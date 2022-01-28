@@ -1,1110 +1,1936 @@
 From: Alan Brady <alan.brady@intel.com>
-Date: Thu, 27 Jan 2022 16:10:01 -0800
-Subject: [Intel-wired-lan] [PATCH net-next 11/19] iecm: add start_xmit and
- set_rx_mode
+Date: Thu, 27 Jan 2022 16:10:06 -0800
+Subject: [Intel-wired-lan] [PATCH net-next 16/19] iecm: implement flow
+ director
 In-Reply-To: <20220128001009.721392-1-alan.brady@intel.com>
 References: <20220128001009.721392-1-alan.brady@intel.com>
-Message-ID: <20220128001009.721392-12-alan.brady@intel.com>
+Message-ID: <20220128001009.721392-17-alan.brady@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-With open and stop done, this continues down the netdev_ops struct to add
-start_xmit and set_rx_mode callbacks. The rest of the data path will be
-added after netdev_ops are done.
+From: Haiyue Wang <haiyue.wang@intel.com>
 
-Signed-off-by: Phani Burra <phani.r.burra@intel.com>
-Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
-Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
-Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-Signed-off-by: Alan Brady <alan.brady@intel.com>
+This adds everthing needed to do flow director commands.
+
+Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
 ---
- drivers/net/ethernet/intel/iecm/iecm_lib.c    | 247 ++++++-
- drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 667 ++++++++++++++++++
- drivers/net/ethernet/intel/include/iecm.h     |   1 +
- .../net/ethernet/intel/include/iecm_txrx.h    |  60 ++
- 4 files changed, 970 insertions(+), 5 deletions(-)
+ .../net/ethernet/intel/iecm/iecm_ethtool.c    |   17 +-
+ drivers/net/ethernet/intel/iecm/iecm_lib.c    | 1528 ++++++++++++++++-
+ .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  119 ++
+ drivers/net/ethernet/intel/include/iecm.h     |  112 ++
+ 4 files changed, 1770 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_ethtool.c b/drivers/net/ethernet/intel/iecm/iecm_ethtool.c
+index 32d905fb1bb6..7e252b25e02d 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_ethtool.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_ethtool.c
+@@ -15,6 +15,7 @@ static int iecm_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+ 			  u32 __always_unused *rule_locs)
+ {
+ 	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
++	struct iecm_adapter *adapter = vport->adapter;
+ 	int ret = -EOPNOTSUPP;
+ 
+ 	switch (cmd->cmd) {
+@@ -23,14 +24,19 @@ static int iecm_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+ 		ret = 0;
+ 		break;
+ 	case ETHTOOL_GRXCLSRLCNT:
+-		/* stub */
++		if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS,
++				     VIRTCHNL2_CAP_FDIR))
++			break;
++		cmd->rule_cnt =
++			adapter->config_data.fdir_config.num_active_filters;
++		cmd->data = IECM_MAX_FDIR_FILTERS;
+ 		ret = 0;
+ 		break;
+ 	case ETHTOOL_GRXCLSRULE:
+-		/* stub */
++		ret = iecm_get_fdir_fltr_entry(vport, cmd);
+ 		break;
+ 	case ETHTOOL_GRXCLSRLALL:
+-		/* stub */
++		ret = iecm_get_fdir_fltr_ids(vport, cmd, (u32 *)rule_locs);
+ 		break;
+ 	case ETHTOOL_GRXFH:
+ 		/* stub */
+@@ -51,14 +57,15 @@ static int iecm_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+  */
+ static int iecm_set_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd)
+ {
++	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
+ 	int ret = -EOPNOTSUPP;
+ 
+ 	switch (cmd->cmd) {
+ 	case ETHTOOL_SRXCLSRLINS:
+-		/* stub */
++		ret = iecm_add_fdir_fltr(vport, cmd);
+ 		break;
+ 	case ETHTOOL_SRXCLSRLDEL:
+-		/* stub */
++		ret = iecm_del_fdir_fltr(vport, cmd);
+ 		break;
+ 	case ETHTOOL_SRXFH:
+ 		/* stub */
 diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-index 037a0e06bb7b..003057f48f0c 100644
+index c5900723b018..35c0cbc42ebe 100644
 --- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
 +++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-@@ -141,6 +141,17 @@ struct iecm_vport *iecm_netdev_to_vport(struct net_device *netdev)
- 	return np->vport;
+@@ -967,6 +967,56 @@ static void iecm_remove_vlan_filters(struct iecm_vport *vport)
+ 	}
  }
  
 +/**
-+ * iecm_netdev_to_adapter - get an adapter handle from a netdev
-+ * @netdev: network interface device structure
++ * iecm_remove_fdir_filters - Remove all Flow Director filters
++ * @vport: vport structure
 + */
-+struct iecm_adapter *iecm_netdev_to_adapter(struct net_device *netdev)
++static void iecm_remove_fdir_filters(struct iecm_vport *vport)
 +{
-+	struct iecm_netdev_priv *np = netdev_priv(netdev);
++	struct iecm_adapter *adapter = vport->adapter;
++	struct iecm_fdir_fltr_config *fdir_config;
 +
-+	return np->vport->adapter;
-+}
-+
- /**
-  * iecm_mb_intr_rel_irq - Free the IRQ association with the OS
-  * @adapter: adapter structure
-@@ -417,6 +428,61 @@ iecm_mac_filter *iecm_find_mac_filter(struct iecm_vport *vport,
- 	return NULL;
- }
- 
-+/**
-+ * __iecm_del_mac_filter - Delete MAC filter helper
-+ * @vport: main vport struct
-+ * @macaddr: address to delete
-+ *
-+ * Takes mac_filter_list_lock spinlock to set remove field for filter in list.
-+ */
-+static struct
-+iecm_mac_filter *__iecm_del_mac_filter(struct iecm_vport *vport,
-+				       const u8 *macaddr)
-+{
-+	struct iecm_mac_filter *f;
-+
-+	spin_lock_bh(&vport->adapter->mac_filter_list_lock);
-+	f = iecm_find_mac_filter(vport, macaddr);
-+	if (f) {
-+		/* If filter was never synced to HW we can just delete it here,
-+		 * otherwise mark for removal.
-+		 */
-+		if (f->add) {
-+			list_del(&f->list);
-+			kfree(f);
-+			f = NULL;
-+		} else {
-+			f->remove = true;
-+		}
-+	}
-+	spin_unlock_bh(&vport->adapter->mac_filter_list_lock);
-+
-+	return f;
-+}
-+
-+/**
-+ * iecm_del_mac_filter - Delete a MAC filter from the filter list
-+ * @vport: main vport structure
-+ * @macaddr: the MAC address
-+ *
-+ * Removes filter from list and if interface is up, tells hardware about the
-+ * removed filter.
-+ **/
-+static void iecm_del_mac_filter(struct iecm_vport *vport, const u8 *macaddr)
-+{
-+	struct iecm_mac_filter *f;
-+
-+	if (!macaddr)
++	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_FDIR))
 +		return;
 +
-+	f = __iecm_del_mac_filter(vport, macaddr);
-+	if (!f)
-+		return;
++	fdir_config = &adapter->config_data.fdir_config;
++	if (!list_empty(&fdir_config->fdir_fltr_list)) {
++		struct iecm_fdir_fltr *fdir;
 +
-+	if (vport->adapter->state == __IECM_UP)
-+		iecm_add_del_ether_addrs(vport, false, false);
-+}
-+
- /**
-  * __iecm_add_mac_filter - Add mac filter helper function
-  * @vport: main vport struct
-@@ -1711,6 +1777,134 @@ void iecm_remove(struct pci_dev *pdev)
- }
- EXPORT_SYMBOL(iecm_remove);
- 
-+/**
-+ * iecm_addr_sync - Callback for dev_(mc|uc)_sync to add address
-+ * @netdev: the netdevice
-+ * @addr: address to add
-+ *
-+ * Called by __dev_(mc|uc)_sync when an address needs to be added. We call
-+ * __dev_(uc|mc)_sync from .set_rx_mode. Kernel takes addr_list_lock spinlock
-+ * meaning we cannot sleep in this context. Due to this, we have to add the
-+ * filter and send the virtchnl message asynchronously without waiting for the
-+ * response from the other side. We won't know whether or not the operation
-+ * actually succeeded until we get the message back.  Returns 0 on success,
-+ * negative on failure.
-+ */
-+static int iecm_addr_sync(struct net_device *netdev, const u8 *addr)
-+{
-+	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
-+
-+	if (__iecm_add_mac_filter(vport, addr)) {
-+		if (vport->adapter->state == __IECM_UP) {
-+			set_bit(__IECM_ADD_ETH_REQ, vport->adapter->flags);
-+			iecm_add_del_ether_addrs(vport, true, true);
++		spin_lock_bh(&adapter->fdir_fltr_list_lock);
++		list_for_each_entry(fdir, &fdir_config->fdir_fltr_list, list) {
++			fdir->remove = true;
 +		}
-+		return 0;
-+	}
-+
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * iecm_addr_unsync - Callback for dev_(mc|uc)_sync to remove address
-+ * @netdev: the netdevice
-+ * @addr: address to add
-+ *
-+ * Called by __dev_(mc|uc)_sync when an address needs to be added. We call
-+ * __dev_(uc|mc)_sync from .set_rx_mode. Kernel takes addr_list_lock spinlock
-+ * meaning we cannot sleep in this context. Due to this we have to delete the
-+ * filter and send the virtchnl message asychronously without waiting for the
-+ * return from the other side.  We won't know whether or not the operation
-+ * actually succeeded until we get the message back. Returns 0 on success,
-+ * negative on failure.
-+ */
-+static int iecm_addr_unsync(struct net_device *netdev, const u8 *addr)
-+{
-+	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
-+
-+	/* Under some circumstances, we might receive a request to delete
-+	 * our own device address from our uc list. Because we store the
-+	 * device address in the VSI's MAC/VLAN filter list, we need to ignore
-+	 * such requests and not delete our device address from this list.
-+	 */
-+	if (ether_addr_equal(addr, netdev->dev_addr))
-+		return 0;
-+
-+	if (__iecm_del_mac_filter(vport, addr)) {
-+		if (vport->adapter->state == __IECM_UP) {
-+			set_bit(__IECM_DEL_ETH_REQ, vport->adapter->flags);
-+			iecm_add_del_ether_addrs(vport, false, true);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * iecm_set_rx_mode - NDO callback to set the netdev filters
-+ * @netdev: network interface device structure
-+ *
-+ * Stack takes addr_list_lock spinlock before calling our .set_rx_mode.  We
-+ * cannot sleep in this context.
-+ */
-+static void iecm_set_rx_mode(struct net_device *netdev)
-+{
-+	struct iecm_adapter *adapter = iecm_netdev_to_adapter(netdev);
-+
-+	if (iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_MACFILTER)) {
-+		__dev_uc_sync(netdev, iecm_addr_sync, iecm_addr_unsync);
-+		__dev_mc_sync(netdev, iecm_addr_sync, iecm_addr_unsync);
-+	}
-+
-+	if (iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_PROMISC)) {
-+		bool changed = false;
-+
-+		/* IFF_PROMISC enables both unicast and multicast promiscuous,
-+		 * while IFF_ALLMULTI only enables multicast such that:
-+		 *
-+		 * promisc  + allmulti		= unicast | multicast
-+		 * promisc  + !allmulti		= unicast | multicast
-+		 * !promisc + allmulti		= multicast
-+		 */
-+		if ((netdev->flags & IFF_PROMISC) &&
-+		    !test_and_set_bit(__IECM_PROMISC_UC,
-+				      adapter->config_data.user_flags)) {
-+			changed = true;
-+			dev_info(&adapter->pdev->dev, "Entering promiscuous mode\n");
-+			if (!test_and_set_bit(__IECM_PROMISC_MC,
-+					      adapter->flags))
-+				dev_info(&adapter->pdev->dev, "Entering multicast promiscuous mode\n");
-+		}
-+		if (!(netdev->flags & IFF_PROMISC) &&
-+		    test_and_clear_bit(__IECM_PROMISC_UC,
-+				       adapter->config_data.user_flags)) {
-+			changed = true;
-+			dev_info(&adapter->pdev->dev, "Leaving promiscuous mode\n");
-+		}
-+		if (netdev->flags & IFF_ALLMULTI &&
-+		    !test_and_set_bit(__IECM_PROMISC_MC,
-+				      adapter->config_data.user_flags)) {
-+			changed = true;
-+			dev_info(&adapter->pdev->dev, "Entering multicast promiscuous mode\n");
-+		}
-+		if (!(netdev->flags & (IFF_ALLMULTI | IFF_PROMISC)) &&
-+		    test_and_clear_bit(__IECM_PROMISC_MC,
-+				       adapter->config_data.user_flags)) {
-+			changed = true;
-+			dev_info(&adapter->pdev->dev, "Leaving multicast promiscuous mode\n");
-+		}
-+
-+		if (changed) {
-+			int err = iecm_set_promiscuous(adapter);
-+
-+			if (err) {
-+				dev_info(&adapter->pdev->dev, "Failed to set promiscuous mode: %d\n",
-+					 err);
-+			}
-+		}
++		spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++		iecm_send_del_fdir_filter_msg(vport);
 +	}
 +}
 +
- /**
-  * iecm_open - Called when a network interface becomes active
-  * @netdev: network interface device structure
-@@ -1730,6 +1924,49 @@ static int iecm_open(struct net_device *netdev)
- 	return iecm_vport_open(np->vport, true);
- }
- 
 +/**
-+ * iecm_set_mac - NDO callback to set port mac address
-+ * @netdev: network interface device structure
-+ * @p: pointer to an address structure
++ * iecm_del_all_fdir_filters - delete all Flow Director filters
++ * @vport: vport structure
 + *
-+ * Returns 0 on success, negative on failure
++ * This function will loop through the list of Flow Director filters and
++ * deletes them.
 + **/
-+static int iecm_set_mac(struct net_device *netdev, void *p)
++static void iecm_del_all_fdir_filters(struct iecm_vport *vport)
 +{
-+	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
-+	struct iecm_mac_filter *f;
-+	struct sockaddr *addr = p;
++	struct iecm_adapter *adapter = vport->adapter;
++	struct iecm_fdir_fltr_config *fdir_config;
++	struct iecm_fdir_fltr *fdir, *fdir_tmp;
 +
-+	if (!iecm_is_cap_ena(vport->adapter, IECM_OTHER_CAPS,
-+			     VIRTCHNL2_CAP_MACFILTER)) {
-+		dev_info(&vport->adapter->pdev->dev, "Setting MAC address is not supported\n");
-+		return -EOPNOTSUPP;
++	fdir_config = &adapter->config_data.fdir_config;
++
++	spin_lock_bh(&adapter->fdir_fltr_list_lock);
++	list_for_each_entry_safe(fdir, fdir_tmp, &fdir_config->fdir_fltr_list,
++				 list) {
++		list_del(&fdir->list);
++		kfree(fdir);
 +	}
-+
-+	if (!is_valid_ether_addr(addr->sa_data)) {
-+		dev_info(&vport->adapter->pdev->dev, "Invalid MAC address: %pM\n",
-+			 addr->sa_data);
-+		return -EADDRNOTAVAIL;
-+	}
-+
-+	if (ether_addr_equal(netdev->dev_addr, addr->sa_data))
-+		return 0;
-+
-+	/* Delete the current filter */
-+	if (is_valid_ether_addr(vport->default_mac_addr))
-+		iecm_del_mac_filter(vport, vport->default_mac_addr);
-+
-+	/* Add new filter */
-+	f = iecm_add_mac_filter(vport, addr->sa_data);
-+
-+	if (f) {
-+		ether_addr_copy(vport->default_mac_addr, addr->sa_data);
-+		dev_addr_mod(netdev, 0, addr->sa_data, ETH_ALEN);
-+	}
-+
-+	return f ? 0 : -ENOMEM;
++	fdir_config->num_active_filters = 0;
++	spin_unlock_bh(&adapter->fdir_fltr_list_lock);
 +}
 +
- void *iecm_alloc_dma_mem(struct iecm_hw *hw, struct iecm_dma_mem *mem, u64 size)
+ /**
+  * iecm_vport_stop - Disable a vport
+  * @vport: vport to disable
+@@ -997,6 +1047,8 @@ static void iecm_vport_stop(struct iecm_vport *vport)
+ 	if (!test_bit(__IECM_REL_RES_IN_PROG, adapter->flags))
+ 		iecm_remove_vlan_filters(vport);
+ 
++	iecm_remove_fdir_filters(vport);
++
+ 	adapter->link_up = false;
+ 	iecm_vport_intr_deinit(vport);
+ 	iecm_vport_intr_rel(vport);
+@@ -1206,6 +1258,28 @@ static void iecm_restore_vlans(struct iecm_vport *vport)
+ 		iecm_set_all_vlans(vport);
+ }
+ 
++/**
++ * iecm_restore_fdir_filters - Restore all Flow Director filters
++ * @vport: vport structure
++ */
++static void iecm_restore_fdir_filters(struct iecm_vport *vport)
++{
++	struct iecm_adapter *adapter = vport->adapter;
++	struct iecm_fdir_fltr_config *fdir_config;
++
++	fdir_config = &adapter->config_data.fdir_config;
++	if (!list_empty(&fdir_config->fdir_fltr_list)) {
++		struct iecm_fdir_fltr *fdir;
++
++		spin_lock_bh(&adapter->fdir_fltr_list_lock);
++		list_for_each_entry(fdir, &fdir_config->fdir_fltr_list, list) {
++			fdir->add = true;
++		}
++		spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++		iecm_send_add_fdir_filter_msg(vport);
++	}
++}
++
+ /**
+  * iecm_restore_features - Restore feature configs
+  * @vport: virtual port structure
+@@ -1227,6 +1301,9 @@ static void iecm_restore_features(struct iecm_vport *vport)
+ 		if (iecm_set_promiscuous(adapter))
+ 			dev_info(&adapter->pdev->dev, "Failed to restore promiscuous settings\n");
+ 	}
++
++	if (iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_FDIR))
++		iecm_restore_fdir_filters(vport);
+ }
+ 
+ /**
+@@ -2014,6 +2091,7 @@ int iecm_probe(struct pci_dev *pdev,
+ 	INIT_LIST_HEAD(&adapter->config_data.mac_filter_list);
+ 	INIT_LIST_HEAD(&adapter->config_data.vlan_filter_list);
+ 	INIT_LIST_HEAD(&adapter->config_data.adv_rss_list);
++	INIT_LIST_HEAD(&adapter->config_data.fdir_config.fdir_fltr_list);
+ 
+ 	INIT_DELAYED_WORK(&adapter->stats_task, iecm_statistics_task);
+ 	INIT_DELAYED_WORK(&adapter->serv_task, iecm_service_task);
+@@ -2052,7 +2130,17 @@ EXPORT_SYMBOL(iecm_probe);
+  */
+ static void iecm_del_user_cfg_data(struct iecm_adapter *adapter)
  {
- 	struct iecm_adapter *adapter = (struct iecm_adapter *)hw->back;
-@@ -1756,10 +1993,10 @@ void iecm_free_dma_mem(struct iecm_hw *hw, struct iecm_dma_mem *mem)
- static const struct net_device_ops iecm_netdev_ops_splitq = {
- 	.ndo_open = iecm_open,
- 	.ndo_stop = iecm_stop,
--	.ndo_start_xmit = NULL,
--	.ndo_set_rx_mode = NULL,
-+	.ndo_start_xmit = iecm_tx_splitq_start,
-+	.ndo_set_rx_mode = iecm_set_rx_mode,
- 	.ndo_validate_addr = eth_validate_addr,
--	.ndo_set_mac_address = NULL,
-+	.ndo_set_mac_address = iecm_set_mac,
- 	.ndo_change_mtu = NULL,
- 	.ndo_get_stats64 = NULL,
- 	.ndo_fix_features = NULL,
-@@ -1773,9 +2010,9 @@ static const struct net_device_ops iecm_netdev_ops_singleq = {
- 	.ndo_open = iecm_open,
- 	.ndo_stop = iecm_stop,
- 	.ndo_start_xmit = NULL,
--	.ndo_set_rx_mode = NULL,
-+	.ndo_set_rx_mode = iecm_set_rx_mode,
- 	.ndo_validate_addr = eth_validate_addr,
--	.ndo_set_mac_address = NULL,
-+	.ndo_set_mac_address = iecm_set_mac,
- 	.ndo_change_mtu = NULL,
- 	.ndo_get_stats64 = NULL,
- 	.ndo_fix_features = NULL,
-diff --git a/drivers/net/ethernet/intel/iecm/iecm_txrx.c b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-index fb6a61277b00..ef5fe659389b 100644
---- a/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-+++ b/drivers/net/ethernet/intel/iecm/iecm_txrx.c
-@@ -1655,6 +1655,673 @@ int iecm_vport_queues_alloc(struct iecm_vport *vport)
+-	/* stub */
++	int i;
++
++	if (!adapter->vports)
++		return;
++
++	for (i = 0; i < adapter->num_alloc_vport; i++) {
++		if (!adapter->vports[i])
++			continue;
++
++		iecm_del_all_fdir_filters(adapter->vports[i]);
++	}
+ }
+ 
+ /**
+@@ -2647,6 +2735,1444 @@ static int iecm_setup_tc(struct net_device *netdev, enum tc_setup_type type,
  	return err;
  }
  
 +/**
-+ * iecm_tx_splitq_build_ctb - populate command tag and size for queue
-+ * based scheduling descriptors
-+ * @desc: descriptor to populate
-+ * @parms: pointer to tx params struct
-+ * @td_cmd: command to be filled in desc
-+ * @size: size of buffer
++ * iecm_pkt_udp_no_pay_len - the length of UDP packet without payload
++ * @fltr: Flow Director filter data structure
 + */
-+void
-+iecm_tx_splitq_build_ctb(union iecm_tx_flex_desc *desc,
-+			 struct iecm_tx_splitq_params *parms,
-+			 u16 td_cmd, u16 size)
++static u16 iecm_pkt_udp_no_pay_len(struct iecm_fdir_fltr *fltr)
 +{
-+	desc->q.qw1.cmd_dtype =
-+		cpu_to_le16(parms->dtype & IECM_FLEX_TXD_QW1_DTYPE_M);
-+	desc->q.qw1.cmd_dtype |=
-+		cpu_to_le16((td_cmd << IECM_FLEX_TXD_QW1_CMD_S) &
-+			    IECM_FLEX_TXD_QW1_CMD_M);
-+	desc->q.qw1.buf_size = cpu_to_le16((u16)size);
-+	desc->q.qw1.flex.l2tags.l2tag1 = cpu_to_le16(parms->td_tag);
++	return sizeof(struct ethhdr) +
++		(fltr->ip_ver == 4 ? sizeof(struct iphdr)
++				   : sizeof(struct ipv6hdr)) +
++		sizeof(struct udphdr);
 +}
 +
 +/**
-+ * iecm_tx_splitq_build_flow_desc - populate command tag and size for flow
-+ * scheduling descriptors
-+ * @desc: descriptor to populate
-+ * @parms: pointer to tx params struct
-+ * @td_cmd: command to be filled in desc
-+ * @size: size of buffer
-+ */
-+void
-+iecm_tx_splitq_build_flow_desc(union iecm_tx_flex_desc *desc,
-+			       struct iecm_tx_splitq_params *parms,
-+			       u16 td_cmd, u16 size)
-+{
-+	desc->flow.qw1.cmd_dtype = (u16)parms->dtype | td_cmd;
-+	desc->flow.qw1.rxr_bufsize = cpu_to_le16((u16)size);
-+	desc->flow.qw1.compl_tag = cpu_to_le16(parms->compl_tag);
-+}
-+
-+/**
-+ * iecm_tx_buf_avail - Stop Tx if no enough book keeping buffers are available
-+ * @tx_q: the queue to be checked
++ * iecm_fill_fdir_gtpu_hdr - fill the GTP-U protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
 + *
-+ * Return -EBUSY if Tx queue stop is needed, else 0
-+ */
-+static int iecm_tx_buf_avail(struct iecm_queue *tx_q)
-+{
-+	/* If We have less than a quarter of the total desc_count left
-+	 * stop the queue to wait for more completions
-+	 */
-+	if (unlikely(IECM_TX_BUF_UNUSED(tx_q) < tx_q->desc_count >> 2)) {
-+		netif_stop_subqueue(tx_q->vport->netdev, tx_q->idx);
-+		return -EBUSY;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * __iecm_tx_maybe_stop - 2nd level check for Tx stop conditions
-+ * @tx_q: the queue to be checked
-+ * @size: the size buffer we want to assure is available
-+ *
-+ * Returns -EBUSY if a stop is needed, else 0
++ * Returns 0 if the GTP-U protocol header is set successfully
 + */
 +static int
-+__iecm_tx_maybe_stop(struct iecm_queue *tx_q, unsigned int size)
++iecm_fill_fdir_gtpu_hdr(struct iecm_fdir_fltr *fltr,
++			struct virtchnl_proto_hdrs *proto_hdrs)
 +{
-+	netif_stop_subqueue(tx_q->vport->netdev, tx_q->idx);
++	struct virtchnl_proto_hdr *uhdr = &proto_hdrs->proto_hdr[proto_hdrs->count - 1];
++	struct virtchnl_proto_hdr *ghdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct virtchnl_proto_hdr *ehdr = NULL;
++	u16 adj_offs, hdr_offs;
++	int i;
 +
-+	/* Memory barrier before checking head and tail */
-+	smp_mb();
++	VIRTCHNL_SET_PROTO_HDR_TYPE(ghdr, GTPU_IP);
 +
-+	/* Check again in a case another CPU has just made room available. */
-+	if (likely(IECM_DESC_UNUSED(tx_q) < size))
-+		return -EBUSY;
++	adj_offs = iecm_pkt_udp_no_pay_len(fltr);
 +
-+	/* A reprieve! - use start_subqueue because it doesn't call schedule */
-+	netif_start_subqueue(tx_q->vport->netdev, tx_q->idx);
++	for (i = 0; i < fltr->flex_cnt; i++) {
++#define IECM_GTPU_HDR_TEID_OFFS0	4
++#define IECM_GTPU_HDR_TEID_OFFS1	6
++#define IECM_GTPU_HDR_N_PDU_AND_NEXT_EXTHDR_OFFS	10
++#define IECM_GTPU_HDR_NEXT_EXTHDR_TYPE_MASK		0x00FF /* skip N_PDU */
++/* PDU Session Container Extension Header (PSC) */
++#define IECM_GTPU_PSC_EXTHDR_TYPE			0x85
++#define IECM_GTPU_HDR_PSC_PDU_TYPE_AND_QFI_OFFS		13
++#define IECM_GTPU_HDR_PSC_PDU_QFI_MASK			0x3F /* skip Type */
++#define IECM_GTPU_EH_QFI_IDX				1
++
++		if (fltr->flex_words[i].offset < adj_offs)
++			return -EINVAL;
++
++		hdr_offs = fltr->flex_words[i].offset - adj_offs;
++
++		switch (hdr_offs) {
++		case IECM_GTPU_HDR_TEID_OFFS0:
++		case IECM_GTPU_HDR_TEID_OFFS1: {
++			__be16 *pay_word = (__force __be16 *)ghdr->buffer;
++
++			pay_word[hdr_offs >> 1] =
++					htons(fltr->flex_words[i].word);
++			VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(ghdr, GTPU_IP, TEID);
++			}
++			break;
++		case IECM_GTPU_HDR_N_PDU_AND_NEXT_EXTHDR_OFFS:
++			if ((fltr->flex_words[i].word &
++			     IECM_GTPU_HDR_NEXT_EXTHDR_TYPE_MASK) !=
++						IECM_GTPU_PSC_EXTHDR_TYPE)
++				return -EOPNOTSUPP;
++			if (!ehdr)
++				ehdr =
++				   &proto_hdrs->proto_hdr[proto_hdrs->count++];
++			VIRTCHNL_SET_PROTO_HDR_TYPE(ehdr, GTPU_EH);
++			break;
++		case IECM_GTPU_HDR_PSC_PDU_TYPE_AND_QFI_OFFS:
++			if (!ehdr)
++				return -EINVAL;
++			ehdr->buffer[IECM_GTPU_EH_QFI_IDX] =
++					fltr->flex_words[i].word &
++						IECM_GTPU_HDR_PSC_PDU_QFI_MASK;
++			VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(ehdr, GTPU_EH, QFI);
++			break;
++		default:
++			return -EINVAL;
++		}
++	}
++
++	/* The PF ignores the UDP header fields */
++	uhdr->field_selector = 0;
 +
 +	return 0;
 +}
 +
 +/**
-+ * iecm_tx_maybe_stop - 1st level check for Tx stop conditions
-+ * @tx_q: the queue to be checked
-+ * @size: number of descriptors we want to assure is available
++ * iecm_fill_fdir_pfcp_hdr - fill the PFCP protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
 + *
-+ * Returns 0 if stop is not needed
++ * Returns 0 if the PFCP protocol header is set successfully
 + */
-+int iecm_tx_maybe_stop(struct iecm_queue *tx_q, unsigned int size)
++static int
++iecm_fill_fdir_pfcp_hdr(struct iecm_fdir_fltr *fltr,
++			struct virtchnl_proto_hdrs *proto_hdrs)
 +{
-+	if (likely(IECM_DESC_UNUSED(tx_q) >= size))
-+		return 0;
++	struct virtchnl_proto_hdr *uhdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count - 1];
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	u16 adj_offs, hdr_offs;
++	int i;
 +
-+	return __iecm_tx_maybe_stop(tx_q, size);
-+}
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, PFCP);
 +
-+/**
-+ * iecm_tx_buf_hw_update - Store the new tail value
-+ * @tx_q: queue to bump
-+ * @val: new tail index
-+ * @xmit_more: more skb's pending
-+ *
-+ * The naming here is special in that 'hw' signals that this function is about
-+ * to do a register write to update our queue status. We know this can only
-+ * mean tail here as HW should be owning head for TX.
-+ */
-+void iecm_tx_buf_hw_update(struct iecm_queue *tx_q, u32 val,
-+			   bool xmit_more)
-+{
-+	struct netdev_queue *nq;
++	adj_offs = iecm_pkt_udp_no_pay_len(fltr);
 +
-+	nq = netdev_get_tx_queue(tx_q->vport->netdev, tx_q->idx);
-+	tx_q->next_to_use = val;
++	for (i = 0; i < fltr->flex_cnt; i++) {
++#define IECM_PFCP_HDR_SFIELD_AND_MSG_TYPE_OFFS	0
++		if (fltr->flex_words[i].offset < adj_offs)
++			return -EINVAL;
 +
-+	iecm_tx_maybe_stop(tx_q, IECM_TX_DESC_NEEDED);
++		hdr_offs = fltr->flex_words[i].offset - adj_offs;
 +
-+	/* Force memory writes to complete before letting h/w
-+	 * know there are new descriptors to fetch.  (Only
-+	 * applicable for weak-ordered memory model archs,
-+	 * such as IA-64).
-+	 */
-+	wmb();
-+
-+	/* notify HW of packet */
-+	if (netif_xmit_stopped(nq) || !xmit_more)
-+		writel(val, tx_q->tail);
-+}
-+
-+/**
-+ * iecm_size_to_txd_count - Get the number of descriptors needed for Tx
-+ * @size: transmit request size in bytes
-+ *
-+ * Due to hardware alignment restrictions (4K alignment), we need to assume
-+ * that we can have no more than 12K of data per descriptor, even though each
-+ * descriptor can take up to 16K - 1 bytes of aligned memory.
-+ */
-+unsigned int iecm_size_to_txd_count(unsigned int size)
-+{
-+	return (size / 12288) + IECM_TX_DESCS_FOR_SKB_DATA_PTR;
-+}
-+
-+/**
-+ * iecm_tx_desc_count_required - calculate number of Tx descriptors needed
-+ * @skb: send buffer
-+ *
-+ * Returns number of data descriptors needed for this skb.
-+ */
-+unsigned int iecm_tx_desc_count_required(struct sk_buff *skb)
-+{
-+	const skb_frag_t *frag = &skb_shinfo(skb)->frags[0];
-+	unsigned int nr_frags = skb_shinfo(skb)->nr_frags;
-+	unsigned int count = 0, size = skb_headlen(skb);
-+
-+	for (;;) {
-+		count += iecm_size_to_txd_count(size);
-+
-+		if (!nr_frags--)
++		switch (hdr_offs) {
++		case IECM_PFCP_HDR_SFIELD_AND_MSG_TYPE_OFFS:
++			hdr->buffer[0] = (fltr->flex_words[i].word >> 8) & 0xff;
++			VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, PFCP, S_FIELD);
 +			break;
-+
-+		size = skb_frag_size(frag++);
-+	}
-+
-+	return count;
-+}
-+
-+/**
-+ * iecm_tx_splitq_map - Build the Tx flex descriptor
-+ * @tx_q: queue to send buffer on
-+ * @parms: pointer to splitq params struct
-+ * @first: first buffer info buffer to use
-+ *
-+ * This function loops over the skb data pointed to by *first
-+ * and gets a physical address for each memory location and programs
-+ * it and the length into the transmit flex descriptor.
-+ */
-+static void
-+iecm_tx_splitq_map(struct iecm_queue *tx_q,
-+		   struct iecm_tx_splitq_params *parms,
-+		   struct iecm_tx_buf *first)
-+{
-+	union iecm_tx_flex_desc *tx_desc;
-+	unsigned int data_len, size;
-+	struct iecm_tx_buf *tx_buf;
-+	u16 i = tx_q->next_to_use;
-+	struct netdev_queue *nq;
-+	struct sk_buff *skb;
-+	skb_frag_t *frag;
-+	u16 td_cmd = 0;
-+	dma_addr_t dma;
-+
-+	skb = first->skb;
-+
-+	td_cmd = parms->offload.td_cmd;
-+	parms->compl_tag = tx_q->tx_buf_key;
-+
-+	data_len = skb->data_len;
-+	size = skb_headlen(skb);
-+
-+	tx_desc = IECM_FLEX_TX_DESC(tx_q, i);
-+
-+	dma = dma_map_single(tx_q->dev, skb->data, size, DMA_TO_DEVICE);
-+
-+	tx_buf = first;
-+
-+	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
-+		unsigned int max_data = IECM_TX_MAX_DESC_DATA_ALIGNED;
-+
-+		if (dma_mapping_error(tx_q->dev, dma))
-+			goto dma_error;
-+
-+		/* record length, and DMA address */
-+		dma_unmap_len_set(tx_buf, len, size);
-+		dma_unmap_addr_set(tx_buf, dma, dma);
-+
-+		/* align size to end of page */
-+		max_data += -dma & (IECM_TX_MAX_READ_REQ_SIZE - 1);
-+
-+		/* buf_addr is in same location for both desc types */
-+		tx_desc->q.buf_addr = cpu_to_le64(dma);
-+
-+		/* account for data chunks larger than the hardware
-+		 * can handle
-+		 */
-+		while (unlikely(size > IECM_TX_MAX_DESC_DATA)) {
-+			parms->splitq_build_ctb(tx_desc, parms, td_cmd,
-+						max_data);
-+
-+			tx_desc++;
-+			i++;
-+
-+			if (i == tx_q->desc_count) {
-+				tx_desc = IECM_FLEX_TX_DESC(tx_q, 0);
-+				i = 0;
-+			}
-+
-+			dma += max_data;
-+			size -= max_data;
-+
-+			max_data = IECM_TX_MAX_DESC_DATA_ALIGNED;
-+			/* buf_addr is in same location for both desc types */
-+			tx_desc->q.buf_addr = cpu_to_le64(dma);
++		default:
++			return -EINVAL;
 +		}
++	}
 +
-+		if (likely(!data_len))
++	/* The PF ignores the UDP header fields */
++	uhdr->field_selector = 0;
++
++	return 0;
++}
++
++/**
++ * iecm_fill_fdir_nat_t_esp_hdr - fill the NAT-T-ESP protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the NAT-T-ESP protocol header is set successfully
++ */
++static int
++iecm_fill_fdir_nat_t_esp_hdr(struct iecm_fdir_fltr *fltr,
++			     struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *uhdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count - 1];
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	u16 adj_offs, hdr_offs;
++	u32 spi = 0;
++	int i;
++
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, ESP);
++
++	adj_offs = iecm_pkt_udp_no_pay_len(fltr);
++
++	for (i = 0; i < fltr->flex_cnt; i++) {
++#define IECM_NAT_T_ESP_SPI_OFFS0	0
++#define IECM_NAT_T_ESP_SPI_OFFS1	2
++		if (fltr->flex_words[i].offset < adj_offs)
++			return -EINVAL;
++
++		hdr_offs = fltr->flex_words[i].offset - adj_offs;
++
++		switch (hdr_offs) {
++		case IECM_NAT_T_ESP_SPI_OFFS0:
++			spi |= fltr->flex_words[i].word << 16;
 +			break;
-+		parms->splitq_build_ctb(tx_desc, parms, td_cmd, size);
-+		tx_desc++;
-+		i++;
-+
-+		if (i == tx_q->desc_count) {
-+			tx_desc = IECM_FLEX_TX_DESC(tx_q, 0);
-+			i = 0;
++		case IECM_NAT_T_ESP_SPI_OFFS1:
++			spi |= fltr->flex_words[i].word;
++			break;
++		default:
++			return -EINVAL;
 +		}
-+
-+		size = skb_frag_size(frag);
-+		data_len -= size;
-+
-+		dma = skb_frag_dma_map(tx_q->dev, frag, 0, size,
-+				       DMA_TO_DEVICE);
-+
-+		tx_buf->compl_tag = parms->compl_tag;
-+		tx_buf = &tx_q->tx_buf[i];
 +	}
 +
-+	/* record bytecount for BQL */
-+	nq = netdev_get_tx_queue(tx_q->vport->netdev, tx_q->idx);
-+	netdev_tx_sent_queue(nq, first->bytecount);
++	/* Not support IKE Header Format with SPI 0 */
++	if (!spi)
++		return -EOPNOTSUPP;
 +
-+	/* record SW timestamp if HW timestamp is not available */
-+	skb_tx_timestamp(first->skb);
++	*(__force __be32 *)hdr->buffer = htonl(spi);
++	VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, ESP, SPI);
 +
-+	/* write last descriptor with RS and EOP bits */
-+	td_cmd |= parms->eop_cmd;
-+	parms->splitq_build_ctb(tx_desc, parms, td_cmd, size);
-+	i++;
-+	if (i == tx_q->desc_count)
-+		i = 0;
++	/* The PF ignores the UDP header fields */
++	uhdr->field_selector = 0;
 +
-+	/* set next_to_watch value indicating a packet is present */
-+	first->next_to_watch = tx_desc;
-+	tx_buf->compl_tag = parms->compl_tag++;
-+
-+	iecm_tx_buf_hw_update(tx_q, i, netdev_xmit_more());
-+
-+	/* Update TXQ Completion Tag key for next buffer */
-+	tx_q->tx_buf_key = parms->compl_tag;
-+
-+	return;
-+
-+dma_error:
-+	/* clear dma mappings for failed tx_buf map */
-+	for (;;) {
-+		tx_buf = &tx_q->tx_buf[i];
-+		iecm_tx_buf_rel(tx_q, tx_buf);
-+		if (tx_buf == first)
-+			break;
-+		if (i == 0)
-+			i = tx_q->desc_count;
-+		i--;
-+	}
-+
-+	tx_q->next_to_use = i;
++	return 0;
 +}
 +
 +/**
-+ * iecm_tx_prepare_vlan_flags - prepare generic vlan tagging for HW
-+ * @tx_q: txq to find the tag location
-+ * @first: pointer to struct iecm_tx_buf
-+ * @skb: skb being xmitted
-+ */
-+void iecm_tx_prepare_vlan_flags(struct iecm_queue *tx_q,
-+				struct iecm_tx_buf *first,
-+				struct sk_buff *skb)
-+{
-+	struct iecm_vport *vport = tx_q->vport;
-+	u32 tx_flags = 0;
-+
-+	/* Stack sets protocol to 8021q when offload is disabled so SW can take
-+	 * any necessary steps to handle it.  We don't need to do anything,
-+	 * just set protocol to encapsulated type.
-+	 */
-+	if (skb->protocol == htons(ETH_P_8021Q) &&
-+	    !iecm_is_feature_ena(vport, NETIF_F_HW_VLAN_CTAG_RX)) {
-+		skb->protocol = vlan_get_protocol(skb);
-+		return;
-+	}
-+
-+	if (!skb_vlan_tag_present(skb))
-+		return;
-+
-+	tx_flags |= skb_vlan_tag_get(skb) << IECM_TX_FLAGS_VLAN_SHIFT;
-+	tx_flags |= IECM_TX_FLAGS_VLAN_TAG;
-+	if (test_bit(__IECM_Q_VLAN_TAG_LOC_L2TAG2, tx_q->flags))
-+		tx_flags |= IECM_TX_FLAGS_HW_OUTER_SINGLE_VLAN;
-+	else if (test_bit(__IECM_Q_VLAN_TAG_LOC_L2TAG1, tx_q->flags))
-+		tx_flags |= IECM_TX_FLAGS_HW_VLAN;
-+	else
-+		dev_dbg(&vport->adapter->pdev->dev, "Unsupported Tx VLAN tag location requested\n");
-+
-+	first->tx_flags |= tx_flags;
-+}
-+
-+/**
-+ * iecm_tso - computes mss and TSO length to prepare for TSO
-+ * @first: pointer to struct iecm_tx_buf
-+ * @off: pointer to struct that holds offload parameters
++ * iecm_fill_fdir_udp_flex_pay_hdr - fill the UDP payload header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
 + *
-+ * Returns error (negative) if TSO doesn't apply to the given skb,
-+ * 0 otherwise.
-+ *
-+ * Note: this function can be used in the splitq and singleq paths
++ * Returns 0 if the UDP payload defined protocol header is set successfully
 + */
-+int iecm_tso(struct iecm_tx_buf *first, struct iecm_tx_offload_params *off)
++static int
++iecm_fill_fdir_udp_flex_pay_hdr(struct iecm_fdir_fltr *fltr,
++				struct virtchnl_proto_hdrs *proto_hdrs)
 +{
-+	struct sk_buff *skb = first->skb;
-+	union {
-+		struct iphdr *v4;
-+		struct ipv6hdr *v6;
-+		unsigned char *hdr;
-+	} ip;
-+	union {
-+		struct tcphdr *tcp;
-+		struct udphdr *udp;
-+		unsigned char *hdr;
-+	} l4;
-+	u32 paylen, l4_start;
++#define IECM_GTPU_PORT		2152
++#define IECM_NAT_T_ESP_PORT	4500
++#define IECM_PFCP_PORT		8805
 +	int err;
 +
-+	if (!skb_is_gso(skb))
-+		return 0;
-+
-+	err = skb_cow_head(skb, 0);
-+	if (err < 0)
-+		return err;
-+
-+	ip.hdr = skb_network_header(skb);
-+	l4.hdr = skb_transport_header(skb);
-+
-+	/* initialize outer IP header fields */
-+	if (ip.v4->version == 4) {
-+		ip.v4->tot_len = 0;
-+		ip.v4->check = 0;
-+	} else if (ip.v4->version == 6) {
-+		ip.v6->payload_len = 0;
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	l4_start = skb_transport_offset(skb);
-+
-+	/* remove payload length from checksum */
-+	paylen = skb->len - l4_start;
-+
-+	switch (skb_shinfo(skb)->gso_type) {
-+	case SKB_GSO_TCPV4:
-+	case SKB_GSO_TCPV6:
-+		csum_replace_by_diff(&l4.tcp->check,
-+				     (__force __wsum)htonl(paylen));
-+
-+		/* compute length of segmentation header */
-+		off->tso_hdr_len = tcp_hdrlen(skb) + l4_start;
++	switch (ntohs(fltr->ip_data.dst_port)) {
++	case IECM_GTPU_PORT:
++		err = iecm_fill_fdir_gtpu_hdr(fltr, proto_hdrs);
 +		break;
-+	case SKB_GSO_UDP_L4:
-+		csum_replace_by_diff(&l4.udp->check,
-+				     (__force __wsum)htonl(paylen));
-+		/* compute length of segmentation header */
-+		off->tso_hdr_len = sizeof(struct udphdr) + l4_start;
-+		l4.udp->len =
-+			htons(skb_shinfo(skb)->gso_size +
-+			      sizeof(struct udphdr));
++	case IECM_NAT_T_ESP_PORT:
++		err = iecm_fill_fdir_nat_t_esp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_PFCP_PORT:
++		err = iecm_fill_fdir_pfcp_hdr(fltr, proto_hdrs);
 +		break;
 +	default:
-+		return -EINVAL;
++		err = -EOPNOTSUPP;
++		break;
 +	}
 +
-+	off->tso_len = skb->len - off->tso_hdr_len;
-+	off->mss = skb_shinfo(skb)->gso_size;
++	return err;
++}
 +
-+	/* update gso_segs and bytecount */
-+	first->gso_segs = skb_shinfo(skb)->gso_segs;
-+	first->bytecount = qdisc_skb_cb(skb)->pkt_len;
++/**
++ * iecm_fill_fdir_ip4_hdr - fill the IPv4 protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the IPv4 protocol header is set successfully
++ */
++static int iecm_fill_fdir_ip4_hdr(struct iecm_fdir_fltr *fltr,
++				  struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct iphdr *iph = (struct iphdr *)hdr->buffer;
 +
-+	first->tx_flags |= IECM_TX_FLAGS_TSO;
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, IPV4);
++
++	if (fltr->ip_mask.tos == U8_MAX) {
++		iph->tos = fltr->ip_data.tos;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV4, DSCP);
++	}
++
++	if (fltr->ip_mask.proto == U8_MAX) {
++		iph->protocol = fltr->ip_data.proto;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV4, PROT);
++	}
++
++	if (fltr->ip_mask.v4_addrs.src_ip == htonl(U32_MAX)) {
++		iph->saddr = fltr->ip_data.v4_addrs.src_ip;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV4, SRC);
++	}
++
++	if (fltr->ip_mask.v4_addrs.dst_ip == htonl(U32_MAX)) {
++		iph->daddr = fltr->ip_data.v4_addrs.dst_ip;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV4, DST);
++	}
++
++	fltr->ip_ver = 4;
 +
 +	return 0;
 +}
 +
 +/**
-+ * __iecm_chk_linearize - Check skb is not using too many buffers
-+ * @skb: send buffer
-+ * @max_bufs: maximum number of buffers
++ * iecm_fill_fdir_ip6_hdr - fill the IPv6 protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
 + *
-+ * For TSO we need to count the TSO header and segment payload separately.  As
-+ * such we need to check cases where we have max_bufs-1 fragments or more as we
-+ * can potentially require max_bufs+1 DMA transactions, 1 for the TSO header, 1
-+ * for the segment payload in the first descriptor, and another max_buf-1 for
-+ * the fragments.
++ * Returns 0 if the IPv6 protocol header is set successfully
 + */
-+static bool __iecm_chk_linearize(struct sk_buff *skb, unsigned int max_bufs)
++static int
++iecm_fill_fdir_ip6_hdr(struct iecm_fdir_fltr *fltr,
++		       struct virtchnl_proto_hdrs *proto_hdrs)
 +{
-+	const skb_frag_t *frag, *stale;
-+	int nr_frags, sum;
-+
-+	/* no need to check if number of frags is less than max_bufs - 1 */
-+	nr_frags = skb_shinfo(skb)->nr_frags;
-+	if (nr_frags < (max_bufs - 1))
-+		return false;
-+
-+	/* We need to walk through the list and validate that each group
-+	 * of max_bufs-2 fragments totals@least gso_size.
-+	 */
-+	nr_frags -= max_bufs - 2;
-+	frag = &skb_shinfo(skb)->frags[0];
-+
-+	/* Initialize size to the negative value of gso_size minus 1.  We use
-+	 * this as the worst case scenario in which the frag ahead of us only
-+	 * provides one byte which is why we are limited to max_bufs-2
-+	 * descriptors for a single transmit as the header and previous
-+	 * fragment are already consuming 2 descriptors.
-+	 */
-+	sum = 1 - skb_shinfo(skb)->gso_size;
-+
-+	/* Add size of frags 0 through 4 to create our initial sum */
-+	sum += skb_frag_size(frag++);
-+	sum += skb_frag_size(frag++);
-+	sum += skb_frag_size(frag++);
-+	sum += skb_frag_size(frag++);
-+	sum += skb_frag_size(frag++);
-+
-+	/* Walk through fragments adding latest fragment, testing it, and
-+	 * then removing stale fragments from the sum.
-+	 */
-+	for (stale = &skb_shinfo(skb)->frags[0];; stale++) {
-+		int stale_size = skb_frag_size(stale);
-+
-+		sum += skb_frag_size(frag++);
-+
-+		/* The stale fragment may present us with a smaller
-+		 * descriptor than the actual fragment size. To account
-+		 * for that we need to remove all the data on the front and
-+		 * figure out what the remainder would be in the last
-+		 * descriptor associated with the fragment.
-+		 */
-+		if (stale_size > IECM_TX_MAX_DESC_DATA) {
-+			int align_pad = -(skb_frag_off(stale)) &
-+					(IECM_TX_MAX_READ_REQ_SIZE - 1);
-+
-+			sum -= align_pad;
-+			stale_size -= align_pad;
-+
-+			do {
-+				sum -= IECM_TX_MAX_DESC_DATA_ALIGNED;
-+				stale_size -= IECM_TX_MAX_DESC_DATA_ALIGNED;
-+			} while (stale_size > IECM_TX_MAX_DESC_DATA);
++	static const struct in6_addr ipv6_addr_full_mask = {
++		.in6_u = {
++			.u6_addr8 = {
++				0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++				0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++			}
 +		}
++	};
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct ipv6hdr *iph = (struct ipv6hdr *)hdr->buffer;
 +
-+		/* if sum is negative we failed to make sufficient progress */
-+		if (sum < 0)
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, IPV6);
++
++	if (fltr->ip_mask.tclass == U8_MAX) {
++		iph->priority = (fltr->ip_data.tclass >> 4) & 0xF;
++		iph->flow_lbl[0] = (fltr->ip_data.tclass << 4) & 0xF0;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, TC);
++	}
++
++	if (fltr->ip_mask.proto == U8_MAX) {
++		iph->nexthdr = fltr->ip_data.proto;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, PROT);
++	}
++
++	if (!memcmp(&fltr->ip_mask.v6_addrs.src_ip, &ipv6_addr_full_mask,
++		    sizeof(struct in6_addr))) {
++		memcpy(&iph->saddr, &fltr->ip_data.v6_addrs.src_ip,
++		       sizeof(struct in6_addr));
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, SRC);
++	}
++
++	if (!memcmp(&fltr->ip_mask.v6_addrs.dst_ip, &ipv6_addr_full_mask,
++		    sizeof(struct in6_addr))) {
++		memcpy(&iph->daddr, &fltr->ip_data.v6_addrs.dst_ip,
++		       sizeof(struct in6_addr));
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, DST);
++	}
++
++	fltr->ip_ver = 6;
++
++	return 0;
++}
++
++/**
++ * iecm_fill_fdir_tcp_hdr - fill the TCP protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the TCP protocol header is set successfully
++ */
++static int
++iecm_fill_fdir_tcp_hdr(struct iecm_fdir_fltr *fltr,
++		       struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct tcphdr *tcph = (struct tcphdr *)hdr->buffer;
++
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, TCP);
++
++	if (fltr->ip_mask.src_port == htons(U16_MAX)) {
++		tcph->source = fltr->ip_data.src_port;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, TCP, SRC_PORT);
++	}
++
++	if (fltr->ip_mask.dst_port == htons(U16_MAX)) {
++		tcph->dest = fltr->ip_data.dst_port;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, TCP, DST_PORT);
++	}
++
++	return 0;
++}
++
++/**
++ * iecm_fill_fdir_udp_hdr - fill the UDP protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the UDP protocol header is set successfully
++ */
++static int
++iecm_fill_fdir_udp_hdr(struct iecm_fdir_fltr *fltr,
++		       struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct udphdr *udph = (struct udphdr *)hdr->buffer;
++
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, UDP);
++
++	if (fltr->ip_mask.src_port == htons(U16_MAX)) {
++		udph->source = fltr->ip_data.src_port;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, UDP, SRC_PORT);
++	}
++
++	if (fltr->ip_mask.dst_port == htons(U16_MAX)) {
++		udph->dest = fltr->ip_data.dst_port;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, UDP, DST_PORT);
++	}
++
++	if (!fltr->flex_cnt)
++		return 0;
++
++	return iecm_fill_fdir_udp_flex_pay_hdr(fltr, proto_hdrs);
++}
++
++/**
++ * iecm_fill_fdir_sctp_hdr - fill the SCTP protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the SCTP protocol header is set successfully
++ */
++static int
++iecm_fill_fdir_sctp_hdr(struct iecm_fdir_fltr *fltr,
++			struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct sctphdr *sctph = (struct sctphdr *)hdr->buffer;
++
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, SCTP);
++
++	if (fltr->ip_mask.src_port == htons(U16_MAX)) {
++		sctph->source = fltr->ip_data.src_port;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, SCTP, SRC_PORT);
++	}
++
++	if (fltr->ip_mask.dst_port == htons(U16_MAX)) {
++		sctph->dest = fltr->ip_data.dst_port;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, SCTP, DST_PORT);
++	}
++
++	return 0;
++}
++
++/**
++ * iecm_fill_fdir_ah_hdr - fill the AH protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the AH protocol header is set successfully
++ */
++static int
++iecm_fill_fdir_ah_hdr(struct iecm_fdir_fltr *fltr,
++		      struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct ip_auth_hdr *ah = (struct ip_auth_hdr *)hdr->buffer;
++
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, AH);
++
++	if (fltr->ip_mask.spi == htonl(U32_MAX)) {
++		ah->spi = fltr->ip_data.spi;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, AH, SPI);
++	}
++
++	return 0;
++}
++
++/**
++ * iecm_fill_fdir_esp_hdr - fill the ESP protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the ESP protocol header is set successfully
++ */
++static int
++iecm_fill_fdir_esp_hdr(struct iecm_fdir_fltr *fltr,
++		       struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct ip_esp_hdr *esph = (struct ip_esp_hdr *)hdr->buffer;
++
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, ESP);
++
++	if (fltr->ip_mask.spi == htonl(U32_MAX)) {
++		esph->spi = fltr->ip_data.spi;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, ESP, SPI);
++	}
++
++	return 0;
++}
++
++/**
++ * iecm_fill_fdir_l4_hdr - fill the L4 protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the L4 protocol header is set successfully
++ */
++static int
++iecm_fill_fdir_l4_hdr(struct iecm_fdir_fltr *fltr,
++		      struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *hdr;
++	__be32 *l4_4_data;
++
++	if (!fltr->ip_mask.proto) /* IPv4/IPv6 header only */
++		return 0;
++
++	hdr = &proto_hdrs->proto_hdr[proto_hdrs->count++];
++	l4_4_data = (__force __be32 *)hdr->buffer;
++
++	/* L2TPv3 over IP with 'Session ID' */
++	if (fltr->ip_data.proto == IPPROTO_L2TP &&
++	    fltr->ip_mask.l4_header == htonl(U32_MAX)) {
++		VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, L2TPV3);
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, L2TPV3, SESS_ID);
++
++		*l4_4_data = fltr->ip_data.l4_header;
++	} else {
++		return -EOPNOTSUPP;
++	}
++
++	return 0;
++}
++
++/**
++ * iecm_fill_fdir_eth_hdr - fill the Ethernet protocol header
++ * @fltr: Flow Director filter data structure
++ * @proto_hdrs: Flow Director protocol headers data structure
++ *
++ * Returns 0 if the Ethernet protocol header is set successfully
++ */
++static int
++iecm_fill_fdir_eth_hdr(struct iecm_fdir_fltr *fltr,
++		       struct virtchnl_proto_hdrs *proto_hdrs)
++{
++	struct virtchnl_proto_hdr *hdr =
++				&proto_hdrs->proto_hdr[proto_hdrs->count++];
++	struct ethhdr *ehdr = (struct ethhdr *)hdr->buffer;
++
++	VIRTCHNL_SET_PROTO_HDR_TYPE(hdr, ETH);
++
++	if (fltr->eth_mask.etype == htons(U16_MAX)) {
++		if (fltr->eth_data.etype == htons(ETH_P_IP) ||
++		    fltr->eth_data.etype == htons(ETH_P_IPV6))
++			return -EOPNOTSUPP;
++
++		ehdr->h_proto = fltr->eth_data.etype;
++		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, ETH, ETHERTYPE);
++	}
++
++	return 0;
++}
++
++/**
++ * iecm_fill_fdir_add_msg - fill the Flow Director filter into virtchnl message
++ * @vport: vport structure
++ * @fltr: Flow Director filter data structure
++ *
++ * Returns 0 if the add Flow Director virtchnl message is filled successfully
++ */
++static int
++iecm_fill_fdir_add_msg(struct iecm_vport *vport, struct iecm_fdir_fltr *fltr)
++{
++	struct virtchnl_fdir_add *vc_msg = &fltr->vc_add_msg;
++	struct virtchnl_proto_hdrs *proto_hdrs;
++	int err;
++
++	proto_hdrs = &vc_msg->rule_cfg.proto_hdrs;
++
++	err = iecm_fill_fdir_eth_hdr(fltr, proto_hdrs); /* L2 always exists */
++	if (err)
++		return err;
++
++	switch (fltr->flow_type) {
++	case IECM_FDIR_FLOW_IPV4_TCP:
++		err = iecm_fill_fdir_ip4_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_tcp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV4_UDP:
++		err = iecm_fill_fdir_ip4_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_udp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV4_SCTP:
++		err = iecm_fill_fdir_ip4_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_sctp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV4_AH:
++		err = iecm_fill_fdir_ip4_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_ah_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV4_ESP:
++		err = iecm_fill_fdir_ip4_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_esp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV4_OTHER:
++		err = iecm_fill_fdir_ip4_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_l4_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV6_TCP:
++		err = iecm_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_tcp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV6_UDP:
++		err = iecm_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_udp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV6_SCTP:
++		err = iecm_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_sctp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV6_AH:
++		err = iecm_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_ah_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV6_ESP:
++		err = iecm_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_esp_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_IPV6_OTHER:
++		err = iecm_fill_fdir_ip6_hdr(fltr, proto_hdrs) |
++		      iecm_fill_fdir_l4_hdr(fltr, proto_hdrs);
++		break;
++	case IECM_FDIR_FLOW_NON_IP_L2:
++		break;
++	default:
++		err = -EINVAL;
++		break;
++	}
++
++	if (err)
++		return err;
++
++	vc_msg->vsi_id = vport->vport_id;
++	vc_msg->rule_cfg.action_set.count = 1;
++	vc_msg->rule_cfg.action_set.actions[0].type = fltr->action;
++	vc_msg->rule_cfg.action_set.actions[0].act_conf.queue.index =
++								fltr->q_index;
++
++	return 0;
++}
++
++/**
++ * iecm_fdir_flow_proto_name - get the flow protocol name
++ * @flow_type: Flow Director filter flow type
++ **/
++static const char *
++iecm_fdir_flow_proto_name(enum iecm_fdir_flow_type flow_type)
++{
++	switch (flow_type) {
++	case IECM_FDIR_FLOW_IPV4_TCP:
++	case IECM_FDIR_FLOW_IPV6_TCP:
++		return "TCP";
++	case IECM_FDIR_FLOW_IPV4_UDP:
++	case IECM_FDIR_FLOW_IPV6_UDP:
++		return "UDP";
++	case IECM_FDIR_FLOW_IPV4_SCTP:
++	case IECM_FDIR_FLOW_IPV6_SCTP:
++		return "SCTP";
++	case IECM_FDIR_FLOW_IPV4_AH:
++	case IECM_FDIR_FLOW_IPV6_AH:
++		return "AH";
++	case IECM_FDIR_FLOW_IPV4_ESP:
++	case IECM_FDIR_FLOW_IPV6_ESP:
++		return "ESP";
++	case IECM_FDIR_FLOW_IPV4_OTHER:
++	case IECM_FDIR_FLOW_IPV6_OTHER:
++		return "Other";
++	case IECM_FDIR_FLOW_NON_IP_L2:
++		return "Ethernet";
++	default:
++		return NULL;
++	}
++}
++
++/**
++ * iecm_dump_fdir_fltr
++ * @vport: vport structure
++ * @fltr: Flow Director filter to print
++ *
++ * Print the Flow Director filter
++ **/
++static void
++iecm_dump_fdir_fltr(struct iecm_vport *vport, struct iecm_fdir_fltr *fltr)
++{
++	const char *proto = iecm_fdir_flow_proto_name(fltr->flow_type);
++	struct device *dev = &vport->adapter->pdev->dev;
++
++	if (!proto)
++		return;
++
++	switch (fltr->flow_type) {
++	case IECM_FDIR_FLOW_IPV4_TCP:
++	case IECM_FDIR_FLOW_IPV4_UDP:
++	case IECM_FDIR_FLOW_IPV4_SCTP:
++		dev_info(dev, "Rule ID: %u dst_ip: %pI4 src_ip %pI4 %s: dst_port %hu src_port %hu\n",
++			 fltr->loc,
++			 &fltr->ip_data.v4_addrs.dst_ip,
++			 &fltr->ip_data.v4_addrs.src_ip,
++			 proto,
++			 ntohs(fltr->ip_data.dst_port),
++			 ntohs(fltr->ip_data.src_port));
++		break;
++	case IECM_FDIR_FLOW_IPV4_AH:
++	case IECM_FDIR_FLOW_IPV4_ESP:
++		dev_info(dev, "Rule ID: %u dst_ip: %pI4 src_ip %pI4 %s: SPI %u\n",
++			 fltr->loc,
++			 &fltr->ip_data.v4_addrs.dst_ip,
++			 &fltr->ip_data.v4_addrs.src_ip,
++			 proto,
++			 ntohl(fltr->ip_data.spi));
++		break;
++	case IECM_FDIR_FLOW_IPV4_OTHER:
++		dev_info(dev, "Rule ID: %u dst_ip: %pI4 src_ip %pI4 proto: %u L4_bytes: 0x%x\n",
++			 fltr->loc,
++			 &fltr->ip_data.v4_addrs.dst_ip,
++			 &fltr->ip_data.v4_addrs.src_ip,
++			 fltr->ip_data.proto,
++			 ntohl(fltr->ip_data.l4_header));
++		break;
++	case IECM_FDIR_FLOW_IPV6_TCP:
++	case IECM_FDIR_FLOW_IPV6_UDP:
++	case IECM_FDIR_FLOW_IPV6_SCTP:
++		dev_info(dev, "Rule ID: %u dst_ip: %pI6 src_ip %pI6 %s: dst_port %hu src_port %hu\n",
++			 fltr->loc,
++			 &fltr->ip_data.v6_addrs.dst_ip,
++			 &fltr->ip_data.v6_addrs.src_ip,
++			 proto,
++			 ntohs(fltr->ip_data.dst_port),
++			 ntohs(fltr->ip_data.src_port));
++		break;
++	case IECM_FDIR_FLOW_IPV6_AH:
++	case IECM_FDIR_FLOW_IPV6_ESP:
++		dev_info(dev, "Rule ID: %u dst_ip: %pI6 src_ip %pI6 %s: SPI %u\n",
++			 fltr->loc,
++			 &fltr->ip_data.v6_addrs.dst_ip,
++			 &fltr->ip_data.v6_addrs.src_ip,
++			 proto,
++			 ntohl(fltr->ip_data.spi));
++		break;
++	case IECM_FDIR_FLOW_IPV6_OTHER:
++		dev_info(dev, "Rule ID: %u dst_ip: %pI6 src_ip %pI6 proto: %u L4_bytes: 0x%x\n",
++			 fltr->loc,
++			 &fltr->ip_data.v6_addrs.dst_ip,
++			 &fltr->ip_data.v6_addrs.src_ip,
++			 fltr->ip_data.proto,
++			 ntohl(fltr->ip_data.l4_header));
++		break;
++	case IECM_FDIR_FLOW_NON_IP_L2:
++		dev_info(dev, "Rule ID: %u eth_type: 0x%x\n",
++			 fltr->loc,
++			 ntohs(fltr->eth_data.etype));
++		break;
++	default:
++		break;
++	}
++}
++
++/**
++ * iecm_fdir_is_dup_fltr - test if filter is already in list
++ * @adapter: board private structure
++ * @fltr: Flow Director filter data structure
++ *
++ * Returns true if the filter is found in the list
++ */
++static bool
++iecm_fdir_is_dup_fltr(struct iecm_adapter *adapter,
++		      struct iecm_fdir_fltr *fltr)
++{
++	struct iecm_fdir_fltr_config *fdir_config;
++	struct iecm_fdir_fltr *tmp;
++
++	fdir_config = &adapter->config_data.fdir_config;
++	list_for_each_entry(tmp, &fdir_config->fdir_fltr_list, list) {
++		if (tmp->flow_type != fltr->flow_type)
++			continue;
++
++		if (!memcmp(&tmp->eth_data, &fltr->eth_data,
++			    sizeof(fltr->eth_data)) &&
++		    !memcmp(&tmp->ip_data, &fltr->ip_data,
++			    sizeof(fltr->ip_data)) &&
++		    !memcmp(&tmp->ext_data, &fltr->ext_data,
++			    sizeof(fltr->ext_data)))
 +			return true;
-+
-+		if (!nr_frags--)
-+			break;
-+
-+		sum -= stale_size;
 +	}
 +
 +	return false;
 +}
 +
 +/**
-+ * iecm_chk_linearize - Check if skb exceeds max descriptors per packet
-+ * @skb: send buffer
-+ * @max_bufs: maximum scatter gather buffers for single packet
-+ * @count: number of buffers this packet needs
++ * iecm_find_fdir_fltr_by_loc - find filter with location
++ * @adapter: board private structure
++ * @loc: location to find.
 + *
-+ * Make sure we don't exceed maximum scatter gather buffers for a single
-+ * packet. We have to do some special checking around the boundary (max_bufs-1)
-+ * if TSO is on since we need count the TSO header and payload separately.
-+ * E.g.: a packet with 7 fragments can require 9 DMA transactions; 1 for TSO
-+ * header, 1 for segment payload, and then 7 for the fragments.
++ * Returns pointer to Flow Director filter if found or null
 + */
-+bool iecm_chk_linearize(struct sk_buff *skb, unsigned int max_bufs,
-+			unsigned int count)
++static struct iecm_fdir_fltr *
++iecm_find_fdir_fltr_by_loc(struct iecm_adapter *adapter, u32 loc)
 +{
-+	if (likely(count < max_bufs))
-+		return false;
-+	if (skb_is_gso(skb))
-+		return __iecm_chk_linearize(skb, max_bufs);
++	struct iecm_fdir_fltr_config *fdir_config;
++	struct iecm_fdir_fltr *rule;
 +
-+	return count != max_bufs;
++	fdir_config = &adapter->config_data.fdir_config;
++	list_for_each_entry(rule, &fdir_config->fdir_fltr_list, list)
++		if (rule->loc == loc)
++			return rule;
++
++	return NULL;
 +}
 +
 +/**
-+ * iecm_tx_splitq_frame - Sends buffer on Tx ring using flex descriptors
-+ * @skb: send buffer
-+ * @tx_q: queue to send buffer on
-+ *
-+ * Returns NETDEV_TX_OK if sent, else an error code
++ * iecm_fdir_list_add_fltr - add a new node to the flow director filter list
++ * @adapter: board private structure
++ * @fltr: filter node to add to structure
 + */
-+static netdev_tx_t
-+iecm_tx_splitq_frame(struct sk_buff *skb, struct iecm_queue *tx_q)
++static void
++iecm_fdir_list_add_fltr(struct iecm_adapter *adapter,
++			struct iecm_fdir_fltr *fltr)
 +{
-+	struct iecm_tx_splitq_params tx_parms = {
-+		NULL, (enum iecm_tx_desc_dtype_value)0, 0, {0}, {0}
-+	};
-+	struct iecm_tx_buf *first;
-+	unsigned int count;
++	struct iecm_fdir_fltr *rule, *parent = NULL;
++	struct iecm_fdir_fltr_config *fdir_config;
 +
-+	count = iecm_tx_desc_count_required(skb);
-+	if (iecm_chk_linearize(skb, tx_q->tx_max_bufs, count)) {
-+		if (__skb_linearize(skb)) {
-+			dev_kfree_skb_any(skb);
-+			return NETDEV_TX_OK;
++	fdir_config = &adapter->config_data.fdir_config;
++
++	spin_lock_bh(&adapter->fdir_fltr_list_lock);
++	list_for_each_entry(rule, &fdir_config->fdir_fltr_list, list) {
++		if (rule->loc >= fltr->loc)
++			break;
++		parent = rule;
++	}
++
++	if (parent)
++		list_add(&fltr->list, &parent->list);
++	else
++		list_add(&fltr->list, &fdir_config->fdir_fltr_list);
++	fltr->add = true;
++	spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++}
++
++/**
++ * iecm_fltr_to_ethtool_flow - convert filter type values to ethtool
++ * flow type values
++ * @flow: filter type to be converted
++ *
++ * Returns the corresponding ethtool flow type.
++ */
++static int iecm_fltr_to_ethtool_flow(enum iecm_fdir_flow_type flow)
++{
++	switch (flow) {
++	case IECM_FDIR_FLOW_IPV4_TCP:
++		return TCP_V4_FLOW;
++	case IECM_FDIR_FLOW_IPV4_UDP:
++		return UDP_V4_FLOW;
++	case IECM_FDIR_FLOW_IPV4_SCTP:
++		return SCTP_V4_FLOW;
++	case IECM_FDIR_FLOW_IPV4_AH:
++		return AH_V4_FLOW;
++	case IECM_FDIR_FLOW_IPV4_ESP:
++		return ESP_V4_FLOW;
++	case IECM_FDIR_FLOW_IPV4_OTHER:
++		return IPV4_USER_FLOW;
++	case IECM_FDIR_FLOW_IPV6_TCP:
++		return TCP_V6_FLOW;
++	case IECM_FDIR_FLOW_IPV6_UDP:
++		return UDP_V6_FLOW;
++	case IECM_FDIR_FLOW_IPV6_SCTP:
++		return SCTP_V6_FLOW;
++	case IECM_FDIR_FLOW_IPV6_AH:
++		return AH_V6_FLOW;
++	case IECM_FDIR_FLOW_IPV6_ESP:
++		return ESP_V6_FLOW;
++	case IECM_FDIR_FLOW_IPV6_OTHER:
++		return IPV6_USER_FLOW;
++	case IECM_FDIR_FLOW_NON_IP_L2:
++		return ETHER_FLOW;
++	default:
++		/* 0 is undefined ethtool flow */
++		return 0;
++	}
++}
++
++/**
++ * iecm_ethtool_flow_to_fltr - convert ethtool flow type to filter enum
++ * @eth: Ethtool flow type to be converted
++ *
++ * Returns flow enum
++ */
++static enum iecm_fdir_flow_type iecm_ethtool_flow_to_fltr(int eth)
++{
++	switch (eth) {
++	case TCP_V4_FLOW:
++		return IECM_FDIR_FLOW_IPV4_TCP;
++	case UDP_V4_FLOW:
++		return IECM_FDIR_FLOW_IPV4_UDP;
++	case SCTP_V4_FLOW:
++		return IECM_FDIR_FLOW_IPV4_SCTP;
++	case AH_V4_FLOW:
++		return IECM_FDIR_FLOW_IPV4_AH;
++	case ESP_V4_FLOW:
++		return IECM_FDIR_FLOW_IPV4_ESP;
++	case IPV4_USER_FLOW:
++		return IECM_FDIR_FLOW_IPV4_OTHER;
++	case TCP_V6_FLOW:
++		return IECM_FDIR_FLOW_IPV6_TCP;
++	case UDP_V6_FLOW:
++		return IECM_FDIR_FLOW_IPV6_UDP;
++	case SCTP_V6_FLOW:
++		return IECM_FDIR_FLOW_IPV6_SCTP;
++	case AH_V6_FLOW:
++		return IECM_FDIR_FLOW_IPV6_AH;
++	case ESP_V6_FLOW:
++		return IECM_FDIR_FLOW_IPV6_ESP;
++	case IPV6_USER_FLOW:
++		return IECM_FDIR_FLOW_IPV6_OTHER;
++	case ETHER_FLOW:
++		return IECM_FDIR_FLOW_NON_IP_L2;
++	default:
++		return IECM_FDIR_FLOW_NONE;
++	}
++}
++
++/**
++ * iecm_is_mask_valid - check mask field set
++ * @mask: full mask to check
++ * @field: field for which mask should be valid
++ *
++ * If the mask is fully set return true. If it is not valid for field return
++ * false.
++ */
++static bool iecm_is_mask_valid(u64 mask, u64 field)
++{
++	return (mask & field) == field;
++}
++
++/**
++ * iecm_parse_rx_flow_user_data - deconstruct user-defined data
++ * @fsp: pointer to ethtool Rx flow specification
++ * @fltr: pointer to Flow Director filter for userdef data storage
++ *
++ * Returns 0 on success, negative error value on failure
++ */
++static int
++iecm_parse_rx_flow_user_data(struct ethtool_rx_flow_spec *fsp,
++			     struct iecm_fdir_fltr *fltr)
++{
++	struct iecm_flex_word *flex;
++	int i, cnt = 0;
++
++	if (!(fsp->flow_type & FLOW_EXT))
++		return 0;
++
++	for (i = 0; i < IECM_FLEX_WORD_NUM; i++) {
++#define IECM_USERDEF_FLEX_WORD_M	GENMASK(15, 0)
++#define IECM_USERDEF_FLEX_OFFS_S	16
++#define IECM_USERDEF_FLEX_OFFS_M	GENMASK(31, IECM_USERDEF_FLEX_OFFS_S)
++#define IECM_USERDEF_FLEX_FLTR_M	GENMASK(31, 0)
++		u32 value = be32_to_cpu(fsp->h_ext.data[i]);
++		u32 mask = be32_to_cpu(fsp->m_ext.data[i]);
++
++		if (!value || !mask)
++			continue;
++
++		if (!iecm_is_mask_valid(mask, IECM_USERDEF_FLEX_FLTR_M))
++			return -EINVAL;
++
++		/* 504 is the maximum value for offsets, and offset is measured
++		 * from the start of the MAC address.
++		 */
++#define IECM_USERDEF_FLEX_MAX_OFFS_VAL 504
++		flex = &fltr->flex_words[cnt++];
++		flex->word = value & IECM_USERDEF_FLEX_WORD_M;
++		flex->offset = (value & IECM_USERDEF_FLEX_OFFS_M) >>
++			     IECM_USERDEF_FLEX_OFFS_S;
++		if (flex->offset > IECM_USERDEF_FLEX_MAX_OFFS_VAL)
++			return -EINVAL;
++	}
++
++	fltr->flex_cnt = cnt;
++
++	return 0;
++}
++
++/**
++ * iecm_fill_rx_flow_ext_data - fill the additional data
++ * @fsp: pointer to ethtool Rx flow specification
++ * @fltr: pointer to Flow Director filter to get additional data
++ */
++static void
++iecm_fill_rx_flow_ext_data(struct ethtool_rx_flow_spec *fsp,
++			   struct iecm_fdir_fltr *fltr)
++{
++	if (!fltr->ext_mask.usr_def[0] && !fltr->ext_mask.usr_def[1])
++		return;
++
++	fsp->flow_type |= FLOW_EXT;
++
++	memcpy(fsp->h_ext.data, fltr->ext_data.usr_def,
++	       sizeof(fsp->h_ext.data));
++	memcpy(fsp->m_ext.data, fltr->ext_mask.usr_def,
++	       sizeof(fsp->m_ext.data));
++}
++
++/**
++ * iecm_get_fdir_fltr_entry - fill ethtool structure with Flow Director
++ * filter data
++ * @vport: vport structure
++ * @cmd: ethtool command data structure to receive the filter data
++ *
++ * Returns 0 as expected for success by ethtool
++ */
++int
++iecm_get_fdir_fltr_entry(struct iecm_vport *vport, struct ethtool_rxnfc *cmd)
++{
++	struct ethtool_rx_flow_spec *fsp =
++					(struct ethtool_rx_flow_spec *)&cmd->fs;
++	struct iecm_adapter *adapter = vport->adapter;
++	struct iecm_fdir_fltr *rule;
++	int ret = 0;
++
++	if (adapter->state != __IECM_UP)
++		return -EIO;
++
++	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_FDIR))
++		return -EOPNOTSUPP;
++
++	spin_lock_bh(&adapter->fdir_fltr_list_lock);
++
++	rule = iecm_find_fdir_fltr_by_loc(adapter, fsp->location);
++	if (!rule) {
++		ret = -EINVAL;
++		goto release_lock;
++	}
++
++	fsp->flow_type = iecm_fltr_to_ethtool_flow(rule->flow_type);
++
++	memset(&fsp->m_u, 0, sizeof(fsp->m_u));
++	memset(&fsp->m_ext, 0, sizeof(fsp->m_ext));
++
++	switch (fsp->flow_type) {
++	case TCP_V4_FLOW:
++	case UDP_V4_FLOW:
++	case SCTP_V4_FLOW:
++		fsp->h_u.tcp_ip4_spec.ip4src = rule->ip_data.v4_addrs.src_ip;
++		fsp->h_u.tcp_ip4_spec.ip4dst = rule->ip_data.v4_addrs.dst_ip;
++		fsp->h_u.tcp_ip4_spec.psrc = rule->ip_data.src_port;
++		fsp->h_u.tcp_ip4_spec.pdst = rule->ip_data.dst_port;
++		fsp->h_u.tcp_ip4_spec.tos = rule->ip_data.tos;
++		fsp->m_u.tcp_ip4_spec.ip4src = rule->ip_mask.v4_addrs.src_ip;
++		fsp->m_u.tcp_ip4_spec.ip4dst = rule->ip_mask.v4_addrs.dst_ip;
++		fsp->m_u.tcp_ip4_spec.psrc = rule->ip_mask.src_port;
++		fsp->m_u.tcp_ip4_spec.pdst = rule->ip_mask.dst_port;
++		fsp->m_u.tcp_ip4_spec.tos = rule->ip_mask.tos;
++		break;
++	case AH_V4_FLOW:
++	case ESP_V4_FLOW:
++		fsp->h_u.ah_ip4_spec.ip4src = rule->ip_data.v4_addrs.src_ip;
++		fsp->h_u.ah_ip4_spec.ip4dst = rule->ip_data.v4_addrs.dst_ip;
++		fsp->h_u.ah_ip4_spec.spi = rule->ip_data.spi;
++		fsp->h_u.ah_ip4_spec.tos = rule->ip_data.tos;
++		fsp->m_u.ah_ip4_spec.ip4src = rule->ip_mask.v4_addrs.src_ip;
++		fsp->m_u.ah_ip4_spec.ip4dst = rule->ip_mask.v4_addrs.dst_ip;
++		fsp->m_u.ah_ip4_spec.spi = rule->ip_mask.spi;
++		fsp->m_u.ah_ip4_spec.tos = rule->ip_mask.tos;
++		break;
++	case IPV4_USER_FLOW:
++		fsp->h_u.usr_ip4_spec.ip4src = rule->ip_data.v4_addrs.src_ip;
++		fsp->h_u.usr_ip4_spec.ip4dst = rule->ip_data.v4_addrs.dst_ip;
++		fsp->h_u.usr_ip4_spec.l4_4_bytes = rule->ip_data.l4_header;
++		fsp->h_u.usr_ip4_spec.tos = rule->ip_data.tos;
++		fsp->h_u.usr_ip4_spec.ip_ver = ETH_RX_NFC_IP4;
++		fsp->h_u.usr_ip4_spec.proto = rule->ip_data.proto;
++		fsp->m_u.usr_ip4_spec.ip4src = rule->ip_mask.v4_addrs.src_ip;
++		fsp->m_u.usr_ip4_spec.ip4dst = rule->ip_mask.v4_addrs.dst_ip;
++		fsp->m_u.usr_ip4_spec.l4_4_bytes = rule->ip_mask.l4_header;
++		fsp->m_u.usr_ip4_spec.tos = rule->ip_mask.tos;
++		fsp->m_u.usr_ip4_spec.ip_ver = 0xFF;
++		fsp->m_u.usr_ip4_spec.proto = rule->ip_mask.proto;
++		break;
++	case TCP_V6_FLOW:
++	case UDP_V6_FLOW:
++	case SCTP_V6_FLOW:
++		memcpy(fsp->h_u.usr_ip6_spec.ip6src,
++		       &rule->ip_data.v6_addrs.src_ip, sizeof(struct in6_addr));
++		memcpy(fsp->h_u.usr_ip6_spec.ip6dst,
++		       &rule->ip_data.v6_addrs.dst_ip, sizeof(struct in6_addr));
++		fsp->h_u.tcp_ip6_spec.psrc = rule->ip_data.src_port;
++		fsp->h_u.tcp_ip6_spec.pdst = rule->ip_data.dst_port;
++		fsp->h_u.tcp_ip6_spec.tclass = rule->ip_data.tclass;
++		memcpy(fsp->m_u.usr_ip6_spec.ip6src,
++		       &rule->ip_mask.v6_addrs.src_ip, sizeof(struct in6_addr));
++		memcpy(fsp->m_u.usr_ip6_spec.ip6dst,
++		       &rule->ip_mask.v6_addrs.dst_ip, sizeof(struct in6_addr));
++		fsp->m_u.tcp_ip6_spec.psrc = rule->ip_mask.src_port;
++		fsp->m_u.tcp_ip6_spec.pdst = rule->ip_mask.dst_port;
++		fsp->m_u.tcp_ip6_spec.tclass = rule->ip_mask.tclass;
++		break;
++	case AH_V6_FLOW:
++	case ESP_V6_FLOW:
++		memcpy(fsp->h_u.ah_ip6_spec.ip6src,
++		       &rule->ip_data.v6_addrs.src_ip, sizeof(struct in6_addr));
++		memcpy(fsp->h_u.ah_ip6_spec.ip6dst,
++		       &rule->ip_data.v6_addrs.dst_ip, sizeof(struct in6_addr));
++		fsp->h_u.ah_ip6_spec.spi = rule->ip_data.spi;
++		fsp->h_u.ah_ip6_spec.tclass = rule->ip_data.tclass;
++		memcpy(fsp->m_u.ah_ip6_spec.ip6src,
++		       &rule->ip_mask.v6_addrs.src_ip, sizeof(struct in6_addr));
++		memcpy(fsp->m_u.ah_ip6_spec.ip6dst,
++		       &rule->ip_mask.v6_addrs.dst_ip, sizeof(struct in6_addr));
++		fsp->m_u.ah_ip6_spec.spi = rule->ip_mask.spi;
++		fsp->m_u.ah_ip6_spec.tclass = rule->ip_mask.tclass;
++		break;
++	case IPV6_USER_FLOW:
++		memcpy(fsp->h_u.usr_ip6_spec.ip6src,
++		       &rule->ip_data.v6_addrs.src_ip, sizeof(struct in6_addr));
++		memcpy(fsp->h_u.usr_ip6_spec.ip6dst,
++		       &rule->ip_data.v6_addrs.dst_ip, sizeof(struct in6_addr));
++		fsp->h_u.usr_ip6_spec.l4_4_bytes = rule->ip_data.l4_header;
++		fsp->h_u.usr_ip6_spec.tclass = rule->ip_data.tclass;
++		fsp->h_u.usr_ip6_spec.l4_proto = rule->ip_data.proto;
++		memcpy(fsp->m_u.usr_ip6_spec.ip6src,
++		       &rule->ip_mask.v6_addrs.src_ip, sizeof(struct in6_addr));
++		memcpy(fsp->m_u.usr_ip6_spec.ip6dst,
++		       &rule->ip_mask.v6_addrs.dst_ip, sizeof(struct in6_addr));
++		fsp->m_u.usr_ip6_spec.l4_4_bytes = rule->ip_mask.l4_header;
++		fsp->m_u.usr_ip6_spec.tclass = rule->ip_mask.tclass;
++		fsp->m_u.usr_ip6_spec.l4_proto = rule->ip_mask.proto;
++		break;
++	case ETHER_FLOW:
++		fsp->h_u.ether_spec.h_proto = rule->eth_data.etype;
++		fsp->m_u.ether_spec.h_proto = rule->eth_mask.etype;
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	iecm_fill_rx_flow_ext_data(fsp, rule);
++
++	if (rule->action == VIRTCHNL_ACTION_DROP)
++		fsp->ring_cookie = RX_CLS_FLOW_DISC;
++	else
++		fsp->ring_cookie = rule->q_index;
++
++release_lock:
++	spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++	return ret;
++}
++
++/**
++ * iecm_get_fdir_fltr_ids - fill buffer with filter IDs of active filters
++ * @vport: vport structure
++ * @cmd: ethtool command data structure
++ * @rule_locs: ethtool array passed in from OS to receive filter IDs
++ *
++ * Returns 0 as expected for success by ethtool
++ */
++int
++iecm_get_fdir_fltr_ids(struct iecm_vport *vport, struct ethtool_rxnfc *cmd,
++		       u32 *rule_locs)
++{
++	struct iecm_adapter *adapter = vport->adapter;
++	struct iecm_fdir_fltr_config *fdir_config;
++	struct iecm_fdir_fltr *fltr;
++	unsigned int cnt = 0;
++	int ret = 0;
++
++	if (adapter->state != __IECM_UP)
++		return -EIO;
++
++	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_FDIR))
++		return -EOPNOTSUPP;
++
++	cmd->data = IECM_MAX_FDIR_FILTERS;
++
++	fdir_config = &adapter->config_data.fdir_config;
++
++	spin_lock_bh(&adapter->fdir_fltr_list_lock);
++
++	list_for_each_entry(fltr, &fdir_config->fdir_fltr_list, list) {
++		if (cnt == cmd->rule_cnt) {
++			ret = -EMSGSIZE;
++			goto release_lock;
 +		}
-+		count = iecm_size_to_txd_count(skb->len);
-+		tx_q->vport->port_stats.tx_linearize++;
++		rule_locs[cnt] = fltr->loc;
++		cnt++;
 +	}
 +
-+	if (iecm_tx_maybe_stop(tx_q, count + IECM_TX_DESCS_PER_CACHE_LINE +
-+			       IECM_TX_DESCS_FOR_CTX)) {
-+		return NETDEV_TX_BUSY;
-+	}
++release_lock:
++	spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++	if (!ret)
++		cmd->rule_cnt = cnt;
 +
-+	/* Also check for available book keeping buffers */
-+	if (iecm_tx_buf_avail(tx_q))
-+		return NETDEV_TX_BUSY;
++	return ret;
++}
 +
-+	/* record the location of the first descriptor for this packet */
-+	first = &tx_q->tx_buf[tx_q->next_to_use];
-+	first->skb = skb;
-+	first->bytecount = max_t(unsigned int, skb->len, ETH_ZLEN);
-+	first->gso_segs = 1;
-+	first->tx_flags = 0;
++/**
++ * iecm_add_fdir_fltr_info - Set the input set for Flow Director filter
++ * @vport: vport structure
++ * @fsp: pointer to ethtool Rx flow specification
++ * @fltr: filter structure
++ */
++static int
++iecm_add_fdir_fltr_info(struct iecm_vport *vport,
++			struct ethtool_rx_flow_spec *fsp,
++			struct iecm_fdir_fltr *fltr)
++{
++	struct iecm_adapter *adapter = vport->adapter;
++	u32 flow_type, q_index = 0;
++	enum virtchnl_action act;
++	int err;
 +
-+	iecm_tx_prepare_vlan_flags(tx_q, first, skb);
-+
-+	if (iecm_tso(first, &tx_parms.offload) < 0) {
-+		/* If tso returns an error, drop the packet */
-+		dev_kfree_skb_any(skb);
-+		return NETDEV_TX_OK;
-+	}
-+
-+	if (first->tx_flags & IECM_TX_FLAGS_TSO) {
-+		/* If tso is needed, set up context desc */
-+		union iecm_flex_tx_ctx_desc *ctx_desc;
-+		int i = tx_q->next_to_use;
-+
-+		/* grab the next descriptor */
-+		ctx_desc = IECM_FLEX_TX_CTX_DESC(tx_q, i);
-+		i++;
-+		tx_q->next_to_use = (i < tx_q->desc_count) ? i : 0;
-+
-+		ctx_desc->tso.qw1.cmd_dtype =
-+				cpu_to_le16(IECM_TX_DESC_DTYPE_FLEX_TSO_CTX |
-+					    IECM_TX_FLEX_CTX_DESC_CMD_TSO);
-+		ctx_desc->tso.qw0.flex_tlen =
-+				cpu_to_le32(tx_parms.offload.tso_len &
-+					    IECM_TXD_FLEX_CTX_TLEN_M);
-+		ctx_desc->tso.qw0.mss_rt =
-+				cpu_to_le16(tx_parms.offload.mss &
-+					    IECM_TXD_FLEX_CTX_MSS_RT_M);
-+		ctx_desc->tso.qw0.hdr_len = tx_parms.offload.tso_hdr_len;
-+
-+		u64_stats_update_begin(&tx_q->stats_sync);
-+		tx_q->q_stats.tx.lso_pkts++;
-+		u64_stats_update_end(&tx_q->stats_sync);
-+	}
-+
-+	if (test_bit(__IECM_Q_FLOW_SCH_EN, tx_q->flags)) {
-+		tx_parms.dtype = IECM_TX_DESC_DTYPE_FLEX_FLOW_SCHE;
-+		tx_parms.splitq_build_ctb = iecm_tx_splitq_build_flow_desc;
-+		tx_parms.eop_cmd =
-+			IECM_TXD_FLEX_FLOW_CMD_EOP | IECM_TXD_FLEX_FLOW_CMD_RE;
-+
-+		if (skb->ip_summed == CHECKSUM_PARTIAL)
-+			tx_parms.offload.td_cmd |= IECM_TXD_FLEX_FLOW_CMD_CS_EN;
-+
++	if (fsp->ring_cookie == RX_CLS_FLOW_DISC) {
++		act = VIRTCHNL_ACTION_DROP;
 +	} else {
-+		tx_parms.dtype = IECM_TX_DESC_DTYPE_FLEX_L2TAG1_L2TAG2;
-+		tx_parms.splitq_build_ctb = iecm_tx_splitq_build_ctb;
-+		tx_parms.eop_cmd = IECM_TXD_LAST_DESC_CMD;
++		q_index = fsp->ring_cookie;
++		if (q_index >= vport->num_rxq)
++			return -EINVAL;
 +
-+		if (skb->ip_summed == CHECKSUM_PARTIAL)
-+			tx_parms.offload.td_cmd |= IECM_TX_FLEX_DESC_CMD_CS_EN;
-+
-+		/* VLAN Offload can only be used with queue based scheduling */
-+		if (first->tx_flags & IECM_TX_FLAGS_VLAN_TAG) {
-+			tx_parms.offload.td_cmd |= (u64)IECM_TX_FLEX_DESC_CMD_IL2TAG1;
-+			tx_parms.td_tag = (first->tx_flags & IECM_TX_FLAGS_VLAN_MASK) >>
-+					  IECM_TX_FLAGS_VLAN_SHIFT;
-+		}
++		act = VIRTCHNL_ACTION_QUEUE;
 +	}
 +
-+	iecm_tx_splitq_map(tx_q, &tx_parms, first);
++	fltr->action = act;
++	fltr->loc = fsp->location;
++	fltr->q_index = q_index;
 +
-+	return NETDEV_TX_OK;
++	if (fsp->flow_type & FLOW_EXT) {
++		memcpy(fltr->ext_data.usr_def, fsp->h_ext.data,
++		       sizeof(fltr->ext_data.usr_def));
++		memcpy(fltr->ext_mask.usr_def, fsp->m_ext.data,
++		       sizeof(fltr->ext_mask.usr_def));
++	}
++
++	flow_type = fsp->flow_type & ~(FLOW_EXT | FLOW_MAC_EXT | FLOW_RSS);
++	fltr->flow_type = iecm_ethtool_flow_to_fltr(flow_type);
++
++	switch (flow_type) {
++	case TCP_V4_FLOW:
++	case UDP_V4_FLOW:
++	case SCTP_V4_FLOW:
++		fltr->ip_data.v4_addrs.src_ip = fsp->h_u.tcp_ip4_spec.ip4src;
++		fltr->ip_data.v4_addrs.dst_ip = fsp->h_u.tcp_ip4_spec.ip4dst;
++		fltr->ip_data.src_port = fsp->h_u.tcp_ip4_spec.psrc;
++		fltr->ip_data.dst_port = fsp->h_u.tcp_ip4_spec.pdst;
++		fltr->ip_data.tos = fsp->h_u.tcp_ip4_spec.tos;
++		fltr->ip_mask.v4_addrs.src_ip = fsp->m_u.tcp_ip4_spec.ip4src;
++		fltr->ip_mask.v4_addrs.dst_ip = fsp->m_u.tcp_ip4_spec.ip4dst;
++		fltr->ip_mask.src_port = fsp->m_u.tcp_ip4_spec.psrc;
++		fltr->ip_mask.dst_port = fsp->m_u.tcp_ip4_spec.pdst;
++		fltr->ip_mask.tos = fsp->m_u.tcp_ip4_spec.tos;
++		break;
++	case AH_V4_FLOW:
++	case ESP_V4_FLOW:
++		fltr->ip_data.v4_addrs.src_ip = fsp->h_u.ah_ip4_spec.ip4src;
++		fltr->ip_data.v4_addrs.dst_ip = fsp->h_u.ah_ip4_spec.ip4dst;
++		fltr->ip_data.spi = fsp->h_u.ah_ip4_spec.spi;
++		fltr->ip_data.tos = fsp->h_u.ah_ip4_spec.tos;
++		fltr->ip_mask.v4_addrs.src_ip = fsp->m_u.ah_ip4_spec.ip4src;
++		fltr->ip_mask.v4_addrs.dst_ip = fsp->m_u.ah_ip4_spec.ip4dst;
++		fltr->ip_mask.spi = fsp->m_u.ah_ip4_spec.spi;
++		fltr->ip_mask.tos = fsp->m_u.ah_ip4_spec.tos;
++		break;
++	case IPV4_USER_FLOW:
++		fltr->ip_data.v4_addrs.src_ip = fsp->h_u.usr_ip4_spec.ip4src;
++		fltr->ip_data.v4_addrs.dst_ip = fsp->h_u.usr_ip4_spec.ip4dst;
++		fltr->ip_data.l4_header = fsp->h_u.usr_ip4_spec.l4_4_bytes;
++		fltr->ip_data.tos = fsp->h_u.usr_ip4_spec.tos;
++		fltr->ip_data.proto = fsp->h_u.usr_ip4_spec.proto;
++		fltr->ip_mask.v4_addrs.src_ip = fsp->m_u.usr_ip4_spec.ip4src;
++		fltr->ip_mask.v4_addrs.dst_ip = fsp->m_u.usr_ip4_spec.ip4dst;
++		fltr->ip_mask.l4_header = fsp->m_u.usr_ip4_spec.l4_4_bytes;
++		fltr->ip_mask.tos = fsp->m_u.usr_ip4_spec.tos;
++		fltr->ip_mask.proto = fsp->m_u.usr_ip4_spec.proto;
++		break;
++	case TCP_V6_FLOW:
++	case UDP_V6_FLOW:
++	case SCTP_V6_FLOW:
++		memcpy(&fltr->ip_data.v6_addrs.src_ip,
++		       fsp->h_u.usr_ip6_spec.ip6src, sizeof(struct in6_addr));
++		memcpy(&fltr->ip_data.v6_addrs.dst_ip,
++		       fsp->h_u.usr_ip6_spec.ip6dst, sizeof(struct in6_addr));
++		fltr->ip_data.src_port = fsp->h_u.tcp_ip6_spec.psrc;
++		fltr->ip_data.dst_port = fsp->h_u.tcp_ip6_spec.pdst;
++		fltr->ip_data.tclass = fsp->h_u.tcp_ip6_spec.tclass;
++		memcpy(&fltr->ip_mask.v6_addrs.src_ip,
++		       fsp->m_u.usr_ip6_spec.ip6src, sizeof(struct in6_addr));
++		memcpy(&fltr->ip_mask.v6_addrs.dst_ip,
++		       fsp->m_u.usr_ip6_spec.ip6dst, sizeof(struct in6_addr));
++		fltr->ip_mask.src_port = fsp->m_u.tcp_ip6_spec.psrc;
++		fltr->ip_mask.dst_port = fsp->m_u.tcp_ip6_spec.pdst;
++		fltr->ip_mask.tclass = fsp->m_u.tcp_ip6_spec.tclass;
++		break;
++	case AH_V6_FLOW:
++	case ESP_V6_FLOW:
++		memcpy(&fltr->ip_data.v6_addrs.src_ip,
++		       fsp->h_u.ah_ip6_spec.ip6src, sizeof(struct in6_addr));
++		memcpy(&fltr->ip_data.v6_addrs.dst_ip,
++		       fsp->h_u.ah_ip6_spec.ip6dst, sizeof(struct in6_addr));
++		fltr->ip_data.spi = fsp->h_u.ah_ip6_spec.spi;
++		fltr->ip_data.tclass = fsp->h_u.ah_ip6_spec.tclass;
++		memcpy(&fltr->ip_mask.v6_addrs.src_ip,
++		       fsp->m_u.ah_ip6_spec.ip6src, sizeof(struct in6_addr));
++		memcpy(&fltr->ip_mask.v6_addrs.dst_ip,
++		       fsp->m_u.ah_ip6_spec.ip6dst, sizeof(struct in6_addr));
++		fltr->ip_mask.spi = fsp->m_u.ah_ip6_spec.spi;
++		fltr->ip_mask.tclass = fsp->m_u.ah_ip6_spec.tclass;
++		break;
++	case IPV6_USER_FLOW:
++		memcpy(&fltr->ip_data.v6_addrs.src_ip,
++		       fsp->h_u.usr_ip6_spec.ip6src, sizeof(struct in6_addr));
++		memcpy(&fltr->ip_data.v6_addrs.dst_ip,
++		       fsp->h_u.usr_ip6_spec.ip6dst, sizeof(struct in6_addr));
++		fltr->ip_data.l4_header = fsp->h_u.usr_ip6_spec.l4_4_bytes;
++		fltr->ip_data.tclass = fsp->h_u.usr_ip6_spec.tclass;
++		fltr->ip_data.proto = fsp->h_u.usr_ip6_spec.l4_proto;
++		memcpy(&fltr->ip_mask.v6_addrs.src_ip,
++		       fsp->m_u.usr_ip6_spec.ip6src, sizeof(struct in6_addr));
++		memcpy(&fltr->ip_mask.v6_addrs.dst_ip,
++		       fsp->m_u.usr_ip6_spec.ip6dst, sizeof(struct in6_addr));
++		fltr->ip_mask.l4_header = fsp->m_u.usr_ip6_spec.l4_4_bytes;
++		fltr->ip_mask.tclass = fsp->m_u.usr_ip6_spec.tclass;
++		fltr->ip_mask.proto = fsp->m_u.usr_ip6_spec.l4_proto;
++		break;
++	case ETHER_FLOW:
++		fltr->eth_data.etype = fsp->h_u.ether_spec.h_proto;
++		fltr->eth_mask.etype = fsp->m_u.ether_spec.h_proto;
++		break;
++	default:
++		/* not doing un-parsed flow types */
++		return -EINVAL;
++	}
++
++	if (iecm_fdir_is_dup_fltr(adapter, fltr))
++		return -EEXIST;
++
++	err = iecm_parse_rx_flow_user_data(fsp, fltr);
++	if (err)
++		return err;
++
++	return iecm_fill_fdir_add_msg(vport, fltr);
 +}
 +
 +/**
-+ * iecm_tx_splitq_start - Selects the right Tx queue to send buffer
-+ * @skb: send buffer
-+ * @netdev: network interface device structure
++ * iecm_add_fdir_fltr - add Flow Director filter
++ * @vport: vport structure
++ * @cmd: command to add Flow Director filter
 + *
-+ * Returns NETDEV_TX_OK if sent, else an error code
++ * Returns 0 on success and negative values for failure
 + */
-+netdev_tx_t iecm_tx_splitq_start(struct sk_buff *skb,
-+				 struct net_device *netdev)
++int iecm_add_fdir_fltr(struct iecm_vport *vport, struct ethtool_rxnfc *cmd)
 +{
-+	struct iecm_vport *vport = iecm_netdev_to_vport(netdev);
-+	struct iecm_queue *tx_q;
++	struct iecm_adapter *adapter = vport->adapter;
++	struct ethtool_rx_flow_spec *fsp = &cmd->fs;
++	struct iecm_fdir_fltr_config *fdir_config;
++	struct iecm_fdir_fltr *fltr;
++	int err;
 +
-+	if (skb->queue_mapping >= vport->num_txq)
++	if (adapter->state != __IECM_UP)
++		return -EIO;
++
++	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_FDIR))
++		return -EOPNOTSUPP;
++
++	if (fsp->flow_type & FLOW_MAC_EXT)
 +		return -EINVAL;
 +
-+	tx_q = vport->txqs[skb->queue_mapping];
++	fdir_config = &adapter->config_data.fdir_config;
++	if (fdir_config->num_active_filters >= IECM_MAX_FDIR_FILTERS) {
++		dev_err(&adapter->pdev->dev,
++			"Unable to add Flow Director filter because vport reached the limit of max allowed filters (%u)\n",
++			IECM_MAX_FDIR_FILTERS);
++		return -ENOSPC;
++	}
 +
-+	/* hardware can't handle really short frames, hardware padding works
-+	 * beyond this point
++	spin_lock_bh(&adapter->fdir_fltr_list_lock);
++	fltr = iecm_find_fdir_fltr_by_loc(adapter, fsp->location);
++	if (fltr) {
++		fltr->remove = false;
++		dev_err(&adapter->pdev->dev, "Failed to add Flow Director filter, it already exists\n");
++		spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++		return -EEXIST;
++	}
++	spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++
++	fltr = kzalloc(sizeof(*fltr), GFP_KERNEL);
++	if (!fltr)
++		return -ENOMEM;
++
++	err = iecm_add_fdir_fltr_info(vport, fsp, fltr);
++	if (err)
++		goto error;
++
++	iecm_fdir_list_add_fltr(adapter, fltr);
++	err = iecm_send_add_fdir_filter_msg(vport);
++	if (!err) {
++		fdir_config->num_active_filters++;
++	} else {
++		spin_lock_bh(&adapter->fdir_fltr_list_lock);
++		list_del(&fltr->list);
++		spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++	}
++
++error:
++	if (!err) {
++		dev_info(&adapter->pdev->dev, "Flow Director filter with location %u is added\n",
++			 fsp->location);
++	} else {
++		dev_info(&adapter->pdev->dev, "Failed to add Flow Director filter\n");
++		iecm_dump_fdir_fltr(vport, fltr);
++		kfree(fltr);
++	}
++
++	return err;
++}
++
++/**
++ * iecm_del_fdir_fltr - delete Flow Director filter
++ * @vport: vport structure
++ * @cmd: command to delete Flow Director filter
++ *
++ * Returns 0 on success and negative values for failure
++ */
++int iecm_del_fdir_fltr(struct iecm_vport *vport, struct ethtool_rxnfc *cmd)
++{
++	struct iecm_adapter *adapter = vport->adapter;
++	struct ethtool_rx_flow_spec *fsp = &cmd->fs;
++	struct iecm_fdir_fltr_config *fdir_config;
++	struct iecm_fdir_fltr *fltr = NULL;
++	int err;
++
++	if (adapter->state != __IECM_UP)
++		return -EIO;
++
++	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS, VIRTCHNL2_CAP_FDIR))
++		return -EOPNOTSUPP;
++
++	fdir_config = &adapter->config_data.fdir_config;
++	spin_lock_bh(&adapter->fdir_fltr_list_lock);
++	fltr = iecm_find_fdir_fltr_by_loc(adapter, fsp->location);
++	if (fltr) {
++		fltr->remove = true;
++		fdir_config->num_active_filters--;
++	}
++	spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++
++	err = iecm_send_del_fdir_filter_msg(vport);
++	if (err)
++		dev_err(&adapter->pdev->dev, "Failed to del Flow Director filter\n");
++
++	/* If the above fails, still delete the filter from the list because
++	 * either HW thinks it doesn't exist or we have a bad filter somehow
++	 * and it doesn't do us any good to continue hanging on to it.
 +	 */
-+	if (skb_put_padto(skb, IECM_TX_MIN_LEN))
-+		return NETDEV_TX_OK;
++	spin_lock_bh(&adapter->fdir_fltr_list_lock);
++	fltr = iecm_find_fdir_fltr_by_loc(adapter, fsp->location);
++	/* It can happen that asynchronously the filter has already been
++	 * removed from the list, make sure it's still there under spinlock
++	 * before deleting it.
++	 */
++	if (fltr) {
++		list_del(&fltr->list);
++		kfree(fltr);
++	}
++	spin_unlock_bh(&adapter->fdir_fltr_list_lock);
 +
-+	return iecm_tx_splitq_frame(skb, tx_q);
++	return err;
 +}
 +
  /**
-  * iecm_vport_intr_clean_queues - MSIX mode Interrupt Handler
-  * @irq: interrupt number
+  * iecm_set_mac - NDO callback to set port mac address
+  * @netdev: network interface device structure
+diff --git a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+index f2516343c199..5601846b4674 100644
+--- a/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
++++ b/drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+@@ -2731,6 +2731,125 @@ static int iecm_send_insert_vlan_msg(struct iecm_vport *vport, bool ena)
+ 	return err;
+ }
+ 
++/**
++ * iecm_send_add_fdir_filter_msg: Send add Flow Director filter message
++ * @vport: vport structure
++ *
++ * Request the CP/PF to add Flow Director as specified by the user via
++ * ethtool
++ *
++ * Return 0 on success, negative on failure
++ **/
++int iecm_send_add_fdir_filter_msg(struct iecm_vport *vport)
++{
++	struct iecm_adapter *adapter = vport->adapter;
++	struct iecm_fdir_fltr_config *fdir_config;
++	struct iecm_fdir_fltr *fdir;
++	struct virtchnl_fdir_add *f;
++	int len, err = 0;
++
++	fdir_config = &adapter->config_data.fdir_config;
++	len = sizeof(struct virtchnl_fdir_add);
++	/* kzalloc required because otherwise stack is over 2k */
++	f = kzalloc(len, GFP_KERNEL);
++	if (!f)
++		return -ENOMEM;
++
++	while (true) {
++		bool process_fltr = false;
++
++		/* Only add a single Flow Director per call */
++		spin_lock_bh(&adapter->fdir_fltr_list_lock);
++		list_for_each_entry(fdir, &fdir_config->fdir_fltr_list, list) {
++			if (fdir->add) {
++				fdir->add = false;
++				process_fltr = true;
++				memcpy(f, &fdir->vc_add_msg, len);
++				break;
++			}
++		}
++		spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++
++		if (!process_fltr)
++			break;
++
++		err = iecm_send_mb_msg(adapter, VIRTCHNL_OP_ADD_FDIR_FILTER,
++				       len, (u8 *)f);
++		if (err)
++			break;
++
++		err = iecm_wait_for_event(adapter, IECM_VC_ADD_FDIR_FILTER,
++					  IECM_VC_ADD_FDIR_FILTER_ERR);
++		if (err)
++			break;
++
++		memcpy(f, adapter->vc_msg, len);
++		if (f->status == VIRTCHNL_FDIR_SUCCESS) {
++			fdir->flow_id = f->flow_id;
++		} else {
++			err = -EIO;
++			break;
++		}
++		clear_bit(__IECM_VC_MSG_PENDING, adapter->flags);
++	}
++
++	clear_bit(__IECM_VC_MSG_PENDING, adapter->flags);
++	kfree(f);
++	return err;
++}
++
++/**
++ * iecm_send_del_fdir_filter_msg: Send del Flow Director filter message
++ * @vport: vport structure
++ *
++ * Request the CP/PF to del Flow Director as specified by the user via
++ * ethtool
++ *
++ * Return 0 on success, negative on failure
++ **/
++int iecm_send_del_fdir_filter_msg(struct iecm_vport *vport)
++{
++	struct iecm_adapter *adapter = vport->adapter;
++	struct iecm_fdir_fltr_config *fdir_config;
++	struct iecm_fdir_fltr *fdir;
++	struct virtchnl_fdir_del f;
++	int err = 0;
++
++	fdir_config = &adapter->config_data.fdir_config;
++
++	while (true) {
++		bool process_fltr = false;
++
++		/* Only del a single Flow Director filter per call */
++		spin_lock_bh(&adapter->fdir_fltr_list_lock);
++		list_for_each_entry(fdir, &fdir_config->fdir_fltr_list, list) {
++			if (fdir->remove) {
++				process_fltr = true;
++				fdir->remove = false;
++				f.vsi_id = fdir->vc_add_msg.vsi_id;
++				f.flow_id = fdir->flow_id;
++				break;
++			}
++		}
++		spin_unlock_bh(&adapter->fdir_fltr_list_lock);
++
++		if (!process_fltr)
++			break;
++
++		err = iecm_send_mb_msg(adapter, VIRTCHNL_OP_DEL_FDIR_FILTER,
++				       sizeof(struct virtchnl_fdir_del), (u8 *)&f);
++		if (err)
++			break;
++
++		err = iecm_wait_for_event(adapter, IECM_VC_DEL_FDIR_FILTER,
++					  IECM_VC_DEL_FDIR_FILTER_ERR);
++		clear_bit(__IECM_VC_MSG_PENDING, adapter->flags);
++	}
++
++	clear_bit(__IECM_VC_MSG_PENDING, adapter->flags);
++	return err;
++}
++
+ /**
+  * iecm_send_enable_channels_msg - Send enable channels message
+  * @vport: vport structure
 diff --git a/drivers/net/ethernet/intel/include/iecm.h b/drivers/net/ethernet/intel/include/iecm.h
-index 4304256f7010..f6f9884c10c2 100644
+index d118da1ea8cd..b0785684cc63 100644
 --- a/drivers/net/ethernet/intel/include/iecm.h
 +++ b/drivers/net/ethernet/intel/include/iecm.h
-@@ -717,6 +717,7 @@ int iecm_send_alloc_vectors_msg(struct iecm_adapter *adapter, u16 num_vectors);
- int iecm_vport_params_buf_alloc(struct iecm_adapter *adapter);
- void iecm_vport_params_buf_rel(struct iecm_adapter *adapter);
- struct iecm_vport *iecm_netdev_to_vport(struct net_device *netdev);
-+struct iecm_adapter *iecm_netdev_to_adapter(struct net_device *netdev);
- int iecm_send_get_stats_msg(struct iecm_vport *vport);
- int iecm_get_vec_ids(struct iecm_adapter *adapter,
- 		     u16 *vecids, int num_vecids,
-diff --git a/drivers/net/ethernet/intel/include/iecm_txrx.h b/drivers/net/ethernet/intel/include/iecm_txrx.h
-index 5e29148938fb..26e480343876 100644
---- a/drivers/net/ethernet/intel/include/iecm_txrx.h
-+++ b/drivers/net/ethernet/intel/include/iecm_txrx.h
-@@ -115,6 +115,11 @@
- 
- #define MAKEMASK(m, s)	((m) << (s))
- 
-+union iecm_tx_flex_desc {
-+	struct iecm_flex_tx_desc q; /* queue based scheduling */
-+	struct iecm_flex_tx_sched_desc flow; /* flow based scheduling */
-+};
-+
- struct iecm_tx_buf {
- 	struct hlist_node hlist;
- 	void *next_to_watch;
-@@ -145,6 +150,37 @@ struct iecm_buf_lifo {
- 	struct iecm_tx_buf **bufs;
+@@ -12,6 +12,7 @@
+ #include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+ #include <linux/ethtool.h>
++#include <linux/l2tp.h>
+ #include <net/tcp.h>
+ #include <net/ip6_checksum.h>
+ #include <net/ipv6.h>
+@@ -409,6 +410,108 @@ struct iecm_channel_config {
+ 	u8 num_tc;
  };
  
-+struct iecm_tx_offload_params {
-+	u16 td_cmd;	/* command field to be inserted into descriptor */
-+	u32 tso_len;	/* total length of payload to segment */
-+	u16 mss;
-+	u8 tso_hdr_len;	/* length of headers to be duplicated */
-+
-+	/* Flow scheduling offload timestamp, formatting as hw expects it */
-+	/* timestamp = bits[0:22], overflow = bit[23] */
-+	u8 desc_ts[3];
-+
-+	/* For legacy offloads */
-+	u32 hdr_offsets;
++enum iecm_fdir_flow_type {
++	/* NONE - used for undef/error */
++	IECM_FDIR_FLOW_NONE = 0,
++	IECM_FDIR_FLOW_IPV4_TCP,
++	IECM_FDIR_FLOW_IPV4_UDP,
++	IECM_FDIR_FLOW_IPV4_SCTP,
++	IECM_FDIR_FLOW_IPV4_AH,
++	IECM_FDIR_FLOW_IPV4_ESP,
++	IECM_FDIR_FLOW_IPV4_OTHER,
++	IECM_FDIR_FLOW_IPV6_TCP,
++	IECM_FDIR_FLOW_IPV6_UDP,
++	IECM_FDIR_FLOW_IPV6_SCTP,
++	IECM_FDIR_FLOW_IPV6_AH,
++	IECM_FDIR_FLOW_IPV6_ESP,
++	IECM_FDIR_FLOW_IPV6_OTHER,
++	IECM_FDIR_FLOW_NON_IP_L2,
++	/* MAX - this must be last and add anything new just above it */
++	IECM_FDIR_FLOW_PTYPE_MAX,
 +};
 +
-+struct iecm_tx_splitq_params {
-+	/* Descriptor build function pointer */
-+	void (*splitq_build_ctb)(union iecm_tx_flex_desc *desc,
-+				 struct iecm_tx_splitq_params *params,
-+				 u16 td_cmd, u16 size);
++/* Must not exceed the array element number of '__be32 data[2]' in the ethtool
++ * 'struct ethtool_rx_flow_spec.m_ext.data[2]' to express the flex-byte (word).
++ */
++#define IECM_FLEX_WORD_NUM	2
 +
-+	/* General descriptor info */
-+	enum iecm_tx_desc_dtype_value dtype;
-+	u16 eop_cmd;
++struct iecm_flex_word {
++	u16 offset;
++	u16 word;
++};
++
++struct iecm_ipv4_addrs {
++	__be32 src_ip;
++	__be32 dst_ip;
++};
++
++struct iecm_ipv6_addrs {
++	struct in6_addr src_ip;
++	struct in6_addr dst_ip;
++};
++
++struct iecm_fdir_eth {
++	__be16 etype;
++};
++
++struct iecm_fdir_ip {
 +	union {
-+		u16 compl_tag; /* only relevant for flow scheduling */
-+		u16 td_tag; /* only relevant for queue scheduling */
++		struct iecm_ipv4_addrs v4_addrs;
++		struct iecm_ipv6_addrs v6_addrs;
 +	};
-+
-+	struct iecm_tx_offload_params offload;
++	__be16 src_port;
++	__be16 dst_port;
++	__be32 l4_header;	/* first 4 bytes of the layer 4 header */
++	__be32 spi;		/* security parameter index for AH/ESP */
++	union {
++		u8 tos;
++		u8 tclass;
++	};
++	u8 proto;
 +};
 +
- /* Checksum offload bits decoded from the receive descriptor. */
- struct iecm_rx_csum_decoded {
- 	u8 l3l4p : 1;
-@@ -588,6 +624,12 @@ struct iecm_txq_group {
- 
- struct iecm_adapter;
- 
-+void iecm_tx_splitq_build_ctb(union iecm_tx_flex_desc *desc,
-+			      struct iecm_tx_splitq_params *parms,
-+			      u16 td_cmd, u16 size);
-+void iecm_tx_splitq_build_flow_desc(union iecm_tx_flex_desc *desc,
-+				    struct iecm_tx_splitq_params *parms,
-+				    u16 td_cmd, u16 size);
- int iecm_vport_singleq_napi_poll(struct napi_struct *napi, int budget);
- void iecm_vport_init_num_qs(struct iecm_vport *vport,
- 			    struct virtchnl2_create_vport *vport_msg);
-@@ -614,7 +656,25 @@ int iecm_init_rss(struct iecm_vport *vport);
- void iecm_deinit_rss(struct iecm_vport *vport);
- bool iecm_init_rx_buf_hw_alloc(struct iecm_queue *rxq, struct iecm_rx_buf *buf);
- void iecm_rx_buf_hw_update(struct iecm_queue *rxq, u32 val);
-+void iecm_tx_buf_hw_update(struct iecm_queue *tx_q, u32 val,
-+			   bool xmit_more);
- void iecm_tx_buf_rel(struct iecm_queue *tx_q, struct iecm_tx_buf *tx_buf);
-+unsigned int iecm_size_to_txd_count(unsigned int size);
-+unsigned int iecm_tx_desc_count_required(struct sk_buff *skb);
-+bool iecm_chk_linearize(struct sk_buff *skb, unsigned int max_bufs,
-+			unsigned int count);
-+int iecm_tx_maybe_stop(struct iecm_queue *tx_q, unsigned int size);
-+void iecm_tx_timeout(struct net_device *netdev,
-+		     unsigned int __always_unused txqueue);
-+netdev_tx_t iecm_tx_splitq_start(struct sk_buff *skb,
-+				 struct net_device *netdev);
-+netdev_tx_t iecm_tx_singleq_start(struct sk_buff *skb,
-+				  struct net_device *netdev);
- bool iecm_rx_singleq_buf_hw_alloc_all(struct iecm_queue *rxq,
- 				      u16 cleaned_count);
-+int iecm_tso(struct iecm_tx_buf *first, struct iecm_tx_offload_params *off);
-+void iecm_tx_prepare_vlan_flags(struct iecm_queue *tx_q,
-+				struct iecm_tx_buf *first,
-+				struct sk_buff *skb);
++struct iecm_fdir_extra {
++	u32 usr_def[IECM_FLEX_WORD_NUM];
++};
 +
- #endif /* !_IECM_TXRX_H_ */
++/* bookkeeping of Flow Director filters */
++struct iecm_fdir_fltr {
++	struct list_head list;
++
++	enum iecm_fdir_flow_type flow_type;
++
++	struct iecm_fdir_eth eth_data;
++	struct iecm_fdir_eth eth_mask;
++
++	struct iecm_fdir_ip ip_data;
++	struct iecm_fdir_ip ip_mask;
++
++	struct iecm_fdir_extra ext_data;
++	struct iecm_fdir_extra ext_mask;
++
++	enum virtchnl_action action;
++
++	/* flex byte filter data */
++	u8 ip_ver; /* used to adjust the flex offset, 4 : IPv4, 6 : IPv6 */
++	u8 flex_cnt;
++	struct iecm_flex_word flex_words[IECM_FLEX_WORD_NUM];
++
++	u32 flow_id;
++
++	u32 loc;	/* Rule location inside the flow table */
++	u32 q_index;
++
++	struct virtchnl_fdir_add vc_add_msg;
++	bool remove;	/* Flow Director filter needs to be deleted */
++	bool add;	/* Flow Director filter needs to be added */
++};
++
++struct iecm_fdir_fltr_config {
++	struct list_head fdir_fltr_list;
++#define IECM_MAX_FDIR_FILTERS	128	/* max allowed Flow Director filters */
++	u16 num_active_filters;
++};
++
+ #define IECM_GET_PTYPE_SIZE(p) \
+ 	(sizeof(struct virtchnl2_ptype) + \
+ 	(((p)->proto_id_count ? ((p)->proto_id_count - 1) : 0) * sizeof(u16)))
+@@ -446,6 +549,7 @@ struct iecm_user_config_data {
+ 	struct list_head mac_filter_list;
+ 	struct list_head vlan_filter_list;
+ 	struct list_head adv_rss_list;
++	struct iecm_fdir_fltr_config fdir_config;
+ 	struct iecm_channel_config ch_config;
+ };
+ 
+@@ -749,6 +853,14 @@ void iecm_set_ethtool_ops(struct net_device *netdev);
+ void iecm_vport_set_hsplit(struct iecm_vport *vport, bool ena);
+ void iecm_add_del_ether_addrs(struct iecm_vport *vport, bool add, bool async);
+ int iecm_set_promiscuous(struct iecm_adapter *adapter);
++int iecm_send_add_fdir_filter_msg(struct iecm_vport *vport);
++int iecm_send_del_fdir_filter_msg(struct iecm_vport *vport);
++int iecm_get_fdir_fltr_entry(struct iecm_vport *vport,
++			     struct ethtool_rxnfc *cmd);
++int iecm_get_fdir_fltr_ids(struct iecm_vport *vport, struct ethtool_rxnfc *cmd,
++			   u32 *rule_locs);
++int iecm_add_fdir_fltr(struct iecm_vport *vport, struct ethtool_rxnfc *cmd);
++int iecm_del_fdir_fltr(struct iecm_vport *vport, struct ethtool_rxnfc *cmd);
+ int iecm_send_enable_channels_msg(struct iecm_vport *vport);
+ int iecm_send_disable_channels_msg(struct iecm_vport *vport);
+ bool iecm_is_feature_ena(struct iecm_vport *vport, netdev_features_t feature);
 -- 
 2.33.0
 
