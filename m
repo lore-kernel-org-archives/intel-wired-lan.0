@@ -1,75 +1,99 @@
 From: Jonathan Toppins <jtoppins@redhat.com>
-Date: Fri, 28 Jan 2022 09:59:21 -0500
-Subject: [Intel-wired-lan] [PATCH net] ice: Avoid RTNL lock when
- re-creating auxiliary device
-In-Reply-To: <20220121002756.1105566-1-david.m.ertman@intel.com>
-References: <20220121002756.1105566-1-david.m.ertman@intel.com>
-Message-ID: <afdb2b42-84bf-ae5e-abbb-808c4e669f58@redhat.com>
+Date: Fri, 28 Jan 2022 10:02:27 -0500
+Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix KASAN error in LAG
+ NETDEV_UNREGISTER handler
+In-Reply-To: <20220118210820.1055792-1-david.m.ertman@intel.com>
+References: <20220118210820.1055792-1-david.m.ertman@intel.com>
+Message-ID: <97261624-d64f-4b82-2c11-a2dd5934c6f8@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/20/22 19:27, Dave Ertman wrote:
-> If a call to re-create the auxiliary device happens in a context that has
-> already taken the RTNL lock, then the call flow that recreates auxiliary
-> device can hang if there is another attempt to claim the RTNL lock by the
-> auxiliary driver.
+On 1/18/22 16:08, Dave Ertman wrote:
+> Currently, the same handler is called for both a NETDEV_BONDING_INFO
+> LAG unlink notification as for a NETDEV_UNREGISTER call.  This is
+> causing a problem though, since the netdev_notifier_info passed has
+> a different structure depending on which event is passed.  The problem
+> manifests as a call trace from a BUG: KASAN stack-out-of-bounds error.
 > 
-> To avoid this, any call to re-create auxiliary devices that comes from
-> an source that is holding the RTNL lock (e.g. netdev notifier when
-> interface exits a bond) should execute in a separate thread.  To
-> accomplish this, add a flag to the PF that will be evaluated in the
-> service task and dealt with there.
+> Fix this by creating a handler specific to NETDEV_UNREGISTER that only
+> is passed valid elements in the netdev_notifier_info struct for the
+> NETDEV_UNREGISTER event.
 > 
-> Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
+> Also included is the removal of an unbalanced dev_put on the peer_netdev
+> and related braces.
+> 
+> Fixes: 6a8b357278f5 ("ice: Respond to a NETDEV_UNREGISTER event for LAG")
 > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 
-Reviewed-by: Jonathan Toppins <jtoppins@redhat.com>
+Acked-by: Jonathan Toppins <jtoppins@redhat.com>
 
----
-This looks like it will fix the issue and we tested internally and did 
-not see the issue.
-
-> ---
->   drivers/net/ethernet/intel/ice/ice.h      | 3 ++-
->   drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
->   2 files changed, 5 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-> index 4e16d185077d..a9fa701aaa95 100644
-> --- a/drivers/net/ethernet/intel/ice/ice.h
-> +++ b/drivers/net/ethernet/intel/ice/ice.h
-> @@ -483,6 +483,7 @@ enum ice_pf_flags {
->   	ICE_FLAG_VF_TRUE_PROMISC_ENA,
->   	ICE_FLAG_MDD_AUTO_RESET_VF,
->   	ICE_FLAG_LINK_LENIENT_MODE_ENA,
-> +	ICE_FLAG_PLUG_AUX_DEV,
->   	ICE_PF_FLAGS_NBITS		/* must be last */
->   };
->   
-> @@ -887,7 +888,7 @@ static inline void ice_set_rdma_cap(struct ice_pf *pf)
->   	if (pf->hw.func_caps.common_cap.rdma && pf->num_rdma_msix) {
->   		set_bit(ICE_FLAG_RDMA_ENA, pf->flags);
->   		set_bit(ICE_FLAG_AUX_ENA, pf->flags);
-> -		ice_plug_aux_dev(pf);
-> +		set_bit(ICE_FLAG_PLUG_AUX_DEV, pf->flags);
+> ---
+> 
+> v2: also remove unneeded if block
+> ---
+>   drivers/net/ethernet/intel/ice/ice_lag.c | 34 +++++++++++++++++++-----
+>   1 file changed, 28 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+> index e375ac849aec..4f954db01b92 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lag.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+> @@ -204,17 +204,39 @@ ice_lag_unlink(struct ice_lag *lag,
+>   		lag->upper_netdev = NULL;
 >   	}
+>   
+> -	if (lag->peer_netdev) {
+> -		dev_put(lag->peer_netdev);
+> -		lag->peer_netdev = NULL;
+> -	}
+> -
+> +	lag->peer_netdev = NULL;
+>   	ice_set_sriov_cap(pf);
+>   	ice_set_rdma_cap(pf);
+>   	lag->bonded = false;
+>   	lag->role = ICE_LAG_NONE;
 >   }
 >   
-> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-> index 30814435f779..b948a865f359 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> @@ -2253,6 +2253,9 @@ static void ice_service_task(struct work_struct *work)
->   		return;
->   	}
->   
-> +	if (test_and_clear_bit(ICE_FLAG_PLUG_AUX_DEV, pf->flags))
-> +		ice_plug_aux_dev(pf);
+> +/**
+> + * ice_lag_unregister - handle netdev unregister events
+> + * @lag: LAG info struct
+> + * @netdev: netdev reporting the event
+> + */
+> +static void ice_lag_unregister(struct ice_lag *lag, struct net_device *netdev)
+> +{
+> +	struct ice_pf *pf = lag->pf;
 > +
->   	ice_clean_adminq_subtask(pf);
->   	ice_check_media_subtask(pf);
->   	ice_check_for_hang_subtask(pf);
+> +	/* check to see if this event is for this netdev
+> +	 * check that we are in an aggregate
+> +	 */
+> +	if (netdev != lag->netdev || !lag->bonded)
+> +		return;
+> +
+> +	if (lag->upper_netdev) {
+> +		dev_put(lag->upper_netdev);
+> +		lag->upper_netdev = NULL;
+> +		ice_set_sriov_cap(pf);
+> +		ice_set_rdma_cap(pf);
+> +	}
+> +	/* perform some cleanup in case we come back */
+> +	lag->bonded = false;
+> +	lag->role = ICE_LAG_NONE;
+> +}
+> +
+>   /**
+>    * ice_lag_changeupper_event - handle LAG changeupper event
+>    * @lag: LAG info struct
+> @@ -307,7 +329,7 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
+>   		ice_lag_info_event(lag, ptr);
+>   		break;
+>   	case NETDEV_UNREGISTER:
+> -		ice_lag_unlink(lag, ptr);
+> +		ice_lag_unregister(lag, netdev);
+>   		break;
+>   	default:
+>   		break;
 
