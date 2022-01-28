@@ -1,10 +1,10 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 28 Jan 2022 12:19:10 +0800
-Subject: [Intel-wired-lan] [PATCH net-next 05/19] iecm: add vport alloc
- and virtchnl messages
-In-Reply-To: <20220128001009.721392-6-alan.brady@intel.com>
-References: <20220128001009.721392-6-alan.brady@intel.com>
-Message-ID: <202201281200.CI9u45bS-lkp@intel.com>
+Date: Fri, 28 Jan 2022 13:21:42 +0800
+Subject: [Intel-wired-lan] [PATCH net-next 13/19] iecm: implement splitq
+ napi_poll
+In-Reply-To: <20220128001009.721392-14-alan.brady@intel.com>
+References: <20220128001009.721392-14-alan.brady@intel.com>
+Message-ID: <202201281316.ZdiaZw6q-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,112 +13,83 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Hi Alan,
 
-Thank you for the patch! Perhaps something to improve:
+Thank you for the patch! Yet something to improve:
 
-[auto build test WARNING on net-next/master]
+[auto build test ERROR on net-next/master]
 
 url:    https://github.com/0day-ci/linux/commits/Alan-Brady/Add-iecm-and-idpf/20220128-085513
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git e2cf07654efb0fd7bbcb475c6f74be7b5755a8fd
-config: i386-allyesconfig (https://download.01.org/0day-ci/archive/20220128/202201281200.CI9u45bS-lkp at intel.com/config)
-compiler: gcc-9 (Debian 9.3.0-22) 9.3.0
+config: arc-allyesconfig (https://download.01.org/0day-ci/archive/20220128/202201281316.ZdiaZw6q-lkp at intel.com/config)
+compiler: arceb-elf-gcc (GCC) 11.2.0
 reproduce (this is a W=1 build):
-        # https://github.com/0day-ci/linux/commit/1233d9631b312eea5aebbce63590e27f9993bacc
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/8e9b2451747f81363327cf5a4e07aaf88af52397
         git remote add linux-review https://github.com/0day-ci/linux
         git fetch --no-tags linux-review Alan-Brady/Add-iecm-and-idpf/20220128-085513
-        git checkout 1233d9631b312eea5aebbce63590e27f9993bacc
+        git checkout 8e9b2451747f81363327cf5a4e07aaf88af52397
         # save the config file to linux build tree
         mkdir build_dir
-        make W=1 O=build_dir ARCH=i386 SHELL=/bin/bash drivers/net/ethernet/intel/iecm/
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=arc SHELL=/bin/bash
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
 
-All warnings (new ones prefixed by >>):
+All errors (new ones prefixed by >>):
 
-   drivers/net/ethernet/intel/iecm/iecm_virtchnl.c: In function 'iecm_vport_queue_ids_init':
->> drivers/net/ethernet/intel/iecm/iecm_virtchnl.c:1396:1: warning: the frame size of 1052 bytes is larger than 1024 bytes [-Wframe-larger-than=]
-    1396 | }
-         | ^
+   drivers/net/ethernet/intel/iecm/iecm_txrx.c: In function 'iecm_rx_can_reuse_page':
+>> drivers/net/ethernet/intel/iecm/iecm_txrx.c:3132:19: error: 'struct iecm_rx_buf' has no member named 'page_offset'
+    3132 |         if (rx_buf->page_offset > last_offset)
+         |                   ^~
 
 
-vim +1396 drivers/net/ethernet/intel/iecm/iecm_virtchnl.c
+vim +3132 drivers/net/ethernet/intel/iecm/iecm_txrx.c
 
-  1322	
-  1323	/**
-  1324	 * iecm_vport_queue_ids_init - Initialize queue ids from Mailbox parameters
-  1325	 * @vport: virtual port for which the queues ids are initialized
-  1326	 *
-  1327	 * Will initialize all queue ids with ids received as mailbox parameters.
-  1328	 * Returns 0 on success, negative if all the queues are not initialized.
-  1329	 */
-  1330	static int iecm_vport_queue_ids_init(struct iecm_vport *vport)
-  1331	{
-  1332		struct virtchnl2_create_vport *vport_params;
-  1333		struct virtchnl2_queue_reg_chunks *chunks;
-  1334		/* We may never deal with more than 256 same type of queues */
-  1335	#define IECM_MAX_QIDS	256
-  1336		u32 qids[IECM_MAX_QIDS];
-  1337		int num_ids;
-  1338		u16 q_type;
-  1339	
-  1340		if (vport->adapter->config_data.req_qs_chunks) {
-  1341			struct virtchnl2_add_queues *vc_aq =
-  1342				(struct virtchnl2_add_queues *)
-  1343				vport->adapter->config_data.req_qs_chunks;
-  1344			chunks = &vc_aq->chunks;
-  1345		} else {
-  1346			vport_params = (struct virtchnl2_create_vport *)
-  1347					vport->adapter->vport_params_recvd[0];
-  1348			chunks = &vport_params->chunks;
-  1349		}
-  1350	
-  1351		num_ids = iecm_vport_get_queue_ids(qids, IECM_MAX_QIDS,
-  1352						   VIRTCHNL2_QUEUE_TYPE_TX,
-  1353						   chunks);
-  1354		if (num_ids != vport->num_txq)
-  1355			return -EINVAL;
-  1356		num_ids = __iecm_vport_queue_ids_init(vport, qids, num_ids,
-  1357						      VIRTCHNL2_QUEUE_TYPE_TX);
-  1358		if (num_ids != vport->num_txq)
-  1359			return -EINVAL;
-  1360		num_ids = iecm_vport_get_queue_ids(qids, IECM_MAX_QIDS,
-  1361						   VIRTCHNL2_QUEUE_TYPE_RX,
-  1362						   chunks);
-  1363		if (num_ids != vport->num_rxq)
-  1364			return -EINVAL;
-  1365		num_ids = __iecm_vport_queue_ids_init(vport, qids, num_ids,
-  1366						      VIRTCHNL2_QUEUE_TYPE_RX);
-  1367		if (num_ids != vport->num_rxq)
-  1368			return -EINVAL;
-  1369	
-  1370		if (iecm_is_queue_model_split(vport->txq_model)) {
-  1371			q_type = VIRTCHNL2_QUEUE_TYPE_TX_COMPLETION;
-  1372			num_ids = iecm_vport_get_queue_ids(qids, IECM_MAX_QIDS, q_type,
-  1373							   chunks);
-  1374			if (num_ids != vport->num_complq)
-  1375				return -EINVAL;
-  1376			num_ids = __iecm_vport_queue_ids_init(vport, qids,
-  1377							      num_ids,
-  1378							      q_type);
-  1379			if (num_ids != vport->num_complq)
-  1380				return -EINVAL;
-  1381		}
-  1382	
-  1383		if (iecm_is_queue_model_split(vport->rxq_model)) {
-  1384			q_type = VIRTCHNL2_QUEUE_TYPE_RX_BUFFER;
-  1385			num_ids = iecm_vport_get_queue_ids(qids, IECM_MAX_QIDS, q_type,
-  1386							   chunks);
-  1387			if (num_ids != vport->num_bufq)
-  1388				return -EINVAL;
-  1389			num_ids = __iecm_vport_queue_ids_init(vport, qids, num_ids,
-  1390							      q_type);
-  1391			if (num_ids != vport->num_bufq)
-  1392				return -EINVAL;
-  1393		}
-  1394	
-  1395		return 0;
-> 1396	}
-  1397	
+  3103	
+  3104	/**
+  3105	 * iecm_rx_can_reuse_page - Determine if page can be reused for another rx
+  3106	 * @rx_buf: buffer containing the page
+  3107	 *
+  3108	 * If page is reusable, we have a green light for calling iecm_reuse_rx_page,
+  3109	 * which will assign the current buffer to the buffer that next_to_alloc is
+  3110	 * pointing to; otherwise, the dma mapping needs to be destroyed and
+  3111	 * page freed
+  3112	 */
+  3113	bool iecm_rx_can_reuse_page(struct iecm_rx_buf *rx_buf)
+  3114	{
+  3115		struct iecm_page_info *page_info = &rx_buf->page_info[rx_buf->page_indx];
+  3116	
+  3117	#if (PAGE_SIZE >= 8192)
+  3118		unsigned int last_offset = PAGE_SIZE - rx_buf->buf_size;
+  3119	#endif /* PAGE_SIZE < 8192) */
+  3120		unsigned int pagecnt_bias = page_info->pagecnt_bias;
+  3121		struct page *page = page_info->page;
+  3122	
+  3123		/* avoid re-using remote pages */
+  3124		if (unlikely(iecm_rx_page_is_reserved(page)))
+  3125			return false;
+  3126	
+  3127	#if (PAGE_SIZE < 8192)
+  3128		/* if we are only owner of page we can reuse it */
+  3129		if (unlikely((page_count(page) - pagecnt_bias) > 1))
+  3130			return false;
+  3131	#else
+> 3132		if (rx_buf->page_offset > last_offset)
+  3133			return false;
+  3134	#endif /* PAGE_SIZE < 8192) */
+  3135	
+  3136		/* If we have drained the page fragment pool we need to update
+  3137		 * the pagecnt_bias and page count so that we fully restock the
+  3138		 * number of references the driver holds.
+  3139		 */
+  3140		if (unlikely(pagecnt_bias == 1)) {
+  3141			page_ref_add(page, USHRT_MAX - 1);
+  3142			page_info->pagecnt_bias = USHRT_MAX;
+  3143		}
+  3144	
+  3145		return true;
+  3146	}
+  3147	
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
