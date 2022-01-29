@@ -1,50 +1,180 @@
-From: Bhandare, KiranX <kiranx.bhandare@intel.com>
-Date: Sat, 29 Jan 2022 08:55:15 +0000
-Subject: [Intel-wired-lan] [PATCH v4 net-next 1/9] i40e: don't reserve
- excessive XDP_PACKET_HEADROOM on XSK Rx to skb
-In-Reply-To: <20211208140702.642741-2-alexandr.lobakin@intel.com>
-References: <20211208140702.642741-1-alexandr.lobakin@intel.com>
- <20211208140702.642741-2-alexandr.lobakin@intel.com>
-Message-ID: <DM6PR11MB329239287A3AC0FFC21A3DEEF1239@DM6PR11MB3292.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 29 Jan 2022 22:51:37 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ c0cac043a1d7d7b8935a529a0fc450f01eb0f220
+Message-ID: <61f55479.Y2asFHd5Pk7R+yNI%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: c0cac043a1d7d7b8935a529a0fc450f01eb0f220  ice: switch: use convenience macros to declare dummy pkt templates
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Alexander Lobakin
-> Sent: Wednesday, December 8, 2021 7:37 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Song Liu <songliubraving@fb.com>; Jesper Dangaard Brouer
-> <hawk@kernel.org>; Daniel Borkmann <daniel@iogearbox.net>; Yonghong
-> Song <yhs@fb.com>; Martin KaFai Lau <kafai@fb.com>; John Fastabend
-> <john.fastabend@gmail.com>; Alexei Starovoitov <ast@kernel.org>; Andrii
-> Nakryiko <andrii@kernel.org>; Bj?rn T?pel <bjorn@kernel.org>;
-> netdev at vger.kernel.org; Jakub Kicinski <kuba@kernel.org>; KP Singh
-> <kpsingh@kernel.org>; bpf at vger.kernel.org; David S. Miller
-> <davem@davemloft.net>; linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH v4 net-next 1/9] i40e: don't reserve
-> excessive XDP_PACKET_HEADROOM on XSK Rx to skb
-> 
-> {__,}napi_alloc_skb() allocates and reserves additional NET_SKB_PAD
-> + NET_IP_ALIGN for any skb.
-> OTOH, i40e_construct_skb_zc() currently allocates and reserves additional
-> `xdp->data - xdp->data_hard_start`, which is XDP_PACKET_HEADROOM for
-> XSK frames.
-> There's no need for that at all as the frame is post-XDP and will go only to the
-> networking stack core.
-> Pass the size of the actual data only to __napi_alloc_skb() and don't reserve
-> anything. This will give enough headroom for stack processing.
-> 
-> Fixes: 0a714186d3c0 ("i40e: add AF_XDP zero-copy Rx support")
-> Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_xsk.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
+elapsed time: 725m
 
-Tested-by: Kiran Bhandare <kiranx.bhandare@intel.com>  A Contingent Worker at Intel
+configs tested: 150
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20220124
+ia64                        generic_defconfig
+sh                             espt_defconfig
+um                                  defconfig
+sh                        edosk7760_defconfig
+arm                         axm55xx_defconfig
+powerpc                      pcm030_defconfig
+xtensa                           alldefconfig
+arm                          pxa3xx_defconfig
+m68k                                defconfig
+arm                       aspeed_g5_defconfig
+arm                         vf610m4_defconfig
+arm                           tegra_defconfig
+h8300                               defconfig
+arm                         cm_x300_defconfig
+sh                           se7751_defconfig
+sparc                               defconfig
+powerpc                      ppc6xx_defconfig
+arc                           tb10x_defconfig
+mips                 decstation_r4k_defconfig
+m68k                          multi_defconfig
+mips                           xway_defconfig
+powerpc                      ep88xc_defconfig
+powerpc                     ep8248e_defconfig
+m68k                        stmark2_defconfig
+powerpc                 mpc834x_itx_defconfig
+arm                        shmobile_defconfig
+mips                     decstation_defconfig
+arm                         lubbock_defconfig
+arm                          iop32x_defconfig
+openrisc                         alldefconfig
+arc                 nsimosci_hs_smp_defconfig
+powerpc                     sequoia_defconfig
+m68k                           sun3_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                     rainier_defconfig
+arm                          badge4_defconfig
+sh                           se7705_defconfig
+xtensa                    smp_lx200_defconfig
+arm                        mini2440_defconfig
+sh                           se7343_defconfig
+mips                           ip32_defconfig
+powerpc                     asp8347_defconfig
+arm                  randconfig-c002-20220127
+arm                  randconfig-c002-20220124
+arm                  randconfig-c002-20220129
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+x86_64               randconfig-a002-20220124
+x86_64               randconfig-a003-20220124
+x86_64               randconfig-a001-20220124
+x86_64               randconfig-a004-20220124
+x86_64               randconfig-a005-20220124
+x86_64               randconfig-a006-20220124
+i386                 randconfig-a002-20220124
+i386                 randconfig-a005-20220124
+i386                 randconfig-a003-20220124
+i386                 randconfig-a004-20220124
+i386                 randconfig-a001-20220124
+i386                 randconfig-a006-20220124
+riscv                randconfig-r042-20220127
+arc                  randconfig-r043-20220127
+arc                  randconfig-r043-20220124
+s390                 randconfig-r044-20220127
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                    rhel-8.3-kselftests
+
+clang tested configs:
+x86_64                        randconfig-c007
+riscv                randconfig-c006-20220129
+arm                  randconfig-c002-20220129
+powerpc              randconfig-c003-20220129
+mips                 randconfig-c004-20220129
+i386                          randconfig-c001
+s390                 randconfig-c005-20220129
+arm                        vexpress_defconfig
+arm                        magician_defconfig
+mips                        bcm63xx_defconfig
+powerpc                      katmai_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64               randconfig-a011-20220124
+x86_64               randconfig-a013-20220124
+x86_64               randconfig-a015-20220124
+x86_64               randconfig-a016-20220124
+x86_64               randconfig-a014-20220124
+x86_64               randconfig-a012-20220124
+i386                 randconfig-a011-20220124
+i386                 randconfig-a016-20220124
+i386                 randconfig-a013-20220124
+i386                 randconfig-a014-20220124
+i386                 randconfig-a015-20220124
+i386                 randconfig-a012-20220124
+riscv                randconfig-r042-20220124
+hexagon              randconfig-r045-20220124
+hexagon              randconfig-r045-20220127
+hexagon              randconfig-r041-20220124
+hexagon              randconfig-r041-20220127
+riscv                randconfig-r042-20220126
+hexagon              randconfig-r045-20220126
+hexagon              randconfig-r041-20220126
+hexagon              randconfig-r045-20220125
+hexagon              randconfig-r041-20220125
+s390                 randconfig-r044-20220124
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
