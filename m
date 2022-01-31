@@ -1,5 +1,5 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Mon, 31 Jan 2022 11:17:06 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 31 Jan 2022 12:10:27 -0800
 Subject: [Intel-wired-lan] [PATCH net-next] net: kbuild: Don't default
  net vendor configs to y
 In-Reply-To: <30ed8220-e24d-4b40-c7a6-4b09c84f9a1f@gmail.com>
@@ -8,26 +8,43 @@ References: <20220131172450.4905-1-saeed@kernel.org>
  <CAMuHMdU17cBzivFm9q-VwF9EG5MX75Qct=is=F2h+Kc+VddZ4g@mail.gmail.com>
  <20220131183540.6ekn3z7tudy5ocdl@sx1>
  <30ed8220-e24d-4b40-c7a6-4b09c84f9a1f@gmail.com>
-Message-ID: <20220131191706.GB24296@hoboy.vegasvil.org>
+Message-ID: <20220131121027.4fe3e8dc@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jan 31, 2022 at 10:40:38AM -0800, Florian Fainelli wrote:
+On Mon, 31 Jan 2022 10:40:38 -0800 Florian Fainelli wrote:
+> >> And changing the defaults means all defconfigs must be updated first,
+> >> else the user's configs will end up without drivers needed.
+> >>  
+> > 
+> > As I understand correctly, at least for most common net drivers, having 
+> > NET_VENDOR_XYZ=y doesn't actually build anything, we have flags per
+> > module for each vendor and those are defaulted to N.  
+> 
+> Right, but once you start hiding NET_VENDOR_DRIVER_XYZ under a 
+> NET_VENDOR_XYZ Kconfig symbol dependency, if NET_VENDOR_XYZ is not set 
+> to Y, then you have no way to select NET_VENDOR_DRIVER_XYZ and so your 
+> old defconfig breaks.
 
-> Maybe the rule should go like this: any new driver vendor defaults to n, and
-> existing ones remain set to y, until we deprecate doing that and switching
-> them all off to n by 5.18?
+To be clear do we actually care about *old* configs or *def* configs?
 
-+1
+Breaking defconfigs seems bad, but I don't think we can break
+reasonable oldconfigs at this point?
 
-Actually, I wouldn't mind breaking old configs.  Why?  Because never
-once have MY configs ever survived a kernel upgrade.  Manual fix ups
-are always needed.
+> >> It might make sense to tune some of the defaults (i.e. change to
+> >> "default y if ARCH_*") for drivers with clear platform dependencies.
+> >>  
+> > 
+> > either set hard default to 'n' or just keep it as is, anything else is just
+> > more confusion.  
+> 
+> Maybe the rule should go like this: any new driver vendor defaults to n, 
+> and existing ones remain set to y, until we deprecate doing that and 
+> switching them all off to n by 5.18?
 
-Nobody cares about my configs, so why should I care about theirs?
-
-Thanks,
-Richard
+I'd be afraid that given the work of fixing up defconfigs is
+non-trivial we may end up never switching old drivers. And then we'd
+have a semi-random soup of defaults :(
