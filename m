@@ -1,86 +1,137 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Mon, 31 Jan 2022 12:51:07 +0200
-Subject: [Intel-wired-lan] [PATCH net] net: e1000e: Recover at least
- in-memory copy of NVM checksum
-In-Reply-To: <20220127150807.26448-1-tbogendoerfer@suse.de>
-References: <20220127150807.26448-1-tbogendoerfer@suse.de>
-Message-ID: <d32ac7da-f460-6d7a-5f7f-9c9d873bf393@intel.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Mon, 31 Jan 2022 13:54:31 +0100
+Subject: [Intel-wired-lan] [External] ixgbe driver link down causes 100%
+ load in ksoftirqd/x
+In-Reply-To: <VI1PR02MB41424341E3E7BA3166E043BD88229@VI1PR02MB4142.eurprd02.prod.outlook.com>
+References: <VI1PR02MB4142A638EC38107B262DB32F885A9@VI1PR02MB4142.eurprd02.prod.outlook.com>
+ <YfQMQWsFqCIPBBqO@boxer>
+ <VI1PR02MB41424341E3E7BA3166E043BD88229@VI1PR02MB4142.eurprd02.prod.outlook.com>
+Message-ID: <YffcB2YZ1h5SRyEP@boxer>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 1/27/2022 17:08, Thomas Bogendoerfer wrote:
-> Commit 4051f68318ca ("e1000e: Do not take care about recovery NVM
-> checksum") causes a regression for systems with a broken NVM checksum
-> and hardware which is not able to update the NVM. Before the change the
-> in-memory copy was correct even the NVM update doesn't work, which is
-> good enough for the driver to work again.
+On Fri, Jan 28, 2022 at 03:53:25PM +0000, Maurice Baijens (Ellips B.V.) wrote:
+> Hello,
 > 
-> See
 > 
-> https://bugzilla.opensuse.org/show_bug.cgi?id=1191663
+> > -----Original Message-----
+> > From: Maciej Fijalkowski <maciej.fijalkowski@intel.com> 
+> > Sent: Friday, January 28, 2022 4:31 PM
+> > To: Maurice Baijens (Ellips B.V.) <maurice.baijens@ellips.com>
+> > Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+> > Subject: Re: [External] ixgbe driver link down causes 100% load in ksoftirqd/x
+> >
+> > On Thu, Jan 20, 2022 at 09:23:06AM +0000, Maurice Baijens (Ellips B.V.) wrote:
+> > > Hello,
+> > > 
+> > > 
+> > > I have an issue with the ixgbe driver and X550Tx network adapter.
+> > > When I disconnect the network cable I end up with 100% load in ksoftirqd/x. I am running the adapter in
+> > > xdp mode (XDP_FLAGS_DRV_MODE). Problem seen in linux kernel 5.15.x and also 5.16.0+ (head).
+> >
+> > Hello,
+> >
+> > a stupid question - why do you disconnect the cable when running traffic? :)
 > 
-> for more details.
+> The answer is even more stupid. Due to supply problems we sometimes have to use
+> dual adapters instead of single once, and if one by accident enables the wrong port,
+> the bug is triggered.
 > 
-> This patch reverts the change and moves the check for hardware without
-> NVM update capability right before the real flash update.
+> > If you plug this back in then what happens?
 > 
-> Fixes: 4051f68318ca ("e1000e: Do not take care about recovery NVM checksum")
-> Signed-off-by: Thomas Bogendoerfer <tbogendoerfer@suse.de>
-> ---
->   drivers/net/ethernet/intel/e1000e/ich8lan.c | 21 ++++++++++-----------
->   1 file changed, 10 insertions(+), 11 deletions(-)
+> Then everything works normal again.
 > 
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> index 5e4fc9b4e2ad..613a60f24ba6 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> @@ -3808,6 +3808,9 @@ static s32 e1000_update_nvm_checksum_spt(struct e1000_hw *hw)
->   	if (nvm->type != e1000_nvm_flash_sw)
->   		goto out;
->   
-> +	if (hw->mac.type >= e1000_pch_cnp)
-> +		goto out;
-> +
->   	nvm->ops.acquire(hw);
->   
->   	/* We're writing to the opposite bank so if we're on bank 1,
-> @@ -4136,17 +4139,13 @@ static s32 e1000_validate_nvm_checksum_ich8lan(struct e1000_hw *hw)
->   		return ret_val;
->   
->   	if (!(data & valid_csum_mask)) {
-> -		e_dbg("NVM Checksum Invalid\n");
-> -
-> -		if (hw->mac.type < e1000_pch_cnp) {
-I meant: change hw->mac.type < e1000_pch_cnp to hw->mac.type < e1000_pch_tgp
-> -			data |= valid_csum_mask;
-> -			ret_val = e1000_write_nvm(hw, word, 1, &data);
-> -			if (ret_val)
-> -				return ret_val;
-> -			ret_val = e1000e_update_nvm_checksum(hw);
-> -			if (ret_val)
-> -				return ret_val;
-> -		}
-Hello Thomas,
-For security reasons starting from the TGL platform SPI controller will 
-be locked for SW access. I've double-checked with our HW architect, not 
-from SPT, from TGP. So, first, we can change the mac type e1000_pch_cnp 
-to e1000_pch_tgp (as fix for initial patch)
-Do we want (second) to allow HW initialization with the "wrong" NVM 
-checksum? It could cause unexpected (HW) behavior in the future. Even if 
-you will "recover" check in shadow RAM - there is no guarantee that NVM 
-is good.
-> +		data |= valid_csum_mask;
-> +		ret_val = e1000_write_nvm(hw, word, 1, &data);
-> +		if (ret_val)
-> +			return ret_val;
-> +		ret_val = e1000e_update_nvm_checksum(hw);
-> +		if (ret_val)
-> +			return ret_val;
->   	}
->   
->   	return e1000e_validate_nvm_checksum_generic(hw);
-Thanks,
-Sasha
+> >
+> > > 
+> > > I traced the problem down to function ixgbe_xmit_zc in ixgbe_xsk.c:
+> > > 
+> > > if (unlikely(!ixgbe_desc_unused(xdp_ring)) ||
+> > >     !netif_carrier_ok(xdp_ring->netdev)) {
+> > >             work_done = false;
+> > >             break;
+> > > }
+> >
+> > This was done in commit c685c69fba71 ("ixgbe: don't do any AF_XDP
+> > zero-copy transmit if netif is not OK") - it was addressing the transient
+> > state when configuring the xsk pool on particular queue pair.
+> >
+> > > 
+> > > This function is called from ixgbe_poll() function via ixgbe_clean_xdp_tx_irq(). It sets
+> > > work_done to false if netif_carrier_ok() returns false (so if link is down). Because work_done
+> > > is always false, ixgbe_poll keeps on polling forever.
+> > > 
+> > > I made a fix by checking link in ixgbe_poll() function and if no link exiting polling mode:
+> > > 
+> > > /* If all work not completed, return budget and keep polling */
+> > > if ((!clean_complete) && netif_carrier_ok(adapter->netdev))
+> > >             return budget;
+> >
+> > Not sure about the correctness of this. Question is how should we act for
+> > link down - should we say that we are done with processing or should we
+> > wait until the link gets back?
+> >
+> > Instead of setting the work_done to false immediately for
+> >!netif_carrier_ok(), I'd rather break out the checks that are currently
+> > combined into the single statement, something like this:
+> >
+> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> > index b3fd8e5cd85b..6a5e9cf6b5da 100644
+> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_xsk.c
+> > @@ -390,12 +390,14 @@ static bool ixgbe_xmit_zc(struct ixgbe_ring *xdp_ring, unsigned int budget)
+> >  	u32 cmd_type;
+> >  
+> >  	while (budget-- > 0) {
+> > -		if (unlikely(!ixgbe_desc_unused(xdp_ring)) ||
+> > -		    !netif_carrier_ok(xdp_ring->netdev)) {
+> > +		if (unlikely(!ixgbe_desc_unused(xdp_ring))) {
+> >  			work_done = false;
+> >  			break;
+> >  		}
+> >  
+> > +		if (!netif_carrier_ok(xdp_ring->netdev))
+> > +			break;
+> > +
+> >  		if (!xsk_tx_peek_desc(pool, &desc))
+> >  			break;
+> >
+> >
+> > > 
+> > > This is probably fine for our application as we only run in xdpdrv mode, however I am not sure this
+> >
+> > By xdpdrv I would understand that you're running XDP in standard native
+> > mode, however you refer to the AF_XDP Zero Copy implementation in the
+> > driver. But I don't think it changes anything in this thread.
+> >
+> > In the end I see some outstanding issues with ixgbe_xmit_zc(), so this
+> > probably might need some attention.
+> >
+> > Thanks!
+> > Maciej
+> 
+> Your suggestion for a fix sounds ok. (I have not tested it). Is someone going to fix it in the next version of the kernel,
+> so we don't have to apply a patch here forever? Or how should we proceed to get it fixed in the kernel?
+
+Could you test it then? If it's fine then I'll send it as a fix. I just
+don't currently have ixgbe HW around me.
+
+> 
+> Thank you,
+> Maurice
+> 
+> 
+> >
+> > > is the correct way to fix this issue and the behaviour of the normal skb mode operation is 
+> > > also affected by my fix.
+> > > 
+> > > So hopefully my observations are correct and someone here can fix the issue and push it upstream.
+> > > 
+> > > 
+> > > Best regards,
+> > > 	Maurice Baijens
+> 
+> 
+> 
