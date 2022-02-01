@@ -1,88 +1,90 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Mon, 28 Feb 2022 22:32:28 -0800
-Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
- iterator after loop body as a ptr
-In-Reply-To: <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
-References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-3-jakobkoschel@gmail.com>
- <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
- <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
- <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
- <FC710A1A-524E-481B-A668-FC258F529A2E@gmail.com>
- <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
-Message-ID: <20220228223228.24cf3fd4@kicinski-fedora-PC1C0HJN.hsd1.ca.comcast.net>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Tue, 1 Feb 2022 10:58:01 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] net: kbuild: Don't default
+ net vendor configs to y
+In-Reply-To: <09c97169-5f9a-fc8f-dea5-5423e7bfef34@twofifty.com>
+References: <20220131172450.4905-1-saeed@kernel.org>
+ <20220131095905.08722670@hermes.local>
+ <CAMuHMdU17cBzivFm9q-VwF9EG5MX75Qct=is=F2h+Kc+VddZ4g@mail.gmail.com>
+ <20220131183540.6ekn3z7tudy5ocdl@sx1>
+ <30ed8220-e24d-4b40-c7a6-4b09c84f9a1f@gmail.com>
+ <09c97169-5f9a-fc8f-dea5-5423e7bfef34@twofifty.com>
+Message-ID: <Yfj2GTH3tHraprl0@unreal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 28 Feb 2022 16:41:04 -0800 Linus Torvalds wrote:
-> So yes, initially my idea had been to just move the iterator entirely
-> inside the macro. But specifying the type got so ugly that I think
-> that
+On Mon, Jan 31, 2022 at 10:55:14AM -0800, Hisashi T Fujinaka wrote:
+> On Mon, 31 Jan 2022, Florian Fainelli wrote:
 > 
->         typeof (pos) pos
+> > On 1/31/2022 10:35 AM, Saeed Mahameed wrote:
+> > > On 31 Jan 19:30, Geert Uytterhoeven wrote:
+> > > > On Mon, Jan 31, 2022 at 6:59 PM Stephen Hemminger
+> > > > <stephen@networkplumber.org> wrote:
+> > > > > On Mon, 31 Jan 2022 09:24:50 -0800
+> > > > > Saeed Mahameed <saeed@kernel.org> wrote:
+> > > > > 
+> > > > > > From: Saeed Mahameed <saeedm@nvidia.com>
+> > > > > >
+> > > > > > NET_VENDOR_XYZ were defaulted to 'y' for no technical reason.
+> > > > > >
+> > > > > > Since all drivers belonging to a vendor are supposed to default to 'n',
+> > > > > > defaulting all vendors to 'n' shouldn't be an issue, and aligns well
+> > > > > > with the 'no new drivers' by default mentality.
+> > > > > >
+> > > > > > Signed-off-by: Saeed Mahameed <saeedm@nvidia.com>
+> > > > > 
+> > > > > This was done back when vendors were introduced in the
+> > > > > network drivers tree.
+> > > > > The default of Y allowed older configurations to just work.
+> > > > 
+> > > > And changing the defaults means all defconfigs must be updated first,
+> > > > else the user's configs will end up without drivers needed.
+> > > > 
+> > > 
+> > > As I understand correctly, at least for most common net drivers,
+> > > having NET_VENDOR_XYZ=y doesn't actually build anything, we have
+> > > flags per
+> > > module for each vendor and those are defaulted to N.
+> > 
+> > Right, but once you start hiding NET_VENDOR_DRIVER_XYZ under a
+> > NET_VENDOR_XYZ Kconfig symbol dependency, if NET_VENDOR_XYZ is not set
+> > to Y, then you have no way to select NET_VENDOR_DRIVER_XYZ and so your
+> > old defconfig breaks.
+> > 
+> > > 
+> > > > > So there was a reason, not sure if it matters anymore.
+> > > > > But it seems like useless repainting to change it now.
+> > > > 
+> > > > It might make sense to tune some of the defaults (i.e. change to
+> > > > "default y if ARCH_*") for drivers with clear platform dependencies.
+> > > > 
+> > > 
+> > > either set hard default to 'n' or just keep it as is, anything else is just
+> > > more confusion.
+> > 
+> > Maybe the rule should go like this: any new driver vendor defaults to n,
+> > and existing ones remain set to y, until we deprecate doing that and
+> > switching them all off to n by 5.18?
 > 
-> trick inside the macro really ends up giving us the best of all worlds:
+> Forgive my ignorance, but isn't it a regression if things quit working
+> even if it's just a configuration change?
+
+No, kernel configs never were declared as ABI as "regular" users are not
+supposed to touch it. They use something provided by the distro.
+
 > 
->  (a) let's us keep the existing syntax and code for all the nice cases
-> that did everything inside the loop anyway
+> From a user perspective I like having everything turned on initially so
+> it just works. Pruning things down is a lot easier than trying to figure
+> out what all to turn on. Especially in graphics.
+
+I have completely opposite view here and prefer to have minimal config
+for my CI, and for my working machines as well. 
+
+Thanks
+
 > 
->  (b) gives us a nice warning for any normal use-after-loop case
-> (unless you explicitly initialized it like that
-> sgx_mmu_notifier_release() function did for no good reason
-> 
->  (c) also guarantees that even if you don't get a warning,
-> non-converted (or newly written) bad code won't actually _work_
-> 
-> so you end up getting the new rules without any ambiguity or mistaken
-
-I presume the goal is that we can do this without changing existing
-code? Otherwise actually moving the iterator into the loop body would
-be an option, by creating a different hidden variable:
-
-#define list_iter(head)						\
-	for (struct list head *_l = (head)->next; _l != (head); _l = _l->next)
-
-#define list_iter_entry(var, member)		\
-	list_entry(_l, typeof(*var), member)
-
-
-	list_iter(&p->a_head) {
-		struct entry *e = list_iter_entry(e, a_member);
-
-		/* use e->... */
-	}
-
-
-Or we can slide into soft insanity and exploit one of Kees'es tricks
-to encode the type of the entries "next to" the head:
-
-#define LIST_HEAD_MEM(name, type)			\
-	union {						\
-		struct list_head name;			\
-		type *name ## _entry;			\
-	}
-
-struct entry {
-	struct list_head a_member;
-};
-
-struct parent {
-	LIST_HEAD_MEM(a_head, struct entry);
-};
-
-#define list_for_each_magic(pos, head, member)				\
-	for (typeof(**(head ## _entry)) *pos = list_first_entry(head, typeof(**(head ## _entry)), member); \
-	     &pos->member != (head);					\
-	     pos = list_next_entry(pos, member))
-
-
-	list_for_each_magic(e, &p->a_head, a_member) {
-		/* use e->... */
-	}
-
-
-I'll show myself out...
+> -- 
+> Hisashi T Fujinaka - htodd at twofifty.com
