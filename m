@@ -1,21 +1,21 @@
 From: kernel test robot <lkp@intel.com>
-Date: Tue, 01 Feb 2022 18:33:37 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:10GbE] BUILD SUCCESS
- f322a620be69e95594eda89502b478aa7dbf6ec2
-Message-ID: <61f90c81.Wqaq/ORMQgwwn0Vo%lkp@intel.com>
+Date: Tue, 01 Feb 2022 18:33:43 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ a73c98862532124daa4847bbb609a8d61ed794c5
+Message-ID: <61f90c87.TNRgMQm4xkdw1yBG%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 10GbE
-branch HEAD: f322a620be69e95594eda89502b478aa7dbf6ec2  ixgbe: respect metadata on XSK Rx to skb
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: a73c98862532124daa4847bbb609a8d61ed794c5  ice: Add slow path offload stats on port representor in switchdev
 
-elapsed time: 732m
+elapsed time: 730m
 
-configs tested: 150
-configs skipped: 4
+configs tested: 121
+configs skipped: 3
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -23,47 +23,27 @@ More configs may be tested in the coming days.
 gcc tested configs:
 arm                                 defconfig
 arm64                            allyesconfig
+arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-arm64                               defconfig
 i386                 randconfig-c001-20220131
 powerpc              randconfig-c003-20220131
-i386                          randconfig-c001
+sh                        dreamcast_defconfig
+xtensa                       common_defconfig
 sh                          rsk7203_defconfig
-mips                           xway_defconfig
-um                               alldefconfig
-powerpc                 mpc834x_mds_defconfig
 m68k                       m5475evb_defconfig
 powerpc                mpc7448_hpc2_defconfig
-sh                            titan_defconfig
-m68k                           sun3_defconfig
-sh                        sh7763rdp_defconfig
-mips                         mpc30x_defconfig
-sh                          rsk7269_defconfig
-powerpc                    klondike_defconfig
-powerpc                      ppc40x_defconfig
-powerpc                 mpc837x_rdb_defconfig
 parisc                           alldefconfig
 m68k                       m5208evb_defconfig
-xtensa                           allyesconfig
-arc                    vdk_hs38_smp_defconfig
-powerpc                 mpc837x_mds_defconfig
+mips                      fuloong2e_defconfig
+powerpc                      arches_defconfig
+riscv                    nommu_k210_defconfig
 arm                           stm32_defconfig
 sh                  sh7785lcr_32bit_defconfig
+powerpc                 mpc837x_rdb_defconfig
 powerpc                     asp8347_defconfig
 arm                      footbridge_defconfig
-h8300                            allyesconfig
-arm                          gemini_defconfig
-xtensa                       common_defconfig
-powerpc                       eiger_defconfig
-powerpc                        cell_defconfig
-microblaze                      mmu_defconfig
-arc                                 defconfig
-sh                               alldefconfig
-m68k                          sun3x_defconfig
-mips                      maltasmvp_defconfig
-powerpc                      bamboo_defconfig
-mips                        jmr3927_defconfig
+csky                             alldefconfig
 openrisc                         alldefconfig
 mips                         db1xxx_defconfig
 arm                  randconfig-c002-20220130
@@ -82,6 +62,9 @@ nios2                            allyesconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
 sh                               allmodconfig
 parisc                              defconfig
 s390                             allyesconfig
@@ -102,9 +85,9 @@ powerpc                           allnoconfig
 x86_64               randconfig-a004-20220131
 x86_64               randconfig-a003-20220131
 x86_64               randconfig-a001-20220131
+x86_64               randconfig-a002-20220131
 x86_64               randconfig-a006-20220131
 x86_64               randconfig-a005-20220131
-x86_64               randconfig-a002-20220131
 i386                 randconfig-a006-20220131
 i386                 randconfig-a005-20220131
 i386                 randconfig-a003-20220131
@@ -114,49 +97,37 @@ i386                 randconfig-a004-20220131
 i386                          randconfig-a012
 i386                          randconfig-a014
 i386                          randconfig-a016
-riscv                    nommu_k210_defconfig
+riscv                randconfig-r042-20220130
+arc                  randconfig-r043-20220130
+arc                  randconfig-r043-20220131
+s390                 randconfig-r044-20220130
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
 um                           x86_64_defconfig
 um                             i386_defconfig
 x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
 x86_64                          rhel-8.3-func
 x86_64                                  kexec
 
 clang tested configs:
-riscv                randconfig-c006-20220130
-x86_64                        randconfig-c007
-arm                  randconfig-c002-20220130
-powerpc              randconfig-c003-20220130
-mips                 randconfig-c004-20220130
-i386                          randconfig-c001
-riscv                randconfig-c006-20220201
-powerpc              randconfig-c003-20220201
-mips                 randconfig-c004-20220201
-arm                  randconfig-c002-20220201
 powerpc                          allyesconfig
 arm                             mxs_defconfig
 arm                        spear3xx_defconfig
-arm                           sama7_defconfig
-powerpc                     kilauea_defconfig
-mips                           ip22_defconfig
 powerpc                        fsp2_defconfig
 arm                           spitz_defconfig
 powerpc                          allmodconfig
 arm                  colibri_pxa270_defconfig
-mips                          rm200_defconfig
-powerpc                  mpc866_ads_defconfig
-arm                          pcm027_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
+powerpc                     pseries_defconfig
+arm                         mv78xx0_defconfig
+arm                            dove_defconfig
+arm                            mmp2_defconfig
 x86_64               randconfig-a013-20220131
 x86_64               randconfig-a015-20220131
 x86_64               randconfig-a014-20220131
@@ -169,14 +140,12 @@ i386                 randconfig-a014-20220131
 i386                 randconfig-a012-20220131
 i386                 randconfig-a015-20220131
 i386                 randconfig-a016-20220131
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
 riscv                randconfig-r042-20220131
 hexagon              randconfig-r045-20220130
 hexagon              randconfig-r045-20220131
 hexagon              randconfig-r041-20220130
 hexagon              randconfig-r041-20220131
+s390                 randconfig-r044-20220131
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
