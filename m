@@ -1,90 +1,146 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Tue, 1 Feb 2022 10:58:01 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] net: kbuild: Don't default
- net vendor configs to y
-In-Reply-To: <09c97169-5f9a-fc8f-dea5-5423e7bfef34@twofifty.com>
-References: <20220131172450.4905-1-saeed@kernel.org>
- <20220131095905.08722670@hermes.local>
- <CAMuHMdU17cBzivFm9q-VwF9EG5MX75Qct=is=F2h+Kc+VddZ4g@mail.gmail.com>
- <20220131183540.6ekn3z7tudy5ocdl@sx1>
- <30ed8220-e24d-4b40-c7a6-4b09c84f9a1f@gmail.com>
- <09c97169-5f9a-fc8f-dea5-5423e7bfef34@twofifty.com>
-Message-ID: <Yfj2GTH3tHraprl0@unreal>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 01 Feb 2022 18:33:46 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 4cf8910555ffbd01cf2194fa4b2754523b02e7af
+Message-ID: <61f90c8a.3OpXze6PRJ+c1PEo%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jan 31, 2022 at 10:55:14AM -0800, Hisashi T Fujinaka wrote:
-> On Mon, 31 Jan 2022, Florian Fainelli wrote:
-> 
-> > On 1/31/2022 10:35 AM, Saeed Mahameed wrote:
-> > > On 31 Jan 19:30, Geert Uytterhoeven wrote:
-> > > > On Mon, Jan 31, 2022 at 6:59 PM Stephen Hemminger
-> > > > <stephen@networkplumber.org> wrote:
-> > > > > On Mon, 31 Jan 2022 09:24:50 -0800
-> > > > > Saeed Mahameed <saeed@kernel.org> wrote:
-> > > > > 
-> > > > > > From: Saeed Mahameed <saeedm@nvidia.com>
-> > > > > >
-> > > > > > NET_VENDOR_XYZ were defaulted to 'y' for no technical reason.
-> > > > > >
-> > > > > > Since all drivers belonging to a vendor are supposed to default to 'n',
-> > > > > > defaulting all vendors to 'n' shouldn't be an issue, and aligns well
-> > > > > > with the 'no new drivers' by default mentality.
-> > > > > >
-> > > > > > Signed-off-by: Saeed Mahameed <saeedm@nvidia.com>
-> > > > > 
-> > > > > This was done back when vendors were introduced in the
-> > > > > network drivers tree.
-> > > > > The default of Y allowed older configurations to just work.
-> > > > 
-> > > > And changing the defaults means all defconfigs must be updated first,
-> > > > else the user's configs will end up without drivers needed.
-> > > > 
-> > > 
-> > > As I understand correctly, at least for most common net drivers,
-> > > having NET_VENDOR_XYZ=y doesn't actually build anything, we have
-> > > flags per
-> > > module for each vendor and those are defaulted to N.
-> > 
-> > Right, but once you start hiding NET_VENDOR_DRIVER_XYZ under a
-> > NET_VENDOR_XYZ Kconfig symbol dependency, if NET_VENDOR_XYZ is not set
-> > to Y, then you have no way to select NET_VENDOR_DRIVER_XYZ and so your
-> > old defconfig breaks.
-> > 
-> > > 
-> > > > > So there was a reason, not sure if it matters anymore.
-> > > > > But it seems like useless repainting to change it now.
-> > > > 
-> > > > It might make sense to tune some of the defaults (i.e. change to
-> > > > "default y if ARCH_*") for drivers with clear platform dependencies.
-> > > > 
-> > > 
-> > > either set hard default to 'n' or just keep it as is, anything else is just
-> > > more confusion.
-> > 
-> > Maybe the rule should go like this: any new driver vendor defaults to n,
-> > and existing ones remain set to y, until we deprecate doing that and
-> > switching them all off to n by 5.18?
-> 
-> Forgive my ignorance, but isn't it a regression if things quit working
-> even if it's just a configuration change?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 4cf8910555ffbd01cf2194fa4b2754523b02e7af  e1000e: Fix possible HW unit hang after an s0ix exit
 
-No, kernel configs never were declared as ABI as "regular" users are not
-supposed to touch it. They use something provided by the distro.
+elapsed time: 732m
 
-> 
-> From a user perspective I like having everything turned on initially so
-> it just works. Pruning things down is a lot easier than trying to figure
-> out what all to turn on. Especially in graphics.
+configs tested: 116
+configs skipped: 3
 
-I have completely opposite view here and prefer to have minimal config
-for my CI, and for my working machines as well. 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20220131
+sh                          urquell_defconfig
+arm                       imx_v6_v7_defconfig
+arc                            hsdk_defconfig
+powerpc                     taishan_defconfig
+parisc                           alldefconfig
+m68k                       m5208evb_defconfig
+xtensa                           allyesconfig
+arc                    vdk_hs38_smp_defconfig
+powerpc                 mpc837x_mds_defconfig
+arm                           stm32_defconfig
+sh                  sh7785lcr_32bit_defconfig
+powerpc                 mpc837x_rdb_defconfig
+powerpc                     asp8347_defconfig
+arm                      footbridge_defconfig
+powerpc                       eiger_defconfig
+powerpc                        cell_defconfig
+microblaze                      mmu_defconfig
+mips                        jmr3927_defconfig
+openrisc                         alldefconfig
+mips                         db1xxx_defconfig
+arm                  randconfig-c002-20220130
+arm                  randconfig-c002-20220131
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a004-20220131
+x86_64               randconfig-a003-20220131
+x86_64               randconfig-a001-20220131
+x86_64               randconfig-a006-20220131
+x86_64               randconfig-a005-20220131
+x86_64               randconfig-a002-20220131
+i386                 randconfig-a006-20220131
+i386                 randconfig-a005-20220131
+i386                 randconfig-a003-20220131
+i386                 randconfig-a002-20220131
+i386                 randconfig-a001-20220131
+i386                 randconfig-a004-20220131
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
 
-> 
-> -- 
-> Hisashi T Fujinaka - htodd at twofifty.com
+clang tested configs:
+powerpc                          allyesconfig
+arm                             mxs_defconfig
+arm                        spear3xx_defconfig
+arm                       versatile_defconfig
+arm                         orion5x_defconfig
+mips                   sb1250_swarm_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64               randconfig-a013-20220131
+x86_64               randconfig-a015-20220131
+x86_64               randconfig-a014-20220131
+x86_64               randconfig-a016-20220131
+x86_64               randconfig-a011-20220131
+x86_64               randconfig-a012-20220131
+i386                 randconfig-a011-20220131
+i386                 randconfig-a013-20220131
+i386                 randconfig-a014-20220131
+i386                 randconfig-a012-20220131
+i386                 randconfig-a015-20220131
+i386                 randconfig-a016-20220131
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+riscv                randconfig-r042-20220131
+hexagon              randconfig-r045-20220131
+hexagon              randconfig-r041-20220131
+hexagon              randconfig-r045-20220130
+hexagon              randconfig-r041-20220130
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
