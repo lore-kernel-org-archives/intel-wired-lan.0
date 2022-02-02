@@ -1,12 +1,9 @@
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Date: Wed, 2 Feb 2022 06:30:14 +0000
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Wed, 2 Feb 2022 07:17:07 -0800
 Subject: [Intel-wired-lan] [PATCH net-next] net: kbuild: Don't default
  net vendor configs to y
-In-Reply-To: <20220202051609.h55eto4rdbfhw5t7@sx1>
-References: <20220131095905.08722670@hermes.local>
- <CAMuHMdU17cBzivFm9q-VwF9EG5MX75Qct=is=F2h+Kc+VddZ4g@mail.gmail.com>
- <20220131183540.6ekn3z7tudy5ocdl@sx1>
- <30ed8220-e24d-4b40-c7a6-4b09c84f9a1f@gmail.com>
+In-Reply-To: <20220202064950.qyomo7ns27mbedds@sx1>
+References: <30ed8220-e24d-4b40-c7a6-4b09c84f9a1f@gmail.com>
  <20220131121027.4fe3e8dc@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
  <7dc930c6-4ffc-0dd0-8385-d7956e7d16ff@gmail.com>
  <20220131151315.4ec5f2d3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
@@ -14,95 +11,26 @@ References: <20220131095905.08722670@hermes.local>
  <20220202044603.tuchbk72iujdyxi4@sx1>
  <20220201205818.2f28cfe5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
  <20220202051609.h55eto4rdbfhw5t7@sx1>
-Message-ID: <8566b1e3-2c99-1e63-5606-aad8525a5378@csgroup.eu>
+ <8566b1e3-2c99-1e63-5606-aad8525a5378@csgroup.eu>
+ <20220202064950.qyomo7ns27mbedds@sx1>
+Message-ID: <20220202151707.GA2365@hoboy.vegasvil.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Tue, Feb 01, 2022 at 10:49:50PM -0800, Saeed Mahameed wrote:
+> I can't think of a clever easily verifiable way to map boards to their VENDORS.
+> Add to that dispersing the VENDORS configs accurately.
 
+Just an idea...
 
-Le 02/02/2022 ? 06:16, Saeed Mahameed a ?crit?:
-> On 01 Feb 20:58, Jakub Kicinski wrote:
->> On Tue, 1 Feb 2022 20:46:03 -0800 Saeed Mahameed wrote:
->>> I am getting mixed messages here, on one hand we know that this patch
->>> might break some old or def configs, but on the other hand people claim
->>> that they have to manually fixup their own configs every time
->>> "something in configs" changes and they are fine with that.
->>>
->>> Obviously I belong to the 2nd camp, hence this patch..
->>>
->>> I can sum it up with "it's fine to controllably break *some* .configs 
->>> for
->>> the greater good" .. that's my .2cent.
->>
->> I think we agree that we don't care about oldconfigs IOW someone's
->> random config.
->>
->> But we do care about defconfigs in the tree, if those indeed include
->> ethernet drivers which would get masked out by vendor=n - they need
->> fixin':
->>
->> $ find arch/ | grep defconfig
->> arch/x86/configs/i386_defconfig
->> arch/x86/configs/x86_64_defconfig
->> arch/ia64/configs/generic_defconfig
->> arch/ia64/configs/gensparse_defconfig
->> ...
->>
->> First one from the top:
->>
->> $ make O=build_tmp/ i386_defconfig
->> $ $EDITOR drivers/net/ethernet/intel/Kconfig
->> $ git diff
->> diff --git a/drivers/net/ethernet/intel/Kconfig 
->> b/drivers/net/ethernet/intel/Kconfig
->> index 3facb55b7161..b9fdf2a835b0 100644
->> --- a/drivers/net/ethernet/intel/Kconfig
->> +++ b/drivers/net/ethernet/intel/Kconfig
->> @@ -5,7 +5,6 @@
->>
->> config NET_VENDOR_INTEL
->> ?????? bool "Intel devices"
->> -?????? default y
->> ?????? help
->> ???????? If you have a network (Ethernet) card belonging to this 
->> class, say Y.
->>
->> $ make O=build_tmp/ i386_defconfig
->> $ diff -urpb build_tmp/.config.old build_tmp/.config
->> --- build_tmp/.config.old??? 2022-02-01 20:55:37.087373905 -0800
->> +++ build_tmp/.config??? 2022-02-01 20:56:32.126044628 -0800
->> @@ -1784,22 +1784,7 @@ CONFIG_NET_VENDOR_GOOGLE=y
->> # CONFIG_GVE is not set
->> CONFIG_NET_VENDOR_HUAWEI=y
->> # CONFIG_HINIC is not set
->> -CONFIG_NET_VENDOR_I825XX=y
->> -CONFIG_NET_VENDOR_INTEL=y
->> -CONFIG_E100=y
->> -CONFIG_E1000=y
->> -CONFIG_E1000E=y
->> -CONFIG_E1000E_HWTS=y
->> -# CONFIG_IGB is not set
->> -# CONFIG_IGBVF is not set
->> -# CONFIG_IXGB is not set
->> -# CONFIG_IXGBE is not set
->> -# CONFIG_IXGBEVF is not set
->> -# CONFIG_I40E is not set
->> -# CONFIG_I40EVF is not set
->> -# CONFIG_ICE is not set
->> -# CONFIG_FM10K is not set
->> -# CONFIG_IGC is not set
->> +# CONFIG_NET_VENDOR_INTEL is not set
-> 
-> We can introduce CONFIG_NET_LEGACY_VENDOR that selects all current vendors.
-> it will be off by default but will be added where needed in the defconfigs
+1. make foo_defconfig
+2. for each vendor, do scripts/config --disable vendor
+3. make savedefconfig
+4. compare defconfig with foo_defconfig
+   difference means some MAC was removed
 
-Why such a hack ?
-
-I think we can fix all defconfig with some scripting, all you have to do 
-it to add the relevant CONFIG_NET_VENDOR_SOMEONE=y wherever you find one 
-of its boards in the defconfig.
-
-Christophe
+HTH,
+Richard
