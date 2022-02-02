@@ -1,63 +1,38 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 2 Feb 2022 19:34:33 +0000
-Subject: [Intel-wired-lan] [PATCH net] ixgbevf: Require large buffers
- for build_skb on 82599VF
-In-Reply-To: <20220112233231.317259-1-samjonas@amazon.com>
-References: <20220112233231.317259-1-samjonas@amazon.com>
-Message-ID: <DM8PR11MB56216C0BF94DFA7D96DF1C98AB279@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Jonathan Toppins <jtoppins@redhat.com>
+Date: Wed,  2 Feb 2022 15:38:49 -0500
+Subject: [Intel-wired-lan] [PATCH] ice: change "can't set link" message to
+ dbg level
+Message-ID: <b25f9e524c404820b310c73012507c8e65a2ef97.1643834329.git.jtoppins@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+In the case where the link is owned by manageability, the firmware is
+not allowed to set the link state, so an error code is returned.
+This however is non-fatal and there is nothing the operator can do,
+so instead of confusing the operator with messages they can do nothing
+about hide this message behind the debug log level.
 
+Signed-off-by: Jonathan Toppins <jtoppins@redhat.com>
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> -----Original Message-----
-> From: Samuel Mendoza-Jonas <samjonas@amazon.com>
-> Sent: Thursday, January 13, 2022 12:33 AM
-> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Cc: Samuel Mendoza-Jonas <samjonas@amazon.com>; Brandeburg, Jesse
-> <jesse.brandeburg@intel.com>; David S . Miller <davem@davemloft.net>;
-> Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Jakub Kicinski
-> <kuba@kernel.org>; linux-kernel at vger.kernel.org
-> Subject: [PATCH net] ixgbevf: Require large buffers for build_skb on 82599VF
-> 
-> From 4.17 onwards the ixgbevf driver uses build_skb() to build an skb around
-> new data in the page buffer shared with the ixgbe PF.
-> This uses either a 2K or 3K buffer, and offsets the DMA mapping by
-> NET_SKB_PAD + NET_IP_ALIGN. When using a smaller buffer RXDCTL is set
-> to ensure the PF does not write a full 2K bytes into the buffer, which is
-> actually 2K minus the offset.
-> 
-> However on the 82599 virtual function, the RXDCTL mechanism is not
-> available. The driver attempts to work around this by using the SET_LPE
-> mailbox method to lower the maximm frame size, but the ixgbe PF driver
-> ignores this in order to keep the PF and all VFs in sync[0].
-> 
-> This means the PF will write up to the full 2K set in SRRCTL, causing it to write
-> NET_SKB_PAD + NET_IP_ALIGN bytes past the end of the buffer.
-> With 4K pages split into two buffers, this means it either writes
-> NET_SKB_PAD + NET_IP_ALIGN bytes past the first buffer (and into the
-> second), or NET_SKB_PAD + NET_IP_ALIGN bytes past the end of the DMA
-> mapping.
-> 
-> Avoid this by only enabling build_skb when using "large" buffers (3K).
-> These are placed in each half of an order-1 page, preventing the PF from
-> writing past the end of the mapping.
-> 
-> [0]: Technically it only ever raises the max frame size, see
-> ixgbe_set_vf_lpe() in ixgbe_sriov.c
-> 
-> Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 13 +++++++------
->  1 file changed, 7 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index 0015fcf1df2b..0f293acd17e8 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 0c187cf04fcf..2c6dad56a48d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -4117,7 +4117,7 @@ int ice_set_link(struct ice_vsi *vsi, bool ena)
+ 	 */
+ 	if (status == -EIO) {
+ 		if (hw->adminq.sq_last_status == ICE_AQ_RC_EMODE)
+-			dev_warn(dev, "can't set link to %s, err %d aq_err %s. not fatal, continuing\n",
++			dev_dbg(dev, "can't set link to %s, err %d aq_err %s. not fatal, continuing\n",
+ 				 (ena ? "ON" : "OFF"), status,
+ 				 ice_aq_str(hw->adminq.sq_last_status));
+ 	} else if (status) {
+-- 
+2.27.0
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
