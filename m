@@ -1,5 +1,5 @@
 From: Saeed Mahameed <saeedm@nvidia.com>
-Date: Tue, 1 Feb 2022 22:44:12 -0800
+Date: Tue, 1 Feb 2022 22:49:50 -0800
 Subject: [Intel-wired-lan] [PATCH net-next] net: kbuild: Don't default
  net vendor configs to y
 In-Reply-To: <8566b1e3-2c99-1e63-5606-aad8525a5378@csgroup.eu>
@@ -13,7 +13,7 @@ References: <20220131183540.6ekn3z7tudy5ocdl@sx1>
  <20220201205818.2f28cfe5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
  <20220202051609.h55eto4rdbfhw5t7@sx1>
  <8566b1e3-2c99-1e63-5606-aad8525a5378@csgroup.eu>
-Message-ID: <20220202064412.d3w4acki3khcgox7@sx1>
+Message-ID: <20220202064950.qyomo7ns27mbedds@sx1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -99,6 +99,9 @@ On 02 Feb 06:30, Christophe Leroy wrote:
 >> We can introduce CONFIG_NET_LEGACY_VENDOR that selects all current vendors.
 >> it will be off by default but will be added where needed in the defconfigs
 >
+
+Sorry I think i messed up my previous reply, here it's again just in case.
+
 >Why such a hack ?
 >
 
@@ -113,6 +116,6 @@ Such a script could easily mess up!
 I can't think of a clever easily verifiable way to map boards to their VENDORS.
 Add to that dispersing the VENDORS configs accurately.
 
-I might be just tired though, i will give it a shot in the morning :) 
+I might be just tired though, i will give it a shot in the morning :)
 
 >Christophe
