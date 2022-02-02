@@ -1,43 +1,63 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 2 Feb 2022 16:31:17 +0100
-Subject: [Intel-wired-lan] [PATCH net-next] net: kbuild: Don't default
- net vendor configs to y
-In-Reply-To: <20220202151707.GA2365@hoboy.vegasvil.org>
-References: <30ed8220-e24d-4b40-c7a6-4b09c84f9a1f@gmail.com>
- <20220131121027.4fe3e8dc@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <7dc930c6-4ffc-0dd0-8385-d7956e7d16ff@gmail.com>
- <20220131151315.4ec5f2d3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <dd1497ca-b1da-311a-e5fc-7c7265eb3ddf@gmail.com>
- <20220202044603.tuchbk72iujdyxi4@sx1>
- <20220201205818.2f28cfe5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20220202051609.h55eto4rdbfhw5t7@sx1>
- <8566b1e3-2c99-1e63-5606-aad8525a5378@csgroup.eu>
- <20220202064950.qyomo7ns27mbedds@sx1>
- <20220202151707.GA2365@hoboy.vegasvil.org>
-Message-ID: <CAK8P3a3ZGFBmxUWm5-DT_QfvU0k8HViEbV4zhwwC8FJLMKZTYg@mail.gmail.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 2 Feb 2022 19:34:33 +0000
+Subject: [Intel-wired-lan] [PATCH net] ixgbevf: Require large buffers
+ for build_skb on 82599VF
+In-Reply-To: <20220112233231.317259-1-samjonas@amazon.com>
+References: <20220112233231.317259-1-samjonas@amazon.com>
+Message-ID: <DM8PR11MB56216C0BF94DFA7D96DF1C98AB279@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Feb 2, 2022 at 4:17 PM Richard Cochran <richardcochran@gmail.com> wrote:
->
-> On Tue, Feb 01, 2022 at 10:49:50PM -0800, Saeed Mahameed wrote:
-> > I can't think of a clever easily verifiable way to map boards to their VENDORS.
-> > Add to that dispersing the VENDORS configs accurately.
->
-> Just an idea...
->
-> 1. make foo_defconfig
-> 2. for each vendor, do scripts/config --disable vendor
-> 3. make savedefconfig
-> 4. compare defconfig with foo_defconfig
->    difference means some MAC was removed
 
-This needs an extra 'savedefconfig' step in the beginning, as a lot of
-the defconfig
-files are already different from what you get after savedefconfig, both in the
-order of options, and in options that got renamed or removed over time.
 
-         Arnd
+> -----Original Message-----
+> From: Samuel Mendoza-Jonas <samjonas@amazon.com>
+> Sent: Thursday, January 13, 2022 12:33 AM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Cc: Samuel Mendoza-Jonas <samjonas@amazon.com>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; David S . Miller <davem@davemloft.net>;
+> Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Jakub Kicinski
+> <kuba@kernel.org>; linux-kernel at vger.kernel.org
+> Subject: [PATCH net] ixgbevf: Require large buffers for build_skb on 82599VF
+> 
+> From 4.17 onwards the ixgbevf driver uses build_skb() to build an skb around
+> new data in the page buffer shared with the ixgbe PF.
+> This uses either a 2K or 3K buffer, and offsets the DMA mapping by
+> NET_SKB_PAD + NET_IP_ALIGN. When using a smaller buffer RXDCTL is set
+> to ensure the PF does not write a full 2K bytes into the buffer, which is
+> actually 2K minus the offset.
+> 
+> However on the 82599 virtual function, the RXDCTL mechanism is not
+> available. The driver attempts to work around this by using the SET_LPE
+> mailbox method to lower the maximm frame size, but the ixgbe PF driver
+> ignores this in order to keep the PF and all VFs in sync[0].
+> 
+> This means the PF will write up to the full 2K set in SRRCTL, causing it to write
+> NET_SKB_PAD + NET_IP_ALIGN bytes past the end of the buffer.
+> With 4K pages split into two buffers, this means it either writes
+> NET_SKB_PAD + NET_IP_ALIGN bytes past the first buffer (and into the
+> second), or NET_SKB_PAD + NET_IP_ALIGN bytes past the end of the DMA
+> mapping.
+> 
+> Avoid this by only enabling build_skb when using "large" buffers (3K).
+> These are placed in each half of an order-1 page, preventing the PF from
+> writing past the end of the mapping.
+> 
+> [0]: Technically it only ever raises the max frame size, see
+> ixgbe_set_vf_lpe() in ixgbe_sriov.c
+> 
+> Signed-off-by: Samuel Mendoza-Jonas <samjonas@amazon.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 13 +++++++------
+>  1 file changed, 7 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index 0015fcf1df2b..0f293acd17e8 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
