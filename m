@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 02 Feb 2022 16:07:20 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 96637f67086dd272c39cbc28d6e7a0cebf37ceaf
-Message-ID: <61fa3bb8.7bak6uPxOvY1VCAS%lkp@intel.com>
+Date: Wed, 02 Feb 2022 16:20:32 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ f282fe1914eda89d5b9dd471e91eb7aa2fd3d9d8
+Message-ID: <61fa3ed0.zFHtmm0eSAX8sKGw%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 96637f67086dd272c39cbc28d6e7a0cebf37ceaf  e1000e: Fix possible HW unit hang after an s0ix exit
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: f282fe1914eda89d5b9dd471e91eb7aa2fd3d9d8  ice: Add slow path offload stats on port representor in switchdev
 
-elapsed time: 723m
+elapsed time: 731m
 
-configs tested: 123
+configs tested: 105
 configs skipped: 4
 
 The following configs have been built successfully.
@@ -22,56 +22,43 @@ More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
+arm64                               defconfig
+arm64                            allyesconfig
 i386                 randconfig-c001-20220131
-arm                            zeus_defconfig
-sh                          rsk7269_defconfig
-sh                   sh7770_generic_defconfig
-powerpc                 mpc85xx_cds_defconfig
-powerpc                 mpc837x_rdb_defconfig
-arc                        nsim_700_defconfig
-powerpc                     tqm8555_defconfig
-sh                           se7206_defconfig
-powerpc                    amigaone_defconfig
-powerpc                      ppc6xx_defconfig
-arm                        mvebu_v7_defconfig
-arc                     nsimosci_hs_defconfig
-arm                        trizeps4_defconfig
-riscv                    nommu_k210_defconfig
-arm                           corgi_defconfig
-arm                         s3c6400_defconfig
-sparc64                             defconfig
-mips                         db1xxx_defconfig
-mips                         mpc30x_defconfig
-m68k                           sun3_defconfig
-powerpc                  iss476-smp_defconfig
-s390                       zfcpdump_defconfig
+powerpc              randconfig-c003-20220131
+i386                          randconfig-c001
 m68k                       m5475evb_defconfig
-sh                          sdk7786_defconfig
-arm                        oxnas_v6_defconfig
-powerpc                      chrp32_defconfig
-nios2                            alldefconfig
-sh                        edosk7760_defconfig
-powerpc                         ps3_defconfig
+powerpc                      ppc40x_defconfig
+mips                      maltasmvp_defconfig
+powerpc                 mpc85xx_cds_defconfig
+sh                             espt_defconfig
+powerpc                    adder875_defconfig
+arm                      integrator_defconfig
+arm                           h3600_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                    amigaone_defconfig
+mips                         rt305x_defconfig
+powerpc                      pasemi_defconfig
+powerpc                     taishan_defconfig
+xtensa                              defconfig
 arm                  randconfig-c002-20220130
 arm                  randconfig-c002-20220131
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
-m68k                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
+m68k                             allyesconfig
 nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
 csky                                defconfig
 alpha                               defconfig
 nds32                               defconfig
-alpha                            allyesconfig
 nios2                            allyesconfig
+alpha                            allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
@@ -98,22 +85,18 @@ i386                 randconfig-a003-20220131
 i386                 randconfig-a002-20220131
 i386                 randconfig-a001-20220131
 i386                 randconfig-a004-20220131
-x86_64               randconfig-a003-20220131
-x86_64               randconfig-a001-20220131
-x86_64               randconfig-a006-20220131
-x86_64               randconfig-a005-20220131
-x86_64               randconfig-a002-20220131
-x86_64               randconfig-a004-20220131
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
 riscv                randconfig-r042-20220130
 arc                  randconfig-r043-20220130
-arc                  randconfig-r043-20220131
 s390                 randconfig-r044-20220130
+riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                            allmodconfig
-riscv                          rv32_defconfig
 um                           x86_64_defconfig
 um                             i386_defconfig
 x86_64                           allyesconfig
@@ -124,9 +107,9 @@ x86_64                          rhel-8.3-func
 x86_64                                  kexec
 
 clang tested configs:
-powerpc                     mpc512x_defconfig
-mips                        bcm63xx_defconfig
-arm                        multi_v5_defconfig
+mips                           ip27_defconfig
+arm                              alldefconfig
+powerpc                     mpc5200_defconfig
 arm                       cns3420vb_defconfig
 x86_64               randconfig-a013-20220131
 x86_64               randconfig-a015-20220131
@@ -134,14 +117,13 @@ x86_64               randconfig-a014-20220131
 x86_64               randconfig-a016-20220131
 x86_64               randconfig-a011-20220131
 x86_64               randconfig-a012-20220131
-i386                 randconfig-a011-20220131
 i386                 randconfig-a013-20220131
 i386                 randconfig-a014-20220131
 i386                 randconfig-a012-20220131
 i386                 randconfig-a015-20220131
 i386                 randconfig-a016-20220131
+i386                 randconfig-a011-20220131
 riscv                randconfig-r042-20220131
-s390                 randconfig-r044-20220131
 hexagon              randconfig-r045-20220130
 hexagon              randconfig-r045-20220131
 hexagon              randconfig-r041-20220130
