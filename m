@@ -1,121 +1,189 @@
-From: Saeed Mahameed <saeedm@nvidia.com>
-Date: Tue, 1 Feb 2022 22:49:50 -0800
-Subject: [Intel-wired-lan] [PATCH net-next] net: kbuild: Don't default
- net vendor configs to y
-In-Reply-To: <8566b1e3-2c99-1e63-5606-aad8525a5378@csgroup.eu>
-References: <20220131183540.6ekn3z7tudy5ocdl@sx1>
- <30ed8220-e24d-4b40-c7a6-4b09c84f9a1f@gmail.com>
- <20220131121027.4fe3e8dc@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <7dc930c6-4ffc-0dd0-8385-d7956e7d16ff@gmail.com>
- <20220131151315.4ec5f2d3@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <dd1497ca-b1da-311a-e5fc-7c7265eb3ddf@gmail.com>
- <20220202044603.tuchbk72iujdyxi4@sx1>
- <20220201205818.2f28cfe5@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com>
- <20220202051609.h55eto4rdbfhw5t7@sx1>
- <8566b1e3-2c99-1e63-5606-aad8525a5378@csgroup.eu>
-Message-ID: <20220202064950.qyomo7ns27mbedds@sx1>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 02 Feb 2022 16:07:17 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:1GbE] BUILD SUCCESS
+ cad014b7b5a6897d8c4fad13e2888978bfb7a53f
+Message-ID: <61fa3bb5./L5GJ6Vu0TkO8DSC%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 02 Feb 06:30, Christophe Leroy wrote:
->
->
->Le 02/02/2022 ? 06:16, Saeed Mahameed a ?crit?:
->> On 01 Feb 20:58, Jakub Kicinski wrote:
->>> On Tue, 1 Feb 2022 20:46:03 -0800 Saeed Mahameed wrote:
->>>> I am getting mixed messages here, on one hand we know that this patch
->>>> might break some old or def configs, but on the other hand people claim
->>>> that they have to manually fixup their own configs every time
->>>> "something in configs" changes and they are fine with that.
->>>>
->>>> Obviously I belong to the 2nd camp, hence this patch..
->>>>
->>>> I can sum it up with "it's fine to controllably break *some* .configs
->>>> for
->>>> the greater good" .. that's my .2cent.
->>>
->>> I think we agree that we don't care about oldconfigs IOW someone's
->>> random config.
->>>
->>> But we do care about defconfigs in the tree, if those indeed include
->>> ethernet drivers which would get masked out by vendor=n - they need
->>> fixin':
->>>
->>> $ find arch/ | grep defconfig
->>> arch/x86/configs/i386_defconfig
->>> arch/x86/configs/x86_64_defconfig
->>> arch/ia64/configs/generic_defconfig
->>> arch/ia64/configs/gensparse_defconfig
->>> ...
->>>
->>> First one from the top:
->>>
->>> $ make O=build_tmp/ i386_defconfig
->>> $ $EDITOR drivers/net/ethernet/intel/Kconfig
->>> $ git diff
->>> diff --git a/drivers/net/ethernet/intel/Kconfig
->>> b/drivers/net/ethernet/intel/Kconfig
->>> index 3facb55b7161..b9fdf2a835b0 100644
->>> --- a/drivers/net/ethernet/intel/Kconfig
->>> +++ b/drivers/net/ethernet/intel/Kconfig
->>> @@ -5,7 +5,6 @@
->>>
->>> config NET_VENDOR_INTEL
->>> ?????? bool "Intel devices"
->>> -?????? default y
->>> ?????? help
->>> ???????? If you have a network (Ethernet) card belonging to this
->>> class, say Y.
->>>
->>> $ make O=build_tmp/ i386_defconfig
->>> $ diff -urpb build_tmp/.config.old build_tmp/.config
->>> --- build_tmp/.config.old??? 2022-02-01 20:55:37.087373905 -0800
->>> +++ build_tmp/.config??? 2022-02-01 20:56:32.126044628 -0800
->>> @@ -1784,22 +1784,7 @@ CONFIG_NET_VENDOR_GOOGLE=y
->>> # CONFIG_GVE is not set
->>> CONFIG_NET_VENDOR_HUAWEI=y
->>> # CONFIG_HINIC is not set
->>> -CONFIG_NET_VENDOR_I825XX=y
->>> -CONFIG_NET_VENDOR_INTEL=y
->>> -CONFIG_E100=y
->>> -CONFIG_E1000=y
->>> -CONFIG_E1000E=y
->>> -CONFIG_E1000E_HWTS=y
->>> -# CONFIG_IGB is not set
->>> -# CONFIG_IGBVF is not set
->>> -# CONFIG_IXGB is not set
->>> -# CONFIG_IXGBE is not set
->>> -# CONFIG_IXGBEVF is not set
->>> -# CONFIG_I40E is not set
->>> -# CONFIG_I40EVF is not set
->>> -# CONFIG_ICE is not set
->>> -# CONFIG_FM10K is not set
->>> -# CONFIG_IGC is not set
->>> +# CONFIG_NET_VENDOR_INTEL is not set
->>
->> We can introduce CONFIG_NET_LEGACY_VENDOR that selects all current vendors.
->> it will be off by default but will be added where needed in the defconfigs
->
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 1GbE
+branch HEAD: cad014b7b5a6897d8c4fad13e2888978bfb7a53f  e1000e: Handshake with CSME starts from ADL platforms
 
-Sorry I think i messed up my previous reply, here it's again just in case.
+elapsed time: 724m
 
->Why such a hack ?
->
+configs tested: 159
+configs skipped: 4
 
-Reduced chance of error.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
->I think we can fix all defconfig with some scripting, all you have to do
->it to add the relevant CONFIG_NET_VENDOR_SOMEONE=y wherever you find one
->of its boards in the defconfig.
->
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20220131
+arm                            zeus_defconfig
+sh                          rsk7269_defconfig
+sh                   sh7770_generic_defconfig
+powerpc                 mpc85xx_cds_defconfig
+powerpc                 mpc837x_rdb_defconfig
+arc                              alldefconfig
+powerpc                         ps3_defconfig
+arm                          gemini_defconfig
+sh                   sh7724_generic_defconfig
+arc                         haps_hs_defconfig
+mips                           ci20_defconfig
+sh                             sh03_defconfig
+powerpc                     rainier_defconfig
+arm                             rpc_defconfig
+arm                          lpd270_defconfig
+sh                             espt_defconfig
+powerpc                    amigaone_defconfig
+powerpc                      ppc6xx_defconfig
+arc                     nsimosci_hs_defconfig
+arm                        trizeps4_defconfig
+arm                        mvebu_v7_defconfig
+m68k                        mvme147_defconfig
+sh                           se7343_defconfig
+mips                           ip32_defconfig
+sh                            migor_defconfig
+arm                        multi_v7_defconfig
+powerpc                      tqm8xx_defconfig
+arm                     eseries_pxa_defconfig
+um                             i386_defconfig
+powerpc                mpc7448_hpc2_defconfig
+ia64                      gensparse_defconfig
+riscv                    nommu_k210_defconfig
+arm                           corgi_defconfig
+arm                         s3c6400_defconfig
+sparc64                             defconfig
+mips                         db1xxx_defconfig
+mips                         mpc30x_defconfig
+m68k                           sun3_defconfig
+powerpc                  iss476-smp_defconfig
+m68k                             allmodconfig
+sh                          rsk7203_defconfig
+sh                        edosk7760_defconfig
+sh                           se7721_defconfig
+mips                         rt305x_defconfig
+powerpc                      pasemi_defconfig
+powerpc                     taishan_defconfig
+xtensa                              defconfig
+nios2                               defconfig
+h8300                     edosk2674_defconfig
+arm                         axm55xx_defconfig
+s390                       zfcpdump_defconfig
+m68k                       m5475evb_defconfig
+sh                          sdk7786_defconfig
+arm                        oxnas_v6_defconfig
+arm                  randconfig-c002-20220130
+arm                  randconfig-c002-20220131
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allyesconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+x86_64               randconfig-a004-20220131
+x86_64               randconfig-a003-20220131
+x86_64               randconfig-a001-20220131
+x86_64               randconfig-a006-20220131
+x86_64               randconfig-a005-20220131
+x86_64               randconfig-a002-20220131
+i386                 randconfig-a006-20220131
+i386                 randconfig-a005-20220131
+i386                 randconfig-a003-20220131
+i386                 randconfig-a002-20220131
+i386                 randconfig-a001-20220131
+i386                 randconfig-a004-20220131
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+riscv                randconfig-r042-20220130
+arc                  randconfig-r043-20220130
+s390                 randconfig-r044-20220130
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
 
-Such a script could easily mess up!
-I can't think of a clever easily verifiable way to map boards to their VENDORS.
-Add to that dispersing the VENDORS configs accurately.
+clang tested configs:
+riscv                randconfig-c006-20220201
+x86_64                        randconfig-c007
+powerpc              randconfig-c003-20220201
+mips                 randconfig-c004-20220201
+i386                          randconfig-c001
+arm                  randconfig-c002-20220201
+riscv                randconfig-c006-20220130
+arm                  randconfig-c002-20220130
+powerpc              randconfig-c003-20220130
+mips                 randconfig-c004-20220130
+arm                          collie_defconfig
+powerpc                 xes_mpc85xx_defconfig
+powerpc                 mpc8313_rdb_defconfig
+mips                      maltaaprp_defconfig
+arm                       cns3420vb_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64               randconfig-a013-20220131
+x86_64               randconfig-a015-20220131
+x86_64               randconfig-a014-20220131
+x86_64               randconfig-a016-20220131
+x86_64               randconfig-a011-20220131
+x86_64               randconfig-a012-20220131
+i386                 randconfig-a011-20220131
+i386                 randconfig-a013-20220131
+i386                 randconfig-a014-20220131
+i386                 randconfig-a012-20220131
+i386                 randconfig-a015-20220131
+i386                 randconfig-a016-20220131
+riscv                randconfig-r042-20220131
+hexagon              randconfig-r045-20220130
+hexagon              randconfig-r045-20220131
+hexagon              randconfig-r041-20220130
+hexagon              randconfig-r041-20220131
 
-I might be just tired though, i will give it a shot in the morning :)
-
->Christophe
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
