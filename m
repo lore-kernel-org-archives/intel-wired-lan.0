@@ -1,105 +1,55 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Thu, 3 Feb 2022 11:46:26 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 18/19] iecm: add advanced rss
-In-Reply-To: <CO1PR11MB51860C64005BE3D05A0D72A18F289@CO1PR11MB5186.namprd11.prod.outlook.com>
-References: <20220128001009.721392-1-alan.brady@intel.com>
- <20220128001009.721392-19-alan.brady@intel.com>
- <20220128195358.31333-1-alexandr.lobakin@intel.com>
- <CO1PR11MB51860C64005BE3D05A0D72A18F289@CO1PR11MB5186.namprd11.prod.outlook.com>
-Message-ID: <YfuygnSgPRg3jdUl@boxer>
+Date: Thu,  3 Feb 2022 13:16:51 +0100
+Subject: [Intel-wired-lan] [PATCH v2 intel-net] ice: avoid XDP checks in
+ ice_clean_tx_irq()
+Message-ID: <20220203121651.18937-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Feb 03, 2022 at 02:55:57AM +0000, Brady, Alan wrote:
-> > -----Original Message-----
-> > From: Lobakin, Alexandr <alexandr.lobakin@intel.com>
-> > Sent: Friday, January 28, 2022 11:54 AM
-> > To: Brady, Alan <alan.brady@intel.com>
-> > Cc: Lobakin, Alexandr <alexandr.lobakin@intel.com>; Wang, Haiyue
-> > <haiyue.wang@intel.com>; intel-wired-lan at lists.osuosl.org; Burra, Phani R
-> > <phani.r.burra@intel.com>; Chittim, Madhu <madhu.chittim@intel.com>;
-> > Linga, Pavan Kumar <pavan.kumar.linga@intel.com>
-> > Subject: Re: [Intel-wired-lan] [PATCH net-next 18/19] iecm: add advanced
-> > rss
-> > 
-> > From: Alan Brady <alan.brady@intel.com>
-> > Date: Thu, 27 Jan 2022 16:10:08 -0800
-> > 
-> > > From: Haiyue Wang <haiyue.wang@intel.com>
-> > >
-> > > Continuing with advanced features this implements what's needed to do
-> > > advanced rss.
-> > 
-> > I'm sorry for not mentioned it before, but most of the series'
-> > commit messages are poor and would probably get rejected upstream.
-> > If they were explaining at least some very basics, it would be better. Even
-> > better if there were explanations of some tricky code that happens time to
-> > time.
+Commit 9610bd988df9 ("ice: optimize XDP_TX workloads") introduced Tx IRQ
+cleaning routine dedicated for XDP rings. Currently it is impossible to
+call ice_clean_tx_irq() against XDP ring, so it is safe to drop
+ice_ring_is_xdp() calls in there.
 
-I agree this should be improved. I don't know if this would be rejected
-upstream, but in the future when looking at the commit history it would
-just be more convenient for us and future readers if the description would
-have more content in it.
+Fixes: 1c96c16858ba ("ice: update to newer kernel API")
+Fixes: cc14db11c8a4 ("ice: use prefetch methods")
+Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
 
-> > 
-> > >
-> > > Signed-off-by: Haiyue Wang <haiyue.wang@intel.com>
-> > > ---
-> > >  drivers/net/ethernet/intel/iecm/iecm_lib.c    | 547
-> > ++++++++++++++++++
-> > >  .../net/ethernet/intel/iecm/iecm_virtchnl.c   |  71 +++
-> > >  drivers/net/ethernet/intel/include/iecm.h     |  73 +++
-> > >  3 files changed, 691 insertions(+)
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/iecm/iecm_lib.c
-> > > b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-> > > index d11413cb438c..baa1e312652a 100644
-> > > --- a/drivers/net/ethernet/intel/iecm/iecm_lib.c
-> > > +++ b/drivers/net/ethernet/intel/iecm/iecm_lib.c
-> > > @@ -1013,6 +1013,52 @@ static void iecm_remove_vlan_filters(struct
-> > iecm_vport *vport)
-> > >  	}
-> > >  }
-> > >
-> > > +/**
-> > > + * iecm_remove_adv_rss_cfgs - Remove all RSS configuration
-> > > + * @vport: vport structure
-> > > + */
-> > > +static void iecm_remove_adv_rss_cfgs(struct iecm_vport *vport) {
-> > > +	struct iecm_adapter *adapter = vport->adapter;
-> > > +
-> > > +	if (!iecm_is_cap_ena(adapter, IECM_OTHER_CAPS,
-> > VIRTCHNL2_CAP_ADV_RSS))
-> > > +		return;
-> > > +
-> > > +	if (!list_empty(&adapter->config_data.adv_rss_list)) {
-> > > +		struct iecm_adv_rss *rss;
-> > > +
-> > > +		spin_lock_bh(&adapter->adv_rss_list_lock);
-> > > +		list_for_each_entry(rss, &adapter-
-> > >config_data.adv_rss_list,
-> > > +				    list) {
-> > > +			rss->remove = true;
-> > > +		}
-> > 
-> > Redundant braces arond an one-liner.
-> > 
-> 
-> Maybe will fix.
+v2: fix commit msg and collect ack (Alex)
 
-? :D this one-liner is not even spread onto multiple lines, right? So why
-'maybe' ?
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-> 
-> > > +		spin_unlock_bh(&adapter->adv_rss_list_lock);
-> > > +		iecm_send_add_del_adv_rss_cfg_msg(vport, false);
-> > > +	}
-> > 
-> > Invert the condition for -1 indent level.
-> > 
-> 
-> Will fix.
-> 
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 7d8824b4c8ff..25a5a3f2d107 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -223,8 +223,7 @@ static bool ice_clean_tx_irq(struct ice_tx_ring *tx_ring, int napi_budget)
+ 	struct ice_tx_buf *tx_buf;
+ 
+ 	/* get the bql data ready */
+-	if (!ice_ring_is_xdp(tx_ring))
+-		netdev_txq_bql_complete_prefetchw(txring_txq(tx_ring));
++	netdev_txq_bql_complete_prefetchw(txring_txq(tx_ring));
+ 
+ 	tx_buf = &tx_ring->tx_buf[i];
+ 	tx_desc = ICE_TX_DESC(tx_ring, i);
+@@ -313,10 +312,6 @@ static bool ice_clean_tx_irq(struct ice_tx_ring *tx_ring, int napi_budget)
+ 	tx_ring->next_to_clean = i;
+ 
+ 	ice_update_tx_ring_stats(tx_ring, total_pkts, total_bytes);
+-
+-	if (ice_ring_is_xdp(tx_ring))
+-		return !!budget;
+-
+ 	netdev_tx_completed_queue(txring_txq(tx_ring), total_pkts, total_bytes);
+ 
+ #define TX_WAKE_THRESHOLD ((s16)(DESC_NEEDED * 2))
+-- 
+2.33.1
+
