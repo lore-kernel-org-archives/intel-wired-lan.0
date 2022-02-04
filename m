@@ -1,43 +1,46 @@
-From: Jonathan Toppins <jtoppins@redhat.com>
-Date: Fri,  4 Feb 2022 11:58:46 -0500
-Subject: [Intel-wired-lan] [RFC] ice: use msleep instead of mdelay
-Message-ID: <c095aac80cac3fc103f13170a976def3aa4d0f78.1643993926.git.jtoppins@redhat.com>
+From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+Date: Fri, 4 Feb 2022 17:04:58 +0000
+Subject: [Intel-wired-lan] [PATCH net] igc: Clear old XDP info when
+ changing ring settings
+In-Reply-To: <20220204080217.70054-1-kurt@linutronix.de>
+References: <20220204080217.70054-1-kurt@linutronix.de>
+Message-ID: <0f1e1c0fc4f555ef0eaaa983da6d8f012a0acf60.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use msleep for long delays instead of spinning in the driver.
+Hi Kurt,
 
-Suggested-by: Jocelyn Falempe <jfalempe@redhat.com>
-Signed-off-by: Jonathan Toppins <jtoppins@redhat.com>
----
- drivers/net/ethernet/intel/ice/ice_common.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Fri, 2022-02-04 at 09:02 +0100, Kurt Kanzenbach wrote:
+> When changing ring sizes the driver triggers kernel warnings in XDP
+> code.
+> 
+> For instance, running 'ethtool -G $interface tx 1024 rx 1024' yields:
+> 
+> > [? 754.838136] Missing unregister, handled but fix driver
+> > [? 754.838143] WARNING: CPU: 4 PID: 704 at net/core/xdp.c:170
+> > xdp_rxq_info_reg+0x7d/0xe0
+> 
+> The newly allocated ring is copied by memcpy() and still contains the
+> old XDP
+> information. Therefore, it has to be cleared before allocating new
+> resources
+> by igc_setup_rx_resources().
+> 
+> Igb does it the same way. Keep the code in sync.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 408d15a5b0e3..50987d513faf 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1107,7 +1107,7 @@ int ice_check_reset(struct ice_hw *hw)
- 			GLGEN_RSTCTL_GRSTDEL_S) + 10;
- 
- 	for (cnt = 0; cnt < grst_timeout; cnt++) {
--		mdelay(100);
-+		msleep(100);
- 		reg = rd32(hw, GLGEN_RSTAT);
- 		if (!(reg & GLGEN_RSTAT_DEVSTATE_M))
- 			break;
-@@ -3196,7 +3196,7 @@ ice_set_fc(struct ice_port_info *pi, u8 *aq_failures, bool ena_auto_link_update)
- 			if (!status)
- 				break;
- 
--			mdelay(100);
-+			msleep(100);
- 		}
- 
- 		if (status)
--- 
-2.27.0
+Thanks for the patch, but we have a patch[1] to resolve this issue in a
+more preferred method. igb is actually changing as well to this new
+solution [2].
+
+Thanks,
+Tony
+
+[1] https://patchwork.ozlabs.org/patch/1581816/
+[2] https://patchwork.ozlabs.org/patch/1581815/
+
+> Fixes: 4609ffb9f615 ("igc: Refactor XDP rxq info registration")
+> Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
 
