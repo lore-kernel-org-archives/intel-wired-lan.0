@@ -1,114 +1,176 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Fri,  4 Feb 2022 13:05:37 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 00/19] Add iecm and idpf
-In-Reply-To: <20220128001009.721392-1-alan.brady@intel.com>
-References: <20220128001009.721392-1-alan.brady@intel.com>
-Message-ID: <20220204120537.80979-1-alexandr.lobakin@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 04 Feb 2022 21:54:45 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
+ 87563a043cef044fed5db7967a75741cc16ad2b1
+Message-ID: <61fd3025.PUKcOmvQhyvheTJH%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
-Date: Thu, 27 Jan 2022 16:09:50 -0800
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
+branch HEAD: 87563a043cef044fed5db7967a75741cc16ad2b1  ax25: fix reference count leaks of ax25_dev
 
-> This series introduces both the Intel Ethernet Common Module and the
-> Intel Data Plane Function.  This also adds extended features and
-> functionality to virtchnl with virtchnl_2.h.
->  
-> The format of the series generally follows the flow of driver init to
-> interface open. We go from probe into a hard reset followed by an init
-> task. From there the rest of the netdev_ops and data path are added.
-> Then lastly advanced features and idpf are introduced.
-> 
-> Currently this common layer (iecm) is initially only being used by only
-> the idpf driver (PF driver for SmartNIC).  However, the plan is to
-> eventually switch our iavf driver along with future drivers to use this
-> common module.  The hope is to better enable code sharing going forward
-> as well as support other developers writing drivers for our hardware
+elapsed time: 726m
 
-                                                                      ^
+configs tested: 146
+configs skipped: 4
 
-There's a dot '.' missing.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> 
-> Alan Brady (17):
->   virtchnl: Add new virtchnl2 ops
->   iecm: add basic module init and documentation
->   iecm: add probe and remove
->   iecm: add api_init and controlq init
->   iecm: add vport alloc and virtchnl messages
->   iecm: add virtchnl messages for queues
->   iecm: finish virtchnl messages
->   iecm: add interrupts and configure netdev
->   iecm: alloc vport TX resources
->   iecm: alloc vport RX resources
->   iecm: add start_xmit and set_rx_mode
->   iecm: finish netdev_ops
->   iecm: implement splitq napi_poll
->   iecm: implement singleq napi_poll
->   iecm: implement ethtool callbacks
->   iecm: implement cloud filters
->   idpf: introduce idpf driver
-> 
-> Haiyue Wang (2):
->   iecm: implement flow director
->   iecm: add advanced rss
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                 randconfig-c001-20220131
+powerpc              randconfig-c003-20220131
+i386                          randconfig-c001
+m68k                        m5307c3_defconfig
+sh                   secureedge5410_defconfig
+arc                        nsim_700_defconfig
+mips                           ci20_defconfig
+sh                           se7750_defconfig
+sh                         microdev_defconfig
+arc                            hsdk_defconfig
+arm                         vf610m4_defconfig
+parisc                           allyesconfig
+arc                          axs101_defconfig
+ia64                             allmodconfig
+powerpc                      ep88xc_defconfig
+mips                          rb532_defconfig
+arm                            mps2_defconfig
+arm                           sunxi_defconfig
+powerpc                     mpc83xx_defconfig
+powerpc                     stx_gp3_defconfig
+mips                         bigsur_defconfig
+powerpc                   currituck_defconfig
+powerpc                     tqm8548_defconfig
+powerpc                 canyonlands_defconfig
+arc                 nsimosci_hs_smp_defconfig
+sh                ecovec24-romimage_defconfig
+m68k                       m5249evb_defconfig
+arm                             rpc_defconfig
+arm                             pxa_defconfig
+sh                             espt_defconfig
+mips                           ip32_defconfig
+microblaze                      mmu_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                     magicpanelr2_defconfig
+powerpc                     rainier_defconfig
+mips                    maltaup_xpa_defconfig
+openrisc                 simple_smp_defconfig
+nios2                         10m50_defconfig
+ia64                         bigsur_defconfig
+um                                  defconfig
+arm                         nhk8815_defconfig
+arm                  randconfig-c002-20220202
+arm                  randconfig-c002-20220130
+arm                  randconfig-c002-20220131
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64               randconfig-a004-20220131
+x86_64               randconfig-a003-20220131
+x86_64               randconfig-a001-20220131
+x86_64               randconfig-a006-20220131
+x86_64               randconfig-a005-20220131
+x86_64               randconfig-a002-20220131
+i386                 randconfig-a006-20220131
+i386                 randconfig-a005-20220131
+i386                 randconfig-a003-20220131
+i386                 randconfig-a002-20220131
+i386                 randconfig-a001-20220131
+i386                 randconfig-a004-20220131
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
 
-I'd like to remind here that you can *not* proceed with publishing
-a v2 to netdev ML before at least me *and* Shannon (we're the only
-two for now who did reviews here) say "I'm okay with your vN
-revision".
-I'm doing this because this is what you did previously, transferring
-from our internal ML to IWL. In fact, you changed a bunch of code
-and the authorship of two patches, but didn't publish a v2 there
-and went directly here instead, without even providing a changelog,
-so I only realized there were other changes apart from the authors
-only when started comparing those two submissions.
-Incorporating only the changes marked by you as "will fix" and not
-getting the others resolved (places you didn't explain or answer to,
-questionable "won't fix" which the reviewers disagree with etc.)
-doesn't make this series ready for netdev ML.
-And please supply changelogs at the end of the cover letter for each
-subsequent revision, so people could easily see what was addressed
-and what was not.
+clang tested configs:
+riscv                randconfig-c006-20220201
+x86_64                        randconfig-c007
+powerpc              randconfig-c003-20220201
+mips                 randconfig-c004-20220201
+i386                          randconfig-c001
+arm                  randconfig-c002-20220201
+mips                          ath79_defconfig
+powerpc                     ppa8548_defconfig
+powerpc                      obs600_defconfig
+arm                         socfpga_defconfig
+powerpc                 mpc832x_mds_defconfig
+arm                          pcm027_defconfig
+arm                           spitz_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64               randconfig-a013-20220131
+x86_64               randconfig-a015-20220131
+x86_64               randconfig-a014-20220131
+x86_64               randconfig-a016-20220131
+x86_64               randconfig-a011-20220131
+x86_64               randconfig-a012-20220131
+i386                 randconfig-a013-20220131
+i386                 randconfig-a014-20220131
+i386                 randconfig-a012-20220131
+i386                 randconfig-a015-20220131
+i386                 randconfig-a016-20220131
+i386                 randconfig-a011-20220131
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+riscv                randconfig-r042-20220131
+hexagon              randconfig-r045-20220130
+hexagon              randconfig-r045-20220131
+hexagon              randconfig-r041-20220130
+hexagon              randconfig-r041-20220131
 
-> 
->  .../device_drivers/ethernet/intel/idpf.rst    |   47 +
->  .../device_drivers/ethernet/intel/iecm.rst    |   93 +
->  MAINTAINERS                                   |    1 +
->  drivers/net/ethernet/intel/Kconfig            |   31 +
->  drivers/net/ethernet/intel/Makefile           |    2 +
->  drivers/net/ethernet/intel/idpf/Makefile      |   15 +
->  drivers/net/ethernet/intel/idpf/idpf_dev.h    |   17 +
->  drivers/net/ethernet/intel/idpf/idpf_devids.h |   10 +
->  drivers/net/ethernet/intel/idpf/idpf_main.c   |  140 +
->  drivers/net/ethernet/intel/idpf/idpf_reg.c    |  130 +
->  drivers/net/ethernet/intel/iecm/Makefile      |   21 +
->  .../net/ethernet/intel/iecm/iecm_controlq.c   |  649 ++
->  .../ethernet/intel/iecm/iecm_controlq_setup.c |  175 +
->  .../net/ethernet/intel/iecm/iecm_ethtool.c    | 1332 ++++
->  drivers/net/ethernet/intel/iecm/iecm_lib.c    | 5717 +++++++++++++++++
->  drivers/net/ethernet/intel/iecm/iecm_main.c   |   40 +
->  .../ethernet/intel/iecm/iecm_singleq_txrx.c   | 1229 ++++
->  drivers/net/ethernet/intel/iecm/iecm_txrx.c   | 4577 +++++++++++++
->  .../net/ethernet/intel/iecm/iecm_virtchnl.c   | 4240 ++++++++++++
->  drivers/net/ethernet/intel/include/iecm.h     |  973 +++
->  .../ethernet/intel/include/iecm_controlq.h    |  117 +
->  .../intel/include/iecm_controlq_api.h         |  185 +
->  .../ethernet/intel/include/iecm_lan_pf_regs.h |  131 +
->  .../ethernet/intel/include/iecm_lan_txrx.h    |  394 ++
->  drivers/net/ethernet/intel/include/iecm_mem.h |   20 +
->  .../net/ethernet/intel/include/iecm_txrx.h    |  733 +++
->  include/linux/avf/virtchnl.h                  | 1507 ++++-
->  include/linux/avf/virtchnl_2.h                | 1243 ++++
->  include/linux/avf/virtchnl_lan_desc.h         |  603 ++
-
---- 8< ---
-
-> -- 
-> 2.33.0
-
-Thanks,
-Al
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
