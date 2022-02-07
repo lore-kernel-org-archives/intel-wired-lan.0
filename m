@@ -1,10 +1,11 @@
 From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Mon, 7 Feb 2022 04:51:15 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Add slow path offload
- stats on port representor in switchdev
-In-Reply-To: <20220127150426.368315-1-marcin.szycik@linux.intel.com>
-References: <20220127150426.368315-1-marcin.szycik@linux.intel.com>
-Message-ID: <MW3PR11MB45547ABB8B318C324E1297429C2C9@MW3PR11MB4554.namprd11.prod.outlook.com>
+Date: Mon, 7 Feb 2022 08:58:54 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2 net-next v6] igb: refactor XDP
+ registration
+In-Reply-To: <20220119145259.1790015-3-vinschen@redhat.com>
+References: <20220119145259.1790015-1-vinschen@redhat.com>
+ <20220119145259.1790015-3-vinschen@redhat.com>
+Message-ID: <MW3PR11MB455413AA525BC82D2CEF33E99C2C9@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,24 +14,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 >-----Original Message-----
 >From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Marcin Szycik
->Sent: Thursday, January 27, 2022 8:34 PM
-To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next] ice: Add slow path offload stats on
->port representor in switchdev
+>Corinna Vinschen
+>Sent: Wednesday, January 19, 2022 8:23 PM
+To: intel-wired-lan@osuosl.org; netdev at vger.kernel.org; Gomes, Vinicius
+><vinicius.gomes@intel.com>
+>Subject: [Intel-wired-lan] [PATCH 2/2 net-next v6] igb: refactor XDP
+>registration
 >
->Implement callbacks to check for stats and fetch port representor stats.
->Stats are taken from RX/TX ring corresponding to port representor and show
->the number of bytes/packets that were not offloaded.
+>On changing the RX ring parameters igb uses a hack to avoid a warning when
+>calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just clears the struct
+>xdp_rxq_info content.
 >
->To see slow path stats run:
->ifstat -x cpu_hits -a
+>Instead, change this to unregister if we're already registered.  Align code to
+>the igc code.
 >
->Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+>Fixes: 9cbc948b5a20c ("igb: add XDP support")
+>Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
 >---
-> drivers/net/ethernet/intel/ice/ice.h      |  3 ++
-> drivers/net/ethernet/intel/ice/ice_main.c |  6 +--
->drivers/net/ethernet/intel/ice/ice_repr.c | 55 +++++++++++++++++++++++
-> 3 files changed, 61 insertions(+), 3 deletions(-)
+> drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
+> drivers/net/ethernet/intel/igb/igb_main.c    | 19 +++++++++++++------
+> 2 files changed, 13 insertions(+), 10 deletions(-)
 >
 Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
