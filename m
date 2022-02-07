@@ -1,191 +1,53 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon,  7 Feb 2022 10:23:29 -0800
-Subject: [Intel-wired-lan] [PATCH] ice: fix concurrent reset and removal of
- VFs
-Message-ID: <20220207182329.2078272-1-jacob.e.keller@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon, 7 Feb 2022 10:39:41 -0800
+Subject: [Intel-wired-lan] [PATCH] ice: fix concurrent reset and removal
+ of VFs
+In-Reply-To: <20220207182329.2078272-1-jacob.e.keller@intel.com>
+References: <20220207182329.2078272-1-jacob.e.keller@intel.com>
+Message-ID: <bb1dc3f7-492b-0410-1fe7-ee66e4a8a506@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit c503e63200c6 ("ice: Stop processing VF messages during teardown")
-introduced a driver state flag, ICE_VF_DEINIT_IN_PROGRESS, which is
-intended to prevent some issues with concurrently handling messages from
-VFs while tearing down the VFs.
+On 2/7/2022 10:23 AM, Jacob Keller wrote:
+> Commit c503e63200c6 ("ice: Stop processing VF messages during teardown")
+> introduced a driver state flag, ICE_VF_DEINIT_IN_PROGRESS, which is
+> intended to prevent some issues with concurrently handling messages from
+> VFs while tearing down the VFs.
+> 
+> This change was motivated by crashes caused while tearing down and
+> bringing up VFs in rapid succession.
+> 
+> It turns out that the fix actually introduces issues with the VF driver
+> caused because the PF no longer responds to any messages sent by the VF
+> during its .remove routine. This results in the VF potentially removing
+> its DMA memory before the PF has shut down the device queues.
+> 
+> Additionally, the fix doesn't actually resolve concurrency issues within
+> the ice driver. It is possible for a VF to initiate a reset just prior
+> to the ice driver removing VFs. This can result in the remove task
+> concurrently operating while the VF is being reset. This results in
+> similar memory corruption and panics purportedly fixed by that commit.
+> 
+> Fix this concurrency at its root by protecting both the reset and
+> removal flows using the existing VF cfg_lock. This ensures that we
+> cannot remove the VF while any outstanding critical tasks such as a
+> virtchnl message or a reset are occurring.
+> 
+> This locking change also fixes the root cause originally fixed by commit
+> c503e63200c6 ("ice: Stop processing VF messages during teardown"), so we
+> can simply revert it.
+> 
+> Note that I kept these two changes together because simply reverting the
+> original commit alone would leave the driver vulnerable to worse race
+> conditions.
+> 
+> Fixes: c503e63200c6 ("ice: Stop processing VF messages during teardown")
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 
-This change was motivated by crashes caused while tearing down and
-bringing up VFs in rapid succession.
+Tree target (net or net-next) wasn't specified in title, since this is a 
+fix maybe it should be targeted to net?
 
-It turns out that the fix actually introduces issues with the VF driver
-caused because the PF no longer responds to any messages sent by the VF
-during its .remove routine. This results in the VF potentially removing
-its DMA memory before the PF has shut down the device queues.
-
-Additionally, the fix doesn't actually resolve concurrency issues within
-the ice driver. It is possible for a VF to initiate a reset just prior
-to the ice driver removing VFs. This can result in the remove task
-concurrently operating while the VF is being reset. This results in
-similar memory corruption and panics purportedly fixed by that commit.
-
-Fix this concurrency at its root by protecting both the reset and
-removal flows using the existing VF cfg_lock. This ensures that we
-cannot remove the VF while any outstanding critical tasks such as a
-virtchnl message or a reset are occurring.
-
-This locking change also fixes the root cause originally fixed by commit
-c503e63200c6 ("ice: Stop processing VF messages during teardown"), so we
-can simply revert it.
-
-Note that I kept these two changes together because simply reverting the
-original commit alone would leave the driver vulnerable to worse race
-conditions.
-
-Fixes: c503e63200c6 ("ice: Stop processing VF messages during teardown")
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h          |  1 -
- drivers/net/ethernet/intel/ice/ice_main.c     |  2 +
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 40 +++++++++++--------
- 3 files changed, 25 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index a9fa701aaa95..473b1f6be9de 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -280,7 +280,6 @@ enum ice_pf_state {
- 	ICE_VFLR_EVENT_PENDING,
- 	ICE_FLTR_OVERFLOW_PROMISC,
- 	ICE_VF_DIS,
--	ICE_VF_DEINIT_IN_PROGRESS,
- 	ICE_CFG_BUSY,
- 	ICE_SERVICE_SCHED,
- 	ICE_SERVICE_DIS,
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d250798f8b60..90c967f05bd1 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1799,7 +1799,9 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 				 * reset, so print the event prior to reset.
- 				 */
- 				ice_print_vf_rx_mdd_event(vf);
-+				mutex_lock(&pf->vf[i].cfg_lock);
- 				ice_reset_vf(&pf->vf[i], false);
-+				mutex_unlock(&pf->vf[i].cfg_lock);
- 			}
- 		}
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 39b80124d282..8a61b23f7cb3 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -500,8 +500,6 @@ void ice_free_vfs(struct ice_pf *pf)
- 	struct ice_hw *hw = &pf->hw;
- 	unsigned int tmp, i;
- 
--	set_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state);
--
- 	if (!pf->vf)
- 		return;
- 
-@@ -519,22 +517,26 @@ void ice_free_vfs(struct ice_pf *pf)
- 	else
- 		dev_warn(dev, "VFs are assigned - not disabling SR-IOV\n");
- 
--	/* Avoid wait time by stopping all VFs at the same time */
--	ice_for_each_vf(pf, i)
--		ice_dis_vf_qs(&pf->vf[i]);
--
- 	tmp = pf->num_alloc_vfs;
- 	pf->num_qps_per_vf = 0;
- 	pf->num_alloc_vfs = 0;
- 	for (i = 0; i < tmp; i++) {
--		if (test_bit(ICE_VF_STATE_INIT, pf->vf[i].vf_states)) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		mutex_lock(&vf->cfg_lock);
-+
-+		ice_dis_vf_qs(vf);
-+
-+		if (test_bit(ICE_VF_STATE_INIT, vf->vf_states)) {
- 			/* disable VF qp mappings and set VF disable state */
--			ice_dis_vf_mappings(&pf->vf[i]);
--			set_bit(ICE_VF_STATE_DIS, pf->vf[i].vf_states);
--			ice_free_vf_res(&pf->vf[i]);
-+			ice_dis_vf_mappings(vf);
-+			set_bit(ICE_VF_STATE_DIS, vf->vf_states);
-+			ice_free_vf_res(vf);
- 		}
- 
--		mutex_destroy(&pf->vf[i].cfg_lock);
-+		mutex_unlock(&vf->cfg_lock);
-+
-+		mutex_destroy(&vf->cfg_lock);
- 	}
- 
- 	if (ice_sriov_free_msix_res(pf))
-@@ -570,7 +572,6 @@ void ice_free_vfs(struct ice_pf *pf)
- 				i);
- 
- 	clear_bit(ICE_VF_DIS, pf->state);
--	clear_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state);
- 	clear_bit(ICE_FLAG_SRIOV_ENA, pf->flags);
- }
- 
-@@ -1498,6 +1499,8 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 	ice_for_each_vf(pf, v) {
- 		vf = &pf->vf[v];
- 
-+		mutex_lock(&vf->cfg_lock);
-+
- 		vf->driver_caps = 0;
- 		ice_vc_set_default_allowlist(vf);
- 
-@@ -1512,6 +1515,8 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 		ice_vf_pre_vsi_rebuild(vf);
- 		ice_vf_rebuild_vsi(vf);
- 		ice_vf_post_vsi_rebuild(vf);
-+
-+		mutex_unlock(&vf->cfg_lock);
- 	}
- 
- 	if (ice_is_eswitch_mode_switchdev(pf))
-@@ -1562,6 +1567,8 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 	u32 reg;
- 	int i;
- 
-+	lockdep_assert_held(&vf->cfg_lock);
-+
- 	dev = ice_pf_to_dev(pf);
- 
- 	if (test_bit(ICE_VF_RESETS_DISABLED, pf->state)) {
-@@ -2061,9 +2068,12 @@ void ice_process_vflr_event(struct ice_pf *pf)
- 		bit_idx = (hw->func_caps.vf_base_id + vf_id) % 32;
- 		/* read GLGEN_VFLRSTAT register to find out the flr VFs */
- 		reg = rd32(hw, GLGEN_VFLRSTAT(reg_idx));
--		if (reg & BIT(bit_idx))
-+		if (reg & BIT(bit_idx)) {
- 			/* GLGEN_VFLRSTAT bit will be cleared in ice_reset_vf */
-+			mutex_lock(&vf->cfg_lock);
- 			ice_reset_vf(vf, true);
-+			mutex_unlock(&vf->cfg_lock);
-+		}
- 	}
- }
- 
-@@ -4625,10 +4635,6 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 	struct device *dev;
- 	int err = 0;
- 
--	/* if de-init is underway, don't process messages from VF */
--	if (test_bit(ICE_VF_DEINIT_IN_PROGRESS, pf->state))
--		return;
--
- 	dev = ice_pf_to_dev(pf);
- 	if (ice_validate_vf_id(pf, vf_id)) {
- 		err = -EINVAL;
-
-base-commit: 4e7157144eac8f9463f10cd7b6adb97a9d14719d
--- 
-2.35.1.46.g38062e73e009
 
