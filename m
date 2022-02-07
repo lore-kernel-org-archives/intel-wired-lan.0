@@ -1,38 +1,47 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Mon, 7 Feb 2022 08:58:54 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2 net-next v6] igb: refactor XDP
- registration
-In-Reply-To: <20220119145259.1790015-3-vinschen@redhat.com>
-References: <20220119145259.1790015-1-vinschen@redhat.com>
- <20220119145259.1790015-3-vinschen@redhat.com>
-Message-ID: <MW3PR11MB455413AA525BC82D2CEF33E99C2C9@MW3PR11MB4554.namprd11.prod.outlook.com>
+From: Switzer, David <david.switzer@intel.com>
+Date: Mon, 7 Feb 2022 15:17:35 +0000
+Subject: [Intel-wired-lan] [net-queue, v2,
+ 4/5] i40e: Add a stat for tracking pages waived.
+In-Reply-To: <1639769719-81285-5-git-send-email-jdamato@fastly.com>
+References: <1639769719-81285-1-git-send-email-jdamato@fastly.com>
+ <1639769719-81285-5-git-send-email-jdamato@fastly.com>
+Message-ID: <SN6PR11MB3518C39BFBA3C58F8995F191EB2C9@SN6PR11MB3518.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
+
 >-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Corinna Vinschen
->Sent: Wednesday, January 19, 2022 8:23 PM
-To: intel-wired-lan@osuosl.org; netdev at vger.kernel.org; Gomes, Vinicius
-><vinicius.gomes@intel.com>
->Subject: [Intel-wired-lan] [PATCH 2/2 net-next v6] igb: refactor XDP
->registration
+>From: Joe Damato <jdamato@fastly.com>
+>Sent: Friday, December 17, 2021 11:35 AM
+To: intel-wired-lan@lists.osuosl.org
+>Cc: kuba at kernel.org; Brandeburg, Jesse <jesse.brandeburg@intel.com>;
+>Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Joe Damato
+><jdamato@fastly.com>
+>Subject: [net-queue,v2,4/5] i40e: Add a stat for tracking pages waived.
 >
->On changing the RX ring parameters igb uses a hack to avoid a warning when
->calling xdp_rxq_info_reg via igb_setup_rx_resources.  It just clears the struct
->xdp_rxq_info content.
+>In some cases, pages can not be reused because they are not associated with
+>the correct NUMA zone. Knowing how often pages are waived helps users to
+>understand the interaction between the driver's memory usage and their
+>system.
 >
->Instead, change this to unregister if we're already registered.  Align code to
->the igc code.
+>Pass rx_stats through to i40e_can_reuse_rx_page to allow tracking when
+>pages are waived.
 >
->Fixes: 9cbc948b5a20c ("igb: add XDP support")
->Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+>The page waive count is accessible via ethtool.
+>
+>Signed-off-by: Joe Damato <jdamato@fastly.com>
 >---
-> drivers/net/ethernet/intel/igb/igb_ethtool.c |  4 ----
-> drivers/net/ethernet/intel/igb/igb_main.c    | 19 +++++++++++++------
-> 2 files changed, 13 insertions(+), 10 deletions(-)
+> drivers/net/ethernet/intel/i40e/i40e.h         |  1 +
+> drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  1 +
+> drivers/net/ethernet/intel/i40e/i40e_main.c    |  5 ++++-
+> drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 13 ++++++++++---
+> drivers/net/ethernet/intel/i40e/i40e_txrx.h    |  1 +
+> 5 files changed, 17 insertions(+), 4 deletions(-)
 >
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+Tested-By: Dave Switzer <david.switzer@intel.com>
+
+
