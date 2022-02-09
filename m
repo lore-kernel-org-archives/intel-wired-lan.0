@@ -1,94 +1,126 @@
-From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Tue, 08 Feb 2022 17:06:05 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v1] ice: Add support for outer
- dest MAC for ADQ tunnels
-Message-ID: <164436876576.5021.7903773697130184451.stgit@anambiarhost.jf.intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 09 Feb 2022 13:28:36 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 8e7f9b5d1be1d2339a67333d7b901fd3688fa624
+Message-ID: <62035104.D9r78D1CXhfgeUOX%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-TC flower does not support matching on user specified
-outer MAC address for tunnels. For ADQ tunnels, the driver
-adds outer destination MAC address as lower netdev's
-active unicast MAC address to filter out packets with
-unrelated MAC address being delivered to ADQ VSIs.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 8e7f9b5d1be1d2339a67333d7b901fd3688fa624  ice: fix concurrent reset and removal of VFs
 
-Example:
-- create tunnel device
-ip l add $VXLAN_DEV type vxlan id $VXLAN_VNI dstport $VXLAN_PORT \
-dev $PF
-- add TC filter (in ADQ mode)
+elapsed time: 728m
 
-$tc filter add dev $VXLAN_DEV protocol ip parent ffff: flower \
- dst_ip $INNER_DST_IP ip_proto tcp dst_port $INNER_DST_PORT \
- enc_key_id $VXLAN_VNI hw_tc $ADQ_TC
+configs tested: 96
+configs skipped: 3
 
-Note: Filters with wild-card tunnel ID (when user does not
-specify tunnel key) are also supported.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                           stm32_defconfig
+powerpc                     taishan_defconfig
+powerpc                     tqm8548_defconfig
+mips                         cobalt_defconfig
+powerpc                        warp_defconfig
+powerpc                 mpc834x_itx_defconfig
+sh                          urquell_defconfig
+powerpc                    amigaone_defconfig
+sh                          sdk7780_defconfig
+powerpc                     sequoia_defconfig
+sh                   rts7751r2dplus_defconfig
+arm                         lubbock_defconfig
+arm                  randconfig-c002-20220209
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+parisc                              defconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+s390                             allyesconfig
+i386                             allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                   debian-10.3-kselftests
+sparc                            allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                          randconfig-a003
+i386                          randconfig-a001
+i386                          randconfig-a005
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+riscv                               defconfig
+riscv                    nommu_k210_defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+x86_64                           allyesconfig
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
+
+clang tested configs:
+powerpc                   bluestone_defconfig
+powerpc                          allyesconfig
+arm                          ep93xx_defconfig
+powerpc                      katmai_defconfig
+powerpc                      pmac32_defconfig
+mips                      malta_kvm_defconfig
+i386                          randconfig-a004
+i386                          randconfig-a002
+i386                          randconfig-a006
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+hexagon              randconfig-r045-20220208
+hexagon              randconfig-r041-20220208
+riscv                randconfig-r042-20220208
+
 ---
- drivers/net/ethernet/intel/ice/ice_tc_lib.c |   30 ++++++++++++++++++++++++---
- 1 file changed, 27 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index f89f387aa320..f82aed63c96a 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -24,6 +24,9 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
- 	if (flags & ICE_TC_FLWR_FIELD_TENANT_ID)
- 		lkups_cnt++;
- 
-+	if (flags & ICE_TC_FLWR_FIELD_ENC_DST_MAC)
-+		lkups_cnt++;
-+
- 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
- 		     ICE_TC_FLWR_FIELD_ENC_DEST_IPV4 |
- 		     ICE_TC_FLWR_FIELD_ENC_SRC_IPV6 |
-@@ -148,6 +151,15 @@ ice_tc_fill_tunnel_outer(u32 flags, struct ice_tc_flower_fltr *fltr,
- 		}
- 	}
- 
-+	if (flags & ICE_TC_FLWR_FIELD_ENC_DST_MAC) {
-+		list[i].type = ice_proto_type_from_mac(false);
-+		ether_addr_copy(list[i].h_u.eth_hdr.dst_addr,
-+				hdr->l2_key.dst_mac);
-+		ether_addr_copy(list[i].m_u.eth_hdr.dst_addr,
-+				hdr->l2_mask.dst_mac);
-+		i++;
-+	}
-+
- 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
- 		     ICE_TC_FLWR_FIELD_ENC_DEST_IPV4)) {
- 		list[i].type = ice_proto_type_from_ipv4(false);
-@@ -1222,12 +1234,24 @@ ice_handle_tclass_action(struct ice_vsi *vsi,
- 	 * this code won't do anything
- 	 * 2. For non-tunnel, if user didn't specify MAC address, add implicit
- 	 * dest MAC to be lower netdev's active unicast MAC address
-+	 * 3. For tunnel,  as of now TC-filter through flower classifier doesn't
-+	 * have provision for user to specify outer DMAC, hence driver to
-+	 * implicitly add outer dest MAC to be lower netdev's active unicast
-+	 * MAC address.
- 	 */
--	if (!(fltr->flags & ICE_TC_FLWR_FIELD_DST_MAC)) {
-+	if (fltr->tunnel_type != TNL_LAST &&
-+	    !(fltr->flags & ICE_TC_FLWR_FIELD_ENC_DST_MAC))
-+		fltr->flags |= ICE_TC_FLWR_FIELD_ENC_DST_MAC;
-+
-+	if (fltr->tunnel_type == TNL_LAST &&
-+	    !(fltr->flags & ICE_TC_FLWR_FIELD_DST_MAC))
-+		fltr->flags |= ICE_TC_FLWR_FIELD_DST_MAC;
-+
-+	if (fltr->flags & (ICE_TC_FLWR_FIELD_DST_MAC |
-+			   ICE_TC_FLWR_FIELD_ENC_DST_MAC)) {
- 		ether_addr_copy(fltr->outer_headers.l2_key.dst_mac,
- 				vsi->netdev->dev_addr);
--		eth_broadcast_addr(fltr->outer_headers.l2_mask.dst_mac);
--		fltr->flags |= ICE_TC_FLWR_FIELD_DST_MAC;
-+		memset(fltr->outer_headers.l2_mask.dst_mac, 0xff, ETH_ALEN);
- 	}
- 
- 	/* validate specified dest MAC address, make sure either it belongs to
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
