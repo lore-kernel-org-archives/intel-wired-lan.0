@@ -1,10 +1,11 @@
 From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 10 Feb 2022 05:29:10 +0000
-Subject: [Intel-wired-lan] [PATCH net] ice: Avoid RTNL lock when
- re-creating auxiliary device
-In-Reply-To: <20220121002756.1105566-1-david.m.ertman@intel.com>
-References: <20220121002756.1105566-1-david.m.ertman@intel.com>
-Message-ID: <BYAPR11MB336728CE6F3C8EF91B88D5EDFC2F9@BYAPR11MB3367.namprd11.prod.outlook.com>
+Date: Thu, 10 Feb 2022 05:29:53 +0000
+Subject: [Intel-wired-lan] [PATCH v2] ice: change "can't set link"
+ message to dbg level
+In-Reply-To: <cfb30f5c84364c8eff96c0a3ea0231e5dfda17e4.1643910316.git.jtoppins@redhat.com>
+References: <b25f9e524c404820b310c73012507c8e65a2ef97.1643834329.git.jtoppins@redhat.com>
+ <cfb30f5c84364c8eff96c0a3ea0231e5dfda17e4.1643910316.git.jtoppins@redhat.com>
+Message-ID: <BYAPR11MB336795B622887929554E63B0FC2F9@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,27 +16,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Dave Ertman
-> Sent: Friday, January 21, 2022 5:58 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net] ice: Avoid RTNL lock when re-creating
-> auxiliary device
+> Jonathan Toppins
+> Sent: Thursday, February 3, 2022 11:15 PM
+> To: netdev at vger.kernel.org
+> Cc: linux-kernel at vger.kernel.org; Jakub Kicinski <kuba@kernel.org>; intel-
+> wired-lan at lists.osuosl.org; David S. Miller <davem@davemloft.net>
+> Subject: [Intel-wired-lan] [PATCH v2] ice: change "can't set link" message to
+> dbg level
 > 
-> If a call to re-create the auxiliary device happens in a context that has already
-> taken the RTNL lock, then the call flow that recreates auxiliary device can
-> hang if there is another attempt to claim the RTNL lock by the auxiliary driver.
+> In the case where the link is owned by manageability, the firmware is not
+> allowed to set the link state, so an error code is returned.
+> This however is non-fatal and there is nothing the operator can do, so
+> instead of confusing the operator with messages they can do nothing about
+> hide this message behind the debug log level.
 > 
-> To avoid this, any call to re-create auxiliary devices that comes from an
-> source that is holding the RTNL lock (e.g. netdev notifier when interface exits
-> a bond) should execute in a separate thread.  To accomplish this, add a flag to
-> the PF that will be evaluated in the service task and dealt with there.
-> 
-> Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Signed-off-by: Jonathan Toppins <jtoppins@redhat.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h      | 3 ++-
->  drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
->  2 files changed, 5 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
 
 Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
