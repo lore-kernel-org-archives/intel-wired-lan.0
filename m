@@ -1,10 +1,10 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 11 Feb 2022 07:27:12 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] iavf: stop leaking
- iavf_status as "errno" values
-In-Reply-To: <20220127141629.28189-1-mateusz.palczewski@intel.com>
-References: <20220127141629.28189-1-mateusz.palczewski@intel.com>
-Message-ID: <DM8PR11MB56215CF622505ACE28CB7809AB309@DM8PR11MB5621.namprd11.prod.outlook.com>
+Date: Fri, 11 Feb 2022 11:01:13 +0000
+Subject: [Intel-wired-lan] [PATCH net v5] iavf: Fix handling of vlan
+ strip virtual channel messages
+In-Reply-To: <20220124133543.274845-1-michal.maloszewski@intel.com>
+References: <20220124133543.274845-1-michal.maloszewski@intel.com>
+Message-ID: <DM8PR11MB5621049D39301AEE22F0B52CAB309@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,41 +15,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Mateusz Palczewski
-> Sent: Thursday, January 27, 2022 3:16 PM
+> Michal Maloszewski
+> Sent: Monday, January 24, 2022 2:36 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] iavf: stop leaking
-> iavf_status as "errno" values
+> Cc: Maloszewski, Michal <michal.maloszewski@intel.com>; Ciosek, NorbertX
+> <norbertx.ciosek@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v5] iavf: Fix handling of vlan strip virtual
+> channel messages
 > 
-> Several functions in the iAVF core files take status values of the enum
-> iavf_status and convert them into integer values. This leads to confusion as
-> functions return both Linux errno values and status codes intermixed.
-> Reporting status codes as if they were "errno" values can lead to confusion
-> when reviewing error logs. Additionally, it can lead to unexpected behavior if
-> a return value is not interpreted properly.
+> Modify netdev->features for vlan stripping based on virtual channel
+> messages received from the PF. Change is needed to synchronize vlan strip
+> status between PF sysfs and iavf ethtool.
 > 
-> Fix this by introducing iavf_status_to_errno, a switch that explicitly converts
-> from the status codes into an appropriate error value. Also introduce a
-> virtchnl_status_to_errno function for the one case where we were returning
-> both virtchnl status codes and iavf_status codes in the same function.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> Fixes: 5951a2b9812d ("iavf: Fix VLAN feature flags after VFR")
+> Signed-off-by: Norbert Ciosek <norbertx.ciosek@intel.com>
+> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
 > ---
->  v2: Submit this with additional patch introducing iavf_status_to_errno
-> function
->  v3: Change iavf_poll_virtchnl_msg to int
+> v5: Changed fixes tag into the proper one due to missclick in pervious one
+> v4: Changed the same flags which occured in statement and did not have any
+> sense.
+>     Changed fixes tag into the proper one
+> v3: NETIF_F_HW_VLAN_RX changed into NETIF_F_HW_VLAN_CTAG_RX
+> because there's
+>     no such definition since Linux 3.10. The code is the same as the one from
+> OOT.
+>     Code successfully passed inner review. netdev_update_features()
+> function is not added
+>     because it causes infinite loop.
+> v2: Changed fixes tag into the more probable and accurate
 > ---
->  drivers/net/ethernet/intel/iavf/iavf.h        |   5 +-
->  drivers/net/ethernet/intel/iavf/iavf_main.c   | 172 +++++++++++++++---
->  .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  18 +-
->  3 files changed, 156 insertions(+), 39 deletions(-)
+> ---
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 40 +++++++++++++++++++
+>  1 file changed, 40 insertions(+)
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
-> b/drivers/net/ethernet/intel/iavf/iavf.h
-> index 6f93759..8287f9f 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> index e508122eddb7..6378d3c216f9 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
