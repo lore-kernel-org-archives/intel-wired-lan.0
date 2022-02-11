@@ -1,54 +1,184 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 10 Feb 2022 16:29:26 -0800
-Subject: [Intel-wired-lan] [PATCH net v2] ice: enable parsing IPSEC SPI
- headers for RSS
-Message-ID: <20220211002926.584554-1-jesse.brandeburg@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 11 Feb 2022 13:12:01 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ 5dbbbd01cbba831233c6ea9a3e6bfa133606d3c0
+Message-ID: <6205f021.1XDQ+zY4xiHrXxYI%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The COMMS package can enable the hardware parser to recognize IPSEC
-frames with ESP header and SPI identifier.  If this package is available
-and configured for loading in /lib/firmware, then the driver will
-succeed in enabling this protocol type for RSS.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: 5dbbbd01cbba831233c6ea9a3e6bfa133606d3c0  ice: Avoid RTNL lock when re-creating auxiliary device
 
-This in turn allows the hardware to hash over the SPI and use it to pick
-a consistent receive queue for the same secure flow. Without this all
-traffic is steered to the same queue for multiple traffic threads from
-the same IP address. For that reason this is marked as a fix, as the
-driver supports the model, but it wasn't enabled.
+elapsed time: 721m
 
-If the package is not available, adding this type will fail, but the
-failure is ignored on purpose as it has no negative affect.
+configs tested: 151
+configs skipped: 4
 
-Fixes: c90ed40cefe1 ("ice: Enable writing hardware filtering tables")
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                          randconfig-c001
+arc                           tb10x_defconfig
+mips                       bmips_be_defconfig
+ia64                         bigsur_defconfig
+powerpc                 mpc834x_mds_defconfig
+openrisc                            defconfig
+mips                 decstation_r4k_defconfig
+m68k                          multi_defconfig
+nios2                            alldefconfig
+powerpc                      pasemi_defconfig
+sh                        sh7785lcr_defconfig
+sh                          lboxre2_defconfig
+arm                       omap2plus_defconfig
+arc                    vdk_hs38_smp_defconfig
+mips                    maltaup_xpa_defconfig
+mips                          rb532_defconfig
+arm                          simpad_defconfig
+parisc                generic-64bit_defconfig
+openrisc                 simple_smp_defconfig
+arm                        shmobile_defconfig
+arm                        mini2440_defconfig
+mips                           ip32_defconfig
+arm                           h3600_defconfig
+powerpc                       eiger_defconfig
+powerpc                     tqm8541_defconfig
+arm                         s3c6400_defconfig
+csky                             alldefconfig
+arm                     eseries_pxa_defconfig
+alpha                            alldefconfig
+mips                            gpr_defconfig
+riscv                    nommu_k210_defconfig
+h8300                     edosk2674_defconfig
+parisc                              defconfig
+m68k                          hp300_defconfig
+powerpc                     tqm8555_defconfig
+arm                       multi_v4t_defconfig
+xtensa                              defconfig
+arm                      jornada720_defconfig
+powerpc                 linkstation_defconfig
+sh                         microdev_defconfig
+arm                        multi_v7_defconfig
+openrisc                         alldefconfig
+sh                           se7724_defconfig
+mips                     loongson1b_defconfig
+m68k                       m5275evb_defconfig
+arm                  randconfig-c002-20220211
+arm                  randconfig-c002-20220210
+arm                  randconfig-c002-20220209
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                             allnoconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+i386                          randconfig-a001
+i386                          randconfig-a005
+i386                          randconfig-a003
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+
+clang tested configs:
+riscv                randconfig-c006-20220211
+x86_64                        randconfig-c007
+powerpc              randconfig-c003-20220211
+arm                  randconfig-c002-20220211
+i386                          randconfig-c001
+mips                 randconfig-c004-20220211
+riscv                randconfig-c006-20220209
+powerpc              randconfig-c003-20220209
+mips                 randconfig-c004-20220209
+arm                  randconfig-c002-20220209
+mips                            e55_defconfig
+arm                        mvebu_v5_defconfig
+powerpc                      katmai_defconfig
+arm                                 defconfig
+powerpc                     ksi8560_defconfig
+mips                       lemote2f_defconfig
+powerpc                     mpc5200_defconfig
+powerpc                     akebono_defconfig
+powerpc                       ebony_defconfig
+mips                      pic32mzda_defconfig
+mips                       rbtx49xx_defconfig
+powerpc                     kilauea_defconfig
+powerpc                     tqm5200_defconfig
+arm                           omap1_defconfig
+powerpc                      ppc44x_defconfig
+powerpc                        icon_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+hexagon              randconfig-r045-20220211
+hexagon              randconfig-r041-20220211
+riscv                randconfig-r042-20220211
+hexagon              randconfig-r045-20220210
+hexagon              randconfig-r041-20220210
+
 ---
-v2: add fixes tag and send to net
----
- drivers/net/ethernet/intel/ice/ice_lib.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 0c187cf04fcf..53256aca27c7 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1684,6 +1684,12 @@ static void ice_vsi_set_rss_flow_fld(struct ice_vsi *vsi)
- 	if (status)
- 		dev_dbg(dev, "ice_add_rss_cfg failed for sctp6 flow, vsi = %d, error = %d\n",
- 			vsi_num, status);
-+
-+	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_ESP_SPI,
-+				 ICE_FLOW_SEG_HDR_ESP);
-+	if (status)
-+		dev_dbg(dev, "ice_add_rss_cfg failed for esp/spi flow, vsi = %d, error = %d\n",
-+			vsi_num, status);
- }
- 
- /**
--- 
-2.34.1
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
