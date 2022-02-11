@@ -1,10 +1,10 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 11 Feb 2022 07:26:34 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 2/2] iavf: Fix incorrect
- use of assigning iavf_status to int
-In-Reply-To: <20220127141640.28398-1-mateusz.palczewski@intel.com>
-References: <20220127141640.28398-1-mateusz.palczewski@intel.com>
-Message-ID: <DM8PR11MB562137EC8DE1F1A6030689CFAB309@DM8PR11MB5621.namprd11.prod.outlook.com>
+Date: Fri, 11 Feb 2022 07:27:12 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] iavf: stop leaking
+ iavf_status as "errno" values
+In-Reply-To: <20220127141629.28189-1-mateusz.palczewski@intel.com>
+References: <20220127141629.28189-1-mateusz.palczewski@intel.com>
+Message-ID: <DM8PR11MB56215CF622505ACE28CB7809AB309@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,37 +16,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Mateusz Palczewski
-> Sent: Thursday, January 27, 2022 3:17 PM
+> Sent: Thursday, January 27, 2022 3:16 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>; Brett Creeley
-> <brett.creeley@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next v3 2/2] iavf: Fix incorrect use of
-> assigning iavf_status to int
+> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] iavf: stop leaking
+> iavf_status as "errno" values
 > 
-> Currently there are functions in iavf_virtchnl.c for polling specific virtchnl
-> receive events. These are all assigning iavf_status values to int values. Fix this
-> and explicitly assign int values if iavf_status is not IAVF_SUCCESS.
+> Several functions in the iAVF core files take status values of the enum
+> iavf_status and convert them into integer values. This leads to confusion as
+> functions return both Linux errno values and status codes intermixed.
+> Reporting status codes as if they were "errno" values can lead to confusion
+> when reviewing error logs. Additionally, it can lead to unexpected behavior if
+> a return value is not interpreted properly.
 > 
-> Also, refactor a small amount of duplicated code that can be reused by all of
-> the previously mentioned functions.
+> Fix this by introducing iavf_status_to_errno, a switch that explicitly converts
+> from the status codes into an appropriate error value. Also introduce a
+> virtchnl_status_to_errno function for the one case where we were returning
+> both virtchnl status codes and iavf_status codes in the same function.
 > 
-> Finally, fix some spacing errors for variable assignment and get rid of all the
-> goto statements in the refactored functions for clarity.
-> 
-> Signed-off-by: Brett Creeley <brett.creeley@intel.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 > ---
 >  v2: Submit this with additional patch introducing iavf_status_to_errno
 > function
 >  v3: Change iavf_poll_virtchnl_msg to int
 > ---
->  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 160 ++++++++----------
->  1 file changed, 68 insertions(+), 92 deletions(-)
+>  drivers/net/ethernet/intel/iavf/iavf.h        |   5 +-
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 172 +++++++++++++++---
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  18 +-
+>  3 files changed, 156 insertions(+), 39 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> index 178cc51..9363b10 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
+> b/drivers/net/ethernet/intel/iavf/iavf.h
+> index 6f93759..8287f9f 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
