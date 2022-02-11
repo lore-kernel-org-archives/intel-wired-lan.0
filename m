@@ -1,18 +1,18 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 11 Feb 2022 20:18:39 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 51a04ebf21122d5c76a716ecd9bfc33ea44b2b39
-Message-ID: <6206541f.5KE2OdvHJH7KS9Oq%lkp@intel.com>
+Date: Fri, 11 Feb 2022 20:18:56 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 5919de805027b27c9256458ae07d22c79bf69ae0
+Message-ID: <62065430.+rfLvfPDZiYPSYfl%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: 51a04ebf21122d5c76a716ecd9bfc33ea44b2b39  net: dsa: mv88e6xxx: fix use-after-free in mv88e6xxx_mdios_unregister
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 5919de805027b27c9256458ae07d22c79bf69ae0  ice: fix concurrent reset and removal of VFs
 
-elapsed time: 731m
+elapsed time: 730m
 
 configs tested: 140
 configs skipped: 3
