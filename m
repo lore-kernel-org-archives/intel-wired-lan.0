@@ -1,86 +1,84 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 12 Feb 2022 20:34:25 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 4b73ec44fccba8b3c65197c835e38a83e3c4f3a8
-Message-ID: <6207a951.IPUX9KWr2OD9naOl%lkp@intel.com>
+Date: Sat, 12 Feb 2022 23:33:50 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD REGRESSION
+ 3f6a8609890e9c3173c52ee51428b0ace232b7e4
+Message-ID: <6207d35e.rQqSKvc1gRA7qKW4%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 4b73ec44fccba8b3c65197c835e38a83e3c4f3a8  e1000e: Print PHY register address when MDI read/write fails
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 3f6a8609890e9c3173c52ee51428b0ace232b7e4  ice: fix concurrent reset and removal of VFs
 
-possible Warning in current branch (please contact us if interested):
+possible Error/Warning in current branch (please contact us if interested):
 
-include/net/gro.h:58:1: sparse: sparse: directive in macro's argument list
-net/ipv6/addrconf.c:4307 if6_get_next() warn: ignoring unreachable code.
+net/netfilter/xt_socket.c:224:3: error: implicit declaration of function 'nf_defrag_ipv6_disable'; did you mean 'nf_defrag_ipv4_disable'? [-Werror=implicit-function-declaration]
 
-Warning ids grouped by kconfigs:
+Error/Warning ids grouped by kconfigs:
 
 gcc_recent_errors
-|-- i386-randconfig-m021
-|   `-- net-ipv6-addrconf.c-if6_get_next()-warn:ignoring-unreachable-code.
-|-- m68k-randconfig-s032-20220211
-|   `-- include-net-gro.h:sparse:sparse:directive-in-macro-s-argument-list
-`-- sparc-randconfig-s031-20220211
-    `-- include-net-gro.h:sparse:sparse:directive-in-macro-s-argument-list
+`-- i386-randconfig-a005
+    `-- net-netfilter-xt_socket.c:error:implicit-declaration-of-function-nf_defrag_ipv6_disable
 
-elapsed time: 721m
+elapsed time: 900m
 
-configs tested: 109
+configs tested: 119
 configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-arm64                               defconfig
-arm64                            allyesconfig
 i386                          randconfig-c001
-openrisc                            defconfig
-mips                          rb532_defconfig
 powerpc                      chrp32_defconfig
 xtensa                    xip_kc705_defconfig
-mips                         rt305x_defconfig
-arc                      axs103_smp_defconfig
-m68k                          hp300_defconfig
-mips                        bcm47xx_defconfig
-xtensa                  cadence_csp_defconfig
+openrisc                            defconfig
+mips                          rb532_defconfig
+ia64                             alldefconfig
+ia64                        generic_defconfig
+xtensa                       common_defconfig
 xtensa                         virt_defconfig
 arm                         axm55xx_defconfig
 m68k                       m5475evb_defconfig
-arm                     eseries_pxa_defconfig
 m68k                        m5307c3_defconfig
 powerpc64                           defconfig
-sh                        sh7757lcr_defconfig
-sh                               alldefconfig
+arm                          pxa3xx_defconfig
+arm                     eseries_pxa_defconfig
+arm                           sama5_defconfig
+powerpc                      bamboo_defconfig
+arc                     nsimosci_hs_defconfig
+xtensa                generic_kc705_defconfig
+mips                        vocore2_defconfig
+xtensa                    smp_lx200_defconfig
+arm                        realview_defconfig
+m68k                        mvme147_defconfig
 sh                          rsk7203_defconfig
+arc                      axs103_smp_defconfig
 um                           x86_64_defconfig
 mips                           ci20_defconfig
 arm                  randconfig-c002-20220211
+ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
-ia64                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
 m68k                             allmodconfig
 nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
-nds32                               defconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
+nds32                               defconfig
 nios2                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
 parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
@@ -97,12 +95,12 @@ mips                             allmodconfig
 powerpc                           allnoconfig
 powerpc                          allmodconfig
 powerpc                          allyesconfig
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a006
 i386                          randconfig-a003
 i386                          randconfig-a001
 i386                          randconfig-a005
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
 x86_64                        randconfig-a011
 x86_64                        randconfig-a013
 x86_64                        randconfig-a015
@@ -118,34 +116,38 @@ riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
 um                             i386_defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
-x86_64                                  kexec
-x86_64                           allyesconfig
 x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
+x86_64                                  kexec
 
 clang tested configs:
-powerpc                 mpc8313_rdb_defconfig
+arm                       imx_v4_v5_defconfig
+mips                          ath79_defconfig
+powerpc                      walnut_defconfig
 mips                      malta_kvm_defconfig
-mips                      pic32mzda_defconfig
 powerpc                      katmai_defconfig
 powerpc                      ppc44x_defconfig
+powerpc                     mpc5200_defconfig
+hexagon                             defconfig
+powerpc               mpc834x_itxgp_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
 i386                          randconfig-a002
 i386                          randconfig-a006
 i386                          randconfig-a004
 x86_64                        randconfig-a012
 x86_64                        randconfig-a014
 x86_64                        randconfig-a016
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-i386                          randconfig-a013
 i386                          randconfig-a011
+i386                          randconfig-a013
 i386                          randconfig-a015
-riscv                randconfig-r042-20220211
 hexagon              randconfig-r045-20220211
 hexagon              randconfig-r041-20220211
+riscv                randconfig-r042-20220211
 s390                 randconfig-r044-20220211
 
 ---
