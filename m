@@ -1,20 +1,37 @@
 From: kernel test robot <lkp@intel.com>
-Date: Tue, 15 Feb 2022 15:25:17 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- d206823813087e50d4d4ac0ec7c982ea3a54c146
-Message-ID: <620b555d.h0b+PF+vY3+eRD3x%lkp@intel.com>
+Date: Tue, 15 Feb 2022 18:26:40 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 0393ce6bd4967f5b6443109289fc171f28be7f1e
+Message-ID: <620b7fe0.06SKTMZdESfwC3TW%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: d206823813087e50d4d4ac0ec7c982ea3a54c146  ice: fix concurrent reset and removal of VFs
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 0393ce6bd4967f5b6443109289fc171f28be7f1e  e1000e: Print PHY register address when MDI read/write fails
 
-elapsed time: 738m
+possible Warning in current branch (please contact us if interested):
 
-configs tested: 136
+include/net/gro.h:58:1: sparse: sparse: directive in macro's argument list
+net/ipv6/addrconf.c:4307 if6_get_next() warn: ignoring unreachable code.
+
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+|-- i386-randconfig-m021-20220214
+|   `-- net-ipv6-addrconf.c-if6_get_next()-warn:ignoring-unreachable-code.
+|-- openrisc-randconfig-s031-20220214
+|   `-- include-net-gro.h:sparse:sparse:directive-in-macro-s-argument-list
+|-- s390-randconfig-s032-20220214
+|   `-- include-net-gro.h:sparse:sparse:directive-in-macro-s-argument-list
+`-- x86_64-randconfig-m001-20220214
+    `-- net-ipv6-addrconf.c-if6_get_next()-warn:ignoring-unreachable-code.
+
+elapsed time: 920m
+
+configs tested: 91
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -22,48 +39,21 @@ More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
-i386                 randconfig-c001-20220214
-mips                 randconfig-c004-20220214
-nios2                            alldefconfig
-sh                          r7780mp_defconfig
-sh                            titan_defconfig
-ia64                         bigsur_defconfig
-powerpc                   motionpro_defconfig
-powerpc                     asp8347_defconfig
-arm                          lpd270_defconfig
-xtensa                         virt_defconfig
-arc                     haps_hs_smp_defconfig
-xtensa                              defconfig
-arm                        oxnas_v6_defconfig
-sh                     magicpanelr2_defconfig
-mips                          rb532_defconfig
-parisc                              defconfig
-sh                           se7751_defconfig
-powerpc                       maple_defconfig
-parisc                           alldefconfig
-microblaze                          defconfig
-sparc                               defconfig
-arm64                            alldefconfig
-arm                        mvebu_v7_defconfig
-m68k                          hp300_defconfig
-arm                     eseries_pxa_defconfig
-arm                            pleb_defconfig
-sh                           se7721_defconfig
-powerpc                           allnoconfig
-arm                         lpc18xx_defconfig
-powerpc                      bamboo_defconfig
-arc                        nsimosci_defconfig
+arm64                               defconfig
+arm64                            allyesconfig
+ia64                            zx1_defconfig
+ia64                      gensparse_defconfig
+arm                         axm55xx_defconfig
+sh                          polaris_defconfig
 arm                  randconfig-c002-20220214
 ia64                             allmodconfig
 ia64                                defconfig
 ia64                             allyesconfig
-m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
+m68k                             allmodconfig
 nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
@@ -76,20 +66,23 @@ xtensa                           allyesconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
+parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
 parisc64                            defconfig
 parisc                           allyesconfig
 s390                                defconfig
 i386                             allyesconfig
-sparc                            allyesconfig
+sparc                               defconfig
 i386                                defconfig
 i386                   debian-10.3-kselftests
 i386                              debian-10.3
+sparc                            allyesconfig
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
+powerpc                           allnoconfig
 x86_64               randconfig-a013-20220214
 x86_64               randconfig-a014-20220214
 x86_64               randconfig-a012-20220214
@@ -112,42 +105,18 @@ riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
 um                           x86_64_defconfig
 um                             i386_defconfig
 x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
 x86_64                          rhel-8.3-func
 x86_64                                  kexec
 
 clang tested configs:
-riscv                randconfig-c006-20220214
-i386                 randconfig-c001-20220214
-powerpc              randconfig-c003-20220214
-arm                  randconfig-c002-20220214
-mips                 randconfig-c004-20220214
-x86_64               randconfig-c007-20220214
-arm                         lpc32xx_defconfig
-powerpc                 mpc8315_rdb_defconfig
-mips                        workpad_defconfig
-arm                         s3c2410_defconfig
-powerpc                     ppa8548_defconfig
-mips                          ath25_defconfig
-powerpc                     mpc5200_defconfig
-arm                  colibri_pxa300_defconfig
-arm                         bcm2835_defconfig
-mips                     cu1830-neo_defconfig
-arm                       spear13xx_defconfig
-arm                       aspeed_g4_defconfig
-arm                          pcm027_defconfig
 mips                         tb0287_defconfig
 arm                          moxart_defconfig
-powerpc                    gamecube_defconfig
-mips                     loongson2k_defconfig
-arm                       netwinder_defconfig
-arm                       versatile_defconfig
-powerpc                      ppc44x_defconfig
 x86_64               randconfig-a002-20220214
 x86_64               randconfig-a006-20220214
 x86_64               randconfig-a005-20220214
