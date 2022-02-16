@@ -1,180 +1,70 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 16 Feb 2022 15:07:23 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 477606a501d0705cb1bb86fe7aa86f553861ae7f
-Message-ID: <620ca2ab.asSLe2BctrxOO3jh%lkp@intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 16 Feb 2022 08:42:28 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: fix concurrent reset and removal
+ of VFs
+In-Reply-To: <20220207182329.2078272-1-jacob.e.keller@intel.com>
+References: <20220207182329.2078272-1-jacob.e.keller@intel.com>
+Message-ID: <DM8PR11MB56212493571FC633D8ADFC7EAB359@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 477606a501d0705cb1bb86fe7aa86f553861ae7f  ice: initialize local variable 'tlv'
 
-possible Warning in current branch (please contact us if interested):
 
-include/net/gro.h:58:1: sparse: sparse: directive in macro's argument list
-net/ipv6/addrconf.c:4307 if6_get_next() warn: ignoring unreachable code.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jacob Keller
+> Sent: Monday, February 7, 2022 7:23 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PATCH] ice: fix concurrent reset and removal of
+> VFs
+> 
+> Commit c503e63200c6 ("ice: Stop processing VF messages during teardown")
+> introduced a driver state flag, ICE_VF_DEINIT_IN_PROGRESS, which is
+> intended to prevent some issues with concurrently handling messages from
+> VFs while tearing down the VFs.
+> 
+> This change was motivated by crashes caused while tearing down and
+> bringing up VFs in rapid succession.
+> 
+> It turns out that the fix actually introduces issues with the VF driver caused
+> because the PF no longer responds to any messages sent by the VF during its
+> .remove routine. This results in the VF potentially removing its DMA memory
+> before the PF has shut down the device queues.
+> 
+> Additionally, the fix doesn't actually resolve concurrency issues within the ice
+> driver. It is possible for a VF to initiate a reset just prior to the ice driver
+> removing VFs. This can result in the remove task concurrently operating
+> while the VF is being reset. This results in similar memory corruption and
+> panics purportedly fixed by that commit.
+> 
+> Fix this concurrency at its root by protecting both the reset and removal
+> flows using the existing VF cfg_lock. This ensures that we cannot remove the
+> VF while any outstanding critical tasks such as a virtchnl message or a reset
+> are occurring.
+> 
+> This locking change also fixes the root cause originally fixed by commit
+> c503e63200c6 ("ice: Stop processing VF messages during teardown"), so we
+> can simply revert it.
+> 
+> Note that I kept these two changes together because simply reverting the
+> original commit alone would leave the driver vulnerable to worse race
+> conditions.
+> 
+> Fixes: c503e63200c6 ("ice: Stop processing VF messages during teardown")
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h          |  1 -
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  2 +
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 40 +++++++++++--------
+>  3 files changed, 25 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice.h
+> b/drivers/net/ethernet/intel/ice/ice.h
+> index a9fa701aaa95..473b1f6be9de 100644
+> --- a/drivers/net/ethernet/intel/ice/ice.h
+> +++ b/drivers/net/ethernet/intel/ice/ice.h
 
-Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- i386-randconfig-m021
-|   `-- net-ipv6-addrconf.c-if6_get_next()-warn:ignoring-unreachable-code.
-`-- nds32-randconfig-s031-20220214
-    `-- include-net-gro.h:sparse:sparse:directive-in-macro-s-argument-list
-
-elapsed time: 722m
-
-configs tested: 138
-configs skipped: 5
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                     taishan_defconfig
-arm                         assabet_defconfig
-arc                     nsimosci_hs_defconfig
-arm                           corgi_defconfig
-arc                      axs103_smp_defconfig
-xtensa                           alldefconfig
-microblaze                      mmu_defconfig
-parisc                           alldefconfig
-arm                           h5000_defconfig
-mips                        bcm47xx_defconfig
-arm                        shmobile_defconfig
-openrisc                 simple_smp_defconfig
-sh                                  defconfig
-m68k                             alldefconfig
-arm                       aspeed_g5_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                           viper_defconfig
-arm                            mps2_defconfig
-arm                      jornada720_defconfig
-m68k                          atari_defconfig
-arm64                            alldefconfig
-sh                            shmin_defconfig
-sh                        sh7757lcr_defconfig
-openrisc                  or1klitex_defconfig
-powerpc                        warp_defconfig
-arm                        keystone_defconfig
-powerpc                        cell_defconfig
-i386                             alldefconfig
-sh                        edosk7760_defconfig
-sh                           se7724_defconfig
-powerpc                  iss476-smp_defconfig
-arm                  randconfig-c002-20220214
-arm                  randconfig-c002-20220216
-ia64                                defconfig
-ia64                             allyesconfig
-ia64                             allmodconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64               randconfig-a013-20220214
-x86_64               randconfig-a012-20220214
-x86_64               randconfig-a011-20220214
-x86_64               randconfig-a014-20220214
-x86_64               randconfig-a016-20220214
-x86_64               randconfig-a015-20220214
-i386                 randconfig-a013-20220214
-i386                 randconfig-a016-20220214
-i386                 randconfig-a012-20220214
-i386                 randconfig-a015-20220214
-i386                 randconfig-a011-20220214
-i386                 randconfig-a014-20220214
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-riscv                randconfig-r042-20220214
-arc                  randconfig-r043-20220214
-s390                 randconfig-r044-20220214
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-powerpc                       ebony_defconfig
-hexagon                             defconfig
-arm                        neponset_defconfig
-powerpc                      ppc44x_defconfig
-powerpc                      obs600_defconfig
-mips                         tb0287_defconfig
-powerpc                      walnut_defconfig
-i386                 randconfig-a004-20220214
-i386                 randconfig-a005-20220214
-i386                 randconfig-a006-20220214
-i386                 randconfig-a002-20220214
-i386                 randconfig-a003-20220214
-i386                 randconfig-a001-20220214
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-x86_64               randconfig-a002-20220214
-x86_64               randconfig-a006-20220214
-x86_64               randconfig-a005-20220214
-x86_64               randconfig-a004-20220214
-x86_64               randconfig-a003-20220214
-x86_64               randconfig-a001-20220214
-hexagon              randconfig-r045-20220214
-hexagon              randconfig-r041-20220214
-hexagon              randconfig-r045-20220216
-hexagon              randconfig-r041-20220216
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
