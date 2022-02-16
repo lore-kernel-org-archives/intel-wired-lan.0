@@ -1,66 +1,78 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 15 Feb 2022 17:31:20 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 04/11] ice: move clear_malvf call
- in ice_free_vfs
+Date: Tue, 15 Feb 2022 17:31:23 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 07/11] ice: use ice_for_each_vf
+ for iteration during removal
 In-Reply-To: <20220216013127.3263153-1-jacob.e.keller@intel.com>
 References: <20220216013127.3263153-1-jacob.e.keller@intel.com>
-Message-ID: <20220216013127.3263153-5-jacob.e.keller@intel.com>
+Message-ID: <20220216013127.3263153-8-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_mbx_clear_malvf function is used to clear the indication and
-count of how many times a VF was detected as malicious. During
-ice_free_vfs, we use this function to ensure that all removed VFs are
-reset to a clean state.
+When removing VFs, the driver takes a weird approach of assigning
+pf->num_alloc_vfs to 0 before iterating over the VFs using a temporary
+variable.
 
-The call currently is done at the end of ice_free_vfs() using a tmp
-value to iterate over all of the entries in the bitmap.
+This logic has been in the driver for a long time, and seems to have
+been carried forward from i40e.
 
-This separate iteration using tmp is problematic for a planned refactor
-of the VF array data structure. To avoid this, lets move the call
-slightly higher into the function inside the loop where we teardown all
-of the VFs. This avoids one use of the tmp value used for iteration.
-We'll fix the other user in a future change.
+We want to refactor the way VFs are stored, and iterating over the data
+structure without the ice_for_each_vf interface impedes this work.
+
+The logic relies on implicitly using the num_alloc_vfs as a sort of
+"safe guard" for accessing VF data.
+
+While this sort of guard makes sense for Single Root IOV where all VFs
+are added at once, the data structures don't work for VFs which can be
+added and removed dynamically. We also have a separate state flag,
+ICE_VF_DEINIT_IN_PROGRESS which is a stronger protection against
+concurrent removal and access.
+
+Avoid the custom tmp iteration and replace it with the standard
+ice_for_each_vf iterator. Delay the assignment of num_alloc_vfs until
+after this loop finishes.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 44037d569755..c469b32f665b 100644
+index 6351af58f74e..3e2357460f34 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -536,6 +536,12 @@ void ice_free_vfs(struct ice_pf *pf)
- 			ice_free_vf_res(vf);
- 		}
+@@ -500,7 +500,7 @@ void ice_free_vfs(struct ice_pf *pf)
+ {
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+-	unsigned int tmp, i;
++	unsigned int i;
  
-+		/* clear malicious info since the VF is getting released */
-+		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
-+					ICE_MAX_VF_COUNT, vf->vf_id))
-+			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
-+				vf->vf_id);
-+
- 		mutex_unlock(&vf->cfg_lock);
+ 	if (!pf->vf)
+ 		return;
+@@ -519,10 +519,7 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	else
+ 		dev_warn(dev, "VFs are assigned - not disabling SR-IOV\n");
  
- 		mutex_destroy(&vf->cfg_lock);
-@@ -566,13 +572,6 @@ void ice_free_vfs(struct ice_pf *pf)
- 		}
- 	}
+-	tmp = pf->num_alloc_vfs;
+-	pf->num_qps_per_vf = 0;
+-	pf->num_alloc_vfs = 0;
+-	for (i = 0; i < tmp; i++) {
++	ice_for_each_vf(pf, i) {
+ 		struct ice_vf *vf = &pf->vf[i];
  
--	/* clear malicious info if the VFs are getting released */
--	for (i = 0; i < tmp; i++)
--		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
--					ICE_MAX_VF_COUNT, i))
--			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
--				i);
--
- 	clear_bit(ICE_VF_DIS, pf->state);
- 	clear_bit(ICE_FLAG_SRIOV_ENA, pf->flags);
- }
+ 		mutex_lock(&vf->cfg_lock);
+@@ -558,6 +555,8 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	if (ice_sriov_free_msix_res(pf))
+ 		dev_err(dev, "Failed to free MSIX resources used by SR-IOV\n");
+ 
++	pf->num_qps_per_vf = 0;
++	pf->num_alloc_vfs = 0;
+ 	devm_kfree(dev, pf->vf);
+ 	pf->vf = NULL;
+ 
 -- 
 2.35.1.129.gb80121027d12
 
