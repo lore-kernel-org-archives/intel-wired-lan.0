@@ -1,8 +1,8 @@
 From: Corinna Vinschen <vinschen@redhat.com>
-Date: Wed, 16 Feb 2022 14:22:27 +0100
-Subject: [Intel-wired-lan] [PATCH net] igc: igc_read_phy_reg_gpy: drop
+Date: Wed, 16 Feb 2022 14:31:35 +0100
+Subject: [Intel-wired-lan] [PATCH net v2] igc: igc_read_phy_reg_gpy: drop
  premature return
-Message-ID: <20220216132227.356186-1-vinschen@redhat.com>
+Message-ID: <20220216133135.356870-1-vinschen@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,8 +16,12 @@ semaphore in the acquired state.
 Drop this premature return statement, the function returns after
 releasing the semaphore immediately anyway.
 
+Fixes: 5586838fe9ce ("igc: Add code for PHY support")
 Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
 ---
+
+v2: Add "Fixes:" tag
+
  drivers/net/ethernet/intel/igc/igc_phy.c | 2 --
  1 file changed, 2 deletions(-)
 
