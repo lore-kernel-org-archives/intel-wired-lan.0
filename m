@@ -1,66 +1,94 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 15 Feb 2022 17:31:16 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 00/11] ice: convert VF storage to
- hash table
-Message-ID: <20220216013127.3263153-1-jacob.e.keller@intel.com>
+Date: Tue, 15 Feb 2022 17:31:21 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 05/11] ice: move VFLR acknowledge
+ during ice_free_vfs
+In-Reply-To: <20220216013127.3263153-1-jacob.e.keller@intel.com>
+References: <20220216013127.3263153-1-jacob.e.keller@intel.com>
+Message-ID: <20220216013127.3263153-6-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series refactors the ice networking driver VF storage from a simple
-static array to a hash table. It also introduces krefs and proper locking
-and protection to prevent common use-after-free and concurrency issues.
+After removing all VFs, the driver clears the VFLR indication for VFs.
+This has been in ice since the beginning of SR-IOV support in the ice
+driver.
 
-There are two motivations for this work. First is to make the ice driver
-more resilient by preventing a whole class of use-after-free bugs that can
-occur around concurrent access to VF structures while removing VFs.
+The implementation was copied from i40e, and the motivation for the VFLR
+indication clearing is described in the commit f7414531a0cf ("i40e:
+acknowledge VFLR when disabling SR-IOV")
 
-The second is to prepare the ice driver for future virtualization work to
-support Scalable IOV, an alternative VF implementation compared to Single
-Root IOV. The new VF implementation will allow for more dynamic VF creation
-and removal, necessitating a more robust implementation for VF storage that
-can't rely on the existing mechanisms to prevent concurrent access
-violations.
+The commit explains that we need to clear the VFLR indication because
+the virtual function undergoes a VFLR event. If we don't indicate that
+it is complete it can cause an issue when VFs are re-enabled due to
+a "phantom" VFLR.
 
-The first few patches are cleanup and preparatory work needed to make the
-conversion to the hash table safe. Following this preparatory work is a
-patch to migrate the VF structures and variables to a new sub-structure for
-code clarity. Next introduce new interface functions to abstract the VF
-storage. Finally, the driver is actually converted to the hash table and
-kref implementation.
+The register block read was added under a pci_vfs_assigned check
+originally. This was done because we added the check after calling
+pci_disable_sriov. This was later moved to disable SRIOV earlier in the
+flow so that the VF drivers could be torn down before we removed
+functionality.
 
-Jacob Keller (11):
-  ice: refactor unwind cleanup in eswitch mode
-  ice: store VF pointer instead of VF ID
-  ice: pass num_vfs to ice_set_per_vf_res()
-  ice: move clear_malvf call in ice_free_vfs
-  ice: move VFLR acknowledge during ice_free_vfs
-  ice: remove checks in ice_vc_send_msg_to_vf
-  ice: use ice_for_each_vf for iteration during removal
-  ice: convert ice_for_each_vf to include VF entry iterator
-  ice: factor VF variables to separate structure
-  ice: introduce VF accessor functions
-  ice: convert VF storage to hash table with krefs and RCU
+Move the VFLR acknowledge into the main loop that tears down VF
+resources. This avoids using the tmp value for iterating over VFs
+multiple times. The result will make it easier to refactor the VF array
+in a future change.
 
- drivers/net/ethernet/intel/ice/ice.h          |  13 +-
- drivers/net/ethernet/intel/ice/ice_base.c     |   4 +-
- drivers/net/ethernet/intel/ice/ice_eswitch.c  | 161 ++--
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |  20 +-
- drivers/net/ethernet/intel/ice/ice_lib.c      | 203 +++--
- drivers/net/ethernet/intel/ice/ice_lib.h      |   3 +-
- drivers/net/ethernet/intel/ice/ice_main.c     |  64 +-
- drivers/net/ethernet/intel/ice/ice_repr.c     |  70 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   2 +-
- .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c  |  19 +-
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  13 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 784 +++++++++++-------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  83 +-
- 13 files changed, 879 insertions(+), 560 deletions(-)
+It's possible we might want to modify this flow to also stop checking
+pci_vfs_assigned. However, it seems reasonable to keep this change: we
+should only clear the VFLR if we actually disabled SR-IOV.
 
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 27 ++++++-------------
+ 1 file changed, 8 insertions(+), 19 deletions(-)
 
-base-commit: 477606a501d0705cb1bb86fe7aa86f553861ae7f
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index c469b32f665b..7ab4e7d4cfb7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -536,6 +536,14 @@ void ice_free_vfs(struct ice_pf *pf)
+ 			ice_free_vf_res(vf);
+ 		}
+ 
++		if (!pci_vfs_assigned(pf->pdev)) {
++			u32 reg_idx, bit_idx;
++
++			reg_idx = (hw->func_caps.vf_base_id + vf->vf_id) / 32;
++			bit_idx = (hw->func_caps.vf_base_id + vf->vf_id) % 32;
++			wr32(hw, GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
++		}
++
+ 		/* clear malicious info since the VF is getting released */
+ 		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
+ 					ICE_MAX_VF_COUNT, vf->vf_id))
+@@ -553,25 +561,6 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	devm_kfree(dev, pf->vf);
+ 	pf->vf = NULL;
+ 
+-	/* This check is for when the driver is unloaded while VFs are
+-	 * assigned. Setting the number of VFs to 0 through sysfs is caught
+-	 * before this function ever gets called.
+-	 */
+-	if (!pci_vfs_assigned(pf->pdev)) {
+-		unsigned int vf_id;
+-
+-		/* Acknowledge VFLR for all VFs. Without this, VFs will fail to
+-		 * work correctly when SR-IOV gets re-enabled.
+-		 */
+-		for (vf_id = 0; vf_id < tmp; vf_id++) {
+-			u32 reg_idx, bit_idx;
+-
+-			reg_idx = (hw->func_caps.vf_base_id + vf_id) / 32;
+-			bit_idx = (hw->func_caps.vf_base_id + vf_id) % 32;
+-			wr32(hw, GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
+-		}
+-	}
+-
+ 	clear_bit(ICE_VF_DIS, pf->state);
+ 	clear_bit(ICE_FLAG_SRIOV_ENA, pf->flags);
+ }
 -- 
 2.35.1.129.gb80121027d12
 
