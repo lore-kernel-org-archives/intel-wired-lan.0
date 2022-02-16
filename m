@@ -1,250 +1,205 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 16 Feb 2022 13:37:28 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v2 01/11] ice: refactor unwind
- cleanup in eswitch mode
+Date: Wed, 16 Feb 2022 13:37:30 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 03/11] ice: pass num_vfs to
+ ice_set_per_vf_res()
 In-Reply-To: <20220216213738.3826664-1-jacob.e.keller@intel.com>
 References: <20220216213738.3826664-1-jacob.e.keller@intel.com>
-Message-ID: <20220216213738.3826664-2-jacob.e.keller@intel.com>
+Message-ID: <20220216213738.3826664-4-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The code for supporting eswitch mode and port representors on VFs uses
-an unwind based cleanup flow when handling errors.
+We are planning to replace the simple array structure tracking VFs with
+a hash table. This change will also remove the "num_alloc_vfs" variable.
 
-These flows are used to cleanup and get everything back to the state
-prior to attempting to switch from legacy to representor mode or back.
+Instead, new access functions to use the hash table as the source of
+truth will be introduced. These will generally be equivalent to existing
+checks, except during VF initialization.
 
-The unwind iterations make sense, but complicate a plan to refactor the
-VF array structure. In the future we won't have a clean method of
-reversing an iteration of the VFs.
+Specifically, ice_set_per_vf_res() cannot use the hash table as it will
+be operating prior to VF structures being inserted into the hash table.
 
-Instead, we can change the cleanup flow to just iterate over all VF
-structures and clean up appropriately.
+Instead of using pf->num_alloc_vfs, simply pass the num_vfs value in
+from the caller.
 
-First notice that ice_repr_add_for_all_vfs and ice_repr_rem_from_all_vfs
-have an additional step of re-assigning the VC ops. There is no good
-reason to do this outside of ice_repr_add and ice_repr_rem. It can
-simply be done as the last step of these functions.
+Note that a sub-function of ice_set_per_vf_res, ice_determine_res, also
+implicitly depends on pf->num_alloc_vfs. Replace ice_determine_res with
+a simpler inline implementation based on rounddown_pow_of_two. Note that
+we must explicitly check that the argument is non-zero since it does not
+play well with zero as a value.
 
-Second, make sure ice_repr_rem is safe to call on a VF which does not
-have a representor. Check if vf->repr is NULL first and exit early if
-so.
+Instead of using the function and while loop, simply calculate the
+number of queues we have available by dividing by num_vfs. Check if the
+desired queues are available. If not, round down to the nearest power of
+2 that fits within our available queues.
 
-Move ice_repr_rem_from_all_vfs above ice_repr_add_for_all_vfs so that we
-can call it from the cleanup function.
+This matches the behavior of ice_determine_res but is easier to follow
+as simple in-line logic. Remove ice_determine_res entirely.
 
-In ice_eswitch.c, replace the unwind iteration with a call to
-ice_eswitch_release_reprs. This will go through all of the VFs and
-revert the VF back to the standard model without the eswitch mode.
-
-To make this safe, ensure this function checks whether or not the
-represent or has been moved. Rely on the metadata destination in
-vf->repr->dst. This must be NULL if the representor has not been moved
-to eswitch mode.
-
-Ensure that we always re-assign this value back to NULL after freeing
-it, and move the ice_eswitch_release_reprs so that it can be called from
-the setup function.
-
-With these changes, eswitch cleanup no longer uses an unwind flow that
-is problematic for the planned VF data structure change.
+With this change, we no longer depend on the pf->num_alloc_vfs during
+the initialization phase of VFs. This will allow us to safely remove it
+in a future planned refactor of the VF data structures.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_eswitch.c | 63 ++++++++++----------
- drivers/net/ethernet/intel/ice/ice_repr.c    | 47 +++++++--------
- 2 files changed, 54 insertions(+), 56 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 87 ++++++-------------
+ 1 file changed, 26 insertions(+), 61 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index 95c81fc9ec9f..22babf59d40b 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -202,6 +202,34 @@ static void ice_eswitch_remap_rings_to_vectors(struct ice_pf *pf)
- 	}
- }
- 
-+/**
-+ * ice_eswitch_release_reprs - clear PR VSIs configuration
-+ * @pf: poiner to PF struct
-+ * @ctrl_vsi: pointer to switchdev control VSI
-+ */
-+static void
-+ice_eswitch_release_reprs(struct ice_pf *pf, struct ice_vsi *ctrl_vsi)
-+{
-+	int i;
-+
-+	ice_for_each_vf(pf, i) {
-+		struct ice_vsi *vsi = pf->vf[i].repr->src_vsi;
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		/* Skip VFs that aren't configured */
-+		if (!vf->repr->dst)
-+			continue;
-+
-+		ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
-+		metadata_dst_free(vf->repr->dst);
-+		vf->repr->dst = NULL;
-+		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr.addr,
-+					       ICE_FWD_TO_VSI);
-+
-+		netif_napi_del(&vf->repr->q_vector->napi);
-+	}
-+}
-+
- /**
-  * ice_eswitch_setup_reprs - configure port reprs to run in switchdev mode
-  * @pf: pointer to PF struct
-@@ -231,6 +259,7 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
- 						       vf->hw_lan_addr.addr,
- 						       ICE_FWD_TO_VSI);
- 			metadata_dst_free(vf->repr->dst);
-+			vf->repr->dst = NULL;
- 			goto err;
- 		}
- 
-@@ -239,6 +268,7 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
- 						       vf->hw_lan_addr.addr,
- 						       ICE_FWD_TO_VSI);
- 			metadata_dst_free(vf->repr->dst);
-+			vf->repr->dst = NULL;
- 			ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
- 			goto err;
- 		}
-@@ -266,42 +296,11 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
- 	return 0;
- 
- err:
--	for (i = i - 1; i >= 0; i--) {
--		struct ice_vsi *vsi = pf->vf[i].repr->src_vsi;
--		struct ice_vf *vf = &pf->vf[i];
--
--		ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
--		metadata_dst_free(vf->repr->dst);
--		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr.addr,
--					       ICE_FWD_TO_VSI);
--	}
-+	ice_eswitch_release_reprs(pf, ctrl_vsi);
- 
- 	return -ENODEV;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index d86d47b8fee2..44037d569755 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -1069,45 +1069,6 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
+ 	ice_ena_vf_q_mappings(vf, vsi->alloc_txq, vsi->alloc_rxq);
  }
  
 -/**
-- * ice_eswitch_release_reprs - clear PR VSIs configuration
-- * @pf: poiner to PF struct
-- * @ctrl_vsi: pointer to switchdev control VSI
+- * ice_determine_res
+- * @pf: pointer to the PF structure
+- * @avail_res: available resources in the PF structure
+- * @max_res: maximum resources that can be given per VF
+- * @min_res: minimum resources that can be given per VF
+- *
+- * Returns non-zero value if resources (queues/vectors) are available or
+- * returns zero if PF cannot accommodate for all num_alloc_vfs.
 - */
--static void
--ice_eswitch_release_reprs(struct ice_pf *pf, struct ice_vsi *ctrl_vsi)
+-static int
+-ice_determine_res(struct ice_pf *pf, u16 avail_res, u16 max_res, u16 min_res)
 -{
--	int i;
+-	bool checked_min_res = false;
+-	int res;
 -
--	ice_for_each_vf(pf, i) {
--		struct ice_vsi *vsi = pf->vf[i].repr->src_vsi;
--		struct ice_vf *vf = &pf->vf[i];
+-	/* start by checking if PF can assign max number of resources for
+-	 * all num_alloc_vfs.
+-	 * if yes, return number per VF
+-	 * If no, divide by 2 and roundup, check again
+-	 * repeat the loop till we reach a point where even minimum resources
+-	 * are not available, in that case return 0
+-	 */
+-	res = max_res;
+-	while ((res >= min_res) && !checked_min_res) {
+-		int num_all_res;
 -
--		ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
--		metadata_dst_free(vf->repr->dst);
--		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr.addr,
--					       ICE_FWD_TO_VSI);
+-		num_all_res = pf->num_alloc_vfs * res;
+-		if (num_all_res <= avail_res)
+-			return res;
 -
--		netif_napi_del(&vf->repr->q_vector->napi);
+-		if (res == min_res)
+-			checked_min_res = true;
+-
+-		res = DIV_ROUND_UP(res, 2);
 -	}
+-	return 0;
 -}
 -
  /**
-  * ice_eswitch_update_repr - reconfigure VF port representor
-  * @vsi: VF VSI for which port representor is configured
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index 3f4af6a168d5..0f9826e89381 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -339,6 +339,8 @@ static int ice_repr_add(struct ice_vf *vf)
- 
- 	devlink_port_type_eth_set(&vf->devlink_port, repr->netdev);
- 
-+	ice_vc_change_ops_to_repr(&vf->vc_ops);
-+
- 	return 0;
- 
- err_netdev:
-@@ -366,6 +368,9 @@ static int ice_repr_add(struct ice_vf *vf)
+  * ice_calc_vf_reg_idx - Calculate the VF's register index in the PF space
+  * @vf: VF to calculate the register index for
+@@ -1187,6 +1148,7 @@ static int ice_sriov_set_msix_res(struct ice_pf *pf, u16 num_msix_needed)
+ /**
+  * ice_set_per_vf_res - check if vectors and queues are available
+  * @pf: pointer to the PF structure
++ * @num_vfs: the number of SR-IOV VFs being configured
+  *
+  * First, determine HW interrupts from common pool. If we allocate fewer VFs, we
+  * get more vectors and can enable more queues per VF. Note that this does not
+@@ -1205,20 +1167,20 @@ static int ice_sriov_set_msix_res(struct ice_pf *pf, u16 num_msix_needed)
+  * Lastly, set queue and MSI-X VF variables tracked by the PF so it can be used
+  * by each VF during VF initialization and reset.
   */
- static void ice_repr_rem(struct ice_vf *vf)
+-static int ice_set_per_vf_res(struct ice_pf *pf)
++static int ice_set_per_vf_res(struct ice_pf *pf, u16 num_vfs)
  {
-+	if (!vf->repr)
-+		return;
-+
- 	ice_devlink_destroy_vf_port(vf);
- 	kfree(vf->repr->q_vector);
- 	vf->repr->q_vector = NULL;
-@@ -378,6 +383,23 @@ static void ice_repr_rem(struct ice_vf *vf)
- #endif
- 	kfree(vf->repr);
- 	vf->repr = NULL;
-+
-+	ice_vc_set_dflt_vf_ops(&vf->vc_ops);
-+}
-+
-+/**
-+ * ice_repr_rem_from_all_vfs - remove port representor for all VFs
-+ * @pf: pointer to PF structure
-+ */
-+void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
-+{
-+	int i;
-+
-+	ice_for_each_vf(pf, i) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		ice_repr_rem(vf);
-+	}
- }
+ 	int max_valid_res_idx = ice_get_max_valid_res_idx(pf->irq_tracker);
++	u16 num_msix_per_vf, num_txq, num_rxq, avail_qs;
+ 	int msix_avail_per_vf, msix_avail_for_sriov;
+ 	struct device *dev = ice_pf_to_dev(pf);
+-	u16 num_msix_per_vf, num_txq, num_rxq;
  
- /**
-@@ -395,39 +417,16 @@ int ice_repr_add_for_all_vfs(struct ice_pf *pf)
- 		err = ice_repr_add(vf);
- 		if (err)
- 			goto err;
--
--		ice_vc_change_ops_to_repr(&vf->vc_ops);
+-	if (!pf->num_alloc_vfs || max_valid_res_idx < 0)
++	if (!num_vfs || max_valid_res_idx < 0)
+ 		return -EINVAL;
+ 
+ 	/* determine MSI-X resources per VF */
+ 	msix_avail_for_sriov = pf->hw.func_caps.common_cap.num_msix_vectors -
+ 		pf->irq_tracker->num_entries;
+-	msix_avail_per_vf = msix_avail_for_sriov / pf->num_alloc_vfs;
++	msix_avail_per_vf = msix_avail_for_sriov / num_vfs;
+ 	if (msix_avail_per_vf >= ICE_NUM_VF_MSIX_MED) {
+ 		num_msix_per_vf = ICE_NUM_VF_MSIX_MED;
+ 	} else if (msix_avail_per_vf >= ICE_NUM_VF_MSIX_SMALL) {
+@@ -1230,32 +1192,35 @@ static int ice_set_per_vf_res(struct ice_pf *pf)
+ 	} else {
+ 		dev_err(dev, "Only %d MSI-X interrupts available for SR-IOV. Not enough to support minimum of %d MSI-X interrupts per VF for %d VFs\n",
+ 			msix_avail_for_sriov, ICE_MIN_INTR_PER_VF,
+-			pf->num_alloc_vfs);
++			num_vfs);
+ 		return -EIO;
  	}
  
+-	/* determine queue resources per VF */
+-	num_txq = ice_determine_res(pf, ice_get_avail_txq_count(pf),
+-				    min_t(u16,
+-					  num_msix_per_vf - ICE_NONQ_VECS_VF,
+-					  ICE_MAX_RSS_QS_PER_VF),
+-				    ICE_MIN_QS_PER_VF);
++	num_txq = min_t(u16, num_msix_per_vf - ICE_NONQ_VECS_VF,
++			ICE_MAX_RSS_QS_PER_VF);
++	avail_qs = ice_get_avail_txq_count(pf) / num_vfs;
++	if (!avail_qs)
++		num_txq = 0;
++	else if (num_txq > avail_qs)
++		num_txq = rounddown_pow_of_two(avail_qs);
+ 
+-	num_rxq = ice_determine_res(pf, ice_get_avail_rxq_count(pf),
+-				    min_t(u16,
+-					  num_msix_per_vf - ICE_NONQ_VECS_VF,
+-					  ICE_MAX_RSS_QS_PER_VF),
+-				    ICE_MIN_QS_PER_VF);
++	num_rxq = min_t(u16, num_msix_per_vf - ICE_NONQ_VECS_VF,
++			ICE_MAX_RSS_QS_PER_VF);
++	avail_qs = ice_get_avail_rxq_count(pf) / num_vfs;
++	if (!avail_qs)
++		num_rxq = 0;
++	else if (num_rxq > avail_qs)
++		num_rxq = rounddown_pow_of_two(avail_qs);
+ 
+-	if (!num_txq || !num_rxq) {
++	if (num_txq < ICE_MIN_QS_PER_VF || num_rxq < ICE_MIN_QS_PER_VF) {
+ 		dev_err(dev, "Not enough queues to support minimum of %d queue pairs per VF for %d VFs\n",
+-			ICE_MIN_QS_PER_VF, pf->num_alloc_vfs);
++			ICE_MIN_QS_PER_VF, num_vfs);
+ 		return -EIO;
+ 	}
+ 
+-	if (ice_sriov_set_msix_res(pf, num_msix_per_vf * pf->num_alloc_vfs)) {
++	if (ice_sriov_set_msix_res(pf, num_msix_per_vf * num_vfs)) {
+ 		dev_err(dev, "Unable to set MSI-X resources for %d VFs\n",
+-			pf->num_alloc_vfs);
++			num_vfs);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -1263,7 +1228,7 @@ static int ice_set_per_vf_res(struct ice_pf *pf)
+ 	pf->num_qps_per_vf = min_t(int, num_txq, num_rxq);
+ 	pf->num_msix_per_vf = num_msix_per_vf;
+ 	dev_info(dev, "Enabling %d VFs with %d vectors and %d queues per VF\n",
+-		 pf->num_alloc_vfs, pf->num_msix_per_vf, pf->num_qps_per_vf);
++		 num_vfs, pf->num_msix_per_vf, pf->num_qps_per_vf);
+ 
  	return 0;
- 
- err:
--	for (i = i - 1; i >= 0; i--) {
--		struct ice_vf *vf = &pf->vf[i];
--
--		ice_repr_rem(vf);
--		ice_vc_set_dflt_vf_ops(&vf->vc_ops);
--	}
-+	ice_repr_rem_from_all_vfs(pf);
- 
- 	return err;
  }
+@@ -1977,7 +1942,7 @@ static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
+ 	if (ret)
+ 		goto err_pci_disable_sriov;
  
--/**
-- * ice_repr_rem_from_all_vfs - remove port representor for all VFs
-- * @pf: pointer to PF structure
-- */
--void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
--{
--	int i;
--
--	ice_for_each_vf(pf, i) {
--		struct ice_vf *vf = &pf->vf[i];
--
--		ice_repr_rem(vf);
--		ice_vc_set_dflt_vf_ops(&vf->vc_ops);
--	}
--}
--
- /**
-  * ice_repr_start_tx_queues - start Tx queues of port representor
-  * @repr: pointer to repr structure
+-	if (ice_set_per_vf_res(pf)) {
++	if (ice_set_per_vf_res(pf, num_vfs)) {
+ 		dev_err(dev, "Not enough resources for %d VFs, try with fewer number of VFs\n",
+ 			num_vfs);
+ 		ret = -ENOSPC;
 -- 
 2.35.1.129.gb80121027d12
 
