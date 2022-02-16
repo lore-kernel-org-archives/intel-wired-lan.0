@@ -1,71 +1,66 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 16 Feb 2022 13:37:27 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v2 00/11] ice: convert VF storage
- to hash table
-Message-ID: <20220216213738.3826664-1-jacob.e.keller@intel.com>
+Date: Wed, 16 Feb 2022 13:37:31 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 04/11] ice: move clear_malvf
+ call in ice_free_vfs
+In-Reply-To: <20220216213738.3826664-1-jacob.e.keller@intel.com>
+References: <20220216213738.3826664-1-jacob.e.keller@intel.com>
+Message-ID: <20220216213738.3826664-5-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series refactors the ice networking driver VF storage from a simple
-static array to a hash table. It also introduces krefs and proper locking
-and protection to prevent common use-after-free and concurrency issues.
+The ice_mbx_clear_malvf function is used to clear the indication and
+count of how many times a VF was detected as malicious. During
+ice_free_vfs, we use this function to ensure that all removed VFs are
+reset to a clean state.
 
-There are two motivations for this work. First is to make the ice driver
-more resilient by preventing a whole class of use-after-free bugs that can
-occur around concurrent access to VF structures while removing VFs.
+The call currently is done at the end of ice_free_vfs() using a tmp
+value to iterate over all of the entries in the bitmap.
 
-The second is to prepare the ice driver for future virtualization work to
-support Scalable IOV, an alternative VF implementation compared to Single
-Root IOV. The new VF implementation will allow for more dynamic VF creation
-and removal, necessitating a more robust implementation for VF storage that
-can't rely on the existing mechanisms to prevent concurrent access
-violations.
+This separate iteration using tmp is problematic for a planned refactor
+of the VF array data structure. To avoid this, lets move the call
+slightly higher into the function inside the loop where we teardown all
+of the VFs. This avoids one use of the tmp value used for iteration.
+We'll fix the other user in a future change.
 
-The first few patches are cleanup and preparatory work needed to make the
-conversion to the hash table safe. Following this preparatory work is a
-patch to migrate the VF structures and variables to a new sub-structure for
-code clarity. Next introduce new interface functions to abstract the VF
-storage. Finally, the driver is actually converted to the hash table and
-kref implementation.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-Changes since v1:
-* Add missing ice_put_vf in ice_vc_process_vf_msg, fixing memory leak of VF
-* Fix a few checkpatch.pl complaints reported by NIPA
-
-
-Jacob Keller (11):
-  ice: refactor unwind cleanup in eswitch mode
-  ice: store VF pointer instead of VF ID
-  ice: pass num_vfs to ice_set_per_vf_res()
-  ice: move clear_malvf call in ice_free_vfs
-  ice: move VFLR acknowledge during ice_free_vfs
-  ice: remove checks in ice_vc_send_msg_to_vf
-  ice: use ice_for_each_vf for iteration during removal
-  ice: convert ice_for_each_vf to include VF entry iterator
-  ice: factor VF variables to separate structure
-  ice: introduce VF accessor functions
-  ice: convert VF storage to hash table with krefs and RCU
-
- drivers/net/ethernet/intel/ice/ice.h          |  13 +-
- drivers/net/ethernet/intel/ice/ice_base.c     |   4 +-
- drivers/net/ethernet/intel/ice/ice_eswitch.c  | 161 ++--
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |  20 +-
- drivers/net/ethernet/intel/ice/ice_lib.c      | 203 +++--
- drivers/net/ethernet/intel/ice/ice_lib.h      |   3 +-
- drivers/net/ethernet/intel/ice/ice_main.c     |  64 +-
- drivers/net/ethernet/intel/ice/ice_repr.c     |  70 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   2 +-
- .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c  |  19 +-
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  13 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 784 +++++++++++-------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  83 +-
- 13 files changed, 879 insertions(+), 560 deletions(-)
-
-
-base-commit: 477606a501d0705cb1bb86fe7aa86f553861ae7f
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 44037d569755..c469b32f665b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -536,6 +536,12 @@ void ice_free_vfs(struct ice_pf *pf)
+ 			ice_free_vf_res(vf);
+ 		}
+ 
++		/* clear malicious info since the VF is getting released */
++		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
++					ICE_MAX_VF_COUNT, vf->vf_id))
++			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
++				vf->vf_id);
++
+ 		mutex_unlock(&vf->cfg_lock);
+ 
+ 		mutex_destroy(&vf->cfg_lock);
+@@ -566,13 +572,6 @@ void ice_free_vfs(struct ice_pf *pf)
+ 		}
+ 	}
+ 
+-	/* clear malicious info if the VFs are getting released */
+-	for (i = 0; i < tmp; i++)
+-		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
+-					ICE_MAX_VF_COUNT, i))
+-			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
+-				i);
+-
+ 	clear_bit(ICE_VF_DIS, pf->state);
+ 	clear_bit(ICE_FLAG_SRIOV_ENA, pf->flags);
+ }
 -- 
 2.35.1.129.gb80121027d12
 
