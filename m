@@ -1,62 +1,90 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 16 Feb 2022 13:37:31 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v2 04/11] ice: move clear_malvf
- call in ice_free_vfs
+Date: Wed, 16 Feb 2022 13:37:32 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 05/11] ice: move VFLR
+ acknowledge during ice_free_vfs
 In-Reply-To: <20220216213738.3826664-1-jacob.e.keller@intel.com>
 References: <20220216213738.3826664-1-jacob.e.keller@intel.com>
-Message-ID: <20220216213738.3826664-5-jacob.e.keller@intel.com>
+Message-ID: <20220216213738.3826664-6-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_mbx_clear_malvf function is used to clear the indication and
-count of how many times a VF was detected as malicious. During
-ice_free_vfs, we use this function to ensure that all removed VFs are
-reset to a clean state.
+After removing all VFs, the driver clears the VFLR indication for VFs.
+This has been in ice since the beginning of SR-IOV support in the ice
+driver.
 
-The call currently is done at the end of ice_free_vfs() using a tmp
-value to iterate over all of the entries in the bitmap.
+The implementation was copied from i40e, and the motivation for the VFLR
+indication clearing is described in the commit f7414531a0cf ("i40e:
+acknowledge VFLR when disabling SR-IOV")
 
-This separate iteration using tmp is problematic for a planned refactor
-of the VF array data structure. To avoid this, lets move the call
-slightly higher into the function inside the loop where we teardown all
-of the VFs. This avoids one use of the tmp value used for iteration.
-We'll fix the other user in a future change.
+The commit explains that we need to clear the VFLR indication because
+the virtual function undergoes a VFLR event. If we don't indicate that
+it is complete it can cause an issue when VFs are re-enabled due to
+a "phantom" VFLR.
+
+The register block read was added under a pci_vfs_assigned check
+originally. This was done because we added the check after calling
+pci_disable_sriov. This was later moved to disable SRIOV earlier in the
+flow so that the VF drivers could be torn down before we removed
+functionality.
+
+Move the VFLR acknowledge into the main loop that tears down VF
+resources. This avoids using the tmp value for iterating over VFs
+multiple times. The result will make it easier to refactor the VF array
+in a future change.
+
+It's possible we might want to modify this flow to also stop checking
+pci_vfs_assigned. However, it seems reasonable to keep this change: we
+should only clear the VFLR if we actually disabled SR-IOV.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 27 ++++++-------------
+ 1 file changed, 8 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index 44037d569755..c469b32f665b 100644
+index c469b32f665b..7ab4e7d4cfb7 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -536,6 +536,12 @@ void ice_free_vfs(struct ice_pf *pf)
+@@ -536,6 +536,14 @@ void ice_free_vfs(struct ice_pf *pf)
  			ice_free_vf_res(vf);
  		}
  
-+		/* clear malicious info since the VF is getting released */
-+		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
-+					ICE_MAX_VF_COUNT, vf->vf_id))
-+			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
-+				vf->vf_id);
++		if (!pci_vfs_assigned(pf->pdev)) {
++			u32 reg_idx, bit_idx;
 +
- 		mutex_unlock(&vf->cfg_lock);
++			reg_idx = (hw->func_caps.vf_base_id + vf->vf_id) / 32;
++			bit_idx = (hw->func_caps.vf_base_id + vf->vf_id) % 32;
++			wr32(hw, GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
++		}
++
+ 		/* clear malicious info since the VF is getting released */
+ 		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
+ 					ICE_MAX_VF_COUNT, vf->vf_id))
+@@ -553,25 +561,6 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	devm_kfree(dev, pf->vf);
+ 	pf->vf = NULL;
  
- 		mutex_destroy(&vf->cfg_lock);
-@@ -566,13 +572,6 @@ void ice_free_vfs(struct ice_pf *pf)
- 		}
- 	}
- 
--	/* clear malicious info if the VFs are getting released */
--	for (i = 0; i < tmp; i++)
--		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
--					ICE_MAX_VF_COUNT, i))
--			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
--				i);
+-	/* This check is for when the driver is unloaded while VFs are
+-	 * assigned. Setting the number of VFs to 0 through sysfs is caught
+-	 * before this function ever gets called.
+-	 */
+-	if (!pci_vfs_assigned(pf->pdev)) {
+-		unsigned int vf_id;
+-
+-		/* Acknowledge VFLR for all VFs. Without this, VFs will fail to
+-		 * work correctly when SR-IOV gets re-enabled.
+-		 */
+-		for (vf_id = 0; vf_id < tmp; vf_id++) {
+-			u32 reg_idx, bit_idx;
+-
+-			reg_idx = (hw->func_caps.vf_base_id + vf_id) / 32;
+-			bit_idx = (hw->func_caps.vf_base_id + vf_id) % 32;
+-			wr32(hw, GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
+-		}
+-	}
 -
  	clear_bit(ICE_VF_DIS, pf->state);
  	clear_bit(ICE_FLAG_SRIOV_ENA, pf->flags);
