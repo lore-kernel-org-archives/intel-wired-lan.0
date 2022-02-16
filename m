@@ -1,137 +1,250 @@
-From: Joe Damato <jdamato@fastly.com>
-Date: Tue, 15 Feb 2022 13:02:06 -0800
-Subject: [Intel-wired-lan] i40e and TSO with MPLS ?
-Message-ID: <1644958926-51692-1-git-send-email-jdamato@fastly.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue, 15 Feb 2022 17:31:17 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 01/11] ice: refactor unwind
+ cleanup in eswitch mode
+In-Reply-To: <20220216013127.3263153-1-jacob.e.keller@intel.com>
+References: <20220216013127.3263153-1-jacob.e.keller@intel.com>
+Message-ID: <20220216013127.3263153-2-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Greetings:
+The code for supporting eswitch mode and port representors on VFs uses
+an unwind based cleanup flow when handling errors.
 
-Does i40e (XL710) support TSO with MPLS?
+These flows are used to cleanup and get everything back to the state
+prior to attempting to switch from legacy to representor mode or back.
 
-We are using firmware version: 7.10 0x80006469 1.2527.0
+The unwind iterations make sense, but complicate a plan to refactor the
+VF array structure. In the future we won't have a clean method of
+reversing an iteration of the VFs.
 
-We've attempted to add support for TSO+MPLS to i40e, but were unable to
-get it working. The patch is included below for reference, but it is almost
-certainly incorrect - and I am not clear if the hardware itself would
-support this even if the patch was correct.
+Instead, we can change the cleanup flow to just iterate over all VF
+structures and clean up appropriately.
 
-Applying the patch below and using tcpdump shows that:
+First notice that ice_repr_add_for_all_vfs and ice_repr_rem_from_all_vfs
+have an additional step of re-assigning the VC ops. There is no good
+reason to do this outside of ice_repr_add and ice_repr_rem. It can
+simply be done as the last step of these functions.
 
-	- packet data, as seen by the pcap filter in the kernel, is large.
-	  This suggests that the kernel is attempting to offload
-	  segmentation to the device,
+Second, make sure ice_repr_rem is safe to call on a VF which does not
+have a representor. Check if vf->repr is NULL first and exit early if
+so.
 
-	but
+Move ice_repr_rem_from_all_vfs above ice_repr_add_for_all_vfs so that we
+can call it from the cleanup function.
 
-	- those large packets are not ACK'd by the client
+In ice_eswitch.c, replace the unwind iteration with a call to
+ice_eswitch_release_reprs. This will go through all of the VFs and
+revert the VF back to the standard model without the eswitch mode.
 
-This suggests that either:
+To make this safe, ensure this function checks whether or not the
+represent or has been moved. Rely on the metadata destination in
+vf->repr->dst. This must be NULL if the representor has not been moved
+to eswitch mode.
 
-	- the device does not support TSO + MPLS, and/or
-	- the patch below is incorrect
+Ensure that we always re-assign this value back to NULL after freeing
+it, and move the ice_eswitch_release_reprs so that it can be called from
+the setup function.
 
-Does anyone working on i40e have any insight on this?
+With these changes, eswitch cleanup no longer uses an unwind flow that
+is problematic for the planned VF data structure change.
 
-Thanks,
-Joe
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 63 ++++++++++----------
+ drivers/net/ethernet/intel/ice/ice_repr.c    | 47 +++++++--------
+ 2 files changed, 54 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a21833c..b7455cc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -12920,8 +12920,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	np->vsi = vsi;
- 
- 	hw_enc_features = NETIF_F_SG			|
--			  NETIF_F_IP_CSUM		|
--			  NETIF_F_IPV6_CSUM		|
-+			  NETIF_F_HW_CSUM		|
- 			  NETIF_F_HIGHDMA		|
- 			  NETIF_F_SOFT_FEATURES		|
- 			  NETIF_F_TSO			|
-@@ -12952,6 +12951,23 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	/* record features VLANs can make use of */
- 	netdev->vlan_features |= hw_enc_features | NETIF_F_TSO_MANGLEID;
- 
-+#define I40E_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
-+				   NETIF_F_GSO_GRE_CSUM | \
-+				   NETIF_F_GSO_IPXIP4 | \
-+				   NETIF_F_GSO_IPXIP6 | \
-+				   NETIF_F_GSO_UDP_TUNNEL | \
-+				   NETIF_F_GSO_UDP_TUNNEL_CSUM)
-+
-+	netdev->gso_partial_features = I40E_GSO_PARTIAL_FEATURES;
-+	netdev->features |= NETIF_F_GSO_PARTIAL |
-+			    I40E_GSO_PARTIAL_FEATURES;
-+
-+	netdev->mpls_features    |= NETIF_F_SG;
-+	netdev->mpls_features    |= NETIF_F_HW_CSUM;
-+	netdev->mpls_features    |= NETIF_F_TSO;
-+	netdev->mpls_features    |= NETIF_F_TSO6;
-+	netdev->mpls_features |= I40E_GSO_PARTIAL_FEATURES;
-+
- 	/* enable macvlan offloads */
- 	netdev->hw_features |= NETIF_F_HW_L2FW_DOFFLOAD;
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 5ad2812..9e641a9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -9,6 +9,7 @@
- #include "i40e_prototype.h"
- #include "i40e_txrx_common.h"
- #include "i40e_xsk.h"
-+#include <net/mpls.h>
- 
- #define I40E_TXD_CMD (I40E_TX_DESC_CMD_EOP | I40E_TX_DESC_CMD_RS)
- /**
-@@ -2908,6 +2909,7 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
- {
- 	struct sk_buff *skb = first->skb;
- 	u64 cd_cmd, cd_tso_len, cd_mss;
-+	__be16 protocol;
- 	union {
- 		struct iphdr *v4;
- 		struct ipv6hdr *v6;
-@@ -2932,15 +2934,24 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
- 	if (err < 0)
- 		return err;
- 
--	ip.hdr = skb_network_header(skb);
--	l4.hdr = skb_transport_header(skb);
-+	protocol = vlan_get_protocol(skb);
-+
-+	if (eth_p_mpls(protocol))
-+		ip.hdr = skb_inner_network_header(skb);
-+	else
-+		ip.hdr = skb_network_header(skb);
-+	l4.hdr = skb_checksum_start(skb);
- 
- 	/* initialize outer IP header fields */
- 	if (ip.v4->version == 4) {
- 		ip.v4->tot_len = 0;
- 		ip.v4->check = 0;
-+
-+		first->tx_flags |= I40E_TX_FLAGS_TSO |
-+				   I40E_TX_FLAGS_IPV4;
- 	} else {
- 		ip.v6->payload_len = 0;
-+		first->tx_flags |= I40E_TX_FLAGS_TSO;
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 95c81fc9ec9f..22babf59d40b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -202,6 +202,34 @@ static void ice_eswitch_remap_rings_to_vectors(struct ice_pf *pf)
  	}
+ }
  
- 	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
-@@ -2962,10 +2973,6 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
- 					     (__force __wsum)htonl(paylen));
++/**
++ * ice_eswitch_release_reprs - clear PR VSIs configuration
++ * @pf: poiner to PF struct
++ * @ctrl_vsi: pointer to switchdev control VSI
++ */
++static void
++ice_eswitch_release_reprs(struct ice_pf *pf, struct ice_vsi *ctrl_vsi)
++{
++	int i;
++
++	ice_for_each_vf(pf, i) {
++		struct ice_vsi *vsi = pf->vf[i].repr->src_vsi;
++		struct ice_vf *vf = &pf->vf[i];
++
++		/* Skip VFs that aren't configured */
++		if (!vf->repr->dst)
++			continue;
++
++		ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
++		metadata_dst_free(vf->repr->dst);
++		vf->repr->dst = NULL;
++		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr.addr,
++					       ICE_FWD_TO_VSI);
++
++		netif_napi_del(&vf->repr->q_vector->napi);
++	}
++}
++
+ /**
+  * ice_eswitch_setup_reprs - configure port reprs to run in switchdev mode
+  * @pf: pointer to PF struct
+@@ -231,6 +259,7 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
+ 						       vf->hw_lan_addr.addr,
+ 						       ICE_FWD_TO_VSI);
+ 			metadata_dst_free(vf->repr->dst);
++			vf->repr->dst = NULL;
+ 			goto err;
  		}
  
--		/* reset pointers to inner headers */
--		ip.hdr = skb_inner_network_header(skb);
--		l4.hdr = skb_inner_transport_header(skb);
+@@ -239,6 +268,7 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
+ 						       vf->hw_lan_addr.addr,
+ 						       ICE_FWD_TO_VSI);
+ 			metadata_dst_free(vf->repr->dst);
++			vf->repr->dst = NULL;
+ 			ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
+ 			goto err;
+ 		}
+@@ -266,42 +296,11 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
+ 	return 0;
+ 
+ err:
+-	for (i = i - 1; i >= 0; i--) {
+-		struct ice_vsi *vsi = pf->vf[i].repr->src_vsi;
+-		struct ice_vf *vf = &pf->vf[i];
 -
- 		/* initialize inner IP header fields */
- 		if (ip.v4->version == 4) {
- 			ip.v4->tot_len = 0;
+-		ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
+-		metadata_dst_free(vf->repr->dst);
+-		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr.addr,
+-					       ICE_FWD_TO_VSI);
+-	}
++	ice_eswitch_release_reprs(pf, ctrl_vsi);
+ 
+ 	return -ENODEV;
+ }
+ 
+-/**
+- * ice_eswitch_release_reprs - clear PR VSIs configuration
+- * @pf: poiner to PF struct
+- * @ctrl_vsi: pointer to switchdev control VSI
+- */
+-static void
+-ice_eswitch_release_reprs(struct ice_pf *pf, struct ice_vsi *ctrl_vsi)
+-{
+-	int i;
+-
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vsi *vsi = pf->vf[i].repr->src_vsi;
+-		struct ice_vf *vf = &pf->vf[i];
+-
+-		ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
+-		metadata_dst_free(vf->repr->dst);
+-		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr.addr,
+-					       ICE_FWD_TO_VSI);
+-
+-		netif_napi_del(&vf->repr->q_vector->napi);
+-	}
+-}
+-
+ /**
+  * ice_eswitch_update_repr - reconfigure VF port representor
+  * @vsi: VF VSI for which port representor is configured
+diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
+index 3f4af6a168d5..0f9826e89381 100644
+--- a/drivers/net/ethernet/intel/ice/ice_repr.c
++++ b/drivers/net/ethernet/intel/ice/ice_repr.c
+@@ -339,6 +339,8 @@ static int ice_repr_add(struct ice_vf *vf)
+ 
+ 	devlink_port_type_eth_set(&vf->devlink_port, repr->netdev);
+ 
++	ice_vc_change_ops_to_repr(&vf->vc_ops);
++
+ 	return 0;
+ 
+ err_netdev:
+@@ -366,6 +368,9 @@ static int ice_repr_add(struct ice_vf *vf)
+  */
+ static void ice_repr_rem(struct ice_vf *vf)
+ {
++	if (!vf->repr)
++		return;
++
+ 	ice_devlink_destroy_vf_port(vf);
+ 	kfree(vf->repr->q_vector);
+ 	vf->repr->q_vector = NULL;
+@@ -378,6 +383,23 @@ static void ice_repr_rem(struct ice_vf *vf)
+ #endif
+ 	kfree(vf->repr);
+ 	vf->repr = NULL;
++
++	ice_vc_set_dflt_vf_ops(&vf->vc_ops);
++}
++
++/**
++ * ice_repr_rem_from_all_vfs - remove port representor for all VFs
++ * @pf: pointer to PF structure
++ */
++void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
++{
++	int i;
++
++	ice_for_each_vf(pf, i) {
++		struct ice_vf *vf = &pf->vf[i];
++
++		ice_repr_rem(vf);
++	}
+ }
+ 
+ /**
+@@ -395,39 +417,16 @@ int ice_repr_add_for_all_vfs(struct ice_pf *pf)
+ 		err = ice_repr_add(vf);
+ 		if (err)
+ 			goto err;
+-
+-		ice_vc_change_ops_to_repr(&vf->vc_ops);
+ 	}
+ 
+ 	return 0;
+ 
+ err:
+-	for (i = i - 1; i >= 0; i--) {
+-		struct ice_vf *vf = &pf->vf[i];
+-
+-		ice_repr_rem(vf);
+-		ice_vc_set_dflt_vf_ops(&vf->vc_ops);
+-	}
++	ice_repr_rem_from_all_vfs(pf);
+ 
+ 	return err;
+ }
+ 
+-/**
+- * ice_repr_rem_from_all_vfs - remove port representor for all VFs
+- * @pf: pointer to PF structure
+- */
+-void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
+-{
+-	int i;
+-
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
+-
+-		ice_repr_rem(vf);
+-		ice_vc_set_dflt_vf_ops(&vf->vc_ops);
+-	}
+-}
+-
+ /**
+  * ice_repr_start_tx_queues - start Tx queues of port representor
+  * @repr: pointer to repr structure
+-- 
+2.35.1.129.gb80121027d12
+
