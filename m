@@ -1,689 +1,757 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 16 Feb 2022 13:37:29 -0800
-Subject: [Intel-wired-lan] [net-next PATCH v2 02/11] ice: store VF pointer
- instead of VF ID
+Date: Wed, 16 Feb 2022 13:37:35 -0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 08/11] ice: convert
+ ice_for_each_vf to include VF entry iterator
 In-Reply-To: <20220216213738.3826664-1-jacob.e.keller@intel.com>
 References: <20220216213738.3826664-1-jacob.e.keller@intel.com>
-Message-ID: <20220216213738.3826664-3-jacob.e.keller@intel.com>
+Message-ID: <20220216213738.3826664-9-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The VSI structure contains a vf_id field used to associate a VSI with a
-VF. This is used mainly for ICE_VSI_VF as well as partially for
-ICE_VSI_CTRL associated with the VFs.
+The ice_for_each_vf macro is intended to be used to loop over all VFs.
+The current implementation relies on an iterator that is the index into
+the VF array in the PF structure. This forces all users to perform a
+look up themselves.
 
-This API was designed with the idea that VFs are stored in a simple
-array that was expected to be static throughout most of the driver's
-life.
+This abstraction forces a lot of duplicate work on callers and leaks the
+interface implementation to the caller. Replace this with an
+implementation that includes the VF pointer the primary iterator. This
+version simplifies callers which just want to iterate over every VF, as
+they no longer need to perform their own lookup.
 
-We plan on refactoring VF storage in a few key ways:
+The "i" iterator value is replaced with a new unsigned int "bkt"
+parameter, as this will match the necessary interface for replacing
+the VF array with a hash table. For now, the bkt is the VF ID, but in
+the future it will simply be the hash bucket index. Document that it
+should not be treated as a VF ID.
 
-  1) converting from a simple static array to a hash table
-  2) using krefs to track VF references obtained from the hash table
-  3) use RCU to delay release of VF memory until after all references
-     are dropped
-
-This is motivated by the goal to ensure that the lifetime of VF
-structures is accounted for, and prevent various use-after-free bugs.
-
-With the existing vsi->vf_id, the reference tracking for VFs would
-become somewhat convoluted, because each VSI maintains a vf_id field
-which will then require performing a look up. This means all these flows
-will require reference tracking and proper usage of rcu_read_lock, etc.
-
-We know that the VF VSI will always be backed by a valid VF structure,
-because the VSI is created during VF initialization and removed before
-the VF is destroyed. Rely on this and store a reference to the VF in the
-VSI structure instead of storing a VF ID. This will simplify the usage
-and avoid the need to perform lookups on the hash table in the future.
-
-For ICE_VSI_VF, it is expected that vsi->vf is always non-NULL after
-ice_vsi_alloc succeeds. Because of this, use WARN_ON when checking if a
-vsi->vf pointer is valid when dealing with VF VSIs. This will aid in
-debugging code which violates this assumption and avoid more disastrous
-panics.
+This change aims to simplify switching from the array to a hash table. I
+considered alternative implementations such as an xarray but decided
+that the hash table was the simplest and most suitable implementation. I
+also looked at methods to hide the bkt iterator entirely, but I couldn't
+come up with a feasible solution that worked for hash table iterators.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h          |   3 +-
- drivers/net/ethernet/intel/ice/ice_base.c     |   4 +-
- drivers/net/ethernet/intel/ice/ice_eswitch.c  |   7 +-
- drivers/net/ethernet/intel/ice/ice_lib.c      | 178 +++++++++++-------
- drivers/net/ethernet/intel/ice/ice_lib.h      |   3 +-
- drivers/net/ethernet/intel/ice/ice_main.c     |  10 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c     |   2 +-
- .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c  |  19 +-
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |   5 +-
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   6 +-
- 10 files changed, 142 insertions(+), 95 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch.c  |  63 ++++----
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |   7 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  21 ++-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  44 +++---
+ drivers/net/ethernet/intel/ice/ice_repr.c     |  15 +-
+ .../ethernet/intel/ice/ice_virtchnl_fdir.c    |   6 +-
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 141 +++++++++---------
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  16 +-
+ 8 files changed, 162 insertions(+), 151 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index b562128e7024..9041b4428af0 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -109,7 +109,6 @@
- /* All VF control VSIs share the same IRQ, so assign a unique ID for them */
- #define ICE_RES_VF_CTRL_VEC_ID	(ICE_RES_RDMA_VEC_ID - 1)
- #define ICE_INVAL_Q_INDEX	0xffff
--#define ICE_INVAL_VFID		256
- 
- #define ICE_MAX_RXQS_PER_TC		256	/* Used when setting VSI context per TC Rx queues */
- 
-@@ -348,7 +347,7 @@ struct ice_vsi {
- 	u16 vsi_num;			/* HW (absolute) index of this VSI */
- 	u16 idx;			/* software index in pf->vsi[] */
- 
--	s16 vf_id;			/* VF ID for SR-IOV VSIs */
-+	struct ice_vf *vf;		/* VF associated with this VSI */
- 
- 	u16 ethtype;			/* Ethernet protocol for pause frame */
- 	u16 num_gfltr;
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 2360e6abdb1e..a3094470d31d 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -323,7 +323,7 @@ ice_setup_tx_ctx(struct ice_tx_ring *ring, struct ice_tlan_ctx *tlan_ctx, u16 pf
- 		break;
- 	case ICE_VSI_VF:
- 		/* Firmware expects vmvf_num to be absolute VF ID */
--		tlan_ctx->vmvf_num = hw->func_caps.vf_base_id + vsi->vf_id;
-+		tlan_ctx->vmvf_num = hw->func_caps.vf_base_id + vsi->vf->vf_id;
- 		tlan_ctx->vmvf_type = ICE_TLAN_CTX_VMVF_TYPE_VF;
- 		break;
- 	case ICE_VSI_SWITCHDEV_CTRL:
-@@ -429,7 +429,7 @@ static int ice_setup_rx_ctx(struct ice_rx_ring *ring)
- 	 */
- 	if (ice_is_dvm_ena(hw))
- 		if (vsi->type == ICE_VSI_VF &&
--		    ice_vf_is_port_vlan_ena(&vsi->back->vf[vsi->vf_id]))
-+		    ice_vf_is_port_vlan_ena(vsi->vf))
- 			rlan_ctx.l2tsel = 1;
- 		else
- 			rlan_ctx.l2tsel = 0;
 diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index 22babf59d40b..e47331e363ea 100644
+index e47331e363ea..aa16ea15c5ca 100644
 --- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -315,7 +315,7 @@ void ice_eswitch_update_repr(struct ice_vsi *vsi)
- 	if (!ice_is_switchdev_running(pf))
- 		return;
- 
--	vf = &pf->vf[vsi->vf_id];
-+	vf = vsi->vf;
- 	repr = vf->repr;
- 	repr->src_vsi = vsi;
- 	repr->dst->u.port_info.port_id = vsi->vsi_num;
-@@ -323,7 +323,8 @@ void ice_eswitch_update_repr(struct ice_vsi *vsi)
- 	ret = ice_vsi_update_security(vsi, ice_vsi_ctx_clear_antispoof);
- 	if (ret) {
- 		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr.addr, ICE_FWD_TO_VSI);
--		dev_err(ice_pf_to_dev(pf), "Failed to update VF %d port representor", vsi->vf_id);
-+		dev_err(ice_pf_to_dev(pf), "Failed to update VF %d port representor",
-+			vsi->vf->vf_id);
- 	}
- }
- 
-@@ -407,7 +408,7 @@ static void ice_eswitch_release_env(struct ice_pf *pf)
- static struct ice_vsi *
- ice_eswitch_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
+@@ -210,11 +210,11 @@ static void ice_eswitch_remap_rings_to_vectors(struct ice_pf *pf)
+ static void
+ ice_eswitch_release_reprs(struct ice_pf *pf, struct ice_vsi *ctrl_vsi)
  {
--	return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL, ICE_INVAL_VFID, NULL);
-+	return ice_vsi_setup(pf, pi, ICE_VSI_SWITCHDEV_CTRL, NULL, NULL);
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vsi *vsi = pf->vf[i].repr->src_vsi;
+-		struct ice_vf *vf = &pf->vf[i];
++	ice_for_each_vf(pf, bkt, vf) {
++		struct ice_vsi *vsi = vf->repr->src_vsi;
+ 
+ 		/* Skip VFs that aren't configured */
+ 		if (!vf->repr->dst)
+@@ -238,11 +238,11 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
+ {
+ 	struct ice_vsi *ctrl_vsi = pf->switchdev.control_vsi;
+ 	int max_vsi_num = 0;
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vsi *vsi = pf->vf[i].repr->src_vsi;
+-		struct ice_vf *vf = &pf->vf[i];
++	ice_for_each_vf(pf, bkt, vf) {
++		struct ice_vsi *vsi = vf->repr->src_vsi;
+ 
+ 		ice_remove_vsi_fltr(&pf->hw, vsi->idx);
+ 		vf->repr->dst = metadata_dst_alloc(0, METADATA_HW_PORT_MUX,
+@@ -282,8 +282,8 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
+ 		netif_keep_dst(vf->repr->netdev);
+ 	}
+ 
+-	ice_for_each_vf(pf, i) {
+-		struct ice_repr *repr = pf->vf[i].repr;
++	ice_for_each_vf(pf, bkt, vf) {
++		struct ice_repr *repr = vf->repr;
+ 		struct ice_vsi *vsi = repr->src_vsi;
+ 		struct metadata_dst *dst;
+ 
+@@ -417,10 +417,11 @@ ice_eswitch_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
+  */
+ static void ice_eswitch_napi_del(struct ice_pf *pf)
+ {
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+-	ice_for_each_vf(pf, i)
+-		netif_napi_del(&pf->vf[i].repr->q_vector->napi);
++	ice_for_each_vf(pf, bkt, vf)
++		netif_napi_del(&vf->repr->q_vector->napi);
  }
  
  /**
+@@ -429,10 +430,11 @@ static void ice_eswitch_napi_del(struct ice_pf *pf)
+  */
+ static void ice_eswitch_napi_enable(struct ice_pf *pf)
+ {
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+-	ice_for_each_vf(pf, i)
+-		napi_enable(&pf->vf[i].repr->q_vector->napi);
++	ice_for_each_vf(pf, bkt, vf)
++		napi_enable(&vf->repr->q_vector->napi);
+ }
+ 
+ /**
+@@ -441,10 +443,11 @@ static void ice_eswitch_napi_enable(struct ice_pf *pf)
+  */
+ static void ice_eswitch_napi_disable(struct ice_pf *pf)
+ {
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+-	ice_for_each_vf(pf, i)
+-		napi_disable(&pf->vf[i].repr->q_vector->napi);
++	ice_for_each_vf(pf, bkt, vf)
++		napi_disable(&vf->repr->q_vector->napi);
+ }
+ 
+ /**
+@@ -613,16 +616,15 @@ int ice_eswitch_configure(struct ice_pf *pf)
+  */
+ static void ice_eswitch_start_all_tx_queues(struct ice_pf *pf)
+ {
+-	struct ice_repr *repr;
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+ 	if (test_bit(ICE_DOWN, pf->state))
+ 		return;
+ 
+-	ice_for_each_vf(pf, i) {
+-		repr = pf->vf[i].repr;
+-		if (repr)
+-			ice_repr_start_tx_queues(repr);
++	ice_for_each_vf(pf, bkt, vf) {
++		if (vf->repr)
++			ice_repr_start_tx_queues(vf->repr);
+ 	}
+ }
+ 
+@@ -632,16 +634,15 @@ static void ice_eswitch_start_all_tx_queues(struct ice_pf *pf)
+  */
+ void ice_eswitch_stop_all_tx_queues(struct ice_pf *pf)
+ {
+-	struct ice_repr *repr;
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+ 	if (test_bit(ICE_DOWN, pf->state))
+ 		return;
+ 
+-	ice_for_each_vf(pf, i) {
+-		repr = pf->vf[i].repr;
+-		if (repr)
+-			ice_repr_stop_tx_queues(repr);
++	ice_for_each_vf(pf, bkt, vf) {
++		if (vf->repr)
++			ice_repr_stop_tx_queues(vf->repr);
+ 	}
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index a3492754d0d3..d2f50d41f62d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -316,11 +316,10 @@ ice_get_eeprom(struct net_device *netdev, struct ethtool_eeprom *eeprom,
+  */
+ static bool ice_active_vfs(struct ice_pf *pf)
+ {
+-	unsigned int i;
+-
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
++	ice_for_each_vf(pf, bkt, vf) {
+ 		if (test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
+ 			return true;
+ 	}
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index de78d62b8ee3..fb348072d5a1 100644
+index fb348072d5a1..5180fd4f6801 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -166,21 +166,19 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
- /**
-  * ice_vsi_set_num_qs - Set number of queues, descriptors and vectors for a VSI
-  * @vsi: the VSI being configured
-- * @vf_id: ID of the VF being configured
-+ * @vf: the VF associated with this VSI, if any
-  *
-  * Return 0 on success and a negative value on error
-  */
--static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
-+static void ice_vsi_set_num_qs(struct ice_vsi *vsi, struct ice_vf *vf)
+@@ -433,13 +433,14 @@ static irqreturn_t ice_eswitch_msix_clean_rings(int __always_unused irq, void *d
  {
-+	enum ice_vsi_type vsi_type = vsi->type;
- 	struct ice_pf *pf = vsi->back;
--	struct ice_vf *vf = NULL;
+ 	struct ice_q_vector *q_vector = (struct ice_q_vector *)data;
+ 	struct ice_pf *pf = q_vector->vsi->back;
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
  
--	if (vsi->type == ICE_VSI_VF)
--		vsi->vf_id = vf_id;
--	else
--		vsi->vf_id = ICE_INVAL_VFID;
-+	if (WARN_ON(vsi_type == ICE_VSI_VF && !vf))
-+		return;
+ 	if (!q_vector->tx.tx_ring && !q_vector->rx.rx_ring)
+ 		return IRQ_HANDLED;
  
--	switch (vsi->type) {
-+	switch (vsi_type) {
- 	case ICE_VSI_PF:
- 		if (vsi->req_txq) {
- 			vsi->alloc_txq = vsi->req_txq;
-@@ -222,7 +220,6 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
- 		vsi->num_q_vectors = 1;
- 		break;
- 	case ICE_VSI_VF:
--		vf = &pf->vf[vsi->vf_id];
- 		if (vf->num_req_qs)
- 			vf->num_vf_qs = vf->num_req_qs;
- 		vsi->alloc_txq = vf->num_vf_qs;
-@@ -248,7 +245,7 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi, u16 vf_id)
- 		vsi->alloc_rxq = 1;
- 		break;
- 	default:
--		dev_warn(ice_pf_to_dev(pf), "Unknown VSI type %d\n", vsi->type);
-+		dev_warn(ice_pf_to_dev(pf), "Unknown VSI type %d\n", vsi_type);
- 		break;
- 	}
+-	ice_for_each_vf(pf, i)
+-		napi_schedule(&pf->vf[i].repr->q_vector->napi);
++	ice_for_each_vf(pf, bkt, vf)
++		napi_schedule(&vf->repr->q_vector->napi);
  
-@@ -299,7 +296,7 @@ void ice_vsi_delete(struct ice_vsi *vsi)
- 		return;
- 
- 	if (vsi->type == ICE_VSI_VF)
--		ctxt->vf_num = vsi->vf_id;
-+		ctxt->vf_num = vsi->vf->vf_id;
- 	ctxt->vsi_num = vsi->vsi_num;
- 
- 	memcpy(&ctxt->info, &vsi->info, sizeof(ctxt->info));
-@@ -384,8 +381,7 @@ int ice_vsi_clear(struct ice_vsi *vsi)
- 	pf->vsi[vsi->idx] = NULL;
- 	if (vsi->idx < pf->next_vsi && vsi->type != ICE_VSI_CTRL)
- 		pf->next_vsi = vsi->idx;
--	if (vsi->idx < pf->next_vsi && vsi->type == ICE_VSI_CTRL &&
--	    vsi->vf_id != ICE_INVAL_VFID)
-+	if (vsi->idx < pf->next_vsi && vsi->type == ICE_VSI_CTRL && vsi->vf)
- 		pf->next_vsi = vsi->idx;
- 
- 	ice_vsi_free_arrays(vsi);
-@@ -453,17 +449,24 @@ static irqreturn_t ice_eswitch_msix_clean_rings(int __always_unused irq, void *d
-  * @pf: board private structure
-  * @vsi_type: type of VSI
-  * @ch: ptr to channel
-- * @vf_id: ID of the VF being configured
-+ * @vf: VF for ICE_VSI_VF and ICE_VSI_CTRL
-+ *
-+ * The VF pointer is used for ICE_VSI_VF and ICE_VSI_CTRL. For ICE_VSI_CTRL,
-+ * it may be NULL in the case there is no association with a VF. For
-+ * ICE_VSI_VF the VF pointer *must not* be NULL.
-  *
-  * returns a pointer to a VSI on success, NULL on failure.
-  */
- static struct ice_vsi *
- ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type,
--	      struct ice_channel *ch, u16 vf_id)
-+	      struct ice_channel *ch, struct ice_vf *vf)
- {
- 	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_vsi *vsi = NULL;
- 
-+	if (WARN_ON(vsi_type == ICE_VSI_VF && !vf))
-+		return NULL;
-+
- 	/* Need to protect the allocation of the VSIs at the PF level */
- 	mutex_lock(&pf->sw_mutex);
- 
-@@ -485,9 +488,9 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type,
- 	set_bit(ICE_VSI_DOWN, vsi->state);
- 
- 	if (vsi_type == ICE_VSI_VF)
--		ice_vsi_set_num_qs(vsi, vf_id);
-+		ice_vsi_set_num_qs(vsi, vf);
- 	else if (vsi_type != ICE_VSI_CHNL)
--		ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
-+		ice_vsi_set_num_qs(vsi, NULL);
- 
- 	switch (vsi->type) {
- 	case ICE_VSI_SWITCHDEV_CTRL:
-@@ -510,10 +513,16 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type,
- 
- 		/* Setup ctrl VSI MSIX irq handler */
- 		vsi->irq_handler = ice_msix_clean_ctrl_vsi;
-+
-+		/* For the PF control VSI this is NULL, for the VF control VSI
-+		 * this will be the first VF to allocate it.
-+		 */
-+		vsi->vf = vf;
- 		break;
- 	case ICE_VSI_VF:
- 		if (ice_vsi_alloc_arrays(vsi))
- 			goto err_rings;
-+		vsi->vf = vf;
- 		break;
- 	case ICE_VSI_CHNL:
- 		if (!ch)
-@@ -531,7 +540,7 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type,
- 		goto unlock_pf;
- 	}
- 
--	if (vsi->type == ICE_VSI_CTRL && vf_id == ICE_INVAL_VFID) {
-+	if (vsi->type == ICE_VSI_CTRL && !vf) {
- 		/* Use the last VSI slot as the index for PF control VSI */
- 		vsi->idx = pf->num_alloc_vsi - 1;
- 		pf->ctrl_vsi_idx = vsi->idx;
-@@ -546,8 +555,8 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type,
- 						 pf->next_vsi);
- 	}
- 
--	if (vsi->type == ICE_VSI_CTRL && vf_id != ICE_INVAL_VFID)
--		pf->vf[vf_id].ctrl_vsi_idx = vsi->idx;
-+	if (vsi->type == ICE_VSI_CTRL && vf)
-+		vf->ctrl_vsi_idx = vsi->idx;
- 	goto unlock_pf;
- 
- err_rings:
-@@ -1130,7 +1139,7 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
- 	case ICE_VSI_VF:
- 		ctxt->flags = ICE_AQ_VSI_TYPE_VF;
- 		/* VF number here is the absolute VF number (0-255) */
--		ctxt->vf_num = vsi->vf_id + hw->func_caps.vf_base_id;
-+		ctxt->vf_num = vsi->vf->vf_id + hw->func_caps.vf_base_id;
- 		break;
- 	default:
- 		ret = -ENODEV;
-@@ -1321,6 +1330,31 @@ ice_get_res(struct ice_pf *pf, struct ice_res_tracker *res, u16 needed, u16 id)
- 	return ice_search_res(res, needed, id);
+ 	return IRQ_HANDLED;
  }
- 
-+/**
-+ * ice_get_vf_ctrl_res - Get VF control VSI resource
-+ * @pf: pointer to the PF structure
-+ * @vsi: the VSI to allocate a resource for
-+ *
-+ * Look up whether another VF has already allocated the control VSI resource.
-+ * If so, re-use this resource so that we share it among all VFs.
-+ *
-+ * Otherwise, allocate the resource and return it.
-+ */
-+static int ice_get_vf_ctrl_res(struct ice_pf *pf, struct ice_vsi *vsi)
-+{
-+	int i;
-+
-+	ice_for_each_vf(pf, i) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		if (vf != vsi->vf && vf->ctrl_vsi_idx != ICE_NO_VSI)
-+			return pf->vsi[vf->ctrl_vsi_idx]->base_vector;
-+	}
-+
-+	return ice_get_res(pf, pf->irq_tracker, vsi->num_q_vectors,
-+			   ICE_RES_VF_CTRL_VEC_ID);
-+}
-+
- /**
-  * ice_vsi_setup_vector_base - Set up the base vector for the given VSI
-  * @vsi: ptr to the VSI
-@@ -1353,20 +1387,8 @@ static int ice_vsi_setup_vector_base(struct ice_vsi *vsi)
- 
- 	num_q_vectors = vsi->num_q_vectors;
- 	/* reserve slots from OS requested IRQs */
--	if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID) {
--		int i;
--
--		ice_for_each_vf(pf, i) {
--			struct ice_vf *vf = &pf->vf[i];
--
--			if (i != vsi->vf_id && vf->ctrl_vsi_idx != ICE_NO_VSI) {
--				base = pf->vsi[vf->ctrl_vsi_idx]->base_vector;
--				break;
--			}
--		}
--		if (i == pf->num_alloc_vfs)
--			base = ice_get_res(pf, pf->irq_tracker, num_q_vectors,
--					   ICE_RES_VF_CTRL_VEC_ID);
-+	if (vsi->type == ICE_VSI_CTRL && vsi->vf) {
-+		base = ice_get_vf_ctrl_res(pf, vsi);
- 	} else {
- 		base = ice_get_res(pf, pf->irq_tracker, num_q_vectors,
- 				   vsi->idx);
-@@ -2218,7 +2240,7 @@ ice_vsi_set_q_vectors_reg_idx(struct ice_vsi *vsi)
- 		}
- 
- 		if (vsi->type == ICE_VSI_VF) {
--			struct ice_vf *vf = &vsi->back->vf[vsi->vf_id];
-+			struct ice_vf *vf = vsi->vf;
- 
- 			q_vector->reg_idx = ice_calc_vf_reg_idx(vf, q_vector);
- 		} else {
-@@ -2403,9 +2425,8 @@ static void ice_set_agg_vsi(struct ice_vsi *vsi)
-  * @pf: board private structure
-  * @pi: pointer to the port_info instance
-  * @vsi_type: VSI type
-- * @vf_id: defines VF ID to which this VSI connects. This field is meant to be
-- *         used only for ICE_VSI_VF VSI type. For other VSI types, should
-- *         fill-in ICE_INVAL_VFID as input.
-+ * @vf: pointer to VF to which this VSI connects. This field is used primarily
-+ *      for the ICE_VSI_VF type. Other VSI types should pass NULL.
-  * @ch: ptr to channel
-  *
-  * This allocates the sw VSI structure and its queue resources.
-@@ -2415,7 +2436,8 @@ static void ice_set_agg_vsi(struct ice_vsi *vsi)
+@@ -1342,11 +1343,10 @@ ice_get_res(struct ice_pf *pf, struct ice_res_tracker *res, u16 needed, u16 id)
   */
- struct ice_vsi *
- ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
--	      enum ice_vsi_type vsi_type, u16 vf_id, struct ice_channel *ch)
-+	      enum ice_vsi_type vsi_type, struct ice_vf *vf,
-+	      struct ice_channel *ch)
+ static int ice_get_vf_ctrl_res(struct ice_pf *pf, struct ice_vsi *vsi)
  {
- 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
- 	struct device *dev = ice_pf_to_dev(pf);
-@@ -2423,11 +2445,11 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	int ret, i;
- 
- 	if (vsi_type == ICE_VSI_CHNL)
--		vsi = ice_vsi_alloc(pf, vsi_type, ch, ICE_INVAL_VFID);
-+		vsi = ice_vsi_alloc(pf, vsi_type, ch, NULL);
- 	else if (vsi_type == ICE_VSI_VF || vsi_type == ICE_VSI_CTRL)
--		vsi = ice_vsi_alloc(pf, vsi_type, NULL, vf_id);
-+		vsi = ice_vsi_alloc(pf, vsi_type, NULL, vf);
- 	else
--		vsi = ice_vsi_alloc(pf, vsi_type, NULL, ICE_INVAL_VFID);
-+		vsi = ice_vsi_alloc(pf, vsi_type, NULL, NULL);
- 
- 	if (!vsi) {
- 		dev_err(dev, "could not allocate VSI\n");
-@@ -2439,9 +2461,6 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	if (vsi->type == ICE_VSI_PF)
- 		vsi->ethtype = ETH_P_PAUSE;
- 
--	if (vsi->type == ICE_VSI_VF || vsi->type == ICE_VSI_CTRL)
--		vsi->vf_id = vf_id;
+-	int i;
 -
- 	ice_alloc_fd_res(vsi);
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
++	struct ice_vf *vf;
++	unsigned int bkt;
  
- 	if (vsi_type != ICE_VSI_CHNL) {
-@@ -2861,6 +2880,34 @@ void ice_napi_del(struct ice_vsi *vsi)
- 		netif_napi_del(&vsi->q_vectors[v_idx]->napi);
- }
- 
-+/**
-+ * ice_free_vf_ctrl_res - Free the VF control VSI resource
-+ * @pf: pointer to PF structure
-+ * @vsi: the VSI to free resources for
-+ *
-+ * Check if the VF control VSI resource is still in use. If no VF is using it
-+ * any more, release the VSI resource. Otherwise, leave it to be cleaned up
-+ * once no other VF uses it.
-+ */
-+static void ice_free_vf_ctrl_res(struct ice_pf *pf,  struct ice_vsi *vsi)
-+{
-+	int i;
-+
-+	ice_for_each_vf(pf, i) {
-+		struct ice_vf *vf = &pf->vf[i];
-+
-+		if (vf != vsi->vf && vf->ctrl_vsi_idx != ICE_NO_VSI)
-+			return;
-+	}
-+
-+	/* No other VFs left that have control VSI. It is now safe to reclaim
-+	 * SW interrupts back to the common pool.
-+	 */
-+	ice_free_res(pf->irq_tracker, vsi->base_vector,
-+		     ICE_RES_VF_CTRL_VEC_ID);
-+	pf->num_avail_sw_msix += vsi->num_q_vectors;
-+}
-+
- /**
-  * ice_vsi_release - Delete a VSI and free its resources
-  * @vsi: the VSI being removed
-@@ -2904,23 +2951,8 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	 * many interrupts each VF needs. SR-IOV MSIX resources are also
- 	 * cleared in the same manner.
- 	 */
--	if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID) {
--		int i;
++	ice_for_each_vf(pf, bkt, vf) {
+ 		if (vf != vsi->vf && vf->ctrl_vsi_idx != ICE_NO_VSI)
+ 			return pf->vsi[vf->ctrl_vsi_idx]->base_vector;
+ 	}
+@@ -2891,11 +2891,10 @@ void ice_napi_del(struct ice_vsi *vsi)
+  */
+ static void ice_free_vf_ctrl_res(struct ice_pf *pf,  struct ice_vsi *vsi)
+ {
+-	int i;
 -
--		ice_for_each_vf(pf, i) {
--			struct ice_vf *vf = &pf->vf[i];
--
--			if (i != vsi->vf_id && vf->ctrl_vsi_idx != ICE_NO_VSI)
--				break;
--		}
--		if (i == pf->num_alloc_vfs) {
--			/* No other VFs left that have control VSI, reclaim SW
--			 * interrupts back to the common pool
--			 */
--			ice_free_res(pf->irq_tracker, vsi->base_vector,
--				     ICE_RES_VF_CTRL_VEC_ID);
--			pf->num_avail_sw_msix += vsi->num_q_vectors;
--		}
-+	if (vsi->type == ICE_VSI_CTRL && vsi->vf) {
-+		ice_free_vf_ctrl_res(pf, vsi);
- 	} else if (vsi->type != ICE_VSI_VF) {
- 		/* reclaim SW interrupts back to the common pool */
- 		ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
-@@ -3104,7 +3136,6 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
- 	struct ice_coalesce_stored *coalesce;
- 	int prev_num_q_vectors = 0;
--	struct ice_vf *vf = NULL;
- 	enum ice_vsi_type vtype;
- 	struct ice_pf *pf;
- 	int ret, i;
-@@ -3114,8 +3145,8 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
++	struct ice_vf *vf;
++	unsigned int bkt;
  
- 	pf = vsi->back;
- 	vtype = vsi->type;
--	if (vtype == ICE_VSI_VF)
--		vf = &pf->vf[vsi->vf_id];
-+	if (WARN_ON(vtype == ICE_VSI_VF) && !vsi->vf)
-+		return -EINVAL;
- 
- 	ice_vsi_init_vlan_ops(vsi);
- 
-@@ -3154,9 +3185,9 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	ice_vsi_clear_rings(vsi);
- 	ice_vsi_free_arrays(vsi);
- 	if (vtype == ICE_VSI_VF)
--		ice_vsi_set_num_qs(vsi, vf->vf_id);
-+		ice_vsi_set_num_qs(vsi, vsi->vf);
- 	else
--		ice_vsi_set_num_qs(vsi, ICE_INVAL_VFID);
-+		ice_vsi_set_num_qs(vsi, NULL);
- 
- 	ret = ice_vsi_alloc_arrays(vsi);
- 	if (ret < 0)
-@@ -4013,9 +4044,14 @@ static u16 ice_vsi_num_zero_vlans(struct ice_vsi *vsi)
- #define ICE_DVM_NUM_ZERO_VLAN_FLTRS	2
- #define ICE_SVM_NUM_ZERO_VLAN_FLTRS	1
- 	/* no VLAN 0 filter is created when a port VLAN is active */
--	if (vsi->type == ICE_VSI_VF &&
--	    ice_vf_is_port_vlan_ena(&vsi->back->vf[vsi->vf_id]))
--		return 0;
-+	if (vsi->type == ICE_VSI_VF) {
-+		if (WARN_ON(!vsi->vf))
-+			return 0;
-+
-+		if (ice_vf_is_port_vlan_ena(vsi->vf))
-+			return 0;
-+	}
-+
- 	if (ice_is_dvm_ena(&vsi->back->hw))
- 		return ICE_DVM_NUM_ZERO_VLAN_FLTRS;
- 	else
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 491f13f98797..0095329949d4 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -52,7 +52,8 @@ void ice_vsi_cfg_netdev_tc(struct ice_vsi *vsi, u8 ena_tc);
- 
- struct ice_vsi *
- ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
--	      enum ice_vsi_type vsi_type, u16 vf_id, struct ice_channel *ch);
-+	      enum ice_vsi_type vsi_type, struct ice_vf *vf,
-+	      struct ice_channel *ch);
- 
- void ice_napi_del(struct ice_vsi *vsi);
- 
++	ice_for_each_vf(pf, bkt, vf) {
+ 		if (vf != vsi->vf && vf->ctrl_vsi_idx != ICE_NO_VSI)
+ 			return;
+ 	}
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index fdd143040fb9..1c40e679a6cc 100644
+index 1c40e679a6cc..4ba18422063d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2439,7 +2439,7 @@ static int ice_vsi_req_irq_msix(struct ice_vsi *vsi, char *basename)
- 			/* skip this unused q_vector */
- 			continue;
+@@ -505,7 +505,8 @@ ice_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+ 	struct ice_vsi *vsi;
+-	unsigned int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+ 	dev_dbg(ice_pf_to_dev(pf), "reset_type=%d\n", reset_type);
+ 
+@@ -520,8 +521,8 @@ ice_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 		ice_vc_notify_reset(pf);
+ 
+ 	/* Disable VFs until reset is completed */
+-	ice_for_each_vf(pf, i)
+-		ice_set_vf_state_qs_dis(&pf->vf[i]);
++	ice_for_each_vf(pf, bkt, vf)
++		ice_set_vf_state_qs_dis(vf);
+ 
+ 	if (ice_is_eswitch_mode_switchdev(pf)) {
+ 		if (reset_type != ICE_RESET_PFR)
+@@ -1666,7 +1667,8 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ {
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+-	unsigned int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 	u32 reg;
+ 
+ 	if (!test_and_clear_bit(ICE_MDD_EVENT_PENDING, pf->state)) {
+@@ -1754,47 +1756,45 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 	/* Check to see if one of the VFs caused an MDD event, and then
+ 	 * increment counters and set print pending
+ 	 */
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
+-
+-		reg = rd32(hw, VP_MDET_TX_PQM(i));
++	ice_for_each_vf(pf, bkt, vf) {
++		reg = rd32(hw, VP_MDET_TX_PQM(vf->vf_id));
+ 		if (reg & VP_MDET_TX_PQM_VALID_M) {
+-			wr32(hw, VP_MDET_TX_PQM(i), 0xFFFF);
++			wr32(hw, VP_MDET_TX_PQM(vf->vf_id), 0xFFFF);
+ 			vf->mdd_tx_events.count++;
+ 			set_bit(ICE_MDD_VF_PRINT_PENDING, pf->state);
+ 			if (netif_msg_tx_err(pf))
+ 				dev_info(dev, "Malicious Driver Detection event TX_PQM detected on VF %d\n",
+-					 i);
++					 vf->vf_id);
  		}
--		if (vsi->type == ICE_VSI_CTRL && vsi->vf_id != ICE_INVAL_VFID)
-+		if (vsi->type == ICE_VSI_CTRL && vsi->vf)
- 			err = devm_request_irq(dev, irq_num, vsi->irq_handler,
- 					       IRQF_SHARED, q_vector->name,
- 					       q_vector);
-@@ -3386,14 +3386,14 @@ void ice_fill_rss_lut(u8 *lut, u16 rss_table_size, u16 rss_size)
- static struct ice_vsi *
- ice_pf_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
- {
--	return ice_vsi_setup(pf, pi, ICE_VSI_PF, ICE_INVAL_VFID, NULL);
-+	return ice_vsi_setup(pf, pi, ICE_VSI_PF, NULL, NULL);
- }
  
- static struct ice_vsi *
- ice_chnl_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 		   struct ice_channel *ch)
- {
--	return ice_vsi_setup(pf, pi, ICE_VSI_CHNL, ICE_INVAL_VFID, ch);
-+	return ice_vsi_setup(pf, pi, ICE_VSI_CHNL, NULL, ch);
- }
+-		reg = rd32(hw, VP_MDET_TX_TCLAN(i));
++		reg = rd32(hw, VP_MDET_TX_TCLAN(vf->vf_id));
+ 		if (reg & VP_MDET_TX_TCLAN_VALID_M) {
+-			wr32(hw, VP_MDET_TX_TCLAN(i), 0xFFFF);
++			wr32(hw, VP_MDET_TX_TCLAN(vf->vf_id), 0xFFFF);
+ 			vf->mdd_tx_events.count++;
+ 			set_bit(ICE_MDD_VF_PRINT_PENDING, pf->state);
+ 			if (netif_msg_tx_err(pf))
+ 				dev_info(dev, "Malicious Driver Detection event TX_TCLAN detected on VF %d\n",
+-					 i);
++					 vf->vf_id);
+ 		}
  
- /**
-@@ -3407,7 +3407,7 @@ ice_chnl_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- static struct ice_vsi *
- ice_ctrl_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
- {
--	return ice_vsi_setup(pf, pi, ICE_VSI_CTRL, ICE_INVAL_VFID, NULL);
-+	return ice_vsi_setup(pf, pi, ICE_VSI_CTRL, NULL, NULL);
- }
+-		reg = rd32(hw, VP_MDET_TX_TDPU(i));
++		reg = rd32(hw, VP_MDET_TX_TDPU(vf->vf_id));
+ 		if (reg & VP_MDET_TX_TDPU_VALID_M) {
+-			wr32(hw, VP_MDET_TX_TDPU(i), 0xFFFF);
++			wr32(hw, VP_MDET_TX_TDPU(vf->vf_id), 0xFFFF);
+ 			vf->mdd_tx_events.count++;
+ 			set_bit(ICE_MDD_VF_PRINT_PENDING, pf->state);
+ 			if (netif_msg_tx_err(pf))
+ 				dev_info(dev, "Malicious Driver Detection event TX_TDPU detected on VF %d\n",
+-					 i);
++					 vf->vf_id);
+ 		}
  
- /**
-@@ -3421,7 +3421,7 @@ ice_ctrl_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
- struct ice_vsi *
- ice_lb_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi)
- {
--	return ice_vsi_setup(pf, pi, ICE_VSI_LB, ICE_INVAL_VFID, NULL);
-+	return ice_vsi_setup(pf, pi, ICE_VSI_LB, NULL, NULL);
- }
+-		reg = rd32(hw, VP_MDET_RX(i));
++		reg = rd32(hw, VP_MDET_RX(vf->vf_id));
+ 		if (reg & VP_MDET_RX_VALID_M) {
+-			wr32(hw, VP_MDET_RX(i), 0xFFFF);
++			wr32(hw, VP_MDET_RX(vf->vf_id), 0xFFFF);
+ 			vf->mdd_rx_events.count++;
+ 			set_bit(ICE_MDD_VF_PRINT_PENDING, pf->state);
+ 			if (netif_msg_rx_err(pf))
+ 				dev_info(dev, "Malicious Driver Detection event RX detected on VF %d\n",
+-					 i);
++					 vf->vf_id);
  
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index a2283ad694de..f9bf008471c9 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1160,7 +1160,7 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
- 			struct ice_vsi *ctrl_vsi = rx_ring->vsi;
- 
- 			if (rx_desc->wb.rxdid == FDIR_DESC_RXDID &&
--			    ctrl_vsi->vf_id != ICE_INVAL_VFID)
-+			    ctrl_vsi->vf)
- 				ice_vc_fdir_irq_handler(ctrl_vsi, rx_desc);
- 			ice_put_rx_buf(rx_ring, NULL, 0);
- 			cleaned_count++;
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c b/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
-index 39f2d36cabba..b16f946185f2 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
-@@ -34,9 +34,10 @@ void ice_vf_vsi_init_vlan_ops(struct ice_vsi *vsi)
- {
- 	struct ice_vsi_vlan_ops *vlan_ops;
- 	struct ice_pf *pf = vsi->back;
--	struct ice_vf *vf;
-+	struct ice_vf *vf = vsi->vf;
- 
--	vf = &pf->vf[vsi->vf_id];
-+	if (WARN_ON(!vf))
-+		return;
- 
- 	if (ice_is_dvm_ena(&pf->hw)) {
- 		vlan_ops = &vsi->outer_vlan_ops;
-@@ -126,9 +127,14 @@ void ice_vf_vsi_init_vlan_ops(struct ice_vsi *vsi)
+ 			/* Since the queue is disabled on VF Rx MDD events, the
+ 			 * PF can be configured to reset the VF through ethtool
+@@ -1805,9 +1805,9 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 				 * reset, so print the event prior to reset.
+ 				 */
+ 				ice_print_vf_rx_mdd_event(vf);
+-				mutex_lock(&pf->vf[i].cfg_lock);
+-				ice_reset_vf(&pf->vf[i], false);
+-				mutex_unlock(&pf->vf[i].cfg_lock);
++				mutex_lock(&vf->cfg_lock);
++				ice_reset_vf(vf, false);
++				mutex_unlock(&vf->cfg_lock);
+ 			}
+ 		}
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
+index 0f9826e89381..ffd428719863 100644
+--- a/drivers/net/ethernet/intel/ice/ice_repr.c
++++ b/drivers/net/ethernet/intel/ice/ice_repr.c
+@@ -393,13 +393,11 @@ static void ice_repr_rem(struct ice_vf *vf)
   */
- void ice_vf_vsi_cfg_dvm_legacy_vlan_mode(struct ice_vsi *vsi)
+ void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
  {
--	struct ice_vf *vf = &vsi->back->vf[vsi->vf_id];
--	struct device *dev = ice_pf_to_dev(vf->pf);
- 	struct ice_vsi_vlan_ops *vlan_ops;
-+	struct ice_vf *vf = vsi->vf;
-+	struct device *dev;
-+
-+	if (WARN_ON(!vf))
-+		return;
-+
-+	dev = ice_pf_to_dev(vf->pf);
+-	int i;
+-
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
++	struct ice_vf *vf;
++	unsigned int bkt;
  
- 	if (!ice_is_dvm_ena(&vsi->back->hw) || ice_vf_is_port_vlan_ena(vf))
- 		return;
-@@ -192,7 +198,10 @@ void ice_vf_vsi_cfg_dvm_legacy_vlan_mode(struct ice_vsi *vsi)
++	ice_for_each_vf(pf, bkt, vf)
+ 		ice_repr_rem(vf);
+-	}
+ }
+ 
+ /**
+@@ -408,12 +406,11 @@ void ice_repr_rem_from_all_vfs(struct ice_pf *pf)
   */
- void ice_vf_vsi_cfg_svm_legacy_vlan_mode(struct ice_vsi *vsi)
+ int ice_repr_add_for_all_vfs(struct ice_pf *pf)
  {
--	struct ice_vf *vf = &vsi->back->vf[vsi->vf_id];
-+	struct ice_vf *vf = vsi->vf;
-+
-+	if (WARN_ON(!vf))
-+		return;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 	int err;
+-	int i;
+-
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
  
- 	if (ice_is_dvm_ena(&vsi->back->hw) || ice_vf_is_port_vlan_ena(vf))
- 		return;
++	ice_for_each_vf(pf, bkt, vf) {
+ 		err = ice_repr_add(vf);
+ 		if (err)
+ 			goto err;
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index d64df81d4893..25b9c1dfc1ac 100644
+index 25b9c1dfc1ac..df7a3f251cd3 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -1288,15 +1288,16 @@ ice_vc_fdir_irq_handler(struct ice_vsi *ctrl_vsi,
- 			union ice_32b_rx_flex_desc *rx_desc)
+@@ -1572,15 +1572,15 @@ ice_vc_del_fdir_fltr_post(struct ice_vf *vf, struct ice_vf_fdir_ctx *ctx,
+  */
+ void ice_flush_fdir_ctx(struct ice_pf *pf)
  {
- 	struct ice_pf *pf = ctrl_vsi->back;
-+	struct ice_vf *vf = ctrl_vsi->vf;
- 	struct ice_vf_fdir_ctx *ctx_done;
- 	struct ice_vf_fdir_ctx *ctx_irq;
- 	struct ice_vf_fdir *fdir;
- 	unsigned long flags;
- 	struct device *dev;
--	struct ice_vf *vf;
- 	int ret;
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
  
--	vf = &pf->vf[ctrl_vsi->vf_id];
-+	if (WARN_ON(!vf))
-+		return;
+ 	if (!test_and_clear_bit(ICE_FD_VF_FLUSH_CTX, pf->state))
+ 		return;
  
- 	fdir = &vf->fdir;
- 	ctx_done = &fdir->ctx_done;
+-	ice_for_each_vf(pf, i) {
++	ice_for_each_vf(pf, bkt, vf) {
+ 		struct device *dev = ice_pf_to_dev(pf);
+ 		enum virtchnl_fdir_prgm_status status;
+-		struct ice_vf *vf = &pf->vf[i];
+ 		struct ice_vf_fdir_ctx *ctx;
+ 		unsigned long flags;
+ 		int ret;
 diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-index a6da81a4de8a..d86d47b8fee2 100644
+index 3e2357460f34..086499a55ba7 100644
 --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-@@ -667,7 +667,7 @@ static struct ice_vsi *ice_vf_vsi_setup(struct ice_vf *vf)
- 	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
+@@ -217,11 +217,10 @@ ice_vc_vf_broadcast(struct ice_pf *pf, enum virtchnl_ops v_opcode,
+ 		    enum virtchnl_status_code v_retval, u8 *msg, u16 msglen)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+-	unsigned int i;
+-
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
++	struct ice_vf *vf;
++	unsigned int bkt;
  
--	vsi = ice_vsi_setup(pf, pi, ICE_VSI_VF, vf->vf_id, NULL);
-+	vsi = ice_vsi_setup(pf, pi, ICE_VSI_VF, vf, NULL);
++	ice_for_each_vf(pf, bkt, vf) {
+ 		/* Not all vfs are enabled so skip the ones that are not */
+ 		if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states) &&
+ 		    !test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
+@@ -500,7 +499,8 @@ void ice_free_vfs(struct ice_pf *pf)
+ {
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+-	unsigned int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
  
- 	if (!vsi) {
- 		dev_err(ice_pf_to_dev(pf), "Failed to create VF VSI\n");
-@@ -694,7 +694,7 @@ struct ice_vsi *ice_vf_ctrl_vsi_setup(struct ice_vf *vf)
- 	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
+ 	if (!pf->vf)
+ 		return;
+@@ -519,9 +519,7 @@ void ice_free_vfs(struct ice_pf *pf)
+ 	else
+ 		dev_warn(dev, "VFs are assigned - not disabling SR-IOV\n");
  
--	vsi = ice_vsi_setup(pf, pi, ICE_VSI_CTRL, vf->vf_id, NULL);
-+	vsi = ice_vsi_setup(pf, pi, ICE_VSI_CTRL, vf, NULL);
- 	if (!vsi) {
- 		dev_err(ice_pf_to_dev(pf), "Failed to create VF control VSI\n");
- 		ice_vf_ctrl_invalidate_vsi(vf);
-@@ -2524,7 +2524,7 @@ bool ice_vc_isvalid_vsi_id(struct ice_vf *vf, u16 vsi_id)
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
+-
++	ice_for_each_vf(pf, bkt, vf) {
+ 		mutex_lock(&vf->cfg_lock);
  
- 	vsi = ice_find_vsi_from_id(pf, vsi_id);
+ 		ice_dis_vf_qs(vf);
+@@ -1462,24 +1460,26 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+ 	struct ice_vf *vf;
+-	int v, i;
++	unsigned int bkt;
  
--	return (vsi && (vsi->vf_id == vf->vf_id));
-+	return (vsi && (vsi->vf == vf));
+ 	/* If we don't have any VFs, then there is nothing to reset */
+ 	if (!pf->num_alloc_vfs)
+ 		return false;
+ 
+ 	/* clear all malicious info if the VFs are getting reset */
+-	ice_for_each_vf(pf, i)
+-		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs, ICE_MAX_VF_COUNT, i))
+-			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n", i);
++	ice_for_each_vf(pf, bkt, vf)
++		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->malvfs,
++					ICE_MAX_VF_COUNT, vf->vf_id))
++			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
++				vf->vf_id);
+ 
+ 	/* If VFs have been disabled, there is no need to reset */
+ 	if (test_and_set_bit(ICE_VF_DIS, pf->state))
+ 		return false;
+ 
+ 	/* Begin reset on all VFs at once */
+-	ice_for_each_vf(pf, v)
+-		ice_trigger_vf_reset(&pf->vf[v], is_vflr, true);
++	ice_for_each_vf(pf, bkt, vf)
++		ice_trigger_vf_reset(vf, is_vflr, true);
+ 
+ 	/* HW requires some time to make sure it can flush the FIFO for a VF
+ 	 * when it resets it. Poll the VPGEN_VFRSTAT register for each VF in
+@@ -1487,36 +1487,34 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	 * the VFs using a simple iterator that increments once that VF has
+ 	 * finished resetting.
+ 	 */
+-	for (i = 0, v = 0; i < 10 && v < pf->num_alloc_vfs; i++) {
+-		/* Check each VF in sequence */
+-		while (v < pf->num_alloc_vfs) {
+-			u32 reg;
++	ice_for_each_vf(pf, bkt, vf) {
++		bool done = false;
++		unsigned int i;
++		u32 reg;
+ 
+-			vf = &pf->vf[v];
+-			reg = rd32(hw, VPGEN_VFRSTAT(vf->vf_id));
+-			if (!(reg & VPGEN_VFRSTAT_VFRD_M)) {
+-				/* only delay if the check failed */
+-				usleep_range(10, 20);
++		for (i = 0; i < 10; i++) {
++			reg = rd32(&pf->hw, VPGEN_VFRSTAT(vf->vf_id));
++			if (reg & VPGEN_VFRSTAT_VFRD_M) {
++				done = true;
+ 				break;
+ 			}
+ 
+-			/* If the current VF has finished resetting, move on
+-			 * to the next VF in sequence.
++			/* only delay if check failed */
++			usleep_range(10, 20);
++		}
++
++		if (!done) {
++			/* Display a warning if at least one VF didn't manage
++			 * to reset in time, but continue on with the
++			 * operation.
+ 			 */
+-			v++;
++			dev_warn(dev, "VF %u reset check timeout\n", vf->vf_id);
++			break;
+ 		}
+ 	}
+ 
+-	/* Display a warning if at least one VF didn't manage to reset in
+-	 * time, but continue on with the operation.
+-	 */
+-	if (v < pf->num_alloc_vfs)
+-		dev_warn(dev, "VF reset check timeout\n");
+-
+ 	/* free VF resources to begin resetting the VSI state */
+-	ice_for_each_vf(pf, v) {
+-		vf = &pf->vf[v];
+-
++	ice_for_each_vf(pf, bkt, vf) {
+ 		mutex_lock(&vf->cfg_lock);
+ 
+ 		vf->driver_caps = 0;
+@@ -1692,10 +1690,11 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+  */
+ void ice_vc_notify_link_state(struct ice_pf *pf)
+ {
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+-	ice_for_each_vf(pf, i)
+-		ice_vc_notify_vf_link_state(&pf->vf[i]);
++	ice_for_each_vf(pf, bkt, vf)
++		ice_vc_notify_vf_link_state(vf);
  }
  
  /**
+@@ -1817,11 +1816,12 @@ static int ice_init_vf_vsi_res(struct ice_vf *vf)
+ static int ice_start_vfs(struct ice_pf *pf)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+-	int retval, i;
+-
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
++	unsigned int bkt, it_cnt;
++	struct ice_vf *vf;
++	int retval;
+ 
++	it_cnt = 0;
++	ice_for_each_vf(pf, bkt, vf) {
+ 		ice_clear_vf_reset_trigger(vf);
+ 
+ 		retval = ice_init_vf_vsi_res(vf);
+@@ -1834,17 +1834,20 @@ static int ice_start_vfs(struct ice_pf *pf)
+ 		set_bit(ICE_VF_STATE_INIT, vf->vf_states);
+ 		ice_ena_vf_mappings(vf);
+ 		wr32(hw, VFGEN_RSTAT(vf->vf_id), VIRTCHNL_VFR_VFACTIVE);
++		it_cnt++;
+ 	}
+ 
+ 	ice_flush(hw);
+ 	return 0;
+ 
+ teardown:
+-	for (i = i - 1; i >= 0; i--) {
+-		struct ice_vf *vf = &pf->vf[i];
++	ice_for_each_vf(pf, bkt, vf) {
++		if (it_cnt == 0)
++			break;
+ 
+ 		ice_dis_vf_mappings(vf);
+ 		ice_vf_vsi_release(vf);
++		it_cnt--;
+ 	}
+ 
+ 	return retval;
+@@ -1856,13 +1859,13 @@ static int ice_start_vfs(struct ice_pf *pf)
+  */
+ static void ice_set_dflt_settings_vfs(struct ice_pf *pf)
+ {
+-	int i;
+-
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
++	struct ice_vf *vf;
++	unsigned int bkt;
++	u16 vf_id = 0;
+ 
++	ice_for_each_vf(pf, bkt, vf) {
+ 		vf->pf = pf;
+-		vf->vf_id = i;
++		vf->vf_id = vf_id++;
+ 		vf->vf_sw_id = pf->first_sw;
+ 		/* assign default capabilities */
+ 		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vf->vf_caps);
+@@ -2087,19 +2090,19 @@ int ice_sriov_configure(struct pci_dev *pdev, int num_vfs)
+ void ice_process_vflr_event(struct ice_pf *pf)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+-	unsigned int vf_id;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 	u32 reg;
+ 
+ 	if (!test_and_clear_bit(ICE_VFLR_EVENT_PENDING, pf->state) ||
+ 	    !pf->num_alloc_vfs)
+ 		return;
+ 
+-	ice_for_each_vf(pf, vf_id) {
+-		struct ice_vf *vf = &pf->vf[vf_id];
++	ice_for_each_vf(pf, bkt, vf) {
+ 		u32 reg_idx, bit_idx;
+ 
+-		reg_idx = (hw->func_caps.vf_base_id + vf_id) / 32;
+-		bit_idx = (hw->func_caps.vf_base_id + vf_id) % 32;
++		reg_idx = (hw->func_caps.vf_base_id + vf->vf_id) / 32;
++		bit_idx = (hw->func_caps.vf_base_id + vf->vf_id) % 32;
+ 		/* read GLGEN_VFLRSTAT register to find out the flr VFs */
+ 		reg = rd32(hw, GLGEN_VFLRSTAT(reg_idx));
+ 		if (reg & BIT(bit_idx)) {
+@@ -2131,10 +2134,10 @@ static void ice_vc_reset_vf(struct ice_vf *vf)
+  */
+ static struct ice_vf *ice_get_vf_from_pfq(struct ice_pf *pf, u16 pfq)
+ {
+-	unsigned int vf_id;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+-	ice_for_each_vf(pf, vf_id) {
+-		struct ice_vf *vf = &pf->vf[vf_id];
++	ice_for_each_vf(pf, bkt, vf) {
+ 		struct ice_vsi *vsi;
+ 		u16 rxq_idx;
+ 
+@@ -3009,11 +3012,10 @@ int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena)
+  */
+ bool ice_is_any_vf_in_promisc(struct ice_pf *pf)
+ {
+-	int vf_idx;
+-
+-	ice_for_each_vf(pf, vf_idx) {
+-		struct ice_vf *vf = &pf->vf[vf_idx];
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
++	ice_for_each_vf(pf, bkt, vf) {
+ 		/* found a VF that has promiscuous mode configured */
+ 		if (test_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states) ||
+ 		    test_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
+@@ -6110,10 +6112,12 @@ int ice_set_vf_link_state(struct net_device *netdev, int vf_id, int link_state)
+  */
+ static int ice_calc_all_vfs_min_tx_rate(struct ice_pf *pf)
+ {
+-	int rate = 0, i;
++	struct ice_vf *vf;
++	unsigned int bkt;
++	int rate = 0;
+ 
+-	ice_for_each_vf(pf, i)
+-		rate += pf->vf[i].min_tx_rate;
++	ice_for_each_vf(pf, bkt, vf)
++		rate += vf->min_tx_rate;
+ 
+ 	return rate;
+ }
+@@ -6294,7 +6298,8 @@ void ice_print_vfs_mdd_events(struct ice_pf *pf)
+ {
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	struct ice_hw *hw = &pf->hw;
+-	int i;
++	struct ice_vf *vf;
++	unsigned int bkt;
+ 
+ 	/* check that there are pending MDD events to print */
+ 	if (!test_and_clear_bit(ICE_MDD_VF_PRINT_PENDING, pf->state))
+@@ -6306,9 +6311,7 @@ void ice_print_vfs_mdd_events(struct ice_pf *pf)
+ 
+ 	pf->last_printed_mdd_jiffies = jiffies;
+ 
+-	ice_for_each_vf(pf, i) {
+-		struct ice_vf *vf = &pf->vf[i];
+-
++	ice_for_each_vf(pf, bkt, vf) {
+ 		/* only print Rx MDD event message if there are new events */
+ 		if (vf->mdd_rx_events.count != vf->mdd_rx_events.last_printed) {
+ 			vf->mdd_rx_events.last_printed =
+@@ -6322,7 +6325,7 @@ void ice_print_vfs_mdd_events(struct ice_pf *pf)
+ 							vf->mdd_tx_events.count;
+ 
+ 			dev_info(dev, "%d Tx Malicious Driver Detection events detected on PF %d VF %d MAC %pM.\n",
+-				 vf->mdd_tx_events.count, hw->pf_id, i,
++				 vf->mdd_tx_events.count, hw->pf_id, vf->vf_id,
+ 				 vf->dev_lan_addr.addr);
+ 		}
+ 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 4f4961043638..9cccb5afb92d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -39,8 +39,20 @@
+ #define ICE_MAX_VF_RESET_TRIES		40
+ #define ICE_MAX_VF_RESET_SLEEP_MS	20
+ 
+-#define ice_for_each_vf(pf, i) \
+-	for ((i) = 0; (i) < (pf)->num_alloc_vfs; (i)++)
++/**
++ * ice_for_each_vf - Iterate over each VF entry
++ * @pf: pointer to the PF private structure
++ * @bkt: bucket index used for iteration
++ * @entry: pointer to the VF entry currently being processed in the loop.
++ *
++ * The bkt variable is an unsigned integer iterator used to traverse the VF
++ * entries. It is *not* guaranteed to be the VF's vf_id. Do not assume it is.
++ * Use vf->vf_id to get the id number if needed.
++ */
++#define ice_for_each_vf(pf, bkt, entry)					\
++	for ((bkt) = 0, (entry) = &(pf)->vf[0];				\
++	     (bkt) < (pf)->num_alloc_vfs;				\
++	     (bkt)++, (entry)++)
+ 
+ /* Specific VF states */
+ enum ice_vf_states {
 -- 
 2.35.1.129.gb80121027d12
 
