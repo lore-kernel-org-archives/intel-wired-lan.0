@@ -1,52 +1,108 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 16 Feb 2022 16:51:34 -0800
-Subject: [Intel-wired-lan] [net PATCH 0/2] ice/i40e: stop disabling VFs due
- to PF error responses
-Message-ID: <20220217005136.75627-1-jacob.e.keller@intel.com>
+Date: Wed, 16 Feb 2022 16:51:36 -0800
+Subject: [Intel-wired-lan] [net PATCH 2/2] ice: stop disabling VFs due to PF
+ error responses
+In-Reply-To: <20220217005136.75627-1-jacob.e.keller@intel.com>
+References: <20220217005136.75627-1-jacob.e.keller@intel.com>
+Message-ID: <20220217005136.75627-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice and i40e drivers have similar logic to detect PF error responses to
-the VFs over the Virtchnl interface. This logic counts the number of
-sequential error responses sent to a VF and logs each error response as a
-dev_info to the kernel log. If more than 10 error responses are sent in a
-row, the PF driver disables the VF in question.
+The ice_vc_send_msg_to_vf function has logic to detect "failure"
+responses being sent to a VF. If a VF is sent more than
+ICE_DFLT_NUM_INVAL_MSGS_ALLOWED then the VF is marked as disabled.
+Almost identical logic also existed in the i40e driver.
 
-This logic has existed since the early days of i40e VF implementation, and
-was carried forward into ice. The logic appears to be some form of malicious
-VF detection. However, it doesn't actually fit in with the hardware based
-malicious VF detection available in the device hardware.
+This logic was added to the ice driver in commit 1071a8358a28 ("ice:
+Implement virtchnl commands for AVF support") which itself copied from
+the i40e implementation in commit 5c3c48ac6bf5 ("i40e: implement virtual
+device interface").
 
-In fact, the logic has had some adjustments in the i40e driver to reduce the
-messaging from dev_err to dev_info, and to allow specific messages to skip
-the check.
+Neither commit provides a proper explanation or justification of the
+check. In fact, later commits to i40e changed the logic to allow
+bypassing the check in some specific instances.
 
-These changes clearly highlight the problematic nature of the check.
-Additionally, there is no requirement for this behavior in our product
-design. Other driver implementations such as the FreeBSD drivers do not
-implement this behavior.
+The "logic" for this seems to be that error responses somehow indicate a
+malicious VF. This is not really true. The PF might be sending an error
+for any number of reasons such as lack of resources, etc.
 
-Disabling VFs is typically not what system administrators what to happen,
-and this behavior is non-intuitive and not documented. Since it clearly
-causes issues and isn't connected to the proper malicious driver detection,
-remove this check from both ice and i40e.
+Additionally, this causes the PF to log an info message for every failed
+VF response which may confuse users, and can spam the kernel log.
 
-Jacob Keller (2):
-  i40e: stop disabling VFs due to PF error responses
-  ice: stop disabling VFs due to PF error responses
+This behavior is not documented as part of any requirement for our
+products and other operating system drivers such as the FreeBSD
+implementation of our drivers do not include this type of check.
 
- .../net/ethernet/intel/i40e/i40e_debugfs.c    |  6 +-
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 57 +++----------------
- .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  5 --
- .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 18 ------
- .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  3 -
- 5 files changed, 9 insertions(+), 80 deletions(-)
+In fact, the change from dev_err to dev_info in i40e commit 18b7af57d9c1
+("i40e: Lower some message levels") explains that these messages
+typically don't actually indicate a real issue. It is quite likely that
+a user who hits this in practice will be very confused as the VF will be
+disabled without an obvious way to recover.
 
+We already have robust malicious driver detection logic using actual
+hardware detection mechanisms that detect and prevent invalid device
+usage. Remove the logic since its not a documented requirement and the
+behavior is not intuitive.
 
-base-commit: 35410c10918a84c9685cd644686ca637bb3c046b
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.c   | 18 ------------------
+ .../net/ethernet/intel/ice/ice_virtchnl_pf.h   |  3 ---
+ 2 files changed, 21 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 8a61b23f7cb3..353c2a3755d0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2180,24 +2180,6 @@ ice_vc_send_msg_to_vf(struct ice_vf *vf, u32 v_opcode,
+ 
+ 	dev = ice_pf_to_dev(pf);
+ 
+-	/* single place to detect unsuccessful return values */
+-	if (v_retval) {
+-		vf->num_inval_msgs++;
+-		dev_info(dev, "VF %d failed opcode %d, retval: %d\n", vf->vf_id,
+-			 v_opcode, v_retval);
+-		if (vf->num_inval_msgs > ICE_DFLT_NUM_INVAL_MSGS_ALLOWED) {
+-			dev_err(dev, "Number of invalid messages exceeded for VF %d\n",
+-				vf->vf_id);
+-			dev_err(dev, "Use PF Control I/F to enable the VF\n");
+-			set_bit(ICE_VF_STATE_DIS, vf->vf_states);
+-			return -EIO;
+-		}
+-	} else {
+-		vf->num_valid_msgs++;
+-		/* reset the invalid counter, if a valid message is received. */
+-		vf->num_inval_msgs = 0;
+-	}
+-
+ 	aq_ret = ice_aq_send_msg_to_vf(&pf->hw, vf->vf_id, v_opcode, v_retval,
+ 				       msg, msglen, NULL);
+ 	if (aq_ret && pf->hw.mailboxq.sq_last_status != ICE_AQ_RC_ENOSYS) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+index 752487a1bdd6..8f27255cc0cc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.h
+@@ -14,7 +14,6 @@
+ #define ICE_MAX_MACADDR_PER_VF		18
+ 
+ /* Malicious Driver Detection */
+-#define ICE_DFLT_NUM_INVAL_MSGS_ALLOWED		10
+ #define ICE_MDD_EVENTS_THRESHOLD		30
+ 
+ /* Static VF transaction/status register def */
+@@ -134,8 +133,6 @@ struct ice_vf {
+ 	unsigned int max_tx_rate;	/* Maximum Tx bandwidth limit in Mbps */
+ 	DECLARE_BITMAP(vf_states, ICE_VF_STATES_NBITS);	/* VF runtime states */
+ 
+-	u64 num_inval_msgs;		/* number of continuous invalid msgs */
+-	u64 num_valid_msgs;		/* number of valid msgs detected */
+ 	unsigned long vf_caps;		/* VF's adv. capabilities */
+ 	u8 num_req_qs;			/* num of queue pairs requested by VF */
+ 	u16 num_mac;
 -- 
 2.35.1.129.gb80121027d12
 
