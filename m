@@ -1,65 +1,50 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 18 Feb 2022 15:02:58 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- be6b41c15dc09c067492bd23668763f551747e4e
-Message-ID: <620f44a2.7Ko0rq62hH6oGcuM%lkp@intel.com>
+Date: Fri, 18 Feb 2022 15:45:50 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 17c8572ffe461675979f10d2f3ed0abd67c10f4f
+Message-ID: <620f4eae.3eGgdcjpmx5UMbMW%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: be6b41c15dc09c067492bd23668763f551747e4e  ipv6/addrconf: ensure addrconf_verify_rtnl() has completed
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 17c8572ffe461675979f10d2f3ed0abd67c10f4f  igc: igc_read_phy_reg_gpy: drop premature return
 
-elapsed time: 856m
+possible Warning in current branch (please contact us if interested):
 
-configs tested: 114
+net/ipv6/addrconf.c:4307 if6_get_next() warn: ignoring unreachable code.
+
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+|-- i386-randconfig-m021
+|   `-- net-ipv6-addrconf.c-if6_get_next()-warn:ignoring-unreachable-code.
+`-- x86_64-randconfig-m001
+    `-- net-ipv6-addrconf.c-if6_get_next()-warn:ignoring-unreachable-code.
+
+elapsed time: 770m
+
+configs tested: 84
 configs skipped: 3
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
 gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
 arm                              allmodconfig
-i386                          randconfig-c001
-powerpc                       maple_defconfig
-sh                         microdev_defconfig
-mips                  decstation_64_defconfig
-arc                                 defconfig
-parisc                generic-32bit_defconfig
-m68k                            mac_defconfig
-ia64                         bigsur_defconfig
-powerpc                        cell_defconfig
-riscv                            allyesconfig
+arm                              allyesconfig
+arm                                 defconfig
+arm64                               defconfig
+arm64                            allyesconfig
 xtensa                  nommu_kc705_defconfig
+riscv                            allyesconfig
 xtensa                    xip_kc705_defconfig
-arc                          axs101_defconfig
-arc                        vdk_hs38_defconfig
-arc                    vdk_hs38_smp_defconfig
-xtensa                generic_kc705_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                       eiger_defconfig
-h8300                               defconfig
-microblaze                      mmu_defconfig
-m68k                       m5475evb_defconfig
-arm                        spear6xx_defconfig
-arm                            lart_defconfig
-sh                            titan_defconfig
-h8300                            alldefconfig
-powerpc                      pasemi_defconfig
-x86_64                           alldefconfig
-powerpc                 mpc8540_ads_defconfig
-sh                     sh7710voipgw_defconfig
-arm                           h5000_defconfig
-arm                          pxa3xx_defconfig
-ia64                          tiger_defconfig
-m68k                           sun3_defconfig
-powerpc                      makalu_defconfig
+arc                            hsdk_defconfig
+sparc                       sparc32_defconfig
+sh                        edosk7760_defconfig
+powerpc                      tqm8xx_defconfig
 arm                  randconfig-c002-20220217
 ia64                             allmodconfig
 ia64                                defconfig
@@ -77,6 +62,7 @@ alpha                               defconfig
 alpha                            allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
+arc                                 defconfig
 sh                               allmodconfig
 parisc                              defconfig
 s390                             allyesconfig
@@ -92,9 +78,9 @@ i386                   debian-10.3-kselftests
 i386                              debian-10.3
 mips                             allyesconfig
 mips                             allmodconfig
+powerpc                           allnoconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
-powerpc                           allnoconfig
 x86_64                        randconfig-a006
 x86_64                        randconfig-a004
 x86_64                        randconfig-a002
@@ -107,24 +93,20 @@ riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
 um                           x86_64_defconfig
 um                             i386_defconfig
 x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
 x86_64                              defconfig
 x86_64                               rhel-8.3
 x86_64                          rhel-8.3-func
 x86_64                                  kexec
 
 clang tested configs:
+mips                        workpad_defconfig
 arm                     davinci_all_defconfig
-arm                      tct_hammer_defconfig
-riscv                            alldefconfig
-powerpc                     tqm5200_defconfig
 arm                        magician_defconfig
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
+powerpc                     tqm5200_defconfig
 i386                          randconfig-a002
 i386                          randconfig-a006
 i386                          randconfig-a004
