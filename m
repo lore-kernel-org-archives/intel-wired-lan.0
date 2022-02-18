@@ -1,79 +1,33 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 17 Feb 2022 18:20:03 +0000
-Subject: [Intel-wired-lan] [net PATCH 2/2] ice: stop disabling VFs due
- to PF error responses
-In-Reply-To: <043ae533aa1225387da24e35578da76029be08cd.camel@intel.com>
-References: <20220217005136.75627-1-jacob.e.keller@intel.com>
- <20220217005136.75627-3-jacob.e.keller@intel.com>
- <043ae533aa1225387da24e35578da76029be08cd.camel@intel.com>
-Message-ID: <CO1PR11MB508942C5C881BB130EF6A8BFD6369@CO1PR11MB5089.namprd11.prod.outlook.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Fri, 18 Feb 2022 05:01:09 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Add support for inner
+ etype in switchdev
+In-Reply-To: <20220116090142.2934-1-martyna.szapar-mudlaw@intel.com>
+References: <20220116090142.2934-1-martyna.szapar-mudlaw@intel.com>
+Message-ID: <MW3PR11MB4554674306EF10709454AE7C9C379@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-> Sent: Thursday, February 17, 2022 9:25 AM
-> To: Keller, Jacob E <jacob.e.keller@intel.com>; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [net PATCH 2/2] ice: stop disabling VFs due to PF
-> error responses
-> 
-> On Wed, 2022-02-16 at 16:51 -0800, Jacob Keller wrote:
-> > The ice_vc_send_msg_to_vf function has logic to detect "failure"
-> > responses being sent to a VF. If a VF is sent more than
-> > ICE_DFLT_NUM_INVAL_MSGS_ALLOWED then the VF is marked as disabled.
-> > Almost identical logic also existed in the i40e driver.
-> >
-> > This logic was added to the ice driver in commit 1071a8358a28 ("ice:
-> > Implement virtchnl commands for AVF support") which itself copied
-> > from
-> > the i40e implementation in commit 5c3c48ac6bf5 ("i40e: implement
-> > virtual
-> > device interface").
-> >
-> > Neither commit provides a proper explanation or justification of the
-> > check. In fact, later commits to i40e changed the logic to allow
-> > bypassing the check in some specific instances.
-> >
-> > The "logic" for this seems to be that error responses somehow
-> > indicate a
-> > malicious VF. This is not really true. The PF might be sending an
-> > error
-> > for any number of reasons such as lack of resources, etc.
-> >
-> > Additionally, this causes the PF to log an info message for every
-> > failed
-> > VF response which may confuse users, and can spam the kernel log.
-> >
-> > This behavior is not documented as part of any requirement for our
-> > products and other operating system drivers such as the FreeBSD
-> > implementation of our drivers do not include this type of check.
-> >
-> > In fact, the change from dev_err to dev_info in i40e commit
-> > 18b7af57d9c1
-> > ("i40e: Lower some message levels") explains that these messages
-> > typically don't actually indicate a real issue. It is quite likely
-> > that
-> > a user who hits this in practice will be very confused as the VF will
-> > be
-> > disabled without an obvious way to recover.
-> >
-> > We already have robust malicious driver detection logic using actual
-> > hardware detection mechanisms that detect and prevent invalid device
-> > usage. Remove the logic since its not a documented requirement and
-> > the
-> > behavior is not intuitive.
-> >
-> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> If this is for net, it should have a Fixes: as well.
-> 
-> Thanks,
-> Tony
-
-Fixes: 1071a8358a28 ("ice: Implement virtchnl commands for AVF support")
-
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Martyna Szapar-Mudlaw
+>Sent: Sunday, January 16, 2022 2:32 PM
+To: intel-wired-lan@lists.osuosl.org
+>Cc: Szapar-Mudlaw, Martyna <martyna.szapar-mudlaw@intel.com>
+>Subject: [Intel-wired-lan] [PATCH net-next] ice: Add support for inner etype in
+>switchdev
+>
+>Enable support for adding TC rules that filter on the inner EtherType field of
+>tunneled packet headers.
+>
+>Signed-off-by: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@intel.com>
+>---
+> .../ethernet/intel/ice/ice_protocol_type.h    |   2 +
+> drivers/net/ethernet/intel/ice/ice_switch.c   | 272 +++++++++++++++++-
+> drivers/net/ethernet/intel/ice/ice_tc_lib.c   |  15 +-
+> 3 files changed, 277 insertions(+), 12 deletions(-)
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
