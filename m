@@ -1,65 +1,155 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Fri, 18 Feb 2022 15:32:16 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] Revert "i40e: Fix reset bw limit
- when DCB enabled with 1 TC"
-Message-ID: <20220218143216.10359-1-mateusz.palczewski@intel.com>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Fri, 18 Feb 2022 15:53:39 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v6 6/7] ice: Fix FV offset
+ searching
+In-Reply-To: <20220218145048.6718-1-marcin.szycik@linux.intel.com>
+References: <20220218145048.6718-1-marcin.szycik@linux.intel.com>
+Message-ID: <20220218145339.7322-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Revert of a patch that instead of fixing a AQ error when trying
-to reset bw limit introduced a several regressions related to
-creation and managing tc. Currently there are errors when creating
-a tc on both pf and vf.
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
-Error log:
-[17428.783095] i40e 0000:3b:00.1: AQ command Config VSI BW allocation per TC failed = 14
-[17428.783107] i40e 0000:3b:00.1: Failed configuring TC map 0 for VSI 391
-[17428.783254] i40e 0000:3b:00.1: AQ command Config VSI BW allocation per TC failed = 14
-[17428.783259] i40e 0000:3b:00.1: Unable to  configure TC map 0 for VSI 391
+Checking only protocol ids while searching for correct FVs can lead to a
+situation, when incorrect FV will be added to the list. Incorrect means
+that FV has correct protocol id but incorrect offset.
 
-This reverts commit 3d2504663c41104b4359a15f35670cfa82de1bbf.
+Call ice_get_sw_fv_list with ice_prot_lkup_ext struct which contains all
+protocol ids with offsets.
 
-Fixes: 3d2504663c41 (i40e: Fix reset bw limit when DCB enabled with 1 TC)
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+With this modification allocating and collecting protocol ids list is
+not longer needed.
+
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- v2: Fixed commit message
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    | 16 +++-----
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |  2 +-
+ drivers/net/ethernet/intel/ice/ice_switch.c   | 39 +------------------
+ 3 files changed, 9 insertions(+), 48 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8572993..2f8ddfa 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5372,15 +5372,7 @@ static int i40e_vsi_configure_bw_alloc(struct i40e_vsi *vsi, u8 enabled_tc,
- 	/* There is no need to reset BW when mqprio mode is on.  */
- 	if (pf->flags & I40E_FLAG_TC_MQPRIO)
- 		return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+index 38fe0a7e6975..9746db6e19b5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
+@@ -1884,7 +1884,7 @@ ice_get_sw_fv_bitmap(struct ice_hw *hw, enum ice_prof_type req_profs,
+  * allocated for every list entry.
+  */
+ int
+-ice_get_sw_fv_list(struct ice_hw *hw, u8 *prot_ids, u16 ids_cnt,
++ice_get_sw_fv_list(struct ice_hw *hw, struct ice_prot_lkup_ext *lkups,
+ 		   unsigned long *bm, struct list_head *fv_list)
+ {
+ 	struct ice_sw_fv_list_entry *fvl;
+@@ -1896,7 +1896,7 @@ ice_get_sw_fv_list(struct ice_hw *hw, u8 *prot_ids, u16 ids_cnt,
+ 
+ 	memset(&state, 0, sizeof(state));
+ 
+-	if (!ids_cnt || !hw->seg)
++	if (!lkups->n_val_words || !hw->seg)
+ 		return -EINVAL;
+ 
+ 	ice_seg = hw->seg;
+@@ -1915,20 +1915,16 @@ ice_get_sw_fv_list(struct ice_hw *hw, u8 *prot_ids, u16 ids_cnt,
+ 		if (!test_bit((u16)offset, bm))
+ 			continue;
+ 
+-		for (i = 0; i < ids_cnt; i++) {
++		for (i = 0; i < lkups->n_val_words; i++) {
+ 			int j;
+ 
+-			/* This code assumes that if a switch field vector line
+-			 * has a matching protocol, then this line will contain
+-			 * the entries necessary to represent every field in
+-			 * that protocol header.
+-			 */
+ 			for (j = 0; j < hw->blk[ICE_BLK_SW].es.fvw; j++)
+-				if (fv->ew[j].prot_id == prot_ids[i])
++				if (fv->ew[j].prot_id == lkups->fv_words[i].prot_id &&
++				    fv->ew[j].off == lkups->fv_words[i].off)
+ 					break;
+ 			if (j >= hw->blk[ICE_BLK_SW].es.fvw)
+ 				break;
+-			if (i + 1 == ids_cnt) {
++			if (i + 1 == lkups->n_val_words) {
+ 				fvl = devm_kzalloc(ice_hw_to_dev(hw),
+ 						   sizeof(*fvl), GFP_KERNEL);
+ 				if (!fvl)
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+index 2fd5312494c7..9c530c86703e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
+@@ -87,7 +87,7 @@ ice_get_sw_fv_bitmap(struct ice_hw *hw, enum ice_prof_type type,
+ void
+ ice_init_prof_result_bm(struct ice_hw *hw);
+ int
+-ice_get_sw_fv_list(struct ice_hw *hw, u8 *prot_ids, u16 ids_cnt,
++ice_get_sw_fv_list(struct ice_hw *hw, struct ice_prot_lkup_ext *lkups,
+ 		   unsigned long *bm, struct list_head *fv_list);
+ int
+ ice_pkg_buf_unreserve_section(struct ice_buf_build *bld, u16 count);
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 4143728a1919..915aa693170c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -4506,41 +4506,6 @@ ice_create_recipe_group(struct ice_hw *hw, struct ice_sw_recipe *rm,
+ 	return status;
+ }
+ 
+-/**
+- * ice_get_fv - get field vectors/extraction sequences for spec. lookup types
+- * @hw: pointer to hardware structure
+- * @lkups: lookup elements or match criteria for the advanced recipe, one
+- *	   structure per protocol header
+- * @lkups_cnt: number of protocols
+- * @bm: bitmap of field vectors to consider
+- * @fv_list: pointer to a list that holds the returned field vectors
+- */
+-static int
+-ice_get_fv(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
+-	   unsigned long *bm, struct list_head *fv_list)
+-{
+-	u8 *prot_ids;
+-	int status;
+-	u16 i;
 -
--	if (!vsi->mqprio_qopt.qopt.hw) {
--		if (pf->flags & I40E_FLAG_DCB_ENABLED)
--			goto skip_reset;
+-	prot_ids = kcalloc(lkups_cnt, sizeof(*prot_ids), GFP_KERNEL);
+-	if (!prot_ids)
+-		return -ENOMEM;
 -
--		if (IS_ENABLED(CONFIG_I40E_DCB) &&
--		    i40e_dcb_hw_get_num_tc(&pf->hw) == 1)
--			goto skip_reset;
+-	for (i = 0; i < lkups_cnt; i++)
+-		if (!ice_prot_type_to_id(lkups[i].type, &prot_ids[i])) {
+-			status = -EIO;
+-			goto free_mem;
+-		}
 -
-+	if (!vsi->mqprio_qopt.qopt.hw && !(pf->flags & I40E_FLAG_DCB_ENABLED)) {
- 		ret = i40e_set_bw_limit(vsi, vsi->seid, 0);
- 		if (ret)
- 			dev_info(&pf->pdev->dev,
-@@ -5388,8 +5380,6 @@ static int i40e_vsi_configure_bw_alloc(struct i40e_vsi *vsi, u8 enabled_tc,
- 				 vsi->seid);
- 		return ret;
- 	}
+-	/* Find field vectors that include all specified protocol types */
+-	status = ice_get_sw_fv_list(hw, prot_ids, lkups_cnt, bm, fv_list);
 -
--skip_reset:
- 	memset(&bw_data, 0, sizeof(bw_data));
- 	bw_data.tc_valid_bits = enabled_tc;
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++)
+-free_mem:
+-	kfree(prot_ids);
+-	return status;
+-}
+-
+ /**
+  * ice_tun_type_match_word - determine if tun type needs a match mask
+  * @tun_type: tunnel type
+@@ -4688,11 +4653,11 @@ ice_add_adv_recipe(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
+ 
+ 	/* Get bitmap of field vectors (profiles) that are compatible with the
+ 	 * rule request; only these will be searched in the subsequent call to
+-	 * ice_get_fv.
++	 * ice_get_sw_fv_list.
+ 	 */
+ 	ice_get_compat_fv_bitmap(hw, rinfo, fv_bitmap);
+ 
+-	status = ice_get_fv(hw, lkups, lkups_cnt, fv_bitmap, &rm->fv_list);
++	status = ice_get_sw_fv_list(hw, lkup_exts, fv_bitmap, &rm->fv_list);
+ 	if (status)
+ 		goto err_unroll;
+ 
 -- 
-2.27.0
+2.31.1
 
