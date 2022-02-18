@@ -1,114 +1,50 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Fri, 18 Feb 2022 11:06:04 -0800
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix error with handling of
- bonding MTU
-Message-ID: <20220218190604.1888716-1-david.m.ertman@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri, 18 Feb 2022 12:15:38 -0800
+Subject: [Intel-wired-lan] [PATCH] fixup! ice: convert VF storage to hash
+ table with krefs and RCU
+Message-ID: <20220218201538.818568-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When a bonded interface is destroyed, .ndo_change_mtu can be called
-during the tear-down process while the RTNL lock is held.  This is a
-problem since the auxiliary driver linked to the LAN driver needs to be
-notified of the MTU change, and this requires grabbing a device_lock on
-the auxiliary_device's dev.  Currently this is being attempted in the
-same execution context as the call to .ndo_change_mtu which is causing a
-dead-lock.
+Add a missing ice_put_vf in ice_vf_lan_overflow_event, since otherwise
+we'll leak the VF structure here.
 
-Move the notification of the changed MTU to a separate execution context
-(watchdog service task) and eliminate the "before" notification.
-
-Fixes: 348048e724a0e ("ice: Implement iidc operations")
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h      |  1 +
- drivers/net/ethernet/intel/ice/ice_main.c | 29 +++++++++++------------
- 2 files changed, 15 insertions(+), 15 deletions(-)
+Noticed another missing ice_put_vf() in ice_vf_lan_overflow_event. Tony, can
+you squash this into the mentioned commit?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 8f40f6f9b8eb..219b7c9d230e 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -487,6 +487,7 @@ enum ice_pf_flags {
- 	ICE_FLAG_VF_VLAN_PRUNING,
- 	ICE_FLAG_LINK_LENIENT_MODE_ENA,
- 	ICE_FLAG_PLUG_AUX_DEV,
-+	ICE_FLAG_MTU_CHANGED,
- 	ICE_PF_FLAGS_NBITS		/* must be last */
- };
+ drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+index 537cdc7a1653..0541db39964e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+@@ -2340,6 +2340,7 @@ ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 		return;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index cff476f735ef..f81b4732b8b2 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2259,6 +2259,17 @@ static void ice_service_task(struct work_struct *work)
- 	if (test_and_clear_bit(ICE_FLAG_PLUG_AUX_DEV, pf->flags))
- 		ice_plug_aux_dev(pf);
- 
-+	if (test_and_clear_bit(ICE_FLAG_MTU_CHANGED, pf->flags)) {
-+		struct iidc_event *event;
-+
-+		event = kzalloc(sizeof(*event), GFP_KERNEL);
-+		if (event) {
-+			set_bit(IIDC_EVENT_AFTER_MTU_CHANGE, event->type);
-+			ice_send_event_to_aux(pf, event);
-+			kfree(event);
-+		}
-+	}
-+
- 	ice_clean_adminq_subtask(pf);
- 	ice_check_media_subtask(pf);
- 	ice_check_for_hang_subtask(pf);
-@@ -7016,7 +7027,6 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
--	struct iidc_event *event;
- 	u8 count = 0;
- 	int err = 0;
- 
-@@ -7051,14 +7061,6 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
- 		return -EBUSY;
- 	}
- 
--	event = kzalloc(sizeof(*event), GFP_KERNEL);
--	if (!event)
--		return -ENOMEM;
--
--	set_bit(IIDC_EVENT_BEFORE_MTU_CHANGE, event->type);
--	ice_send_event_to_aux(pf, event);
--	clear_bit(IIDC_EVENT_BEFORE_MTU_CHANGE, event->type);
--
- 	netdev->mtu = (unsigned int)new_mtu;
- 
- 	/* if VSI is up, bring it down and then back up */
-@@ -7066,21 +7068,18 @@ static int ice_change_mtu(struct net_device *netdev, int new_mtu)
- 		err = ice_down(vsi);
- 		if (err) {
- 			netdev_err(netdev, "change MTU if_down err %d\n", err);
--			goto event_after;
-+			return err;
- 		}
- 
- 		err = ice_up(vsi);
- 		if (err) {
- 			netdev_err(netdev, "change MTU if_up err %d\n", err);
--			goto event_after;
-+			return err;
- 		}
- 	}
- 
- 	netdev_dbg(netdev, "changed MTU to %d\n", new_mtu);
--event_after:
--	set_bit(IIDC_EVENT_AFTER_MTU_CHANGE, event->type);
--	ice_send_event_to_aux(pf, event);
--	kfree(event);
-+	set_bit(ICE_FLAG_MTU_CHANGED, pf->flags);
- 
- 	return err;
+ 	ice_vc_reset_vf(vf);
++	ice_put_vf(vf);
  }
+ 
+ /**
+
+base-commit: 477606a501d0705cb1bb86fe7aa86f553861ae7f
+prerequisite-patch-id: 52d10a04856713e454419d1fab93a8eb8fc8b46b
+prerequisite-patch-id: 5e147a8595d06a154c4d4bd96a00123b9d7aeff3
+prerequisite-patch-id: 219a2374784bc332860587188fff3b52875bf75b
+prerequisite-patch-id: 9c0a3c2a0f103f375d154874cb2f6c05460fce4f
+prerequisite-patch-id: 0d93364319183aa07095f318faa1ab04818a0122
+prerequisite-patch-id: f6646bb747160540b8aad64bc8bf6eec2f8a0751
+prerequisite-patch-id: 30b94ac0dc91fa628dac13700d71b1dbcb466207
+prerequisite-patch-id: 7d2e698ae3bc185dfb1d622219774cb3eaf2747b
+prerequisite-patch-id: c323612611a89bb6c6fd39c16c2cbec947eac0be
+prerequisite-patch-id: 9c0e97be6504c4ebb3ad317cf7a58983369f852d
+prerequisite-patch-id: 9d8a69cab472a9920a226840cf9ba0e664b2d48a
 -- 
-2.33.1
+2.35.1.129.gb80121027d12
 
