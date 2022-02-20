@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Mon, 21 Feb 2022 05:22:32 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
- 5950bdc88dd1d158f2845fdff8fb1de86476806c
-Message-ID: <6212b118.7/vey7uf1HnYeiva%lkp@intel.com>
+Date: Mon, 21 Feb 2022 05:22:07 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 98b1f1d6a184646cb70760676f70ec5c6bedda24
+Message-ID: <6212b0ff.aNWIQeB9ImQTgrRl%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
-branch HEAD: 5950bdc88dd1d158f2845fdff8fb1de86476806c  ice: initialize local variable 'tlv'
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 98b1f1d6a184646cb70760676f70ec5c6bedda24  Revert "i40e: Fix reset bw limit when DCB enabled with 1 TC"
 
-elapsed time: 733m
+elapsed time: 732m
 
-configs tested: 109
+configs tested: 106
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -38,7 +38,6 @@ powerpc                      ppc40x_defconfig
 powerpc                    klondike_defconfig
 m68k                        m5272c3_defconfig
 xtensa                              defconfig
-alpha                               defconfig
 powerpc                      pcm030_defconfig
 mips                       bmips_be_defconfig
 h8300                            alldefconfig
@@ -61,11 +60,12 @@ ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
+nds32                             allnoconfig
 nios2                               defconfig
 arc                              allyesconfig
-nds32                             allnoconfig
 nios2                            allyesconfig
 csky                                defconfig
+alpha                               defconfig
 alpha                            allyesconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
@@ -87,9 +87,6 @@ mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a006
 riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
@@ -98,8 +95,8 @@ riscv                               defconfig
 riscv                          rv32_defconfig
 riscv                            allmodconfig
 x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
 um                             i386_defconfig
+um                           x86_64_defconfig
 x86_64                           allyesconfig
 x86_64                              defconfig
 x86_64                               rhel-8.3
