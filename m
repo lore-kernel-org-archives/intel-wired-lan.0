@@ -1,131 +1,80 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Mon, 21 Feb 2022 16:53:40 +0100
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Add restoration of VF
- MSI-X state during PCI reset
-In-Reply-To: <20220221151329.27346-1-mateusz.palczewski@intel.com>
-References: <20220221151329.27346-1-mateusz.palczewski@intel.com>
-Message-ID: <770c2232-b19c-a831-1e37-69b9c1271493@molgen.mpg.de>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Mon, 21 Feb 2022 11:14:18 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v7 0/7] ice: GTP support in
+ switchdev
+Message-ID: <20220221101425.19776-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Slawomir, dear Mateusz,
+Add support for adding GTP-C and GTP-U filters in switchdev mode.
 
+To create a filter for GTP, create a GTP-type netdev with ip tool, enable
+hardware offload, add qdisc and add a filter in tc:
 
-Am 21.02.22 um 16:13 schrieb Mateusz Palczewski:
-> From: Slawomir Laba <slawomirx.laba@intel.com>
+ip link add $GTP0 type gtp role <sgsn/ggsn> hsize <hsize>
+ethtool -K $PF0 hw-tc-offload on
+tc qdisc add dev $GTP0 ingress
+tc filter add dev $GTP0 ingress prio 1 flower enc_key_id 1337 \
+action mirred egress redirect dev $VF1_PR
 
-Thank you for your patch. To shorten the commit message summary, maybe 
-just use: i40e Restore VF MSI-X state during PCI reset
+By default, a filter for GTP-U will be added. To add a filter for GTP-C,
+specify enc_dst_port = 2123, e.g.:
 
-> During a PCI FLR the MSI-X Enable flag in the VF PCI MSI-X capability
-> register will be cleared. This can lead to issues when a VF is
-> assigned to a VM because in these cases the VF driver receives no
-> indication of the PF PCI error/reset and additionally it is incapable
-> of restoring the cleared flag in the hypervisor configuration space
-> without fully reinitializing the driver interrupt functionality.
+tc filter add dev $GTP0 ingress prio 1 flower enc_key_id 1337 \
+enc_dst_port 2123 action mirred egress redirect dev $VF1_PR
 
-For the record, can you please document the exact test environment to 
-reproduce the issue, and what error is seen.
+Note: outer IPv6 offload is not supported yet.
+Note: GTP-U with no payload offload is not supported yet.
 
-> Since the VF driver is unable to easily resolve this condition on its own,
-> restore the VF MSI-X flag during the PF PCI reset handling.
-> 
-> Fixes: 19b7960b2da1 ("i40e: implement split PCI error reset handler")
-> Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
-> Signed-off-by: Karen Sornek <karen.sornek@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-> ---
->   v2: Fixed compilation error
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_main.c   |  2 ++
->   .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 32 +++++++++++++++++++
->   .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  1 +
->   3 files changed, 35 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 2f8ddfa..442b68a 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -16151,6 +16151,8 @@ static void i40e_pci_error_reset_done(struct pci_dev *pdev)
->   		return;
->   
->   	i40e_reset_and_rebuild(pf, false, false);
-> +
-> +	i40e_restore_all_vfs_msi_state(pdev);
->   }
->   
->   /**
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> index 2606e8f..5aaa669 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-> @@ -152,6 +152,38 @@ void i40e_vc_notify_reset(struct i40e_pf *pf)
->   			     (u8 *)&pfe, sizeof(struct virtchnl_pf_event));
->   }
->   
-> +/**
-> + * i40e_restore_all_vfs_msi_state - restore VF MSI state after PF FLR
-> + * @pdev: pointer to a pci_dev structure
-> + *
-> + * Called when recovering from a PF FLR to restore interrupt capability to
-> + * the VFs.
-> + */
-> +void i40e_restore_all_vfs_msi_state(struct pci_dev *pdev)
-> +{
-> +	struct pci_dev *vfdev;
-> +	u16 vf_id;
-> +	int pos;
+ICE COMMS package is required to create a filter as it contains GTP
+profiles.
 
-Use u16 to match pci_find_ext_capability() signature?
+Changes in iproute2 [1] are required to be able to add GTP netdev and use
+GTP-specific options (QFI and PDU type).
 
-> +
-> +	/* Continue only if this is a PF */
-> +	if (!pdev->is_physfn)
-> +		return;
-> +
-> +	if (!pci_num_vf(pdev))
-> +		return;
-> +
-> +	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
-> +	if (pos) {
-> +		pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
-> +		vfdev = pci_get_device(pdev->vendor, vf_id, NULL);
-> +		while (vfdev) {
-> +			if (vfdev->is_virtfn && vfdev->physfn == pdev)
-> +				pci_restore_msi_state(vfdev);
-> +			vfdev = pci_get_device(pdev->vendor, vf_id, vfdev);
+[1] https://lore.kernel.org/netdev/20220211182902.11542-1-wojciech.drewek at intel.com/T
+---
+v2: Adding more CC
+v3: Fixed mail thread, sorry for spam
+v4: Added GTP echo response in gtp module
+v5: Change patch order
+v6: Added GTP echo request in gtp module
+v7: Fix kernel-docs in ice
 
-Move that in the while condition (and initialize vfdev with NULL to 
-follow the pattern in `Documentation/PCI/pci.rst`?
+Marcin Szycik (1):
+  ice: Support GTP-U and GTP-C offload in switchdev
 
-     struct pci_dev *dev = NULL;
-     while (dev = pci_get_device(VENDOR_ID, DEVICE_ID, dev))
-     	configure_device(dev);
+Michal Swiatkowski (1):
+  ice: Fix FV offset searching
 
-> +		}
-> +	}
-> +}
-> +
->   /**
->    * i40e_vc_notify_vf_reset
->    * @vf: pointer to the VF structure
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-> index a554d0a..7c5f166 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-> @@ -134,6 +134,7 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable);
->   
->   void i40e_vc_notify_link_state(struct i40e_pf *pf);
->   void i40e_vc_notify_reset(struct i40e_pf *pf);
-> +void i40e_restore_all_vfs_msi_state(struct pci_dev *pdev);
->   int i40e_get_vf_stats(struct net_device *netdev, int vf_id,
->   		      struct ifla_vf_stats *vf_stats);
->   
+Wojciech Drewek (5):
+  gtp: Allow to create GTP device without FDs
+  gtp: Implement GTP echo response
+  gtp: Implement GTP echo request
+  net/sched: Allow flower to match on GTP options
+  gtp: Add support for checking GTP device type
 
+ drivers/net/ethernet/intel/ice/ice.h          |   1 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |  52 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |   2 +-
+ .../net/ethernet/intel/ice/ice_flex_type.h    |   6 +-
+ .../ethernet/intel/ice/ice_protocol_type.h    |  19 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   | 630 +++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_switch.h   |   9 +
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 105 ++-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h   |   3 +
+ drivers/net/gtp.c                             | 661 +++++++++++++++++-
+ include/net/gtp.h                             |  42 ++
+ include/uapi/linux/gtp.h                      |   2 +
+ include/uapi/linux/if_link.h                  |   2 +
+ include/uapi/linux/if_tunnel.h                |   4 +-
+ include/uapi/linux/pkt_cls.h                  |  15 +
+ net/sched/cls_flower.c                        | 116 +++
+ 16 files changed, 1565 insertions(+), 104 deletions(-)
 
-Kind regards,
+-- 
+2.35.1
 
-Paul
