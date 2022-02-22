@@ -1,42 +1,81 @@
-From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
-Date: Tue, 22 Feb 2022 11:43:04 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] ice: Fix curr_link_speed
- advertised speed
-Message-ID: <20220222114304.126803-1-jedrzej.jagielski@intel.com>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Tue, 22 Feb 2022 13:41:45 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v8 0/7] ice: GTP support in
+ switchdev
+Message-ID: <20220222124152.103039-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Change curr_link_speed advertised speed, due to
-link_info.link_speed is not equal phy.curr_user_speed_req.
-Without this patch it is impossible to set adverised
-speed to same as link_speed.
+Add support for adding GTP-C and GTP-U filters in switchdev mode.
 
-Testing Hints: Try to set advertised speed
-to 25G only with 25G default link (use ethtool -s 0x80000000)
+To create a filter for GTP, create a GTP-type netdev with ip tool, enable
+hardware offload, add qdisc and add a filter in tc:
 
-Fixes: 48cb27f2fd18 ("ice: Implement handlers for ethtool PHY/link operations")
-Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+ip link add $GTP0 type gtp role <sgsn/ggsn> hsize <hsize>
+ethtool -K $PF0 hw-tc-offload on
+tc qdisc add dev $GTP0 ingress
+tc filter add dev $GTP0 ingress prio 1 flower enc_key_id 1337 \
+action mirred egress redirect dev $VF1_PR
+
+By default, a filter for GTP-U will be added. To add a filter for GTP-C,
+specify enc_dst_port = 2123, e.g.:
+
+tc filter add dev $GTP0 ingress prio 1 flower enc_key_id 1337 \
+enc_dst_port 2123 action mirred egress redirect dev $VF1_PR
+
+Note: outer IPv6 offload is not supported yet.
+Note: GTP-U with no payload offload is not supported yet.
+
+ICE COMMS package is required to create a filter as it contains GTP
+profiles.
+
+Changes in iproute2 [1] are required to be able to add GTP netdev and use
+GTP-specific options (QFI and PDU type).
+
+[1] https://lore.kernel.org/netdev/20220211182902.11542-1-wojciech.drewek at intel.com/T
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v2: Adding more CC
+v3: Fixed mail thread, sorry for spam
+v4: Added GTP echo response in gtp module
+v5: Change patch order
+v6: Added GTP echo request in gtp module
+v7: Fix kernel-docs in ice
+v8: Remove handling of GTP Echo Response
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index e2e3ef7fba7f..a5dc9824e255 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -2298,7 +2298,7 @@ ice_set_link_ksettings(struct net_device *netdev,
- 	if (err)
- 		goto done;
- 
--	curr_link_speed = pi->phy.link_info.link_speed;
-+	curr_link_speed = pi->phy.curr_user_speed_req;
- 	adv_link_speed = ice_ksettings_find_adv_link_speed(ks);
- 
- 	/* If speed didn't get set, set it to what it currently is.
+Marcin Szycik (1):
+  ice: Support GTP-U and GTP-C offload in switchdev
+
+Michal Swiatkowski (1):
+  ice: Fix FV offset searching
+
+Wojciech Drewek (5):
+  gtp: Allow to create GTP device without FDs
+  gtp: Implement GTP echo response
+  gtp: Implement GTP echo request
+  net/sched: Allow flower to match on GTP options
+  gtp: Add support for checking GTP device type
+
+ drivers/net/ethernet/intel/ice/ice.h          |   1 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |  52 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |   2 +-
+ .../net/ethernet/intel/ice/ice_flex_type.h    |   6 +-
+ .../ethernet/intel/ice/ice_protocol_type.h    |  19 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   | 630 ++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_switch.h   |   9 +
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 105 ++-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h   |   3 +
+ drivers/net/gtp.c                             | 426 +++++++++++-
+ include/net/gtp.h                             |  42 ++
+ include/uapi/linux/gtp.h                      |   1 +
+ include/uapi/linux/if_link.h                  |   2 +
+ include/uapi/linux/if_tunnel.h                |   4 +-
+ include/uapi/linux/pkt_cls.h                  |  15 +
+ net/sched/cls_flower.c                        | 116 ++++
+ 16 files changed, 1330 insertions(+), 103 deletions(-)
+
 -- 
-2.27.0
+2.35.1
 
