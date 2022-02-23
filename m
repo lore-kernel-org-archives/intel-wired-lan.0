@@ -1,39 +1,42 @@
-From: naamax.meir <naamax.meir@linux.intel.com>
-Date: Wed, 23 Feb 2022 09:02:29 +0200
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Print PHY register address
- when MDI read/write fails
-In-Reply-To: <20220210132256.53589-1-yu.c.chen@intel.com>
-References: <20220210132256.53589-1-yu.c.chen@intel.com>
-Message-ID: <723d2a6c-8f5a-8e26-73d9-e96a289ff9af@linux.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 23 Feb 2022 09:42:55 +0000
+Subject: [Intel-wired-lan] [net-next PATCH 23/25] ice: cleanup long
+ longs in ice_sriov.c
+In-Reply-To: <bcba92ad-d159-2abc-f7d1-92043c9c44bc@intel.com>
+References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
+ <20220223002712.2771809-24-jacob.e.keller@intel.com>
+ <bcba92ad-d159-2abc-f7d1-92043c9c44bc@intel.com>
+Message-ID: <CO1PR11MB5089CB5838DE2F54C51A079DD63C9@CO1PR11MB5089.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2/10/2022 15:22, Chen Yu wrote:
-> There is occasional suspend error from e1000e which blocks the
-> system from further suspending. And the issue was found on
-> a WhiskeyLake-U platform with I219-V:
->
-> [   20.078957] PM: pci_pm_suspend(): e1000e_pm_suspend+0x0/0x780 [e1000e] returns -2
-> [   20.078970] PM: dpm_run_callback(): pci_pm_suspend+0x0/0x170 returns -2
-> [   20.078974] e1000e 0000:00:1f.6: PM: pci_pm_suspend+0x0/0x170 returned -2 after 371012 usecs
-> [   20.078978] e1000e 0000:00:1f.6: PM: failed to suspend async: error -2
->
-> According to the code flow, this might be caused by broken MDI read/write
-> to PHY registers. However currently the code does not tell us which
-> register is broken. Thus enhance the debug information to print the
-> offender PHY register. So the next the issue is reproduced, this
-> information could be used for narrow down.
->
-> Acked-by: Paul Menzel<pmenzel@molgen.mpg.de>
-> Reported-by: Todd Brandt<todd.e.brandt@intel.com>
-> Signed-off-by: Chen Yu<yu.c.chen@intel.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/phy.c | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
-Tested-by: Naama Meir <naamax.meir@linux.intel.com>
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220223/6bef2cfd/attachment-0001.html>
+
+
+> -----Original Message-----
+> From: Brandeburg, Jesse <jesse.brandeburg@intel.com>
+> Sent: Tuesday, February 22, 2022 5:47 PM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>; Intel Wired LAN <intel-wired-
+> lan at lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [net-next PATCH 23/25] ice: cleanup long longs in
+> ice_sriov.c
+> 
+> Subject should be "cleanup long lines" not "cleanup long longs"
+> 
+> 
+> On 2/22/2022 4:27 PM, Jacob Keller wrote:
+> > Before we move the virtchnl message handling from ice_sriov.c into
+> > ice_virtchnl.c, cleanup some long line warnings to avoid checkpatch.pl
+> > complaints.
+> >
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> 
+
+Oops, thanks for the review Jesse!
+
+Tony, can you fix this up in your tree?
+
+Thanks,
+Haje
