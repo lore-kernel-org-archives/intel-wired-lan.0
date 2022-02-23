@@ -1,102 +1,104 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Feb 2022 16:27:04 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 17/25] ice: drop is_vflr
- parameter from ice_reset_all_vfs
+Date: Tue, 22 Feb 2022 16:26:53 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 06/25] ice: rename
+ ICE_MAX_VF_COUNT to avoid confusion
 In-Reply-To: <20220223002712.2771809-1-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
-Message-ID: <20220223002712.2771809-18-jacob.e.keller@intel.com>
+Message-ID: <20220223002712.2771809-7-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_reset_all_vfs function takes a parameter to handle whether its
-operating after a VFLR event or not. This is not necessary as every
-caller always passes true. Simplify the interface by removing the
-parameter.
+The ICE_MAX_VF_COUNT field is defined in ice_sriov.h. This count is true
+for SR-IOV but will not be true for all VF implementations, such as when
+the ice driver supports Scalable IOV.
+
+Rename this definition to clearly indicate ICE_MAX_SRIOV_VFS.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c   | 4 ++--
- drivers/net/ethernet/intel/ice/ice_vf_lib.c | 5 ++---
- drivers/net/ethernet/intel/ice/ice_vf_lib.h | 4 ++--
- 3 files changed, 6 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c  | 2 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c | 8 ++++----
+ drivers/net/ethernet/intel/ice/ice_sriov.h | 4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a628fa9f1442..af4befb22d0d 100644
+index 133860071174..a628fa9f1442 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -768,7 +768,7 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
- 		clear_bit(ICE_PREPARED_FOR_RESET, pf->state);
- 		clear_bit(ICE_PFR_REQ, pf->state);
- 		wake_up(&pf->reset_wait_queue);
--		ice_reset_all_vfs(pf, true);
-+		ice_reset_all_vfs(pf);
+@@ -3868,7 +3868,7 @@ static void ice_set_pf_caps(struct ice_pf *pf)
+ 	if (func_caps->common_cap.sr_iov_1_1) {
+ 		set_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
+ 		pf->vfs.num_supported = min_t(int, func_caps->num_allocd_vfs,
+-					      ICE_MAX_VF_COUNT);
++					      ICE_MAX_SRIOV_VFS);
  	}
- }
+ 	clear_bit(ICE_FLAG_RSS_ENA, pf->flags);
+ 	if (func_caps->common_cap.rss_table_size)
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index 205d7e5003d8..7cd910bb7a7a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -661,7 +661,7 @@ void ice_free_vfs(struct ice_pf *pf)
  
-@@ -819,7 +819,7 @@ static void ice_reset_subtask(struct ice_pf *pf)
- 			clear_bit(ICE_CORER_REQ, pf->state);
- 			clear_bit(ICE_GLOBR_REQ, pf->state);
- 			wake_up(&pf->reset_wait_queue);
--			ice_reset_all_vfs(pf, true);
-+			ice_reset_all_vfs(pf);
- 		}
+ 		/* clear malicious info since the VF is getting released */
+ 		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->vfs.malvfs,
+-					ICE_MAX_VF_COUNT, vf->vf_id))
++					ICE_MAX_SRIOV_VFS, vf->vf_id))
+ 			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
+ 				vf->vf_id);
  
- 		return;
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 282be49dbfed..996d84a3303d 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -356,7 +356,6 @@ ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m)
- /**
-  * ice_reset_all_vfs - reset all allocated VFs in one go
-  * @pf: pointer to the PF structure
-- * @is_vflr: true if VFLR was issued, false if not
-  *
-  * First, tell the hardware to reset each VF, then do all the waiting in one
-  * chunk, and finally finish restoring each VF after the wait. This is useful
-@@ -365,7 +364,7 @@ ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m)
-  *
-  * Returns true if any VFs were reset, and false otherwise.
-  */
--bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
-+bool ice_reset_all_vfs(struct ice_pf *pf)
- {
- 	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_hw *hw = &pf->hw;
-@@ -393,7 +392,7 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
- 
- 	/* Begin reset on all VFs at once */
+@@ -1591,7 +1591,7 @@ bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
+ 	/* clear all malicious info if the VFs are getting reset */
  	ice_for_each_vf(pf, bkt, vf)
--		ice_trigger_vf_reset(vf, is_vflr, true);
-+		ice_trigger_vf_reset(vf, true, true);
+ 		if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->vfs.malvfs,
+-					ICE_MAX_VF_COUNT, vf->vf_id))
++					ICE_MAX_SRIOV_VFS, vf->vf_id))
+ 			dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
+ 				vf->vf_id);
  
- 	/* HW requires some time to make sure it can flush the FIFO for a VF
- 	 * when it resets it. Now that we've triggered all of the VFs, iterate
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index 2a971e48b1cc..3ed8a56189d3 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -213,7 +213,7 @@ ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
- int
- ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
- bool ice_reset_vf(struct ice_vf *vf, bool is_vflr);
--bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr);
-+bool ice_reset_all_vfs(struct ice_pf *pf);
- #else /* CONFIG_PCI_IOV */
- static inline struct ice_vf *ice_get_vf_by_id(struct ice_pf *pf, u16 vf_id)
- {
-@@ -275,7 +275,7 @@ static inline bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 	return true;
- }
+@@ -1805,7 +1805,7 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
  
--static inline bool ice_reset_all_vfs(struct ice_pf *pf, bool is_vflr)
-+static inline bool ice_reset_all_vfs(struct ice_pf *pf)
- {
+ 	/* if the VF has been reset allow it to come up again */
+ 	if (ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->vfs.malvfs,
+-				ICE_MAX_VF_COUNT, vf->vf_id))
++				ICE_MAX_SRIOV_VFS, vf->vf_id))
+ 		dev_dbg(dev, "failed to clear malicious VF state for VF %u\n", i);
+ 
  	return true;
- }
+@@ -6624,7 +6624,7 @@ ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
+ 		 * know about it, then let them know now
+ 		 */
+ 		status = ice_mbx_report_malvf(&pf->hw, pf->vfs.malvfs,
+-					      ICE_MAX_VF_COUNT, vf_id,
++					      ICE_MAX_SRIOV_VFS, vf_id,
+ 					      &report_vf);
+ 		if (status)
+ 			dev_dbg(dev, "Error reporting malicious VF\n");
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.h b/drivers/net/ethernet/intel/ice/ice_sriov.h
+index 525e3f0819e8..28a544c09894 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.h
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.h
+@@ -22,7 +22,7 @@
+ #define ICE_PCI_CIAD_WAIT_DELAY_US	1
+ 
+ /* VF resource constraints */
+-#define ICE_MAX_VF_COUNT		256
++#define ICE_MAX_SRIOV_VFS		256
+ #define ICE_MIN_QS_PER_VF		1
+ #define ICE_NONQ_VECS_VF		1
+ #define ICE_MAX_RSS_QS_PER_VF		16
+@@ -147,7 +147,7 @@ struct ice_vfs {
+ 	u16 num_qps_per;		/* number of queue pairs per VF */
+ 	u16 num_msix_per;		/* number of MSi-X vectors per VF */
+ 	unsigned long last_printed_mdd_jiffies;	/* MDD message rate limit */
+-	DECLARE_BITMAP(malvfs, ICE_MAX_VF_COUNT); /* malicious VF indicator */
++	DECLARE_BITMAP(malvfs, ICE_MAX_SRIOV_VFS); /* malicious VF indicator */
+ };
+ 
+ /* VF information structure */
 -- 
 2.35.1.129.gb80121027d12
 
