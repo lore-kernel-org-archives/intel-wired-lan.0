@@ -1,156 +1,40 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Feb 2022 16:27:07 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 20/25] ice: convert ice_reset_vf
- to take flags
+Date: Tue, 22 Feb 2022 16:26:57 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 10/25] ice: log an error message
+ when eswitch fails to configure
 In-Reply-To: <20220223002712.2771809-1-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
-Message-ID: <20220223002712.2771809-21-jacob.e.keller@intel.com>
+Message-ID: <20220223002712.2771809-11-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_reset_vf function takes a boolean parameter which indicates
-whether or not the reset is due to a VFLR event.
-
-This is somewhat confusing to read because readers must interpret what
-"true" and "false" mean when seeing a line of code like
-"ice_reset_vf(vf, false)".
-
-We will want to add another toggle to the ice_reset_vf in a following
-change. To avoid proliferating many arguments, convert this function to
-take flags instead. ICE_VF_RESET_VFLR will indicate if this is a VFLR
-reset. A value of 0 indicates no flags.
-
-One could argue that "ice_reset_vf(vf, 0)" is no more readable than
-"ice_reset_vf(vf, false)".. However, this type of flags interface is
-somewhat common and using 0 to mean "no flags" makes sense in this
-context. We could bother to add a define for "ICE_VF_RESET_PLAIN" or
-something similar, but this can be confusing since its not an actual bit
-flag.
-
-This paves the way to add another flag to the function in a following
-change.
+When ice_eswitch_configure fails, print an error message to make it more
+obvious why VF initialization did not succeed.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c   | 2 +-
- drivers/net/ethernet/intel/ice/ice_sriov.c  | 6 +++---
- drivers/net/ethernet/intel/ice/ice_vf_lib.c | 9 ++++++---
- drivers/net/ethernet/intel/ice/ice_vf_lib.h | 9 +++++++--
- 4 files changed, 17 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sriov.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index af4befb22d0d..9d5fa9840004 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1958,7 +1958,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 				 */
- 				ice_print_vf_rx_mdd_event(vf);
- 				mutex_lock(&vf->cfg_lock);
--				ice_reset_vf(vf, false);
-+				ice_reset_vf(vf, 0);
- 				mutex_unlock(&vf->cfg_lock);
- 			}
- 		}
 diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 4a8cf8f646c8..c234e4edc7f0 100644
+index b695d479dfb1..d41fce16ddfb 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -1393,7 +1393,7 @@ void ice_process_vflr_event(struct ice_pf *pf)
- 		if (reg & BIT(bit_idx)) {
- 			/* GLGEN_VFLRSTAT bit will be cleared in ice_reset_vf */
- 			mutex_lock(&vf->cfg_lock);
--			ice_reset_vf(vf, true);
-+			ice_reset_vf(vf, ICE_VF_RESET_VFLR);
- 			mutex_unlock(&vf->cfg_lock);
- 		}
- 	}
-@@ -1407,7 +1407,7 @@ void ice_process_vflr_event(struct ice_pf *pf)
- static void ice_vc_reset_vf(struct ice_vf *vf)
- {
- 	ice_vc_notify_vf_reset(vf);
--	ice_reset_vf(vf, false);
-+	ice_reset_vf(vf, 0);
- }
+@@ -2087,8 +2087,10 @@ static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
+ 	clear_bit(ICE_VF_DIS, pf->state);
  
- /**
-@@ -1724,7 +1724,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
- static void ice_vc_reset_vf_msg(struct ice_vf *vf)
- {
- 	if (test_bit(ICE_VF_STATE_INIT, vf->vf_states))
--		ice_reset_vf(vf, false);
-+		ice_reset_vf(vf, 0);
- }
+ 	ret = ice_eswitch_configure(pf);
+-	if (ret)
++	if (ret) {
++		dev_err(dev, "Failed to configure eswitch, err %d\n", ret);
+ 		goto err_unroll_sriov;
++	}
  
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index d37232197bde..3b4e55c62786 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -444,13 +444,16 @@ void ice_reset_all_vfs(struct ice_pf *pf)
- /**
-  * ice_reset_vf - Reset a particular VF
-  * @vf: pointer to the VF structure
-- * @is_vflr: true if VFLR was issued, false if not
-+ * @flags: flags controlling behavior of the reset
-+ *
-+ * Flags:
-+ *   ICE_VF_RESET_VFLR - Indicates a reset is due to VFLR event
-  *
-  * Returns 0 if the VF is currently in reset, if the resets are disabled, or
-  * if the VF resets successfully. Returns an error code if the VF fails to
-  * rebuild.
-  */
--int ice_reset_vf(struct ice_vf *vf, bool is_vflr)
-+int ice_reset_vf(struct ice_vf *vf, u32 flags)
- {
- 	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
-@@ -478,7 +481,7 @@ int ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 
- 	/* Set VF disable bit state here, before triggering reset */
- 	set_bit(ICE_VF_STATE_DIS, vf->vf_states);
--	ice_trigger_vf_reset(vf, is_vflr, false);
-+	ice_trigger_vf_reset(vf, flags & ICE_VF_RESET_VFLR, false);
- 
- 	vsi = ice_get_vf_vsi(vf);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index b569186b248b..f33d55f8bcc3 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -133,6 +133,11 @@ struct ice_vf {
- 	struct devlink_port devlink_port;
- };
- 
-+/* Flags for controlling behavior of ice_reset_vf */
-+enum ice_vf_reset_flags {
-+	ICE_VF_RESET_VFLR = BIT(0), /* Indicate a VFLR reset */
-+};
-+
- static inline u16 ice_vf_get_port_vlan_id(struct ice_vf *vf)
- {
- 	return vf->port_vlan_info.vid;
-@@ -212,7 +217,7 @@ int
- ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
- int
- ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
--int ice_reset_vf(struct ice_vf *vf, bool is_vflr);
-+int ice_reset_vf(struct ice_vf *vf, u32 flags);
- void ice_reset_all_vfs(struct ice_pf *pf);
- #else /* CONFIG_PCI_IOV */
- static inline struct ice_vf *ice_get_vf_by_id(struct ice_pf *pf, u16 vf_id)
-@@ -270,7 +275,7 @@ ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m)
- 	return -EOPNOTSUPP;
- }
- 
--static inline int ice_reset_vf(struct ice_vf *vf, bool is_vflr)
-+static inline int ice_reset_vf(struct ice_vf *vf, u32 flags)
- {
- 	return 0;
- }
+ 	/* rearm global interrupts */
+ 	if (test_and_clear_bit(ICE_OICR_INTR_DIS, pf->state))
 -- 
 2.35.1.129.gb80121027d12
 
