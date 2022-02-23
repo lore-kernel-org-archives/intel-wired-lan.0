@@ -1,174 +1,221 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 23 Feb 2022 19:11:46 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- f2ab415305741c5df2eb631bc0727b100106547c
-Message-ID: <62161672.zTxr+6t+pvey8c6t%lkp@intel.com>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Wed, 23 Feb 2022 13:35:49 +0100
+Subject: [Intel-wired-lan] [PATCH net v1 1/8] iavf: Rework mutexes for
+ better synchronisation
+Message-ID: <20220223123549.29391-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: f2ab415305741c5df2eb631bc0727b100106547c  ice: Add inline flow director support for channels
+From: SlawomirX Laba <slawomirx.laba@intel.com>
 
-possible Warning in current branch (please contact us if interested):
+The driver used to crash in multiple spots when put to stress testing
+of the init, reset and remove paths.
 
-net/ipv6/addrconf.c:4312 if6_get_next() warn: ignoring unreachable code.
+The user would experience call traces or hangs when creating,
+resetting, removing VFs. Depending on the machines, the call traces
+are happening in random spots, like reset restoring resources racing
+with driver remove.
 
-Warning ids grouped by kconfigs:
+Make adapter->crit_lock mutex a mandatory lock for guarding the
+operations performed on all workqueues and functions dealing with
+resource allocation and disposal.
 
-gcc_recent_errors
-|-- i386-randconfig-m021-20220221
-|   `-- net-ipv6-addrconf.c-if6_get_next()-warn:ignoring-unreachable-code.
-`-- x86_64-randconfig-m001-20220221
-    `-- net-ipv6-addrconf.c-if6_get_next()-warn:ignoring-unreachable-code.
+Make __IAVF_REMOVE a final state of the driver respected by
+workqueues that shall not requeue, when they fail to obtain the
+crit_lock.
 
-elapsed time: 880m
+Make the IRQ handler not to queue the new work for adminq_task
+when the __IAVF_REMOVE state is set.
 
-configs tested: 133
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                      jornada720_defconfig
-powerpc                     tqm8555_defconfig
-sh                               j2_defconfig
-powerpc                     sequoia_defconfig
-ia64                         bigsur_defconfig
-h8300                    h8300h-sim_defconfig
-powerpc                     pq2fads_defconfig
-powerpc                         ps3_defconfig
-m68k                        m5307c3_defconfig
-mips                         db1xxx_defconfig
-sparc                               defconfig
-arm                          pxa910_defconfig
-arm                          gemini_defconfig
-arm                       imx_v6_v7_defconfig
-powerpc                       ppc64_defconfig
-ia64                            zx1_defconfig
-arm                        multi_v7_defconfig
-arm                          exynos_defconfig
-arm                             ezx_defconfig
-arc                     haps_hs_smp_defconfig
-arm                           stm32_defconfig
-um                                  defconfig
-arm                           sunxi_defconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                     redwood_defconfig
-alpha                               defconfig
-powerpc                      makalu_defconfig
-mips                           ci20_defconfig
-m68k                       bvme6000_defconfig
-powerpc                   currituck_defconfig
-arm                  randconfig-c002-20220221
-arm                  randconfig-c002-20220222
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a003-20220221
-x86_64               randconfig-a002-20220221
-x86_64               randconfig-a005-20220221
-x86_64               randconfig-a006-20220221
-x86_64               randconfig-a001-20220221
-x86_64               randconfig-a004-20220221
-i386                 randconfig-a002-20220221
-i386                 randconfig-a003-20220221
-i386                 randconfig-a004-20220221
-i386                 randconfig-a001-20220221
-i386                 randconfig-a005-20220221
-i386                 randconfig-a006-20220221
-arc                  randconfig-r043-20220221
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-powerpc                      katmai_defconfig
-arm                          imote2_defconfig
-mips                          ath25_defconfig
-mips                malta_qemu_32r6_defconfig
-arm                           omap1_defconfig
-arm                      pxa255-idp_defconfig
-arm                         mv78xx0_defconfig
-powerpc                  mpc866_ads_defconfig
-arm                         s5pv210_defconfig
-mips                       rbtx49xx_defconfig
-arm                        multi_v5_defconfig
-powerpc               mpc834x_itxgp_defconfig
-arm                            dove_defconfig
-mips                           ip27_defconfig
-mips                          ath79_defconfig
-powerpc                     mpc5200_defconfig
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-x86_64               randconfig-a011-20220221
-x86_64               randconfig-a015-20220221
-x86_64               randconfig-a014-20220221
-x86_64               randconfig-a016-20220221
-x86_64               randconfig-a013-20220221
-x86_64               randconfig-a012-20220221
-i386                 randconfig-a016-20220221
-i386                 randconfig-a012-20220221
-i386                 randconfig-a015-20220221
-i386                 randconfig-a011-20220221
-i386                 randconfig-a014-20220221
-i386                 randconfig-a013-20220221
-hexagon              randconfig-r045-20220221
-hexagon              randconfig-r041-20220221
-riscv                randconfig-r042-20220221
-s390                 randconfig-r044-20220221
-
+Fixes: 5ac49f3c2702 ("iavf: use mutexes for locking of critical sections")
+Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+Signed-off-by: Phani Burra <phani.r.burra@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/iavf/iavf.h      |  1 -
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 66 +++++++++++----------
+ 2 files changed, 36 insertions(+), 31 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
+index 59806d1..44f83e0 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf.h
++++ b/drivers/net/ethernet/intel/iavf/iavf.h
+@@ -246,7 +246,6 @@ struct iavf_adapter {
+ 	struct list_head mac_filter_list;
+ 	struct mutex crit_lock;
+ 	struct mutex client_lock;
+-	struct mutex remove_lock;
+ 	/* Lock to protect accesses to MAC and VLAN lists */
+ 	spinlock_t mac_vlan_list_lock;
+ 	char misc_vector_name[IFNAMSIZ + 9];
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 8125b91..84ae96e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -302,8 +302,9 @@ static irqreturn_t iavf_msix_aq(int irq, void *data)
+ 	rd32(hw, IAVF_VFINT_ICR01);
+ 	rd32(hw, IAVF_VFINT_ICR0_ENA1);
+ 
+-	/* schedule work on the private workqueue */
+-	queue_work(iavf_wq, &adapter->adminq_task);
++	if (adapter->state != __IAVF_REMOVE)
++		/* schedule work on the private workqueue */
++		queue_work(iavf_wq, &adapter->adminq_task);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -2374,8 +2375,12 @@ static void iavf_watchdog_task(struct work_struct *work)
+ 	struct iavf_hw *hw = &adapter->hw;
+ 	u32 reg_val;
+ 
+-	if (!mutex_trylock(&adapter->crit_lock))
++	if (!mutex_trylock(&adapter->crit_lock)) {
++		if (adapter->state == __IAVF_REMOVE)
++			return;
++
+ 		goto restart_watchdog;
++	}
+ 
+ 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
+ 		iavf_change_state(adapter, __IAVF_COMM_FAILED);
+@@ -2601,13 +2606,13 @@ static void iavf_reset_task(struct work_struct *work)
+ 	/* When device is being removed it doesn't make sense to run the reset
+ 	 * task, just return in such a case.
+ 	 */
+-	if (mutex_is_locked(&adapter->remove_lock))
+-		return;
++	if (!mutex_trylock(&adapter->crit_lock)) {
++		if (adapter->state != __IAVF_REMOVE)
++			queue_work(iavf_wq, &adapter->reset_task);
+ 
+-	if (iavf_lock_timeout(&adapter->crit_lock, 200)) {
+-		schedule_work(&adapter->reset_task);
+ 		return;
+ 	}
++
+ 	while (!mutex_trylock(&adapter->client_lock))
+ 		usleep_range(500, 1000);
+ 	if (CLIENT_ENABLED(adapter)) {
+@@ -2826,13 +2831,19 @@ static void iavf_adminq_task(struct work_struct *work)
+ 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
+ 		goto out;
+ 
++	if (!mutex_trylock(&adapter->crit_lock)) {
++		if (adapter->state == __IAVF_REMOVE)
++			return;
++
++		queue_work(iavf_wq, &adapter->adminq_task);
++		goto out;
++	}
++
+ 	event.buf_len = IAVF_MAX_AQ_BUF_SIZE;
+ 	event.msg_buf = kzalloc(event.buf_len, GFP_KERNEL);
+ 	if (!event.msg_buf)
+ 		goto out;
+ 
+-	if (iavf_lock_timeout(&adapter->crit_lock, 200))
+-		goto freedom;
+ 	do {
+ 		ret = iavf_clean_arq_element(hw, &event, &pending);
+ 		v_op = (enum virtchnl_ops)le32_to_cpu(event.desc.cookie_high);
+@@ -3800,11 +3811,12 @@ static int iavf_close(struct net_device *netdev)
+ 	struct iavf_adapter *adapter = netdev_priv(netdev);
+ 	int status;
+ 
+-	if (adapter->state <= __IAVF_DOWN_PENDING)
+-		return 0;
++	mutex_lock(&adapter->crit_lock);
+ 
+-	while (!mutex_trylock(&adapter->crit_lock))
+-		usleep_range(500, 1000);
++	if (adapter->state <= __IAVF_DOWN_PENDING) {
++		mutex_unlock(&adapter->crit_lock);
++		return 0;
++	}
+ 
+ 	set_bit(__IAVF_VSI_DOWN, adapter->vsi.state);
+ 	if (CLIENT_ENABLED(adapter))
+@@ -4431,7 +4443,6 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	 */
+ 	mutex_init(&adapter->crit_lock);
+ 	mutex_init(&adapter->client_lock);
+-	mutex_init(&adapter->remove_lock);
+ 	mutex_init(&hw->aq.asq_mutex);
+ 	mutex_init(&hw->aq.arq_mutex);
+ 
+@@ -4556,11 +4567,7 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	struct iavf_cloud_filter *cf, *cftmp;
+ 	struct iavf_hw *hw = &adapter->hw;
+ 	int err;
+-	/* Indicate we are in remove and not to run reset_task */
+-	mutex_lock(&adapter->remove_lock);
+-	cancel_work_sync(&adapter->reset_task);
+-	cancel_delayed_work_sync(&adapter->watchdog_task);
+-	cancel_delayed_work_sync(&adapter->client_task);
++
+ 	if (adapter->netdev_registered) {
+ 		unregister_netdev(netdev);
+ 		adapter->netdev_registered = false;
+@@ -4572,6 +4579,10 @@ static void iavf_remove(struct pci_dev *pdev)
+ 				 err);
+ 	}
+ 
++	mutex_lock(&adapter->crit_lock);
++	dev_info(&adapter->pdev->dev, "Remove device\n");
++	iavf_change_state(adapter, __IAVF_REMOVE);
++
+ 	iavf_request_reset(adapter);
+ 	msleep(50);
+ 	/* If the FW isn't responding, kick it once, but only once. */
+@@ -4579,18 +4590,19 @@ static void iavf_remove(struct pci_dev *pdev)
+ 		iavf_request_reset(adapter);
+ 		msleep(50);
+ 	}
+-	if (iavf_lock_timeout(&adapter->crit_lock, 5000))
+-		dev_warn(&adapter->pdev->dev, "failed to acquire crit_lock in %s\n", __FUNCTION__);
+ 
+-	dev_info(&adapter->pdev->dev, "Removing device\n");
++	iavf_misc_irq_disable(adapter);
+ 	/* Shut down all the garbage mashers on the detention level */
+-	iavf_change_state(adapter, __IAVF_REMOVE);
++	cancel_work_sync(&adapter->reset_task);
++	cancel_delayed_work_sync(&adapter->watchdog_task);
++	cancel_work_sync(&adapter->adminq_task);
++	cancel_delayed_work_sync(&adapter->client_task);
++
+ 	adapter->aq_required = 0;
+ 	adapter->flags &= ~IAVF_FLAG_REINIT_ITR_NEEDED;
+ 
+ 	iavf_free_all_tx_resources(adapter);
+ 	iavf_free_all_rx_resources(adapter);
+-	iavf_misc_irq_disable(adapter);
+ 	iavf_free_misc_irq(adapter);
+ 
+ 	/* In case we enter iavf_remove from erroneous state, free traffic irqs
+@@ -4606,10 +4618,6 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	iavf_reset_interrupt_capability(adapter);
+ 	iavf_free_q_vectors(adapter);
+ 
+-	cancel_delayed_work_sync(&adapter->watchdog_task);
+-
+-	cancel_work_sync(&adapter->adminq_task);
+-
+ 	iavf_free_rss(adapter);
+ 
+ 	if (hw->aq.asq.count)
+@@ -4621,8 +4629,6 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	mutex_destroy(&adapter->client_lock);
+ 	mutex_unlock(&adapter->crit_lock);
+ 	mutex_destroy(&adapter->crit_lock);
+-	mutex_unlock(&adapter->remove_lock);
+-	mutex_destroy(&adapter->remove_lock);
+ 
+ 	iounmap(hw->hw_addr);
+ 	pci_release_regions(pdev);
+-- 
+2.27.0
+
