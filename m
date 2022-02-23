@@ -1,116 +1,156 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Feb 2022 16:26:56 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 09/25] ice: cleanup error logging
- for ice_ena_vfs
+Date: Tue, 22 Feb 2022 16:27:07 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 20/25] ice: convert ice_reset_vf
+ to take flags
 In-Reply-To: <20220223002712.2771809-1-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
-Message-ID: <20220223002712.2771809-10-jacob.e.keller@intel.com>
+Message-ID: <20220223002712.2771809-21-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_ena_vfs function and some of its sub-functions like
-ice_set_per_vf_res use a "if (<function>) { <print error> ; <exit> }"
-flow. This flow discards specialized errors reported by the called
-function.
+The ice_reset_vf function takes a boolean parameter which indicates
+whether or not the reset is due to a VFLR event.
 
-This style is generally not preferred as it makes tracing error sources
-more difficult. It also means we cannot log the actual error received
-properly.
+This is somewhat confusing to read because readers must interpret what
+"true" and "false" mean when seeing a line of code like
+"ice_reset_vf(vf, false)".
 
-Refactor several calls in the ice_ena_vfs function that do this to catch
-the error in the 'ret' variable. Report this in the messages, and then
-return the more precise error value.
+We will want to add another toggle to the ice_reset_vf in a following
+change. To avoid proliferating many arguments, convert this function to
+take flags instead. ICE_VF_RESET_VFLR will indicate if this is a VFLR
+reset. A value of 0 indicates no flags.
 
-Doing this reveals that ice_set_per_vf_res returns -EINVAL or -EIO in
-places where -ENOSPC makes more sense. Fix these calls up to return the
-more appropriate value.
+One could argue that "ice_reset_vf(vf, 0)" is no more readable than
+"ice_reset_vf(vf, false)".. However, this type of flags interface is
+somewhat common and using 0 to mean "no flags" makes sense in this
+context. We could bother to add a define for "ICE_VF_RESET_PLAIN" or
+something similar, but this can be confusing since its not an actual bit
+flag.
+
+This paves the way to add another flag to the function in a following
+change.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sriov.c | 32 +++++++++++++---------
- 1 file changed, 19 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c   | 2 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c  | 6 +++---
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c | 9 ++++++---
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h | 9 +++++++--
+ 4 files changed, 17 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index af4befb22d0d..9d5fa9840004 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1958,7 +1958,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
+ 				 */
+ 				ice_print_vf_rx_mdd_event(vf);
+ 				mutex_lock(&vf->cfg_lock);
+-				ice_reset_vf(vf, false);
++				ice_reset_vf(vf, 0);
+ 				mutex_unlock(&vf->cfg_lock);
+ 			}
+ 		}
 diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index eebff1824be2..b695d479dfb1 100644
+index 4a8cf8f646c8..c234e4edc7f0 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -1275,12 +1275,16 @@ static int ice_set_per_vf_res(struct ice_pf *pf, u16 num_vfs)
- 	u16 num_msix_per_vf, num_txq, num_rxq, avail_qs;
- 	int msix_avail_per_vf, msix_avail_for_sriov;
- 	struct device *dev = ice_pf_to_dev(pf);
-+	int err;
+@@ -1393,7 +1393,7 @@ void ice_process_vflr_event(struct ice_pf *pf)
+ 		if (reg & BIT(bit_idx)) {
+ 			/* GLGEN_VFLRSTAT bit will be cleared in ice_reset_vf */
+ 			mutex_lock(&vf->cfg_lock);
+-			ice_reset_vf(vf, true);
++			ice_reset_vf(vf, ICE_VF_RESET_VFLR);
+ 			mutex_unlock(&vf->cfg_lock);
+ 		}
+ 	}
+@@ -1407,7 +1407,7 @@ void ice_process_vflr_event(struct ice_pf *pf)
+ static void ice_vc_reset_vf(struct ice_vf *vf)
+ {
+ 	ice_vc_notify_vf_reset(vf);
+-	ice_reset_vf(vf, false);
++	ice_reset_vf(vf, 0);
+ }
  
- 	lockdep_assert_held(&pf->vfs.table_lock);
+ /**
+@@ -1724,7 +1724,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ static void ice_vc_reset_vf_msg(struct ice_vf *vf)
+ {
+ 	if (test_bit(ICE_VF_STATE_INIT, vf->vf_states))
+-		ice_reset_vf(vf, false);
++		ice_reset_vf(vf, 0);
+ }
  
--	if (!num_vfs || max_valid_res_idx < 0)
-+	if (!num_vfs)
- 		return -EINVAL;
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+index d37232197bde..3b4e55c62786 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+@@ -444,13 +444,16 @@ void ice_reset_all_vfs(struct ice_pf *pf)
+ /**
+  * ice_reset_vf - Reset a particular VF
+  * @vf: pointer to the VF structure
+- * @is_vflr: true if VFLR was issued, false if not
++ * @flags: flags controlling behavior of the reset
++ *
++ * Flags:
++ *   ICE_VF_RESET_VFLR - Indicates a reset is due to VFLR event
+  *
+  * Returns 0 if the VF is currently in reset, if the resets are disabled, or
+  * if the VF resets successfully. Returns an error code if the VF fails to
+  * rebuild.
+  */
+-int ice_reset_vf(struct ice_vf *vf, bool is_vflr)
++int ice_reset_vf(struct ice_vf *vf, u32 flags)
+ {
+ 	struct ice_pf *pf = vf->pf;
+ 	struct ice_vsi *vsi;
+@@ -478,7 +481,7 @@ int ice_reset_vf(struct ice_vf *vf, bool is_vflr)
  
-+	if (max_valid_res_idx < 0)
-+		return -ENOSPC;
+ 	/* Set VF disable bit state here, before triggering reset */
+ 	set_bit(ICE_VF_STATE_DIS, vf->vf_states);
+-	ice_trigger_vf_reset(vf, is_vflr, false);
++	ice_trigger_vf_reset(vf, flags & ICE_VF_RESET_VFLR, false);
+ 
+ 	vsi = ice_get_vf_vsi(vf);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+index b569186b248b..f33d55f8bcc3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+@@ -133,6 +133,11 @@ struct ice_vf {
+ 	struct devlink_port devlink_port;
+ };
+ 
++/* Flags for controlling behavior of ice_reset_vf */
++enum ice_vf_reset_flags {
++	ICE_VF_RESET_VFLR = BIT(0), /* Indicate a VFLR reset */
++};
 +
- 	/* determine MSI-X resources per VF */
- 	msix_avail_for_sriov = pf->hw.func_caps.common_cap.num_msix_vectors -
- 		pf->irq_tracker->num_entries;
-@@ -1297,7 +1301,7 @@ static int ice_set_per_vf_res(struct ice_pf *pf, u16 num_vfs)
- 		dev_err(dev, "Only %d MSI-X interrupts available for SR-IOV. Not enough to support minimum of %d MSI-X interrupts per VF for %d VFs\n",
- 			msix_avail_for_sriov, ICE_MIN_INTR_PER_VF,
- 			num_vfs);
--		return -EIO;
-+		return -ENOSPC;
- 	}
+ static inline u16 ice_vf_get_port_vlan_id(struct ice_vf *vf)
+ {
+ 	return vf->port_vlan_info.vid;
+@@ -212,7 +217,7 @@ int
+ ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
+ int
+ ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
+-int ice_reset_vf(struct ice_vf *vf, bool is_vflr);
++int ice_reset_vf(struct ice_vf *vf, u32 flags);
+ void ice_reset_all_vfs(struct ice_pf *pf);
+ #else /* CONFIG_PCI_IOV */
+ static inline struct ice_vf *ice_get_vf_by_id(struct ice_pf *pf, u16 vf_id)
+@@ -270,7 +275,7 @@ ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m)
+ 	return -EOPNOTSUPP;
+ }
  
- 	num_txq = min_t(u16, num_msix_per_vf - ICE_NONQ_VECS_VF,
-@@ -1319,13 +1323,14 @@ static int ice_set_per_vf_res(struct ice_pf *pf, u16 num_vfs)
- 	if (num_txq < ICE_MIN_QS_PER_VF || num_rxq < ICE_MIN_QS_PER_VF) {
- 		dev_err(dev, "Not enough queues to support minimum of %d queue pairs per VF for %d VFs\n",
- 			ICE_MIN_QS_PER_VF, num_vfs);
--		return -EIO;
-+		return -ENOSPC;
- 	}
- 
--	if (ice_sriov_set_msix_res(pf, num_msix_per_vf * num_vfs)) {
--		dev_err(dev, "Unable to set MSI-X resources for %d VFs\n",
--			num_vfs);
--		return -EINVAL;
-+	err = ice_sriov_set_msix_res(pf, num_msix_per_vf * num_vfs);
-+	if (err) {
-+		dev_err(dev, "Unable to set MSI-X resources for %d VFs, err %d\n",
-+			num_vfs, err);
-+		return err;
- 	}
- 
- 	/* only allow equal Tx/Rx queue count (i.e. queue pairs) */
-@@ -2058,10 +2063,10 @@ static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
- 
- 	mutex_lock(&pf->vfs.table_lock);
- 
--	if (ice_set_per_vf_res(pf, num_vfs)) {
--		dev_err(dev, "Not enough resources for %d VFs, try with fewer number of VFs\n",
--			num_vfs);
--		ret = -ENOSPC;
-+	ret = ice_set_per_vf_res(pf, num_vfs);
-+	if (ret) {
-+		dev_err(dev, "Not enough resources for %d VFs, err %d. Try with fewer number of VFs\n",
-+			num_vfs, ret);
- 		goto err_unroll_sriov;
- 	}
- 
-@@ -2072,8 +2077,9 @@ static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
- 		goto err_unroll_sriov;
- 	}
- 
--	if (ice_start_vfs(pf)) {
--		dev_err(dev, "Failed to start VF(s)\n");
-+	ret = ice_start_vfs(pf);
-+	if (ret) {
-+		dev_err(dev, "Failed to start %d VFs, err %d\n", num_vfs, ret);
- 		ret = -EAGAIN;
- 		goto err_unroll_vf_entries;
- 	}
+-static inline int ice_reset_vf(struct ice_vf *vf, bool is_vflr)
++static inline int ice_reset_vf(struct ice_vf *vf, u32 flags)
+ {
+ 	return 0;
+ }
 -- 
 2.35.1.129.gb80121027d12
 
