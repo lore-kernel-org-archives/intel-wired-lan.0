@@ -1,8 +1,7 @@
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Wed, 23 Feb 2022 13:37:10 +0100
-Subject: [Intel-wired-lan] [PATCH net v1 3/8] iavf: Fix init state closure
- on remove
-Message-ID: <20220223123710.29979-1-mateusz.palczewski@intel.com>
+Date: Wed, 23 Feb 2022 13:38:01 +0100
+Subject: [Intel-wired-lan] [PATCH net v1 5/8] iavf: Fix race in init state
+Message-ID: <20220223123801.30386-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,30 +10,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: SlawomirX Laba <slawomirx.laba@intel.com>
 
-When init states of the adapter work, the errors like lack
-of communication with the PF might hop in. If such events
-occur the driver restores previous states in order to retry
-initialization in a proper way. When remove task kicks in,
-this situation could lead to races with unregistering the
-netdevice as well as resources cleanup. With the commit
-introducing the waiting in remove for init to complete,
-this problem turns into an endless waiting if init never
-recovers from errors.
+When iavf_init_version_check sends VIRTCHNL_OP_GET_VF_RESOURCES
+message, the driver will wait for the response after requeueing
+the watchdog task in iavf_init_get_resources call stack. The
+logic is implemented this way that iavf_init_get_resources has
+to be called in order to allocate adapter->vf_res. It is polling
+for the AQ response in iavf_get_vf_config function. Expect a
+call trace from kernel when adminq_task worker handles this
+message first. adapter->vf_res will be NULL in
+iavf_virtchnl_completion.
 
-Introduce __IAVF_IN_REMOVE_TASK bit to indicate that the
-remove thread has started.
-
-Make __IAVF_COMM_FAILED adapter state respect the
-__IAVF_IN_REMOVE_TASK bit and set the __IAVF_INIT_FAILED
-state and return without any action instead of trying to
-recover.
-
-Make __IAVF_INIT_FAILED adapter state respect the
-__IAVF_IN_REMOVE_TASK bit and return without any further
-actions.
-
-Make the loop in the remove handler break when adapter has
-__IAVF_INIT_FAILED state set.
+Make the watchdog task not queue the adminq_task if the init
+process is not finished yet.
 
 Fixes: 898ef1cb1cb2 ("iavf: Combine init and watchdog state machines")
 Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
@@ -42,80 +29,23 @@ Signed-off-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h      |  4 ++++
- drivers/net/ethernet/intel/iavf/iavf_main.c | 24 ++++++++++++++++++++-
- 2 files changed, 27 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 44f83e0..f259fd5 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -201,6 +201,10 @@ enum iavf_state_t {
- 	__IAVF_RUNNING,		/* opened, working */
- };
- 
-+enum iavf_critical_section_t {
-+	__IAVF_IN_REMOVE_TASK,	/* device being removed */
-+};
-+
- #define IAVF_CLOUD_FIELD_OMAC		0x01
- #define IAVF_CLOUD_FIELD_IMAC		0x02
- #define IAVF_CLOUD_FIELD_IVLAN	0x04
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 5e71b38e..be51da9 100644
+index 67349d2..36433d6 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2424,6 +2424,15 @@ static void iavf_watchdog_task(struct work_struct *work)
- 				   msecs_to_jiffies(1));
- 		return;
- 	case __IAVF_INIT_FAILED:
-+		if (test_bit(__IAVF_IN_REMOVE_TASK,
-+			     &adapter->crit_section)) {
-+			/* Do not update the state and do not reschedule
-+			 * watchdog task, iavf_remove should handle this state
-+			 * as it can loop forever
-+			 */
-+			mutex_unlock(&adapter->crit_lock);
-+			return;
-+		}
- 		if (++adapter->aq_wait_count > IAVF_AQ_MAX_ERR) {
- 			dev_err(&adapter->pdev->dev,
- 				"Failed to communicate with PF; waiting before retry\n");
-@@ -2440,6 +2449,17 @@ static void iavf_watchdog_task(struct work_struct *work)
- 		queue_delayed_work(iavf_wq, &adapter->watchdog_task, HZ);
- 		return;
- 	case __IAVF_COMM_FAILED:
-+		if (test_bit(__IAVF_IN_REMOVE_TASK,
-+			     &adapter->crit_section)) {
-+			/* Set state to __IAVF_INIT_FAILED and perform remove
-+			 * steps. Remove IAVF_FLAG_PF_COMMS_FAILED so the task
-+			 * doesn't bring the state back to __IAVF_COMM_FAILED.
-+			 */
-+			iavf_change_state(adapter, __IAVF_INIT_FAILED);
-+			adapter->flags &= ~IAVF_FLAG_PF_COMMS_FAILED;
-+			mutex_unlock(&adapter->crit_lock);
-+			return;
-+		}
- 		reg_val = rd32(hw, IAVF_VFGEN_RSTAT) &
- 			  IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
- 		if (reg_val == VIRTCHNL_VFR_VFACTIVE ||
-@@ -4567,13 +4587,15 @@ static void iavf_remove(struct pci_dev *pdev)
- 	struct iavf_hw *hw = &adapter->hw;
- 	int err;
- 
-+	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
- 	/* Wait until port initialization is complete.
- 	 * There are flows where register/unregister netdev may race.
- 	 */
- 	while (1) {
- 		mutex_lock(&adapter->crit_lock);
- 		if (adapter->state == __IAVF_RUNNING ||
--		    adapter->state == __IAVF_DOWN) {
-+		    adapter->state == __IAVF_DOWN ||
-+		    adapter->state == __IAVF_INIT_FAILED) {
- 			mutex_unlock(&adapter->crit_lock);
- 			break;
- 		}
+@@ -2532,7 +2532,8 @@ static void iavf_watchdog_task(struct work_struct *work)
+ 	schedule_delayed_work(&adapter->client_task, msecs_to_jiffies(5));
+ 	mutex_unlock(&adapter->crit_lock);
+ restart_watchdog:
+-	queue_work(iavf_wq, &adapter->adminq_task);
++	if (adapter->state >= __IAVF_DOWN)
++		queue_work(iavf_wq, &adapter->adminq_task);
+ 	if (adapter->aq_required)
+ 		queue_delayed_work(iavf_wq, &adapter->watchdog_task,
+ 				   msecs_to_jiffies(20));
 -- 
 2.27.0
 
