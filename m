@@ -1,76 +1,163 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Wed, 23 Feb 2022 13:38:55 +0100
-Subject: [Intel-wired-lan] [PATCH net v1 8/8] iavf: Fix __IAVF_RESETTING
- state usage
-Message-ID: <20220223123855.30862-1-mateusz.palczewski@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 23 Feb 2022 20:58:38 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 71282c6324f467ae8c318d1f790a1f85e011a038
+Message-ID: <62162f7e.5p1ZEuz5pyw87LNU%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: SlawomirX Laba <slawomirx.laba@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 71282c6324f467ae8c318d1f790a1f85e011a038  Revert "i40e: Fix reset bw limit when DCB enabled with 1 TC"
 
-The setup of __IAVF_RESETTING state in watchdog task had no
-effect and could lead to slow resets in the driver as
-the task for __IAVF_RESETTING state only requeues watchdog.
-Till now the __IAVF_RESETTING was interpreted by reset task
-as running state which could lead to errors with allocating
-and resources disposal.
+elapsed time: 739m
 
-Make watchdog_task queue the reset task when it's necessary.
-Do not update the state to __IAVF_RESETTING so the reset task
-knows exactly what is the current state of the adapter.
+configs tested: 131
+configs skipped: 4
 
-Fixes: 898ef1cb1cb2 ("iavf: Combine init and watchdog state machines")
-Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
-Signed-off-by: Phani Burra <phani.r.burra@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+i386                          randconfig-c001
+i386                 randconfig-c001-20220221
+sh                 kfr2r09-romimage_defconfig
+powerpc                     asp8347_defconfig
+powerpc                     stx_gp3_defconfig
+powerpc                         wii_defconfig
+powerpc                      ep88xc_defconfig
+m68k                            q40_defconfig
+powerpc                     sequoia_defconfig
+powerpc                         ps3_defconfig
+m68k                        m5307c3_defconfig
+mips                         db1xxx_defconfig
+sparc                               defconfig
+arm                          pxa910_defconfig
+arm                          exynos_defconfig
+arm                             ezx_defconfig
+powerpc                     redwood_defconfig
+powerpc                      makalu_defconfig
+arm                        shmobile_defconfig
+x86_64                           alldefconfig
+arm                  randconfig-c002-20220221
+arm                  randconfig-c002-20220222
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+csky                                defconfig
+alpha                               defconfig
+nds32                               defconfig
+nios2                            allyesconfig
+alpha                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+i386                 randconfig-a002-20220221
+i386                 randconfig-a001-20220221
+i386                 randconfig-a005-20220221
+i386                 randconfig-a003-20220221
+i386                 randconfig-a006-20220221
+i386                 randconfig-a004-20220221
+x86_64               randconfig-a003-20220221
+x86_64               randconfig-a002-20220221
+x86_64               randconfig-a005-20220221
+x86_64               randconfig-a006-20220221
+x86_64               randconfig-a001-20220221
+x86_64               randconfig-a004-20220221
+arc                  randconfig-r043-20220221
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                                  kexec
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+
+clang tested configs:
+powerpc              randconfig-c003-20220221
+x86_64               randconfig-c007-20220221
+arm                  randconfig-c002-20220221
+mips                 randconfig-c004-20220221
+i386                 randconfig-c001-20220221
+riscv                randconfig-c006-20220221
+mips                malta_qemu_32r6_defconfig
+arm                           omap1_defconfig
+arm                      pxa255-idp_defconfig
+arm                     am200epdkit_defconfig
+arm                          pxa168_defconfig
+powerpc                          g5_defconfig
+powerpc                      obs600_defconfig
+arm                          imote2_defconfig
+mips                       rbtx49xx_defconfig
+arm                        multi_v5_defconfig
+powerpc               mpc834x_itxgp_defconfig
+arm                            dove_defconfig
+arm64                            allyesconfig
+powerpc                     tqm8540_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+x86_64                        randconfig-a005
+x86_64               randconfig-a011-20220221
+x86_64               randconfig-a015-20220221
+x86_64               randconfig-a014-20220221
+x86_64               randconfig-a016-20220221
+x86_64               randconfig-a013-20220221
+x86_64               randconfig-a012-20220221
+i386                 randconfig-a016-20220221
+i386                 randconfig-a012-20220221
+i386                 randconfig-a015-20220221
+i386                 randconfig-a011-20220221
+i386                 randconfig-a014-20220221
+i386                 randconfig-a013-20220221
+hexagon              randconfig-r045-20220221
+hexagon              randconfig-r041-20220221
+riscv                randconfig-r042-20220221
+s390                 randconfig-r044-20220221
+
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index be97ac2..dcf2426 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1137,8 +1137,7 @@ void iavf_down(struct iavf_adapter *adapter)
- 		rss->state = IAVF_ADV_RSS_DEL_REQUEST;
- 	spin_unlock_bh(&adapter->adv_rss_lock);
- 
--	if (!(adapter->flags & IAVF_FLAG_PF_COMMS_FAILED) &&
--	    adapter->state != __IAVF_RESETTING) {
-+	if (!(adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)) {
- 		/* cancel any current operation */
- 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
- 		/* Schedule operations to close down the HW. Don't wait
-@@ -2385,11 +2384,12 @@ static void iavf_watchdog_task(struct work_struct *work)
- 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
- 		iavf_change_state(adapter, __IAVF_COMM_FAILED);
- 
--	if (adapter->flags & IAVF_FLAG_RESET_NEEDED &&
--	    adapter->state != __IAVF_RESETTING) {
--		iavf_change_state(adapter, __IAVF_RESETTING);
-+	if (adapter->flags & IAVF_FLAG_RESET_NEEDED) {
- 		adapter->aq_required = 0;
- 		adapter->current_op = VIRTCHNL_OP_UNKNOWN;
-+		mutex_unlock(&adapter->crit_lock);
-+		queue_work(iavf_wq, &adapter->reset_task);
-+		return;
- 	}
- 
- 	switch (adapter->state) {
-@@ -2697,8 +2697,7 @@ static void iavf_reset_task(struct work_struct *work)
- 	 * ndo_open() returning, so we can't assume it means all our open
- 	 * tasks have finished, since we're not holding the rtnl_lock here.
- 	 */
--	running = ((adapter->state == __IAVF_RUNNING) ||
--		   (adapter->state == __IAVF_RESETTING));
-+	running = adapter->state == __IAVF_RUNNING;
- 
- 	if (running) {
- 		netdev->flags &= ~IFF_UP;
--- 
-2.27.0
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
