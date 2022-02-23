@@ -1,114 +1,133 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Feb 2022 16:27:06 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 19/25] ice: convert ice_reset_vf
- to standard error codes
+Date: Tue, 22 Feb 2022 16:27:10 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 23/25] ice: cleanup long longs in
+ ice_sriov.c
 In-Reply-To: <20220223002712.2771809-1-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
-Message-ID: <20220223002712.2771809-20-jacob.e.keller@intel.com>
+Message-ID: <20220223002712.2771809-24-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_reset_vf function returns a boolean value indicating whether or
-not the VF reset. This is a bit confusing since it means that callers
-need to know how to interpret the return value when needing to indicate
-an error.
-
-Refactor the function and call sites to report a regular error code. We
-still report success (i.e. return 0) in cases where the reset is in
-progress or is disabled.
-
-Existing callers don't care because they do not check the return value.
-We keep the error code anyways instead of a void return because we
-expect future code which may care about or at least report the error
-value.
+Before we move the virtchnl message handling from ice_sriov.c into
+ice_virtchnl.c, cleanup some long line warnings to avoid checkpatch.pl
+complaints.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_vf_lib.c | 15 ++++++++-------
- drivers/net/ethernet/intel/ice/ice_vf_lib.h |  6 +++---
- 2 files changed, 11 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sriov.c | 39 +++++++++++++++-------
+ 1 file changed, 27 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 6f9e8383c69b..d37232197bde 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -446,10 +446,11 @@ void ice_reset_all_vfs(struct ice_pf *pf)
-  * @vf: pointer to the VF structure
-  * @is_vflr: true if VFLR was issued, false if not
-  *
-- * Returns true if the VF is currently in reset, resets successfully, or resets
-- * are disabled and false otherwise.
-+ * Returns 0 if the VF is currently in reset, if the resets are disabled, or
-+ * if the VF resets successfully. Returns an error code if the VF fails to
-+ * rebuild.
-  */
--bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
-+int ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- {
- 	struct ice_pf *pf = vf->pf;
- 	struct ice_vsi *vsi;
-@@ -466,13 +467,13 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 	if (test_bit(ICE_VF_RESETS_DISABLED, pf->state)) {
- 		dev_dbg(dev, "Trying to reset VF %d, but all VF resets are disabled\n",
- 			vf->vf_id);
--		return true;
-+		return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index f74474f8af99..4f3d25ed68c9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -2325,16 +2325,21 @@ static int ice_vc_cfg_promiscuous_mode_msg(struct ice_vf *vf, u8 *msg)
+ 		    !test_and_set_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
+ 			dev_info(dev, "VF %u successfully set multicast promiscuous mode\n",
+ 				 vf->vf_id);
+-		else if (!allmulti && test_and_clear_bit(ICE_VF_STATE_MC_PROMISC, vf->vf_states))
++		else if (!allmulti &&
++			 test_and_clear_bit(ICE_VF_STATE_MC_PROMISC,
++					    vf->vf_states))
+ 			dev_info(dev, "VF %u successfully unset multicast promiscuous mode\n",
+ 				 vf->vf_id);
  	}
  
- 	if (ice_is_vf_disabled(vf)) {
- 		dev_dbg(dev, "VF is already disabled, there is no need for resetting it, telling VM, all is fine %d\n",
- 			vf->vf_id);
--		return true;
-+		return 0;
+ 	if (!ucast_err) {
+-		if (alluni && !test_and_set_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
++		if (alluni &&
++		    !test_and_set_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
+ 			dev_info(dev, "VF %u successfully set unicast promiscuous mode\n",
+ 				 vf->vf_id);
+-		else if (!alluni && test_and_clear_bit(ICE_VF_STATE_UC_PROMISC, vf->vf_states))
++		else if (!alluni &&
++			 test_and_clear_bit(ICE_VF_STATE_UC_PROMISC,
++					    vf->vf_states))
+ 			dev_info(dev, "VF %u successfully unset unicast promiscuous mode\n",
+ 				 vf->vf_id);
  	}
+@@ -2878,8 +2883,9 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+ 			}
  
- 	/* Set VF disable bit state here, before triggering reset */
-@@ -532,7 +533,7 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 	if (vf->vf_ops->vsi_rebuild(vf)) {
- 		dev_err(dev, "Failed to release and setup the VF%u's VSI\n",
- 			vf->vf_id);
--		return false;
-+		return -EFAULT;
- 	}
- 
- 	vf->vf_ops->post_vsi_rebuild(vf);
-@@ -546,7 +547,7 @@ bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
- 		dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
- 			vf->vf_id);
- 
--	return true;
-+	return 0;
+ 			vsi->max_frame = qpi->rxq.max_pkt_size;
+-			/* add space for the port VLAN since the VF driver is not
+-			 * expected to account for it in the MTU calculation
++			/* add space for the port VLAN since the VF driver is
++			 * not expected to account for it in the MTU
++			 * calculation
+ 			 */
+ 			if (ice_vf_is_port_vlan_ena(vf))
+ 				vsi->max_frame += VLAN_HLEN;
+@@ -3665,8 +3671,11 @@ static u16 ice_vc_get_max_vlan_fltrs(struct ice_vf *vf)
  }
  
  /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index fa40d607d1c7..b569186b248b 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -212,7 +212,7 @@ int
- ice_vf_set_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
- int
- ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m);
--bool ice_reset_vf(struct ice_vf *vf, bool is_vflr);
-+int ice_reset_vf(struct ice_vf *vf, bool is_vflr);
- void ice_reset_all_vfs(struct ice_pf *pf);
- #else /* CONFIG_PCI_IOV */
- static inline struct ice_vf *ice_get_vf_by_id(struct ice_pf *pf, u16 vf_id)
-@@ -270,9 +270,9 @@ ice_vf_clear_vsi_promisc(struct ice_vf *vf, struct ice_vsi *vsi, u8 promisc_m)
- 	return -EOPNOTSUPP;
- }
- 
--static inline bool ice_reset_vf(struct ice_vf *vf, bool is_vflr)
-+static inline int ice_reset_vf(struct ice_vf *vf, bool is_vflr)
+- * ice_vf_outer_vlan_not_allowed - check outer VLAN can be used when the device is in DVM
++ * ice_vf_outer_vlan_not_allowed - check if outer VLAN can be used
+  * @vf: VF that being checked for
++ *
++ * When the device is in double VLAN mode, check whether or not the outer VLAN
++ * is allowed.
+  */
+ static bool ice_vf_outer_vlan_not_allowed(struct ice_vf *vf)
  {
--	return true;
-+	return 0;
+@@ -3944,9 +3953,11 @@ ice_vc_validate_vlan_filter_list(struct virtchnl_vlan_filtering_caps *vfc,
+ 			return false;
+ 
+ 		if ((ice_vc_is_valid_vlan(outer) &&
+-		     !ice_vc_validate_vlan_tpid(filtering_support->outer, outer->tpid)) ||
++		     !ice_vc_validate_vlan_tpid(filtering_support->outer,
++						outer->tpid)) ||
+ 		    (ice_vc_is_valid_vlan(inner) &&
+-		     !ice_vc_validate_vlan_tpid(filtering_support->inner, inner->tpid)))
++		     !ice_vc_validate_vlan_tpid(filtering_support->inner,
++						inner->tpid)))
+ 			return false;
+ 	}
+ 
+@@ -4421,7 +4432,8 @@ static int ice_vc_ena_vlan_stripping_v2_msg(struct ice_vf *vf, u8 *msg)
+ 	}
+ 
+ out:
+-	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_ENABLE_VLAN_STRIPPING_V2, v_ret, NULL, 0);
++	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_ENABLE_VLAN_STRIPPING_V2,
++				     v_ret, NULL, 0);
  }
  
- static inline void ice_reset_all_vfs(struct ice_pf *pf)
+ /**
+@@ -4490,7 +4502,8 @@ static int ice_vc_dis_vlan_stripping_v2_msg(struct ice_vf *vf, u8 *msg)
+ 	}
+ 
+ out:
+-	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING_V2, v_ret, NULL, 0);
++	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DISABLE_VLAN_STRIPPING_V2,
++				     v_ret, NULL, 0);
+ }
+ 
+ /**
+@@ -4548,7 +4561,8 @@ static int ice_vc_ena_vlan_insertion_v2_msg(struct ice_vf *vf, u8 *msg)
+ 	}
+ 
+ out:
+-	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_ENABLE_VLAN_INSERTION_V2, v_ret, NULL, 0);
++	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_ENABLE_VLAN_INSERTION_V2,
++				     v_ret, NULL, 0);
+ }
+ 
+ /**
+@@ -4602,7 +4616,8 @@ static int ice_vc_dis_vlan_insertion_v2_msg(struct ice_vf *vf, u8 *msg)
+ 	}
+ 
+ out:
+-	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DISABLE_VLAN_INSERTION_V2, v_ret, NULL, 0);
++	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DISABLE_VLAN_INSERTION_V2,
++				     v_ret, NULL, 0);
+ }
+ 
+ static const struct ice_virtchnl_ops ice_virtchnl_dflt_ops = {
 -- 
 2.35.1.129.gb80121027d12
 
