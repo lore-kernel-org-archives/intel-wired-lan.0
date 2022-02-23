@@ -1,12 +1,16 @@
 From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
-Date: Wed, 23 Feb 2022 17:19:56 +0000
+Date: Wed, 23 Feb 2022 17:55:49 +0000
 Subject: [Intel-wired-lan] i40e and TSO with MPLS ?
-Message-ID: <DM6PR11MB4657EB65F784C3E816FD27FB9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
+In-Reply-To: <DM6PR11MB4657EB65F784C3E816FD27FB9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
+References: <DM6PR11MB4657EB65F784C3E816FD27FB9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
+Message-ID: <DM6PR11MB46572510E594BF3E789AC5CF9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
++Joe
 
 > Greetings:
 >
@@ -159,3 +163,7 @@ Arek
 > Intel-wired-lan mailing list
 > Intel-wired-lan at osuosl.org
 > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
