@@ -1,8 +1,8 @@
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Wed, 23 Feb 2022 13:37:50 +0100
-Subject: [Intel-wired-lan] [PATCH net v1 4/8] iavf: Fix locking for
- VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
-Message-ID: <20220223123750.30266-1-mateusz.palczewski@intel.com>
+Date: Wed, 23 Feb 2022 13:38:31 +0100
+Subject: [Intel-wired-lan] [PATCH net v1 6/8] iavf: Fix deadlock in
+ iavf_reset_task
+Message-ID: <20220223123831.30608-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,130 +11,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: SlawomirX Laba <slawomirx.laba@intel.com>
 
-iavf_virtchnl_completion is called under crit_lock but when
-the code for VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS is called,
-this lock is released in order to obtain rtnl_lock to avoid
-ABBA deadlock with unregister_netdev.
+There exists a missing mutex_unlock call on crit_lock in
+iavf_reset_task call path.
 
-Along with the new way iavf_remove behaves, there exist
-many risks related to the lock release and attmepts to regrab
-it. The driver faces crashes related to races between
-unregister_netdev and netdev_update_features. Yet another
-risk is that the driver could already obtain the crit_lock
-in order to destroy it and iavf_virtchnl_completion could
-crash or block forever.
+Unlock the crit_lock before returning from reset task.
 
-Make iavf_virtchnl_completion never relock crit_lock in it's
-call paths.
-
-Extract rtnl_lock locking logic to the driver for
-unregister_netdev in order to set the netdev_registered flag
-inside the lock.
-
-Introduce a new flag that will inform adminq_task to perform
-the code from VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS right after
-it finishes processing messages. Guard this code with remove
-flags so it's never called when the driver is in remove state.
-
-Fixes: 5951a2b9812d ("iavf: Fix VLAN feature flags after VFR")
+Fixes: 5ac49f3c2702 ("iavf: use mutexes for locking of critical sections")
 Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
 Signed-off-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h        |  1 +
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 22 ++++++++++++++++-
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 24 +------------------
- 3 files changed, 23 insertions(+), 24 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index f259fd5..8942394 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -287,6 +287,7 @@ struct iavf_adapter {
- #define IAVF_FLAG_LEGACY_RX			BIT(15)
- #define IAVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
- #define IAVF_FLAG_QUEUES_DISABLED		BIT(17)
-+#define IAVF_FLAG_SETUP_NETDEV_FEATURES		BIT(18)
- /* duplicates for common code */
- #define IAVF_FLAG_DCB_ENABLED			0
- 	/* flags for admin queue service task */
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index be51da9..67349d2 100644
+index 36433d6..da50ea3 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2879,6 +2879,24 @@ static void iavf_adminq_task(struct work_struct *work)
- 	} while (pending);
- 	mutex_unlock(&adapter->crit_lock);
- 
-+	if ((adapter->flags & IAVF_FLAG_SETUP_NETDEV_FEATURES)) {
-+		if (adapter->netdev_registered ||
-+		    !test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section)) {
-+			struct net_device *netdev = adapter->netdev;
-+
-+			rtnl_lock();
-+			netdev_update_features(netdev);
-+			rtnl_unlock();
-+			/* Request VLAN offload settings */
-+			if (VLAN_V2_ALLOWED(adapter))
-+				iavf_set_vlan_offload_features
-+					(adapter, 0, netdev->features);
-+
-+			iavf_set_queue_vlan_tag_loc(adapter);
-+		}
-+
-+		adapter->flags &= ~IAVF_FLAG_SETUP_NETDEV_FEATURES;
-+	}
- 	if ((adapter->flags &
- 	     (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED)) ||
- 	    adapter->state == __IAVF_RESETTING)
-@@ -4606,8 +4624,10 @@ static void iavf_remove(struct pci_dev *pdev)
- 	cancel_delayed_work_sync(&adapter->watchdog_task);
- 
- 	if (adapter->netdev_registered) {
--		unregister_netdev(netdev);
-+		rtnl_lock();
-+		unregister_netdevice(netdev);
- 		adapter->netdev_registered = false;
-+		rtnl_unlock();
+@@ -2688,6 +2688,7 @@ static void iavf_reset_task(struct work_struct *work)
+ 			reg_val);
+ 		iavf_disable_vf(adapter);
+ 		mutex_unlock(&adapter->client_lock);
++		mutex_unlock(&adapter->crit_lock);
+ 		return; /* Do not attempt to reinit. It's dead, Jim. */
  	}
- 	if (CLIENT_ALLOWED(adapter)) {
- 		err = iavf_lan_del_device(adapter);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 5ee1d11..88844d6 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -2146,29 +2146,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 				     sizeof(adapter->vlan_v2_caps)));
  
- 		iavf_process_config(adapter);
--
--		/* unlock crit_lock before acquiring rtnl_lock as other
--		 * processes holding rtnl_lock could be waiting for the same
--		 * crit_lock
--		 */
--		mutex_unlock(&adapter->crit_lock);
--		/* VLAN capabilities can change during VFR, so make sure to
--		 * update the netdev features with the new capabilities
--		 */
--		rtnl_lock();
--		netdev_update_features(netdev);
--		rtnl_unlock();
--		if (iavf_lock_timeout(&adapter->crit_lock, 10000))
--			dev_warn(&adapter->pdev->dev, "failed to acquire crit_lock in %s\n",
--				 __FUNCTION__);
--
--		/* Request VLAN offload settings */
--		if (VLAN_V2_ALLOWED(adapter))
--			iavf_set_vlan_offload_features(adapter, 0,
--						       netdev->features);
--
--		iavf_set_queue_vlan_tag_loc(adapter);
--
-+		adapter->flags |= IAVF_FLAG_SETUP_NETDEV_FEATURES;
- 		}
- 		break;
- 	case VIRTCHNL_OP_ENABLE_QUEUES:
 -- 
 2.27.0
 
