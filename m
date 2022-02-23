@@ -1,94 +1,106 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Feb 2022 16:26:54 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 07/25] ice: refactor spoofchk
- control code in ice_sriov.c
+Date: Tue, 22 Feb 2022 16:26:48 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 01/25] ice: rename ice_sriov.c to
+ ice_vf_mbx.c
 In-Reply-To: <20220223002712.2771809-1-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
-Message-ID: <20220223002712.2771809-8-jacob.e.keller@intel.com>
+Message-ID: <20220223002712.2771809-2-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The API to control the VSI spoof checking for a VF VSI has three
-functions: enable, disable, and set. The set function takes the VSI and
-the VF and decides whether to call enable or disable based on the
-vf->spoofchk field.
+The ice_sriov.c file primarily contains code which handles the logic for
+mailbox overflow detection and some other utility functions related to
+the virtualization mailbox.
 
-In some flows, vf->spoofchk is not yet set, such as the function used to
-control the setting for a VF. (vf->spoofchk is only updated after a
-success).
+The bulk of the SR-IOV implementation is actually found in
+ice_virtchnl_pf.c, and this file isn't strictly SR-IOV specific.
 
-Simplify this API by refactoring ice_vf_set_spoofchk_cfg to be
-"ice_vsi_apply_spoofchk" which takes the boolean and allows all callers
-to avoid having to determine whether to call enable or disable
-themselves.
+In the future, the ice driver will support an additional virtualization
+scheme known as Scalable IOV, and the code in this file will be used
+for this alternative implementation.
 
-This matches the expected callers better, and will prevent the need to
-export more than one function when this code must be called from another
-file.
+Rename this file (and its associated header) to ice_vf_mbx.c, so that we
+can later re-use the ice_sriov.c file as the SR-IOV specific file.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sriov.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/ice/Makefile                     | 2 +-
+ drivers/net/ethernet/intel/ice/ice.h                        | 2 +-
+ .../net/ethernet/intel/ice/{ice_sriov.c => ice_vf_mbx.c}    | 2 +-
+ .../net/ethernet/intel/ice/{ice_sriov.h => ice_vf_mbx.h}    | 6 +++---
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+ rename drivers/net/ethernet/intel/ice/{ice_sriov.c => ice_vf_mbx.c} (99%)
+ rename drivers/net/ethernet/intel/ice/{ice_sriov.h => ice_vf_mbx.h} (95%)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 7cd910bb7a7a..8d22b5d94706 100644
+diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+index 44b8464b7663..451098e25023 100644
+--- a/drivers/net/ethernet/intel/ice/Makefile
++++ b/drivers/net/ethernet/intel/ice/Makefile
+@@ -36,7 +36,7 @@ ice-y := ice_main.o	\
+ ice-$(CONFIG_PCI_IOV) +=	\
+ 	ice_virtchnl_allowlist.o \
+ 	ice_virtchnl_fdir.o	\
+-	ice_sriov.o		\
++	ice_vf_mbx.o		\
+ 	ice_vf_vsi_vlan_ops.o	\
+ 	ice_virtchnl_pf.o
+ ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 32ebce1fbeef..6c41edd99410 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -67,7 +67,7 @@
+ #include "ice_sched.h"
+ #include "ice_idc_int.h"
+ #include "ice_virtchnl_pf.h"
+-#include "ice_sriov.h"
++#include "ice_vf_mbx.h"
+ #include "ice_ptp.h"
+ #include "ice_fdir.h"
+ #include "ice_xsk.h"
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_vf_mbx.c
+similarity index 99%
+rename from drivers/net/ethernet/intel/ice/ice_sriov.c
+rename to drivers/net/ethernet/intel/ice/ice_vf_mbx.c
+index 52c6bac41bf7..fc8c93fa4455 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -985,16 +985,15 @@ static int ice_vsi_dis_spoofchk(struct ice_vsi *vsi)
- }
++++ b/drivers/net/ethernet/intel/ice/ice_vf_mbx.c
+@@ -2,7 +2,7 @@
+ /* Copyright (c) 2018, Intel Corporation. */
+ 
+ #include "ice_common.h"
+-#include "ice_sriov.h"
++#include "ice_vf_mbx.h"
  
  /**
-- * ice_vf_set_spoofchk_cfg - apply Tx spoof checking setting
-- * @vf: VF set spoofchk for
-+ * ice_vsi_apply_spoofchk - Apply Tx spoof checking setting to a VSI
-  * @vsi: VSI associated to the VF
-+ * @enable: whether to enable or disable the spoof checking
-  */
--static int
--ice_vf_set_spoofchk_cfg(struct ice_vf *vf, struct ice_vsi *vsi)
-+static int ice_vsi_apply_spoofchk(struct ice_vsi *vsi, bool enable)
- {
- 	int err;
+  * ice_aq_send_msg_to_vf
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.h b/drivers/net/ethernet/intel/ice/ice_vf_mbx.h
+similarity index 95%
+rename from drivers/net/ethernet/intel/ice/ice_sriov.h
+rename to drivers/net/ethernet/intel/ice/ice_vf_mbx.h
+index 68686a3fd7e8..582716e6d5f9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.h
++++ b/drivers/net/ethernet/intel/ice/ice_vf_mbx.h
+@@ -1,8 +1,8 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ /* Copyright (c) 2018, Intel Corporation. */
  
--	if (vf->spoofchk)
-+	if (enable)
- 		err = ice_vsi_ena_spoofchk(vsi);
- 	else
- 		err = ice_vsi_dis_spoofchk(vsi);
-@@ -1478,7 +1477,7 @@ static void ice_vf_rebuild_host_cfg(struct ice_vf *vf)
- 		dev_err(dev, "failed to rebuild Tx rate limiting configuration for VF %u\n",
- 			vf->vf_id);
+-#ifndef _ICE_SRIOV_H_
+-#define _ICE_SRIOV_H_
++#ifndef _ICE_VF_MBX_H_
++#define _ICE_VF_MBX_H_
  
--	if (ice_vf_set_spoofchk_cfg(vf, vsi))
-+	if (ice_vsi_apply_spoofchk(vsi, vf->spoofchk))
- 		dev_err(dev, "failed to rebuild spoofchk configuration for VF %d\n",
- 			vf->vf_id);
+ #include "ice_type.h"
+ #include "ice_controlq.h"
+@@ -49,4 +49,4 @@ ice_conv_link_speed_to_virtchnl(bool __always_unused adv_link_support,
+ }
  
-@@ -1915,7 +1914,7 @@ static int ice_init_vf_vsi_res(struct ice_vf *vf)
- 		goto release_vsi;
- 	}
- 
--	err = ice_vf_set_spoofchk_cfg(vf, vsi);
-+	err = ice_vsi_apply_spoofchk(vsi, vf->spoofchk);
- 	if (err) {
- 		dev_warn(dev, "Failed to initialize spoofchk setting for VF %d\n",
- 			 vf->vf_id);
-@@ -3129,10 +3128,7 @@ int ice_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool ena)
- 		goto out_put_vf;
- 	}
- 
--	if (ena)
--		ret = ice_vsi_ena_spoofchk(vf_vsi);
--	else
--		ret = ice_vsi_dis_spoofchk(vf_vsi);
-+	ret = ice_vsi_apply_spoofchk(vf_vsi, ena);
- 	if (ret)
- 		dev_err(dev, "Failed to set spoofchk %s for VF %d VSI %d\n error %d\n",
- 			ena ? "ON" : "OFF", vf->vf_id, vf_vsi->vsi_num, ret);
+ #endif /* CONFIG_PCI_IOV */
+-#endif /* _ICE_SRIOV_H_ */
++#endif /* _ICE_VF_MBX_H_ */
 -- 
 2.35.1.129.gb80121027d12
 
