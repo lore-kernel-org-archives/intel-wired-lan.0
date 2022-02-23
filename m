@@ -1,147 +1,152 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 22 Feb 2022 16:27:09 -0800
-Subject: [Intel-wired-lan] [net-next PATCH 22/25] ice: introduce
- ICE_VF_RESET_LOCK flag
+Date: Tue, 22 Feb 2022 16:27:12 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 25/25] ice: remove PF pointer
+ from ice_check_vf_init
 In-Reply-To: <20220223002712.2771809-1-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
-Message-ID: <20220223002712.2771809-23-jacob.e.keller@intel.com>
+Message-ID: <20220223002712.2771809-26-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_reset_vf function performs actions which must be taken only
-while holding the VF configuration lock. Some flows already acquired the
-lock, while other flows must acquire it just for the reset function. Add
-the ICE_VF_RESET_LOCK flag to the function so that it can handle taking
-and releasing the lock instead at the appropriate scope.
+The ice_check_vf_init function takes both a PF and a VF pointer. Every
+caller looks up the PF pointer from the VF structure. Some callers only
+use of the PF pointer is call this function. Move the lookup inside
+ice_check_vf_init and drop the unnecessary argument.
+
+Cleanup the callers to drop the now unnecessary local variables. In
+particular, replace the local PF pointer with a HW structure pointer in
+ice_vc_get_vf_res_msg which simplifies a few accesses to the HW
+structure in that function.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c   |  4 +---
- drivers/net/ethernet/intel/ice/ice_sriov.c  | 12 +++---------
- drivers/net/ethernet/intel/ice/ice_vf_lib.c | 18 ++++++++++++++----
- drivers/net/ethernet/intel/ice/ice_vf_lib.h |  1 +
- 4 files changed, 19 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c      | 16 +++++++---------
+ .../net/ethernet/intel/ice/ice_vf_lib_private.h  |  2 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c    | 12 ++++++------
+ 3 files changed, 14 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 9d5fa9840004..4f35eb039d9f 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1957,9 +1957,7 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 				 * reset, so print the event prior to reset.
- 				 */
- 				ice_print_vf_rx_mdd_event(vf);
--				mutex_lock(&vf->cfg_lock);
--				ice_reset_vf(vf, 0);
--				mutex_unlock(&vf->cfg_lock);
-+				ice_reset_vf(vf, ICE_VF_RESET_LOCK);
- 			}
- 		}
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 46d656d385c4..f74474f8af99 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -1366,12 +1366,9 @@ void ice_process_vflr_event(struct ice_pf *pf)
- 		bit_idx = (hw->func_caps.vf_base_id + vf->vf_id) % 32;
- 		/* read GLGEN_VFLRSTAT register to find out the flr VFs */
- 		reg = rd32(hw, GLGEN_VFLRSTAT(reg_idx));
--		if (reg & BIT(bit_idx)) {
-+		if (reg & BIT(bit_idx))
- 			/* GLGEN_VFLRSTAT bit will be cleared in ice_reset_vf */
--			mutex_lock(&vf->cfg_lock);
--			ice_reset_vf(vf, ICE_VF_RESET_VFLR);
--			mutex_unlock(&vf->cfg_lock);
--		}
-+			ice_reset_vf(vf, ICE_VF_RESET_VFLR | ICE_VF_RESET_LOCK);
- 	}
- 	mutex_unlock(&pf->vfs.table_lock);
- }
-@@ -1453,10 +1450,7 @@ ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event)
- 	if (!vf)
- 		return;
- 
--	mutex_lock(&vf->cfg_lock);
--	ice_reset_vf(vf, ICE_VF_RESET_NOTIFY);
--	mutex_unlock(&vf->cfg_lock);
--
-+	ice_reset_vf(vf, ICE_VF_RESET_NOTIFY | ICE_VF_RESET_LOCK);
- 	ice_put_vf(vf);
- }
- 
 diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index dce32bc194a0..c584f5123ba7 100644
+index c584f5123ba7..6578059d9479 100644
 --- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -473,6 +473,7 @@ static void ice_notify_vf_reset(struct ice_vf *vf)
-  * Flags:
-  *   ICE_VF_RESET_VFLR - Indicates a reset is due to VFLR event
-  *   ICE_VF_RESET_NOTIFY - Send VF a notification prior to reset
-+ *   ICE_VF_RESET_LOCK - Acquire VF cfg_lock before resetting
-  *
-  * Returns 0 if the VF is currently in reset, if the resets are disabled, or
-  * if the VF resets successfully. Returns an error code if the VF fails to
-@@ -485,10 +486,9 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 	struct device *dev;
- 	struct ice_hw *hw;
- 	u8 promisc_m;
-+	int err = 0;
- 	bool rsd;
- 
--	lockdep_assert_held(&vf->cfg_lock);
+@@ -174,15 +174,12 @@ static void ice_wait_on_vf_reset(struct ice_vf *vf)
+  */
+ int ice_check_vf_ready_for_cfg(struct ice_vf *vf)
+ {
+-	struct ice_pf *pf;
 -
- 	dev = ice_pf_to_dev(pf);
- 	hw = &pf->hw;
+ 	ice_wait_on_vf_reset(vf);
  
-@@ -507,6 +507,11 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 		return 0;
- 	}
+ 	if (ice_is_vf_disabled(vf))
+ 		return -EINVAL;
  
-+	if (flags & ICE_VF_RESET_LOCK)
-+		mutex_lock(&vf->cfg_lock);
-+	else
-+		lockdep_assert_held(&vf->cfg_lock);
-+
- 	/* Set VF disable bit state here, before triggering reset */
- 	set_bit(ICE_VF_STATE_DIS, vf->vf_states);
- 	ice_trigger_vf_reset(vf, flags & ICE_VF_RESET_VFLR, false);
-@@ -564,7 +569,8 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 	if (vf->vf_ops->vsi_rebuild(vf)) {
- 		dev_err(dev, "Failed to release and setup the VF%u's VSI\n",
- 			vf->vf_id);
--		return -EFAULT;
-+		err = -EFAULT;
-+		goto out_unlock;
- 	}
+-	pf = vf->pf;
+-	if (ice_check_vf_init(pf, vf))
++	if (ice_check_vf_init(vf))
+ 		return -EBUSY;
  
- 	vf->vf_ops->post_vsi_rebuild(vf);
-@@ -578,7 +584,11 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 		dev_dbg(dev, "failed to clear malicious VF state for VF %u\n",
- 			vf->vf_id);
- 
--	return 0;
-+out_unlock:
-+	if (flags & ICE_VF_RESET_LOCK)
-+		mutex_unlock(&vf->cfg_lock);
-+
-+	return err;
- }
+ 	return 0;
+@@ -620,11 +617,12 @@ void ice_dis_vf_qs(struct ice_vf *vf)
  
  /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index 9155c0d2f998..758e37295942 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -137,6 +137,7 @@ struct ice_vf {
- enum ice_vf_reset_flags {
- 	ICE_VF_RESET_VFLR = BIT(0), /* Indicate a VFLR reset */
- 	ICE_VF_RESET_NOTIFY = BIT(1), /* Notify VF prior to reset */
-+	ICE_VF_RESET_LOCK = BIT(2), /* Acquire the VF cfg_lock */
- };
+  * ice_check_vf_init - helper to check if VF init complete
+- * @pf: pointer to the PF structure
+  * @vf: the pointer to the VF to check
+  */
+-int ice_check_vf_init(struct ice_pf *pf, struct ice_vf *vf)
++int ice_check_vf_init(struct ice_vf *vf)
+ {
++	struct ice_pf *pf = vf->pf;
++
+ 	if (!test_bit(ICE_VF_STATE_INIT, vf->vf_states)) {
+ 		dev_err(ice_pf_to_dev(pf), "VF ID: %u in reset. Try again.\n",
+ 			vf->vf_id);
+@@ -752,9 +750,9 @@ bool ice_vf_has_no_qs_ena(struct ice_vf *vf)
+  */
+ bool ice_is_vf_link_up(struct ice_vf *vf)
+ {
+-	struct ice_pf *pf = vf->pf;
++	struct ice_port_info *pi = ice_vf_get_port_info(vf);
  
- static inline u16 ice_vf_get_port_vlan_id(struct ice_vf *vf)
+-	if (ice_check_vf_init(pf, vf))
++	if (ice_check_vf_init(vf))
+ 		return false;
+ 
+ 	if (ice_vf_has_no_qs_ena(vf))
+@@ -762,7 +760,7 @@ bool ice_is_vf_link_up(struct ice_vf *vf)
+ 	else if (vf->link_forced)
+ 		return vf->link_up;
+ 	else
+-		return pf->hw.port_info->phy.link_info.link_info &
++		return pi->phy.link_info.link_info &
+ 			ICE_AQ_LINK_UP;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib_private.h b/drivers/net/ethernet/intel/ice/ice_vf_lib_private.h
+index e9374693496e..15887e772c76 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib_private.h
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib_private.h
+@@ -24,7 +24,7 @@
+ #endif
+ 
+ void ice_dis_vf_qs(struct ice_vf *vf);
+-int ice_check_vf_init(struct ice_pf *pf, struct ice_vf *vf);
++int ice_check_vf_init(struct ice_vf *vf);
+ struct ice_port_info *ice_vf_get_port_info(struct ice_vf *vf);
+ int ice_vsi_apply_spoofchk(struct ice_vsi *vsi, bool enable);
+ bool ice_is_vf_trusted(struct ice_vf *vf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index d820ec622640..3f1a63815bac 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -370,12 +370,12 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ {
+ 	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
+ 	struct virtchnl_vf_resource *vfres = NULL;
+-	struct ice_pf *pf = vf->pf;
++	struct ice_hw *hw = &vf->pf->hw;
+ 	struct ice_vsi *vsi;
+ 	int len = 0;
+ 	int ret;
+ 
+-	if (ice_check_vf_init(pf, vf)) {
++	if (ice_check_vf_init(vf)) {
+ 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 		goto err;
+ 	}
+@@ -412,9 +412,9 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 		 * inner/single VLAN respectively and don't allow VF to
+ 		 * negotiate VIRTCHNL_VF_OFFLOAD in any other cases
+ 		 */
+-		if (ice_is_dvm_ena(&pf->hw) && ice_vf_is_port_vlan_ena(vf)) {
++		if (ice_is_dvm_ena(hw) && ice_vf_is_port_vlan_ena(vf)) {
+ 			vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_VLAN;
+-		} else if (!ice_is_dvm_ena(&pf->hw) &&
++		} else if (!ice_is_dvm_ena(hw) &&
+ 			   !ice_vf_is_port_vlan_ena(vf)) {
+ 			vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_VLAN;
+ 			/* configure backward compatible support for VFs that
+@@ -422,7 +422,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 			 * configured in SVM, and no port VLAN is configured
+ 			 */
+ 			ice_vf_vsi_cfg_svm_legacy_vlan_mode(vsi);
+-		} else if (ice_is_dvm_ena(&pf->hw)) {
++		} else if (ice_is_dvm_ena(hw)) {
+ 			/* configure software offloaded VLAN support when DVM
+ 			 * is enabled, but no port VLAN is enabled
+ 			 */
+@@ -472,7 +472,7 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 	vfres->num_vsis = 1;
+ 	/* Tx and Rx queue are equal for VF */
+ 	vfres->num_queue_pairs = vsi->num_txq;
+-	vfres->max_vectors = pf->vfs.num_msix_per;
++	vfres->max_vectors = vf->pf->vfs.num_msix_per;
+ 	vfres->rss_key_size = ICE_VSIQF_HKEY_ARRAY_SIZE;
+ 	vfres->rss_lut_size = ICE_VSIQF_HLUT_ARRAY_SIZE;
+ 	vfres->max_mtu = ice_vc_get_max_frame_size(vf);
 -- 
 2.35.1.129.gb80121027d12
 
