@@ -1,10 +1,10 @@
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Thu, 24 Feb 2022 19:54:54 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v9 1/7] gtp: Allow to create GTP
- device without FDs
+Date: Thu, 24 Feb 2022 19:54:57 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v9 4/7] net/sched: Allow flower
+ to match on GTP options
 In-Reply-To: <20220224185500.18384-1-marcin.szycik@linux.intel.com>
 References: <20220224185500.18384-1-marcin.szycik@linux.intel.com>
-Message-ID: <20220224185500.18384-2-marcin.szycik@linux.intel.com>
+Message-ID: <20220224185500.18384-5-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,217 +13,266 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 
-Currently, when the user wants to create GTP device, he has to
-provide file handles to the sockets created in userspace (IFLA_GTP_FD0,
-IFLA_GTP_FD1). This behaviour is not ideal, considering the option of
-adding support for GTP device creation through ip link. Ip link
-application is not a good place to create such sockets.
+Options are as follows: PDU_TYPE:QFI and they refernce to
+the fields from the  PDU Session Protocol. PDU Session data
+is conveyed in GTP-U Extension Header.
 
-This patch allows to create GTP device without providing
-IFLA_GTP_FD0 and IFLA_GTP_FD1 arguments. If the user sets
-IFLA_GTP_CREATE_SOCKETS attribute, then GTP module takes care
-of creating UDP sockets by itself. Sockets are created with the
-commonly known UDP ports used for GTP protocol (GTP0_PORT and
-GTP1U_PORT). In this case we don't have to provide encap_destroy
-because no extra deinitialization is needed, everything is covered
-by udp_tunnel_sock_release.
+GTP-U Extension Header is described in 3GPP TS 29.281.
+PDU Session Protocol is described in 3GPP TS 38.415.
 
-Note: GTP instance created with only this change applied, does
-not handle GTP Echo Requests. This is implemented in the following
-patch.
+PDU_TYPE -  indicates the type of the PDU Session Information (4 bits)
+QFI      -  QoS Flow Identifier (6 bits)
+
+  # ip link add gtp_dev type gtp role sgsn
+  # tc qdisc add dev gtp_dev ingress
+  # tc filter add dev gtp_dev protocol ip parent ffff: \
+      flower \
+        enc_key_id 11 \
+        gtp_opts 1:8/ff:ff \
+      action mirred egress redirect dev eth0
 
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
-v4: Use ntohs when creating UDP socket
-v5: IFLA_GTP_CREATE_SOCKETS introduced, gtp_newlink refactor
-v6: Reordering refactor removed
----
- drivers/net/gtp.c            | 101 +++++++++++++++++++++++++++++------
- include/uapi/linux/if_link.h |   1 +
- 2 files changed, 85 insertions(+), 17 deletions(-)
+ include/net/gtp.h              |   5 ++
+ include/uapi/linux/if_tunnel.h |   4 +-
+ include/uapi/linux/pkt_cls.h   |  15 +++++
+ net/sched/cls_flower.c         | 116 +++++++++++++++++++++++++++++++++
+ 4 files changed, 139 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/gtp.c b/drivers/net/gtp.c
-index bf087171bcf0..25d8521897b3 100644
---- a/drivers/net/gtp.c
-+++ b/drivers/net/gtp.c
-@@ -66,8 +66,10 @@ struct gtp_dev {
+diff --git a/include/net/gtp.h b/include/net/gtp.h
+index 0e12c37f2958..23c2aaae8a42 100644
+--- a/include/net/gtp.h
++++ b/include/net/gtp.h
+@@ -58,6 +58,11 @@ struct gtp1u_packet {
+ 	struct gtp_ie ie;
+ } __packed;
  
- 	struct sock		*sk0;
- 	struct sock		*sk1u;
-+	u8			sk_created;
++struct gtp_pdu_session_info {	/* According to 3GPP TS 38.415. */
++	u8	pdu_type;
++	u8	qfi;
++};
++
+ #define GTP1_F_NPDU	0x01
+ #define GTP1_F_SEQ	0x02
+ #define GTP1_F_EXTHDR	0x04
+diff --git a/include/uapi/linux/if_tunnel.h b/include/uapi/linux/if_tunnel.h
+index 7d9105533c7b..102119628ff5 100644
+--- a/include/uapi/linux/if_tunnel.h
++++ b/include/uapi/linux/if_tunnel.h
+@@ -176,8 +176,10 @@ enum {
+ #define TUNNEL_VXLAN_OPT	__cpu_to_be16(0x1000)
+ #define TUNNEL_NOCACHE		__cpu_to_be16(0x2000)
+ #define TUNNEL_ERSPAN_OPT	__cpu_to_be16(0x4000)
++#define TUNNEL_GTP_OPT		__cpu_to_be16(0x8000)
  
- 	struct net_device	*dev;
-+	struct net		*net;
+ #define TUNNEL_OPTIONS_PRESENT \
+-		(TUNNEL_GENEVE_OPT | TUNNEL_VXLAN_OPT | TUNNEL_ERSPAN_OPT)
++		(TUNNEL_GENEVE_OPT | TUNNEL_VXLAN_OPT | TUNNEL_ERSPAN_OPT | \
++		TUNNEL_GTP_OPT)
  
- 	unsigned int		role;
- 	unsigned int		hash_size;
-@@ -320,8 +322,16 @@ static void gtp_encap_disable_sock(struct sock *sk)
+ #endif /* _UAPI_IF_TUNNEL_H_ */
+diff --git a/include/uapi/linux/pkt_cls.h b/include/uapi/linux/pkt_cls.h
+index ee38b35c3f57..404f97fb239c 100644
+--- a/include/uapi/linux/pkt_cls.h
++++ b/include/uapi/linux/pkt_cls.h
+@@ -616,6 +616,10 @@ enum {
+ 					 * TCA_FLOWER_KEY_ENC_OPT_ERSPAN_
+ 					 * attributes
+ 					 */
++	TCA_FLOWER_KEY_ENC_OPTS_GTP,	/* Nested
++					 * TCA_FLOWER_KEY_ENC_OPT_GTP_
++					 * attributes
++					 */
+ 	__TCA_FLOWER_KEY_ENC_OPTS_MAX,
+ };
  
- static void gtp_encap_disable(struct gtp_dev *gtp)
- {
--	gtp_encap_disable_sock(gtp->sk0);
--	gtp_encap_disable_sock(gtp->sk1u);
-+	if (gtp->sk_created) {
-+		udp_tunnel_sock_release(gtp->sk0->sk_socket);
-+		udp_tunnel_sock_release(gtp->sk1u->sk_socket);
-+		gtp->sk_created = false;
-+		gtp->sk0 = NULL;
-+		gtp->sk1u = NULL;
-+	} else {
-+		gtp_encap_disable_sock(gtp->sk0);
-+		gtp_encap_disable_sock(gtp->sk1u);
-+	}
+@@ -654,6 +658,17 @@ enum {
+ #define TCA_FLOWER_KEY_ENC_OPT_ERSPAN_MAX \
+ 		(__TCA_FLOWER_KEY_ENC_OPT_ERSPAN_MAX - 1)
+ 
++enum {
++	TCA_FLOWER_KEY_ENC_OPT_GTP_UNSPEC,
++	TCA_FLOWER_KEY_ENC_OPT_GTP_PDU_TYPE,		/* u8 */
++	TCA_FLOWER_KEY_ENC_OPT_GTP_QFI,			/* u8 */
++
++	__TCA_FLOWER_KEY_ENC_OPT_GTP_MAX,
++};
++
++#define TCA_FLOWER_KEY_ENC_OPT_GTP_MAX \
++		(__TCA_FLOWER_KEY_ENC_OPT_GTP_MAX - 1)
++
+ enum {
+ 	TCA_FLOWER_KEY_MPLS_OPTS_UNSPEC,
+ 	TCA_FLOWER_KEY_MPLS_OPTS_LSE,
+diff --git a/net/sched/cls_flower.c b/net/sched/cls_flower.c
+index 1a9b1f140f9e..c80fc49c0da1 100644
+--- a/net/sched/cls_flower.c
++++ b/net/sched/cls_flower.c
+@@ -25,6 +25,7 @@
+ #include <net/geneve.h>
+ #include <net/vxlan.h>
+ #include <net/erspan.h>
++#include <net/gtp.h>
+ 
+ #include <net/dst.h>
+ #include <net/dst_metadata.h>
+@@ -723,6 +724,7 @@ enc_opts_policy[TCA_FLOWER_KEY_ENC_OPTS_MAX + 1] = {
+ 	[TCA_FLOWER_KEY_ENC_OPTS_GENEVE]        = { .type = NLA_NESTED },
+ 	[TCA_FLOWER_KEY_ENC_OPTS_VXLAN]         = { .type = NLA_NESTED },
+ 	[TCA_FLOWER_KEY_ENC_OPTS_ERSPAN]        = { .type = NLA_NESTED },
++	[TCA_FLOWER_KEY_ENC_OPTS_GTP]		= { .type = NLA_NESTED },
+ };
+ 
+ static const struct nla_policy
+@@ -746,6 +748,12 @@ erspan_opt_policy[TCA_FLOWER_KEY_ENC_OPT_ERSPAN_MAX + 1] = {
+ 	[TCA_FLOWER_KEY_ENC_OPT_ERSPAN_HWID]       = { .type = NLA_U8 },
+ };
+ 
++static const struct nla_policy
++gtp_opt_policy[TCA_FLOWER_KEY_ENC_OPT_GTP_MAX + 1] = {
++	[TCA_FLOWER_KEY_ENC_OPT_GTP_PDU_TYPE]	   = { .type = NLA_U8 },
++	[TCA_FLOWER_KEY_ENC_OPT_GTP_QFI]	   = { .type = NLA_U8 },
++};
++
+ static const struct nla_policy
+ mpls_stack_entry_policy[TCA_FLOWER_KEY_MPLS_OPT_LSE_MAX + 1] = {
+ 	[TCA_FLOWER_KEY_MPLS_OPT_LSE_DEPTH]    = { .type = NLA_U8 },
+@@ -1262,6 +1270,49 @@ static int fl_set_erspan_opt(const struct nlattr *nla, struct fl_flow_key *key,
+ 	return sizeof(*md);
  }
  
- /* UDP encapsulation receive handler. See net/ipv4/udp.c.
-@@ -656,17 +666,69 @@ static void gtp_destructor(struct net_device *dev)
- 	kfree(gtp->tid_hash);
- }
- 
-+static struct sock *gtp_create_sock(int type, struct gtp_dev *gtp)
++static int fl_set_gtp_opt(const struct nlattr *nla, struct fl_flow_key *key,
++			  int depth, int option_len,
++			  struct netlink_ext_ack *extack)
 +{
-+	struct udp_tunnel_sock_cfg tuncfg = {};
-+	struct udp_port_cfg udp_conf = {
-+		.local_ip.s_addr	= htonl(INADDR_ANY),
-+		.family			= AF_INET,
-+	};
-+	struct net *net = gtp->net;
-+	struct socket *sock;
++	struct nlattr *tb[TCA_FLOWER_KEY_ENC_OPT_GTP_MAX + 1];
++	struct gtp_pdu_session_info *sinfo;
++	u8 len = key->enc_opts.len;
 +	int err;
 +
-+	if (type == UDP_ENCAP_GTP0)
-+		udp_conf.local_udp_port = htons(GTP0_PORT);
-+	else if (type == UDP_ENCAP_GTP1U)
-+		udp_conf.local_udp_port = htons(GTP1U_PORT);
-+	else
-+		return ERR_PTR(-EINVAL);
++	sinfo = (struct gtp_pdu_session_info *)&key->enc_opts.data[len];
++	memset(sinfo, 0xff, option_len);
 +
-+	err = udp_sock_create(net, &udp_conf, &sock);
-+	if (err)
-+		return ERR_PTR(err);
++	if (!depth)
++		return sizeof(*sinfo);
 +
-+	tuncfg.sk_user_data = gtp;
-+	tuncfg.encap_type = type;
-+	tuncfg.encap_rcv = gtp_encap_recv;
-+	tuncfg.encap_destroy = NULL;
-+
-+	setup_udp_tunnel_sock(net, sock, &tuncfg);
-+
-+	return sock->sk;
-+}
-+
-+static int gtp_create_sockets(struct gtp_dev *gtp, struct nlattr *data[])
-+{
-+	struct sock *sk1u = NULL;
-+	struct sock *sk0 = NULL;
-+
-+	sk0 = gtp_create_sock(UDP_ENCAP_GTP0, gtp);
-+	if (IS_ERR(sk0))
-+		return PTR_ERR(sk0);
-+
-+	sk1u = gtp_create_sock(UDP_ENCAP_GTP1U, gtp);
-+	if (IS_ERR(sk1u)) {
-+		udp_tunnel_sock_release(sk0->sk_socket);
-+		return PTR_ERR(sk1u);
-+	}
-+
-+	gtp->sk_created = true;
-+	gtp->sk0 = sk0;
-+	gtp->sk1u = sk1u;
-+
-+	return 0;
-+}
-+
- static int gtp_newlink(struct net *src_net, struct net_device *dev,
- 		       struct nlattr *tb[], struct nlattr *data[],
- 		       struct netlink_ext_ack *extack)
- {
-+	unsigned int role = GTP_ROLE_GGSN;
- 	struct gtp_dev *gtp;
- 	struct gtp_net *gn;
- 	int hashsize, err;
- 
--	if (!data[IFLA_GTP_FD0] && !data[IFLA_GTP_FD1])
--		return -EINVAL;
--
- 	gtp = netdev_priv(dev);
- 
- 	if (!data[IFLA_GTP_PDP_HASHSIZE]) {
-@@ -677,11 +739,23 @@ static int gtp_newlink(struct net *src_net, struct net_device *dev,
- 			hashsize = 1024;
- 	}
- 
-+	if (data[IFLA_GTP_ROLE]) {
-+		role = nla_get_u32(data[IFLA_GTP_ROLE]);
-+		if (role > GTP_ROLE_SGSN)
-+			return -EINVAL;
-+	}
-+	gtp->role = role;
-+
-+	gtp->net = src_net;
-+
- 	err = gtp_hashtable_new(gtp, hashsize);
- 	if (err < 0)
- 		return err;
- 
--	err = gtp_encap_enable(gtp, data);
-+	if (data[IFLA_GTP_CREATE_SOCKETS])
-+		err = gtp_create_sockets(gtp, data);
-+	else
-+		err = gtp_encap_enable(gtp, data);
- 	if (err < 0)
- 		goto out_hashtable;
- 
-@@ -726,6 +800,7 @@ static const struct nla_policy gtp_policy[IFLA_GTP_MAX + 1] = {
- 	[IFLA_GTP_FD1]			= { .type = NLA_U32 },
- 	[IFLA_GTP_PDP_HASHSIZE]		= { .type = NLA_U32 },
- 	[IFLA_GTP_ROLE]			= { .type = NLA_U32 },
-+	[IFLA_GTP_CREATE_SOCKETS]	= { .type = NLA_U8 },
- };
- 
- static int gtp_validate(struct nlattr *tb[], struct nlattr *data[],
-@@ -848,7 +923,9 @@ static int gtp_encap_enable(struct gtp_dev *gtp, struct nlattr *data[])
- {
- 	struct sock *sk1u = NULL;
- 	struct sock *sk0 = NULL;
--	unsigned int role = GTP_ROLE_GGSN;
-+
-+	if (!data[IFLA_GTP_FD0] && !data[IFLA_GTP_FD1])
++	if (nla_type(nla) != TCA_FLOWER_KEY_ENC_OPTS_GTP) {
++		NL_SET_ERR_MSG_MOD(extack, "Non-gtp option type for mask");
 +		return -EINVAL;
- 
- 	if (data[IFLA_GTP_FD0]) {
- 		u32 fd0 = nla_get_u32(data[IFLA_GTP_FD0]);
-@@ -868,18 +945,8 @@ static int gtp_encap_enable(struct gtp_dev *gtp, struct nlattr *data[])
- 		}
- 	}
- 
--	if (data[IFLA_GTP_ROLE]) {
--		role = nla_get_u32(data[IFLA_GTP_ROLE]);
--		if (role > GTP_ROLE_SGSN) {
--			gtp_encap_disable_sock(sk0);
--			gtp_encap_disable_sock(sk1u);
--			return -EINVAL;
--		}
--	}
--
- 	gtp->sk0 = sk0;
- 	gtp->sk1u = sk1u;
--	gtp->role = role;
- 
- 	return 0;
++	}
++
++	err = nla_parse_nested(tb, TCA_FLOWER_KEY_ENC_OPT_GTP_MAX, nla,
++			       gtp_opt_policy, extack);
++	if (err < 0)
++		return err;
++
++	if (!option_len &&
++	    (!tb[TCA_FLOWER_KEY_ENC_OPT_GTP_PDU_TYPE] ||
++	     !tb[TCA_FLOWER_KEY_ENC_OPT_GTP_QFI])) {
++		NL_SET_ERR_MSG_MOD(extack,
++				   "Missing tunnel key gtp option pdu type or qfi");
++		return -EINVAL;
++	}
++
++	if (tb[TCA_FLOWER_KEY_ENC_OPT_GTP_PDU_TYPE])
++		sinfo->pdu_type =
++			nla_get_u8(tb[TCA_FLOWER_KEY_ENC_OPT_GTP_PDU_TYPE]);
++
++	if (tb[TCA_FLOWER_KEY_ENC_OPT_GTP_QFI])
++		sinfo->qfi = nla_get_u8(tb[TCA_FLOWER_KEY_ENC_OPT_GTP_QFI]);
++
++	return sizeof(*sinfo);
++}
++
+ static int fl_set_enc_opt(struct nlattr **tb, struct fl_flow_key *key,
+ 			  struct fl_flow_key *mask,
+ 			  struct netlink_ext_ack *extack)
+@@ -1386,6 +1437,38 @@ static int fl_set_enc_opt(struct nlattr **tb, struct fl_flow_key *key,
+ 				return -EINVAL;
+ 			}
+ 			break;
++		case TCA_FLOWER_KEY_ENC_OPTS_GTP:
++			if (key->enc_opts.dst_opt_type) {
++				NL_SET_ERR_MSG_MOD(extack,
++						   "Duplicate type for gtp options");
++				return -EINVAL;
++			}
++			option_len = 0;
++			key->enc_opts.dst_opt_type = TUNNEL_GTP_OPT;
++			option_len = fl_set_gtp_opt(nla_opt_key, key,
++						    key_depth, option_len,
++						    extack);
++			if (option_len < 0)
++				return option_len;
++
++			key->enc_opts.len += option_len;
++			/* At the same time we need to parse through the mask
++			 * in order to verify exact and mask attribute lengths.
++			 */
++			mask->enc_opts.dst_opt_type = TUNNEL_GTP_OPT;
++			option_len = fl_set_gtp_opt(nla_opt_msk, mask,
++						    msk_depth, option_len,
++						    extack);
++			if (option_len < 0)
++				return option_len;
++
++			mask->enc_opts.len += option_len;
++			if (key->enc_opts.len != mask->enc_opts.len) {
++				NL_SET_ERR_MSG_MOD(extack,
++						   "Key and mask miss aligned");
++				return -EINVAL;
++			}
++			break;
+ 		default:
+ 			NL_SET_ERR_MSG(extack, "Unknown tunnel option type");
+ 			return -EINVAL;
+@@ -2761,6 +2844,34 @@ static int fl_dump_key_erspan_opt(struct sk_buff *skb,
+ 	return -EMSGSIZE;
  }
-diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
-index be09d2ad4b5d..2dce9caa2bb0 100644
---- a/include/uapi/linux/if_link.h
-+++ b/include/uapi/linux/if_link.h
-@@ -823,6 +823,7 @@ enum {
- 	IFLA_GTP_FD1,
- 	IFLA_GTP_PDP_HASHSIZE,
- 	IFLA_GTP_ROLE,
-+	IFLA_GTP_CREATE_SOCKETS,
- 	__IFLA_GTP_MAX,
- };
- #define IFLA_GTP_MAX (__IFLA_GTP_MAX - 1)
+ 
++static int fl_dump_key_gtp_opt(struct sk_buff *skb,
++			       struct flow_dissector_key_enc_opts *enc_opts)
++
++{
++	struct gtp_pdu_session_info *session_info;
++	struct nlattr *nest;
++
++	nest = nla_nest_start_noflag(skb, TCA_FLOWER_KEY_ENC_OPTS_GTP);
++	if (!nest)
++		goto nla_put_failure;
++
++	session_info = (struct gtp_pdu_session_info *)&enc_opts->data[0];
++
++	if (nla_put_u8(skb, TCA_FLOWER_KEY_ENC_OPT_GTP_PDU_TYPE,
++		       session_info->pdu_type))
++		goto nla_put_failure;
++
++	if (nla_put_u8(skb, TCA_FLOWER_KEY_ENC_OPT_GTP_QFI, session_info->qfi))
++		goto nla_put_failure;
++
++	nla_nest_end(skb, nest);
++	return 0;
++
++nla_put_failure:
++	nla_nest_cancel(skb, nest);
++	return -EMSGSIZE;
++}
++
+ static int fl_dump_key_ct(struct sk_buff *skb,
+ 			  struct flow_dissector_key_ct *key,
+ 			  struct flow_dissector_key_ct *mask)
+@@ -2824,6 +2935,11 @@ static int fl_dump_key_options(struct sk_buff *skb, int enc_opt_type,
+ 		if (err)
+ 			goto nla_put_failure;
+ 		break;
++	case TUNNEL_GTP_OPT:
++		err = fl_dump_key_gtp_opt(skb, enc_opts);
++		if (err)
++			goto nla_put_failure;
++		break;
+ 	default:
+ 		goto nla_put_failure;
+ 	}
 -- 
 2.35.1
 
