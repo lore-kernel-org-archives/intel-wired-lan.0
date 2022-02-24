@@ -1,58 +1,90 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Wed, 23 Feb 2022 18:02:22 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 23/25] ice: cleanup long
- longs in ice_sriov.c
-In-Reply-To: <CO1PR11MB5089CB5838DE2F54C51A079DD63C9@CO1PR11MB5089.namprd11.prod.outlook.com>
-References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
- <20220223002712.2771809-24-jacob.e.keller@intel.com>
- <bcba92ad-d159-2abc-f7d1-92043c9c44bc@intel.com>
- <CO1PR11MB5089CB5838DE2F54C51A079DD63C9@CO1PR11MB5089.namprd11.prod.outlook.com>
-Message-ID: <4228f673158e3f59f3465e617126034d47852e65.camel@intel.com>
+From: Joe Damato <jdamato@fastly.com>
+Date: Wed, 23 Feb 2022 18:16:35 -0800
+Subject: [Intel-wired-lan] i40e and TSO with MPLS ?
+In-Reply-To: <DM6PR11MB46572510E594BF3E789AC5CF9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
+References: <DM6PR11MB4657EB65F784C3E816FD27FB9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
+ <DM6PR11MB46572510E594BF3E789AC5CF9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
+Message-ID: <CALALjgzQPDdNTjCBD+S2Adymk9XTH4qa4Sb6-kBuh96oKg+ajQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2022-02-23 at 09:42 +0000, Keller, Jacob E wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Brandeburg, Jesse <jesse.brandeburg@intel.com>
-> > Sent: Tuesday, February 22, 2022 5:47 PM
-> > To: Keller, Jacob E <jacob.e.keller@intel.com>; Intel Wired LAN
-> > <intel-wired-
-> > lan at lists.osuosl.org>
-> > Subject: Re: [Intel-wired-lan] [net-next PATCH 23/25] ice: cleanup
-> > long longs in
-> > ice_sriov.c
-> > 
-> > Subject should be "cleanup long lines" not "cleanup long longs"
-> > 
-> > 
-> > On 2/22/2022 4:27 PM, Jacob Keller wrote:
-> > > Before we move the virtchnl message handling from ice_sriov.c
-> > > into
-> > > ice_virtchnl.c, cleanup some long line warnings to avoid
-> > > checkpatch.pl
-> > > complaints.
-> > > 
-> > > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > 
-> 
-> Oops, thanks for the review Jesse!
-> 
-> Tony, can you fix this up in your tree?
+On Wed, Feb 23, 2022 at 9:56 AM Kubalewski, Arkadiusz
+<arkadiusz.kubalewski@intel.com> wrote:
+>
+> +Joe
+>
+> > Greetings:
+> >
+> > Does i40e (XL710) support TSO with MPLS?
+> >
+> > We are using firmware version: 7.10 0x80006469 1.2527.0
+> >
+> > We've attempted to add support for TSO+MPLS to i40e, but were unable to
+> > get it working. The patch is included below for reference, but it is almost
+> > certainly incorrect - and I am not clear if the hardware itself would
+> > support this even if the patch was correct.
+> >
+> > Applying the patch below and using tcpdump shows that:
+> >
+> >         - packet data, as seen by the pcap filter in the kernel, is large.
+> >           This suggests that the kernel is attempting to offload
+> >           segmentation to the device,
+> >
+> >         but
+> >
+> >         - those large packets are not ACK'd by the client
+> >
+> > This suggests that either:
+> >
+> >         - the device does not support TSO + MPLS, and/or
+> >         - the patch below is incorrect
+> >
+> > Does anyone working on i40e have any insight on this?
+>
+> Hi Joe,
+>
+> I have done some research for your case, good news is that we believe that 710
+> hardware supports it. Currently we do not have plans to implement such feature
+> ourselves, but we will do our best in reviewing if you decide to implement it.
 
-Yea, I'll fix that up in the tree.
+OK, thanks. I appreciate the information and your willingness to
+review. I am pleased to hear that the hardware supports it.
+
+> Such offloads should be supported on packets with up to 2 MPLS tags before the
+> IP header. For start, you might take a look for the features pre check function:
+> static netdev_features_t i40e_features_check(struct sk_buff *skb, ...
+> It probably requires an update after the changes you have posted.
+
+I took a look at i40e_features_check, as you suggested, but I am
+probably missing something.
+
+My understanding is that the call graph on the xmit path is roughly:
+
+__dev_queue_xmit which calls (in order):
+1. validate_xmit_skb -- this eventually calls i40e_features_check and
+harmonize_features which will use the mpls_features bitfield set in
+the patch to turn on the TSO bit
+
+2. dev_hard_start_xmit -- this delivers packets to taps, then to the driver
+
+dev_hard_start_xmit internally hands packets to any taps installed
+(for example pcap), before handing them to the driver
+(i40e_lan_xmit_frame).
+
+In our tests of the patch below, we see that tcpdump reports large
+packet sizes. Since we see them in tcpdump, I think this suggests that
+everything leading up to pcap delivery (including i40e_features_check)
+is correct... otherwise we'd see smaller packet sizes being delivered
+to pcap.
+
+This leads me to believe the issue is somewhere in i40e_lan_xmit_frame
+or below -- most likely in i40e_tso, which my patch attempts to tweak.
+
+Let me know if I'm off track and misunderstanding your analysis, but
+based on the above, I suspect the changes to i40e_tso are buggy.
 
 Thanks,
-Tony
-
-> Thanks,
-> Haje
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
+Joe
