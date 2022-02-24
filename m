@@ -1,90 +1,96 @@
-From: Joe Damato <jdamato@fastly.com>
-Date: Wed, 23 Feb 2022 18:16:35 -0800
-Subject: [Intel-wired-lan] i40e and TSO with MPLS ?
-In-Reply-To: <DM6PR11MB46572510E594BF3E789AC5CF9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
-References: <DM6PR11MB4657EB65F784C3E816FD27FB9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
- <DM6PR11MB46572510E594BF3E789AC5CF9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
-Message-ID: <CALALjgzQPDdNTjCBD+S2Adymk9XTH4qa4Sb6-kBuh96oKg+ajQ@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 24 Feb 2022 17:11:37 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ d21b2b8fbd73ff2fe54b4b6facb93cfa1d89a371
+Message-ID: <62174bc9.AJMs44j8fuKm+UO2%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Feb 23, 2022 at 9:56 AM Kubalewski, Arkadiusz
-<arkadiusz.kubalewski@intel.com> wrote:
->
-> +Joe
->
-> > Greetings:
-> >
-> > Does i40e (XL710) support TSO with MPLS?
-> >
-> > We are using firmware version: 7.10 0x80006469 1.2527.0
-> >
-> > We've attempted to add support for TSO+MPLS to i40e, but were unable to
-> > get it working. The patch is included below for reference, but it is almost
-> > certainly incorrect - and I am not clear if the hardware itself would
-> > support this even if the patch was correct.
-> >
-> > Applying the patch below and using tcpdump shows that:
-> >
-> >         - packet data, as seen by the pcap filter in the kernel, is large.
-> >           This suggests that the kernel is attempting to offload
-> >           segmentation to the device,
-> >
-> >         but
-> >
-> >         - those large packets are not ACK'd by the client
-> >
-> > This suggests that either:
-> >
-> >         - the device does not support TSO + MPLS, and/or
-> >         - the patch below is incorrect
-> >
-> > Does anyone working on i40e have any insight on this?
->
-> Hi Joe,
->
-> I have done some research for your case, good news is that we believe that 710
-> hardware supports it. Currently we do not have plans to implement such feature
-> ourselves, but we will do our best in reviewing if you decide to implement it.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: d21b2b8fbd73ff2fe54b4b6facb93cfa1d89a371  ice: Fix curr_link_speed advertised speed
 
-OK, thanks. I appreciate the information and your willingness to
-review. I am pleased to hear that the hardware supports it.
+elapsed time: 721m
 
-> Such offloads should be supported on packets with up to 2 MPLS tags before the
-> IP header. For start, you might take a look for the features pre check function:
-> static netdev_features_t i40e_features_check(struct sk_buff *skb, ...
-> It probably requires an update after the changes you have posted.
+configs tested: 67
+configs skipped: 3
 
-I took a look at i40e_features_check, as you suggested, but I am
-probably missing something.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-My understanding is that the call graph on the xmit path is roughly:
+gcc tested configs:
+arm                                 defconfig
+arm                              allmodconfig
+arm                              allyesconfig
+arm64                               defconfig
+arm64                            allyesconfig
+arm                  randconfig-c002-20220223
+ia64                                defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+nds32                             allnoconfig
+nios2                               defconfig
+arc                              allyesconfig
+csky                                defconfig
+alpha                               defconfig
+nds32                               defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+parisc64                            defconfig
+s390                             allmodconfig
+parisc                           allyesconfig
+s390                                defconfig
+s390                             allyesconfig
+i386                             allyesconfig
+i386                              debian-10.3
+i386                   debian-10.3-kselftests
+i386                                defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+i386                          randconfig-a014
+i386                          randconfig-a012
+i386                          randconfig-a016
+arc                  randconfig-r043-20220223
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+riscv                    nommu_virt_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                                  kexec
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
 
-__dev_queue_xmit which calls (in order):
-1. validate_xmit_skb -- this eventually calls i40e_features_check and
-harmonize_features which will use the mpls_features bitfield set in
-the patch to turn on the TSO bit
+clang tested configs:
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+hexagon              randconfig-r041-20220223
+hexagon              randconfig-r045-20220223
+riscv                randconfig-r042-20220223
+s390                 randconfig-r044-20220223
 
-2. dev_hard_start_xmit -- this delivers packets to taps, then to the driver
-
-dev_hard_start_xmit internally hands packets to any taps installed
-(for example pcap), before handing them to the driver
-(i40e_lan_xmit_frame).
-
-In our tests of the patch below, we see that tcpdump reports large
-packet sizes. Since we see them in tcpdump, I think this suggests that
-everything leading up to pcap delivery (including i40e_features_check)
-is correct... otherwise we'd see smaller packet sizes being delivered
-to pcap.
-
-This leads me to believe the issue is somewhere in i40e_lan_xmit_frame
-or below -- most likely in i40e_tso, which my patch attempts to tweak.
-
-Let me know if I'm off track and misunderstanding your analysis, but
-based on the above, I suspect the changes to i40e_tso are buggy.
-
-Thanks,
-Joe
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
