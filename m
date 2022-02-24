@@ -1,164 +1,72 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 24 Feb 2022 20:37:44 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 859ca48e6262e340023ac5cdbe1e6c8763243bc1
-Message-ID: <62177c18.QcA7HuJGSNq1myKc%lkp@intel.com>
+From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+Date: Thu, 24 Feb 2022 13:36:14 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] ice: Fix re-enablement of FW
+ logging after reset
+Message-ID: <20220224133614.179091-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 859ca48e6262e340023ac5cdbe1e6c8763243bc1  ice: remove PF pointer from ice_check_vf_init
+Device resets such as a CORER disable FW logging, and currently, it is
+not re-enabled by the driver after the reset. This means that FW log
+messages are not captured even though FW logging was enabled at driver
+load time.
 
-elapsed time: 724m
+To fix the issue, call ice_cfg_fw_log() from ice_rebuild() to re-enable
+the FW logging after a reset.
 
-configs tested: 131
-configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                          randconfig-c001
-mips                 randconfig-c004-20220223
-sh                             sh03_defconfig
-sh                          sdk7780_defconfig
-arm                            pleb_defconfig
-powerpc                      bamboo_defconfig
-sh                             espt_defconfig
-arc                              alldefconfig
-sh                          rsk7201_defconfig
-sh                          r7780mp_defconfig
-sh                           se7724_defconfig
-mips                           xway_defconfig
-arm                            hisi_defconfig
-sh                        sh7757lcr_defconfig
-sh                          rsk7269_defconfig
-mips                           jazz_defconfig
-sh                        sh7763rdp_defconfig
-sh                            migor_defconfig
-powerpc                      makalu_defconfig
-arm                       aspeed_g5_defconfig
-powerpc                     tqm8555_defconfig
-powerpc                     redwood_defconfig
-powerpc                      pasemi_defconfig
-sh                     magicpanelr2_defconfig
-powerpc                      ep88xc_defconfig
-ia64                             alldefconfig
-arm                           viper_defconfig
-sh                        sh7785lcr_defconfig
-nios2                               defconfig
-csky                                defconfig
-arm                           tegra_defconfig
-arm                  randconfig-c002-20220224
-arm                  randconfig-c002-20220223
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                             allnoconfig
-arc                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-x86_64                        randconfig-a015
-i386                          randconfig-a014
-i386                          randconfig-a012
-i386                          randconfig-a016
-s390                 randconfig-r044-20220224
-arc                  randconfig-r043-20220224
-riscv                randconfig-r042-20220224
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-
-clang tested configs:
-powerpc              randconfig-c003-20220224
-powerpc              randconfig-c003-20220223
-x86_64                        randconfig-c007
-arm                  randconfig-c002-20220224
-arm                  randconfig-c002-20220223
-mips                 randconfig-c004-20220224
-mips                 randconfig-c004-20220223
-i386                          randconfig-c001
-riscv                randconfig-c006-20220223
-riscv                randconfig-c006-20220224
-powerpc                      walnut_defconfig
-arm                           omap1_defconfig
-powerpc                        icon_defconfig
-powerpc                      obs600_defconfig
-powerpc                     ppa8548_defconfig
-arm                          imote2_defconfig
-arm                         bcm2835_defconfig
-arm                           spitz_defconfig
-powerpc                      ppc44x_defconfig
-powerpc                      katmai_defconfig
-powerpc                     mpc5200_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                        neponset_defconfig
-arm                          moxart_defconfig
-mips                        maltaup_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220223
-hexagon              randconfig-r041-20220223
-riscv                randconfig-r042-20220223
-
+Fixes: 8b97ceb1dc0f ("ice: Enable firmware logging during device initialization.")
+Signed-off-by: Ben Shelton <benjamin.h.shelton@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ice/ice_common.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_common.h | 1 +
+ drivers/net/ethernet/intel/ice/ice_main.c   | 5 +++++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index e2af99a763ed..e0e20ad80199 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -737,7 +737,7 @@ static int ice_get_fw_log_cfg(struct ice_hw *hw)
+  * messages from FW to SW. Interrupts are typically disabled during the device's
+  * initialization phase.
+  */
+-static int ice_cfg_fw_log(struct ice_hw *hw, bool enable)
++int ice_cfg_fw_log(struct ice_hw *hw, bool enable)
+ {
+ 	struct ice_aqc_fw_logging *cmd;
+ 	u16 i, chgs = 0, len = 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 1c57097ddf0b..2d3743a3638e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -174,6 +174,7 @@ ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 q_handle,
+ int ice_replay_vsi(struct ice_hw *hw, u16 vsi_handle);
+ void ice_replay_post(struct ice_hw *hw);
+ void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf);
++int ice_cfg_fw_log(struct ice_hw *hw, bool enable);
+ struct ice_q_ctx *
+ ice_get_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 q_handle);
+ int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index d72d5d147c75..9c36851d1401 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -6646,6 +6646,11 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 		goto err_init_ctrlq;
+ 	}
+ 
++	/* Re-enable FW logging. Not fatal if this fails. */
++	err = ice_cfg_fw_log(hw, true);
++	if (err)
++		dev_dbg(dev, "Failed to re-enable FW logging\n");
++
+ 	/* if DDP was previously loaded successfully */
+ 	if (!ice_is_safe_mode(pf)) {
+ 		/* reload the SW DB of filter tables */
+-- 
+2.27.0
+
