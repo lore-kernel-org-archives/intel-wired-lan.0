@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 25 Feb 2022 16:20:27 +0000
-Subject: [Intel-wired-lan] [net-next PATCH v2 02/11] ice: store VF
- pointer instead of VF ID
-In-Reply-To: <20220216213738.3826664-3-jacob.e.keller@intel.com>
+Date: Fri, 25 Feb 2022 16:21:11 +0000
+Subject: [Intel-wired-lan] [net-next PATCH v2 03/11] ice: pass num_vfs
+ to ice_set_per_vf_res()
+In-Reply-To: <20220216213738.3826664-4-jacob.e.keller@intel.com>
 References: <20220216213738.3826664-1-jacob.e.keller@intel.com>
- <20220216213738.3826664-3-jacob.e.keller@intel.com>
-Message-ID: <SJ0PR11MB5629E9B911D5B88E567D8ED0AB3E9@SJ0PR11MB5629.namprd11.prod.outlook.com>
+ <20220216213738.3826664-4-jacob.e.keller@intel.com>
+Message-ID: <SJ0PR11MB5629CB1AB767EC3524887DE2AB3E9@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,64 +17,52 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Jacob Keller
-> Sent: Wednesday, February 16, 2022 10:37 PM
+> Sent: Wednesday, February 16, 2022 10:38 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next PATCH v2 02/11] ice: store VF pointer
-> instead of VF ID
+> Subject: [Intel-wired-lan] [net-next PATCH v2 03/11] ice: pass num_vfs to
+> ice_set_per_vf_res()
 > 
-> The VSI structure contains a vf_id field used to associate a VSI with a VF. This
-> is used mainly for ICE_VSI_VF as well as partially for ICE_VSI_CTRL associated
-> with the VFs.
+> We are planning to replace the simple array structure tracking VFs with a
+> hash table. This change will also remove the "num_alloc_vfs" variable.
 > 
-> This API was designed with the idea that VFs are stored in a simple array that
-> was expected to be static throughout most of the driver's life.
+> Instead, new access functions to use the hash table as the source of truth will
+> be introduced. These will generally be equivalent to existing checks, except
+> during VF initialization.
 > 
-> We plan on refactoring VF storage in a few key ways:
+> Specifically, ice_set_per_vf_res() cannot use the hash table as it will be
+> operating prior to VF structures being inserted into the hash table.
 > 
->   1) converting from a simple static array to a hash table
->   2) using krefs to track VF references obtained from the hash table
->   3) use RCU to delay release of VF memory until after all references
->      are dropped
+> Instead of using pf->num_alloc_vfs, simply pass the num_vfs value in from
+> the caller.
 > 
-> This is motivated by the goal to ensure that the lifetime of VF structures is
-> accounted for, and prevent various use-after-free bugs.
+> Note that a sub-function of ice_set_per_vf_res, ice_determine_res, also
+> implicitly depends on pf->num_alloc_vfs. Replace ice_determine_res with a
+> simpler inline implementation based on rounddown_pow_of_two. Note that
+> we must explicitly check that the argument is non-zero since it does not play
+> well with zero as a value.
 > 
-> With the existing vsi->vf_id, the reference tracking for VFs would become
-> somewhat convoluted, because each VSI maintains a vf_id field which will
-> then require performing a look up. This means all these flows will require
-> reference tracking and proper usage of rcu_read_lock, etc.
+> Instead of using the function and while loop, simply calculate the number of
+> queues we have available by dividing by num_vfs. Check if the desired
+> queues are available. If not, round down to the nearest power of
+> 2 that fits within our available queues.
 > 
-> We know that the VF VSI will always be backed by a valid VF structure,
-> because the VSI is created during VF initialization and removed before the VF
-> is destroyed. Rely on this and store a reference to the VF in the VSI structure
-> instead of storing a VF ID. This will simplify the usage and avoid the need to
-> perform lookups on the hash table in the future.
+> This matches the behavior of ice_determine_res but is easier to follow as
+> simple in-line logic. Remove ice_determine_res entirely.
 > 
-> For ICE_VSI_VF, it is expected that vsi->vf is always non-NULL after
-> ice_vsi_alloc succeeds. Because of this, use WARN_ON when checking if a
-> vsi->vf pointer is valid when dealing with VF VSIs. This will aid in
-> debugging code which violates this assumption and avoid more disastrous
-> panics.
+> With this change, we no longer depend on the pf->num_alloc_vfs during the
+> initialization phase of VFs. This will allow us to safely remove it in a future
+> planned refactor of the VF data structures.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h          |   3 +-
->  drivers/net/ethernet/intel/ice/ice_base.c     |   4 +-
->  drivers/net/ethernet/intel/ice/ice_eswitch.c  |   7 +-
->  drivers/net/ethernet/intel/ice/ice_lib.c      | 178 +++++++++++-------
->  drivers/net/ethernet/intel/ice/ice_lib.h      |   3 +-
->  drivers/net/ethernet/intel/ice/ice_main.c     |  10 +-
->  drivers/net/ethernet/intel/ice/ice_txrx.c     |   2 +-
->  .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c  |  19 +-
->  .../ethernet/intel/ice/ice_virtchnl_fdir.c    |   5 +-
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  |   6 +-
->  10 files changed, 142 insertions(+), 95 deletions(-)
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 87 ++++++-------------
+>  1 file changed, 26 insertions(+), 61 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice.h
-> b/drivers/net/ethernet/intel/ice/ice.h
-> index b562128e7024..9041b4428af0 100644
-> --- a/drivers/net/ethernet/intel/ice/ice.h
-> +++ b/drivers/net/ethernet/intel/ice/ice.h
-> @@ -109,7 +109,6 @@
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> index d86d47b8fee2..44037d569755 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> @@ -1069,45 +1069,6 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
