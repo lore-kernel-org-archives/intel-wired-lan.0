@@ -1,10 +1,10 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 25 Feb 2022 16:17:42 +0000
-Subject: [Intel-wired-lan] [PATCH net v1 3/8] iavf: Fix init state
- closure on remove
-In-Reply-To: <20220223123710.29979-1-mateusz.palczewski@intel.com>
-References: <20220223123710.29979-1-mateusz.palczewski@intel.com>
-Message-ID: <SJ0PR11MB56294189E9E945D7EAEE21D0AB3E9@SJ0PR11MB5629.namprd11.prod.outlook.com>
+Date: Fri, 25 Feb 2022 16:18:08 +0000
+Subject: [Intel-wired-lan] [PATCH net v1 2/8] iavf: Add waiting so the
+ port is initialized in remove
+In-Reply-To: <20220223123656.29846-1-mateusz.palczewski@intel.com>
+References: <20220223123656.29846-1-mateusz.palczewski@intel.com>
+Message-ID: <SJ0PR11MB5629B7270EE1BC6D8A4BA6AAAB3E9@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,47 +21,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Laba, SlawomirX <slawomirx.laba@intel.com>; Burra, Phani R
 > <phani.r.burra@intel.com>; Palczewski, Mateusz
 > <mateusz.palczewski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1 3/8] iavf: Fix init state closure on
-> remove
+> Subject: [Intel-wired-lan] [PATCH net v1 2/8] iavf: Add waiting so the port is
+> initialized in remove
 > 
 > From: SlawomirX Laba <slawomirx.laba@intel.com>
 > 
-> When init states of the adapter work, the errors like lack of communication
-> with the PF might hop in. If such events occur the driver restores previous
-> states in order to retry initialization in a proper way. When remove task kicks
-> in, this situation could lead to races with unregistering the netdevice as well
-> as resources cleanup. With the commit introducing the waiting in remove for
-> init to complete, this problem turns into an endless waiting if init never
-> recovers from errors.
+> There exist races when port is being configured and remove is triggered.
 > 
-> Introduce __IAVF_IN_REMOVE_TASK bit to indicate that the remove thread
-> has started.
+> unregister_netdev is not and can't be called under crit_lock mutex since it is
+> calling ndo_stop -> iavf_close which requires this lock. Depending on init
+> state the netdev could be still unregistered so unregister_netdev never
+> cleans up, when shortly after that the device could become registered.
 > 
-> Make __IAVF_COMM_FAILED adapter state respect the
-> __IAVF_IN_REMOVE_TASK bit and set the __IAVF_INIT_FAILED state and
-> return without any action instead of trying to recover.
+> Make iavf_remove wait until port finishes initialization.
+> All critical state changes are atomic (under crit_lock).
+> Crashes that come from iavf_reset_interrupt_capability and
+> iavf_free_traffic_irqs should now be solved in a graceful manner.
 > 
-> Make __IAVF_INIT_FAILED adapter state respect the
-> __IAVF_IN_REMOVE_TASK bit and return without any further actions.
-> 
-> Make the loop in the remove handler break when adapter has
-> __IAVF_INIT_FAILED state set.
-> 
-> Fixes: 898ef1cb1cb2 ("iavf: Combine init and watchdog state machines")
+> Fixes: 605ca7c5c6707 ("iavf: Fix kernel BUG in free_msi_irqs")
 > Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
 > Signed-off-by: Phani Burra <phani.r.burra@intel.com>
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf.h      |  4 ++++
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 24 ++++++++++++++++++++-
->  2 files changed, 27 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 27 ++++++++++++---------
+>  1 file changed, 16 insertions(+), 11 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
-> b/drivers/net/ethernet/intel/iavf/iavf.h
-> index 44f83e0..f259fd5 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-> @@ -201,6 +201,10 @@ enum iavf_state_t {
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 84ae96e..5e71b38e 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -4558,7 +4558,6 @@ static int __maybe_unused iavf_resume(struct
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
