@@ -1,10 +1,10 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 25 Feb 2022 16:16:41 +0000
-Subject: [Intel-wired-lan] [PATCH net v1 5/8] iavf: Fix race in init
- state
-In-Reply-To: <20220223123801.30386-1-mateusz.palczewski@intel.com>
-References: <20220223123801.30386-1-mateusz.palczewski@intel.com>
-Message-ID: <SJ0PR11MB56296A38ED7AACA911EB9EB1AB3E9@SJ0PR11MB5629.namprd11.prod.outlook.com>
+Date: Fri, 25 Feb 2022 16:17:14 +0000
+Subject: [Intel-wired-lan] [PATCH net v1 4/8] iavf: Fix locking for
+ VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
+In-Reply-To: <20220223123750.30266-1-mateusz.palczewski@intel.com>
+References: <20220223123750.30266-1-mateusz.palczewski@intel.com>
+Message-ID: <SJ0PR11MB5629B190BD992A4B37ABA4EEAB3E9@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,35 +21,60 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Laba, SlawomirX <slawomirx.laba@intel.com>; Burra, Phani R
 > <phani.r.burra@intel.com>; Palczewski, Mateusz
 > <mateusz.palczewski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1 5/8] iavf: Fix race in init state
+> Subject: [Intel-wired-lan] [PATCH net v1 4/8] iavf: Fix locking for
+> VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS
 > 
 > From: SlawomirX Laba <slawomirx.laba@intel.com>
 > 
-> When iavf_init_version_check sends VIRTCHNL_OP_GET_VF_RESOURCES
-> message, the driver will wait for the response after requeueing the
-> watchdog task in iavf_init_get_resources call stack. The logic is implemented
-> this way that iavf_init_get_resources has to be called in order to allocate
-> adapter->vf_res. It is polling for the AQ response in iavf_get_vf_config
-> function. Expect a call trace from kernel when adminq_task worker handles
-> this message first. adapter->vf_res will be NULL in iavf_virtchnl_completion.
+> iavf_virtchnl_completion is called under crit_lock but when the code for
+> VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS is called, this lock is released
+> in order to obtain rtnl_lock to avoid ABBA deadlock with unregister_netdev.
 > 
-> Make the watchdog task not queue the adminq_task if the init process is not
-> finished yet.
+> Along with the new way iavf_remove behaves, there exist many risks related
+> to the lock release and attmepts to regrab it. The driver faces crashes related
+> to races between unregister_netdev and netdev_update_features. Yet
+> another risk is that the driver could already obtain the crit_lock in order to
+> destroy it and iavf_virtchnl_completion could crash or block forever.
 > 
-> Fixes: 898ef1cb1cb2 ("iavf: Combine init and watchdog state machines")
+> Make iavf_virtchnl_completion never relock crit_lock in it's call paths.
+> 
+> Extract rtnl_lock locking logic to the driver for unregister_netdev in order to
+> set the netdev_registered flag inside the lock.
+> 
+> Introduce a new flag that will inform adminq_task to perform the code from
+> VIRTCHNL_OP_GET_OFFLOAD_VLAN_V2_CAPS right after it finishes
+> processing messages. Guard this code with remove flags so it's never called
+> when the driver is in remove state.
+> 
+> Fixes: 5951a2b9812d ("iavf: Fix VLAN feature flags after VFR")
 > Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
 > Signed-off-by: Phani Burra <phani.r.burra@intel.com>
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 > ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/iavf/iavf.h        |  1 +
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 22 ++++++++++++++++-
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 24 +------------------
+>  3 files changed, 23 insertions(+), 24 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
+> b/drivers/net/ethernet/intel/iavf/iavf.h
+> index f259fd5..8942394 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> @@ -287,6 +287,7 @@ struct iavf_adapter {
+>  #define IAVF_FLAG_LEGACY_RX			BIT(15)
+>  #define IAVF_FLAG_REINIT_ITR_NEEDED		BIT(16)
+>  #define IAVF_FLAG_QUEUES_DISABLED		BIT(17)
+> +#define IAVF_FLAG_SETUP_NETDEV_FEATURES		BIT(18)
+>  /* duplicates for common code */
+>  #define IAVF_FLAG_DCB_ENABLED			0
+>  	/* flags for admin queue service task */ diff --git
+> a/drivers/net/ethernet/intel/iavf/iavf_main.c
 > b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index 67349d2..36433d6 100644
+> index be51da9..67349d2 100644
 > --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 > +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -2532,7 +2532,8 @@ static void iavf_watchdog_task(struct work_struct
+> @@ -2879,6 +2879,24 @@ static void iavf_adminq_task(struct work_struct
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
