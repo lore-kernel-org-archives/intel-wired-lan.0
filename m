@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 25 Feb 2022 16:23:08 +0000
-Subject: [Intel-wired-lan] [net-next PATCH v2 07/11] ice: use
- ice_for_each_vf for iteration during removal
-In-Reply-To: <20220216213738.3826664-8-jacob.e.keller@intel.com>
+Date: Fri, 25 Feb 2022 16:23:40 +0000
+Subject: [Intel-wired-lan] [net-next PATCH v2 08/11] ice: convert
+ ice_for_each_vf to include VF entry iterator
+In-Reply-To: <20220216213738.3826664-9-jacob.e.keller@intel.com>
 References: <20220216213738.3826664-1-jacob.e.keller@intel.com>
- <20220216213738.3826664-8-jacob.e.keller@intel.com>
-Message-ID: <SJ0PR11MB5629964CA5FEE19CB8763985AB3E9@SJ0PR11MB5629.namprd11.prod.outlook.com>
+ <20220216213738.3826664-9-jacob.e.keller@intel.com>
+Message-ID: <SJ0PR11MB56293CD88A500326787BB5F4AB3E9@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,42 +19,49 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Jacob Keller
 > Sent: Wednesday, February 16, 2022 10:38 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next PATCH v2 07/11] ice: use
-> ice_for_each_vf for iteration during removal
+> Subject: [Intel-wired-lan] [net-next PATCH v2 08/11] ice: convert
+> ice_for_each_vf to include VF entry iterator
 > 
-> When removing VFs, the driver takes a weird approach of assigning
-> pf->num_alloc_vfs to 0 before iterating over the VFs using a temporary
-> variable.
+> The ice_for_each_vf macro is intended to be used to loop over all VFs.
+> The current implementation relies on an iterator that is the index into the VF
+> array in the PF structure. This forces all users to perform a look up
+> themselves.
 > 
-> This logic has been in the driver for a long time, and seems to have been
-> carried forward from i40e.
+> This abstraction forces a lot of duplicate work on callers and leaks the
+> interface implementation to the caller. Replace this with an implementation
+> that includes the VF pointer the primary iterator. This version simplifies
+> callers which just want to iterate over every VF, as they no longer need to
+> perform their own lookup.
 > 
-> We want to refactor the way VFs are stored, and iterating over the data
-> structure without the ice_for_each_vf interface impedes this work.
+> The "i" iterator value is replaced with a new unsigned int "bkt"
+> parameter, as this will match the necessary interface for replacing the VF
+> array with a hash table. For now, the bkt is the VF ID, but in the future it will
+> simply be the hash bucket index. Document that it should not be treated as a
+> VF ID.
 > 
-> The logic relies on implicitly using the num_alloc_vfs as a sort of "safe guard"
-> for accessing VF data.
-> 
-> While this sort of guard makes sense for Single Root IOV where all VFs are
-> added at once, the data structures don't work for VFs which can be added
-> and removed dynamically. We also have a separate state flag,
-> ICE_VF_DEINIT_IN_PROGRESS which is a stronger protection against
-> concurrent removal and access.
-> 
-> Avoid the custom tmp iteration and replace it with the standard
-> ice_for_each_vf iterator. Delay the assignment of num_alloc_vfs until after
-> this loop finishes.
+> This change aims to simplify switching from the array to a hash table. I
+> considered alternative implementations such as an xarray but decided that
+> the hash table was the simplest and most suitable implementation. I also
+> looked at methods to hide the bkt iterator entirely, but I couldn't come up
+> with a feasible solution that worked for hash table iterators.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_eswitch.c  |  63 ++++----
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c  |   7 +-
+>  drivers/net/ethernet/intel/ice/ice_lib.c      |  21 ++-
+>  drivers/net/ethernet/intel/ice/ice_main.c     |  44 +++---
+>  drivers/net/ethernet/intel/ice/ice_repr.c     |  15 +-
+>  .../ethernet/intel/ice/ice_virtchnl_fdir.c    |   6 +-
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c  | 141 +++++++++---------
+> .../net/ethernet/intel/ice/ice_virtchnl_pf.h  |  16 +-
+>  8 files changed, 162 insertions(+), 151 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index 6351af58f74e..3e2357460f34 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -500,7 +500,7 @@ void ice_free_vfs(struct ice_pf *pf)  {
+> diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c
+> b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+> index e47331e363ea..aa16ea15c5ca 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+> @@ -210,11 +210,11 @@ static void
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
