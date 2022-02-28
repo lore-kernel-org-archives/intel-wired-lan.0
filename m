@@ -1,10 +1,10 @@
 From: kernel test robot <lkp@intel.com>
-Date: Tue, 1 Mar 2022 01:37:02 +0800
+Date: Tue, 1 Mar 2022 01:36:22 +0800
 Subject: [Intel-wired-lan] [PATCH net 3/3] ixgbevf: add disable link
  state
 In-Reply-To: <20220228132752.17522-3-slawomirx.mrozowicz@intel.com>
 References: <20220228132752.17522-3-slawomirx.mrozowicz@intel.com>
-Message-ID: <202203010159.pkLQCurU-lkp@intel.com>
+Message-ID: <202203010040.hGBnlm7i-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,8 +19,8 @@ Thank you for the patch! Perhaps something to improve:
 
 url:    https://github.com/0day-ci/linux/commits/Slawomir-Mrozowicz/ixgbe-add-the-ability-for-the-PF-to-disable-VF-link-state/20220228-225053
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git 519ca6fa960587d02904a9f8f79d587ac874fb03
-config: x86_64-randconfig-a006-20220228 (https://download.01.org/0day-ci/archive/20220301/202203010159.pkLQCurU-lkp at intel.com/config)
-compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project d271fc04d5b97b12e6b797c6067d3c96a8d7470e)
+config: alpha-allyesconfig (https://download.01.org/0day-ci/archive/20220301/202203010040.hGBnlm7i-lkp at intel.com/config)
+compiler: alpha-linux-gcc (GCC) 11.2.0
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
@@ -30,21 +30,16 @@ reproduce (this is a W=1 build):
         git checkout 74e631f4b502bf5cda71dd25f255cd7eca42d280
         # save the config file to linux build tree
         mkdir build_dir
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash drivers/net/ethernet/intel/ixgbevf/
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross O=build_dir ARCH=alpha SHELL=/bin/bash drivers/net/ethernet/intel/ixgbevf/
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
 
 All warnings (new ones prefixed by >>):
 
->> drivers/net/ethernet/intel/ixgbevf/vf.c:594:5: warning: no previous prototype for function 'ixgbevf_get_link_state_vf' [-Wmissing-prototypes]
-   s32 ixgbevf_get_link_state_vf(struct ixgbe_hw *hw, bool *link_state)
-       ^
-   drivers/net/ethernet/intel/ixgbevf/vf.c:594:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
-   s32 ixgbevf_get_link_state_vf(struct ixgbe_hw *hw, bool *link_state)
-   ^
-   static 
-   1 warning generated.
+>> drivers/net/ethernet/intel/ixgbevf/vf.c:594:5: warning: no previous prototype for 'ixgbevf_get_link_state_vf' [-Wmissing-prototypes]
+     594 | s32 ixgbevf_get_link_state_vf(struct ixgbe_hw *hw, bool *link_state)
+         |     ^~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 vim +/ixgbevf_get_link_state_vf +594 drivers/net/ethernet/intel/ixgbevf/vf.c
