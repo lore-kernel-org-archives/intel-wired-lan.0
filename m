@@ -1,86 +1,64 @@
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date: Mon, 28 Feb 2022 17:28:58 -0500
+From: Matthew Wilcox <willy@infradead.org>
+Date: Mon, 28 Feb 2022 23:26:42 +0000
 Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
  iterator after loop body as a ptr
-In-Reply-To: <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
+In-Reply-To: <CAHk-=wgBfJ1-cPA2LTvFyyy8owpfmtCuyiZi4+um8DhFNe+CyA@mail.gmail.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
- <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
- <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
-Message-ID: <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
+ <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+ <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
+ <Yh0tl3Lni4weIMkl@casper.infradead.org>
+ <CAHk-=wgBfJ1-cPA2LTvFyyy8owpfmtCuyiZi4+um8DhFNe+CyA@mail.gmail.com>
+Message-ID: <Yh1aMm3hFe/j9ZbI@casper.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2022-02-28 at 23:59 +0200, Mike Rapoport wrote:
+On Mon, Feb 28, 2022 at 12:37:15PM -0800, Linus Torvalds wrote:
+> On Mon, Feb 28, 2022 at 12:16 PM Matthew Wilcox <willy@infradead.org> wrote:
+> >
+> > Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
+> > it catches real bugs.
 > 
-> On February 28, 2022 10:42:53 PM GMT+02:00, James Bottomley <
-> James.Bottomley at HansenPartnership.com> wrote:
-> > On Mon, 2022-02-28 at 21:07 +0100, Christian K?nig wrote:
-[...]
-> > > > I do wish we could actually poison the 'pos' value after the
-> > > > loop somehow - but clearly the "might be uninitialized" I was
-> > > > hoping for isn't the way to do it.
-> > > > 
-> > > > Anybody have any ideas?
-> > > 
-> > > I think we should look at the use cases why code is touching
-> > > (pos) after the loop.
-> > > 
-> > > Just from skimming over the patches to change this and experience
-> > > with the drivers/subsystems I help to maintain I think the
-> > > primary pattern looks something like this:
-> > > 
-> > > list_for_each_entry(entry, head, member) {
-> > >      if (some_condition_checking(entry))
-> > >          break;
-> > > }
-> > > do_something_with(entry);
-> > 
-> > Actually, we usually have a check to see if the loop found
-> > anything, but in that case it should something like
-> > 
-> > if (list_entry_is_head(entry, head, member)) {
-> >    return with error;
-> > }
-> > do_somethin_with(entry);
-> > 
-> > Suffice?  The list_entry_is_head() macro is designed to cope with
-> > the bogus entry on head problem.
+> Oh, we already can never use -Wshadow regardless of things like this.
+> That bridge hasn't just been burned, it never existed in the first
+> place.
 > 
-> Won't suffice because the end goal of this work is to limit scope of
-> entry only to loop. Hence the need for additional variable.
+> The whole '-Wshadow' thing simply cannot work with local variables in
+> macros - something that we've used since day 1.
+> 
+> Try this (as a "p.c" file):
+> 
+>         #define min(a,b) ({                     \
+>                 typeof(a) __a = (a);            \
+>                 typeof(b) __b = (b);            \
+>                 __a < __b ? __a : __b; })
+> 
+>         int min3(int a, int b, int c)
+>         {
+>                 return min(a,min(b,c));
+>         }
+> 
+> and now do "gcc -O2 -S t.c".
+> 
+> Then try it with -Wshadow.
 
-Well, yes, but my objection is more to the size of churn than the
-desire to do loop local.  I'm not even sure loop local is possible,
-because it's always annoyed me that for (int i = 0; ...  in C++ defines
-i in the outer scope not the loop scope, which is why I never use it.
+#define ___PASTE(a, b)	a##b
+#define __PASTE(a, b) ___PASTE(a, b)
+#define _min(a, b, u) ({         \
+        typeof(a) __PASTE(__a,u) = (a);            \
+        typeof(b) __PASTE(__b,u) = (b);            \
+        __PASTE(__a,u) < __PASTE(__b,u) ? __PASTE(__a,u) : __PASTE(__b,u); })
 
-However, if the desire is really to poison the loop variable then we
-can do
+#define min(a, b) _min(a, b, __COUNTER__)
 
-#define list_for_each_entry(pos, head, member)				\
-	for (pos = list_first_entry(head, typeof(*pos), member);	\
-	     !list_entry_is_head(pos, head, member) && ((pos = NULL) == NULL;			\
-	     pos = list_next_entry(pos, member))
+int min3(int a, int b, int c)
+{
+        return min(a,min(b,c));
+}
 
-Which would at least set pos to NULL when the loop completes.
-
-> Besides, there are no guarantees that people won't
-> do_something_with(entry) without the check or won't compare entry to
-> NULL to check if the loop finished with break or not.
-
-I get the wider goal, but we have to patch the problem cases now and a
-simple one-liner is better than a larger patch that may or may not work
-if we ever achieve the local definition or value poisoning idea.  I'm
-also fairly certain coccinelle can come up with a use without checking
-for loop completion semantic patch which we can add to 0day.
-
-James
-
-
+(probably there's a more elegant way to do this)
