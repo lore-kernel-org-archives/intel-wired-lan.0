@@ -1,51 +1,57 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 28 Feb 2022 12:10:24 -0800
+Date: Mon, 28 Feb 2022 12:37:15 -0800
 Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
  iterator after loop body as a ptr
-In-Reply-To: <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
+In-Reply-To: <Yh0tl3Lni4weIMkl@casper.infradead.org>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
  <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
-Message-ID: <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
+ <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
+ <Yh0tl3Lni4weIMkl@casper.infradead.org>
+Message-ID: <CAHk-=wgBfJ1-cPA2LTvFyyy8owpfmtCuyiZi4+um8DhFNe+CyA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Feb 28, 2022 at 12:03 PM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
+On Mon, Feb 28, 2022 at 12:16 PM Matthew Wilcox <willy@infradead.org> wrote:
 >
-> Side note: we do need *some* way to do it.
+> Then we can never use -Wshadow ;-(  I'd love to be able to turn it on;
+> it catches real bugs.
 
-Ooh.
+Oh, we already can never use -Wshadow regardless of things like this.
+That bridge hasn't just been burned, it never existed in the first
+place.
 
-This patch is a work of art.
+The whole '-Wshadow' thing simply cannot work with local variables in
+macros - something that we've used since day 1.
 
-And I mean that in the worst possible way.
+Try this (as a "p.c" file):
 
-We can do
+        #define min(a,b) ({                     \
+                typeof(a) __a = (a);            \
+                typeof(b) __b = (b);            \
+                __a < __b ? __a : __b; })
+
+        int min3(int a, int b, int c)
+        {
+                return min(a,min(b,c));
+        }
+
+and now do "gcc -O2 -S t.c".
+
+Then try it with -Wshadow.
+
+In other words, -Wshadow is simply not acceptable. Never has been,
+never will be, and that has nothing to do with the
 
         typeof(pos) pos
 
-in the 'for ()' loop, and never use __iter at all.
+kind of thing.
 
-That means that inside the for-loop, we use a _different_ 'pos' than outside.
+Your argument just isn't an argument.
 
-And then the compiler will not see some "might be uninitialized", but
-the outer 'pos' *will* be uninitialized.
-
-Unless, of course, the outer 'pos' had that pointless explicit initializer.
-
-Here - can somebody poke holes in this "work of art" patch?
-
-                     Linus
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: patch.diff
-Type: text/x-patch
-Size: 1927 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220228/92bce193/attachment.bin>
+              Linus
