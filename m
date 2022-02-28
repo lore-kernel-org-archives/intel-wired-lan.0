@@ -1,65 +1,84 @@
-From: trix@redhat.com <trix@redhat.com>
-Date: Sun, 13 Mar 2022 08:02:10 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: zero hwtstamp by default
-Message-ID: <20220313150210.1508203-1-trix@redhat.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 1 Mar 2022 01:37:02 +0800
+Subject: [Intel-wired-lan] [PATCH net 3/3] ixgbevf: add disable link
+ state
+In-Reply-To: <20220228132752.17522-3-slawomirx.mrozowicz@intel.com>
+References: <20220228132752.17522-3-slawomirx.mrozowicz@intel.com>
+Message-ID: <202203010159.pkLQCurU-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tom Rix <trix@redhat.com>
+Hi Slawomir,
 
-Clang static analysis reports this representative issue
-igb_ptp.c:997:3: warning: The left operand of '+' is a
-  garbage value
-  ktime_add_ns(shhwtstamps.hwtstamp, adjust);
-  ^            ~~~~~~~~~~~~~~~~~~~~
+Thank you for the patch! Perhaps something to improve:
 
-shhwtstamps.hwtstamp is set by a call to
-igb_ptp_systim_to_hwtstamp().  In the switch-statement
-for the hw type, the hwtstamp is zeroed for matches
-but not the default case.  Move the memset out of
-switch-statement.  This degarbages the default case
-and reduces the size.
+[auto build test WARNING on net/master]
 
-Some whitespace cleanup of empty lines
+url:    https://github.com/0day-ci/linux/commits/Slawomir-Mrozowicz/ixgbe-add-the-ability-for-the-PF-to-disable-VF-link-state/20220228-225053
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git 519ca6fa960587d02904a9f8f79d587ac874fb03
+config: x86_64-randconfig-a006-20220228 (https://download.01.org/0day-ci/archive/20220301/202203010159.pkLQCurU-lkp at intel.com/config)
+compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project d271fc04d5b97b12e6b797c6067d3c96a8d7470e)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/0day-ci/linux/commit/74e631f4b502bf5cda71dd25f255cd7eca42d280
+        git remote add linux-review https://github.com/0day-ci/linux
+        git fetch --no-tags linux-review Slawomir-Mrozowicz/ixgbe-add-the-ability-for-the-PF-to-disable-VF-link-state/20220228-225053
+        git checkout 74e631f4b502bf5cda71dd25f255cd7eca42d280
+        # save the config file to linux build tree
+        mkdir build_dir
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash drivers/net/ethernet/intel/ixgbevf/
 
-Signed-off-by: Tom Rix <trix@redhat.com>
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/net/ethernet/intel/ixgbevf/vf.c:594:5: warning: no previous prototype for function 'ixgbevf_get_link_state_vf' [-Wmissing-prototypes]
+   s32 ixgbevf_get_link_state_vf(struct ixgbe_hw *hw, bool *link_state)
+       ^
+   drivers/net/ethernet/intel/ixgbevf/vf.c:594:1: note: declare 'static' if the function is not intended to be used outside of this translation unit
+   s32 ixgbevf_get_link_state_vf(struct ixgbe_hw *hw, bool *link_state)
+   ^
+   static 
+   1 warning generated.
+
+
+vim +/ixgbevf_get_link_state_vf +594 drivers/net/ethernet/intel/ixgbevf/vf.c
+
+   586	
+   587	/**
+   588	 * ixgbevf_get_link_state_vf - Get VF link state from PF
+   589	 * @hw: pointer to the HW structure
+   590	 * @link_state: link state storage
+   591	 *
+   592	 * Returns state of the operation error or success.
+   593	 */
+ > 594	s32 ixgbevf_get_link_state_vf(struct ixgbe_hw *hw, bool *link_state)
+   595	{
+   596		u32 msgbuf[2];
+   597		s32 ret_val;
+   598		s32 err;
+   599	
+   600		msgbuf[0] = IXGBE_VF_GET_LINK_STATE;
+   601		msgbuf[1] = 0x0;
+   602	
+   603		err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
+   604	
+   605		if (err || (msgbuf[0] & IXGBE_VT_MSGTYPE_FAILURE)) {
+   606			ret_val = IXGBE_ERR_MBX;
+   607		} else {
+   608			ret_val = 0;
+   609			*link_state = msgbuf[1];
+   610		}
+   611	
+   612		return ret_val;
+   613	}
+   614	
+
 ---
- drivers/net/ethernet/intel/igb/igb_ptp.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 6580fcddb4be5..02fec948ce642 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -165,23 +165,21 @@ static void igb_ptp_systim_to_hwtstamp(struct igb_adapter *adapter,
- 	unsigned long flags;
- 	u64 ns;
- 
-+	memset(hwtstamps, 0, sizeof(*hwtstamps));
-+
- 	switch (adapter->hw.mac.type) {
- 	case e1000_82576:
- 	case e1000_82580:
- 	case e1000_i354:
- 	case e1000_i350:
- 		spin_lock_irqsave(&adapter->tmreg_lock, flags);
--
- 		ns = timecounter_cyc2time(&adapter->tc, systim);
--
- 		spin_unlock_irqrestore(&adapter->tmreg_lock, flags);
- 
--		memset(hwtstamps, 0, sizeof(*hwtstamps));
- 		hwtstamps->hwtstamp = ns_to_ktime(ns);
- 		break;
- 	case e1000_i210:
- 	case e1000_i211:
--		memset(hwtstamps, 0, sizeof(*hwtstamps));
- 		/* Upper 32 bits contain s, lower 32 bits contain ns. */
- 		hwtstamps->hwtstamp = ktime_set(systim >> 32,
- 						systim & 0xFFFFFFFF);
--- 
-2.26.3
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
