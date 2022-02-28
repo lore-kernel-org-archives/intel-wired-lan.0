@@ -1,64 +1,86 @@
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Mon, 28 Feb 2022 14:53:07 -0600
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Mon, 28 Feb 2022 17:28:58 -0500
 Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
  iterator after loop body as a ptr
-In-Reply-To: <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
+In-Reply-To: <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
  <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <CAHk-=wj8fkosQ7=bps5K+DDazBXk=ypfn49A0sEq+7-nZnyfXA@mail.gmail.com>
- <CAHk-=wiTCvLQkHcJ3y0hpqH7FEk9D28LDvZZogC6OVLk7naBww@mail.gmail.com>
- <CAHk-=wj27SZQ3kPTesBzkiGhe-mA3gOQqr_adt_bMFzmg1VNaA@mail.gmail.com>
-Message-ID: <20220228205307.GD614@gate.crashing.org>
+ <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+ <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
+Message-ID: <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Feb 28, 2022 at 12:14:44PM -0800, Linus Torvalds wrote:
-> On Mon, Feb 28, 2022 at 12:10 PM Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >
-> > We can do
-> >
-> >         typeof(pos) pos
-> >
-> > in the 'for ()' loop, and never use __iter at all.
-> >
-> > That means that inside the for-loop, we use a _different_ 'pos' than outside.
+On Mon, 2022-02-28 at 23:59 +0200, Mike Rapoport wrote:
 > 
-> The thing that makes me throw up in my mouth a bit is that in that
+> On February 28, 2022 10:42:53 PM GMT+02:00, James Bottomley <
+> James.Bottomley at HansenPartnership.com> wrote:
+> > On Mon, 2022-02-28 at 21:07 +0100, Christian K?nig wrote:
+[...]
+> > > > I do wish we could actually poison the 'pos' value after the
+> > > > loop somehow - but clearly the "might be uninitialized" I was
+> > > > hoping for isn't the way to do it.
+> > > > 
+> > > > Anybody have any ideas?
+> > > 
+> > > I think we should look at the use cases why code is touching
+> > > (pos) after the loop.
+> > > 
+> > > Just from skimming over the patches to change this and experience
+> > > with the drivers/subsystems I help to maintain I think the
+> > > primary pattern looks something like this:
+> > > 
+> > > list_for_each_entry(entry, head, member) {
+> > >      if (some_condition_checking(entry))
+> > >          break;
+> > > }
+> > > do_something_with(entry);
+> > 
+> > Actually, we usually have a check to see if the loop found
+> > anything, but in that case it should something like
+> > 
+> > if (list_entry_is_head(entry, head, member)) {
+> >    return with error;
+> > }
+> > do_somethin_with(entry);
+> > 
+> > Suffice?  The list_entry_is_head() macro is designed to cope with
+> > the bogus entry on head problem.
 > 
->         typeof(pos) pos
-> 
-> the first 'pos' (that we use for just the typeof) is that outer-level
-> 'pos', IOW it's a *different* 'pos' than the second 'pos' in that same
-> declaration that declares the inner level shadowing new 'pos'
-> variable.
+> Won't suffice because the end goal of this work is to limit scope of
+> entry only to loop. Hence the need for additional variable.
 
-The new "pos" has not yet been declared, so this has to refer to the
-outer "pos", it cannot be the inner one.  Because it hasn't been
-declared yet :-)
+Well, yes, but my objection is more to the size of churn than the
+desire to do loop local.  I'm not even sure loop local is possible,
+because it's always annoyed me that for (int i = 0; ...  in C++ defines
+i in the outer scope not the loop scope, which is why I never use it.
 
-Compare this to
-  typeof (pos) pos = pos;
-where that last "pos" *does* refer to the newly declared one: that
-declaration has already been done!  (So this code is UB btw, 6.3.2.1/2).
+However, if the desire is really to poison the loop variable then we
+can do
 
-> If I was a compiler person, I would say "Linus, that thing is too ugly
-> to live", and I would hate it. I'm just hoping that even compiler
-> people say "that's *so* ugly it's almost beautiful".
+#define list_for_each_entry(pos, head, member)				\
+	for (pos = list_first_entry(head, typeof(*pos), member);	\
+	     !list_entry_is_head(pos, head, member) && ((pos = NULL) == NULL;			\
+	     pos = list_next_entry(pos, member))
 
-It is perfectly well-defined.  Well, it would be good if we (GCC) would
-document it does work, and if someone tested it on LLVM as well.  But it
-is really hard to implement it to *not* work :-)
+Which would at least set pos to NULL when the loop completes.
 
-> Because it does seem to work. It's not pretty, but hey, it's not like
-> our headers are really ever be winning any beauty contests...
+> Besides, there are no guarantees that people won't
+> do_something_with(entry) without the check or won't compare entry to
+> NULL to check if the loop finished with break or not.
 
-It is very pretty!  Needs a comment though :-)
+I get the wider goal, but we have to patch the problem cases now and a
+simple one-liner is better than a larger patch that may or may not work
+if we ever achieve the local definition or value poisoning idea.  I'm
+also fairly certain coccinelle can come up with a use without checking
+for loop completion semantic patch which we can add to 0day.
+
+James
 
 
-Segher
