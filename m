@@ -1,8 +1,8 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 28 Feb 2022 16:54:45 -0800
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Mon, 28 Feb 2022 18:30:59 -0600
 Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
  iterator after loop body as a ptr
-In-Reply-To: <20220301003059.GE614@gate.crashing.org>
+In-Reply-To: <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <20220228110822.491923-3-jakobkoschel@gmail.com>
  <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
@@ -11,44 +11,62 @@ References: <20220228110822.491923-1-jakobkoschel@gmail.com>
  <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
  <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
  <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
- <20220301003059.GE614@gate.crashing.org>
-Message-ID: <CAHk-=wgLYqYcw0xv65xrLSR7KDpS_6M+S9737m6NQorHGWsXYQ@mail.gmail.com>
+Message-ID: <20220301003059.GE614@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Feb 28, 2022 at 4:38 PM Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->
-> In C its scope is the rest of the declaration and the entire loop, not
-> anything after it.  This was the same in C++98 already, btw (but in
-> pre-standard versions of C++ things were like you remember, yes, and it
-> was painful).
+On Mon, Feb 28, 2022 at 05:28:58PM -0500, James Bottomley wrote:
+> On Mon, 2022-02-28 at 23:59 +0200, Mike Rapoport wrote:
+> > 
+> > On February 28, 2022 10:42:53 PM GMT+02:00, James Bottomley <
+> > James.Bottomley at HansenPartnership.com> wrote:
+> > > On Mon, 2022-02-28 at 21:07 +0100, Christian K?nig wrote:
+> [...]
+> > > > > I do wish we could actually poison the 'pos' value after the
+> > > > > loop somehow - but clearly the "might be uninitialized" I was
+> > > > > hoping for isn't the way to do it.
+> > > > > 
+> > > > > Anybody have any ideas?
+> > > > 
+> > > > I think we should look at the use cases why code is touching
+> > > > (pos) after the loop.
+> > > > 
+> > > > Just from skimming over the patches to change this and experience
+> > > > with the drivers/subsystems I help to maintain I think the
+> > > > primary pattern looks something like this:
+> > > > 
+> > > > list_for_each_entry(entry, head, member) {
+> > > >      if (some_condition_checking(entry))
+> > > >          break;
+> > > > }
+> > > > do_something_with(entry);
+> > > 
+> > > Actually, we usually have a check to see if the loop found
+> > > anything, but in that case it should something like
+> > > 
+> > > if (list_entry_is_head(entry, head, member)) {
+> > >    return with error;
+> > > }
+> > > do_somethin_with(entry);
+> > > 
+> > > Suffice?  The list_entry_is_head() macro is designed to cope with
+> > > the bogus entry on head problem.
+> > 
+> > Won't suffice because the end goal of this work is to limit scope of
+> > entry only to loop. Hence the need for additional variable.
+> 
+> Well, yes, but my objection is more to the size of churn than the
+> desire to do loop local.  I'm not even sure loop local is possible,
+> because it's always annoyed me that for (int i = 0; ...  in C++ defines
+> i in the outer scope not the loop scope, which is why I never use it.
 
-Yeah, the original C++ model was just unadulterated garbage, with no
-excuse for it, and the scope was not the loop, but the block the loop
-existed in.
+In C its scope is the rest of the declaration and the entire loop, not
+anything after it.  This was the same in C++98 already, btw (but in
+pre-standard versions of C++ things were like you remember, yes, and it
+was painful).
 
-That would never have been acceptable for the kernel - it's basically
-just an even uglier version of "put variable declarations in the
-middle of code" (and we use "-Wdeclaration-after-statement" to
-disallow that for kernel code, although apparently some of our user
-space tooling code doesn't enforce or follow that rule).
 
-The actual C99 version is the sane one which actually makes it easier
-and clearer to have loop iterators that are clearly just in loop
-scope.
-
-That's a good idea in general, and I have wanted to start using that
-in the kernel even aside from some of the loop construct macros.
-Because putting variables in natural minimal scope is a GoodThing(tm).
-
-Of course, we shouldn't go crazy with it. Even after we do that
--std=gnu11 thing, we'll have backports to worry about. And it's not
-clear that we necessarily want to backport that gnu11 thing - since
-people who run old stable kernels also may be still using those really
-old compilers...
-
-            Linus
+Segher
