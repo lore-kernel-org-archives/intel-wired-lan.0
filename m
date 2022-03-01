@@ -1,53 +1,85 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 1 Mar 2022 11:42:26 -0800
-Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
- iterator after loop body as a ptr
-In-Reply-To: <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
+Date: Tue, 1 Mar 2022 12:36:03 -0800
+Subject: [Intel-wired-lan] [PATCH 6/6] treewide: remove check of list
+ iterator against head past the loop body
+In-Reply-To: <20220228110822.491923-7-jakobkoschel@gmail.com>
 References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-3-jakobkoschel@gmail.com>
- <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
- <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
- <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
- <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
- <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
- <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
-Message-ID: <CAHk-=wghQygmASNUWj=LZn5FR5wsce2osyR6EXcfEB_FaX_6Og@mail.gmail.com>
+ <20220228110822.491923-7-jakobkoschel@gmail.com>
+Message-ID: <CAHk-=wgLtKofBbn9kSXRU3MpdX7S2OxN1V5Mc679oJpFnp_VnQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Mar 1, 2022 at 11:06 AM Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
+So looking at this patch, I really reacted to the fact that quite
+often the "use outside the loop" case is all kinds of just plain
+unnecessary, but _used_ to be a convenience feature.
+
+I'll just quote the first chunk in it's entirely as an example - not
+because I think this chunk is particularly important, but because it's
+a good example:
+
+On Mon, Feb 28, 2022 at 3:09 AM Jakob Koschel <jakobkoschel@gmail.com> wrote:
 >
-> So instead of that simple "if (!entry)", we'd effectively have to
-> continue to use something that still works with the old world order
-> (ie that "if (list_entry_is_head())" model).
+> diff --git a/arch/arm/mach-mmp/sram.c b/arch/arm/mach-mmp/sram.c
+> index 6794e2db1ad5..fc47c107059b 100644
+> --- a/arch/arm/mach-mmp/sram.c
+> +++ b/arch/arm/mach-mmp/sram.c
+> @@ -39,19 +39,22 @@ static LIST_HEAD(sram_bank_list);
+>  struct gen_pool *sram_get_gpool(char *pool_name)
+>  {
+>         struct sram_bank_info *info = NULL;
+> +       struct sram_bank_info *tmp;
+>
+>         if (!pool_name)
+>                 return NULL;
+>
+>         mutex_lock(&sram_lock);
+>
+> -       list_for_each_entry(info, &sram_bank_list, node)
+> -               if (!strcmp(pool_name, info->pool_name))
+> +       list_for_each_entry(tmp, &sram_bank_list, node)
+> +               if (!strcmp(pool_name, tmp->pool_name)) {
+> +                       info = tmp;
+>                         break;
+> +               }
+>
+>         mutex_unlock(&sram_lock);
+>
+> -       if (&info->node == &sram_bank_list)
+> +       if (!info)
+>                 return NULL;
+>
+>         return info->gpool;
 
-Just to prove my point about how this is painful, that doesn't work at all.
+I realize this was probably at least auto-generated with coccinelle,
+but maybe that script could be taught to do avoid the "use after loop"
+by simply moving the code _into_ the loop.
 
-If the loop iterator at the end is NULL (good, in theory), we can't
-use "list_entry_is_head()" to check whether we ended. We'd have to use
-a new thing entirely, to handle the "list_for_each_entry() has the
-old/new semantics" cases.
+IOW, this all would be cleaner and clear written as
 
-That's largely why I was pushing for the "let's make it impossible to
-use the loop iterator at all outside the loop". It avoids the
-confusing case, and the patches to move to that stricter semantic can
-be merged independently (and before) doing the actual semantic change.
+        if (!pool_name)
+                return NULL;
 
-I'm not saying my suggested approach is wonderful either. Honestly,
-it's painful that we have so nasty semantics for the end-of-loop case
-for list_for_each_entry().
+        mutex_lock(&sram_lock);
+        list_for_each_entry(info, &sram_bank_list, node) {
+                if (!strcmp(pool_name, info->pool_name)) {
+                        mutex_unlock(&sram_lock);
+                        return info;
+                }
+        }
+        mutex_unlock(&sram_lock);
+        return NULL;
 
-The minimal patch would clearly be to keep those broken semantics, and
-just force everybody to use the list_entry_is_head() case. That's the
-"we know we messed up, we are too lazy to fix it, we'll just work
-around it and people need to be careful" approach.
+Ta-daa - no use outside the loop, no need for new variables, just a
+simple "just do it inside the loop". Yes, we end up having that lock
+thing twice, but it looks worth it from a "make the code obvious"
+standpoint.
 
-And laziness is a virtue. But bad semantics are bad semantics. So it's
-a question of balancing those two issues.
+Would it be even cleaner if the locking was done in the caller, and
+the loop was some simple helper function? It probably would. But that
+would require a bit more smarts than probably a simple coccinelle
+script would do.
 
-               Linus
+                Linus
