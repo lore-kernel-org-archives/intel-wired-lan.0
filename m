@@ -1,102 +1,161 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Tue, 1 Mar 2022 22:58:11 +0000
-Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
- iterator after loop body as a ptr
-In-Reply-To: <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
-References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220228110822.491923-3-jakobkoschel@gmail.com>
- <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
- <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
- <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
- <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
- <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
- <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
- <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
-Message-ID: <7dc860874d434d2288f36730d8ea3312@AcuMS.aculab.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue,  1 Mar 2022 15:02:28 -0800
+Subject: [Intel-wired-lan] [PATCH] ice: add trace events for tx timestamps
+Message-ID: <20220301230228.925588-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Linus Torvalds
-> Sent: 01 March 2022 19:07
-> On Mon, Feb 28, 2022 at 2:29 PM James Bottomley
-> <James.Bottomley@hansenpartnership.com> wrote:
-> >
-> > However, if the desire is really to poison the loop variable then we
-> > can do
-> >
-> > #define list_for_each_entry(pos, head, member)                          \
-> >         for (pos = list_first_entry(head, typeof(*pos), member);        \
-> >              !list_entry_is_head(pos, head, member) && ((pos = NULL) == NULL;                   \
-> >              pos = list_next_entry(pos, member))
-> >
-> > Which would at least set pos to NULL when the loop completes.
-> 
-> That would actually have been excellent if we had done that
-> originally. It would not only avoid the stale and incorrectly typed
-> head entry left-over turd, it would also have made it very easy to
-> test for "did I find an entry in the loop".
-> 
-> But I don't much like it in the situation we are now.
-> 
-> Why? Mainly because it basically changes the semantics of the loop
-> _without_ any warnings about it.  And we don't actually get the
-> advantage of the nicer semantics, because we can't actually make code
-> do
-> 
->         list_for_each_entry(entry, ....) {
->                 ..
->         }
->         if (!entry)
->                 return -ESRCH;
->         .. use the entry we found ..
-> 
-> because that would be a disaster for back-porting, plus it would be a
-> flag-day issue (ie we'd have to change the semantics of the loop at
-> the same time we change every single user).
-> 
-> So instead of that simple "if (!entry)", we'd effectively have to
-> continue to use something that still works with the old world order
-> (ie that "if (list_entry_is_head())" model).
-> 
-> So we couldn't really take _advantage_ of the nicer semantics, and
-> we'd not even get a warning if somebody does it wrong - the code would
-> just silently do the wrong thing.
-> 
-> IOW: I don't think you are wrong about that patch: it would solve the
-> problem that Jakob wants to solve, and it would have absolutely been
-> much better if we had done this from the beginning. But I think that
-> in our current situation, it's actually a really fragile solution to
-> the "don't do that then" problem we have.
+We've previously run into many issues related to the latency of a Tx
+timestamp completion with the ice hardware. It can be difficult to
+determine the root cause of a slow Tx timestamp. To aid in this,
+introduce new trace events which capture timing data about when the
+driver reaches certain points while processing a transmit timestamp
 
-Can it be resolved by making:
-#define list_entry_is_head(pos, head, member) ((pos) == NULL)
-and double-checking that it isn't used anywhere else (except in
-the list macros themselves).
+ * ice_tx_tstamp_request: Trace when the stack initiates a new timestamp
+   request.
 
-The odd ones I just found are fs/locks.c mm/page_reporting.c
-security/apparmor/apparmorfs.c (3 times)
+ * ice_tx_tstamp_fw_req: Trace when the driver begins a read of the
+   timestamp register in the work thread.
 
-net/xfrm/xfrm_ipcomp.c#L244 is buggy.
-(There is a WARN_ON() then it just carries on regardless!)
+ * ice_tx_tstamp_fw_done: Trace when the driver finishes reading a
+   timestamp register in the work thread.
 
-There are only about 25 uses of list_entry_is_head().
+ * ice_tx_tstamp_complete: Trace when the driver submits the skb back to
+   the stack with a completed Tx timestamp.
 
-There are a lot more places where these lists seem to be scanned by hand.
-I bet a few of those aren't actually right either.
+These trace events can be enabled using the standard trace event
+subsystem exposed by the ice driver. If they are disabled, they become
+no-ops with no run time cost.
 
-(Oh at 3am this morning I thought it was a different list type
-that could have much the same problem!)
+The following is a simple GNU AWK script which can highlight one
+potential way to use the trace events to capture latency data from the
+trace buffer about how long the driver takes to process a timestamp:
 
-Another plausible solution is a variant of list_foreach_entry()
-that does set the 'entry' to NULL at the end.
-Then code can be moved over in stages.
-I'd reorder the arguments as well as changing the name!
+-----
+  BEGIN {
+      PREC=256
+  }
 
-	David
+  # Detect requests
+  /tx_tstamp_request/ {
+      time=strtonum($4)
+      skb=$7
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
+      # Store the time of request for this skb
+      requests[skb] = time
+      printf("skb %s: idx %d at %.6f\n", skb, idx, time)
+  }
+
+  # Detect completions
+  /tx_tstamp_complete/ {
+      time=strtonum($4)
+      skb=$7
+      idx=$9
+
+      if (skb in requests) {
+          latency = (time - requests[skb]) * 1000
+          printf("skb %s: %.3f to complete\n", skb, latency)
+          if (latency > 4) {
+              printf(">>> HIGH LATENCY <<<\n")
+          }
+          printf("\n")
+      } else {
+          printf("!!! skb %s (idx %d) at %.6f\n", skb, idx, time)
+      }
+  }
+-----
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c   |  8 ++++++++
+ drivers/net/ethernet/intel/ice/ice_trace.h | 24 ++++++++++++++++++++++
+ 2 files changed, 32 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 000c39d163a2..a1cd33273ca4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -3,6 +3,7 @@
+ 
+ #include "ice.h"
+ #include "ice_lib.h"
++#include "ice_trace.h"
+ 
+ #define E810_OUT_PROP_DELAY_NS 1
+ 
+@@ -2063,11 +2064,15 @@ static void ice_ptp_tx_tstamp_work(struct kthread_work *work)
+ 		struct sk_buff *skb;
+ 		int err;
+ 
++		ice_trace(tx_tstamp_fw_req, tx->tstamps[idx].skb, idx);
++
+ 		err = ice_read_phy_tstamp(hw, tx->quad, phy_idx,
+ 					  &raw_tstamp);
+ 		if (err)
+ 			continue;
+ 
++		ice_trace(tx_tstamp_fw_done, tx->tstamps[idx].skb, idx);
++
+ 		/* Check if the timestamp is invalid or stale */
+ 		if (!(raw_tstamp & ICE_PTP_TS_VALID) ||
+ 		    raw_tstamp == tx->tstamps[idx].cached_tstamp)
+@@ -2093,6 +2098,8 @@ static void ice_ptp_tx_tstamp_work(struct kthread_work *work)
+ 		tstamp = ice_ptp_extend_40b_ts(pf, raw_tstamp);
+ 		shhwtstamps.hwtstamp = ns_to_ktime(tstamp);
+ 
++		ice_trace(tx_tstamp_complete, skb, idx);
++
+ 		skb_tstamp_tx(skb, &shhwtstamps);
+ 		dev_kfree_skb_any(skb);
+ 	}
+@@ -2131,6 +2138,7 @@ s8 ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb)
+ 		tx->tstamps[idx].start = jiffies;
+ 		tx->tstamps[idx].skb = skb_get(skb);
+ 		skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
++		ice_trace(tx_tstamp_request, skb, idx);
+ 	}
+ 
+ 	spin_unlock(&tx->lock);
+diff --git a/drivers/net/ethernet/intel/ice/ice_trace.h b/drivers/net/ethernet/intel/ice/ice_trace.h
+index cf685247c07a..ae98d5a8ff60 100644
+--- a/drivers/net/ethernet/intel/ice/ice_trace.h
++++ b/drivers/net/ethernet/intel/ice/ice_trace.h
+@@ -216,6 +216,30 @@ DEFINE_EVENT(ice_xmit_template, name, \
+ DEFINE_XMIT_TEMPLATE_OP_EVENT(ice_xmit_frame_ring);
+ DEFINE_XMIT_TEMPLATE_OP_EVENT(ice_xmit_frame_ring_drop);
+ 
++DECLARE_EVENT_CLASS(ice_tx_tstamp_template,
++		    TP_PROTO(struct sk_buff *skb, int idx),
++
++		    TP_ARGS(skb, idx),
++
++		    TP_STRUCT__entry(__field(void *, skb)
++				     __field(int, idx)),
++
++		    TP_fast_assign(__entry->skb = skb;
++				   __entry->idx = idx;),
++
++		    TP_printk("skb %pK idx %d",
++			      __entry->skb, __entry->idx)
++);
++#define DEFINE_TX_TSTAMP_OP_EVENT(name) \
++DEFINE_EVENT(ice_tx_tstamp_template, name, \
++	     TP_PROTO(struct sk_buff *skb, int idx), \
++	     TP_ARGS(skb, idx))
++
++DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_request);
++DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_fw_req);
++DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_fw_done);
++DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_complete);
++
+ /* End tracepoints */
+ 
+ #endif /* _ICE_TRACE_H_ */
+
+base-commit: 8646ddba7233169c146c00fcba41da551f874f66
+-- 
+2.35.1.355.ge7e302376dd6
+
