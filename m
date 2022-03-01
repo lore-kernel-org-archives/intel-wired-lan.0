@@ -1,126 +1,77 @@
-From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
-Date: Tue, 1 Mar 2022 13:57:45 +0000
-Subject: [Intel-wired-lan] i40e and TSO with MPLS ?
-In-Reply-To: <CALALjgxJ-=WbWBS0VxxSNWA17L6mMZA7xZa-XBBeOsYy6KujEQ@mail.gmail.com>
-References: <DM6PR11MB4657EB65F784C3E816FD27FB9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
- <DM6PR11MB46572510E594BF3E789AC5CF9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
- <CALALjgzQPDdNTjCBD+S2Adymk9XTH4qa4Sb6-kBuh96oKg+ajQ@mail.gmail.com>
- <DM6PR11MB4657CBB8B06ACCAB0CE201429B3D9@DM6PR11MB4657.namprd11.prod.outlook.com>
- <CALALjgxJ-=WbWBS0VxxSNWA17L6mMZA7xZa-XBBeOsYy6KujEQ@mail.gmail.com>
-Message-ID: <DM6PR11MB46572379068898154F187F889B029@DM6PR11MB4657.namprd11.prod.outlook.com>
+From: Christian =?unknown-8bit?q?K=C3=B6nig?= <christian.koenig@amd.com>
+Date: Tue, 1 Mar 2022 08:03:26 +0100
+Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
+ iterator after loop body as a ptr
+In-Reply-To: <ade13f419519350e460e7ef1e64477ec72e828ed.camel@HansenPartnership.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-3-jakobkoschel@gmail.com>
+ <2e4e95d6-f6c9-a188-e1cd-b1eae465562a@amd.com>
+ <CAHk-=wgQps58DPEOe4y5cTh5oE9EdNTWRLXzgMiETc+mFX7jzw@mail.gmail.com>
+ <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+ <0b65541a-3da7-dc35-690a-0ada75b0adae@amd.com>
+ <ade13f419519350e460e7ef1e64477ec72e828ed.camel@HansenPartnership.com>
+Message-ID: <3d37084e-72d4-d3a5-ec8d-df1ac1758fad@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On Thu, Feb 24, 2022 at 6:28 AM Kubalewski, Arkadiusz
-> <arkadiusz.kubalewski@intel.com> wrote:
-> >
-> > > On Wed, Feb 23, 2022 at 9:56 AM Kubalewski, Arkadiusz
-> > > <arkadiusz.kubalewski@intel.com> wrote:
-> > > >
-> > > > +Joe
-> > > >
-> > > > > Greetings:
-> > > > >
-> > > > > Does i40e (XL710) support TSO with MPLS?
-> > > > >
-> > > > > We are using firmware version: 7.10 0x80006469 1.2527.0
-> > > > >
-> > > > > We've attempted to add support for TSO+MPLS to i40e, but were unable to
-> > > > > get it working. The patch is included below for reference, but it is almost
-> > > > > certainly incorrect - and I am not clear if the hardware itself would
-> > > > > support this even if the patch was correct.
-> > > > >
-> > > > > Applying the patch below and using tcpdump shows that:
-> > > > >
-> > > > >         - packet data, as seen by the pcap filter in the kernel, is large.
-> > > > >           This suggests that the kernel is attempting to offload
-> > > > >           segmentation to the device,
-> > > > >
-> > > > >         but
-> > > > >
-> > > > >         - those large packets are not ACK'd by the client
-> > > > >
-> > > > > This suggests that either:
-> > > > >
-> > > > >         - the device does not support TSO + MPLS, and/or
-> > > > >         - the patch below is incorrect
-> > > > >
-> > > > > Does anyone working on i40e have any insight on this?
-> > > >
-> > > > Hi Joe,
-> > > >
-> > > > I have done some research for your case, good news is that we believe that 710
-> > > > hardware supports it. Currently we do not have plans to implement such feature
-> > > > ourselves, but we will do our best in reviewing if you decide to implement it.
-> > >
-> > > OK, thanks. I appreciate the information and your willingness to
-> > > review. I am pleased to hear that the hardware supports it.
-> > >
-> > > > Such offloads should be supported on packets with up to 2 MPLS tags before the
-> > > > IP header. For start, you might take a look for the features pre check function:
-> > > > static netdev_features_t i40e_features_check(struct sk_buff *skb, ...
-> > > > It probably requires an update after the changes you have posted.
-> > >
-> > > I took a look at i40e_features_check, as you suggested, but I am
-> > > probably missing something.
-> > >
-> > > My understanding is that the call graph on the xmit path is roughly:
-> > >
-> > > __dev_queue_xmit which calls (in order):
-> > > 1. validate_xmit_skb -- this eventually calls i40e_features_check and
-> > > harmonize_features which will use the mpls_features bitfield set in
-> > > the patch to turn on the TSO bit
-> > >
-> > Just saying, worth to check if the required flags are already set when
-> > i40e_features_check was called.
-> >
-> > > 2. dev_hard_start_xmit -- this delivers packets to taps, then to the driver
-> > >
-> > > dev_hard_start_xmit internally hands packets to any taps installed
-> > > (for example pcap), before handing them to the driver
-> > > (i40e_lan_xmit_frame).
-> > >
-> > > In our tests of the patch below, we see that tcpdump reports large
-> > > packet sizes. Since we see them in tcpdump, I think this suggests that
-> > > everything leading up to pcap delivery (including i40e_features_check)
-> > > is correct... otherwise we'd see smaller packet sizes being delivered
-> > > to pcap.
-> > >
-> > > This leads me to believe the issue is somewhere in i40e_lan_xmit_frame
-> > > or below -- most likely in i40e_tso, which my patch attempts to tweak.
-> > >
-> > > Let me know if I'm off track and misunderstanding your analysis, but
-> > > based on the above, I suspect the changes to i40e_tso are buggy.
-> > >
-> >
-> > Seems like your understanding is correct.
-> > Are those packets actually sent to the wire?
-> > Any stats are incremented?
-> > Anything at all shows up on the client?
-> 
-> The bytes are never ACK'd by the client and are eventually re-transmit.
-> 
-> Based on the tcpdump output I think the packet data makes it to the
-> driver unsegmented (which is what we want), but due to some issue in
-> i40e_tso (or a hardware limitation) the NIC fails to TSO the bytes and
-> they are eventually re-transmit.
-> 
+Am 28.02.22 um 22:13 schrieb James Bottomley:
+> On Mon, 2022-02-28 at 21:56 +0100, Christian K?nig wrote:
+>> Am 28.02.22 um 21:42 schrieb James Bottomley:
+>>> On Mon, 2022-02-28 at 21:07 +0100, Christian K?nig wrote:
+>>>> Am 28.02.22 um 20:56 schrieb Linus Torvalds:
+>>>>> On Mon, Feb 28, 2022 at 4:19 AM Christian K?nig
+>>>>> <christian.koenig@amd.com> wrote:
+>>>>> [SNIP]
+>>>>> Anybody have any ideas?
+>>>> I think we should look at the use cases why code is touching
+>>>> (pos)
+>>>> after the loop.
+>>>>
+>>>> Just from skimming over the patches to change this and experience
+>>>> with the drivers/subsystems I help to maintain I think the
+>>>> primary pattern looks something like this:
+>>>>
+>>>> list_for_each_entry(entry, head, member) {
+>>>>        if (some_condition_checking(entry))
+>>>>            break;
+>>>> }
+>>>> do_something_with(entry);
+>>> Actually, we usually have a check to see if the loop found
+>>> anything, but in that case it should something like
+>>>
+>>> if (list_entry_is_head(entry, head, member)) {
+>>>       return with error;
+>>> }
+>>> do_somethin_with(entry);
+>>>
+>>> Suffice?  The list_entry_is_head() macro is designed to cope with
+>>> the bogus entry on head problem.
+>> That will work and is also what people already do.
+>>
+>> The key problem is that we let people do the same thing over and
+>> over again with slightly different implementations.
+>>
+>> Out in the wild I've seen at least using a separate variable, using
+>> a bool to indicate that something was found and just assuming that
+>> the list has an entry.
+>>
+>> The last case is bogus and basically what can break badly.
+> Yes, I understand that.  I'm saying we should replace that bogus checks
+> of entry->something against some_value loop termination condition with
+> the list_entry_is_head() macro.  That should be a one line and fairly
+> mechanical change rather than the explosion of code changes we seem to
+> have in the patch series.
 
-I think good place to start would be the 710 datasheet:
-https://cdrdv2.intel.com/v1/dl/getContent/332464?explicitVersion=true
-i.e. 8.4.4.3.2 Transmit Segmentation Flow
-Please verify if your change is following the expected flow,
+Yes, exactly that's my thinking as well.
 
-Thank you!
+Christian.
 
-> The retransmit shows smaller packets being handed to the pcap tap,
-> which are then acked by the client.
-> 
-> Thanks,
-> Joe
-> 
-
+>
+> James
+>
+>
 
