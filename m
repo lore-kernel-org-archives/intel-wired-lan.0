@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 2 Mar 2022 20:03:54 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 05/25] ice: remmove unused
- definitions from ice_sriov.h
-In-Reply-To: <20220223002712.2771809-6-jacob.e.keller@intel.com>
+Date: Wed, 2 Mar 2022 20:05:22 +0000
+Subject: [Intel-wired-lan] [net-next PATCH 02/25] ice: rename
+ ice_virtchnl_pf.c to ice_sriov.c
+In-Reply-To: <20220223002712.2771809-3-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
- <20220223002712.2771809-6-jacob.e.keller@intel.com>
-Message-ID: <SJ0PR11MB5629BAA5664D17AD6A187F50AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
+ <20220223002712.2771809-3-jacob.e.keller@intel.com>
+Message-ID: <SJ0PR11MB56290B3CD3E60E4918AB0178AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,38 +19,81 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Jacob Keller
 > Sent: Wednesday, February 23, 2022 1:27 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next PATCH 05/25] ice: remmove unused
-> definitions from ice_sriov.h
+> Subject: [Intel-wired-lan] [net-next PATCH 02/25] ice: rename
+> ice_virtchnl_pf.c to ice_sriov.c
 > 
-> A few more macros exist in ice_sriov.h which are not used anywhere.
-> These can be safely removed. Note that ICE_VIRTCHNL_VF_CAP_L2
-> capability is set but never checked anywhere in the driver. Thus it is also safe
-> to remove.
+> The ice_virtchnl_pf.c and ice_virtchnl_pf.h files are where most of the code
+> for implementing Single Root IOV virtualization resides. This code includes
+> support for bringing up and tearing down VFs, hooks into the kernel SR-IOV
+> netdev operations, and for handling virtchnl messages from VFs.
+> 
+> In the future, we plan to support Scalable IOV in addition to Single Root IOV
+> as an alternative virtualization scheme. This implementation will re-use some
+> but not all of the code in ice_virtchnl_pf.c
+> 
+> To prepare for this future, we want to refactor and split up the code in
+> ice_virtchnl_pf.c into the following scheme:
+> 
+>  * ice_vf_lib.[ch]
+> 
+>    Basic VF structures and accessors. This is where scheme-independent
+>    code will reside.
+> 
+>  * ice_virtchnl.[ch]
+> 
+>    Virtchnl message handling. This is where the bulk of the logic for
+>    processing messages from VFs using the virtchnl messaging scheme will
+>    reside. This is separated from ice_vf_lib.c because it is distinct
+>    and has a bulk of the processing code.
+> 
+>  * ice_sriov.[ch]
+> 
+>    Single Root IOV implementation, including initialization and the
+>    routines for interacting with SR-IOV based netdev operations.
+> 
+>  * (future) ice_siov.[ch]
+> 
+>    Scalable IOV implementation.
+> 
+> As a first step, lets assume that all of the code in ice_virtchnl_pf.[ch] is for
+> Single Root IOV. Rename this file to ice_sriov.c and its header to ice_sriov.h
+> 
+> Future changes will further split out the code in these files following the plan
+> outlined here.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_sriov.c | 1 -
-> drivers/net/ethernet/intel/ice/ice_sriov.h | 7 +------
->  2 files changed, 1 insertion(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/ice/Makefile                     | 2 +-
+>  drivers/net/ethernet/intel/ice/ice.h                        | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_base.c                   | 2 +-
+>  drivers/net/ethernet/intel/ice/ice_repr.c                   | 2 +-
+>  .../ethernet/intel/ice/{ice_virtchnl_pf.c => ice_sriov.c}   | 0
+>  .../ethernet/intel/ice/{ice_virtchnl_pf.h => ice_sriov.h}   | 6 +++---
+>  drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c        | 2 +-
+>  7 files changed, 8 insertions(+), 8 deletions(-)  rename
+> drivers/net/ethernet/intel/ice/{ice_virtchnl_pf.c => ice_sriov.c} (100%)
+> rename drivers/net/ethernet/intel/ice/{ice_virtchnl_pf.h => ice_sriov.h}
+> (99%)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c
-> b/drivers/net/ethernet/intel/ice/ice_sriov.c
-> index 8578317ceb8a..205d7e5003d8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-> @@ -2012,7 +2012,6 @@ static int ice_create_vf_entries(struct ice_pf *pf,
-> u16 num_vfs)
-> 
->  		vf->vf_sw_id = pf->first_sw;
->  		/* assign default capabilities */
-> -		set_bit(ICE_VIRTCHNL_VF_CAP_L2, &vf->vf_caps);
->  		vf->spoofchk = true;
->  		vf->num_vf_qs = pf->vfs.num_qps_per;
->  		ice_vc_set_default_allowlist(vf);
-> diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.h
-> b/drivers/net/ethernet/intel/ice/ice_sriov.h
-> index 01b6b08a73d8..525e3f0819e8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_sriov.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_sriov.h
+> diff --git a/drivers/net/ethernet/intel/ice/Makefile
+> b/drivers/net/ethernet/intel/ice/Makefile
+> index 451098e25023..816e81832b7f 100644
+> --- a/drivers/net/ethernet/intel/ice/Makefile
+> +++ b/drivers/net/ethernet/intel/ice/Makefile
+> @@ -38,7 +38,7 @@ ice-$(CONFIG_PCI_IOV) +=	\
+>  	ice_virtchnl_fdir.o	\
+>  	ice_vf_mbx.o		\
+>  	ice_vf_vsi_vlan_ops.o	\
+> -	ice_virtchnl_pf.o
+> +	ice_sriov.o
+>  ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
+>  ice-$(CONFIG_TTY) += ice_gnss.o
+>  ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o diff --git
+> a/drivers/net/ethernet/intel/ice/ice.h
+> b/drivers/net/ethernet/intel/ice/ice.h
+> index 6c41edd99410..0fd15b45ce23 100644
+> --- a/drivers/net/ethernet/intel/ice/ice.h
+> +++ b/drivers/net/ethernet/intel/ice/ice.h
+> @@ -66,7 +66,7 @@
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
