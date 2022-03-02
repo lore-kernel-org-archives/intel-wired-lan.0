@@ -1,103 +1,177 @@
-From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-Date: Wed,  2 Mar 2022 17:31:06 +0800
-Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
- iterator after loop body as a ptr
-In-Reply-To: <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
-References: <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
-Message-ID: <20220302093106.8402-1-xiam0nd.tong@gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 02 Mar 2022 23:46:53 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 5862d8e032585a3e3841c020c2cae61f7f302e89
+Message-ID: <621f916d.bBm7LTZUwqUIdA77%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 28 Feb 2022 16:41:04 -0800, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> But basically to _me_, the important part is that the end result is
-> maintainable longer-term.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 5862d8e032585a3e3841c020c2cae61f7f302e89  ice: Fix re-enablement of FW logging after reset
 
-I couldn't agree more. And because of that, I stick with the following
-approach because it's maintainable longer-term than "type(pos) pos" one:
- Implements a new macro for each list_for_each_entry* with _inside suffix.
-  #define list_for_each_entry_inside(pos, type, head, member)
+elapsed time: 721m
 
-I have posted a patch series here to demonstrate this approach:
-https://lore.kernel.org/lkml/20220301075839.4156-3-xiam0nd.tong at gmail.com/
+configs tested: 143
+configs skipped: 3
 
-Although we need replace all the use of list_for_each_entry* (15000+)
-with list_for_each_entry*_inside, the work can be done gradually rather
-than all at once. We can incrementally replace these callers until
-all these in the kernel are completely updated with *_inside* one. At
-that time, we can just remove the implements of origin macros and rename
-the *_inside* macro back to the origin name just in one single patch.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-And the "type(pos) pos" approach need teach developers to "not initialize
-the iterator variable, otherwise the use-after-loop will not be reported by
-compiler", which is unreasonable and impossible for all developers. 
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc              randconfig-c003-20220302
+i386                          randconfig-c001
+mips                 randconfig-c004-20220302
+mips                           xway_defconfig
+mips                       capcella_defconfig
+ia64                          tiger_defconfig
+sh                           se7206_defconfig
+arm                           corgi_defconfig
+parisc                generic-64bit_defconfig
+powerpc64                        alldefconfig
+arm                        multi_v7_defconfig
+sh                           se7705_defconfig
+sh                          r7780mp_defconfig
+sh                           sh2007_defconfig
+mips                         bigsur_defconfig
+arm                         vf610m4_defconfig
+h8300                               defconfig
+sh                          sdk7780_defconfig
+m68k                          amiga_defconfig
+arc                              alldefconfig
+sh                          r7785rp_defconfig
+sh                             espt_defconfig
+mips                           ip32_defconfig
+m68k                          atari_defconfig
+sh                   secureedge5410_defconfig
+arm                          iop32x_defconfig
+arc                     nsimosci_hs_defconfig
+xtensa                  nommu_kc705_defconfig
+sparc                            allyesconfig
+sh                        sh7785lcr_defconfig
+arm                        trizeps4_defconfig
+arm                      jornada720_defconfig
+powerpc                      mgcoge_defconfig
+powerpc                     taishan_defconfig
+sparc64                          alldefconfig
+powerpc                     tqm8541_defconfig
+sh                          sdk7786_defconfig
+arm                        shmobile_defconfig
+sh                               j2_defconfig
+powerpc                   currituck_defconfig
+powerpc                 mpc834x_itx_defconfig
+powerpc                     pq2fads_defconfig
+parisc64                         alldefconfig
+powerpc                   motionpro_defconfig
+arm                            qcom_defconfig
+ia64                             alldefconfig
+arm                        oxnas_v6_defconfig
+m68k                        stmark2_defconfig
+m68k                        m5307c3_defconfig
+arc                      axs103_smp_defconfig
+mips                     loongson1b_defconfig
+arm                  randconfig-c002-20220302
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+nios2                            allyesconfig
+alpha                            allyesconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+s390                             allmodconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+i386                          randconfig-a003
+i386                          randconfig-a001
+i386                          randconfig-a005
+x86_64                        randconfig-a013
+x86_64                        randconfig-a011
+x86_64                        randconfig-a015
+i386                          randconfig-a014
+i386                          randconfig-a012
+i386                          randconfig-a016
+arc                  randconfig-r043-20220302
+riscv                randconfig-r042-20220302
+s390                 randconfig-r044-20220302
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                                  kexec
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                         rhel-8.3-kunit
 
-And it will mess up the following code logic and no warnning reported by
-compiler, even without initializing "ext" at the beginning:
-void foo(struct mem_extent *arg) {
-  struct mem_extent *ext;  // used both for iterator and normal ptr
-  ...
-  ext = arg;  // this assignment can alse be done in another bar() func
-  ...
-  list_for_each_entry(ext, head, member) {
-    if (found(ext))
-       break;
-  }
-  ...
-  // use ext after the loop
-  ret = ext;
-}
-If the loop hit the break, the last "ret" will be the found ext iterator.
-However, if the "type(pos) pos" approach applied, the last "ret" will be
-"arg" which is not the intention of the developers, because the "ext" is
-two different variables inside and outside the loop.
+clang tested configs:
+powerpc              randconfig-c003-20220302
+riscv                randconfig-c006-20220302
+i386                          randconfig-c001
+arm                  randconfig-c002-20220302
+mips                 randconfig-c004-20220302
+powerpc                 mpc8313_rdb_defconfig
+arm                                 defconfig
+arm                         bcm2835_defconfig
+mips                     loongson2k_defconfig
+arm                     davinci_all_defconfig
+arm                       netwinder_defconfig
+arm                        neponset_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+x86_64                        randconfig-a005
+hexagon              randconfig-r045-20220302
+hexagon              randconfig-r041-20220302
 
-Thus, my idea is *better a finger off than always aching*, let's choose
-the "list_for_each_entry_inside(pos, type, head, member)" approach.
-
-> It turns out that just syntactically, it's really nice to give the
-> type of the iterator from outside the way we do now. Yeah, it may be a
-> bit odd, and maybe it's partly because I'm so used to the
-> "list_for_each_list_entry()" syntax, but moving the type into the loop
-> construct really made it nasty - either one very complex line, or
-> having to split it over two lines which was even worse.
->
-> Maybe the place I looked at just happened to have a long typename, but
-> it's basically always going to be a struct, so it's never a _simple_
-> type. And it just looked very odd adn unnatural to have the type as
-> one of the "arguments" to that list_for_each_entry() macro.
-
-we can pass a shorter type name to list_for_each_entry_inside, thus no
-need to split it over two lines. Actually it is not a big problem.
-+ #define t struct sram_bank_info
-- list_for_each_entry(pos, head, member) {
-+ list_for_each_entry_inside(pos, t, head, member) {
-
-I put the type at the second argument not the first to avoid messing up
-the pattern match in some coccinelle scripts.
-
->  (b) gives us a nice warning for any normal use-after-loop case
-> (unless you explicitly initialized it like that
-> sgx_mmu_notifier_release() function did for no good reason
-
-sometimes developers can be confused by the reported warnning:
-"used without having been initialized", and can not figure out immediately
-that "oh, now i am using another different variable but with the same name
-of the loop iterator variable", which has changed the programming habits
-of developers.
-
->  (c) also guarantees that even if you don't get a warning,
-> non-converted (or newly written) bad code won't actually _work_
->
-> so you end up getting the new rules without any ambiguity or mistaken
-
-It will lead to a wrong/NULL pointer dereference if the pointer is used
-anywhere else, depend on which value is used to initialized with.
-
-Best regard,
---
-Xiaomeng Tong
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
