@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 2 Mar 2022 21:26:44 +0000
-Subject: [Intel-wired-lan] [net PATCH 2/2] ice: stop disabling VFs due
+Date: Wed, 2 Mar 2022 21:27:57 +0000
+Subject: [Intel-wired-lan] [net PATCH 1/2] i40e: stop disabling VFs due
  to PF error responses
-In-Reply-To: <20220217005136.75627-3-jacob.e.keller@intel.com>
+In-Reply-To: <20220217005136.75627-2-jacob.e.keller@intel.com>
 References: <20220217005136.75627-1-jacob.e.keller@intel.com>
- <20220217005136.75627-3-jacob.e.keller@intel.com>
-Message-ID: <SJ0PR11MB562909589BB8EA12F736B4F7AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
+ <20220217005136.75627-2-jacob.e.keller@intel.com>
+Message-ID: <SJ0PR11MB5629034DA1BA9EF8F1FD99B5AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,56 +19,60 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Jacob Keller
 > Sent: Thursday, February 17, 2022 1:52 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net PATCH 2/2] ice: stop disabling VFs due to PF
+> Subject: [Intel-wired-lan] [net PATCH 1/2] i40e: stop disabling VFs due to PF
 > error responses
 > 
-> The ice_vc_send_msg_to_vf function has logic to detect "failure"
-> responses being sent to a VF. If a VF is sent more than
-> ICE_DFLT_NUM_INVAL_MSGS_ALLOWED then the VF is marked as disabled.
-> Almost identical logic also existed in the i40e driver.
+> The i40e_vc_send_msg_to_vf_ex (and its wrapper
+> i40e_vc_send_msg_to_vf) function has logic to detect "failure" responses
+> sent to the VF. If a VF is sent more than
+> I40E_DEFAULT_NUM_INVALID_MSGS_ALLOWED, then the VF is marked as
+> disabled. In either case, a dev_info message is printed stating that a VF
+> opcode failed.
 > 
-> This logic was added to the ice driver in commit 1071a8358a28 ("ice:
-> Implement virtchnl commands for AVF support") which itself copied from the
-> i40e implementation in commit 5c3c48ac6bf5 ("i40e: implement virtual device
-> interface").
+> This logic originates from the early implementation of VF support in commit
+> 5c3c48ac6bf5 ("i40e: implement virtual device interface").
 > 
-> Neither commit provides a proper explanation or justification of the check. In
-> fact, later commits to i40e changed the logic to allow bypassing the check in
-> some specific instances.
+> That commit did not go far enough. The "logic" for this behavior seems to be
+> that error responses somehow indicate a malicious VF. This is not really true.
+> The PF might be sending an error for any number of reasons such as lacking
+> resources, an unsupported operation, etc. This does not indicate a malicious
+> VF. We already have a separate robust malicious VF detection which relies on
+> hardware logic to detect and prevent a variety of behaviors.
 > 
-> The "logic" for this seems to be that error responses somehow indicate a
-> malicious VF. This is not really true. The PF might be sending an error for any
-> number of reasons such as lack of resources, etc.
+> There is no justification for this behavior in the original implementation. In
+> fact, a later commit 18b7af57d9c1 ("i40e: Lower some message levels")
+> reduced the opcode failure message from a dev_err to a dev_info. In
+> addition, recent commit 01cbf50877e6 ("i40e: Fix to not show opcode msg on
+> unsuccessful VF MAC change") changed the logic to allow quieting it for
+> expected failures.
 > 
-> Additionally, this causes the PF to log an info message for every failed VF
-> response which may confuse users, and can spam the kernel log.
+> That commit prevented this logic from kicking in for specific circumstances.
+> This change did not go far enough. The behavior is not documented nor is it
+> part of any requirement for our products. Other operating systems such as
+> the FreeBSD implementation of our driver do not include this logic.
 > 
-> This behavior is not documented as part of any requirement for our products
-> and other operating system drivers such as the FreeBSD implementation of
-> our drivers do not include this type of check.
+> It is clear this check does not make sense, and causes problems which led to
+> ugly workarounds.
 > 
-> In fact, the change from dev_err to dev_info in i40e commit 18b7af57d9c1
-> ("i40e: Lower some message levels") explains that these messages typically
-> don't actually indicate a real issue. It is quite likely that a user who hits this in
-> practice will be very confused as the VF will be disabled without an obvious
-> way to recover.
+> Fix this by just removing the entire logic and the need for the
+> i40e_vc_send_msg_to_vf_ex function.
 > 
-> We already have robust malicious driver detection logic using actual
-> hardware detection mechanisms that detect and prevent invalid device
-> usage. Remove the logic since its not a documented requirement and the
-> behavior is not intuitive.
-> 
+> Fixes: 01cbf50877e6 ("i40e: Fix to not show opcode msg on unsuccessful VF
+> MAC change")
+> Fixes: 5c3c48ac6bf5 ("i40e: implement virtual device interface")
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.c   | 18 ------------------
->  .../net/ethernet/intel/ice/ice_virtchnl_pf.h   |  3 ---
->  2 files changed, 21 deletions(-)
+>  .../net/ethernet/intel/i40e/i40e_debugfs.c    |  6 +-
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 57 +++----------------
+>  .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  5 --
+>  3 files changed, 9 insertions(+), 59 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> index 8a61b23f7cb3..353c2a3755d0 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
-> @@ -2180,24 +2180,6 @@ ice_vc_send_msg_to_vf(struct ice_vf *vf, u32
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+> b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+> index 1e57cc8c47d7..9db5001297c7 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+> @@ -742,10 +742,8 @@ static void i40e_dbg_dump_vf(struct i40e_pf *pf, int
+> vf_id)
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
