@@ -1,157 +1,179 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 02 Mar 2022 23:46:31 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 4761df52f1549cc8c5ffcad0b2095fffe2c5435d
-Message-ID: <621f9157.XouTGPr0p+t3tBVg%lkp@intel.com>
+From: Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>
+Date: Wed, 2 Mar 2022 17:14:50 +0000
+Subject: [Intel-wired-lan] [Intel-gfx] [PATCH 6/6] treewide: remove
+ check of list iterator against head past the loop body
+In-Reply-To: <20220228110822.491923-7-jakobkoschel@gmail.com>
+References: <20220228110822.491923-1-jakobkoschel@gmail.com>
+ <20220228110822.491923-7-jakobkoschel@gmail.com>
+Message-ID: <ed52ce3c-0f4a-a1e8-4176-543657d6228d@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: 4761df52f1549cc8c5ffcad0b2095fffe2c5435d  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netfilter/nf
 
-elapsed time: 720m
+On 28/02/2022 11:08, Jakob Koschel wrote:
+> When list_for_each_entry() completes the iteration over the whole list
+> without breaking the loop, the iterator value will be a bogus pointer
+> computed based on the head element.
+> 
+> While it is safe to use the pointer to determine if it was computed
+> based on the head element, either with list_entry_is_head() or
+> &pos->member == head, using the iterator variable after the loop should
+> be avoided.
+> 
+> In preparation to limiting the scope of a list iterator to the list
+> traversal loop, use a dedicated pointer to point to the found element.
+> 
+> Signed-off-by: Jakob Koschel <jakobkoschel@gmail.com>
 
-configs tested: 124
-configs skipped: 3
+[snip until i915 parts]
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+>   drivers/gpu/drm/i915/gem/i915_gem_context.c   | 14 +++---
+>   .../gpu/drm/i915/gem/i915_gem_execbuffer.c    | 15 ++++---
+>   drivers/gpu/drm/i915/gt/intel_ring.c          | 15 ++++---
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc              randconfig-c003-20220302
-i386                          randconfig-c001
-mips                 randconfig-c004-20220302
-arm                           corgi_defconfig
-parisc                generic-64bit_defconfig
-powerpc64                        alldefconfig
-arm                        multi_v7_defconfig
-sh                           se7705_defconfig
-sh                          r7780mp_defconfig
-sh                           sh2007_defconfig
-m68k                        mvme16x_defconfig
-sh                              ul2_defconfig
-sh                            migor_defconfig
-microblaze                          defconfig
-mips                         bigsur_defconfig
-arm                         vf610m4_defconfig
-h8300                               defconfig
-m68k                          atari_defconfig
-sh                   secureedge5410_defconfig
-arm                          iop32x_defconfig
-arc                     nsimosci_hs_defconfig
-xtensa                  nommu_kc705_defconfig
-sparc                            allyesconfig
-sh                        sh7785lcr_defconfig
-arm                        trizeps4_defconfig
-arm                      jornada720_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                     taishan_defconfig
-sparc64                          alldefconfig
-powerpc                     tqm8541_defconfig
-sh                          sdk7786_defconfig
-arm                        shmobile_defconfig
-sh                               j2_defconfig
-powerpc                   currituck_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                     pq2fads_defconfig
-parisc64                         alldefconfig
-powerpc                   motionpro_defconfig
-arm                            qcom_defconfig
-ia64                             alldefconfig
-arm                        oxnas_v6_defconfig
-m68k                        stmark2_defconfig
-m68k                        m5307c3_defconfig
-arc                      axs103_smp_defconfig
-mips                     loongson1b_defconfig
-arm                  randconfig-c002-20220302
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-arc                  randconfig-r043-20220302
-riscv                randconfig-r042-20220302
-s390                 randconfig-r044-20220302
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                                  kexec
+[snip]
 
-clang tested configs:
-powerpc              randconfig-c003-20220302
-riscv                randconfig-c006-20220302
-i386                          randconfig-c001
-arm                  randconfig-c002-20220302
-mips                 randconfig-c004-20220302
-powerpc                 mpc8313_rdb_defconfig
-arm                     davinci_all_defconfig
-arm                       netwinder_defconfig
-arm                        neponset_defconfig
-arm                      pxa255-idp_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220302
-hexagon              randconfig-r041-20220302
+> diff --git a/drivers/gpu/drm/i915/gem/i915_gem_context.c b/drivers/gpu/drm/i915/gem/i915_gem_context.c
+> index 00327b750fbb..80c79028901a 100644
+> --- a/drivers/gpu/drm/i915/gem/i915_gem_context.c
+> +++ b/drivers/gpu/drm/i915/gem/i915_gem_context.c
+> @@ -107,25 +107,27 @@ static void lut_close(struct i915_gem_context *ctx)
+>   	radix_tree_for_each_slot(slot, &ctx->handles_vma, &iter, 0) {
+>   		struct i915_vma *vma = rcu_dereference_raw(*slot);
+>   		struct drm_i915_gem_object *obj = vma->obj;
+> -		struct i915_lut_handle *lut;
+> +		struct i915_lut_handle *lut = NULL;
+> +		struct i915_lut_handle *tmp;
+> 
+>   		if (!kref_get_unless_zero(&obj->base.refcount))
+>   			continue;
+> 
+>   		spin_lock(&obj->lut_lock);
+> -		list_for_each_entry(lut, &obj->lut_list, obj_link) {
+> -			if (lut->ctx != ctx)
+> +		list_for_each_entry(tmp, &obj->lut_list, obj_link) {
+> +			if (tmp->ctx != ctx)
+>   				continue;
+> 
+> -			if (lut->handle != iter.index)
+> +			if (tmp->handle != iter.index)
+>   				continue;
+> 
+> -			list_del(&lut->obj_link);
+> +			list_del(&tmp->obj_link);
+> +			lut = tmp;
+>   			break;
+>   		}
+>   		spin_unlock(&obj->lut_lock);
+> 
+> -		if (&lut->obj_link != &obj->lut_list) {
+> +		if (lut) {
+>   			i915_lut_handle_free(lut);
+>   			radix_tree_iter_delete(&ctx->handles_vma, &iter, slot);
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+Looks okay although personally I would have left lut as is for a smaller 
+diff and introduced a new local like 'found' or 'unlinked'.
+
+>   			i915_vma_close(vma);
+> diff --git a/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c b/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
+> index 1736efa43339..fda9e3685ad2 100644
+> --- a/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
+> +++ b/drivers/gpu/drm/i915/gem/i915_gem_execbuffer.c
+> @@ -2444,7 +2444,8 @@ static struct i915_request *eb_throttle(struct i915_execbuffer *eb, struct intel
+>   {
+>   	struct intel_ring *ring = ce->ring;
+>   	struct intel_timeline *tl = ce->timeline;
+> -	struct i915_request *rq;
+> +	struct i915_request *rq = NULL;
+> +	struct i915_request *tmp;
+> 
+>   	/*
+>   	 * Completely unscientific finger-in-the-air estimates for suitable
+> @@ -2460,15 +2461,17 @@ static struct i915_request *eb_throttle(struct i915_execbuffer *eb, struct intel
+>   	 * claiming our resources, but not so long that the ring completely
+>   	 * drains before we can submit our next request.
+>   	 */
+> -	list_for_each_entry(rq, &tl->requests, link) {
+> -		if (rq->ring != ring)
+> +	list_for_each_entry(tmp, &tl->requests, link) {
+> +		if (tmp->ring != ring)
+>   			continue;
+> 
+> -		if (__intel_ring_space(rq->postfix,
+> -				       ring->emit, ring->size) > ring->size / 2)
+> +		if (__intel_ring_space(tmp->postfix,
+> +				       ring->emit, ring->size) > ring->size / 2) {
+> +			rq = tmp;
+>   			break;
+> +		}
+>   	}
+> -	if (&rq->link == &tl->requests)
+> +	if (!rq)
+>   		return NULL; /* weird, we will check again later for real */
+
+Alternatively, instead of break could simply do "return 
+i915_request_get(rq);" and replace the end of the function after the 
+loop with "return NULL;". A bit smaller diff, or at least less "spread 
+out" over the function, so might be easier to backport stuff touching 
+this area in the future. But looks correct as is.
+
+> 
+>   	return i915_request_get(rq);
+> diff --git a/drivers/gpu/drm/i915/gt/intel_ring.c b/drivers/gpu/drm/i915/gt/intel_ring.c
+> index 2fdd52b62092..4881c4e0c407 100644
+> --- a/drivers/gpu/drm/i915/gt/intel_ring.c
+> +++ b/drivers/gpu/drm/i915/gt/intel_ring.c
+> @@ -191,24 +191,27 @@ wait_for_space(struct intel_ring *ring,
+>   	       struct intel_timeline *tl,
+>   	       unsigned int bytes)
+>   {
+> -	struct i915_request *target;
+> +	struct i915_request *target = NULL;
+> +	struct i915_request *tmp;
+>   	long timeout;
+> 
+>   	if (intel_ring_update_space(ring) >= bytes)
+>   		return 0;
+> 
+>   	GEM_BUG_ON(list_empty(&tl->requests));
+> -	list_for_each_entry(target, &tl->requests, link) {
+> -		if (target->ring != ring)
+> +	list_for_each_entry(tmp, &tl->requests, link) {
+> +		if (tmp->ring != ring)
+>   			continue;
+> 
+>   		/* Would completion of this request free enough space? */
+> -		if (bytes <= __intel_ring_space(target->postfix,
+> -						ring->emit, ring->size))
+> +		if (bytes <= __intel_ring_space(tmp->postfix,
+> +						ring->emit, ring->size)) {
+> +			target = tmp;
+>   			break;
+> +		}
+>   	}
+> 
+> -	if (GEM_WARN_ON(&target->link == &tl->requests))
+> +	if (GEM_WARN_ON(!target))
+>   		return -ENOSPC;
+> 
+>   	timeout = i915_request_wait(target,
+
+Looks okay as well. Less clear here if there is a clean solution to make 
+the diff smaller so no suggestions. I mean do I dare mention "goto 
+found;" from inside the loop, where the break is, instead of the 
+variable renames.. risky.. :) (And ofc "return -ENOSPC" immediately 
+after the loop.)
+
+As a summary changes looks okay, up to you if you want to try to make 
+the diffs smaller or not. It doesn't matter hugely really, all I have is 
+a vague and uncertain "maybe it makes backporting of something, someday 
+easier". So for i915 it is good either way.
+
+Reviewed-by: Tvrtko Ursulin <tvrtko.ursulin@intel.com> # i915 bits only
+
+Regards,
+
+Tvrtko
