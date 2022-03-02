@@ -1,56 +1,75 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 2 Mar 2022 20:05:46 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 01/25] ice: rename
- ice_sriov.c to ice_vf_mbx.c
-In-Reply-To: <20220223002712.2771809-2-jacob.e.keller@intel.com>
-References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
- <20220223002712.2771809-2-jacob.e.keller@intel.com>
-Message-ID: <SJ0PR11MB5629541F17EBDF2F2DD00858AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Wed, 2 Mar 2022 12:07:04 -0800
+Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
+ iterator after loop body as a ptr
+In-Reply-To: <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
+References: <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
+ <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
+ <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
+ <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
+ <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
+ <7dc860874d434d2288f36730d8ea3312@AcuMS.aculab.com>
+ <CAHk-=whKqg89zu4T95+ctY-hocR6kDArpo2qO14-kV40Ga7ufw@mail.gmail.com>
+ <0ced2b155b984882b39e895f0211037c@AcuMS.aculab.com>
+ <CAHk-=wix0HLCBs5sxAeW3uckg0YncXbTjMsE-Tv8WzmkOgLAXQ@mail.gmail.com>
+ <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
+Message-ID: <202203021158.DB5204A0@keescook>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Wed, Mar 02, 2022 at 10:29:31AM +0100, Rasmus Villemoes wrote:
+> This won't help the current issue (because it doesn't exist and might
+> never), but just in case some compiler people are listening, I'd like to
+> have some sort of way to tell the compiler "treat this variable as
+> uninitialized from here on". So one could do
+> 
+> #define kfree(p) do { __kfree(p); __magic_uninit(p); } while (0)
+> 
+> with __magic_uninit being a magic no-op that doesn't affect the
+> semantics of the code, but could be used by the compiler's "[is/may be]
+> used uninitialized" machinery to flag e.g. double frees on some odd
+> error path etc. It would probably only work for local automatic
+> variables, but it should be possible to just ignore the hint if p is
+> some expression like foo->bar or has side effects. If we had that, the
+> end-of-loop test could include that to "uninitialize" the iterator.
+
+I've long wanted to change kfree() to explicitly set pointers to NULL on
+free. https://github.com/KSPP/linux/issues/87
+
+The thing stopping a trivial transformation of kfree() is:
+
+	kfree(get_some_pointer());
+
+I would argue, though, that the above is poor form: the thing holding
+the pointer should be the thing freeing it, so these cases should be
+refactored and kfree() could do the NULLing by default.
+
+Quoting myself in the above issue:
 
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jacob Keller
-> Sent: Wednesday, February 23, 2022 1:27 AM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next PATCH 01/25] ice: rename ice_sriov.c to
-> ice_vf_mbx.c
-> 
-> The ice_sriov.c file primarily contains code which handles the logic for
-> mailbox overflow detection and some other utility functions related to the
-> virtualization mailbox.
-> 
-> The bulk of the SR-IOV implementation is actually found in ice_virtchnl_pf.c,
-> and this file isn't strictly SR-IOV specific.
-> 
-> In the future, the ice driver will support an additional virtualization scheme
-> known as Scalable IOV, and the code in this file will be used for this
-> alternative implementation.
-> 
-> Rename this file (and its associated header) to ice_vf_mbx.c, so that we can
-> later re-use the ice_sriov.c file as the SR-IOV specific file.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/Makefile                     | 2 +-
->  drivers/net/ethernet/intel/ice/ice.h                        | 2 +-
->  .../net/ethernet/intel/ice/{ice_sriov.c => ice_vf_mbx.c}    | 2 +-
->  .../net/ethernet/intel/ice/{ice_sriov.h => ice_vf_mbx.h}    | 6 +++---
->  4 files changed, 6 insertions(+), 6 deletions(-)  rename
-> drivers/net/ethernet/intel/ice/{ice_sriov.c => ice_vf_mbx.c} (99%)  rename
-> drivers/net/ethernet/intel/ice/{ice_sriov.h => ice_vf_mbx.h} (95%)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/Makefile
-> b/drivers/net/ethernet/intel/ice/Makefile
-> index 44b8464b7663..451098e25023 100644
-> --- a/drivers/net/ethernet/intel/ice/Makefile
-> +++ b/drivers/net/ethernet/intel/ice/Makefile
-> @@ -36,7 +36,7 @@ ice-y := ice_main.o	\
+Without doing massive tree-wide changes, I think we need compiler
+support. If we had something like __builtin_is_lvalue(), we could
+distinguish function returns from lvalues. For example, right now a
+common case are things like:
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+	kfree(get_some_ptr());
+
+But if we could at least gain coverage of the lvalue cases, and detect
+them statically at compile-time, we could do:
+
+#define __kfree_and_null(x) do { __kfree(*x); *x = NULL; } while (0)
+#define kfree(x) __builtin_choose_expr(__builtin_is_lvalue(x),
+			__kfree_and_null(&(x)), __kfree(x))
+
+Alternatively, we could do a tree-wide change of the former case (findable
+with Coccinelle) and change them into something like kfree_no_null()
+and redefine kfree() itself:
+
+#define kfree_no_null(x) do { void *__ptr = (x); __kfree(__ptr); } while (0)
+#define kfree(x) do { __kfree(x); x = NULL; } while (0)
+
+-- 
+Kees Cook
