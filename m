@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 2 Mar 2022 20:02:55 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 07/25] ice: refactor spoofchk
- control code in ice_sriov.c
-In-Reply-To: <20220223002712.2771809-8-jacob.e.keller@intel.com>
+Date: Wed, 2 Mar 2022 20:03:24 +0000
+Subject: [Intel-wired-lan] [net-next PATCH 06/25] ice: rename
+ ICE_MAX_VF_COUNT to avoid confusion
+In-Reply-To: <20220223002712.2771809-7-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
- <20220223002712.2771809-8-jacob.e.keller@intel.com>
-Message-ID: <SJ0PR11MB5629B5F86B4E0AC1D232851BAB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
+ <20220223002712.2771809-7-jacob.e.keller@intel.com>
+Message-ID: <SJ0PR11MB56294813AD405EDA94E6F227AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,36 +19,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Jacob Keller
 > Sent: Wednesday, February 23, 2022 1:27 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next PATCH 07/25] ice: refactor spoofchk
-> control code in ice_sriov.c
+> Subject: [Intel-wired-lan] [net-next PATCH 06/25] ice: rename
+> ICE_MAX_VF_COUNT to avoid confusion
 > 
-> The API to control the VSI spoof checking for a VF VSI has three
-> functions: enable, disable, and set. The set function takes the VSI and the VF
-> and decides whether to call enable or disable based on the
-> vf->spoofchk field.
+> The ICE_MAX_VF_COUNT field is defined in ice_sriov.h. This count is true for
+> SR-IOV but will not be true for all VF implementations, such as when the ice
+> driver supports Scalable IOV.
 > 
-> In some flows, vf->spoofchk is not yet set, such as the function used to
-> control the setting for a VF. (vf->spoofchk is only updated after a success).
-> 
-> Simplify this API by refactoring ice_vf_set_spoofchk_cfg to be
-> "ice_vsi_apply_spoofchk" which takes the boolean and allows all callers to
-> avoid having to determine whether to call enable or disable themselves.
-> 
-> This matches the expected callers better, and will prevent the need to
-> export more than one function when this code must be called from another
-> file.
+> Rename this definition to clearly indicate ICE_MAX_SRIOV_VFS.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_sriov.c | 18 +++++++-----------
->  1 file changed, 7 insertions(+), 11 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_main.c  | 2 +-
+> drivers/net/ethernet/intel/ice/ice_sriov.c | 8 ++++----
+> drivers/net/ethernet/intel/ice/ice_sriov.h | 4 ++--
+>  3 files changed, 7 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c
-> b/drivers/net/ethernet/intel/ice/ice_sriov.c
-> index 7cd910bb7a7a..8d22b5d94706 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-> @@ -985,16 +985,15 @@ static int ice_vsi_dis_spoofchk(struct ice_vsi *vsi)  }
-> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
+> b/drivers/net/ethernet/intel/ice/ice_main.c
+> index 133860071174..a628fa9f1442 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -3868,7 +3868,7 @@ static void ice_set_pf_caps(struct ice_pf *pf)
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
