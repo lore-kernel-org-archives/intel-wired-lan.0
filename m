@@ -1,75 +1,143 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Wed, 2 Mar 2022 12:07:04 -0800
-Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
- iterator after loop body as a ptr
-In-Reply-To: <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
-References: <282f0f8d-f491-26fc-6ae0-604b367a5a1a@amd.com>
- <b2d20961dbb7533f380827a7fcc313ff849875c1.camel@HansenPartnership.com>
- <7D0C2A5D-500E-4F38-AD0C-A76E132A390E@kernel.org>
- <73fa82a20910c06784be2352a655acc59e9942ea.camel@HansenPartnership.com>
- <CAHk-=wiT5HX6Kp0Qv4ZYK_rkq9t5fZ5zZ7vzvi6pub9kgp=72g@mail.gmail.com>
- <7dc860874d434d2288f36730d8ea3312@AcuMS.aculab.com>
- <CAHk-=whKqg89zu4T95+ctY-hocR6kDArpo2qO14-kV40Ga7ufw@mail.gmail.com>
- <0ced2b155b984882b39e895f0211037c@AcuMS.aculab.com>
- <CAHk-=wix0HLCBs5sxAeW3uckg0YncXbTjMsE-Tv8WzmkOgLAXQ@mail.gmail.com>
- <78ccb184-405e-da93-1e02-078f90d2b9bc@rasmusvillemoes.dk>
-Message-ID: <202203021158.DB5204A0@keescook>
+From: Joe Damato <jdamato@fastly.com>
+Date: Wed, 2 Mar 2022 12:24:38 -0800
+Subject: [Intel-wired-lan] i40e and TSO with MPLS ?
+In-Reply-To: <DM6PR11MB46572379068898154F187F889B029@DM6PR11MB4657.namprd11.prod.outlook.com>
+References: <DM6PR11MB4657EB65F784C3E816FD27FB9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
+ <DM6PR11MB46572510E594BF3E789AC5CF9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
+ <CALALjgzQPDdNTjCBD+S2Adymk9XTH4qa4Sb6-kBuh96oKg+ajQ@mail.gmail.com>
+ <DM6PR11MB4657CBB8B06ACCAB0CE201429B3D9@DM6PR11MB4657.namprd11.prod.outlook.com>
+ <CALALjgxJ-=WbWBS0VxxSNWA17L6mMZA7xZa-XBBeOsYy6KujEQ@mail.gmail.com>
+ <DM6PR11MB46572379068898154F187F889B029@DM6PR11MB4657.namprd11.prod.outlook.com>
+Message-ID: <CALALjgyJhZLZALV5w3C-Etus8ZCRzeCBpwYVZgF9VUQptAQMjQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Mar 02, 2022 at 10:29:31AM +0100, Rasmus Villemoes wrote:
-> This won't help the current issue (because it doesn't exist and might
-> never), but just in case some compiler people are listening, I'd like to
-> have some sort of way to tell the compiler "treat this variable as
-> uninitialized from here on". So one could do
-> 
-> #define kfree(p) do { __kfree(p); __magic_uninit(p); } while (0)
-> 
-> with __magic_uninit being a magic no-op that doesn't affect the
-> semantics of the code, but could be used by the compiler's "[is/may be]
-> used uninitialized" machinery to flag e.g. double frees on some odd
-> error path etc. It would probably only work for local automatic
-> variables, but it should be possible to just ignore the hint if p is
-> some expression like foo->bar or has side effects. If we had that, the
-> end-of-loop test could include that to "uninitialize" the iterator.
+On Tue, Mar 1, 2022 at 5:58 AM Kubalewski, Arkadiusz
+<arkadiusz.kubalewski@intel.com> wrote:
+>
+> > On Thu, Feb 24, 2022 at 6:28 AM Kubalewski, Arkadiusz
+> > <arkadiusz.kubalewski@intel.com> wrote:
+> > >
+> > > > On Wed, Feb 23, 2022 at 9:56 AM Kubalewski, Arkadiusz
+> > > > <arkadiusz.kubalewski@intel.com> wrote:
+> > > > >
+> > > > > +Joe
+> > > > >
+> > > > > > Greetings:
+> > > > > >
+> > > > > > Does i40e (XL710) support TSO with MPLS?
+> > > > > >
+> > > > > > We are using firmware version: 7.10 0x80006469 1.2527.0
+> > > > > >
+> > > > > > We've attempted to add support for TSO+MPLS to i40e, but were unable to
+> > > > > > get it working. The patch is included below for reference, but it is almost
+> > > > > > certainly incorrect - and I am not clear if the hardware itself would
+> > > > > > support this even if the patch was correct.
+> > > > > >
+> > > > > > Applying the patch below and using tcpdump shows that:
+> > > > > >
+> > > > > >         - packet data, as seen by the pcap filter in the kernel, is large.
+> > > > > >           This suggests that the kernel is attempting to offload
+> > > > > >           segmentation to the device,
+> > > > > >
+> > > > > >         but
+> > > > > >
+> > > > > >         - those large packets are not ACK'd by the client
+> > > > > >
+> > > > > > This suggests that either:
+> > > > > >
+> > > > > >         - the device does not support TSO + MPLS, and/or
+> > > > > >         - the patch below is incorrect
+> > > > > >
+> > > > > > Does anyone working on i40e have any insight on this?
+> > > > >
+> > > > > Hi Joe,
+> > > > >
+> > > > > I have done some research for your case, good news is that we believe that 710
+> > > > > hardware supports it. Currently we do not have plans to implement such feature
+> > > > > ourselves, but we will do our best in reviewing if you decide to implement it.
+> > > >
+> > > > OK, thanks. I appreciate the information and your willingness to
+> > > > review. I am pleased to hear that the hardware supports it.
+> > > >
+> > > > > Such offloads should be supported on packets with up to 2 MPLS tags before the
+> > > > > IP header. For start, you might take a look for the features pre check function:
+> > > > > static netdev_features_t i40e_features_check(struct sk_buff *skb, ...
+> > > > > It probably requires an update after the changes you have posted.
+> > > >
+> > > > I took a look at i40e_features_check, as you suggested, but I am
+> > > > probably missing something.
+> > > >
+> > > > My understanding is that the call graph on the xmit path is roughly:
+> > > >
+> > > > __dev_queue_xmit which calls (in order):
+> > > > 1. validate_xmit_skb -- this eventually calls i40e_features_check and
+> > > > harmonize_features which will use the mpls_features bitfield set in
+> > > > the patch to turn on the TSO bit
+> > > >
+> > > Just saying, worth to check if the required flags are already set when
+> > > i40e_features_check was called.
+> > >
+> > > > 2. dev_hard_start_xmit -- this delivers packets to taps, then to the driver
+> > > >
+> > > > dev_hard_start_xmit internally hands packets to any taps installed
+> > > > (for example pcap), before handing them to the driver
+> > > > (i40e_lan_xmit_frame).
+> > > >
+> > > > In our tests of the patch below, we see that tcpdump reports large
+> > > > packet sizes. Since we see them in tcpdump, I think this suggests that
+> > > > everything leading up to pcap delivery (including i40e_features_check)
+> > > > is correct... otherwise we'd see smaller packet sizes being delivered
+> > > > to pcap.
+> > > >
+> > > > This leads me to believe the issue is somewhere in i40e_lan_xmit_frame
+> > > > or below -- most likely in i40e_tso, which my patch attempts to tweak.
+> > > >
+> > > > Let me know if I'm off track and misunderstanding your analysis, but
+> > > > based on the above, I suspect the changes to i40e_tso are buggy.
+> > > >
+> > >
+> > > Seems like your understanding is correct.
+> > > Are those packets actually sent to the wire?
+> > > Any stats are incremented?
+> > > Anything at all shows up on the client?
+> >
+> > The bytes are never ACK'd by the client and are eventually re-transmit.
+> >
+> > Based on the tcpdump output I think the packet data makes it to the
+> > driver unsegmented (which is what we want), but due to some issue in
+> > i40e_tso (or a hardware limitation) the NIC fails to TSO the bytes and
+> > they are eventually re-transmit.
+> >
+>
+> I think good place to start would be the 710 datasheet:
+> https://cdrdv2.intel.com/v1/dl/getContent/332464?explicitVersion=true
+> i.e. 8.4.4.3.2 Transmit Segmentation Flow
+> Please verify if your change is following the expected flow,
 
-I've long wanted to change kfree() to explicitly set pointers to NULL on
-free. https://github.com/KSPP/linux/issues/87
+I think I found the issue.
 
-The thing stopping a trivial transformation of kfree() is:
+The original patch only modified i40e_tso, but I needed two more tweaks:
 
-	kfree(get_some_pointer());
+- a similar change is needed in i40e_tx_enable_csum.
+- tx_flags need to be tweaked slightly so that the l4 protocol
+detection works in i40e_tx_enable_csum.
 
-I would argue, though, that the above is poor form: the thing holding
-the pointer should be the thing freeing it, so these cases should be
-refactored and kfree() could do the NULLing by default.
+Tests in my test environment show large MPLS packet TX which are now
+ACK'd by the client :)
 
-Quoting myself in the above issue:
+I will submit this patch to the mailing list now and CC you on it for
+a formal review.
 
+I noticed ice probably needs the same change (assuming it supports
+mpls+tso), but I don't have any ice hardware to test on. I am happy to
+port this change to the ice driver and submit that as well, if you
+like, but I'll need to ask the ice folks to test on my behalf.
 
-Without doing massive tree-wide changes, I think we need compiler
-support. If we had something like __builtin_is_lvalue(), we could
-distinguish function returns from lvalues. For example, right now a
-common case are things like:
+Let me know if you'd like me to submit to ice, as well.
 
-	kfree(get_some_ptr());
-
-But if we could at least gain coverage of the lvalue cases, and detect
-them statically at compile-time, we could do:
-
-#define __kfree_and_null(x) do { __kfree(*x); *x = NULL; } while (0)
-#define kfree(x) __builtin_choose_expr(__builtin_is_lvalue(x),
-			__kfree_and_null(&(x)), __kfree(x))
-
-Alternatively, we could do a tree-wide change of the former case (findable
-with Coccinelle) and change them into something like kfree_no_null()
-and redefine kfree() itself:
-
-#define kfree_no_null(x) do { void *__ptr = (x); __kfree(__ptr); } while (0)
-#define kfree(x) do { __kfree(x); x = NULL; } while (0)
-
--- 
-Kees Cook
+Thanks,
+Joe
