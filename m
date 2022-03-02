@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 2 Mar 2022 19:41:42 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 24/25] ice: introduce
- ice_virtchnl.c and ice_virtchnl.h
-In-Reply-To: <20220223002712.2771809-25-jacob.e.keller@intel.com>
+Date: Wed, 2 Mar 2022 19:43:31 +0000
+Subject: [Intel-wired-lan] [net-next PATCH 23/25] ice: cleanup long
+ longs in ice_sriov.c
+In-Reply-To: <20220223002712.2771809-24-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
- <20220223002712.2771809-25-jacob.e.keller@intel.com>
-Message-ID: <SJ0PR11MB5629650A7BAFFA6417908DC0AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
+ <20220223002712.2771809-24-jacob.e.keller@intel.com>
+Message-ID: <SJ0PR11MB562987E2AFD5722EED8397E6AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,27 +19,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Jacob Keller
 > Sent: Wednesday, February 23, 2022 1:27 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next PATCH 24/25] ice: introduce
-> ice_virtchnl.c and ice_virtchnl.h
+> Subject: [Intel-wired-lan] [net-next PATCH 23/25] ice: cleanup long longs in
+> ice_sriov.c
 > 
-> Just as we moved the generic virtualization library logic into
-> ice_vf_lib.c, move the virtchnl message handling into ice_virtchnl.c
+> Before we move the virtchnl message handling from ice_sriov.c into
+> ice_virtchnl.c, cleanup some long line warnings to avoid checkpatch.pl
+> complaints.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/Makefile       |    1 +
->  drivers/net/ethernet/intel/ice/ice_sriov.c    | 3771 -----------------
->  drivers/net/ethernet/intel/ice/ice_sriov.h    |   55 +-
->  .../intel/ice/{ice_sriov.c => ice_virtchnl.c} | 1915 +--------
->  drivers/net/ethernet/intel/ice/ice_virtchnl.h |   82 +
->  5 files changed, 89 insertions(+), 5735 deletions(-)
->  copy drivers/net/ethernet/intel/ice/{ice_sriov.c => ice_virtchnl.c} (68%)
->  create mode 100644 drivers/net/ethernet/intel/ice/ice_virtchnl.h
+>  drivers/net/ethernet/intel/ice/ice_sriov.c | 39 +++++++++++++++-------
+>  1 file changed, 27 insertions(+), 12 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/Makefile
-> b/drivers/net/ethernet/intel/ice/Makefile
-> index c21a0aa897a5..9183d480b70b 100644
-> --- a/drivers/net/ethernet/intel/ice/Makefile
-> +++ b/drivers/net/ethernet/intel/ice/Makefile
+> diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c
+> b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> index f74474f8af99..4f3d25ed68c9 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> @@ -2325,16 +2325,21 @@ static int
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
