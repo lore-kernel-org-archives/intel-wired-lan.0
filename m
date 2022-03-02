@@ -1,157 +1,74 @@
-From: Kubalewski, Arkadiusz <arkadiusz.kubalewski@intel.com>
-Date: Wed, 2 Mar 2022 21:10:00 +0000
-Subject: [Intel-wired-lan] i40e and TSO with MPLS ?
-In-Reply-To: <CALALjgyJhZLZALV5w3C-Etus8ZCRzeCBpwYVZgF9VUQptAQMjQ@mail.gmail.com>
-References: <DM6PR11MB4657EB65F784C3E816FD27FB9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
- <DM6PR11MB46572510E594BF3E789AC5CF9B3C9@DM6PR11MB4657.namprd11.prod.outlook.com>
- <CALALjgzQPDdNTjCBD+S2Adymk9XTH4qa4Sb6-kBuh96oKg+ajQ@mail.gmail.com>
- <DM6PR11MB4657CBB8B06ACCAB0CE201429B3D9@DM6PR11MB4657.namprd11.prod.outlook.com>
- <CALALjgxJ-=WbWBS0VxxSNWA17L6mMZA7xZa-XBBeOsYy6KujEQ@mail.gmail.com>
- <DM6PR11MB46572379068898154F187F889B029@DM6PR11MB4657.namprd11.prod.outlook.com>
- <CALALjgyJhZLZALV5w3C-Etus8ZCRzeCBpwYVZgF9VUQptAQMjQ@mail.gmail.com>
-Message-ID: <DM6PR11MB465794A7D38CFD093B81C9479B039@DM6PR11MB4657.namprd11.prod.outlook.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 2 Mar 2022 21:26:44 +0000
+Subject: [Intel-wired-lan] [net PATCH 2/2] ice: stop disabling VFs due
+ to PF error responses
+In-Reply-To: <20220217005136.75627-3-jacob.e.keller@intel.com>
+References: <20220217005136.75627-1-jacob.e.keller@intel.com>
+ <20220217005136.75627-3-jacob.e.keller@intel.com>
+Message-ID: <SJ0PR11MB562909589BB8EA12F736B4F7AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On Tue, Mar 1, 2022 at 5:58 AM Kubalewski, Arkadiusz
-> <arkadiusz.kubalewski@intel.com> wrote:
-> >
-> > > On Thu, Feb 24, 2022 at 6:28 AM Kubalewski, Arkadiusz
-> > > <arkadiusz.kubalewski@intel.com> wrote:
-> > > >
-> > > > > On Wed, Feb 23, 2022 at 9:56 AM Kubalewski, Arkadiusz
-> > > > > <arkadiusz.kubalewski@intel.com> wrote:
-> > > > > >
-> > > > > > +Joe
-> > > > > >
-> > > > > > > Greetings:
-> > > > > > >
-> > > > > > > Does i40e (XL710) support TSO with MPLS?
-> > > > > > >
-> > > > > > > We are using firmware version: 7.10 0x80006469 1.2527.0
-> > > > > > >
-> > > > > > > We've attempted to add support for TSO+MPLS to i40e, but were unable to
-> > > > > > > get it working. The patch is included below for reference, but it is almost
-> > > > > > > certainly incorrect - and I am not clear if the hardware itself would
-> > > > > > > support this even if the patch was correct.
-> > > > > > >
-> > > > > > > Applying the patch below and using tcpdump shows that:
-> > > > > > >
-> > > > > > >         - packet data, as seen by the pcap filter in the kernel, is large.
-> > > > > > >           This suggests that the kernel is attempting to offload
-> > > > > > >           segmentation to the device,
-> > > > > > >
-> > > > > > >         but
-> > > > > > >
-> > > > > > >         - those large packets are not ACK'd by the client
-> > > > > > >
-> > > > > > > This suggests that either:
-> > > > > > >
-> > > > > > >         - the device does not support TSO + MPLS, and/or
-> > > > > > >         - the patch below is incorrect
-> > > > > > >
-> > > > > > > Does anyone working on i40e have any insight on this?
-> > > > > >
-> > > > > > Hi Joe,
-> > > > > >
-> > > > > > I have done some research for your case, good news is that we believe that 710
-> > > > > > hardware supports it. Currently we do not have plans to implement such feature
-> > > > > > ourselves, but we will do our best in reviewing if you decide to implement it.
-> > > > >
-> > > > > OK, thanks. I appreciate the information and your willingness to
-> > > > > review. I am pleased to hear that the hardware supports it.
-> > > > >
-> > > > > > Such offloads should be supported on packets with up to 2 MPLS tags before the
-> > > > > > IP header. For start, you might take a look for the features pre check function:
-> > > > > > static netdev_features_t i40e_features_check(struct sk_buff *skb, ...
-> > > > > > It probably requires an update after the changes you have posted.
-> > > > >
-> > > > > I took a look at i40e_features_check, as you suggested, but I am
-> > > > > probably missing something.
-> > > > >
-> > > > > My understanding is that the call graph on the xmit path is roughly:
-> > > > >
-> > > > > __dev_queue_xmit which calls (in order):
-> > > > > 1. validate_xmit_skb -- this eventually calls i40e_features_check and
-> > > > > harmonize_features which will use the mpls_features bitfield set in
-> > > > > the patch to turn on the TSO bit
-> > > > >
-> > > > Just saying, worth to check if the required flags are already set when
-> > > > i40e_features_check was called.
-> > > >
-> > > > > 2. dev_hard_start_xmit -- this delivers packets to taps, then to the driver
-> > > > >
-> > > > > dev_hard_start_xmit internally hands packets to any taps installed
-> > > > > (for example pcap), before handing them to the driver
-> > > > > (i40e_lan_xmit_frame).
-> > > > >
-> > > > > In our tests of the patch below, we see that tcpdump reports large
-> > > > > packet sizes. Since we see them in tcpdump, I think this suggests that
-> > > > > everything leading up to pcap delivery (including i40e_features_check)
-> > > > > is correct... otherwise we'd see smaller packet sizes being delivered
-> > > > > to pcap.
-> > > > >
-> > > > > This leads me to believe the issue is somewhere in i40e_lan_xmit_frame
-> > > > > or below -- most likely in i40e_tso, which my patch attempts to tweak.
-> > > > >
-> > > > > Let me know if I'm off track and misunderstanding your analysis, but
-> > > > > based on the above, I suspect the changes to i40e_tso are buggy.
-> > > > >
-> > > >
-> > > > Seems like your understanding is correct.
-> > > > Are those packets actually sent to the wire?
-> > > > Any stats are incremented?
-> > > > Anything at all shows up on the client?
-> > >
-> > > The bytes are never ACK'd by the client and are eventually re-transmit.
-> > >
-> > > Based on the tcpdump output I think the packet data makes it to the
-> > > driver unsegmented (which is what we want), but due to some issue in
-> > > i40e_tso (or a hardware limitation) the NIC fails to TSO the bytes and
-> > > they are eventually re-transmit.
-> > >
-> >
-> > I think good place to start would be the 710 datasheet:
-> > https://cdrdv2.intel.com/v1/dl/getContent/332464?explicitVersion=true
-> > i.e. 8.4.4.3.2 Transmit Segmentation Flow
-> > Please verify if your change is following the expected flow,
-> 
-> I think I found the issue.
-> 
-> The original patch only modified i40e_tso, but I needed two more tweaks:
-> 
-> - a similar change is needed in i40e_tx_enable_csum.
-> - tx_flags need to be tweaked slightly so that the l4 protocol
-> detection works in i40e_tx_enable_csum.
-> 
-> Tests in my test environment show large MPLS packet TX which are now
-> ACK'd by the client :)
-> 
-> I will submit this patch to the mailing list now and CC you on it for
-> a formal review.
-> 
-> I noticed ice probably needs the same change (assuming it supports
-> mpls+tso), but I don't have any ice hardware to test on. I am happy to
-> port this change to the ice driver and submit that as well, if you
-> like, but I'll need to ask the ice folks to test on my behalf.
-> 
-> Let me know if you'd like me to submit to ice, as well.
-> 
-> Thanks,
-> Joe
-> 
 
-Hi Joe,
 
-Great to hear that! :)
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jacob Keller
+> Sent: Thursday, February 17, 2022 1:52 AM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [net PATCH 2/2] ice: stop disabling VFs due to PF
+> error responses
+> 
+> The ice_vc_send_msg_to_vf function has logic to detect "failure"
+> responses being sent to a VF. If a VF is sent more than
+> ICE_DFLT_NUM_INVAL_MSGS_ALLOWED then the VF is marked as disabled.
+> Almost identical logic also existed in the i40e driver.
+> 
+> This logic was added to the ice driver in commit 1071a8358a28 ("ice:
+> Implement virtchnl commands for AVF support") which itself copied from the
+> i40e implementation in commit 5c3c48ac6bf5 ("i40e: implement virtual device
+> interface").
+> 
+> Neither commit provides a proper explanation or justification of the check. In
+> fact, later commits to i40e changed the logic to allow bypassing the check in
+> some specific instances.
+> 
+> The "logic" for this seems to be that error responses somehow indicate a
+> malicious VF. This is not really true. The PF might be sending an error for any
+> number of reasons such as lack of resources, etc.
+> 
+> Additionally, this causes the PF to log an info message for every failed VF
+> response which may confuse users, and can spam the kernel log.
+> 
+> This behavior is not documented as part of any requirement for our products
+> and other operating system drivers such as the FreeBSD implementation of
+> our drivers do not include this type of check.
+> 
+> In fact, the change from dev_err to dev_info in i40e commit 18b7af57d9c1
+> ("i40e: Lower some message levels") explains that these messages typically
+> don't actually indicate a real issue. It is quite likely that a user who hits this in
+> practice will be very confused as the VF will be disabled without an obvious
+> way to recover.
+> 
+> We already have robust malicious driver detection logic using actual
+> hardware detection mechanisms that detect and prevent invalid device
+> usage. Remove the logic since its not a documented requirement and the
+> behavior is not intuitive.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.c   | 18 ------------------
+>  .../net/ethernet/intel/ice/ice_virtchnl_pf.h   |  3 ---
+>  2 files changed, 21 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> index 8a61b23f7cb3..353c2a3755d0 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_pf.c
+> @@ -2180,24 +2180,6 @@ ice_vc_send_msg_to_vf(struct ice_vf *vf, u32
 
-If you think that it is required to enable MPLS+TSO on ice, you can also submit
-the patch there. When the patch is submitted to intel-wired-lan they are
-passed to validation team,  and once they are reviewed and validated, our
-maintainer will propose them to be merged into Dave's next-tree.
-
-Thanks,
-Arek
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
