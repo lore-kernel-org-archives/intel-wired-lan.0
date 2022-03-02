@@ -1,11 +1,11 @@
 From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 2 Mar 2022 19:55:40 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 21/25] ice: introduce
- ICE_VF_RESET_NOTIFY flag
-In-Reply-To: <20220223002712.2771809-22-jacob.e.keller@intel.com>
+Date: Wed, 2 Mar 2022 19:56:27 +0000
+Subject: [Intel-wired-lan] [net-next PATCH 16/25] ice: move reset
+ functionality into ice_vf_lib.c
+In-Reply-To: <20220223002712.2771809-17-jacob.e.keller@intel.com>
 References: <20220223002712.2771809-1-jacob.e.keller@intel.com>
- <20220223002712.2771809-22-jacob.e.keller@intel.com>
-Message-ID: <SJ0PR11MB5629BD6F16225AF3766AA517AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
+ <20220223002712.2771809-17-jacob.e.keller@intel.com>
+Message-ID: <SJ0PR11MB56299347D8DF754357E24C18AB039@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,33 +19,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Jacob Keller
 > Sent: Wednesday, February 23, 2022 1:27 AM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [net-next PATCH 21/25] ice: introduce
-> ICE_VF_RESET_NOTIFY flag
+> Subject: [Intel-wired-lan] [net-next PATCH 16/25] ice: move reset
+> functionality into ice_vf_lib.c
 > 
-> In some cases of resetting a VF, the PF would like to first notify the VF that a
-> reset is impending. This is currently done via ice_vc_notify_vf_reset. A
-> wrapper to ice_reset_vf, ice_vf_reset_vf, is used to call this function first
-> before calling ice_reset_vf.
-> 
-> In fact, every single call to ice_vc_notify_vf_reset occurs just prior to a call to
-> ice_vc_reset_vf.
-> 
-> Now that ice_reset_vf has flags, replace this separate call with an
-> ICE_VF_RESET_NOTIFY flag. This removes an unnecessary exported function
-> of ice_vc_notify_vf_reset, and also makes there be a single function to reset
-> VFs (ice_reset_vf).
+> Now that the reset functions do not rely on Single Root specific behavior,
+> move the ice_reset_vf, ice_reset_all_vfs, and ice_vf_rebuild_host_cfg
+> functions and their dependent helper functions out of ice_sriov.c and into
+> ice_vf_lib.c
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_sriov.c  | 44 +++------------------
-> drivers/net/ethernet/intel/ice/ice_vf_lib.c | 28 +++++++++++++
-> drivers/net/ethernet/intel/ice/ice_vf_lib.h |  1 +
->  3 files changed, 34 insertions(+), 39 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_sriov.c    | 475 ------------------
+>  drivers/net/ethernet/intel/ice/ice_sriov.h    |  15 -
+>  drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 475 ++++++++++++++++++
+>  drivers/net/ethernet/intel/ice/ice_vf_lib.h   |  12 +
+>  .../ethernet/intel/ice/ice_vf_lib_private.h   |   1 +
+>  5 files changed, 488 insertions(+), 490 deletions(-)
 > 
 > diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c
 > b/drivers/net/ethernet/intel/ice/ice_sriov.c
-> index c234e4edc7f0..46d656d385c4 100644
+> index b2376e3b746e..4a8cf8f646c8 100644
 > --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
 > +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> @@ -466,37 +466,6 @@ void ice_free_vfs(struct ice_pf *pf)
 
 Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
