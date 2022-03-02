@@ -1,42 +1,47 @@
-From: trix@redhat.com <trix@redhat.com>
-Date: Wed,  2 Mar 2022 04:57:02 -0800
-Subject: [Intel-wired-lan] [PATCH] i40e: little endian only valid checksums
-Message-ID: <20220302125702.358999-1-trix@redhat.com>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Wed, 2 Mar 2022 14:04:06 +0000
+Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
+ iterator after loop body as a ptr
+In-Reply-To: <20220302093106.8402-1-xiam0nd.tong@gmail.com>
+References: <CAHk-=whLK11HyvpUtEftOjc3Gup2V77KpAQ2fycj3uai=qceHw@mail.gmail.com>
+ <20220302093106.8402-1-xiam0nd.tong@gmail.com>
+Message-ID: <1077f17e50d34dc2bbfdf4e52a1cb2fd@AcuMS.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tom Rix <trix@redhat.com>
+From: Xiaomeng Tong
+> Sent: 02 March 2022 09:31
+> 
+> On Mon, 28 Feb 2022 16:41:04 -0800, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
+> > But basically to _me_, the important part is that the end result is
+> > maintainable longer-term.
+> 
+> I couldn't agree more. And because of that, I stick with the following
+> approach because it's maintainable longer-term than "type(pos) pos" one:
+>  Implements a new macro for each list_for_each_entry* with _inside suffix.
+>   #define list_for_each_entry_inside(pos, type, head, member)
 
-The calculation of the checksum can fail.
-So move converting the checksum to little endian
-to inside the return status check.
+I think that it would be better to make any alternate loop macro
+just set the variable to NULL on the loop exit.
+That is easier to code for and the compiler might be persuaded to
+not redo the test.
 
-Signed-off-by: Tom Rix <trix@redhat.com>
----
- drivers/net/ethernet/intel/i40e/i40e_nvm.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+It also doesn't need an extra variable defined in the for() statement
+so can be back-ported to older kernels without required declaration
+in the middle of blocks.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index fe6dca846028f..3a38bf8bcde7e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -682,10 +682,11 @@ i40e_status i40e_update_nvm_checksum(struct i40e_hw *hw)
- 	__le16 le_sum;
- 
- 	ret_code = i40e_calc_nvm_checksum(hw, &checksum);
--	le_sum = cpu_to_le16(checksum);
--	if (!ret_code)
-+	if (!ret_code) {
-+		le_sum = cpu_to_le16(checksum);
- 		ret_code = i40e_write_nvm_aq(hw, 0x00, I40E_SR_SW_CHECKSUM_WORD,
- 					     1, &le_sum, true);
-+	}
- 
- 	return ret_code;
- }
--- 
-2.26.3
+OTOH there may be alternative definitions that can be used to get
+the compiler (or other compiler-like tools) to detect broken code.
+Even if the definition can't possibly generate a working kerrnel.
+
+	David
+
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+Registration No: 1397386 (Wales)
 
