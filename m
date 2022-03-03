@@ -1,145 +1,43 @@
-From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-Date: Thu,  3 Mar 2022 20:37:18 +0800
-Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
- iterator after loop body as a ptr
-In-Reply-To: <2d208771c50b4c6db4f43039e9d62851@AcuMS.aculab.com>
-References: <2d208771c50b4c6db4f43039e9d62851@AcuMS.aculab.com>
-Message-ID: <20220303123718.12426-1-xiam0nd.tong@gmail.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Thu, 3 Mar 2022 16:59:20 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix error with handling
+ of bonding MTU
+In-Reply-To: <20220218190604.1888716-1-david.m.ertman@intel.com>
+References: <20220218190604.1888716-1-david.m.ertman@intel.com>
+Message-ID: <BYAPR11MB3367662CCCFEA4E85CBD0926FC049@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Xiaomeng Tong
-> > Sent: 03 March 2022 07:27
-> > 
-> > On Thu, 3 Mar 2022 04:58:23 +0000, David Laight wrote:
-> > > on 3 Mar 2022 10:27:29 +0800, Xiaomeng Tong wrote:
-> > > > The problem is the mis-use of iterator outside the loop on exit, and
-> > > > the iterator will be the HEAD's container_of pointer which pointers
-> > > > to a type-confused struct. Sidenote: The *mis-use* here refers to
-> > > > mistakely access to other members of the struct, instead of the
-> > > > list_head member which acutally is the valid HEAD.
-> > >
-> > > The problem is that the HEAD's container_of pointer should never
-> > > be calculated at all.
-> > > This is what is fundamentally broken about the current definition.
-> > 
-> > Yes, the rule is "the HEAD's container_of pointer should never be
-> > calculated at all outside the loop", but how do you make sure everyone
-> > follows this rule?
-> > Everyone makes mistakes, but we can eliminate them all from the beginning
-> > with the help of compiler which can catch such use-after-loop things.
-> > 
-> > > > IOW, you would dereference a (NULL + offset_of_member) address here.
-> > >
-> > >Where?
-> > 
-> > In the case where a developer do not follows the above rule, and mistakely
-> > access a non-list-head member of the HEAD's container_of pointer outside
-> > the loop. For example:
-> >     struct req{
-> >       int a;
-> >       struct list_head h;
-> >     }
-> >     struct req *r;
-> >     list_for_each_entry(r, HEAD, h) {
-> >       if (r->a == 0x10)
-> >         break;
-> >     }
-> >     // the developer made a mistake: he didn't take this situation into
-> >     // account where all entries in the list are *r->a != 0x10*, and now
-> >     // the r is the HEAD's container_of pointer.
-> >     r->a = 0x20;
-> > Thus the "r->a = 0x20" would dereference a (NULL + offset_of_member)
-> > address here.
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Dave Ertman
+> Sent: Saturday, February 19, 2022 12:36 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix error with handling of
+> bonding MTU
 > 
-> That is just a bug.
-> No different to failing to check anything else might 'return'
-> a NULL pointer.
-
-Yes, but it?s a mistake everyone has made and will make, we should avoid
-this at the beginning with the help of compiler.
-
-> Because it is a NULL dereference you find out pretty quickly.
-
-AFAIK?NULL dereference is a undefined bahavior, can compiler quickly
-catch it? Or it can only be applied to some simple/restricted cases.
-
-> The existing loop leaves you with a valid pointer to something
-> that isn't a list item.
+> When a bonded interface is destroyed, .ndo_change_mtu can be called
+> during the tear-down process while the RTNL lock is held.  This is a problem
+> since the auxiliary driver linked to the LAN driver needs to be notified of the
+> MTU change, and this requires grabbing a device_lock on the
+> auxiliary_device's dev.  Currently this is being attempted in the same
+> execution context as the call to .ndo_change_mtu which is causing a dead-
+> lock.
 > 
-> > > > Please remind me if i missed something, thanks.
-> > > >
-> > > > Can you share your "alternative definitions" details? thanks!
-> > >
-> > > The loop should probably use as extra variable that points
-> > > to the 'list node' in the next structure.
-> > > Something like:
-> > > 	for (xxx *iter = head->next;
-> > > 		iter == &head ? ((item = NULL),0) : ((item = list_item(iter),1));
-> > > 		iter = item->member->next) {
-> > > 	   ...
-> > > With a bit of casting you can use 'item' to hold 'iter'.
-> > 
-> > you still can not make sure everyone follows this rule:
-> > "do not use iterator outside the loop" without the help of compiler,
-> > because item is declared outside the loop.
+> Move the notification of the changed MTU to a separate execution context
+> (watchdog service task) and eliminate the "before" notification.
 > 
-> That one has 'iter' defined in the loop.
-
-Oh, sorry, I misunderstood. Then this is the same way with my way of
-list_for_each_entry_inside(pos, type, head, member), which declare
-the iterator inside the loop.
-You go further and make things like "&pos->member == (head)" goes away
-to avoid calculate the HEAD's container_of pointer, although the
-calculation is harmless.
-
-> 
-> > BTW, to avoid ambiguity?the "alternative definitions" here i asked is
-> > something from you in this context:
-> > "OTOH there may be alternative definitions that can be used to get
-> > the compiler (or other compiler-like tools) to detect broken code.
-> > Even if the definition can't possibly generate a working kerrnel."
-> 
-> I was thinking of something like:
-> 	if ((pos = list_first)), 1) pos = NULL else
-> so that unchecked dereferences after the loop will be detectable
-> as NULL pointer offsets - but that in itself isn't enough to avoid
-> other warnings.
+> Fixes: 348048e724a0e ("ice: Implement iidc operations")
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h      |  1 +
+>  drivers/net/ethernet/intel/ice/ice_main.c | 29 +++++++++++------------
+>  2 files changed, 15 insertions(+), 15 deletions(-)
 > 
 
-Do you mean put this right after the loop (I changed somthing that i
-do not understand, please correct me if i am worng, thanks):
-       if (pos == list_first) pos = NULL; else
-and compiler can detect the following NULL derefernce?
-But if the NULL derefernce is just right after the loop originally,
-it will be masked by the *else* keyword?
-
-> > > > The "list_for_each_entry_inside(pos, type, head, member)" way makes
-> > > > the iterator invisiable outside the loop, and would be catched by
-> > > > compiler if use-after-loop things happened.
-> > 
-> > > It is also a compete PITA for anything doing a search.
-> > 
-> > You mean it would be a burden on search? can you show me some examples?
-> 
-> The whole business of having to save the pointer to the located item
-> before breaking the loop, remembering to have set it to NULL earlier etc.
-
-Ok, i see. And then you need pass a "item" to the list_for_each_entry macro
-as a new argument.
-
-> 
-> It is so much better if you can just do:
-> 		if (found)
-> 			break;
-> 
-> 	David
-
-this confused me. this way is better or the "save the pointer to the located item
-before breaking the loop" one?
-
---
-Xiaomeng Tong
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
