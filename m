@@ -1,7 +1,7 @@
 From: Joe Damato <jdamato@fastly.com>
-Date: Wed,  2 Mar 2022 14:45:02 -0800
-Subject: [Intel-wired-lan] [next-queue] i40e: Add support for MPLS + TSO
-Message-ID: <1646261102-84208-1-git-send-email-jdamato@fastly.com>
+Date: Wed,  2 Mar 2022 17:29:07 -0800
+Subject: [Intel-wired-lan] [next-queue v2] i40e: Add support for MPLS + TSO
+Message-ID: <1646270947-92954-1-git-send-email-jdamato@fastly.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -42,13 +42,16 @@ IP dstip.1234 > srcip.50086: Flags [.], ack 653345, win 8,
 IP dstip.1234 > srcip.50086: Flags [.], ack 655953, win 3,
   options [nop,nop,TS val 1722291395 ecr 45022534], length 0
 
+v1 -> v2:
+	- Restore erroneously deleted code from i40e_tso.
+
 Signed-off-by: Joe Damato <jdamato@fastly.com>
 Co-developed-by: Mike Gallo <mgallo@fastly.com>
 Signed-off-by: Mike Gallo <mgallo@fastly.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 20 +++++++++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 51 +++++++++++++++++------------
- 2 files changed, 48 insertions(+), 23 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 20 ++++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 47 ++++++++++++++++++-----------
+ 2 files changed, 48 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
 index 1145a6e..f4730cc 100644
@@ -89,17 +92,17 @@ index 1145a6e..f4730cc 100644
  	netdev->hw_features |= NETIF_F_HW_L2FW_DOFFLOAD;
  
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 0eae585..fadf84a 100644
+index 0eae585..8b844ad 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -9,6 +9,7 @@
- #include "i40e_prototype.h"
- #include "i40e_txrx_common.h"
- #include "i40e_xsk.h"
-+#include <net/mpls.h>
+@@ -3,6 +3,7 @@
  
- #define I40E_TXD_CMD (I40E_TX_DESC_CMD_EOP | I40E_TX_DESC_CMD_RS)
- /**
+ #include <linux/prefetch.h>
+ #include <linux/bpf_trace.h>
++#include <net/mpls.h>
+ #include <net/xdp.h>
+ #include "i40e.h"
+ #include "i40e_trace.h"
 @@ -3015,6 +3016,7 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
  {
  	struct sk_buff *skb = first->skb;
@@ -143,18 +146,7 @@ index 0eae585..fadf84a 100644
  	}
  
  	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
-@@ -3069,10 +3079,6 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
- 					     (__force __wsum)htonl(paylen));
- 		}
- 
--		/* reset pointers to inner headers */
--		ip.hdr = skb_inner_network_header(skb);
--		l4.hdr = skb_inner_transport_header(skb);
--
- 		/* initialize inner IP header fields */
- 		if (ip.v4->version == 4) {
- 			ip.v4->tot_len = 0;
-@@ -3100,10 +3106,9 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
+@@ -3100,10 +3110,9 @@ static int i40e_tso(struct i40e_tx_buffer *first, u8 *hdr_len,
  
  	/* pull values out of skb_shinfo */
  	gso_size = skb_shinfo(skb)->gso_size;
@@ -166,7 +158,7 @@ index 0eae585..fadf84a 100644
  	first->bytecount += (first->gso_segs - 1) * *hdr_len;
  
  	/* find the field values */
-@@ -3187,13 +3192,27 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+@@ -3187,13 +3196,27 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
  	unsigned char *exthdr;
  	u32 offset, cmd = 0;
  	__be16 frag_off;
@@ -196,7 +188,7 @@ index 0eae585..fadf84a 100644
  
  	/* compute outer L2 header size */
  	offset = ((ip.hdr - skb->data) / 2) << I40E_TX_DESC_LENGTH_MACLEN_SHIFT;
-@@ -3749,7 +3768,6 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+@@ -3749,7 +3772,6 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
  	struct i40e_tx_buffer *first;
  	u32 td_offset = 0;
  	u32 tx_flags = 0;
@@ -204,7 +196,7 @@ index 0eae585..fadf84a 100644
  	u32 td_cmd = 0;
  	u8 hdr_len = 0;
  	int tso, count;
-@@ -3791,15 +3809,6 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+@@ -3791,15 +3813,6 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
  	if (i40e_tx_prepare_vlan_flags(skb, tx_ring, &tx_flags))
  		goto out_drop;
  
