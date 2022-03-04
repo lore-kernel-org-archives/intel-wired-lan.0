@@ -1,10 +1,10 @@
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Fri,  4 Mar 2022 17:40:42 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v10 1/7] gtp: Allow to create GTP
- device without FDs
+Date: Fri,  4 Mar 2022 17:40:44 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v10 3/7] gtp: Implement GTP echo
+ request
 In-Reply-To: <20220304164048.476900-1-marcin.szycik@linux.intel.com>
 References: <20220304164048.476900-1-marcin.szycik@linux.intel.com>
-Message-ID: <20220304164048.476900-2-marcin.szycik@linux.intel.com>
+Message-ID: <20220304164048.476900-4-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,217 +13,462 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 
-Currently, when the user wants to create GTP device, he has to
-provide file handles to the sockets created in userspace (IFLA_GTP_FD0,
-IFLA_GTP_FD1). This behaviour is not ideal, considering the option of
-adding support for GTP device creation through ip link. Ip link
-application is not a good place to create such sockets.
+Adding GTP device through ip link creates the situation where
+GTP instance is not able to send GTP echo requests.
+Echo requests are used to check if GTP peer is still alive.
+With this patch, gtp_genl_ops are extended by new cmd (GTP_CMD_ECHOREQ)
+which allows to send echo request in the given version of GTP
+protocol (v0 or v1), from the given ms address to he given
+peer. TID is not inclued because in all path management
+messages it should be equal to 0.
 
-This patch allows to create GTP device without providing
-IFLA_GTP_FD0 and IFLA_GTP_FD1 arguments. If the user sets
-IFLA_GTP_CREATE_SOCKETS attribute, then GTP module takes care
-of creating UDP sockets by itself. Sockets are created with the
-commonly known UDP ports used for GTP protocol (GTP0_PORT and
-GTP1U_PORT). In this case we don't have to provide encap_destroy
-because no extra deinitialization is needed, everything is covered
-by udp_tunnel_sock_release.
-
-Note: GTP instance created with only this change applied, does
-not handle GTP Echo Requests. This is implemented in the following
-patch.
+When GTP echo response is detected, multicast message is
+send to everyone in the gtp_genl_family. Message contains
+GTP version, ms address and peer address.
 
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Suggested-by: Harald Welte <laforge@gnumonks.org>
 ---
-v4: Use ntohs when creating UDP socket
-v5: IFLA_GTP_CREATE_SOCKETS introduced, gtp_newlink refactor
-v6: Reordering refactor removed
+v8: Handling of GTP Echo Response removed
+v9: Implement sending multicast message when echo response
+    is detected
+v10: Fix 80 char line limit
 ---
- drivers/net/gtp.c            | 101 +++++++++++++++++++++++++++++------
- include/uapi/linux/if_link.h |   1 +
- 2 files changed, 85 insertions(+), 17 deletions(-)
+ drivers/net/gtp.c        | 305 ++++++++++++++++++++++++++++++++++-----
+ include/uapi/linux/gtp.h |   1 +
+ 2 files changed, 269 insertions(+), 37 deletions(-)
 
 diff --git a/drivers/net/gtp.c b/drivers/net/gtp.c
-index bf087171bcf0..25d8521897b3 100644
+index bf434d79f868..756714d4ad92 100644
 --- a/drivers/net/gtp.c
 +++ b/drivers/net/gtp.c
-@@ -66,8 +66,10 @@ struct gtp_dev {
+@@ -79,6 +79,12 @@ struct gtp_dev {
+ 	u8			restart_count;
+ };
  
- 	struct sock		*sk0;
- 	struct sock		*sk1u;
-+	u8			sk_created;
++struct echo_info {
++	struct in_addr		ms_addr_ip4;
++	struct in_addr		peer_addr_ip4;
++	u8			gtp_version;
++};
++
+ static unsigned int gtp_net_id __read_mostly;
  
- 	struct net_device	*dev;
-+	struct net		*net;
+ struct gtp_net {
+@@ -87,6 +93,16 @@ struct gtp_net {
  
- 	unsigned int		role;
- 	unsigned int		hash_size;
-@@ -320,8 +322,16 @@ static void gtp_encap_disable_sock(struct sock *sk)
+ static u32 gtp_h_initval;
  
- static void gtp_encap_disable(struct gtp_dev *gtp)
++static struct genl_family gtp_genl_family;
++
++enum gtp_multicast_groups {
++	GTP_GENL_MCGRP,
++};
++
++static const struct genl_multicast_group gtp_genl_mcgrps[] = {
++	[GTP_GENL_MCGRP] = { .name = GTP_GENL_MCGRP_NAME },
++};
++
+ static void pdp_context_delete(struct pdp_ctx *pctx);
+ 
+ static inline u32 gtp0_hashfn(u64 tid)
+@@ -243,12 +259,38 @@ static struct rtable *ip4_route_output_gtp(struct flowi4 *fl4,
+  *   by the receiver
+  * Returns true if the echo req was correct, false otherwise.
+  */
+-static bool gtp0_validate_echo_req(struct gtp0_header *gtp0)
++static bool gtp0_validate_echo_hdr(struct gtp0_header *gtp0)
  {
--	gtp_encap_disable_sock(gtp->sk0);
--	gtp_encap_disable_sock(gtp->sk1u);
-+	if (gtp->sk_created) {
-+		udp_tunnel_sock_release(gtp->sk0->sk_socket);
-+		udp_tunnel_sock_release(gtp->sk1u->sk_socket);
-+		gtp->sk_created = false;
-+		gtp->sk0 = NULL;
-+		gtp->sk1u = NULL;
-+	} else {
-+		gtp_encap_disable_sock(gtp->sk0);
-+		gtp_encap_disable_sock(gtp->sk1u);
-+	}
+ 	return !(gtp0->tid || (gtp0->flags ^ 0x1e) ||
+ 		gtp0->number != 0xff || gtp0->flow);
  }
  
- /* UDP encapsulation receive handler. See net/ipv4/udp.c.
-@@ -656,17 +666,69 @@ static void gtp_destructor(struct net_device *dev)
- 	kfree(gtp->tid_hash);
- }
- 
-+static struct sock *gtp_create_sock(int type, struct gtp_dev *gtp)
++/* msg_type has to be GTP_ECHO_REQ or GTP_ECHO_RSP */
++static void gtp0_build_echo_msg(struct gtp0_header *hdr, __u8 msg_type)
 +{
-+	struct udp_tunnel_sock_cfg tuncfg = {};
-+	struct udp_port_cfg udp_conf = {
-+		.local_ip.s_addr	= htonl(INADDR_ANY),
-+		.family			= AF_INET,
-+	};
-+	struct net *net = gtp->net;
-+	struct socket *sock;
-+	int err;
++	int len_pkt, len_hdr;
 +
-+	if (type == UDP_ENCAP_GTP0)
-+		udp_conf.local_udp_port = htons(GTP0_PORT);
-+	else if (type == UDP_ENCAP_GTP1U)
-+		udp_conf.local_udp_port = htons(GTP1U_PORT);
++	hdr->flags = 0x1e; /* v0, GTP-non-prime. */
++	hdr->type = msg_type;
++	/* GSM TS 09.60. 7.3 In all Path Management Flow Label and TID
++	 * are not used and shall be set to 0.
++	 */
++	hdr->flow = 0;
++	hdr->tid = 0;
++	hdr->number = 0xff;
++	hdr->spare[0] = 0xff;
++	hdr->spare[1] = 0xff;
++	hdr->spare[2] = 0xff;
++
++	len_pkt = sizeof(struct gtp0_packet);
++	len_hdr = sizeof(struct gtp0_header);
++
++	if (msg_type == GTP_ECHO_RSP)
++		hdr->length = htons(len_pkt - len_hdr);
 +	else
-+		return ERR_PTR(-EINVAL);
-+
-+	err = udp_sock_create(net, &udp_conf, &sock);
-+	if (err)
-+		return ERR_PTR(err);
-+
-+	tuncfg.sk_user_data = gtp;
-+	tuncfg.encap_type = type;
-+	tuncfg.encap_rcv = gtp_encap_recv;
-+	tuncfg.encap_destroy = NULL;
-+
-+	setup_udp_tunnel_sock(net, sock, &tuncfg);
-+
-+	return sock->sk;
++		hdr->length = 0;
 +}
 +
-+static int gtp_create_sockets(struct gtp_dev *gtp, struct nlattr *data[])
+ static int gtp0_send_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
+ {
+ 	struct gtp0_packet *gtp_pkt;
+@@ -260,7 +302,7 @@ static int gtp0_send_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
+ 
+ 	gtp0 = (struct gtp0_header *)(skb->data + sizeof(struct udphdr));
+ 
+-	if (!gtp0_validate_echo_req(gtp0))
++	if (!gtp0_validate_echo_hdr(gtp0))
+ 		return -1;
+ 
+ 	seq = gtp0->seq;
+@@ -271,10 +313,7 @@ static int gtp0_send_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
+ 	gtp_pkt = skb_push(skb, sizeof(struct gtp0_packet));
+ 	memset(gtp_pkt, 0, sizeof(struct gtp0_packet));
+ 
+-	gtp_pkt->gtp0_h.flags = 0x1e; /* v0, GTP-non-prime. */
+-	gtp_pkt->gtp0_h.type = GTP_ECHO_RSP;
+-	gtp_pkt->gtp0_h.length =
+-		htons(sizeof(struct gtp0_packet) - sizeof(struct gtp0_header));
++	gtp0_build_echo_msg(&gtp_pkt->gtp0_h, GTP_ECHO_RSP);
+ 
+ 	/* GSM TS 09.60. 7.3 The Sequence Number in a signalling response
+ 	 * message shall be copied from the signalling request message
+@@ -282,16 +321,6 @@ static int gtp0_send_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
+ 	 */
+ 	gtp_pkt->gtp0_h.seq = seq;
+ 
+-	/* GSM TS 09.60. 7.3 In all Path Management Flow Label and TID
+-	 * are not used and shall be set to 0.
+-	 */
+-	gtp_pkt->gtp0_h.flow = 0;
+-	gtp_pkt->gtp0_h.tid = 0;
+-	gtp_pkt->gtp0_h.number = 0xff;
+-	gtp_pkt->gtp0_h.spare[0] = 0xff;
+-	gtp_pkt->gtp0_h.spare[1] = 0xff;
+-	gtp_pkt->gtp0_h.spare[2] = 0xff;
+-
+ 	gtp_pkt->ie.tag = GTPIE_RECOVERY;
+ 	gtp_pkt->ie.val = gtp->restart_count;
+ 
+@@ -319,6 +348,61 @@ static int gtp0_send_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
+ 	return 0;
+ }
+ 
++static int gtp_genl_fill_echo(struct sk_buff *skb, u32 snd_portid, u32 snd_seq,
++			      int flags, u32 type, struct echo_info echo)
 +{
-+	struct sock *sk1u = NULL;
-+	struct sock *sk0 = NULL;
++	void *genlh;
 +
-+	sk0 = gtp_create_sock(UDP_ENCAP_GTP0, gtp);
-+	if (IS_ERR(sk0))
-+		return PTR_ERR(sk0);
++	genlh = genlmsg_put(skb, snd_portid, snd_seq, &gtp_genl_family, flags,
++			    type);
++	if (!genlh)
++		goto failure;
 +
-+	sk1u = gtp_create_sock(UDP_ENCAP_GTP1U, gtp);
-+	if (IS_ERR(sk1u)) {
-+		udp_tunnel_sock_release(sk0->sk_socket);
-+		return PTR_ERR(sk1u);
++	if (nla_put_u32(skb, GTPA_VERSION, echo.gtp_version) ||
++	    nla_put_be32(skb, GTPA_PEER_ADDRESS, echo.peer_addr_ip4.s_addr) ||
++	    nla_put_be32(skb, GTPA_MS_ADDRESS, echo.ms_addr_ip4.s_addr))
++		goto failure;
++
++	genlmsg_end(skb, genlh);
++	return 0;
++
++failure:
++	genlmsg_cancel(skb, genlh);
++	return -EMSGSIZE;
++}
++
++static int gtp0_handle_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
++{
++	struct gtp0_header *gtp0;
++	struct echo_info echo;
++	struct sk_buff *msg;
++	struct iphdr *iph;
++	int ret;
++
++	gtp0 = (struct gtp0_header *)(skb->data + sizeof(struct udphdr));
++
++	if (!gtp0_validate_echo_hdr(gtp0))
++		return -1;
++
++	iph = ip_hdr(skb);
++	echo.ms_addr_ip4.s_addr = iph->daddr;
++	echo.peer_addr_ip4.s_addr = iph->saddr;
++	echo.gtp_version = GTP_V0;
++
++	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
++	if (!msg)
++		return -ENOMEM;
++
++	ret = gtp_genl_fill_echo(msg, 0, 0, 0, GTP_CMD_ECHOREQ, echo);
++	if (ret < 0) {
++		nlmsg_free(msg);
++		return ret;
 +	}
 +
-+	gtp->sk_created = true;
-+	gtp->sk0 = sk0;
-+	gtp->sk1u = sk1u;
++	return genlmsg_multicast_netns(&gtp_genl_family, dev_net(gtp->dev),
++				       msg, 0, GTP_GENL_MCGRP, GFP_ATOMIC);
++}
 +
+ /* 1 means pass up to the stack, -1 means drop and 0 means decapsulated. */
+ static int gtp0_udp_encap_recv(struct gtp_dev *gtp, struct sk_buff *skb)
+ {
+@@ -342,6 +426,9 @@ static int gtp0_udp_encap_recv(struct gtp_dev *gtp, struct sk_buff *skb)
+ 	if (gtp0->type == GTP_ECHO_REQ && gtp->sk_created)
+ 		return gtp0_send_echo_resp(gtp, skb);
+ 
++	if (gtp0->type == GTP_ECHO_RSP && gtp->sk_created)
++		return gtp0_handle_echo_resp(gtp, skb);
++
+ 	if (gtp0->type != GTP_TPDU)
+ 		return 1;
+ 
+@@ -354,6 +441,36 @@ static int gtp0_udp_encap_recv(struct gtp_dev *gtp, struct sk_buff *skb)
+ 	return gtp_rx(pctx, skb, hdrlen, gtp->role);
+ }
+ 
++/* msg_type has to be GTP_ECHO_REQ or GTP_ECHO_RSP */
++static void gtp1u_build_echo_msg(struct gtp1_header_long *hdr, __u8 msg_type)
++{
++	int len_pkt, len_hdr;
++
++	/* S flag must be set to 1 */
++	hdr->flags = 0x32; /* v1, GTP-non-prime. */
++	hdr->type = msg_type;
++	/* 3GPP TS 29.281 5.1 - TEID has to be set to 0 */
++	hdr->tid = 0;
++
++	/* seq, npdu and next should be counted to the length of the GTP packet
++	 * that's why szie of gtp1_header should be subtracted,
++	 * not size of gtp1_header_long.
++	 */
++
++	len_hdr = sizeof(struct gtp1_header);
++
++	if (msg_type == GTP_ECHO_RSP) {
++		len_pkt = sizeof(struct gtp1u_packet);
++		hdr->length = htons(len_pkt - len_hdr);
++	} else {
++		/* GTP_ECHO_REQ does not carry GTP Information Element,
++		 * the why gtp1_header_long is used here.
++		 */
++		len_pkt = sizeof(struct gtp1_header_long);
++		hdr->length = htons(len_pkt - len_hdr);
++	}
++}
++
+ static int gtp1u_send_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
+ {
+ 	struct gtp1_header_long *gtp1u;
+@@ -378,17 +495,7 @@ static int gtp1u_send_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
+ 	gtp_pkt = skb_push(skb, sizeof(struct gtp1u_packet));
+ 	memset(gtp_pkt, 0, sizeof(struct gtp1u_packet));
+ 
+-	/* S flag must be set to 1 */
+-	gtp_pkt->gtp1u_h.flags = 0x32;
+-	gtp_pkt->gtp1u_h.type = GTP_ECHO_RSP;
+-	/* seq, npdu and next should be counted to the length of the GTP packet
+-	 * that's why szie of gtp1_header should be subtracted,
+-	 * not why szie of gtp1_header_long.
+-	 */
+-	gtp_pkt->gtp1u_h.length =
+-		htons(sizeof(struct gtp1u_packet) - sizeof(struct gtp1_header));
+-	/* 3GPP TS 29.281 5.1 - TEID has to be set to 0 */
+-	gtp_pkt->gtp1u_h.tid = 0;
++	gtp1u_build_echo_msg(&gtp_pkt->gtp1u_h, GTP_ECHO_RSP);
+ 
+ 	/* 3GPP TS 29.281 7.7.2 - The Restart Counter value in the
+ 	 * Recovery information element shall not be used, i.e. it shall
+@@ -423,6 +530,42 @@ static int gtp1u_send_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
+ 	return 0;
+ }
+ 
++static int gtp1u_handle_echo_resp(struct gtp_dev *gtp, struct sk_buff *skb)
++{
++	struct gtp1_header_long *gtp1u;
++	struct echo_info echo;
++	struct sk_buff *msg;
++	struct iphdr *iph;
++	int ret;
++
++	gtp1u = (struct gtp1_header_long *)(skb->data + sizeof(struct udphdr));
++
++	/* 3GPP TS 29.281 5.1 - For the Echo Request, Echo Response,
++	 * Error Indication and Supported Extension Headers Notification
++	 * messages, the S flag shall be set to 1 and TEID shall be set to 0.
++	 */
++	if (!(gtp1u->flags & GTP1_F_SEQ) || gtp1u->tid)
++		return -1;
++
++	iph = ip_hdr(skb);
++	echo.ms_addr_ip4.s_addr = iph->daddr;
++	echo.peer_addr_ip4.s_addr = iph->saddr;
++	echo.gtp_version = GTP_V1;
++
++	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_ATOMIC);
++	if (!msg)
++		return -ENOMEM;
++
++	ret = gtp_genl_fill_echo(msg, 0, 0, 0, GTP_CMD_ECHOREQ, echo);
++	if (ret < 0) {
++		nlmsg_free(msg);
++		return ret;
++	}
++
++	return genlmsg_multicast_netns(&gtp_genl_family, dev_net(gtp->dev),
++				       msg, 0, GTP_GENL_MCGRP, GFP_ATOMIC);
++}
++
+ static int gtp1u_udp_encap_recv(struct gtp_dev *gtp, struct sk_buff *skb)
+ {
+ 	unsigned int hdrlen = sizeof(struct udphdr) +
+@@ -445,6 +588,9 @@ static int gtp1u_udp_encap_recv(struct gtp_dev *gtp, struct sk_buff *skb)
+ 	if (gtp1->type == GTP_ECHO_REQ && gtp->sk_created)
+ 		return gtp1u_send_echo_resp(gtp, skb);
+ 
++	if (gtp1->type == GTP_ECHO_RSP && gtp->sk_created)
++		return gtp1u_handle_echo_resp(gtp, skb);
++
+ 	if (gtp1->type != GTP_TPDU)
+ 		return 1;
+ 
+@@ -1431,16 +1577,6 @@ static int gtp_genl_del_pdp(struct sk_buff *skb, struct genl_info *info)
+ 	return err;
+ }
+ 
+-static struct genl_family gtp_genl_family;
+-
+-enum gtp_multicast_groups {
+-	GTP_GENL_MCGRP,
+-};
+-
+-static const struct genl_multicast_group gtp_genl_mcgrps[] = {
+-	[GTP_GENL_MCGRP] = { .name = GTP_GENL_MCGRP_NAME },
+-};
+-
+ static int gtp_genl_fill_info(struct sk_buff *skb, u32 snd_portid, u32 snd_seq,
+ 			      int flags, u32 type, struct pdp_ctx *pctx)
+ {
+@@ -1584,6 +1720,95 @@ static int gtp_genl_dump_pdp(struct sk_buff *skb,
+ 	return skb->len;
+ }
+ 
++static int gtp_genl_send_echo_req(struct sk_buff *skb, struct genl_info *info)
++{
++	struct sk_buff *skb_to_send;
++	__be32 src_ip, dst_ip;
++	unsigned int version;
++	struct gtp_dev *gtp;
++	struct flowi4 fl4;
++	struct rtable *rt;
++	struct sock *sk;
++	__be16 port;
++	int len;
++
++	if (!info->attrs[GTPA_VERSION] ||
++	    !info->attrs[GTPA_LINK] ||
++	    !info->attrs[GTPA_PEER_ADDRESS] ||
++	    !info->attrs[GTPA_MS_ADDRESS])
++		return -EINVAL;
++
++	version = nla_get_u32(info->attrs[GTPA_VERSION]);
++	dst_ip = nla_get_be32(info->attrs[GTPA_PEER_ADDRESS]);
++	src_ip = nla_get_be32(info->attrs[GTPA_MS_ADDRESS]);
++
++	gtp = gtp_find_dev(sock_net(skb->sk), info->attrs);
++	if (!gtp)
++		return -ENODEV;
++
++	if (!gtp->sk_created)
++		return -EOPNOTSUPP;
++	if (!(gtp->dev->flags & IFF_UP))
++		return -ENETDOWN;
++
++	if (version == GTP_V0) {
++		struct gtp0_header *gtp0_h;
++
++		len = LL_RESERVED_SPACE(gtp->dev) + sizeof(struct gtp0_header) +
++			sizeof(struct iphdr) + sizeof(struct udphdr);
++
++		skb_to_send = netdev_alloc_skb_ip_align(gtp->dev, len);
++		if (!skb_to_send)
++			return -ENOMEM;
++
++		sk = gtp->sk0;
++		port = htons(GTP0_PORT);
++
++		gtp0_h = skb_push(skb_to_send, sizeof(struct gtp0_header));
++		memset(gtp0_h, 0, sizeof(struct gtp0_header));
++		gtp0_build_echo_msg(gtp0_h, GTP_ECHO_REQ);
++	} else if (version == GTP_V1) {
++		struct gtp1_header_long *gtp1u_h;
++
++		len = LL_RESERVED_SPACE(gtp->dev) +
++			sizeof(struct gtp1_header_long) +
++			sizeof(struct iphdr) + sizeof(struct udphdr);
++
++		skb_to_send = netdev_alloc_skb_ip_align(gtp->dev, len);
++		if (!skb_to_send)
++			return -ENOMEM;
++
++		sk = gtp->sk1u;
++		port = htons(GTP1U_PORT);
++
++		gtp1u_h = skb_push(skb_to_send,
++				   sizeof(struct gtp1_header_long));
++		memset(gtp1u_h, 0, sizeof(struct gtp1_header_long));
++		gtp1u_build_echo_msg(gtp1u_h, GTP_ECHO_REQ);
++	} else {
++		return -ENODEV;
++	}
++
++	rt = ip4_route_output_gtp(&fl4, sk, dst_ip, src_ip);
++	if (IS_ERR(rt)) {
++		netdev_dbg(gtp->dev, "no route for echo request to %pI4\n",
++			   &dst_ip);
++			   kfree_skb(skb_to_send);
++		return -ENODEV;
++	}
++
++	udp_tunnel_xmit_skb(rt, sk, skb_to_send,
++			    fl4.saddr, fl4.daddr,
++			    fl4.flowi4_tos,
++			    ip4_dst_hoplimit(&rt->dst),
++			    0,
++			    port, port,
++			    !net_eq(sock_net(sk),
++				    dev_net(gtp->dev)),
++			    false);
 +	return 0;
 +}
 +
- static int gtp_newlink(struct net *src_net, struct net_device *dev,
- 		       struct nlattr *tb[], struct nlattr *data[],
- 		       struct netlink_ext_ack *extack)
- {
-+	unsigned int role = GTP_ROLE_GGSN;
- 	struct gtp_dev *gtp;
- 	struct gtp_net *gn;
- 	int hashsize, err;
- 
--	if (!data[IFLA_GTP_FD0] && !data[IFLA_GTP_FD1])
--		return -EINVAL;
--
- 	gtp = netdev_priv(dev);
- 
- 	if (!data[IFLA_GTP_PDP_HASHSIZE]) {
-@@ -677,11 +739,23 @@ static int gtp_newlink(struct net *src_net, struct net_device *dev,
- 			hashsize = 1024;
- 	}
- 
-+	if (data[IFLA_GTP_ROLE]) {
-+		role = nla_get_u32(data[IFLA_GTP_ROLE]);
-+		if (role > GTP_ROLE_SGSN)
-+			return -EINVAL;
-+	}
-+	gtp->role = role;
-+
-+	gtp->net = src_net;
-+
- 	err = gtp_hashtable_new(gtp, hashsize);
- 	if (err < 0)
- 		return err;
- 
--	err = gtp_encap_enable(gtp, data);
-+	if (data[IFLA_GTP_CREATE_SOCKETS])
-+		err = gtp_create_sockets(gtp, data);
-+	else
-+		err = gtp_encap_enable(gtp, data);
- 	if (err < 0)
- 		goto out_hashtable;
- 
-@@ -726,6 +800,7 @@ static const struct nla_policy gtp_policy[IFLA_GTP_MAX + 1] = {
- 	[IFLA_GTP_FD1]			= { .type = NLA_U32 },
- 	[IFLA_GTP_PDP_HASHSIZE]		= { .type = NLA_U32 },
- 	[IFLA_GTP_ROLE]			= { .type = NLA_U32 },
-+	[IFLA_GTP_CREATE_SOCKETS]	= { .type = NLA_U8 },
+ static const struct nla_policy gtp_genl_policy[GTPA_MAX + 1] = {
+ 	[GTPA_LINK]		= { .type = NLA_U32, },
+ 	[GTPA_VERSION]		= { .type = NLA_U32, },
+@@ -1616,6 +1841,12 @@ static const struct genl_small_ops gtp_genl_ops[] = {
+ 		.dumpit = gtp_genl_dump_pdp,
+ 		.flags = GENL_ADMIN_PERM,
+ 	},
++	{
++		.cmd = GTP_CMD_ECHOREQ,
++		.validate = GENL_DONT_VALIDATE_STRICT | GENL_DONT_VALIDATE_DUMP,
++		.doit = gtp_genl_send_echo_req,
++		.flags = GENL_ADMIN_PERM,
++	},
  };
  
- static int gtp_validate(struct nlattr *tb[], struct nlattr *data[],
-@@ -848,7 +923,9 @@ static int gtp_encap_enable(struct gtp_dev *gtp, struct nlattr *data[])
- {
- 	struct sock *sk1u = NULL;
- 	struct sock *sk0 = NULL;
--	unsigned int role = GTP_ROLE_GGSN;
-+
-+	if (!data[IFLA_GTP_FD0] && !data[IFLA_GTP_FD1])
-+		return -EINVAL;
+ static struct genl_family gtp_genl_family __ro_after_init = {
+diff --git a/include/uapi/linux/gtp.h b/include/uapi/linux/gtp.h
+index 79f9191bbb24..2f61298a7b77 100644
+--- a/include/uapi/linux/gtp.h
++++ b/include/uapi/linux/gtp.h
+@@ -8,6 +8,7 @@ enum gtp_genl_cmds {
+ 	GTP_CMD_NEWPDP,
+ 	GTP_CMD_DELPDP,
+ 	GTP_CMD_GETPDP,
++	GTP_CMD_ECHOREQ,
  
- 	if (data[IFLA_GTP_FD0]) {
- 		u32 fd0 = nla_get_u32(data[IFLA_GTP_FD0]);
-@@ -868,18 +945,8 @@ static int gtp_encap_enable(struct gtp_dev *gtp, struct nlattr *data[])
- 		}
- 	}
- 
--	if (data[IFLA_GTP_ROLE]) {
--		role = nla_get_u32(data[IFLA_GTP_ROLE]);
--		if (role > GTP_ROLE_SGSN) {
--			gtp_encap_disable_sock(sk0);
--			gtp_encap_disable_sock(sk1u);
--			return -EINVAL;
--		}
--	}
--
- 	gtp->sk0 = sk0;
- 	gtp->sk1u = sk1u;
--	gtp->role = role;
- 
- 	return 0;
- }
-diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
-index ddca20357e7e..ebd2aa3ef809 100644
---- a/include/uapi/linux/if_link.h
-+++ b/include/uapi/linux/if_link.h
-@@ -887,6 +887,7 @@ enum {
- 	IFLA_GTP_FD1,
- 	IFLA_GTP_PDP_HASHSIZE,
- 	IFLA_GTP_ROLE,
-+	IFLA_GTP_CREATE_SOCKETS,
- 	__IFLA_GTP_MAX,
+ 	GTP_CMD_MAX,
  };
- #define IFLA_GTP_MAX (__IFLA_GTP_MAX - 1)
 -- 
 2.35.1
 
