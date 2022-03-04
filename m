@@ -1,192 +1,74 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 04 Mar 2022 03:23:23 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:10GbE] BUILD SUCCESS
- a53c52cf226e561b5ee18c5ffc20e45a616d6643
-Message-ID: <622115ab.Kopzb+xOMvJLvXKw%lkp@intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 4 Mar 2022 11:58:58 +0300
+Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE 179/215]
+ net/dsa/dsa.c:486 dsa_port_walk_fdbs() error: uninitialized symbol 'err'.
+Message-ID: <202203041527.OdG5EuV4-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 10GbE
-branch HEAD: a53c52cf226e561b5ee18c5ffc20e45a616d6643  ice: avoid XDP checks in ice_clean_tx_irq()
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
+head:   3d5985a185e6abfc0b38ed187819016a79eca864
+commit: f9cef64fa23f6c1ff177be5082113c5a94e34e5d [179/215] net: dsa: felix: migrate host FDB and MDB entries when changing tag proto
+config: m68k-randconfig-m031-20220304 (https://download.01.org/0day-ci/archive/20220304/202203041527.OdG5EuV4-lkp at intel.com/config)
+compiler: m68k-linux-gcc (GCC) 11.2.0
 
-elapsed time: 1427m
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-configs tested: 160
-configs skipped: 5
+smatch warnings:
+net/dsa/dsa.c:486 dsa_port_walk_fdbs() error: uninitialized symbol 'err'.
+net/dsa/dsa.c:506 dsa_port_walk_mdbs() error: uninitialized symbol 'err'.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+vim +/err +486 net/dsa/dsa.c
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                          randconfig-c001
-mips                 randconfig-c004-20220303
-sparc64                             defconfig
-arm                           sunxi_defconfig
-sh                        edosk7705_defconfig
-xtensa                           allyesconfig
-arc                    vdk_hs38_smp_defconfig
-arm                         lubbock_defconfig
-mips                         db1xxx_defconfig
-sh                            shmin_defconfig
-arm                          badge4_defconfig
-m68k                             allyesconfig
-h8300                     edosk2674_defconfig
-powerpc                    amigaone_defconfig
-mips                            ar7_defconfig
-m68k                          sun3x_defconfig
-arm                            mps2_defconfig
-nios2                         10m50_defconfig
-arm                        cerfcube_defconfig
-arc                        nsim_700_defconfig
-arm                        realview_defconfig
-arm                         axm55xx_defconfig
-nds32                            alldefconfig
-mips                        jmr3927_defconfig
-um                                  defconfig
-m68k                        mvme16x_defconfig
-arm                          iop32x_defconfig
-sh                          lboxre2_defconfig
-arc                            hsdk_defconfig
-arm                         assabet_defconfig
-sh                   sh7724_generic_defconfig
-sparc                            allyesconfig
-powerpc                     taishan_defconfig
-microblaze                          defconfig
-m68k                        stmark2_defconfig
-nios2                               defconfig
-riscv             nommu_k210_sdcard_defconfig
-mips                 decstation_r4k_defconfig
-arm                            qcom_defconfig
-um                             i386_defconfig
-sh                        sh7757lcr_defconfig
-sh                          urquell_defconfig
-arm                            lart_defconfig
-arc                        nsimosci_defconfig
-arm                           h3600_defconfig
-arm                           sama5_defconfig
-sparc                            alldefconfig
-mips                            gpr_defconfig
-powerpc                        warp_defconfig
-m68k                            q40_defconfig
-i386                                defconfig
-h8300                               defconfig
-sh                           se7705_defconfig
-powerpc                       holly_defconfig
-arm                        clps711x_defconfig
-sh                          r7780mp_defconfig
-m68k                        m5407c3_defconfig
-sh                           se7712_defconfig
-m68k                          multi_defconfig
-openrisc                  or1klitex_defconfig
-sh                  sh7785lcr_32bit_defconfig
-csky                                defconfig
-riscv                               defconfig
-arm                      jornada720_defconfig
-m68k                       m5475evb_defconfig
-m68k                       bvme6000_defconfig
-mips                           ci20_defconfig
-arm                  randconfig-c002-20220302
-ia64                                defconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-h8300                            allyesconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-parisc                              defconfig
-parisc64                            defconfig
-s390                             allmodconfig
-s390                                defconfig
-parisc                           allyesconfig
-s390                             allyesconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                          randconfig-a003
-i386                          randconfig-a001
-i386                          randconfig-a005
-x86_64                        randconfig-a015
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-arc                  randconfig-r043-20220302
-riscv                randconfig-r042-20220302
-s390                 randconfig-r044-20220302
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                                  kexec
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  470  int dsa_port_walk_fdbs(struct dsa_switch *ds, int port, dsa_fdb_walk_cb_t cb)
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  471  {
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  472  	struct dsa_port *dp = dsa_to_port(ds, port);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  473  	struct dsa_mac_addr *a;
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  474  	int err;
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  475  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  476  	mutex_lock(&dp->addr_lists_lock);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  477  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  478  	list_for_each_entry(a, &dp->fdbs, list) {
 
-clang tested configs:
-x86_64                        randconfig-c007
-powerpc              randconfig-c003-20220303
-riscv                randconfig-c006-20220303
-i386                          randconfig-c001
-arm                  randconfig-c002-20220303
-mips                 randconfig-c004-20220303
-powerpc              randconfig-c003-20220302
-riscv                randconfig-c006-20220302
-arm                  randconfig-c002-20220302
-mips                 randconfig-c004-20220302
-arm                  colibri_pxa300_defconfig
-mips                     loongson2k_defconfig
-powerpc                       ebony_defconfig
-arm                            mmp2_defconfig
-powerpc                      pmac32_defconfig
-arm                         mv78xx0_defconfig
-arm                         lpc32xx_defconfig
-mips                            e55_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a001
-x86_64                        randconfig-a003
-x86_64                        randconfig-a005
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220302
-hexagon              randconfig-r041-20220302
-hexagon              randconfig-r045-20220303
-riscv                randconfig-r042-20220303
-hexagon              randconfig-r041-20220303
+Can the list be empty?  Smatch might be able to figure this out with
+cross function analysis but it's not feasible for the kbuild-bot.
+
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  479  		err = cb(ds, port, a->addr, a->vid, a->db);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  480  		if (err)
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  481  			break;
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  482  	}
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  483  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  484  	mutex_unlock(&dp->addr_lists_lock);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  485  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02 @486  	return err;
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  487  }
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  488  EXPORT_SYMBOL_GPL(dsa_port_walk_fdbs);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  489  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  490  int dsa_port_walk_mdbs(struct dsa_switch *ds, int port, dsa_fdb_walk_cb_t cb)
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  491  {
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  492  	struct dsa_port *dp = dsa_to_port(ds, port);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  493  	struct dsa_mac_addr *a;
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  494  	int err;
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  495  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  496  	mutex_lock(&dp->addr_lists_lock);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  497  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  498  	list_for_each_entry(a, &dp->mdbs, list) {
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  499  		err = cb(ds, port, a->addr, a->vid, a->db);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  500  		if (err)
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  501  			break;
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  502  	}
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  503  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  504  	mutex_unlock(&dp->addr_lists_lock);
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  505  
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02 @506  	return err;
+f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  507  }
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
 https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+
