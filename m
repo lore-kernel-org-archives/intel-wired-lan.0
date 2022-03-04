@@ -1,120 +1,109 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 4 Mar 2022 14:53:00 +0300
-Subject: [Intel-wired-lan] [bug report] iavf: Fix deadlock in iavf_reset_task
-Message-ID: <20220304115300.GA7106@kili>
+From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
+Date: Fri,  4 Mar 2022 14:59:57 +0800
+Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
+ iterator after loop body as a ptr
+In-Reply-To: <20220303121824.qdyrognluik74iph@maple.lan>
+References: <20220303121824.qdyrognluik74iph@maple.lan>
+Message-ID: <20220304065957.16799-1-xiam0nd.tong@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Slawomir Laba,
+On Thu, 3 Mar 2022 12:18:24 +0000, Daniel Thompson wrote:
+> On Thu, Mar 03, 2022 at 03:26:57PM +0800, Xiaomeng Tong wrote:
+> > On Thu, 3 Mar 2022 04:58:23 +0000, David Laight wrote:
+> > > on 3 Mar 2022 10:27:29 +0800, Xiaomeng Tong wrote:
+> > > > The problem is the mis-use of iterator outside the loop on exit, and
+> > > > the iterator will be the HEAD's container_of pointer which pointers
+> > > > to a type-confused struct. Sidenote: The *mis-use* here refers to
+> > > > mistakely access to other members of the struct, instead of the
+> > > > list_head member which acutally is the valid HEAD.
+> > >
+> > > The problem is that the HEAD's container_of pointer should never
+> > > be calculated at all.
+> > > This is what is fundamentally broken about the current definition.
+> > 
+> > Yes, the rule is "the HEAD's container_of pointer should never be
+> > calculated at all outside the loop", but how do you make sure everyone
+> > follows this rule?
+> 
+> Your formulation of the rule is correct: never run container_of() on HEAD
+> pointer.
 
-The patch e85ff9c631e1: "iavf: Fix deadlock in iavf_reset_task" from
-Feb 23, 2022, leads to the following Smatch static checker warning:
+Actually, it is not my rule. My rule is that never access other members
+of the struct except for the list_head member after the loop, because
+this is a invalid member after loop exit, but valid for the list_head
+member which just is HEAD and the lately caculation (&pos->head) seems
+harmless.
 
-	drivers/net/ethernet/intel/iavf/iavf_main.c:2691 iavf_reset_task()
-	error: double unlocked '&adapter->crit_lock' (orig line 2689)
+I have considered the case that the HEAD's container "pos" is layouted
+across the max and the min address boundary, which means the address of
+HEAD is likely 0x60, and the address of pos is likely 0xffffffe0.
+It seems ok to caculate pos with:
+((type *)(__mptr - offsetof(type, member)));
+and it seems ok to caculate head outside the loop with:
+if (&pos->head == &HEAD)
+    return NULL;
 
-drivers/net/ethernet/intel/iavf/iavf_main.c
-    2613 static void iavf_reset_task(struct work_struct *work)
-    2614 {
-    2615         struct iavf_adapter *adapter = container_of(work,
-    2616                                                       struct iavf_adapter,
-    2617                                                       reset_task);
-    2618         struct virtchnl_vf_resource *vfres = adapter->vf_res;
-    2619         struct net_device *netdev = adapter->netdev;
-    2620         struct iavf_hw *hw = &adapter->hw;
-    2621         struct iavf_mac_filter *f, *ftmp;
-    2622         struct iavf_cloud_filter *cf;
-    2623         u32 reg_val;
-    2624         int i = 0, err;
-    2625         bool running;
-    2626 
-    2627         /* When device is being removed it doesn't make sense to run the reset
-    2628          * task, just return in such a case.
-    2629          */
-    2630         if (!mutex_trylock(&adapter->crit_lock)) {
-    2631                 if (adapter->state != __IAVF_REMOVE)
-    2632                         queue_work(iavf_wq, &adapter->reset_task);
-    2633 
-    2634                 return;
-    2635         }
-    2636 
-    2637         while (!mutex_trylock(&adapter->client_lock))
-    2638                 usleep_range(500, 1000);
-    2639         if (CLIENT_ENABLED(adapter)) {
-    2640                 adapter->flags &= ~(IAVF_FLAG_CLIENT_NEEDS_OPEN |
-    2641                                     IAVF_FLAG_CLIENT_NEEDS_CLOSE |
-    2642                                     IAVF_FLAG_CLIENT_NEEDS_L2_PARAMS |
-    2643                                     IAVF_FLAG_SERVICE_CLIENT_REQUESTED);
-    2644                 cancel_delayed_work_sync(&adapter->client_task);
-    2645                 iavf_notify_client_close(&adapter->vsi, true);
-    2646         }
-    2647         iavf_misc_irq_disable(adapter);
-    2648         if (adapter->flags & IAVF_FLAG_RESET_NEEDED) {
-    2649                 adapter->flags &= ~IAVF_FLAG_RESET_NEEDED;
-    2650                 /* Restart the AQ here. If we have been reset but didn't
-    2651                  * detect it, or if the PF had to reinit, our AQ will be hosed.
-    2652                  */
-    2653                 iavf_shutdown_adminq(hw);
-    2654                 iavf_init_adminq(hw);
-    2655                 iavf_request_reset(adapter);
-    2656         }
-    2657         adapter->flags |= IAVF_FLAG_RESET_PENDING;
-    2658 
-    2659         /* poll until we see the reset actually happen */
-    2660         for (i = 0; i < IAVF_RESET_WAIT_DETECTED_COUNT; i++) {
-    2661                 reg_val = rd32(hw, IAVF_VF_ARQLEN1) &
-    2662                           IAVF_VF_ARQLEN1_ARQENABLE_MASK;
-    2663                 if (!reg_val)
-    2664                         break;
-    2665                 usleep_range(5000, 10000);
-    2666         }
-    2667         if (i == IAVF_RESET_WAIT_DETECTED_COUNT) {
-    2668                 dev_info(&adapter->pdev->dev, "Never saw reset\n");
-    2669                 goto continue_reset; /* act like the reset happened */
-    2670         }
-    2671 
-    2672         /* wait until the reset is complete and the PF is responding to us */
-    2673         for (i = 0; i < IAVF_RESET_WAIT_COMPLETE_COUNT; i++) {
-    2674                 /* sleep first to make sure a minimum wait time is met */
-    2675                 msleep(IAVF_RESET_WAIT_MS);
-    2676 
-    2677                 reg_val = rd32(hw, IAVF_VFGEN_RSTAT) &
-    2678                           IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
-    2679                 if (reg_val == VIRTCHNL_VFR_VFACTIVE)
-    2680                         break;
-    2681         }
-    2682 
-    2683         pci_set_master(adapter->pdev);
-    2684         pci_restore_msi_state(adapter->pdev);
-    2685 
-    2686         if (i == IAVF_RESET_WAIT_COMPLETE_COUNT) {
-    2687                 dev_err(&adapter->pdev->dev, "Reset never finished (%x)\n",
-    2688                         reg_val);
-    2689                 iavf_disable_vf(adapter);
+The only case I can think of with the rule "never run container_of()
+on HEAD" must be followed is when the first argument (which is &HEAD)
+passing to container_of() is NULL + some offset, it may lead to the
+resulting "pos->member" access being a NULL dereference. But maybe
+the caller can take the responsibility to check if it is NULL, not
+container_of() itself.
 
-The proble is that iavf_disable_vf() calls mutex_unlock(&adapter->crit_lock);
+Please remind me if i missed somthing, thanks.
 
-    2690                 mutex_unlock(&adapter->client_lock);
---> 2691                 mutex_unlock(&adapter->crit_lock);
+> 
+> However the rule that is introduced by list_for_each_entry_inside() is
+> *not* this rule. The rule it introduces is: never access the iterator
+> variable outside the loop.
 
-so calling it again here is a bug.
+Sorry for the confusion, indeed, that is two *different* rule.
 
-I feel like I owe you an apology on this one because I asked you to add
-the mutex_unlock() here via the kbuild-bot...  It is confusing though.
-Does the unlock really need to be done inside iavf_disable_vf() are
-can we move that to the callers?
+> 
+> Making the iterator NULL on loop exit does follow the rule you proposed
+> but using a different technique: do not allow HEAD to be stored in the
+> iterator variable after loop exit. This also makes it impossible to run
+> container_of() on the HEAD pointer.
+> 
 
-    2692                 return; /* Do not attempt to reinit. It's dead, Jim. */
-    2693         }
-    2694 
-    2695 continue_reset:
-    2696         /* We don't use netif_running() because it may be true prior to
-    2697          * ndo_open() returning, so we can't assume it means all our open
-    2698          * tasks have finished, since we're not holding the rtnl_lock here.
-    2699          */
+It does not. My rule is: never access the iterator variable outside the loop.
+The "Making the iterator NULL on loop exit" way still leak the pos with NULL
+outside the loop, may lead to a NULL deference.
 
-regards,
-dan carpenter
+> 
+> > Everyone makes mistakes, but we can eliminate them all from the beginning
+> > with the help of compiler which can catch such use-after-loop things.
+> 
+> Indeed but if we introduce new interfaces then we don't have to worry
+> about existing usages and silent regressions. Code will have been
+> written knowing the loop can exit with the iterator set to NULL.
+
+Yes, it is more simple and compatible with existing interfaces. Howerver,
+you should make every developers to remember that "pos will be set NULL on
+loop exit", which is unreasonable and impossible for *every* single person.
+Otherwise the mis-use-after-loop will lead to a NULL dereference.
+But we can kill this problem by declaring iterator inside the loop and the
+complier will catch it if somebody mis-use-after-loop.
+
+> 
+> Sure it is still possible for programmers to make mistakes and
+> dereference the NULL pointer but C programmers are well training w.r.t.
+> NULL pointer checking so such mistakes are much less likely than with
+> the current list_for_each_entry() macro. This risk must be offset
+> against the way a NULLify approach can lead to more elegant code when we
+> are doing a list search.
+> 
+
+Yes, the NULLify approach is better than the current list_for_each_entry()
+macro, but i stick with that the list_for_each_entry_inside() way is best
+and perfect _technically_.
+
+Thus, my idea is *better a finger off than always aching*, let's settle this
+damn problem once and for all, with list_for_each_entry_inside().
+
+--
+Xiaomeng Tong
