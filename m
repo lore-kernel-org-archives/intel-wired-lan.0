@@ -1,74 +1,120 @@
 From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 4 Mar 2022 11:58:58 +0300
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE 179/215]
- net/dsa/dsa.c:486 dsa_port_walk_fdbs() error: uninitialized symbol 'err'.
-Message-ID: <202203041527.OdG5EuV4-lkp@intel.com>
+Date: Fri, 4 Mar 2022 14:53:00 +0300
+Subject: [Intel-wired-lan] [bug report] iavf: Fix deadlock in iavf_reset_task
+Message-ID: <20220304115300.GA7106@kili>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-head:   3d5985a185e6abfc0b38ed187819016a79eca864
-commit: f9cef64fa23f6c1ff177be5082113c5a94e34e5d [179/215] net: dsa: felix: migrate host FDB and MDB entries when changing tag proto
-config: m68k-randconfig-m031-20220304 (https://download.01.org/0day-ci/archive/20220304/202203041527.OdG5EuV4-lkp at intel.com/config)
-compiler: m68k-linux-gcc (GCC) 11.2.0
+Hello Slawomir Laba,
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+The patch e85ff9c631e1: "iavf: Fix deadlock in iavf_reset_task" from
+Feb 23, 2022, leads to the following Smatch static checker warning:
 
-smatch warnings:
-net/dsa/dsa.c:486 dsa_port_walk_fdbs() error: uninitialized symbol 'err'.
-net/dsa/dsa.c:506 dsa_port_walk_mdbs() error: uninitialized symbol 'err'.
+	drivers/net/ethernet/intel/iavf/iavf_main.c:2691 iavf_reset_task()
+	error: double unlocked '&adapter->crit_lock' (orig line 2689)
 
-vim +/err +486 net/dsa/dsa.c
+drivers/net/ethernet/intel/iavf/iavf_main.c
+    2613 static void iavf_reset_task(struct work_struct *work)
+    2614 {
+    2615         struct iavf_adapter *adapter = container_of(work,
+    2616                                                       struct iavf_adapter,
+    2617                                                       reset_task);
+    2618         struct virtchnl_vf_resource *vfres = adapter->vf_res;
+    2619         struct net_device *netdev = adapter->netdev;
+    2620         struct iavf_hw *hw = &adapter->hw;
+    2621         struct iavf_mac_filter *f, *ftmp;
+    2622         struct iavf_cloud_filter *cf;
+    2623         u32 reg_val;
+    2624         int i = 0, err;
+    2625         bool running;
+    2626 
+    2627         /* When device is being removed it doesn't make sense to run the reset
+    2628          * task, just return in such a case.
+    2629          */
+    2630         if (!mutex_trylock(&adapter->crit_lock)) {
+    2631                 if (adapter->state != __IAVF_REMOVE)
+    2632                         queue_work(iavf_wq, &adapter->reset_task);
+    2633 
+    2634                 return;
+    2635         }
+    2636 
+    2637         while (!mutex_trylock(&adapter->client_lock))
+    2638                 usleep_range(500, 1000);
+    2639         if (CLIENT_ENABLED(adapter)) {
+    2640                 adapter->flags &= ~(IAVF_FLAG_CLIENT_NEEDS_OPEN |
+    2641                                     IAVF_FLAG_CLIENT_NEEDS_CLOSE |
+    2642                                     IAVF_FLAG_CLIENT_NEEDS_L2_PARAMS |
+    2643                                     IAVF_FLAG_SERVICE_CLIENT_REQUESTED);
+    2644                 cancel_delayed_work_sync(&adapter->client_task);
+    2645                 iavf_notify_client_close(&adapter->vsi, true);
+    2646         }
+    2647         iavf_misc_irq_disable(adapter);
+    2648         if (adapter->flags & IAVF_FLAG_RESET_NEEDED) {
+    2649                 adapter->flags &= ~IAVF_FLAG_RESET_NEEDED;
+    2650                 /* Restart the AQ here. If we have been reset but didn't
+    2651                  * detect it, or if the PF had to reinit, our AQ will be hosed.
+    2652                  */
+    2653                 iavf_shutdown_adminq(hw);
+    2654                 iavf_init_adminq(hw);
+    2655                 iavf_request_reset(adapter);
+    2656         }
+    2657         adapter->flags |= IAVF_FLAG_RESET_PENDING;
+    2658 
+    2659         /* poll until we see the reset actually happen */
+    2660         for (i = 0; i < IAVF_RESET_WAIT_DETECTED_COUNT; i++) {
+    2661                 reg_val = rd32(hw, IAVF_VF_ARQLEN1) &
+    2662                           IAVF_VF_ARQLEN1_ARQENABLE_MASK;
+    2663                 if (!reg_val)
+    2664                         break;
+    2665                 usleep_range(5000, 10000);
+    2666         }
+    2667         if (i == IAVF_RESET_WAIT_DETECTED_COUNT) {
+    2668                 dev_info(&adapter->pdev->dev, "Never saw reset\n");
+    2669                 goto continue_reset; /* act like the reset happened */
+    2670         }
+    2671 
+    2672         /* wait until the reset is complete and the PF is responding to us */
+    2673         for (i = 0; i < IAVF_RESET_WAIT_COMPLETE_COUNT; i++) {
+    2674                 /* sleep first to make sure a minimum wait time is met */
+    2675                 msleep(IAVF_RESET_WAIT_MS);
+    2676 
+    2677                 reg_val = rd32(hw, IAVF_VFGEN_RSTAT) &
+    2678                           IAVF_VFGEN_RSTAT_VFR_STATE_MASK;
+    2679                 if (reg_val == VIRTCHNL_VFR_VFACTIVE)
+    2680                         break;
+    2681         }
+    2682 
+    2683         pci_set_master(adapter->pdev);
+    2684         pci_restore_msi_state(adapter->pdev);
+    2685 
+    2686         if (i == IAVF_RESET_WAIT_COMPLETE_COUNT) {
+    2687                 dev_err(&adapter->pdev->dev, "Reset never finished (%x)\n",
+    2688                         reg_val);
+    2689                 iavf_disable_vf(adapter);
 
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  470  int dsa_port_walk_fdbs(struct dsa_switch *ds, int port, dsa_fdb_walk_cb_t cb)
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  471  {
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  472  	struct dsa_port *dp = dsa_to_port(ds, port);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  473  	struct dsa_mac_addr *a;
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  474  	int err;
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  475  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  476  	mutex_lock(&dp->addr_lists_lock);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  477  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  478  	list_for_each_entry(a, &dp->fdbs, list) {
+The proble is that iavf_disable_vf() calls mutex_unlock(&adapter->crit_lock);
 
-Can the list be empty?  Smatch might be able to figure this out with
-cross function analysis but it's not feasible for the kbuild-bot.
+    2690                 mutex_unlock(&adapter->client_lock);
+--> 2691                 mutex_unlock(&adapter->crit_lock);
 
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  479  		err = cb(ds, port, a->addr, a->vid, a->db);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  480  		if (err)
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  481  			break;
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  482  	}
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  483  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  484  	mutex_unlock(&dp->addr_lists_lock);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  485  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02 @486  	return err;
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  487  }
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  488  EXPORT_SYMBOL_GPL(dsa_port_walk_fdbs);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  489  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  490  int dsa_port_walk_mdbs(struct dsa_switch *ds, int port, dsa_fdb_walk_cb_t cb)
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  491  {
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  492  	struct dsa_port *dp = dsa_to_port(ds, port);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  493  	struct dsa_mac_addr *a;
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  494  	int err;
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  495  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  496  	mutex_lock(&dp->addr_lists_lock);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  497  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  498  	list_for_each_entry(a, &dp->mdbs, list) {
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  499  		err = cb(ds, port, a->addr, a->vid, a->db);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  500  		if (err)
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  501  			break;
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  502  	}
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  503  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  504  	mutex_unlock(&dp->addr_lists_lock);
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  505  
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02 @506  	return err;
-f9cef64fa23f6c1 Vladimir Oltean 2022-03-02  507  }
+so calling it again here is a bug.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+I feel like I owe you an apology on this one because I asked you to add
+the mutex_unlock() here via the kbuild-bot...  It is confusing though.
+Does the unlock really need to be done inside iavf_disable_vf() are
+can we move that to the callers?
 
+    2692                 return; /* Do not attempt to reinit. It's dead, Jim. */
+    2693         }
+    2694 
+    2695 continue_reset:
+    2696         /* We don't use netif_running() because it may be true prior to
+    2697          * ndo_open() returning, so we can't assume it means all our open
+    2698          * tasks have finished, since we're not holding the rtnl_lock here.
+    2699          */
+
+regards,
+dan carpenter
