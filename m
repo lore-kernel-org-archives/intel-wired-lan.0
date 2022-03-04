@@ -1,109 +1,84 @@
-From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-Date: Fri,  4 Mar 2022 14:59:57 +0800
-Subject: [Intel-wired-lan] [PATCH 2/6] treewide: remove using list
- iterator after loop body as a ptr
-In-Reply-To: <20220303121824.qdyrognluik74iph@maple.lan>
-References: <20220303121824.qdyrognluik74iph@maple.lan>
-Message-ID: <20220304065957.16799-1-xiam0nd.tong@gmail.com>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Fri,  4 Mar 2022 17:40:41 +0100
+Subject: [Intel-wired-lan] [PATCH net-next v10 0/7] ice: GTP support in
+ switchdev
+Message-ID: <20220304164048.476900-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 3 Mar 2022 12:18:24 +0000, Daniel Thompson wrote:
-> On Thu, Mar 03, 2022 at 03:26:57PM +0800, Xiaomeng Tong wrote:
-> > On Thu, 3 Mar 2022 04:58:23 +0000, David Laight wrote:
-> > > on 3 Mar 2022 10:27:29 +0800, Xiaomeng Tong wrote:
-> > > > The problem is the mis-use of iterator outside the loop on exit, and
-> > > > the iterator will be the HEAD's container_of pointer which pointers
-> > > > to a type-confused struct. Sidenote: The *mis-use* here refers to
-> > > > mistakely access to other members of the struct, instead of the
-> > > > list_head member which acutally is the valid HEAD.
-> > >
-> > > The problem is that the HEAD's container_of pointer should never
-> > > be calculated at all.
-> > > This is what is fundamentally broken about the current definition.
-> > 
-> > Yes, the rule is "the HEAD's container_of pointer should never be
-> > calculated at all outside the loop", but how do you make sure everyone
-> > follows this rule?
-> 
-> Your formulation of the rule is correct: never run container_of() on HEAD
-> pointer.
+Add support for adding GTP-C and GTP-U filters in switchdev mode.
 
-Actually, it is not my rule. My rule is that never access other members
-of the struct except for the list_head member after the loop, because
-this is a invalid member after loop exit, but valid for the list_head
-member which just is HEAD and the lately caculation (&pos->head) seems
-harmless.
+To create a filter for GTP, create a GTP-type netdev with ip tool, enable
+hardware offload, add qdisc and add a filter in tc:
 
-I have considered the case that the HEAD's container "pos" is layouted
-across the max and the min address boundary, which means the address of
-HEAD is likely 0x60, and the address of pos is likely 0xffffffe0.
-It seems ok to caculate pos with:
-((type *)(__mptr - offsetof(type, member)));
-and it seems ok to caculate head outside the loop with:
-if (&pos->head == &HEAD)
-    return NULL;
+ip link add $GTP0 type gtp role <sgsn/ggsn> hsize <hsize>
+ethtool -K $PF0 hw-tc-offload on
+tc qdisc add dev $GTP0 ingress
+tc filter add dev $GTP0 ingress prio 1 flower enc_key_id 1337 \
+action mirred egress redirect dev $VF1_PR
 
-The only case I can think of with the rule "never run container_of()
-on HEAD" must be followed is when the first argument (which is &HEAD)
-passing to container_of() is NULL + some offset, it may lead to the
-resulting "pos->member" access being a NULL dereference. But maybe
-the caller can take the responsibility to check if it is NULL, not
-container_of() itself.
+By default, a filter for GTP-U will be added. To add a filter for GTP-C,
+specify enc_dst_port = 2123, e.g.:
 
-Please remind me if i missed somthing, thanks.
+tc filter add dev $GTP0 ingress prio 1 flower enc_key_id 1337 \
+enc_dst_port 2123 action mirred egress redirect dev $VF1_PR
 
-> 
-> However the rule that is introduced by list_for_each_entry_inside() is
-> *not* this rule. The rule it introduces is: never access the iterator
-> variable outside the loop.
+Note: outer IPv6 offload is not supported yet.
+Note: GTP-U with no payload offload is not supported yet.
 
-Sorry for the confusion, indeed, that is two *different* rule.
+ICE COMMS package is required to create a filter as it contains GTP
+profiles.
 
-> 
-> Making the iterator NULL on loop exit does follow the rule you proposed
-> but using a different technique: do not allow HEAD to be stored in the
-> iterator variable after loop exit. This also makes it impossible to run
-> container_of() on the HEAD pointer.
-> 
+Changes in iproute2 [1] are required to be able to add GTP netdev and use
+GTP-specific options (QFI and PDU type).
 
-It does not. My rule is: never access the iterator variable outside the loop.
-The "Making the iterator NULL on loop exit" way still leak the pos with NULL
-outside the loop, may lead to a NULL deference.
+[1] https://lore.kernel.org/netdev/20220211182902.11542-1-wojciech.drewek at intel.com/T
+---
+v2: Add more CC
+v3: Fix mail thread, sorry for spam
+v4: Add GTP echo response in gtp module
+v5: Change patch order
+v6: Add GTP echo request in gtp module
+v7: Fix kernel-docs in ice
+v8: Remove handling of GTP Echo Response
+v9: Add sending of multicast message on GTP Echo Response, fix GTP-C dummy 
+    packet selection
+v10: Rebase, fixed most 80 char line limits
 
-> 
-> > Everyone makes mistakes, but we can eliminate them all from the beginning
-> > with the help of compiler which can catch such use-after-loop things.
-> 
-> Indeed but if we introduce new interfaces then we don't have to worry
-> about existing usages and silent regressions. Code will have been
-> written knowing the loop can exit with the iterator set to NULL.
+Marcin Szycik (1):
+  ice: Support GTP-U and GTP-C offload in switchdev
 
-Yes, it is more simple and compatible with existing interfaces. Howerver,
-you should make every developers to remember that "pos will be set NULL on
-loop exit", which is unreasonable and impossible for *every* single person.
-Otherwise the mis-use-after-loop will lead to a NULL dereference.
-But we can kill this problem by declaring iterator inside the loop and the
-complier will catch it if somebody mis-use-after-loop.
+Michal Swiatkowski (1):
+  ice: Fix FV offset searching
 
-> 
-> Sure it is still possible for programmers to make mistakes and
-> dereference the NULL pointer but C programmers are well training w.r.t.
-> NULL pointer checking so such mistakes are much less likely than with
-> the current list_for_each_entry() macro. This risk must be offset
-> against the way a NULLify approach can lead to more elegant code when we
-> are doing a list search.
-> 
+Wojciech Drewek (5):
+  gtp: Allow to create GTP device without FDs
+  gtp: Implement GTP echo response
+  gtp: Implement GTP echo request
+  net/sched: Allow flower to match on GTP options
+  gtp: Add support for checking GTP device type
 
-Yes, the NULLify approach is better than the current list_for_each_entry()
-macro, but i stick with that the list_for_each_entry_inside() way is best
-and perfect _technically_.
+ drivers/net/ethernet/intel/ice/ice.h          |   1 +
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |  53 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |   2 +-
+ .../net/ethernet/intel/ice/ice_flex_type.h    |   6 +-
+ .../ethernet/intel/ice/ice_protocol_type.h    |  19 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   | 643 ++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_switch.h   |   9 +
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 105 ++-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h   |   3 +
+ drivers/net/gtp.c                             | 565 +++++++++++++--
+ include/net/gtp.h                             |  42 ++
+ include/uapi/linux/gtp.h                      |   1 +
+ include/uapi/linux/if_link.h                  |   2 +
+ include/uapi/linux/if_tunnel.h                |   4 +-
+ include/uapi/linux/pkt_cls.h                  |  15 +
+ net/sched/cls_flower.c                        | 116 ++++
+ 16 files changed, 1473 insertions(+), 113 deletions(-)
 
-Thus, my idea is *better a finger off than always aching*, let's settle this
-damn problem once and for all, with list_for_each_entry_inside().
+-- 
+2.35.1
 
---
-Xiaomeng Tong
