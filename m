@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Mon, 07 Mar 2022 13:41:56 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 704f1f3022d8b59d8bbb570b090b865a4c9d2a0f
-Message-ID: <62259b24.kf04mYuphFWYlnWq%lkp@intel.com>
+Date: Mon, 07 Mar 2022 13:40:45 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
+ e1bec7fa1cee311a6d3fb9161037c7675904134d
+Message-ID: <62259add.PClBPOuvtbb4wwx4%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 704f1f3022d8b59d8bbb570b090b865a4c9d2a0f  igc: Fix infinite loop in release_swfw_sync
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
+branch HEAD: e1bec7fa1cee311a6d3fb9161037c7675904134d  net: dsa: make dsa_tree_change_tag_proto actually unwind the tag proto change
 
 elapsed time: 4820m
 
-configs tested: 107
+configs tested: 141
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -27,23 +27,41 @@ arm64                               defconfig
 arm                              allyesconfig
 arm                              allmodconfig
 i386                          randconfig-c001
+mips                 randconfig-c004-20220303
+sh                            migor_defconfig
+arm                           sunxi_defconfig
 arm                         axm55xx_defconfig
 arm                        mvebu_v7_defconfig
 arm                        cerfcube_defconfig
 h8300                            alldefconfig
 powerpc                  iss476-smp_defconfig
+sh                             sh03_defconfig
+m68k                       m5275evb_defconfig
 sh                           se7751_defconfig
 riscv                            allmodconfig
+sh                 kfr2r09-romimage_defconfig
+sh                               alldefconfig
+sh                          sdk7780_defconfig
+sh                            titan_defconfig
+sh                          lboxre2_defconfig
 sh                          kfr2r09_defconfig
 sh                          r7780mp_defconfig
 arm                           sama5_defconfig
 arm                         lubbock_defconfig
 sparc                       sparc64_defconfig
 riscv             nommu_k210_sdcard_defconfig
+xtensa                generic_kc705_defconfig
 sh                          urquell_defconfig
 powerpc                     ep8248e_defconfig
 arm                         vf610m4_defconfig
 m68k                          multi_defconfig
+sh                          rsk7269_defconfig
+mips                         mpc30x_defconfig
+mips                      maltasmvp_defconfig
+nds32                            alldefconfig
+arm                            qcom_defconfig
+um                             i386_defconfig
+sh                        sh7757lcr_defconfig
 sh                ecovec24-romimage_defconfig
 sh                   secureedge5410_defconfig
 arm                           u8500_defconfig
@@ -56,7 +74,13 @@ arm                            mps2_defconfig
 arm                        clps711x_defconfig
 m68k                        m5407c3_defconfig
 sh                           se7712_defconfig
+sh                         microdev_defconfig
+parisc                generic-64bit_defconfig
+h8300                     edosk2674_defconfig
+arc                        vdk_hs38_defconfig
+arm                            hisi_defconfig
 arm                  randconfig-c002-20220302
+arm                  randconfig-c002-20220303
 arm                  randconfig-c002-20220304
 ia64                             allmodconfig
 ia64                                defconfig
@@ -96,16 +120,18 @@ powerpc                           allnoconfig
 x86_64                        randconfig-a006
 x86_64                        randconfig-a004
 x86_64                        randconfig-a002
+i386                          randconfig-a014
+i386                          randconfig-a012
+i386                          randconfig-a016
 riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
 x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+x86_64                           allyesconfig
 x86_64                              defconfig
 x86_64                               rhel-8.3
 x86_64                          rhel-8.3-func
@@ -113,7 +139,20 @@ x86_64                         rhel-8.3-kunit
 x86_64                                  kexec
 
 clang tested configs:
+x86_64                        randconfig-c007
+powerpc              randconfig-c003-20220303
+riscv                randconfig-c006-20220303
+i386                          randconfig-c001
+arm                  randconfig-c002-20220303
+mips                 randconfig-c004-20220303
+powerpc              randconfig-c003-20220302
+riscv                randconfig-c006-20220302
+arm                  randconfig-c002-20220302
+mips                 randconfig-c004-20220302
 arm                  colibri_pxa270_defconfig
+i386                             allyesconfig
+powerpc                      ppc64e_defconfig
+arm                        spear3xx_defconfig
 i386                          randconfig-a002
 i386                          randconfig-a006
 i386                          randconfig-a004
