@@ -1,64 +1,46 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Mon, 7 Mar 2022 15:26:48 +0000
-Subject: [Intel-wired-lan] [PATCH 0/6] Remove usage of list iterator
- past the loop body
-In-Reply-To: <20220307150037.GD3293@kadam>
-References: <20220228110822.491923-1-jakobkoschel@gmail.com>
- <20220307150037.GD3293@kadam>
-Message-ID: <f7ffd78aa68340e1ade6af15fa2f06d8@AcuMS.aculab.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Mon, 7 Mar 2022 16:19:23 +0000
+Subject: [Intel-wired-lan] [PATCH net v2 3/3] ixgbevf: add disable link
+ state
+In-Reply-To: <20220301114010.2676-3-slawomirx.mrozowicz@intel.com>
+References: <20220301114010.2676-1-slawomirx.mrozowicz@intel.com>
+ <20220301114010.2676-3-slawomirx.mrozowicz@intel.com>
+Message-ID: <DM8PR11MB56213CAA0567C77DFC88D3A3AB089@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Dan Carpenter
-> Sent: 07 March 2022 15:01
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Slawomir Mrozowicz
+> Sent: Tuesday, March 1, 2022 12:40 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Mrozowicz, SlawomirX <slawomirx.mrozowicz@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v2 3/3] ixgbevf: add disable link state
 > 
-> Updating this API is risky because some places rely on the old behavior
-> and not all of them have been updated.  Here are some additional places
-> you might want to change.
+> Add possibility to disable link state if it is administratively disabled in PF.
+> 
+> It is part of the general functionality that allows the PF driver to control the
+> state of the virtual link VF devices.
+> 
+> Signed-off-by: Slawomir Mrozowicz <slawomirx.mrozowicz@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h  |  2 +
+> .../net/ethernet/intel/ixgbevf/ixgbevf_main.c | 11 ++++-
+>  drivers/net/ethernet/intel/ixgbevf/mbx.h      |  2 +
+>  drivers/net/ethernet/intel/ixgbevf/vf.c       | 42 +++++++++++++++++++
+>  drivers/net/ethernet/intel/ixgbevf/vf.h       |  1 +
+>  5 files changed, 57 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> index e257390a4f6a..149c733fcc2b 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> @@ -387,6 +387,8 @@ struct ixgbevf_adapter {
 
-I really can't help thinking that trying to merge this patch is
-actually impossible.
-It affects far too many different parts of the tree.
-
-Since (I believe) this is a doubly linked list with forwards and
-backwards pointers that point to a 'node' (not that there is a
-nice comment to that effect in the header - and there are lots of
-ways to do linked lists) the 'head' pretty much has to be a 'node'.
-
-I'd write the following new defines (but I might be using
-the old names here):
-
-list_first(head, field) First item, NULL if empty.
-list_last(head, field) Last item NULL if empty.
-list_next(head, item, field) Item after 'item', NULL if last.
-list_prev(head, item. field) Item before 'item', NULL if first.
-
-You get (something like):
-#define list_first(head, field) \
-	head->next == &head ? NULL : list_item(head->next, field)
-(probably needs typeof(item) from somewhere).
-
-The iterator loop is then just:
-#define loop_iterate(item, head, field) \
-	for (item = list_first(head, field); item; \
-		item = list_next(head, item, field)
-
-I'm not sure, but making the 'head' be a structure that contains
-a single member that is a 'node' might help type checking.
-
-Then all the code that uses the current defines can slowly be
-moved over (probably a couple of releases) before the existing
-defines are deleted.
-
-That should simplify all the open-coded search loops that are
-just as likely to be buggy (possibly more so).
-
-	David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
-
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
