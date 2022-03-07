@@ -1,20 +1,40 @@
 From: kernel test robot <lkp@intel.com>
-Date: Mon, 07 Mar 2022 13:40:45 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- e1bec7fa1cee311a6d3fb9161037c7675904134d
-Message-ID: <62259add.PClBPOuvtbb4wwx4%lkp@intel.com>
+Date: Mon, 07 Mar 2022 13:42:12 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
+ 3d5985a185e6abfc0b38ed187819016a79eca864
+Message-ID: <62259b34.8YrL8/OC8ITm+fi/%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: e1bec7fa1cee311a6d3fb9161037c7675904134d  net: dsa: make dsa_tree_change_tag_proto actually unwind the tag proto change
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
+branch HEAD: 3d5985a185e6abfc0b38ed187819016a79eca864  ice: convert VF storage to hash table with krefs and RCU
+
+Unverified Warning (likely false positive, please contact us if interested):
+
+drivers/net/phy/sfp.c:1713 sfp_sm_mod_hpower() warn: passing zero to 'ERR_PTR'
+drivers/net/phy/sfp.c:1797 sfp_cotsworks_fixup_check() warn: passing zero to 'ERR_PTR'
+drivers/net/phy/sfp.c:1830 sfp_sm_mod_probe() warn: passing zero to 'ERR_PTR'
+drivers/net/phy/sfp.c:473 sfp_soft_get_state() warn: passing zero to 'ERR_PTR'
+net/dsa/dsa.c:486 dsa_port_walk_fdbs() error: uninitialized symbol 'err'.
+net/dsa/dsa.c:506 dsa_port_walk_mdbs() error: uninitialized symbol 'err'.
+
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+`-- m68k-randconfig-m031-20220304
+    |-- drivers-net-phy-sfp.c-sfp_cotsworks_fixup_check()-warn:passing-zero-to-ERR_PTR
+    |-- drivers-net-phy-sfp.c-sfp_sm_mod_hpower()-warn:passing-zero-to-ERR_PTR
+    |-- drivers-net-phy-sfp.c-sfp_sm_mod_probe()-warn:passing-zero-to-ERR_PTR
+    |-- drivers-net-phy-sfp.c-sfp_soft_get_state()-warn:passing-zero-to-ERR_PTR
+    |-- net-dsa-dsa.c-dsa_port_walk_fdbs()-error:uninitialized-symbol-err-.
+    `-- net-dsa-dsa.c-dsa_port_walk_mdbs()-error:uninitialized-symbol-err-.
 
 elapsed time: 4820m
 
-configs tested: 141
+configs tested: 99
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -30,60 +50,21 @@ i386                          randconfig-c001
 mips                 randconfig-c004-20220303
 sh                            migor_defconfig
 arm                           sunxi_defconfig
-arm                         axm55xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                        cerfcube_defconfig
-h8300                            alldefconfig
-powerpc                  iss476-smp_defconfig
-sh                             sh03_defconfig
-m68k                       m5275evb_defconfig
-sh                           se7751_defconfig
-riscv                            allmodconfig
-sh                 kfr2r09-romimage_defconfig
-sh                               alldefconfig
-sh                          sdk7780_defconfig
-sh                            titan_defconfig
-sh                          lboxre2_defconfig
-sh                          kfr2r09_defconfig
-sh                          r7780mp_defconfig
-arm                           sama5_defconfig
-arm                         lubbock_defconfig
-sparc                       sparc64_defconfig
-riscv             nommu_k210_sdcard_defconfig
-xtensa                generic_kc705_defconfig
-sh                          urquell_defconfig
-powerpc                     ep8248e_defconfig
-arm                         vf610m4_defconfig
-m68k                          multi_defconfig
 sh                          rsk7269_defconfig
+arm                           sama5_defconfig
 mips                         mpc30x_defconfig
 mips                      maltasmvp_defconfig
-nds32                            alldefconfig
-arm                            qcom_defconfig
-um                             i386_defconfig
-sh                        sh7757lcr_defconfig
-sh                ecovec24-romimage_defconfig
-sh                   secureedge5410_defconfig
-arm                           u8500_defconfig
-m68k                          sun3x_defconfig
-powerpc                        cell_defconfig
-arm                       omap2plus_defconfig
-s390                          debug_defconfig
-arm                           h5000_defconfig
-arm                            mps2_defconfig
-arm                        clps711x_defconfig
-m68k                        m5407c3_defconfig
-sh                           se7712_defconfig
+parisc64                         alldefconfig
+powerpc                     tqm8548_defconfig
+powerpc                     sequoia_defconfig
+powerpc                 mpc837x_mds_defconfig
 sh                         microdev_defconfig
 parisc                generic-64bit_defconfig
-h8300                     edosk2674_defconfig
-arc                        vdk_hs38_defconfig
-arm                            hisi_defconfig
-arm                  randconfig-c002-20220302
 arm                  randconfig-c002-20220303
 arm                  randconfig-c002-20220304
-ia64                             allmodconfig
+arm                  randconfig-c002-20220302
 ia64                                defconfig
+ia64                             allmodconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
@@ -96,10 +77,10 @@ nios2                            allyesconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
 parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
@@ -107,29 +88,34 @@ parisc64                            defconfig
 parisc                           allyesconfig
 s390                                defconfig
 i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
 i386                              debian-10.3
-mips                             allyesconfig
+i386                   debian-10.3-kselftests
+i386                                defconfig
+sparc                               defconfig
+sparc                            allyesconfig
 mips                             allmodconfig
+mips                             allyesconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
 powerpc                           allnoconfig
 x86_64                        randconfig-a006
 x86_64                        randconfig-a004
 x86_64                        randconfig-a002
+x86_64                        randconfig-a013
+x86_64                        randconfig-a011
+x86_64                        randconfig-a015
 i386                          randconfig-a014
 i386                          randconfig-a012
 i386                          randconfig-a016
 riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
 riscv                             allnoconfig
 riscv                               defconfig
 riscv                          rv32_defconfig
+riscv                            allmodconfig
+riscv                    nommu_virt_defconfig
 x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
 um                           x86_64_defconfig
 x86_64                           allyesconfig
 x86_64                              defconfig
@@ -140,35 +126,24 @@ x86_64                                  kexec
 
 clang tested configs:
 x86_64                        randconfig-c007
-powerpc              randconfig-c003-20220303
-riscv                randconfig-c006-20220303
-i386                          randconfig-c001
-arm                  randconfig-c002-20220303
-mips                 randconfig-c004-20220303
 powerpc              randconfig-c003-20220302
 riscv                randconfig-c006-20220302
+i386                          randconfig-c001
 arm                  randconfig-c002-20220302
 mips                 randconfig-c004-20220302
-arm                  colibri_pxa270_defconfig
-i386                             allyesconfig
-powerpc                      ppc64e_defconfig
+powerpc                          g5_defconfig
 arm                        spear3xx_defconfig
 i386                          randconfig-a002
 i386                          randconfig-a006
 i386                          randconfig-a004
 x86_64                        randconfig-a012
-x86_64                        randconfig-a014
 x86_64                        randconfig-a016
+x86_64                        randconfig-a014
 i386                          randconfig-a011
 i386                          randconfig-a013
 i386                          randconfig-a015
 hexagon              randconfig-r045-20220304
 hexagon              randconfig-r041-20220304
-hexagon              randconfig-r045-20220302
-hexagon              randconfig-r041-20220302
-hexagon              randconfig-r045-20220303
-riscv                randconfig-r042-20220303
-hexagon              randconfig-r041-20220303
 
 ---
 0-DAY CI Kernel Test Service, Intel Corporation
