@@ -1,150 +1,106 @@
-From: kernel test robot <lkp@intel.com>
-Date: Mon, 07 Mar 2022 13:42:12 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 3d5985a185e6abfc0b38ed187819016a79eca864
-Message-ID: <62259b34.8YrL8/OC8ITm+fi/%lkp@intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 7 Mar 2022 15:53:19 +0300
+Subject: [Intel-wired-lan] [bug report] ice: add TTY for GNSS module for
+ E810T device
+Message-ID: <20220307125319.GA16609@kili>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 3d5985a185e6abfc0b38ed187819016a79eca864  ice: convert VF storage to hash table with krefs and RCU
+Hello Karol Kolacinski,
 
-Unverified Warning (likely false positive, please contact us if interested):
+This is a semi-automatic email about new static checker warnings.
 
-drivers/net/phy/sfp.c:1713 sfp_sm_mod_hpower() warn: passing zero to 'ERR_PTR'
-drivers/net/phy/sfp.c:1797 sfp_cotsworks_fixup_check() warn: passing zero to 'ERR_PTR'
-drivers/net/phy/sfp.c:1830 sfp_sm_mod_probe() warn: passing zero to 'ERR_PTR'
-drivers/net/phy/sfp.c:473 sfp_soft_get_state() warn: passing zero to 'ERR_PTR'
-net/dsa/dsa.c:486 dsa_port_walk_fdbs() error: uninitialized symbol 'err'.
-net/dsa/dsa.c:506 dsa_port_walk_mdbs() error: uninitialized symbol 'err'.
+The patch 43113ff73453: "ice: add TTY for GNSS module for E810T 
+device" from Mar 1, 2022, leads to the following Smatch complaint:
 
-Warning ids grouped by kconfigs:
+    drivers/net/ethernet/intel/ice/ice_gnss.c:101 ice_gnss_read()
+    error: we previously assumed 'pf' could be null (see line 30)
 
-gcc_recent_errors
-`-- m68k-randconfig-m031-20220304
-    |-- drivers-net-phy-sfp.c-sfp_cotsworks_fixup_check()-warn:passing-zero-to-ERR_PTR
-    |-- drivers-net-phy-sfp.c-sfp_sm_mod_hpower()-warn:passing-zero-to-ERR_PTR
-    |-- drivers-net-phy-sfp.c-sfp_sm_mod_probe()-warn:passing-zero-to-ERR_PTR
-    |-- drivers-net-phy-sfp.c-sfp_soft_get_state()-warn:passing-zero-to-ERR_PTR
-    |-- net-dsa-dsa.c-dsa_port_walk_fdbs()-error:uninitialized-symbol-err-.
-    `-- net-dsa-dsa.c-dsa_port_walk_mdbs()-error:uninitialized-symbol-err-.
+drivers/net/ethernet/intel/ice/ice_gnss.c
+    29		pf = gnss->back;
+    30		if (!pf || !gnss->tty || !gnss->tty->port) {
+                    ^^^
+Check for NULL
 
-elapsed time: 4820m
+    31			err = -EFAULT;
+    32			goto exit;
+    33		}
+    34	
+    35		hw = &pf->hw;
+    36		port = gnss->tty->port;
+    37	
+    38		buf = (char *)get_zeroed_page(GFP_KERNEL);
+    39		if (!buf) {
+    40			err = -ENOMEM;
+    41			goto exit;
+    42		}
+    43	
+    44		memset(&link_topo, 0, sizeof(struct ice_aqc_link_topo_addr));
+    45		link_topo.topo_params.index = ICE_E810T_GNSS_I2C_BUS;
+    46		link_topo.topo_params.node_type_ctx |=
+    47			FIELD_PREP(ICE_AQC_LINK_TOPO_NODE_CTX_M,
+    48				   ICE_AQC_LINK_TOPO_NODE_CTX_OVERRIDE);
+    49	
+    50		i2c_params = ICE_GNSS_UBX_DATA_LEN_WIDTH |
+    51			     ICE_AQC_I2C_USE_REPEATED_START;
+    52	
+    53		/* Read data length in a loop, when it's not 0 the data is ready */
+    54		for (i = 0; i < ICE_MAX_UBX_READ_TRIES; i++) {
+    55			err = ice_aq_read_i2c(hw, link_topo, ICE_GNSS_UBX_I2C_BUS_ADDR,
+    56					      cpu_to_le16(ICE_GNSS_UBX_DATA_LEN_H),
+    57					      i2c_params, (u8 *)&data_len_b, NULL);
+    58			if (err)
+    59				goto exit_buf;
+    60	
+    61			data_len = be16_to_cpu(data_len_b);
+    62			if (data_len != 0 && data_len != U16_MAX)
+    63				break;
+    64	
+    65			mdelay(10);
+    66		}
+    67	
+    68		data_len = min(data_len, (u16)PAGE_SIZE);
+    69		data_len = tty_buffer_request_room(port, data_len);
+    70		if (!data_len) {
+    71			err = -ENOMEM;
+    72			goto exit_buf;
+    73		}
+    74	
+    75		/* Read received data */
+    76		for (i = 0; i < data_len; i += bytes_read) {
+    77			u16 bytes_left = data_len - i;
+    78	
+    79			bytes_read = bytes_left < ICE_MAX_I2C_DATA_SIZE ? bytes_left :
+    80						  ICE_MAX_I2C_DATA_SIZE;
+    81	
+    82			err = ice_aq_read_i2c(hw, link_topo, ICE_GNSS_UBX_I2C_BUS_ADDR,
+    83					      cpu_to_le16(ICE_GNSS_UBX_EMPTY_DATA),
+    84					      bytes_read, &buf[i], NULL);
+    85			if (err)
+    86				goto exit_buf;
+    87		}
+    88	
+    89		/* Send the data to the tty layer for users to read. This doesn't
+    90		 * actually push the data through unless tty->low_latency is set.
+    91		 */
+    92		tty_insert_flip_string(port, buf, i);
+    93		tty_flip_buffer_push(port);
+    94	
+    95	exit_buf:
+    96		free_page((unsigned long)buf);
+    97		kthread_queue_delayed_work(gnss->kworker, &gnss->read_work,
+    98					   ICE_GNSS_TIMER_DELAY_TIME);
+    99	exit:
+   100		if (err)
+   101			dev_dbg(ice_pf_to_dev(pf), "GNSS failed to read err=%d\n", err);
+                                              ^^
+Unchecked dereference
 
-configs tested: 99
-configs skipped: 3
+   102	}
+   103	
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                          randconfig-c001
-mips                 randconfig-c004-20220303
-sh                            migor_defconfig
-arm                           sunxi_defconfig
-sh                          rsk7269_defconfig
-arm                           sama5_defconfig
-mips                         mpc30x_defconfig
-mips                      maltasmvp_defconfig
-parisc64                         alldefconfig
-powerpc                     tqm8548_defconfig
-powerpc                     sequoia_defconfig
-powerpc                 mpc837x_mds_defconfig
-sh                         microdev_defconfig
-parisc                generic-64bit_defconfig
-arm                  randconfig-c002-20220303
-arm                  randconfig-c002-20220304
-arm                  randconfig-c002-20220302
-ia64                                defconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-i386                              debian-10.3
-i386                   debian-10.3-kselftests
-i386                                defconfig
-sparc                               defconfig
-sparc                            allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-x86_64                        randconfig-a015
-i386                          randconfig-a014
-i386                          randconfig-a012
-i386                          randconfig-a016
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-riscv                    nommu_virt_defconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                                  kexec
-
-clang tested configs:
-x86_64                        randconfig-c007
-powerpc              randconfig-c003-20220302
-riscv                randconfig-c006-20220302
-i386                          randconfig-c001
-arm                  randconfig-c002-20220302
-mips                 randconfig-c004-20220302
-powerpc                          g5_defconfig
-arm                        spear3xx_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a016
-x86_64                        randconfig-a014
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220304
-hexagon              randconfig-r041-20220304
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+regards,
+dan carpenter
