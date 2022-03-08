@@ -1,208 +1,48 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 08 Mar 2022 17:12:31 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 0baa704ac200daa6dc02a86617e09440bf837910
-Message-ID: <62271dff.kwxamtgzwPD8HAMr%lkp@intel.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Tue,  8 Mar 2022 11:24:22 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Fix BUG: scheduling while
+ atomic: kworker/u64:0/9/0x00000002
+Message-ID: <20220308092422.2971655-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 0baa704ac200daa6dc02a86617e09440bf837910  igc: Fix infinite loop in release_swfw_sync
+Replace usleep_range() method with udelay() method to allow atomic contects
+in low-level MDIO access functions.
 
-elapsed time: 732m
-
-configs tested: 175
-configs skipped: 4
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                          randconfig-c001
-i386                 randconfig-c001-20220307
-alpha                            alldefconfig
-arm                      footbridge_defconfig
-m68k                           sun3_defconfig
-sh                           se7722_defconfig
-sh                          urquell_defconfig
-powerpc                      ep88xc_defconfig
-arm                         nhk8815_defconfig
-powerpc                     asp8347_defconfig
-arm                        realview_defconfig
-sh                           se7780_defconfig
-nios2                               defconfig
-m68k                          sun3x_defconfig
-arm                         assabet_defconfig
-mips                       bmips_be_defconfig
-m68k                        m5307c3_defconfig
-mips                     loongson1b_defconfig
-powerpc64                           defconfig
-xtensa                  cadence_csp_defconfig
-arm                          pxa3xx_defconfig
-arm                           sama5_defconfig
-arc                            hsdk_defconfig
-x86_64                           alldefconfig
-mips                     decstation_defconfig
-ia64                          tiger_defconfig
-x86_64                              defconfig
-sparc                       sparc32_defconfig
-arm                             rpc_defconfig
-arc                           tb10x_defconfig
-parisc64                         alldefconfig
-sh                           se7750_defconfig
-sh                             sh03_defconfig
-sh                          r7785rp_defconfig
-nios2                         3c120_defconfig
-powerpc                     ep8248e_defconfig
-powerpc                        warp_defconfig
-arm                      jornada720_defconfig
-arm                            zeus_defconfig
-sh                          landisk_defconfig
-powerpc                   currituck_defconfig
-powerpc                      ppc40x_defconfig
-xtensa                           alldefconfig
-microblaze                          defconfig
-sh                           se7712_defconfig
-alpha                               defconfig
-microblaze                      mmu_defconfig
-sh                         ecovec24_defconfig
-sh                          rsk7201_defconfig
-arm                        shmobile_defconfig
-mips                         tb0226_defconfig
-mips                  decstation_64_defconfig
-arm                         s3c6400_defconfig
-sh                            titan_defconfig
-arm                            xcep_defconfig
-xtensa                          iss_defconfig
-powerpc                 mpc834x_itx_defconfig
-m68k                       m5249evb_defconfig
-arm                            hisi_defconfig
-riscv                               defconfig
-um                           x86_64_defconfig
-arc                          axs101_defconfig
-sh                           se7751_defconfig
-sparc                            allyesconfig
-mips                      maltasmvp_defconfig
-powerpc                  iss476-smp_defconfig
-arm                  randconfig-c002-20220308
-arm                  randconfig-c002-20220307
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                 randconfig-a005-20220307
-i386                 randconfig-a004-20220307
-i386                 randconfig-a003-20220307
-i386                 randconfig-a006-20220307
-i386                 randconfig-a002-20220307
-i386                 randconfig-a001-20220307
-x86_64               randconfig-a006-20220307
-x86_64               randconfig-a004-20220307
-x86_64               randconfig-a005-20220307
-x86_64               randconfig-a001-20220307
-x86_64               randconfig-a003-20220307
-x86_64               randconfig-a002-20220307
-arc                  randconfig-r043-20220308
-riscv                randconfig-r042-20220308
-s390                 randconfig-r044-20220308
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                                  kexec
-
-clang tested configs:
-x86_64                        randconfig-c007
-riscv                randconfig-c006-20220308
-powerpc              randconfig-c003-20220308
-i386                          randconfig-c001
-arm                  randconfig-c002-20220308
-mips                 randconfig-c004-20220308
-x86_64               randconfig-c007-20220307
-i386                 randconfig-c001-20220307
-powerpc              randconfig-c003-20220307
-riscv                randconfig-c006-20220307
-mips                 randconfig-c004-20220307
-arm                  randconfig-c002-20220307
-s390                 randconfig-c005-20220307
-powerpc                      walnut_defconfig
-mips                        qi_lb60_defconfig
-powerpc                     skiroot_defconfig
-mips                     loongson2k_defconfig
-arm                         bcm2835_defconfig
-powerpc                      ppc44x_defconfig
-arm                         socfpga_defconfig
-arm                        vexpress_defconfig
-hexagon                             defconfig
-mips                           ip22_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                 randconfig-a012-20220307
-i386                 randconfig-a013-20220307
-i386                 randconfig-a015-20220307
-i386                 randconfig-a011-20220307
-i386                 randconfig-a014-20220307
-i386                 randconfig-a016-20220307
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220307
-hexagon              randconfig-r045-20220308
-hexagon              randconfig-r041-20220308
-riscv                randconfig-r042-20220307
-hexagon              randconfig-r041-20220307
-
+Bugzilla: https://bugzilla.redhat.com/show_bug.cgi?id=2014971
+Fixes: 5586838fe9ce ("igc: Add code for PHY support")
+Reported-by: Corinna Vinschen <vinschen@redhat.com>
+Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/igc/igc_phy.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
+index 40dbf4b43234..6961f65d36b9 100644
+--- a/drivers/net/ethernet/intel/igc/igc_phy.c
++++ b/drivers/net/ethernet/intel/igc/igc_phy.c
+@@ -581,7 +581,7 @@ static s32 igc_read_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 *data)
+ 	 * the lower time out
+ 	 */
+ 	for (i = 0; i < IGC_GEN_POLL_TIMEOUT; i++) {
+-		usleep_range(500, 1000);
++		udelay(50);
+ 		mdic = rd32(IGC_MDIC);
+ 		if (mdic & IGC_MDIC_READY)
+ 			break;
+@@ -638,7 +638,7 @@ static s32 igc_write_phy_reg_mdic(struct igc_hw *hw, u32 offset, u16 data)
+ 	 * the lower time out
+ 	 */
+ 	for (i = 0; i < IGC_GEN_POLL_TIMEOUT; i++) {
+-		usleep_range(500, 1000);
++		udelay(50);
+ 		mdic = rd32(IGC_MDIC);
+ 		if (mdic & IGC_MDIC_READY)
+ 			break;
+-- 
+2.30.2
+
