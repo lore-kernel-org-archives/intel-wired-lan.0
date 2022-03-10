@@ -1,32 +1,45 @@
-From: Ivan Vecera <ivecera@redhat.com>
-Date: Thu, 10 Mar 2022 19:06:42 +0100
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix race condition during
- interface enslave
-In-Reply-To: <MW5PR11MB58114999381C7B98598BB568DD0B9@MW5PR11MB5811.namprd11.prod.outlook.com>
-References: <20220310171641.3863659-1-ivecera@redhat.com>
- <MW5PR11MB58114999381C7B98598BB568DD0B9@MW5PR11MB5811.namprd11.prod.outlook.com>
-Message-ID: <20220310190642.556063ae@ceranb>
+From: Sreenivas, Bharathi <bharathi.sreenivas@intel.com>
+Date: Thu, 10 Mar 2022 18:09:23 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v4 1/2] devlink: Allow
+ parameter registration/unregistration during runtime
+In-Reply-To: <BN9PR11MB549766F269D3EA6D0F0D8338E40B9@BN9PR11MB5497.namprd11.prod.outlook.com>
+References: <20220310103959.369773-1-sudheer.mogilappagari@intel.com>
+ <20220310103959.369773-2-sudheer.mogilappagari@intel.com>
+ <BN9PR11MB549766F269D3EA6D0F0D8338E40B9@BN9PR11MB5497.namprd11.prod.outlook.com>
+Message-ID: <MN2PR11MB36147AA4918EB619872D92C58E0B9@MN2PR11MB3614.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 10 Mar 2022 17:48:16 +0000
-"Ertman, David M" <david.m.ertman@intel.com> wrote:
 
-> This only addresses one case of unplugging the auxiliary bus.  Rather than controlling one instance of
-> calling ice_unplig_aux_dev(), it seems like it would be better to modify ice_unplug_aux_dev so that it
-> will pause until any plugging is done by the service task (check for the pf->flag bit and wait until it clears
-> before progressing).
 
-You cannot wait in ice_unplug_aux_dev() for ICE_FLAG_PLUG_AUX_DEV to be cleared because
-ice_clear_rdma_cap() is called under RTNL.
-This patch is a counter part for commit 5dbbbd01cbba83 ("ice: Avoid RTNL lock when
-re-creating auxiliary device") that eliminates ice_plug_aux() and fixed first part
-of deadlock and this patch fixes a second part and eliminates also ice_unplug_aux_dev()
-to be called under RTNL.
-
-Thanks,
-Ivan
-
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Sudheer Mogilappagari
+> Sent: Thursday, March 10, 2022 2:40 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v4 1/2] devlink: Allow parameter
+> registration/unregistration during runtime
+> 
+> From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> 
+> commit 7a690ad499e7 ("devlink: Clean not-executed param notifications")
+> added ASSERTs and removed notifications when devlink parameters are
+> registered by the drivers after the associated devlink instance is already
+> registered.
+> The next patch in this series adds a feature in 'ice' driver that is only enabled
+> when ADQ queue groups are created and introduces a devlink parameter to
+> configure this feature per queue group.
+> 
+> To allow dynamic parameter registration/unregistration during runtime,
+> revert the changes added by the above commit.
+> 
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> ---
+>  net/core/devlink.c | 14 +++-----------
+>  1 file changed, 3 insertions(+), 11 deletions(-)
+> 
+Tested-by: Bharathi Sreenivas <bharathi.sreenivas@intel.com>
