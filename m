@@ -1,11 +1,11 @@
 From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Thu, 10 Mar 2022 10:37:06 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v10 6/7] ice: Fix FV offset
- searching
-In-Reply-To: <20220304164048.476900-7-marcin.szycik@linux.intel.com>
+Date: Thu, 10 Mar 2022 10:38:17 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v10 7/7] ice: Support GTP-U
+ and GTP-C offload in switchdev
+In-Reply-To: <20220304164048.476900-8-marcin.szycik@linux.intel.com>
 References: <20220304164048.476900-1-marcin.szycik@linux.intel.com>
- <20220304164048.476900-7-marcin.szycik@linux.intel.com>
-Message-ID: <MW3PR11MB45546A2306F39A3647C94E039C0B9@MW3PR11MB4554.namprd11.prod.outlook.com>
+ <20220304164048.476900-8-marcin.szycik@linux.intel.com>
+Message-ID: <MW3PR11MB4554E0C520A2F1F2EB06BE009C0B9@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,28 +21,35 @@ To: netdev@vger.kernel.org
 >gprs at lists.osmocom.org; jhs at mojatatu.com; laforge at gnumonks.org; intel-
 >wired-lan at lists.osuosl.org; kuba at kernel.org; davem at davemloft.net;
 >pablo at netfilter.org
->Subject: [Intel-wired-lan] [PATCH net-next v10 6/7] ice: Fix FV offset searching
+>Subject: [Intel-wired-lan] [PATCH net-next v10 7/7] ice: Support GTP-U and
+>GTP-C offload in switchdev
 >
->From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>Add support for creating filters for GTP-U and GTP-C in switchdev mode. Add
+>support for parsing GTP-specific options (QFI and PDU type) and TEID.
 >
->Checking only protocol ids while searching for correct FVs can lead to a
->situation, when incorrect FV will be added to the list. Incorrect means that FV
->has correct protocol id but incorrect offset.
+>By default, a filter for GTP-U will be added. To add a filter for GTP-C, specify
+>enc_dst_port = 2123, e.g.:
 >
->Call ice_get_sw_fv_list with ice_prot_lkup_ext struct which contains all
->protocol ids with offsets.
+>tc filter add dev $GTP0 ingress prio 1 flower enc_key_id 1337 \ enc_dst_port
+>2123 action mirred egress redirect dev $VF1_PR
 >
->With this modification allocating and collecting protocol ids list is not longer
->needed.
+>Note: GTP-U with outer IPv6 offload is not supported yet.
+>Note: GTP-U with no payload offload is not supported yet.
 >
->Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 >---
->v7: Fix ice_get_sw_fv_list kernel-doc
->v10: Fix 80 char line limit
+>v7: Fix ice_get_sw_prof_type kernel-doc
+>v9: Fix GTP-C dummy packet selection, GTP-C IPv6 offload working
+>v10: Rebase
 >---
-> .../net/ethernet/intel/ice/ice_flex_pipe.c    | 22 +++++------
-> .../net/ethernet/intel/ice/ice_flex_pipe.h    |  2 +-
-> drivers/net/ethernet/intel/ice/ice_switch.c   | 39 +------------------
-> 3 files changed, 12 insertions(+), 51 deletions(-)
+> drivers/net/ethernet/intel/ice/ice.h          |   1 +
+> .../net/ethernet/intel/ice/ice_flex_pipe.c    |  31 +-
+> .../net/ethernet/intel/ice/ice_flex_type.h    |   6 +-
+> .../ethernet/intel/ice/ice_protocol_type.h    |  19 +
+> drivers/net/ethernet/intel/ice/ice_switch.c   | 604 +++++++++++++++++-
+> drivers/net/ethernet/intel/ice/ice_switch.h   |   9 +
+> drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 105 ++-
+> drivers/net/ethernet/intel/ice/ice_tc_lib.h   |   3 +
+> 8 files changed, 760 insertions(+), 18 deletions(-)
 >
 Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
