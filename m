@@ -1,55 +1,112 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Thu, 10 Mar 2022 10:38:17 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v10 7/7] ice: Support GTP-U
- and GTP-C offload in switchdev
-In-Reply-To: <20220304164048.476900-8-marcin.szycik@linux.intel.com>
-References: <20220304164048.476900-1-marcin.szycik@linux.intel.com>
- <20220304164048.476900-8-marcin.szycik@linux.intel.com>
-Message-ID: <MW3PR11MB4554E0C520A2F1F2EB06BE009C0B9@MW3PR11MB4554.namprd11.prod.outlook.com>
+From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Date: Thu, 10 Mar 2022 02:39:58 -0800
+Subject: [Intel-wired-lan] [PATCH net-next v4 1/2] devlink: Allow parameter
+ registration/unregistration during runtime
+In-Reply-To: <20220310103959.369773-1-sudheer.mogilappagari@intel.com>
+References: <20220310103959.369773-1-sudheer.mogilappagari@intel.com>
+Message-ID: <20220310103959.369773-2-sudheer.mogilappagari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Marcin Szycik
->Sent: Friday, March 4, 2022 10:11 PM
-To: netdev@vger.kernel.org
->Cc: jiri at resnulli.us; xiyou.wangcong at gmail.com; osmocom-net-
->gprs at lists.osmocom.org; jhs at mojatatu.com; laforge at gnumonks.org; intel-
->wired-lan at lists.osuosl.org; kuba at kernel.org; davem at davemloft.net;
->pablo at netfilter.org
->Subject: [Intel-wired-lan] [PATCH net-next v10 7/7] ice: Support GTP-U and
->GTP-C offload in switchdev
->
->Add support for creating filters for GTP-U and GTP-C in switchdev mode. Add
->support for parsing GTP-specific options (QFI and PDU type) and TEID.
->
->By default, a filter for GTP-U will be added. To add a filter for GTP-C, specify
->enc_dst_port = 2123, e.g.:
->
->tc filter add dev $GTP0 ingress prio 1 flower enc_key_id 1337 \ enc_dst_port
->2123 action mirred egress redirect dev $VF1_PR
->
->Note: GTP-U with outer IPv6 offload is not supported yet.
->Note: GTP-U with no payload offload is not supported yet.
->
->Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
->---
->v7: Fix ice_get_sw_prof_type kernel-doc
->v9: Fix GTP-C dummy packet selection, GTP-C IPv6 offload working
->v10: Rebase
->---
-> drivers/net/ethernet/intel/ice/ice.h          |   1 +
-> .../net/ethernet/intel/ice/ice_flex_pipe.c    |  31 +-
-> .../net/ethernet/intel/ice/ice_flex_type.h    |   6 +-
-> .../ethernet/intel/ice/ice_protocol_type.h    |  19 +
-> drivers/net/ethernet/intel/ice/ice_switch.c   | 604 +++++++++++++++++-
-> drivers/net/ethernet/intel/ice/ice_switch.h   |   9 +
-> drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 105 ++-
-> drivers/net/ethernet/intel/ice/ice_tc_lib.h   |   3 +
-> 8 files changed, 760 insertions(+), 18 deletions(-)
->
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+
+commit 7a690ad499e7 ("devlink: Clean not-executed param notifications")
+added ASSERTs and removed notifications when devlink parameters are
+registered by the drivers after the associated devlink instance is
+already registered.
+The next patch in this series adds a feature in 'ice' driver that is
+only enabled when ADQ queue groups are created and introduces a
+devlink parameter to configure this feature per queue group.
+
+To allow dynamic parameter registration/unregistration during runtime,
+revert the changes added by the above commit.
+
+Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+---
+ net/core/devlink.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
+
+diff --git a/net/core/devlink.c b/net/core/devlink.c
+index fcd9f6d85cf1..d09f2aa4f48f 100644
+--- a/net/core/devlink.c
++++ b/net/core/devlink.c
+@@ -4724,7 +4724,6 @@ static void devlink_param_notify(struct devlink *devlink,
+ 	WARN_ON(cmd != DEVLINK_CMD_PARAM_NEW && cmd != DEVLINK_CMD_PARAM_DEL &&
+ 		cmd != DEVLINK_CMD_PORT_PARAM_NEW &&
+ 		cmd != DEVLINK_CMD_PORT_PARAM_DEL);
+-	ASSERT_DEVLINK_REGISTERED(devlink);
+ 
+ 	msg = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL);
+ 	if (!msg)
+@@ -10120,8 +10119,6 @@ int devlink_params_register(struct devlink *devlink,
+ 	const struct devlink_param *param = params;
+ 	int i, err;
+ 
+-	ASSERT_DEVLINK_NOT_REGISTERED(devlink);
+-
+ 	for (i = 0; i < params_count; i++, param++) {
+ 		err = devlink_param_register(devlink, param);
+ 		if (err)
+@@ -10152,8 +10149,6 @@ void devlink_params_unregister(struct devlink *devlink,
+ 	const struct devlink_param *param = params;
+ 	int i;
+ 
+-	ASSERT_DEVLINK_NOT_REGISTERED(devlink);
+-
+ 	for (i = 0; i < params_count; i++, param++)
+ 		devlink_param_unregister(devlink, param);
+ }
+@@ -10173,8 +10168,6 @@ int devlink_param_register(struct devlink *devlink,
+ {
+ 	struct devlink_param_item *param_item;
+ 
+-	ASSERT_DEVLINK_NOT_REGISTERED(devlink);
+-
+ 	WARN_ON(devlink_param_verify(param));
+ 	WARN_ON(devlink_param_find_by_name(&devlink->param_list, param->name));
+ 
+@@ -10190,6 +10183,7 @@ int devlink_param_register(struct devlink *devlink,
+ 	param_item->param = param;
+ 
+ 	list_add_tail(&param_item->list, &devlink->param_list);
++	devlink_param_notify(devlink, 0, param_item, DEVLINK_CMD_PARAM_NEW);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(devlink_param_register);
+@@ -10204,11 +10198,10 @@ void devlink_param_unregister(struct devlink *devlink,
+ {
+ 	struct devlink_param_item *param_item;
+ 
+-	ASSERT_DEVLINK_NOT_REGISTERED(devlink);
+-
+ 	param_item =
+ 		devlink_param_find_by_name(&devlink->param_list, param->name);
+ 	WARN_ON(!param_item);
++	devlink_param_notify(devlink, 0, param_item, DEVLINK_CMD_PARAM_DEL);
+ 	list_del(&param_item->list);
+ 	kfree(param_item);
+ }
+@@ -10268,8 +10261,6 @@ int devlink_param_driverinit_value_set(struct devlink *devlink, u32 param_id,
+ {
+ 	struct devlink_param_item *param_item;
+ 
+-	ASSERT_DEVLINK_NOT_REGISTERED(devlink);
+-
+ 	param_item = devlink_param_find_by_id(&devlink->param_list, param_id);
+ 	if (!param_item)
+ 		return -EINVAL;
+@@ -10283,6 +10274,7 @@ int devlink_param_driverinit_value_set(struct devlink *devlink, u32 param_id,
+ 	else
+ 		param_item->driverinit_value = init_val;
+ 	param_item->driverinit_value_valid = true;
++	devlink_param_notify(devlink, 0, param_item, DEVLINK_CMD_PARAM_NEW);
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(devlink_param_driverinit_value_set);
+-- 
+2.27.0
+
