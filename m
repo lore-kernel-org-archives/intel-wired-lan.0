@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 12 Mar 2022 20:58:52 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 9a225f81f540f65225e4b820e303d40d9e747e78
-Message-ID: <622c990c.yzQ320SYCOjAqYN/%lkp@intel.com>
+Date: Sat, 12 Mar 2022 22:17:47 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ bdcb37d9e161b1e0ee431f41fce747b2f61cf443
+Message-ID: <622cab8b.rfcYsvya8ysDhAip%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 9a225f81f540f65225e4b820e303d40d9e747e78  ice: Support GTP-U and GTP-C offload in switchdev
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: bdcb37d9e161b1e0ee431f41fce747b2f61cf443  ice: destroy flow director filter mutex after releasing VSIs
 
-elapsed time: 1160m
+elapsed time: 1107m
 
-configs tested: 65
+configs tested: 61
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -22,16 +22,16 @@ More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
-arm64                            allyesconfig
 arm64                               defconfig
-arm                              allyesconfig
+arm64                            allyesconfig
 arm                              allmodconfig
-ia64                             allmodconfig
+arm                              allyesconfig
 ia64                                defconfig
+ia64                             allmodconfig
 ia64                             allyesconfig
+m68k                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
-m68k                             allyesconfig
 nios2                               defconfig
 arc                              allyesconfig
 nds32                             allnoconfig
@@ -51,18 +51,17 @@ parisc64                            defconfig
 parisc                           allyesconfig
 s390                                defconfig
 i386                             allyesconfig
-i386                              debian-10.3
-i386                                defconfig
-sparc                               defconfig
-i386                   debian-10.3-kselftests
 sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
 mips                             allyesconfig
 mips                             allmodconfig
 powerpc                           allnoconfig
 powerpc                          allmodconfig
 powerpc                          allyesconfig
 arc                  randconfig-r043-20220310
-arc                  randconfig-r043-20220312
 riscv                    nommu_k210_defconfig
 riscv                            allyesconfig
 riscv                             allnoconfig
@@ -81,13 +80,10 @@ x86_64                         rhel-8.3-kunit
 x86_64                                  kexec
 
 clang tested configs:
-hexagon              randconfig-r045-20220310
-hexagon              randconfig-r041-20220310
-s390                 randconfig-r044-20220310
 riscv                randconfig-r042-20220310
-hexagon              randconfig-r045-20220312
-hexagon              randconfig-r041-20220312
-s390                 randconfig-r044-20220312
+hexagon              randconfig-r041-20220310
+hexagon              randconfig-r045-20220310
+s390                 randconfig-r044-20220310
 
 ---
 0-DAY CI Kernel Test Service
