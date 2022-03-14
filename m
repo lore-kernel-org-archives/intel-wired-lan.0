@@ -1,47 +1,42 @@
-From: Yang Yingliang <yangyingliang@huawei.com>
-Date: Sat, 5 Mar 2022 17:04:30 +0800
-Subject: [Intel-wired-lan] [PATCH -next] ice: fix return value check in
- ice_gnss.c
-Message-ID: <20220305090430.3078757-1-yangyingliang@huawei.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Mon, 14 Mar 2022 04:46:44 +0000
+Subject: [Intel-wired-lan] [PATCH intel-net] ice: fix NULL pointer
+ dereference in ice_update_vsi_tx_ring_stats()
+In-Reply-To: <20220307174739.55899-1-maciej.fijalkowski@intel.com>
+References: <20220307174739.55899-1-maciej.fijalkowski@intel.com>
+Message-ID: <BYAPR11MB3367D9730C0C04E6626D744FFC0F9@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-kthread_create_worker() and tty_alloc_driver() return ERR_PTR()
-and never return NULL. The NULL test in the return value check
-should be replaced with IS_ERR().
 
-Fixes: 43113ff73453 ("ice: add TTY for GNSS module for E810T device")
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
----
- drivers/net/ethernet/intel/ice/ice_gnss.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
-index 755e1580f368..35579cf4283f 100644
---- a/drivers/net/ethernet/intel/ice/ice_gnss.c
-+++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
-@@ -125,7 +125,7 @@ static struct gnss_serial *ice_gnss_struct_init(struct ice_pf *pf)
- 	 * writes.
- 	 */
- 	kworker = kthread_create_worker(0, "ice-gnss-%s", dev_name(dev));
--	if (!kworker) {
-+	if (IS_ERR(kworker)) {
- 		kfree(gnss);
- 		return NULL;
- 	}
-@@ -253,7 +253,7 @@ static struct tty_driver *ice_gnss_create_tty_driver(struct ice_pf *pf)
- 	int err;
- 
- 	tty_driver = tty_alloc_driver(1, TTY_DRIVER_REAL_RAW);
--	if (!tty_driver) {
-+	if (IS_ERR(tty_driver)) {
- 		dev_err(ice_pf_to_dev(pf), "Failed to allocate memory for GNSS TTY\n");
- 		return NULL;
- 	}
--- 
-2.25.1
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Maciej Fijalkowski
+> Sent: Monday, March 7, 2022 11:18 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; dan.carpenter at oracle.com; kuba at kernel.org;
+> bpf at vger.kernel.org; davem at davemloft.net; Karlsson, Magnus
+> <magnus.karlsson@intel.com>
+> Subject: [Intel-wired-lan] [PATCH intel-net] ice: fix NULL pointer dereference
+> in ice_update_vsi_tx_ring_stats()
+> 
+> It is possible to do NULL pointer dereference in routine that updates Tx ring
+> stats. Currently only stats and bytes are updated when ring pointer is valid,
+> but later on ring is accessed to propagate gathered Tx stats onto VSI stats.
+> 
+> Change the existing logic to move to next ring when ring is NULL.
+> 
+> Fixes: e72bba21355d ("ice: split ice_ring onto Tx/Rx separate structs")
+> Reported-by: kernel test robot <lkp@intel.com>
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_main.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
 
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
