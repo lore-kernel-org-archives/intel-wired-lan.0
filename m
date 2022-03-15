@@ -1,28 +1,46 @@
-From: naamax.meir <naamax.meir@linux.intel.com>
-Date: Tue, 15 Mar 2022 10:04:48 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Fix infinite loop in
- release_swfw_sync
-In-Reply-To: <20220301133210.1433609-1-sasha.neftin@intel.com>
-References: <20220301133210.1433609-1-sasha.neftin@intel.com>
-Message-ID: <c9536ff5-72ac-5b78-6eb3-e6c5f415433a@linux.intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Tue, 15 Mar 2022 11:56:39 +0000
+Subject: [Intel-wired-lan] [PATCH linux-firmware v3] ice: update ice DDP
+ comms package to 1.3.31.0
+In-Reply-To: <20220311220230.2430-1-arjun.anantharam@intel.com>
+References: <20220311220230.2430-1-arjun.anantharam@intel.com>
+Message-ID: <BYAPR11MB3367C73D351EC98E20CB9130FC109@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/1/2022 15:32, Sasha Neftin wrote:
-> An infinite loop may occur if we fail to acquire the HW semaphore,
-> which is needed for resource release.
-> This will typically happen if the hardware is surprise-removed.
-> At this stage there is nothing to do, except log an error and quit.
->
-> Suggested-by: Dima Ruinskiy<dima.ruinskiy@intel.com>
-> Signed-off-by: Sasha Neftin<sasha.neftin@intel.com>
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Arjun Anantharam
+> Sent: Saturday, March 12, 2022 3:33 AM
+> To: intel-wired-lan at lists.osuosl.org; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; Anantharam, Arjun
+> <arjun.anantharam@intel.com>; Rao, Guruprasad Kudukolly
+> <guruprasad.kudukolly.rao@intel.com>
+> Subject: [Intel-wired-lan] [PATCH linux-firmware v3] ice: update ice DDP
+> comms package to 1.3.31.0
+> 
+> Update ice DDP comms package file to the latest version: 1.3.31.0
+> 
+> Highlight of changes since 1.3.20.0:
+> 
+> - Add Separate Package Type Group for outer IPv4 and IPv6 tunnel packet
+> - Add GTPU SCTP ptypes to PTGs mapping
+> - Add Multicast support in Flow Director
+> - Add profiles for GTPU extension header
+> 
+> Signed-off-by: Arjun Anantharam <arjun.anantharam@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_i225.c | 11 +++++++++--
->   1 file changed, 9 insertions(+), 2 deletions(-)
-Tested-by: Naama Meir <naamax.meir@linux.intel.com>
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220315/e4f90db1/attachment.html>
+> v3: Edited highlights of changes in package
+> 
+>  WHENCE                                        |   2 +-
+>  ...ms-1.3.20.0.pkg => ice_comms-1.3.31.0.pkg} | Bin 688388 -> 717176 bytes
+>  2 files changed, 1 insertion(+), 1 deletion(-)  rename intel/ice/ddp-
+> comms/{ice_comms-1.3.20.0.pkg => ice_comms-1.3.31.0.pkg} (75%)
+> 
+
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
