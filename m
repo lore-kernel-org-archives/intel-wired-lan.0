@@ -1,35 +1,28 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 14 Mar 2022 11:42:31 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Add support for double
- vlan in switchdev
-In-Reply-To: <20220223003830.25565-1-martyna.szapar-mudlaw@intel.com>
-References: <20220223003830.25565-1-martyna.szapar-mudlaw@intel.com>
-Message-ID: <02787281-51d6-aab8-6047-59da1ad9658c@intel.com>
+From: naamax.meir <naamax.meir@linux.intel.com>
+Date: Tue, 15 Mar 2022 10:04:48 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Fix infinite loop in
+ release_swfw_sync
+In-Reply-To: <20220301133210.1433609-1-sasha.neftin@intel.com>
+References: <20220301133210.1433609-1-sasha.neftin@intel.com>
+Message-ID: <c9536ff5-72ac-5b78-6eb3-e6c5f415433a@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Martyna,
-
-On 2/22/2022 4:38 PM, Martyna Szapar-Mudlaw wrote:
-> Enable support for adding TC rules with both C-tag and S-tag that can
-> filter on the inner and outer VLAN in QinQ for basic packets (not
-> tunneled cases).
+On 3/1/2022 15:32, Sasha Neftin wrote:
+> An infinite loop may occur if we fail to acquire the HW semaphore,
+> which is needed for resource release.
+> This will typically happen if the hardware is surprise-removed.
+> At this stage there is nothing to do, except log an error and quit.
 >
-> Signed-off-by: Wiktor Pilarczyk <wiktor.pilarczyk@intel.com>
-> Signed-off-by: Martyna Szapar-Mudlaw <martyna.szapar-mudlaw@intel.com>
-
-It looks like this was based on changes made with the ice switch 
-optimizations that were dropped for updating [1]. I have to drop this as 
-well as it no longer applies without those. Please either rebase on 
-current tree or wait for Alex's update and resend.
-
-Thanks,
-
-Tony
-
-[1] 
-https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20220314/028137.html
-
+> Suggested-by: Dima Ruinskiy<dima.ruinskiy@intel.com>
+> Signed-off-by: Sasha Neftin<sasha.neftin@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_i225.c | 11 +++++++++--
+>   1 file changed, 9 insertions(+), 2 deletions(-)
+Tested-by: Naama Meir <naamax.meir@linux.intel.com>
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220315/e4f90db1/attachment.html>
