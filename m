@@ -1,37 +1,57 @@
-From: Yang Li <yang.lee@linux.alibaba.com>
-Date: Wed, 16 Mar 2022 08:03:07 +0800
-Subject: [Intel-wired-lan] [PATCH -next] ice: clean up one inconsistent
- indenting
-Message-ID: <20220316000307.66863-1-yang.lee@linux.alibaba.com>
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+Date: Wed, 16 Mar 2022 15:51:23 +0100
+Subject: [Intel-wired-lan] [PATCH v2 net-next 0/4] ice: switch: debloat
+ packet templates code
+In-Reply-To: <40f168ef-f610-4082-d032-d3625505a323@intel.com>
+References: <20220127154009.623304-1-alexandr.lobakin@intel.com>
+ <40f168ef-f610-4082-d032-d3625505a323@intel.com>
+Message-ID: <20220316145123.1324206-1-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Eliminate the follow smatch warning:
-drivers/net/ethernet/intel/ice/ice_switch.c:5568 ice_find_dummy_packet()
-warn: inconsistent indenting
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon, 14 Mar 2022 09:30:03 -0700
 
-Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
----
- drivers/net/ethernet/intel/ice/ice_switch.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Hi Alex,
+> 
+> On 1/27/2022 7:40 AM, Alexander Lobakin wrote:
+> > Note: this will conflict with [1] going through net-next,
+> > a followup will be sent once accepted.
+> 
+> The series you referenced was accepted and now I'm conflicting as you 
+> alluded. I'm dropping this version and will await your updated one.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 7f3d97595890..25b8f6f726eb 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -5565,7 +5565,7 @@ ice_find_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 					*offsets = dummy_ipv6_gtpu_ipv4_udp_packet_offsets;
- 				} else {
- 					*pkt = dummy_ipv6_gtpu_ipv4_tcp_packet;
--				*pkt_len = sizeof(dummy_ipv6_gtpu_ipv4_tcp_packet);
-+					*pkt_len = sizeof(dummy_ipv6_gtpu_ipv4_tcp_packet);
- 					*offsets = dummy_ipv6_gtpu_ipv4_tcp_packet_offsets;
- 				}
- 			}
--- 
-2.20.1.7.g153144c
+I rebased on top of the latest next-queue, however, I managed to
+improve it even more, so I sent it to e1000 currently, so Switchdev
+team could test it with their usecases as well and adjust all their
+new code accordingly.
+I'll send it to IWL as soon as they give me a greenlight.
 
+> 
+> Thanks,
+> 
+> Tony
+> 
+> >  From v1 ([0]):
+> >   - rebase on top of the latest next-queue (to fix #3 not applying);
+> >   - adjust the kdoc accordingly to the function proto changes in #3;
+> >   - no functional changes.
+> >
+> > [0] https://lore.kernel.org/netdev/20220124173116.739083-1-alexandr.lobakin at intel.com
+> > [1] https://lore.kernel.org/netdev/20220127125525.125805-1-marcin.szycik at linux.intel.com
+> >
+> > Alexander Lobakin (4):
+> >    ice: switch: add and use u16[] aliases to ice_adv_lkup_elem::{h,m}_u
+> >    ice: switch: unobscurify bitops loop in ice_fill_adv_dummy_packet()
+> >    ice: switch: use a struct to pass packet template params
+> >    ice: switch: use convenience macros to declare dummy pkt templates
+> >
+> >   drivers/net/ethernet/intel/ice/ice_switch.c | 273 ++++++++------------
+> >   drivers/net/ethernet/intel/ice/ice_switch.h |  12 +-
+> >   2 files changed, 123 insertions(+), 162 deletions(-)
+
+Thanks,
+Al
