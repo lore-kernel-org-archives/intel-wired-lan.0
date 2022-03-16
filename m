@@ -1,32 +1,48 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 15 Mar 2022 22:26:33 -0700
-Subject: [Intel-wired-lan] [PATCH -next] ice: clean up one inconsistent
- indenting
-In-Reply-To: <20220316000307.66863-1-yang.lee@linux.alibaba.com>
-References: <20220316000307.66863-1-yang.lee@linux.alibaba.com>
-Message-ID: <6fda3983-a32f-c78c-0150-37593bf5db68@intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Wed, 16 Mar 2022 06:14:24 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: zero hwtstamp by default
+In-Reply-To: <20220313150210.1508203-1-trix@redhat.com>
+References: <20220313150210.1508203-1-trix@redhat.com>
+Message-ID: <BYAPR11MB3367BC9F34175A1D52EB68D4FC119@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/15/2022 5:03 PM, Yang Li wrote:
-> Eliminate the follow smatch warning:
-> drivers/net/ethernet/intel/ice/ice_switch.c:5568 ice_find_dummy_packet()
-> warn: inconsistent indenting
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> trix at redhat.com
+> Sent: Sunday, March 13, 2022 8:32 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org;
+> nathan at kernel.org; ndesaulniers at google.com
+> Cc: netdev at vger.kernel.org; llvm at lists.linux.dev; intel-wired-
+> lan at lists.osuosl.org; linux-kernel at vger.kernel.org; Tom Rix
+> <trix@redhat.com>
+> Subject: [Intel-wired-lan] [PATCH] igb: zero hwtstamp by default
 > 
-> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
-> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
+> From: Tom Rix <trix@redhat.com>
+> 
+> Clang static analysis reports this representative issue
+> igb_ptp.c:997:3: warning: The left operand of '+' is a
+>   garbage value
+>   ktime_add_ns(shhwtstamps.hwtstamp, adjust);
+>   ^            ~~~~~~~~~~~~~~~~~~~~
+> 
+> shhwtstamps.hwtstamp is set by a call to igb_ptp_systim_to_hwtstamp().  In
+> the switch-statement for the hw type, the hwtstamp is zeroed for matches
+> but not the default case.  Move the memset out of switch-statement.  This
+> degarbages the default case and reduces the size.
+> 
+> Some whitespace cleanup of empty lines
+> 
+> Signed-off-by: Tom Rix <trix@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_ptp.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
 
-Thanks but this patch has already been submitted on intel-wired-lan, as 
-it was already reported by the kernel test robot.
-
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20220314164314.15218-1-marcin.szycik at linux.intel.com/
-
-As well, the other inconsistent indent patch is also fixed at
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20220314164137.15101-1-marcin.szycik at linux.intel.com/
-
-They will probably be sent to net-next tomorrow in the PDT timezone.
-
-Thanks!
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
