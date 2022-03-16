@@ -1,8 +1,8 @@
 From: Jeff Daly <jeffd@silicom-usa.com>
-Date: Wed, 16 Mar 2022 15:24:58 -0400
+Date: Wed, 16 Mar 2022 15:27:10 -0400
 Subject: [Intel-wired-lan] [PATCH] ixgbe: Manual AN-37 for troublesome link
  partners for X550 SFI
-Message-ID: <20220316192458.9847-1-jeffd@silicom-usa.com>
+Message-ID: <20220316192710.9947-1-jeffd@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
