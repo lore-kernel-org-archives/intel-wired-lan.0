@@ -1,188 +1,107 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 17 Mar 2022 01:11:21 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 06cee9956f47a550f24e7a48db994c4685ad99c8
-Message-ID: <62321a39.AHT5ZjweP9uMrl1y%lkp@intel.com>
+From: Jeff Daly <jeffd@silicom-usa.com>
+Date: Wed, 16 Mar 2022 15:24:58 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Manual AN-37 for troublesome link
+ partners for X550 SFI
+Message-ID: <20220316192458.9847-1-jeffd@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 06cee9956f47a550f24e7a48db994c4685ad99c8  ice: destroy flow director filter mutex after releasing VSIs
+Some (Juniper MX5) SFP link partners exhibit a disinclination to
+autonegotiate with X550 configured in SFI mode.  This patch enables
+a manual AN-37 restart to work around the problem.
 
-elapsed time: 1090m
-
-configs tested: 158
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm                              allmodconfig
-arm                              allyesconfig
-arm64                            allyesconfig
-arm64                               defconfig
-i386                          randconfig-c001
-powerpc              randconfig-c003-20220313
-powerpc                      tqm8xx_defconfig
-m68k                         apollo_defconfig
-sh                        edosk7760_defconfig
-mips                  decstation_64_defconfig
-powerpc64                           defconfig
-sh                          landisk_defconfig
-powerpc                    amigaone_defconfig
-alpha                               defconfig
-h8300                            alldefconfig
-sh                          rsk7201_defconfig
-s390                          debug_defconfig
-arm                         lubbock_defconfig
-powerpc                 canyonlands_defconfig
-xtensa                  cadence_csp_defconfig
-sh                 kfr2r09-romimage_defconfig
-sh                          rsk7269_defconfig
-arm                        realview_defconfig
-mips                         mpc30x_defconfig
-powerpc                     tqm8541_defconfig
-m68k                        mvme16x_defconfig
-mips                        bcm47xx_defconfig
-powerpc                     tqm8548_defconfig
-sh                          r7780mp_defconfig
-powerpc                      pasemi_defconfig
-s390                       zfcpdump_defconfig
-um                               alldefconfig
-arm                         axm55xx_defconfig
-powerpc                      pcm030_defconfig
-arm                        shmobile_defconfig
-arm                          pxa910_defconfig
-arm                         at91_dt_defconfig
-powerpc                      arches_defconfig
-powerpc                     mpc83xx_defconfig
-m68k                           sun3_defconfig
-m68k                        m5272c3_defconfig
-m68k                        m5307c3_defconfig
-mips                           ci20_defconfig
-sh                     sh7710voipgw_defconfig
-sh                        sh7763rdp_defconfig
-powerpc                     pq2fads_defconfig
-arm                  randconfig-c002-20220313
-arm                  randconfig-c002-20220314
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                             allnoconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-parisc64                            defconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-s390                             allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a004-20220314
-x86_64               randconfig-a005-20220314
-x86_64               randconfig-a003-20220314
-x86_64               randconfig-a002-20220314
-x86_64               randconfig-a006-20220314
-x86_64               randconfig-a001-20220314
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                 randconfig-a001-20220314
-i386                 randconfig-a002-20220314
-i386                 randconfig-a004-20220314
-i386                 randconfig-a003-20220314
-i386                 randconfig-a005-20220314
-i386                 randconfig-a006-20220314
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-x86_64                        randconfig-a015
-arc                  randconfig-r043-20220313
-riscv                randconfig-r042-20220313
-s390                 randconfig-r044-20220313
-arc                  randconfig-r043-20220314
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                                  kexec
-
-clang tested configs:
-mips                      maltaaprp_defconfig
-powerpc                      ppc44x_defconfig
-powerpc                 mpc836x_mds_defconfig
-powerpc                 mpc8560_ads_defconfig
-hexagon                          alldefconfig
-arm                        neponset_defconfig
-riscv                          rv32_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                      pxa255-idp_defconfig
-powerpc                     ppa8548_defconfig
-mips                        omega2p_defconfig
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-x86_64               randconfig-a014-20220314
-x86_64               randconfig-a015-20220314
-x86_64               randconfig-a016-20220314
-x86_64               randconfig-a012-20220314
-x86_64               randconfig-a013-20220314
-x86_64               randconfig-a011-20220314
-i386                 randconfig-a012-20220314
-i386                 randconfig-a011-20220314
-i386                 randconfig-a013-20220314
-i386                 randconfig-a014-20220314
-i386                 randconfig-a015-20220314
-i386                 randconfig-a016-20220314
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-x86_64                        randconfig-a001
-x86_64                        randconfig-a003
-x86_64                        randconfig-a005
-hexagon              randconfig-r045-20220313
-hexagon              randconfig-r045-20220314
-hexagon              randconfig-r041-20220313
-hexagon              randconfig-r041-20220314
-riscv                randconfig-r042-20220314
-s390                 randconfig-r044-20220314
-
+Signed-off-by: Jeff Daly <jeffd@silicom-usa.com>
 ---
-0-DAY CI Kernel Test Service
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  3 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 50 +++++++++++++++++++
+ 2 files changed, 53 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 2647937f7f4d..dc8a259fda5f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3705,7 +3705,9 @@ struct ixgbe_info {
+ #define IXGBE_KRM_LINK_S1(P)		((P) ? 0x8200 : 0x4200)
+ #define IXGBE_KRM_LINK_CTRL_1(P)	((P) ? 0x820C : 0x420C)
+ #define IXGBE_KRM_AN_CNTL_1(P)		((P) ? 0x822C : 0x422C)
++#define IXGBE_KRM_AN_CNTL_4(P)		((P) ? 0x8238 : 0x4238)
+ #define IXGBE_KRM_AN_CNTL_8(P)		((P) ? 0x8248 : 0x4248)
++#define IXGBE_KRM_PCS_KX_AN(P)		((P) ? 0x9918 : 0x5918)
+ #define IXGBE_KRM_SGMII_CTRL(P)		((P) ? 0x82A0 : 0x42A0)
+ #define IXGBE_KRM_LP_BASE_PAGE_HIGH(P)	((P) ? 0x836C : 0x436C)
+ #define IXGBE_KRM_DSP_TXFFE_STATE_4(P)	((P) ? 0x8634 : 0x4634)
+@@ -3715,6 +3717,7 @@ struct ixgbe_info {
+ #define IXGBE_KRM_PMD_FLX_MASK_ST20(P)	((P) ? 0x9054 : 0x5054)
+ #define IXGBE_KRM_TX_COEFF_CTRL_1(P)	((P) ? 0x9520 : 0x5520)
+ #define IXGBE_KRM_RX_ANA_CTL(P)		((P) ? 0x9A00 : 0x5A00)
++#define IXGBE_KRM_FLX_TMRS_CTRL_ST31(P)	((P) ? 0x9180 : 0x5180)
+ 
+ #define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_DA		~(0x3 << 20)
+ #define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_SR		BIT(20)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index e4b50c7781ff..f48a422ae83f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1725,6 +1725,56 @@ static s32 ixgbe_setup_sfi_x550a(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
+ 				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
+ 				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
+ 
++	/* change mode enforcement rules to hybrid */
++	status = mac->ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_FLX_TMRS_CTRL_ST31(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++	reg_val |= 0x0400;
++
++	status = mac->ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_FLX_TMRS_CTRL_ST31(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++
++	/* manually control the config */
++	status = mac->ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++	reg_val |= 0x20002240;
++
++	status = mac->ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++
++	/* move the AN base page values */
++	status = mac->ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_PCS_KX_AN(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++	reg_val |= 0x1;
++
++	status = mac->ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_PCS_KX_AN(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++
++	/* set the AN37 over CB mode */
++	status = mac->ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_AN_CNTL_4(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++	reg_val |= 0x20000000;
++
++	status = mac->ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_AN_CNTL_4(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++
++	/* restart AN manually */
++	status = mac->ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++	reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
++
++	status = mac->ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++
+ 	/* Toggle port SW reset by AN reset. */
+ 	status = ixgbe_restart_an_internal_phy_x550em(hw);
+ 
+-- 
+2.25.1
+
