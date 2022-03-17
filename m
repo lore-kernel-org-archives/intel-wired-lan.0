@@ -1,43 +1,70 @@
-From: patchwork-bot+netdevbpf@kernel.org <patchwork-bot+netdevbpf@kernel.org>
-Date: Thu, 17 Mar 2022 17:30:10 +0000
-Subject: [Intel-wired-lan] [PATCH] iavf: Fix hang during reboot/shutdown
-In-Reply-To: <20220317104524.2802848-1-ivecera@redhat.com>
-References: <20220317104524.2802848-1-ivecera@redhat.com>
-Message-ID: <164753821041.18148.18371834724218825935.git-patchwork-notify@kernel.org>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Thu, 17 Mar 2022 18:57:27 +0100
+Subject: [Intel-wired-lan] [PATCH intel-next] ice: xsk: check if Rx ring was
+ filled up to the end
+Message-ID: <20220317175727.340251-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello:
+__ice_alloc_rx_bufs_zc() checks if a number of the descriptors to be
+allocated would cause the ring wrap. In that case, driver will issue two
+calls to xsk_buff_alloc_batch() - one that will fill the ring up to the
+end and the second one that will start with filling descriptors from the
+beginning of the ring.
 
-This patch was applied to netdev/net.git (master)
-by Jakub Kicinski <kuba@kernel.org>:
+ice_fill_rx_descs() is a wrapper for taking care of what
+xsk_buff_alloc_batch() gave back to the driver. It works in a best
+effort approach, so for example when driver asks for 64 buffers,
+ice_fill_rx_descs() could assign only 32. Such case needs to be checked
+when ring is being filled up to the end, because in that situation ntu
+might not reached the end of the ring.
 
-On Thu, 17 Mar 2022 11:45:24 +0100 you wrote:
-> Recent commit 974578017fc1 ("iavf: Add waiting so the port is
-> initialized in remove") adds a wait-loop at the beginning of
-> iavf_remove() to ensure that port initialization is finished
-> prior unregistering net device. This causes a regression
-> in reboot/shutdown scenario because in this case callback
-> iavf_shutdown() is called and this callback detaches the device,
-> makes it down if it is running and sets its state to __IAVF_REMOVE.
-> Later shutdown callback of associated PF driver (e.g. ice_shutdown)
-> is called. That callback calls among other things sriov_disable()
-> that calls indirectly iavf_remove() (see stack trace below).
-> As the adapter state is already __IAVF_REMOVE then the mentioned
-> loop is end-less and shutdown process hangs.
-> 
-> [...]
+Fix the ring wrap by checking if nb_buffs_extra has the expected value.
+If not, bump ntu and go directly to tail update.
 
-Here is the summary with links:
-  - iavf: Fix hang during reboot/shutdown
-    https://git.kernel.org/netdev/net/c/b04683ff8f08
+Fixes: 3876ff525de7 ("ice: xsk: Handle SW XDP ring wrap and bump tail more often")
+Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_xsk.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-You are awesome, thank you!
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 88853a6ed931..6f15aa69cd5f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -413,8 +413,8 @@ static u16 ice_fill_rx_descs(struct xsk_buff_pool *pool, struct xdp_buff **xdp,
+  */
+ static bool __ice_alloc_rx_bufs_zc(struct ice_rx_ring *rx_ring, u16 count)
+ {
++	u32 nb_buffs_extra = 0, nb_buffs = 0;
+ 	union ice_32b_rx_flex_desc *rx_desc;
+-	u32 nb_buffs_extra = 0, nb_buffs;
+ 	u16 ntu = rx_ring->next_to_use;
+ 	u16 total_count = count;
+ 	struct xdp_buff **xdp;
+@@ -426,6 +426,10 @@ static bool __ice_alloc_rx_bufs_zc(struct ice_rx_ring *rx_ring, u16 count)
+ 		nb_buffs_extra = ice_fill_rx_descs(rx_ring->xsk_pool, xdp,
+ 						   rx_desc,
+ 						   rx_ring->count - ntu);
++		if (nb_buffs_extra != rx_ring->count - ntu) {
++			ntu += nb_buffs_extra;
++			goto exit;
++		}
+ 		rx_desc = ICE_RX_DESC(rx_ring, 0);
+ 		xdp = ice_xdp_buf(rx_ring, 0);
+ 		ntu = 0;
+@@ -439,6 +443,7 @@ static bool __ice_alloc_rx_bufs_zc(struct ice_rx_ring *rx_ring, u16 count)
+ 	if (ntu == rx_ring->count)
+ 		ntu = 0;
+ 
++exit:
+ 	if (rx_ring->next_to_use != ntu)
+ 		ice_release_rx_desc(rx_ring, ntu);
+ 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.27.0
 
