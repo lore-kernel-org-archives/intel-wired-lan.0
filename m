@@ -1,107 +1,83 @@
-From: Jeff Daly <jeffd@silicom-usa.com>
-Date: Wed, 16 Mar 2022 15:27:10 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Manual AN-37 for troublesome link
- partners for X550 SFI
-Message-ID: <20220316192710.9947-1-jeffd@silicom-usa.com>
+From: Ivan Vecera <ivecera@redhat.com>
+Date: Thu, 17 Mar 2022 11:45:24 +0100
+Subject: [Intel-wired-lan] [PATCH] iavf: Fix hang during reboot/shutdown
+Message-ID: <20220317104524.2802848-1-ivecera@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Some (Juniper MX5) SFP link partners exhibit a disinclination to
-autonegotiate with X550 configured in SFI mode.  This patch enables
-a manual AN-37 restart to work around the problem.
+Recent commit 974578017fc1 ("iavf: Add waiting so the port is
+initialized in remove") adds a wait-loop at the beginning of
+iavf_remove() to ensure that port initialization is finished
+prior unregistering net device. This causes a regression
+in reboot/shutdown scenario because in this case callback
+iavf_shutdown() is called and this callback detaches the device,
+makes it down if it is running and sets its state to __IAVF_REMOVE.
+Later shutdown callback of associated PF driver (e.g. ice_shutdown)
+is called. That callback calls among other things sriov_disable()
+that calls indirectly iavf_remove() (see stack trace below).
+As the adapter state is already __IAVF_REMOVE then the mentioned
+loop is end-less and shutdown process hangs.
 
-Signed-off-by: Jeff Daly <jeffd@silicom-usa.com>
+The patch fixes this by checking adapter's state at the beginning
+of iavf_remove() and skips the rest of the function if the adapter
+is already in remove state (shutdown is in progress).
+
+Reproducer:
+1. Create VF on PF driven by ice or i40e driver
+2. Ensure that the VF is bound to iavf driver
+3. Reboot
+
+[52625.981294] sysrq: SysRq : Show Blocked State
+[52625.988377] task:reboot          state:D stack:    0 pid:17359 ppid:     1 f2
+[52625.996732] Call Trace:
+[52625.999187]  __schedule+0x2d1/0x830
+[52626.007400]  schedule+0x35/0xa0
+[52626.010545]  schedule_hrtimeout_range_clock+0x83/0x100
+[52626.020046]  usleep_range+0x5b/0x80
+[52626.023540]  iavf_remove+0x63/0x5b0 [iavf]
+[52626.027645]  pci_device_remove+0x3b/0xc0
+[52626.031572]  device_release_driver_internal+0x103/0x1f0
+[52626.036805]  pci_stop_bus_device+0x72/0xa0
+[52626.040904]  pci_stop_and_remove_bus_device+0xe/0x20
+[52626.045870]  pci_iov_remove_virtfn+0xba/0x120
+[52626.050232]  sriov_disable+0x2f/0xe0
+[52626.053813]  ice_free_vfs+0x7c/0x340 [ice]
+[52626.057946]  ice_remove+0x220/0x240 [ice]
+[52626.061967]  ice_shutdown+0x16/0x50 [ice]
+[52626.065987]  pci_device_shutdown+0x34/0x60
+[52626.070086]  device_shutdown+0x165/0x1c5
+[52626.074011]  kernel_restart+0xe/0x30
+[52626.077593]  __do_sys_reboot+0x1d2/0x210
+[52626.093815]  do_syscall_64+0x5b/0x1a0
+[52626.097483]  entry_SYSCALL_64_after_hwframe+0x65/0xca
+
+Fixes: 974578017fc1 ("iavf: Add waiting so the port is initialized in remove")
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  3 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 50 +++++++++++++++++++
- 2 files changed, 53 insertions(+)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 2647937f7f4d..dc8a259fda5f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -3705,7 +3705,9 @@ struct ixgbe_info {
- #define IXGBE_KRM_LINK_S1(P)		((P) ? 0x8200 : 0x4200)
- #define IXGBE_KRM_LINK_CTRL_1(P)	((P) ? 0x820C : 0x420C)
- #define IXGBE_KRM_AN_CNTL_1(P)		((P) ? 0x822C : 0x422C)
-+#define IXGBE_KRM_AN_CNTL_4(P)		((P) ? 0x8238 : 0x4238)
- #define IXGBE_KRM_AN_CNTL_8(P)		((P) ? 0x8248 : 0x4248)
-+#define IXGBE_KRM_PCS_KX_AN(P)		((P) ? 0x9918 : 0x5918)
- #define IXGBE_KRM_SGMII_CTRL(P)		((P) ? 0x82A0 : 0x42A0)
- #define IXGBE_KRM_LP_BASE_PAGE_HIGH(P)	((P) ? 0x836C : 0x436C)
- #define IXGBE_KRM_DSP_TXFFE_STATE_4(P)	((P) ? 0x8634 : 0x4634)
-@@ -3715,6 +3717,7 @@ struct ixgbe_info {
- #define IXGBE_KRM_PMD_FLX_MASK_ST20(P)	((P) ? 0x9054 : 0x5054)
- #define IXGBE_KRM_TX_COEFF_CTRL_1(P)	((P) ? 0x9520 : 0x5520)
- #define IXGBE_KRM_RX_ANA_CTL(P)		((P) ? 0x9A00 : 0x5A00)
-+#define IXGBE_KRM_FLX_TMRS_CTRL_ST31(P)	((P) ? 0x9180 : 0x5180)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 45570e3f782e..0e178a0a59c5 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -4620,6 +4620,13 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	struct iavf_hw *hw = &adapter->hw;
+ 	int err;
  
- #define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_DA		~(0x3 << 20)
- #define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_SR		BIT(20)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index e4b50c7781ff..f48a422ae83f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1725,6 +1725,56 @@ static s32 ixgbe_setup_sfi_x550a(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
- 				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
- 				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
- 
-+	/* change mode enforcement rules to hybrid */
-+	status = mac->ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_FLX_TMRS_CTRL_ST31(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
-+	reg_val |= 0x0400;
++	/* When reboot/shutdown is in progress no need to do anything
++	 * as the adapter is already REMOVE state that was set during
++	 * iavf_shutdown() callback.
++	 */
++	if (adapter->state == __IAVF_REMOVE)
++		return;
 +
-+	status = mac->ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_FLX_TMRS_CTRL_ST31(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+
-+	/* manually control the config */
-+	status = mac->ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
-+	reg_val |= 0x20002240;
-+
-+	status = mac->ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+
-+	/* move the AN base page values */
-+	status = mac->ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_PCS_KX_AN(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
-+	reg_val |= 0x1;
-+
-+	status = mac->ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_PCS_KX_AN(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+
-+	/* set the AN37 over CB mode */
-+	status = mac->ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_AN_CNTL_4(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
-+	reg_val |= 0x20000000;
-+
-+	status = mac->ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_AN_CNTL_4(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+
-+	/* restart AN manually */
-+	status = mac->ops.read_iosf_sb_reg(hw,
-+				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
-+	reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
-+
-+	status = mac->ops.write_iosf_sb_reg(hw,
-+				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+
- 	/* Toggle port SW reset by AN reset. */
- 	status = ixgbe_restart_an_internal_phy_x550em(hw);
- 
+ 	set_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section);
+ 	/* Wait until port initialization is complete.
+ 	 * There are flows where register/unregister netdev may race.
 -- 
-2.25.1
+2.34.1
 
