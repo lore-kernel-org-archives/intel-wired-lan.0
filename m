@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 18 Mar 2022 22:54:41 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD SUCCESS
- 5d705de0cd3400b2721185430e0dddeff79d7871
-Message-ID: <62349d31.KtJ/S6jN0TXMcvVq%lkp@intel.com>
+Date: Fri, 18 Mar 2022 22:54:39 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ e243f39685af1bd6d837fa7bff40c1afdf3eb7fa
+Message-ID: <62349d2f.ugsb5HEnRlmjFwud%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
-branch HEAD: 5d705de0cd3400b2721185430e0dddeff79d7871  igb: zero hwtstamp by default
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: e243f39685af1bd6d837fa7bff40c1afdf3eb7fa  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netdev/net
 
-elapsed time: 724m
+elapsed time: 723m
 
-configs tested: 120
+configs tested: 136
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -22,48 +22,54 @@ More configs may be tested in the coming days.
 
 gcc tested configs:
 arm                                 defconfig
-arm                              allmodconfig
-arm                              allyesconfig
-arm64                               defconfig
 arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
 i386                          randconfig-c001
-m68k                       bvme6000_defconfig
+arm                             pxa_defconfig
+sh                   rts7751r2dplus_defconfig
+nios2                         10m50_defconfig
+sh                               alldefconfig
+m68k                          hp300_defconfig
+parisc64                         alldefconfig
+mips                         tb0226_defconfig
+sh                  sh7785lcr_32bit_defconfig
 mips                  decstation_64_defconfig
 mips                      loongson3_defconfig
 mips                      maltasmvp_defconfig
+openrisc                  or1klitex_defconfig
 alpha                            alldefconfig
 powerpc                     tqm8555_defconfig
-openrisc                  or1klitex_defconfig
 powerpc                      pcm030_defconfig
-sh                   rts7751r2dplus_defconfig
 m68k                       m5208evb_defconfig
 sparc64                             defconfig
 powerpc                        warp_defconfig
-arc                          axs101_defconfig
-sh                   secureedge5410_defconfig
-arm                           u8500_defconfig
-m68k                          hp300_defconfig
-sh                   sh7770_generic_defconfig
+powerpc                       holly_defconfig
+powerpc                    adder875_defconfig
+sparc                            alldefconfig
+ia64                            zx1_defconfig
+sh                           se7780_defconfig
 arm                  randconfig-c002-20220318
 arm                  randconfig-c002-20220317
-ia64                             allmodconfig
 ia64                                defconfig
+ia64                             allmodconfig
 ia64                             allyesconfig
 m68k                             allmodconfig
 m68k                                defconfig
 m68k                             allyesconfig
+nds32                             allnoconfig
 nios2                               defconfig
 arc                              allyesconfig
-nds32                             allnoconfig
 nds32                               defconfig
 nios2                            allyesconfig
 csky                                defconfig
 alpha                               defconfig
 alpha                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
 xtensa                           allyesconfig
 h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
 parisc                              defconfig
 s390                             allyesconfig
 s390                             allmodconfig
@@ -78,9 +84,9 @@ i386                   debian-10.3-kselftests
 i386                              debian-10.3
 mips                             allyesconfig
 mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
 powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
 x86_64                        randconfig-a006
 x86_64                        randconfig-a004
 x86_64                        randconfig-a002
@@ -115,14 +121,27 @@ x86_64                         rhel-8.3-kunit
 x86_64                    rhel-8.3-kselftests
 
 clang tested configs:
-arm                       netwinder_defconfig
-powerpc                 mpc836x_rdk_defconfig
-mips                     cu1830-neo_defconfig
-mips                   sb1250_swarm_defconfig
+arm                  randconfig-c002-20220318
+x86_64                        randconfig-c007
+s390                 randconfig-c005-20220317
+s390                 randconfig-c005-20220318
+arm                  randconfig-c002-20220317
+mips                 randconfig-c004-20220318
+mips                 randconfig-c004-20220317
+riscv                randconfig-c006-20220318
+powerpc              randconfig-c003-20220318
+powerpc              randconfig-c003-20220317
+i386                          randconfig-c001
+riscv                randconfig-c006-20220317
+arm                    vt8500_v6_v7_defconfig
+mips                        qi_lb60_defconfig
+powerpc                 mpc832x_mds_defconfig
+arm                         lpc32xx_defconfig
+arm                          pxa168_defconfig
+powerpc                     tqm5200_defconfig
 powerpc                     mpc512x_defconfig
 riscv                            alldefconfig
 mips                      maltaaprp_defconfig
-arm                         shannon_defconfig
 mips                     loongson1c_defconfig
 powerpc                 mpc836x_mds_defconfig
 x86_64                        randconfig-a001
