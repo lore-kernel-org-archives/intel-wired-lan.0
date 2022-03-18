@@ -1,141 +1,115 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 18 Mar 2022 06:01:00 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- b1351527f1eeb9624c301ecb7d8adbc4f543e045
-Message-ID: <6233af9c.FS3uHwp03x0bH/TN%lkp@intel.com>
+From: Joe Damato <jdamato@fastly.com>
+Date: Thu, 17 Mar 2022 21:12:12 -0700
+Subject: [Intel-wired-lan] [next-queue v2] ice: Add mpls+tso support
+Message-ID: <1647576732-46414-1-git-send-email-jdamato@fastly.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: b1351527f1eeb9624c301ecb7d8adbc4f543e045  Merge branch 'devlink-expose-instance-locking-and-simplify-port-splitting'
+Attempt to add mpls+tso support.
 
-elapsed time: 824m
+I don't have ice hardware available to test myself, but I just implemented
+this feature in i40e and thought it might be useful to implement for ice
+while this is fresh in my brain.
 
-configs tested: 112
-configs skipped: 3
+Hoping some one at intel will be able to test this on my behalf.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+v1 -> v2:
+	- In ice_tx_csum, only set ICE_TX_FLAGS_IPV6 if ip v6 is detected
+	  explicitly. All cases other than ipv4 or ipv6 leave first->tx_flags
+	  unset, which allows for ice_tx_csum to return -1 to indicate that
+	  csum offloading is not supported.
 
-gcc tested configs:
-arm                                 defconfig
-arm                              allmodconfig
-arm                              allyesconfig
-arm64                               defconfig
-arm64                            allyesconfig
-i386                          randconfig-c001
-arm                            mps2_defconfig
-arm                            pleb_defconfig
-powerpc                     asp8347_defconfig
-sh                         ap325rxa_defconfig
-powerpc                 linkstation_defconfig
-powerpc                      pasemi_defconfig
-mips                  decstation_64_defconfig
-mips                      loongson3_defconfig
-mips                      maltasmvp_defconfig
-powerpc64                           defconfig
-mips                           jazz_defconfig
-x86_64                              defconfig
-xtensa                              defconfig
-arm                            xcep_defconfig
-sh                        edosk7705_defconfig
-mips                           ip32_defconfig
-powerpc                   currituck_defconfig
-arm                        realview_defconfig
-sh                           se7780_defconfig
-m68k                            mac_defconfig
-arm                  randconfig-c002-20220317
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                                defconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-nds32                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-s390                             allmodconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-i386                              debian-10.3
-i386                   debian-10.3-kselftests
-i386                                defconfig
-sparc                               defconfig
-sparc                            allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a002
-x86_64                        randconfig-a004
-i386                          randconfig-a003
-i386                          randconfig-a001
-i386                          randconfig-a005
-x86_64                        randconfig-a015
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-i386                          randconfig-a014
-i386                          randconfig-a012
-i386                          randconfig-a016
-riscv                randconfig-r042-20220317
-arc                  randconfig-r043-20220317
-s390                 randconfig-r044-20220317
-riscv                          rv32_defconfig
-riscv                               defconfig
-riscv                            allmodconfig
-riscv                    nommu_k210_defconfig
-riscv                    nommu_virt_defconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                           allyesconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                                  kexec
-
-clang tested configs:
-arm                         palmz72_defconfig
-powerpc                          g5_defconfig
-arm                         lpc32xx_defconfig
-arm                       versatile_defconfig
-arm                         orion5x_defconfig
-powerpc                     powernv_defconfig
-x86_64                        randconfig-a001
-x86_64                        randconfig-a003
-x86_64                        randconfig-a005
-i386                          randconfig-a002
-i386                          randconfig-a004
-i386                          randconfig-a006
-x86_64                        randconfig-a014
-x86_64                        randconfig-a012
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r041-20220317
-hexagon              randconfig-r045-20220317
-
+Signed-off-by: Joe Damato <jdamato@fastly.com>
 ---
-0-DAY CI Kernel Test Service
-https://lists.01.org/hyperkitty/list/kbuild-all at lists.01.org
+ drivers/net/ethernet/intel/ice/ice_main.c |  4 +++-
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 29 +++++++++++++++++++++--------
+ 2 files changed, 24 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 285b0cd..3032eab 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3454,7 +3454,9 @@ static void ice_set_netdev_features(struct net_device *netdev)
+ 			      vlano_features | tso_features;
+ 
+ 	/* add support for HW_CSUM on packets with MPLS header */
+-	netdev->mpls_features =  NETIF_F_HW_CSUM;
++	netdev->mpls_features =  NETIF_F_HW_CSUM |
++				 NETIF_F_TSO     |
++				 NETIF_F_TSO6;
+ 
+ 	/* enable features */
+ 	netdev->features |= netdev->hw_features;
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 2dd3e1b..ca41453 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -9,6 +9,7 @@
+ #include <linux/bpf_trace.h>
+ #include <net/busy_poll.h>
+ #include <net/dsfield.h>
++#include <net/mpls.h>
+ #include <net/xdp.h>
+ #include "ice_txrx_lib.h"
+ #include "ice_lib.h"
+@@ -1910,18 +1911,24 @@ int ice_tx_csum(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+ 	if (skb->ip_summed != CHECKSUM_PARTIAL)
+ 		return 0;
+ 
+-	ip.hdr = skb_network_header(skb);
+-	l4.hdr = skb_transport_header(skb);
++	protocol = vlan_get_protocol(skb);
++
++	if (eth_p_mpls(protocol))
++		ip.hdr = skb_inner_network_header(skb);
++	else
++		ip.hdr = skb_network_header(skb);
++	l4.hdr = skb_checksum_start(skb);
+ 
+ 	/* compute outer L2 header size */
+ 	l2_len = ip.hdr - skb->data;
+ 	offset = (l2_len / 2) << ICE_TX_DESC_LEN_MACLEN_S;
+ 
+-	protocol = vlan_get_protocol(skb);
+-
+-	if (protocol == htons(ETH_P_IP))
++	/* set the tx_flags to indicate the IP protocol type. this is
++	 * required so that checksum header computation below is accurate.
++	 */
++	if (ip.v4->version == 4)
+ 		first->tx_flags |= ICE_TX_FLAGS_IPV4;
+-	else if (protocol == htons(ETH_P_IPV6))
++	else if (ip.v6->version == 6)
+ 		first->tx_flags |= ICE_TX_FLAGS_IPV6;
+ 
+ 	if (skb->encapsulation) {
+@@ -2122,6 +2129,7 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+ 	u32 paylen;
+ 	u8 l4_start;
+ 	int err;
++	__be16 protocol;
+ 
+ 	if (skb->ip_summed != CHECKSUM_PARTIAL)
+ 		return 0;
+@@ -2134,8 +2142,13 @@ int ice_tso(struct ice_tx_buf *first, struct ice_tx_offload_params *off)
+ 		return err;
+ 
+ 	/* cppcheck-suppress unreadVariable */
+-	ip.hdr = skb_network_header(skb);
+-	l4.hdr = skb_transport_header(skb);
++	protocol = vlan_get_protocol(skb);
++
++	if (eth_p_mpls(protocol))
++		ip.hdr = skb_inner_network_header(skb);
++	else
++		ip.hdr = skb_network_header(skb);
++	l4.hdr = skb_checksum_start(skb);
+ 
+ 	/* initialize outer IP header fields */
+ 	if (ip.v4->version == 4) {
+-- 
+2.7.4
+
