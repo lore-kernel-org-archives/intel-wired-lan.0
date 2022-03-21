@@ -1,64 +1,55 @@
-From: Jiabing Wan <wanjiabing@vivo.com>
-Date: Mon, 21 Mar 2022 20:02:53 +0800
-Subject: [Intel-wired-lan] [PATCH] ice: use min() to make code cleaner
- in ice_gnss
-In-Reply-To: <20220321115412.844440-1-alexandr.lobakin@intel.com>
-References: <20220318094629.526321-1-wanjiabing@vivo.com>
- <8822dfa2-bdb8-fceb-e920-94afb50881e8@intel.com>
- <20220321115412.844440-1-alexandr.lobakin@intel.com>
-Message-ID: <cf2dd88b-908d-efbb-9d5d-7194e2ed43ba@vivo.com>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Mon, 21 Mar 2022 15:47:31 +0100
+Subject: [Intel-wired-lan] [PATCH net-next] Revert "ice: Hide bus-info in
+ ethtool for PRs in switchdev mode"
+Message-ID: <20220321144731.3935-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This reverts commit bfaaba99e680bf82bf2cbf69866c3f37434ff766.
 
+Commit bfaaba99e680 ("ice: Hide bus-info in ethtool for PRs in switchdev
+mode") was a workaround for lshw tool displaying incorrect
+descriptions for port representors and PF in switchdev mode. Now the issue
+has been fixed in the lshw tool itself [1].
 
-On 2022/3/21 19:54, Alexander Lobakin wrote:
-> From: Tony Nguyen <anthony.l.nguyen@intel.com>
-> Date: Fri, 18 Mar 2022 13:19:26 -0700
->
->> On 3/18/2022 2:46 AM, Wan Jiabing wrote:
-> Hey Wan,
->
->>> Fix the following coccicheck warning:
->>> ./drivers/net/ethernet/intel/ice/ice_gnss.c:79:26-27: WARNING opportunity for min()
->>>
->>> Use min() to make code cleaner.
->>>
->>> Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
->> There are build issues with this patch:
->>
->> In file included from ./include/linux/kernel.h:26,
->>                   from drivers/net/ethernet/intel/ice/ice.h:9,
->>                   from drivers/net/ethernet/intel/ice/ice_gnss.c:4:
->> drivers/net/ethernet/intel/ice/ice_gnss.c: In function 'ice_gnss_read':
->> ./include/linux/minmax.h:20:35: error: comparison of distinct pointer types lacks a cast [-Werror]
->>     20 |         (!!(sizeof((typeof(x) *)1 == (typeof(y) *)1)))
->>        |                                   ^~
->> ./include/linux/minmax.h:26:18: note: in expansion of macro '__typecheck'
->>     26 |                 (__typecheck(x, y) && __no_side_effects(x, y))
->>        |                  ^~~~~~~~~~~
->> ./include/linux/minmax.h:36:31: note: in expansion of macro '__safe_cmp'
->>     36 |         __builtin_choose_expr(__safe_cmp(x, y), \
->>        |                               ^~~~~~~~~~
->> ./include/linux/minmax.h:45:25: note: in expansion of macro '__careful_cmp'
->>     45 | #define min(x, y)       __careful_cmp(x, y, <)
->>        |                         ^~~~~~~~~~~~~
->> drivers/net/ethernet/intel/ice/ice_gnss.c:79:30: note: in expansion of macro 'min'
->>     79 |                 bytes_read = min(bytes_left, ICE_MAX_I2C_DATA_SIZE);
->>        |                              ^~~
-> Use `min_t(typeof(bytes_left), ICE_MAX_I2C_DATA_SIZE)` to avoid
-> this. Plain definitions are usually treated as `unsigned long`
-> unless there's a suffix (u, ull etc.).
->
->> cc1: all warnings being treated as errors
-> Thanks,
-> Al
+[1] https://ezix.org/src/pkg/lshw/commit/9bf4e4c9c1
 
-OK, I'll fix it in v2.
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-Thanks,
-Wan Jiabing
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 24cda7e1f916..476bd1c83c87 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -190,19 +190,17 @@ __ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
+ 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
+ 		 "%x.%02x 0x%x %d.%d.%d", nvm->major, nvm->minor,
+ 		 nvm->eetrack, orom->major, orom->build, orom->patch);
++
++	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
++		sizeof(drvinfo->bus_info));
+ }
+ 
+ static void
+ ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+-	struct ice_pf *pf = np->vsi->back;
+ 
+ 	__ice_get_drvinfo(netdev, drvinfo, np->vsi);
+-
+-	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
+-		sizeof(drvinfo->bus_info));
+-
+ 	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
+ }
+ 
+-- 
+2.35.1
 
