@@ -1,201 +1,40 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 22 Mar 2022 19:58:40 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 29c2f8b3a7a994f70be1355fea91f2c917c282f0
-Message-ID: <6239b9f0.2Py7DLXzd9ZNU4LF%lkp@intel.com>
+From: Wan Jiabing <wanjiabing@vivo.com>
+Date: Mon, 21 Mar 2022 21:59:47 +0800
+Subject: [Intel-wired-lan] [PATCH v2] ice: use min_t() to make code cleaner
+ in ice_gnss
+Message-ID: <20220321135947.378250-1-wanjiabing@vivo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 29c2f8b3a7a994f70be1355fea91f2c917c282f0  ice: clear cmd_type_offset_bsz for TX rings
+Fix the following coccicheck warning:
+./drivers/net/ethernet/intel/ice/ice_gnss.c:79:26-27: WARNING opportunity for min()
 
-elapsed time: 726m
+Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
+---
+Changelog:
+v2:
+- Use typeof(bytes_left) instead of u8.
+---
+ drivers/net/ethernet/intel/ice/ice_gnss.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-configs tested: 167
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-i386                 randconfig-c001-20220321
-i386                          randconfig-c001
-mips                 randconfig-c004-20220320
-arm                        keystone_defconfig
-sparc                       sparc32_defconfig
-h8300                               defconfig
-powerpc                 mpc85xx_cds_defconfig
-arm                         nhk8815_defconfig
-m68k                          hp300_defconfig
-powerpc                 canyonlands_defconfig
-m68k                        m5272c3_defconfig
-sh                           se7721_defconfig
-sh                        edosk7705_defconfig
-s390                             allyesconfig
-arm                          exynos_defconfig
-sh                         ecovec24_defconfig
-arm                          lpd270_defconfig
-m68k                             allyesconfig
-sh                            titan_defconfig
-powerpc                   currituck_defconfig
-ia64                      gensparse_defconfig
-sh                        sh7785lcr_defconfig
-xtensa                  nommu_kc705_defconfig
-mips                         rt305x_defconfig
-openrisc                  or1klitex_defconfig
-powerpc                 mpc837x_mds_defconfig
-sh                      rts7751r2d1_defconfig
-sh                        edosk7760_defconfig
-arc                        nsimosci_defconfig
-sh                          rsk7201_defconfig
-nios2                               defconfig
-arm                             pxa_defconfig
-arc                           tb10x_defconfig
-parisc64                            defconfig
-arc                 nsimosci_hs_smp_defconfig
-sh                               j2_defconfig
-sh                          r7780mp_defconfig
-mips                     loongson1b_defconfig
-parisc                generic-64bit_defconfig
-m68k                          sun3x_defconfig
-sh                        apsh4ad0a_defconfig
-h8300                     edosk2674_defconfig
-sh                         microdev_defconfig
-sh                              ul2_defconfig
-um                                  defconfig
-powerpc                 mpc834x_itx_defconfig
-sh                             sh03_defconfig
-powerpc                     rainier_defconfig
-arm                         vf610m4_defconfig
-arm                     eseries_pxa_defconfig
-sparc                            allyesconfig
-arc                            hsdk_defconfig
-powerpc                      ppc40x_defconfig
-xtensa                    xip_kc705_defconfig
-um                               alldefconfig
-mips                        vocore2_defconfig
-mips                           ci20_defconfig
-nds32                               defconfig
-arm                            hisi_defconfig
-m68k                        mvme147_defconfig
-arm                  randconfig-c002-20220321
-arm                  randconfig-c002-20220320
-arm                  randconfig-c002-20220322
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allmodconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64               randconfig-a016-20220321
-x86_64               randconfig-a011-20220321
-x86_64               randconfig-a012-20220321
-x86_64               randconfig-a013-20220321
-x86_64               randconfig-a014-20220321
-x86_64               randconfig-a015-20220321
-i386                 randconfig-a015-20220321
-i386                 randconfig-a016-20220321
-i386                 randconfig-a013-20220321
-i386                 randconfig-a012-20220321
-i386                 randconfig-a014-20220321
-i386                 randconfig-a011-20220321
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                         rhel-8.3-kunit
-x86_64                                  kexec
-
-clang tested configs:
-x86_64                        randconfig-c007
-mips                 randconfig-c004-20220320
-arm                  randconfig-c002-20220320
-powerpc              randconfig-c003-20220320
-riscv                randconfig-c006-20220320
-i386                          randconfig-c001
-arm                  randconfig-c002-20220322
-powerpc              randconfig-c003-20220322
-riscv                randconfig-c006-20220322
-arm                        neponset_defconfig
-arm                       spear13xx_defconfig
-mips                         tb0287_defconfig
-powerpc                 mpc832x_rdb_defconfig
-powerpc                     tqm8540_defconfig
-arm64                            allyesconfig
-arm                        mvebu_v5_defconfig
-powerpc                        fsp2_defconfig
-arm                     am200epdkit_defconfig
-hexagon                             defconfig
-mips                        omega2p_defconfig
-mips                       lemote2f_defconfig
-x86_64               randconfig-a001-20220321
-x86_64               randconfig-a003-20220321
-x86_64               randconfig-a005-20220321
-x86_64               randconfig-a004-20220321
-x86_64               randconfig-a002-20220321
-x86_64               randconfig-a006-20220321
-i386                 randconfig-a001-20220321
-i386                 randconfig-a006-20220321
-i386                 randconfig-a003-20220321
-i386                 randconfig-a005-20220321
-i386                 randconfig-a004-20220321
-i386                 randconfig-a002-20220321
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-riscv                randconfig-r042-20220320
-hexagon              randconfig-r045-20220321
-hexagon              randconfig-r045-20220320
-hexagon              randconfig-r041-20220321
-hexagon              randconfig-r041-20220320
-riscv                randconfig-r042-20220322
-hexagon              randconfig-r045-20220322
-hexagon              randconfig-r041-20220322
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
+index 35579cf4283f..57586a2e6dec 100644
+--- a/drivers/net/ethernet/intel/ice/ice_gnss.c
++++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
+@@ -76,8 +76,7 @@ static void ice_gnss_read(struct kthread_work *work)
+ 	for (i = 0; i < data_len; i += bytes_read) {
+ 		u16 bytes_left = data_len - i;
+ 
+-		bytes_read = bytes_left < ICE_MAX_I2C_DATA_SIZE ? bytes_left :
+-					  ICE_MAX_I2C_DATA_SIZE;
++		bytes_read = min_t(typeof(bytes_left), bytes_left, ICE_MAX_I2C_DATA_SIZE);
+ 
+ 		err = ice_aq_read_i2c(hw, link_topo, ICE_GNSS_UBX_I2C_BUS_ADDR,
+ 				      cpu_to_le16(ICE_GNSS_UBX_EMPTY_DATA),
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.35.1
+
