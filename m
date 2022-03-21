@@ -1,88 +1,96 @@
-From: Wan Jiabing <wanjiabing@vivo.com>
-Date: Sat, 19 Mar 2022 12:24:14 +0800
-Subject: [Intel-wired-lan] [PATCH] ice: use min() to make code cleaner
- in ice_gnss
-In-Reply-To: <8822dfa2-bdb8-fceb-e920-94afb50881e8@intel.com>
-References: <20220318094629.526321-1-wanjiabing@vivo.com>
- <8822dfa2-bdb8-fceb-e920-94afb50881e8@intel.com>
-Message-ID: <YjVa7rJx7TuIo4gm@myhostname>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Mon, 21 Mar 2022 08:05:10 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove igc_set_spd_dplx method
+Message-ID: <20220321060510.1862932-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Mar 18, 2022 at 01:19:26PM -0700, Tony Nguyen wrote:
-> 
-> On 3/18/2022 2:46 AM, Wan Jiabing wrote:
-> > Fix the following coccicheck warning:
-> > ./drivers/net/ethernet/intel/ice/ice_gnss.c:79:26-27: WARNING opportunity for min()
-> > 
-> > Use min() to make code cleaner.
-> > 
-> > Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
-> 
-> There are build issues with this patch:
-> 
-> In file included from ./include/linux/kernel.h:26,
-> ???????????????? from drivers/net/ethernet/intel/ice/ice.h:9,
-> ???????????????? from drivers/net/ethernet/intel/ice/ice_gnss.c:4:
-> drivers/net/ethernet/intel/ice/ice_gnss.c: In function ?ice_gnss_read?:
-> ./include/linux/minmax.h:20:35: error: comparison of distinct pointer types
-> lacks a cast [-Werror]
-> ?? 20 |???????? (!!(sizeof((typeof(x) *)1 == (typeof(y) *)1)))
-> ????? |?????????????????????????????????? ^~
-> ./include/linux/minmax.h:26:18: note: in expansion of macro ?__typecheck?
-> ?? 26 |???????????????? (__typecheck(x, y) && __no_side_effects(x, y))
-> ????? |????????????????? ^~~~~~~~~~~
-> ./include/linux/minmax.h:36:31: note: in expansion of macro ?__safe_cmp?
-> ?? 36 |???????? __builtin_choose_expr(__safe_cmp(x, y), \
-> ????? |?????????????????????????????? ^~~~~~~~~~
-> ./include/linux/minmax.h:45:25: note: in expansion of macro ?__careful_cmp?
-> ?? 45 | #define min(x, y)?????? __careful_cmp(x, y, <)
-> ????? |???????????????????????? ^~~~~~~~~~~~~
-> drivers/net/ethernet/intel/ice/ice_gnss.c:79:30: note: in expansion of macro
-> ?min?
-> ?? 79 |???????????????? bytes_read = min(bytes_left, ICE_MAX_I2C_DATA_SIZE);
-> ????? |????????????????????????????? ^~~
-> cc1: all warnings being treated as errors
-> 
+igc_set_spd_dplx method not in use. This patch comes to tidy up
+the driver code.
 
-Yes, sorry for the warning.
-
-After check minmax.h, it's better to use min_t and there are no warnings.
-
-Please check the new patch, thanks!
-
-Wan Jiabing
--------------- next part --------------
-From 43118a4f14393816054a41e4861106cdb623b3d9 Mon Sep 17 00:00:00 2001
-From: Wan Jiabing <wanjiabing@vivo.com>
-Date: Sat, 19 Mar 2022 12:01:29 +0800
-Subject: [PATCH] ice: use min_t() to make code cleaner in ice_gnss
-
-Fix the following coccicheck warning:
-./drivers/net/ethernet/intel/ice/ice_gnss.c:79:26-27: WARNING opportunity for min()
-
-Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
+Reported-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_gnss.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h      |  1 -
+ drivers/net/ethernet/intel/igc/igc_main.c | 50 -----------------------
+ 2 files changed, 51 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
-index 35579cf4283f..85ceb7018781 100644
---- a/drivers/net/ethernet/intel/ice/ice_gnss.c
-+++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
-@@ -76,8 +76,7 @@ static void ice_gnss_read(struct kthread_work *work)
- 	for (i = 0; i < data_len; i += bytes_read) {
- 		u16 bytes_left = data_len - i;
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 3e386c38d016..1e7e7071f64d 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -264,7 +264,6 @@ int igc_reinit_queues(struct igc_adapter *adapter);
+ void igc_write_rss_indir_tbl(struct igc_adapter *adapter);
+ bool igc_has_link(struct igc_adapter *adapter);
+ void igc_reset(struct igc_adapter *adapter);
+-int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx);
+ void igc_update_stats(struct igc_adapter *adapter);
+ void igc_disable_rx_ring(struct igc_ring *ring);
+ void igc_enable_rx_ring(struct igc_ring *ring);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 3f193a33d1a9..d0ab915bb31b 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -6190,56 +6190,6 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+ 	return value;
+ }
  
--		bytes_read = bytes_left < ICE_MAX_I2C_DATA_SIZE ? bytes_left :
--					  ICE_MAX_I2C_DATA_SIZE;
-+		bytes_read = min_t(u8, bytes_left, ICE_MAX_I2C_DATA_SIZE);
- 
- 		err = ice_aq_read_i2c(hw, link_topo, ICE_GNSS_UBX_I2C_BUS_ADDR,
- 				      cpu_to_le16(ICE_GNSS_UBX_EMPTY_DATA),
+-int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
+-{
+-	struct igc_mac_info *mac = &adapter->hw.mac;
+-
+-	mac->autoneg = false;
+-
+-	/* Make sure dplx is at most 1 bit and lsb of speed is not set
+-	 * for the switch() below to work
+-	 */
+-	if ((spd & 1) || (dplx & ~1))
+-		goto err_inval;
+-
+-	switch (spd + dplx) {
+-	case SPEED_10 + DUPLEX_HALF:
+-		mac->forced_speed_duplex = ADVERTISE_10_HALF;
+-		break;
+-	case SPEED_10 + DUPLEX_FULL:
+-		mac->forced_speed_duplex = ADVERTISE_10_FULL;
+-		break;
+-	case SPEED_100 + DUPLEX_HALF:
+-		mac->forced_speed_duplex = ADVERTISE_100_HALF;
+-		break;
+-	case SPEED_100 + DUPLEX_FULL:
+-		mac->forced_speed_duplex = ADVERTISE_100_FULL;
+-		break;
+-	case SPEED_1000 + DUPLEX_FULL:
+-		mac->autoneg = true;
+-		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
+-		break;
+-	case SPEED_1000 + DUPLEX_HALF: /* not supported */
+-		goto err_inval;
+-	case SPEED_2500 + DUPLEX_FULL:
+-		mac->autoneg = true;
+-		adapter->hw.phy.autoneg_advertised = ADVERTISE_2500_FULL;
+-		break;
+-	case SPEED_2500 + DUPLEX_HALF: /* not supported */
+-	default:
+-		goto err_inval;
+-	}
+-
+-	/* clear MDI, MDI(-X) override is only allowed when autoneg enabled */
+-	adapter->hw.phy.mdix = AUTO_ALL_MODES;
+-
+-	return 0;
+-
+-err_inval:
+-	netdev_err(adapter->netdev, "Unsupported Speed/Duplex configuration\n");
+-	return -EINVAL;
+-}
+-
+ /**
+  * igc_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
 -- 
-2.35.1
+2.30.2
 
