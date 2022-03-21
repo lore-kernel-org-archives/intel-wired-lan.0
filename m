@@ -1,55 +1,73 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Mon, 21 Mar 2022 16:02:20 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ice: use min_t() to make code
- cleaner in ice_gnss
-In-Reply-To: <20220321135947.378250-1-wanjiabing@vivo.com>
-References: <20220321135947.378250-1-wanjiabing@vivo.com>
-Message-ID: <f888e3cf09944f9aa63532c9f59e69fb@AcuMS.aculab.com>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Mon, 21 Mar 2022 17:14:27 +0100
+Subject: [Intel-wired-lan] [PATCH net-next] Revert "ice: Hide bus-info
+ in ethtool for PRs in switchdev mode"
+In-Reply-To: <a7dcc837-e24e-86d6-059c-416ad3357fe0@molgen.mpg.de>
+References: <20220321144731.3935-1-marcin.szycik@linux.intel.com>
+ <a7dcc837-e24e-86d6-059c-416ad3357fe0@molgen.mpg.de>
+Message-ID: <3cbd7420-3803-e830-9347-652e53a3dd02@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Wan Jiabing
-> Sent: 21 March 2022 14:00
-> 
-> Fix the following coccicheck warning:
-> ./drivers/net/ethernet/intel/ice/ice_gnss.c:79:26-27: WARNING opportunity for min()
-> 
-> Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
-> ---
-> Changelog:
-> v2:
-> - Use typeof(bytes_left) instead of u8.
-> ---
->  drivers/net/ethernet/intel/ice/ice_gnss.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
-> index 35579cf4283f..57586a2e6dec 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_gnss.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
-> @@ -76,8 +76,7 @@ static void ice_gnss_read(struct kthread_work *work)
->  	for (i = 0; i < data_len; i += bytes_read) {
->  		u16 bytes_left = data_len - i;
 
-Oh FFS why is that u16?
-Don't do arithmetic on anything smaller than 'int'
 
-	David
+On 21-Mar-22 15:57, Paul Menzel wrote:
+> Dear Marcin,
+> 
+> 
+> Am 21.03.22 um 15:47 schrieb Marcin Szycik:
+>> This reverts commit bfaaba99e680bf82bf2cbf69866c3f37434ff766.
+>>
+>> Commit bfaaba99e680 ("ice: Hide bus-info in ethtool for PRs in switchdev
+>> mode") was a workaround for lshw tool displaying incorrect
+>> descriptions for port representors and PF in switchdev mode. Now the issue
+>> has been fixed in the lshw tool itself [1].
+>>
+>> [1] https://ezix.org/src/pkg/lshw/commit/9bf4e4c9c1
+> 
+> As you cannot know what lshw version users have installed, I am afraid the workaround (part of Linux 5.16. and 5.17) has to stay in the Linux kernel to not violate Linux? no-regression policy.
+> 
+> What are the downsides of keeping the workaround around?
+
+The only downside of leaving this workaround is that PCI number won't be shown in ethtool for port representor netdevs. I'm not aware of any applications (other than lshw) that depend on this information, but there might be some.
 
 > 
-> -		bytes_read = bytes_left < ICE_MAX_I2C_DATA_SIZE ? bytes_left :
-> -					  ICE_MAX_I2C_DATA_SIZE;
-> +		bytes_read = min_t(typeof(bytes_left), bytes_left, ICE_MAX_I2C_DATA_SIZE);
 > 
->  		err = ice_aq_read_i2c(hw, link_topo, ICE_GNSS_UBX_I2C_BUS_ADDR,
->  				      cpu_to_le16(ICE_GNSS_UBX_EMPTY_DATA),
-> --
-> 2.35.1
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
-Registration No: 1397386 (Wales)
-
+> Kind regards,
+> 
+> Paul
+> 
+> 
+>> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+>> ---
+>> ? drivers/net/ethernet/intel/ice/ice_ethtool.c | 8 +++-----
+>> ? 1 file changed, 3 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+>> index 24cda7e1f916..476bd1c83c87 100644
+>> --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
+>> +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+>> @@ -190,19 +190,17 @@ __ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
+>> ????? snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
+>> ?????????? "%x.%02x 0x%x %d.%d.%d", nvm->major, nvm->minor,
+>> ?????????? nvm->eetrack, orom->major, orom->build, orom->patch);
+>> +
+>> +??? strscpy(drvinfo->bus_info, pci_name(pf->pdev),
+>> +??????? sizeof(drvinfo->bus_info));
+>> ? }
+>> ? ? static void
+>> ? ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
+>> ? {
+>> ????? struct ice_netdev_priv *np = netdev_priv(netdev);
+>> -??? struct ice_pf *pf = np->vsi->back;
+>> ? ????? __ice_get_drvinfo(netdev, drvinfo, np->vsi);
+>> -
+>> -??? strscpy(drvinfo->bus_info, pci_name(pf->pdev),
+>> -??????? sizeof(drvinfo->bus_info));
+>> -
+>> ????? drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
+>> ? }
+>> ? 
