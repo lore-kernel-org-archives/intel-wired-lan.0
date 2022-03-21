@@ -1,96 +1,56 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Mon, 21 Mar 2022 08:05:10 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove igc_set_spd_dplx method
-Message-ID: <20220321060510.1862932-1-sasha.neftin@intel.com>
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+Date: Mon, 21 Mar 2022 11:59:51 +0100
+Subject: [Intel-wired-lan] [PATCH v4 net-next 2/5] ice: switch: unobscurify
+ bitops loop in ice_fill_adv_dummy_packet()
+In-Reply-To: <20220321105954.843154-1-alexandr.lobakin@intel.com>
+References: <20220321105954.843154-1-alexandr.lobakin@intel.com>
+Message-ID: <20220321105954.843154-3-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-igc_set_spd_dplx method not in use. This patch comes to tidy up
-the driver code.
+A loop performing header modification according to the provided mask
+in ice_fill_adv_dummy_packet() is very cryptic (and error-prone).
+Replace two identical cast-deferences with a variable. Replace three
+struct-member-array-accesses with a variable. Invert the condition,
+reduce the indentation by one -> eliminate line wraps.
 
-Reported-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Tested-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc.h      |  1 -
- drivers/net/ethernet/intel/igc/igc_main.c | 50 -----------------------
- 2 files changed, 51 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 3e386c38d016..1e7e7071f64d 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -264,7 +264,6 @@ int igc_reinit_queues(struct igc_adapter *adapter);
- void igc_write_rss_indir_tbl(struct igc_adapter *adapter);
- bool igc_has_link(struct igc_adapter *adapter);
- void igc_reset(struct igc_adapter *adapter);
--int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx);
- void igc_update_stats(struct igc_adapter *adapter);
- void igc_disable_rx_ring(struct igc_ring *ring);
- void igc_enable_rx_ring(struct igc_ring *ring);
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 3f193a33d1a9..d0ab915bb31b 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6190,56 +6190,6 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
- 	return value;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 075df2474688..0936d39de70c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -5810,13 +5810,15 @@ ice_fill_adv_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
+ 		 * indicated by the mask to make sure we don't improperly write
+ 		 * over any significant packet data.
+ 		 */
+-		for (j = 0; j < len / sizeof(u16); j++)
+-			if (lkups[i].m_raw[j])
+-				((u16 *)(pkt + offset))[j] =
+-					(((u16 *)(pkt + offset))[j] &
+-					 ~lkups[i].m_raw[j]) |
+-					(lkups[i].h_raw[j] &
+-					 lkups[i].m_raw[j]);
++		for (j = 0; j < len / sizeof(u16); j++) {
++			u16 *ptr = (u16 *)(pkt + offset);
++			u16 mask = lkups[i].m_raw[j];
++
++			if (!mask)
++				continue;
++
++			ptr[j] = (ptr[j] & ~mask) | (lkups[i].h_raw[j] & mask);
++		}
+ 	}
  
--int igc_set_spd_dplx(struct igc_adapter *adapter, u32 spd, u8 dplx)
--{
--	struct igc_mac_info *mac = &adapter->hw.mac;
--
--	mac->autoneg = false;
--
--	/* Make sure dplx is at most 1 bit and lsb of speed is not set
--	 * for the switch() below to work
--	 */
--	if ((spd & 1) || (dplx & ~1))
--		goto err_inval;
--
--	switch (spd + dplx) {
--	case SPEED_10 + DUPLEX_HALF:
--		mac->forced_speed_duplex = ADVERTISE_10_HALF;
--		break;
--	case SPEED_10 + DUPLEX_FULL:
--		mac->forced_speed_duplex = ADVERTISE_10_FULL;
--		break;
--	case SPEED_100 + DUPLEX_HALF:
--		mac->forced_speed_duplex = ADVERTISE_100_HALF;
--		break;
--	case SPEED_100 + DUPLEX_FULL:
--		mac->forced_speed_duplex = ADVERTISE_100_FULL;
--		break;
--	case SPEED_1000 + DUPLEX_FULL:
--		mac->autoneg = true;
--		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
--		break;
--	case SPEED_1000 + DUPLEX_HALF: /* not supported */
--		goto err_inval;
--	case SPEED_2500 + DUPLEX_FULL:
--		mac->autoneg = true;
--		adapter->hw.phy.autoneg_advertised = ADVERTISE_2500_FULL;
--		break;
--	case SPEED_2500 + DUPLEX_HALF: /* not supported */
--	default:
--		goto err_inval;
--	}
--
--	/* clear MDI, MDI(-X) override is only allowed when autoneg enabled */
--	adapter->hw.phy.mdix = AUTO_ALL_MODES;
--
--	return 0;
--
--err_inval:
--	netdev_err(adapter->netdev, "Unsupported Speed/Duplex configuration\n");
--	return -EINVAL;
--}
--
- /**
-  * igc_probe - Device Initialization Routine
-  * @pdev: PCI device information struct
+ 	s_rule->pdata.lkup_tx_rx.hdr_len = cpu_to_le16(pkt_len);
 -- 
-2.30.2
+2.35.1
 
