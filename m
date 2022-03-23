@@ -1,79 +1,456 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Wed, 23 Mar 2022 19:19:55 +0100
-Subject: [Intel-wired-lan] [PATCH net] ice: Clear default forwarding VSI
- during VSI release
-In-Reply-To: <20220323185426.33c66892@ceranb>
-References: <20220322142554.3253428-1-ivecera@redhat.com>
- <45b155ff-8e26-fa96-f89e-6a561de01abb@linux.intel.com>
- <20220323185426.33c66892@ceranb>
-Message-ID: <287f2247-2c58-497d-f7b1-ae1e24a88da8@linux.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 23 Mar 2022 19:26:25 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix broken IFF_ALLMULTI
+ handling
+In-Reply-To: <20220321191731.2596414-1-ivecera@redhat.com>
+References: <20220321191731.2596414-1-ivecera@redhat.com>
+Message-ID: <05d80b4c-c4a4-8f77-bbef-c5273aab613b@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 3/21/2022 12:17 PM, Ivan Vecera wrote:
+> Handling of all-multicast flag and associated multicast promiscuous
+> mode is broken in ice driver. When a user switches allmulticast
+> flag on or off the driver checks whether any VLANs are configured
+> over the interface (except default VLAN 0).
+> 
+> If any extra VLANs are registered it enables multicast promiscuous
+> mode for all these VLANs (including default VLAN 0) using
+> ICE_SW_LKUP_PROMISC_VLAN look-up type. In this situation all
+> multicast packets tagged with known VLAN ID or untagged are received
+> and multicast packets tagged with unknown VLAN ID ignored.
+> 
+> If no extra VLANs are registered (so only VLAN 0 exists) it enables
+> multicast promiscuous mode for VLAN 0 and uses ICE_SW_LKUP_PROMISC
+> look-up type. In this situation any multicast packets including
+> tagged ones are received.
+> 
+> The driver handles IFF_ALLMULTI in ice_vsi_sync_fltr() this way:
+> 
+> ice_vsi_sync_fltr() {
+>   ...
+>   if (changed_flags & IFF_ALLMULTI) {
+>     if (netdev->flags & IFF_ALLMULTI) {
+>       if (vsi->num_vlans > 1)
+>         ice_set_promisc(..., ICE_MCAST_VLAN_PROMISC_BITS);
+>       else
+>         ice_set_promisc(..., ICE_MCAST_PROMISC_BITS);
+>     } else {
+>       if (vsi->num_vlans > 1)
+>         ice_clear_promisc(..., ICE_MCAST_VLAN_PROMISC_BITS);
+>       else
+>         ice_clear_promisc(..., ICE_MCAST_PROMISC_BITS);
+>     }
+>   }
+>   ...
+> }
+> 
+> The code above depends on value vsi->num_vlan that specifies number
+> of VLANs configured over the interface (including VLAN 0) and
+> this is problem because that value is modified in NDO callbacks
+> ice_vlan_rx_add_vid() and ice_vlan_rx_kill_vid().
+> 
+> Scenario 1:
+> 1. ip link set ens7f0 allmulticast on
+> 2. ip link add vlan10 link ens7f0 type vlan id 10
+> 3. ip link set ens7f0 allmulticast off
+> 4. ip link set ens7f0 allmulticast on
+> 
+> [1] In this scenario IFF_ALLMULTI is enabled and the driver calls
+>     ice_set_promisc(..., ICE_MCAST_PROMISC_BITS) that installs
+>     multicast promisc rule with non-VLAN look-up type.
+> [2] Then VLAN with ID 10 is added and vsi->num_vlan incremented to 2
+> [3] Command switches IFF_ALLMULTI off and the driver calls
+>     ice_clear_promisc(..., ICE_MCAST_VLAN_PROMISC_BITS) but this
+>     call is effectively NOP because it looks for multicast promisc
+>     rules for VLAN 0 and VLAN 10 with VLAN look-up type but no such
+>     rules exist. So the all-multicast remains enabled silently
+>     in hardware.
+> [4] Command tries to switch IFF_ALLMULTI on and the driver calls
+>     ice_clear_promisc(..., ICE_MCAST_PROMISC_BITS) but this call
+>     fails (-EEXIST) because non-VLAN multicast promisc rule already
+>     exists.
+> 
+> Scenario 2:
+> 1. ip link add vlan10 link ens7f0 type vlan id 10
+> 2. ip link set ens7f0 allmulticast on
+> 3. ip link add vlan20 link ens7f0 type vlan id 20
+> 4. ip link del vlan10 ; ip link del vlan20
+> 5. ip link set ens7f0 allmulticast off
+> 
+> [1] VLAN with ID 10 is added and vsi->num_vlan==2
+> [2] Command switches IFF_ALLMULTI on and driver installs multicast
+>     promisc rules with VLAN look-up type for VLAN 0 and 10
+> [3] VLAN with ID 20 is added and vsi->num_vlan==3 but no multicast
+>     promisc rules is added for this new VLAN so the interface does
+>     not receive MC packets from VLAN 20
+> [4] Both VLANs are removed but multicast rule for VLAN 10 remains
+>     installed so interface receives multicast packets from VLAN 10
+> [5] Command switches IFF_ALLMULTI off and because vsi->num_vlan is 1
+>     the driver tries to remove multicast promisc rule for VLAN 0
+>     with non-VLAN look-up that does not exist.
+>     All-multicast looks disabled from user point of view but it
+>     is partially enabled in HW (interface receives all multicast
+>     packets either untagged or tagged with VLAN ID 10)
+> 
+> To resolve these issues the patch introduces these changes:
+> 1. Adds handling for IFF_ALLMULTI to ice_vlan_rx_add_vid() and
+>    ice_vlan_rx_kill_vid() callbacks. So when VLAN is added/removed
+>    and IFF_ALLMULTI is enabled an appropriate multicast promisc
+>    rule for that VLAN ID is added/removed.
+> 2. In ice_vlan_rx_add_vid() when first VLAN besides VLAN 0 is added
+>    so (vsi->num_vlan == 2) and IFF_ALLMULTI is enabled then look-up
+>    type for existing multicast promisc rule for VLAN 0 is updated
+>    to ICE_MCAST_VLAN_PROMISC_BITS.
+> 3. In ice_vlan_rx_kill_vid() when last VLAN besides VLAN 0 is removed
+>    so (vsi->num_vlan == 1) and IFF_ALLMULTI is enabled then look-up
+>    type for existing multicast promisc rule for VLAN 0 is updated
+>    to ICE_MCAST_PROMISC_BITS.
+> 4. Both ice_vlan_rx_{add,kill}_vid() have to run under ICE_CFG_BUSY
+>    bit protection to avoid races with ice_vsi_sync_fltr() that runs
+>    in ice_service_task() context.
+> 5. Bit ICE_VSI_VLAN_FLTR_CHANGED is use-less and can be removed.
+> 6. Error messages added to ice_fltr_*_vsi_promisc() helper functions
+>    to avoid them in their callers
+> 7. Small improvements to increase readability
+> 
+> Fixes: 5eda8afd6bcc ("ice: Add support for PF/VF promiscuous mode")
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice.h      |   1 -
+>  drivers/net/ethernet/intel/ice/ice_fltr.c |  52 +++++++++-
+>  drivers/net/ethernet/intel/ice/ice_main.c | 119 +++++++++++++++-------
+>  3 files changed, 131 insertions(+), 41 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+> index bea1d1e39fa2..717542e49d65 100644
+> --- a/drivers/net/ethernet/intel/ice/ice.h
+> +++ b/drivers/net/ethernet/intel/ice/ice.h
+> @@ -300,7 +300,6 @@ enum ice_vsi_state {
+>  	ICE_VSI_NETDEV_REGISTERED,
+>  	ICE_VSI_UMAC_FLTR_CHANGED,
+>  	ICE_VSI_MMAC_FLTR_CHANGED,
+> -	ICE_VSI_VLAN_FLTR_CHANGED,
+>  	ICE_VSI_PROMISC_CHANGED,
+>  	ICE_VSI_STATE_NBITS		/* must be last */
+>  };
+> diff --git a/drivers/net/ethernet/intel/ice/ice_fltr.c b/drivers/net/ethernet/intel/ice/ice_fltr.c
+> index c29177c6bb9d..8ed87b43a367 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_fltr.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_fltr.c
+> @@ -58,7 +58,18 @@ int
+>  ice_fltr_set_vlan_vsi_promisc(struct ice_hw *hw, struct ice_vsi *vsi,
+>  			      u8 promisc_mask)
+>  {
+> -	return ice_set_vlan_vsi_promisc(hw, vsi->idx, promisc_mask, false);
+> +	struct ice_pf *pf = hw->back;
+> +	int result;
+> +
+> +	result = ice_set_vlan_vsi_promisc(hw, vsi->idx, promisc_mask, false);
+> +	if (!result)
+> +		return result;
+> +
+> +	dev_err(ice_pf_to_dev(pf),
+> +		"Error setting promisc mode on VSI %i (rc=%d)\n", vsi->vsi_num,
+> +		result);
+> +
+
+Our typical style here would be to do:
+
+result = <function>;
+if (result) {
+	dev_err(...);
+}
+
+I find that much more readable than "if (!result) return;
+
+> +	return result;
+>  }
+>  
+>  /**
+> @@ -73,7 +84,18 @@ int
+>  ice_fltr_clear_vlan_vsi_promisc(struct ice_hw *hw, struct ice_vsi *vsi,
+>  				u8 promisc_mask)
+>  {
+> -	return ice_set_vlan_vsi_promisc(hw, vsi->idx, promisc_mask, true);
+> +	struct ice_pf *pf = hw->back;
+> +	int result;
+> +
+> +	result = ice_set_vlan_vsi_promisc(hw, vsi->idx, promisc_mask, true);
+> +	if (!result)
+> +		return result;
+> +
+> +	dev_err(ice_pf_to_dev(pf),
+> +		"Error clearing promisc mode on VSI %i (rc=%d)\n",
+> +		vsi->vsi_num, result);
+> +
+> +	return result;
+>  }
+>  
+>  /**
+> @@ -87,7 +109,18 @@ int
+>  ice_fltr_clear_vsi_promisc(struct ice_hw *hw, u16 vsi_handle, u8 promisc_mask,
+>  			   u16 vid)
+>  {
+> -	return ice_clear_vsi_promisc(hw, vsi_handle, promisc_mask, vid);
+> +	struct ice_pf *pf = hw->back;
+> +	int result;
+> +
+> +	result = ice_clear_vsi_promisc(hw, vsi_handle, promisc_mask, vid);
+> +	if (!result)
+> +		return result;
+> +
+> +	dev_err(ice_pf_to_dev(pf),
+> +		"Error clearing promisc mode on VSI %i for VID %u (rc=%d)\n",
+> +		ice_get_hw_vsi_num(hw, vsi_handle), vid, result);
+> +
+> +	return result;
+>  }
+>  
+>  /**
+> @@ -101,7 +134,18 @@ int
+>  ice_fltr_set_vsi_promisc(struct ice_hw *hw, u16 vsi_handle, u8 promisc_mask,
+>  			 u16 vid)
+>  {
+> -	return ice_set_vsi_promisc(hw, vsi_handle, promisc_mask, vid);
+> +	struct ice_pf *pf = hw->back;
+> +	int result;
+> +
+> +	result = ice_set_vsi_promisc(hw, vsi_handle, promisc_mask, vid);
+> +	if (!result)
+> +		return result;
+> +
+> +	dev_err(ice_pf_to_dev(pf),
+> +		"Error setting promisc mode on VSI %i for VID %u (rc=%d)\n",
+> +		ice_get_hw_vsi_num(hw, vsi_handle), vid, result);
+> +
+> +	return result;
+>  }
+>  
+>  /**
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+> index b7e8744b0c0a..168a41ea37b8 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -227,8 +227,7 @@ static int ice_add_mac_to_unsync_list(struct net_device *netdev, const u8 *addr)
+>  static bool ice_vsi_fltr_changed(struct ice_vsi *vsi)
+>  {
+>  	return test_bit(ICE_VSI_UMAC_FLTR_CHANGED, vsi->state) ||
+> -	       test_bit(ICE_VSI_MMAC_FLTR_CHANGED, vsi->state) ||
+> -	       test_bit(ICE_VSI_VLAN_FLTR_CHANGED, vsi->state);
+> +	       test_bit(ICE_VSI_MMAC_FLTR_CHANGED, vsi->state);
+
+Ok, so we now handle VLAN filters seprately without these states.
+
+>  }
+>  
+>  /**
+> @@ -244,10 +243,15 @@ static int ice_set_promisc(struct ice_vsi *vsi, u8 promisc_m)
+>  	if (vsi->type != ICE_VSI_PF)
+>  		return 0;
+>  
+> -	if (vsi->num_vlan > 1)
+> -		status = ice_fltr_set_vlan_vsi_promisc(&vsi->back->hw, vsi, promisc_m);
+> -	else
+> -		status = ice_fltr_set_vsi_promisc(&vsi->back->hw, vsi->idx, promisc_m, 0);
+> +	if (vsi->num_vlan > 1) {
+> +		promisc_m |= (ICE_PROMISC_VLAN_RX | ICE_PROMISC_VLAN_TX);
+> +		status = ice_fltr_set_vlan_vsi_promisc(&vsi->back->hw, vsi,
+> +						       promisc_m);
+
+Ok so if we're in >1 filter, we add the VLAN_RX and VLAN_TX flags. Right.
+
+And we know that changes only from another ndo op to add VLANs?
+
+> +	} else {
+> +		status = ice_fltr_set_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +						  promisc_m, 0);
+> +	}
+> +
+>  	return status;
+>  }
+>  
+> @@ -264,10 +268,15 @@ static int ice_clear_promisc(struct ice_vsi *vsi, u8 promisc_m)
+>  	if (vsi->type != ICE_VSI_PF)
+>  		return 0;
+>  
+> -	if (vsi->num_vlan > 1)
+> -		status = ice_fltr_clear_vlan_vsi_promisc(&vsi->back->hw, vsi, promisc_m);
+> -	else
+> -		status = ice_fltr_clear_vsi_promisc(&vsi->back->hw, vsi->idx, promisc_m, 0);
+> +	if (vsi->num_vlan > 1) {
+> +		promisc_m |= (ICE_PROMISC_VLAN_RX | ICE_PROMISC_VLAN_TX);
+> +		status = ice_fltr_clear_vlan_vsi_promisc(&vsi->back->hw, vsi,
+> +							 promisc_m);
+> +	} else {
+> +		status = ice_fltr_clear_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +						    promisc_m, 0);
+> +	}
+> +
+>  	return status;
+>  }
+>  
+> @@ -285,7 +294,6 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
+>  	struct ice_pf *pf = vsi->back;
+>  	struct ice_hw *hw = &pf->hw;
+>  	u32 changed_flags = 0;
+> -	u8 promisc_m;
+>  	int err;
+>  
+>  	if (!vsi->netdev)
+> @@ -303,7 +311,6 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
+>  	if (ice_vsi_fltr_changed(vsi)) {
+>  		clear_bit(ICE_VSI_UMAC_FLTR_CHANGED, vsi->state);
+>  		clear_bit(ICE_VSI_MMAC_FLTR_CHANGED, vsi->state);
+> -		clear_bit(ICE_VSI_VLAN_FLTR_CHANGED, vsi->state);
+>  
+>  		/* grab the netdev's addr_list_lock */
+>  		netif_addr_lock_bh(netdev);
+> @@ -352,29 +359,15 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
+>  	/* check for changes in promiscuous modes */
+>  	if (changed_flags & IFF_ALLMULTI) {
+>  		if (vsi->current_netdev_flags & IFF_ALLMULTI) {
+> -			if (vsi->num_vlan > 1)
+> -				promisc_m = ICE_MCAST_VLAN_PROMISC_BITS;
+> -			else
+> -				promisc_m = ICE_MCAST_PROMISC_BITS;
+> -
+> -			err = ice_set_promisc(vsi, promisc_m);
+> +			err = ice_set_promisc(vsi, ICE_MCAST_PROMISC_BITS);
+>  			if (err) {
+> -				netdev_err(netdev, "Error setting Multicast promiscuous mode on VSI %i\n",
+> -					   vsi->vsi_num);
+>  				vsi->current_netdev_flags &= ~IFF_ALLMULTI;
+>  				goto out_promisc;
+>  			}
+>  		} else {
+>  			/* !(vsi->current_netdev_flags & IFF_ALLMULTI) */
+> -			if (vsi->num_vlan > 1)
+> -				promisc_m = ICE_MCAST_VLAN_PROMISC_BITS;
+> -			else
+> -				promisc_m = ICE_MCAST_PROMISC_BITS;
+> -
+> -			err = ice_clear_promisc(vsi, promisc_m);
+> +			err = ice_clear_promisc(vsi, ICE_MCAST_PROMISC_BITS);
+>  			if (err) {
+> -				netdev_err(netdev, "Error clearing Multicast promiscuous mode on VSI %i\n",
+> -					   vsi->vsi_num);
+>  				vsi->current_netdev_flags |= IFF_ALLMULTI;
+>  				goto out_promisc;
+>  			}
+> @@ -3445,19 +3438,47 @@ ice_vlan_rx_add_vid(struct net_device *netdev, __always_unused __be16 proto,
+>  	if (!vid)
+>  		return 0;
+>  
+> +	while (test_and_set_bit(ICE_CFG_BUSY, vsi->state))
+> +		usleep_range(1000, 2000);
+> +
+
+Not your fault, but every time I see this I think about why not just
+making this a mutex...
+
+>  	/* Enable VLAN pruning when a VLAN other than 0 is added */
+>  	if (!ice_vsi_is_vlan_pruning_ena(vsi)) {
+>  		ret = ice_cfg_vlan_pruning(vsi, true);
+>  		if (ret)
+> -			return ret;
+> +			goto finish;
+> +	}
+> +
+> +	/* Add multicast promisc rule for the VLAN ID to be added if
+> +	 * all-multicast is currently enabled.
+> +	 */
+> +	if (vsi->current_netdev_flags & IFF_ALLMULTI) {
+> +		ret = ice_fltr_set_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +					       ICE_MCAST_VLAN_PROMISC_BITS,
+> +					       vid);
+> +		if (ret)
+> +			goto finish;
+>  	}
+
+If we're not in multicast mode (or if multicast mode gets disabled) when
+do we clear these bits?
+
+I would have expected some sort of loop to iterate over VLANs?
 
 
-On 23-Mar-22 18:54, Ivan Vecera wrote:
-> On Wed, 23 Mar 2022 18:39:11 +0100
-> Marcin Szycik <marcin.szycik@linux.intel.com> wrote:
-> 
->> On 22-Mar-22 15:25, Ivan Vecera wrote:
->>> VSI is set as default forwarding one when promisc mode is set for
->>> PF interface, when PF is switched to switchdev mode or when VF
->>> driver asks to enable allmulticast or promisc mode for the VF
->>> interface (when vf-true-promisc-support priv flag is off).
->>> The third case is buggy because in that case VSI associated with
->>> VF remains as default one after VF removal.
->>>
->>> Reproducer:
->>> 1. Create VF
->>>    echo 1 > sys/class/net/ens7f0/device/sriov_numvfs
->>> 2. Enable allmulticast or promisc mode on VF
->>>    ip link set ens7f0v0 allmulticast on
->>>    ip link set ens7f0v0 promisc on
->>> 3. Delete VF
->>>    echo 0 > sys/class/net/ens7f0/device/sriov_numvfs
->>> 4. Try to enable promisc mode on PF
->>>    ip link set ens7f0 promisc on
->>>
->>> Although it looks that promisc mode on PF is enabled the opposite
->>> is true because ice_vsi_sync_fltr() responsible for IFF_PROMISC
->>> handling first checks if any other VSI is set as default forwarding
->>> one and if so the function does not do anything. At this point
->>> it is not possible to enable promisc mode on PF without re-probe
->>> device.
->>>
->>> To resolve the issue this patch clear default forwarding VSI
->>> during ice_vsi_release() when the VSI to be released is the default
->>> one.
->>>
->>> Fixes: 01b5e89aab49 ("ice: Add VF promiscuous support")
->>> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
->>> ---
->>>  drivers/net/ethernet/intel/ice/ice_lib.c | 2 ++
->>>  1 file changed, 2 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
->>> index 53256aca27c7..20d755822d43 100644
->>> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
->>> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
->>> @@ -3147,6 +3147,8 @@ int ice_vsi_release(struct ice_vsi *vsi)
->>>  		}
->>>  	}
->>>  
->>> +	if (ice_is_vsi_dflt_vsi(pf->first_sw, vsi))
->>> +		ice_clear_dflt_vsi(pf->first_sw);  
->>
->> It would probably be good to check `ice_clear_dflt_vsi` return code.
-> 
-> Check and report potential warning when error occurs? because we are in ice_vsi_release() so
-> any rollback does not make sense.
+>  
+>  	/* Add a switch rule for this VLAN ID so its corresponding VLAN tagged
+>  	 * packets aren't pruned by the device's internal switch on Rx
+>  	 */
+>  	ret = ice_vsi_add_vlan(vsi, vid, ICE_FWD_TO_VSI);
+> -	if (!ret)
+> -		set_bit(ICE_VSI_VLAN_FLTR_CHANGED, vsi->state);
+> +	if (ret)
+> +		goto finish;
+> +
+> +	/* If all-multicast is currently enabled and this VLAN ID is only one
+> +	 * besides VLAN-0 we have to update look-up type of multicast promisc
+> +	 * rule for VLAN-0 from ICE_SW_LKUP_PROMISC to ICE_SW_LKUP_PROMISC_VLAN.
+> +	 */
+> +	if ((vsi->current_netdev_flags & IFF_ALLMULTI) && vsi->num_vlan == 2) {
+> +		ice_fltr_clear_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +					   ICE_MCAST_PROMISC_BITS, 0);
+> +		ice_fltr_set_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +					 ICE_MCAST_VLAN_PROMISC_BITS, 0);
+> +	}
+> +
+> +finish:
+> +	clear_bit(ICE_CFG_BUSY, vsi->state);
+>  
+>  	return ret;
+>  }
+> @@ -3482,18 +3503,44 @@ ice_vlan_rx_kill_vid(struct net_device *netdev, __always_unused __be16 proto,
+>  	if (!vid)
+>  		return 0;
+>  
+> +	while (test_and_set_bit(ICE_CFG_BUSY, vsi->state))
+> +		usleep_range(1000, 2000);
+> +
+>  	/* Make sure ice_vsi_kill_vlan is successful before updating VLAN
+>  	 * information
+>  	 */
+>  	ret = ice_vsi_kill_vlan(vsi, vid);
+>  	if (ret)
+> -		return ret;
+> +		goto finish;
+>  
+> -	/* Disable pruning when VLAN 0 is the only VLAN rule */
+> -	if (vsi->num_vlan == 1 && ice_vsi_is_vlan_pruning_ena(vsi))
+> -		ret = ice_cfg_vlan_pruning(vsi, false);
+> +	/* Remove multicast promisc rule for the removed VLAN ID if
+> +	 * all-multicast is enabled.
+> +	 */
+> +	if (vsi->current_netdev_flags & IFF_ALLMULTI)
+> +		ice_fltr_clear_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +					   ICE_MCAST_VLAN_PROMISC_BITS, vid);
+> +
+> +	if (vsi->num_vlan == 1) {
+> +		/* Disable pruning when VLAN 0 is the only VLAN rule */
+> +		if (ice_vsi_is_vlan_pruning_ena(vsi))
+> +			ice_cfg_vlan_pruning(vsi, false);
+> +
+> +		/* Update look-up type of multicast promisc rule for VLAN 0
+> +		 * from ICE_SW_LKUP_PROMISC_VLAN to ICE_SW_LKUP_PROMISC when
+> +		 * all-multicast is enabled and VLAN 0 is the only VLAN rule.
+> +		 */
+> +		if (vsi->current_netdev_flags & IFF_ALLMULTI) {
+> +			ice_fltr_clear_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +						   ICE_MCAST_VLAN_PROMISC_BITS,
+> +						   0);
+> +			ice_fltr_set_vsi_promisc(&vsi->back->hw, vsi->idx,
+> +						 ICE_MCAST_PROMISC_BITS, 0);
+> +		}
+> +	}
+> +
+> +finish:
+> +	clear_bit(ICE_CFG_BUSY, vsi->state);
+>  
+> -	set_bit(ICE_VSI_VLAN_FLTR_CHANGED, vsi->state);
+>  	return ret;
+>  }
+>  
 
-Right. ice_clear_dflt_vsi already reports errors so it should be good as is.
-LGTM, thanks!
-
-> 
-> Ivan
-> 
