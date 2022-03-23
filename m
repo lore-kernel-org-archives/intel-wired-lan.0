@@ -1,56 +1,68 @@
-From: Ivan Vecera <ivecera@redhat.com>
-Date: Wed, 23 Mar 2022 14:58:29 +0100
+From: Piotr Raczynski <piotr.raczynski@intel.com>
+Date: Wed, 23 Mar 2022 20:10:10 +0100
 Subject: [Intel-wired-lan] [PATCH net] ice: Fix MAC address setting
-Message-ID: <20220323135829.4015645-1-ivecera@redhat.com>
+In-Reply-To: <20220323135829.4015645-1-ivecera@redhat.com>
+References: <20220323135829.4015645-1-ivecera@redhat.com>
+Message-ID: <20220323190519.GA23730@kplh.igk.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit 2ccc1c1ccc671b ("ice: Remove excess error variables") merged
-the usage of 'status' and 'err' variables into single one in
-function ice_set_mac_address(). Unfortunately this causes
-a regression when call of ice_fltr_add_mac() returns -EEXIST because
-this return value does not indicate an error in this case but
-value of 'err' value remains to be -EEXIST till the end of
-the function and is returned to caller.
+On Wed, Mar 23, 2022 at 02:58:29PM +0100, Ivan Vecera wrote:
+> Commit 2ccc1c1ccc671b ("ice: Remove excess error variables") merged
+> the usage of 'status' and 'err' variables into single one in
+> function ice_set_mac_address(). Unfortunately this causes
+> a regression when call of ice_fltr_add_mac() returns -EEXIST because
+> this return value does not indicate an error in this case but
+> value of 'err' value remains to be -EEXIST till the end of
+> the function and is returned to caller.
+> 
+> Prior this commit this does not happen because return value of
+> ice_fltr_add_mac() was stored to 'status' variable first and
+> if it was -EEXIST then 'err' remains to be zero.
+> 
+> The patch fixes the problem by reset 'err' to zero when
+> ice_fltr_add_mac() returns -EEXIST.
+> 
+> Fixes: 2ccc1c1ccc671b ("ice: Remove excess error variables")
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_main.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+> index 168a41ea37b8..420558d1cd21 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -5474,14 +5474,15 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
+>  
+>  	/* Add filter for new MAC. If filter exists, return success */
+>  	err = ice_fltr_add_mac(vsi, mac, ICE_FWD_TO_VSI);
+> -	if (err == -EEXIST)
+> +	if (err == -EEXIST) {
+>  		/* Although this MAC filter is already present in hardware it's
+>  		 * possible in some cases (e.g. bonding) that dev_addr was
+>  		 * modified outside of the driver and needs to be restored back
+>  		 * to this value.
+>  		 */
+>  		netdev_dbg(netdev, "filter for MAC %pM already exists\n", mac);
+> -	else if (err)
+> +		err = 0;
 
-Prior this commit this does not happen because return value of
-ice_fltr_add_mac() was stored to 'status' variable first and
-if it was -EEXIST then 'err' remains to be zero.
+Thanks Ivan, This looks fine. It is a regression as I checked since
+driver used to return success in such case. It seems that the only
+way to have EEXIST here is when the same MAC is requested, I'd also
+consider just return 0 here to skip later firwmare write which seems
+redundant here.
 
-The patch fixes the problem by reset 'err' to zero when
-ice_fltr_add_mac() returns -EEXIST.
+Piotr
 
-Fixes: 2ccc1c1ccc671b ("ice: Remove excess error variables")
-Signed-off-by: Ivan Vecera <ivecera@redhat.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 168a41ea37b8..420558d1cd21 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5474,14 +5474,15 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
- 
- 	/* Add filter for new MAC. If filter exists, return success */
- 	err = ice_fltr_add_mac(vsi, mac, ICE_FWD_TO_VSI);
--	if (err == -EEXIST)
-+	if (err == -EEXIST) {
- 		/* Although this MAC filter is already present in hardware it's
- 		 * possible in some cases (e.g. bonding) that dev_addr was
- 		 * modified outside of the driver and needs to be restored back
- 		 * to this value.
- 		 */
- 		netdev_dbg(netdev, "filter for MAC %pM already exists\n", mac);
--	else if (err)
-+		err = 0;
-+	} else if (err)
- 		/* error if the new filter addition failed */
- 		err = -EADDRNOTAVAIL;
- 
--- 
-2.34.1
-
+> +	} else if (err)
+>  		/* error if the new filter addition failed */
+>  		err = -EADDRNOTAVAIL;
+>  
+> -- 
+> 2.34.1
+> 
