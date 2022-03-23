@@ -1,134 +1,56 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Wed, 23 Mar 2022 13:43:52 +0100
-Subject: [Intel-wired-lan] [PATCH net 1/2] ice: fix 'scheduling while
- atomic' on aux critical err interrupt
-In-Reply-To: <20220323124353.2762181-1-alexandr.lobakin@intel.com>
-References: <20220323124353.2762181-1-alexandr.lobakin@intel.com>
-Message-ID: <20220323124353.2762181-2-alexandr.lobakin@intel.com>
+From: Ivan Vecera <ivecera@redhat.com>
+Date: Wed, 23 Mar 2022 14:58:29 +0100
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix MAC address setting
+Message-ID: <20220323135829.4015645-1-ivecera@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There's a kernel BUG splat on processing aux critical error
-interrupts in ice_misc_intr():
+Commit 2ccc1c1ccc671b ("ice: Remove excess error variables") merged
+the usage of 'status' and 'err' variables into single one in
+function ice_set_mac_address(). Unfortunately this causes
+a regression when call of ice_fltr_add_mac() returns -EEXIST because
+this return value does not indicate an error in this case but
+value of 'err' value remains to be -EEXIST till the end of
+the function and is returned to caller.
 
-[ 2100.917085] BUG: scheduling while atomic: swapper/15/0/0x00010000
-...
-[ 2101.060770] Call Trace:
-[ 2101.063229]  <IRQ>
-[ 2101.065252]  dump_stack+0x41/0x60
-[ 2101.068587]  __schedule_bug.cold.100+0x4c/0x58
-[ 2101.073060]  __schedule+0x6a4/0x830
-[ 2101.076570]  schedule+0x35/0xa0
-[ 2101.079727]  schedule_preempt_disabled+0xa/0x10
-[ 2101.084284]  __mutex_lock.isra.7+0x310/0x420
-[ 2101.088580]  ? ice_misc_intr+0x201/0x2e0 [ice]
-[ 2101.093078]  ice_send_event_to_aux+0x25/0x70 [ice]
-[ 2101.097921]  ice_misc_intr+0x220/0x2e0 [ice]
-[ 2101.102232]  __handle_irq_event_percpu+0x40/0x180
-[ 2101.106965]  handle_irq_event_percpu+0x30/0x80
-[ 2101.111434]  handle_irq_event+0x36/0x53
-[ 2101.115292]  handle_edge_irq+0x82/0x190
-[ 2101.119148]  handle_irq+0x1c/0x30
-[ 2101.122480]  do_IRQ+0x49/0xd0
-[ 2101.125465]  common_interrupt+0xf/0xf
-[ 2101.129146]  </IRQ>
-...
+Prior this commit this does not happen because return value of
+ice_fltr_add_mac() was stored to 'status' variable first and
+if it was -EEXIST then 'err' remains to be zero.
 
-As Andrew correctly mentioned previously[0], the following call
-ladder happens:
+The patch fixes the problem by reset 'err' to zero when
+ice_fltr_add_mac() returns -EEXIST.
 
-ice_misc_intr() <- hardirq
-  ice_send_event_to_aux()
-    device_lock()
-      mutex_lock()
-        might_sleep()
-          might_resched() <- oops
-
-Add a new PF state bit which indicates that an aux critical error
-occurred and serve it in ice_service_task() in process context.
-The new ice_pf::oicr_err_reg is read-write in both hardirq and
-process contexts, but only 3 bits of non-critical data probably
-aren't worth explicit synchronizing (and they're even in the same
-byte [31:24]).
-
-[0] https://lore.kernel.org/all/YeSRUVmrdmlUXHDn at lunn.ch
-
-Fixes: 348048e724a0e ("ice: Implement iidc operations")
-Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-Tested-by: Michal Kubiak <michal.kubiak@intel.com>
-Acked-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Fixes: 2ccc1c1ccc671b ("ice: Remove excess error variables")
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h      |  2 ++
- drivers/net/ethernet/intel/ice/ice_main.c | 25 ++++++++++++++---------
- 2 files changed, 17 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index bea1d1e39fa2..2ca887076dd4 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -290,6 +290,7 @@ enum ice_pf_state {
- 	ICE_LINK_DEFAULT_OVERRIDE_PENDING,
- 	ICE_PHY_INIT_COMPLETE,
- 	ICE_FD_VF_FLUSH_CTX,		/* set at FD Rx IRQ or timeout */
-+	ICE_AUX_ERR_PENDING,
- 	ICE_STATE_NBITS		/* must be last */
- };
- 
-@@ -559,6 +560,7 @@ struct ice_pf {
- 	wait_queue_head_t reset_wait_queue;
- 
- 	u32 hw_csum_rx_error;
-+	u32 oicr_err_reg;
- 	u16 oicr_idx;		/* Other interrupt cause MSIX vector index */
- 	u16 num_avail_sw_msix;	/* remaining MSIX SW vectors left unclaimed */
- 	u16 max_pf_txqs;	/* Total Tx queues PF wide */
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index b7e8744b0c0a..296f9d5f7408 100644
+index 168a41ea37b8..420558d1cd21 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2255,6 +2255,19 @@ static void ice_service_task(struct work_struct *work)
- 		return;
- 	}
+@@ -5474,14 +5474,15 @@ static int ice_set_mac_address(struct net_device *netdev, void *pi)
  
-+	if (test_and_clear_bit(ICE_AUX_ERR_PENDING, pf->state)) {
-+		struct iidc_event *event;
-+
-+		event = kzalloc(sizeof(*event), GFP_KERNEL);
-+		if (event) {
-+			set_bit(IIDC_EVENT_CRIT_ERR, event->type);
-+			/* report the entire OICR value to AUX driver */
-+			swap(event->reg, pf->oicr_err_reg);
-+			ice_send_event_to_aux(pf, event);
-+			kfree(event);
-+		}
-+	}
-+
- 	if (test_bit(ICE_FLAG_PLUG_AUX_DEV, pf->flags)) {
- 		/* Plug aux device per request */
- 		ice_plug_aux_dev(pf);
-@@ -3041,17 +3054,9 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 	/* Add filter for new MAC. If filter exists, return success */
+ 	err = ice_fltr_add_mac(vsi, mac, ICE_FWD_TO_VSI);
+-	if (err == -EEXIST)
++	if (err == -EEXIST) {
+ 		/* Although this MAC filter is already present in hardware it's
+ 		 * possible in some cases (e.g. bonding) that dev_addr was
+ 		 * modified outside of the driver and needs to be restored back
+ 		 * to this value.
+ 		 */
+ 		netdev_dbg(netdev, "filter for MAC %pM already exists\n", mac);
+-	else if (err)
++		err = 0;
++	} else if (err)
+ 		/* error if the new filter addition failed */
+ 		err = -EADDRNOTAVAIL;
  
- #define ICE_AUX_CRIT_ERR (PFINT_OICR_PE_CRITERR_M | PFINT_OICR_HMC_ERR_M | PFINT_OICR_PE_PUSH_M)
- 	if (oicr & ICE_AUX_CRIT_ERR) {
--		struct iidc_event *event;
--
-+		pf->oicr_err_reg |= oicr;
-+		set_bit(ICE_AUX_ERR_PENDING, pf->state);
- 		ena_mask &= ~ICE_AUX_CRIT_ERR;
--		event = kzalloc(sizeof(*event), GFP_ATOMIC);
--		if (event) {
--			set_bit(IIDC_EVENT_CRIT_ERR, event->type);
--			/* report the entire OICR value to AUX driver */
--			event->reg = oicr;
--			ice_send_event_to_aux(pf, event);
--			kfree(event);
--		}
- 	}
- 
- 	/* Report any remaining unexpected interrupts */
 -- 
-2.35.1
+2.34.1
 
