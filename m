@@ -1,17 +1,19 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 23 Mar 2022 19:26:25 +0000
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Wed, 23 Mar 2022 21:05:20 +0100
 Subject: [Intel-wired-lan] [PATCH net] ice: Fix broken IFF_ALLMULTI
  handling
 In-Reply-To: <20220321191731.2596414-1-ivecera@redhat.com>
 References: <20220321191731.2596414-1-ivecera@redhat.com>
-Message-ID: <05d80b4c-c4a4-8f77-bbef-c5273aab613b@intel.com>
+Message-ID: <eb6538d9-4667-f1f5-492c-e1e113a6da35@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/21/2022 12:17 PM, Ivan Vecera wrote:
+
+
+On 21-Mar-22 20:17, Ivan Vecera wrote:
 > Handling of all-multicast flag and associated multicast promiscuous
 > mode is broken in ice driver. When a user switches allmulticast
 > flag on or off the driver checks whether any VLANs are configured
@@ -157,16 +159,6 @@ On 3/21/2022 12:17 PM, Ivan Vecera wrote:
 > +		"Error setting promisc mode on VSI %i (rc=%d)\n", vsi->vsi_num,
 > +		result);
 > +
-
-Our typical style here would be to do:
-
-result = <function>;
-if (result) {
-	dev_err(...);
-}
-
-I find that much more readable than "if (!result) return;
-
 > +	return result;
 >  }
 >  
@@ -242,9 +234,6 @@ I find that much more readable than "if (!result) return;
 > -	       test_bit(ICE_VSI_MMAC_FLTR_CHANGED, vsi->state) ||
 > -	       test_bit(ICE_VSI_VLAN_FLTR_CHANGED, vsi->state);
 > +	       test_bit(ICE_VSI_MMAC_FLTR_CHANGED, vsi->state);
-
-Ok, so we now handle VLAN filters seprately without these states.
-
 >  }
 >  
 >  /**
@@ -260,11 +249,6 @@ Ok, so we now handle VLAN filters seprately without these states.
 > +		promisc_m |= (ICE_PROMISC_VLAN_RX | ICE_PROMISC_VLAN_TX);
 > +		status = ice_fltr_set_vlan_vsi_promisc(&vsi->back->hw, vsi,
 > +						       promisc_m);
-
-Ok so if we're in >1 filter, we add the VLAN_RX and VLAN_TX flags. Right.
-
-And we know that changes only from another ndo op to add VLANs?
-
 > +	} else {
 > +		status = ice_fltr_set_vsi_promisc(&vsi->back->hw, vsi->idx,
 > +						  promisc_m, 0);
@@ -317,10 +301,12 @@ And we know that changes only from another ndo op to add VLANs?
 > -				promisc_m = ICE_MCAST_VLAN_PROMISC_BITS;
 > -			else
 > -				promisc_m = ICE_MCAST_PROMISC_BITS;
+
+Because `ice_{set,clear}_promisc()` are now always called with the same second argument (ICE_MCAST_PROMISC_BITS), wouldn't it be better to remove the arg and instead call `ice_fltr_{clear,set}_{vlan,vsi}_vsi_promisc()` with either ICE_MCAST_VLAN_PROMISC_BITS or ICE_MCAST_PROMISC_BITS inside the function?
+
 > -
 > -			err = ice_set_promisc(vsi, promisc_m);
-> +			err = ice_set_promisc(vsi, ICE_MCAST_PROMISC_BITS);
->  			if (err) {
+> +			err = ice_set_promisc(vsi, ICE_MCAST_PROMISC_BITS);>  			if (err) {
 > -				netdev_err(netdev, "Error setting Multicast promiscuous mode on VSI %i\n",
 > -					   vsi->vsi_num);
 >  				vsi->current_netdev_flags &= ~IFF_ALLMULTI;
@@ -348,10 +334,6 @@ And we know that changes only from another ndo op to add VLANs?
 > +	while (test_and_set_bit(ICE_CFG_BUSY, vsi->state))
 > +		usleep_range(1000, 2000);
 > +
-
-Not your fault, but every time I see this I think about why not just
-making this a mutex...
-
 >  	/* Enable VLAN pruning when a VLAN other than 0 is added */
 >  	if (!ice_vsi_is_vlan_pruning_ena(vsi)) {
 >  		ret = ice_cfg_vlan_pruning(vsi, true);
@@ -370,13 +352,6 @@ making this a mutex...
 > +		if (ret)
 > +			goto finish;
 >  	}
-
-If we're not in multicast mode (or if multicast mode gets disabled) when
-do we clear these bits?
-
-I would have expected some sort of loop to iterate over VLANs?
-
-
 >  
 >  	/* Add a switch rule for this VLAN ID so its corresponding VLAN tagged
 >  	 * packets aren't pruned by the device's internal switch on Rx
@@ -432,6 +407,9 @@ I would have expected some sort of loop to iterate over VLANs?
 > +		/* Disable pruning when VLAN 0 is the only VLAN rule */
 > +		if (ice_vsi_is_vlan_pruning_ena(vsi))
 > +			ice_cfg_vlan_pruning(vsi, false);
+
+Why was `ret = ...` removed here?
+
 > +
 > +		/* Update look-up type of multicast promisc rule for VLAN 0
 > +		 * from ICE_SW_LKUP_PROMISC_VLAN to ICE_SW_LKUP_PROMISC when
@@ -454,3 +432,6 @@ I would have expected some sort of loop to iterate over VLANs?
 >  }
 >  
 
+Otherwise LGTM (though my experience in this area is rather limited).
+
+Marcin
