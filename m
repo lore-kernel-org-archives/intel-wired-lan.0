@@ -1,96 +1,128 @@
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Thu, 24 Mar 2022 12:25:58 +0100
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix MAC address setting
-In-Reply-To: <CO1PR11MB508946CC906E8B851D69D31AD6189@CO1PR11MB5089.namprd11.prod.outlook.com>
-References: <20220323135829.4015645-1-ivecera@redhat.com>
- <CO1PR11MB508946CC906E8B851D69D31AD6189@CO1PR11MB5089.namprd11.prod.outlook.com>
-Message-ID: <YjxVRqTppQeYKb1h@boxer>
+Date: Thu, 24 Mar 2022 12:49:07 +0100
+Subject: [Intel-wired-lan] [PATCH intel-next] ice: introduce common helper
+ for retrieving VSI by vsi_num
+Message-ID: <20220324114907.73459-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Mar 23, 2022 at 05:28:02PM +0000, Keller, Jacob E wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Ivan Vecera <ivecera@redhat.com>
-> > Sent: Wednesday, March 23, 2022 6:58 AM
-> > To: netdev at vger.kernel.org
-> > Cc: poros at redhat.com; mschmidt at redhat.com; Brandeburg, Jesse
-> > <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> > <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Jakub
-> > Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; moderated
-> > list:INTEL ETHERNET DRIVERS <intel-wired-lan@lists.osuosl.org>; open list <linux-
-> > kernel at vger.kernel.org>
-> > Subject: [PATCH net] ice: Fix MAC address setting
-> > 
-> > Commit 2ccc1c1ccc671b ("ice: Remove excess error variables") merged
-> > the usage of 'status' and 'err' variables into single one in
-> > function ice_set_mac_address(). Unfortunately this causes
-> > a regression when call of ice_fltr_add_mac() returns -EEXIST because
-> > this return value does not indicate an error in this case but
-> > value of 'err' value remains to be -EEXIST till the end of
+Both ice_idc.c and ice_virtchnl.c carry their own implementation of a
+helper function that is looking for a given VSI based on provided
+vsi_num. Their functionality is the same, so let's introduce the common
+function in ice.h that both of the mentioned sites will use.
 
-s/'err' value/'err'
+This is a strictly cleanup thing, no functionality is changed.
 
-> > the function and is returned to caller.
-> > 
-> > Prior this commit this does not happen because return value of
+Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h          | 15 +++++++++++++
+ drivers/net/ethernet/intel/ice/ice_idc.c      | 15 -------------
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 22 ++-----------------
+ 3 files changed, 17 insertions(+), 35 deletions(-)
 
-s/this/mentioned ?
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index e9aa1fb43c3a..a541446b96e8 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -756,6 +756,21 @@ static inline struct ice_vsi *ice_get_ctrl_vsi(struct ice_pf *pf)
+ 	return pf->vsi[pf->ctrl_vsi_idx];
+ }
+ 
++/**
++ * ice_find_vsi - Find the VSI from VSI ID
++ * @pf: The PF pointer to search in
++ * @vsi_num: The VSI ID to search for
++ */
++static inline struct ice_vsi *ice_find_vsi(struct ice_pf *pf, u16 vsi_num)
++{
++	int i;
++
++	ice_for_each_vsi(pf, i)
++		if (pf->vsi[i] && pf->vsi[i]->vsi_num == vsi_num)
++			return  pf->vsi[i];
++	return NULL;
++}
++
+ /**
+  * ice_is_switchdev_running - check if switchdev is configured
+  * @pf: pointer to PF structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
+index 73aa520317d4..56e03d0e319f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_idc.c
++++ b/drivers/net/ethernet/intel/ice/ice_idc.c
+@@ -44,21 +44,6 @@ void ice_send_event_to_aux(struct ice_pf *pf, struct iidc_event *event)
+ 	device_unlock(&pf->adev->dev);
+ }
+ 
+-/**
+- * ice_find_vsi - Find the VSI from VSI ID
+- * @pf: The PF pointer to search in
+- * @vsi_num: The VSI ID to search for
+- */
+-static struct ice_vsi *ice_find_vsi(struct ice_pf *pf, u16 vsi_num)
+-{
+-	int i;
+-
+-	ice_for_each_vsi(pf, i)
+-		if (pf->vsi[i] && pf->vsi[i]->vsi_num == vsi_num)
+-			return  pf->vsi[i];
+-	return NULL;
+-}
+-
+ /**
+  * ice_add_rdma_qset - Add Leaf Node for RDMA Qset
+  * @pf: PF struct
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index 3f1a63815bac..8ddb462e1af2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -514,24 +514,6 @@ static void ice_vc_reset_vf_msg(struct ice_vf *vf)
+ 		ice_reset_vf(vf, 0);
+ }
+ 
+-/**
+- * ice_find_vsi_from_id
+- * @pf: the PF structure to search for the VSI
+- * @id: ID of the VSI it is searching for
+- *
+- * searches for the VSI with the given ID
+- */
+-static struct ice_vsi *ice_find_vsi_from_id(struct ice_pf *pf, u16 id)
+-{
+-	int i;
+-
+-	ice_for_each_vsi(pf, i)
+-		if (pf->vsi[i] && pf->vsi[i]->vsi_num == id)
+-			return pf->vsi[i];
+-
+-	return NULL;
+-}
+-
+ /**
+  * ice_vc_isvalid_vsi_id
+  * @vf: pointer to the VF info
+@@ -544,7 +526,7 @@ bool ice_vc_isvalid_vsi_id(struct ice_vf *vf, u16 vsi_id)
+ 	struct ice_pf *pf = vf->pf;
+ 	struct ice_vsi *vsi;
+ 
+-	vsi = ice_find_vsi_from_id(pf, vsi_id);
++	vsi = ice_find_vsi(pf, vsi_id);
+ 
+ 	return (vsi && (vsi->vf == vf));
+ }
+@@ -559,7 +541,7 @@ bool ice_vc_isvalid_vsi_id(struct ice_vf *vf, u16 vsi_id)
+  */
+ static bool ice_vc_isvalid_q_id(struct ice_vf *vf, u16 vsi_id, u8 qid)
+ {
+-	struct ice_vsi *vsi = ice_find_vsi_from_id(vf->pf, vsi_id);
++	struct ice_vsi *vsi = ice_find_vsi(vf->pf, vsi_id);
+ 	/* allocated Tx and Rx queues should be always equal for VF VSI */
+ 	return (vsi && (qid < vsi->alloc_txq));
+ }
+-- 
+2.27.0
 
-> > ice_fltr_add_mac() was stored to 'status' variable first and
-> > if it was -EEXIST then 'err' remains to be zero.
-> > 
-> > The patch fixes the problem by reset 'err' to zero when
-> > ice_fltr_add_mac() returns -EEXIST.
-
-Again, i'd recommend imperative mood. Besides, good catch!
-
-> > 
-> > Fixes: 2ccc1c1ccc671b ("ice: Remove excess error variables")
-> > Signed-off-by: Ivan Vecera <ivecera@redhat.com>
-> > ---
-> >  drivers/net/ethernet/intel/ice/ice_main.c | 5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
-> > b/drivers/net/ethernet/intel/ice/ice_main.c
-> > index 168a41ea37b8..420558d1cd21 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_main.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-> > @@ -5474,14 +5474,15 @@ static int ice_set_mac_address(struct net_device
-> > *netdev, void *pi)
-> > 
-> >  	/* Add filter for new MAC. If filter exists, return success */
-> >  	err = ice_fltr_add_mac(vsi, mac, ICE_FWD_TO_VSI);
-> > -	if (err == -EEXIST)
-> > +	if (err == -EEXIST) {
-> >  		/* Although this MAC filter is already present in hardware it's
-> >  		 * possible in some cases (e.g. bonding) that dev_addr was
-> >  		 * modified outside of the driver and needs to be restored back
-> >  		 * to this value.
-> >  		 */
-> >  		netdev_dbg(netdev, "filter for MAC %pM already exists\n", mac);
-> > -	else if (err)
-> > +		err = 0;
-> > +	} else if (err)
-> >  		/* error if the new filter addition failed */
-> >  		err = -EADDRNOTAVAIL;
-> > 
-> 
-> Style wise, don't we typically use {} for all branches if its needed on one?
-
-+1, please add braces around second branch as well.
-
-> 
-> I'm ok takin this fix as-is now and doing the {} fix up afterwards if we want to avoid delay.
-> 
-> Thanks,
-> Jake
-> 
-> > --
-> > 2.34.1
-> 
