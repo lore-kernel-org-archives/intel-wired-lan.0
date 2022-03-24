@@ -1,73 +1,72 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 24 Mar 2022 08:33:14 +0000
-Subject: [Intel-wired-lan] [next-queue v2] i40e: Add support for MPLS +
- TSO
-In-Reply-To: <1646270947-92954-1-git-send-email-jdamato@fastly.com>
-References: <1646270947-92954-1-git-send-email-jdamato@fastly.com>
-Message-ID: <BYAPR11MB3367A2FF3FE31B56602F16F6FC199@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Date: Thu, 24 Mar 2022 03:09:25 -0400
+Subject: [Intel-wired-lan] [PATCH net] ice: Clear default forwarding VSI
+ during VSI release
+In-Reply-To: <20220322142554.3253428-1-ivecera@redhat.com>
+References: <20220322142554.3253428-1-ivecera@redhat.com>
+Message-ID: <YjwZJU7PIKCcndC1@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Joe Damato <jdamato@fastly.com>
-> Sent: Thursday, March 3, 2022 6:59 AM
-> To: jdamato at fastly.com; Brandeburg, Jesse <jesse.brandeburg@intel.com>;
-> Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Kubalewski, Arkadiusz
-> <arkadiusz.kubalewski@intel.com>; kuba at kernel.org; intel-wired-
-> lan at lists.osuosl.org
-> Cc: Mike Gallo <mgallo@fastly.com>
-> Subject: [next-queue v2] i40e: Add support for MPLS + TSO
+On Tue, Mar 22, 2022 at 03:25:54PM +0100, Ivan Vecera wrote:
+> VSI is set as default forwarding one when promisc mode is set for
+> PF interface, when PF is switched to switchdev mode or when VF
+> driver asks to enable allmulticast or promisc mode for the VF
+> interface (when vf-true-promisc-support priv flag is off).
+> The third case is buggy because in that case VSI associated with
+> VF remains as default one after VF removal.
 > 
-> This change adds support for TSO of MPLS packets.
+> Reproducer:
+> 1. Create VF
+>    echo 1 > sys/class/net/ens7f0/device/sriov_numvfs
+> 2. Enable allmulticast or promisc mode on VF
+>    ip link set ens7f0v0 allmulticast on
+>    ip link set ens7f0v0 promisc on
+> 3. Delete VF
+>    echo 0 > sys/class/net/ens7f0/device/sriov_numvfs
+> 4. Try to enable promisc mode on PF
+>    ip link set ens7f0 promisc on
 > 
-> In my tests with tcpdump it seems to work. Note this test setup has a 9000
-> byte MTU:
+> Although it looks that promisc mode on PF is enabled the opposite
+> is true because ice_vsi_sync_fltr() responsible for IFF_PROMISC
+> handling first checks if any other VSI is set as default forwarding
+> one and if so the function does not do anything. At this point
+> it is not possible to enable promisc mode on PF without re-probe
+> device.
 > 
-> MPLS (label 100, exp 0, [S], ttl 64) IP srcip.50086 > dstip.1234:
->   Flags [P.], seq 593345:644401, ack 0, win 420,
->   options [nop,nop,TS val 45022534 ecr 1722291395], length 51056
+> To resolve the issue this patch clear default forwarding VSI
+> during ice_vsi_release() when the VSI to be released is the default
+> one.
 > 
-> IP dstip.1234 > srcip.50086: Flags [.], ack 593345, win 122,
->   options [nop,nop,TS val 1722291395 ecr 45022534], length 0
-> 
-> IP dstip.1234 > srcip.50086: Flags [.], ack 602289, win 105,
->   options [nop,nop,TS val 1722291395 ecr 45022534], length 0
-> 
-> IP dstip.1234 > srcip.50086: Flags [.], ack 620177, win 71,
->   options [nop,nop,TS val 1722291395 ecr 45022534], length 0
-> 
-> MPLS (label 100, exp 0, [S], ttl 64) IP srcip.50086 > dstip.1234:
->   Flags [P.], seq 644401:655953, ack 0, win 420,
->   options [nop,nop,TS val 45022534 ecr 1722291395], length 11552
-> 
-> IP dstip.1234 > srcip.50086: Flags [.], ack 638065, win 37,
->   options [nop,nop,TS val 1722291395 ecr 45022534], length 0
-> 
-> IP dstip.1234 > srcip.50086: Flags [.], ack 644401, win 25,
->   options [nop,nop,TS val 1722291395 ecr 45022534], length 0
-> 
-> IP dstip.1234 > srcip.50086: Flags [.], ack 653345, win 8,
->   options [nop,nop,TS val 1722291395 ecr 45022534], length 0
-> 
-> IP dstip.1234 > srcip.50086: Flags [.], ack 655953, win 3,
->   options [nop,nop,TS val 1722291395 ecr 45022534], length 0
-> 
-> v1 -> v2:
-> 	- Restore erroneously deleted code from i40e_tso.
-> 
-> Signed-off-by: Joe Damato <jdamato@fastly.com>
-> Co-developed-by: Mike Gallo <mgallo@fastly.com>
-> Signed-off-by: Mike Gallo <mgallo@fastly.com>
+> Fixes: 01b5e89aab49 ("ice: Add VF promiscuous support")
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 20 ++++++++++--
-> drivers/net/ethernet/intel/i40e/i40e_txrx.c | 47 ++++++++++++++++++-----
-> ------
->  2 files changed, 48 insertions(+), 19 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_lib.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+> index 53256aca27c7..20d755822d43 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+> @@ -3147,6 +3147,8 @@ int ice_vsi_release(struct ice_vsi *vsi)
+>  		}
+>  	}
+>  
+> +	if (ice_is_vsi_dflt_vsi(pf->first_sw, vsi))
+> +		ice_clear_dflt_vsi(pf->first_sw);
+>  	ice_fltr_remove_all(vsi);
+>  	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
+>  	err = ice_rm_vsi_rdma_cfg(vsi->port_info, vsi->idx);
+Thanks for fixing it.
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+> -- 
+> 2.34.1
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
