@@ -1,64 +1,48 @@
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Date: Fri, 25 Mar 2022 10:54:56 +0100
-Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add Inspur Ethernet
- Connection X722 for 10GbE SFP+ support
-Message-ID: <20220325095456.20084-1-mateusz.palczewski@intel.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Fri, 25 Mar 2022 10:23:56 +0000
+Subject: [Intel-wired-lan] [PATCH v4 net-next 1/5] ice: switch: add and
+ use u16[] aliases to ice_adv_lkup_elem::{h, m}_u
+In-Reply-To: <20220321105954.843154-2-alexandr.lobakin@intel.com>
+References: <20220321105954.843154-1-alexandr.lobakin@intel.com>
+ <20220321105954.843154-2-alexandr.lobakin@intel.com>
+Message-ID: <MW3PR11MB4554B661BCDEAAB6F5558C599C1A9@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for Inspur Ethernet Connection X722 for 10GbE SFP+ cards.
-Make possible for the driver to bind to the card.
-
-Testing Hints: no functionality loss for other cards, make sure the
-device loads
-
-Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_common.c | 1 +
- drivers/net/ethernet/intel/i40e/i40e_devids.h | 1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 1 +
- 3 files changed, 3 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 6aefffd..2819e26 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -47,6 +47,7 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
- 		case I40E_DEV_ID_1G_BASE_T_X722:
- 		case I40E_DEV_ID_10G_BASE_T_X722:
- 		case I40E_DEV_ID_SFP_I_X722:
-+		case I40E_DEV_ID_SFP_X722_A:
- 			hw->mac.type = I40E_MAC_X722;
- 			break;
- 		default:
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_devids.h b/drivers/net/ethernet/intel/i40e/i40e_devids.h
-index 1bcb0ec..2610338 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_devids.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_devids.h
-@@ -33,6 +33,7 @@
- #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
- #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
- #define I40E_DEV_ID_SFP_I_X722		0x37D3
-+#define I40E_DEV_ID_SFP_X722_A		0x0DDA
- 
- 
- #endif /* _I40E_DEVIDS_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b7f11fd..c318770 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -77,6 +77,7 @@ static const struct pci_device_id i40e_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_X722), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_X722), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_I_X722), 0},
-+	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_X722_A), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2_A), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_X710_N3000), 0},
--- 
-2.27.0
-
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Alexander Lobakin
+>Sent: Monday, March 21, 2022 4:30 PM
+To: intel-wired-lan@lists.osuosl.org
+>Cc: Szapar-Mudlaw, Martyna <martyna.szapar-mudlaw@intel.com>;
+>netdev at vger.kernel.org; linux-kernel at vger.kernel.org; Jakub Kicinski
+><kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; David S. Miller
+><davem@davemloft.net>
+>Subject: [Intel-wired-lan] [PATCH v4 net-next 1/5] ice: switch: add and use
+>u16[] aliases to ice_adv_lkup_elem::{h, m}_u
+>
+>ice_adv_lkup_elem fields h_u and m_u are being accessed as raw u16 arrays
+>in several places.
+>To reduce cast and braces burden, add permanent array-of-u16 aliases with
+>the same size as the `union ice_prot_hdr` itself via anonymous unions to the
+>actual struct declaration, and just access them directly.
+>
+>This:
+> - removes the need to cast the union to u16[] and then dereference
+>   it each time -> reduces the horizon for potential bugs;
+> - improves -Warray-bounds coverage -- the array size is now known
+>   at compilation time;
+> - addresses cppcheck complaints.
+>
+>Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+>Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>Tested-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+>---
+> drivers/net/ethernet/intel/ice/ice_switch.c | 15 +++++++--------
+>drivers/net/ethernet/intel/ice/ice_switch.h | 12 ++++++++++--
+> 2 files changed, 17 insertions(+), 10 deletions(-)
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
