@@ -1,43 +1,93 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sun, 27 Mar 2022 20:14:07 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix possible overflow in
- LTR decoding
-Message-ID: <20220327171407.3657540-1-sasha.neftin@intel.com>
+From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
+Date: Sun, 27 Mar 2022 14:36:06 +0800
+Subject: [Intel-wired-lan] [PATCH] i40e: i40e_main: fix a missing check on
+ list iterator
+Message-ID: <20220327063606.7315-1-xiam0nd.tong@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When we decode the latency and the max_latency u16 value does not fill
-the required size and could lead to the wrong LTR representation.
-Replace the u16 type with the u32 type and allow corrected LTR
-representation.
+The bug is here:
+	ret = i40e_add_macvlan_filter(hw, ch->seid, vdev->dev_addr, &aq_err);
 
-Fixes: 44a13a5d99c7 ("e1000e: Fix the max snoop/no-snoop latency for 10M")
-Reported-by: James Hutchinson <jahutchinson99@googlemail.com>
-Reported-by: Thorsten Leemhuis <regressions@leemhuis.info>
-Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+The list iterator 'ch' will point to a bogus position containing
+HEAD if the list is empty or no element is found. This case must
+be checked before any use of the iterator, otherwise it will
+lead to a invalid memory access.
+
+To fix this bug, use a new variable 'iter' as the list iterator,
+while use the origin variable 'ch' as a dedicated pointer to
+point to the found element.
+
+Cc: stable at vger.kernel.org
+Fixes: 1d8d80b4e4ff6 ("i40e: Add macvlan support on i40e")
+Signed-off-by: Xiaomeng Tong <xiam0nd.tong@gmail.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 27 +++++++++++----------
+ 1 file changed, 14 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index d60e2016d03c..e6c8e6d5234f 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1009,8 +1009,8 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 31b03fe78d3b..6224c98d275f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7536,41 +7536,42 @@ static int i40e_fwd_ring_up(struct i40e_vsi *vsi, struct net_device *vdev,
+ 			    struct i40e_fwd_adapter *fwd)
  {
- 	u32 reg = link << (E1000_LTRV_REQ_SHIFT + E1000_LTRV_NOSNOOP_SHIFT) |
- 	    link << E1000_LTRV_REQ_SHIFT | E1000_LTRV_SEND;
--	u16 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
--	u16 lat_enc_d = 0;	/* latency decoded */
-+	u32 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
-+	u32 lat_enc_d = 0;	/* latency decoded */
- 	u16 lat_enc = 0;	/* latency encoded */
+ 	int ret = 0, num_tc = 1,  i, aq_err;
+-	struct i40e_channel *ch, *ch_tmp;
++	struct i40e_channel *ch = NULL, *ch_tmp, *iter;
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
  
- 	if (link) {
+-	if (list_empty(&vsi->macvlan_list))
+-		return -EINVAL;
+-
+ 	/* Go through the list and find an available channel */
+-	list_for_each_entry_safe(ch, ch_tmp, &vsi->macvlan_list, list) {
+-		if (!i40e_is_channel_macvlan(ch)) {
+-			ch->fwd = fwd;
++	list_for_each_entry_safe(iter, ch_tmp, &vsi->macvlan_list, list) {
++		if (!i40e_is_channel_macvlan(iter)) {
++			iter->fwd = fwd;
+ 			/* record configuration for macvlan interface in vdev */
+ 			for (i = 0; i < num_tc; i++)
+ 				netdev_bind_sb_channel_queue(vsi->netdev, vdev,
+ 							     i,
+-							     ch->num_queue_pairs,
+-							     ch->base_queue);
+-			for (i = 0; i < ch->num_queue_pairs; i++) {
++							     iter->num_queue_pairs,
++							     iter->base_queue);
++			for (i = 0; i < iter->num_queue_pairs; i++) {
+ 				struct i40e_ring *tx_ring, *rx_ring;
+ 				u16 pf_q;
+ 
+-				pf_q = ch->base_queue + i;
++				pf_q = iter->base_queue + i;
+ 
+ 				/* Get to TX ring ptr */
+ 				tx_ring = vsi->tx_rings[pf_q];
+-				tx_ring->ch = ch;
++				tx_ring->ch = iter;
+ 
+ 				/* Get the RX ring ptr */
+ 				rx_ring = vsi->rx_rings[pf_q];
+-				rx_ring->ch = ch;
++				rx_ring->ch = iter;
+ 			}
++			ch = iter;
+ 			break;
+ 		}
+ 	}
+ 
++	if (!ch)
++		return -EINVAL;
++
+ 	/* Guarantee all rings are updated before we update the
+ 	 * MAC address filter.
+ 	 */
 -- 
-2.30.2
+2.17.1
 
