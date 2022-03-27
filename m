@@ -1,49 +1,43 @@
-From: Szapar-Mudlaw, Martyna <martyna.szapar-mudlaw@intel.com>
-Date: Sat, 26 Mar 2022 12:40:48 +0000
-Subject: [Intel-wired-lan] [PATCH v2 net-next] ice: Add support for
- double vlan in switchdev
-In-Reply-To: <06caaa26-d0ae-989d-d55f-6535ba30a117@intel.com>
-References: <20220325102922.3320-1-martyna.szapar-mudlaw@intel.com>
- <06caaa26-d0ae-989d-d55f-6535ba30a117@intel.com>
-Message-ID: <DM6PR11MB426896E5EA49880819851D19BD1B9@DM6PR11MB4268.namprd11.prod.outlook.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun, 27 Mar 2022 20:14:07 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix possible overflow in
+ LTR decoding
+Message-ID: <20220327171407.3657540-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Anthony,
+When we decode the latency and the max_latency u16 value does not fill
+the required size and could lead to the wrong LTR representation.
+Replace the u16 type with the u32 type and allow corrected LTR
+representation.
 
-I sent fixed v3 version.
+Fixes: 44a13a5d99c7 ("e1000e: Fix the max snoop/no-snoop latency for 10M")
+Reported-by: James Hutchinson <jahutchinson99@googlemail.com>
+Reported-by: Thorsten Leemhuis <regressions@leemhuis.info>
+Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks,
-Martyna
-
------Original Message-----
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com> 
-Sent: 25 marca 2022 21:37
-To: Szapar-Mudlaw, Martyna <martyna.szapar-mudlaw@intel.com>; intel-wired-lan at lists.osuosl.org
-Cc: Wiktor Pilarczyk <wiktor.pilarczyk@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH v2 net-next] ice: Add support for double vlan in switchdev
-
-
-On 3/25/2022 3:29 AM, Martyna Szapar-Mudlaw wrote:+
->   static const struct ice_dummy_pkt_profile ice_dummy_pkt_profiles[] = {
-> +	ICE_PKT_PROFILE(qinq_ipv6_tcp, ICE_PKT_CVLAN |
-> +				       ICE_PKT_VLAN |
-> +				       ICE_PKT_OUTER_IPV6 |
-> +				       ICE_PKT_INNER_TCP),
-> +	ICE_PKT_PROFILE(qinq_ipv6_udp, ICE_PKT_CVLAN |
-> +				       ICE_PKT_VLAN |
-> +				       ICE_PKT_OUTER_IPV6 |
-> +				       ICE_PKT_INNER_UDP),
-> +	ICE_PKT_PROFILE(qinq_ipv6, ICE_PKT_CVLAN |
-> +			           ICE_PKT_VLAN |
-> +				   ICE_PKT_OUTER_IPV6),
-
-There's a spacing issue here:
-
-ERROR: code indent should use tabs where possible
-#261: FILE: drivers/net/ethernet/intel/ice/ice_switch.c:1446:
-+^I^I^I?????????? ICE_PKT_VLAN |$
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index d60e2016d03c..e6c8e6d5234f 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -1009,8 +1009,8 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
+ {
+ 	u32 reg = link << (E1000_LTRV_REQ_SHIFT + E1000_LTRV_NOSNOOP_SHIFT) |
+ 	    link << E1000_LTRV_REQ_SHIFT | E1000_LTRV_SEND;
+-	u16 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
+-	u16 lat_enc_d = 0;	/* latency decoded */
++	u32 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
++	u32 lat_enc_d = 0;	/* latency decoded */
+ 	u16 lat_enc = 0;	/* latency encoded */
+ 
+ 	if (link) {
+-- 
+2.30.2
 
