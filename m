@@ -1,63 +1,58 @@
-From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-Date: Sun, 27 Mar 2022 14:43:44 +0800
-Subject: [Intel-wired-lan] [PATCH] ice: ice_sched: fix an incorrect NULL
- check on list iterator
-Message-ID: <20220327064344.7573-1-xiam0nd.tong@gmail.com>
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+Date: Sun, 27 Mar 2022 19:24:54 +0200
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix possible overflow
+ in LTR decoding
+In-Reply-To: <20220327171407.3657540-1-sasha.neftin@intel.com>
+References: <20220327171407.3657540-1-sasha.neftin@intel.com>
+Message-ID: <4ab2299e-0460-0366-f1e7-851a3ec94dc7@leemhuis.info>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The bugs are here:
-	if (old_agg_vsi_info)
-	if (old_agg_vsi_info && !old_agg_vsi_info->tc_bitmap[0]) {
+On 27.03.22 19:14, Sasha Neftin wrote:
+> When we decode the latency and the max_latency u16 value does not fill
+> the required size and could lead to the wrong LTR representation.
+> Replace the u16 type with the u32 type and allow corrected LTR
+> representation.
+> 
+> Fixes: 44a13a5d99c7 ("e1000e: Fix the max snoop/no-snoop latency for 10M")
+> Reported-by: James Hutchinson <jahutchinson99@googlemail.com>
+> Reported-by: Thorsten Leemhuis <regressions@leemhuis.info>
 
-The list iterator value 'old_agg_vsi_info' will *always* be set
-and non-NULL by list_for_each_entry_safe(), so it is incorrect
-to assume that the iterator value will be NULL if the list is
-empty or no element found (in this case, the check
-'if (old_agg_vsi_info)' will always be true unexpectly).
+Please drop me here (I merely forwarded the report) and instead please
+add a 'Link:' tag pointing to the original report for anyone wanting to
+look into the backstory in the future, as explained in
+'Documentation/process/submitting-patches.rst' and
+'Documentation/process/5.Posting.rst'? E.g. like this:
 
-To fix the bug, use a new variable 'iter' as the list iterator,
-while use the original variable 'old_agg_vsi_info' as a dedicated
-pointer to point to the found element.
+"Link: https://bugzilla.kernel.org/show_bug.cgi?id=215689"
 
-Cc: stable at vger.kernel.org
-Fixes: 37c592062b16d ("ice: remove the VSI info from previous agg")
-Signed-off-by: Xiaomeng Tong <xiam0nd.tong@gmail.com>
----
- drivers/net/ethernet/intel/ice/ice_sched.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+And if the patch is already good to go: could the maintainer please add
+it when applying the patch?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 7947223536e3..fba524148a09 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -2757,6 +2757,7 @@ ice_sched_assoc_vsi_to_agg(struct ice_port_info *pi, u32 agg_id,
- 			   u16 vsi_handle, unsigned long *tc_bitmap)
- {
- 	struct ice_sched_agg_vsi_info *agg_vsi_info, *old_agg_vsi_info = NULL;
-+	struct ice_sched_agg_vsi_info *iter;
- 	struct ice_sched_agg_info *agg_info, *old_agg_info;
- 	struct ice_hw *hw = pi->hw;
- 	int status = 0;
-@@ -2774,11 +2775,13 @@ ice_sched_assoc_vsi_to_agg(struct ice_port_info *pi, u32 agg_id,
- 	if (old_agg_info && old_agg_info != agg_info) {
- 		struct ice_sched_agg_vsi_info *vtmp;
- 
--		list_for_each_entry_safe(old_agg_vsi_info, vtmp,
-+		list_for_each_entry_safe(iter, vtmp,
- 					 &old_agg_info->agg_vsi_list,
- 					 list_entry)
--			if (old_agg_vsi_info->vsi_handle == vsi_handle)
-+			if (iter->vsi_handle == vsi_handle) {
-+				old_agg_vsi_info = iter;
- 				break;
-+			}
- 	}
- 
- 	/* check if entry already exist */
--- 
-2.17.1
+In anyone wonders why I care: there are internal and publicly used tools
+and scripts out there that reply on proper "Link" tags. I don't known
+how many, but there is at least one public tool I'm running that cares:
+regzbot, my regression tracking bot, which I use to track Linux kernel
+regressions and generate the regression reports sent to Linus. Proper
+"Link:" tags allow the bot to automatically connect regression reports
+with fixes being posted or applied to resolve the particular regression
+-- which makes regression tracking a whole lot easier and feasible for
+the Linux kernel. That's why it's a great help for me if people set
+proper "Link" tags.
 
+While at it, let me tell regzbot about this thread:
+#regzbot ^backmonitor:
+https://lore.kernel.org/regressions/6801d0ef-9620-0f61-c107-c2c5524952ef at leemhuis.info/
+
+Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
+
+P.S.: As the Linux kernel's regression tracker I'm getting a lot of
+reports on my table. I can only look briefly into most of them and lack
+knowledge about most of the areas they concern. I thus unfortunately
+will sometimes get things wrong or miss something important. I hope
+that's not the case here; if you think it is, don't hesitate to tell me
+in a public reply, it's in everyone's interest to set the public record
+straight.
