@@ -1,65 +1,48 @@
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Mon, 28 Mar 2022 16:58:28 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] Revert "ice: Hide bus-info
- in ethtool for PRs in switchdev mode"
+Date: Mon, 28 Mar 2022 16:58:27 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 1/2] ice: link representors to
+ PCI device
 In-Reply-To: <20220328145828.10097-1-marcin.szycik@linux.intel.com>
 References: <20220328145828.10097-1-marcin.szycik@linux.intel.com>
-Message-ID: <20220328145828.10097-3-marcin.szycik@linux.intel.com>
+Message-ID: <20220328145828.10097-2-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This reverts commit bfaaba99e680bf82bf2cbf69866c3f37434ff766.
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
-Commit bfaaba99e680 ("ice: Hide bus-info in ethtool for PRs in switchdev
-mode") was a workaround for lshw tool displaying incorrect
-descriptions for port representors and PF in switchdev mode. Now the issue
-has been fixed in the lshw tool itself [1].
+Link port representors to parent PCI device to benefit from
+systemd defined naming scheme.
 
-Removing the workaround can be considered a regression, as the user might
-be running older, unpatched lshw version. However, another important change
-(ice: link representors to PCI device, which improves port representor
-netdev naming with SET_NETDEV_DEV) also causes the same "regression" as
-removing the workaround, i.e. unpatched lshw is able to access bus-info
-information (this time not via ethtool) and the bug can occur. Therefore,
-the workaround no longer prevents the bug and can be removed.
+Example from ip tool:
+ - without linking:
+  eth0 ...
+ - with linking:
+  eth0 ...
+  altname enp24s0f0npf0vf0
 
-[1] https://ezix.org/src/pkg/lshw/commit/9bf4e4c9c1
+The port representor name is being shown in altname, because the name is
+longer than IFNAMSIZ (16) limit. Altname can be used in ip tool.
 
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_repr.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 24cda7e1f916..476bd1c83c87 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -190,19 +190,17 @@ __ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
- 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
- 		 "%x.%02x 0x%x %d.%d.%d", nvm->major, nvm->minor,
- 		 nvm->eetrack, orom->major, orom->build, orom->patch);
-+
-+	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
-+		sizeof(drvinfo->bus_info));
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
+index 848f2adea563..78ee82511329 100644
+--- a/drivers/net/ethernet/intel/ice/ice_repr.c
++++ b/drivers/net/ethernet/intel/ice/ice_repr.c
+@@ -333,6 +333,7 @@ static int ice_repr_add(struct ice_vf *vf)
+ 	repr->netdev->min_mtu = ETH_MIN_MTU;
+ 	repr->netdev->max_mtu = ICE_MAX_MTU;
  
- static void
- ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
- {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
--	struct ice_pf *pf = np->vsi->back;
- 
- 	__ice_get_drvinfo(netdev, drvinfo, np->vsi);
--
--	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
--		sizeof(drvinfo->bus_info));
--
- 	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
- }
- 
++	SET_NETDEV_DEV(repr->netdev, ice_pf_to_dev(vf->pf));
+ 	err = ice_repr_reg_netdev(repr->netdev);
+ 	if (err)
+ 		goto err_netdev;
 -- 
 2.35.1
 
