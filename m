@@ -1,116 +1,83 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Mon, 28 Mar 2022 16:58:26 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 0/2] ice: improve port
- representor naming scheme
-Message-ID: <20220328145828.10097-1-marcin.szycik@linux.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Mon, 28 Mar 2022 17:53:19 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix MAC address setting
+In-Reply-To: <20220325132524.1765342-1-ivecera@redhat.com>
+References: <20220325132524.1765342-1-ivecera@redhat.com>
+Message-ID: <CO1PR11MB508954503C974FD6D9E162FCD61D9@CO1PR11MB5089.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patchset adds support for systemd defined naming scheme for port
-representors, as well as re-enables displaying PCI bus-info in ethtool.
-
-bus-info information has previously been removed from ethtool for port
-representors, as a workaround for a bug in lshw tool, where the tool would
-sometimes display wrong descriptions for port representors/PF. Now the bug
-has been fixed in lshw tool [1].
-
-Removing the workaround can be considered a regression (user might be
-running an older, unpatched version of lshw) (see [2] for discussion).
-However, calling SET_NETDEV_DEV also produces the same effect as removing
-the workaround, i.e. lshw is able to access PCI bus-info (this time not
-via ethtool, but in some other way) and the bug can occur.
-
-Adding SET_NETDEV_DEV is important, as it greatly improves netdev naming -
-- port representors are named based on PF name. Currently port representors
-are named "ethX", which might be confusing, especially when spawning VFs on
-multiple PFs. Furthermore, it's currently harder to determine to which PF
-does a particular port representor belong, as bus-info is not shown in
-ethtool.
-
-Consider the following three cases:
 
 
-Case 1: current code - driver workaround in place, no SET_NETDEV_DEV,
-lshw with or without fix. Port representors are not displayed because they
-don't have bus-info (the workaround), PFs are labelled correctly:
+> -----Original Message-----
+> From: Ivan Vecera <ivecera@redhat.com>
+> Sent: Friday, March 25, 2022 6:25 AM
+> To: netdev at vger.kernel.org
+> Cc: poros <poros@redhat.com>; mschmidt <mschmidt@redhat.com>;
+> Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Jakub
+> Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; moderated
+> list:INTEL ETHERNET DRIVERS <intel-wired-lan@lists.osuosl.org>; open list <linux-
+> kernel at vger.kernel.org>
+> Subject: [PATCH net v2] ice: Fix MAC address setting
+> 
+> Commit 2ccc1c1ccc671b ("ice: Remove excess error variables") merged
+> the usage of 'status' and 'err' variables into single one in
+> function ice_set_mac_address(). Unfortunately this causes
+> a regression when call of ice_fltr_add_mac() returns -EEXIST because
+> this return value does not indicate an error in this case but
+> value of 'err' remains to be -EEXIST till the end of the function
+> and is returned to caller.
+> 
+> Prior mentioned commit this does not happen because return value of
+> ice_fltr_add_mac() was stored to 'status' variable first and
+> if it was -EEXIST then 'err' remains to be zero.
+> 
+> Fix the problem by reset 'err' to zero when ice_fltr_add_mac()
+> returns -EEXIST.
+> 
+> Fixes: 2ccc1c1ccc671b ("ice: Remove excess error variables")
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> ---
 
-$ sudo ./lshw -c net -businfo
-Bus info          Device      Class          Description
-========================================================
-pci at 0000:02:00.0  ens6f0      network        Ethernet Controller E810-XXV for SFP <-- PF
-pci at 0000:02:00.1  ens6f1      network        Ethernet Controller E810-XXV for SFP
-pci at 0000:02:01.0  ens6f0v0    network        Ethernet Adaptive Virtual Function <-- VF
-pci at 0000:02:01.1  ens6f0v1    network        Ethernet Adaptive Virtual Function
-...
+Thanks for the v2. This looks great. Good analysis of how this happened in the commit message, I appreciate that.
 
+Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
 
-Case 2: driver workaround in place, SET_NETDEV_DEV, no lshw fix. Port
-representors have predictable names. lshw is able to get bus-info because
-of SET_NETDEV_DEV and netdevs CAN be mislabelled:
-
-$ sudo ./lshw -c net -businfo
-Bus info          Device           Class          Description
-=============================================================
-pci at 0000:02:00.0  ens6f0npf0vf60   network        Ethernet Controller E810-XXV for SFP <-- mislabelled port representor
-pci at 0000:02:00.1  ens6f1           network        Ethernet Controller E810-XXV for SFP
-pci at 0000:02:01.0  ens6f0v0         network        Ethernet Adaptive Virtual Function
-pci at 0000:02:01.1  ens6f0v1         network        Ethernet Adaptive Virtual Function
-...
-pci at 0000:02:00.0  ens6f0npf0vf26   network        Ethernet interface
-pci at 0000:02:00.0  ens6f0           network        Ethernet interface <-- mislabelled PF
-pci at 0000:02:00.0  ens6f0npf0vf81   network        Ethernet interface
-...
-$ sudo ethtool -i ens6f0npf0vf60
-driver: ice
-...
-bus-info:
-...
-
-Output of lshw would be the same with workaround removed; it does not
-change the fact that lshw labels netdevs incorrectly, while at the same
-time it prevents ethtool from displaying potentially useful data
-(bus-info).
-
-
-Case 3: workaround removed, SET_NETDEV_DEV, lshw fix:
-
-$ sudo ./lshw -c net -businfo
-Bus info          Device           Class          Description
-=============================================================
-pci at 0000:02:00.0  ens6f0npf0vf73   network        Ethernet Controller E810-XXV for SFP
-pci at 0000:02:00.1  ens6f1           network        Ethernet Controller E810-XXV for SFP
-pci at 0000:02:01.0  ens6f0v0         network        Ethernet Adaptive Virtual Function
-pci at 0000:02:01.1  ens6f0v1         network        Ethernet Adaptive Virtual Function
-...
-pci at 0000:02:00.0  ens6f0npf0vf5    network        Ethernet Controller E810-XXV for SFP
-pci at 0000:02:00.0  ens6f0           network        Ethernet Controller E810-XXV for SFP
-pci at 0000:02:00.0  ens6f0npf0vf60   network        Ethernet Controller E810-XXV for SFP
-...
-$ sudo ethtool -i ens6f0npf0vf73
-driver: ice
-...
-bus-info: 0000:02:00.0
-...
-
-In this case poort representors have predictable names, netdevs are not
-mislabelled in lshw, and bus-info is shown in ethtool.
-
-[1] https://ezix.org/src/pkg/lshw/commit/9bf4e4c9c1
-[2] https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20220321144731.3935-1-marcin.szycik@linux.intel.com
-
-Marcin Szycik (1):
-  Revert "ice: Hide bus-info in ethtool for PRs in switchdev mode"
-
-Michal Swiatkowski (1):
-  ice: link representors to PCI device
-
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 8 +++-----
- drivers/net/ethernet/intel/ice/ice_repr.c    | 1 +
- 2 files changed, 4 insertions(+), 5 deletions(-)
-
--- 
-2.35.1
+>  drivers/net/ethernet/intel/ice/ice_main.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
+> b/drivers/net/ethernet/intel/ice/ice_main.c
+> index b588d7995631..d755ce07869f 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -5475,16 +5475,19 @@ static int ice_set_mac_address(struct net_device
+> *netdev, void *pi)
+> 
+>  	/* Add filter for new MAC. If filter exists, return success */
+>  	err = ice_fltr_add_mac(vsi, mac, ICE_FWD_TO_VSI);
+> -	if (err == -EEXIST)
+> +	if (err == -EEXIST) {
+>  		/* Although this MAC filter is already present in hardware it's
+>  		 * possible in some cases (e.g. bonding) that dev_addr was
+>  		 * modified outside of the driver and needs to be restored back
+>  		 * to this value.
+>  		 */
+>  		netdev_dbg(netdev, "filter for MAC %pM already exists\n", mac);
+> -	else if (err)
+> +
+> +		return 0;
+> +	} else if (err) {
+>  		/* error if the new filter addition failed */
+>  		err = -EADDRNOTAVAIL;
+> +	}
+> 
+>  err_update_filters:
+>  	if (err) {
+> --
+> 2.34.1
 
