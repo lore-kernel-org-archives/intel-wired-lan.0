@@ -1,58 +1,65 @@
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Date: Sun, 27 Mar 2022 19:24:54 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Fix possible overflow
- in LTR decoding
-In-Reply-To: <20220327171407.3657540-1-sasha.neftin@intel.com>
-References: <20220327171407.3657540-1-sasha.neftin@intel.com>
-Message-ID: <4ab2299e-0460-0366-f1e7-851a3ec94dc7@leemhuis.info>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Mon, 28 Mar 2022 16:58:28 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 2/2] Revert "ice: Hide bus-info
+ in ethtool for PRs in switchdev mode"
+In-Reply-To: <20220328145828.10097-1-marcin.szycik@linux.intel.com>
+References: <20220328145828.10097-1-marcin.szycik@linux.intel.com>
+Message-ID: <20220328145828.10097-3-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 27.03.22 19:14, Sasha Neftin wrote:
-> When we decode the latency and the max_latency u16 value does not fill
-> the required size and could lead to the wrong LTR representation.
-> Replace the u16 type with the u32 type and allow corrected LTR
-> representation.
-> 
-> Fixes: 44a13a5d99c7 ("e1000e: Fix the max snoop/no-snoop latency for 10M")
-> Reported-by: James Hutchinson <jahutchinson99@googlemail.com>
-> Reported-by: Thorsten Leemhuis <regressions@leemhuis.info>
+This reverts commit bfaaba99e680bf82bf2cbf69866c3f37434ff766.
 
-Please drop me here (I merely forwarded the report) and instead please
-add a 'Link:' tag pointing to the original report for anyone wanting to
-look into the backstory in the future, as explained in
-'Documentation/process/submitting-patches.rst' and
-'Documentation/process/5.Posting.rst'? E.g. like this:
+Commit bfaaba99e680 ("ice: Hide bus-info in ethtool for PRs in switchdev
+mode") was a workaround for lshw tool displaying incorrect
+descriptions for port representors and PF in switchdev mode. Now the issue
+has been fixed in the lshw tool itself [1].
 
-"Link: https://bugzilla.kernel.org/show_bug.cgi?id=215689"
+Removing the workaround can be considered a regression, as the user might
+be running older, unpatched lshw version. However, another important change
+(ice: link representors to PCI device, which improves port representor
+netdev naming with SET_NETDEV_DEV) also causes the same "regression" as
+removing the workaround, i.e. unpatched lshw is able to access bus-info
+information (this time not via ethtool) and the bug can occur. Therefore,
+the workaround no longer prevents the bug and can be removed.
 
-And if the patch is already good to go: could the maintainer please add
-it when applying the patch?
+[1] https://ezix.org/src/pkg/lshw/commit/9bf4e4c9c1
 
-In anyone wonders why I care: there are internal and publicly used tools
-and scripts out there that reply on proper "Link" tags. I don't known
-how many, but there is at least one public tool I'm running that cares:
-regzbot, my regression tracking bot, which I use to track Linux kernel
-regressions and generate the regression reports sent to Linus. Proper
-"Link:" tags allow the bot to automatically connect regression reports
-with fixes being posted or applied to resolve the particular regression
--- which makes regression tracking a whole lot easier and feasible for
-the Linux kernel. That's why it's a great help for me if people set
-proper "Link" tags.
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-While at it, let me tell regzbot about this thread:
-#regzbot ^backmonitor:
-https://lore.kernel.org/regressions/6801d0ef-9620-0f61-c107-c2c5524952ef at leemhuis.info/
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 24cda7e1f916..476bd1c83c87 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -190,19 +190,17 @@ __ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
+ 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
+ 		 "%x.%02x 0x%x %d.%d.%d", nvm->major, nvm->minor,
+ 		 nvm->eetrack, orom->major, orom->build, orom->patch);
++
++	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
++		sizeof(drvinfo->bus_info));
+ }
+ 
+ static void
+ ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+-	struct ice_pf *pf = np->vsi->back;
+ 
+ 	__ice_get_drvinfo(netdev, drvinfo, np->vsi);
+-
+-	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
+-		sizeof(drvinfo->bus_info));
+-
+ 	drvinfo->n_priv_flags = ICE_PRIV_FLAG_ARRAY_SIZE;
+ }
+ 
+-- 
+2.35.1
 
-Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
-
-P.S.: As the Linux kernel's regression tracker I'm getting a lot of
-reports on my table. I can only look briefly into most of them and lack
-knowledge about most of the areas they concern. I thus unfortunately
-will sometimes get things wrong or miss something important. I hope
-that's not the case here; if you think it is, don't hesitate to tell me
-in a public reply, it's in everyone's interest to set the public record
-straight.
