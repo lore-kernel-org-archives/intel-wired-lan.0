@@ -1,77 +1,44 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Wed, 30 Mar 2022 19:00:46 +0200
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix logic of getting XSK
- pool associated with Tx queue
-In-Reply-To: <MWHPR11MB0062B06CAE27C58EEE54F162E41F9@MWHPR11MB0062.namprd11.prod.outlook.com>
-References: <20220329102752.1481125-1-ivecera@redhat.com>
- <YkL0wfgyCq5s8vdu@boxer> <20220329195522.63d332fb@ceranb>
- <MWHPR11MB0062B06CAE27C58EEE54F162E41F9@MWHPR11MB0062.namprd11.prod.outlook.com>
-Message-ID: <20220330170046.3604787-1-alexandr.lobakin@intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Wed, 30 Mar 2022 17:28:15 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] Revert "iavf: Fix deadlock
+ occurrence during resetting VF interface"
+In-Reply-To: <20220324131915.13929-1-mateusz.palczewski@intel.com>
+References: <20220324131915.13929-1-mateusz.palczewski@intel.com>
+Message-ID: <DM8PR11MB562180FA88B783E20A485284AB1F9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alice Michael <alice.michael@intel.com>
-Date: Wed, 30 Mar 2022 16:47:18 +0000
 
-> > -----Original Message-----
-> > From: Ivan Vecera <ivecera@redhat.com>
-> > Sent: Tuesday, March 29, 2022 10:55 AM
-> > To: Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
-> > Cc: netdev at vger.kernel.org; poros <poros@redhat.com>; mschmidt
-> > <mschmidt@redhat.com>; Brandeburg, Jesse
-> > <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> > <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
-> > Jakub Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>;
-> > Alexei Starovoitov <ast@kernel.org>; Daniel Borkmann
-> > <daniel@iogearbox.net>; Jesper Dangaard Brouer <hawk@kernel.org>; John
-> > Fastabend <john.fastabend@gmail.com>; Andrii Nakryiko
-> > <andrii@kernel.org>; Martin KaFai Lau <kafai@fb.com>; Song Liu
-> > <songliubraving@fb.com>; Yonghong Song <yhs@fb.com>; KP Singh
-> > <kpsingh@kernel.org>; Jeff Kirsher <jeffrey.t.kirsher@intel.com>; Krzysztof
-> > Kazimierczak <krzysztof.kazimierczak@intel.com>; Lobakin, Alexandr
-> > <alexandr.lobakin@intel.com>; moderated list:INTEL ETHERNET DRIVERS
-> > <intel-wired-lan@lists.osuosl.org>; open list <linux-kernel@vger.kernel.org>;
-> > open list:XDP (eXpress Data Path) <bpf@vger.kernel.org>
-> > Subject: Re: [PATCH net] ice: Fix logic of getting XSK pool associated with Tx
-> > queue
-> > 
-> > On Tue, 29 Mar 2022 14:00:01 +0200
-> > Maciej Fijalkowski <maciej.fijalkowski@intel.com> wrote:
-> > 
-> > > Thanks for this fix! I did exactly the same patch yesterday and it's
-> > > already applied to bpf tree:
-> > >
-> > > https://lore.kernel.org/bpf/20220328142123.170157-5-maciej.fijalkowski
-> > > @intel.com/T/#u
-> > >
-> > > Maciej
-> > 
-> > Thanks for info... Nice human race condition ;-)
-> > 
-> > I.
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Mateusz Palczewski
+> Sent: Thursday, March 24, 2022 2:19 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v1] Revert "iavf: Fix deadlock
+> occurrence during resetting VF interface"
 > 
-> I'm covering for Tony this week maintaining this tree.  He let me know there were a few patches you had to send Ivan and I was waiting on this one.  If I'm following correctly, this one will be dropped and the other ones are ready to be sent now to net then?
-
-Yes, this one is beaten and the net tree already contains it[0].
-There are still 3 Ivan's fixes not applied yet:
- * [1]
- * [2]
- * [3]
-
-I'm wondering if it's worth to pass them through dev-queue since
-they're urgent and have been tested already in 2 companies? They
-could go directly to -net and make it into RC1.
-
+> This change caused a regression with resetting while changing network
+> namespaces. By clearing the IFF_UP flag, the kernel now thinks it has fully
+> closed the device.
 > 
-> Alice.
+> This reverts commit 0cc318d2e8408bc0ffb4662a0c3e5e57005ac6ff.
+> 
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf_main.c | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 0e178a0a..310fd57 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -2706,7 +2706,6 @@ static void iavf_reset_task(struct work_struct
 
-[0] https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net.git/commit/?id=1ac2524de7b366633fc336db6c94062768d0ab03
-[1] https://lore.kernel.org/netdev/20220322142554.3253428-1-ivecera at redhat.com
-[2] https://lore.kernel.org/netdev/20220325132524.1765342-1-ivecera at redhat.com
-[3] https://lore.kernel.org/netdev/20220325132819.1767050-1-ivecera at redhat.com
 
-Thanks,
-Al
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
