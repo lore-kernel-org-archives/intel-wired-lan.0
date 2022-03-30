@@ -1,58 +1,54 @@
-From: Shannon Nelson <snelson@pensando.io>
-Date: Wed, 30 Mar 2022 09:13:21 -0700
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: ensure IPsec VF<->PF
- compatibility
-In-Reply-To: <3702fad8a016170947da5f3c521a9251cf0f4a22.1648637865.git.leonro@nvidia.com>
-References: <3702fad8a016170947da5f3c521a9251cf0f4a22.1648637865.git.leonro@nvidia.com>
-Message-ID: <b201a3ed-5698-4e91-adc9-34c938e43668@pensando.io>
+From: Michael, Alice <alice.michael@intel.com>
+Date: Wed, 30 Mar 2022 16:47:18 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix logic of getting XSK
+ pool associated with Tx queue
+In-Reply-To: <20220329195522.63d332fb@ceranb>
+References: <20220329102752.1481125-1-ivecera@redhat.com>
+ <YkL0wfgyCq5s8vdu@boxer> <20220329195522.63d332fb@ceranb>
+Message-ID: <MWHPR11MB0062B06CAE27C58EEE54F162E41F9@MWHPR11MB0062.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 3/30/22 4:01 AM, Leon Romanovsky wrote:
-> From: Leon Romanovsky <leonro@nvidia.com>
->
-> The VF driver can forward any IPsec flags and such makes the function
-> is not extendable and prone to backward/forward incompatibility.
->
-> If new software runs on VF, it won't know that PF configured something
-> completely different as it "knows" only XFRM_OFFLOAD_INBOUND flag.
->
-> Fixes: eda0333ac293 ("ixgbe: add VF IPsec management")
-> Reviewed-by: Raed Salem <raeds@nvidia.com>
-> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
-> ---
-> There is no simple fix for this VF/PF incompatibility as long as FW
-> doesn't filter/decline unsupported options when convey mailbox from VF
-> to PF.
-> ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> index e596e1a9fc75..236f244e3f65 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> @@ -903,7 +903,9 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
->   	/* Tx IPsec offload doesn't seem to work on this
->   	 * device, so block these requests for now.
->   	 */
-> -	if (!(sam->flags & XFRM_OFFLOAD_INBOUND)) {
-> +	sam->flags = sam->flags & ~XFRM_OFFLOAD_IPV6;
-> +	if (!(sam->flags & XFRM_OFFLOAD_INBOUND) ||
-> +	    sam->flags & ~XFRM_OFFLOAD_INBOUND) {
+> -----Original Message-----
+> From: Ivan Vecera <ivecera@redhat.com>
+> Sent: Tuesday, March 29, 2022 10:55 AM
+> To: Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
+> Cc: netdev at vger.kernel.org; poros <poros@redhat.com>; mschmidt
+> <mschmidt@redhat.com>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
+> Jakub Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>;
+> Alexei Starovoitov <ast@kernel.org>; Daniel Borkmann
+> <daniel@iogearbox.net>; Jesper Dangaard Brouer <hawk@kernel.org>; John
+> Fastabend <john.fastabend@gmail.com>; Andrii Nakryiko
+> <andrii@kernel.org>; Martin KaFai Lau <kafai@fb.com>; Song Liu
+> <songliubraving@fb.com>; Yonghong Song <yhs@fb.com>; KP Singh
+> <kpsingh@kernel.org>; Jeff Kirsher <jeffrey.t.kirsher@intel.com>; Krzysztof
+> Kazimierczak <krzysztof.kazimierczak@intel.com>; Lobakin, Alexandr
+> <alexandr.lobakin@intel.com>; moderated list:INTEL ETHERNET DRIVERS
+> <intel-wired-lan@lists.osuosl.org>; open list <linux-kernel@vger.kernel.org>;
+> open list:XDP (eXpress Data Path) <bpf@vger.kernel.org>
+> Subject: Re: [PATCH net] ice: Fix logic of getting XSK pool associated with Tx
+> queue
+> 
+> On Tue, 29 Mar 2022 14:00:01 +0200
+> Maciej Fijalkowski <maciej.fijalkowski@intel.com> wrote:
+> 
+> > Thanks for this fix! I did exactly the same patch yesterday and it's
+> > already applied to bpf tree:
+> >
+> > https://lore.kernel.org/bpf/20220328142123.170157-5-maciej.fijalkowski
+> > @intel.com/T/#u
+> >
+> > Maciej
+> 
+> Thanks for info... Nice human race condition ;-)
+> 
+> I.
 
-So after stripping the IPV6 flag, you're checking to be sure that 
-INBOUND is the only flag enabled, right?
-Could you use
- ??? if (sam->flags != XFRM_OFFLOAD_INBOUND) {
-instead?
+I'm covering for Tony this week maintaining this tree.  He let me know there were a few patches you had to send Ivan and I was waiting on this one.  If I'm following correctly, this one will be dropped and the other ones are ready to be sent now to net then?
 
-sln
-
->   		err = -EOPNOTSUPP;
->   		goto err_out;
->   	}
-
+Alice.
