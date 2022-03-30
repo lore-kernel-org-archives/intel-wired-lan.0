@@ -1,48 +1,71 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Wed, 30 Mar 2022 14:01:44 +0300
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: ensure IPsec VF<->PF
- compatibility
-Message-ID: <3702fad8a016170947da5f3c521a9251cf0f4a22.1648637865.git.leonro@nvidia.com>
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+Date: Wed, 30 Mar 2022 14:18:35 +0200
+Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix MAC address setting
+In-Reply-To: <CO1PR11MB508954503C974FD6D9E162FCD61D9@CO1PR11MB5089.namprd11.prod.outlook.com>
+References: <20220325132524.1765342-1-ivecera@redhat.com>
+ <CO1PR11MB508954503C974FD6D9E162FCD61D9@CO1PR11MB5089.namprd11.prod.outlook.com>
+Message-ID: <20220330121835.2737360-1-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Leon Romanovsky <leonro@nvidia.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 28 Mar 2022 17:53:19 +0000
 
-The VF driver can forward any IPsec flags and such makes the function
-is not extendable and prone to backward/forward incompatibility.
+Hey netdev maintainers,
 
-If new software runs on VF, it won't know that PF configured something
-completely different as it "knows" only XFRM_OFFLOAD_INBOUND flag.
+> > -----Original Message-----
+> > From: Ivan Vecera <ivecera@redhat.com>
+> > Sent: Friday, March 25, 2022 6:25 AM
+> > To: netdev at vger.kernel.org
+> > Cc: poros <poros@redhat.com>; mschmidt <mschmidt@redhat.com>;
+> > Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> > <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Jakub
+> > Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; moderated
+> > list:INTEL ETHERNET DRIVERS <intel-wired-lan@lists.osuosl.org>; open list <linux-
+> > kernel at vger.kernel.org>
+> > Subject: [PATCH net v2] ice: Fix MAC address setting
+> > 
+> > Commit 2ccc1c1ccc671b ("ice: Remove excess error variables") merged
+> > the usage of 'status' and 'err' variables into single one in
+> > function ice_set_mac_address(). Unfortunately this causes
+> > a regression when call of ice_fltr_add_mac() returns -EEXIST because
+> > this return value does not indicate an error in this case but
+> > value of 'err' remains to be -EEXIST till the end of the function
+> > and is returned to caller.
+> > 
+> > Prior mentioned commit this does not happen because return value of
+> > ice_fltr_add_mac() was stored to 'status' variable first and
+> > if it was -EEXIST then 'err' remains to be zero.
+> > 
+> > Fix the problem by reset 'err' to zero when ice_fltr_add_mac()
+> > returns -EEXIST.
+> > 
+> > Fixes: 2ccc1c1ccc671b ("ice: Remove excess error variables")
+> > Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> > ---
+> 
+> Thanks for the v2. This looks great. Good analysis of how this happened in the commit message, I appreciate that.
+> 
+> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
 
-Fixes: eda0333ac293 ("ixgbe: add VF IPsec management")
-Reviewed-by: Raed Salem <raeds@nvidia.com>
-Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
----
-There is no simple fix for this VF/PF incompatibility as long as FW
-doesn't filter/decline unsupported options when convey mailbox from VF
-to PF.
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+This is an urgent fix, so we would like it to go through -net, not
+IWL.
+It has this Reviewed-by, and also
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index e596e1a9fc75..236f244e3f65 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -903,7 +903,9 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
- 	/* Tx IPsec offload doesn't seem to work on this
- 	 * device, so block these requests for now.
- 	 */
--	if (!(sam->flags & XFRM_OFFLOAD_INBOUND)) {
-+	sam->flags = sam->flags & ~XFRM_OFFLOAD_IPV6;
-+	if (!(sam->flags & XFRM_OFFLOAD_INBOUND) ||
-+	    sam->flags & ~XFRM_OFFLOAD_INBOUND) {
- 		err = -EOPNOTSUPP;
- 		goto err_out;
- 	}
--- 
-2.35.1
+Acked-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 
+> 
+> >  drivers/net/ethernet/intel/ice/ice_main.c | 7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > 
+
+--- 8< ---
+
+> > --
+> > 2.34.1
+
+Thanks,
+Al
