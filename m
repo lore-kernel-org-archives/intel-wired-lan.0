@@ -1,8 +1,8 @@
 From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Wed, 30 Mar 2022 19:50:36 +0000
+Date: Wed, 30 Mar 2022 20:05:51 +0000
 Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix error when changing ring
  parameters on ice PF
-Message-ID: <20220330195036.1319631-1-michal.maloszewski@intel.com>
+Message-ID: <20220330200551.1319989-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,10 +20,6 @@ state. If VF is currently resetting or queues are disabled for the VF
 return with EAGAIN error.
 
 Fixes: d732a1844507 ("i40evf: fix crash when changing ring sizes")
-Title: iavf: Fix error when changing ring parameters on ice PF
-Change-type: DefectResolution
-HSDES-Number: 18021295299
-HSDES-Tenant: server_platf_lan.bug
 Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
 ---
