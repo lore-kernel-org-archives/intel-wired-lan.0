@@ -1,48 +1,51 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Wed, 30 Mar 2022 17:28:53 +0000
-Subject: [Intel-wired-lan] [PATCH intel-next] ice: introduce common
- helper for retrieving VSI by vsi_num
-In-Reply-To: <20220324114907.73459-1-maciej.fijalkowski@intel.com>
-References: <20220324114907.73459-1-maciej.fijalkowski@intel.com>
-Message-ID: <DM8PR11MB56216945A750624D043AF8EAAB1F9@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Michal Maloszewski <michal.maloszewski@intel.com>
+Date: Wed, 30 Mar 2022 19:50:36 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix error when changing ring
+ parameters on ice PF
+Message-ID: <20220330195036.1319631-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Reset is triggered when ring parameters are being changed through
+ethtool and queues are reconfigured for VF's VSI. If ring is changed
+again immediately, then the next reset could be executed before
+queues could be properly reinitialized on VF's VSI. It caused ice PF
+to mess up the VSI resource tree.
 
+Add a check in iavf_set_ringparam for adapter and VF's queue
+state. If VF is currently resetting or queues are disabled for the VF
+return with EAGAIN error.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Maciej Fijalkowski
-> Sent: Thursday, March 24, 2022 12:49 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; kuba at kernel.org; bpf at vger.kernel.org;
-> pabeni at redhat.com; davem at davemloft.net; Karlsson, Magnus
-> <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH intel-next] ice: introduce common helper
-> for retrieving VSI by vsi_num
-> 
-> Both ice_idc.c and ice_virtchnl.c carry their own implementation of a helper
-> function that is looking for a given VSI based on provided vsi_num. Their
-> functionality is the same, so let's introduce the common function in ice.h that
-> both of the mentioned sites will use.
-> 
-> This is a strictly cleanup thing, no functionality is changed.
-> 
-> Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice.h          | 15 +++++++++++++
->  drivers/net/ethernet/intel/ice/ice_idc.c      | 15 -------------
->  drivers/net/ethernet/intel/ice/ice_virtchnl.c | 22 ++-----------------
->  3 files changed, 17 insertions(+), 35 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice.h
-> b/drivers/net/ethernet/intel/ice/ice.h
-> index e9aa1fb43c3a..a541446b96e8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice.h
-> +++ b/drivers/net/ethernet/intel/ice/ice.h
+Fixes: d732a1844507 ("i40evf: fix crash when changing ring sizes")
+Title: iavf: Fix error when changing ring parameters on ice PF
+Change-type: DefectResolution
+HSDES-Number: 18021295299
+HSDES-Tenant: server_platf_lan.bug
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 3bb56714beb0..762ef6fb5585 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -631,6 +631,11 @@ static int iavf_set_ringparam(struct net_device *netdev,
+ 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+ 		return -EINVAL;
+ 
++	if (adapter->state == __IAVF_RESETTING ||
++	    adapter->state == __IAVF_RUNNING &&
++	    (adapter->flags & IAVF_FLAG_QUEUES_DISABLED))
++		return -EAGAIN;
++
+ 	if (ring->tx_pending > IAVF_MAX_TXD ||
+ 	    ring->tx_pending < IAVF_MIN_TXD ||
+ 	    ring->rx_pending > IAVF_MAX_RXD ||
+-- 
+2.27.0
+
