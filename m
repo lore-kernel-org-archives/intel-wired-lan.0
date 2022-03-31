@@ -1,34 +1,21 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 31 Mar 2022 20:02:43 +0000
+From: Brett Creeley <brett@pensando.io>
+Date: Thu, 31 Mar 2022 09:32:31 -0700
 Subject: [Intel-wired-lan] [PATCH net] ice: Fix incorrect locking in
  ice_vc_process_vf_msg()
-In-Reply-To: <20220331174832.68e17c4a@ceranb>
+In-Reply-To: <YkWp5JJ9Sp6UCTw7@boxer>
 References: <20220331105005.2580771-1-ivecera@redhat.com>
- <YkWpNVXYEBo/u3dm@boxer> <20220331174832.68e17c4a@ceranb>
-Message-ID: <CO1PR11MB50891AEAC5604FD63BEB5C76D6E19@CO1PR11MB5089.namprd11.prod.outlook.com>
+ <YkWpNVXYEBo/u3dm@boxer> <YkWp5JJ9Sp6UCTw7@boxer>
+Message-ID: <CAFWUkrTzE87bduD431nu11biHi78XFitUWQfiwcU6_4UPU9FBg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Ivan Vecera <ivecera@redhat.com>
-> Sent: Thursday, March 31, 2022 8:49 AM
-> To: Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
-> Cc: netdev at vger.kernel.org; moderated list:INTEL ETHERNET DRIVERS <intel-
-> wired-lan at lists.osuosl.org>; mschmidt <mschmidt@redhat.com>; Brett Creeley
-> <brett.creeley@intel.com>; open list <linux-kernel@vger.kernel.org>; poros
-> <poros@redhat.com>; Jakub Kicinski <kuba@kernel.org>; Paolo Abeni
-> <pabeni@redhat.com>; David S. Miller <davem@davemloft.net>
-> Subject: Re: [Intel-wired-lan] [PATCH net] ice: Fix incorrect locking in
-> ice_vc_process_vf_msg()
-> 
-> On Thu, 31 Mar 2022 15:14:29 +0200
-> Maciej Fijalkowski <maciej.fijalkowski@intel.com> wrote:
-> 
+On Thu, Mar 31, 2022 at 6:17 AM Maciej Fijalkowski
+<maciej.fijalkowski@intel.com> wrote:
+>
+> On Thu, Mar 31, 2022 at 03:14:32PM +0200, Maciej Fijalkowski wrote:
 > > On Thu, Mar 31, 2022 at 12:50:04PM +0200, Ivan Vecera wrote:
 > > > Usage of mutex_trylock() in ice_vc_process_vf_msg() is incorrect
 > > > because message sent from VF is ignored and never processed.
@@ -41,126 +28,58 @@ List-ID: <intel-wired-lan.osuosl.org>
 > >
 > > Specifically, what is the case that ignoring a particular message when
 > > mutex is already held is a broken behavior?
-> 
-> Reproducer:
-> 
-> <code>
-> #!/bin/sh
-> 
-> set -xe
-> 
-> PF="ens7f0"
-> VF="${PF}v0"
-> 
-> echo 1 > /sys/class/net/${PF}/device/sriov_numvfs
-> sleep 2
-> 
-> ip link set ${VF} up
-> ip addr add 172.30.29.11/24 dev ${VF}
-> 
-> while true; do
-> 
-> # Set VF to be trusted
-> ip link set ${PF} vf 0 trust on
-> 
-> # Ping server again
-> ping -c5 172.30.29.2 || {
->         echo Ping failed
->         ip link show dev ${VF} # <- No carrier here
->         break
-> }
-> 
-> ip link set ${PF} vf 0 trust off
-> sleep 1
-> 
-> done
-> 
-> echo 0 > /sys/class/net/${PF}/device/sriov_numvfs
-> </code>
-> 
-> <sample>
-> [root at wsfd-advnetlab150 ~]# uname -r
-> 5.17.0+ # Current net.git HEAD
-> [root at wsfd-advnetlab150 ~]# ./repro_simple.sh
-> + PF=ens7f0
-> + VF=ens7f0v0
-> + echo 1
-> + sleep 2
-> + ip link set ens7f0v0 up
-> + ip addr add 172.30.29.11/24 dev ens7f0v0
-> + true
-> + ip link set ens7f0 vf 0 trust on
-> + ping -c5 172.30.29.2
-> PING 172.30.29.2 (172.30.29.2) 56(84) bytes of data.
-> 64 bytes from 172.30.29.2: icmp_seq=2 ttl=64 time=0.820 ms
-> 64 bytes from 172.30.29.2: icmp_seq=3 ttl=64 time=0.142 ms
-> 64 bytes from 172.30.29.2: icmp_seq=4 ttl=64 time=0.128 ms
-> 64 bytes from 172.30.29.2: icmp_seq=5 ttl=64 time=0.129 ms
-> 
-> --- 172.30.29.2 ping statistics ---
-> 5 packets transmitted, 4 received, 20% packet loss, time 4110ms
-> rtt min/avg/max/mdev = 0.128/0.304/0.820/0.298 ms
-> + ip link set ens7f0 vf 0 trust off
-> + sleep 1
-> + true
-> + ip link set ens7f0 vf 0 trust on
-> + ping -c5 172.30.29.2
-> PING 172.30.29.2 (172.30.29.2) 56(84) bytes of data.
-> From 172.30.29.11 icmp_seq=1 Destination Host Unreachable
-> From 172.30.29.11 icmp_seq=2 Destination Host Unreachable
-> From 172.30.29.11 icmp_seq=3 Destination Host Unreachable
-> 
-> --- 172.30.29.2 ping statistics ---
-> 5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4125ms
-> pipe 3
-> + echo Ping failed
-> Ping failed
-> + ip link show dev ens7f0v0
-> 20: ens7f0v0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq
-> state DOWN mode DEFAULT group default qlen 1000
->     link/ether de:69:e3:a5:68:b6 brd ff:ff:ff:ff:ff:ff
->     altname enp202s0f0v0
-> + break
-> + echo 0
-> 
-> [root at wsfd-advnetlab150 ~]# dmesg | tail -8
-> [  220.265891] iavf 0000:ca:01.0: Reset indication received from the PF
-> [  220.272250] iavf 0000:ca:01.0: Scheduling reset task
-> [  220.277217] iavf 0000:ca:01.0: Hardware reset detected
-> [  220.292854] ice 0000:ca:00.0: VF 0 is now trusted
-> [  220.295027] ice 0000:ca:00.0: VF 0 is being configured in another context that
-> will trigger a VFR, so there is no need to handle this message
-> [  234.445819] iavf 0000:ca:01.0: PF returned error -64 (IAVF_NOT_SUPPORTED)
-> to our request 9
-> [  234.466827] iavf 0000:ca:01.0: Failed to delete MAC filter, error
-> IAVF_NOT_SUPPORTED
-> [  234.474574] iavf 0000:ca:01.0: Remove device
-> </sample>
-> 
-> User set VF to be trusted so .ndo_set_vf_trust (ice_set_vf_trust) is called.
-> Function ice_set_vf_trust() takes vf->cfg_lock and calls ice_vc_reset_vf() that
-> sends message to iavf that initiates reset task. During this reset task iavf sends
-> config messages to ice. These messages are handled in ice_service_task() context
-> via ice_clean_adminq_subtask() -> __ice_clean_ctrlq() ->
-> ice_vc_process_vf_msg().
+>
+> Uh oh, let's
+> CC: Brett Creeley <brett@pensando.io>
 
-Right. Because the reset isn't finished in the PF by the time that the caller starts sending messages back.
+My concern here is that we don't want to handle messages
+from the context of the "previous" VF configuration if that
+makes sense.
 
-I also think that this could be buggy if cfg_lock is held elsewhere too (though reset is the most likely problem).
+It might be best to grab the cfg_lock before doing any
+message/VF validating in ice_vc_process_vf_msg() to
+make sure all of the checks are done under the cfg_lock.
 
-Especially since the recent changes we did in ice to hold cfg_lock in more places to protect against concurrently configuring VFs. I think I agree with Ivans change (though perhaps we should re-test some cases for why we made this a try lock originally).
+CC'ing Jake so he can provide some input as
+well.
 
-The only other concern was mentioned in a different message by Brett. Perhaps we also want to cancel any outstanding messages from the VF when we start a reset (since we're going to reset the VF and we don't really want to process any of its messages that were issued before the reset).
-
-Thanks,
-Jake
-
-> 
-> Function ice_vc_process_vf_msg() tries to take vf->cfg_lock but this can be locked
-> from ice_set_vf_trust() yet (as in sample above). The lock attempt failed so the
-> function
-> returns, message is not processed.
-> 
-> Thanks,
-> Ivan
-
+>
+> >
+> > > mutex is used to prevent races between VF related NDOs and
+> > > handlers processing request messages from VF and these handlers
+> > > are running in ice_service_task() context.
+> > >
+> > > Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
+> > > Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> > > ---
+> > >  drivers/net/ethernet/intel/ice/ice_virtchnl.c | 10 +---------
+> > >  1 file changed, 1 insertion(+), 9 deletions(-)
+> > >
+> > > diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> > > index 3f1a63815bac..9bf5bb008128 100644
+> > > --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> > > +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> > > @@ -3660,15 +3660,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+> > >             return;
+> > >     }
+> > >
+> > > -   /* VF is being configured in another context that triggers a VFR, so no
+> > > -    * need to process this message
+> > > -    */
+> > > -   if (!mutex_trylock(&vf->cfg_lock)) {
+> > > -           dev_info(dev, "VF %u is being configured in another context that will trigger a VFR, so there is no need to handle this message\n",
+> > > -                    vf->vf_id);
+> > > -           ice_put_vf(vf);
+> > > -           return;
+> > > -   }
+> > > +   mutex_lock(&vf->cfg_lock);
+> > >
+> > >     switch (v_opcode) {
+> > >     case VIRTCHNL_OP_VERSION:
+> > > --
+> > > 2.34.1
+> > >
+> > > _______________________________________________
+> > > Intel-wired-lan mailing list
+> > > Intel-wired-lan at osuosl.org
+> > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
