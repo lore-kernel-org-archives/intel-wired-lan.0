@@ -1,45 +1,64 @@
-From: Nagaraju, Shwetha <shwetha.nagaraju@intel.com>
-Date: Thu, 31 Mar 2022 13:01:49 +0000
-Subject: [Intel-wired-lan] [PATCH intel-net 1/3] ice: synchronize_rcu()
- when terminating rings
-In-Reply-To: <20220317183629.340350-2-maciej.fijalkowski@intel.com>
-References: <20220317183629.340350-1-maciej.fijalkowski@intel.com>
- <20220317183629.340350-2-maciej.fijalkowski@intel.com>
-Message-ID: <MW4PR11MB58223B3518AB85AE56ABEA8E90E19@MW4PR11MB5822.namprd11.prod.outlook.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Thu, 31 Mar 2022 15:14:29 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix incorrect locking in
+ ice_vc_process_vf_msg()
+In-Reply-To: <20220331105005.2580771-1-ivecera@redhat.com>
+References: <20220331105005.2580771-1-ivecera@redhat.com>
+Message-ID: <YkWpNVXYEBo/u3dm@boxer>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Thu, Mar 31, 2022 at 12:50:04PM +0200, Ivan Vecera wrote:
+> Usage of mutex_trylock() in ice_vc_process_vf_msg() is incorrect
+> because message sent from VF is ignored and never processed.
+> 
+> Use mutex_lock() instead to fix the issue. It is safe because this
 
+We need to know what is *the* issue in the first place.
+Could you please provide more context what is being fixed to the readers
+that don't have an access to bugzilla?
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Maciej Fijalkowski
-> Sent: Friday, March 18, 2022 12:06 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; kuba at kernel.org; bpf at vger.kernel.org;
-> davem at davemloft.net; Karlsson, Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH intel-net 1/3] ice: synchronize_rcu() when
-> terminating rings
+Specifically, what is the case that ignoring a particular message when
+mutex is already held is a broken behavior?
+
+> mutex is used to prevent races between VF related NDOs and
+> handlers processing request messages from VF and these handlers
+> are running in ice_service_task() context.
 > 
-> Unfortunately, the ice driver doesn't respect the RCU critical section that XSK
-> wakeup is surrounded with. To fix this, add synchronize_rcu() calls to paths
-> that destroy resources that might be in use.
-> 
-> This was addressed in other AF_XDP ZC enabled drivers, for reference see
-> for example commit b3873a5be757 ("net/i40e: Fix concurrency issues
-> between config flow and XSK")
-> 
-> Fixes: efc2214b6047 ("ice: Add support for XDP")
-> Fixes: 2d4238f55697 ("ice: Add support for AF_XDP")
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice.h      | 2 +-
->  drivers/net/ethernet/intel/ice/ice_main.c | 4 +++-
-> drivers/net/ethernet/intel/ice/ice_xsk.c  | 4 +++-
->  3 files changed, 7 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/ice/ice_virtchnl.c | 10 +---------
+>  1 file changed, 1 insertion(+), 9 deletions(-)
 > 
-Tested-by: Shwetha Nagaraju <Shwetha.nagaraju@intel.com>
-
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> index 3f1a63815bac..9bf5bb008128 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> @@ -3660,15 +3660,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+>  		return;
+>  	}
+>  
+> -	/* VF is being configured in another context that triggers a VFR, so no
+> -	 * need to process this message
+> -	 */
+> -	if (!mutex_trylock(&vf->cfg_lock)) {
+> -		dev_info(dev, "VF %u is being configured in another context that will trigger a VFR, so there is no need to handle this message\n",
+> -			 vf->vf_id);
+> -		ice_put_vf(vf);
+> -		return;
+> -	}
+> +	mutex_lock(&vf->cfg_lock);
+>  
+>  	switch (v_opcode) {
+>  	case VIRTCHNL_OP_VERSION:
+> -- 
+> 2.34.1
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
