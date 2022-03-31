@@ -1,47 +1,50 @@
-From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Thu, 31 Mar 2022 11:15:26 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix error when changing ring
- parameters on ice PF
-Message-ID: <20220331111526.1333801-1-michal.maloszewski@intel.com>
+From: Nagaraju, Shwetha <shwetha.nagaraju@intel.com>
+Date: Thu, 31 Mar 2022 10:21:57 +0000
+Subject: [Intel-wired-lan] [PATCH intel-next] ice: xsk: check if Rx ring
+ was filled up to the end
+In-Reply-To: <20220317175727.340251-1-maciej.fijalkowski@intel.com>
+References: <20220317175727.340251-1-maciej.fijalkowski@intel.com>
+Message-ID: <MW4PR11MB582268F689B8EC10514112B090E19@MW4PR11MB5822.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Reset is triggered when ring parameters are being changed through
-ethtool and queues are reconfigured for VF's VSI. If ring is changed
-again immediately, then the next reset could be executed before
-queues could be properly reinitialized on VF's VSI. It caused ice PF
-to mess up the VSI resource tree.
 
-Add a check in iavf_set_ringparam for adapter and VF's queue
-state. If VF is currently resetting or queues are disabled for the VF
-return with EAGAIN error.
 
-Fixes: d732a1844507 ("i40evf: fix crash when changing ring sizes")
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 3bb56714beb0..8213bf3f8dfc 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -631,6 +631,11 @@ static int iavf_set_ringparam(struct net_device *netdev,
- 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
- 		return -EINVAL;
- 
-+	if ((adapter->state == __IAVF_RESETTING) ||
-+	    ((adapter->state == __IAVF_RUNNING) &&
-+	     (adapter->flags & IAVF_FLAG_QUEUES_DISABLED)))
-+		return -EAGAIN;
-+
- 	if (ring->tx_pending > IAVF_MAX_TXD ||
- 	    ring->tx_pending < IAVF_MIN_TXD ||
- 	    ring->rx_pending > IAVF_MAX_RXD ||
--- 
-2.27.0
-
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Maciej Fijalkowski
+> Sent: Thursday, March 17, 2022 11:27 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; kuba at kernel.org; bpf at vger.kernel.org;
+> davem at davemloft.net; Karlsson, Magnus <magnus.karlsson@intel.com>
+> Subject: [Intel-wired-lan] [PATCH intel-next] ice: xsk: check if Rx ring was
+> filled up to the end
+> 
+> __ice_alloc_rx_bufs_zc() checks if a number of the descriptors to be
+> allocated would cause the ring wrap. In that case, driver will issue two calls to
+> xsk_buff_alloc_batch() - one that will fill the ring up to the end and the
+> second one that will start with filling descriptors from the beginning of the
+> ring.
+> 
+> ice_fill_rx_descs() is a wrapper for taking care of what
+> xsk_buff_alloc_batch() gave back to the driver. It works in a best effort
+> approach, so for example when driver asks for 64 buffers,
+> ice_fill_rx_descs() could assign only 32. Such case needs to be checked when
+> ring is being filled up to the end, because in that situation ntu might not
+> reached the end of the ring.
+> 
+> Fix the ring wrap by checking if nb_buffs_extra has the expected value.
+> If not, bump ntu and go directly to tail update.
+> 
+> Fixes: 3876ff525de7 ("ice: xsk: Handle SW XDP ring wrap and bump tail more
+> often")
+> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
+> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_xsk.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+Tested-by: Shwetha Nagaraju <Shwetha.nagaraju@intel.com>
