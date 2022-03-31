@@ -1,48 +1,47 @@
-From: Leon Romanovsky <leon@kernel.org>
-Date: Thu, 31 Mar 2022 11:20:23 +0300
-Subject: [Intel-wired-lan] [PATCH net v1] ixgbe: ensure IPsec VF<->PF
- compatibility
-Message-ID: <737616899df2a482e4ec35aa4056c9ac608d2f50.1648714609.git.leonro@nvidia.com>
+From: Michal Maloszewski <michal.maloszewski@intel.com>
+Date: Thu, 31 Mar 2022 11:15:26 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix error when changing ring
+ parameters on ice PF
+Message-ID: <20220331111526.1333801-1-michal.maloszewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Leon Romanovsky <leonro@nvidia.com>
+Reset is triggered when ring parameters are being changed through
+ethtool and queues are reconfigured for VF's VSI. If ring is changed
+again immediately, then the next reset could be executed before
+queues could be properly reinitialized on VF's VSI. It caused ice PF
+to mess up the VSI resource tree.
 
-The VF driver can forward any IPsec flags and such makes the function
-is not extendable and prone to backward/forward incompatibility.
+Add a check in iavf_set_ringparam for adapter and VF's queue
+state. If VF is currently resetting or queues are disabled for the VF
+return with EAGAIN error.
 
-If new software runs on VF, it won't know that PF configured something
-completely different as it "knows" only XFRM_OFFLOAD_INBOUND flag.
-
-Fixes: eda0333ac293 ("ixgbe: add VF IPsec management")
-Reviewed-by: Raed Salem <raeds@nvidia.com>
-Signed-off-by: Leon Romanovsky <leonro@nvidia.com>a
+Fixes: d732a1844507 ("i40evf: fix crash when changing ring sizes")
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
 ---
-Chaagelog:
-v1:
- * Replaced bits arithmetic with more simple expression
-v0: https://lore.kernel.org/all/3702fad8a016170947da5f3c521a9251cf0f4a22.1648637865.git.leonro at nvidia.com
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index e596e1a9fc75..69d11ff7677d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -903,7 +903,8 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
- 	/* Tx IPsec offload doesn't seem to work on this
- 	 * device, so block these requests for now.
- 	 */
--	if (!(sam->flags & XFRM_OFFLOAD_INBOUND)) {
-+	sam->flags = sam->flags & ~XFRM_OFFLOAD_IPV6;
-+	if (sam->flags != XFRM_OFFLOAD_INBOUND) {
- 		err = -EOPNOTSUPP;
- 		goto err_out;
- 	}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 3bb56714beb0..8213bf3f8dfc 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -631,6 +631,11 @@ static int iavf_set_ringparam(struct net_device *netdev,
+ 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+ 		return -EINVAL;
+ 
++	if ((adapter->state == __IAVF_RESETTING) ||
++	    ((adapter->state == __IAVF_RUNNING) &&
++	     (adapter->flags & IAVF_FLAG_QUEUES_DISABLED)))
++		return -EAGAIN;
++
+ 	if (ring->tx_pending > IAVF_MAX_TXD ||
+ 	    ring->tx_pending < IAVF_MIN_TXD ||
+ 	    ring->rx_pending > IAVF_MAX_RXD ||
 -- 
-2.35.1
+2.27.0
 
