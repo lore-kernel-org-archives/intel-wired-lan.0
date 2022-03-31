@@ -1,50 +1,49 @@
-From: Nagaraju, Shwetha <shwetha.nagaraju@intel.com>
-Date: Thu, 31 Mar 2022 10:21:57 +0000
-Subject: [Intel-wired-lan] [PATCH intel-next] ice: xsk: check if Rx ring
- was filled up to the end
-In-Reply-To: <20220317175727.340251-1-maciej.fijalkowski@intel.com>
-References: <20220317175727.340251-1-maciej.fijalkowski@intel.com>
-Message-ID: <MW4PR11MB582268F689B8EC10514112B090E19@MW4PR11MB5822.namprd11.prod.outlook.com>
+From: Ivan Vecera <ivecera@redhat.com>
+Date: Thu, 31 Mar 2022 12:50:04 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix incorrect locking in
+ ice_vc_process_vf_msg()
+Message-ID: <20220331105005.2580771-1-ivecera@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Usage of mutex_trylock() in ice_vc_process_vf_msg() is incorrect
+because message sent from VF is ignored and never processed.
 
+Use mutex_lock() instead to fix the issue. It is safe because this
+mutex is used to prevent races between VF related NDOs and
+handlers processing request messages from VF and these handlers
+are running in ice_service_task() context.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Maciej Fijalkowski
-> Sent: Thursday, March 17, 2022 11:27 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; kuba at kernel.org; bpf at vger.kernel.org;
-> davem at davemloft.net; Karlsson, Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH intel-next] ice: xsk: check if Rx ring was
-> filled up to the end
-> 
-> __ice_alloc_rx_bufs_zc() checks if a number of the descriptors to be
-> allocated would cause the ring wrap. In that case, driver will issue two calls to
-> xsk_buff_alloc_batch() - one that will fill the ring up to the end and the
-> second one that will start with filling descriptors from the beginning of the
-> ring.
-> 
-> ice_fill_rx_descs() is a wrapper for taking care of what
-> xsk_buff_alloc_batch() gave back to the driver. It works in a best effort
-> approach, so for example when driver asks for 64 buffers,
-> ice_fill_rx_descs() could assign only 32. Such case needs to be checked when
-> ring is being filled up to the end, because in that situation ntu might not
-> reached the end of the ring.
-> 
-> Fix the ring wrap by checking if nb_buffs_extra has the expected value.
-> If not, bump ntu and go directly to tail update.
-> 
-> Fixes: 3876ff525de7 ("ice: xsk: Handle SW XDP ring wrap and bump tail more
-> often")
-> Signed-off-by: Magnus Karlsson <magnus.karlsson@intel.com>
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_xsk.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-Tested-by: Shwetha Nagaraju <Shwetha.nagaraju@intel.com>
+Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index 3f1a63815bac..9bf5bb008128 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -3660,15 +3660,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 		return;
+ 	}
+ 
+-	/* VF is being configured in another context that triggers a VFR, so no
+-	 * need to process this message
+-	 */
+-	if (!mutex_trylock(&vf->cfg_lock)) {
+-		dev_info(dev, "VF %u is being configured in another context that will trigger a VFR, so there is no need to handle this message\n",
+-			 vf->vf_id);
+-		ice_put_vf(vf);
+-		return;
+-	}
++	mutex_lock(&vf->cfg_lock);
+ 
+ 	switch (v_opcode) {
+ 	case VIRTCHNL_OP_VERSION:
+-- 
+2.34.1
+
