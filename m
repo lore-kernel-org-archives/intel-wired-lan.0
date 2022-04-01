@@ -1,69 +1,44 @@
-From: Ivan Vecera <ivecera@redhat.com>
-Date: Fri,  1 Apr 2022 12:40:52 +0200
-Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix incorrect locking in
- ice_vc_process_vf_msg()
-Message-ID: <20220401104052.1711721-1-ivecera@redhat.com>
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Date: Fri,  1 Apr 2022 14:54:38 +0200
+Subject: [Intel-wired-lan] [PATCH intel-net] ice: allow creating VFs for
+ !CONFIG_NET_SWITCHDEV
+Message-ID: <20220401125438.292649-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Usage of mutex_trylock() in ice_vc_process_vf_msg() is incorrect
-because message sent from VF is ignored and never processed.
+Currently for !CONFIG_NET_SWITCHDEV kernel builds it is not possible to
+create VFs properly as call to ice_eswitch_configure() returns
+-EOPNOTSUPP for us. This is because CONFIG_ICE_SWITCHDEV depends on
+CONFIG_NET_SWITCHDEV.
 
-Use mutex_lock() instead to fix the issue. It is safe because this
-mutex is used to prevent races between VF related NDOs and
-handlers processing request messages from VF and these handlers
-are running in ice_service_task() context. Additionally move this
-mutex lock prior ice_vc_is_opcode_allowed() call to avoid potential
-races during allowlist acccess.
+Change the ice_eswitch_configure() implementation for
+!CONFIG_ICE_SWITCHDEV to return 0 instead -EOPNOTSUPP and let
+ice_ena_vfs() finish its work properly.
 
-Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
-Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+CC: Grzegorz Nitka <grzegorz.nitka@intel.com>
+Fixes: 1a1c40df2e80 ("ice: set and release switchdev environment")
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 21 +++++++------------
- 1 file changed, 7 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 3f1a63815bac..a465f3743ffc 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -3642,14 +3642,6 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 			err = -EINVAL;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.h b/drivers/net/ethernet/intel/ice/ice_eswitch.h
+index bd58d9d2e565..6a413331572b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.h
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.h
+@@ -52,7 +52,7 @@ static inline void ice_eswitch_update_repr(struct ice_vsi *vsi) { }
  
--	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
--		ice_vc_send_msg_to_vf(vf, v_opcode,
--				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED, NULL,
--				      0);
--		ice_put_vf(vf);
--		return;
--	}
--
- error_handler:
- 	if (err) {
- 		ice_vc_send_msg_to_vf(vf, v_opcode, VIRTCHNL_STATUS_ERR_PARAM,
-@@ -3660,12 +3652,13 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 		return;
- 	}
+ static inline int ice_eswitch_configure(struct ice_pf *pf)
+ {
+-	return -EOPNOTSUPP;
++	return 0;
+ }
  
--	/* VF is being configured in another context that triggers a VFR, so no
--	 * need to process this message
--	 */
--	if (!mutex_trylock(&vf->cfg_lock)) {
--		dev_info(dev, "VF %u is being configured in another context that will trigger a VFR, so there is no need to handle this message\n",
--			 vf->vf_id);
-+	mutex_lock(&vf->cfg_lock);
-+
-+	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
-+		ice_vc_send_msg_to_vf(vf, v_opcode,
-+				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED, NULL,
-+				      0);
-+		mutex_unlock(&vf->cfg_lock);
- 		ice_put_vf(vf);
- 		return;
- 	}
+ static inline int ice_eswitch_rebuild(struct ice_pf *pf)
 -- 
-2.35.1
+2.27.0
 
