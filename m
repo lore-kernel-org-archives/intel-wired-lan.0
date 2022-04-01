@@ -1,77 +1,42 @@
-From: Nikolay Aleksandrov <razor@blackwall.org>
-Date: Mon, 25 Apr 2022 00:52:39 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] rtnetlink: add extack
- support in fdb del handlers
-In-Reply-To: <3bcb2d3d-8b8b-8a8f-1285-7277394b4e6b@gmail.com>
-References: <cover.1650800975.git.eng.alaamohamedsoliman.am@gmail.com>
- <c3a882e4fb6f9228f704ebe3c1fcace14ee6cdf2.1650800975.git.eng.alaamohamedsoliman.am@gmail.com>
- <7c8367b6-95c7-ea39-fafe-72495f343625@blackwall.org>
- <d89eefc2-664f-8537-d10e-6fdfbb6823ed@gmail.com>
- <4bf69eef-7444-1238-0f4a-fb0fccda080c@blackwall.org>
- <3bcb2d3d-8b8b-8a8f-1285-7277394b4e6b@gmail.com>
-Message-ID: <0f1e1250-920a-c7d1-900c-98ef3e0456d8@blackwall.org>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Fri, 1 Apr 2022 03:34:05 +0000
+Subject: [Intel-wired-lan] [PATCH linux-firmware] ice: Add wireless edge
+ file for Intel E800 series driver
+In-Reply-To: <20220317175932.78417-1-guruprasad.kudukolly.rao@intel.com>
+References: <20220317175932.78417-1-guruprasad.kudukolly.rao@intel.com>
+Message-ID: <BYAPR11MB3367B2388F0C417719B3178BFCE09@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/25/22 00:09, Alaa Mohamed wrote:
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Guruprasad Rao
+> Sent: Thursday, March 17, 2022 11:30 PM
+> To: intel-wired-lan at lists.osuosl.org; Anantharam, Arjun
+> <arjun.anantharam@intel.com>; Rao, Guruprasad Kudukolly
+> <guruprasad.kudukolly.rao@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>
+> Subject: [Intel-wired-lan] [PATCH linux-firmware] ice: Add wireless edge file
+> for Intel E800 series driver
 > 
-> On ???/??/???? ??:??, Nikolay Aleksandrov wrote:
->> On 24/04/2022 22:49, Alaa Mohamed wrote:
->>> On ???/??/???? ??:??, Nikolay Aleksandrov wrote:
->>>> On 24/04/2022 15:09, Alaa Mohamed wrote:
->>>>> Add extack support to .ndo_fdb_del in netdevice.h and
->>>>> all related methods.
->>>>>
->>>>> Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
->>>>> ---
->>>>> changes in V3:
->>>>> ????????? fix errors reported by checkpatch.pl
->>>>> ---
->>>>> ?? drivers/net/ethernet/intel/ice/ice_main.c??????? | 4 ++--
->>>>> ?? drivers/net/ethernet/mscc/ocelot_net.c?????????? | 4 ++--
->>>>> ?? drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c | 2 +-
->>>>> ?? drivers/net/macvlan.c??????????????????????????? | 2 +-
->>>>> ?? drivers/net/vxlan/vxlan_core.c?????????????????? | 2 +-
->>>>> ?? include/linux/netdevice.h??????????????????????? | 2 +-
->>>>> ?? net/bridge/br_fdb.c????????????????????????????? | 2 +-
->>>>> ?? net/bridge/br_private.h????????????????????????? | 2 +-
->>>>> ?? net/core/rtnetlink.c???????????????????????????? | 4 ++--
->>>>> ?? 9 files changed, 12 insertions(+), 12 deletions(-)
->>>>>
->>>>> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c 
->>>>> b/drivers/net/ethernet/intel/ice/ice_main.c
->>>>> index d768925785ca..7b55d8d94803 100644
->>>>> --- a/drivers/net/ethernet/intel/ice/ice_main.c
->>>>> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
->>>>> @@ -5678,10 +5678,10 @@ ice_fdb_add(struct ndmsg *ndm, struct 
->>>>> nlattr __always_unused *tb[],
->>>>> ?? static int
->>>>> ?? ice_fdb_del(struct ndmsg *ndm, __always_unused struct nlattr *tb[],
->>>>> ?????????? struct net_device *dev, const unsigned char *addr,
->>>>> -??????? __always_unused u16 vid)
->>>>> +??????? __always_unused u16 vid, struct netlink_ext_ack *extack)
->>>>> ?? {
->>>>> ?????? int err;
->>>>> -
->>>>> +
->>>> What's changed here?
->>> In the previous version, I removed the blank line after "int err;" 
->>> and you said I shouldn't so I added blank line.
->>>
->> Yeah, my question is are you fixing a dos ending or something else?
->> The blank line is already there, what's wrong with it?
-> No, I didn't.
->>
->> The point is it's not nice to mix style fixes and other changes, more so
->> if nothing is mentioned in the commit message.
-> Got it, So, what should I do to fix it?
+> The ice driver can, optionally, load other package files for different
+> packet processing pipeline configurations.
+> 
+> This package includes support for GTPv1, GTPv2 with extension headers,
+> eCPRI, ESP and IPsec
+> 
+> Signed-off-by: Guruprasad Rao <guruprasad.kudukolly.rao@intel.com>
+> ---
+>  WHENCE                                         |   1 +
+>  .../ice_wireless_edge-1.3.7.0.pkg              | Bin 0 -> 717176 bytes
+>  2 files changed, 1 insertion(+)
+>  create mode 100644 intel/ice/ddp-wireless_edge/ice_wireless_edge-
+> 1.3.7.0.pkg
+> 
 
-Don't change that line? I mean I'm even surprised this made it in the 
-patch. As I mentioned above, there is already a new line there so I'm 
-not sure how you're removing it and adding it again. :)
-
-Cheers,
-  Nik
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
