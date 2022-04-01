@@ -1,44 +1,37 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Fri,  1 Apr 2022 14:54:38 +0200
-Subject: [Intel-wired-lan] [PATCH intel-net] ice: allow creating VFs for
- !CONFIG_NET_SWITCHDEV
-Message-ID: <20220401125438.292649-1-maciej.fijalkowski@intel.com>
+From: Jianglei Nie <niejianglei2021@163.com>
+Date: Fri,  1 Apr 2022 16:00:51 +0800
+Subject: [Intel-wired-lan] [PATCH] ice: Fix memory leak in
+ ice_get_orom_civd_data()
+Message-ID: <20220401080051.16846-1-niejianglei2021@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently for !CONFIG_NET_SWITCHDEV kernel builds it is not possible to
-create VFs properly as call to ice_eswitch_configure() returns
--EOPNOTSUPP for us. This is because CONFIG_ICE_SWITCHDEV depends on
-CONFIG_NET_SWITCHDEV.
+Line 637 allocates a memory chunk for orom_data by vzmalloc(). But
+when ice_read_flash_module() fails, the allocated memory is not freed,
+which will lead to a memory leak.
 
-Change the ice_eswitch_configure() implementation for
-!CONFIG_ICE_SWITCHDEV to return 0 instead -EOPNOTSUPP and let
-ice_ena_vfs() finish its work properly.
+We can fix it by freeing the orom_data when ce_read_flash_module() fails.
 
-CC: Grzegorz Nitka <grzegorz.nitka@intel.com>
-Fixes: 1a1c40df2e80 ("ice: set and release switchdev environment")
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@intel.com>
+Signed-off-by: Jianglei Nie <niejianglei2021@163.com>
 ---
- drivers/net/ethernet/intel/ice/ice_eswitch.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_nvm.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.h b/drivers/net/ethernet/intel/ice/ice_eswitch.h
-index bd58d9d2e565..6a413331572b 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.h
-@@ -52,7 +52,7 @@ static inline void ice_eswitch_update_repr(struct ice_vsi *vsi) { }
- 
- static inline int ice_eswitch_configure(struct ice_pf *pf)
- {
--	return -EOPNOTSUPP;
-+	return 0;
- }
- 
- static inline int ice_eswitch_rebuild(struct ice_pf *pf)
+diff --git a/drivers/net/ethernet/intel/ice/ice_nvm.c b/drivers/net/ethernet/intel/ice/ice_nvm.c
+index 4eb0599714f4..13cdb5ea594d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_nvm.c
++++ b/drivers/net/ethernet/intel/ice/ice_nvm.c
+@@ -641,6 +641,7 @@ ice_get_orom_civd_data(struct ice_hw *hw, enum ice_bank_select bank,
+ 	status = ice_read_flash_module(hw, bank, ICE_SR_1ST_OROM_BANK_PTR, 0,
+ 				       orom_data, hw->flash.banks.orom_size);
+ 	if (status) {
++		vfree(orom_data);
+ 		ice_debug(hw, ICE_DBG_NVM, "Unable to read Option ROM data\n");
+ 		return status;
+ 	}
 -- 
-2.27.0
+2.25.1
 
