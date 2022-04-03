@@ -1,257 +1,97 @@
-From: Kallol Biswas [C] <kallol.biswas@nutanix.com>
-Date: Fri, 1 Apr 2022 18:49:11 +0000
-Subject: [Intel-wired-lan] bug in i40e-2.14.13 driver ??
-In-Reply-To: <20220331112607.0337e1eb@kernel.org>
-References: <SJ0PR02MB8862A7F336A45D8E8B0090C4FEE19@SJ0PR02MB8862.namprd02.prod.outlook.com>
- <20220331112607.0337e1eb@kernel.org>
-Message-ID: <SJ0PR02MB8862779A913E85B1E45870E8FEE09@SJ0PR02MB8862.namprd02.prod.outlook.com>
+From: naamax.meir <naamax.meir@linux.intel.com>
+Date: Sun, 3 Apr 2022 13:24:14 +0300
+Subject: [Intel-wired-lan] [PATCH v2 1/1] igc: Fix BUG: scheduling while
+ atomic
+In-Reply-To: <20220309061919.3115112-1-sasha.neftin@intel.com>
+References: <20220309061919.3115112-1-sasha.neftin@intel.com>
+Message-ID: <76640021-0694-bd12-7d57-7533fb5cf54e@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I have debugged this further..
-
-At init time  num_queue_pairs is 60
-[    5.384729] i40e 0000:b1:00.1: Features: PF-id[1] VFs: 64 VSIs: 66 QP: 60 RSS FD_ATR FD_SB NTUPLE
-
-At crash time (detect hang routine)
-Num_queue_pairs is 64.
-
-The driver crashes accessing 1st of last 4 uninitialized structures.
-
-What changes num_queue_pairs from 60 to 64 at run time? Maybe bug is there.
-
-Any input from i40e developers?
-
------Original Message-----
-From: Jakub Kicinski <kuba@kernel.org> 
-Sent: Thursday, March 31, 2022 11:26 AM
-To: Kallol Biswas [C] <kallol.biswas@nutanix.com>; intel-wired-lan at lists.osuosl.org
-Cc: netdev at vger.kernel.org
-Subject: Re: bug in i40e-2.14.13 driver ??
-
-Sounds like the out of tree version of the driver, adding the intel-wired list. Feel free to skip CCing netdev in the future on reports about code that's not in tree.
-
-On Thu, 31 Mar 2022 18:17:14 +0000 Kallol Biswas [C] wrote:
-> Hi,
->      We have been getting a NULL pointer dereference in intel i40e driver.
+On 3/9/2022 08:19, Sasha Neftin wrote:
+> Replace usleep_range() method with udelay() method to allow atomic contexts
+> in low-level MDIO access functions.
 > 
-> [  105.551413] BUG: kernel NULL pointer dereference, address: 
-> 000000000000000a
+> The following issue can be seen by doing the following:
+> $ modprobe -r bonding
+> $ modprobe -v bonding max_bonds=1 mode=1 miimon=100 use_carrier=0
+> $ ip link set bond0 up
+> $ ifenslave bond0 eth0 eth1
 > 
-> PID: 369    TASK: ffff980d62d70000  CPU: 16  COMMAND: "kworker/16:1"
-> #0 [ffffb0354e26fb00] machine_kexec at ffffffffae059db5
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/arch/x86/kernel/machine_kexec_64.c: 441
-> #1 [ffffb0354e26fb50] __crash_kexec at ffffffffae12584d
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/kernel/kexec_core.c: 957
-> #2 [ffffb0354e26fc18] crash_kexec at ffffffffae126ab9
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/include/linux/compiler.h: 292
-> #3 [ffffb0354e26fc30] oops_end at ffffffffae02a3da
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/arch/x86/kernel/dumpstack.c: 334
-> #4 [ffffb0354e26fc50] no_context at ffffffffae065ff8
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/arch/x86/mm/fault.c: 848
-> #5 [ffffb0354e26fcc0] do_page_fault at ffffffffae066ad1
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/arch/x86/mm/fault.c: 1552
-> #6 [ffffb0354e26fcf0] page_fault at ffffffffae801119
->     /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.2244.x86_64/arch/x86/entry/entry_64.S: 1203
->     [exception RIP: i40e_detect_recover_hung+116]
->     RIP: ffffffffc07ae0d4  RSP: ffffb0354e26fda0  RFLAGS: 00010202
->     RAX: ffff980d64e6a000  RBX: ffff980d5b788c00  RCX: ffff980d6f426e08
->     RDX: 0000000000000000  RSI: 0000000000000001  RDI: ffff980d5b788800
->     RBP: 000000000000003c   R8: 0000000065303469   R9: 8080808080808080
->     R10: 0000000000000000  R11: 0000000000000000  R12: ffff980d62d86000
->     R13: 00000000ffffffff  R14: 0000000000000000  R15: ffff980d64e6a848
->     ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
->     
-> /home/mockbuild/rpmbuild/BUILD/i40e-2.14.13/src/i40e_virtchnl_pf.c: 
-> 7253
-> #7 [ffffb0354e26fdc8] i40e_service_task at ffffffffc078ff9b [i40e]
->     /home/mockbuild/rpmbuild/BUILD/i40e-2.14.13/src/i40e_ethtool.c: 
-> 5000
-> #8 [ffffb0354e26fe78] process_one_work at ffffffffae09818b
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/kernel/workqueue.c: 2271
-> #9 [ffffb0354e26feb8] worker_thread at ffffffffae098ca9
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/include/linux/compiler.h: 266
-> #10 [ffffb0354e26ff10] kthread at ffffffffae09e378
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/kernel/kthread.c: 268
-> #11 [ffffb0354e26ff50] ret_from_fork at ffffffffae8001ff
->     
-> /usr/src/debug/kernel-5.4.109/linux-5.4.109-2.el7.nutanix.20201105.224
-> 4.x86_64/arch/x86/entry/entry_64.S: 352
+> [  982.357308] BUG: scheduling while atomic: kworker/u64:0/9/0x00000002
+> [  982.364431] INFO: lockdep is turned off.
+> [  982.368824] Modules linked in: bonding sctp ip6_udp_tunnel udp_tunnel mlx4_ib ib_uverbs ib_core mlx4_en mlx4_core nfp tls sunrpc intel_rapl_msr iTCO_wdt iTCO_vendor_support mxm_wmi dcdbas intel_rapl_common sb_edac x86_pkg_temp_thermal intel_powerclamp coretemp kvm_intel kvm irqbypass crct10dif_pclmul crc32_pclmul ghash_clmulni_intel rapl intel_cstate intel_uncore pcspkr lpc_ich mei_me ipmi_ssif mei ipmi_si ipmi_devintf ipmi_msghandler wmi acpi_power_meter xfs libcrc32c sr_mod cdrom sd_mod t10_pi sg mgag200 drm_kms_helper syscopyarea sysfillrect sysimgblt fb_sys_fops drm ahci libahci crc32c_intel libata i2c_algo_bit tg3 megaraid_sas igc dm_mirror dm_region_hash dm_log dm_mod [last unloaded: bonding]
+> [  982.437941] CPU: 25 PID: 9 Comm: kworker/u64:0 Kdump: loaded Tainted: G        W        --------- -  - 4.18.0-348.el8.x86_64+debug #1
+> [  982.451333] Hardware name: Dell Inc. PowerEdge R730/0H21J3, BIOS 2.7.0 12/005/2017
+> [  982.459791] Workqueue: bond0 bond_mii_monitor [bonding]
+> [  982.465622] Call Trace:
+> [  982.468355]  dump_stack+0x8e/0xd0
+> [  982.472056]  __schedule_bug.cold.60+0x3a/0x60
+> [  982.476919]  __schedule+0x147b/0x1bc0
+> [  982.481007]  ? firmware_map_remove+0x16b/0x16b
+> [  982.485967]  ? hrtimer_fixup_init+0x40/0x40
+> [  982.490625]  schedule+0xd9/0x250
+> [  982.494227]  schedule_hrtimeout_range_clock+0x10d/0x2c0
+> [  982.500058]  ? hrtimer_nanosleep_restart+0x130/0x130
+> [  982.505598]  ? hrtimer_init_sleeper_on_stack+0x90/0x90
+> [  982.511332]  ? usleep_range+0x88/0x130
+> [  982.515514]  ? recalibrate_cpu_khz+0x10/0x10
+> [  982.520279]  ? ktime_get+0xab/0x1c0
+> [  982.524175]  ? usleep_range+0x88/0x130
+> [  982.528355]  usleep_range+0xdd/0x130
+> [  982.532344]  ? console_conditional_schedule+0x30/0x30
+> [  982.537987]  ? igc_put_hw_semaphore+0x17/0x60 [igc]
+> [  982.543432]  igc_read_phy_reg_gpy+0x111/0x2b0 [igc]
+> [  982.548887]  igc_phy_has_link+0xfa/0x260 [igc]
+> [  982.553847]  ? igc_get_phy_id+0x210/0x210 [igc]
+> [  982.558894]  ? lock_acquire+0x34d/0x890
+> [  982.563187]  ? lock_downgrade+0x710/0x710
+> [  982.567659]  ? rcu_read_unlock+0x50/0x50
+> [  982.572039]  igc_check_for_copper_link+0x106/0x210 [igc]
+> [  982.577970]  ? igc_config_fc_after_link_up+0x840/0x840 [igc]
+> [  982.584286]  ? rcu_read_unlock+0x50/0x50
+> [  982.588661]  ? lock_release+0x591/0xb80
+> [  982.592939]  ? lock_release+0x591/0xb80
+> [  982.597220]  igc_has_link+0x113/0x330 [igc]
+> [  982.601887]  ? lock_downgrade+0x710/0x710
+> [  982.606362]  igc_ethtool_get_link+0x6d/0x90 [igc]
+> [  982.611614]  bond_check_dev_link+0x131/0x2c0 [bonding]
+> [  982.617350]  ? bond_time_in_interval+0xd0/0xd0 [bonding]
+> [  982.623277]  ? rcu_read_lock_held+0x62/0xc0
+> [  982.627944]  ? rcu_read_lock_sched_held+0xe0/0xe0
+> [  982.633198]  bond_mii_monitor+0x314/0x2500 [bonding]
+> [  982.638738]  ? lock_contended+0x880/0x880
+> [  982.643214]  ? bond_miimon_link_change+0xa0/0xa0 [bonding]
+> [  982.649336]  ? lock_acquire+0x34d/0x890
+> [  982.653615]  ? lock_downgrade+0x710/0x710
+> [  982.658089]  ? debug_object_deactivate+0x221/0x340
+> [  982.663436]  ? rcu_read_unlock+0x50/0x50
+> [  982.667811]  ? debug_print_object+0x2b0/0x2b0
+> [  982.672672]  ? __switch_to_asm+0x41/0x70
+> [  982.677049]  ? __switch_to_asm+0x35/0x70
+> [  982.681426]  ? _raw_spin_unlock_irq+0x24/0x40
+> [  982.686288]  ? trace_hardirqs_on+0x20/0x195
+> [  982.690956]  ? _raw_spin_unlock_irq+0x24/0x40
+> [  982.695818]  process_one_work+0x8f0/0x1770
+> [  982.700390]  ? pwq_dec_nr_in_flight+0x320/0x320
+> [  982.705443]  ? debug_show_held_locks+0x50/0x50
+> [  982.710403]  worker_thread+0x87/0xb40
+> [  982.714489]  ? process_one_work+0x1770/0x1770
+> [  982.719349]  kthread+0x344/0x410
+> [  982.722950]  ? kthread_insert_work_sanity_check+0xd0/0xd0
+> [  982.728975]  ret_from_fork+0x3a/0x50
 > 
-> -------------------------------------------
+> v2:
+> Fixed typo, edited message and added kernel log
 > 
-> movzwl 0xa(%rdx),%edx fails as RDX: 0000000000000000  (offset 0xa from 
-> 0) causes NULL pointer dereference
-> 4:27
-> mov    0xe8(%rbx),%rdx program rdx, and %rbx is ffff980d5b788c00
-> x/x 0xffff980d5b788ce8
-> 0xffff980d5b788ce8:     0x00000000, so %rdx gets programmed with 0.
-> 
-> crash> i40e_vsi.state ffff980d62d86000
->   state = {0}
-> crash> i40e_vsi.netdev ffff980d62d86000
->   netdev = 0xffff980d62d87000
-> crash> num_queue_pairs
-> crash: command not found: num_queue_pairs
-> crash> i40e_vsi.num_queue_pairs ffff980d62d86000
->   num_queue_pairs = 64
-> All Tx rings
-> crash> x/64g 0xffff980d61f11800
-> 0xffff980d61f11800:     0xffff980d61f11c00      0xffff980d61f12000
-> 0xffff980d61f11810:     0xffff980d61f12400      0xffff980d61f12800
-> 0xffff980d61f11820:     0xffff980d61f12c00      0xffff980d61f13000
-> 0xffff980d61f11830:     0xffff980d61f13400      0xffff980d61f13800
-> 0xffff980d61f11840:     0xffff980d61f13c00      0xffff980d61f14000
-> 0xffff980d61f11850:     0xffff980d61f14400      0xffff980d61f14800
-> 0xffff980d61f11860:     0xffff980d61f14c00      0xffff980d61f15000
-> 0xffff980d61f11870:     0xffff980d61f15400      0xffff980d61f15800
-> 0xffff980d61f11880:     0xffff980d61f15c00      0xffff980d61f16000
-> 0xffff980d61f11890:     0xffff980d61f16400      0xffff980d61f16800
-> 0xffff980d61f118a0:     0xffff980d61f16c00      0xffff980d61f17000
-> 0xffff980d61f118b0:     0xffff980d61f17400      0xffff980d61f17800
-> 0xffff980d61f118c0:     0xffff980d61f17c00      0xffff980d5b790000
-> 0xffff980d61f118d0:     0xffff980d5b790400      0xffff980d5b790800
-> 0xffff980d61f118e0:     0xffff980d5b790c00      0xffff980d5b791000
-> 0xffff980d61f118f0:     0xffff980d5b791400      0xffff980d5b791800
-> 0xffff980d61f11900:     0xffff980d5b791c00      0xffff980d5b792000
-> 0xffff980d61f11910:     0xffff980d5b792400      0xffff980d5b792800
-> 0xffff980d61f11920:     0xffff980d5b792c00      0xffff980d5b793000
-> 0xffff980d61f11930:     0xffff980d5b793400      0xffff980d5b793800
-> 0xffff980d61f11940:     0xffff980d5b793c00      0xffff980d5b794000
-> 0xffff980d61f11950:     0xffff980d5b794400      0xffff980d5b794800
-> 0xffff980d61f11960:     0xffff980d5b794c00      0xffff980d5b795000
-> 0xffff980d61f11970:     0xffff980d5b795400      0xffff980d5b795800
-> 0xffff980d61f11980:     0xffff980d5b795c00      0xffff980d5b796000
-> 0xffff980d61f11990:     0xffff980d5b796400      0xffff980d5b796800
-> 0xffff980d61f119a0:     0xffff980d5b796c00      0xffff980d5b797000
-> 0xffff980d61f119b0:     0xffff980d5b797400      0xffff980d5b797800
-> 0xffff980d61f119c0:     0xffff980d5b797c00      0xffff980d5b788000
-> 0xffff980d61f119d0:     0xffff980d5b788400      0xffff980d5b788800
-> 0xffff980d61f119e0:     0xffff980d5b788c00      0xffff980d5b789000
-> 0xffff980d61f119f0:     0xffff980d5b789400      0xffff980d5b789800crash> struct i40e_ring.q_vector 0xffff980d5b788400  q_vector = 0xffff980d61c92800
-> crash> struct i40e_ring.q_vector 0xffff980d5b788400    
-> q_vector = 0xffff980d61c92800
-> 
-> crash> struct i40e_ring.q_vector 0xffff980d5b788c00
->   q_vector = 0x0
-> 
-> So q_vector is not set after around 60 queues, yet in the driver we do 
-> a deference
-> i40e_force_wb():
-> (q_vector->reg_idx) and die.
-> 
-> Gdb macro:
-> define print_i40e_q_vector
->     set $vsi = (struct i40e_vsi *)$arg0
-> 
->     set $q_vectors = $vsi->num_q_vectors
-> 
->     printf "vsi %p q_vectors %d", $vsi, $q_vectors
->     set $index = 0
-> 
->     while $index < $q_vectors
-> 
->         set $q_vector = (struct i40e_q_vector 
-> *)$vsi->q_vectors[$index]
-> 
->         printf "num_ringpairs %d\n", $q_vector->num_ringpairs
-> 
->         set $index += 1
->     end
-> 
-> 
-> end
-> 
-> Ouput:
-> 
-> crash> print_i40e_q_vector 0xffff980d62d86000
-> vsi 0xffff980d62d86000 q_vectors 64num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 num_ringpairs 1 
-> num_ringpairs 1 num_ringpairs 1 num_ringpairs 0 num_ringpairs 0 
-> num_ringpairs 0 num_ringpairs 0
-> 
-> 
-> Source code:
-> 
-> static void i40e_vsi_map_rings_to_vectors(struct i40e_vsi *vsi) {
->   int qp_remaining = vsi->num_queue_pairs;
->   int q_vectors = vsi->num_q_vectors;
->   int num_ringpairs;
->   int v_start = 0;
->   int qp_idx = 0;
-> 
->   /* If we don't have enough vectors for a 1-to-1 mapping, we'll have to
->    * group them so there are multiple queues per vector.
->    * It is also important to go through all the vectors available to be
->    * sure that if we don't use all the vectors, that the remaining vectors
->    * are cleared. This is especially important when decreasing the
->    * number of queues in use.
->    */
->   for (; v_start < q_vectors; v_start++) {
->     struct i40e_q_vector *q_vector = vsi->q_vectors[v_start];
-> 
->     num_ringpairs = DIV_ROUND_UP(qp_remaining, q_vectors - v_start);
-> 
->     q_vector->num_ringpairs = num_ringpairs;
->     q_vector->reg_idx = q_vector->v_idx + vsi->base_vector - 1;
-> 
->     q_vector->rx.count = 0;
->     q_vector->tx.count = 0;
->     q_vector->rx.ring = NULL;
->     q_vector->tx.ring = NULL;
-> 
->     while (num_ringpairs--) {
->       i40e_map_vector_to_qp(vsi, v_start, qp_idx);
->       qp_idx++;
->       qp_remaining--;
->     }
->   }
-> }
-> 
-> How in the above for loop 
->     num_ringpairs = DIV_ROUND_UP(qp_remaining, q_vectors - v_start); 
-> evaluates to 0, is not clear.
-> 
-> Have we seen this problem before? If so, is there are fix?
-> 
-> Nucleodyne at Nutanix
-> 408-718-8164
-> 
-> Nucleodyne at Nutanix
-> 408-718-8164
-> 
-
+> Fixes: 5586838fe9ce ("igc: Add code for PHY support")
+> Reported-by: Corinna Vinschen <vinschen@redhat.com>
+> Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_phy.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+Tested-by: Naama Meir <naamax.meir@linux.intel.com>
