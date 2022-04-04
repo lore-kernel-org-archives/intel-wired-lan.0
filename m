@@ -1,11 +1,10 @@
-From: Nagaraju, Shwetha <shwetha.nagaraju@intel.com>
-Date: Mon, 4 Apr 2022 04:34:21 +0000
-Subject: [Intel-wired-lan] [PATCH intel-net 3/3] ice: clear
- cmd_type_offset_bsz for TX rings
-In-Reply-To: <20220317183629.340350-4-maciej.fijalkowski@intel.com>
-References: <20220317183629.340350-1-maciej.fijalkowski@intel.com>
- <20220317183629.340350-4-maciej.fijalkowski@intel.com>
-Message-ID: <MW4PR11MB582222B135FDD63795ED3C8E90E59@MW4PR11MB5822.namprd11.prod.outlook.com>
+From: Sreenivas, Bharathi <bharathi.sreenivas@intel.com>
+Date: Mon, 4 Apr 2022 08:28:43 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Add support for
+ classid based queue selection
+In-Reply-To: <20220318055549.76343-1-sudheer.mogilappagari@intel.com>
+References: <20220318055549.76343-1-sudheer.mogilappagari@intel.com>
+Message-ID: <MN2PR11MB3614E9C8FBB1EABCB691D4B28EE59@MN2PR11MB3614.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,28 +15,44 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Maciej Fijalkowski
-> Sent: Friday, March 18, 2022 12:06 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; kuba at kernel.org; bpf at vger.kernel.org;
-> davem at davemloft.net; Karlsson, Magnus <magnus.karlsson@intel.com>
-> Subject: [Intel-wired-lan] [PATCH intel-net 3/3] ice: clear
-> cmd_type_offset_bsz for TX rings
+> Sudheer Mogilappagari
+> Sent: Friday, March 18, 2022 11:26 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Add support for classid
+> based queue selection
 > 
-> Currently when XDP rings are created, each descriptor gets its DD bit set,
-> which turns out to be the wrong approach as it can lead to a situation where
-> more descriptors get cleaned than it was supposed to, e.g. when AF_XDP
-> busy poll is run with a large batch size. In this situation, the driver would
-> request for more buffers than it is able to handle.
+> From: Amritha Nambiar <amritha.nambiar@intel.com>
 > 
-> Fix this by not setting the DD bits in ice_xdp_alloc_setup_rings(). They should
-> be initialized to zero instead.
+> This patch uses TC flower filter's classid feature to support forwarding
+> packets to a device queue. Such filters with action forward to queue will be
+> the highest priority switch filter in HW.
+> Example:
+> $ tc filter add dev ens4f0 protocol ip ingress flower\
+>   dst_ip 192.168.1.12 ip_proto tcp dst_port 5001\
+>   skip_sw classid ffff:0x5
 > 
-> Fixes: 9610bd988df9 ("ice: optimize XDP_TX workloads")
-> Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> The above command adds an ingress filter, the accepted packets will be
+> directed to queue 4. The major number represents the ingress qdisc. The
+> general rule is "classID's minor number - 1" upto max queues supported. The
+> queue number is in hex format.
+> 
+> Refactored ice_add_tc_flower_adv_fltr() to consolidate code with action
+> FWD_TO_VSI and FWD_TO QUEUE.
+> 
+> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-Tested-by: Shwetha Nagaraju <Shwetha.nagaraju@intel.com>
-
+> v2:
+> - fixed use of global queue id instead of PF relative queue id
+>   as requred by hw.
+> 
+> ---
+> 
+>  drivers/net/ethernet/intel/ice/ice.h        |  15 ++
+>  drivers/net/ethernet/intel/ice/ice_main.c   |   2 +-
+>  drivers/net/ethernet/intel/ice/ice_tc_lib.c | 274 +++++++++++++++-----
+> drivers/net/ethernet/intel/ice/ice_tc_lib.h |  40 ++-
+>  4 files changed, 263 insertions(+), 68 deletions(-)
+> 
+Tested-by: Bharathi Sreenivas <bharathi.sreenivas@intel.com>
