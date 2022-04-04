@@ -1,58 +1,149 @@
-From: Sreenivas, Bharathi <bharathi.sreenivas@intel.com>
-Date: Mon, 4 Apr 2022 08:28:43 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Add support for
- classid based queue selection
-In-Reply-To: <20220318055549.76343-1-sudheer.mogilappagari@intel.com>
-References: <20220318055549.76343-1-sudheer.mogilappagari@intel.com>
-Message-ID: <MN2PR11MB3614E9C8FBB1EABCB691D4B28EE59@MN2PR11MB3614.namprd11.prod.outlook.com>
+From: Ivan Vecera <ivecera@redhat.com>
+Date: Mon,  4 Apr 2022 12:06:14 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix use-after-free
+Message-ID: <20220404100615.23525-1-ivecera@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+When CONFIG_RFS_ACCEL is enabled the driver uses CPU affinity
+reverse-maps that set CPU affinity notifier in the background.
 
+If the interface is put down then ice_vsi_free_irq() is called
+via ice_vsi_close() and this clears affinity notifiers of IRQs
+associated with the VSI and old notifier's release callback
+is called - for this case this is cpu_rmap_release() that
+frees allocated cpu_rmap.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Sudheer Mogilappagari
-> Sent: Friday, March 18, 2022 11:26 AM
-> To: intel-wired-lan at osuosl.org
-> Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Add support for classid
-> based queue selection
-> 
-> From: Amritha Nambiar <amritha.nambiar@intel.com>
-> 
-> This patch uses TC flower filter's classid feature to support forwarding
-> packets to a device queue. Such filters with action forward to queue will be
-> the highest priority switch filter in HW.
-> Example:
-> $ tc filter add dev ens4f0 protocol ip ingress flower\
->   dst_ip 192.168.1.12 ip_proto tcp dst_port 5001\
->   skip_sw classid ffff:0x5
-> 
-> The above command adds an ingress filter, the accepted packets will be
-> directed to queue 4. The major number represents the ingress qdisc. The
-> general rule is "classID's minor number - 1" upto max queues supported. The
-> queue number is in hex format.
-> 
-> Refactored ice_add_tc_flower_adv_fltr() to consolidate code with action
-> FWD_TO_VSI and FWD_TO QUEUE.
-> 
-> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-> ---
-> 
-> v2:
-> - fixed use of global queue id instead of PF relative queue id
->   as requred by hw.
-> 
-> ---
-> 
->  drivers/net/ethernet/intel/ice/ice.h        |  15 ++
->  drivers/net/ethernet/intel/ice/ice_main.c   |   2 +-
->  drivers/net/ethernet/intel/ice/ice_tc_lib.c | 274 +++++++++++++++-----
-> drivers/net/ethernet/intel/ice/ice_tc_lib.h |  40 ++-
->  4 files changed, 263 insertions(+), 68 deletions(-)
-> 
-Tested-by: Bharathi Sreenivas <bharathi.sreenivas@intel.com>
+During device removal (ice_remove()) free_irq_cpu_rmap() is called
+and it tries to free already de-allocated cpu_rmap.
+
+Do not clear IRQ affinity notifier in ice_vsi_free_irq() when
+CONFIG_RFS_ACCEL is enabled. This is a code-path that
+commit 28bf26724fdb ("ice: Implement aRFS") forgot to handle.
+
+Reproducer:
+[root at host ~]# ip link set ens7f0 up
+[root at host ~]# ip link set ens7f0 down
+[root at host ~]# rmmod ice
+
+Result:
+[  538.173276] =================================================================
+[  538.180615] BUG: KASAN: use-after-free in free_irq_cpu_rmap+0x13b/0x173
+[  538.187236] Read of size 4 at addr ff110022d1f9e300 by task rmmod/16218
+[  538.193849]
+[  538.195350] CPU: 0 PID: 16218 Comm: rmmod Kdump: loaded Not tainted 4.18.0-31
+[  538.205613] Hardware name: Dell Inc. PowerEdge R750/06V45N, BIOS 1.4.4 10/071
+[  538.213089] Call Trace:
+[  538.215544]  dump_stack+0x5c/0x80
+[  538.218873]  print_address_description.constprop.6+0x1a/0x150
+[  538.233182]  kasan_report.cold.11+0x7f/0x118
+[  538.241739]  free_irq_cpu_rmap+0x13b/0x173
+[  538.245852]  ice_free_cpu_rx_rmap.part.2+0x58/0xa0 [ice]
+[  538.251208]  ice_remove_arfs+0xb2/0xf0 [ice]
+[  538.255506]  ice_remove+0x4e7/0x620 [ice]
+[  538.259553]  pci_device_remove+0xf3/0x290
+[  538.275025]  device_release_driver_internal+0x204/0x4b0
+[  538.280263]  driver_detach+0xf8/0x1ba
+[  538.283937]  bus_remove_driver+0x117/0x2db
+[  538.288047]  pci_unregister_driver+0x30/0x230
+[  538.297650]  ice_module_exit+0xc/0x2b [ice]
+[  538.301864]  __x64_sys_delete_module+0x2cc/0x4a0
+[  538.320373]  do_syscall_64+0xa5/0x450
+[  538.324046]  entry_SYSCALL_64_after_hwframe+0x6a/0xdf
+[  538.329103] RIP: 0033:0x7f7a2498c05b
+[  538.332686] Code: 73 01 c3 48 8b 0d 2d 4e 38 00 f7 d8 64 89 01 48 83 c8 ff c8
+[  538.351437] RSP: 002b:00007ffed8b6f3e8 EFLAGS: 00000206 ORIG_RAX: 00000000000
+[  538.359012] RAX: ffffffffffffffda RBX: 000055d81e2547a0 RCX: 00007f7a2498c05b
+[  538.366145] RDX: 000000000000000a RSI: 0000000000000800 RDI: 000055d81e254808
+[  538.373279] RBP: 0000000000000000 R08: 00007ffed8b6e361 R09: 0000000000000000
+[  538.380411] R10: 00007f7a24ac3480 R11: 0000000000000206 R12: 00007ffed8b6f618
+[  538.387544] R13: 00007ffed8b712ba R14: 000055d81e2542a0 R15: 000055d81e2547a0
+[  538.394695]
+[  538.396193] Allocated by task 469:
+[  538.399599]  kasan_save_stack+0x19/0x40
+[  538.403437]  __kasan_kmalloc+0x7d/0xa0
+[  538.407192]  kmem_cache_alloc_trace+0x188/0x2b0
+[  538.411732]  irq_cpu_rmap_add+0x4a/0x2e0
+[  538.415659]  ice_set_cpu_rx_rmap+0x28a/0x490 [ice]
+[  538.420476]  ice_probe+0x1f9c/0x43d0 [ice]
+[  538.424594]  local_pci_probe+0xd8/0x170
+[  538.428433]  work_for_cpu_fn+0x51/0xa0
+[  538.432186]  process_one_work+0x919/0x17d0
+[  538.436284]  worker_thread+0x541/0xb40
+[  538.440038]  kthread+0x30d/0x3c0
+[  538.443269]  ret_from_fork+0x24/0x50
+[  538.446850]
+[  538.448350] Freed by task 16217:
+[  538.451582]  kasan_save_stack+0x19/0x40
+[  538.455420]  kasan_set_track+0x1c/0x30
+[  538.459172]  kasan_set_free_info+0x20/0x30
+[  538.463272]  __kasan_slab_free+0xdf/0x110
+[  538.467284]  slab_free_freelist_hook+0xc6/0x190
+[  538.471818]  kfree+0xd9/0x2b0
+[  538.474791]  irq_set_affinity_notifier+0x246/0x2c0
+[  538.479583]  ice_vsi_free_irq+0x719/0xad0 [ice]
+[  538.484142]  ice_vsi_close+0x28/0x50 [ice]
+[  538.488258]  ice_stop+0x66/0x90 [ice]
+[  538.491942]  __dev_close_many+0x19c/0x2c0
+[  538.495956]  __dev_change_flags+0x1fd/0x580
+[  538.500142]  dev_change_flags+0x7c/0x150
+[  538.504068]  do_setlink+0x97d/0x2e70
+[  538.507646]  __rtnl_newlink+0x9b7/0x1210
+[  538.511573]  rtnl_newlink+0x61/0x90
+[  538.515064]  rtnetlink_rcv_msg+0x34e/0x8d0
+[  538.519164]  netlink_rcv_skb+0x123/0x390
+[  538.523090]  netlink_unicast+0x40f/0x5d0
+[  538.527016]  netlink_sendmsg+0x73d/0xb60
+[  538.530944]  sock_sendmsg+0xde/0x110
+[  538.534531]  ____sys_sendmsg+0x593/0x840
+[  538.538458]  ___sys_sendmsg+0xe9/0x160
+[  538.542210]  __sys_sendmsg+0xd3/0x170
+[  538.545876]  do_syscall_64+0xa5/0x450
+[  538.549542]  entry_SYSCALL_64_after_hwframe+0x6a/0xdf
+[  538.554594]
+[  538.556093] The buggy address belongs to the object at ff110022d1f9e300
+[  538.556093]  which belongs to the cache kmalloc-192 of size 192
+[  538.568601] The buggy address is located 0 bytes inside of
+[  538.568601]  192-byte region [ff110022d1f9e300, ff110022d1f9e3c0)
+[  538.580152] The buggy address belongs to the page:
+[  538.584946] page:ffd400008b47e780 refcount:1 mapcount:0 mapping:0000000000000
+[  538.597538] flags: 0x57ffffc0008100(slab|head|node=1|zone=2|lastcpupid=0x1ff)
+[  538.604931] raw: 0057ffffc0008100 dead000000000100 dead000000000200 ff1100010
+[  538.612670] raw: 0000000000000000 0000000000200020 00000001ffffffff 000000000
+[  538.620408] page dumped because: kasan: bad access detected
+[  538.625983]
+[  538.627480] Memory state around the buggy address:
+[  538.632276]  ff110022d1f9e200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0
+[  538.639493]  ff110022d1f9e280: 00 00 00 00 00 00 00 00 fc fc fc fc fc fc fc c
+[  538.646712] >ff110022d1f9e300: fa fb fb fb fb fb fb fb fb fb fb fb fb fb fb b
+[  538.653931]                    ^
+[  538.657164]  ff110022d1f9e380: fb fb fb fb fb fb fb fb fc fc fc fc fc fc fc c
+[  538.664386]  ff110022d1f9e400: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0
+[  538.671603] =================================================================
+
+Fixes: 28bf26724fdb ("ice: Implement aRFS")
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 6d6233204388..34bc7710a6b5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2701,7 +2701,8 @@ void ice_vsi_free_irq(struct ice_vsi *vsi)
+ 			continue;
+ 
+ 		/* clear the affinity notifier in the IRQ descriptor */
+-		irq_set_affinity_notifier(irq_num, NULL);
++		if (!IS_ENABLED(CONFIG_RFS_ACCEL))
++			irq_set_affinity_notifier(irq_num, NULL);
+ 
+ 		/* clear the affinity_mask in the IRQ descriptor */
+ 		irq_set_affinity_hint(irq_num, NULL);
+-- 
+2.35.1
+
