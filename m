@@ -1,45 +1,72 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Tue,  5 Apr 2022 18:56:01 +0300
-Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Fix possible overflow in
- LTR decoding
-Message-ID: <20220405155601.1443799-1-sasha.neftin@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Tue,  5 Apr 2022 13:54:37 -0700
+Subject: [Intel-wired-lan] [PATCH net-queue v1] igc: Fix suspending when PTM
+ is active
+Message-ID: <20220405205437.29829-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When we decode the latency and the max_latency u16 value does not fill
-the required size and could lead to the wrong LTR representation.
-Replace the u16 type with the u32 type and allow corrected LTR
-representation.
+Some mainboard/CPU combinations have shown problems with
+suspend/resume when PCIe PTM is enabled and active.
 
-Fixes: 44a13a5d99c7 ("e1000e: Fix the max snoop/no-snoop latency for 10M")
-Reported-by: James Hutchinson <jahutchinson99@googlemail.com>
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=215689
-Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+The best we can do is to stop PTM dialogs from the downstream/device
+side before the interface is brought down. PCIe PTM will be
+re-enabled when the interface is being brought up.
+
+Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 ---
-v2: added link tag
+Stefan,
 
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I believe that this should be a more general solution to the problem you reported in
+https://lore.kernel.org/all/924175a188159f4e03bd69908a91e606b574139b.camel at gmx.de/
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index d60e2016d03c..e6c8e6d5234f 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1009,8 +1009,8 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
- {
- 	u32 reg = link << (E1000_LTRV_REQ_SHIFT + E1000_LTRV_NOSNOOP_SHIFT) |
- 	    link << E1000_LTRV_REQ_SHIFT | E1000_LTRV_SEND;
--	u16 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
--	u16 lat_enc_d = 0;	/* latency decoded */
-+	u32 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
-+	u32 lat_enc_d = 0;	/* latency decoded */
- 	u16 lat_enc = 0;	/* latency encoded */
+Would it be possible for you revert commit 1e81dcc1ab7d ("igc: Do not
+enable crosstimestamping for i225-V models") and apply this one, and
+see if it works for you? I don't have your exact setup.
+
+Cheers,
+
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 0d6e3215e98f..653e9f1e35b5 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -992,6 +992,17 @@ static void igc_ptp_time_restore(struct igc_adapter *adapter)
+ 	igc_ptp_write_i225(adapter, &ts);
+ }
  
- 	if (link) {
++static void igc_ptm_stop(struct igc_adapter *adapter)
++{
++	struct igc_hw *hw = &adapter->hw;
++	u32 ctrl;
++
++	ctrl = rd32(IGC_PTM_CTRL);
++	ctrl &= ~IGC_PTM_CTRL_EN;
++
++	wr32(IGC_PTM_CTRL, ctrl);
++}
++
+ /**
+  * igc_ptp_suspend - Disable PTP work items and prepare for suspend
+  * @adapter: Board private structure
+@@ -1009,8 +1020,10 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
+ 	adapter->ptp_tx_skb = NULL;
+ 	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
+ 
+-	if (pci_device_is_present(adapter->pdev))
++	if (pci_device_is_present(adapter->pdev)) {
+ 		igc_ptp_time_save(adapter);
++		igc_ptm_stop(adapter);
++	}
+ }
+ 
+ /**
 -- 
-2.30.2
+2.35.1
 
