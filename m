@@ -1,42 +1,24 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Tue, 5 Apr 2022 04:50:01 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ice: use min_t() to make code
- cleaner in ice_gnss
-In-Reply-To: <20220321135947.378250-1-wanjiabing@vivo.com>
-References: <20220321135947.378250-1-wanjiabing@vivo.com>
-Message-ID: <BYAPR11MB33676930AB96198D69C234B0FCE49@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: naamax.meir <naamax.meir@linux.intel.com>
+Date: Tue, 5 Apr 2022 11:17:52 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove igc_set_spd_dplx
+ method
+In-Reply-To: <20220321060510.1862932-1-sasha.neftin@intel.com>
+References: <20220321060510.1862932-1-sasha.neftin@intel.com>
+Message-ID: <d5806c62-5bf4-49ea-9c83-6d9c49c11b05@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Wan Jiabing <wanjiabing@vivo.com>
-> Sent: Monday, March 21, 2022 7:30 PM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
-> Jakub Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>;
-> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org
-> Cc: Lobakin, Alexandr <alexandr.lobakin@intel.com>; Wan Jiabing
-> <wanjiabing@vivo.com>
-> Subject: [PATCH v2] ice: use min_t() to make code cleaner in ice_gnss
+On 3/21/2022 08:05, Sasha Neftin wrote:
+> igc_set_spd_dplx method not in use. This patch comes to tidy up
+> the driver code.
 > 
-> Fix the following coccicheck warning:
-> ./drivers/net/ethernet/intel/ice/ice_gnss.c:79:26-27: WARNING opportunity
-> for min()
-> 
-> Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
+> Reported-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
-> Changelog:
-> v2:
-> - Use typeof(bytes_left) instead of u8.
-> ---
->  drivers/net/ethernet/intel/ice/ice_gnss.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+>   drivers/net/ethernet/intel/igc/igc.h      |  1 -
+>   drivers/net/ethernet/intel/igc/igc_main.c | 50 -----------------------
+>   2 files changed, 51 deletions(-)
+Tested-by: Naama Meir <naamax.meir@linux.intel.com>
