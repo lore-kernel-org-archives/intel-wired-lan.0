@@ -1,9 +1,10 @@
 From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Tue, 5 Apr 2022 04:49:33 +0000
-Subject: [Intel-wired-lan] [next-queue v2] ice: Add mpls+tso support
-In-Reply-To: <1647576732-46414-1-git-send-email-jdamato@fastly.com>
-References: <1647576732-46414-1-git-send-email-jdamato@fastly.com>
-Message-ID: <BYAPR11MB33679027CBE4CEA415B9615CFCE49@BYAPR11MB3367.namprd11.prod.outlook.com>
+Date: Tue, 5 Apr 2022 04:50:01 +0000
+Subject: [Intel-wired-lan] [PATCH v2] ice: use min_t() to make code
+ cleaner in ice_gnss
+In-Reply-To: <20220321135947.378250-1-wanjiabing@vivo.com>
+References: <20220321135947.378250-1-wanjiabing@vivo.com>
+Message-ID: <BYAPR11MB33676930AB96198D69C234B0FCE49@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,35 +14,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 > -----Original Message-----
-> From: Joe Damato <jdamato@fastly.com>
-> Sent: Friday, March 18, 2022 9:42 AM
-> To: intel-wired-lan at lists.osuosl.org; kuba at kernel.org; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; Brandeburg, Jesse
-> <jesse.brandeburg@intel.com>; Kubalewski, Arkadiusz
-> <arkadiusz.kubalewski@intel.com>
-> Cc: Joe Damato <jdamato@fastly.com>
-> Subject: [next-queue v2] ice: Add mpls+tso support
+> From: Wan Jiabing <wanjiabing@vivo.com>
+> Sent: Monday, March 21, 2022 7:30 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
+> Jakub Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>;
+> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org
+> Cc: Lobakin, Alexandr <alexandr.lobakin@intel.com>; Wan Jiabing
+> <wanjiabing@vivo.com>
+> Subject: [PATCH v2] ice: use min_t() to make code cleaner in ice_gnss
 > 
-> Attempt to add mpls+tso support.
+> Fix the following coccicheck warning:
+> ./drivers/net/ethernet/intel/ice/ice_gnss.c:79:26-27: WARNING opportunity
+> for min()
 > 
-> I don't have ice hardware available to test myself, but I just implemented this
-> feature in i40e and thought it might be useful to implement for ice while this
-> is fresh in my brain.
-> 
-> Hoping some one at intel will be able to test this on my behalf.
-> 
-> v1 -> v2:
-> 	- In ice_tx_csum, only set ICE_TX_FLAGS_IPV6 if ip v6 is detected
-> 	  explicitly. All cases other than ipv4 or ipv6 leave first->tx_flags
-> 	  unset, which allows for ice_tx_csum to return -1 to indicate that
-> 	  csum offloading is not supported.
-> 
-> Signed-off-by: Joe Damato <jdamato@fastly.com>
+> Signed-off-by: Wan Jiabing <wanjiabing@vivo.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_main.c |  4 +++-
-> drivers/net/ethernet/intel/ice/ice_txrx.c | 29 +++++++++++++++++++++----
-> ----
->  2 files changed, 24 insertions(+), 9 deletions(-)
+> Changelog:
+> v2:
+> - Use typeof(bytes_left) instead of u8.
+> ---
+>  drivers/net/ethernet/intel/ice/ice_gnss.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
 
 Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
