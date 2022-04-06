@@ -1,75 +1,162 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 6 Apr 2022 07:34:37 +0200
-Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Fix possible overflow
- in LTR decoding
-In-Reply-To: <20220405155601.1443799-1-sasha.neftin@intel.com>
-References: <20220405155601.1443799-1-sasha.neftin@intel.com>
-Message-ID: <f0402937-8594-6ecb-c4f9-c6605dd73d77@molgen.mpg.de>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 06 Apr 2022 14:30:45 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ e19778e6c911691856447c3bf9617f00b3e1347f
+Message-ID: <624d3395.+SX8JdiaAS5CNhzD%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: e19778e6c911691856447c3bf9617f00b3e1347f  ice: clear cmd_type_offset_bsz for TX rings
 
+elapsed time: 724m
 
-Thank you for your patch.
+configs tested: 131
+configs skipped: 4
 
-Am 05.04.22 um 17:56 schrieb Sasha Neftin:
-> When we decode the latency and the max_latency u16 value does not fill
-> the required size
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Do you mean ?fit into? or ?is too small for the required size??
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+m68k                        m5407c3_defconfig
+powerpc                     pq2fads_defconfig
+sparc64                          alldefconfig
+m68k                            q40_defconfig
+arm                           tegra_defconfig
+arc                            hsdk_defconfig
+arm                        shmobile_defconfig
+m68k                        mvme16x_defconfig
+riscv                            allmodconfig
+mips                  maltasmvp_eva_defconfig
+sparc                       sparc32_defconfig
+sh                           se7722_defconfig
+powerpc                      tqm8xx_defconfig
+powerpc                     tqm8548_defconfig
+i386                             alldefconfig
+arm                        spear6xx_defconfig
+m68k                       bvme6000_defconfig
+m68k                       m5249evb_defconfig
+ia64                        generic_defconfig
+arm                           viper_defconfig
+powerpc                     tqm8541_defconfig
+xtensa                    smp_lx200_defconfig
+arm                          exynos_defconfig
+openrisc                            defconfig
+sh                            shmin_defconfig
+sh                            migor_defconfig
+sh                      rts7751r2d1_defconfig
+openrisc                  or1klitex_defconfig
+arc                          axs101_defconfig
+m68k                                defconfig
+sh                     magicpanelr2_defconfig
+powerpc                 mpc837x_mds_defconfig
+sparc                       sparc64_defconfig
+arm                          iop32x_defconfig
+riscv             nommu_k210_sdcard_defconfig
+arm                        mvebu_v7_defconfig
+sh                 kfr2r09-romimage_defconfig
+mips                           xway_defconfig
+xtensa                    xip_kc705_defconfig
+mips                          rb532_defconfig
+m68k                        m5307c3_defconfig
+x86_64                        randconfig-c001
+arm                  randconfig-c002-20220405
+ia64                             allmodconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+nios2                               defconfig
+arc                              allyesconfig
+csky                                defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+sparc                               defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allyesconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                         rhel-8.3-kunit
+x86_64                               rhel-8.3
 
-> and could lead to the wrong LTR representation.
+clang tested configs:
+x86_64                        randconfig-c007
+i386                          randconfig-c001
+powerpc              randconfig-c003-20220405
+riscv                randconfig-c006-20220405
+mips                 randconfig-c004-20220405
+arm                  randconfig-c002-20220405
+arm                       mainstone_defconfig
+arm                       spear13xx_defconfig
+powerpc                        fsp2_defconfig
+arm                           sama7_defconfig
+powerpc                   microwatt_defconfig
+riscv                            alldefconfig
+arm                      tct_hammer_defconfig
+powerpc                  mpc885_ads_defconfig
+arm                         shannon_defconfig
+powerpc                       ebony_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+hexagon              randconfig-r045-20220405
+riscv                randconfig-r042-20220405
+hexagon              randconfig-r041-20220405
 
-Maybe give an example of values leading to incorrect behavior?
-
-> Replace the u16 type with the u32 type and allow corrected LTR
-> representation.
-
-Maybe: Increase the variable size from u16 to u32, so the decoded 
-latency can be represented. Why are 32 bit enough? Why not 64 bit?
-
-Please use 75 characters per line.
-
-> Fixes: 44a13a5d99c7 ("e1000e: Fix the max snoop/no-snoop latency for 10M")
-> Reported-by: James Hutchinson <jahutchinson99@googlemail.com>
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=215689
-> Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-
-Add
-
-Tested-by: James Hutchinson <jahutchinson99@googlemail.com> (I219-V (rev 
-30))
-
-> ---
-> v2: added link tag
-> 
->   drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> index d60e2016d03c..e6c8e6d5234f 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> @@ -1009,8 +1009,8 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
->   {
->   	u32 reg = link << (E1000_LTRV_REQ_SHIFT + E1000_LTRV_NOSNOOP_SHIFT) |
->   	    link << E1000_LTRV_REQ_SHIFT | E1000_LTRV_SEND;
-> -	u16 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
-> -	u16 lat_enc_d = 0;	/* latency decoded */
-> +	u32 max_ltr_enc_d = 0;	/* maximum LTR decoded by platform */
-> +	u32 lat_enc_d = 0;	/* latency decoded */
->   	u16 lat_enc = 0;	/* latency encoded */
->   
->   	if (link) {
-
-The diff looks good.
-
-
-Kind regards,
-
-Paul
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
