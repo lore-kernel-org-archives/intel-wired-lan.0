@@ -1,24 +1,46 @@
 From: Olivier Matz <olivier.matz@6wind.com>
-Date: Wed,  6 Apr 2022 11:52:51 +0200
-Subject: [Intel-wired-lan] [PATCH net v2 1/2] ixgbe: fix bcast packets Rx on
- VF after promisc removal
+Date: Wed,  6 Apr 2022 11:52:52 +0200
+Subject: [Intel-wired-lan] [PATCH net v2 2/2] ixgbe: fix unexpected VLAN Rx
+ in promisc mode on VF
 In-Reply-To: <20220406095252.22338-1-olivier.matz@6wind.com>
 References: <20220406095252.22338-1-olivier.matz@6wind.com>
-Message-ID: <20220406095252.22338-2-olivier.matz@6wind.com>
+Message-ID: <20220406095252.22338-3-olivier.matz@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-After a VF requested to remove the promiscuous flag on an interface, the
-broadcast packets are not received anymore. This breaks some protocols
-like ARP.
+When the promiscuous mode is enabled on a VF, the IXGBE_VMOLR_VPE
+bit (VLAN Promiscuous Enable) is set. This means that the VF will
+receive packets whose VLAN is not the same than the VLAN of the VF.
 
-In ixgbe_update_vf_xcast_mode(), we should keep the IXGBE_VMOLR_BAM
-bit (Broadcast Accept) on promiscuous removal.
+For instance, in this situation:
 
-This flag is already set by default in ixgbe_set_vmolr() on VF reset.
+??????????    ??????????    ??????????
+?        ?    ?        ?    ?        ?
+?        ?    ?        ?    ?        ?
+?     VF0??????VF1  VF2??????VF3     ?
+?        ?    ?        ?    ?        ?
+??????????    ??????????    ??????????
+   VM1           VM2           VM3
+
+vf 0:  vlan 1000
+vf 1:  vlan 1000
+vf 2:  vlan 1001
+vf 3:  vlan 1001
+
+If we tcpdump on VF3, we see all the packets, even those transmitted
+on vlan 1000.
+
+This behavior prevents to bridge VF1 and VF2 in VM2, because it will
+create a loop: packets transmitted on VF1 will be received by VF2 and
+vice-versa, and bridged again through the software bridge.
+
+This patch remove the activation of VLAN Promiscuous when a VF enables
+the promiscuous mode. However, the IXGBE_VMOLR_UPE bit (Unicast
+Promiscuous) is kept, so that a VF receives all packets that has the
+same VLAN, whatever the destination MAC address.
 
 Fixes: 8443c1a4b192 ("ixgbe, ixgbevf: Add new mbox API xcast mode")
 Cc: stable at vger.kernel.org
@@ -29,21 +51,21 @@ Signed-off-by: Olivier Matz <olivier.matz@6wind.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 7f11c0a8e7a9..8d108a78941b 100644
+index 8d108a78941b..d4e63f0644c3 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1184,9 +1184,9 @@ static int ixgbe_update_vf_xcast_mode(struct ixgbe_adapter *adapter,
+@@ -1208,9 +1208,9 @@ static int ixgbe_update_vf_xcast_mode(struct ixgbe_adapter *adapter,
+ 			return -EPERM;
+ 		}
  
- 	switch (xcast_mode) {
- 	case IXGBEVF_XCAST_MODE_NONE:
--		disable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE |
-+		disable = IXGBE_VMOLR_ROMPE |
- 			  IXGBE_VMOLR_MPE | IXGBE_VMOLR_UPE | IXGBE_VMOLR_VPE;
--		enable = 0;
-+		enable = IXGBE_VMOLR_BAM;
+-		disable = 0;
++		disable = IXGBE_VMOLR_VPE;
+ 		enable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE |
+-			 IXGBE_VMOLR_MPE | IXGBE_VMOLR_UPE | IXGBE_VMOLR_VPE;
++			 IXGBE_VMOLR_MPE | IXGBE_VMOLR_UPE;
  		break;
- 	case IXGBEVF_XCAST_MODE_MULTI:
- 		disable = IXGBE_VMOLR_MPE | IXGBE_VMOLR_UPE | IXGBE_VMOLR_VPE;
+ 	default:
+ 		return -EOPNOTSUPP;
 -- 
 2.30.2
 
