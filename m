@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Thu, 07 Apr 2022 15:07:49 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 41c82a152eb88d877812f7302123f0d15b377a70
-Message-ID: <624e8dc5.NXYXkpENJBNNaAfw%lkp@intel.com>
+Date: Thu, 07 Apr 2022 15:07:54 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ edce337186745883e13a9f86e43c35739e909ddc
+Message-ID: <624e8dca.PU5V9EHmMxwdWueV%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 41c82a152eb88d877812f7302123f0d15b377a70  ice: return proper error code in ice_add_adv_rule
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: edce337186745883e13a9f86e43c35739e909ddc  ixgbe: ensure IPsec VF<->PF compatibility
 
-elapsed time: 723m
+elapsed time: 724m
 
-configs tested: 99
+configs tested: 101
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -26,24 +26,27 @@ arm                                 defconfig
 arm                              allmodconfig
 arm64                               defconfig
 arm64                            allyesconfig
-i386                          randconfig-c001
 sh                           se7343_defconfig
 openrisc                            defconfig
 openrisc                         alldefconfig
 sh                        edosk7705_defconfig
+m68k                          atari_defconfig
+arm                           stm32_defconfig
+powerpc                     stx_gp3_defconfig
+parisc                              defconfig
+powerpc                      cm5200_defconfig
 m68k                        m5407c3_defconfig
 powerpc                         wii_defconfig
 arc                        vdk_hs38_defconfig
 arm                            pleb_defconfig
-nios2                         10m50_defconfig
-mips                    maltaup_xpa_defconfig
-powerpc                     mpc83xx_defconfig
-sh                        sh7785lcr_defconfig
-powerpc                mpc7448_hpc2_defconfig
-arm                            qcom_defconfig
-ia64                             alldefconfig
-x86_64                        randconfig-c001
+powerpc                   currituck_defconfig
+powerpc                       eiger_defconfig
+sh                         ap325rxa_defconfig
+sh                               j2_defconfig
+sh                        sh7763rdp_defconfig
+i386                          randconfig-c001
 arm                  randconfig-c002-20220406
+x86_64                        randconfig-c001
 ia64                             allmodconfig
 ia64                             allyesconfig
 ia64                                defconfig
@@ -62,7 +65,6 @@ arc                                 defconfig
 sh                               allmodconfig
 s390                                defconfig
 s390                             allmodconfig
-parisc                              defconfig
 parisc64                            defconfig
 parisc                           allyesconfig
 s390                             allyesconfig
@@ -83,19 +85,22 @@ x86_64                        randconfig-a002
 i386                          randconfig-a001
 i386                          randconfig-a003
 i386                          randconfig-a005
-i386                          randconfig-a014
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
 i386                          randconfig-a012
+i386                          randconfig-a014
 i386                          randconfig-a016
 arc                  randconfig-r043-20220406
 s390                 randconfig-r044-20220406
 riscv                randconfig-r042-20220406
-riscv                            allmodconfig
-riscv                    nommu_k210_defconfig
-riscv                             allnoconfig
-riscv                            allyesconfig
 riscv                               defconfig
 riscv                    nommu_virt_defconfig
 riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
 um                           x86_64_defconfig
 um                             i386_defconfig
 x86_64                          rhel-8.3-func
@@ -107,9 +112,9 @@ x86_64                               rhel-8.3
 x86_64                           allyesconfig
 
 clang tested configs:
-mips                        maltaup_defconfig
-arm                       versatile_defconfig
-powerpc                      walnut_defconfig
+arm                       mainstone_defconfig
+arm                        multi_v5_defconfig
+mips                     cu1830-neo_defconfig
 x86_64                        randconfig-a005
 x86_64                        randconfig-a003
 x86_64                        randconfig-a001
@@ -119,9 +124,6 @@ i386                          randconfig-a004
 x86_64                        randconfig-a012
 x86_64                        randconfig-a014
 x86_64                        randconfig-a016
-i386                          randconfig-a013
-i386                          randconfig-a015
-i386                          randconfig-a011
 
 -- 
 0-DAY CI Kernel Test Service
