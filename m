@@ -1,47 +1,55 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 7 Apr 2022 07:14:28 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: i40e_main: fix a missing check
- on list iterator
-In-Reply-To: <20220327063606.7315-1-xiam0nd.tong@gmail.com>
-References: <20220327063606.7315-1-xiam0nd.tong@gmail.com>
-Message-ID: <BYAPR11MB33679D2463F0E8B3833CC64BFCE69@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Neftin, Sasha <sasha.neftin@intel.com>
+Date: Thu, 7 Apr 2022 14:03:16 +0300
+Subject: [Intel-wired-lan] I218-LM uses > 1 W with low traffic
+In-Reply-To: <bff5f4d7-bb85-e3fa-b8b1-76d1b8e0133a@molgen.mpg.de>
+References: <bff5f4d7-bb85-e3fa-b8b1-76d1b8e0133a@molgen.mpg.de>
+Message-ID: <9505bc04-edbd-ab64-bc95-a06150bbba38@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 4/6/2022 13:09, Paul Menzel wrote:
+> Dear Linux folks,
+> 
+> 
+> On a Dell Latitude E7250 with Debian sid/unstable, PowerTOP 2.14 reports 
+> the network device uses over 1.5 Watt, which is almost ten percent of 
+> the whole system.
+> 
+>  ????? 1.62 W??? 435,9 pkts/s??????????????? Device 
+> Netzwerkschnittstelle: eno1 (e1000e)
+> 
+>  ??? $ lspci -nn | grep Ether
+>  ??? 00:19.0 Ethernet controller [0200]: Intel Corporation Ethernet 
+> Connection (3) I218-LM [8086:15a2] (rev 03)
+>  ??? $ uname -a
+>  ??? Linux ersatz 5.17.0-trunk-amd64 #1 SMP PREEMPT Debian 5.17.1-1~exp1 
+> (2022-03-29) x86_64 GNU/Linux
+> 
+>  From atop:
+> 
+>  ??? NET |? eno1????? 0% |? pcki??? 2421 |? pcko??? 2194 |? sp 1000 Mbps 
+> |? si 1501 Kbps? | so? 140 Kbps? | erri?????? 0? | erro?????? 0? | drpo 
+>  ???? 0? |
+> 
+> So I receive 1.5 Mbps, and send 0.14 Mbps.
+> 
+> Is such high energy usage expected of the network hardware?
+Hello Paul,
+It is not the power consumption we expected.How do you measure it? (as I 
+know powertop does not show it)
+We will try to find out about power consumption.
+> 
+> 
+> Kind regards,
+> 
+> Paul
+Thanks,
+Sasha
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Xiaomeng Tong
-> Sent: Sunday, March 27, 2022 12:06 PM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>
-> Cc: pabeni at redhat.com; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org; stable at vger.kernel.org; Xiaomeng Tong
-> <xiam0nd.tong@gmail.com>; jeffrey.t.kirsher at intel.com;
-> netdev at vger.kernel.org; kuba at kernel.org; davem at davemloft.net
-> Subject: [Intel-wired-lan] [PATCH] i40e: i40e_main: fix a missing check on list
-> iterator
-> 
-> The bug is here:
-> 	ret = i40e_add_macvlan_filter(hw, ch->seid, vdev->dev_addr,
-> &aq_err);
-> 
-> The list iterator 'ch' will point to a bogus position containing HEAD if the list is
-> empty or no element is found. This case must be checked before any use of
-> the iterator, otherwise it will lead to a invalid memory access.
-> 
-> To fix this bug, use a new variable 'iter' as the list iterator, while use the origin
-> variable 'ch' as a dedicated pointer to point to the found element.
-> 
-> Cc: stable at vger.kernel.org
-> Fixes: 1d8d80b4e4ff6 ("i40e: Add macvlan support on i40e")
-> Signed-off-by: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 27 +++++++++++----------
->  1 file changed, 14 insertions(+), 13 deletions(-)
-> 
-
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
