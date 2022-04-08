@@ -1,11 +1,11 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 8 Apr 2022 08:58:19 -0700
-Subject: [Intel-wired-lan] [PATCH v2 net] ice: arfs: fix use-after-free
- when freeing @rx_cpu_rmap
-In-Reply-To: <20220408123120.1829671-1-alexandr.lobakin@intel.com>
-References: <20220404161509.3489310-1-alexandr.lobakin@intel.com>
- <20220408123120.1829671-1-alexandr.lobakin@intel.com>
-Message-ID: <607fe8b6-2f30-ac0c-996a-9d8c4cfeaba5@intel.com>
+Date: Fri, 8 Apr 2022 09:01:05 -0700
+Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix incorrect locking in
+ ice_vc_process_vf_msg()
+In-Reply-To: <20220408134714.1834349-1-alexandr.lobakin@intel.com>
+References: <20220401104052.1711721-1-ivecera@redhat.com>
+ <20220408134714.1834349-1-alexandr.lobakin@intel.com>
+Message-ID: <97c58b06-11b5-182b-eed2-e5a74824241c@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,91 +13,76 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-On 4/8/2022 5:31 AM, Alexander Lobakin wrote:
-> From: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Date: Mon, 4 Apr 2022 18:15:09 +0200
+On 4/8/2022 6:47 AM, Alexander Lobakin wrote:
+> From: Ivan Vecera <ivecera@redhat.com>
+> Date: Fri,  1 Apr 2022 12:40:52 +0200
 >
->> The CI testing bots triggered the following splat:
+>> Usage of mutex_trylock() in ice_vc_process_vf_msg() is incorrect
+>> because message sent from VF is ignored and never processed.
 >>
->> [  718.203054] BUG: KASAN: use-after-free in free_irq_cpu_rmap+0x53/0x80
->> [  718.206349] Read of size 4 at addr ffff8881bd127e00 by task sh/20834
->> [  718.212852] CPU: 28 PID: 20834 Comm: sh Kdump: loaded Tainted: G S      W IOE     5.17.0-rc8_nextqueue-devqueue-02643-g23f3121aca93 #1
->> [  718.219695] Hardware name: Intel Corporation S2600WFT/S2600WFT, BIOS SE5C620.86B.02.01.0012.070720200218 07/07/2020
->> [  718.223418] Call Trace:
->> [  718.227139]
->> [  718.230783]  dump_stack_lvl+0x33/0x42
->> [  718.234431]  print_address_description.constprop.9+0x21/0x170
->> [  718.238177]  ? free_irq_cpu_rmap+0x53/0x80
->> [  718.241885]  ? free_irq_cpu_rmap+0x53/0x80
->> [  718.245539]  kasan_report.cold.18+0x7f/0x11b
->> [  718.249197]  ? free_irq_cpu_rmap+0x53/0x80
->> [  718.252852]  free_irq_cpu_rmap+0x53/0x80
->> [  718.256471]  ice_free_cpu_rx_rmap.part.11+0x37/0x50 [ice]
->> [  718.260174]  ice_remove_arfs+0x5f/0x70 [ice]
->> [  718.263810]  ice_rebuild_arfs+0x3b/0x70 [ice]
->> [  718.267419]  ice_rebuild+0x39c/0xb60 [ice]
->> [  718.270974]  ? asm_sysvec_apic_timer_interrupt+0x12/0x20
->> [  718.274472]  ? ice_init_phy_user_cfg+0x360/0x360 [ice]
->> [  718.278033]  ? delay_tsc+0x4a/0xb0
->> [  718.281513]  ? preempt_count_sub+0x14/0xc0
->> [  718.284984]  ? delay_tsc+0x8f/0xb0
->> [  718.288463]  ice_do_reset+0x92/0xf0 [ice]
->> [  718.292014]  ice_pci_err_resume+0x91/0xf0 [ice]
->> [  718.295561]  pci_reset_function+0x53/0x80
->> <...>
->> [  718.393035] Allocated by task 690:
->> [  718.433497] Freed by task 20834:
->> [  718.495688] Last potentially related work creation:
->> [  718.568966] The buggy address belongs to the object at ffff8881bd127e00
->>                  which belongs to the cache kmalloc-96 of size 96
->> [  718.574085] The buggy address is located 0 bytes inside of
->>                  96-byte region [ffff8881bd127e00, ffff8881bd127e60)
->> [  718.579265] The buggy address belongs to the page:
->> [  718.598905] Memory state around the buggy address:
->> [  718.601809]  ffff8881bd127d00: fa fb fb fb fb fb fb fb fb fb fb fb fc fc fc fc
->> [  718.604796]  ffff8881bd127d80: 00 00 00 00 00 00 00 00 00 00 fc fc fc fc fc fc
->> [  718.607794] >ffff8881bd127e00: fa fb fb fb fb fb fb fb fb fb fb fb fc fc fc fc
->> [  718.610811]                    ^
->> [  718.613819]  ffff8881bd127e80: 00 00 00 00 00 00 00 00 00 00 00 00 fc fc fc fc
->> [  718.617107]  ffff8881bd127f00: fa fb fb fb fb fb fb fb fb fb fb fb fc fc fc fc
+>> Use mutex_lock() instead to fix the issue. It is safe because this
+>> mutex is used to prevent races between VF related NDOs and
+>> handlers processing request messages from VF and these handlers
+>> are running in ice_service_task() context. Additionally move this
+>> mutex lock prior ice_vc_is_opcode_allowed() call to avoid potential
+>> races during allowlist acccess.
 >>
->> This is due to that free_irq_cpu_rmap() is always being called
->> *after* (devm_)free_irq() and thus it tries to work with IRQ descs
->> already freed. For example, on device reset the driver frees the
->> rmap right before allocating a new one (the splat above).
->> Make rmap creation and freeing function symmetrical with
->> {request,free}_irq() calls i.e. do that on ifup/ifdown instead
->> of device probe/remove/resume. These operations can be performed
->> independently from the actual device aRFS configuration.
->> Also, make sure ice_vsi_free_irq() clears IRQ affinity notifiers
->> only when aRFS is disabled -- otherwise, CPU rmap sets and clears
->> its own and they must not be touched manually.
->>
->> Fixes: 28bf26724fdb0 ("ice: Implement aRFS")
->> Co-developed-by: Ivan Vecera <ivecera@redhat.com>
+>> Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
 >> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
->> Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
-> Bah, forgot to mention in v2 that it's an urgent fix. Tony, are you
-> okay with posting it to netdev or allowing it to go directly to
-> -net? It's been tested by Ivan already (I had also asked Konrad, but
-> he hasn't replied yet).
-
-I have another patch to send as well. I'll send that and this one to 
-netdev today.
-
-Thanks,
-
-Tony
-
->> ---
->>  From v1[0]:
->>   - remove the obsolete `!vsi->arfs_fltr_list` check from
->>     ice_free_cpu_rx_rmap() leading to a leak and trace (Ivan).
->>
->> [0] https://lore.kernel.org/netdev/20220404132832.1936529-1-alexandr.lobakin at intel.com
->> ---
-> --- 8< ---
+> Hey Tony,
 >
+> I guess you missed this one due to being on a vacation previously.
+> It's been previously reviewed IIRC, could you take it into
+> net-queue?
+
+I remember applying this but I don't see it on the tree so I must be 
+mistaken. :( I'll get it applied, thanks for catching.
+
+-Tony
+
+>> ---
+>>   drivers/net/ethernet/intel/ice/ice_virtchnl.c | 21 +++++++------------
+>>   1 file changed, 7 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+>> index 3f1a63815bac..a465f3743ffc 100644
+>> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+>> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+>> @@ -3642,14 +3642,6 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+>>   			err = -EINVAL;
+>>   	}
+>>   
+>> -	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
+>> -		ice_vc_send_msg_to_vf(vf, v_opcode,
+>> -				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED, NULL,
+>> -				      0);
+>> -		ice_put_vf(vf);
+>> -		return;
+>> -	}
+>> -
+>>   error_handler:
+>>   	if (err) {
+>>   		ice_vc_send_msg_to_vf(vf, v_opcode, VIRTCHNL_STATUS_ERR_PARAM,
+>> @@ -3660,12 +3652,13 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+>>   		return;
+>>   	}
+>>   
+>> -	/* VF is being configured in another context that triggers a VFR, so no
+>> -	 * need to process this message
+>> -	 */
+>> -	if (!mutex_trylock(&vf->cfg_lock)) {
+>> -		dev_info(dev, "VF %u is being configured in another context that will trigger a VFR, so there is no need to handle this message\n",
+>> -			 vf->vf_id);
+>> +	mutex_lock(&vf->cfg_lock);
+>> +
+>> +	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
+>> +		ice_vc_send_msg_to_vf(vf, v_opcode,
+>> +				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED, NULL,
+>> +				      0);
+>> +		mutex_unlock(&vf->cfg_lock);
+>>   		ice_put_vf(vf);
+>>   		return;
+>>   	}
 >> -- 
 >> 2.35.1
 > Thanks,
