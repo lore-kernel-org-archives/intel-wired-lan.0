@@ -1,262 +1,94 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 08 Apr 2022 13:03:32 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- e8bd70250a821edb541c3abe1eacdad9f8dc7adf
-Message-ID: <624fc224.sEvNe3cePZcl8SHB%lkp@intel.com>
+From: Wojciech Drewek <wojciech.drewek@intel.com>
+Date: Fri,  8 Apr 2022 09:56:10 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: fix crash in switchdev mode
+Message-ID: <20220408075610.445584-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: e8bd70250a821edb541c3abe1eacdad9f8dc7adf  prestera: acl: add action hw_stats support
+Below steps end up with crash:
+- modprobe ice
+- devlink dev eswitch set $PF1_PCI mode switchdev
+- echo 64 > /sys/class/net/$PF1/device/sriov_numvfs
+- rmmod ice
 
-elapsed time: 1224m
+Calling ice_eswitch_port_start_xmit while the process of removing
+VFs is in progress ends up with NULL pointer dereference.
+That's because PR netdev is not released but some resources
+are already freed. Fix it by checking if ICE_VF_DIS bit is set.
 
-configs tested: 228
-configs skipped: 4
+Call trace:
+[ 1379.595146] BUG: kernel NULL pointer dereference, address: 0000000000000040
+[ 1379.595284] #PF: supervisor read access in kernel mode
+[ 1379.595410] #PF: error_code(0x0000) - not-present page
+[ 1379.595535] PGD 0 P4D 0
+[ 1379.595657] Oops: 0000 [#1] PREEMPT SMP PTI
+[ 1379.595783] CPU: 4 PID: 974 Comm: NetworkManager Kdump: loaded Tainted: G           OE     5.17.0-rc8_mrq_dev-queue+ #12
+[ 1379.595926] Hardware name: Intel Corporation S1200SP/S1200SP, BIOS S1200SP.86B.03.01.0042.013020190050 01/30/2019
+[ 1379.596063] RIP: 0010:ice_eswitch_port_start_xmit+0x46/0xd0 [ice]
+[ 1379.596292] Code: c7 c8 09 00 00 e8 9a c9 fc ff 84 c0 0f 85 82 00 00 00 4c 89 e7 e8 ca 70 fe ff 48 8b 7d 58 48 89 c3 48 85 ff 75 5e 48 8b 53 20 <8b> 42 40 85 c0 74 78 8d 48 01 f0 0f b1 4a 40 75 f2 0f b6 95 84 00
+[ 1379.596456] RSP: 0018:ffffaba0c0d7bad0 EFLAGS: 00010246
+[ 1379.596584] RAX: ffff969c14c71680 RBX: ffff969c14c71680 RCX: 000100107a0f0000
+[ 1379.596715] RDX: 0000000000000000 RSI: ffff969b9d631000 RDI: 0000000000000000
+[ 1379.596846] RBP: ffff969c07b46500 R08: ffff969becfca8ac R09: 0000000000000001
+[ 1379.596977] R10: 0000000000000004 R11: ffffaba0c0d7bbec R12: ffff969b9d631000
+[ 1379.597106] R13: ffffffffc08357a0 R14: ffff969c07b46500 R15: ffff969b9d631000
+[ 1379.597237] FS:  00007f72c0e25c80(0000) GS:ffff969f13500000(0000) knlGS:0000000000000000
+[ 1379.597414] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 1379.597562] CR2: 0000000000000040 CR3: 000000012b316006 CR4: 00000000003706e0
+[ 1379.597713] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 1379.597863] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[ 1379.598015] Call Trace:
+[ 1379.598153]  <TASK>
+[ 1379.598294]  dev_hard_start_xmit+0xd9/0x220
+[ 1379.598444]  sch_direct_xmit+0x8a/0x340
+[ 1379.598592]  __dev_queue_xmit+0xa3c/0xd30
+[ 1379.598739]  ? packet_parse_headers+0xb4/0xf0
+[ 1379.598890]  packet_sendmsg+0xa15/0x1620
+[ 1379.599038]  ? __check_object_size+0x46/0x140
+[ 1379.599186]  sock_sendmsg+0x5e/0x60
+[ 1379.599330]  ____sys_sendmsg+0x22c/0x270
+[ 1379.599474]  ? import_iovec+0x17/0x20
+[ 1379.599622]  ? sendmsg_copy_msghdr+0x59/0x90
+[ 1379.599771]  ___sys_sendmsg+0x81/0xc0
+[ 1379.599917]  ? __pollwait+0xd0/0xd0
+[ 1379.600061]  ? preempt_count_add+0x68/0xa0
+[ 1379.600210]  ? _raw_write_lock_irq+0x1a/0x40
+[ 1379.600369]  ? ep_done_scan+0xc9/0x110
+[ 1379.600494]  ? _raw_spin_unlock_irqrestore+0x25/0x40
+[ 1379.600622]  ? preempt_count_add+0x68/0xa0
+[ 1379.600747]  ? _raw_spin_lock_irq+0x1a/0x40
+[ 1379.600899]  ? __fget_light+0x8f/0x110
+[ 1379.601024]  __sys_sendmsg+0x49/0x80
+[ 1379.601148]  ? release_ds_buffers+0x50/0xe0
+[ 1379.601274]  do_syscall_64+0x3b/0x90
+[ 1379.601399]  entry_SYSCALL_64_after_hwframe+0x44/0xae
+[ 1379.601525] RIP: 0033:0x7f72c1e2e35d
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Fixes: f5396b8a663f ("ice: switchdev slow path")
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Reported-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-gcc tested configs:
-arm64                               defconfig
-arm64                            allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                          randconfig-c001
-arm                        spear6xx_defconfig
-sh                        sh7757lcr_defconfig
-xtensa                generic_kc705_defconfig
-sh                           se7712_defconfig
-sh                           se7343_defconfig
-openrisc                            defconfig
-openrisc                         alldefconfig
-sh                        edosk7705_defconfig
-xtensa                  nommu_kc705_defconfig
-powerpc                 linkstation_defconfig
-powerpc                     mpc83xx_defconfig
-riscv                    nommu_k210_defconfig
-arm                        multi_v7_defconfig
-arm                        keystone_defconfig
-powerpc                     sequoia_defconfig
-sh                          sdk7780_defconfig
-s390                             allyesconfig
-h8300                    h8300h-sim_defconfig
-arm                           h5000_defconfig
-sh                         apsh4a3a_defconfig
-arm                        shmobile_defconfig
-sh                          rsk7201_defconfig
-powerpc                     asp8347_defconfig
-arm                      integrator_defconfig
-powerpc                     taishan_defconfig
-sh                          polaris_defconfig
-ia64                             allmodconfig
-m68k                        m5407c3_defconfig
-powerpc                         wii_defconfig
-arc                        vdk_hs38_defconfig
-arm                            pleb_defconfig
-powerpc                      bamboo_defconfig
-sh                           se7722_defconfig
-arm                          iop32x_defconfig
-arc                            hsdk_defconfig
-arm                         s3c6400_defconfig
-powerpc                         ps3_defconfig
-h8300                       h8s-sim_defconfig
-powerpc                      ep88xc_defconfig
-powerpc                      ppc6xx_defconfig
-sh                           se7780_defconfig
-sparc64                          alldefconfig
-mips                     decstation_defconfig
-arm                            hisi_defconfig
-arm                         lubbock_defconfig
-sh                              ul2_defconfig
-arm                        cerfcube_defconfig
-ia64                      gensparse_defconfig
-arm                     eseries_pxa_defconfig
-arc                                 defconfig
-powerpc                    sam440ep_defconfig
-arm                          pxa910_defconfig
-arm                          gemini_defconfig
-sh                     sh7710voipgw_defconfig
-openrisc                    or1ksim_defconfig
-arm                        clps711x_defconfig
-sh                   secureedge5410_defconfig
-arm                       imx_v6_v7_defconfig
-m68k                        mvme16x_defconfig
-arc                              alldefconfig
-sparc                       sparc32_defconfig
-m68k                          sun3x_defconfig
-sh                          urquell_defconfig
-arm                        trizeps4_defconfig
-m68k                            q40_defconfig
-nios2                         3c120_defconfig
-ia64                          tiger_defconfig
-sparc64                             defconfig
-arm                             ezx_defconfig
-powerpc                 mpc834x_itx_defconfig
-sh                   sh7770_generic_defconfig
-ia64                            zx1_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                      tqm8xx_defconfig
-sh                        sh7763rdp_defconfig
-sh                               j2_defconfig
-um                           x86_64_defconfig
-powerpc                       eiger_defconfig
-sh                         ap325rxa_defconfig
-powerpc                   currituck_defconfig
-arc                    vdk_hs38_smp_defconfig
-arm                          lpd270_defconfig
-sh                ecovec24-romimage_defconfig
-mips                     loongson1b_defconfig
-powerpc                    adder875_defconfig
-parisc                           alldefconfig
-sh                           se7619_defconfig
-arc                      axs103_smp_defconfig
-ia64                         bigsur_defconfig
-mips                      loongson3_defconfig
-arm                             pxa_defconfig
-sparc                               defconfig
-powerpc                      pcm030_defconfig
-powerpc64                           defconfig
-powerpc                       ppc64_defconfig
-ia64                        generic_defconfig
-arm                       multi_v4t_defconfig
-powerpc                     tqm8541_defconfig
-mips                      maltasmvp_defconfig
-riscv                               defconfig
-powerpc                     stx_gp3_defconfig
-mips                            ar7_defconfig
-xtensa                          iss_defconfig
-arm                         assabet_defconfig
-mips                        vocore2_defconfig
-sh                               allmodconfig
-m68k                          multi_defconfig
-xtensa                           alldefconfig
-i386                             alldefconfig
-x86_64                        randconfig-c001
-arm                  randconfig-c002-20220406
-arm                  randconfig-c002-20220407
-arm                  randconfig-c002-20220408
-ia64                             allyesconfig
-ia64                                defconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-s390                                defconfig
-s390                             allmodconfig
-parisc                              defconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a011
-x86_64                        randconfig-a013
-x86_64                        randconfig-a015
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-arc                  randconfig-r043-20220406
-arc                  randconfig-r043-20220407
-arc                  randconfig-r043-20220408
-s390                 randconfig-r044-20220408
-s390                 randconfig-r044-20220406
-riscv                randconfig-r042-20220406
-riscv                randconfig-r042-20220408
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                             allnoconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-x86_64                    rhel-8.3-kselftests
-um                             i386_defconfig
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                         rhel-8.3-kunit
-x86_64                               rhel-8.3
-
-clang tested configs:
-x86_64                        randconfig-c007
-i386                          randconfig-c001
-powerpc              randconfig-c003-20220408
-riscv                randconfig-c006-20220408
-mips                 randconfig-c004-20220408
-arm                  randconfig-c002-20220408
-powerpc              randconfig-c003-20220407
-powerpc              randconfig-c003-20220406
-riscv                randconfig-c006-20220407
-riscv                randconfig-c006-20220406
-mips                 randconfig-c004-20220407
-mips                 randconfig-c004-20220406
-arm                  randconfig-c002-20220406
-arm                  randconfig-c002-20220407
-s390                 randconfig-c005-20220406
-s390                 randconfig-c005-20220407
-powerpc                      pasemi_defconfig
-arm                            mps2_defconfig
-arm                       aspeed_g4_defconfig
-arm                     davinci_all_defconfig
-powerpc                 mpc8313_rdb_defconfig
-arm                              alldefconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                   bluestone_defconfig
-mips                        qi_lb60_defconfig
-mips                           ip28_defconfig
-powerpc                     skiroot_defconfig
-arm                        magician_defconfig
-powerpc                       ebony_defconfig
-mips                     cu1000-neo_defconfig
-powerpc                      ppc44x_defconfig
-powerpc                    ge_imp3a_defconfig
-powerpc                   microwatt_defconfig
-powerpc                    socrates_defconfig
-powerpc                 mpc832x_rdb_defconfig
-arm                  colibri_pxa270_defconfig
-arm                             mxs_defconfig
-arm                            dove_defconfig
-arm                          pcm027_defconfig
-riscv                             allnoconfig
-arm                          collie_defconfig
-arm                       mainstone_defconfig
-riscv                            alldefconfig
-powerpc                     powernv_defconfig
-mips                           rs90_defconfig
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 9a84d746a6c4..6a463b242c7d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -361,7 +361,8 @@ ice_eswitch_port_start_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 	np = netdev_priv(netdev);
+ 	vsi = np->vsi;
+ 
+-	if (ice_is_reset_in_progress(vsi->back->state))
++	if (ice_is_reset_in_progress(vsi->back->state) ||
++	    test_bit(ICE_VF_DIS, vsi->back->state))
+ 		return NETDEV_TX_BUSY;
+ 
+ 	repr = ice_netdev_to_repr(netdev);
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.31.1
+
