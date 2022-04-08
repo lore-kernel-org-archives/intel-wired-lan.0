@@ -1,56 +1,203 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 7 Apr 2022 17:58:57 +0200
-Subject: [Intel-wired-lan] I218-LM uses > 1 W with low traffic
-In-Reply-To: <9505bc04-edbd-ab64-bc95-a06150bbba38@intel.com>
-References: <bff5f4d7-bb85-e3fa-b8b1-76d1b8e0133a@molgen.mpg.de>
- <9505bc04-edbd-ab64-bc95-a06150bbba38@intel.com>
-Message-ID: <20e6d930-c50f-45b7-f98e-3d11c35a09d1@molgen.mpg.de>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 08 Apr 2022 13:03:57 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
+ e33163a40d1a1f7fead2ce26f9b75da6b581a49e
+Message-ID: <624fc23d.Wg62dFmI+UyccRw3%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
+branch HEAD: e33163a40d1a1f7fead2ce26f9b75da6b581a49e  ice: switch: convert packet template match code to rodata
 
+elapsed time: 732m
 
-Am 07.04.22 um 13:03 schrieb Neftin, Sasha:
-> On 4/6/2022 13:09, Paul Menzel wrote:
+configs tested: 169
+configs skipped: 4
 
->> On a Dell Latitude E7250 with Debian sid/unstable, PowerTOP 2.14 
->> reports the network device uses over 1.5 Watt, which is almost ten 
->> percent of the whole system.
->>
->> ?????? 1.62 W??? 435,9 pkts/s??????????????? Device Netzwerkschnittstelle: eno1 (e1000e)
->>
->> ???? $ lspci -nn | grep Ether
->> ???? 00:19.0 Ethernet controller [0200]: Intel Corporation Ethernet Connection (3) I218-LM [8086:15a2] (rev 03)
->> ???? $ uname -a
->> ???? Linux ersatz 5.17.0-trunk-amd64 #1 SMP PREEMPT Debian 5.17.1-1~exp1 (2022-03-29) x86_64 GNU/Linux
->>
->> ?From atop:
->>
->> ???? NET |? eno1????? 0% |? pcki??? 2421 |? pcko??? 2194 |? sp 1000 Mbps |? si 1501 Kbps? | so? 140 Kbps? | erri?????? 0? | erro?????? 0? | drpo ????? 0? |
->>
->> So I receive 1.5 Mbps, and send 0.14 Mbps.
->>
->> Is such high energy usage expected of the network hardware?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> It is not the power consumption we expected.How do you measure it? (as I 
-> know powertop does not show it)
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+arm                           h5000_defconfig
+sh                         apsh4a3a_defconfig
+arm                        shmobile_defconfig
+sh                          rsk7201_defconfig
+powerpc                     asp8347_defconfig
+arm                      integrator_defconfig
+powerpc                     taishan_defconfig
+sh                          polaris_defconfig
+powerpc                      bamboo_defconfig
+sh                           se7722_defconfig
+arm                          iop32x_defconfig
+arc                            hsdk_defconfig
+powerpc                      ep88xc_defconfig
+powerpc                      ppc6xx_defconfig
+sh                           se7780_defconfig
+sparc64                          alldefconfig
+mips                     decstation_defconfig
+arm                            hisi_defconfig
+arm                         lubbock_defconfig
+sh                              ul2_defconfig
+arm                        cerfcube_defconfig
+ia64                      gensparse_defconfig
+arm                          gemini_defconfig
+sh                     sh7710voipgw_defconfig
+openrisc                    or1ksim_defconfig
+arm                       imx_v6_v7_defconfig
+m68k                        mvme16x_defconfig
+sh                        sh7757lcr_defconfig
+ia64                          tiger_defconfig
+sparc64                             defconfig
+arm                             ezx_defconfig
+powerpc                 mpc834x_itx_defconfig
+arm                        clps711x_defconfig
+sh                   sh7770_generic_defconfig
+ia64                            zx1_defconfig
+powerpc                      mgcoge_defconfig
+powerpc                      tqm8xx_defconfig
+arm                             pxa_defconfig
+sparc                               defconfig
+powerpc                      pcm030_defconfig
+powerpc64                           defconfig
+powerpc                       ppc64_defconfig
+ia64                        generic_defconfig
+arm                       multi_v4t_defconfig
+arc                        vdk_hs38_defconfig
+sh                ecovec24-romimage_defconfig
+riscv                               defconfig
+powerpc                     stx_gp3_defconfig
+ia64                         bigsur_defconfig
+mips                            ar7_defconfig
+xtensa                          iss_defconfig
+arm                        multi_v7_defconfig
+m68k                          multi_defconfig
+xtensa                           alldefconfig
+sh                          sdk7780_defconfig
+i386                             alldefconfig
+mips                        vocore2_defconfig
+x86_64                        randconfig-c001
+arm                  randconfig-c002-20220408
+arm                  randconfig-c002-20220406
+arm                  randconfig-c002-20220407
+ia64                             allmodconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+csky                                defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+arc                  randconfig-r043-20220406
+arc                  randconfig-r043-20220407
+arc                  randconfig-r043-20220408
+s390                 randconfig-r044-20220408
+s390                 randconfig-r044-20220406
+riscv                randconfig-r042-20220406
+riscv                randconfig-r042-20220408
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+riscv                    nommu_k210_defconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                         rhel-8.3-kunit
+x86_64                               rhel-8.3
 
-On my system, PowerTOP shows it. Though maybe it?s a bug in PowerTOP?s 
-power usage estimation algorithm. No idea. At least with no network 
-cable connected, it shows zero Watts being used.
+clang tested configs:
+x86_64                        randconfig-c007
+i386                          randconfig-c001
+powerpc              randconfig-c003-20220408
+riscv                randconfig-c006-20220408
+mips                 randconfig-c004-20220408
+arm                  randconfig-c002-20220408
+s390                 randconfig-c005-20220406
+s390                 randconfig-c005-20220407
+powerpc              randconfig-c003-20220407
+powerpc              randconfig-c003-20220406
+riscv                randconfig-c006-20220407
+riscv                randconfig-c006-20220406
+mips                 randconfig-c004-20220407
+mips                 randconfig-c004-20220406
+arm                  randconfig-c002-20220406
+arm                  randconfig-c002-20220407
+powerpc                      pasemi_defconfig
+arm                            mps2_defconfig
+arm                       aspeed_g4_defconfig
+arm                     davinci_all_defconfig
+powerpc                   bluestone_defconfig
+mips                        qi_lb60_defconfig
+mips                           ip28_defconfig
+powerpc                     skiroot_defconfig
+arm                        magician_defconfig
+powerpc                       ebony_defconfig
+powerpc                   microwatt_defconfig
+powerpc                    socrates_defconfig
+arm                          pcm027_defconfig
+riscv                             allnoconfig
+arm                          collie_defconfig
+arm                       mainstone_defconfig
+riscv                            alldefconfig
+powerpc                     powernv_defconfig
+mips                           rs90_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
 
-         0 mW      0,0 pkts/s  Netzwerkschnittstelle: eno1 (e1000e)
-
-
-> We will try to find out about power consumption.
-
-Thank you very much.
-
-
-Kind regards,
-
-Paull
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
