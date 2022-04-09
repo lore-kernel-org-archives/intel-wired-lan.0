@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 09 Apr 2022 14:09:19 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
- 7d59706dbef8de83b3662026766507bc494223d7
-Message-ID: <6251230f.qTZmvONgU7K7XsuE%lkp@intel.com>
+Date: Sat, 09 Apr 2022 14:09:01 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 7661ae0babaf78f62387af0d87fb08d0f130e220
+Message-ID: <625122fd.v6jmpzQZpNAIIIHj%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
-branch HEAD: 7d59706dbef8de83b3662026766507bc494223d7  Revert "iavf: Fix deadlock occurrence during resetting VF interface"
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 7661ae0babaf78f62387af0d87fb08d0f130e220  ice: Fix incorrect locking in ice_vc_process_vf_msg()
 
-elapsed time: 722m
+elapsed time: 723m
 
-configs tested: 135
+configs tested: 131
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -27,10 +27,6 @@ arm                              allmodconfig
 arm                                 defconfig
 arm                              allyesconfig
 i386                          randconfig-c001
-mips                  maltasmvp_eva_defconfig
-mips                 decstation_r4k_defconfig
-arm                       aspeed_g5_defconfig
-mips                      loongson3_defconfig
 m68k                             allyesconfig
 microblaze                      mmu_defconfig
 powerpc                    sam440ep_defconfig
@@ -101,15 +97,15 @@ mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                           allnoconfig
 powerpc                          allmodconfig
+x86_64                        randconfig-a002
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a015
 x86_64                        randconfig-a013
 x86_64                        randconfig-a011
-x86_64                        randconfig-a015
 i386                          randconfig-a012
 i386                          randconfig-a014
 i386                          randconfig-a016
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a006
 arc                  randconfig-r043-20220408
 s390                 randconfig-r044-20220408
 riscv                randconfig-r042-20220408
@@ -150,14 +146,14 @@ mips                   sb1250_swarm_defconfig
 mips                     loongson1c_defconfig
 powerpc                       ebony_defconfig
 powerpc                     mpc5200_defconfig
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
 x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+x86_64                        randconfig-a005
 i386                          randconfig-a002
 i386                          randconfig-a006
 i386                          randconfig-a004
-x86_64                        randconfig-a012
 x86_64                        randconfig-a014
+x86_64                        randconfig-a012
 x86_64                        randconfig-a016
 hexagon              randconfig-r045-20220408
 hexagon              randconfig-r041-20220408
