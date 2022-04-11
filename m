@@ -1,20 +1,31 @@
-From: naamax.meir <naamax.meir@linux.intel.com>
-Date: Mon, 11 Apr 2022 14:23:00 +0300
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Mon, 11 Apr 2022 13:50:52 +0200
 Subject: [Intel-wired-lan] [PATCH net-queue v1] igc: Fix suspending when
  PTM is active
 In-Reply-To: <20220405205437.29829-1-vinicius.gomes@intel.com>
 References: <20220405205437.29829-1-vinicius.gomes@intel.com>
-Message-ID: <986fbc61-dfc2-b5e0-1fd9-32b626e5aae1@linux.intel.com>
+Message-ID: <019c889a-35be-a443-38a0-113e094d68b4@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/5/2022 23:54, Vinicius Costa Gomes wrote:
+Dear Vinicius,
+
+
+Thank you for your patch.
+
+Am 05.04.22 um 22:54 schrieb Vinicius Costa Gomes:
 > Some mainboard/CPU combinations have shown problems with
 > suspend/resume when PCIe PTM is enabled and active.
-> 
+
+Please give a concrete example of a mainboard/CPU combination with that 
+problem, and document exactly what the problem is (system hangs, when, 
+where, just no network device)?
+
+Also, please use 75 characters per line in commit messages.
+
 > The best we can do is to stop PTM dialogs from the downstream/device
 > side before the interface is brought down. PCIe PTM will be
 > re-enabled when the interface is being brought up.
@@ -35,4 +46,45 @@ On 4/5/2022 23:54, Vinicius Costa Gomes wrote:
 > 
 >   drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
 >   1 file changed, 14 insertions(+), 1 deletion(-)
-Tested-by: Naama Meir <naamax.meir@linux.intel.com>
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+> index 0d6e3215e98f..653e9f1e35b5 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+> @@ -992,6 +992,17 @@ static void igc_ptp_time_restore(struct igc_adapter *adapter)
+>   	igc_ptp_write_i225(adapter, &ts);
+>   }
+>   
+> +static void igc_ptm_stop(struct igc_adapter *adapter)
+> +{
+> +	struct igc_hw *hw = &adapter->hw;
+> +	u32 ctrl;
+> +
+> +	ctrl = rd32(IGC_PTM_CTRL);
+> +	ctrl &= ~IGC_PTM_CTRL_EN;
+> +
+> +	wr32(IGC_PTM_CTRL, ctrl);
+> +}
+> +
+>   /**
+>    * igc_ptp_suspend - Disable PTP work items and prepare for suspend
+>    * @adapter: Board private structure
+> @@ -1009,8 +1020,10 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
+>   	adapter->ptp_tx_skb = NULL;
+>   	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
+>   
+> -	if (pci_device_is_present(adapter->pdev))
+> +	if (pci_device_is_present(adapter->pdev)) {
+>   		igc_ptp_time_save(adapter);
+> +		igc_ptm_stop(adapter);
+> +	}
+>   }
+>   
+>   /**
+
+Acked-by: Paul Menzel <pmenzel@molgen.mpg.de>
+
+
+Kind regards,
+
+Paul
