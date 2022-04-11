@@ -1,10 +1,10 @@
 From: naamax.meir <naamax.meir@linux.intel.com>
-Date: Mon, 11 Apr 2022 14:11:45 +0300
+Date: Mon, 11 Apr 2022 14:23:00 +0300
 Subject: [Intel-wired-lan] [PATCH net-queue v1] igc: Fix suspending when
  PTM is active
 In-Reply-To: <20220405205437.29829-1-vinicius.gomes@intel.com>
 References: <20220405205437.29829-1-vinicius.gomes@intel.com>
-Message-ID: <116e8d8a-a63f-c894-eb3b-84d57bcace6b@linux.intel.com>
+Message-ID: <986fbc61-dfc2-b5e0-1fd9-32b626e5aae1@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -34,4 +34,5 @@ On 4/5/2022 23:54, Vinicius Costa Gomes wrote:
 > Cheers,
 > 
 >   drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
->   1 file changed, 14 insertions(+), 1 deletion(-)Tested-by: Naama Meir <naamax.meir@linux.intel.com>
+>   1 file changed, 14 insertions(+), 1 deletion(-)
+Tested-by: Naama Meir <naamax.meir@linux.intel.com>
