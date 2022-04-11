@@ -1,10 +1,13 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Mon, 11 Apr 2022 13:20:03 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix error when changing
- ring parameters on ice PF
-In-Reply-To: <20220330195036.1319631-1-michal.maloszewski@intel.com>
-References: <20220330195036.1319631-1-michal.maloszewski@intel.com>
-Message-ID: <DM8PR11MB5621FD32D8F77F7477A0B205ABEA9@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Mon, 11 Apr 2022 15:21:42 -0700
+Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Fix possible overflow
+ in LTR decoding
+In-Reply-To: <a2d025d5-dd85-8816-8c0f-1cd873dce529@molgen.mpg.de>
+References: <20220405155601.1443799-1-sasha.neftin@intel.com>
+ <f0402937-8594-6ecb-c4f9-c6605dd73d77@molgen.mpg.de>
+ <46988714-070b-fca0-efe8-52004649976a@intel.com>
+ <a2d025d5-dd85-8816-8c0f-1cd873dce529@molgen.mpg.de>
+Message-ID: <c91397a2-b3d5-35de-d06a-d6e8a47064b5@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,42 +15,101 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
+On 4/10/2022 3:10 AM, Paul Menzel wrote:
+> Dear Sasha, dear Tony,
+>
+>
+> Am 06.04.22 um 16:33 schrieb Neftin, Sasha:
+>> On 4/6/2022 08:34, Paul Menzel wrote:
+>
+>>> Thank you for your patch.
+>>>
+>>> Am 05.04.22 um 17:56 schrieb Sasha Neftin:
+>>>> When we decode the latency and the max_latency u16 value does not fill
+>>>> the required size
+>>>
+>>> Do you mean ?fit into? or ?is too small for the required size??
+>
+> Tony, I saw you committed this patch [1]. Is it still possible to fix 
+> the wording?
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Michal Maloszewski
-> Sent: Wednesday, March 30, 2022 9:51 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>; Maloszewski,
-> Michal <michal.maloszewski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix error when changing ring
-> parameters on ice PF
-> 
-> Reset is triggered when ring parameters are being changed through ethtool
-> and queues are reconfigured for VF's VSI. If ring is changed again
-> immediately, then the next reset could be executed before queues could be
-> properly reinitialized on VF's VSI. It caused ice PF to mess up the VSI resource
-> tree.
-> 
-> Add a check in iavf_set_ringparam for adapter and VF's queue state. If VF is
-> currently resetting or queues are disabled for the VF return with EAGAIN
-> error.
-> 
-> Fixes: d732a1844507 ("i40evf: fix crash when changing ring sizes")
-> Title: iavf: Fix error when changing ring parameters on ice PF
-> Change-type: DefectResolution
-> HSDES-Number: 18021295299
-> HSDES-Tenant: server_platf_lan.bug
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> index 3bb56714beb0..762ef6fb5585 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+Yes, it can still be changed. I'll check with Sasha on any edits he 
+wants to make before sending on to netdev.
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+Thanks,
+
+Tony
+
+>
+>>>> and could lead to the wrong LTR representation.
+>>>
+>>> Maybe give an example of values leading to incorrect behavior?
+>>>
+>>>> Replace the u16 type with the u32 type and allow corrected LTR
+>>>> representation.
+>>>
+>>> Maybe: Increase the variable size from u16 to u32, so the decoded 
+>>> latency can be represented. Why are 32 bit enough? Why not 64 bit?
+>> Hello Paul,
+>> Scaling represented as:
+>> scale 0 - 1???????? (2^(5*0)) = 2^0
+>> scale 1 - 32??????? (2^(5 *1))= 2^5
+>> scale 2 - 1024????? (2^(5 *2)) =2^10
+>> scale 3 - 32768???? (2^(5 *3)) =2^15
+>> scale 4 ? 1048576?? (2^(5 *4)) = 2^20
+>> scale 5 ? 33554432? (2^(5 *4)) = 2^25
+>> scale 4 and scale 5 required 20 and 25 bits respectively.
+>> scale 6 reserved.
+>
+> This would have been nice in the commit message.
+>
+>>> Please use 75 characters per line.
+>>>
+>>>> Fixes: 44a13a5d99c7 ("e1000e: Fix the max snoop/no-snoop latency 
+>>>> for 10M")
+>>>> Reported-by: James Hutchinson <jahutchinson99@googlemail.com>
+>>>> Link: https://bugzilla.kernel.org/show_bug.cgi?id=215689
+>>>> Suggested-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+>>>> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+>>>
+>>> Add
+>>>
+>>> Tested-by: James Hutchinson <jahutchinson99@googlemail.com> (I219-V 
+>>> (rev 30))
+>> I will let James add this tag.
+>>>
+>>>> ---
+>>>> v2: added link tag
+>>>>
+>>>> ? drivers/net/ethernet/intel/e1000e/ich8lan.c | 4 ++--
+>>>> ? 1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c 
+>>>> b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>>> index d60e2016d03c..e6c8e6d5234f 100644
+>>>> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>>> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+>>>> @@ -1009,8 +1009,8 @@ static s32 e1000_platform_pm_pch_lpt(struct 
+>>>> e1000_hw *hw, bool link)
+>>>> ? {
+>>>> ????? u32 reg = link << (E1000_LTRV_REQ_SHIFT + 
+>>>> E1000_LTRV_NOSNOOP_SHIFT) |
+>>>> ????????? link << E1000_LTRV_REQ_SHIFT | E1000_LTRV_SEND;
+>>>> -??? u16 max_ltr_enc_d = 0;??? /* maximum LTR decoded by platform */
+>>>> -??? u16 lat_enc_d = 0;??? /* latency decoded */
+>>>> +??? u32 max_ltr_enc_d = 0;??? /* maximum LTR decoded by platform */
+>>>> +??? u32 lat_enc_d = 0;??? /* latency decoded */
+>>>> ????? u16 lat_enc = 0;??? /* latency encoded */
+>>>> ????? if (link) {
+>>>
+>>> The diff looks good.
+>> Thanks
+>
+>
+> Kind regards,
+>
+> Paul
+>
+>
+> [1]: 
+> https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git/commit/?h=dev-queue&id=7dd121b8d5735780b6a70db735d44b3e5b856130
