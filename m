@@ -1,290 +1,225 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 11 Apr 2022 16:29:03 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 2/6] ice: always check VF VSI
- pointer values
-In-Reply-To: <20220411232907.1022602-1-jacob.e.keller@intel.com>
-References: <20220411232907.1022602-1-jacob.e.keller@intel.com>
-Message-ID: <20220411232907.1022602-3-jacob.e.keller@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 11 Apr 2022 16:31:03 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v4 02/12] taprio: Add support
+ for frame preemption offload
+In-Reply-To: <20210627195826.fax7l4hd2itze4pi@skbuf>
+References: <20210626003314.3159402-1-vinicius.gomes@intel.com>
+ <20210626003314.3159402-3-vinicius.gomes@intel.com>
+ <20210627195826.fax7l4hd2itze4pi@skbuf>
+Message-ID: <874k2zdwp4.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ice_get_vf_vsi function can return NULL in some cases, such as if
-handling messages during a reset where the VSI is being removed and
-recreated.
+Vladimir Oltean <vladimir.oltean@nxp.com> writes:
 
-Several places throughout the driver do not bother to check whether this
-VSI pointer is valid. Static analysis tools maybe report issues because
-they detect paths where a potentially NULL pointer could be
-dereferenced.
+> On Fri, Jun 25, 2021 at 05:33:04PM -0700, Vinicius Costa Gomes wrote:
+>> Adds a way to configure which traffic classes are marked as
+>> preemptible and which are marked as express.
+>> 
+>> Even if frame preemption is not a "real" offload, because it can't be
+>> executed purely in software, having this information near where the
+>> mapping of traffic classes to queues is specified, makes it,
+>> hopefully, easier to use.
+>> 
+>> taprio will receive the information of which traffic classes are
+>> marked as express/preemptible, and when offloading frame preemption to
+>> the driver will convert the information, so the driver receives which
+>> queues are marked as express/preemptible.
+>> 
+>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>> ---
+>>  include/linux/netdevice.h      |  1 +
+>>  include/net/pkt_sched.h        |  4 ++++
+>>  include/uapi/linux/pkt_sched.h |  1 +
+>>  net/sched/sch_taprio.c         | 43 ++++++++++++++++++++++++++++++----
+>>  4 files changed, 44 insertions(+), 5 deletions(-)
+>> 
+>> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+>> index be1dcceda5e4..af5d4c5b0ad5 100644
+>> --- a/include/linux/netdevice.h
+>> +++ b/include/linux/netdevice.h
+>> @@ -923,6 +923,7 @@ enum tc_setup_type {
+>>  	TC_SETUP_QDISC_TBF,
+>>  	TC_SETUP_QDISC_FIFO,
+>>  	TC_SETUP_QDISC_HTB,
+>> +	TC_SETUP_PREEMPT,
+>>  };
+>>  
+>>  /* These structures hold the attributes of bpf state that are being passed
+>> diff --git a/include/net/pkt_sched.h b/include/net/pkt_sched.h
+>> index 6d7b12cba015..b4cb479d1cf5 100644
+>> --- a/include/net/pkt_sched.h
+>> +++ b/include/net/pkt_sched.h
+>> @@ -178,6 +178,10 @@ struct tc_taprio_qopt_offload {
+>>  	struct tc_taprio_sched_entry entries[];
+>>  };
+>>  
+>> +struct tc_preempt_qopt_offload {
+>> +	u32 preemptible_queues;
+>> +};
+>> +
+>>  /* Reference counting */
+>>  struct tc_taprio_qopt_offload *taprio_offload_get(struct tc_taprio_qopt_offload
+>>  						  *offload);
+>> diff --git a/include/uapi/linux/pkt_sched.h b/include/uapi/linux/pkt_sched.h
+>> index 79a699f106b1..830ce9c9ec6f 100644
+>> --- a/include/uapi/linux/pkt_sched.h
+>> +++ b/include/uapi/linux/pkt_sched.h
+>> @@ -1241,6 +1241,7 @@ enum {
+>>  	TCA_TAPRIO_ATTR_SCHED_CYCLE_TIME_EXTENSION, /* s64 */
+>>  	TCA_TAPRIO_ATTR_FLAGS, /* u32 */
+>>  	TCA_TAPRIO_ATTR_TXTIME_DELAY, /* u32 */
+>> +	TCA_TAPRIO_ATTR_PREEMPT_TCS, /* u32 */
+>>  	__TCA_TAPRIO_ATTR_MAX,
+>>  };
+>>  
+>> diff --git a/net/sched/sch_taprio.c b/net/sched/sch_taprio.c
+>> index 66fe2b82af9a..58586f98c648 100644
+>> --- a/net/sched/sch_taprio.c
+>> +++ b/net/sched/sch_taprio.c
+>> @@ -64,6 +64,7 @@ struct taprio_sched {
+>>  	struct Qdisc **qdiscs;
+>>  	struct Qdisc *root;
+>>  	u32 flags;
+>> +	u32 preemptible_tcs;
+>>  	enum tk_offsets tk_offset;
+>>  	int clockid;
+>>  	atomic64_t picos_per_byte; /* Using picoseconds because for 10Gbps+
+>> @@ -786,6 +787,7 @@ static const struct nla_policy taprio_policy[TCA_TAPRIO_ATTR_MAX + 1] = {
+>>  	[TCA_TAPRIO_ATTR_SCHED_CYCLE_TIME_EXTENSION] = { .type = NLA_S64 },
+>>  	[TCA_TAPRIO_ATTR_FLAGS]                      = { .type = NLA_U32 },
+>>  	[TCA_TAPRIO_ATTR_TXTIME_DELAY]		     = { .type = NLA_U32 },
+>> +	[TCA_TAPRIO_ATTR_PREEMPT_TCS]                = { .type = NLA_U32 },
+>>  };
+>>  
+>>  static int fill_sched_entry(struct taprio_sched *q, struct nlattr **tb,
+>> @@ -1284,6 +1286,7 @@ static int taprio_disable_offload(struct net_device *dev,
+>>  				  struct netlink_ext_ack *extack)
+>>  {
+>>  	const struct net_device_ops *ops = dev->netdev_ops;
+>> +	struct tc_preempt_qopt_offload preempt = { };
+>>  	struct tc_taprio_qopt_offload *offload;
+>>  	int err;
+>>  
+>> @@ -1302,13 +1305,15 @@ static int taprio_disable_offload(struct net_device *dev,
+>>  	offload->enable = 0;
+>>  
+>>  	err = ops->ndo_setup_tc(dev, TC_SETUP_QDISC_TAPRIO, offload);
+>> -	if (err < 0) {
+>> +	if (err < 0)
+>>  		NL_SET_ERR_MSG(extack,
+>> -			       "Device failed to disable offload");
+>> -		goto out;
+>> -	}
+>> +			       "Device failed to disable taprio offload");
+>> +
+>> +	err = ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT, &preempt);
+>> +	if (err < 0)
+>> +		NL_SET_ERR_MSG(extack,
+>> +			       "Device failed to disable frame preemption offload");
+>
+> First line in taprio_disable_offload() is:
+>
+> 	if (!FULL_OFFLOAD_IS_ENABLED(q->flags))
+> 		return 0;
+>
+> but you said it yourself below that the preemptible queues thing is
+> independent of whether you have taprio offload or not (or taprio at
+> all). So the queues will never be reset back to the eMAC if you don't
+> use full offload (yes, this includes txtime offload too). In fact, it's
+> so independent, that I don't even know why we add them to taprio in the
+> first place :)
 
-Fix this by checking the return value of ice_get_vf_vsi everywhere.
+That I didn't change taprio_disable_offload() was a mistake caused in
+part by the limitations of the hardware I have (I cannot have txtime
+offload and frame preemption enabled at the same time), so I didn't
+catch that.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_devlink.c  |  5 ++-
- drivers/net/ethernet/intel/ice/ice_repr.c     |  7 +++-
- drivers/net/ethernet/intel/ice/ice_sriov.c    | 32 +++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 28 +++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |  5 +++
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  7 +++-
- 6 files changed, 77 insertions(+), 7 deletions(-)
+> I think the argument had to do with the hold/advance commands (other
+> frame preemption stuff that's already in taprio), but those are really
+> special and only to be used in the Qbv+Qbu combination, but the pMAC
+> traffic classes? I don't know... Honestly I thought that me asking to
+> see preemptible queues implemented for mqprio as well was going to
+> discourage you, but oh well...
+>
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index a230edb38466..4a9de59121d8 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -753,9 +753,12 @@ int ice_devlink_create_vf_port(struct ice_vf *vf)
- 
- 	pf = vf->pf;
- 	dev = ice_pf_to_dev(pf);
--	vsi = ice_get_vf_vsi(vf);
- 	devlink_port = &vf->devlink_port;
- 
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi)
-+		return -EINVAL;
-+
- 	attrs.flavour = DEVLINK_PORT_FLAVOUR_PCI_VF;
- 	attrs.pci_vf.pf = pf->hw.bus.func;
- 	attrs.pci_vf.vf = vf->vf_id;
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index 848f2adea563..a91b81c3088b 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -293,8 +293,13 @@ static int ice_repr_add(struct ice_vf *vf)
- 	struct ice_q_vector *q_vector;
- 	struct ice_netdev_priv *np;
- 	struct ice_repr *repr;
-+	struct ice_vsi *vsi;
- 	int err;
- 
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi)
-+		return -EINVAL;
-+
- 	repr = kzalloc(sizeof(*repr), GFP_KERNEL);
- 	if (!repr)
- 		return -ENOMEM;
-@@ -313,7 +318,7 @@ static int ice_repr_add(struct ice_vf *vf)
- 		goto err_alloc;
- 	}
- 
--	repr->src_vsi = ice_get_vf_vsi(vf);
-+	repr->src_vsi = vsi;
- 	repr->vf = vf;
- 	vf->repr = repr;
- 	np = netdev_priv(repr->netdev);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 8915a9d39e36..29278e23691f 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -46,7 +46,12 @@ static void ice_free_vf_entries(struct ice_pf *pf)
-  */
- static void ice_vf_vsi_release(struct ice_vf *vf)
- {
--	ice_vsi_release(ice_get_vf_vsi(vf));
-+	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
-+
-+	if (WARN_ON(!vsi))
-+		return;
-+
-+	ice_vsi_release(vsi);
- 	ice_vf_invalidate_vsi(vf);
- }
- 
-@@ -104,6 +109,8 @@ static void ice_dis_vf_mappings(struct ice_vf *vf)
- 
- 	hw = &pf->hw;
- 	vsi = ice_get_vf_vsi(vf);
-+	if (WARN_ON(!vsi))
-+		return;
- 
- 	dev = ice_pf_to_dev(pf);
- 	wr32(hw, VPINT_ALLOC(vf->vf_id), 0);
-@@ -341,6 +348,9 @@ static void ice_ena_vf_q_mappings(struct ice_vf *vf, u16 max_txq, u16 max_rxq)
- 	struct ice_hw *hw = &vf->pf->hw;
- 	u32 reg;
- 
-+	if (WARN_ON(!vsi))
-+		return;
-+
- 	/* set regardless of mapping mode */
- 	wr32(hw, VPLAN_TXQ_MAPENA(vf->vf_id), VPLAN_TXQ_MAPENA_TX_ENA_M);
- 
-@@ -386,6 +396,9 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
- {
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 
-+	if (WARN_ON(!vsi))
-+		return;
-+
- 	ice_ena_vf_msix_mappings(vf);
- 	ice_ena_vf_q_mappings(vf, vsi->alloc_txq, vsi->alloc_rxq);
- }
-@@ -1128,6 +1141,8 @@ static struct ice_vf *ice_get_vf_from_pfq(struct ice_pf *pf, u16 pfq)
- 		u16 rxq_idx;
- 
- 		vsi = ice_get_vf_vsi(vf);
-+		if (!vsi)
-+			continue;
- 
- 		ice_for_each_rxq(vsi, rxq_idx)
- 			if (vsi->rxq_map[rxq_idx] == pfq) {
-@@ -1521,8 +1536,15 @@ static int ice_calc_all_vfs_min_tx_rate(struct ice_pf *pf)
- static bool
- ice_min_tx_rate_oversubscribed(struct ice_vf *vf, int min_tx_rate)
- {
--	int link_speed_mbps = ice_get_link_speed_mbps(ice_get_vf_vsi(vf));
--	int all_vfs_min_tx_rate = ice_calc_all_vfs_min_tx_rate(vf->pf);
-+	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
-+	int all_vfs_min_tx_rate;
-+	int link_speed_mbps;
-+
-+	if (WARN_ON(!vsi))
-+		return false;
-+
-+	link_speed_mbps = ice_get_link_speed_mbps(vsi);
-+	all_vfs_min_tx_rate = ice_calc_all_vfs_min_tx_rate(vf->pf);
- 
- 	/* this VF's previous rate is being overwritten */
- 	all_vfs_min_tx_rate -= vf->min_tx_rate;
-@@ -1566,6 +1588,10 @@ ice_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 		goto out_put_vf;
- 
- 	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		ret = -EINVAL;
-+		goto out_put_vf;
-+	}
- 
- 	/* when max_tx_rate is zero that means no max Tx rate limiting, so only
- 	 * check if max_tx_rate is non-zero
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 6578059d9479..aefd66a4db80 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -220,8 +220,10 @@ static void ice_vf_clear_counters(struct ice_vf *vf)
- {
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 
-+	if (vsi)
-+		vsi->num_vlan = 0;
-+
- 	vf->num_mac = 0;
--	vsi->num_vlan = 0;
- 	memset(&vf->mdd_tx_events, 0, sizeof(vf->mdd_tx_events));
- 	memset(&vf->mdd_rx_events, 0, sizeof(vf->mdd_rx_events));
- }
-@@ -251,6 +253,9 @@ static int ice_vf_rebuild_vsi(struct ice_vf *vf)
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 	struct ice_pf *pf = vf->pf;
- 
-+	if (WARN_ON(!vsi))
-+		return -EINVAL;
-+
- 	if (ice_vsi_rebuild(vsi, true)) {
- 		dev_err(ice_pf_to_dev(pf), "failed to rebuild VF %d VSI\n",
- 			vf->vf_id);
-@@ -514,6 +519,10 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 	ice_trigger_vf_reset(vf, flags & ICE_VF_RESET_VFLR, false);
- 
- 	vsi = ice_get_vf_vsi(vf);
-+	if (WARN_ON(!vsi)) {
-+		err = -EIO;
-+		goto out_unlock;
-+	}
- 
- 	ice_dis_vf_qs(vf);
- 
-@@ -572,6 +581,11 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 
- 	vf->vf_ops->post_vsi_rebuild(vf);
- 	vsi = ice_get_vf_vsi(vf);
-+	if (WARN_ON(!vsi)) {
-+		err = -EINVAL;
-+		goto out_unlock;
-+	}
-+
- 	ice_eswitch_update_repr(vsi);
- 	ice_eswitch_replay_vf_mac_rule(vf);
- 
-@@ -610,6 +624,9 @@ void ice_dis_vf_qs(struct ice_vf *vf)
- {
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 
-+	if (WARN_ON(!vsi))
-+		return;
-+
- 	ice_vsi_stop_lan_tx_rings(vsi, ICE_NO_RESET, vf->vf_id);
- 	ice_vsi_stop_all_rx_rings(vsi);
- 	ice_set_vf_state_qs_dis(vf);
-@@ -790,6 +807,9 @@ static int ice_vf_rebuild_host_mac_cfg(struct ice_vf *vf)
- 	u8 broadcast[ETH_ALEN];
- 	int status;
- 
-+	if (WARN_ON(!vsi))
-+		return -EINVAL;
-+
- 	if (ice_is_eswitch_mode_switchdev(vf->pf))
- 		return 0;
- 
-@@ -875,6 +895,9 @@ static int ice_vf_rebuild_host_tx_rate_cfg(struct ice_vf *vf)
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 	int err;
- 
-+	if (WARN_ON(!vsi))
-+		return -EINVAL;
-+
- 	if (vf->min_tx_rate) {
- 		err = ice_set_min_bw_limit(vsi, (u64)vf->min_tx_rate * 1000);
- 		if (err) {
-@@ -938,6 +961,9 @@ void ice_vf_rebuild_host_cfg(struct ice_vf *vf)
- 	struct device *dev = ice_pf_to_dev(vf->pf);
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 
-+	if (WARN_ON(!vsi))
-+		return;
-+
- 	ice_vf_set_host_trust_cfg(vf);
- 
- 	if (ice_vf_rebuild_host_mac_cfg(vf))
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 8ddb462e1af2..ca13995cc5ab 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -2342,6 +2342,11 @@ static int ice_vc_ena_vlan_stripping(struct ice_vf *vf)
- 	}
- 
- 	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto error_param;
-+	}
-+
- 	if (vsi->inner_vlan_ops.ena_stripping(vsi, ETH_P_8021Q))
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index dbc1965c0609..c6a58343d81d 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -1344,7 +1344,12 @@ static void ice_vf_fdir_dump_info(struct ice_vf *vf)
- 	pf = vf->pf;
- 	hw = &pf->hw;
- 	dev = ice_pf_to_dev(pf);
--	vf_vsi = pf->vsi[vf->lan_vsi_idx];
-+	vf_vsi = ice_get_vf_vsi(vf);
-+	if (!vf_vsi) {
-+		dev_dbg(dev, "VF %d: invalid VSI pointer\n", vf->vf_id);
-+		return;
-+	}
-+
- 	vsi_num = ice_get_hw_vsi_num(hw, vf_vsi->idx);
- 
- 	fd_size = rd32(hw, VSIQF_FD_SIZE(vsi_num));
+Now, the real important part, if this should be communicated to the
+driver via taprio or via ethtool/netlink.   
+
+I don't really have strong opinions on this anymore, the two options are
+viable/possible.
+
+This is going to be a niche feature, agreed, so thinking that going with
+the one that gives the user more flexibility perhaps is best, i.e. using
+ethtool/netlink to communicate which queues should be marked as
+preemptible or express.
+
+>>  
+>> -out:
+>>  	taprio_offload_free(offload);
+>>  
+>>  	return err;
+>> @@ -1525,6 +1530,29 @@ static int taprio_change(struct Qdisc *sch, struct nlattr *opt,
+>>  					       mqprio->prio_tc_map[i]);
+>>  	}
+>>  
+>> +	/* It's valid to enable frame preemption without any kind of
+>> +	 * offloading being enabled, so keep it separated.
+>> +	 */
+>> +	if (tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]) {
+>> +		u32 preempt = nla_get_u32(tb[TCA_TAPRIO_ATTR_PREEMPT_TCS]);
+>> +		struct tc_preempt_qopt_offload qopt = { };
+>> +
+>> +		if (preempt == U32_MAX) {
+>> +			NL_SET_ERR_MSG(extack, "At least one queue must be not be preemptible");
+>> +			err = -EINVAL;
+>> +			goto free_sched;
+>> +		}
+>
+> Hmmm, did we somehow agree that at least one traffic class must not be
+> preemptible? Citation needed.
+>
+>> +
+>> +		qopt.preemptible_queues = tc_map_to_queue_mask(dev, preempt);
+>> +
+>> +		err = dev->netdev_ops->ndo_setup_tc(dev, TC_SETUP_PREEMPT,
+>> +						    &qopt);
+>> +		if (err)
+>> +			goto free_sched;
+>> +
+>> +		q->preemptible_tcs = preempt;
+>> +	}
+>> +
+>>  	if (FULL_OFFLOAD_IS_ENABLED(q->flags))
+>>  		err = taprio_enable_offload(dev, q, new_admin, extack);
+>>  	else
+>> @@ -1681,6 +1709,7 @@ static int taprio_init(struct Qdisc *sch, struct nlattr *opt,
+>>  	 */
+>>  	q->clockid = -1;
+>>  	q->flags = TAPRIO_FLAGS_INVALID;
+>> +	q->preemptible_tcs = U32_MAX;
+>>  
+>>  	spin_lock(&taprio_list_lock);
+>>  	list_add(&q->taprio_list, &taprio_list);
+>> @@ -1899,6 +1928,10 @@ static int taprio_dump(struct Qdisc *sch, struct sk_buff *skb)
+>>  	if (q->flags && nla_put_u32(skb, TCA_TAPRIO_ATTR_FLAGS, q->flags))
+>>  		goto options_error;
+>>  
+>> +	if (q->preemptible_tcs != U32_MAX &&
+>> +	    nla_put_u32(skb, TCA_TAPRIO_ATTR_PREEMPT_TCS, q->preemptible_tcs))
+>> +		goto options_error;
+>> +
+>>  	if (q->txtime_delay &&
+>>  	    nla_put_u32(skb, TCA_TAPRIO_ATTR_TXTIME_DELAY, q->txtime_delay))
+>>  		goto options_error;
+>> -- 
+>> 2.32.0
+>> 
+
+
+
 -- 
-2.35.1.456.ga9c7032d4631
-
+Vinicius
