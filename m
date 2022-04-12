@@ -1,50 +1,105 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 12 Apr 2022 12:04:47 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix error when changing
- ring parameters on ice PF
-In-Reply-To: <20220331111526.1333801-1-michal.maloszewski@intel.com>
-References: <20220331111526.1333801-1-michal.maloszewski@intel.com>
-Message-ID: <SJ0PR11MB5629781422BB7F3B1C397703ABED9@SJ0PR11MB5629.namprd11.prod.outlook.com>
+From: Petr Oros <poros@redhat.com>
+Date: Tue, 12 Apr 2022 12:27:53 +0200
+Subject: [Intel-wired-lan] [PATCH] ice: wait for EMP reset after firmware
+ flash
+Message-ID: <20220412102753.670867-1-poros@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+We need to wait for EMP reset after firmware flash.
+Code was extracted from OOT driver and without this wait fw_activate let
+card in inconsistent state recoverable only by second flash/activate
 
+Reproducer:
+[root at host ~]# devlink dev flash pci/0000:ca:00.0 file E810_XXVDA4_FH_O_SEC_FW_1p6p1p9_NVM_3p10_PLDMoMCTP_0.11_8000AD7B.bin
+Preparing to flash
+[fw.mgmt] Erasing
+[fw.mgmt] Erasing done
+[fw.mgmt] Flashing 100%
+[fw.mgmt] Flashing done 100%
+[fw.undi] Erasing
+[fw.undi] Erasing done
+[fw.undi] Flashing 100%
+[fw.undi] Flashing done 100%
+[fw.netlist] Erasing
+[fw.netlist] Erasing done
+[fw.netlist] Flashing 100%
+[fw.netlist] Flashing done 100%
+Activate new firmware by devlink reload
+[root at host ~]# devlink dev reload pci/0000:ca:00.0 action fw_activate
+reload_actions_performed:
+    fw_activate
+[root at host ~]# ip link show ens7f0
+71: ens7f0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
+    link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
+    altname enp202s0f0
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Michal Maloszewski
-> Sent: Thursday, March 31, 2022 1:15 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>; Maloszewski,
-> Michal <michal.maloszewski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v1] iavf: Fix error when changing ring
-> parameters on ice PF
-> 
-> Reset is triggered when ring parameters are being changed through ethtool
-> and queues are reconfigured for VF's VSI. If ring is changed again
-> immediately, then the next reset could be executed before queues could be
-> properly reinitialized on VF's VSI. It caused ice PF to mess up the VSI resource
-> tree.
-> 
-> Add a check in iavf_set_ringparam for adapter and VF's queue state. If VF is
-> currently resetting or queues are disabled for the VF return with EAGAIN
-> error.
-> 
-> Fixes: d732a1844507 ("i40evf: fix crash when changing ring sizes")
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> index 3bb56714beb0..8213bf3f8dfc 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-> @@ -631,6 +631,11 @@ static int iavf_set_ringparam(struct net_device
+dmesg after flash:
+[   55.120788] ice: Copyright (c) 2018, Intel Corporation.
+[   55.274734] ice 0000:ca:00.0: Get PHY capabilities failed status = -5, continuing anyway
+[   55.569797] ice 0000:ca:00.0: The DDP package was successfully loaded: ICE OS Default Package version 1.3.28.0
+[   55.603629] ice 0000:ca:00.0: Get PHY capability failed.
+[   55.608951] ice 0000:ca:00.0: ice_init_nvm_phy_type failed: -5
+[   55.647348] ice 0000:ca:00.0: PTP init successful
+[   55.675536] ice 0000:ca:00.0: DCB is enabled in the hardware, max number of TCs supported on this port are 8
+[   55.685365] ice 0000:ca:00.0: FW LLDP is disabled, DCBx/LLDP in SW mode.
+[   55.692179] ice 0000:ca:00.0: Commit DCB Configuration to the hardware
+[   55.701382] ice 0000:ca:00.0: 126.024 Gb/s available PCIe bandwidth, limited by 16.0 GT/s PCIe x8 link at 0000:c9:02.0 (capable of 252.048 Gb/s with 16.0 GT/s PCIe x16 link)
+Reboot don't help, only second flash/activate with OOT or patched driver put card back in consistent state
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+After patch:
+[root at host ~]# devlink dev flash pci/0000:ca:00.0 file E810_XXVDA4_FH_O_SEC_FW_1p6p1p9_NVM_3p10_PLDMoMCTP_0.11_8000AD7B.bin
+Preparing to flash
+[fw.mgmt] Erasing
+[fw.mgmt] Erasing done
+[fw.mgmt] Flashing 100%
+[fw.mgmt] Flashing done 100%
+[fw.undi] Erasing
+[fw.undi] Erasing done
+[fw.undi] Flashing 100%
+[fw.undi] Flashing done 100%
+[fw.netlist] Erasing
+[fw.netlist] Erasing done
+[fw.netlist] Flashing 100%
+[fw.netlist] Flashing done 100%
+Activate new firmware by devlink reload
+[root at host ~]# devlink dev reload pci/0000:ca:00.0 action fw_activate
+reload_actions_performed:
+    fw_activate
+[root at host ~]# ip link show ens7f0
+19: ens7f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
+    altname enp202s0f0
+
+Fixes: 399e27dbbd9e94 ("ice: support immediate firmware activation via devlink reload")
+Signed-off-by: Petr Oros <poros@redhat.com>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index d768925785ca79..90ea2203cdc763 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -6931,12 +6931,15 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 
+ 	dev_dbg(dev, "rebuilding PF after reset_type=%d\n", reset_type);
+ 
++#define ICE_EMP_RESET_SLEEP 5000
+ 	if (reset_type == ICE_RESET_EMPR) {
+ 		/* If an EMP reset has occurred, any previously pending flash
+ 		 * update will have completed. We no longer know whether or
+ 		 * not the NVM update EMP reset is restricted.
+ 		 */
+ 		pf->fw_emp_reset_disabled = false;
++
++		msleep(ICE_EMP_RESET_SLEEP);
+ 	}
+ 
+ 	err = ice_init_all_ctrlq(hw);
+-- 
+2.35.1
+
