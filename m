@@ -1,79 +1,49 @@
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Mon, 11 Apr 2022 17:38:47 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v4 02/12] taprio: Add support
- for frame preemption offload
-In-Reply-To: <20220412000759.wtsebxkayb5vssvx@skbuf>
-References: <20210626003314.3159402-1-vinicius.gomes@intel.com>
- <20210626003314.3159402-3-vinicius.gomes@intel.com>
- <20210627195826.fax7l4hd2itze4pi@skbuf> <874k2zdwp4.fsf@intel.com>
- <20220412000759.wtsebxkayb5vssvx@skbuf>
-Message-ID: <87h76zcezs.fsf@intel.com>
+Date: Mon, 11 Apr 2022 20:01:42 -0700
+Subject: [Intel-wired-lan] [PATCH net-queue v1] igc: Fix suspending when
+ PTM is active
+In-Reply-To: <019c889a-35be-a443-38a0-113e094d68b4@molgen.mpg.de>
+References: <20220405205437.29829-1-vinicius.gomes@intel.com>
+ <019c889a-35be-a443-38a0-113e094d68b4@molgen.mpg.de>
+Message-ID: <877d7vc8dl.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Vladimir Oltean <vladimir.oltean@nxp.com> writes:
+Paul Menzel <pmenzel@molgen.mpg.de> writes:
 
-> On Mon, Apr 11, 2022 at 04:31:03PM -0700, Vinicius Costa Gomes wrote:
->> > First line in taprio_disable_offload() is:
->> >
->> > 	if (!FULL_OFFLOAD_IS_ENABLED(q->flags))
->> > 		return 0;
->> >
->> > but you said it yourself below that the preemptible queues thing is
->> > independent of whether you have taprio offload or not (or taprio at
->> > all). So the queues will never be reset back to the eMAC if you don't
->> > use full offload (yes, this includes txtime offload too). In fact, it's
->> > so independent, that I don't even know why we add them to taprio in the
->> > first place :)
->>
->> That I didn't change taprio_disable_offload() was a mistake caused in
->> part by the limitations of the hardware I have (I cannot have txtime
->> offload and frame preemption enabled at the same time), so I didn't
->> catch that.
->>
->> > I think the argument had to do with the hold/advance commands (other
->> > frame preemption stuff that's already in taprio), but those are really
->> > special and only to be used in the Qbv+Qbu combination, but the pMAC
->> > traffic classes? I don't know... Honestly I thought that me asking to
->> > see preemptible queues implemented for mqprio as well was going to
->> > discourage you, but oh well...
->>
->> Now, the real important part, if this should be communicated to the
->> driver via taprio or via ethtool/netlink.
->>
->> I don't really have strong opinions on this anymore, the two options are
->> viable/possible.
->>
->> This is going to be a niche feature, agreed, so thinking that going with
->> the one that gives the user more flexibility perhaps is best, i.e. using
->> ethtool/netlink to communicate which queues should be marked as
->> preemptible or express.
+> Dear Vinicius,
 >
-> So we're back at this, very well.
 >
-> I was just happening to be looking at clause 36 of 802.1Q (Priority Flow Control),
-> a feature exchanged through DCBX where flows of a certain priority can be
-> configured as lossless on a port, and generate PAUSE frames. This is essentially
-> the extension of 802.3 annex 31B MAC Control PAUSE operation with the ability to
-> enable/disable flow control on a per-priority basis.
+> Thank you for your patch.
 >
-> The priority in PFC (essentially synonymous with "traffic class") is the same
-> priority as the priority in frame preemption. And you know how PFC is configured
-> in Linux? Not through the qdisc, but through DCB_ATTR_PFC_CFG, a nested dcbnl
-> netlink attribute with one nested u8 attribute per priority value
-> (DCB_PFC_UP_ATTR_0 to DCB_PFC_UP_ATTR_7).
+> Am 05.04.22 um 22:54 schrieb Vinicius Costa Gomes:
+>> Some mainboard/CPU combinations have shown problems with
+>> suspend/resume when PCIe PTM is enabled and active.
 >
-> Not saying we should follow the exact same model as PFC, just saying that I'm
-> hard pressed to find a good reason why the "preemptable traffic classes"
-> information should sit in a layer which is basically independent of the frame
-> preemption feature itself.
+> Please give a concrete example of a mainboard/CPU combination with that 
+> problem, and document exactly what the problem is (system hangs, when, 
+> where, just no network device)?
 
-Ok, going to take this as another point in favor of going the ethtool
-route.
+Sure. Will add.
 
+>
+> Also, please use 75 characters per line in commit messages.
+>
+
+Will fix.
+
+@Tony, I will send a v2.
+
+>
+> Acked-by: Paul Menzel <pmenzel@molgen.mpg.de>
+>
+>
+> Kind regards,
+>
+> Paul
 
 Thank you,
 -- 
