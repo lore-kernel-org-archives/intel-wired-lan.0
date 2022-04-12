@@ -1,43 +1,23 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 12 Apr 2022 15:28:14 +0200
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+Date: Tue, 12 Apr 2022 18:08:56 +0200
 Subject: [Intel-wired-lan] [PATCH] ice: wait for EMP reset after
  firmware flash
 In-Reply-To: <20220412102753.670867-1-poros@redhat.com>
 References: <20220412102753.670867-1-poros@redhat.com>
-Message-ID: <bc534155-e5bc-b9d2-24b4-e7559a7c5fb5@molgen.mpg.de>
+Message-ID: <20220412160856.1027597-1-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-[Cc: +Jakob, +regressions at lists.linux.dev]
-
-
-Dear Petr,
-
-
-Thank you for your patch for the regression.
-
-#regzbot ^introduced 399e27dbbd9e94
-
-
-Am 12.04.22 um 12:27 schrieb Petr Oros:
-
-Please mention the time in the commit message summary:
-
-ice: Wait 5 s for EMP reset after firmware flash
+From: Petr Oros <poros@redhat.com>
+Date: Tue, 12 Apr 2022 12:27:53 +0200
 
 > We need to wait for EMP reset after firmware flash.
 > Code was extracted from OOT driver and without this wait fw_activate let
-
-Which OOT driver exactly?
-
 > card in inconsistent state recoverable only by second flash/activate
-
-Please reflow for 75 characters per line, and add a dot/period to the 
-end of sentences.
-
+> 
 > Reproducer:
 > [root at host ~]# devlink dev flash pci/0000:ca:00.0 file E810_XXVDA4_FH_O_SEC_FW_1p6p1p9_NVM_3p10_PLDMoMCTP_0.11_8000AD7B.bin
 > Preparing to flash
@@ -56,11 +36,11 @@ end of sentences.
 > Activate new firmware by devlink reload
 > [root at host ~]# devlink dev reload pci/0000:ca:00.0 action fw_activate
 > reload_actions_performed:
->      fw_activate
+>     fw_activate
 > [root at host ~]# ip link show ens7f0
 > 71: ens7f0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
->      link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
->      altname enp202s0f0
+>     link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
+>     altname enp202s0f0
 > 
 > dmesg after flash:
 > [   55.120788] ice: Copyright (c) 2018, Intel Corporation.
@@ -73,15 +53,8 @@ end of sentences.
 > [   55.685365] ice 0000:ca:00.0: FW LLDP is disabled, DCBx/LLDP in SW mode.
 > [   55.692179] ice 0000:ca:00.0: Commit DCB Configuration to the hardware
 > [   55.701382] ice 0000:ca:00.0: 126.024 Gb/s available PCIe bandwidth, limited by 16.0 GT/s PCIe x8 link at 0000:c9:02.0 (capable of 252.048 Gb/s with 16.0 GT/s PCIe x16 link)
-
-So, what is the error? `Get PHY capabilities failed status = -5`?
-
-What firmware version did the network card have before and after the update?
-
 > Reboot don't help, only second flash/activate with OOT or patched driver put card back in consistent state
-
-s/don't/doesn?t/
-
+> 
 > After patch:
 > [root at host ~]# devlink dev flash pci/0000:ca:00.0 file E810_XXVDA4_FH_O_SEC_FW_1p6p1p9_NVM_3p10_PLDMoMCTP_0.11_8000AD7B.bin
 > Preparing to flash
@@ -100,46 +73,44 @@ s/don't/doesn?t/
 > Activate new firmware by devlink reload
 > [root at host ~]# devlink dev reload pci/0000:ca:00.0 action fw_activate
 > reload_actions_performed:
->      fw_activate
+>     fw_activate
 > [root at host ~]# ip link show ens7f0
 > 19: ens7f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
->      link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
->      altname enp202s0f0
-
-Did you try anything less than five seconds? i40e uses one second, cf. 
-commit 9b13bd53134c (i40e: Increase delay to 1 s after global EMP reset).
-
+>     link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
+>     altname enp202s0f0
+> 
 > Fixes: 399e27dbbd9e94 ("ice: support immediate firmware activation via devlink reload")
 > Signed-off-by: Petr Oros <poros@redhat.com>
 > ---
->   drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
->   1 file changed, 3 insertions(+)
+>  drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
+>  1 file changed, 3 insertions(+)
 > 
 > diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
 > index d768925785ca79..90ea2203cdc763 100644
 > --- a/drivers/net/ethernet/intel/ice/ice_main.c
 > +++ b/drivers/net/ethernet/intel/ice/ice_main.c
 > @@ -6931,12 +6931,15 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
->   
->   	dev_dbg(dev, "rebuilding PF after reset_type=%d\n", reset_type);
->   
+>  
+>  	dev_dbg(dev, "rebuilding PF after reset_type=%d\n", reset_type);
+>  
 > +#define ICE_EMP_RESET_SLEEP 5000
 
-Please append the unit to the macro name.
+Ooof, 5 sec is a lot! Is there any way to poll the device readiness?
+Does it really need the whole 5 sec?
 
->   	if (reset_type == ICE_RESET_EMPR) {
->   		/* If an EMP reset has occurred, any previously pending flash
->   		 * update will have completed. We no longer know whether or
->   		 * not the NVM update EMP reset is restricted.
->   		 */
->   		pf->fw_emp_reset_disabled = false;
+>  	if (reset_type == ICE_RESET_EMPR) {
+>  		/* If an EMP reset has occurred, any previously pending flash
+>  		 * update will have completed. We no longer know whether or
+>  		 * not the NVM update EMP reset is restricted.
+>  		 */
+>  		pf->fw_emp_reset_disabled = false;
 > +
 > +		msleep(ICE_EMP_RESET_SLEEP);
->   	}
->   
->   	err = ice_init_all_ctrlq(hw);
+>  	}
+>  
+>  	err = ice_init_all_ctrlq(hw);
+> -- 
+> 2.35.1
 
-
-Kind regards,
-
-Paul
+Thanks,
+Al
