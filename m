@@ -1,11 +1,11 @@
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 12 Apr 2022 07:10:56 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 1/6] ice: add newline to
- dev_dbg in ice_vf_fdir_dump_info
-In-Reply-To: <20220411232907.1022602-2-jacob.e.keller@intel.com>
+Date: Tue, 12 Apr 2022 07:38:43 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 2/6] ice: always check VF VSI
+ pointer values
+In-Reply-To: <20220411232907.1022602-3-jacob.e.keller@intel.com>
 References: <20220411232907.1022602-1-jacob.e.keller@intel.com>
- <20220411232907.1022602-2-jacob.e.keller@intel.com>
-Message-ID: <aa858f43-a62b-4ce8-c307-882e0ef90134@molgen.mpg.de>
+ <20220411232907.1022602-3-jacob.e.keller@intel.com>
+Message-ID: <e079ab74-48fc-65d1-4d3f-2c0cdd4ffcb9@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,41 +15,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 Dear Jacob,
 
 
+Thank you for the patch.
+
 Am 12.04.22 um 01:29 schrieb Jacob Keller:
-> The debug print in ice_vf_fdir_dump_info don't end in newlines. This can
-
-Singular? does not
-
-> look confusing when reading the kernel log, as the next print will
-> immediately continue on the same line.
+> The ice_get_vf_vsi function can return NULL in some cases, such as if
+> handling messages during a reset where the VSI is being removed and
+> recreated.
 > 
-> Fix this.
-> 
+> Several places throughout the driver do not bother to check whether this
+> VSI pointer is valid. Static analysis tools maybe report issues because
+> they detect paths where a potentially NULL pointer could be
+> dereferenced.
 
-Add a Fixes tag?
+(side note: scripts/checkpatch.pl checks for 75 characters per line, and 
+you seem to use 72 characters per line.)
 
-Maybe also add *forgotten* to the commit message summary:
+> Fix this by checking the return value of ice_get_vf_vsi everywhere.
 
-Add forgotten newline ?
+I didn?t understand, when WARN_ON() is necessary, and when not, but 
+looks fine.
 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->   drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> index 8e38ee2faf58..dbc1965c0609 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-> @@ -1349,7 +1349,7 @@ static void ice_vf_fdir_dump_info(struct ice_vf *vf)
->   
->   	fd_size = rd32(hw, VSIQF_FD_SIZE(vsi_num));
->   	fd_cnt = rd32(hw, VSIQF_FD_CNT(vsi_num));
-> -	dev_dbg(dev, "VF %d: space allocated: guar:0x%x, be:0x%x, space consumed: guar:0x%x, be:0x%x",
-> +	dev_dbg(dev, "VF %d: space allocated: guar:0x%x, be:0x%x, space consumed: guar:0x%x, be:0x%x\n",
->   		vf->vf_id,
->   		(fd_size & VSIQF_FD_CNT_FD_GCNT_M) >> VSIQF_FD_CNT_FD_GCNT_S,
->   		(fd_size & VSIQF_FD_CNT_FD_BCNT_M) >> VSIQF_FD_CNT_FD_BCNT_S,
+>   drivers/net/ethernet/intel/ice/ice_devlink.c  |  5 ++-
+>   drivers/net/ethernet/intel/ice/ice_repr.c     |  7 +++-
+>   drivers/net/ethernet/intel/ice/ice_sriov.c    | 32 +++++++++++++++++--
+>   drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 28 +++++++++++++++-
+>   drivers/net/ethernet/intel/ice/ice_virtchnl.c |  5 +++
+>   .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  7 +++-
+>   6 files changed, 77 insertions(+), 7 deletions(-)
+
+[?]
 
 Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
