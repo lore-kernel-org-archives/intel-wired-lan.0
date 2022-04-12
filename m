@@ -1,53 +1,71 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 12 Apr 2022 07:44:20 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 0/6] minor cleanups for ice
- virtualization
-In-Reply-To: <20220411232907.1022602-1-jacob.e.keller@intel.com>
-References: <20220411232907.1022602-1-jacob.e.keller@intel.com>
-Message-ID: <4a3aca36-3dd4-51fb-660c-42adb306bd0e@molgen.mpg.de>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Tue, 12 Apr 2022 10:39:01 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix incorrect locking in
+ ice_vc_process_vf_msg()
+In-Reply-To: <97c58b06-11b5-182b-eed2-e5a74824241c@intel.com>
+References: <20220401104052.1711721-1-ivecera@redhat.com>
+ <20220408134714.1834349-1-alexandr.lobakin@intel.com>
+ <97c58b06-11b5-182b-eed2-e5a74824241c@intel.com>
+Message-ID: <SJ0PR11MB5629903816D77836D62E8EAEABED9@SJ0PR11MB5629.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Jacob,
 
 
-Am 12.04.22 um 01:29 schrieb Jacob Keller:
-> This series contains a few minor fix ups for virtualization files. Mainly
-> this includes fixes for function header comments and minor wording changes.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Friday, April 8, 2022 6:01 PM
+> To: Lobakin, Alexandr <alexandr.lobakin@intel.com>
+> Cc: ivecera <ivecera@redhat.com>; netdev at vger.kernel.org; mschmidt
+> <mschmidt@redhat.com>; Brett Creeley <brett@pensando.io>; open list
+> <linux-kernel@vger.kernel.org>; poros <poros@redhat.com>; moderated
+> list:INTEL ETHERNET DRIVERS <intel-wired-lan@lists.osuosl.org>; Jakub
+> Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; David S.
+> Miller <davem@davemloft.net>
+> Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: Fix incorrect locking in
+> ice_vc_process_vf_msg()
 > 
-> The only larger change is a patch which adds NULL checks to ice_get_vf_vsi.
-> This was done in order to prevent static analysis tools from complaining
-> that a NULL value could be dereferenced. Flows where an error is not
-> feasible have a WARN_ON check added. This change enhances the robustness of
-> the driver by avoiding a panic in the event that a VF does not have a valid
-> VSI.
 > 
-> Jacob Keller (6):
->    ice: add newline to dev_dbg in ice_vf_fdir_dump_info
->    ice: always check VF VSI pointer values
->    ice: remove return value comment for ice_reset_all_vfs
->    ice: fix wording in comment for ice_reset_vf
->    ice: add a function comment for ice_cfg_mac_antispoof
->    ice: remove period on argument description in ice_for_each_vf
+> On 4/8/2022 6:47 AM, Alexander Lobakin wrote:
+> > From: Ivan Vecera <ivecera@redhat.com>
+> > Date: Fri,  1 Apr 2022 12:40:52 +0200
+> >
+> >> Usage of mutex_trylock() in ice_vc_process_vf_msg() is incorrect
+> >> because message sent from VF is ignored and never processed.
+> >>
+> >> Use mutex_lock() instead to fix the issue. It is safe because this
+> >> mutex is used to prevent races between VF related NDOs and handlers
+> >> processing request messages from VF and these handlers are running in
+> >> ice_service_task() context. Additionally move this mutex lock prior
+> >> ice_vc_is_opcode_allowed() call to avoid potential races during
+> >> allowlist acccess.
+> >>
+> >> Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl
+> >> handling and VF ndo ops")
+> >> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+> > Hey Tony,
+> >
+> > I guess you missed this one due to being on a vacation previously.
+> > It's been previously reviewed IIRC, could you take it into net-queue?
 > 
->   drivers/net/ethernet/intel/ice/ice_devlink.c  |  5 ++-
->   drivers/net/ethernet/intel/ice/ice_repr.c     |  7 ++-
->   drivers/net/ethernet/intel/ice/ice_sriov.c    | 32 ++++++++++++--
->   drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 43 ++++++++++++++++---
->   drivers/net/ethernet/intel/ice/ice_vf_lib.h   |  4 +-
->   drivers/net/ethernet/intel/ice/ice_virtchnl.c |  5 +++
->   .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  9 +++-
->   7 files changed, 91 insertions(+), 14 deletions(-)
+> I remember applying this but I don't see it on the tree so I must be mistaken.
+> :( I'll get it applied, thanks for catching.
+> 
+> -Tony
+> 
+> >> ---
+> >>   drivers/net/ethernet/intel/ice/ice_virtchnl.c | 21 +++++++------------
+> >>   1 file changed, 7 insertions(+), 14 deletions(-)
+> >>
+> >> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> >> b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> >> index 3f1a63815bac..a465f3743ffc 100644
+> >> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> >> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> >> @@ -3642,14 +3642,6 @@ void ice_vc_process_vf_msg(struct ice_pf *pf,
 
-Besides the nitpicks, the whole series looks good. Thank you very much 
-for doing such cleanup work.
-
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-
-
-Kind regards,
-
-Paul
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
