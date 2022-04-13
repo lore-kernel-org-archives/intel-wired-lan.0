@@ -1,18 +1,18 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 13 Apr 2022 20:50:45 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 4fc63884e78e7f3aaabaaeb81d0e102d8651ed0d
-Message-ID: <6256c725.ABP1FSJOi+oHWey1%lkp@intel.com>
+Date: Wed, 13 Apr 2022 20:50:39 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD SUCCESS
+ a941d5ee4c579682e36063dd966e041bd8368ab8
+Message-ID: <6256c71f.cY6cUs6HM6XUxMpA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 4fc63884e78e7f3aaabaaeb81d0e102d8651ed0d  i40e: Add VF VLAN pruning
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
+branch HEAD: a941d5ee4c579682e36063dd966e041bd8368ab8  i40e: Add Ethernet Connection X722 for 10GbE SFP+ support
 
-elapsed time: 913m
+elapsed time: 914m
 
 configs tested: 96
 configs skipped: 3
@@ -53,10 +53,10 @@ m68k                             allmodconfig
 m68k                                defconfig
 nios2                               defconfig
 arc                              allyesconfig
-csky                                defconfig
 nios2                            allyesconfig
-alpha                               defconfig
 alpha                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
 h8300                            allyesconfig
 arc                                 defconfig
 sh                               allmodconfig
@@ -116,8 +116,8 @@ x86_64                        randconfig-a005
 x86_64                        randconfig-a003
 x86_64                        randconfig-a001
 i386                          randconfig-a002
-i386                          randconfig-a006
 i386                          randconfig-a004
+i386                          randconfig-a006
 x86_64                        randconfig-a012
 x86_64                        randconfig-a014
 x86_64                        randconfig-a016
