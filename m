@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 13 Apr 2022 20:40:47 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- d3c17b5df3620317e67f6643f904ac7ff3d23664
-Message-ID: <6256c4cf.uW85p0hj19NDXU5G%lkp@intel.com>
+Date: Wed, 13 Apr 2022 20:50:32 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
+ 625e8cb8e0e7b9eb6566c5a6e4fa95fb9dad9d4e
+Message-ID: <6256c718.ZizEZhl7yIBpIySJ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: d3c17b5df3620317e67f6643f904ac7ff3d23664  Merge branch 'mlxsw-extend-device-registers-for-line-cards-support'
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
+branch HEAD: 625e8cb8e0e7b9eb6566c5a6e4fa95fb9dad9d4e  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netfilter/nf
 
-elapsed time: 1165m
+elapsed time: 915m
 
-configs tested: 112
+configs tested: 93
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -43,10 +43,6 @@ powerpc                   motionpro_defconfig
 arc                     haps_hs_smp_defconfig
 parisc                           alldefconfig
 arm                            zeus_defconfig
-arc                        vdk_hs38_defconfig
-arm                       aspeed_g5_defconfig
-sh                     sh7710voipgw_defconfig
-powerpc                 mpc834x_mds_defconfig
 x86_64                        randconfig-c001
 arm                  randconfig-c002-20220413
 ia64                             allmodconfig
@@ -93,8 +89,8 @@ riscv                    nommu_k210_defconfig
 riscv                             allnoconfig
 riscv                            allyesconfig
 x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
 um                             i386_defconfig
+um                           x86_64_defconfig
 x86_64                          rhel-8.3-func
 x86_64                                  kexec
 x86_64                              defconfig
@@ -109,9 +105,6 @@ arm                  randconfig-c002-20220413
 i386                          randconfig-c001
 riscv                randconfig-c006-20220413
 mips                 randconfig-c004-20220413
-mips                      pic32mzda_defconfig
-hexagon                             defconfig
-powerpc                      ppc44x_defconfig
 powerpc                        icon_defconfig
 powerpc                 mpc836x_mds_defconfig
 powerpc                      obs600_defconfig
@@ -119,21 +112,9 @@ powerpc                      walnut_defconfig
 x86_64                        randconfig-a005
 x86_64                        randconfig-a003
 x86_64                        randconfig-a001
-x86_64               randconfig-a003-20220411
-x86_64               randconfig-a004-20220411
-x86_64               randconfig-a006-20220411
-x86_64               randconfig-a001-20220411
-x86_64               randconfig-a002-20220411
-x86_64               randconfig-a005-20220411
 i386                          randconfig-a002
 i386                          randconfig-a006
 i386                          randconfig-a004
-i386                 randconfig-a004-20220411
-i386                 randconfig-a001-20220411
-i386                 randconfig-a003-20220411
-i386                 randconfig-a005-20220411
-i386                 randconfig-a006-20220411
-i386                 randconfig-a002-20220411
 x86_64                        randconfig-a012
 x86_64                        randconfig-a014
 x86_64                        randconfig-a016
