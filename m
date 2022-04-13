@@ -1,125 +1,143 @@
-From: Ivan Vecera <ivecera@redhat.com>
-Date: Wed, 13 Apr 2022 09:22:59 +0200
-Subject: [Intel-wired-lan] [PATCH net] ice: Protect vf_state check by
- cfg_lock in ice_vc_process_vf_msg()
-Message-ID: <20220413072259.3189386-1-ivecera@redhat.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 13 Apr 2022 20:40:47 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ d3c17b5df3620317e67f6643f904ac7ff3d23664
+Message-ID: <6256c4cf.uW85p0hj19NDXU5G%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Previous patch labelled "ice: Fix incorrect locking in
-ice_vc_process_vf_msg()"  fixed an issue with ignored messages
-sent by VF driver but a small race window still left.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: d3c17b5df3620317e67f6643f904ac7ff3d23664  Merge branch 'mlxsw-extend-device-registers-for-line-cards-support'
 
-Recently caught trace during 'ip link set ... vf 0 vlan ...' operation:
+elapsed time: 1165m
 
-[ 7332.995625] ice 0000:3b:00.0: Clearing port VLAN on VF 0
-[ 7333.001023] iavf 0000:3b:01.0: Reset indication received from the PF
-[ 7333.007391] iavf 0000:3b:01.0: Scheduling reset task
-[ 7333.059575] iavf 0000:3b:01.0: PF returned error -5 (IAVF_ERR_PARAM) to our request 3
-[ 7333.059626] ice 0000:3b:00.0: Invalid message from VF 0, opcode 3, len 4, error -1
+configs tested: 112
+configs skipped: 3
 
-Setting of VLAN for VF causes a reset of the affected VF using
-ice_reset_vf() function that runs with cfg_lock taken:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-1. ice_notify_vf_reset() informs IAVF driver that reset is needed and
-   IAVF schedules its own reset procedure
-2. Bit ICE_VF_STATE_DIS is set in vf->vf_state
-3. Misc initialization steps
-4. ice_sriov_post_vsi_rebuild() -> ice_vf_set_initialized() and that
-   clears ICE_VF_STATE_DIS in vf->vf_state
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+mips                           ci20_defconfig
+arm                        cerfcube_defconfig
+sh                   sh7770_generic_defconfig
+powerpc                       maple_defconfig
+sh                           se7721_defconfig
+arc                            hsdk_defconfig
+riscv                            allmodconfig
+arc                     nsimosci_hs_defconfig
+xtensa                           allyesconfig
+sh                        dreamcast_defconfig
+ia64                      gensparse_defconfig
+sparc                               defconfig
+powerpc                   motionpro_defconfig
+arc                     haps_hs_smp_defconfig
+parisc                           alldefconfig
+arm                            zeus_defconfig
+arc                        vdk_hs38_defconfig
+arm                       aspeed_g5_defconfig
+sh                     sh7710voipgw_defconfig
+powerpc                 mpc834x_mds_defconfig
+x86_64                        randconfig-c001
+arm                  randconfig-c002-20220413
+ia64                             allmodconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+csky                                defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                randconfig-r042-20220413
+arc                  randconfig-r043-20220413
+s390                 randconfig-r044-20220413
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allyesconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                         rhel-8.3-kunit
+x86_64                               rhel-8.3
 
-Step 3 is mentioned race window because IAVF reset procedure runs in
-parallel and one of its step is sending of VIRTCHNL_OP_GET_VF_RESOURCES
-message (opcode==3). This message is handled in ice_vc_process_vf_msg()
-and if it is received during the mentioned race window then it's
-marked as invalid and error is returned to VF driver.
+clang tested configs:
+x86_64                        randconfig-c007
+powerpc              randconfig-c003-20220413
+arm                  randconfig-c002-20220413
+i386                          randconfig-c001
+riscv                randconfig-c006-20220413
+mips                 randconfig-c004-20220413
+mips                      pic32mzda_defconfig
+hexagon                             defconfig
+powerpc                      ppc44x_defconfig
+powerpc                        icon_defconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                      obs600_defconfig
+powerpc                      walnut_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+x86_64               randconfig-a003-20220411
+x86_64               randconfig-a004-20220411
+x86_64               randconfig-a006-20220411
+x86_64               randconfig-a001-20220411
+x86_64               randconfig-a002-20220411
+x86_64               randconfig-a005-20220411
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+i386                 randconfig-a004-20220411
+i386                 randconfig-a001-20220411
+i386                 randconfig-a003-20220411
+i386                 randconfig-a005-20220411
+i386                 randconfig-a006-20220411
+i386                 randconfig-a002-20220411
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
 
-Protect vf_state check in ice_vc_process_vf_msg() by cfg_lock to avoid
-this race condition.
-
-Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
-Tested-by: Fei Liu <feliu@redhat.com>
-Signed-off-by: Ivan Vecera <ivecera@redhat.com>
----
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 38 +++++++++----------
- 1 file changed, 17 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 5612c032f15a..553287a75b50 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -3625,44 +3625,39 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 		return;
- 	}
- 
-+	mutex_lock(&vf->cfg_lock);
-+
- 	/* Check if VF is disabled. */
- 	if (test_bit(ICE_VF_STATE_DIS, vf->vf_states)) {
- 		err = -EPERM;
--		goto error_handler;
--	}
--
--	ops = vf->virtchnl_ops;
--
--	/* Perform basic checks on the msg */
--	err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
--	if (err) {
--		if (err == VIRTCHNL_STATUS_ERR_PARAM)
--			err = -EPERM;
--		else
--			err = -EINVAL;
-+	} else {
-+		/* Perform basic checks on the msg */
-+		err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg,
-+						  msglen);
-+		if (err) {
-+			if (err == VIRTCHNL_STATUS_ERR_PARAM)
-+				err = -EPERM;
-+			else
-+				err = -EINVAL;
-+		}
- 	}
--
--error_handler:
- 	if (err) {
- 		ice_vc_send_msg_to_vf(vf, v_opcode, VIRTCHNL_STATUS_ERR_PARAM,
- 				      NULL, 0);
- 		dev_err(dev, "Invalid message from VF %d, opcode %d, len %d, error %d\n",
- 			vf_id, v_opcode, msglen, err);
--		ice_put_vf(vf);
--		return;
-+		goto finish;
- 	}
- 
--	mutex_lock(&vf->cfg_lock);
--
- 	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
- 		ice_vc_send_msg_to_vf(vf, v_opcode,
- 				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED, NULL,
- 				      0);
--		mutex_unlock(&vf->cfg_lock);
--		ice_put_vf(vf);
--		return;
-+		goto finish;
- 	}
- 
-+	ops = vf->virtchnl_ops;
-+
- 	switch (v_opcode) {
- 	case VIRTCHNL_OP_VERSION:
- 		err = ops->get_ver_msg(vf, msg);
-@@ -3773,6 +3768,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
- 			 vf_id, v_opcode, err);
- 	}
- 
-+finish:
- 	mutex_unlock(&vf->cfg_lock);
- 	ice_put_vf(vf);
- }
 -- 
-2.35.1
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
