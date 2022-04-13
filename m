@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 13 Apr 2022 20:50:49 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 7d7f2966d44d04e75bca5bed4ee673a37542e21f
-Message-ID: <6256c729.C0CPnq6DDI2M5b8p%lkp@intel.com>
+Date: Wed, 13 Apr 2022 20:50:45 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 4fc63884e78e7f3aaabaaeb81d0e102d8651ed0d
+Message-ID: <6256c725.ABP1FSJOi+oHWey1%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 7d7f2966d44d04e75bca5bed4ee673a37542e21f  ice: fix crash in switchdev mode
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 4fc63884e78e7f3aaabaaeb81d0e102d8651ed0d  i40e: Add VF VLAN pruning
 
-elapsed time: 915m
+elapsed time: 913m
 
-configs tested: 93
+configs tested: 96
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -76,6 +76,9 @@ mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                           allnoconfig
 powerpc                          allmodconfig
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a005
 i386                          randconfig-a012
 i386                          randconfig-a014
 i386                          randconfig-a016
