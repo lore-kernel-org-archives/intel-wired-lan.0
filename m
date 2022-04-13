@@ -1,16 +1,16 @@
 From: kernel test robot <lkp@intel.com>
-Date: Wed, 13 Apr 2022 20:50:32 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 625e8cb8e0e7b9eb6566c5a6e4fa95fb9dad9d4e
-Message-ID: <6256c718.ZizEZhl7yIBpIySJ%lkp@intel.com>
+Date: Wed, 13 Apr 2022 20:50:49 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 7d7f2966d44d04e75bca5bed4ee673a37542e21f
+Message-ID: <6256c729.C0CPnq6DDI2M5b8p%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: 625e8cb8e0e7b9eb6566c5a6e4fa95fb9dad9d4e  Merge git://git.kernel.org/pub/scm/linux/kernel/git/netfilter/nf
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 7d7f2966d44d04e75bca5bed4ee673a37542e21f  ice: fix crash in switchdev mode
 
 elapsed time: 915m
 
