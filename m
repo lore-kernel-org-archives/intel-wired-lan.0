@@ -1,33 +1,64 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 12 Apr 2022 11:29:48 -0700
-Subject: [Intel-wired-lan] [PATCH] ice: wait for EMP reset after
- firmware flash
-In-Reply-To: <20220412160856.1027597-1-alexandr.lobakin@intel.com>
-References: <20220412102753.670867-1-poros@redhat.com>
- <20220412160856.1027597-1-alexandr.lobakin@intel.com>
-Message-ID: <d1d4b35e-2fcd-fa30-4985-5ae58ea6d53f@intel.com>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Tue, 12 Apr 2022 18:58:15 -0700
+Subject: [Intel-wired-lan] [PATCH net-queue v2] igc: Fix suspending when PTM
+ is active
+Message-ID: <20220413015815.31521-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/12/2022 9:08 AM, Alexander Lobakin wrote:
+Some mainboard/CPU combinations, in particular, Alder Lake-S with a
+W680 mainboard, have shown problems (system hangs usually, no kernel
+logs) with suspend/resume when PCIe PTM is enabled and active. In some
+cases, it could be reproduced when removing the igc module.
 
->> +#define ICE_EMP_RESET_SLEEP 5000
-> 
-> Ooof, 5 sec is a lot! Is there any way to poll the device readiness?
-> Does it really need the whole 5 sec?
+The best we can do is to stop PTM dialogs from the downstream/device
+side before the interface is brought down. PCIe PTM will be re-enabled
+when the interface is being brought up.
 
-The problem with resets is usually you don't want to disturb the 
-hardware with PCIe pokes while it's resetting. In this case, this code 
-only runs if it was indicated by the update status that the firmware 
-could internally reset itself to pick up new updates, avoiding a reboot.
+Fixes: a90ec8483732 ("igc: Add support for PTP getcrosststamp()")
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Acked-by: Paul Menzel <pmenzel@molgen.mpg.de>
+---
+ drivers/net/ethernet/intel/igc/igc_ptp.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-Yes the five seconds is less than ideal, but it was the value we found 
-that offered the most stability / likelihood of reset completing. In 
-this case the 5 seconds is a tradeoff vs a reboot.
-
-Thank you Ivan for chasing down this bug!
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
+index 0d6e3215e98f..653e9f1e35b5 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ptp.c
++++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
+@@ -992,6 +992,17 @@ static void igc_ptp_time_restore(struct igc_adapter *adapter)
+ 	igc_ptp_write_i225(adapter, &ts);
+ }
+ 
++static void igc_ptm_stop(struct igc_adapter *adapter)
++{
++	struct igc_hw *hw = &adapter->hw;
++	u32 ctrl;
++
++	ctrl = rd32(IGC_PTM_CTRL);
++	ctrl &= ~IGC_PTM_CTRL_EN;
++
++	wr32(IGC_PTM_CTRL, ctrl);
++}
++
+ /**
+  * igc_ptp_suspend - Disable PTP work items and prepare for suspend
+  * @adapter: Board private structure
+@@ -1009,8 +1020,10 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
+ 	adapter->ptp_tx_skb = NULL;
+ 	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
+ 
+-	if (pci_device_is_present(adapter->pdev))
++	if (pci_device_is_present(adapter->pdev)) {
+ 		igc_ptp_time_save(adapter);
++		igc_ptm_stop(adapter);
++	}
+ }
+ 
+ /**
+-- 
+2.35.1
 
