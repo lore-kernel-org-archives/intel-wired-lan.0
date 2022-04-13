@@ -1,83 +1,125 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Wed, 13 Apr 2022 08:33:17 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused phy_type enum
-Message-ID: <20220413053317.3297670-1-sasha.neftin@intel.com>
+From: Ivan Vecera <ivecera@redhat.com>
+Date: Wed, 13 Apr 2022 09:22:59 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: Protect vf_state check by
+ cfg_lock in ice_vc_process_vf_msg()
+Message-ID: <20220413072259.3189386-1-ivecera@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Complete to commit 8e153faf5827 ("igc: Remove unused phy type")
-i225 parts have only one phy. There is no point to use phy_type enum.
-Clean up the code accordingly, and get rid of the unused enum lines.
+Previous patch labelled "ice: Fix incorrect locking in
+ice_vc_process_vf_msg()"  fixed an issue with ignored messages
+sent by VF driver but a small race window still left.
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+Recently caught trace during 'ip link set ... vf 0 vlan ...' operation:
+
+[ 7332.995625] ice 0000:3b:00.0: Clearing port VLAN on VF 0
+[ 7333.001023] iavf 0000:3b:01.0: Reset indication received from the PF
+[ 7333.007391] iavf 0000:3b:01.0: Scheduling reset task
+[ 7333.059575] iavf 0000:3b:01.0: PF returned error -5 (IAVF_ERR_PARAM) to our request 3
+[ 7333.059626] ice 0000:3b:00.0: Invalid message from VF 0, opcode 3, len 4, error -1
+
+Setting of VLAN for VF causes a reset of the affected VF using
+ice_reset_vf() function that runs with cfg_lock taken:
+
+1. ice_notify_vf_reset() informs IAVF driver that reset is needed and
+   IAVF schedules its own reset procedure
+2. Bit ICE_VF_STATE_DIS is set in vf->vf_state
+3. Misc initialization steps
+4. ice_sriov_post_vsi_rebuild() -> ice_vf_set_initialized() and that
+   clears ICE_VF_STATE_DIS in vf->vf_state
+
+Step 3 is mentioned race window because IAVF reset procedure runs in
+parallel and one of its step is sending of VIRTCHNL_OP_GET_VF_RESOURCES
+message (opcode==3). This message is handled in ice_vc_process_vf_msg()
+and if it is received during the mentioned race window then it's
+marked as invalid and error is returned to VF driver.
+
+Protect vf_state check in ice_vc_process_vf_msg() by cfg_lock to avoid
+this race condition.
+
+Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
+Tested-by: Fei Liu <feliu@redhat.com>
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/net/ethernet/intel/igc/igc_base.c |  2 --
- drivers/net/ethernet/intel/igc/igc_hw.h   |  7 -------
- drivers/net/ethernet/intel/igc/igc_phy.c  | 10 +++-------
- 3 files changed, 3 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 38 +++++++++----------
+ 1 file changed, 17 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index f068b66b8025..a15927e77272 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -182,8 +182,6 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index 5612c032f15a..553287a75b50 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -3625,44 +3625,39 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 		return;
+ 	}
  
- 	igc_check_for_copper_link(hw);
- 
--	phy->type = igc_phy_i225;
--
- out:
- 	return ret_val;
- }
-diff --git a/drivers/net/ethernet/intel/igc/igc_hw.h b/drivers/net/ethernet/intel/igc/igc_hw.h
-index b1e72ec5f131..360644f33d5f 100644
---- a/drivers/net/ethernet/intel/igc/igc_hw.h
-+++ b/drivers/net/ethernet/intel/igc/igc_hw.h
-@@ -53,11 +53,6 @@ enum igc_mac_type {
- 	igc_num_macs  /* List is 1-based, so subtract 1 for true count. */
- };
- 
--enum igc_phy_type {
--	igc_phy_unknown = 0,
--	igc_phy_i225,
--};
--
- enum igc_media_type {
- 	igc_media_type_unknown = 0,
- 	igc_media_type_copper = 1,
-@@ -138,8 +133,6 @@ struct igc_nvm_info {
- struct igc_phy_info {
- 	struct igc_phy_operations ops;
- 
--	enum igc_phy_type type;
--
- 	u32 addr;
- 	u32 id;
- 	u32 reset_delay_us; /* in usec */
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
-index 6961f65d36b9..4f06e6bb68b1 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.c
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.c
-@@ -150,13 +150,9 @@ s32 igc_check_downshift(struct igc_hw *hw)
- 	struct igc_phy_info *phy = &hw->phy;
- 	s32 ret_val;
- 
--	switch (phy->type) {
--	case igc_phy_i225:
--	default:
--		/* speed downshift not supported */
--		phy->speed_downgraded = false;
--		ret_val = 0;
++	mutex_lock(&vf->cfg_lock);
++
+ 	/* Check if VF is disabled. */
+ 	if (test_bit(ICE_VF_STATE_DIS, vf->vf_states)) {
+ 		err = -EPERM;
+-		goto error_handler;
 -	}
-+	/* speed downshift not supported */
-+	phy->speed_downgraded = false;
-+	ret_val = 0;
+-
+-	ops = vf->virtchnl_ops;
+-
+-	/* Perform basic checks on the msg */
+-	err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
+-	if (err) {
+-		if (err == VIRTCHNL_STATUS_ERR_PARAM)
+-			err = -EPERM;
+-		else
+-			err = -EINVAL;
++	} else {
++		/* Perform basic checks on the msg */
++		err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg,
++						  msglen);
++		if (err) {
++			if (err == VIRTCHNL_STATUS_ERR_PARAM)
++				err = -EPERM;
++			else
++				err = -EINVAL;
++		}
+ 	}
+-
+-error_handler:
+ 	if (err) {
+ 		ice_vc_send_msg_to_vf(vf, v_opcode, VIRTCHNL_STATUS_ERR_PARAM,
+ 				      NULL, 0);
+ 		dev_err(dev, "Invalid message from VF %d, opcode %d, len %d, error %d\n",
+ 			vf_id, v_opcode, msglen, err);
+-		ice_put_vf(vf);
+-		return;
++		goto finish;
+ 	}
  
- 	return ret_val;
+-	mutex_lock(&vf->cfg_lock);
+-
+ 	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
+ 		ice_vc_send_msg_to_vf(vf, v_opcode,
+ 				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED, NULL,
+ 				      0);
+-		mutex_unlock(&vf->cfg_lock);
+-		ice_put_vf(vf);
+-		return;
++		goto finish;
+ 	}
+ 
++	ops = vf->virtchnl_ops;
++
+ 	switch (v_opcode) {
+ 	case VIRTCHNL_OP_VERSION:
+ 		err = ops->get_ver_msg(vf, msg);
+@@ -3773,6 +3768,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 			 vf_id, v_opcode, err);
+ 	}
+ 
++finish:
+ 	mutex_unlock(&vf->cfg_lock);
+ 	ice_put_vf(vf);
  }
 -- 
-2.30.2
+2.35.1
 
