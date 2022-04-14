@@ -1,46 +1,39 @@
-From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
-Date: Thu, 14 Apr 2022 06:36:35 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] Revert "ice: Hide
- bus-info in ethtool for PRs in switchdev mode"
-In-Reply-To: <20220328145828.10097-3-marcin.szycik@linux.intel.com>
-References: <20220328145828.10097-1-marcin.szycik@linux.intel.com>
- <20220328145828.10097-3-marcin.szycik@linux.intel.com>
-Message-ID: <DM6PR11MB454618A0BB23814F21A7ADAF9CEF9@DM6PR11MB4546.namprd11.prod.outlook.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Thu, 14 Apr 2022 06:41:52 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: Fix memory leak in
+ ice_get_orom_civd_data()
+In-Reply-To: <20220401080051.16846-1-niejianglei2021@163.com>
+References: <20220401080051.16846-1-niejianglei2021@163.com>
+Message-ID: <BYAPR11MB3367D0896E6DD74BE81196FCFCEF9@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
->Marcin Szycik
->Sent: Monday, March 28, 2022 8:28 PM
-To: intel-wired-lan@lists.osuosl.org
->Subject: [Intel-wired-lan] [PATCH net-next 2/2] Revert "ice: Hide bus-info in
->ethtool for PRs in switchdev mode"
->
->This reverts commit bfaaba99e680bf82bf2cbf69866c3f37434ff766.
->
->Commit bfaaba99e680 ("ice: Hide bus-info in ethtool for PRs in switchdev
->mode") was a workaround for lshw tool displaying incorrect descriptions for
->port representors and PF in switchdev mode. Now the issue has been fixed in
->the lshw tool itself [1].
->
->Removing the workaround can be considered a regression, as the user might
->be running older, unpatched lshw version. However, another important
->change
->(ice: link representors to PCI device, which improves port representor netdev
->naming with SET_NETDEV_DEV) also causes the same "regression" as
->removing the workaround, i.e. unpatched lshw is able to access bus-info
->information (this time not via ethtool) and the bug can occur. Therefore, the
->workaround no longer prevents the bug and can be removed.
->
->[1] https://ezix.org/src/pkg/lshw/commit/9bf4e4c9c1
->
->Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
->---
-> drivers/net/ethernet/intel/ice/ice_ethtool.c | 8 +++-----
-> 1 file changed, 3 insertions(+), 5 deletions(-)
->
-Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
+
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Jianglei Nie
+> Sent: Friday, April 1, 2022 1:31 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; davem at davemloft.net; kuba at kernel.org
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org; Jianglei Nie <niejianglei2021@163.com>
+> Subject: [Intel-wired-lan] [PATCH] ice: Fix memory leak in
+> ice_get_orom_civd_data()
+> 
+> Line 637 allocates a memory chunk for orom_data by vzmalloc(). But when
+> ice_read_flash_module() fails, the allocated memory is not freed, which will
+> lead to a memory leak.
+> 
+> We can fix it by freeing the orom_data when ce_read_flash_module() fails.
+> 
+> Signed-off-by: Jianglei Nie <niejianglei2021@163.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_nvm.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
