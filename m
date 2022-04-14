@@ -1,32 +1,76 @@
-From: Christian Melki <christian.melki@t2data.com>
-Date: Wed, 13 Apr 2022 08:10:47 +0200
-Subject: [Intel-wired-lan] No link up before IFF_UP? (early link
- optimization)
-Message-ID: <3438c789-d4c2-1b41-79d2-d2fb9ff6f089@t2data.com>
+From: Michal Michalik <michal.michalik@intel.com>
+Date: Thu, 14 Apr 2022 12:23:58 +0200
+Subject: [Intel-wired-lan] [PATCH net v1] ice: fix PTP stale Tx timestamps
+ cleanup
+Message-ID: <20220414102358.13486-1-michal.michalik@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I have a optimization task for a time constrained boot process.
-The system in question is an AMD Ryzen from the R1000 family with an 
-Intel I211 running igb in 5.17.1.
+Read stale PTP Tx timestamps from PHY on cleanup.
 
-The current kernel and driver behavior:
-UEFI (link up) -> Kernel starts, driver is probed (link down) -> link 
-stays down until userspace IFF_UP -> after an extra +6-7 seconds the 
-link comes up.
+After running out of Tx timestamps request handlers hardware (HW) stops
+reporting finished requests. Function ice_ptp_tx_tstamp_cleanup() used
+to only cleanup stale handlers in driver and was leaving the hardware
+registers not read. Not reading stale PTP Tx timestamps prevents next
+interrupts from arriving and makes timestamping not usable.
 
-This means that the userspace can't start communication after 6-7 
-seconds after device open. Moving the interface initialization earlier 
-won't help much as IFF_UP is about 0.5 away from jumping to initramfs.
+Fixes: ea9b847cda64 ("ice: enable transmit timestamps for E810 devices")
+Signed-off-by: Michal Michalik <michal.michalik@intel.com>
+Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-So the question is: Can I get the interface to stop powering down after 
-probe? If reset is needed, then take up the interface again. Of course 
-the kernel won't start forwarding until netif_carrier transitions.
-But I'd like to move the resets and powerups as early as possible.
-I guess that also means no resets if no settings have changed.
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index a1cd332..826a508 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2287,6 +2287,7 @@ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
+ 
+ /**
+  * ice_ptp_tx_tstamp_cleanup - Cleanup old timestamp requests that got dropped
++ * @hw: pointer to the hw struct
+  * @tx: PTP Tx tracker to clean up
+  *
+  * Loop through the Tx timestamp requests and see if any of them have been
+@@ -2295,7 +2296,7 @@ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
+  * timestamp will never be captured. This might happen if the packet gets
+  * discarded before it reaches the PHY timestamping block.
+  */
+-static void ice_ptp_tx_tstamp_cleanup(struct ice_ptp_tx *tx)
++static void ice_ptp_tx_tstamp_cleanup(struct ice_hw *hw, struct ice_ptp_tx *tx)
+ {
+ 	u8 idx;
+ 
+@@ -2304,11 +2305,15 @@ static void ice_ptp_tx_tstamp_cleanup(struct ice_ptp_tx *tx)
+ 
+ 	for_each_set_bit(idx, tx->in_use, tx->len) {
+ 		struct sk_buff *skb;
++		u64 raw_tstamp;
+ 
+ 		/* Check if this SKB has been waiting for too long */
+ 		if (time_is_after_jiffies(tx->tstamps[idx].start + 2 * HZ))
+ 			continue;
+ 
++		ice_read_phy_tstamp(hw, tx->quad, idx + tx->quad_offset,
++				    &raw_tstamp);
++
+ 		spin_lock(&tx->lock);
+ 		skb = tx->tstamps[idx].skb;
+ 		tx->tstamps[idx].skb = NULL;
+@@ -2330,7 +2335,7 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
+ 
+ 	ice_ptp_update_cached_phctime(pf);
+ 
+-	ice_ptp_tx_tstamp_cleanup(&pf->ptp.port.tx);
++	ice_ptp_tx_tstamp_cleanup(&pf->hw, &pf->ptp.port.tx);
+ 
+ 	/* Run twice a second */
+ 	kthread_queue_delayed_work(ptp->kworker, &ptp->work,
+-- 
+2.9.5
 
-Regards,
-Christian
+base-commit: ad66aede031ecde3028926ebab54adffd19cf59c
