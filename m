@@ -1,8 +1,8 @@
 From: Jeff Daly <jeffd@silicom-usa.com>
-Date: Thu, 14 Apr 2022 16:20:18 -0400
+Date: Thu, 14 Apr 2022 16:21:04 -0400
 Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix module_param
  allow_unsupported_sfp type
-Message-ID: <20220414202018.800-1-jeffd@silicom-usa.com>
+Message-ID: <20220414202104.900-1-jeffd@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
