@@ -1,50 +1,85 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Thu, 14 Apr 2022 09:15:52 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused phy_type
- enum
-In-Reply-To: <716d73f5-3e2d-0ed9-d9b9-356406988010@intel.com>
-References: <20220413053317.3297670-1-sasha.neftin@intel.com>
- <716d73f5-3e2d-0ed9-d9b9-356406988010@intel.com>
-Message-ID: <3bd66d57-25bb-909c-4106-c4c46be45ac8@intel.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Thu, 14 Apr 2022 06:19:08 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: fix crash in switchdev mode
+In-Reply-To: <20220408075610.445584-1-wojciech.drewek@intel.com>
+References: <20220408075610.445584-1-wojciech.drewek@intel.com>
+Message-ID: <DM6PR11MB45463A034BE0FF4A527AA2559CEF9@DM6PR11MB4546.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/13/2022 21:13, Tony Nguyen wrote:
-> 
-> On 4/12/2022 10:33 PM, Sasha Neftin wrote:
-> 
-> <snip>
->> diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c 
->> b/drivers/net/ethernet/intel/igc/igc_phy.c
->> index 6961f65d36b9..4f06e6bb68b1 100644
->> --- a/drivers/net/ethernet/intel/igc/igc_phy.c
->> +++ b/drivers/net/ethernet/intel/igc/igc_phy.c
->> @@ -150,13 +150,9 @@ s32 igc_check_downshift(struct igc_hw *hw)
->> ????? struct igc_phy_info *phy = &hw->phy;
->> ????? s32 ret_val;
->> -??? switch (phy->type) {
->> -??? case igc_phy_i225:
->> -??? default:
->> -??????? /* speed downshift not supported */
->> -??????? phy->speed_downgraded = false;
->> -??????? ret_val = 0;
->> -??? }
->> +??? /* speed downshift not supported */
->> +??? phy->speed_downgraded = false;
->> +??? ret_val = 0;
->> ????? return ret_val;
-> 
-> ret_val isn't needed since it's always returning 0 and could possibly be 
-> made a void function.
-Thank you, Tony, right. I believe it is a minor logical change - it 
-should be a different patch. I remember we have a few similar cases in 
-igc. I plan (TODO) to fix them.
-> 
-> Thanks,
-> 
-> Tony
-> 
-
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Wojciech Drewek
+>Sent: Friday, April 8, 2022 1:26 PM
+To: intel-wired-lan@lists.osuosl.org
+>Subject: [Intel-wired-lan] [PATCH net] ice: fix crash in switchdev mode
+>
+>Below steps end up with crash:
+>- modprobe ice
+>- devlink dev eswitch set $PF1_PCI mode switchdev
+>- echo 64 > /sys/class/net/$PF1/device/sriov_numvfs
+>- rmmod ice
+>
+>Calling ice_eswitch_port_start_xmit while the process of removing VFs is in
+>progress ends up with NULL pointer dereference.
+>That's because PR netdev is not released but some resources are already
+>freed. Fix it by checking if ICE_VF_DIS bit is set.
+>
+>Call trace:
+>[ 1379.595146] BUG: kernel NULL pointer dereference, address:
+>0000000000000040 [ 1379.595284] #PF: supervisor read access in kernel mode
+>[ 1379.595410] #PF: error_code(0x0000) - not-present page [ 1379.595535]
+>PGD 0 P4D 0 [ 1379.595657] Oops: 0000 [#1] PREEMPT SMP PTI
+>[ 1379.595783] CPU: 4 PID: 974 Comm: NetworkManager Kdump: loaded
+>Tainted: G           OE     5.17.0-rc8_mrq_dev-queue+ #12
+>[ 1379.595926] Hardware name: Intel Corporation S1200SP/S1200SP, BIOS
+>S1200SP.86B.03.01.0042.013020190050 01/30/2019 [ 1379.596063] RIP:
+>0010:ice_eswitch_port_start_xmit+0x46/0xd0 [ice] [ 1379.596292] Code: c7 c8
+>09 00 00 e8 9a c9 fc ff 84 c0 0f 85 82 00 00 00 4c 89 e7 e8 ca 70 fe ff 48 8b 7d 58
+>48 89 c3 48 85 ff 75 5e 48 8b 53 20 <8b> 42 40 85 c0 74 78 8d 48 01 f0 0f b1 4a
+>40 75 f2 0f b6 95 84 00 [ 1379.596456] RSP: 0018:ffffaba0c0d7bad0 EFLAGS:
+>00010246 [ 1379.596584] RAX: ffff969c14c71680 RBX: ffff969c14c71680 RCX:
+>000100107a0f0000 [ 1379.596715] RDX: 0000000000000000 RSI:
+>ffff969b9d631000 RDI: 0000000000000000 [ 1379.596846] RBP:
+>ffff969c07b46500 R08: ffff969becfca8ac R09: 0000000000000001 [
+>1379.596977] R10: 0000000000000004 R11: ffffaba0c0d7bbec R12:
+>ffff969b9d631000 [ 1379.597106] R13: ffffffffc08357a0 R14: ffff969c07b46500
+>R15: ffff969b9d631000 [ 1379.597237] FS:  00007f72c0e25c80(0000)
+>GS:ffff969f13500000(0000) knlGS:0000000000000000 [ 1379.597414] CS:  0010
+>DS: 0000 ES: 0000 CR0: 0000000080050033 [ 1379.597562] CR2:
+>0000000000000040 CR3: 000000012b316006 CR4: 00000000003706e0 [
+>1379.597713] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
+>0000000000000000 [ 1379.597863] DR3: 0000000000000000 DR6:
+>00000000fffe0ff0 DR7: 0000000000000400 [ 1379.598015] Call Trace:
+>[ 1379.598153]  <TASK>
+>[ 1379.598294]  dev_hard_start_xmit+0xd9/0x220 [ 1379.598444]
+>sch_direct_xmit+0x8a/0x340 [ 1379.598592]  __dev_queue_xmit+0xa3c/0xd30
+>[ 1379.598739]  ? packet_parse_headers+0xb4/0xf0 [ 1379.598890]
+>packet_sendmsg+0xa15/0x1620 [ 1379.599038]  ?
+>__check_object_size+0x46/0x140 [ 1379.599186]  sock_sendmsg+0x5e/0x60 [
+>1379.599330]  ____sys_sendmsg+0x22c/0x270 [ 1379.599474]  ?
+>import_iovec+0x17/0x20 [ 1379.599622]  ? sendmsg_copy_msghdr+0x59/0x90
+>[ 1379.599771]  ___sys_sendmsg+0x81/0xc0 [ 1379.599917]  ?
+>__pollwait+0xd0/0xd0 [ 1379.600061]  ? preempt_count_add+0x68/0xa0 [
+>1379.600210]  ? _raw_write_lock_irq+0x1a/0x40 [ 1379.600369]  ?
+>ep_done_scan+0xc9/0x110 [ 1379.600494]  ?
+>_raw_spin_unlock_irqrestore+0x25/0x40
+>[ 1379.600622]  ? preempt_count_add+0x68/0xa0 [ 1379.600747]  ?
+>_raw_spin_lock_irq+0x1a/0x40 [ 1379.600899]  ? __fget_light+0x8f/0x110 [
+>1379.601024]  __sys_sendmsg+0x49/0x80 [ 1379.601148]  ?
+>release_ds_buffers+0x50/0xe0 [ 1379.601274]  do_syscall_64+0x3b/0x90 [
+>1379.601399]  entry_SYSCALL_64_after_hwframe+0x44/0xae
+>[ 1379.601525] RIP: 0033:0x7f72c1e2e35d
+>
+>Fixes: f5396b8a663f ("ice: switchdev slow path")
+>Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+>Reported-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+>Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>---
+> drivers/net/ethernet/intel/ice/ice_eswitch.c | 3 ++-
+> 1 file changed, 2 insertions(+), 1 deletion(-)
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
