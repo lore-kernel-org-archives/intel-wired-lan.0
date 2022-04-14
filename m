@@ -1,16 +1,17 @@
 From: Jeff Daly <jeffd@silicom-usa.com>
-Date: Thu, 14 Apr 2022 13:10:28 -0400
-Subject: [Intel-wired-lan] [PATCH] X550EM NICs do not support 1G Cu SFPs by
- default from Intel,
- this patch enables treating these SFPs as 1G SX SFPs via a module parameter
- similar to the parameter that allows the driver to be able to recognize
- unsupported (by Intel) SFPs.
-Message-ID: <20220414171028.22107-1-jeffd@silicom-usa.com>
+Date: Thu, 14 Apr 2022 13:20:20 -0400
+Subject: [Intel-wired-lan] [PATCH] Treat 1G Cu SFPs as 1G SX for X550EM
+Message-ID: <20220414172020.22396-1-jeffd@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+X550EM NICs do not support 1G Cu SFPs by default from Intel, this
+patch enables treating these SFPs as 1G SX SFPs via a module
+parameter similar to the parameter that allows the driver to be
+able to recognize unsupported (by Intel) SFPs.
 
 Signed-off-by: Jeff Daly <jeffd@silicom-usa.com>
 ---
