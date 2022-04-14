@@ -1,164 +1,98 @@
-From: Ivan Vecera <ivecera@redhat.com>
-Date: Thu, 14 Apr 2022 18:39:06 +0200
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix race during aux device
- (un)plugging
-Message-ID: <20220414163907.1456925-1-ivecera@redhat.com>
+From: Jeff Daly <jeffd@silicom-usa.com>
+Date: Thu, 14 Apr 2022 13:10:28 -0400
+Subject: [Intel-wired-lan] [PATCH] X550EM NICs do not support 1G Cu SFPs by
+ default from Intel,
+ this patch enables treating these SFPs as 1G SX SFPs via a module parameter
+ similar to the parameter that allows the driver to be able to recognize
+ unsupported (by Intel) SFPs.
+Message-ID: <20220414171028.22107-1-jeffd@silicom-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Function ice_plug_aux_dev() assigns pf->adev field too early prior
-aux device initialization and on other side ice_unplug_aux_dev()
-starts aux device deinit and at the end assigns NULL to pf->adev.
-This is wrong and can causes a crash when ice_send_event_to_aux()
-call occurs during these operations because that function depends
-on non-NULL value of pf->adev and does not assume that aux device
-is half-initialized or half-destroyed.
-
-Modify affected functions so pf->adev field is set after aux device
-init and prior aux device destroy.
-
-Reproducer:
-cycle=1
-while :;do
-        echo "#### Cycle: $cycle"
-
-        ip link set ens7f0 mtu 9000
-        ip link add bond0 type bond mode 1 miimon 100
-        ip link set bond0 up
-        ifenslave bond0 ens7f0
-        ip link set bond0 mtu 9000
-        ethtool -L ens7f0 combined 1
-        ip link del bond0
-        ip link set ens7f0 mtu 1500
-        sleep 1
-
-        let cycle++
-done
-
-In short when the device is added/removed to/from bond the aux device
-is unplugged/plugged. When MTU of the device is changed an event is
-sent to aux device asynchronously. This can race with (un)plugging
-operation and because pf->adev is set too early (plug) or too late
-(unplug) and the function ice_send_event_to_aux() can touch
-uninitialized or destroyed fields (e.g. pf->adev->dev.mutex like
-in the following crash)
-
-[   53.372066] bond0: (slave ens7f0): making interface the new active one
-[   53.378622] bond0: (slave ens7f0): Enslaving as an active interface with an u
-p link
-[   53.386294] IPv6: ADDRCONF(NETDEV_CHANGE): bond0: link becomes ready
-[   53.549104] bond0: (slave ens7f1): Enslaving as a backup interface with an up
- link
-[   54.118906] ice 0000:ca:00.0 ens7f0: Number of in use tx queues changed inval
-idating tc mappings. Priority traffic classification disabled!
-[   54.233374] ice 0000:ca:00.1 ens7f1: Number of in use tx queues changed inval
-idating tc mappings. Priority traffic classification disabled!
-[   54.248204] bond0: (slave ens7f0): Releasing backup interface
-[   54.253955] bond0: (slave ens7f1): making interface the new active one
-[   54.274875] bond0: (slave ens7f1): Releasing backup interface
-[   54.289153] bond0 (unregistering): Released all slaves
-[   55.383179] MII link monitoring set to 100 ms
-[   55.398696] bond0: (slave ens7f0): making interface the new active one
-[   55.405241] BUG: kernel NULL pointer dereference, address: 0000000000000080
-[   55.405289] bond0: (slave ens7f0): Enslaving as an active interface with an u
-p link
-[   55.412198] #PF: supervisor write access in kernel mode
-[   55.412200] #PF: error_code(0x0002) - not-present page
-[   55.412201] PGD 25d2ad067 P4D 0
-[   55.412204] Oops: 0002 [#1] PREEMPT SMP NOPTI
-[   55.412207] CPU: 0 PID: 403 Comm: kworker/0:2 Kdump: loaded Tainted: G S
-           5.17.0-13579-g57f2d6540f03 #1
-[   55.429094] bond0: (slave ens7f1): Enslaving as a backup interface with an up
- link
-[   55.430224] Hardware name: Dell Inc. PowerEdge R750/06V45N, BIOS 1.4.4 10/07/
-2021
-[   55.430226] Workqueue: ice ice_service_task [ice]
-[   55.468169] RIP: 0010:mutex_unlock+0x10/0x20
-[   55.472439] Code: 0f b1 13 74 96 eb e0 4c 89 ee eb d8 e8 79 54 ff ff 66 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 65 48 8b 04 25 40 ef 01 00 31 d2 <f0> 48 0f b1 17 75 01 c3 e9 e3 fe ff ff 0f 1f 00 0f 1f 44 00 00 48
-[   55.491186] RSP: 0018:ff4454230d7d7e28 EFLAGS: 00010246
-[   55.496413] RAX: ff1a79b208b08000 RBX: ff1a79b2182e8880 RCX: 0000000000000001
-[   55.503545] RDX: 0000000000000000 RSI: ff4454230d7d7db0 RDI: 0000000000000080
-[   55.510678] RBP: ff1a79d1c7e48b68 R08: ff4454230d7d7db0 R09: 0000000000000041
-[   55.517812] R10: 00000000000000a5 R11: 00000000000006e6 R12: ff1a79d1c7e48bc0
-[   55.524945] R13: 0000000000000000 R14: ff1a79d0ffc305c0 R15: 0000000000000000
-[   55.532076] FS:  0000000000000000(0000) GS:ff1a79d0ffc00000(0000) knlGS:0000000000000000
-[   55.540163] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[   55.545908] CR2: 0000000000000080 CR3: 00000003487ae003 CR4: 0000000000771ef0
-[   55.553041] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[   55.560173] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-[   55.567305] PKRU: 55555554
-[   55.570018] Call Trace:
-[   55.572474]  <TASK>
-[   55.574579]  ice_service_task+0xaab/0xef0 [ice]
-[   55.579130]  process_one_work+0x1c5/0x390
-[   55.583141]  ? process_one_work+0x390/0x390
-[   55.587326]  worker_thread+0x30/0x360
-[   55.590994]  ? process_one_work+0x390/0x390
-[   55.595180]  kthread+0xe6/0x110
-[   55.598325]  ? kthread_complete_and_exit+0x20/0x20
-[   55.603116]  ret_from_fork+0x1f/0x30
-[   55.606698]  </TASK>
-
-Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
-Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+Signed-off-by: Jeff Daly <jeffd@silicom-usa.com>
 ---
- drivers/net/ethernet/intel/ice/ice_idc.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  8 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 16 +++++++++++++++-
+ 3 files changed, 24 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
-index 25a436d342c2..4d889049231b 100644
---- a/drivers/net/ethernet/intel/ice/ice_idc.c
-+++ b/drivers/net/ethernet/intel/ice/ice_idc.c
-@@ -290,7 +290,6 @@ int ice_plug_aux_dev(struct ice_pf *pf)
- 		return -ENOMEM;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index c4a4954aa317..0d638e4bbc60 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -156,6 +156,11 @@ module_param(allow_unsupported_sfp, uint, 0);
+ MODULE_PARM_DESC(allow_unsupported_sfp,
+ 		 "Allow unsupported and untested SFP+ modules on 82599-based adapters");
  
- 	adev = &iadev->adev;
--	pf->adev = adev;
- 	iadev->pf = pf;
- 
- 	adev->id = pf->aux_idx;
-@@ -300,18 +299,18 @@ int ice_plug_aux_dev(struct ice_pf *pf)
- 
- 	ret = auxiliary_device_init(adev);
- 	if (ret) {
--		pf->adev = NULL;
- 		kfree(iadev);
- 		return ret;
- 	}
- 
- 	ret = auxiliary_device_add(adev);
- 	if (ret) {
--		pf->adev = NULL;
- 		auxiliary_device_uninit(adev);
- 		return ret;
- 	}
- 
-+	pf->adev = adev;
++static unsigned int cu_sfp_as_sx;
++module_param(cu_sfp_as_sx, uint, 0);
++MODULE_PARM_DESC(cu_sfp_as_sx,
++		 "Allow treating 1G Cu SFP modules as 1G SX modules on X550-based adapters");
 +
- 	return 0;
- }
+ #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
+ static int debug = -1;
+ module_param(debug, int, 0);
+@@ -10814,6 +10819,9 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (allow_unsupported_sfp)
+ 		hw->allow_unsupported_sfp = allow_unsupported_sfp;
  
-@@ -320,12 +319,14 @@ int ice_plug_aux_dev(struct ice_pf *pf)
++	if (cu_sfp_as_sx)
++		hw->cu_sfp_as_sx = cu_sfp_as_sx;
++
+ 	/* reset_hw fills in the perm_addr as well */
+ 	hw->phy.reset_if_overtemp = true;
+ 	err = hw->mac.ops.reset_hw(hw);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 6da9880d766a..0ffe09c0d5a8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3645,6 +3645,7 @@ struct ixgbe_hw {
+ 	bool				allow_unsupported_sfp;
+ 	bool				wol_enabled;
+ 	bool				need_crosstalk_fix;
++	bool				cu_sfp_as_sx;
+ };
+ 
+ struct ixgbe_info {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index e4b50c7781ff..aa12d589c39b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1609,6 +1609,8 @@ static s32 ixgbe_setup_ixfi_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
   */
- void ice_unplug_aux_dev(struct ice_pf *pf)
+ static s32 ixgbe_supported_sfp_modules_X550em(struct ixgbe_hw *hw, bool *linear)
  {
--	if (!pf->adev)
-+	struct auxiliary_device *adev = pf->adev;
++	struct ixgbe_adapter *adapter = hw->back;
 +
-+	if (!adev)
- 		return;
- 
--	auxiliary_device_delete(pf->adev);
--	auxiliary_device_uninit(pf->adev);
- 	pf->adev = NULL;
-+	auxiliary_device_delete(adev);
-+	auxiliary_device_uninit(adev);
- }
- 
- /**
+ 	switch (hw->phy.sfp_type) {
+ 	case ixgbe_sfp_type_not_present:
+ 		return IXGBE_ERR_SFP_NOT_PRESENT;
+@@ -1626,9 +1628,21 @@ static s32 ixgbe_supported_sfp_modules_X550em(struct ixgbe_hw *hw, bool *linear)
+ 	case ixgbe_sfp_type_1g_lx_core1:
+ 		*linear = false;
+ 		break;
+-	case ixgbe_sfp_type_unknown:
+ 	case ixgbe_sfp_type_1g_cu_core0:
++		if (hw->cu_sfp_as_sx) {
++			e_warn(drv, "WARNING: Treating Cu SFP modules as SX modules is unsupported by Intel and may cause unstable operation or damage to the module or the adapter.  Intel Corporation is not responsible for any harm caused by using Cu modules in this way with this adapter.\n");
++			*linear = false;
++			hw->phy.sfp_type = ixgbe_sfp_type_1g_sx_core0;
++			break;
++		}
+ 	case ixgbe_sfp_type_1g_cu_core1:
++		if (hw->cu_sfp_as_sx) {
++			e_warn(drv, "WARNING: Treating Cu SFP modules as SX modules is unsupported by Intel and may cause unstable operation or damage to the module or the adapter.  Intel Corporation is not responsible for any harm caused by using Cu modules in this way with this adapter.\n");
++			*linear = false;
++			hw->phy.sfp_type = ixgbe_sfp_type_1g_sx_core1;
++			break;
++		}
++	case ixgbe_sfp_type_unknown:
+ 	default:
+ 		return IXGBE_ERR_SFP_NOT_SUPPORTED;
+ 	}
 -- 
-2.35.1
+2.25.1
 
