@@ -1,124 +1,164 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Thu, 14 Apr 2022 12:16:17 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ice: wait 5 s for EMP reset after
- firmware flash
-In-Reply-To: <20220413153745.1125674-1-poros@redhat.com>
-References: <20220412102753.670867-1-poros@redhat.com>
- <20220413153745.1125674-1-poros@redhat.com>
-Message-ID: <BYAPR11MB33671AA8F5947FEFB6FAA9F1FCEF9@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Ivan Vecera <ivecera@redhat.com>
+Date: Thu, 14 Apr 2022 18:39:06 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix race during aux device
+ (un)plugging
+Message-ID: <20220414163907.1456925-1-ivecera@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Function ice_plug_aux_dev() assigns pf->adev field too early prior
+aux device initialization and on other side ice_unplug_aux_dev()
+starts aux device deinit and at the end assigns NULL to pf->adev.
+This is wrong and can causes a crash when ice_send_event_to_aux()
+call occurs during these operations because that function depends
+on non-NULL value of pf->adev and does not assume that aux device
+is half-initialized or half-destroyed.
 
+Modify affected functions so pf->adev field is set after aux device
+init and prior aux device destroy.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Petr Oros
-> Sent: Wednesday, April 13, 2022 9:08 PM
-> To: netdev at vger.kernel.org
-> Cc: ivecera <ivecera@redhat.com>; pmenzel at molgen.mpg.de; intel-wired-
-> lan at lists.osuosl.org; linux-kernel at vger.kernel.org; kuba at kernel.org;
-> pabeni at redhat.com; davem at davemloft.net
-> Subject: [Intel-wired-lan] [PATCH v2] ice: wait 5 s for EMP reset after
-> firmware flash
-> 
-> We need to wait 5 s for EMP reset after firmware flash. Code was extracted
-> from OOT driver (ice v1.8.3 downloaded from sourceforge). Without this
-> wait, fw_activate let card in inconsistent state and recoverable only by
-> second flash/activate. Flash was tested on these fw's:
-> From -> To
->  3.00 -> 3.10/3.20
->  3.10 -> 3.00/3.20
->  3.20 -> 3.00/3.10
-> 
-> Reproducer:
-> [root at host ~]# devlink dev flash pci/0000:ca:00.0 file
-> E810_XXVDA4_FH_O_SEC_FW_1p6p1p9_NVM_3p10_PLDMoMCTP_0.11_80
-> 00AD7B.bin
-> Preparing to flash
-> [fw.mgmt] Erasing
-> [fw.mgmt] Erasing done
-> [fw.mgmt] Flashing 100%
-> [fw.mgmt] Flashing done 100%
-> [fw.undi] Erasing
-> [fw.undi] Erasing done
-> [fw.undi] Flashing 100%
-> [fw.undi] Flashing done 100%
-> [fw.netlist] Erasing
-> [fw.netlist] Erasing done
-> [fw.netlist] Flashing 100%
-> [fw.netlist] Flashing done 100%
-> Activate new firmware by devlink reload
-> [root at host ~]# devlink dev reload pci/0000:ca:00.0 action fw_activate
-> reload_actions_performed:
->     fw_activate
-> [root at host ~]# ip link show ens7f0
-> 71: ens7f0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq
-> state DOWN mode DEFAULT group default qlen 1000
->     link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
->     altname enp202s0f0
-> 
-> dmesg after flash:
-> [   55.120788] ice: Copyright (c) 2018, Intel Corporation.
-> [   55.274734] ice 0000:ca:00.0: Get PHY capabilities failed status = -5,
-> continuing anyway
-> [   55.569797] ice 0000:ca:00.0: The DDP package was successfully loaded: ICE
-> OS Default Package version 1.3.28.0
-> [   55.603629] ice 0000:ca:00.0: Get PHY capability failed.
-> [   55.608951] ice 0000:ca:00.0: ice_init_nvm_phy_type failed: -5
-> [   55.647348] ice 0000:ca:00.0: PTP init successful
-> [   55.675536] ice 0000:ca:00.0: DCB is enabled in the hardware, max number
-> of TCs supported on this port are 8
-> [   55.685365] ice 0000:ca:00.0: FW LLDP is disabled, DCBx/LLDP in SW mode.
-> [   55.692179] ice 0000:ca:00.0: Commit DCB Configuration to the hardware
-> [   55.701382] ice 0000:ca:00.0: 126.024 Gb/s available PCIe bandwidth, limited
-> by 16.0 GT/s PCIe x8 link at 0000:c9:02.0 (capable of 252.048 Gb/s with 16.0
-> GT/s PCIe x16 link)
-> Reboot doesn?t help, only second flash/activate with OOT or patched driver
-> put card back in consistent state.
-> 
-> After patch:
-> [root at host ~]# devlink dev flash pci/0000:ca:00.0 file
-> E810_XXVDA4_FH_O_SEC_FW_1p6p1p9_NVM_3p10_PLDMoMCTP_0.11_80
-> 00AD7B.bin
-> Preparing to flash
-> [fw.mgmt] Erasing
-> [fw.mgmt] Erasing done
-> [fw.mgmt] Flashing 100%
-> [fw.mgmt] Flashing done 100%
-> [fw.undi] Erasing
-> [fw.undi] Erasing done
-> [fw.undi] Flashing 100%
-> [fw.undi] Flashing done 100%
-> [fw.netlist] Erasing
-> [fw.netlist] Erasing done
-> [fw.netlist] Flashing 100%
-> [fw.netlist] Flashing done 100%
-> Activate new firmware by devlink reload
-> [root at host ~]# devlink dev reload pci/0000:ca:00.0 action fw_activate
-> reload_actions_performed:
->     fw_activate
-> [root at host ~]# ip link show ens7f0
-> 19: ens7f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq
-> state UP mode DEFAULT group default qlen 1000
->     link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
->     altname enp202s0f0
-> 
-> v2 changes:
-> - fixed format issues
-> - added info about fw and OOT driver versions
-> - added time in the commit message summary
-> - appended the unit to the macro name
-> 
-> Fixes: 399e27dbbd9e94 ("ice: support immediate firmware activation via
-> devlink reload")
-> Signed-off-by: Petr Oros <poros@redhat.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
+Reproducer:
+cycle=1
+while :;do
+        echo "#### Cycle: $cycle"
 
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+        ip link set ens7f0 mtu 9000
+        ip link add bond0 type bond mode 1 miimon 100
+        ip link set bond0 up
+        ifenslave bond0 ens7f0
+        ip link set bond0 mtu 9000
+        ethtool -L ens7f0 combined 1
+        ip link del bond0
+        ip link set ens7f0 mtu 1500
+        sleep 1
+
+        let cycle++
+done
+
+In short when the device is added/removed to/from bond the aux device
+is unplugged/plugged. When MTU of the device is changed an event is
+sent to aux device asynchronously. This can race with (un)plugging
+operation and because pf->adev is set too early (plug) or too late
+(unplug) and the function ice_send_event_to_aux() can touch
+uninitialized or destroyed fields (e.g. pf->adev->dev.mutex like
+in the following crash)
+
+[   53.372066] bond0: (slave ens7f0): making interface the new active one
+[   53.378622] bond0: (slave ens7f0): Enslaving as an active interface with an u
+p link
+[   53.386294] IPv6: ADDRCONF(NETDEV_CHANGE): bond0: link becomes ready
+[   53.549104] bond0: (slave ens7f1): Enslaving as a backup interface with an up
+ link
+[   54.118906] ice 0000:ca:00.0 ens7f0: Number of in use tx queues changed inval
+idating tc mappings. Priority traffic classification disabled!
+[   54.233374] ice 0000:ca:00.1 ens7f1: Number of in use tx queues changed inval
+idating tc mappings. Priority traffic classification disabled!
+[   54.248204] bond0: (slave ens7f0): Releasing backup interface
+[   54.253955] bond0: (slave ens7f1): making interface the new active one
+[   54.274875] bond0: (slave ens7f1): Releasing backup interface
+[   54.289153] bond0 (unregistering): Released all slaves
+[   55.383179] MII link monitoring set to 100 ms
+[   55.398696] bond0: (slave ens7f0): making interface the new active one
+[   55.405241] BUG: kernel NULL pointer dereference, address: 0000000000000080
+[   55.405289] bond0: (slave ens7f0): Enslaving as an active interface with an u
+p link
+[   55.412198] #PF: supervisor write access in kernel mode
+[   55.412200] #PF: error_code(0x0002) - not-present page
+[   55.412201] PGD 25d2ad067 P4D 0
+[   55.412204] Oops: 0002 [#1] PREEMPT SMP NOPTI
+[   55.412207] CPU: 0 PID: 403 Comm: kworker/0:2 Kdump: loaded Tainted: G S
+           5.17.0-13579-g57f2d6540f03 #1
+[   55.429094] bond0: (slave ens7f1): Enslaving as a backup interface with an up
+ link
+[   55.430224] Hardware name: Dell Inc. PowerEdge R750/06V45N, BIOS 1.4.4 10/07/
+2021
+[   55.430226] Workqueue: ice ice_service_task [ice]
+[   55.468169] RIP: 0010:mutex_unlock+0x10/0x20
+[   55.472439] Code: 0f b1 13 74 96 eb e0 4c 89 ee eb d8 e8 79 54 ff ff 66 0f 1f 84 00 00 00 00 00 0f 1f 44 00 00 65 48 8b 04 25 40 ef 01 00 31 d2 <f0> 48 0f b1 17 75 01 c3 e9 e3 fe ff ff 0f 1f 00 0f 1f 44 00 00 48
+[   55.491186] RSP: 0018:ff4454230d7d7e28 EFLAGS: 00010246
+[   55.496413] RAX: ff1a79b208b08000 RBX: ff1a79b2182e8880 RCX: 0000000000000001
+[   55.503545] RDX: 0000000000000000 RSI: ff4454230d7d7db0 RDI: 0000000000000080
+[   55.510678] RBP: ff1a79d1c7e48b68 R08: ff4454230d7d7db0 R09: 0000000000000041
+[   55.517812] R10: 00000000000000a5 R11: 00000000000006e6 R12: ff1a79d1c7e48bc0
+[   55.524945] R13: 0000000000000000 R14: ff1a79d0ffc305c0 R15: 0000000000000000
+[   55.532076] FS:  0000000000000000(0000) GS:ff1a79d0ffc00000(0000) knlGS:0000000000000000
+[   55.540163] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[   55.545908] CR2: 0000000000000080 CR3: 00000003487ae003 CR4: 0000000000771ef0
+[   55.553041] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[   55.560173] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[   55.567305] PKRU: 55555554
+[   55.570018] Call Trace:
+[   55.572474]  <TASK>
+[   55.574579]  ice_service_task+0xaab/0xef0 [ice]
+[   55.579130]  process_one_work+0x1c5/0x390
+[   55.583141]  ? process_one_work+0x390/0x390
+[   55.587326]  worker_thread+0x30/0x360
+[   55.590994]  ? process_one_work+0x390/0x390
+[   55.595180]  kthread+0xe6/0x110
+[   55.598325]  ? kthread_complete_and_exit+0x20/0x20
+[   55.603116]  ret_from_fork+0x1f/0x30
+[   55.606698]  </TASK>
+
+Fixes: f9f5301e7e2d ("ice: Register auxiliary device to provide RDMA")
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+---
+ drivers/net/ethernet/intel/ice/ice_idc.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
+index 25a436d342c2..4d889049231b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_idc.c
++++ b/drivers/net/ethernet/intel/ice/ice_idc.c
+@@ -290,7 +290,6 @@ int ice_plug_aux_dev(struct ice_pf *pf)
+ 		return -ENOMEM;
+ 
+ 	adev = &iadev->adev;
+-	pf->adev = adev;
+ 	iadev->pf = pf;
+ 
+ 	adev->id = pf->aux_idx;
+@@ -300,18 +299,18 @@ int ice_plug_aux_dev(struct ice_pf *pf)
+ 
+ 	ret = auxiliary_device_init(adev);
+ 	if (ret) {
+-		pf->adev = NULL;
+ 		kfree(iadev);
+ 		return ret;
+ 	}
+ 
+ 	ret = auxiliary_device_add(adev);
+ 	if (ret) {
+-		pf->adev = NULL;
+ 		auxiliary_device_uninit(adev);
+ 		return ret;
+ 	}
+ 
++	pf->adev = adev;
++
+ 	return 0;
+ }
+ 
+@@ -320,12 +319,14 @@ int ice_plug_aux_dev(struct ice_pf *pf)
+  */
+ void ice_unplug_aux_dev(struct ice_pf *pf)
+ {
+-	if (!pf->adev)
++	struct auxiliary_device *adev = pf->adev;
++
++	if (!adev)
+ 		return;
+ 
+-	auxiliary_device_delete(pf->adev);
+-	auxiliary_device_uninit(pf->adev);
+ 	pf->adev = NULL;
++	auxiliary_device_delete(adev);
++	auxiliary_device_uninit(adev);
+ }
+ 
+ /**
+-- 
+2.35.1
+
