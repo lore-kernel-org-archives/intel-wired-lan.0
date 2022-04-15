@@ -1,12 +1,11 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 Apr 2022 13:53:20 -0700
+Date: Fri, 15 Apr 2022 13:55:06 -0700
 Subject: [Intel-wired-lan] [PATCH net] ice: Protect vf_state check by
  cfg_lock in ice_vc_process_vf_msg()
-In-Reply-To: <CO1PR11MB5089695CB3733F4B1284E3CED6EE9@CO1PR11MB5089.namprd11.prod.outlook.com>
+In-Reply-To: <YlldsfrRJURXpp5d@boxer>
 References: <20220413072259.3189386-1-ivecera@redhat.com>
- <YlldFriBVkKEgbBs@boxer> <20220415183845.51a326fe@ceranb>
- <CO1PR11MB5089695CB3733F4B1284E3CED6EE9@CO1PR11MB5089.namprd11.prod.outlook.com>
-Message-ID: <9dfffc57-4733-37c9-5668-97b06a40a202@intel.com>
+ <YlldFriBVkKEgbBs@boxer> <YlldsfrRJURXpp5d@boxer>
+Message-ID: <248da3d7-cb00-14b6-12f0-6bb9fda6d532@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,43 +13,101 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-On 4/15/2022 11:31 AM, Keller, Jacob E wrote:
->
->> -----Original Message-----
->> From: Ivan Vecera <ivecera@redhat.com>
->> Sent: Friday, April 15, 2022 9:39 AM
->> To: Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
->> Cc: netdev at vger.kernel.org; Fei Liu <feliu@redhat.com>; moderated list:INTEL
->> ETHERNET DRIVERS <intel-wired-lan@lists.osuosl.org>; mschmidt
->> <mschmidt@redhat.com>; Brett Creeley <brett.creeley@intel.com>; open list
->> <linux-kernel@vger.kernel.org>; Jakub Kicinski <kuba@kernel.org>; Paolo Abeni
->> <pabeni@redhat.com>; David S. Miller <davem@davemloft.net>
->> Subject: Re: [Intel-wired-lan] [PATCH net] ice: Protect vf_state check by cfg_lock in
->> ice_vc_process_vf_msg()
->>
->> On Fri, 15 Apr 2022 13:55:02 +0200
->> Maciej Fijalkowski <maciej.fijalkowski@intel.com> wrote:
->>
->>> On Wed, Apr 13, 2022 at 09:22:59AM +0200, Ivan Vecera wrote:
->>>> Previous patch labelled "ice: Fix incorrect locking in
->>>> ice_vc_process_vf_msg()"  fixed an issue with ignored messages
->>> tiny tiny nit: double space after "
->>> Also, has mentioned patch landed onto some tree so that we could provide
->>> SHA-1 of it? If not, then maybe squashing this one with the mentioned one
->>> would make sense?
->> Well, that commit were already tested and now it is present in Tony's queue
->> but not in upstream yet. It is not problem to squash together but the first
->> was about ignored VF messages and this one is about race and I didn't want
->> to make single patch with huge description that cover both issues.
->> But as I said, no problem to squash if needed.
->>
->> Thx,
->> Ivan
-> I'm fine with either squashing or keeping them as separate changes.
+On 4/15/2022 4:57 AM, Maciej Fijalkowski wrote:
 
-Either way sounds ok to me as they are different types of changes.
+<snip>
+
+>>> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+>>> index 5612c032f15a..553287a75b50 100644
+>>> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+>>> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+>>> @@ -3625,44 +3625,39 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+>>>   		return;
+>>>   	}
+>>>   
+>>> +	mutex_lock(&vf->cfg_lock);
+>>> +
+>>>   	/* Check if VF is disabled. */
+>>>   	if (test_bit(ICE_VF_STATE_DIS, vf->vf_states)) {
+>>>   		err = -EPERM;
+>>> -		goto error_handler;
+>>> -	}
+>>> -
+>>> -	ops = vf->virtchnl_ops;
+>>> -
+>>> -	/* Perform basic checks on the msg */
+>>> -	err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
+>>> -	if (err) {
+>>> -		if (err == VIRTCHNL_STATUS_ERR_PARAM)
+>>> -			err = -EPERM;
+>>> -		else
+>>> -			err = -EINVAL;
+>>> +	} else {
+>>> +		/* Perform basic checks on the msg */
+>>> +		err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg,
+>>> +						  msglen);
+>>> +		if (err) {
+>>> +			if (err == VIRTCHNL_STATUS_ERR_PARAM)
+>>> +				err = -EPERM;
+>>> +			else
+>>> +				err = -EINVAL;
+>>> +		}
+>> The chunk above feels a bit like unnecessary churn, no?
+>> Couldn't this patch be simply focused only on extending critical section?
+
+Agree, this doesn't seem related to the fix.
 
 Thanks,
 
 Tony
 
+
+>>>   	}
+>>> -
+>>> -error_handler:
+>>>   	if (err) {
+>>>   		ice_vc_send_msg_to_vf(vf, v_opcode, VIRTCHNL_STATUS_ERR_PARAM,
+>>>   				      NULL, 0);
+>>>   		dev_err(dev, "Invalid message from VF %d, opcode %d, len %d, error %d\n",
+>>>   			vf_id, v_opcode, msglen, err);
+>>> -		ice_put_vf(vf);
+>>> -		return;
+>>> +		goto finish;
+>>>   	}
+>>>   
+>>> -	mutex_lock(&vf->cfg_lock);
+>>> -
+>>>   	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
+>>>   		ice_vc_send_msg_to_vf(vf, v_opcode,
+>>>   				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED, NULL,
+>>>   				      0);
+>>> -		mutex_unlock(&vf->cfg_lock);
+>>> -		ice_put_vf(vf);
+>>> -		return;
+>>> +		goto finish;
+>>>   	}
+>>>   
+>>> +	ops = vf->virtchnl_ops;
+>>> +
+>>>   	switch (v_opcode) {
+>>>   	case VIRTCHNL_OP_VERSION:
+>>>   		err = ops->get_ver_msg(vf, msg);
+>>> @@ -3773,6 +3768,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+>>>   			 vf_id, v_opcode, err);
+>>>   	}
+>>>   
+>>> +finish:
+>>>   	mutex_unlock(&vf->cfg_lock);
+>>>   	ice_put_vf(vf);
+>>>   }
+>>> -- 
+>>> 2.35.1
+>>>
+>>> _______________________________________________
+>>> Intel-wired-lan mailing list
+>>> Intel-wired-lan at osuosl.org
+>>> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
