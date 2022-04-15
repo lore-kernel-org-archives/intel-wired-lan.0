@@ -1,29 +1,69 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 15 Apr 2022 13:56:31 -0700
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Treat 1G Cu SFPs as 1G SX
- for X550EM
-In-Reply-To: <20220414201329.27714-1-jeffd@silicom-usa.com>
-References: <20220414172020.22396-1-jeffd@silicom-usa.com>
- <20220414201329.27714-1-jeffd@silicom-usa.com>
-Message-ID: <5f4c6fe9-0b4b-5474-50a6-bf9a6bbc3b9f@intel.com>
+From: Ira Weiny <ira.weiny@intel.com>
+Date: Fri, 15 Apr 2022 14:40:58 -0700
+Subject: [Intel-wired-lan] [PATCH] intel: igb: igb_ethtool.c: Convert
+ kmap() to kmap_local_page()
+In-Reply-To: <20220415205307.675650-1-eng.alaamohamedsoliman.am@gmail.com>
+References: <20220415205307.675650-1-eng.alaamohamedsoliman.am@gmail.com>
+Message-ID: <Ylnmaji5bHHp8t3p@iweiny-desk3>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Fri, Apr 15, 2022 at 10:53:07PM +0200, Alaa Mohamed wrote:
+> The use of kmap() is being deprecated in favor of kmap_local_page()
+> where it is feasible.
+> 
+> With kmap_local_page(), the mapping is per thread, CPU local and not
+> globally visible.
+> 
+> Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> index 2a5782063f4c..ba93aa4ae6a0 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
+>  
+>  	frame_size >>= 1;
+>  
+> -	data = kmap(rx_buffer->page);
+> +	data = kmap_local_page(rx_buffer->page);
+>  
+>  	if (data[3] != 0xFF ||
+>  	    data[frame_size + 10] != 0xBE ||
+>  	    data[frame_size + 12] != 0xAF)
+>  		match = false;
+>  
+> -	kunmap(rx_buffer->page);
+> +	kunmap_local(rx_buffer->page);
 
-On 4/14/2022 1:13 PM, Jeff Daly wrote:
-> X550EM NICs do not support 1G Cu SFPs by default from Intel, this patch
-> enables treating these SFPs as 1G SX SFPs via a module parameter similar to
-> the parameter that allows the driver to be able to recognize unsupported
-> (by Intel) SFPs.
+kunmap_local() is different from kunmap().  It takes an address within the
+mapped page.  From the kdoc:
 
-The addition of new module parameters is no longer allowed.
+/**
+ * kunmap_local - Unmap a page mapped via kmap_local_page().
+ * @__addr: An address within the page mapped
+ *
+ * @__addr can be any address within the mapped page.  Commonly it is the
+ * address return from kmap_local_page(), but it can also include offsets.
+ *
+ * Unmapping should be done in the reverse order of the mapping.  See
+ * kmap_local_page() for details.
+ */
+#define kunmap_local(__addr)                                    \
+...
 
-Thanks,
 
-Tony
+Ira
 
-> Signed-off-by: Jeff Daly <jeffd@silicom-usa.com>
->
+>  
+>  	return match;
+>  }
+> -- 
+> 2.35.2
+> 
