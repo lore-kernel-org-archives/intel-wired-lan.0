@@ -1,46 +1,43 @@
-From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
-Date: Fri, 15 Apr 2022 22:53:07 +0200
-Subject: [Intel-wired-lan] [PATCH] intel: igb: igb_ethtool.c: Convert kmap()
- to kmap_local_page()
-Message-ID: <20220415205307.675650-1-eng.alaamohamedsoliman.am@gmail.com>
+From: Jeff Evanson <jeff.evanson@gmail.com>
+Date: Fri, 15 Apr 2022 15:04:21 -0600
+Subject: [Intel-wired-lan] [PATCH 1/2] Fix race in igc_xdp_xmit_zc
+Message-ID: <20220415210421.11217-1-jeff.evanson@qsc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The use of kmap() is being deprecated in favor of kmap_local_page()
-where it is feasible.
+in igc_xdp_xmit_zc, initialize next_to_use while holding the netif_tx_lock
+to prevent racing with other users of the tx ring
 
-With kmap_local_page(), the mapping is per thread, CPU local and not
-globally visible.
-
-Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Signed-off-by: Jeff Evanson <jeff.evanson@qsc.com>
 ---
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 2a5782063f4c..ba93aa4ae6a0 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 1c00ee310c19..a36a18c84aeb 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2598,7 +2598,7 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
+ 	struct netdev_queue *nq = txring_txq(ring);
+ 	union igc_adv_tx_desc *tx_desc = NULL;
+ 	int cpu = smp_processor_id();
+-	u16 ntu = ring->next_to_use;
++	u16 ntu;
+ 	struct xdp_desc xdp_desc;
+ 	u16 budget;
  
- 	frame_size >>= 1;
+@@ -2607,6 +2607,8 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
  
--	data = kmap(rx_buffer->page);
-+	data = kmap_local_page(rx_buffer->page);
+ 	__netif_tx_lock(nq, cpu);
  
- 	if (data[3] != 0xFF ||
- 	    data[frame_size + 10] != 0xBE ||
- 	    data[frame_size + 12] != 0xAF)
- 		match = false;
++	ntu = ring->next_to_use;
++
+ 	budget = igc_desc_unused(ring);
  
--	kunmap(rx_buffer->page);
-+	kunmap_local(rx_buffer->page);
- 
- 	return match;
- }
+ 	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget--) {
 -- 
-2.35.2
+2.17.1
 
