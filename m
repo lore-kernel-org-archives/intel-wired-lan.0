@@ -1,76 +1,53 @@
-From: Michal Michalik <michal.michalik@intel.com>
-Date: Thu, 14 Apr 2022 12:23:58 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] ice: fix PTP stale Tx timestamps
- cleanup
-Message-ID: <20220414102358.13486-1-michal.michalik@intel.com>
+From: Michal Schmidt <mschmidt@redhat.com>
+Date: Fri, 15 Apr 2022 13:12:03 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix race during aux device
+ (un)plugging
+In-Reply-To: <20220414163907.1456925-1-ivecera@redhat.com>
+References: <20220414163907.1456925-1-ivecera@redhat.com>
+Message-ID: <CADEbmW3eUAnvn4gvNxqjCMmO333-=OdObGhDXkrTbDwn0YkJDw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Read stale PTP Tx timestamps from PHY on cleanup.
+On Thu, Apr 14, 2022 at 6:39 PM Ivan Vecera <ivecera@redhat.com> wrote:
 
-After running out of Tx timestamps request handlers hardware (HW) stops
-reporting finished requests. Function ice_ptp_tx_tstamp_cleanup() used
-to only cleanup stale handlers in driver and was leaving the hardware
-registers not read. Not reading stale PTP Tx timestamps prevents next
-interrupts from arriving and makes timestamping not usable.
+> Function ice_plug_aux_dev() assigns pf->adev field too early prior
+> aux device initialization and on other side ice_unplug_aux_dev()
+> starts aux device deinit and at the end assigns NULL to pf->adev.
+> This is wrong and can causes a crash when ice_send_event_to_aux()
+> call occurs during these operations because that function depends
+> on non-NULL value of pf->adev and does not assume that aux device
+> is half-initialized or half-destroyed.
+>
+> Modify affected functions so pf->adev field is set after aux device
+> init and prior aux device destroy.
+>
+[...]
 
-Fixes: ea9b847cda64 ("ice: enable transmit timestamps for E810 devices")
-Signed-off-by: Michal Michalik <michal.michalik@intel.com>
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ptp.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+> @@ -320,12 +319,14 @@ int ice_plug_aux_dev(struct ice_pf *pf)
+>   */
+>  void ice_unplug_aux_dev(struct ice_pf *pf)
+>  {
+> -       if (!pf->adev)
+> +       struct auxiliary_device *adev = pf->adev;
+> +
+> +       if (!adev)
+>                 return;
+>
+> -       auxiliary_device_delete(pf->adev);
+> -       auxiliary_device_uninit(pf->adev);
+>         pf->adev = NULL;
+> +       auxiliary_device_delete(adev);
+> +       auxiliary_device_uninit(adev);
+>  }
+>
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index a1cd332..826a508 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -2287,6 +2287,7 @@ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
- 
- /**
-  * ice_ptp_tx_tstamp_cleanup - Cleanup old timestamp requests that got dropped
-+ * @hw: pointer to the hw struct
-  * @tx: PTP Tx tracker to clean up
-  *
-  * Loop through the Tx timestamp requests and see if any of them have been
-@@ -2295,7 +2296,7 @@ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
-  * timestamp will never be captured. This might happen if the packet gets
-  * discarded before it reaches the PHY timestamping block.
-  */
--static void ice_ptp_tx_tstamp_cleanup(struct ice_ptp_tx *tx)
-+static void ice_ptp_tx_tstamp_cleanup(struct ice_hw *hw, struct ice_ptp_tx *tx)
- {
- 	u8 idx;
- 
-@@ -2304,11 +2305,15 @@ static void ice_ptp_tx_tstamp_cleanup(struct ice_ptp_tx *tx)
- 
- 	for_each_set_bit(idx, tx->in_use, tx->len) {
- 		struct sk_buff *skb;
-+		u64 raw_tstamp;
- 
- 		/* Check if this SKB has been waiting for too long */
- 		if (time_is_after_jiffies(tx->tstamps[idx].start + 2 * HZ))
- 			continue;
- 
-+		ice_read_phy_tstamp(hw, tx->quad, idx + tx->quad_offset,
-+				    &raw_tstamp);
-+
- 		spin_lock(&tx->lock);
- 		skb = tx->tstamps[idx].skb;
- 		tx->tstamps[idx].skb = NULL;
-@@ -2330,7 +2335,7 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
- 
- 	ice_ptp_update_cached_phctime(pf);
- 
--	ice_ptp_tx_tstamp_cleanup(&pf->ptp.port.tx);
-+	ice_ptp_tx_tstamp_cleanup(&pf->hw, &pf->ptp.port.tx);
- 
- 	/* Run twice a second */
- 	kthread_queue_delayed_work(ptp->kworker, &ptp->work,
--- 
-2.9.5
-
-base-commit: ad66aede031ecde3028926ebab54adffd19cf59c
+Hi Ivan,
+What prevents ice_unplug_aux_dev() from running immediately after
+ice_send_event_to_aux() gets past its "if (!pf->adev)" test ?
+Michal
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220415/1465d2d6/attachment.html>
