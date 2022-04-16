@@ -1,130 +1,94 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 16 Apr 2022 19:39:43 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 7b05c54226015807993a7d1bab0ba59d00e592ad
-Message-ID: <625aaaff.jtEW8JwTLwXcnaWe%lkp@intel.com>
+From: Julia Lawall <julia.lawall@inria.fr>
+Date: Sat, 16 Apr 2022 16:09:58 +0200 (CEST)
+Subject: [Intel-wired-lan] [PATCH v3] intel: igb: igb_ethtool.c: Convert
+ kmap() to kmap_local_page()
+In-Reply-To: <857a2d22-5d0f-99d6-6686-98d50e4491d5@gmail.com>
+References: <20220416111457.5868-1-eng.alaamohamedsoliman.am@gmail.com>
+ <alpine.DEB.2.22.394.2204161331080.3501@hadrien>
+ <857a2d22-5d0f-99d6-6686-98d50e4491d5@gmail.com>
+Message-ID: <alpine.DEB.2.22.394.2204161608230.3501@hadrien>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 7b05c54226015807993a7d1bab0ba59d00e592ad  Merge branch 'net-ethool-add-support-to-get-set-tx-push-by-ethtool-g-g'
 
-elapsed time: 865m
 
-configs tested: 99
-configs skipped: 3
+On Sat, 16 Apr 2022, Alaa Mohamed wrote:
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+>
+> On ??/?/???? ??:??, Julia Lawall wrote:
+> >
+> > On Sat, 16 Apr 2022, Alaa Mohamed wrote:
+> >
+> > > Convert kmap() to kmap_local_page()
+> > >
+> > > With kmap_local_page(), the mapping is per thread, CPU local and not
+> > > globally visible.
+> > It's not clearer.
+> I mean this " fix kunmap_local path value to take address of the mapped page"
+> be more clearer
+> > This is a general statement about the function.  You
+> > need to explain why it is appropriate to use it here.  Unless it is the
+> > case that all calls to kmap should be converted to call kmap_local_page.
+> It's required to convert all calls kmap to kmap_local_page. So, I don't what
+> should the commit message be?
 
-gcc tested configs:
-arm64                               defconfig
-arm64                            allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                          randconfig-c001
-arm                       imx_v6_v7_defconfig
-sh                               j2_defconfig
-m68k                             allyesconfig
-sh                          r7780mp_defconfig
-sh                        edosk7760_defconfig
-arm                       aspeed_g5_defconfig
-openrisc                            defconfig
-powerpc64                        alldefconfig
-arm                     eseries_pxa_defconfig
-sh                   sh7724_generic_defconfig
-powerpc                 mpc85xx_cds_defconfig
-sh                           se7722_defconfig
-um                                  defconfig
-arc                     haps_hs_smp_defconfig
-x86_64                              defconfig
-powerpc                     tqm8555_defconfig
-x86_64                        randconfig-c001
-arm                  randconfig-c002-20220415
-ia64                             allmodconfig
-ia64                             allyesconfig
-ia64                                defconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                                defconfig
-s390                             allmodconfig
-parisc                              defconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                             allyesconfig
-sparc                               defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                              debian-10.3
-i386                   debian-10.3-kselftests
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a011
-x86_64                        randconfig-a013
-x86_64                        randconfig-a015
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
-riscv                             allnoconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-x86_64                           allyesconfig
-x86_64                         rhel-8.3-kunit
-x86_64                               rhel-8.3
+If all calls should be changed then you can also say that.
 
-clang tested configs:
-x86_64                        randconfig-c007
-powerpc              randconfig-c003-20220414
-arm                  randconfig-c002-20220414
-i386                          randconfig-c001
-mips                         tb0287_defconfig
-i386                             allyesconfig
-powerpc                        icon_defconfig
-arm                        neponset_defconfig
-arm                       aspeed_g4_defconfig
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-riscv                randconfig-r042-20220414
-hexagon              randconfig-r041-20220414
-hexagon              randconfig-r045-20220414
+I thought that a previous commit on the outreachy list made some arguments
+about how the affacted value was just allocated and thus could not yet be
+shared.
 
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+julia
+
+>
+> Is this will be good :
+>
+> "kmap_local_page() was recently developed as a replacement for kmap().? The
+> kmap_local_page() creates a mapping which is restricted to local use by a
+> single thread of execution. "
+> >
+> > julia
+> >
+> > > Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+> > > ---
+> > > changes in V2:
+> > > 	fix kunmap_local path value to take address of the mapped page.
+> > > ---
+> > > changes in V3:
+> > > 	edit commit message to be clearer
+> > > ---
+> > >   drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
+> > >   1 file changed, 2 insertions(+), 2 deletions(-)
+> > >
+> > > diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> > > b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> > > index 2a5782063f4c..c14fc871dd41 100644
+> > > --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> > > +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> > > @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct
+> > > igb_rx_buffer *rx_buffer,
+> > >
+> > >   	frame_size >>= 1;
+> > >
+> > > -	data = kmap(rx_buffer->page);
+> > > +	data = kmap_local_page(rx_buffer->page);
+> > >
+> > >   	if (data[3] != 0xFF ||
+> > >   	    data[frame_size + 10] != 0xBE ||
+> > >   	    data[frame_size + 12] != 0xAF)
+> > >   		match = false;
+> > >
+> > > -	kunmap(rx_buffer->page);
+> > > +	kunmap_local(data);
+> > >
+> > >   	return match;
+> > >   }
+> > > --
+> > > 2.35.2
+> > >
+> > >
+> > >
+>
