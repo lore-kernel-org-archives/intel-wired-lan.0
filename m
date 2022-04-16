@@ -1,63 +1,95 @@
-From: Julia Lawall <julia.lawall@inria.fr>
-Date: Sat, 16 Apr 2022 09:41:31 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v2] intel: igb: igb_ethtool.c: Convert
- kmap() to kmap_local_page()
-In-Reply-To: <20220416011920.5380-1-eng.alaamohamedsoliman.am@gmail.com>
-References: <20220416011920.5380-1-eng.alaamohamedsoliman.am@gmail.com>
-Message-ID: <alpine.DEB.2.22.394.2204160941180.3501@hadrien>
+From: Ivan Vecera <ivecera@redhat.com>
+Date: Sat, 16 Apr 2022 13:30:43 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: Protect vf_state check by
+ cfg_lock in ice_vc_process_vf_msg()
+In-Reply-To: <248da3d7-cb00-14b6-12f0-6bb9fda6d532@intel.com>
+References: <20220413072259.3189386-1-ivecera@redhat.com>
+ <YlldFriBVkKEgbBs@boxer> <YlldsfrRJURXpp5d@boxer>
+ <248da3d7-cb00-14b6-12f0-6bb9fda6d532@intel.com>
+Message-ID: <20220416133043.08b4ee74@ceranb>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Fri, 15 Apr 2022 13:55:06 -0700
+Tony Nguyen <anthony.l.nguyen@intel.com> wrote:
 
+> >>> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> >>> index 5612c032f15a..553287a75b50 100644
+> >>> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> >>> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> >>> @@ -3625,44 +3625,39 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+> >>>   		return;
+> >>>   	}
+> >>>   
+> >>> +	mutex_lock(&vf->cfg_lock);
+> >>> +
+> >>>   	/* Check if VF is disabled. */
+> >>>   	if (test_bit(ICE_VF_STATE_DIS, vf->vf_states)) {
+> >>>   		err = -EPERM;
+> >>> -		goto error_handler;
+> >>> -	}
+> >>> -
+> >>> -	ops = vf->virtchnl_ops;
+> >>> -
+> >>> -	/* Perform basic checks on the msg */
+> >>> -	err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
+> >>> -	if (err) {
+> >>> -		if (err == VIRTCHNL_STATUS_ERR_PARAM)
+> >>> -			err = -EPERM;
+> >>> -		else
+> >>> -			err = -EINVAL;
+> >>> +	} else {
+> >>> +		/* Perform basic checks on the msg */
+> >>> +		err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg,
+> >>> +						  msglen);
+> >>> +		if (err) {
+> >>> +			if (err == VIRTCHNL_STATUS_ERR_PARAM)
+> >>> +				err = -EPERM;
+> >>> +			else
+> >>> +				err = -EINVAL;
+> >>> +		}  
+> >> The chunk above feels a bit like unnecessary churn, no?
+> >> Couldn't this patch be simply focused only on extending critical section?  
+> 
+> Agree, this doesn't seem related to the fix.
+> 
+> Thanks,
+> 
+> Tony
+Yes, it is not directly related but it's just a conversion of following snippet
+to avoid ugly and unnecessary 'goto':
 
-On Sat, 16 Apr 2022, Alaa Mohamed wrote:
+if (A) {
+	err = ...
+	goto error_handler;
+}
+if (B) {
+	err = ...
+	...
+}
+if (err) {
+	...
+}
 
-> The use of kmap() is being deprecated in favor of kmap_local_page()
-> where it is feasible.
->
-> With kmap_local_page(), the mapping is per thread, CPU local and not
-> globally visible.
->
-> Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
-> ---
-> changes in V2:
-> 	fix kunmap_local path value to be address
+to
 
-This is not understandable.  What address?
+if (A) {
+	err = ...
+} else {
+	if (B) {
+		...
+	}
+}
+if (err) {
+	...
+}
 
-julia
+If you want to leave the code as is and remove this from the patch
+let me know and I will send v2.
 
+Thanks,
+Ivan
 
-> ---
->  drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> index 2a5782063f4c..c14fc871dd41 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
->
->  	frame_size >>= 1;
->
-> -	data = kmap(rx_buffer->page);
-> +	data = kmap_local_page(rx_buffer->page);
->
->  	if (data[3] != 0xFF ||
->  	    data[frame_size + 10] != 0xBE ||
->  	    data[frame_size + 12] != 0xAF)
->  		match = false;
->
-> -	kunmap(rx_buffer->page);
-> +	kunmap_local(data);
->
->  	return match;
->  }
-> --
-> 2.35.2
->
->
->
