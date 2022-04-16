@@ -1,11 +1,11 @@
 From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
-Date: Sat, 16 Apr 2022 15:14:57 +0200
+Date: Sat, 16 Apr 2022 15:18:13 +0200
 Subject: [Intel-wired-lan] [PATCH v3] intel: igb: igb_ethtool.c: Convert
  kmap() to kmap_local_page()
 In-Reply-To: <alpine.DEB.2.22.394.2204161331080.3501@hadrien>
 References: <20220416111457.5868-1-eng.alaamohamedsoliman.am@gmail.com>
  <alpine.DEB.2.22.394.2204161331080.3501@hadrien>
-Message-ID: <df4c0f81-454d-ab96-1d74-1c4fbc3dbd63@gmail.com>
+Message-ID: <857a2d22-5d0f-99d6-6686-98d50e4491d5@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -27,7 +27,6 @@ page" be more clearer
 > This is a general statement about the function.  You
 > need to explain why it is appropriate to use it here.  Unless it is the
 > case that all calls to kmap should be converted to call kmap_local_page.
-
 It's required to convert all calls kmap to kmap_local_page. So, I don't 
 what should the commit message be?
 
@@ -36,11 +35,10 @@ Is this will be good :
 "kmap_local_page() was recently developed as a replacement for kmap().? The
 kmap_local_page() creates a mapping which is restricted to local use by a
 single thread of execution. "
-
 >
 > julia
 >
->> Signed-off-by: Alaa Mohamed<eng.alaamohamedsoliman.am@gmail.com>
+>> Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
 >> ---
 >> changes in V2:
 >> 	fix kunmap_local path value to take address of the mapped page.
@@ -77,6 +75,3 @@ single thread of execution. "
 >>
 >>
 >>
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20220416/173e7199/attachment-0001.html>
