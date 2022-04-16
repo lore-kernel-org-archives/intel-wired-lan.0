@@ -1,10 +1,10 @@
 From: Julia Lawall <julia.lawall@inria.fr>
-Date: Sat, 16 Apr 2022 09:37:33 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH] intel: igb: igb_ethtool.c: Convert
+Date: Sat, 16 Apr 2022 09:41:31 +0200 (CEST)
+Subject: [Intel-wired-lan] [PATCH v2] intel: igb: igb_ethtool.c: Convert
  kmap() to kmap_local_page()
-In-Reply-To: <20220415205307.675650-1-eng.alaamohamedsoliman.am@gmail.com>
-References: <20220415205307.675650-1-eng.alaamohamedsoliman.am@gmail.com>
-Message-ID: <alpine.DEB.2.22.394.2204160937120.3501@hadrien>
+In-Reply-To: <20220416011920.5380-1-eng.alaamohamedsoliman.am@gmail.com>
+References: <20220416011920.5380-1-eng.alaamohamedsoliman.am@gmail.com>
+Message-ID: <alpine.DEB.2.22.394.2204160941180.3501@hadrien>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,26 +13,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-On Fri, 15 Apr 2022, Alaa Mohamed wrote:
+On Sat, 16 Apr 2022, Alaa Mohamed wrote:
 
 > The use of kmap() is being deprecated in favor of kmap_local_page()
 > where it is feasible.
-
-And why is it feasible here?
-
-julia
-
 >
 > With kmap_local_page(), the mapping is per thread, CPU local and not
 > globally visible.
 >
 > Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
 > ---
+> changes in V2:
+> 	fix kunmap_local path value to be address
+
+This is not understandable.  What address?
+
+julia
+
+
+> ---
 >  drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
 >  1 file changed, 2 insertions(+), 2 deletions(-)
 >
 > diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> index 2a5782063f4c..ba93aa4ae6a0 100644
+> index 2a5782063f4c..c14fc871dd41 100644
 > --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
 > +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
 > @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
@@ -48,7 +52,7 @@ julia
 >  		match = false;
 >
 > -	kunmap(rx_buffer->page);
-> +	kunmap_local(rx_buffer->page);
+> +	kunmap_local(data);
 >
 >  	return match;
 >  }
