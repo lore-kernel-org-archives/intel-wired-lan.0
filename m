@@ -1,79 +1,49 @@
-From: Jeff Evanson <jeff.evanson@gmail.com>
-Date: Fri, 15 Apr 2022 15:05:46 -0600
-Subject: [Intel-wired-lan] [PATCH 2/2] Trigger proper interrupts in
- igc_xsk_wakeup
-Message-ID: <20220415210546.11294-1-jeff.evanson@qsc.com>
+From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Date: Sat, 16 Apr 2022 03:19:20 +0200
+Subject: [Intel-wired-lan] [PATCH v2] intel: igb: igb_ethtool.c: Convert
+ kmap() to kmap_local_page()
+Message-ID: <20220416011920.5380-1-eng.alaamohamedsoliman.am@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-in igc_xsk_wakeup, trigger the proper interrupt based on whether flags
-contains XDP_WAKEUP_RX and/or XDP_WAKEUP_TX
+The use of kmap() is being deprecated in favor of kmap_local_page()
+where it is feasible.
 
-Signed-off-by: Jeff Evanson <jeff.evanson@qsc.com>
+With kmap_local_page(), the mapping is per thread, CPU local and not
+globally visible.
+
+Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 36 +++++++++++++++++------
- 1 file changed, 27 insertions(+), 9 deletions(-)
+changes in V2:
+	fix kunmap_local path value to be address
+---
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index a36a18c84aeb..d706de95dc06 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6073,7 +6073,7 @@ static void igc_trigger_rxtxq_interrupt(struct igc_adapter *adapter,
- int igc_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
- {
- 	struct igc_adapter *adapter = netdev_priv(dev);
--	struct igc_q_vector *q_vector;
-+	struct igc_q_vector *txq_vector = 0, *rxq_vector = 0;
- 	struct igc_ring *ring;
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 2a5782063f4c..c14fc871dd41 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
  
- 	if (test_bit(__IGC_DOWN, &adapter->state))
-@@ -6082,17 +6082,35 @@ int igc_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
- 	if (!igc_xdp_is_enabled(adapter))
- 		return -ENXIO;
+ 	frame_size >>= 1;
  
--	if (queue_id >= adapter->num_rx_queues)
--		return -EINVAL;
-+	if (flags & XDP_WAKEUP_RX) {
-+		if (queue_id >= adapter->num_rx_queues)
-+			return -EINVAL;
+-	data = kmap(rx_buffer->page);
++	data = kmap_local_page(rx_buffer->page);
  
--	ring = adapter->rx_ring[queue_id];
-+		ring = adapter->rx_ring[queue_id];
-+		if (!ring->xsk_pool)
-+			return -ENXIO;
+ 	if (data[3] != 0xFF ||
+ 	    data[frame_size + 10] != 0xBE ||
+ 	    data[frame_size + 12] != 0xAF)
+ 		match = false;
  
--	if (!ring->xsk_pool)
--		return -ENXIO;
-+		rxq_vector = ring->q_vector;
-+	}
-+
-+	if (flags & XDP_WAKEUP_TX) {
-+		if (queue_id >= adapter->num_tx_queues)
-+			return -EINVAL;
-+
-+		ring = adapter->tx_ring[queue_id];
-+		if (!ring->xsk_pool)
-+			return -ENXIO;
-+
-+		txq_vector = ring->q_vector;
-+	}
-+
-+	if (rxq_vector &&
-+	    !napi_if_scheduled_mark_missed(&rxq_vector->napi))
-+		igc_trigger_rxtxq_interrupt(adapter, rxq_vector);
+-	kunmap(rx_buffer->page);
++	kunmap_local(data);
  
--	q_vector = adapter->q_vector[queue_id];
--	if (!napi_if_scheduled_mark_missed(&q_vector->napi))
--		igc_trigger_rxtxq_interrupt(adapter, q_vector);
-+	if (txq_vector && txq_vector != rxq_vector &&
-+	    !napi_if_scheduled_mark_missed(&txq_vector->napi))
-+		igc_trigger_rxtxq_interrupt(adapter, txq_vector);
- 
- 	return 0;
+ 	return match;
  }
 -- 
-2.17.1
+2.35.2
 
