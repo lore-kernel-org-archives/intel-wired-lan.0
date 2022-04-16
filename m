@@ -1,94 +1,157 @@
-From: Julia Lawall <julia.lawall@inria.fr>
-Date: Sat, 16 Apr 2022 16:09:58 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v3] intel: igb: igb_ethtool.c: Convert
- kmap() to kmap_local_page()
-In-Reply-To: <857a2d22-5d0f-99d6-6686-98d50e4491d5@gmail.com>
-References: <20220416111457.5868-1-eng.alaamohamedsoliman.am@gmail.com>
- <alpine.DEB.2.22.394.2204161331080.3501@hadrien>
- <857a2d22-5d0f-99d6-6686-98d50e4491d5@gmail.com>
-Message-ID: <alpine.DEB.2.22.394.2204161608230.3501@hadrien>
+From: kernel test robot <lkp@intel.com>
+Date: Sun, 17 Apr 2022 02:36:06 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 135e9e05924290c0416ae187444b106d207b5fb6
+Message-ID: <625b0c96.9kIy+VfZHItQ32um%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 135e9e05924290c0416ae187444b106d207b5fb6  ice: Fix race during aux device (un)plugging
 
+elapsed time: 1142m
 
-On Sat, 16 Apr 2022, Alaa Mohamed wrote:
+configs tested: 127
+configs skipped: 3
 
->
-> On ??/?/???? ??:??, Julia Lawall wrote:
-> >
-> > On Sat, 16 Apr 2022, Alaa Mohamed wrote:
-> >
-> > > Convert kmap() to kmap_local_page()
-> > >
-> > > With kmap_local_page(), the mapping is per thread, CPU local and not
-> > > globally visible.
-> > It's not clearer.
-> I mean this " fix kunmap_local path value to take address of the mapped page"
-> be more clearer
-> > This is a general statement about the function.  You
-> > need to explain why it is appropriate to use it here.  Unless it is the
-> > case that all calls to kmap should be converted to call kmap_local_page.
-> It's required to convert all calls kmap to kmap_local_page. So, I don't what
-> should the commit message be?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-If all calls should be changed then you can also say that.
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+powerpc              randconfig-c003-20220414
+s390                          debug_defconfig
+openrisc                         alldefconfig
+arm                            xcep_defconfig
+powerpc                      tqm8xx_defconfig
+sh                          polaris_defconfig
+m68k                             allyesconfig
+sh                          r7780mp_defconfig
+sh                        edosk7760_defconfig
+arm                       aspeed_g5_defconfig
+openrisc                            defconfig
+sh                           se7724_defconfig
+sh                                  defconfig
+alpha                            allyesconfig
+mips                            gpr_defconfig
+arm                           imxrt_defconfig
+arm                        shmobile_defconfig
+sh                          landisk_defconfig
+powerpc64                        alldefconfig
+arm                     eseries_pxa_defconfig
+sh                   sh7724_generic_defconfig
+powerpc                 mpc85xx_cds_defconfig
+sh                           se7722_defconfig
+i386                             alldefconfig
+powerpc                      ppc6xx_defconfig
+powerpc                   motionpro_defconfig
+powerpc                      cm5200_defconfig
+arm                            mps2_defconfig
+x86_64                              defconfig
+powerpc                     tqm8555_defconfig
+arc                     haps_hs_smp_defconfig
+um                                  defconfig
+x86_64                        randconfig-c001
+arm                  randconfig-c002-20220415
+arm                  randconfig-c002-20220414
+ia64                             allmodconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m68k                                defconfig
+m68k                             allmodconfig
+alpha                               defconfig
+csky                                defconfig
+nios2                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+i386                              debian-10.3
+i386                             allyesconfig
+sparc                               defconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+sparc                            allyesconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a005
+x86_64                        randconfig-a015
+x86_64                        randconfig-a013
+x86_64                        randconfig-a011
+i386                          randconfig-a014
+i386                          randconfig-a012
+i386                          randconfig-a016
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a006
+arc                  randconfig-r043-20220414
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                         rhel-8.3-kunit
+x86_64                               rhel-8.3
 
-I thought that a previous commit on the outreachy list made some arguments
-about how the affacted value was just allocated and thus could not yet be
-shared.
+clang tested configs:
+arm                         lpc32xx_defconfig
+arm                       mainstone_defconfig
+mips                         tb0287_defconfig
+i386                             allyesconfig
+arm                       aspeed_g4_defconfig
+arm                          ixp4xx_defconfig
+mips                          malta_defconfig
+powerpc                     pseries_defconfig
+arm                        mvebu_v5_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                  colibri_pxa300_defconfig
+arm                       imx_v4_v5_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a013
+i386                          randconfig-a011
+i386                          randconfig-a015
+hexagon              randconfig-r041-20220414
+s390                 randconfig-r044-20220414
+hexagon              randconfig-r045-20220414
+riscv                randconfig-r042-20220414
 
-julia
-
->
-> Is this will be good :
->
-> "kmap_local_page() was recently developed as a replacement for kmap().? The
-> kmap_local_page() creates a mapping which is restricted to local use by a
-> single thread of execution. "
-> >
-> > julia
-> >
-> > > Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
-> > > ---
-> > > changes in V2:
-> > > 	fix kunmap_local path value to take address of the mapped page.
-> > > ---
-> > > changes in V3:
-> > > 	edit commit message to be clearer
-> > > ---
-> > >   drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
-> > >   1 file changed, 2 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> > > b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> > > index 2a5782063f4c..c14fc871dd41 100644
-> > > --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> > > +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> > > @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct
-> > > igb_rx_buffer *rx_buffer,
-> > >
-> > >   	frame_size >>= 1;
-> > >
-> > > -	data = kmap(rx_buffer->page);
-> > > +	data = kmap_local_page(rx_buffer->page);
-> > >
-> > >   	if (data[3] != 0xFF ||
-> > >   	    data[frame_size + 10] != 0xBE ||
-> > >   	    data[frame_size + 12] != 0xAF)
-> > >   		match = false;
-> > >
-> > > -	kunmap(rx_buffer->page);
-> > > +	kunmap_local(data);
-> > >
-> > >   	return match;
-> > >   }
-> > > --
-> > > 2.35.2
-> > >
-> > >
-> > >
->
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
