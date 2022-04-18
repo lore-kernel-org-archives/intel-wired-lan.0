@@ -1,85 +1,57 @@
-From: Brett Creeley <brett@pensando.io>
-Date: Thu, 31 Mar 2022 09:32:31 -0700
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix incorrect locking in
- ice_vc_process_vf_msg()
-In-Reply-To: <YkWp5JJ9Sp6UCTw7@boxer>
-References: <20220331105005.2580771-1-ivecera@redhat.com>
- <YkWpNVXYEBo/u3dm@boxer> <YkWp5JJ9Sp6UCTw7@boxer>
-Message-ID: <CAFWUkrTzE87bduD431nu11biHi78XFitUWQfiwcU6_4UPU9FBg@mail.gmail.com>
+From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Date: Mon, 18 Apr 2022 08:14:30 +0200
+Subject: [Intel-wired-lan] [PATCH v4] intel: igb: igb_ethtool.c: Convert
+ kmap() to kmap_local_page()
+Message-ID: <20220418061430.6605-1-eng.alaamohamedsoliman.am@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Mar 31, 2022 at 6:17 AM Maciej Fijalkowski
-<maciej.fijalkowski@intel.com> wrote:
->
-> On Thu, Mar 31, 2022 at 03:14:32PM +0200, Maciej Fijalkowski wrote:
-> > On Thu, Mar 31, 2022 at 12:50:04PM +0200, Ivan Vecera wrote:
-> > > Usage of mutex_trylock() in ice_vc_process_vf_msg() is incorrect
-> > > because message sent from VF is ignored and never processed.
-> > >
-> > > Use mutex_lock() instead to fix the issue. It is safe because this
-> >
-> > We need to know what is *the* issue in the first place.
-> > Could you please provide more context what is being fixed to the readers
-> > that don't have an access to bugzilla?
-> >
-> > Specifically, what is the case that ignoring a particular message when
-> > mutex is already held is a broken behavior?
->
-> Uh oh, let's
-> CC: Brett Creeley <brett@pensando.io>
+The use of kmap() is being deprecated in favor of kmap_local_page()
+where it is feasible.
 
-My concern here is that we don't want to handle messages
-from the context of the "previous" VF configuration if that
-makes sense.
+With kmap_local_page(), the mapping is per thread, CPU local and not
+globally visible. Therefore igb_check_lbtest_frame() is a function
+where the use of kmap_local_page() in place of kmap() is correctly
+suited.
 
-It might be best to grab the cfg_lock before doing any
-message/VF validating in ice_vc_process_vf_msg() to
-make sure all of the checks are done under the cfg_lock.
+Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+---
+changes in V2:
+	fix kunmap_local path value to take address of the mapped page.
+---
+changes in V3:
+	edit commit message to be clearer
+---
+changes in V4:
+	edit the commit message
+---
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-CC'ing Jake so he can provide some input as
-well.
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 2a5782063f4c..c14fc871dd41 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
+ 
+ 	frame_size >>= 1;
+ 
+-	data = kmap(rx_buffer->page);
++	data = kmap_local_page(rx_buffer->page);
+ 
+ 	if (data[3] != 0xFF ||
+ 	    data[frame_size + 10] != 0xBE ||
+ 	    data[frame_size + 12] != 0xAF)
+ 		match = false;
+ 
+-	kunmap(rx_buffer->page);
++	kunmap_local(data);
+ 
+ 	return match;
+ }
+-- 
+2.35.2
 
->
-> >
-> > > mutex is used to prevent races between VF related NDOs and
-> > > handlers processing request messages from VF and these handlers
-> > > are running in ice_service_task() context.
-> > >
-> > > Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF ndo ops")
-> > > Signed-off-by: Ivan Vecera <ivecera@redhat.com>
-> > > ---
-> > >  drivers/net/ethernet/intel/ice/ice_virtchnl.c | 10 +---------
-> > >  1 file changed, 1 insertion(+), 9 deletions(-)
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> > > index 3f1a63815bac..9bf5bb008128 100644
-> > > --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> > > +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> > > @@ -3660,15 +3660,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
-> > >             return;
-> > >     }
-> > >
-> > > -   /* VF is being configured in another context that triggers a VFR, so no
-> > > -    * need to process this message
-> > > -    */
-> > > -   if (!mutex_trylock(&vf->cfg_lock)) {
-> > > -           dev_info(dev, "VF %u is being configured in another context that will trigger a VFR, so there is no need to handle this message\n",
-> > > -                    vf->vf_id);
-> > > -           ice_put_vf(vf);
-> > > -           return;
-> > > -   }
-> > > +   mutex_lock(&vf->cfg_lock);
-> > >
-> > >     switch (v_opcode) {
-> > >     case VIRTCHNL_OP_VERSION:
-> > > --
-> > > 2.34.1
-> > >
-> > > _______________________________________________
-> > > Intel-wired-lan mailing list
-> > > Intel-wired-lan at osuosl.org
-> > > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
