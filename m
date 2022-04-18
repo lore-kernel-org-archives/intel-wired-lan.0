@@ -1,76 +1,68 @@
-From: Julia Lawall <julia.lawall@inria.fr>
-Date: Mon, 18 Apr 2022 09:13:22 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v4] intel: igb: igb_ethtool.c: Convert
- kmap() to kmap_local_page()
-In-Reply-To: <20220418061430.6605-1-eng.alaamohamedsoliman.am@gmail.com>
-References: <20220418061430.6605-1-eng.alaamohamedsoliman.am@gmail.com>
-Message-ID: <alpine.DEB.2.22.394.2204180911430.2860@hadrien>
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Date: Mon, 18 Apr 2022 13:39:48 -0400
+Subject: [Intel-wired-lan] [PATCH 1/2] Fix race in igc_xdp_xmit_zc
+In-Reply-To: <20220415210421.11217-1-jeff.evanson@qsc.com>
+References: <20220415210421.11217-1-jeff.evanson@qsc.com>
+Message-ID: <871qxu5lzv.fsf@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Hi Jeff,
 
+Jeff Evanson <jeff.evanson@gmail.com> writes:
 
-On Mon, 18 Apr 2022, Alaa Mohamed wrote:
+> in igc_xdp_xmit_zc, initialize next_to_use while holding the netif_tx_lock
+> to prevent racing with other users of the tx ring
 
-> The use of kmap() is being deprecated in favor of kmap_local_page()
-> where it is feasible.
+Some style things to change:
+ - Some more details on what is the effect of the race condition, and
+ perhaps the conditions to reproduce it (what I could imagine is that
+ you would need two applications (one using AF_XDP and another one using
+ AF_PACKET, for example) sending packets to the same queue.
+ - I think this patch is solving a real problem, so directing this patch
+ to the net-queue (using 'PATCH net-queue' as subject prefix) would make
+ sense.
+ - Please add the 'Fixes:' tag so this commit can be applied to any
+ stable tree that makes sense.
+
+Apart from those style changes, the code looks good.
+
+Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+
 >
-> With kmap_local_page(), the mapping is per thread, CPU local and not
-> globally visible. Therefore igb_check_lbtest_frame() is a function
-> where the use of kmap_local_page() in place of kmap() is correctly
-> suited.
-
-Same comment as the previous one.  What is it about igb_check_lbtest_frame
-that makes this the right choice?
-
-The subject line also does not look correct.  Normally, one does not put
-an extension on a file name in a subject line, ie igb_ethtool.c.  Have you
-used git log --oneline to see what subject line others have used for this
-driver?
-
-julia
-
->
-> Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+> Signed-off-by: Jeff Evanson <jeff.evanson@qsc.com>
 > ---
-> changes in V2:
-> 	fix kunmap_local path value to take address of the mapped page.
-> ---
-> changes in V3:
-> 	edit commit message to be clearer
-> ---
-> changes in V4:
-> 	edit the commit message
-> ---
->  drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/igc/igc_main.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> index 2a5782063f4c..c14fc871dd41 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 1c00ee310c19..a36a18c84aeb 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -2598,7 +2598,7 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
+>  	struct netdev_queue *nq = txring_txq(ring);
+>  	union igc_adv_tx_desc *tx_desc = NULL;
+>  	int cpu = smp_processor_id();
+> -	u16 ntu = ring->next_to_use;
+> +	u16 ntu;
+>  	struct xdp_desc xdp_desc;
+>  	u16 budget;
+>  
+> @@ -2607,6 +2607,8 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
+>  
+>  	__netif_tx_lock(nq, cpu);
+>  
+> +	ntu = ring->next_to_use;
+> +
+>  	budget = igc_desc_unused(ring);
+>  
+>  	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget--) {
+> -- 
+> 2.17.1
 >
->  	frame_size >>= 1;
->
-> -	data = kmap(rx_buffer->page);
-> +	data = kmap_local_page(rx_buffer->page);
->
->  	if (data[3] != 0xFF ||
->  	    data[frame_size + 10] != 0xBE ||
->  	    data[frame_size + 12] != 0xAF)
->  		match = false;
->
-> -	kunmap(rx_buffer->page);
-> +	kunmap_local(data);
->
->  	return match;
->  }
-> --
-> 2.35.2
->
->
->
+
+-- 
+Vinicius
