@@ -1,106 +1,144 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Mon, 18 Apr 2022 11:10:30 -0700
-Subject: [Intel-wired-lan] [PATCH net] ice: Protect vf_state check by
- cfg_lock in ice_vc_process_vf_msg()
-In-Reply-To: <20220416133043.08b4ee74@ceranb>
-References: <20220413072259.3189386-1-ivecera@redhat.com>
- <YlldFriBVkKEgbBs@boxer> <YlldsfrRJURXpp5d@boxer>
- <248da3d7-cb00-14b6-12f0-6bb9fda6d532@intel.com>
- <20220416133043.08b4ee74@ceranb>
-Message-ID: <607248b2-bfb2-08a2-3d17-67c5c28840fc@intel.com>
+From: Ira Weiny <ira.weiny@intel.com>
+Date: Mon, 18 Apr 2022 15:19:41 -0700
+Subject: [Intel-wired-lan] [PATCH v3] intel: igb: igb_ethtool.c: Convert
+ kmap() to kmap_local_page()
+In-Reply-To: <df4c0f81-454d-ab96-1d74-1c4fbc3dbd63@gmail.com>
+References: <20220416111457.5868-1-eng.alaamohamedsoliman.am@gmail.com>
+ <alpine.DEB.2.22.394.2204161331080.3501@hadrien>
+ <df4c0f81-454d-ab96-1d74-1c4fbc3dbd63@gmail.com>
+Message-ID: <Yl3j/bOvoX13WGSW@iweiny-desk3>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Sat, Apr 16, 2022 at 03:14:57PM +0200, Alaa Mohamed wrote:
+>    On ???/??/???? ??:??, Julia Lawall wrote:
+> 
+> 
+>  On Sat, 16 Apr 2022, Alaa Mohamed wrote:
+> 
+> 
+>  Convert kmap() to kmap_local_page()
+> 
+>  With kmap_local_page(), the mapping is per thread, CPU local and not
+>  globally visible.
+> 
+>  It's not clearer. 
+> 
+>    I mean this " fix kunmap_local path value to take address of the mapped
+>    page" be more clearer
+> 
+>  This is a general statement about the function.  You
+>  need to explain why it is appropriate to use it here.  Unless it is the
+>  case that all calls to kmap should be converted to call kmap_local_page.
+> 
+>    It's required to convert all calls kmap to kmap_local_page. So, I don't
+>    what should the commit message be?
+> 
+>    Is this will be good :
+> 
+>    "kmap_local_page() was recently developed as a replacement for kmap(). 
+>    The
+>    kmap_local_page() creates a mapping which is restricted to local use by a
+>    single thread of execution. "
+> 
 
-On 4/16/2022 4:30 AM, Ivan Vecera wrote:
-> On Fri, 15 Apr 2022 13:55:06 -0700
-> Tony Nguyen <anthony.l.nguyen@intel.com> wrote:
->
->>>>> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
->>>>> index 5612c032f15a..553287a75b50 100644
->>>>> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
->>>>> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
->>>>> @@ -3625,44 +3625,39 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
->>>>>    		return;
->>>>>    	}
->>>>>    
->>>>> +	mutex_lock(&vf->cfg_lock);
->>>>> +
->>>>>    	/* Check if VF is disabled. */
->>>>>    	if (test_bit(ICE_VF_STATE_DIS, vf->vf_states)) {
->>>>>    		err = -EPERM;
->>>>> -		goto error_handler;
->>>>> -	}
->>>>> -
->>>>> -	ops = vf->virtchnl_ops;
->>>>> -
->>>>> -	/* Perform basic checks on the msg */
->>>>> -	err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg, msglen);
->>>>> -	if (err) {
->>>>> -		if (err == VIRTCHNL_STATUS_ERR_PARAM)
->>>>> -			err = -EPERM;
->>>>> -		else
->>>>> -			err = -EINVAL;
->>>>> +	} else {
->>>>> +		/* Perform basic checks on the msg */
->>>>> +		err = virtchnl_vc_validate_vf_msg(&vf->vf_ver, v_opcode, msg,
->>>>> +						  msglen);
->>>>> +		if (err) {
->>>>> +			if (err == VIRTCHNL_STATUS_ERR_PARAM)
->>>>> +				err = -EPERM;
->>>>> +			else
->>>>> +				err = -EINVAL;
->>>>> +		}
->>>> The chunk above feels a bit like unnecessary churn, no?
->>>> Couldn't this patch be simply focused only on extending critical section?
->> Agree, this doesn't seem related to the fix.
->>
->> Thanks,
->>
->> Tony
-> Yes, it is not directly related but it's just a conversion of following snippet
-> to avoid ugly and unnecessary 'goto':
->
-> if (A) {
-> 	err = ...
-> 	goto error_handler;
-> }
-> if (B) {
-> 	err = ...
-> 	...
-> }
-> if (err) {
-> 	...
-> }
->
-> to
->
-> if (A) {
-> 	err = ...
-> } else {
-> 	if (B) {
-> 		...
-> 	}
-> }
-> if (err) {
-> 	...
-> }
->
-> If you want to leave the code as is and remove this from the patch
-> let me know and I will send v2.
+I think I am missing some thread context here.  I'm not sure who said what
+above.  So I'm going to start over.
 
-The change itself looks ok to me, but for net patches, we should fix the 
-issue without introducing other changes. A v2 without this change would 
-be great; feel free to submit this change to -next after I've applied 
-the v2 for this patch.
+Alaa,
 
-Thanks,
+It is important to remember that a good commit message says 2 things.
 
-Tony
+	1) What is the problem you are trying to solve
+	2) Overview of the solution
 
-> Thanks,
-> Ivan
->
+First off I understand your frustration.  In my opinion fixes and clean ups
+like this are very hard to write good commit messages for because so often the
+code diff seems so self explanatory.  However, each code change comes at the
+identification of a problem.  And remember that 'problem' does not always mean
+a bug fix.
+
+The deprecation of kmap() may not seem like a problem.  I mean why can't we
+just leave kmap() as it is?  It works right?
+
+But the problem is that the kmap (highmem) interface has become stale and its
+original purpose was targeted toward large memory systems with 32 bit kernels.
+There are very few systems being run like that any longer.
+
+So how do we clean up the kmap interface to be more useful to the kernel
+community now that 32 bit kernels with highmem are so rare?
+
+The community has identified that a first step of that is to move away from and
+eventually remove the kmap() call.  This is due to the call being incorrectly
+used to create long term mappings.  Most calls to kmap() are not used
+incorrectly but those call sites needed something in between kmap() and
+kmap_atmoic().  That call is kmap_local_page().
+
+Now that kmap_local_page() exists the kmap() calls can be audited and most (I
+hope most)[1] can be replaced with kmap_local_page().
+
+The change you have below is correct.  But it lacks a good commit message.  We
+need to cover the 2 points above.
+
+	1) Julia is asking why you needed to do this change.  What is the
+	   problem or reason for this change?  (Ira told you to is not a good
+	   reason.  ;-)
+
+	   PS In fact me telling you to may actually be a very bad reason...
+	   j/k ;-)
+
+	2) Why is this solution ok as part of the deprecation and removal of
+	   kmap()?
+
+A final note; the 2 above points don't need a lot of text.  Here I used
+2 simple sentences.
+
+https://lore.kernel.org/lkml/20220124015409.807587-2-ira.weiny at intel.com/
+
+I hope this helps,
+Ira
+
+[1] But not all...  some uses of kmap() have been identified as being pretty
+complex.
+
+> 
+>  julia
+> 
+> 
+>  Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+>  ---
+>  changes in V2:
+>          fix kunmap_local path value to take address of the mapped page.
+>  ---
+>  changes in V3:
+>          edit commit message to be clearer
+>  ---
+>   drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+>  diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+>  index 2a5782063f4c..c14fc871dd41 100644
+>  --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+>  +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+>  @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
+> 
+>          frame_size >>= 1;
+> 
+>  -       data = kmap(rx_buffer->page);
+>  +       data = kmap_local_page(rx_buffer->page);
+> 
+>          if (data[3] != 0xFF ||
+>              data[frame_size + 10] != 0xBE ||
+>              data[frame_size + 12] != 0xAF)
+>                  match = false;
+> 
+>  -       kunmap(rx_buffer->page);
+>  +       kunmap_local(data);
+> 
+>          return match;
+>   }
+>  --
+>  2.35.2
