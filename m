@@ -1,57 +1,138 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 18 Apr 2022 15:58:23 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 2/6] ice: always check VF VSI
- pointer values
-In-Reply-To: <d9142a13-1b0f-6a01-c69d-727f4c76cb04@molgen.mpg.de>
-References: <20220411232907.1022602-1-jacob.e.keller@intel.com>
- <20220411232907.1022602-3-jacob.e.keller@intel.com>
- <e079ab74-48fc-65d1-4d3f-2c0cdd4ffcb9@molgen.mpg.de>
- <987480f6-9fc1-bd67-8803-9b88645b514c@intel.com>
- <d9142a13-1b0f-6a01-c69d-727f4c76cb04@molgen.mpg.de>
-Message-ID: <4ebe06d5-814b-4277-1d5f-8916376a8fff@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 19 Apr 2022 19:06:00 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 6e51f61589038cd05bc2fc74577f8f61cfecb801
+Message-ID: <625e9798./Fc4b2YV1FPPzFfP%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 6e51f61589038cd05bc2fc74577f8f61cfecb801  iavf: Add waiting for response from PF in set mac
 
+elapsed time: 1014m
 
-On 4/12/2022 10:50 AM, Paul Menzel wrote:
-> Dear Jacob,
-> 
-> 
-> Am 12.04.22 um 19:35 schrieb Jacob Keller:
-> 
->> On 4/11/2022 10:38 PM, Paul Menzel wrote:
-> 
->>> Am 12.04.22 um 01:29 schrieb Jacob Keller:
->>>> The ice_get_vf_vsi function can return NULL in some cases, such as if
->>>> handling messages during a reset where the VSI is being removed and
->>>> recreated.
->>>>
->>>> Several places throughout the driver do not bother to check whether this
->>>> VSI pointer is valid. Static analysis tools maybe report issues because
->>>> they detect paths where a potentially NULL pointer could be
->>>> dereferenced.
->>>
->>> (side note: scripts/checkpatch.pl checks for 75 characters per line, and
->>> you seem to use 72 characters per line.)
->>
->> For commit message wrapping? I use some default from a vim plugin which
->> I guess decided that 72 was a good choice. Technically thats 8
->> characters less than 80 which is one full tabstop if you render tabs as
->> 8 spaces, which is sometimes used as a method of indenting commits from
->> git tools..
-> 
-> Yes, but the git tools indent with four spaces. See commit 2a076f40d8c9 
-> (checkpatch, SubmittingPatches: suggest line wrapping commit messages at 
-> 75 columns) [1]:
-> 
+configs tested: 109
+configs skipped: 3
 
-I fixed my local editor config to use 75 characters going forward. I
-also requested Tony fix the commits as he applied them to his tree, so
-this should be corrected with what is applied to his next-queue now.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks,
-Jake
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                 randconfig-c001-20220418
+sparc                       sparc32_defconfig
+xtensa                  cadence_csp_defconfig
+mips                            ar7_defconfig
+sparc                       sparc64_defconfig
+powerpc                 mpc8540_ads_defconfig
+sh                     magicpanelr2_defconfig
+nios2                               defconfig
+sh                          landisk_defconfig
+arm                        shmobile_defconfig
+sparc64                          alldefconfig
+microblaze                      mmu_defconfig
+parisc                           alldefconfig
+xtensa                  nommu_kc705_defconfig
+m68k                          hp300_defconfig
+sh                            hp6xx_defconfig
+mips                         cobalt_defconfig
+powerpc                      pasemi_defconfig
+arm                  randconfig-c002-20220417
+arm                  randconfig-c002-20220418
+x86_64               randconfig-c001-20220418
+ia64                             allmodconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+arc                              allyesconfig
+csky                                defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+sparc                               defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64               randconfig-a003-20220418
+x86_64               randconfig-a004-20220418
+x86_64               randconfig-a006-20220418
+x86_64               randconfig-a001-20220418
+x86_64               randconfig-a002-20220418
+x86_64               randconfig-a005-20220418
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                         rhel-8.3-kunit
+x86_64                               rhel-8.3
+
+clang tested configs:
+arm                         s5pv210_defconfig
+arm                          collie_defconfig
+powerpc                     kmeter1_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64               randconfig-a016-20220418
+x86_64               randconfig-a012-20220418
+x86_64               randconfig-a013-20220418
+x86_64               randconfig-a014-20220418
+x86_64               randconfig-a015-20220418
+x86_64               randconfig-a011-20220418
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                 randconfig-a011-20220418
+i386                 randconfig-a015-20220418
+i386                 randconfig-a016-20220418
+i386                 randconfig-a012-20220418
+i386                 randconfig-a013-20220418
+i386                 randconfig-a014-20220418
+riscv                randconfig-r042-20220418
+hexagon              randconfig-r041-20220417
+hexagon              randconfig-r041-20220418
+hexagon              randconfig-r045-20220417
+hexagon              randconfig-r045-20220418
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
