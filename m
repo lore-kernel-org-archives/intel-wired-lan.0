@@ -1,33 +1,58 @@
-From: Jeff Kirsher <tarbal@gmail.com>
-Date: Tue, 19 Apr 2022 11:22:25 -0700
-Subject: [Intel-wired-lan] kernel LAN : Intel 2.5GbE LAN : support
-In-Reply-To: <5ae22b2e-97de-6680-50a3-887ab87b3b87@gmail.com>
-References: <5ae22b2e-97de-6680-50a3-887ab87b3b87@gmail.com>
-Message-ID: <CAL3LdT4gohtJk7s2V1j+_KhL_NuWg6_siJiaFQuELFL=ODnHzg@mail.gmail.com>
+From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Date: Wed, 20 Apr 2022 01:43:13 +0200
+Subject: [Intel-wired-lan] [PATCH v5] igb: Convert kmap() to
+ kmap_local_page()
+Message-ID: <20220419234313.10324-1-eng.alaamohamedsoliman.am@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Apr 19, 2022 at 8:39 AM hanasaki-gmail <hanasaki@gmail.com> wrote:
->
-> kernel LAN : Intel 2.5GbE LAN  : support
-> Intel 2.5GbE LAN chip (2.5 Gbps/1 Gbps/100 Mbps)
->
-> Looking at the below motherboard.
-> what .config option and kernel module supports
-> this ethernet LAN chip and at 2.5GB?
->
-> What is the first kernel version having support?
->
-> ref:
-> X570SI AORUS PRO AX (rev. 1.1)
-> https://www.gigabyte.com/us/Motherboard/X570SI-AORUS-PRO-AX-rev-11
+kmap() is being deprecated and these usages are all local to the thread
+so there is no reason kmap_local_page() can't be used.
 
-Adding intel-wired-lan mailing list, which has all the Intel wired
-Ethernet developers to answer your questions.
+Replace kmap() calls with kmap_local_page().
 
+Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+---
+changes in V2:
+	fix kunmap_local path value to take address of the mapped page.
+---
+changes in V3:
+	edit commit message to be clearer
+---
+changes in V4:
+	edit the commit message
+---
+changes in V5:
+	-edit commit subject
+	-edit commit message
+---
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 2a5782063f4c..c14fc871dd41 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
+ 
+ 	frame_size >>= 1;
+ 
+-	data = kmap(rx_buffer->page);
++	data = kmap_local_page(rx_buffer->page);
+ 
+ 	if (data[3] != 0xFF ||
+ 	    data[frame_size + 10] != 0xBE ||
+ 	    data[frame_size + 12] != 0xAF)
+ 		match = false;
+ 
+-	kunmap(rx_buffer->page);
++	kunmap_local(data);
+ 
+ 	return match;
+ }
 -- 
-Cheers,
-Jeff
+2.35.2
+
