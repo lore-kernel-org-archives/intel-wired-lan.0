@@ -1,153 +1,147 @@
-From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
-Date: Tue, 19 Apr 2022 15:37:47 +0200
-Subject: [Intel-wired-lan] [PATCH v3] intel: igb: igb_ethtool.c: Convert
- kmap() to kmap_local_page()
-In-Reply-To: <Yl3j/bOvoX13WGSW@iweiny-desk3>
-References: <20220416111457.5868-1-eng.alaamohamedsoliman.am@gmail.com>
- <alpine.DEB.2.22.394.2204161331080.3501@hadrien>
- <df4c0f81-454d-ab96-1d74-1c4fbc3dbd63@gmail.com>
- <Yl3j/bOvoX13WGSW@iweiny-desk3>
-Message-ID: <21796697-e4e1-bf51-76fc-bdb0e28d6b60@gmail.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Tue, 19 Apr 2022 16:09:27 +0200
+Subject: [Intel-wired-lan] [PATCH net v1] ice: fix PTP stale Tx
+ timestamps cleanup
+In-Reply-To: <BN6PR11MB4177CF618A7FB2654DC9690DE3F29@BN6PR11MB4177.namprd11.prod.outlook.com>
+References: <20220414102358.13486-1-michal.michalik@intel.com>
+ <280c31b8-9f70-a0b5-2450-510903bd0d4e@molgen.mpg.de>
+ <BN6PR11MB4177CF618A7FB2654DC9690DE3F29@BN6PR11MB4177.namprd11.prod.outlook.com>
+Message-ID: <cb3d32f3-d9f1-f285-bde3-b62b94cb17ec@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-On ???/??/???? ??:??, Ira Weiny wrote:
-> On Sat, Apr 16, 2022 at 03:14:57PM +0200, Alaa Mohamed wrote:
->>     On ???/??/???? ??:??, Julia Lawall wrote:
->>
->>
->>   On Sat, 16 Apr 2022, Alaa Mohamed wrote:
->>
->>
->>   Convert kmap() to kmap_local_page()
->>
->>   With kmap_local_page(), the mapping is per thread, CPU local and not
->>   globally visible.
->>
->>   It's not clearer.
->>
->>     I mean this " fix kunmap_local path value to take address of the mapped
->>     page" be more clearer
->>
->>   This is a general statement about the function.  You
->>   need to explain why it is appropriate to use it here.  Unless it is the
->>   case that all calls to kmap should be converted to call kmap_local_page.
->>
->>     It's required to convert all calls kmap to kmap_local_page. So, I don't
->>     what should the commit message be?
->>
->>     Is this will be good :
->>
->>     "kmap_local_page() was recently developed as a replacement for kmap().
->>     The
->>     kmap_local_page() creates a mapping which is restricted to local use by a
->>     single thread of execution. "
->>
-> I think I am missing some thread context here.  I'm not sure who said what
-> above.  So I'm going to start over.
->
-> Alaa,
->
-> It is important to remember that a good commit message says 2 things.
->
-> 	1) What is the problem you are trying to solve
-> 	2) Overview of the solution
->
-> First off I understand your frustration.  In my opinion fixes and clean ups
-> like this are very hard to write good commit messages for because so often the
-> code diff seems so self explanatory.  However, each code change comes at the
-> identification of a problem.  And remember that 'problem' does not always mean
-> a bug fix.
->
-> The deprecation of kmap() may not seem like a problem.  I mean why can't we
-> just leave kmap() as it is?  It works right?
->
-> But the problem is that the kmap (highmem) interface has become stale and its
-> original purpose was targeted toward large memory systems with 32 bit kernels.
-> There are very few systems being run like that any longer.
->
-> So how do we clean up the kmap interface to be more useful to the kernel
-> community now that 32 bit kernels with highmem are so rare?
->
-> The community has identified that a first step of that is to move away from and
-> eventually remove the kmap() call.  This is due to the call being incorrectly
-> used to create long term mappings.  Most calls to kmap() are not used
-> incorrectly but those call sites needed something in between kmap() and
-> kmap_atmoic().  That call is kmap_local_page().
->
-> Now that kmap_local_page() exists the kmap() calls can be audited and most (I
-> hope most)[1] can be replaced with kmap_local_page().
->
-> The change you have below is correct.  But it lacks a good commit message.  We
-> need to cover the 2 points above.
->
-> 	1) Julia is asking why you needed to do this change.  What is the
-> 	   problem or reason for this change?  (Ira told you to is not a good
-> 	   reason.  ;-)
->
-> 	   PS In fact me telling you to may actually be a very bad reason...
-> 	   j/k ;-)
->
-> 	2) Why is this solution ok as part of the deprecation and removal of
-> 	   kmap()?
->
-> A final note; the 2 above points don't need a lot of text.  Here I used
-> 2 simple sentences.
->
-> https://lore.kernel.org/lkml/20220124015409.807587-2-ira.weiny at intel.com/
->
-> I hope this helps,
-> Ira
->
-> [1] But not all...  some uses of kmap() have been identified as being pretty
-> complex.
+Dear Michal,
 
 
-Thanks a lot for detailed explaining , yes you help me a lot.
+Am 19.04.22 um 15:27 schrieb Michalik, Michal:
+
+[?]
+
+> Much thanks for your kind review of my first community patch.
+
+Hah, I didn?t know. Congratulations, and I hope, it?s the first of many 
+more to come. ;-)
+
+> Please excuse me for a delay in answering - Monday 18th was a Public
+> Holiday here in Poland.
+
+No problem. Luckily email is async, and it?s no problem if replies only 
+come after days/weeks. By the way, Easter Monday is also a public 
+holiday in Germany.
+
+>> -----Original Message-----
+>> From: Paul Menzel <pmenzel@molgen.mpg.de>
+>> Sent: Friday, April 15, 2022 6:37 PM
+
+[?]
+
+>> Am 14.04.22 um 12:23 schrieb Michal Michalik:
+>>> Read stale PTP Tx timestamps from PHY on cleanup.
+>>>
+>>> After running out of Tx timestamps request handlers hardware (HW) stops
+>>> reporting finished requests. Function ice_ptp_tx_tstamp_cleanup() used
+>>> to only cleanup stale handlers in driver and was leaving the hardware
+>>
+>> Nit: clean up
+> 
+> Good catch - I should have used verb instead of noun. Will fix it in v2.
+> 
+>>
+>>> registers not read. Not reading stale PTP Tx timestamps prevents next
+>>> interrupts from arriving and makes timestamping not usable.
+>>
+>> Nit: unusable
+> 
+> Thanks - lesson learned. Will fix it in v2.
+
+Both variants work, unusable is just a little shorter.
+
+>> Do you have a method, how to force the network device to run out of
+>> timestamps request handlers?
+> 
+> Unlucky - I don't have anything convenient. Both reproducing this bug
+> and proving fix for it is working correctly was done by performing
+> stability tests for multiple hours (using linuxptp project).
+
+Understood. Maybe just add that as a comment in the commit message.
+
+>>> Fixes: ea9b847cda64 ("ice: enable transmit timestamps for E810 devices")
+>>> Signed-off-by: Michal Michalik <michal.michalik@intel.com>
+>>> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+>>> ---
+>>>    drivers/net/ethernet/intel/ice/ice_ptp.c | 9 +++++++--
+>>>    1 file changed, 7 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>>> index a1cd332..826a508 100644
+>>> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
+>>> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+>>> @@ -2287,6 +2287,7 @@ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
+>>>    
+>>>    /**
+>>>     * ice_ptp_tx_tstamp_cleanup - Cleanup old timestamp requests that got dropped
+>>> + * @hw: pointer to the hw struct
+>>>     * @tx: PTP Tx tracker to clean up
+>>>     *
+>>>     * Loop through the Tx timestamp requests and see if any of them have been
+>>> @@ -2295,7 +2296,7 @@ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
+>>>     * timestamp will never be captured. This might happen if the packet gets
+>>>     * discarded before it reaches the PHY timestamping block.
+>>>     */
+>>> -static void ice_ptp_tx_tstamp_cleanup(struct ice_ptp_tx *tx)
+>>> +static void ice_ptp_tx_tstamp_cleanup(struct ice_hw *hw, struct ice_ptp_tx *tx)
+>>>    {
+>>>    	u8 idx;
+>>>    
+>>> @@ -2304,11 +2305,15 @@ static void ice_ptp_tx_tstamp_cleanup(struct ice_ptp_tx *tx)
+>>>    
+>>>    	for_each_set_bit(idx, tx->in_use, tx->len) {
+>>>    		struct sk_buff *skb;
+>>> +		u64 raw_tstamp;
+>>>    
+>>>    		/* Check if this SKB has been waiting for too long */
+>>>    		if (time_is_after_jiffies(tx->tstamps[idx].start + 2 * HZ))
+>>>    			continue;
+>>>    
+>>> +		ice_read_phy_tstamp(hw, tx->quad, idx + tx->quad_offset,
+>>> +				    &raw_tstamp);
+>>> +
+>>
+>> Are compilers or code analyzer going to complain, that nothing will be
+>> done with `raw_tstamp`? Is there some attribute, that it?s unused? Maybe
+>> also add a comment, this is just to read the value, and it?s not going
+>> to be used.
+>>
+> 
+> I haven't noticed any complaints from compiler. This function is used
+> in different places, where all parameters are used. Do you think we
+> should consider changing ice_read_phy_tstamp() so it would be able to
+> accept tstamp equal to NULL and remove this unused raw_tstamp from
+> here? If we leave it as is I will add a comment, according to your
+> suggestion.
+
+I guess the comment is fine, and let?s see if compilers or analyzers are 
+going to complain.
+
+>>>    		spin_lock(&tx->lock);
+>>>    		skb = tx->tstamps[idx].skb;
+>>>    		tx->tstamps[idx].skb = NULL;
+>>> @@ -2330,7 +2335,7 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
+>>>    
+>>>    	ice_ptp_update_cached_phctime(pf);
+>>>    
+>>> -	ice_ptp_tx_tstamp_cleanup(&pf->ptp.port.tx);
+>>> +	ice_ptp_tx_tstamp_cleanup(&pf->hw, &pf->ptp.port.tx);
+>>>    
+>>>    	/* Run twice a second */
+>>>    	kthread_queue_delayed_work(ptp->kworker, &ptp->work,
+>>
+>> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
 
-Thanks again,
+Kind regards,
 
-Alaa
-
->>   julia
->>
->>
->>   Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
->>   ---
->>   changes in V2:
->>           fix kunmap_local path value to take address of the mapped page.
->>   ---
->>   changes in V3:
->>           edit commit message to be clearer
->>   ---
->>    drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
->>    1 file changed, 2 insertions(+), 2 deletions(-)
->>
->>   diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
->>   index 2a5782063f4c..c14fc871dd41 100644
->>   --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
->>   +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
->>   @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
->>
->>           frame_size >>= 1;
->>
->>   -       data = kmap(rx_buffer->page);
->>   +       data = kmap_local_page(rx_buffer->page);
->>
->>           if (data[3] != 0xFF ||
->>               data[frame_size + 10] != 0xBE ||
->>               data[frame_size + 12] != 0xAF)
->>                   match = false;
->>
->>   -       kunmap(rx_buffer->page);
->>   +       kunmap_local(data);
->>
->>           return match;
->>    }
->>   --
->>   2.35.2
+Paul
