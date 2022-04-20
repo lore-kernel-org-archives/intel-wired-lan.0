@@ -1,95 +1,58 @@
-From: Drewek, Wojciech <wojciech.drewek@intel.com>
-Date: Wed, 20 Apr 2022 10:36:18 +0000
-Subject: [Intel-wired-lan] [PATCH net-next] ice: return proper error
- code in ice_add_adv_rule
-In-Reply-To: <38b3db7f-af23-1ab5-ba5d-a79d02e90fda@molgen.mpg.de>
-References: <20220401095958.438230-1-wojciech.drewek@intel.com>
- <38b3db7f-af23-1ab5-ba5d-a79d02e90fda@molgen.mpg.de>
-Message-ID: <MW4PR11MB577638268472DE97373623B3FDF59@MW4PR11MB5776.namprd11.prod.outlook.com>
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+Date: Wed, 20 Apr 2022 12:37:08 +0200
+Subject: [Intel-wired-lan] [PATCH 1/2] Fix race in igc_xdp_xmit_zc
+In-Reply-To: <20220415210421.11217-1-jeff.evanson@qsc.com>
+References: <20220415210421.11217-1-jeff.evanson@qsc.com>
+Message-ID: <20220420103708.1841070-1-alexandr.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Paul,
+From: Jeff Evanson <jeff.evanson@gmail.com>
+Date: Fri, 15 Apr 2022 15:04:21 -0600
 
-Thanks for the review!
+> in igc_xdp_xmit_zc, initialize next_to_use while holding the netif_tx_lock
+> to prevent racing with other users of the tx ring
+> 
+> Signed-off-by: Jeff Evanson <jeff.evanson@qsc.com>
+> ---
+>  drivers/net/ethernet/intel/igc/igc_main.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 1c00ee310c19..a36a18c84aeb 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -2598,7 +2598,7 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
+>  	struct netdev_queue *nq = txring_txq(ring);
+>  	union igc_adv_tx_desc *tx_desc = NULL;
+>  	int cpu = smp_processor_id();
+> -	u16 ntu = ring->next_to_use;
+> +	u16 ntu;
 
-> -----Original Message-----
-> From: Paul Menzel <pmenzel@molgen.mpg.de>
-> Sent: ?roda, 20 kwietnia 2022 12:16
-> To: Drewek, Wojciech <wojciech.drewek@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH net-next] ice: return proper error code in ice_add_adv_rule
-> 
-> Dear Wojciech,
-> 
-> 
-> Thank you for your patch.
-> 
-> Am 01.04.22 um 11:59 schrieb Wojciech Drewek:
-> > When number of words exceeds ICE_MAX_CHAIN_WORDS, -ENOSPC
-> > should be returned not -EINVAL. Do not overwrite this
-> > error code in ice_add_tc_flower_adv_fltr.
-> 
-> Maybe make that two commits?
+Please don't break the RCT (reverse christmas tree) style here. You
+should move it to the bottom of the declaration block, ideally
+combine it with the declaration of @budget as they're both u16s.
 
-IMO there is no need for that. Those changes are logically connected,
-why bother changing error code when it?s overwritten later.
+>  	struct xdp_desc xdp_desc;
+>  	u16 budget;
+>  
+> @@ -2607,6 +2607,8 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
+>  
+>  	__netif_tx_lock(nq, cpu);
+>  
+> +	ntu = ring->next_to_use;
+> +
 
-> 
-> Also for the subject, instead of ?proper error code?, just name it. Maybe:
-> 
-> > ice: ice_add_adv_rule: return ENOSPC when exceeding ICE_MAX_CHAIN_WORDS
+There's no need for this empty newline I believe.
 
-Yea, I think it sounds better, will send v2.
+>  	budget = igc_desc_unused(ring);
+>  
+>  	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget--) {
+> -- 
+> 2.17.1
 
-Regards,
-Wojtek
-
-> 
-> 
-> Kind regards,
-> 
-> Paul
-> 
-> 
-> > Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
-> > Suggested-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-> > Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-> > ---
-> >   drivers/net/ethernet/intel/ice/ice_switch.c | 5 ++++-
-> >   drivers/net/ethernet/intel/ice/ice_tc_lib.c | 1 -
-> >   2 files changed, 4 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-> > index ed7130b7abfe..01f7029ec22f 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_switch.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-> > @@ -5992,9 +5992,12 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
-> >   				word_cnt++;
-> >   	}
-> >
-> > -	if (!word_cnt || word_cnt > ICE_MAX_CHAIN_WORDS)
-> > +	if (!word_cnt)
-> >   		return -EINVAL;
-> >
-> > +	if (word_cnt > ICE_MAX_CHAIN_WORDS)
-> > +		return -ENOSPC;
-> > +
-> >   	/* locate a dummy packet */
-> >   	profile = ice_find_dummy_packet(lkups, lkups_cnt, rinfo->tun_type);
-> >
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-> > index f3a51597f7f6..4cee0fcf91d1 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-> > @@ -748,7 +748,6 @@ ice_add_tc_flower_adv_fltr(struct ice_vsi *vsi,
-> >   	} else if (ret) {
-> >   		NL_SET_ERR_MSG_MOD(tc_fltr->extack,
-> >   				   "Unable to add filter due to error");
-> > -		ret = -EIO;
-> >   		goto exit;
-> >   	}
-> >
+Thanks,
+Al
