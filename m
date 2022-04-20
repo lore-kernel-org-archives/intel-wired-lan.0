@@ -1,120 +1,173 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Wed, 20 Apr 2022 13:22:43 +0200
-Subject: [Intel-wired-lan] [PATCH net-next] ice: get switch id on switchdev
- devices
-Message-ID: <20220420112243.142168-1-marcin.szycik@linux.intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 20 Apr 2022 19:58:19 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
+ 034a7ee13af591b4c63af4d425fdeee693e987d5
+Message-ID: <625ff55b.85HYd6C8ZtB6X9wp%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
+branch HEAD: 034a7ee13af591b4c63af4d425fdeee693e987d5  i40e: i40e_main: fix a missing check on list iterator
 
-Switch id should be the same for each netdevice on a driver.
-The id must be unique between devices on the same system, but
-does not need to be unique between devices on different systems.
+elapsed time: 1020m
 
-The switch id is used to locate ports on a switch and to know if
-aggregated ports belong to the same switch.
+configs tested: 141
+configs skipped: 3
 
-To meet this requirements, use pci_get_dsn as switch id value, as
-this is unique value for each devices on the same system.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Implementing switch id is needed by automatic tools for kubernetes.
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+mips                 randconfig-c004-20220420
+sh                              ul2_defconfig
+arm                       aspeed_g5_defconfig
+nios2                               defconfig
+ia64                         bigsur_defconfig
+arm                        keystone_defconfig
+powerpc                     redwood_defconfig
+mips                     loongson1b_defconfig
+m68k                         amcore_defconfig
+s390                                defconfig
+powerpc                      makalu_defconfig
+ia64                        generic_defconfig
+mips                            ar7_defconfig
+xtensa                    xip_kc705_defconfig
+sh                           se7721_defconfig
+powerpc                 mpc8540_ads_defconfig
+m68k                        mvme16x_defconfig
+arc                            hsdk_defconfig
+mips                       bmips_be_defconfig
+mips                      loongson3_defconfig
+arc                        nsimosci_defconfig
+sh                            hp6xx_defconfig
+microblaze                          defconfig
+sh                           se7722_defconfig
+i386                                defconfig
+xtensa                       common_defconfig
+m68k                        mvme147_defconfig
+ia64                             alldefconfig
+sh                        dreamcast_defconfig
+sh                   rts7751r2dplus_defconfig
+mips                         cobalt_defconfig
+arc                     nsimosci_hs_defconfig
+arm                           u8500_defconfig
+sh                           sh2007_defconfig
+csky                                defconfig
+sh                        apsh4ad0a_defconfig
+sh                          r7785rp_defconfig
+arm                        shmobile_defconfig
+m68k                        m5307c3_defconfig
+arm                        mvebu_v7_defconfig
+powerpc                     asp8347_defconfig
+x86_64                        randconfig-c001
+arm                  randconfig-c002-20220420
+ia64                             allmodconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+arc                              allyesconfig
+nios2                            allyesconfig
+alpha                            allyesconfig
+alpha                               defconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+sparc                               defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                           allnoconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+x86_64                        randconfig-a002
+x86_64                        randconfig-a004
+x86_64                        randconfig-a006
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a005
+x86_64                        randconfig-a013
+x86_64                        randconfig-a011
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+riscv                randconfig-r042-20220419
+arc                  randconfig-r043-20220419
+s390                 randconfig-r044-20220419
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                         rhel-8.3-kunit
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                               rhel-8.3
 
-Set switch id by setting devlink port attribiutes and calling
-devlink_port_attrs_set while creating pf (for uplink) and vf
-(for representator) devlink port.
+clang tested configs:
+riscv                randconfig-c006-20220420
+mips                 randconfig-c004-20220420
+x86_64                        randconfig-c007
+i386                          randconfig-c001
+s390                 randconfig-c005-20220420
+arm                  randconfig-c002-20220420
+powerpc              randconfig-c003-20220420
+mips                        qi_lb60_defconfig
+arm                         s3c2410_defconfig
+powerpc                    socrates_defconfig
+mips                           ip22_defconfig
+arm                         shannon_defconfig
+powerpc                      katmai_defconfig
+arm                       mainstone_defconfig
+powerpc                     ksi8560_defconfig
+powerpc                  mpc885_ads_defconfig
+arm                         mv78xx0_defconfig
+powerpc                      ppc64e_defconfig
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+x86_64                        randconfig-a005
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a013
+i386                          randconfig-a011
+i386                          randconfig-a015
+hexagon              randconfig-r041-20220420
+riscv                randconfig-r042-20220420
+hexagon              randconfig-r045-20220420
+hexagon              randconfig-r041-20220419
+hexagon              randconfig-r045-20220419
 
-To get switch id (in switchdev mode):
-cat /sys/class/net/$PF0/phys_switch_id
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_devlink.c | 22 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_main.c    | 15 +++++++++++++
- 2 files changed, 37 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 4a9de59121d8..3991d62473bf 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -647,6 +647,23 @@ void ice_devlink_unregister(struct ice_pf *pf)
- 	devlink_unregister(priv_to_devlink(pf));
- }
- 
-+/**
-+ * ice_devlink_set_switch_id - Set unique switch id based on pci dsn
-+ * @pf: the PF to create a devlink port for
-+ * @ppid: struct with switch id information
-+ */
-+static void
-+ice_devlink_set_switch_id(struct ice_pf *pf, struct netdev_phys_item_id *ppid)
-+{
-+	struct pci_dev *pdev = pf->pdev;
-+	u64 id;
-+
-+	id = pci_get_dsn(pdev);
-+
-+	ppid->id_len = sizeof(id);
-+	put_unaligned_be64(id, &ppid->id);
-+}
-+
- int ice_devlink_register_params(struct ice_pf *pf)
- {
- 	struct devlink *devlink = priv_to_devlink(pf);
-@@ -704,6 +721,9 @@ int ice_devlink_create_pf_port(struct ice_pf *pf)
- 
- 	attrs.flavour = DEVLINK_PORT_FLAVOUR_PHYSICAL;
- 	attrs.phys.port_number = pf->hw.bus.func;
-+
-+	ice_devlink_set_switch_id(pf, &attrs.switch_id);
-+
- 	devlink_port_attrs_set(devlink_port, &attrs);
- 	devlink = priv_to_devlink(pf);
- 
-@@ -763,6 +783,8 @@ int ice_devlink_create_vf_port(struct ice_vf *vf)
- 	attrs.pci_vf.pf = pf->hw.bus.func;
- 	attrs.pci_vf.vf = vf->vf_id;
- 
-+	ice_devlink_set_switch_id(pf, &attrs.switch_id);
-+
- 	devlink_port_attrs_set(devlink_port, &attrs);
- 	devlink = priv_to_devlink(pf);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 4039f14b4db6..3d4e7f48217e 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -296,6 +296,20 @@ static int ice_clear_promisc(struct ice_vsi *vsi, u8 promisc_m)
- 	return status;
- }
- 
-+/**
-+ * ice_get_devlink_port - Get devlink port from netdev
-+ * @netdev: the netdevice structure
-+ */
-+static struct devlink_port *ice_get_devlink_port(struct net_device *netdev)
-+{
-+	struct ice_pf *pf = ice_netdev_to_pf(netdev);
-+
-+	if (!ice_is_switchdev_running(pf))
-+		return NULL;
-+
-+	return &pf->devlink_port;
-+}
-+
- /**
-  * ice_vsi_sync_fltr - Update the VSI filter list to the HW
-  * @vsi: ptr to the VSI
-@@ -8926,4 +8940,5 @@ static const struct net_device_ops ice_netdev_ops = {
- 	.ndo_bpf = ice_xdp,
- 	.ndo_xdp_xmit = ice_xdp_xmit,
- 	.ndo_xsk_wakeup = ice_xsk_wakeup,
-+	.ndo_get_devlink_port = ice_get_devlink_port,
- };
 -- 
-2.35.1
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
