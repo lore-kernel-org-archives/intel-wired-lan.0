@@ -1,58 +1,59 @@
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-Date: Wed, 20 Apr 2022 12:37:08 +0200
-Subject: [Intel-wired-lan] [PATCH 1/2] Fix race in igc_xdp_xmit_zc
-In-Reply-To: <20220415210421.11217-1-jeff.evanson@qsc.com>
-References: <20220415210421.11217-1-jeff.evanson@qsc.com>
-Message-ID: <20220420103708.1841070-1-alexandr.lobakin@intel.com>
+From: Wojciech Drewek <wojciech.drewek@intel.com>
+Date: Wed, 20 Apr 2022 12:55:41 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: return ENOSPC when
+ exceeding ICE_MAX_CHAIN_WORDS
+Message-ID: <20220420105541.275957-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jeff Evanson <jeff.evanson@gmail.com>
-Date: Fri, 15 Apr 2022 15:04:21 -0600
+When number of words exceeds ICE_MAX_CHAIN_WORDS, -ENOSPC
+should be returned not -EINVAL. Do not overwrite this
+error code in ice_add_tc_flower_adv_fltr.
 
-> in igc_xdp_xmit_zc, initialize next_to_use while holding the netif_tx_lock
-> to prevent racing with other users of the tx ring
-> 
-> Signed-off-by: Jeff Evanson <jeff.evanson@qsc.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index 1c00ee310c19..a36a18c84aeb 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -2598,7 +2598,7 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
->  	struct netdev_queue *nq = txring_txq(ring);
->  	union igc_adv_tx_desc *tx_desc = NULL;
->  	int cpu = smp_processor_id();
-> -	u16 ntu = ring->next_to_use;
-> +	u16 ntu;
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Suggested-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
-Please don't break the RCT (reverse christmas tree) style here. You
-should move it to the bottom of the declaration block, ideally
-combine it with the declaration of @budget as they're both u16s.
+---
+v2: change title as Paul suggested
+---
+ drivers/net/ethernet/intel/ice/ice_switch.c | 5 ++++-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c | 1 -
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
->  	struct xdp_desc xdp_desc;
->  	u16 budget;
->  
-> @@ -2607,6 +2607,8 @@ static void igc_xdp_xmit_zc(struct igc_ring *ring)
->  
->  	__netif_tx_lock(nq, cpu);
->  
-> +	ntu = ring->next_to_use;
-> +
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 968b96a6e0ac..79ab2128857f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -6265,9 +6265,12 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
+ 				word_cnt++;
+ 	}
+ 
+-	if (!word_cnt || word_cnt > ICE_MAX_CHAIN_WORDS)
++	if (!word_cnt)
+ 		return -EINVAL;
+ 
++	if (word_cnt > ICE_MAX_CHAIN_WORDS)
++		return -ENOSPC;
++
+ 	/* locate a dummy packet */
+ 	profile = ice_find_dummy_packet(lkups, lkups_cnt, rinfo->tun_type);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+index 5b300c8cb009..ce6b5f31a1c8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -781,7 +781,6 @@ ice_add_tc_flower_adv_fltr(struct ice_vsi *vsi,
+ 	} else if (ret) {
+ 		NL_SET_ERR_MSG_MOD(tc_fltr->extack,
+ 				   "Unable to add filter due to error");
+-		ret = -EIO;
+ 		goto exit;
+ 	}
+ 
+-- 
+2.31.1
 
-There's no need for this empty newline I believe.
-
->  	budget = igc_desc_unused(ring);
->  
->  	while (xsk_tx_peek_desc(pool, &xdp_desc) && budget--) {
-> -- 
-> 2.17.1
-
-Thanks,
-Al
