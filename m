@@ -1,64 +1,43 @@
-From: Ira Weiny <ira.weiny@intel.com>
-Date: Thu, 21 Apr 2022 10:49:09 -0700
-Subject: [Intel-wired-lan] [PATCH v5] igb: Convert kmap() to
- kmap_local_page()
-In-Reply-To: <20220419234313.10324-1-eng.alaamohamedsoliman.am@gmail.com>
-References: <20220419234313.10324-1-eng.alaamohamedsoliman.am@gmail.com>
-Message-ID: <YmGZFfcY/Yz6Iv1Y@iweiny-desk3>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Thu, 21 Apr 2022 13:23:53 -0700
+Subject: [Intel-wired-lan] [PATCH v2 2/2] igc: Trigger proper interrupts
+ in igc_xsk_wakeup
+In-Reply-To: <20220420012635.13733-3-jeff.evanson@qsc.com>
+References: <20220420012635.13733-1-jeff.evanson@qsc.com>
+ <20220420012635.13733-3-jeff.evanson@qsc.com>
+Message-ID: <ccb8e7f0-c038-c525-0902-47c321c19a10@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 20, 2022 at 01:43:13AM +0200, Alaa Mohamed wrote:
-> kmap() is being deprecated and these usages are all local to the thread
-> so there is no reason kmap_local_page() can't be used.
-> 
-> Replace kmap() calls with kmap_local_page().
-> 
-> Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
 
-Reviewed-by: Ira Weiny <ira.weiny@intel.com>
+On 4/19/2022 6:26 PM, jeff.evanson at gmail.com wrote:
+> From: Jeff Evanson <jeff.evanson@qsc.com>
+>
+> In igc_xsk_wakeup, trigger the proper interrupt based on whether flags
+> contains XDP_WAKEUP_RX and/or XDP_WAKEUP_TX.
+>
+> Consider a scenario where the transmit queue interrupt is mapped to a
+> different irq from the receive queue. If XDP_WAKEUP_TX is set in the
+> flags argument, the interrupt for transmit queue must be triggered,
+> otherwise the transmit queue's napi_struct will never be scheduled.
+>
+> In the case where both XDP_WAKEUP_TX and XDP_WAKEUP_RX are both set,
+> the receive interrupt should always be triggered, but the transmit
+> interrupt should only be triggered if its q_vector differs from the
+> receive queue's interrupt.
+>
+> Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
 
-> ---
-> changes in V2:
-> 	fix kunmap_local path value to take address of the mapped page.
-> ---
-> changes in V3:
-> 	edit commit message to be clearer
-> ---
-> changes in V4:
-> 	edit the commit message
-> ---
-> changes in V5:
-> 	-edit commit subject
-> 	-edit commit message
-> ---
->  drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> index 2a5782063f4c..c14fc871dd41 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-> @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
->  
->  	frame_size >>= 1;
->  
-> -	data = kmap(rx_buffer->page);
-> +	data = kmap_local_page(rx_buffer->page);
->  
->  	if (data[3] != 0xFF ||
->  	    data[frame_size + 10] != 0xBE ||
->  	    data[frame_size + 12] != 0xAF)
->  		match = false;
->  
-> -	kunmap(rx_buffer->page);
-> +	kunmap_local(data);
->  
->  	return match;
->  }
-> -- 
-> 2.35.2
-> 
+You're missing your sign-off; same for patch 1. Also, there's a handful 
+of issues being reported by checkpatch [1]
+
+Thanks,
+
+Tony
+
+[1] 
+https://patchwork.kernel.org/project/netdevbpf/patch/20220420012635.13733-3-jeff.evanson at qsc.com/
+
