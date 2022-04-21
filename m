@@ -1,130 +1,64 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 21 Apr 2022 16:40:59 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] ice: Protect vf_state check by
- cfg_lock in ice_vc_process_vf_msg()
-In-Reply-To: <20220419142221.2349382-1-ivecera@redhat.com>
-References: <20220419142221.2349382-1-ivecera@redhat.com>
-Message-ID: <CO1PR11MB5089EDB8FE93BA8B8905E889D6F49@CO1PR11MB5089.namprd11.prod.outlook.com>
+From: Ira Weiny <ira.weiny@intel.com>
+Date: Thu, 21 Apr 2022 10:49:09 -0700
+Subject: [Intel-wired-lan] [PATCH v5] igb: Convert kmap() to
+ kmap_local_page()
+In-Reply-To: <20220419234313.10324-1-eng.alaamohamedsoliman.am@gmail.com>
+References: <20220419234313.10324-1-eng.alaamohamedsoliman.am@gmail.com>
+Message-ID: <YmGZFfcY/Yz6Iv1Y@iweiny-desk3>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Wed, Apr 20, 2022 at 01:43:13AM +0200, Alaa Mohamed wrote:
+> kmap() is being deprecated and these usages are all local to the thread
+> so there is no reason kmap_local_page() can't be used.
+> 
+> Replace kmap() calls with kmap_local_page().
+> 
+> Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
 
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Ivan
-> Vecera
-> Sent: Tuesday, April 19, 2022 7:22 AM
-> To: netdev at vger.kernel.org
-> Cc: Fei Liu <feliu@redhat.com>; moderated list:INTEL ETHERNET DRIVERS <intel-
-> wired-lan at lists.osuosl.org>; mschmidt <mschmidt@redhat.com>; Brett Creeley
-> <brett.creeley@intel.com>; open list <linux-kernel@vger.kernel.org>; Jakub
-> Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; David S. Miller
-> <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net v2] ice: Protect vf_state check by cfg_lock in
-> ice_vc_process_vf_msg()
-> 
-> Previous patch labelled "ice: Fix incorrect locking in
-> ice_vc_process_vf_msg()"  fixed an issue with ignored messages
-> sent by VF driver but a small race window still left.
-> 
-> Recently caught trace during 'ip link set ... vf 0 vlan ...' operation:
-> 
-> [ 7332.995625] ice 0000:3b:00.0: Clearing port VLAN on VF 0
-> [ 7333.001023] iavf 0000:3b:01.0: Reset indication received from the PF
-> [ 7333.007391] iavf 0000:3b:01.0: Scheduling reset task
-> [ 7333.059575] iavf 0000:3b:01.0: PF returned error -5 (IAVF_ERR_PARAM) to our
-> request 3
-> [ 7333.059626] ice 0000:3b:00.0: Invalid message from VF 0, opcode 3, len 4,
-> error -1
-> 
-> Setting of VLAN for VF causes a reset of the affected VF using
-> ice_reset_vf() function that runs with cfg_lock taken:
-> 
-> 1. ice_notify_vf_reset() informs IAVF driver that reset is needed and
->    IAVF schedules its own reset procedure
-> 2. Bit ICE_VF_STATE_DIS is set in vf->vf_state
-> 3. Misc initialization steps
-> 4. ice_sriov_post_vsi_rebuild() -> ice_vf_set_initialized() and that
->    clears ICE_VF_STATE_DIS in vf->vf_state
-> 
-> Step 3 is mentioned race window because IAVF reset procedure runs in
-> parallel and one of its step is sending of VIRTCHNL_OP_GET_VF_RESOURCES
-> message (opcode==3). This message is handled in ice_vc_process_vf_msg()
-> and if it is received during the mentioned race window then it's
-> marked as invalid and error is returned to VF driver.
-> 
-> Protect vf_state check in ice_vc_process_vf_msg() by cfg_lock to avoid
-> this race condition.
-> 
-> Fixes: e6ba5273d4ed ("ice: Fix race conditions between virtchnl handling and VF
-> ndo ops")
-> Tested-by: Fei Liu <feliu@redhat.com>
-> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
-
-Thanks, this looks good to me.
-
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Ira Weiny <ira.weiny@intel.com>
 
 > ---
->  drivers/net/ethernet/intel/ice/ice_virtchnl.c | 12 +++++-------
->  1 file changed, 5 insertions(+), 7 deletions(-)
+> changes in V2:
+> 	fix kunmap_local path value to take address of the mapped page.
+> ---
+> changes in V3:
+> 	edit commit message to be clearer
+> ---
+> changes in V4:
+> 	edit the commit message
+> ---
+> changes in V5:
+> 	-edit commit subject
+> 	-edit commit message
+> ---
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> index 5612c032f15a..b72606c9e6d0 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> @@ -3625,6 +3625,8 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct
-> ice_rq_event_info *event)
->  		return;
->  	}
-> 
-> +	mutex_lock(&vf->cfg_lock);
-> +
->  	/* Check if VF is disabled. */
->  	if (test_bit(ICE_VF_STATE_DIS, vf->vf_states)) {
->  		err = -EPERM;
-> @@ -3648,19 +3650,14 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct
-> ice_rq_event_info *event)
->  				      NULL, 0);
->  		dev_err(dev, "Invalid message from VF %d, opcode %d, len %d,
-> error %d\n",
->  			vf_id, v_opcode, msglen, err);
-> -		ice_put_vf(vf);
-> -		return;
-> +		goto finish;
->  	}
-> 
-> -	mutex_lock(&vf->cfg_lock);
-> -
->  	if (!ice_vc_is_opcode_allowed(vf, v_opcode)) {
->  		ice_vc_send_msg_to_vf(vf, v_opcode,
->  				      VIRTCHNL_STATUS_ERR_NOT_SUPPORTED,
-> NULL,
->  				      0);
-> -		mutex_unlock(&vf->cfg_lock);
-> -		ice_put_vf(vf);
-> -		return;
-> +		goto finish;
->  	}
-> 
->  	switch (v_opcode) {
-> @@ -3773,6 +3770,7 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct
-> ice_rq_event_info *event)
->  			 vf_id, v_opcode, err);
->  	}
-> 
-> +finish:
->  	mutex_unlock(&vf->cfg_lock);
->  	ice_put_vf(vf);
+> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> index 2a5782063f4c..c14fc871dd41 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> @@ -1798,14 +1798,14 @@ static int igb_check_lbtest_frame(struct igb_rx_buffer *rx_buffer,
+>  
+>  	frame_size >>= 1;
+>  
+> -	data = kmap(rx_buffer->page);
+> +	data = kmap_local_page(rx_buffer->page);
+>  
+>  	if (data[3] != 0xFF ||
+>  	    data[frame_size + 10] != 0xBE ||
+>  	    data[frame_size + 12] != 0xAF)
+>  		match = false;
+>  
+> -	kunmap(rx_buffer->page);
+> +	kunmap_local(data);
+>  
+>  	return match;
 >  }
-> --
-> 2.35.1
+> -- 
+> 2.35.2
 > 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
