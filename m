@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Fri, 22 Apr 2022 17:47:43 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
- 9c8774e629a1950c24b44e3c8fb93d76fb644b49
-Message-ID: <626279bf.ZQgQCRbUWWAfIiuX%lkp@intel.com>
+Date: Fri, 22 Apr 2022 18:06:19 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 810430e874310b6b6d73b59cbff0a2c6a9ed18b6
+Message-ID: <62627e1b.AXx6eAF85lgQzypQ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
-branch HEAD: 9c8774e629a1950c24b44e3c8fb93d76fb644b49  net: eql: Use kzalloc instead of kmalloc/memset
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 810430e874310b6b6d73b59cbff0a2c6a9ed18b6  ice: switch: dynamically add vlan headers to a dummy packets
 
-elapsed time: 1229m
+elapsed time: 725m
 
-configs tested: 110
+configs tested: 96
 configs skipped: 3
 
 The following configs have been built successfully.
@@ -41,16 +41,6 @@ sh                          polaris_defconfig
 arm                        spear6xx_defconfig
 mips                            ar7_defconfig
 powerpc                     pq2fads_defconfig
-arm                           stm32_defconfig
-xtensa                    smp_lx200_defconfig
-mips                           xway_defconfig
-xtensa                          iss_defconfig
-openrisc                 simple_smp_defconfig
-sh                          sdk7780_defconfig
-sh                         ecovec24_defconfig
-microblaze                          defconfig
-xtensa                  cadence_csp_defconfig
-powerpc                      arches_defconfig
 x86_64                        randconfig-c001
 arm                  randconfig-c002-20220421
 ia64                             allmodconfig
@@ -118,10 +108,9 @@ x86_64                        randconfig-c007
 i386                          randconfig-c001
 arm                  randconfig-c002-20220421
 powerpc              randconfig-c003-20220421
-powerpc                      ppc64e_defconfig
-mips                           rs90_defconfig
 arm                        mvebu_v5_defconfig
 powerpc                 mpc8315_rdb_defconfig
+powerpc                      ppc64e_defconfig
 powerpc                        fsp2_defconfig
 powerpc                     tqm8560_defconfig
 hexagon                          alldefconfig
@@ -132,9 +121,6 @@ i386                          randconfig-a004
 x86_64                        randconfig-a012
 x86_64                        randconfig-a014
 x86_64                        randconfig-a016
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
 
 -- 
 0-DAY CI Kernel Test Service
