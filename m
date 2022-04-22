@@ -1,127 +1,60 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 22 Apr 2022 18:06:19 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 810430e874310b6b6d73b59cbff0a2c6a9ed18b6
-Message-ID: <62627e1b.AXx6eAF85lgQzypQ%lkp@intel.com>
+From: Kolacinski, Karol <karol.kolacinski@intel.com>
+Date: Fri, 22 Apr 2022 11:44:22 +0000
+Subject: [Intel-wired-lan] [PATCH intel-next 1/3] ice: remove u16
+ arithmetic in ice_gnss
+In-Reply-To: <730b2502-3aa4-e5b9-be37-cc60e716e318@molgen.mpg.de>
+References: <20220415103139.794790-1-karol.kolacinski@intel.com>
+ <730b2502-3aa4-e5b9-be37-cc60e716e318@molgen.mpg.de>
+Message-ID: <MW4PR11MB5800880B4C413D8669D436A986F79@MW4PR11MB5800.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 810430e874310b6b6d73b59cbff0a2c6a9ed18b6  ice: switch: dynamically add vlan headers to a dummy packets
+Dear Paul,
 
-elapsed time: 725m
+Thank you for your review.
 
-configs tested: 96
-configs skipped: 3
+On 4/15/22 3:51 PM, Paul Menzel wrote:
+>> Change u16 to u32 where arithmetic occured.
+>
+>occur*r*e*s*
+>
+>Why does 16-bit width not work?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+In the previous GNSS patch review, David Laight wrote that I should not do
+arithmetic on anything smaller than 'int'.
 
-gcc tested configs:
-arm64                               defconfig
-arm64                            allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                          randconfig-c001
-powerpc                     asp8347_defconfig
-sh                           se7712_defconfig
-arc                                 defconfig
-sh                        edosk7760_defconfig
-arm                             rpc_defconfig
-powerpc                 linkstation_defconfig
-arm                          pxa3xx_defconfig
-powerpc                     tqm8555_defconfig
-arm                          pxa910_defconfig
-mips                        bcm47xx_defconfig
-sh                          polaris_defconfig
-arm                        spear6xx_defconfig
-mips                            ar7_defconfig
-powerpc                     pq2fads_defconfig
-x86_64                        randconfig-c001
-arm                  randconfig-c002-20220421
-ia64                             allmodconfig
-ia64                             allyesconfig
-ia64                                defconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-sh                               allmodconfig
-s390                                defconfig
-s390                             allmodconfig
-parisc                              defconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                             allyesconfig
-sparc                               defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-arc                  randconfig-r043-20220421
-s390                 randconfig-r044-20220421
-riscv                randconfig-r042-20220421
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
-riscv                             allnoconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                          rhel-8.3-func
-x86_64                                  kexec
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                         rhel-8.3-kunit
-x86_64                               rhel-8.3
+>
+>> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+>> ---
+>>?? drivers/net/ethernet/intel/ice/ice_gnss.c | 6 +++---
+>>?? 1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
+>> index 57586a2e6dec..f0b2091c3b5f 100644
+>> --- a/drivers/net/ethernet/intel/ice/ice_gnss.c
+>> +++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
+>> @@ -23,7 +23,7 @@ static void ice_gnss_read(struct kthread_work *work)
+>>??????? struct ice_hw *hw;
+>>??????? __be16 data_len_b;
+>>??????? char *buf = NULL;
+>> -???? u16 i, data_len;
+>> +???? u32 i, data_len;
+>
+>Why does the length need to be specified at all, and no native types can
+>be used?
 
-clang tested configs:
-riscv                randconfig-c006-20220421
-mips                 randconfig-c004-20220421
-x86_64                        randconfig-c007
-i386                          randconfig-c001
-arm                  randconfig-c002-20220421
-powerpc              randconfig-c003-20220421
-arm                        mvebu_v5_defconfig
-powerpc                 mpc8315_rdb_defconfig
-powerpc                      ppc64e_defconfig
-powerpc                        fsp2_defconfig
-powerpc                     tqm8560_defconfig
-hexagon                          alldefconfig
-arm                     davinci_all_defconfig
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
+I changed it to use native type. Length of the buffer is read from the device
+and then used in a read loop.
 
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Kind regards,
+Karol
+
+---------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173, 80-298 Gdansk
+KRS 101882
+NIP 957-07-52-316
