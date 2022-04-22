@@ -1,11 +1,11 @@
 From: Kolacinski, Karol <karol.kolacinski@intel.com>
-Date: Fri, 22 Apr 2022 11:44:22 +0000
-Subject: [Intel-wired-lan] [PATCH intel-next 1/3] ice: remove u16
- arithmetic in ice_gnss
-In-Reply-To: <730b2502-3aa4-e5b9-be37-cc60e716e318@molgen.mpg.de>
+Date: Fri, 22 Apr 2022 11:46:11 +0000
+Subject: [Intel-wired-lan] [PATCH intel-next 2/3] ice: add i2c write command
+In-Reply-To: <76921ca9-07dc-3c26-cf48-a74274a795d0@molgen.mpg.de>
 References: <20220415103139.794790-1-karol.kolacinski@intel.com>
- <730b2502-3aa4-e5b9-be37-cc60e716e318@molgen.mpg.de>
-Message-ID: <MW4PR11MB5800880B4C413D8669D436A986F79@MW4PR11MB5800.namprd11.prod.outlook.com>
+ <20220415103139.794790-2-karol.kolacinski@intel.com>
+ <76921ca9-07dc-3c26-cf48-a74274a795d0@molgen.mpg.de>
+Message-ID: <MW4PR11MB58004C0C9CA45DB08BEC811286F79@MW4PR11MB5800.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,38 +16,44 @@ Dear Paul,
 
 Thank you for your review.
 
-On 4/15/22 3:51 PM, Paul Menzel wrote:
->> Change u16 to u32 where arithmetic occured.
+On 4/15/22 3:55 PM, Paul Menzel wrote:
+>> Add the possibility to write to connected i2c devices. FW may reject
+>> the write if the device is not on allowlist.
 >
->occur*r*e*s*
->
->Why does 16-bit width not work?
+>Did you use a datasheet for implementing this. If so, please mention the 
+>name and revision.
 
-In the previous GNSS patch review, David Laight wrote that I should not do
-arithmetic on anything smaller than 'int'.
+Unfortunately, the original author did not leave the datasheet.
 
+>> +/**
+>> + * ice_aq_write_i2c
+>> + * @hw: pointer to the hw struct
+>> + * @topo_addr: topology address for a device to communicate with
+>> + * @bus_addr: 7-bit I2C bus address
+>> + * @addr: I2C memory address (I2C offset) with up to 16 bits
+>> + * @params: I2C parameters: bit [4] - I2C address type, bits [3:0] - data size to write (0-7 bytes)
+>> + * @data: pointer to data (0 to 4 bytes) to be written to the I2C device
+>> + * @cd: pointer to command details structure or NULL
 >
->> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
->> ---
->>?? drivers/net/ethernet/intel/ice/ice_gnss.c | 6 +++---
->>?? 1 file changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
->> index 57586a2e6dec..f0b2091c3b5f 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_gnss.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
->> @@ -23,7 +23,7 @@ static void ice_gnss_read(struct kthread_work *work)
->>??????? struct ice_hw *hw;
->>??????? __be16 data_len_b;
->>??????? char *buf = NULL;
->> -???? u16 i, data_len;
->> +???? u32 i, data_len;
->
->Why does the length need to be specified at all, and no native types can
->be used?
+>Also document the return value?
 
-I changed it to use native type. Length of the buffer is read from the device
-and then used in a read loop.
+Done.
+
+>> + *
+>> + * Write I2C (0x06E3)
+>> + */
+>> +int
+>> +ice_aq_write_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
+>> +????????????? u16 bus_addr, __le16 addr, u8 params, u8 *data,
+>> +????????????? struct ice_sq_cd *cd)
+>> +{
+>> +???? struct ice_aq_desc desc = { 0 };
+>> +???? struct ice_aqc_i2c *cmd;
+>> +???? u8 i, data_size;
+>
+>The loop variable should be a native type.
+
+Done.
 
 Kind regards,
 Karol
