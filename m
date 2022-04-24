@@ -1,20 +1,20 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sun, 24 Apr 2022 14:10:44 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 28cd78159579ecb2f2c5141e2088e03b85399b46
-Message-ID: <6264e9e4.0Q5gFiOX9BZUAyjp%lkp@intel.com>
+Date: Sun, 24 Apr 2022 14:10:51 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ f2714bd3e8156d2e2e78b913095720cccc134489
+Message-ID: <6264e9eb.0tCDFjZ2ByJAWS9i%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 28cd78159579ecb2f2c5141e2088e03b85399b46  ice: switch: dynamically add vlan headers to a dummy packets
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: f2714bd3e8156d2e2e78b913095720cccc134489  ice: fix PTP stale Tx timestamps cleanup
 
-elapsed time: 1937m
+elapsed time: 1935m
 
-configs tested: 86
+configs tested: 89
 configs skipped: 4
 
 The following configs have been built successfully.
@@ -73,6 +73,9 @@ powerpc                          allmodconfig
 x86_64                        randconfig-a006
 x86_64                        randconfig-a004
 x86_64                        randconfig-a002
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a005
 riscv                               defconfig
 riscv                    nommu_virt_defconfig
 riscv                          rv32_defconfig
