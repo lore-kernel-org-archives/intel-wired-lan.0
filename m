@@ -1,60 +1,117 @@
-From: Sasha Neftin <sasha.neftin@intel.com>
-Date: Sat, 23 Apr 2022 19:55:02 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Change type of the
- 'igc_check_downshift' method
-Message-ID: <20220423165502.838143-1-sasha.neftin@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sun, 24 Apr 2022 14:10:44 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 28cd78159579ecb2f2c5141e2088e03b85399b46
+Message-ID: <6264e9e4.0Q5gFiOX9BZUAyjp%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The 'igc_check_downshift' method always return 0 value. There is no point
-return value. Change the return type of this method to void.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 28cd78159579ecb2f2c5141e2088e03b85399b46  ice: switch: dynamically add vlan headers to a dummy packets
 
-Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_phy.c | 6 +-----
- drivers/net/ethernet/intel/igc/igc_phy.h | 2 +-
- 2 files changed, 2 insertions(+), 6 deletions(-)
+elapsed time: 1937m
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
-index 2140ad1e8443..53b77c969c85 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.c
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.c
-@@ -141,18 +141,14 @@ void igc_power_down_phy_copper(struct igc_hw *hw)
-  * igc_check_downshift - Checks whether a downshift in speed occurred
-  * @hw: pointer to the HW structure
-  *
-- * Success returns 0, Failure returns 1
-- *
-  * A downshift is detected by querying the PHY link health.
-  */
--s32 igc_check_downshift(struct igc_hw *hw)
-+void igc_check_downshift(struct igc_hw *hw)
- {
- 	struct igc_phy_info *phy = &hw->phy;
- 
- 	/* speed downshift not supported */
- 	phy->speed_downgraded = false;
--
--	return 0;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.h b/drivers/net/ethernet/intel/igc/igc_phy.h
-index 1b031372d206..832a7e359f18 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.h
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.h
-@@ -11,7 +11,7 @@ s32 igc_phy_hw_reset(struct igc_hw *hw);
- s32 igc_get_phy_id(struct igc_hw *hw);
- s32 igc_phy_has_link(struct igc_hw *hw, u32 iterations,
- 		     u32 usec_interval, bool *success);
--s32 igc_check_downshift(struct igc_hw *hw);
-+void igc_check_downshift(struct igc_hw *hw);
- s32 igc_setup_copper_link(struct igc_hw *hw);
- void igc_power_up_phy_copper(struct igc_hw *hw);
- void igc_power_down_phy_copper(struct igc_hw *hw);
+configs tested: 86
+configs skipped: 4
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+arm                        shmobile_defconfig
+powerpc                       holly_defconfig
+m68k                        m5407c3_defconfig
+m68k                          atari_defconfig
+sh                          rsk7203_defconfig
+arm                        trizeps4_defconfig
+sh                           se7751_defconfig
+arc                          axs103_defconfig
+x86_64                        randconfig-c001
+arm                  randconfig-c002-20220422
+ia64                             allmodconfig
+ia64                             allyesconfig
+ia64                                defconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+csky                                defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+nios2                               defconfig
+arc                              allyesconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+sparc                               defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                          rhel-8.3-func
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                         rhel-8.3-kunit
+x86_64                               rhel-8.3
+
+clang tested configs:
+riscv                randconfig-c006-20220422
+mips                 randconfig-c004-20220422
+x86_64                        randconfig-c007
+i386                          randconfig-c001
+arm                  randconfig-c002-20220422
+powerpc              randconfig-c003-20220422
+powerpc                 mpc8315_rdb_defconfig
+powerpc                       ebony_defconfig
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+hexagon              randconfig-r041-20220422
+riscv                randconfig-r042-20220422
+hexagon              randconfig-r045-20220422
+
 -- 
-2.30.2
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
