@@ -1,30 +1,130 @@
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Date: Mon, 25 Apr 2022 08:27:54 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 0/2] ice: preventing VLAN
- configuration in switchdev
-Message-ID: <20220425062756.14987-1-michal.swiatkowski@linux.intel.com>
+Date: Mon, 25 Apr 2022 08:27:55 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 1/2] ice: don't set VF VLAN caps
+ in switchdev
+In-Reply-To: <20220425062756.14987-1-michal.swiatkowski@linux.intel.com>
+References: <20220425062756.14987-1-michal.swiatkowski@linux.intel.com>
+Message-ID: <20220425062756.14987-2-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In switchdev for any VLAN configuration requested from VF PF should
-answer with not supported error. Instead of adding custom ops for all
-VLAN ops prevent setting VLAN VF caps.
+In switchdev mode any VLAN manipulation from VF side isn't allowed.
+In order to prevent parsing VLAN commands don't set VF VLAN caps.
+This will result in removing VLAN specific opcodes from allowlist.
+If VF send any VLAN specific opcode PF driver will answer with not
+supported error.
 
-Thanks for that ugly error from dmesg will be removed as VF should not
-send VLAN configuration commands. If it sends any PF driver will
-return not supported error because all VLAN opcodes are remove from
-allowlist (only in switchdev mode).
+With this approach VF driver know that VLAN caps aren't supported so it
+shouldn't send VLAN specific opcodes. Thanks to that, some ugly errors
+will not show up in dmesg (ex. on creating VFs in switchdev mode
+there are errors about not supported VLAN insertion and stripping)
 
-Michal Swiatkowski (2):
-  ice: don't set VF VLAN caps in switchdev
-  ice: remove VLAN representor specific ops
+Move setting VLAN caps to separate function, including
+switchdev mode specific code.
 
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 121 ++++++++----------
- 1 file changed, 54 insertions(+), 67 deletions(-)
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 77 ++++++++++++-------
+ 1 file changed, 50 insertions(+), 27 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index b47577a2841a..5d07e009bc84 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -359,6 +359,54 @@ static u16 ice_vc_get_max_frame_size(struct ice_vf *vf)
+ 	return max_frame_size;
+ }
+ 
++/**
++ * ice_vc_get_vlan_caps
++ * @hw: pointer to the hw
++ * @vf: pointer to the VF info
++ * @vsi: pointer to the VSI
++ * @driver_caps: current driver caps
++ *
++ * Return 0 if there is no VLAN caps supported, or VLAN caps value
++ */
++static u32
++ice_vc_get_vlan_caps(struct ice_hw *hw, struct ice_vf *vf, struct ice_vsi *vsi,
++		     u32 driver_caps)
++{
++	if (ice_is_eswitch_mode_switchdev(vf->pf))
++		/* In switchdev setting VLAN from VF isn't supported */
++		return 0;
++
++	if (driver_caps & VIRTCHNL_VF_OFFLOAD_VLAN_V2) {
++		/* VLAN offloads based on current device configuration */
++		return VIRTCHNL_VF_OFFLOAD_VLAN_V2;
++	} else if (driver_caps & VIRTCHNL_VF_OFFLOAD_VLAN) {
++		/* allow VF to negotiate VIRTCHNL_VF_OFFLOAD explicitly for
++		 * these two conditions, which amounts to guest VLAN filtering
++		 * and offloads being based on the inner VLAN or the
++		 * inner/single VLAN respectively and don't allow VF to
++		 * negotiate VIRTCHNL_VF_OFFLOAD in any other cases
++		 */
++		if (ice_is_dvm_ena(hw) && ice_vf_is_port_vlan_ena(vf)) {
++			return VIRTCHNL_VF_OFFLOAD_VLAN;
++		} else if (!ice_is_dvm_ena(hw) &&
++			   !ice_vf_is_port_vlan_ena(vf)) {
++			/* configure backward compatible support for VFs that
++			 * only support VIRTCHNL_VF_OFFLOAD_VLAN, the PF is
++			 * configured in SVM, and no port VLAN is configured
++			 */
++			ice_vf_vsi_cfg_svm_legacy_vlan_mode(vsi);
++			return VIRTCHNL_VF_OFFLOAD_VLAN;
++		} else if (ice_is_dvm_ena(hw)) {
++			/* configure software offloaded VLAN support when DVM
++			 * is enabled, but no port VLAN is enabled
++			 */
++			ice_vf_vsi_cfg_dvm_legacy_vlan_mode(vsi);
++		}
++	}
++
++	return 0;
++}
++
+ /**
+  * ice_vc_get_vf_res_msg
+  * @vf: pointer to the VF info
+@@ -402,33 +450,8 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
+ 		goto err;
+ 	}
+ 
+-	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_VLAN_V2) {
+-		/* VLAN offloads based on current device configuration */
+-		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_VLAN_V2;
+-	} else if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_VLAN) {
+-		/* allow VF to negotiate VIRTCHNL_VF_OFFLOAD explicitly for
+-		 * these two conditions, which amounts to guest VLAN filtering
+-		 * and offloads being based on the inner VLAN or the
+-		 * inner/single VLAN respectively and don't allow VF to
+-		 * negotiate VIRTCHNL_VF_OFFLOAD in any other cases
+-		 */
+-		if (ice_is_dvm_ena(hw) && ice_vf_is_port_vlan_ena(vf)) {
+-			vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_VLAN;
+-		} else if (!ice_is_dvm_ena(hw) &&
+-			   !ice_vf_is_port_vlan_ena(vf)) {
+-			vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_VLAN;
+-			/* configure backward compatible support for VFs that
+-			 * only support VIRTCHNL_VF_OFFLOAD_VLAN, the PF is
+-			 * configured in SVM, and no port VLAN is configured
+-			 */
+-			ice_vf_vsi_cfg_svm_legacy_vlan_mode(vsi);
+-		} else if (ice_is_dvm_ena(hw)) {
+-			/* configure software offloaded VLAN support when DVM
+-			 * is enabled, but no port VLAN is enabled
+-			 */
+-			ice_vf_vsi_cfg_dvm_legacy_vlan_mode(vsi);
+-		}
+-	}
++	vfres->vf_cap_flags |= ice_vc_get_vlan_caps(hw, vf, vsi,
++						    vf->driver_caps);
+ 
+ 	if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RSS_PF) {
+ 		vfres->vf_cap_flags |= VIRTCHNL_VF_OFFLOAD_RSS_PF;
 -- 
 2.31.1
 
