@@ -1,54 +1,32 @@
-From: Jeff Daly <jeffd@silicom-usa.com>
-Date: Mon, 25 Apr 2022 09:17:57 -0400
-Subject: [Intel-wired-lan] [PATCH v2 1/1] ixgbe: correct SDP0 check of SFP
- cage for X550
-In-Reply-To: <20220420205130.23616-1-jeffd@silicom-usa.com>
-References: <20220420205130.23616-1-jeffd@silicom-usa.com>
-Message-ID: <20220425131758.4749-1-jeffd@silicom-usa.com>
+From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Date: Mon, 25 Apr 2022 16:25:05 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v4 0/2] propagate extack to
+ vxlan_fdb_delete
+Message-ID: <cover.1650896000.git.eng.alaamohamedsoliman.am@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-SDP0 for X550 NICs is active low to indicate the presence of an SFP in the
-cage (MOD_ABS#).  Invert the results of the logical AND to set
-sfp_cage_full variable correctly.
+In order to propagate extack to vxlan_fdb_delete and vxlan_fdb_parse,
+add extack to .ndo_fdb_del and edit all fdb del handelers
 
-Fixes: aac9e053f104 ("ixgbe: cleanup crosstalk fix")
-Suggested-by: Stephen Douthit <stephend@silicom-usa.com>
-Signed-off-by: Jeff Daly <jeffd@silicom-usa.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+Alaa Mohamed (2):
+  rtnetlink: add extack support in fdb del handlers
+  net: vxlan: vxlan_core.c: Add extack support to vxlan_fdb_delete
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 4c26c4b92f07..13482d4e24e2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3299,17 +3299,17 @@ s32 ixgbe_check_mac_link_generic(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
- 	 * the SFP+ cage is full.
- 	 */
- 	if (ixgbe_need_crosstalk_fix(hw)) {
--		u32 sfp_cage_full;
-+		bool sfp_cage_full;
- 
- 		switch (hw->mac.type) {
- 		case ixgbe_mac_82599EB:
--			sfp_cage_full = IXGBE_READ_REG(hw, IXGBE_ESDP) &
--					IXGBE_ESDP_SDP2;
-+			sfp_cage_full = !!(IXGBE_READ_REG(hw, IXGBE_ESDP) &
-+					   IXGBE_ESDP_SDP2);
- 			break;
- 		case ixgbe_mac_X550EM_x:
- 		case ixgbe_mac_x550em_a:
--			sfp_cage_full = IXGBE_READ_REG(hw, IXGBE_ESDP) &
--					IXGBE_ESDP_SDP0;
-+			sfp_cage_full = !(IXGBE_READ_REG(hw, IXGBE_ESDP) &
-+					  IXGBE_ESDP_SDP0);
- 			break;
- 		default:
- 			/* sanity check - No SFP+ devices here */
+ drivers/net/ethernet/intel/ice/ice_main.c     |  2 +-
+ drivers/net/ethernet/mscc/ocelot_net.c        |  4 +-
+ .../net/ethernet/qlogic/qlcnic/qlcnic_main.c  |  2 +-
+ drivers/net/macvlan.c                         |  2 +-
+ drivers/net/vxlan/vxlan_core.c                | 39 +++++++++++++------
+ include/linux/netdevice.h                     |  2 +-
+ net/bridge/br_fdb.c                           |  2 +-
+ net/bridge/br_private.h                       |  3 +-
+ net/core/rtnetlink.c                          |  4 +-
+ 9 files changed, 38 insertions(+), 22 deletions(-)
+
 -- 
-2.25.1
+2.36.0
 
