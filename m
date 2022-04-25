@@ -1,10 +1,16 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Mon, 25 Apr 2022 11:34:42 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] ixgbe: ensure IPsec VF<->PF
- compatibility
-In-Reply-To: <737616899df2a482e4ec35aa4056c9ac608d2f50.1648714609.git.leonro@nvidia.com>
-References: <737616899df2a482e4ec35aa4056c9ac608d2f50.1648714609.git.leonro@nvidia.com>
-Message-ID: <DM8PR11MB56217CED4DFFAB90FA256C0CABF89@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Date: Mon, 25 Apr 2022 13:47:21 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] rtnetlink: add extack
+ support in fdb del handlers
+In-Reply-To: <0f1e1250-920a-c7d1-900c-98ef3e0456d8@blackwall.org>
+References: <cover.1650800975.git.eng.alaamohamedsoliman.am@gmail.com>
+ <c3a882e4fb6f9228f704ebe3c1fcace14ee6cdf2.1650800975.git.eng.alaamohamedsoliman.am@gmail.com>
+ <7c8367b6-95c7-ea39-fafe-72495f343625@blackwall.org>
+ <d89eefc2-664f-8537-d10e-6fdfbb6823ed@gmail.com>
+ <4bf69eef-7444-1238-0f4a-fb0fccda080c@blackwall.org>
+ <3bcb2d3d-8b8b-8a8f-1285-7277394b4e6b@gmail.com>
+ <0f1e1250-920a-c7d1-900c-98ef3e0456d8@blackwall.org>
+Message-ID: <1efd4c00-4c78-2330-cfb3-fe81493e7e68@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,50 +18,69 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
+On ???/??/???? ??:??, Nikolay Aleksandrov wrote:
+> On 4/25/22 00:09, Alaa Mohamed wrote:
+>>
+>> On ???/??/???? ??:??, Nikolay Aleksandrov wrote:
+>>> On 24/04/2022 22:49, Alaa Mohamed wrote:
+>>>> On ???/??/???? ??:??, Nikolay Aleksandrov wrote:
+>>>>> On 24/04/2022 15:09, Alaa Mohamed wrote:
+>>>>>> Add extack support to .ndo_fdb_del in netdevice.h and
+>>>>>> all related methods.
+>>>>>>
+>>>>>> Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+>>>>>> ---
+>>>>>> changes in V3:
+>>>>>> ????????? fix errors reported by checkpatch.pl
+>>>>>> ---
+>>>>>> ?? drivers/net/ethernet/intel/ice/ice_main.c??????? | 4 ++--
+>>>>>> ?? drivers/net/ethernet/mscc/ocelot_net.c?????????? | 4 ++--
+>>>>>> ?? drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c | 2 +-
+>>>>>> ?? drivers/net/macvlan.c??????????????????????????? | 2 +-
+>>>>>> ?? drivers/net/vxlan/vxlan_core.c?????????????????? | 2 +-
+>>>>>> ?? include/linux/netdevice.h??????????????????????? | 2 +-
+>>>>>> ?? net/bridge/br_fdb.c????????????????????????????? | 2 +-
+>>>>>> ?? net/bridge/br_private.h????????????????????????? | 2 +-
+>>>>>> ?? net/core/rtnetlink.c???????????????????????????? | 4 ++--
+>>>>>> ?? 9 files changed, 12 insertions(+), 12 deletions(-)
+>>>>>>
+>>>>>> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c 
+>>>>>> b/drivers/net/ethernet/intel/ice/ice_main.c
+>>>>>> index d768925785ca..7b55d8d94803 100644
+>>>>>> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+>>>>>> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+>>>>>> @@ -5678,10 +5678,10 @@ ice_fdb_add(struct ndmsg *ndm, struct 
+>>>>>> nlattr __always_unused *tb[],
+>>>>>> ?? static int
+>>>>>> ?? ice_fdb_del(struct ndmsg *ndm, __always_unused struct nlattr 
+>>>>>> *tb[],
+>>>>>> ?????????? struct net_device *dev, const unsigned char *addr,
+>>>>>> -??????? __always_unused u16 vid)
+>>>>>> +??????? __always_unused u16 vid, struct netlink_ext_ack *extack)
+>>>>>> ?? {
+>>>>>> ?????? int err;
+>>>>>> -
+>>>>>> +
+>>>>> What's changed here?
+>>>> In the previous version, I removed the blank line after "int err;" 
+>>>> and you said I shouldn't so I added blank line.
+>>>>
+>>> Yeah, my question is are you fixing a dos ending or something else?
+>>> The blank line is already there, what's wrong with it?
+>> No, I didn't.
+>>>
+>>> The point is it's not nice to mix style fixes and other changes, 
+>>> more so
+>>> if nothing is mentioned in the commit message.
+>> Got it, So, what should I do to fix it?
+>
+> Don't change that line? I mean I'm even surprised this made it in the 
+> patch. As I mentioned above, there is already a new line there so I'm 
+> not sure how you're removing it and adding it again. :)
+>
+> Cheers,
+> ?Nik
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Leon Romanovsky
-> Sent: Thursday, March 31, 2022 10:20 AM
-> To: David S . Miller <davem@davemloft.net>; Jakub Kicinski
-> <kuba@kernel.org>
-> Cc: Steffen Klassert <steffen.klassert@secunet.com>; Shannon Nelson
-> <snelson@pensando.io>; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Jeff Kirsher
-> <jeffrey.t.kirsher@intel.com>; Raed Salem <raeds@nvidia.com>; Shannon
-> Nelson <shannon.nelson@oracle.com>; Paolo Abeni <pabeni@redhat.com>;
-> Leon Romanovsky <leonro@nvidia.com>
-> Subject: [Intel-wired-lan] [PATCH net v1] ixgbe: ensure IPsec VF<->PF
-> compatibility
-> 
-> From: Leon Romanovsky <leonro@nvidia.com>
-> 
-> The VF driver can forward any IPsec flags and such makes the function is not
-> extendable and prone to backward/forward incompatibility.
-> 
-> If new software runs on VF, it won't know that PF configured something
-> completely different as it "knows" only XFRM_OFFLOAD_INBOUND flag.
-> 
-> Fixes: eda0333ac293 ("ixgbe: add VF IPsec management")
-> Reviewed-by: Raed Salem <raeds@nvidia.com>
-> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>a
-> ---
-> Chaagelog:
-> v1:
->  * Replaced bits arithmetic with more simple expression
-> v0:
-> https://lore.kernel.org/all/3702fad8a016170947da5f3c521a9251cf0f4a22.16
-> 48637865.git.leonro at nvidia.com
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> index e596e1a9fc75..69d11ff7677d 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-> @@ -903,7 +903,8 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter
-> *adapter, u32 *msgbuf, u32 vf)
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+Thanks Nik, I will fix this.
+
