@@ -1,157 +1,271 @@
-From: Lorenzo Bianconi <lorenzo@kernel.org>
-Date: Tue, 26 Apr 2022 15:14:55 +0200
-Subject: [Intel-wired-lan] [PATCH v2 net-next] ixgbe: add xdp frags support
- to ndo_xdp_xmit
-Message-ID: <e36724d3cdfbedf9af1a2a7f47ebd60aa7932f83.1650978540.git.lorenzo@kernel.org>
+From: Maximilian Heyne <mheyne@amazon.de>
+Date: Tue, 26 Apr 2022 08:46:35 +0000
+Subject: [Intel-wired-lan] [PATCH] drivers,
+ ixgbe: show VF statistics via ethtool
+Message-ID: <20220426084636.31609-1-mheyne@amazon.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add the capability to map non-linear xdp frames in XDP_TX and ndo_xdp_xmit
-callback.
+This change exports network statistics for individual virtual functions
+via ethtool.
 
-Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
----
-Changes since v1:
-- rebase on top of net-next
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 99 ++++++++++++-------
- 1 file changed, 63 insertions(+), 36 deletions(-)
+The code is taken from the out-of-tree driver.  The feature was
+introduced with version 2.0.75.7, so the diff between this version and
+the previous version 2.0.72.4 was used to identify required changes.
+I took commit c8d4725e985d ("intel: Update drivers to use
+ethtool_sprintf") into account and fixed a few style issues.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index c4a4954aa317..8b84c9b2eecc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2344,6 +2344,7 @@ static int ixgbe_clean_rx_irq(struct ixgbe_q_vector *q_vector,
- 			hard_start = page_address(rx_buffer->page) +
- 				     rx_buffer->page_offset - offset;
- 			xdp_prepare_buff(&xdp, hard_start, offset, size, true);
-+			xdp_buff_clear_frags_flag(&xdp);
- #if (PAGE_SIZE > 4096)
- 			/* At larger PAGE_SIZE, frame_sz depend on len size */
- 			xdp.frame_sz = ixgbe_rx_frame_truesize(rx_ring, size);
-@@ -8571,57 +8572,83 @@ static u16 ixgbe_select_queue(struct net_device *dev, struct sk_buff *skb,
- int ixgbe_xmit_xdp_ring(struct ixgbe_ring *ring,
- 			struct xdp_frame *xdpf)
- {
--	struct ixgbe_tx_buffer *tx_buffer;
--	union ixgbe_adv_tx_desc *tx_desc;
--	u32 len, cmd_type;
--	dma_addr_t dma;
--	u16 i;
--
--	len = xdpf->len;
-+	struct skb_shared_info *sinfo = xdp_get_shared_info_from_frame(xdpf);
-+	u8 nr_frags = unlikely(xdp_frame_has_frags(xdpf)) ? sinfo->nr_frags : 0;
-+	u16 i = 0, index = ring->next_to_use;
-+	struct ixgbe_tx_buffer *tx_head = &ring->tx_buffer_info[index];
-+	struct ixgbe_tx_buffer *tx_buff = tx_head;
-+	union ixgbe_adv_tx_desc *tx_desc = IXGBE_TX_DESC(ring, index);
-+	u32 cmd_type, len = xdpf->len;
-+	void *data = xdpf->data;
+Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      | 34 ++++++++++
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 26 ++++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 68 +++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  7 ++
+ 4 files changed, 134 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 921a4d977d65..48444ab9e0b1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -167,12 +167,46 @@ enum ixgbe_tx_flags {
+ #define IXGBE_82599_VF_DEVICE_ID        0x10ED
+ #define IXGBE_X540_VF_DEVICE_ID         0x1515
  
--	if (unlikely(!ixgbe_desc_unused(ring)))
-+	if (unlikely(ixgbe_desc_unused(ring) < 1 + nr_frags))
- 		return IXGBE_XDP_CONSUMED;
- 
--	dma = dma_map_single(ring->dev, xdpf->data, len, DMA_TO_DEVICE);
--	if (dma_mapping_error(ring->dev, dma))
--		return IXGBE_XDP_CONSUMED;
-+	tx_head->bytecount = xdp_get_frame_len(xdpf);
-+	tx_head->gso_segs = 1;
-+	tx_head->xdpf = xdpf;
- 
--	/* record the location of the first descriptor for this packet */
--	tx_buffer = &ring->tx_buffer_info[ring->next_to_use];
--	tx_buffer->bytecount = len;
--	tx_buffer->gso_segs = 1;
--	tx_buffer->protocol = 0;
-+	tx_desc->read.olinfo_status =
-+		cpu_to_le32(tx_head->bytecount << IXGBE_ADVTXD_PAYLEN_SHIFT);
- 
--	i = ring->next_to_use;
--	tx_desc = IXGBE_TX_DESC(ring, i);
-+	for (;;) {
-+		dma_addr_t dma;
- 
--	dma_unmap_len_set(tx_buffer, len, len);
--	dma_unmap_addr_set(tx_buffer, dma, dma);
--	tx_buffer->xdpf = xdpf;
-+		dma = dma_map_single(ring->dev, data, len, DMA_TO_DEVICE);
-+		if (dma_mapping_error(ring->dev, dma))
-+			goto unmap;
- 
--	tx_desc->read.buffer_addr = cpu_to_le64(dma);
-+		dma_unmap_len_set(tx_buff, len, len);
-+		dma_unmap_addr_set(tx_buff, dma, dma);
-+
-+		cmd_type = IXGBE_ADVTXD_DTYP_DATA | IXGBE_ADVTXD_DCMD_DEXT |
-+			   IXGBE_ADVTXD_DCMD_IFCS | len;
-+		tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type);
-+		tx_desc->read.buffer_addr = cpu_to_le64(dma);
-+		tx_buff->protocol = 0;
-+
-+		if (++index == ring->count)
-+			index = 0;
-+
-+		if (i == nr_frags)
-+			break;
-+
-+		tx_buff = &ring->tx_buffer_info[index];
-+		tx_desc = IXGBE_TX_DESC(ring, index);
-+		tx_desc->read.olinfo_status = 0;
- 
-+		data = skb_frag_address(&sinfo->frags[i]);
-+		len = skb_frag_size(&sinfo->frags[i]);
-+		i++;
-+	}
- 	/* put descriptor type bits */
--	cmd_type = IXGBE_ADVTXD_DTYP_DATA |
--		   IXGBE_ADVTXD_DCMD_DEXT |
--		   IXGBE_ADVTXD_DCMD_IFCS;
--	cmd_type |= len | IXGBE_TXD_CMD;
--	tx_desc->read.cmd_type_len = cpu_to_le32(cmd_type);
--	tx_desc->read.olinfo_status =
--		cpu_to_le32(len << IXGBE_ADVTXD_PAYLEN_SHIFT);
-+	tx_desc->read.cmd_type_len |= cpu_to_le32(IXGBE_TXD_CMD);
- 
- 	/* Avoid any potential race with xdp_xmit and cleanup */
- 	smp_wmb();
- 
--	/* set next_to_watch value indicating a packet is present */
--	i++;
--	if (i == ring->count)
--		i = 0;
--
--	tx_buffer->next_to_watch = tx_desc;
--	ring->next_to_use = i;
-+	tx_head->next_to_watch = tx_desc;
-+	ring->next_to_use = index;
- 
- 	return IXGBE_XDP_TX;
-+
-+unmap:
-+	for (;;) {
-+		tx_buff = &ring->tx_buffer_info[index];
-+		if (dma_unmap_len(tx_buff, len))
-+			dma_unmap_page(ring->dev, dma_unmap_addr(tx_buff, dma),
-+				       dma_unmap_len(tx_buff, len),
-+				       DMA_TO_DEVICE);
-+		dma_unmap_len_set(tx_buff, len, 0);
-+		if (tx_buff == tx_head)
-+			break;
-+
-+		if (!index)
-+			index += ring->count;
-+		index--;
++#define UPDATE_VF_COUNTER_32bit(reg, last_counter, counter)	\
++	{							\
++		u32 current_counter = IXGBE_READ_REG(hw, reg);	\
++		if (current_counter < last_counter)		\
++			counter += 0x100000000LL;		\
++		last_counter = current_counter;			\
++		counter &= 0xFFFFFFFF00000000LL;		\
++		counter |= current_counter;			\
 +	}
 +
-+	return IXGBE_XDP_CONSUMED;
++#define UPDATE_VF_COUNTER_36bit(reg_lsb, reg_msb, last_counter, counter) \
++	{								 \
++		u64 current_counter_lsb = IXGBE_READ_REG(hw, reg_lsb);	 \
++		u64 current_counter_msb = IXGBE_READ_REG(hw, reg_msb);	 \
++		u64 current_counter = (current_counter_msb << 32) |	 \
++			current_counter_lsb;				 \
++		if (current_counter < last_counter)			 \
++			counter += 0x1000000000LL;			 \
++		last_counter = current_counter;				 \
++		counter &= 0xFFFFFFF000000000LL;			 \
++		counter |= current_counter;				 \
++	}
++
++struct vf_stats {
++	u64 gprc;
++	u64 gorc;
++	u64 gptc;
++	u64 gotc;
++	u64 mprc;
++};
++
+ struct vf_data_storage {
+ 	struct pci_dev *vfdev;
+ 	unsigned char vf_mac_addresses[ETH_ALEN];
+ 	u16 vf_mc_hashes[IXGBE_MAX_VF_MC_ENTRIES];
+ 	u16 num_vf_mc_hashes;
+ 	bool clear_to_send;
++	struct vf_stats vfstats;
++	struct vf_stats last_vfstats;
++	struct vf_stats saved_rst_vfstats;
+ 	bool pf_set_mac;
+ 	u16 pf_vlan; /* When set, guest VLAN config not allowed. */
+ 	u16 pf_qos;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 628d0eb0599f..ae94d927bb46 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -122,9 +122,13 @@ static const struct ixgbe_stats ixgbe_gstrings_stats[] = {
+ 			 sizeof(((struct ixgbe_adapter *)0)->stats.pxoffrxc) + \
+ 			 sizeof(((struct ixgbe_adapter *)0)->stats.pxofftxc)) \
+ 			/ sizeof(u64))
++#define IXGBE_VF_STATS_LEN \
++	((((struct ixgbe_adapter *)netdev_priv(netdev))->num_vfs) * \
++	  (sizeof(struct vf_stats) / sizeof(u64)))
+ #define IXGBE_STATS_LEN (IXGBE_GLOBAL_STATS_LEN + \
+ 			 IXGBE_PB_STATS_LEN + \
+-			 IXGBE_QUEUE_STATS_LEN)
++			 IXGBE_QUEUE_STATS_LEN + \
++			 IXGBE_VF_STATS_LEN)
+ 
+ static const char ixgbe_gstrings_test[][ETH_GSTRING_LEN] = {
+ 	"Register test  (offline)", "Eeprom test    (offline)",
+@@ -1302,6 +1306,8 @@ static void ixgbe_get_ethtool_stats(struct net_device *netdev,
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	struct rtnl_link_stats64 temp;
+ 	const struct rtnl_link_stats64 *net_stats;
++	u64 *queue_stat;
++	int stat_count, k;
+ 	unsigned int start;
+ 	struct ixgbe_ring *ring;
+ 	int i, j;
+@@ -1368,11 +1374,22 @@ static void ixgbe_get_ethtool_stats(struct net_device *netdev,
+ 		data[i++] = adapter->stats.pxonrxc[j];
+ 		data[i++] = adapter->stats.pxoffrxc[j];
+ 	}
++	stat_count = sizeof(struct vf_stats) / sizeof(u64);
++	for (j = 0; j < adapter->num_vfs; j++) {
++		queue_stat = (u64 *)&adapter->vfinfo[j].vfstats;
++		for (k = 0; k < stat_count; k++)
++			data[i + k] = queue_stat[k];
++		queue_stat = (u64 *)&adapter->vfinfo[j].saved_rst_vfstats;
++		for (k = 0; k < stat_count; k++)
++			data[i + k] += queue_stat[k];
++		i += k;
++	}
  }
  
- netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+ 			      u8 *data)
+ {
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	unsigned int i;
+ 	u8 *p = data;
+ 
+@@ -1401,6 +1418,13 @@ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+ 			ethtool_sprintf(&p, "rx_pb_%u_pxon", i);
+ 			ethtool_sprintf(&p, "rx_pb_%u_pxoff", i);
+ 		}
++		for (i = 0; i < adapter->num_vfs; i++) {
++			ethtool_sprintf(&p, "VF %u Rx Packets", i);
++			ethtool_sprintf(&p, "VF %u Rx Bytes", i);
++			ethtool_sprintf(&p, "VF %u Tx Packets", i);
++			ethtool_sprintf(&p, "VF %u Tx Bytes", i);
++			ethtool_sprintf(&p, "VF %u MC Packets", i);
++		}
+ 		/* BUG_ON(p - data != IXGBE_STATS_LEN * ETH_GSTRING_LEN); */
+ 		break;
+ 	case ETH_SS_PRIV_FLAGS:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index c4a4954aa317..26f6656077a6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5548,6 +5548,47 @@ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
+ 	return ret;
+ }
+ 
++/**
++ * ixgbe_clear_vf_stats_counters - Clear out VF stats after reset
++ * @adapter: board private structure
++ *
++ * On a reset we need to clear out the VF stats or accounting gets
++ * messed up because they're not clear on read.
++ **/
++static void ixgbe_clear_vf_stats_counters(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	int i;
++
++	for (i = 0; i < adapter->num_vfs; i++) {
++		adapter->vfinfo[i].last_vfstats.gprc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGPRC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gprc +=
++			adapter->vfinfo[i].vfstats.gprc;
++		adapter->vfinfo[i].vfstats.gprc = 0;
++		adapter->vfinfo[i].last_vfstats.gptc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGPTC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gptc +=
++			adapter->vfinfo[i].vfstats.gptc;
++		adapter->vfinfo[i].vfstats.gptc = 0;
++		adapter->vfinfo[i].last_vfstats.gorc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGORC_LSB(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gorc +=
++			adapter->vfinfo[i].vfstats.gorc;
++		adapter->vfinfo[i].vfstats.gorc = 0;
++		adapter->vfinfo[i].last_vfstats.gotc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGOTC_LSB(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gotc +=
++			adapter->vfinfo[i].vfstats.gotc;
++		adapter->vfinfo[i].vfstats.gotc = 0;
++		adapter->vfinfo[i].last_vfstats.mprc =
++			IXGBE_READ_REG(hw, IXGBE_PVFMPRC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.mprc +=
++			adapter->vfinfo[i].vfstats.mprc;
++		adapter->vfinfo[i].vfstats.mprc = 0;
++	}
++}
++
+ static void ixgbe_setup_gpie(struct ixgbe_adapter *adapter)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+@@ -5683,6 +5724,7 @@ static void ixgbe_up_complete(struct ixgbe_adapter *adapter)
+ 	adapter->link_check_timeout = jiffies;
+ 	mod_timer(&adapter->service_timer, jiffies);
+ 
++	ixgbe_clear_vf_stats_counters(adapter);
+ 	/* Set PF Reset Done bit so PF/VF Mail Ops can work */
+ 	ctrl_ext = IXGBE_READ_REG(hw, IXGBE_CTRL_EXT);
+ 	ctrl_ext |= IXGBE_CTRL_EXT_PFRSTD;
+@@ -7270,6 +7312,32 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 	netdev->stats.rx_length_errors = hwstats->rlec;
+ 	netdev->stats.rx_crc_errors = hwstats->crcerrs;
+ 	netdev->stats.rx_missed_errors = total_mpc;
++
++	/* VF Stats Collection - skip while resetting because these
++	 * are not clear on read and otherwise you'll sometimes get
++	 * crazy values.
++	 */
++	if (!test_bit(__IXGBE_RESETTING, &adapter->state)) {
++		for (i = 0; i < adapter->num_vfs; i++) {
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFGPRC(i),
++					adapter->vfinfo[i].last_vfstats.gprc,
++					adapter->vfinfo[i].vfstats.gprc);
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFGPTC(i),
++					adapter->vfinfo[i].last_vfstats.gptc,
++					adapter->vfinfo[i].vfstats.gptc);
++			UPDATE_VF_COUNTER_36bit(IXGBE_PVFGORC_LSB(i),
++					IXGBE_PVFGORC_MSB(i),
++					adapter->vfinfo[i].last_vfstats.gorc,
++					adapter->vfinfo[i].vfstats.gorc);
++			UPDATE_VF_COUNTER_36bit(IXGBE_PVFGOTC_LSB(i),
++					IXGBE_PVFGOTC_MSB(i),
++					adapter->vfinfo[i].last_vfstats.gotc,
++					adapter->vfinfo[i].vfstats.gotc);
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFMPRC(i),
++					adapter->vfinfo[i].last_vfstats.mprc,
++					adapter->vfinfo[i].vfstats.mprc);
++		}
++	}
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 6da9880d766a..7f7ea468ffa9 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -2533,6 +2533,13 @@ enum {
+ #define IXGBE_PVFTXDCTL(P)	(0x06028 + (0x40 * (P)))
+ #define IXGBE_PVFTDWBAL(P)	(0x06038 + (0x40 * (P)))
+ #define IXGBE_PVFTDWBAH(P)	(0x0603C + (0x40 * (P)))
++#define IXGBE_PVFGPRC(x)	(0x0101C + (0x40 * (x)))
++#define IXGBE_PVFGPTC(x)	(0x08300 + (0x04 * (x)))
++#define IXGBE_PVFGORC_LSB(x)	(0x01020 + (0x40 * (x)))
++#define IXGBE_PVFGORC_MSB(x)	(0x0D020 + (0x40 * (x)))
++#define IXGBE_PVFGOTC_LSB(x)	(0x08400 + (0x08 * (x)))
++#define IXGBE_PVFGOTC_MSB(x)	(0x08404 + (0x08 * (x)))
++#define IXGBE_PVFMPRC(x)	(0x0D01C + (0x40 * (x)))
+ 
+ #define IXGBE_PVFTDWBALn(q_per_pool, vf_number, vf_q_index) \
+ 		(IXGBE_PVFTDWBAL((q_per_pool)*(vf_number) + (vf_q_index)))
 -- 
-2.35.1
+2.32.0
+
+
+
+
+Amazon Development Center Germany GmbH
+Krausenstr. 38
+10117 Berlin
+Geschaeftsfuehrung: Christian Schlaeger, Jonathan Weiss
+Eingetragen am Amtsgericht Charlottenburg unter HRB 149173 B
+Sitz: Berlin
+Ust-ID: DE 289 237 879
+
+
 
