@@ -1,71 +1,74 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Tue, 26 Apr 2022 05:50:22 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 2/6] ice: always check VF VSI
- pointer values
-In-Reply-To: <20220411232907.1022602-3-jacob.e.keller@intel.com>
-References: <20220411232907.1022602-1-jacob.e.keller@intel.com>
- <20220411232907.1022602-3-jacob.e.keller@intel.com>
-Message-ID: <DM8PR11MB5621223FB2D965FFCFB0F9B7ABFB9@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 26 Apr 2022 18:23:14 +0800
+Subject: [Intel-wired-lan] [PATCH net-next v4 1/2] rtnetlink: add extack
+ support in fdb del handlers
+In-Reply-To: <8847c5d670c7ee11890d75f58a4922c5cb542f20.1650896000.git.eng.alaamohamedsoliman.am@gmail.com>
+References: <8847c5d670c7ee11890d75f58a4922c5cb542f20.1650896000.git.eng.alaamohamedsoliman.am@gmail.com>
+Message-ID: <202204261831.S6mBmtgP-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Hi Alaa,
+
+Thank you for the patch! Yet something to improve:
+
+[auto build test ERROR on horms-ipvs/master]
+[also build test ERROR on net/master linus/master v5.18-rc4]
+[cannot apply to net-next/master next-20220422]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Alaa-Mohamed/propagate-extack-to-vxlan_fdb_delete/20220425-222644
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/horms/ipvs.git master
+config: riscv-randconfig-r002-20220425 (https://download.01.org/0day-ci/archive/20220426/202204261831.S6mBmtgP-lkp at intel.com/config)
+compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project 1cddcfdc3c683b393df1a5c9063252eb60e52818)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # install riscv cross compiling tool for clang build
+        # apt-get install binutils-riscv64-linux-gnu
+        # https://github.com/intel-lab-lkp/linux/commit/5e9c3e146040a4e37b45ca18c3b42c3dfd6d0a0e
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Alaa-Mohamed/propagate-extack-to-vxlan_fdb_delete/20220425-222644
+        git checkout 5e9c3e146040a4e37b45ca18c3b42c3dfd6d0a0e
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=riscv SHELL=/bin/bash drivers/net/ethernet/mscc/
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All errors (new ones prefixed by >>):
+
+>> drivers/net/ethernet/mscc/ocelot_net.c:784:70: error: too many arguments to function call, expected 5, have 6
+           return ocelot_fdb_del(ocelot, port, addr, vid, ocelot_port->bridge, extack);
+                  ~~~~~~~~~~~~~~                                               ^~~~~~
+   include/soc/mscc/ocelot.h:893:5: note: 'ocelot_fdb_del' declared here
+   int ocelot_fdb_del(struct ocelot *ocelot, int port, const unsigned char *addr,
+       ^
+   1 error generated.
 
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Jacob Keller
-> Sent: Tuesday, April 12, 2022 1:29 AM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH net-next 2/6] ice: always check VF VSI
-> pointer values
-> 
-> The ice_get_vf_vsi function can return NULL in some cases, such as if
-> handling messages during a reset where the VSI is being removed and
-> recreated.
-> 
-> Several places throughout the driver do not bother to check whether this VSI
-> pointer is valid. Static analysis tools maybe report issues because they detect
-> paths where a potentially NULL pointer could be dereferenced.
-> 
-> Fix this by checking the return value of ice_get_vf_vsi everywhere.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_devlink.c  |  5 ++-
->  drivers/net/ethernet/intel/ice/ice_repr.c     |  7 +++-
->  drivers/net/ethernet/intel/ice/ice_sriov.c    | 32 +++++++++++++++++--
->  drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 28 +++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_virtchnl.c |  5 +++
->  .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  7 +++-
->  6 files changed, 77 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c
-> b/drivers/net/ethernet/intel/ice/ice_devlink.c
-> index a230edb38466..4a9de59121d8 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-> @@ -753,9 +753,12 @@ int ice_devlink_create_vf_port(struct ice_vf *vf)
-> 
->  	pf = vf->pf;
->  	dev = ice_pf_to_dev(pf);
-> -	vsi = ice_get_vf_vsi(vf);
->  	devlink_port = &vf->devlink_port;
-> 
-> +	vsi = ice_get_vf_vsi(vf);
-> +	if (!vsi)
-> +		return -EINVAL;
-> +
->  	attrs.flavour = DEVLINK_PORT_FLAVOUR_PCI_VF;
->  	attrs.pci_vf.pf = pf->hw.bus.func;
->  	attrs.pci_vf.vf = vf->vf_id;
-> diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c
-> b/drivers/net/ethernet/intel/ice/ice_repr.c
-> index 848f2adea563..a91b81c3088b 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_repr.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-> @@ -293,8 +293,13 @@ static int ice_repr_add(struct ice_vf *vf)
+vim +784 drivers/net/ethernet/mscc/ocelot_net.c
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+   774	
+   775	static int ocelot_port_fdb_del(struct ndmsg *ndm, struct nlattr *tb[],
+   776				       struct net_device *dev,
+   777				       const unsigned char *addr, u16 vid, struct netlink_ext_ack *extack)
+   778	{
+   779		struct ocelot_port_private *priv = netdev_priv(dev);
+   780		struct ocelot_port *ocelot_port = &priv->port;
+   781		struct ocelot *ocelot = ocelot_port->ocelot;
+   782		int port = priv->chip_port;
+   783	
+ > 784		return ocelot_fdb_del(ocelot, port, addr, vid, ocelot_port->bridge, extack);
+   785	}
+   786	
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
