@@ -1,63 +1,159 @@
-From: Michal Maloszewski <michal.maloszewski@intel.com>
-Date: Thu, 28 Apr 2022 09:30:13 +0000
-Subject: [Intel-wired-lan] [PATCH net v4] iavf: Fix error when changing ring
- parameters on ice PF
-Message-ID: <20220428093013.186832-1-michal.maloszewski@intel.com>
+From: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
+Date: Thu, 28 Apr 2022 12:01:00 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] ice: clear stale Tx queue settings
+ before configuring
+Message-ID: <20220428120100.81269-1-anatolii.gerasymenko@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Reset is triggered when ring parameters are being changed through
-ethtool and queues are reconfigured for VF's VSI. If ring is changed
-again immediately, then the next reset could be executed before
-queues could be properly reinitialized on VF's VSI. It caused ice PF
-to mess up the VSI resource tree.
+The iAVF driver uses 3 virtchnl op codes to communicate with the PF
+regarding the VF Tx queues:
 
-Add a check in iavf_set_ringparam for adapter and VF's queue
-state. If VF is currently resetting or queues are disabled for the VF
-return with EAGAIN error.
+* VIRTCHNL_OP_CONFIG_VSI_QUEUES configures the hardware and firmware
+logic for the Tx queues
 
-Fixes: d732a1844507 ("i40evf: fix crash when changing ring sizes")
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Michal Maloszewski <michal.maloszewski@intel.com>
----
-v4: Changed order of if statements suggested by community
-    Answer to question:
-    Can't we wait for the device to get into the right state?
-    Throwing EAGAIN back to user space is not very friendly.
-    Answer:
-    When we have state which is running, it does not mean
-    that we have queues configured on PF. So in order to
-    configure queues on PF, the IAVF_FLAG_QUEUES has to be
-    disabled. I use here EAGAIN because as long as we are not
-    configured with queues, it does not make any sens to trigger
-    command and we are not sure when the configuration of queues
-    will end - so that is why EAGAIN is used.
-v3: Correct patch to be send on right tree
-v2: Changed unnecessary parentheses
----
----
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 5 +++++
- 1 file changed, 5 insertions(+)
+* VIRTCHNL_OP_ENABLE_QUEUES configures the queue interrupts
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 3bb56714beb0..15e02a6105b9 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -628,6 +628,11 @@ static int iavf_set_ringparam(struct net_device *netdev,
- 	struct iavf_adapter *adapter = netdev_priv(netdev);
- 	u32 new_rx_count, new_tx_count;
+* VIRTCHNL_OP_DISABLE_QUEUES disables the queue interrupts and Tx rings.
+
+There is a bug in the iAVF driver due to the race condition between VF reset
+request and shutdown being executed in parallel. This leads to a break in
+logic and VIRTCHNL_OP_DISABLE_QUEUES is not being sent.
+
+If this occurs, the PF driver never cleans up the Tx queues. This results in
+leaving behind stale Tx queue settings in the hardware and firmware.
+
+The most obvious outcome is that upon the next
+VIRTCHNL_OP_CONFIG_VSI_QUEUES, the PF will fail to program the Tx
+scheduler node due to a lack of space.
+
+We need to protect ICE driver against such situation.
+
+To fix this, make sure we clear existing stale settings out when
+handling VIRTCHNL_OP_CONFIG_VSI_QUEUES. This ensures we remove the
+previous settings.
+
+Calling ice_vf_vsi_dis_single_txq should be safe as it will do nothing if the
+queue is not configured. The function already handles the case when the
+Tx queue is not currently configured and exits with a 0 return in that case.
+
+Fixes: 7ad15440acf8 ("ice: Refactor VIRTCHNL_OP_CONFIG_VSI_QUEUES handling")
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 68 ++++++++++++++-----
+ 1 file changed, 50 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index 69ff4b929772..e1982940150a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -1307,13 +1307,52 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
+ 				     NULL, 0);
+ }
  
-+	if (adapter->state == __IAVF_RESETTING ||
-+	    adapter->state == __IAVF_RUNNING &&
-+	     (adapter->flags & IAVF_FLAG_QUEUES_DISABLED))
-+		return -EAGAIN;
++/**
++ * ice_vf_vsi_dis_single_txq - disable a single Tx queue
++ * @vf: VF to disable queue for
++ * @vsi: VSI for the VF
++ * @q_id: VF relative (0-based) queue ID
++ *
++ * Attempt to disable the Tx queue passed in. If the Tx queue was successfully
++ * disabled then clear q_id bit in the enabled queues bitmap and return
++ * success. Otherwise return error.
++ */
++static int
++ice_vf_vsi_dis_single_txq(struct ice_vf *vf, struct ice_vsi *vsi, u16 q_id)
++{
++	struct ice_txq_meta txq_meta = { 0 };
++	struct ice_tx_ring *ring;
++	int err;
 +
- 	if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
- 		return -EINVAL;
++	if (!test_bit(q_id, vf->txq_ena))
++		dev_dbg(ice_pf_to_dev(vsi->back), "Queue %u on VSI %u is not enabled, but stopping it anyway\n",
++			q_id, vsi->vsi_num);
++
++	ring = vsi->tx_rings[q_id];
++	if (!ring)
++		return -EINVAL;
++
++	ice_fill_txq_meta(vsi, ring, &txq_meta);
++
++	err = ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, vf->vf_id, ring, &txq_meta);
++	if (err) {
++		dev_err(ice_pf_to_dev(vsi->back), "Failed to stop Tx ring %d on VSI %d\n",
++			q_id, vsi->vsi_num);
++		return err;
++	}
++
++	/* Clear enabled queues flag */
++	clear_bit(q_id, vf->txq_ena);
++
++	return 0;
++}
++
+ /**
+  * ice_vc_dis_qs_msg
+  * @vf: pointer to the VF info
+  * @msg: pointer to the msg buffer
+  *
+- * called from the VF to disable all or specific
+- * queue(s)
++ * called from the VF to disable all or specific queue(s)
+  */
+ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
+ {
+@@ -1350,30 +1389,15 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		q_map = vqs->tx_queues;
  
+ 		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
+-			struct ice_tx_ring *ring = vsi->tx_rings[vf_q_id];
+-			struct ice_txq_meta txq_meta = { 0 };
+-
+ 			if (!ice_vc_isvalid_q_id(vf, vqs->vsi_id, vf_q_id)) {
+ 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 				goto error_param;
+ 			}
+ 
+-			if (!test_bit(vf_q_id, vf->txq_ena))
+-				dev_dbg(ice_pf_to_dev(vsi->back), "Queue %u on VSI %u is not enabled, but stopping it anyway\n",
+-					vf_q_id, vsi->vsi_num);
+-
+-			ice_fill_txq_meta(vsi, ring, &txq_meta);
+-
+-			if (ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, vf->vf_id,
+-						 ring, &txq_meta)) {
+-				dev_err(ice_pf_to_dev(vsi->back), "Failed to stop Tx ring %d on VSI %d\n",
+-					vf_q_id, vsi->vsi_num);
++			if (ice_vf_vsi_dis_single_txq(vf, vsi, vf_q_id)) {
+ 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 				goto error_param;
+ 			}
+-
+-			/* Clear enabled queues flag */
+-			clear_bit(vf_q_id, vf->txq_ena);
+ 		}
+ 	}
+ 
+@@ -1622,6 +1646,14 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+ 		if (qpi->txq.ring_len > 0) {
+ 			vsi->tx_rings[i]->dma = qpi->txq.dma_ring_addr;
+ 			vsi->tx_rings[i]->count = qpi->txq.ring_len;
++
++			/* Disable any existing queue first */
++			if (ice_vf_vsi_dis_single_txq(vf, vsi, q_idx)) {
++				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++				goto error_param;
++			}
++
++			/* Configure a queue with the requested settings */
+ 			if (ice_vsi_cfg_single_txq(vsi, vsi->tx_rings, q_idx)) {
+ 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 				goto error_param;
 -- 
-2.27.0
+2.25.1
 
