@@ -1,73 +1,107 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 28 Apr 2022 10:17:03 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix adding ADq filter to
- TC0
-In-Reply-To: <20220428075735.926715-1-jedrzej.jagielski@intel.com>
-References: <20220428075735.926715-1-jedrzej.jagielski@intel.com>
-Message-ID: <e5f0f6a7-1c10-e445-be34-5ae9c3f5d4df@molgen.mpg.de>
+From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Date: Thu, 28 Apr 2022 10:33:50 +0200
+Subject: [Intel-wired-lan] [PATCH net v3] ice: fix crash when writing
+ timestamp on rx rings
+Message-ID: <20220428083350.10986-1-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Jedzej, dear Grzegorz,
+Do not allow to write timestamps on RX rings if PF is being configured.
+When PF is being configured RX rings can be freed or rebuilt. If at the same
+time timestamps are updated, the kernel will crash by dereferencing null RX
+ring pointer.
 
+PID: 1449   TASK: ff187d28ed658040  CPU: 34  COMMAND: "ice-ptp-0000:51"
+ #0 [ff1966a94a713bb0] machine_kexec at ffffffff9d05a0be
+ #1 [ff1966a94a713c08] __crash_kexec at ffffffff9d192e9d
+ #2 [ff1966a94a713cd0] crash_kexec at ffffffff9d1941bd
+ #3 [ff1966a94a713ce8] oops_end at ffffffff9d01bd54
+ #4 [ff1966a94a713d08] no_context at ffffffff9d06bda4
+ #5 [ff1966a94a713d60] __bad_area_nosemaphore at ffffffff9d06c10c
+ #6 [ff1966a94a713da8] do_page_fault at ffffffff9d06cae4
+ #7 [ff1966a94a713de0] page_fault at ffffffff9da0107e
+    [exception RIP: ice_ptp_update_cached_phctime+91]
+    RIP: ffffffffc076db8b  RSP: ff1966a94a713e98  RFLAGS: 00010246
+    RAX: 16e3db9c6b7ccae4  RBX: ff187d269dd3c180  RCX: ff187d269cd4d018
+    RDX: 0000000000000000  RSI: 0000000000000000  RDI: 0000000000000000
+    RBP: ff187d269cfcc644   R8: ff187d339b9641b0   R9: 0000000000000000
+    R10: 0000000000000002  R11: 0000000000000000  R12: ff187d269cfcc648
+    R13: ffffffff9f128784  R14: ffffffff9d101b70  R15: ff187d269cfcc640
+    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+ #8 [ff1966a94a713ea0] ice_ptp_periodic_work at ffffffffc076dbef [ice]
+ #9 [ff1966a94a713ee0] kthread_worker_fn at ffffffff9d101c1b
+ #10 [ff1966a94a713f10] kthread at ffffffff9d101b4d
+ #11 [ff1966a94a713f50] ret_from_fork at ffffffff9da0023f
 
-Thank you for your patch.
+Fixes: 77a781155a65 ("ice: enable receive hardware timestamping")
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+---
+v2: rebased to latest dev-queue
+v3: use proper if statement condition to bail out
 
-Am 28.04.22 um 09:57 schrieb Jedzej Jagielski:
-> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> 
-> Procedure of configure tc flower filters erroneously allow to create
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-allow*s*
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index da025c204577..4101bfa27365 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -500,12 +500,19 @@ ice_ptp_read_src_clk_reg(struct ice_pf *pf, struct ptp_system_timestamp *sts)
+  * This function must be called periodically to ensure that the cached value
+  * is never more than 2 seconds old. It must also be called whenever the PHC
+  * time has been changed.
++ *
++ * Return:
++ * * 0 - OK, successfully updated
++ * * -EAGAIN - PF was busy, need to reschedule the update
+  */
+-static void ice_ptp_update_cached_phctime(struct ice_pf *pf)
++static int ice_ptp_update_cached_phctime(struct ice_pf *pf)
+ {
+ 	u64 systime;
+ 	int i;
+ 
++	if (test_and_set_bit(ICE_CFG_BUSY, pf->state))
++		return -EAGAIN;
++
+ 	/* Read the current PHC time */
+ 	systime = ice_ptp_read_src_clk_reg(pf, NULL);
+ 
+@@ -528,6 +535,9 @@ static void ice_ptp_update_cached_phctime(struct ice_pf *pf)
+ 			WRITE_ONCE(vsi->rx_rings[j]->cached_phctime, systime);
+ 		}
+ 	}
++	clear_bit(ICE_CFG_BUSY, pf->state);
++
++	return 0;
+ }
+ 
+ /**
+@@ -2330,17 +2340,18 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
+ {
+ 	struct ice_ptp *ptp = container_of(work, struct ice_ptp, work.work);
+ 	struct ice_pf *pf = container_of(ptp, struct ice_pf, ptp);
++	int err;
+ 
+ 	if (!test_bit(ICE_FLAG_PTP, pf->flags))
+ 		return;
+ 
+-	ice_ptp_update_cached_phctime(pf);
++	err = ice_ptp_update_cached_phctime(pf);
+ 
+ 	ice_ptp_tx_tstamp_cleanup(&pf->hw, &pf->ptp.port.tx);
+ 
+-	/* Run twice a second */
++	/* Run twice a second or reschedule if phc update failed */
+ 	kthread_queue_delayed_work(ptp->kworker, &ptp->work,
+-				   msecs_to_jiffies(500));
++				   msecs_to_jiffies(err ? 10 : 500));
+ }
+ 
+ /**
+-- 
+2.31.1
 
-> filters on TC0 where unfiltered packets are also directed by default.
-> Issue was caused by insufficient checks of hw_tc parameter specify
-
-?   s/of/if/?
-?   *is* caused
-
-> a hardware traffic class to pass matching packets on to.
-
-Please add a blank line between paragraphs.
-
-> Fix checking hw_tc parameter which blocks creation of filters on TC0.
-> Previously it was possible to create tc flower filters on TC0.
-
-The last sentence is redundant when reading the whole commit message.
-
-> 
-> Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
-> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
->   1 file changed, 5 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 1e074a6462d4..a0d5d696cdc1 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -8537,6 +8537,11 @@ static int i40e_configure_clsflower(struct i40e_vsi *vsi,
->   		return -EOPNOTSUPP;
->   	}
->   
-> +	if (!tc) {
-> +		dev_err(&pf->pdev->dev, "Unable to add filter because of invalid destination");
-> +		return -EINVAL;
-
-How can an invalid destination be passed at all? Should that be WARN_ON 
-to debug this?
-
-> +	}
-> +
->   	if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
->   	    test_bit(__I40E_RESET_INTR_RECEIVED, pf->state))
->   		return -EBUSY;
-
-
-Kind regards,
-
-Paul
