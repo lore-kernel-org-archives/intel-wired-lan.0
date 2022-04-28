@@ -1,159 +1,149 @@
-From: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
-Date: Thu, 28 Apr 2022 12:01:00 +0000
-Subject: [Intel-wired-lan] [PATCH net v1] ice: clear stale Tx queue settings
- before configuring
-Message-ID: <20220428120100.81269-1-anatolii.gerasymenko@intel.com>
+From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+Date: Thu, 28 Apr 2022 11:29:39 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix adding ADq filter to
+ TC0
+In-Reply-To: <e5f0f6a7-1c10-e445-be34-5ae9c3f5d4df@molgen.mpg.de>
+References: <20220428075735.926715-1-jedrzej.jagielski@intel.com>
+ <e5f0f6a7-1c10-e445-be34-5ae9c3f5d4df@molgen.mpg.de>
+Message-ID: <DM6PR11MB27310E947344EDB66F06B566F0FD9@DM6PR11MB2731.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The iAVF driver uses 3 virtchnl op codes to communicate with the PF
-regarding the VF Tx queues:
+Hello Paul, 
 
-* VIRTCHNL_OP_CONFIG_VSI_QUEUES configures the hardware and firmware
-logic for the Tx queues
+>Thank you for your patch.
+>
+>Am 28.04.22 um 09:57 schrieb Jedzej Jagielski:
+>> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+>> 
+>> Procedure of configure tc flower filters erroneously allow to create
+>
+>allow*s*
+>
+>> filters on TC0 where unfiltered packets are also directed by default.
+>> Issue was caused by insufficient checks of hw_tc parameter specify
+>
+>?   s/of/if/?
+>?   *is* caused
+>
+>> a hardware traffic class to pass matching packets on to.
+>
+>Please add a blank line between paragraphs.
+>
+>> Fix checking hw_tc parameter which blocks creation of filters on TC0.
+>> Previously it was possible to create tc flower filters on TC0.
+>
+>The last sentence is redundant when reading the whole commit message.
 
-* VIRTCHNL_OP_ENABLE_QUEUES configures the queue interrupts
+Sure, the commit msg will modified.
+>
+>> 
+>> Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
+>> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+>> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+>> ---
+>>   drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
+>>   1 file changed, 5 insertions(+)
+>> 
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> index 1e074a6462d4..a0d5d696cdc1 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> @@ -8537,6 +8537,11 @@ static int i40e_configure_clsflower(struct i40e_vsi *vsi,
+>>   		return -EOPNOTSUPP;
+>>   	}
+>>   
+>> +	if (!tc) {
+>> +		dev_err(&pf->pdev->dev, "Unable to add filter because of invalid destination");
+>> +		return -EINVAL;
+>
+>How can an invalid destination be passed at all? Should that be WARN_ON 
+>to debug this?
 
-* VIRTCHNL_OP_DISABLE_QUEUES disables the queue interrupts and Tx rings.
+The invalid destination is meant as TC0, which can be passed to
+i40e_configure_clsflower(). So this is basically verification 
+of the passed value. I don't see the need to add WARN_ON if there 
+is already dev_err().
+>
+>> +	}
+>> +
+>>   	if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
+>>   	    test_bit(__I40E_RESET_INTR_RECEIVED, pf->state))
+>>   		return -EBUSY;
+>
+Thanks for your suggestions,
 
-There is a bug in the iAVF driver due to the race condition between VF reset
-request and shutdown being executed in parallel. This leads to a break in
-logic and VIRTCHNL_OP_DISABLE_QUEUES is not being sent.
+Best regards,
+Jedrzej
 
-If this occurs, the PF driver never cleans up the Tx queues. This results in
-leaving behind stale Tx queue settings in the hardware and firmware.
 
-The most obvious outcome is that upon the next
-VIRTCHNL_OP_CONFIG_VSI_QUEUES, the PF will fail to program the Tx
-scheduler node due to a lack of space.
+-----Original Message-----
+From: Paul Menzel <pmenzel@molgen.mpg.de> 
+Sent: czwartek, 28 kwietnia 2022 10:17
+To: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org; Szczurek, GrzegorzX <grzegorzx.szczurek@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH net v1] i40e: Fix adding ADq filter to TC0
 
-We need to protect ICE driver against such situation.
+Dear Jedzej, dear Grzegorz,
 
-To fix this, make sure we clear existing stale settings out when
-handling VIRTCHNL_OP_CONFIG_VSI_QUEUES. This ensures we remove the
-previous settings.
 
-Calling ice_vf_vsi_dis_single_txq should be safe as it will do nothing if the
-queue is not configured. The function already handles the case when the
-Tx queue is not currently configured and exits with a 0 return in that case.
+Thank you for your patch.
 
-Fixes: 7ad15440acf8 ("ice: Refactor VIRTCHNL_OP_CONFIG_VSI_QUEUES handling")
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 68 ++++++++++++++-----
- 1 file changed, 50 insertions(+), 18 deletions(-)
+Am 28.04.22 um 09:57 schrieb Jedzej Jagielski:
+> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> 
+> Procedure of configure tc flower filters erroneously allow to create
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 69ff4b929772..e1982940150a 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -1307,13 +1307,52 @@ static int ice_vc_ena_qs_msg(struct ice_vf *vf, u8 *msg)
- 				     NULL, 0);
- }
- 
-+/**
-+ * ice_vf_vsi_dis_single_txq - disable a single Tx queue
-+ * @vf: VF to disable queue for
-+ * @vsi: VSI for the VF
-+ * @q_id: VF relative (0-based) queue ID
-+ *
-+ * Attempt to disable the Tx queue passed in. If the Tx queue was successfully
-+ * disabled then clear q_id bit in the enabled queues bitmap and return
-+ * success. Otherwise return error.
-+ */
-+static int
-+ice_vf_vsi_dis_single_txq(struct ice_vf *vf, struct ice_vsi *vsi, u16 q_id)
-+{
-+	struct ice_txq_meta txq_meta = { 0 };
-+	struct ice_tx_ring *ring;
-+	int err;
-+
-+	if (!test_bit(q_id, vf->txq_ena))
-+		dev_dbg(ice_pf_to_dev(vsi->back), "Queue %u on VSI %u is not enabled, but stopping it anyway\n",
-+			q_id, vsi->vsi_num);
-+
-+	ring = vsi->tx_rings[q_id];
-+	if (!ring)
-+		return -EINVAL;
-+
-+	ice_fill_txq_meta(vsi, ring, &txq_meta);
-+
-+	err = ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, vf->vf_id, ring, &txq_meta);
-+	if (err) {
-+		dev_err(ice_pf_to_dev(vsi->back), "Failed to stop Tx ring %d on VSI %d\n",
-+			q_id, vsi->vsi_num);
-+		return err;
-+	}
-+
-+	/* Clear enabled queues flag */
-+	clear_bit(q_id, vf->txq_ena);
-+
-+	return 0;
-+}
-+
- /**
-  * ice_vc_dis_qs_msg
-  * @vf: pointer to the VF info
-  * @msg: pointer to the msg buffer
-  *
-- * called from the VF to disable all or specific
-- * queue(s)
-+ * called from the VF to disable all or specific queue(s)
-  */
- static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- {
-@@ -1350,30 +1389,15 @@ static int ice_vc_dis_qs_msg(struct ice_vf *vf, u8 *msg)
- 		q_map = vqs->tx_queues;
- 
- 		for_each_set_bit(vf_q_id, &q_map, ICE_MAX_RSS_QS_PER_VF) {
--			struct ice_tx_ring *ring = vsi->tx_rings[vf_q_id];
--			struct ice_txq_meta txq_meta = { 0 };
--
- 			if (!ice_vc_isvalid_q_id(vf, vqs->vsi_id, vf_q_id)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 				goto error_param;
- 			}
- 
--			if (!test_bit(vf_q_id, vf->txq_ena))
--				dev_dbg(ice_pf_to_dev(vsi->back), "Queue %u on VSI %u is not enabled, but stopping it anyway\n",
--					vf_q_id, vsi->vsi_num);
--
--			ice_fill_txq_meta(vsi, ring, &txq_meta);
--
--			if (ice_vsi_stop_tx_ring(vsi, ICE_NO_RESET, vf->vf_id,
--						 ring, &txq_meta)) {
--				dev_err(ice_pf_to_dev(vsi->back), "Failed to stop Tx ring %d on VSI %d\n",
--					vf_q_id, vsi->vsi_num);
-+			if (ice_vf_vsi_dis_single_txq(vf, vsi, vf_q_id)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 				goto error_param;
- 			}
--
--			/* Clear enabled queues flag */
--			clear_bit(vf_q_id, vf->txq_ena);
- 		}
- 	}
- 
-@@ -1622,6 +1646,14 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		if (qpi->txq.ring_len > 0) {
- 			vsi->tx_rings[i]->dma = qpi->txq.dma_ring_addr;
- 			vsi->tx_rings[i]->count = qpi->txq.ring_len;
-+
-+			/* Disable any existing queue first */
-+			if (ice_vf_vsi_dis_single_txq(vf, vsi, q_idx)) {
-+				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+				goto error_param;
-+			}
-+
-+			/* Configure a queue with the requested settings */
- 			if (ice_vsi_cfg_single_txq(vsi, vsi->tx_rings, q_idx)) {
- 				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 				goto error_param;
--- 
-2.25.1
+allow*s*
 
+> filters on TC0 where unfiltered packets are also directed by default.
+> Issue was caused by insufficient checks of hw_tc parameter specify
+
+?   s/of/if/?
+?   *is* caused
+
+> a hardware traffic class to pass matching packets on to.
+
+Please add a blank line between paragraphs.
+
+> Fix checking hw_tc parameter which blocks creation of filters on TC0.
+> Previously it was possible to create tc flower filters on TC0.
+
+The last sentence is redundant when reading the whole commit message.
+
+> 
+> Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
+>   1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 1e074a6462d4..a0d5d696cdc1 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -8537,6 +8537,11 @@ static int i40e_configure_clsflower(struct i40e_vsi *vsi,
+>   		return -EOPNOTSUPP;
+>   	}
+>   
+> +	if (!tc) {
+> +		dev_err(&pf->pdev->dev, "Unable to add filter because of invalid destination");
+> +		return -EINVAL;
+
+How can an invalid destination be passed at all? Should that be WARN_ON 
+to debug this?
+
+> +	}
+> +
+>   	if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
+>   	    test_bit(__I40E_RESET_INTR_RECEIVED, pf->state))
+>   		return -EBUSY;
+
+
+Kind regards,
+
+Paul
