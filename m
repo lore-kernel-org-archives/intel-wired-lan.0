@@ -1,67 +1,151 @@
 From: Karol Kolacinski <karol.kolacinski@intel.com>
-Date: Fri, 29 Apr 2022 12:21:43 +0200
-Subject: [Intel-wired-lan] [PATCH v4 intel-next 1/3] ice: remove u16
- arithmetic in ice_gnss
-Message-ID: <20220429102145.74764-1-karol.kolacinski@intel.com>
+Date: Fri, 29 Apr 2022 12:21:44 +0200
+Subject: [Intel-wired-lan] [PATCH v4 intel-next 2/3] ice: add i2c write
+ command
+In-Reply-To: <20220429102145.74764-1-karol.kolacinski@intel.com>
+References: <20220429102145.74764-1-karol.kolacinski@intel.com>
+Message-ID: <20220429102145.74764-2-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Change u16 to u32 where arithmetic occurres.
+Add the possibility to write to connected i2c devices using the AQ
+command. FW may reject the write if the device is not on allowlist.
 
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
-V3 -> V4: Add one missed line
-V2 -> V3: Add previously removed err variable
-V1 -> V2: Use more native types
+V2 -> V4: No changes
+V1 -> V2: Added return values description and used FIELD_GET
 
- drivers/net/ethernet/intel/ice/ice_gnss.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  7 +--
+ drivers/net/ethernet/intel/ice/ice_common.c   | 51 ++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_common.h   |  4 ++
+ 3 files changed, 58 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
-index 57586a2e6dec..c6d755f707aa 100644
---- a/drivers/net/ethernet/intel/ice/ice_gnss.c
-+++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
-@@ -17,13 +17,13 @@ static void ice_gnss_read(struct kthread_work *work)
- 	struct gnss_serial *gnss = container_of(work, struct gnss_serial,
- 						read_work.work);
- 	struct ice_aqc_link_topo_addr link_topo;
--	u8 i2c_params, bytes_read;
-+	unsigned int i, bytes_read, data_len;
- 	struct tty_port *port;
- 	struct ice_pf *pf;
- 	struct ice_hw *hw;
- 	__be16 data_len_b;
- 	char *buf = NULL;
--	u16 i, data_len;
-+	u8 i2c_params;
- 	int err = 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index b25e27c4d887..bedc19f12cbd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1401,7 +1401,7 @@ struct ice_aqc_get_link_topo {
+ 	u8 rsvd[9];
+ };
  
- 	pf = gnss->back;
-@@ -65,7 +65,7 @@ static void ice_gnss_read(struct kthread_work *work)
- 		mdelay(10);
- 	}
+-/* Read I2C (direct, 0x06E2) */
++/* Read/Write I2C (direct, 0x06E2/0x06E3) */
+ struct ice_aqc_i2c {
+ 	struct ice_aqc_link_topo_addr topo_addr;
+ 	__le16 i2c_addr;
+@@ -1411,7 +1411,7 @@ struct ice_aqc_i2c {
  
--	data_len = min(data_len, (u16)PAGE_SIZE);
-+	data_len = min_t(typeof(data_len), data_len, PAGE_SIZE);
- 	data_len = tty_buffer_request_room(port, data_len);
- 	if (!data_len) {
- 		err = -ENOMEM;
-@@ -74,9 +74,10 @@ static void ice_gnss_read(struct kthread_work *work)
+ 	u8 rsvd;
+ 	__le16 i2c_bus_addr;
+-	u8 rsvd2[4];
++	u8 i2c_data[4]; /* Used only by write command, reserved in read. */
+ };
  
- 	/* Read received data */
- 	for (i = 0; i < data_len; i += bytes_read) {
--		u16 bytes_left = data_len - i;
-+		unsigned int bytes_left = data_len - i;
+ /* Read I2C Response (direct, 0x06E2) */
+@@ -2130,7 +2130,7 @@ struct ice_aq_desc {
+ 		struct ice_aqc_get_link_status get_link_status;
+ 		struct ice_aqc_event_lan_overflow lan_overflow;
+ 		struct ice_aqc_get_link_topo get_link_topo;
+-		struct ice_aqc_i2c read_i2c;
++		struct ice_aqc_i2c read_write_i2c;
+ 		struct ice_aqc_read_i2c_resp read_i2c_resp;
+ 	} params;
+ };
+@@ -2247,6 +2247,7 @@ enum ice_adminq_opc {
+ 	ice_aqc_opc_set_mac_lb				= 0x0620,
+ 	ice_aqc_opc_get_link_topo			= 0x06E0,
+ 	ice_aqc_opc_read_i2c				= 0x06E2,
++	ice_aqc_opc_write_i2c				= 0x06E3,
+ 	ice_aqc_opc_set_port_id_led			= 0x06E9,
+ 	ice_aqc_opc_set_gpio				= 0x06EC,
+ 	ice_aqc_opc_get_gpio				= 0x06ED,
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 9619bdb9e49a..1999c19a786e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -4823,7 +4823,7 @@ ice_aq_read_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
+ 	int status;
  
--		bytes_read = min_t(typeof(bytes_left), bytes_left, ICE_MAX_I2C_DATA_SIZE);
-+		bytes_read = min_t(typeof(bytes_left), bytes_left,
-+				   ICE_MAX_I2C_DATA_SIZE);
+ 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_read_i2c);
+-	cmd = &desc.params.read_i2c;
++	cmd = &desc.params.read_write_i2c;
  
- 		err = ice_aq_read_i2c(hw, link_topo, ICE_GNSS_UBX_I2C_BUS_ADDR,
- 				      cpu_to_le16(ICE_GNSS_UBX_EMPTY_DATA),
+ 	if (!data)
+ 		return -EINVAL;
+@@ -4850,6 +4850,55 @@ ice_aq_read_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
+ 	return status;
+ }
+ 
++/**
++ * ice_aq_write_i2c
++ * @hw: pointer to the hw struct
++ * @topo_addr: topology address for a device to communicate with
++ * @bus_addr: 7-bit I2C bus address
++ * @addr: I2C memory address (I2C offset) with up to 16 bits
++ * @params: I2C parameters: bit [4] - I2C address type, bits [3:0] - data size to write (0-7 bytes)
++ * @data: pointer to data (0 to 4 bytes) to be written to the I2C device
++ * @cd: pointer to command details structure or NULL
++ *
++ * Write I2C (0x06E3)
++ *
++ * * Return:
++ * * 0             - Successful write to the i2c device
++ * * -EINVAL       - Data size greater than 4 bytes
++ * * -EIO          - FW error
++ */
++int
++ice_aq_write_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
++		 u16 bus_addr, __le16 addr, u8 params, u8 *data,
++		 struct ice_sq_cd *cd)
++{
++	struct ice_aq_desc desc = { 0 };
++	struct ice_aqc_i2c *cmd;
++	unsigned int i;
++	u8 data_size;
++
++	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_write_i2c);
++	cmd = &desc.params.read_write_i2c;
++
++	data_size = FIELD_GET(ICE_AQC_I2C_DATA_SIZE_M, params);
++
++	/* data_size limited to 4 */
++	if (data_size > 4)
++		return -EINVAL;
++
++	cmd->i2c_bus_addr = cpu_to_le16(bus_addr);
++	cmd->topo_addr = topo_addr;
++	cmd->i2c_params = params;
++	cmd->i2c_addr = addr;
++
++	for (i = 0; i < data_size; i++) {
++		cmd->i2c_data[i] = *data;
++		data++;
++	}
++
++	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++}
++
+ /**
+  * ice_aq_set_driver_param - Set driver parameter to share via firmware
+  * @hw: pointer to the HW struct
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
+index 872ea7d2332d..61b7c60db689 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.h
++++ b/drivers/net/ethernet/intel/ice/ice_common.h
+@@ -214,5 +214,9 @@ int
+ ice_aq_read_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
+ 		u16 bus_addr, __le16 addr, u8 params, u8 *data,
+ 		struct ice_sq_cd *cd);
++int
++ice_aq_write_i2c(struct ice_hw *hw, struct ice_aqc_link_topo_addr topo_addr,
++		 u16 bus_addr, __le16 addr, u8 params, u8 *data,
++		 struct ice_sq_cd *cd);
+ bool ice_fw_supports_report_dflt_cfg(struct ice_hw *hw);
+ #endif /* _ICE_COMMON_H_ */
 -- 
 2.34.1
 
