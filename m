@@ -1,51 +1,67 @@
-From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
-Date: Fri, 29 Apr 2022 08:35:10 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3] iavf: Add waiting for
- response from PF in set mac
-In-Reply-To: <20220415085009.2117-1-mateusz.palczewski@intel.com>
-References: <20220415085009.2117-1-mateusz.palczewski@intel.com>
-Message-ID: <DM8PR11MB5621D6489B620B1638544B66ABFC9@DM8PR11MB5621.namprd11.prod.outlook.com>
+From: Karol Kolacinski <karol.kolacinski@intel.com>
+Date: Fri, 29 Apr 2022 12:21:43 +0200
+Subject: [Intel-wired-lan] [PATCH v4 intel-next 1/3] ice: remove u16
+ arithmetic in ice_gnss
+Message-ID: <20220429102145.74764-1-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Change u16 to u32 where arithmetic occurres.
 
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+---
+V3 -> V4: Add one missed line
+V2 -> V3: Add previously removed err variable
+V1 -> V2: Use more native types
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Mateusz Palczewski
-> Sent: Friday, April 15, 2022 10:50 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Palczewski, Mateusz <mateusz.palczewski@intel.com>; Sylwester
-> Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net-next v3] iavf: Add waiting for response
-> from PF in set mac
-> 
-> Make iavf_set_mac synchronous by waiting for a response from a PF.
-> Without this iavf_set_mac is always returning success even though set_mac
-> can be rejected by a PF.
-> This ensures that when set_mac exits netdev MAC is updated.
-> This is needed for sending ARPs with correct MAC after changing VF's MAC.
-> This is also needed by bonding module.
-> 
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-> ---
->  v3: Resent the patch to apply to next-queue
->  v2: Changed __IAVF_IN_CRITICAL_TASK to crit_lock
-> ---
->  drivers/net/ethernet/intel/iavf/iavf.h        |   7 +-
->  drivers/net/ethernet/intel/iavf/iavf_main.c   | 123 +++++++++++++++---
->  .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  61 ++++++++-
->  3 files changed, 170 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
-> b/drivers/net/ethernet/intel/iavf/iavf.h
-> index 49aed3e..fda1198 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf.h
-> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
-> @@ -146,7 +146,8 @@ struct iavf_mac_filter {
+ drivers/net/ethernet/intel/ice/ice_gnss.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
+index 57586a2e6dec..c6d755f707aa 100644
+--- a/drivers/net/ethernet/intel/ice/ice_gnss.c
++++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
+@@ -17,13 +17,13 @@ static void ice_gnss_read(struct kthread_work *work)
+ 	struct gnss_serial *gnss = container_of(work, struct gnss_serial,
+ 						read_work.work);
+ 	struct ice_aqc_link_topo_addr link_topo;
+-	u8 i2c_params, bytes_read;
++	unsigned int i, bytes_read, data_len;
+ 	struct tty_port *port;
+ 	struct ice_pf *pf;
+ 	struct ice_hw *hw;
+ 	__be16 data_len_b;
+ 	char *buf = NULL;
+-	u16 i, data_len;
++	u8 i2c_params;
+ 	int err = 0;
+ 
+ 	pf = gnss->back;
+@@ -65,7 +65,7 @@ static void ice_gnss_read(struct kthread_work *work)
+ 		mdelay(10);
+ 	}
+ 
+-	data_len = min(data_len, (u16)PAGE_SIZE);
++	data_len = min_t(typeof(data_len), data_len, PAGE_SIZE);
+ 	data_len = tty_buffer_request_room(port, data_len);
+ 	if (!data_len) {
+ 		err = -ENOMEM;
+@@ -74,9 +74,10 @@ static void ice_gnss_read(struct kthread_work *work)
+ 
+ 	/* Read received data */
+ 	for (i = 0; i < data_len; i += bytes_read) {
+-		u16 bytes_left = data_len - i;
++		unsigned int bytes_left = data_len - i;
+ 
+-		bytes_read = min_t(typeof(bytes_left), bytes_left, ICE_MAX_I2C_DATA_SIZE);
++		bytes_read = min_t(typeof(bytes_left), bytes_left,
++				   ICE_MAX_I2C_DATA_SIZE);
+ 
+ 		err = ice_aq_read_i2c(hw, link_topo, ICE_GNSS_UBX_I2C_BUS_ADDR,
+ 				      cpu_to_le16(ICE_GNSS_UBX_EMPTY_DATA),
+-- 
+2.34.1
+
