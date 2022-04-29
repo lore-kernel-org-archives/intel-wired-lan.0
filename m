@@ -1,7 +1,8 @@
 From: Jedzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Fri, 29 Apr 2022 14:27:08 +0200
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix adding ADq filter to TC0
-Message-ID: <20220429122708.978369-1-jedrzej.jagielski@intel.com>
+Date: Fri, 29 Apr 2022 14:40:23 +0200
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix calculating the number
+ of queue pairs
+Message-ID: <20220429124023.979010-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,38 +11,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
 
-Procedure of configure tc flower filters erroneously allows to create
-filters on TC0 where unfiltered packets are also directed by default.
-Issue was caused by insufficient checks of hw_tc parameter specifying
-the hardware traffic class to pass matching packets to.
+If ADq is enabled for a VF, then actual number of queue pair
+is a number of currently available traffic classes for this VF.
 
-Fix checking hw_tc parameter which blocks creation of filters on TC0.
+Without this change the configuration of the rx/tx queues
+fails with error.
 
-Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
+Fixes: d29e0d233e0d ("i40e: missing input validation on VF message handling by the PF")
 Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
 Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 ---
-v2: fix commit msg
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1e074a6462d4..a0d5d696cdc1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8537,6 +8537,11 @@ static int i40e_configure_clsflower(struct i40e_vsi *vsi,
- 		return -EOPNOTSUPP;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 2606e8f0f19b..033ea71763e3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2282,7 +2282,7 @@ static int i40e_vc_config_queues_msg(struct i40e_vf *vf, u8 *msg)
  	}
  
-+	if (!tc) {
-+		dev_err(&pf->pdev->dev, "Unable to add filter because of invalid destination");
-+		return -EINVAL;
-+	}
-+
- 	if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
- 	    test_bit(__I40E_RESET_INTR_RECEIVED, pf->state))
- 		return -EBUSY;
+ 	if (vf->adq_enabled) {
+-		for (i = 0; i < I40E_MAX_VF_VSI; i++)
++		for (i = 0; i < vf->num_tc; i++)
+ 			num_qps_all += vf->ch[i].num_qps;
+ 		if (num_qps_all != qci->num_queue_pairs) {
+ 			aq_ret = I40E_ERR_PARAM;
 -- 
 2.27.0
 
