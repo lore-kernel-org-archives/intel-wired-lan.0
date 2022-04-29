@@ -1,167 +1,47 @@
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-Date: Fri, 29 Apr 2022 13:32:13 +0200
-Subject: [Intel-wired-lan] [PATCH] ice: wait for EMP reset after
- firmware flash #forregzbot
-In-Reply-To: <bc534155-e5bc-b9d2-24b4-e7559a7c5fb5@molgen.mpg.de>
-References: <20220412102753.670867-1-poros@redhat.com>
- <bc534155-e5bc-b9d2-24b4-e7559a7c5fb5@molgen.mpg.de>
-Message-ID: <34bc7a39-b7e6-55a8-38d9-4a49c34d1797@leemhuis.info>
+From: Jedzej Jagielski <jedrzej.jagielski@intel.com>
+Date: Fri, 29 Apr 2022 14:27:08 +0200
+Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix adding ADq filter to TC0
+Message-ID: <20220429122708.978369-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-TWIMC: this mail is primarily send for documentation purposes and for
-regzbot, my Linux kernel regression tracking bot. These mails usually
-contain '#forregzbot' in the subject, to make them easy to spot and filter.
+From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
 
-#regzbot fixed-by: b537752e6cbf0e
+Procedure of configure tc flower filters erroneously allows to create
+filters on TC0 where unfiltered packets are also directed by default.
+Issue was caused by insufficient checks of hw_tc parameter specifying
+the hardware traffic class to pass matching packets to.
 
-On 12.04.22 15:28, Paul Menzel wrote:
-> [Cc: +Jakob, +regressions at lists.linux.dev]
-> 
-> 
-> Dear Petr,
-> 
-> 
-> Thank you for your patch for the regression.
-> 
-> #regzbot ^introduced 399e27dbbd9e94
-> 
-> 
-> Am 12.04.22 um 12:27 schrieb Petr Oros:
-> 
-> Please mention the time in the commit message summary:
-> 
-> ice: Wait 5 s for EMP reset after firmware flash
-> 
->> We need to wait for EMP reset after firmware flash.
->> Code was extracted from OOT driver and without this wait fw_activate let
-> 
-> Which OOT driver exactly?
-> 
->> card in inconsistent state recoverable only by second flash/activate
-> 
-> Please reflow for 75 characters per line, and add a dot/period to the
-> end of sentences.
-> 
->> Reproducer:
->> [root at host ~]# devlink dev flash pci/0000:ca:00.0 file
->> E810_XXVDA4_FH_O_SEC_FW_1p6p1p9_NVM_3p10_PLDMoMCTP_0.11_8000AD7B.bin
->> Preparing to flash
->> [fw.mgmt] Erasing
->> [fw.mgmt] Erasing done
->> [fw.mgmt] Flashing 100%
->> [fw.mgmt] Flashing done 100%
->> [fw.undi] Erasing
->> [fw.undi] Erasing done
->> [fw.undi] Flashing 100%
->> [fw.undi] Flashing done 100%
->> [fw.netlist] Erasing
->> [fw.netlist] Erasing done
->> [fw.netlist] Flashing 100%
->> [fw.netlist] Flashing done 100%
->> Activate new firmware by devlink reload
->> [root at host ~]# devlink dev reload pci/0000:ca:00.0 action fw_activate
->> reload_actions_performed:
->> ???? fw_activate
->> [root at host ~]# ip link show ens7f0
->> 71: ens7f0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq
->> state DOWN mode DEFAULT group default qlen 1000
->> ???? link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
->> ???? altname enp202s0f0
->>
->> dmesg after flash:
->> [?? 55.120788] ice: Copyright (c) 2018, Intel Corporation.
->> [?? 55.274734] ice 0000:ca:00.0: Get PHY capabilities failed status =
->> -5, continuing anyway
->> [?? 55.569797] ice 0000:ca:00.0: The DDP package was successfully
->> loaded: ICE OS Default Package version 1.3.28.0
->> [?? 55.603629] ice 0000:ca:00.0: Get PHY capability failed.
->> [?? 55.608951] ice 0000:ca:00.0: ice_init_nvm_phy_type failed: -5
->> [?? 55.647348] ice 0000:ca:00.0: PTP init successful
->> [?? 55.675536] ice 0000:ca:00.0: DCB is enabled in the hardware, max
->> number of TCs supported on this port are 8
->> [?? 55.685365] ice 0000:ca:00.0: FW LLDP is disabled, DCBx/LLDP in SW
->> mode.
->> [?? 55.692179] ice 0000:ca:00.0: Commit DCB Configuration to the hardware
->> [?? 55.701382] ice 0000:ca:00.0: 126.024 Gb/s available PCIe
->> bandwidth, limited by 16.0 GT/s PCIe x8 link at 0000:c9:02.0 (capable
->> of 252.048 Gb/s with 16.0 GT/s PCIe x16 link)
-> 
-> So, what is the error? `Get PHY capabilities failed status = -5`?
-> 
-> What firmware version did the network card have before and after the
-> update?
-> 
->> Reboot don't help, only second flash/activate with OOT or patched
->> driver put card back in consistent state
-> 
-> s/don't/doesn?t/
-> 
->> After patch:
->> [root at host ~]# devlink dev flash pci/0000:ca:00.0 file
->> E810_XXVDA4_FH_O_SEC_FW_1p6p1p9_NVM_3p10_PLDMoMCTP_0.11_8000AD7B.bin
->> Preparing to flash
->> [fw.mgmt] Erasing
->> [fw.mgmt] Erasing done
->> [fw.mgmt] Flashing 100%
->> [fw.mgmt] Flashing done 100%
->> [fw.undi] Erasing
->> [fw.undi] Erasing done
->> [fw.undi] Flashing 100%
->> [fw.undi] Flashing done 100%
->> [fw.netlist] Erasing
->> [fw.netlist] Erasing done
->> [fw.netlist] Flashing 100%
->> [fw.netlist] Flashing done 100%
->> Activate new firmware by devlink reload
->> [root at host ~]# devlink dev reload pci/0000:ca:00.0 action fw_activate
->> reload_actions_performed:
->> ???? fw_activate
->> [root at host ~]# ip link show ens7f0
->> 19: ens7f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state
->> UP mode DEFAULT group default qlen 1000
->> ???? link/ether b4:96:91:dc:72:e0 brd ff:ff:ff:ff:ff:ff
->> ???? altname enp202s0f0
-> 
-> Did you try anything less than five seconds? i40e uses one second, cf.
-> commit 9b13bd53134c (i40e: Increase delay to 1 s after global EMP reset).
-> 
->> Fixes: 399e27dbbd9e94 ("ice: support immediate firmware activation via
->> devlink reload")
->> Signed-off-by: Petr Oros <poros@redhat.com>
->> ---
->> ? drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
->> ? 1 file changed, 3 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c
->> b/drivers/net/ethernet/intel/ice/ice_main.c
->> index d768925785ca79..90ea2203cdc763 100644
->> --- a/drivers/net/ethernet/intel/ice/ice_main.c
->> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
->> @@ -6931,12 +6931,15 @@ static void ice_rebuild(struct ice_pf *pf,
->> enum ice_reset_req reset_type)
->> ? ????? dev_dbg(dev, "rebuilding PF after reset_type=%d\n", reset_type);
->> ? +#define ICE_EMP_RESET_SLEEP 5000
-> 
-> Please append the unit to the macro name.
-> 
->> ????? if (reset_type == ICE_RESET_EMPR) {
->> ????????? /* If an EMP reset has occurred, any previously pending flash
->> ?????????? * update will have completed. We no longer know whether or
->> ?????????? * not the NVM update EMP reset is restricted.
->> ?????????? */
->> ????????? pf->fw_emp_reset_disabled = false;
->> +
->> +??????? msleep(ICE_EMP_RESET_SLEEP);
->> ????? }
->> ? ????? err = ice_init_all_ctrlq(hw);
-> 
-> 
-> Kind regards,
-> 
-> Paul
-> 
-> 
+Fix checking hw_tc parameter which blocks creation of filters on TC0.
+
+Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
+Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+---
+v2: fix commit msg
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 1e074a6462d4..a0d5d696cdc1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8537,6 +8537,11 @@ static int i40e_configure_clsflower(struct i40e_vsi *vsi,
+ 		return -EOPNOTSUPP;
+ 	}
+ 
++	if (!tc) {
++		dev_err(&pf->pdev->dev, "Unable to add filter because of invalid destination");
++		return -EINVAL;
++	}
++
+ 	if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
+ 	    test_bit(__I40E_RESET_INTR_RECEIVED, pf->state))
+ 		return -EBUSY;
+-- 
+2.27.0
+
