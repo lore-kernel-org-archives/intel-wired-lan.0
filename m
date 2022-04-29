@@ -1,145 +1,230 @@
-From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
-Date: Fri, 29 Apr 2022 14:49:07 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v5 2/2] net: vxlan: Add extack
- support to vxlan_fdb_delete
-In-Reply-To: <cover.1651236081.git.eng.alaamohamedsoliman.am@gmail.com>
-References: <cover.1651236081.git.eng.alaamohamedsoliman.am@gmail.com>
-Message-ID: <7abd2d1abb8abd3080356b8e031b1b100b80f1ed.1651236082.git.eng.alaamohamedsoliman.am@gmail.com>
+From: Niklas Schnelle <schnelle@linux.ibm.com>
+Date: Fri, 29 Apr 2022 15:50:32 +0200
+Subject: [Intel-wired-lan] [PATCH 20/37] net: add HAS_IOPORT dependencies
+In-Reply-To: <20220429135108.2781579-1-schnelle@linux.ibm.com>
+References: <20220429135108.2781579-1-schnelle@linux.ibm.com>
+Message-ID: <20220429135108.2781579-35-schnelle@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds extack msg support to vxlan_fdb_delete and vxlan_fdb_parse.
-extack is used to propagate meaningful error msgs to the user of vxlan
-fdb netlink api
+In a future patch HAS_IOPORT=n will result in inb()/outb() and friends
+not being declared. We thus need to add HAS_IOPORT as dependency for
+those drivers using them.
 
-Signed-off-by: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Co-developed-by: Arnd Bergmann <arnd@kernel.org>
+Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
 ---
-changes in V2:
-        - fix spelling vxlan_fdb_delete
-        - add missing braces
-        - edit error message
----
-changes in V3:
-        fix errors reported by checkpatch.pl
----
-changes in V4:
-        - fix errors reported by checkpatch.pl
-        - edit commit message.
----
-changes in V5:
-	- edit commit message
----
- drivers/net/vxlan/vxlan_core.c | 38 ++++++++++++++++++++++++----------
- 1 file changed, 27 insertions(+), 11 deletions(-)
+ drivers/net/Kconfig                | 2 +-
+ drivers/net/arcnet/Kconfig         | 2 +-
+ drivers/net/can/cc770/Kconfig      | 1 +
+ drivers/net/can/sja1000/Kconfig    | 1 +
+ drivers/net/ethernet/8390/Kconfig  | 2 +-
+ drivers/net/ethernet/amd/Kconfig   | 2 +-
+ drivers/net/ethernet/intel/Kconfig | 2 +-
+ drivers/net/ethernet/sis/Kconfig   | 4 ++--
+ drivers/net/ethernet/ti/Kconfig    | 2 +-
+ drivers/net/ethernet/via/Kconfig   | 1 +
+ drivers/net/fddi/Kconfig           | 2 +-
+ drivers/net/hamradio/Kconfig       | 6 +++---
+ drivers/net/wan/Kconfig            | 2 +-
+ 13 files changed, 16 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/vxlan/vxlan_core.c b/drivers/net/vxlan/vxlan_core.c
-index ad0f2150cfdb..429ce2168971 100644
---- a/drivers/net/vxlan/vxlan_core.c
-+++ b/drivers/net/vxlan/vxlan_core.c
-@@ -1129,19 +1129,25 @@ static void vxlan_fdb_dst_destroy(struct vxlan_dev *vxlan, struct vxlan_fdb *f,
-
- static int vxlan_fdb_parse(struct nlattr *tb[], struct vxlan_dev *vxlan,
- 			   union vxlan_addr *ip, __be16 *port, __be32 *src_vni,
--			   __be32 *vni, u32 *ifindex, u32 *nhid)
-+			   __be32 *vni, u32 *ifindex, u32 *nhid,
-+			   struct netlink_ext_ack *extack)
- {
- 	struct net *net = dev_net(vxlan->dev);
- 	int err;
-
- 	if (tb[NDA_NH_ID] && (tb[NDA_DST] || tb[NDA_VNI] || tb[NDA_IFINDEX] ||
--	    tb[NDA_PORT]))
--		return -EINVAL;
-+	    tb[NDA_PORT])) {
-+			NL_SET_ERR_MSG(extack,
-+						  "DST, VNI, ifindex and port are mutually exclusive with NH_ID");
-+			return -EINVAL;
-+		}
-
- 	if (tb[NDA_DST]) {
- 		err = vxlan_nla_get_addr(ip, tb[NDA_DST]);
--		if (err)
-+		if (err) {
-+			NL_SET_ERR_MSG(extack, "Unsupported address family");
- 			return err;
-+		}
- 	} else {
- 		union vxlan_addr *remote = &vxlan->default_dst.remote_ip;
-
-@@ -1157,24 +1163,30 @@ static int vxlan_fdb_parse(struct nlattr *tb[], struct vxlan_dev *vxlan,
- 	}
-
- 	if (tb[NDA_PORT]) {
--		if (nla_len(tb[NDA_PORT]) != sizeof(__be16))
-+		if (nla_len(tb[NDA_PORT]) != sizeof(__be16)) {
-+			NL_SET_ERR_MSG(extack, "Invalid vxlan port");
- 			return -EINVAL;
-+		}
- 		*port = nla_get_be16(tb[NDA_PORT]);
- 	} else {
- 		*port = vxlan->cfg.dst_port;
- 	}
-
- 	if (tb[NDA_VNI]) {
--		if (nla_len(tb[NDA_VNI]) != sizeof(u32))
-+		if (nla_len(tb[NDA_VNI]) != sizeof(u32)) {
-+			NL_SET_ERR_MSG(extack, "Invalid vni");
- 			return -EINVAL;
-+		}
- 		*vni = cpu_to_be32(nla_get_u32(tb[NDA_VNI]));
- 	} else {
- 		*vni = vxlan->default_dst.remote_vni;
- 	}
-
- 	if (tb[NDA_SRC_VNI]) {
--		if (nla_len(tb[NDA_SRC_VNI]) != sizeof(u32))
-+		if (nla_len(tb[NDA_SRC_VNI]) != sizeof(u32)) {
-+			NL_SET_ERR_MSG(extack, "Invalid src vni");
- 			return -EINVAL;
-+		}
- 		*src_vni = cpu_to_be32(nla_get_u32(tb[NDA_SRC_VNI]));
- 	} else {
- 		*src_vni = vxlan->default_dst.remote_vni;
-@@ -1183,12 +1195,16 @@ static int vxlan_fdb_parse(struct nlattr *tb[], struct vxlan_dev *vxlan,
- 	if (tb[NDA_IFINDEX]) {
- 		struct net_device *tdev;
-
--		if (nla_len(tb[NDA_IFINDEX]) != sizeof(u32))
-+		if (nla_len(tb[NDA_IFINDEX]) != sizeof(u32)) {
-+			NL_SET_ERR_MSG(extack, "Invalid ifindex");
- 			return -EINVAL;
-+		}
- 		*ifindex = nla_get_u32(tb[NDA_IFINDEX]);
- 		tdev = __dev_get_by_index(net, *ifindex);
--		if (!tdev)
-+		if (!tdev) {
-+			NL_SET_ERR_MSG(extack, "Device not found");
- 			return -EADDRNOTAVAIL;
-+		}
- 	} else {
- 		*ifindex = 0;
- 	}
-@@ -1226,7 +1242,7 @@ static int vxlan_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
- 		return -EINVAL;
-
- 	err = vxlan_fdb_parse(tb, vxlan, &ip, &port, &src_vni, &vni, &ifindex,
--			      &nhid);
-+			      &nhid, extack);
- 	if (err)
- 		return err;
-
-@@ -1292,7 +1308,7 @@ static int vxlan_fdb_delete(struct ndmsg *ndm, struct nlattr *tb[],
- 	int err;
-
- 	err = vxlan_fdb_parse(tb, vxlan, &ip, &port, &src_vni, &vni, &ifindex,
--			      &nhid);
-+			      &nhid, extack);
- 	if (err)
- 		return err;
-
---
-2.36.0
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index b2a4f998c180..0fd284103ee4 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -475,7 +475,7 @@ source "drivers/net/ipa/Kconfig"
+ 
+ config NET_SB1000
+ 	tristate "General Instruments Surfboard 1000"
+-	depends on PNP
++	depends on ISAPNP
+ 	help
+ 	  This is a driver for the General Instrument (also known as
+ 	  NextLevel) SURFboard 1000 internal
+diff --git a/drivers/net/arcnet/Kconfig b/drivers/net/arcnet/Kconfig
+index a51b9dab6d3a..d1d07a1d4fbc 100644
+--- a/drivers/net/arcnet/Kconfig
++++ b/drivers/net/arcnet/Kconfig
+@@ -4,7 +4,7 @@
+ #
+ 
+ menuconfig ARCNET
+-	depends on NETDEVICES && (ISA || PCI || PCMCIA)
++	depends on NETDEVICES && (ISA || PCI || PCMCIA) && HAS_IOPORT
+ 	tristate "ARCnet support"
+ 	help
+ 	  If you have a network card of this type, say Y and check out the
+diff --git a/drivers/net/can/cc770/Kconfig b/drivers/net/can/cc770/Kconfig
+index 9ef1359319f0..467ef19de1c1 100644
+--- a/drivers/net/can/cc770/Kconfig
++++ b/drivers/net/can/cc770/Kconfig
+@@ -7,6 +7,7 @@ if CAN_CC770
+ 
+ config CAN_CC770_ISA
+ 	tristate "ISA Bus based legacy CC770 driver"
++	depends on ISA
+ 	help
+ 	  This driver adds legacy support for CC770 and AN82527 chips
+ 	  connected to the ISA bus using I/O port, memory mapped or
+diff --git a/drivers/net/can/sja1000/Kconfig b/drivers/net/can/sja1000/Kconfig
+index 110071b26921..be1943a27ed0 100644
+--- a/drivers/net/can/sja1000/Kconfig
++++ b/drivers/net/can/sja1000/Kconfig
+@@ -87,6 +87,7 @@ config CAN_PLX_PCI
+ 
+ config CAN_SJA1000_ISA
+ 	tristate "ISA Bus based legacy SJA1000 driver"
++	depends on ISA
+ 	help
+ 	  This driver adds legacy support for SJA1000 chips connected to
+ 	  the ISA bus using I/O port, memory mapped or indirect access.
+diff --git a/drivers/net/ethernet/8390/Kconfig b/drivers/net/ethernet/8390/Kconfig
+index a4130e643342..3e727407d8f5 100644
+--- a/drivers/net/ethernet/8390/Kconfig
++++ b/drivers/net/ethernet/8390/Kconfig
+@@ -117,7 +117,7 @@ config NE2000
+ 
+ config NE2K_PCI
+ 	tristate "PCI NE2000 and clones support (see help)"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	select CRC32
+ 	help
+ 	  This driver is for NE2000 compatible PCI cards. It will not work
+diff --git a/drivers/net/ethernet/amd/Kconfig b/drivers/net/ethernet/amd/Kconfig
+index 899c8a2a34b6..019810eeb68d 100644
+--- a/drivers/net/ethernet/amd/Kconfig
++++ b/drivers/net/ethernet/amd/Kconfig
+@@ -56,7 +56,7 @@ config LANCE
+ 
+ config PCNET32
+ 	tristate "AMD PCnet32 PCI support"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	select CRC32
+ 	select MII
+ 	help
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 3facb55b7161..6bdce8eb689d 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -41,7 +41,7 @@ config E100
+ 
+ config E1000
+ 	tristate "Intel(R) PRO/1000 Gigabit Ethernet support"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	help
+ 	  This driver supports Intel(R) PRO/1000 gigabit ethernet family of
+ 	  adapters.  For more information on how to identify your adapter, go
+diff --git a/drivers/net/ethernet/sis/Kconfig b/drivers/net/ethernet/sis/Kconfig
+index 775d76d9890e..7e498bdbca73 100644
+--- a/drivers/net/ethernet/sis/Kconfig
++++ b/drivers/net/ethernet/sis/Kconfig
+@@ -19,7 +19,7 @@ if NET_VENDOR_SIS
+ 
+ config SIS900
+ 	tristate "SiS 900/7016 PCI Fast Ethernet Adapter support"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	select CRC32
+ 	select MII
+ 	help
+@@ -35,7 +35,7 @@ config SIS900
+ 
+ config SIS190
+ 	tristate "SiS190/SiS191 gigabit ethernet support"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	select CRC32
+ 	select MII
+ 	help
+diff --git a/drivers/net/ethernet/ti/Kconfig b/drivers/net/ethernet/ti/Kconfig
+index affcf92cd3aa..b5cc714adda4 100644
+--- a/drivers/net/ethernet/ti/Kconfig
++++ b/drivers/net/ethernet/ti/Kconfig
+@@ -159,7 +159,7 @@ config TI_KEYSTONE_NETCP_ETHSS
+ 
+ config TLAN
+ 	tristate "TI ThunderLAN support"
+-	depends on (PCI || EISA)
++	depends on (PCI || EISA) && HAS_IOPORT
+ 	help
+ 	  If you have a PCI Ethernet network card based on the ThunderLAN chip
+ 	  which is supported by this driver, say Y here.
+diff --git a/drivers/net/ethernet/via/Kconfig b/drivers/net/ethernet/via/Kconfig
+index da287ef65be7..00773f5e4d7e 100644
+--- a/drivers/net/ethernet/via/Kconfig
++++ b/drivers/net/ethernet/via/Kconfig
+@@ -20,6 +20,7 @@ config VIA_RHINE
+ 	tristate "VIA Rhine support"
+ 	depends on PCI || (OF_IRQ && GENERIC_PCI_IOMAP)
+ 	depends on PCI || ARCH_VT8500 || COMPILE_TEST
++	depends on HAS_IOPORT
+ 	depends on HAS_DMA
+ 	select CRC32
+ 	select MII
+diff --git a/drivers/net/fddi/Kconfig b/drivers/net/fddi/Kconfig
+index 846bf41c2717..fa3f1e0fe143 100644
+--- a/drivers/net/fddi/Kconfig
++++ b/drivers/net/fddi/Kconfig
+@@ -29,7 +29,7 @@ config DEFZA
+ 
+ config DEFXX
+ 	tristate "Digital DEFTA/DEFEA/DEFPA adapter support"
+-	depends on FDDI && (PCI || EISA || TC)
++	depends on FDDI && (PCI || EISA || TC) && HAS_IOPORT
+ 	help
+ 	  This is support for the DIGITAL series of TURBOchannel (DEFTA),
+ 	  EISA (DEFEA) and PCI (DEFPA) controllers which can connect you
+diff --git a/drivers/net/hamradio/Kconfig b/drivers/net/hamradio/Kconfig
+index 441da03c23ee..61c0bc156870 100644
+--- a/drivers/net/hamradio/Kconfig
++++ b/drivers/net/hamradio/Kconfig
+@@ -117,7 +117,7 @@ config SCC_TRXECHO
+ 
+ config BAYCOM_SER_FDX
+ 	tristate "BAYCOM ser12 fullduplex driver for AX.25"
+-	depends on AX25 && !S390
++	depends on AX25 && HAS_IOPORT
+ 	select CRC_CCITT
+ 	help
+ 	  This is one of two drivers for Baycom style simple amateur radio
+@@ -137,7 +137,7 @@ config BAYCOM_SER_FDX
+ 
+ config BAYCOM_SER_HDX
+ 	tristate "BAYCOM ser12 halfduplex driver for AX.25"
+-	depends on AX25 && !S390
++	depends on AX25 && HAS_IOPORT
+ 	select CRC_CCITT
+ 	help
+ 	  This is one of two drivers for Baycom style simple amateur radio
+@@ -185,7 +185,7 @@ config BAYCOM_EPP
+ 
+ config YAM
+ 	tristate "YAM driver for AX.25"
+-	depends on AX25 && !S390
++	depends on AX25 && HAS_IOPORT
+ 	help
+ 	  The YAM is a modem for packet radio which connects to the serial
+ 	  port and includes some of the functions of a Terminal Node
+diff --git a/drivers/net/wan/Kconfig b/drivers/net/wan/Kconfig
+index 140780ac1745..e62a51098836 100644
+--- a/drivers/net/wan/Kconfig
++++ b/drivers/net/wan/Kconfig
+@@ -250,7 +250,7 @@ config C101
+ 
+ config FARSYNC
+ 	tristate "FarSync T-Series support"
+-	depends on HDLC && PCI
++	depends on HDLC && PCI && HAS_IOPORT
+ 	help
+ 	  Support for the FarSync T-Series X.21 (and V.35/V.24) cards by
+ 	  FarSite Communications Ltd.
+-- 
+2.32.0
 
