@@ -1,42 +1,32 @@
-From: Jedzej Jagielski <jedrzej.jagielski@intel.com>
-Date: Fri, 29 Apr 2022 14:40:23 +0200
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix calculating the number
- of queue pairs
-Message-ID: <20220429124023.979010-1-jedrzej.jagielski@intel.com>
+From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Date: Fri, 29 Apr 2022 14:49:05 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v5 0/2] propagate extack to
+ vxlan_fdb_delete
+Message-ID: <cover.1651236081.git.eng.alaamohamedsoliman.am@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+In order to propagate extack to vxlan_fdb_delete and vxlan_fdb_parse,
+add extack to .ndo_fdb_del and edit all fdb del handelers.
 
-If ADq is enabled for a VF, then actual number of queue pair
-is a number of currently available traffic classes for this VF.
+Alaa Mohamed (2):
+  rtnetlink: add extack support in fdb del handlers
+  net: vxlan: Add extack support to vxlan_fdb_delete
 
-Without this change the configuration of the rx/tx queues
-fails with error.
+ drivers/net/ethernet/intel/ice/ice_main.c     |  2 +-
+ drivers/net/ethernet/mscc/ocelot_net.c        |  3 +-
+ .../net/ethernet/qlogic/qlcnic/qlcnic_main.c  |  3 +-
+ drivers/net/macvlan.c                         |  3 +-
+ drivers/net/vxlan/vxlan_core.c                | 41 +++++++++++++------
+ include/linux/netdevice.h                     |  2 +-
+ net/bridge/br_fdb.c                           |  3 +-
+ net/bridge/br_private.h                       |  3 +-
+ net/core/rtnetlink.c                          |  4 +-
+ 9 files changed, 43 insertions(+), 21 deletions(-)
 
-Fixes: d29e0d233e0d ("i40e: missing input validation on VF message handling by the PF")
-Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 2606e8f0f19b..033ea71763e3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2282,7 +2282,7 @@ static int i40e_vc_config_queues_msg(struct i40e_vf *vf, u8 *msg)
- 	}
- 
- 	if (vf->adq_enabled) {
--		for (i = 0; i < I40E_MAX_VF_VSI; i++)
-+		for (i = 0; i < vf->num_tc; i++)
- 			num_qps_all += vf->ch[i].num_qps;
- 		if (num_qps_all != qci->num_queue_pairs) {
- 			aq_ret = I40E_ERR_PARAM;
 -- 
-2.27.0
+2.36.0
 
