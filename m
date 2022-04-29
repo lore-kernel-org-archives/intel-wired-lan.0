@@ -1,9 +1,9 @@
 From: Niklas Schnelle <schnelle@linux.ibm.com>
-Date: Fri, 29 Apr 2022 15:50:32 +0200
-Subject: [Intel-wired-lan] [PATCH 20/37] net: add HAS_IOPORT dependencies
+Date: Fri, 29 Apr 2022 15:50:33 +0200
+Subject: [Intel-wired-lan] [RFC v2 21/39] net: add HAS_IOPORT dependencies
 In-Reply-To: <20220429135108.2781579-1-schnelle@linux.ibm.com>
 References: <20220429135108.2781579-1-schnelle@linux.ibm.com>
-Message-ID: <20220429135108.2781579-35-schnelle@linux.ibm.com>
+Message-ID: <20220429135108.2781579-36-schnelle@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,8 +12,11 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 In a future patch HAS_IOPORT=n will result in inb()/outb() and friends
 not being declared. We thus need to add HAS_IOPORT as dependency for
-those drivers using them.
+those drivers using them. It also turns out that with HAS_IOPORT handled
+explicitly HAMRADIO does not need the !S390 dependency and successfully
+builds the bpqether driver.
 
+Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>
 Co-developed-by: Arnd Bergmann <arnd@kernel.org>
 Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
 ---
@@ -30,10 +33,11 @@ Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
  drivers/net/fddi/Kconfig           | 2 +-
  drivers/net/hamradio/Kconfig       | 6 +++---
  drivers/net/wan/Kconfig            | 2 +-
- 13 files changed, 16 insertions(+), 13 deletions(-)
+ net/ax25/Kconfig                   | 2 +-
+ 14 files changed, 17 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index b2a4f998c180..0fd284103ee4 100644
+index b2a4f998c180..5bc1324150c2 100644
 --- a/drivers/net/Kconfig
 +++ b/drivers/net/Kconfig
 @@ -475,7 +475,7 @@ source "drivers/net/ipa/Kconfig"
@@ -41,7 +45,7 @@ index b2a4f998c180..0fd284103ee4 100644
  config NET_SB1000
  	tristate "General Instruments Surfboard 1000"
 -	depends on PNP
-+	depends on ISAPNP
++	depends on ISA && PNP
  	help
  	  This is a driver for the General Instrument (also known as
  	  NextLevel) SURFboard 1000 internal
@@ -225,6 +229,19 @@ index 140780ac1745..e62a51098836 100644
  	help
  	  Support for the FarSync T-Series X.21 (and V.35/V.24) cards by
  	  FarSite Communications Ltd.
+diff --git a/net/ax25/Kconfig b/net/ax25/Kconfig
+index d3a9843a043d..f769e8f4bd02 100644
+--- a/net/ax25/Kconfig
++++ b/net/ax25/Kconfig
+@@ -4,7 +4,7 @@
+ #
+ 
+ menuconfig HAMRADIO
+-	depends on NET && !S390
++	depends on NET
+ 	bool "Amateur Radio support"
+ 	help
+ 	  If you want to connect your Linux box to an amateur radio, answer Y
 -- 
 2.32.0
 
