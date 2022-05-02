@@ -1,160 +1,59 @@
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Tue, 17 May 2022 13:45:50 -0700
-Subject: [Intel-wired-lan] Bonding problem on Intel X710 hardware
-In-Reply-To: <ad3e244d-2f87-c74b-1d40-c21e286a721c@anduras.de>
-References: <700118d5-2007-3c13-af2d-3a2a6c7775bd@anduras.de>
- <ad3e244d-2f87-c74b-1d40-c21e286a721c@anduras.de>
-Message-ID: <20220517134550.7c451a83@kernel.org>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Mon, 2 May 2022 08:17:32 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: ice_sched: fix an incorrect NULL
+ check on list iterator
+In-Reply-To: <CO1PR11MB5089C7298CC46861FF41D3E3D61D9@CO1PR11MB5089.namprd11.prod.outlook.com>
+References: <20220327064344.7573-1-xiam0nd.tong@gmail.com>
+ <CO1PR11MB5089C7298CC46861FF41D3E3D61D9@CO1PR11MB5089.namprd11.prod.outlook.com>
+Message-ID: <BYAPR11MB336781C93921216983F8BE3CFCC19@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-CC: intel
 
-On Tue, 17 May 2022 16:23:16 +0200 Sven Anders wrote:
-> Hello!
-> 
-> This is a follow up to my question. I did not hear anything so far, but I tried
-> to find some some information meanwhile.
-> 
-> I've got a guess from somebody, that the error message "Error I40E_AQ_RC_EINVAL
-> adding RX filters on PF, promiscuous mode forced on" maybe triggered, because
-> I'm hitting a limit here.
-> 
-> Somebody other said, that this seems to be an error in the "bonding driver", but
-> I do not think so. Aside from that, there seem to be no special "bonding" mailing
-> list anymore. So I will have to ask this questions here anyway...
-> 
-> I want to understand the problem to classify it.
-> 
-> 1) Why is this "error" issued? Do I really hit a limit and what is this current limit?
-> 2) Is it really an error or is it more "a warning"?
-> 3) Why is this error triggered only when changing the "ntuples filter" and not during
->     the normal adding of VLANs?
->     Remark: I can trigger the "ntuples fiilter" later on again and it still works.
-> 
-> I also tried the latest 5.18-rc kernel with the same problem.
-> 
-> Maybe somebody will find time and try to reproduce this?
-> I will answer any questions...
-> 
-> Regards
->   Sven
-> 
-> Am 12.05.22 um 16:05 schrieb Sven Anders:
-> > Hello!
-> > 
-> > I'm having problems setting up a bond in adaptive load balancing
-> > mode (balance-alb, mode 6) on an intel X710 network adapter using
-> > the i40e driver connected to an Aruba 2530-48G switch.
-> > The network card has 4 on board ports.
-> > I'm using 2 ports for the bond with 36 VLANs on it.
-> > 
-> > The setup is correct, because it works without problems, if
-> > I use the same setup with 1GBit Intel hardware (using the
-> > e1000e driver, version 3.2.6-k, firmware 5.10-2).
-> > 
-> > Data packets are only received sporadically. If I run the same test
-> > with only one slave port, it works without problems.
-> > 
-> > I debugged it down to the reception of the packets by the
-> > network hardware.
-> > 
-> > If I remove the number of VLANs under 8, almost all packets are
-> > received. The fewer VLANs the better the receive rate.
-> > 
-> > I suspected the hardware offloading operations to be the cause, so I
-> > tried to disable them. It resulted in the following:
-> > 
-> >  ?If I turn of the "ntuple-filters" with
-> >  ?? ethtool -K eth3 ntuple off
-> >  ?? ethtool -K eth3 ntuple off
-> >  ?it will work.
-> > 
-> >  ?But if I do this I see the following errors in "dmesg":
-> >  ? i40e 0000:65:00.1: Error I40E_AQ_RC_EINVAL adding RX filters on PF, promiscuous mode forced on
-> >  ? i40e 0000:65:00.2: Error I40E_AQ_RC_EINVAL adding RX filters on PF, promiscuous mode forced on
-> > 
-> > Disabling any any other offloading operations made no change.
-> > 
-> > For me it seems, that the hardware filter is dropping packets because they
-> > have the wrong values (mac-address ?).
-> > Turning the "ntuple-filters" off, forces the network adapter to accept
-> > all packets.
-> > 
-> > 
-> > My questions:
-> > 
-> > 1. Can anybody explain or confirm this?
-> > 
-> > 2. Is the a correct method to force the adapter in promiscous mode?
-> > 
-> > 3. Are the any special settings needed, if I use ALB bonding, which I missed?
-> > 
-> > 
-> > Some details:
-> > -------------
-> > 
-> > Linux kernel 5.15.35-core2 on x86_64.
-> > 
-> > 
-> > This is the hardware:
-> > ---------------------
-> > 4 port Ethernet controller:
-> >  ?Intel Corporation Ethernet Controller X710 for 10GBASE-T (rev 02)
-> >  ?8086:15ff (rev 02)
-> > 
-> > with
-> > 
-> >  ?driver: i40e
-> >  ?version: 5.15.35-core2
-> >  ?firmware-version: 8.60 0x8000bd80 1.3140.0
-> >  ?bus-info: 0000:65:00.2
-> >  ?supports-statistics: yes
-> >  ?supports-test: yes
-> >  ?supports-eeprom-access: yes
-> >  ?supports-register-dump: yes
-> >  ?supports-priv-flags: yes
-> > 
-> > 
-> > This is current bonding configuration:
-> > --------------------------------------
-> > Ethernet Channel Bonding Driver: v5.15.35-core2
-> > 
-> > Bonding Mode: adaptive load balancing
-> > Primary Slave: None
-> > Currently Active Slave: eth3
-> > MII Status: up
-> > MII Polling Interval (ms): 100
-> > Up Delay (ms): 200
-> > Down Delay (ms): 200
-> > Peer Notification Delay (ms): 0
-> > 
-> > Slave Interface: eth3
-> > MII Status: up
-> > Speed: 1000 Mbps
-> > Duplex: full
-> > Link Failure Count: 0
-> > Permanent HW addr: 68:05:ca:f8:9c:42
-> > Slave queue ID: 0
-> > 
-> > Slave Interface: eth4
-> > MII Status: up
-> > Speed: 1000 Mbps
-> > Duplex: full
-> > Link Failure Count: 0
-> > Permanent HW addr: 68:05:ca:f8:9c:41
-> > Slave queue ID: 0
-> > 
-> > 
-> > Regards
-> >  ?Sven Anders
-> >   
-> 
-> 
-> Mit freundlichen Gr??en
->   Sven Anders
-> 
 
+-----Original Message-----
+> From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
+> Sent: Saturday, March 26, 2022 11:44 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>
+> Cc: Nguyen, Anthony L <anthony.l.nguyen@intel.com>;
+> davem at davemloft.net; kuba at kernel.org; pabeni at redhat.com; Raj, Victor
+> <victor.raj@intel.com>; intel- wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; linux- kernel at vger.kernel.org; Xiaomeng Tong
+> <xiam0nd.tong@gmail.com>; stable at vger.kernel.org
+> Subject: [PATCH] ice: ice_sched: fix an incorrect NULL check on list
+> iterator
+>
+> The bugs are here:
+> 	if (old_agg_vsi_info)
+> 	if (old_agg_vsi_info && !old_agg_vsi_info->tc_bitmap[0]) {
+>
+> The list iterator value 'old_agg_vsi_info' will *always* be set and
+> non-NULL by list_for_each_entry_safe(), so it is incorrect to assume
+> that the iterator value will be NULL if the list is empty or no
+> element found (in this case, the check 'if (old_agg_vsi_info)' will
+> always be true unexpectly).
+>
+> To fix the bug, use a new variable 'iter' as the list iterator, while
+> use the original variable 'old_agg_vsi_info' as a dedicated pointer to
+> point to the found element.
+>
+
+Yep. This looks correct to me.
+
+> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> Thanks,
+> Jake
+
+> Cc: stable at vger.kernel.org
+> Fixes: 37c592062b16d ("ice: remove the VSI info from previous agg")
+> Signed-off-by: Xiaomeng Tong <xiam0nd.tong@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_sched.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+>
+
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
