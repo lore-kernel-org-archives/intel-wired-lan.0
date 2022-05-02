@@ -1,57 +1,40 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Mon, 2 May 2022 09:29:56 +0000
-Subject: [Intel-wired-lan] [PATCH v5] igb: Convert kmap() to
- kmap_local_page()
-In-Reply-To: <YmGZFfcY/Yz6Iv1Y@iweiny-desk3>
-References: <20220419234313.10324-1-eng.alaamohamedsoliman.am@gmail.com>
- <YmGZFfcY/Yz6Iv1Y@iweiny-desk3>
-Message-ID: <BYAPR11MB3367A2BBE81A95AAEF6D0498FCC19@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Mon,  2 May 2022 16:15:56 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] e1000e: Enable the GPT clock
+ before sending message to the CSME
+Message-ID: <20220502131556.349753-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Enable the dynamic GPT clock. The clock is always ticking is the guarantee
+CSME receive the H2ME message and exit from the DMoff state.
+This clock cleared upon HW initialization (D3 -> D0 transition).
 
+Fixes: 3e55d231716e ("e1000e: Add handshake with the CSME to support s0ix")
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Ira Weiny
-> Sent: Thursday, April 21, 2022 11:19 PM
-> To: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
-> Cc: outreachy at lists.linux.dev; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org; netdev at vger.kernel.org; kuba at kernel.org;
-> pabeni at redhat.com; davem at davemloft.net
-> Subject: Re: [Intel-wired-lan] [PATCH v5] igb: Convert kmap() to
-> kmap_local_page()
-> 
-> On Wed, Apr 20, 2022 at 01:43:13AM +0200, Alaa Mohamed wrote:
-> > kmap() is being deprecated and these usages are all local to the
-> > thread so there is no reason kmap_local_page() can't be used.
-> >
-> > Replace kmap() calls with kmap_local_page().
-> >
-> > Signed-off-by: Alaa Mohamed
-> <eng.alaamohamedsoliman.am@gmail.com>
-> 
-> Reviewed-by: Ira Weiny <ira.weiny@intel.com>
-> 
-> > ---
-> > changes in V2:
-> > 	fix kunmap_local path value to take address of the mapped page.
-> > ---
-> > changes in V3:
-> > 	edit commit message to be clearer
-> > ---
-> > changes in V4:
-> > 	edit the commit message
-> > ---
-> > changes in V5:
-> > 	-edit commit subject
-> > 	-edit commit message
-> > ---
-> >  drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index fa06f68c8c80..e29a718469ee 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6494,6 +6494,10 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+ 
+ 	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
+ 	    hw->mac.type >= e1000_pch_adp) {
++		/* Keep the gpt_clk_enable_d clock for CSME*/
++		mac_data = er32(FEXTNVM);
++		mac_data |= BIT(3);
++		ew32(FEXTNVM, mac_data);
+ 		/* Request ME unconfigure the device from S0ix */
+ 		mac_data = er32(H2ME);
+ 		mac_data &= ~E1000_H2ME_START_DPG;
+-- 
+2.30.2
 
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
