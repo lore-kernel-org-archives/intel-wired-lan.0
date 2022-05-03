@@ -1,82 +1,73 @@
-From: Niklas Schnelle <schnelle@linux.ibm.com>
-Date: Tue, 03 May 2022 14:45:21 +0200
-Subject: [Intel-wired-lan] [RFC v2 21/39] net: add HAS_IOPORT
- dependencies
-In-Reply-To: <alpine.DEB.2.21.2205012324130.9383@angie.orcam.me.uk>
-References: <20220429135108.2781579-1-schnelle@linux.ibm.com>
- <20220429135108.2781579-36-schnelle@linux.ibm.com>
- <alpine.DEB.2.21.2205012324130.9383@angie.orcam.me.uk>
-Message-ID: <867e70df01fc938abf93ffa15a3f1989a8fb136b.camel@linux.ibm.com>
+From: Raj, Victor <victor.raj@intel.com>
+Date: Tue, 3 May 2022 00:31:28 +0000
+Subject: [Intel-wired-lan] [PATCH] ice: ice_sched: fix an incorrect NULL
+ check on list iterator
+In-Reply-To: <BYAPR11MB336781C93921216983F8BE3CFCC19@BYAPR11MB3367.namprd11.prod.outlook.com>
+References: <20220327064344.7573-1-xiam0nd.tong@gmail.com>
+ <CO1PR11MB5089C7298CC46861FF41D3E3D61D9@CO1PR11MB5089.namprd11.prod.outlook.com>
+ <BYAPR11MB336781C93921216983F8BE3CFCC19@BYAPR11MB3367.namprd11.prod.outlook.com>
+Message-ID: <BYAPR11MB339776DBFFC7F86EC7F4DD708DC09@BYAPR11MB3397.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, 2022-05-01 at 23:48 +0100, Maciej W. Rozycki wrote:
-> On Fri, 29 Apr 2022, Niklas Schnelle wrote:
-> 
-> > In a future patch HAS_IOPORT=n will result in inb()/outb() and friends
-> > not being declared. We thus need to add HAS_IOPORT as dependency for
-> > those drivers using them. It also turns out that with HAS_IOPORT handled
-> > explicitly HAMRADIO does not need the !S390 dependency and successfully
-> > builds the bpqether driver.
-> [...]
-> > diff --git a/drivers/net/fddi/Kconfig b/drivers/net/fddi/Kconfig
-> > index 846bf41c2717..fa3f1e0fe143 100644
-> > --- a/drivers/net/fddi/Kconfig
-> > +++ b/drivers/net/fddi/Kconfig
-> > @@ -29,7 +29,7 @@ config DEFZA
-> >  
-> >  config DEFXX
-> >  	tristate "Digital DEFTA/DEFEA/DEFPA adapter support"
-> > -	depends on FDDI && (PCI || EISA || TC)
-> > +	depends on FDDI && (PCI || EISA || TC) && HAS_IOPORT
-> >  	help
-> >  	  This is support for the DIGITAL series of TURBOchannel (DEFTA),
-> >  	  EISA (DEFEA) and PCI (DEFPA) controllers which can connect you
-> 
->  NAK, this has to be sorted out differently (and I think we discussed it 
-> before).
-> 
->  The driver works just fine with MMIO where available, so if `inb'/`outb' 
-> do get removed, then only parts that rely on port I/O need to be disabled.  
-> In fact there's already such provision there in drivers/net/fddi/defxx.c 
-> for TURBOchannel systems (CONFIG_TC), which have no port I/O space either:
-> 
-> #if defined(CONFIG_EISA) || defined(CONFIG_PCI)
-> #define dfx_use_mmio bp->mmio
-> #else
-> #define dfx_use_mmio true
-> #endif
-> 
-> so I guess it's just the conditional that will have to be changed to:
-> 
-> #ifdef CONFIG_HAS_IOPORT
-> 
-> replacing the current explicit bus dependency list.  The compiler will 
-> then optimise away all the port I/O stuff (though I suspect dummy function 
-> declarations may be required for `inb'/`outb', etc.).
-> 
->  I can verify a suitable change with a TURBOchannel configuration once the 
-> MIPS part has been sorted.
-> 
->   Maciej
+If the control comes down to the loop then surely the VSI is already part of an aggregator (old). The aggregator vsi list should have that VSI information. My understanding is that if control comes here then you always find a valid entry and matching handle here. If that doesn't happen then we need to debug. The fix is kind of masking this problem.
 
-With dfx_use_mmio changed as you propose above things compile on s390
-which previously ran into missing (now __compile_error()) inl() via
-dfx_port_read_long() -> dfx_inl() ->  inl().
+-Victor
 
-Looking at the other uses of dfx_use_mmio I notice however that in
-dfx_get_bars(), inb() actually gets called when dfx_use_mmio is true.
-This happens if dfx_bus_eisa is also true. Now that variable is just
-the cached result of DFX_BUS_EISA(dev) which is defined to 0 if
-CONFIG_EISA is unset. I'm not 100% sure if going through a local
-variable is still considered trivial enough dead code elimination, at
-least it works for me?. I did also check the GCC docs and they
-explicitly say that __attribute__(error) is supposed to be used when
-dead code elimination gets rid of the error paths.
 
-I think we also need a "depends on HAS_IOPORT" for "config HAVE_EISA"
-just as I'm adding for "config ISA".
 
+-----Original Message-----
+From: G, GurucharanX <gurucharanx.g@intel.com> 
+Sent: Monday, May 2, 2022 1:18 AM
+To: Keller, Jacob E <jacob.e.keller@intel.com>; Xiaomeng Tong <xiam0nd.tong@gmail.com>; Brandeburg, Jesse <jesse.brandeburg@intel.com>
+Cc: netdev at vger.kernel.org; Raj, Victor <victor.raj@intel.com>; stable at vger.kernel.org; linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; kuba at kernel.org; pabeni at redhat.com; davem at davemloft.net
+Subject: RE: [PATCH] ice: ice_sched: fix an incorrect NULL check on list iterator
+
+
+
+-----Original Message-----
+> From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
+> Sent: Saturday, March 26, 2022 11:44 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>
+> Cc: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; 
+> davem at davemloft.net; kuba at kernel.org; pabeni at redhat.com; Raj, Victor 
+> <victor.raj@intel.com>; intel- wired-lan at lists.osuosl.org; 
+> netdev at vger.kernel.org; linux- kernel at vger.kernel.org; Xiaomeng Tong 
+> <xiam0nd.tong@gmail.com>; stable at vger.kernel.org
+> Subject: [PATCH] ice: ice_sched: fix an incorrect NULL check on list 
+> iterator
+>
+> The bugs are here:
+> 	if (old_agg_vsi_info)
+> 	if (old_agg_vsi_info && !old_agg_vsi_info->tc_bitmap[0]) {
+>
+> The list iterator value 'old_agg_vsi_info' will *always* be set and 
+> non-NULL by list_for_each_entry_safe(), so it is incorrect to assume 
+> that the iterator value will be NULL if the list is empty or no 
+> element found (in this case, the check 'if (old_agg_vsi_info)' will 
+> always be true unexpectly).
+>
+> To fix the bug, use a new variable 'iter' as the list iterator, while 
+> use the original variable 'old_agg_vsi_info' as a dedicated pointer to 
+> point to the found element.
+>
+
+Yep. This looks correct to me.
+
+> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> Thanks,
+> Jake
+
+> Cc: stable at vger.kernel.org
+> Fixes: 37c592062b16d ("ice: remove the VSI info from previous agg")
+> Signed-off-by: Xiaomeng Tong <xiam0nd.tong@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_sched.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+>
+
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
