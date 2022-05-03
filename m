@@ -1,73 +1,153 @@
-From: Raj, Victor <victor.raj@intel.com>
-Date: Tue, 3 May 2022 00:31:28 +0000
-Subject: [Intel-wired-lan] [PATCH] ice: ice_sched: fix an incorrect NULL
- check on list iterator
-In-Reply-To: <BYAPR11MB336781C93921216983F8BE3CFCC19@BYAPR11MB3367.namprd11.prod.outlook.com>
-References: <20220327064344.7573-1-xiam0nd.tong@gmail.com>
- <CO1PR11MB5089C7298CC46861FF41D3E3D61D9@CO1PR11MB5089.namprd11.prod.outlook.com>
- <BYAPR11MB336781C93921216983F8BE3CFCC19@BYAPR11MB3367.namprd11.prod.outlook.com>
-Message-ID: <BYAPR11MB339776DBFFC7F86EC7F4DD708DC09@BYAPR11MB3397.namprd11.prod.outlook.com>
+From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Date: Tue,  3 May 2022 06:24:28 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v1] ice: Expose RSS indirection
+ tables for queue groups via ethtool
+Message-ID: <20220503132428.1859432-1-sudheer.mogilappagari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If the control comes down to the loop then surely the VSI is already part of an aggregator (old). The aggregator vsi list should have that VSI information. My understanding is that if control comes here then you always find a valid entry and matching handle here. If that doesn't happen then we need to debug. The fix is kind of masking this problem.
+From: Sridhar Samudrala <sridhar.samudrala@intel.com>
 
--Victor
+When ADQ queue groups(TCs) are created via tc mqprio command,
+RSS contexts and associated RSS indirection tables are configured
+automatically per TC based on the queue ranges specified for
+each traffic class.
 
+For ex:
+tc qdisc add dev enp175s0f0 root mqprio num_tc 3 map 0 1 2 \
+	queues 2 at 0 8 at 2 4 at 10 hw 1 mode channel
 
+will create 3 queue groups(TC 0-2) with queue ranges 2, 8 and 4
+in 3 queue groups. Each queue group is associated with its
+own RSS context and RSS indirection table.
 
------Original Message-----
-From: G, GurucharanX <gurucharanx.g@intel.com> 
-Sent: Monday, May 2, 2022 1:18 AM
-To: Keller, Jacob E <jacob.e.keller@intel.com>; Xiaomeng Tong <xiam0nd.tong@gmail.com>; Brandeburg, Jesse <jesse.brandeburg@intel.com>
-Cc: netdev at vger.kernel.org; Raj, Victor <victor.raj@intel.com>; stable at vger.kernel.org; linux-kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; kuba at kernel.org; pabeni at redhat.com; davem at davemloft.net
-Subject: RE: [PATCH] ice: ice_sched: fix an incorrect NULL check on list iterator
+Add support to expose RSS indirection tables for all ADQ queue
+groups using ethtool RSS contexts interface.
+	ethtool -x enp175s0f0 context <tc-num>
 
+Signed-off-by: Sridhar Samudrala<sridhar.samudrala@intel.com>
+Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 69 +++++++++++++++-----
+ 1 file changed, 51 insertions(+), 18 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 476bd1c83c87..1e71b70f0e52 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3111,36 +3111,47 @@ static u32 ice_get_rxfh_indir_size(struct net_device *netdev)
+ 	return np->vsi->rss_table_size;
+ }
+ 
+-/**
+- * ice_get_rxfh - get the Rx flow hash indirection table
+- * @netdev: network interface device structure
+- * @indir: indirection table
+- * @key: hash key
+- * @hfunc: hash function
+- *
+- * Reads the indirection table directly from the hardware.
+- */
+ static int
+-ice_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key, u8 *hfunc)
++ice_get_rxfh_context(struct net_device *netdev, u32 *indir,
++		     u8 *key, u8 *hfunc, u32 rss_context)
+ {
+ 	struct ice_netdev_priv *np = netdev_priv(netdev);
+ 	struct ice_vsi *vsi = np->vsi;
+ 	struct ice_pf *pf = vsi->back;
+-	int err, i;
++	u16 qcount, offset;
++	int err, num_tc, i;
+ 	u8 *lut;
+ 
++	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
++		netdev_warn(netdev, "RSS is not supported on this VSI!\n");
++		return -EOPNOTSUPP;
++	}
++
++	if (rss_context && !ice_is_adq_active(pf)) {
++		netdev_err(netdev, "RSS context cannot be non-zero when ADQ is not configured.\n");
++		return -EINVAL;
++	}
++
++	qcount = vsi->mqprio_qopt.qopt.count[rss_context];
++	offset = vsi->mqprio_qopt.qopt.offset[rss_context];
++
++	if (rss_context && ice_is_adq_active(pf)) {
++		num_tc = vsi->mqprio_qopt.qopt.num_tc;
++		if (rss_context >= num_tc) {
++			netdev_err(netdev, "RSS context:%d  > num_tc:%d\n",
++				   rss_context, num_tc);
++			return -EINVAL;
++		}
++		/* Use channel VSI of given TC */
++		vsi = vsi->tc_map_vsi[rss_context];
++	}
++
+ 	if (hfunc)
+ 		*hfunc = ETH_RSS_HASH_TOP;
+ 
+ 	if (!indir)
+ 		return 0;
+ 
+-	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+-		/* RSS not supported return error here */
+-		netdev_warn(netdev, "RSS is not configured on this VSI!\n");
+-		return -EIO;
+-	}
+-
+ 	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
+ 	if (!lut)
+ 		return -ENOMEM;
+@@ -3153,14 +3164,35 @@ ice_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key, u8 *hfunc)
+ 	if (err)
+ 		goto out;
+ 
++	if (ice_is_adq_active(pf)) {
++		for (i = 0; i < vsi->rss_table_size; i++)
++			indir[i] = offset + lut[i] % qcount;
++		goto out;
++	}
++
+ 	for (i = 0; i < vsi->rss_table_size; i++)
+-		indir[i] = (u32)(lut[i]);
++		indir[i] = lut[i];
+ 
+ out:
+ 	kfree(lut);
+ 	return err;
+ }
+ 
++/**
++ * ice_get_rxfh - get the Rx flow hash indirection table
++ * @netdev: network interface device structure
++ * @indir: indirection table
++ * @key: hash key
++ * @hfunc: hash function
++ *
++ * Reads the indirection table directly from the hardware.
++ */
++static int
++ice_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key, u8 *hfunc)
++{
++	return ice_get_rxfh_context(netdev, indir, key, hfunc, 0);
++}
++
+ /**
+  * ice_set_rxfh - set the Rx flow hash indirection table
+  * @netdev: network interface device structure
+@@ -4102,6 +4134,7 @@ static const struct ethtool_ops ice_ethtool_ops = {
+ 	.set_pauseparam		= ice_set_pauseparam,
+ 	.get_rxfh_key_size	= ice_get_rxfh_key_size,
+ 	.get_rxfh_indir_size	= ice_get_rxfh_indir_size,
++	.get_rxfh_context	= ice_get_rxfh_context,
+ 	.get_rxfh		= ice_get_rxfh,
+ 	.set_rxfh		= ice_set_rxfh,
+ 	.get_channels		= ice_get_channels,
+-- 
+2.27.0
 
------Original Message-----
-> From: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-> Sent: Saturday, March 26, 2022 11:44 PM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>
-> Cc: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; 
-> davem at davemloft.net; kuba at kernel.org; pabeni at redhat.com; Raj, Victor 
-> <victor.raj@intel.com>; intel- wired-lan at lists.osuosl.org; 
-> netdev at vger.kernel.org; linux- kernel at vger.kernel.org; Xiaomeng Tong 
-> <xiam0nd.tong@gmail.com>; stable at vger.kernel.org
-> Subject: [PATCH] ice: ice_sched: fix an incorrect NULL check on list 
-> iterator
->
-> The bugs are here:
-> 	if (old_agg_vsi_info)
-> 	if (old_agg_vsi_info && !old_agg_vsi_info->tc_bitmap[0]) {
->
-> The list iterator value 'old_agg_vsi_info' will *always* be set and 
-> non-NULL by list_for_each_entry_safe(), so it is incorrect to assume 
-> that the iterator value will be NULL if the list is empty or no 
-> element found (in this case, the check 'if (old_agg_vsi_info)' will 
-> always be true unexpectly).
->
-> To fix the bug, use a new variable 'iter' as the list iterator, while 
-> use the original variable 'old_agg_vsi_info' as a dedicated pointer to 
-> point to the found element.
->
-
-Yep. This looks correct to me.
-
-> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Thanks,
-> Jake
-
-> Cc: stable at vger.kernel.org
-> Fixes: 37c592062b16d ("ice: remove the VSI info from previous agg")
-> Signed-off-by: Xiaomeng Tong <xiam0nd.tong@gmail.com>
-> ---
->  drivers/net/ethernet/intel/ice/ice_sched.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
->
-
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
