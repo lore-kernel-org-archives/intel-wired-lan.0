@@ -1,153 +1,309 @@
-From: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
-Date: Tue,  3 May 2022 06:24:28 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v1] ice: Expose RSS indirection
- tables for queue groups via ethtool
-Message-ID: <20220503132428.1859432-1-sudheer.mogilappagari@intel.com>
+From: Maximilian Heyne <mheyne@amazon.de>
+Date: Tue, 3 May 2022 15:00:17 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] drivers,
+ ixgbe: show VF statistics
+Message-ID: <20220503150017.16148-1-mheyne@amazon.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+This change exports network statistics for individual virtual functions
+via ethtool and iproute2.
 
-When ADQ queue groups(TCs) are created via tc mqprio command,
-RSS contexts and associated RSS indirection tables are configured
-automatically per TC based on the queue ranges specified for
-each traffic class.
+The code for retrieving the statistics from the device and printing via
+ethtool is taken from the out-of-tree driver.  The feature was
+introduced with version 2.0.75.7, so the diff between this version and
+the previous version 2.0.72.4 was used to identify required changes.  I
+took commit c8d4725e985d ("intel: Update drivers to use
+ethtool_sprintf") into account and fixed a few style issues.
 
-For ex:
-tc qdisc add dev enp175s0f0 root mqprio num_tc 3 map 0 1 2 \
-	queues 2 at 0 8 at 2 4 at 10 hw 1 mode channel
+Apart from that, ndo_get_vf_stats is implemented so that iproute2 also
+prints the statistics.
 
-will create 3 queue groups(TC 0-2) with queue ranges 2, 8 and 4
-in 3 queue groups. Each queue group is associated with its
-own RSS context and RSS indirection table.
-
-Add support to expose RSS indirection tables for all ADQ queue
-groups using ethtool RSS contexts interface.
-	ethtool -x enp175s0f0 context <tc-num>
-
-Signed-off-by: Sridhar Samudrala<sridhar.samudrala@intel.com>
-Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 69 +++++++++++++++-----
- 1 file changed, 51 insertions(+), 18 deletions(-)
+v2: implemented the ndo_get_vf_stats callback
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 476bd1c83c87..1e71b70f0e52 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3111,36 +3111,47 @@ static u32 ice_get_rxfh_indir_size(struct net_device *netdev)
- 	return np->vsi->rss_table_size;
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      | 34 ++++++++
+ .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 26 +++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 86 +++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  7 ++
+ 4 files changed, 152 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 921a4d977d65..48444ab9e0b1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -167,12 +167,46 @@ enum ixgbe_tx_flags {
+ #define IXGBE_82599_VF_DEVICE_ID        0x10ED
+ #define IXGBE_X540_VF_DEVICE_ID         0x1515
+ 
++#define UPDATE_VF_COUNTER_32bit(reg, last_counter, counter)	\
++	{							\
++		u32 current_counter = IXGBE_READ_REG(hw, reg);	\
++		if (current_counter < last_counter)		\
++			counter += 0x100000000LL;		\
++		last_counter = current_counter;			\
++		counter &= 0xFFFFFFFF00000000LL;		\
++		counter |= current_counter;			\
++	}
++
++#define UPDATE_VF_COUNTER_36bit(reg_lsb, reg_msb, last_counter, counter) \
++	{								 \
++		u64 current_counter_lsb = IXGBE_READ_REG(hw, reg_lsb);	 \
++		u64 current_counter_msb = IXGBE_READ_REG(hw, reg_msb);	 \
++		u64 current_counter = (current_counter_msb << 32) |	 \
++			current_counter_lsb;				 \
++		if (current_counter < last_counter)			 \
++			counter += 0x1000000000LL;			 \
++		last_counter = current_counter;				 \
++		counter &= 0xFFFFFFF000000000LL;			 \
++		counter |= current_counter;				 \
++	}
++
++struct vf_stats {
++	u64 gprc;
++	u64 gorc;
++	u64 gptc;
++	u64 gotc;
++	u64 mprc;
++};
++
+ struct vf_data_storage {
+ 	struct pci_dev *vfdev;
+ 	unsigned char vf_mac_addresses[ETH_ALEN];
+ 	u16 vf_mc_hashes[IXGBE_MAX_VF_MC_ENTRIES];
+ 	u16 num_vf_mc_hashes;
+ 	bool clear_to_send;
++	struct vf_stats vfstats;
++	struct vf_stats last_vfstats;
++	struct vf_stats saved_rst_vfstats;
+ 	bool pf_set_mac;
+ 	u16 pf_vlan; /* When set, guest VLAN config not allowed. */
+ 	u16 pf_qos;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 628d0eb0599f..ae94d927bb46 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -122,9 +122,13 @@ static const struct ixgbe_stats ixgbe_gstrings_stats[] = {
+ 			 sizeof(((struct ixgbe_adapter *)0)->stats.pxoffrxc) + \
+ 			 sizeof(((struct ixgbe_adapter *)0)->stats.pxofftxc)) \
+ 			/ sizeof(u64))
++#define IXGBE_VF_STATS_LEN \
++	((((struct ixgbe_adapter *)netdev_priv(netdev))->num_vfs) * \
++	  (sizeof(struct vf_stats) / sizeof(u64)))
+ #define IXGBE_STATS_LEN (IXGBE_GLOBAL_STATS_LEN + \
+ 			 IXGBE_PB_STATS_LEN + \
+-			 IXGBE_QUEUE_STATS_LEN)
++			 IXGBE_QUEUE_STATS_LEN + \
++			 IXGBE_VF_STATS_LEN)
+ 
+ static const char ixgbe_gstrings_test[][ETH_GSTRING_LEN] = {
+ 	"Register test  (offline)", "Eeprom test    (offline)",
+@@ -1302,6 +1306,8 @@ static void ixgbe_get_ethtool_stats(struct net_device *netdev,
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	struct rtnl_link_stats64 temp;
+ 	const struct rtnl_link_stats64 *net_stats;
++	u64 *queue_stat;
++	int stat_count, k;
+ 	unsigned int start;
+ 	struct ixgbe_ring *ring;
+ 	int i, j;
+@@ -1368,11 +1374,22 @@ static void ixgbe_get_ethtool_stats(struct net_device *netdev,
+ 		data[i++] = adapter->stats.pxonrxc[j];
+ 		data[i++] = adapter->stats.pxoffrxc[j];
+ 	}
++	stat_count = sizeof(struct vf_stats) / sizeof(u64);
++	for (j = 0; j < adapter->num_vfs; j++) {
++		queue_stat = (u64 *)&adapter->vfinfo[j].vfstats;
++		for (k = 0; k < stat_count; k++)
++			data[i + k] = queue_stat[k];
++		queue_stat = (u64 *)&adapter->vfinfo[j].saved_rst_vfstats;
++		for (k = 0; k < stat_count; k++)
++			data[i + k] += queue_stat[k];
++		i += k;
++	}
  }
  
--/**
-- * ice_get_rxfh - get the Rx flow hash indirection table
-- * @netdev: network interface device structure
-- * @indir: indirection table
-- * @key: hash key
-- * @hfunc: hash function
-- *
-- * Reads the indirection table directly from the hardware.
-- */
- static int
--ice_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key, u8 *hfunc)
-+ice_get_rxfh_context(struct net_device *netdev, u32 *indir,
-+		     u8 *key, u8 *hfunc, u32 rss_context)
+ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+ 			      u8 *data)
  {
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
- 	struct ice_pf *pf = vsi->back;
--	int err, i;
-+	u16 qcount, offset;
-+	int err, num_tc, i;
- 	u8 *lut;
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	unsigned int i;
+ 	u8 *p = data;
  
-+	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
-+		netdev_warn(netdev, "RSS is not supported on this VSI!\n");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (rss_context && !ice_is_adq_active(pf)) {
-+		netdev_err(netdev, "RSS context cannot be non-zero when ADQ is not configured.\n");
-+		return -EINVAL;
-+	}
-+
-+	qcount = vsi->mqprio_qopt.qopt.count[rss_context];
-+	offset = vsi->mqprio_qopt.qopt.offset[rss_context];
-+
-+	if (rss_context && ice_is_adq_active(pf)) {
-+		num_tc = vsi->mqprio_qopt.qopt.num_tc;
-+		if (rss_context >= num_tc) {
-+			netdev_err(netdev, "RSS context:%d  > num_tc:%d\n",
-+				   rss_context, num_tc);
-+			return -EINVAL;
+@@ -1401,6 +1418,13 @@ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+ 			ethtool_sprintf(&p, "rx_pb_%u_pxon", i);
+ 			ethtool_sprintf(&p, "rx_pb_%u_pxoff", i);
+ 		}
++		for (i = 0; i < adapter->num_vfs; i++) {
++			ethtool_sprintf(&p, "VF %u Rx Packets", i);
++			ethtool_sprintf(&p, "VF %u Rx Bytes", i);
++			ethtool_sprintf(&p, "VF %u Tx Packets", i);
++			ethtool_sprintf(&p, "VF %u Tx Bytes", i);
++			ethtool_sprintf(&p, "VF %u MC Packets", i);
 +		}
-+		/* Use channel VSI of given TC */
-+		vsi = vsi->tc_map_vsi[rss_context];
-+	}
-+
- 	if (hfunc)
- 		*hfunc = ETH_RSS_HASH_TOP;
- 
- 	if (!indir)
- 		return 0;
- 
--	if (!test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
--		/* RSS not supported return error here */
--		netdev_warn(netdev, "RSS is not configured on this VSI!\n");
--		return -EIO;
--	}
--
- 	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
- 	if (!lut)
- 		return -ENOMEM;
-@@ -3153,14 +3164,35 @@ ice_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key, u8 *hfunc)
- 	if (err)
- 		goto out;
- 
-+	if (ice_is_adq_active(pf)) {
-+		for (i = 0; i < vsi->rss_table_size; i++)
-+			indir[i] = offset + lut[i] % qcount;
-+		goto out;
-+	}
-+
- 	for (i = 0; i < vsi->rss_table_size; i++)
--		indir[i] = (u32)(lut[i]);
-+		indir[i] = lut[i];
- 
- out:
- 	kfree(lut);
- 	return err;
+ 		/* BUG_ON(p - data != IXGBE_STATS_LEN * ETH_GSTRING_LEN); */
+ 		break;
+ 	case ETH_SS_PRIV_FLAGS:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index c4a4954aa317..f60d8b425f61 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5548,6 +5548,47 @@ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
+ 	return ret;
  }
  
 +/**
-+ * ice_get_rxfh - get the Rx flow hash indirection table
-+ * @netdev: network interface device structure
-+ * @indir: indirection table
-+ * @key: hash key
-+ * @hfunc: hash function
++ * ixgbe_clear_vf_stats_counters - Clear out VF stats after reset
++ * @adapter: board private structure
 + *
-+ * Reads the indirection table directly from the hardware.
-+ */
-+static int
-+ice_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key, u8 *hfunc)
++ * On a reset we need to clear out the VF stats or accounting gets
++ * messed up because they're not clear on read.
++ **/
++static void ixgbe_clear_vf_stats_counters(struct ixgbe_adapter *adapter)
 +{
-+	return ice_get_rxfh_context(netdev, indir, key, hfunc, 0);
++	struct ixgbe_hw *hw = &adapter->hw;
++	int i;
++
++	for (i = 0; i < adapter->num_vfs; i++) {
++		adapter->vfinfo[i].last_vfstats.gprc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGPRC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gprc +=
++			adapter->vfinfo[i].vfstats.gprc;
++		adapter->vfinfo[i].vfstats.gprc = 0;
++		adapter->vfinfo[i].last_vfstats.gptc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGPTC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gptc +=
++			adapter->vfinfo[i].vfstats.gptc;
++		adapter->vfinfo[i].vfstats.gptc = 0;
++		adapter->vfinfo[i].last_vfstats.gorc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGORC_LSB(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gorc +=
++			adapter->vfinfo[i].vfstats.gorc;
++		adapter->vfinfo[i].vfstats.gorc = 0;
++		adapter->vfinfo[i].last_vfstats.gotc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGOTC_LSB(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gotc +=
++			adapter->vfinfo[i].vfstats.gotc;
++		adapter->vfinfo[i].vfstats.gotc = 0;
++		adapter->vfinfo[i].last_vfstats.mprc =
++			IXGBE_READ_REG(hw, IXGBE_PVFMPRC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.mprc +=
++			adapter->vfinfo[i].vfstats.mprc;
++		adapter->vfinfo[i].vfstats.mprc = 0;
++	}
 +}
 +
+ static void ixgbe_setup_gpie(struct ixgbe_adapter *adapter)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+@@ -5683,6 +5724,7 @@ static void ixgbe_up_complete(struct ixgbe_adapter *adapter)
+ 	adapter->link_check_timeout = jiffies;
+ 	mod_timer(&adapter->service_timer, jiffies);
+ 
++	ixgbe_clear_vf_stats_counters(adapter);
+ 	/* Set PF Reset Done bit so PF/VF Mail Ops can work */
+ 	ctrl_ext = IXGBE_READ_REG(hw, IXGBE_CTRL_EXT);
+ 	ctrl_ext |= IXGBE_CTRL_EXT_PFRSTD;
+@@ -7270,6 +7312,32 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 	netdev->stats.rx_length_errors = hwstats->rlec;
+ 	netdev->stats.rx_crc_errors = hwstats->crcerrs;
+ 	netdev->stats.rx_missed_errors = total_mpc;
++
++	/* VF Stats Collection - skip while resetting because these
++	 * are not clear on read and otherwise you'll sometimes get
++	 * crazy values.
++	 */
++	if (!test_bit(__IXGBE_RESETTING, &adapter->state)) {
++		for (i = 0; i < adapter->num_vfs; i++) {
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFGPRC(i),
++					adapter->vfinfo[i].last_vfstats.gprc,
++					adapter->vfinfo[i].vfstats.gprc);
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFGPTC(i),
++					adapter->vfinfo[i].last_vfstats.gptc,
++					adapter->vfinfo[i].vfstats.gptc);
++			UPDATE_VF_COUNTER_36bit(IXGBE_PVFGORC_LSB(i),
++					IXGBE_PVFGORC_MSB(i),
++					adapter->vfinfo[i].last_vfstats.gorc,
++					adapter->vfinfo[i].vfstats.gorc);
++			UPDATE_VF_COUNTER_36bit(IXGBE_PVFGOTC_LSB(i),
++					IXGBE_PVFGOTC_MSB(i),
++					adapter->vfinfo[i].last_vfstats.gotc,
++					adapter->vfinfo[i].vfstats.gotc);
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFMPRC(i),
++					adapter->vfinfo[i].last_vfstats.mprc,
++					adapter->vfinfo[i].vfstats.mprc);
++		}
++	}
+ }
+ 
  /**
-  * ice_set_rxfh - set the Rx flow hash indirection table
-  * @netdev: network interface device structure
-@@ -4102,6 +4134,7 @@ static const struct ethtool_ops ice_ethtool_ops = {
- 	.set_pauseparam		= ice_set_pauseparam,
- 	.get_rxfh_key_size	= ice_get_rxfh_key_size,
- 	.get_rxfh_indir_size	= ice_get_rxfh_indir_size,
-+	.get_rxfh_context	= ice_get_rxfh_context,
- 	.get_rxfh		= ice_get_rxfh,
- 	.set_rxfh		= ice_set_rxfh,
- 	.get_channels		= ice_get_channels,
+@@ -8995,6 +9063,23 @@ static void ixgbe_get_stats64(struct net_device *netdev,
+ 	stats->rx_missed_errors	= netdev->stats.rx_missed_errors;
+ }
+ 
++static int ixgbe_ndo_get_vf_stats(struct net_device *netdev, int vf,
++				  struct ifla_vf_stats *vf_stats)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++
++	if (vf < 0 || vf >= adapter->num_vfs)
++		return -EINVAL;
++
++	vf_stats->rx_packets = adapter->vfinfo[vf].vfstats.gprc;
++	vf_stats->rx_bytes   = adapter->vfinfo[vf].vfstats.gorc;
++	vf_stats->tx_packets = adapter->vfinfo[vf].vfstats.gptc;
++	vf_stats->tx_bytes   = adapter->vfinfo[vf].vfstats.gotc;
++	vf_stats->multicast  = adapter->vfinfo[vf].vfstats.mprc;
++
++	return 0;
++}
++
+ #ifdef CONFIG_IXGBE_DCB
+ /**
+  * ixgbe_validate_rtr - verify 802.1Qp to Rx packet buffer mapping is valid.
+@@ -10311,6 +10396,7 @@ static const struct net_device_ops ixgbe_netdev_ops = {
+ 	.ndo_set_vf_rss_query_en = ixgbe_ndo_set_vf_rss_query_en,
+ 	.ndo_set_vf_trust	= ixgbe_ndo_set_vf_trust,
+ 	.ndo_get_vf_config	= ixgbe_ndo_get_vf_config,
++	.ndo_get_vf_stats	= ixgbe_ndo_get_vf_stats,
+ 	.ndo_get_stats64	= ixgbe_get_stats64,
+ 	.ndo_setup_tc		= __ixgbe_setup_tc,
+ #ifdef IXGBE_FCOE
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 6da9880d766a..7f7ea468ffa9 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -2533,6 +2533,13 @@ enum {
+ #define IXGBE_PVFTXDCTL(P)	(0x06028 + (0x40 * (P)))
+ #define IXGBE_PVFTDWBAL(P)	(0x06038 + (0x40 * (P)))
+ #define IXGBE_PVFTDWBAH(P)	(0x0603C + (0x40 * (P)))
++#define IXGBE_PVFGPRC(x)	(0x0101C + (0x40 * (x)))
++#define IXGBE_PVFGPTC(x)	(0x08300 + (0x04 * (x)))
++#define IXGBE_PVFGORC_LSB(x)	(0x01020 + (0x40 * (x)))
++#define IXGBE_PVFGORC_MSB(x)	(0x0D020 + (0x40 * (x)))
++#define IXGBE_PVFGOTC_LSB(x)	(0x08400 + (0x08 * (x)))
++#define IXGBE_PVFGOTC_MSB(x)	(0x08404 + (0x08 * (x)))
++#define IXGBE_PVFMPRC(x)	(0x0D01C + (0x40 * (x)))
+ 
+ #define IXGBE_PVFTDWBALn(q_per_pool, vf_number, vf_q_index) \
+ 		(IXGBE_PVFTDWBAL((q_per_pool)*(vf_number) + (vf_q_index)))
 -- 
-2.27.0
+2.32.0
+
+
+
+
+Amazon Development Center Germany GmbH
+Krausenstr. 38
+10117 Berlin
+Geschaeftsfuehrung: Christian Schlaeger, Jonathan Weiss
+Eingetragen am Amtsgericht Charlottenburg unter HRB 149173 B
+Sitz: Berlin
+Ust-ID: DE 289 237 879
+
+
 
