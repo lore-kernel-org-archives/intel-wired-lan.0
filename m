@@ -1,23 +1,25 @@
 From: naamax.meir <naamax.meir@linux.intel.com>
-Date: Wed, 4 May 2022 11:25:14 +0300
-Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Change type of the
- 'igc_check_downshift' method
-In-Reply-To: <20220423165502.838143-1-sasha.neftin@intel.com>
-References: <20220423165502.838143-1-sasha.neftin@intel.com>
-Message-ID: <cb18dcef-08da-f932-bfed-72048babc396@linux.intel.com>
+Date: Wed, 4 May 2022 11:26:59 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove unused phy_type
+ enum
+In-Reply-To: <20220413053317.3297670-1-sasha.neftin@intel.com>
+References: <20220413053317.3297670-1-sasha.neftin@intel.com>
+Message-ID: <564b6bb4-f9cd-c9ce-8d32-f51b49823262@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/23/2022 19:55, Sasha Neftin wrote:
-> The 'igc_check_downshift' method always return 0 value. There is no point
-> return value. Change the return type of this method to void.
+On 4/13/2022 08:33, Sasha Neftin wrote:
+> Complete to commit 8e153faf5827 ("igc: Remove unused phy type")
+> i225 parts have only one phy. There is no point to use phy_type enum.
+> Clean up the code accordingly, and get rid of the unused enum lines.
 > 
 > Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 > ---
->   drivers/net/ethernet/intel/igc/igc_phy.c | 6 +-----
->   drivers/net/ethernet/intel/igc/igc_phy.h | 2 +-
->   2 files changed, 2 insertions(+), 6 deletions(-)
+>   drivers/net/ethernet/intel/igc/igc_base.c |  2 --
+>   drivers/net/ethernet/intel/igc/igc_hw.h   |  7 -------
+>   drivers/net/ethernet/intel/igc/igc_phy.c  | 10 +++-------
+>   3 files changed, 3 insertions(+), 16 deletions(-)
 Tested-by: Naama Meir <naamax.meir@linux.intel.com>
