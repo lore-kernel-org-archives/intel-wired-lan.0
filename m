@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Thu,  5 May 2022 13:06:45 +0300
-Subject: [Intel-wired-lan] [PATCH ipsec-next 8/8] xfrm: drop not needed
- flags variable in XFRM offload struct
+Date: Thu,  5 May 2022 13:06:44 +0300
+Subject: [Intel-wired-lan] [PATCH ipsec-next 7/8] net/mlx5e: Use XFRM state
+ direction instead of flags
 In-Reply-To: <cover.1651743750.git.leonro@nvidia.com>
 References: <cover.1651743750.git.leonro@nvidia.com>
-Message-ID: <b0c39ee6e266ee021b810259fd73f5701fa929d1.1651743750.git.leonro@nvidia.com>
+Message-ID: <a8e511b7d8446e4c1c5414c44a6a81de62f116eb.1651743750.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,49 +13,49 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-After drivers were converted to rely on direction, the flags is not
-used anymore and can be removed.
+Convert mlx5 driver to use XFRM state direction.
 
 Reviewed-by: Raed Salem <raeds@nvidia.com>
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- include/net/xfrm.h     | 1 -
- net/xfrm/xfrm_device.c | 3 ---
- 2 files changed, 4 deletions(-)
+ .../net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c   | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/include/net/xfrm.h b/include/net/xfrm.h
-index 45422f7be0c5..736c349de8bf 100644
---- a/include/net/xfrm.h
-+++ b/include/net/xfrm.h
-@@ -136,7 +136,6 @@ struct xfrm_dev_offload {
- 	netdevice_tracker	dev_tracker;
- 	struct net_device	*real_dev;
- 	unsigned long		offload_handle;
--	u8			flags;
- 	u8			dir : 2;
- };
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c b/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c
+index 35e2bb301c26..2a8fd7020622 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c
+@@ -172,9 +172,9 @@ mlx5e_ipsec_build_accel_xfrm_attrs(struct mlx5e_ipsec_sa_entry *sa_entry,
+ 	}
  
-diff --git a/net/xfrm/xfrm_device.c b/net/xfrm/xfrm_device.c
-index c818afca9137..35c7e89b2e7d 100644
---- a/net/xfrm/xfrm_device.c
-+++ b/net/xfrm/xfrm_device.c
-@@ -264,8 +264,6 @@ int xfrm_dev_state_add(struct net *net, struct xfrm_state *x,
- 	xso->dev = dev;
- 	netdev_tracker_alloc(dev, &xso->dev_tracker, GFP_ATOMIC);
- 	xso->real_dev = dev;
--	/* Don't forward bit that is not implemented */
--	xso->flags = xuo->flags & ~XFRM_OFFLOAD_IPV6;
+ 	/* action */
+-	attrs->action = (!(x->xso.flags & XFRM_OFFLOAD_INBOUND)) ?
+-			MLX5_ACCEL_ESP_ACTION_ENCRYPT :
+-			MLX5_ACCEL_ESP_ACTION_DECRYPT;
++	attrs->action = (x->xso.dir == XFRM_DEV_OFFLOAD_OUT) ?
++				MLX5_ACCEL_ESP_ACTION_ENCRYPT :
++				      MLX5_ACCEL_ESP_ACTION_DECRYPT;
+ 	/* flags */
+ 	attrs->flags |= (x->props.mode == XFRM_MODE_TRANSPORT) ?
+ 			MLX5_ACCEL_ESP_FLAGS_TRANSPORT :
+@@ -306,7 +306,7 @@ static int mlx5e_xfrm_add_state(struct xfrm_state *x)
+ 	if (err)
+ 		goto err_hw_ctx;
  
- 	if (xuo->flags & XFRM_OFFLOAD_INBOUND)
- 		xso->dir = XFRM_DEV_OFFLOAD_IN;
-@@ -274,7 +272,6 @@ int xfrm_dev_state_add(struct net *net, struct xfrm_state *x,
+-	if (x->xso.flags & XFRM_OFFLOAD_INBOUND) {
++	if (x->xso.dir == XFRM_DEV_OFFLOAD_IN) {
+ 		err = mlx5e_ipsec_sadb_rx_add(sa_entry);
+ 		if (err)
+ 			goto err_add_rule;
+@@ -333,7 +333,7 @@ static void mlx5e_xfrm_del_state(struct xfrm_state *x)
+ {
+ 	struct mlx5e_ipsec_sa_entry *sa_entry = to_ipsec_sa_entry(x);
  
- 	err = dev->xfrmdev_ops->xdo_dev_state_add(x);
- 	if (err) {
--		xso->flags = 0;
- 		xso->dev = NULL;
- 		xso->dir = 0;
- 		xso->real_dev = NULL;
+-	if (x->xso.flags & XFRM_OFFLOAD_INBOUND)
++	if (x->xso.dir == XFRM_DEV_OFFLOAD_IN)
+ 		mlx5e_ipsec_sadb_rx_del(sa_entry);
+ }
+ 
 -- 
 2.35.1
 
