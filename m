@@ -1,10 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Thu,  5 May 2022 13:06:40 +0300
-Subject: [Intel-wired-lan] [PATCH ipsec-next 3/8] xfrm: rename
- xfrm_state_offload struct to allow reuse
+Date: Thu,  5 May 2022 13:06:42 +0300
+Subject: [Intel-wired-lan] [PATCH ipsec-next 5/8] ixgbe: propagate XFRM
+ offload state direction instead of flags
 In-Reply-To: <cover.1651743750.git.leonro@nvidia.com>
 References: <cover.1651743750.git.leonro@nvidia.com>
-Message-ID: <2a59f8a4bfa849da0b3a9931bc2f687a6efdb74b.1651743750.git.leonro@nvidia.com>
+Message-ID: <136e50b0e7daad71a2e3516427133ec8296fc4d0.1651743750.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,116 +13,116 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-The struct xfrm_state_offload has all fields needed to hold information
-for offloaded policies too. In order to do not create new struct with
-same fields, let's rename existing one and reuse it later.
+Convert the ixgbe driver to rely on XFRM offload state direction instead
+of flags bits that were not checked at all.
 
 Reviewed-by: Raed Salem <raeds@nvidia.com>
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- include/net/xfrm.h     | 10 +++++-----
- net/xfrm/xfrm_device.c |  2 +-
- net/xfrm/xfrm_state.c  |  4 ++--
- net/xfrm/xfrm_user.c   |  2 +-
- 4 files changed, 9 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c | 9 ++++-----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h | 2 +-
+ drivers/net/ethernet/intel/ixgbevf/ipsec.c     | 6 +++---
+ drivers/net/ethernet/intel/ixgbevf/ipsec.h     | 2 +-
+ 4 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/include/net/xfrm.h b/include/net/xfrm.h
-index 4e097423116c..bb20278d689c 100644
---- a/include/net/xfrm.h
-+++ b/include/net/xfrm.h
-@@ -126,7 +126,7 @@ struct xfrm_state_walk {
- 	struct xfrm_address_filter *filter;
- };
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+index 69d11ff7677d..774de63dd93a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
+@@ -585,7 +585,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs)
+ 		return -EINVAL;
+ 	}
  
--struct xfrm_state_offload {
-+struct xfrm_dev_offload {
- 	struct net_device	*dev;
- 	netdevice_tracker	dev_tracker;
- 	struct net_device	*real_dev;
-@@ -246,7 +246,7 @@ struct xfrm_state {
- 	struct xfrm_lifetime_cur curlft;
- 	struct hrtimer		mtimer;
+-	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
++	if (xs->xso.dir == XFRM_DEV_OFFLOAD_IN) {
+ 		struct rx_sa rsa;
  
--	struct xfrm_state_offload xso;
-+	struct xfrm_dev_offload xso;
+ 		if (xs->calg) {
+@@ -757,7 +757,7 @@ static void ixgbe_ipsec_del_sa(struct xfrm_state *xs)
+ 	u32 zerobuf[4] = {0, 0, 0, 0};
+ 	u16 sa_idx;
  
- 	/* used to fix curlft->add_time when changing date */
- 	long		saved_tmo;
-@@ -1865,7 +1865,7 @@ bool xfrm_dev_offload_ok(struct sk_buff *skb, struct xfrm_state *x);
+-	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
++	if (xs->xso.dir == XFRM_DEV_OFFLOAD_IN) {
+ 		struct rx_sa *rsa;
+ 		u8 ipi;
  
- static inline void xfrm_dev_state_advance_esn(struct xfrm_state *x)
- {
--	struct xfrm_state_offload *xso = &x->xso;
-+	struct xfrm_dev_offload *xso = &x->xso;
+@@ -903,8 +903,7 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
+ 	/* Tx IPsec offload doesn't seem to work on this
+ 	 * device, so block these requests for now.
+ 	 */
+-	sam->flags = sam->flags & ~XFRM_OFFLOAD_IPV6;
+-	if (sam->flags != XFRM_OFFLOAD_INBOUND) {
++	if (sam->dir != XFRM_DEV_OFFLOAD_IN) {
+ 		err = -EOPNOTSUPP;
+ 		goto err_out;
+ 	}
+@@ -915,7 +914,7 @@ int ixgbe_ipsec_vf_add_sa(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
+ 		goto err_out;
+ 	}
  
- 	if (xso->dev && xso->dev->xfrmdev_ops->xdo_dev_state_advance_esn)
- 		xso->dev->xfrmdev_ops->xdo_dev_state_advance_esn(x);
-@@ -1891,7 +1891,7 @@ static inline bool xfrm_dst_offload_ok(struct dst_entry *dst)
+-	xs->xso.flags = sam->flags;
++	xs->xso.dir = sam->dir;
+ 	xs->id.spi = sam->spi;
+ 	xs->id.proto = sam->proto;
+ 	xs->props.family = sam->family;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+index d2b64ff8eb4e..809ab51a7842 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.h
+@@ -74,7 +74,7 @@ struct ixgbe_ipsec {
  
- static inline void xfrm_dev_state_delete(struct xfrm_state *x)
- {
--	struct xfrm_state_offload *xso = &x->xso;
-+	struct xfrm_dev_offload *xso = &x->xso;
+ struct sa_mbx_msg {
+ 	__be32 spi;
+-	u8 flags;
++	u8 dir;
+ 	u8 proto;
+ 	u16 family;
+ 	__be32 addr[4];
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ipsec.c b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+index e763cee0695e..9984ebc62d78 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+@@ -25,7 +25,7 @@ static int ixgbevf_ipsec_set_pf_sa(struct ixgbevf_adapter *adapter,
  
- 	if (xso->dev)
- 		xso->dev->xfrmdev_ops->xdo_dev_state_delete(x);
-@@ -1899,7 +1899,7 @@ static inline void xfrm_dev_state_delete(struct xfrm_state *x)
+ 	/* send the important bits to the PF */
+ 	sam = (struct sa_mbx_msg *)(&msgbuf[1]);
+-	sam->flags = xs->xso.flags;
++	sam->dir = xs->xso.dir;
+ 	sam->spi = xs->id.spi;
+ 	sam->proto = xs->id.proto;
+ 	sam->family = xs->props.family;
+@@ -280,7 +280,7 @@ static int ixgbevf_ipsec_add_sa(struct xfrm_state *xs)
+ 		return -EINVAL;
+ 	}
  
- static inline void xfrm_dev_state_free(struct xfrm_state *x)
- {
--	struct xfrm_state_offload *xso = &x->xso;
-+	struct xfrm_dev_offload *xso = &x->xso;
- 	struct net_device *dev = xso->dev;
+-	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
++	if (xs->xso.dir == XFRM_DEV_OFFLOAD_IN) {
+ 		struct rx_sa rsa;
  
- 	if (dev && dev->xfrmdev_ops) {
-diff --git a/net/xfrm/xfrm_device.c b/net/xfrm/xfrm_device.c
-index dbd923e1d5f0..6e4d3cb2e24d 100644
---- a/net/xfrm/xfrm_device.c
-+++ b/net/xfrm/xfrm_device.c
-@@ -212,7 +212,7 @@ int xfrm_dev_state_add(struct net *net, struct xfrm_state *x,
- 	int err;
- 	struct dst_entry *dst;
- 	struct net_device *dev;
--	struct xfrm_state_offload *xso = &x->xso;
-+	struct xfrm_dev_offload *xso = &x->xso;
- 	xfrm_address_t *saddr;
- 	xfrm_address_t *daddr;
+ 		if (xs->calg) {
+@@ -394,7 +394,7 @@ static void ixgbevf_ipsec_del_sa(struct xfrm_state *xs)
+ 	adapter = netdev_priv(dev);
+ 	ipsec = adapter->ipsec;
  
-diff --git a/net/xfrm/xfrm_state.c b/net/xfrm/xfrm_state.c
-index b749935152ba..08564e0eef20 100644
---- a/net/xfrm/xfrm_state.c
-+++ b/net/xfrm/xfrm_state.c
-@@ -751,7 +751,7 @@ xfrm_dev_state_flush_secctx_check(struct net *net, struct net_device *dev, bool
+-	if (xs->xso.flags & XFRM_OFFLOAD_INBOUND) {
++	if (xs->xso.dir == XFRM_DEV_OFFLOAD_IN) {
+ 		sa_idx = xs->xso.offload_handle - IXGBE_IPSEC_BASE_RX_INDEX;
  
- 	for (i = 0; i <= net->xfrm.state_hmask; i++) {
- 		struct xfrm_state *x;
--		struct xfrm_state_offload *xso;
-+		struct xfrm_dev_offload *xso;
+ 		if (!ipsec->rx_tbl[sa_idx].used) {
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ipsec.h b/drivers/net/ethernet/intel/ixgbevf/ipsec.h
+index 3740725041c3..d22990165353 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ipsec.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ipsec.h
+@@ -57,7 +57,7 @@ struct ixgbevf_ipsec {
  
- 		hlist_for_each_entry(x, net->xfrm.state_bydst+i, bydst) {
- 			xso = &x->xso;
-@@ -835,7 +835,7 @@ int xfrm_dev_state_flush(struct net *net, struct net_device *dev, bool task_vali
- 	err = -ESRCH;
- 	for (i = 0; i <= net->xfrm.state_hmask; i++) {
- 		struct xfrm_state *x;
--		struct xfrm_state_offload *xso;
-+		struct xfrm_dev_offload *xso;
- restart:
- 		hlist_for_each_entry(x, net->xfrm.state_bydst+i, bydst) {
- 			xso = &x->xso;
-diff --git a/net/xfrm/xfrm_user.c b/net/xfrm/xfrm_user.c
-index 64fa8fdd6bbd..7217c57a76e9 100644
---- a/net/xfrm/xfrm_user.c
-+++ b/net/xfrm/xfrm_user.c
-@@ -840,7 +840,7 @@ static int copy_sec_ctx(struct xfrm_sec_ctx *s, struct sk_buff *skb)
- 	return 0;
- }
- 
--static int copy_user_offload(struct xfrm_state_offload *xso, struct sk_buff *skb)
-+static int copy_user_offload(struct xfrm_dev_offload *xso, struct sk_buff *skb)
- {
- 	struct xfrm_user_offload *xuo;
- 	struct nlattr *attr;
+ struct sa_mbx_msg {
+ 	__be32 spi;
+-	u8 flags;
++	u8 dir;
+ 	u8 proto;
+ 	u16 family;
+ 	__be32 addr[4];
 -- 
 2.35.1
 
