@@ -1,8 +1,10 @@
 From: Leon Romanovsky <leon@kernel.org>
-Date: Thu,  5 May 2022 13:06:37 +0300
-Subject: [Intel-wired-lan] [PATCH ipsec-next 0/8] Be explicit with XFRM
- offload direction
-Message-ID: <cover.1651743750.git.leonro@nvidia.com>
+Date: Thu,  5 May 2022 13:06:38 +0300
+Subject: [Intel-wired-lan] [PATCH ipsec-next 1/8] xfrm: free not used
+ XFRM_ESP_NO_TRAILER flag
+In-Reply-To: <cover.1651743750.git.leonro@nvidia.com>
+References: <cover.1651743750.git.leonro@nvidia.com>
+Message-ID: <a8b37f45df031108d6b191916570a1005d645d38.1651743750.git.leonro@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,58 +13,79 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-Hi Steffen,
+After removal of Innova IPsec support from mlx5 driver, the last user
+of this XFRM_ESP_NO_TRAILER was gone too. This means that we can safely
+remove it as no other hardware is capable (or need) to remove ESP trailer.
 
-I may admit that the title of this series is not the best one as it
-contains straightforward cleanups and code that converts flags to
-something less confusing.
+Reviewed-by: Raed Salem <raeds@nvidia.com>
+Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+---
+ include/net/xfrm.h | 2 +-
+ net/ipv4/esp4.c    | 6 ------
+ net/ipv6/esp6.c    | 6 ------
+ 3 files changed, 1 insertion(+), 13 deletions(-)
 
-This series follows removal of FPGA IPsec code from the mlx5 driver and
-based on net-next commit 4950b6990e3b ("Merge branch 'ocelot-vcap-cleanups'").
-
-As such, first two patches delete code that was used by mlx5 FPGA code
-but isn't needed anymore.
-
-Third patch is simple struct rename.
-
-Rest of the patches separate user's provided flags variable from driver's
-usage. This allows us to created more simple in-kernel interface, that
-supports type checking without blending different properties into one
-variable. It is achieved by converting flags to specific bitfield variables
-with clear, meaningful names.
-    
-Such change allows us more clear addition of new input flags needed to
-mark IPsec offload type.
-
-The followup code uses this extensively:
-https://git.kernel.org/pub/scm/linux/kernel/git/leon/linux-rdma.git/log/?h=xfrm-next
-
-Thanks
-
-Leon Romanovsky (8):
-  xfrm: free not used XFRM_ESP_NO_TRAILER flag
-  xfrm: delete not used number of external headers
-  xfrm: rename xfrm_state_offload struct to allow reuse
-  xfrm: store and rely on direction to construct offload flags
-  ixgbe: propagate XFRM offload state direction instead of flags
-  netdevsim: rely on XFRM state direction instead of flags
-  net/mlx5e: Use XFRM state direction instead of flags
-  xfrm: drop not needed flags variable in XFRM offload struct
-
- .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    |  9 ++++-----
- .../net/ethernet/intel/ixgbe/ixgbe_ipsec.h    |  2 +-
- drivers/net/ethernet/intel/ixgbevf/ipsec.c    |  6 +++---
- drivers/net/ethernet/intel/ixgbevf/ipsec.h    |  2 +-
- .../mellanox/mlx5/core/en_accel/ipsec.c       | 10 +++++-----
- drivers/net/netdevsim/ipsec.c                 |  2 +-
- include/net/xfrm.h                            | 20 +++++++++++--------
- net/ipv4/esp4.c                               |  6 ------
- net/ipv6/esp6.c                               |  6 ------
- net/xfrm/xfrm_device.c                        | 15 +++++++-------
- net/xfrm/xfrm_state.c                         |  4 ++--
- net/xfrm/xfrm_user.c                          |  5 +++--
- 12 files changed, 40 insertions(+), 47 deletions(-)
-
+diff --git a/include/net/xfrm.h b/include/net/xfrm.h
+index 6fb899ff5afc..b41278abeeaa 100644
+--- a/include/net/xfrm.h
++++ b/include/net/xfrm.h
+@@ -1006,7 +1006,7 @@ struct xfrm_offload {
+ #define	CRYPTO_FALLBACK		8
+ #define	XFRM_GSO_SEGMENT	16
+ #define	XFRM_GRO		32
+-#define	XFRM_ESP_NO_TRAILER	64
++/* 64 is free */
+ #define	XFRM_DEV_RESUME		128
+ #define	XFRM_XMIT		256
+ 
+diff --git a/net/ipv4/esp4.c b/net/ipv4/esp4.c
+index d747166bb291..b21238df3301 100644
+--- a/net/ipv4/esp4.c
++++ b/net/ipv4/esp4.c
+@@ -705,7 +705,6 @@ static int esp_output(struct xfrm_state *x, struct sk_buff *skb)
+ static inline int esp_remove_trailer(struct sk_buff *skb)
+ {
+ 	struct xfrm_state *x = xfrm_input_state(skb);
+-	struct xfrm_offload *xo = xfrm_offload(skb);
+ 	struct crypto_aead *aead = x->data;
+ 	int alen, hlen, elen;
+ 	int padlen, trimlen;
+@@ -717,11 +716,6 @@ static inline int esp_remove_trailer(struct sk_buff *skb)
+ 	hlen = sizeof(struct ip_esp_hdr) + crypto_aead_ivsize(aead);
+ 	elen = skb->len - hlen;
+ 
+-	if (xo && (xo->flags & XFRM_ESP_NO_TRAILER)) {
+-		ret = xo->proto;
+-		goto out;
+-	}
+-
+ 	if (skb_copy_bits(skb, skb->len - alen - 2, nexthdr, 2))
+ 		BUG();
+ 
+diff --git a/net/ipv6/esp6.c b/net/ipv6/esp6.c
+index f2120e92caf1..36e1d0f8dd06 100644
+--- a/net/ipv6/esp6.c
++++ b/net/ipv6/esp6.c
+@@ -741,7 +741,6 @@ static int esp6_output(struct xfrm_state *x, struct sk_buff *skb)
+ static inline int esp_remove_trailer(struct sk_buff *skb)
+ {
+ 	struct xfrm_state *x = xfrm_input_state(skb);
+-	struct xfrm_offload *xo = xfrm_offload(skb);
+ 	struct crypto_aead *aead = x->data;
+ 	int alen, hlen, elen;
+ 	int padlen, trimlen;
+@@ -753,11 +752,6 @@ static inline int esp_remove_trailer(struct sk_buff *skb)
+ 	hlen = sizeof(struct ip_esp_hdr) + crypto_aead_ivsize(aead);
+ 	elen = skb->len - hlen;
+ 
+-	if (xo && (xo->flags & XFRM_ESP_NO_TRAILER)) {
+-		ret = xo->proto;
+-		goto out;
+-	}
+-
+ 	ret = skb_copy_bits(skb, skb->len - alen - 2, nexthdr, 2);
+ 	BUG_ON(ret);
+ 
 -- 
 2.35.1
 
