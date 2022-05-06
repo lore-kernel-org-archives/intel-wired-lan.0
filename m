@@ -1,50 +1,51 @@
-From: Maximilian Heyne <mheyne@amazon.de>
-Date: Fri, 6 May 2022 06:44:40 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] drivers,
- ixgbe: show VF statistics
-In-Reply-To: <20220504201632.2a41a3b9@kernel.org>
-Message-ID: <20220506064440.57940-1-mheyne@amazon.de>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Fri, 6 May 2022 09:11:12 +0000
+Subject: [Intel-wired-lan] [PATCH linux-firmware] ice: Update package to
+ 1.3.28.0
+In-Reply-To: <20220429170433.7298-1-anthony.l.nguyen@intel.com>
+References: <20220429170433.7298-1-anthony.l.nguyen@intel.com>
+Message-ID: <BYAPR11MB33674231F42DD52D4A04336BFCC59@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2022-05-04T20:16:32-07:00   Jakub Kicinski <kuba@kernel.org> wrote:
 
-> On Tue, 3 May 2022 15:00:17 +0000 Maximilian Heyne wrote:
-> > +		for (i = 0; i < adapter->num_vfs; i++) {
-> > +			ethtool_sprintf(&p, "VF %u Rx Packets", i);
-> > +			ethtool_sprintf(&p, "VF %u Rx Bytes", i);
-> > +			ethtool_sprintf(&p, "VF %u Tx Packets", i);
-> > +			ethtool_sprintf(&p, "VF %u Tx Bytes", i);
-> > +			ethtool_sprintf(&p, "VF %u MC Packets", i);
-> > +		}
+
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Tony Nguyen
+> Sent: Friday, April 29, 2022 10:35 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH linux-firmware] ice: Update package to
+> 1.3.28.0
 > 
-> Please drop the ethtool stats. We've been trying to avoid duplicating
-> the same stats in ethtool and iproute2 for a while now.
+> Update package file to 1.3.28.0 which adds support for classifying IP
+> fragmented packets.
+> 
+> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> ---
+>  WHENCE                                        |   4 ++--
+>  .../{ice-1.3.26.0.pkg => ice-1.3.28.0.pkg}    | Bin 635256 -> 684408 bytes
+>  2 files changed, 2 insertions(+), 2 deletions(-)  rename intel/ice/ddp/{ice-
+> 1.3.26.0.pkg => ice-1.3.28.0.pkg} (72%)
+> 
+> diff --git a/WHENCE b/WHENCE
+> index 56f3cea45571..4d44fafc925c 100644
+> --- a/WHENCE
+> +++ b/WHENCE
+> @@ -5992,8 +5992,8 @@ Licence: Redistributable. See LICENSE.amlogic_vdec
+> for details.
+> 
+>  Driver: ice - Intel(R) Ethernet Connection E800 Series
+> 
+> -File: intel/ice/ddp/ice-1.3.26.0.pkg
+> -Link: intel/ice/ddp/ice.pkg -> ice-1.3.26.0.pkg
+> +File: intel/ice/ddp/ice-1.3.28.0.pkg
+> +Link: intel/ice/ddp/ice.pkg -> ice-1.3.28.0.pkg
+> 
+>  License: Redistributable. See LICENSE.ice for details
 > 
 
-I can see the point that standard metrics should only be reported via the
-iproute2 interface. However, in this special case this patch was intended to
-converge the out-of-tree driver with the in-tree version. These missing stats
-were breaking our userspace. If we now switch solely to iproute2 based
-statistics both driver versions would diverge even more. So depending on where a
-user gets the ixgbe driver from, they have to work-around.
-
-I can change the patch as requested, but it will contradict the inital
-intention. At least Intel should then port this change to the external driver as
-well. Let's get a statement from them.
-
-
-
-Amazon Development Center Germany GmbH
-Krausenstr. 38
-10117 Berlin
-Geschaeftsfuehrung: Christian Schlaeger, Jonathan Weiss
-Eingetragen am Amtsgericht Charlottenburg unter HRB 149173 B
-Sitz: Berlin
-Ust-ID: DE 289 237 879
-
-
-
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
