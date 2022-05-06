@@ -1,12 +1,10 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 6 May 2022 09:20:14 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v2] drivers,
- ixgbe: show VF statistics
-In-Reply-To: <20220506091322.1be7ee6e@kernel.org>
-References: <20220504201632.2a41a3b9@kernel.org>
- <20220506064440.57940-1-mheyne@amazon.de>
- <20220506091322.1be7ee6e@kernel.org>
-Message-ID: <7775a23b-199e-b0f2-fe6b-06a667ac9dee@intel.com>
+From: Sreenivas, Bharathi <bharathi.sreenivas@intel.com>
+Date: Fri, 6 May 2022 16:21:19 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Expose RSS
+ indirection tables for queue groups via ethtool
+In-Reply-To: <20220503161339.2287738-1-sudheer.mogilappagari@intel.com>
+References: <20220503161339.2287738-1-sudheer.mogilappagari@intel.com>
+Message-ID: <MN2PR11MB361456918E18D6D4DCEDCB5A8EC59@MN2PR11MB3614.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,49 +13,40 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-On 5/6/2022 9:13 AM, Jakub Kicinski wrote:
-> On Fri, 6 May 2022 06:44:40 +0000 Maximilian Heyne wrote:
->> On 2022-05-04T20:16:32-07:00   Jakub Kicinski <kuba@kernel.org> wrote:
->>
->>> On Tue, 3 May 2022 15:00:17 +0000 Maximilian Heyne wrote:
->>>> +		for (i = 0; i < adapter->num_vfs; i++) {
->>>> +			ethtool_sprintf(&p, "VF %u Rx Packets", i);
->>>> +			ethtool_sprintf(&p, "VF %u Rx Bytes", i);
->>>> +			ethtool_sprintf(&p, "VF %u Tx Packets", i);
->>>> +			ethtool_sprintf(&p, "VF %u Tx Bytes", i);
->>>> +			ethtool_sprintf(&p, "VF %u MC Packets", i);
->>>> +		}
->>>
->>> Please drop the ethtool stats. We've been trying to avoid duplicating
->>> the same stats in ethtool and iproute2 for a while now.
->>
->> I can see the point that standard metrics should only be reported via the
->> iproute2 interface. However, in this special case this patch was
->> intended to converge the out-of-tree driver with the in-tree version.
->> These missing stats were breaking our userspace. If we now switch
->> solely to iproute2 based statistics both driver versions would
->> diverge even more. So depending on where a user gets the ixgbe driver
->> from, they have to work-around.
->>
->> I can change the patch as requested, but it will contradict the inital
->> intention. At least Intel should then port this change to the
->> external driver as well. Let's get a statement from them.
-
-We discussed this patch internally and concluded the correct approach 
-would be to not have the ethtool stats and use the VF info. Jakub beat 
-us to the comment. We would plan to port the iproute implementation to 
-OOT as well.
-
-> Ack, but we really want people to move towards using standard stats.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Sudheer Mogilappagari
+> Sent: Tuesday, May 3, 2022 9:44 PM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Expose RSS indirection
+> tables for queue groups via ethtool
 > 
-> Can you change the user space to first try reading the stats via
-> iproute2/rtnetlink? And fallback to random ethtool strings if not
-> available? That way it will work with any driver implementing the
-> standard API. Long term that'll make everyone's life easier.
+> From: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > 
-> Out-of-tree code cannot be an argument upstream, otherwise we'd
-> completely lose control over our APIs. Vendors could ship whatever
-> in their out of tree repo and then force us to accept it upstream.
+> When ADQ queue groups (TCs) are created via tc mqprio command, RSS
+> contexts and associated RSS indirection tables are configured automatically
+> per TC based on the queue ranges specified for each traffic class.
 > 
-> It's disappointing to see the vendor letting the uAPI of the out of
-> tree driver diverge from upstream, especially a driver this mature.
+> For ex:
+> tc qdisc add dev enp175s0f0 root mqprio num_tc 3 map 0 1 2 \
+> 	queues 2 at 0 8 at 2 4 at 10 hw 1 mode channel
+> 
+> will create 3 queue groups (TC 0-2) with queue ranges 2, 8 and 4 in 3 queue
+> groups. Each queue group is associated with its own RSS context and RSS
+> indirection table.
+> 
+> Add support to expose RSS indirection tables for all ADQ queue groups using
+> ethtool RSS contexts interface.
+> 	ethtool -x enp175s0f0 context <tc-num>
+> 
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> Signed-off-by: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>
+> ---
+> v2:
+> -Updated commit message based on Paul's review comments.
+> 
+> ---
+>  drivers/net/ethernet/intel/ice/ice_ethtool.c | 69 +++++++++++++++-----
+>  1 file changed, 51 insertions(+), 18 deletions(-)
+> 
+Tested-by: Bharathi Sreenivas <bharathi.sreenivas@intel.com>
