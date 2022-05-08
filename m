@@ -1,55 +1,44 @@
-From: Steffen Klassert <steffen.klassert@secunet.com>
-Date: Sat, 7 May 2022 09:28:35 +0200
-Subject: [Intel-wired-lan] [PATCH ipsec-next 0/8] Be explicit with XFRM
- offload direction
-In-Reply-To: <cover.1651743750.git.leonro@nvidia.com>
-References: <cover.1651743750.git.leonro@nvidia.com>
-Message-ID: <20220507072835.GI680067@gauss3.secunet.de>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Sun,  8 May 2022 10:09:05 +0300
+Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Enable GPT clock before
+ sending message to CSME
+Message-ID: <20220508070905.1878172-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 05, 2022 at 01:06:37PM +0300, Leon Romanovsky wrote:
-> From: Leon Romanovsky <leonro@nvidia.com>
-> 
-> Hi Steffen,
-> 
-> I may admit that the title of this series is not the best one as it
-> contains straightforward cleanups and code that converts flags to
-> something less confusing.
-> 
-> This series follows removal of FPGA IPsec code from the mlx5 driver and
-> based on net-next commit 4950b6990e3b ("Merge branch 'ocelot-vcap-cleanups'").
-> 
-> As such, first two patches delete code that was used by mlx5 FPGA code
-> but isn't needed anymore.
-> 
-> Third patch is simple struct rename.
-> 
-> Rest of the patches separate user's provided flags variable from driver's
-> usage. This allows us to created more simple in-kernel interface, that
-> supports type checking without blending different properties into one
-> variable. It is achieved by converting flags to specific bitfield variables
-> with clear, meaningful names.
->     
-> Such change allows us more clear addition of new input flags needed to
-> mark IPsec offload type.
-> 
-> The followup code uses this extensively:
-> https://git.kernel.org/pub/scm/linux/kernel/git/leon/linux-rdma.git/log/?h=xfrm-next
-> 
-> Thanks
-> 
-> Leon Romanovsky (8):
->   xfrm: free not used XFRM_ESP_NO_TRAILER flag
->   xfrm: delete not used number of external headers
->   xfrm: rename xfrm_state_offload struct to allow reuse
->   xfrm: store and rely on direction to construct offload flags
->   ixgbe: propagate XFRM offload state direction instead of flags
->   netdevsim: rely on XFRM state direction instead of flags
->   net/mlx5e: Use XFRM state direction instead of flags
->   xfrm: drop not needed flags variable in XFRM offload struct
+On corporate (CSME) ADL systems, the Ethernet Controller may stop working
+("HW unit hang") after exiting from the s0ix state. The reason is that
+CSME misses the message sent by the host. Enabling the dynamic GPT clock
+solves this problem. This clock is cleared upon HW initialization.
 
-Series applied, thanks a lot Leon!
+Fixes: 3e55d231716e ("e1000e: Add handshake with the CSME to support S0ix")
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
+Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+v2:
+Correct commit message and minor fix in comment.
+ drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index fa06f68c8c80..c64102b29862 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6494,6 +6494,10 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+ 
+ 	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
+ 	    hw->mac.type >= e1000_pch_adp) {
++		/* Keep the GPT clock enabled for CSME */
++		mac_data = er32(FEXTNVM);
++		mac_data |= BIT(3);
++		ew32(FEXTNVM, mac_data);
+ 		/* Request ME unconfigure the device from S0ix */
+ 		mac_data = er32(H2ME);
+ 		mac_data &= ~E1000_H2ME_START_DPG;
+-- 
+2.30.2
+
