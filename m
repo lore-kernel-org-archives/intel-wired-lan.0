@@ -1,47 +1,38 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Mon,  9 May 2022 21:01:18 +0200
-Subject: [Intel-wired-lan] [PATCH net] ice: ignore protocol field in GTP
- offload
-Message-ID: <20220509190118.7507-1-marcin.szycik@linux.intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Mon, 9 May 2022 15:46:03 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v6 2/2] net: vxlan: Add
+ extack support to vxlan_fdb_delete
+In-Reply-To: <ac4b6c650b6519cc56baa32ef20415460a5aa8ee.1651762830.git.eng.alaamohamedsoliman.am@gmail.com>
+References: <cover.1651762829.git.eng.alaamohamedsoliman.am@gmail.com>
+ <ac4b6c650b6519cc56baa32ef20415460a5aa8ee.1651762830.git.eng.alaamohamedsoliman.am@gmail.com>
+Message-ID: <20220509154603.4a7b4243@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit 34a897758efe ("ice: Add support for inner etype in switchdev")
-added the ability to match on inner ethertype. A side effect of that change
-is that it is now impossible to add some filters for protocols which do not
-contain inner ethtype field. tc requires the protocol field to be specified
-when providing certain other options, e.g. src_ip. This is a problem in
-case of GTP - when user wants to specify e.g. src_ip, they also need to
-specify protocol in tc command (otherwise tc fails with: Illegal "src_ip").
-Because GTP is a tunnel, the protocol field is treated as inner protocol.
-GTP does not contain inner ethtype field and the filter cannot be added.
+On Thu,  5 May 2022 17:09:58 +0200 Alaa Mohamed wrote:
+> +			NL_SET_ERR_MSG(extack,
+> +						  "DST, VNI, ifindex and port are mutually exclusive with NH_ID");
 
-To fix this, ignore the ethertype field in case of GTP filters.
+This continuation line still does not align with the opening bracket.
+Look here if your email client makes it hard to see:
 
-Fixes: 9a225f81f540 ("ice: Support GTP-U and GTP-C offload in switchdev")
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_tc_lib.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+https://lore.kernel.org/all/ac4b6c650b6519cc56baa32ef20415460a5aa8ee.1651762830.git.eng.alaamohamedsoliman.am at gmail.com/
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index 3acd9f921c44..734bfa121e24 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -994,7 +994,9 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
- 		n_proto_key = ntohs(match.key->n_proto);
- 		n_proto_mask = ntohs(match.mask->n_proto);
- 
--		if (n_proto_key == ETH_P_ALL || n_proto_key == 0) {
-+		if (n_proto_key == ETH_P_ALL || n_proto_key == 0 ||
-+		    fltr->tunnel_type == TNL_GTPU ||
-+		    fltr->tunnel_type == TNL_GTPC) {
- 			n_proto_key = 0;
- 			n_proto_mask = 0;
- 		} else {
--- 
-2.35.1
+Same story in patch 1:
 
+>  static int ocelot_port_fdb_del(struct ndmsg *ndm, struct nlattr *tb[],
+>  			       struct net_device *dev,
+> -			       const unsigned char *addr, u16 vid)
+> +			       const unsigned char *addr, u16 vid,
+> +				   struct netlink_ext_ack *extack)
+
+and here:
+
+>  static int vxlan_fdb_delete(struct ndmsg *ndm, struct nlattr *tb[],
+>  			    struct net_device *dev,
+> -			    const unsigned char *addr, u16 vid)
+> +			    const unsigned char *addr, u16 vid,
+> +				struct netlink_ext_ack *extack)
