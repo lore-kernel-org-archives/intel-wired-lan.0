@@ -1,70 +1,70 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 31 May 2022 13:40:37 -0700
-Subject: [Intel-wired-lan] [PATCH net v1 1/2] ice: Add error handling
- for queue config fail
-In-Reply-To: <20220531131835.3614-1-mateusz.palczewski@intel.com>
-References: <20220531131835.3614-1-mateusz.palczewski@intel.com>
-Message-ID: <2cceb264-8998-2f81-354b-b1331f71102d@intel.com>
+From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+Date: Mon,  9 May 2022 09:08:47 +0800
+Subject: [Intel-wired-lan] [PATCH] igc: Correct the launchtime offset
+Message-ID: <20220509010847.17492-1-muhammad.husaini.zulkifli@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+The launchtime offset can be corrected according to sections 7.5.2.6
+and 12.3.2 of the datasheet.
 
+Based on the preliminary data, this correction is roughly 1500ns.
+In the future, proper measurements must be taken, and corrections must take
+into account the various link speeds.
 
-On 5/31/2022 6:18 AM, Mateusz Palczewski wrote:
-> From: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-> 
-> Disable VF's RX/TX queues, when VIRTCHNL_OP_CONFIG_VSI_QUEUES fail.
-> Not disabling them might lead to scenario, where PF driver leaves VF
-> queues enabled, when VF's VSI failed queue config.
-> In this scenario VF should not have RX/TX queues enabled. If PF failed
-> to setup VF's queues, VF will reset due to TX timeouts in VF driver.
-> 
+Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_regs.h |  1 +
+ drivers/net/ethernet/intel/igc/igc_tsn.c  | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+)
 
-Patches for net need a Fixes tag.
-
-> Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-> Suggested-by: Slawomir Laba <slawomirx.laba@intel.com>
-> ---
->   drivers/net/ethernet/intel/ice/ice_virtchnl.c | 53 +++++++++----------
->   1 file changed, 26 insertions(+), 27 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> index 1d9b84c..4547bc1 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> @@ -1569,35 +1569,27 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
->    */
->   static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
->   {
-> -	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
-
-This removal seems like a refactor and unrelated to the bug. Please send 
-this change via net-next.
-
-Thanks,
-Tony
-
->   	struct virtchnl_vsi_queue_config_info *qci =
->   	    (struct virtchnl_vsi_queue_config_info *)msg;
->   	struct virtchnl_queue_pair_info *qpi;
->   	struct ice_pf *pf = vf->pf;
->   	struct ice_vsi *vsi;
-> -	int i, q_idx;
-> +	int i = -1, q_idx;
->   
-> -	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
-> -		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
->   		goto error_param;
-> -	}
->   
-> -	if (!ice_vc_isvalid_vsi_id(vf, qci->vsi_id)) {
-> -		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +	if (!ice_vc_isvalid_vsi_id(vf, qci->vsi_id))
->   		goto error_param;
-> -	}
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index e197a33d93a0..928d22b1ca22 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -231,6 +231,7 @@
+ #define IGC_BASET_H		0x3318
+ #define IGC_QBVCYCLET		0x331C
+ #define IGC_QBVCYCLET_S		0x3320
++#define IGC_GTXOFFSET		0x3310
+ 
+ #define IGC_STQT(_n)		(0x3324 + 0x4 * (_n))
+ #define IGC_ENDQT(_n)		(0x3334 + 0x4 * (_n))
+diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+index 0fce22de2ab8..3d4d0ab011e3 100644
+--- a/drivers/net/ethernet/intel/igc/igc_tsn.c
++++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+@@ -84,12 +84,26 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+ 	struct igc_hw *hw = &adapter->hw;
+ 	u32 tqavctrl, baset_l, baset_h;
+ 	u32 sec, nsec, cycle;
++	u16 tx_offset;
+ 	ktime_t base_time, systim;
+ 	int i;
+ 
+ 	cycle = adapter->cycle_time;
+ 	base_time = adapter->base_time;
+ 
++	switch (adapter->link_speed) {
++	/* TODO: This code use same transmit offset across all link speed as for now. */
++	case SPEED_10:
++	case SPEED_100:
++	case SPEED_1000:
++	case SPEED_2500:
++		tx_offset = 1500;
++		break;
++	default:
++		break;
++	}
++
++	wr32(IGC_GTXOFFSET, tx_offset);
+ 	wr32(IGC_TSAUXC, 0);
+ 	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
+ 	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
+-- 
+2.17.1
 
