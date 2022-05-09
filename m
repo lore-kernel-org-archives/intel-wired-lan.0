@@ -1,84 +1,123 @@
-From: Maximilian Heyne <mheyne@amazon.de>
-Date: Mon, 9 May 2022 07:39:15 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2] drivers,
- ixgbe: show VF statistics
-In-Reply-To: <7775a23b-199e-b0f2-fe6b-06a667ac9dee@intel.com>
-Message-ID: <20220509073915.28476-1-mheyne@amazon.de>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Mon,  9 May 2022 11:52:54 +0300
+Subject: [Intel-wired-lan] [PATCH v1 1/1] Revert "e1000e: Fix possible HW
+ unit hang after an s0ix exit"
+Message-ID: <20220509085254.2436296-1-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2022-05-06T09:20:14-07:00   Tony Nguyen <anthony.l.nguyen@intel.com> wrote:
-> On 5/6/2022 9:13 AM, Jakub Kicinski wrote:
-> > On Fri, 6 May 2022 06:44:40 +0000 Maximilian Heyne wrote:
-> >> On 2022-05-04T20:16:32-07:00   Jakub Kicinski <kuba@kernel.org> wrote:
-> >>
-> >>> On Tue, 3 May 2022 15:00:17 +0000 Maximilian Heyne wrote:
-> >>>> +		for (i = 0; i < adapter->num_vfs; i++) {
-> >>>> +			ethtool_sprintf(&p, "VF %u Rx Packets", i);
-> >>>> +			ethtool_sprintf(&p, "VF %u Rx Bytes", i);
-> >>>> +			ethtool_sprintf(&p, "VF %u Tx Packets", i);
-> >>>> +			ethtool_sprintf(&p, "VF %u Tx Bytes", i);
-> >>>> +			ethtool_sprintf(&p, "VF %u MC Packets", i);
-> >>>> +		}
-> >>>
-> >>> Please drop the ethtool stats. We've been trying to avoid duplicating
-> >>> the same stats in ethtool and iproute2 for a while now.
-> >>
-> >> I can see the point that standard metrics should only be reported via the
-> >> iproute2 interface. However, in this special case this patch was
-> >> intended to converge the out-of-tree driver with the in-tree version.
-> >> These missing stats were breaking our userspace. If we now switch
-> >> solely to iproute2 based statistics both driver versions would
-> >> diverge even more. So depending on where a user gets the ixgbe driver
-> >> from, they have to work-around.
-> >>
-> >> I can change the patch as requested, but it will contradict the inital
-> >> intention. At least Intel should then port this change to the
-> >> external driver as well. Let's get a statement from them.
-> 
-> We discussed this patch internally and concluded the correct approach 
-> would be to not have the ethtool stats and use the VF info. Jakub beat 
-> us to the comment. We would plan to port the iproute implementation to 
-> OOT as well.
+This reverts commit 1866aa0d0d6492bc2f8d22d0df49abaccf50cddd.
 
-Ok, then I'll send a follow-up patch without the ethtool changes. I'm happy to
-get some kind of convergence between the out-of-tree driver and upstream. 
+Commit 1866aa0d0d64("e1000e: Fix possible HW unit hang after an s0ix exit")
+was a workaround for CSME problem to handle messages comes via H2ME
+mailbox. This problem has been fixed by patch "e1000e: Enable the GPT
+clock before sending message to the CSME".
 
-While at it, I wonder whether other drivers need similar changes as well and
-what other features are missing in the upstream driver. There should be no
-surprises when switching between these drivers.
+Fixes: 3e55d231716e ("e1000e: Add handshake with the CSME to support S0ix")
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/hw.h      |  1 -
+ drivers/net/ethernet/intel/e1000e/ich8lan.c |  4 ----
+ drivers/net/ethernet/intel/e1000e/ich8lan.h |  1 -
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 26 ---------------------
+ 4 files changed, 32 deletions(-)
 
-> 
-> > Ack, but we really want people to move towards using standard stats.
-> > 
-> > Can you change the user space to first try reading the stats via
-> > iproute2/rtnetlink? And fallback to random ethtool strings if not
-> > available? That way it will work with any driver implementing the
-> > standard API. Long term that'll make everyone's life easier.
-
-Yes, in this case we are in control of user space and can work around.
-
-> > 
-> > Out-of-tree code cannot be an argument upstream, otherwise we'd
-> > completely lose control over our APIs. Vendors could ship whatever
-> > in their out of tree repo and then force us to accept it upstream.
-> > 
-> > It's disappointing to see the vendor letting the uAPI of the out of
-> > tree driver diverge from upstream, especially a driver this mature.
-> 
-
-
-
-Amazon Development Center Germany GmbH
-Krausenstr. 38
-10117 Berlin
-Geschaeftsfuehrung: Christian Schlaeger, Jonathan Weiss
-Eingetragen am Amtsgericht Charlottenburg unter HRB 149173 B
-Sitz: Berlin
-Ust-ID: DE 289 237 879
-
-
+diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+index 13382df2f2ef..bcf680e83811 100644
+--- a/drivers/net/ethernet/intel/e1000e/hw.h
++++ b/drivers/net/ethernet/intel/e1000e/hw.h
+@@ -630,7 +630,6 @@ struct e1000_phy_info {
+ 	bool disable_polarity_correction;
+ 	bool is_mdix;
+ 	bool polarity_correction;
+-	bool reset_disable;
+ 	bool speed_downgraded;
+ 	bool autoneg_wait_to_complete;
+ };
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index e6c8e6d5234f..9466f65a6da7 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -2050,10 +2050,6 @@ static s32 e1000_check_reset_block_ich8lan(struct e1000_hw *hw)
+ 	bool blocked = false;
+ 	int i = 0;
+ 
+-	/* Check the PHY (LCD) reset flag */
+-	if (hw->phy.reset_disable)
+-		return true;
+-
+ 	while ((blocked = !(er32(FWSM) & E1000_ICH_FWSM_RSPCIPHY)) &&
+ 	       (i++ < 30))
+ 		usleep_range(10000, 11000);
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+index 638a3ddd7ada..2504b11c3169 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+@@ -271,7 +271,6 @@
+ #define I217_CGFREG_ENABLE_MTA_RESET	0x0002
+ #define I217_MEMPWR			PHY_REG(772, 26)
+ #define I217_MEMPWR_DISABLE_SMB_RELEASE	0x0010
+-#define I217_MEMPWR_MOEM		0x1000
+ 
+ /* Receive Address Initial CRC Calculation */
+ #define E1000_PCH_RAICC(_n)	(0x05F50 + ((_n) * 4))
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index c64102b29862..f1729940e46c 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6991,21 +6991,8 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
+ 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct e1000_hw *hw = &adapter->hw;
+-	u16 phy_data;
+ 	int rc;
+ 
+-	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
+-	    hw->mac.type >= e1000_pch_adp) {
+-		/* Mask OEM Bits / Gig Disable / Restart AN (772_26[12] = 1) */
+-		e1e_rphy(hw, I217_MEMPWR, &phy_data);
+-		phy_data |= I217_MEMPWR_MOEM;
+-		e1e_wphy(hw, I217_MEMPWR, phy_data);
+-
+-		/* Disable LCD reset */
+-		hw->phy.reset_disable = true;
+-	}
+-
+ 	e1000e_flush_lpic(pdev);
+ 
+ 	e1000e_pm_freeze(dev);
+@@ -7027,8 +7014,6 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+ 	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+-	struct e1000_hw *hw = &adapter->hw;
+-	u16 phy_data;
+ 	int rc;
+ 
+ 	/* Introduce S0ix implementation */
+@@ -7039,17 +7024,6 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
+ 	if (rc)
+ 		return rc;
+ 
+-	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
+-	    hw->mac.type >= e1000_pch_adp) {
+-		/* Unmask OEM Bits / Gig Disable / Restart AN 772_26[12] = 0 */
+-		e1e_rphy(hw, I217_MEMPWR, &phy_data);
+-		phy_data &= ~I217_MEMPWR_MOEM;
+-		e1e_wphy(hw, I217_MEMPWR, phy_data);
+-
+-		/* Enable LCD reset */
+-		hw->phy.reset_disable = false;
+-	}
+-
+ 	return e1000e_pm_thaw(dev);
+ }
+ 
+-- 
+2.30.2
 
