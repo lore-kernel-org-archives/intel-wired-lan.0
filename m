@@ -1,143 +1,244 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Mon, 9 May 2022 11:23:27 +0200
-Subject: [Intel-wired-lan] [PATCH v1 1/1] Revert "e1000e: Fix possible
- HW unit hang after an s0ix exit"
-In-Reply-To: <20220509085254.2436296-1-sasha.neftin@intel.com>
-References: <20220509085254.2436296-1-sasha.neftin@intel.com>
-Message-ID: <197c20a7-dea9-6466-5965-85cd271c7f8d@molgen.mpg.de>
+From: Maximilian Heyne <mheyne@amazon.de>
+Date: Mon, 9 May 2022 11:03:39 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3] drivers,
+ ixgbe: export vf statistics
+Message-ID: <20220509110340.100814-1-mheyne@amazon.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Sasha,
+This change retrieves network metrics for virtual functions from the
+device and exports them via the iproute2 interface.
+
+The code for retrieving the statistics from the device is taken from the
+out-of-tree driver.  The feature was introduced with version 2.0.75.7,
+so the diff between this version and the previous version 2.0.72.4 was
+used to identify required changes. The export via ethtool is omitted in
+favor of using the standard ndo_get_vf_stats interface.
+
+Per-VF statistics can now be printed, for instance, via
+
+  ip --statistics link show dev eth0
+
+Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
+---
+v2: implemented the ndo_get_vf_stats callback
+v3: as per discussion, removed the ethtool changes
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      | 34 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 86 +++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  7 ++
+ 3 files changed, 127 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 921a4d977d65..48444ab9e0b1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -167,12 +167,46 @@ enum ixgbe_tx_flags {
+ #define IXGBE_82599_VF_DEVICE_ID        0x10ED
+ #define IXGBE_X540_VF_DEVICE_ID         0x1515
+ 
++#define UPDATE_VF_COUNTER_32bit(reg, last_counter, counter)	\
++	{							\
++		u32 current_counter = IXGBE_READ_REG(hw, reg);	\
++		if (current_counter < last_counter)		\
++			counter += 0x100000000LL;		\
++		last_counter = current_counter;			\
++		counter &= 0xFFFFFFFF00000000LL;		\
++		counter |= current_counter;			\
++	}
++
++#define UPDATE_VF_COUNTER_36bit(reg_lsb, reg_msb, last_counter, counter) \
++	{								 \
++		u64 current_counter_lsb = IXGBE_READ_REG(hw, reg_lsb);	 \
++		u64 current_counter_msb = IXGBE_READ_REG(hw, reg_msb);	 \
++		u64 current_counter = (current_counter_msb << 32) |	 \
++			current_counter_lsb;				 \
++		if (current_counter < last_counter)			 \
++			counter += 0x1000000000LL;			 \
++		last_counter = current_counter;				 \
++		counter &= 0xFFFFFFF000000000LL;			 \
++		counter |= current_counter;				 \
++	}
++
++struct vf_stats {
++	u64 gprc;
++	u64 gorc;
++	u64 gptc;
++	u64 gotc;
++	u64 mprc;
++};
++
+ struct vf_data_storage {
+ 	struct pci_dev *vfdev;
+ 	unsigned char vf_mac_addresses[ETH_ALEN];
+ 	u16 vf_mc_hashes[IXGBE_MAX_VF_MC_ENTRIES];
+ 	u16 num_vf_mc_hashes;
+ 	bool clear_to_send;
++	struct vf_stats vfstats;
++	struct vf_stats last_vfstats;
++	struct vf_stats saved_rst_vfstats;
+ 	bool pf_set_mac;
+ 	u16 pf_vlan; /* When set, guest VLAN config not allowed. */
+ 	u16 pf_qos;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index c4a4954aa317..f60d8b425f61 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5548,6 +5548,47 @@ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
+ 	return ret;
+ }
+ 
++/**
++ * ixgbe_clear_vf_stats_counters - Clear out VF stats after reset
++ * @adapter: board private structure
++ *
++ * On a reset we need to clear out the VF stats or accounting gets
++ * messed up because they're not clear on read.
++ **/
++static void ixgbe_clear_vf_stats_counters(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	int i;
++
++	for (i = 0; i < adapter->num_vfs; i++) {
++		adapter->vfinfo[i].last_vfstats.gprc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGPRC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gprc +=
++			adapter->vfinfo[i].vfstats.gprc;
++		adapter->vfinfo[i].vfstats.gprc = 0;
++		adapter->vfinfo[i].last_vfstats.gptc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGPTC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gptc +=
++			adapter->vfinfo[i].vfstats.gptc;
++		adapter->vfinfo[i].vfstats.gptc = 0;
++		adapter->vfinfo[i].last_vfstats.gorc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGORC_LSB(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gorc +=
++			adapter->vfinfo[i].vfstats.gorc;
++		adapter->vfinfo[i].vfstats.gorc = 0;
++		adapter->vfinfo[i].last_vfstats.gotc =
++			IXGBE_READ_REG(hw, IXGBE_PVFGOTC_LSB(i));
++		adapter->vfinfo[i].saved_rst_vfstats.gotc +=
++			adapter->vfinfo[i].vfstats.gotc;
++		adapter->vfinfo[i].vfstats.gotc = 0;
++		adapter->vfinfo[i].last_vfstats.mprc =
++			IXGBE_READ_REG(hw, IXGBE_PVFMPRC(i));
++		adapter->vfinfo[i].saved_rst_vfstats.mprc +=
++			adapter->vfinfo[i].vfstats.mprc;
++		adapter->vfinfo[i].vfstats.mprc = 0;
++	}
++}
++
+ static void ixgbe_setup_gpie(struct ixgbe_adapter *adapter)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+@@ -5683,6 +5724,7 @@ static void ixgbe_up_complete(struct ixgbe_adapter *adapter)
+ 	adapter->link_check_timeout = jiffies;
+ 	mod_timer(&adapter->service_timer, jiffies);
+ 
++	ixgbe_clear_vf_stats_counters(adapter);
+ 	/* Set PF Reset Done bit so PF/VF Mail Ops can work */
+ 	ctrl_ext = IXGBE_READ_REG(hw, IXGBE_CTRL_EXT);
+ 	ctrl_ext |= IXGBE_CTRL_EXT_PFRSTD;
+@@ -7270,6 +7312,32 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
+ 	netdev->stats.rx_length_errors = hwstats->rlec;
+ 	netdev->stats.rx_crc_errors = hwstats->crcerrs;
+ 	netdev->stats.rx_missed_errors = total_mpc;
++
++	/* VF Stats Collection - skip while resetting because these
++	 * are not clear on read and otherwise you'll sometimes get
++	 * crazy values.
++	 */
++	if (!test_bit(__IXGBE_RESETTING, &adapter->state)) {
++		for (i = 0; i < adapter->num_vfs; i++) {
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFGPRC(i),
++					adapter->vfinfo[i].last_vfstats.gprc,
++					adapter->vfinfo[i].vfstats.gprc);
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFGPTC(i),
++					adapter->vfinfo[i].last_vfstats.gptc,
++					adapter->vfinfo[i].vfstats.gptc);
++			UPDATE_VF_COUNTER_36bit(IXGBE_PVFGORC_LSB(i),
++					IXGBE_PVFGORC_MSB(i),
++					adapter->vfinfo[i].last_vfstats.gorc,
++					adapter->vfinfo[i].vfstats.gorc);
++			UPDATE_VF_COUNTER_36bit(IXGBE_PVFGOTC_LSB(i),
++					IXGBE_PVFGOTC_MSB(i),
++					adapter->vfinfo[i].last_vfstats.gotc,
++					adapter->vfinfo[i].vfstats.gotc);
++			UPDATE_VF_COUNTER_32bit(IXGBE_PVFMPRC(i),
++					adapter->vfinfo[i].last_vfstats.mprc,
++					adapter->vfinfo[i].vfstats.mprc);
++		}
++	}
+ }
+ 
+ /**
+@@ -8995,6 +9063,23 @@ static void ixgbe_get_stats64(struct net_device *netdev,
+ 	stats->rx_missed_errors	= netdev->stats.rx_missed_errors;
+ }
+ 
++static int ixgbe_ndo_get_vf_stats(struct net_device *netdev, int vf,
++				  struct ifla_vf_stats *vf_stats)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++
++	if (vf < 0 || vf >= adapter->num_vfs)
++		return -EINVAL;
++
++	vf_stats->rx_packets = adapter->vfinfo[vf].vfstats.gprc;
++	vf_stats->rx_bytes   = adapter->vfinfo[vf].vfstats.gorc;
++	vf_stats->tx_packets = adapter->vfinfo[vf].vfstats.gptc;
++	vf_stats->tx_bytes   = adapter->vfinfo[vf].vfstats.gotc;
++	vf_stats->multicast  = adapter->vfinfo[vf].vfstats.mprc;
++
++	return 0;
++}
++
+ #ifdef CONFIG_IXGBE_DCB
+ /**
+  * ixgbe_validate_rtr - verify 802.1Qp to Rx packet buffer mapping is valid.
+@@ -10311,6 +10396,7 @@ static const struct net_device_ops ixgbe_netdev_ops = {
+ 	.ndo_set_vf_rss_query_en = ixgbe_ndo_set_vf_rss_query_en,
+ 	.ndo_set_vf_trust	= ixgbe_ndo_set_vf_trust,
+ 	.ndo_get_vf_config	= ixgbe_ndo_get_vf_config,
++	.ndo_get_vf_stats	= ixgbe_ndo_get_vf_stats,
+ 	.ndo_get_stats64	= ixgbe_get_stats64,
+ 	.ndo_setup_tc		= __ixgbe_setup_tc,
+ #ifdef IXGBE_FCOE
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 6da9880d766a..7f7ea468ffa9 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -2533,6 +2533,13 @@ enum {
+ #define IXGBE_PVFTXDCTL(P)	(0x06028 + (0x40 * (P)))
+ #define IXGBE_PVFTDWBAL(P)	(0x06038 + (0x40 * (P)))
+ #define IXGBE_PVFTDWBAH(P)	(0x0603C + (0x40 * (P)))
++#define IXGBE_PVFGPRC(x)	(0x0101C + (0x40 * (x)))
++#define IXGBE_PVFGPTC(x)	(0x08300 + (0x04 * (x)))
++#define IXGBE_PVFGORC_LSB(x)	(0x01020 + (0x40 * (x)))
++#define IXGBE_PVFGORC_MSB(x)	(0x0D020 + (0x40 * (x)))
++#define IXGBE_PVFGOTC_LSB(x)	(0x08400 + (0x08 * (x)))
++#define IXGBE_PVFGOTC_MSB(x)	(0x08404 + (0x08 * (x)))
++#define IXGBE_PVFMPRC(x)	(0x0D01C + (0x40 * (x)))
+ 
+ #define IXGBE_PVFTDWBALn(q_per_pool, vf_number, vf_q_index) \
+ 		(IXGBE_PVFTDWBAL((q_per_pool)*(vf_number) + (vf_q_index)))
+-- 
+2.32.0
 
 
-Thank you for the patch.
-
-Am 09.05.22 um 10:52 schrieb Sasha Neftin:
-> This reverts commit 1866aa0d0d6492bc2f8d22d0df49abaccf50cddd.
-> 
-> Commit 1866aa0d0d64("e1000e: Fix possible HW unit hang after an s0ix exit")
-
-Please add a space before the (.
-
-> was a workaround for CSME problem to handle messages comes via H2ME
-> mailbox. This problem has been fixed by patch "e1000e: Enable the GPT
-> clock before sending message to the CSME".
-
-Please send both patches as a series then.
-
-> Fixes: 3e55d231716e ("e1000e: Add handshake with the CSME to support S0ix")
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
-> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
-
-Should people affected by this (reporters, ?) be added to the Cc: list, 
-so they can test the patches?
 
 
-Kind regards,
+Amazon Development Center Germany GmbH
+Krausenstr. 38
+10117 Berlin
+Geschaeftsfuehrung: Christian Schlaeger, Jonathan Weiss
+Eingetragen am Amtsgericht Charlottenburg unter HRB 149173 B
+Sitz: Berlin
+Ust-ID: DE 289 237 879
 
-Paul
 
 
-> ---
->   drivers/net/ethernet/intel/e1000e/hw.h      |  1 -
->   drivers/net/ethernet/intel/e1000e/ich8lan.c |  4 ----
->   drivers/net/ethernet/intel/e1000e/ich8lan.h |  1 -
->   drivers/net/ethernet/intel/e1000e/netdev.c  | 26 ---------------------
->   4 files changed, 32 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-> index 13382df2f2ef..bcf680e83811 100644
-> --- a/drivers/net/ethernet/intel/e1000e/hw.h
-> +++ b/drivers/net/ethernet/intel/e1000e/hw.h
-> @@ -630,7 +630,6 @@ struct e1000_phy_info {
->   	bool disable_polarity_correction;
->   	bool is_mdix;
->   	bool polarity_correction;
-> -	bool reset_disable;
->   	bool speed_downgraded;
->   	bool autoneg_wait_to_complete;
->   };
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> index e6c8e6d5234f..9466f65a6da7 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> @@ -2050,10 +2050,6 @@ static s32 e1000_check_reset_block_ich8lan(struct e1000_hw *hw)
->   	bool blocked = false;
->   	int i = 0;
->   
-> -	/* Check the PHY (LCD) reset flag */
-> -	if (hw->phy.reset_disable)
-> -		return true;
-> -
->   	while ((blocked = !(er32(FWSM) & E1000_ICH_FWSM_RSPCIPHY)) &&
->   	       (i++ < 30))
->   		usleep_range(10000, 11000);
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-> index 638a3ddd7ada..2504b11c3169 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-> @@ -271,7 +271,6 @@
->   #define I217_CGFREG_ENABLE_MTA_RESET	0x0002
->   #define I217_MEMPWR			PHY_REG(772, 26)
->   #define I217_MEMPWR_DISABLE_SMB_RELEASE	0x0010
-> -#define I217_MEMPWR_MOEM		0x1000
->   
->   /* Receive Address Initial CRC Calculation */
->   #define E1000_PCH_RAICC(_n)	(0x05F50 + ((_n) * 4))
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index c64102b29862..f1729940e46c 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -6991,21 +6991,8 @@ static __maybe_unused int e1000e_pm_suspend(struct device *dev)
->   	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
->   	struct e1000_adapter *adapter = netdev_priv(netdev);
->   	struct pci_dev *pdev = to_pci_dev(dev);
-> -	struct e1000_hw *hw = &adapter->hw;
-> -	u16 phy_data;
->   	int rc;
->   
-> -	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
-> -	    hw->mac.type >= e1000_pch_adp) {
-> -		/* Mask OEM Bits / Gig Disable / Restart AN (772_26[12] = 1) */
-> -		e1e_rphy(hw, I217_MEMPWR, &phy_data);
-> -		phy_data |= I217_MEMPWR_MOEM;
-> -		e1e_wphy(hw, I217_MEMPWR, phy_data);
-> -
-> -		/* Disable LCD reset */
-> -		hw->phy.reset_disable = true;
-> -	}
-> -
->   	e1000e_flush_lpic(pdev);
->   
->   	e1000e_pm_freeze(dev);
-> @@ -7027,8 +7014,6 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
->   	struct net_device *netdev = pci_get_drvdata(to_pci_dev(dev));
->   	struct e1000_adapter *adapter = netdev_priv(netdev);
->   	struct pci_dev *pdev = to_pci_dev(dev);
-> -	struct e1000_hw *hw = &adapter->hw;
-> -	u16 phy_data;
->   	int rc;
->   
->   	/* Introduce S0ix implementation */
-> @@ -7039,17 +7024,6 @@ static __maybe_unused int e1000e_pm_resume(struct device *dev)
->   	if (rc)
->   		return rc;
->   
-> -	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
-> -	    hw->mac.type >= e1000_pch_adp) {
-> -		/* Unmask OEM Bits / Gig Disable / Restart AN 772_26[12] = 0 */
-> -		e1e_rphy(hw, I217_MEMPWR, &phy_data);
-> -		phy_data &= ~I217_MEMPWR_MOEM;
-> -		e1e_wphy(hw, I217_MEMPWR, phy_data);
-> -
-> -		/* Enable LCD reset */
-> -		hw->phy.reset_disable = false;
-> -	}
-> -
->   	return e1000e_pm_thaw(dev);
->   }
->   
