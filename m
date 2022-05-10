@@ -1,241 +1,101 @@
-From: kernel test robot <lkp@intel.com>
-Date: Tue, 10 May 2022 13:20:32 +0800
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Tue, 10 May 2022 09:04:21 +0200
 Subject: [Intel-wired-lan] [PATCH] igc: Correct the launchtime offset
 In-Reply-To: <20220509010847.17492-1-muhammad.husaini.zulkifli@intel.com>
 References: <20220509010847.17492-1-muhammad.husaini.zulkifli@intel.com>
-Message-ID: <202205101357.46oBdnm7-lkp@intel.com>
+Message-ID: <d9807c38-81a1-a1d9-cc77-802c2a5755cb@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Muhammad,
-
-Thank you for the patch! Perhaps something to improve:
-
-[auto build test WARNING on tnguy-next-queue/dev-queue]
-[also build test WARNING on v5.18-rc6 next-20220509]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Muhammad-Husaini-Zulkifli/igc-Correct-the-launchtime-offset/20220509-091028
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-config: arm64-allmodconfig (https://download.01.org/0day-ci/archive/20220510/202205101357.46oBdnm7-lkp at intel.com/config)
-compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project 3abb68a626160e019c30a4860e569d7bc75e486a)
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # install arm64 cross compiling tool for clang build
-        # apt-get install binutils-aarch64-linux-gnu
-        # https://github.com/intel-lab-lkp/linux/commit/819e4648eaccdeaf40643fd0fe7cd735a584c251
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Muhammad-Husaini-Zulkifli/igc-Correct-the-launchtime-offset/20220509-091028
-        git checkout 819e4648eaccdeaf40643fd0fe7cd735a584c251
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=arm64 SHELL=/bin/bash arch/arm64/kernel/ drivers/net/ethernet/intel/igc/ drivers/rtc/
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
-
-All warnings (new ones prefixed by >>):
-
->> drivers/net/ethernet/intel/igc/igc_tsn.c:102:2: warning: variable 'tx_offset' is used uninitialized whenever switch default is taken [-Wsometimes-uninitialized]
-           default:
-           ^~~~~~~
-   drivers/net/ethernet/intel/igc/igc_tsn.c:106:22: note: uninitialized use occurs here
-           wr32(IGC_GTXOFFSET, tx_offset);
-                               ^~~~~~~~~
-   drivers/net/ethernet/intel/igc/igc_regs.h:310:10: note: expanded from macro 'wr32'
-           writel((val), &hw_addr[(reg)]); \
-                   ^~~
-   arch/arm64/include/asm/io.h:142:52: note: expanded from macro 'writel'
-   #define writel(v,c)             ({ __iowmb(); writel_relaxed((v),(c)); })
-                                                                 ^
-   arch/arm64/include/asm/io.h:127:74: note: expanded from macro 'writel_relaxed'
-   #define writel_relaxed(v,c)     ((void)__raw_writel((__force u32)cpu_to_le32(v),(c)))
-                                                                                ^
-   include/uapi/linux/byteorder/little_endian.h:34:51: note: expanded from macro '__cpu_to_le32'
-   #define __cpu_to_le32(x) ((__force __le32)(__u32)(x))
-                                                     ^
-   drivers/net/ethernet/intel/igc/igc_tsn.c:87:15: note: initialize the variable 'tx_offset' to silence this warning
-           u16 tx_offset;
-                        ^
-                         = 0
-   1 warning generated.
+Dear Muhammad,
 
 
-vim +/tx_offset +102 drivers/net/ethernet/intel/igc/igc_tsn.c
+Thank you for your patch.
 
-    81	
-    82	static int igc_tsn_enable_offload(struct igc_adapter *adapter)
-    83	{
-    84		struct igc_hw *hw = &adapter->hw;
-    85		u32 tqavctrl, baset_l, baset_h;
-    86		u32 sec, nsec, cycle;
-    87		u16 tx_offset;
-    88		ktime_t base_time, systim;
-    89		int i;
-    90	
-    91		cycle = adapter->cycle_time;
-    92		base_time = adapter->base_time;
-    93	
-    94		switch (adapter->link_speed) {
-    95		/* TODO: This code use same transmit offset across all link speed as for now. */
-    96		case SPEED_10:
-    97		case SPEED_100:
-    98		case SPEED_1000:
-    99		case SPEED_2500:
-   100			tx_offset = 1500;
-   101			break;
- > 102		default:
-   103			break;
-   104		}
-   105	
-   106		wr32(IGC_GTXOFFSET, tx_offset);
-   107		wr32(IGC_TSAUXC, 0);
-   108		wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
-   109		wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
-   110	
-   111		tqavctrl = rd32(IGC_TQAVCTRL);
-   112		tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
-   113		wr32(IGC_TQAVCTRL, tqavctrl);
-   114	
-   115		wr32(IGC_QBVCYCLET_S, cycle);
-   116		wr32(IGC_QBVCYCLET, cycle);
-   117	
-   118		for (i = 0; i < adapter->num_tx_queues; i++) {
-   119			struct igc_ring *ring = adapter->tx_ring[i];
-   120			u32 txqctl = 0;
-   121			u16 cbs_value;
-   122			u32 tqavcc;
-   123	
-   124			wr32(IGC_STQT(i), ring->start_time);
-   125			wr32(IGC_ENDQT(i), ring->end_time);
-   126	
-   127			if (adapter->base_time) {
-   128				/* If we have a base_time we are in "taprio"
-   129				 * mode and we need to be strict about the
-   130				 * cycles: only transmit a packet if it can be
-   131				 * completed during that cycle.
-   132				 */
-   133				txqctl |= IGC_TXQCTL_STRICT_CYCLE |
-   134					IGC_TXQCTL_STRICT_END;
-   135			}
-   136	
-   137			if (ring->launchtime_enable)
-   138				txqctl |= IGC_TXQCTL_QUEUE_MODE_LAUNCHT;
-   139	
-   140			/* Skip configuring CBS for Q2 and Q3 */
-   141			if (i > 1)
-   142				goto skip_cbs;
-   143	
-   144			if (ring->cbs_enable) {
-   145				if (i == 0)
-   146					txqctl |= IGC_TXQCTL_QAV_SEL_CBS0;
-   147				else
-   148					txqctl |= IGC_TXQCTL_QAV_SEL_CBS1;
-   149	
-   150				/* According to i225 datasheet section 7.5.2.7, we
-   151				 * should set the 'idleSlope' field from TQAVCC
-   152				 * register following the equation:
-   153				 *
-   154				 * value = link-speed   0x7736 * BW * 0.2
-   155				 *         ---------- *  -----------------         (E1)
-   156				 *          100Mbps            2.5
-   157				 *
-   158				 * Note that 'link-speed' is in Mbps.
-   159				 *
-   160				 * 'BW' is the percentage bandwidth out of full
-   161				 * link speed which can be found with the
-   162				 * following equation. Note that idleSlope here
-   163				 * is the parameter from this function
-   164				 * which is in kbps.
-   165				 *
-   166				 *     BW =     idleSlope
-   167				 *          -----------------                      (E2)
-   168				 *          link-speed * 1000
-   169				 *
-   170				 * That said, we can come up with a generic
-   171				 * equation to calculate the value we should set
-   172				 * it TQAVCC register by replacing 'BW' in E1 by E2.
-   173				 * The resulting equation is:
-   174				 *
-   175				 * value = link-speed * 0x7736 * idleSlope * 0.2
-   176				 *         -------------------------------------   (E3)
-   177				 *             100 * 2.5 * link-speed * 1000
-   178				 *
-   179				 * 'link-speed' is present in both sides of the
-   180				 * fraction so it is canceled out. The final
-   181				 * equation is the following:
-   182				 *
-   183				 *     value = idleSlope * 61036
-   184				 *             -----------------                   (E4)
-   185				 *                  2500000
-   186				 *
-   187				 * NOTE: For i225, given the above, we can see
-   188				 *       that idleslope is represented in
-   189				 *       40.959433 kbps units by the value at
-   190				 *       the TQAVCC register (2.5Gbps / 61036),
-   191				 *       which reduces the granularity for
-   192				 *       idleslope increments.
-   193				 *
-   194				 * In i225 controller, the sendSlope and loCredit
-   195				 * parameters from CBS are not configurable
-   196				 * by software so we don't do any
-   197				 * 'controller configuration' in respect to
-   198				 * these parameters.
-   199				 */
-   200				cbs_value = DIV_ROUND_UP_ULL(ring->idleslope
-   201							     * 61036ULL, 2500000);
-   202	
-   203				tqavcc = rd32(IGC_TQAVCC(i));
-   204				tqavcc &= ~IGC_TQAVCC_IDLESLOPE_MASK;
-   205				tqavcc |= cbs_value | IGC_TQAVCC_KEEP_CREDITS;
-   206				wr32(IGC_TQAVCC(i), tqavcc);
-   207	
-   208				wr32(IGC_TQAVHC(i),
-   209				     0x80000000 + ring->hicredit * 0x7735);
-   210			} else {
-   211				/* Disable any CBS for the queue */
-   212				txqctl &= ~(IGC_TXQCTL_QAV_SEL_MASK);
-   213	
-   214				/* Set idleSlope to zero. */
-   215				tqavcc = rd32(IGC_TQAVCC(i));
-   216				tqavcc &= ~(IGC_TQAVCC_IDLESLOPE_MASK |
-   217					    IGC_TQAVCC_KEEP_CREDITS);
-   218				wr32(IGC_TQAVCC(i), tqavcc);
-   219	
-   220				/* Set hiCredit to zero. */
-   221				wr32(IGC_TQAVHC(i), 0);
-   222			}
-   223	skip_cbs:
-   224			wr32(IGC_TXQCTL(i), txqctl);
-   225		}
-   226	
-   227		nsec = rd32(IGC_SYSTIML);
-   228		sec = rd32(IGC_SYSTIMH);
-   229	
-   230		systim = ktime_set(sec, nsec);
-   231	
-   232		if (ktime_compare(systim, base_time) > 0) {
-   233			s64 n;
-   234	
-   235			n = div64_s64(ktime_sub_ns(systim, base_time), cycle);
-   236			base_time = ktime_add_ns(base_time, (n + 1) * cycle);
-   237		}
-   238	
-   239		baset_h = div_s64_rem(base_time, NSEC_PER_SEC, &baset_l);
-   240	
-   241		wr32(IGC_BASET_H, baset_h);
-   242		wr32(IGC_BASET_L, baset_l);
-   243	
-   244		return 0;
-   245	}
-   246	
+Am 09.05.22 um 03:08 schrieb Muhammad Husaini Zulkifli:
+> The launchtime offset can be corrected according to sections 7.5.2.6
+> and 12.3.2 of the datasheet.
 
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+?can? or ?should??
+
+Sorry, what is the name of the datasheet?
+
+What problems does it fix, and how can they be reproduced?
+
+> Based on the preliminary data, this correction is roughly 1500ns.
+> In the future, proper measurements must be taken, and corrections must take
+> into account the various link speeds.
+
+Nit: Please do not wrap lines just because a sentence ends. If these are 
+paragraphs, then please separate those by exactly one blank line.
+
+> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+> Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_regs.h |  1 +
+>   drivers/net/ethernet/intel/igc/igc_tsn.c  | 14 ++++++++++++++
+>   2 files changed, 15 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+> index e197a33d93a0..928d22b1ca22 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_regs.h
+> +++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+> @@ -231,6 +231,7 @@
+>   #define IGC_BASET_H		0x3318
+>   #define IGC_QBVCYCLET		0x331C
+>   #define IGC_QBVCYCLET_S		0x3320
+> +#define IGC_GTXOFFSET		0x3310
+
+Sort these by the value?
+
+>   
+>   #define IGC_STQT(_n)		(0x3324 + 0x4 * (_n))
+>   #define IGC_ENDQT(_n)		(0x3334 + 0x4 * (_n))
+> diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+> index 0fce22de2ab8..3d4d0ab011e3 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_tsn.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+> @@ -84,12 +84,26 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+>   	struct igc_hw *hw = &adapter->hw;
+>   	u32 tqavctrl, baset_l, baset_h;
+>   	u32 sec, nsec, cycle;
+> +	u16 tx_offset;
+
+Please append the unit to the variable name.
+
+Why specify the size, and not just use `unsigned int` [1]? (`__writel()` 
+also uses `unsigned int` in the end?
+
+>   	ktime_t base_time, systim;
+>   	int i;
+>   
+>   	cycle = adapter->cycle_time;
+>   	base_time = adapter->base_time;
+>   
+> +	switch (adapter->link_speed) {
+> +	/* TODO: This code use same transmit offset across all link speed as for now. */
+> +	case SPEED_10:
+> +	case SPEED_100:
+> +	case SPEED_1000:
+> +	case SPEED_2500:
+> +		tx_offset = 1500;
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+> +	wr32(IGC_GTXOFFSET, tx_offset);
+>   	wr32(IGC_TSAUXC, 0);
+>   	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
+>   	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
+
+
+Kind regards,
+
+Paul
+
+
+[1]: https://notabs.org/coding/smallIntsBigPenalty.htm
