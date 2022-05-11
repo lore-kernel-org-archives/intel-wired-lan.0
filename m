@@ -1,50 +1,72 @@
-From: lixue liang <lianglixue@greatwall.com.cn>
-Date: Wed, 11 May 2022 08:07:16 +0000
-Subject: [Intel-wired-lan] =?utf-8?b?W1BBVENIXSBpZ2JfbWFpbu+8mkFkZGVkIGlu?=
- =?utf-8?q?valid_mac_address_handling_in_igb=5Fprobe?=
-Message-ID: <20220511080716.10054-1-lianglixue@greatwall.com.cn>
+From: Linkui Xiao <xiaolinkui@gmail.com>
+Date: Wed, 11 May 2022 17:13:07 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: Convert a series of if
+ statements to switch case
+In-Reply-To: <6b16f60d-0f76-f876-0881-de09ecbbbc89@molgen.mpg.de>
+References: <20220510025755.19047-1-xiaolinkui@kylinos.cn>
+ <6b16f60d-0f76-f876-0881-de09ecbbbc89@molgen.mpg.de>
+Message-ID: <d42df7fa-0eb1-bf89-6e8f-f4fc5ff138b2@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In some cases, when the user uses igb_set_eeprom to modify
-the mac address to be invalid, the igb driver will fail to load.
-If there is no network card device, the user must modify it to
-a valid mac address by other means. It is only the invalid
-mac address that causes the driver The fatal problem of
-loading failure will cause most users no choice but to trouble.
+Dear Paul:
 
-Since the mac address may be changed to be invalid, it must
-also be changed to a valid mac address, then add a random
-valid mac address to replace the invalid mac address in the
-driver, continue to load the igb network card driver,
-and output the relevant log reminder. vital to the user.
+Thank you for your reply and suggestions, I will send the V2 version soon.
 
-Signed-off-by: lixue liang <lianglixue@greatwall.com.cn>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 34b33b21e0dc..a513570c2ad6 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3359,9 +3359,10 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	eth_hw_addr_set(netdev, hw->mac.addr);
- 
- 	if (!is_valid_ether_addr(netdev->dev_addr)) {
--		dev_err(&pdev->dev, "Invalid MAC Address\n");
--		err = -EIO;
--		goto err_eeprom;
-+		eth_random_addr(netdev->dev_addr);
-+		memcpy(hw->mac.addr, netdev->dev_addr, netdev->addr_len);
-+		dev_info(&pdev->dev,
-+			 "Invalid Mac Address, already got random Mac Address\n");
- 	}
- 
- 	igb_set_default_mac_filter(adapter);
--- 
-2.27.0
-
+On 5/11/22 14:32, Paul Menzel wrote:
+> Dear Linkui,
+>
+>
+> Thank you for your patch.
+>
+> Am 10.05.22 um 04:57 schrieb xiaolinkui:
+>> From: Linkui Xiao<xiaolinkui@kylinos.cn>
+>
+> Please add a space before the <.
+>
+>> Convert a series of if statements that handle different events to
+>> a switch case statement to simplify the code.
+>
+> (Nit: Please use 75 characters per line.)
+>
+>> Signed-off-by: Linkui Xiao<xiaolinkui@kylinos.cn>
+>> ---
+>> ? drivers/net/ethernet/intel/igb/igb_main.c | 12 ++++++++----
+>> ? 1 file changed, 8 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c 
+>> b/drivers/net/ethernet/intel/igb/igb_main.c
+>> index 34b33b21e0dc..4ce0718eeff6 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>> @@ -4588,13 +4588,17 @@ static inline void 
+>> igb_set_vf_vlan_strip(struct igb_adapter *adapter,
+>> ????? struct e1000_hw *hw = &adapter->hw;
+>> ????? u32 val, reg;
+>> ? -??? if (hw->mac.type < e1000_82576)
+>> +??? switch (hw->mac.type) {
+>> +??? case e1000_undefined:
+>> +??? case e1000_82575:
+>> ????????? return;
+>> -
+>> -??? if (hw->mac.type == e1000_i350)
+>> +??? case e1000_i350:
+>> ????????? reg = E1000_DVMOLR(vfn);
+>> -??? else
+>> +??????? break;
+>> +??? default:
+>> ????????? reg = E1000_VMOLR(vfn);
+>> +??????? break;
+>> +??? }
+>> ? ????? val = rd32(reg);
+>> ????? if (enable)
+>
+> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+>
+>
+> Kind regards,
+>
+> Paul
