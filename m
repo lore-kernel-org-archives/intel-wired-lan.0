@@ -1,51 +1,168 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Wed, 11 May 2022 11:52:04 +0200
-Subject: [Intel-wired-lan] [PATCH] igb_ethtool: fix efficiency issues in
- igb_set_eeprom
-In-Reply-To: <B0201E3D-98F5-490E-81CF-45B16A06760D@gmail.com>
-References: <20220510012159.8924-1-lianglixue@greatwall.com.cn>
- <8d7e86ad-932c-d08c-3131-762edd553b22@molgen.mpg.de>
- <B0201E3D-98F5-490E-81CF-45B16A06760D@gmail.com>
-Message-ID: <7ee58bc9-bacf-9d16-8f96-5c9beacb5e8a@molgen.mpg.de>
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Date: Wed, 11 May 2022 12:21:28 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add support for ethtool
+ -s <interface> speed <speed in Mb>
+Message-ID: <20220511102128.14684-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Lixue,
+Add ability to change speed through ethtool -s <interface> speed <speed in Mb>
+Driver advertises all link modes that support requested speed.
+Autoneg must be set off e.g.:
+	ethtool -s <interface> autoneg off speed <speed in Mb>.
 
+Add helper function that translate speed in Mb to
+enum i40e_aq_link_speed and compare it to supported speeds from
+given ethtool_link_ksettings. Add in i40e_set_link_ksettings hold
+for requested speed and set copy_ks.base.speed to safe_ks.base.speed
+to be sure that user is not changing unsupported setting.
+In i40e_speed_to_link_speed compare requested speed with supported
+speeds. Set speed to requested speed.
 
-Am 11.05.22 um 09:59 schrieb lixue liang:
+Signed-off-by: Norbert Zulinski <norbertx.zulinski@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+---
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    | 90 +++++++++++++++++++
+ 1 file changed, 90 insertions(+)
 
-> Thank you very much for your reply and suggestions.I have made the
-> corresponding changes according to your suggestion.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index c65e9e2..9c6aa27 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1143,6 +1143,71 @@ static int i40e_get_link_ksettings(struct net_device *netdev,
+ 	return 0;
+ }
+ 
++#define I40E_LBIT_SIZE 8
++/**
++ * i40e_speed_to_link_speed - Translate decimal speed to i40e_aq_link_speed
++ * @speed: speed in decimal
++ * @ks: ethtool ksettings
++ *
++ * Return i40e_aq_link_speed based on speed
++ **/
++static enum i40e_aq_link_speed
++i40e_speed_to_link_speed(__u32 speed, const struct ethtool_link_ksettings *ks)
++{
++	enum i40e_aq_link_speed link_speed = I40E_LINK_SPEED_UNKNOWN;
++	bool speed_changed = false;
++	int i, j;
++
++	static const struct {
++		__u32 speed;
++		enum i40e_aq_link_speed link_speed;
++		__u8 bit[I40E_LBIT_SIZE];
++	} i40e_speed_lut[] = {
++#define I40E_LBIT(mode) ETHTOOL_LINK_MODE_ ## mode ##_Full_BIT
++		{SPEED_100, I40E_LINK_SPEED_100MB, {I40E_LBIT(100baseT)} },
++		{SPEED_1000, I40E_LINK_SPEED_1GB,
++		 {I40E_LBIT(1000baseT), I40E_LBIT(1000baseX),
++		  I40E_LBIT(1000baseKX)} },
++		{SPEED_10000, I40E_LINK_SPEED_10GB,
++		 {I40E_LBIT(10000baseT), I40E_LBIT(10000baseKR),
++		  I40E_LBIT(10000baseLR), I40E_LBIT(10000baseCR),
++		  I40E_LBIT(10000baseSR), I40E_LBIT(10000baseKX4)} },
++
++		{SPEED_25000, I40E_LINK_SPEED_25GB,
++		 {I40E_LBIT(25000baseCR), I40E_LBIT(25000baseKR),
++		  I40E_LBIT(25000baseSR)} },
++		{SPEED_40000, I40E_LINK_SPEED_40GB,
++		 {I40E_LBIT(40000baseKR4), I40E_LBIT(40000baseCR4),
++		  I40E_LBIT(40000baseSR4), I40E_LBIT(40000baseLR4)} },
++		{SPEED_20000, I40E_LINK_SPEED_20GB,
++		 {I40E_LBIT(20000baseKR2)} },
++		{SPEED_2500, I40E_LINK_SPEED_2_5GB, {I40E_LBIT(2500baseT)} },
++		{SPEED_5000, I40E_LINK_SPEED_5GB, {I40E_LBIT(2500baseT)} }
++#undef I40E_LBIT
++};
++
++	for (i = 0; i < ARRAY_SIZE(i40e_speed_lut); i++) {
++		if (i40e_speed_lut[i].speed == speed) {
++			for (j = 0; j < I40E_LBIT_SIZE; j++) {
++				if (test_bit(i40e_speed_lut[i].bit[j],
++					     ks->link_modes.supported)) {
++					speed_changed = true;
++					break;
++				}
++				if (!i40e_speed_lut[i].bit[j])
++					break;
++			}
++			if (speed_changed) {
++				link_speed = i40e_speed_lut[i].link_speed;
++				break;
++			}
++		}
++	}
++	return link_speed;
++}
++
++#undef I40E_LBIT_SIZE
++
+ /**
+  * i40e_set_link_ksettings - Set Speed and Duplex
+  * @netdev: network interface device structure
+@@ -1159,12 +1224,14 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+ 	struct ethtool_link_ksettings copy_ks;
+ 	struct i40e_aq_set_phy_config config;
+ 	struct i40e_pf *pf = np->vsi->back;
++	enum i40e_aq_link_speed link_speed;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	bool autoneg_changed = false;
+ 	i40e_status status = 0;
+ 	int timeout = 50;
+ 	int err = 0;
++	__u32 speed;
+ 	u8 autoneg;
+ 
+ 	/* Changing port settings is not supported if this isn't the
+@@ -1197,6 +1264,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+ 
+ 	/* save autoneg out of ksettings */
+ 	autoneg = copy_ks.base.autoneg;
++	speed = copy_ks.base.speed;
+ 
+ 	/* get our own copy of the bits to check against */
+ 	memset(&safe_ks, 0, sizeof(struct ethtool_link_ksettings));
+@@ -1215,6 +1283,7 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+ 
+ 	/* set autoneg back to what it currently is */
+ 	copy_ks.base.autoneg = safe_ks.base.autoneg;
++	copy_ks.base.speed  = safe_ks.base.speed;
+ 
+ 	/* If copy_ks.base and safe_ks.base are not the same now, then they are
+ 	 * trying to set something that we do not support.
+@@ -1331,6 +1400,27 @@ static int i40e_set_link_ksettings(struct net_device *netdev,
+ 						  40000baseLR4_Full))
+ 		config.link_speed |= I40E_LINK_SPEED_40GB;
+ 
++	/* Autonegotiation must be disabled to change speed */
++	if ((speed != SPEED_UNKNOWN && safe_ks.base.speed != speed) &&
++	    (autoneg == AUTONEG_DISABLE ||
++	    (safe_ks.base.autoneg == AUTONEG_DISABLE && !autoneg_changed))) {
++		link_speed = i40e_speed_to_link_speed(speed, ks);
++		if (link_speed == I40E_LINK_SPEED_UNKNOWN) {
++			netdev_info(netdev, "Given speed is not supported\n");
++			err = -EOPNOTSUPP;
++			goto done;
++		} else {
++			config.link_speed = link_speed;
++		}
++	} else {
++		if (safe_ks.base.speed != speed) {
++			netdev_info(netdev,
++				    "Unable to set speed, disable autoneg\n");
++			err = -EOPNOTSUPP;
++			goto done;
++		}
++	}
++
+ 	/* If speed didn't get set, set it to what it currently is.
+ 	 * This is needed because if advertise is 0 (as it is when autoneg
+ 	 * is disabled) then speed won't get set.
+-- 
+2.27.0
 
-Thank you.
-
-> In addition, for the problem that the invalid mac address cannot load
-> the igb driver, I personally think there is a better way to modify
-> it, and I will resubmit the patch about igb_main.c.
-
-Awesome.
-
-> It's the same question, but I may not know how to continue submitting
-> new patches on this email, sorry about that.
-
-As you use `git send-email`, what does `git log` show as the patch 
-author? It might be as easy as to do
-
-     git config --global user.name "Lixue Liang"
-     git config --global user.email lianglixue at greatwall.com.cn
-     git commit --amend --author "Lixue Liang <lianglixue@greatwall.com.cn>"
-
-
-Kind regards,
-
-Paul
-
-
-PS: When replying, it?d be great if you used interleaved style [1].
-
-
-[1]: https://en.wikipedia.org/wiki/Posting_style#Interleaved_style
