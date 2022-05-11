@@ -1,36 +1,40 @@
-From: lixue liang <lixue.liang5086@gmail.com>
-Date: Wed, 11 May 2022 14:26:45 +0800
-Subject: [Intel-wired-lan] [PATCH] igb_ethtool: fix efficiency issues in
- igb_set_eeprom
-In-Reply-To: <7963e252-05cb-349e-5902-c4e38f7e9405@intel.com>
-References: <20220510012159.8924-1-lianglixue@greatwall.com.cn>
- <7963e252-05cb-349e-5902-c4e38f7e9405@intel.com>
-Message-ID: <AD31AFC0-2621-4671-986A-8BCE2AA9F514@gmail.com>
+From: Bernard Zhao <zhaojunkui2008@126.com>
+Date: Tue, 10 May 2022 23:54:51 -0700
+Subject: [Intel-wired-lan] [PATCH] intel/i40e: delete if NULL check before
+ dev_kfree_skb
+Message-ID: <20220511065451.655335-1-zhaojunkui2008@126.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thank you very much for replying to my question and for suggesting corrections.
+dev_kfree_skb check if the input parameter NULL and do the right
+thing, there is no need to check again.
+This change is to cleanup the code a bit.
 
-Since the interface (igb_set_eeprom) for arbitrarily modifying the mac address is provided, 
-it is equivalent to providing a way to modify the mac address arbitrarily and cause the igb 
-driver to fail to load. Therefore, a way to restore a valid mac address should also be reserved, 
-so as to prevent most users from being helpless in the case of an invalid mac address.
+Signed-off-by: Bernard Zhao <zhaojunkui2008@126.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Except by using tools to flash the firmware or modify the igb driver to continue loading under 
-an invalid mac address, however most users do not have this ability. In the case of invalidity, 
-the invalid mac address must be changed to a legal address, so it is always better to use a 
-valid mac address to continue pretending to be a network card driver when the mac address is invalid,
- which is always better than not being able to load the driver, such as the microchip network card (lan743x) driver .
-
-I think it is worthwhile to replace the invalid mac address with a random valid mac address to 
-complete the igb driver loading. In response to the above problem, I will provide a patch on igb_main.c again..
-
-Thank you for taking the time.
-
-> 2022?5?11? 03:43?Jesse Brandeburg <jesse.brandeburg@intel.com> ???
-> 
-> Please include netdev mailing list when mailing the maintainers of netdev.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 0eae5858f2fe..98cfadfd0f35 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1482,10 +1482,8 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
+ 	if (!rx_ring->rx_bi)
+ 		return;
+ 
+-	if (rx_ring->skb) {
+-		dev_kfree_skb(rx_ring->skb);
+-		rx_ring->skb = NULL;
+-	}
++	dev_kfree_skb(rx_ring->skb);
++	rx_ring->skb = NULL;
+ 
+ 	if (rx_ring->xsk_pool) {
+ 		i40e_xsk_clean_rx_ring(rx_ring);
+-- 
+2.33.1
 
