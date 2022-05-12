@@ -1,120 +1,43 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Thu, 12 May 2022 10:55:50 +0800
-Subject: [Intel-wired-lan] [PATCH 2/2] igb: Make DMA faster when CPU is
- active on the PCIe link
-In-Reply-To: <6246d753-00cb-b5dc-f5fc-d041a8e78718@molgen.mpg.de>
-References: <20220511122806.2146847-1-kai.heng.feng@canonical.com>
- <20220511122806.2146847-2-kai.heng.feng@canonical.com>
- <6246d753-00cb-b5dc-f5fc-d041a8e78718@molgen.mpg.de>
-Message-ID: <CAAd53p52gkv-PLRvEM3GunTwU1J=c+n0J6uD03AQJ4EnL2y4Kg@mail.gmail.com>
+From: Alaa Mohamed <eng.alaamohamedsoliman.am@gmail.com>
+Date: Thu, 12 May 2022 10:39:38 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v6 2/2] net: vxlan: Add
+ extack support to vxlan_fdb_delete
+In-Reply-To: <20220509154603.4a7b4243@kernel.org>
+References: <cover.1651762829.git.eng.alaamohamedsoliman.am@gmail.com>
+ <ac4b6c650b6519cc56baa32ef20415460a5aa8ee.1651762830.git.eng.alaamohamedsoliman.am@gmail.com>
+ <20220509154603.4a7b4243@kernel.org>
+Message-ID: <191b395a-996b-597e-4ee9-06722ac3c776@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Paul,
 
-On Wed, May 11, 2022 at 8:49 PM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+On ???/??/???? ??:??, Jakub Kicinski wrote:
+> On Thu,  5 May 2022 17:09:58 +0200 Alaa Mohamed wrote:
+>> +			NL_SET_ERR_MSG(extack,
+>> +						  "DST, VNI, ifindex and port are mutually exclusive with NH_ID");
+> This continuation line still does not align with the opening bracket.
+> Look here if your email client makes it hard to see:
 >
-> Dear Kai-Hang,
+> https://lore.kernel.org/all/ac4b6c650b6519cc56baa32ef20415460a5aa8ee.1651762830.git.eng.alaamohamedsoliman.am at gmail.com/
 >
+> Same story in patch 1:
 >
-> Thank you for the patch.
+>>   static int ocelot_port_fdb_del(struct ndmsg *ndm, struct nlattr *tb[],
+>>   			       struct net_device *dev,
+>> -			       const unsigned char *addr, u16 vid)
+>> +			       const unsigned char *addr, u16 vid,
+>> +				   struct netlink_ext_ack *extack)
+> and here:
 >
->
-> Am 11.05.22 um 14:28 schrieb Kai-Heng Feng:
-> > We found Intel I210 can only achieve ~750Mbps Tx speed on some
-> > platforms. The RR2DCDELAY shows around 0x2xxx DMA delay, which will be
->
-> Please give an example platform, where it works and where it does not.
+>>   static int vxlan_fdb_delete(struct ndmsg *ndm, struct nlattr *tb[],
+>>   			    struct net_device *dev,
+>> -			    const unsigned char *addr, u16 vid)
+>> +			    const unsigned char *addr, u16 vid,
+>> +				struct netlink_ext_ack *extack)
 
-The platform is about but not yet hit the market yet, so I can't disclose it.
-They are Intel Alder Lake based.
 
->
-> How did you test transfer speed?
+I will fix it, thanks.
 
-Iperf.
-
->
-> > significantly lower when 1) ASPM is disabled or 2) SoC package c-state
-> > stays above PC3. When the RR2DCDELAY is around 0x1xxx the Tx speed can
-> > reach to ~950Mbps.
-> >
-> > According to the I210 datasheet "8.26.1 PCIe Misc. Register - PCIEMISC",
-> > "DMA Idle Indication" doesn't seem to tie to DMA coalesce anymore, so
-> > set it to 1b for "DMA is considered idle when there is no Rx or Tx AND
-> > when there are no TLPs indicating that CPU is active detected on the
-> > PCIe link (such as the host executes CSR or Configuration register read
-> > or write operation)" and performing Tx should also fall under "active
-> > CPU on PCIe link" case.
-> >
-> > In addition to that, commit b6e0c419f040 ("igb: Move DMA Coalescing init
-> > code to separate function.") seems to wrongly changed from enabling
-> > E1000_PCIEMISC_LX_DECISION to disabling it, also fix that.
->
-> Please split this into a separate commit with Fixes tag, and maybe the
-> commit author in Cc.
-
-I don't see the need to split to separate commit as both require the
-same change.
-
-I will add the "Fixes" tag once the igb maintainers reviewed the patch.
-
-Kai-Heng
-
->
->
-> Kind regards,
->
-> Paul
->
->
-> > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> > ---
-> >   drivers/net/ethernet/intel/igb/igb_main.c | 12 +++++-------
-> >   1 file changed, 5 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> > index 34b33b21e0dcd..eca797dded429 100644
-> > --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> > @@ -9897,11 +9897,10 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
-> >       struct e1000_hw *hw = &adapter->hw;
-> >       u32 dmac_thr;
-> >       u16 hwm;
-> > +     u32 reg;
-> >
-> >       if (hw->mac.type > e1000_82580) {
-> >               if (adapter->flags & IGB_FLAG_DMAC) {
-> > -                     u32 reg;
-> > -
-> >                       /* force threshold to 0. */
-> >                       wr32(E1000_DMCTXTH, 0);
-> >
-> > @@ -9934,7 +9933,6 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
-> >                       /* Disable BMC-to-OS Watchdog Enable */
-> >                       if (hw->mac.type != e1000_i354)
-> >                               reg &= ~E1000_DMACR_DC_BMC2OSW_EN;
-> > -
-> >                       wr32(E1000_DMACR, reg);
-> >
-> >                       /* no lower threshold to disable
-> > @@ -9951,12 +9949,12 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
-> >                        */
-> >                       wr32(E1000_DMCTXTH, (IGB_MIN_TXPBSIZE -
-> >                            (IGB_TX_BUF_4096 + adapter->max_frame_size)) >> 6);
-> > +             }
-> >
-> > -                     /* make low power state decision controlled
-> > -                      * by DMA coal
-> > -                      */
-> > +             if (hw->mac.type >= e1000_i210 ||
-> > +                 (adapter->flags & IGB_FLAG_DMAC)) {
-> >                       reg = rd32(E1000_PCIEMISC);
-> > -                     reg &= ~E1000_PCIEMISC_LX_DECISION;
-> > +                     reg |= E1000_PCIEMISC_LX_DECISION;
-> >                       wr32(E1000_PCIEMISC, reg);
-> >               } /* endif adapter->dmac is not disabled */
-> >       } else if (hw->mac.type == e1000_82580) {
