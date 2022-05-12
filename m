@@ -1,424 +1,120 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 12 May 2022 02:40:17 +0800
-Subject: [Intel-wired-lan] 
- =?utf-8?b?W1BBVENIXSBpZ2JfbWFpbu+8mkFkZGVkIGlu?=
- =?utf-8?q?valid_mac_address_handling_in_igb=5Fprobe?=
-In-Reply-To: <20220511080716.10054-1-lianglixue@greatwall.com.cn>
-References: <20220511080716.10054-1-lianglixue@greatwall.com.cn>
-Message-ID: <202205120241.e57SFKBu-lkp@intel.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Thu, 12 May 2022 10:55:50 +0800
+Subject: [Intel-wired-lan] [PATCH 2/2] igb: Make DMA faster when CPU is
+ active on the PCIe link
+In-Reply-To: <6246d753-00cb-b5dc-f5fc-d041a8e78718@molgen.mpg.de>
+References: <20220511122806.2146847-1-kai.heng.feng@canonical.com>
+ <20220511122806.2146847-2-kai.heng.feng@canonical.com>
+ <6246d753-00cb-b5dc-f5fc-d041a8e78718@molgen.mpg.de>
+Message-ID: <CAAd53p52gkv-PLRvEM3GunTwU1J=c+n0J6uD03AQJ4EnL2y4Kg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi lixue,
+Hi Paul,
 
-Thank you for the patch! Perhaps something to improve:
+On Wed, May 11, 2022 at 8:49 PM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+>
+> Dear Kai-Hang,
+>
+>
+> Thank you for the patch.
+>
+>
+> Am 11.05.22 um 14:28 schrieb Kai-Heng Feng:
+> > We found Intel I210 can only achieve ~750Mbps Tx speed on some
+> > platforms. The RR2DCDELAY shows around 0x2xxx DMA delay, which will be
+>
+> Please give an example platform, where it works and where it does not.
 
-[auto build test WARNING on tnguy-next-queue/dev-queue]
-[also build test WARNING on v5.18-rc6 next-20220511]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+The platform is about but not yet hit the market yet, so I can't disclose it.
+They are Intel Alder Lake based.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/lixue-liang/igb_main-Added-invalid-mac-address-handling-in-igb_probe/20220511-162855
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-config: ia64-allmodconfig (https://download.01.org/0day-ci/archive/20220512/202205120241.e57SFKBu-lkp at intel.com/config)
-compiler: ia64-linux-gcc (GCC) 11.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/6237ad497b2c8063fe59ba165d5ab87ae15aad0d
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review lixue-liang/igb_main-Added-invalid-mac-address-handling-in-igb_probe/20220511-162855
-        git checkout 6237ad497b2c8063fe59ba165d5ab87ae15aad0d
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.3.0 make.cross W=1 O=build_dir ARCH=ia64 SHELL=/bin/bash drivers/net/ethernet/intel/igb/
+>
+> How did you test transfer speed?
 
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kernel test robot <lkp@intel.com>
+Iperf.
 
-All warnings (new ones prefixed by >>):
+>
+> > significantly lower when 1) ASPM is disabled or 2) SoC package c-state
+> > stays above PC3. When the RR2DCDELAY is around 0x1xxx the Tx speed can
+> > reach to ~950Mbps.
+> >
+> > According to the I210 datasheet "8.26.1 PCIe Misc. Register - PCIEMISC",
+> > "DMA Idle Indication" doesn't seem to tie to DMA coalesce anymore, so
+> > set it to 1b for "DMA is considered idle when there is no Rx or Tx AND
+> > when there are no TLPs indicating that CPU is active detected on the
+> > PCIe link (such as the host executes CSR or Configuration register read
+> > or write operation)" and performing Tx should also fall under "active
+> > CPU on PCIe link" case.
+> >
+> > In addition to that, commit b6e0c419f040 ("igb: Move DMA Coalescing init
+> > code to separate function.") seems to wrongly changed from enabling
+> > E1000_PCIEMISC_LX_DECISION to disabling it, also fix that.
+>
+> Please split this into a separate commit with Fixes tag, and maybe the
+> commit author in Cc.
 
-   drivers/net/ethernet/intel/igb/igb_main.c: In function 'igb_probe':
->> drivers/net/ethernet/intel/igb/igb_main.c:3362:39: warning: passing argument 1 of 'eth_random_addr' discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
-    3362 |                 eth_random_addr(netdev->dev_addr);
-         |                                 ~~~~~~^~~~~~~~~~
-   In file included from include/linux/if_vlan.h:11,
-                    from include/net/pkt_sched.h:7,
-                    from drivers/net/ethernet/intel/igb/igb_main.c:17:
-   include/linux/etherdevice.h:230:40: note: expected 'u8 *' {aka 'unsigned char *'} but argument is of type 'const unsigned char *'
-     230 | static inline void eth_random_addr(u8 *addr)
-         |                                    ~~~~^~~~
-   {standard input}: Assembler messages:
-   {standard input}:45068: Error: Register number out of range 0..4
-   {standard input}:45069: Error: Register number out of range 0..4
-   {standard input}:45069: Warning: Use of 'mov' violates WAW dependency 'GR%, % in 1 - 127' (impliedf), specific resource number is 45
-   {standard input}:45069: Warning: Only the first path encountering the conflict is reported
-   {standard input}:45068: Warning: This is the location of the conflicting usage
-   {standard input}:45073: Error: Register number out of range 0..4
+I don't see the need to split to separate commit as both require the
+same change.
 
+I will add the "Fixes" tag once the igb maintainers reviewed the patch.
 
-vim +3362 drivers/net/ethernet/intel/igb/igb_main.c
+Kai-Heng
 
-  3146	
-  3147	/**
-  3148	 *  igb_probe - Device Initialization Routine
-  3149	 *  @pdev: PCI device information struct
-  3150	 *  @ent: entry in igb_pci_tbl
-  3151	 *
-  3152	 *  Returns 0 on success, negative on failure
-  3153	 *
-  3154	 *  igb_probe initializes an adapter identified by a pci_dev structure.
-  3155	 *  The OS initialization, configuring of the adapter private structure,
-  3156	 *  and a hardware reset occur.
-  3157	 **/
-  3158	static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-  3159	{
-  3160		struct net_device *netdev;
-  3161		struct igb_adapter *adapter;
-  3162		struct e1000_hw *hw;
-  3163		u16 eeprom_data = 0;
-  3164		s32 ret_val;
-  3165		static int global_quad_port_a; /* global quad port a indication */
-  3166		const struct e1000_info *ei = igb_info_tbl[ent->driver_data];
-  3167		u8 part_str[E1000_PBANUM_LENGTH];
-  3168		int err;
-  3169	
-  3170		/* Catch broken hardware that put the wrong VF device ID in
-  3171		 * the PCIe SR-IOV capability.
-  3172		 */
-  3173		if (pdev->is_virtfn) {
-  3174			WARN(1, KERN_ERR "%s (%x:%x) should not be a VF!\n",
-  3175				pci_name(pdev), pdev->vendor, pdev->device);
-  3176			return -EINVAL;
-  3177		}
-  3178	
-  3179		err = pci_enable_device_mem(pdev);
-  3180		if (err)
-  3181			return err;
-  3182	
-  3183		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
-  3184		if (err) {
-  3185			dev_err(&pdev->dev,
-  3186				"No usable DMA configuration, aborting\n");
-  3187			goto err_dma;
-  3188		}
-  3189	
-  3190		err = pci_request_mem_regions(pdev, igb_driver_name);
-  3191		if (err)
-  3192			goto err_pci_reg;
-  3193	
-  3194		pci_enable_pcie_error_reporting(pdev);
-  3195	
-  3196		pci_set_master(pdev);
-  3197		pci_save_state(pdev);
-  3198	
-  3199		err = -ENOMEM;
-  3200		netdev = alloc_etherdev_mq(sizeof(struct igb_adapter),
-  3201					   IGB_MAX_TX_QUEUES);
-  3202		if (!netdev)
-  3203			goto err_alloc_etherdev;
-  3204	
-  3205		SET_NETDEV_DEV(netdev, &pdev->dev);
-  3206	
-  3207		pci_set_drvdata(pdev, netdev);
-  3208		adapter = netdev_priv(netdev);
-  3209		adapter->netdev = netdev;
-  3210		adapter->pdev = pdev;
-  3211		hw = &adapter->hw;
-  3212		hw->back = adapter;
-  3213		adapter->msg_enable = netif_msg_init(debug, DEFAULT_MSG_ENABLE);
-  3214	
-  3215		err = -EIO;
-  3216		adapter->io_addr = pci_iomap(pdev, 0, 0);
-  3217		if (!adapter->io_addr)
-  3218			goto err_ioremap;
-  3219		/* hw->hw_addr can be altered, we'll use adapter->io_addr for unmap */
-  3220		hw->hw_addr = adapter->io_addr;
-  3221	
-  3222		netdev->netdev_ops = &igb_netdev_ops;
-  3223		igb_set_ethtool_ops(netdev);
-  3224		netdev->watchdog_timeo = 5 * HZ;
-  3225	
-  3226		strncpy(netdev->name, pci_name(pdev), sizeof(netdev->name) - 1);
-  3227	
-  3228		netdev->mem_start = pci_resource_start(pdev, 0);
-  3229		netdev->mem_end = pci_resource_end(pdev, 0);
-  3230	
-  3231		/* PCI config space info */
-  3232		hw->vendor_id = pdev->vendor;
-  3233		hw->device_id = pdev->device;
-  3234		hw->revision_id = pdev->revision;
-  3235		hw->subsystem_vendor_id = pdev->subsystem_vendor;
-  3236		hw->subsystem_device_id = pdev->subsystem_device;
-  3237	
-  3238		/* Copy the default MAC, PHY and NVM function pointers */
-  3239		memcpy(&hw->mac.ops, ei->mac_ops, sizeof(hw->mac.ops));
-  3240		memcpy(&hw->phy.ops, ei->phy_ops, sizeof(hw->phy.ops));
-  3241		memcpy(&hw->nvm.ops, ei->nvm_ops, sizeof(hw->nvm.ops));
-  3242		/* Initialize skew-specific constants */
-  3243		err = ei->get_invariants(hw);
-  3244		if (err)
-  3245			goto err_sw_init;
-  3246	
-  3247		/* setup the private structure */
-  3248		err = igb_sw_init(adapter);
-  3249		if (err)
-  3250			goto err_sw_init;
-  3251	
-  3252		igb_get_bus_info_pcie(hw);
-  3253	
-  3254		hw->phy.autoneg_wait_to_complete = false;
-  3255	
-  3256		/* Copper options */
-  3257		if (hw->phy.media_type == e1000_media_type_copper) {
-  3258			hw->phy.mdix = AUTO_ALL_MODES;
-  3259			hw->phy.disable_polarity_correction = false;
-  3260			hw->phy.ms_type = e1000_ms_hw_default;
-  3261		}
-  3262	
-  3263		if (igb_check_reset_block(hw))
-  3264			dev_info(&pdev->dev,
-  3265				"PHY reset is blocked due to SOL/IDER session.\n");
-  3266	
-  3267		/* features is initialized to 0 in allocation, it might have bits
-  3268		 * set by igb_sw_init so we should use an or instead of an
-  3269		 * assignment.
-  3270		 */
-  3271		netdev->features |= NETIF_F_SG |
-  3272				    NETIF_F_TSO |
-  3273				    NETIF_F_TSO6 |
-  3274				    NETIF_F_RXHASH |
-  3275				    NETIF_F_RXCSUM |
-  3276				    NETIF_F_HW_CSUM;
-  3277	
-  3278		if (hw->mac.type >= e1000_82576)
-  3279			netdev->features |= NETIF_F_SCTP_CRC | NETIF_F_GSO_UDP_L4;
-  3280	
-  3281		if (hw->mac.type >= e1000_i350)
-  3282			netdev->features |= NETIF_F_HW_TC;
-  3283	
-  3284	#define IGB_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
-  3285					  NETIF_F_GSO_GRE_CSUM | \
-  3286					  NETIF_F_GSO_IPXIP4 | \
-  3287					  NETIF_F_GSO_IPXIP6 | \
-  3288					  NETIF_F_GSO_UDP_TUNNEL | \
-  3289					  NETIF_F_GSO_UDP_TUNNEL_CSUM)
-  3290	
-  3291		netdev->gso_partial_features = IGB_GSO_PARTIAL_FEATURES;
-  3292		netdev->features |= NETIF_F_GSO_PARTIAL | IGB_GSO_PARTIAL_FEATURES;
-  3293	
-  3294		/* copy netdev features into list of user selectable features */
-  3295		netdev->hw_features |= netdev->features |
-  3296				       NETIF_F_HW_VLAN_CTAG_RX |
-  3297				       NETIF_F_HW_VLAN_CTAG_TX |
-  3298				       NETIF_F_RXALL;
-  3299	
-  3300		if (hw->mac.type >= e1000_i350)
-  3301			netdev->hw_features |= NETIF_F_NTUPLE;
-  3302	
-  3303		netdev->features |= NETIF_F_HIGHDMA;
-  3304	
-  3305		netdev->vlan_features |= netdev->features | NETIF_F_TSO_MANGLEID;
-  3306		netdev->mpls_features |= NETIF_F_HW_CSUM;
-  3307		netdev->hw_enc_features |= netdev->vlan_features;
-  3308	
-  3309		/* set this bit last since it cannot be part of vlan_features */
-  3310		netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER |
-  3311				    NETIF_F_HW_VLAN_CTAG_RX |
-  3312				    NETIF_F_HW_VLAN_CTAG_TX;
-  3313	
-  3314		netdev->priv_flags |= IFF_SUPP_NOFCS;
-  3315	
-  3316		netdev->priv_flags |= IFF_UNICAST_FLT;
-  3317	
-  3318		/* MTU range: 68 - 9216 */
-  3319		netdev->min_mtu = ETH_MIN_MTU;
-  3320		netdev->max_mtu = MAX_STD_JUMBO_FRAME_SIZE;
-  3321	
-  3322		adapter->en_mng_pt = igb_enable_mng_pass_thru(hw);
-  3323	
-  3324		/* before reading the NVM, reset the controller to put the device in a
-  3325		 * known good starting state
-  3326		 */
-  3327		hw->mac.ops.reset_hw(hw);
-  3328	
-  3329		/* make sure the NVM is good , i211/i210 parts can have special NVM
-  3330		 * that doesn't contain a checksum
-  3331		 */
-  3332		switch (hw->mac.type) {
-  3333		case e1000_i210:
-  3334		case e1000_i211:
-  3335			if (igb_get_flash_presence_i210(hw)) {
-  3336				if (hw->nvm.ops.validate(hw) < 0) {
-  3337					dev_err(&pdev->dev,
-  3338						"The NVM Checksum Is Not Valid\n");
-  3339					err = -EIO;
-  3340					goto err_eeprom;
-  3341				}
-  3342			}
-  3343			break;
-  3344		default:
-  3345			if (hw->nvm.ops.validate(hw) < 0) {
-  3346				dev_err(&pdev->dev, "The NVM Checksum Is Not Valid\n");
-  3347				err = -EIO;
-  3348				goto err_eeprom;
-  3349			}
-  3350			break;
-  3351		}
-  3352	
-  3353		if (eth_platform_get_mac_address(&pdev->dev, hw->mac.addr)) {
-  3354			/* copy the MAC address out of the NVM */
-  3355			if (hw->mac.ops.read_mac_addr(hw))
-  3356				dev_err(&pdev->dev, "NVM Read Error\n");
-  3357		}
-  3358	
-  3359		eth_hw_addr_set(netdev, hw->mac.addr);
-  3360	
-  3361		if (!is_valid_ether_addr(netdev->dev_addr)) {
-> 3362			eth_random_addr(netdev->dev_addr);
-  3363			memcpy(hw->mac.addr, netdev->dev_addr, netdev->addr_len);
-  3364			dev_info(&pdev->dev,
-  3365				 "Invalid Mac Address, already got random Mac Address\n");
-  3366		}
-  3367	
-  3368		igb_set_default_mac_filter(adapter);
-  3369	
-  3370		/* get firmware version for ethtool -i */
-  3371		igb_set_fw_version(adapter);
-  3372	
-  3373		/* configure RXPBSIZE and TXPBSIZE */
-  3374		if (hw->mac.type == e1000_i210) {
-  3375			wr32(E1000_RXPBS, I210_RXPBSIZE_DEFAULT);
-  3376			wr32(E1000_TXPBS, I210_TXPBSIZE_DEFAULT);
-  3377		}
-  3378	
-  3379		timer_setup(&adapter->watchdog_timer, igb_watchdog, 0);
-  3380		timer_setup(&adapter->phy_info_timer, igb_update_phy_info, 0);
-  3381	
-  3382		INIT_WORK(&adapter->reset_task, igb_reset_task);
-  3383		INIT_WORK(&adapter->watchdog_task, igb_watchdog_task);
-  3384	
-  3385		/* Initialize link properties that are user-changeable */
-  3386		adapter->fc_autoneg = true;
-  3387		hw->mac.autoneg = true;
-  3388		hw->phy.autoneg_advertised = 0x2f;
-  3389	
-  3390		hw->fc.requested_mode = e1000_fc_default;
-  3391		hw->fc.current_mode = e1000_fc_default;
-  3392	
-  3393		igb_validate_mdi_setting(hw);
-  3394	
-  3395		/* By default, support wake on port A */
-  3396		if (hw->bus.func == 0)
-  3397			adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-  3398	
-  3399		/* Check the NVM for wake support on non-port A ports */
-  3400		if (hw->mac.type >= e1000_82580)
-  3401			hw->nvm.ops.read(hw, NVM_INIT_CONTROL3_PORT_A +
-  3402					 NVM_82580_LAN_FUNC_OFFSET(hw->bus.func), 1,
-  3403					 &eeprom_data);
-  3404		else if (hw->bus.func == 1)
-  3405			hw->nvm.ops.read(hw, NVM_INIT_CONTROL3_PORT_B, 1, &eeprom_data);
-  3406	
-  3407		if (eeprom_data & IGB_EEPROM_APME)
-  3408			adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-  3409	
-  3410		/* now that we have the eeprom settings, apply the special cases where
-  3411		 * the eeprom may be wrong or the board simply won't support wake on
-  3412		 * lan on a particular port
-  3413		 */
-  3414		switch (pdev->device) {
-  3415		case E1000_DEV_ID_82575GB_QUAD_COPPER:
-  3416			adapter->flags &= ~IGB_FLAG_WOL_SUPPORTED;
-  3417			break;
-  3418		case E1000_DEV_ID_82575EB_FIBER_SERDES:
-  3419		case E1000_DEV_ID_82576_FIBER:
-  3420		case E1000_DEV_ID_82576_SERDES:
-  3421			/* Wake events only supported on port A for dual fiber
-  3422			 * regardless of eeprom setting
-  3423			 */
-  3424			if (rd32(E1000_STATUS) & E1000_STATUS_FUNC_1)
-  3425				adapter->flags &= ~IGB_FLAG_WOL_SUPPORTED;
-  3426			break;
-  3427		case E1000_DEV_ID_82576_QUAD_COPPER:
-  3428		case E1000_DEV_ID_82576_QUAD_COPPER_ET2:
-  3429			/* if quad port adapter, disable WoL on all but port A */
-  3430			if (global_quad_port_a != 0)
-  3431				adapter->flags &= ~IGB_FLAG_WOL_SUPPORTED;
-  3432			else
-  3433				adapter->flags |= IGB_FLAG_QUAD_PORT_A;
-  3434			/* Reset for multiple quad port adapters */
-  3435			if (++global_quad_port_a == 4)
-  3436				global_quad_port_a = 0;
-  3437			break;
-  3438		default:
-  3439			/* If the device can't wake, don't set software support */
-  3440			if (!device_can_wakeup(&adapter->pdev->dev))
-  3441				adapter->flags &= ~IGB_FLAG_WOL_SUPPORTED;
-  3442		}
-  3443	
-  3444		/* initialize the wol settings based on the eeprom settings */
-  3445		if (adapter->flags & IGB_FLAG_WOL_SUPPORTED)
-  3446			adapter->wol |= E1000_WUFC_MAG;
-  3447	
-  3448		/* Some vendors want WoL disabled by default, but still supported */
-  3449		if ((hw->mac.type == e1000_i350) &&
-  3450		    (pdev->subsystem_vendor == PCI_VENDOR_ID_HP)) {
-  3451			adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-  3452			adapter->wol = 0;
-  3453		}
-  3454	
-  3455		/* Some vendors want the ability to Use the EEPROM setting as
-  3456		 * enable/disable only, and not for capability
-  3457		 */
-  3458		if (((hw->mac.type == e1000_i350) ||
-  3459		     (hw->mac.type == e1000_i354)) &&
-  3460		    (pdev->subsystem_vendor == PCI_VENDOR_ID_DELL)) {
-  3461			adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-  3462			adapter->wol = 0;
-  3463		}
-  3464		if (hw->mac.type == e1000_i350) {
-  3465			if (((pdev->subsystem_device == 0x5001) ||
-  3466			     (pdev->subsystem_device == 0x5002)) &&
-  3467					(hw->bus.func == 0)) {
-  3468				adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-  3469				adapter->wol = 0;
-  3470			}
-  3471			if (pdev->subsystem_device == 0x1F52)
-  3472				adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-  3473		}
-  3474	
-  3475		device_set_wakeup_enable(&adapter->pdev->dev,
-  3476					 adapter->flags & IGB_FLAG_WOL_SUPPORTED);
-  3477	
-  3478		/* reset the hardware with the new settings */
-  3479		igb_reset(adapter);
-  3480	
-  3481		/* Init the I2C interface */
-  3482		err = igb_init_i2c(adapter);
-  3483		if (err) {
-  3484			dev_err(&pdev->dev, "failed to init i2c interface\n");
-  3485			goto err_eeprom;
-  3486		}
-  3487	
-  3488		/* let the f/w know that the h/w is now under the control of the
-  3489		 * driver.
-  3490		 */
-  3491		igb_get_hw_control(adapter);
-  3492	
-  3493		strcpy(netdev->name, "eth%d");
-  3494		err = register_netdev(netdev);
-  3495		if (err)
-  3496			goto err_register;
-  3497	
-  3498		/* carrier off reporting is important to ethtool even BEFORE open */
-  3499		netif_carrier_off(netdev);
-  3500	
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+>
+>
+> Kind regards,
+>
+> Paul
+>
+>
+> > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> > ---
+> >   drivers/net/ethernet/intel/igb/igb_main.c | 12 +++++-------
+> >   1 file changed, 5 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> > index 34b33b21e0dcd..eca797dded429 100644
+> > --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> > @@ -9897,11 +9897,10 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
+> >       struct e1000_hw *hw = &adapter->hw;
+> >       u32 dmac_thr;
+> >       u16 hwm;
+> > +     u32 reg;
+> >
+> >       if (hw->mac.type > e1000_82580) {
+> >               if (adapter->flags & IGB_FLAG_DMAC) {
+> > -                     u32 reg;
+> > -
+> >                       /* force threshold to 0. */
+> >                       wr32(E1000_DMCTXTH, 0);
+> >
+> > @@ -9934,7 +9933,6 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
+> >                       /* Disable BMC-to-OS Watchdog Enable */
+> >                       if (hw->mac.type != e1000_i354)
+> >                               reg &= ~E1000_DMACR_DC_BMC2OSW_EN;
+> > -
+> >                       wr32(E1000_DMACR, reg);
+> >
+> >                       /* no lower threshold to disable
+> > @@ -9951,12 +9949,12 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
+> >                        */
+> >                       wr32(E1000_DMCTXTH, (IGB_MIN_TXPBSIZE -
+> >                            (IGB_TX_BUF_4096 + adapter->max_frame_size)) >> 6);
+> > +             }
+> >
+> > -                     /* make low power state decision controlled
+> > -                      * by DMA coal
+> > -                      */
+> > +             if (hw->mac.type >= e1000_i210 ||
+> > +                 (adapter->flags & IGB_FLAG_DMAC)) {
+> >                       reg = rd32(E1000_PCIEMISC);
+> > -                     reg &= ~E1000_PCIEMISC_LX_DECISION;
+> > +                     reg |= E1000_PCIEMISC_LX_DECISION;
+> >                       wr32(E1000_PCIEMISC, reg);
+> >               } /* endif adapter->dmac is not disabled */
+> >       } else if (hw->mac.type == e1000_82580) {
