@@ -1,154 +1,235 @@
 From: kernel test robot <lkp@intel.com>
-Date: Thu, 12 May 2022 22:01:35 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:40GbE] BUILD SUCCESS
- 9d5803f0135acfd1cd838d88124356e74c4e5beb
-Message-ID: <627d133f.SYZ9IcM95FxIAobM%lkp@intel.com>
+Date: Thu, 12 May 2022 22:49:06 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ ecd17a87eb78b5bd5ca6d1aa20c39f2bc3591337
+Message-ID: <627d1e62.NzfQf9wIzrGWUWhJ%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 40GbE
-branch HEAD: 9d5803f0135acfd1cd838d88124356e74c4e5beb  iavf: Add waiting for response from PF in set mac
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: ecd17a87eb78b5bd5ca6d1aa20c39f2bc3591337  x25: remove redundant pointer dev
 
-elapsed time: 4071m
+Unverified Warning (likely false positive, please contact us if interested):
 
-configs tested: 212
-configs skipped: 3
+kismet: WARNING: unmet direct dependencies detected for NVMEM_SUNPLUS_OCOTP when selected by SP7021_EMAC
+
+Warning ids grouped by kconfigs:
+
+gcc_recent_errors
+`-- x86_64-allnoconfig
+    `-- kismet:WARNING:unmet-direct-dependencies-detected-for-NVMEM_SUNPLUS_OCOTP-when-selected-by-SP7021_EMAC
+
+elapsed time: 3152m
+
+configs tested: 316
+configs skipped: 4
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
 
 gcc tested configs:
-arm64                               defconfig
 arm64                            allyesconfig
 arm                              allmodconfig
 arm                                 defconfig
 arm                              allyesconfig
-i386                          randconfig-c001
+arm64                               defconfig
 i386                 randconfig-c001-20220509
-arm                         lpc18xx_defconfig
+i386                          randconfig-c001
+sh                               j2_defconfig
+sh                         ap325rxa_defconfig
+sh                      rts7751r2d1_defconfig
+arm                       imx_v6_v7_defconfig
+powerpc                       ppc64_defconfig
+xtensa                  cadence_csp_defconfig
+sh                           se7705_defconfig
+ia64                            zx1_defconfig
+powerpc                      makalu_defconfig
+arm                         axm55xx_defconfig
+powerpc                 linkstation_defconfig
+mips                       capcella_defconfig
 sh                          rsk7269_defconfig
-mips                          rb532_defconfig
-powerpc                 mpc834x_mds_defconfig
-powerpc64                           defconfig
-sh                        edosk7760_defconfig
-arc                          axs101_defconfig
-h8300                       h8s-sim_defconfig
-xtensa                generic_kc705_defconfig
-ia64                         bigsur_defconfig
-arm                            pleb_defconfig
-xtensa                          iss_defconfig
-sh                           se7721_defconfig
-arm                           corgi_defconfig
-mips                 decstation_r4k_defconfig
+powerpc                       eiger_defconfig
+mips                           xway_defconfig
+powerpc                      pasemi_defconfig
 arm                        mini2440_defconfig
 arm                        multi_v7_defconfig
 m68k                        m5272c3_defconfig
 sh                          rsk7201_defconfig
 arm                         at91_dt_defconfig
-arc                        nsim_700_defconfig
-powerpc                 linkstation_defconfig
-parisc                           alldefconfig
 arm                         lubbock_defconfig
+parisc                           alldefconfig
 sh                          urquell_defconfig
-um                               alldefconfig
-xtensa                  cadence_csp_defconfig
+arm                       omap2plus_defconfig
+ia64                             alldefconfig
+sh                          rsk7203_defconfig
+arm                        spear6xx_defconfig
+h8300                            allyesconfig
+arm                           h3600_defconfig
+arm                          iop32x_defconfig
+arm                         cm_x300_defconfig
+parisc64                         alldefconfig
+m68k                            mac_defconfig
+powerpc                        warp_defconfig
+powerpc                     taishan_defconfig
+sh                          r7785rp_defconfig
+sh                                  defconfig
+powerpc                  storcenter_defconfig
+ia64                          tiger_defconfig
 sparc                       sparc64_defconfig
 arm                       aspeed_g5_defconfig
 ia64                        generic_defconfig
 xtensa                  nommu_kc705_defconfig
+arm                           stm32_defconfig
+powerpc                    sam440ep_defconfig
+sh                           se7619_defconfig
 arm                        clps711x_defconfig
 arc                              alldefconfig
 sh                          landisk_defconfig
 powerpc                           allnoconfig
+sparc64                             defconfig
+arm                            zeus_defconfig
+nios2                            alldefconfig
+sh                           se7721_defconfig
 sh                           sh2007_defconfig
+i386                                defconfig
+m68k                             allmodconfig
 powerpc                     sequoia_defconfig
 sh                          polaris_defconfig
 sh                            hp6xx_defconfig
 sparc                            alldefconfig
 arc                         haps_hs_defconfig
-nios2                         10m50_defconfig
-openrisc                 simple_smp_defconfig
-sh                         ecovec24_defconfig
-mips                  maltasmvp_eva_defconfig
+powerpc64                           defconfig
+arc                        vdk_hs38_defconfig
+powerpc                mpc7448_hpc2_defconfig
+arm                        keystone_defconfig
+riscv             nommu_k210_sdcard_defconfig
+openrisc                            defconfig
+arm                          pxa910_defconfig
+h8300                               defconfig
+arm                            qcom_defconfig
+arc                      axs103_smp_defconfig
+sh                        edosk7705_defconfig
+sh                        sh7763rdp_defconfig
+sh                   sh7724_generic_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                            allyesconfig
+m68k                          multi_defconfig
+sh                          sdk7780_defconfig
+s390                             allyesconfig
+arm                         lpc18xx_defconfig
 powerpc                 mpc8540_ads_defconfig
-i386                                defconfig
-sparc                       sparc32_defconfig
-sh                           se7750_defconfig
-arm                          exynos_defconfig
+nios2                         10m50_defconfig
+sh                             sh03_defconfig
+arc                                 defconfig
+mips                             allyesconfig
 s390                                defconfig
+csky                                defconfig
+openrisc                 simple_smp_defconfig
 s390                       zfcpdump_defconfig
 arc                          axs103_defconfig
-arm                        keystone_defconfig
+arm                      footbridge_defconfig
+arc                 nsimosci_hs_smp_defconfig
+sh                           se7343_defconfig
+sh                          kfr2r09_defconfig
+arm                             ezx_defconfig
 sh                           se7751_defconfig
-arc                      axs103_smp_defconfig
-arc                    vdk_hs38_smp_defconfig
-arm                           sunxi_defconfig
-sh                         apsh4a3a_defconfig
-xtensa                    xip_kc705_defconfig
-mips                         tb0226_defconfig
-powerpc                 canyonlands_defconfig
-powerpc                 mpc837x_mds_defconfig
+m68k                       m5208evb_defconfig
 powerpc                      pcm030_defconfig
+arc                    vdk_hs38_smp_defconfig
+mips                            ar7_defconfig
+xtensa                    smp_lx200_defconfig
+sh                         microdev_defconfig
+powerpc                      tqm8xx_defconfig
+mips                           gcw0_defconfig
+xtensa                    xip_kc705_defconfig
+nios2                               defconfig
+arm                          simpad_defconfig
+ia64                         bigsur_defconfig
+xtensa                       common_defconfig
+sh                            migor_defconfig
+powerpc                     tqm8555_defconfig
+powerpc                      cm5200_defconfig
+arm                            mps2_defconfig
 parisc                generic-32bit_defconfig
 alpha                            allyesconfig
-arm                           viper_defconfig
-sparc64                          alldefconfig
+arm                        shmobile_defconfig
+sh                               alldefconfig
+mips                  maltasmvp_eva_defconfig
+m68k                        mvme147_defconfig
+powerpc                        cell_defconfig
+ia64                                defconfig
+m68k                             alldefconfig
+sh                          lboxre2_defconfig
 mips                        bcm47xx_defconfig
-arm                         axm55xx_defconfig
 arm                           tegra_defconfig
 sh                        sh7757lcr_defconfig
+sh                           se7722_defconfig
+arm                          exynos_defconfig
+openrisc                  or1klitex_defconfig
 m68k                        m5407c3_defconfig
 riscv                               defconfig
 xtensa                           alldefconfig
-powerpc                   currituck_defconfig
 sh                     sh7710voipgw_defconfig
+sh                          r7780mp_defconfig
+m68k                        stmark2_defconfig
+m68k                       bvme6000_defconfig
 sh                           se7724_defconfig
 sh                           se7780_defconfig
 mips                         cobalt_defconfig
-sh                        edosk7705_defconfig
-powerpc                      ep88xc_defconfig
+sh                            shmin_defconfig
+arm                         assabet_defconfig
+mips                            gpr_defconfig
+microblaze                          defconfig
 powerpc                    adder875_defconfig
-powerpc                       ppc64_defconfig
 powerpc                         ps3_defconfig
+sh                         apsh4a3a_defconfig
 ia64                      gensparse_defconfig
 arm                          lpd270_defconfig
-arm                             rpc_defconfig
-arm                        spear6xx_defconfig
-powerpc                        cell_defconfig
+m68k                       m5249evb_defconfig
+arc                           tb10x_defconfig
+arc                            hsdk_defconfig
+powerpc                  iss476-smp_defconfig
+m68k                          amiga_defconfig
+powerpc                 mpc834x_itx_defconfig
+um                                  defconfig
+powerpc                     rainier_defconfig
+arm                         vf610m4_defconfig
+um                               alldefconfig
+arm                            hisi_defconfig
+sh                             espt_defconfig
+powerpc                    klondike_defconfig
+riscv                    nommu_k210_defconfig
+powerpc                     tqm8548_defconfig
 openrisc                         alldefconfig
+arc                        nsim_700_defconfig
+powerpc                      ep88xc_defconfig
+powerpc                     tqm8541_defconfig
+powerpc                       maple_defconfig
+sh                           se7712_defconfig
 x86_64               randconfig-c001-20220509
 arm                  randconfig-c002-20220509
 x86_64                        randconfig-c001
 arm                  randconfig-c002-20220512
-ia64                             allmodconfig
 ia64                             allyesconfig
-ia64                                defconfig
+ia64                             allmodconfig
 m68k                             allyesconfig
-m68k                             allmodconfig
 m68k                                defconfig
-nios2                               defconfig
 arc                              allyesconfig
-csky                                defconfig
-nios2                            allyesconfig
 alpha                               defconfig
-h8300                            allyesconfig
 xtensa                           allyesconfig
-arc                                 defconfig
 sh                               allmodconfig
 s390                             allmodconfig
 parisc                              defconfig
 parisc64                            defconfig
 parisc                           allyesconfig
-s390                             allyesconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
+sparc                               defconfig
 i386                             allyesconfig
 sparc                            allyesconfig
-sparc                               defconfig
-mips                             allyesconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
 mips                             allmodconfig
 powerpc                          allyesconfig
 powerpc                          allmodconfig
@@ -161,6 +242,9 @@ x86_64               randconfig-a016-20220509
 x86_64               randconfig-a014-20220509
 x86_64               randconfig-a013-20220509
 x86_64               randconfig-a011-20220509
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
 i386                 randconfig-a011-20220509
 i386                 randconfig-a013-20220509
 i386                 randconfig-a016-20220509
@@ -176,9 +260,11 @@ riscv                randconfig-r042-20220509
 s390                 randconfig-r044-20220512
 riscv                randconfig-r042-20220512
 arc                  randconfig-r043-20220512
+s390                 randconfig-r044-20220510
+riscv                randconfig-r042-20220510
+arc                  randconfig-r043-20220510
 riscv                    nommu_virt_defconfig
 riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
 riscv                             allnoconfig
 riscv                            allmodconfig
 riscv                            allyesconfig
@@ -194,28 +280,61 @@ x86_64                         rhel-8.3-kunit
 x86_64                               rhel-8.3
 
 clang tested configs:
-s390                 randconfig-c005-20220512
-powerpc              randconfig-c003-20220512
+x86_64               randconfig-c007-20220509
+i386                 randconfig-c001-20220509
+powerpc              randconfig-c003-20220509
+riscv                randconfig-c006-20220509
+mips                 randconfig-c004-20220509
+arm                  randconfig-c002-20220509
+s390                 randconfig-c005-20220509
+powerpc              randconfig-c003-20220510
 x86_64                        randconfig-c007
-riscv                randconfig-c006-20220512
-mips                 randconfig-c004-20220512
+riscv                randconfig-c006-20220510
+mips                 randconfig-c004-20220510
 i386                          randconfig-c001
-arm                  randconfig-c002-20220512
+arm                  randconfig-c002-20220510
+s390                 randconfig-c005-20220510
+mips                        bcm63xx_defconfig
+arm                           omap1_defconfig
+mips                     cu1830-neo_defconfig
+powerpc                      acadia_defconfig
+powerpc                    mvme5100_defconfig
 arm                                 defconfig
-powerpc                     tqm5200_defconfig
+powerpc                     kmeter1_defconfig
+arm                        spear3xx_defconfig
+arm                         socfpga_defconfig
+powerpc                     akebono_defconfig
+powerpc                     powernv_defconfig
+powerpc                          allmodconfig
+mips                       rbtx49xx_defconfig
+mips                        maltaup_defconfig
+mips                      maltaaprp_defconfig
+arm                      pxa255-idp_defconfig
+hexagon                             defconfig
 mips                        omega2p_defconfig
-arm                  colibri_pxa300_defconfig
-arm                       versatile_defconfig
-powerpc                     ppa8548_defconfig
+arm                       netwinder_defconfig
+powerpc                          g5_defconfig
+powerpc                     tqm8560_defconfig
+powerpc                 xes_mpc85xx_defconfig
+mips                          ath79_defconfig
+powerpc                     skiroot_defconfig
+arm                          ixp4xx_defconfig
+mips                      pic32mzda_defconfig
 arm                          pcm027_defconfig
 arm                          collie_defconfig
 powerpc                  mpc885_ads_defconfig
+arm                       aspeed_g4_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                          pxa168_defconfig
 x86_64               randconfig-a006-20220509
 x86_64               randconfig-a002-20220509
 x86_64               randconfig-a001-20220509
 x86_64               randconfig-a004-20220509
 x86_64               randconfig-a005-20220509
 x86_64               randconfig-a003-20220509
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
 i386                 randconfig-a004-20220509
 i386                 randconfig-a006-20220509
 i386                 randconfig-a002-20220509
@@ -231,11 +350,8 @@ x86_64                        randconfig-a016
 i386                          randconfig-a011
 i386                          randconfig-a013
 i386                          randconfig-a015
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-hexagon              randconfig-r041-20220509
 hexagon              randconfig-r045-20220509
+hexagon              randconfig-r041-20220509
 hexagon              randconfig-r045-20220512
 hexagon              randconfig-r041-20220512
 
