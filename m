@@ -1,316 +1,41 @@
-From: kernel test robot <lkp@intel.com>
-Date: Thu, 12 May 2022 22:48:43 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:1GbE] BUILD SUCCESS
- 95073d08154a27b1d0a84bcf6210e67c3b4d8c08
-Message-ID: <627d1e4b.s6mv+UQyFc+Iv/Mo%lkp@intel.com>
+From: G, GurucharanX <gurucharanx.g@intel.com>
+Date: Thu, 12 May 2022 14:54:22 +0000
+Subject: [Intel-wired-lan] [PATCH net] ice: fix possible under reporting
+ of ethtool Tx and Rx statistics
+In-Reply-To: <20220428211142.806462-1-paul.greenwalt@intel.com>
+References: <20220428211142.806462-1-paul.greenwalt@intel.com>
+Message-ID: <BYAPR11MB3367AE89B6C48D29D9177E5DFCCB9@BYAPR11MB3367.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 1GbE
-branch HEAD: 95073d08154a27b1d0a84bcf6210e67c3b4d8c08  igc: Change type of the 'igc_check_downshift' method
 
-elapsed time: 2467m
 
-configs tested: 282
-configs skipped: 4
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Paul Greenwalt
+> Sent: Friday, April 29, 2022 2:42 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net] ice: fix possible under reporting of
+> ethtool Tx and Rx statistics
+> 
+> The hardware statistics counters are not cleared during resets so the drivers
+> first access is to initialize the baseline and then subsequent reads are for
+> reporting the counters. The statistics counters are read during the watchdog
+> subtask when the interface is up. If the baseline is not initialized before the
+> interface is up, then there can be a brief window in which some traffic can be
+> transmitted/received before the initial baseline reading takes place.
+> 
+> Directly initialize ethtool statistics in driver open so the baseline will be
+> initialized when the interface is up, and any dropped packets incremented
+> before the interface is up won't be reported.
+> 
+> Fixes: 28dc1b86f8ea9 ("ice: ignore dropped packets during init")
+> Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_main.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm64                            allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-arm64                               defconfig
-i386                 randconfig-c001-20220509
-i386                          randconfig-c001
-sh                               j2_defconfig
-sh                         ap325rxa_defconfig
-sh                      rts7751r2d1_defconfig
-arm                       imx_v6_v7_defconfig
-powerpc                       ppc64_defconfig
-xtensa                  cadence_csp_defconfig
-sh                           se7705_defconfig
-ia64                            zx1_defconfig
-powerpc                       eiger_defconfig
-mips                           xway_defconfig
-powerpc                      pasemi_defconfig
-arm                        mini2440_defconfig
-arm                        multi_v7_defconfig
-m68k                        m5272c3_defconfig
-sh                          rsk7201_defconfig
-arm                         at91_dt_defconfig
-arm                       omap2plus_defconfig
-ia64                             alldefconfig
-sh                          rsk7203_defconfig
-arm                        spear6xx_defconfig
-h8300                            allyesconfig
-arm                           h3600_defconfig
-arm                          iop32x_defconfig
-arm                         cm_x300_defconfig
-parisc64                         alldefconfig
-m68k                            mac_defconfig
-powerpc                        warp_defconfig
-powerpc                     taishan_defconfig
-sh                          r7785rp_defconfig
-sh                                  defconfig
-powerpc                  storcenter_defconfig
-ia64                          tiger_defconfig
-sparc                       sparc64_defconfig
-arm                       aspeed_g5_defconfig
-ia64                        generic_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                           stm32_defconfig
-powerpc                    sam440ep_defconfig
-sh                           se7619_defconfig
-sparc64                             defconfig
-arm                            zeus_defconfig
-nios2                            alldefconfig
-sh                           se7721_defconfig
-sh                           sh2007_defconfig
-i386                                defconfig
-m68k                             allmodconfig
-powerpc                     sequoia_defconfig
-sh                          polaris_defconfig
-sh                            hp6xx_defconfig
-sparc                            alldefconfig
-arc                         haps_hs_defconfig
-arm                        keystone_defconfig
-riscv             nommu_k210_sdcard_defconfig
-openrisc                            defconfig
-arm                          pxa910_defconfig
-sh                        sh7763rdp_defconfig
-sh                   sh7724_generic_defconfig
-powerpc                mpc7448_hpc2_defconfig
-h8300                    h8300h-sim_defconfig
-nios2                            allyesconfig
-m68k                          multi_defconfig
-sh                          sdk7780_defconfig
-s390                             allyesconfig
-arm                         lpc18xx_defconfig
-powerpc                 mpc8540_ads_defconfig
-nios2                         10m50_defconfig
-s390                                defconfig
-arm                         lubbock_defconfig
-csky                                defconfig
-openrisc                 simple_smp_defconfig
-s390                       zfcpdump_defconfig
-arc                          axs103_defconfig
-sh                           se7751_defconfig
-parisc                           alldefconfig
-arc                      axs103_smp_defconfig
-m68k                       m5208evb_defconfig
-powerpc                      pcm030_defconfig
-mips                       capcella_defconfig
-arc                    vdk_hs38_smp_defconfig
-mips                            ar7_defconfig
-xtensa                    smp_lx200_defconfig
-sh                         microdev_defconfig
-powerpc                      tqm8xx_defconfig
-mips                           gcw0_defconfig
-xtensa                    xip_kc705_defconfig
-nios2                               defconfig
-arm                          simpad_defconfig
-ia64                         bigsur_defconfig
-xtensa                       common_defconfig
-sh                          kfr2r09_defconfig
-sh                            migor_defconfig
-powerpc                     tqm8555_defconfig
-powerpc                      cm5200_defconfig
-arm                            mps2_defconfig
-parisc                generic-32bit_defconfig
-alpha                            allyesconfig
-arm                        shmobile_defconfig
-sh                               alldefconfig
-mips                  maltasmvp_eva_defconfig
-m68k                        mvme147_defconfig
-powerpc                        cell_defconfig
-ia64                                defconfig
-m68k                             alldefconfig
-sh                          lboxre2_defconfig
-mips                        bcm47xx_defconfig
-arm                         axm55xx_defconfig
-arm                           tegra_defconfig
-sh                        sh7757lcr_defconfig
-sh                           se7722_defconfig
-arm                          exynos_defconfig
-openrisc                  or1klitex_defconfig
-m68k                        m5407c3_defconfig
-riscv                               defconfig
-xtensa                           alldefconfig
-sh                     sh7710voipgw_defconfig
-sh                          r7780mp_defconfig
-m68k                        stmark2_defconfig
-m68k                       bvme6000_defconfig
-sh                            shmin_defconfig
-arm                         assabet_defconfig
-mips                            gpr_defconfig
-microblaze                          defconfig
-powerpc                    adder875_defconfig
-powerpc                         ps3_defconfig
-sh                         apsh4a3a_defconfig
-ia64                      gensparse_defconfig
-arm                          lpd270_defconfig
-m68k                       m5249evb_defconfig
-arc                           tb10x_defconfig
-arc                            hsdk_defconfig
-powerpc                  iss476-smp_defconfig
-m68k                          amiga_defconfig
-powerpc                 mpc834x_itx_defconfig
-um                               alldefconfig
-riscv                    nommu_k210_defconfig
-sh                           se7724_defconfig
-powerpc                     tqm8548_defconfig
-openrisc                         alldefconfig
-arc                        nsim_700_defconfig
-powerpc                      ep88xc_defconfig
-powerpc                     tqm8541_defconfig
-powerpc                       maple_defconfig
-sh                           se7712_defconfig
-x86_64               randconfig-c001-20220509
-arm                  randconfig-c002-20220509
-x86_64                        randconfig-c001
-arm                  randconfig-c002-20220512
-ia64                             allyesconfig
-ia64                             allmodconfig
-m68k                             allyesconfig
-m68k                                defconfig
-arc                              allyesconfig
-alpha                               defconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                             allmodconfig
-parisc                              defconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-sparc                               defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64               randconfig-a015-20220509
-x86_64               randconfig-a012-20220509
-x86_64               randconfig-a016-20220509
-x86_64               randconfig-a014-20220509
-x86_64               randconfig-a013-20220509
-x86_64               randconfig-a011-20220509
-x86_64                        randconfig-a011
-x86_64                        randconfig-a013
-x86_64                        randconfig-a015
-i386                 randconfig-a011-20220509
-i386                 randconfig-a013-20220509
-i386                 randconfig-a016-20220509
-i386                 randconfig-a015-20220509
-i386                 randconfig-a014-20220509
-i386                 randconfig-a012-20220509
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-arc                  randconfig-r043-20220509
-s390                 randconfig-r044-20220509
-riscv                randconfig-r042-20220509
-s390                 randconfig-r044-20220512
-riscv                randconfig-r042-20220512
-arc                  randconfig-r043-20220512
-s390                 randconfig-r044-20220510
-riscv                randconfig-r042-20220510
-arc                  randconfig-r043-20220510
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                             allnoconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                          rhel-8.3-func
-x86_64                           rhel-8.3-syz
-x86_64                                  kexec
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                         rhel-8.3-kunit
-x86_64                               rhel-8.3
-
-clang tested configs:
-x86_64               randconfig-c007-20220509
-s390                 randconfig-c005-20220509
-i386                 randconfig-c001-20220509
-powerpc              randconfig-c003-20220509
-riscv                randconfig-c006-20220509
-mips                 randconfig-c004-20220509
-arm                  randconfig-c002-20220509
-powerpc              randconfig-c003-20220510
-x86_64                        randconfig-c007
-riscv                randconfig-c006-20220510
-mips                 randconfig-c004-20220510
-i386                          randconfig-c001
-arm                  randconfig-c002-20220510
-s390                 randconfig-c005-20220510
-mips                        bcm63xx_defconfig
-arm                           omap1_defconfig
-mips                     cu1830-neo_defconfig
-powerpc                      acadia_defconfig
-powerpc                    mvme5100_defconfig
-arm                                 defconfig
-arm                         socfpga_defconfig
-powerpc                     akebono_defconfig
-powerpc                     powernv_defconfig
-powerpc                          allmodconfig
-mips                       rbtx49xx_defconfig
-mips                        maltaup_defconfig
-mips                      maltaaprp_defconfig
-mips                        omega2p_defconfig
-arm                       netwinder_defconfig
-powerpc                          g5_defconfig
-powerpc                     tqm8560_defconfig
-hexagon                             defconfig
-powerpc                 xes_mpc85xx_defconfig
-mips                          ath79_defconfig
-powerpc                     skiroot_defconfig
-arm                          ixp4xx_defconfig
-arm                       aspeed_g4_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                          collie_defconfig
-arm                          pxa168_defconfig
-x86_64               randconfig-a003-20220509
-x86_64               randconfig-a001-20220509
-x86_64               randconfig-a002-20220509
-x86_64               randconfig-a004-20220509
-x86_64               randconfig-a005-20220509
-x86_64               randconfig-a006-20220509
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-i386                 randconfig-a004-20220509
-i386                 randconfig-a006-20220509
-i386                 randconfig-a002-20220509
-i386                 randconfig-a003-20220509
-i386                 randconfig-a001-20220509
-i386                 randconfig-a005-20220509
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-hexagon              randconfig-r041-20220509
-hexagon              randconfig-r045-20220509
-hexagon              randconfig-r045-20220512
-hexagon              randconfig-r041-20220512
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
