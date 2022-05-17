@@ -1,184 +1,160 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sun, 22 May 2022 14:43:38 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- f5a4ca1b07014ac04c8a251af01e206d25ffeb2a
-Message-ID: <6289db9a.rxysnZnVYSyhYhsE%lkp@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Tue, 17 May 2022 13:45:50 -0700
+Subject: [Intel-wired-lan] Bonding problem on Intel X710 hardware
+In-Reply-To: <ad3e244d-2f87-c74b-1d40-c21e286a721c@anduras.de>
+References: <700118d5-2007-3c13-af2d-3a2a6c7775bd@anduras.de>
+ <ad3e244d-2f87-c74b-1d40-c21e286a721c@anduras.de>
+Message-ID: <20220517134550.7c451a83@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: f5a4ca1b07014ac04c8a251af01e206d25ffeb2a  i40e: Remove unnecessary synchronize_irq() before free_irq()
+CC: intel
 
-elapsed time: 2020m
+On Tue, 17 May 2022 16:23:16 +0200 Sven Anders wrote:
+> Hello!
+> 
+> This is a follow up to my question. I did not hear anything so far, but I tried
+> to find some some information meanwhile.
+> 
+> I've got a guess from somebody, that the error message "Error I40E_AQ_RC_EINVAL
+> adding RX filters on PF, promiscuous mode forced on" maybe triggered, because
+> I'm hitting a limit here.
+> 
+> Somebody other said, that this seems to be an error in the "bonding driver", but
+> I do not think so. Aside from that, there seem to be no special "bonding" mailing
+> list anymore. So I will have to ask this questions here anyway...
+> 
+> I want to understand the problem to classify it.
+> 
+> 1) Why is this "error" issued? Do I really hit a limit and what is this current limit?
+> 2) Is it really an error or is it more "a warning"?
+> 3) Why is this error triggered only when changing the "ntuples filter" and not during
+>     the normal adding of VLANs?
+>     Remark: I can trigger the "ntuples fiilter" later on again and it still works.
+> 
+> I also tried the latest 5.18-rc kernel with the same problem.
+> 
+> Maybe somebody will find time and try to reproduce this?
+> I will answer any questions...
+> 
+> Regards
+>   Sven
+> 
+> Am 12.05.22 um 16:05 schrieb Sven Anders:
+> > Hello!
+> > 
+> > I'm having problems setting up a bond in adaptive load balancing
+> > mode (balance-alb, mode 6) on an intel X710 network adapter using
+> > the i40e driver connected to an Aruba 2530-48G switch.
+> > The network card has 4 on board ports.
+> > I'm using 2 ports for the bond with 36 VLANs on it.
+> > 
+> > The setup is correct, because it works without problems, if
+> > I use the same setup with 1GBit Intel hardware (using the
+> > e1000e driver, version 3.2.6-k, firmware 5.10-2).
+> > 
+> > Data packets are only received sporadically. If I run the same test
+> > with only one slave port, it works without problems.
+> > 
+> > I debugged it down to the reception of the packets by the
+> > network hardware.
+> > 
+> > If I remove the number of VLANs under 8, almost all packets are
+> > received. The fewer VLANs the better the receive rate.
+> > 
+> > I suspected the hardware offloading operations to be the cause, so I
+> > tried to disable them. It resulted in the following:
+> > 
+> >  ?If I turn of the "ntuple-filters" with
+> >  ?? ethtool -K eth3 ntuple off
+> >  ?? ethtool -K eth3 ntuple off
+> >  ?it will work.
+> > 
+> >  ?But if I do this I see the following errors in "dmesg":
+> >  ? i40e 0000:65:00.1: Error I40E_AQ_RC_EINVAL adding RX filters on PF, promiscuous mode forced on
+> >  ? i40e 0000:65:00.2: Error I40E_AQ_RC_EINVAL adding RX filters on PF, promiscuous mode forced on
+> > 
+> > Disabling any any other offloading operations made no change.
+> > 
+> > For me it seems, that the hardware filter is dropping packets because they
+> > have the wrong values (mac-address ?).
+> > Turning the "ntuple-filters" off, forces the network adapter to accept
+> > all packets.
+> > 
+> > 
+> > My questions:
+> > 
+> > 1. Can anybody explain or confirm this?
+> > 
+> > 2. Is the a correct method to force the adapter in promiscous mode?
+> > 
+> > 3. Are the any special settings needed, if I use ALB bonding, which I missed?
+> > 
+> > 
+> > Some details:
+> > -------------
+> > 
+> > Linux kernel 5.15.35-core2 on x86_64.
+> > 
+> > 
+> > This is the hardware:
+> > ---------------------
+> > 4 port Ethernet controller:
+> >  ?Intel Corporation Ethernet Controller X710 for 10GBASE-T (rev 02)
+> >  ?8086:15ff (rev 02)
+> > 
+> > with
+> > 
+> >  ?driver: i40e
+> >  ?version: 5.15.35-core2
+> >  ?firmware-version: 8.60 0x8000bd80 1.3140.0
+> >  ?bus-info: 0000:65:00.2
+> >  ?supports-statistics: yes
+> >  ?supports-test: yes
+> >  ?supports-eeprom-access: yes
+> >  ?supports-register-dump: yes
+> >  ?supports-priv-flags: yes
+> > 
+> > 
+> > This is current bonding configuration:
+> > --------------------------------------
+> > Ethernet Channel Bonding Driver: v5.15.35-core2
+> > 
+> > Bonding Mode: adaptive load balancing
+> > Primary Slave: None
+> > Currently Active Slave: eth3
+> > MII Status: up
+> > MII Polling Interval (ms): 100
+> > Up Delay (ms): 200
+> > Down Delay (ms): 200
+> > Peer Notification Delay (ms): 0
+> > 
+> > Slave Interface: eth3
+> > MII Status: up
+> > Speed: 1000 Mbps
+> > Duplex: full
+> > Link Failure Count: 0
+> > Permanent HW addr: 68:05:ca:f8:9c:42
+> > Slave queue ID: 0
+> > 
+> > Slave Interface: eth4
+> > MII Status: up
+> > Speed: 1000 Mbps
+> > Duplex: full
+> > Link Failure Count: 0
+> > Permanent HW addr: 68:05:ca:f8:9c:41
+> > Slave queue ID: 0
+> > 
+> > 
+> > Regards
+> >  ?Sven Anders
+> >   
+> 
+> 
+> Mit freundlichen Gr??en
+>   Sven Anders
+> 
 
-configs tested: 155
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm64                               defconfig
-arm64                            allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                          randconfig-c001
-powerpc64                           defconfig
-arc                                 defconfig
-powerpc                     asp8347_defconfig
-m68k                            mac_defconfig
-ia64                            zx1_defconfig
-ia64                      gensparse_defconfig
-arm                            pleb_defconfig
-sh                               j2_defconfig
-um                                  defconfig
-um                               alldefconfig
-powerpc                    sam440ep_defconfig
-arm                        shmobile_defconfig
-powerpc                      cm5200_defconfig
-mips                      maltasmvp_defconfig
-arm                        cerfcube_defconfig
-mips                         db1xxx_defconfig
-sh                          rsk7269_defconfig
-powerpc                     pq2fads_defconfig
-parisc                           allyesconfig
-arm                        mini2440_defconfig
-xtensa                           allyesconfig
-m68k                            q40_defconfig
-sh                           se7721_defconfig
-arm                           tegra_defconfig
-arm                           corgi_defconfig
-xtensa                          iss_defconfig
-powerpc                        cell_defconfig
-sh                                  defconfig
-powerpc                    klondike_defconfig
-arm                       imx_v6_v7_defconfig
-sh                           se7206_defconfig
-xtensa                  audio_kc705_defconfig
-arm                           h3600_defconfig
-parisc                generic-64bit_defconfig
-sh                           se7619_defconfig
-s390                       zfcpdump_defconfig
-arm                       omap2plus_defconfig
-mips                 decstation_r4k_defconfig
-arm                           h5000_defconfig
-arm                        multi_v7_defconfig
-ia64                         bigsur_defconfig
-sh                          landisk_defconfig
-alpha                            allyesconfig
-arc                        nsimosci_defconfig
-powerpc                     stx_gp3_defconfig
-sparc64                          alldefconfig
-x86_64                           alldefconfig
-powerpc                 canyonlands_defconfig
-powerpc                 mpc837x_mds_defconfig
-arm                           viper_defconfig
-sh                          sdk7786_defconfig
-powerpc                 mpc837x_rdb_defconfig
-arm                        keystone_defconfig
-h8300                       h8s-sim_defconfig
-openrisc                 simple_smp_defconfig
-xtensa                generic_kc705_defconfig
-powerpc                       holly_defconfig
-m68k                       m5208evb_defconfig
-powerpc                      mgcoge_defconfig
-mips                     loongson1b_defconfig
-arc                         haps_hs_defconfig
-sh                               allmodconfig
-m68k                           sun3_defconfig
-powerpc                     rainier_defconfig
-arm                           sama5_defconfig
-m68k                             allmodconfig
-powerpc                      ppc6xx_defconfig
-m68k                          amiga_defconfig
-sh                         microdev_defconfig
-x86_64                        randconfig-c001
-arm                  randconfig-c002-20220519
-arm                  randconfig-c002-20220522
-ia64                                defconfig
-ia64                             allmodconfig
-riscv                             allnoconfig
-m68k                             allyesconfig
-m68k                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-h8300                            allyesconfig
-s390                                defconfig
-s390                             allmodconfig
-parisc                              defconfig
-parisc64                            defconfig
-s390                             allyesconfig
-sparc                               defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                                  kexec
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                           rhel-8.3-syz
-x86_64                         rhel-8.3-kunit
-
-clang tested configs:
-mips                      pic32mzda_defconfig
-arm                          ep93xx_defconfig
-mips                      malta_kvm_defconfig
-arm                              alldefconfig
-arm                          ixp4xx_defconfig
-powerpc                     tqm5200_defconfig
-powerpc                 mpc8560_ads_defconfig
-arm                       spear13xx_defconfig
-mips                           rs90_defconfig
-arm                        mvebu_v5_defconfig
-powerpc                  mpc885_ads_defconfig
-powerpc                    gamecube_defconfig
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-i386                          randconfig-a013
-i386                          randconfig-a015
-hexagon              randconfig-r045-20220519
-riscv                randconfig-r042-20220519
-hexagon              randconfig-r041-20220519
-s390                 randconfig-r044-20220519
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
