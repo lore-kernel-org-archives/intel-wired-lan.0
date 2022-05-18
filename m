@@ -1,49 +1,120 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Wed, 18 May 2022 14:31:11 -0700
-Subject: [Intel-wired-lan] [PATCH RESEND] i40e: Remove unnecessary
- synchronize_irq() before free_irq()
-Message-ID: <20220518213111.2444630-1-anthony.l.nguyen@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 19 May 2022 06:54:13 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ bf13502ed5f941b0777b3fd1e24dac5d93f3886c
+Message-ID: <62857915./6ZsYxwvPckiOrN8%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Minghao Chi <chi.minghao@zte.com.cn>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: bf13502ed5f941b0777b3fd1e24dac5d93f3886c  ice: Fix interrupt moderation settings getting cleared
 
-Calling synchronize_irq() right before free_irq() is quite useless. On one
-hand the IRQ can easily fire again before free_irq() is entered, on the
-other hand free_irq() itself calls synchronize_irq() internally (in a race
-condition free way), before any state associated with the IRQ is freed.
+elapsed time: 1733m
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
----
-Resending due to mail issues with Intel Wired LAN
+configs tested: 91
+configs skipped: 3
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 --
- 1 file changed, 2 deletions(-)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 83e0cf475ebd..797f61b2cd96 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4162,7 +4162,6 @@ static void i40e_free_misc_vector(struct i40e_pf *pf)
- 	i40e_flush(&pf->hw);
- 
- 	if (pf->flags & I40E_FLAG_MSIX_ENABLED && pf->msix_entries) {
--		synchronize_irq(pf->msix_entries[0].vector);
- 		free_irq(pf->msix_entries[0].vector, pf);
- 		clear_bit(__I40E_MISC_IRQ_REQUESTED, pf->state);
- 	}
-@@ -4901,7 +4900,6 @@ static void i40e_vsi_free_irq(struct i40e_vsi *vsi)
- 			irq_set_affinity_notifier(irq_num, NULL);
- 			/* remove our suggested affinity mask for this IRQ */
- 			irq_update_affinity_hint(irq_num, NULL);
--			synchronize_irq(irq_num);
- 			free_irq(irq_num, vsi->q_vectors[i]);
- 
- 			/* Tear down the interrupt queue link list
+gcc tested configs:
+arm                              allmodconfig
+arm                              allyesconfig
+arm                                 defconfig
+arm64                               defconfig
+arm64                            allyesconfig
+i386                 randconfig-c001-20220516
+arm                         at91_dt_defconfig
+m68k                          amiga_defconfig
+arm                             pxa_defconfig
+arm                         cm_x300_defconfig
+sh                   sh7770_generic_defconfig
+powerpc                 mpc8540_ads_defconfig
+ia64                                defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+m68k                                defconfig
+alpha                               defconfig
+csky                                defconfig
+nios2                            allyesconfig
+alpha                            allyesconfig
+sh                               allmodconfig
+arc                                 defconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+s390                             allmodconfig
+parisc64                            defconfig
+s390                                defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+i386                                defconfig
+i386                             allyesconfig
+sparc                               defconfig
+sparc                            allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64               randconfig-a012-20220516
+x86_64               randconfig-a011-20220516
+x86_64               randconfig-a013-20220516
+x86_64               randconfig-a014-20220516
+x86_64               randconfig-a016-20220516
+x86_64               randconfig-a015-20220516
+i386                 randconfig-a014-20220516
+i386                 randconfig-a011-20220516
+i386                 randconfig-a013-20220516
+i386                 randconfig-a015-20220516
+i386                 randconfig-a012-20220516
+i386                 randconfig-a016-20220516
+arc                  randconfig-r043-20220516
+riscv                randconfig-r042-20220516
+s390                 randconfig-r044-20220516
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                                  kexec
+x86_64                           rhel-8.3-syz
+x86_64                          rhel-8.3-func
+x86_64                               rhel-8.3
+x86_64                         rhel-8.3-kunit
+x86_64                    rhel-8.3-kselftests
+
+clang tested configs:
+x86_64               randconfig-a002-20220516
+x86_64               randconfig-a001-20220516
+x86_64               randconfig-a003-20220516
+x86_64               randconfig-a004-20220516
+x86_64               randconfig-a005-20220516
+x86_64               randconfig-a006-20220516
+i386                 randconfig-a003-20220516
+i386                 randconfig-a001-20220516
+i386                 randconfig-a002-20220516
+i386                 randconfig-a006-20220516
+i386                 randconfig-a005-20220516
+i386                 randconfig-a004-20220516
+hexagon              randconfig-r041-20220516
+hexagon              randconfig-r045-20220516
+
 -- 
-2.35.1
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
