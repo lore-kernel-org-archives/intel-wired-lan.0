@@ -1,106 +1,48 @@
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Date: Thu, 19 May 2022 12:21:04 +0200
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix call trace in
- setup_tx_descriptors
-In-Reply-To: <20220519080246.1906390-1-aleksandr.loktionov@intel.com>
-References: <20220519080246.1906390-1-aleksandr.loktionov@intel.com>
-Message-ID: <YoYaECJZabzgNK7D@boxer>
+From: Chia-Lin Kao (AceLan) <acelan.kao@canonical.com>
+Date: Thu, 19 May 2022 16:42:22 +0800
+Subject: [Intel-wired-lan] [PATCH v2 1/1] e1000e: Enable GPT clock
+ before sending message to CSME
+In-Reply-To: <20220508070905.1878172-1-sasha.neftin@intel.com>
+References: <20220508070905.1878172-1-sasha.neftin@intel.com>
+Message-ID: <20220519084222.GA1624511@acelan-xps15-9560>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 19, 2022 at 10:02:46AM +0200, Loktionov, Aleksandr wrote:
-> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com> 
+On Sun, May 08, 2022 at 10:09:05AM +0300, Sasha Neftin wrote:
+> On corporate (CSME) ADL systems, the Ethernet Controller may stop working
+> ("HW unit hang") after exiting from the s0ix state. The reason is that
+> CSME misses the message sent by the host. Enabling the dynamic GPT clock
+> solves this problem. This clock is cleared upon HW initialization.
 > 
-> After pf reset and ethtool -t there was call trace is dmesg
+> Fixes: 3e55d231716e ("e1000e: Add handshake with the CSME to support S0ix")
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=214821
+> Reviewed-by: Dima Ruinskiy <dima.ruinskiy@intel.com>
+> Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 
-s/pf/PF
-s/trace is dmesg/trace in dmesg
+This commit fixed the hardware unit hang issue on my machine.
 
-> sometimes providing to panic. When there was some time, around 5
-
-s/providing/leading ?
-please include the splat from panic
-
-> seconds, between reset and test there was no errors.
-
-s/was/were
-
-> 
-> Problem was that pf reset calls i40e_vsi_close in prep_for_reset
-> and ethtool -t calls i40e_vsi_close in diag_test. If there was not
-> enough time between those commands the second i40e_vsi_close starts
-> before previous i40e_vsi_close was done which leads to crash.
-> 
-> Add check to diag_test if pf is in reset and don't start offline
-> tests if it is true.
-> 
-> Fixes: e17bc411aea8 ("i40e: Disable offline diagnostics if VFs are enabled")
-
-Hard to say which commit should we pick as fixes candidate, but if we stay
-with the current one then I think it would be good to include a second
-fixes tag that points to the commit that added "|| i40e_active_vmdqs(pf)"
-part.
-
-> Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Tested-by: Chia-Lin Kao (AceLan) <acelan.kao@canonical.com>
 > ---
->  .../net/ethernet/intel/i40e/i40e_ethtool.c    | 25 +++++++++++++------
->  1 file changed, 17 insertions(+), 8 deletions(-)
+> v2:
+> Correct commit message and minor fix in comment.
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index e484996..06c05a6 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -2584,15 +2584,16 @@ static void i40e_diag_test(struct net_device *netdev,
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index fa06f68c8c80..c64102b29862 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -6494,6 +6494,10 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
 >  
->  		set_bit(__I40E_TESTING, pf->state);
->  
-> +		if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
-> +		    test_bit(__I40E_RESET_INTR_RECEIVED, pf->state)) {
-> +			dev_warn(&pf->pdev->dev,
-> +				 "Cannot start offline testing when PF is in reset state.\n");
-> +			goto skip_ol_tests;
-> +		}
-> +
->  		if (i40e_active_vfs(pf) || i40e_active_vmdqs(pf)) {
->  			dev_warn(&pf->pdev->dev,
->  				 "Please take active VFs and Netqueues offline and restart the adapter before running NIC diagnostics\n");
-> -			data[I40E_ETH_TEST_REG]		= 1;
-> -			data[I40E_ETH_TEST_EEPROM]	= 1;
-> -			data[I40E_ETH_TEST_INTR]	= 1;
-> -			data[I40E_ETH_TEST_LINK]	= 1;
-> -			eth_test->flags |= ETH_TEST_FL_FAILED;
-> -			clear_bit(__I40E_TESTING, pf->state);
->  			goto skip_ol_tests;
->  		}
->  
-> @@ -2639,9 +2640,17 @@ static void i40e_diag_test(struct net_device *netdev,
->  		data[I40E_ETH_TEST_INTR] = 0;
->  	}
->  
-> -skip_ol_tests:
-> -
->  	netif_info(pf, drv, netdev, "testing finished\n");
-> +	return;
-> +
-> +skip_ol_tests:
-> +	data[I40E_ETH_TEST_REG]		= 1;
-> +	data[I40E_ETH_TEST_EEPROM]	= 1;
-> +	data[I40E_ETH_TEST_INTR]	= 1;
-> +	data[I40E_ETH_TEST_LINK]	= 1;
-> +	eth_test->flags |= ETH_TEST_FL_FAILED;
-> +	clear_bit(__I40E_TESTING, pf->state);
-> +	netif_info(pf, drv, netdev, "testing failed\n");
->  }
->  
->  static void i40e_get_wol(struct net_device *netdev,
-> -- 
-> 2.31.1
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>  	if (er32(FWSM) & E1000_ICH_FWSM_FW_VALID &&
+>  	    hw->mac.type >= e1000_pch_adp) {
+> +		/* Keep the GPT clock enabled for CSME */
+> +		mac_data = er32(FEXTNVM);
+> +		mac_data |= BIT(3);
+> +		ew32(FEXTNVM, mac_data);
+>  		/* Request ME unconfigure the device from S0ix */
+>  		mac_data = er32(H2ME);
+>  		mac_data &= ~E1000_H2ME_START_DPG;
