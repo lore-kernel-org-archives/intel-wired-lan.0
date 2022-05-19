@@ -1,98 +1,111 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Thu, 19 May 2022 10:28:52 +0200
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix call trace in
- setup_tx_descriptors
-In-Reply-To: <20220519080246.1906390-1-aleksandr.loktionov@intel.com>
-References: <20220519080246.1906390-1-aleksandr.loktionov@intel.com>
-Message-ID: <a814caad-5e32-90fb-547d-4e211d60d848@molgen.mpg.de>
+From: kernel test robot <lkp@intel.com>
+Date: Thu, 19 May 2022 17:30:08 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 718d4aeece7c5392a20f85da284ed1ae0429a68a
+Message-ID: <62860e20.kPfDc4w5ALfK8Q6f%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Aleksandr,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 718d4aeece7c5392a20f85da284ed1ae0429a68a  i40e: Add support for ethtool -s <interface> speed <speed in Mb>
 
+elapsed time: 2295m
 
-Am 19.05.22 um 10:02 schrieb Loktionov, Aleksandr:
-> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> 
-> After pf reset and ethtool -t there was call trace is dmesg
-> sometimes providing to panic. When there was some time, around 5
+configs tested: 82
+configs skipped: 3
 
-?sometimes providing to panic? sounds strange. Can you please clarify, 
-and rephrase for v2?
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-> seconds, between reset and test there was no errors.
-> 
-> Problem was that pf reset calls i40e_vsi_close in prep_for_reset
-> and ethtool -t calls i40e_vsi_close in diag_test. If there was not
-> enough time between those commands the second i40e_vsi_close starts
-> before previous i40e_vsi_close was done which leads to crash.
-> 
-> Add check to diag_test if pf is in reset and don't start offline
-> tests if it is true.
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                 randconfig-c001-20220516
+sh                             shx3_defconfig
+ia64                             alldefconfig
+ia64                                defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+alpha                               defconfig
+csky                                defconfig
+alpha                            allyesconfig
+nios2                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc64                            defconfig
+s390                             allmodconfig
+s390                                defconfig
+s390                             allyesconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+i386                                defconfig
+i386                             allyesconfig
+sparc                               defconfig
+sparc                            allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+x86_64               randconfig-a012-20220516
+x86_64               randconfig-a011-20220516
+x86_64               randconfig-a013-20220516
+x86_64               randconfig-a014-20220516
+x86_64               randconfig-a016-20220516
+x86_64               randconfig-a015-20220516
+i386                 randconfig-a011-20220516
+i386                 randconfig-a013-20220516
+i386                 randconfig-a015-20220516
+i386                 randconfig-a012-20220516
+i386                 randconfig-a016-20220516
+i386                 randconfig-a014-20220516
+arc                  randconfig-r043-20220516
+riscv                randconfig-r042-20220516
+s390                 randconfig-r044-20220516
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                                  kexec
+x86_64                          rhel-8.3-func
+x86_64                               rhel-8.3
+x86_64                    rhel-8.3-kselftests
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
 
-Maybe also mention the new log message:
+clang tested configs:
+powerpc                   microwatt_defconfig
+i386                 randconfig-a005-20220516
+i386                 randconfig-a003-20220516
+i386                 randconfig-a001-20220516
+i386                 randconfig-a004-20220516
+i386                 randconfig-a006-20220516
+i386                 randconfig-a002-20220516
+hexagon              randconfig-r041-20220516
+hexagon              randconfig-r045-20220516
 
-     netif_info(pf, drv, netdev, "testing failed\n");
-
-> Fixes: e17bc411aea8 ("i40e: Disable offline diagnostics if VFs are enabled")
-> Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
->   .../net/ethernet/intel/i40e/i40e_ethtool.c    | 25 +++++++++++++------
->   1 file changed, 17 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index e484996..06c05a6 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -2584,15 +2584,16 @@ static void i40e_diag_test(struct net_device *netdev,
->   
->   		set_bit(__I40E_TESTING, pf->state);
->   
-> +		if (test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state) ||
-> +		    test_bit(__I40E_RESET_INTR_RECEIVED, pf->state)) {
-> +			dev_warn(&pf->pdev->dev,
-> +				 "Cannot start offline testing when PF is in reset state.\n");
-> +			goto skip_ol_tests;
-> +		}
-> +
->   		if (i40e_active_vfs(pf) || i40e_active_vmdqs(pf)) {
->   			dev_warn(&pf->pdev->dev,
->   				 "Please take active VFs and Netqueues offline and restart the adapter before running NIC diagnostics\n");
-> -			data[I40E_ETH_TEST_REG]		= 1;
-> -			data[I40E_ETH_TEST_EEPROM]	= 1;
-> -			data[I40E_ETH_TEST_INTR]	= 1;
-> -			data[I40E_ETH_TEST_LINK]	= 1;
-> -			eth_test->flags |= ETH_TEST_FL_FAILED;
-> -			clear_bit(__I40E_TESTING, pf->state);
->   			goto skip_ol_tests;
->   		}
->   
-> @@ -2639,9 +2640,17 @@ static void i40e_diag_test(struct net_device *netdev,
->   		data[I40E_ETH_TEST_INTR] = 0;
->   	}
->   
-> -skip_ol_tests:
-> -
->   	netif_info(pf, drv, netdev, "testing finished\n");
-> +	return;
-> +
-> +skip_ol_tests:
-> +	data[I40E_ETH_TEST_REG]		= 1;
-> +	data[I40E_ETH_TEST_EEPROM]	= 1;
-> +	data[I40E_ETH_TEST_INTR]	= 1;
-> +	data[I40E_ETH_TEST_LINK]	= 1;
-> +	eth_test->flags |= ETH_TEST_FL_FAILED;
-> +	clear_bit(__I40E_TESTING, pf->state);
-> +	netif_info(pf, drv, netdev, "testing failed\n");
->   }
->   
->   static void i40e_get_wol(struct net_device *netdev,
-
-
-Kind regards,
-
-Paul
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
