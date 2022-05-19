@@ -1,10 +1,10 @@
 From: Sreenivas, Bharathi <bharathi.sreenivas@intel.com>
-Date: Thu, 19 May 2022 10:03:23 +0000
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix adding ADq filter to
- TC0
-In-Reply-To: <20220429122708.978369-1-jedrzej.jagielski@intel.com>
-References: <20220429122708.978369-1-jedrzej.jagielski@intel.com>
-Message-ID: <MN2PR11MB36143756B2546DC32C4EF3F98ED09@MN2PR11MB3614.namprd11.prod.outlook.com>
+Date: Thu, 19 May 2022 10:06:58 +0000
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix calculating the
+ number of queue pairs
+In-Reply-To: <20220429124023.979010-1-jedrzej.jagielski@intel.com>
+References: <20220429124023.979010-1-jedrzej.jagielski@intel.com>
+Message-ID: <MN2PR11MB3614CE8C76DCB2912508DF818ED09@MN2PR11MB3614.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,27 +16,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
 > Jedzej Jagielski
-> Sent: Friday, April 29, 2022 5:57 PM
+> Sent: Friday, April 29, 2022 6:10 PM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix adding ADq filter to TC0
+> Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix calculating the number of
+> queue pairs
 > 
 > From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
 > 
-> Procedure of configure tc flower filters erroneously allows to create filters
-> on TC0 where unfiltered packets are also directed by default.
-> Issue was caused by insufficient checks of hw_tc parameter specifying the
-> hardware traffic class to pass matching packets to.
+> If ADq is enabled for a VF, then actual number of queue pair is a number of
+> currently available traffic classes for this VF.
 > 
-> Fix checking hw_tc parameter which blocks creation of filters on TC0.
+> Without this change the configuration of the rx/tx queues fails with error.
 > 
-> Fixes: 2f4b411a3d67 ("i40e: Enable cloud filters via tc-flower")
+> Fixes: d29e0d233e0d ("i40e: missing input validation on VF message handling
+> by the PF")
 > Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
 > Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 > ---
-> v2: fix commit msg
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
->  1 file changed, 5 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
 Tested-by: Bharathi Sreenivas<bharathi.sreenivas@intel.com>
