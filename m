@@ -1,8 +1,8 @@
 From: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>
-Date: Thu, 19 May 2022 15:58:24 +0200
-Subject: [Intel-wired-lan] [PATCH net v333] i40e: Fix call trace in
+Date: Thu, 19 May 2022 16:01:45 +0200
+Subject: [Intel-wired-lan] [PATCH net v4] i40e: Fix call trace in
  setup_tx_descriptors
-Message-ID: <20220519135824.1917154-1-aleksandr.loktionov@intel.com>
+Message-ID: <20220519140145.1917314-1-aleksandr.loktionov@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
