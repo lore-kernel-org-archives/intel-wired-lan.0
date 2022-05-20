@@ -1,131 +1,149 @@
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Date: Fri, 20 May 2022 10:45:33 +0800
-Subject: [Intel-wired-lan] [PATCH 2/2] igb: Make DMA faster when CPU is
- active on the PCIe link
-In-Reply-To: <CAAd53p52gkv-PLRvEM3GunTwU1J=c+n0J6uD03AQJ4EnL2y4Kg@mail.gmail.com>
-References: <20220511122806.2146847-1-kai.heng.feng@canonical.com>
- <20220511122806.2146847-2-kai.heng.feng@canonical.com>
- <6246d753-00cb-b5dc-f5fc-d041a8e78718@molgen.mpg.de>
- <CAAd53p52gkv-PLRvEM3GunTwU1J=c+n0J6uD03AQJ4EnL2y4Kg@mail.gmail.com>
-Message-ID: <CAAd53p4h1-SJROvUghPYbBnh2Z9nRtgfNEagE4X6XtBwNg8JOg@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Fri, 20 May 2022 14:11:27 +0800
+Subject: [Intel-wired-lan] [PATCH net-next v5 10/11] igc: Check
+ incompatible configs for Frame Preemption
+In-Reply-To: <20220520011538.1098888-11-vinicius.gomes@intel.com>
+References: <20220520011538.1098888-11-vinicius.gomes@intel.com>
+Message-ID: <202205201422.84XYwlpY-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 12, 2022 at 10:55 AM Kai-Heng Feng
-<kai.heng.feng@canonical.com> wrote:
->
-> Hi Paul,
->
-> On Wed, May 11, 2022 at 8:49 PM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
-> >
-> > Dear Kai-Hang,
-> >
-> >
-> > Thank you for the patch.
-> >
-> >
-> > Am 11.05.22 um 14:28 schrieb Kai-Heng Feng:
-> > > We found Intel I210 can only achieve ~750Mbps Tx speed on some
-> > > platforms. The RR2DCDELAY shows around 0x2xxx DMA delay, which will be
-> >
-> > Please give an example platform, where it works and where it does not.
->
-> The platform is about but not yet hit the market yet, so I can't disclose it.
-> They are Intel Alder Lake based.
->
-> >
-> > How did you test transfer speed?
->
-> Iperf.
->
-> >
-> > > significantly lower when 1) ASPM is disabled or 2) SoC package c-state
-> > > stays above PC3. When the RR2DCDELAY is around 0x1xxx the Tx speed can
-> > > reach to ~950Mbps.
-> > >
-> > > According to the I210 datasheet "8.26.1 PCIe Misc. Register - PCIEMISC",
-> > > "DMA Idle Indication" doesn't seem to tie to DMA coalesce anymore, so
-> > > set it to 1b for "DMA is considered idle when there is no Rx or Tx AND
-> > > when there are no TLPs indicating that CPU is active detected on the
-> > > PCIe link (such as the host executes CSR or Configuration register read
-> > > or write operation)" and performing Tx should also fall under "active
-> > > CPU on PCIe link" case.
-> > >
-> > > In addition to that, commit b6e0c419f040 ("igb: Move DMA Coalescing init
-> > > code to separate function.") seems to wrongly changed from enabling
-> > > E1000_PCIEMISC_LX_DECISION to disabling it, also fix that.
-> >
-> > Please split this into a separate commit with Fixes tag, and maybe the
-> > commit author in Cc.
->
-> I don't see the need to split to separate commit as both require the
-> same change.
->
-> I will add the "Fixes" tag once the igb maintainers reviewed the patch.
+Hi Vinicius,
 
-A gentle ping...
+I love your patch! Perhaps something to improve:
 
-Please let me know if this is a proper fix so I can send v2.
+[auto build test WARNING on net-next/master]
 
-Kai-Heng
+url:    https://github.com/intel-lab-lkp/linux/commits/Vinicius-Costa-Gomes/ethtool-Add-support-for-frame-preemption/20220520-092800
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git df98714e432abf5cbdac3e4c1a13f94c65ddb8d3
+config: s390-buildonly-randconfig-r002-20220519 (https://download.01.org/0day-ci/archive/20220520/202205201422.84XYwlpY-lkp at intel.com/config)
+compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project e00cbbec06c08dc616a0d52a20f678b8fbd4e304)
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # install s390 cross compiling tool for clang build
+        # apt-get install binutils-s390x-linux-gnu
+        # https://github.com/intel-lab-lkp/linux/commit/a42e940bc53c40ee4e33a1bbf022a663bb28a9c7
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Vinicius-Costa-Gomes/ethtool-Add-support-for-frame-preemption/20220520-092800
+        git checkout a42e940bc53c40ee4e33a1bbf022a663bb28a9c7
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=s390 SHELL=/bin/bash drivers/net/ethernet/intel/igc/
 
->
-> Kai-Heng
->
-> >
-> >
-> > Kind regards,
-> >
-> > Paul
-> >
-> >
-> > > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> > > ---
-> > >   drivers/net/ethernet/intel/igb/igb_main.c | 12 +++++-------
-> > >   1 file changed, 5 insertions(+), 7 deletions(-)
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> > > index 34b33b21e0dcd..eca797dded429 100644
-> > > --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> > > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> > > @@ -9897,11 +9897,10 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
-> > >       struct e1000_hw *hw = &adapter->hw;
-> > >       u32 dmac_thr;
-> > >       u16 hwm;
-> > > +     u32 reg;
-> > >
-> > >       if (hw->mac.type > e1000_82580) {
-> > >               if (adapter->flags & IGB_FLAG_DMAC) {
-> > > -                     u32 reg;
-> > > -
-> > >                       /* force threshold to 0. */
-> > >                       wr32(E1000_DMCTXTH, 0);
-> > >
-> > > @@ -9934,7 +9933,6 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
-> > >                       /* Disable BMC-to-OS Watchdog Enable */
-> > >                       if (hw->mac.type != e1000_i354)
-> > >                               reg &= ~E1000_DMACR_DC_BMC2OSW_EN;
-> > > -
-> > >                       wr32(E1000_DMACR, reg);
-> > >
-> > >                       /* no lower threshold to disable
-> > > @@ -9951,12 +9949,12 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
-> > >                        */
-> > >                       wr32(E1000_DMCTXTH, (IGB_MIN_TXPBSIZE -
-> > >                            (IGB_TX_BUF_4096 + adapter->max_frame_size)) >> 6);
-> > > +             }
-> > >
-> > > -                     /* make low power state decision controlled
-> > > -                      * by DMA coal
-> > > -                      */
-> > > +             if (hw->mac.type >= e1000_i210 ||
-> > > +                 (adapter->flags & IGB_FLAG_DMAC)) {
-> > >                       reg = rd32(E1000_PCIEMISC);
-> > > -                     reg &= ~E1000_PCIEMISC_LX_DECISION;
-> > > +                     reg |= E1000_PCIEMISC_LX_DECISION;
-> > >                       wr32(E1000_PCIEMISC, reg);
-> > >               } /* endif adapter->dmac is not disabled */
-> > >       } else if (hw->mac.type == e1000_82580) {
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kernel test robot <lkp@intel.com>
+
+All warnings (new ones prefixed by >>):
+
+   In file included from drivers/net/ethernet/intel/igc/igc_main.c:6:
+   In file included from include/linux/if_vlan.h:10:
+   In file included from include/linux/netdevice.h:38:
+   In file included from include/net/net_namespace.h:40:
+   In file included from include/linux/skbuff.h:31:
+   In file included from include/linux/dma-mapping.h:10:
+   In file included from include/linux/scatterlist.h:9:
+   In file included from arch/s390/include/asm/io.h:75:
+   include/asm-generic/io.h:464:31: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __raw_readb(PCI_IOBASE + addr);
+                             ~~~~~~~~~~ ^
+   include/asm-generic/io.h:477:61: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __le16_to_cpu((__le16 __force)__raw_readw(PCI_IOBASE + addr));
+                                                           ~~~~~~~~~~ ^
+   include/uapi/linux/byteorder/big_endian.h:37:59: note: expanded from macro '__le16_to_cpu'
+   #define __le16_to_cpu(x) __swab16((__force __u16)(__le16)(x))
+                                                             ^
+   include/uapi/linux/swab.h:102:54: note: expanded from macro '__swab16'
+   #define __swab16(x) (__u16)__builtin_bswap16((__u16)(x))
+                                                        ^
+   In file included from drivers/net/ethernet/intel/igc/igc_main.c:6:
+   In file included from include/linux/if_vlan.h:10:
+   In file included from include/linux/netdevice.h:38:
+   In file included from include/net/net_namespace.h:40:
+   In file included from include/linux/skbuff.h:31:
+   In file included from include/linux/dma-mapping.h:10:
+   In file included from include/linux/scatterlist.h:9:
+   In file included from arch/s390/include/asm/io.h:75:
+   include/asm-generic/io.h:490:61: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           val = __le32_to_cpu((__le32 __force)__raw_readl(PCI_IOBASE + addr));
+                                                           ~~~~~~~~~~ ^
+   include/uapi/linux/byteorder/big_endian.h:35:59: note: expanded from macro '__le32_to_cpu'
+   #define __le32_to_cpu(x) __swab32((__force __u32)(__le32)(x))
+                                                             ^
+   include/uapi/linux/swab.h:115:54: note: expanded from macro '__swab32'
+   #define __swab32(x) (__u32)__builtin_bswap32((__u32)(x))
+                                                        ^
+   In file included from drivers/net/ethernet/intel/igc/igc_main.c:6:
+   In file included from include/linux/if_vlan.h:10:
+   In file included from include/linux/netdevice.h:38:
+   In file included from include/net/net_namespace.h:40:
+   In file included from include/linux/skbuff.h:31:
+   In file included from include/linux/dma-mapping.h:10:
+   In file included from include/linux/scatterlist.h:9:
+   In file included from arch/s390/include/asm/io.h:75:
+   include/asm-generic/io.h:501:33: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writeb(value, PCI_IOBASE + addr);
+                               ~~~~~~~~~~ ^
+   include/asm-generic/io.h:511:59: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writew((u16 __force)cpu_to_le16(value), PCI_IOBASE + addr);
+                                                         ~~~~~~~~~~ ^
+   include/asm-generic/io.h:521:59: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           __raw_writel((u32 __force)cpu_to_le32(value), PCI_IOBASE + addr);
+                                                         ~~~~~~~~~~ ^
+   include/asm-generic/io.h:609:20: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           readsb(PCI_IOBASE + addr, buffer, count);
+                  ~~~~~~~~~~ ^
+   include/asm-generic/io.h:617:20: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           readsw(PCI_IOBASE + addr, buffer, count);
+                  ~~~~~~~~~~ ^
+   include/asm-generic/io.h:625:20: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           readsl(PCI_IOBASE + addr, buffer, count);
+                  ~~~~~~~~~~ ^
+   include/asm-generic/io.h:634:21: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           writesb(PCI_IOBASE + addr, buffer, count);
+                   ~~~~~~~~~~ ^
+   include/asm-generic/io.h:643:21: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           writesw(PCI_IOBASE + addr, buffer, count);
+                   ~~~~~~~~~~ ^
+   include/asm-generic/io.h:652:21: warning: performing pointer arithmetic on a null pointer has undefined behavior [-Wnull-pointer-arithmetic]
+           writesl(PCI_IOBASE + addr, buffer, count);
+                   ~~~~~~~~~~ ^
+>> drivers/net/ethernet/intel/igc/igc_main.c:5919:6: warning: variable 'ring' is uninitialized when used here [-Wuninitialized]
+           if (ring->preemptible) {
+               ^~~~
+   drivers/net/ethernet/intel/igc/igc_main.c:5914:23: note: initialize the variable 'ring' to silence this warning
+           struct igc_ring *ring;
+                                ^
+                                 = NULL
+   13 warnings generated.
+
+
+vim +/ring +5919 drivers/net/ethernet/intel/igc/igc_main.c
+
+  5910	
+  5911	static int igc_save_launchtime_params(struct igc_adapter *adapter, int queue,
+  5912					      bool enable)
+  5913	{
+  5914		struct igc_ring *ring;
+  5915	
+  5916		if (queue < 0 || queue >= adapter->num_tx_queues)
+  5917			return -EINVAL;
+  5918	
+> 5919		if (ring->preemptible) {
+  5920			netdev_err(adapter->netdev, "Cannot enable LaunchTime on a preemptible queue\n");
+  5921			return -EINVAL;
+  5922		}
+  5923	
+  5924		ring = adapter->tx_ring[queue];
+  5925		ring->launchtime_enable = enable;
+  5926	
+  5927		return 0;
+  5928	}
+  5929	
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
