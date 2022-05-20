@@ -1,45 +1,27 @@
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
-Date: Fri, 20 May 2022 09:19:37 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 06/11] igc: Add support
- for receiving errored frames
-In-Reply-To: <20220520011538.1098888-7-vinicius.gomes@intel.com>
+Date: Fri, 20 May 2022 09:22:18 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v5 08/11] igc: Add support
+ for setting frame preemption configuration
+In-Reply-To: <20220520011538.1098888-9-vinicius.gomes@intel.com>
 References: <20220520011538.1098888-1-vinicius.gomes@intel.com>
- <20220520011538.1098888-7-vinicius.gomes@intel.com>
-Message-ID: <20220520091936.x5ci5nkkp2lm7k6l@skbuf>
+ <20220520011538.1098888-9-vinicius.gomes@intel.com>
+Message-ID: <20220520092217.w4bw3pl6b5hum75g@skbuf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 19, 2022 at 06:15:33PM -0700, Vinicius Costa Gomes wrote:
-> While developing features that require sending potencially ill formed
-> frames, it is useful being able to receive them on the other side.
+On Thu, May 19, 2022 at 06:15:35PM -0700, Vinicius Costa Gomes wrote:
+> Set the hardware register that enables the frame preemption feature.
 > 
-> The driver already had all the pieces in place to support that, all
-> that was missing was put the flag in the list of supported features.
+> Some code is moved around because the PREEMPT_ENA bit in the
+> IGC_TQAVCTRL register is recommended to be set after the individual
+> queue registers (IGC_TXQCTL[i]) are set.
 > 
 > Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 > ---
 
-Is this required to run the verification state machine in software, or
-just for debugging?
-
->  drivers/net/ethernet/intel/igc/igc_main.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index bcbf35b32ef3..5dd7140bac82 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -6318,6 +6318,7 @@ static int igc_probe(struct pci_dev *pdev,
->  
->  	/* copy netdev features into list of user selectable features */
->  	netdev->hw_features |= NETIF_F_NTUPLE;
-> +	netdev->hw_features |= NETIF_F_RXALL;
->  	netdev->hw_features |= NETIF_F_HW_VLAN_CTAG_TX;
->  	netdev->hw_features |= NETIF_F_HW_VLAN_CTAG_RX;
->  	netdev->hw_features |= netdev->features;
-> -- 
-> 2.35.3
->
+Could you please squash this patch with the previous one, which just
+copies the settings from ethtool into the adapter but doesn't do
+anything with them?
