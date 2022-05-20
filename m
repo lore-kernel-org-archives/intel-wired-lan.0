@@ -1,39 +1,29 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 20 May 2022 13:54:34 -0700
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix switchdev rules book
- keeping
-In-Reply-To: <20220520084527.123885-1-wojciech.drewek@intel.com>
-References: <20220520084527.123885-1-wojciech.drewek@intel.com>
-Message-ID: <3092a89c-fbfd-b613-827d-337e7c2b633e@intel.com>
+From: Jakub Kicinski <kuba@kernel.org>
+Date: Fri, 20 May 2022 15:34:13 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v5 00/11] ethtool: Add
+ support for frame preemption
+In-Reply-To: <20220520011538.1098888-1-vinicius.gomes@intel.com>
+References: <20220520011538.1098888-1-vinicius.gomes@intel.com>
+Message-ID: <20220520153413.16c6830b@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Thu, 19 May 2022 18:15:27 -0700 Vinicius Costa Gomes wrote:
+> Changes from v4:
+>  - Went back to exposing the per-queue frame preemption bits via
+>    ethtool-netlink only, via taprio/mqprio was seen as too much
+>    trouble. (Vladimir Oltean)
+>  - Fixed documentation and code/patch organization changes (Vladimir
+>    Oltean).
 
+First of all - could you please, please, please rev these patches more
+than once a year? It's really hard to keep track of the context when
+previous version was sent in Jun 2021 :/
 
-On 5/20/2022 1:45 AM, Wojciech Drewek wrote:
-> Adding two filters with same matching criteria ends up with
-> one rule in hardware with act = ICE_FWD_TO_VSI_LIST.
-> In order to remove them properly we have to keep the
-> information about vsi handle which is used in VSI bitmap
-> (ice_adv_fltr_mgmt_list_entry::vsi_list_info::vsi_map).
-> 
-> Fixes: 0d08a441fb1a ("ice: ndo_setup_tc implementation for PF")
-> Reported-by: Sridhar Samudrala<sridhar.samudrala@intel.com>
-
-Need a space between name and email.
-
-> Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
-
-This doesn't build:
-
-../drivers/net/ethernet/intel/ice/ice_tc_lib.c: In function 
-?ice_eswitch_add_tc_fltr?:
-../drivers/net/ethernet/intel/ice/ice_tc_lib.c:527:8: error: ?struct 
-ice_tc_flower_fltr? has no member named ?dest_vsi_handle?; did you mean 
-?dest_vsi??
-   fltr->dest_vsi_handle = rule_added.vsi_handle;
-         ^~~~~~~~~~~~~~~
-         dest_vsi
+I disagree that queue mask belongs in ethtool. It's an attribute of 
+a queue and should be attached to a queue. The DCBNL parallel is flawed
+IMO because pause generation is Rx, not Tx. There is no Rx queue in
+Linux, much less per-prio.
