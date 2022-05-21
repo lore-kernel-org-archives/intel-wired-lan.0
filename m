@@ -1,62 +1,169 @@
-From: Julia Lawall <Julia.Lawall@inria.fr>
-Date: Sat, 21 May 2022 13:11:00 +0200
-Subject: [Intel-wired-lan] [PATCH] drivers/net/ethernet/intel: fix typos in
- comments
-Message-ID: <20220521111145.81697-50-Julia.Lawall@inria.fr>
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+Date: Sat, 21 May 2022 15:03:05 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v5 00/11] ethtool: Add
+ support for frame preemption
+In-Reply-To: <20220520153413.16c6830b@kernel.org>
+References: <20220520011538.1098888-1-vinicius.gomes@intel.com>
+ <20220520153413.16c6830b@kernel.org>
+Message-ID: <20220521150304.3lhpraxpssjxfhai@skbuf>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Spelling mistakes (triple letters) in comments.
-Detected with the help of Coccinelle.
+Hi Jakub,
 
-Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+On Fri, May 20, 2022 at 03:34:13PM -0700, Jakub Kicinski wrote:
+> On Thu, 19 May 2022 18:15:27 -0700 Vinicius Costa Gomes wrote:
+> > Changes from v4:
+> >  - Went back to exposing the per-queue frame preemption bits via
+> >    ethtool-netlink only, via taprio/mqprio was seen as too much
+> >    trouble. (Vladimir Oltean)
+> >  - Fixed documentation and code/patch organization changes (Vladimir
+> >    Oltean).
+> 
+> First of all - could you please, please, please rev these patches more
+> than once a year? It's really hard to keep track of the context when
+> previous version was sent in Jun 2021 :/
 
----
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c   |    2 +-
- drivers/net/ethernet/intel/ice/ice_lib.c       |    2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+It would have been nice if Vinicius would have posted these more than
+once a year. But let's not throw stones at each other, I'm sure everyone
+is doing their best ;) These are new specs, their usefulness in the Real
+World is still being evaluated, and you shouldn't underestimate the
+difficulty of exposing standard Linux interfaces for pre-standard or
+first-generation hardware. Even the mistakes I may be making in my
+interpretation of the spec below are in good faith (i.e. if I'm wrong
+it's because I'm stupid, not because I'm interested in leaning the
+implementation towards an interface that's more conventient for the
+hardware I'm working with).
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 30ca9ee1900b..f2fba6e1d0f7 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -1825,7 +1825,7 @@ static void fm10k_sm_mbx_process_error(struct fm10k_mbx_info *mbx)
- 		fm10k_sm_mbx_connect_reset(mbx);
- 		break;
- 	case FM10K_STATE_CONNECT:
--		/* try connnecting at lower version */
-+		/* try connecting at lower version */
- 		if (mbx->remote) {
- 			while (mbx->local > 1)
- 				mbx->local--;
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 454e01ae09b9..70961c0343e7 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2403,7 +2403,7 @@ static void ice_set_agg_vsi(struct ice_vsi *vsi)
- 				agg_id);
- 			return;
- 		}
--		/* aggregator node is created, store the neeeded info */
-+		/* aggregator node is created, store the needed info */
- 		agg_node->valid = true;
- 		agg_node->agg_id = agg_id;
- 	}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 3e74ab82868b..3f5ef5269bb2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -77,7 +77,7 @@ static int __ixgbe_enable_sriov(struct ixgbe_adapter *adapter,
- 	IXGBE_WRITE_REG(hw, IXGBE_PFDTXGSWC, IXGBE_PFDTXGSWC_VT_LBEN);
- 	adapter->bridge_mode = BRIDGE_MODE_VEB;
- 
--	/* limit trafffic classes based on VFs enabled */
-+	/* limit traffic classes based on VFs enabled */
- 	if ((adapter->hw.mac.type == ixgbe_mac_82599EB) && (num_vfs < 16)) {
- 		adapter->dcb_cfg.num_tcs.pg_tcs = MAX_TRAFFIC_CLASS;
- 		adapter->dcb_cfg.num_tcs.pfc_tcs = MAX_TRAFFIC_CLASS;
 
+
+> I disagree that queue mask belongs in ethtool. It's an attribute of 
+> a queue and should be attached to a queue.
+
+Sure, you have very strong reasons to disagree with that statement, if
+only the premise were true. But you have to understand that IEEE 802.1Q
+does not talk about preemptible queues, but about preemptible priorities.
+Here:
+
+| 6.7.1 Support of the ISS by IEEE Std 802.3 (Ethernet)
+| 
+| For priority values that are identified in the frame preemption status table
+| (6.7.2) as preemptible, frames that are selected for transmission shall be
+| transmitted using the pMAC service instance, and for priority values that are
+| identified in the frame preemption status table as express, frames that are
+| selected for transmission shall be transmitted using the eMAC service instance.
+| In all other respects, the Port behaves as if it is supported by a single MAC
+| service interface. In particular, all frames received by the Port are treated
+| as if they were received on a single MAC service interface regardless of
+| whether they were received on the eMAC service interface or the pMAC service
+| interface, except with respect to frame preemption.
+| 
+| 6.7.2 Frame preemption
+| If the Port supports frame preemption, then a value of frame preemption status
+| is assigned to each value of priority via a frame preemption status table. The
+| possible values of frame preemption status are express or preemptible.
+| The frame preemption status table can be changed by management as described in
+| 12.30.1.1. The default value of frame preemption status is express for all
+| priority values.
+
+For context, I probably need to point out the distinction that the spec
+makes between a priority and a traffic class.
+
+A priority is a number assigned to a packet based on the VLAN PCP using
+the rules in clause 6.9.3 Priority Code Point encoding. In Linux, it is
+more or less equivalent to skb->priority.
+
+A traffic class, on the other hand, is defined as basically synonimous
+with a TX priority queue, as follows:
+
+| 3.268 traffic class: A classification used to expedite transmission of frames
+| generated by critical or time-sensitive services. Traffic classes are numbered
+| from zero through N-1, where N is the number of outbound queues associated with
+| a given Bridge Port, and 1 <= N <= 8, and each traffic class has a one-to-one
+| correspondence with a specific outbound queue for that Port. Traffic class 0
+| corresponds to nonexpedited traffic; nonzero traffic classes correspond to
+| expedited classes of traffic. A fixed mapping determines, for a given priority
+| associated with a frame and a given number of traffic classes, what traffic
+| class will be assigned to the frame.
+
+A priority is translated into a traffic class using Table 8-5:
+Recommended priority to traffic class mappings, which in Linux would be
+handled using the tc-mqprio "map".
+
+But attention, a priority TX queue is not the same as a netdev TX queue,
+but rather the same as a tc-mqprio traffic class (i.e. when you specify
+"queues count@offset" to mqprio, from Linux perspective there are "count"
+queues, from 802.1Q perspective there is only the "offset" queue (or TC).
+This is because we may have per-CPU queues, etc.
+
+This is even spelled out in this note:
+
+| NOTE 3 - A queue in this context is not necessarily a single FIFO data structure.
+| A queue is a record of all frames of a given traffic class awaiting
+| transmission on a given Bridge Port. The structure of this record is not
+| specified. The transmission selection algorithm (8.6.8) determines which
+| traffic class, among those classes with frames available for transmission,
+| provides the next frame for transmission. The method of determining which frame
+| within a traffic class is the next available frame is not specified beyond
+| conforming to the frame ordering requirements of this subclause. This allows a
+| variety of queue structures such as a single FIFO, or a set of FIFOs with one
+| for each pairing of ingress and egress ports (i.e., Virtual Output Queuing), or
+| a set of FIFOs with one for each VLAN or priority, or hierarchical structures.
+
+I'm not sure how much of this was already clear and how much wasn't.
+I apologize if I'm not bringing new info to the table. I just want to
+point out what a "queue" is, and what a "priority" is.
+
+
+
+> The DCBNL parallel is flawed IMO because pause generation is Rx, not
+> Tx. There is no Rx queue in Linux, much less per-prio.
+
+First of all: we both know that PFC is not only about RX, right? :) Here:
+
+| 8.6.8 Transmission selection
+| In a port of a Bridge or station that supports PFC, a frame of priority
+| n is not available for transmission if that priority is paused (i.e., if
+| Priority_Paused[n] is TRUE (see 36.1.3.2) on that port.
+| 
+| NOTE 1 - Two or more priorities can be combined in a single queue. In
+| this case if one or more of the priorities in the queue are paused, it
+| is possible for frames in that queue not belonging to the paused
+| priority to not be scheduled for transmission.
+| 
+| NOTE 2 - Mixing PFC and non-PFC priorities in the same queue results in
+| non-PFC traffic being paused causing congestion spreading, and therefore
+| is not recommended.
+
+And that's kind of my whole point: PFC is per _priority_, not per
+"queue"/"traffic class". And so is frame preemption (right below, same
+clause). So the parallel isn't flawed at all. The dcbnl-pfc isn't in tc
+for a reason, and that isn't because we don't have RX netdev queues...
+And the reason why dcbnl-pfc isn't in tc is the same reason why ethtool
+frame preemption shouldn't, either.
+
+| In a port of a Bridge or station that supports frame preemption, a frame
+| of priority n is not available for transmission if that priority is
+| identified in the frame preemption status table (6.7.2) as preemptible
+| and either the holdRequest object (12.30.1.5) is set to the value hold,
+| or the transmission of a prior preemptible frame has yet to complete
+| because it has been interrupted to allow the transmission of an express
+| frame.
+
+So since the managed objects for frame preemption are stipulated by IEEE
+per priority:
+
+| The framePreemptionStatusTable (6.7.2) consists of 8
+| framePreemptionAdminStatus values (12.30.1.1.1), one per priority.
+
+I think it is only reasonable for Linux to expose the same thing, and
+let drivers do the priority to queue or traffic class remapping as they
+see fit, when tc-mqprio or tc-taprio or other qdiscs that change this
+mapping are installed (if their preemption hardware implementation is
+per TC or queue rather than per priority). After all, you can have 2
+priorities mapped to the same TC, but still have one express and one
+preemptible. That is to say, you can implement preemption even in single
+"queue" devices, and it even makes sense.
