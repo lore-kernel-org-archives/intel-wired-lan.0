@@ -1,130 +1,232 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sun, 22 May 2022 09:29:15 +0800
-Subject: [Intel-wired-lan] [PATCH net] ice: Fix switchdev rules book
- keeping
-In-Reply-To: <20220520084527.123885-1-wojciech.drewek@intel.com>
-References: <20220520084527.123885-1-wojciech.drewek@intel.com>
-Message-ID: <202205220932.IobcFqRE-lkp@intel.com>
+Date: Sun, 22 May 2022 14:42:52 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
+ 9b80ccda233fa6c59de411bf889cc4d0e028f2c7
+Message-ID: <6289db6c.+5MSrWYx9CkDscbF%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Wojciech,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
+branch HEAD: 9b80ccda233fa6c59de411bf889cc4d0e028f2c7  bonding: fix missed rcu protection
 
-Thank you for the patch! Yet something to improve:
+elapsed time: 3139m
 
-[auto build test ERROR on net/master]
+configs tested: 201
+configs skipped: 4
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Wojciech-Drewek/ice-Fix-switchdev-rules-book-keeping/20220520-164759
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git 9b80ccda233fa6c59de411bf889cc4d0e028f2c7
-config: i386-debian-10.3-kselftests (https://download.01.org/0day-ci/archive/20220522/202205220932.IobcFqRE-lkp at intel.com/config)
-compiler: gcc-11 (Debian 11.3.0-1) 11.3.0
-reproduce (this is a W=1 build):
-        # https://github.com/intel-lab-lkp/linux/commit/e04c52f89a78dfae78ac79a71f0c92df8c409146
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Wojciech-Drewek/ice-Fix-switchdev-rules-book-keeping/20220520-164759
-        git checkout e04c52f89a78dfae78ac79a71f0c92df8c409146
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        make W=1 O=build_dir ARCH=i386 SHELL=/bin/bash drivers/gpu/drm/i915/ drivers/net/ethernet/intel/ice/
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-If you fix the issue, kindly add following tag where applicable
-Reported-by: kernel test robot <lkp@intel.com>
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+powerpc64                           defconfig
+powerpc                     asp8347_defconfig
+m68k                            mac_defconfig
+ia64                            zx1_defconfig
+ia64                      gensparse_defconfig
+arm                            pleb_defconfig
+sh                            titan_defconfig
+sh                            migor_defconfig
+arm                      footbridge_defconfig
+s390                          debug_defconfig
+xtensa                    xip_kc705_defconfig
+sh                               j2_defconfig
+um                                  defconfig
+um                               alldefconfig
+powerpc                    sam440ep_defconfig
+arm                        shmobile_defconfig
+powerpc                      cm5200_defconfig
+mips                      maltasmvp_defconfig
+arm                        cerfcube_defconfig
+mips                         db1xxx_defconfig
+sh                          rsk7269_defconfig
+powerpc                     pq2fads_defconfig
+parisc                           allyesconfig
+mips                           ci20_defconfig
+s390                             allyesconfig
+xtensa                          iss_defconfig
+ia64                        generic_defconfig
+powerpc                      chrp32_defconfig
+mips                  maltasmvp_eva_defconfig
+riscv                            allyesconfig
+powerpc                      pcm030_defconfig
+sh                   sh7770_generic_defconfig
+h8300                    h8300h-sim_defconfig
+arm                        mini2440_defconfig
+xtensa                           allyesconfig
+sh                           se7721_defconfig
+arm                           tegra_defconfig
+arm                           corgi_defconfig
+xtensa                  audio_kc705_defconfig
+arm                            lart_defconfig
+arc                                 defconfig
+sh                          r7785rp_defconfig
+sh                        sh7763rdp_defconfig
+powerpc                     sequoia_defconfig
+sh                         microdev_defconfig
+arm                      jornada720_defconfig
+powerpc                        cell_defconfig
+sh                                  defconfig
+powerpc                    klondike_defconfig
+arm                           h3600_defconfig
+parisc                generic-64bit_defconfig
+sh                           se7619_defconfig
+h8300                            allyesconfig
+alpha                               defconfig
+arm                           h5000_defconfig
+arm                        multi_v7_defconfig
+ia64                         bigsur_defconfig
+sh                          landisk_defconfig
+alpha                            allyesconfig
+sh                           se7343_defconfig
+nios2                            alldefconfig
+arc                        nsimosci_defconfig
+powerpc                     stx_gp3_defconfig
+sparc64                          alldefconfig
+i386                                defconfig
+ia64                          tiger_defconfig
+powerpc                      ep88xc_defconfig
+h8300                       h8s-sim_defconfig
+powerpc                     mpc83xx_defconfig
+powerpc                 mpc834x_mds_defconfig
+sh                          urquell_defconfig
+x86_64                           alldefconfig
+powerpc                 canyonlands_defconfig
+s390                       zfcpdump_defconfig
+arm                           sama5_defconfig
+m68k                             allyesconfig
+m68k                          hp300_defconfig
+mips                         mpc30x_defconfig
+powerpc                        warp_defconfig
+m68k                            q40_defconfig
+powerpc                 mpc837x_mds_defconfig
+arm                           viper_defconfig
+h8300                     edosk2674_defconfig
+arc                           tb10x_defconfig
+m68k                          multi_defconfig
+arm                        keystone_defconfig
+openrisc                 simple_smp_defconfig
+xtensa                generic_kc705_defconfig
+powerpc                       holly_defconfig
+arc                          axs101_defconfig
+powerpc                     rainier_defconfig
+m68k                       m5208evb_defconfig
+powerpc                      mgcoge_defconfig
+mips                     loongson1b_defconfig
+arc                         haps_hs_defconfig
+sh                               allmodconfig
+sh                   secureedge5410_defconfig
+arm                        realview_defconfig
+sh                   rts7751r2dplus_defconfig
+powerpc                      ppc6xx_defconfig
+m68k                          amiga_defconfig
+x86_64                        randconfig-c001
+arm                  randconfig-c002-20220519
+arm                  randconfig-c002-20220522
+ia64                                defconfig
+riscv                             allnoconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+csky                                defconfig
+nios2                            allyesconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc64                            defconfig
+sparc                               defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+arc                  randconfig-r043-20220519
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
 
-All errors (new ones prefixed by >>):
-
-   drivers/net/ethernet/intel/ice/ice_tc_lib.c: In function 'ice_eswitch_add_tc_fltr':
->> drivers/net/ethernet/intel/ice/ice_tc_lib.c:527:13: error: 'struct ice_tc_flower_fltr' has no member named 'dest_vsi_handle'
-     527 |         fltr->dest_vsi_handle = rule_added.vsi_handle;
-         |             ^~
-
-
-vim +527 drivers/net/ethernet/intel/ice/ice_tc_lib.c
-
-   452	
-   453	static int
-   454	ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
-   455	{
-   456		struct ice_tc_flower_lyr_2_4_hdrs *headers = &fltr->outer_headers;
-   457		struct ice_adv_rule_info rule_info = { 0 };
-   458		struct ice_rule_query_data rule_added;
-   459		struct ice_hw *hw = &vsi->back->hw;
-   460		struct ice_adv_lkup_elem *list;
-   461		u32 flags = fltr->flags;
-   462		int lkups_cnt;
-   463		int ret;
-   464		int i;
-   465	
-   466		if (!flags || (flags & ICE_TC_FLWR_FIELD_ENC_SRC_L4_PORT)) {
-   467			NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported encap field(s)");
-   468			return -EOPNOTSUPP;
-   469		}
-   470	
-   471		lkups_cnt = ice_tc_count_lkups(flags, headers, fltr);
-   472		list = kcalloc(lkups_cnt, sizeof(*list), GFP_ATOMIC);
-   473		if (!list)
-   474			return -ENOMEM;
-   475	
-   476		i = ice_tc_fill_rules(hw, flags, fltr, list, &rule_info, NULL);
-   477		if (i != lkups_cnt) {
-   478			ret = -EINVAL;
-   479			goto exit;
-   480		}
-   481	
-   482		/* egress traffic is always redirect to uplink */
-   483		if (fltr->direction == ICE_ESWITCH_FLTR_EGRESS)
-   484			fltr->dest_vsi = vsi->back->switchdev.uplink_vsi;
-   485	
-   486		rule_info.sw_act.fltr_act = fltr->action.fltr_act;
-   487		if (fltr->action.fltr_act != ICE_DROP_PACKET)
-   488			rule_info.sw_act.vsi_handle = fltr->dest_vsi->idx;
-   489		/* For now, making priority to be highest, and it also becomes
-   490		 * the priority for recipe which will get created as a result of
-   491		 * new extraction sequence based on input set.
-   492		 * Priority '7' is max val for switch recipe, higher the number
-   493		 * results into order of switch rule evaluation.
-   494		 */
-   495		rule_info.priority = 7;
-   496	
-   497		if (fltr->direction == ICE_ESWITCH_FLTR_INGRESS) {
-   498			rule_info.sw_act.flag |= ICE_FLTR_RX;
-   499			rule_info.sw_act.src = hw->pf_id;
-   500			rule_info.rx = true;
-   501		} else {
-   502			rule_info.sw_act.flag |= ICE_FLTR_TX;
-   503			rule_info.sw_act.src = vsi->idx;
-   504			rule_info.rx = false;
-   505			rule_info.flags_info.act = ICE_SINGLE_ACT_LAN_ENABLE;
-   506			rule_info.flags_info.act_valid = true;
-   507		}
-   508	
-   509		/* specify the cookie as filter_rule_id */
-   510		rule_info.fltr_rule_id = fltr->cookie;
-   511	
-   512		ret = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info, &rule_added);
-   513		if (ret == -EEXIST) {
-   514			NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter because it already exist");
-   515			ret = -EINVAL;
-   516			goto exit;
-   517		} else if (ret) {
-   518			NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter due to error");
-   519			goto exit;
-   520		}
-   521	
-   522		/* store the output params, which are needed later for removing
-   523		 * advanced switch filter
-   524		 */
-   525		fltr->rid = rule_added.rid;
-   526		fltr->rule_id = rule_added.rule_id;
- > 527		fltr->dest_vsi_handle = rule_added.vsi_handle;
-   528	
-   529	exit:
-   530		kfree(list);
-   531		return ret;
-   532	}
-   533	
+clang tested configs:
+powerpc              randconfig-c003-20220519
+x86_64                        randconfig-c007
+riscv                randconfig-c006-20220519
+mips                 randconfig-c004-20220519
+i386                          randconfig-c001
+arm                  randconfig-c002-20220519
+s390                 randconfig-c005-20220519
+powerpc                          g5_defconfig
+hexagon                             defconfig
+arm                          ep93xx_defconfig
+mips                      malta_kvm_defconfig
+arm                              alldefconfig
+arm                          ixp4xx_defconfig
+arm                         mv78xx0_defconfig
+powerpc                    ge_imp3a_defconfig
+mips                      pic32mzda_defconfig
+powerpc                 mpc8560_ads_defconfig
+powerpc                   bluestone_defconfig
+powerpc                      katmai_defconfig
+powerpc                        icon_defconfig
+powerpc                      ppc44x_defconfig
+arm                       spear13xx_defconfig
+mips                           rs90_defconfig
+powerpc                          allmodconfig
+powerpc                 mpc8272_ads_defconfig
+arm                        mvebu_v5_defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                    gamecube_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+hexagon              randconfig-r045-20220522
+hexagon              randconfig-r041-20220522
+hexagon              randconfig-r045-20220519
+riscv                randconfig-r042-20220519
+hexagon              randconfig-r041-20220519
+s390                 randconfig-r044-20220519
+hexagon              randconfig-r045-20220521
+hexagon              randconfig-r041-20220521
+s390                 randconfig-r044-20220521
+riscv                randconfig-r042-20220521
 
 -- 
 0-DAY CI Kernel Test Service
