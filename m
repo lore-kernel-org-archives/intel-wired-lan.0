@@ -1,169 +1,131 @@
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-Date: Sat, 21 May 2022 15:03:05 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 00/11] ethtool: Add
- support for frame preemption
-In-Reply-To: <20220520153413.16c6830b@kernel.org>
-References: <20220520011538.1098888-1-vinicius.gomes@intel.com>
- <20220520153413.16c6830b@kernel.org>
-Message-ID: <20220521150304.3lhpraxpssjxfhai@skbuf>
+From: kernel test robot <lkp@intel.com>
+Date: Sun, 22 May 2022 09:29:15 +0800
+Subject: [Intel-wired-lan] [PATCH net] ice: Fix switchdev rules book
+ keeping
+In-Reply-To: <20220520084527.123885-1-wojciech.drewek@intel.com>
+References: <20220520084527.123885-1-wojciech.drewek@intel.com>
+Message-ID: <202205220932.IobcFqRE-lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Jakub,
+Hi Wojciech,
 
-On Fri, May 20, 2022 at 03:34:13PM -0700, Jakub Kicinski wrote:
-> On Thu, 19 May 2022 18:15:27 -0700 Vinicius Costa Gomes wrote:
-> > Changes from v4:
-> >  - Went back to exposing the per-queue frame preemption bits via
-> >    ethtool-netlink only, via taprio/mqprio was seen as too much
-> >    trouble. (Vladimir Oltean)
-> >  - Fixed documentation and code/patch organization changes (Vladimir
-> >    Oltean).
-> 
-> First of all - could you please, please, please rev these patches more
-> than once a year? It's really hard to keep track of the context when
-> previous version was sent in Jun 2021 :/
+Thank you for the patch! Yet something to improve:
 
-It would have been nice if Vinicius would have posted these more than
-once a year. But let's not throw stones at each other, I'm sure everyone
-is doing their best ;) These are new specs, their usefulness in the Real
-World is still being evaluated, and you shouldn't underestimate the
-difficulty of exposing standard Linux interfaces for pre-standard or
-first-generation hardware. Even the mistakes I may be making in my
-interpretation of the spec below are in good faith (i.e. if I'm wrong
-it's because I'm stupid, not because I'm interested in leaning the
-implementation towards an interface that's more conventient for the
-hardware I'm working with).
+[auto build test ERROR on net/master]
 
+url:    https://github.com/intel-lab-lkp/linux/commits/Wojciech-Drewek/ice-Fix-switchdev-rules-book-keeping/20220520-164759
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git 9b80ccda233fa6c59de411bf889cc4d0e028f2c7
+config: i386-debian-10.3-kselftests (https://download.01.org/0day-ci/archive/20220522/202205220932.IobcFqRE-lkp at intel.com/config)
+compiler: gcc-11 (Debian 11.3.0-1) 11.3.0
+reproduce (this is a W=1 build):
+        # https://github.com/intel-lab-lkp/linux/commit/e04c52f89a78dfae78ac79a71f0c92df8c409146
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Wojciech-Drewek/ice-Fix-switchdev-rules-book-keeping/20220520-164759
+        git checkout e04c52f89a78dfae78ac79a71f0c92df8c409146
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        make W=1 O=build_dir ARCH=i386 SHELL=/bin/bash drivers/gpu/drm/i915/ drivers/net/ethernet/intel/ice/
 
+If you fix the issue, kindly add following tag where applicable
+Reported-by: kernel test robot <lkp@intel.com>
 
-> I disagree that queue mask belongs in ethtool. It's an attribute of 
-> a queue and should be attached to a queue.
+All errors (new ones prefixed by >>):
 
-Sure, you have very strong reasons to disagree with that statement, if
-only the premise were true. But you have to understand that IEEE 802.1Q
-does not talk about preemptible queues, but about preemptible priorities.
-Here:
-
-| 6.7.1 Support of the ISS by IEEE Std 802.3 (Ethernet)
-| 
-| For priority values that are identified in the frame preemption status table
-| (6.7.2) as preemptible, frames that are selected for transmission shall be
-| transmitted using the pMAC service instance, and for priority values that are
-| identified in the frame preemption status table as express, frames that are
-| selected for transmission shall be transmitted using the eMAC service instance.
-| In all other respects, the Port behaves as if it is supported by a single MAC
-| service interface. In particular, all frames received by the Port are treated
-| as if they were received on a single MAC service interface regardless of
-| whether they were received on the eMAC service interface or the pMAC service
-| interface, except with respect to frame preemption.
-| 
-| 6.7.2 Frame preemption
-| If the Port supports frame preemption, then a value of frame preemption status
-| is assigned to each value of priority via a frame preemption status table. The
-| possible values of frame preemption status are express or preemptible.
-| The frame preemption status table can be changed by management as described in
-| 12.30.1.1. The default value of frame preemption status is express for all
-| priority values.
-
-For context, I probably need to point out the distinction that the spec
-makes between a priority and a traffic class.
-
-A priority is a number assigned to a packet based on the VLAN PCP using
-the rules in clause 6.9.3 Priority Code Point encoding. In Linux, it is
-more or less equivalent to skb->priority.
-
-A traffic class, on the other hand, is defined as basically synonimous
-with a TX priority queue, as follows:
-
-| 3.268 traffic class: A classification used to expedite transmission of frames
-| generated by critical or time-sensitive services. Traffic classes are numbered
-| from zero through N-1, where N is the number of outbound queues associated with
-| a given Bridge Port, and 1 <= N <= 8, and each traffic class has a one-to-one
-| correspondence with a specific outbound queue for that Port. Traffic class 0
-| corresponds to nonexpedited traffic; nonzero traffic classes correspond to
-| expedited classes of traffic. A fixed mapping determines, for a given priority
-| associated with a frame and a given number of traffic classes, what traffic
-| class will be assigned to the frame.
-
-A priority is translated into a traffic class using Table 8-5:
-Recommended priority to traffic class mappings, which in Linux would be
-handled using the tc-mqprio "map".
-
-But attention, a priority TX queue is not the same as a netdev TX queue,
-but rather the same as a tc-mqprio traffic class (i.e. when you specify
-"queues count@offset" to mqprio, from Linux perspective there are "count"
-queues, from 802.1Q perspective there is only the "offset" queue (or TC).
-This is because we may have per-CPU queues, etc.
-
-This is even spelled out in this note:
-
-| NOTE 3 - A queue in this context is not necessarily a single FIFO data structure.
-| A queue is a record of all frames of a given traffic class awaiting
-| transmission on a given Bridge Port. The structure of this record is not
-| specified. The transmission selection algorithm (8.6.8) determines which
-| traffic class, among those classes with frames available for transmission,
-| provides the next frame for transmission. The method of determining which frame
-| within a traffic class is the next available frame is not specified beyond
-| conforming to the frame ordering requirements of this subclause. This allows a
-| variety of queue structures such as a single FIFO, or a set of FIFOs with one
-| for each pairing of ingress and egress ports (i.e., Virtual Output Queuing), or
-| a set of FIFOs with one for each VLAN or priority, or hierarchical structures.
-
-I'm not sure how much of this was already clear and how much wasn't.
-I apologize if I'm not bringing new info to the table. I just want to
-point out what a "queue" is, and what a "priority" is.
+   drivers/net/ethernet/intel/ice/ice_tc_lib.c: In function 'ice_eswitch_add_tc_fltr':
+>> drivers/net/ethernet/intel/ice/ice_tc_lib.c:527:13: error: 'struct ice_tc_flower_fltr' has no member named 'dest_vsi_handle'
+     527 |         fltr->dest_vsi_handle = rule_added.vsi_handle;
+         |             ^~
 
 
+vim +527 drivers/net/ethernet/intel/ice/ice_tc_lib.c
 
-> The DCBNL parallel is flawed IMO because pause generation is Rx, not
-> Tx. There is no Rx queue in Linux, much less per-prio.
+   452	
+   453	static int
+   454	ice_eswitch_add_tc_fltr(struct ice_vsi *vsi, struct ice_tc_flower_fltr *fltr)
+   455	{
+   456		struct ice_tc_flower_lyr_2_4_hdrs *headers = &fltr->outer_headers;
+   457		struct ice_adv_rule_info rule_info = { 0 };
+   458		struct ice_rule_query_data rule_added;
+   459		struct ice_hw *hw = &vsi->back->hw;
+   460		struct ice_adv_lkup_elem *list;
+   461		u32 flags = fltr->flags;
+   462		int lkups_cnt;
+   463		int ret;
+   464		int i;
+   465	
+   466		if (!flags || (flags & ICE_TC_FLWR_FIELD_ENC_SRC_L4_PORT)) {
+   467			NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported encap field(s)");
+   468			return -EOPNOTSUPP;
+   469		}
+   470	
+   471		lkups_cnt = ice_tc_count_lkups(flags, headers, fltr);
+   472		list = kcalloc(lkups_cnt, sizeof(*list), GFP_ATOMIC);
+   473		if (!list)
+   474			return -ENOMEM;
+   475	
+   476		i = ice_tc_fill_rules(hw, flags, fltr, list, &rule_info, NULL);
+   477		if (i != lkups_cnt) {
+   478			ret = -EINVAL;
+   479			goto exit;
+   480		}
+   481	
+   482		/* egress traffic is always redirect to uplink */
+   483		if (fltr->direction == ICE_ESWITCH_FLTR_EGRESS)
+   484			fltr->dest_vsi = vsi->back->switchdev.uplink_vsi;
+   485	
+   486		rule_info.sw_act.fltr_act = fltr->action.fltr_act;
+   487		if (fltr->action.fltr_act != ICE_DROP_PACKET)
+   488			rule_info.sw_act.vsi_handle = fltr->dest_vsi->idx;
+   489		/* For now, making priority to be highest, and it also becomes
+   490		 * the priority for recipe which will get created as a result of
+   491		 * new extraction sequence based on input set.
+   492		 * Priority '7' is max val for switch recipe, higher the number
+   493		 * results into order of switch rule evaluation.
+   494		 */
+   495		rule_info.priority = 7;
+   496	
+   497		if (fltr->direction == ICE_ESWITCH_FLTR_INGRESS) {
+   498			rule_info.sw_act.flag |= ICE_FLTR_RX;
+   499			rule_info.sw_act.src = hw->pf_id;
+   500			rule_info.rx = true;
+   501		} else {
+   502			rule_info.sw_act.flag |= ICE_FLTR_TX;
+   503			rule_info.sw_act.src = vsi->idx;
+   504			rule_info.rx = false;
+   505			rule_info.flags_info.act = ICE_SINGLE_ACT_LAN_ENABLE;
+   506			rule_info.flags_info.act_valid = true;
+   507		}
+   508	
+   509		/* specify the cookie as filter_rule_id */
+   510		rule_info.fltr_rule_id = fltr->cookie;
+   511	
+   512		ret = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info, &rule_added);
+   513		if (ret == -EEXIST) {
+   514			NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter because it already exist");
+   515			ret = -EINVAL;
+   516			goto exit;
+   517		} else if (ret) {
+   518			NL_SET_ERR_MSG_MOD(fltr->extack, "Unable to add filter due to error");
+   519			goto exit;
+   520		}
+   521	
+   522		/* store the output params, which are needed later for removing
+   523		 * advanced switch filter
+   524		 */
+   525		fltr->rid = rule_added.rid;
+   526		fltr->rule_id = rule_added.rule_id;
+ > 527		fltr->dest_vsi_handle = rule_added.vsi_handle;
+   528	
+   529	exit:
+   530		kfree(list);
+   531		return ret;
+   532	}
+   533	
 
-First of all: we both know that PFC is not only about RX, right? :) Here:
-
-| 8.6.8 Transmission selection
-| In a port of a Bridge or station that supports PFC, a frame of priority
-| n is not available for transmission if that priority is paused (i.e., if
-| Priority_Paused[n] is TRUE (see 36.1.3.2) on that port.
-| 
-| NOTE 1 - Two or more priorities can be combined in a single queue. In
-| this case if one or more of the priorities in the queue are paused, it
-| is possible for frames in that queue not belonging to the paused
-| priority to not be scheduled for transmission.
-| 
-| NOTE 2 - Mixing PFC and non-PFC priorities in the same queue results in
-| non-PFC traffic being paused causing congestion spreading, and therefore
-| is not recommended.
-
-And that's kind of my whole point: PFC is per _priority_, not per
-"queue"/"traffic class". And so is frame preemption (right below, same
-clause). So the parallel isn't flawed at all. The dcbnl-pfc isn't in tc
-for a reason, and that isn't because we don't have RX netdev queues...
-And the reason why dcbnl-pfc isn't in tc is the same reason why ethtool
-frame preemption shouldn't, either.
-
-| In a port of a Bridge or station that supports frame preemption, a frame
-| of priority n is not available for transmission if that priority is
-| identified in the frame preemption status table (6.7.2) as preemptible
-| and either the holdRequest object (12.30.1.5) is set to the value hold,
-| or the transmission of a prior preemptible frame has yet to complete
-| because it has been interrupted to allow the transmission of an express
-| frame.
-
-So since the managed objects for frame preemption are stipulated by IEEE
-per priority:
-
-| The framePreemptionStatusTable (6.7.2) consists of 8
-| framePreemptionAdminStatus values (12.30.1.1.1), one per priority.
-
-I think it is only reasonable for Linux to expose the same thing, and
-let drivers do the priority to queue or traffic class remapping as they
-see fit, when tc-mqprio or tc-taprio or other qdiscs that change this
-mapping are installed (if their preemption hardware implementation is
-per TC or queue rather than per priority). After all, you can have 2
-priorities mapped to the same TC, but still have one express and one
-preemptible. That is to say, you can implement preemption even in single
-"queue" devices, and it even makes sense.
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
