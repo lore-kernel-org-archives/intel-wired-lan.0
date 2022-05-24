@@ -1,10 +1,10 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Tue, 24 May 2022 13:48:33 +0000
-Subject: [Intel-wired-lan] [PATCH RESEND] i40e: Remove unnecessary
- synchronize_irq() before free_irq()
-In-Reply-To: <20220518213111.2444630-1-anthony.l.nguyen@intel.com>
-References: <20220518213111.2444630-1-anthony.l.nguyen@intel.com>
-Message-ID: <BYAPR11MB3367C687414EEDCA02E8566FFCD79@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Tue, 24 May 2022 15:52:26 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3] drivers,
+ ixgbe: export vf statistics
+In-Reply-To: <20220509110340.100814-1-mheyne@amazon.de>
+References: <20220509110340.100814-1-mheyne@amazon.de>
+Message-ID: <DM8PR11MB562165BE16503138D1100255ABD79@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,29 +14,44 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 > -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Tony Nguyen
-> Sent: Thursday, May 19, 2022 3:01 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Zeal Robot <zealci@zte.com.cn>; Minghao Chi
-> <chi.minghao@zte.com.cn>
-> Subject: [Intel-wired-lan] [PATCH RESEND] i40e: Remove unnecessary
-> synchronize_irq() before free_irq()
+> From: Maximilian Heyne <mheyne@amazon.de>
+> Sent: Monday, May 9, 2022 1:04 PM
+> Cc: Maximilian Heyne <mheyne@amazon.de>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nguyen, Anthony L
+> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Eric
+> Dumazet <edumazet@google.com>; Jakub Kicinski <kuba@kernel.org>; Paolo
+> Abeni <pabeni@redhat.com>; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [PATCH net-next v3] drivers, ixgbe: export vf statistics
 > 
-> From: Minghao Chi <chi.minghao@zte.com.cn>
+> This change retrieves network metrics for virtual functions from the device
+> and exports them via the iproute2 interface.
 > 
-> Calling synchronize_irq() right before free_irq() is quite useless. On one hand
-> the IRQ can easily fire again before free_irq() is entered, on the other hand
-> free_irq() itself calls synchronize_irq() internally (in a race condition free
-> way), before any state associated with the IRQ is freed.
+> The code for retrieving the statistics from the device is taken from the out-of-
+> tree driver.  The feature was introduced with version 2.0.75.7, so the diff
+> between this version and the previous version 2.0.72.4 was used to identify
+> required changes. The export via ethtool is omitted in favor of using the
+> standard ndo_get_vf_stats interface.
 > 
-> Reported-by: Zeal Robot <zealci@zte.com.cn>
-> Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
+> Per-VF statistics can now be printed, for instance, via
+> 
+>   ip --statistics link show dev eth0
+> 
+> Signed-off-by: Maximilian Heyne <mheyne@amazon.de>
 > ---
-> Resending due to mail issues with Intel Wired LAN
+> v2: implemented the ndo_get_vf_stats callback
+> v3: as per discussion, removed the ethtool changes
 > 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 --
->  1 file changed, 2 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      | 34 ++++++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 86 +++++++++++++++++++
+> drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  7 ++
+>  3 files changed, 127 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> index 921a4d977d65..48444ab9e0b1 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
 > 
 
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
