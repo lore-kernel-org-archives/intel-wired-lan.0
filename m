@@ -1,25 +1,49 @@
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-Date: Mon, 23 May 2022 23:33:39 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 00/11] ethtool: Add
- support for frame preemption
-In-Reply-To: <20220523125238.6f73b9f5@kernel.org>
-References: <20220520011538.1098888-1-vinicius.gomes@intel.com>
- <20220520153413.16c6830b@kernel.org> <20220521150304.3lhpraxpssjxfhai@skbuf>
- <20220523125238.6f73b9f5@kernel.org>
-Message-ID: <20220523233338.tmwykgwutoigurnu@skbuf>
+From: Olivier Matz <olivier.matz@6wind.com>
+Date: Tue, 24 May 2022 09:37:52 +0200
+Subject: [Intel-wired-lan] [PATCH net v2 0/2] ixgbe: fix promiscuous
+ mode on VF
+In-Reply-To: <YmaLWN0aGIKCzkHP@platinum>
+References: <20220406095252.22338-1-olivier.matz@6wind.com>
+ <YmaLWN0aGIKCzkHP@platinum>
+Message-ID: <YoyLUEk9n1uXHscH@platinum>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, May 23, 2022 at 12:52:38PM -0700, Jakub Kicinski wrote:
-> My understanding is that DCBNL is not in ethtool is that it was built
-> primarily for converged Ethernet. ethtool being a netdev thing it's
-> largely confined to coarse interface configuration in such
-> environments, they certainly don't use TC to control RDMA queues.
-> 
-> To put it differently DCBNL separates RoCE and storage queues from
-> netdev queues (latter being lossy). It's Conway's law at work.
+Hi,
 
-I had to look up Conway's law, now I get it. Beautiful euphemism, thank you.
+On Mon, Apr 25, 2022 at 01:51:53PM +0200, Olivier Matz wrote:
+> Hi,
+> 
+> On Wed, Apr 06, 2022 at 11:52:50AM +0200, Olivier Matz wrote:
+> > These 2 patches fix issues related to the promiscuous mode on VF.
+> > 
+> > Comments are welcome,
+> > Olivier
+> > 
+> > Cc: stable at vger.kernel.org
+> > Cc: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+> > 
+> > Changes since v1:
+> > - resend with CC intel-wired-lan
+> > - remove CC Hiroshi Shimamoto (address does not exist anymore)
+> > 
+> > Olivier Matz (2):
+> >   ixgbe: fix bcast packets Rx on VF after promisc removal
+> >   ixgbe: fix unexpected VLAN Rx in promisc mode on VF
+> > 
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 8 ++++----
+> >  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> Any feedback about this patchset?
+> Comments are welcome.
+
+I didn't get feedback for this patchset until now. Am I doing things
+correctly? Am I targeting the appropriate mailing lists and people?
+
+Please let me know if I missed something.
+
+Thanks,
+Olivier
