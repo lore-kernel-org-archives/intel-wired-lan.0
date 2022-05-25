@@ -1,50 +1,47 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Wed, 25 May 2022 08:55:33 +0000
-Subject: [Intel-wired-lan] [PATCH net v4] i40e: Fix call trace in
- setup_tx_descriptors
-In-Reply-To: <20220519140145.1917314-1-aleksandr.loktionov@intel.com>
-References: <20220519140145.1917314-1-aleksandr.loktionov@intel.com>
-Message-ID: <BYAPR11MB336712ED7B18D64CCCD7F10CFCD69@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Date: Wed, 25 May 2022 19:31:12 +0800
+Subject: [Intel-wired-lan] [PATCH v2 1/2] igb: Remove duplicate defines
+Message-ID: <20220525113113.171746-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+There's no need to define same thing twice.
 
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_defines.h | 3 ---
+ drivers/net/ethernet/intel/igb/e1000_regs.h    | 1 -
+ 2 files changed, 4 deletions(-)
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Loktionov, Aleksandr
-> Sent: Thursday, May 19, 2022 7:32 PM
-> To: intel-wired-lan at lists.osuosl.org; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>
-> Cc: Loktionov, Aleksandr <aleksandr.loktionov@intel.com>; Jaron, MichalX
-> <michalx.jaron@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v4] i40e: Fix call trace in
-> setup_tx_descriptors
-> 
-> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> 
-> After PF reset and ethtool -t there was call trace in dmesg sometimes leading
-> to panic. When there was some time, around 5 seconds, between reset and
-> test there were no errors.
-> 
-> Problem was that pf reset calls i40e_vsi_close in prep_for_reset and ethtool
-> -t calls i40e_vsi_close in diag_test. If there was not enough time between
-> those commands the second i40e_vsi_close starts before previous
-> i40e_vsi_close was done which leads to crash.
-> 
-> Add check to diag_test if pf is in reset and don't start offline tests if it is true.
-> Add netif_info("testing failed") into unhappy path of i40e_diag_test()
-> 
-> Fixes: e17bc411aea8 ("i40e: Disable offline diagnostics if VFs are enabled")
-> Fixes: 510efb2682b3 ("i40e: Fix ethtool offline diagnostic with netqueues")
-> Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
->  .../net/ethernet/intel/i40e/i40e_ethtool.c    | 25 +++++++++++++------
->  1 file changed, 17 insertions(+), 8 deletions(-)
-> 
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index ca5429774994e..fa028928482fc 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -1033,9 +1033,6 @@
+ #define E1000_VFTA_ENTRY_MASK                0x7F
+ #define E1000_VFTA_ENTRY_BIT_SHIFT_MASK      0x1F
+ 
+-/* DMA Coalescing register fields */
+-#define E1000_PCIEMISC_LX_DECISION      0x00000080 /* Lx power on DMA coal */
+-
+ /* Tx Rate-Scheduler Config fields */
+ #define E1000_RTTBCNRC_RS_ENA		0x80000000
+ #define E1000_RTTBCNRC_RF_DEC_MASK	0x00003FFF
+diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
+index 9cb49980ec2d1..eb9f6da9208a6 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_regs.h
++++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
+@@ -116,7 +116,6 @@
+ #define E1000_DMCRTRH	0x05DD0 /* Receive Packet Rate Threshold */
+ #define E1000_DMCCNT	0x05DD4 /* Current Rx Count */
+ #define E1000_FCRTC	0x02170 /* Flow Control Rx high watermark */
+-#define E1000_PCIEMISC	0x05BB8 /* PCIE misc config register */
+ 
+ /* TX Rate Limit Registers */
+ #define E1000_RTTDQSEL	0x3604 /* Tx Desc Plane Queue Select - WO */
+-- 
+2.34.1
 
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
