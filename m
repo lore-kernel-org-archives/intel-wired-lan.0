@@ -1,143 +1,75 @@
 From: Palczewski, Mateusz <mateusz.palczewski@intel.com>
-Date: Wed, 25 May 2022 08:12:34 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] igb: Make DMA faster when CPU is
- active on the PCIe link
-In-Reply-To: <CAAd53p4h1-SJROvUghPYbBnh2Z9nRtgfNEagE4X6XtBwNg8JOg@mail.gmail.com>
-References: <20220511122806.2146847-1-kai.heng.feng@canonical.com>
- <20220511122806.2146847-2-kai.heng.feng@canonical.com>
- <6246d753-00cb-b5dc-f5fc-d041a8e78718@molgen.mpg.de>
- <CAAd53p52gkv-PLRvEM3GunTwU1J=c+n0J6uD03AQJ4EnL2y4Kg@mail.gmail.com>
- <CAAd53p4h1-SJROvUghPYbBnh2Z9nRtgfNEagE4X6XtBwNg8JOg@mail.gmail.com>
-Message-ID: <BL1PR11MB528839B81758CFBF18B9452E87D69@BL1PR11MB5288.namprd11.prod.outlook.com>
+Date: Wed, 25 May 2022 08:30:34 +0000
+Subject: [Intel-wired-lan] [PATCH v2 2/2] igb_main: Assign random MAC
+ address instead of fail in case of invalid one
+In-Reply-To: <DM6PR11MB46576A8E6EBCB81E29FA49DC9BD69@DM6PR11MB4657.namprd11.prod.outlook.com>
+References: <20220512093918.86084-1-lianglixue@greatwall.com.cn>
+ <d50b23b1-38b5-2522-cbf4-c360c0ed05cd@molgen.mpg.de>
+ <DM6PR11MB46576A8E6EBCB81E29FA49DC9BD69@DM6PR11MB4657.namprd11.prod.outlook.com>
+Message-ID: <BL1PR11MB5288F4233475A84ABF2FACAB87D69@BL1PR11MB5288.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->
->On Thu, May 12, 2022 at 10:55 AM Kai-Heng Feng <kai.heng.feng@canonical.com> wrote:
->>
->> Hi Paul,
->>
->> On Wed, May 11, 2022 at 8:49 PM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
->> >
->> > Dear Kai-Hang,
->> >
->> >
->> > Thank you for the patch.
->> >
->> >
->> > Am 11.05.22 um 14:28 schrieb Kai-Heng Feng:
->> > > We found Intel I210 can only achieve ~750Mbps Tx speed on some 
->> > > platforms. The RR2DCDELAY shows around 0x2xxx DMA delay, which 
->> > > will be
->> >
->> > Please give an example platform, where it works and where it does not.
->>
->> The platform is about but not yet hit the market yet, so I can't disclose it.
->> They are Intel Alder Lake based.
->>
->> >
->> > How did you test transfer speed?
->>
->> Iperf.
->>
->> >
->> > > significantly lower when 1) ASPM is disabled or 2) SoC package 
->> > > c-state stays above PC3. When the RR2DCDELAY is around 0x1xxx the 
->> > > Tx speed can reach to ~950Mbps.
->> > >
->> > > According to the I210 datasheet "8.26.1 PCIe Misc. Register - 
->> > > PCIEMISC", "DMA Idle Indication" doesn't seem to tie to DMA 
->> > > coalesce anymore, so set it to 1b for "DMA is considered idle when 
->> > > there is no Rx or Tx AND when there are no TLPs indicating that 
->> > > CPU is active detected on the PCIe link (such as the host executes 
->> > > CSR or Configuration register read or write operation)" and 
->> > > performing Tx should also fall under "active CPU on PCIe link" case.
->> > >
->> > > In addition to that, commit b6e0c419f040 ("igb: Move DMA 
->> > > Coalescing init code to separate function.") seems to wrongly 
->> > > changed from enabling E1000_PCIEMISC_LX_DECISION to disabling it, also fix that.
->> >
->> > Please split this into a separate commit with Fixes tag, and maybe 
->> > the commit author in Cc.
->>
->> I don't see the need to split to separate commit as both require the 
->> same change.
->>
->> I will add the "Fixes" tag once the igb maintainers reviewed the patch.
->
->A gentle ping...
->
->Please let me know if this is a proper fix so I can send v2.
->
->Kai-Heng
->
-Hi,
-Looking good to me. Waiting for v2 version with fixes tag and then 
-this will be fully accepted. 
+> Dear Lixue,
+> 
+> 
+> Thank you for sending version 2. Some more minor nits.
+> 
+> Am 12.05.22 um 11:39 schrieb lixue liang:
+> > In some cases, when the user uses igb_set_eeprom to modify the MAC 
+> > address to be invalid, the igb driver will fail to load. If there is 
+> > no network card device, the user must modify it to a valid MAC address 
+> > by other means.
+> > 
+> > Since the MAC address can be modified ,then add a random valid MAC 
+> > address to replace the invalid MAC address in the driver can be 
+> > workable, it can continue to finish the loading ,and output the relevant log reminder.
+> 
+> Please add the space after the comma.
+> 
+> > Reported-by: kernel test robot <lkp@intel.com>
+> 
+> This line is confusing. Maybe add that to the version change-log below the `---`.
+> 
+> > Signed-off-by: lixue liang <lianglixue@greatwall.com.cn>
+> > ---
+> >   drivers/net/ethernet/intel/igb/igb_main.c | 8 ++++----
+> >   1 file changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+> > b/drivers/net/ethernet/intel/igb/igb_main.c
+> > index a513570c2ad6..746233befade 100644
+> > --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> > @@ -3359,10 +3359,10 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+> >   	eth_hw_addr_set(netdev, hw->mac.addr);
+> >   
+> >   	if (!is_valid_ether_addr(netdev->dev_addr)) {
+> > -		eth_random_addr(netdev->dev_addr);
+> > -		memcpy(hw->mac.addr, netdev->dev_addr, netdev->addr_len);
+> > -		dev_info(&pdev->dev,
+> > -			 "Invalid Mac Address, already got random Mac Address\n");
+> > +		eth_hw_addr_random(netdev);
+> > +		ether_addr_copy(hw->mac.addr, netdev->dev_addr);
+> > +		dev_err(&pdev->dev,
+> > +			"Invalid MAC Address, already assigned random MAC Address\n");
+> 
+> Please spell it MAC address.
+> 
+> >   	}
+> >   
+> >   	igb_set_default_mac_filter(adapter);
+> 
+> 
+> Kind regards,
+> 
+> Paul
+> 
+Hi, 
+Please apply the changes suggested by Paul, other than that this looks good. 
 
 Regards,
 Mateusz 
->>
->> Kai-Heng
->>
->> >
->> >
->> > Kind regards,
->> >
->> > Paul
->> >
->> >
->> > > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
->> > > ---
->> > >   drivers/net/ethernet/intel/igb/igb_main.c | 12 +++++-------
->> > >   1 file changed, 5 insertions(+), 7 deletions(-)
->> > >
->> > > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c 
->> > > b/drivers/net/ethernet/intel/igb/igb_main.c
->> > > index 34b33b21e0dcd..eca797dded429 100644
->> > > --- a/drivers/net/ethernet/intel/igb/igb_main.c
->> > > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
->> > > @@ -9897,11 +9897,10 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
->> > >       struct e1000_hw *hw = &adapter->hw;
->> > >       u32 dmac_thr;
->> > >       u16 hwm;
->> > > +     u32 reg;
->> > >
->> > >       if (hw->mac.type > e1000_82580) {
->> > >               if (adapter->flags & IGB_FLAG_DMAC) {
->> > > -                     u32 reg;
->> > > -
->> > >                       /* force threshold to 0. */
->> > >                       wr32(E1000_DMCTXTH, 0);
->> > >
->> > > @@ -9934,7 +9933,6 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
->> > >                       /* Disable BMC-to-OS Watchdog Enable */
->> > >                       if (hw->mac.type != e1000_i354)
->> > >                               reg &= ~E1000_DMACR_DC_BMC2OSW_EN;
->> > > -
->> > >                       wr32(E1000_DMACR, reg);
->> > >
->> > >                       /* no lower threshold to disable @@ -9951,12 
->> > > +9949,12 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
->> > >                        */
->> > >                       wr32(E1000_DMCTXTH, (IGB_MIN_TXPBSIZE -
->> > >                            (IGB_TX_BUF_4096 + 
->> > > adapter->max_frame_size)) >> 6);
->> > > +             }
->> > >
->> > > -                     /* make low power state decision controlled
->> > > -                      * by DMA coal
->> > > -                      */
->> > > +             if (hw->mac.type >= e1000_i210 ||
->> > > +                 (adapter->flags & IGB_FLAG_DMAC)) {
->> > >                       reg = rd32(E1000_PCIEMISC);
->> > > -                     reg &= ~E1000_PCIEMISC_LX_DECISION;
->> > > +                     reg |= E1000_PCIEMISC_LX_DECISION;
->> > >                       wr32(E1000_PCIEMISC, reg);
->> > >               } /* endif adapter->dmac is not disabled */
->> > >       } else if (hw->mac.type == e1000_82580) {
->
->
