@@ -1,43 +1,143 @@
-From: G, GurucharanX <gurucharanx.g@intel.com>
-Date: Wed, 25 May 2022 03:14:29 +0000
-Subject: [Intel-wired-lan] [PATCH] ice: Use correct order for the
- parameters of devm_kcalloc()
-In-Reply-To: <627df513c3acf65f9aa5f43ca2bf7826a73c0c7b.1653116222.git.christophe.jaillet@wanadoo.fr>
-References: <627df513c3acf65f9aa5f43ca2bf7826a73c0c7b.1653116222.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <BYAPR11MB3367EA050DB996F600CF46C9FCD69@BYAPR11MB3367.namprd11.prod.outlook.com>
+From: Palczewski, Mateusz <mateusz.palczewski@intel.com>
+Date: Wed, 25 May 2022 08:12:34 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] igb: Make DMA faster when CPU is
+ active on the PCIe link
+In-Reply-To: <CAAd53p4h1-SJROvUghPYbBnh2Z9nRtgfNEagE4X6XtBwNg8JOg@mail.gmail.com>
+References: <20220511122806.2146847-1-kai.heng.feng@canonical.com>
+ <20220511122806.2146847-2-kai.heng.feng@canonical.com>
+ <6246d753-00cb-b5dc-f5fc-d041a8e78718@molgen.mpg.de>
+ <CAAd53p52gkv-PLRvEM3GunTwU1J=c+n0J6uD03AQJ4EnL2y4Kg@mail.gmail.com>
+ <CAAd53p4h1-SJROvUghPYbBnh2Z9nRtgfNEagE4X6XtBwNg8JOg@mail.gmail.com>
+Message-ID: <BL1PR11MB528839B81758CFBF18B9452E87D69@BL1PR11MB5288.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+>
+>On Thu, May 12, 2022 at 10:55 AM Kai-Heng Feng <kai.heng.feng@canonical.com> wrote:
+>>
+>> Hi Paul,
+>>
+>> On Wed, May 11, 2022 at 8:49 PM Paul Menzel <pmenzel@molgen.mpg.de> wrote:
+>> >
+>> > Dear Kai-Hang,
+>> >
+>> >
+>> > Thank you for the patch.
+>> >
+>> >
+>> > Am 11.05.22 um 14:28 schrieb Kai-Heng Feng:
+>> > > We found Intel I210 can only achieve ~750Mbps Tx speed on some 
+>> > > platforms. The RR2DCDELAY shows around 0x2xxx DMA delay, which 
+>> > > will be
+>> >
+>> > Please give an example platform, where it works and where it does not.
+>>
+>> The platform is about but not yet hit the market yet, so I can't disclose it.
+>> They are Intel Alder Lake based.
+>>
+>> >
+>> > How did you test transfer speed?
+>>
+>> Iperf.
+>>
+>> >
+>> > > significantly lower when 1) ASPM is disabled or 2) SoC package 
+>> > > c-state stays above PC3. When the RR2DCDELAY is around 0x1xxx the 
+>> > > Tx speed can reach to ~950Mbps.
+>> > >
+>> > > According to the I210 datasheet "8.26.1 PCIe Misc. Register - 
+>> > > PCIEMISC", "DMA Idle Indication" doesn't seem to tie to DMA 
+>> > > coalesce anymore, so set it to 1b for "DMA is considered idle when 
+>> > > there is no Rx or Tx AND when there are no TLPs indicating that 
+>> > > CPU is active detected on the PCIe link (such as the host executes 
+>> > > CSR or Configuration register read or write operation)" and 
+>> > > performing Tx should also fall under "active CPU on PCIe link" case.
+>> > >
+>> > > In addition to that, commit b6e0c419f040 ("igb: Move DMA 
+>> > > Coalescing init code to separate function.") seems to wrongly 
+>> > > changed from enabling E1000_PCIEMISC_LX_DECISION to disabling it, also fix that.
+>> >
+>> > Please split this into a separate commit with Fixes tag, and maybe 
+>> > the commit author in Cc.
+>>
+>> I don't see the need to split to separate commit as both require the 
+>> same change.
+>>
+>> I will add the "Fixes" tag once the igb maintainers reviewed the patch.
+>
+>A gentle ping...
+>
+>Please let me know if this is a proper fix so I can send v2.
+>
+>Kai-Heng
+>
+Hi,
+Looking good to me. Waiting for v2 version with fixes tag and then 
+this will be fully accepted. 
 
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Christophe JAILLET
-> Sent: Saturday, May 21, 2022 12:27 PM
-> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>;
-> Eric Dumazet <edumazet@google.com>; Jakub Kicinski <kuba@kernel.org>;
-> Paolo Abeni <pabeni@redhat.com>
-> Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>; intel-wired-
-> lan at lists.osuosl.org; kernel-janitors at vger.kernel.org; linux-
-> kernel at vger.kernel.org; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] ice: Use correct order for the parameters
-> of devm_kcalloc()
-> 
-> We should have 'n', then 'size', not the opposite.
-> This is harmless because the 2 values are just multiplied, but having the
-> correct order silence a (unpublished yet) smatch warning.
-> 
-> While at it use '*tun_seg' instead '*seg'. The both variable have the same
-> type, so the result is the same, but it lokks more logical.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
->  drivers/net/ethernet/intel/ice/ice_ethtool_fdir.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-
-Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Regards,
+Mateusz 
+>>
+>> Kai-Heng
+>>
+>> >
+>> >
+>> > Kind regards,
+>> >
+>> > Paul
+>> >
+>> >
+>> > > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>> > > ---
+>> > >   drivers/net/ethernet/intel/igb/igb_main.c | 12 +++++-------
+>> > >   1 file changed, 5 insertions(+), 7 deletions(-)
+>> > >
+>> > > diff --git a/drivers/net/ethernet/intel/igb/igb_main.c 
+>> > > b/drivers/net/ethernet/intel/igb/igb_main.c
+>> > > index 34b33b21e0dcd..eca797dded429 100644
+>> > > --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>> > > +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>> > > @@ -9897,11 +9897,10 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
+>> > >       struct e1000_hw *hw = &adapter->hw;
+>> > >       u32 dmac_thr;
+>> > >       u16 hwm;
+>> > > +     u32 reg;
+>> > >
+>> > >       if (hw->mac.type > e1000_82580) {
+>> > >               if (adapter->flags & IGB_FLAG_DMAC) {
+>> > > -                     u32 reg;
+>> > > -
+>> > >                       /* force threshold to 0. */
+>> > >                       wr32(E1000_DMCTXTH, 0);
+>> > >
+>> > > @@ -9934,7 +9933,6 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
+>> > >                       /* Disable BMC-to-OS Watchdog Enable */
+>> > >                       if (hw->mac.type != e1000_i354)
+>> > >                               reg &= ~E1000_DMACR_DC_BMC2OSW_EN;
+>> > > -
+>> > >                       wr32(E1000_DMACR, reg);
+>> > >
+>> > >                       /* no lower threshold to disable @@ -9951,12 
+>> > > +9949,12 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
+>> > >                        */
+>> > >                       wr32(E1000_DMCTXTH, (IGB_MIN_TXPBSIZE -
+>> > >                            (IGB_TX_BUF_4096 + 
+>> > > adapter->max_frame_size)) >> 6);
+>> > > +             }
+>> > >
+>> > > -                     /* make low power state decision controlled
+>> > > -                      * by DMA coal
+>> > > -                      */
+>> > > +             if (hw->mac.type >= e1000_i210 ||
+>> > > +                 (adapter->flags & IGB_FLAG_DMAC)) {
+>> > >                       reg = rd32(E1000_PCIEMISC);
+>> > > -                     reg &= ~E1000_PCIEMISC_LX_DECISION;
+>> > > +                     reg |= E1000_PCIEMISC_LX_DECISION;
+>> > >                       wr32(E1000_PCIEMISC, reg);
+>> > >               } /* endif adapter->dmac is not disabled */
+>> > >       } else if (hw->mac.type == e1000_82580) {
+>
+>
