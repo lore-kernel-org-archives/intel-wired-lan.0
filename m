@@ -1,10 +1,11 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 27 May 2022 09:45:23 -0700
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix dropped jumbo frames
- statistics
-In-Reply-To: <20220527080750.2370502-1-jedrzej.jagielski@intel.com>
-References: <20220527080750.2370502-1-jedrzej.jagielski@intel.com>
-Message-ID: <2485cd45-1ac5-6e2a-9023-2887cc535069@intel.com>
+Date: Fri, 27 May 2022 09:56:56 -0700
+Subject: [Intel-wired-lan] [PATCH net v1 2/2] iavf: Fix call trace
+ during removing iavf driver
+In-Reply-To: <20220527080919.2370640-2-jedrzej.jagielski@intel.com>
+References: <20220527080919.2370640-1-jedrzej.jagielski@intel.com>
+ <20220527080919.2370640-2-jedrzej.jagielski@intel.com>
+Message-ID: <04b439d9-2e8f-7c50-3d52-bd6a6880edfd@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,59 +14,45 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-On 5/27/2022 1:07 AM, Jedrzej Jagielski wrote:
-> From: Lukasz Cieplicki <lukaszx.cieplicki@intel.com>
+On 5/27/2022 1:09 AM, Jedrzej Jagielski wrote:
+> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
 > 
-> +/**
-> + * i40e_stats_update_rx_discards - update rx_discards.
-> + * @vsi: ptr to the VSI to be updated.
-> + * @hw: ptr to the hardware info.
-> + * @stat_idx: VSI's stat_counter_idx.
-> + * @offset_loaded: ptr to the VSI's stat_offsets_loaded.
-> + * @stat_offset: ptr to stat_offset to store first read of specific register.
-> + * @stat: ptr to VSI's stat to be updated.
-> + **/
-> +static void i40e_stats_update_rx_discards(struct i40e_vsi *vsi,
-> +			struct i40e_hw *hw, int stat_idx, bool offset_loaded,
-> +			struct i40e_eth_stats *stat_offset,
-> +			struct i40e_eth_stats *stat)
+> If VF has configured tc qdisc with number of queues less than original
+> set and then the driver went in removing process, tc resources are also
+> releasing. Attempt of modify real num tx/rx in this state is causing
+> call trace, because kernel is trying to releasing uninitialized queues.
+> 
+> Fix by not modifying the number of queues when removing a driver.
+> 
+> Fixes: d5b33d024496 ("i40evf: add ndo_setup_tc callback to i40evf")
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> ---
+>   drivers/net/ethernet/intel/iavf/iavf_main.c | 3 +++
+>   1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index eec74ee5fc19..1b46a97f4ad6 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -3478,6 +3478,9 @@ static int __iavf_setup_tc(struct net_device *netdev, void *type_data)
+>   		}
+>   	}
+>   exit:
+> +	if (iavf_is_remove_in_progress(adapter))
+> +		return 0;
 
-Checkpatch reports an alignment issue with this. I'd recommend using 
-this style to help resolve this:
+Why do we check this condition at the end of the function after 
+everything is done instead of the beginning?
 
-static void
-i40e_stats_update_rx_discards(struct i40e_vsi *vsi,
-			      struct i40e_hw *hw, int stat_idx, ...
+Also, this function from patch 1, is a refactor for checking a bit. 
+Refactors shouldn't be going to net unless necessary. This patch can 
+directly check the bit and the other patch can be sent as a follow on 
+after this patch has been applied.
 
-Look at the ice driver for more examples.
+Thanks,
+Tony
 
-> +{
-> +	u64 rx_rdpc, rx_rxerr;
-> +
-> +	i40e_stat_update32(hw, I40E_GLV_RDPC(stat_idx), offset_loaded,
-> +			   &stat_offset->rx_discards, &rx_rdpc);
-> +	i40e_stat_update64(hw,
-> +			   I40E_GL_RXERR1H(i40e_compute_pci_to_hw_id(vsi, hw)),
-> +			   I40E_GL_RXERR1L(i40e_compute_pci_to_hw_id(vsi, hw)),
-> +			   offset_loaded, &stat_offset->rx_discards_other,
-> +			   &rx_rxerr);
-> +
-> +	stat->rx_discards = rx_rdpc + rx_rxerr;
-> +}
-> +
->   /**
->    * i40e_update_eth_stats - Update VSI-specific ethernet statistics counters.
->    * @vsi: the VSI to be updated
-> @@ -679,6 +749,10 @@ void i40e_update_eth_stats(struct i40e_vsi *vsi)
->   			   I40E_GLV_BPTCL(stat_idx),
->   			   vsi->stat_offsets_loaded,
->   			   &oes->tx_broadcast, &es->tx_broadcast);
-> +
-> +	i40e_stats_update_rx_discards(vsi, hw, stat_idx,
-> +		   vsi->stat_offsets_loaded, oes, es);
-
-Alignment issue here as well.
-
-> +
->   	vsi->stat_offsets_loaded = true;
+>   	return ret;
 >   }
+>   
