@@ -1,10 +1,10 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Fri, 27 May 2022 09:31:42 -0700
-Subject: [Intel-wired-lan] [PATCH net] ice: disable stripping in default
- VSI ctx
-In-Reply-To: <20220527115131.7413-1-marcin.szycik@linux.intel.com>
-References: <20220527115131.7413-1-marcin.szycik@linux.intel.com>
-Message-ID: <8fd71e27-7f9a-fab8-62c5-b16839b882f5@intel.com>
+Date: Fri, 27 May 2022 09:45:23 -0700
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix dropped jumbo frames
+ statistics
+In-Reply-To: <20220527080750.2370502-1-jedrzej.jagielski@intel.com>
+References: <20220527080750.2370502-1-jedrzej.jagielski@intel.com>
+Message-ID: <2485cd45-1ac5-6e2a-9023-2887cc535069@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,27 +13,59 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-On 5/27/2022 4:51 AM, Marcin Szycik wrote:
-
-This fixes commit doesn't exist in net, so it shouldn't be targeting 
-net. It looks like the patch this is fixing is still on Intel Wired LAN 
-[1]. Perhaps it would be better to squash it with that patch as a v2?
-
-> From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+On 5/27/2022 1:07 AM, Jedrzej Jagielski wrote:
+> From: Lukasz Cieplicki <lukaszx.cieplicki@intel.com>
 > 
-> In case when driver is in eswitch mode, having VLAN stripping enabled
-> causes failure in communication. All VLAN configuration commands are
-> blocked, because of that VF driver can't disable VLAN stripping at
-> initialization. It leads to the situation when VLAN stripping on VF VSI
-> is on, but in kernel it is off.
-> 
-> To prevent this, set VLAN stripping to disabled in VSI initialization.
-> It doesn't break other usecases, because it is set according to kernel
-> settings.
-> 
-> Fixes: f09901aa554a ("ice: remove VLAN representor specific ops")
-> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+> +/**
+> + * i40e_stats_update_rx_discards - update rx_discards.
+> + * @vsi: ptr to the VSI to be updated.
+> + * @hw: ptr to the hardware info.
+> + * @stat_idx: VSI's stat_counter_idx.
+> + * @offset_loaded: ptr to the VSI's stat_offsets_loaded.
+> + * @stat_offset: ptr to stat_offset to store first read of specific register.
+> + * @stat: ptr to VSI's stat to be updated.
+> + **/
+> +static void i40e_stats_update_rx_discards(struct i40e_vsi *vsi,
+> +			struct i40e_hw *hw, int stat_idx, bool offset_loaded,
+> +			struct i40e_eth_stats *stat_offset,
+> +			struct i40e_eth_stats *stat)
 
-[1] 
-https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20220425062756.14987-3-michal.swiatkowski at linux.intel.com/
+Checkpatch reports an alignment issue with this. I'd recommend using 
+this style to help resolve this:
+
+static void
+i40e_stats_update_rx_discards(struct i40e_vsi *vsi,
+			      struct i40e_hw *hw, int stat_idx, ...
+
+Look at the ice driver for more examples.
+
+> +{
+> +	u64 rx_rdpc, rx_rxerr;
+> +
+> +	i40e_stat_update32(hw, I40E_GLV_RDPC(stat_idx), offset_loaded,
+> +			   &stat_offset->rx_discards, &rx_rdpc);
+> +	i40e_stat_update64(hw,
+> +			   I40E_GL_RXERR1H(i40e_compute_pci_to_hw_id(vsi, hw)),
+> +			   I40E_GL_RXERR1L(i40e_compute_pci_to_hw_id(vsi, hw)),
+> +			   offset_loaded, &stat_offset->rx_discards_other,
+> +			   &rx_rxerr);
+> +
+> +	stat->rx_discards = rx_rdpc + rx_rxerr;
+> +}
+> +
+>   /**
+>    * i40e_update_eth_stats - Update VSI-specific ethernet statistics counters.
+>    * @vsi: the VSI to be updated
+> @@ -679,6 +749,10 @@ void i40e_update_eth_stats(struct i40e_vsi *vsi)
+>   			   I40E_GLV_BPTCL(stat_idx),
+>   			   vsi->stat_offsets_loaded,
+>   			   &oes->tx_broadcast, &es->tx_broadcast);
+> +
+> +	i40e_stats_update_rx_discards(vsi, hw, stat_idx,
+> +		   vsi->stat_offsets_loaded, oes, es);
+
+Alignment issue here as well.
+
+> +
+>   	vsi->stat_offsets_loaded = true;
+>   }
