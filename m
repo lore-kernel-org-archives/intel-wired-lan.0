@@ -1,13 +1,11 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Fri, 27 May 2022 18:17:15 +0200
-Subject: [Intel-wired-lan] [PATCH net] ice: disable stripping in default
- VSI ctx
-In-Reply-To: <c808f098-2d17-db32-6106-8c75d5116508@molgen.mpg.de>
-References: <20220527115131.7413-1-marcin.szycik@linux.intel.com>
- <6b4a6f01-dfde-e047-066f-15098633113c@molgen.mpg.de>
- <3fab057b-ef21-3bda-6535-a19e5c4c96ec@linux.intel.com>
- <c808f098-2d17-db32-6106-8c75d5116508@molgen.mpg.de>
-Message-ID: <4f8d2b55-ed19-206e-3171-efff363dc8d4@linux.intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Fri, 27 May 2022 09:26:42 -0700
+Subject: [Intel-wired-lan] [PATCH v2 2/2] igb: Make DMA faster when CPU
+ is active on the PCIe link
+In-Reply-To: <20220525113113.171746-2-kai.heng.feng@canonical.com>
+References: <20220525113113.171746-1-kai.heng.feng@canonical.com>
+ <20220525113113.171746-2-kai.heng.feng@canonical.com>
+Message-ID: <4344ab36-e925-b68f-b54e-4cbb55e48836@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,74 +14,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-On 27-May-22 15:11, Paul Menzel wrote:
-> Dear Marcin.
+On 5/25/2022 4:31 AM, Kai-Heng Feng wrote:
+> Intel I210 on some Intel Alder Lake platforms can only achieve ~750Mbps
+> Tx speed via iperf. The RR2DCDELAY shows around 0x2xxx DMA delay, which
+> will be significantly lower when 1) ASPM is disabled or 2) SoC package
+> c-state stays above PC3. When the RR2DCDELAY is around 0x1xxx the Tx
+> speed can reach to ~950Mbps.
 > 
+> According to the I210 datasheet "8.26.1 PCIe Misc. Register - PCIEMISC",
+> "DMA Idle Indication" doesn't seem to tie to DMA coalesce anymore, so
+> set it to 1b for "DMA is considered idle when there is no Rx or Tx AND
+> when there are no TLPs indicating that CPU is active detected on the
+> PCIe link (such as the host executes CSR or Configuration register read
+> or write operation)" and performing Tx should also fall under "active
+> CPU on PCIe link" case.
 > 
-> Am 27.05.22 um 15:01 schrieb Marcin Szycik:
-> 
->> On 27-May-22 14:15, Paul Menzel wrote:
-> 
->>> Am 27.05.22 um 13:51 schrieb Marcin Szycik:
->>>> From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
->>>>
->>>> In case when driver is in eswitch mode, having VLAN stripping enabled
->>>> causes failure in communication. All VLAN configuration commands are
->>>> blocked, because of that VF driver can't disable VLAN stripping at
->>>
->>> s/blocked, because/blocked. Because/
->>
->> Sorry, but I don't understand what to change here. Could you explain more clearly?
-> 
-> I am sorry for being unclear. I think it should be two sentences.
+> In addition to that, commit b6e0c419f040 ("igb: Move DMA Coalescing init
+> code to separate function.") seems to wrongly changed from enabling
+> E1000_PCIEMISC_LX_DECISION to disabling it, also fix that.
+Patches applied. However, this patch seems like net material where patch 
+1[1] seems more suited for net-next so I plan to split to those 
+respective trees.
 
-Ah, now I see it's a sed-style string replace. I will remember this for future discussions :)
+Thanks,
+Tony
 
->>>> initialization. It leads to the situation when VLAN stripping on VF VSI
->>>> is on, but in kernel it is off.
->>>>
->>>> To prevent this, set VLAN stripping to disabled in VSI initialization.
->>>
->>> Maybe: ?, disable VLAN stripping in VSI initialization.
->>
->> Sounds good.
->>
->>>> It doesn't break other usecases, because it is set according to kernel
->>>> settings.
->>>
->>> Please document your test setup.
->>
->> Will reproduction steps be enough?
-> 
-> Yes, that?d be great.
+> Fixes: b6e0c419f040 ("igb: Move DMA Coalescing init code to separate function.")
+> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 
-I'll send v2 probably on Monday. I'm sorry for delay, but I have a bit of a problem reproducing this issue, and I don't want to include a repro that doesn't actually work (Micha? originally worked on the fix, but he will be unavailable for some time).
-
-Regards,
-Marcin
-
->>>> Fixes: f09901aa554a ("ice: remove VLAN representor specific ops")
->>>> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
->>>> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
->>>> ---
->>>> ?? drivers/net/ethernet/intel/ice/ice_lib.c | 3 +++
->>>> ?? 1 file changed, 3 insertions(+)
->>>>
->>>> diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
->>>> index 70961c0343e7..b28fb8eacffb 100644
->>>> --- a/drivers/net/ethernet/intel/ice/ice_lib.c
->>>> +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
->>>> @@ -887,6 +887,9 @@ static void ice_set_dflt_vsi_ctx(struct ice_hw *hw, struct ice_vsi_ctx *ctxt)
->>>> ?????????????? (ICE_AQ_VSI_OUTER_TAG_VLAN_8100 <<
->>>> ??????????????? ICE_AQ_VSI_OUTER_TAG_TYPE_S) &
->>>> ?????????????? ICE_AQ_VSI_OUTER_TAG_TYPE_M;
->>>> +??????? ctxt->info.outer_vlan_flags |=
->>>> +??????????? FIELD_PREP(ICE_AQ_VSI_OUTER_VLAN_EMODE_M,
->>>> +?????????????????? ICE_AQ_VSI_OUTER_VLAN_EMODE_NOTHING);
->>>> ?????? }
->>>> ?????? /* Have 1:1 UP mapping for both ingress/egress tables */
->>>> ?????? table |= ICE_UP_TABLE_TRANSLATE(0, 0)
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+[1] 
+https://lore.kernel.org/netdev/20220525113113.171746-1-kai.heng.feng at canonical.com/
