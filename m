@@ -1,60 +1,96 @@
-From: Olivier Matz <olivier.matz@6wind.com>
-Date: Sun, 29 May 2022 21:03:57 +0200
-Subject: [Intel-wired-lan] [PATCH net v2 0/2] ixgbe: fix promiscuous
- mode on VF
-In-Reply-To: <20220526141015.43057-1-piotrx.skajewski@intel.com>
-References: <20220406095252.22338-1-olivier.matz@6wind.com>
- <20220526141015.43057-1-piotrx.skajewski@intel.com>
-Message-ID: <YpPDnXRlxC5doIAJ@platinum>
+From: Zhou Furong <furong.zhou@linux.intel.com>
+Date: Fri, 27 May 2022 17:08:18 +0800
+Subject: [Intel-wired-lan] [PATCH net-next v5 09/11] igc: Add support
+ for Frame Preemption verification
+In-Reply-To: <20220520011538.1098888-10-vinicius.gomes@intel.com>
+References: <20220520011538.1098888-1-vinicius.gomes@intel.com>
+ <20220520011538.1098888-10-vinicius.gomes@intel.com>
+Message-ID: <e6cb8b03-4d3d-b64b-0aca-642fe53ecb90@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Piotr,
+> +
+> +	struct delayed_work fp_verification_work;
+> +	unsigned long fp_start;
+> +	bool fp_received_smd_v;
+> +	bool fp_received_smd_r;
+> +	unsigned int fp_verify_cnt;
+> +	enum frame_preemption_state fp_tx_state;
+> +	bool fp_disable_verify;
 
-On Thu, May 26, 2022 at 04:10:15PM +0200, Piotr Skajewski wrote:
-> > On Mon, Apr 25, 2022 at 01:51:53PM +0200, Olivier Matz wrote:
-> > > Hi,
-> > > 
-> > > On Wed, Apr 06, 2022 at 11:52:50AM +0200, Olivier Matz wrote:
-> > > > These 2 patches fix issues related to the promiscuous mode on VF.
-> > > > 
-> > > > Comments are welcome,
-> > > > Olivier
-> > > > 
-> > > > Cc: stable at vger.kernel.org
-> > > > Cc: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-> > > > 
-> > > > Changes since v1:
-> > > > - resend with CC intel-wired-lan
-> > > > - remove CC Hiroshi Shimamoto (address does not exist anymore)
-> > > > 
-> > > > Olivier Matz (2):
-> > > >   ixgbe: fix bcast packets Rx on VF after promisc removal
-> > > >   ixgbe: fix unexpected VLAN Rx in promisc mode on VF
-> > > > 
-> > > >  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 8 ++++----
-> > > >  1 file changed, 4 insertions(+), 4 deletions(-)
-> > > 
-> > > Any feedback about this patchset?
-> > > Comments are welcome.
-> >
-> > I didn't get feedback for this patchset until now. Am I doing things
-> > correctly? Am I targeting the appropriate mailing lists and people?
-> >
-> > Please let me know if I missed something.
-> 
-> Hi Olivier,
-> 
-> Sorry for the late reply,
-> We had to analyze it internally and it took us some time.
-> After reviewing, we decided that the proposed patches could be accepted.
-> 
-> ACK for series.
+struct size would be smaller if add member to right place
 
-No problem for the delay.
-Thank you!
 
-Olivier
+> +	if (!netif_running(adapter->netdev))
+> +		return -ENOTCONN;
+> +
+> +	/* FIXME: rename this function to something less specific, as
+> +	 * it can be used outside XDP.
+> +	 */
+> +	ring = igc_xdp_get_tx_ring(adapter, cpu);
+> +	nq = txring_txq(ring);
+> +
+> +	skb = alloc_skb(IGC_FP_SMD_FRAME_SIZE, GFP_KERNEL);
+> +	if (!skb)
+> +		return -ENOMEM;
+> +
+if there is chance of NOMEM, move this before
+ring = igc_xdp_get_tx_ring(adapter, cpu);
+
+
+> +static void igc_fp_verification_work(struct work_struct *work)
+> +{
+> +	struct delayed_work *dwork = to_delayed_work(work);
+> +	struct igc_adapter *adapter;
+> +	int err;
+> +
+> +	adapter = container_of(dwork, struct igc_adapter, fp_verification_work);
+> +
+please remove blank
+
+> +	if (adapter->fp_disable_verify)
+> +		goto done;
+> +
+> +	switch (adapter->fp_tx_state) {
+> +	case FRAME_PREEMPTION_STATE_START:
+> +		adapter->fp_received_smd_r = false;
+> +		err = igc_xmit_smd_frame(adapter, IGC_SMD_TYPE_SMD_V);
+> +		if (err < 0)
+> +			netdev_err(adapter->netdev, "Error sending SMD-V frame\n");
+> +
+> +		adapter->fp_tx_state = FRAME_PREEMPTION_STATE_SENT;
+state is SENT when send error?
+
+> +		adapter->fp_start = jiffies;
+> +		schedule_delayed_work(&adapter->fp_verification_work, IGC_FP_TIMEOUT);
+> +		break;
+> +
+
+
+
+
+
+> +
+> +			if (adapter->fp_verify_cnt > IGC_MAX_VERIFY_CNT) {
+> +				adapter->fp_verify_cnt = 0;
+> +				adapter->fp_tx_state = FRAME_PREEMPTION_STATE_FAILED;
+> +				netdev_err(adapter->netdev,
+> +					   "Exceeded number of attempts for frame preemption verification\n");
+> +			} else {
+> +				adapter->fp_tx_state = FRAME_PREEMPTION_STATE_START;
+> +			}
+> +			schedule_delayed_work(&adapter->fp_verification_work, IGC_FP_TIMEOUT);
+> +		}
+> +
+> +		break;
+> +
+> +	case FRAME_PREEMPTION_STATE_FAILED:
+> +	case FRAME_PREEMPTION_STATE_DONE:
+miss default?
+
+> +		break;
+> +	}
+> +
