@@ -1,185 +1,156 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 27 May 2022 14:26:57 -0700
-Subject: [Intel-wired-lan] Bonding problem on Intel X710 hardware
-In-Reply-To: <20220517134550.7c451a83@kernel.org>
-References: <700118d5-2007-3c13-af2d-3a2a6c7775bd@anduras.de>
- <ad3e244d-2f87-c74b-1d40-c21e286a721c@anduras.de>
- <20220517134550.7c451a83@kernel.org>
-Message-ID: <a94b23d2-57a8-954f-9fae-246cf900be92@intel.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 28 May 2022 13:27:43 +0800
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ fe6f053672f543c0818cd76ebb5230cdbcbfb636
+Message-ID: <6291b2cf.A3nnlaGpj2JFt2f7%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 5/17/2022 1:45 PM, Jakub Kicinski wrote:
-> CC: intel
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: fe6f053672f543c0818cd76ebb5230cdbcbfb636  igb: Remove duplicate defines
 
-Thanks for the copy.
+elapsed time: 724m
 
+configs tested: 125
+configs skipped: 5
 
-> 
-> On Tue, 17 May 2022 16:23:16 +0200 Sven Anders wrote:
->> Hello!
->>
->> This is a follow up to my question. I did not hear anything so far, but I tried
->> to find some some information meanwhile.
->>
->> I've got a guess from somebody, that the error message "Error I40E_AQ_RC_EINVAL
->> adding RX filters on PF, promiscuous mode forced on" maybe triggered, because
->> I'm hitting a limit here.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Yes, typically this is a response from our firmware that a table is full 
-in hardware, and I'm guessing that you might be running into a filter 
-limit due to using vlans?
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+m68k                          sun3x_defconfig
+powerpc                      ppc6xx_defconfig
+arm                       multi_v4t_defconfig
+parisc64                            defconfig
+powerpc64                           defconfig
+um                                  defconfig
+sh                               alldefconfig
+arm                           sama5_defconfig
+sh                             sh03_defconfig
+xtensa                           alldefconfig
+arc                     haps_hs_smp_defconfig
+powerpc                 mpc8540_ads_defconfig
+sh                            hp6xx_defconfig
+mips                 decstation_r4k_defconfig
+sh                          r7780mp_defconfig
+s390                             allyesconfig
+sh                            shmin_defconfig
+arm                           u8500_defconfig
+sh                           se7712_defconfig
+powerpc                      pcm030_defconfig
+microblaze                          defconfig
+m68k                          multi_defconfig
+arm                          pxa910_defconfig
+arc                      axs103_smp_defconfig
+i386                                defconfig
+powerpc                mpc7448_hpc2_defconfig
+sh                     magicpanelr2_defconfig
+arm                  randconfig-c002-20220526
+arm                  randconfig-c002-20220524
+x86_64                        randconfig-c001
+ia64                             allmodconfig
+ia64                             allyesconfig
+ia64                                defconfig
+riscv                             allnoconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+csky                                defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc                           allyesconfig
+sparc                               defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+arc                  randconfig-r043-20220526
+arc                  randconfig-r043-20220524
+s390                 randconfig-r044-20220526
+s390                 randconfig-r044-20220524
+riscv                randconfig-r042-20220526
+riscv                randconfig-r042-20220524
+arc                  randconfig-r043-20220527
+arc                  randconfig-r043-20220525
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+x86_64                    rhel-8.3-kselftests
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
 
->>
->> Somebody other said, that this seems to be an error in the "bonding driver", but
->> I do not think so. Aside from that, there seem to be no special "bonding" mailing
->> list anymore. So I will have to ask this questions here anyway...
+clang tested configs:
+arm                  randconfig-c002-20220524
+x86_64                        randconfig-c007
+s390                 randconfig-c005-20220524
+i386                          randconfig-c001
+powerpc              randconfig-c003-20220524
+riscv                randconfig-c006-20220524
+mips                 randconfig-c004-20220524
+mips                     loongson2k_defconfig
+mips                          malta_defconfig
+mips                  cavium_octeon_defconfig
+mips                           ip22_defconfig
+arm                      pxa255-idp_defconfig
+arm                       aspeed_g4_defconfig
+mips                     cu1830-neo_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+hexagon              randconfig-r045-20220527
+hexagon              randconfig-r041-20220527
+s390                 randconfig-r044-20220527
+riscv                randconfig-r042-20220527
 
-this netdev list is the bonding list since it's part of the networking 
-stack in the kernel.
-
->>
->> I want to understand the problem to classify it.
->>
->> 1) Why is this "error" issued? Do I really hit a limit and what is this current limit?
->> 2) Is it really an error or is it more "a warning"?
->> 3) Why is this error triggered only when changing the "ntuples filter" and not during
->>      the normal adding of VLANs?
->>      Remark: I can trigger the "ntuples fiilter" later on again and it still works.
->>
->> I also tried the latest 5.18-rc kernel with the same problem.
->>
->> Maybe somebody will find time and try to reproduce this?
->> I will answer any questions...
-
-We assigned someone to look into reproduction of this today, and they'll 
-get back to you if we have further questions.
-
-
->>
->> Regards
->>    Sven
->>
->> Am 12.05.22 um 16:05 schrieb Sven Anders:
->>> Hello!
->>>
->>> I'm having problems setting up a bond in adaptive load balancing
->>> mode (balance-alb, mode 6) on an intel X710 network adapter using
->>> the i40e driver connected to an Aruba 2530-48G switch.
->>> The network card has 4 on board ports.
->>> I'm using 2 ports for the bond with 36 VLANs on it.
->>>
->>> The setup is correct, because it works without problems, if
->>> I use the same setup with 1GBit Intel hardware (using the
->>> e1000e driver, version 3.2.6-k, firmware 5.10-2).
->>>
->>> Data packets are only received sporadically. If I run the same test
->>> with only one slave port, it works without problems.
-
-And there are no counters going up in ethtool -S when you receive/drop 
-packets?
-
->>>
->>> I debugged it down to the reception of the packets by the
->>> network hardware.
->>>
->>> If I remove the number of VLANs under 8, almost all packets are
->>> received. The fewer VLANs the better the receive rate.
->>>
->>> I suspected the hardware offloading operations to be the cause, so I
->>> tried to disable them. It resulted in the following:
->>>
->>>   ?If I turn of the "ntuple-filters" with
->>>   ?? ethtool -K eth3 ntuple off
->>>   ?? ethtool -K eth3 ntuple off
->>>   ?it will work.
->>>
->>>   ?But if I do this I see the following errors in "dmesg":
->>>   ? i40e 0000:65:00.1: Error I40E_AQ_RC_EINVAL adding RX filters on PF, promiscuous mode forced on
->>>   ? i40e 0000:65:00.2: Error I40E_AQ_RC_EINVAL adding RX filters on PF, promiscuous mode forced on
->>>
->>> Disabling any any other offloading operations made no change.
->>>
->>> For me it seems, that the hardware filter is dropping packets because they
->>> have the wrong values (mac-address ?).
->>> Turning the "ntuple-filters" off, forces the network adapter to accept
->>> all packets.
->>>
->>>
->>> My questions:
->>>
->>> 1. Can anybody explain or confirm this?
->>>
->>> 2. Is the a correct method to force the adapter in promiscous mode?
->>>
->>> 3. Are the any special settings needed, if I use ALB bonding, which I missed?
->>>
->>>
->>> Some details:
->>> -------------
->>>
->>> Linux kernel 5.15.35-core2 on x86_64.
->>>
->>>
->>> This is the hardware:
->>> ---------------------
->>> 4 port Ethernet controller:
->>>   ?Intel Corporation Ethernet Controller X710 for 10GBASE-T (rev 02)
->>>   ?8086:15ff (rev 02)
->>>
->>> with
->>>
->>>   ?driver: i40e
->>>   ?version: 5.15.35-core2
->>>   ?firmware-version: 8.60 0x8000bd80 1.3140.0
->>>   ?bus-info: 0000:65:00.2
->>>   ?supports-statistics: yes
->>>   ?supports-test: yes
->>>   ?supports-eeprom-access: yes
->>>   ?supports-register-dump: yes
->>>   ?supports-priv-flags: yes
->>>
->>>
->>> This is current bonding configuration:
->>> --------------------------------------
->>> Ethernet Channel Bonding Driver: v5.15.35-core2
->>>
->>> Bonding Mode: adaptive load balancing
->>> Primary Slave: None
->>> Currently Active Slave: eth3
->>> MII Status: up
->>> MII Polling Interval (ms): 100
->>> Up Delay (ms): 200
->>> Down Delay (ms): 200
->>> Peer Notification Delay (ms): 0
->>>
->>> Slave Interface: eth3
->>> MII Status: up
->>> Speed: 1000 Mbps
->>> Duplex: full
->>> Link Failure Count: 0
->>> Permanent HW addr: 68:05:ca:f8:9c:42
->>> Slave queue ID: 0
->>>
->>> Slave Interface: eth4
->>> MII Status: up
->>> Speed: 1000 Mbps
->>> Duplex: full
->>> Link Failure Count: 0
->>> Permanent HW addr: 68:05:ca:f8:9c:41
->>> Slave queue ID: 0
->>>
->>>
->>> Regards
->>>   ?Sven Anders
->>>    
->>
->>
->> Mit freundlichen Gr??en
->>    Sven Anders
->>
-> 
-
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
