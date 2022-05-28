@@ -1,18 +1,18 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 28 May 2022 13:27:43 +0800
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- fe6f053672f543c0818cd76ebb5230cdbcbfb636
-Message-ID: <6291b2cf.A3nnlaGpj2JFt2f7%lkp@intel.com>
+Date: Sat, 28 May 2022 13:27:45 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ c38b2ff6d60ba50c0b785a43c1a98cd1f9f04b58
+Message-ID: <6291b2d1.ey8SYfoNWzlMotRA%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: fe6f053672f543c0818cd76ebb5230cdbcbfb636  igb: Remove duplicate defines
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: c38b2ff6d60ba50c0b785a43c1a98cd1f9f04b58  igb: Make DMA faster when CPU is active on the PCIe link
 
-elapsed time: 724m
+elapsed time: 725m
 
 configs tested: 125
 configs skipped: 5
@@ -105,12 +105,12 @@ riscv                randconfig-r042-20220526
 riscv                randconfig-r042-20220524
 arc                  randconfig-r043-20220527
 arc                  randconfig-r043-20220525
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
-riscv                            allmodconfig
 riscv                            allyesconfig
+riscv                            allmodconfig
+riscv                    nommu_k210_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_virt_defconfig
+riscv                               defconfig
 x86_64                    rhel-8.3-kselftests
 um                             i386_defconfig
 um                           x86_64_defconfig
