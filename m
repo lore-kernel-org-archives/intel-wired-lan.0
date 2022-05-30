@@ -1,50 +1,57 @@
-From: Lixue Liang <lianglixuehao@126.com>
-Date: Mon, 30 May 2022 10:58:34 +0000
-Subject: [Intel-wired-lan] [PATCH v3] igb_main: Assign random MAC address
- instead of fail in case of invalid one
-In-Reply-To: <d50b23b1-38b5-2522-cbf4-c360c0ed05cd@molgen.mpg.de>
-References: <d50b23b1-38b5-2522-cbf4-c360c0ed05cd@molgen.mpg.de>
-Message-ID: <20220530105834.97175-1-lianglixuehao@126.com>
+From: Sven Anders <sven.anders@anduras.de>
+Date: Mon, 30 May 2022 17:53:45 +0200
+Subject: [Intel-wired-lan] Bonding problem on Intel X710 hardware
+In-Reply-To: <a94b23d2-57a8-954f-9fae-246cf900be92@intel.com>
+References: <a94b23d2-57a8-954f-9fae-246cf900be92@intel.com>
+Message-ID: <8d7813a5-c344-6225-dc1a-89a92e5cddb9@anduras.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Lixue Liang <lianglixue@greatwall.com.cn>
+>>> Hello!
+>>>
+>>> This is a follow up to my question. I did not hear anything so far, but I tried
+>>> to find some some information meanwhile.
+>>>
+>>> I've got a guess from somebody, that the error message "Error I40E_AQ_RC_EINVAL
+>>> adding RX filters on PF, promiscuous mode forced on" maybe triggered, because
+>>> I'm hitting a limit here.
+> 
+> Yes, typically this is a response from our firmware that a table is full 
+> in hardware, and I'm guessing that you might be running into a filter 
+> limit due to using vlans?
 
-In some cases, when the user uses igb_set_eeprom to modify the MAC
-address to be invalid, the igb driver will fail to load. If there is no
-network card device, the user must modify it to a valid MAC address by
-other means.
+That's what I suspect, but I did know the hardware and firmware insufficiently
+to be sure.
+What I'm wondering is: Why this is only triggered if I toggle the "ntuples support"
+and not earlier when setting up the interface?
 
-Since the MAC address can be modified, then add a random valid MAC address
-to replace the invalid MAC address in the driver can be workable, it can
-continue to finish the loading, and output the relevant log reminder.
+>>> Data packets are only received sporadically. If I run the same test
+>>> with only one slave port, it works without problems.
+> 
+> And there are no counters going up in ethtool -S when you receive/drop 
+> packets?
 
-Signed-off-by: Lixue Liang <lianglixue@greatwall.com.cn>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+I'm not sure here. I tried to inspect the counters and it seems that the counters
+are going up slower in this case, but it's difficult to say, because there is
+some "noise" on the line and I do not have direct access to the hardware at the
+moment.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 34b33b21e0dc..40f43534a3af 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3359,9 +3359,10 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	eth_hw_addr_set(netdev, hw->mac.addr);
- 
- 	if (!is_valid_ether_addr(netdev->dev_addr)) {
--		dev_err(&pdev->dev, "Invalid MAC Address\n");
--		err = -EIO;
--		goto err_eeprom;
-+		eth_hw_addr_random(netdev);
-+		ether_addr_copy(hw->mac.addr, netdev->dev_addr);
-+		dev_err(&pdev->dev,
-+			"Invalid MAC address, already assigned random MAC address\n");
- 	}
- 
- 	igb_set_default_mac_filter(adapter);
+
+If you need any further information or tests, just contact me.
+
+Regards
+   Sven Anders
+
 -- 
-2.27.0
+   Sven Anders                  () UTF-8 Ribbon Campaign
+                                                   /\ Support plain text e-mail
+   ANDURAS intranet security AG
+   Messestrasse 3 - 94036 Passau - Germany
+   Web: www.anduras.de - Tel: +49 (0)851-4 90 50-0 - Fax: +49 (0)851-4 90 50-55
 
+Those who would give up essential Liberty, to purchase a little
+temporary Safety, deserve neither Liberty nor Safety.
+    - Benjamin Franklin
