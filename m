@@ -1,297 +1,75 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 30 May 2022 09:23:10 -0400
-Subject: [Intel-wired-lan] [PATCH AUTOSEL 5.18 085/159] ice: always check VF
- VSI pointer values
-In-Reply-To: <20220530132425.1929512-1-sashal@kernel.org>
-References: <20220530132425.1929512-1-sashal@kernel.org>
-Message-ID: <20220530132425.1929512-85-sashal@kernel.org>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Mon, 30 May 2022 18:51:22 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: disable stripping in
+ default VSI ctx
+Message-ID: <20220530165122.8804-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
-[ Upstream commit baeb705fd6a7245cc1fa69ed991a9cffdf44a174 ]
+In case when driver is in eswitch mode, having VLAN stripping enabled
+causes failure in communication. All VLAN configuration commands are
+blocked. Because of that VF driver can't disable VLAN stripping at
+initialization. It leads to the situation when VLAN stripping on VF VSI
+is on, but in kernel it is off.
 
-The ice_get_vf_vsi function can return NULL in some cases, such as if
-handling messages during a reset where the VSI is being removed and
-recreated.
+To prevent this, disable VLAN stripping in VSI initialization. It doesn't
+break other usecases, because it is set according to kernel settings.
 
-Several places throughout the driver do not bother to check whether this
-VSI pointer is valid. Static analysis tools maybe report issues because
-they detect paths where a potentially NULL pointer could be dereferenced.
+To reproduce:
+modprobe ice
+devlink dev eswitch set $PF_PCI mode switchdev
+ip link add br0 type bridge
+ip link set br0 up
+ip link set $PF_DEV master br0
+ip link set $PF_DEV up
+echo 1 > /sys/class/net/$PF_DEV/device/sriov_numvfs
+ip link set $VF1 up
+ip link set $VF1_PR master br0
+ip link set $VF1_PR up
+ip link add link $VF1 name vlan100 type vlan id 100
+ip addr add $VLAN_IP/$MASK dev vlan100
+ip link set vlan100 up
 
-Fix this by checking the return value of ice_get_vf_vsi everywhere.
+On link partner:
+ip link add link $PF name vlan100 type vlan id 100
+ip addr add $PEER_VLAN_IP/$MASK dev vlan100
+ip link set vlan100 up
+ping $VLAN_IP
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Ping fails.
+
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_devlink.c  |  5 ++-
- drivers/net/ethernet/intel/ice/ice_repr.c     |  7 +++-
- drivers/net/ethernet/intel/ice/ice_sriov.c    | 32 +++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 28 +++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |  5 +++
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  7 +++-
- 6 files changed, 77 insertions(+), 7 deletions(-)
+v2:
+   * Small corrections in commit msg
+   * Added reproduction steps
+   * Removed Fixes tag, added squash note
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index a230edb38466..4a9de59121d8 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -753,9 +753,12 @@ int ice_devlink_create_vf_port(struct ice_vf *vf)
- 
- 	pf = vf->pf;
- 	dev = ice_pf_to_dev(pf);
--	vsi = ice_get_vf_vsi(vf);
- 	devlink_port = &vf->devlink_port;
- 
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi)
-+		return -EINVAL;
-+
- 	attrs.flavour = DEVLINK_PORT_FLAVOUR_PCI_VF;
- 	attrs.pci_vf.pf = pf->hw.bus.func;
- 	attrs.pci_vf.vf = vf->vf_id;
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index 848f2adea563..a91b81c3088b 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -293,8 +293,13 @@ static int ice_repr_add(struct ice_vf *vf)
- 	struct ice_q_vector *q_vector;
- 	struct ice_netdev_priv *np;
- 	struct ice_repr *repr;
-+	struct ice_vsi *vsi;
- 	int err;
- 
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi)
-+		return -EINVAL;
-+
- 	repr = kzalloc(sizeof(*repr), GFP_KERNEL);
- 	if (!repr)
- 		return -ENOMEM;
-@@ -313,7 +318,7 @@ static int ice_repr_add(struct ice_vf *vf)
- 		goto err_alloc;
+This patch should be squashed with "ice: remove VLAN representor specific
+logs"
+ drivers/net/ethernet/intel/ice/ice_lib.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 70961c0343e7..b28fb8eacffb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -887,6 +887,9 @@ static void ice_set_dflt_vsi_ctx(struct ice_hw *hw, struct ice_vsi_ctx *ctxt)
+ 			(ICE_AQ_VSI_OUTER_TAG_VLAN_8100 <<
+ 			 ICE_AQ_VSI_OUTER_TAG_TYPE_S) &
+ 			ICE_AQ_VSI_OUTER_TAG_TYPE_M;
++		ctxt->info.outer_vlan_flags |=
++			FIELD_PREP(ICE_AQ_VSI_OUTER_VLAN_EMODE_M,
++				   ICE_AQ_VSI_OUTER_VLAN_EMODE_NOTHING);
  	}
- 
--	repr->src_vsi = ice_get_vf_vsi(vf);
-+	repr->src_vsi = vsi;
- 	repr->vf = vf;
- 	vf->repr = repr;
- 	np = netdev_priv(repr->netdev);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 0c438219f7a3..bb1721f1321d 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -46,7 +46,12 @@ static void ice_free_vf_entries(struct ice_pf *pf)
-  */
- static void ice_vf_vsi_release(struct ice_vf *vf)
- {
--	ice_vsi_release(ice_get_vf_vsi(vf));
-+	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
-+
-+	if (WARN_ON(!vsi))
-+		return;
-+
-+	ice_vsi_release(vsi);
- 	ice_vf_invalidate_vsi(vf);
- }
- 
-@@ -104,6 +109,8 @@ static void ice_dis_vf_mappings(struct ice_vf *vf)
- 
- 	hw = &pf->hw;
- 	vsi = ice_get_vf_vsi(vf);
-+	if (WARN_ON(!vsi))
-+		return;
- 
- 	dev = ice_pf_to_dev(pf);
- 	wr32(hw, VPINT_ALLOC(vf->vf_id), 0);
-@@ -341,6 +348,9 @@ static void ice_ena_vf_q_mappings(struct ice_vf *vf, u16 max_txq, u16 max_rxq)
- 	struct ice_hw *hw = &vf->pf->hw;
- 	u32 reg;
- 
-+	if (WARN_ON(!vsi))
-+		return;
-+
- 	/* set regardless of mapping mode */
- 	wr32(hw, VPLAN_TXQ_MAPENA(vf->vf_id), VPLAN_TXQ_MAPENA_TX_ENA_M);
- 
-@@ -386,6 +396,9 @@ static void ice_ena_vf_mappings(struct ice_vf *vf)
- {
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 
-+	if (WARN_ON(!vsi))
-+		return;
-+
- 	ice_ena_vf_msix_mappings(vf);
- 	ice_ena_vf_q_mappings(vf, vsi->alloc_txq, vsi->alloc_rxq);
- }
-@@ -1128,6 +1141,8 @@ static struct ice_vf *ice_get_vf_from_pfq(struct ice_pf *pf, u16 pfq)
- 		u16 rxq_idx;
- 
- 		vsi = ice_get_vf_vsi(vf);
-+		if (!vsi)
-+			continue;
- 
- 		ice_for_each_rxq(vsi, rxq_idx)
- 			if (vsi->rxq_map[rxq_idx] == pfq) {
-@@ -1521,8 +1536,15 @@ static int ice_calc_all_vfs_min_tx_rate(struct ice_pf *pf)
- static bool
- ice_min_tx_rate_oversubscribed(struct ice_vf *vf, int min_tx_rate)
- {
--	int link_speed_mbps = ice_get_link_speed_mbps(ice_get_vf_vsi(vf));
--	int all_vfs_min_tx_rate = ice_calc_all_vfs_min_tx_rate(vf->pf);
-+	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
-+	int all_vfs_min_tx_rate;
-+	int link_speed_mbps;
-+
-+	if (WARN_ON(!vsi))
-+		return false;
-+
-+	link_speed_mbps = ice_get_link_speed_mbps(vsi);
-+	all_vfs_min_tx_rate = ice_calc_all_vfs_min_tx_rate(vf->pf);
- 
- 	/* this VF's previous rate is being overwritten */
- 	all_vfs_min_tx_rate -= vf->min_tx_rate;
-@@ -1566,6 +1588,10 @@ ice_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 		goto out_put_vf;
- 
- 	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		ret = -EINVAL;
-+		goto out_put_vf;
-+	}
- 
- 	/* when max_tx_rate is zero that means no max Tx rate limiting, so only
- 	 * check if max_tx_rate is non-zero
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 6578059d9479..aefd66a4db80 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -220,8 +220,10 @@ static void ice_vf_clear_counters(struct ice_vf *vf)
- {
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 
-+	if (vsi)
-+		vsi->num_vlan = 0;
-+
- 	vf->num_mac = 0;
--	vsi->num_vlan = 0;
- 	memset(&vf->mdd_tx_events, 0, sizeof(vf->mdd_tx_events));
- 	memset(&vf->mdd_rx_events, 0, sizeof(vf->mdd_rx_events));
- }
-@@ -251,6 +253,9 @@ static int ice_vf_rebuild_vsi(struct ice_vf *vf)
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 	struct ice_pf *pf = vf->pf;
- 
-+	if (WARN_ON(!vsi))
-+		return -EINVAL;
-+
- 	if (ice_vsi_rebuild(vsi, true)) {
- 		dev_err(ice_pf_to_dev(pf), "failed to rebuild VF %d VSI\n",
- 			vf->vf_id);
-@@ -514,6 +519,10 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 	ice_trigger_vf_reset(vf, flags & ICE_VF_RESET_VFLR, false);
- 
- 	vsi = ice_get_vf_vsi(vf);
-+	if (WARN_ON(!vsi)) {
-+		err = -EIO;
-+		goto out_unlock;
-+	}
- 
- 	ice_dis_vf_qs(vf);
- 
-@@ -572,6 +581,11 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 
- 	vf->vf_ops->post_vsi_rebuild(vf);
- 	vsi = ice_get_vf_vsi(vf);
-+	if (WARN_ON(!vsi)) {
-+		err = -EINVAL;
-+		goto out_unlock;
-+	}
-+
- 	ice_eswitch_update_repr(vsi);
- 	ice_eswitch_replay_vf_mac_rule(vf);
- 
-@@ -610,6 +624,9 @@ void ice_dis_vf_qs(struct ice_vf *vf)
- {
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 
-+	if (WARN_ON(!vsi))
-+		return;
-+
- 	ice_vsi_stop_lan_tx_rings(vsi, ICE_NO_RESET, vf->vf_id);
- 	ice_vsi_stop_all_rx_rings(vsi);
- 	ice_set_vf_state_qs_dis(vf);
-@@ -790,6 +807,9 @@ static int ice_vf_rebuild_host_mac_cfg(struct ice_vf *vf)
- 	u8 broadcast[ETH_ALEN];
- 	int status;
- 
-+	if (WARN_ON(!vsi))
-+		return -EINVAL;
-+
- 	if (ice_is_eswitch_mode_switchdev(vf->pf))
- 		return 0;
- 
-@@ -875,6 +895,9 @@ static int ice_vf_rebuild_host_tx_rate_cfg(struct ice_vf *vf)
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 	int err;
- 
-+	if (WARN_ON(!vsi))
-+		return -EINVAL;
-+
- 	if (vf->min_tx_rate) {
- 		err = ice_set_min_bw_limit(vsi, (u64)vf->min_tx_rate * 1000);
- 		if (err) {
-@@ -938,6 +961,9 @@ void ice_vf_rebuild_host_cfg(struct ice_vf *vf)
- 	struct device *dev = ice_pf_to_dev(vf->pf);
- 	struct ice_vsi *vsi = ice_get_vf_vsi(vf);
- 
-+	if (WARN_ON(!vsi))
-+		return;
-+
- 	ice_vf_set_host_trust_cfg(vf);
- 
- 	if (ice_vf_rebuild_host_mac_cfg(vf))
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 2889e050a4c9..5405a0e752cf 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -2392,6 +2392,11 @@ static int ice_vc_ena_vlan_stripping(struct ice_vf *vf)
- 	}
- 
- 	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		goto error_param;
-+	}
-+
- 	if (vsi->inner_vlan_ops.ena_stripping(vsi, ETH_P_8021Q))
- 		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index 8e38ee2faf58..b74ccbd1591a 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -1344,7 +1344,12 @@ static void ice_vf_fdir_dump_info(struct ice_vf *vf)
- 	pf = vf->pf;
- 	hw = &pf->hw;
- 	dev = ice_pf_to_dev(pf);
--	vf_vsi = pf->vsi[vf->lan_vsi_idx];
-+	vf_vsi = ice_get_vf_vsi(vf);
-+	if (!vf_vsi) {
-+		dev_dbg(dev, "VF %d: invalid VSI pointer\n", vf->vf_id);
-+		return;
-+	}
-+
- 	vsi_num = ice_get_hw_vsi_num(hw, vf_vsi->idx);
- 
- 	fd_size = rd32(hw, VSIQF_FD_SIZE(vsi_num));
+ 	/* Have 1:1 UP mapping for both ingress/egress tables */
+ 	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
 -- 
 2.35.1
 
