@@ -1,49 +1,56 @@
-From: Jiaqing Zhao <jiaqing.zhao@linux.intel.com>
-Date: Sat, 28 May 2022 20:31:23 +0800
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: Fix typos in comments
-In-Reply-To: <20220528123123.1851519-1-jiaqing.zhao@linux.intel.com>
-References: <20220528123123.1851519-1-jiaqing.zhao@linux.intel.com>
-Message-ID: <20220528123123.1851519-4-jiaqing.zhao@linux.intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+Date: Mon, 30 May 2022 09:47:17 +0200
+Subject: [Intel-wired-lan] [PATCH v3 3/3] igb_main: Assign random MAC
+ address instead of fail in case of invalid one
+In-Reply-To: <20220530031941.44006-1-lianglixuehao@126.com>
+References: <d50b23b1-38b5-2522-cbf4-c360c0ed05cd@molgen.mpg.de>
+ <20220530031941.44006-1-lianglixuehao@126.com>
+Message-ID: <ade6c030-b1c5-e359-7321-fa21310a10f3@molgen.mpg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-"VLAN filter" was misspelled as "VLAN filer" in some comments.
+Dear Lixue,
 
-Signed-off-by: Jiaqing Zhao <jiaqing.zhao@linux.intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c  | 2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Am 30.05.22 um 05:19 schrieb Lixue Liang:
+> From: Lixue Liang <lianglixue@greatwall.com.cn>
+> 
+> In some cases, when the user uses igb_set_eeprom to modify the MAC
+> address to be invalid, the igb driver will fail to load. If there is no
+> network card device, the user must modify it to a valid MAC address by
+> other means.
+> 
+> Since the MAC address can be modified, then add a random valid MAC address
+> to replace the invalid MAC address in the driver can be workable, it can
+> continue to finish the loading, and output the relevant log reminder.
+> 
+> Signed-off-by: Lixue Liang <lianglixue@greatwall.com.cn>
+> ---
+>   drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 746233befade..40f43534a3af 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -3362,7 +3362,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>   		eth_hw_addr_random(netdev);
+>   		ether_addr_copy(hw->mac.addr, netdev->dev_addr);
+>   		dev_err(&pdev->dev,
+> -			"Invalid MAC Address, already assigned random MAC Address\n");
+> +			"Invalid MAC address, already assigned random MAC address\n");
+>   	}
+>   
+>   	igb_set_default_mac_filter(adapter);
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-index 95c92fe890a1..100388968e4d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-@@ -879,7 +879,7 @@ static s32 ixgbe_set_vfta_82598(struct ixgbe_hw *hw, u32 vlan, u32 vind,
-  *  ixgbe_clear_vfta_82598 - Clear VLAN filter table
-  *  @hw: pointer to hardware structure
-  *
-- *  Clears the VLAN filer table, and the VMDq index associated with the filter
-+ *  Clears the VLAN filter table, and the VMDq index associated with the filter
-  **/
- static s32 ixgbe_clear_vfta_82598(struct ixgbe_hw *hw)
- {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 4c26c4b92f07..38c4609bd429 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3237,7 +3237,7 @@ s32 ixgbe_set_vfta_generic(struct ixgbe_hw *hw, u32 vlan, u32 vind,
-  *  ixgbe_clear_vfta_generic - Clear VLAN filter table
-  *  @hw: pointer to hardware structure
-  *
-- *  Clears the VLAN filer table, and the VMDq index associated with the filter
-+ *  Clears the VLAN filter table, and the VMDq index associated with the filter
-  **/
- s32 ixgbe_clear_vfta_generic(struct ixgbe_hw *hw)
- {
--- 
-2.34.1
+The diff does not do what is described in the commit message. I also 
+just noticed, that it was spelled ?MAC Address? before, so it would be 
+fine for me if you send in this commit separately (but with the correct 
+commit message).
 
+
+Kind regards,
+
+Paul
