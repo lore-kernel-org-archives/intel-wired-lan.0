@@ -1,10 +1,10 @@
 From: Lixue Liang <lianglixuehao@126.com>
-Date: Mon, 30 May 2022 03:19:41 +0000
-Subject: [Intel-wired-lan] [PATCH v3 3/3] igb_main: Assign random MAC
- address instead of fail in case of invalid one
+Date: Mon, 30 May 2022 10:58:34 +0000
+Subject: [Intel-wired-lan] [PATCH v3] igb_main: Assign random MAC address
+ instead of fail in case of invalid one
 In-Reply-To: <d50b23b1-38b5-2522-cbf4-c360c0ed05cd@molgen.mpg.de>
 References: <d50b23b1-38b5-2522-cbf4-c360c0ed05cd@molgen.mpg.de>
-Message-ID: <20220530031941.44006-1-lianglixuehao@126.com>
+Message-ID: <20220530105834.97175-1-lianglixuehao@126.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,18 +24,23 @@ continue to finish the loading, and output the relevant log reminder.
 
 Signed-off-by: Lixue Liang <lianglixue@greatwall.com.cn>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 746233befade..40f43534a3af 100644
+index 34b33b21e0dc..40f43534a3af 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3362,7 +3362,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		eth_hw_addr_random(netdev);
- 		ether_addr_copy(hw->mac.addr, netdev->dev_addr);
- 		dev_err(&pdev->dev,
--			"Invalid MAC Address, already assigned random MAC Address\n");
+@@ -3359,9 +3359,10 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	eth_hw_addr_set(netdev, hw->mac.addr);
+ 
+ 	if (!is_valid_ether_addr(netdev->dev_addr)) {
+-		dev_err(&pdev->dev, "Invalid MAC Address\n");
+-		err = -EIO;
+-		goto err_eeprom;
++		eth_hw_addr_random(netdev);
++		ether_addr_copy(hw->mac.addr, netdev->dev_addr);
++		dev_err(&pdev->dev,
 +			"Invalid MAC address, already assigned random MAC address\n");
  	}
  
