@@ -1,146 +1,42 @@
-From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
-Date: Mon, 30 May 2022 08:59:44 +0000
-Subject: [Intel-wired-lan] [PATCH net v1 2/2] iavf: Fix call trace
- during removing iavf driver
-In-Reply-To: <9ff865cc-92f0-b719-b2c1-bb6e0ec53a27@molgen.mpg.de>
-References: <20220527080919.2370640-1-jedrzej.jagielski@intel.com>
- <20220527080919.2370640-2-jedrzej.jagielski@intel.com>
- <9ff865cc-92f0-b719-b2c1-bb6e0ec53a27@molgen.mpg.de>
-Message-ID: <DM6PR11MB273126FB9449F334AF154319F0DD9@DM6PR11MB2731.namprd11.prod.outlook.com>
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Date: Mon, 30 May 2022 13:25:04 +0200
+Subject: [Intel-wired-lan] [PATCH net] ice: disable stripping in default
+ VSI ctx
+In-Reply-To: <8fd71e27-7f9a-fab8-62c5-b16839b882f5@intel.com>
+References: <20220527115131.7413-1-marcin.szycik@linux.intel.com>
+ <8fd71e27-7f9a-fab8-62c5-b16839b882f5@intel.com>
+Message-ID: <d3493e8f-27d0-5a11-173f-74907b5410ff@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Paul,
-
->Dear Jedrzej, dear Grzegorz,
->
->
->Am 27.05.22 um 10:09 schrieb Jedrzej Jagielski:
->> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
->
->For the summary, maybe be more specific about the action:
->
-> > Do not modify queue number when removing iavf driver
->
->> If VF has configured tc qdisc with number of queues less than original
->> set and then the driver went in removing process, tc resources are also
->
->s/went/goes/
->
->> releasing. Attempt of modify real num tx/rx in this state is causing
->
->released?
->
->> call trace, because kernel is trying to releasing uninitialized queues.
->
->to release
->
->Please add parts of the call trace.
->
->> 
->> Fix by not modifying the number of queues when removing a driver.
->
->Fix *it* by ?
-
-Thank you for your notices. Commit msg will be corrected.
-
->
->
->Kind regards,
->
->Paul
->
->> 
->> Fixes: d5b33d024496 ("i40evf: add ndo_setup_tc callback to i40evf")
->> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
->> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
->> ---
->>   drivers/net/ethernet/intel/iavf/iavf_main.c | 3 +++
->>   1 file changed, 3 insertions(+)
->> 
->> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
->> index eec74ee5fc19..1b46a97f4ad6 100644
->> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
->> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
->> @@ -3478,6 +3478,9 @@ static int __iavf_setup_tc(struct net_device *netdev, void *type_data)
->>   		}
->>   	}
->>   exit:
->> +	if (iavf_is_remove_in_progress(adapter))
->> +		return 0;
->> +
->>   	return ret;
->>   }
->>   
-
-Best regards,
-Jedrzej
 
 
------Original Message-----
-From: Paul Menzel <pmenzel@molgen.mpg.de> 
-Sent: pi?tek, 27 maja 2022 14:21
-To: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>; Szczurek, GrzegorzX <grzegorzx.szczurek@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [PATCH net v1 2/2] iavf: Fix call trace during removing iavf driver
-
-Dear Jedrzej, dear Grzegorz,
-
-
-Am 27.05.22 um 10:09 schrieb Jedrzej Jagielski:
-> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-
-For the summary, maybe be more specific about the action:
-
- > Do not modify queue number when removing iavf driver
-
-> If VF has configured tc qdisc with number of queues less than original
-> set and then the driver went in removing process, tc resources are also
-
-s/went/goes/
-
-> releasing. Attempt of modify real num tx/rx in this state is causing
-
-released?
-
-> call trace, because kernel is trying to releasing uninitialized queues.
-
-to release
-
-Please add parts of the call trace.
-
+On 27-May-22 18:31, Tony Nguyen wrote:
 > 
-> Fix by not modifying the number of queues when removing a driver.
-
-Fix *it* by ?
-
-
-Kind regards,
-
-Paul
-
 > 
-> Fixes: d5b33d024496 ("i40evf: add ndo_setup_tc callback to i40evf")
-> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
-> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-> ---
->   drivers/net/ethernet/intel/iavf/iavf_main.c | 3 +++
->   1 file changed, 3 insertions(+)
+> On 5/27/2022 4:51 AM, Marcin Szycik wrote:
 > 
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index eec74ee5fc19..1b46a97f4ad6 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -3478,6 +3478,9 @@ static int __iavf_setup_tc(struct net_device *netdev, void *type_data)
->   		}
->   	}
->   exit:
-> +	if (iavf_is_remove_in_progress(adapter))
-> +		return 0;
-> +
->   	return ret;
->   }
->   
+> This fixes commit doesn't exist in net, so it shouldn't be targeting net. It looks like the patch this is fixing is still on Intel Wired LAN [1]. Perhaps it would be better to squash it with that patch as a v2?
+
+You're right, sorry I didn't notice this. I will send next version with net-next tag and a squash note.
+
+>> From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>>
+>> In case when driver is in eswitch mode, having VLAN stripping enabled
+>> causes failure in communication. All VLAN configuration commands are
+>> blocked, because of that VF driver can't disable VLAN stripping at
+>> initialization. It leads to the situation when VLAN stripping on VF VSI
+>> is on, but in kernel it is off.
+>>
+>> To prevent this, set VLAN stripping to disabled in VSI initialization.
+>> It doesn't break other usecases, because it is set according to kernel
+>> settings.
+>>
+>> Fixes: f09901aa554a ("ice: remove VLAN representor specific ops")
+>> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+> 
+> [1] https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20220425062756.14987-3-michal.swiatkowski at linux.intel.com/
