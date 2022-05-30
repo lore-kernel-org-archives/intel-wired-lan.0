@@ -1,56 +1,146 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Mon, 30 May 2022 09:47:17 +0200
-Subject: [Intel-wired-lan] [PATCH v3 3/3] igb_main: Assign random MAC
- address instead of fail in case of invalid one
-In-Reply-To: <20220530031941.44006-1-lianglixuehao@126.com>
-References: <d50b23b1-38b5-2522-cbf4-c360c0ed05cd@molgen.mpg.de>
- <20220530031941.44006-1-lianglixuehao@126.com>
-Message-ID: <ade6c030-b1c5-e359-7321-fa21310a10f3@molgen.mpg.de>
+From: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>
+Date: Mon, 30 May 2022 08:59:44 +0000
+Subject: [Intel-wired-lan] [PATCH net v1 2/2] iavf: Fix call trace
+ during removing iavf driver
+In-Reply-To: <9ff865cc-92f0-b719-b2c1-bb6e0ec53a27@molgen.mpg.de>
+References: <20220527080919.2370640-1-jedrzej.jagielski@intel.com>
+ <20220527080919.2370640-2-jedrzej.jagielski@intel.com>
+ <9ff865cc-92f0-b719-b2c1-bb6e0ec53a27@molgen.mpg.de>
+Message-ID: <DM6PR11MB273126FB9449F334AF154319F0DD9@DM6PR11MB2731.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Lixue,
+Hello Paul,
 
-Am 30.05.22 um 05:19 schrieb Lixue Liang:
-> From: Lixue Liang <lianglixue@greatwall.com.cn>
-> 
-> In some cases, when the user uses igb_set_eeprom to modify the MAC
-> address to be invalid, the igb driver will fail to load. If there is no
-> network card device, the user must modify it to a valid MAC address by
-> other means.
-> 
-> Since the MAC address can be modified, then add a random valid MAC address
-> to replace the invalid MAC address in the driver can be workable, it can
-> continue to finish the loading, and output the relevant log reminder.
-> 
-> Signed-off-by: Lixue Liang <lianglixue@greatwall.com.cn>
-> ---
->   drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 746233befade..40f43534a3af 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -3362,7 +3362,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->   		eth_hw_addr_random(netdev);
->   		ether_addr_copy(hw->mac.addr, netdev->dev_addr);
->   		dev_err(&pdev->dev,
-> -			"Invalid MAC Address, already assigned random MAC Address\n");
-> +			"Invalid MAC address, already assigned random MAC address\n");
->   	}
->   
->   	igb_set_default_mac_filter(adapter);
+>Dear Jedrzej, dear Grzegorz,
+>
+>
+>Am 27.05.22 um 10:09 schrieb Jedrzej Jagielski:
+>> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+>
+>For the summary, maybe be more specific about the action:
+>
+> > Do not modify queue number when removing iavf driver
+>
+>> If VF has configured tc qdisc with number of queues less than original
+>> set and then the driver went in removing process, tc resources are also
+>
+>s/went/goes/
+>
+>> releasing. Attempt of modify real num tx/rx in this state is causing
+>
+>released?
+>
+>> call trace, because kernel is trying to releasing uninitialized queues.
+>
+>to release
+>
+>Please add parts of the call trace.
+>
+>> 
+>> Fix by not modifying the number of queues when removing a driver.
+>
+>Fix *it* by ?
 
-The diff does not do what is described in the commit message. I also 
-just noticed, that it was spelled ?MAC Address? before, so it would be 
-fine for me if you send in this commit separately (but with the correct 
-commit message).
+Thank you for your notices. Commit msg will be corrected.
+
+>
+>
+>Kind regards,
+>
+>Paul
+>
+>> 
+>> Fixes: d5b33d024496 ("i40evf: add ndo_setup_tc callback to i40evf")
+>> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+>> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+>> ---
+>>   drivers/net/ethernet/intel/iavf/iavf_main.c | 3 +++
+>>   1 file changed, 3 insertions(+)
+>> 
+>> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+>> index eec74ee5fc19..1b46a97f4ad6 100644
+>> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+>> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+>> @@ -3478,6 +3478,9 @@ static int __iavf_setup_tc(struct net_device *netdev, void *type_data)
+>>   		}
+>>   	}
+>>   exit:
+>> +	if (iavf_is_remove_in_progress(adapter))
+>> +		return 0;
+>> +
+>>   	return ret;
+>>   }
+>>   
+
+Best regards,
+Jedrzej
+
+
+-----Original Message-----
+From: Paul Menzel <pmenzel@molgen.mpg.de> 
+Sent: pi?tek, 27 maja 2022 14:21
+To: Jagielski, Jedrzej <jedrzej.jagielski@intel.com>; Szczurek, GrzegorzX <grzegorzx.szczurek@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] [PATCH net v1 2/2] iavf: Fix call trace during removing iavf driver
+
+Dear Jedrzej, dear Grzegorz,
+
+
+Am 27.05.22 um 10:09 schrieb Jedrzej Jagielski:
+> From: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+
+For the summary, maybe be more specific about the action:
+
+ > Do not modify queue number when removing iavf driver
+
+> If VF has configured tc qdisc with number of queues less than original
+> set and then the driver went in removing process, tc resources are also
+
+s/went/goes/
+
+> releasing. Attempt of modify real num tx/rx in this state is causing
+
+released?
+
+> call trace, because kernel is trying to releasing uninitialized queues.
+
+to release
+
+Please add parts of the call trace.
+
+> 
+> Fix by not modifying the number of queues when removing a driver.
+
+Fix *it* by ?
 
 
 Kind regards,
 
 Paul
+
+> 
+> Fixes: d5b33d024496 ("i40evf: add ndo_setup_tc callback to i40evf")
+> Signed-off-by: Grzegorz Szczurek <grzegorzx.szczurek@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> ---
+>   drivers/net/ethernet/intel/iavf/iavf_main.c | 3 +++
+>   1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index eec74ee5fc19..1b46a97f4ad6 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -3478,6 +3478,9 @@ static int __iavf_setup_tc(struct net_device *netdev, void *type_data)
+>   		}
+>   	}
+>   exit:
+> +	if (iavf_is_remove_in_progress(adapter))
+> +		return 0;
+> +
+>   	return ret;
+>   }
+>   
