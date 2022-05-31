@@ -1,75 +1,51 @@
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-Date: Mon, 30 May 2022 18:51:22 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v2] ice: disable stripping in
- default VSI ctx
-Message-ID: <20220530165122.8804-1-marcin.szycik@linux.intel.com>
+From: Jankowski, Konrad0 <konrad0.jankowski@intel.com>
+Date: Tue, 31 May 2022 08:37:40 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v4] iavf: Add waiting for
+ response from PF in set mac
+In-Reply-To: <20220520100713.6632-1-mateusz.palczewski@intel.com>
+References: <20220520100713.6632-1-mateusz.palczewski@intel.com>
+Message-ID: <DM8PR11MB5621417A1F36B648A0E26946ABDC9@DM8PR11MB5621.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 
-In case when driver is in eswitch mode, having VLAN stripping enabled
-causes failure in communication. All VLAN configuration commands are
-blocked. Because of that VF driver can't disable VLAN stripping at
-initialization. It leads to the situation when VLAN stripping on VF VSI
-is on, but in kernel it is off.
 
-To prevent this, disable VLAN stripping in VSI initialization. It doesn't
-break other usecases, because it is set according to kernel settings.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Mateusz Palczewski
+> Sent: Friday, May 20, 2022 12:07 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net-next v4] iavf: Add waiting for response
+> from PF in set mac
+> 
+> Make iavf_set_mac synchronous by waiting for a response from a PF.
+> Without this iavf_set_mac is always returning success even though set_mac
+> can be rejected by a PF.
+> This ensures that when set_mac exits netdev MAC is updated.
+> This is needed for sending ARPs with correct MAC after changing VF's MAC.
+> This is also needed by bonding module.
+> 
+> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> ---
+>  v4: Rewrited some code to avoid passing a value as a condition
+>  v3: Resent the patch to apply to next-queue
+>  v2: Changed __IAVF_IN_CRITICAL_TASK to crit_lock
+> ---
+>  drivers/net/ethernet/intel/iavf/iavf.h        |   7 +-
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 127 +++++++++++++++---
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  61 ++++++++-
+>  3 files changed, 174 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf.h
+> b/drivers/net/ethernet/intel/iavf/iavf.h
+> index 49aed3e..fda1198 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf.h
+> +++ b/drivers/net/ethernet/intel/iavf/iavf.h
+> @@ -146,7 +146,8 @@ struct iavf_mac_filter {
 
-To reproduce:
-modprobe ice
-devlink dev eswitch set $PF_PCI mode switchdev
-ip link add br0 type bridge
-ip link set br0 up
-ip link set $PF_DEV master br0
-ip link set $PF_DEV up
-echo 1 > /sys/class/net/$PF_DEV/device/sriov_numvfs
-ip link set $VF1 up
-ip link set $VF1_PR master br0
-ip link set $VF1_PR up
-ip link add link $VF1 name vlan100 type vlan id 100
-ip addr add $VLAN_IP/$MASK dev vlan100
-ip link set vlan100 up
-
-On link partner:
-ip link add link $PF name vlan100 type vlan id 100
-ip addr add $PEER_VLAN_IP/$MASK dev vlan100
-ip link set vlan100 up
-ping $VLAN_IP
-
-Ping fails.
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
----
-v2:
-   * Small corrections in commit msg
-   * Added reproduction steps
-   * Removed Fixes tag, added squash note
-
-This patch should be squashed with "ice: remove VLAN representor specific
-logs"
- drivers/net/ethernet/intel/ice/ice_lib.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 70961c0343e7..b28fb8eacffb 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -887,6 +887,9 @@ static void ice_set_dflt_vsi_ctx(struct ice_hw *hw, struct ice_vsi_ctx *ctxt)
- 			(ICE_AQ_VSI_OUTER_TAG_VLAN_8100 <<
- 			 ICE_AQ_VSI_OUTER_TAG_TYPE_S) &
- 			ICE_AQ_VSI_OUTER_TAG_TYPE_M;
-+		ctxt->info.outer_vlan_flags |=
-+			FIELD_PREP(ICE_AQ_VSI_OUTER_VLAN_EMODE_M,
-+				   ICE_AQ_VSI_OUTER_VLAN_EMODE_NOTHING);
- 	}
- 	/* Have 1:1 UP mapping for both ingress/egress tables */
- 	table |= ICE_UP_TABLE_TRANSLATE(0, 0);
--- 
-2.35.1
-
+Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
