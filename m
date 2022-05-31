@@ -1,184 +1,70 @@
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-Date: Tue, 31 May 2022 16:52:16 +0200
-Subject: [Intel-wired-lan] [PATCH net v1 1/2] ice: Add error handling
- for queue config fail
-In-Reply-To: <20220531131835.3614-1-mateusz.palczewski@intel.com>
-References: <20220531131835.3614-1-mateusz.palczewski@intel.com>
-Message-ID: <31dc2a61-5538-b9c6-ea16-a238fc2143d3@molgen.mpg.de>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Tue, 31 May 2022 13:36:14 -0700
+Subject: [Intel-wired-lan] [PATCH v3] igb_main: Assign random MAC
+ address instead of fail in case of invalid one
+In-Reply-To: <20220530105834.97175-1-lianglixuehao@126.com>
+References: <d50b23b1-38b5-2522-cbf4-c360c0ed05cd@molgen.mpg.de>
+ <20220530105834.97175-1-lianglixuehao@126.com>
+Message-ID: <15b0507f-c810-8a75-e883-b23313a7badd@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dear Mateusz, dear Przemyslaw,
 
 
-Thank you for the patch.
+On 5/30/2022 3:58 AM, Lixue Liang wrote:
 
-Am 31.05.22 um 15:18 schrieb Mateusz Palczewski:
-> From: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+nit: Please use just the driver name in the title, not the file being 
+modified. i.e. igb: not igb_main:
+
+Also, as Paul pointed out earlier, each time you do a revision, please 
+increment the vX number and please include a changelog under the '---' 
+to make review easier.
+
+> From: Lixue Liang <lianglixue@greatwall.com.cn>
 > 
-> Disable VF's RX/TX queues, when VIRTCHNL_OP_CONFIG_VSI_QUEUES fail.
-> Not disabling them might lead to scenario, where PF driver leaves VF
-> queues enabled, when VF's VSI failed queue config.
-> In this scenario VF should not have RX/TX queues enabled. If PF failed
-> to setup VF's queues, VF will reset due to TX timeouts in VF driver.
-
-Nit: The verb is spelled with a space: to set up
-
-> Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-> Suggested-by: Slawomir Laba <slawomirx.laba@intel.com>
+> In some cases, when the user uses igb_set_eeprom to modify the MAC
+> address to be invalid, the igb driver will fail to load. If there is no
+> network card device, the user must modify it to a valid MAC address by
+> other means.
+> 
+> Since the MAC address can be modified, then add a random valid MAC address
+> to replace the invalid MAC address in the driver can be workable, it can
+> continue to finish the loading, and output the relevant log reminder.
+> 
+> Signed-off-by: Lixue Liang <lianglixue@greatwall.com.cn>
 > ---
->   drivers/net/ethernet/intel/ice/ice_virtchnl.c | 53 +++++++++----------
->   1 file changed, 26 insertions(+), 27 deletions(-)
+>   drivers/net/ethernet/intel/igb/igb_main.c | 7 ++++---
+>   1 file changed, 4 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> index 1d9b84c..4547bc1 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> @@ -1569,35 +1569,27 @@ static int ice_vc_cfg_irq_map_msg(struct ice_vf *vf, u8 *msg)
->    */
->   static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
->   {
-> -	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
->   	struct virtchnl_vsi_queue_config_info *qci =
->   	    (struct virtchnl_vsi_queue_config_info *)msg;
->   	struct virtchnl_queue_pair_info *qpi;
->   	struct ice_pf *pf = vf->pf;
->   	struct ice_vsi *vsi;
-> -	int i, q_idx;
-> +	int i = -1, q_idx;
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 34b33b21e0dc..40f43534a3af 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -3359,9 +3359,10 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>   	eth_hw_addr_set(netdev, hw->mac.addr);
+>   
+>   	if (!is_valid_ether_addr(netdev->dev_addr)) {
+> -		dev_err(&pdev->dev, "Invalid MAC Address\n");
+> -		err = -EIO;
+> -		goto err_eeprom;
+> +		eth_hw_addr_random(netdev);
+> +		ether_addr_copy(hw->mac.addr, netdev->dev_addr);
+> +		dev_err(&pdev->dev,
+> +			"Invalid MAC address, already assigned random MAC address\n");
 
-Could you please add a comment to the commit message, why the for loop 
-variable is initialized to -1. Reading a bit through the diff, it looks 
-like `i` is not exclusively used as a loop variable. Maybe you could 
-also add a cleanup patch, renaming the variable, or adding another one.
+I prefer the message as Alex suggested [1]: "Invalid MAC address. 
+Assigned random MAC address". "already assigned random MAC address" 
+seems a bit confusing to me.
 
->   
-> -	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
-> -		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states))
->   		goto error_param;
-> -	}
->   
-> -	if (!ice_vc_isvalid_vsi_id(vf, qci->vsi_id)) {
-> -		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +	if (!ice_vc_isvalid_vsi_id(vf, qci->vsi_id))
->   		goto error_param;
-> -	}
->   
->   	vsi = ice_get_vf_vsi(vf);
-> -	if (!vsi) {
-> -		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +	if (!vsi)
->   		goto error_param;
-> -	}
->   
->   	if (qci->num_queue_pairs > ICE_MAX_RSS_QS_PER_VF ||
->   	    qci->num_queue_pairs > min_t(u16, vsi->alloc_txq, vsi->alloc_rxq)) {
->   		dev_err(ice_pf_to_dev(pf), "VF-%d requesting more than supported number of queues: %d\n",
->   			vf->vf_id, min_t(u16, vsi->alloc_txq, vsi->alloc_rxq));
-> -		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
->   		goto error_param;
+Thanks,
+Tony
+
 >   	}
 >   
-> @@ -1610,7 +1602,6 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
->   		    !ice_vc_isvalid_ring_len(qpi->txq.ring_len) ||
->   		    !ice_vc_isvalid_ring_len(qpi->rxq.ring_len) ||
->   		    !ice_vc_isvalid_q_id(vf, qci->vsi_id, qpi->txq.queue_id)) {
-> -			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
->   			goto error_param;
->   		}
->   
-> @@ -1620,7 +1611,6 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
->   		 * for selected "vsi"
->   		 */
->   		if (q_idx >= vsi->alloc_txq || q_idx >= vsi->alloc_rxq) {
-> -			v_ret = VIRTCHNL_STATUS_ERR_PARAM;
->   			goto error_param;
->   		}
->   
-> @@ -1630,14 +1620,13 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
->   			vsi->tx_rings[i]->count = qpi->txq.ring_len;
->   
->   			/* Disable any existing queue first */
-> -			if (ice_vf_vsi_dis_single_txq(vf, vsi, q_idx)) {
-> -				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +			if (ice_vf_vsi_dis_single_txq(vf, vsi, q_idx))
->   				goto error_param;
-> -			}
->   
->   			/* Configure a queue with the requested settings */
->   			if (ice_vsi_cfg_single_txq(vsi, vsi->tx_rings, q_idx)) {
-> -				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +				dev_warn(ice_pf_to_dev(pf), "VF-%d failed to configure TX queue %d\n",
-> +					 vf->vf_id, i);
->   				goto error_param;
->   			}
->   		}
-> @@ -1651,17 +1640,13 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
->   
->   			if (qpi->rxq.databuffer_size != 0 &&
->   			    (qpi->rxq.databuffer_size > ((16 * 1024) - 128) ||
-> -			     qpi->rxq.databuffer_size < 1024)) {
-> -				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +			     qpi->rxq.databuffer_size < 1024))
->   				goto error_param;
-> -			}
->   			vsi->rx_buf_len = qpi->rxq.databuffer_size;
->   			vsi->rx_rings[i]->rx_buf_len = vsi->rx_buf_len;
->   			if (qpi->rxq.max_pkt_size > max_frame_size ||
-> -			    qpi->rxq.max_pkt_size < 64) {
-> -				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +			    qpi->rxq.max_pkt_size < 64)
->   				goto error_param;
-> -			}
->   
->   			vsi->max_frame = qpi->rxq.max_pkt_size;
->   			/* add space for the port VLAN since the VF driver is
-> @@ -1672,16 +1657,30 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
->   				vsi->max_frame += VLAN_HLEN;
->   
->   			if (ice_vsi_cfg_single_rxq(vsi, q_idx)) {
-> -				v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> +				dev_warn(ice_pf_to_dev(pf), "VF-%d failed to configure RX queue %d\n",
-> +					 vf->vf_id, i);
->   				goto error_param;
->   			}
->   		}
->   	}
->   
-> +	/* send the response to the VF */
-> +	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_VSI_QUEUES,
-> +				     VIRTCHNL_STATUS_SUCCESS, NULL, 0);
->   error_param:
-> +	/* disable whatever we can */
-> +	for (; i >= 0; i--) {
+>   	igb_set_default_mac_filter(adapter);
 
-With the rename, this could be then
-
-     for (i = new_variable_name; i =>0; i--) {
-
-> +		if (ice_vsi_ctrl_one_rx_ring(vsi, false, i, true))
-> +			dev_err(ice_pf_to_dev(pf), "VF-%d could not disable RX queue %d\n",
-> +				vf->vf_id, i);
-> +		if (ice_vf_vsi_dis_single_txq(vf, vsi, i))
-> +			dev_err(ice_pf_to_dev(pf), "VF-%d could not disable TX queue %d\n",
-> +				vf->vf_id, i);
-> +	}
-> +
->   	/* send the response to the VF */
-> -	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_VSI_QUEUES, v_ret,
-> -				     NULL, 0);
-> +	return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_VSI_QUEUES,
-> +				     VIRTCHNL_STATUS_ERR_PARAM, NULL, 0);
->   }
->   
->   /**
-
-
-Kind regards,
-
-Paul
+[1] 
+https://lore.kernel.org/netdev/ad8cf673c8e9e21cb2e7afeb5c7e66cc76a36995.camel at gmail.com/
