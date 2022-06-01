@@ -1,62 +1,159 @@
-From: Maciej W. Rozycki <macro@orcam.me.uk>
-Date: Sun, 1 May 2022 23:48:09 +0100 (BST)
-Subject: [Intel-wired-lan] [RFC v2 21/39] net: add HAS_IOPORT
- dependencies
-In-Reply-To: <20220429135108.2781579-36-schnelle@linux.ibm.com>
-References: <20220429135108.2781579-1-schnelle@linux.ibm.com>
- <20220429135108.2781579-36-schnelle@linux.ibm.com>
-Message-ID: <alpine.DEB.2.21.2205012324130.9383@angie.orcam.me.uk>
+From: kernel test robot <lkp@intel.com>
+Date: Wed, 01 Jun 2022 13:14:29 +0800
+Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
+ 09e545f7381459c015b6fa0cd0ac6f010ef8cc25
+Message-ID: <6296f5b5.t+nY23lzy9wUuusU%lkp@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 29 Apr 2022, Niklas Schnelle wrote:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
+branch HEAD: 09e545f7381459c015b6fa0cd0ac6f010ef8cc25  xen/netback: fix incorrect usage of RING_HAS_UNCONSUMED_REQUESTS()
 
-> In a future patch HAS_IOPORT=n will result in inb()/outb() and friends
-> not being declared. We thus need to add HAS_IOPORT as dependency for
-> those drivers using them. It also turns out that with HAS_IOPORT handled
-> explicitly HAMRADIO does not need the !S390 dependency and successfully
-> builds the bpqether driver.
-[...]
-> diff --git a/drivers/net/fddi/Kconfig b/drivers/net/fddi/Kconfig
-> index 846bf41c2717..fa3f1e0fe143 100644
-> --- a/drivers/net/fddi/Kconfig
-> +++ b/drivers/net/fddi/Kconfig
-> @@ -29,7 +29,7 @@ config DEFZA
->  
->  config DEFXX
->  	tristate "Digital DEFTA/DEFEA/DEFPA adapter support"
-> -	depends on FDDI && (PCI || EISA || TC)
-> +	depends on FDDI && (PCI || EISA || TC) && HAS_IOPORT
->  	help
->  	  This is support for the DIGITAL series of TURBOchannel (DEFTA),
->  	  EISA (DEFEA) and PCI (DEFPA) controllers which can connect you
+elapsed time: 949m
 
- NAK, this has to be sorted out differently (and I think we discussed it 
-before).
+configs tested: 128
+configs skipped: 3
 
- The driver works just fine with MMIO where available, so if `inb'/`outb' 
-do get removed, then only parts that rely on port I/O need to be disabled.  
-In fact there's already such provision there in drivers/net/fddi/defxx.c 
-for TURBOchannel systems (CONFIG_TC), which have no port I/O space either:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-#if defined(CONFIG_EISA) || defined(CONFIG_PCI)
-#define dfx_use_mmio bp->mmio
-#else
-#define dfx_use_mmio true
-#endif
+gcc tested configs:
+arm64                               defconfig
+arm64                            allyesconfig
+arm                              allmodconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+sh                  sh7785lcr_32bit_defconfig
+arm64                            alldefconfig
+sh                   sh7770_generic_defconfig
+sh                          lboxre2_defconfig
+powerpc                     pq2fads_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                     tqm8555_defconfig
+mips                       capcella_defconfig
+arm                           tegra_defconfig
+arm                        shmobile_defconfig
+sh                          rsk7201_defconfig
+xtensa                  nommu_kc705_defconfig
+arm                            zeus_defconfig
+alpha                            alldefconfig
+sparc                       sparc32_defconfig
+parisc64                         alldefconfig
+arc                           tb10x_defconfig
+sh                          sdk7786_defconfig
+arm                        realview_defconfig
+powerpc                     stx_gp3_defconfig
+powerpc                      mgcoge_defconfig
+parisc                           alldefconfig
+ia64                         bigsur_defconfig
+sh                        dreamcast_defconfig
+parisc                generic-64bit_defconfig
+arm                        clps711x_defconfig
+h8300                            alldefconfig
+sh                          r7780mp_defconfig
+microblaze                          defconfig
+sh                          rsk7269_defconfig
+powerpc                 linkstation_defconfig
+mips                         bigsur_defconfig
+arm                        cerfcube_defconfig
+parisc64                            defconfig
+x86_64                        randconfig-c001
+arm                  randconfig-c002-20220531
+ia64                                defconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+riscv                             allnoconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+nios2                               defconfig
+arc                              allyesconfig
+csky                                defconfig
+nios2                            allyesconfig
+alpha                               defconfig
+alpha                            allyesconfig
+h8300                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                                defconfig
+s390                             allmodconfig
+parisc                              defconfig
+parisc                           allyesconfig
+s390                             allyesconfig
+sparc                               defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+i386                                defconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+arc                  randconfig-r043-20220531
+s390                 randconfig-r044-20220531
+riscv                randconfig-r042-20220531
+riscv                               defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                            allmodconfig
+riscv                            allyesconfig
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                                  kexec
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
 
-so I guess it's just the conditional that will have to be changed to:
+clang tested configs:
+mips                 randconfig-c004-20220531
+x86_64                        randconfig-c007
+i386                          randconfig-c001
+s390                 randconfig-c005-20220531
+arm                  randconfig-c002-20220531
+powerpc              randconfig-c003-20220531
+riscv                randconfig-c006-20220531
+mips                        workpad_defconfig
+powerpc                     tqm5200_defconfig
+mips                        bcm63xx_defconfig
+arm                           sama7_defconfig
+arm                         shannon_defconfig
+mips                malta_qemu_32r6_defconfig
+powerpc                     skiroot_defconfig
+powerpc                    ge_imp3a_defconfig
+mips                         tb0287_defconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+hexagon              randconfig-r045-20220531
+hexagon              randconfig-r041-20220531
 
-#ifdef CONFIG_HAS_IOPORT
-
-replacing the current explicit bus dependency list.  The compiler will 
-then optimise away all the port I/O stuff (though I suspect dummy function 
-declarations may be required for `inb'/`outb', etc.).
-
- I can verify a suitable change with a TURBOchannel configuration once the 
-MIPS part has been sorted.
-
-  Maciej
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
