@@ -1,159 +1,62 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 01 Jun 2022 13:14:29 +0800
-Subject: [Intel-wired-lan] [tnguy-net-queue:master] BUILD SUCCESS
- 09e545f7381459c015b6fa0cd0ac6f010ef8cc25
-Message-ID: <6296f5b5.t+nY23lzy9wUuusU%lkp@intel.com>
+From: Penigalapati, Sandeep <sandeep.penigalapati@intel.com>
+Date: Wed, 1 Jun 2022 06:28:36 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: disable stripping in
+ default VSI ctx
+In-Reply-To: <20220530165122.8804-1-marcin.szycik@linux.intel.com>
+References: <20220530165122.8804-1-marcin.szycik@linux.intel.com>
+Message-ID: <MW3PR11MB45541AE66B00C50ED19AA2CF9CDF9@MW3PR11MB4554.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git master
-branch HEAD: 09e545f7381459c015b6fa0cd0ac6f010ef8cc25  xen/netback: fix incorrect usage of RING_HAS_UNCONSUMED_REQUESTS()
-
-elapsed time: 949m
-
-configs tested: 128
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm64                               defconfig
-arm64                            allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                          randconfig-c001
-sh                  sh7785lcr_32bit_defconfig
-arm64                            alldefconfig
-sh                   sh7770_generic_defconfig
-sh                          lboxre2_defconfig
-powerpc                     pq2fads_defconfig
-openrisc                 simple_smp_defconfig
-powerpc                     tqm8555_defconfig
-mips                       capcella_defconfig
-arm                           tegra_defconfig
-arm                        shmobile_defconfig
-sh                          rsk7201_defconfig
-xtensa                  nommu_kc705_defconfig
-arm                            zeus_defconfig
-alpha                            alldefconfig
-sparc                       sparc32_defconfig
-parisc64                         alldefconfig
-arc                           tb10x_defconfig
-sh                          sdk7786_defconfig
-arm                        realview_defconfig
-powerpc                     stx_gp3_defconfig
-powerpc                      mgcoge_defconfig
-parisc                           alldefconfig
-ia64                         bigsur_defconfig
-sh                        dreamcast_defconfig
-parisc                generic-64bit_defconfig
-arm                        clps711x_defconfig
-h8300                            alldefconfig
-sh                          r7780mp_defconfig
-microblaze                          defconfig
-sh                          rsk7269_defconfig
-powerpc                 linkstation_defconfig
-mips                         bigsur_defconfig
-arm                        cerfcube_defconfig
-parisc64                            defconfig
-x86_64                        randconfig-c001
-arm                  randconfig-c002-20220531
-ia64                                defconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-riscv                             allnoconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-csky                                defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                                defconfig
-s390                             allmodconfig
-parisc                              defconfig
-parisc                           allyesconfig
-s390                             allyesconfig
-sparc                               defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a011
-x86_64                        randconfig-a013
-x86_64                        randconfig-a015
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-arc                  randconfig-r043-20220531
-s390                 randconfig-r044-20220531
-riscv                randconfig-r042-20220531
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-x86_64                    rhel-8.3-kselftests
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                                  kexec
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                           rhel-8.3-syz
-x86_64                         rhel-8.3-kunit
-
-clang tested configs:
-mips                 randconfig-c004-20220531
-x86_64                        randconfig-c007
-i386                          randconfig-c001
-s390                 randconfig-c005-20220531
-arm                  randconfig-c002-20220531
-powerpc              randconfig-c003-20220531
-riscv                randconfig-c006-20220531
-mips                        workpad_defconfig
-powerpc                     tqm5200_defconfig
-mips                        bcm63xx_defconfig
-arm                           sama7_defconfig
-arm                         shannon_defconfig
-mips                malta_qemu_32r6_defconfig
-powerpc                     skiroot_defconfig
-powerpc                    ge_imp3a_defconfig
-mips                         tb0287_defconfig
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-hexagon              randconfig-r045-20220531
-hexagon              randconfig-r041-20220531
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Marcin Szycik
+>Sent: Monday, May 30, 2022 10:21 PM
+To: intel-wired-lan@lists.osuosl.org
+>Subject: [Intel-wired-lan] [PATCH net-next v2] ice: disable stripping in default
+>VSI ctx
+>
+>From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>
+>In case when driver is in eswitch mode, having VLAN stripping enabled causes
+>failure in communication. All VLAN configuration commands are blocked.
+>Because of that VF driver can't disable VLAN stripping at initialization. It leads
+>to the situation when VLAN stripping on VF VSI is on, but in kernel it is off.
+>
+>To prevent this, disable VLAN stripping in VSI initialization. It doesn't break
+>other usecases, because it is set according to kernel settings.
+>
+>To reproduce:
+>modprobe ice
+>devlink dev eswitch set $PF_PCI mode switchdev ip link add br0 type bridge ip
+>link set br0 up ip link set $PF_DEV master br0 ip link set $PF_DEV up echo 1 >
+>/sys/class/net/$PF_DEV/device/sriov_numvfs
+>ip link set $VF1 up
+>ip link set $VF1_PR master br0
+>ip link set $VF1_PR up
+>ip link add link $VF1 name vlan100 type vlan id 100 ip addr add
+>$VLAN_IP/$MASK dev vlan100 ip link set vlan100 up
+>
+>On link partner:
+>ip link add link $PF name vlan100 type vlan id 100 ip addr add
+>$PEER_VLAN_IP/$MASK dev vlan100 ip link set vlan100 up ping $VLAN_IP
+>
+>Ping fails.
+>
+>Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+>Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+>---
+>v2:
+>   * Small corrections in commit msg
+>   * Added reproduction steps
+>   * Removed Fixes tag, added squash note
+>
+>This patch should be squashed with "ice: remove VLAN representor specific
+>logs"
+> drivers/net/ethernet/intel/ice/ice_lib.c | 3 +++
+> 1 file changed, 3 insertions(+)
+>
+Tested-by: Sandeep Penigalapati <sandeep.penigalapati@intel.com>
