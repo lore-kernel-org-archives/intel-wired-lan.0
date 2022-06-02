@@ -1,193 +1,185 @@
-From: Piotr Skajewski <piotrx.skajewski@intel.com>
-Date: Wed,  1 Jun 2022 15:14:48 +0200
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Add locking to prevent
- panic when setting sriov_numvfs to zero
-In-Reply-To: <20220519055358.20314-1-piotrx.skajewski@intel.com>
-References: <20220519055358.20314-1-piotrx.skajewski@intel.com>
-Message-ID: <20220601131448.13796-1-piotrx.skajewski@intel.com>
+Return-Path: <intel-wired-lan-bounces@osuosl.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EA7BC43334
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Jun 2022 16:04:03 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+	by smtp3.osuosl.org (Postfix) with ESMTP id DC1C8605EA;
+	Thu,  2 Jun 2022 16:04:02 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id MhTCiyBF09gd; Thu,  2 Jun 2022 16:04:02 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id CFA116104C;
+	Thu,  2 Jun 2022 16:04:01 +0000 (UTC)
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id AFE141BF401
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jun 2022 16:04:00 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 9DA3360B56
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jun 2022 16:04:00 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id N5Qxo3MP7m22 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Jun 2022 16:03:59 +0000 (UTC)
+X-Greylist: delayed 00:05:44 by SQLgrey-1.8.0
+Received: from mail.wantstofly.org (hmm.wantstofly.org [213.239.204.108])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4E279605EA
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Jun 2022 16:03:59 +0000 (UTC)
+Received: by mail.wantstofly.org (Postfix, from userid 1000)
+ id C70227F546; Thu,  2 Jun 2022 18:58:11 +0300 (EEST)
+Date: Thu, 2 Jun 2022 18:58:11 +0300
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>
+Message-ID: <YpjeEyMxobCIRfTx@wantstofly.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+Subject: [Intel-wired-lan] [PATCH v1] igc: Reinstate IGC_REMOVED logic and
+ implement it properly
+X-BeenThere: intel-wired-lan@osuosl.org
+X-Mailman-Version: 2.1.29
+Precedence: list
+List-Id: Intel Wired Ethernet Linux Kernel Driver Development
+ <intel-wired-lan.osuosl.org>
+List-Unsubscribe: <https://lists.osuosl.org/mailman/options/intel-wired-lan>, 
+ <mailto:intel-wired-lan-request@osuosl.org?subject=unsubscribe>
+List-Archive: <http://lists.osuosl.org/pipermail/intel-wired-lan/>
+List-Post: <mailto:intel-wired-lan@osuosl.org>
+List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
+List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
+ <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: netdev@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
+ Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: intel-wired-lan@osuosl.org
-List-ID: <intel-wired-lan.osuosl.org>
+Errors-To: intel-wired-lan-bounces@osuosl.org
+Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> On Thu, May 19, 2022 at 07:53:58AM +0200, Piotr Skajewski wrote:
-> > It is possible to disable VFs while the PF driver is processing requests
-> > from the VF driver.  This can result in a panic.
-> > 
-> > BUG: unable to handle kernel paging request at 000000000000106c
-> > PGD 0 P4D 0
-> > Oops: 0000 [#1] SMP NOPTI
-> > CPU: 8 PID: 0 Comm: swapper/8 Kdump: loaded Tainted: G I      --------- -
-> > Hardware name: Dell Inc. PowerEdge R740/06WXJT, BIOS 2.8.2 08/27/2020
-> > RIP: 0010:ixgbe_msg_task+0x4c8/0x1690 [ixgbe]
-> > Code: 00 00 48 8d 04 40 48 c1 e0 05 89 7c 24 24 89 fd 48 89 44 24 10 83 ff
-> > 01 0f 84 b8 04 00 00 4c 8b 64 24 10 4d 03 a5 48 22 00 00 <41> 80 7c 24 4c
-> > 00 0f 84 8a 03 00 00 0f b7 c7 83 f8 08 0f 84 8f 0a
-> > RSP: 0018:ffffb337869f8df8 EFLAGS: 00010002
-> > RAX: 0000000000001020 RBX: 0000000000000000 RCX: 000000000000002b
-> > RDX: 0000000000000002 RSI: 0000000000000008 RDI: 0000000000000006
-> > RBP: 0000000000000006 R08: 0000000000000002 R09: 0000000000029780
-> > R10: 00006957d8f42832 R11: 0000000000000000 R12: 0000000000001020
-> > R13: ffff8a00e8978ac0 R14: 000000000000002b R15: ffff8a00e8979c80
-> > FS:  0000000000000000(0000) GS:ffff8a07dfd00000(0000) knlGS:00000000000000
-> > CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> > CR2: 000000000000106c CR3: 0000000063e10004 CR4: 00000000007726e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-> > PKRU: 55555554
-> > Call Trace:
-> >  <IRQ>
-> >  ? ttwu_do_wakeup+0x19/0x140
-> >  ? try_to_wake_up+0x1cd/0x550
-> >  ? ixgbevf_update_xcast_mode+0x71/0xc0 [ixgbevf]
-> >  ixgbe_msix_other+0x17e/0x310 [ixgbe]
-> >  __handle_irq_event_percpu+0x40/0x180
-> >  handle_irq_event_percpu+0x30/0x80
-> >  handle_irq_event+0x36/0x53
-> >  handle_edge_irq+0x82/0x190
-> >  handle_irq+0x1c/0x30
-> >  do_IRQ+0x49/0xd0
-> >  common_interrupt+0xf/0xf
-> > 
-> > This can be eventually be reproduced with the following script:
-> > 
-> > while :
-> > do
-> >     echo 63 > /sys/class/net/<devname>/device/sriov_numvfs
-> >     sleep 1
-> >     echo 0 > /sys/class/net/<devname>/device/sriov_numvfs
-> >     sleep 1
-> > done
-> > 
-> > Add lock when disabling SR-IOV to prevent process VF mailbox communication.
-> > 
-> > Signed-off-by: Piotr Skajewski <piotrx.skajewski@intel.com>
-> 
-> This is a fix for sure. Please target it to net tree and add fixes tag.
-> 
-> > ---
-> > changes in v2:
-> >     - replace type spin_lock_bh to spin_lock
-> 
-> Why? Please explain what contexts are being synchronized.k
+The initially merged version of the igc driver code (via commit
+146740f9abc4, "igc: Add support for PF") contained the following
+IGC_REMOVED checks in the igc_rd32/wr32() MMIO accessors:
 
-The synchronization of shared resources while creating and removing many
-virtual function simultaneously.
+	u32 igc_rd32(struct igc_hw *hw, u32 reg)
+	{
+		u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+		u32 value = 0;
 
-> 
-> > 
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  1 +
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  3 ++
-> >  .../net/ethernet/intel/ixgbe/ixgbe_sriov.c    | 28 ++++++++++++-------
-> >  3 files changed, 22 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > index 921a4d977d65..8813b4dd6872 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > @@ -779,6 +779,7 @@ struct ixgbe_adapter {
-> >  #ifdef CONFIG_IXGBE_IPSEC
-> >  	struct ixgbe_ipsec *ipsec;
-> >  #endif /* CONFIG_IXGBE_IPSEC */
-> > +	spinlock_t vfs_lock;
-> >  };
-> >  
-> >  static inline int ixgbe_determine_xdp_q_idx(int cpu)
-> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > index c4a4954aa317..6c403f112d29 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > @@ -6402,6 +6402,9 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
-> >  	/* n-tuple support exists, always init our spinlock */
-> >  	spin_lock_init(&adapter->fdir_perfect_lock);
-> >  
-> > +	/* init spinlock to avoid concurrency of VF resources */
-> > +	spin_lock_init(&adapter->vfs_lock);
-> > +
-> >  #ifdef CONFIG_IXGBE_DCB
-> >  	ixgbe_init_dcb(adapter);
-> >  #endif
-> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> > index 7f11c0a8e7a9..6f583df19635 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> > @@ -207,6 +207,8 @@ int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
-> >  	unsigned int num_vfs = adapter->num_vfs, vf;
-> >  	int rss;
-> >  
-> > +	spin_lock(&adapter->vfs_lock);
-> > +
-> >  	/* set num VFs to 0 to prevent access to vfinfo */
-> >  	adapter->num_vfs = 0;
-> >  
-> > @@ -228,6 +230,8 @@ int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
-> >  	kfree(adapter->mv_list);
-> >  	adapter->mv_list = NULL;
-> >  
-> > +	spin_unlock(&adapter->vfs_lock);
-> > +
-> >  	/* if SR-IOV is already disabled then there is nothing to do */
-> >  	if (!(adapter->flags & IXGBE_FLAG_SRIOV_ENABLED))
-> >  		return 0;
-> > @@ -1357,19 +1361,23 @@ void ixgbe_msg_task(struct ixgbe_adapter *adapter)
-> >  	struct ixgbe_hw *hw = &adapter->hw;
-> >  	u32 vf;
-> >  
-> > -	for (vf = 0; vf < adapter->num_vfs; vf++) {
-> > -		/* process any reset requests */
-> > -		if (!ixgbe_check_for_rst(hw, vf))
-> > -			ixgbe_vf_reset_event(adapter, vf);
-> > +	spin_lock(&adapter->vfs_lock);
-> > +	if (adapter->vfinfo) {
-> 
-> why this is needed?
+		if (IGC_REMOVED(hw_addr))
+			return ~value;
 
-While creating and removing many VF at the same time,
-it happens that we process messages from VF whose resources
-have already been released. Driver should not process message
-while this is happening.
+		value = readl(&hw_addr[reg]);
 
-> 
-> also maybe revert the logic and flatten the code:
->     if (!adapter->vfinfo)
-> 	goto unlock;
->     (...)
-> unlock:
->     spin_unlock(&adapter->vfs_lock);
-> 
+		/* reads should not return all F's */
+		if (!(~value) && (!reg || !(~readl(hw_addr))))
+			hw->hw_addr = NULL;
 
-This check is not related to spinlock itself but
-stick to the loop where VF message is processed.
+		return value;
+	}
 
-> > +		for (vf = 0; vf < adapter->num_vfs; vf++) {
-> > +			/* process any reset requests */
-> > +			if (!ixgbe_check_for_rst(hw, vf))
-> > +				ixgbe_vf_reset_event(adapter, vf);
-> >  
-> > -		/* process any messages pending */
-> > -		if (!ixgbe_check_for_msg(hw, vf))
-> > -			ixgbe_rcv_msg_from_vf(adapter, vf);
-> > +			/* process any messages pending */
-> > +			if (!ixgbe_check_for_msg(hw, vf))
-> > +				ixgbe_rcv_msg_from_vf(adapter, vf);
-> >  
-> > -		/* process any acks */
-> > -		if (!ixgbe_check_for_ack(hw, vf))
-> > -			ixgbe_rcv_ack_from_vf(adapter, vf);
-> > +			/* process any acks */
-> > +			if (!ixgbe_check_for_ack(hw, vf))
-> > +				ixgbe_rcv_ack_from_vf(adapter, vf);
-> > +		}
-> >  	}
-> > +	spin_unlock(&adapter->vfs_lock);
-> >  }
-> >  
-> >  static inline void ixgbe_ping_vf(struct ixgbe_adapter *adapter, int vf)
-> > -- 
-> > 2.35.0.rc0
-> > 
-> > _______________________________________________
-> > Intel-wired-lan mailing list
-> > Intel-wired-lan at osuosl.org
-> > https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+And:
+
+	#define wr32(reg, val) \
+	do { \
+		u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
+		if (!IGC_REMOVED(hw_addr)) \
+			writel((val), &hw_addr[(reg)]); \
+	} while (0)
+
+E.g. igb has similar checks in its MMIO accessors, and has a similar
+macro E1000_REMOVED, which is implemented as follows:
+
+	#define E1000_REMOVED(h) unlikely(!(h))
+
+These checks serve to detect and take note of an 0xffffffff MMIO read
+return from the device, which can be caused by a PCIe link flap or some
+other kind of PCI bus error, and to avoid performing MMIO reads and
+writes from that point onwards.
+
+However, the IGC_REMOVED macro was not originally implemented:
+
+	#ifndef IGC_REMOVED
+	#define IGC_REMOVED(a) (0)
+	#endif /* IGC_REMOVED */
+
+This led to the IGC_REMOVED logic to be removed entirely in a
+subsequent commit (commit 3c215fb18e70, "igc: remove IGC_REMOVED
+function"), with the rationale that such checks matter only for
+virtualization and that igc does not support virtualization -- but a
+PCIe device can become detached even without virtualization being in
+use, and without proper checks, a PCIe bus error affecting an igc
+adapter will lead to various NULL pointer dereferences, as the first
+access after the error will set hw->hw_addr to NULL, and subsequent
+accesses will blindly dereference this now-NULL pointer.
+
+This patch reinstates the IGC_REMOVED checks in igc_rd32/wr32(), and
+implements IGC_REMOVED the way it is done for igb, by checking for the
+unlikely() case of hw_addr being NULL.  This change prevents the oopses
+seen when a PCIe link flap occurs on an igc adapter.
+
+Fixes: 146740f9abc4 ("igc: Add support for PF")
+Signed-off-by: Lennert Buytenhek <buytenh@arista.com>
+---
+As initially reported on intel-wired-lan@ in February:
+
+	https://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20220214/027787.html
+
+We're seeing these NULL pointer dereferences hit fairly reproducibly
+when rebooting, presumably due to the particularities of reset
+sequencing on the boards we see this hit on.
+
+A link flap can be caused by toggling the Secondary Bus Reset bit
+in the upstream PCIe bridge's Bridge Control register and can reliably
+reproduce this problem.
+
+ drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
+ drivers/net/ethernet/intel/igc/igc_regs.h | 5 ++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 74b2c590ed5d..38e46e9ba8bb 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -6171,6 +6171,9 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+ 	u8 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
+ 	u32 value = 0;
+ 
++	if (IGC_REMOVED(hw_addr))
++		return ~value;
++
+ 	value = readl(&hw_addr[reg]);
+ 
+ 	/* reads should not return all F's */
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index e197a33d93a0..026c3b65fc37 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -306,7 +306,8 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg);
+ #define wr32(reg, val) \
+ do { \
+ 	u8 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
+-	writel((val), &hw_addr[(reg)]); \
++	if (!IGC_REMOVED(hw_addr)) \
++		writel((val), &hw_addr[(reg)]); \
+ } while (0)
+ 
+ #define rd32(reg) (igc_rd32(hw, reg))
+@@ -318,4 +319,6 @@ do { \
+ 
+ #define array_rd32(reg, offset) (igc_rd32(hw, (reg) + ((offset) << 2)))
+ 
++#define IGC_REMOVED(h) unlikely(!(h))
++
+ #endif
+-- 
+2.36.1
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
