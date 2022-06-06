@@ -1,220 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D9DFC433EF
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Jun 2022 13:01:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24763C43334
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Jun 2022 07:02:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B805142495;
-	Tue,  7 Jun 2022 13:01:28 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id B7E5C4010C;
+	Mon,  6 Jun 2022 07:02:46 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CPVDlHA8f_uA; Tue,  7 Jun 2022 13:01:23 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 92736DzzJclP; Mon,  6 Jun 2022 07:02:45 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2B94242493;
-	Tue,  7 Jun 2022 13:01:23 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 8FC3640283;
+	Mon,  6 Jun 2022 07:02:45 +0000 (UTC)
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 779DE1BF2EF
- for <intel-wired-lan@osuosl.org>; Tue,  7 Jun 2022 06:13:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 5C32C1BF40D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jun 2022 07:02:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 72F8D408BE
- for <intel-wired-lan@osuosl.org>; Tue,  7 Jun 2022 06:13:47 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTP id 49D8E41845
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jun 2022 07:02:44 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at osuosl.org
+Authentication-Results: smtp4.osuosl.org (amavisd-new);
+ dkim=pass (2048-bit key) header.d=intel.com
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id tDsPjxCLPvr7 for <intel-wired-lan@osuosl.org>;
- Tue,  7 Jun 2022 06:13:45 +0000 (UTC)
-X-Greylist: delayed 00:09:01 by SQLgrey-1.8.0
-Received: from wx-euc1.prod.hydra.sophos.com (wx-euc1.prod.hydra.sophos.com
- [94.140.18.101])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1A8354086E
- for <intel-wired-lan@osuosl.org>; Tue,  7 Jun 2022 06:13:44 +0000 (UTC)
-Received: from wd-euc1.prod.hydra.sophos.com
- (ip-172-20-0-41.eu-central-1.compute.internal [172.20.0.41])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by wx-euc1.prod.hydra.sophos.com (Postfix) with ESMTPS id 4LHKZR3hX8z8hh
- for <intel-wired-lan@osuosl.org>; Tue,  7 Jun 2022 06:04:47 +0000 (UTC)
-Received: from ip-172-20-0-132.eu-central-1.compute.internal
- (ip-172-20-0-132.eu-central-1.compute.internal [127.0.0.1])
- by wd-euc1.prod.hydra.sophos.com (Postfix) with ESMTP id 4LHKZK37sMzlVjT
- for <intel-wired-lan@osuosl.org>; Tue,  7 Jun 2022 06:04:41 +0000 (UTC)
-X-Sophos-Product-Type: Gateway
-X-Sophos-Email-ID: 9d496d6cfff04cc5831b9fb506b04834
-Received: from DEU01-FR2-obe.outbound.protection.outlook.com
- (mail-fr2deu01lp2171.outbound.protection.outlook.com [104.47.11.171])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by relay-eu-central-1.prod.hydra.sophos.com (Postfix) with ESMTPS id
- 4LHKZG3l67zgY8G
- for <intel-wired-lan@osuosl.org>; Tue,  7 Jun 2022 06:04:38 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=WSRqYJHGIfKzg/UAyhNRElWftLWTSSPioi4JuzizT58Z7/wy/hCuHsR7I/57VM4U+pkngBFsl9PQ+4vVHokyAzLhdbksXhtBBH3zDAgKAFdzPTlfia6SYi13U4F4s/+PFrP6sv5Xofz+eCEcUAfJtVzhHvXeCLWZ4a9QOoooCL+ytgjxzrc/iCxYEydnY9fSWvYkrG5JUXDABYyGVJKDj4sIlKawUlj98dAHv7PrnIj1ZDdKYmr5F+EHyarpJh7qEijlpBjUJGLvCBSQIGhnvNvWKzDoIePtQIg+iYxoX5zCkl8ZSKUoar6iXM7tABoXK3mvJ34PrkFQDnCzFXf4Ww==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/GlhxCcQ6SQJskJreAvQMEWd6RTxt5RyGIDfLn/QWcY=;
- b=RO9ln8d5Hk0sB50QN+vi4Yy3HJUb5UL2Evo/D1+f29qEoRRePRhsUVJ1mZy6RtriQwOEVpvsdpC/vChjQ2TN6jQLue5VBVKIUSkK+vbnZk2TEMI0ISIcj0cHDp4IF90dtKs5PIaGDejI0Lx+IefDGSQRmPJ7Oi0oz4748qny52CMKdW1d6Z6wPGrA9gb7uBsM6rBg/ZBDQGdY19AwEz4J//C59XatYt4DTpmhC7ggA86KonT14hQBNY3oEPvYweiscn7KkSQRkjnIXM3NdVpT6nVATukk8/c+h/AsF6Zxcdjzv3MKznuoCylBTNaQ18RU6GNfsS42Oe26MeK7I6riw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=anduras.de; dmarc=pass action=none header.from=anduras.de;
- dkim=pass header.d=anduras.de; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ANDURASAG.onmicrosoft.com; s=selector1-ANDURASAG-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/GlhxCcQ6SQJskJreAvQMEWd6RTxt5RyGIDfLn/QWcY=;
- b=S5+XPUHy3CRZysQjKrIrxU5ZCHdIgkQQnJLSOKoGlgY3MO8OTZXJtjVZEsIMI0IF21N1xcovYxv6TFFvDVpExIsGyHNq3GbQy/6dD/xyTy1mFbVy66zdj9fw0HDMAbUjMgTbR953B5Bg77IRAGMzfp7mB5Wz/bD88qPpBryERjQ=
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1654581875; 
- s=sophosf9aa68d74dee45c58aac945adde58f79; d=anduras.de;
- h=Content-Type:To:From:Subject:Date;
- bh=/GlhxCcQ6SQJskJreAvQMEWd6RTxt5RyGIDfLn/QWcY=;
- b=M2cIoBOkhq4GWCF72DuOaEEyxkhyoxT8DNhZan9GXNGUZp9mH9K5Bmc26Rl7Klhx
- 4PeJ2eQ+9DMUJ4/e5QmdNiyO0KptNd+Zhtgo5jSdHHz+fi8qf9e3aQzRZ8vKgxQGwrV
- DA3UWLLkFdS2Cey1r5l8+YnYEs7rDSrIGi/6pRcvse7PQgOEMWP653AumjZJ58h/8O5
- PaNcEjc9WhIcK1qkBtSDoh/qT7Jzz3n9JV9NseCIL5pjAYmKAC68GV7j31D1wLSqxt2
- z8wpWyJn8jqRNzwIeMt3jaLpFlecrg9rubeEbqs1txXRf088CGOkV45w620pNaZIBbY
- ++0GIwWJKQ==
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1654581875; 
- s=v1; d=mail-dkim-eu-central-1.prod.hydra.sophos.com;
- h=Content-Type:To:From:Subject:Date;
- bh=/GlhxCcQ6SQJskJreAvQMEWd6RTxt5RyGIDfLn/QWcY=;
- b=nKYQ7yk0/pZ8d21/LpToDRuaDitrmIpQ+pQY1OyOO2HAFWTb2fjZn7pgHVWWlAXG
- CPKSRKl2g2/XcOE8XfnB3TGUNEU7nSclqH1mkhgLMX9xkmhfdeZG5D5uxz1v0p7TgQ0
- NIXMvUZs/jYuz5znykxogQe3uW+Z8GEn1/BlF02e+OdS4ZjvJd7K91s8jgYh3haJZCw
- dIQo8zl1qfvFD0/SXoQbc+gUS0BubvxSyq3ZFFyOHf/rvC6whin/kmaSx+qgp95K6al
- 9ZxehIwE5doCyFzYgZGHvVvSABbldgoqfiytazlNmsABQcTHAa0VzYVir1HG4g3Qou8
- j0UmvYwslg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=anduras.de;
-Received: from FRYP281MB2107.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:2e::5) by
- FRYP281MB0703.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:70::9) with
- Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5332.4; Tue, 7 Jun 2022 06:04:36 +0000
-Received: from FRYP281MB2107.DEUP281.PROD.OUTLOOK.COM
- ([fe80::2071:8fd3:6071:b25e]) by FRYP281MB2107.DEUP281.PROD.OUTLOOK.COM
- ([fe80::2071:8fd3:6071:b25e%7]) with mapi id 15.20.5332.010; Tue, 7 Jun 2022
- 06:04:36 +0000
-Message-ID: <eb729924-7c59-23fa-4847-bff376a98d2a@anduras.de>
-Date: Tue, 7 Jun 2022 08:04:35 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Content-Language: de-DE
-From: Sven Anders <sven.anders@anduras.de>
-To: intel-wired-lan@osuosl.org
-References: <a94b23d2-57a8-954f-9fae-246cf900be92@intel.com>
- <8d7813a5-c344-6225-dc1a-89a92e5cddb9@anduras.de>
-Organization: ANDURAS AG
-In-Reply-To: <8d7813a5-c344-6225-dc1a-89a92e5cddb9@anduras.de>
-X-ClientProxiedBy: AM0PR01CA0104.eurprd01.prod.exchangelabs.com
- (2603:10a6:208:10e::45) To FRYP281MB2107.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:2e::5)
+ with ESMTP id Nk2pduOHq-L7 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Jun 2022 07:02:42 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 03FD8417C6
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Jun 2022 07:02:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1654498962; x=1686034962;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=o/Ljaid7JM9nwV3cw0qyYru9lmYxLz2HF01mMoFgpnk=;
+ b=LiP21sf2gxm3R7NGf5f76RwVGWjDQRNsqrDU5Sz3GtgSwkEJXpg+5P04
+ PcV5EXnYLI5OGdgtoZDhGTnYR7iPox8xVRK189mJF3tdFZvlMwBp4sCmI
+ 2WV+gh9GBRqaX4VijTaPXYfjqs4l4tZjf12yNkq/eXfVOcf+mvqScHMvv
+ gsDgPKG5ZoeS/NlbHQBedNRyq/rMFytFbUuApyYinjrF/xcOf9wfryAsK
+ eJ2W91hOgXgzkxQGsk+BSwLnB8B4aB8bteHKWby7otj+qE4xaEVGD9PRS
+ ZHAbXtWofmx//Yq0hsbgQpn/UeGogi8kpn0cbH6W6lVTrABttRUUBSMHN Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10369"; a="257074511"
+X-IronPort-AV: E=Sophos;i="5.91,280,1647327600"; d="scan'208";a="257074511"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Jun 2022 00:02:41 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.91,280,1647327600"; d="scan'208";a="635455680"
+Received: from propan.igk.intel.com ([10.211.8.82])
+ by fmsmga008.fm.intel.com with ESMTP; 06 Jun 2022 00:02:40 -0700
+From: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Mon,  6 Jun 2022 09:01:21 +0200
+Message-Id: <20220606070121.3086735-1-anatolii.gerasymenko@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 2042a1bd-63cf-466d-09fb-08da484b99e6
-X-MS-TrafficTypeDiagnostic: FRYP281MB0703:EE_
-X-Microsoft-Antispam-PRVS: <FRYP281MB0703083CCD88A2E47F635EC284A59@FRYP281MB0703.DEUP281.PROD.OUTLOOK.COM>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: VeBy3T5W3/f5K0DKbriE8qaIagB3J4Cmah034EG3sJeOuuGM9A1V/ORnTbygT0w0MnlVfyOZIKw3X3GyKdWHEr3uRtj32SN4CcFyznwO+DKPjxfXSWi5D2jTqrA0prW9DTzGp88c/uJVryF4rBLHGQoRUGOEqYU40B5rnGfRBXlcwmAXd7X4bdRb2vHG4OOfL1mbXqvbOVEaqzX8R5+9RkazeP3Y1rN9tIglfQYgO4E3MZ2xzsyYAcEa40i964rCtqoRP6A4k1F4neiltZRixkzNOBA0XzDNcvi8Lc2SwuNPJzND8S03nF/TYtdM2U825k2HUDfYnUiWs1pOsMBj7M5qEx/1Qvta7GoOadCKx3fZZwNS5ed1Gcq84GZEP/gLIwxrnkpzRcP6AMzUEUULx+/0FtpL3CyI1dmPP9kD/xnz7Ugs+vq/ogSzeKBtrvvkBJo9NWsOh7lOoV4hxoyfQYc4hz7iUy/o82YTPrXU0jO+xrissxrz9ekSwwg6ZsZ+XMeGm6o0oqfbgaLYFt5M0oFAldskPpPeG1TAKvZvr91WqY/1WNX02lYYhZZCuFq1kPhfHr3t5Pp+5By2gI+GL53dlgcOr6k33JN6eDC1xlyBC4WLs8/ZIgJr7l3WcC2w6LHsABrYn5SpOKTNwIiMmfWzWO3/3NokXDJOaEfgLlE4jZ9pkem5KmOj1+pbw/Vt/foKpnZmqQWFfNLk01EXcDXig3jDyAHRHC7mgxgrXn24uPyQARRohBM44oASHZzCt8f83yEVRz/3LUcIiwaPXqgUhkm4mttgjDcAlHUrN1Kd9tTqMBEL9bUZIXUYd4aQ
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:; 
- IPV:NLI; SFV:NSPM;
- H:FRYP281MB2107.DEUP281.PROD.OUTLOOK.COM; PTR:; CAT:NONE; 
- SFS:(13230001)(396003)(42606007)(346002)(39830400003)(366004)(376002)(136003)(86362001)(31696002)(6506007)(26005)(44832011)(6512007)(6486002)(6916009)(36916002)(36756003)(15974865002)(31686004)(508600001)(41300700001)(38100700002)(2616005)(8676002)(66476007)(66556008)(66946007)(5660300002)(8936002)(83380400001)(316002)(2906002)(186003)(43740500002)(45980500001);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?K0ZweUY2bUxyREVqTXBaTzJPMlRvT21YWmROTWlZY0RGc0JRR1BLUThXVjVx?=
- =?utf-8?B?L3R3M2c3SzNjOHlUeGNSQzdNUkhRT0hJcU95RVpMUGNTU2owVjFNZzhKVXZq?=
- =?utf-8?B?bjlHUnFUY3NpejVWR1loYm9vS0FyWHQ0dkp5UUlacFd5ckY4ZHRNaUFKSWNn?=
- =?utf-8?B?ZkNDeTNHdTllTHZtdC9PUDRWL1ZVTWVZVGVJKzhVWXI1b0JvWFJ4czB1S3JU?=
- =?utf-8?B?Q1NOZG91czlWdzVSY1VBVVBEaDltMVJhTUVabHJBdWlIN2RZWU1vVlh5THpM?=
- =?utf-8?B?UTZRZzIyblk3VG8vWFhMK2tGd2hMYUlxVnFlTVJiVjNzSVFVUGRjRUFMUzNC?=
- =?utf-8?B?L2d5OHBjWjdCRm9nM1dwNVlaYWgyZVhMRzZ1a1BsWFdwaUo4UWxiMG1oRXdJ?=
- =?utf-8?B?K3JOUDRPeWg5OXJYSUdDKzNhRjFzWGx2MU9IcUZ6L2dId2hHS3VENXBYTFlZ?=
- =?utf-8?B?TzhZek52RW0zeUllTEIxdGRQb1FCdmF0czlxeTUzaUc5MjduSlcyOGhsVGt1?=
- =?utf-8?B?d1owVVIzNVFReE44V3UvcmdiYWtsYU10SCtmbGZCUTdDamtVNnNiT2xZUzUv?=
- =?utf-8?B?UmhseW9SZ0VGaUZjc05mU1NkUjdGTXY3LzVkcEs1Rmw5THFuazRVbXJMMGZH?=
- =?utf-8?B?bDJOZ2dzMUErc0ZweTZhbnBRVGI3WC9XTkhneU95ZnhkalQ1ZHNaSHIxTVdy?=
- =?utf-8?B?QW1KTERsZ2RkdWpTUi8vVEswUkRmb0FBRXNpcjNpWmZKUFd1bzVRbEJ0UlJW?=
- =?utf-8?B?TTRqNmd6ci95eVE3UVBpVFlnVzUvQ1VzMDllOWlpbjNkTm1jQ3lNZzFRbDFk?=
- =?utf-8?B?YTNBbFN5LzNoQStnZ0dTaUdnWkpTOForOGhPUHNQeGFuUDVhMWFBTXpzemxU?=
- =?utf-8?B?NmhjcXg1bXpmV3d2ajhSeUJCOGVROTZqZyt2bnRVZTFTRUpoeVQxT0RkSitr?=
- =?utf-8?B?Q3ZURjFOYnl6UzZLZHhvSjhlR0dvM09QeHROeCswUE5GWDJnOExjdjlKVCty?=
- =?utf-8?B?RHhoeGY3OHloQTdCMWJKME5xQkZibFZnSWVOVVpBR2hzUWpraGNUZ1Vyek9E?=
- =?utf-8?B?SnIwbGZWZCtrVk5sclJZN1lPbENtd0grZnhDc2UxWlhlN3hXd3dlZkdGOWRC?=
- =?utf-8?B?bGdqajRjb0ZjaWYrNmRsT2UxODI5ZjA5TW9kaG9BSU1pVVhUZDYyMmM2YUpH?=
- =?utf-8?B?ZHRKZ3BuZ1hNY2VzVjZtaTJvMmlWUzQvZVBtZy9IVFB3NXJ6ODdUSWljUDZh?=
- =?utf-8?B?M29oZmZaQ1d1SHE1dkFvcWQ2bzVaVjlIamNjdVF1SnlFdjhQc2x3S2x0TWhr?=
- =?utf-8?B?aFl1SGRwZmFubjFTTTdaa2UxY24rcjVVWFhLeHNBVThXM2p1N05seUw2bFpW?=
- =?utf-8?B?dnJYUjRPamcyakRTTU5YNmhnNmJsaGdpWG04VTF3QVVkQ2wwWjd5dW5vRmJn?=
- =?utf-8?B?bHFDMitJZlRlWk9OV0pWR1RTY0tpWWxtUUFEdXBmNWRuT1N0YWFsWllsYlIr?=
- =?utf-8?B?SEo4NG4xUGpqYys4c0E4Z2hyMWhXNCt4NDg1cGJOSExQdUtIZ2xQOVZaeVdS?=
- =?utf-8?B?MTVVRW96cWxVQTUvN0UxcmMzbGh6aXBoZGNVeHc4bjFYV00raU1VK2FBZE9R?=
- =?utf-8?B?Zk84ZGlrT3ZCMEFGak9kRndyN1UrSGtZUTVoYm9KYmlzWnYzUlIzWUVVd1Mx?=
- =?utf-8?B?akZPS05pTDFIUWVJV2x2eTB2UmxlWW5kdWptRnYvS0had0N0TThzeC9LT1Bp?=
- =?utf-8?B?cmtyVTlobXJKdnlDZHhlWUNwak9SYWxWd09ZL2NXNlBYL3JjMFRDcHVoanZ2?=
- =?utf-8?B?aXRNcFJleFZHMThjRHBRdUYxdVpCeUhjcS9IN1diWERBWXl3YkM5T05tdkZE?=
- =?utf-8?B?QjVwRy9YNWhkb0tIanRsa3gvdXI3MUFYNitWbUcvNmQ3elVpeUdVQ05kV0Zj?=
- =?utf-8?B?TWMrNlJ6RGhRYnpJd2VFbTNYaktqZG5YQmRQeUJXRDNIQ0d4VWZUQ09kOUNQ?=
- =?utf-8?B?Q2t4dm50czdIbVM0ODlwSkxIQ3VWb0dYb0tGVVpwR0xMZEExNUhEeEdtV3p6?=
- =?utf-8?B?SGF3ZStNazhxYVMxWkZua2IyQnptdnlSVXRPNFMrbXpwSjkvU0F6NHNodGlT?=
- =?utf-8?B?YkhTbGJ5N3NtWE94aStCeW1Zay9RTzNzalpyaWo3YlROaE4vVys5WC9UcVZJ?=
- =?utf-8?B?M1ArZWpnalcvekZZL0xkL3lxdXllK2pDZm1UTmY3QWtJZUFYV29rSDk3QUJC?=
- =?utf-8?B?di8xUXAydGVtcUNQRy91NjFCMFBUYXVYeURzbFdGclVQRWtaeVNkaU1MQzEw?=
- =?utf-8?B?Z3JLMnV1V1VCZWxNUFJJRjQvc3F5ZEN0RHJsV0lET05GMmhHWVR6Zz09?=
-X-OriginatorOrg: anduras.de
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2042a1bd-63cf-466d-09fb-08da484b99e6
-X-MS-Exchange-CrossTenant-AuthSource: FRYP281MB2107.DEUP281.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Jun 2022 06:04:36.9020 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 639cc95b-aa9f-42bf-b982-a592003fbab3
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QqgJX9iHo8pooujWidDdxdtqe37IzOEt3s9gEN6YPxjPnnoJGKZeXiWqlgemZrbelfhaQIJ/jrkd4D7gNpeG+Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: FRYP281MB0703
-X-Sophos-Email: [eu-central-1] Antispam-Engine: 5.0.0,
- AntispamData: 2022.6.7.53619
-X-LASED-SpamProbability: 0.079439
-X-LASED-Hits: BODYTEXTP_SIZE_3000_LESS 0.000000, BODY_SIZE_2000_2999 0.000000, 
- BODY_SIZE_5000_LESS 0.000000, BODY_SIZE_7000_LESS 0.000000,
- CTE_BASE64 0.000000, DKIM_SIGNATURE 0.000000, HTML_00_01 0.050000,
- HTML_00_10 0.050000, IN_REP_TO 0.000000, LEGITIMATE_SIGNS 0.000000,
- MSG_THREAD 0.000000, NO_FUR_HEADER 0.000000, NO_URI_HTTPS 0.000000,
- OUTBOUND 0.000000, OUTBOUND_SOPHOS 0.000000, REFERENCES 0.000000,
- SINGLE_URI_IN_BODY 0.000000, __ANY_URI 0.000000,
- __ARCAUTH_DKIM_PASSED 0.000000, __ARCAUTH_DMARC_PASSED 0.000000,
- __ARCAUTH_PASSED 0.000000, __ARC_SEAL_MICROSOFT 0.000000,
- __ARC_SIGNATURE_MICROSOFT 0.000000, __BANNER_TRUSTED_SENDER 0.000000,
- __BODY_NO_MAILTO 0.000000, __BOUNCE_CHALLENGE_SUBJ 0.000000,
- __BOUNCE_NDR_SUBJ_EXEMPT 0.000000, __BULK_NEGATE 0.000000,
- __BUSINESS_SIGNATURE 0.000000, __CT 0.000000, __CTE 0.000000,
- __CT_TEXT_PLAIN 0.000000, __DQ_NEG_DOMAIN 0.000000, __DQ_NEG_HEUR 0.000000,
- __DQ_NEG_IP 0.000000, __FORWARDED_MSG 0.000000, __FRAUD_CONTACT_NUM 0.000000, 
- __FRAUD_PARTNERSHIP 0.000000, __FUR_RDNS_SOPHOS 0.000000, __HAS_FROM 0.000000, 
- __HAS_MSGID 0.000000, __HAS_REFERENCES 0.000000, __HAS_X_FF_ASR 0.000000,
- __HAS_X_FF_ASR_CAT 0.000000, __HAS_X_FF_ASR_SFV 0.000000,
- __HEADER_ORDER_FROM 0.000000, __IN_REP_TO 0.000000, __MAIL_CHAIN 0.000000,
- __MIME_TEXT_ONLY 0.000000, __MIME_TEXT_P 0.000000, __MIME_TEXT_P1 0.000000,
- __MIME_VERSION 0.000000, __MOZILLA_USER_AGENT 0.000000,
- __NO_HTML_TAG_RAW 0.000000, __OUTBOUND_SOPHOS 0.000000,
- __OUTBOUND_SOPHOS_FUR 0.000000, __OUTBOUND_SOPHOS_FUR_IP 0.000000,
- __OUTBOUND_SOPHOS_FUR_RDNS 0.000000, __PHISH_SPEAR_STORAGE_LIMIT2 0.000000,
- __PHISH_SPEAR_SUBJ_ALERT 0.000000, __REFERENCES 0.000000,
- __SANE_MSGID 0.000000, __SINGLE_URI_TEXT 0.000000, __SUBJ_ALPHA_END 0.000000, 
- __SUBJ_ALPHA_NEGATE 0.000000, __SUBJ_REPLY 0.000000, __TO_MALFORMED_2 0.000000,
- __TO_NO_NAME 0.000000, __URI_IN_BODY 0.000000, __URI_NOT_IMG 0.000000,
- __URI_NO_MAILTO 0.000000, __URI_NO_PATH 0.000000, __URI_NS 0.000000,
- __URI_WITHOUT_PATH 0.000000, __USER_AGENT 0.000000,
- __X_FF_ASR_SCL_NSP 0.000000, __X_FF_ASR_SFV_NSPM 0.000000
-X-LASED-Impersonation: False
-X-LASED-Spam: NonSpam
-X-Sophos-MH-Mail-Info-Key: NExIS1pSM2hYOHo4aGgtMTcyLjIwLjAuMTM2
-X-Mailman-Approved-At: Tue, 07 Jun 2022 13:01:22 +0000
-Subject: Re: [Intel-wired-lan] Bonding problem on Intel X710 hardware
+Subject: [Intel-wired-lan] [PATCH net v1] ice: ethtool: Prohibit improper
+ channel config for DCB
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -227,46 +74,209 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Cc: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-SGVsbG8hDQoNCldhcyBhbnlib2R5IGFibGUgdG8gcmVwcm9kdWNlIHRoZSBwcm9ibGVtPw0KRG8g
-eW91IG5lZWQgYXNzaXN0YW5jZSBvciBmdXJ0aGVyIGluZm9ybWF0aW9uPw0KDQpSZWdhcmRzDQog
-IFN2ZW4NCg0KQW0gMzAuMDUuMjIgdW0gMTc6NTMgc2NocmllYiBTdmVuIEFuZGVyczoNCj4+Pj4g
-SGVsbG8hDQo+Pj4+DQo+Pj4+IFRoaXMgaXMgYSBmb2xsb3cgdXAgdG8gbXkgcXVlc3Rpb24uIEkg
-ZGlkIG5vdCBoZWFyIGFueXRoaW5nIHNvIGZhciwgYnV0IEkgdHJpZWQNCj4+Pj4gdG8gZmluZCBz
-b21lIHNvbWUgaW5mb3JtYXRpb24gbWVhbndoaWxlLg0KPj4+Pg0KPj4+PiBJJ3ZlIGdvdCBhIGd1
-ZXNzIGZyb20gc29tZWJvZHksIHRoYXQgdGhlIGVycm9yIG1lc3NhZ2UgIkVycm9yIEk0MEVfQVFf
-UkNfRUlOVkFMDQo+Pj4+IGFkZGluZyBSWCBmaWx0ZXJzIG9uIFBGLCBwcm9taXNjdW91cyBtb2Rl
-IGZvcmNlZCBvbiIgbWF5YmUgdHJpZ2dlcmVkLCBiZWNhdXNlDQo+Pj4+IEknbSBoaXR0aW5nIGEg
-bGltaXQgaGVyZS4NCj4+DQo+PiBZZXMsIHR5cGljYWxseSB0aGlzIGlzIGEgcmVzcG9uc2UgZnJv
-bSBvdXIgZmlybXdhcmUgdGhhdCBhIHRhYmxlIGlzIGZ1bGwgaW4gaGFyZHdhcmUsIGFuZCBJJ20g
-Z3Vlc3NpbmcgdGhhdCB5b3UgbWlnaHQgYmUgcnVubmluZyBpbnRvIGEgZmlsdGVyIGxpbWl0IA0K
-Pj4gZHVlIHRvIHVzaW5nIHZsYW5zPw0KPiANCj4gVGhhdCdzIHdoYXQgSSBzdXNwZWN0LCBidXQg
-SSBkaWQga25vdyB0aGUgaGFyZHdhcmUgYW5kIGZpcm13YXJlIGluc3VmZmljaWVudGx5DQo+IHRv
-IGJlIHN1cmUuDQo+IFdoYXQgSSdtIHdvbmRlcmluZyBpczogV2h5IHRoaXMgaXMgb25seSB0cmln
-Z2VyZWQgaWYgSSB0b2dnbGUgdGhlICJudHVwbGVzIHN1cHBvcnQiDQo+IGFuZCBub3QgZWFybGll
-ciB3aGVuIHNldHRpbmcgdXAgdGhlIGludGVyZmFjZT8NCj4gDQo+Pj4+IERhdGEgcGFja2V0cyBh
-cmUgb25seSByZWNlaXZlZCBzcG9yYWRpY2FsbHkuIElmIEkgcnVuIHRoZSBzYW1lIHRlc3QNCj4+
-Pj4gd2l0aCBvbmx5IG9uZSBzbGF2ZSBwb3J0LCBpdCB3b3JrcyB3aXRob3V0IHByb2JsZW1zLg0K
-Pj4NCj4+IEFuZCB0aGVyZSBhcmUgbm8gY291bnRlcnMgZ29pbmcgdXAgaW4gZXRodG9vbCAtUyB3
-aGVuIHlvdSByZWNlaXZlL2Ryb3AgcGFja2V0cz8NCj4gDQo+IEknbSBub3Qgc3VyZSBoZXJlLiBJ
-IHRyaWVkIHRvIGluc3BlY3QgdGhlIGNvdW50ZXJzIGFuZCBpdCBzZWVtcyB0aGF0IHRoZSBjb3Vu
-dGVycw0KPiBhcmUgZ29pbmcgdXAgc2xvd2VyIGluIHRoaXMgY2FzZSwgYnV0IGl0J3MgZGlmZmlj
-dWx0IHRvIHNheSwgYmVjYXVzZSB0aGVyZSBpcw0KPiBzb21lICJub2lzZSIgb24gdGhlIGxpbmUg
-YW5kIEkgZG8gbm90IGhhdmUgZGlyZWN0IGFjY2VzcyB0byB0aGUgaGFyZHdhcmUgYXQgdGhlDQo+
-IG1vbWVudC4NCj4gDQo+IElmIHlvdSBuZWVkIGFueSBmdXJ0aGVyIGluZm9ybWF0aW9uIG9yIHRl
-c3RzLCBqdXN0IGNvbnRhY3QgbWUuDQoNClJlZ2FyZHMNCiAgwqAgU3ZlbiBBbmRlcnMNCi0tIA0K
-ICBTdmVuIEFuZGVycyAgICAgICAgICAgICAgICAgICgpIFVURi04IFJpYmJvbiBDYW1wYWlnbg0K
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAvXCBTdXBw
-b3J0IHBsYWluIHRleHQgZS1tYWlsDQogIEFORFVSQVMgaW50cmFuZXQgc2VjdXJpdHkgQUcNCiAg
-TWVzc2VzdHJhc3NlIDMgLSA5NDAzNiBQYXNzYXUgLSBHZXJtYW55DQogIFdlYjogd3d3LmFuZHVy
-YXMuZGUgLSBUZWw6ICs0OSAoMCk4NTEtNCA5MCA1MC0wIC0gRmF4OiArNDkgKDApODUxLTQgOTAg
-NTAtNTUNCg0KVGhvc2Ugd2hvIHdvdWxkIGdpdmUgdXAgZXNzZW50aWFsIExpYmVydHksIHRvIHB1
-cmNoYXNlIGEgbGl0dGxlDQp0ZW1wb3JhcnkgU2FmZXR5LCBkZXNlcnZlIG5laXRoZXIgTGliZXJ0
-eSBub3IgU2FmZXR5Lg0KICAgLSBCZW5qYW1pbiBGcmFua2xpbg0KDQpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBs
-aXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
+Do not allow setting less channels, than Traffic Classes there are
+via ethtool. There must be at least one channel per Traffic Class.
+
+If you set less channels, than Traffic Classes there are, then during
+ice_vsi_rebuild there would be allocated only the requested amount
+of tx/rx rings in ice_vsi_alloc_arrays. But later in ice_vsi_setup_q_map
+there would be requested at least one channel per Traffic Class. This
+results in setting num_rxq > alloc_rxq and num_txq > alloc_txq.
+Later, there would be a NULL pointer dereference in
+ice_vsi_map_rings_to_vectors, because we go beyond of rx_rings or
+tx_rings arrays.
+
+Change ice_set_channels() to return error if you try to allocate less
+channels, than Traffic Classes there are.
+Change ice_vsi_setup_q_map() and ice_vsi_setup_q_map_mqprio() to return
+status code instead of void.
+Add error handling for ice_vsi_setup_q_map() and
+ice_vsi_setup_q_map_mqprio() in ice_vsi_init() and ice_vsi_cfg_tc().
+
+[53753.889983] INFO: Flow control is disabled for this traffic class (0) on this vsi.
+[53763.984862] BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
+[53763.992915] PGD 14b45f5067 P4D 0
+[53763.996444] Oops: 0002 [#1] SMP NOPTI
+[53764.000312] CPU: 12 PID: 30661 Comm: ethtool Kdump: loaded Tainted: GOE    --------- -  - 4.18.0-240.el8.x86_64 #1
+[53764.011825] Hardware name: Intel Corporation WilsonCity/WilsonCity, BIOS WLYDCRB1.SYS.0020.P21.2012150710 12/15/2020
+[53764.022584] RIP: 0010:ice_vsi_map_rings_to_vectors+0x7e/0x120 [ice]
+[53764.029089] Code: 41 0d 0f b7 b7 12 05 00 00 0f b6 d0 44 29 de 44 0f b7 c6 44 01 c2 41 39 d0 7d 2d 4c 8b 47 28 44 0f b7 ce 83 c6 01 4f 8b 04 c8 <49> 89 48 28 4                           c 8b 89 b8 01 00 00 4d 89 08 4c 89 81 b8 01 00 00 44
+[53764.048379] RSP: 0018:ff550dd88ea47b20 EFLAGS: 00010206
+[53764.053884] RAX: 0000000000000002 RBX: 0000000000000004 RCX: ff385ea42fa4a018
+[53764.061301] RDX: 0000000000000006 RSI: 0000000000000005 RDI: ff385e9baeedd018
+[53764.068717] RBP: 0000000000000010 R08: 0000000000000000 R09: 0000000000000004
+[53764.076133] R10: 0000000000000002 R11: 0000000000000004 R12: 0000000000000000
+[53764.083553] R13: 0000000000000000 R14: ff385e658fdd9000 R15: ff385e9baeedd018
+[53764.090976] FS:  000014872c5b5740(0000) GS:ff385e847f100000(0000) knlGS:0000000000000000
+[53764.099362] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[53764.105409] CR2: 0000000000000028 CR3: 0000000a820fa002 CR4: 0000000000761ee0
+[53764.112851] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[53764.120301] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[53764.127747] PKRU: 55555554
+[53764.130781] Call Trace:
+[53764.133564]  ice_vsi_rebuild+0x611/0x870 [ice]
+[53764.138341]  ice_vsi_recfg_qs+0x94/0x100 [ice]
+[53764.143116]  ice_set_channels+0x1a8/0x3e0 [ice]
+[53764.147975]  ethtool_set_channels+0x14e/0x240
+[53764.152667]  dev_ethtool+0xd74/0x2a10
+[53764.156665]  ? __mod_lruvec_state+0x44/0x110
+[53764.161280]  ? __mod_lruvec_state+0x44/0x110
+[53764.165893]  ? page_add_file_rmap+0x15/0x170
+[53764.170518]  ? inet_ioctl+0xd1/0x220
+[53764.174445]  ? netdev_run_todo+0x5e/0x290
+[53764.178808]  dev_ioctl+0xb5/0x550
+[53764.182485]  sock_do_ioctl+0xa0/0x140
+[53764.186512]  sock_ioctl+0x1a8/0x300
+[53764.190367]  ? selinux_file_ioctl+0x161/0x200
+[53764.195090]  do_vfs_ioctl+0xa4/0x640
+[53764.199035]  ksys_ioctl+0x60/0x90
+[53764.202722]  __x64_sys_ioctl+0x16/0x20
+[53764.206845]  do_syscall_64+0x5b/0x1a0
+[53764.210887]  entry_SYSCALL_64_after_hwframe+0x65/0xca
+
+Fixes: 87324e747fde ("ice: Implement ethtool ops for channels")
+Signed-off-by: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 10 +++++
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 42 +++++++++++++++++---
+ 2 files changed, 47 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 1e71b70f0e52..a99a5554eeb2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3470,6 +3470,16 @@ static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
+ 	new_rx = ch->combined_count + ch->rx_count;
+ 	new_tx = ch->combined_count + ch->tx_count;
+ 
++	if (new_rx < vsi->tc_cfg.numtc) {
++		netdev_err(dev, "Cannot set less Rx channels, than Traffic Classes you have (%u)\n",
++			   vsi->tc_cfg.numtc);
++		return -EINVAL;
++	}
++	if (new_tx < vsi->tc_cfg.numtc) {
++		netdev_err(dev, "Cannot set less Tx channels, than Traffic Classes you have (%u)\n",
++			   vsi->tc_cfg.numtc);
++		return -EINVAL;
++	}
+ 	if (new_rx > ice_get_max_rxq(pf)) {
+ 		netdev_err(dev, "Maximum allowed Rx channels is %d\n",
+ 			   ice_get_max_rxq(pf));
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 454e01ae09b9..f7f9c973ec54 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -909,7 +909,7 @@ static void ice_set_dflt_vsi_ctx(struct ice_hw *hw, struct ice_vsi_ctx *ctxt)
+  * @vsi: the VSI being configured
+  * @ctxt: VSI context structure
+  */
+-static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
++static int ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ {
+ 	u16 offset = 0, qmap = 0, tx_count = 0, pow = 0;
+ 	u16 num_txq_per_tc, num_rxq_per_tc;
+@@ -982,7 +982,18 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 	else
+ 		vsi->num_rxq = num_rxq_per_tc;
+ 
++	if (vsi->num_rxq > vsi->alloc_rxq) {
++		dev_err(ice_pf_to_dev(vsi->back), "Trying to use more Rx queues (%u), than were allocated (%u)!\n",
++			vsi->num_rxq, vsi->alloc_rxq);
++		return -EINVAL;
++	}
++
+ 	vsi->num_txq = tx_count;
++	if (vsi->num_txq > vsi->alloc_txq) {
++		dev_err(ice_pf_to_dev(vsi->back), "Trying to use more Tx queues (%u), than were allocated (%u)!\n",
++			vsi->num_txq, vsi->alloc_txq);
++		return -EINVAL;
++	}
+ 
+ 	if (vsi->type == ICE_VSI_VF && vsi->num_txq != vsi->num_rxq) {
+ 		dev_dbg(ice_pf_to_dev(vsi->back), "VF VSI should have same number of Tx and Rx queues. Hence making them equal\n");
+@@ -1000,6 +1011,8 @@ static void ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
+ 	 */
+ 	ctxt->info.q_mapping[0] = cpu_to_le16(vsi->rxq_map[0]);
+ 	ctxt->info.q_mapping[1] = cpu_to_le16(vsi->num_rxq);
++
++	return 0;
+ }
+ 
+ /**
+@@ -1187,7 +1200,10 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
+ 	if (vsi->type == ICE_VSI_CHNL) {
+ 		ice_chnl_vsi_setup_q_map(vsi, ctxt);
+ 	} else {
+-		ice_vsi_setup_q_map(vsi, ctxt);
++		ret = ice_vsi_setup_q_map(vsi, ctxt);
++		if (ret)
++			goto out;
++
+ 		if (!init_vsi) /* means VSI being updated */
+ 			/* must to indicate which section of VSI context are
+ 			 * being modified
+@@ -3464,7 +3480,7 @@ void ice_vsi_cfg_netdev_tc(struct ice_vsi *vsi, u8 ena_tc)
+  *
+  * Prepares VSI tc_config to have queue configurations based on MQPRIO options.
+  */
+-static void
++static int
+ ice_vsi_setup_q_map_mqprio(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt,
+ 			   u8 ena_tc)
+ {
+@@ -3513,7 +3529,18 @@ ice_vsi_setup_q_map_mqprio(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt,
+ 
+ 	/* Set actual Tx/Rx queue pairs */
+ 	vsi->num_txq = offset + qcount_tx;
++	if (vsi->num_txq > vsi->alloc_txq) {
++		dev_err(ice_pf_to_dev(vsi->back), "Trying to use more Tx queues (%u), than were allocated (%u)!\n",
++			vsi->num_txq, vsi->alloc_txq);
++		return -EINVAL;
++	}
++
+ 	vsi->num_rxq = offset + qcount_rx;
++	if (vsi->num_rxq > vsi->alloc_rxq) {
++		dev_err(ice_pf_to_dev(vsi->back), "Trying to use more Rx queues (%u), than were allocated (%u)!\n",
++			vsi->num_rxq, vsi->alloc_rxq);
++		return -EINVAL;
++	}
+ 
+ 	/* Setup queue TC[0].qmap for given VSI context */
+ 	ctxt->info.tc_mapping[0] = cpu_to_le16(qmap);
+@@ -3531,6 +3558,8 @@ ice_vsi_setup_q_map_mqprio(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt,
+ 	dev_dbg(ice_pf_to_dev(vsi->back), "vsi->num_rxq = %d\n",  vsi->num_rxq);
+ 	dev_dbg(ice_pf_to_dev(vsi->back), "all_numtc %u, all_enatc: 0x%04x, tc_cfg.numtc %u\n",
+ 		vsi->all_numtc, vsi->all_enatc, vsi->tc_cfg.numtc);
++
++	return 0;
+ }
+ 
+ /**
+@@ -3580,9 +3609,12 @@ int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc)
+ 
+ 	if (vsi->type == ICE_VSI_PF &&
+ 	    test_bit(ICE_FLAG_TC_MQPRIO, pf->flags))
+-		ice_vsi_setup_q_map_mqprio(vsi, ctx, ena_tc);
++		ret = ice_vsi_setup_q_map_mqprio(vsi, ctx, ena_tc);
+ 	else
+-		ice_vsi_setup_q_map(vsi, ctx);
++		ret = ice_vsi_setup_q_map(vsi, ctx);
++
++	if (ret)
++		goto out;
+ 
+ 	/* must to indicate which section of VSI context are being modified */
+ 	ctx->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_RXQ_MAP_VALID);
+-- 
+2.25.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
