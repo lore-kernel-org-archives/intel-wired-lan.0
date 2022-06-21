@@ -1,73 +1,73 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FD03C433EF
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 21 Jun 2022 15:31:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DA88CCA473
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 21 Jun 2022 15:31:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9E0194196A;
-	Tue, 21 Jun 2022 15:31:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9E0194196A
+	by smtp3.osuosl.org (Postfix) with ESMTP id BEC4C60681;
+	Tue, 21 Jun 2022 15:31:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BEC4C60681
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1655825475;
-	bh=x/dH9gLNrMUJjENqYWQP9aGDgrftzTG66E6CDFD6/TI=;
+	s=default; t=1655825479;
+	bh=Po1WH49JWsmfPDA8/c0/Fey8LQSziY/erLmMggLu8OQ=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=9AIyKpU8zcwFLV7MQ8fBtnri/INI8IqPeDzb8EMqc2H6wg1GfuhHYuRO4xhHeMRiq
-	 pOKvtZsCIeJI4Iq6xGsWIqRibcO50E3bKppy+oC42xh4PuhCStS1aASlWh8Yk7S0A1
-	 QpOxugoUvCcQAx8TBjrx9A1NfkxcqeeylIifwXJXNXjQa/fL3kSTGMbxZNUtG26pYl
-	 lgrHNqMPfOGcQ6EC+hLgCUO26X+AJjhPzPy+lXQhG29PL0w8w7NSjeRb7+UC5qdaN5
-	 HgMp9jcUY1yqplAaAO73MZdq81lxoml34WLUOdcKGVZLPFcxDwH815SDMCQkPV8QfY
-	 Utwqrlwq4c2WA==
+	b=DVZWr1pywNsR1vj67nSa3BDaUyrOFSOU8gWvkNaP4vSNYrBw0vHjDbQ1q+kMVk72s
+	 MJ9TzSkiPOxQXYRiydj5EKIHUgYVBAxUnjL15v4STei1PKX2djyqOOGqKTHna825/j
+	 96NmvISenqmf1r09AHTkvNqYMDfgly5rcdipHp8DKlAmSCZJsQANogtd3knfoVmovO
+	 WVXQt3S95wrW0RkZhrNHwm05tbdc1ZKS/13m8N5CSx19PbBrEhF0A9SS7aXgZZaSSX
+	 qcFsBa0IvGdSALHsby+e96dBXoW+JKxvqgsRuWmAqZub6jydWbifxUvu87n3zP3Iva
+	 rb917qqNpzLxg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DmC2ntRmWNwp; Tue, 21 Jun 2022 15:31:14 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 7vIVQsKOgWEC; Tue, 21 Jun 2022 15:31:19 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8B16E418FE;
-	Tue, 21 Jun 2022 15:31:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8B16E418FE
+	by smtp3.osuosl.org (Postfix) with ESMTP id CAADF60B6B;
+	Tue, 21 Jun 2022 15:31:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CAADF60B6B
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2CC291BF5DB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Jun 2022 08:34:10 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 496121BF5DB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Jun 2022 08:35:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id AF45240BB2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Jun 2022 08:34:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AF45240BB2
+ by smtp2.osuosl.org (Postfix) with ESMTP id 21F6140142
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Jun 2022 08:35:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 21F6140142
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id EH7TW_BaQRQ1 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 21 Jun 2022 08:34:04 +0000 (UTC)
-X-Greylist: delayed 00:06:35 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E5A35404EB
-Received: from smtpbg.qq.com (smtpbg123.qq.com [175.27.65.52])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E5A35404EB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Jun 2022 08:34:03 +0000 (UTC)
-X-QQ-mid: bizesmtp84t1655800307tp96dari
+ with ESMTP id hvlgbg_1I-sd for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 21 Jun 2022 08:35:11 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AA98940104
+Received: from smtpbg.qq.com (smtpbg139.qq.com [175.27.65.136])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AA98940104
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Jun 2022 08:35:10 +0000 (UTC)
+X-QQ-mid: bizesmtp63t1655799963tih337vy
 Received: from ubuntu.localdomain ( [106.117.99.68])
  by bizesmtp.qq.com (ESMTP) with 
- id ; Tue, 21 Jun 2022 16:31:42 +0800 (CST)
-X-QQ-SSF: 01000000007000209000B00A0000000
-X-QQ-FEAT: 0VgNaGdhy9i3VEgTjda6YTeTUjwUfOcImznDL6T2LXaZA2NbnSfXY1kzYj4wX
- t4P4vhDP0uFEgNKYWsiYzOWMCHw/oep9gTTRwmXEi+9fjX+I2c73H0oaXT3LQ4/fbPX8kDd
- 48m7ZLETi83rkgCTaPCq5BbS5BmIlP29LhhA7xL5ua1kiuKqYg8lzawQ20Rtr0Uy0reliM2
- ndcX/2Luky4X4Pb9dsOIVx67CvUzjnLs5CWsFN47jR98iH8N3KLLGFgycF8usTl4QuS4dlK
- NOw5CnXyy2nqCB/fviIu1Rc5iqmHa6h7gMaS7k80Gyd4Ynti4HaNZWm3362I4A2QMxrWn99
- 206wO8pIWtxTJWS/XI=
+ id ; Tue, 21 Jun 2022 16:25:56 +0800 (CST)
+X-QQ-SSF: 01000000007000109000B00A0000000
+X-QQ-FEAT: EbWlFiDChHPYfU5yL6223QxbRZgfR1rtB43QG8V5Y7Z2MVodubW05u6ah+dI/
+ 3d49daniGvuu5+3qEQ8bNjMDL1XKeplZV0Lb/zJQmboLN3Hj3g3Je/aGanv0f/cAdxj05KR
+ 63khFKXwieh3DmbsQQg1jOzH4izzfk90u/P00FNaMVeA+Rj3y/Fcc57uQ89tfcm/LjXACen
+ zIAfl/3M1Q3iqx3vFRIQodrB3BPJx4yxQf1UE40yWQN4nxShLBuY+ruDPxub4Tdt+jgetVT
+ ZWjMDmWYJPO9G3MC5PTRCFqA8XXcwKWAuJq69kri2qkARwW+32zwuf6OMdAWWHwTsNG1iht
+ w1dXSIC
 X-QQ-GoodBg: 0
 From: Jiang Jian <jiangjian@cdjrlc.com>
 To: jesse.brandeburg@intel.com,
 	anthony.l.nguyen@intel.com
-Date: Tue, 21 Jun 2022 16:31:40 +0800
-Message-Id: <20220621083140.54004-1-jiangjian@cdjrlc.com>
+Date: Tue, 21 Jun 2022 16:25:54 +0800
+Message-Id: <20220621082554.52380-1-jiangjian@cdjrlc.com>
 X-Mailer: git-send-email 2.17.1
 X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybgspam:qybgspam8
+Feedback-ID: bizesmtp:cdjrlc.com:qybgspam:qybgspam6
 X-Mailman-Approved-At: Tue, 21 Jun 2022 15:31:12 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: remove unexpected word "the"
+Subject: [Intel-wired-lan] [PATCH] ixgbe: remove unexpected word "the"
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,22 +93,31 @@ there is an unexpected word "the" in the comments that need to be removed
 
 Signed-off-by: Jiang Jian <jiangjian@cdjrlc.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_82575.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index cbe92fd23a70..8d6e44ee1895 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -2207,7 +2207,7 @@ s32 igb_write_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 data)
-  *  igb_reset_mdicnfg_82580 - Reset MDICNFG destination and com_mdio bits
-  *  @hw: pointer to the HW structure
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index e4b50c7781ff..35c2b9b8bd19 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1737,7 +1737,7 @@ static s32 ixgbe_setup_sfi_x550a(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
+  * @speed: link speed
+  * @autoneg_wait_to_complete: unused
   *
-- *  This resets the the MDICNFG.Destination and MDICNFG.Com_MDIO bits based on
-+ *  This resets the MDICNFG.Destination and MDICNFG.Com_MDIO bits based on
-  *  the values found in the EEPROM.  This addresses an issue in which these
-  *  bits are not restored from EEPROM after reset.
-  **/
+- * Configure the the integrated PHY for native SFP support.
++ * Configure the integrated PHY for native SFP support.
+  */
+ static s32
+ ixgbe_setup_mac_link_sfp_n(struct ixgbe_hw *hw, ixgbe_link_speed speed,
+@@ -1786,7 +1786,7 @@ ixgbe_setup_mac_link_sfp_n(struct ixgbe_hw *hw, ixgbe_link_speed speed,
+  * @speed: link speed
+  * @autoneg_wait_to_complete: unused
+  *
+- * Configure the the integrated PHY for SFP support.
++ * Configure the integrated PHY for SFP support.
+  */
+ static s32
+ ixgbe_setup_mac_link_sfp_x550a(struct ixgbe_hw *hw, ixgbe_link_speed speed,
 -- 
 2.17.1
 
