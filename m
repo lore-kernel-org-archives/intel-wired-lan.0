@@ -4,81 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CD26C43334
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jun 2022 10:45:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95F37C43334
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jun 2022 10:45:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E567682B21;
-	Tue, 28 Jun 2022 10:45:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E567682B21
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4184882B97;
+	Tue, 28 Jun 2022 10:45:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4184882B97
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1656413130;
-	bh=Gm/ijKamyBlUiOc/gLa1P1ePiKzFZCnvi8tONO8JYYA=;
+	s=default; t=1656413136;
+	bh=0HEK34q6pW9uwV+jNoj56MWyrQLIUcDqbiA1ZxkHVBI=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=LvK/nojDjygPNaaSi5gdRYQVZKg7l4PsuvdaLIVmiWQ5aKgDhZdbaLuLwh3BsfQjp
-	 5PjDfWr9YU0dwCnk9VSPoj2/2OAyubS8f70zcRHFKcG70rRiyHxybG7G58YgL54SEj
-	 riMPRB/HsGdYQpDldeGvdPvcnAFrAfpRYnAXpMnGnRexNjUXm6yyKKxR/Kd8Gd28dw
-	 d/YmmYfKgb7wKMKH8y3L9OQbRJUa6Qaw1KFDhj+DkKFEGC0p0vG204THQB6hXf1fSF
-	 qYH0aom0V5OIe7xGmbUCIxHzX3ICCUP+iW0RDKGBAq/ULM3wRlj7IbGxnnfWERXhAE
-	 XeCtk3dvDyxjg==
+	b=waaWagu8eEyG/BkTf1VkCoPoHo5BiikE/G3BtwHsuxPwl0JBNgJAKIcEmf+yT8L5p
+	 QWjJcKC1Hij+gb+i8TPNNoDOUpvcwULCZbvNlnJpdY7bc3CnS0KLGTQAlz0gGcV0Ek
+	 UwfFnqOxauyFx4B6XoX0CbXSA1EmMtLn97v2x1tARJzTiBAbrkUmm4JSnqyX6WXsRK
+	 7qTZI1E4mNuHIXsMQ4EKzeoyOIlDbCyTCizeZqeY54yvwUUcXyzTKg3lajtwqeuEMW
+	 WNO4mVCnB5N5nBJMH1K9Pu2715RFFXJ9etZ2WeyugrIhMbZzwabgl5jZ17aU5wuF+C
+	 iNyVHcErBn73g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id SaYFvzufh-AS; Tue, 28 Jun 2022 10:45:30 +0000 (UTC)
+	with ESMTP id JK__IxHC6zlg; Tue, 28 Jun 2022 10:45:35 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F253682B97;
-	Tue, 28 Jun 2022 10:45:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F253682B97
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1918A82FA9;
+	Tue, 28 Jun 2022 10:45:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1918A82FA9
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id DF7BA1BF599
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 10:45:26 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B38601BF599
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 10:45:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C771960C0F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 10:45:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C771960C0F
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8DB5460773
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 10:45:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8DB5460773
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id iTvF_I03UUWk for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Jun 2022 10:45:26 +0000 (UTC)
+ with ESMTP id BuLnBjWyD_AJ for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Jun 2022 10:45:32 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1AE0B6072A
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1AE0B6072A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 10:45:25 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10391"; a="343396624"
-X-IronPort-AV: E=Sophos;i="5.92,227,1650956400"; d="scan'208";a="343396624"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CCE446072A
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id CCE446072A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 10:45:32 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10391"; a="368019842"
+X-IronPort-AV: E=Sophos;i="5.92,227,1650956400"; d="scan'208";a="368019842"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Jun 2022 03:45:12 -0700
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 Jun 2022 03:45:32 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,227,1650956400"; d="scan'208";a="693060041"
+X-IronPort-AV: E=Sophos;i="5.92,227,1650956400"; d="scan'208";a="693060217"
 Received: from propan.igk.intel.com ([10.211.8.82])
- by fmsmga002.fm.intel.com with ESMTP; 28 Jun 2022 03:45:11 -0700
+ by fmsmga002.fm.intel.com with ESMTP; 28 Jun 2022 03:45:31 -0700
 From: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 28 Jun 2022 12:43:54 +0200
-Message-Id: <20220628104354.4195-1-anatolii.gerasymenko@intel.com>
+Date: Tue, 28 Jun 2022 12:44:14 +0200
+Message-Id: <20220628104414.4297-1-anatolii.gerasymenko@intel.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1656413126; x=1687949126;
+ t=1656413132; x=1687949132;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=MlnVECHpanFIAvylX3pdvylTQ8wxY0xueSEXp/jma2s=;
- b=bgEtLUFpHgP3FgeVxtjEEpKVrEqCUiPbo8Oa9f6G2SOjbF361bR/xRnX
- EJY54eJi+j0fkSg3q8RCWwB+bP4P9gTOdCvJuwwOruhL5L54dVa1t7b0V
- a4b+OV2eX0S6V2P5i7bKyE0Gqd4F8SyJ658paixccfZ/sCejIC9z6d9Et
- gFuCRi7a8qJ3ty28Jno/7MPCYyQzLNY1Va6YoEM+qg2cTkcrybpyfjvJu
- tXz/2CCASiO6VTWZ6rUBPZ3N/2Pz+OD4GPjU3ZZZ0A/jRz20Opd/PbkC1
- wScttOtry4MsOfkGTAjk2RfP6QhWavkiSCjvfnQ9Tl6AjTAZqDy+pN4WC
+ bh=WiPhdTIulxcvZJRWJMRVDE6PXcjTuCyUd4vsmL/3vXM=;
+ b=iab0iBTfmlj+STE1nYCAo/WAIhAmWkpBQ/GA1XP9xVYtd5/wtd7ZtCk3
+ yA0K8kgXMIwI6yZHGreve96indld7+FbrKZQZ7QCj8ivJR09Awcf9nN87
+ D55n9TSPIBwSyAEVzaHtv/3NsqCFo28uNIqU1A4unUJMvFhzGdgMJDw+0
+ Zo803QQrnW0zjJGs46QeprZ/qOyzIq0oCNbDJkha7xP/sypagss8KTnP3
+ CR1trIM6MOHjmqWNQpLlqi4TzscZu/AmVlaMPiLjYNCd62PxEDWTF8AzJ
+ 0f7IC2a7tj9Mm65c6iKCxntNB4Xza6n3Lwv2Pfkno51j7oKyQSB8/1Ylz
  g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=bgEtLUFp
-Subject: [Intel-wired-lan] [PATCH net-next 0/2] ice: FCS/CRC stripping
- control
+ header.a=rsa-sha256 header.s=Intel header.b=iab0iBTf
+Subject: [Intel-wired-lan] [PATCH net-next 2/2] ice: Implement FCS/CRC and
+ VLAN stripping co-existence policy
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,35 +91,124 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implement possibility to change FCS/CRC stripping feature using
-ethtool command.
+Make sure that only the valid combinations of FCS/CRC stripping and
+VLAN stripping offloads are allowed.
 
-Having FCS/CRC could be useful for:
-- network sniffers to inspect FCS/CRC correctness
-- for benchmarking use cases
-- XDP programs
+You cannot have FCS/CRC stripping disabled while VLAN stripping is
+enabled - this breaks the correctness of the FCS/CRC.
 
-Anatolii Gerasymenko (1):
-  ice: Implement FCS/CRC and VLAN stripping co-existence policy
+If administrator tries to enable VLAN stripping when FCS/CRC stripping is
+disabled, the request should be rejected.
 
-Jesse Brandeburg (1):
-  ice: Implement control of FCS/CRC stripping
+If administrator tries to disable FCS/CRC stripping when VLAN stripping
+is enabled, the request should be rejected if VLANs are configured. If
+there is no VLAN configured, then both FCS/CRC and VLAN stripping should
+be disabled.
 
- drivers/net/ethernet/intel/ice/ice.h         |  1 +
- drivers/net/ethernet/intel/ice/ice_base.c    |  2 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c |  5 +-
- drivers/net/ethernet/intel/ice/ice_lib.c     | 21 ++++++
- drivers/net/ethernet/intel/ice/ice_lib.h     |  2 +
- drivers/net/ethernet/intel/ice/ice_main.c    | 73 ++++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_txrx.h    |  3 +-
- 7 files changed, 96 insertions(+), 11 deletions(-)
+Testing Hints:
+The default settings after driver load are:
+- VLAN C-Tag offloads are enabled
+- VLAN S-Tag offloads are disabled
+- FCS/CRC stripping is enabled
 
+Restore the default settings before each test with the command:
+ethtool -K eth0 rx-fcs off rxvlan on txvlan on rx-vlan-stag-hw-parse off
+tx-vlan-stag-hw-insert off
+
+Test 1:
+Disable FCS/CRC and VLAN stripping:
+ethtool -K eth0 rx-fcs on rxvlan off
+Try to enable VLAN stripping:
+ethtool -K eth0 rxvlan on
+
+Expected: VLAN stripping request is rejected
+
+Test 2:
+Try to disable FCS/CRC stripping:
+ethtool -K eth0 rx-fcs on
+
+Expected: VLAN stripping is also disabled, as there are no VLAN
+configured
+
+Test 3:
+Add a VLAN:
+ip link add link eth0 eth0.42 type vlan id 42
+ip link set eth0 up
+Try to disable FCS/CRC stripping:
+ethtool -K eth0 rx-fcs on
+
+Expected: FCS/CRC stripping request is rejected
+
+Signed-off-by: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
+Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 25 +++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 6510f4910e5d..8cdd41af8cf6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5724,6 +5724,9 @@ ice_fdb_del(struct ndmsg *ndm, __always_unused struct nlattr *tb[],
+ 					 NETIF_F_HW_VLAN_STAG_RX | \
+ 					 NETIF_F_HW_VLAN_STAG_TX)
+ 
++#define NETIF_VLAN_STRIPPING_FEATURES	(NETIF_F_HW_VLAN_CTAG_RX | \
++					 NETIF_F_HW_VLAN_STAG_RX)
++
+ #define NETIF_VLAN_FILTERING_FEATURES	(NETIF_F_HW_VLAN_CTAG_FILTER | \
+ 					 NETIF_F_HW_VLAN_STAG_FILTER)
+ 
+@@ -5810,6 +5813,14 @@ ice_fix_features(struct net_device *netdev, netdev_features_t features)
+ 			      NETIF_F_HW_VLAN_STAG_TX);
+ 	}
+ 
++	if (!(netdev->features & NETIF_F_RXFCS) &&
++	    (features & NETIF_F_RXFCS) &&
++	    (features & NETIF_VLAN_STRIPPING_FEATURES) &&
++	    !ice_vsi_has_non_zero_vlans(np->vsi)) {
++		netdev_warn(netdev, "Disabling VLAN stripping as FCS/CRC stripping is also disabled and there is no VLAN configured\n");
++		features &= ~NETIF_VLAN_STRIPPING_FEATURES;
++	}
++
+ 	return features;
+ }
+ 
+@@ -5903,6 +5914,13 @@ ice_set_vlan_features(struct net_device *netdev, netdev_features_t features)
+ 	current_vlan_features = netdev->features & NETIF_VLAN_OFFLOAD_FEATURES;
+ 	requested_vlan_features = features & NETIF_VLAN_OFFLOAD_FEATURES;
+ 	if (current_vlan_features ^ requested_vlan_features) {
++		if ((features & NETIF_F_RXFCS) &&
++		    (features & NETIF_VLAN_STRIPPING_FEATURES)) {
++			dev_err(ice_pf_to_dev(vsi->back),
++				"To enable VLAN stripping, you must first enable FCS/CRC stripping\n");
++			return -EIO;
++		}
++
+ 		err = ice_set_vlan_offload_features(vsi, features);
+ 		if (err)
+ 			return err;
+@@ -5960,6 +5978,13 @@ ice_set_features(struct net_device *netdev, netdev_features_t features)
+ 	 * flag the packet data will have the 4 byte CRC appended
+ 	 */
+ 	if (changed & NETIF_F_RXFCS) {
++		if ((features & NETIF_F_RXFCS) &&
++		    (features & NETIF_VLAN_STRIPPING_FEATURES)) {
++			dev_err(ice_pf_to_dev(vsi->back),
++				"To disable FCS/CRC stripping, you must first disable VLAN stripping\n");
++			return -EIO;
++		}
++
+ 		ice_vsi_cfg_crc_strip(vsi, !!(features & NETIF_F_RXFCS));
+ 		ret = ice_down_up(vsi);
+ 		if (ret)
 -- 
 2.25.1
 
