@@ -1,84 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2135AC43334
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jun 2022 13:43:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D327FC433EF
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Jun 2022 13:43:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id BA6A140607;
-	Tue, 28 Jun 2022 13:43:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BA6A140607
+	by smtp4.osuosl.org (Postfix) with ESMTP id 76B9041736;
+	Tue, 28 Jun 2022 13:43:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 76B9041736
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1656423825;
-	bh=ElKADsjBgnZRJvbl7ErdrPWlB+iwb24+VDT050+llBA=;
+	s=default; t=1656423831;
+	bh=Uyp1hxZtSfcmKbSqbYdQd7391GpLuJtSCIPNveWv9SE=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=AAd6yRtG9liESsRprk3QXBmOX1gxOmTZVEQt7c0GsbQNvPC1mD7g80Mqc9fFMtaeC
-	 1mltwAoHHbje5tE7LI5qeJyd9d2WVGnb6SJDNs8btiSBwKRL9pG2he7r31iyVKv0K6
-	 zH/G2JhncRC4VarZIu0mUVe+PLQRoswc7+oVED5nJkUkLCI4j2Vs3+XZvg2o2+pYp7
-	 9ACY0g2VEcVTVbHKlmnubE0MYrY2Ntzvw0QwdHpyCXWigzzj0NFz9bd0dIx3F6p/+0
-	 Z80zihyKgzD4ZTFPOS0leGhNlBU2149tomJce0nkT3uqLN2GX31DY1fa+zfnBqJy+m
-	 FUGSZcjmXD6ow==
+	b=Sz6zbTQzsNPY4wLM10+ELs+oMWtSDoRPZC4QzWJsDql7AvUKc/eWyj53Df0GStaDn
+	 yo9y3tyOJ/EoNiGhBwV+b6MkiKWLATzEajponzTM3zdaXwk5K6k5gZzMreTeQhQ8f6
+	 MOEn5Bz3kljVuggk5z8zHRiSUCKDcPD0qDZRKh9wzToE+ZviuHrhY5Q9rBzn5P/1IP
+	 sNrVNp6UqOv8MsN4xlBs7kCxbwugBQamQkL8ATlcs1YmSY96T2aFJamEWxo1L+BImI
+	 b19u+Mw392gwgASLSqSv8WK+JUtp9E1W6h1dAn8+S6WgcOOHso7dSMrkTuM75msJ2Q
+	 1AQtBWkJu74rA==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ZKAgi2qDdcPY; Tue, 28 Jun 2022 13:43:50 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 32C7F41739;
+	Tue, 28 Jun 2022 13:43:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 32C7F41739
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 833181BF28B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 13:43:48 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 687BA40C33
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 13:43:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 687BA40C33
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 8Lk0ssMTf5yx; Tue, 28 Jun 2022 13:43:44 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9F6CA40C44;
-	Tue, 28 Jun 2022 13:43:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9F6CA40C44
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 6E6621BF28B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 13:43:39 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 48AEB60C19
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 13:43:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 48AEB60C19
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id r6xVUe8i93sP for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Jun 2022 13:43:38 +0000 (UTC)
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 7Yx_JS0fOkp2 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Jun 2022 13:43:47 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8151760BD8
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8151760BD8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 13:43:38 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10391"; a="280504458"
-X-IronPort-AV: E=Sophos;i="5.92,227,1650956400"; d="scan'208";a="280504458"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Jun 2022 06:43:29 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AD9E840C1A
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AD9E840C1A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Jun 2022 13:43:47 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10391"; a="270502094"
+X-IronPort-AV: E=Sophos;i="5.92,227,1650956400"; d="scan'208";a="270502094"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 Jun 2022 06:43:43 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,227,1650956400"; d="scan'208";a="565074436"
+X-IronPort-AV: E=Sophos;i="5.92,227,1650956400"; d="scan'208";a="617187232"
 Received: from amlin-018-068.igk.intel.com (HELO localhost.igk.intel.com)
  ([10.102.18.68])
- by orsmga006.jf.intel.com with ESMTP; 28 Jun 2022 06:43:27 -0700
+ by orsmga008.jf.intel.com with ESMTP; 28 Jun 2022 06:43:42 -0700
 From: "Palczewski, Mateusz" <mateusz.palczewski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 28 Jun 2022 15:43:16 +0200
-Message-Id: <20220628134316.706108-1-mateusz.palczewski@intel.com>
+Date: Tue, 28 Jun 2022 15:43:30 +0200
+Message-Id: <20220628134330.706304-1-mateusz.palczewski@intel.com>
 X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1656423818; x=1687959818;
+ t=1656423827; x=1687959827;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=Utp6kcG7OgWPu6XxpwF7bOdix4mPjSHwio/CKddhDpY=;
- b=Pz/elvRAn8j5gaed/BbIj58ghsuD9azLfvhCuN+vC+dPvy5GsGbRoymg
- /PyDp5kGtgnZQ0wbDtX9HsyZsYUg31MBML/RZjdQ0ASAI/7eyEJ2y7Jk9
- 4G7gil5eBErvnXd4k/N58rpjYbLQP3T0wfQPB2D3ABgE9sV/m3MWHl43y
- UUGdMoYIWqEEtKJ1l9hh5Of9RY81mezDVAjtva0Pq+e9Cn8RRFzNlH84v
- yNpY53Uyg/Ek+aUmVWSwfFDFOT6Wpzc+Kwv6yAvRGZQIWVD5Cao7gBCqW
- tuK2LLbBcCMwTmscazN9Yxu10bfEL1ZxSQgTT4Vntv66pAHMmNj4WCT86
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=cxqAE3O1U/0kh0ZQMgWNrTFDLESaynyFruADGLyqRlQ=;
+ b=ACxzcdSwQ9b595TNoIwH1mwU+MFstkcKzJ+y3sLmErWd7wjNlaJPtCGn
+ rinm6CCSK1Elozr/vJ2Ts0yUlFnxQPsEhqKP+T53RtThZPsyPBAtirOvb
+ Dn0WRY5VXueU4eYHmHuMVuJQQlBQJz8KTb9qISCjPkwRBgAQrL9CDYHFA
+ Ff6m2+9ftblCwXv4fUrLGOk7fv0mjdARZOfLQ5NZuZw5GW2L108H8XShe
+ 5mQwwpI/65p5NwAMzUrDhHIpiK/vUeumCKbOh/VbM79+aoiI3S0OrF9GP
+ CtMETokE1/z/jKwA4+pfFK0XJXtY96AyA8tW0nj98sAtg0swsmObBhU9q
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Pz/elvRA
-Subject: [Intel-wired-lan] [PATCH net v2 1/3] iavf: Fix reset error handling
+ header.a=rsa-sha256 header.s=Intel header.b=ACxzcdSw
+Subject: [Intel-wired-lan] [PATCH net v2 3/3] iavf: Fix adminq error handling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,102 +99,80 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
 
-Do not call iavf_close in iavf_reset_task error handling. Doing so can
-lead to double call of napi_disable, which can lead to deadlock there.
-Removing VF would lead to iavf_remove task being stuck, because it
-requires crit_lock, which is held by iavf_close.
-Call iavf_disable_vf if reset fail, so that driver will clean up
-remaining invalid resources.
-During rapid VF resets, HW can fail to setup VF mailbox. Wrong
-error handling can lead to iavf_remove being stuck with:
-[ 5218.999087] iavf 0000:82:01.0: Failed to init adminq: -53
-...
-[ 5267.189211] INFO: task repro.sh:11219 blocked for more than 30 seconds.
-[ 5267.189520]       Tainted: G S          E     5.18.0-04958-ga54ce3703613-dirty #1
-[ 5267.189764] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[ 5267.190062] task:repro.sh        state:D stack:    0 pid:11219 ppid:  8162 flags:0x00000000
-[ 5267.190347] Call Trace:
-[ 5267.190647]  <TASK>
-[ 5267.190927]  __schedule+0x460/0x9f0
-[ 5267.191264]  schedule+0x44/0xb0
-[ 5267.191563]  schedule_preempt_disabled+0x14/0x20
-[ 5267.191890]  __mutex_lock.isra.12+0x6e3/0xac0
-[ 5267.192237]  ? iavf_remove+0xf9/0x6c0 [iavf]
-[ 5267.192565]  iavf_remove+0x12a/0x6c0 [iavf]
-[ 5267.192911]  ? _raw_spin_unlock_irqrestore+0x1e/0x40
-[ 5267.193285]  pci_device_remove+0x36/0xb0
-[ 5267.193619]  device_release_driver_internal+0xc1/0x150
-[ 5267.193974]  pci_stop_bus_device+0x69/0x90
-[ 5267.194361]  pci_stop_and_remove_bus_device+0xe/0x20
-[ 5267.194735]  pci_iov_remove_virtfn+0xba/0x120
-[ 5267.195130]  sriov_disable+0x2f/0xe0
-[ 5267.195506]  ice_free_vfs+0x7d/0x2f0 [ice]
-[ 5267.196056]  ? pci_get_device+0x4f/0x70
-[ 5267.196496]  ice_sriov_configure+0x78/0x1a0 [ice]
-[ 5267.196995]  sriov_numvfs_store+0xfe/0x140
-[ 5267.197466]  kernfs_fop_write_iter+0x12e/0x1c0
-[ 5267.197918]  new_sync_write+0x10c/0x190
-[ 5267.198404]  vfs_write+0x24e/0x2d0
-[ 5267.198886]  ksys_write+0x5c/0xd0
-[ 5267.199367]  do_syscall_64+0x3a/0x80
-[ 5267.199827]  entry_SYSCALL_64_after_hwframe+0x46/0xb0
-[ 5267.200317] RIP: 0033:0x7f5b381205c8
-[ 5267.200814] RSP: 002b:00007fff8c7e8c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-[ 5267.201981] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 00007f5b381205c8
-[ 5267.202620] RDX: 0000000000000002 RSI: 00005569420ee900 RDI: 0000000000000001
-[ 5267.203426] RBP: 00005569420ee900 R08: 000000000000000a R09: 00007f5b38180820
-[ 5267.204327] R10: 000000000000000a R11: 0000000000000246 R12: 00007f5b383c06e0
-[ 5267.205193] R13: 0000000000000002 R14: 00007f5b383bb880 R15: 0000000000000002
-[ 5267.206041]  </TASK>
-[ 5267.206970] Kernel panic - not syncing: hung_task: blocked tasks
-[ 5267.207809] CPU: 48 PID: 551 Comm: khungtaskd Kdump: loaded Tainted: G S          E     5.18.0-04958-ga54ce3703613-dirty #1
-[ 5267.208726] Hardware name: Dell Inc. PowerEdge R730/0WCJNT, BIOS 2.11.0 11/02/2019
-[ 5267.209623] Call Trace:
-[ 5267.210569]  <TASK>
-[ 5267.211480]  dump_stack_lvl+0x33/0x42
-[ 5267.212472]  panic+0x107/0x294
-[ 5267.213467]  watchdog.cold.8+0xc/0xbb
-[ 5267.214413]  ? proc_dohung_task_timeout_secs+0x30/0x30
-[ 5267.215511]  kthread+0xf4/0x120
-[ 5267.216459]  ? kthread_complete_and_exit+0x20/0x20
-[ 5267.217505]  ret_from_fork+0x22/0x30
-[ 5267.218459]  </TASK>
+iavf_alloc_asq_bufs/iavf_alloc_arq_bufs allocates with dma_alloc_coherent
+memory for VF mailbox.
+Free DMA regions for both ASQ and ARQ in case error happens during
+configuration of ASQ/ARQ registers.
+Without this change it is possible to see when unloading interface:
+74626.583369: dma_debug_device_change: device driver has pending DMA allocations while released from device [count=32]
+One of leaked entries details: [device address=0x0000000b27ff9000] [size=4096 bytes] [mapped with DMA_BIDIRECTIONAL] [mapped as coherent]
 
-Fixes: f0db78928783 ("i40evf: use netdev variable in reset task")
+Fixes: d358aa9a7a2d ("i40evf: init code and hardware support")
 Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
  v2: Add comment to make code more understandable
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_adminq.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 05b01b67210d..14366210a317 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2998,12 +2998,18 @@ static void iavf_reset_task(struct work_struct *work)
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_adminq.c b/drivers/net/ethernet/intel/iavf/iavf_adminq.c
+index cd4e6a22d0f9..9ffbd24d83cb 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_adminq.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_adminq.c
+@@ -324,6 +324,7 @@ static enum iavf_status iavf_config_arq_regs(struct iavf_hw *hw)
+ static enum iavf_status iavf_init_asq(struct iavf_hw *hw)
+ {
+ 	enum iavf_status ret_code = 0;
++	int i;
  
- 	return;
- reset_err:
-+	if (running) {
-+		set_bit(__IAVF_VSI_DOWN, adapter->vsi.state);
-+		/* As we enter iavf_disable_vf with __IAVF_RESETTING state set,
-+		 * free traffic irqs here, as it is the only remaining resource
-+		 */
-+		iavf_free_traffic_irqs(adapter);
-+	}
-+	iavf_disable_vf(adapter);
+ 	if (hw->aq.asq.count > 0) {
+ 		/* queue already initialized */
+@@ -354,12 +355,17 @@ static enum iavf_status iavf_init_asq(struct iavf_hw *hw)
+ 	/* initialize base registers */
+ 	ret_code = iavf_config_asq_regs(hw);
+ 	if (ret_code)
+-		goto init_adminq_free_rings;
++		goto init_free_asq_bufs;
+ 
+ 	/* success! */
+ 	hw->aq.asq.count = hw->aq.num_asq_entries;
+ 	goto init_adminq_exit;
+ 
++init_free_asq_bufs:
++	for (i = 0; i < hw->aq.num_asq_entries; i++)
++		iavf_free_dma_mem(hw, &hw->aq.asq.r.asq_bi[i]);
++	iavf_free_virt_mem(hw, &hw->aq.asq.dma_head);
 +
- 	mutex_unlock(&adapter->client_lock);
- 	mutex_unlock(&adapter->crit_lock);
--	if (running)
--		iavf_change_state(adapter, __IAVF_RUNNING);
- 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
--	iavf_close(netdev);
- }
+ init_adminq_free_rings:
+ 	iavf_free_adminq_asq(hw);
  
- /**
+@@ -383,6 +389,7 @@ static enum iavf_status iavf_init_asq(struct iavf_hw *hw)
+ static enum iavf_status iavf_init_arq(struct iavf_hw *hw)
+ {
+ 	enum iavf_status ret_code = 0;
++	int i;
+ 
+ 	if (hw->aq.arq.count > 0) {
+ 		/* queue already initialized */
+@@ -413,12 +420,16 @@ static enum iavf_status iavf_init_arq(struct iavf_hw *hw)
+ 	/* initialize base registers */
+ 	ret_code = iavf_config_arq_regs(hw);
+ 	if (ret_code)
+-		goto init_adminq_free_rings;
++		goto init_free_arq_bufs;
+ 
+ 	/* success! */
+ 	hw->aq.arq.count = hw->aq.num_arq_entries;
+ 	goto init_adminq_exit;
+ 
++init_free_arq_bufs:
++	for (i = 0; i < hw->aq.num_arq_entries; i++)
++		iavf_free_dma_mem(hw, &hw->aq.arq.r.arq_bi[i]);
++	iavf_free_virt_mem(hw, &hw->aq.arq.dma_head);
+ init_adminq_free_rings:
+ 	iavf_free_adminq_arq(hw);
+ 
 -- 
 2.27.0
 
