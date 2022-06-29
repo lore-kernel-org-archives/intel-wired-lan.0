@@ -1,74 +1,109 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3902C433EF
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jun 2022 15:11:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 908D3C433EF
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jun 2022 15:12:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 42160606A9;
-	Wed, 29 Jun 2022 15:11:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 42160606A9
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2F176408AE;
+	Wed, 29 Jun 2022 15:12:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F176408AE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1656515517;
-	bh=8rFrgsPdp2NUbUfk+SRAX5wvqfnl53xHnMYvewvuMFA=;
+	s=default; t=1656515522;
+	bh=yIVm8blW8Pib70QpGvpGBBsLs3mbz5tbAhSo8C/el60=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=IQtbafx1aCWakCgwT6dqpK8y+YNEA8NvCU6MbGLbJnPfq/ybudTNTFjQuG5XxzAbS
-	 MKREjteehwla4KDlI4wE6Gi+UD/FNz2ZfhvoqJhxTlkkUevDIdUAiYZdejdwvKUXXE
-	 +kYZddeWmXWbfNsxMgEi7HPKkIWwHIQIlRki9peqg+0+3O94mKXQwAFP0bSc1SMM58
-	 q+FdwvFgXTfnqJ4XBDV3uDEA0lfDubgLMg3hvm03fwPbCN5YvFR+rS6QVUiybAXfwt
-	 v9uZvh9/APY9kSTgUUqj4+ucy3LNfGHDHtq3xWObNIVel1JzUlTcTOGfQpzV67XSRa
-	 5+Nx9/cex7bZg==
+	b=6JbOJDUc4+Mr9ugnDNTmhjfup/Az4ESyWoDCgmFpzoPCnet6msiengBY9i6SphtjW
+	 OQu6RGHVbANRkuJW4VfOOgDB31Q0cGBdZnGVp/N2bOvNHYIDAGmspvauTMHqTFiDbd
+	 xxqzuYTrtPJfd1lQSUdvq7Yl4ercIsTuRadI+OWGHh/b48Hz1fYZtshYzy3IB8dlpw
+	 L6oGkaT7IVzozc1hzbUC8kXsTUA2xU7zhaYhrQbl43D6rJCLo0IFv2+gNpZBcWTz8s
+	 UW0xFq4xyUXBZKK0Qz4El2waq7SLZUckVM08Ma8zMUjF9Zsbm68nBchUat4Ow4a4wJ
+	 SqNXwkYKEFHMw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id UA70dqw8X7mJ; Wed, 29 Jun 2022 15:11:56 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Sy-GMPI3Yc56; Wed, 29 Jun 2022 15:12:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 51CDE6120B;
-	Wed, 29 Jun 2022 15:11:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 51CDE6120B
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id F26331BF28F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 14:22:21 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 687B4408C0;
+	Wed, 29 Jun 2022 15:12:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 687B4408C0
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id AC0A31BF4E3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 08:58:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CC96741B34
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 14:22:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CC96741B34
+ by smtp1.osuosl.org (Postfix) with ESMTP id 860A1813D6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 08:58:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 860A1813D6
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id nl9zLx91cFn9 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Jun 2022 14:22:17 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3A30C41A56
-Received: from smtpbg.qq.com (biz-43-154-54-12.mail.qq.com [43.154.54.12])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 3A30C41A56
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 14:22:16 +0000 (UTC)
-X-QQ-mid: bizesmtp85t1656512516torh9h9i
-Received: from localhost.localdomain ( [182.148.13.66])
- by bizesmtp.qq.com (ESMTP) with 
- id ; Wed, 29 Jun 2022 22:21:53 +0800 (CST)
-X-QQ-SSF: 0100000000200060C000C00A0000000
-X-QQ-FEAT: c0j92dw6IxKSeiEhrm+PtPxktskjXZcL4jlLKZjz7sO7OU5wzT87U/K4i93M1
- SIXryARAEXvXxv8ewgPkqT8uNecc8E29dDtO47pw+aNrj8xqVlE/kxAyWin8eWOUZuZPioZ
- Hy8wKoBUlufjdCMEqtDETjL9Z2pK+a1WvihZ52kZzAZ6Suotgy44vC3to4tP0DUQzObdo2B
- qfKmyv7xsWx49nK79I1zbk4IxNW0jycTMfX6mLJzR8f8FmwPyt06ivN/9p3rVz/GEO3CpKA
- Aj6PBwEXzTTC1C7xwUjtV1AuLnVB1+gd4TviIieLQ9ClUfjaKhFp7pfKAeaK/KUOetFvPum
- ZWcs3f2roAscvhvtgg=
-X-QQ-GoodBg: 0
-From: Jilin Yuan <yuanjilin@cdjrlc.com>
-To: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Wed, 29 Jun 2022 22:21:47 +0800
-Message-Id: <20220629142147.15535-1-yuanjilin@cdjrlc.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id cgpb58htFlh5 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 29 Jun 2022 08:58:44 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D28F813C6
+Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com
+ [IPv6:2a00:1450:4864:20::530])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9D28F813C6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 08:58:43 +0000 (UTC)
+Received: by mail-ed1-x530.google.com with SMTP id c13so21205377eds.10
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 01:58:43 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=r++121sbLgXWyC87t6HhBYGjFC1OZo7m/Al81TbSLAc=;
+ b=8HOVdIkhtSwDRBq2JKYGruPNoKpETpF54qznou+mg9E73hZ7s5yvZIZhTrRyOBoVhW
+ ImHZD7F5mqWzR+EIKCrtsRVFegi9Qc+W8f0h/ExTw70pncAHstVy4TqQDlZQoSWaDyRU
+ R4ooUOC1uX1tZmC9tn3tZ9VuS3TsLO8YRajpzrdt94K/h5/CZWKSC40Gn/Q/HfBbL3jT
+ Bj5pV1GlYhgPevJH1y2ETkMkRsCgqOVHD7rqcQT1ZRZXJIoIrelPYLHmaVwoq5LkyCZe
+ AXKkC5PYpnjodooJDGBljljgpqRaug+eWaA3meQQ8Ws5xfrIA83OFCXP7o94LzdSdHoO
+ 6iwA==
+X-Gm-Message-State: AJIora+sUhnlsZufSj6NaJx97JThr0umLc0R1CGhqlIu5S7teVeSOKgE
+ 1khdFv+LAtzm/fRv8TS1d44=
+X-Google-Smtp-Source: AGRyM1tAyTjbfqt55MKCcHD0WymqazhAWk4ybuv3YQ8j6WxGsH0iTFjyiTpmDaLtRbAiv1DK0y0lbQ==
+X-Received: by 2002:a05:6402:4387:b0:435:94c6:716d with SMTP id
+ o7-20020a056402438700b0043594c6716dmr2837654edc.298.1656493121725; 
+ Wed, 29 Jun 2022 01:58:41 -0700 (PDT)
+Received: from localhost.localdomain
+ (host-87-6-98-182.retail.telecomitalia.it. [87.6.98.182])
+ by smtp.gmail.com with ESMTPSA id
+ a18-20020a170906671200b00718e4e64b7bsm7489740ejp.79.2022.06.29.01.58.38
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 29 Jun 2022 01:58:39 -0700 (PDT)
+From: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, bpf@vger.kernel.org
+Date: Wed, 29 Jun 2022 10:58:36 +0200
+Message-Id: <20220629085836.18042-1-fmdefrancesco@gmail.com>
 X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr4
 X-Mailman-Approved-At: Wed, 29 Jun 2022 15:11:26 +0000
-Subject: [Intel-wired-lan] [PATCH] intel/igbvf:fix repeated words in comments
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20210112;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=r++121sbLgXWyC87t6HhBYGjFC1OZo7m/Al81TbSLAc=;
+ b=QRckV6V4u2oiBdEL0UBUoDQqliBh7zDWCo7k1wV03x1E23P11wbDeU1C05lwfZlo7U
+ LS+eADyHaw9InWhCnF/7orpv+hOmwZAOR6FUSY7KN9zvf8S+nx0qNzodpfbGArqJzex6
+ BmGLDdZrXozYghL4CSdujGNIKFF5x3xfGQarw24QAtndrBGt/4CyrPusRrD5cGMnV82R
+ Ctr1zok0+gHGhnUpNKHnXamxIHOcNfsMC758001icFlfMLfMm+jhN2k4Kyx2QCybyWWG
+ r2bc3KP926tzQLNJZS3tETF5L4vlpvYabcqn2Ez5OkrjqnoV4tJwPSodC5ynDlKv3ERf
+ l45A==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20210112 header.b=QRckV6V4
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Use kmap_local_page in
+ ixgbe_check_lbtest_frame()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,48 +116,49 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Jilin Yuan <yuanjilin@cdjrlc.com>,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
+Cc: Ira Weiny <ira.weiny@intel.com>,
+ "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Delete the redundant word 'on'.
-Delete the redundant word 'slot'.
+The use of kmap() is being deprecated in favor of kmap_local_page().
 
-Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
+With kmap_local_page(), the mapping is per thread, CPU local and not
+globally visible. Furthermore, the mapping can be acquired from any context
+(including interrupts).
+
+Therefore, use kmap_local_page() in ixgbe_check_lbtest_frame() because
+this mapping is per thread, CPU local, and not globally visible.
+
+Suggested-by: Ira Weiny <ira.weiny@intel.com>
+Signed-off-by: Fabio M. De Francesco <fmdefrancesco@gmail.com>
 ---
- drivers/net/ethernet/intel/igbvf/igbvf.h  | 2 +-
- drivers/net/ethernet/intel/igbvf/netdev.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igbvf/igbvf.h b/drivers/net/ethernet/intel/igbvf/igbvf.h
-index 975eb47ee04d..57d39ee00b58 100644
---- a/drivers/net/ethernet/intel/igbvf/igbvf.h
-+++ b/drivers/net/ethernet/intel/igbvf/igbvf.h
-@@ -227,7 +227,7 @@ struct igbvf_adapter {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 628d0eb0599f..e64d40482bfd 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -1966,14 +1966,14 @@ static bool ixgbe_check_lbtest_frame(struct ixgbe_rx_buffer *rx_buffer,
  
- 	/* The VF counters don't clear on read so we have to get a base
- 	 * count on driver start up and always subtract that base on
--	 * on the first update, thus the flag..
-+	 * the first update, thus the flag..
- 	 */
- 	struct e1000_vf_stats stats;
- 	u64 zero_base;
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 43ced78c3a2e..f4e91db89fe5 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -2537,7 +2537,7 @@ static pci_ers_result_t igbvf_io_error_detected(struct pci_dev *pdev,
- 		igbvf_down(adapter);
- 	pci_disable_device(pdev);
+ 	frame_size >>= 1;
  
--	/* Request a slot slot reset. */
-+	/* Request a slot reset. */
- 	return PCI_ERS_RESULT_NEED_RESET;
+-	data = kmap(rx_buffer->page) + rx_buffer->page_offset;
++	data = kmap_local_page(rx_buffer->page) + rx_buffer->page_offset;
+ 
+ 	if (data[3] != 0xFF ||
+ 	    data[frame_size + 10] != 0xBE ||
+ 	    data[frame_size + 12] != 0xAF)
+ 		match = false;
+ 
+-	kunmap(rx_buffer->page);
++	kunmap_local(data);
+ 
+ 	return match;
  }
- 
 -- 
 2.36.1
 
