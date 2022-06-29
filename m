@@ -4,106 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 908D3C433EF
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jun 2022 15:12:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F217AC433EF
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jun 2022 15:12:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2F176408AE;
-	Wed, 29 Jun 2022 15:12:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F176408AE
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9CEE441156;
+	Wed, 29 Jun 2022 15:12:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9CEE441156
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1656515522;
-	bh=yIVm8blW8Pib70QpGvpGBBsLs3mbz5tbAhSo8C/el60=;
+	s=default; t=1656515525;
+	bh=CMFW/SGk9cU/c0S4yo3oDQPqGhlxjSvjwtbGGnpqvY4=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=6JbOJDUc4+Mr9ugnDNTmhjfup/Az4ESyWoDCgmFpzoPCnet6msiengBY9i6SphtjW
-	 OQu6RGHVbANRkuJW4VfOOgDB31Q0cGBdZnGVp/N2bOvNHYIDAGmspvauTMHqTFiDbd
-	 xxqzuYTrtPJfd1lQSUdvq7Yl4ercIsTuRadI+OWGHh/b48Hz1fYZtshYzy3IB8dlpw
-	 L6oGkaT7IVzozc1hzbUC8kXsTUA2xU7zhaYhrQbl43D6rJCLo0IFv2+gNpZBcWTz8s
-	 UW0xFq4xyUXBZKK0Qz4El2waq7SLZUckVM08Ma8zMUjF9Zsbm68nBchUat4Ow4a4wJ
-	 SqNXwkYKEFHMw==
+	b=aaXSWBro17mki2bCxWZUuxEuOfQqr6Ovdydha04IMOvqeqb2yw0FM6FWfIJGDpzuA
+	 0Pfi9C5ql1DCVDB0bD93JX9TVyL2z8322/VRBje1VUvxLfLnYWfrYyzVnAn7LJDfF3
+	 pp4G3z0ns+bmxeiuAlQdpjt05DGsFDl4zpSfqzn6qgZKqCWj63UFCljFCJKY8N5aL5
+	 sGnG11Cv4r9rkqd3vwR6cqXhlIDeJkYg0uyav1tWMqYnCznenWY0uB8kpXrNe3KAeU
+	 IIdQDGfLWgpmDGA7Brz6R8iq8IxamLJg75YwU7gJ6EXlyckBq43DTis02TrypdMIPp
+	 uy0EFriPmMiZA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Sy-GMPI3Yc56; Wed, 29 Jun 2022 15:12:00 +0000 (UTC)
+	with ESMTP id T-YRuchktFEe; Wed, 29 Jun 2022 15:12:04 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 687B4408C0;
-	Wed, 29 Jun 2022 15:12:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 687B4408C0
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id AC0A31BF4E3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 08:58:44 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 6DA6441165;
+	Wed, 29 Jun 2022 15:12:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6DA6441165
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id C75381BF390
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 10:03:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 860A1813D6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 08:58:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 860A1813D6
+ by smtp2.osuosl.org (Postfix) with ESMTP id AD82241119
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 10:03:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AD82241119
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id cgpb58htFlh5 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Jun 2022 08:58:44 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 73uychxYqNIP for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 29 Jun 2022 10:03:44 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D28F813C6
-Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com
- [IPv6:2a00:1450:4864:20::530])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9D28F813C6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 08:58:43 +0000 (UTC)
-Received: by mail-ed1-x530.google.com with SMTP id c13so21205377eds.10
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 01:58:43 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EBA2D410EC
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com
+ [IPv6:2607:f8b0:4864:20::42c])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EBA2D410EC
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 10:03:43 +0000 (UTC)
+Received: by mail-pf1-x42c.google.com with SMTP id t21so14651204pfq.1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 03:03:43 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=r++121sbLgXWyC87t6HhBYGjFC1OZo7m/Al81TbSLAc=;
- b=8HOVdIkhtSwDRBq2JKYGruPNoKpETpF54qznou+mg9E73hZ7s5yvZIZhTrRyOBoVhW
- ImHZD7F5mqWzR+EIKCrtsRVFegi9Qc+W8f0h/ExTw70pncAHstVy4TqQDlZQoSWaDyRU
- R4ooUOC1uX1tZmC9tn3tZ9VuS3TsLO8YRajpzrdt94K/h5/CZWKSC40Gn/Q/HfBbL3jT
- Bj5pV1GlYhgPevJH1y2ETkMkRsCgqOVHD7rqcQT1ZRZXJIoIrelPYLHmaVwoq5LkyCZe
- AXKkC5PYpnjodooJDGBljljgpqRaug+eWaA3meQQ8Ws5xfrIA83OFCXP7o94LzdSdHoO
- 6iwA==
-X-Gm-Message-State: AJIora+sUhnlsZufSj6NaJx97JThr0umLc0R1CGhqlIu5S7teVeSOKgE
- 1khdFv+LAtzm/fRv8TS1d44=
-X-Google-Smtp-Source: AGRyM1tAyTjbfqt55MKCcHD0WymqazhAWk4ybuv3YQ8j6WxGsH0iTFjyiTpmDaLtRbAiv1DK0y0lbQ==
-X-Received: by 2002:a05:6402:4387:b0:435:94c6:716d with SMTP id
- o7-20020a056402438700b0043594c6716dmr2837654edc.298.1656493121725; 
- Wed, 29 Jun 2022 01:58:41 -0700 (PDT)
-Received: from localhost.localdomain
- (host-87-6-98-182.retail.telecomitalia.it. [87.6.98.182])
+ bh=v+1Kh9yXYSF/SSlAxUUF7lfd7AbotnJ6XEUP9Y2jqwE=;
+ b=GuSBwvKIu/H1/dQgTCNZTbmMrtNhD9UPMvuyzGBdSl4fay6LLZy/xIL5lD1wjulAjc
+ Gv79t/qYgWeC9B/YtGKONq0Pmr6ZmKqY4nKPemN9LDyYkDc1iC3pzkeNEA+BqkHxhr3g
+ +BMJOHhE7U6TplaFlKEhbHGZO8q4Gx7CFCmKmiACqKpPiP6HI+Oldu6Zk63vmk7FRQmt
+ 6jFa5gvrveHYHEGksRvTlB+wyzosr0g/kkIXgz4z3LJuKnt3JZ+qw/CWBKyEP8f3f7ZF
+ BCU/f37iI47/W1tl+RW1X0I0f9U54N+9gXONEXRqwryB4k2LYOpxZK2EdH22hE/60jsb
+ 14MQ==
+X-Gm-Message-State: AJIora8DyRy7p3rXy7JqSdYI43VheLXecjvZhCVzfIW1RTrSkevbIIeQ
+ AyIU/7+a/CMGCCBLfrDucT2B+A==
+X-Google-Smtp-Source: AGRyM1sTw4UxgBgSUAtM/Ce+HiXo5qoS5Rt9oKfdvJ/YFT4je9ZLNVgxqIQyVnyMl/m9dosjMIfh0g==
+X-Received: by 2002:a62:7b95:0:b0:525:8304:2f16 with SMTP id
+ w143-20020a627b95000000b0052583042f16mr8194428pfc.33.1656497023394; 
+ Wed, 29 Jun 2022 03:03:43 -0700 (PDT)
+Received: from C02F63J9MD6R.bytedance.net ([61.120.150.74])
  by smtp.gmail.com with ESMTPSA id
- a18-20020a170906671200b00718e4e64b7bsm7489740ejp.79.2022.06.29.01.58.38
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 29 Jun 2022 01:58:39 -0700 (PDT)
-From: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Date: Wed, 29 Jun 2022 10:58:36 +0200
-Message-Id: <20220629085836.18042-1-fmdefrancesco@gmail.com>
-X-Mailer: git-send-email 2.36.1
+ u5-20020a17090a1f0500b001ed1444df67sm1696872pja.6.2022.06.29.03.03.38
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 29 Jun 2022 03:03:42 -0700 (PDT)
+From: Zhuo Chen <chenzhuo.1@bytedance.com>
+To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
+Date: Wed, 29 Jun 2022 18:03:34 +0800
+Message-Id: <20220629100334.60710-1-chenzhuo.1@bytedance.com>
+X-Mailer: git-send-email 2.30.1 (Apple Git-130)
 MIME-Version: 1.0
 X-Mailman-Approved-At: Wed, 29 Jun 2022 15:11:26 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
+ d=bytedance-com.20210112.gappssmtp.com; s=20210112;
  h=from:to:cc:subject:date:message-id:mime-version
  :content-transfer-encoding;
- bh=r++121sbLgXWyC87t6HhBYGjFC1OZo7m/Al81TbSLAc=;
- b=QRckV6V4u2oiBdEL0UBUoDQqliBh7zDWCo7k1wV03x1E23P11wbDeU1C05lwfZlo7U
- LS+eADyHaw9InWhCnF/7orpv+hOmwZAOR6FUSY7KN9zvf8S+nx0qNzodpfbGArqJzex6
- BmGLDdZrXozYghL4CSdujGNIKFF5x3xfGQarw24QAtndrBGt/4CyrPusRrD5cGMnV82R
- Ctr1zok0+gHGhnUpNKHnXamxIHOcNfsMC758001icFlfMLfMm+jhN2k4Kyx2QCybyWWG
- r2bc3KP926tzQLNJZS3tETF5L4vlpvYabcqn2Ez5OkrjqnoV4tJwPSodC5ynDlKv3ERf
- l45A==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=QRckV6V4
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Use kmap_local_page in
- ixgbe_check_lbtest_frame()
+ bh=v+1Kh9yXYSF/SSlAxUUF7lfd7AbotnJ6XEUP9Y2jqwE=;
+ b=bT696kWD335zwtQvW47vd4+mT5xdlttfcuP/cfCSLGtb7YgSROS2L7ffdCL6lmeT9X
+ hLO4kCeKrh9RhaoNZxg6Eb6G+AeKxnOiLYRUTEAnkTGswpNC6vnrXR6z0mf+a5G3eiBo
+ qz29lWEkYZ+jCGe3KfM0543mgg0fJH1DNS32yfChg36ESaebBkp+5PiUj4TLvqXaNtAB
+ hFiO0kxoSePedtkr8Bj6ref1wJrQW2YrtDSKlp8QvVVMHgn0EQdjXFyD+DRBJhVULj3G
+ 3PMAGlJ4zKL0SJ3SmGf40soyRQiN8+kQzPniaDWJ4WGCcVg5SX+5l2znBCumkn7e5N/I
+ ggLw==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=bytedance-com.20210112.gappssmtp.com
+ header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256
+ header.s=20210112 header.b=bT696kWD
+Subject: [Intel-wired-lan] [PATCH] ice: Remove
+ pci_aer_clear_nonfatal_status() call
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,51 +109,47 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Ira Weiny <ira.weiny@intel.com>,
- "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+Cc: netdev@vger.kernel.org, Zhuo Chen <chenzhuo.1@bytedance.com>,
+ Sen Wang <wangsen.harry@bytedance.com>, linux-kernel@vger.kernel.org,
+ Muchun Song <songmuchun@bytedance.com>,
+ Wenliang Wang <wangwenliang.1995@bytedance.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The use of kmap() is being deprecated in favor of kmap_local_page().
+After 62b36c3 ("PCI/AER: Remove pci_cleanup_aer_uncorrect_error_status()
+calls"), Calls to pci_cleanup_aer_uncorrect_error_status() have already
+been removed. But in 5995b6d pci_cleanup_aer_uncorrect_error_status was
+used again, so remove it in this patch.
 
-With kmap_local_page(), the mapping is per thread, CPU local and not
-globally visible. Furthermore, the mapping can be acquired from any context
-(including interrupts).
-
-Therefore, use kmap_local_page() in ixgbe_check_lbtest_frame() because
-this mapping is per thread, CPU local, and not globally visible.
-
-Suggested-by: Ira Weiny <ira.weiny@intel.com>
-Signed-off-by: Fabio M. De Francesco <fmdefrancesco@gmail.com>
+Signed-off-by: Zhuo Chen <chenzhuo.1@bytedance.com>
+Cc: Muchun Song <songmuchun@bytedance.com>
+Cc: Sen Wang <wangsen.harry@bytedance.com>
+Cc: Wenliang Wang <wangwenliang.1995@bytedance.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 628d0eb0599f..e64d40482bfd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -1966,14 +1966,14 @@ static bool ixgbe_check_lbtest_frame(struct ixgbe_rx_buffer *rx_buffer,
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index c1ac2f746714..6bf6d8b5a967 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5313,12 +5313,6 @@ static pci_ers_result_t ice_pci_err_slot_reset(struct pci_dev *pdev)
+ 			result = PCI_ERS_RESULT_DISCONNECT;
+ 	}
  
- 	frame_size >>= 1;
- 
--	data = kmap(rx_buffer->page) + rx_buffer->page_offset;
-+	data = kmap_local_page(rx_buffer->page) + rx_buffer->page_offset;
- 
- 	if (data[3] != 0xFF ||
- 	    data[frame_size + 10] != 0xBE ||
- 	    data[frame_size + 12] != 0xAF)
- 		match = false;
- 
--	kunmap(rx_buffer->page);
-+	kunmap_local(data);
- 
- 	return match;
+-	err = pci_aer_clear_nonfatal_status(pdev);
+-	if (err)
+-		dev_dbg(&pdev->dev, "pci_aer_clear_nonfatal_status() failed, error %d\n",
+-			err);
+-		/* non-fatal, continue */
+-
+ 	return result;
  }
+ 
 -- 
-2.36.1
+2.20.1
 
 _______________________________________________
 Intel-wired-lan mailing list
