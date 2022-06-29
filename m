@@ -1,75 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AC6AC433EF
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jun 2022 15:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABFFBCCA47E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Jun 2022 15:19:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5599881A23;
-	Wed, 29 Jun 2022 15:12:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5599881A23
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6158460AA7;
+	Wed, 29 Jun 2022 15:19:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6158460AA7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1656515538;
-	bh=CzCahy126HySf3wfSnDUnyiHmsUFwug23eIk62wHvDg=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=wwkFAKiyi+42oKAfOtVh6rtfyBtYGswDk6tcaO2nifGS2sv4Ratks9/Nb+qaO+k0E
-	 F3gedyPE8wjb3sgaha/cWpYvbAZNJZQN1wIdVaglAoSYPpBM4VOSA+6ojbXhpqG1Qw
-	 pP/5vtsqzSHwY7smzNjTnflJc3pjgdikLENH7E6mpHgXq7ji+4sWe4rzQw9bueJlC1
-	 S95OMb9NHWMf/usWxQKX2VgH3TwnxhPf8INuYKbiw76QXzMoAzGYFWNF1MTWI0M+Ga
-	 H2LfUJ5fKvNBcdBEylJlLcX8ZmWz1sycnxQ8r+ubQohPzmnnBPwSOS80d1ogCYgSVe
-	 IHsUwq3AQ3+ug==
+	s=default; t=1656515986;
+	bh=JFUQOvYynGk1QDloB5lcXUlRLVlIFn9vJIw3gvp87XY=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=WlB1Fz46dqJsOWQrxx6bPlfPt9uUVAzBGzQgAclq+4q0rFRfMQmY1V6Utqv7JdIeT
+	 F9Vc7Gp7gtTCauin8sd11YrQEqNXRzNX0TwT5QIzqvyJ8yc0vHFShUngg8bUJFjDLP
+	 DwkNMwlkhJMYcl0dTRtWNkXQilWEXo9stC0YatFtT9v/t9e0b4FbY2ZzS1SKGgo49e
+	 uh2EzoWTWMzb3sI3jAiumSgKKyLyecfNcF7lfffw7N1IIliTa3g/fkaCuRHKszdlUP
+	 /10mD2884VUYDul7HHF4oKqfg4D4BgaJzptZ6NODpiY9/Pba/R5/7kP8kURrlXj9C1
+	 mzDprnnY6cgMA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id UppnAhgCpbJX; Wed, 29 Jun 2022 15:12:17 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id M_hDTlT2pGE5; Wed, 29 Jun 2022 15:19:45 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 610CE84100;
-	Wed, 29 Jun 2022 15:12:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 610CE84100
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 441261BF28F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 14:34:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 656C560B30;
+	Wed, 29 Jun 2022 15:19:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 656C560B30
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 2AF101BF48B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 15:19:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2AA58408A5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 14:34:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2AA58408A5
+ by smtp3.osuosl.org (Postfix) with ESMTP id 03B0A60B9A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 15:19:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 03B0A60B9A
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id SqNn7fH1LD2w for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Jun 2022 14:34:33 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E3A40405A8
-Received: from smtpbg.qq.com (biz-43-154-54-12.mail.qq.com [43.154.54.12])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E3A40405A8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 14:34:32 +0000 (UTC)
-X-QQ-mid: bizesmtp65t1656513261tfud432q
-Received: from localhost.localdomain ( [182.148.13.66])
- by bizesmtp.qq.com (ESMTP) with 
- id ; Wed, 29 Jun 2022 22:34:18 +0800 (CST)
-X-QQ-SSF: 0100000000200060C000C00A0000000
-X-QQ-FEAT: ZHWZeLXy+8dy2IPb5OrWCa7omzZetmReOw5KuLhq7YQxXkAo7SR+PHOoaDvKU
- tUFDiqbQI3GkZT6YgApcsrxmjwJb4uLxtqV5Bv53DZuEAfYK8/CmwXTobt/862lIH1d+uJd
- 1Z0J5647yZEtbmnfxYC6RUG6d81i9snZXXXqzVaQXlTNYO0Y12vsqTKcoxlfu2J24kqdCfs
- wym840SOmrv5ONKjCnXGJUb4XvOdRfvOUg9Mb1m/ZtPVov2lPVJtJV7nTFhahNiEOIKUUql
- bwMfSz+tTaBFQM9yexG53DRBM2ZNOpoWzKhb856YeuRIVmIpdG0/cNW1oh4QY+Kzparago+
- j2OEtkB5XTeVNml37g=
-X-QQ-GoodBg: 0
-From: Jilin Yuan <yuanjilin@cdjrlc.com>
-To: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Wed, 29 Jun 2022 22:34:01 +0800
-Message-Id: <20220629143401.20380-1-yuanjilin@cdjrlc.com>
-X-Mailer: git-send-email 2.36.1
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id U6kPl3-VRptm for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 29 Jun 2022 15:19:42 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CDEF060AE4
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id CDEF060AE4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Jun 2022 15:19:41 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 8F1B060EEB;
+ Wed, 29 Jun 2022 15:19:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0948BC34114;
+ Wed, 29 Jun 2022 15:19:38 +0000 (UTC)
+Date: Wed, 29 Jun 2022 08:19:37 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: "Drewek, Wojciech" <wojciech.drewek@intel.com>
+Message-ID: <20220629081937.7270e7d7@kernel.org>
+In-Reply-To: <MW4PR11MB57761A084A3A556F4070F8CDFDBB9@MW4PR11MB5776.namprd11.prod.outlook.com>
+References: <20220628112918.11296-1-marcin.szycik@linux.intel.com>
+ <20220628112918.11296-2-marcin.szycik@linux.intel.com>
+ <20220628214020.0f83fc21@kernel.org>
+ <MW4PR11MB57761A084A3A556F4070F8CDFDBB9@MW4PR11MB5776.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr4
-X-Mailman-Approved-At: Wed, 29 Jun 2022 15:11:26 +0000
-Subject: [Intel-wired-lan] [PATCH] intel/ixgbevf:fix repeated words in
- comments
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1656515979;
+ bh=tLBQwVe0ndA2/6U5cX56akazDpzZj1TmPAaBtu08mIE=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=Qzp4QRBc44PQ+vHPZwo0SR2XFHaxcFyy8eMYzzjXXFih2pbAjnhFk/WsHOxOuvtsD
+ GVaNlzxTmgR+5bZWCMBSuVohJYVFdzau5cchVCvxUhfmNbU7zaM54r2PYxKqr6AVP2
+ bdf2lyRbQPItpukrwDVOsYlcw8jHIL6xxQAAMOntYhm3JfpBsZeSXbrP1ysw8+2YR+
+ yPVTyGywzM4RJxecVRAynbg5Q/81JdEx1rXfuiNzKGRRZIE//8BF8VbYTBSDevut73
+ iiuKB6pbgUpnmN3KhRe75YRdp8hWWdbgzDAxN6SQ9KbfJH0Vhhxa2HREeJuN09VeMZ
+ rN/kn78cSGAIA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Qzp4QRBc
+Subject: Re: [Intel-wired-lan] [RFC PATCH net-next v2 1/4] flow_dissector:
+ Add PPPoE dissectors
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,51 +92,38 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Jilin Yuan <yuanjilin@cdjrlc.com>,
- intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
+Cc: "simon.horman@corigine.com" <simon.horman@corigine.com>,
+ "kurt@linutronix.de" <kurt@linutronix.de>,
+ "paulb@nvidia.com" <paulb@nvidia.com>,
+ "edumazet@google.com" <edumazet@google.com>,
+ "boris.sukholitko@broadcom.com" <boris.sukholitko@broadcom.com>, "Brandeburg,
+ Jesse" <jesse.brandeburg@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "zhangkaiheb@126.com" <zhangkaiheb@126.com>,
+ "pablo@netfilter.org" <pablo@netfilter.org>,
+ "baowen.zheng@corigine.com" <baowen.zheng@corigine.com>,
+ "jiri@resnulli.us" <jiri@resnulli.us>,
+ "komachi.yoshiki@gmail.com" <komachi.yoshiki@gmail.com>,
+ "jhs@mojatatu.com" <jhs@mojatatu.com>,
+ "xiyou.wangcong@gmail.com" <xiyou.wangcong@gmail.com>,
+ "pabeni@redhat.com" <pabeni@redhat.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "gustavoars@kernel.org" <gustavoars@kernel.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Delete the redundant word 'slot'.
-Delete the redundant word 'we'.
+On Wed, 29 Jun 2022 07:44:50 +0000 Drewek, Wojciech wrote:
+> > > +static bool is_ppp_proto_supported(__be16 proto)  
+> > 
+> > What does supported mean in this context?  
+> 
+> It means that only those protocols are going to be dissected.
 
-Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
- drivers/net/ethernet/intel/ixgbevf/vf.c           | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 55b87bc3a938..2f12fbe229c1 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -4787,7 +4787,7 @@ static pci_ers_result_t ixgbevf_io_error_detected(struct pci_dev *pdev,
- 		pci_disable_device(pdev);
- 	rtnl_unlock();
- 
--	/* Request a slot slot reset. */
-+	/* Request a slot reset. */
- 	return PCI_ERS_RESULT_NEED_RESET;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index 68fc32e36e88..1641d00d8ed3 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -964,7 +964,7 @@ int ixgbevf_get_queues(struct ixgbe_hw *hw, unsigned int *num_tcs,
- 	if (!err) {
- 		msg[0] &= ~IXGBE_VT_MSGTYPE_CTS;
- 
--		/* if we we didn't get an ACK there must have been
-+		/* if we didn't get an ACK there must have been
- 		 * some sort of mailbox error so we should treat it
- 		 * as such
- 		 */
--- 
-2.36.1
-
+We only dissect PPP_IP and PPP_IPV6. This looks more like a list of all
+known protocols.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
