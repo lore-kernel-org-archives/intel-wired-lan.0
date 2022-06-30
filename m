@@ -1,94 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4BC6C433EF
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Jun 2022 15:17:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2A93CCA47B
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Jun 2022 15:21:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 66F6440178;
-	Thu, 30 Jun 2022 15:17:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 66F6440178
+	by smtp1.osuosl.org (Postfix) with ESMTP id 72A4184633;
+	Thu, 30 Jun 2022 15:21:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 72A4184633
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1656602262;
-	bh=ywHxYVinUYSUlpmNUIm3mB9QAdiYWWsb8zgAnfIbhYk=;
-	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	s=default; t=1656602476;
+	bh=VMsEcmCqwQMGQwdTXvsysn7IchpjlSNvWeRe+f7OZAU=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=QEVFihl5NjoV/Lp1QBWACkDes6vGwHKa08xzFN9PRSqjIL2FOQXi1n3lhKWE5RJah
-	 Qh1OfArwBlb1zwBm7qD16XqRwyKtczoX9PlQzL4FHlPh2Nq6jSHhO675OUrbpo33av
-	 NQqHcA53u2XmWUst/IDkmej6zLrBEbncRVEtdyH63hsA1sLr1cAVy6QJHGAZtco9Od
-	 EZy8UAg3BsyqqODUIxNx0mf08Jzyic7JQsdXvLhw+fScKnT59oBWTMRrHsG4GlEoRy
-	 sANYj4Y9vpeq8ro+m8gLtah0Rep82PFxONZP1CW8zyCJQsPhJ3CttCl4uCOSkncyKV
-	 wE0M//ArPKyLw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id vr5QfRgpQOP5; Thu, 30 Jun 2022 15:17:41 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6165C4039D;
-	Thu, 30 Jun 2022 15:17:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6165C4039D
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A22261BF30E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Jun 2022 15:17:39 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7CC2981418
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Jun 2022 15:17:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7CC2981418
+	b=2cndE3SQCGeHhYYhY2AhkLbiP4g1zO9N+1ZzuacDbn30P7lvrgwcuxbuK7mB5xBnj
+	 g+bB6D5jqZYuLsxamOd9ByifB/7VYY6tFconmgZXYlLKfpPMChOG/OHT6VN/kCXYww
+	 j+NVUH8TyEd5HoG2dQvOenVDbegSQsSnMaNJ6P4c4Ek4IdFHCKhvvesBYUcBD5q9MH
+	 UtQ+QzJ+u9cQMndGm/sHSl4+wRMZokWo+mdnoaWTwzhrGJFv1cDC1GAghk0rX3hPah
+	 evTy9kOuF+mfQnkl8sGIXR/2ZhzuP2WZslMGiZtHvFxTxIY3Bcet0JaLxZyEBu4t/8
+	 cjjhUQ51kWeMg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Vd44kgbtvNDk for <intel-wired-lan@lists.osuosl.org>;
- Thu, 30 Jun 2022 15:17:38 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3EB72813D6
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com
- [IPv6:2a00:1450:4864:20::62b])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3EB72813D6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Jun 2022 15:17:38 +0000 (UTC)
-Received: by mail-ej1-x62b.google.com with SMTP id ge10so39666328ejb.7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Jun 2022 08:17:38 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=/i5OyXrdHIl03uJMvczX531K/3M39oSh861kA9eYkbU=;
- b=FvWLBg3r1/TORWIum4gDHrvmCGiReaxpymCIhoBPNPluhrt7G/ZBG2qqTQ+u396JyA
- bIp7LlOy9fPMYUWQ5LKxCGZxIFSvV5nMsw3TX6leFf7PaDKSidK99EhstB7MBooBMTq2
- 1NaWdH9WC7NNauBFVZfEVtxPgDh7zdsTEMb24MBHGSwYBurdYkH/6YB7F8EOcACQrw/R
- U7s2bDGboPYTqGB3RcmvgJ4b4Dn8mGGG8kq1gA2pfP4RqZipc3RJ3snfcP20C87UtS8O
- KiZNutKdyA6bObjdFI2lnKmuMVyFMMkxrdJ5LhV09maWh6CfRXMMBIhG1WuJcTTlVsZJ
- 4+vQ==
-X-Gm-Message-State: AJIora+0aDN/oh5B94g2NpMn89EY5LodUJA20EtehpBgvnIe1y4/hftF
- aseiSHpIXl+6YqXQpJxWqr2kBEbtw1RcDNK1KLM=
-X-Google-Smtp-Source: AGRyM1tvD9r7R4DWPYKzvMjniTP8BJWTjA3b1PCNh5lkp3ELl7rkW3gZcKAFb2vPPOb58pKNUph5HCPHGh8p2YQF/DA=
-X-Received: by 2002:a17:907:16a6:b0:726:574d:d31f with SMTP id
- hc38-20020a17090716a600b00726574dd31fmr9240954ejc.514.1656602256279; Thu, 30
- Jun 2022 08:17:36 -0700 (PDT)
-MIME-Version: 1.0
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id tbsJsebb8IdE; Thu, 30 Jun 2022 15:21:15 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8B22D84639;
+	Thu, 30 Jun 2022 15:21:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8B22D84639
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id C05A81BF30E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Jun 2022 15:21:14 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9934C4039D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Jun 2022 15:21:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9934C4039D
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id g2lVibXLh2Mg for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 30 Jun 2022 15:21:13 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A6CEF40178
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A6CEF40178
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Jun 2022 15:21:13 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10393"; a="307887168"
+X-IronPort-AV: E=Sophos;i="5.92,234,1650956400"; d="scan'208";a="307887168"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 30 Jun 2022 08:21:13 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.92,234,1650956400"; d="scan'208";a="918087557"
+Received: from boxer.igk.intel.com (HELO boxer) ([10.102.20.173])
+ by fmsmga005.fm.intel.com with ESMTP; 30 Jun 2022 08:21:09 -0700
+Date: Thu, 30 Jun 2022 17:21:08 +0200
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: Alexander Duyck <alexander.duyck@gmail.com>
+Message-ID: <Yr2/ZAYgOAGQopZJ@boxer>
 References: <20220629085836.18042-1-fmdefrancesco@gmail.com>
  <Yr12jl1nEqqVI3TT@boxer>
-In-Reply-To: <Yr12jl1nEqqVI3TT@boxer>
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 30 Jun 2022 08:17:24 -0700
-Message-ID: <CAKgT0UfGM8nCZnnYjWPKT+JXOwVJx1xj6n7ssGi41vH4GrUy0Q@mail.gmail.com>
-To: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc;
- bh=/i5OyXrdHIl03uJMvczX531K/3M39oSh861kA9eYkbU=;
- b=aUnaDEQf/6DZiB9+2W4JNMnceVSAaQP7P20qDaIlYU2rIgQd30pZyBI6JIDqFCXbQT
- vocFA2dds+c2iYSC2f6DEc3scWLcnYg/SOVK8wY2xZFqSwCVI/yA2xxj35Q5P7QtLFng
- ucHahq3keTH8wpoKTw23IaNHyTsk5TE2HMSiFGDuHUkaH3uB1vdtsfO6q7tGCe/nwB3E
- OseqyINdZv01zFtHRxOHMZhbOzneyJycUpWgxEzx2fPBTjbMtiZgS5zaB3ec/WHv4suM
- 7OD4FaSoA3XafBUR2QRUNH2ncTdRB6oN+7eUs+kgdaoIKUJtMnqOiIYBEG1cIpwouPaA
- F4gg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=aUnaDEQf
+ <CAKgT0UfGM8nCZnnYjWPKT+JXOwVJx1xj6n7ssGi41vH4GrUy0Q@mail.gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <CAKgT0UfGM8nCZnnYjWPKT+JXOwVJx1xj6n7ssGi41vH4GrUy0Q@mail.gmail.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1656602473; x=1688138473;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=IV4NsOLZ4pseLjE+Zgo99/IZslsFn8JpLQVKMjQpu2s=;
+ b=mWkAN/kVzTURRBM8V4BDAg3hUO9Nu8Lm4efh9/iesXOlkTL2xcIsqzz6
+ SYnoH4yw/FF0a/VWICxdiTcCjBY9nEcMHZeNS8PKqBzmL7iELdoxGEeVL
+ cNsZD+EVGy2YJGvjbcLvSlirGpirRpzEpsHjWWcPPTk01ukVly0A5BBgS
+ Sg6W+sj+gpCBYvSg1wIkogwDN/+QDEke8MOCNy3qDHM0CSmNTdrTbHlMe
+ A3CUtHlBq6tJJ1/d6A7TESXoCrMQlCwG0fgO6MZaN4soLd3dr/dvu55Zf
+ BgVzJqWXwK45ZIGOPCd1GrvucFqMMjO4MRBAKY8Q/6L36LPa40Edag34v
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=mWkAN/kV
 Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: Use kmap_local_page in
  ixgbe_check_lbtest_frame()
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -120,37 +113,43 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Jun 30, 2022 at 3:10 AM Maciej Fijalkowski
-<maciej.fijalkowski@intel.com> wrote:
->
-> On Wed, Jun 29, 2022 at 10:58:36AM +0200, Fabio M. De Francesco wrote:
-> > The use of kmap() is being deprecated in favor of kmap_local_page().
+On Thu, Jun 30, 2022 at 08:17:24AM -0700, Alexander Duyck wrote:
+> On Thu, Jun 30, 2022 at 3:10 AM Maciej Fijalkowski
+> <maciej.fijalkowski@intel.com> wrote:
 > >
-> > With kmap_local_page(), the mapping is per thread, CPU local and not
-> > globally visible. Furthermore, the mapping can be acquired from any context
-> > (including interrupts).
+> > On Wed, Jun 29, 2022 at 10:58:36AM +0200, Fabio M. De Francesco wrote:
+> > > The use of kmap() is being deprecated in favor of kmap_local_page().
+> > >
+> > > With kmap_local_page(), the mapping is per thread, CPU local and not
+> > > globally visible. Furthermore, the mapping can be acquired from any context
+> > > (including interrupts).
+> > >
+> > > Therefore, use kmap_local_page() in ixgbe_check_lbtest_frame() because
+> > > this mapping is per thread, CPU local, and not globally visible.
 > >
-> > Therefore, use kmap_local_page() in ixgbe_check_lbtest_frame() because
-> > this mapping is per thread, CPU local, and not globally visible.
->
-> Hi,
->
-> I'd like to ask why kmap was there in the first place and not plain
-> page_address() ?
->
-> Alex?
+> > Hi,
+> >
+> > I'd like to ask why kmap was there in the first place and not plain
+> > page_address() ?
+> >
+> > Alex?
+> 
+> The page_address function only works on architectures that have access
+> to all of physical memory via virtual memory addresses. The kmap
+> function is meant to take care of highmem which will need to be mapped
+> before it can be accessed.
+> 
+> For non-highmem pages kmap just calls the page_address function.
+> https://elixir.bootlin.com/linux/latest/source/include/linux/highmem-internal.h#L40
 
-The page_address function only works on architectures that have access
-to all of physical memory via virtual memory addresses. The kmap
-function is meant to take care of highmem which will need to be mapped
-before it can be accessed.
+I knew the second part but not the first, thanks.
+So basically it is advised to convert the page_address() usage in similar
+loopback testing code that other Intel drivers have, I'll do that later.
 
-For non-highmem pages kmap just calls the page_address function.
-https://elixir.bootlin.com/linux/latest/source/include/linux/highmem-internal.h#L40
-
-Thanks,
-
-- Alex
+> 
+> Thanks,
+> 
+> - Alex
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
