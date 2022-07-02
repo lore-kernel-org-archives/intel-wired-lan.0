@@ -4,100 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39F65C43334
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Jul 2022 12:51:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53FE0C433EF
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Jul 2022 12:51:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D939840A8C;
-	Tue,  5 Jul 2022 12:51:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D939840A8C
+	by smtp2.osuosl.org (Postfix) with ESMTP id F10A740AA0;
+	Tue,  5 Jul 2022 12:51:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F10A740AA0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1657025506;
-	bh=pAQkfcNN3rWJmUpRyVA3sXR8+1KAvS+FmGDot9uFatA=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1657025517;
+	bh=o95kRSjJzLDiOXetkMj59zFUVNXMgGkuPZNaKJPbJmQ=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=u6+ZUsMqcXXTYaIYRNsLgUqksO1Pw4YKwOXVayDujU0f+AQzduGcjaAeyM32qn7pz
-	 7ck4yrhvIKG3zvE12m6pnI3CI9wm9NThRWBYnX+5tUnf9doLLSqEZlLy/tSYrd0u3q
-	 CxtZfFHd4miF7y2eqMmeGgTuSpXeaJZnc/2cem4klOibgt/uKA7CdKtq9oG/0JEMhh
-	 rKPGj/wTAmBigeIjlPfqNRdB5m6TKE5tPwgsFT9tEyKl/izpl2n+WM8wfcymtwiQNz
-	 g9Yqw+hsMq9BtEx/uBO+GIOfB2ZKw5rgXW0wbt/hqYpchQhaqUUesj78ELTfbAaxb4
-	 J2JB7BwzqhIgA==
+	b=iJ1GkA4XpY4jHzEJpFJoqbdP3Q7Wpwwn1OhZL0frRQ9/53gCag/COgYNxU15L2BVV
+	 Ny+/YkjPoPxvZ2H4BE3HMXClEKlZvLaOZxDxjrsb9C3F32fqFrnoChgUJHKFT8HBeH
+	 o7LYzaorTSWhiXy4Kbbj+OWg3ZOEv7GUp1Ob5214/9kHr0hoWS5TeVTXlvuvnBfgEN
+	 qoHBAKPJorA2ZVoR6LyM0IGyQZnevwgnjkD8WxXC0A5g1SegRRdP/a0x8bQW5rVaPL
+	 S2QyC+FmPgwVaeVchyBOlX2JDoYvIWqJLoHpLbu+mldabW4/84ynnafJrbKUodYwnS
+	 qhPjwMC3SmiIQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lGzxxh0L4jys; Tue,  5 Jul 2022 12:51:46 +0000 (UTC)
+	with ESMTP id kQhHI8OlHJa9; Tue,  5 Jul 2022 12:51:55 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B1AEF40A88;
-	Tue,  5 Jul 2022 12:51:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B1AEF40A88
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 51B381BF5DA
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Jul 2022 15:36:49 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5256940A49;
+	Tue,  5 Jul 2022 12:51:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5256940A49
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 903F81C11A9
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Jul 2022 01:03:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 38B064187E
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Jul 2022 15:36:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 38B064187E
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5AD4A60B61
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Jul 2022 01:03:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5AD4A60B61
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id cMuh-CS8iwli for <intel-wired-lan@lists.osuosl.org>;
- Fri,  1 Jul 2022 15:36:47 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A666F41860
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com
- [IPv6:2a00:1450:4864:20::62b])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A666F41860
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Jul 2022 15:36:47 +0000 (UTC)
-Received: by mail-ej1-x62b.google.com with SMTP id mf9so4834511ejb.0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 01 Jul 2022 08:36:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=kVWP9v9nuRHyTkGEYSrcvx5uXVMOYJJ1wNoS0VDXg9k=;
- b=gz6XuhapjYJy0M6xvXd/9vq0Sd9GdDPX2sGYaWmDmx9gukegFtsh2H0i8BO6GeNQpx
- 8ju9+Ha61bDvn3eaJuj7Crl5IeKNuqHcP4mlXq67Ie8hU4bLc4Inn1XYadnJlfeSdPhu
- p5Zs0bXDoTbP/olfk6TzI4tk5xrM8Ukawkr5wk9YwXgHnt0QAzt/NYj5/e5xS3/jPo1O
- TbgeCMil1J/q4SnezCH41sW9ot7Rc7844w4k5bf1Vt27/28nb/vjrKv/sO1FnP3sFEBW
- Gm4pkX0V4g0T8vwl0AKn6WPd9lOE1rUv0troiATc84TtZvntny0N2ssAEZ4OyCaf7fr5
- o2ug==
-X-Gm-Message-State: AJIora8jcgfUIMQO0SGjDZp9dhPIhqg0TzuTV6k9waH8WefpVAQCVSzK
- fRWd0+NBSwasG1KWh7g0AGU=
-X-Google-Smtp-Source: AGRyM1sbuKQmRTnINPADgbGRg8JQE2qKqhXWTCOypWUscwCJZKjHhyoe3fG2hqQGXqGDHtdjsw8lJA==
-X-Received: by 2002:a17:907:628a:b0:6fe:526c:ebc with SMTP id
- nd10-20020a170907628a00b006fe526c0ebcmr14194125ejc.531.1656689805755; 
- Fri, 01 Jul 2022 08:36:45 -0700 (PDT)
-Received: from opensuse.localnet (host-79-53-109-127.retail.telecomitalia.it.
- [79.53.109.127]) by smtp.gmail.com with ESMTPSA id
- c12-20020a170906d18c00b00727c6da69besm3853562ejz.38.2022.07.01.08.36.42
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 01 Jul 2022 08:36:44 -0700 (PDT)
-From: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
-To: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 01 Jul 2022 17:36:42 +0200
-Message-ID: <2834855.e9J7NaK4W3@opensuse>
-In-Reply-To: <CAKgT0UfThk3MLcE38wQu5+2Qy7Ld2px-2WJgnD+2xbDsA8iEEw@mail.gmail.com>
-References: <20220629085836.18042-1-fmdefrancesco@gmail.com>
- <2254584.ElGaqSPkdT@opensuse>
- <CAKgT0UfThk3MLcE38wQu5+2Qy7Ld2px-2WJgnD+2xbDsA8iEEw@mail.gmail.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id T_XY_qfq3QEl for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  2 Jul 2022 01:03:36 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1EFB060B2F
+Received: from out1.migadu.com (out1.migadu.com [91.121.223.63])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1EFB060B2F
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  2 Jul 2022 01:03:36 +0000 (UTC)
+Date: Fri, 1 Jul 2022 18:03:10 -0700
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Roman Gushchin <roman.gushchin@linux.dev>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ kernel test robot <lkp@intel.com>
+Message-ID: <Yr+ZTnLb9lJk6fJO@castle>
+References: <62be3696.+PAAAVlbtWK6G2hk%lkp@intel.com>
 MIME-Version: 1.0
-X-Mailman-Approved-At: Tue, 05 Jul 2022 12:51:16 +0000
+Content-Disposition: inline
+In-Reply-To: <62be3696.+PAAAVlbtWK6G2hk%lkp@intel.com>
+X-Migadu-Flow: FLOW_OUT
+X-Migadu-Auth-User: linux.dev
+X-Mailman-Approved-At: Tue, 05 Jul 2022 12:51:15 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=kVWP9v9nuRHyTkGEYSrcvx5uXVMOYJJ1wNoS0VDXg9k=;
- b=SqZhVjf7YNNWixNsKmBLY6iXajXocLtajbIf7Rwa4/DgzXmfZOf929koyVGp5a4cJM
- 9rrisSEADI6F7uCEphtjMSxcfpYNk6hkQn7MYGwsnEJI42VB5gSdrHMeISl1m0u/uNbM
- FKmTJpDjug72jjNeo2v6vGUKbrRVU6PK9rTE7g6l/txGHCOGAsbNNk3zbSU9w/LpDtbQ
- Qz0foezAvyKetuqKHK/Epagqzwa+luCiiN6hbGSzAqzVloMh5MoCcakiImRU8hb+v4tP
- LIlhFcBX1UfLysKyB5fLC+xNhn/ly0jvmTgqbw6LSKbR909kFJAWzGLH8VnoYHpd3R6d
- tXeQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=SqZhVjf7
-Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: Use kmap_local_page in
- ixgbe_check_lbtest_frame()
+ d=linux.dev; s=key1; t=1656723813;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=UefsvJWBOCsJEHG/jcpgIGR+KBtUCRUqjXcROu7qjh4=;
+ b=oGHlDm4tgr6UzDbC5z/sb7q2WEts5mi8mJ8aiIMXBOzW75BRr4BaIuszRL9hOCzoFfVxku
+ tmO6BM7R9GzDDzZbe/MQeyeOEOAx+3VHqH/w/8ecEZ7fImffcNYGlal4Cw/gQ26E9Sym1J
+ usYWeNXz8OdB9Vt23HLuxwKOwXbZ7ng=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=oGHlDm4t
+Subject: Re: [Intel-wired-lan] [linux-next:master] BUILD REGRESSION
+ 6cc11d2a1759275b856e464265823d94aabd5eaf
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,80 +88,152 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jesper Dangaard Brouer <hawk@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Netdev <netdev@vger.kernel.org>,
- Alexander Duyck <alexanderduyck@fb.com>,
- John Fastabend <john.fastabend@gmail.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Alexei Starovoitov <ast@kernel.org>, Eric Dumazet <edumazet@google.com>,
- intel-wired-lan <intel-wired-lan@lists.osuosl.org>,
- Jakub Kicinski <kuba@kernel.org>, bpf <bpf@vger.kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Ira Weiny <ira.weiny@intel.com>,
- "David S. Miller" <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: nvdimm@lists.linux.dev, legousb-devel@lists.sourceforge.net,
+ dri-devel@lists.freedesktop.org, linux-sctp@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com, linux-samsung-soc@vger.kernel.org,
+ ceph-devel@vger.kernel.org, linux-pm@vger.kernel.org,
+ usbb2k-api-dev@nongnu.org, linux-omap@vger.kernel.org,
+ megaraidlinux.pdl@broadcom.com, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ netfilter-devel@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-wpan@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-parport@lists.infradead.org,
+ samba-technical@lists.samba.org, linux-cxl@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+ target-devel@vger.kernel.org, dev@openvswitch.org, linux-cifs@vger.kernel.org,
+ linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org,
+ iommu@lists.linux.dev, coreteam@netfilter.org, linux-media@vger.kernel.org,
+ linux-watchdog@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+ linaro-mm-sig@lists.linaro.org, cgroups@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org,
+ linux-renesas-soc@vger.kernel.org, linux-integrity@vger.kernel.org,
+ linux-efi@vger.kernel.org, linux-iio@vger.kernel.org,
+ linux-pci@vger.kernel.org, linux-fpga@vger.kernel.org,
+ alsa-devel@alsa-project.org, linux-mtd@lists.infradead.org,
+ linux-amlogic@lists.infradead.org, linux-phy@lists.infradead.org,
+ sound-open-firmware@alsa-project.org, linux-rdma@vger.kernel.org,
+ linux-staging@lists.linux.dev, amd-gfx@lists.freedesktop.org,
+ isdn4linux@listserv.isdn4linux.de, linux-input@vger.kernel.org,
+ linux-ext4@vger.kernel.org, mjpeg-users@lists.sourceforge.net,
+ openipmi-developer@lists.sourceforge.net, linux-hwmon@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-ide@vger.kernel.org,
+ linux-mmc@vger.kernel.org, iommu@lists.linux-foundation.org,
+ keyrings@vger.kernel.org, netdev@vger.kernel.org, kvm@vger.kernel.org,
+ damon@lists.linux.dev, linux-mm@kvack.org,
+ accessrunner-general@lists.sourceforge.net,
+ linux1394-devel@lists.sourceforge.net, linux-leds@vger.kernel.org,
+ rds-devel@oss.oracle.com, linux-x25@vger.kernel.org, dccp@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-serial@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-nfc@lists.01.org,
+ osmocom-net-gprs@lists.osmocom.org, apparmor@lists.ubuntu.com,
+ linux-raid@vger.kernel.org, linux-bcache@vger.kernel.org,
+ linux-mediatek@lists.infradead.org, linux-tegra@vger.kernel.org,
+ linux-scsi@vger.kernel.org, patches@opensource.cirrus.com,
+ linux-unionfs@vger.kernel.org, linux-bluetooth@vger.kernel.org,
+ ntb@lists.linux.dev, tipc-discussion@lists.sourceforge.net,
+ linuxppc-dev@lists.ozlabs.org, linux-btrfs@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gZ2lvdmVkw6wgMzAgZ2l1Z25vIDIwMjIgMjM6NTk6MjMgQ0VTVCBBbGV4YW5kZXIgRHV5Y2sg
-d3JvdGU6Cj4gT24gVGh1LCBKdW4gMzAsIDIwMjIgYXQgMTE6MTggQU0gRmFiaW8gTS4gRGUgRnJh
-bmNlc2NvCj4gPGZtZGVmcmFuY2VzY29AZ21haWwuY29tPiB3cm90ZToKPiA+Cj4gPiBPbiBnaW92
-ZWTDrCAzMCBnaXVnbm8gMjAyMiAxODowOToxOCBDRVNUIEFsZXhhbmRlciBEdXljayB3cm90ZToK
-PiA+ID4gT24gVGh1LCBKdW4gMzAsIDIwMjIgYXQgODoyNSBBTSBFcmljIER1bWF6ZXQgPGVkdW1h
-emV0QGdvb2dsZS5jb20+IAp3cm90ZToKPiA+ID4gPgo+ID4gPiA+IE9uIFRodSwgSnVuIDMwLCAy
-MDIyIGF0IDU6MTcgUE0gQWxleGFuZGVyIER1eWNrCj4gPiA+ID4gPGFsZXhhbmRlci5kdXlja0Bn
-bWFpbC5jb20+IHdyb3RlOgo+ID4gPiA+ID4KPiA+ID4gPiA+IE9uIFRodSwgSnVuIDMwLCAyMDIy
-IGF0IDM6MTAgQU0gTWFjaWVqIEZpamFsa293c2tpCj4gPiA+ID4gPiA8bWFjaWVqLmZpamFsa293
-c2tpQGludGVsLmNvbT4gd3JvdGU6Cj4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+IE9uIFdlZCwgSnVu
-IDI5LCAyMDIyIGF0IDEwOjU4OjM2QU0gKzAyMDAsIEZhYmlvIE0uIERlIEZyYW5jZXNjbwo+ID4g
-d3JvdGU6Cj4gPiA+ID4gPiA+ID4gVGhlIHVzZSBvZiBrbWFwKCkgaXMgYmVpbmcgZGVwcmVjYXRl
-ZCBpbiBmYXZvciBvZgo+ID4ga21hcF9sb2NhbF9wYWdlKCkuCj4gPiA+ID4gPiA+ID4KPiA+ID4g
-PiA+ID4gPiBXaXRoIGttYXBfbG9jYWxfcGFnZSgpLCB0aGUgbWFwcGluZyBpcyBwZXIgdGhyZWFk
-LCBDUFUgbG9jYWwgCmFuZAo+ID4gbm90Cj4gPiA+ID4gPiA+ID4gZ2xvYmFsbHkgdmlzaWJsZS4g
-RnVydGhlcm1vcmUsIHRoZSBtYXBwaW5nIGNhbiBiZSBhY3F1aXJlZCAKZnJvbQo+ID4gYW55IGNv
-bnRleHQKPiA+ID4gPiA+ID4gPiAoaW5jbHVkaW5nIGludGVycnVwdHMpLgo+ID4gPiA+ID4gPiA+
-Cj4gPiA+ID4gPiA+ID4gVGhlcmVmb3JlLCB1c2Uga21hcF9sb2NhbF9wYWdlKCkgaW4gCml4Z2Jl
-X2NoZWNrX2xidGVzdF9mcmFtZSgpCj4gPiBiZWNhdXNlCj4gPiA+ID4gPiA+ID4gdGhpcyBtYXBw
-aW5nIGlzIHBlciB0aHJlYWQsIENQVSBsb2NhbCwgYW5kIG5vdCBnbG9iYWxseSAKdmlzaWJsZS4K
-PiA+ID4gPiA+ID4KPiA+ID4gPiA+ID4gSGksCj4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+IEknZCBs
-aWtlIHRvIGFzayB3aHkga21hcCB3YXMgdGhlcmUgaW4gdGhlIGZpcnN0IHBsYWNlIGFuZCBub3Qg
-CnBsYWluCj4gPiA+ID4gPiA+IHBhZ2VfYWRkcmVzcygpID8KPiA+ID4gPiA+ID4KPiA+ID4gPiA+
-ID4gQWxleD8KPiA+ID4gPiA+Cj4gPiA+ID4gPiBUaGUgcGFnZV9hZGRyZXNzIGZ1bmN0aW9uIG9u
-bHkgd29ya3Mgb24gYXJjaGl0ZWN0dXJlcyB0aGF0IGhhdmUKPiA+IGFjY2Vzcwo+ID4gPiA+ID4g
-dG8gYWxsIG9mIHBoeXNpY2FsIG1lbW9yeSB2aWEgdmlydHVhbCBtZW1vcnkgYWRkcmVzc2VzLiBU
-aGUga21hcAo+ID4gPiA+ID4gZnVuY3Rpb24gaXMgbWVhbnQgdG8gdGFrZSBjYXJlIG9mIGhpZ2ht
-ZW0gd2hpY2ggd2lsbCBuZWVkIHRvIGJlCj4gPiBtYXBwZWQKPiA+ID4gPiA+IGJlZm9yZSBpdCBj
-YW4gYmUgYWNjZXNzZWQuCj4gPiA+ID4gPgo+ID4gPiA+ID4gRm9yIG5vbi1oaWdobWVtIHBhZ2Vz
-IGttYXAganVzdCBjYWxscyB0aGUgcGFnZV9hZGRyZXNzIGZ1bmN0aW9uLgo+ID4gPiA+ID4gaHR0
-cHM6Ly9lbGl4aXIuYm9vdGxpbi5jb20vbGludXgvbGF0ZXN0L3NvdXJjZS9pbmNsdWRlL2xpbnV4
-LwpoaWdobWVtLWludGVybmFsLmgjTDQwCj4gPiA+ID4KPiA+ID4gPgo+ID4gPiA+IFN1cmUsIGJ1
-dCBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9peGdiZS9peGdiZV9tYWluLmMgaXMgCmFsbG9j
-YXRpbmcKPiA+ID4gPiBwYWdlcyB0aGF0IGFyZSBub3QgaGlnaG1lbSA/Cj4gPiA+ID4KPiA+ID4g
-PiBUaGlzIGttYXAoKSBkb2VzIG5vdCBzZWVtIG5lZWRlZC4KPiA+ID4KPiA+ID4gR29vZCBwb2lu
-dC4gU28gb2RkcyBhcmUgcGFnZV9hZGRyZXNzIGlzIGZpbmUgdG8gdXNlLiBBY3R1YWxseSB0aGVy
-ZSAKaXMKPiA+ID4gYSBub3RlIHRvIHRoYXQgZWZmZWN0IGluIGl4Z2JlX3B1bGxfdGFpbC4KPiA+
-ID4KPiA+ID4gQXMgc3VjaCB3ZSBjb3VsZCBwcm9iYWJseSBnbyB0aHJvdWdoIGFuZCB1cGRhdGUg
-aWdiLCBhbmQgc2V2ZXJhbCBvZgo+ID4gPiB0aGUgb3RoZXIgSW50ZWwgZHJpdmVycyBhcyB3ZWxs
-Lgo+ID4gPgo+ID4gPiAtIEFsZXgKPiA+ID4KPiA+IEkgZG9uJ3Qga25vdyB0aGlzIGNvZGUsIGhv
-d2V2ZXIgSSBrbm93IGttYXAqKCkuCj4gPgo+ID4gSSBhc3N1bWVkIHRoYXQsIGlmIGF1dGhvciB1
-c2VkIGttYXAoKSwgdGhlcmUgd2FzIHBvc3NpYmlsaXR5IHRoYXQgdGhlIApwYWdlCj4gPiBjYW1l
-IGZyb20gaGlnaG1lbS4KPiA+Cj4gPiBJbiB0aGF0IGNhc2Uga21hcF9sb2NhbF9wYWdlKCkgbG9v
-a3MgY29ycmVjdCBoZXJlLgo+ID4KPiA+IEhvd2V2ZXIsIG5vdyBJIHJlYWQgdGhhdCB0aGF0IHBh
-Z2UgX2Nhbm5vdF8gY29tZSBmcm9tIGhpZ2htZW0uIApUaGVyZWZvcmUsCj4gPiBwYWdlX2FkZHJl
-c3MoKSB3b3VsZCBzdWZmaWNlLgo+ID4KPiA+IElmIHlvdSBhbGwgd2FudCBJIGNhbiByZXBsYWNl
-IGttYXAoKSAvIGt1bm1hcCgpIHdpdGggYSAicGxhaW4iCj4gPiBwYWdlX2FkZHJlc3MoKS4gUGxl
-YXNlIGxldCBtZSBrbm93Lgo+ID4KPiA+IFRoYW5rcywKPiA+Cj4gPiBGYWJpbwo+IAo+IFJlcGxh
-Y2luZyBpdCB3aXRoIGp1c3QgcGFnZV9hZGRyZXNzKCkgc2hvdWxkIGJlIGZpbmUuIEJhY2sgd2hl
-biBJCj4gd3JvdGUgdGhlIGNvZGUgSSBkaWRuJ3QgcmVhbGl6ZSB0aGF0IEdGUF9BVE9NSUMgcGFn
-ZXMgd2VyZW4ndAo+IGFsbG9jYXRlZCBmcm9tIGhpZ2htZW0gc28gSSBzdXNwZWN0IEkganVzdCB1
-c2VkIGttYXAgc2luY2UgaXQgd2FzIHRoZQo+IHdheSB0byBjb3ZlciBhbGwgdGhlIGJhc2VzLgo+
-IAo+IFRoYW5rcywKPiAKPiAtIEFsZXgKPiAKCk9LLCBJJ20gYWJvdXQgdG8gcHJlcGFyZSBhbm90
-aGVyIHBhdGNoIHdpdGggcGFnZV9hZGRyZXNzKCkgKG9idmlvdXNseSwgdGhpcyAKc2hvdWxkIGJl
-IGRpc2NhcmRlZCkuCgpMYXN0IHRoaW5nLi4uIElzIHRoYXQgcGFnZSBhbGxvY2F0ZWQgd2l0aCBk
-bWFfcG9vbF9hbGxvYygpIGF0Cml4Z2JlL2l4Z2JlX2Zjb2UuYzoxOTY/IFNvbWV3aGVyZSBlbHNl
-PwoKVGhhbmtzLAoKRmFiaW8KClAuUy46IENhbiB5b3Ugc2F5IHNvbWV0aGluZyBhYm91dCBob3cg
-cGFnZXMgYXJlIGFsbG9jYXRlZCBpbiBpbnRlbC9lMTAwMCAKYW5kIGluIGludGVsL2UxMDAwZT8g
-SSBzZWUgdGhhdCB0aG9zZSBkcml2ZXJzIHVzZSBrbWFwX2F0b21pYygpLgoKCgpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFp
-bGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3Ns
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
+esOn Fri, Jul 01, 2022 at 07:49:42AM +0800, kbuild test robot wrote:
+> tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+> branch HEAD: 6cc11d2a1759275b856e464265823d94aabd5eaf  Add linux-next specific files for 20220630
+> 
+> Error/Warning reports:
+> 
+> https://lore.kernel.org/linux-mm/202206301859.UodBCrva-lkp@intel.com
+> 
+> Error/Warning: (recently discovered and may have been fixed)
+> 
+> arch/powerpc/kernel/interrupt.c:542:55: error: suggest braces around empty body in an 'if' statement [-Werror=empty-body]
+> arch/powerpc/kernel/interrupt.c:542:55: warning: suggest braces around empty body in an 'if' statement [-Wempty-body]
+> drivers/pci/endpoint/functions/pci-epf-vntb.c:975:5: warning: no previous prototype for 'pci_read' [-Wmissing-prototypes]
+> drivers/pci/endpoint/functions/pci-epf-vntb.c:984:5: warning: no previous prototype for 'pci_write' [-Wmissing-prototypes]
+> mm/shrinker_debug.c:143:9: warning: function 'shrinker_debugfs_rename' might be a candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+> mm/shrinker_debug.c:217:9: warning: function 'shrinker_debugfs_rename' might be a candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+> mm/vmscan.c:637:9: warning: function 'prealloc_shrinker' might be a candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+> mm/vmscan.c:642:9: warning: function 'prealloc_shrinker' might be a candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+> mm/vmscan.c:697:9: warning: function 'register_shrinker' might be a candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+> mm/vmscan.c:702:9: warning: function 'register_shrinker' might be a candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+
+Shrinker-related warnings should be fixed by the following patch.
+
+Thanks!
+
+--
+
+From c399aff65c7745a209397a531c5b28fd404d83c2 Mon Sep 17 00:00:00 2001
+From: Roman Gushchin <roman.gushchin@linux.dev>
+Date: Fri, 1 Jul 2022 17:38:31 -0700
+Subject: [PATCH] mm:shrinkers: fix build warnings
+
+Add __printf(a, b) attributes to shrinker functions taking shrinker
+name as an argument to avoid compiler warnings like:
+
+mm/shrinker_debug.c:143:9: warning: function 'shrinker_debugfs_rename'
+  might be a candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+mm/shrinker_debug.c:217:9: warning: function 'shrinker_debugfs_rename'
+  might be a candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+mm/vmscan.c:637:9: warning: function 'prealloc_shrinker' might be a
+  candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+mm/vmscan.c:642:9: warning: function 'prealloc_shrinker' might be a
+  candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+mm/vmscan.c:697:9: warning: function 'register_shrinker' might be a
+  candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+mm/vmscan.c:702:9: warning: function 'register_shrinker' might be a
+  candidate for 'gnu_printf' format attribute [-Wsuggest-attribute=format]
+
+Signed-off-by: Roman Gushchin <roman.gushchin@linux.dev>
+---
+ include/linux/shrinker.h | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/shrinker.h b/include/linux/shrinker.h
+index 64416f3e0a1f..08e6054e061f 100644
+--- a/include/linux/shrinker.h
++++ b/include/linux/shrinker.h
+@@ -93,9 +93,11 @@ struct shrinker {
+  */
+ #define SHRINKER_NONSLAB	(1 << 3)
+ 
+-extern int prealloc_shrinker(struct shrinker *shrinker, const char *fmt, ...);
++extern int __printf(2, 3) prealloc_shrinker(struct shrinker *shrinker,
++					    const char *fmt, ...);
+ extern void register_shrinker_prepared(struct shrinker *shrinker);
+-extern int register_shrinker(struct shrinker *shrinker, const char *fmt, ...);
++extern int __printf(2, 3) register_shrinker(struct shrinker *shrinker,
++					    const char *fmt, ...);
+ extern void unregister_shrinker(struct shrinker *shrinker);
+ extern void free_prealloced_shrinker(struct shrinker *shrinker);
+ extern void synchronize_shrinkers(void);
+@@ -103,8 +105,8 @@ extern void synchronize_shrinkers(void);
+ #ifdef CONFIG_SHRINKER_DEBUG
+ extern int shrinker_debugfs_add(struct shrinker *shrinker);
+ extern void shrinker_debugfs_remove(struct shrinker *shrinker);
+-extern int shrinker_debugfs_rename(struct shrinker *shrinker,
+-				   const char *fmt, ...);
++extern int __printf(2, 3) shrinker_debugfs_rename(struct shrinker *shrinker,
++						  const char *fmt, ...);
+ #else /* CONFIG_SHRINKER_DEBUG */
+ static inline int shrinker_debugfs_add(struct shrinker *shrinker)
+ {
+@@ -113,8 +115,8 @@ static inline int shrinker_debugfs_add(struct shrinker *shrinker)
+ static inline void shrinker_debugfs_remove(struct shrinker *shrinker)
+ {
+ }
+-static inline int shrinker_debugfs_rename(struct shrinker *shrinker,
+-					  const char *fmt, ...)
++static inline __printf(2, 3)
++int shrinker_debugfs_rename(struct shrinker *shrinker, const char *fmt, ...)
+ {
+ 	return 0;
+ }
+-- 
+2.36.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
