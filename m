@@ -1,84 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84DF0C433EF
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 Jul 2022 13:46:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65539C433EF
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Jul 2022 04:19:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1A4DD605EE;
-	Mon,  4 Jul 2022 13:46:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1A4DD605EE
+	by smtp4.osuosl.org (Postfix) with ESMTP id D0D9B40925;
+	Tue,  5 Jul 2022 04:19:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D0D9B40925
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1656942392;
-	bh=Y6Vm+lcusZ1A5Wzt2Oc95aCIuloNJFhyWdR5jdcNipo=;
+	s=default; t=1656994762;
+	bh=wIqqvnhzKMh3jtOWMiuEBtS77xXJ3zx9IMaOSCDquwA=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=P005uxVswYNoPmBASlYf9xUpQVUbIr2UekK/rph5a6a9v59dWVR7LAB06U7w0wmPp
-	 eqwuGBB/llpEj17KKxiiie0PHu1WVomiVSmCooSuVWD3/+iMulvaAX8jyHCTiIbqlP
-	 2T6PzYg+nFpnUqT3CnQKFo8MsEsgiYRPYuJD8P84e1T6atAQSGZWAyyvKkV76p2YdH
-	 nvQE6gMKhRcF+fr0iKWHjUIN6Hr2bOs/AXJKpfhkm1476W6SjeytFJ08DXWacBnMPW
-	 ktekUso6Aav1k7KN0PkhTEUxnG/iC6KDdXl7M5vKYxZd+Nbpi+JtSMtfXdJ0KR/XoS
-	 bwqNERc8hc0IQ==
+	 List-Post:List-Help:List-Subscribe:From;
+	b=D6Py4A30BwekoYKFkXEgzdqYk9lPNf7/3gXfYiSYxT7zgXM4teZY/aeoDy/lautTg
+	 CJuOBuTg3fPB8pm6okWu+RnQBFN2mPFcjTBKX1bmqGGVtOobsUj14UV/K6snxran+1
+	 uEF8fEUev4uLkgnT0ulDWWcnex9PhH73HOPwK9IKQxRAYMfK2e8wrATMCP7gLR6al6
+	 TT51C6a+uY2jRPp71larSN0gMlWONPJeEAHJheOSFd/tC4lSYaC1+rsygZQgJ7o7S3
+	 8VeeVqW6Rnd3l6YwbZzfUbK/vjeKJBvizTXkDyMeSpAoh9tu/IyCTB7xeTIJnhRiti
+	 T+4ZhxwWZDJDQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FHcOjlBXUjOc; Mon,  4 Jul 2022 13:46:31 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lbb0jX_TV7SX; Tue,  5 Jul 2022 04:19:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3327D60BD5;
-	Mon,  4 Jul 2022 13:46:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3327D60BD5
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8CC7A40928;
+	Tue,  5 Jul 2022 04:19:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8CC7A40928
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id CA6A01BF35F
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Jul 2022 13:46:29 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id DBA9C1BF32B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 04:19:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A3767401F2
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Jul 2022 13:46:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A3767401F2
+ by smtp2.osuosl.org (Postfix) with ESMTP id B0E3640166
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 04:19:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B0E3640166
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id l7WultjoM8Ay for <intel-wired-lan@lists.osuosl.org>;
- Mon,  4 Jul 2022 13:46:29 +0000 (UTC)
+ with ESMTP id l30yhhNmJcmz for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Jul 2022 04:19:18 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 14E7F40158
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 14E7F40158
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Jul 2022 13:46:28 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10397"; a="262925583"
-X-IronPort-AV: E=Sophos;i="5.92,243,1650956400"; d="scan'208";a="262925583"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Jul 2022 06:46:28 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7E74F40131
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7E74F40131
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 04:19:18 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10398"; a="344924911"
+X-IronPort-AV: E=Sophos;i="5.92,245,1650956400"; d="scan'208";a="344924911"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Jul 2022 21:19:17 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,243,1650956400"; d="scan'208";a="695335363"
-Received: from amlin-018-068.igk.intel.com (HELO localhost.igk.intel.com)
- ([10.102.18.68])
- by fmsmga002.fm.intel.com with ESMTP; 04 Jul 2022 06:46:27 -0700
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+X-IronPort-AV: E=Sophos;i="5.92,245,1650956400"; d="scan'208";a="838981377"
+Received: from ccdlinuxdev11.iil.intel.com ([143.185.162.183])
+ by fmsmga006.fm.intel.com with ESMTP; 04 Jul 2022 21:19:16 -0700
+From: Sasha Neftin <sasha.neftin@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  4 Jul 2022 15:46:12 +0200
-Message-Id: <20220704134612.1362297-1-mateusz.palczewski@intel.com>
-X-Mailer: git-send-email 2.27.0
+Date: Tue,  5 Jul 2022 07:19:10 +0300
+Message-Id: <20220705041910.3849895-1-sasha.neftin@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1656942389; x=1688478389;
+ t=1656994758; x=1688530758;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=VGSy3bKCr540x4LWC9x3uPAlBZLR25coTow2x1ChsuI=;
- b=Wxujtxh3xtK/dESskFIIpLp48q5L+INqTO82fiMBJY86IAvUiEs2VGUM
- k8HKWiKRTPpnJFb5NlcKnSKkNLzfvg/1SpTGrA+x5qFHtrG33Qjr+Q2cO
- U4zr/HSyBE9p3jUWe5Rqto5mP54S+L8es3VQEib34OoYSEhZMqpKhtp68
- 2PAiKdAN7MUmdQbKUFaMBfPhmey/BEUFk4KqquIj1fwjaUXu/0WvYKmrg
- DHHlOyjJUaSHMbcFoC5xrDmxuhUjgsvsqmQQUTyGMucAkaQOENUEnorMy
- 1OgfnN1ZlHWQjN/mYo2dlL3K6RirkRxkFGgvNJ3yCng+33rohcsZwb8/E
- g==;
+ bh=UunJRAOyaCOq5xz5LI5VO58CWQtt2XkwNVJthLthTso=;
+ b=SZ4KtXL2V/J2zIoPFO2smPAgWWjHY+7RfbCau+HEMnEoLlq4n1KfD72d
+ 0YvpN/3BroOat1mJr3MeFtnE+tbtRBZs1F8SuaxVv424vuwRCykpwK9yL
+ WseeBIcRlGdqNee9yM3ZwhFszr4zOGdgkqlSxUQgKpREDp+mMjL6lZolv
+ GVWVj4n6VtGZspGykmGniMlstyI7OScG5nhX3inEGYS8LLwWbIWWizea2
+ wYlcS2iPlTGDK71g4z6eFKjbvSJwBkROgUPse0NT7zZJmPFcsfWLeO2Ff
+ rJ40BWn7NN0HgF5QlFoWYBL81iCucE3RmTmgJBxaugj104KRvxyVUnuJW
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Wxujtxh3
-Subject: [Intel-wired-lan] [PATCH net v3] ice: Fix max VLANs available for VF
+ header.a=rsa-sha256 header.s=Intel header.b=SZ4KtXL2
+Subject: [Intel-wired-lan] [PATCH v1 1/1] igc: Remove MSI-X PBA Clear
+ register
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,48 +91,35 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+MSI-X PBA Clear register is not used. This patch comes to tidy up the
+driver code.
 
-Legacy VLAN implementation allows for untrusted VF to have 8 VLAN
-filters, not counting VLAN 0 filters. Current VLAN_V2 implementation
-lowers available filters for VF, by counting in  VLAN 0 filter for both
-TPIDs.
-Fix this by counting only non zero VLAN filters.
-Without this patch, untrusted VF would not be able to access 8 VLAN
-filters.
-
-Fixes: cc71de8fa133 ("ice: Add support for VIRTCHNL_VF_OFFLOAD_VLAN_V2")
-Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- v3: Fixed git settings and commit author
- v2: Changed fixes tag
----
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc_regs.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 4547bc1f7cee..24188ec594d5 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -2948,7 +2948,8 @@ ice_vc_validate_add_vlan_filter_list(struct ice_vsi *vsi,
- 				     struct virtchnl_vlan_filtering_caps *vfc,
- 				     struct virtchnl_vlan_filter_list_v2 *vfl)
- {
--	u16 num_requested_filters = vsi->num_vlan + vfl->num_elements;
-+	u16 num_requested_filters = ice_vsi_num_non_zero_vlans(vsi) +
-+		vfl->num_elements;
+diff --git a/drivers/net/ethernet/intel/igc/igc_regs.h b/drivers/net/ethernet/intel/igc/igc_regs.h
+index 026c3b65fc37..c0d8214148d1 100644
+--- a/drivers/net/ethernet/intel/igc/igc_regs.h
++++ b/drivers/net/ethernet/intel/igc/igc_regs.h
+@@ -59,9 +59,6 @@
+ #define IGC_IVAR_MISC		0x01740  /* IVAR for "other" causes - RW */
+ #define IGC_GPIE		0x01514  /* General Purpose Intr Enable - RW */
  
- 	if (num_requested_filters > vfc->max_filters)
- 		return false;
+-/* MSI-X Table Register Descriptions */
+-#define IGC_PBACL		0x05B68  /* MSIx PBA Clear - R/W 1 to clear */
+-
+ /* RSS registers */
+ #define IGC_MRQC		0x05818 /* Multiple Receive Control - RW */
+ 
 -- 
-2.27.0
+2.25.1
 
 _______________________________________________
 Intel-wired-lan mailing list
