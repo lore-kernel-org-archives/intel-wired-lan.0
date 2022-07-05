@@ -1,109 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E456C43334
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Jul 2022 12:52:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 314A8CCA47B
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Jul 2022 12:52:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2770E40919;
-	Tue,  5 Jul 2022 12:52:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2770E40919
+	by smtp1.osuosl.org (Postfix) with ESMTP id DEA37812FC;
+	Tue,  5 Jul 2022 12:52:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DEA37812FC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1657025522;
-	bh=vckuI2gS5WZA5Jnh2sVJEeGPCinGPuzpOPWtw+4K3HQ=;
+	s=default; t=1657025528;
+	bh=sxRhQXRPHrxHa1mon6+o9zs7jvYJTiyc7RaJKtuXkHY=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=HbAKSnErqx4l8qpzgoQLhR0TXM/PmBkZcvh7tckZ3zpkKtKfqigMdLgyGawDgHxEc
-	 sKHW2bJIQcwVVtdmtmW+Hzwi09WQU6YYWHIM1WtJV2SGNRHl+2BqSHcRODg/CYPAmH
-	 1el3o1qYYska2XJRZV1QtogEqwOkfHTrDixmMZ0eFTUdgZ6i7kYSmf/hIaniqmgzea
-	 f9rwXdlWwpVGFLGs3kSzJy5Op5CZ7KZ3OtfctPAfLYBAcmq2UTuiQrabmkly5Q4mpq
-	 C37IJgdAdZ58XZzP5wWYwLAzadmoxer4Ky1u4BWgnyJLHpcx6FZMceZrRDHO1vNUZj
-	 jndBrAm6d98yA==
+	b=D+rohMwJ1BCrFl1cVHOWH/CtFdA3MvOIpqrulmJglgdWulNpeCnvDMm+YB0nILU8N
+	 jAvqtQfLZUmGsD4zZf0BwazDLORNMr6aH+I6JFIwKBvvmxeTfO6Vf4hKLAIARcoXI/
+	 s/zSxW4FgUcNdLltE/CTg5SGy+2Y2BdHUhwADLffgTMIRGFBU2vL83YK1nwIsdGUhD
+	 CRiflRR5BkYSlQudr4+9aYax/PIFQ6kdVJdv5xkBPa7I4Nu78AO5/ucwhJEA+3jGaZ
+	 gvcZNWWPd57fzW/xqJAzrqXfI7Lm2bCNa6S9SCXgHdZzS89udNeK7I3PWkZ161221V
+	 gJSbxRkmNy5aQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zbGMfSFDwKqG; Tue,  5 Jul 2022 12:51:59 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id DkfsKoQAGhAF; Tue,  5 Jul 2022 12:52:08 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4ED284091A;
-	Tue,  5 Jul 2022 12:51:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4ED284091A
+	by smtp1.osuosl.org (Postfix) with ESMTP id AFCB082716;
+	Tue,  5 Jul 2022 12:52:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AFCB082716
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 5F7071BF35F
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Jul 2022 14:01:39 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id DC0591BF36D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 01:08:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 37AE6606F2
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Jul 2022 14:01:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 37AE6606F2
+ by smtp3.osuosl.org (Postfix) with ESMTP id C258A60AAC
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 01:08:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C258A60AAC
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id USNiWOJcMUdP for <intel-wired-lan@lists.osuosl.org>;
- Mon,  4 Jul 2022 14:01:38 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9EF26606EB
-Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com
- [IPv6:2a00:1450:4864:20::42e])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9EF26606EB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Jul 2022 14:01:37 +0000 (UTC)
-Received: by mail-wr1-x42e.google.com with SMTP id s1so13628693wra.9
- for <intel-wired-lan@lists.osuosl.org>; Mon, 04 Jul 2022 07:01:37 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=0RwqG+scDxa5sBRqSdCikrVrH/DlHuQpNG6BogojNcw=;
- b=u9H58wohqPYp0MinXYaxo5/r/Z6bIn2PPKYEY3GmwPbX1Cvbbm2pzero6ImfQIZh8C
- rXO0MwUpY2auyaYswIbl7nzMoFxfb0SQeU5elS+povlklx3Er7n8NEH7vRtXj+iXEEUz
- TElswYoBU2lt5znnNrKiNqDIPJo3gbee6XG6vrETgF+hV/+JtwL0bcN/FglfYS7OehQn
- We3Ean3K8kSH+bpiRjFzs8oGCD8bjLfu3UAhC+v+2r3ymQURFWjMwaR0vuYxXwW0jZLy
- j5LcBRCQBAJPF3hcyQwONK1lYqB6WtNlylKZRLuq1QI442g9XEzm18SYegwKLSQlwmVz
- cnTQ==
-X-Gm-Message-State: AJIora95va4mlNrAQRgsCbJarvcuPIm/VI3qqIZp6mBk5nOMGfhYwcfR
- 9EEXKEtk1rUvjncDzYLilNg=
-X-Google-Smtp-Source: AGRyM1smRSj3Ife5KLTAkAievRyKaIgwIO/zIdO2R0orYgNnwofMXGR9OfYzMd2s/lnJBQ5AknUp2w==
-X-Received: by 2002:a05:6000:1887:b0:21d:33c1:efd6 with SMTP id
- a7-20020a056000188700b0021d33c1efd6mr23299338wri.134.1656943295318; 
- Mon, 04 Jul 2022 07:01:35 -0700 (PDT)
-Received: from localhost.localdomain
- (host-79-53-109-127.retail.telecomitalia.it. [79.53.109.127])
- by smtp.gmail.com with ESMTPSA id
- f7-20020a0560001b0700b0021d68e1fd42sm3963147wrz.89.2022.07.04.07.01.32
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 04 Jul 2022 07:01:33 -0700 (PDT)
-From: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Date: Mon,  4 Jul 2022 16:01:29 +0200
-Message-Id: <20220704140129.6463-1-fmdefrancesco@gmail.com>
-X-Mailer: git-send-email 2.36.1
+ with ESMTP id sC2JXvSUbxGw for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Jul 2022 01:08:49 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 901DD60AA7
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 901DD60AA7
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 01:08:49 +0000 (UTC)
+Received: from dggpeml500026.china.huawei.com (unknown [172.30.72.53])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4LcPd86CJKzhYZG;
+ Tue,  5 Jul 2022 09:06:20 +0800 (CST)
+Received: from huawei.com (10.175.101.6) by dggpeml500026.china.huawei.com
+ (7.185.36.106) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Tue, 5 Jul
+ 2022 09:08:12 +0800
+From: Zhengchao Shao <shaozhengchao@huawei.com>
+To: <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <bpf@vger.kernel.org>, <davem@davemloft.net>, 
+ <edumazet@google.com>, <kuba@kernel.org>, <pabeni@redhat.com>,
+ <jesse.brandeburg@intel.com>, <anthony.l.nguyen@intel.com>, <ast@kernel.org>, 
+ <daniel@iogearbox.net>, <hawk@kernel.org>, <john.fastabend@gmail.com>
+Date: Tue, 5 Jul 2022 09:13:04 +0800
+Message-ID: <20220705011304.230622-1-shaozhengchao@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-X-Mailman-Approved-At: Tue, 05 Jul 2022 12:51:16 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=0RwqG+scDxa5sBRqSdCikrVrH/DlHuQpNG6BogojNcw=;
- b=odnnTUp/LoUmKOUyIJo7vEDZ9yAuctYKOVpNuGmulrP9ucSUIzulweZaGGyx5FAYjS
- pKtpKxi4+NqK+MuIKSu9ZSW3m5/J4CZD6x12SiuRNc6W268Bu7bBLJedQSHalLOH3Dni
- /gb6Juv9w3rHsvJs7EYOlL7HBPp+qP8HHhDiIWrqC70++0qmzhrOY0dZd8xJqIFFTi1d
- GkOERF7j+9cILgoS2NHfS5QT0eU6lR/yhdvYRtMYRy9tXXaOcBsHeHsQacSPAJubQ+Jv
- Z0JebS6MOLja+VT6KCC3MFDQkpbg2heGJIdBA1Pl7CUgL5ungJ1Q1Ed3BEzeIHHWe9AU
- NvnA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=odnnTUp/
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Don't call kmap() on page
- allocated with GFP_ATOMIC
+X-Originating-IP: [10.175.101.6]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpeml500026.china.huawei.com (7.185.36.106)
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Tue, 05 Jul 2022 12:51:15 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] i40e: i40e_reset_vf should
+ return false if reset vf timeout
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,49 +82,52 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Ira Weiny <ira.weiny@intel.com>,
- "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+Cc: yuehaibing@huawei.com, shaozhengchao@huawei.com, weiyongjun1@huawei.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Pages allocated with GFP_ATOMIC cannot come from Highmem. This is why
-there is no need to call kmap() on them.
+when trigger vf reset, but vf status is not ready, i40e_reset_vf
+should not do other cleanup action. The current logic is always return
+true. But it can't cover timeout scenary, and the looping in function
+i40e_vc_reset_vf is useless. 
+Waiting for 120ms will cover most normal scenary. And the caller 
+function should try again when timeout or accept that resetting vf 
+failed.
 
-Therefore, don't call kmap() on rx_buffer->page() and instead use a
-plain page_address() to get the kernel address.
-
-Suggested-by: Ira Weiny <ira.weiny@intel.com>
-Suggested-by: Alexander Duyck <alexander.duyck@gmail.com>
-Signed-off-by: Fabio M. De Francesco <fmdefrancesco@gmail.com>
+Signed-off-by: Zhengchao Shao <shaozhengchao@huawei.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 628d0eb0599f..71196fd92f81 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -1966,15 +1966,13 @@ static bool ixgbe_check_lbtest_frame(struct ixgbe_rx_buffer *rx_buffer,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index d01fb592778c..42262009a00c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1564,11 +1564,17 @@ bool i40e_reset_vf(struct i40e_vf *vf, bool flr)
+ 	if (flr)
+ 		usleep_range(10000, 20000);
  
- 	frame_size >>= 1;
+-	if (!rsd)
+-		dev_err(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
+-			vf->vf_id);
+ 	usleep_range(10000, 20000);
  
--	data = kmap(rx_buffer->page) + rx_buffer->page_offset;
-+	data = page_address(rx_buffer->page) + rx_buffer->page_offset;
- 
- 	if (data[3] != 0xFF ||
- 	    data[frame_size + 10] != 0xBE ||
- 	    data[frame_size + 12] != 0xAF)
- 		match = false;
- 
--	kunmap(rx_buffer->page);
--
- 	return match;
- }
- 
++	if (!rsd) {
++		reg = rd32(hw, I40E_VPGEN_VFRSTAT(vf->vf_id));
++		if (!(reg & I40E_VPGEN_VFRSTAT_VFRD_MASK)) {
++			dev_err(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
++				vf->vf_id);
++			return false;
++		}
++	}
++
+ 	/* On initial reset, we don't have any queues to disable */
+ 	if (vf->lan_vsi_idx != 0)
+ 		i40e_vsi_stop_rings(pf->vsi[vf->lan_vsi_idx]);
 -- 
-2.36.1
+2.17.1
 
 _______________________________________________
 Intel-wired-lan mailing list
