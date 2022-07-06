@@ -1,96 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8E41CCA47B
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Jul 2022 19:52:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81614C433EF
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Jul 2022 07:54:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 30D5681A6A;
-	Tue,  5 Jul 2022 19:52:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 30D5681A6A
+	by smtp3.osuosl.org (Postfix) with ESMTP id E910860F96;
+	Wed,  6 Jul 2022 07:54:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E910860F96
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1657050773;
-	bh=4jI8BzTq6TgObhNu6zUU3yOP27wNfrrk3u9NNcccnfI=;
-	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=2KGKJY3T6elmP3MzfUgDYuaNjRppa5f86qC3owlmmkuVaiCa8on/84QWfkOccNcXW
-	 qnTvxuJ6AnemM4Yu2Jo2yWz3J6emMZoLapNRtat6XstAPd8Z5ibs4pNet4DZfQoStC
-	 2zdh8jcKpjvCBMPxm2+wlz22jc0dRKocC5P2CHyft6PIp7GRyasBkwaLHBK7Mw8hcj
-	 ZscQ7JlR6EYtzQMzuw7F1TNc7Zovs/dI4Kw/O7siOZuvzdq74tvqkw2zyTF6ri35no
-	 QibMdTUmFYQuaz//RndlH1qot3BsYxb23ODJwCC85aaQItYbz9u68Wq9IDSJihK86G
-	 7TZfJivCXRR0Q==
+	s=default; t=1657094096;
+	bh=dE/cA0VmO1pjW5fwS3ONxTWQJ8S/wINAaB1HuihZG7E=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=vkNZVb7n0qQFDSNVidjdXxrSg1GfyqOdZkJFE0qKMVIw4eMUP9b39AwntEyg0T8pX
+	 E+SXlFHnjU/YeGDLTyZ7NHf5RZGqpqfY2QN85+2VI5Clj7KJ2xaX+qYqnaS+qCrE7L
+	 9JgyeZy+tay5sL8vaSxsvtMbDBUsqD5JlVUJrf+YBqp8ZxoVBwS6fT2iqGWH/XPTbD
+	 kaC6a+x/RHC3/Ns8a6ZUZo71M4VWUJmGc2z6t9h5r0EWptwaod84/t63pWlWu55ZvJ
+	 yPtA1sP7+wlWHTbkvCaP2B3iQeRYz8ZDoQ4yVfydRUTwROm+QkfcUOjSwGWpG/4Mhv
+	 b7/86o3wopOQQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9skONDldo5M3; Tue,  5 Jul 2022 19:52:52 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id QV3ypCRISF10; Wed,  6 Jul 2022 07:54:55 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3D29081A81;
-	Tue,  5 Jul 2022 19:52:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3D29081A81
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 2DE471BF3E1
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 19:52:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CC0B860F97;
+	Wed,  6 Jul 2022 07:54:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CC0B860F97
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 046551BF31A
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Jul 2022 07:54:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 14F8481A81
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 19:52:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 14F8481A81
+ by smtp2.osuosl.org (Postfix) with ESMTP id CFE6F403A7
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Jul 2022 07:54:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CFE6F403A7
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id PPkuo3ekc-YX for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 Jul 2022 19:52:50 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B57D681A6A
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com
- [IPv6:2a00:1450:4864:20::433])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B57D681A6A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Jul 2022 19:52:49 +0000 (UTC)
-Received: by mail-wr1-x433.google.com with SMTP id h17so5876207wrx.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 05 Jul 2022 12:52:49 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=/doxS0i6Wxlf3MlQXzvD1rRavf5pbzG6RAdOF/mnCY4=;
- b=dWhLw6oEG8FzIfgTv59BqRCYPqAUU+DyRN37Vf1eCvLf2zJreJzFwenB1cSdy5OS8N
- UCfajQh5ONDeZHluirXIMLo+xZF9ghG2JXGgccpnAYVmPso/VFI5UMTLWOHZYm510TKg
- 53+RS1upMwMHFIVKihyaU2ug9HYBkq1RXkUnAg5Qai1mvp8mLDpqal7u6P+QmZ3IVszM
- wnPFMpbo9tC24uP62l4CK7G+dyYdLCDQHhBOag5bzZ78BUDUNlIqNc2/uGnv8nVQi64I
- D5Zz9pTZ4C+2C/ds28Y7/hV0yONKdvWKkNMycm9IeRdVL1Iup/Zle6wBablQoMpVQxbc
- mSig==
-X-Gm-Message-State: AJIora9tsqyrKpuZ0No/EodEl9kPmv8BRZhkfssEnPILpyxZfVkiuuDk
- v+MCAq5NC9nfZH7t8klGmq0La2yZYxZgIodCODA=
-X-Google-Smtp-Source: AGRyM1v7ifsufKfy5Jeo+13iCkt+psbaynIFUU7eS3NIGXvLiFM9Ug8mRV/eLUpjyCfhBiEIOSJYh7GFnTe629aUmb0=
-X-Received: by 2002:a5d:5703:0:b0:21d:6c55:4986 with SMTP id
- a3-20020a5d5703000000b0021d6c554986mr10402402wrv.455.1657050767617; Tue, 05
- Jul 2022 12:52:47 -0700 (PDT)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id aXk9hPB7hte8 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Jul 2022 07:54:52 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7357A400E2
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7357A400E2
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Jul 2022 07:54:52 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 3890061DFA;
+ Wed,  6 Jul 2022 07:54:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 18C69C3411C;
+ Wed,  6 Jul 2022 07:54:49 +0000 (UTC)
+From: Lorenzo Bianconi <lorenzo@kernel.org>
+To: netdev@vger.kernel.org
+Date: Wed,  6 Jul 2022 09:54:19 +0200
+Message-Id: <d8e3744f060ee11d5069bfd0f581f02d0ecb5e08.1657093744.git.lorenzo@kernel.org>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-References: <20220704140129.6463-1-fmdefrancesco@gmail.com>
- <YsSBR5nJovFMHGcB@iweiny-desk3>
-In-Reply-To: <YsSBR5nJovFMHGcB@iweiny-desk3>
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 5 Jul 2022 12:52:36 -0700
-Message-ID: <CAKgT0UcGvjczCZXBS_OunwnZ5Xc7ytDRqjpymiXQni0ugrdmug@mail.gmail.com>
-To: Ira Weiny <ira.weiny@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc;
- bh=/doxS0i6Wxlf3MlQXzvD1rRavf5pbzG6RAdOF/mnCY4=;
- b=ArexrY44HStoCcsS43la3guKBJ49QQtWvjH+cMc4ug5p3cyvHU5Dyaoyou9wlV98lU
- t1rdtTH4PtO7TMcNN3JUzkdb1mY7LFdrvCuiKfl0rDvV/VcSVMPYlnvaUHFk2NaJPCU4
- XkEjrVKV/65CCHIOXVBkO09lya86ZtlmV/BpPBKLJ74qfJwHi4Zrfq3tvmc7/4RH2UYt
- hxGmVomn9hiIriN8+Zquy93JmujHo2e5lF+3IgxY8MUhetFqIv4HrlJNoowHBBmWt6+J
- QCZ7STtbE+6h60ougeY8ry/e/Rya28iXXXF1KY0QwxW2WTCTZUW5zIvZBRylRhYfvIQg
- JULw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=ArexrY44
-Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: Don't call kmap() on page
- allocated with GFP_ATOMIC
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1657094090;
+ bh=ELRHvyXNJVImNM2lth4w2n4eIkbQRwt/oCHIWIRH2F0=;
+ h=From:To:Cc:Subject:Date:From;
+ b=Ovmjdjg/J+FeRWgkFNGcvru2B+5IzSto7Ma2M6Bi7Zgl0Jx5eS6kmwurjyjrOECfB
+ 6GY9fPUomDY9n8kRc5zKwk7JYGGezEbbLFbBzKEnnhmd84iLJ9JGtba4HB4HmjVfLU
+ QHJYgwqkPUfCFKc4mT0woG4w8FQsi/QI2ro0IVKEgNmCujMFVCdHdW8lpCFAQ2Hbt0
+ yE4x3rs1PIBSQ5cuMAMKxeS1UrjAQwKUXyJMb1NYxvNQqQCKy9W8xniFBGojfVAPJG
+ MbSb7dHMlOumR2jgfQMSHSJdEYMkk4r2j3+mzpF/cJy9+AnuZghLtqhF2IJUPjDzKl
+ ScrllAR/QZ5Ag==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Ovmjdjg/
+Subject: [Intel-wired-lan] [PATCH net-next] igc: add xdp frags support to
+ ndo_xdp_xmit
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,42 +87,188 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jesper Dangaard Brouer <hawk@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- intel-wired-lan <intel-wired-lan@lists.osuosl.org>,
- John Fastabend <john.fastabend@gmail.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Alexei Starovoitov <ast@kernel.org>, Eric Dumazet <edumazet@google.com>,
- Netdev <netdev@vger.kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- bpf <bpf@vger.kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "Fabio M. De Francesco" <fmdefrancesco@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
+Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
+ jbrouer@redhat.com, edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net, magnus.karlsson@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Jul 5, 2022 at 11:22 AM Ira Weiny <ira.weiny@intel.com> wrote:
->
-> On Mon, Jul 04, 2022 at 04:01:29PM +0200, Fabio M. De Francesco wrote:
-> > Pages allocated with GFP_ATOMIC cannot come from Highmem. This is why
-> > there is no need to call kmap() on them.
->
-> I'm still not 100% sure where this page gets allocated but AFAICT it is
-> allocated in ixgbe_alloc_mapped_page() which calls dev_alloc_pages() for the
-> allocation which is where the GFP_ATOMIC is specified.
->
-> I think I would add this detail here.
->
-> That said, and assuming my analysis is correct, the code looks fine so:
+Add the capability to map non-linear xdp frames in XDP_TX and
+ndo_xdp_xmit callback.
 
-Yeah, this is actually called out in other spots in the buffer
-cleaning path. This is just something I had overlooked and left in
-place back a few refactors ago.. :-)
+Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
+---
+Please note this patch is only compiled tested since I do not have
+access to a igc NIC
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 128 ++++++++++++++--------
+ 1 file changed, 83 insertions(+), 45 deletions(-)
 
-https://elixir.bootlin.com/linux/latest/source/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c#L1795
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index ae17af44fe02..71657d03da03 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -2129,65 +2129,102 @@ static bool igc_alloc_rx_buffers_zc(struct igc_ring *ring, u16 count)
+ 	return ok;
+ }
+ 
+-static int igc_xdp_init_tx_buffer(struct igc_tx_buffer *buffer,
+-				  struct xdp_frame *xdpf,
+-				  struct igc_ring *ring)
+-{
+-	dma_addr_t dma;
+-
+-	dma = dma_map_single(ring->dev, xdpf->data, xdpf->len, DMA_TO_DEVICE);
+-	if (dma_mapping_error(ring->dev, dma)) {
+-		netdev_err_once(ring->netdev, "Failed to map DMA for TX\n");
+-		return -ENOMEM;
+-	}
+-
+-	buffer->type = IGC_TX_BUFFER_TYPE_XDP;
+-	buffer->xdpf = xdpf;
+-	buffer->protocol = 0;
+-	buffer->bytecount = xdpf->len;
+-	buffer->gso_segs = 1;
+-	buffer->time_stamp = jiffies;
+-	dma_unmap_len_set(buffer, len, xdpf->len);
+-	dma_unmap_addr_set(buffer, dma, dma);
+-	return 0;
+-}
+-
+ /* This function requires __netif_tx_lock is held by the caller. */
+ static int igc_xdp_init_tx_descriptor(struct igc_ring *ring,
+ 				      struct xdp_frame *xdpf)
+ {
+-	struct igc_tx_buffer *buffer;
+-	union igc_adv_tx_desc *desc;
+-	u32 cmd_type, olinfo_status;
+-	int err;
++	struct skb_shared_info *sinfo = xdp_get_shared_info_from_frame(xdpf);
++	u8 nr_frags = unlikely(xdp_frame_has_frags(xdpf)) ? sinfo->nr_frags : 0;
++	u16 count, index = ring->next_to_use;
++	struct igc_tx_buffer *head = &ring->tx_buffer_info[index];
++	struct igc_tx_buffer *buffer = head;
++	union igc_adv_tx_desc *desc = IGC_TX_DESC(ring, index);
++	u32 olinfo_status, len = xdpf->len, cmd_type;
++	void *data = xdpf->data;
++	u16 i;
+ 
+-	if (!igc_desc_unused(ring))
+-		return -EBUSY;
++	count = TXD_USE_COUNT(len);
++	for (i = 0; i < nr_frags; i++)
++		count += TXD_USE_COUNT(skb_frag_size(&sinfo->frags[i]));
+ 
+-	buffer = &ring->tx_buffer_info[ring->next_to_use];
+-	err = igc_xdp_init_tx_buffer(buffer, xdpf, ring);
+-	if (err)
+-		return err;
++	if (igc_maybe_stop_tx(ring, count + 3)) {
++		/* this is a hard error */
++		return -EBUSY;
++	}
+ 
+-	cmd_type = IGC_ADVTXD_DTYP_DATA | IGC_ADVTXD_DCMD_DEXT |
+-		   IGC_ADVTXD_DCMD_IFCS | IGC_TXD_DCMD |
+-		   buffer->bytecount;
+-	olinfo_status = buffer->bytecount << IGC_ADVTXD_PAYLEN_SHIFT;
++	i = 0;
++	head->bytecount = xdp_get_frame_len(xdpf);
++	head->type = IGC_TX_BUFFER_TYPE_XDP;
++	head->gso_segs = 1;
++	head->xdpf = xdpf;
+ 
+-	desc = IGC_TX_DESC(ring, ring->next_to_use);
+-	desc->read.cmd_type_len = cpu_to_le32(cmd_type);
++	olinfo_status = head->bytecount << IGC_ADVTXD_PAYLEN_SHIFT;
+ 	desc->read.olinfo_status = cpu_to_le32(olinfo_status);
+-	desc->read.buffer_addr = cpu_to_le64(dma_unmap_addr(buffer, dma));
+ 
+-	netdev_tx_sent_queue(txring_txq(ring), buffer->bytecount);
++	for (;;) {
++		dma_addr_t dma;
+ 
+-	buffer->next_to_watch = desc;
++		dma = dma_map_single(ring->dev, data, len, DMA_TO_DEVICE);
++		if (dma_mapping_error(ring->dev, dma)) {
++			netdev_err_once(ring->netdev,
++					"Failed to map DMA for TX\n");
++			goto unmap;
++		}
+ 
+-	ring->next_to_use++;
+-	if (ring->next_to_use == ring->count)
+-		ring->next_to_use = 0;
++		dma_unmap_len_set(buffer, len, len);
++		dma_unmap_addr_set(buffer, dma, dma);
++
++		cmd_type = IGC_ADVTXD_DTYP_DATA | IGC_ADVTXD_DCMD_DEXT |
++			   IGC_ADVTXD_DCMD_IFCS | len;
++
++		desc->read.cmd_type_len = cpu_to_le32(cmd_type);
++		desc->read.buffer_addr = cpu_to_le64(dma);
++
++		buffer->protocol = 0;
++
++		if (++index == ring->count)
++			index = 0;
++
++		if (i == nr_frags)
++			break;
++
++		buffer = &ring->tx_buffer_info[index];
++		desc = IGC_TX_DESC(ring, index);
++		desc->read.olinfo_status = 0;
++
++		data = skb_frag_address(&sinfo->frags[i]);
++		len = skb_frag_size(&sinfo->frags[i]);
++		i++;
++	}
++	desc->read.cmd_type_len |= cpu_to_le32(IGC_TXD_DCMD);
++
++	netdev_tx_sent_queue(txring_txq(ring), head->bytecount);
++	/* set the timestamp */
++	head->time_stamp = jiffies;
++	/* set next_to_watch value indicating a packet is present */
++	head->next_to_watch = desc;
++	ring->next_to_use = index;
+ 
+ 	return 0;
++
++unmap:
++	for (;;) {
++		buffer = &ring->tx_buffer_info[index];
++		if (dma_unmap_len(buffer, len))
++			dma_unmap_page(ring->dev,
++				       dma_unmap_addr(buffer, dma),
++				       dma_unmap_len(buffer, len),
++				       DMA_TO_DEVICE);
++		dma_unmap_len_set(buffer, len, 0);
++		if (buffer == head)
++			break;
++
++		if (!index)
++			index += ring->count;
++		index--;
++	}
++
++	return -ENOMEM;
+ }
+ 
+ static struct igc_ring *igc_xdp_get_tx_ring(struct igc_adapter *adapter,
+@@ -2369,6 +2406,7 @@ static int igc_clean_rx_irq(struct igc_q_vector *q_vector, const int budget)
+ 			xdp_prepare_buff(&xdp, pktbuf - igc_rx_offset(rx_ring),
+ 					 igc_rx_offset(rx_ring) + pkt_offset,
+ 					 size, true);
++			xdp_buff_clear_frags_flag(&xdp);
+ 
+ 			skb = igc_xdp_run_prog(adapter, &xdp);
+ 		}
+-- 
+2.36.1
 
-Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
