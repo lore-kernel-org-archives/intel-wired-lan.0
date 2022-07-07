@@ -1,86 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D10CC433EF
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Jul 2022 13:16:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A63ACC433EF
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Jul 2022 13:16:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id EC0E54046D;
-	Thu,  7 Jul 2022 13:16:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EC0E54046D
+	by smtp3.osuosl.org (Postfix) with ESMTP id 516326120B;
+	Thu,  7 Jul 2022 13:16:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 516326120B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1657199797;
-	bh=ceeMbzzo1lS8jnn7HFdp0ObYqJy7JqNy07umYXHrmMg=;
+	s=default; t=1657199800;
+	bh=xRDiFgeKYjTtOmHjoIRcMeu5uU9mTLIipN16xsd6OpA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=j+8JQvlKJl3PzntDPqrqZ/c/mN15aeHAm1oYdaGdk2sUQkpq0MSTKrQdlwx3BPfAy
-	 zzdso9rkx//LfOYQJcs1nIu0p9SeUbLnpMfzve/wqfSkvP2CfHPzr4fgPfvHLZlGUl
-	 fA4xmikgrGft8w90qk18n8B4yQMq33UtNmiipPjSzPM2Rc06WnwR22CPTPG1L3mSED
-	 ontcmbn0+SE4MMXOErzmTTmu00IgcOEs774ix/cKYHWHY6tIY7izeIBFL94A7rmHCf
-	 cuHxQV1kFRP6o+P28es8KMzFFjh+FQHKSBSHFiF34mRFb5Lw6tDGUcNJ88DJRuE19g
-	 WjEBgRFLPO+nA==
+	b=fJv0H+7w4/DIJGLu0floDMjy7yJsopiw49uUlqqPnWf6ZAcVf9+404RyEJ9Ilzofa
+	 Achba4FAvPj/ECKUyOcOrIOuzCs5cmj/ru4AFxDgKEHZ1VximmZhhoTNazpNkjjMiq
+	 o8LVTqngN0KfWZT3k7JioU2hQrN7eUoUcq0x3bHTkXPFDYNkFlyJP0LnwogQaQFubP
+	 PR/E1LoOMfHwI2EbVYw7xOM7PhCiiUIRjjvWHuX6p6Xt2l9GxzU5FnB5e0Rl66IQv7
+	 UX8fKVu7+iVmL6/STrMsv9LWKQpjCFW8lZ+3xXv/uAzBOFHDNnuOKWDDm3BtRDwfTf
+	 B/uUG039XQE3Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id aeMhML1juYEm; Thu,  7 Jul 2022 13:16:35 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 21rOATBzTJoa; Thu,  7 Jul 2022 13:16:39 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 510D340FBC;
-	Thu,  7 Jul 2022 13:16:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 510D340FBC
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4EC4E61210;
+	Thu,  7 Jul 2022 13:16:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4EC4E61210
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 8B6981BF40E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Jul 2022 13:16:09 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id DC29F1BF40E
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Jul 2022 13:16:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 645AA41A5F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Jul 2022 13:16:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 645AA41A5F
+ by smtp4.osuosl.org (Postfix) with ESMTP id B61E341A66
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Jul 2022 13:16:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B61E341A66
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CGcuIu5WNTkt for <intel-wired-lan@lists.osuosl.org>;
- Thu,  7 Jul 2022 13:16:07 +0000 (UTC)
+ with ESMTP id tcBzC65fi0HX for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  7 Jul 2022 13:16:09 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 80FAA41A66
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AE1A041A5F
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 80FAA41A66
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Jul 2022 13:16:07 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10400"; a="285147986"
-X-IronPort-AV: E=Sophos;i="5.92,253,1650956400"; d="scan'208";a="285147986"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id AE1A041A5F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Jul 2022 13:16:09 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10400"; a="285147994"
+X-IronPort-AV: E=Sophos;i="5.92,253,1650956400"; d="scan'208";a="285147994"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Jul 2022 06:16:07 -0700
+ 07 Jul 2022 06:16:09 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,253,1650956400"; d="scan'208";a="651131619"
+X-IronPort-AV: E=Sophos;i="5.92,253,1650956400"; d="scan'208";a="651131628"
 Received: from gsiwik.igk.intel.com ([10.102.18.50])
- by fmsmga008.fm.intel.com with ESMTP; 07 Jul 2022 06:16:06 -0700
+ by fmsmga008.fm.intel.com with ESMTP; 07 Jul 2022 06:16:08 -0700
 From: Grzegorz Siwik <grzegorz.siwik@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  7 Jul 2022 15:15:49 +0200
-Message-Id: <1657199751-256188-2-git-send-email-grzegorz.siwik@intel.com>
+Date: Thu,  7 Jul 2022 15:15:50 +0200
+Message-Id: <1657199751-256188-3-git-send-email-grzegorz.siwik@intel.com>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1657199751-256188-1-git-send-email-grzegorz.siwik@intel.com>
 References: <1657199751-256188-1-git-send-email-grzegorz.siwik@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1657199767; x=1688735767;
+ t=1657199769; x=1688735769;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references;
- bh=LZbAfmvZOL9Accy3+5N+djs7nrxxVsP8oHNTG4dhcZU=;
- b=jgLAxFygTfHArA1lg6mY7a2XrW2yEWIC8CEQppKG/5yHzfUFRzCSbmLe
- w6LQYKCEU3jtQ8MlwuxwZ4FrgQ/3HcA/99b6BtmTdAVAfkLR2qjYgCqXL
- g7Hfi/fFu4jcN/D+Kd0jTu4/5Ke5N0zYujBSgdwRFTn5ARYZD3gq/DzdQ
- 0zIdSQ7Te74P20uoyLyZ24qApuBE3vg2g2d+JHHhlMUyBU4DyMFaDoeZv
- YSH3sO2OdFBArn4zOFxQWmgrZECTfDScantidWcBRfGhsIlwMcnvuVDdM
- aH3d9iJTBxf2m8RpWEwyDAEn3mfHSq2Cj/PYsMUYIt1m7AMSIR6PaIear
+ bh=Jix2OmQcc7RaURIcs58qO4L1kqDZh1pMCBQIeUgodpg=;
+ b=h83pLV9jgX6IzZR6ynhqnDyH8lK2o7WKOYFryYgckBidOT7JHsBp6KGz
+ Eemsiy2GjooMgR3R5iLZCUh16DTlWAzn7KuBSRMTJE6QzU0tCcvlhIcaE
+ Quh9SycViAZMqYoesMtWMBxD/7gvZDWaFNzZBrtp+oXuddLavaVz8Z1BZ
+ n6NC5bDiwcE9DJl/8nIV/uYZLhWLtrUoTB0dGQcN9C5w9rq0mcWXfSFTh
+ QlEoDS3hZOIfWBxaeUzQR9uZhYkRPCTahEenE06Sqe6oz0gKZ22rNKh3i
+ tnU1+KYhNieL3+nYc21wk2zy6HmqROMbLmKkUvwtf48AS9BxiiJvw/r2B
  w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=jgLAxFyg
-Subject: [Intel-wired-lan] [PATCH net v1 1/3] ice: Fix double VLAN error
- when entering promisc mode
+ header.a=rsa-sha256 header.s=Intel header.b=h83pLV9j
+Subject: [Intel-wired-lan] [PATCH net v1 2/3] ice: Ignore ERR_ALREADY_EXISTS
+ when setting promisc mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,15 +100,11 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Avoid enabling or disabling vlan 0 when trying to set promiscuous
-vlan mode if double vlan mode is enabled. This fix is needed
-because the driver tries to add the vlan 0 filter twice (once for
-inner and once for outer) when double VLAN mode is enabled. The
-filter program is rejected by the firmware when double vlan is
-enabled, because the promiscuous filter only needs to be set once.
-
-This issue was missed in the initial implementation of double vlan
-mode.
+Ignore ERR_ALREADY_EXISTS error when setting promiscuous mode.
+This fix is needed because the driver could set promiscuous mode
+when it still has not cleared properly.
+Promiscuous mode could be set only once, so setting it second
+time will be rejected.
 
 Fixes: 5eda8afd6bcc ("ice: Add support for PF/VF promiscuous mode")
 Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
@@ -117,27 +113,22 @@ Tested-by: Igor Raits <igor@gooddata.com>
 Link:
 https://lore.kernel.org/all/CAK8fFZ7m-KR57M_rYX6xZN39K89O=LGooYkKsu6HKt0Bs+x6xQ@mail.gmail.com/
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 8d8f3ee..8a60052 100644
+index 8a60052..0aa4871 100644
 --- a/drivers/net/ethernet/intel/ice/ice_switch.c
 +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -4414,6 +4414,13 @@ static u8 ice_determine_promisc_mask(struct ice_fltr_info *fi)
- 		goto free_fltr_list;
+@@ -4428,7 +4428,7 @@ static u8 ice_determine_promisc_mask(struct ice_fltr_info *fi)
+ 		else
+ 			status = ice_set_vsi_promisc(hw, vsi_handle,
+ 						     promisc_mask, vlan_id);
+-		if (status)
++		if (status && status != -EEXIST)
+ 			break;
+ 	}
  
- 	list_for_each_entry(list_itr, &vsi_list_head, list_entry) {
-+		/* Avoid enabling or disabling vlan zero twice when in double
-+		 * vlan mode
-+		 */
-+		if (ice_is_dvm_ena(hw) &&
-+		    list_itr->fltr_info.l_data.vlan.tpid == 0)
-+			continue;
-+
- 		vlan_id = list_itr->fltr_info.l_data.vlan.vlan_id;
- 		if (rm_vlan_promisc)
- 			status = ice_clear_vsi_promisc(hw, vsi_handle,
 -- 
 1.8.3.1
 
