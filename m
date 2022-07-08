@@ -4,87 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2A7BC43334
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 Jul 2022 12:25:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7723EC433EF
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 Jul 2022 13:44:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4C1A1847C1;
-	Fri,  8 Jul 2022 12:25:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4C1A1847C1
+	by smtp1.osuosl.org (Postfix) with ESMTP id EED2C82CDD;
+	Fri,  8 Jul 2022 13:44:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EED2C82CDD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1657283118;
-	bh=+RH1JmzKMXZelGDzgJEGkhLKgZNH93ezEcP35DqxMxw=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=hEX68Ozco24tMLZrznPzq1+Q/6CoGcuvHqEjjnsW+7qc3NOUITHDhq/562EeLOPUQ
-	 88WYXdcfHlpvz/Iz6Fn9iMKd6LPNPVO+39TCwTn6sggb51PRtCh6C7zcjuq5G97/R0
-	 q1hityOf6SFJCOk6KtTtarXmzfbtduufWZSrXq5v0c0lmbYzSDK4rmXOI8SBTceiqH
-	 CAuR1RP+FT8pHGkQzfMBw+iao1MhMa7Ek9QnZHArExFmJH1hVqQw9quBf35+2sdrzA
-	 F4yU+zpUw7DqQBgErGYqtbWY/e+8gfkEm7NFQzEiGe05++Y7PUF3Q6V0ZudmKbfaPp
-	 s1ZJ9c291y9Cw==
+	s=default; t=1657287843;
+	bh=3FUmB9Z0HfQb7SmZI96ZXilZx0MzvHiGTS4+ifY3eJ4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=i4LszJT24ezYpATWOf6cA4cWzmD6BAMWPIejvMFWKdQCEmGrV4cEwhlcZ9q5whOE/
+	 hH1z0JWunktDujt30qZPPJEX4EdGIvdf1UAKx6VcSqS/MUJlJFc2Mt/G9AMmbIKZgj
+	 yzV6p7ct8wIJYKKO67fHKBJK68HA2A+bsRcsZdj47nIIVi5kuGmVDqKRG7GBe2CHum
+	 uR9s0TiOaFPMacppzuh8WqOgmeTQ8ci8ZOYjWDfkDUxRlpoV1yxt7pd29BjJuB39Gv
+	 PivSIYSwhNxzHK0l4dZ0eer96AuqZTl9ZJvCY/3knPrGN55df34D0/zCo7KKtuja2s
+	 jd/Utide6jLGQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id aLIyKFUuwRDx; Fri,  8 Jul 2022 12:25:17 +0000 (UTC)
+	with ESMTP id t35vyPpa1ySv; Fri,  8 Jul 2022 13:44:02 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CE5F2847B7;
-	Fri,  8 Jul 2022 12:25:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CE5F2847B7
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0E44D8402A;
+	Fri,  8 Jul 2022 13:44:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0E44D8402A
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 55F091BF32A
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Jul 2022 12:25:04 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 207D21BF379
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Jul 2022 03:53:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2FD3C40494
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Jul 2022 12:25:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2FD3C40494
+ by smtp2.osuosl.org (Postfix) with ESMTP id EEC874010C
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Jul 2022 03:53:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EEC874010C
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id cXjobetkguH0 for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 Jul 2022 12:25:03 +0000 (UTC)
+ with ESMTP id oIiL3HUtMb41 for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 Jul 2022 03:53:44 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EFCDB4014C
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp2.osuosl.org (Postfix) with ESMTPS id EFCDB4014C
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Jul 2022 12:25:02 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10401"; a="309836592"
-X-IronPort-AV: E=Sophos;i="5.92,255,1650956400"; d="scan'208";a="309836592"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jul 2022 05:25:02 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,255,1650956400"; d="scan'208";a="621198474"
-Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by orsmga008.jf.intel.com with ESMTP; 08 Jul 2022 05:24:56 -0700
-Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 268COncc014111; Fri, 8 Jul 2022 13:24:54 +0100
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-To: netdev@vger.kernel.org
-Date: Fri,  8 Jul 2022 14:24:21 +0200
-Message-Id: <20220708122421.19309-5-marcin.szycik@linux.intel.com>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220708122421.19309-1-marcin.szycik@linux.intel.com>
-References: <20220708122421.19309-1-marcin.szycik@linux.intel.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2B79C400EA
+Received: from m12-13.163.com (m12-13.163.com [220.181.12.13])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2B79C400EA
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Jul 2022 03:53:41 +0000 (UTC)
+Received: from bf-rmsz-11.ccdomain.com (unknown [218.17.89.92])
+ by smtp9 (Coremail) with SMTP id DcCowAAXVuvgqcdiOwytNw--.46411S2;
+ Fri, 08 Jul 2022 11:52:01 +0800 (CST)
+From: Zhongjun Tan <hbut_tan@163.com>
+To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
+Date: Fri,  8 Jul 2022 11:51:54 +0800
+Message-Id: <20220708035154.44079-1-hbut_tan@163.com>
+X-Mailer: git-send-email 2.29.0
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1657283102; x=1688819102;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=5Baprpetq/tazRGp+iDBt4UwDTMGa0gZMl/SyLMtMOE=;
- b=SV/I1VM3NxvQrSL2A+A1gWMIsqJUhfWDNrUWG5QDZTdjvHUIM6X5clz1
- yQ4YxrXPGKoWau1lnfnP5sbWit28m1lM79skhE/asANSYw6IEfPxK3gU3
- +A3yYLOb1mg0cSZ6B+sHQOTCckX1BDB5g8sBH70yM2AhLD9dnooqreEze
- X5CLUz2G57VNnM/mb4/AOMzr9D1UvwqejSv3c8BH6688q8PLDPf1zAHza
- HP2X+pamRquneBJ8BwWl+sL1loU0hnx97bs4UnvwcV1DycBdNmiv8IY3L
- NuFiNwOI1vsZuJ9nTTXVdNvnzh4OtZJptwchScl9L2kTuiIspgWaDxxD6
- Q==;
+X-CM-TRANSID: DcCowAAXVuvgqcdiOwytNw--.46411S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7JFWkCr4Uur4UKF4ftr1DZFb_yoWfZFX_Kr
+ Wjqr4xCan8JF1SvryUtrW29a4j9rWqywn7uF9Fk39Fy343Xw1UCr1DZw1fAr4Y9ry5GF9r
+ Z3ZxJryxt34jyjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+ 9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUnqjg3UUUUU==
+X-Originating-IP: [218.17.89.92]
+X-CM-SenderInfo: xkex3sxwdqqiywtou0bp/xtbBlwI4xmI0WBtgogAAs8
+X-Mailman-Approved-At: Fri, 08 Jul 2022 13:44:00 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=163.com; 
+ s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=82Uye
+ dPEauwT5cf5wHBTyobSyIimwqIK7UX1yZj1hqg=; b=LIoF5qwkAQXiMqjp4eEWR
+ CVtdg68cKtOEcacBOjYEKmoZiCoPHUhfz6lKe9BE8JzABD69AUudrB0Xyf/DpWG+
+ uq7Ku1Jm4TAI0E9FIMKI45rWHxPixXtNseFr61fn9wg7izaC+wvHdXFqSGg8hEdk
+ eqALjah1eTDNs/MdoEyL68=
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=SV/I1VM3
-Subject: [Intel-wired-lan] [RFC PATCH net-next v4 4/4] ice: Add support for
- PPPoE hardware offload
+ dkim=pass (1024-bit key) header.d=163.com header.i=@163.com
+ header.a=rsa-sha256 header.s=s110527 header.b=LIoF5qwk
+Subject: [Intel-wired-lan] [PATCH] iavf: Remove condition with no effect
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,487 +88,37 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: simon.horman@corigine.com, kurt@linutronix.de, paulb@nvidia.com,
- edumazet@google.com, boris.sukholitko@broadcom.com, jiri@resnulli.us,
- paulus@samba.org, gnault@redhat.com, jesse.brandeburg@intel.com,
- intel-wired-lan@lists.osuosl.org, kuba@kernel.org, zhangkaiheb@126.com,
- pablo@netfilter.org, baowen.zheng@corigine.com, komachi.yoshiki@gmail.com,
- jhs@mojatatu.com, mostrows@earthlink.net, xiyou.wangcong@gmail.com,
- pabeni@redhat.com, gustavoars@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Zhongjun Tan <tanzhongjun@coolpad.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add support for creating PPPoE filters in switchdev mode. Add support
-for parsing PPPoE and PPP-specific tc options: pppoe_sid and ppp_proto.
+From: Zhongjun Tan <tanzhongjun@coolpad.com>
 
-Example filter:
-tc filter add dev $PF1 ingress protocol ppp_ses prio 1 flower pppoe_sid \
-    1234 ppp_proto ip skip_sw action mirred egress redirect dev $VF1_PR
+Remove condition with no effect
 
-Changes in iproute2 are required to use the new fields.
-
-ICE COMMS DDP package is required to create a filter as it contains PPPoE
-profiles. Added a warning message when loaded DDP package does not contain
-required profiles.
-
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+Signed-off-by: Zhongjun Tan <tanzhongjun@coolpad.com>
 ---
-v4:
-  * adapted code to the redefined ice_tc_pppoe_hdr (session_id is now 
-    stored in __be16)
-  * removed note about missing support for vlan fields:
-    263957263a00 ("ice: switch: dynamically add VLAN headers to dummy packets")
-    is already accepted
-  * always add an ethtype lookup if PPP/PPPoE options are provided (to 
-    prevent setting incorrect ethtype)
-  * rebase
-v2: wrap one long line
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
- drivers/net/ethernet/intel/ice/ice.h          |   1 +
- .../net/ethernet/intel/ice/ice_flex_pipe.c    |   5 +-
- .../ethernet/intel/ice/ice_protocol_type.h    |  11 ++
- drivers/net/ethernet/intel/ice/ice_switch.c   | 165 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_tc_lib.c   |  71 +++++++-
- drivers/net/ethernet/intel/ice/ice_tc_lib.h   |   8 +
- 6 files changed, 259 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 60453b3b8d23..0e48a930f004 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -52,6 +52,7 @@
- #include <net/udp_tunnel.h>
- #include <net/vxlan.h>
- #include <net/gtp.h>
-+#include <linux/ppp_defs.h>
- #include "ice_devids.h"
- #include "ice_type.h"
- #include "ice_txrx.h"
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index ada5198b5b16..4b3bb19e1d06 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -1964,8 +1964,11 @@ ice_get_sw_fv_list(struct ice_hw *hw, struct ice_prot_lkup_ext *lkups,
- 			}
- 		}
- 	} while (fv);
--	if (list_empty(fv_list))
-+	if (list_empty(fv_list)) {
-+		dev_warn(ice_hw_to_dev(hw), "Required profiles not found in currently loaded DDP package");
- 		return -EIO;
-+	}
-+
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 69ade653f5d4..52b622ea7d6b 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -2136,8 +2136,6 @@ iavf_set_vlan_offload_features(struct iavf_adapter *adapter,
+ 		vlan_ethertype = ETH_P_8021Q;
+ 	else if (prev_features & (NETIF_F_HW_VLAN_STAG_RX | NETIF_F_HW_VLAN_STAG_TX))
+ 		vlan_ethertype = ETH_P_8021AD;
+-	else if (prev_features & (NETIF_F_HW_VLAN_CTAG_RX | NETIF_F_HW_VLAN_CTAG_TX))
+-		vlan_ethertype = ETH_P_8021Q;
+ 	else
+ 		vlan_ethertype = ETH_P_8021Q;
  
- err:
-diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-index d4a0d089649c..560efc7654c7 100644
---- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-@@ -43,6 +43,7 @@ enum ice_protocol_type {
- 	ICE_NVGRE,
- 	ICE_GTP,
- 	ICE_GTP_NO_PAY,
-+	ICE_PPPOE,
- 	ICE_VLAN_EX,
- 	ICE_VLAN_IN,
- 	ICE_VXLAN_GPE,
-@@ -109,6 +110,7 @@ enum ice_prot_id {
- #define ICE_TCP_IL_HW		49
- #define ICE_UDP_ILOS_HW		53
- #define ICE_GRE_OF_HW		64
-+#define ICE_PPPOE_HW		103
- 
- #define ICE_UDP_OF_HW	52 /* UDP Tunnels */
- #define ICE_META_DATA_ID_HW 255 /* this is used for tunnel and VLAN type */
-@@ -207,6 +209,14 @@ struct ice_udp_gtp_hdr {
- 	u8 rsvrd;
- };
- 
-+struct ice_pppoe_hdr {
-+	u8 rsrvd_ver_type;
-+	u8 rsrvd_code;
-+	__be16 session_id;
-+	__be16 length;
-+	__be16 ppp_prot_id; /* control and data only */
-+};
-+
- struct ice_nvgre_hdr {
- 	__be16 flags;
- 	__be16 protocol;
-@@ -224,6 +234,7 @@ union ice_prot_hdr {
- 	struct ice_udp_tnl_hdr tnl_hdr;
- 	struct ice_nvgre_hdr nvgre_hdr;
- 	struct ice_udp_gtp_hdr gtp_hdr;
-+	struct ice_pppoe_hdr pppoe_hdr;
- };
- 
- /* This is mapping table entry that maps every word within a given protocol
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 2d1274774987..4a6a8334a0e0 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -41,6 +41,7 @@ enum {
- 	ICE_PKT_INNER_UDP	= BIT(7),
- 	ICE_PKT_GTP_NOPAY	= BIT(8),
- 	ICE_PKT_KMALLOC		= BIT(9),
-+	ICE_PKT_PPPOE		= BIT(10),
- };
- 
- struct ice_dummy_pkt_offsets {
-@@ -1109,6 +1110,154 @@ ICE_DECLARE_PKT_TEMPLATE(ipv6_gtp) = {
- 	0x00, 0x00,
- };
- 
-+ICE_DECLARE_PKT_OFFSETS(pppoe_ipv4_tcp) = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_PPPOE,		14 },
-+	{ ICE_IPV4_OFOS,	22 },
-+	{ ICE_TCP_IL,		42 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+ICE_DECLARE_PKT_TEMPLATE(pppoe_ipv4_tcp) = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x88, 0x64,		/* ICE_ETYPE_OL 12 */
-+
-+	0x11, 0x00, 0x00, 0x00, /* ICE_PPPOE 14 */
-+	0x00, 0x16,
-+
-+	0x00, 0x21,		/* PPP Link Layer 20 */
-+
-+	0x45, 0x00, 0x00, 0x28, /* ICE_IPV4_OFOS 22 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x00, 0x06, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_TCP_IL 42 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x50, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00,		/* 2 bytes for 4 bytes alignment */
-+};
-+
-+ICE_DECLARE_PKT_OFFSETS(pppoe_ipv4_udp) = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_PPPOE,		14 },
-+	{ ICE_IPV4_OFOS,	22 },
-+	{ ICE_UDP_ILOS,		42 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+ICE_DECLARE_PKT_TEMPLATE(pppoe_ipv4_udp) = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x88, 0x64,		/* ICE_ETYPE_OL 12 */
-+
-+	0x11, 0x00, 0x00, 0x00, /* ICE_PPPOE 14 */
-+	0x00, 0x16,
-+
-+	0x00, 0x21,		/* PPP Link Layer 20 */
-+
-+	0x45, 0x00, 0x00, 0x1c, /* ICE_IPV4_OFOS 22 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x00, 0x11, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_UDP_ILOS 42 */
-+	0x00, 0x08, 0x00, 0x00,
-+
-+	0x00, 0x00,		/* 2 bytes for 4 bytes alignment */
-+};
-+
-+ICE_DECLARE_PKT_OFFSETS(pppoe_ipv6_tcp) = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_PPPOE,		14 },
-+	{ ICE_IPV6_OFOS,	22 },
-+	{ ICE_TCP_IL,		62 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+ICE_DECLARE_PKT_TEMPLATE(pppoe_ipv6_tcp) = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x88, 0x64,		/* ICE_ETYPE_OL 12 */
-+
-+	0x11, 0x00, 0x00, 0x00, /* ICE_PPPOE 14 */
-+	0x00, 0x2a,
-+
-+	0x00, 0x57,		/* PPP Link Layer 20 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_OFOS 22 */
-+	0x00, 0x14, 0x06, 0x00, /* Next header is TCP */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_TCP_IL 62 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x50, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00,		/* 2 bytes for 4 bytes alignment */
-+};
-+
-+ICE_DECLARE_PKT_OFFSETS(pppoe_ipv6_udp) = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_PPPOE,		14 },
-+	{ ICE_IPV6_OFOS,	22 },
-+	{ ICE_UDP_ILOS,		62 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+ICE_DECLARE_PKT_TEMPLATE(pppoe_ipv6_udp) = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x88, 0x64,		/* ICE_ETYPE_OL 12 */
-+
-+	0x11, 0x00, 0x00, 0x00, /* ICE_PPPOE 14 */
-+	0x00, 0x2a,
-+
-+	0x00, 0x57,		/* PPP Link Layer 20 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_OFOS 22 */
-+	0x00, 0x08, 0x11, 0x00, /* Next header UDP*/
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x00, 0x00, /* ICE_UDP_ILOS 62 */
-+	0x00, 0x08, 0x00, 0x00,
-+
-+	0x00, 0x00,		/* 2 bytes for 4 bytes alignment */
-+};
-+
- static const struct ice_dummy_pkt_profile ice_dummy_pkt_profiles[] = {
- 	ICE_PKT_PROFILE(ipv6_gtp, ICE_PKT_TUN_GTPU | ICE_PKT_OUTER_IPV6 |
- 				  ICE_PKT_GTP_NOPAY),
-@@ -1135,6 +1284,11 @@ static const struct ice_dummy_pkt_profile ice_dummy_pkt_profiles[] = {
- 	ICE_PKT_PROFILE(ipv4_gtpu_ipv4_tcp, ICE_PKT_TUN_GTPU),
- 	ICE_PKT_PROFILE(ipv6_gtp, ICE_PKT_TUN_GTPC | ICE_PKT_OUTER_IPV6),
- 	ICE_PKT_PROFILE(ipv4_gtpu_ipv4, ICE_PKT_TUN_GTPC),
-+	ICE_PKT_PROFILE(pppoe_ipv6_udp, ICE_PKT_PPPOE | ICE_PKT_OUTER_IPV6 |
-+					ICE_PKT_INNER_UDP),
-+	ICE_PKT_PROFILE(pppoe_ipv6_tcp, ICE_PKT_PPPOE | ICE_PKT_OUTER_IPV6),
-+	ICE_PKT_PROFILE(pppoe_ipv4_udp, ICE_PKT_PPPOE | ICE_PKT_INNER_UDP),
-+	ICE_PKT_PROFILE(pppoe_ipv4_tcp, ICE_PKT_PPPOE),
- 	ICE_PKT_PROFILE(gre_ipv6_tcp, ICE_PKT_TUN_NVGRE | ICE_PKT_INNER_IPV6 |
- 				      ICE_PKT_INNER_TCP),
- 	ICE_PKT_PROFILE(gre_tcp, ICE_PKT_TUN_NVGRE | ICE_PKT_INNER_TCP),
-@@ -4480,6 +4634,7 @@ static const struct ice_prot_ext_tbl_entry ice_prot_ext[ICE_PROTOCOL_LAST] = {
- 	{ ICE_NVGRE,		{ 0, 2, 4, 6 } },
- 	{ ICE_GTP,		{ 8, 10, 12, 14, 16, 18, 20, 22 } },
- 	{ ICE_GTP_NO_PAY,	{ 8, 10, 12, 14 } },
-+	{ ICE_PPPOE,		{ 0, 2, 4, 6 } },
- 	{ ICE_VLAN_EX,          { 2, 0 } },
- 	{ ICE_VLAN_IN,          { 2, 0 } },
- };
-@@ -4502,6 +4657,7 @@ static struct ice_protocol_entry ice_prot_id_tbl[ICE_PROTOCOL_LAST] = {
- 	{ ICE_NVGRE,		ICE_GRE_OF_HW },
- 	{ ICE_GTP,		ICE_UDP_OF_HW },
- 	{ ICE_GTP_NO_PAY,	ICE_UDP_ILOS_HW },
-+	{ ICE_PPPOE,		ICE_PPPOE_HW },
- 	{ ICE_VLAN_EX,          ICE_VLAN_OF_HW },
- 	{ ICE_VLAN_IN,          ICE_VLAN_OL_HW },
- };
-@@ -5580,6 +5736,12 @@ ice_find_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 			match |= ICE_PKT_INNER_IPV6;
- 		else if (lkups[i].type == ICE_GTP_NO_PAY)
- 			match |= ICE_PKT_GTP_NOPAY;
-+		else if (lkups[i].type == ICE_PPPOE) {
-+			match |= ICE_PKT_PPPOE;
-+			if (lkups[i].h_u.pppoe_hdr.ppp_prot_id ==
-+			    htons(PPP_IPV6))
-+				match |= ICE_PKT_OUTER_IPV6;
-+		}
- 	}
- 
- 	while (ret->match && (match & ret->match) != ret->match)
-@@ -5677,6 +5839,9 @@ ice_fill_adv_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 		case ICE_GTP:
- 			len = sizeof(struct ice_udp_gtp_hdr);
- 			break;
-+		case ICE_PPPOE:
-+			len = sizeof(struct ice_pppoe_hdr);
-+			break;
- 		default:
- 			return -EINVAL;
- 		}
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index 14795157846b..a298862857a8 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -54,6 +54,11 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
- 	if (flags & ICE_TC_FLWR_FIELD_CVLAN)
- 		lkups_cnt++;
- 
-+	/* are PPPoE options specified? */
-+	if (flags & (ICE_TC_FLWR_FIELD_PPPOE_SESSID |
-+		     ICE_TC_FLWR_FIELD_PPP_PROTO))
-+		lkups_cnt++;
-+
- 	/* are IPv[4|6] fields specified? */
- 	if (flags & (ICE_TC_FLWR_FIELD_DEST_IPV4 | ICE_TC_FLWR_FIELD_SRC_IPV4 |
- 		     ICE_TC_FLWR_FIELD_DEST_IPV6 | ICE_TC_FLWR_FIELD_SRC_IPV6))
-@@ -350,6 +355,28 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
- 		i++;
- 	}
- 
-+	if (flags & (ICE_TC_FLWR_FIELD_PPPOE_SESSID |
-+		     ICE_TC_FLWR_FIELD_PPP_PROTO)) {
-+		struct ice_pppoe_hdr *vals, *masks;
-+
-+		vals = &list[i].h_u.pppoe_hdr;
-+		masks = &list[i].m_u.pppoe_hdr;
-+
-+		list[i].type = ICE_PPPOE;
-+
-+		if (flags & ICE_TC_FLWR_FIELD_PPPOE_SESSID) {
-+			vals->session_id = headers->pppoe_hdr.session_id;
-+			masks->session_id = cpu_to_be16(0xFFFF);
-+		}
-+
-+		if (flags & ICE_TC_FLWR_FIELD_PPP_PROTO) {
-+			vals->ppp_prot_id = headers->pppoe_hdr.ppp_proto;
-+			masks->ppp_prot_id = cpu_to_be16(0xFFFF);
-+		}
-+
-+		i++;
-+	}
-+
- 	/* copy L3 (IPv[4|6]: src, dest) address */
- 	if (flags & (ICE_TC_FLWR_FIELD_DEST_IPV4 |
- 		     ICE_TC_FLWR_FIELD_SRC_IPV4)) {
-@@ -693,6 +720,31 @@ ice_add_tc_flower_adv_fltr(struct ice_vsi *vsi,
- 	return ret;
- }
- 
-+/**
-+ * ice_tc_set_pppoe - Parse PPPoE fields from TC flower filter
-+ * @match: Pointer to flow match structure
-+ * @fltr: Pointer to filter structure
-+ * @headers: Pointer to outer header fields
-+ * @returns PPP protocol used in filter (ppp_ses or ppp_disc)
-+ */
-+static u16
-+ice_tc_set_pppoe(struct flow_match_pppoe *match,
-+		 struct ice_tc_flower_fltr *fltr,
-+		 struct ice_tc_flower_lyr_2_4_hdrs *headers)
-+{
-+	if (match->mask->session_id) {
-+		fltr->flags |= ICE_TC_FLWR_FIELD_PPPOE_SESSID;
-+		headers->pppoe_hdr.session_id = match->key->session_id;
-+	}
-+
-+	if (match->mask->ppp_proto) {
-+		fltr->flags |= ICE_TC_FLWR_FIELD_PPP_PROTO;
-+		headers->pppoe_hdr.ppp_proto = match->key->ppp_proto;
-+	}
-+
-+	return be16_to_cpu(match->key->type);
-+}
-+
- /**
-  * ice_tc_set_ipv4 - Parse IPv4 addresses from TC flower filter
-  * @match: Pointer to flow match structure
-@@ -988,7 +1040,8 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
- 	      BIT(FLOW_DISSECTOR_KEY_ENC_PORTS) |
- 	      BIT(FLOW_DISSECTOR_KEY_ENC_OPTS) |
- 	      BIT(FLOW_DISSECTOR_KEY_ENC_IP) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS))) {
-+	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT(FLOW_DISSECTOR_KEY_PPPOE))) {
- 		NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported key used");
- 		return -EOPNOTSUPP;
- 	}
-@@ -1124,6 +1177,22 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
- 			headers->cvlan_hdr.vlan_prio = match.key->vlan_priority;
- 	}
- 
-+	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_PPPOE)) {
-+		struct flow_match_pppoe match;
-+
-+		flow_rule_match_pppoe(rule, &match);
-+		n_proto_key = ice_tc_set_pppoe(&match, fltr, headers);
-+
-+		/* If ethertype equals ETH_P_PPP_SES, n_proto might be
-+		 * overwritten by encapsulated protocol (ppp_proto field) or set
-+		 * to 0. To correct this, flow_match_pppoe provides the type
-+		 * field, which contains the actual ethertype (ETH_P_PPP_SES).
-+		 */
-+		headers->l2_key.n_proto = cpu_to_be16(n_proto_key);
-+		headers->l2_mask.n_proto = cpu_to_be16(0xFFFF);
-+		fltr->flags |= ICE_TC_FLWR_FIELD_ETH_TYPE_ID;
-+	}
-+
- 	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_CONTROL)) {
- 		struct flow_match_control match;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.h b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
-index 0193874cd203..91cd3d3778c7 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
-@@ -24,6 +24,8 @@
- #define ICE_TC_FLWR_FIELD_ETH_TYPE_ID		BIT(17)
- #define ICE_TC_FLWR_FIELD_ENC_OPTS		BIT(18)
- #define ICE_TC_FLWR_FIELD_CVLAN			BIT(19)
-+#define ICE_TC_FLWR_FIELD_PPPOE_SESSID		BIT(20)
-+#define ICE_TC_FLWR_FIELD_PPP_PROTO		BIT(21)
- 
- #define ICE_TC_FLOWER_MASK_32   0xFFFFFFFF
- 
-@@ -44,6 +46,11 @@ struct ice_tc_vlan_hdr {
- 	__be16 vlan_tpid;
- };
- 
-+struct ice_tc_pppoe_hdr {
-+	__be16 session_id;
-+	__be16 ppp_proto;
-+};
-+
- struct ice_tc_l2_hdr {
- 	u8 dst_mac[ETH_ALEN];
- 	u8 src_mac[ETH_ALEN];
-@@ -84,6 +91,7 @@ struct ice_tc_flower_lyr_2_4_hdrs {
- 	struct ice_tc_l2_hdr l2_mask;
- 	struct ice_tc_vlan_hdr vlan_hdr;
- 	struct ice_tc_vlan_hdr cvlan_hdr;
-+	struct ice_tc_pppoe_hdr pppoe_hdr;
- 	/* L3 (IPv4[6]) layer fields with their mask */
- 	struct ice_tc_l3_hdr l3_key;
- 	struct ice_tc_l3_hdr l3_mask;
 -- 
-2.35.1
+2.29.0
 
 _______________________________________________
 Intel-wired-lan mailing list
