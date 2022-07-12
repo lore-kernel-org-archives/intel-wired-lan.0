@@ -1,66 +1,66 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42931C433EF
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Jul 2022 14:17:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33680C43334
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Jul 2022 14:17:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D9D5340C84;
-	Tue, 12 Jul 2022 14:17:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D9D5340C84
+	by smtp4.osuosl.org (Postfix) with ESMTP id C33A7419C0;
+	Tue, 12 Jul 2022 14:17:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C33A7419C0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1657635453;
-	bh=oKYYCZJLp6AfYHEdHfq3qqIs4Wpgk1O9p7ddIEAKO5o=;
+	s=default; t=1657635458;
+	bh=e+vX4tzW48cLznZhW8A9rTWKPaXdXbOFY75Fg5mLPhQ=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=S5ViuNjyHr3p9uFey7bWWXJSJFhqYlj1pa5evUFsC5W9TzxfoChzKuO+GcB7Yyev0
-	 C0aZyUBh9xvrv9KnNyI+0bvetqH6AOVAm1/rFy8UCp/PcCrjxZPzOnfv5zPuwfSgjL
-	 BhLNlMrV84geAY2NjSvWITSi7c94dgYeyWkQlY1h6yorpxAOQmWz7AVCrZyvgI9Dfg
-	 MklKlEgnuXkxYrx33OeZ/JWhmu+7Usb/MiyOrGeII+JJAeEQLZps2gqNhLS87nGLkY
-	 oo5W7vhMvO/3XwwXHhr033wspv99YBCNsFjKS/1j1RlAKnVg8dkc2r4wRIwECo1+BB
-	 Tcvg24avT6kPw==
+	b=2xh39Ee3ZlVSFc/7U/gYXkxD1AUdu0cqaj8yIChriUYAxEsZQT8qNWLGN50DhndgK
+	 9XB1nNbGBdogozRlbOIEvl17bie2evyzR0r+krj7ElfwVb3uXE4eRAIOxJMFUPJKPV
+	 0bEUE5ASv94GCN7OavsHQazUzswNyN/YjUQ6PMwA4Oz2AhxtBcZkTr2k6esVfoF7d3
+	 QzPfJuihDCT5MD6DlUWUKYy6jWdgSS0eQ22/zvIJjPxgueQYPDR2hEl/voBiuOa6AR
+	 SGsyl98DCE6/NsW0xRYajT3c7iiM1kDx4FB2sEe3MnU7v6M4+LI5iaBAOz+ltozmvd
+	 yRvYNOdvMEHPg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id b8s-EVZEZd0A; Tue, 12 Jul 2022 14:17:33 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id sQkI5VTWGdx0; Tue, 12 Jul 2022 14:17:37 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id BBBC340C99;
-	Tue, 12 Jul 2022 14:17:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BBBC340C99
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id B7B191BF3D2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 14:17:27 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C9B5541A5C;
+	Tue, 12 Jul 2022 14:17:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C9B5541A5C
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 7EEC01BF3D2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 14:17:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9F7CC403A9
+ by smtp4.osuosl.org (Postfix) with ESMTP id 56FB4419C0
  for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 14:17:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9F7CC403A9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 56FB4419C0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id np3I3I-JCbjN for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id itjC3hmipAO8 for <intel-wired-lan@lists.osuosl.org>;
  Tue, 12 Jul 2022 14:17:26 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 699624023B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3982C41A5C
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 699624023B
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3982C41A5C
  for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 14:17:26 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10405"; a="286073630"
-X-IronPort-AV: E=Sophos;i="5.92,265,1650956400"; d="scan'208";a="286073630"
+X-IronPort-AV: E=McAfee;i="6400,9594,10405"; a="286073628"
+X-IronPort-AV: E=Sophos;i="5.92,265,1650956400"; d="scan'208";a="286073628"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jul 2022 07:17:16 -0700
+ 12 Jul 2022 07:17:14 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,265,1650956400"; d="scan'208";a="698036270"
+X-IronPort-AV: E=Sophos;i="5.92,265,1650956400"; d="scan'208";a="698036246"
 Received: from amlin-018-068.igk.intel.com (HELO localhost.igk.intel.com)
  ([10.102.18.68])
- by fmsmga002.fm.intel.com with ESMTP; 12 Jul 2022 07:17:15 -0700
+ by fmsmga002.fm.intel.com with ESMTP; 12 Jul 2022 07:17:13 -0700
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 12 Jul 2022 16:16:53 +0200
-Message-Id: <20220712141653.2590868-3-mateusz.palczewski@intel.com>
+Date: Tue, 12 Jul 2022 16:16:52 +0200
+Message-Id: <20220712141653.2590868-2-mateusz.palczewski@intel.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20220712141653.2590868-1-mateusz.palczewski@intel.com>
 References: <20220712141653.2590868-1-mateusz.palczewski@intel.com>
@@ -70,19 +70,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1657635446; x=1689171446;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=bh0rfQrNZrULBhqOJr1l3hah3sxiO4ZvfvNp9IMDuWs=;
- b=nNCU0fjhBiWoj8UPHMFfrF49xOiLFIFMT/8sK9H/NGEY6C+o+QemT3IB
- AaAlpZQbYB3MXNXFRArgLLAO7LsX1OrPcMUYNG0ECop1gdWGsQu0WSRpd
- rf4QOcmuyl0mIvJoOq5dt6odyA75ilWtBgjaxlRBroL3NjR3brhA5QYEG
- VOGHEbLoOKnXiqrdg5ouwBg8fG9UbXRmumAZhEvTpPGBOwBoO/hM70RYu
- 4v9K3+8+paGLSSI3lGZaVLzwwetDHc5t9uUJDPmDHxOdZki3SJy/3eQFH
- k1djq18okYLObnHDXYyL4TgYZhda2gtQyKHNsS6UDsEmpauccik2+WVc1
+ bh=JVA62Czpf8Xb4yKadF4WxNE4vMTZTKQ26yQDcDGqoWc=;
+ b=BXr9HQtKfGf1+9UM2oESOgq85iyMSZyzhXRnmpXq3ZeedRoWyOWEUU0J
+ Qay3ULpxiB4oA8lJu2T4gcTHgm/hfBQZtEjblmF1yx6MhjFh/tdwZS8DY
+ JQIRsbPqMwN8p5dt75pnmRQnBvgEmOB7oWbHE/sCaXjl6iHQfUZ2IMCZy
+ +LmlEu5RIqfieP1a/YiDApY+TBV+1eEr/TpPutx+YgaAGnViIuHsjnFI0
+ oVx/Gl2AFCgo4Djdx1Ex7ltyU+4TYU+X090eODIFyBm7KEbtYsIAttrSh
+ oxidcgX3eB7BvL4ZwcluymMVZMvjJmMviFJ430Iqk278E4rvHZeLEtp03
  A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nNCU0fjh
-Subject: [Intel-wired-lan] [PATCH net-next v2 2/2] i40e: Refactor
- i40e_set_rss_hash_opt
+ header.a=rsa-sha256 header.s=Intel header.b=BXr9HQtK
+Subject: [Intel-wired-lan] [PATCH net-next v2 1/2] i40e: Fix ethtool
+ rx-flow-hash setting for X722
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,136 +103,120 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Michal Jaron <michalx.jaron@intel.com>
 
-Refactor bitwise operations for rx-flow-hash for improved readability.
+When enabling flow type for RSS hash via ethtool:
 
+ethtool -N $pf rx-flow-hash tcp4|tcp6|udp4|udp6 s|d
+
+the driver would fail to setup this setting on X722
+device since it was using the mask on the register
+dedicated for X710 devices.
+
+Apply a different mask on the register when setting the
+RSS hash for the X722 device.
+
+When displaying the flow types enabled via ethtool:
+
+ethtool -n $pf rx-flow-hash tcp4|tcp6|udp4|udp6
+
+the driver would print wrong values for X722 device.
+
+Fix this issue by testing masks for X722 device in
+i40e_get_rss_hash_opts function.
+
+Fixes: eb0dd6e4a3b3 (i40e: Allow RSS Hash set with less than four parameters)
 Signed-off-by: Slawomir Laba slawomirx.laba@intel.com
 Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
- v2: Moved define out of the fuction
+ v2: Fixed commit message and added description about hw 
 ---
- .../net/ethernet/intel/i40e/i40e_ethtool.c    | 76 +++++++++++--------
- 1 file changed, 43 insertions(+), 33 deletions(-)
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    | 31 ++++++++++++++-----
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |  4 +++
+ 2 files changed, 27 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 7f55a3664a95..230cf3bc5085 100644
+index 156e92c43780..7f55a3664a95 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3607,6 +3607,8 @@ static u64 i40e_get_rss_hash_bits(struct i40e_hw *hw,
- 	return i_set;
- }
+@@ -3188,10 +3188,17 @@ static int i40e_get_rss_hash_opts(struct i40e_pf *pf, struct ethtool_rxnfc *cmd)
  
-+#define FLOW_PCTYPES_SIZE 64
-+
+ 		if (cmd->flow_type == TCP_V4_FLOW ||
+ 		    cmd->flow_type == UDP_V4_FLOW) {
+-			if (i_set & I40E_L3_SRC_MASK)
+-				cmd->data |= RXH_IP_SRC;
+-			if (i_set & I40E_L3_DST_MASK)
+-				cmd->data |= RXH_IP_DST;
++			if (hw->mac.type == I40E_MAC_X722) {
++				if (i_set & I40E_X722_L3_SRC_MASK)
++					cmd->data |= RXH_IP_SRC;
++				if (i_set & I40E_X722_L3_DST_MASK)
++					cmd->data |= RXH_IP_DST;
++			} else {
++				if (i_set & I40E_L3_SRC_MASK)
++					cmd->data |= RXH_IP_SRC;
++				if (i_set & I40E_L3_DST_MASK)
++					cmd->data |= RXH_IP_DST;
++			}
+ 		} else if (cmd->flow_type == TCP_V6_FLOW ||
+ 			  cmd->flow_type == UDP_V6_FLOW) {
+ 			if (i_set & I40E_L3_V6_SRC_MASK)
+@@ -3549,12 +3556,15 @@ static int i40e_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+ 
  /**
-  * i40e_set_rss_hash_opt - Enable/Disable flow types for RSS hash
-  * @pf: pointer to the physical function struct
-@@ -3619,9 +3621,11 @@ static int i40e_set_rss_hash_opt(struct i40e_pf *pf, struct ethtool_rxnfc *nfc)
- 	struct i40e_hw *hw = &pf->hw;
- 	u64 hena = (u64)i40e_read_rx_ctl(hw, I40E_PFQF_HENA(0)) |
- 		   ((u64)i40e_read_rx_ctl(hw, I40E_PFQF_HENA(1)) << 32);
--	u8 flow_pctype = 0;
-+	DECLARE_BITMAP(flow_pctypes, FLOW_PCTYPES_SIZE);
- 	u64 i_set, i_setc;
- 
-+	bitmap_zero(flow_pctypes, FLOW_PCTYPES_SIZE);
-+
- 	if (pf->flags & I40E_FLAG_MFP_ENABLED) {
- 		dev_err(&pf->pdev->dev,
- 			"Change of RSS hash input set is not supported when MFP mode is enabled\n");
-@@ -3637,36 +3641,35 @@ static int i40e_set_rss_hash_opt(struct i40e_pf *pf, struct ethtool_rxnfc *nfc)
- 
- 	switch (nfc->flow_type) {
- 	case TCP_V4_FLOW:
--		flow_pctype = I40E_FILTER_PCTYPE_NONF_IPV4_TCP;
-+		set_bit(I40E_FILTER_PCTYPE_NONF_IPV4_TCP, flow_pctypes);
- 		if (pf->hw_features & I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE)
--			hena |=
--			  BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK);
-+			set_bit(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK,
-+				flow_pctypes);
- 		break;
- 	case TCP_V6_FLOW:
--		flow_pctype = I40E_FILTER_PCTYPE_NONF_IPV6_TCP;
-+		set_bit(I40E_FILTER_PCTYPE_NONF_IPV6_TCP, flow_pctypes);
- 		if (pf->hw_features & I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE)
--			hena |=
--			  BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK);
--		if (pf->hw_features & I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE)
--			hena |=
--			  BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV6_TCP_SYN_NO_ACK);
-+			set_bit(I40E_FILTER_PCTYPE_NONF_IPV6_TCP_SYN_NO_ACK,
-+				flow_pctypes);
- 		break;
- 	case UDP_V4_FLOW:
--		flow_pctype = I40E_FILTER_PCTYPE_NONF_IPV4_UDP;
--		if (pf->hw_features & I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE)
--			hena |=
--			  BIT_ULL(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV4_UDP) |
--			  BIT_ULL(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV4_UDP);
--
-+		set_bit(I40E_FILTER_PCTYPE_NONF_IPV4_UDP, flow_pctypes);
-+		if (pf->hw_features & I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE) {
-+			set_bit(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV4_UDP,
-+				flow_pctypes);
-+			set_bit(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV4_UDP,
-+				flow_pctypes);
+  * i40e_get_rss_hash_bits - Read RSS Hash bits from register
++ * @hw: hw structure
+  * @nfc: pointer to user request
+  * @i_setc: bits currently set
+  *
+  * Returns value of bits to be set per user request
+  **/
+-static u64 i40e_get_rss_hash_bits(struct ethtool_rxnfc *nfc, u64 i_setc)
++static u64 i40e_get_rss_hash_bits(struct i40e_hw *hw,
++				  struct ethtool_rxnfc *nfc,
++				  u64 i_setc)
+ {
+ 	u64 i_set = i_setc;
+ 	u64 src_l3 = 0, dst_l3 = 0;
+@@ -3573,8 +3583,13 @@ static u64 i40e_get_rss_hash_bits(struct ethtool_rxnfc *nfc, u64 i_setc)
+ 		dst_l3 = I40E_L3_V6_DST_MASK;
+ 	} else if (nfc->flow_type == TCP_V4_FLOW ||
+ 		  nfc->flow_type == UDP_V4_FLOW) {
+-		src_l3 = I40E_L3_SRC_MASK;
+-		dst_l3 = I40E_L3_DST_MASK;
++		if (hw->mac.type == I40E_MAC_X722) {
++			src_l3 = I40E_X722_L3_SRC_MASK;
++			dst_l3 = I40E_X722_L3_DST_MASK;
++		} else {
++			src_l3 = I40E_L3_SRC_MASK;
++			dst_l3 = I40E_L3_DST_MASK;
 +		}
- 		hena |= BIT_ULL(I40E_FILTER_PCTYPE_FRAG_IPV4);
- 		break;
- 	case UDP_V6_FLOW:
--		flow_pctype = I40E_FILTER_PCTYPE_NONF_IPV6_UDP;
--		if (pf->hw_features & I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE)
--			hena |=
--			  BIT_ULL(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP) |
--			  BIT_ULL(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP);
--
-+		set_bit(I40E_FILTER_PCTYPE_NONF_IPV6_UDP, flow_pctypes);
-+		if (pf->hw_features & I40E_HW_MULTIPLE_TCP_UDP_RSS_PCTYPE) {
-+			set_bit(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP,
-+				flow_pctypes);
-+			set_bit(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP,
-+				flow_pctypes);
-+		}
- 		hena |= BIT_ULL(I40E_FILTER_PCTYPE_FRAG_IPV6);
- 		break;
- 	case AH_ESP_V4_FLOW:
-@@ -3699,17 +3702,24 @@ static int i40e_set_rss_hash_opt(struct i40e_pf *pf, struct ethtool_rxnfc *nfc)
- 		return -EINVAL;
- 	}
+ 	} else {
+ 		/* Any other flow type are not supported here */
+ 		return i_set;
+@@ -3689,7 +3704,7 @@ static int i40e_set_rss_hash_opt(struct i40e_pf *pf, struct ethtool_rxnfc *nfc)
+ 					       flow_pctype)) |
+ 			((u64)i40e_read_rx_ctl(hw, I40E_GLQF_HASH_INSET(1,
+ 					       flow_pctype)) << 32);
+-		i_set = i40e_get_rss_hash_bits(nfc, i_setc);
++		i_set = i40e_get_rss_hash_bits(&pf->hw, nfc, i_setc);
+ 		i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(0, flow_pctype),
+ 				  (u32)i_set);
+ 		i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(1, flow_pctype),
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 7b3f30beb757..388c3d36d96a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1404,6 +1404,10 @@ struct i40e_lldp_variables {
+ #define I40E_PFQF_CTL_0_HASHLUTSIZE_512	0x00010000
  
--	if (flow_pctype) {
--		i_setc = (u64)i40e_read_rx_ctl(hw, I40E_GLQF_HASH_INSET(0,
--					       flow_pctype)) |
--			((u64)i40e_read_rx_ctl(hw, I40E_GLQF_HASH_INSET(1,
--					       flow_pctype)) << 32);
--		i_set = i40e_get_rss_hash_bits(&pf->hw, nfc, i_setc);
--		i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(0, flow_pctype),
--				  (u32)i_set);
--		i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(1, flow_pctype),
--				  (u32)(i_set >> 32));
--		hena |= BIT_ULL(flow_pctype);
-+	if (bitmap_weight(flow_pctypes, FLOW_PCTYPES_SIZE)) {
-+		u8 flow_id;
-+
-+		for_each_set_bit(flow_id, flow_pctypes, FLOW_PCTYPES_SIZE) {
-+			i_setc = (u64)i40e_read_rx_ctl(hw,
-+						       I40E_GLQF_HASH_INSET
-+						       (0, flow_id)) |
-+				 ((u64)i40e_read_rx_ctl(hw,
-+							I40E_GLQF_HASH_INSET
-+							(1, flow_id)) << 32);
-+			i_set = i40e_get_rss_hash_bits(&pf->hw, nfc, i_setc);
-+
-+			i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(0, flow_id),
-+					  (u32)i_set);
-+			i40e_write_rx_ctl(hw, I40E_GLQF_HASH_INSET(1, flow_id),
-+					  (u32)(i_set >> 32));
-+			hena |= BIT_ULL(flow_id);
-+		};
- 	}
- 
- 	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), (u32)hena);
+ /* INPUT SET MASK for RSS, flow director, and flexible payload */
++#define I40E_X722_L3_SRC_SHIFT		49
++#define I40E_X722_L3_SRC_MASK		(0x3ULL << I40E_X722_L3_SRC_SHIFT)
++#define I40E_X722_L3_DST_SHIFT		41
++#define I40E_X722_L3_DST_MASK		(0x3ULL << I40E_X722_L3_DST_SHIFT)
+ #define I40E_L3_SRC_SHIFT		47
+ #define I40E_L3_SRC_MASK		(0x3ULL << I40E_L3_SRC_SHIFT)
+ #define I40E_L3_V6_SRC_SHIFT		43
 -- 
 2.27.0
 
