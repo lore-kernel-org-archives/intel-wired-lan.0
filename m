@@ -1,87 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CD86C43334
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Jul 2022 08:14:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BE72C43334
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Jul 2022 14:17:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 063D382CEC;
-	Tue, 12 Jul 2022 08:14:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 063D382CEC
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9E1E04023B;
+	Tue, 12 Jul 2022 14:17:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9E1E04023B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1657613691;
-	bh=ULVUlO+X4rRlBjISnPFtERIIbxNT0T0LRHpJOe6M1lI=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=WOG2s2LDu5qHiwgAnz1FctOSgZ72U8wL28PExeogOcYTF2FOgJFXzCIBMY5ANLiJv
-	 QIXJqlimFr6MN73MeLKTwjsktmvvSpTOIgHjeL56/6TU95+Qxt7j+51uV2SOgRU1Zl
-	 Q0pbPds9/PUzpsAqCFnm1+hCgJ8mz97l5S9ucRH9NrcOlWh9PrGmZDo24XxSrW7fwd
-	 fzcFbZbunUCdckZYg/xTRbkegbqA8bWZEnYnSDRo/6JjFc0Bky+4Ya0H0CahWFL/MA
-	 TmHTFON4iUH3b8mcNtSAN9iVwGpgoQrWQYTQvGBevC6vFUee6ao7rMdKUEXaXHbD/v
-	 yFDVeA5o3jlwA==
+	s=default; t=1657635449;
+	bh=yL1GJ22UJ5GAjdQiwSKgXpc99d/5uyDkb+gvjCHvK0Q=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=0oyTixMCNKxoCo5wJstKWUl1UWDjH8Sg7XuiuXUJggl5UgpV8ZIacahjfDWhX4mNc
+	 sbD00oNrjuJkvPTxYTzZzEy7pLk8cUtZgDu6HDrYJKB+CUWQmB5dfVL2nQn8HfWB2s
+	 YElJiZvRFImUDuc0FVx54H49IUWGb9trM3rkCBE47DJFKTUq13APlP+dbKgsqPizIq
+	 HycF80tXMwmCCbTFFv0B+lJz2fVRBbwkWjNiL9G23WPZ2Va+ay9QoQ23P5uqgzb8wv
+	 POs+T/aCtN5XjQtNNR7iZcuugqf8FYi8FX0G2Vr/v/SOSYdXqnU3PKq8WrY83qHNEa
+	 5Q20N3jPVZAFA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id LjR4A4yxlCiA; Tue, 12 Jul 2022 08:14:50 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id UXQztUwmFLT1; Tue, 12 Jul 2022 14:17:29 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DEA3C83FC0;
-	Tue, 12 Jul 2022 08:14:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DEA3C83FC0
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id BF8521BF279
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 08:14:42 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id A523340C67;
+	Tue, 12 Jul 2022 14:17:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A523340C67
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 544A11BF3D2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 14:17:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5666083FC0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 08:14:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5666083FC0
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3AB8041A63
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 14:17:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3AB8041A63
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HLAh3c-Hp23x for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Jul 2022 08:14:39 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id L91TtFLBsPk0 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Jul 2022 14:17:26 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5CDB683F72
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5CDB683F72
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 08:14:39 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10405"; a="267909368"
-X-IronPort-AV: E=Sophos;i="5.92,265,1650956400"; d="scan'208";a="267909368"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jul 2022 01:14:23 -0700
-X-IronPort-AV: E=Sophos;i="5.92,265,1650956400"; d="scan'208";a="627806339"
-Received: from moradin.igk.intel.com ([10.123.220.12])
- by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jul 2022 01:14:22 -0700
-From: Michal Wilczynski <michal.wilczynski@intel.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D26B5419C0
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D26B5419C0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Jul 2022 14:17:25 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10405"; a="286073617"
+X-IronPort-AV: E=Sophos;i="5.92,265,1650956400"; d="scan'208";a="286073617"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 12 Jul 2022 07:17:12 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.92,265,1650956400"; d="scan'208";a="698036230"
+Received: from amlin-018-068.igk.intel.com (HELO localhost.igk.intel.com)
+ ([10.102.18.68])
+ by fmsmga002.fm.intel.com with ESMTP; 12 Jul 2022 07:17:11 -0700
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 12 Jul 2022 10:13:56 +0200
-Message-Id: <20220712081357.336350-3-michal.wilczynski@intel.com>
+Date: Tue, 12 Jul 2022 16:16:51 +0200
+Message-Id: <20220712141653.2590868-1-mateusz.palczewski@intel.com>
 X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20220712081357.336350-1-michal.wilczynski@intel.com>
-References: <20220712081357.336350-1-michal.wilczynski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1657613679; x=1689149679;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=/yEchoS13uSP4a3CnIsgpAVg1zG+UI4pofXePwBwyaE=;
- b=HOYF527vDmf/DOwnySr+BDDizcMwuNAMWDIDDHk+HvfF6aAN+BqhNwg1
- 6JJXHOO6UlNStaIdtY+eSvUkRAAdzeZZ8r/8HxLAdMnZWRgHRPf80lzJc
- np9yFe6Qkbu+M+1+dqK0yjuE+WE5Vs+toEx85wwtSCPLBpgOib/ZFZWMU
- M8wlYW1P8mY1AU85h/npijIiPZWfX+qZUMcl5Sxl5WbwspDUyjl+ioKq+
- 4/QFyqilb1izp4+Axqfyux+Esgsvguo+mskOJndzwOcQ1HygO3l0C/Hl3
- 1oPOVy+vzUzUvzLcmx2bsFsxh4rtu27OC9aycHzwuajdNFm6oPfxUpriU
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1657635445; x=1689171445;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=4Hlz8b+jALTckEuyJaRAFRqIR5XlKt7b2KPe2zk8SYM=;
+ b=MfSAe+26RjOXO8OgCZBuvYvrg0MnfmtwJoS7SA+l8ILtS8uzthsXfsGv
+ gEplRBAdtlyEKBpDTopqbs64TkVpcjUw3VxaqS4obuAE2dKtDJbUuDbfG
+ gzCt3HSy6kreTGjX3PSe49ZqvxclAqma5WUOI8qSgkx2jvV1bjvnbsCPS
+ kDfwdAYSHGvmf0K0mECiGWeP7/bcTJTptW6IFjz3G5CzDasB2BW4oYTmo
+ uHRsNLqFRpBBNYn49hTlki8/AnHf7QmEnRjHB8BePPSIccR+PKTnlNHZ2
+ VeYT+Umfpl8YSw++sswltyok96kqpI1CAzhNMi6lueQvpNbz+n6F+WTFc
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=HOYF527v
-Subject: [Intel-wired-lan] [PATCH net-next v5 2/3] ice: Adjust the
- VSI/Aggregator layers
+ header.a=rsa-sha256 header.s=Intel header.b=MfSAe+26
+Subject: [Intel-wired-lan] [PATCH net-next v2 0/2] i40e: Fix ethtool
+ rx-flow-hash setting for X722
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,120 +92,35 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Raj Victor <victor.raj@intel.com>,
- Michal Wilczynski <michal.wilczynski@intel.com>
+Cc: Michal Jaron <michalx.jaron@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Raj Victor <victor.raj@intel.com>
+From: Michal Jaron <michalx.jaron@intel.com>
 
-Adjust the VSI/Aggregator layers based on the number of logical layers
-supported by the FW. Currently the VSI and aggregator layers are
-fixed based on the 9 layer scheduler tree layout. Due to performance
-reasons the number of layers of the scheduler tree is changing from
-9 to 5. It requires a readjustment of these VSI/Aggregator layer values.
+When enabling flow type for RSS hash via ethtool:
 
-Signed-off-by: Raj Victor <victor.raj@intel.com>
-Co-developed-by: Michal Wilczynski <michal.wilczynski@intel.com>
-Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_sched.c | 35 +++++++++++-----------
- 1 file changed, 18 insertions(+), 17 deletions(-)
+  ethtool -N $pf rx-flow-hash tcp4|tcp6|udp4|udp6 s|d
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 7947223536e3..4d9cd7aa9db4 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -1102,12 +1102,11 @@ static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
- 	 *     5 or less       sw_entry_point_layer
- 	 */
- 	/* calculate the VSI layer based on number of layers. */
--	if (hw->num_tx_sched_layers > ICE_VSI_LAYER_OFFSET + 1) {
--		u8 layer = hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
--
--		if (layer > hw->sw_entry_point_layer)
--			return layer;
--	}
-+	if (hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS)
-+		return hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
-+	if (hw->num_tx_sched_layers == ICE_SCHED_5_LAYERS)
-+		/* qgroup and VSI layers are same */
-+		return hw->num_tx_sched_layers - ICE_QGRP_LAYER_OFFSET;
- 	return hw->sw_entry_point_layer;
- }
- 
-@@ -1124,12 +1123,8 @@ static u8 ice_sched_get_agg_layer(struct ice_hw *hw)
- 	 *     7 or less       sw_entry_point_layer
- 	 */
- 	/* calculate the aggregator layer based on number of layers. */
--	if (hw->num_tx_sched_layers > ICE_AGG_LAYER_OFFSET + 1) {
--		u8 layer = hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
--
--		if (layer > hw->sw_entry_point_layer)
--			return layer;
--	}
-+	if (hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS)
-+		return hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
- 	return hw->sw_entry_point_layer;
- }
- 
-@@ -1485,10 +1480,11 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- {
- 	struct ice_sched_node *vsi_node, *qgrp_node;
- 	struct ice_vsi_ctx *vsi_ctx;
-+	u8 qgrp_layer, vsi_layer;
- 	u16 max_children;
--	u8 qgrp_layer;
- 
- 	qgrp_layer = ice_sched_get_qgrp_layer(pi->hw);
-+	vsi_layer = ice_sched_get_vsi_layer(pi->hw);
- 	max_children = pi->hw->max_children[qgrp_layer];
- 
- 	vsi_ctx = ice_get_vsi_ctx(pi->hw, vsi_handle);
-@@ -1499,6 +1495,12 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- 	if (!vsi_node)
- 		return NULL;
- 
-+	/* If the queue group and vsi layer are same then queues
-+	 * are all attached directly to VSI
-+	 */
-+	if (qgrp_layer == vsi_layer)
-+		return vsi_node;
-+
- 	/* get the first queue group node from VSI sub-tree */
- 	qgrp_node = ice_sched_get_first_node(pi, vsi_node, qgrp_layer);
- 	while (qgrp_node) {
-@@ -3178,8 +3180,9 @@ ice_sched_add_rl_profile(struct ice_port_info *pi,
- 	u8 profile_type;
- 	int status;
- 
--	if (layer_num >= ICE_AQC_TOPO_MAX_LEVEL_NUM)
-+	if (!pi || layer_num >= pi->hw->num_tx_sched_layers)
- 		return NULL;
-+
- 	switch (rl_type) {
- 	case ICE_MIN_BW:
- 		profile_type = ICE_AQC_RL_PROFILE_TYPE_CIR;
-@@ -3194,8 +3197,6 @@ ice_sched_add_rl_profile(struct ice_port_info *pi,
- 		return NULL;
- 	}
- 
--	if (!pi)
--		return NULL;
- 	hw = pi->hw;
- 	list_for_each_entry(rl_prof_elem, &pi->rl_prof_list[layer_num],
- 			    list_entry)
-@@ -3425,7 +3426,7 @@ ice_sched_rm_rl_profile(struct ice_port_info *pi, u8 layer_num, u8 profile_type,
- 	struct ice_aqc_rl_profile_info *rl_prof_elem;
- 	int status = 0;
- 
--	if (layer_num >= ICE_AQC_TOPO_MAX_LEVEL_NUM)
-+	if (layer_num >= pi->hw->num_tx_sched_layers)
- 		return -EINVAL;
- 	/* Check the existing list for RL profile */
- 	list_for_each_entry(rl_prof_elem, &pi->rl_prof_list[layer_num],
+the driver would fail to setup this setting on X722
+device since it was using the mask on the register
+dedicated for X710 devices.
+
+Implement a bitmap to collect the flow pc types that
+shall be applied on the inset and hena registers.
+Apply a different mask on the register when setting the
+RSS hash for the X722 device.
+
+Michal Jaron (2):
+  i40e: Fix ethtool rx-flow-hash setting for X722
+  i40e: Refactor i40e_set_rss_hash_opt
+
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    | 105 +++++++++++-------
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |   4 +
+ 2 files changed, 69 insertions(+), 40 deletions(-)
+
 -- 
 2.27.0
 
