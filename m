@@ -1,87 +1,90 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 751C9CCA47F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Jul 2022 13:05:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 772D5C43334
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Jul 2022 13:05:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 031BF84D9B;
-	Fri, 15 Jul 2022 13:05:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 031BF84D9B
+	by smtp4.osuosl.org (Postfix) with ESMTP id D460142236;
+	Fri, 15 Jul 2022 13:05:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D460142236
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1657890307;
-	bh=SgEEp4/75LFccphDZJQrW402nYqHJydze5AXl5J+RWE=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=8nTDYBQXAiB0i9YpW0i1WQoAct5K4B3mIAgr0zatYNCkKPuRG4KqEzwa1M53rLBwv
-	 5eo/+c1lr1UFRdANSGLgyYSqiMP9ts4jn+sbwgFgdXriBwEXbFt+5hxBA91NFJG28s
-	 71GqRWXbOGanAVPIIZkVLODNGRJroAeQW+SrlvjQ3ZHEz/y0ieqFhJOhMWzoFvHUVL
-	 UJ/R4za7uy8clZw+LyLf2iN9QBd8Q/xU3M6A3e1x4usCwc+Exf0IBU4ZtVTgBCLRCc
-	 auL4dXbImz3AP34sP41HW/KBdxm1qBjGoSpM7b4E/YaKqokjFQ3R2LwPFTuciCVpAZ
-	 1PBBdRef4Wq9Q==
+	s=default; t=1657890311;
+	bh=RP/xKQBIL2DVYS7Ba8g2h5IYW9b8OvXIxWR8cB8jzyQ=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=hX5x+jTittZoKsmb8W26dtNF9weaaP5pLDcf/N3OFsj0teBsMYikdmv2TAKe+Zfmk
+	 KnWtqzxYo53NONMqjmJMIIWGzptIeCxVH4lNZyypIUNFqmMbcz3I0CumzlVX7zhpIx
+	 SZEKTr0l2zY3jy+clNZatMXiNUEezTVjonz1KBz+Nj+eD+9zqj/5lz4DBbsueeiSfj
+	 MfwC1/JHwPUzH1Db7xBUgQ3wAiYrvwc4G18i+pvYmIxRyBFOkCwOemvHwYhP7iRJmh
+	 szivALgh4OB3vS0fmunPWdUceh9rr4kH6r47EJ02fOe0/ghShaOWSwlF+7vPb62GkR
+	 dUmK4R2zc0MHg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zsoSb2KupHkv; Fri, 15 Jul 2022 13:05:06 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Ru_ptSC0qTA5; Fri, 15 Jul 2022 13:05:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EEAE084E01;
-	Fri, 15 Jul 2022 13:05:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EEAE084E01
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 9935C1BF30D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Jul 2022 13:05:04 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6EA754285E;
+	Fri, 15 Jul 2022 13:05:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6EA754285E
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id AB5851BF30D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Jul 2022 13:05:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 716C060B0A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Jul 2022 13:05:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 716C060B0A
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8F05942236
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Jul 2022 13:05:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8F05942236
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id sU5cXC3EijCn for <intel-wired-lan@lists.osuosl.org>;
- Fri, 15 Jul 2022 13:05:03 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id CiSeBlqtHV1z for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 15 Jul 2022 13:05:05 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9FFB960B18
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9FFB960B18
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Jul 2022 13:05:03 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10408"; a="286527744"
-X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; d="scan'208";a="286527744"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Jul 2022 06:05:02 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 569C7428A6
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 569C7428A6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Jul 2022 13:05:05 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10408"; a="265578752"
+X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; d="scan'208";a="265578752"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 15 Jul 2022 06:05:04 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; d="scan'208";a="600489618"
+X-IronPort-AV: E=Sophos;i="5.92,274,1650956400"; d="scan'208";a="629099710"
 Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by fmsmga007.fm.intel.com with ESMTP; 15 Jul 2022 06:04:57 -0700
+ by orsmga001.jf.intel.com with ESMTP; 15 Jul 2022 06:04:59 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
  by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 26FD4tXK013793; Fri, 15 Jul 2022 14:04:55 +0100
+ 26FD4tXL013793; Fri, 15 Jul 2022 14:04:57 +0100
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: netdev@vger.kernel.org
-Date: Fri, 15 Jul 2022 15:04:26 +0200
-Message-Id: <20220715130430.160029-1-marcin.szycik@linux.intel.com>
+Date: Fri, 15 Jul 2022 15:04:27 +0200
+Message-Id: <20220715130430.160029-2-marcin.szycik@linux.intel.com>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220715130430.160029-1-marcin.szycik@linux.intel.com>
+References: <20220715130430.160029-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1657890303; x=1689426303;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=5vNuiax7PnFW6vFk7c1tktuDD1nUBAqUy/yn8ZhC6bI=;
- b=SKdF0SqYr6hVxd8lsBXkYZJ+agMVM+ZpnjqdgAAlZnjONwKwrNymH0ss
- U2M04+0nn9QeGkzLgh5egEDhD7qiyjMgvXpakbwN7fIaN1ZRecdbwCeFP
- aGXVUxjHI90jApuDcJBvwUsSZSZszEz2T/aM5/dCmCr70eaTYlLFQXFFh
- I0+7VupBE2gaguoOqm1VSOmSyQY6t1b38sA3ty/zly7IEDjgrpV658Pyn
- JduS/eZymM4CjTg9FNKMqe/M/TF9YbdfcEDRNyWJj/ZKvmZR8yp65tTcy
- AVGaag6FKpS4pN4IXp0NDB61o5l7G/dOQG2r4safkVhHM+J5NxJ1W6t6i
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1657890305; x=1689426305;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=2gPuloWhaxpoc/veSmSyLQ/8KAHfGQeAawY83T0HtB4=;
+ b=AV4K71/a1uxS8qb2XRq28nTP2J9U/jA64qG0JrCHQs7sQOvflGcKWl3M
+ hIWqSZERyvuJE1D7t79jm/giwHEbBP7APejM1qLXY831kXgx69LQf7csH
+ ZAKt/ly28GivD8K8t6Hp5Mx2sCL0TImckYtaHkxxkmBCdY+u8ENAZHX0p
+ MsI9X62zhSCkXeVXy+08fTy2w3KnCEBqbachCuic59IALeeahIPMVERPD
+ 7Ww9VJrpKx8TDPErebEbKIlYnNuhB+4viFSU26UZzzyEBAQ1D+bf8wbWy
+ 5O6c8W3FAuJjIp5N+b7E+6qWFqeJTfjjw3lkjkyVVzg3sAOhehc0R6LbX
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=SKdF0SqY
-Subject: [Intel-wired-lan] [RFC PATCH net-next v5 0/4] ice: PPPoE offload
- support
+ header.a=rsa-sha256 header.s=Intel header.b=AV4K71/a
+Subject: [Intel-wired-lan] [RFC PATCH net-next v5 1/4] flow_dissector: Add
+ PPPoE dissectors
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,59 +109,189 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add support for dissecting PPPoE and PPP-specific fields in flow dissector:
-PPPoE session id and PPP protocol type. Add support for those fields in
-tc-flower and support offloading PPPoE. Finally, add support for hardware
-offload of PPPoE packets in switchdev mode in ice driver.
+From: Wojciech Drewek <wojciech.drewek@intel.com>
 
-Example filter:
-tc filter add dev $PF1 ingress protocol ppp_ses prio 1 flower pppoe_sid \
-    1234 ppp_proto ip skip_sw action mirred egress redirect dev $VF1_PR
+Allow to dissect PPPoE specific fields which are:
+- session ID (16 bits)
+- ppp protocol (16 bits)
+- type (16 bits) - this is PPPoE ethertype, for now only
+  ETH_P_PPP_SES is supported, possible ETH_P_PPP_DISC
+  in the future
 
-Changes in iproute2 are required to use the new fields (will be submitted
-soon).
+The goal is to make the following TC command possible:
 
-ICE COMMS DDP package is required to create a filter in ice.
+  # tc filter add dev ens6f0 ingress prio 1 protocol ppp_ses \
+      flower \
+        pppoe_sid 12 \
+        ppp_proto ip \
+      action drop
 
+Note that only PPPoE Session is supported.
+
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+---
 v5: fix endianness when processing compressed protocols
 v4:
-  * PPPoE header validation
-  * added MPLS support
-  * added support for compressed PPP protocol field
+  * pppoe header validation
+  * added MPLS dissection
+  * added support for compressed ppp protocol field
   * flow_dissector_key_pppoe::session_id stored in __be16
   * new field: flow_dissector_key_pppoe::type
-  * always add an ethtype lookup if PPP/PPPoE options are provided (to
-    prevent setting incorrect ethtype)
-  * rebase
-v3:
-  * revert byte order changes in is_ppp_proto_supported from previous
-    version
-  * add kernel-doc for is_ppp_proto_supported
-  * add more CC
-v2: cosmetic changes
+v3: revert byte order changes in is_ppp_proto_supported from
+    previous version
+v2: ntohs instead of htons in is_ppp_proto_supported
 
-Marcin Szycik (1):
-  ice: Add support for PPPoE hardware offload
+ include/net/flow_dissector.h | 13 ++++++
+ net/core/flow_dissector.c    | 85 +++++++++++++++++++++++++++++++++---
+ 2 files changed, 91 insertions(+), 7 deletions(-)
 
-Wojciech Drewek (3):
-  flow_dissector: Add PPPoE dissectors
-  net/sched: flower: Add PPPoE filter
-  flow_offload: Introduce flow_match_pppoe
-
- drivers/net/ethernet/intel/ice/ice.h          |   1 +
- .../net/ethernet/intel/ice/ice_flex_pipe.c    |   5 +-
- .../ethernet/intel/ice/ice_protocol_type.h    |  11 ++
- drivers/net/ethernet/intel/ice/ice_switch.c   | 165 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_tc_lib.c   |  71 +++++++-
- drivers/net/ethernet/intel/ice/ice_tc_lib.h   |   8 +
- include/net/flow_dissector.h                  |  13 ++
- include/net/flow_offload.h                    |   6 +
- include/uapi/linux/pkt_cls.h                  |   3 +
- net/core/flow_dissector.c                     |  85 ++++++++-
- net/core/flow_offload.c                       |   7 +
- net/sched/cls_flower.c                        |  61 +++++++
- 12 files changed, 427 insertions(+), 9 deletions(-)
-
+diff --git a/include/net/flow_dissector.h b/include/net/flow_dissector.h
+index 0f9544a9bb9e..6c74812d64b2 100644
+--- a/include/net/flow_dissector.h
++++ b/include/net/flow_dissector.h
+@@ -277,6 +277,18 @@ struct flow_dissector_key_num_of_vlans {
+ 	u8 num_of_vlans;
+ };
+ 
++/**
++ * struct flow_dissector_key_pppoe:
++ * @session_id: pppoe session id
++ * @ppp_proto: ppp protocol
++ * @type: pppoe eth type
++ */
++struct flow_dissector_key_pppoe {
++	__be16 session_id;
++	__be16 ppp_proto;
++	__be16 type;
++};
++
+ enum flow_dissector_key_id {
+ 	FLOW_DISSECTOR_KEY_CONTROL, /* struct flow_dissector_key_control */
+ 	FLOW_DISSECTOR_KEY_BASIC, /* struct flow_dissector_key_basic */
+@@ -307,6 +319,7 @@ enum flow_dissector_key_id {
+ 	FLOW_DISSECTOR_KEY_CT, /* struct flow_dissector_key_ct */
+ 	FLOW_DISSECTOR_KEY_HASH, /* struct flow_dissector_key_hash */
+ 	FLOW_DISSECTOR_KEY_NUM_OF_VLANS, /* struct flow_dissector_key_num_of_vlans */
++	FLOW_DISSECTOR_KEY_PPPOE, /* struct flow_dissector_key_pppoe */
+ 
+ 	FLOW_DISSECTOR_KEY_MAX,
+ };
+diff --git a/net/core/flow_dissector.c b/net/core/flow_dissector.c
+index 6aee04f75e3e..e3dfc9e5d095 100644
+--- a/net/core/flow_dissector.c
++++ b/net/core/flow_dissector.c
+@@ -895,6 +895,42 @@ bool bpf_flow_dissect(struct bpf_prog *prog, struct bpf_flow_dissector *ctx,
+ 	return result == BPF_OK;
+ }
+ 
++/**
++ * is_ppp_proto_supported - checks if inner PPP protocol should be dissected
++ * @proto: protocol type (PPP proto field)
++ */
++static bool is_ppp_proto_supported(__be16 proto)
++{
++	switch (proto) {
++	case htons(PPP_AT):
++	case htons(PPP_IPX):
++	case htons(PPP_VJC_COMP):
++	case htons(PPP_VJC_UNCOMP):
++	case htons(PPP_MP):
++	case htons(PPP_COMPFRAG):
++	case htons(PPP_COMP):
++	case htons(PPP_IPCP):
++	case htons(PPP_ATCP):
++	case htons(PPP_IPXCP):
++	case htons(PPP_IPV6CP):
++	case htons(PPP_CCPFRAG):
++	case htons(PPP_MPLSCP):
++	case htons(PPP_LCP):
++	case htons(PPP_PAP):
++	case htons(PPP_LQR):
++	case htons(PPP_CHAP):
++	case htons(PPP_CBCP):
++		return true;
++	default:
++		return false;
++	}
++}
++
++static bool is_pppoe_ses_hdr_valid(struct pppoe_hdr hdr)
++{
++	return hdr.ver == 1 && hdr.type == 1 && hdr.code == 0;
++}
++
+ /**
+  * __skb_flow_dissect - extract the flow_keys struct and return it
+  * @net: associated network namespace, derived from @skb if NULL
+@@ -1214,26 +1250,61 @@ bool __skb_flow_dissect(const struct net *net,
+ 			struct pppoe_hdr hdr;
+ 			__be16 proto;
+ 		} *hdr, _hdr;
++		u16 ppp_proto;
++
+ 		hdr = __skb_header_pointer(skb, nhoff, sizeof(_hdr), data, hlen, &_hdr);
+ 		if (!hdr) {
+ 			fdret = FLOW_DISSECT_RET_OUT_BAD;
+ 			break;
+ 		}
+ 
+-		nhoff += PPPOE_SES_HLEN;
+-		switch (hdr->proto) {
+-		case htons(PPP_IP):
++		if (!is_pppoe_ses_hdr_valid(hdr->hdr)) {
++			fdret = FLOW_DISSECT_RET_OUT_BAD;
++			break;
++		}
++
++		/* least significant bit of the least significant octet
++		 * indicates if protocol field was compressed
++		 */
++		ppp_proto = ntohs(hdr->proto);
++		if (ppp_proto & 256) {
++			ppp_proto = htons(ppp_proto >> 8);
++			nhoff += PPPOE_SES_HLEN - 1;
++		} else {
++			ppp_proto = htons(ppp_proto);
++			nhoff += PPPOE_SES_HLEN;
++		}
++
++		if (ppp_proto == htons(PPP_IP)) {
+ 			proto = htons(ETH_P_IP);
+ 			fdret = FLOW_DISSECT_RET_PROTO_AGAIN;
+-			break;
+-		case htons(PPP_IPV6):
++		} else if (ppp_proto == htons(PPP_IPV6)) {
+ 			proto = htons(ETH_P_IPV6);
+ 			fdret = FLOW_DISSECT_RET_PROTO_AGAIN;
+-			break;
+-		default:
++		} else if (ppp_proto == htons(PPP_MPLS_UC)) {
++			proto = htons(ETH_P_MPLS_UC);
++			fdret = FLOW_DISSECT_RET_PROTO_AGAIN;
++		} else if (ppp_proto == htons(PPP_MPLS_MC)) {
++			proto = htons(ETH_P_MPLS_MC);
++			fdret = FLOW_DISSECT_RET_PROTO_AGAIN;
++		} else if (is_ppp_proto_supported(ppp_proto)) {
++			fdret = FLOW_DISSECT_RET_OUT_GOOD;
++		} else {
+ 			fdret = FLOW_DISSECT_RET_OUT_BAD;
+ 			break;
+ 		}
++
++		if (dissector_uses_key(flow_dissector,
++				       FLOW_DISSECTOR_KEY_PPPOE)) {
++			struct flow_dissector_key_pppoe *key_pppoe;
++
++			key_pppoe = skb_flow_dissector_target(flow_dissector,
++							      FLOW_DISSECTOR_KEY_PPPOE,
++							      target_container);
++			key_pppoe->session_id = hdr->hdr.sid;
++			key_pppoe->ppp_proto = ppp_proto;
++			key_pppoe->type = htons(ETH_P_PPP_SES);
++		}
+ 		break;
+ 	}
+ 	case htons(ETH_P_TIPC): {
 -- 
 2.35.1
 
