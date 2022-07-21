@@ -1,84 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51A0CC433EF
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Jul 2022 14:43:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB959C43334
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Jul 2022 14:43:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D7B9881263;
-	Thu, 21 Jul 2022 14:43:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D7B9881263
+	by smtp4.osuosl.org (Postfix) with ESMTP id 674A44232A;
+	Thu, 21 Jul 2022 14:43:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 674A44232A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1658414629;
-	bh=9AtIgymte11/VeWRLn+0UeJsDP8nsz52CaX4nXrMiCY=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=sJhzAAGIe6Am/Yv7xobFmV2DpKcjMGW0NeufV85WHowbnsZEeQBu12NSNvfgS81Ne
-	 eDcGxXr4vyzr1YqlsD7bad8eG/1OO6JVpFT3adbWbb4ckE9xCzElyhrngiDcTy1dMW
-	 LBUevJmEqphq4qJKhf0LjZUeF7k54wg/DWV3VnD9lJhOsUnAgqo3JnpNvGxHdWtrnt
-	 y+Dh8s3jqQdbs0bnz44yqM2HyBFMqsvzctBJDTe+/M/H3UpZqbRQMpX+D/8+tvYkJy
-	 PHmbNw4aJPovrIB6U4B7AVEozb9bPlOg4AH7kUyguvCMSuhi6chMzOxq6RvDE11bYn
-	 S874xmYqGSwXw==
+	s=default; t=1658414634;
+	bh=ULVUlO+X4rRlBjISnPFtERIIbxNT0T0LRHpJOe6M1lI=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=uFIgzjgj1VuNjJx/hHFbt5QEP1JR7SuAhDMSvQtjHc3v6CFjJd4H4+Ukj0BYgyo+y
+	 jMbyPTvm+xAjSCUCB4OBUzEyPyeFrumg9ULYQy+gI7EYHwqPyCBnhDXlqHUmZFzojL
+	 N8cc/tHCbpj4sh3AFGiSwLWrmDSNw+UZKfn1izJfi/CHmGi6xGSgGgb/njaHqv4Hyq
+	 esXSCxdCDVq38zl8TcV6t17eIIFcRoya3IAw0gtmUPH+Qg9FrlAm892AW/BevgYDU9
+	 tEFHoH08f3GWFKqFXbq89/Q5BIFV02hY+tbT3mGWHDQHHMg8HVcPBrxVwTfeuciHrC
+	 3+YBaXzKyd8Xg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id keRFD_rOm6IT; Thu, 21 Jul 2022 14:43:49 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id K1gieBONNh8t; Thu, 21 Jul 2022 14:43:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D15F3812D9;
-	Thu, 21 Jul 2022 14:43:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D15F3812D9
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 2A1621BF338
+	by smtp4.osuosl.org (Postfix) with ESMTP id EF6AC42307;
+	Thu, 21 Jul 2022 14:43:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF6AC42307
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 745621BF338
  for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 14:43:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id F411460B94
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 14:43:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F411460B94
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4BEC7422E3
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 14:43:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4BEC7422E3
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id vUHKlewbtqzR for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id bDLo7n0IZXDt for <intel-wired-lan@lists.osuosl.org>;
  Thu, 21 Jul 2022 14:43:46 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 294A4600C9
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 294A4600C9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 418E9422AF
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 418E9422AF
  for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 14:43:46 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10414"; a="267462720"
-X-IronPort-AV: E=Sophos;i="5.93,290,1654585200"; d="scan'208";a="267462720"
+X-IronPort-AV: E=McAfee;i="6400,9594,10414"; a="285828656"
+X-IronPort-AV: E=Sophos;i="5.93,290,1654585200"; d="scan'208";a="285828656"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Jul 2022 07:43:35 -0700
-X-IronPort-AV: E=Sophos;i="5.93,290,1654585200"; d="scan'208";a="573766469"
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Jul 2022 07:43:45 -0700
+X-IronPort-AV: E=Sophos;i="5.93,290,1654585200"; d="scan'208";a="573766515"
 Received: from moradin.igk.intel.com ([10.123.220.12])
  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Jul 2022 07:43:34 -0700
+ 21 Jul 2022 07:43:44 -0700
 From: Michal Wilczynski <michal.wilczynski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 21 Jul 2022 16:43:19 +0200
-Message-Id: <20220721144324.141416-1-michal.wilczynski@intel.com>
+Date: Thu, 21 Jul 2022 16:43:21 +0200
+Message-Id: <20220721144324.141416-3-michal.wilczynski@intel.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20220721144324.141416-1-michal.wilczynski@intel.com>
+References: <20220721144324.141416-1-michal.wilczynski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1658414626; x=1689950626;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=rUF4C+vCVPU4Asv7csfayG6CfZbZusnkrPCwVCsHcT0=;
- b=NrmsWOFPinfwOq+QiiiEp4s2fwvw8K3MKvIWrAiCCo0u/IgzMI2CgFlz
- hbqI1C+fNLvkOQXOciaCc2XUnl7xrCgR9fEA0pbeSBJubDS+7UncwaWVT
- RaIh3A+WM4VBfHKo7WDMPl49CC5K3cosCnYtrnBVk7J4aDlzy4QSH+3gL
- Albc+6JFVYAEFDAldXVXqS7U0gLKdPUjtXbVPRrVGVmienxT7UHQhcxIq
- fek7yPaPHDp24zWWH/BKzpBR7HphDa569SBO5ZcztxMnp9ePQ9r7JOR98
- c+aj8624fVEhOA4tkPNVAAXsF22z/JEAhHB2zEHQHzmVRW/P85WOLmo8G
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=/yEchoS13uSP4a3CnIsgpAVg1zG+UI4pofXePwBwyaE=;
+ b=dhVzZWBOGHR/7s3lL7ui/H2BlmTR81GsR3a+B6L2IYxSWzBqnc+Onh/K
+ dQrCxnZVS3Y7ddAIDtBYAzopuWhXmXNCeJwzEfHJDS437owsZ57wWuPs4
+ iPzF7dvRVn60N646NokKoRw4BZ7eOc+ilCrIs7hoqtXVjc8cAhdR+rv7I
+ a8euut0uWgFM1PWK8+Kkdohw8pCf81ISHcUblv0Hb/JZr8u6AJrWR39lx
+ 2Yurf5auW/HGqLxgrRW+4ZGKnfqv2EqtaxroTmjTISQCm9QGDNeQh0v+x
+ o6siCBJUlqZyZU4vr3hy9ucpr+yjNgq7jUwg9va22btFP6JCb1wk8xe9/
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NrmsWOFP
-Subject: [Intel-wired-lan] [PATCH net-next v7 0/5] ice: Support 5 layer tx
- scheduler topology
+ header.a=rsa-sha256 header.s=Intel header.b=dhVzZWBO
+Subject: [Intel-wired-lan] [PATCH net-next v7 2/5] ice: Adjust the
+ VSI/Aggregator layers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,82 +94,120 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Michal Wilczynski <michal.wilczynski@intel.com>
+Cc: Raj Victor <victor.raj@intel.com>,
+ Michal Wilczynski <michal.wilczynski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-For performance reasons there is a need to have support for selectable
-tx scheduler topology. Currently firmware supports only the default
-9-layer and 5-layer topology. This patch series enables switch from
-default to 5-layer topology, if user decides to opt-in.
+From: Raj Victor <victor.raj@intel.com>
 
-Lukasz Czapnik (1):
-  ice: Add txbalancing devlink param
-v6: Added this commit
-v7: Fixed nitpicks, checkpatch issue, changed functions to static
+Adjust the VSI/Aggregator layers based on the number of logical layers
+supported by the FW. Currently the VSI and aggregator layers are
+fixed based on the 9 layer scheduler tree layout. Due to performance
+reasons the number of layers of the scheduler tree is changing from
+9 to 5. It requires a readjustment of these VSI/Aggregator layer values.
 
+Signed-off-by: Raj Victor <victor.raj@intel.com>
+Co-developed-by: Michal Wilczynski <michal.wilczynski@intel.com>
+Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_sched.c | 35 +++++++++++-----------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
 
-Michal Wilczynski (2):
-  ice: Enable switching default tx scheduler topology
-v2:
-- Moved definitions of scheduling layers to other commit
-v3:
-- Removed wrong tags
-- Added blank line
-- Indented a comment
-- Moved parts of code to separate commit
-- Removed unnecessary initializations
-- Change from unnecessary devm_kmemdup to kmemdup
-v5:
-- Changed freeing to kfree
-- Changed commit message to clarify that parameter change is not yet
-  upstream
-
-  ice: Document txbalancing parameter
-v7: Added this commit
-
-Raj Victor (2):
-  ice: Support 5 layer topology
-v2:
-- Added example of performance decrease in commit message
-- Reworded commit message for imperative mood
-- Removed unnecessary tags
-- Refactored duplicated function call
-- Fixed RCT
-- Fixed unnecessary call to devm_kfree
-- Defined constants
-v3:
-- Changed title
-- Changes in commit description, added versions of DDP
-  and firmware, also added test methodology
-- Removed unnecessary defines
-- Added a newline for define separation
-- Did s/tx/Tx in comments
-- Removed newline between error check
-
-  ice: Adjust the VSI/Aggregator layers
-v3:
-- Added this commit
-- Removed unnecessary 'else'
-
- Documentation/networking/devlink/ice.rst      |  17 ++
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  31 +++
- drivers/net/ethernet/intel/ice/ice_common.c   |   5 +
- drivers/net/ethernet/intel/ice/ice_devlink.c  | 161 ++++++++++++++
- .../net/ethernet/intel/ice/ice_flex_pipe.c    | 202 ++++++++++++++++++
- .../net/ethernet/intel/ice/ice_flex_type.h    |  17 +-
- .../net/ethernet/intel/ice/ice_fw_update.c    |   7 +-
- .../net/ethernet/intel/ice/ice_fw_update.h    |   3 +
- drivers/net/ethernet/intel/ice/ice_main.c     | 113 ++++++++--
- drivers/net/ethernet/intel/ice/ice_nvm.c      |   2 +-
- drivers/net/ethernet/intel/ice/ice_nvm.h      |   4 +
- drivers/net/ethernet/intel/ice/ice_sched.c    |  35 +--
- drivers/net/ethernet/intel/ice/ice_sched.h    |   3 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
- 14 files changed, 558 insertions(+), 43 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 7947223536e3..4d9cd7aa9db4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1102,12 +1102,11 @@ static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
+ 	 *     5 or less       sw_entry_point_layer
+ 	 */
+ 	/* calculate the VSI layer based on number of layers. */
+-	if (hw->num_tx_sched_layers > ICE_VSI_LAYER_OFFSET + 1) {
+-		u8 layer = hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
+-
+-		if (layer > hw->sw_entry_point_layer)
+-			return layer;
+-	}
++	if (hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS)
++		return hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
++	if (hw->num_tx_sched_layers == ICE_SCHED_5_LAYERS)
++		/* qgroup and VSI layers are same */
++		return hw->num_tx_sched_layers - ICE_QGRP_LAYER_OFFSET;
+ 	return hw->sw_entry_point_layer;
+ }
+ 
+@@ -1124,12 +1123,8 @@ static u8 ice_sched_get_agg_layer(struct ice_hw *hw)
+ 	 *     7 or less       sw_entry_point_layer
+ 	 */
+ 	/* calculate the aggregator layer based on number of layers. */
+-	if (hw->num_tx_sched_layers > ICE_AGG_LAYER_OFFSET + 1) {
+-		u8 layer = hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
+-
+-		if (layer > hw->sw_entry_point_layer)
+-			return layer;
+-	}
++	if (hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS)
++		return hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
+ 	return hw->sw_entry_point_layer;
+ }
+ 
+@@ -1485,10 +1480,11 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ {
+ 	struct ice_sched_node *vsi_node, *qgrp_node;
+ 	struct ice_vsi_ctx *vsi_ctx;
++	u8 qgrp_layer, vsi_layer;
+ 	u16 max_children;
+-	u8 qgrp_layer;
+ 
+ 	qgrp_layer = ice_sched_get_qgrp_layer(pi->hw);
++	vsi_layer = ice_sched_get_vsi_layer(pi->hw);
+ 	max_children = pi->hw->max_children[qgrp_layer];
+ 
+ 	vsi_ctx = ice_get_vsi_ctx(pi->hw, vsi_handle);
+@@ -1499,6 +1495,12 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 	if (!vsi_node)
+ 		return NULL;
+ 
++	/* If the queue group and vsi layer are same then queues
++	 * are all attached directly to VSI
++	 */
++	if (qgrp_layer == vsi_layer)
++		return vsi_node;
++
+ 	/* get the first queue group node from VSI sub-tree */
+ 	qgrp_node = ice_sched_get_first_node(pi, vsi_node, qgrp_layer);
+ 	while (qgrp_node) {
+@@ -3178,8 +3180,9 @@ ice_sched_add_rl_profile(struct ice_port_info *pi,
+ 	u8 profile_type;
+ 	int status;
+ 
+-	if (layer_num >= ICE_AQC_TOPO_MAX_LEVEL_NUM)
++	if (!pi || layer_num >= pi->hw->num_tx_sched_layers)
+ 		return NULL;
++
+ 	switch (rl_type) {
+ 	case ICE_MIN_BW:
+ 		profile_type = ICE_AQC_RL_PROFILE_TYPE_CIR;
+@@ -3194,8 +3197,6 @@ ice_sched_add_rl_profile(struct ice_port_info *pi,
+ 		return NULL;
+ 	}
+ 
+-	if (!pi)
+-		return NULL;
+ 	hw = pi->hw;
+ 	list_for_each_entry(rl_prof_elem, &pi->rl_prof_list[layer_num],
+ 			    list_entry)
+@@ -3425,7 +3426,7 @@ ice_sched_rm_rl_profile(struct ice_port_info *pi, u8 layer_num, u8 profile_type,
+ 	struct ice_aqc_rl_profile_info *rl_prof_elem;
+ 	int status = 0;
+ 
+-	if (layer_num >= ICE_AQC_TOPO_MAX_LEVEL_NUM)
++	if (layer_num >= pi->hw->num_tx_sched_layers)
+ 		return -EINVAL;
+ 	/* Check the existing list for RL profile */
+ 	list_for_each_entry(rl_prof_elem, &pi->rl_prof_list[layer_num],
 -- 
 2.27.0
 
