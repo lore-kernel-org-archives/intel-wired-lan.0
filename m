@@ -4,81 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E99DCCA485
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Jul 2022 21:30:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D6FEC43334
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Jul 2022 21:30:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E745B405B9;
-	Thu, 21 Jul 2022 21:30:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E745B405B9
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1C2A7404F8;
+	Thu, 21 Jul 2022 21:30:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1C2A7404F8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1658439012;
-	bh=MYNkDjbkiT61+bTK47kZAMssBRPe/G2U0yKwxiRM+EQ=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=K2KrrKIjwuYaMap2JdZI+wU1XCV4FLcLEB+ug4VgEJqw1XMMlLWe2rWc/Y83W29Qw
-	 iiOtZ0QMU5QM8dKea5/TKsQW3BhkZbXVgPQHx90Sw2WFddXb2D7yUhuNL7Ob9D/Hyc
-	 WMTnRnoF4fT3DKuaRWs4HQvhd6mRdCMRTKeNvZd8wnTD80LdhJdmmP0MZ1uZaOMH9d
-	 +UjDiigbovYgCr7dIN/kobEG2IGup2v45B1EfAyE5dKw3ilFT4T+lSMbdH/Ul5MUR5
-	 wtuwhCbDCHZ5k+aU2tEV4j3gn7U0otOzNv1tw4PTpSoE+Hu9r7J5Nmw5QK068zFuTe
-	 MdVct6OuZytZw==
+	s=default; t=1658439017;
+	bh=kCDCWoMh4y8/+hCY5DdERESO6EyZQAaMDm3ehHQ+Z24=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=Qezl+KBBjot5IZT7ybhSJkGIEKTjYnfUWXYpTYW0anCgmnhtp7jrR9IQXnu076bhi
+	 gIO+NU7S8+T789q4dz0/nOc/FAPnz5oOGFAO6Ta/g/KPlzBZwRo+lgptZ3gazsiLH6
+	 XQCWjT+3+vsYpmsHJVPL0ZaMzY37j5S3o0FGlm2PXhRQ0EdybDjNMpC0hwnB3TGBQ1
+	 DrQe/79QUb5r1csL3rWZdtPXoK8il9Ddd1letkgHfuG59kOOBx5ZPG7bWz8CY5zfdi
+	 KZe79tJ1smEC5qIK12FmYyxzasUVjKJxn4BSQwd0YLCuP9wmgsjKok09w+/PHzYGOs
+	 fG5KOqIHV42HA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DEV3MCxpbkXH; Thu, 21 Jul 2022 21:30:12 +0000 (UTC)
+	with ESMTP id ELZzg3d14ncF; Thu, 21 Jul 2022 21:30:16 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id C74EE4090E;
-	Thu, 21 Jul 2022 21:30:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C74EE4090E
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 32E9A1BF375
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:10 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id F2CDA4056F;
+	Thu, 21 Jul 2022 21:30:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F2CDA4056F
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 27D331BF375
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id ECC8960BEC
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ECC8960BEC
+ by smtp1.osuosl.org (Postfix) with ESMTP id F2DBB84044
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F2DBB84044
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id eXdPERSppPQv for <intel-wired-lan@lists.osuosl.org>;
- Thu, 21 Jul 2022 21:30:09 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 8uji-pUeKz8o for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 21 Jul 2022 21:30:10 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3F0FF60808
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3C25D83F1E
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3F0FF60808
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:09 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10415"; a="274029222"
-X-IronPort-AV: E=Sophos;i="5.93,183,1654585200"; d="scan'208";a="274029222"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3C25D83F1E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:10 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10415"; a="274029230"
+X-IronPort-AV: E=Sophos;i="5.93,183,1654585200"; d="scan'208";a="274029230"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Jul 2022 14:30:08 -0700
-X-IronPort-AV: E=Sophos;i="5.93,183,1654585200"; d="scan'208";a="740833131"
+ 21 Jul 2022 14:30:09 -0700
+X-IronPort-AV: E=Sophos;i="5.93,183,1654585200"; d="scan'208";a="740833147"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  21 Jul 2022 14:30:08 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Thu, 21 Jul 2022 14:29:53 -0700
-Message-Id: <20220721213001.2483596-1-jacob.e.keller@intel.com>
+Date: Thu, 21 Jul 2022 14:29:57 -0700
+Message-Id: <20220721213001.2483596-5-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.35.1.456.ga9c7032d4631
+In-Reply-To: <20220721213001.2483596-1-jacob.e.keller@intel.com>
+References: <20220721213001.2483596-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1658439009; x=1689975009;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=dzvzZcx7W9wyuKs8mr/sXqyjIQgY1LbhTH92a/oQEkg=;
- b=U5c3n0Dnhj8NYq362QSGJB3nw83dPUx61fQU48x2elugX0e2/B3vJlNa
- mjoXm+Jq9BrfUcyFA2SL8hlaacX4Tqv+Oan2KWZRRds7dnJRf0zEwXeQS
- vBS7AdOD5Dv8JXsXbNNcon/rdzRdi8gvK6Cg3W/gUxTeiUDpiD8ODOu29
- /8O69C4cRy1VOKv5pvopkXZwYa6BLq9KdzACIVU/zzszvm6X7fM3a7jXf
- bpFT7i4DCTxmoJi8bY/PlxwkUz/iXgLUxsWYF90Dvj1/PA3q/WVcnTjyf
- z8tB+XsXgtR/uLl6gQpHMobpl0gpzBQeX2uGs7N/YBb2SJMwGSeynEOHT
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1658439010; x=1689975010;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=5UkeEYUJlYEi4z9dlawX0Ec83t4TmIgYRVEgtPY22rU=;
+ b=XswjgbV6zxfA0uM+lJcxwu/QoBPrDWrJV6c6SCdsJlFUcXbU2mHRyUlI
+ 7rYQHHgC9xiswgWlYRy8AQj88SdovAuvzHoDqLMuYhnh5rr9oWIwub5Dn
+ 69MvWiF7jD6473Kde9AYOscthm81zFPbvncGWTFwLvbzGNAap3aoREgDd
+ bf3BDdUne5dAz8HPDHXOE/+wAYx7weLDvjPGn833iEGrxE3EGy2qeXhnr
+ txlJ99J8CsY72VyH66uQs/7NJL6E6um/nWsKF6sgWp7SyXaeffN+WCmL+
+ LhVokjobSqUVhcDdXbt6IZWLxfFvV1IcmQyIGtARW5W8ODrLnUfKZyz0s
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=U5c3n0Dn
-Subject: [Intel-wired-lan] [net-next PATCH 0/7] intel: ptp: convert .adjfreq
- to .adjfine
+ header.a=rsa-sha256 header.s=Intel header.b=XswjgbV6
+Subject: [Intel-wired-lan] [net-next PATCH 3/7] e1000e: convert .adjfreq to
+ .adjfine
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,48 +99,97 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Convert all of the Intel drivers with PTP support to the newer .adjfine
-implementation which uses scaled parts per million.
+The PTP implementation for the e1000e driver uses the older .adjfreq
+method. This method takes an adjustment in parts per billion. The newer
+.adjfine implementation uses scaled_ppm. The use of scaled_ppm allows for
+finer grained adjustments and is preferred over using the older
+implementation.
 
-This improves the precision of the frequency adjustments by taking advantage
-of the full scaled parts per million input coming from user space.
+Make use of mul_u64_u64_div_u64 in order to handle possible overflow of the
+multiplication used to calculate the desired adjustment to the hardware
+increment value.
 
-In addition, all implementations are converted to using the
-mul_u64_u64_div_u64 function which better handles the intermediate value.
-This function supports architecture specific instructions where possible to
-avoid loss of precision if the normal 64-bit multiplication would overflow.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/e1000.h  |  2 +-
+ drivers/net/ethernet/intel/e1000e/netdev.c |  4 ++--
+ drivers/net/ethernet/intel/e1000e/ptp.c    | 15 ++++++++-------
+ 3 files changed, 11 insertions(+), 10 deletions(-)
 
-Of note, the i40e implementation is now able to avoid loss of precision on
-slower link speeds by taking advantage of this to multiply by the link speed
-factor first. This results in a significantly more precise adjustment by
-allowing the calculation to impact the lower bits.
-
-This also gets us a step closer to being able to remove the .adjfreq
-entirely by removing its use from many drivers.
-
-I plan to follow this up with a series to update the drivers from other
-vendors and drop the .adjfreq implementation entirely.
-
-Jacob Keller (7):
-  ice: implement adjfine with mul_u64_u64_div_u64
-  e1000e: remove unnecessary range check in e1000e_phc_adjfreq
-  e1000e: convert .adjfreq to .adjfine
-  i40e: use mul_u64_u64_div_u64 for PTP frequency calculation
-  i40e: convert .adjfreq to .adjfine
-  ixgbe: convert .adjfreq to .adjfine
-  igb: convert .adjfreq to .adjfine
-
- drivers/net/ethernet/intel/e1000e/e1000.h    |  2 +-
- drivers/net/ethernet/intel/e1000e/netdev.c   |  4 +-
- drivers/net/ethernet/intel/e1000e/ptp.c      | 18 +++--
- drivers/net/ethernet/intel/i40e/i40e_ptp.c   | 35 ++++------
- drivers/net/ethernet/intel/ice/ice_ptp.c     | 16 +----
- drivers/net/ethernet/intel/igb/igb_ptp.c     | 15 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 73 +++++++++++---------
- 7 files changed, 75 insertions(+), 88 deletions(-)
-
-
-base-commit: 9f055d4106bdefd5a533316c1d3dc3b5e9821b9a
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index 8d06c9d8ff8b..e8a9a9610ac6 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -329,7 +329,7 @@ struct e1000_adapter {
+ 	struct ptp_clock *ptp_clock;
+ 	struct ptp_clock_info ptp_clock_info;
+ 	struct pm_qos_request pm_qos_req;
+-	s32 ptp_delta;
++	long ptp_delta;
+ 
+ 	u16 eee_advert;
+ };
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 70d933f52e93..321f2a95ae3a 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3922,9 +3922,9 @@ static void e1000e_systim_reset(struct e1000_adapter *adapter)
+ 	if (!(adapter->flags & FLAG_HAS_HW_TIMESTAMP))
+ 		return;
+ 
+-	if (info->adjfreq) {
++	if (info->adjfine) {
+ 		/* restore the previous ptp frequency delta */
+-		ret_val = info->adjfreq(info, adapter->ptp_delta);
++		ret_val = info->adjfine(info, adapter->ptp_delta);
+ 	} else {
+ 		/* set the default base frequency if no adjustment possible */
+ 		ret_val = e1000e_get_base_timinca(adapter, &timinca);
+diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
+index 432e04ce8c4e..0e488e4fa5c1 100644
+--- a/drivers/net/ethernet/intel/e1000e/ptp.c
++++ b/drivers/net/ethernet/intel/e1000e/ptp.c
+@@ -15,14 +15,16 @@
+ #endif
+ 
+ /**
+- * e1000e_phc_adjfreq - adjust the frequency of the hardware clock
++ * e1000e_phc_adjfine - adjust the frequency of the hardware clock
+  * @ptp: ptp clock structure
+- * @delta: Desired frequency change in parts per billion
++ * @delta: Desired frequency chance in scaled parts per million
+  *
+  * Adjust the frequency of the PHC cycle counter by the indicated delta from
+  * the base frequency.
++ *
++ * Scaled parts per million is ppm but with a 16 bit binary fractional field.
+  **/
+-static int e1000e_phc_adjfreq(struct ptp_clock_info *ptp, s32 delta)
++static int e1000e_phc_adjfine(struct ptp_clock_info *ptp, long delta)
+ {
+ 	struct e1000_adapter *adapter = container_of(ptp, struct e1000_adapter,
+ 						     ptp_clock_info);
+@@ -47,9 +49,8 @@ static int e1000e_phc_adjfreq(struct ptp_clock_info *ptp, s32 delta)
+ 
+ 	incvalue = timinca & E1000_TIMINCA_INCVALUE_MASK;
+ 
+-	adjustment = incvalue;
+-	adjustment *= delta;
+-	adjustment = div_u64(adjustment, 1000000000);
++	adjustment = mul_u64_u64_div_u64(incvalue, (u64)delta,
++					 1000000ULL << 16);
+ 
+ 	incvalue = neg_adj ? (incvalue - adjustment) : (incvalue + adjustment);
+ 
+@@ -257,7 +258,7 @@ static const struct ptp_clock_info e1000e_ptp_clock_info = {
+ 	.n_per_out	= 0,
+ 	.n_pins		= 0,
+ 	.pps		= 0,
+-	.adjfreq	= e1000e_phc_adjfreq,
++	.adjfine	= e1000e_phc_adjfine,
+ 	.adjtime	= e1000e_phc_adjtime,
+ 	.gettimex64	= e1000e_phc_gettimex,
+ 	.settime64	= e1000e_phc_settime,
 -- 
 2.35.1.456.ga9c7032d4631
 
