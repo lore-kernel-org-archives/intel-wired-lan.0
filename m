@@ -1,87 +1,82 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12DEFC433EF
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Jul 2022 21:30:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 977F4CCA485
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Jul 2022 23:53:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B0400418CA;
-	Thu, 21 Jul 2022 21:30:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B0400418CA
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2671460BC4;
+	Thu, 21 Jul 2022 23:53:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2671460BC4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1658439047;
-	bh=AHdrDUz3apYu16XtPvqSwZOOgjEdCbh61DWk8jsfOMA=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1658447583;
+	bh=cGN4qL0CwB51kon+SSCJD2p2MUjtROPvU7WhA84ExFs=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=pItZModoB9S2b8wy4Lff7Vmt5zeGY6Zcz2X1v4EDKafJ95aseD3FP1Z82VZ3Pntua
-	 bz4j7rfFt95QO+hJyrLOV7EN/aC4ATQQdBy3Gfo/mHHjaNKWkLYpNMPK+jK7NgsD65
-	 Chk9srwQHsiAj2GhleVO+YH+EC7Bb6vtecMATjijniyCX+E3F5r8qVUW7ExUVpJn57
-	 mO8Ez4Kh14f31YOg2eCX7k6na7Dx7455EflpvvpUT8OOGmFscnqi58Zazd0Owsfdmi
-	 cJ+1B39SfTv8aG60ZK3AbcA9pgDDy4mTwd/+gURapuimWvzr4lpB2cWUeOHm+/ZZfX
-	 0rOqcbIr75NpA==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Cb1Fm4UoEhZm; Thu, 21 Jul 2022 21:30:46 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D2334418AD;
-	Thu, 21 Jul 2022 21:30:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D2334418AD
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id C6F7A1BF375
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:15 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 8035C60BEC
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8035C60BEC
+	 Cc:From;
+	b=b3UUdsyOhbDI5crEbvQbgb+pp6QxUtKI9fD5bhcG5IRQK8iQl2dT5wS2sopcLt3FB
+	 EGSkip2xHxM/+MKWCizc5mZ4vlPrp7RI+Acs3vjkRhZXL9UoyYC0iDMX162kwC8b9d
+	 Rdh0pAHONHLMyMfywQ/JhoolvJ7/fsxMJL3aeV/SpG4l8euUytZPrOyQ5/GrcjSuc5
+	 tPLGL/ZOEXbiXzB2+zPHxYE96xvfY3I1o87SlDJAYDOQn3jL8EJMZy5y0MCfPucmap
+	 CsW7b+bA4GWmULcrJUCm+MvN+mz/atANCYfOV7WFN761+lSs/GChupi9g11UwXCAsj
+	 DO9ogOAZJurng==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wNLqsn8fxDU2 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 21 Jul 2022 21:30:10 +0000 (UTC)
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id FVPbhTXPXBL3; Thu, 21 Jul 2022 23:53:02 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4500860BFD;
+	Thu, 21 Jul 2022 23:53:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4500860BFD
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 9800E1BF340
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 23:53:00 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 6FAC5403AA
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 23:53:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6FAC5403AA
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id iemCxWlDRvra for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 21 Jul 2022 23:52:59 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9BE4360C05
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9BE4360C05
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 21:30:10 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10415"; a="274029235"
-X-IronPort-AV: E=Sophos;i="5.93,183,1654585200"; d="scan'208";a="274029235"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Jul 2022 14:30:09 -0700
-X-IronPort-AV: E=Sophos;i="5.93,183,1654585200"; d="scan'208";a="740833159"
-Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
- by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Jul 2022 14:30:09 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Thu, 21 Jul 2022 14:30:00 -0700
-Message-Id: <20220721213001.2483596-8-jacob.e.keller@intel.com>
-X-Mailer: git-send-email 2.35.1.456.ga9c7032d4631
-In-Reply-To: <20220721213001.2483596-1-jacob.e.keller@intel.com>
-References: <20220721213001.2483596-1-jacob.e.keller@intel.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7E7C24023F
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7E7C24023F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 23:52:59 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 1CDB661EA4;
+ Thu, 21 Jul 2022 23:52:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 190D3C341C0;
+ Thu, 21 Jul 2022 23:52:57 +0000 (UTC)
+Date: Thu, 21 Jul 2022 16:52:56 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Jacob Keller <jacob.e.keller@intel.com>
+Message-ID: <20220721165256.02f83fe8@kernel.org>
+In-Reply-To: <20220721211451.2475600-1-jacob.e.keller@intel.com>
+References: <20220721211451.2475600-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1658439010; x=1689975010;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=iPIrupZKCGLodHWKIENzFahTpb1c4Uv9MCiNQ2Fc9Rk=;
- b=NnLP7u6Q2zQL06LrdXj67IoWXTCUvdAIs7yukVMov9g1+kKNFR8eA9kX
- PNdBfjMG2kZNsdEPTgy+o82D4flDaOvVZjnUBV5hAAgOgayv2pKXPXh1s
- GV7OzXIC1+3vYRrOEHIngK+RFho7/1K7AJ6+Jfx6K89Y+bqurKwc8kRDU
- 5AgvvAoz2dyWqqn6MSLzi/i0HaDums+365yVVO861eqVp5E+PEVs0AlbX
- 8oIOf1Yk3iqaCUhCM+qbNIr8YP0UMMVacZXUHQrURfZ2Cm3jaGwAx0BdO
- jiWjwnYKeIRhtNbWzUrLXOEnL4AVpBQ4jTlSYCJLyncjQOooyTVZbJ2Ra
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NnLP7u6Q
-Subject: [Intel-wired-lan] [net-next PATCH 6/7] ixgbe: convert .adjfreq to
- .adjfine
+ d=kernel.org; s=k20201202; t=1658447577;
+ bh=yK/2aQwcTmWjKegD+naXKwpgN28c2N1Wm1Ikhzqp8T0=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=a6ar49SmtZ+Qeblvh9vslHjtBhAxbfKiw+TqxcyzG8PgVwW26AjXOrZ2XqyZUKGRR
+ 4rbeEk5nmqWSiikSqCu/CLmf37QWXMLVBJCjBrpi+zQeYvQVWF1hEiDOCx9cJho4mS
+ X/Ax02+tUpj5o2R7/p57KDmIRr3rFT0gpOqtBDdSPTxkl2QuqGjX1YW19utgQUARuV
+ ejfMzr4YNovBmx9figGcqP0zx+DEMk6OZYowmFA4wnkHP5JJba3wAL2O93o5J5R5TW
+ umXAqAk6kAih+uwefwoKnqwcgmSZifwEHgtZS1OQAF1kqPQC5kSs/NmO2JxjNP0FSx
+ QYHLqH2MNP0mg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=a6ar49Sm
+Subject: Re: [Intel-wired-lan] [net-next v2 0/2] devlink: implement dry run
+ support for flash update
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,193 +89,28 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Jonathan Corbet <corbet@lwn.net>, netdev@vger.kernel.org,
+ David Ahern <dsahern@kernel.org>, linux-doc@vger.kernel.org,
+ Stephen Hemminger <stephen@networkplumber.org>,
+ Eric Dumazet <edumazet@google.com>, Jiri Pirko <jiri@nvidia.com>,
+ intel-wired-lan@lists.osuosl.org, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Convert the ixgbe PTP frequency adjustment implementations from .adjfreq to
-.adjfine. This allows using the scaled parts per million adjustment from
-the PTP core and results in a more precise adjustment for small
-corrections.
+On Thu, 21 Jul 2022 14:14:45 -0700 Jacob Keller wrote:
+> This is a re-send of the dry run support I submitted nearly a year ago at
+> https://lore.kernel.org/netdev/CO1PR11MB50898047B9C0FAA520505AFDD6B59@CO1PR11MB5089.namprd11.prod.outlook.com/
 
-To avoid overflow, use mul_u64_u64_div_u64 to perform the calculation. On
-X86 platforms, this will use instructions that perform the operations with
-128bit intermediate values. For other architectures, the implementation
-will limit the loss of precision as much as possible.
+You confused patchwork, please post user space in separate thread:
 
-This change slightly improves the precision of frequency adjustments for
-all ixgbe based devices, and gets us one driver closer to being able to
-remove the older .adjfreq implementation from the kernel.
+https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html#how-do-i-post-corresponding-changes-to-user-space-components
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c | 73 +++++++++++---------
- 1 file changed, 40 insertions(+), 33 deletions(-)
+Tomorrow:
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-index 27a71fa26d3c..9f06896a049b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-@@ -113,12 +113,16 @@
-  * the sign bit. This register enables software to calculate frequency
-  * adjustments and apply them directly to the clock rate.
-  *
-- * The math for converting ppb into TIMINCA values is fairly straightforward.
-- *   TIMINCA value = ( Base_Frequency * ppb ) / 1000000000ULL
-+ * The math for converting scaled_ppm into TIMINCA values is fairly
-+ * straightforward.
-  *
-- * This assumes that ppb is never high enough to create a value bigger than
-- * TIMINCA's 31 bits can store. This is ensured by the stack. Calculating this
-- * value is also simple.
-+ *   TIMINCA value = ( Base_Frequency * scaled_ppm ) / 1000000ULL << 16
-+ *
-+ * To avoid overflow, we simply use mul_u64_u64_div_u64.
-+ *
-+ * This assumes that scaled_ppm is never high enough to create a value bigger
-+ * than TIMINCA's 31 bits can store. This is ensured by the stack, and is
-+ * measured in parts per billion. Calculating this value is also simple.
-  *   Max ppb = ( Max Adjustment / Base Frequency ) / 1000000000ULL
-  *
-  * For the X550, the Max adjustment is +/- 0.5 ns, and the base frequency is
-@@ -433,45 +437,45 @@ static void ixgbe_ptp_convert_to_hwtstamp(struct ixgbe_adapter *adapter,
- }
- 
- /**
-- * ixgbe_ptp_adjfreq_82599
-+ * ixgbe_ptp_adjfine_82599
-  * @ptp: the ptp clock structure
-- * @ppb: parts per billion adjustment from base
-+ * @scaled_ppm: scaled parts per million adjustment from base
-  *
-- * adjust the frequency of the ptp cycle counter by the
-- * indicated ppb from the base frequency.
-+ * Adjust the frequency of the ptp cycle counter by the
-+ * indicated scaled_ppm from the base frequency.
-+ *
-+ * Scaled parts per million is ppm with a 16-bit binary fractional field.
-  */
--static int ixgbe_ptp_adjfreq_82599(struct ptp_clock_info *ptp, s32 ppb)
-+static int ixgbe_ptp_adjfine_82599(struct ptp_clock_info *ptp, long scaled_ppm)
- {
- 	struct ixgbe_adapter *adapter =
- 		container_of(ptp, struct ixgbe_adapter, ptp_caps);
- 	struct ixgbe_hw *hw = &adapter->hw;
--	u64 freq, incval;
--	u32 diff;
-+	u64 incval, diff;
- 	int neg_adj = 0;
- 
--	if (ppb < 0) {
-+	if (scaled_ppm < 0) {
- 		neg_adj = 1;
--		ppb = -ppb;
-+		scaled_ppm = -scaled_ppm;
- 	}
- 
- 	smp_mb();
- 	incval = READ_ONCE(adapter->base_incval);
- 
--	freq = incval;
--	freq *= ppb;
--	diff = div_u64(freq, 1000000000ULL);
-+	diff = mul_u64_u64_div_u64(incval, scaled_ppm,
-+				   1000000ULL << 16);
- 
- 	incval = neg_adj ? (incval - diff) : (incval + diff);
- 
- 	switch (hw->mac.type) {
- 	case ixgbe_mac_X540:
- 		if (incval > 0xFFFFFFFFULL)
--			e_dev_warn("PTP ppb adjusted SYSTIME rate overflowed!\n");
-+			e_dev_warn("PTP scaled_ppm adjusted SYSTIME rate overflowed!\n");
- 		IXGBE_WRITE_REG(hw, IXGBE_TIMINCA, (u32)incval);
- 		break;
- 	case ixgbe_mac_82599EB:
- 		if (incval > 0x00FFFFFFULL)
--			e_dev_warn("PTP ppb adjusted SYSTIME rate overflowed!\n");
-+			e_dev_warn("PTP scaled_ppm adjusted SYSTIME rate overflowed!\n");
- 		IXGBE_WRITE_REG(hw, IXGBE_TIMINCA,
- 				BIT(IXGBE_INCPER_SHIFT_82599) |
- 				((u32)incval & 0x00FFFFFFUL));
-@@ -484,32 +488,35 @@ static int ixgbe_ptp_adjfreq_82599(struct ptp_clock_info *ptp, s32 ppb)
- }
- 
- /**
-- * ixgbe_ptp_adjfreq_X550
-+ * ixgbe_ptp_adjfine_X550
-  * @ptp: the ptp clock structure
-- * @ppb: parts per billion adjustment from base
-+ * @scaled_ppm: scaled parts per million adjustment from base
-  *
-- * adjust the frequency of the SYSTIME registers by the indicated ppb from base
-- * frequency
-+ * Adjust the frequency of the SYSTIME registers by the indicated scaled_ppm
-+ * from base frequency.
-+ *
-+ * Scaled parts per million is ppm with a 16-bit binary fractional field.
-  */
--static int ixgbe_ptp_adjfreq_X550(struct ptp_clock_info *ptp, s32 ppb)
-+static int ixgbe_ptp_adjfine_X550(struct ptp_clock_info *ptp, long scaled_ppm)
- {
- 	struct ixgbe_adapter *adapter =
- 			container_of(ptp, struct ixgbe_adapter, ptp_caps);
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	int neg_adj = 0;
--	u64 rate = IXGBE_X550_BASE_PERIOD;
-+	u64 rate;
- 	u32 inca;
- 
--	if (ppb < 0) {
-+	if (scaled_ppm < 0) {
- 		neg_adj = 1;
--		ppb = -ppb;
-+		scaled_ppm = -scaled_ppm;
- 	}
--	rate *= ppb;
--	rate = div_u64(rate, 1000000000ULL);
-+
-+	rate = mul_u64_u64_div_u64(IXGBE_X550_BASE_PERIOD, scaled_ppm,
-+				   1000000ULL << 16);
- 
- 	/* warn if rate is too large */
- 	if (rate >= INCVALUE_MASK)
--		e_dev_warn("PTP ppb adjusted SYSTIME rate overflowed!\n");
-+		e_dev_warn("PTP scaled_ppm adjusted SYSTIME rate overflowed!\n");
- 
- 	inca = rate & INCVALUE_MASK;
- 	if (neg_adj)
-@@ -1355,7 +1362,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter *adapter)
- 		adapter->ptp_caps.n_ext_ts = 0;
- 		adapter->ptp_caps.n_per_out = 0;
- 		adapter->ptp_caps.pps = 1;
--		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_82599;
-+		adapter->ptp_caps.adjfine = ixgbe_ptp_adjfine_82599;
- 		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
- 		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
- 		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
-@@ -1372,7 +1379,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter *adapter)
- 		adapter->ptp_caps.n_ext_ts = 0;
- 		adapter->ptp_caps.n_per_out = 0;
- 		adapter->ptp_caps.pps = 0;
--		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_82599;
-+		adapter->ptp_caps.adjfine = ixgbe_ptp_adjfine_82599;
- 		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
- 		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
- 		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
-@@ -1388,7 +1395,7 @@ static long ixgbe_ptp_create_clock(struct ixgbe_adapter *adapter)
- 		adapter->ptp_caps.n_ext_ts = 0;
- 		adapter->ptp_caps.n_per_out = 0;
- 		adapter->ptp_caps.pps = 1;
--		adapter->ptp_caps.adjfreq = ixgbe_ptp_adjfreq_X550;
-+		adapter->ptp_caps.adjfine = ixgbe_ptp_adjfine_X550;
- 		adapter->ptp_caps.adjtime = ixgbe_ptp_adjtime;
- 		adapter->ptp_caps.gettimex64 = ixgbe_ptp_gettimex;
- 		adapter->ptp_caps.settime64 = ixgbe_ptp_settime;
--- 
-2.35.1.456.ga9c7032d4631
-
+https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html#i-have-received-review-feedback-when-should-i-post-a-revised-version-of-the-patches
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
