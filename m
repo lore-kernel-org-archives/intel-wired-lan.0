@@ -1,82 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 977F4CCA485
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 21 Jul 2022 23:53:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 375A3C43334
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 22 Jul 2022 04:31:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2671460BC4;
-	Thu, 21 Jul 2022 23:53:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2671460BC4
+	by smtp4.osuosl.org (Postfix) with ESMTP id A574A41836;
+	Fri, 22 Jul 2022 04:31:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A574A41836
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1658447583;
-	bh=cGN4qL0CwB51kon+SSCJD2p2MUjtROPvU7WhA84ExFs=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=b3UUdsyOhbDI5crEbvQbgb+pp6QxUtKI9fD5bhcG5IRQK8iQl2dT5wS2sopcLt3FB
-	 EGSkip2xHxM/+MKWCizc5mZ4vlPrp7RI+Acs3vjkRhZXL9UoyYC0iDMX162kwC8b9d
-	 Rdh0pAHONHLMyMfywQ/JhoolvJ7/fsxMJL3aeV/SpG4l8euUytZPrOyQ5/GrcjSuc5
-	 tPLGL/ZOEXbiXzB2+zPHxYE96xvfY3I1o87SlDJAYDOQn3jL8EJMZy5y0MCfPucmap
-	 CsW7b+bA4GWmULcrJUCm+MvN+mz/atANCYfOV7WFN761+lSs/GChupi9g11UwXCAsj
-	 DO9ogOAZJurng==
+	s=default; t=1658464284;
+	bh=X4FSfFEKT57y4I+Ki0f1ThkN/o5G4qQ/zDnoJ0MtEms=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=KUzEKCGsuSM1wCuPjqigEdZdHTuHlgRk3R2UhCrcO4b4QJ5IYzWh3MdcaBvWkyl3H
+	 AyBURJIrUqGyRsptMqP85rRBWtpa33e4aK8KTkHuHI/zchaMTlUW2h30nc8gIXY93j
+	 Sr6SkE3w2QInDi/XQgIE2nhX5n3C2Cu1gyrHFhEys2UwP75+KmVTQs+qcSuPZnTjUV
+	 Pt1zLbTxme4uAo64BH6zKKgLUHs5ha51X0Y/OBsPjO7O7U6A53gn6K0x8AhLqhmdiB
+	 KJ+Ew7A0TZ4YlxgPz811HCmtJL7pPVhE1suCHgsRzYEP3oTDsU3SJoLR2ow50C4mNw
+	 hgsRT2bq8SYIA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FVPbhTXPXBL3; Thu, 21 Jul 2022 23:53:02 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 3LeEeSdqyTcn; Fri, 22 Jul 2022 04:31:23 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4500860BFD;
-	Thu, 21 Jul 2022 23:53:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4500860BFD
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5088541837;
+	Fri, 22 Jul 2022 04:31:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5088541837
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 9800E1BF340
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 23:53:00 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 35F871BF3EB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Jul 2022 04:31:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6FAC5403AA
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 23:53:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6FAC5403AA
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1CD6E404E5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Jul 2022 04:31:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1CD6E404E5
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id iemCxWlDRvra for <intel-wired-lan@lists.osuosl.org>;
- Thu, 21 Jul 2022 23:52:59 +0000 (UTC)
+ with ESMTP id Rrk-8THiypQ0 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 22 Jul 2022 04:31:19 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7E7C24023F
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7E7C24023F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 21 Jul 2022 23:52:59 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 1CDB661EA4;
- Thu, 21 Jul 2022 23:52:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 190D3C341C0;
- Thu, 21 Jul 2022 23:52:57 +0000 (UTC)
-Date: Thu, 21 Jul 2022 16:52:56 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Jacob Keller <jacob.e.keller@intel.com>
-Message-ID: <20220721165256.02f83fe8@kernel.org>
-In-Reply-To: <20220721211451.2475600-1-jacob.e.keller@intel.com>
-References: <20220721211451.2475600-1-jacob.e.keller@intel.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D4D2C4013A
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D4D2C4013A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Jul 2022 04:31:17 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10415"; a="267008943"
+X-IronPort-AV: E=Sophos;i="5.93,184,1654585200"; d="scan'208";a="267008943"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Jul 2022 21:31:16 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.93,184,1654585200"; d="scan'208";a="574023655"
+Received: from lkp-server01.sh.intel.com (HELO e0eace57cfef) ([10.239.97.150])
+ by orsmga006.jf.intel.com with ESMTP; 21 Jul 2022 21:31:15 -0700
+Received: from kbuild by e0eace57cfef with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1oEkJm-0000xk-2w;
+ Fri, 22 Jul 2022 04:31:14 +0000
+Date: Fri, 22 Jul 2022 12:30:39 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <62da27ef.BeiEan0L1/2pS0Rr%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1658447577;
- bh=yK/2aQwcTmWjKegD+naXKwpgN28c2N1Wm1Ikhzqp8T0=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=a6ar49SmtZ+Qeblvh9vslHjtBhAxbfKiw+TqxcyzG8PgVwW26AjXOrZ2XqyZUKGRR
- 4rbeEk5nmqWSiikSqCu/CLmf37QWXMLVBJCjBrpi+zQeYvQVWF1hEiDOCx9cJho4mS
- X/Ax02+tUpj5o2R7/p57KDmIRr3rFT0gpOqtBDdSPTxkl2QuqGjX1YW19utgQUARuV
- ejfMzr4YNovBmx9figGcqP0zx+DEMk6OZYowmFA4wnkHP5JJba3wAL2O93o5J5R5TW
- umXAqAk6kAih+uwefwoKnqwcgmSZifwEHgtZS1OQAF1kqPQC5kSs/NmO2JxjNP0FSx
- QYHLqH2MNP0mg==
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1658464278; x=1690000278;
+ h=date:from:to:subject:message-id:mime-version:
+ content-transfer-encoding;
+ bh=ydSwkCT4KgANxbAyuQnQltn2eNV9/sn5igJGEyeuKOg=;
+ b=Kn9Ldw4OqU7vYm8X6exWDThzQMLIR9IFDhBeVL3ObgYgEEhwMY0nUnZ1
+ MNcxwP2hGlZtD9F9XyGwkoux9dtSIosGkz8W0H3ktrfYHVluzsubFvoa/
+ t06Y2ftxzxJPdmOijWE90e6Mkzz4hzGdgF1K7MH+ID67tpUtvMN+GFnKG
+ luHcZnUVbFv3517cOcHYS9upDwLxYVt0W+P0noID+tLoKQb3AbmwPmnQu
+ vchUZheAO1tqVNUqYNY86OJXLfJLCifAx/IzNV8ZDgb/Nj5Fd09Ozb2Go
+ hdNOhHbOok2P8CbsX9pAhVz45yP35a8Qhmg7DwPt8BzETabqrO/RqKHwn
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=a6ar49Sm
-Subject: Re: [Intel-wired-lan] [net-next v2 0/2] devlink: implement dry run
- support for flash update
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=Kn9Ldw4O
+Subject: [Intel-wired-lan] [tnguy-next-queue:master] BUILD SUCCESS
+ 5588d628027092e66195097bdf6835ddf64418b3
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,28 +94,121 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jonathan Corbet <corbet@lwn.net>, netdev@vger.kernel.org,
- David Ahern <dsahern@kernel.org>, linux-doc@vger.kernel.org,
- Stephen Hemminger <stephen@networkplumber.org>,
- Eric Dumazet <edumazet@google.com>, Jiri Pirko <jiri@nvidia.com>,
- intel-wired-lan@lists.osuosl.org, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 21 Jul 2022 14:14:45 -0700 Jacob Keller wrote:
-> This is a re-send of the dry run support I submitted nearly a year ago at
-> https://lore.kernel.org/netdev/CO1PR11MB50898047B9C0FAA520505AFDD6B59@CO1PR11MB5089.namprd11.prod.outlook.com/
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git master
+branch HEAD: 5588d628027092e66195097bdf6835ddf64418b3  net/cdc_ncm: Increase NTB max RX/TX values to 64kb
 
-You confused patchwork, please post user space in separate thread:
+elapsed time: 880m
 
-https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html#how-do-i-post-corresponding-changes-to-user-space-components
+configs tested: 90
+configs skipped: 3
 
-Tomorrow:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html#i-have-received-review-feedback-when-should-i-post-a-revised-version-of-the-patches
+gcc tested configs:
+arm64                            allyesconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+sh                               j2_defconfig
+arc                          axs101_defconfig
+alpha                               defconfig
+mips                         cobalt_defconfig
+arm                      jornada720_defconfig
+sh                              ul2_defconfig
+powerpc                        cell_defconfig
+riscv             nommu_k210_sdcard_defconfig
+mips                           xway_defconfig
+mips                          rb532_defconfig
+powerpc                 mpc834x_mds_defconfig
+m68k                        mvme147_defconfig
+mips                     loongson1b_defconfig
+arm                         at91_dt_defconfig
+m68k                                defconfig
+s390                          debug_defconfig
+nios2                         10m50_defconfig
+sh                               alldefconfig
+powerpc                     tqm8555_defconfig
+arm                             pxa_defconfig
+powerpc                      tqm8xx_defconfig
+mips                           gcw0_defconfig
+arm                        oxnas_v6_defconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+i386                              debian-10.3
+arm                  randconfig-c002-20220721
+csky                              allnoconfig
+alpha                             allnoconfig
+arc                               allnoconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+arc                              allyesconfig
+alpha                            allyesconfig
+powerpc                           allnoconfig
+mips                             allyesconfig
+powerpc                          allmodconfig
+sh                               allmodconfig
+i386                             allyesconfig
+i386                                defconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                               rhel-8.3
+x86_64                          rhel-8.3-func
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
+
+clang tested configs:
+mips                malta_qemu_32r6_defconfig
+mips                  cavium_octeon_defconfig
+powerpc                     tqm8540_defconfig
+arm                          ixp4xx_defconfig
+powerpc                  mpc866_ads_defconfig
+mips                      malta_kvm_defconfig
+arm                                 defconfig
+arm                           spitz_defconfig
+mips                      pic32mzda_defconfig
+mips                           mtx1_defconfig
+powerpc                 mpc836x_mds_defconfig
+arm                      tct_hammer_defconfig
+mips                        qi_lb60_defconfig
+x86_64                           allyesconfig
+x86_64                        randconfig-k001
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+hexagon              randconfig-r041-20220721
+s390                 randconfig-r044-20220721
+hexagon              randconfig-r045-20220721
+riscv                randconfig-r042-20220721
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
