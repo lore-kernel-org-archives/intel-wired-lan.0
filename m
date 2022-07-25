@@ -4,113 +4,113 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 853AAC43334
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 25 Jul 2022 16:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A89DAC433EF
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 25 Jul 2022 16:00:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 078A660E38;
-	Mon, 25 Jul 2022 16:00:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 078A660E38
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4596360E38;
+	Mon, 25 Jul 2022 16:00:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4596360E38
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1658764809;
-	bh=YbnifO4jrZi8JPpJVHNwK6SlrOOP+JPomyimXjsRwdg=;
+	s=default; t=1658764822;
+	bh=WjBIdM+uGBheqvgORvl5RQBsrvqnVSX04qIR0LmDQlo=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=NQYc+APK/rXTj7DRFu/pvLMK5Q2J+iodFWP2oXVVhieCRfrVEe2Han8QiqqlOFRXG
-	 ebzGnwj4N7l5JsmzjJyZ/H9Ux65VXkNcVQwiJKXmROTglx2XWMCZAmJjPMJ79sOuT8
-	 NGrT/G5b6bflIPQnmn2KzEyaNvM6m64FCY4sSLfzEWMxamdKFEgPLtj7t6Wdw9cQcK
-	 u1nq8PNacCBxeAuXQo7hfy7M4onGIOBEV7gWXdGiHOqMiXdriAuXtBYizlNNhka9C8
-	 UpWXoda5WPRwlADUhGXYo5rPz09kznkKmNA++obPwocoXiU38cTfK3dR9Cc5pJkpJW
-	 MuSsacwmsm/zQ==
+	b=Z0s/8LIgebX3xn9I7Z6chkPu62MtMsEN6OljHkhYa+EptxEC7MFOQRSKY7TYwOgYG
+	 5t/cyvqmwQM4r655gZyzFuVkHLkNAoIZ1ZwMmLYl15KlxDRUImoFbiG5iRA/3TzI1K
+	 NIDsz/EWiW79U84ymVY7oh18uxAAg9u+GSFV3+XFGe6l2VXU7Co9/ucpXL5LXWrQZ/
+	 Vc0QKOK1wrb4R8bhQ5Hw/RbwEnhyrg15b+5FoEHE0gS2RyNMapqfMElwS/v36/pYBP
+	 hBc8YibdBOe5x1/9mKJQQXbGQG3IyezbCsmUDk09ysoVgDMlo/pv7LpGQGChNxhIEl
+	 UNUyHY8ttUHvA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1UqiQ-9mF_IN; Mon, 25 Jul 2022 16:00:08 +0000 (UTC)
+	with ESMTP id YRyWwODthw2B; Mon, 25 Jul 2022 16:00:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 115156124B;
-	Mon, 25 Jul 2022 16:00:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 115156124B
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B9B8B1BF379
- for <intel-wired-lan@lists.osuosl.org>; Mon, 25 Jul 2022 16:00:05 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 52ECD6124B;
+	Mon, 25 Jul 2022 16:00:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 52ECD6124B
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 3A98C1BF379
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 25 Jul 2022 16:00:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9C35360E50
- for <intel-wired-lan@lists.osuosl.org>; Mon, 25 Jul 2022 16:00:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9C35360E50
+ by smtp4.osuosl.org (Postfix) with ESMTP id 0EA7241A17
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 25 Jul 2022 16:00:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0EA7241A17
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id RMZ0dLkQ7YSo for <intel-wired-lan@lists.osuosl.org>;
- Mon, 25 Jul 2022 15:59:57 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id VxNOJTXtDpLA for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 25 Jul 2022 16:00:19 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F056860E38
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 266F641A13
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id F056860E38
- for <intel-wired-lan@lists.osuosl.org>; Mon, 25 Jul 2022 15:59:56 +0000 (UTC)
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 266F641A13
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 25 Jul 2022 16:00:18 +0000 (UTC)
 Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
  [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-210-fiyWcMZDOYinUmiKs361Mg-1; Mon, 25 Jul 2022 11:59:53 -0400
-X-MC-Unique: fiyWcMZDOYinUmiKs361Mg-1
+ us-mta-107-guiogGnmO1uvO0CVXyK70A-1; Mon, 25 Jul 2022 12:00:16 -0400
+X-MC-Unique: guiogGnmO1uvO0CVXyK70A-1
 Received: by mail-wm1-f70.google.com with SMTP id
- v11-20020a1cf70b000000b003a318238826so4253455wmh.2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 25 Jul 2022 08:59:53 -0700 (PDT)
+ z20-20020a1c4c14000000b003a3020da654so4242030wmf.5
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 25 Jul 2022 09:00:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=x-gm-message-state:date:from:to:cc:subject:message-id:references
  :mime-version:content-disposition:in-reply-to;
- bh=tY2aon/f125PpUF2utZCx2LZaCcEv6DZkZmWDwPeZms=;
- b=U7irbxWI9CJW3kZ+JoDFws/o/EDK8wH/RHDaTY4ZG30BKC+p52SjGSYpJmhOuxNF1N
- 2/oe32dpz6/P/660eoaPkS+x2YVSonYdC9SbiuTr5BokjAuAIEnzjCqFH8wRDe6sLZp5
- gU7MoIpGKbx0fxZacBXmJ75rMH2GJ/fpCbg//GhLdtoXulwN+TjHUQjhjRj9PqnNYV3W
- +HU7Z/YnDpBrSLli4d3cpyZO0l44Pbi9hJ+wkL2JIOXT9XnkXUO9VupUmQ8jLnLLW3f/
- OUnmiOH7v5uXtLXkflp8fq//4VocZxcjnOGspK5kOvqeF7dA5U74gF9gkA5/6tq8tXo0
- G+tg==
-X-Gm-Message-State: AJIora+CrecyMjed8zOl8Dxe8i57vBSC1RpygO4fGjPF9bkxDgBglo5h
- 7OS1nkmh0aKGPVg26rB2EpxZrmsU0OLsFiDlR1xSiBTDD/IRMTvIn1h+l/FN92CWSepqF3Kqtuf
- eMVy8vACPhZOv4VbT62h/QXbp+EK2sg==
-X-Received: by 2002:a5d:47c2:0:b0:21e:37b9:3b0b with SMTP id
- o2-20020a5d47c2000000b0021e37b93b0bmr8471509wrc.450.1658764792260; 
- Mon, 25 Jul 2022 08:59:52 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1ud1B8beje1+rVeYF3sJwS5B0hQU3eYnQhd9GZBmbM1M4Ns7lhVQMyFQQSQeRSi9oM5CqNwfg==
-X-Received: by 2002:a5d:47c2:0:b0:21e:37b9:3b0b with SMTP id
- o2-20020a5d47c2000000b0021e37b93b0bmr8471474wrc.450.1658764791971; 
- Mon, 25 Jul 2022 08:59:51 -0700 (PDT)
+ bh=pXQd8qsiueUyNLCwLanEF1sKoZG5cu8SXoCPRLwZkzY=;
+ b=EQ+YAWyIIi/yHJT3UBl4pGmC6AWFugHkP3NDjSKrCpd7Pd++9vrkIR5wxQNQSu0AzU
+ LT1iTxclswOnj4DO30Q8RvtsTU16zGTKiqKR9MZhEdSvaAm0anvfVfzHQKxVd1AZ6GZ9
+ Mf4k35/h47hn/6x1ynsaCpI9XHSkEhXUoEQ810E1sRyxZPKnIc+YuWIKid2baZlATNym
+ clY6SRl/11gxjQFAxfPofrynmegkzT4yKIICk+7FsCSvR0HX49+U7o3EpSr2qGAhZC+h
+ yo72z4peQRZhC9uR1VxXyeM0ttIvXGr5yz6GH7WiYbpmYpiYVq/7jTldTysgya7/SCqA
+ CyRA==
+X-Gm-Message-State: AJIora/1+h9qMW4pl/K34tBWy6eJZlu93b8llgSX47AVF5FXph8LXY15
+ JMXxKWm6kLVbmgb/43Gx+Q2K9Taa2N++leVMtvQ9A5Yz099AkRO58VWEo5GxwOp53mBiXGTqNx/
+ vylgTXzV/UfpGpaa0P2xnz1KECtZtPQ==
+X-Received: by 2002:a05:600c:254f:b0:3a3:2848:caeb with SMTP id
+ e15-20020a05600c254f00b003a32848caebmr21666524wma.187.1658764815136; 
+ Mon, 25 Jul 2022 09:00:15 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1uRFiHVAeQRhZYDaNBmO7NkOHQC5P2zy+an+ev9rSBv3hAwokWe0rX9Gjcv5nhFilHb9QSZHA==
+X-Received: by 2002:a05:600c:254f:b0:3a3:2848:caeb with SMTP id
+ e15-20020a05600c254f00b003a32848caebmr21666496wma.187.1658764814837; 
+ Mon, 25 Jul 2022 09:00:14 -0700 (PDT)
 Received: from pc-4.home (2a01cb058918ce00dd1a5a4f9908f2d5.ipv6.abo.wanadoo.fr.
  [2a01:cb05:8918:ce00:dd1a:5a4f:9908:f2d5])
  by smtp.gmail.com with ESMTPSA id
- p20-20020a1c5454000000b003a30c3d0c9csm19132485wmi.8.2022.07.25.08.59.50
+ z21-20020a05600c0a1500b0039c454067ddsm15650521wmp.15.2022.07.25.09.00.12
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 25 Jul 2022 08:59:51 -0700 (PDT)
-Date: Mon, 25 Jul 2022 17:59:48 +0200
+ Mon, 25 Jul 2022 09:00:14 -0700 (PDT)
+Date: Mon, 25 Jul 2022 18:00:11 +0200
 From: Guillaume Nault <gnault@redhat.com>
 To: Marcin Szycik <marcin.szycik@linux.intel.com>
-Message-ID: <20220725155948.GA18808@pc-4.home>
+Message-ID: <20220725160011.GB18808@pc-4.home>
 References: <20220718121813.159102-1-marcin.szycik@linux.intel.com>
- <20220718121813.159102-2-marcin.szycik@linux.intel.com>
+ <20220718121813.159102-3-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20220718121813.159102-2-marcin.szycik@linux.intel.com>
+In-Reply-To: <20220718121813.159102-3-marcin.szycik@linux.intel.com>
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 Content-Disposition: inline
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1658764795;
+ s=mimecast20190719; t=1658764818;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  in-reply-to:in-reply-to:references:references;
- bh=tY2aon/f125PpUF2utZCx2LZaCcEv6DZkZmWDwPeZms=;
- b=B4P/FxUI33dDyddrhWHvMDoJIwEhjlFb7KK78LkmvMVq8IpM2jZg7CR6wLcj3pFB9pmAkH
- kfz37h90nLl1bUBhxnRv98Uu1svQyv9Ru5rb/+g72tCFWMsXMeC4lKX58YSlHfB2czl0e9
- GZ028QMjL4I22GzUw1719t6CBMlsJaY=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=pXQd8qsiueUyNLCwLanEF1sKoZG5cu8SXoCPRLwZkzY=;
+ b=I3aTs4qmLOVjxHfzvZ6aBDog/Aqm7DBYT5LlNfyVW6HJYvfRAJ6WLcXV+QfTtdT0zGPFMm
+ eTljoI0gp9Cps/T3NFellQxtB/uzcyzOLgV6dIIqEXk9LA+A8Q+2BUW6r08SE1TEGBgiMK
+ mrxIsruk8dDtBwH21CkC97ymauh6Hsc=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=B4P/FxUI
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=I3aTs4qm
 X-Mailman-Original-Authentication-Results: relay.mimecast.com;
  auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=gnault@redhat.com
-Subject: Re: [Intel-wired-lan] [RFC PATCH net-next v6 1/4] flow_dissector:
- Add PPPoE dissectors
+Subject: Re: [Intel-wired-lan] [RFC PATCH net-next v6 2/4] net/sched:
+ flower: Add PPPoE filter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -135,25 +135,15 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Jul 18, 2022 at 02:18:10PM +0200, Marcin Szycik wrote:
+On Mon, Jul 18, 2022 at 02:18:11PM +0200, Marcin Szycik wrote:
 > From: Wojciech Drewek <wojciech.drewek@intel.com>
 > 
-> Allow to dissect PPPoE specific fields which are:
-> - session ID (16 bits)
-> - ppp protocol (16 bits)
-> - type (16 bits) - this is PPPoE ethertype, for now only
->   ETH_P_PPP_SES is supported, possible ETH_P_PPP_DISC
->   in the future
+> Add support for PPPoE specific fields for tc-flower.
+> Those fields can be provided only when protocol was set
+> to ETH_P_PPP_SES. Defines, dump, load and set are being done here.
 > 
-> The goal is to make the following TC command possible:
-> 
->   # tc filter add dev ens6f0 ingress prio 1 protocol ppp_ses \
->       flower \
->         pppoe_sid 12 \
->         ppp_proto ip \
->       action drop
-> 
-> Note that only PPPoE Session is supported.
+> Overwrite basic.n_proto only in case of PPP_IP and PPP_IPV6,
+> otherwise leave it as ETH_P_PPP_SES.
 
 Acked-by: Guillaume Nault <gnault@redhat.com>
 
