@@ -1,83 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62028C43334
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Jul 2022 08:52:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51D13C43334
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Jul 2022 09:00:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D480341634;
-	Tue, 26 Jul 2022 08:52:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D480341634
+	by smtp1.osuosl.org (Postfix) with ESMTP id DC62A83026;
+	Tue, 26 Jul 2022 09:00:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DC62A83026
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1658825564;
-	bh=Mk6p50s7qhQmB1ggIr7SSW7yduA3IKVHvQP9FdRTgLk=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=2rrixp+kcOLxfN4WpnuYbo1fX4RNED8odpOtWMqmU3bk20SdC4crIsmw0tsZge5O2
-	 e/vxNF/Vpr1dWvkrwkISfIggv4Wq69Vl3qRM0QcSa+dLDbLDIWnRI6i4Wneim72h/S
-	 QwDcRS/y3aJznAYyoqZ0BSoyjvFeNW4bPuSZ0rOS+DClZdxfNCO3CXqww5sID+wPNS
-	 6v7D13gyLDTcM3exoKTPO2+CAg7Jk62vJ58GLeaSCXm+HIcQvyM0noWhIj4zmjajOm
-	 yr9k2MnfBKSrwakTIezi1gJ3HgT/b7HhrrPjKKMhUeVjBkGvKji57k8cJmv6EK/UKk
-	 wlsj+NQ3b9sow==
+	s=default; t=1658826014;
+	bh=iU69TAo/y/lyTFxZoyMHcNqRym0lK1rtfaN7XjFK7Fw=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=As5Mg/Ruiswp09mS+WDqj2Bys27JJzJF09LiL2wxsk8jkqmiDi/sCb7z3F6UNMWDE
+	 NyXZm8RT243y9mUA12bjMaglRb8LWdzso9cPVk9QlTK6Xg5qWBfTJPLkHqZJcW/HqU
+	 RtATh7GUPnuWrUjiIf6GrdRndttnLtlNhirf4XcTFz5gWDxvWMt6NdkhomY/Ou4xSh
+	 gLh9IwMOt46T6UdKW3Ef1whLqdOAbLFRTj8NN2ts4cqR/W4amvBYaPsXI0F0bLQO9S
+	 qpHSAU6ToGvAxRjktsyKxzzkBOWkwsjiqJ3cqO8oXu93FfKeqXydblv9/T1X8XhkKW
+	 d9SilshsGeakg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id h1S13Z6u9fc8; Tue, 26 Jul 2022 08:52:43 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 2FDXXHzLQsbt; Tue, 26 Jul 2022 09:00:14 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1CAF841635;
-	Tue, 26 Jul 2022 08:52:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1CAF841635
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id D55BF1BF239
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Jul 2022 08:52:41 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id DF0078308A;
+	Tue, 26 Jul 2022 09:00:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DF0078308A
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 76BD01BF23C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Jul 2022 09:00:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B9D2E41635
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Jul 2022 08:52:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B9D2E41635
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4F4C48308A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Jul 2022 09:00:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4F4C48308A
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id jzUl6_5EvnbP for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Jul 2022 08:52:40 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id eOS98ZoW06Ev for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Jul 2022 09:00:11 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6BBA541634
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 324F783026
 Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6BBA541634
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Jul 2022 08:52:40 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10419"; a="349600810"
-X-IronPort-AV: E=Sophos;i="5.93,193,1654585200"; d="scan'208";a="349600810"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 324F783026
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Jul 2022 09:00:11 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10419"; a="349602085"
+X-IronPort-AV: E=Sophos;i="5.93,193,1654585200"; d="scan'208";a="349602085"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Jul 2022 01:52:39 -0700
+ 26 Jul 2022 02:00:10 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,193,1654585200"; d="scan'208";a="776235990"
-Received: from amlin-018-218.igk.intel.com ([10.102.18.218])
- by orsmga005.jf.intel.com with ESMTP; 26 Jul 2022 01:52:37 -0700
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 26 Jul 2022 10:50:07 +0200
-Message-Id: <20220726085007.989536-1-jedrzej.jagielski@intel.com>
-X-Mailer: git-send-email 2.27.0
+X-IronPort-AV: E=Sophos;i="5.93,193,1654585200"; d="scan'208";a="550324359"
+Received: from lkp-server01.sh.intel.com (HELO e0eace57cfef) ([10.239.97.150])
+ by orsmga003.jf.intel.com with ESMTP; 26 Jul 2022 02:00:09 -0700
+Received: from kbuild by e0eace57cfef with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1oGGQA-0006dY-1Q;
+ Tue, 26 Jul 2022 09:00:06 +0000
+Date: Tue, 26 Jul 2022 16:59:06 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <62dfacda.rp8Xq6vF2lSYrfXA%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1658825560; x=1690361560;
- h=from:to:cc:subject:date:message-id:mime-version:
+ t=1658826011; x=1690362011;
+ h=date:from:to:subject:message-id:mime-version:
  content-transfer-encoding;
- bh=qzO55WwLL8Mh6ncagDH4KN1Kmxvp2BX2yod3bS2dpmA=;
- b=oBaX9kRZRukpyn84Kogi6Ooaeb/BoApXRzZyKLeODI+2tD0yrNcYGTzU
- V2U8QvaA+epN0JCq6KF5wgqqRe3sA2HSDwnMpfWNSvMTm9P/Be9Tx42Js
- z5TdOKPhhfS104TJN/3J361prov4kfmDiRJXkYrLNvbe0icxhRFGeHZXc
- 9nQt/WTRdibsfkwy4oKBjs47QINBEfCCZB9EknElUv4V5AW4rby7W+Wef
- qA4KrkaGBexI3qvaGubuvlK/sYiXHO9hUqd6rGRMfp5aZnpaqIL+oqpSA
- yNRgJr5SwtLxLWKeOyv7xyVtTP4f0SRZZlOmfhok+UMEXCzsTp6/xgGD6
+ bh=zPy3leKsfwKzBt96XCdsfqlQ4Yt+aSLL4XhbgS1RSoM=;
+ b=d/kH5vmm61IEf63gLb4DEksSJLN2UBcoCCk0fZ+1TIJ4vtZn4hCC46O5
+ LQnh4VDyu9H32EkNHfx019DdUXNiIp410opaykeNGkjSy/0W4UhUqEG1M
+ p8JeZQTrMaxPoqtMH84FFM/JN5OekYG3/gQDHnCV/4QT37wtV1W9Mo/1O
+ OpRjyzyBST2xpE/9Og+wghRmLIWyGpa5UOHoJLuh2BSIo5/6ihk+j9B5n
+ x3On//g9VOnJcUJtcQEMUA8v6rfFGe8ThbV4rvpfgrqHCXQ/t0YuJJnkX
+ ob7bhp6iqPJNZOvE9Tdoet2PIBB9OBhAj2aVB58rffTn8T/7D2qgBVMt5
  g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=oBaX9kRZ
-Subject: [Intel-wired-lan] [PATCH net-next v1] ice: Remove ucast_shared
+ header.a=rsa-sha256 header.s=Intel header.b=d/kH5vmm
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 5245eb4f3cf8ba1e9e0e6d58d810eceae9edc0c1
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,280 +94,104 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>,
- Jedrzej Jagielski <jedrzej.jagielski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 5245eb4f3cf8ba1e9e0e6d58d810eceae9edc0c1  ice: Document txbalancing parameter
 
-Remove ucast_shared as it was always true. Remove the code depending on
-ucast_shared from ice_add_mac and ice_remove_mac.
-Remove ice_find_ucast_rule_entry function as it was only
-used when ucast_shared was set to false.
+elapsed time: 723m
 
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c   |   2 -
- drivers/net/ethernet/intel/ice/ice_switch.c | 164 +-------------------
- drivers/net/ethernet/intel/ice/ice_type.h   |   2 -
- 3 files changed, 5 insertions(+), 163 deletions(-)
+configs tested: 74
+configs skipped: 2
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 47046c0bc93e..da212fbbd9d9 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4748,8 +4748,6 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		ice_set_safe_mode_caps(hw);
- 	}
- 
--	hw->ucast_shared = true;
--
- 	err = ice_init_pf(pf);
- 	if (err) {
- 		dev_err(dev, "ice_init_pf failed: %d\n", err);
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 66d1e17896a6..b7e9b270b6a7 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -3295,31 +3295,17 @@ bool ice_vlan_fltr_exist(struct ice_hw *hw, u16 vlan_id, u16 vsi_handle)
-  * ice_add_mac - Add a MAC address based filter rule
-  * @hw: pointer to the hardware structure
-  * @m_list: list of MAC addresses and forwarding information
-- *
-- * IMPORTANT: When the ucast_shared flag is set to false and m_list has
-- * multiple unicast addresses, the function assumes that all the
-- * addresses are unique in a given add_mac call. It doesn't
-- * check for duplicates in this case, removing duplicates from a given
-- * list should be taken care of in the caller of this function.
-  */
- int ice_add_mac(struct ice_hw *hw, struct list_head *m_list)
- {
--	struct ice_sw_rule_lkup_rx_tx *s_rule, *r_iter;
- 	struct ice_fltr_list_entry *m_list_itr;
--	struct list_head *rule_head;
--	u16 total_elem_left, s_rule_size;
- 	struct ice_switch_info *sw;
--	struct mutex *rule_lock; /* Lock to protect filter rule list */
--	u16 num_unicast = 0;
- 	int status = 0;
--	u8 elem_sent;
- 
- 	if (!m_list || !hw)
- 		return -EINVAL;
- 
--	s_rule = NULL;
- 	sw = hw->switch_info;
--	rule_lock = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
- 	list_for_each_entry(m_list_itr, m_list, list_entry) {
- 		u8 *add = &m_list_itr->fltr_info.l_data.mac.mac_addr[0];
- 		u16 vsi_handle;
-@@ -3338,106 +3324,13 @@ int ice_add_mac(struct ice_hw *hw, struct list_head *m_list)
- 		if (m_list_itr->fltr_info.lkup_type != ICE_SW_LKUP_MAC ||
- 		    is_zero_ether_addr(add))
- 			return -EINVAL;
--		if (is_unicast_ether_addr(add) && !hw->ucast_shared) {
--			/* Don't overwrite the unicast address */
--			mutex_lock(rule_lock);
--			if (ice_find_rule_entry(hw, ICE_SW_LKUP_MAC,
--						&m_list_itr->fltr_info)) {
--				mutex_unlock(rule_lock);
--				return -EEXIST;
--			}
--			mutex_unlock(rule_lock);
--			num_unicast++;
--		} else if (is_multicast_ether_addr(add) ||
--			   (is_unicast_ether_addr(add) && hw->ucast_shared)) {
--			m_list_itr->status =
--				ice_add_rule_internal(hw, ICE_SW_LKUP_MAC,
--						      m_list_itr);
--			if (m_list_itr->status)
--				return m_list_itr->status;
--		}
--	}
--
--	mutex_lock(rule_lock);
--	/* Exit if no suitable entries were found for adding bulk switch rule */
--	if (!num_unicast) {
--		status = 0;
--		goto ice_add_mac_exit;
--	}
--
--	rule_head = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rules;
--
--	/* Allocate switch rule buffer for the bulk update for unicast */
--	s_rule_size = ICE_SW_RULE_RX_TX_ETH_HDR_SIZE(s_rule);
--	s_rule = devm_kcalloc(ice_hw_to_dev(hw), num_unicast, s_rule_size,
--			      GFP_KERNEL);
--	if (!s_rule) {
--		status = -ENOMEM;
--		goto ice_add_mac_exit;
--	}
--
--	r_iter = s_rule;
--	list_for_each_entry(m_list_itr, m_list, list_entry) {
--		struct ice_fltr_info *f_info = &m_list_itr->fltr_info;
--		u8 *mac_addr = &f_info->l_data.mac.mac_addr[0];
--
--		if (is_unicast_ether_addr(mac_addr)) {
--			ice_fill_sw_rule(hw, &m_list_itr->fltr_info, r_iter,
--					 ice_aqc_opc_add_sw_rules);
--			r_iter = (typeof(s_rule))((u8 *)r_iter + s_rule_size);
--		}
--	}
--
--	/* Call AQ bulk switch rule update for all unicast addresses */
--	r_iter = s_rule;
--	/* Call AQ switch rule in AQ_MAX chunk */
--	for (total_elem_left = num_unicast; total_elem_left > 0;
--	     total_elem_left -= elem_sent) {
--		struct ice_sw_rule_lkup_rx_tx *entry = r_iter;
--
--		elem_sent = min_t(u8, total_elem_left,
--				  (ICE_AQ_MAX_BUF_LEN / s_rule_size));
--		status = ice_aq_sw_rules(hw, entry, elem_sent * s_rule_size,
--					 elem_sent, ice_aqc_opc_add_sw_rules,
--					 NULL);
--		if (status)
--			goto ice_add_mac_exit;
--		r_iter = (typeof(s_rule))
--			((u8 *)r_iter + (elem_sent * s_rule_size));
--	}
--
--	/* Fill up rule ID based on the value returned from FW */
--	r_iter = s_rule;
--	list_for_each_entry(m_list_itr, m_list, list_entry) {
--		struct ice_fltr_info *f_info = &m_list_itr->fltr_info;
--		u8 *mac_addr = &f_info->l_data.mac.mac_addr[0];
--		struct ice_fltr_mgmt_list_entry *fm_entry;
--
--		if (is_unicast_ether_addr(mac_addr)) {
--			f_info->fltr_rule_id = le16_to_cpu(r_iter->index);
--			f_info->fltr_act = ICE_FWD_TO_VSI;
--			/* Create an entry to track this MAC address */
--			fm_entry = devm_kzalloc(ice_hw_to_dev(hw),
--						sizeof(*fm_entry), GFP_KERNEL);
--			if (!fm_entry) {
--				status = -ENOMEM;
--				goto ice_add_mac_exit;
--			}
--			fm_entry->fltr_info = *f_info;
--			fm_entry->vsi_count = 1;
--			/* The book keeping entries will get removed when
--			 * base driver calls remove filter AQ command
--			 */
- 
--			list_add(&fm_entry->list_entry, rule_head);
--			r_iter = (typeof(s_rule))((u8 *)r_iter + s_rule_size);
--		}
-+		m_list_itr->status = ice_add_rule_internal(hw, ICE_SW_LKUP_MAC,
-+							   m_list_itr);
-+		if (m_list_itr->status)
-+			return m_list_itr->status;
- 	}
- 
--ice_add_mac_exit:
--	mutex_unlock(rule_lock);
--	if (s_rule)
--		devm_kfree(ice_hw_to_dev(hw), s_rule);
- 	return status;
- }
- 
-@@ -3822,38 +3715,6 @@ ice_check_if_dflt_vsi(struct ice_port_info *pi, u16 vsi_handle,
- 	return ret;
- }
- 
--/**
-- * ice_find_ucast_rule_entry - Search for a unicast MAC filter rule entry
-- * @hw: pointer to the hardware structure
-- * @recp_id: lookup type for which the specified rule needs to be searched
-- * @f_info: rule information
-- *
-- * Helper function to search for a unicast rule entry - this is to be used
-- * to remove unicast MAC filter that is not shared with other VSIs on the
-- * PF switch.
-- *
-- * Returns pointer to entry storing the rule if found
-- */
--static struct ice_fltr_mgmt_list_entry *
--ice_find_ucast_rule_entry(struct ice_hw *hw, u8 recp_id,
--			  struct ice_fltr_info *f_info)
--{
--	struct ice_switch_info *sw = hw->switch_info;
--	struct ice_fltr_mgmt_list_entry *list_itr;
--	struct list_head *list_head;
--
--	list_head = &sw->recp_list[recp_id].filt_rules;
--	list_for_each_entry(list_itr, list_head, list_entry) {
--		if (!memcmp(&f_info->l_data, &list_itr->fltr_info.l_data,
--			    sizeof(f_info->l_data)) &&
--		    f_info->fwd_id.hw_vsi_id ==
--		    list_itr->fltr_info.fwd_id.hw_vsi_id &&
--		    f_info->flag == list_itr->fltr_info.flag)
--			return list_itr;
--	}
--	return NULL;
--}
--
- /**
-  * ice_remove_mac - remove a MAC address based filter rule
-  * @hw: pointer to the hardware structure
-@@ -3870,15 +3731,12 @@ ice_find_ucast_rule_entry(struct ice_hw *hw, u8 recp_id,
- int ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
- {
- 	struct ice_fltr_list_entry *list_itr, *tmp;
--	struct mutex *rule_lock; /* Lock to protect filter rule list */
- 
- 	if (!m_list)
- 		return -EINVAL;
- 
--	rule_lock = &hw->switch_info->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
- 	list_for_each_entry_safe(list_itr, tmp, m_list, list_entry) {
- 		enum ice_sw_lkup_type l_type = list_itr->fltr_info.lkup_type;
--		u8 *add = &list_itr->fltr_info.l_data.mac.mac_addr[0];
- 		u16 vsi_handle;
- 
- 		if (l_type != ICE_SW_LKUP_MAC)
-@@ -3890,19 +3748,7 @@ int ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
- 
- 		list_itr->fltr_info.fwd_id.hw_vsi_id =
- 					ice_get_hw_vsi_num(hw, vsi_handle);
--		if (is_unicast_ether_addr(add) && !hw->ucast_shared) {
--			/* Don't remove the unicast address that belongs to
--			 * another VSI on the switch, since it is not being
--			 * shared...
--			 */
--			mutex_lock(rule_lock);
--			if (!ice_find_ucast_rule_entry(hw, ICE_SW_LKUP_MAC,
--						       &list_itr->fltr_info)) {
--				mutex_unlock(rule_lock);
--				return -ENOENT;
--			}
--			mutex_unlock(rule_lock);
--		}
-+
- 		list_itr->status = ice_remove_rule_internal(hw,
- 							    ICE_SW_LKUP_MAC,
- 							    list_itr);
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 830a77dfe6fa..52fbd903d256 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -886,8 +886,6 @@ struct ice_hw {
- 	/* INTRL granularity in 1 us */
- 	u8 intrl_gran;
- 
--	u8 ucast_shared;	/* true if VSIs can share unicast addr */
--
- #define ICE_PHY_PER_NAC		1
- #define ICE_MAX_QUAD		2
- #define ICE_NUM_QUAD_TYPE	2
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm64                            allyesconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-c001
+sh                            shmin_defconfig
+parisc                generic-32bit_defconfig
+mips                         rt305x_defconfig
+loongarch                 loongson3_defconfig
+alpha                               defconfig
+loongarch                           defconfig
+sh                             espt_defconfig
+m68k                                defconfig
+mips                           gcw0_defconfig
+mips                         tb0226_defconfig
+sh                     sh7710voipgw_defconfig
+m68k                          atari_defconfig
+mips                 decstation_r4k_defconfig
+powerpc                      tqm8xx_defconfig
+powerpc                     tqm8555_defconfig
+mips                      fuloong2e_defconfig
+arm                        oxnas_v6_defconfig
+ia64                             allmodconfig
+csky                              allnoconfig
+alpha                             allnoconfig
+arc                               allnoconfig
+riscv                             allnoconfig
+powerpc                           allnoconfig
+mips                             allyesconfig
+powerpc                          allmodconfig
+sh                               allmodconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+arc                              allyesconfig
+alpha                            allyesconfig
+i386                             allyesconfig
+i386                                defconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+s390                 randconfig-r044-20220724
+riscv                randconfig-r042-20220724
+arc                  randconfig-r043-20220724
+x86_64                    rhel-8.3-kselftests
+um                           x86_64_defconfig
+um                             i386_defconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                               rhel-8.3
+x86_64                           rhel-8.3-kvm
+x86_64                          rhel-8.3-func
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
+
+clang tested configs:
+arm                          moxart_defconfig
+powerpc                      walnut_defconfig
+powerpc                 mpc832x_rdb_defconfig
+arm                      tct_hammer_defconfig
+x86_64                           allyesconfig
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+
 -- 
-2.27.0
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
