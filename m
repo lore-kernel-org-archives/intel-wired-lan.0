@@ -4,119 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04D4FC04A68
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Jul 2022 09:53:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 176C0C04A68
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Jul 2022 12:38:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9995760AD6;
-	Wed, 27 Jul 2022 09:53:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9995760AD6
+	by smtp3.osuosl.org (Postfix) with ESMTP id A9DFD60B57;
+	Wed, 27 Jul 2022 12:38:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A9DFD60B57
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1658915627;
-	bh=d5WS73tM6TYl1ZUpL9UzVv5ZPo+C2XFIGbAXFCVslCw=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:From;
-	b=1g5wdAy884qwM2nL5nFdIsWrZZzpF5Al3sAwa6ALAK/eDZxR4jw1mLR78um1PNTa5
-	 UUJsv57NbEqBzIfx02rJPv3wWuI3eX14HHXLIxWUUk4GVL364Z/tz4WdksRyokscv1
-	 OQ8jteHmADdZhX4+kQaFy9FSr2CCiG0gyAfJ2TNVo0L+E0XwIFlgpmB1pF4RezeIPS
-	 7w7WoEJvmLaFH1Z8kluOc9/rBN+e3YBS1b7LjGW9I+PVXnwAYm0sEpRzpyDcuO4jkw
-	 dc9hSM3BJj/TDaNlr2By3bjmSR60tGolS0466rLlpmfrVSQDGnyHkPQLI5+NJ1LzHQ
-	 t2uiY24cEYgDQ==
+	s=default; t=1658925506;
+	bh=nV4vsYMVt7RK+CYFqZM9gL7jgCEdt4rfRNmNkbA8WeE=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=oqfcpQ6nz0YSakerkLM772a202P4uwdRiM9uFvnICybQwP2op8Svd09lzlYm5pXTG
+	 0AbfhxVWPkdVVQOI8a57a3KntSyD6IYSkyandD4xoSL6LXI7HnKpJl4yi7rBhTwtZG
+	 PqOir30/Kul9brstdQ0NqLtsz6y19aVro8iy+MdMvzBRI+c5E+Mb3MzOGX2ZF5s2eo
+	 zogpeQf/MZod8wQAFp2ImseXXpYwARrVTWgyYB3fkKcRWaIetCRimI+UVO3ABx2w8q
+	 +opTy3sS530S0vHmpX261Jowxq/81OMPzuT10rn/RTglDdd4vduW4qI2TUAb6b9/Cf
+	 ei48juTk7xyXw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zuclNpIXArvc; Wed, 27 Jul 2022 09:53:46 +0000 (UTC)
+	with ESMTP id DwGIjqC_qzQV; Wed, 27 Jul 2022 12:38:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8F0E360AEC;
-	Wed, 27 Jul 2022 09:53:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8F0E360AEC
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id DF32B1BF57F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 09:53:44 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 76AE660BEC;
+	Wed, 27 Jul 2022 12:38:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 76AE660BEC
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 4D15E1BF372
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 12:38:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C20EF81320
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 09:53:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C20EF81320
+ by smtp4.osuosl.org (Postfix) with ESMTP id 26154401E9
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 12:38:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 26154401E9
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id txH9TaI6li_u for <intel-wired-lan@lists.osuosl.org>;
- Wed, 27 Jul 2022 09:53:42 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id hc0EE0MBHyqz for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 27 Jul 2022 12:38:22 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A04DA81321
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A04DA81321
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 09:53:42 +0000 (UTC)
-Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
- [209.85.218.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-103-O8epb_DhMamJrPm7hOgyxQ-1; Wed, 27 Jul 2022 05:53:40 -0400
-X-MC-Unique: O8epb_DhMamJrPm7hOgyxQ-1
-Received: by mail-ej1-f71.google.com with SMTP id
- ne36-20020a1709077ba400b0072b64ce28aaso4935617ejc.3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 02:53:39 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=x-gm-message-state:message-id:subject:from:reply-to:to:date
- :in-reply-to:references:organization:content-transfer-encoding
- :user-agent:mime-version;
- bh=MdPSFWR6VJSJnQdNxMVgAmt95G1OyHE2RSeDHprm8S4=;
- b=JYmLhTtc4uY4KKi2B2YWJ6cce93SH3aZDigOYX/AdDYKpkZ9sFcwG2FjjPJv32mdEd
- NCZJc1LNnHiPhMNXao9LbMZbaIvcBKNiAPLbrdZWMkjwR7bOe/uQ62HxUXg5aga1Cdxf
- BzhJn7KC/VHRhdtX7jHG2l3g3Czux9lfSfRBZkk4bnn/xzEh4rnYz/vT4nS6ZvX5q7fU
- QxPY/Z7GNFTGiOdjRlGJPGda42bsNz8RcsxWSPqWCwo9Frz1yQ47J8IMHn67hVf6L2Nj
- X+p87EWVU77K1JWNtWq69GtPZCzk6jPgcNrhqPPWUpQI3X9u1fIiwlUadBYb3vBei8F5
- hoVg==
-X-Gm-Message-State: AJIora85m5IJhl1smmOAlumTgrS6kBWmDUJ8KvEh8YWhnLnmtWr0fZ4/
- vBsLA23QMB5z+kP5K0Y06wogPmS2cjz+5vxeLUFQsEVnXL8MEZEi2J1Cfh9MhtSQvrJcpkYHgp9
- KzhP9vVASgmlOp3OOGp7LezMT9jDXKg==
-X-Received: by 2002:a17:906:8479:b0:72b:83cf:4cf3 with SMTP id
- hx25-20020a170906847900b0072b83cf4cf3mr16788638ejc.90.1658915618889; 
- Wed, 27 Jul 2022 02:53:38 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1uCi8NMGoTh92RYRF/6u79xYHxVBE8UOzMrxhMfigQl0HSCcdnYPedIUfN75hP1W8ek4u7ruA==
-X-Received: by 2002:a17:906:8479:b0:72b:83cf:4cf3 with SMTP id
- hx25-20020a170906847900b0072b83cf4cf3mr16788618ejc.90.1658915618542; 
- Wed, 27 Jul 2022 02:53:38 -0700 (PDT)
-Received: from [192.168.2.36] (ip4-46-175-183-46.net.iconn.cz. [46.175.183.46])
- by smtp.gmail.com with ESMTPSA id
- s25-20020a056402165900b0043bc19efc15sm9796297edx.28.2022.07.27.02.53.37
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 27 Jul 2022 02:53:37 -0700 (PDT)
-Message-ID: <668ad644d03b30975b88ac84c9e4a1263115095f.camel@redhat.com>
-From: Petr Oros <poros@redhat.com>
-To: "G, GurucharanX" <gurucharanx.g@intel.com>, "Siwik, Grzegorz"
- <grzegorz.siwik@intel.com>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 27 Jul 2022 11:53:35 +0200
-In-Reply-To: <BYAPR11MB3367E7DA6E06013CAC612C91FC949@BYAPR11MB3367.namprd11.prod.outlook.com>
-References: <1657199751-256188-1-git-send-email-grzegorz.siwik@intel.com>
- <1657199751-256188-2-git-send-email-grzegorz.siwik@intel.com>
- <BYAPR11MB3367E7DA6E06013CAC612C91FC949@BYAPR11MB3367.namprd11.prod.outlook.com>
-Organization: Red Hat
-User-Agent: Evolution 3.44.2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8EC7F401C6
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8EC7F401C6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 12:38:22 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10420"; a="267988262"
+X-IronPort-AV: E=Sophos;i="5.93,195,1654585200"; d="scan'208";a="267988262"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Jul 2022 05:38:21 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.93,195,1654585200"; d="scan'208";a="633189884"
+Received: from amlin-018-218.igk.intel.com ([10.102.18.218])
+ by orsmga001.jf.intel.com with ESMTP; 27 Jul 2022 05:38:20 -0700
+From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed, 27 Jul 2022 14:35:49 +0200
+Message-Id: <20220727123549.1146738-1-jedrzej.jagielski@intel.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1658915621;
- h=from:from:reply-to:reply-to:subject:subject:date:date:
- message-id:message-id:to:to:cc:mime-version:mime-version:
- content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=MdPSFWR6VJSJnQdNxMVgAmt95G1OyHE2RSeDHprm8S4=;
- b=iwv4iF5cbM2w2KQwC+N49tTbBoAHkSF2NBl1gy5/CMT8nhUblRvklMDoq1N32B3T0r7Gx7
- IQBcMO9cGtl9R3p8xh/7AQwrQxsguaAOzH6cokyT3XgW0Jz/1sjJEkW26LecB4WnsQ+vUx
- k6TC/Uq2pEmFe1zOslTKR4msKSJ5q/Q=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=iwv4iF5c
-X-Mailman-Original-Authentication-Results: relay.mimecast.com;
- auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=poros@redhat.com
-Subject: Re: [Intel-wired-lan] [PATCH net v1 1/3] ice: Fix double VLAN error
- when entering promisc mode
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1658925502; x=1690461502;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=dny5uB2/r94fmDsy3cMrO5H2bnDY47gImKJ4Cu3WQeQ=;
+ b=FIE8zmSJDlWwWErYG26/iRNWNi9pkYca0nBHfrjmtqSJx+S42ueu0VY+
+ c1gcpGthvSi86Z1L3ezDVoaV3mF8LK620G/OKb/FSrsnDQRgnlQqxRww4
+ P3pfMV4ldt06US+YLLQoYkARs64TaqNsiTd2KHtUos/uDXu6ofMG5fU25
+ jBy6MtrKQ0eHgqfil7u+YfALEYOsN23XHbBvF5d0J+Qx4sv6l/vef9VND
+ SKpfG9/2Vhf4HrrcDZC88tbjPiSC6CmNkbTtP989COWKgsbpCtrChPIyp
+ gNiqayqMUDRmXj8SrctaD1Y0CC6Jc0GtTDxD8nNlC16OukXKBYwVQRY3p
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=FIE8zmSJ
+Subject: [Intel-wired-lan] [PATCH net-next v2] ice: Remove ucast_shared
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,49 +90,283 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: poros@redhat.com
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>,
+ Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-RywgR3VydWNoYXJhblggcMOtxaFlIHYgw5p0IDI2LiAwNy4gMjAyMiB2IDA1OjMzICswMDAwOgo+
-IAo+IAo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0KPiA+IEZyb206IEludGVsLXdpcmVk
-LWxhbiA8aW50ZWwtd2lyZWQtbGFuLWJvdW5jZXNAb3N1b3NsLm9yZz4gT24KPiA+IEJlaGFsZiBP
-Zgo+ID4gR3J6ZWdvcnogU2l3aWsKPiA+IFNlbnQ6IFRodXJzZGF5LCBKdWx5IDcsIDIwMjIgNjo0
-NiBQTQo+ID4gVG86IGludGVsLXdpcmVkLWxhbkBsaXN0cy5vc3Vvc2wub3JnCj4gPiBDYzogU2l3
-aWssIEdyemVnb3J6IDxncnplZ29yei5zaXdpa0BpbnRlbC5jb20+Cj4gPiBTdWJqZWN0OiBbSW50
-ZWwtd2lyZWQtbGFuXSBbUEFUQ0ggbmV0IHYxIDEvM10gaWNlOiBGaXggZG91YmxlIFZMQU4KPiA+
-IGVycm9yCj4gPiB3aGVuIGVudGVyaW5nIHByb21pc2MgbW9kZQo+ID4gCj4gPiBBdm9pZCBlbmFi
-bGluZyBvciBkaXNhYmxpbmcgdmxhbiAwIHdoZW4gdHJ5aW5nIHRvIHNldCBwcm9taXNjdW91cwo+
-ID4gdmxhbiBtb2RlCj4gPiBpZiBkb3VibGUgdmxhbiBtb2RlIGlzIGVuYWJsZWQuIFRoaXMgZml4
-IGlzIG5lZWRlZCBiZWNhdXNlIHRoZQo+ID4gZHJpdmVyIHRyaWVzIHRvCj4gPiBhZGQgdGhlIHZs
-YW4gMCBmaWx0ZXIgdHdpY2UgKG9uY2UgZm9yIGlubmVyIGFuZCBvbmNlIGZvciBvdXRlcikKPiA+
-IHdoZW4gZG91YmxlCj4gPiBWTEFOIG1vZGUgaXMgZW5hYmxlZC4gVGhlIGZpbHRlciBwcm9ncmFt
-IGlzIHJlamVjdGVkIGJ5IHRoZQo+ID4gZmlybXdhcmUgd2hlbgo+ID4gZG91YmxlIHZsYW4gaXMg
-ZW5hYmxlZCwgYmVjYXVzZSB0aGUgcHJvbWlzY3VvdXMgZmlsdGVyIG9ubHkgbmVlZHMKPiA+IHRv
-IGJlIHNldAo+ID4gb25jZS4KPiA+IAo+ID4gVGhpcyBpc3N1ZSB3YXMgbWlzc2VkIGluIHRoZSBp
-bml0aWFsIGltcGxlbWVudGF0aW9uIG9mIGRvdWJsZSB2bGFuCj4gPiBtb2RlLgo+ID4gCj4gPiBG
-aXhlczogNWVkYThhZmQ2YmNjICgiaWNlOiBBZGQgc3VwcG9ydCBmb3IgUEYvVkYgcHJvbWlzY3Vv
-dXMgbW9kZSIpCj4gPiBTaWduZWQtb2ZmLWJ5OiBHcnplZ29yeiBTaXdpayA8Z3J6ZWdvcnouc2l3
-aWtAaW50ZWwuY29tPgo+ID4gVGVzdGVkLWJ5OiBKYXJvc2xhdiBQdWxjaGFydCA8amFyb3NsYXYu
-cHVsY2hhcnRAZ29vZGRhdGEuY29tPgo+ID4gVGVzdGVkLWJ5OiBJZ29yIFJhaXRzIDxpZ29yQGdv
-b2RkYXRhLmNvbT4KPiA+IExpbms6Cj4gPiBodHRwczovL2xvcmUua2VybmVsLm9yZy9hbGwvQ0FL
-OGZGWjdtLQo+ID4gS1I1N01fcllYNnhaTjM5Szg5Tz1MR29vWWtLc3U2SEt0MEJzK3g2eFFAbWFp
-bC5nbWFpbC5jb20vCj4gPiAtLS0KPiA+IMKgZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNl
-L2ljZV9zd2l0Y2guYyB8IDcgKysrKysrKwo+ID4gwqAxIGZpbGUgY2hhbmdlZCwgNyBpbnNlcnRp
-b25zKCspCj4gPiAKPiAKPiBJIGNvdWxkIHN0aWxsIG9ic2VydmUgdGhlIGlzc3VlIHdoZW4gdGhl
-IGljZSBkcml2ZXIgaGFzIGJlZW4gcmVtb3ZlZAo+IGZyb20gdGhlIHN5c3RlbSBvbmNlIGFmdGVy
-IGV4ZWN1dGluZwo+IGNyZWF0aW5nIGJyaWRnZSBvdmVyIGJvbmQgYW5kIHRoZW4gZG91YmxlIHZs
-YW4KCkhpLAoKSXMgaXQgcmVncmVzc2lvbiBpbnRyb2R1Y2VkIGJ5IHRoaXMgcGF0Y2ggb3IgdGhp
-cyBmaXggaXMgcGFydGlhbCBhbmQKbWVudGlvbmVkIGlzc3VlIGlzIHVuZml4ZWQgcmVncmVzc2lv
-biBmcm9tIHBhc3QuIEkgYXNraW5nIGJlY2F1c2UKcHJvbWlzYyBtb2RlIGlzc3VlcyBpcyB2ZXJ5
-IHBhaW4gZm9yIHVzIGFuZCBpbiBzZWNvbmQgY2FzZSB3aWxsIGJlCihtYXliZSkgZ29vZCB0byBt
-b3ZlIHRoaXMgZm9yd2FyZCBhbmQgbWVudGlvbmVkIGlzc3VlIHdpbGwgZml4IGluIG5leHQKcGF0
-Y2guCgpNYW55IHRoYW5rcywKUGV0cgoKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwo+IEludGVsLXdpcmVkLWxhbiBtYWlsaW5nIGxpc3QKPiBJbnRlbC13
-aXJlZC1sYW5Ab3N1b3NsLm9yZwo+IGh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xp
-c3RpbmZvL2ludGVsLXdpcmVkLWxhbgo+IAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KSW50ZWwtd2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRlbC13aXJl
-ZC1sYW5Ab3N1b3NsLm9yZwpodHRwczovL2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9pbnRlbC13aXJlZC1sYW4K
+From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+
+Remove ucast_shared as it was always true. Remove the code depending on
+ucast_shared from ice_add_mac and ice_remove_mac.
+Remove ice_find_ucast_rule_entry function as it was only
+used when ucast_shared was set to false.
+
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+---
+v2: remove struct ice_switch_info *sw, which is set but unused
+---
+ drivers/net/ethernet/intel/ice/ice_main.c   |   2 -
+ drivers/net/ethernet/intel/ice/ice_switch.c | 166 +-------------------
+ drivers/net/ethernet/intel/ice/ice_type.h   |   2 -
+ 3 files changed, 5 insertions(+), 165 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 47046c0bc93e..da212fbbd9d9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4748,8 +4748,6 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		ice_set_safe_mode_caps(hw);
+ 	}
+ 
+-	hw->ucast_shared = true;
+-
+ 	err = ice_init_pf(pf);
+ 	if (err) {
+ 		dev_err(dev, "ice_init_pf failed: %d\n", err);
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index 66d1e17896a6..58bc09631bf7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -3295,31 +3295,15 @@ bool ice_vlan_fltr_exist(struct ice_hw *hw, u16 vlan_id, u16 vsi_handle)
+  * ice_add_mac - Add a MAC address based filter rule
+  * @hw: pointer to the hardware structure
+  * @m_list: list of MAC addresses and forwarding information
+- *
+- * IMPORTANT: When the ucast_shared flag is set to false and m_list has
+- * multiple unicast addresses, the function assumes that all the
+- * addresses are unique in a given add_mac call. It doesn't
+- * check for duplicates in this case, removing duplicates from a given
+- * list should be taken care of in the caller of this function.
+  */
+ int ice_add_mac(struct ice_hw *hw, struct list_head *m_list)
+ {
+-	struct ice_sw_rule_lkup_rx_tx *s_rule, *r_iter;
+ 	struct ice_fltr_list_entry *m_list_itr;
+-	struct list_head *rule_head;
+-	u16 total_elem_left, s_rule_size;
+-	struct ice_switch_info *sw;
+-	struct mutex *rule_lock; /* Lock to protect filter rule list */
+-	u16 num_unicast = 0;
+ 	int status = 0;
+-	u8 elem_sent;
+ 
+ 	if (!m_list || !hw)
+ 		return -EINVAL;
+ 
+-	s_rule = NULL;
+-	sw = hw->switch_info;
+-	rule_lock = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
+ 	list_for_each_entry(m_list_itr, m_list, list_entry) {
+ 		u8 *add = &m_list_itr->fltr_info.l_data.mac.mac_addr[0];
+ 		u16 vsi_handle;
+@@ -3338,106 +3322,13 @@ int ice_add_mac(struct ice_hw *hw, struct list_head *m_list)
+ 		if (m_list_itr->fltr_info.lkup_type != ICE_SW_LKUP_MAC ||
+ 		    is_zero_ether_addr(add))
+ 			return -EINVAL;
+-		if (is_unicast_ether_addr(add) && !hw->ucast_shared) {
+-			/* Don't overwrite the unicast address */
+-			mutex_lock(rule_lock);
+-			if (ice_find_rule_entry(hw, ICE_SW_LKUP_MAC,
+-						&m_list_itr->fltr_info)) {
+-				mutex_unlock(rule_lock);
+-				return -EEXIST;
+-			}
+-			mutex_unlock(rule_lock);
+-			num_unicast++;
+-		} else if (is_multicast_ether_addr(add) ||
+-			   (is_unicast_ether_addr(add) && hw->ucast_shared)) {
+-			m_list_itr->status =
+-				ice_add_rule_internal(hw, ICE_SW_LKUP_MAC,
+-						      m_list_itr);
+-			if (m_list_itr->status)
+-				return m_list_itr->status;
+-		}
+-	}
+-
+-	mutex_lock(rule_lock);
+-	/* Exit if no suitable entries were found for adding bulk switch rule */
+-	if (!num_unicast) {
+-		status = 0;
+-		goto ice_add_mac_exit;
+-	}
+-
+-	rule_head = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rules;
+-
+-	/* Allocate switch rule buffer for the bulk update for unicast */
+-	s_rule_size = ICE_SW_RULE_RX_TX_ETH_HDR_SIZE(s_rule);
+-	s_rule = devm_kcalloc(ice_hw_to_dev(hw), num_unicast, s_rule_size,
+-			      GFP_KERNEL);
+-	if (!s_rule) {
+-		status = -ENOMEM;
+-		goto ice_add_mac_exit;
+-	}
+-
+-	r_iter = s_rule;
+-	list_for_each_entry(m_list_itr, m_list, list_entry) {
+-		struct ice_fltr_info *f_info = &m_list_itr->fltr_info;
+-		u8 *mac_addr = &f_info->l_data.mac.mac_addr[0];
+-
+-		if (is_unicast_ether_addr(mac_addr)) {
+-			ice_fill_sw_rule(hw, &m_list_itr->fltr_info, r_iter,
+-					 ice_aqc_opc_add_sw_rules);
+-			r_iter = (typeof(s_rule))((u8 *)r_iter + s_rule_size);
+-		}
+-	}
+-
+-	/* Call AQ bulk switch rule update for all unicast addresses */
+-	r_iter = s_rule;
+-	/* Call AQ switch rule in AQ_MAX chunk */
+-	for (total_elem_left = num_unicast; total_elem_left > 0;
+-	     total_elem_left -= elem_sent) {
+-		struct ice_sw_rule_lkup_rx_tx *entry = r_iter;
+-
+-		elem_sent = min_t(u8, total_elem_left,
+-				  (ICE_AQ_MAX_BUF_LEN / s_rule_size));
+-		status = ice_aq_sw_rules(hw, entry, elem_sent * s_rule_size,
+-					 elem_sent, ice_aqc_opc_add_sw_rules,
+-					 NULL);
+-		if (status)
+-			goto ice_add_mac_exit;
+-		r_iter = (typeof(s_rule))
+-			((u8 *)r_iter + (elem_sent * s_rule_size));
+-	}
+-
+-	/* Fill up rule ID based on the value returned from FW */
+-	r_iter = s_rule;
+-	list_for_each_entry(m_list_itr, m_list, list_entry) {
+-		struct ice_fltr_info *f_info = &m_list_itr->fltr_info;
+-		u8 *mac_addr = &f_info->l_data.mac.mac_addr[0];
+-		struct ice_fltr_mgmt_list_entry *fm_entry;
+-
+-		if (is_unicast_ether_addr(mac_addr)) {
+-			f_info->fltr_rule_id = le16_to_cpu(r_iter->index);
+-			f_info->fltr_act = ICE_FWD_TO_VSI;
+-			/* Create an entry to track this MAC address */
+-			fm_entry = devm_kzalloc(ice_hw_to_dev(hw),
+-						sizeof(*fm_entry), GFP_KERNEL);
+-			if (!fm_entry) {
+-				status = -ENOMEM;
+-				goto ice_add_mac_exit;
+-			}
+-			fm_entry->fltr_info = *f_info;
+-			fm_entry->vsi_count = 1;
+-			/* The book keeping entries will get removed when
+-			 * base driver calls remove filter AQ command
+-			 */
+ 
+-			list_add(&fm_entry->list_entry, rule_head);
+-			r_iter = (typeof(s_rule))((u8 *)r_iter + s_rule_size);
+-		}
++		m_list_itr->status = ice_add_rule_internal(hw, ICE_SW_LKUP_MAC,
++							   m_list_itr);
++		if (m_list_itr->status)
++			return m_list_itr->status;
+ 	}
+ 
+-ice_add_mac_exit:
+-	mutex_unlock(rule_lock);
+-	if (s_rule)
+-		devm_kfree(ice_hw_to_dev(hw), s_rule);
+ 	return status;
+ }
+ 
+@@ -3822,38 +3713,6 @@ ice_check_if_dflt_vsi(struct ice_port_info *pi, u16 vsi_handle,
+ 	return ret;
+ }
+ 
+-/**
+- * ice_find_ucast_rule_entry - Search for a unicast MAC filter rule entry
+- * @hw: pointer to the hardware structure
+- * @recp_id: lookup type for which the specified rule needs to be searched
+- * @f_info: rule information
+- *
+- * Helper function to search for a unicast rule entry - this is to be used
+- * to remove unicast MAC filter that is not shared with other VSIs on the
+- * PF switch.
+- *
+- * Returns pointer to entry storing the rule if found
+- */
+-static struct ice_fltr_mgmt_list_entry *
+-ice_find_ucast_rule_entry(struct ice_hw *hw, u8 recp_id,
+-			  struct ice_fltr_info *f_info)
+-{
+-	struct ice_switch_info *sw = hw->switch_info;
+-	struct ice_fltr_mgmt_list_entry *list_itr;
+-	struct list_head *list_head;
+-
+-	list_head = &sw->recp_list[recp_id].filt_rules;
+-	list_for_each_entry(list_itr, list_head, list_entry) {
+-		if (!memcmp(&f_info->l_data, &list_itr->fltr_info.l_data,
+-			    sizeof(f_info->l_data)) &&
+-		    f_info->fwd_id.hw_vsi_id ==
+-		    list_itr->fltr_info.fwd_id.hw_vsi_id &&
+-		    f_info->flag == list_itr->fltr_info.flag)
+-			return list_itr;
+-	}
+-	return NULL;
+-}
+-
+ /**
+  * ice_remove_mac - remove a MAC address based filter rule
+  * @hw: pointer to the hardware structure
+@@ -3870,15 +3729,12 @@ ice_find_ucast_rule_entry(struct ice_hw *hw, u8 recp_id,
+ int ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
+ {
+ 	struct ice_fltr_list_entry *list_itr, *tmp;
+-	struct mutex *rule_lock; /* Lock to protect filter rule list */
+ 
+ 	if (!m_list)
+ 		return -EINVAL;
+ 
+-	rule_lock = &hw->switch_info->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
+ 	list_for_each_entry_safe(list_itr, tmp, m_list, list_entry) {
+ 		enum ice_sw_lkup_type l_type = list_itr->fltr_info.lkup_type;
+-		u8 *add = &list_itr->fltr_info.l_data.mac.mac_addr[0];
+ 		u16 vsi_handle;
+ 
+ 		if (l_type != ICE_SW_LKUP_MAC)
+@@ -3890,19 +3746,7 @@ int ice_remove_mac(struct ice_hw *hw, struct list_head *m_list)
+ 
+ 		list_itr->fltr_info.fwd_id.hw_vsi_id =
+ 					ice_get_hw_vsi_num(hw, vsi_handle);
+-		if (is_unicast_ether_addr(add) && !hw->ucast_shared) {
+-			/* Don't remove the unicast address that belongs to
+-			 * another VSI on the switch, since it is not being
+-			 * shared...
+-			 */
+-			mutex_lock(rule_lock);
+-			if (!ice_find_ucast_rule_entry(hw, ICE_SW_LKUP_MAC,
+-						       &list_itr->fltr_info)) {
+-				mutex_unlock(rule_lock);
+-				return -ENOENT;
+-			}
+-			mutex_unlock(rule_lock);
+-		}
++
+ 		list_itr->status = ice_remove_rule_internal(hw,
+ 							    ICE_SW_LKUP_MAC,
+ 							    list_itr);
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 830a77dfe6fa..52fbd903d256 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -886,8 +886,6 @@ struct ice_hw {
+ 	/* INTRL granularity in 1 us */
+ 	u8 intrl_gran;
+ 
+-	u8 ucast_shared;	/* true if VSIs can share unicast addr */
+-
+ #define ICE_PHY_PER_NAC		1
+ #define ICE_MAX_QUAD		2
+ #define ICE_NUM_QUAD_TYPE	2
+-- 
+2.27.0
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
