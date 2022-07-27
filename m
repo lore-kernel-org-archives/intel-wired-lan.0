@@ -1,85 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A206C04A68
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Jul 2022 23:16:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25245C19F29
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Jul 2022 23:16:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2C104409E7;
-	Wed, 27 Jul 2022 23:16:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2C104409E7
+	by smtp4.osuosl.org (Postfix) with ESMTP id C4097416E9;
+	Wed, 27 Jul 2022 23:16:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C4097416E9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1658963805;
-	bh=Gw6dUOKNOQce5PAtDVLQ0WLfSpUrkW06ALxamj63jvU=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=j4vrG1ZZTbCGi9zFoA0ME+KfD7cKSWmY9qeohbERTkOvIunucscnPan6W/Ohu8lJ/
-	 Uk40jcPlaFEfjBM3v6qZ2TKFngWCa+H1Qz6wJtAXhbcDTyF18j4q18t7unXoRPanrW
-	 SF2t2Rb7dTubtzl6Zle1XIYD1u5P5JPH/OzCmmefCkzHshoaOGJ5MGKkEl4NsW1kLI
-	 mHjRJD6N6zeHgQNo8buNJd9ZdZdoJ9ViKRo5OhjlDJTN/1M7NfxDyquJ29TG2gG138
-	 WjFJVGgkyAh+dEcg6ucszPVaIiKl4etqQNRJCMja/n0QzpcpspP7CQyrhQdQT3wZ6f
-	 eYykNtkL1kApg==
+	s=default; t=1658963809;
+	bh=lY8qrLRMny8hhhUNyUNSBF0Yokfkfe12BULFe3FVHe8=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=4UIR6nQj0TrKKNadpZ8FlzeOFxfsNXtqAtejld4r7wQidI1xtqu6pZYNXEeXu5nG4
+	 cKm2aPSP9eG8VaSFzb7NcRjGeh3dVIiMpQ8tsodZsuvseFmp8WdK0xRG8DOv35z1gF
+	 /BLyD1hnL9V3ShT9eElGkqpuPcQAedne5gKbZWdDC4IgaALTcRQZQ3U+mbtBqcOOfv
+	 vDOJwNNWtEUVNV2Y7H9fimSaLBULbirYXO3XJdvgaVchafRaSJQKIJCGUGkwTSsE3E
+	 7ZgcFyv2ikMShtiBWd9/QP5n22Y8rxI4D0Or1jUB1LgSqR2BiSEsl8AB58ntdl0wqB
+	 VFH91JMdOyf2w==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bVArpnsUI787; Wed, 27 Jul 2022 23:16:44 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id d64rBfooiOME; Wed, 27 Jul 2022 23:16:48 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3666A40104;
-	Wed, 27 Jul 2022 23:16:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3666A40104
+	by smtp4.osuosl.org (Postfix) with ESMTP id 38DE2416F3;
+	Wed, 27 Jul 2022 23:16:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 38DE2416F3
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 8C7941BF42D
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 23:16:37 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id E91BD1BF42D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 23:16:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 65778416E9
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 23:16:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 65778416E9
+ by smtp4.osuosl.org (Postfix) with ESMTP id CFAF4416E9
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 23:16:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CFAF4416E9
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 34Z4rJzTte1F for <intel-wired-lan@lists.osuosl.org>;
- Wed, 27 Jul 2022 23:16:35 +0000 (UTC)
+ with ESMTP id mOW4DpClo-5J for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 27 Jul 2022 23:16:34 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DEBC2416F5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 689EA415BF
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DEBC2416F5
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 689EA415BF
  for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Jul 2022 23:16:34 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10421"; a="352365991"
-X-IronPort-AV: E=Sophos;i="5.93,196,1654585200"; d="scan'208";a="352365991"
+X-IronPort-AV: E=McAfee;i="6400,9594,10421"; a="352365995"
+X-IronPort-AV: E=Sophos;i="5.93,196,1654585200"; d="scan'208";a="352365995"
 Received: from fmsmga006.fm.intel.com ([10.253.24.20])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Jul 2022 16:16:10 -0700
-X-IronPort-AV: E=Sophos;i="5.93,196,1654585200"; d="scan'208";a="846447998"
+ 27 Jul 2022 16:16:11 -0700
+X-IronPort-AV: E=Sophos;i="5.93,196,1654585200"; d="scan'208";a="846448022"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.7])
  by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 27 Jul 2022 16:16:09 -0700
+ 27 Jul 2022 16:16:10 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 27 Jul 2022 16:15:56 -0700
-Message-Id: <20220727231602.1625980-1-jacob.e.keller@intel.com>
+Date: Wed, 27 Jul 2022 16:16:02 -0700
+Message-Id: <20220727231602.1625980-7-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.37.1.208.ge72d93e88cb2
+In-Reply-To: <20220727231602.1625980-1-jacob.e.keller@intel.com>
+References: <20220727231602.1625980-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1658963794; x=1690499794;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=0RMk3MJzHeRsuFBfYpFtbQqxHqtWthDvB0iiARrIYY4=;
- b=BGJUsqy5wacOOK3xufI4S0ixmpeI7Y1p+un0AJQ/6hMM0NUz61qfenHx
- rzM7oKaHvd3U+u9tTMn5MpQuoqJIAFA2lnou1eCp8PgeF9X4B9MLk1WHA
- L7BTb9tBoIEYtpT2xIwLj4SB8Udm9rlT8W2gs2SCFwD4JGB0BE84qkdhP
- c4gLVo8B0GpGQSL5T+vzDYBrW5PEciznnidqbmeMJC1XjHROWD86L4/Po
- gjhEFUQyAWCRlu3Odn4gybZVh4fal6IbW5jXQvcudB7+C3Pdkv+QBM3R+
- e0+/D6fU6xkDERM1kGjPO5kebo5peUC/JVssIutull5bx/TMdxRIcZKEu
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=bQvz/EdIPECCJMzw21pkqR9Z8oogxDhZaAB9lKDbi1Y=;
+ b=GDCrIrZHS+wU0YPrEnhUaXxjia0dGuJieoy+phButtP5lcTMd77ASy9D
+ dhZLdeMDOUwSVxAOHkGdECMR6hMbbXMYLbtmUO43wEf8XKQ8dAIUKPEsD
+ 53g3SSlCkT0XRekMDQEd8T54BgxQBfkjsp5TqRsB0ylWC3OZwIa80anxw
+ WeI6wp2aEOXNYlg+TUD1adpqdEvMS6DgPnlK/wYTS9qoqSiWdbnTaX+Cd
+ 8WwkGU4eFuiEjD455woLEjK7kOvo0TThRkNhwzmFYe15vpb6Hj4imzusX
+ 1rtKT/pDRUZgs9i0hcpIZZwL3yW7LY8FHYS5d6Le5eXXdUNVxQ9v4SDlT
  g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=BGJUsqy5
-Subject: [Intel-wired-lan] [net-next v2 0/6] ice: detect and report PTP
- timestamp issues
+ header.a=rsa-sha256 header.s=Intel header.b=GDCrIrZH
+Subject: [Intel-wired-lan] [net-next v2 6/6] ice: introduce
+ ice_ptp_reset_cached_phctime function
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,37 +100,199 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series fixes a few small issues with the cached PTP Hardware Clock
-timestamp used for timestamp extension. It also introduces extra checks to
-help detect issues with this logic, such as if the cached timestamp is not
-updated within the 2 second window.
+If the PTP hardware clock is adjusted, the ice driver must update the
+cached PHC timestamp. This is required in order to perform timestamp
+extension on the shorter timestamps captured by the PHY.
 
-This introduces a few statistics similar to the ones already available in
-other Intel drivers, including tx_hwtstamp_skipped and tx_hwtstamp_timeouts.
+Currently, we simply call ice_ptp_update_cached_phctime in the settime and
+adjtime callbacks. This has a few issues:
 
-It is intended to aid in debugging issues we're seeing with some setups
-which might be related to incorrect cached timestamp values.
+1) if ICE_CFG_BUSY is set because another thread is updating the Rx rings,
+   we will exit with an error. This is not checked, and the functions do
+   not re-schedule the update. This could leave the cached timestamp
+   incorrect until the next scheduled work item execution.
 
-Changes since v1
-* Fix kdoc and checkpatch warnings
+2) even if we did handle an update, any currently outstanding Tx timestamp
+   would be extended using the wrong cached PHC time. This would produce
+   incorrect results.
 
-Jacob Keller (6):
-  ice: set tx_tstamps when creating new Tx rings via ethtool
-  ice: initialize cached_phctime when creating Rx rings
-  ice: track Tx timestamp stats similar to other Intel drivers
-  ice: track and warn when PHC update is late
-  ice: re-arrange some static functions in ice_ptp.c
-  ice: introduce ice_ptp_reset_cached_phctime function
+To fix these issues, introduce a new ice_ptp_reset_cached_phctime function.
+This function calls the ice_ptp_update_cached_phctime, and discards
+outstanding Tx timestamps.
 
- drivers/net/ethernet/intel/ice/ice_ethtool.c |   7 +
- drivers/net/ethernet/intel/ice/ice_lib.c     |   1 +
- drivers/net/ethernet/intel/ice/ice_ptp.c     | 752 ++++++++++---------
- drivers/net/ethernet/intel/ice/ice_ptp.h     |  13 +
- drivers/net/ethernet/intel/ice/ice_txrx.c    |   4 +-
- 5 files changed, 440 insertions(+), 337 deletions(-)
+If the ice_ptp_update_cached_phctime function fails because ICE_CFG_BUSY is
+set, we log a warning and schedule the thread to execute soon. The update
+function is modified so that it always updates the cached copy in the PF
+regardless. This ensures we have the most up to date values possible and
+minimizes the risk of a packet timestamp being extended with the wrong
+value.
 
+It would be nice if we could skip reporting Rx timestamps until the cached
+values are up to date. However, we can't access the Rx rings while
+ICE_CFG_BUSY is set because they are actively being updated by another
+thread.
 
-base-commit: 5245eb4f3cf8ba1e9e0e6d58d810eceae9edc0c1
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 99 ++++++++++++++++++------
+ 1 file changed, 76 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index f125b8135348..5a2fd4d690f3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -880,8 +880,10 @@ static void ice_ptp_tx_tstamp_cleanup(struct ice_pf *pf, struct ice_ptp_tx *tx)
+  * structure and the Rx rings.
+  *
+  * This function must be called periodically to ensure that the cached value
+- * is never more than 2 seconds old. It must also be called whenever the PHC
+- * time has been changed.
++ * is never more than 2 seconds old.
++ *
++ * Note that the cached copy in the PF PTP structure is always updated, even
++ * if we can't update the copy in the Rx rings.
+  *
+  * Return:
+  * * 0 - OK, successfully updated
+@@ -894,9 +896,6 @@ static int ice_ptp_update_cached_phctime(struct ice_pf *pf)
+ 	u64 systime;
+ 	int i;
+ 
+-	if (test_and_set_bit(ICE_CFG_BUSY, pf->state))
+-		return -EAGAIN;
+-
+ 	update_before = pf->ptp.cached_phc_jiffies + msecs_to_jiffies(2000);
+ 	if (pf->ptp.cached_phc_time &&
+ 	    time_is_before_jiffies(update_before)) {
+@@ -914,6 +913,9 @@ static int ice_ptp_update_cached_phctime(struct ice_pf *pf)
+ 	WRITE_ONCE(pf->ptp.cached_phc_time, systime);
+ 	WRITE_ONCE(pf->ptp.cached_phc_jiffies, jiffies);
+ 
++	if (test_and_set_bit(ICE_CFG_BUSY, pf->state))
++		return -EAGAIN;
++
+ 	ice_for_each_vsi(pf, i) {
+ 		struct ice_vsi *vsi = pf->vsi[i];
+ 		int j;
+@@ -935,6 +937,52 @@ static int ice_ptp_update_cached_phctime(struct ice_pf *pf)
+ 	return 0;
+ }
+ 
++/**
++ * ice_ptp_reset_cached_phctime - Reset cached PHC time after an update
++ * @pf: Board specific private structure
++ *
++ * This function must be called when the cached PHC time is no longer valid,
++ * such as after a time adjustment. It discards any outstanding Tx timestamps,
++ * and updates the cached PHC time for both the PF and Rx rings. If updating
++ * the PHC time cannot be done immediately, a warning message is logged and
++ * the work item is scheduled.
++ *
++ * These steps are required in order to ensure that we do not accidentally
++ * report a timestamp extended by the wrong PHC cached copy. Note that we
++ * do not directly update the cached timestamp here because it is possible
++ * this might produce an error when ICE_CFG_BUSY is set. If this occurred, we
++ * would have to try again. During that time window, timestamps might be
++ * requested and returned with an invalid extension. Thus, on failure to
++ * immediately update the cached PHC time we would need to zero the value
++ * anyways. For this reason, we just zero the value immediately and queue the
++ * update work item.
++ */
++static void ice_ptp_reset_cached_phctime(struct ice_pf *pf)
++{
++	struct device *dev = ice_pf_to_dev(pf);
++	int err;
++
++	/* Update the cached PHC time immediately if possible, otherwise
++	 * schedule the work item to execute soon.
++	 */
++	err = ice_ptp_update_cached_phctime(pf);
++	if (err) {
++		/* If another thread is updating the Rx rings, we won't
++		 * properly reset them here. This could lead to reporting of
++		 * invalid timestamps, but there isn't much we can do.
++		 */
++		dev_warn(dev, "%s: ICE_CFG_BUSY, unable to immediately update cached PHC time\n",
++			 __func__);
++
++		/* Queue the work item to update the Rx rings when possible */
++		kthread_queue_delayed_work(pf->ptp.kworker, &pf->ptp.work,
++					   msecs_to_jiffies(10));
++	}
++
++	/* Flush any outstanding Tx timestamps */
++	ice_ptp_flush_tx_tracker(pf, &pf->ptp.port.tx);
++}
++
+ /**
+  * ice_ptp_read_time - Read the time from the device
+  * @pf: Board private structure
+@@ -1803,7 +1851,7 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
+ 	ice_ptp_unlock(hw);
+ 
+ 	if (!err)
+-		ice_ptp_update_cached_phctime(pf);
++		ice_ptp_reset_cached_phctime(pf);
+ 
+ 	/* Reenable periodic outputs */
+ 	ice_ptp_enable_all_clkout(pf);
+@@ -1882,7 +1930,7 @@ static int ice_ptp_adjtime(struct ptp_clock_info *info, s64 delta)
+ 		return err;
+ 	}
+ 
+-	ice_ptp_update_cached_phctime(pf);
++	ice_ptp_reset_cached_phctime(pf);
+ 
+ 	return 0;
+ }
+@@ -2090,26 +2138,31 @@ void
+ ice_ptp_rx_hwtstamp(struct ice_rx_ring *rx_ring,
+ 		    union ice_32b_rx_flex_desc *rx_desc, struct sk_buff *skb)
+ {
++	struct skb_shared_hwtstamps *hwtstamps;
++	u64 ts_ns, cached_time;
+ 	u32 ts_high;
+-	u64 ts_ns;
+ 
+-	/* Populate timesync data into skb */
+-	if (rx_desc->wb.time_stamp_low & ICE_PTP_TS_VALID) {
+-		struct skb_shared_hwtstamps *hwtstamps;
++	if (!(rx_desc->wb.time_stamp_low & ICE_PTP_TS_VALID))
++		return;
+ 
+-		/* Use ice_ptp_extend_32b_ts directly, using the ring-specific
+-		 * cached PHC value, rather than accessing the PF. This also
+-		 * allows us to simply pass the upper 32bits of nanoseconds
+-		 * directly. Calling ice_ptp_extend_40b_ts is unnecessary as
+-		 * it would just discard these bits itself.
+-		 */
+-		ts_high = le32_to_cpu(rx_desc->wb.flex_ts.ts_high);
+-		ts_ns = ice_ptp_extend_32b_ts(rx_ring->cached_phctime, ts_high);
++	cached_time = READ_ONCE(rx_ring->cached_phctime);
+ 
+-		hwtstamps = skb_hwtstamps(skb);
+-		memset(hwtstamps, 0, sizeof(*hwtstamps));
+-		hwtstamps->hwtstamp = ns_to_ktime(ts_ns);
+-	}
++	/* Do not report a timestamp if we don't have a cached PHC time */
++	if (!cached_time)
++		return;
++
++	/* Use ice_ptp_extend_32b_ts directly, using the ring-specific cached
++	 * PHC value, rather than accessing the PF. This also allows us to
++	 * simply pass the upper 32bits of nanoseconds directly. Calling
++	 * ice_ptp_extend_40b_ts is unnecessary as it would just discard these
++	 * bits itself.
++	 */
++	ts_high = le32_to_cpu(rx_desc->wb.flex_ts.ts_high);
++	ts_ns = ice_ptp_extend_32b_ts(cached_time, ts_high);
++
++	hwtstamps = skb_hwtstamps(skb);
++	memset(hwtstamps, 0, sizeof(*hwtstamps));
++	hwtstamps->hwtstamp = ns_to_ktime(ts_ns);
+ }
+ 
+ /**
 -- 
 2.37.1.208.ge72d93e88cb2
 
