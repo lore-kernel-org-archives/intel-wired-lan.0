@@ -1,85 +1,78 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF243C00144
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Jul 2022 13:35:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0BF2C00144
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 29 Jul 2022 13:35:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5E8DB41812;
-	Fri, 29 Jul 2022 13:35:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5E8DB41812
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5235C60BB1;
+	Fri, 29 Jul 2022 13:35:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5235C60BB1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1659101730;
-	bh=RrZf0GLgVW/ciTo5XY4K1xoLmU/NZ1ClOwzZn72oClU=;
+	s=default; t=1659101735;
+	bh=n9ywwnVyUTU/ZBl5lSjHWgnO1xM8ImMaS3JO96YJxqI=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=bHCP28o0nA0T3XA8DUeDA6XJqkJ6eVL7H5d3hn11fMvEc7XMemvgabMyKVFKVNIp1
-	 6PpFHciPwonMZ01gLMuAHyspQhEgqG9QgBeeYU3BLW+HvDD+5BKAp9skqn49XJZjAE
-	 QVoKnkcNTLkAwc4hmJAH8jVqx/v4/ZAZVntcQ14fPucaRHMco8vcRzRQ2d5dpMW2ZH
-	 iJjHtrKT5vzvV7mdCKNBn48Cs4dG1uZ1QkSPd1VXU/wq523KOE1EuGr1AJpFp8PY43
-	 g0Az8KGnJflkXwcgnKi29bKyAWH+0GbRPDs2As4IjvEoajhwHqks5LBtymSp1BCmNc
-	 XL60V42eHGQhA==
+	b=uHGyrFIbmPOHRhsKAMIRY7fjmcoCt4ALmWRQf6bUZK5vlSkSbSa1/DHudsGmq0vUf
+	 BsH9SWZ8PXntUoPakZTtbf48/4AFh3qTGmA5MgtI7lZG+ZBdAV8drgLlb6+GDJrPE8
+	 kYHSvMVnaNv/b9+rP3poSQH+Cr3c7EQ1bqfjtFXSoPxanpPsiCPHbASP3pfnR9qLcv
+	 ArJKlckYqSmggpmKsyo2FOIR+b1AE8+55Q7pYs+rNQCh024Tw3aXu3jRx6dSyv47Oc
+	 VK3GcCCyxQVUbxJSOBGTsDK0zTklAdyKJz9VtP83irZHmLcYMnlPafETFXQpTwTnwd
+	 8sAZL2ILyiThg==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id pFmNCX74CfYi; Fri, 29 Jul 2022 13:35:32 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id A5F276107A;
+	Fri, 29 Jul 2022 13:35:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A5F276107A
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 3641C1BF288
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Jul 2022 10:25:02 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 098E24170A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Jul 2022 10:25:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 098E24170A
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id PoLuYKSVqWPK; Fri, 29 Jul 2022 13:35:28 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6477F41B42;
-	Fri, 29 Jul 2022 13:35:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6477F41B42
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 695E41BF339
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Jul 2022 09:25:31 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 337A883F82
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Jul 2022 09:25:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 337A883F82
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id DIf5svRcW7m2 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 29 Jul 2022 09:25:30 +0000 (UTC)
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id YWB_3E4DrdAg for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 29 Jul 2022 10:25:00 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 782ED83F7E
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 782ED83F7E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Jul 2022 09:25:30 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10422"; a="286280775"
-X-IronPort-AV: E=Sophos;i="5.93,201,1654585200"; d="scan'208";a="286280775"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Jul 2022 02:25:29 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,201,1654585200"; d="scan'208";a="660162930"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga008.fm.intel.com with ESMTP; 29 Jul 2022 02:25:28 -0700
-From: Kamil Maziarz <kamil.maziarz@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 29 Jul 2022 11:34:52 +0000
-Message-Id: <20220729113452.858783-1-kamil.maziarz@intel.com>
-X-Mailer: git-send-email 2.25.1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4172241725
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4172241725
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 29 Jul 2022 10:24:59 +0000 (UTC)
+Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.54])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LvNnz3H3rzWg24;
+ Fri, 29 Jul 2022 18:20:55 +0800 (CST)
+Received: from kwepemm600016.china.huawei.com (7.193.23.20) by
+ dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Fri, 29 Jul 2022 18:24:50 +0800
+Received: from localhost.localdomain (10.67.165.24) by
+ kwepemm600016.china.huawei.com (7.193.23.20) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Fri, 29 Jul 2022 18:24:50 +0800
+From: Guangbin Huang <huangguangbin2@huawei.com>
+To: <davem@davemloft.net>, <kuba@kernel.org>, <edumazet@google.com>,
+ <pabeni@redhat.com>, <snelson@pensando.io>, <brett@pensando.io>,
+ <drivers@pensando.io>, <anthony.l.nguyen@intel.com>,
+ <jesse.brandeburg@intel.com>
+Date: Fri, 29 Jul 2022 18:17:53 +0800
+Message-ID: <20220729101755.4798-1-huangguangbin2@huawei.com>
+X-Mailer: git-send-email 2.33.0
 MIME-Version: 1.0
+X-Originating-IP: [10.67.165.24]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ kwepemm600016.china.huawei.com (7.193.23.20)
+X-CFilter-Loop: Reflected
 X-Mailman-Approved-At: Fri, 29 Jul 2022 13:35:27 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1659086730; x=1690622730;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=2uBLbsd+e0+qfaghg1TvJjKs7JJZYCfOHtIAj0pxCXg=;
- b=PFR9UIQ2eHX1tRSbU6gr2BS3y9eFozGd+XxEglqOIK6Zn8kGjiHZwto/
- IbNE1FUrIJnYKn0Fo1kbZvwZsW9GeUHKcGfuUjjEsSKP+/G+DQvzCJ258
- d03INiEbVMxFv6HqNF1wNUMRXn6fI1SWZYMzpmv+eAArsm6mLg4I0TECw
- CFV9adzJiEojTQQDq+xKfVsaA+jBgb2DmxNx7PcXv2Q0G3+hwGFbbkz2H
- YSnKldyW6xYTqYlK0s0e5BjSL6nTiKh34u+ec6977nMCqlr4A61iR8T6W
- 3jyU/h4HqzwBtOovYM+UwbXKoH7XxVxoBvKUZWUn4FlKgkLVM35K3UiXd
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=PFR9UIQ2
-Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Disallow ip4 and ip6
- l4_4_bytes
+Subject: [Intel-wired-lan] [PATCH net 0/2] net: fix using wrong flags to
+ check features
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,63 +85,28 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>,
- Kamil Maziarz <kamil.maziarz@intel.com>
+Cc: huangguangbin2@huawei.com, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ lipeng321@huawei.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Return -EOPNOTSUPP, when user requests l4_4_bytes for raw IP4 or
-IP6 flow director filters. Flow director does not support filtering
-on l4 bytes for PCTYPEs used by IP4 and IP6 filters.
-Without this patch, user could create filters with l4_4_bytes fields,
-which did not do any filtering on L4, but only on L3 fields.
+We find that some drivers may use wrong flags to check features, so fix
+them.
 
-Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-Signed-off-by: Kamil Maziarz  <kamil.maziarz@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+Jian Shen (2):
+  net: ice: fix error NETIF_F_HW_VLAN_CTAG_FILTER check in
+    ice_vsi_sync_fltr()
+  net: ionic: fix error check for vlan flags in ionic_set_nic_features()
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 156e92c43780..6695dbe61a04 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -4447,11 +4447,7 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
- 			return -EOPNOTSUPP;
- 
- 		/* First 4 bytes of L4 header */
--		if (usr_ip4_spec->l4_4_bytes == htonl(0xFFFFFFFF))
--			new_mask |= I40E_L4_SRC_MASK | I40E_L4_DST_MASK;
--		else if (!usr_ip4_spec->l4_4_bytes)
--			new_mask &= ~(I40E_L4_SRC_MASK | I40E_L4_DST_MASK);
--		else
-+		if (usr_ip4_spec->l4_4_bytes)
- 			return -EOPNOTSUPP;
- 
- 		/* Filtering on Type of Service is not supported. */
-@@ -4490,11 +4486,7 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
- 		else
- 			return -EOPNOTSUPP;
- 
--		if (usr_ip6_spec->l4_4_bytes == htonl(0xFFFFFFFF))
--			new_mask |= I40E_L4_SRC_MASK | I40E_L4_DST_MASK;
--		else if (!usr_ip6_spec->l4_4_bytes)
--			new_mask &= ~(I40E_L4_SRC_MASK | I40E_L4_DST_MASK);
--		else
-+		if (usr_ip6_spec->l4_4_bytes)
- 			return -EOPNOTSUPP;
- 
- 		/* Filtering on Traffic class is not supported. */
+ drivers/net/ethernet/intel/ice/ice_main.c       | 2 +-
+ drivers/net/ethernet/pensando/ionic/ionic_lif.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
 -- 
-2.25.1
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+2.33.0
 
 _______________________________________________
 Intel-wired-lan mailing list
