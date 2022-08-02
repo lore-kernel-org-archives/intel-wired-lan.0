@@ -1,85 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11373C00140
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Aug 2022 11:52:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E147AC00140
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Aug 2022 11:52:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8C9FB405C8;
-	Tue,  2 Aug 2022 11:52:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8C9FB405C8
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6CA5181394;
+	Tue,  2 Aug 2022 11:52:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6CA5181394
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1659441155;
-	bh=jxgyLzYFTIrDHx3VzCGoUgbxur8XP8z5XeG5XU83Uy0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=tuGavCb1SpkOUme7kDENdHJBZ7iF927xEpj0Qw//nqvprT/r8gMIMPPhcFkf1E/jt
-	 pxdx+9GLVajcFSqKz8lYoDRPYtgXJ8mOdPrbixXxwkBJ1jYvniVQ6NLtemBiF5p/Y7
-	 kGesu6HErbIqKGki0xMtiyE/dDZZ3DqgT2boU+3BpFnaAEvx5gFQ+yuFby4bHesNu0
-	 yOtGPGKRTovX3uC09c2onY5VmV5UJefWi/AcF5iLgbXzX4UCzALUsE96ttIkxY1QH+
-	 nM4E+DcMsHIjvsYFBnUTjsC8IrjCeKMhqLLUDP+Emi/XrZ0hGD5G9A3DnNle/tJm1N
-	 qHhOPCxFbqx+Q==
+	s=default; t=1659441159;
+	bh=MJvA1AZXHJJvbb+bV6Gj7tqg+lx7YWDcyizMqJi5Ukw=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=jHSOWrEdTOXtjm4SRaaKhuBA293acAsX5GSccDdhOnHhqqoWA+jGPGBL7PYA4Lenr
+	 Shzuaf91YqYj90xld43hrKYn7zTwcvgHhaB8fcYtDqOkMt8LO8cUByuvZphUjFnB0a
+	 AtKI7JE481+US7Ho2443GhjjV8mhzSn/uK1MZCd+Xj2z/ICtSwsjollTwLihlcT4/z
+	 KS8TpIE2xhgP5suyb2nIbaXINw5Diq1XdxVUGJ30MlZtlhqinakjmaQ9bXYS1rU8bj
+	 LP/ivaPE+ElnVVqf/WavBASlqN7ArstMVrc2mwu95FjocFjUBi9zXpXTBpYylnWOBK
+	 W8FrT8c9bPifg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lv7kvTQ0IZfu; Tue,  2 Aug 2022 11:52:34 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ZCUBnIhyNo-N; Tue,  2 Aug 2022 11:52:38 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7F9C3405CD;
-	Tue,  2 Aug 2022 11:52:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7F9C3405CD
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6D3658139D;
+	Tue,  2 Aug 2022 11:52:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6D3658139D
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id ADF211BF409
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 11:52:33 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id C919D1BF409
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 11:52:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 94612405C8
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 11:52:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 94612405C8
+ by smtp2.osuosl.org (Postfix) with ESMTP id ACF29405CF
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 11:52:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ACF29405CF
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id SxOUlbmXNqdS for <intel-wired-lan@lists.osuosl.org>;
- Tue,  2 Aug 2022 11:52:31 +0000 (UTC)
+ with ESMTP id SJMxdBwRQOZn for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  2 Aug 2022 11:52:32 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B6CD0401C9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A4A4D40370
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B6CD0401C9
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 11:52:31 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10426"; a="289401279"
-X-IronPort-AV: E=Sophos;i="5.93,210,1654585200"; d="scan'208";a="289401279"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A4A4D40370
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 11:52:32 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10426"; a="289401284"
+X-IronPort-AV: E=Sophos;i="5.93,210,1654585200"; d="scan'208";a="289401284"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Aug 2022 04:52:30 -0700
+ 02 Aug 2022 04:52:32 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,210,1654585200"; d="scan'208";a="728807626"
+X-IronPort-AV: E=Sophos;i="5.93,210,1654585200"; d="scan'208";a="728807633"
 Received: from amlin-018-068.igk.intel.com (HELO localhost.igk.intel.com)
  ([10.102.18.68])
- by orsmga004.jf.intel.com with ESMTP; 02 Aug 2022 04:52:29 -0700
+ by orsmga004.jf.intel.com with ESMTP; 02 Aug 2022 04:52:31 -0700
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  2 Aug 2022 13:51:40 +0200
-Message-Id: <20220802115142.65176-1-mateusz.palczewski@intel.com>
+Date: Tue,  2 Aug 2022 13:51:41 +0200
+Message-Id: <20220802115142.65176-2-mateusz.palczewski@intel.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20220802115142.65176-1-mateusz.palczewski@intel.com>
+References: <20220802115142.65176-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1659441151; x=1690977151;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=qUFnl17N6vr42UK8aBdofZpU0qkaNBGFU6K7ZQZnpt8=;
- b=GBK30eWU68B5RKTrfy1P7cyZtsDRW60LDX54LfLL2sL+oa4v/X6LLK7a
- w2YlODLujpirR6UzMftbGzRXfWdnkn3yI1Igo3g2gnesK2FKuCPIvGEC1
- POp/Xs27e/cFtZ/DDXgIK8Ckz41baK3YpEjOLmsC8KRXTlhc5XVhhhTlq
- bpBUOfsRaneVqIYR65sFdM8iND1rmYt2NS/wj29hCBILiejFmujtjhEwa
- vLkk+AE4TEY5rfFtqi/1kGDzFTf0UzYXoylDFu0vECLUdqw5CkiKhEHaE
- 976Hk0VNP0rWJiENJHvxZ7wI2ksbrcZZ9ICZ1yBmJtZgkVGAKGuC8SKIZ
- g==;
+ t=1659441152; x=1690977152;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=DpMwQRFoAF2+HvpsTw77Ge6Qg8v1mZ2nUjH64Qhffwk=;
+ b=CnK1VQM2s6LSQ8otn4I+UY+3sHnbPgH9DGp4njhwVRs53ItGDFRypxyC
+ yIRknRRhAcTpNYSymWcjyoDW2iUyoKgCf1v8wXrbI9qAynWfu5CuCCWUb
+ I5vsr2lASo5u+dQGmK2AWJlcprUqK+0P4wS4tzg2TRwvC0jcdrW39Qxfg
+ 2Q2yacFee2DBr0IOFO5OF7yTN3WgIKqljz/C7yH2xPsBE5ts3c8trfaeV
+ 5FcUi2XsyEViuCHPE86XI+iGe19OM880QNyJoxS+uqVjt9Tlwt9zPwTLl
+ BHhC+aqXPQBtcEUsMNxgdukxf4on6SAJ+sgxKQhZLAjk/XZ033tIwJprY
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GBK30eWU
-Subject: [Intel-wired-lan] [PATCH net v2 0/2] iavf: Fix close path on
- shutdown and remove in iavf driver.
+ header.a=rsa-sha256 header.s=Intel header.b=CnK1VQM2
+Subject: [Intel-wired-lan] [PATCH net v2 1/2] iavf: Fix shutdown pci
+ callback to match the remove one
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,28 +103,83 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Slawomir Laba <slawomirx.laba@intel.com>
 
+Make the flow for pci shutdown be the same to the pci remove.
+
 iavf_shutdown was implementing an incomplete version
-of iavf_remove. It misses several calls to the kernel like
+of iavf_remove. It misses several calls  to the kernel like
 iavf_free_misc_irq, iavf_reset_interrupt_capability, iounmap
 that might break the system on reboot or hibernation.
 
-Fix a deadlock introduced by commit
-974578017fc1f ("iavf: Add waiting so the port is initialized in remove")
-due to race condition between iavf_shutdown and iavf_remove, where
-iavf_remove stucks forever in while loop since iavf_shutdown already
-set __IAVF_REMOVE adapter state.
+Implement the call of iavf_remove directly in iavf_shutdown to
+close this gap.
 
+Fixes: 5eae00c57f5e ("i40evf: main driver core")
+Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
  v2: Fixed author
 ---
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 40 +++++++--------------
+ 1 file changed, 12 insertions(+), 28 deletions(-)
 
-SlawomirX Laba (2):
-  iavf: Fix shutdown pci callback to match the remove one
-  iavf: Fix race condition between iavf_shutdown and iavf_remove
-
- drivers/net/ethernet/intel/iavf/iavf_main.c | 59 ++++++++-------------
- 1 file changed, 22 insertions(+), 37 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 04fb9fc0de19..6357dea93b99 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -4647,34 +4647,6 @@ int iavf_process_config(struct iavf_adapter *adapter)
+ 	return 0;
+ }
+ 
+-/**
+- * iavf_shutdown - Shutdown the device in preparation for a reboot
+- * @pdev: pci device structure
+- **/
+-static void iavf_shutdown(struct pci_dev *pdev)
+-{
+-	struct iavf_adapter *adapter = iavf_pdev_to_adapter(pdev);
+-	struct net_device *netdev = adapter->netdev;
+-
+-	netif_device_detach(netdev);
+-
+-	if (netif_running(netdev))
+-		iavf_close(netdev);
+-
+-	if (iavf_lock_timeout(&adapter->crit_lock, 5000))
+-		dev_warn(&adapter->pdev->dev, "failed to acquire crit_lock in %s\n", __FUNCTION__);
+-	/* Prevent the watchdog from running. */
+-	iavf_change_state(adapter, __IAVF_REMOVE);
+-	adapter->aq_required = 0;
+-	mutex_unlock(&adapter->crit_lock);
+-
+-#ifdef CONFIG_PM
+-	pci_save_state(pdev);
+-
+-#endif
+-	pci_disable_device(pdev);
+-}
+-
+ /**
+  * iavf_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -5011,6 +4983,18 @@ static void iavf_remove(struct pci_dev *pdev)
+ 	pci_disable_device(pdev);
+ }
+ 
++/**
++ * iavf_shutdown - Shutdown the device in preparation for a reboot
++ * @pdev: pci device structure
++ **/
++static void iavf_shutdown(struct pci_dev *pdev)
++{
++	iavf_remove(pdev);
++
++	if (system_state == SYSTEM_POWER_OFF)
++		pci_set_power_state(pdev, PCI_D3hot);
++}
++
+ static SIMPLE_DEV_PM_OPS(iavf_pm_ops, iavf_suspend, iavf_resume);
+ 
+ static struct pci_driver iavf_driver = {
 -- 
 2.27.0
 
