@@ -1,85 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E688C00140
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Aug 2022 08:20:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4B1FC00140
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  2 Aug 2022 08:44:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D1A12404DF;
-	Tue,  2 Aug 2022 08:20:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D1A12404DF
+	by smtp3.osuosl.org (Postfix) with ESMTP id 55A0160AF0;
+	Tue,  2 Aug 2022 08:44:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 55A0160AF0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1659428408;
-	bh=SZhVcm+ZBfenuCDvaVJ8ObbErtqaU1fJXN6FKjYXEB0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1659429857;
+	bh=KY1K4PGob0BwAKCHP0yAqeuiBuhucZyqgrnipFK2jY0=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=ryK3dNa7ZMc58WMHTpaN7SDZ4p4fGdYFcc8VZK5SmiWcx03Off/DZKFnDx/FmKqeS
-	 HUfSiRcwCKwWrThpjYJU8ZuvRHWFKiCet3UlykinriVB80bdoUodY1des91WPm4+ih
-	 ooY2Q4lIo1pFsc41dp13e7S2V2nukvabfl9lhVdW8Tw8fOhzeb2Bx7L8nJuYotP/Wn
-	 j0NgpRZNtVn9aLmHpF/LLHi9Hlml/XRdxEfEWT8xAnYmGCHD4lgJ0zqevxyvdTs5+o
-	 ydAKvh8IOaxacPOI9K6h4vPDOwWxEH+RP9rAZ+JV09UUmBbqs6199Er/cm/SS/u0mR
-	 t0SIuEECbN6jw==
+	b=MddzOOEq+nBaYddIbP71rkHVNYl6lvau2I7VsieELMfGSVY+lpEVbjNcRk6mAd5ok
+	 cO0wKBNqTC5897Ziw7N1+459p/MkcZ2yXk5epNIWAbwoEG2+9/TyajWJCgBCfB8w7p
+	 ZxPSahFIzZYYBiUDUIbIp7jdlXJtv+I3PQXT9yvAnsRwPqXld2FJUhwsCWRzigGHWb
+	 I05ca+SN1EtKPgfL9XPvyLAtHJPU9ZCxhZOH9kppdm3Myge54kHyag6vij71a7/a52
+	 zs5cXyo6Ap6/qV91VAGJUIyDidg2lJTqqu8akZVHwsqWtYHF6B059GN3yEz2OnRAuo
+	 Fym4SY66qRGJA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id OSa4dcNuKXkF; Tue,  2 Aug 2022 08:20:08 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id dY6fwTu6hz5D; Tue,  2 Aug 2022 08:44:16 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D8529404EE;
-	Tue,  2 Aug 2022 08:20:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D8529404EE
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 9A4BF1BF37E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 08:20:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4944F60B49;
+	Tue,  2 Aug 2022 08:44:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4944F60B49
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 241921BF37E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 08:44:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 73BAE404F5
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 08:20:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 73BAE404F5
+ by smtp4.osuosl.org (Postfix) with ESMTP id 09B7040386
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 08:44:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 09B7040386
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zDmtAT5Mrsln for <intel-wired-lan@lists.osuosl.org>;
- Tue,  2 Aug 2022 08:20:05 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id jZnbBUH1y1D9 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  2 Aug 2022 08:44:13 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D16EA404F1
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D16EA404F1
- for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 08:20:04 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10426"; a="353357583"
-X-IronPort-AV: E=Sophos;i="5.93,210,1654585200"; d="scan'208";a="353357583"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Aug 2022 01:20:03 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BA69940324
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id BA69940324
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  2 Aug 2022 08:44:13 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10426"; a="286918264"
+X-IronPort-AV: E=Sophos;i="5.93,210,1654585200"; d="scan'208";a="286918264"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Aug 2022 01:44:13 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,210,1654585200"; d="scan'208";a="848124605"
-Received: from amlin-018-068.igk.intel.com (HELO localhost.igk.intel.com)
- ([10.102.18.68])
- by fmsmga006.fm.intel.com with ESMTP; 02 Aug 2022 01:20:02 -0700
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  2 Aug 2022 10:19:17 +0200
-Message-Id: <20220802081917.86798-1-mateusz.palczewski@intel.com>
-X-Mailer: git-send-email 2.27.0
+X-IronPort-AV: E=Sophos;i="5.93,210,1654585200"; d="scan'208";a="552843406"
+Received: from lkp-server01.sh.intel.com (HELO e0eace57cfef) ([10.239.97.150])
+ by orsmga003.jf.intel.com with ESMTP; 02 Aug 2022 01:44:12 -0700
+Received: from kbuild by e0eace57cfef with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1oInVb-000Fsl-1H;
+ Tue, 02 Aug 2022 08:44:11 +0000
+Date: Tue, 02 Aug 2022 16:43:13 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <62e8e3a1.YELCE7mcVEmXS+O0%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1659428404; x=1690964404;
- h=from:to:cc:subject:date:message-id:mime-version:
+ t=1659429853; x=1690965853;
+ h=date:from:to:subject:message-id:mime-version:
  content-transfer-encoding;
- bh=0HBZEDQ2aITc42H36j7SRl0T2o1mALAdZkY8i43tbKw=;
- b=QErBD30LDnxy5NPbDhLXhiis9lbIqLg3U4gYIncl5kZKNhq56igm0j57
- G4lrt9DVmFRE9WtzyQ1I2hHeJ/RBSUnp7gQB9ESDb/o6WUO3QSNnNfbvP
- nGP7yzmVc43jdip7LXWzzXnFbkps5UtCu2v+TFwGXGc/YEzEmi5V1/8cc
- Q5lZmvNOjlSi9M7KKZV8FC5J1FTdr2CNxqyc07q/G2wsJwnvC1RqdYQys
- 3KRgkqPMLERH1XMMTAGLi+zN26+zM030eS8Td8YJiILhIbDiZZ6DVfLZf
- Kfh3b+8VH4RcaAcrSRTmboSyvDXEDjefsNrVw472CO841EWK7ZIaBiXiL
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=kpkXGH8jMmPhtRsYp6iwyM3/BUmsvb0VkN3UhMjyHJM=;
+ b=nOg6qfsnPdd9zeuZCghgfXrj2qOYbWyYYfUVY66utPT9PdpuE8rnBNuX
+ A3wm3XFbe6GYJ+cFbbGaDI6gIWyOlALSjjyNkQZX2foNORedNkdS4jUZL
+ 3/m3DJViJlIWi94DFqBtJ4oTHIA4Ndv8aLtr5IURPBIKbOBokVISvu1s9
+ gVEXvlp38TK/k7/GvvfD5oF1xDFFPkoRBNs94YpvBVBGz5glnqLNJGRuI
+ 1Fpn6Uyc1OLoD1Mkj68oyAtXkLjbzq+F4PbDStaOY1dkB5QvETDwsUDFN
+ XHSp+kQOemOdOD9ND1AQpVcdJtzAF+uih9CddqiKpk+wVND4SIpulUg6j
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QErBD30L
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Fix to stop tx_timeout
- recovery if GLOBR fails
+ header.a=rsa-sha256 header.s=Intel header.b=nOg6qfsn
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 05e2f0e1dbd7e8d0a879d6cd0a9c6e3458f8b794
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,45 +99,76 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 05e2f0e1dbd7e8d0a879d6cd0a9c6e3458f8b794  ice: Add support for ip TTL & ToS offload
 
-When a tx_timeout fires, the PF attempts to recover by incrementally
-resetting.  First we try a PFR, then CORER and finally a GLOBR.  If the
-GLOBR fails, then we keep hitting the tx_timeout and incrementing the
-recovery level and issuing dmesgs, which is both annoying to the user
-and accomplishes nothing.
+elapsed time: 716m
 
-If the GLOBR fails, then we're pretty much totally hosed, and there's
-not much else we can do to recover, so this makes it such that we just
-kill the VSI and stop hitting the tx_timeout in such a case.
+configs tested: 52
+configs skipped: 2
 
-Fixes: 41c445ff0f48 ("i40e: main driver core")
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- v2: Changed the author
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 685556e968f2..71a8e1698ed4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -384,7 +384,9 @@ static void i40e_tx_timeout(struct net_device *netdev, unsigned int txqueue)
- 		set_bit(__I40E_GLOBAL_RESET_REQUESTED, pf->state);
- 		break;
- 	default:
--		netdev_err(netdev, "tx_timeout recovery unsuccessful\n");
-+		netdev_err(netdev, "tx_timeout recovery unsuccessful, device is in non-recoverable state.\n");
-+		set_bit(__I40E_DOWN_REQUESTED, pf->state);
-+		set_bit(__I40E_VSI_DOWN_REQUESTED, vsi->state);
- 		break;
- 	}
- 
+gcc tested configs:
+um                             i386_defconfig
+um                           x86_64_defconfig
+arc                  randconfig-r043-20220801
+i386                             allyesconfig
+i386                                defconfig
+powerpc                          allmodconfig
+mips                             allyesconfig
+powerpc                           allnoconfig
+sh                               allmodconfig
+s390                 randconfig-r044-20220801
+riscv                randconfig-r042-20220801
+x86_64                           allyesconfig
+i386                 randconfig-a012-20220801
+i386                 randconfig-a013-20220801
+m68k                             allmodconfig
+arc                              allyesconfig
+x86_64                               rhel-8.3
+i386                 randconfig-a011-20220801
+alpha                            allyesconfig
+m68k                             allyesconfig
+x86_64                              defconfig
+arm                                 defconfig
+i386                 randconfig-a014-20220801
+i386                 randconfig-a015-20220801
+i386                 randconfig-a016-20220801
+arm                              allyesconfig
+x86_64               randconfig-a011-20220801
+arm64                            allyesconfig
+x86_64               randconfig-a012-20220801
+x86_64               randconfig-a013-20220801
+x86_64               randconfig-a014-20220801
+x86_64               randconfig-a015-20220801
+x86_64               randconfig-a016-20220801
+x86_64                    rhel-8.3-kselftests
+x86_64                          rhel-8.3-func
+x86_64                         rhel-8.3-kunit
+x86_64                           rhel-8.3-kvm
+x86_64                           rhel-8.3-syz
+
+clang tested configs:
+hexagon              randconfig-r041-20220801
+hexagon              randconfig-r045-20220801
+i386                 randconfig-a001-20220801
+i386                 randconfig-a002-20220801
+i386                 randconfig-a003-20220801
+i386                 randconfig-a005-20220801
+i386                 randconfig-a004-20220801
+i386                 randconfig-a006-20220801
+x86_64               randconfig-a002-20220801
+x86_64               randconfig-a001-20220801
+x86_64               randconfig-a003-20220801
+x86_64               randconfig-a006-20220801
+x86_64               randconfig-a004-20220801
+x86_64               randconfig-a005-20220801
+
 -- 
-2.27.0
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
