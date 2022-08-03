@@ -4,81 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD5C3C19F28
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Aug 2022 13:54:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2511EC19F28
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Aug 2022 16:41:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 675186F8F0;
-	Wed,  3 Aug 2022 13:54:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 675186F8F0
+	by smtp3.osuosl.org (Postfix) with ESMTP id AACAB60A68;
+	Wed,  3 Aug 2022 16:41:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AACAB60A68
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1659534889;
+	s=default; t=1659544863;
 	bh=uW+wnuAaLFvm80D4H+6UBLRGh7H1S6khqOZt4U/tXZg=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Dmtlq0517arMpeNZ9vsh4uI1ntwoloJ+3h+rNxQ4s/iKU1x8Jo4UtAaCiX2rga4AE
-	 bULbV+803Gd7/cmOhl1L2LnijdlnL5f5fTmH2EK85L5NuWP2HBbwY1qHGWgHnyM0TN
-	 sEI0pUHTKfqJjOHpSqHweutQrdsXK/IF4OC0Jj663O9x6OHzVGX6lqu4h7x88/hPBW
-	 8nDCLE8gmLVabNdPjXQS7OfUlPxLH2xSmzLzSbA96x9ZIZIIaWkfCDRi7PnpfyQjtS
-	 cGKjZSKn2FCMEX/+wZFXbl/MNk42s0tXQYqd3M+batmv3b3DwxuS7IbRNiV0i9UStG
-	 SlFxp4sghfATg==
+	b=fWe+IVTmUlnOR7FXoRFmvRBpihH/JoXhD+XvzT4tFQKHenlswJv8Ouq8W1b8o8/Me
+	 r5R/QjVQo/7Q/ZfuZBQ+okuVnfTWsT+dPN5GVNTDH8p6G1dK80tPJ02KGfo8JG2toz
+	 VLho12s4fHQKNfQsdIfrNrjxQoKgi7fhqfjmyCpfhqBOjN187okFi2Sy/erEh3rn9c
+	 9T53/smrHv8aYt4lz5/GCE/zqFh765yN+F0UZyi0PAlzl6BR0lh4Th4r8cav1eSyW+
+	 wKs7JlgDd4ybvs8FJBYRIV6aevVxdvIIaN65s+Akfx+9usHNCeCLzx0m1BAh/L4klm
+	 mSoRF34QtnQ7Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id MBPUaipgTtFs; Wed,  3 Aug 2022 13:54:48 +0000 (UTC)
+	with ESMTP id dpkiL3vXzPAD; Wed,  3 Aug 2022 16:41:02 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 482806F8F5;
-	Wed,  3 Aug 2022 13:54:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 482806F8F5
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9BDA160BDC;
+	Wed,  3 Aug 2022 16:41:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9BDA160BDC
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 7043B1BF28B
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 13:54:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 263D71BF3D5
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 16:41:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 43FAF41C70
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 13:54:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 43FAF41C70
+ by smtp4.osuosl.org (Postfix) with ESMTP id EF71F40142
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 16:41:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF71F40142
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hb26JlqyDnGL for <intel-wired-lan@lists.osuosl.org>;
- Wed,  3 Aug 2022 13:54:46 +0000 (UTC)
+ with ESMTP id 2HcSLGxBTqG6 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  3 Aug 2022 16:40:59 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 109CD41C41
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 109CD41C41
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 13:54:45 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10428"; a="289687135"
-X-IronPort-AV: E=Sophos;i="5.93,214,1654585200"; d="scan'208";a="289687135"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Aug 2022 06:54:45 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8FA3940131
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8FA3940131
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 16:40:59 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10428"; a="272768080"
+X-IronPort-AV: E=Sophos;i="5.93,214,1654585200"; d="scan'208";a="272768080"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2022 09:40:58 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,214,1654585200"; d="scan'208";a="606388237"
+X-IronPort-AV: E=Sophos;i="5.93,214,1654585200"; d="scan'208";a="692307467"
 Received: from amlin-018-218.igk.intel.com ([10.102.18.218])
- by fmsmga007.fm.intel.com with ESMTP; 03 Aug 2022 06:54:44 -0700
+ by FMSMGA003.fm.intel.com with ESMTP; 03 Aug 2022 09:40:56 -0700
 From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org,
 	anthony.l.nguyen@intel.com
-Date: Wed,  3 Aug 2022 15:51:53 +0200
-Message-Id: <20220803135153.224732-1-aleksandr.loktionov@intel.com>
+Date: Wed,  3 Aug 2022 18:38:21 +0200
+Message-Id: <20220803163821.229317-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1659534886; x=1691070886;
+ t=1659544859; x=1691080859;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
  bh=EguyO5nV9HgQWRR0WKv+3DsB22q/04n6Vl9eDugxKTs=;
- b=AZQrSB5W4MOGHvV39amFKklAwPug9OBayyMI0LII06vN1t8mvEtGLoM0
- +s+5e1+1cL6gdaxRxQimvTIG2mu77Eq4oEVcbdVh9FU5VZxGgykv7uFCk
- gkuN1q5rEdiuwl1SMU7/vWek5uWdChMDkf5GhiM1rygU04/Rw+KcupEN0
- pJEH/rC3K+uOdPS5Rc7Fqg3k7yF7QPwxH0igm2U3FLBVCOzCB9INPeHXR
- ah/eCQzngWg+TAeUsuSvreMq/x2lt0+pFjoYVHnrQPLjU9dFjkl8/NHeU
- 2zh4R9h6fufC4C+PaBn9qWH8r/uj2WBdTtUl+mRYzI4A5mFae5fkpTTZF
- w==;
+ b=lWXPPs9TOetyYhs65bfePr7etdu3WfA8STyDvS6LI6usnIXLIeG78uRd
+ dCw8cIE4wEhazEedz+dJ2Hq7UcLS2R3em2uVyyxIsq4bBDHXwxpomb90H
+ NbEDvRgoYZLQG51fIWyDAJwukxq8LjwQRDma+CoEYzlFfLA898K+M5il4
+ 2pncClY/xlZTo77RN/PBLFt+eSJFXW+squBDq59dIqUFXxjAoebMSSAqY
+ q96iDAGBaH5poGUnpYBm0ikteJlogWp66wJFpMAsyb7cK18o35AGugJLM
+ zIlmgy9bcfECLBL7oGUDo/Q4fVBGcA/tvT9Wxy8+KXDDm1c74f7WKO+Jk
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=AZQrSB5W
-Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Add source-pruning flag
+ header.a=rsa-sha256 header.s=Intel header.b=lWXPPs9T
+Subject: [Intel-wired-lan] [PATCH net-next v3] i40e: Add source-pruning flag
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
