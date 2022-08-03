@@ -1,84 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B7E4C25B06
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Aug 2022 07:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 403E5C19F28
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 Aug 2022 08:43:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A3D9540A63;
-	Wed,  3 Aug 2022 07:58:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A3D9540A63
+	by smtp4.osuosl.org (Postfix) with ESMTP id B30C840598;
+	Wed,  3 Aug 2022 08:43:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B30C840598
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1659513494;
-	bh=/qLB9lEcySwEv6k69lI/BNuD5kfX1Kij1px+PiCfeQg=;
+	s=default; t=1659516222;
+	bh=hDAhOqkg1u+tYgv13P1Hj98P8/V5Kr9kwC38HjGpNRo=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=uo1ZegiBaVn6D6nqJdt68bmORGADwFJefVjh3cygEDz2xYH0O2ytO27lFVbx1l+0a
-	 VOK4UylEPUoWcZ8CqCfl2FV0mEwutN2CQQEJuaz/L9HL4vcgpRU1aOP0rtPNihw2Nf
-	 bhCgPzVfSxTbdOPexIjMCm9bvVv+RUC317hSrN8Xci99WVwIOR1L44ufFuV6gYDkqE
-	 ObQ2H08o7FwK/3tZsJWhP+CR13nmlaCinGn2VJmAzmU9qyARFrpam1IPtCOzKpoy2s
-	 MReCBHWbtw2CYgb4kJlLvYVOXmU0vpPWT+k75j9ymUBUqDyzvg6EUp154DN9sK7/uc
-	 fnLbe69Nj0CSA==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id pn5g-JE5hM3G; Wed,  3 Aug 2022 07:58:13 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id AEAA140A76;
-	Wed,  3 Aug 2022 07:58:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AEAA140A76
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 128421BF4E5
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 07:58:12 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DEE0A409F0
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 07:58:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DEE0A409F0
+	b=7ASzBN+QzivoHM0nT0y08n39EMIP5g1u53mN7vgLX0OxxtocnQAfYy/UkrBtXW8SI
+	 s1VB/Fk+wgIaW3aIf7HFtweDSe4E7l3jzhRUXyd5F4Qu/VE/G44FNwZj8JFa3OrOGg
+	 qAgDinOHXpjquqQBy3dRAIrcInxqtr1DFuNRUMLA0F+eBqb4QMlg+e5MeGpnrLaZGT
+	 98PS+ae8D0vjZKfFDJHDpWpZChKLjQkTvx9UuvSpQBZVhM41oiVAdvuZuvFlmdpB+a
+	 e8zY8TAVCXCnINulzZVWWZFL+dZFVmb03Q6mCfaElnedbugUJFeAzfQFFyU6qpOcMb
+	 Qd/31AeSCAxew==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ES6Y8RbMzYq4 for <intel-wired-lan@lists.osuosl.org>;
- Wed,  3 Aug 2022 07:58:10 +0000 (UTC)
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Dburru4-rGa4; Wed,  3 Aug 2022 08:43:41 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id EBEAE4067C;
+	Wed,  3 Aug 2022 08:43:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EBEAE4067C
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 524841BF5DA
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 08:43:39 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2BE8780C64
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 08:43:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2BE8780C64
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qtejA-2rLwWp for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  3 Aug 2022 08:43:37 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F39A7409F8
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp4.osuosl.org (Postfix) with ESMTPS id F39A7409F8
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 07:58:09 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10427"; a="287173714"
-X-IronPort-AV: E=Sophos;i="5.93,213,1654585200"; d="scan'208";a="287173714"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Aug 2022 00:58:09 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D17C880C1C
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D17C880C1C
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 Aug 2022 08:43:36 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10427"; a="270000754"
+X-IronPort-AV: E=Sophos;i="5.93,213,1654585200"; d="scan'208";a="270000754"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Aug 2022 01:43:34 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,213,1654585200"; d="scan'208";a="661976134"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga008.fm.intel.com with ESMTP; 03 Aug 2022 00:58:08 -0700
-From: Kamil Maziarz <kamil.maziarz@intel.com>
+X-IronPort-AV: E=Sophos;i="5.93,213,1654585200"; d="scan'208";a="692169824"
+Received: from amlin-018-068.igk.intel.com (HELO localhost.igk.intel.com)
+ ([10.102.18.68])
+ by FMSMGA003.fm.intel.com with ESMTP; 03 Aug 2022 01:43:33 -0700
+From: Mateusz Palczewski <mateusz.palczewski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  3 Aug 2022 10:07:44 +0000
-Message-Id: <20220803100744.889542-1-kamil.maziarz@intel.com>
-X-Mailer: git-send-email 2.25.1
+Date: Wed,  3 Aug 2022 10:42:46 +0200
+Message-Id: <20220803084246.213685-1-mateusz.palczewski@intel.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1659513490; x=1691049490;
+ t=1659516216; x=1691052216;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=0ZfZgNCKr5WCw4bP1vo1RtYiBk2hXwCAvKzjiwRbufQ=;
- b=Q+M6+z+zZqt56bUjEJiNZXXD62AK4Yx60Jnp9yWYIHxFWBVZXA/228eD
- wbwEg9z2INMCW2SdGgnRxtKCyx1+Gh4anuYLgvwQp0ynVKutbT02LETIR
- HJgegx7BCaCUYi3OsiS9JQzZvBaFTqjWM0wmnvwRFhA7QhrkuwNB+eDBi
- Ij9KoHE42E06GuaZ/jSV5hmQdeyGEe2hefqLZonH8/ZDIrVnMGmobfl6/
- wTsvDBSnUwVd/1upjhdw3rzegHnAXSvsrOC1d0u1wHsV5FkaUPPzNvhRp
- RT/J5wLbNmxiJzOz5jW+TE/47zh/6gsi3c6LEBblPXb/QItJzL7g/MY1D
+ bh=6/y2BH7zaQkCN2gVJYrG5AW51qGXvG7kakEdan4sF9o=;
+ b=PN090Ul780tH757IGe/Iun7QX/Oio7HM2zxaHDeusRREZzpqFq+P+uZ7
+ 9MHqb37Y7Ffbbq/TKG2gNwbD0TtXPJchgzLZyLroSeKf0zWVVRdb2ChGp
+ WohMpc5g8bwuRM3C4chbNKBKWdeYQS2t4lTAwL+0GPRSu8NE+XxMhGZVh
+ lzPkaO0smR2NKMNpxlmWPZHWPJDHAcyZWLmUjZ5pc5NcvuKGpuLT/R7oK
+ QFXZow6Lp4xw2h2XnngXz81yeJi09Od8nhkxtcHUzXfivy/xTD5JPK82b
+ 8D5GqYDvmj69Wg7iQ7qqoBA1NBmqmyzjVG79HF517q6nM4catjzOXde0H
  w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Q+M6+z+z
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Disallow ip4 and ip6
- l4_4_bytes
+ header.a=rsa-sha256 header.s=Intel header.b=PN090Ul7
+Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix VF not able to send
+ tagged traffic with no VLAN filters
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,67 +92,172 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>,
- Kamil Maziarz <kamil.maziarz@intel.com>
+Cc: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 
-Return -EOPNOTSUPP, when user requests l4_4_bytes for raw IP4 or
-IP6 flow director filters. Flow director does not support filtering
-on l4 bytes for PCTYPEs used by IP4 and IP6 filters.
-Without this patch, user could create filters with l4_4_bytes fields,
-which did not do any filtering on L4, but only on L3 fields.
+VF was not able to send tagged traffic when it didn't
+have any VLAN interfaces and VLAN anti-spoofing was enabled.
+Fix this by allowing VFs with no VLAN filters to send tagged
+traffic. After VF adds a VLAN interface it will be able to
+send tagged traffic matching VLAN filters only.
 
-Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
-Signed-off-by: Kamil Maziarz <kamil.maziarz@intel.com>
+Testing hints:
+1. Spawn VF
+2. Send tagged packet from a VF
+3. The packet should be sent out and not dropped
+4. Add a VLAN interface on VF
+5. Send tagged packet on that VLAN interface
+6. Packet should be sent out and not dropped
+7. Send tagged packet with id different than VLAN interface
+8. Packet should be dropped
+
+Fixes: daf4dd16438b ("ice: Refactor spoofcheck configuration functions")
+Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
- v2: changed author and tree
---- 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+ v2: Removed Unnecessary parentheses around 'vsi->type != ICE_VSI_VF'
+     Unfortunetly some lines must be over 80 char to make the code more  readable
+---
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 11 ++--
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 57 ++++++++++++++++---
+ 2 files changed, 57 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 19704f5c8291..fb9ead8d7bb3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -4357,11 +4357,7 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
- 			return -EOPNOTSUPP;
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+index 2d6130af1d40..7775aaa8cc43 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+@@ -707,13 +707,16 @@ static int ice_cfg_mac_antispoof(struct ice_vsi *vsi, bool enable)
+ static int ice_vsi_ena_spoofchk(struct ice_vsi *vsi)
+ {
+ 	struct ice_vsi_vlan_ops *vlan_ops;
+-	int err;
++	int err = 0;
  
- 		/* First 4 bytes of L4 header */
--		if (usr_ip4_spec->l4_4_bytes == htonl(0xFFFFFFFF))
--			new_mask |= I40E_L4_SRC_MASK | I40E_L4_DST_MASK;
--		else if (!usr_ip4_spec->l4_4_bytes)
--			new_mask &= ~(I40E_L4_SRC_MASK | I40E_L4_DST_MASK);
--		else
-+		if (usr_ip4_spec->l4_4_bytes)
- 			return -EOPNOTSUPP;
+ 	vlan_ops = ice_get_compat_vsi_vlan_ops(vsi);
  
- 		/* Filtering on Type of Service is not supported. */
-@@ -4400,11 +4396,7 @@ static int i40e_check_fdir_input_set(struct i40e_vsi *vsi,
- 		else
- 			return -EOPNOTSUPP;
+-	err = vlan_ops->ena_tx_filtering(vsi);
+-	if (err)
+-		return err;
++	/* Allow VF with VLAN 0 only to send all tagged traffic */
++	if (vsi->type != ICE_VSI_VF || ice_vsi_has_non_zero_vlans(vsi)) {
++		err = vlan_ops->ena_tx_filtering(vsi);
++		if (err)
++			return err;
++	}
  
--		if (usr_ip6_spec->l4_4_bytes == htonl(0xFFFFFFFF))
--			new_mask |= I40E_L4_SRC_MASK | I40E_L4_DST_MASK;
--		else if (!usr_ip6_spec->l4_4_bytes)
--			new_mask &= ~(I40E_L4_SRC_MASK | I40E_L4_DST_MASK);
--		else
-+		if (usr_ip6_spec->l4_4_bytes)
- 			return -EOPNOTSUPP;
+ 	return ice_cfg_mac_antispoof(vsi, true);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index 24188ec594d5..a241c0bdc150 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -2264,6 +2264,15 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
  
- 		/* Filtering on Traffic class is not supported. */
+ 			/* Enable VLAN filtering on first non-zero VLAN */
+ 			if (!vlan_promisc && vid && !ice_is_dvm_ena(&pf->hw)) {
++				if (vf->spoofchk) {
++					status = vsi->inner_vlan_ops.ena_tx_filtering(vsi);
++					if (status) {
++						v_ret = VIRTCHNL_STATUS_ERR_PARAM;
++						dev_err(dev, "Enable VLAN anti-spoofing on VLAN ID: %d failed error-%d\n",
++							vid, status);
++						goto error_param;
++					}
++				}
+ 				if (vsi->inner_vlan_ops.ena_rx_filtering(vsi)) {
+ 					v_ret = VIRTCHNL_STATUS_ERR_PARAM;
+ 					dev_err(dev, "Enable VLAN pruning on VLAN ID: %d failed error-%d\n",
+@@ -2309,8 +2318,10 @@ static int ice_vc_process_vlan_msg(struct ice_vf *vf, u8 *msg, bool add_v)
+ 			}
+ 
+ 			/* Disable VLAN filtering when only VLAN 0 is left */
+-			if (!ice_vsi_has_non_zero_vlans(vsi))
++			if (!ice_vsi_has_non_zero_vlans(vsi)) {
++				vsi->inner_vlan_ops.dis_tx_filtering(vsi);
+ 				vsi->inner_vlan_ops.dis_rx_filtering(vsi);
++			}
+ 
+ 			if (vlan_promisc)
+ 				ice_vf_dis_vlan_promisc(vsi, &vlan);
+@@ -2814,6 +2825,13 @@ ice_vc_del_vlans(struct ice_vf *vf, struct ice_vsi *vsi,
+ 
+ 			if (vlan_promisc)
+ 				ice_vf_dis_vlan_promisc(vsi, &vlan);
++
++			/* Disable VLAN filtering when only VLAN 0 is left */
++			if (!ice_vsi_has_non_zero_vlans(vsi) && ice_is_dvm_ena(&vsi->back->hw)) {
++				err = vsi->outer_vlan_ops.dis_tx_filtering(vsi);
++				if (err)
++					return err;
++			}
+ 		}
+ 
+ 		vc_vlan = &vlan_fltr->inner;
+@@ -2829,8 +2847,17 @@ ice_vc_del_vlans(struct ice_vf *vf, struct ice_vsi *vsi,
+ 			/* no support for VLAN promiscuous on inner VLAN unless
+ 			 * we are in Single VLAN Mode (SVM)
+ 			 */
+-			if (!ice_is_dvm_ena(&vsi->back->hw) && vlan_promisc)
+-				ice_vf_dis_vlan_promisc(vsi, &vlan);
++			if (!ice_is_dvm_ena(&vsi->back->hw)) {
++				if (vlan_promisc)
++					ice_vf_dis_vlan_promisc(vsi, &vlan);
++
++				/* Disable VLAN filtering when only VLAN 0 is left */
++				if (!ice_vsi_has_non_zero_vlans(vsi)) {
++					err = vsi->inner_vlan_ops.dis_tx_filtering(vsi);
++					if (err)
++						return err;
++				}
++			}
+ 		}
+ 	}
+ 
+@@ -2907,6 +2934,13 @@ ice_vc_add_vlans(struct ice_vf *vf, struct ice_vsi *vsi,
+ 				if (err)
+ 					return err;
+ 			}
++
++			/* Enable VLAN filtering on first non-zero VLAN */
++			if (vf->spoofchk && vlan.vid && ice_is_dvm_ena(&vsi->back->hw)) {
++				err = vsi->outer_vlan_ops.ena_tx_filtering(vsi);
++				if (err)
++					return err;
++			}
+ 		}
+ 
+ 		vc_vlan = &vlan_fltr->inner;
+@@ -2922,10 +2956,19 @@ ice_vc_add_vlans(struct ice_vf *vf, struct ice_vsi *vsi,
+ 			/* no support for VLAN promiscuous on inner VLAN unless
+ 			 * we are in Single VLAN Mode (SVM)
+ 			 */
+-			if (!ice_is_dvm_ena(&vsi->back->hw) && vlan_promisc) {
+-				err = ice_vf_ena_vlan_promisc(vsi, &vlan);
+-				if (err)
+-					return err;
++			if (!ice_is_dvm_ena(&vsi->back->hw)) {
++				if (vlan_promisc) {
++					err = ice_vf_ena_vlan_promisc(vsi, &vlan);
++					if (err)
++						return err;
++				}
++
++				/* Enable VLAN filtering on first non-zero VLAN */
++				if (vf->spoofchk && vlan.vid) {
++					err = vsi->inner_vlan_ops.ena_tx_filtering(vsi);
++					if (err)
++						return err;
++				}
+ 			}
+ 		}
+ 	}
 -- 
-2.25.1
-
----------------------------------------------------------------------
-Intel Technology Poland sp. z o.o.
-ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
-Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek przegladanie lub rozpowszechnianie jest zabronione.
-This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by others is strictly prohibited.
+2.27.0
 
 _______________________________________________
 Intel-wired-lan mailing list
