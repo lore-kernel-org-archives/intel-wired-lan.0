@@ -1,83 +1,83 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4E0DC19F2D
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Aug 2022 07:36:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB20FC25B06
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Aug 2022 08:55:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4376060AD8;
-	Tue,  9 Aug 2022 07:36:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4376060AD8
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1967A40283;
+	Tue,  9 Aug 2022 08:55:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1967A40283
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1660030573;
-	bh=sYtVBlE8UDDe4uvrBRlJsS3CmJ6Pu064J5/VSWdqUdY=;
+	s=default; t=1660035334;
+	bh=6A1mxop+sSW3Vm9kloYqQMkIAMIRfT8mvB3zUYcIjEM=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=AaMXU+zf5al60RL2p8tPWO7D36A+fuwDlSw/2aTY5mcwFo7ZTQFMC1YCqi6qyqn/U
-	 jf1cNmCEyV5n/l8i/4CicHZtrr0Fvde/bB3DHfeW1HrI9zTbDXqJp2m9fnvPughcy4
-	 TwPwHkzJx2WBZVNEnqglJc13dMVnPhF2qU1pTH3ccTGU69CaeyVeVoLVcElJZR/rvB
-	 qX2qQ0dS9/NWWk8DVssmMpYBK4eweY2fzgZBYvyA3cKPhehVgju1IaD9i8zpL2wcNk
-	 n//jIMO+3qJcBP9TmcE8dxfxH/iWzbSSATXdRpj1myGqRL8FpaR75AsQOFiycU4FT1
-	 u6Z4tLmYEgtdQ==
+	b=wVDzjJcNB/ii2GN7PKtfCG3j3xgy3xp8EIVtFggPSLlOezqVzxXJBzNQjp1bsBLXw
+	 27dbb+p1xAHONMzkQwQ8qz152exSAtswKofi2WvASfYeSlVSIpxCBk9R++LbxaVtHu
+	 WuzM2VHzw1AdA/7bEyu055BJfFJraOPYYagm8g9Bo4U9HSsg9iApXk1AWwOqqNiU+O
+	 iNUULWxc4Tuy6a91PDZYeBXOgcWa6BOwBcEJRue4TKNxx2wJwbub7wGLw4pdxqT0tt
+	 0KHb7jwtiQxWEy+XIPrmwX57va93Nb/ej0+FHelFXI98Yzr0x1Lp7tl83J8MM0erQt
+	 +gWelsMPWspdQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id vEnMAG4crrLx; Tue,  9 Aug 2022 07:36:12 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id x-9BNI0ZWo57; Tue,  9 Aug 2022 08:55:33 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 31E5D60AE2;
-	Tue,  9 Aug 2022 07:36:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 31E5D60AE2
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 20C601BF27E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 07:36:11 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1A55240549;
+	Tue,  9 Aug 2022 08:55:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1A55240549
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 017D51BF5F5
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 08:55:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EDD2040932
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 07:36:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EDD2040932
+ by smtp2.osuosl.org (Postfix) with ESMTP id C5E8240549
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 08:55:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C5E8240549
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Ikry9s5b21S7 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  9 Aug 2022 07:36:09 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4764840354
-Received: from zju.edu.cn (mail.zju.edu.cn [61.164.42.155])
- by smtp4.osuosl.org (Postfix) with ESMTP id 4764840354
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 07:36:07 +0000 (UTC)
-Received: from localhost.localdomain (unknown [10.12.77.33])
- by mail-app4 (Coremail) with SMTP id cS_KCgDnIfxVDvJiEs6IAg--.63921S4;
- Tue, 09 Aug 2022 15:35:49 +0800 (CST)
-From: Lin Ma <linma@zju.edu.cn>
-To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, ast@kernel.org, daniel@iogearbox.net, hawk@kernel.org,
- john.fastabend@gmail.com, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Date: Tue,  9 Aug 2022 15:35:42 +0800
-Message-Id: <20220809073542.3390-1-linma@zju.edu.cn>
-X-Mailer: git-send-email 2.36.1
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id JMvWqudoNVB9 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  9 Aug 2022 08:55:30 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 831A740283
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 831A740283
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 08:55:30 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10433"; a="288353986"
+X-IronPort-AV: E=Sophos;i="5.93,224,1654585200"; d="scan'208";a="288353986"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Aug 2022 01:55:29 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.93,224,1654585200"; d="scan'208";a="694069185"
+Received: from s240.igk.intel.com (HELO s048.nql.local) ([10.102.18.202])
+ by FMSMGA003.fm.intel.com with ESMTP; 09 Aug 2022 01:55:28 -0700
+From: "Sokolowski, Jan" <jan.sokolowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue,  9 Aug 2022 10:57:44 +0200
+Message-Id: <20220809085744.2573-1-jan.sokolowski@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-X-CM-TRANSID: cS_KCgDnIfxVDvJiEs6IAg--.63921S4
-X-Coremail-Antispam: 1UD129KBjvJXoWxur4xCr13XF48ZrykuF17ZFb_yoWrtrWfpF
- 4DX342yr10qF1jq397Xa18Ary3Kw4rKryfK3W7uw4F93Z8JryvqrWrtryYvF9Y9395u3ZI
- yryDuw4xZF1DAFDanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDU0xBIdaVrnRJUUUvl1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AE
- w4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2
- IY67AKxVWDJVCq3wA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8Jr0_Cr1UM28EF7xvwVC2
- z280aVAFwI0_GcCE3s1l84ACjcxK6I8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcV
- Aq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j
- 6r18McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64
- vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7M4IIrI8v6xkF7I0E8cxan2IY04v7MxAIw28I
- cxkI7VAKI48JMxAIw28IcVCjz48v1sIEY20_GFWkJr1UJwCFx2IqxVCFs4IE7xkEbVWUJV
- W8JwC20s026c02F40E14v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF
- 1VAFwI0_Jw0_GFylIxkGc2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6x
- IIjxv20xvEc7CjxVAFwI0_Gr0_Cr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvE
- x4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvj
- DU0xZFpf9x0JUdHUDUUUUU=
-X-CM-SenderInfo: qtrwiiyqvtljo62m3hxhgxhubq/
-Subject: [Intel-wired-lan] [PATCH v3] igb: Add lock to avoid data race
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1660035330; x=1691571330;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=U8fMxvWVuTpNRo8au5arBqlmE51WSwNoz2ibbUd8/i4=;
+ b=jk1PRt/N7KbeLQVYnbXNSDKIC85dUlgLaF+EgqLc4Pm2z1B3QmPOuPOx
+ jXztk8D7+H2OItpH17U2ZutOF65Gtx9s/EgWGSy6KVaNbienCJgdCoy4A
+ 8h46e5TTHS634OemzU2mqR8P6Mw/yHkslGjPFZAT3dyRtN4qJ53GDABIX
+ bUTRE97Q4HNfjThcOiTyfhAa+7Q0BGKQwq2y3U2XH+hx2t6CvrH2Uaodp
+ POS2FMVIutauYMCUnMjMOQhHQdRwdwYGcPUNBMEcECconHzVRVGmnoN9o
+ nyGjB1wIhChSBG0f7IeQuKsO/oCVCY5MpUmvHW7RmDQ16HGHXlgRk0weA
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=jk1PRt/N
+Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix ADq rate limiting for PF
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,138 +90,59 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Lin Ma <linma@zju.edu.cn>
+Cc: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The commit c23d92b80e0b ("igb: Teardown SR-IOV before
-unregister_netdev()") places the unregister_netdev() call after the
-igb_disable_sriov() call to avoid functionality issue.
+From: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
 
-However, it introduces several race conditions when detaching a device.
-For example, when .remove() is called, the below interleaving leads to
-use-after-free.
+Fix HW rate limiting for ADq.
+Fallback to kernel queue selection for ADq, as it is network stack
+that decides which queue to use for transmit with ADq configured.
+Reset PF after creation of VMDq2 VSIs required for ADq, as to
+reprogram TX queue contexts in i40e_configure_tx_ring.
+Without this patch PF would limit TX rate only according to TC0.
 
- (FREE from device detaching)      |   (USE from netdev core)
-igb_remove                         |  igb_ndo_get_vf_config
- igb_disable_sriov                 |  vf >= adapter->vfs_allocated_count?
-  kfree(adapter->vf_data)          |
-  adapter->vfs_allocated_count = 0 |
-                                   |    memcpy(... adapter->vf_data[vf]
-
-Moreover, the igb_disable_sriov() also suffers from data race with the
-requests from VF driver.
-
- (FREE from device detaching)      |   (USE from requests)
-igb_remove                         |  igb_msix_other
- igb_disable_sriov                 |   igb_msg_task
-  kfree(adapter->vf_data)          |    vf < adapter->vfs_allocated_count
-  adapter->vfs_allocated_count = 0 |
-
-To this end, this commit first eliminates the data races from netdev
-core by using rtnl_lock (similar to commit 719479230893 ("dpaa2-eth: add
-MAC/PHY support through phylink")). And then adds a spinlock to
-eliminate races from driver requests. (similar to commit 1e53834ce541
-("ixgbe: Add locking to prevent panic when setting sriov_numvfs to zero")
-
-
-Fixes: c23d92b80e0b ("igb: Teardown SR-IOV before unregister_netdev()")
-Signed-off-by: Lin Ma <linma@zju.edu.cn>
+Fixes: a9ce82f744dc ("i40e: Enable 'channel' mode in mqprio for TC configs")
+Signed-off-by: Przemyslaw Patynowski <przemyslawx.patynowski@intel.com>
+Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
 ---
-V2 -> V3:  make the commit message much clear
-V1 -> V2:  fix typo in title idb -> igb
-V0 -> V1:  change title from "Add rtnl_lock" to "Add lock"
-           add additional spinlock as suggested by Jakub, according to
-           1e53834ce541 ("ixgbe: Add locking to prevent panic when setting
-           sriov_numvfs to zero")
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 ++-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
- drivers/net/ethernet/intel/igb/igb.h      |  2 ++
- drivers/net/ethernet/intel/igb/igb_main.c | 12 +++++++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 2d3daf022651..015b78144114 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -664,6 +664,8 @@ struct igb_adapter {
- 	struct igb_mac_addr *mac_table;
- 	struct vf_mac_filter vf_macs;
- 	struct vf_mac_filter *vf_mac_list;
-+	/* lock for VF resources */
-+	spinlock_t vfs_lock;
- };
- 
- /* flags controlling PTP/1588 function */
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index d8b836a85cc3..2796e81d2726 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3637,6 +3637,7 @@ static int igb_disable_sriov(struct pci_dev *pdev)
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
-+	unsigned long flags;
- 
- 	/* reclaim resources allocated to VFs */
- 	if (adapter->vf_data) {
-@@ -3649,12 +3650,13 @@ static int igb_disable_sriov(struct pci_dev *pdev)
- 			pci_disable_sriov(pdev);
- 			msleep(500);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 9f1d5de7bf16..10c1e1ea83a1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6659,6 +6659,9 @@ static int i40e_configure_queue_channels(struct i40e_vsi *vsi)
+ 			vsi->tc_seid_map[i] = ch->seid;
  		}
--
-+		spin_lock_irqsave(&adapter->vfs_lock, flags);
- 		kfree(adapter->vf_mac_list);
- 		adapter->vf_mac_list = NULL;
- 		kfree(adapter->vf_data);
- 		adapter->vf_data = NULL;
- 		adapter->vfs_allocated_count = 0;
-+		spin_unlock_irqrestore(&adapter->vfs_lock, flags);
- 		wr32(E1000_IOVCTL, E1000_IOVCTL_REUSE_VFQ);
- 		wrfl();
- 		msleep(100);
-@@ -3814,7 +3816,9 @@ static void igb_remove(struct pci_dev *pdev)
- 	igb_release_hw_control(adapter);
- 
- #ifdef CONFIG_PCI_IOV
-+	rtnl_lock();
- 	igb_disable_sriov(pdev);
-+	rtnl_unlock();
- #endif
- 
- 	unregister_netdev(netdev);
-@@ -3974,6 +3978,9 @@ static int igb_sw_init(struct igb_adapter *adapter)
- 
- 	spin_lock_init(&adapter->nfc_lock);
- 	spin_lock_init(&adapter->stats64_lock);
-+
-+	/* init spinlock to avoid concurrency of VF resources */
-+	spin_lock_init(&adapter->vfs_lock);
- #ifdef CONFIG_PCI_IOV
- 	switch (hw->mac.type) {
- 	case e1000_82576:
-@@ -7958,8 +7965,10 @@ static void igb_rcv_msg_from_vf(struct igb_adapter *adapter, u32 vf)
- static void igb_msg_task(struct igb_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
-+	unsigned long flags;
- 	u32 vf;
- 
-+	spin_lock_irqsave(&adapter->vfs_lock, flags);
- 	for (vf = 0; vf < adapter->vfs_allocated_count; vf++) {
- 		/* process any reset requests */
- 		if (!igb_check_for_rst(hw, vf))
-@@ -7973,6 +7982,7 @@ static void igb_msg_task(struct igb_adapter *adapter)
- 		if (!igb_check_for_ack(hw, vf))
- 			igb_rcv_ack_from_vf(adapter, vf);
  	}
-+	spin_unlock_irqrestore(&adapter->vfs_lock, flags);
- }
++
++	/* reset to reconfigure TX queue contexts */
++	i40e_do_reset(vsi->back, I40E_PF_RESET_FLAG, true);
+ 	return ret;
  
- /**
+ err_free:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index d4226161a3ef..69e67eb6aea7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -3688,7 +3688,8 @@ u16 i40e_lan_select_queue(struct net_device *netdev,
+ 	u8 prio;
+ 
+ 	/* is DCB enabled at all? */
+-	if (vsi->tc_config.numtc == 1)
++	if (vsi->tc_config.numtc == 1 ||
++	    i40e_is_tc_mqprio_enabled(vsi->back))
+ 		return netdev_pick_tx(netdev, skb, sb_dev);
+ 
+ 	prio = skb->priority;
 -- 
-2.36.1
+2.31.1
 
 _______________________________________________
 Intel-wired-lan mailing list
