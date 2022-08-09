@@ -1,68 +1,68 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97AB1C19F2D
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Aug 2022 04:48:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4E0DC19F2D
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  9 Aug 2022 07:36:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2297780C97;
-	Tue,  9 Aug 2022 04:48:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2297780C97
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4376060AD8;
+	Tue,  9 Aug 2022 07:36:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4376060AD8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1660020528;
-	bh=KFzWYIUpdcmx7/LME5aUQBmTsubDS3rsHdHGjp74ojk=;
+	s=default; t=1660030573;
+	bh=sYtVBlE8UDDe4uvrBRlJsS3CmJ6Pu064J5/VSWdqUdY=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=eyFNKRD+6167cGT+xTeIamoe7PxGezFxU+Ydq2FHWO9D3HWGJij0cxhLKipMHyy0H
-	 iZucmUopKv5ik5UQhD4stVwT5i+UvyXWyJd6t9DTRYLg5gkd+2+P0D9wzdEgyI1vxS
-	 mq1g0OxAPwqMgxl0H3rwlPzYr7X7qDOjada3vubR0CEVvAaLvgk8BRUhh7SzqNzDSB
-	 f+SCMf2JqEYnA6+Fd7ZZ2i/8GjU6pMShrfOJS1XUugialttTMaPHPBhVii+i+zmu7j
-	 KuoQs7MAeuc/+01/5E8Y9lyD8Mn9vXKUqvDCPkxUURdsyqT+oIzGI6lG3SusOc/JYg
-	 jvqUK03DkKWWA==
+	b=AaMXU+zf5al60RL2p8tPWO7D36A+fuwDlSw/2aTY5mcwFo7ZTQFMC1YCqi6qyqn/U
+	 jf1cNmCEyV5n/l8i/4CicHZtrr0Fvde/bB3DHfeW1HrI9zTbDXqJp2m9fnvPughcy4
+	 TwPwHkzJx2WBZVNEnqglJc13dMVnPhF2qU1pTH3ccTGU69CaeyVeVoLVcElJZR/rvB
+	 qX2qQ0dS9/NWWk8DVssmMpYBK4eweY2fzgZBYvyA3cKPhehVgju1IaD9i8zpL2wcNk
+	 n//jIMO+3qJcBP9TmcE8dxfxH/iWzbSSATXdRpj1myGqRL8FpaR75AsQOFiycU4FT1
+	 u6Z4tLmYEgtdQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XDNEIx-pCPAr; Tue,  9 Aug 2022 04:48:45 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id vEnMAG4crrLx; Tue,  9 Aug 2022 07:36:12 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D2C5480D7E;
-	Tue,  9 Aug 2022 04:48:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D2C5480D7E
+	by smtp3.osuosl.org (Postfix) with ESMTP id 31E5D60AE2;
+	Tue,  9 Aug 2022 07:36:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 31E5D60AE2
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id A4CEA1BF2C4
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 04:48:43 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 20C601BF27E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 07:36:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8102F4092C
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 04:48:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8102F4092C
+ by smtp4.osuosl.org (Postfix) with ESMTP id EDD2040932
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 07:36:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EDD2040932
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MTE3aY926hZZ for <intel-wired-lan@lists.osuosl.org>;
- Tue,  9 Aug 2022 04:48:41 +0000 (UTC)
+ with ESMTP id Ikry9s5b21S7 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  9 Aug 2022 07:36:09 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CBEC44091F
-Received: from zju.edu.cn (spam.zju.edu.cn [61.164.42.155])
- by smtp4.osuosl.org (Postfix) with ESMTP id CBEC44091F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 04:48:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4764840354
+Received: from zju.edu.cn (mail.zju.edu.cn [61.164.42.155])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4764840354
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  9 Aug 2022 07:36:07 +0000 (UTC)
 Received: from localhost.localdomain (unknown [10.12.77.33])
- by mail-app2 (Coremail) with SMTP id by_KCgC3vvYY5_FiY7Z_Ag--.15876S4;
- Tue, 09 Aug 2022 12:48:24 +0800 (CST)
+ by mail-app4 (Coremail) with SMTP id cS_KCgDnIfxVDvJiEs6IAg--.63921S4;
+ Tue, 09 Aug 2022 15:35:49 +0800 (CST)
 From: Lin Ma <linma@zju.edu.cn>
 To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
  davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
  pabeni@redhat.com, ast@kernel.org, daniel@iogearbox.net, hawk@kernel.org,
  john.fastabend@gmail.com, intel-wired-lan@lists.osuosl.org,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bpf@vger.kernel.org
-Date: Tue,  9 Aug 2022 12:48:20 +0800
-Message-Id: <20220809044820.2861-1-linma@zju.edu.cn>
+Date: Tue,  9 Aug 2022 15:35:42 +0800
+Message-Id: <20220809073542.3390-1-linma@zju.edu.cn>
 X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-X-CM-TRANSID: by_KCgC3vvYY5_FiY7Z_Ag--.15876S4
-X-Coremail-Antispam: 1UD129KBjvJXoWxur4xCr13XF48ZrykuF17ZFb_yoWrZr1rpF
- 4DX342yr10qF12qa97Xa18Ary3K3yrtrWfK3W3uw4F93Z8JryqqrWFyryjvFyFk393u3ZI
- yryDuw4fZ3WDAFDanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+X-CM-TRANSID: cS_KCgDnIfxVDvJiEs6IAg--.63921S4
+X-Coremail-Antispam: 1UD129KBjvJXoWxur4xCr13XF48ZrykuF17ZFb_yoWrtrWfpF
+ 4DX342yr10qF1jq397Xa18Ary3Kw4rKryfK3W7uw4F93Z8JryvqrWrtryYvF9Y9395u3ZI
+ yryDuw4xZF1DAFDanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
  9KBjDU0xBIdaVrnRJUUUvl1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AE
  w4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2
  IY67AKxVWDJVCq3wA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8Jr0_Cr1UM28EF7xvwVC2
@@ -77,7 +77,7 @@ X-Coremail-Antispam: 1UD129KBjvJXoWxur4xCr13XF48ZrykuF17ZFb_yoWrZr1rpF
  x4A2jsIE14v26r1j6r4UMIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvj
  DU0xZFpf9x0JUdHUDUUUUU=
 X-CM-SenderInfo: qtrwiiyqvtljo62m3hxhgxhubq/
-Subject: [Intel-wired-lan] [PATCH v2] igb: Add lock to avoid data race
+Subject: [Intel-wired-lan] [PATCH v3] igb: Add lock to avoid data race
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,19 +111,26 @@ igb_remove                         |  igb_ndo_get_vf_config
   adapter->vfs_allocated_count = 0 |
                                    |    memcpy(... adapter->vf_data[vf]
 
-Moreover, just as commit 1e53834ce541 ("ixgbe: Add locking to
-prevent panic when setting sriov_numvfs to zero") shows. The
-igb_disable_sriov function also need to watch out the requests from VF
-driver.
+Moreover, the igb_disable_sriov() also suffers from data race with the
+requests from VF driver.
+
+ (FREE from device detaching)      |   (USE from requests)
+igb_remove                         |  igb_msix_other
+ igb_disable_sriov                 |   igb_msg_task
+  kfree(adapter->vf_data)          |    vf < adapter->vfs_allocated_count
+  adapter->vfs_allocated_count = 0 |
 
 To this end, this commit first eliminates the data races from netdev
 core by using rtnl_lock (similar to commit 719479230893 ("dpaa2-eth: add
-MAC/PHY support through phylink")). And then adds a spinlock just as
-1d53834ce541 did.
+MAC/PHY support through phylink")). And then adds a spinlock to
+eliminate races from driver requests. (similar to commit 1e53834ce541
+("ixgbe: Add locking to prevent panic when setting sriov_numvfs to zero")
+
 
 Fixes: c23d92b80e0b ("igb: Teardown SR-IOV before unregister_netdev()")
 Signed-off-by: Lin Ma <linma@zju.edu.cn>
 ---
+V2 -> V3:  make the commit message much clear
 V1 -> V2:  fix typo in title idb -> igb
 V0 -> V1:  change title from "Add rtnl_lock" to "Add lock"
            add additional spinlock as suggested by Jakub, according to
