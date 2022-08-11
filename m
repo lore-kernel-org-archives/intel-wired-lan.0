@@ -1,88 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90DA7C19F2A
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 11 Aug 2022 18:59:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74F52C19F2A
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 11 Aug 2022 20:00:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 09DB741774;
-	Thu, 11 Aug 2022 18:59:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 09DB741774
+	by smtp3.osuosl.org (Postfix) with ESMTP id D661060BC0;
+	Thu, 11 Aug 2022 20:00:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D661060BC0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1660244350;
-	bh=oa6NWL2vMZfhcoA2n04WHQf/gD1MOXQ+/ZBJu9taUho=;
+	s=default; t=1660248019;
+	bh=O/9g8z2/LFQLnCYyNcwXGUsecNgGF0NkCKgqJ+9eR0s=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=RWgvmlZCifzkpU5Ewh7oCbi1uRcgN7BQexqNC+QDZDbhCnOIt3xSdVxU7gCg3dIO6
-	 gRZt3jw4V5sSx/tSL6DWhI5cXS4ArcZZkmjN/LN42Boc5GzXKORF86vKRKPXsICLdK
-	 SuZV6Z2nVBWEnBq/px6t5Yyg+BgeeJJmsfinwfBfhWwRNAbHyklRcgfvRAk65XB9Ea
-	 cWNMftHYXZ7j2uj5uM2Jd3Pu2N++KpMKmFqrpH/07xK9dgyNBfGEgYxzdo/zaz+ZEw
-	 CHjRuHEG2mhf7z43X4aZOkFYtuyN0aOpmAkFYI8z+T5r8tGbKO7NQbTdyCMTuaBBp7
-	 wKW7vtrFf13RQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4b9SKeYr1Te4; Thu, 11 Aug 2022 18:59:08 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 48D054179C;
-	Thu, 11 Aug 2022 18:59:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 48D054179C
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B76361BF228
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 18:59:06 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9E4FA60B8E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 18:59:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9E4FA60B8E
+	b=Rgs1dGzMG61rcg2AXT7fHSo2J1BAOn/PnGmqGG5pcgUY3dFfk+DHpebSDEwaswoVw
+	 a78296PHnLm9Dw2C2k4uopcmxvAajzqXCHHs1Re0AuslSJNrQHRaiYyBv6fjBepca8
+	 +nCvovs53uWJ1E/hJs/nNVhPLpm3ia25Lw3rWRVZ+Go8XF5BqRm06yuiygtSsRFFXj
+	 ZdtjJLLZbphF0wykedxa3tdN3AUkFhVwUrfEpL+TbxzggKB9G/rJGDAVlkBMyvVYSX
+	 Twak9qlUUy3Tndds0VT0fxwjOBKznLJTNsdFZaSrxob7J6X/RsDfZ21OXjRA2SFegG
+	 rKVyG12OiCpEA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id rIF-Epwb-BKz for <intel-wired-lan@lists.osuosl.org>;
- Thu, 11 Aug 2022 18:59:04 +0000 (UTC)
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id wBiP5u1am6Ch; Thu, 11 Aug 2022 20:00:19 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id B322D60C02;
+	Thu, 11 Aug 2022 20:00:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B322D60C02
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 64FBB1BF3AA
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 20:00:17 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2D67B82A2D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 20:00:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2D67B82A2D
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id X4heb3LxVdAc for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 11 Aug 2022 20:00:14 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6882360B6C
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6882360B6C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 18:59:04 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10436"; a="290192764"
-X-IronPort-AV: E=Sophos;i="5.93,230,1654585200"; d="scan'208";a="290192764"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Aug 2022 11:59:03 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3603682B49
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3603682B49
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 20:00:13 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10436"; a="292711068"
+X-IronPort-AV: E=Sophos;i="5.93,230,1654585200"; d="scan'208";a="292711068"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Aug 2022 13:00:07 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,230,1654585200"; d="scan'208";a="673810482"
+X-IronPort-AV: E=Sophos;i="5.93,230,1654585200"; d="scan'208";a="933455900"
 Received: from lkp-server02.sh.intel.com (HELO cfab306db114) ([10.239.97.151])
- by fmsmga004.fm.intel.com with ESMTP; 11 Aug 2022 11:59:01 -0700
+ by fmsmga005.fm.intel.com with ESMTP; 11 Aug 2022 13:00:04 -0700
 Received: from kbuild by cfab306db114 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1oMDOX-0000Xr-0K;
- Thu, 11 Aug 2022 18:59:01 +0000
-Date: Fri, 12 Aug 2022 02:58:15 +0800
+ (envelope-from <lkp@intel.com>) id 1oMELc-0000bp-10;
+ Thu, 11 Aug 2022 20:00:04 +0000
+Date: Fri, 12 Aug 2022 03:59:36 +0800
 From: kernel test robot <lkp@intel.com>
 To: Vinicius Costa Gomes <vinicius.gomes@intel.com>, jhogan@kernel.org
-Message-ID: <202208120244.a7CKRiFy-lkp@intel.com>
+Message-ID: <202208120359.pPxeIJNZ-lkp@intel.com>
 References: <20220811151342.19059-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
 In-Reply-To: <20220811151342.19059-1-vinicius.gomes@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1660244344; x=1691780344;
+ t=1660248013; x=1691784013;
  h=date:from:to:cc:subject:message-id:references:
  mime-version:in-reply-to;
- bh=OgRPmckFG0TtMVAfj/fjsMBpWluP7n5nc5q0S29fQ70=;
- b=B9Co7/MzMkBXuUDwiRgvaz1hGeuSi3tRJdLy7JR5Gw99hPJvGXmpvZM8
- PMWcsow2ZL5W/4z1GIDqZIMuQRGALLeFlFLvF4oyp8YcoxHeLxKN9Puvg
- 04dbTMMbGrQH1qsNS2W0jR1SsHKt8jnoBTd1JRo9b4QWwiZY9DMYvHeWu
- LJS37z6x3hsrYbkV9lepY2lkl2e0LULISQ6rhKIoS+BOcxWZpSniE1euV
- /1gjQdLvTBz3w53vInvu/XKf1Q3FuVejrOXkepr7U0S1IAYROjTTzGJAO
- CWahFFt0OrGVpbWcHhx0yQVCWQqhjzvEMNpUN+Ysm7FDsQkTWGfOgX+17
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=YiQBXT9wfa1wetxm9fnBkCHowbBE8sB6uMZyl/xqtkU=;
+ b=AsZ5eV0y1vakGbY7B8oTpmC5rtcIruPAZRrEoKzoYmRQHvrVjpz3KIKM
+ R1RnA/giZ0wMrZp06KtJvFxmkKw+PKtuFM2xxxpIrAfQJxYnapDVHhlGm
+ zBXSbNXuop6IZN02tnUO/5BG6JiFYm//7iMmUy9q81ve8Y2qanwyUc1Zt
+ Tm706ZAfwtHvjalxhbIk4f6v2xUlx8T39QRt7cke7pRKoYiEksMq/mUt5
+ DTKdH/du/LXADlOX985p0rXU9L/La8dI8PB0I7ta595coNLSoxvz3YJRZ
+ 6OspqbPvK9ZmIGy6rim2VcMji2aOJ8uqmWlxdAvmCOTsueiZ4Ap1o1ka7
+ w==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=B9Co7/Mz
+ header.a=rsa-sha256 header.s=Intel header.b=AsZ5eV0y
 Subject: Re: [Intel-wired-lan] [PATCH] igc: fix deadlock caused by taking
  RTNL in RPM resume path
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -98,8 +98,7 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Paul Menzel <pmenzel@molgen.mpg.de>, kbuild-all@lists.01.org,
- netdev@vger.kernel.org, llvm@lists.linux.dev,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
  intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
@@ -119,82 +118,50 @@ https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
 url:    https://github.com/intel-lab-lkp/linux/commits/Vinicius-Costa-Gomes/igc-fix-deadlock-caused-by-taking-RTNL-in-RPM-resume-path/20220811-232032
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-config: i386-randconfig-a013 (https://download.01.org/0day-ci/archive/20220812/202208120244.a7CKRiFy-lkp@intel.com/config)
-compiler: clang version 16.0.0 (https://github.com/llvm/llvm-project 5f1c7e2cc5a3c07cbc2412e851a7283c1841f520)
+config: x86_64-rhel-8.3-kselftests (https://download.01.org/0day-ci/archive/20220812/202208120359.pPxeIJNZ-lkp@intel.com/config)
+compiler: gcc-11 (Debian 11.3.0-3) 11.3.0
 reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
         # https://github.com/intel-lab-lkp/linux/commit/61ed7ed758f23a10549c5d4fdc82ef9356281cbf
         git remote add linux-review https://github.com/intel-lab-lkp/linux
         git fetch --no-tags linux-review Vinicius-Costa-Gomes/igc-fix-deadlock-caused-by-taking-RTNL-in-RPM-resume-path/20220811-232032
         git checkout 61ed7ed758f23a10549c5d4fdc82ef9356281cbf
         # save the config file
         mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=i386 SHELL=/bin/bash drivers/net/ethernet/intel/igc/
+        make W=1 O=build_dir ARCH=x86_64 SHELL=/bin/bash
 
 If you fix the issue, kindly add following tag where applicable
 Reported-by: kernel test robot <lkp@intel.com>
 
 All errors (new ones prefixed by >>):
 
->> drivers/net/ethernet/intel/igc/igc_main.c:6838:26: error: use of undeclared identifier 'igc_suspend'; did you mean '__igc_suspend'?
-           SET_SYSTEM_SLEEP_PM_OPS(igc_suspend, igc_resume)
-                                   ^~~~~~~~~~~
-                                   __igc_suspend
-   include/linux/pm.h:343:22: note: expanded from macro 'SET_SYSTEM_SLEEP_PM_OPS'
-           SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-                               ^
-   include/linux/pm.h:313:26: note: expanded from macro 'SYSTEM_SLEEP_PM_OPS'
-           .suspend = pm_sleep_ptr(suspend_fn), \
-                                   ^
-   include/linux/pm.h:439:65: note: expanded from macro 'pm_sleep_ptr'
-   #define pm_sleep_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), (_ptr))
-                                                                   ^
-   include/linux/kernel.h:57:38: note: expanded from macro 'PTR_IF'
-   #define PTR_IF(cond, ptr)       ((cond) ? (ptr) : NULL)
-                                              ^
-   drivers/net/ethernet/intel/igc/igc_main.c:6706:27: note: '__igc_suspend' declared here
-   static int __maybe_unused __igc_suspend(struct device *dev)
-                             ^
->> drivers/net/ethernet/intel/igc/igc_main.c:6838:26: error: use of undeclared identifier 'igc_suspend'; did you mean '__igc_suspend'?
-           SET_SYSTEM_SLEEP_PM_OPS(igc_suspend, igc_resume)
-                                   ^~~~~~~~~~~
-                                   __igc_suspend
-   include/linux/pm.h:343:22: note: expanded from macro 'SET_SYSTEM_SLEEP_PM_OPS'
-           SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-                               ^
-   include/linux/pm.h:315:25: note: expanded from macro 'SYSTEM_SLEEP_PM_OPS'
-           .freeze = pm_sleep_ptr(suspend_fn), \
-                                  ^
-   include/linux/pm.h:439:65: note: expanded from macro 'pm_sleep_ptr'
-   #define pm_sleep_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), (_ptr))
-                                                                   ^
-   include/linux/kernel.h:57:38: note: expanded from macro 'PTR_IF'
-   #define PTR_IF(cond, ptr)       ((cond) ? (ptr) : NULL)
-                                              ^
-   drivers/net/ethernet/intel/igc/igc_main.c:6706:27: note: '__igc_suspend' declared here
-   static int __maybe_unused __igc_suspend(struct device *dev)
-                             ^
->> drivers/net/ethernet/intel/igc/igc_main.c:6838:26: error: use of undeclared identifier 'igc_suspend'; did you mean '__igc_suspend'?
-           SET_SYSTEM_SLEEP_PM_OPS(igc_suspend, igc_resume)
-                                   ^~~~~~~~~~~
-                                   __igc_suspend
-   include/linux/pm.h:343:22: note: expanded from macro 'SET_SYSTEM_SLEEP_PM_OPS'
-           SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-                               ^
-   include/linux/pm.h:317:27: note: expanded from macro 'SYSTEM_SLEEP_PM_OPS'
-           .poweroff = pm_sleep_ptr(suspend_fn), \
-                                    ^
-   include/linux/pm.h:439:65: note: expanded from macro 'pm_sleep_ptr'
-   #define pm_sleep_ptr(_ptr) PTR_IF(IS_ENABLED(CONFIG_PM_SLEEP), (_ptr))
-                                                                   ^
-   include/linux/kernel.h:57:38: note: expanded from macro 'PTR_IF'
-   #define PTR_IF(cond, ptr)       ((cond) ? (ptr) : NULL)
-                                              ^
-   drivers/net/ethernet/intel/igc/igc_main.c:6706:27: note: '__igc_suspend' declared here
-   static int __maybe_unused __igc_suspend(struct device *dev)
-                             ^
-   3 errors generated.
+   In file included from arch/x86/include/asm/percpu.h:27,
+                    from arch/x86/include/asm/nospec-branch.h:14,
+                    from arch/x86/include/asm/paravirt_types.h:40,
+                    from arch/x86/include/asm/ptrace.h:97,
+                    from arch/x86/include/asm/math_emu.h:5,
+                    from arch/x86/include/asm/processor.h:13,
+                    from arch/x86/include/asm/timex.h:5,
+                    from include/linux/timex.h:67,
+                    from include/linux/time32.h:13,
+                    from include/linux/time.h:60,
+                    from include/linux/stat.h:19,
+                    from include/linux/module.h:13,
+                    from drivers/net/ethernet/intel/igc/igc_main.c:4:
+>> drivers/net/ethernet/intel/igc/igc_main.c:6838:33: error: 'igc_suspend' undeclared here (not in a function); did you mean 'dpm_suspend'?
+    6838 |         SET_SYSTEM_SLEEP_PM_OPS(igc_suspend, igc_resume)
+         |                                 ^~~~~~~~~~~
+   include/linux/kernel.h:57:44: note: in definition of macro 'PTR_IF'
+      57 | #define PTR_IF(cond, ptr)       ((cond) ? (ptr) : NULL)
+         |                                            ^~~
+   include/linux/pm.h:313:20: note: in expansion of macro 'pm_sleep_ptr'
+     313 |         .suspend = pm_sleep_ptr(suspend_fn), \
+         |                    ^~~~~~~~~~~~
+   include/linux/pm.h:343:9: note: in expansion of macro 'SYSTEM_SLEEP_PM_OPS'
+     343 |         SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
+         |         ^~~~~~~~~~~~~~~~~~~
+   drivers/net/ethernet/intel/igc/igc_main.c:6838:9: note: in expansion of macro 'SET_SYSTEM_SLEEP_PM_OPS'
+    6838 |         SET_SYSTEM_SLEEP_PM_OPS(igc_suspend, igc_resume)
+         |         ^~~~~~~~~~~~~~~~~~~~~~~
 
 
 vim +6838 drivers/net/ethernet/intel/igc/igc_main.c
