@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 627CCC19F2A
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 11 Aug 2022 13:05:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95329C19F2A
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 11 Aug 2022 13:06:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1081960709;
-	Thu, 11 Aug 2022 13:05:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1081960709
+	by smtp3.osuosl.org (Postfix) with ESMTP id 43DF1610ED;
+	Thu, 11 Aug 2022 13:06:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 43DF1610ED
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1660223156;
-	bh=8ipBUGrsBeEtE1dMyE3hXizp+kTDj27g+/2Sz1UFnEY=;
+	s=default; t=1660223160;
+	bh=u16KODXMi2+ogAjbfk6RPBiL7e61KkQEWa1HjIMzSO0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=QnX41tn09HGPywGMVxPLQLcMAndDX+qnl3mb+4iXh7nAo3MZ+qdxNej5dHdUiL3zG
-	 0zbDdVoghIQaOm3oCbAjVQRqH36z8ZjlQ6q4Zu+UJ8rm3K/gyyjoPsQmLFRQuhl6AT
-	 KQQctt8SCfIpmQnvOszpuctLYay96ykP0MqDiObo7UzL2gLa8OjOi9GyJ82hX55X1M
-	 w82Z3IVTZjxQn1jrCBTDoe/tInV60wSt1Mjqn58zGrO0YobFe07esMkCPAPzn5Ezya
-	 ITshJEE3y5B0Ak5wk/OjK1Mjs/wAJ6E4YEsQMWDUr75xZLVJ6Wej2eFYiUaIGXdLxH
-	 /Ugyu+7Oozuhg==
+	b=QDG6RcM+lQOnw7c7sdZa0pEFoCyLdpT1Ewbe4pryC+vak8XgC87mdWAvQV6hXKQP6
+	 IByDw+eC5p1VCBfGdZ99kxbrjOC2oa2brIxz6D7XZYukSg0ivmNmf03pI6XkCmaOuo
+	 8plliwNaZvNiwSLoFzueLj2gOedlqXHp0Chs8cbpk6V7z+wSizfOvZ3wP3ldHjgLXF
+	 jJIBjlhvYXCp+RVOAIKP07sWq6IVsPUmKMKqtfkhldhTcfOTSN0+zHcT1O7ZrvkJC2
+	 IEG74KzHOd0Xpqy5dsXOoZwKmv6HnoIsWaW3YsQKvdBfclv/Ge3vjKMOGEdGPQZGD8
+	 JFlbUHBOeLAew==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id w2QMtU5lBrQZ; Thu, 11 Aug 2022 13:05:55 +0000 (UTC)
+	with ESMTP id Za7kUnDARzET; Thu, 11 Aug 2022 13:05:59 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C60DC610E5;
-	Thu, 11 Aug 2022 13:05:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C60DC610E5
+	by smtp3.osuosl.org (Postfix) with ESMTP id BC538610F1;
+	Thu, 11 Aug 2022 13:05:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BC538610F1
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id B281A1BF2F6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 13:05:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id BE1241BF2F6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 13:05:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5078541821
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 13:05:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5078541821
+ by smtp4.osuosl.org (Postfix) with ESMTP id 902C441813
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 13:05:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 902C441813
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Uftf4qH5yiGb for <intel-wired-lan@lists.osuosl.org>;
- Thu, 11 Aug 2022 13:05:42 +0000 (UTC)
+ with ESMTP id f7JpEpH1Ai95 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 11 Aug 2022 13:05:46 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 59D1C41813
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6048B41829
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 59D1C41813
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 13:05:42 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10435"; a="355342585"
-X-IronPort-AV: E=Sophos;i="5.93,228,1654585200"; d="scan'208";a="355342585"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6048B41829
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 Aug 2022 13:05:46 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10435"; a="355342605"
+X-IronPort-AV: E=Sophos;i="5.93,228,1654585200"; d="scan'208";a="355342605"
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Aug 2022 06:05:42 -0700
+ 11 Aug 2022 06:05:45 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,228,1654585200"; d="scan'208";a="933304206"
+X-IronPort-AV: E=Sophos;i="5.93,228,1654585200"; d="scan'208";a="933304236"
 Received: from propan.igk.intel.com ([10.211.8.82])
- by fmsmga005.fm.intel.com with ESMTP; 11 Aug 2022 06:05:40 -0700
+ by fmsmga005.fm.intel.com with ESMTP; 11 Aug 2022 06:05:44 -0700
 From: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 11 Aug 2022 15:05:33 +0200
-Message-Id: <20220811130535.1053828-2-anatolii.gerasymenko@intel.com>
+Date: Thu, 11 Aug 2022 15:05:35 +0200
+Message-Id: <20220811130535.1053828-4-anatolii.gerasymenko@intel.com>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <20220811130535.1053828-1-anatolii.gerasymenko@intel.com>
 References: <20220811130535.1053828-1-anatolii.gerasymenko@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1660223142; x=1691759142;
+ t=1660223146; x=1691759146;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=GwW/WK2hzz+hzeE5SFGK0IoRAoupQOMWjY8qRGVh/LE=;
- b=GERWQQoL2PFrFUeQySzGpWHObIfG6QUcYiyj/VUVUr2LkXOfoubehCNA
- cTsz0vIwQlnHpJ+kDDA/IAclFOHncxcA06dYVxfHgMDkgGYLBYB2xGx0Q
- 58hmA6F+ZZoTM79nNyLKkHrRET1N6cGBpsUvHBBv7U8aSI5C3gOvxDZyu
- es4e3BZsd1krZzeXcZP3qxY+k+wMUNQEf7rDzib47OmM/EALUBk7bZPpC
- TtVF9d5KesG9XdvpTHMlpy0XzERBTh5b7XE6aW/LQW0bICgUlfYwnq+Xa
- 6pAYEurmDCY2us/9shb3l2lf1gI2GqRZizcJQba/bj3mrRFef+7YVmj3H
- g==;
+ bh=Z4Bn3kZpbN2ZgpMCRqZbThTZZy71GUKtRLa/ssfIvDE=;
+ b=d19VCz79Kyy0WhlK1QbwvjmkWKu3zBLWDlKqoTg9vMX+/TtsYVMdc4iA
+ yDyTO/lF5H4EKlktI/ybHFTd58Hs4KEGFzgVVv12uhqzo7pTZRABxJlGy
+ amwFp8G5vwJR4n/OOUyN5kWJBcvcPhtgz5pUFruTjS6uvYoMWrzrWcSNH
+ jjw8RuNB4sYmb6WHiBF3fVRE2l//w6uwDcLc7eKRO+ejHmOlOdZblW1NZ
+ tHpwOfEypQKM+QvjHKYKXRwmriN+NaZB1w7TFh2wIhsPrd2krr+7N8RYo
+ Jyw1842kYbh9mJJfZpG9JQH02bWykjnBsy2RcOYXyAsk6zfW7pDzPcse+
+ w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GERWQQoL
-Subject: [Intel-wired-lan] [PATCH net-next v1 1/3] ice: Add port option
- admin queue commands
+ header.a=rsa-sha256 header.s=Intel header.b=d19VCz79
+Subject: [Intel-wired-lan] [PATCH net-next v1 3/3] ice: Implement devlink
+ port split operations
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,254 +95,418 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Damian Milosek <damian.milosek@intel.com>, Lev Faerman <lev.faerman@intel.com>,
  Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implement support for Get/Set Port Options admin queue commands
-(0x06EA/0x06EB). These firmware commands allow the driver to change port
-specific options and will be used in the next patch.
+Allow to configure port split options using the devlink port split
+interface. Support port splitting only for port 0, as the FW has
+a predefined set of available port split options for the whole device.
 
-Co-developed-by: Lev Faerman <lev.faerman@intel.com>
-Signed-off-by: Lev Faerman <lev.faerman@intel.com>
-Co-developed-by: Damian Milosek <damian.milosek@intel.com>
-Signed-off-by: Damian Milosek <damian.milosek@intel.com>
+Add ice_devlink_port_options_print() function to print the table with
+all available FW port split options. It will be printed after each port
+split and unsplit command.
+
+Add documentation for devlink port split interface usage for the ice
+driver.
+
 Co-developed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Signed-off-by: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  53 ++++++++
- drivers/net/ethernet/intel/ice/ice_common.c   | 115 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h   |   9 ++
- 3 files changed, 177 insertions(+)
+ Documentation/networking/devlink/ice.rst     |  36 +++
+ drivers/net/ethernet/intel/ice/ice_devlink.c | 288 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_type.h    |   2 +
+ 3 files changed, 326 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 9939238573a4..7eb8162c2ecc 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1423,6 +1423,55 @@ struct ice_aqc_set_port_id_led {
- 	u8 rsvd[13];
- };
+diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
+index 8c082b139bbd..0c89ceb8986d 100644
+--- a/Documentation/networking/devlink/ice.rst
++++ b/Documentation/networking/devlink/ice.rst
+@@ -139,6 +139,42 @@ EMP firmware image.
+ The driver does not currently support reloading the driver via
+ ``DEVLINK_RELOAD_ACTION_DRIVER_REINIT``.
  
-+/* Get Port Options (indirect, 0x06EA) */
-+struct ice_aqc_get_port_options {
-+	u8 lport_num;
-+	u8 lport_num_valid;
-+	u8 port_options_count;
-+#define ICE_AQC_PORT_OPT_COUNT_M	GENMASK(3, 0)
-+#define ICE_AQC_PORT_OPT_MAX		16
++Port split
++==========
 +
-+	u8 innermost_phy_index;
-+	u8 port_options;
-+#define ICE_AQC_PORT_OPT_ACTIVE_M	GENMASK(3, 0)
-+#define ICE_AQC_PORT_OPT_VALID		BIT(7)
++The ``ice`` driver supports port splitting only for port 0, as the FW has
++a predefined set of available port split options for the whole device.
 +
-+	u8 pending_port_option_status;
-+#define ICE_AQC_PENDING_PORT_OPT_IDX_M	GENMASK(3, 0)
-+#define ICE_AQC_PENDING_PORT_OPT_VALID	BIT(7)
++A system reboot is required for port split to be applied.
 +
-+	u8 rsvd[2];
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
++The following command will select the port split option with 4 ports:
 +
-+struct ice_aqc_get_port_options_elem {
-+	u8 pmd;
-+#define ICE_AQC_PORT_OPT_PMD_COUNT_M	GENMASK(3, 0)
++.. code:: shell
 +
-+	u8 max_lane_speed;
-+#define ICE_AQC_PORT_OPT_MAX_LANE_M	GENMASK(3, 0)
-+#define ICE_AQC_PORT_OPT_MAX_LANE_100M	0
-+#define ICE_AQC_PORT_OPT_MAX_LANE_1G	1
-+#define ICE_AQC_PORT_OPT_MAX_LANE_2500M	2
-+#define ICE_AQC_PORT_OPT_MAX_LANE_5G	3
-+#define ICE_AQC_PORT_OPT_MAX_LANE_10G	4
-+#define ICE_AQC_PORT_OPT_MAX_LANE_25G	5
-+#define ICE_AQC_PORT_OPT_MAX_LANE_50G	6
-+#define ICE_AQC_PORT_OPT_MAX_LANE_100G	7
-+	u8 global_scid[2];
-+	u8 phy_scid[2];
-+	u8 pf2port_cid[2];
-+};
++    $ devlink port split pci/0000:16:00.0/0 count 4
 +
-+/* Set Port Option (direct, 0x06EB) */
-+struct ice_aqc_set_port_option {
-+	u8 lport_num;
-+	u8 lport_num_valid;
-+	u8 selected_port_option;
-+	u8 rsvd[13];
-+};
++The list of all available port options will be printed to dynamic debug after
++each ``split`` and ``unsplit`` command. The first option is the default.
 +
- /* Set/Get GPIO (direct, 0x06EC/0x06ED) */
- struct ice_aqc_gpio {
- 	__le16 gpio_ctrl_handle;
-@@ -2082,6 +2131,8 @@ struct ice_aq_desc {
- 		struct ice_aqc_gpio read_write_gpio;
- 		struct ice_aqc_sff_eeprom read_write_sff_param;
- 		struct ice_aqc_set_port_id_led set_port_id_led;
-+		struct ice_aqc_get_port_options get_port_options;
-+		struct ice_aqc_set_port_option set_port_option;
- 		struct ice_aqc_get_sw_cfg get_sw_conf;
- 		struct ice_aqc_set_port_params set_port_params;
- 		struct ice_aqc_sw_rules sw_rules;
-@@ -2243,6 +2294,8 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_read_i2c				= 0x06E2,
- 	ice_aqc_opc_write_i2c				= 0x06E3,
- 	ice_aqc_opc_set_port_id_led			= 0x06E9,
-+	ice_aqc_opc_get_port_options			= 0x06EA,
-+	ice_aqc_opc_set_port_option			= 0x06EB,
- 	ice_aqc_opc_set_gpio				= 0x06EC,
- 	ice_aqc_opc_get_gpio				= 0x06ED,
- 	ice_aqc_opc_sff_eeprom				= 0x06EE,
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 27d0cbbd29da..93f39cabf0ad 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -3534,6 +3534,121 @@ ice_aq_set_port_id_led(struct ice_port_info *pi, bool is_orig_mode,
- 	return ice_aq_send_cmd(hw, &desc, NULL, 0, cd);
++.. code:: shell
++
++    ice 0000:16:00.0: Available port split options and max port speeds (Gbps):
++    ice 0000:16:00.0: Status  Split      Quad 0          Quad 1
++    ice 0000:16:00.0:         count  L0  L1  L2  L3  L4  L5  L6  L7
++    ice 0000:16:00.0: Active  2     100   -   -   - 100   -   -   -
++    ice 0000:16:00.0:         2      50   -  50   -   -   -   -   -
++    ice 0000:16:00.0: Pending 4      25  25  25  25   -   -   -   -
++    ice 0000:16:00.0:         4      25  25   -   -  25  25   -   -
++    ice 0000:16:00.0:         8      10  10  10  10  10  10  10  10
++    ice 0000:16:00.0:         1     100   -   -   -   -   -   -   -
++
++There could be multiple FW port options with the same port split count. When
++the same port split count request is issued again, the next FW port option with
++the same port split count will be selected.
++
++``devlink port unsplit`` will select the option with a split count of 1. If
++there is no FW option available with split count 1, you will receive an error.
++
+ Regions
+ =======
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
+index 3337314a7b35..e6ec20079ced 100644
+--- a/drivers/net/ethernet/intel/ice/ice_devlink.c
++++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
+@@ -9,6 +9,8 @@
+ #include "ice_eswitch.h"
+ #include "ice_fw_update.h"
+ 
++static int ice_active_port_option = -1;
++
+ /* context for devlink info version reporting */
+ struct ice_info_ctx {
+ 	char buf[128];
+@@ -466,12 +468,259 @@ ice_devlink_reload_empr_finish(struct devlink *devlink,
+ 	return 0;
  }
  
 +/**
-+ * ice_aq_get_port_options
-+ * @hw: pointer to the hw struct
-+ * @options: buffer for the resultant port options
-+ * @option_count: input - size of the buffer in port options structures,
-+ *                output - number of returned port options
-+ * @lport: logical port to call the command with (optional)
-+ * @lport_valid: when false, FW uses port owned by the PF instead of lport,
-+ *               when PF owns more than 1 port it must be true
-+ * @active_option_idx: index of active port option in returned buffer
-+ * @active_option_valid: active option in returned buffer is valid
-+ * @pending_option_idx: index of pending port option in returned buffer
-+ * @pending_option_valid: pending option in returned buffer is valid
-+ *
-+ * Calls Get Port Options AQC (0x06ea) and verifies result.
++ * ice_devlink_port_opt_speed_str - convert speed to a string
++ * @speed: speed value
 + */
-+int
-+ice_aq_get_port_options(struct ice_hw *hw,
-+			struct ice_aqc_get_port_options_elem *options,
-+			u8 *option_count, u8 lport, bool lport_valid,
-+			u8 *active_option_idx, bool *active_option_valid,
-+			u8 *pending_option_idx, bool *pending_option_valid)
++static const char *ice_devlink_port_opt_speed_str(u8 speed)
 +{
-+	struct ice_aqc_get_port_options *cmd;
-+	struct ice_aq_desc desc;
++	switch (speed & ICE_AQC_PORT_OPT_MAX_LANE_M) {
++	case ICE_AQC_PORT_OPT_MAX_LANE_100M:
++		return "0.1";
++	case ICE_AQC_PORT_OPT_MAX_LANE_1G:
++		return "1";
++	case ICE_AQC_PORT_OPT_MAX_LANE_2500M:
++		return "2.5";
++	case ICE_AQC_PORT_OPT_MAX_LANE_5G:
++		return "5";
++	case ICE_AQC_PORT_OPT_MAX_LANE_10G:
++		return "10";
++	case ICE_AQC_PORT_OPT_MAX_LANE_25G:
++		return "25";
++	case ICE_AQC_PORT_OPT_MAX_LANE_50G:
++		return "50";
++	case ICE_AQC_PORT_OPT_MAX_LANE_100G:
++		return "100";
++	}
++
++	return "-";
++}
++
++#define ICE_PORT_OPT_DESC_LEN	50
++/**
++ * ice_devlink_port_options_print - Print available port split options
++ * @pf: the PF to print split port options
++ *
++ * Prints a table with available port split options and max port speeds
++ */
++static void ice_devlink_port_options_print(struct ice_pf *pf)
++{
++	u8 i, j, options_count, cnt, speed, pending_idx, active_idx;
++	struct ice_aqc_get_port_options_elem *options, *opt;
++	struct device *dev = ice_pf_to_dev(pf);
++	bool active_valid, pending_valid;
++	char desc[ICE_PORT_OPT_DESC_LEN];
++	const char *str;
 +	int status;
-+	u8 i;
 +
-+	/* options buffer shall be able to hold max returned options */
-+	if (*option_count < ICE_AQC_PORT_OPT_COUNT_M)
++	options = kcalloc(ICE_AQC_PORT_OPT_MAX * ICE_MAX_PORT_PER_PCI_DEV,
++			  sizeof(*options), GFP_KERNEL);
++	if (!options)
++		return;
++
++	for (i = 0; i < ICE_MAX_PORT_PER_PCI_DEV; i++) {
++		opt = options + i * ICE_AQC_PORT_OPT_MAX;
++		options_count = ICE_AQC_PORT_OPT_MAX;
++		active_valid = 0;
++
++		status = ice_aq_get_port_options(&pf->hw, opt, &options_count,
++						 i, true, &active_idx,
++						 &active_valid, &pending_idx,
++						 &pending_valid);
++		if (status) {
++			dev_dbg(dev, "Couldn't read port option for port %d, err %d\n",
++				i, status);
++			goto err;
++		}
++	}
++
++	dev_dbg(dev, "Available port split options and max port speeds (Gbps):\n");
++	dev_dbg(dev, "Status  Split      Quad 0          Quad 1\n");
++	dev_dbg(dev, "        count  L0  L1  L2  L3  L4  L5  L6  L7\n");
++
++	for (i = 0; i < options_count; i++) {
++		cnt = 0;
++
++		if (i == ice_active_port_option)
++			str = "Active";
++		else if ((i == pending_idx) && pending_valid)
++			str = "Pending";
++		else
++			str = "";
++
++		cnt += snprintf(&desc[cnt], ICE_PORT_OPT_DESC_LEN - cnt,
++				"%-8s", str);
++
++		cnt += snprintf(&desc[cnt], ICE_PORT_OPT_DESC_LEN - cnt,
++				"%-6u", options[i].pmd);
++
++		for (j = 0; j < ICE_MAX_PORT_PER_PCI_DEV; ++j) {
++			speed = options[i + j * ICE_AQC_PORT_OPT_MAX].max_lane_speed;
++			str = ice_devlink_port_opt_speed_str(speed);
++			cnt += snprintf(&desc[cnt], ICE_PORT_OPT_DESC_LEN - cnt,
++					"%3s ", str);
++		}
++
++		dev_dbg(dev, "%s\n", desc);
++	}
++
++err:
++	kfree(options);
++}
++
++/**
++ * ice_devlink_aq_set_port_option - Send set port option admin queue command
++ * @pf: the PF to print split port options
++ * @option_idx: selected port option
++ * @extack: extended netdev ack structure
++ *
++ * Sends set port option admin queue command with selected port option and
++ * calls NVM write activate.
++ */
++static int
++ice_devlink_aq_set_port_option(struct ice_pf *pf, u8 option_idx,
++			       struct netlink_ext_ack *extack)
++{
++	struct device *dev = ice_pf_to_dev(pf);
++	int status;
++
++	status = ice_aq_set_port_option(&pf->hw, 0, true, option_idx);
++	if (status) {
++		dev_dbg(dev, "ice_aq_set_port_option, err %d aq_err %d\n",
++			status, pf->hw.adminq.sq_last_status);
++		NL_SET_ERR_MSG_MOD(extack, "Port split request failed");
++		return -EIO;
++	}
++
++	status = ice_acquire_nvm(&pf->hw, ICE_RES_WRITE);
++	if (status) {
++		dev_dbg(dev, "ice_acquire_nvm failed, err %d aq_err %d\n",
++			status, pf->hw.adminq.sq_last_status);
++		NL_SET_ERR_MSG_MOD(extack, "Failed to acquire NVM semaphore");
++		return -EIO;
++	}
++
++	status = ice_nvm_write_activate(&pf->hw, ICE_AQC_NVM_ACTIV_REQ_EMPR, NULL);
++	if (status) {
++		dev_dbg(dev, "ice_nvm_write_activate failed, err %d aq_err %d\n",
++			status, pf->hw.adminq.sq_last_status);
++		NL_SET_ERR_MSG_MOD(extack, "Port split request failed to save data");
++		ice_release_nvm(&pf->hw);
++		return -EIO;
++	}
++
++	ice_release_nvm(&pf->hw);
++
++	NL_SET_ERR_MSG_MOD(extack, "Reboot required to finish port split");
++	return 0;
++}
++
++/**
++ * ice_devlink_port_split - .port_split devlink handler
++ * @devlink: devlink instance structure
++ * @port: devlink port structure
++ * @count: number of ports to split to
++ * @extack: extended netdev ack structure
++ *
++ * Callback for the devlink .port_split operation.
++ *
++ * Unfortunately, the devlink expression of available options is limited
++ * to just a number, so search for an FW port option which supports
++ * the specified number. As there could be multiple FW port options with
++ * the same port split count, allow switching between them. When the same
++ * port split count request is issued again, switch to the next FW port
++ * option with the same port split count.
++ *
++ * Return: zero on success or an error code on failure.
++ */
++static int
++ice_devlink_port_split(struct devlink *devlink, struct devlink_port *port,
++		       unsigned int count, struct netlink_ext_ack *extack)
++{
++	struct ice_aqc_get_port_options_elem options[ICE_AQC_PORT_OPT_MAX];
++	u8 i, j, active_idx, pending_idx, new_option;
++	struct ice_pf *pf = devlink_priv(devlink);
++	u8 option_count = ICE_AQC_PORT_OPT_MAX;
++	struct device *dev = ice_pf_to_dev(pf);
++	bool active_valid, pending_valid;
++	int status;
++
++	status = ice_aq_get_port_options(&pf->hw, options, &option_count,
++					 0, true, &active_idx, &active_valid,
++					 &pending_idx, &pending_valid);
++	if (status) {
++		dev_dbg(dev, "Couldn't read port split options, err = %d\n",
++			status);
++		NL_SET_ERR_MSG_MOD(extack, "Failed to get available port split options");
++		return -EIO;
++	}
++
++	new_option = ICE_AQC_PORT_OPT_MAX;
++	active_idx = pending_valid ? pending_idx : active_idx;
++	for (i = 1; i <= option_count; i++) {
++		/* In order to allow switching between FW port options with
++		 * the same port split count, search for a new option starting
++		 * from the active/pending option (with array wrap around).
++		 */
++		j = (active_idx + i) % option_count;
++
++		if (count == options[j].pmd) {
++			new_option = j;
++			break;
++		}
++	}
++
++	if (new_option == active_idx) {
++		dev_dbg(dev, "request to split: count: %u is already set and there are no other options\n",
++			count);
++		NL_SET_ERR_MSG_MOD(extack, "Requested split count is already set");
++		ice_devlink_port_options_print(pf);
 +		return -EINVAL;
++	}
 +
-+	cmd = &desc.params.get_port_options;
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_port_options);
++	if (new_option == ICE_AQC_PORT_OPT_MAX) {
++		dev_dbg(dev, "request to split: count: %u not found\n", count);
++		NL_SET_ERR_MSG_MOD(extack, "Port split requested unsupported port config");
++		ice_devlink_port_options_print(pf);
++		return -EINVAL;
++	}
 +
-+	if (lport_valid)
-+		cmd->lport_num = lport;
-+	cmd->lport_num_valid = lport_valid;
-+
-+	status = ice_aq_send_cmd(hw, &desc, options,
-+				 *option_count * sizeof(*options), NULL);
++	status = ice_devlink_aq_set_port_option(pf, new_option, extack);
 +	if (status)
 +		return status;
 +
-+	/* verify direct FW response & set output parameters */
-+	*option_count = FIELD_GET(ICE_AQC_PORT_OPT_COUNT_M,
-+				  cmd->port_options_count);
-+	ice_debug(hw, ICE_DBG_PHY, "options: %x\n", *option_count);
-+	*active_option_valid = FIELD_GET(ICE_AQC_PORT_OPT_VALID,
-+					 cmd->port_options);
-+	if (*active_option_valid) {
-+		*active_option_idx = FIELD_GET(ICE_AQC_PORT_OPT_ACTIVE_M,
-+					       cmd->port_options);
-+		if (*active_option_idx > (*option_count - 1))
-+			return -EIO;
-+		ice_debug(hw, ICE_DBG_PHY, "active idx: %x\n",
-+			  *active_option_idx);
-+	}
-+
-+	*pending_option_valid = FIELD_GET(ICE_AQC_PENDING_PORT_OPT_VALID,
-+					  cmd->pending_port_option_status);
-+	if (*pending_option_valid) {
-+		*pending_option_idx = FIELD_GET(ICE_AQC_PENDING_PORT_OPT_IDX_M,
-+						cmd->pending_port_option_status);
-+		if (*pending_option_idx > (*option_count - 1))
-+			return -EIO;
-+		ice_debug(hw, ICE_DBG_PHY, "pending idx: %x\n",
-+			  *pending_option_idx);
-+	}
-+
-+	/* mask output options fields */
-+	for (i = 0; i < *option_count; i++) {
-+		options[i].pmd = FIELD_GET(ICE_AQC_PORT_OPT_PMD_COUNT_M,
-+					   options[i].pmd);
-+		options[i].max_lane_speed = FIELD_GET(ICE_AQC_PORT_OPT_MAX_LANE_M,
-+						      options[i].max_lane_speed);
-+		ice_debug(hw, ICE_DBG_PHY, "pmds: %x max speed: %x\n",
-+			  options[i].pmd, options[i].max_lane_speed);
-+	}
++	ice_devlink_port_options_print(pf);
 +
 +	return 0;
 +}
 +
 +/**
-+ * ice_aq_set_port_option
-+ * @hw: pointer to the hw struct
-+ * @lport: logical port to call the command with
-+ * @lport_valid: when false, FW uses port owned by the PF instead of lport,
-+ *               when PF owns more than 1 port it must be true
-+ * @new_option: new port option to be written
++ * ice_devlink_port_unsplit - .port_unsplit devlink handler
++ * @devlink: devlink instance structure
++ * @port: devlink port structure
++ * @extack: extended netdev ack structure
 + *
-+ * Calls Set Port Options AQC (0x06eb).
++ * Callback for the devlink .port_unsplit operation.
++ * Calls ice_devlink_port_split with split count set to 1.
++ * There could be no FW option available with split count 1.
++ *
++ * Return: zero on success or an error code on failure.
 + */
-+int
-+ice_aq_set_port_option(struct ice_hw *hw, u8 lport, u8 lport_valid,
-+		       u8 new_option)
++static int
++ice_devlink_port_unsplit(struct devlink *devlink, struct devlink_port *port,
++			 struct netlink_ext_ack *extack)
 +{
-+	struct ice_aqc_set_port_option *cmd;
-+	struct ice_aq_desc desc;
++	return ice_devlink_port_split(devlink, port, 1, extack);
++}
 +
-+	if (new_option > ICE_AQC_PORT_OPT_COUNT_M)
-+		return -EINVAL;
+ static const struct devlink_ops ice_devlink_ops = {
+ 	.supported_flash_update_params = DEVLINK_SUPPORT_FLASH_UPDATE_OVERWRITE_MASK,
+ 	.reload_actions = BIT(DEVLINK_RELOAD_ACTION_FW_ACTIVATE),
+ 	/* The ice driver currently does not support driver reinit */
+ 	.reload_down = ice_devlink_reload_empr_start,
+ 	.reload_up = ice_devlink_reload_empr_finish,
++	.port_split = ice_devlink_port_split,
++	.port_unsplit = ice_devlink_port_unsplit,
+ 	.eswitch_mode_get = ice_eswitch_mode_get,
+ 	.eswitch_mode_set = ice_eswitch_mode_set,
+ 	.info_get = ice_devlink_info_get,
+@@ -694,6 +943,39 @@ void ice_devlink_unregister_params(struct ice_pf *pf)
+ 				  ARRAY_SIZE(ice_devlink_params));
+ }
+ 
++/**
++ * ice_devlink_set_port_split_options - Set port split options
++ * @pf: the PF to set port split options
++ * @attrs: devlink attributes
++ *
++ * Sets devlink port split options based on available FW port options
++ */
++static void
++ice_devlink_set_port_split_options(struct ice_pf *pf,
++				   struct devlink_port_attrs *attrs)
++{
++	struct ice_aqc_get_port_options_elem options[ICE_AQC_PORT_OPT_MAX];
++	u8 i, active_idx, pending_idx, option_count = ICE_AQC_PORT_OPT_MAX;
++	bool active_valid, pending_valid;
++	int status;
 +
-+	cmd = &desc.params.set_port_option;
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_port_option);
++	status = ice_aq_get_port_options(&pf->hw, options, &option_count,
++					 0, true, &active_idx, &active_valid,
++					 &pending_idx, &pending_valid);
++	if (status) {
++		dev_dbg(ice_pf_to_dev(pf), "Couldn't read port split options, err = %d\n",
++			status);
++		return;
++	}
 +
-+	if (lport_valid)
-+		cmd->lport_num = lport;
++	/* find the biggest available port split count */
++	for (i = 0; i < option_count; i++)
++		attrs->lanes = max_t(int, attrs->lanes, options[i].pmd);
 +
-+	cmd->lport_num_valid = lport_valid;
-+	cmd->selected_port_option = new_option;
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
++	attrs->splittable = attrs->lanes ? 1 : 0;
++	ice_active_port_option = active_idx;
 +}
 +
  /**
-  * ice_aq_sff_eeprom
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 61b7c60db689..e5ead3f2ba54 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -151,6 +151,15 @@ int
- ice_aq_set_port_id_led(struct ice_port_info *pi, bool is_orig_mode,
- 		       struct ice_sq_cd *cd);
- int
-+ice_aq_get_port_options(struct ice_hw *hw,
-+			struct ice_aqc_get_port_options_elem *options,
-+			u8 *option_count, u8 lport, bool lport_valid,
-+			u8 *active_option_idx, bool *active_option_valid,
-+			u8 *pending_option_idx, bool *pending_option_valid);
-+int
-+ice_aq_set_port_option(struct ice_hw *hw, u8 lport, u8 lport_valid,
-+		       u8 new_option);
-+int
- ice_aq_sff_eeprom(struct ice_hw *hw, u16 lport, u8 bus_addr,
- 		  u16 mem_addr, u8 page, u8 set_page, u8 *data, u8 length,
- 		  bool write, struct ice_sq_cd *cd);
+  * ice_devlink_create_pf_port - Create a devlink port for this PF
+  * @pf: the PF to create a devlink port for
+@@ -722,6 +1004,12 @@ int ice_devlink_create_pf_port(struct ice_pf *pf)
+ 	attrs.flavour = DEVLINK_PORT_FLAVOUR_PHYSICAL;
+ 	attrs.phys.port_number = pf->hw.bus.func;
+ 
++	/* As FW supports only port split options for whole device,
++	 * set port split options only for first PF.
++	 */
++	if (pf->hw.pf_id == 0)
++		ice_devlink_set_port_split_options(pf, &attrs);
++
+ 	ice_devlink_set_switch_id(pf, &attrs.switch_id);
+ 
+ 	devlink_port_attrs_set(devlink_port, &attrs);
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index 861b64322959..dca3438351fa 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -564,6 +564,8 @@ enum ice_rl_type {
+ #define ICE_SCHED_INVAL_PROF_ID		0xFFFF
+ #define ICE_SCHED_DFLT_BURST_SIZE	(15 * 1024)	/* in bytes (15k) */
+ 
++#define ICE_MAX_PORT_PER_PCI_DEV 8
++
+  /* Data structure for saving BW information */
+ enum ice_bw_type {
+ 	ICE_BW_TYPE_PRIO,
 -- 
 2.37.1
 
