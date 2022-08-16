@@ -1,184 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5628C25B0E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Aug 2022 11:29:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72309C25B0E
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Aug 2022 12:26:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 24B3882768;
-	Tue, 16 Aug 2022 11:29:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 24B3882768
+	by smtp4.osuosl.org (Postfix) with ESMTP id E681041712;
+	Tue, 16 Aug 2022 12:26:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E681041712
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1660649346;
-	bh=H+U/V6dj394wBRa6bhUtkP6Wt5X9BPFFaJTucsRX23o=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=MA0t1OX7vXeeRbQZW+nx/diYSJIwVfuKga69qzmU8/h4ww93986n6HEwPT49x49KB
-	 fLf6RckObIDsNm60+uncacu0lG9PemF9uzFENHhRsEBzmZozqmXrdS5GK2WKdvHodn
-	 vIovntFuWuTEza1iuCHEXOefXrRziEMLHQtCtAdKnn0lFw/HpVVP+9en+0ZmAcCPXZ
-	 Fa75zRCQN5IW2se+cmx2M3mGj8Bxg4RwJKmdDBEmRAj80eKIw7V/qAZbMrwWLQkMu8
-	 C5Ns/3Bf9U2tD1oN7xTX5iTC55BrKfSmMnl37qateM30Je+3846HkNH6eG6nMnSq/p
-	 K9G6WQ940iZnA==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 2j32MiXHnV4d; Tue, 16 Aug 2022 11:29:05 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1549582778;
-	Tue, 16 Aug 2022 11:29:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1549582778
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 7D6271BF386
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 11:29:04 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5D2F541579
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 11:29:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D2F541579
+	s=default; t=1660652768;
+	bh=QwHiwS984U8sqa8SeGx7CPdjRgjFWe7r1Zq+x1VN/m0=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=2ec7EJi18dMdNelZCyfoRddJq8et3J5U25/PPaC5AtbSAsR4Xgp3x53SH3fe9WWiW
+	 t9L64eONWKbAzgJqraoO3KH6lMJQ7/ycal19N1xv9ISQ+jjZZIxHGefyjL8+x9xlCp
+	 V3o7lmu84xWGUkJdWKIHrFSR0hYn7spWLKFjOzfmn1PH6qfE5gUrpBlfr43WjAPVn8
+	 tBQRQnudse8qqK9lSX80ZhXyVndeqtYzEwcTVczkHEd7kWh9CImlybXL2pqkSnflVM
+	 mfHXUek6NfrsV80ZWGqeUoj/gS7xLr1R0Au1XlhiZRwdLn557qaWwTQvkhyyes2gvv
+	 UTuzQu0Yyr/mg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dx_e8XaokeTp for <intel-wired-lan@lists.osuosl.org>;
- Tue, 16 Aug 2022 11:29:03 +0000 (UTC)
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id vHHdknaHlyDt; Tue, 16 Aug 2022 12:26:06 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1AD534163D;
+	Tue, 16 Aug 2022 12:26:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1AD534163D
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id BBB4F1BF82D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 12:26:04 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9507540531
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 12:26:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9507540531
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id MdRVjjDZpRRn for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 16 Aug 2022 12:26:02 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2899A409E9
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2899A409E9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 11:29:03 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10440"; a="289764501"
-X-IronPort-AV: E=Sophos;i="5.93,240,1654585200"; d="scan'208";a="289764501"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Aug 2022 04:29:02 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8C1F44026A
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8C1F44026A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 12:26:02 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10440"; a="353947275"
+X-IronPort-AV: E=Sophos;i="5.93,241,1654585200"; d="scan'208";a="353947275"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Aug 2022 05:26:01 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,240,1654585200"; d="scan'208";a="557662332"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
- by orsmga003.jf.intel.com with ESMTP; 16 Aug 2022 04:29:02 -0700
-Received: from orsmsx607.amr.corp.intel.com (10.22.229.20) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.28; Tue, 16 Aug 2022 04:29:01 -0700
-Received: from orsmsx603.amr.corp.intel.com (10.22.229.16) by
- ORSMSX607.amr.corp.intel.com (10.22.229.20) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.28; Tue, 16 Aug 2022 04:29:01 -0700
-Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
- orsmsx603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.28 via Frontend Transport; Tue, 16 Aug 2022 04:29:01 -0700
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.173)
- by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2375.28; Tue, 16 Aug 2022 04:29:01 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Wir6iP8ixEPUxlXsM0Vd8W/lfr5kimG2E0m0mVxo3Rn65GpZpTr9+CTWG9horTvhOW6sKsmAtWsCalAEIuOYIjXiiSKYLVIKpgOU/u6FFU/bXXTWPxDw/S+57NEagWN/2z5AsDRWpxEfzST5KbIhppNKZn0KdYqhjaoY+++bANA764qtTlucFtayzuRAcLlsLhOzt1eS3EyHaH4Nkbcl664IR+TvShrhaPX4dRfMqpOcGsg7D8seJCD+6RczYSptdBabzOCjmNnLiBDPwcOJ+9Q6Fw/laSmqB6nydDghSpVAXiQdVuEDRDn7RZjdrgieAanMhJaUU73n+wWPvDl1tA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=wkAT4aNTyOWlBKbqNgmOHDUFU6wjv8uJ7dIh1rdCsgk=;
- b=cFO7fSMxE+PjsdTM70o5DDXIbkR/6dDEDAd59ak2e1g86CnSnPvXtUHZlOO8tyTvtjrqyqniaaXJFn2BI2L4jWCItPPifurDIhv9IoBrXYZmRX4X8OV06ZgZm1vYoOoQ8iYjSV1ybnAduPxJTntKXPeglmmJ9tyGqYKH2OH5TZ2ziBIdk8LeIwgKW4j9XypC3vkOvutv7o8Jm/CuxnNWfk2SvOThGtLyFaQ/i7woQ3xijZg3GfrXAFXtkLbpsv3iXRAXyAM+/ibbB7kh9V+Oak1ekfi01oIhZPP6eLm7d+aHxT196OF1vHj0BxqdRwCZleaGf/oq19W1+rGDQai9GA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from DM8PR11MB5621.namprd11.prod.outlook.com (2603:10b6:8:38::14) by
- CH0PR11MB5538.namprd11.prod.outlook.com (2603:10b6:610:d5::23) with
- Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5525.11; Tue, 16 Aug 2022 11:29:00 +0000
-Received: from DM8PR11MB5621.namprd11.prod.outlook.com
- ([fe80::d45a:9b13:46a1:8a35]) by DM8PR11MB5621.namprd11.prod.outlook.com
- ([fe80::d45a:9b13:46a1:8a35%8]) with mapi id 15.20.5504.028; Tue, 16 Aug 2022
- 11:28:59 +0000
-From: "Jankowski, Konrad0" <konrad0.jankowski@intel.com>
-To: "Palczewski, Mateusz" <mateusz.palczewski@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-Thread-Topic: [Intel-wired-lan] [PATCH net v2] ice: Fix VF not able to send
- tagged traffic with no VLAN filters
-Thread-Index: AQHYpxUwzAAdYHTWtEW6PHCQe/b4fq2xeH5Q
-Date: Tue, 16 Aug 2022 11:28:59 +0000
-Message-ID: <DM8PR11MB5621CE6291796BDA853156A8AB6B9@DM8PR11MB5621.namprd11.prod.outlook.com>
-References: <20220803084246.213685-1-mateusz.palczewski@intel.com>
-In-Reply-To: <20220803084246.213685-1-mateusz.palczewski@intel.com>
-Accept-Language: pl-PL, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-dlp-version: 11.6.500.17
-dlp-product: dlpe-windows
-dlp-reaction: no-action
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 971a91c0-3455-467a-86a4-08da7f7a83c0
-x-ms-traffictypediagnostic: CH0PR11MB5538:EE_
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: pm9RYQ4C+l3hPaTkG7qrgyIgzY8e6shPULadiBND4jaQmiCBZuombQJaj1e51K9MDHgyEC/6lyyXFzzKoL1PpAKvwQhECuWaNlqhw7VhVRUXsDketzyX/4ZKr5xv3Z4b/qyCzLTCe83t89Kha2Prql3pSps9egImOPktgrAmJH3TG+HV6AmqrDGUvNv6Vsm55tTDhWw+6KTmeB7uZpTu3A4KE1URj+E3zq9ntvb5/ZE381QjqnREG3HOX6AASiLefljrccTXamDSOLKXpfHXbWBf/V6TsBpxuyseaKVyRgkmb90s9BzRJPFwX9YMS2I3n76G715hRj/2EcvE5rrmjvbPPMy0Pu0g5EbjF2iGEdC08WLmWGnM/Q7rkQVM3zTmIGFQQYY8tNWm6jbc3dOEPSoFngq3B3ICeF9MsKaaA8UiFHc7QvViYTJn1ZNJHFO5ilqA6YVea0vHZy7bUfF+dlN3IIC3FHCnTALNEBxXitPUf9AK9CqzYT39YbugAZP+zI/UWyTb7pUA5NdsnaI+phb4gsdBw0ZH6GGXfyt7SMEBcfAGXth7sRFzlVHmnErsCbUgmIlvjopX9UDaYW53ACnaRj8mI/PxVBCtfMq6TfGlG3zkMCKgeitAOffpP5zmifA8VRLSeU1B5mnXdiSKOSWU5+ikQBjDOB5q4q15LEXYjV19rDPUrvnvyKMjNGaSzAWth3F/cIWWDZIspe2FlJ68PjIEXCwfWEjtrjr0nEgOpTFA20j3sFRnu/Lj+vUfuiH2Ux62h9KVcQ787bW9SJbsClQokY9DJ3aj08ZxfevWjVXM5Zszx453ZUMcTyu7
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DM8PR11MB5621.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230016)(366004)(136003)(376002)(346002)(39860400002)(396003)(71200400001)(41300700001)(478600001)(316002)(38100700002)(4326008)(64756008)(110136005)(66946007)(8676002)(8936002)(66446008)(76116006)(66476007)(66556008)(52536014)(5660300002)(26005)(2906002)(38070700005)(53546011)(107886003)(122000001)(186003)(86362001)(6506007)(33656002)(82960400001)(83380400001)(7696005)(9686003)(55016003);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?IyZGJftc9k7OiLu2vAgH8F2MVMNulfYo8rfKTnmlw7DOF6BQsXagc4HuXWfB?=
- =?us-ascii?Q?QMyCGZGYJ32ugiNVF4ZaVZ74ld0r4601bUHpnQQdOWNPxLOV1dR2b6ieyYDU?=
- =?us-ascii?Q?Q5DJPG+X4dRjLAzxWuk5kPHixukbr+qwyTufajfpA/YBt+/kUwq1x9UvFxvj?=
- =?us-ascii?Q?VXhtzHUrzDsXZjfAZNKZbvjizao0PaSv8a7LnYWn1bjW6n3VxxM6Q3DT1q9l?=
- =?us-ascii?Q?4caYUjkXQeGRMYANVKFvCulvf3zmnhPPVtH3tL13deR5Zxmu6AxRep5Mc0Mq?=
- =?us-ascii?Q?YPAR/O85LyQXWLo17J2RFlKIA52rjWqL45Fz42Pg/SYtjvto9BdO1GmzR5vP?=
- =?us-ascii?Q?1U2jkQkdhbRXrLj+zUcyozd4JNwzg5P99Yi6OXZoti4uTi/5jhfn9nu6/Swu?=
- =?us-ascii?Q?cSfbcmkMH0ghZBeMywGHaaol5171mnxwQ15mPnZaWFcB2yPhKsvs3pr+P8HQ?=
- =?us-ascii?Q?wzLsUJxwWYRo3O42Cn+34vN7ZjgrDtTeSNThz2vwPqlxgHDjao5JwAafFlVK?=
- =?us-ascii?Q?uFfmCPU9fprhTblEUI/mHFxInS6Ovz39oidDk7vndj/gM53eVqFcFqYX7Gg7?=
- =?us-ascii?Q?TlXeT0yWpPzLlqBig4M++ls3ftwohbuyfiPM/Lx0ARVr2M+2cgb0ysLmmtom?=
- =?us-ascii?Q?HTJy54XIN+RBBEwAXEHhX9rPUuPtpstZOgpfRbT/hm8qceMxO9xHWruDIe1P?=
- =?us-ascii?Q?+woX4BFrc48msZxJWb8PoI3XlNm5Ycp+mrOZ23OdoHPgvo03u90TX2D+MYph?=
- =?us-ascii?Q?Ri5CZElj8dC3Byl6DsU4QmD53RGo0EoeKGT7EWvdJuqW9tzFcShuLnbyxS0R?=
- =?us-ascii?Q?DFlxjNSgFYMCDN2xa7kCFoZ0VEhBxtFYWZFbkXJVMXdpAz1u5gYsPGR05vqN?=
- =?us-ascii?Q?BaDxu/PeobY5YviL8hB5b3Htz58kC7shJRTqljjn1AYkvdM6V4YR99F+5cg3?=
- =?us-ascii?Q?LZQ2jVEC4jRzBMhEon3jwl/oeQXxTNs1ZkXdlEjOxcYoqoipFMpC4La2PtHD?=
- =?us-ascii?Q?sJ5XLgvdteldf8Qh2Drp0TUoyElZB8yb7mCh6yPeLvPIAqYM3GoDOWE8O5/j?=
- =?us-ascii?Q?Cl5NVf/7hrreBy3BSzPpDCnaBUqYXp+N+FG7ql08/uy5fWxbRsTo5y7Mlzsy?=
- =?us-ascii?Q?P2ZZuJ3LRiMb/2fMl5ggdKuatpDezer+1wgl1UJZP4uoSOILsrVcBAELwLdc?=
- =?us-ascii?Q?VSUPt4LZ1KLk15JINedaHZmfTYeY7Tm0+bHsRW2CxJdHucys69cmY88Q2aKq?=
- =?us-ascii?Q?FEx4ATigULG0RJiHO8Ft0bEkK/qDD1H7YaoINCu8RDsGH0m6JsTm1NZdu22R?=
- =?us-ascii?Q?CX50fD+B493jLslhnoqH6vSBKfkMZHftnUXItfQyhOg+0+fCqheZFDxvAPPw?=
- =?us-ascii?Q?Voiyjt0DEyDMdBKYmqNVCLV9+kz+5/DXiw/W2QnvMd4j0LNFtqFNO7KAh/ut?=
- =?us-ascii?Q?FPIEpWoYabVlgZ0DsucuZM37MR0KpbyKBqRnLmMArhkdItmq98uPc+XGJbi9?=
- =?us-ascii?Q?Ir/72/lIKnRyHjXutnN9O5nYuxj9ECK5VoG/yTqMb968rMyPp+JBBqm0fbkC?=
- =?us-ascii?Q?QbhZIRr/t90hi/L/h3sQYqwsPAUiakpFtV/s3Kt1KHubotJYVhRJ0jmkzD+w?=
- =?us-ascii?Q?sQ=3D=3D?=
+X-IronPort-AV: E=Sophos;i="5.93,241,1654585200"; d="scan'208";a="667089706"
+Received: from irvmail001.ir.intel.com ([10.43.11.63])
+ by fmsmga008.fm.intel.com with ESMTP; 16 Aug 2022 05:26:00 -0700
+Received: from lplachno-mobl.ger.corp.intel.com
+ (lplachno-mobl.ger.corp.intel.com [10.213.25.254])
+ by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
+ 27GCPvrf015260; Tue, 16 Aug 2022 13:25:58 +0100
+From: Lukasz Plachno <lukasz.plachno@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue, 16 Aug 2022 14:22:43 +0200
+Message-Id: <20220816122242.26012-1-lukasz.plachno@intel.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DM8PR11MB5621.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 971a91c0-3455-467a-86a4-08da7f7a83c0
-X-MS-Exchange-CrossTenant-originalarrivaltime: 16 Aug 2022 11:28:59.9361 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: AsQVz2knvsTgf4VYRa+WQHdBzvJ+O9ZgvkVB3goYk5VR2nzhTBnf6oxwlUQ680A9rw826AEtAr3qPDbZ8+l0STpPxHeiJpgzYfmTz2t0nSU=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH0PR11MB5538
-X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1660649343; x=1692185343;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=rBnD32jKASi07L82C7sLXHlmEqWiYofyu2vTXWWUbOs=;
- b=MBR4wuPhKLb86PtG5R6g9gH0sZqcyNyU/HG6m6vjTpkXUMARC12xRPVn
- POsbya6MZNprtOo7DKgQdevJjFNmB5sT8tQt9VAvAinu1sysO3s9dfqwT
- GGEjwkjX1lyvQt6QAtV38kZ408EMJHH/C6IZqBsHZEu+3VajTwoxOF8zR
- nclmY9PqJwLFyxpse2tmkNwHw5J/2W9Dxgmc9VhbTgSC4LlQ0V33YTxay
- yYTky18G8z4ntDIA3VcMM79fbnkHGhoNDhmBOk9gZh4QsBkUOhJS6P9lV
- kCKLaU/g8Ti4ibRDAHC4nPKsQIc8e/6/y96IFteie37jbMUiBSx4pyyGO
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1660652762; x=1692188762;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=cC9YvEfFtAiLzB/iPr10K1fQBW7AInZPCsN5QY59YtA=;
+ b=GIa6VVkqD/T7P8Sb6YZGhop3Q6xIwJXgEGdI+c6imod1dCj5lv0PQzSs
+ cDeJ4D/b8a07p13NjVMOkijZa9qP5u2aoW8lSjdOo/se8zse90fCcLqXH
+ Bu+h8ySqWzu469KuJeqv46Tlxpic7ByWHw0StfEoEQ1dXQShTwFfeWhD4
+ IH1Mia6LDgTtGH8NNYqTr9UMOetisMTwWuA4DK0L+3fjdF7M9GwK36sfo
+ 5tqzHlB4sPXZgSWduPHqMFrTWfC2oZGdGEFwYtm1NupIyRg18QVtMeewQ
+ aGFqez6QTluf0Ra6NhSzmNTu0jktimxl6fs+FiLn0g1e0TV2z7pNbFgOZ
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=MBR4wuPh
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: Fix VF not able to send
- tagged traffic with no VLAN filters
+ header.a=rsa-sha256 header.s=Intel header.b=GIa6VVkq
+Subject: [Intel-wired-lan] [PATCH net-next v1] ice: Print human-friendly PHY
+ types
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -191,59 +95,255 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Dziedziuch, SylwesterX" <sylwesterx.dziedziuch@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
 
+Provide human readable description of PHY capabilities
+and report_mode.
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Mateusz Palczewski
-> Sent: Wednesday, August 3, 2022 10:43 AM
-> To: intel-wired-lan@lists.osuosl.org
-> Cc: Dziedziuch, SylwesterX <sylwesterx.dziedziuch@intel.com>
-> Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix VF not able to send tagged
-> traffic with no VLAN filters
-> 
-> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> 
-> VF was not able to send tagged traffic when it didn't have any VLAN
-> interfaces and VLAN anti-spoofing was enabled.
-> Fix this by allowing VFs with no VLAN filters to send tagged traffic. After VF
-> adds a VLAN interface it will be able to send tagged traffic matching VLAN
-> filters only.
-> 
-> Testing hints:
-> 1. Spawn VF
-> 2. Send tagged packet from a VF
-> 3. The packet should be sent out and not dropped 4. Add a VLAN interface on
-> VF 5. Send tagged packet on that VLAN interface 6. Packet should be sent out
-> and not dropped 7. Send tagged packet with id different than VLAN interface
-> 8. Packet should be dropped
-> 
-> Fixes: daf4dd16438b ("ice: Refactor spoofcheck configuration functions")
-> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-> ---
->  v2: Removed Unnecessary parentheses around 'vsi->type != ICE_VSI_VF'
->      Unfortunetly some lines must be over 80 char to make the code more
-> readable
-> ---
->  drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 11 ++--
->  drivers/net/ethernet/intel/ice/ice_virtchnl.c | 57 ++++++++++++++++---
->  2 files changed, 57 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-> b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-> index 2d6130af1d40..7775aaa8cc43 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-> @@ -707,13 +707,16 @@ static int ice_cfg_mac_antispoof(struct ice_vsi *vsi,
+Sample output:
 
-Tested-by: Konrad Jankowski <konrad0.jankowski@intel.com>
+Old:
+[  286.130405] ice 0000:16:00.0: get phy caps - report_mode = 0x2
+[  286.130409] ice 0000:16:00.0:        phy_type_low = 0x108021020502000
+[  286.130412] ice 0000:16:00.0:        phy_type_high = 0x0
+[  286.130415] ice 0000:16:00.0:        caps = 0xc8
+[  286.130419] ice 0000:16:00.0:        low_power_ctrl_an = 0x4
+[  286.130421] ice 0000:16:00.0:        eee_cap = 0x0
+[  286.130424] ice 0000:16:00.0:        eeer_value = 0x0
+[  286.130427] ice 0000:16:00.0:        link_fec_options = 0xdf
+[  286.130430] ice 0000:16:00.0:        module_compliance_enforcement = 0x0
+[  286.130433] ice 0000:16:00.0:    extended_compliance_code = 0xb
+[  286.130435] ice 0000:16:00.0:    module_type[0] = 0x11
+[  286.130438] ice 0000:16:00.0:    module_type[1] = 0x1
+[  286.130441] ice 0000:16:00.0:    module_type[2] = 0x0
+
+New:
+[ 1128.297347] ice 0000:16:00.0: get phy caps dump
+[ 1128.297351] ice 0000:16:00.0: phy_caps_active: phy_type_low: 0x0108021020502000
+[ 1128.297355] ice 0000:16:00.0: phy_caps_active:   bit(13): 10G_SFI_DA
+[ 1128.297359] ice 0000:16:00.0: phy_caps_active:   bit(20): 25GBASE_CR
+[ 1128.297362] ice 0000:16:00.0: phy_caps_active:   bit(22): 25GBASE_CR1
+[ 1128.297365] ice 0000:16:00.0: phy_caps_active:   bit(29): 25G_AUI_C2C
+[ 1128.297368] ice 0000:16:00.0: phy_caps_active:   bit(36): 50GBASE_CR2
+[ 1128.297371] ice 0000:16:00.0: phy_caps_active:   bit(41): 50G_LAUI2
+[ 1128.297374] ice 0000:16:00.0: phy_caps_active:   bit(51): 100GBASE_CR4
+[ 1128.297377] ice 0000:16:00.0: phy_caps_active:   bit(56): 100G_CAUI4
+[ 1128.297380] ice 0000:16:00.0: phy_caps_active: phy_type_high: 0x0000000000000000
+[ 1128.297383] ice 0000:16:00.0: phy_caps_active: report_mode = 0x4
+[ 1128.297386] ice 0000:16:00.0: phy_caps_active: caps = 0xc8
+[ 1128.297389] ice 0000:16:00.0: phy_caps_active: low_power_ctrl_an = 0x4
+[ 1128.297392] ice 0000:16:00.0: phy_caps_active: eee_cap = 0x0
+[ 1128.297394] ice 0000:16:00.0: phy_caps_active: eeer_value = 0x0
+[ 1128.297397] ice 0000:16:00.0: phy_caps_active: link_fec_options = 0xdf
+[ 1128.297400] ice 0000:16:00.0: phy_caps_active: module_compliance_enforcement = 0x0
+[ 1128.297402] ice 0000:16:00.0: phy_caps_active: extended_compliance_code = 0xb
+[ 1128.297405] ice 0000:16:00.0: phy_caps_active: module_type[0] = 0x11
+[ 1128.297408] ice 0000:16:00.0: phy_caps_active: module_type[1] = 0x1
+[ 1128.297411] ice 0000:16:00.0: phy_caps_active: module_type[2] = 0x0
+
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Co-developed-by: Lukasz Plachno <lukasz.plachno@intel.com>
+Signed-off-by: Lukasz Plachno <lukasz.plachno@intel.com>
+Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_common.c | 158 +++++++++++++++++---
+ 1 file changed, 140 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 5a83cea28df9..cc3aeaef6110 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -8,6 +8,108 @@
+ 
+ #define ICE_PF_RESET_WAIT_COUNT	300
+ 
++static const char * const ice_link_mode_str_low[] = {
++	[0] = "100BASE_TX",
++	[1] = "100M_SGMII",
++	[2] = "1000BASE_T",
++	[3] = "1000BASE_SX",
++	[4] = "1000BASE_LX",
++	[5] = "1000BASE_KX",
++	[6] = "1G_SGMII",
++	[7] = "2500BASE_T",
++	[8] = "2500BASE_X",
++	[9] = "2500BASE_KX",
++	[10] = "5GBASE_T",
++	[11] = "5GBASE_KR",
++	[12] = "10GBASE_T",
++	[13] = "10G_SFI_DA",
++	[14] = "10GBASE_SR",
++	[15] = "10GBASE_LR",
++	[16] = "10GBASE_KR_CR1",
++	[17] = "10G_SFI_AOC_ACC",
++	[18] = "10G_SFI_C2C",
++	[19] = "25GBASE_T",
++	[20] = "25GBASE_CR",
++	[21] = "25GBASE_CR_S",
++	[22] = "25GBASE_CR1",
++	[23] = "25GBASE_SR",
++	[24] = "25GBASE_LR",
++	[25] = "25GBASE_KR",
++	[26] = "25GBASE_KR_S",
++	[27] = "25GBASE_KR1",
++	[28] = "25G_AUI_AOC_ACC",
++	[29] = "25G_AUI_C2C",
++	[30] = "40GBASE_CR4",
++	[31] = "40GBASE_SR4",
++	[32] = "40GBASE_LR4",
++	[33] = "40GBASE_KR4",
++	[34] = "40G_XLAUI_AOC_ACC",
++	[35] = "40G_XLAUI",
++	[36] = "50GBASE_CR2",
++	[37] = "50GBASE_SR2",
++	[38] = "50GBASE_LR2",
++	[39] = "50GBASE_KR2",
++	[40] = "50G_LAUI2_AOC_ACC",
++	[41] = "50G_LAUI2",
++	[42] = "50G_AUI2_AOC_ACC",
++	[43] = "50G_AUI2",
++	[44] = "50GBASE_CP",
++	[45] = "50GBASE_SR",
++	[46] = "50GBASE_FR",
++	[47] = "50GBASE_LR",
++	[48] = "50GBASE_KR_PAM4",
++	[49] = "50G_AUI1_AOC_ACC",
++	[50] = "50G_AUI1",
++	[51] = "100GBASE_CR4",
++	[52] = "100GBASE_SR4",
++	[53] = "100GBASE_LR4",
++	[54] = "100GBASE_KR4",
++	[55] = "100G_CAUI4_AOC_ACC",
++	[56] = "100G_CAUI4",
++	[57] = "100G_AUI4_AOC_ACC",
++	[58] = "100G_AUI4",
++	[59] = "100GBASE_CR_PAM4",
++	[60] = "100GBASE_KR_PAM4",
++	[61] = "100GBASE_CP2",
++	[62] = "100GBASE_SR2",
++	[63] = "100GBASE_DR",
++};
++
++static const char * const ice_link_mode_str_high[] = {
++	[0] = "100GBASE_KR2_PAM4",
++	[1] = "100G_CAUI2_AOC_ACC",
++	[2] = "100G_CAUI2",
++	[3] = "100G_AUI2_AOC_ACC",
++	[4] = "100G_AUI2",
++};
++
++/**
++ * ice_dump_phy_type - helper function to dump phy_type
++ * @hw: pointer to the HW structure
++ * @low: 64 bit value for phy_type_low
++ * @high: 64 bit value for phy_type_high
++ * @prefix: prefix string to differentiate multiple dumps
++ */
++static void
++ice_dump_phy_type(struct ice_hw *hw, u64 low, u64 high, const char *prefix)
++{
++	ice_debug(hw, ICE_DBG_PHY, "%s: phy_type_low: 0x%016llx\n", prefix, low);
++
++	for (u32 i = 0; i < BITS_PER_TYPE(typeof(low)); i++) {
++		if (low & BIT_ULL(i))
++			ice_debug(hw, ICE_DBG_PHY, "%s:   bit(%d): %s\n",
++				  prefix, i, ice_link_mode_str_low[i]);
++	}
++
++	ice_debug(hw, ICE_DBG_PHY, "%s: phy_type_high: 0x%016llx\n", prefix, high);
++
++	for (u32 i = 0; i < BITS_PER_TYPE(typeof(high)); i++) {
++		if (high & BIT_ULL(i))
++			ice_debug(hw, ICE_DBG_PHY, "%s:   bit(%d): %s\n",
++				  prefix, i, ice_link_mode_str_high[i]);
++	}
++}
++
+ /**
+  * ice_set_mac_type - Sets MAC type
+  * @hw: pointer to the HW structure
+@@ -183,6 +285,7 @@ ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
+ 	struct ice_aqc_get_phy_caps *cmd;
+ 	u16 pcaps_size = sizeof(*pcaps);
+ 	struct ice_aq_desc desc;
++	const char *prefix;
+ 	struct ice_hw *hw;
+ 	int status;
+ 
+@@ -204,29 +307,48 @@ ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
+ 	cmd->param0 |= cpu_to_le16(report_mode);
+ 	status = ice_aq_send_cmd(hw, &desc, pcaps, pcaps_size, cd);
+ 
+-	ice_debug(hw, ICE_DBG_LINK, "get phy caps - report_mode = 0x%x\n",
+-		  report_mode);
+-	ice_debug(hw, ICE_DBG_LINK, "	phy_type_low = 0x%llx\n",
+-		  (unsigned long long)le64_to_cpu(pcaps->phy_type_low));
+-	ice_debug(hw, ICE_DBG_LINK, "	phy_type_high = 0x%llx\n",
+-		  (unsigned long long)le64_to_cpu(pcaps->phy_type_high));
+-	ice_debug(hw, ICE_DBG_LINK, "	caps = 0x%x\n", pcaps->caps);
+-	ice_debug(hw, ICE_DBG_LINK, "	low_power_ctrl_an = 0x%x\n",
++	ice_debug(hw, ICE_DBG_LINK, "get phy caps dump\n");
++
++	switch (report_mode) {
++	case ICE_AQC_REPORT_TOPO_CAP_MEDIA:
++		prefix = "phy_caps_media";
++		break;
++	case ICE_AQC_REPORT_TOPO_CAP_NO_MEDIA:
++		prefix = "phy_caps_no_media";
++		break;
++	case ICE_AQC_REPORT_ACTIVE_CFG:
++		prefix = "phy_caps_active";
++		break;
++	case ICE_AQC_REPORT_DFLT_CFG:
++		prefix = "phy_caps_default";
++		break;
++	default:
++		prefix = "phy_caps_invalid";
++	}
++
++	ice_dump_phy_type(hw, le64_to_cpu(pcaps->phy_type_low),
++		  le64_to_cpu(pcaps->phy_type_high), prefix);
++
++	ice_debug(hw, ICE_DBG_LINK, "%s: report_mode = 0x%x\n",
++		  prefix, report_mode);
++	ice_debug(hw, ICE_DBG_LINK, "%s: caps = 0x%x\n", prefix, pcaps->caps);
++	ice_debug(hw, ICE_DBG_LINK, "%s: low_power_ctrl_an = 0x%x\n", prefix,
+ 		  pcaps->low_power_ctrl_an);
+-	ice_debug(hw, ICE_DBG_LINK, "	eee_cap = 0x%x\n", pcaps->eee_cap);
+-	ice_debug(hw, ICE_DBG_LINK, "	eeer_value = 0x%x\n",
++	ice_debug(hw, ICE_DBG_LINK, "%s: eee_cap = 0x%x\n", prefix,
++		  pcaps->eee_cap);
++	ice_debug(hw, ICE_DBG_LINK, "%s: eeer_value = 0x%x\n", prefix,
+ 		  pcaps->eeer_value);
+-	ice_debug(hw, ICE_DBG_LINK, "	link_fec_options = 0x%x\n",
++	ice_debug(hw, ICE_DBG_LINK, "%s: link_fec_options = 0x%x\n", prefix,
+ 		  pcaps->link_fec_options);
+-	ice_debug(hw, ICE_DBG_LINK, "	module_compliance_enforcement = 0x%x\n",
+-		  pcaps->module_compliance_enforcement);
+-	ice_debug(hw, ICE_DBG_LINK, "   extended_compliance_code = 0x%x\n",
+-		  pcaps->extended_compliance_code);
+-	ice_debug(hw, ICE_DBG_LINK, "   module_type[0] = 0x%x\n",
++	ice_debug(hw, ICE_DBG_LINK, "%s: module_compliance_enforcement = 0x%x\n",
++		  prefix, pcaps->module_compliance_enforcement);
++	ice_debug(hw, ICE_DBG_LINK, "%s: extended_compliance_code = 0x%x\n",
++		  prefix, pcaps->extended_compliance_code);
++	ice_debug(hw, ICE_DBG_LINK, "%s: module_type[0] = 0x%x\n", prefix,
+ 		  pcaps->module_type[0]);
+-	ice_debug(hw, ICE_DBG_LINK, "   module_type[1] = 0x%x\n",
++	ice_debug(hw, ICE_DBG_LINK, "%s: module_type[1] = 0x%x\n", prefix,
+ 		  pcaps->module_type[1]);
+-	ice_debug(hw, ICE_DBG_LINK, "   module_type[2] = 0x%x\n",
++	ice_debug(hw, ICE_DBG_LINK, "%s: module_type[2] = 0x%x\n", prefix,
+ 		  pcaps->module_type[2]);
+ 
+ 	if (!status && report_mode == ICE_AQC_REPORT_TOPO_CAP_MEDIA) {
+-- 
+2.34.1
 
 _______________________________________________
 Intel-wired-lan mailing list
