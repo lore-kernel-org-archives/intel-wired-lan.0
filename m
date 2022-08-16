@@ -4,82 +4,178 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88B8DC25B0E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Aug 2022 12:57:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE4DCC25B0E
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 16 Aug 2022 13:06:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 154A140390;
-	Tue, 16 Aug 2022 12:57:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 154A140390
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5C101403C4;
+	Tue, 16 Aug 2022 13:06:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5C101403C4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1660654642;
-	bh=Ofa404LGlkK0oqbwZ7ThT0kkV4hhQjNGEv1cFf5OIxE=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=HBlbQNf2/LOdxo0OwJafQxP+9TfLnNQa8vkjw1zTz2iXk8ytYtsvrWlbgRpuoznv0
-	 rmwJ/XX60GH85MMoywODmqhqco7DNdQtbCnqQvS2YUtQONX1QOGo/dEjwNKUBiNU5a
-	 owCnmxaksXn5xmpOU+vmq9uI0uSQKYDhZfa3hvG3s854rpALXV8R3C6GQ4v5fKWcGo
-	 jetu2ix7ihlHcV3pqUfjdlDJRWPohJlFU833HT9xWAiP6ZTGtAfHUJeo/ayjXR4naZ
-	 axrIJbQK89c21QbxaMWpESE5QX110mzmXHdb5EM1qbKooHp98tMCnKUatDm3WlUsS0
-	 CQJsOPfhdnXWA==
+	s=default; t=1660655160;
+	bh=uSh90m5zbmIXFekhN9lY3CGyM8+CPrWGEadmWbJMPEM=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=2e0uRexiFgfM92tQqh+Y6OyAJqT9dSpihiBvMonS/D8IUutOMxFbzLJZnsHs6J94Y
+	 0g3+1wExxU/HXzGmz3wu696C5avQDJw7GEO3pMn1YuVeCVY7Ep5mQEeuW1Og7CKL9P
+	 EitHqC3lSRhxxP/Vh1BJO6QCVTq9HNkhiMa1KO0oWVO9mgjElR7tgmYeAjb+YyY2yP
+	 rcgQtm45CXRBfuYyg+EvG5yWtG1eOTPqp+qwI2+zyT30C13w00YnRrIG8ZmHtTvQiW
+	 F9nhbyEaFP7ENNlCb6NSzg5hB3Lmex57zc+RuteC6jXfZ6nOnLo9S4xblwArL7A+D7
+	 SF3rdSB4npdbA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id q6UPDe5Y_u4i; Tue, 16 Aug 2022 12:57:19 +0000 (UTC)
+	with ESMTP id MqHTuegrtJoa; Tue, 16 Aug 2022 13:05:59 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6095040531;
-	Tue, 16 Aug 2022 12:57:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6095040531
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 287EC1BF31D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 07:29:45 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 59C5E403CA;
+	Tue, 16 Aug 2022 13:05:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 59C5E403CA
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 1AC301BF4DD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 13:05:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id F0C544091E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 07:29:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F0C544091E
+ by smtp2.osuosl.org (Postfix) with ESMTP id E663040A6E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 13:05:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E663040A6E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NgP1tBOLCmL2 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 16 Aug 2022 07:29:43 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 9U37ap95eQvN for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 16 Aug 2022 13:05:55 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C255E4090C
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C255E4090C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 07:29:43 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6400,9594,10440"; a="292944744"
-X-IronPort-AV: E=Sophos;i="5.93,240,1654585200"; d="scan'208";a="292944744"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Aug 2022 00:29:43 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EE612403C4
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EE612403C4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 16 Aug 2022 13:05:54 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6400,9594,10440"; a="275266364"
+X-IronPort-AV: E=Sophos;i="5.93,241,1654585200"; d="scan'208";a="275266364"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Aug 2022 06:05:54 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,240,1654585200"; d="scan'208";a="934793396"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga005.fm.intel.com with ESMTP; 16 Aug 2022 00:29:40 -0700
-From: Andrii Staikov <andrii.staikov@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 16 Aug 2022 11:43:44 +0200
-Message-Id: <20220816094344.3500-1-andrii.staikov@intel.com>
-X-Mailer: git-send-email 2.25.1
+X-IronPort-AV: E=Sophos;i="5.93,241,1654585200"; d="scan'208";a="733285907"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+ by orsmga004.jf.intel.com with ESMTP; 16 Aug 2022 06:05:54 -0700
+Received: from orsmsx609.amr.corp.intel.com (10.22.229.22) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.28; Tue, 16 Aug 2022 06:05:54 -0700
+Received: from orsmsx603.amr.corp.intel.com (10.22.229.16) by
+ ORSMSX609.amr.corp.intel.com (10.22.229.22) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.28; Tue, 16 Aug 2022 06:05:53 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ orsmsx603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.28 via Frontend Transport; Tue, 16 Aug 2022 06:05:53 -0700
+Received: from NAM04-DM6-obe.outbound.protection.outlook.com (104.47.73.40) by
+ edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2375.28; Tue, 16 Aug 2022 06:05:53 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=SIg8ZchkOe9vH03kMLw5uaH3JuiQK4bkiYFfO9UEhTfHuqiw+cccEyEtJSBiUw+rmpvMfZixWXRIEape2LOn5gy6jYUw1uVBowFX2JNf+H5mMUExYSj/wYSZEJbSOXlMKnjYWIhddENJEkrE+3Wg4//7Uz/DdqMgqUshESJAn1iLDFl6zKO+WrwcfA09q4BsVEazjOeno5cpM9P8MulX8oAQH0Ac0aAnNoMgUZ9VHbHqBQvPIWXjFIo6RU/AWW+SlNVqys56eK8Y9ejKVvvqJWEnc2wm2GFL4t0/ctqXhzBcVggdf6MmnY7rpfb2JzXeh8MubpPnguyqiqhjA4j60Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hmwpUdXvlT4opjUNw+8YqipqMycqAv4yvOa2FCsguCk=;
+ b=RZD08t5EZMeOm1KtEeSM1HzXG9N/2vZfgWNuK6tFpWc43a9Gv9Qcd6owjpxF6pYTPrKg8lyvlf6KbSANvkj3skbJNX6LflTVR8GeXsJGIBCllKmwU0q+41phLgBZ5xZctAjpTawx0wGQ90A9N/ZkrwGZ3vNzTSZr+ejsLNUnI9M1crzrOb3jjMAzCGo7Ec12JtaoGYx1I0WAZxL1RoYnwgSN82u+gXNcrcMG96mESpZsisM4+r0Vlb3TfcL7QuZz/shOpHHzhZ0knjHqJaXpjIMchuktUMlflFh0Sb1DPRCFH6xWZJCUGlJI2ZszQtcZOpzv6MAa8CXlHtqa8qfbxw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from BYAPR11MB3367.namprd11.prod.outlook.com (2603:10b6:a03:79::29)
+ by SN7PR11MB6774.namprd11.prod.outlook.com (2603:10b6:806:265::10)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5504.16; Tue, 16 Aug
+ 2022 13:05:48 +0000
+Received: from BYAPR11MB3367.namprd11.prod.outlook.com
+ ([fe80::682f:e9fd:d1d7:f3b9]) by BYAPR11MB3367.namprd11.prod.outlook.com
+ ([fe80::682f:e9fd:d1d7:f3b9%4]) with mapi id 15.20.5525.011; Tue, 16 Aug 2022
+ 13:05:48 +0000
+From: "G, GurucharanX" <gurucharanx.g@intel.com>
+To: "Siwik, Grzegorz" <grzegorz.siwik@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Thread-Topic: [Intel-wired-lan] [PATCH net v5 1/4] ice: Fix double VLAN error
+ when entering promisc mode
+Thread-Index: AQHYrk8nI/Dkts+WKkygKYofwpady62xhQvQ
+Date: Tue, 16 Aug 2022 13:05:48 +0000
+Message-ID: <BYAPR11MB3367FAAD16E908AD64FF1EFCFC6B9@BYAPR11MB3367.namprd11.prod.outlook.com>
+References: <1660310750-290943-1-git-send-email-grzegorz.siwik@intel.com>
+ <1660310750-290943-2-git-send-email-grzegorz.siwik@intel.com>
+In-Reply-To: <1660310750-290943-2-git-send-email-grzegorz.siwik@intel.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: d05959bc-1135-4eb6-f98f-08da7f8809b1
+x-ms-traffictypediagnostic: SN7PR11MB6774:EE_
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: Gqn7bBhaDXjgzs9MCnQmsIdvOH1xjKGRE3DU8htDfXJk2AY1B42hMIx+Z35lJ8tt3fpVv875utwECkOFl9W6cfVd3ZyEh3YgR+vn8JBBh3FFWb8mdo+NR/grwnoaGDA4/yFXoijqSs0euhw2aZBwJWafOko9Ix4eJJl1enlQ/yb6yiqjktY275HfE7wkw/HRIFJYol0uQ08tz5mvAW0lJccilWy8sRSouDVsd9Z3UwZ4vYZE64sT9bW5JzUGmI59MKyirncsoifyUrPUkYsGW58tmzTwYujL+37fKoC+Y9ya7u+frjRFn/hUzk+8vrkqsjXO42yCnceZZHhyU0UgkmSduhbxMrLXlYxCfef2AHEhIxvgONvV0mSCmVbdw6zsF92mPdBg4DYg4VLE67UwiuVS3SkHbIMXWn4EurbGGOuol2UFRzksilPnXa7IZMixCpEnnK0o+OoffFPvo35v/Q52/PzoMrXL/t/MyltjqEHXAr76HHOfXcvX79S2m/ICi05vitzngJxtfuQdveSkkEaA80RTG0Q5oIJ/EIQkzeYgnleVxJyXtTnKuVlREolz5zK//6lS7n20ckZ/dtm8GsSRhrBVnypy87sf2Ti+kkOgFmKfTBHvk6XVVwfHUJFIZMARM2YCTFKU8aMZuYNYRH9AxZ6uF6x0sQt9YoCHiaCMaRZvuPacq+985UJE5T2OyV1UF0OfCP719Ez4MijffenwocO9rCgExRULRM7C57Pxyw/pwdPxmB7bT/r1MomhQpxEcAxi841Ke9qPVxFhpdZpVcvo2eWTokWuYzYqSYT/qhQgV2jkumd/WxAhH9Ul6rn6v3ESEhMvS3T/4uOo0w==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:BYAPR11MB3367.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230016)(136003)(376002)(39860400002)(346002)(396003)(366004)(71200400001)(2906002)(7696005)(55016003)(478600001)(9686003)(52536014)(6506007)(8936002)(41300700001)(110136005)(122000001)(966005)(55236004)(33656002)(53546011)(26005)(316002)(38100700002)(66476007)(38070700005)(66446008)(4326008)(76116006)(8676002)(64756008)(82960400001)(66946007)(66556008)(107886003)(86362001)(83380400001)(5660300002)(186003);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?Yj8tirTmh+wUuUVN+HpiIKxuJnX+jgfEF78283TPhpztdAJwfYIsR2Otl8dS?=
+ =?us-ascii?Q?twXBuIDaeeizhGfj2EkO3fzODds95W1Omyo6fckOVvh/CZO1ybYbrYjy/1/L?=
+ =?us-ascii?Q?ft+j1IURpP1IvkZod64eOFtT4TwGcLajopQXpOpbEuv2kKXgUajCFv00gXwA?=
+ =?us-ascii?Q?j3GXlNJmOhUFoBOtSin9JuqLKLLKbBvJukbTPYFg1DCl1GEabnh06R1S1Ytr?=
+ =?us-ascii?Q?7gc0EN+OBM43NVyR+OPk/ZqbcFONOzl4rbu7P7MH/25grfV/p9mlX8IjZ/cj?=
+ =?us-ascii?Q?z5TGNMB8XzpPmxI130/65Dddis/eNny/ybuKY/HXZatQ60VG9kJjbi3ouvRz?=
+ =?us-ascii?Q?Kagfoeno7ulL/jyfuCdwxOdrcDsPrjX6bT4yrOC8a9haA/w5izmka6W5Abp0?=
+ =?us-ascii?Q?yLJsekb7Od4s6eTCT0TtDrA/o2h8b7WqBUQ+7unopp0URTqLSFtUVuscmeQg?=
+ =?us-ascii?Q?u+DZXkrR+I02QHJt6jbzbCwpg0TO+C31+dz+JRTsShVIaAqjnM3Ys8FDggFb?=
+ =?us-ascii?Q?aQYA4g7lEdznPnXR5z/2rMonS3AreqgLKB2H1HrWSi/LcqNix0LPBDm+v/xy?=
+ =?us-ascii?Q?+FTOH+5WOY6HUnRPb/1J6Ii1pt8dVNsRPIkCL1uk409/9IH6uH6360NIrhCK?=
+ =?us-ascii?Q?ZntuxQjvI2JmSoWaCTRiGBk5h9a8ac2fwwH7XxDf7/j4NM4hLfZg4GxC8tZU?=
+ =?us-ascii?Q?2AdytP30PlFtpoooa7Qcgv0z+mix50JI+brb6lGqoCqtCXTjx7fUEReKJlG4?=
+ =?us-ascii?Q?IjS/3KR68eNhOFFD5UF5KR5AtWJ1zMeZCAXVmOX4rFGFLD9f9Xz31OIIVDA7?=
+ =?us-ascii?Q?tfcPfhNlTSdIl44Balkgjgxp1+tjZM0Fk+3MCebK41Lv41aU8j8s/7we13gS?=
+ =?us-ascii?Q?c6SGfhSAnILJZXF4Z557Yp8pPUZ4T6PZGITQZTNOpi/j2YTo6Uqhbyv4t4eF?=
+ =?us-ascii?Q?M0lDlMnemaHXI1cOUgpfvooG2C61qO6ooGvKApZzOwp0juebK11LpYFUIHIH?=
+ =?us-ascii?Q?xuP0HHaSlkmFkv2MPp/hbUd628xn7S1Dz0U0RtP8LBlE5mIPGvG5GUXrswL7?=
+ =?us-ascii?Q?VyU77I1orJDG4P9OqaTCXIHgDKVhsqTxEN+V+NcPXeVoXxIuSfQoYRh5f7aW?=
+ =?us-ascii?Q?b2hgdtkC88Phb/wYQFxlvBsXA/t62BUvNlPTPIc4IRQcnLzu6nDjLnWwsJx5?=
+ =?us-ascii?Q?M6E77C/qhOwF/NsQRnBulL1NnigKsVRKMo6UAgRu0ZeZ9WcvfShamb5cU5d5?=
+ =?us-ascii?Q?8jMInfL350bKd47JyMJ1QtkLz/NHCAQwDagGfMTmx4bWdXCOVKRIvLXOC2JW?=
+ =?us-ascii?Q?unXpw+eNwRj0l5UKDp9Qojwk42A5lFC44Ovqtq5rysOefKI4Loxx3b2Ln1kE?=
+ =?us-ascii?Q?XSC0XGodTplLyCncB9pAUmVB/ken0KGmhoL9fhCm9X75mGzHpUmsUB/nIiaD?=
+ =?us-ascii?Q?Sxxg80aGa9H5vo2E96jEV99adgOBzYV+xaMtISOG3JxUFig7NfO9YOBqloWa?=
+ =?us-ascii?Q?LRDTCFGwfcu4CCFyqgr8svIlefsyg/NaOoek08bViMEG0cXFNVK+Y2+tEIeH?=
+ =?us-ascii?Q?iDbSyl3KTROY66i9a3uvFOBqWiTIRDdBrvfaE7bC?=
 MIME-Version: 1.0
-X-Mailman-Approved-At: Tue, 16 Aug 2022 12:57:18 +0000
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB3367.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d05959bc-1135-4eb6-f98f-08da7f8809b1
+X-MS-Exchange-CrossTenant-originalarrivaltime: 16 Aug 2022 13:05:48.0816 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: YPeT1hKvEg8KFjKTZquZO/XsbWTzWlkhv8wfKAk3IY+BCElTSLAI/fzXmZKHb7c/pE3gtBLb3WnrLJPxGttq9Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR11MB6774
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1660634983; x=1692170983;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=z8nwwDvpHYWk50SsGTQHcGuGXbq95Du6gLc/t85PD5Y=;
- b=S+Zx766iKBF5AoqqcEnuQNzguNaw71EPAF9y20FLpzUsfFRxygz7ccyb
- azrCmH73Q01hWVHypP4xyl5Lkkrs6OnO/j+9grrQ6nPSzRt2XaL+GUK5R
- DViSVYVGwmxVVvPfCUO9jAOF0osZjFVxWydiV+P/KShDAwxAvHS2nwxPS
- plDhwCOCFLEZmgVDM/g/k1XQ25pMMEhBpWWyXYfRfajo1ymrGuyb3FidC
- hb6xehrOIUITfv/vxkjonWQV5pvvmQjCsXFTSAqz6Zm0EaS6SoDjc+yQ9
- wlTP3+LYbIdWyF2Nusc0mDLCDKjr1rDM+tWiRA9ABY3q26g2cdkP++fKh
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1660655154; x=1692191154;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=MY5XylWOigC7xtaVEeBXKXfWPbiHmssUE+OVaLYkjSM=;
+ b=m3hScq2OWeVHt4Ctz/Lp/AFufP7Frf2y251vjiScLMlM+207XYYoXTHr
+ XLLSEp35rdoxIRdelwZ0lvOawv5mPTl9ZxZgmzBG8c2LHZa90glblX2t6
+ Z7EIcItCWP/RVgNcrIxlJv6d6H/W9NljXCojnF9riYc/BCDuFzvwLYGYu
+ keHij1eZhg2ocFVpV4ise2aHqsyle6Q0/kGLjh6w3QhwIYWXClsC15Ndx
+ zieyicnGkU4wexSXXs+NEr2bQgq1cRiPEtHfq1M1bfSSQmgUnF29SMTRk
+ xHkWeDLPx+vHaP096ogG9G8q2yXShfaKd8QIxUZDGvdr7uf6LvcfkABBG
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=S+Zx766i
-Subject: [Intel-wired-lan] [PATCH net-next v1] i40e: Fix set max_tx_rate
- when it is lower than 1 Mbps
+ header.a=rsa-sha256 header.s=Intel header.b=m3hScq2O
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net v5 1/4] ice: Fix double VLAN error
+ when entering promisc mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,105 +188,50 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Michal Jaron <michalx.jaron@intel.com>,
- Andrii Staikov <andrii.staikov@intel.com>
+Cc: "Siwik, Grzegorz" <grzegorz.siwik@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Value max_tx_rate is converted from bytes to Mbps.
-When max_tx_rate was set to lower than 125000 bytes (1 Mbps)
-it was cut to 0 because of this conversion.
 
-Add a check that if max_tx_rate is lower than 1 Mbps
-set this to minimum usable value of 50 Mbps.
-Add defined constants.
 
-bats=yes
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Grzegorz Siwik
+> Sent: Friday, August 12, 2022 6:56 PM
+> To: intel-wired-lan@lists.osuosl.org
+> Cc: Siwik, Grzegorz <grzegorz.siwik@intel.com>
+> Subject: [Intel-wired-lan] [PATCH net v5 1/4] ice: Fix double VLAN error
+> when entering promisc mode
+> 
+> Avoid enabling or disabling vlan 0 when trying to set promiscuous vlan mode
+> if double vlan mode is enabled. This fix is needed because the driver tries to
+> add the vlan 0 filter twice (once for inner and once for outer) when double
+> VLAN mode is enabled. The filter program is rejected by the firmware when
+> double vlan is enabled, because the promiscuous filter only needs to be set
+> once.
+> 
+> This issue was missed in the initial implementation of double vlan mode.
+> 
+> Fixes: 5eda8afd6bcc ("ice: Add support for PF/VF promiscuous mode")
+> Signed-off-by: Grzegorz Siwik <grzegorz.siwik@intel.com>
+> Link: https://lore.kernel.org/all/CAK8fFZ7m-
+> KR57M_rYX6xZN39K89O=LGooYkKsu6HKt0Bs+x6xQ@mail.gmail.com/
+> ---
+>  v2: Fixed error message when setting same promiscuous mode
+> ---
+>  v3: Fixed style issues, changed to return directly.
+> ---
+>  v4: Fixed problem with patch applying
+> ---
+>  v5: Fixed incorrect title patch issue
+> ---
+>  drivers/net/ethernet/intel/ice/ice_switch.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
 
-Title: i40e: Fix set max_tx_rate when it is lower than 1 Mbps
-Change-type: DefectResolution
-HSDES-Number: 16013332829
-HSDES-Tenant: server_platf_lan.bug
-Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
-Signed-off-by: Andrii Staikov <andrii.staikov@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 32 +++++++++++++++++----
- 1 file changed, 26 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 10c1e1ea83a1..e3d9804aeb25 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5908,6 +5908,26 @@ static int i40e_get_link_speed(struct i40e_vsi *vsi)
- 	}
- }
- 
-+/**
-+ * i40e_bw_bytes_to_mbits - Convert max_tx_rate from bytes to mbits
-+ * @vsi: Pointer to vsi structure
-+ * @max_tx_rate: max TX rate in bytes to be converted into Mbits
-+ *
-+ * Helper function to convert units before send to set BW limit
-+ **/
-+static u64 i40e_bw_bytes_to_mbits(struct i40e_vsi *vsi, u64 max_tx_rate)
-+{
-+	if (max_tx_rate < I40E_BW_MBPS_DIVISOR) {
-+		dev_warn(&vsi->back->pdev->dev,
-+			 "Setting max tx rate to minimum usable value of 50Mbps.\n");
-+		max_tx_rate = I40E_BW_CREDIT_DIVISOR;
-+	} else {
-+		do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
-+	}
-+
-+	return max_tx_rate;
-+}
-+
- /**
-  * i40e_set_bw_limit - setup BW limit for Tx traffic based on max_tx_rate
-  * @vsi: VSI to be configured
-@@ -5930,10 +5950,10 @@ int i40e_set_bw_limit(struct i40e_vsi *vsi, u16 seid, u64 max_tx_rate)
- 			max_tx_rate, seid);
- 		return -EINVAL;
- 	}
--	if (max_tx_rate && max_tx_rate < 50) {
-+	if (max_tx_rate && max_tx_rate < I40E_BW_CREDIT_DIVISOR) {
- 		dev_warn(&pf->pdev->dev,
- 			 "Setting max tx rate to minimum usable value of 50Mbps.\n");
--		max_tx_rate = 50;
-+		max_tx_rate = I40E_BW_CREDIT_DIVISOR;
- 	}
- 
- 	/* Tx rate credits are in values of 50Mbps, 0 is disabled */
-@@ -8224,9 +8244,9 @@ static int i40e_setup_tc(struct net_device *netdev, void *type_data)
- 
- 	if (i40e_is_tc_mqprio_enabled(pf)) {
- 		if (vsi->mqprio_qopt.max_rate[0]) {
--			u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
-+			u64 max_tx_rate = i40e_bw_bytes_to_mbits(vsi,
-+						  vsi->mqprio_qopt.max_rate[0]);
- 
--			do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
- 			ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
- 			if (!ret) {
- 				u64 credits = max_tx_rate;
-@@ -10971,10 +10991,10 @@ static void i40e_rebuild(struct i40e_pf *pf, bool reinit, bool lock_acquired)
- 	}
- 
- 	if (vsi->mqprio_qopt.max_rate[0]) {
--		u64 max_tx_rate = vsi->mqprio_qopt.max_rate[0];
-+		u64 max_tx_rate = i40e_bw_bytes_to_mbits(vsi,
-+						  vsi->mqprio_qopt.max_rate[0]);
- 		u64 credits = 0;
- 
--		do_div(max_tx_rate, I40E_BW_MBPS_DIVISOR);
- 		ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
- 		if (ret)
- 			goto end_unlock;
--- 
-2.25.1
-
+Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker at Intel)
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
