@@ -4,99 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C6A6ECAAA3
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Aug 2022 11:16:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D260ECAAD4
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Aug 2022 11:17:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9D60D60B8D;
-	Fri, 26 Aug 2022 11:16:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9D60D60B8D
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2CB7D60B8D;
+	Fri, 26 Aug 2022 11:17:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2CB7D60B8D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1661512571;
-	bh=ibFsIptFyEWcAzi6B9IL3m3QBHpItEz0xqPGYC7OJ7o=;
+	s=default; t=1661512664;
+	bh=1JzL5dFPQdcfqlIq7qSwRsv/Amu3JOJo6/EPwZHDfb4=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=g4AyTx1iKstTXyCzFRdO23eqavn9NDC+P2ke3zgyppYpYGw52fnxvb/Ehc6Sk2rQh
-	 Pe/PLw1ulr10qkXsvjRgJSeA/eZNufP2PKxfYYl5JM7YG9zl9HTVqrItQEBDslw1MN
-	 7zJopdEhlgIPpGJEnL3urz5kYsb9D/bJgnrfT0m3ZgHd2w4lW8TcXtgWuTl1C19fwy
-	 v2OaBOE/sh/loeAmGRRulpghYIriLWMaoj1aAQ6JDoXakqVsacFJeo4zRXGOkzu8Cc
-	 rIPdoJzbNugvvNrWTCC4/aOy0SAT3CPHtfpkYjqdO+V63Oz8jErg7M2zOurWxiiwkE
-	 bAZIH7M+nu2Kw==
+	b=yE+5ANvJGndtWW/iwbdzUSdwaL6Z4EjwRsul7BTibyWamVLHxPN5O5NqO108lOEbS
+	 ltbvCYIwltGku8OxHGt9JfuWlGlx2oiJySaCEPA1XsL+cgYhoqsPZHXeU1GIJ8YmVq
+	 vdxcg7l82vIOe1JricOWqo+fSpiuuWzT895fJOm3Y2iqt659yCd4Y3OLDp388wPqAA
+	 84r27HR4u0mkFw3Zrp6zuLQ4tEKi/Yc41ZO+OmiFzDnu5GN21S7ynD4D3WK7t1Ca6T
+	 0Vi4yfGLuZjCGjIJs0VGbkmjAPKAYs+w9AfHAmLFj+ySyp9XH4uUNBSL2XlqmEMLoV
+	 j9uNLtyVbHaPg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Yf8KFeyE_aYo; Fri, 26 Aug 2022 11:16:10 +0000 (UTC)
+	with ESMTP id klwLSaEvFdZ5; Fri, 26 Aug 2022 11:17:43 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A17C9610DC;
-	Fri, 26 Aug 2022 11:16:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A17C9610DC
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 195D61BF289
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:16:09 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2C5A6610E0;
+	Fri, 26 Aug 2022 11:17:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2C5A6610E0
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 60D811BF289
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:17:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E5F7383EF0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:16:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E5F7383EF0
+ by smtp4.osuosl.org (Postfix) with ESMTP id 46820419F2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:17:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 46820419F2
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CLwHpo_UIGKu for <intel-wired-lan@lists.osuosl.org>;
- Fri, 26 Aug 2022 11:16:04 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id sWVHgFUGD-N3 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 26 Aug 2022 11:17:40 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5CA6183EEE
-Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com
- [IPv6:2a00:1450:4864:20::32d])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5CA6183EEE
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:16:03 +0000 (UTC)
-Received: by mail-wm1-x32d.google.com with SMTP id ay12so707598wmb.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 04:16:03 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 23A2B419F0
+Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com
+ [IPv6:2a00:1450:4864:20::42d])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 23A2B419F0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:17:40 +0000 (UTC)
+Received: by mail-wr1-x42d.google.com with SMTP id e20so1398694wri.13
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 04:17:39 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=in-reply-to:content-disposition:mime-version:references:message-id
  :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
- bh=vRtP9Skqdi6VRUhZFmU/5JLtOk/HwkyzGgOrB5aVaqc=;
- b=lmhXmyAVYSBFOdtA4Dte2s5ofxsdE7GAxU/mLTH/XA/4/Eqp0bpLVJ8+SNCqQHanqZ
- H3jDbIlT4EvzGN/vkLZvC1cfseVlT7shlDRaf6Unl9by8FqSNgph8fiErmm8wA/HkSU8
- /LYEvtWtqpGcL9I2aO+2hXP16cBwvFulm6l+BlYcB/I/bo8mBQ3YvCkmitTDvobA4VH6
- 2uH1aGBsJk10JWFf5Db6NQo67xH6Ue0YWJtJqbaOzYzsUElhqLDYuq6diSfhpMQlMHvt
- o/woQmGZMriRHm+CncP8GVxmC4AOlBmFj4/P0C9P7GnDywRo4iAQQTrTvA8folWKt630
- XtoA==
-X-Gm-Message-State: ACgBeo3v1zbKwEJFXRoSEXA3t3jrmOzUwdOkmz9it0e9gEamrqjIQtWf
- p5cB8dXujqeUq7mbKbdqF9ts9Q==
-X-Google-Smtp-Source: AA6agR4QzaWX8XmLz8SGvNyIEQsQ5GQDx172pO0aIEdni0lwQywVURMMxO00o4DMyckU7PnYyS53nA==
-X-Received: by 2002:a05:600c:3048:b0:3a6:5ce0:9701 with SMTP id
- n8-20020a05600c304800b003a65ce09701mr4969801wmh.97.1661512562030; 
- Fri, 26 Aug 2022 04:16:02 -0700 (PDT)
+ bh=s5HqRvr7PHDgoWZiabiLCmfMHT6gZC+dy6EsiwT3xbQ=;
+ b=Jo9lJmwX5aJBSYX0nFER+Dwg8mFlUzeFlAUcAVz3ec5Ye6fYaJatfrYxW+lr6U2ao3
+ ZZRMa7okwrxAjYSgowJ0sw4H3hinIc2lB8JL+uLIRCCPkEUyNPI+0K/xxg1vu6XZRvdV
+ ioKq100QfWg6hMpl3kYgFnaqcNuS2hlUVjlFOIcWV6z1RSJtlQKZh2Xhu1WpGAiXUU6q
+ 3czKW+AgjPDM/mmYOGbVUnyLqxd0k4+7BulE252EcJgtocxgjEKPILdCz74CWCHrrG46
+ Ehgvh0MhNSLDGo0O/12uke/i4t7korEmPfJCs6LqN+LiUeV2GCXX9r72AVU97fTONB9c
+ OXGw==
+X-Gm-Message-State: ACgBeo0EGxSFOlo4tQ4LH6bl4FzIX+tDARm28r0xdEl6HTYGV1pFwXcj
+ HxRRHGcRrCKLbkIObsNPjkoq7g==
+X-Google-Smtp-Source: AA6agR7O+TmV/Wg7dw7LV0qg1aUoBB0fczi0zDl0Ee3qSOIFltVBL8eS4m8i5QweusGvGcmsr9QSKw==
+X-Received: by 2002:a05:6000:15ca:b0:225:4575:746d with SMTP id
+ y10-20020a05600015ca00b002254575746dmr4460103wry.147.1661512658299; 
+ Fri, 26 Aug 2022 04:17:38 -0700 (PDT)
 Received: from localhost (host-213-179-129-39.customer.m-online.net.
  [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
- h21-20020a05600c351500b003a60ff7c082sm8622454wmq.15.2022.08.26.04.16.01
+ by6-20020a056000098600b0021f15514e7fsm2059971wrb.0.2022.08.26.04.17.37
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 26 Aug 2022 04:16:01 -0700 (PDT)
-Date: Fri, 26 Aug 2022 13:16:00 +0200
+ Fri, 26 Aug 2022 04:17:37 -0700 (PDT)
+Date: Fri, 26 Aug 2022 13:17:37 +0200
 From: Jiri Pirko <jiri@resnulli.us>
 To: Wojciech Drewek <wojciech.drewek@intel.com>
-Message-ID: <YwircDhHhOfqdHy/@nanopsycho>
+Message-ID: <Ywir0R7xdE7RZIhD@nanopsycho>
 References: <20220826110059.119927-1-wojciech.drewek@intel.com>
+ <20220826110059.119927-2-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20220826110059.119927-1-wojciech.drewek@intel.com>
+In-Reply-To: <20220826110059.119927-2-wojciech.drewek@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=resnulli-us.20210112.gappssmtp.com; s=20210112;
  h=in-reply-to:content-disposition:mime-version:references:message-id
  :subject:cc:to:from:date:from:to:cc;
- bh=vRtP9Skqdi6VRUhZFmU/5JLtOk/HwkyzGgOrB5aVaqc=;
- b=BdK6TUPc3E95StF714NnERXWUrvaQ18TZ48qTAB6uRMvSSkzEVJKaqXmU1jlABADIn
- k3elOllRLH6zHYKRmAwge10AsGt90U/L65VKqWXeZW3722f3YNZY2M6o0H2gbn4FthOq
- 9/wDAAKJfQrIXOJtNPCu+fMEUpHxgxUQLnAZWXBJD/Wpxp3u6jP3BhpdkUG+5cYGLv0M
- SietHnFquLDYnlZz24gs/eUGbfFd/mRvtsAkCQhTSptZgFuuwrQA39UkYjGUYIBD7J/U
- b7brUwjthuTOFYs7QOveQ5WljT0czxdNfL+pV+SxzidtQgnEBBW+r0I2jMyvmZkYAjF2
- 6Q3A==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=s5HqRvr7PHDgoWZiabiLCmfMHT6gZC+dy6EsiwT3xbQ=;
+ b=7h9g7EK9RqVul2SxQH6CNrg/bVcpzhDCrLUdI6ScWhDU7WNx4ReP5AgoC/a8qWBvS1
+ jVvE5cHj0rgJGVhhf/DJjWMVYJAYGk5HqVZOqAY02dQZ+svPBzEAYE9qbgpbvEuy8smC
+ qppATxVh+u+btTiaVx1FSOheR+KENUYveqzCzybJQdH6iM/C9tqrqLqc9O5nw/12qiTp
+ 9K0qVYLbsUfyClH99d5GboIwoku2OvJicFJ73DD2dG681QDpOF3ViGbL+GARN7fKrUkv
+ wkzI10UZCVABrX5D75xc7KumSNIn9kyreUd2ohPOtQ8ojq5h+mxqi8BjK5z3tLbG1/PZ
+ Rcmg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=resnulli-us.20210112.gappssmtp.com
  header.i=@resnulli-us.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=BdK6TUPc
-Subject: Re: [Intel-wired-lan] [RFC PATCH net-next 0/5] ice: L2TPv3 offload
- support
+ header.s=20210112 header.b=7h9g7EK9
+Subject: Re: [Intel-wired-lan] [RFC PATCH net-next 1/5] uapi: move
+ IPPROTO_L2TP to in.h
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,52 +122,48 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Fri, Aug 26, 2022 at 01:00:54PM CEST, wojciech.drewek@intel.com wrote:
->Add support for dissecting L2TPv3 session id in flow dissector. Add support
->for this field in tc-flower and support offloading L2TPv3. Finally, add
->support for hardware offload of L2TPv3 packets based on session id in
->switchdev mode in ice driver.
+Fri, Aug 26, 2022 at 01:00:55PM CEST, wojciech.drewek@intel.com wrote:
+>IPPROTO_L2TP is currently defined in l2tp.h, but most of
+>ip protocols is defined in in.h file. Move it there in order
+>to keep code clean.
 >
->Example filter:
->  # tc filter add dev $PF1 ingress prio 1 protocol ip \
->      flower \
->        ip_proto l2tp \
->        l2tpv3_sid 1234 \
->        skip_sw \
->      action mirred egress redirect dev $VF1_PR
+>Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+>---
+> include/uapi/linux/in.h   | 2 ++
+> include/uapi/linux/l2tp.h | 2 --
+> 2 files changed, 2 insertions(+), 2 deletions(-)
 >
->Changes in iproute2 are required to use the new fields.
->
->ICE COMMS DDP package is required to create a filter in ice.
+>diff --git a/include/uapi/linux/in.h b/include/uapi/linux/in.h
+>index 14168225cecd..5a9454c886b3 100644
+>--- a/include/uapi/linux/in.h
+>+++ b/include/uapi/linux/in.h
+>@@ -68,6 +68,8 @@ enum {
+> #define IPPROTO_PIM		IPPROTO_PIM
+>   IPPROTO_COMP = 108,		/* Compression Header Protocol		*/
+> #define IPPROTO_COMP		IPPROTO_COMP
+>+  IPPROTO_L2TP = 115,		/* Layer 2 Tunnelling Protocol		*/
+>+#define IPPROTO_L2TP		IPPROTO_L2TP
+>   IPPROTO_SCTP = 132,		/* Stream Control Transport Protocol	*/
+> #define IPPROTO_SCTP		IPPROTO_SCTP
+>   IPPROTO_UDPLITE = 136,	/* UDP-Lite (RFC 3828)			*/
+>diff --git a/include/uapi/linux/l2tp.h b/include/uapi/linux/l2tp.h
+>index bab8c9708611..7d81c3e1ec29 100644
+>--- a/include/uapi/linux/l2tp.h
+>+++ b/include/uapi/linux/l2tp.h
+>@@ -13,8 +13,6 @@
+> #include <linux/in.h>
+> #include <linux/in6.h>
+> 
+>-#define IPPROTO_L2TP		115
 
-I don't understand what do you mean by this. Could you please explain
-what this mysterious "ICE COMMS DDP package" is? Do I understand it
-correctly that without it, the solution would not work?
+You most certainly cannot do this, as you would break the user including
+linux/l2tp.h and using this.
 
->
->Marcin Szycik (1):
->  ice: Add L2TPv3 hardware offload support
->
->Wojciech Drewek (4):
->  uapi: move IPPROTO_L2TP to in.h
->  flow_dissector: Add L2TPv3 dissectors
->  net/sched: flower: Add L2TPv3 filter
->  flow_offload: Introduce flow_match_l2tpv3
->
-> .../ethernet/intel/ice/ice_protocol_type.h    |  8 +++
-> drivers/net/ethernet/intel/ice/ice_switch.c   | 70 ++++++++++++++++++-
-> drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 27 ++++++-
-> drivers/net/ethernet/intel/ice/ice_tc_lib.h   |  6 ++
-> include/net/flow_dissector.h                  |  9 +++
-> include/net/flow_offload.h                    |  6 ++
-> include/uapi/linux/in.h                       |  2 +
-> include/uapi/linux/l2tp.h                     |  2 -
-> include/uapi/linux/pkt_cls.h                  |  2 +
-> net/core/flow_dissector.c                     | 28 ++++++++
-> net/core/flow_offload.c                       |  7 ++
-> net/sched/cls_flower.c                        | 16 +++++
-> 12 files changed, 179 insertions(+), 4 deletions(-)
->
+
+>-
+> /**
+>  * struct sockaddr_l2tpip - the sockaddr structure for L2TP-over-IP sockets
+>  * @l2tp_family:  address family number AF_L2TPIP.
 >-- 
 >2.31.1
 >
