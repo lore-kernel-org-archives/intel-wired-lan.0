@@ -1,106 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC61CECAAD5
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Aug 2022 14:34:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE904ECAAD4
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Aug 2022 15:57:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 637D683E7E;
-	Fri, 26 Aug 2022 14:34:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 637D683E7E
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4B9C24191F;
+	Fri, 26 Aug 2022 15:57:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4B9C24191F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1661524483;
-	bh=xlaFpdnihflwxBD2252R2gtuiNxvztRLvahZyRxStCY=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1661529424;
+	bh=lx+RjTjqsCYTFRpHJNc3Xg9x/y4oc09utrKQxvFi0+8=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=yFxfJTLhD1lg2d6WtvhkzZFSOjC8m9vYeFSmLJtOJW2UBJz+TLoOMAgvE8ccNeOWe
-	 fMiWa3dS9rPoSEU75/CIUVEUl8UuwT4I1qUhQ6lJ13fPUD7e0P2zLfettpynCRO/XS
-	 5cqkW0NQDtOamQuF9hAkCS8c2vXh39dqlkTpNs2HuF+GJ85Ss5/4GC4bnkP89/bYMd
-	 eBG4Dyqmp7HeuvsZ7Z1bW4Nva6+alb6OXRv/4exm1O1Cn2rmjBdVo1yBI1EcH7xNfR
-	 iY7Zm4rb3+G1JWmyPkIDnBKXoEGUU5TuxvHGDmb3KVC1edKdXphjnK5bfXuAYIGaz2
-	 86rY1Jau5Ayfw==
+	b=ggxBwL+leKYXQ7iKzabaYUs3squU+KZVlFVWu5B/cM0xjGxSa6vKLAIq7ixLCDhz9
+	 7OFpvKcEL81ie1e1WhdLO9lWvMaWPMT2v/p5AsuOZQWzXFxCNs97vFCuvdzTweXEp7
+	 4onK+gennKWnjFutOHLF5TklesW123h9ucOzlNIEoqRQBNuqgkhyMmoikF1Py9MPjm
+	 SMqsbmVbGGt04DjHoQu6BUfsSQfie7ramqDlBIV9lttPps/HwjjsgcfY+gx7hFnVhO
+	 +Z3KqXRhxVAX3/UBjPgWOT7bOx4XuQSAZJG5kLFBGoItJ99JtHKVJK0XLkFKtxqyYE
+	 tcqkmPKzlnMoA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1FXn1Zo2XLDU; Fri, 26 Aug 2022 14:34:42 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id h9XzvFzXooAP; Fri, 26 Aug 2022 15:57:03 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4C22583EC1;
-	Fri, 26 Aug 2022 14:34:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4C22583EC1
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 723721BF284
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 14:34:40 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C3F9F41929;
+	Fri, 26 Aug 2022 15:57:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C3F9F41929
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id AAB121BF5A6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 05:43:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 599866111C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 14:34:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 599866111C
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9205C40354
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 05:43:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9205C40354
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 6-Y3HqaplU7z for <intel-wired-lan@lists.osuosl.org>;
- Fri, 26 Aug 2022 14:34:38 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id lYYFIMx0ABuq for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 26 Aug 2022 05:42:59 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DCC2D60B5A
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com
- [IPv6:2a00:1450:4864:20::52f])
- by smtp3.osuosl.org (Postfix) with ESMTPS id DCC2D60B5A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 14:34:37 +0000 (UTC)
-Received: by mail-ed1-x52f.google.com with SMTP id x93so2195379ede.6
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 07:34:37 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9564540012
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com
+ [IPv6:2607:f8b0:4864:20::636])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9564540012
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 05:42:59 +0000 (UTC)
+Received: by mail-pl1-x636.google.com with SMTP id w2so746983pld.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 25 Aug 2022 22:42:59 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=in-reply-to:content-transfer-encoding:content-disposition
- :mime-version:references:message-id:subject:cc:to:from:date
- :x-gm-message-state:from:to:cc;
- bh=9zlwCPVehJQ1qgjHuCqk7QskOCRiDPoz2uVWsDuaHXA=;
- b=Jr23NFUU6S7FQ/EBZXb2M0a7vB5E6XcnwUIlshgnk7Ol04DFjfdPi13vVnUVOLRN87
- J2KxEhXT8GroR/L6ezIjpBHItM45gog6aWbqJtHVH79/HQWr4S/bUNLaSRC6vePwreX1
- +6P4EbVDDW6zYUiifr09lkBrtsdGALikAE9FLN4dNPaOOmqti+iTieJXUXficN8LPYdf
- 5CaZZ+elu9XQuxZdj2zt6eUPDunq7L3O3s+sVXWZBUNW1l+xpWGGWKAG8R8oyXySKekv
- nYlsLov8CRM9MOSEw/AXpHv7qg1TIYSaT98jhgv86ykYn/bZLnJhgj7kVNF2l67O9crH
- N2sw==
-X-Gm-Message-State: ACgBeo3eSYKQjhYjVNn3k9YgDO0LMk5L1EazRHLpUJRd8arFLK5nzcgw
- Ya9Sc3TJqCrY9Gl7Vgm0csvq7g==
-X-Google-Smtp-Source: AA6agR4XSVmzN1sOs2T2fKu+ihFGyRk7Bm77OfYpfXrHGJiIkQ7cdmBiP7+80PNa8q8VQ0gCXY5GEQ==
-X-Received: by 2002:a05:6402:551a:b0:446:1526:85ea with SMTP id
- fi26-20020a056402551a00b00446152685eamr7159133edb.188.1661524475867; 
- Fri, 26 Aug 2022 07:34:35 -0700 (PDT)
-Received: from localhost (host-213-179-129-39.customer.m-online.net.
- [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
- b7-20020aa7c907000000b004478e9ab2c5sm1362707edt.69.2022.08.26.07.34.35
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 26 Aug 2022 07:34:35 -0700 (PDT)
-Date: Fri, 26 Aug 2022 16:34:34 +0200
-From: Jiri Pirko <jiri@resnulli.us>
-To: "Drewek, Wojciech" <wojciech.drewek@intel.com>
-Message-ID: <YwjZ+h82UrF2MrxO@nanopsycho>
-References: <20220826110059.119927-1-wojciech.drewek@intel.com>
- <YwircDhHhOfqdHy/@nanopsycho>
- <MW4PR11MB5776E6C92351788A0E55B6CBFD759@MW4PR11MB5776.namprd11.prod.outlook.com>
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc;
+ bh=1YeSohKprvznhG9NRDHk53lOiY+tzruNA0zvGt6cDqA=;
+ b=mM5avyqsh+5UvhbliUKPti2EiHeG2vht/9aSLxT1REGTFGFt2iP2XY33XKLMw3agFc
+ fM2mez+joEmzojdbH4h7pDcerx+7guir9803UFWtDC9pjQ17w8trf4JbO53gTaBk75iV
+ FGpblo+tcuS0nHpJqhnChAR3Qg9lFtFrZABXCDKPk9FdGDXHWv8oCRDc6JNeDDEJFRch
+ S3qwcQKUfxESLBxJFCNqjnhJZAvkfio5g97R2Nmx6GfcWmUWxrM6fpAfpSlrUvf72snx
+ GMhLn1yn0qy49VsRpC8gE/vZXWOYQ1QanCQeoEy5IoyuZ3meV+D/OfJeRflTreGTmTxT
+ mroA==
+X-Gm-Message-State: ACgBeo3IaqFWIjHa7GLBd3t0NHE4aRe/rUbmUa6leALNMv3ZbcVOuPxn
+ 7iXr/N7RDntCAbskNrPYqONS3aYX5HnV2984tSE=
+X-Google-Smtp-Source: AA6agR42kqYx1732sUGKVGYoHwU6CxdVQe0DWE+KnwPrgjRLwjUZgsI4L38JkYQD/RyuNhYYMhxwZyJBxYpd0NwXP2I=
+X-Received: by 2002:a17:902:d584:b0:173:19a2:b831 with SMTP id
+ k4-20020a170902d58400b0017319a2b831mr2301769plh.126.1661492578880; Thu, 25
+ Aug 2022 22:42:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <MW4PR11MB5776E6C92351788A0E55B6CBFD759@MW4PR11MB5776.namprd11.prod.outlook.com>
+References: <20220823060200.1452663-1-floridsleeves@gmail.com>
+ <0056a39d-d7dc-34ea-3a71-6d5d3835c2d5@intel.com>
+In-Reply-To: <0056a39d-d7dc-34ea-3a71-6d5d3835c2d5@intel.com>
+From: Li Zhong <floridsleeves@gmail.com>
+Date: Thu, 25 Aug 2022 22:42:48 -0700
+Message-ID: <CAMEuxRraM31C1k9u37ZyxrYVUtKuWdiYUfhw+g=p7_oq-MrMEA@mail.gmail.com>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>
+X-Mailman-Approved-At: Fri, 26 Aug 2022 15:57:00 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=resnulli-us.20210112.gappssmtp.com; s=20210112;
- h=in-reply-to:content-transfer-encoding:content-disposition
- :mime-version:references:message-id:subject:cc:to:from:date:from:to
- :cc;
- bh=9zlwCPVehJQ1qgjHuCqk7QskOCRiDPoz2uVWsDuaHXA=;
- b=ADLsg/Oi/Efwq6v44nXKp2rbwJ1f1EFDTiuc/nAwlP9XuqPA8wEMyg9iDu95s2OYL5
- nnEL67MBpAu1ZKYTrD9IK9hSkutHmoM/esRdyy8AGLGSaQwzvB9oQwhI3aBSJKRT0+4v
- LOkyCY3DrxGC/NM34g3IoQuCRuTdZ0ttk9yWPvBi0vUttFYyXABE5el0cqdP/IgI5YZY
- 8EkYbq+he4mJxW0vRz/iym4SmJS5pj0qem9Qlks3m7Hkb88ez/+mQjgqbGC86qALstmI
- DRuW5xsu2gDMNGeSOHxbmopRmmUK1UyWgdPvzQxqdQ2z9YLvCBf6HPDk8o1hdyMLMn7W
- 3YNg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=resnulli-us.20210112.gappssmtp.com
- header.i=@resnulli-us.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=ADLsg/Oi
-Subject: Re: [Intel-wired-lan] [RFC PATCH net-next 0/5] ice: L2TPv3 offload
- support
+ d=gmail.com; s=20210112;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc;
+ bh=1YeSohKprvznhG9NRDHk53lOiY+tzruNA0zvGt6cDqA=;
+ b=QIYjs8ZjdE355CkSF1xQ6exccmZKYEc1ldYwXFNX6soDgzVvKLLilEKEW8BstaCngQ
+ u2lR5DnJVzUwuQuHiJcApUvD4PGhmBLJR6Cm7Upt4hirsCx2tM0rgj6oDvZwAb7Wwcqm
+ k0HGwVHgt+ac9cT+oqf/RhfqYcAOS3yCh8oLPtBMy7wF/0JIrVHGib2HbUu7+bXy9i83
+ txnd5pvztmmAnQyrTUc7nHr7BWNlEuZPFOHy02BU8FMod/i2iA7OHG6R6YAVim4IlB9Z
+ NTfE5Rv7iSb+N0OwR05f25fHMYpZWP1FED5BVglgO0z44oolAcCrjeLrGt9afUkb6a8e
+ tlYQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20210112 header.b=QIYjs8Zj
+Subject: Re: [Intel-wired-lan] [PATCH v1] drivers/net/ethernet: check return
+ value of e1e_rphy()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,93 +104,106 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "simon.horman@corigine.com" <simon.horman@corigine.com>,
- "maksym.glubokiy@plvision.eu" <maksym.glubokiy@plvision.eu>,
- "komachi.yoshiki@gmail.com" <komachi.yoshiki@gmail.com>,
- "jchapman@katalix.com" <jchapman@katalix.com>,
- "edumazet@google.com" <edumazet@google.com>,
- "boris.sukholitko@broadcom.com" <boris.sukholitko@broadcom.com>,
- "louis.peens@corigine.com" <louis.peens@corigine.com>,
- "gnault@redhat.com" <gnault@redhat.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "vladbu@nvidia.com" <vladbu@nvidia.com>, "kuba@kernel.org" <kuba@kernel.org>,
- "pabeni@redhat.com" <pabeni@redhat.com>,
- "pablo@netfilter.org" <pablo@netfilter.org>,
- "baowen.zheng@corigine.com" <baowen.zheng@corigine.com>,
- "kurt@linutronix.de" <kurt@linutronix.de>,
- "paulb@nvidia.com" <paulb@nvidia.com>, "jhs@mojatatu.com" <jhs@mojatatu.com>,
- "xiyou.wangcong@gmail.com" <xiyou.wangcong@gmail.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "davem@davemloft.net" <davem@davemloft.net>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, edumazet@google.com,
+ kuba@kernel.org, intel-wired-lan@lists.osuosl.org, pabeni@redhat.com,
+ davem@davemloft.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-RnJpLCBBdWcgMjYsIDIwMjIgYXQgMDE6MzY6NTVQTSBDRVNULCB3b2pjaWVjaC5kcmV3ZWtAaW50
-ZWwuY29tIHdyb3RlOgo+Cj4KPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0KPj4gRnJvbTog
-SmlyaSBQaXJrbyA8amlyaUByZXNudWxsaS51cz4KPj4gU2VudDogcGnEhXRlaywgMjYgc2llcnBu
-aWEgMjAyMiAxMzoxNgo+PiBUbzogRHJld2VrLCBXb2pjaWVjaCA8d29qY2llY2guZHJld2VrQGlu
-dGVsLmNvbT4KPj4gQ2M6IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7IExvYmFraW4sIEFsZXhhbmRy
-IDxhbGV4YW5kci5sb2Jha2luQGludGVsLmNvbT47IEJyYW5kZWJ1cmcsIEplc3NlIDxqZXNzZS5i
-cmFuZGVidXJnQGludGVsLmNvbT47Cj4+IE5ndXllbiwgQW50aG9ueSBMIDxhbnRob255Lmwubmd1
-eWVuQGludGVsLmNvbT47IGRhdmVtQGRhdmVtbG9mdC5uZXQ7IGVkdW1hemV0QGdvb2dsZS5jb207
-IGt1YmFAa2VybmVsLm9yZzsKPj4gcGFiZW5pQHJlZGhhdC5jb207IGpoc0Btb2phdGF0dS5jb207
-IHhpeW91Lndhbmdjb25nQGdtYWlsLmNvbTsgbWFyY2luLnN6eWNpa0BsaW51eC5pbnRlbC5jb207
-Cj4+IG1pY2hhbC5zd2lhdGtvd3NraUBsaW51eC5pbnRlbC5jb207IGt1cnRAbGludXRyb25peC5k
-ZTsgYm9yaXMuc3VraG9saXRrb0Bicm9hZGNvbS5jb207IHZsYWRidUBudmlkaWEuY29tOwo+PiBr
-b21hY2hpLnlvc2hpa2lAZ21haWwuY29tOyBwYXVsYkBudmlkaWEuY29tOyBiYW93ZW4uemhlbmdA
-Y29yaWdpbmUuY29tOyBsb3Vpcy5wZWVuc0Bjb3JpZ2luZS5jb207Cj4+IHNpbW9uLmhvcm1hbkBj
-b3JpZ2luZS5jb207IHBhYmxvQG5ldGZpbHRlci5vcmc7IG1ha3N5bS5nbHVib2tpeUBwbHZpc2lv
-bi5ldTsgaW50ZWwtd2lyZWQtbGFuQGxpc3RzLm9zdW9zbC5vcmc7Cj4+IGpjaGFwbWFuQGthdGFs
-aXguY29tOyBnbmF1bHRAcmVkaGF0LmNvbQo+PiBTdWJqZWN0OiBSZTogW1JGQyBQQVRDSCBuZXQt
-bmV4dCAwLzVdIGljZTogTDJUUHYzIG9mZmxvYWQgc3VwcG9ydAo+PiAKPj4gRnJpLCBBdWcgMjYs
-IDIwMjIgYXQgMDE6MDA6NTRQTSBDRVNULCB3b2pjaWVjaC5kcmV3ZWtAaW50ZWwuY29tIHdyb3Rl
-Ogo+PiA+QWRkIHN1cHBvcnQgZm9yIGRpc3NlY3RpbmcgTDJUUHYzIHNlc3Npb24gaWQgaW4gZmxv
-dyBkaXNzZWN0b3IuIEFkZCBzdXBwb3J0Cj4+ID5mb3IgdGhpcyBmaWVsZCBpbiB0Yy1mbG93ZXIg
-YW5kIHN1cHBvcnQgb2ZmbG9hZGluZyBMMlRQdjMuIEZpbmFsbHksIGFkZAo+PiA+c3VwcG9ydCBm
-b3IgaGFyZHdhcmUgb2ZmbG9hZCBvZiBMMlRQdjMgcGFja2V0cyBiYXNlZCBvbiBzZXNzaW9uIGlk
-IGluCj4+ID5zd2l0Y2hkZXYgbW9kZSBpbiBpY2UgZHJpdmVyLgo+PiA+Cj4+ID5FeGFtcGxlIGZp
-bHRlcjoKPj4gPiAgIyB0YyBmaWx0ZXIgYWRkIGRldiAkUEYxIGluZ3Jlc3MgcHJpbyAxIHByb3Rv
-Y29sIGlwIFwKPj4gPiAgICAgIGZsb3dlciBcCj4+ID4gICAgICAgIGlwX3Byb3RvIGwydHAgXAo+
-PiA+ICAgICAgICBsMnRwdjNfc2lkIDEyMzQgXAo+PiA+ICAgICAgICBza2lwX3N3IFwKPj4gPiAg
-ICAgIGFjdGlvbiBtaXJyZWQgZWdyZXNzIHJlZGlyZWN0IGRldiAkVkYxX1BSCj4+ID4KPj4gPkNo
-YW5nZXMgaW4gaXByb3V0ZTIgYXJlIHJlcXVpcmVkIHRvIHVzZSB0aGUgbmV3IGZpZWxkcy4KPj4g
-Pgo+PiA+SUNFIENPTU1TIEREUCBwYWNrYWdlIGlzIHJlcXVpcmVkIHRvIGNyZWF0ZSBhIGZpbHRl
-ciBpbiBpY2UuCj4+IAo+PiBJIGRvbid0IHVuZGVyc3RhbmQgd2hhdCBkbyB5b3UgbWVhbiBieSB0
-aGlzLiBDb3VsZCB5b3UgcGxlYXNlIGV4cGxhaW4KPj4gd2hhdCB0aGlzIG15c3RlcmlvdXMgIklD
-RSBDT01NUyBERFAgcGFja2FnZSIgaXM/IERvIEkgdW5kZXJzdGFuZCBpdAo+PiBjb3JyZWN0bHkg
-dGhhdCB3aXRob3V0IGl0LCB0aGUgc29sdXRpb24gd291bGQgbm90IHdvcms/Cj4KPlNvcnJ5LCBJ
-J2xsIGluY2x1ZGUgbW9yZSBwcmVjaXNlIGRlc2NyaXB0aW9uIGluIHRoZSBuZXh0IHZlcnNpb24u
-Cj5ERFAgKER5bmFtaWMgRGV2aWNlIFBlcnNvbmFsaXphdGlvbikgaXMgYSBmaXJtd2FyZSBwYWNr
-YWdlIHRoYXQgY29udGFpbnMgZGVmaW5pdGlvbnMKPnByb3RvY29sJ3MgaGVhZGVycyBhbmQgcGFj
-a2V0cy4gSXQgYWxsb3dzIHlvdSAgdG8gYWRkIHN1cHBvcnQgZm9yIHRoZSBuZXcgcHJvdG9jb2wg
-dG8gdGhlCj5OSUMgY2FyZCB3aXRob3V0IHJlYm9vdGluZy4gIElmIHRoZSBERFAgcGFja2FnZSBk
-b2VzIG5vdCBzdXBwb3J0IEwyVFB2MyB0aGVuIGh3IG9mZmxvYWQgCj53aWxsIG5vdCB3b3JrLCBo
-b3dldmVyIHN3IG9mZmxvYWQgd2lsbCBzdGlsbCB3b3JrLgoKSG1tLCBzbyBpdCBpcyBzb21lIEZX
-IHBhcnQ/IFdoeSBkbyB3ZSBjYXJlIGFib3V0IGl0IGhlcmUgaW4gcGF0Y2hzZXQKZGVzY3JpcHRp
-b24/CgoKPgo+TW9yZSBpbmZvIG9uIEREUDoKPmh0dHBzOi8vd3d3LmludGVsLmNvbS9jb250ZW50
-L3d3dy91cy9lbi9hcmNoaXRlY3R1cmUtYW5kLXRlY2hub2xvZ3kvZXRoZXJuZXQvZHluYW1pYy1k
-ZXZpY2UtcGVyc29uYWxpemF0aW9uLWJyaWVmLmh0bWwKPgo+PiAKPj4gPgo+PiA+TWFyY2luIFN6
-eWNpayAoMSk6Cj4+ID4gIGljZTogQWRkIEwyVFB2MyBoYXJkd2FyZSBvZmZsb2FkIHN1cHBvcnQK
-Pj4gPgo+PiA+V29qY2llY2ggRHJld2VrICg0KToKPj4gPiAgdWFwaTogbW92ZSBJUFBST1RPX0wy
-VFAgdG8gaW4uaAo+PiA+ICBmbG93X2Rpc3NlY3RvcjogQWRkIEwyVFB2MyBkaXNzZWN0b3JzCj4+
-ID4gIG5ldC9zY2hlZDogZmxvd2VyOiBBZGQgTDJUUHYzIGZpbHRlcgo+PiA+ICBmbG93X29mZmxv
-YWQ6IEludHJvZHVjZSBmbG93X21hdGNoX2wydHB2Mwo+PiA+Cj4+ID4gLi4uL2V0aGVybmV0L2lu
-dGVsL2ljZS9pY2VfcHJvdG9jb2xfdHlwZS5oICAgIHwgIDggKysrCj4+ID4gZHJpdmVycy9uZXQv
-ZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV9zd2l0Y2guYyAgIHwgNzAgKysrKysrKysrKysrKysrKysr
-LQo+PiA+IGRyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9pY2VfdGNfbGliLmMgICB8IDI3
-ICsrKysrKy0KPj4gPiBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2UvaWNlX3RjX2xpYi5o
-ICAgfCAgNiArKwo+PiA+IGluY2x1ZGUvbmV0L2Zsb3dfZGlzc2VjdG9yLmggICAgICAgICAgICAg
-ICAgICB8ICA5ICsrKwo+PiA+IGluY2x1ZGUvbmV0L2Zsb3dfb2ZmbG9hZC5oICAgICAgICAgICAg
-ICAgICAgICB8ICA2ICsrCj4+ID4gaW5jbHVkZS91YXBpL2xpbnV4L2luLmggICAgICAgICAgICAg
-ICAgICAgICAgIHwgIDIgKwo+PiA+IGluY2x1ZGUvdWFwaS9saW51eC9sMnRwLmggICAgICAgICAg
-ICAgICAgICAgICB8ICAyIC0KPj4gPiBpbmNsdWRlL3VhcGkvbGludXgvcGt0X2Nscy5oICAgICAg
-ICAgICAgICAgICAgfCAgMiArCj4+ID4gbmV0L2NvcmUvZmxvd19kaXNzZWN0b3IuYyAgICAgICAg
-ICAgICAgICAgICAgIHwgMjggKysrKysrKysKPj4gPiBuZXQvY29yZS9mbG93X29mZmxvYWQuYyAg
-ICAgICAgICAgICAgICAgICAgICAgfCAgNyArKwo+PiA+IG5ldC9zY2hlZC9jbHNfZmxvd2VyLmMg
-ICAgICAgICAgICAgICAgICAgICAgICB8IDE2ICsrKysrCj4+ID4gMTIgZmlsZXMgY2hhbmdlZCwg
-MTc5IGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pCj4+ID4KPj4gPi0tCj4+ID4yLjMxLjEK
-Pj4gPgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRl
-bC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBz
-Oi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
+On Tue, Aug 23, 2022 at 8:19 AM Jesse Brandeburg
+<jesse.brandeburg@intel.com> wrote:
+>
+> On 8/22/2022 11:02 PM, lily wrote:
+> > e1e_rphy() could return error value, which need to be checked.
+>
+> Thanks for having a look at the e1000e driver. Was there some bug you
+> found or is this just a fix based on a tool or observation?
+>
+> If a tool was used, what tool?
+>
+These bugs are detected by a static analysis tool to check whether a
+return error is handled.
+
+> For networking patches please follow the guidance at
+> https://www.kernel.org/doc/html/latest/process/maintainer-netdev.html
+>
+>
+> > Signed-off-by: Li Zhong <floridsleeves@gmail.com>
+> > ---
+> >   drivers/net/ethernet/intel/e1000e/phy.c | 14 +++++++++++---
+> >   1 file changed, 11 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+> > index fd07c3679bb1..15ac302fdee0 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/phy.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/phy.c
+> > @@ -2697,9 +2697,12 @@ static s32 e1000_access_phy_wakeup_reg_bm(struct e1000_hw *hw, u32 offset,
+> >   void e1000_power_up_phy_copper(struct e1000_hw *hw)
+> >   {
+> >       u16 mii_reg = 0;
+> > +     int ret;
+> >
+> >       /* The PHY will retain its settings across a power down/up cycle */
+> > -     e1e_rphy(hw, MII_BMCR, &mii_reg);
+> > +     ret = e1e_rphy(hw, MII_BMCR, &mii_reg);
+> > +     if (ret)
+> > +             return ret;
+>
+> Can't return value to a void declared function, did you even compile
+> test this?
+
+Sorry for the compilation error. We will fix it in patch v2.
+
+>
+> Maybe it should be like:
+>      if (ret) {
+>         // this is psuedo code
+>          dev_warn(..., "PHY read failed during power up\n");
+>          return;
+>      }
+>
+> >       mii_reg &= ~BMCR_PDOWN;
+> >       e1e_wphy(hw, MII_BMCR, mii_reg);
+> >   }
+> > @@ -2715,9 +2718,12 @@ void e1000_power_up_phy_copper(struct e1000_hw *hw)
+> >   void e1000_power_down_phy_copper(struct e1000_hw *hw)
+> >   {
+> >       u16 mii_reg = 0;
+> > +     int ret;
+> >
+> >       /* The PHY will retain its settings across a power down/up cycle */
+> > -     e1e_rphy(hw, MII_BMCR, &mii_reg);
+> > +     ret = e1e_rphy(hw, MII_BMCR, &mii_reg);
+> > +     if (ret)
+> > +             return ret;
+>
+> same here.
+>
+> >       mii_reg |= BMCR_PDOWN;
+> >       e1e_wphy(hw, MII_BMCR, mii_reg);
+> >       usleep_range(1000, 2000);
+> > @@ -3037,7 +3043,9 @@ s32 e1000_link_stall_workaround_hv(struct e1000_hw *hw)
+> >               return 0;
+> >
+> >       /* Do not apply workaround if in PHY loopback bit 14 set */
+> > -     e1e_rphy(hw, MII_BMCR, &data);
+> > +     ret_val = e1e_rphy(hw, MII_BMCR, &data);
+> > +     if (ret_val)
+> > +             return ret_val;
+> >       if (data & BMCR_LOOPBACK)
+> >               return 0;
+> >
+>
+> Did any of the callers of the above function care about the return code
+> being an error value? This has been like this for a long time...
+
+We manually check this function e1e_rphy(). We think it's possible that
+this function fails and it would be better if we can check the error and
+report it for debugging and diagnosing. Though the possibility of error
+may be low and that's why it has been here for a long time.
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
