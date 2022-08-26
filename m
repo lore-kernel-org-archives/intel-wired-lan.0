@@ -1,91 +1,102 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A58CECAAA3
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Aug 2022 11:04:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C6A6ECAAA3
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 26 Aug 2022 11:16:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D985D419E3;
-	Fri, 26 Aug 2022 11:04:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D985D419E3
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9D60D60B8D;
+	Fri, 26 Aug 2022 11:16:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9D60D60B8D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1661511884;
-	bh=LOkggR6Qd40+/PmHT22F99rm5NIoXi9iDyj4dtkEMGw=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1661512571;
+	bh=ibFsIptFyEWcAzi6B9IL3m3QBHpItEz0xqPGYC7OJ7o=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=IDAlimZOC1dcZlCSvzGxs/3DuBGEmSmWwUG12PzeZnhm6k+ZwtLKEB6IQ8ivoElvF
-	 R+9wkVHDD2uEzlakMOSqbv0g4goRUsTxz3wFk2mJPIvr9zMxdiJKtkbdiPyeqTTbuV
-	 tM59iy4wZQo1MFgmTVr8ryNopeoeAIIm+ZMFlX6nT5l8yHOS8Keco30QT+RPlLZi5Z
-	 GlFlMtSHok2VrGe7O+etgc0NIcdj+aTmBIJtT3nLINhaEzS6Waib2NKMquyT57lpZX
-	 M7FqS4Io0uihHu0YnZYhH5INOHiE61cm2XvbjLVLo3GU4Z6iiVa4M0upyOa6EdVi+c
-	 TxXJmB1ZMj1vw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3pkOIs0Q01Bi; Fri, 26 Aug 2022 11:04:43 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 548B7419EF;
-	Fri, 26 Aug 2022 11:04:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 548B7419EF
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id EAEA81BF289
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:04:29 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C6696610D1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:04:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C6696610D1
+	b=g4AyTx1iKstTXyCzFRdO23eqavn9NDC+P2ke3zgyppYpYGw52fnxvb/Ehc6Sk2rQh
+	 Pe/PLw1ulr10qkXsvjRgJSeA/eZNufP2PKxfYYl5JM7YG9zl9HTVqrItQEBDslw1MN
+	 7zJopdEhlgIPpGJEnL3urz5kYsb9D/bJgnrfT0m3ZgHd2w4lW8TcXtgWuTl1C19fwy
+	 v2OaBOE/sh/loeAmGRRulpghYIriLWMaoj1aAQ6JDoXakqVsacFJeo4zRXGOkzu8Cc
+	 rIPdoJzbNugvvNrWTCC4/aOy0SAT3CPHtfpkYjqdO+V63Oz8jErg7M2zOurWxiiwkE
+	 bAZIH7M+nu2Kw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id FFOOeAcP52HU for <intel-wired-lan@lists.osuosl.org>;
- Fri, 26 Aug 2022 11:04:29 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E3B8360B8D
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E3B8360B8D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:04:28 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10450"; a="380775333"
-X-IronPort-AV: E=Sophos;i="5.93,265,1654585200"; d="scan'208";a="380775333"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Aug 2022 04:04:23 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,265,1654585200"; d="scan'208";a="640017551"
-Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by orsmga008.jf.intel.com with ESMTP; 26 Aug 2022 04:04:17 -0700
-Received: from switcheroo.igk.intel.com (switcheroo.igk.intel.com
- [172.22.229.137])
- by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 27QB4CLs024087; Fri, 26 Aug 2022 12:04:15 +0100
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-To: netdev@vger.kernel.org
-Date: Fri, 26 Aug 2022 13:00:56 +0200
-Message-Id: <20220826110059.119927-3-wojciech.drewek@intel.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20220826110059.119927-1-wojciech.drewek@intel.com>
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Yf8KFeyE_aYo; Fri, 26 Aug 2022 11:16:10 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id A17C9610DC;
+	Fri, 26 Aug 2022 11:16:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A17C9610DC
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 195D61BF289
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:16:09 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id E5F7383EF0
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:16:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E5F7383EF0
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id CLwHpo_UIGKu for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 26 Aug 2022 11:16:04 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5CA6183EEE
+Received: from mail-wm1-x32d.google.com (mail-wm1-x32d.google.com
+ [IPv6:2a00:1450:4864:20::32d])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 5CA6183EEE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 11:16:03 +0000 (UTC)
+Received: by mail-wm1-x32d.google.com with SMTP id ay12so707598wmb.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 26 Aug 2022 04:16:03 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
+ bh=vRtP9Skqdi6VRUhZFmU/5JLtOk/HwkyzGgOrB5aVaqc=;
+ b=lmhXmyAVYSBFOdtA4Dte2s5ofxsdE7GAxU/mLTH/XA/4/Eqp0bpLVJ8+SNCqQHanqZ
+ H3jDbIlT4EvzGN/vkLZvC1cfseVlT7shlDRaf6Unl9by8FqSNgph8fiErmm8wA/HkSU8
+ /LYEvtWtqpGcL9I2aO+2hXP16cBwvFulm6l+BlYcB/I/bo8mBQ3YvCkmitTDvobA4VH6
+ 2uH1aGBsJk10JWFf5Db6NQo67xH6Ue0YWJtJqbaOzYzsUElhqLDYuq6diSfhpMQlMHvt
+ o/woQmGZMriRHm+CncP8GVxmC4AOlBmFj4/P0C9P7GnDywRo4iAQQTrTvA8folWKt630
+ XtoA==
+X-Gm-Message-State: ACgBeo3v1zbKwEJFXRoSEXA3t3jrmOzUwdOkmz9it0e9gEamrqjIQtWf
+ p5cB8dXujqeUq7mbKbdqF9ts9Q==
+X-Google-Smtp-Source: AA6agR4QzaWX8XmLz8SGvNyIEQsQ5GQDx172pO0aIEdni0lwQywVURMMxO00o4DMyckU7PnYyS53nA==
+X-Received: by 2002:a05:600c:3048:b0:3a6:5ce0:9701 with SMTP id
+ n8-20020a05600c304800b003a65ce09701mr4969801wmh.97.1661512562030; 
+ Fri, 26 Aug 2022 04:16:02 -0700 (PDT)
+Received: from localhost (host-213-179-129-39.customer.m-online.net.
+ [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
+ h21-20020a05600c351500b003a60ff7c082sm8622454wmq.15.2022.08.26.04.16.01
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 26 Aug 2022 04:16:01 -0700 (PDT)
+Date: Fri, 26 Aug 2022 13:16:00 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+To: Wojciech Drewek <wojciech.drewek@intel.com>
+Message-ID: <YwircDhHhOfqdHy/@nanopsycho>
 References: <20220826110059.119927-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1661511868; x=1693047868;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=xKLv1G8WfQWG4cBP9vyucBTiuVq6O/R1cI+hNgRFNlU=;
- b=HbbxftrdMtANyP8tc9VhZpm71N6MjYMcWE7qYsEXFsOQOYhElI8GM2lr
- GD9OcOnQsAXHcUNqpQockaFLt9ZcjtamQZ1om5XdfCU3F8b49WgQ8W1NH
- XQQU46ciZg5Ml+gZ+lk3ENNiMNQ2AvvyE1xffCh6S+N2wZekbYi9W/A8u
- 8AoZFr9OuAz0igYTpTh82TV7OJe7fdRtVAhIVTgXkGeI5ZJnEP9rlATTB
- s1/F7gRJkRyunOWGsT7pIPFwOEKyiSvhEyMqSbva4eYfkCTBuEc+YzmU+
- 3+urroq461w+d8DKxgcWOAjPUIrd6AHGT4jyPxIZzktrIDUKrvwG5rJVg
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Hbbxftrd
-Subject: [Intel-wired-lan] [RFC PATCH net-next 2/5] flow_dissector: Add
- L2TPv3 dissectors
+Content-Disposition: inline
+In-Reply-To: <20220826110059.119927-1-wojciech.drewek@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=resnulli-us.20210112.gappssmtp.com; s=20210112;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc;
+ bh=vRtP9Skqdi6VRUhZFmU/5JLtOk/HwkyzGgOrB5aVaqc=;
+ b=BdK6TUPc3E95StF714NnERXWUrvaQ18TZ48qTAB6uRMvSSkzEVJKaqXmU1jlABADIn
+ k3elOllRLH6zHYKRmAwge10AsGt90U/L65VKqWXeZW3722f3YNZY2M6o0H2gbn4FthOq
+ 9/wDAAKJfQrIXOJtNPCu+fMEUpHxgxUQLnAZWXBJD/Wpxp3u6jP3BhpdkUG+5cYGLv0M
+ SietHnFquLDYnlZz24gs/eUGbfFd/mRvtsAkCQhTSptZgFuuwrQA39UkYjGUYIBD7J/U
+ b7brUwjthuTOFYs7QOveQ5WljT0czxdNfL+pV+SxzidtQgnEBBW+r0I2jMyvmZkYAjF2
+ 6Q3A==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=resnulli-us.20210112.gappssmtp.com
+ header.i=@resnulli-us.20210112.gappssmtp.com header.a=rsa-sha256
+ header.s=20210112 header.b=BdK6TUPc
+Subject: Re: [Intel-wired-lan] [RFC PATCH net-next 0/5] ice: L2TPv3 offload
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,108 +109,67 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: simon.horman@corigine.com, kurt@linutronix.de, komachi.yoshiki@gmail.com,
- jchapman@katalix.com, edumazet@google.com, boris.sukholitko@broadcom.com,
- louis.peens@corigine.com, gnault@redhat.com, intel-wired-lan@lists.osuosl.org,
- vladbu@nvidia.com, kuba@kernel.org, pabeni@redhat.com, pablo@netfilter.org,
- baowen.zheng@corigine.com, maksym.glubokiy@plvision.eu, jiri@resnulli.us,
- paulb@nvidia.com, jhs@mojatatu.com, xiyou.wangcong@gmail.com,
- davem@davemloft.net
+Cc: simon.horman@corigine.com, maksym.glubokiy@plvision.eu,
+ komachi.yoshiki@gmail.com, jchapman@katalix.com, edumazet@google.com,
+ boris.sukholitko@broadcom.com, louis.peens@corigine.com, gnault@redhat.com,
+ intel-wired-lan@lists.osuosl.org, vladbu@nvidia.com, kuba@kernel.org,
+ pabeni@redhat.com, pablo@netfilter.org, baowen.zheng@corigine.com,
+ kurt@linutronix.de, paulb@nvidia.com, jhs@mojatatu.com,
+ xiyou.wangcong@gmail.com, netdev@vger.kernel.org, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Allow to dissect L2TPv3 specific field which is:
-- session ID (32 bits)
+Fri, Aug 26, 2022 at 01:00:54PM CEST, wojciech.drewek@intel.com wrote:
+>Add support for dissecting L2TPv3 session id in flow dissector. Add support
+>for this field in tc-flower and support offloading L2TPv3. Finally, add
+>support for hardware offload of L2TPv3 packets based on session id in
+>switchdev mode in ice driver.
+>
+>Example filter:
+>  # tc filter add dev $PF1 ingress prio 1 protocol ip \
+>      flower \
+>        ip_proto l2tp \
+>        l2tpv3_sid 1234 \
+>        skip_sw \
+>      action mirred egress redirect dev $VF1_PR
+>
+>Changes in iproute2 are required to use the new fields.
+>
+>ICE COMMS DDP package is required to create a filter in ice.
 
-L2TPv3 might be transported over IP or over UDP,
-this ipmplementation is only about L2TPv3 over IP.
-IP protocold carries L2TPv3 when ip_proto is
-IPPROTO_L2TP (115).
+I don't understand what do you mean by this. Could you please explain
+what this mysterious "ICE COMMS DDP package" is? Do I understand it
+correctly that without it, the solution would not work?
 
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
----
- include/net/flow_dissector.h |  9 +++++++++
- net/core/flow_dissector.c    | 28 ++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+)
-
-diff --git a/include/net/flow_dissector.h b/include/net/flow_dissector.h
-index 6c74812d64b2..5ccf52ef8809 100644
---- a/include/net/flow_dissector.h
-+++ b/include/net/flow_dissector.h
-@@ -289,6 +289,14 @@ struct flow_dissector_key_pppoe {
- 	__be16 type;
- };
- 
-+/**
-+ * struct flow_dissector_key_l2tpv3:
-+ * @session_id: identifier for a l2tp session
-+ */
-+struct flow_dissector_key_l2tpv3 {
-+	__be32 session_id;
-+};
-+
- enum flow_dissector_key_id {
- 	FLOW_DISSECTOR_KEY_CONTROL, /* struct flow_dissector_key_control */
- 	FLOW_DISSECTOR_KEY_BASIC, /* struct flow_dissector_key_basic */
-@@ -320,6 +328,7 @@ enum flow_dissector_key_id {
- 	FLOW_DISSECTOR_KEY_HASH, /* struct flow_dissector_key_hash */
- 	FLOW_DISSECTOR_KEY_NUM_OF_VLANS, /* struct flow_dissector_key_num_of_vlans */
- 	FLOW_DISSECTOR_KEY_PPPOE, /* struct flow_dissector_key_pppoe */
-+	FLOW_DISSECTOR_KEY_L2TPV3, /* struct flow_dissector_key_l2tpv3 */
- 
- 	FLOW_DISSECTOR_KEY_MAX,
- };
-diff --git a/net/core/flow_dissector.c b/net/core/flow_dissector.c
-index 764c4cb3fe8f..dbd944de4129 100644
---- a/net/core/flow_dissector.c
-+++ b/net/core/flow_dissector.c
-@@ -204,6 +204,30 @@ static void __skb_flow_dissect_icmp(const struct sk_buff *skb,
- 	skb_flow_get_icmp_tci(skb, key_icmp, data, thoff, hlen);
- }
- 
-+static void __skb_flow_dissect_l2tpv3(const struct sk_buff *skb,
-+				      struct flow_dissector *flow_dissector,
-+				      void *target_container, const void *data,
-+				      int nhoff, int hlen)
-+{
-+	struct flow_dissector_key_l2tpv3 *key_l2tpv3;
-+	struct {
-+		__be32 session_id;
-+	} *hdr, _hdr;
-+
-+	hdr = __skb_header_pointer(skb, nhoff, sizeof(_hdr), data, hlen, &_hdr);
-+	if (!hdr)
-+		return;
-+
-+	if (!dissector_uses_key(flow_dissector, FLOW_DISSECTOR_KEY_L2TPV3))
-+		return;
-+
-+	key_l2tpv3 = skb_flow_dissector_target(flow_dissector,
-+					       FLOW_DISSECTOR_KEY_L2TPV3,
-+					       target_container);
-+
-+	key_l2tpv3->session_id = hdr->session_id;
-+}
-+
- void skb_flow_dissect_meta(const struct sk_buff *skb,
- 			   struct flow_dissector *flow_dissector,
- 			   void *target_container)
-@@ -1497,6 +1521,10 @@ bool __skb_flow_dissect(const struct net *net,
- 		__skb_flow_dissect_icmp(skb, flow_dissector, target_container,
- 					data, nhoff, hlen);
- 		break;
-+	case IPPROTO_L2TP:
-+		__skb_flow_dissect_l2tpv3(skb, flow_dissector, target_container,
-+					  data, nhoff, hlen);
-+		break;
- 
- 	default:
- 		break;
--- 
-2.31.1
-
+>
+>Marcin Szycik (1):
+>  ice: Add L2TPv3 hardware offload support
+>
+>Wojciech Drewek (4):
+>  uapi: move IPPROTO_L2TP to in.h
+>  flow_dissector: Add L2TPv3 dissectors
+>  net/sched: flower: Add L2TPv3 filter
+>  flow_offload: Introduce flow_match_l2tpv3
+>
+> .../ethernet/intel/ice/ice_protocol_type.h    |  8 +++
+> drivers/net/ethernet/intel/ice/ice_switch.c   | 70 ++++++++++++++++++-
+> drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 27 ++++++-
+> drivers/net/ethernet/intel/ice/ice_tc_lib.h   |  6 ++
+> include/net/flow_dissector.h                  |  9 +++
+> include/net/flow_offload.h                    |  6 ++
+> include/uapi/linux/in.h                       |  2 +
+> include/uapi/linux/l2tp.h                     |  2 -
+> include/uapi/linux/pkt_cls.h                  |  2 +
+> net/core/flow_dissector.c                     | 28 ++++++++
+> net/core/flow_offload.c                       |  7 ++
+> net/sched/cls_flower.c                        | 16 +++++
+> 12 files changed, 179 insertions(+), 4 deletions(-)
+>
+>-- 
+>2.31.1
+>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
