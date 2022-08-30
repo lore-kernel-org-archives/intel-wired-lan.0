@@ -1,183 +1,237 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8CDDECAAA1
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Aug 2022 20:50:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99285ECAAA1
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 Aug 2022 21:39:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 65201400AF;
-	Tue, 30 Aug 2022 20:50:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 65201400AF
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3086682897;
+	Tue, 30 Aug 2022 21:39:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3086682897
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1661892610;
-	bh=9A2z0wPg3cu5+ppEy1ljUdDx88/RkiqPkxJqL0GuquM=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1661895597;
+	bh=Xfo+jZDKTBjoyd22wRBWB/dowoRdqMoa7aC9BF2wq+M=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=FjmHBRYS38FtgSGRYMgmDDs2mcMLnK1IVj3fVYPXwdFWcawwhTXW1AG6f3zLpwfM/
-	 pyL6l1kb3eHT4Ra93iNmCtYlTD10UpzhTzmmPK+x+tWvUX6dBVC0BQrNV2ft58cpOi
-	 rnIj2qlBF+NwyubZ3uooFSaYvpI5hM7QdXyTUV64BNPVFdXYrYGtr1VLdtW+JyctKb
-	 ML75L/bHs2Oe8TI7cASHPfjwv/uc6zjCBjG/sSx19O6UXjAIRO3WTM8Oy5EmuzSWVP
-	 xSu05+lUIIJQVt/QhXgYnXRkiwMhhT2EnDBekjg6XRx1ybelAr+GwsyTj+lP6jqCCq
-	 AX0aP5jAsb2hw==
+	b=EwCKTb87glBdmH48EgLtPLvidt76LlckgWE06EGZ6lOowYxD+t1oEiFIGp/Q5vdfV
+	 UFg2IlcWZuT6c7CV1WWTxrmYwvZaneN5B4E7GVoHPWmDlTiMavO/nj1VyWHbuIYQTR
+	 Cz9nfciaia3Np4Z0y4cXrafyzbvcIHZHogjiy8qHzY3sEY9Bkd9kdbBwKH1qr/kl9+
+	 Wv36ATtrU9Bgzx1mkAf+gLHYUn01vZ6aWB2Msa0nzwP3KVSMIqZf2vgKuu9xBBFjKu
+	 QblDd3TlRYw5WC/JJdgtuXCNMvkKf9ionbmoJklXE8zVM1EXwqQ+xhXX41308fFBd8
+	 AaRWoP7q5Y6DA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4H4URw-l42N3; Tue, 30 Aug 2022 20:50:09 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id DM72w9VkjMeK; Tue, 30 Aug 2022 21:39:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4D19740BD7;
-	Tue, 30 Aug 2022 20:50:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4D19740BD7
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id D8EA51BF4E6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Aug 2022 20:50:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A5DB5828AA;
+	Tue, 30 Aug 2022 21:39:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A5DB5828AA
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id DBA8B1BF228
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Aug 2022 19:59:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id AF307417CF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Aug 2022 20:50:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AF307417CF
+ by smtp3.osuosl.org (Postfix) with ESMTP id B556F61004
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Aug 2022 19:59:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B556F61004
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ro6eDj-1rSrR for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 Aug 2022 20:50:06 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 12B98417CA
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 12B98417CA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Aug 2022 20:50:05 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10455"; a="275045983"
-X-IronPort-AV: E=Sophos;i="5.93,276,1654585200"; d="scan'208";a="275045983"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Aug 2022 13:50:05 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,276,1654585200"; d="scan'208";a="588773256"
-Received: from fmsmsx603.amr.corp.intel.com ([10.18.126.83])
- by orsmga006.jf.intel.com with ESMTP; 30 Aug 2022 13:50:00 -0700
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Tue, 30 Aug 2022 13:49:59 -0700
-Received: from fmsmsx607.amr.corp.intel.com (10.18.126.87) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Tue, 30 Aug 2022 13:49:59 -0700
-Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
- fmsmsx607.amr.corp.intel.com (10.18.126.87) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31 via Frontend Transport; Tue, 30 Aug 2022 13:49:59 -0700
-Received: from NAM04-BN8-obe.outbound.protection.outlook.com (104.47.74.41) by
- edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2375.31; Tue, 30 Aug 2022 13:49:58 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=V4AztDSKQbu14BQu4K2WnZPgtSDOEevRZN6IbUtl/36NAW4IZqF+v64NcZxK/kycjoIXNtHcTqLD3XQcO/R1KZF5kEeA60Va1dkPSER9yoaV+hotJDyFaNnE0tTw2O1XAel39UznlwXjqar/epmRGrK1yA6Xe+owmaMNVV9CSZZSjZAsbf8NTeJMYLGiBhGzySBwhMSZw2+4oGfR4GmGPXpXM3KeuKK1sBhKmO1yVyTRMHIRjAeLQyNZdZmYPn5F9IqA0dhcwzn2I0JkYDVK9Iu9tfmy1GXXU+npVHoXMCFfnQEB8bLWWr0enJ3yjvAf0P4WcvtovASMTSoBadZv7g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=wMKRCKMMbFlifYaNWyK5ee1xcBjfWAVOXAHgv/LmcLw=;
- b=e9sbfGxlYZ06C+HQsizh5xFNiLavmF6VC/cpUgeKaa8AjioD1gX//3KkamkH0eLJXkrnGnBV0cprdX9cn9EjhZuM5g1V/aR0j6BtBbCY/zJmrktGyY94+3SPZXmQbeJkWXWp811yPntt68hHneXlDCSEcwjr572bRONB8b4Snk/Q1EfgOu86a9fnBHd4PZEHcbt8gFnCUtIDoytDS6R5LtaX2VP5u+17uRND/aSD0tgUhf0OzXnbzkljbPiKP2HHI4FV1N7/9E27X/XtDjB8DLJDGqWsMoqz6lspdk5vbnbdE9jqEUAC4yP1hRV2OydM55cH4kUVISmoLnEb3JJQTg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from DM6PR11MB3113.namprd11.prod.outlook.com (2603:10b6:5:69::19) by
- CY4PR11MB1608.namprd11.prod.outlook.com (2603:10b6:910:e::8) with
- Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5588.10; Tue, 30 Aug 2022 20:49:54 +0000
-Received: from DM6PR11MB3113.namprd11.prod.outlook.com
- ([fe80::7100:8281:521b:ff31]) by DM6PR11MB3113.namprd11.prod.outlook.com
- ([fe80::7100:8281:521b:ff31%5]) with mapi id 15.20.5566.021; Tue, 30 Aug 2022
- 20:49:54 +0000
-From: "Laba, SlawomirX" <slawomirx.laba@intel.com>
-To: ivecera <ivecera@redhat.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-Thread-Topic: [PATCH net v2] iavf: Detach device during reset task
-Thread-Index: AQHYvEjhCJvnRrVNjEyX8LmyQxwL263H6JFw
-Date: Tue, 30 Aug 2022 20:49:54 +0000
-Message-ID: <DM6PR11MB31134AD7D5D1CB5382A5052887799@DM6PR11MB3113.namprd11.prod.outlook.com>
-References: <20220830081627.1205872-1-ivecera@redhat.com>
-In-Reply-To: <20220830081627.1205872-1-ivecera@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-dlp-version: 11.6.500.17
-dlp-product: dlpe-windows
-dlp-reaction: no-action
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 7c53c1a2-df10-4fc4-fa8d-08da8ac93111
-x-ms-traffictypediagnostic: CY4PR11MB1608:EE_
-x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: pLX95oYJL28cWt1o0MxqIjFW5mJlkn0Kupulsjm2co0zr2kKMmNua+uTMDlzI6lE11DalMyDgIdcgbqQybz1fvGFA3/EIypQeR5Ycpsc7UmcGnsU4Mvy25G2n2yi5Qn01kXiH0PvQV8HjBmul7sDFOPgwzEbFBDctkrJlxxvwUOO778tZGTUJLK5m0pYpWX5aNbWzKVh7AfzmTayG+NPaDEeqsssn44shs1lf5VPZgpOgWcj678TTlqw2ppMjIOY2vkVM4ioqOGCl6idvgoarr3kJ5UIeiTpdw00OIQ0lYRECPAbNW9P1zUZ35JEvGLfMrY1Lrd170eyMl/zkpTGQgcTB1Emy7aguSCMIHkIMfl4/uvsCe7COcBdOzn7vA9Wgz6zEykvhZpjX3NrI84gRivxRqr/YygV7+6MlgaaFzWuK7URJgzS+jCiO58QhMbmTrDG0KOc8FXUGm5bjawOL6G75zv0aDVbE4OqfiBK+21RuxUohbPpaNB3d0QykJoaf6WhgSe8RuVRnFwybAWsdZW70qAsRwH7BtvWiTfVywOX2qgHh2fnNDEJEe+C90i0J22w0Wjoo2YVtRD8mboLQr3s+CbRcibbbZSQLdMLYcxyu5iFHP8msZtPHwv5//Bnxo1DUGh8sgdaKR4MLoPCD7X2VtUdWfIygallq8bFWz6tqe8XexSvn/Xyx0B06NndpRF/4FKr/gsVAcF+tR9g6MMYe+oPOEWHhxBvZ4jvclhh1nFHnIqhMjpTNcVHKr5CYPOOmnFHTjPd6Nx3iA6dKGGRzK4HWpfeJF/Cm9qoLHM=
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DM6PR11MB3113.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230016)(376002)(39860400002)(366004)(136003)(346002)(396003)(66446008)(76116006)(66556008)(478600001)(4326008)(966005)(66476007)(66946007)(316002)(110136005)(54906003)(8676002)(71200400001)(55016003)(2906002)(64756008)(5660300002)(52536014)(8936002)(38070700005)(82960400001)(122000001)(38100700002)(86362001)(33656002)(53546011)(6506007)(9686003)(7696005)(26005)(186003)(41300700001)(83380400001);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?Z5YR1I1Ve6bFDYYEkptn0BgHbIhpqj81znq0/yHqo81BywcLMdy6YFkjGi/D?=
- =?us-ascii?Q?JzCqnnZi1cqp6q7+fOaVHrKH/9qgXOIhtWwNYcSQiC3mWKEK/UulO8ilfL9D?=
- =?us-ascii?Q?kKml7MjUcyNbrukHFUTYFt7FAa8T5t5LrGXcgzp/pYqpMOjKm+b8Z7cdEbQE?=
- =?us-ascii?Q?aBDcvDK9kqF9ZrsLej9rBhDak3NYvEVSrwvvaqtroD49Y0nrQv5r0dK5+Onf?=
- =?us-ascii?Q?FYTl/nWSNjk4ZLeN/cVc889aRfn5+55kPNyp9LfgQDsEaik//rlISVkvy71P?=
- =?us-ascii?Q?LfdB9C4/kcRpivVa136hHoqJe5/A4UBqm543uDnKZyxHDsLXhKl9H95eUgv2?=
- =?us-ascii?Q?wWvVfvANOkROqMW1mEyyd84yi3qdfBbY+Ix8TglDQ7xlZr5ZSnUd8StuhBfw?=
- =?us-ascii?Q?bb1gTV3oD8ThXWZ4+RysJMFOjrwpvEZ0BjQk5IGJhFEfengA412fWEBUttvW?=
- =?us-ascii?Q?UQJ4ny3zQ5vvYynAvcCNrqcxjKtZV+99n2+xNl/HULDvXsOsTL50JjwzwfSf?=
- =?us-ascii?Q?dZ48WyoP9zYNmt5jw7uxY9u4PQafMV92T8MZA7RHCKqduQFuqxxnYcEYJYfL?=
- =?us-ascii?Q?OezCkt9vNVMFuL1SzMApVLI5CV7wpCYO+1D8ifVuJDscTu5NTcKJmKF/lpu9?=
- =?us-ascii?Q?VfhShFabsAvIbhyC3OBLxs7oxkSVXvI3xmcJObKbJ3b6r+TwEgIuDtlNnYfo?=
- =?us-ascii?Q?wEkDpqJyJgo++tGJ3+AdJMzI6LxKf8nT/FnLxEmsr/in2Y53W0m5vI5VzvSL?=
- =?us-ascii?Q?jMB2oZ7MZaplj1kSXBykKJUt83QWdOkCmqKnc3wowtt2xJs7P3rSrhQ2O8hr?=
- =?us-ascii?Q?qQGL5RQgM7UY41qxK+3+BGcs1NaIf7QBKNfYbhZ+AIQxsINo8LMdpPTiPsfq?=
- =?us-ascii?Q?h6JSS5GGWvcHCFLYTY3NB+O50SxQOlod4QKAGJLtnol1dSmBVnKeSmZMNGoS?=
- =?us-ascii?Q?b7lvc/oHGvK6r27zh7b8CwfRizGmIeO5uIMy6plaALWuat/yypm8Tt8Ltp3t?=
- =?us-ascii?Q?WOq9mc1WxQRgfRlmmplz5FVuEgqkrnRGzlr/5fLbG96uJWh82tO4CNMQtFU5?=
- =?us-ascii?Q?R9IKTM3+WEWjoV/44j+KnhozVXcLPjO8g2B0z/59rvK1gxBMmJvUzkslRwjj?=
- =?us-ascii?Q?oCxQHVGqJJfHHzhT99PE2A/duCpmOQf2oaiaGiJDgjs/espJdNV8AQMU0th6?=
- =?us-ascii?Q?gSqwJ5/haRuQCgD0740jKqfS85DJUExrb7hh7tfIY3ldYEKaxWW4QJyiZqd/?=
- =?us-ascii?Q?a9SBo+2zoYF1cTBQiANojhz9/jGYyPaT9he1IGWr+PetTbhw7EBhNmKeoKBy?=
- =?us-ascii?Q?7oGmbb/3E9mx3A97BD3wWVdMhs8gLtcG3BnOF2hJVwjHnBiboqqcv4ri5bvX?=
- =?us-ascii?Q?PsUcyBYgKtY2me6yR7DTeBdnxtE3RG92xKCe3H36VC6I1NeKdB0fSt5xWbay?=
- =?us-ascii?Q?Rl3SuMv2TeNmja8FQBsbxoXQ9FVhr+ZrOGObO9ekzlzg78HnOX4RMmCaLPHC?=
- =?us-ascii?Q?K/bVoxA/u4UuTH4lhFftd3aPDHph3kHK2vfAA0VKlmXM8vSgMD9esyEvnm0T?=
- =?us-ascii?Q?pl0cKUqTc6kpQFYa4lTW3W4/HSG71UTNtDk2yiQv?=
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id lB34Nc_xaP8X for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 Aug 2022 19:59:52 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0E64060FE1
+Received: from mail.zeus03.de (www.zeus03.de [194.117.254.33])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0E64060FE1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 Aug 2022 19:59:50 +0000 (UTC)
+Received: (qmail 417445 invoked from network); 30 Aug 2022 21:59:10 +0200
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted,
+ authenticated); 30 Aug 2022 21:59:10 +0200
+X-UD-Smtp-Session: l3s3148p1@xaob0HrnKMEgAwDtxxrgAFH1RcxMblwv
+Date: Tue, 30 Aug 2022 21:59:06 +0200
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: Jakub Kicinski <kuba@kernel.org>
+Message-ID: <Yw5sCpdgdR9k/mgs@shikoro>
+Mail-Followup-To: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ Jakub Kicinski <kuba@kernel.org>, linux-kernel@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Jay Vosburgh <j.vosburgh@gmail.com>,
+ Veaceslav Falico <vfalico@gmail.com>,
+ Andy Gospodarek <andy@greyhouse.net>,
+ Wolfgang Grandegger <wg@grandegger.com>,
+ Marc Kleine-Budde <mkl@pengutronix.de>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Andrew Lunn <andrew@lunn.ch>,
+ Vivien Didelot <vivien.didelot@gmail.com>,
+ Vladimir Oltean <olteanv@gmail.com>,
+ Kurt Kanzenbach <kurt@linutronix.de>,
+ Steffen Klassert <klassert@kernel.org>,
+ David Dillow <dave@thedillows.org>,
+ Russell King <linux@armlinux.org.uk>,
+ Ion Badulescu <ionut@badula.org>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Mark Einon <mark.einon@gmail.com>,
+ Lino Sanfilippo <LinoSanfilippo@gmx.de>,
+ Chen-Yu Tsai <wens@csie.org>,
+ Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Samuel Holland <samuel@sholland.org>,
+ Jes Sorensen <jes@trained-monkey.org>,
+ Shay Agroskin <shayagr@amazon.com>,
+ Arthur Kiyanovski <akiyano@amazon.com>,
+ David Arinzon <darinzon@amazon.com>, Noam Dagan <ndagan@amazon.com>,
+ Saeed Bishara <saeedb@amazon.com>, Don Fry <pcnet32@frontier.com>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+ Igor Russkikh <irusskikh@marvell.com>,
+ Chris Snook <chris.snook@gmail.com>,
+ Michael Chan <michael.chan@broadcom.com>,
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+ =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
+ Rasesh Mody <rmody@marvell.com>, GR-Linux-NIC-Dev@marvell.com,
+ Ariel Elior <aelior@marvell.com>,
+ Sudarsana Kalluru <skalluru@marvell.com>,
+ Manish Chopra <manishc@marvell.com>,
+ Doug Berger <opendmb@gmail.com>,
+ Siva Reddy Kallam <siva.kallam@broadcom.com>,
+ Prashant Sreedharan <prashant@broadcom.com>,
+ Sunil Goutham <sgoutham@marvell.com>,
+ Raju Rangoju <rajur@chelsio.com>,
+ Ayush Sawal <ayush.sawal@chelsio.com>,
+ Vinay Kumar Yadav <vinay.yadav@chelsio.com>,
+ Rohit Maheshwari <rohitm@chelsio.com>,
+ Hartley Sweeten <hsweeten@visionengravers.com>,
+ Christian Benvenuti <benve@cisco.com>,
+ Govindarajulu Varadarajan <_govind@gmx.com>,
+ Denis Kirjanov <kda@linux-powerpc.org>,
+ Ajit Khaparde <ajit.khaparde@broadcom.com>,
+ Sriharsha Basavapatna <sriharsha.basavapatna@broadcom.com>,
+ Somnath Kotur <somnath.kotur@broadcom.com>,
+ Madalin Bucur <madalin.bucur@nxp.com>,
+ Ioana Ciornei <ioana.ciornei@nxp.com>,
+ Claudiu Manoil <claudiu.manoil@nxp.com>,
+ Joakim Zhang <qiangqing.zhang@nxp.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Li Yang <leoyang.li@nxp.com>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>,
+ Salil Mehta <salil.mehta@huawei.com>,
+ Douglas Miller <dougmill@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Nick Child <nnac123@linux.ibm.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Guo-Fu Tseng <cooldavid@cooldavid.org>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+ Marcin Wojtas <mw@semihalf.com>,
+ Geetha sowjanya <gakula@marvell.com>,
+ Subbaraya Sundeep <sbhatta@marvell.com>,
+ hariprasad <hkelam@marvell.com>,
+ Taras Chornyi <tchornyi@marvell.com>,
+ Mirko Lindner <mlindner@marvell.com>,
+ Stephen Hemminger <stephen@networkplumber.org>,
+ Felix Fietkau <nbd@nbd.name>, John Crispin <john@phrozen.org>,
+ Sean Wang <sean.wang@mediatek.com>,
+ Mark Lee <Mark-MC.Lee@mediatek.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Tariq Toukan <tariqt@nvidia.com>,
+ Saeed Mahameed <saeedm@nvidia.com>,
+ Leon Romanovsky <leon@kernel.org>, Ido Schimmel <idosch@nvidia.com>,
+ Petr Machata <petrm@nvidia.com>,
+ Bryan Whitehead <bryan.whitehead@microchip.com>,
+ UNGLinuxDriver@microchip.com, Chris Lee <christopher.lee@cspi.com>,
+ Jon Mason <jdmason@kudzu.us>,
+ Simon Horman <simon.horman@corigine.com>,
+ Rain River <rain.1986.08.12@gmail.com>,
+ Zhu Yanjun <zyjzyj2000@gmail.com>,
+ Vladimir Zapolskiy <vz@mleia.com>, Rahul Verma <rahulv@marvell.com>,
+ Shahed Shaikh <shshaikh@marvell.com>,
+ Heiner Kallweit <hkallweit1@gmail.com>, nic_swsd@realtek.com,
+ Jiri Pirko <jiri@resnulli.us>, Byungho An <bh74.an@samsung.com>,
+ Edward Cree <ecree.xilinx@gmail.com>,
+ Martin Habets <habetsm.xilinx@gmail.com>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Francois Romieu <romieu@fr.zoreil.com>,
+ Daniele Venzano <venza@brownhat.org>,
+ Nicolas Pitre <nico@fluxnic.net>,
+ Steve Glendinning <steve.glendinning@shawell.net>,
+ Jassi Brar <jaswinder.singh@linaro.org>,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+ Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Jose Abreu <joabreu@synopsys.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Samuel Chessman <chessman@tux.org>,
+ Geoff Levand <geoff@infradead.org>,
+ Ishizaki Kou <kou.ishizaki@toshiba.co.jp>,
+ Kevin Brace <kevinbrace@bracecomputerlab.com>,
+ Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>,
+ Michal Simek <michal.simek@xilinx.com>,
+ Krzysztof Halasa <khalasa@piap.pl>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+ Sridhar Samudrala <sridhar.samudrala@intel.com>,
+ Dave Jiang <dave.jiang@intel.com>, Allen Hubbe <allenbh@gmail.com>,
+ Michael Hennerich <michael.hennerich@analog.com>,
+ Petko Manolov <petkan@nucleusys.com>,
+ Oliver Neukum <oneukum@suse.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>,
+ Jason Wang <jasowang@redhat.com>, Ronak Doshi <doshir@vmware.com>,
+ VMware PV-Drivers Reviewers <pv-drivers@vmware.com>,
+ David Ahern <dsahern@kernel.org>, Kalle Valo <kvalo@kernel.org>,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ Simon Kelley <simon@thekelleys.org.uk>,
+ Larry Finger <Larry.Finger@lwfinger.net>,
+ Arend van Spriel <aspriel@gmail.com>,
+ Franky Lin <franky.lin@broadcom.com>,
+ Hante Meuleman <hante.meuleman@broadcom.com>,
+ Stanislav Yakovlev <stas.yakovlev@gmail.com>,
+ Stanislaw Gruszka <stf_xl@wp.pl>, Jouni Malinen <j@w1.fi>,
+ Ajay Singh <ajay.kathat@microchip.com>,
+ Claudiu Beznea <claudiu.beznea@microchip.com>,
+ Igor Mitsyanko <imitsyanko@quantenna.com>,
+ Sergey Matyukevich <geomatsi@gmail.com>,
+ Herton Ronaldo Krzesinski <herton@canonical.com>,
+ Hin-Tak Leung <htl10@users.sourceforge.net>, netdev@vger.kernel.org,
+ linux-can@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-sunxi@lists.linux.dev, linux-acenic@sunsite.dk,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ intel-wired-lan@lists.osuosl.org,
+ linux-mediatek@lists.infradead.org, linux-rdma@vger.kernel.org,
+ oss-drivers@corigine.com, linux-mips@vger.kernel.org,
+ linux-stm32@st-md-mailman.stormreply.com,
+ linux-omap@vger.kernel.org, linux-hyperv@vger.kernel.org,
+ ntb@lists.linux.dev, linux-usb@vger.kernel.org,
+ virtualization@lists.linux-foundation.org,
+ linux-wireless@vger.kernel.org, b43-dev@lists.infradead.org,
+ brcm80211-dev-list.pdl@broadcom.com,
+ SHA-cyfmac-dev-list@infineon.com, libertas-dev@lists.infradead.org
+References: <20220818210050.7108-1-wsa+renesas@sang-engineering.com>
+ <20220822180551.160c2a0b@kernel.org>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB3113.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7c53c1a2-df10-4fc4-fa8d-08da8ac93111
-X-MS-Exchange-CrossTenant-originalarrivaltime: 30 Aug 2022 20:49:54.2042 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: /kIBcHNJFJMRikp8I3Ir358KQkfCgVmGaNdOGqhhX67z+j9+SvSxdH4Egn7x19VNITIc7HQDOVu2C53kLgn2FO5n2Jul4EViWJUYVtq4CWI=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY4PR11MB1608
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1661892606; x=1693428606;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=wg2Agm196/3dPHKJYqG4Si8O+l0vboBJE6EM73CHXXM=;
- b=Ag7ZwuEoj9L+/KSKAvCHyLhO+QC0E9hSNab7e+N+/Ag6pWbAtzdGOc1g
- 3n+c8JfHNjINwhokwHq+07NO9bSq322yj2GtsLTJTB3Gw0IN3rRbH9C6y
- wvdXsKoBJ7VqVvskyanc6dLUxWwv5L08ki0I8NsWY/zpA+isEV3wJ8TIK
- LgLi9dxWlnkBHtOZ++kJS9gKY2J63OuCBvypQuIZwd6amp3vzZ0PRwtKE
- hnmlZ+d7wieq2/oOeQM6DLoqRWhZrrHnlMw+WglgplTD8j8iiKADNEsO0
- B704sT1a0AxIF7zGYP6ySF7k2FquQhPNck0qc9BHNR3ZQqCSF4bvz007M
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Ag7ZwuEo
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net v2] iavf: Detach device during
- reset task
+In-Reply-To: <20220822180551.160c2a0b@kernel.org>
+X-Mailman-Approved-At: Tue, 30 Aug 2022 21:39:53 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=simple;
+ d=sang-engineering.com; h=
+ date:from:to:cc:subject:message-id:references:mime-version
+ :content-type:in-reply-to; s=k1; bh=A8bVRCFI98pRUSlXVuZ0JuXQWSsk
+ LWEPpZPSCxPQ4Yc=; b=bvs8E5/fix4EfPuCb+OWMHT6Bu46TU1l+IigRSvtvn9P
+ EPjUjEMoaKMAh5zUmSlIUll78CFyvIAIO22BPo+YYx2/PHVMYseFmKF27NnJ760a
+ yJnn+PLBTo5LOy0cZ+CcMvpCeYZvUs2xJ9oI/cferGF5V0ikEASasUiMDmVqo9M=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=sang-engineering.com header.i=@sang-engineering.com
+ header.a=rsa-sha256 header.s=k1 header.b=bvs8E5/f
+Subject: Re: [Intel-wired-lan] [PATCH] net: move from strlcpy with unused
+ retval to strscpy
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -190,67 +244,180 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paolo Abeni <pabeni@redhat.com>, Eric
- Dumazet <edumazet@google.com>, "moderated
- list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
- open list <linux-kernel@vger.kernel.org>, "Piotrowski,
- Patryk" <patryk.piotrowski@intel.com>,
- Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Jakub Kicinski <kuba@kernel.org>,
- Vitaly Grinberg <vgrinber@redhat.com>, "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: Andrew Lunn <andrew@lunn.ch>, Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+ Igor Russkikh <irusskikh@marvell.com>,
+ Kevin Brace <kevinbrace@bracecomputerlab.com>,
+ Somnath Kotur <somnath.kotur@broadcom.com>,
+ =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
+ linux-stm32@st-md-mailman.stormreply.com, Andy Gospodarek <andy@greyhouse.net>,
+ Wei Liu <wei.liu@kernel.org>, Manish Chopra <manishc@marvell.com>,
+ Samuel Holland <samuel@sholland.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Madalin Bucur <madalin.bucur@nxp.com>,
+ Christian Lamparter <chunkeey@googlemail.com>,
+ Michal Simek <michal.simek@xilinx.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Jose Abreu <joabreu@synopsys.com>,
+ Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>,
+ Franky Lin <franky.lin@broadcom.com>, Mark Lee <Mark-MC.Lee@mediatek.com>,
+ Chris Lee <christopher.lee@cspi.com>, Nick Child <nnac123@linux.ibm.com>,
+ Jiri Pirko <jiri@resnulli.us>, Jay Vosburgh <j.vosburgh@gmail.com>,
+ Vinay Kumar Yadav <vinay.yadav@chelsio.com>,
+ Arend van Spriel <aspriel@gmail.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Igor Mitsyanko <imitsyanko@quantenna.com>, Krzysztof Halasa <khalasa@piap.pl>,
+ Shay Agroskin <shayagr@amazon.com>, linux-omap@vger.kernel.org,
+ Petr Machata <petrm@nvidia.com>, libertas-dev@lists.infradead.org,
+ Rasesh Mody <rmody@marvell.com>,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+ Douglas Miller <dougmill@linux.ibm.com>,
+ Joakim Zhang <qiangqing.zhang@nxp.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Vivien Didelot <vivien.didelot@gmail.com>, Ion Badulescu <ionut@badula.org>,
+ Hartley Sweeten <hsweeten@visionengravers.com>,
+ Stanislav Yakovlev <stas.yakovlev@gmail.com>, Jon Mason <jdmason@kudzu.us>,
+ Vladimir Oltean <olteanv@gmail.com>,
+ Claudiu Beznea <claudiu.beznea@microchip.com>,
+ Christian Benvenuti <benve@cisco.com>, Samuel Chessman <chessman@tux.org>,
+ linux-usb@vger.kernel.org, Ronak Doshi <doshir@vmware.com>,
+ Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+ Chris Snook <chris.snook@gmail.com>, Denis Kirjanov <kda@linux-powerpc.org>,
+ Prashant Sreedharan <prashant@broadcom.com>, linux-kernel@vger.kernel.org,
+ Daniele Venzano <venza@brownhat.org>, Eric Dumazet <edumazet@google.com>,
+ Zhu Yanjun <zyjzyj2000@gmail.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Arthur Kiyanovski <akiyano@amazon.com>, Leon Romanovsky <leon@kernel.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Sergey Matyukevich <geomatsi@gmail.com>,
+ Rain River <rain.1986.08.12@gmail.com>, Veaceslav Falico <vfalico@gmail.com>,
+ Martin Habets <habetsm.xilinx@gmail.com>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>,
+ Wolfgang Grandegger <wg@grandegger.com>,
+ Steve Glendinning <steve.glendinning@shawell.net>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ Michael Hennerich <michael.hennerich@analog.com>,
+ Ido Schimmel <idosch@nvidia.com>, Sean Wang <sean.wang@mediatek.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-can@vger.kernel.org,
+ Siva Reddy Kallam <siva.kallam@broadcom.com>,
+ Claudiu Manoil <claudiu.manoil@nxp.com>, Doug Berger <opendmb@gmail.com>,
+ Simon Kelley <simon@thekelleys.org.uk>,
+ Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+ linux-arm-kernel@lists.infradead.org, Mirko Lindner <mlindner@marvell.com>,
+ Sriharsha Basavapatna <sriharsha.basavapatna@broadcom.com>,
+ Nicolas Pitre <nico@fluxnic.net>, David Arinzon <darinzon@amazon.com>,
+ Rohit Maheshwari <rohitm@chelsio.com>, Tariq Toukan <tariqt@nvidia.com>,
+ Sudarsana Kalluru <skalluru@marvell.com>, Taras Chornyi <tchornyi@marvell.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ linux-mediatek@lists.infradead.org, Heiner Kallweit <hkallweit1@gmail.com>,
+ linux-wireless@vger.kernel.org, Ajit Khaparde <ajit.khaparde@broadcom.com>,
+ Petko Manolov <petkan@nucleusys.com>, Andreas Larsson <andreas@gaisler.com>,
+ Jason Wang <jasowang@redhat.com>, Kurt Kanzenbach <kurt@linutronix.de>,
+ linux-hyperv@vger.kernel.org, oss-drivers@corigine.com, netdev@vger.kernel.org,
+ Subbaraya Sundeep <sbhatta@marvell.com>,
+ Hin-Tak Leung <htl10@users.sourceforge.net>,
+ Jassi Brar <jaswinder.singh@linaro.org>, Noam Dagan <ndagan@amazon.com>,
+ Stanislaw Gruszka <stf_xl@wp.pl>, Ajay Singh <ajay.kathat@microchip.com>,
+ Florian Fainelli <f.fainelli@gmail.com>, Dave Jiang <dave.jiang@intel.com>,
+ linux-rdma@vger.kernel.org, Guo-Fu Tseng <cooldavid@cooldavid.org>,
+ Dexuan Cui <decui@microsoft.com>, Jernej Skrabec <jernej.skrabec@gmail.com>,
+ Chen-Yu Tsai <wens@csie.org>,
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+ b43-dev@lists.infradead.org, Simon Horman <simon.horman@corigine.com>,
+ Paolo Abeni <pabeni@redhat.com>, Allen Hubbe <allenbh@gmail.com>,
+ Shahed Shaikh <shshaikh@marvell.com>,
+ Grygorii Strashko <grygorii.strashko@ti.com>, Byungho An <bh74.an@samsung.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Hante Meuleman <hante.meuleman@broadcom.com>,
+ Vladimir Zapolskiy <vz@mleia.com>, Don Fry <pcnet32@frontier.com>,
+ John Crispin <john@phrozen.org>, Michael Chan <michael.chan@broadcom.com>,
+ virtualization@lists.linux-foundation.org,
+ Ishizaki Kou <kou.ishizaki@toshiba.co.jp>,
+ Salil Mehta <salil.mehta@huawei.com>, GR-Linux-NIC-Dev@marvell.com,
+ linux-parisc@vger.kernel.org, Geoff Levand <geoff@infradead.org>,
+ linux-sunxi@lists.linux.dev, Edward Cree <ecree.xilinx@gmail.com>,
+ Bryan Whitehead <bryan.whitehead@microchip.com>,
+ Saeed Bishara <saeedb@amazon.com>, Mark Einon <mark.einon@gmail.com>,
+ Geetha sowjanya <gakula@marvell.com>, Oliver Neukum <oneukum@suse.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>,
+ VMware PV-Drivers Reviewers <pv-drivers@vmware.com>,
+ Ioana Ciornei <ioana.ciornei@nxp.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Govindarajulu Varadarajan <_govind@gmx.com>,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+ Ayush Sawal <ayush.sawal@chelsio.com>, UNGLinuxDriver@microchip.com,
+ linux-acenic@sunsite.dk, Herton Ronaldo Krzesinski <herton@canonical.com>,
+ Rahul Verma <rahulv@marvell.com>, Russell King <linux@armlinux.org.uk>,
+ SHA-cyfmac-dev-list@infineon.com, Lino Sanfilippo <LinoSanfilippo@gmx.de>,
+ intel-wired-lan@lists.osuosl.org, Steffen Klassert <klassert@kernel.org>,
+ Sunil Goutham <sgoutham@marvell.com>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+ Jes Sorensen <jes@trained-monkey.org>, nic_swsd@realtek.com,
+ Ariel Elior <aelior@marvell.com>, Jouni Malinen <j@w1.fi>,
+ Kalle Valo <kvalo@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ Matthias Brugger <matthias.bgg@gmail.com>, Marcin Wojtas <mw@semihalf.com>,
+ brcm80211-dev-list.pdl@broadcom.com, David Ahern <dsahern@kernel.org>,
+ linux-mips@vger.kernel.org, Li Yang <leoyang.li@nxp.com>,
+ Stephen Hemminger <stephen@networkplumber.org>,
+ hariprasad <hkelam@marvell.com>, ntb@lists.linux.dev,
+ Raju Rangoju <rajur@chelsio.com>, Larry Finger <Larry.Finger@lwfinger.net>,
+ Saeed Mahameed <saeedm@nvidia.com>, Felix Fietkau <nbd@nbd.name>
+Content-Type: multipart/mixed; boundary="===============7849541390426818030=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> -----Original Message-----
-> From: Ivan Vecera <ivecera@redhat.com>
-> Sent: Tuesday, August 30, 2022 10:16 AM
-> Subject: [PATCH net v2] iavf: Detach device during reset task
-> 
-> iavf_reset_task() takes crit_lock at the beginning and holds it during whole call.
-> The function subsequently calls
-> iavf_init_interrupt_scheme() that grabs RTNL. Problem occurs when userspace
-> initiates during the reset task any ndo callback that runs under RTNL like
-> iavf_open() because some of that functions tries to take crit_lock. This leads to
-> classic A-B B-A deadlock scenario.
-> 
-> To resolve this situation the device should be detached in
-> iavf_reset_task() prior taking crit_lock to avoid subsequent ndos running under
-> RTNL and reattach the device at the end.
-> 
-> Fixes: 62fe2a865e6d ("i40evf: add missing rtnl_lock() around
-> i40evf_set_interrupt_capability")
-> Cc: Jacob Keller <jacob.e.keller@intel.com>
-> Cc: Patryk Piotrowski <patryk.piotrowski@intel.com>
-> Cc: SlawomirX Laba <slawomirx.laba@intel.com>
-> Tested-by: Vitaly Grinberg <vgrinber@redhat.com>
-> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
->
-> @@ -2884,7 +2889,7 @@ static void iavf_reset_task(struct work_struct *work)
->  		if (adapter->state != __IAVF_REMOVE)
->  			queue_work(iavf_wq, &adapter->reset_task);
-> 
-> -		return;
-> +		goto reset_finish;
->  	}
-> 
->  	while (!mutex_trylock(&adapter->client_lock))
 
-Ivan, what do you think about this flow [1]? Shouldn't it also goto reset_finish label?
+--===============7849541390426818030==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="bu+qW3icU8857Hzl"
+Content-Disposition: inline
 
-	if (i == IAVF_RESET_WAIT_COMPLETE_COUNT) {
-		dev_err(&adapter->pdev->dev, "Reset never finished (%x)\n",
-			reg_val);
-		iavf_disable_vf(adapter);
-		mutex_unlock(&adapter->client_lock);
-		mutex_unlock(&adapter->crit_lock);
-		return; /* Do not attempt to reinit. It's dead, Jim. */
-	}
 
-I am concerned that if the reset never finishes and iavf goes into disabled state, and then for example if driver reload operation is performed, bad things can happen.
+--bu+qW3icU8857Hzl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-[1] https://elixir.bootlin.com/linux/v6.0-rc3/source/drivers/net/ethernet/intel/iavf/iavf_main.c#L2939
+
+> Unfortunately looks like patchwork was unable to ingest this change :(
+> Not sure why.
+
+vger rejected this mail because the header was too big. I updated my
+scripts to estimate that before sending out.
+
+> Would you mind splitting it into 3 chunks - wireless, ethernet,
+> everything else, and resending? Let's see if that'll be small enough..
+
+I did this and my scripts estimate that the patches will be small enough
+now. Let's see...
+
+
+--bu+qW3icU8857Hzl
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmMObAUACgkQFA3kzBSg
+KbYmbxAAhLDry8AFCMs0JeaOiDjRHrHjQEgpCeivV6b/gp/jt/RKiaPiEcHJAMtv
+EIS+TTWc+VeHctybJ5IXx6ABcP64zEBQmcWaExve4a8QAEd5OBjFBqHMBNYLOjl3
+2LGdKq94jeX80mkXitqnxGKCZHvD+3fv86hgce4psGaByDBgrtFvnCYOEMOAb/i/
+QevZg2nDRS9Agwpz1u+L/byfiIP9L8n0FxFFkM8acJmU68E7zd1DZ4Zo0CKajVGa
+7VuzjWEjYpIRrp6BQh+HCfL+FvHJoxE7euZQ+b5t4jOqEKZwsH8J2367g4NtnTQd
+EE9vTTG1K07rfBoratigsH2yyNoi93cTR9mk7WgeYCSzFW5hyc/wrFM+tpIe9OUj
+9mOstqkAgKfUeIrkpnH/e1S9S7J8iMehTSU8HvIrX+gyBDXn7IgFTizgT+Kb1N95
+gyaciis4a5wdBiEJndYoQup2O94FRuqP4jvs3b6nU4DnspMrcp7OZ1iUYs2MJf/+
+jqtbi6y3n3y+PyeB3yic/rT9OKhEMO06A+Th68Ys/EK5KFs71763znTEsqfqMAzs
+HJZ6OhnNREklAf0x9E3jQbHD9I90WXUUp8OwiGVa7p+Y2kwa6L/PVTMon/J+97zk
+AqapabC9SVMN1KMRdpPlCJsb0CViQ0aWpW2gmfmsNb42RjFBjdQ=
+=9XVx
+-----END PGP SIGNATURE-----
+
+--bu+qW3icU8857Hzl--
+
+--===============7849541390426818030==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============7849541390426818030==--
