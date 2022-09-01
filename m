@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8110BECAAD3
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Sep 2022 12:04:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E909ECAAD1
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Sep 2022 12:04:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 295C941A55;
-	Thu,  1 Sep 2022 12:04:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 295C941A55
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1280941A61;
+	Thu,  1 Sep 2022 12:04:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1280941A61
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1662033889;
-	bh=CloUed4jqDPy9ZSHVipo9iufT1AQcZJxd/6Z4xdV+KI=;
+	s=default; t=1662033896;
+	bh=bs4zcBORXQyIaEz9l77iL+OZqbMra6+A12R96WSnXbw=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Xlhv3JJhLeh7XV+3y15/HVTqxYjRCZOV6IwLQN+N/4KzXRIlMFbmLnj8plR6ja/nc
-	 g4A+uSsugTk07/0/Lbm0tqY9fYD34dHqVLarwKw0aej7WB0cwiCbExuH+euYiGr+Si
-	 TftpXdv9V0CyUMllklwIBBxS6h8WgrZIKVACJhv1OMxDGAOjQWMw+7Fg58gv3X3QZG
-	 97g2FkXqxCf3j6UXVtkWdsduZG1a8I/l1aykiHGOn9Sl6pDOhBuN4mwr1mXLJstXjH
-	 AZSGjxJGSrN8e+R6r34aOLiG+Aio66IpdowS6ZjnJKGolW+0O8T7xqldcCyfRtK1fG
-	 i2b8RD+T6R7Wg==
+	b=0ok7j8/81u6U2kZuzFAbMnt7KuctH9CYdQ/dFlkEFo5cNTLFJ/JwD+/z+wd+PziGS
+	 nBD8+QWni6xb7ZZLbBqQiQ4D/TPMAP0vYp8JcgXk0/F5c2Ohxh9tGOWEjNUtFwKltF
+	 n3uZ0mcY1xbq9aGQH9n4RBXN83+w3TNyj5HBT/NvAe/e6Eptsp9oFEjIWZWnuZIvXc
+	 YpOfdtfpOY1fDZ8N1q3AyX9pJBVhJBQs3U6We+MXHQyupUrOpda/0rG3tvCCfyC1Ur
+	 PBJtqvllsm5eg7EHfBofyOErEbZY9rdvw4MF3peOKavElhAK46qryGDgiItifky8DD
+	 KUPB8TOEkPRyQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id nJ19Lu8vhnrB; Thu,  1 Sep 2022 12:04:48 +0000 (UTC)
+	with ESMTP id Bd9xHXluTWeU; Thu,  1 Sep 2022 12:04:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9887941A58;
-	Thu,  1 Sep 2022 12:04:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9887941A58
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 2054A1BF338
+	by smtp4.osuosl.org (Postfix) with ESMTP id 00B3C41A58;
+	Thu,  1 Sep 2022 12:04:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 00B3C41A58
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id BF36D1BF338
  for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Sep 2022 12:04:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id EF13F83E18
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Sep 2022 12:04:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EF13F83E18
+ by smtp3.osuosl.org (Postfix) with ESMTP id A75D060C25
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Sep 2022 12:04:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A75D060C25
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CY__LnD0QIP1 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  1 Sep 2022 12:04:42 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id GEQFuV6fGwlL for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  1 Sep 2022 12:04:43 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 162E683DF7
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 162E683DF7
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Sep 2022 12:04:41 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10457"; a="321843597"
-X-IronPort-AV: E=Sophos;i="5.93,280,1654585200"; d="scan'208";a="321843597"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Sep 2022 05:04:41 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 00F5260BE4
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 00F5260BE4
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Sep 2022 12:04:42 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10457"; a="293274365"
+X-IronPort-AV: E=Sophos;i="5.93,280,1654585200"; d="scan'208";a="293274365"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Sep 2022 05:04:42 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,280,1654585200"; d="scan'208";a="563433757"
+X-IronPort-AV: E=Sophos;i="5.93,280,1654585200"; d="scan'208";a="608532261"
 Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by orsmga003.jf.intel.com with ESMTP; 01 Sep 2022 05:04:36 -0700
+ by orsmga007.jf.intel.com with ESMTP; 01 Sep 2022 05:04:38 -0700
 Received: from switcheroo.igk.intel.com (switcheroo.igk.intel.com
  [172.22.229.137])
  by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 281C4XRh024211; Thu, 1 Sep 2022 13:04:34 +0100
+ 281C4XRi024211; Thu, 1 Sep 2022 13:04:36 +0100
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: netdev@vger.kernel.org
-Date: Thu,  1 Sep 2022 14:01:27 +0200
-Message-Id: <20220901120131.1373568-2-wojciech.drewek@intel.com>
+Date: Thu,  1 Sep 2022 14:01:28 +0200
+Message-Id: <20220901120131.1373568-3-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20220901120131.1373568-1-wojciech.drewek@intel.com>
 References: <20220901120131.1373568-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1662033882; x=1693569882;
+ t=1662033883; x=1693569883;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=/iUE+C/YoHTWlabpxbMQDFAlbGOXYtiHq7W6hemCfqo=;
- b=igb0A7Fofxh1BMBKDS1V+iXPPrEjbGuU+WP35hiUc4/fj9QqH1h3nGGK
- yS9nDJhNG3K839SqhjJ0ihCDp3nvjcXghNJRdJ01/xWG/pzxtqwivYWcF
- klFf05yS01l9iWgFTp2JUbkGXPkj+FTYXdmM8N3fHXWTzvTOKg5Yk/2Nj
- vojuloWs31LPZdpp5xy7ghaMblO3qAaVZhWDXsw28jAOZH3ZWFMEMzBPB
- pAmBovELTiJmaYJizOeVsPWcYESRBE51iKP7fNOe5PyrXW2I5PxPSJdze
- OeJJB1ETlGimKf+boeQOwUodpS/pgjb4QZnMEs10qs2k+raY+sOYZZvWp
+ bh=4amD39zOEmluCPQYQNAg9eXou38dE6G14ogv0QNFbVo=;
+ b=RxvvXLiod2tiDkKPTX+3zIs/g45hmjzfB88uZnCyQeKwf0A0RGkfBQSu
+ NxyKsOVMSAv4jcsd71/nM1WQc00WIh3Tg44kTdaczsMvlisN08S4KPIlU
+ 3yaAcd1yy9l30WFnw9E/IDdEw+62XWeB2xZtMRXqG87RHV6fAOEGdvtfq
+ DmxsuYM0KJJNe5pEh30AGSRmkW64XfMO4mjXu2BHK7AFnrVoZgw5hSCln
+ fG/GI5cykINhaYJIn812/Bi3Uw1dQYkRbzgTzzOtjZ66PS8R6vNgyzQZc
+ BfHnTBiG1vaBBSoFk9lSZytz8C7IS/IfqRg7Lh8Xk4PA0CoyaJRe0oIow
  A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=igb0A7Fo
-Subject: [Intel-wired-lan] [RFC PATCH net-next v3 1/5] uapi: move
- IPPROTO_L2TP to in.h
+ header.a=rsa-sha256 header.s=Intel header.b=RxvvXLio
+Subject: [Intel-wired-lan] [RFC PATCH net-next v3 2/5] flow_dissector: Add
+ L2TPv3 dissectors
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,43 +110,97 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-IPPROTO_L2TP is currently defined in l2tp.h, but most of
-ip protocols is defined in in.h file. Move it there in order
-to keep code clean.
+Allow to dissect L2TPv3 specific field which is:
+- session ID (32 bits)
+
+L2TPv3 might be transported over IP or over UDP,
+this ipmplementation is only about L2TPv3 over IP.
+IP protocold carries L2TPv3 when ip_proto is
+IPPROTO_L2TP (115).
 
 Acked-by: Guillaume Nault <gnault@redhat.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
- include/uapi/linux/in.h   | 2 ++
- include/uapi/linux/l2tp.h | 2 --
- 2 files changed, 2 insertions(+), 2 deletions(-)
+v3: move !dissector_uses_key() check before calling
+    __skb_header_pointer
+---
+ include/net/flow_dissector.h |  9 +++++++++
+ net/core/flow_dissector.c    | 28 ++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
 
-diff --git a/include/uapi/linux/in.h b/include/uapi/linux/in.h
-index 14168225cecd..5a9454c886b3 100644
---- a/include/uapi/linux/in.h
-+++ b/include/uapi/linux/in.h
-@@ -68,6 +68,8 @@ enum {
- #define IPPROTO_PIM		IPPROTO_PIM
-   IPPROTO_COMP = 108,		/* Compression Header Protocol		*/
- #define IPPROTO_COMP		IPPROTO_COMP
-+  IPPROTO_L2TP = 115,		/* Layer 2 Tunnelling Protocol		*/
-+#define IPPROTO_L2TP		IPPROTO_L2TP
-   IPPROTO_SCTP = 132,		/* Stream Control Transport Protocol	*/
- #define IPPROTO_SCTP		IPPROTO_SCTP
-   IPPROTO_UDPLITE = 136,	/* UDP-Lite (RFC 3828)			*/
-diff --git a/include/uapi/linux/l2tp.h b/include/uapi/linux/l2tp.h
-index bab8c9708611..7d81c3e1ec29 100644
---- a/include/uapi/linux/l2tp.h
-+++ b/include/uapi/linux/l2tp.h
-@@ -13,8 +13,6 @@
- #include <linux/in.h>
- #include <linux/in6.h>
+diff --git a/include/net/flow_dissector.h b/include/net/flow_dissector.h
+index 6c74812d64b2..5ccf52ef8809 100644
+--- a/include/net/flow_dissector.h
++++ b/include/net/flow_dissector.h
+@@ -289,6 +289,14 @@ struct flow_dissector_key_pppoe {
+ 	__be16 type;
+ };
  
--#define IPPROTO_L2TP		115
--
- /**
-  * struct sockaddr_l2tpip - the sockaddr structure for L2TP-over-IP sockets
-  * @l2tp_family:  address family number AF_L2TPIP.
++/**
++ * struct flow_dissector_key_l2tpv3:
++ * @session_id: identifier for a l2tp session
++ */
++struct flow_dissector_key_l2tpv3 {
++	__be32 session_id;
++};
++
+ enum flow_dissector_key_id {
+ 	FLOW_DISSECTOR_KEY_CONTROL, /* struct flow_dissector_key_control */
+ 	FLOW_DISSECTOR_KEY_BASIC, /* struct flow_dissector_key_basic */
+@@ -320,6 +328,7 @@ enum flow_dissector_key_id {
+ 	FLOW_DISSECTOR_KEY_HASH, /* struct flow_dissector_key_hash */
+ 	FLOW_DISSECTOR_KEY_NUM_OF_VLANS, /* struct flow_dissector_key_num_of_vlans */
+ 	FLOW_DISSECTOR_KEY_PPPOE, /* struct flow_dissector_key_pppoe */
++	FLOW_DISSECTOR_KEY_L2TPV3, /* struct flow_dissector_key_l2tpv3 */
+ 
+ 	FLOW_DISSECTOR_KEY_MAX,
+ };
+diff --git a/net/core/flow_dissector.c b/net/core/flow_dissector.c
+index 764c4cb3fe8f..8180e65ab8e2 100644
+--- a/net/core/flow_dissector.c
++++ b/net/core/flow_dissector.c
+@@ -204,6 +204,30 @@ static void __skb_flow_dissect_icmp(const struct sk_buff *skb,
+ 	skb_flow_get_icmp_tci(skb, key_icmp, data, thoff, hlen);
+ }
+ 
++static void __skb_flow_dissect_l2tpv3(const struct sk_buff *skb,
++				      struct flow_dissector *flow_dissector,
++				      void *target_container, const void *data,
++				      int nhoff, int hlen)
++{
++	struct flow_dissector_key_l2tpv3 *key_l2tpv3;
++	struct {
++		__be32 session_id;
++	} *hdr, _hdr;
++
++	if (!dissector_uses_key(flow_dissector, FLOW_DISSECTOR_KEY_L2TPV3))
++		return;
++
++	hdr = __skb_header_pointer(skb, nhoff, sizeof(_hdr), data, hlen, &_hdr);
++	if (!hdr)
++		return;
++
++	key_l2tpv3 = skb_flow_dissector_target(flow_dissector,
++					       FLOW_DISSECTOR_KEY_L2TPV3,
++					       target_container);
++
++	key_l2tpv3->session_id = hdr->session_id;
++}
++
+ void skb_flow_dissect_meta(const struct sk_buff *skb,
+ 			   struct flow_dissector *flow_dissector,
+ 			   void *target_container)
+@@ -1497,6 +1521,10 @@ bool __skb_flow_dissect(const struct net *net,
+ 		__skb_flow_dissect_icmp(skb, flow_dissector, target_container,
+ 					data, nhoff, hlen);
+ 		break;
++	case IPPROTO_L2TP:
++		__skb_flow_dissect_l2tpv3(skb, flow_dissector, target_container,
++					  data, nhoff, hlen);
++		break;
+ 
+ 	default:
+ 		break;
 -- 
 2.31.1
 
