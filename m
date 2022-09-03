@@ -1,87 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5305BECAAD5
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  3 Sep 2022 11:49:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28F02C54EE9
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  3 Sep 2022 12:38:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DDC93408DE;
-	Sat,  3 Sep 2022 11:49:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DDC93408DE
+	by smtp2.osuosl.org (Postfix) with ESMTP id 94F2D40105;
+	Sat,  3 Sep 2022 12:38:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 94F2D40105
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1662205773;
-	bh=+MuBS5Kg9NNEqkkNQ+6qGaeJmuuggTkN8siXC//Mg0o=;
+	s=default; t=1662208718;
+	bh=xzJUYDYxfmsIy53dJlI10r4cbRHmjGGDy38ZACfxCTY=;
 	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=DejCPmX9fI9R24RDz15OfHsC7beyNZmYjT/LVwXOOC7FhqEa7K0yDXVfXbw+2UTj6
-	 MEruCyFOf40wJov9V+SnSi/MaAZnwGsMU5tQqOzHG6gSxH7HHxx/EkWaIirzdgCOSX
-	 qfRe2ukN8fifT9jokwU5K0kH0qppp+/CLYheGQmbDo3Po5KKW4I0AJF6pKwGzogp71
-	 K/S3eHnH4CIIWUNyF1BZxkWGfwNXBYKutCrupl0ViP2Ym3MetFSR5WGrNHQt+7u+wP
-	 5c/2fs/S8RXWl8ETGpGlwRSkGFCHRW0irycByDpwunwQaSBn0oAuCP3y7XJzh5EQak
-	 D8NxTDqL2Mluw==
+	b=75VFcHBh0rOkm0tCgZC+nt3G5HNIfG52hpskrYTGBq3zOCuOLztBCNyhRB2zis6Mq
+	 YY/i2J0bCw4MnW6HTyEgGgfxlfHnMIw25/1lm5+WT7hTF9ra3So05bsoQyhdWhOIp0
+	 LYUoTlvqzJXbQiqSbjSsAYW+ntlO2nYMho90Rd5W+DjmsdKvmDWjWm55oEZRd3LzES
+	 I+0e+peDKt0v3nRBCtFMNC+t/h9xBwLMWu+SaCjhTxNqZgBbZ+QE32vjRytBwI2BL6
+	 3cBN+1EgcHVEw70W2I3j+EpPn7JrqJEeg4PIs+XKuM3/GjF3m9aZ8k55I61wX5j2Wa
+	 xPehwGgvbX3cA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id yyzNG504zlmp; Sat,  3 Sep 2022 11:49:33 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id eKS3izeaqtgK; Sat,  3 Sep 2022 12:38:37 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B00DA40981;
-	Sat,  3 Sep 2022 11:49:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B00DA40981
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 333F01BF2A7
- for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Sep 2022 11:49:31 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9664E403E2;
+	Sat,  3 Sep 2022 12:38:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9664E403E2
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id EF8571BF2C6
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Sep 2022 12:38:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0B03340981
- for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Sep 2022 11:49:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0B03340981
+ by smtp3.osuosl.org (Postfix) with ESMTP id C5AE260A8D
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Sep 2022 12:38:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C5AE260A8D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id X-s4PeETaBHT for <intel-wired-lan@lists.osuosl.org>;
- Sat,  3 Sep 2022 11:49:30 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id JMbGKTEnqvoo for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  3 Sep 2022 12:38:35 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D523F408DE
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D523F408DE
- for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Sep 2022 11:49:29 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10458"; a="357866857"
-X-IronPort-AV: E=Sophos;i="5.93,287,1654585200"; d="scan'208";a="357866857"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Sep 2022 04:49:29 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E907C60A6C
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E907C60A6C
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  3 Sep 2022 12:38:34 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10458"; a="293742770"
+X-IronPort-AV: E=Sophos;i="5.93,287,1654585200"; d="scan'208";a="293742770"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Sep 2022 05:38:34 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,287,1654585200"; d="scan'208";a="590375623"
+X-IronPort-AV: E=Sophos;i="5.93,287,1654585200"; d="scan'208";a="643258074"
 Received: from lkp-server02.sh.intel.com (HELO 95dfd251caa2) ([10.239.97.151])
- by orsmga006.jf.intel.com with ESMTP; 03 Sep 2022 04:49:28 -0700
+ by orsmga008.jf.intel.com with ESMTP; 03 Sep 2022 05:38:33 -0700
 Received: from kbuild by 95dfd251caa2 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1oUReR-0001an-2E;
- Sat, 03 Sep 2022 11:49:27 +0000
-Date: Sat, 03 Sep 2022 19:48:41 +0800
+ (envelope-from <lkp@intel.com>) id 1oUSPw-0001ew-1D;
+ Sat, 03 Sep 2022 12:38:32 +0000
+Date: Sat, 03 Sep 2022 20:38:24 +0800
 From: kernel test robot <lkp@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <63133f19.FvhP7dnbd1lAi1A2%lkp@intel.com>
+Message-ID: <63134ac0.WktfH2TRj4o1kfXc%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1662205769; x=1693741769;
+ t=1662208714; x=1693744714;
  h=date:from:to:subject:message-id:mime-version:
  content-transfer-encoding;
- bh=etzH1uYuPaEH7OdnaKem0dzZ2e+40MmSrO8YfunVZ3U=;
- b=hHWPPN6QyqR/SVY4HFckuujB4O6aTqa//1jR9dTtOkiBS1a+PieGbcpi
- PYTidLIXft0ORuIMeBv8ydSXsONPmxmeHPXwnbinSgSKi0pKHOTh6O72b
- Tb+5LB355J8opnN46SJLyhvA3VAt3hhY1ksWfnlMBSAKQdLpP2Sn78K7P
- AzhgHQprhIs18UENgQvYSqZTcwhzSjNCdIhLHsF4TiffB/Zt5hkbg+4nJ
- Sp0iv64lQ/4475/3vcSPvVllnY1ga82XRhD3mEyDUBTLvq3tzva1I9AYN
- /vfpEUgBJ+XRK402UuY1oXJK9YCsDt3SCEyNcpexHwsgie63sIysCO+ut
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=Ms5XIQqRJeGfB/pd2AHTD7IwAhdOsxBJ0bAqvPtP4nE=;
+ b=V3WeR4uzX+n5V4C9gf+yjBduLyKOO7iBagknXVty4vBwdHLlPD50hK7H
+ YVYYI0K2yBOz0Qxeb9vYTnLQpCdS3xN4edeJQyAzBC/qtnojfieiJKza5
+ FeXLjfBzQQmab2VwIguX/DVRicdHm9F+7gzbohsh+Unnffi+BYDAHhdGi
+ l2JNMyxcIn+bXAYcfHf4TGeX4UjE50D6v5APRiV/U+qPvt/XT8ioNVeEJ
+ 6t8He6U43zh02yG8X5W0n33LrJTki/cLboOdV0SRPTUay9NI+w2FBrAGF
+ Cf/NJsY70a7/VkOsluiv0S2f0D/6HPvHn5jdnW8i2jes5T/CTLS94aKda
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hHWPPN6Q
-Subject: [Intel-wired-lan] [tnguy-net-queue:40GbE] BUILD SUCCESS
- aa626da947e9cd30c4cf727493903e1adbb2c0a0
+ header.a=rsa-sha256 header.s=Intel header.b=V3WeR4uz
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ 59ac325557b6c14f1f793b90d3946bc145ffa085
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,10 +99,10 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 40GbE
-branch HEAD: aa626da947e9cd30c4cf727493903e1adbb2c0a0  iavf: Detach device during reset task
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: 59ac325557b6c14f1f793b90d3946bc145ffa085  ice: use bitmap_free instead of devm_kfree
 
-elapsed time: 936m
+elapsed time: 987m
 
 configs tested: 24
 configs skipped: 2
@@ -111,30 +111,30 @@ The following configs have been built successfully.
 More configs may be tested in the coming days.
 
 gcc tested configs:
-um                             i386_defconfig
 um                           x86_64_defconfig
-powerpc                           allnoconfig
+um                             i386_defconfig
+powerpc                          allmodconfig
 mips                             allyesconfig
+powerpc                           allnoconfig
 sh                               allmodconfig
 x86_64                          rhel-8.3-func
 x86_64                         rhel-8.3-kunit
 x86_64                    rhel-8.3-kselftests
-x86_64                           rhel-8.3-syz
 x86_64                           rhel-8.3-kvm
+x86_64                           rhel-8.3-syz
+i386                                defconfig
 arc                              allyesconfig
 alpha                            allyesconfig
+m68k                             allyesconfig
 x86_64                              defconfig
 m68k                             allmodconfig
-i386                                defconfig
-m68k                             allyesconfig
 x86_64                               rhel-8.3
-i386                             allyesconfig
 x86_64                           allyesconfig
+i386                             allyesconfig
 arm                                 defconfig
-arm                              allyesconfig
 arm64                            allyesconfig
+arm                              allyesconfig
 ia64                             allmodconfig
-powerpc                          allmodconfig
 
 -- 
 0-DAY CI Kernel Test Service
