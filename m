@@ -4,54 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F10CECAAD5
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  4 Sep 2022 14:18:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B12A0ECAAD5
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  4 Sep 2022 14:22:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BE470408A8;
-	Sun,  4 Sep 2022 14:18:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BE470408A8
+	by smtp4.osuosl.org (Postfix) with ESMTP id 43422408A9;
+	Sun,  4 Sep 2022 14:22:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 43422408A9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1662301093;
-	bh=zaSXak4q6hpiHKd6gIBJV0wbzgdfJV+eGs6bqVBXUkA=;
+	s=default; t=1662301377;
+	bh=KtAt5+ccJxMZRgCtKyYDnd74O7T0cUQZcY5bbWFrYfs=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=4zmPvvYkI3cWr7KgUb/uUv1oLgT1uBRZW2Cob/V3GAbelH483/Ib19Ii8r10IvI9t
-	 jW/M5x6+Ni8bBfMuE4I7buSe5pbUsBCuya1G8C9tQcbHB2VRQee8jhs0l3PEpHsee7
-	 6my28Ubi9LqNhZmDBg5RQis3ixzjaroYY0lHut45KdE5ja4hLisGm70CRXh6kFJd7+
-	 Ed9U+hVIUBOXECXzhaqzgz2Loqq+uzrqh+kjM+EwHbnO2GBdgHqJSnTlpoJkqXGRaq
-	 T7+lYM7/IXbkFu/KEkoNNhK8WctNpg7845zb+9NCcQYV5OyFbt5AYZ/G+rI6A62b6d
-	 N3xyXWhUt+E8w==
+	b=IcYnsTjCsAobEanIM9/PFndz5GQJrypE8GJ9DSfwLhCZpKGNmh/77lDDr+UPxMLXc
+	 RDu400J2RhkfawTTDVNwQDDvYv9ndKAaQbUNuX18rYcr/3j09As1ZQXhpKWfmmvi1I
+	 asuge7cS31khkUpYt6ZqjUW5hAxFZR/eR7q/FOBidtM9oKD0yDMnliy3DC2BrahnM/
+	 tu3cRSoToaMmgcxZeO89oQ+p0XaLsns0V/rgPqeCv7zPsxuI4Sxi4flToM9X3v1KKm
+	 RMQLZhMNwrFcQiOsPluX/L0pjslP3T3ZmvqY3xQ9GWjyZAFNG2egQfIxN/XruKe8tu
+	 KYcW8nz3WsIsA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Rk1vbVmpyl7Q; Sun,  4 Sep 2022 14:18:12 +0000 (UTC)
+	with ESMTP id k7qxB2Jx2yKV; Sun,  4 Sep 2022 14:22:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8CE184077D;
-	Sun,  4 Sep 2022 14:18:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8CE184077D
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1BD06408BB;
+	Sun,  4 Sep 2022 14:22:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1BD06408BB
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id CC0B71BF2BB
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Sep 2022 14:18:10 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 789021BF2BB
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Sep 2022 14:22:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A640C81277
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Sep 2022 14:18:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A640C81277
+ by smtp1.osuosl.org (Postfix) with ESMTP id 52E5780E7E
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Sep 2022 14:22:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 52E5780E7E
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id x4psRdBw2Dfn for <intel-wired-lan@lists.osuosl.org>;
- Sun,  4 Sep 2022 14:18:09 +0000 (UTC)
+ with ESMTP id RZS_ocYiH3hx for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  4 Sep 2022 14:22:53 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 58EE58124C
-Received: from smtp.smtpout.orange.fr (smtp02.smtpout.orange.fr
- [80.12.242.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 58EE58124C
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Sep 2022 14:18:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1D26580C37
+Received: from smtp.smtpout.orange.fr (smtp07.smtpout.orange.fr
+ [80.12.242.129])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1D26580C37
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Sep 2022 14:22:53 +0000 (UTC)
 Received: from pop-os.home ([90.11.190.129]) by smtp.orange.fr with ESMTPA
- id UqRoo6N75sfCIUqRooeLOU; Sun, 04 Sep 2022 16:18:07 +0200
+ id UqWOoEaZwJvOZUqWOotKwX; Sun, 04 Sep 2022 16:22:51 +0200
 X-ME-Helo: pop-os.home
 X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
-X-ME-Date: Sun, 04 Sep 2022 16:18:07 +0200
+X-ME-Date: Sun, 04 Sep 2022 16:22:51 +0200
 X-ME-IP: 90.11.190.129
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
@@ -59,11 +59,12 @@ To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
  "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>
-Date: Sun,  4 Sep 2022 16:18:02 +0200
-Message-Id: <55ff1825aee6e655c41cb6770ca44f0fbdbfec00.1662301068.git.christophe.jaillet@wanadoo.fr>
+Date: Sun,  4 Sep 2022 16:22:46 +0200
+Message-Id: <7cd7cb09607c46763e846d1fa7158ce9fdfca3e6.1662301342.git.christophe.jaillet@wanadoo.fr>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Subject: [Intel-wired-lan] [PATCH] ice: switch: Simplify memory allocation
+Subject: [Intel-wired-lan] [PATCH] ice: Simplify memory allocation in
+ ice_sched_init_port()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,7 +85,7 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-'rbuf' is locale to the ice_get_initial_sw_cfg() function.
+'buf' is locale to the ice_sched_init_port() function.
 There is no point in using devm_kzalloc()/devm_kfree().
 
 use kzalloc()/kfree() instead.
@@ -92,33 +93,31 @@ use kzalloc()/kfree() instead.
 Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
 As a side effect, it also require less memory. devm_kzalloc() has a small
-memory overhead, and requesting ICE_SW_CFG_MAX_BUF_LEN (i.e. 2048) bytes,
-4096 are really allocated.
+memory overhead, and requesting ICE_AQ_MAX_BUF_LEN (i.e. 4096) bytes,
+8192 are really allocated.
 ---
- drivers/net/ethernet/intel/ice/ice_switch.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 697feb89188c..eb6e19deb70d 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -2274,9 +2274,7 @@ int ice_get_initial_sw_cfg(struct ice_hw *hw)
- 	int status;
- 	u16 i;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index 7947223536e3..118595763bba 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -1212,7 +1212,7 @@ int ice_sched_init_port(struct ice_port_info *pi)
+ 	hw = pi->hw;
  
--	rbuf = devm_kzalloc(ice_hw_to_dev(hw), ICE_SW_CFG_MAX_BUF_LEN,
--			    GFP_KERNEL);
--
-+	rbuf = kzalloc(ICE_SW_CFG_MAX_BUF_LEN, GFP_KERNEL);
- 	if (!rbuf)
+ 	/* Query the Default Topology from FW */
+-	buf = devm_kzalloc(ice_hw_to_dev(hw), ICE_AQ_MAX_BUF_LEN, GFP_KERNEL);
++	buf = kzalloc(ICE_AQ_MAX_BUF_LEN, GFP_KERNEL);
+ 	if (!buf)
  		return -ENOMEM;
  
-@@ -2324,7 +2322,7 @@ int ice_get_initial_sw_cfg(struct ice_hw *hw)
- 		}
- 	} while (req_desc && !status);
+@@ -1290,7 +1290,7 @@ int ice_sched_init_port(struct ice_port_info *pi)
+ 		pi->root = NULL;
+ 	}
  
--	devm_kfree(ice_hw_to_dev(hw), rbuf);
-+	kfree(rbuf);
+-	devm_kfree(ice_hw_to_dev(hw), buf);
++	kfree(buf);
  	return status;
  }
  
