@@ -1,84 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE210C38145
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Sep 2022 09:28:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC6EEECAAA1
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Sep 2022 10:08:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6A570812ED;
-	Tue,  6 Sep 2022 09:28:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6A570812ED
+	by smtp2.osuosl.org (Postfix) with ESMTP id 50E1340BB0;
+	Tue,  6 Sep 2022 10:08:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 50E1340BB0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1662456529;
-	bh=WAMzUJIwnMsgCRtM62v4VCIhwt9vV+2RYUQkjXFVUdk=;
+	s=default; t=1662458901;
+	bh=R34oZ/xQsxWUSVFDjLZs2D1gDQXvtHqxLFstEex0PWM=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=2xbX8yW3rlLjzEU25ONQLHDK8216Q4+lQeKBxkYmZlPiHoSToa/xqiE69imJyYzad
-	 WYlGS2pYmyEicIcGmeQ+JiTwkYE8W31Pwbxpm48uVu5w8h4+TvzrDXWqrGVAX0tUxH
-	 sSWkb5H6k+4+1leNLajehc1JOLyjBOAzIznVa/09oS+Y6w9vtm+pQe5IjrHfwp4iHC
-	 FmOSY37dSso6PLaaKj+9Zpmko4mKj/fRWbjAJ9VD7QZi7475gu2xl+wuPRFGxJiTNl
-	 K6KeFkWPrnslIX8fu897NWJIqn1c8/g4GVwyNbhGo9imK9PRzmZK9Y3WWcDrRq4eH1
-	 y8925fXBFWzRw==
+	b=jKish2MxQkxqFa7rMhKOd2Tp72RtESapxFzxE2OjmzIT9SnNIuS2IEovP3BstVH+r
+	 zGT2R1C0DANjuaYXM4mNuLR3HT7bLm5zib/2xHjsdV2t5Mg3B73J226n6MRdp89Uvz
+	 UMqAhJGhsAxmhzRt660U8SRVLmZthxYwE+GlWCRSF5SLqypEq1CpOZujaQQCd75+ZX
+	 jtc0y0BMtqs+V4rxY31E1gH9P/4EywoGEUHBmG79ecIpKcNI4oe8W00MBqcne7Qow8
+	 ALAg86rHqzWUYYNigMb3B8/baXYQCMs2hI+/pI5PUmNiuuwrGeJH0O+u1QbcNiTONZ
+	 iczEYAXiI15qQ==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id jtdFjo7uWIGW; Tue,  6 Sep 2022 10:08:20 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2937440BC4;
+	Tue,  6 Sep 2022 10:08:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2937440BC4
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id AD2171BF25F
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Sep 2022 10:08:18 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 942BE817AB
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Sep 2022 10:08:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 942BE817AB
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id sGAgx8y47UG7; Tue,  6 Sep 2022 09:28:48 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3C52981343;
-	Tue,  6 Sep 2022 09:28:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3C52981343
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 50B6C1BF2FF
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Sep 2022 09:28:46 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 31CE761086
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Sep 2022 09:28:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 31CE761086
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id TxsM4gj8d-o6 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  6 Sep 2022 09:28:45 +0000 (UTC)
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id kgPAvpy0idvW for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  6 Sep 2022 10:08:17 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 64CF760AAE
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 64CF760AAE
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Sep 2022 09:28:45 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10461"; a="297332917"
-X-IronPort-AV: E=Sophos;i="5.93,293,1654585200"; d="scan'208";a="297332917"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Sep 2022 02:28:44 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 303DF81753
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 303DF81753
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Sep 2022 10:08:17 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10461"; a="294140225"
+X-IronPort-AV: E=Sophos;i="5.93,293,1654585200"; d="scan'208";a="294140225"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Sep 2022 03:08:16 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,293,1654585200"; d="scan'208";a="859199011"
+X-IronPort-AV: E=Sophos;i="5.93,293,1654585200"; d="scan'208";a="565040289"
 Received: from amlin-018-068.igk.intel.com (HELO localhost.igk.intel.com)
  ([10.102.18.68])
- by fmsmga006.fm.intel.com with ESMTP; 06 Sep 2022 02:28:43 -0700
+ by orsmga003.jf.intel.com with ESMTP; 06 Sep 2022 03:08:14 -0700
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  6 Sep 2022 11:27:25 +0200
-Message-Id: <20220906092725.915437-1-mateusz.palczewski@intel.com>
+Date: Tue,  6 Sep 2022 12:07:00 +0200
+Message-Id: <20220906100700.930860-1-mateusz.palczewski@intel.com>
 X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1662456525; x=1693992525;
+ t=1662458897; x=1693994897;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=lGxNIvHkZ+esXy+291erQjrDjEDf5lZZH/WtHMpU+ZE=;
- b=i67FEAsuatVvseAOCzBJtq20DHWBHtd39Gba55NIpzBLbr12Yp7ZdWRr
- m62EgdBm2uaXZoGxN9F4VXEIQUIk9sIwh+75yEFMCM1wAQs7SGGJm+/16
- x7Oq2rYIKWyIcNmL6pX+6jrZdXNdzkufiqKyJXVl68luwIwImDe96lBkD
- kk5SKngxjT8oPkVx45wVY9BTQdyBQYw1AmW0Yej0y2PWm/8zR3v6OaT+s
- q7tseUPK5cU8krKy7P8QCTvqUH1VlmTydhKJ7R3s4x7oIQYtaY0BFzduj
- 7xmlIC9MObIFm3i85FjVTyZXuvBXoziPZVxs5wNrLk/l67cpnGAisD411
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=h5hpqrAcWazher5xcpMK/6tXVho5LqfUHxeS3YIr+VU=;
+ b=KBMegkaEd4BHrs1VVJvOZ07RYPUhnSttvjRdfxaBmOzFJhn3ytPOJt8l
+ RRmUeWMrn74jeRyTKVyjqyETAXAvltTWDKp0TaZKXATmU6Q7+n6EeyN9D
+ UQzDI8h5PiEhq4Ye3gHzoTYcScUFhu5Jl5iVMsjA5NFLgvsIkIl18iwce
+ rHpu2LSjvIDyGC1LkJaI/RNiY6+1RN4Kv2zhenlXmR6RhuFQ/y1fFl1a6
+ D1ctMfervVSoO+MYqSpCcRG6sW6k8b2LLfhjHualBjZr9pvqbBwjxG1SC
+ k4YMP5H3luaNrXBy24XP/sNA75L4aT4Q3FhVqVey+g646UV/c8scQ0j5a
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=i67FEAsu
-Subject: [Intel-wired-lan] [PATCH net v4] i40e: Fix ethtool rx-flow-hash
+ header.a=rsa-sha256 header.s=Intel header.b=KBMegkaE
+Subject: [Intel-wired-lan] [PATCH net v5] i40e: Fix ethtool rx-flow-hash
  setting for X722
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -98,7 +98,7 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Jaron <michalx.jaron@intel.com>
+From: Slawomir Laba <slawomirx.laba@intel.com>
 
 When enabling flow type for RSS hash via ethtool:
 
@@ -121,10 +121,11 @@ Fix this issue by testing masks for X722 device in
 i40e_get_rss_hash_opts function.
 
 Fixes: eb0dd6e4a3b3 ("i40e: Allow RSS Hash set with less than four parameters")
-Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
 Signed-off-by: Slawomir Laba <slawomirx.laba@intel.com>
+Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
+ v5: Changed author and order of signed-off-by tags
  v4: Add missing fixes tag and updated kdoc  
  v3: Split the patch series and send only this to net and refactor
  to next
