@@ -1,87 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A570ECAAA1
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Sep 2022 12:09:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3895DECAAA1
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Sep 2022 12:50:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4BB01404AB;
-	Fri,  9 Sep 2022 12:09:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4BB01404AB
+	by smtp3.osuosl.org (Postfix) with ESMTP id BD6826109D;
+	Fri,  9 Sep 2022 12:50:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BD6826109D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1662725363;
-	bh=HeOHN0QM0rYUqdh6Sw6HLrwSlKKVpVW7/bx5faX6YjY=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=gynmzuvV4HrBpVH1xOelEKTRz0j745PONXff+AHerhnTuj5SzC8QtA3Jzh451vSDC
-	 Y84MeWFy7wNml2Aa6VAcTemp3jmaNjJCyE6Nu/6/ZjPgvTjTtUAHJY5A+fZM2prlka
-	 ZdWTiaqmfY5davONNxlgeSh63j5Y9wzID0tQqtmat0fHGr4oZWwCW8zYoMCRH3W9dD
-	 XdMw53MIAabaXCe0zaQN7udwlrWsR2amKXT7zhrLyYP5ktTtU78GatsA7mYf5l778p
-	 MBfD50msZPUMpNdQ5LjW+c4XVdY1Rs1WzZgWa5wZIOEcn/cuUt5+E+oP4Qx28OoVX1
-	 KnCJJYy4Zg9GA==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id gfcZpRO5_wi4; Fri,  9 Sep 2022 12:09:22 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 386A740E44;
-	Fri,  9 Sep 2022 12:09:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 386A740E44
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 118F41BF2F5
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Sep 2022 12:09:20 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id DFDC4610A8
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Sep 2022 12:09:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DFDC4610A8
+	s=default; t=1662727838;
+	bh=aYBqLtqbm7RZncossa5dMkPVuQvp+wGbGYytUg01tYI=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=y5oVE08YArHf6/Z0/1F6bnEByY0kcTLuY9dChTpl54fv3ezIYjBv7XSSOoqrD+HCI
+	 Qv3BTw+lUSMrUj9HcwH8ExiZTgzbZ7XA4uA44DO/3r9e9bqd767mKM2QAgk+c0fI/l
+	 PA3KkMrk6phw/7fBSPPcJ7QpFHQ8ciQUk8adJowem5SyK5GpC3+8rOaO6mPRylrEpm
+	 x/mVAUlaRqVlhdX/MUrWY4D0aJQ5/eQT2Lr0N6TROsQ/2f5wcMdnnVUw+5xCw/fQpF
+	 AeSyCYM0bjtnE+6buQxGB7m9tKt3bPLSDFVeUNFODIRJWHScBpfaUo0WkXf/fmghdO
+	 KP7rRjG2/dOfg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id igZx6scwNKZD for <intel-wired-lan@lists.osuosl.org>;
- Fri,  9 Sep 2022 12:09:19 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BE3AE61095
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id BE3AE61095
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Sep 2022 12:09:18 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10464"; a="298262897"
-X-IronPort-AV: E=Sophos;i="5.93,303,1654585200"; d="scan'208";a="298262897"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Sep 2022 05:09:18 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,303,1654585200"; d="scan'208";a="645513870"
-Received: from lkp-server02.sh.intel.com (HELO b2938d2e5c5a) ([10.239.97.151])
- by orsmga008.jf.intel.com with ESMTP; 09 Sep 2022 05:09:17 -0700
-Received: from kbuild by b2938d2e5c5a with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1oWcou-00019F-2L;
- Fri, 09 Sep 2022 12:09:16 +0000
-Date: Fri, 09 Sep 2022 20:08:29 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <631b2cbd.7UvdvHPmCj43nbdZ%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id fsTf66UxQGhD; Fri,  9 Sep 2022 12:50:36 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9EBB86108B;
+	Fri,  9 Sep 2022 12:50:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9EBB86108B
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 9DAAA1BF402
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Sep 2022 20:12:27 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 84E55826C0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Sep 2022 20:12:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 84E55826C0
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id W0oxggIh_8CB for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Sep 2022 20:12:25 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8C86782690
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com
+ [IPv6:2607:f8b0:4864:20::636])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8C86782690
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Sep 2022 20:12:24 +0000 (UTC)
+Received: by mail-pl1-x636.google.com with SMTP id s14so9402917plr.4
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Sep 2022 13:12:24 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date;
+ bh=AgWbSCqsBhHrsZVaw/sxv1pyjzYk2RKYwGT/J2cxviE=;
+ b=7IHwPRNmMY0P+uSnLAUYCFw5a3fYcO/Kmh3luywbYFZiyy/LEkb/CXCYokja6Zdrqj
+ U9bQhbgUMlwBP/xM/oZWHT4UaD9ZMuqlzdJQIUqNLkgFr1vivRqNNTkC/wURJlxAD3w5
+ RxJdvE0KF8zIPO+yZosUpLoFve52EreuD1uvoU4Hwo1zQVLPXlqcxN3WY4tFkvgQJD0R
+ ph9JjP8iKCW9ZHOTBcmK+oZj/Djh+dJtQERsega51lLVgeOOFXvu2zk1B0BlFawC7yFM
+ 5y7HMuu/J9Nqs4uFv+spzg9Phenjob58ZUJ0lipw9gkkSenP/ZuhvOoOcGOSHIYKxEo8
+ 1SKw==
+X-Gm-Message-State: ACgBeo1XnkKdNjnfeFXepsEvCYwkIiLspiI0mITmhIwlinKA5MDFZgM+
+ p82jFFSELPa+hT6OQnkr2vGXX9coE6q6/A8XEOQ=
+X-Google-Smtp-Source: AA6agR5KOMUR8ZKnX8tx2MXSJlAkIlqGadbD/DCXbpZdNLcvfoMW0hG1rMUpHqSV/hxQ743MK+orWtEB5bSy7M70EVU=
+X-Received: by 2002:a17:902:c411:b0:170:91ff:884b with SMTP id
+ k17-20020a170902c41100b0017091ff884bmr10656414plk.58.1662667938991; Thu, 08
+ Sep 2022 13:12:18 -0700 (PDT)
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1662725358; x=1694261358;
- h=date:from:to:subject:message-id:mime-version:
- content-transfer-encoding;
- bh=IebPoczRccRlp/jqIl+YqgZ1SwfF3TxswRKeFZ6BL/s=;
- b=DEzA1Gi9zx4rVlcyF52X5dqq6JIRYDS0XGjsDR/D25XJzQHSi+hpN0zu
- C8eWfftac43fLWKVwpM2vrVMWJVaqZNO+Aikg+rOrY1K77/XXq8t5aUGD
- fOnvyGtRR2k+0dIqtrNwn67ebXnexr9Vw+t2GldS64MbS4xIDHedqgvmd
- vRr4ZgCihju2ttfsKHdCLHLTm09GM2fUiekjXkRFdx2tfqd7jr5mxDsxP
- hcC4tpnbDFmWNZMU6x5AazEVOoCSrDbRfzkcr8bt+yGaMc2OLROi7Qo/I
- ySIiQHscJ6ayfyLnAhyUmX8mAZQ1kxNbng/3yyiBXt8RsPMixKvmZhiNT
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=DEzA1Gi9
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- f5efed95c9516efb5f70059d5a01c539945d6427
+References: <FA05D61D-3E1A-4C0E-BE32-CD427DFEEAD2@gmail.com>
+ <SN6PR11MB35188DA27C2DAF0FEE874A65EB7E9@SN6PR11MB3518.namprd11.prod.outlook.com>
+In-Reply-To: <SN6PR11MB35188DA27C2DAF0FEE874A65EB7E9@SN6PR11MB3518.namprd11.prod.outlook.com>
+From: Martin Zaharinov <micron10@gmail.com>
+Date: Thu, 8 Sep 2022 23:12:07 +0300
+Message-ID: <CALidq=Ue3s9L0zexhY0pVsuKizJ1SOb9nevktM_FZs+bp-+zhQ@mail.gmail.com>
+To: "Switzer, David" <david.switzer@intel.com>
+X-Mailman-Approved-At: Fri, 09 Sep 2022 12:50:35 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20210112;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date;
+ bh=AgWbSCqsBhHrsZVaw/sxv1pyjzYk2RKYwGT/J2cxviE=;
+ b=D/covYbZQQ5ITLpezO3Fc4MNbzNEd16djD/BRKChgQNYOX09vfzuzAUeIowwAOy+dt
+ Tltn3ofZPuANwzxrl/dYEZ1/fuEAv/R9pXonAA64vIDWFwd2OyGnT63Yf0ID5y6vNNsM
+ kdgIY8kTmzh+oPT2lpQmjTlFZqT7CZEYDPIO6fnh3zs0aBI913EqE0irYRyudntKwjdz
+ D2xh/hRSdyPndBBkzNiZdYp8200uaymLjBXsyK+PR6XtjRGebBztrT4dExbEAmbLKg2u
+ zghGvKVP5fkxvOGUkHIgDVE0wuSTz7/zN2Iz3b85118kfPLP8GqKlRmkd/dcctRHDzNE
+ wIdg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20210112 header.b=D/covYbZ
+Subject: Re: [Intel-wired-lan] Urgent Kernel Bug NETDEV WATCHDOG ixgbe
+ transmit queue 2 timed out after kernel 5.19.2 to 5.19.6
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,111 +104,431 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: "Dubel, Helena Anna" <helena.anna.dubel@intel.com>,
+ Eric Dumazet <eric.dumazet@gmail.com>, netdev <netdev@vger.kernel.org>,
+ Eric Dumazet <edumazet@google.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S . Miller" <davem@davemloft.net>
+Content-Type: multipart/mixed; boundary="===============4635376008422964241=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: f5efed95c9516efb5f70059d5a01c539945d6427  ice: Add L2TPv3 hardware offload support
+--===============4635376008422964241==
+Content-Type: multipart/alternative; boundary="000000000000e21d3305e8300bcb"
 
-elapsed time: 1087m
+--000000000000e21d3305e8300bcb
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-configs tested: 81
-configs skipped: 3
+Hi Dave
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Good i am here if need more info.
+same problem is happen with i40e driver.
+and may be this is bug in kernel.
 
-gcc tested configs:
-um                             i386_defconfig
-um                           x86_64_defconfig
-arc                              allyesconfig
-alpha                            allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-i386                                defconfig
-x86_64                           allyesconfig
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-x86_64                        randconfig-a015
-x86_64                          rhel-8.3-func
-x86_64                        randconfig-a004
-x86_64                         rhel-8.3-kunit
-x86_64                        randconfig-a002
-powerpc                           allnoconfig
-x86_64                    rhel-8.3-kselftests
-mips                             allyesconfig
-x86_64                           rhel-8.3-syz
-powerpc                          allmodconfig
-x86_64                           rhel-8.3-kvm
-x86_64                        randconfig-a006
-i386                             allyesconfig
-sh                               allmodconfig
-i386                          randconfig-a014
-i386                          randconfig-a001
-i386                          randconfig-a003
-i386                          randconfig-a005
-i386                          randconfig-a012
-i386                          randconfig-a016
-arc                  randconfig-r043-20220908
-riscv                randconfig-r042-20220908
-arm                                 defconfig
-arc                  randconfig-r043-20220907
-s390                 randconfig-r044-20220908
-arm64                            allyesconfig
-arm                              allyesconfig
-csky                              allnoconfig
-alpha                             allnoconfig
-arc                               allnoconfig
-riscv                             allnoconfig
-arm                      footbridge_defconfig
-arm                        realview_defconfig
-m68k                       m5275evb_defconfig
-loongarch                         allnoconfig
-arm                             pxa_defconfig
-arc                              alldefconfig
-arm                           u8500_defconfig
-i386                          randconfig-c001
-arc                    vdk_hs38_smp_defconfig
-sh                         microdev_defconfig
-mips                           xway_defconfig
-loongarch                           defconfig
-nios2                            allyesconfig
-nios2                               defconfig
-parisc                              defconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-ia64                             allmodconfig
 
-clang tested configs:
-x86_64                        randconfig-a012
-x86_64                        randconfig-a016
-x86_64                        randconfig-a014
-x86_64                        randconfig-a005
-x86_64                        randconfig-a001
-x86_64                        randconfig-a003
-i386                          randconfig-a013
-i386                          randconfig-a015
-i386                          randconfig-a011
-i386                          randconfig-a002
-i386                          randconfig-a004
-s390                 randconfig-r044-20220907
-hexagon              randconfig-r041-20220907
-i386                          randconfig-a006
-hexagon              randconfig-r041-20220908
-riscv                randconfig-r042-20220907
-hexagon              randconfig-r045-20220908
-hexagon              randconfig-r045-20220907
-x86_64                        randconfig-k001
-mips                           mtx1_defconfig
+Martin
 
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+=D0=9D=D0=B0 =D0=B2=D1=82, 6.09.2022 =D0=B3. =D0=B2 22:02 =D1=87. Switzer, =
+David <david.switzer@intel.com>
+=D0=BD=D0=B0=D0=BF=D0=B8=D1=81=D0=B0:
+
+>
+>
+> >-----Original Message-----
+> >From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> >Martin Zaharinov
+> >Sent: Saturday, September 3, 2022 2:54 AM
+> >To: Eric Dumazet <eric.dumazet@gmail.com>; Eric Dumazet
+> ><edumazet@google.com>; Fijalkowski, Maciej
+> ><maciej.fijalkowski@intel.com>; Brandeburg, Jesse
+> ><jesse.brandeburg@intel.com>; David S . Miller <davem@davemloft.net>;
+> >Jakub Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>;
+> >Nguyen, Anthony L <anthony.l.nguyen@intel.com>; netdev
+> ><netdev@vger.kernel.org>; Dubel, Helena Anna
+> ><helena.anna.dubel@intel.com>; intel-wired-lan@lists.osuosl.org
+> >Subject: [Intel-wired-lan] Urgent Kernel Bug NETDEV WATCHDOG ixgbe
+> >transmit queue 2 timed out after kernel 5.19.2 to 5.19.6
+> >
+> >Hi All
+> Hello Martin!
+>
+> I'm Dave, a driver validation engineer at Intel Corp.
+> >
+> >
+> >after move to release 5.19.x (2 and up to 6 ) start geting this bug
+> report and
+> >machine reboot automatic after that.
+> I'm sorry you're having this issue, I'm working on reproducing your issue
+> so that we can have our developers look into it.
+>
+> I will reach out to you if I have any questions.
+>
+> Have a great day!
+> Dave
+> >
+> >With kernel 5.18 this problem is not happen.
+> >
+> >Machine run with 2x 10G Intel 82599 card in bonding .
+> >its a simple router with 6 core cpu.
+> >
+> >Sep  3 10:05:39  [193378.949952][   C10] ------------[ cut here
+> ]------------
+> >Sep  3 10:05:39  [193378.949965][   C10] NETDEV WATCHDOG: eth1 (ixgbe):
+> >transmit queue 2 timed out
+> >Sep  3 10:05:39  [193378.949980][   C10] WARNING: CPU: 10 PID: 0 at
+> >net/sched/sch_generic.c:529 dev_watchdog+0x167/0x170
+> >Sep  3 10:05:39  [193378.949992][   C10] Modules linked in:
+> >nf_conntrack_netlink nft_limit pppoe pppox ppp_generic slhc nft_nat
+> >nft_chain_nat nf_tables team_mode_loadbalance team netconsole coretemp
+> >ixgbe mdio_devres libphy mdio nf_nat_sip nf_conntrack_sip nf_nat_pptp
+> >nf_conntrack_pptp nf_nat_tftp nf_conntrack_tftp nf_nat_ftp
+> >nf_conntrack_ftp nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4
+> >acpi_ipmi ipmi_si ipmi_devintf ipmi_msghandler rtc_cmos
+> >Sep  3 10:05:39  [193378.950023][   C10] CPU: 10 PID: 0 Comm: swapper/10
+> >Tainted: G           O      5.19.4 #1
+> >Sep  3 10:05:39  [193378.950028][   C10] Hardware name: Supermicro Super
+> >Server/X10SRD-F, BIOS 3.3 10/28/2020
+> >Sep  3 10:05:39  [193378.950032][   C10] RIP:
+> 0010:dev_watchdog+0x167/0x170
+> >Sep  3 10:05:39  [193378.950037][   C10] Code: 28 e9 77 ff ff ff 48 89 d=
+f
+> c6 05 95
+> >3d c4 00 01 e8 9e 5a fb ff 48 89 c2 44 89 e1 48 89 de 48 c7 c7 f0 d0 ec
+> a7 e8 c2 c2
+> >13 00 <0f> 0b eb 85 0f 1f 44 00 00 41 55 41 54 55 53 48 8b 47 50 4c 8b 2=
+8
+> >Sep  3 10:05:39  [193378.950043][   C10] RSP: 0018:ffff96320030cee8
+> EFLAGS:
+> >00010292
+> >Sep  3 10:05:39  [193378.950048][   C10] RAX: 0000000000000039 RBX:
+> >ffff898a4da00000 RCX: 0000000000000001
+> >Sep  3 10:05:39  [193378.950053][   C10] RDX: 00000000ffffffea RSI:
+> >00000000fffbffff RDI: 00000000fffbffff
+> >Sep  3 10:05:39  [193378.950057][   C10] RBP: ffff898a4da003c0 R08:
+> >0000000000000001 R09: 00000000fffbffff
+> >Sep  3 10:05:39  [193378.950061][   C10] R10: ffff89919d600000 R11:
+> >0000000000000003 R12: 0000000000000002
+> >Sep  3 10:05:39  [193378.950065][   C10] R13: 0000000000000000 R14:
+> >ffff89919fca07a8 R15: 0000000000000082
+> >Sep  3 10:05:39  [193378.950070][   C10] FS:  0000000000000000(0000)
+> >GS:ffff89919fc80000(0000) knlGS:0000000000000000
+> >Sep  3 10:05:39  [193378.950074][   C10] CS:  0010 DS: 0000 ES: 0000 CR0=
+:
+> >0000000080050033
+> >Sep  3 10:05:39  [193378.950078][   C10] CR2: 00007fb39f41d000 CR3:
+> >00000001002fd003 CR4: 00000000003706e0
+> >Sep  3 10:05:39  [193378.950082][   C10] DR0: 0000000000000000 DR1:
+> >0000000000000000 DR2: 0000000000000000
+> >Sep  3 10:05:39  [193378.950086][   C10] DR3: 0000000000000000 DR6:
+> >00000000fffe0ff0 DR7: 0000000000000400
+> >Sep  3 10:05:39  [193378.950090][   C10] Call Trace:
+> >Sep  3 10:05:39  [193378.950094][   C10]  <IRQ>
+> >Sep  3 10:05:39  [193378.950098][   C10]  ? pfifo_fast_destroy+0x30/0x30
+> >Sep  3 10:05:39  [193378.950104][   C10]
+> call_timer_fn.constprop.0+0x14/0x70
+> >Sep  3 10:05:39  [193378.950110][   C10]  __run_timers.part.0+0x164/0x19=
+0
+> >Sep  3 10:05:39  [193378.950116][   C10]  ?
+> >__hrtimer_run_queues+0x143/0x1a0
+> >Sep  3 10:05:39  [193378.950120][   C10]  ? ktime_get+0x30/0x90
+> >Sep  3 10:05:39  [193378.950125][   C10]  run_timer_softirq+0x21/0x50
+> >Sep  3 10:05:39  [193378.950130][   C10]  __do_softirq+0xaf/0x1d7
+> >Sep  3 10:05:39  [193378.950136][   C10]  __irq_exit_rcu+0x9a/0xd0
+> >Sep  3 10:05:39  [193378.950142][   C10]
+> >sysvec_apic_timer_interrupt+0x66/0x80
+> >Sep  3 10:05:39  [193378.950149][   C10]  </IRQ>
+> >Sep  3 10:05:39  [193378.950152][   C10]  <TASK>
+> >Sep  3 10:05:39  [193378.950155][   C10]
+> >asm_sysvec_apic_timer_interrupt+0x16/0x20
+> >Sep  3 10:05:39  [193378.950160][   C10] RIP:
+> >0010:cpuidle_enter_state+0xb3/0x290
+> >Sep  3 10:05:39  [193378.950167][   C10] Code: e8 d2 0d b0 ff 31 ff 49 8=
+9
+> c5 e8 48
+> >68 af ff 45 84 ff 74 12 9c 58 f6 c4 02 0f 85 cf 01 00 00 31 ff e8 81 b4
+> b3 ff fb 45 85
+> >f6 <0f> 88 d0 00 00 00 49 63 ce 48 6b f1 68 48 8b 04 24 4c 89 ea 48 29
+> >Sep  3 10:05:39  [193378.950402][   C10] RSP: 0018:ffff96320014fe98
+> EFLAGS:
+> >00000202
+> >Sep  3 10:05:39  [193378.950411][   C10] RAX: ffff89919fca6800 RBX:
+> >ffff898a4206c800 RCX: 000000000000001f
+> >Sep  3 10:05:39  [193378.950418][   C10] RDX: 0000afe08b9e69de RSI:
+> >00000000238e3b7a RDI: 0000000000000000
+> >Sep  3 10:05:39  [193378.950424][   C10] RBP: 0000000000000001 R08:
+> >0000000000000002 R09: ffff89919fca5704
+> >Sep  3 10:05:39  [193378.950430][   C10] R10: 0000000000000008 R11:
+> >000000000000010b R12: ffffffffa8222f40
+> >Sep  3 10:05:39  [193378.950436][   C10] R13: 0000afe08b9e69de R14:
+> >0000000000000001 R15: 0000000000000000
+> >Sep  3 10:05:39  [193378.950443][   C10]  ? cpuidle_enter_state+0x98/0x2=
+90
+> >Sep  3 10:05:39  [193378.950451][   C10]  cpuidle_enter+0x24/0x40
+> >Sep  3 10:05:39  [193378.950459][   C10]  cpuidle_idle_call+0xbb/0x100
+> >Sep  3 10:05:39  [193378.950468][   C10]  do_idle+0x76/0xc0
+> >Sep  3 10:05:39  [193378.950476][   C10]  cpu_startup_entry+0x14/0x20
+> >Sep  3 10:05:39  [193378.950483][   C10]  start_secondary+0xd6/0xe0
+> >Sep  3 10:05:39  [193378.950491][   C10]
+> >secondary_startup_64_no_verify+0xd3/0xdb
+> >Sep  3 10:05:39  [193378.950499][   C10]  </TASK>
+> >Sep  3 10:05:39  [193378.950504][   C10] ---[ end trace 0000000000000000
+> ]---
+> >Sep  3 10:05:39  [193378.950513][   C10] ixgbe 0000:02:00.1 eth1:
+> initiating reset
+> >due to tx timeout
+> >Sep  3 10:05:39  [193378.950525][T1766094] ixgbe 0000:02:00.1 eth1: Rese=
+t
+> >adapter
+> >Sep  3 10:10:02  [   30.021823][  T454] ixgbe 0000:02:00.1 eth1: NIC Lin=
+k
+> is Up 10
+> >Gbps, Flow Control: None
+> >
+> >
+> >
+> >_______________________________________________
+> >Intel-wired-lan mailing list
+> >Intel-wired-lan@osuosl.org
+> >https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
+
+--000000000000e21d3305e8300bcb
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi Dave<div><br></div><div>Good i am here if need more inf=
+o.</div><div>same problem is happen with i40e driver.</div><div>and may be =
+this is bug in kernel.</div><div><br></div><div><br></div><div>Martin</div>=
+</div><br><div class=3D"gmail_quote"><div dir=3D"ltr" class=3D"gmail_attr">=
+=D0=9D=D0=B0 =D0=B2=D1=82, 6.09.2022 =D0=B3. =D0=B2 22:02 =D1=87. Switzer, =
+David &lt;<a href=3D"mailto:david.switzer@intel.com">david.switzer@intel.co=
+m</a>&gt; =D0=BD=D0=B0=D0=BF=D0=B8=D1=81=D0=B0:<br></div><blockquote class=
+=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rg=
+b(204,204,204);padding-left:1ex"><br>
+<br>
+&gt;-----Original Message-----<br>
+&gt;From: Intel-wired-lan &lt;<a href=3D"mailto:intel-wired-lan-bounces@osu=
+osl.org" target=3D"_blank">intel-wired-lan-bounces@osuosl.org</a>&gt; On Be=
+half Of<br>
+&gt;Martin Zaharinov<br>
+&gt;Sent: Saturday, September 3, 2022 2:54 AM<br>
+&gt;To: Eric Dumazet &lt;<a href=3D"mailto:eric.dumazet@gmail.com" target=
+=3D"_blank">eric.dumazet@gmail.com</a>&gt;; Eric Dumazet<br>
+&gt;&lt;<a href=3D"mailto:edumazet@google.com" target=3D"_blank">edumazet@g=
+oogle.com</a>&gt;; Fijalkowski, Maciej<br>
+&gt;&lt;<a href=3D"mailto:maciej.fijalkowski@intel.com" target=3D"_blank">m=
+aciej.fijalkowski@intel.com</a>&gt;; Brandeburg, Jesse<br>
+&gt;&lt;<a href=3D"mailto:jesse.brandeburg@intel.com" target=3D"_blank">jes=
+se.brandeburg@intel.com</a>&gt;; David S . Miller &lt;<a href=3D"mailto:dav=
+em@davemloft.net" target=3D"_blank">davem@davemloft.net</a>&gt;;<br>
+&gt;Jakub Kicinski &lt;<a href=3D"mailto:kuba@kernel.org" target=3D"_blank"=
+>kuba@kernel.org</a>&gt;; Paolo Abeni &lt;<a href=3D"mailto:pabeni@redhat.c=
+om" target=3D"_blank">pabeni@redhat.com</a>&gt;;<br>
+&gt;Nguyen, Anthony L &lt;<a href=3D"mailto:anthony.l.nguyen@intel.com" tar=
+get=3D"_blank">anthony.l.nguyen@intel.com</a>&gt;; netdev<br>
+&gt;&lt;<a href=3D"mailto:netdev@vger.kernel.org" target=3D"_blank">netdev@=
+vger.kernel.org</a>&gt;; Dubel, Helena Anna<br>
+&gt;&lt;<a href=3D"mailto:helena.anna.dubel@intel.com" target=3D"_blank">he=
+lena.anna.dubel@intel.com</a>&gt;; <a href=3D"mailto:intel-wired-lan@lists.=
+osuosl.org" target=3D"_blank">intel-wired-lan@lists.osuosl.org</a><br>
+&gt;Subject: [Intel-wired-lan] Urgent Kernel Bug NETDEV WATCHDOG ixgbe<br>
+&gt;transmit queue 2 timed out after kernel 5.19.2 to 5.19.6<br>
+&gt;<br>
+&gt;Hi All<br>
+Hello Martin!<br>
+<br>
+I&#39;m Dave, a driver validation engineer at Intel Corp.<br>
+&gt;<br>
+&gt;<br>
+&gt;after move to release 5.19.x (2 and up to 6 ) start geting this bug rep=
+ort and<br>
+&gt;machine reboot automatic after that.<br>
+I&#39;m sorry you&#39;re having this issue, I&#39;m working on reproducing =
+your issue so that we can have our developers look into it.<br>
+<br>
+I will reach out to you if I have any questions.<br>
+<br>
+Have a great day!<br>
+Dave<br>
+&gt;<br>
+&gt;With kernel 5.18 this problem is not happen.<br>
+&gt;<br>
+&gt;Machine run with 2x 10G Intel 82599 card in bonding .<br>
+&gt;its a simple router with 6 core cpu.<br>
+&gt;<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.949952][=C2=A0 =C2=A0C10] ----------=
+--[ cut here ]------------<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.949965][=C2=A0 =C2=A0C10] NETDEV WAT=
+CHDOG: eth1 (ixgbe):<br>
+&gt;transmit queue 2 timed out<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.949980][=C2=A0 =C2=A0C10] WARNING: C=
+PU: 10 PID: 0 at<br>
+&gt;net/sched/sch_generic.c:529 dev_watchdog+0x167/0x170<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.949992][=C2=A0 =C2=A0C10] Modules li=
+nked in:<br>
+&gt;nf_conntrack_netlink nft_limit pppoe pppox ppp_generic slhc nft_nat<br>
+&gt;nft_chain_nat nf_tables team_mode_loadbalance team netconsole coretemp<=
+br>
+&gt;ixgbe mdio_devres libphy mdio nf_nat_sip nf_conntrack_sip nf_nat_pptp<b=
+r>
+&gt;nf_conntrack_pptp nf_nat_tftp nf_conntrack_tftp nf_nat_ftp<br>
+&gt;nf_conntrack_ftp nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4<br>
+&gt;acpi_ipmi ipmi_si ipmi_devintf ipmi_msghandler rtc_cmos<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950023][=C2=A0 =C2=A0C10] CPU: 10 PI=
+D: 0 Comm: swapper/10<br>
+&gt;Tainted: G=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0O=C2=A0 =C2=A0 =C2=
+=A0 5.19.4 #1<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950028][=C2=A0 =C2=A0C10] Hardware n=
+ame: Supermicro Super<br>
+&gt;Server/X10SRD-F, BIOS 3.3 10/28/2020<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950032][=C2=A0 =C2=A0C10] RIP: 0010:=
+dev_watchdog+0x167/0x170<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950037][=C2=A0 =C2=A0C10] Code: 28 e=
+9 77 ff ff ff 48 89 df c6 05 95<br>
+&gt;3d c4 00 01 e8 9e 5a fb ff 48 89 c2 44 89 e1 48 89 de 48 c7 c7 f0 d0 ec=
+ a7 e8 c2 c2<br>
+&gt;13 00 &lt;0f&gt; 0b eb 85 0f 1f 44 00 00 41 55 41 54 55 53 48 8b 47 50 =
+4c 8b 28<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950043][=C2=A0 =C2=A0C10] RSP: 0018:=
+ffff96320030cee8 EFLAGS:<br>
+&gt;00010292<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950048][=C2=A0 =C2=A0C10] RAX: 00000=
+00000000039 RBX:<br>
+&gt;ffff898a4da00000 RCX: 0000000000000001<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950053][=C2=A0 =C2=A0C10] RDX: 00000=
+000ffffffea RSI:<br>
+&gt;00000000fffbffff RDI: 00000000fffbffff<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950057][=C2=A0 =C2=A0C10] RBP: ffff8=
+98a4da003c0 R08:<br>
+&gt;0000000000000001 R09: 00000000fffbffff<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950061][=C2=A0 =C2=A0C10] R10: ffff8=
+9919d600000 R11:<br>
+&gt;0000000000000003 R12: 0000000000000002<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950065][=C2=A0 =C2=A0C10] R13: 00000=
+00000000000 R14:<br>
+&gt;ffff89919fca07a8 R15: 0000000000000082<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950070][=C2=A0 =C2=A0C10] FS:=C2=A0 =
+0000000000000000(0000)<br>
+&gt;GS:ffff89919fc80000(0000) knlGS:0000000000000000<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950074][=C2=A0 =C2=A0C10] CS:=C2=A0 =
+0010 DS: 0000 ES: 0000 CR0:<br>
+&gt;0000000080050033<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950078][=C2=A0 =C2=A0C10] CR2: 00007=
+fb39f41d000 CR3:<br>
+&gt;00000001002fd003 CR4: 00000000003706e0<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950082][=C2=A0 =C2=A0C10] DR0: 00000=
+00000000000 DR1:<br>
+&gt;0000000000000000 DR2: 0000000000000000<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950086][=C2=A0 =C2=A0C10] DR3: 00000=
+00000000000 DR6:<br>
+&gt;00000000fffe0ff0 DR7: 0000000000000400<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950090][=C2=A0 =C2=A0C10] Call Trace=
+:<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950094][=C2=A0 =C2=A0C10]=C2=A0 &lt;=
+IRQ&gt;<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950098][=C2=A0 =C2=A0C10]=C2=A0 ? pf=
+ifo_fast_destroy+0x30/0x30<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950104][=C2=A0 =C2=A0C10]=C2=A0 call=
+_timer_fn.constprop.0+0x14/0x70<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950110][=C2=A0 =C2=A0C10]=C2=A0 __ru=
+n_timers.part.0+0x164/0x190<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950116][=C2=A0 =C2=A0C10]=C2=A0 ?<br=
+>
+&gt;__hrtimer_run_queues+0x143/0x1a0<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950120][=C2=A0 =C2=A0C10]=C2=A0 ? kt=
+ime_get+0x30/0x90<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950125][=C2=A0 =C2=A0C10]=C2=A0 run_=
+timer_softirq+0x21/0x50<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950130][=C2=A0 =C2=A0C10]=C2=A0 __do=
+_softirq+0xaf/0x1d7<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950136][=C2=A0 =C2=A0C10]=C2=A0 __ir=
+q_exit_rcu+0x9a/0xd0<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950142][=C2=A0 =C2=A0C10]<br>
+&gt;sysvec_apic_timer_interrupt+0x66/0x80<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950149][=C2=A0 =C2=A0C10]=C2=A0 &lt;=
+/IRQ&gt;<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950152][=C2=A0 =C2=A0C10]=C2=A0 &lt;=
+TASK&gt;<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950155][=C2=A0 =C2=A0C10]<br>
+&gt;asm_sysvec_apic_timer_interrupt+0x16/0x20<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950160][=C2=A0 =C2=A0C10] RIP:<br>
+&gt;0010:cpuidle_enter_state+0xb3/0x290<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950167][=C2=A0 =C2=A0C10] Code: e8 d=
+2 0d b0 ff 31 ff 49 89 c5 e8 48<br>
+&gt;68 af ff 45 84 ff 74 12 9c 58 f6 c4 02 0f 85 cf 01 00 00 31 ff e8 81 b4=
+ b3 ff fb 45 85<br>
+&gt;f6 &lt;0f&gt; 88 d0 00 00 00 49 63 ce 48 6b f1 68 48 8b 04 24 4c 89 ea =
+48 29<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950402][=C2=A0 =C2=A0C10] RSP: 0018:=
+ffff96320014fe98 EFLAGS:<br>
+&gt;00000202<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950411][=C2=A0 =C2=A0C10] RAX: ffff8=
+9919fca6800 RBX:<br>
+&gt;ffff898a4206c800 RCX: 000000000000001f<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950418][=C2=A0 =C2=A0C10] RDX: 0000a=
+fe08b9e69de RSI:<br>
+&gt;00000000238e3b7a RDI: 0000000000000000<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950424][=C2=A0 =C2=A0C10] RBP: 00000=
+00000000001 R08:<br>
+&gt;0000000000000002 R09: ffff89919fca5704<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950430][=C2=A0 =C2=A0C10] R10: 00000=
+00000000008 R11:<br>
+&gt;000000000000010b R12: ffffffffa8222f40<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950436][=C2=A0 =C2=A0C10] R13: 0000a=
+fe08b9e69de R14:<br>
+&gt;0000000000000001 R15: 0000000000000000<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950443][=C2=A0 =C2=A0C10]=C2=A0 ? cp=
+uidle_enter_state+0x98/0x290<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950451][=C2=A0 =C2=A0C10]=C2=A0 cpui=
+dle_enter+0x24/0x40<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950459][=C2=A0 =C2=A0C10]=C2=A0 cpui=
+dle_idle_call+0xbb/0x100<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950468][=C2=A0 =C2=A0C10]=C2=A0 do_i=
+dle+0x76/0xc0<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950476][=C2=A0 =C2=A0C10]=C2=A0 cpu_=
+startup_entry+0x14/0x20<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950483][=C2=A0 =C2=A0C10]=C2=A0 star=
+t_secondary+0xd6/0xe0<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950491][=C2=A0 =C2=A0C10]<br>
+&gt;secondary_startup_64_no_verify+0xd3/0xdb<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950499][=C2=A0 =C2=A0C10]=C2=A0 &lt;=
+/TASK&gt;<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950504][=C2=A0 =C2=A0C10] ---[ end t=
+race 0000000000000000 ]---<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950513][=C2=A0 =C2=A0C10] ixgbe 0000=
+:02:00.1 eth1: initiating reset<br>
+&gt;due to tx timeout<br>
+&gt;Sep=C2=A0 3 10:05:39=C2=A0 [193378.950525][T1766094] ixgbe 0000:02:00.1=
+ eth1: Reset<br>
+&gt;adapter<br>
+&gt;Sep=C2=A0 3 10:10:02=C2=A0 [=C2=A0 =C2=A030.021823][=C2=A0 T454] ixgbe =
+0000:02:00.1 eth1: NIC Link is Up 10<br>
+&gt;Gbps, Flow Control: None<br>
+&gt;<br>
+&gt;<br>
+&gt;<br>
+&gt;_______________________________________________<br>
+&gt;Intel-wired-lan mailing list<br>
+&gt;<a href=3D"mailto:Intel-wired-lan@osuosl.org" target=3D"_blank">Intel-w=
+ired-lan@osuosl.org</a><br>
+&gt;<a href=3D"https://lists.osuosl.org/mailman/listinfo/intel-wired-lan" r=
+el=3D"noreferrer" target=3D"_blank">https://lists.osuosl.org/mailman/listin=
+fo/intel-wired-lan</a><br>
+</blockquote></div>
+
+--000000000000e21d3305e8300bcb--
+
+--===============4635376008422964241==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============4635376008422964241==--
