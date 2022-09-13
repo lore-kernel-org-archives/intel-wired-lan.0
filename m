@@ -4,81 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17A12C54EE9
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Sep 2022 13:38:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE4BDC6FA82
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Sep 2022 13:38:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6335240323;
-	Tue, 13 Sep 2022 13:38:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6335240323
+	by smtp4.osuosl.org (Postfix) with ESMTP id E05E6408C1;
+	Tue, 13 Sep 2022 13:38:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E05E6408C1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1663076323;
-	bh=9q5OMjcNRginaCasRbok8Q1Nt0V28eLbAu+gwNxphgI=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=SD+N/AuKwlzJhOsFw70JXNH8dYFJimVZ/lDCM6QHjDZsUUef0UBysD7+0Eq0SEPse
-	 kwJmAtJMOpuFcJCl18x9GX6ggUPe82dPtBYl6xspAJueFDGrGmtja9/gkVfEGGyZyL
-	 8n78oEE5iVMvazajZxUKfGwoWY6xQicj/GYdi+dlByVtBVLksFhIs3b99CfTo2TvtT
-	 sG2FRZN9eFvTRvUprPcIxm3iGkIR0c4sWhpXwziX/DJeG8YYSUXSoWD3iCkLpAALX5
-	 ZxViIziSRGrSxlSP9WixqmhsGNJc253HyORgfMb4h8J8WwgSJ99O6lvlT/uBXFHDh1
-	 qCRYIt/w7+KAQ==
+	s=default; t=1663076327;
+	bh=YTCxq+h0Hg4CA9GhwBqH/fX+yIb1CGcYfBJJc3OHniA=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=fWpxtldetIERekYDCE+gzB20i6Ju1s07eH0/IsqZ4bbPr5V5I0xOd+rAv6NTQDAhQ
+	 tkC0e5fKUK8MrYkvAvb2ttHhbszLkmbrERnsWW+cr8l9ZLTZ3YleLWVBX6pOm5cSl2
+	 1haPxJ0kVQMSMlE9Sg5SJrBoObqNA7fylGCU03HeFxm665RODmBB7Wo37543PY4cvn
+	 njFqJt/KZ9AhHmvexLSiEyffritpZ0dpHqsJ9Ol/IO3cWdNvG+3O36jsZR5+ZJjosT
+	 ubRCmbWPFvAS5F77BnzFKZafiEwCrlNfD1SRQIbSrvn+jeF62tq4R7gsTBmIXK7XTG
+	 2POFNLeHTXMTA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id c1AwccRqd33d; Tue, 13 Sep 2022 13:38:42 +0000 (UTC)
+	with ESMTP id JobzH6pK4ynL; Tue, 13 Sep 2022 13:38:47 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 23EFB4034D;
-	Tue, 13 Sep 2022 13:38:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 23EFB4034D
+	by smtp4.osuosl.org (Postfix) with ESMTP id 96C95408C4;
+	Tue, 13 Sep 2022 13:38:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 96C95408C4
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 37B6C1BF2AB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Sep 2022 13:38:40 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 40CD41BF2AB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Sep 2022 13:38:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0EC4B40982
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Sep 2022 13:38:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0EC4B40982
+ by smtp2.osuosl.org (Postfix) with ESMTP id 19C3440A06
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Sep 2022 13:38:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 19C3440A06
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id FfCaaheeHOIW for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Sep 2022 13:38:39 +0000 (UTC)
+ with ESMTP id L17aMJbEOlfX for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Sep 2022 13:38:41 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4C79F40490
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 625B440490
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4C79F40490
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Sep 2022 13:38:39 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10468"; a="298141325"
-X-IronPort-AV: E=Sophos;i="5.93,312,1654585200"; d="scan'208";a="298141325"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 625B440490
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Sep 2022 13:38:41 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10468"; a="298141338"
+X-IronPort-AV: E=Sophos;i="5.93,312,1654585200"; d="scan'208";a="298141338"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Sep 2022 06:38:38 -0700
+ 13 Sep 2022 06:38:41 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.93,312,1654585200"; d="scan'208";a="678569549"
+X-IronPort-AV: E=Sophos;i="5.93,312,1654585200"; d="scan'208";a="678569560"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga008.fm.intel.com with ESMTP; 13 Sep 2022 06:38:37 -0700
+ by fmsmga008.fm.intel.com with ESMTP; 13 Sep 2022 06:38:40 -0700
 From: Mateusz Palczewski <mateusz.palczewski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 13 Sep 2022 15:38:34 +0200
-Message-Id: <20220913133836.48284-1-mateusz.palczewski@intel.com>
+Date: Tue, 13 Sep 2022 15:38:35 +0200
+Message-Id: <20220913133836.48284-2-mateusz.palczewski@intel.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220913133836.48284-1-mateusz.palczewski@intel.com>
+References: <20220913133836.48284-1-mateusz.palczewski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1663076319; x=1694612319;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=8Ko2csT6dFjmYW8iy8RMdZxrszdp2MZ9OZCpLJAo1CI=;
- b=gK5ZNz85kHoHJz/G8CziMELCg7Z1l6EOIEGGFNFKIZgoY9sFM/tlPYrq
- vgvR1ZvfPBDKCGn9BIkOYsolzc5DsFICflgMJuRkf+aCZUQswFxp7KZ7J
- FMWHPvvx8PmoEWz3IjLsrqbqbTy4nWYCe8Bbs2fMz2tjcSN5nSHTg6gbT
- OwNFCDlL/SuaLwH11ubdKD2dpDOHSFA9Gbv+hQSCzqOEdAVMBfwpulzPO
- L2MNidxTAtyI2ed2CiepI+c6oqh7zf1uAvQXRkbC85yWouxN8BphbWtBN
- yf945ZlPvyUYrZvUPNC388WRudAMrnx+Mupt3Qz1tZNqe/v5ankVQA/jF
- Q==;
+ t=1663076321; x=1694612321;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=E7VFjH6Vn7bSHJLst+wb6RSeBcccjN+uuwxwMZfJKVY=;
+ b=HAXOIkDVM+eAp5wNwTfppzHO9Tj59oCtQb7ebz+ewSKIvexlmMvKUW28
+ Qf7zZq+7eTs6+jfkYeaxJVsDeM5BuUVo2WTlJ2vHbnqS1GAdWIkExu9ky
+ 81h2AUKsw/61pg41VFIg5RhljiPzMMz4Z+Tq9EdeGuLHJK2uXckVsCmpH
+ c70LO9qPOf8SD1M7wqnBkI2NdmD48TNKyvgrfdETAPmGLOV/JY91htMVt
+ H8Yi/yqyTgDxZJdldDzD/ywdD6K8XM4IPlweviN3AZ83n7hGPAWIt7ZuF
+ ANMIIgh94g+RPGCfq3qiKJ3xpmgcAsIEqHWtI9nySxbsIj8gXhXTOHWyc
+ A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=gK5ZNz85
-Subject: [Intel-wired-lan] [PATCH net v2 0/2] Fix vf set max mtu size with
- port vlan and jumbo frames
+ header.a=rsa-sha256 header.s=Intel header.b=HAXOIkDV
+Subject: [Intel-wired-lan] [PATCH net v2 1/2] iavf: Fix vf set max mtu size
+ with port vlan and jumbo frames
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,27 +94,60 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Michal Jaron <michalx.jaron@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Fix "PF returned error -5 (IAVF_ERR_PARAM) to our request 6" error and
-possible page_frag_cache_drain crashes that is a result of this error
-when port vlan and jumbo frames are set on vf .
+From: Michal Jaron <michalx.jaron@intel.com>
 
+After setting port vlan and mtu 9000 on vf with ice driver there
+was an iavf error
+"PF returned error -5 (IAVF_ERR_PARAM) to our request 6".
+It was caused by that during queues configuration vf's max packet
+size was set to IAVF_MAX_RXBUFFER but on ice max frame size was
+smaller by VLAN_HLEN due to making some space for port vlan as VF
+is not aware whether it's in a port VLAN. This missmatch in sizes
+caused that ice rejects queues configuration with ERR_PARAM error.
+Proper max_mtu is send from ice pf to vf with GET_VF_RESOURCES msg
+but vf does not look at this.
+
+In iavf change max_frame from IAVF_MAX_RXBUFFER to max_mtu
+received from pf with GET_VF_RESOURCES msg to make vf's
+max_frame_size dependent from pf. Add check if received max_mtu is
+not in eligible range then set it to IAVF_MAX_RXBUFFER.
+
+Fixes: dab86afdbbd1 ("i40e/i40evf: Change the way we limit the maximum frame size for Rx")
+Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
+Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 ---
  v2: Fixed one check regarding !max_frame
 ---
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Michal Jaron (2):
-  iavf: Fix vf set max mtu size with port vlan and jumbo frames
-  i40e: Fix vf set max mtu size
-
- .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 20 +++++++++++++++++++
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  7 +++++--
- 2 files changed, 25 insertions(+), 2 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 15ee85dc33bd..5a9e6563923e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -269,11 +269,14 @@ int iavf_get_vf_vlan_v2_caps(struct iavf_adapter *adapter)
+ void iavf_configure_queues(struct iavf_adapter *adapter)
+ {
+ 	struct virtchnl_vsi_queue_config_info *vqci;
+-	struct virtchnl_queue_pair_info *vqpi;
++	int i, max_frame = adapter->vf_res->max_mtu;
+ 	int pairs = adapter->num_active_queues;
+-	int i, max_frame = IAVF_MAX_RXBUFFER;
++	struct virtchnl_queue_pair_info *vqpi;
+ 	size_t len;
+ 
++	if (max_frame > IAVF_MAX_RXBUFFER || !max_frame)
++		max_frame = IAVF_MAX_RXBUFFER;
++
+ 	if (adapter->current_op != VIRTCHNL_OP_UNKNOWN) {
+ 		/* bail because we already have a command pending */
+ 		dev_err(&adapter->pdev->dev, "Cannot configure queues, command %d pending\n",
 -- 
 2.25.1
 
