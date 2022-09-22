@@ -1,114 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D153ECAAD8
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 22 Sep 2022 03:11:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 009B5C54EE9
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 22 Sep 2022 04:01:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 329CF61030;
-	Thu, 22 Sep 2022 03:11:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 329CF61030
+	by smtp2.osuosl.org (Postfix) with ESMTP id 70A35400EA;
+	Thu, 22 Sep 2022 04:01:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 70A35400EA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1663816295;
-	bh=NaSvBpbmJSkGddReBRa9gOjpKhL24U+l2K8jLdHpaxg=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=gOc8UKHFWrlOSMyAebkHeK1aPYz2vfvsAY8CGlGuB9nxHrbU9uzbFKDYROZCE0RvE
-	 w9PEG9phufvsiOiI6RdkMUmZLYDqWaG6DUg1OLDj+2I/EtuqwYJ8ngjlXMfe7uNTil
-	 frqEFMbySVO7gzzZtyzkyqNLjjRyPYyH7N36hzif/kdxSCX5cB13eKv5SvpuXHJx1d
-	 g3q5rkLWIwA2cOnvoIHAydfAbox/96enBfgfcVANYizWmmYALu+8W7zmRfxIjxB8Jf
-	 GMh18FWF+EQYHBR1fh8sBDWKqttUYdx2PTqEyiaPibs0sJ0gpQ8dUA0gkw2wuoTt87
-	 ssYbAcwEfOqbg==
+	s=default; t=1663819267;
+	bh=dj1QfWTkKVeJACf12B5PLYF3mu3tCMyrxnhEN9hZfy0=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=k+p3nzEvkulUfeXD3JGZ5a3wVYcdUoJ/XN0esMFul/0rvis/MauMDpTuk2Ne5veqx
+	 Wmi2cTwhNgYAk3A6Lvdp02H+7MOVoq4wTxr4KZ1Y3k9fSSMwVY5Qp6cosskp7BEiC4
+	 S0Mp5qcVNzGPfXYYBgnwaM1mKZGtiDcPczahhF5sKyAIWIETJdWdT1fwedKlSy1sdT
+	 lWFVANUV0ToIhSjYKWj8eqarUFj5AJwW3e1QwSj5uzcFzf4rnVHryHWBkcBhUtDUbd
+	 Q4qLn9REKuIlMNAJEGL1FyJuBFa/SuXzsCRfxMg2BPzVikX9xvk+HSrYC2/Tzey2OI
+	 9JYgSfwobKdIg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Njra7-dELNt5; Thu, 22 Sep 2022 03:11:34 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id G_3ZvpQ2lRau; Thu, 22 Sep 2022 04:01:06 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2DC60610A3;
-	Thu, 22 Sep 2022 03:11:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2DC60610A3
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 3BE8F1C1190
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Sep 2022 03:10:33 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 67D794047C;
+	Thu, 22 Sep 2022 04:01:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 67D794047C
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 23E9B1BF397
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Sep 2022 04:01:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 173BC82F4F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Sep 2022 03:10:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 173BC82F4F
+ by smtp4.osuosl.org (Postfix) with ESMTP id 09DE041707
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Sep 2022 04:01:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 09DE041707
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3MLPU18xz9jX for <intel-wired-lan@lists.osuosl.org>;
- Thu, 22 Sep 2022 03:10:32 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4DCC782628
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
- [IPv6:2607:f8b0:4864:20::630])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4DCC782628
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Sep 2022 03:10:32 +0000 (UTC)
-Received: by mail-pl1-x630.google.com with SMTP id t3so7553408ply.2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Sep 2022 20:10:32 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
- :subject:date;
- bh=bpEbyFBm8ujPK6iqrGWXCPwqEismRLAX26z3I+Rspz8=;
- b=sX6uPvjlBBImYyXVxoBnHnvxhR0sK4A74K1pa/akxri5gp59LbriiiXkuWUvu9Pz70
- Ayhn1XFIXe/XvqO7vfb2io6x1EmMX7EqfwKHhgwO97MQhcx704h0Gv/7VJ5xiegs1vPI
- U6yx9NhFeaEFSk/8RVnQglphI2UB8dzF4mT4Wf5d/dwga+KtW+S8+nL1kx5zBsaXBsp1
- LhspXnTcglRVQheIV3kc+4W2HCJuijG3VVSxVwjIxSaAKmbq/nrkSY0g+ql0aRfdi9i4
- r3PyxK9SzsohVeATjDDM/A02bTLzEeHG0Mnj4nTUeERw0yeSVIzBcmMiILMFWzHuSQiF
- UsNA==
-X-Gm-Message-State: ACrzQf2uDneMDOVHJUSfb8plG/qAp31rDuZDnyKjGYl4RVTwoqF38wGp
- H7BS/zL7RGikND3nC5S9n8EBkg==
-X-Google-Smtp-Source: AMsMyM5u6eYb4g944r9Q/Pt9mZXCmsyxQzDwy9CZJ8oZsRhkZQrJS6fEKVkXWUHzQQ89FNa93/Kc0w==
-X-Received: by 2002:a17:902:e54b:b0:177:e29e:a0c0 with SMTP id
- n11-20020a170902e54b00b00177e29ea0c0mr1359878plf.66.1663816231700; 
- Wed, 21 Sep 2022 20:10:31 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id
- u3-20020a17090341c300b0016d6963cb12sm2781495ple.304.2022.09.21.20.10.26
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 21 Sep 2022 20:10:26 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: Vlastimil Babka <vbabka@suse.cz>
-Date: Wed, 21 Sep 2022 20:10:12 -0700
-Message-Id: <20220922031013.2150682-12-keescook@chromium.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220922031013.2150682-1-keescook@chromium.org>
-References: <20220922031013.2150682-1-keescook@chromium.org>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id lFreJfHwZSfJ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 22 Sep 2022 04:01:02 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B95C541704
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B95C541704
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Sep 2022 04:01:02 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10477"; a="287269263"
+X-IronPort-AV: E=Sophos;i="5.93,335,1654585200"; d="scan'208";a="287269263"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Sep 2022 21:01:01 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.93,335,1654585200"; d="scan'208";a="688134298"
+Received: from lkp-server01.sh.intel.com (HELO c0a60f19fe7e) ([10.239.97.150])
+ by fmsmga004.fm.intel.com with ESMTP; 21 Sep 2022 21:00:59 -0700
+Received: from kbuild by c0a60f19fe7e with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1obDOV-0004H3-10;
+ Thu, 22 Sep 2022 04:00:59 +0000
+Date: Thu, 22 Sep 2022 12:00:37 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <632bdde5.v/BC1StKEDcwi5xF%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3544; h=from:subject;
- bh=oS2Iv+uVGC72Kt/ZsRdKSQv1v3zTVhJ3IWvWWRabp+g=;
- b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBjK9IUEKv90igkAnqqd37b6kR1bxxEz6G+6mdwmL8d
- hU8qttyJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCYyvSFAAKCRCJcvTf3G3AJqdIEA
- CK12iuKhH2Gb+F4wapUYpaSc373MS6rjJoFpsNm84+/ObvNHGEz2kq5kYHkOs7G3e8jhHlr4YXru45
- YnbkR3SRCmUyJ7loADAzHlj0yCxkYniAAXvuZzfvc9luBT3TIsBLzOyoo8E8ylHkAK0aVycGXvAy+W
- PGkSD/jL+EQrHdUK+hra5t32/YXsbXr4NStVZ9IzHolQ9EI054AF8/LV77MBWpPIX5Ho1mGWzl1ijJ
- E9wFPHhl2hfKzU9eXD+N4EzOrlLceF+ztZPDuq2MdUfMxOdv5GAJKiW5FRq+IFpNkwIM9nhSPM5iQE
- YBr/ivEWQqdNFsPnRtgWssO370vtzYb+x61dFRrUn7/FKR7Om27TEYwAd6+P+FnDwRoMTV/BPuFe6C
- 7iiHIRbFsfrIUn/r4jYTZt4u6NtpaDA1FVV/Em1JDkKtSh3fWi4Ku18TGZQm81iMdScRZHubomFfI+
- vxHjePLahrOHkSfaNZvuJLrLPDU7WsDADYD6e/53VTiL3yyHRtO0XH1DyMkIDUA2WPNZy6ISq70TQ5
- eN54uMg3p8o5Bz9r112LSXwEkIA+2aRlSgWZDi0KwDLacLHhcuECUcvzHrANynElUzrtH5uoqtYyZh
- Y8ppyJSFYyPmpNrkQ/M6ZKVaeCwZCHu2ZcgtL5o8/NTiuMaB6SQl9nFcWJRg==
-X-Developer-Key: i=keescook@chromium.org; a=openpgp;
- fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=chromium.org; s=google;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
- bh=bpEbyFBm8ujPK6iqrGWXCPwqEismRLAX26z3I+Rspz8=;
- b=GwEKRlSGWNZZz0bSOhH09wT/dIlAzUgEDzlKCcSGfqUiFWltnmUuICqFqj3LlzCRek
- BVgZYAczODxRtxBqW9kNHbHyqaba8VuQcAtk82kUBEiaAlU+daUZZIQGOA7CX1koggEg
- yep8B8ilhj99/u+e0tErmzGRiobAHfyNKzCog=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
- header.a=rsa-sha256 header.s=google header.b=GwEKRlSG
-Subject: [Intel-wired-lan] [PATCH 11/12] slab: Remove __malloc attribute
- from realloc functions
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1663819262; x=1695355262;
+ h=date:from:to:subject:message-id:mime-version:
+ content-transfer-encoding;
+ bh=Wbq7MAJA/N9cwKSHiF+gpckZOpEgIHrU/w0ZyKXyKN0=;
+ b=iD/4hvy60tix4isvFHMUbmpIsTVlu+4BvS5pMJcHnT9ZrqeMJpc9tNzD
+ 9Eb9Fg/lihUOdydV81TsqG8b2OWgL7hxg+VralpeqXgKl+wSm/bgyFLu/
+ UlMn+jAL35C9a2IMqxxZubIfTbh8WjVKMvmBzsxvgDOxj4HVepnJjLvI7
+ x+Kb8B2WHYkp2ksOE3Qh5zal6O1oEFlS4UTJ/kY/5eWpJ59r1cvq8/Rm9
+ pfBaC0ROF7HUf70Ikt4XK/y8r46jsf9zYe/ZO2KzEpXQjRyt17Mddvood
+ DiQTixxjMhQut2kyUNeOHGfBX8QqZvV8N5u61zpT0eBKXXRYc++2M1Z8C
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=iD/4hvy6
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ ae16ce9c89b49b5787c0fbb7f02bee5895bee216
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,116 +94,87 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: linux-wireless@vger.kernel.org, Jacob Shin <jacob.shin@amd.com>,
- llvm@lists.linux.dev, dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
- Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org,
- Sumit Semwal <sumit.semwal@linaro.org>, dev@openvswitch.org, x86@kernel.org,
- intel-wired-lan@lists.osuosl.org, David Rientjes <rientjes@google.com>,
- Miguel Ojeda <ojeda@kernel.org>, Yonghong Song <yhs@fb.com>,
- Paolo Abeni <pabeni@redhat.com>, linux-media@vger.kernel.org,
- Marco Elver <elver@google.com>, Kees Cook <keescook@chromium.org>,
- Josef Bacik <josef@toxicpanda.com>, linaro-mm-sig@lists.linaro.org,
- Jakub Kicinski <kuba@kernel.org>, David Sterba <dsterba@suse.com>,
- Andrew Morton <akpm@linux-foundation.org>, Hao Luo <haoluo@google.com>,
- Alex Elder <elder@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, Pekka Enberg <penberg@kernel.org>,
- Daniel Micay <danielmicay@gmail.com>, netdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
- linux-btrfs@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The __malloc attribute should not be applied to "realloc" functions, as
-the returned pointer may alias the storage of the prior pointer. Instead
-of splitting __malloc from __alloc_size, which would be a huge amount of
-churn, just create __realloc_size for the few cases where it is needed.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: ae16ce9c89b49b5787c0fbb7f02bee5895bee216  e1000e: Remove unnecessary use of kmap_atomic()
 
-Additionally removes the conditional test for __alloc_size__, which is
-always defined now.
+elapsed time: 724m
 
-Cc: Pekka Enberg <penberg@kernel.org>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Desaulniers <ndesaulniers@google.com>
-Cc: Hao Luo <haoluo@google.com>
-Cc: Marco Elver <elver@google.com>
-Cc: linux-mm@kvack.org
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- include/linux/compiler_types.h | 13 +++++--------
- include/linux/slab.h           | 12 ++++++------
- 2 files changed, 11 insertions(+), 14 deletions(-)
+configs tested: 58
+configs skipped: 2
 
-diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 4f2a819fd60a..f141a6f6b9f6 100644
---- a/include/linux/compiler_types.h
-+++ b/include/linux/compiler_types.h
-@@ -271,15 +271,12 @@ struct ftrace_likely_data {
- 
- /*
-  * Any place that could be marked with the "alloc_size" attribute is also
-- * a place to be marked with the "malloc" attribute. Do this as part of the
-- * __alloc_size macro to avoid redundant attributes and to avoid missing a
-- * __malloc marking.
-+ * a place to be marked with the "malloc" attribute, except those that may
-+ * be performing a _reallocation_, as that may alias the existing pointer.
-+ * For these, use __realloc_size().
-  */
--#ifdef __alloc_size__
--# define __alloc_size(x, ...)	__alloc_size__(x, ## __VA_ARGS__) __malloc
--#else
--# define __alloc_size(x, ...)	__malloc
--#endif
-+#define __alloc_size(x, ...)	__alloc_size__(x, ## __VA_ARGS__) __malloc
-+#define __realloc_size(x, ...)	__alloc_size__(x, ## __VA_ARGS__)
- 
- #ifndef asm_volatile_goto
- #define asm_volatile_goto(x...) asm goto(x)
-diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 4fc41e4ed4a2..ac3832b50dbb 100644
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -184,7 +184,7 @@ int kmem_cache_shrink(struct kmem_cache *s);
- /*
-  * Common kmalloc functions provided by all allocators
-  */
--void * __must_check krealloc(const void *objp, size_t new_size, gfp_t flags) __alloc_size(2);
-+void * __must_check krealloc(const void *objp, size_t new_size, gfp_t flags) __realloc_size(2);
- void kfree(const void *objp);
- void kfree_sensitive(const void *objp);
- size_t __ksize(const void *objp);
-@@ -661,10 +661,10 @@ static inline __alloc_size(1, 2) void *kmalloc_array(size_t n, size_t size, gfp_
-  * @new_size: new size of a single member of the array
-  * @flags: the type of memory to allocate (see kmalloc)
-  */
--static inline __alloc_size(2, 3) void * __must_check krealloc_array(void *p,
--								    size_t new_n,
--								    size_t new_size,
--								    gfp_t flags)
-+static inline __realloc_size(2, 3) void * __must_check krealloc_array(void *p,
-+								      size_t new_n,
-+								      size_t new_size,
-+								      gfp_t flags)
- {
- 	size_t bytes;
- 
-@@ -788,7 +788,7 @@ static inline __alloc_size(1, 2) void *kvcalloc(size_t n, size_t size, gfp_t fla
- }
- 
- extern void *kvrealloc(const void *p, size_t oldsize, size_t newsize, gfp_t flags)
--		      __alloc_size(3);
-+		      __realloc_size(3);
- extern void kvfree(const void *addr);
- extern void kvfree_sensitive(const void *addr, size_t len);
- 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+um                             i386_defconfig
+um                           x86_64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+mips                             allyesconfig
+sh                               allmodconfig
+arc                  randconfig-r043-20220921
+riscv                randconfig-r042-20220921
+arc                                 defconfig
+s390                             allmodconfig
+alpha                               defconfig
+x86_64                        randconfig-a011
+s390                                defconfig
+s390                 randconfig-r044-20220921
+x86_64                        randconfig-a013
+s390                             allyesconfig
+x86_64                        randconfig-a015
+arm                                 defconfig
+arm                              allyesconfig
+arm64                            allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                        randconfig-a004
+x86_64                           rhel-8.3-syz
+x86_64                        randconfig-a002
+x86_64                          rhel-8.3-func
+x86_64                         rhel-8.3-kunit
+x86_64                           rhel-8.3-kvm
+x86_64                        randconfig-a006
+i386                                defconfig
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a014
+i386                          randconfig-a012
+i386                          randconfig-a005
+i386                          randconfig-a016
+x86_64                              defconfig
+x86_64                           allyesconfig
+i386                             allyesconfig
+x86_64                               rhel-8.3
+m68k                             allyesconfig
+m68k                             allmodconfig
+arc                              allyesconfig
+alpha                            allyesconfig
+ia64                             allmodconfig
+
+clang tested configs:
+hexagon              randconfig-r041-20220921
+hexagon              randconfig-r045-20220921
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+x86_64                        randconfig-a005
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+i386                          randconfig-a002
+i386                          randconfig-a013
+i386                          randconfig-a004
+i386                          randconfig-a011
+i386                          randconfig-a015
+i386                          randconfig-a006
+
 -- 
-2.34.1
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
