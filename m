@@ -1,114 +1,114 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5242C04A95
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Sep 2022 20:30:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FCC1C6FA83
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Sep 2022 20:30:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 66B0284236;
-	Fri, 23 Sep 2022 20:30:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 66B0284236
+	by smtp3.osuosl.org (Postfix) with ESMTP id CF88461139;
+	Fri, 23 Sep 2022 20:30:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CF88461139
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1663965009;
-	bh=hy+vBr/+1Re2C4OKlXpRDaBFVJrB1bZMOYTf7QbnSaw=;
+	s=default; t=1663965010;
+	bh=1AJOwfab04bPy6gi6mYggVkgLUgRkpz4+cGtjK90Bb4=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=VhCfBWLpMQBaiNB9B5UDWIXKGK707hjDN1CxPjxiw7zeRzC3ivo2s4YUMx3a/8npI
-	 s8Sn4ocgfai4jru96+V4kJv+3JzPE+n8FpfXJ0i95ZKyNyFNjiJUyahvSA6sI+CfdP
-	 XauiV6S4qX1Sd4i4+n+0EiGg/xfubzDZn+4TQnG3ZXgyQzNVgwkFrsXJYOhUN2bl4I
-	 QjPUk9+yWP728rY0QMrOpm769LgawfZYvFW1r4BOBf8E3VsYlq5+E2U3zYmi0jHoV8
-	 2cBAgbqWG10bDo/jHcvvYAtwlLeX1yh/Fe/iFvJeoInj9yXCxXh9XDx1WNsz2qaeJX
-	 AlxGJt3C0SVVA==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id eUQ5TVgYofUV; Fri, 23 Sep 2022 20:30:05 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 78CEB84309;
-	Fri, 23 Sep 2022 20:30:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 78CEB84309
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 10A891BF8A8
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 20:28:38 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4613060F2D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 20:28:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4613060F2D
+	b=5qohX96/WuORjLuhV3e0LB5//ZMbQCumucY0XRAzbV/PTdCGGval45ZmPDLn4D+o5
+	 XsAErNTKiiODrS61/ysXKScy/ucPpVbbsU13Q/OexvFTzZbTFPZg6Lz8bUMtQnu/nR
+	 mE6DeuXAkyYR5rZhrSFoeSVDl8zipA/mvFKqCN+DqWtP/ZPwsbQACMtu8SZJ+Z0e76
+	 589lstrUqwRjk8IaDtdUk6+HzdYc/bZ2pB148dm9v5fQ5w6aDE3WPc2/AiWDoZG6cU
+	 d7YH6lovWXfdR6BFjUPtMlVx4lJhLE7eiM3li3Yat2mTreMGLDz9CuHWqoBG0haRWh
+	 hpY4v09QEURVw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id OtuPaUWOULTt for <intel-wired-lan@lists.osuosl.org>;
- Fri, 23 Sep 2022 20:28:36 +0000 (UTC)
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 8N4memrnB4ue; Fri, 23 Sep 2022 20:30:10 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id B397C61282;
+	Fri, 23 Sep 2022 20:30:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B397C61282
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 6D13C1BF8A8
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 20:28:40 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 22D2C41030
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 20:28:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 22D2C41030
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id mikG1D2gPwgL for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 23 Sep 2022 20:28:35 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CA44860F7B
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
- [IPv6:2607:f8b0:4864:20::62b])
- by smtp3.osuosl.org (Postfix) with ESMTPS id CA44860F7B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D21CD41055
+Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
+ [IPv6:2607:f8b0:4864:20::630])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D21CD41055
  for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 20:28:35 +0000 (UTC)
-Received: by mail-pl1-x62b.google.com with SMTP id w10so1147955pll.11
+Received: by mail-pl1-x630.google.com with SMTP id l10so1152868plb.10
  for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 13:28:35 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
  :subject:date;
- bh=1MqQrxnQnbWg62GSxHH0OEF1q347X/m+4lnjB2flQT0=;
- b=NaAsZDuFnzTuJilJUiHR02Y9+4v06E3EjMPTo2suEIxqemdlHGACCR2Dwy946sIQ5O
- EOemX3BZ2soWbg+S94ubrYVUooWDM0fm02U9ysS3ZSPuzKQsAhddkB3QKYv+LmBOjpIp
- AxOCCfKffjTrfUYwcrnurutt/KfGD1xJ2ajOAhGQkITQ7All9r7/0ckvOQdM6HSnnIqM
- iMgPFstvFgnu4WqmJGPeLNnaDxHO3t5fntm4KY3MIpXC34qYESZdD5vziQA1bHv5QITP
- ixIZq47pFVUOBehL9DiJ0QarHGr6pU4FL1VPK/vDzHZbyOUNs1m8Pw4Q/21qyoaboEb9
- wzEw==
-X-Gm-Message-State: ACrzQf0vICyh1anL8sItAWjudYAelRE3JBS6M8nG7drBK55IG4V0Q/jy
- lcx8nyPxjuPqV8zy2PH0AeFgug==
-X-Google-Smtp-Source: AMsMyM6DPO4r131p/AkrnBJsIg/pPdpNgGZzqHysb3GkGzz8lYKLY18dMnHntypNM/af/tAornEd+g==
-X-Received: by 2002:a17:90b:3e8d:b0:203:1b6d:2112 with SMTP id
- rj13-20020a17090b3e8d00b002031b6d2112mr23327438pjb.6.1663964915447; 
+ bh=z4tB+xVARH2BbBzGKcf3E9OvsPG9MUKkIVIFYw9OFoE=;
+ b=bHU+nQ1svkc1+e/5m40bpaICuNQwqUF3pdgAakspYdThs0OITUQ2Ab9zkG6989axDz
+ d4mw+h9KfX+pzLyH56Oue9mJKpjQMjkiRN8GPFxmOq/5fTDxtSZyAkX4QXOx+XysT9+5
+ ntWjC4aCfJ7KUoWtnuAqo0bDTdkkddEwQR6TxkX8WbUuKTh8V/rZ1/KTkdoc4PUGpHk3
+ FeQfv7gd/d0Pr/eWXLkZZVav4Vpd697r5XYoNIe6wcswExR0GRdK42ez46100xzmVCNX
+ kUuY9cSe6UCNqJPBBebTkyeJoU6eCo0kKWAzLXMg8+cDBgieG8/Yws1FRFt/ut4Efect
+ IcIw==
+X-Gm-Message-State: ACrzQf0gVcIDfRPSvpxVPl5wlTiYhAbMfFCgPG8zI2M3hCP7DDs4UP7R
+ 86+keI/s3bAxPzSSUdAdna/f9Q==
+X-Google-Smtp-Source: AMsMyM75IrvvzFBms5bHfHu6V2O7UB+rtpwccRdUWoQNc25BPNZqqAb4Stuw+QSSG5uxeFf6i+40Yw==
+X-Received: by 2002:a17:90b:4b46:b0:202:7a55:5588 with SMTP id
+ mi6-20020a17090b4b4600b002027a555588mr11300183pjb.55.1663964915056; 
  Fri, 23 Sep 2022 13:28:35 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
  by smtp.gmail.com with ESMTPSA id
- g13-20020aa796ad000000b0053ae018a91esm7005618pfk.173.2022.09.23.13.28.28
+ o5-20020a170902d4c500b00176b66954a6sm6438596plg.121.2022.09.23.13.28.28
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
  Fri, 23 Sep 2022 13:28:32 -0700 (PDT)
 From: Kees Cook <keescook@chromium.org>
 To: Vlastimil Babka <vbabka@suse.cz>
-Date: Fri, 23 Sep 2022 13:28:18 -0700
-Message-Id: <20220923202822.2667581-13-keescook@chromium.org>
+Date: Fri, 23 Sep 2022 13:28:20 -0700
+Message-Id: <20220923202822.2667581-15-keescook@chromium.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220923202822.2667581-1-keescook@chromium.org>
 References: <20220923202822.2667581-1-keescook@chromium.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=845; h=from:subject;
- bh=p9b8wNdLQUTcKVpskeYovP9HfQefiLH6cTy/WYiH/34=;
- b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBjLhblaNBFxJTohammexHC6CbeJ0+h67dRN4PBtvwk
- 5JonPTWJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCYy4W5QAKCRCJcvTf3G3AJv3zD/
- 9LAMXluSBHTtqxb1umMTVE5i5sD3JCHrbpRq7+nm/ihvkEJ1pnKlLOmxomGKq8yeaSA69bZA8KfZSc
- CR5xfaDsFWx4j9MHisTXdoYIizPEmbqQRRqOxkcdkdBTXGB4/9y7dICzF8nG/wZnRE5cg43nOsJxA/
- hh08sM/Jc50zsKD8NK3U423EdCAh5Mur1N+IQdBrcIDvnYzrV9ox60ZBhTx1GxtTQH29f1M7tkTsxb
- CVJH0I7rS5lLvIDvLckMlcpX75U4M6OfFXPwwIxp8zwb/SpdErJg9OQ0Bc5aPbHKg5h0mzeyjxITo4
- Z8ePU5LP/HNZ40tbLl/4YQUWf9RwhgxmPxlaMerypnyhhY7RPOqjaEt4QjEp435c3lkzt/jPKVyQ00
- /BWZWjk3oYQBVD1YkNvQadr0W7iugWkFBmy0TMQKbpGlH/9UDUI6ZWX0cskd2A9Vm/9DXzxZlWfb5T
- 46CEGwe6OTc72/fqVunf113g0JP/k16VF9IW4+cBz7fPkxp8MWBVHYsuByyGXMUPaQPem/RWWPBSdo
- m2SZX1ZgW/fXrsnRcDrhQ1bd8TrDPmojcGJefLK+ix//dr8fGR/Mmu8QlKJ5P4e96wfEoqQZTf9cys
- itlMdKLXQRmGqut8owpdZR9a0jlrGiYaoK47SOl258qhzKf6gWj/fY7i/IJw==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3002; h=from:subject;
+ bh=nsR089jDUY/rZ3RkLnBCmN0cxhulkR1WvQxc2IILkdA=;
+ b=owEBbQKS/ZANAwAKAYly9N/cbcAmAcsmYgBjLhbmz8DrfaIQlG3nQhgCokX0k1pjcPoiZW0Jauf3
+ tW1sqtCJAjMEAAEKAB0WIQSlw/aPIp3WD3I+bhOJcvTf3G3AJgUCYy4W5gAKCRCJcvTf3G3AJhLbEA
+ CE0iCQD7eLDXpM8ch5Nl2WFXcHp3LHX4r5WZApWbPThez4fy3zQ6oNOuYG3svqE9Ty3HRWiGtAuj1z
+ 52ieVU1DgCeOcKoR+WWmyjUwvEKyYiR5nSddmdky8FqqpEzQC4EtPsNCfpE7C5WkkbCFT2YOnKkP+I
+ c+XG3sdrbNkpYqdfxTpOaqfpmDejGo/bN62+BnL1P/oGYvKbQbJwTsGZSFgCcDiGxIx4MUs8kdvOoE
+ f3E1N/A5SnQc82KMjdHOBvqyr5/nmPWBXDf9PlAi8EX9EOeSdWA63gqrcMmtWF7k53AM8y3nnA1WjF
+ ArSY9BsRELGcOYhJ3ZLW3AkptdWRSxpYNY4+Bez24YkZOCmYJtf8k9uUGxCocTzQbk81lJAneIcRM6
+ CmmNxTps7Rcdxo//FEpitZVXcFDFcuKqMUFVXOtgkBr5VTyqhFW3U3sns9A/xdIvuzU1nLW21+Z/gs
+ rX/cfIV7h8BHZawSfOBQwanV/aeRIHMA3P7DqC6Wryes8omgf/NBRyzIEWcXGOjM+KfNjcPoqUYaPn
+ VmEXb44aYqHppQofZHS2SZ2s3815KS6eI25k+LJIkeIBCtJfER9/IiKu4geqN/K/Fc2osV+7bYCzqb
+ C4y72qoT68wn68L1UOdkRy8UoFwG12ut8cp2hnf2M1C3fLZUVpj8BctMNe3A==
 X-Developer-Key: i=keescook@chromium.org; a=openpgp;
  fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=chromium.org; s=google;
  h=content-transfer-encoding:mime-version:references:in-reply-to
  :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
- bh=1MqQrxnQnbWg62GSxHH0OEF1q347X/m+4lnjB2flQT0=;
- b=Sm/M1aPSgGxkRY3LHKu9WT6VO0RigAcBGr0kTvvwRsO2yiPnlyPOycSqBm+Mx8oFi3
- bspsiUMbtKdtztOA4+TN8PPA5DxAgy5IBcQaq/1bn/CTLSI6xp/mM0sWTL+QnjiHRtQm
- hkYMCwfmO+zSjZYsUL+mFvQC8TlG50HBWaABQ=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=z4tB+xVARH2BbBzGKcf3E9OvsPG9MUKkIVIFYw9OFoE=;
+ b=Q4rh+gmlpihEosurwwZcg5v36Y7S4n07nnD5qTUDm6HH7U8YnWvyJeQCcPZN5psqhA
+ 1FcoXjDJH32RpyVhUAH8KodhEdorGpw+FG6gvM+RSEQNuZXjSLQE5zdS1isnmk0JOB4S
+ 3CG9eUjuqlbNuMG0YbmCq/VnSQeCLDo3sbD6M=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
- header.a=rsa-sha256 header.s=google header.b=Sm/M1aPS
-Subject: [Intel-wired-lan] [PATCH v2 12/16] devres: Use
- kmalloc_size_roundup() to match ksize() usage
+ header.a=rsa-sha256 header.s=google header.b=Q4rh+gml
+Subject: [Intel-wired-lan] [PATCH v2 14/16] kasan: Remove ksize()-related
+ tests
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,55 +121,126 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, llvm@lists.linux.dev,
- dri-devel@lists.freedesktop.org, "Ruhl, Michael J" <michael.j.ruhl@intel.com>,
- Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org,
+Cc: llvm@lists.linux.dev, dri-devel@lists.freedesktop.org, "Ruhl,
+ Michael J" <michael.j.ruhl@intel.com>, Eric Dumazet <edumazet@google.com>,
+ Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+ Alexander Potapenko <glider@google.com>, linux-hardening@vger.kernel.org,
  Hyeonggon Yoo <42.hyeyoo@gmail.com>, Christoph Lameter <cl@linux.com>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
  Sumit Semwal <sumit.semwal@linaro.org>, dev@openvswitch.org, x86@kernel.org,
- intel-wired-lan@lists.osuosl.org, David Rientjes <rientjes@google.com>,
- Miguel Ojeda <ojeda@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, linux-media@vger.kernel.org,
- Marco Elver <elver@google.com>, Kees Cook <keescook@chromium.org>,
- Josef Bacik <josef@toxicpanda.com>, linaro-mm-sig@lists.linaro.org,
- Yonghong Song <yhs@fb.com>, David Sterba <dsterba@suse.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Alex Elder <elder@kernel.org>,
- linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ kasan-dev@googlegroups.com, intel-wired-lan@lists.osuosl.org,
+ David Rientjes <rientjes@google.com>, Miguel Ojeda <ojeda@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ linux-media@vger.kernel.org, Marco Elver <elver@google.com>,
+ Kees Cook <keescook@chromium.org>, Josef Bacik <josef@toxicpanda.com>,
+ linaro-mm-sig@lists.linaro.org, Yonghong Song <yhs@fb.com>,
+ David Sterba <dsterba@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Dmitry Vyukov <dvyukov@google.com>, Andrey Konovalov <andreyknvl@gmail.com>,
+ Alex Elder <elder@kernel.org>, linux-mm@kvack.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
  =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
  Pekka Enberg <penberg@kernel.org>, Daniel Micay <danielmicay@gmail.com>,
  netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>, linux-btrfs@vger.kernel.org
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, "David S. Miller" <davem@davemloft.net>,
+ linux-btrfs@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Round up allocations with kmalloc_size_roundup() so that devres's use
-of ksize() is always accurate and no special handling of the memory is
-needed by KASAN, UBSAN_BOUNDS, nor FORTIFY_SOURCE.
+In preparation for no longer unpoisoning in ksize(), remove the behavioral
+self-tests for ksize().
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Alexander Potapenko <glider@google.com>
+Cc: Andrey Konovalov <andreyknvl@gmail.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>
+Cc: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: kasan-dev@googlegroups.com
+Cc: linux-mm@kvack.org
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- drivers/base/devres.c | 3 +++
- 1 file changed, 3 insertions(+)
+ lib/test_kasan.c  | 42 ------------------------------------------
+ mm/kasan/shadow.c |  4 +---
+ 2 files changed, 1 insertion(+), 45 deletions(-)
 
-diff --git a/drivers/base/devres.c b/drivers/base/devres.c
-index 864d0b3f566e..7db20ce7ea8a 100644
---- a/drivers/base/devres.c
-+++ b/drivers/base/devres.c
-@@ -101,6 +101,9 @@ static bool check_dr_size(size_t size, size_t *tot_size)
- 					size, tot_size)))
- 		return false;
- 
-+	/* Actually allocate the full kmalloc bucket size. */
-+	*tot_size = kmalloc_size_roundup(*tot_size);
-+
- 	return true;
+diff --git a/lib/test_kasan.c b/lib/test_kasan.c
+index 58c1b01ccfe2..bdd0ced8f8d7 100644
+--- a/lib/test_kasan.c
++++ b/lib/test_kasan.c
+@@ -753,46 +753,6 @@ static void kasan_global_oob_left(struct kunit *test)
+ 	KUNIT_EXPECT_KASAN_FAIL(test, *(volatile char *)p);
  }
  
+-/* Check that ksize() makes the whole object accessible. */
+-static void ksize_unpoisons_memory(struct kunit *test)
+-{
+-	char *ptr;
+-	size_t size = 123, real_size;
+-
+-	ptr = kmalloc(size, GFP_KERNEL);
+-	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
+-	real_size = ksize(ptr);
+-
+-	OPTIMIZER_HIDE_VAR(ptr);
+-
+-	/* This access shouldn't trigger a KASAN report. */
+-	ptr[size] = 'x';
+-
+-	/* This one must. */
+-	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[real_size]);
+-
+-	kfree(ptr);
+-}
+-
+-/*
+- * Check that a use-after-free is detected by ksize() and via normal accesses
+- * after it.
+- */
+-static void ksize_uaf(struct kunit *test)
+-{
+-	char *ptr;
+-	int size = 128 - KASAN_GRANULE_SIZE;
+-
+-	ptr = kmalloc(size, GFP_KERNEL);
+-	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
+-	kfree(ptr);
+-
+-	OPTIMIZER_HIDE_VAR(ptr);
+-	KUNIT_EXPECT_KASAN_FAIL(test, ksize(ptr));
+-	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[0]);
+-	KUNIT_EXPECT_KASAN_FAIL(test, ((volatile char *)ptr)[size]);
+-}
+-
+ static void kasan_stack_oob(struct kunit *test)
+ {
+ 	char stack_array[10];
+@@ -1392,8 +1352,6 @@ static struct kunit_case kasan_kunit_test_cases[] = {
+ 	KUNIT_CASE(kasan_stack_oob),
+ 	KUNIT_CASE(kasan_alloca_oob_left),
+ 	KUNIT_CASE(kasan_alloca_oob_right),
+-	KUNIT_CASE(ksize_unpoisons_memory),
+-	KUNIT_CASE(ksize_uaf),
+ 	KUNIT_CASE(kmem_cache_double_free),
+ 	KUNIT_CASE(kmem_cache_invalid_free),
+ 	KUNIT_CASE(kmem_cache_double_destroy),
+diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
+index 0e3648b603a6..0895c73e9b69 100644
+--- a/mm/kasan/shadow.c
++++ b/mm/kasan/shadow.c
+@@ -124,9 +124,7 @@ void kasan_unpoison(const void *addr, size_t size, bool init)
+ 	addr = kasan_reset_tag(addr);
+ 
+ 	/*
+-	 * Skip KFENCE memory if called explicitly outside of sl*b. Also note
+-	 * that calls to ksize(), where size is not a multiple of machine-word
+-	 * size, would otherwise poison the invalid portion of the word.
++	 * Skip KFENCE memory if called explicitly outside of sl*b.
+ 	 */
+ 	if (is_kfence_address(addr))
+ 		return;
 -- 
 2.34.1
 
