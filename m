@@ -4,105 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B638EECAAD8
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Sep 2022 13:48:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79B51ECAAD8
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 23 Sep 2022 15:05:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 57AD34097E;
-	Fri, 23 Sep 2022 13:48:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 57AD34097E
+	by smtp2.osuosl.org (Postfix) with ESMTP id DE94A40111;
+	Fri, 23 Sep 2022 15:05:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DE94A40111
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1663940927;
-	bh=O4ZEBLBDuHKAHGolNAwx6wdXYY7X2qM+4njV+vmIauo=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1663945552;
+	bh=mn/F4DRLp4uJrLIOb4+1oPTBARUW+RDG3rflWWxkTnk=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=excU1Jt+PBZSQAxfDhS2yiRg2eXOKocMtZASC+8aR5t+6NPXpz8Sgs5F5ZNkf8VPX
-	 hxRiEACMZqxW6ookX/v01qmtZPfoPYLWal+8XOIkwgnOiFkojq59mqYIO6wNoO4v5f
-	 wXIIDlUf7tPDfvYCVsEvue/fVsletJGweFwpQTaijBFXobyth4NuWEBuBnoKkJR4HW
-	 Ol8C3nmhDeHeUMOQfjpqsFGRQRg4zMJuHQOznjmdMOT5itFYzT/zuZc+hxYtvA9U++
-	 /wBC5GsEfkfO3NdRpcswAtKQP6DeoaOXMfY9szJeZkAhjcujzCxhg82VjZYKRb8aDF
-	 ITZ4QUbz4Vn3g==
+	b=OSpVQHl4rlDN8Ock7WXIBufnqEXvSiuBCHUfeGlFMo5xVTt9YWSjIZrG+5YkOCPwV
+	 kxUJgEGitC0h0EGLaF+gsg3M8f1HEt1rGNu0x8H9aqwCCt/j5dvC4CbKJ5bh+7G2Z9
+	 Yp6utgrJkxAbzV/SKkjnh150/k3iQJ/4rct5r0kt6jgINVp3KeSfQV0NKeNCdUYLLS
+	 eLSj6koKF2OjKD0oYM9F3fOFH69oZS7G0q6S0dAV0tlvpB3p+3D41OfSTbDhhrj1T8
+	 VvieYSTnWV551GT6g/ze965CHfjUXDDCj/MpvhAJB1USdci5aMfo4Z2OzaTiaFAKrS
+	 RdKusX3smmZUw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id X_UC4Aa90tGZ; Fri, 23 Sep 2022 13:48:46 +0000 (UTC)
+	with ESMTP id o5-uMD3gHwAG; Fri, 23 Sep 2022 15:05:51 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4F8A040992;
-	Fri, 23 Sep 2022 13:48:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4F8A040992
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 1D1061BF47E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 09:08:07 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 97D62409D7;
+	Fri, 23 Sep 2022 15:05:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 97D62409D7
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id EBE181BF2FF
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 15:05:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E9CBF403B4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 09:08:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E9CBF403B4
+ by smtp1.osuosl.org (Postfix) with ESMTP id C640C83FEB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 15:05:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C640C83FEB
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oaHFDxRO7M9t for <intel-wired-lan@lists.osuosl.org>;
- Fri, 23 Sep 2022 09:08:05 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0F5F140022
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0F5F140022
- for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 09:08:04 +0000 (UTC)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by smtp-out1.suse.de (Postfix) with ESMTPS id A0F1B219BA;
- Fri, 23 Sep 2022 09:08:00 +0000 (UTC)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 19F9B13AA5;
- Fri, 23 Sep 2022 09:08:00 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
- by imap2.suse-dmz.suse.de with ESMTPSA id e5i3BXB3LWM6HAAAMHmgww
- (envelope-from <vbabka@suse.cz>); Fri, 23 Sep 2022 09:08:00 +0000
-Message-ID: <6e6a5f86-3080-54ed-82ea-80e57e184fd0@suse.cz>
-Date: Fri, 23 Sep 2022 11:07:59 +0200
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id xXb-3iZ9U26c for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 23 Sep 2022 15:05:49 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 66B3A83FE7
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com
+ [IPv6:2a00:1450:4864:20::433])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 66B3A83FE7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 15:05:49 +0000 (UTC)
+Received: by mail-wr1-x433.google.com with SMTP id z6so479264wrq.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 23 Sep 2022 08:05:49 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+ :subject:date;
+ bh=IbrAq0owyuBI2vDk7UuHuInHGIm6YEu/yGe6vOTOGVE=;
+ b=vZz7xPasAtdfYodlOZ7WxUCY2EB6pwikzBzWdcQFo4r9Ioa4hmHkRrCEQp7QRKRLw3
+ i80LgKFKSlPQ3/EcYcnpjUdgV5ltfqLhpcYh40l5rtL3ZMgUBaf7nkWmxacrHO5mvfhF
+ wGR3KzR/2qhnVXgNh3i2x4hEUEDAhGVacWuUV5nrDsCe0GDt2tWXx52BmDamXwsZIINI
+ q8YqGJmcxBj2rOjEHDqIDeT20YBaMKFxrLzYPZR2LOQY01iZ3vobTdvULfGS9yXDbdHh
+ CoOEbi1CTwcWjHu3Ib9Y9BF5t/3NMEOZDV8vaevCCC3XAE0xkskvUeFAmGTcacFjo6GY
+ rXpw==
+X-Gm-Message-State: ACrzQf0R+30UjHQ2U4yHnSvQ/S6fqfV6b/3BbxiZQOZGJNDsSyDnZ38f
+ fhugBJ90aszPy/e/KOCGgws=
+X-Google-Smtp-Source: AMsMyM7vxshdv9NcCk1eQtMtBrLoSSkn6Iwj/Y3O/y/lDxIl1BYy0YkD1UzgB9nDCy+zd1CmfS/6wA==
+X-Received: by 2002:a05:6000:124f:b0:228:8713:ced9 with SMTP id
+ j15-20020a056000124f00b002288713ced9mr5630819wrx.198.1663945547426; 
+ Fri, 23 Sep 2022 08:05:47 -0700 (PDT)
+Received: from localhost.localdomain
+ (host-79-34-226-61.business.telecomitalia.it. [79.34.226.61])
+ by smtp.gmail.com with ESMTPSA id
+ z19-20020a1cf413000000b003a541d893desm2518606wma.38.2022.09.23.08.05.45
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 23 Sep 2022 08:05:46 -0700 (PDT)
+From: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
+To: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>,
+ Ira Weiny <ira.weiny@intel.com>
+Date: Fri, 23 Sep 2022 17:05:43 +0200
+Message-ID: <27280395.gRfpFWEtPU@localhost.localdomain>
+In-Reply-To: <22aa8568-7f6e-605e-7219-325795b218b7@intel.com>
+References: <20220629085836.18042-1-fmdefrancesco@gmail.com>
+ <CAKgT0Uf1o+i0qKf7J_xqC3SACRFhiYqyhBeQydgUafB5uFkAvg@mail.gmail.com>
+ <22aa8568-7f6e-605e-7219-325795b218b7@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Content-Language: en-US
-To: Kees Cook <keescook@chromium.org>
-References: <20220922031013.2150682-1-keescook@chromium.org>
- <673e425d-1692-ef47-052b-0ff2de0d9c1d@amd.com>
- <202209220845.2F7A050@keescook>
- <cb38655c-2107-bda6-2fa8-f5e1e97eab14@suse.cz>
- <202209221446.5E90AEED@keescook>
-From: Vlastimil Babka <vbabka@suse.cz>
-In-Reply-To: <202209221446.5E90AEED@keescook>
-X-Mailman-Approved-At: Fri, 23 Sep 2022 13:48:44 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=suse.cz; s=susede2_rsa; 
- t=1663924080; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=3NmV8dBleohq19FUTGjShv3qNCUcjTHlt1m0s7sWLVk=;
- b=V6wEuumqUBqjySkow4NVfoPBdDcct+QY2sSnA92ZeyPwH38i0NPhxZ2JBFN/nzoZI0qJDc
- KkeFL/D96aoTs49QcLygaGlMNADNI8AXG8StgjNUceGaiafR2+x2Vnsi6pDhmZ07qrK3n8
- Inta8iq5GzYLsx9ExrSXKnUXYR9y3Io=
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=suse.cz; s=susede2_ed25519; t=1663924080;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=3NmV8dBleohq19FUTGjShv3qNCUcjTHlt1m0s7sWLVk=;
- b=U7EHAzZMP7bk2R61PfblSG7IYbc4Ddv8PLRV2h2xeqC20gD9ZFpGn6nKi00zf3zaGPeOWS
- aSCwMvZR9gmTbODQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz
- header.a=rsa-sha256 header.s=susede2_rsa header.b=V6wEuumq; 
- dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=U7EHAzZM
-Subject: Re: [Intel-wired-lan] [PATCH 00/12] slab: Introduce
- kmalloc_size_roundup()
+ d=gmail.com; s=20210112;
+ h=content-transfer-encoding:mime-version:references:in-reply-to
+ :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
+ bh=IbrAq0owyuBI2vDk7UuHuInHGIm6YEu/yGe6vOTOGVE=;
+ b=YX51EvCicYLzsulTEP+TH4axgTjVnMmSsyVPa+FXuodPd6MQGGx9arVG+4ivuuELXZ
+ uORO/ruHsPkcE+pKMLy42QhjFDrZkbMxhY1chRB3sqVO1n4kLje/IZ25T/2nwamTHjoh
+ SzhM9Xz+6mr7tounkShKfyJZVvzooFBTUcOhz8811BPjwBIt+W9qrbk5eT3OyLF+7PM5
+ Ct1cH5ihg9w0uCGMyQ8Mms/+2/cTarUB3+RF04TXLByxsAexBHUAzlnUf/WWdgf+h8+Y
+ MwV7ClhMs/0cxAxZ4O65oVTYx9VaLbVAHSAkHVxK+6BfXypTycz8ODgUFs+8+DH0ATpP
+ PpXA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20210112 header.b=YX51EvCi
+Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: Use kmap_local_page in
+ ixgbe_check_lbtest_frame()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,59 +112,193 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Feng Tang <feng.tang@intel.com>, linux-wireless@vger.kernel.org,
- llvm@lists.linux.dev, dri-devel@lists.freedesktop.org, linux-mm@kvack.org,
- Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org,
- Hyeonggon Yoo <42.hyeyoo@gmail.com>, Sumit Semwal <sumit.semwal@linaro.org>,
- dev@openvswitch.org, x86@kernel.org, intel-wired-lan@lists.osuosl.org,
- David Rientjes <rientjes@google.com>, Miguel Ojeda <ojeda@kernel.org>,
- Yonghong Song <yhs@fb.com>, Paolo Abeni <pabeni@redhat.com>,
- linux-media@vger.kernel.org, Marco Elver <elver@google.com>,
- Josef Bacik <josef@toxicpanda.com>, linaro-mm-sig@lists.linaro.org,
- Jakub Kicinski <kuba@kernel.org>, David Sterba <dsterba@suse.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Alex Elder <elder@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- =?UTF-8?Q?Christian_K=c3=b6nig?= <christian.koenig@amd.com>,
- Pekka Enberg <penberg@kernel.org>, Daniel Micay <danielmicay@gmail.com>,
- netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>, linux-btrfs@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: Jesper Dangaard Brouer <hawk@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, Netdev <netdev@vger.kernel.org>,
+ Alexander Duyck <alexanderduyck@fb.com>,
+ John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
+ Eric Dumazet <edumazet@google.com>,
+ intel-wired-lan <intel-wired-lan@lists.osuosl.org>,
+ Jakub Kicinski <kuba@kernel.org>, bpf <bpf@vger.kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gOS8yMi8yMiAyMzo0OSwgS2VlcyBDb29rIHdyb3RlOgo+IE9uIFRodSwgU2VwIDIyLCAyMDIy
-IGF0IDExOjA1OjQ3UE0gKzAyMDAsIFZsYXN0aW1pbCBCYWJrYSB3cm90ZToKPj4gT24gOS8yMi8y
-MiAxNzo1NSwgS2VlcyBDb29rIHdyb3RlOgo+PiA+IE9uIFRodSwgU2VwIDIyLCAyMDIyIGF0IDA5
-OjEwOjU2QU0gKzAyMDAsIENocmlzdGlhbiBLw7ZuaWcgd3JvdGU6Cj4+ID4gWy4uLl0KPj4gPiA+
-IFNvIHdoZW4gdGhpcyBwYXRjaCBzZXQgaXMgYWJvdXQgdG8gY2xlYW4gdXAgdGhpcyB1c2UgY2Fz
-ZSBpdCBzaG91bGQgcHJvYmFibHkKPj4gPiA+IGFsc28gdGFrZSBjYXJlIHRvIHJlbW92ZSBrc2l6
-ZSgpIG9yIGF0IGxlYXN0IGxpbWl0IGl0IHNvIHRoYXQgaXQgd29uJ3QgYmUKPj4gPiA+IHVzZWQg
-Zm9yIHRoaXMgdXNlIGNhc2UgaW4gdGhlIGZ1dHVyZS4KPj4gPiAKPj4gPiBZZWFoLCBteSBnb2Fs
-IHdvdWxkIGJlIHRvIGVsaW1pbmF0ZSBrc2l6ZSgpLCBhbmQgaXQgc2VlbXMgcG9zc2libGUgaWYK
-Pj4gPiBvdGhlciBjYXNlcyBhcmUgc2F0aXNmaWVkIHdpdGggdHJhY2tpbmcgdGhlaXIgYWxsb2Nh
-dGlvbiBzaXplcyBkaXJlY3RseS4KPj4gCj4+IEkgdGhpbmsgd2UgY291bGQgbGVhdmUga3NpemUo
-KSB0byBkZXRlcm1pbmUgdGhlIHNpemUgd2l0aG91dCBhIG5lZWQgZm9yCj4+IGV4dGVybmFsIHRy
-YWNraW5nLCBidXQgZnJvbSBub3cgb24gZm9yYmlkIGNhbGxlcnMgZnJvbSB1c2luZyB0aGF0IGhp
-bnQgdG8KPj4gb3ZlcmZsb3cgdGhlIGFsbG9jYXRpb24gc2l6ZSB0aGV5IGFjdHVhbGx5IHJlcXVl
-c3RlZD8gT25jZSB3ZSByZW1vdmUgdGhlCj4+IGthc2FuL2tmZW5jZSBob29rcyBpbiBrc2l6ZSgp
-IHRoYXQgbWFrZSB0aGUgY3VycmVudCBraW5kcyBvZiB1c2FnZSBwb3NzaWJsZSwKPj4gd2Ugc2hv
-dWxkIGJlIGFibGUgdG8gY2F0Y2ggYW55IG9mZmVuZGVycyBvZiB0aGUgbmV3IHNlbWFudGljcyB0
-aGF0IHdvdWxkIGFwcGVhcj8KPiAKPiBUaGF0J3MgY29ycmVjdC4gSSBzcGVudCB0aGUgbW9ybmlu
-ZyB3b3JraW5nIG15IHdheSB0aHJvdWdoIHRoZSByZXN0IG9mCj4gdGhlIGtzaXplKCkgdXNlcnMg
-SSBkaWRuJ3QgY2xlYW4gdXAgeWVzdGVyZGF5LCBhbmQgaW4gc2V2ZXJhbCBwbGFjZXMgSQo+IGp1
-c3Qgc3dhcHBlZCBpbiBfX2tzaXplKCkuIEJ1dCB0aGF0IHdvdWxkbid0IGV2ZW4gYmUgbmVlZGVk
-IGlmIHdlIGp1c3QKPiByZW1vdmVkIHRoZSBrYXNhbiB1bnBvaXNvbmluZyBmcm9tIGtzaXplKCks
-IGV0Yy4KPiAKPiBJIGFtIHRlbXB0ZWQgdG8gbGVhdmUgaXQgX19rc2l6ZSgpLCB0aG91Z2gsIGp1
-c3QgdG8gcmVpbmZvcmNlIHRoYXQgaXQncwo+IG5vdCBzdXBwb3NlZCB0byBiZSB1c2VkICJub3Jt
-YWxseSIuIFdoYXQgZG8geW91IHRoaW5rPwoKU291bmRzIGdvb2QuIE5vdGUgaW4gbGludXgtbmV4
-dCB0aGVyZSdzIG5vdyBhIHNlcmllcyBpbiBzbGFiLmdpdCBwbGFubmVkIGZvcgo2LjEgdGhhdCBt
-b3ZlcyBfX2tzaXplKCkgZGVjbGFyYXRpb24gdG8gbW0vc2xhYi5oIHRvIG1ha2UgaXQgbW9yZSBw
-cml2YXRlLgpCdXQgd2UgZG9uJ3Qgd2FudCByYW5kb20gdXNlcnMgb3V0c2lkZSBtbSBhbmQgcmVs
-YXRlZCBrYXNhbi9rZmVuY2UKc3Vic3lzdGVtcyB0byBpbmNsdWRlIG1tL3NsYWIuaCwgc28gd2Un
-bGwgaGF2ZSB0byBleHBvc2UgaXQgYWdhaW4gaW5zdGVhZCBvZgprc2l6ZSgpLgpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFp
-bGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3Ns
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
+Hi Anirudh,
+
+On Friday, September 23, 2022 12:38:02 AM CEST Anirudh Venkataramanan wrote:
+> On 9/22/2022 1:58 PM, Alexander Duyck wrote:
+> > On Thu, Sep 22, 2022 at 1:07 PM Anirudh Venkataramanan
+> > <anirudh.venkataramanan@intel.com> wrote:
+> >>
+> >>
+> >> Following Fabio's patches, I made similar changes for e1000/e1000e and
+> >> submitted them to IWL [1].
+
+I saw your patches and they look good to me. I might comment and probably 
+review them, however I prefer to wait for Ira to do that. Furthermore, looking 
+again at your patches made me recall that I need to talk with him about 
+something that is only indirectly related with you work.
+
+Please don't rely on older patches of mine as models for your next patches. In 
+the last months I changed many things in the way I handle the removal of 
+kmap() in favour of a plain page_address() or decide to convert to 
+kmap_local_page(). Obviously I'm talking about pages which cannot come from 
+ZONE_HIGHMEM.
+
+> >> Yesterday, Ira Weiny pointed me to some feedback from Dave Hansen on the
+> >> use of page_address() [2]. My understanding of this feedback is that
+> >> it's safer to use kmap_local_page() instead of page_address(), because
+> >> you don't always know how the underlying page was allocated.
+
+Your understanding of Dave's message is absolutely correct.
+
+> >> This approach (of using kmap_local_page() instead of page_address())
+> >> makes sense to me. Any reason not to go this way?
+
+> >> [1]
+> >>
+> >> https://patchwork.ozlabs.org/project/intel-wired-lan/patch/
+20220919180949.388785-1-anirudh.venkataramanan@intel.com/
+> >>
+> >> https://patchwork.ozlabs.org/project/intel-wired-lan/patch/
+20220919180949.388785-2-anirudh.venkataramanan@intel.com/
+> >>
+> >> [2]
+> >> https://lore.kernel.org/lkml/5d667258-b58b-3d28-3609-e7914c99b31b@intel.com/
+> >>
+> >> Ani
+> > 
+> > For the two patches you referenced the driver is the one allocating
+> > the pages. So in such a case the page_address should be acceptable.
+> > Specifically we are falling into alloc_page(GFP_ATOMIC) which should
+> > fall into the first case that Dave Hansen called out.
+> 
+> Right. However, I did run into a case in the chelsio inline crypto 
+> driver where it seems like the pages are allocated outside the driver. 
+> In such cases, kmap_local_page() would be the right approach, as the 
+> driver can't make assumptions on how the page was allocated.
+
+The mere fact that we are still discussing this particular topic is my only 
+fault. I mean that the guidelines about what to do with ZONE_NORMAL or lower 
+pages is not enough clear. I'll have to improve that paragraph.
+
+For now let me tell you what I'm doing whenever I have to decide between a 
+conversion  from kmap{,_atomic}() to kmap_local_page() or a kmap() removal  in 
+favour of page_address() use.
+
+> ... and this makes me wonder why not just use kmap_local_page() even in 
+> cases where the page allocation was done in the driver. IMO, this is 
+> simpler because
+> 
+> a) you don't have to care how a page was allocated. kmap_local_page() 
+> will create a temporary mapping if required, if not it just becomes a 
+> wrapper to page_address().
+> 
+> b) should a future patch change the allocation to be from highmem, you 
+> don't have to change a bunch of page_address() calls to be 
+> kmap_local_page().
+
+"a" and "b" are good arguments with sound logic. However there are a couple of 
+cases that you are not yet considering.
+
+As my main rule I prefer the use of kmap_local_page() whenever tracking if 
+pages can't come from Highmem is complex, especially when allocation is 
+performed in other translation units of the same driver or, worse, pages come 
+from different subsystems.
+
+Instead, I don't like to use kmap_local_page() when the allocation is in the 
+same function and you see immediately that it cannot come from ZONE_HIGHMEM.
+
+Sometimes it's so clear that using kmap_local_page() looks silly to me :-)
+For example...
+
+void *silly_alloc_and_map() {
+         	struct *page;
+	
+	page = alloc_page(GFP_KERNEL);
+	return kmap_local_page(page);
+}
+
+In this case you know without any effort that the page cannot come from 
+ZONE_HIGHMEM. Therefore, why bother with mapping and unmapping (and perhaps 
+write a function for unmapping).
+
+While working on the removals or the conversions of kmap(), I noticed that 
+people tend to forget to call kunmap(). We have a limited amount of kmap() 
+slots. If the mapping space is fully utilized we'll have the next slot 
+available only after reboot or unloading and reloading a module.
+
+If I recall correctly, with kmap_local_page() we can map a maximum of 16 pages 
+per task_struct. Therefore, limits are everywhere and people tend to leak 
+resources.
+
+To summarize: whenever allocation is easily trackable, and pages cannot come 
+from ZONE_HIGHMEM, I prefer page_address().
+
+Honestly, if code is well designed I don't care whether or not within 5 days 
+or 10 years decide to change the allocation. I think it's like to refrain from 
+deleting unreachable code, variables, partially implemented functions, and so 
+on just because one day someone may think to make something useful from those 
+things. 
+
+Greg K-H taught me that I must see the code as is now and don't speculate 
+about possible future scenarios. I agree with him in full :-)
+
+Very different case where I _need_ page_address() are due to the strict rules 
+of nesting mapping and unmapping-mapping. I recall that I spent days on a 
+function in Btrfs because I could not map and unmap with the usual Last In - 
+First Out (LIFO) rule. 
+
+A function was so complex and convoluted that nobody could know in advance the 
+order of execution of the mappings of two pages. Lots of goto, breaks, loops 
+made impossible to unmap in the correct order at the "clean and exit" label.
+
+I made a first attempt using a two element array as a stack which registered 
+the mappings and then I used it to unmap in the correct order at exit.
+
+It was intentionally a means to draw the attention of the maintainers. One of 
+them proposed to split that very complex function in several helpers, and 
+isolate the mappings one by one. It was OK to me.
+
+After weeks, David Sterba noticed that he knew that one of the pages came from 
+the page cache and we had to map it, but the second page was allocated inside 
+Btrfs with GFP_KERNEL. Therefore, the better suited solution was to use 
+kmap_local_page() for the first and page address() for the second.
+
+My stack based solution was working but nobody should write such an ugly code 
+just to enforce local mapping :-) 
+
+> Is using page_address() directly beneficial in some way?
+
+A possible call chain on 32 bits kernels is the following:
+
+kmap_local_page() ->
+ __kmap_local_page_prot() { 
+	if (!IS_ENABLED(CONFIG_DEBUG_KMAP_LOCAL_FORCE_MAP) && |
+PageHighMem(page))
+		return page_address(page);
+
+....
+}
+
+How many instructions can you save calling page_address() directly?
+If you don't know, look at the assembly.
+
+Thanks,
+
+Fabio		
+
+> Ani
+> 
+> 
+
+
+
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
