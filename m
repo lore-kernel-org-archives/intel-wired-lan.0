@@ -4,100 +4,176 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2523EC6FA83
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Sep 2022 00:41:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61D13C07E9D
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Sep 2022 12:47:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BDF8D60E8D;
-	Mon, 26 Sep 2022 00:41:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BDF8D60E8D
+	by smtp3.osuosl.org (Postfix) with ESMTP id E8EB860692;
+	Mon, 26 Sep 2022 12:47:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E8EB860692
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1664152889;
-	bh=esoBZtz4iQdiU6n1vHgErOvVuWbxXHcbYhNVQ4QFl8w=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1664196475;
+	bh=HAynbL7f0b30S7SbCUyOkGQk8x3/vbgxmO79HPJNx/8=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=kD0UHbGoNLs9XyUFdSp2CAaZ2WIFOU2I59luohAmXiinF1EEsdQcdD8pmBLslWydY
-	 nYN1pv2xC0/vIaymo+PcpJRCJykvOIZfG8mS0FzzzKx3OIizTEXZ/Oe0d1GTqX2138
-	 eX3nACtik0aMP7MxjAFTQreC+94e7bdO9QvmXXTzANRBpW2YClX0jKxwiqzqT4mEO1
-	 +glk3r3DgTeoMgjNQrKtoZrfhsUpYx4aI2w00lR24tS+x572EQBG0U1xzz40wSimfO
-	 RO93W/slJ+GDZZS2a1GSPSDXFz/K/+d/SZnTsOyFcYPjtT1mf6wONKQucIm/XKljxP
-	 /4+dLdFANl7xQ==
+	b=cFswBLBB7XSFjynyIiEgv/J+7hoDWEHoHB5olBsJ//yIc5F5bgMY2gVAlN3l5n/fj
+	 YA33yxT4D5W4qczfSYRlHc7ynOwnNMl7AoZjDVVozrf9Apgby80cwhSN4HoBemlIXQ
+	 BTfGGF6soMEG688y/Gcjp6qmAyvnUnoSQrqG1qykYtKJozXwBKpZnyChAt22824eDG
+	 ELMN2FJiC/ReCHzkbPwpKemLXdZistfKqVNynJBMX5CBNX90dhgPG/ymlzb6nYiubo
+	 4FlRwv5cL+NU4Btt0zck+WRgJPe1yXLwm1PpGg/8XzmmUtKBsZiVmsp/Kw2FEEUgUX
+	 GAePrvtr0ZuUg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id yIe5wIoS2KfF; Mon, 26 Sep 2022 00:41:29 +0000 (UTC)
+	with ESMTP id ALmIPRfsCuKo; Mon, 26 Sep 2022 12:47:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C452660E7A;
-	Mon, 26 Sep 2022 00:41:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C452660E7A
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id E6F701BF4D8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:41:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D320160F6F;
+	Mon, 26 Sep 2022 12:47:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D320160F6F
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id C305C1BF3B0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 12:47:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id CD69E60E83
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:41:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CD69E60E83
+ by smtp2.osuosl.org (Postfix) with ESMTP id A969C408DD
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 12:47:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A969C408DD
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id smCX9xc-6q7r for <intel-wired-lan@lists.osuosl.org>;
- Mon, 26 Sep 2022 00:41:26 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 38CEC60E7A
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
- [IPv6:2607:f8b0:4864:20::102e])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 38CEC60E7A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:41:26 +0000 (UTC)
-Received: by mail-pj1-x102e.google.com with SMTP id
- i15-20020a17090a4b8f00b0020073b4ac27so5224679pjh.3
- for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Sep 2022 17:41:26 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=in-reply-to:content-transfer-encoding:content-disposition
- :mime-version:references:message-id:subject:cc:to:from:date
- :x-gm-message-state:from:to:cc:subject:date;
- bh=Ee6jY7viFUfMjAsx1AOZFi9ykD0TZlKjDDVt7+BAWpA=;
- b=6/vIRNYGnkq3iufpirMnLMpFKaUsI0O0W74a1I5JiWq8W8kS1b0y4UeEqTCQX8ey/a
- vypxZc3d0UxgsH8AzHHE5SI0ciiOtFnk61DM7d7K2ZjSB3KW/dBsan+EpoHy+VXjjuEB
- kA32I5mentw8WP1Q8aTmystzCK60yaRGv04rBHQTZJ9d+CYvLTg96pGNOwAoXcmrRNgG
- 1vzHnZ1awEb8ZqKtm5gVfrdI/+yt0uBBPxDkCgS5EQB7n6DYkYq5s8VDG3GvilLO3NQq
- f2dp0bJ1XxEQtmOmfVjOYkoHBW3KTAe7T4NdNf7OI3Lot8P1QMgKU8XheOinSdmh4GiE
- pb6Q==
-X-Gm-Message-State: ACrzQf2rzNntUePcKA8KtPE9we/k/ili6nw9InE64FWa1q+6fELsbroL
- pp9EdQ/lN+aBNLJT/BM53Pl8+A==
-X-Google-Smtp-Source: AMsMyM5VpMx54A01n2IxbeNYegjZcGYyyX6uNC/69UJfyYAh5+QLjokwGVSlu1kDsKsMHY6BwDZQuA==
-X-Received: by 2002:a17:902:ea0e:b0:178:3d49:45ad with SMTP id
- s14-20020a170902ea0e00b001783d4945admr19810833plg.103.1664152885590; 
- Sun, 25 Sep 2022 17:41:25 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id
- l7-20020a622507000000b0053ebafa7c42sm10576331pfl.79.2022.09.25.17.41.24
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 25 Sep 2022 17:41:24 -0700 (PDT)
-Date: Sun, 25 Sep 2022 17:41:23 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Paolo Abeni <pabeni@redhat.com>
-Message-ID: <202209251738.2E6B9C29D@keescook>
-References: <20220923202822.2667581-1-keescook@chromium.org>
- <20220923202822.2667581-5-keescook@chromium.org>
- <e340d993bce8e1b2742fba52ac6383771cfaddae.camel@redhat.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Mkbqv3VBhFyi for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 26 Sep 2022 12:47:50 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 97B11401AD
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 97B11401AD
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 12:47:50 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10481"; a="365048969"
+X-IronPort-AV: E=Sophos;i="5.93,346,1654585200"; d="scan'208";a="365048969"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Sep 2022 05:47:49 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10481"; a="949836202"
+X-IronPort-AV: E=Sophos;i="5.93,346,1654585200"; d="scan'208";a="949836202"
+Received: from orsmsx602.amr.corp.intel.com ([10.22.229.15])
+ by fmsmga005.fm.intel.com with ESMTP; 26 Sep 2022 05:47:49 -0700
+Received: from orsmsx607.amr.corp.intel.com (10.22.229.20) by
+ ORSMSX602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Mon, 26 Sep 2022 05:47:49 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ orsmsx607.amr.corp.intel.com (10.22.229.20) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31 via Frontend Transport; Mon, 26 Sep 2022 05:47:49 -0700
+Received: from NAM02-BN1-obe.outbound.protection.outlook.com (104.47.51.49) by
+ edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2375.31; Mon, 26 Sep 2022 05:47:48 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=GMY82pAJ5SpMn+djhlUGm0UAMPaSfxuC2E3rhFhaOj8bonX0un+05cxw4fqUM9ylklgltbnlURmtYDnswNTyuMrQa3FKLF6T8H8N4DCwjNvCnPBpWN6Sau+1JL0j6lUQ1m3RBJIIX+GZDIjnV79rf/s5ASxmjpCKWtwZways2rsYYCiGk+D2yrU59eOINzTGnK0+YyD4ZD8AfBFmAE0LttYreLsUIs5V7PIfUWe9HqDQ9GMi3gWcowQAB5UI8JxMeEsdqux/mjeXhJzSmpeF9iy+7h1UCdKrQC4R5BL4kqjUGyYiOFhHI/CJ1NfS4AzPFaRwB+FU/OGITT0zP7y5Cw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hA8Axn70+n5Vrmg0CQlr3qf6cR4IM/4WQv3Jrti6k7w=;
+ b=JWIMxD60fD4SNdif7o4F1FojbUItJ6oAoGGgDMwp6rhfjMVcjNN/GtbjPxmrDG9lSfBhi1ZgG6f1lW/EUtXYUldyRozNAcpINtqVMDQQepWt3E/nRnOPb+jS5fPsevLk3mTOx3d4rOPHz+XyW0TlFSok7lPr11LB3v5mW0Byi8lrkwm10zrSConDxk1tHiZ7B7Arkiu05Z0X0Lalb4gj6TO8wnMgvNwjRFqSrBd8z6Km6+oOa4T2RjqJDgm/R3q9KjXND/jZazW+3H/TZMZhRg9nR5mBPn5H7TT6ugoZBMdiDQd1DpwBl6SkMdrP5HVMT6uS3Y1MXqqvmHeXxBZhZQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from MN2PR11MB4045.namprd11.prod.outlook.com (2603:10b6:208:135::27)
+ by PH8PR11MB7119.namprd11.prod.outlook.com (2603:10b6:510:215::14)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5654.25; Mon, 26 Sep
+ 2022 12:47:46 +0000
+Received: from MN2PR11MB4045.namprd11.prod.outlook.com
+ ([fe80::8943:7a27:bfb1:329a]) by MN2PR11MB4045.namprd11.prod.outlook.com
+ ([fe80::8943:7a27:bfb1:329a%7]) with mapi id 15.20.5654.026; Mon, 26 Sep 2022
+ 12:47:46 +0000
+From: "Rout, ChandanX" <chandanx.rout@intel.com>
+To: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "Patynowski, PrzemyslawX" <przemyslawx.patynowski@intel.com>
+Thread-Topic: [Intel-wired-lan] [PATCH net v3] i40e: Fix DMA mappings leak
+Thread-Index: AQHYxCabl8MIYzwC30GXvQnEs78SCK3xv3tAgAAB9zA=
+Date: Mon, 26 Sep 2022 12:47:46 +0000
+Message-ID: <MN2PR11MB40453BB27DE98B5F7A260893EA529@MN2PR11MB4045.namprd11.prod.outlook.com>
+References: <20220909083326.344027-1-jan.sokolowski@intel.com>
+ <PH0PR11MB51446613253DABA09F279AEBE2529@PH0PR11MB5144.namprd11.prod.outlook.com>
+In-Reply-To: <PH0PR11MB51446613253DABA09F279AEBE2529@PH0PR11MB5144.namprd11.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+dlp-product: dlpe-windows
+dlp-version: 11.6.500.17
+dlp-reaction: no-action
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MN2PR11MB4045:EE_|PH8PR11MB7119:EE_
+x-ms-office365-filtering-correlation-id: 32128b09-5a8a-4ff9-a070-08da9fbd5017
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: kpweuqkU/A+5c3L7VYCTH8zSJhuv4UU5he/KSgD1hy553MAKFk9hcN2iOMcE7nDfqwI6U2fOUeTHwkDCn+pCOy3GGGlb5tT+8OM/DsZpiVizl0I6tCQnsALk1RAnxsa8+g2Aht2udTXe1wsmqUtscwdLruPxmyuwj5LLFS9c9K01qmf0QiQkbDy4TP4HwuYUAuU/KW12Doy3dKEmwmIORqdKPGsXynnVe6JNH97IOP9TFo/X8Mx41c1p1h3O1DNPWRjL2LROeSENGzptHiWEbOvxjltXiYk6X3D4eP49ZzBu7sz+pKPYoJmoV7PpreB7iqTMRfljt2HtgZamvMAkiahDcYtsg+IS0hgljw76Fk8lvpGa8ASIHTzXH2Dd9VCdR/hX4BHsHA/OspLHpuzKSu91xf4eJB1wN4jsB4EibrAFyvYw61DG24q+6DTk+aQkavvGG/YW5POqNsXkCJeO5W8dAWc2GpvUsi5lMteM5v9u4IB+BPSA+FuTp4OUwAzrkq0ryw+FRYXV13WnoCkhVtV356aSN01mDVGt8FKr3z/NTWX+8pV2/JedS0igE3CxYXcNgsa23yZH+EIBtNoucMIpRtBcep5KU5Cl0yX/Rrld69+RS1WoQ7nsqMD0Yt8eNUr/VNEQovW+5R/s5I0fxvIbY0Q1Z5tjYDx3aRXWTH+5vZkkYjD8+gcjQdRfNTZPrbwOFmImaIQnX/Jrb6n1W5GOhFY5egyUJtoZqzKM1vhhP/33Y1RYiFg7bUdHDswXyn8DBxALlyy9x/1A9kR2/g==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MN2PR11MB4045.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230022)(136003)(376002)(39860400002)(396003)(366004)(346002)(451199015)(5660300002)(41300700001)(2906002)(52536014)(8936002)(122000001)(33656002)(38070700005)(38100700002)(66476007)(66446008)(76116006)(66946007)(110136005)(4326008)(8676002)(71200400001)(64756008)(54906003)(478600001)(55016003)(316002)(6636002)(66556008)(186003)(107886003)(82960400001)(86362001)(6506007)(9686003)(7696005)(83380400001)(26005);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?/EtvC7PN1kGSVs5Wx7Q+dwoLfZW4Ez+j7Pv2DccssOd/Sd/mUjS+soVFTX3V?=
+ =?us-ascii?Q?Iyo4p2o5+6cG+UuKhEeYneHONAZy/fCwpQAafbMniroI7YB2WCrODh4gJOaL?=
+ =?us-ascii?Q?rhN/3ILtu3GeKYoa22f3/Sf1cOVZj+KzAzZUXDPhoq5ao6DuRqBnO00LAAr7?=
+ =?us-ascii?Q?G5MN6YDbqQqDQKdmLnjQkmDJ7fGIxbjlAMhG0yl63r4/o2vgkzhEc/9W7OTO?=
+ =?us-ascii?Q?B+Xo7grAt90sOjU59FlxpxfDzOJDG5BRZGtOv1yE4BdMehyVUxOX0rQ46eq0?=
+ =?us-ascii?Q?tRbZZBMBFsbbKO+DFnNsTRa3Az3djLefJzkETgqEq7e63TIhUiZ3XXuyNazz?=
+ =?us-ascii?Q?62fShCRSMyDjERa0krvVFJja5FUFSn7Dy5RmjjVgvKVHD3SWYpSjE485XwE8?=
+ =?us-ascii?Q?HmccsJk2A7WJ1KBJDZUFeIw3K6Q8uJ/E2NSkaqit04VEsyllHfJ35H60nFEZ?=
+ =?us-ascii?Q?1q1/96kLNZrnDGEA1JK647baCzb+Za4V5hGLJOLDSbXmhm5TofLJ+3MRXZfy?=
+ =?us-ascii?Q?nfX+7tkEYwZP2U67My96TfCFfxX3OXE7R8QWuRWMaG+xdLCCyX/hFeKA58gn?=
+ =?us-ascii?Q?ShlzIgcH1Jij9CvFQNDLzew4Mn6fzRYmEZlTkzmKsFMkdD6f2jJbaOWiyqxO?=
+ =?us-ascii?Q?Qr1cbGWV+B4WGSRxXcJ8/eDhk80wqlFLQPYFy4kXx3ZtiiU74BXhK0enVdO5?=
+ =?us-ascii?Q?G2FefeYhaAje7iFl7iSwRQpogDg5TPTO4q0X4hjzKx+e0WPYCJLGROwBYHO/?=
+ =?us-ascii?Q?8NXYVDbhNyhAqyr1tfozJnUbi61FTQuk6YnuZqfaoF9pGsYuDpoIOElSd23W?=
+ =?us-ascii?Q?0fJUIvpMKUFx6mn7glhllJ67d5VMJ5y3H7zVpl0fTfJRxKtTD1IbGKQQO3sK?=
+ =?us-ascii?Q?vN+jonrUA5xdq0n5N5+oJshkM+zjvyNvTlIBJrTXJO2nH/RkEN7L2vhRcI1E?=
+ =?us-ascii?Q?1tI6zvfwYsty0cKxzugBQ6+mgdQvZ0NIUKlRTZgauQc48Ecfp3ouNuFd32ri?=
+ =?us-ascii?Q?i+zQleUGTmnf/u7GX8zmmK7sQ/9f6UVUGjcz9r0XrX5fekcR1Z6vCW/gQA87?=
+ =?us-ascii?Q?SIMqvZVyb7MULhn7vloXT5AlybSAia19M/kCQYUsJOIZbnucqtp4Sa1hyg5d?=
+ =?us-ascii?Q?jx5p66zSaTn36DUZRWPOTNISQYIVJKFfJRKGnLBVrqir0EjTPYImvS2wlU3O?=
+ =?us-ascii?Q?vcreGsHaEYVAXP4bUCWnLFvayoff5AKw6rB2J4BghO3mHDYyjQ51CdUNjGZr?=
+ =?us-ascii?Q?4jNmVsmycTp++Y6cYu8SYS3nxjRBZUm3gC3tg/WL2epedYa7klwCfpkCTmsV?=
+ =?us-ascii?Q?eIZjKdp+qseIXBKGLcUgBv0qx0hwkR+prQHUL8lwXp2QSXQXPKWzhXT/Aq2l?=
+ =?us-ascii?Q?wAijQVaIynX7EgV1CAhqn2gEI9R4AVlzPHndtm+C20Yvutz6d0VJLxaZ9vhV?=
+ =?us-ascii?Q?Op/DHx0mwjudhyteOCOmJtLa2yUe3kvZViO8Q9IpPU9PCNi9ECNCcStwTCoT?=
+ =?us-ascii?Q?OveizQErw9WLWCOmHH8Y5vUjLodQbGZKqBSjMKOags7ZRMtnmJNEYidrLryh?=
+ =?us-ascii?Q?G9/73zdC53vSj5aHbE8nJ0eJeIqNmYaCZ8L5Vr0A?=
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <e340d993bce8e1b2742fba52ac6383771cfaddae.camel@redhat.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=chromium.org; s=google;
- h=in-reply-to:content-transfer-encoding:content-disposition
- :mime-version:references:message-id:subject:cc:to:from:date:from:to
- :cc:subject:date;
- bh=Ee6jY7viFUfMjAsx1AOZFi9ykD0TZlKjDDVt7+BAWpA=;
- b=Tymc3mQ6yYtKo/fUwb0pntTGEsuDmA3KGe5ZainSrzJcqfvTUXGD6g4AS/QDrdEz1m
- IPp9Tld0kqL2gFrY1NTkahNxDsLTe8rCfVZ7Sf6Yy58l+LrHh3LtaZFzBUsKT5oECTI8
- ASxk03BGu9JGtTcAH5Y41r1unU3COw5iwE/sg=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
- header.a=rsa-sha256 header.s=google header.b=Tymc3mQ6
-Subject: Re: [Intel-wired-lan] [PATCH v2 04/16] skbuff: Phase out ksize()
- fallback for frag_size
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MN2PR11MB4045.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 32128b09-5a8a-4ff9-a070-08da9fbd5017
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Sep 2022 12:47:46.7082 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: bCgmiDYCiwC5Vq/GoklIi7LoJ2DNHosAm7bvIRFhAtqBkvNymUqj32HzDzXwjV29i1noqRc2XrG1N6DOE6Sp3Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH8PR11MB7119
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1664196470; x=1695732470;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=57PY3/G9mnXEPY+d79itm3Am2WJMtoG5TevuNtv6mnU=;
+ b=BYeNtIr+DvwPDuWYvrx4gQwfxfZxnKnNvLS/D1f+/lDwMBTg0UKIEztB
+ 9FPlZavFBDg3gv+ADVSjDzAA4VzlJkoljTyglSGRnpdNe4omOh/VoVN87
+ 6P2aGFyQF/cAsBWoGLoqQo/gyoPsOESE8W5YpCHah1w+egiiCYGf5KY5D
+ 9OguOCpz0iKpeSEWBzvIexFpTwAl+8BvCFaKMcamQ7xwGeWVtni9EfFCd
+ J4yoUFkVPKxdJ6vpmBgMBgpO2xS67oW6pOyclZt0WfSYs2Jb7hZYugBUS
+ 38oZ2AcIJMRWyczgSg7vYJ2WKlOLQMCpU6BRnpdYpbKTh1XN7V6lUFMNC
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=BYeNtIr+
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net v3] i40e: Fix DMA mappings leak
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,89 +186,71 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: llvm@lists.linux.dev, dri-devel@lists.freedesktop.org, "Ruhl,
- Michael J" <michael.j.ruhl@intel.com>, Eric Dumazet <edumazet@google.com>,
- linux-hardening@vger.kernel.org, Hyeonggon Yoo <42.hyeyoo@gmail.com>,
- Christoph Lameter <cl@linux.com>, Sumit Semwal <sumit.semwal@linaro.org>,
- dev@openvswitch.org, x86@kernel.org, intel-wired-lan@lists.osuosl.org,
- David Rientjes <rientjes@google.com>, Miguel Ojeda <ojeda@kernel.org>,
- Yonghong Song <yhs@fb.com>, linux-media@vger.kernel.org,
- Marco Elver <elver@google.com>, Josef Bacik <josef@toxicpanda.com>,
- linaro-mm-sig@lists.linaro.org, Jakub Kicinski <kuba@kernel.org>,
- David Sterba <dsterba@suse.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Vlastimil Babka <vbabka@suse.cz>, Alex Elder <elder@kernel.org>,
- linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, Pekka Enberg <penberg@kernel.org>,
- Daniel Micay <danielmicay@gmail.com>, netdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
- linux-btrfs@vger.kernel.org
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Cc: "Nagraj, Shravan" <shravan.nagraj@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sun, Sep 25, 2022 at 09:17:40AM +0200, Paolo Abeni wrote:
-> On Fri, 2022-09-23 at 13:28 -0700, Kees Cook wrote:
-> > All callers of APIs that allowed a 0-sized frag_size appear to be
-> > passing actual size information already
-> =
+	
 
-> AFAICS, not yet:
-> =
+>-----Original Message-----
+>From: Kuruvinakunnel, George <george.kuruvinakunnel@intel.com>
+>Sent: Monday, September 26, 2022 6:02 PM
+>To: Rout, ChandanX <chandanx.rout@intel.com>
+>Subject: FW: [Intel-wired-lan] [PATCH net v3] i40e: Fix DMA mappings leak
+>
+>FYI:
+>
+>George
+>
+>++++++++++++++++++++++++++++++++++++++++++++++++
+>
+>-----Original Message-----
+>From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+>Sokolowski, Jan
+>Sent: Friday, September 9, 2022 2:03 PM
+>To: intel-wired-lan@lists.osuosl.org
+>Subject: [Intel-wired-lan] [PATCH net v3] i40e: Fix DMA mappings leak
+>
+>From: Jan Sokolowski <jan.sokolowski@intel.com>
+>
+>During reallocation of RX buffers, new DMA mappings are created for those
+>buffers. New buffers with different RX ring count should substitute older
+>ones, but those buffers were freed in i40e_configure_rx_ring and reallocated
+>again with i40e_alloc_rx_bi, thus kfree on rx_bi caused leak of already
+>mapped DMA.
+>
+>In case of non XDP ring, do not free rx_bi and reuse already existing buffer,
+>move kfree to XDP rings only, remove unused i40e_alloc_rx_bi function.
+>
+>steps for reproduction:
+>while :
+>do
+>for ((i=0; i<=8160; i=i+32))
+>do
+>ethtool -G enp130s0f0 rx $i tx $i
+>sleep 0.5
+>ethtool -g enp130s0f0
+>done
+>done
+>
+>v2: Fixed improper kerneldoc that resulted in a warning
+>v3: Applied commit msg fixes reported during a review
+>
+>Fixes: be1222b585fd ("i40e: Separate kernel allocated rx_bi rings from AF_XDP
+>rings")
+>Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+>---
+> .../net/ethernet/intel/i40e/i40e_ethtool.c    |  3 -
+> drivers/net/ethernet/intel/i40e/i40e_main.c   | 13 ++--
+> drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 14 ++--
+> drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  1 -
+> drivers/net/ethernet/intel/i40e/i40e_xsk.c    | 70 ++++++++++++++++---
+> drivers/net/ethernet/intel/i40e/i40e_xsk.h    |  2 +-
+> 6 files changed, 74 insertions(+), 29 deletions(-)
 
-> drivers/net/ethernet/qlogic/qed/qed_ll2.c:
-> 	skb =3D build_skb(buffer->data, 0); // -> __build_skb(..., 0)=A0
-> 		// ->  __build_skb_around()
-> =
-
-> drivers/net/ethernet/broadcom/bnx2.c:
-> 	skb =3D build_skb(data, 0);
-> =
-
-> I guess some more drivers have calls leading to=A0
-> =
-
-> 	__build_skb_around(...,  0)
-> =
-
-> there are several call path to checks...
-
-Ah-ha! Thank you. I will try to hunt these down -- I think we can't
-remove the "secret resizing" effect of ksize() without fixing these.
-
-> > [...]
-> > diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-> > index 0b30fbdbd0d0..84ca89c781cd 100644
-> > --- a/net/core/skbuff.c
-> > +++ b/net/core/skbuff.c
-> > @@ -195,7 +195,11 @@ static void __build_skb_around(struct sk_buff *skb=
-, void *data,
-> >  			       unsigned int frag_size)
-> >  {
-> >  	struct skb_shared_info *shinfo;
-> > -	unsigned int size =3D frag_size ? : ksize(data);
-> > +	unsigned int size =3D frag_size;
-> > +
-> > +	/* All callers should be setting frag size now? */
-> > +	if (WARN_ON_ONCE(size =3D=3D 0))
-> > +		size =3D ksize(data);
-> =
-
-> At some point in the future, I guess we could even drop this check,
-> right?
-
-Alternatively, we might be able to ask the slab if "data" came from
-kmalloc or a kmem_cache, and if the former, do:
-
-	data =3D krealloc(kmalloc_size_roundup(ksize(data), ...)
-
-But that seems ugly...
-
--- =
-
-Kees Cook
+Tested-by: Chandan <chandanx.rout@intel.com> (A Contingent Worker at Intel)
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
