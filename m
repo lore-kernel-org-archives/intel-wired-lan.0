@@ -1,100 +1,103 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74378C6FA82
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Sep 2022 00:38:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2523EC6FA83
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Sep 2022 00:41:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F3520415DD;
-	Mon, 26 Sep 2022 00:38:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F3520415DD
+	by smtp3.osuosl.org (Postfix) with ESMTP id BDF8D60E8D;
+	Mon, 26 Sep 2022 00:41:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BDF8D60E8D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1664152739;
-	bh=MyMlCwMrjhAsL3zRRqxvYCw9MGsx5UI+AC1RKilU8R4=;
+	s=default; t=1664152889;
+	bh=esoBZtz4iQdiU6n1vHgErOvVuWbxXHcbYhNVQ4QFl8w=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=0JIxn4V1LOFBnpruK8cjROCpNGtglR217sBUKsZ8OihRnJPDzgE2e3aruZaKYPOc1
-	 qibN49vNBFpRr8rtxflVp04uLoq8T2xdsNixoh8YwwFbLPId4kArdVfxz9kUdAdJ2I
-	 eFis0glw1zD+9UGI5PGwlklTr+SMKnNnKhsdBlCwaNm1D1RRwOps5jQeG8ISneVDde
-	 0QLSQY4lwgWFYTEzuZ/d+0JucD/AMMR6vIGrQ+l9XgfRwpD44rnpw4sG4s+Q8WcEuv
-	 vAh/xoLFaUXRbAgESJY2O0tk3XZBZ36Qw4Gr9F9zEt/NhvkgRWwScmY5Dfs0/VE4po
-	 654H03XTTNh5Q==
+	b=kD0UHbGoNLs9XyUFdSp2CAaZ2WIFOU2I59luohAmXiinF1EEsdQcdD8pmBLslWydY
+	 nYN1pv2xC0/vIaymo+PcpJRCJykvOIZfG8mS0FzzzKx3OIizTEXZ/Oe0d1GTqX2138
+	 eX3nACtik0aMP7MxjAFTQreC+94e7bdO9QvmXXTzANRBpW2YClX0jKxwiqzqT4mEO1
+	 +glk3r3DgTeoMgjNQrKtoZrfhsUpYx4aI2w00lR24tS+x572EQBG0U1xzz40wSimfO
+	 RO93W/slJ+GDZZS2a1GSPSDXFz/K/+d/SZnTsOyFcYPjtT1mf6wONKQucIm/XKljxP
+	 /4+dLdFANl7xQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id tnPRm406Ocf1; Mon, 26 Sep 2022 00:38:58 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id yIe5wIoS2KfF; Mon, 26 Sep 2022 00:41:29 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BC1704168E;
-	Mon, 26 Sep 2022 00:38:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BC1704168E
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 119DB1BF4D8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:38:56 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C452660E7A;
+	Mon, 26 Sep 2022 00:41:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C452660E7A
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id E6F701BF4D8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:41:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EBB304168E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:38:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EBB304168E
+ by smtp3.osuosl.org (Postfix) with ESMTP id CD69E60E83
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:41:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CD69E60E83
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id IzYscz7Unq7P for <intel-wired-lan@lists.osuosl.org>;
- Mon, 26 Sep 2022 00:38:51 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id smCX9xc-6q7r for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 26 Sep 2022 00:41:26 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 11E72415DD
-Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com
- [IPv6:2607:f8b0:4864:20::52d])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 11E72415DD
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:38:50 +0000 (UTC)
-Received: by mail-pg1-x52d.google.com with SMTP id 78so5143660pgb.13
- for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Sep 2022 17:38:50 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 38CEC60E7A
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com
+ [IPv6:2607:f8b0:4864:20::102e])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 38CEC60E7A
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:41:26 +0000 (UTC)
+Received: by mail-pj1-x102e.google.com with SMTP id
+ i15-20020a17090a4b8f00b0020073b4ac27so5224679pjh.3
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Sep 2022 17:41:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
- bh=ZsMZDiPJ05dqPEjOyzQRRCQyAniieUtquk7D7/uc9oo=;
- b=j06QcIItwsxJ0lldgvNzhnawp1+YRiXUukuS21W7yYUKn4nzLLDo0uegLwKpGncEZA
- coNzopJuDcLNF+6ya3R5qce3paV0HLpvFZY9LR8ufwdqTQp5zD0MCVDsucHmNw7hTw4o
- 62ljUe4Zp4lPi2c+MkaNdovo2L99FIveXqy3cQ6jFZAMIH830p/gNZOcVYl0YnEcTjkr
- NAKxDLqPk2GzGYlu9sdwBZoHrySmWU8+bewshDiLIKcPHoznUUR/BIH9SGNqDuJKD/Oe
- Nzva3qoSBOBvn8DqsmSAPQxSTIhT1duniXEwzevKkZoc65xXuOXGHvP7TMxJuZk3z8pm
- fLyw==
-X-Gm-Message-State: ACrzQf2lSPC4U2BnFmxUWneE7mJ0dwKAexeu7LC/fzY41tleFqQOcibB
- ttZ3/lXGbL1tfHBCishkW4gazg==
-X-Google-Smtp-Source: AMsMyM7j48vn8CX614C8f5vlUd1g6FcIEIYyyHHTpwyTo0bx6Hew8gRK92T2JHXk4G8JNUKlDJxOQQ==
-X-Received: by 2002:a63:4b1d:0:b0:439:e6a4:e902 with SMTP id
- y29-20020a634b1d000000b00439e6a4e902mr18048148pga.212.1664152730415; 
- Sun, 25 Sep 2022 17:38:50 -0700 (PDT)
+ h=in-reply-to:content-transfer-encoding:content-disposition
+ :mime-version:references:message-id:subject:cc:to:from:date
+ :x-gm-message-state:from:to:cc:subject:date;
+ bh=Ee6jY7viFUfMjAsx1AOZFi9ykD0TZlKjDDVt7+BAWpA=;
+ b=6/vIRNYGnkq3iufpirMnLMpFKaUsI0O0W74a1I5JiWq8W8kS1b0y4UeEqTCQX8ey/a
+ vypxZc3d0UxgsH8AzHHE5SI0ciiOtFnk61DM7d7K2ZjSB3KW/dBsan+EpoHy+VXjjuEB
+ kA32I5mentw8WP1Q8aTmystzCK60yaRGv04rBHQTZJ9d+CYvLTg96pGNOwAoXcmrRNgG
+ 1vzHnZ1awEb8ZqKtm5gVfrdI/+yt0uBBPxDkCgS5EQB7n6DYkYq5s8VDG3GvilLO3NQq
+ f2dp0bJ1XxEQtmOmfVjOYkoHBW3KTAe7T4NdNf7OI3Lot8P1QMgKU8XheOinSdmh4GiE
+ pb6Q==
+X-Gm-Message-State: ACrzQf2rzNntUePcKA8KtPE9we/k/ili6nw9InE64FWa1q+6fELsbroL
+ pp9EdQ/lN+aBNLJT/BM53Pl8+A==
+X-Google-Smtp-Source: AMsMyM5VpMx54A01n2IxbeNYegjZcGYyyX6uNC/69UJfyYAh5+QLjokwGVSlu1kDsKsMHY6BwDZQuA==
+X-Received: by 2002:a17:902:ea0e:b0:178:3d49:45ad with SMTP id
+ s14-20020a170902ea0e00b001783d4945admr19810833plg.103.1664152885590; 
+ Sun, 25 Sep 2022 17:41:25 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
  by smtp.gmail.com with ESMTPSA id
- t11-20020a17090340cb00b00172951ddb12sm9640855pld.42.2022.09.25.17.38.49
+ l7-20020a622507000000b0053ebafa7c42sm10576331pfl.79.2022.09.25.17.41.24
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 25 Sep 2022 17:38:49 -0700 (PDT)
-Date: Sun, 25 Sep 2022 17:38:48 -0700
+ Sun, 25 Sep 2022 17:41:24 -0700 (PDT)
+Date: Sun, 25 Sep 2022 17:41:23 -0700
 From: Kees Cook <keescook@chromium.org>
-To: Dmitry Vyukov <dvyukov@google.com>
-Message-ID: <202209251738.6A453BC008@keescook>
+To: Paolo Abeni <pabeni@redhat.com>
+Message-ID: <202209251738.2E6B9C29D@keescook>
 References: <20220923202822.2667581-1-keescook@chromium.org>
- <20220923202822.2667581-15-keescook@chromium.org>
- <CACT4Y+bg=j9VdteQwrJTNFF_t4EE5uDTMLj07+uMJ9-NcooXGQ@mail.gmail.com>
+ <20220923202822.2667581-5-keescook@chromium.org>
+ <e340d993bce8e1b2742fba52ac6383771cfaddae.camel@redhat.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <CACT4Y+bg=j9VdteQwrJTNFF_t4EE5uDTMLj07+uMJ9-NcooXGQ@mail.gmail.com>
+In-Reply-To: <e340d993bce8e1b2742fba52ac6383771cfaddae.camel@redhat.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=chromium.org; s=google;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date;
- bh=ZsMZDiPJ05dqPEjOyzQRRCQyAniieUtquk7D7/uc9oo=;
- b=EloZHChUwOJ+IAK+dqPRjhd24FYS6MkmFqZpedddEJP3NPIP54FWcwg3RKRz6Ai8pZ
- z2DviABmbm5Ne8x7+vcrgYA1N3bmoOgjdNpOgYz+yaXmcZ9y56Pdoen1P+xANPX4dHu4
- HiKqS9DzqPcFKjopFBXMCDEaM898Bv94O7hJQ=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ h=in-reply-to:content-transfer-encoding:content-disposition
+ :mime-version:references:message-id:subject:cc:to:from:date:from:to
+ :cc:subject:date;
+ bh=Ee6jY7viFUfMjAsx1AOZFi9ykD0TZlKjDDVt7+BAWpA=;
+ b=Tymc3mQ6yYtKo/fUwb0pntTGEsuDmA3KGe5ZainSrzJcqfvTUXGD6g4AS/QDrdEz1m
+ IPp9Tld0kqL2gFrY1NTkahNxDsLTe8rCfVZ7Sf6Yy58l+LrHh3LtaZFzBUsKT5oECTI8
+ ASxk03BGu9JGtTcAH5Y41r1unU3COw5iwE/sg=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
- header.a=rsa-sha256 header.s=google header.b=EloZHChU
-Subject: Re: [Intel-wired-lan] [PATCH v2 14/16] kasan: Remove
- ksize()-related tests
+ header.a=rsa-sha256 header.s=google header.b=Tymc3mQ6
+Subject: Re: [Intel-wired-lan] [PATCH v2 04/16] skbuff: Phase out ksize()
+ fallback for frag_size
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,60 +112,86 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: llvm@lists.linux.dev, dri-devel@lists.freedesktop.org, "Ruhl,
  Michael J" <michael.j.ruhl@intel.com>, Eric Dumazet <edumazet@google.com>,
- Andrey Ryabinin <ryabinin.a.a@gmail.com>,
- Alexander Potapenko <glider@google.com>, linux-hardening@vger.kernel.org,
- Hyeonggon Yoo <42.hyeyoo@gmail.com>, Christoph Lameter <cl@linux.com>,
- Vincenzo Frascino <vincenzo.frascino@arm.com>,
- Sumit Semwal <sumit.semwal@linaro.org>, dev@openvswitch.org, x86@kernel.org,
- kasan-dev@googlegroups.com, intel-wired-lan@lists.osuosl.org,
+ linux-hardening@vger.kernel.org, Hyeonggon Yoo <42.hyeyoo@gmail.com>,
+ Christoph Lameter <cl@linux.com>, Sumit Semwal <sumit.semwal@linaro.org>,
+ dev@openvswitch.org, x86@kernel.org, intel-wired-lan@lists.osuosl.org,
  David Rientjes <rientjes@google.com>, Miguel Ojeda <ojeda@kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- linux-media@vger.kernel.org, Marco Elver <elver@google.com>,
- Josef Bacik <josef@toxicpanda.com>, linaro-mm-sig@lists.linaro.org,
- Yonghong Song <yhs@fb.com>, David Sterba <dsterba@suse.com>,
- Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>,
- Andrey Konovalov <andreyknvl@gmail.com>, Alex Elder <elder@kernel.org>,
+ Yonghong Song <yhs@fb.com>, linux-media@vger.kernel.org,
+ Marco Elver <elver@google.com>, Josef Bacik <josef@toxicpanda.com>,
+ linaro-mm-sig@lists.linaro.org, Jakub Kicinski <kuba@kernel.org>,
+ David Sterba <dsterba@suse.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Alex Elder <elder@kernel.org>,
  linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>, Pekka Enberg <penberg@kernel.org>,
+ Daniel Micay <danielmicay@gmail.com>, netdev@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
  Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
- Pekka Enberg <penberg@kernel.org>, Daniel Micay <danielmicay@gmail.com>,
- netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, "David S. Miller" <davem@davemloft.net>,
  linux-btrfs@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, Sep 24, 2022 at 10:15:18AM +0200, Dmitry Vyukov wrote:
-> On Fri, 23 Sept 2022 at 22:28, Kees Cook <keescook@chromium.org> wrote:
-> >
-> > In preparation for no longer unpoisoning in ksize(), remove the behavioral
-> > self-tests for ksize().
-> >
+On Sun, Sep 25, 2022 at 09:17:40AM +0200, Paolo Abeni wrote:
+> On Fri, 2022-09-23 at 13:28 -0700, Kees Cook wrote:
+> > All callers of APIs that allowed a 0-sized frag_size appear to be
+> > passing actual size information already
+> =
+
+> AFAICS, not yet:
+> =
+
+> drivers/net/ethernet/qlogic/qed/qed_ll2.c:
+> 	skb =3D build_skb(buffer->data, 0); // -> __build_skb(..., 0)=A0
+> 		// ->  __build_skb_around()
+> =
+
+> drivers/net/ethernet/broadcom/bnx2.c:
+> 	skb =3D build_skb(data, 0);
+> =
+
+> I guess some more drivers have calls leading to=A0
+> =
+
+> 	__build_skb_around(...,  0)
+> =
+
+> there are several call path to checks...
+
+Ah-ha! Thank you. I will try to hunt these down -- I think we can't
+remove the "secret resizing" effect of ksize() without fixing these.
+
 > > [...]
-> > -/* Check that ksize() makes the whole object accessible. */
-> > -static void ksize_unpoisons_memory(struct kunit *test)
-> > -{
-> > -       char *ptr;
-> > -       size_t size = 123, real_size;
-> > -
-> > -       ptr = kmalloc(size, GFP_KERNEL);
-> > -       KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
-> > -       real_size = ksize(ptr);
-> > -
-> > -       OPTIMIZER_HIDE_VAR(ptr);
-> > -
-> > -       /* This access shouldn't trigger a KASAN report. */
->  > -       ptr[size] = 'x';
-> 
-> I would rather keep the tests and update to the new behavior. We had
-> bugs in ksize, we need test coverage.
-> I assume ptr[size] access must now produce an error even after ksize.
+> > diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+> > index 0b30fbdbd0d0..84ca89c781cd 100644
+> > --- a/net/core/skbuff.c
+> > +++ b/net/core/skbuff.c
+> > @@ -195,7 +195,11 @@ static void __build_skb_around(struct sk_buff *skb=
+, void *data,
+> >  			       unsigned int frag_size)
+> >  {
+> >  	struct skb_shared_info *shinfo;
+> > -	unsigned int size =3D frag_size ? : ksize(data);
+> > +	unsigned int size =3D frag_size;
+> > +
+> > +	/* All callers should be setting frag size now? */
+> > +	if (WARN_ON_ONCE(size =3D=3D 0))
+> > +		size =3D ksize(data);
+> =
 
-Good point on all these! I'll respin.
+> At some point in the future, I guess we could even drop this check,
+> right?
 
--- 
+Alternatively, we might be able to ask the slab if "data" came from
+kmalloc or a kmem_cache, and if the former, do:
+
+	data =3D krealloc(kmalloc_size_roundup(ksize(data), ...)
+
+But that seems ugly...
+
+-- =
+
 Kees Cook
 _______________________________________________
 Intel-wired-lan mailing list
