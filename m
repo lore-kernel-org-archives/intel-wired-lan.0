@@ -1,115 +1,100 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 774E0C04A95
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 25 Sep 2022 07:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74378C6FA82
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Sep 2022 00:38:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1495560B10;
-	Sun, 25 Sep 2022 07:17:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1495560B10
+	by smtp4.osuosl.org (Postfix) with ESMTP id F3520415DD;
+	Mon, 26 Sep 2022 00:38:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F3520415DD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1664090276;
-	bh=PNOcwoV4HE7e3fXUjZd4heQgoYQkX5yAQoeMrFVR2Ao=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1664152739;
+	bh=MyMlCwMrjhAsL3zRRqxvYCw9MGsx5UI+AC1RKilU8R4=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=GFuq31mwjcv9LajKH8oGqRQ0HOt1ZJXGV3Y2baUmpW2VyeAe3yI+AW2iujpfW7OAI
-	 byZ0zE2oAIbaxt77QM8zeipZ5+qww28gDxM9wnF+YxHJNTcvigdJO4nWu03tHdDKwP
-	 Z4pXe5eCvO0PBFJUaxzWOsvuDzvDbSJl3/9fP9eSNqL1hUqQ6oynWUjImNANsksWYY
-	 zn4ayXoJLvpfEDT93QlB0k9DN0+V5x2MwCEOs4O6dAswgWHfraAeQveZoqi7TrT+4y
-	 lRzNS02o6FZJerTztHwsNov0YIa1hLIpP1sXeTXWif0JXQq/jirCKjCcCfmN2adWYk
-	 jR+07jn6u9exA==
+	b=0JIxn4V1LOFBnpruK8cjROCpNGtglR217sBUKsZ8OihRnJPDzgE2e3aruZaKYPOc1
+	 qibN49vNBFpRr8rtxflVp04uLoq8T2xdsNixoh8YwwFbLPId4kArdVfxz9kUdAdJ2I
+	 eFis0glw1zD+9UGI5PGwlklTr+SMKnNnKhsdBlCwaNm1D1RRwOps5jQeG8ISneVDde
+	 0QLSQY4lwgWFYTEzuZ/d+0JucD/AMMR6vIGrQ+l9XgfRwpD44rnpw4sG4s+Q8WcEuv
+	 vAh/xoLFaUXRbAgESJY2O0tk3XZBZ36Qw4Gr9F9zEt/NhvkgRWwScmY5Dfs0/VE4po
+	 654H03XTTNh5Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id RrzN8zj-n8Em; Sun, 25 Sep 2022 07:17:55 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id tnPRm406Ocf1; Mon, 26 Sep 2022 00:38:58 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0B82360761;
-	Sun, 25 Sep 2022 07:17:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0B82360761
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id C9D9B1BF5DC
- for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Sep 2022 07:17:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id BC1704168E;
+	Mon, 26 Sep 2022 00:38:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BC1704168E
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 119DB1BF4D8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:38:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9A4D383F16
- for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Sep 2022 07:17:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9A4D383F16
+ by smtp4.osuosl.org (Postfix) with ESMTP id EBB304168E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:38:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EBB304168E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Mrj9BD5rNWCi for <intel-wired-lan@lists.osuosl.org>;
- Sun, 25 Sep 2022 07:17:51 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9AFED83F11
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9AFED83F11
- for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Sep 2022 07:17:51 +0000 (UTC)
-Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com
- [209.85.219.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-301-mnBVV0PwO9WfvQq0WDzGoQ-1; Sun, 25 Sep 2022 03:17:48 -0400
-X-MC-Unique: mnBVV0PwO9WfvQq0WDzGoQ-1
-Received: by mail-qv1-f72.google.com with SMTP id
- e19-20020ad44433000000b004aaa7d00846so2434921qvt.0
- for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Sep 2022 00:17:48 -0700 (PDT)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id IzYscz7Unq7P for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 26 Sep 2022 00:38:51 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 11E72415DD
+Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com
+ [IPv6:2607:f8b0:4864:20::52d])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 11E72415DD
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Sep 2022 00:38:50 +0000 (UTC)
+Received: by mail-pg1-x52d.google.com with SMTP id 78so5143660pgb.13
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Sep 2022 17:38:50 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=content-transfer-encoding:mime-version:user-agent:references
- :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
- :from:to:cc:subject:date;
- bh=FnuW0+nquE7jeCs1wGd25t/HgD5sAtMc07QK9kih2sQ=;
- b=KAkn8PpH8bzZHuq39pMj7ddJgT0pRYblyunGOGBrp/TOcCYwPqtN5EEaSUDCMlT3eo
- pN5UzYqOdNwDOxRKBu09X2J0La37TdTFFeqSL1L9nfosKWpz1nR9UnxLlZ6rOUQfwlEg
- 42apMNrVY5RgQpxIWtO9+HFJnG2ZBP7p1R1mwoUoinCK3Yni0dygo1bLMm8ZWZR3luhT
- fucfRoAyyVKPh87FpZDTieu2dDypVYDdOmaDUEyk7J9pN1sqoOolL8qWj0YJ3Illkozg
- nsTofAGQCDQX1RfYvBB4uq8CV6DntuaeOk1ENem0WvKozPh8a+yDcRj7BL4bV3kALPU/
- GCKw==
-X-Gm-Message-State: ACrzQf3oy0WC8lxInQ+buIBM2kBDzUTxOG7l6Eag32QDnmKHfov85Jy+
- 5uLdUARsfaUFYIBd/GXOsqlCsgZbGcVz60bdoFbKq5+RbyN4XlklS7HRD93wx+tG+vrBZpvaJ01
- VgTfYSnYVgn3yLwzPDEtwU8zsgd8Wrg==
-X-Received: by 2002:a05:620a:c8f:b0:6cb:e329:b5b9 with SMTP id
- q15-20020a05620a0c8f00b006cbe329b5b9mr10667169qki.95.1664090268094; 
- Sun, 25 Sep 2022 00:17:48 -0700 (PDT)
-X-Google-Smtp-Source: AMsMyM4u6YF4dJIrwAN1QRZGgvTOpwH6qKYsc23O//LxYiiudu83+P6fv+LpA21i63RBBqqlayo//g==
-X-Received: by 2002:a05:620a:c8f:b0:6cb:e329:b5b9 with SMTP id
- q15-20020a05620a0c8f00b006cbe329b5b9mr10667159qki.95.1664090267816; 
- Sun, 25 Sep 2022 00:17:47 -0700 (PDT)
-Received: from gerbillo.redhat.com (146-241-97-96.dyn.eolo.it. [146.241.97.96])
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
+ bh=ZsMZDiPJ05dqPEjOyzQRRCQyAniieUtquk7D7/uc9oo=;
+ b=j06QcIItwsxJ0lldgvNzhnawp1+YRiXUukuS21W7yYUKn4nzLLDo0uegLwKpGncEZA
+ coNzopJuDcLNF+6ya3R5qce3paV0HLpvFZY9LR8ufwdqTQp5zD0MCVDsucHmNw7hTw4o
+ 62ljUe4Zp4lPi2c+MkaNdovo2L99FIveXqy3cQ6jFZAMIH830p/gNZOcVYl0YnEcTjkr
+ NAKxDLqPk2GzGYlu9sdwBZoHrySmWU8+bewshDiLIKcPHoznUUR/BIH9SGNqDuJKD/Oe
+ Nzva3qoSBOBvn8DqsmSAPQxSTIhT1duniXEwzevKkZoc65xXuOXGHvP7TMxJuZk3z8pm
+ fLyw==
+X-Gm-Message-State: ACrzQf2lSPC4U2BnFmxUWneE7mJ0dwKAexeu7LC/fzY41tleFqQOcibB
+ ttZ3/lXGbL1tfHBCishkW4gazg==
+X-Google-Smtp-Source: AMsMyM7j48vn8CX614C8f5vlUd1g6FcIEIYyyHHTpwyTo0bx6Hew8gRK92T2JHXk4G8JNUKlDJxOQQ==
+X-Received: by 2002:a63:4b1d:0:b0:439:e6a4:e902 with SMTP id
+ y29-20020a634b1d000000b00439e6a4e902mr18048148pga.212.1664152730415; 
+ Sun, 25 Sep 2022 17:38:50 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
  by smtp.gmail.com with ESMTPSA id
- bp30-20020a05620a459e00b006c479acd82fsm10375465qkb.7.2022.09.25.00.17.42
+ t11-20020a17090340cb00b00172951ddb12sm9640855pld.42.2022.09.25.17.38.49
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 25 Sep 2022 00:17:47 -0700 (PDT)
-Message-ID: <e340d993bce8e1b2742fba52ac6383771cfaddae.camel@redhat.com>
-From: Paolo Abeni <pabeni@redhat.com>
-To: Kees Cook <keescook@chromium.org>, Vlastimil Babka <vbabka@suse.cz>
-Date: Sun, 25 Sep 2022 09:17:40 +0200
-In-Reply-To: <20220923202822.2667581-5-keescook@chromium.org>
+ Sun, 25 Sep 2022 17:38:49 -0700 (PDT)
+Date: Sun, 25 Sep 2022 17:38:48 -0700
+From: Kees Cook <keescook@chromium.org>
+To: Dmitry Vyukov <dvyukov@google.com>
+Message-ID: <202209251738.6A453BC008@keescook>
 References: <20220923202822.2667581-1-keescook@chromium.org>
- <20220923202822.2667581-5-keescook@chromium.org>
-User-Agent: Evolution 3.42.4 (3.42.4-2.fc35)
+ <20220923202822.2667581-15-keescook@chromium.org>
+ <CACT4Y+bg=j9VdteQwrJTNFF_t4EE5uDTMLj07+uMJ9-NcooXGQ@mail.gmail.com>
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
+Content-Disposition: inline
+In-Reply-To: <CACT4Y+bg=j9VdteQwrJTNFF_t4EE5uDTMLj07+uMJ9-NcooXGQ@mail.gmail.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1664090270;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=FnuW0+nquE7jeCs1wGd25t/HgD5sAtMc07QK9kih2sQ=;
- b=SZBL0yllgncMHQJjYqneGvfhQm2AeybNL8PYw1Bfent43/fRlxWvUxkC/D/nmTltqWC4Ni
- 22qTmVCLexiT0Ag0Ho1YAYPfMzOY+P42y+y33CKftoPcY/OThEMaUdzmmOltw3hbApVM83
- asdnwLDr1xKa8tvz4sXNyRRhsXEeWiE=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=SZBL0yll
-Subject: Re: [Intel-wired-lan] [PATCH v2 04/16] skbuff: Phase out ksize()
- fallback for frag_size
+ d=chromium.org; s=google;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date;
+ bh=ZsMZDiPJ05dqPEjOyzQRRCQyAniieUtquk7D7/uc9oo=;
+ b=EloZHChUwOJ+IAK+dqPRjhd24FYS6MkmFqZpedddEJP3NPIP54FWcwg3RKRz6Ai8pZ
+ z2DviABmbm5Ne8x7+vcrgYA1N3bmoOgjdNpOgYz+yaXmcZ9y56Pdoen1P+xANPX4dHu4
+ HiKqS9DzqPcFKjopFBXMCDEaM898Bv94O7hJQ=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
+ header.a=rsa-sha256 header.s=google header.b=EloZHChU
+Subject: Re: [Intel-wired-lan] [PATCH v2 14/16] kasan: Remove
+ ksize()-related tests
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,57 +109,62 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: llvm@lists.linux.dev, dri-devel@lists.freedesktop.org, "Ruhl,
  Michael J" <michael.j.ruhl@intel.com>, Eric Dumazet <edumazet@google.com>,
- linux-hardening@vger.kernel.org, Hyeonggon Yoo <42.hyeyoo@gmail.com>,
- Christoph Lameter <cl@linux.com>, Sumit Semwal <sumit.semwal@linaro.org>,
- dev@openvswitch.org, x86@kernel.org, intel-wired-lan@lists.osuosl.org,
+ Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+ Alexander Potapenko <glider@google.com>, linux-hardening@vger.kernel.org,
+ Hyeonggon Yoo <42.hyeyoo@gmail.com>, Christoph Lameter <cl@linux.com>,
+ Vincenzo Frascino <vincenzo.frascino@arm.com>,
+ Sumit Semwal <sumit.semwal@linaro.org>, dev@openvswitch.org, x86@kernel.org,
+ kasan-dev@googlegroups.com, intel-wired-lan@lists.osuosl.org,
  David Rientjes <rientjes@google.com>, Miguel Ojeda <ojeda@kernel.org>,
- Yonghong Song <yhs@fb.com>, linux-media@vger.kernel.org,
- Marco Elver <elver@google.com>, Josef Bacik <josef@toxicpanda.com>,
- linaro-mm-sig@lists.linaro.org, Jakub Kicinski <kuba@kernel.org>,
- David Sterba <dsterba@suse.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Alex Elder <elder@kernel.org>, linux-mm@kvack.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ linux-media@vger.kernel.org, Marco Elver <elver@google.com>,
+ Josef Bacik <josef@toxicpanda.com>, linaro-mm-sig@lists.linaro.org,
+ Yonghong Song <yhs@fb.com>, David Sterba <dsterba@suse.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>,
+ Andrey Konovalov <andreyknvl@gmail.com>, Alex Elder <elder@kernel.org>,
+ linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, Pekka Enberg <penberg@kernel.org>,
- Daniel Micay <danielmicay@gmail.com>, netdev@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+ Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+ Pekka Enberg <penberg@kernel.org>, Daniel Micay <danielmicay@gmail.com>,
+ netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, "David S. Miller" <davem@davemloft.net>,
  linux-btrfs@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gRnJpLCAyMDIyLTA5LTIzIGF0IDEzOjI4IC0wNzAwLCBLZWVzIENvb2sgd3JvdGU6Cj4gQWxs
-IGNhbGxlcnMgb2YgQVBJcyB0aGF0IGFsbG93ZWQgYSAwLXNpemVkIGZyYWdfc2l6ZSBhcHBlYXIg
-dG8gYmUKPiBwYXNzaW5nIGFjdHVhbCBzaXplIGluZm9ybWF0aW9uIGFscmVhZHkKCkFGQUlDUywg
-bm90IHlldDoKCmRyaXZlcnMvbmV0L2V0aGVybmV0L3Fsb2dpYy9xZWQvcWVkX2xsMi5jOgoJc2ti
-ID0gYnVpbGRfc2tiKGJ1ZmZlci0+ZGF0YSwgMCk7IC8vIC0+IF9fYnVpbGRfc2tiKC4uLiwgMCnC
-oAoJCS8vIC0+ICBfX2J1aWxkX3NrYl9hcm91bmQoKQoKZHJpdmVycy9uZXQvZXRoZXJuZXQvYnJv
-YWRjb20vYm54Mi5jOgoJc2tiID0gYnVpbGRfc2tiKGRhdGEsIDApOwoKSSBndWVzcyBzb21lIG1v
-cmUgZHJpdmVycyBoYXZlIGNhbGxzIGxlYWRpbmcgdG/CoAoKCV9fYnVpbGRfc2tiX2Fyb3VuZCgu
-Li4sICAwKQoKdGhlcmUgYXJlIHNldmVyYWwgY2FsbCBwYXRoIHRvIGNoZWNrcy4uLgoKCj4gLCBz
-byB0aGlzIHVzZSBvZiBrc2l6ZSgpIGNhbgo+IGJlIHJlbW92ZWQuIEhvd2V2ZXIsIGp1c3QgaW4g
-Y2FzZSB0aGVyZSBpcyBzb21ldGhpbmcgc3RpbGwgZGVwZW5kaW5nCj4gb24gdGhpcyBiZWhhdmlv
-ciwgaXNzdWUgYSBXQVJOIGFuZCBmYWxsIGJhY2sgdG8gYXMgYmVmb3JlIHRvIGtzaXplKCkKPiB3
-aGljaCBtZWFucyB3ZSdsbCBhbHNvIHBvdGVudGlhbGx5IGdldCBLQVNBTiB3YXJuaW5ncy4KPiAK
-PiBDYzogIkRhdmlkIFMuIE1pbGxlciIgPGRhdmVtQGRhdmVtbG9mdC5uZXQ+Cj4gQ2M6IEVyaWMg
-RHVtYXpldCA8ZWR1bWF6ZXRAZ29vZ2xlLmNvbT4KPiBDYzogSmFrdWIgS2ljaW5za2kgPGt1YmFA
-a2VybmVsLm9yZz4KPiBDYzogUGFvbG8gQWJlbmkgPHBhYmVuaUByZWRoYXQuY29tPgo+IENjOiBu
-ZXRkZXZAdmdlci5rZXJuZWwub3JnCj4gU2lnbmVkLW9mZi1ieTogS2VlcyBDb29rIDxrZWVzY29v
-a0BjaHJvbWl1bS5vcmc+Cj4gLS0tCj4gIG5ldC9jb3JlL3NrYnVmZi5jIHwgMTggKysrKysrKysr
-Ky0tLS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9u
-cygtKQo+IAo+IGRpZmYgLS1naXQgYS9uZXQvY29yZS9za2J1ZmYuYyBiL25ldC9jb3JlL3NrYnVm
-Zi5jCj4gaW5kZXggMGIzMGZiZGJkMGQwLi44NGNhODljNzgxY2QgMTAwNjQ0Cj4gLS0tIGEvbmV0
-L2NvcmUvc2tidWZmLmMKPiArKysgYi9uZXQvY29yZS9za2J1ZmYuYwo+IEBAIC0xOTUsNyArMTk1
-LDExIEBAIHN0YXRpYyB2b2lkIF9fYnVpbGRfc2tiX2Fyb3VuZChzdHJ1Y3Qgc2tfYnVmZiAqc2ti
-LCB2b2lkICpkYXRhLAo+ICAJCQkgICAgICAgdW5zaWduZWQgaW50IGZyYWdfc2l6ZSkKPiAgewo+
-ICAJc3RydWN0IHNrYl9zaGFyZWRfaW5mbyAqc2hpbmZvOwo+IC0JdW5zaWduZWQgaW50IHNpemUg
-PSBmcmFnX3NpemUgPyA6IGtzaXplKGRhdGEpOwo+ICsJdW5zaWduZWQgaW50IHNpemUgPSBmcmFn
-X3NpemU7Cj4gKwo+ICsJLyogQWxsIGNhbGxlcnMgc2hvdWxkIGJlIHNldHRpbmcgZnJhZyBzaXpl
-IG5vdz8gKi8KPiArCWlmIChXQVJOX09OX09OQ0Uoc2l6ZSA9PSAwKSkKPiArCQlzaXplID0ga3Np
-emUoZGF0YSk7CgpBdCBzb21lIHBvaW50IGluIHRoZSBmdXR1cmUsIEkgZ3Vlc3Mgd2UgY291bGQg
-ZXZlbiBkcm9wIHRoaXMgY2hlY2ssCnJpZ2h0PwoKVGhhbmtzIQoKUGFvbG8KCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLXdpcmVkLWxhbiBtYWls
-aW5nIGxpc3QKSW50ZWwtd2lyZWQtbGFuQG9zdW9zbC5vcmcKaHR0cHM6Ly9saXN0cy5vc3Vvc2wu
-b3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtd2lyZWQtbGFuCg==
+On Sat, Sep 24, 2022 at 10:15:18AM +0200, Dmitry Vyukov wrote:
+> On Fri, 23 Sept 2022 at 22:28, Kees Cook <keescook@chromium.org> wrote:
+> >
+> > In preparation for no longer unpoisoning in ksize(), remove the behavioral
+> > self-tests for ksize().
+> >
+> > [...]
+> > -/* Check that ksize() makes the whole object accessible. */
+> > -static void ksize_unpoisons_memory(struct kunit *test)
+> > -{
+> > -       char *ptr;
+> > -       size_t size = 123, real_size;
+> > -
+> > -       ptr = kmalloc(size, GFP_KERNEL);
+> > -       KUNIT_ASSERT_NOT_ERR_OR_NULL(test, ptr);
+> > -       real_size = ksize(ptr);
+> > -
+> > -       OPTIMIZER_HIDE_VAR(ptr);
+> > -
+> > -       /* This access shouldn't trigger a KASAN report. */
+>  > -       ptr[size] = 'x';
+> 
+> I would rather keep the tests and update to the new behavior. We had
+> bugs in ksize, we need test coverage.
+> I assume ptr[size] access must now produce an error even after ksize.
+
+Good point on all these! I'll respin.
+
+-- 
+Kees Cook
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
