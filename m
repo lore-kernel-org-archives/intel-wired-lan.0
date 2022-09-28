@@ -1,103 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5A31C32771
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Sep 2022 17:13:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C24EAC04A95
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Sep 2022 19:27:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2BA23418EE;
-	Wed, 28 Sep 2022 17:13:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2BA23418EE
+	by smtp1.osuosl.org (Postfix) with ESMTP id 564B083DFF;
+	Wed, 28 Sep 2022 19:27:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 564B083DFF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1664385201;
-	bh=7QjX6WqvLfVNssbZYZg2DrD0YHlSy5f7EPy8zn+Iv90=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=sWxY1TUB76A2Gx3GyUtsui1Jn9pl10k3Nyn85mQkFlxBHXZMoy9y4SiqTrRkJUGQd
-	 Xz1QzyiEw7Z/Yu1PPP3bMIxI32/yTWuWTPmCzMCtHTodZe2Af3tH2W+US4kti5ugfc
-	 ZOIgsaUHjNRhLcJDxdFU8SL6OA8jauHsGyRMpfN1ak9oYyVdINgTTIYPMuaYPGebFO
-	 Wt9Gjrpj0adfoK6+m+oo8SYvlLmWflRQwYRv4u/Yas6ewMzqodZX3oFRjsSlaw0m5l
-	 6isCp57FtVYaj/se07e4pN9ZziZRPKGPco7CSMOBPNbF/R+FQUXqy+4EE7/pCzQ5kP
-	 6pfic4xXD0IiA==
+	s=default; t=1664393224;
+	bh=axYq3LZNM755hYuN9GddeYC9eC2ZYFuvLUltX7zRw+o=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=snf0tzkFs6eopiriBnBU3v5xcirddcVvWfE5GrkYEBAkpaloXPziC/MRLzBXn+Jdk
+	 kzUo5PG9OaBVlO1uyA+V5K6NhMQtITJfQ3k72Yqa4T0y1/Hen1fHX6+8tGaze6g1xZ
+	 bX7NiXsp1aGOQPO43yt0Mw43jTnyvsLN834EVY/VpAQCN/Mx2clnX5JWhY1n5blf5F
+	 VYu7mFzU4YUjqpQoiftXKp3TLN3MDzDXzWoAegSjCyJ+rxwU8sKzIFE8LUjHps2bld
+	 ZBrtXpsWjghxTDYf/dRRIJmwPRG+U66NjQWRolD80vRYSaQaNbPBSxJAF0UuzsvdML
+	 ISFzCPofoTirw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id tbn5QcwSdniX; Wed, 28 Sep 2022 17:13:19 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id GzDPWaQml5jd; Wed, 28 Sep 2022 19:27:03 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BF86241911;
-	Wed, 28 Sep 2022 17:13:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BF86241911
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3F84183E00;
+	Wed, 28 Sep 2022 19:27:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3F84183E00
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id B5E6B1BF2F0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Sep 2022 17:13:16 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 534321BF3E0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Sep 2022 19:27:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9A36040FCF
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Sep 2022 17:13:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9A36040FCF
+ by smtp2.osuosl.org (Postfix) with ESMTP id 29F8240989
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Sep 2022 19:27:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 29F8240989
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Nk0AAxoUBDUI for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Sep 2022 17:13:15 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4BAB440FBD
-Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com
- [IPv6:2607:f8b0:4864:20::102f])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4BAB440FBD
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Sep 2022 17:13:15 +0000 (UTC)
-Received: by mail-pj1-x102f.google.com with SMTP id
- e11-20020a17090a77cb00b00205edbfd646so3188691pjs.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Sep 2022 10:13:15 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=in-reply-to:content-transfer-encoding:content-disposition
- :mime-version:references:message-id:subject:cc:to:from:date
- :x-gm-message-state:from:to:cc:subject:date;
- bh=d6n7vVcWWAUhY50nx1oX+SjTLgFqeY1Yq8iTalyfqd0=;
- b=uyFPfj6kL05r6DqEWPTSEn98aXS3wA2nywn8j00hOPIlxAgFNDVd8PJCtqNSStOM3w
- TzYDyrFDSxCehnutFNUXia3gjuEHHpdwKwSKtA5RxBsM4vDeGIJ0soDjkyBkhINwhjVP
- a7+voLuXOIVkw9Z2b/g0gvjNSoeXmbPIj8iH0kXCIUYHz3AInv5/HvW2DLbVzEU8vXnm
- AbGntAOi1mc8Oh9nb5sZHZ35m+EloTqCJARo/NkrdzduFEBZmLCTG6WY5qZwljDlhQM3
- A66hUnX6CJULaiI/aDreCD1ez84ZTmlzRRcZTLpUYGMf9XvXs9wHNwIlTf2fex39l2fC
- bXHg==
-X-Gm-Message-State: ACrzQf3PAE3zCTjSyVnHtBsBFT0pnGxVII/+JgdGmaTKnRFhSkWSlzVw
- ajCks5B0s8OcXTjsnFnN7SN6bA==
-X-Google-Smtp-Source: AMsMyM6sCBBdOCLg/ekAp2unP2+2il2GSYEdTvWU2WPyIonTKW/L3Ua/pLmu7ZGbcH4WrqStMgqaPQ==
-X-Received: by 2002:a17:902:db08:b0:176:d40e:4b57 with SMTP id
- m8-20020a170902db0800b00176d40e4b57mr799977plx.172.1664385194575; 
- Wed, 28 Sep 2022 10:13:14 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
- by smtp.gmail.com with ESMTPSA id
- q3-20020a170902dac300b00177faf558b5sm4082449plx.250.2022.09.28.10.13.13
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 28 Sep 2022 10:13:13 -0700 (PDT)
-Date: Wed, 28 Sep 2022 10:13:12 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Message-ID: <202209281011.66DD717D@keescook>
-References: <20220923202822.2667581-1-keescook@chromium.org>
- <20220923202822.2667581-2-keescook@chromium.org>
- <CAMuHMdXK+UN1YVZm9DenuXAM8hZRUZJwp=SXsueP7sWiVU3a9A@mail.gmail.com>
+ with ESMTP id 3qASExGU8qYz for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Sep 2022 19:27:00 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5C714408AC
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5C714408AC
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Sep 2022 19:27:00 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10484"; a="288856776"
+X-IronPort-AV: E=Sophos;i="5.93,352,1654585200"; d="scan'208";a="288856776"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 Sep 2022 12:26:47 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10484"; a="747546906"
+X-IronPort-AV: E=Sophos;i="5.93,352,1654585200"; d="scan'208";a="747546906"
+Received: from avenkata-desk0.sc.intel.com ([172.25.112.42])
+ by orsmga004.jf.intel.com with ESMTP; 28 Sep 2022 12:26:47 -0700
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed, 28 Sep 2022 12:27:30 -0700
+Message-Id: <20220928192730.809441-1-anirudh.venkataramanan@intel.com>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdXK+UN1YVZm9DenuXAM8hZRUZJwp=SXsueP7sWiVU3a9A@mail.gmail.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=chromium.org; s=google;
- h=in-reply-to:content-transfer-encoding:content-disposition
- :mime-version:references:message-id:subject:cc:to:from:date:from:to
- :cc:subject:date;
- bh=d6n7vVcWWAUhY50nx1oX+SjTLgFqeY1Yq8iTalyfqd0=;
- b=lIRHIZiWHITqRmakxRZHSG2SU2bpWinoR3Swar+fPYJBmT1qOO/MT6WnWN5yBDlhGu
- /lQXgjvlz0O4V2+hnYy+98Yh09p4wB3YUjZ22bnBWEa9dMSwUm7gVI6Ae5kXcacwBn8L
- BoOjiPYblWsCdJGhH6goLGXzHmU5/JoB80oyI=
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1664393220; x=1695929220;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=WPrdjb/yLS/X/+hSDPLwaTB5/8fLopmKXxd/WTG/5j0=;
+ b=kkknWj9wsZ/pSH0Q0VQ5s+OKANvc+QKQxeHGilXzTbcfBEghA4V5Ey5l
+ L6ft9xH5W1EIfvygHEIVle89/zye3xf3STSrgAVaNOsRsEMcD+aoifwXh
+ wXq5GLpVJWFG7o6sJl1Qqpts7rSjaB4kI8IGc6lId52wCdmrtF69nI42/
+ BNDP6JKX1i83XGAp4GQtkyZgSfdP97qN3J1e4xoLrxE7CIydig0FlCjxw
+ 5fJVsf59zX1DS+bGfww55CKvr2f+mPJMpJkrM5b+omWKNUSkqmFDYwbQD
+ 9W2Z3ySndJHwNACHvgftb0jNp1pUedYdApmdcZIdvZeONyznHSlAIDTK9
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
- header.a=rsa-sha256 header.s=google header.b=lIRHIZiW
-Subject: Re: [Intel-wired-lan] [PATCH v2 01/16] slab: Remove __malloc
- attribute from realloc functions
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=kkknWj9w
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: Remove unnecessary use of
+ kmap()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,71 +92,69 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Roman Gushchin <roman.gushchin@linux.dev>, dri-devel@lists.freedesktop.org,
- "Ruhl, Michael J" <michael.j.ruhl@intel.com>,
- Eric Dumazet <edumazet@google.com>, linux-hardening@vger.kernel.org,
- Hyeonggon Yoo <42.hyeyoo@gmail.com>, Christoph Lameter <cl@linux.com>,
- Sumit Semwal <sumit.semwal@linaro.org>, dev@openvswitch.org, x86@kernel.org,
- intel-wired-lan@lists.osuosl.org, David Rientjes <rientjes@google.com>,
- Miguel Ojeda <ojeda@kernel.org>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, linux-media@vger.kernel.org,
- Marco Elver <elver@google.com>, llvm@lists.linux.dev,
- Josef Bacik <josef@toxicpanda.com>, linaro-mm-sig@lists.linaro.org,
- Yonghong Song <yhs@fb.com>, David Sterba <dsterba@suse.com>,
- Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>,
- Alex Elder <elder@kernel.org>, linux-mm@kvack.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org,
- Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
- Pekka Enberg <penberg@kernel.org>, Daniel Micay <danielmicay@gmail.com>,
- netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, "David S. Miller" <davem@davemloft.net>,
- linux-btrfs@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: "Fabio M . De Francesco" <fmdefrancesco@gmail.com>,
+ Ira Weiny <ira.weiny@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gV2VkLCBTZXAgMjgsIDIwMjIgYXQgMDk6MjY6MTVBTSArMDIwMCwgR2VlcnQgVXl0dGVyaG9l
-dmVuIHdyb3RlOgo+IEhpIEtlZXMsCj4gCj4gT24gRnJpLCBTZXAgMjMsIDIwMjIgYXQgMTA6MzUg
-UE0gS2VlcyBDb29rIDxrZWVzY29va0BjaHJvbWl1bS5vcmc+IHdyb3RlOgo+ID4gVGhlIF9fbWFs
-bG9jIGF0dHJpYnV0ZSBzaG91bGQgbm90IGJlIGFwcGxpZWQgdG8gInJlYWxsb2MiIGZ1bmN0aW9u
-cywgYXMKPiA+IHRoZSByZXR1cm5lZCBwb2ludGVyIG1heSBhbGlhcyB0aGUgc3RvcmFnZSBvZiB0
-aGUgcHJpb3IgcG9pbnRlci4gSW5zdGVhZAo+ID4gb2Ygc3BsaXR0aW5nIF9fbWFsbG9jIGZyb20g
-X19hbGxvY19zaXplLCB3aGljaCB3b3VsZCBiZSBhIGh1Z2UgYW1vdW50IG9mCj4gPiBjaHVybiwg
-anVzdCBjcmVhdGUgX19yZWFsbG9jX3NpemUgZm9yIHRoZSBmZXcgY2FzZXMgd2hlcmUgaXQgaXMg
-bmVlZGVkLgo+ID4KPiA+IEFkZGl0aW9uYWxseSByZW1vdmVzIHRoZSBjb25kaXRpb25hbCB0ZXN0
-IGZvciBfX2FsbG9jX3NpemVfXywgd2hpY2ggaXMKPiA+IGFsd2F5cyBkZWZpbmVkIG5vdy4KPiA+
-Cj4gPiBDYzogQ2hyaXN0b3BoIExhbWV0ZXIgPGNsQGxpbnV4LmNvbT4KPiA+IENjOiBQZWtrYSBF
-bmJlcmcgPHBlbmJlcmdAa2VybmVsLm9yZz4KPiA+IENjOiBEYXZpZCBSaWVudGplcyA8cmllbnRq
-ZXNAZ29vZ2xlLmNvbT4KPiA+IENjOiBKb29uc29vIEtpbSA8aWFtam9vbnNvby5raW1AbGdlLmNv
-bT4KPiA+IENjOiBBbmRyZXcgTW9ydG9uIDxha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnPgo+ID4g
-Q2M6IFZsYXN0aW1pbCBCYWJrYSA8dmJhYmthQHN1c2UuY3o+Cj4gPiBDYzogUm9tYW4gR3VzaGNo
-aW4gPHJvbWFuLmd1c2hjaGluQGxpbnV4LmRldj4KPiA+IENjOiBIeWVvbmdnb24gWW9vIDw0Mi5o
-eWV5b29AZ21haWwuY29tPgo+ID4gQ2M6IE1hcmNvIEVsdmVyIDxlbHZlckBnb29nbGUuY29tPgo+
-ID4gQ2M6IGxpbnV4LW1tQGt2YWNrLm9yZwo+ID4gU2lnbmVkLW9mZi1ieTogS2VlcyBDb29rIDxr
-ZWVzY29va0BjaHJvbWl1bS5vcmc+Cj4gCj4gVGhhbmtzIGZvciB5b3VyIHBhdGNoLCB3aGljaCBp
-cyBub3cgY29tbWl0IDYzY2FhMDRlYzYwNTgzYjEgKCJzbGFiOgo+IFJlbW92ZSBfX21hbGxvYyBh
-dHRyaWJ1dGUgZnJvbSByZWFsbG9jIGZ1bmN0aW9ucyIpIGluIG5leHQtMjAyMjA5MjcuCj4gCj4g
-Tm9yZXBseUBlbGxlcm1hbi5pZC5hdSByZXBvcnRlZCBhbGwgZ2NjOC1iYXNlZCBidWlsZHMgdG8g
-ZmFpbAo+IChlLmcuIFsxXSwgbW9yZSBhdCBbMl0pOgo+IAo+ICAgICBJbiBmaWxlIGluY2x1ZGVk
-IGZyb20gPGNvbW1hbmQtbGluZT46Cj4gICAgIC4vaW5jbHVkZS9saW51eC9wZXJjcHUuaDogSW4g
-ZnVuY3Rpb24g4oCYX19hbGxvY19yZXNlcnZlZF9wZXJjcHXigJk6Cj4gICAgIC4vLi9pbmNsdWRl
-L2xpbnV4L2NvbXBpbGVyX3R5cGVzLmg6Mjc5OjMwOiBlcnJvcjogZXhwZWN0ZWQKPiBkZWNsYXJh
-dGlvbiBzcGVjaWZpZXJzIGJlZm9yZSDigJhfX2FsbG9jX3NpemVfX+KAmQo+ICAgICAgI2RlZmlu
-ZSBfX2FsbG9jX3NpemUoeCwgLi4uKSBfX2FsbG9jX3NpemVfXyh4LCAjIyBfX1ZBX0FSR1NfXykg
-X19tYWxsb2MKPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXn5+fn5+fn5+fn5+
-fn4KPiAgICAgLi9pbmNsdWRlL2xpbnV4L3BlcmNwdS5oOjEyMDo3NDogbm90ZTogaW4gZXhwYW5z
-aW9uIG9mIG1hY3JvIOKAmF9fYWxsb2Nfc2l6ZeKAmQo+ICAgICBbLi4uXQo+IAo+IEl0J3MgYnVp
-bGRpbmcgZmluZSB3aXRoIGUuZy4gZ2NjLTkgKHdoaWNoIGlzIG15IHVzdWFsIG02OGsgY3Jvc3Mt
-Y29tcGlsZXIpLgo+IFJldmVydGluZyB0aGlzIGNvbW1pdCBvbiBuZXh0LTIwMjIwOTI3IGZpeGVz
-IHRoZSBpc3N1ZS4KPiAKPiBbMV0gaHR0cDovL2tpc3NrYi5lbGxlcm1hbi5pZC5hdS9raXNza2Iv
-YnVpbGRyZXN1bHQvMTQ4MDM5MDgvCj4gWzJdIGh0dHA6Ly9raXNza2IuZWxsZXJtYW4uaWQuYXUv
-a2lzc2tiL2hlYWQvMWJkOGI3NWZlNmFkZWFhODlkMDI5NjhiZGQ4MTFmZmU3MDhjZjgzOS8KCkVl
-ayEgVGhhbmtzIGZvciBsZXR0aW5nIG1lIGtub3cuIEknbSBjb25mdXNlZCBhYm91dCB0aGlzIC0t
-Cl9fYWxsb2Nfc2l6ZV9fIHdhc24ndCBvcHRpb25hbCBpbiBjb21waWxlcl9hdHRyaWJ1dGVzLmgg
-LS0gYnV0IG9idmlvdXNseQpJIGJyb2tlIHNvbWV0aGluZyEgSSdsbCBnbyBmaWd1cmUgdGhpcyBv
-dXQuCgotS2VlcwoKLS0gCktlZXMgQ29vawpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVk
-LWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2ludGVsLXdpcmVkLWxhbgo=
+Pages for Rx are allocated in ixgbe_alloc_mapped_page() using
+dev_alloc_pages(), which does the allocation using flags GFP_ATOMIC |
+__GFP_NOWARN. Pages allocated thus can't come from highmem, so remove
+calls to kmap() and kunmap().
+
+While here, also remove the local variable "match", and just return
+true/false.
+
+I wasn't able to get a hold of a system with an ixgbe NIC to test this
+change. This is a pretty trivial change and I don't expect anything to
+break, but a "Tested-by" from someone who has the hardware would be nice.
+
+Cc: Alexander Duyck <alexander.duyck@gmail.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Ira Weiny <ira.weiny@intel.com>
+Cc: Fabio M. De Francesco <fmdefrancesco@gmail.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Suggested-by: Ira Weiny <ira.weiny@intel.com>
+Suggested-by: Fabio M. De Francesco <fmdefrancesco@gmail.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 04f453e..90c0e0b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -1960,20 +1960,17 @@ static bool ixgbe_check_lbtest_frame(struct ixgbe_rx_buffer *rx_buffer,
+ 				     unsigned int frame_size)
+ {
+ 	unsigned char *data;
+-	bool match = true;
+ 
+ 	frame_size >>= 1;
+ 
+-	data = kmap(rx_buffer->page) + rx_buffer->page_offset;
++	data = page_address(rx_buffer->page) + rx_buffer->page_offset;
+ 
+ 	if (data[3] != 0xFF ||
+ 	    data[frame_size + 10] != 0xBE ||
+ 	    data[frame_size + 12] != 0xAF)
+-		match = false;
+-
+-	kunmap(rx_buffer->page);
++		return false;
+ 
+-	return match;
++	return true;
+ }
+ 
+ static u16 ixgbe_clean_test_rings(struct ixgbe_ring *rx_ring,
+-- 
+2.37.2
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
