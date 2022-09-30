@@ -1,105 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92852C433F5
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Sep 2022 22:03:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFF98C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 30 Sep 2022 22:32:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 315EE812E1;
-	Fri, 30 Sep 2022 22:03:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 315EE812E1
+	by smtp3.osuosl.org (Postfix) with ESMTP id 49BB460D89;
+	Fri, 30 Sep 2022 22:32:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 49BB460D89
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1664575419;
-	bh=ihAx1+iTEomN1cCUzcZQm1hAV+5l1Qya17tSS8e5gjU=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=3tsJxKwqt+dkRKUrKeqbu47taCPO5NZyLrMt9ulesQaZRkW3lq0XsK3Jv/2lB6CQg
-	 nU11UmuTUa6gvkLnDWnPYAvyCbYR4ACNeNxQx2cNAyZPVMHAK8mSd8HyhotrPAY7h8
-	 +k7y3Fi2N3bsJM1uqFIQsRoB6h3ZVmGSeQcu/viaqzYt2oaAPa0zkHea+/K3PJ+bdz
-	 UWqCYtZiyqkSIVUrYXKu89Uwy5N6JfvgOHNmTPE/BrMdnFpq2IrgOUmsJ3PC32QP1s
-	 J/C6ZRrVdgBZCw4dVePLmN/MxpS4OZw3SNYOen+vZgIM67k9eDbhZ3jbxTslzqsIsi
-	 aruqYPTkYJ26Q==
+	s=default; t=1664577166;
+	bh=zYwga3h11vlnNL+QrWbLKqJaVdz0MCMiqW9yooD7deM=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=yLhFXTUkaJAGt0atUZYH6gCegFNoGGjLIAi2rB5Ki+yRSqxNVPNLZMw3aNPwQURwo
+	 Jbw6j56opIRdRGGvJNBpZ9f/PuiQjPSmEL5hEC7/KF2eC8ZkCHyhUfafOYun7pxXdt
+	 CHFYI93OtbuoXRxzEmdrQgUQHzNH8vV22UhSQ0YQW+HETPkJdVd9/IlWUe80+VgHSF
+	 VOCDHDVSAfOhg5ZqEn4LSCehBdxLlCaZEi+MVQfrhX/tqlgnRkbp0dGWMw9m+KRUVd
+	 AA10ZTf/gha7LdHtzdo3htwPje8yUon/+M9Y6aCt0vgN4NVcBq8XHkdA5GxajmPHZk
+	 hrUeNbFRpEUSQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id NKckNGpxU9dT; Fri, 30 Sep 2022 22:03:37 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id tDk1TYTmXaZL; Fri, 30 Sep 2022 22:32:45 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C2A908130A;
-	Fri, 30 Sep 2022 22:03:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C2A908130A
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id C1A091BF32D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Sep 2022 22:03:35 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3EA6460D91;
+	Fri, 30 Sep 2022 22:32:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3EA6460D91
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id CDA5C1BF4E7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Sep 2022 22:32:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9A50E4093F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Sep 2022 22:03:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A50E4093F
+ by smtp2.osuosl.org (Postfix) with ESMTP id A839040B78
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Sep 2022 22:32:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A839040B78
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id G5_H7shu_QwS for <intel-wired-lan@lists.osuosl.org>;
- Fri, 30 Sep 2022 22:03:30 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1BCBE40929
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com
- [IPv6:2a00:1450:4864:20::62d])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1BCBE40929
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Sep 2022 22:03:29 +0000 (UTC)
-Received: by mail-ej1-x62d.google.com with SMTP id nb11so11710514ejc.5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Sep 2022 15:03:29 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
- :subject:date;
- bh=w1LUNGae1tKCepvb0oOGHF++V1v90y9UBTYHWhUfzAA=;
- b=Bb9cp4akMDeyvQ9pvU7zW0hIGbmnP+ZvE2KXnZmdwM4jeUls3LIR8S6JGnv+wkF64t
- hRUsmNom4vk136dn8VrmHCecHr1jtpnseVy819YBncGN6xswGTOA9KU8jQuX9RFprRxN
- 6Jlj8Nx1RY8+8gx9tFV6N+Rjap+or4lQPQxWyRJ3ZoUzoBX0zS/iEO939vPcuFOE1Wln
- zk8GvtORRd5hWuftQgvYofelI11esVfI9WnXzT65RaihL7WSWTZ47HzqTX0Yo0uGmVUi
- 00m7rZf5Fnmc/lcJNMA3+Z0vMxQVxSjn1ttg5sRz6HZAdOpBqkf0nVlQ8EOsamdLCIVC
- LJ4A==
-X-Gm-Message-State: ACrzQf3SIwFXt/icJD7VWDlPR7zG/oFW/Te2/GWPQY26zcHlDQzSJp+T
- CNd5FqSaurEt+eITJ22hbU8=
-X-Google-Smtp-Source: AMsMyM4sdp1MWWaYaJKLOcSXT3SWaRWras92rfoJ6q3CHFksLe+XCS2i9JymJ/lS58ISBcwlLeSJWQ==
-X-Received: by 2002:a17:906:dc8b:b0:787:8f41:d231 with SMTP id
- cs11-20020a170906dc8b00b007878f41d231mr7950685ejc.547.1664575408188; 
- Fri, 30 Sep 2022 15:03:28 -0700 (PDT)
-Received: from localhost.localdomain
- (host-79-34-226-61.business.telecomitalia.it. [79.34.226.61])
- by smtp.gmail.com with ESMTPSA id
- x11-20020a170906298b00b0073de0506745sm1703399eje.197.2022.09.30.15.03.25
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 30 Sep 2022 15:03:27 -0700 (PDT)
-From: "Fabio M. De Francesco" <fmdefrancesco@gmail.com>
-To: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>,
- Ira Weiny <ira.weiny@intel.com>
-Date: Sat, 01 Oct 2022 00:03:24 +0200
-Message-ID: <832292081.0ifERbkFSE@localhost.localdomain>
-In-Reply-To: <27280395.gRfpFWEtPU@localhost.localdomain>
-References: <20220629085836.18042-1-fmdefrancesco@gmail.com>
- <22aa8568-7f6e-605e-7219-325795b218b7@intel.com>
- <27280395.gRfpFWEtPU@localhost.localdomain>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id LVRvbwH7rX4O for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 30 Sep 2022 22:32:42 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8133D4052F
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8133D4052F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 30 Sep 2022 22:32:41 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10486"; a="282672772"
+X-IronPort-AV: E=Sophos;i="5.93,359,1654585200"; d="scan'208";a="282672772"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 30 Sep 2022 15:32:41 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10486"; a="618134137"
+X-IronPort-AV: E=Sophos;i="5.93,359,1654585200"; d="scan'208";a="618134137"
+Received: from avenkata-desk0.sc.intel.com ([172.25.112.42])
+ by orsmga007.jf.intel.com with ESMTP; 30 Sep 2022 15:32:40 -0700
+From: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Fri, 30 Sep 2022 15:33:24 -0700
+Message-Id: <20220930223324.1008555-1-anirudh.venkataramanan@intel.com>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
- bh=w1LUNGae1tKCepvb0oOGHF++V1v90y9UBTYHWhUfzAA=;
- b=LNmiO19Lzs2yuUyodCb6bzUXcpgj17k/JJvoy0TdiXj17vhMD8G2vLFLqfPhMnXstL
- Qy9sgewfQhwdYihswkIQX+u2cKirqaZwJ89+MDAJo1h6WusEgGkOKdxaQoD1XPiLdkVr
- lzsphSywwAq7qk40yYdi+6Gn3lkQkckHA+/jLm0mbLdnav90Gij9+A0mwymMuJESrlLb
- 0IQUHZ9Vq/OEWHdH4iL0nTgsFTEab+BUrlna+wNyKkl8hQHWnFCxlRgdgODjwVEGav0H
- UGI7Cr6harkCrjfCb6ExBg+cQ5e4Su3d91bqSSc5/KTkM1aTrt1TkyeDzjWo4JT9JeKH
- kFZA==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=LNmiO19L
-Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: Use kmap_local_page in
- ixgbe_check_lbtest_frame()
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1664577162; x=1696113162;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=1p7qLFh7XHJkhrkTF2KAd2O/ABA7vYXK+QKJMHkg+NQ=;
+ b=DSXVhoLGYVZuJOYqRxInR1//JSLYSFhsyGyPLTcebkSBnALK6y7k0eUg
+ fzn2rhPXHMtFGkPufaFhk/Qt3OWhA4k2/mSIqi0rZCbJQvZQvsNj9qPC6
+ YOUX7euUvgumITCFbFJHvwGFgXWYd9bavG+t+PerW3wrW8ecWrCFY2RgZ
+ CWjGFy5zRIeANYqTyUJYNWBkGcGtNhaMqsP7ux5KwWbQLJNpeXp0oeGdl
+ 6BJVlk/ZE6Sd7+zpMRgPBrhxc3aQHr+Bttr/GQ4Gl3e4kq6roNKnzvOj3
+ uHGzYs+NBQw+6/7mfC4r8EoRjt+LSxhUtddoflOdyCXPi4nGHZuLuPWMZ
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=DSXVhoLG
+Subject: [Intel-wired-lan] [PATCH v2 net-next] e1000e: Remove unnecessary
+ use of kmap_atomic()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,76 +92,86 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jesper Dangaard Brouer <hawk@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Netdev <netdev@vger.kernel.org>,
- Alexander Duyck <alexanderduyck@fb.com>,
- John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>,
- Eric Dumazet <edumazet@google.com>,
- intel-wired-lan <intel-wired-lan@lists.osuosl.org>,
- Jakub Kicinski <kuba@kernel.org>, bpf <bpf@vger.kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- LKML <linux-kernel@vger.kernel.org>
+Cc: "Fabio M . De Francesco" <fmdefrancesco@gmail.com>,
+ Ira Weiny <ira.weiny@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Friday, September 23, 2022 5:05:43 PM CEST Fabio M. De Francesco wrote:
-> Hi Anirudh,
-> 
-> On Friday, September 23, 2022 12:38:02 AM CEST Anirudh Venkataramanan wrote:
-> > On 9/22/2022 1:58 PM, Alexander Duyck wrote:
-> > > On Thu, Sep 22, 2022 at 1:07 PM Anirudh Venkataramanan
-> > > <anirudh.venkataramanan@intel.com> wrote:
+alloc_rx_buf() allocates ps_page->page and buffer_info->page using either
+GFP_ATOMIC or GFP_KERNEL. Memory allocated with GFP_KERNEL/GFP_ATOMIC can't
+come from highmem and so there's no need to kmap() them. Just use
+page_address().
 
-[snip]
+I don't have access to a 32-bit system so did some limited testing on qemu
+(qemu-system-i386 -m 4096 -smp 4 -device e1000e) with a 32-bit Debian 11.04
+image.
 
-> > Is using page_address() directly beneficial in some way?
-> 
-> A possible call chain on 32 bits kernels is the following:
-> 
-> kmap_local_page() ->
->  __kmap_local_page_prot() { 
-> 	if (!IS_ENABLED(CONFIG_DEBUG_KMAP_LOCAL_FORCE_MAP) && |
-> PageHighMem(page))
-> 		return page_address(page);
-> 
-> ....
-> }
-> 
-> How many instructions can you save calling page_address() directly?
-> If you don't know, look at the assembly.
+v1->v2:
+- update comment to remove a reference to kmap
 
-I just realized that perhaps you were expecting something like either "No, it 
-is not directly beneficial because []" or "Yes, it is directly beneficial 
-because []".
+Cc: Ira Weiny <ira.weiny@intel.com>
+Cc: Fabio M. De Francesco <fmdefrancesco@gmail.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Suggested-by: Ira Weiny <ira.weiny@intel.com>
+Suggested-by: Fabio M. De Francesco <fmdefrancesco@gmail.com>
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
 
-Instead, I used a rhetoric question that might not have been so clear as I 
-thought. This kind of construct is so largely used in my native language, that 
-nobody might misunderstand. I'm not so sure if it is the same in English.
-
-I mean, are those dozen "unnecessary" further assembly instructions too many 
-or too few to care about? I _think_ that they are too many.
-
-Therefore, by showing a possible call chain in 32 bits architectures, I 
-indirectly responded "no, I can't see any direct benefit", at least because....
-
-1) Whatever the architecture, if pages can't come from Highmem, code always 
-ends up calling page_address(). In 32 bits archs they waste precious kernel 
-stack space (a scarce resources) only to build two stack frames (one per each 
-called functions).
-
- 2) Developers adds further work to the CPU and force the kernel to run 
-unnecessary code.
-
-I'll always use page_address() when I can "prove" that the allocation cannot 
-come from ZONE_HIGHMEM.
-
-Thanks,
-
-Fabio
-
-
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 49e9269..5fb7891 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1388,26 +1388,18 @@ static bool e1000_clean_rx_irq_ps(struct e1000_ring *rx_ring, int *work_done,
+ 
+ 			/* page alloc/put takes too long and effects small
+ 			 * packet throughput, so unsplit small packets and
+-			 * save the alloc/put only valid in softirq (napi)
+-			 * context to call kmap_*
++			 * save the alloc/put
+ 			 */
+ 			if (l1 && (l1 <= copybreak) &&
+ 			    ((length + l1) <= adapter->rx_ps_bsize0)) {
+-				u8 *vaddr;
+-
+ 				ps_page = &buffer_info->ps_pages[0];
+ 
+-				/* there is no documentation about how to call
+-				 * kmap_atomic, so we can't hold the mapping
+-				 * very long
+-				 */
+ 				dma_sync_single_for_cpu(&pdev->dev,
+ 							ps_page->dma,
+ 							PAGE_SIZE,
+ 							DMA_FROM_DEVICE);
+-				vaddr = kmap_atomic(ps_page->page);
+-				memcpy(skb_tail_pointer(skb), vaddr, l1);
+-				kunmap_atomic(vaddr);
++				memcpy(skb_tail_pointer(skb),
++				       page_address(ps_page->page), l1);
+ 				dma_sync_single_for_device(&pdev->dev,
+ 							   ps_page->dma,
+ 							   PAGE_SIZE,
+@@ -1607,11 +1599,9 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_ring *rx_ring, int *work_done,
+ 				 */
+ 				if (length <= copybreak &&
+ 				    skb_tailroom(skb) >= length) {
+-					u8 *vaddr;
+-					vaddr = kmap_atomic(buffer_info->page);
+-					memcpy(skb_tail_pointer(skb), vaddr,
++					memcpy(skb_tail_pointer(skb),
++					       page_address(buffer_info->page),
+ 					       length);
+-					kunmap_atomic(vaddr);
+ 					/* re-use the page, so don't erase
+ 					 * buffer_info->page
+ 					 */
+-- 
+2.37.2
 
 _______________________________________________
 Intel-wired-lan mailing list
