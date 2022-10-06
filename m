@@ -4,85 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CDDFC433F5
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Oct 2022 11:13:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62C0FC433F5
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Oct 2022 12:41:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3C17C4055E;
-	Thu,  6 Oct 2022 11:13:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3C17C4055E
+	by smtp2.osuosl.org (Postfix) with ESMTP id F1DF340C2C;
+	Thu,  6 Oct 2022 12:41:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F1DF340C2C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1665054809;
-	bh=jvWnoNzGBd0ltQbRDaaDyQDdiGVUVUUrCaf7JbpBnYQ=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1665060088;
+	bh=kmIhHyxB4PJqOP5dRpoHh15+D4YaaALVuzY7F6RoiOQ=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=sEhPaTYIQgh1VOlQ0yj+myQd/JkmV7pFQZ9Vc83/kAotd/Wl33GlYVZI8sb//mmhj
-	 hrtkTfIWPEREjEIQj3svDF/JkqtjWe+OKbeAu7VED/AqlsD9s0vu0+tbxXvQI8K8Xl
-	 r3CBDx+3jPOdwR3ZVCfmlLKceAFp9GPOfE9bTJLajk4rtJGMT0NeYRjK6iBJvfFzw1
-	 hJhwoiRa1KpaJOZh26F1snVfQ6TeO/rCKwk9R72xCYOFpMgWoLbJEch9OvK1e7dJsj
-	 iQOqzjgnwRJBVHu6yNcwTFeQksmAqEU/yZba7HKublUm7y4IqJZPf5D1frfuGDc2Zl
-	 vn0dHc9q1uZjg==
+	b=Da1mpUBda3Qt6THHQdKXaCbEdfZbxcVl5iWDQ0n9tcqYFAzxuTsDhEiY8qXjvSFsu
+	 Xra8m6PXDTEpdHIrKMUPSWMtQoh/eqXt0F6yDQoTKtj+H//oJqg8qTecCxkU8fjC2K
+	 pAkA8Gn/5vqgrtIXsVda3dbhVgDKmoRHrP8oXnysgzRzwD9eEYWMQSuIBNzy6XxSa5
+	 Epjnn+bjMHzUEyHB/PCXynqu/q8rmYcIzB5P1vTBzbaL9Jax2jwhUOJjk2bFhb0v6g
+	 qgk1LNb5H7HRVfal/xNr8XvOe+wpzW0quwP+DIpbGbI70yv3Cwe4vWKJ0Gk/CtDZS+
+	 9MinQG8IjZJMQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IUQspGhr4ScW; Thu,  6 Oct 2022 11:13:28 +0000 (UTC)
+	with ESMTP id bkie0zDnoVzQ; Thu,  6 Oct 2022 12:41:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 264B940571;
-	Thu,  6 Oct 2022 11:13:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 264B940571
+	by smtp2.osuosl.org (Postfix) with ESMTP id 07EA840C4F;
+	Thu,  6 Oct 2022 12:41:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 07EA840C4F
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id C21081BF408
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Oct 2022 11:13:25 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 87FE01BF393
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Oct 2022 12:41:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A814B4012E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Oct 2022 11:13:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A814B4012E
+ by smtp4.osuosl.org (Postfix) with ESMTP id 602A6418AB
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Oct 2022 12:41:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 602A6418AB
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Adf1cgBJG8aB for <intel-wired-lan@lists.osuosl.org>;
- Thu,  6 Oct 2022 11:13:24 +0000 (UTC)
+ with ESMTP id hBxe5XjBDp1N for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  6 Oct 2022 12:41:24 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8FE054003E
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8FE054003E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Oct 2022 11:13:24 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="302132845"
-X-IronPort-AV: E=Sophos;i="5.95,163,1661842800"; d="scan'208";a="302132845"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Oct 2022 04:13:23 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 98BD640331
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 98BD640331
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Oct 2022 12:41:24 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="283148854"
+X-IronPort-AV: E=Sophos;i="5.95,163,1661842800"; d="scan'208";a="283148854"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Oct 2022 05:41:24 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="624683457"
-X-IronPort-AV: E=Sophos;i="5.95,163,1661842800"; d="scan'208";a="624683457"
-Received: from lkp-server01.sh.intel.com (HELO 3c15167049b7) ([10.239.97.150])
- by orsmga002.jf.intel.com with ESMTP; 06 Oct 2022 04:13:20 -0700
-Received: from kbuild by 3c15167049b7 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1ogOoZ-00007Q-2F;
- Thu, 06 Oct 2022 11:13:19 +0000
-Date: Thu, 06 Oct 2022 19:12:20 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <633eb814.exNR+vMl+25CQlGL%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="713831441"
+X-IronPort-AV: E=Sophos;i="5.95,163,1661842800"; d="scan'208";a="713831441"
+Received: from s240.igk.intel.com (HELO s048.nql.local) ([10.102.18.202])
+ by FMSMGA003.fm.intel.com with ESMTP; 06 Oct 2022 05:41:23 -0700
+From: Jan Sokolowski <jan.sokolowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Thu,  6 Oct 2022 14:44:08 +0200
+Message-Id: <20221006124408.15485-1-jan.sokolowski@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1665054804; x=1696590804;
- h=date:from:to:subject:message-id:mime-version:
+ t=1665060084; x=1696596084;
+ h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=VEDkMH6vWKUU6xVrFUKJ8qJtwJrZ4s0WBoEOB2GMfGk=;
- b=ZJcsxJ66C7JvE5Q/dcHIr8xhQgUU/AMqxONsCPMYZ/cXEzYY6AAq6tHz
- RPZ/URt/eyHfZo0oHL1lESPTvP1F6AUNeFdCUfUu3+9C1tCYlTt1XJR8/
- mSU3UpltgUZ1b82sDMqYu8P6Bm4EHKij7WOoZphkIUCw8wHJqzoWe3f9C
- 69zA7N/ArlHWLb3nlDdBmPcuTkjmlA3KiYGPQ5fSOOym1GqrkWOhO4HSB
- lKHNOed6Bio+Lx/Q6Yk5imHAKlcMiwAWjGcWmPTRq9iaZmD9Cdkc5SDp/
- hkJfAWn8fvYduTZrymu/PJJ5Xms8TQpJh1+0axdXKlpzbxEfRpTqVvCiR
- g==;
+ bh=SZR4rCa0Gr13OrCIymsYSp9WQZOq/CSE/HvoLm5hmqg=;
+ b=VPIpiw6GRgqSPeBC2Wuo3cL6I13s8f1bl3VZ9ysCZ1u2fvWXjfFoUFE9
+ /B/u2tFLsfVL21zqaqa8Y5PxWkxb99S1W5E7qswTseurImBjlMuY0XAgu
+ n5qm8VdhNpfPFHhDD5W+7/0Ex7YHWBs2WGXRCNWqc1AZo49Uk0ZlIluS9
+ Tic48vrB49prTEi7ciexy4uBGnOrYYwkRhJfh3Kr2bAjviN5g0H+2lCHS
+ tGholAMM4UpDbzUCnLEeD+RcfdyBMbBjPZHmdr3X9dyXhCog6eije7svU
+ U+5/FZGRmY1ojVg8wHuCF9R2tAp4diTbpgsipOOV4CssxhWPWxx86Jixm
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ZJcsxJ66
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- da0e352053f2aeb03d61053d3c98ad9d8a2911ee
+ header.a=rsa-sha256 header.s=Intel header.b=VPIpiw6G
+Subject: [Intel-wired-lan] [PATCH net-next v2] ixgbevf: Add error messages
+ on vlan error
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,121 +97,57 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: da0e352053f2aeb03d61053d3c98ad9d8a2911ee  i40e: Fix flow-type by setting GL_HASH_INSET registers
+From: "Jan Sokolowski" <jan.sokolowski@intel.com>
 
-elapsed time: 723m
+ixgbevf did not provide an error in dmesg if VLAN addition failed.
 
-configs tested: 97
-configs skipped: 2
+Add two descriptive failure messages in the kernel log.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+---
+v2: Reworded commit message
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c   | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-gcc tested configs:
-um                           x86_64_defconfig
-um                             i386_defconfig
-arc                                 defconfig
-alpha                               defconfig
-m68k                             allmodconfig
-arc                              allyesconfig
-alpha                            allyesconfig
-x86_64                          rhel-8.3-func
-x86_64                              defconfig
-x86_64                    rhel-8.3-kselftests
-s390                                defconfig
-s390                             allmodconfig
-x86_64                               rhel-8.3
-x86_64               randconfig-a011-20221003
-m68k                             allyesconfig
-x86_64                           rhel-8.3-syz
-x86_64               randconfig-a012-20221003
-s390                             allyesconfig
-x86_64                           allyesconfig
-arm                                 defconfig
-x86_64               randconfig-a013-20221003
-i386                                defconfig
-i386                 randconfig-a011-20221003
-x86_64               randconfig-a014-20221003
-i386                 randconfig-a012-20221003
-x86_64                         rhel-8.3-kunit
-x86_64               randconfig-a015-20221003
-x86_64               randconfig-a016-20221003
-i386                 randconfig-a013-20221003
-x86_64                           rhel-8.3-kvm
-i386                 randconfig-a015-20221003
-i386                             allyesconfig
-powerpc                           allnoconfig
-i386                 randconfig-a016-20221003
-i386                 randconfig-a014-20221003
-mips                             allyesconfig
-ia64                             allmodconfig
-arm                              allyesconfig
-riscv                randconfig-r042-20221003
-arc                  randconfig-r043-20221003
-arc                  randconfig-r043-20221002
-s390                 randconfig-r044-20221003
-powerpc                          allmodconfig
-arm64                            allyesconfig
-sh                               allmodconfig
-arm                     eseries_pxa_defconfig
-mips                         cobalt_defconfig
-openrisc                            defconfig
-nios2                            alldefconfig
-csky                              allnoconfig
-alpha                             allnoconfig
-arc                               allnoconfig
-riscv                             allnoconfig
-powerpc                     taishan_defconfig
-powerpc                       eiger_defconfig
-loongarch                        alldefconfig
-powerpc                 mpc85xx_cds_defconfig
-parisc                generic-64bit_defconfig
-i386                          randconfig-c001
-mips                 randconfig-c004-20221002
-arc                           tb10x_defconfig
-um                               alldefconfig
-mips                         bigsur_defconfig
-mips                        bcm47xx_defconfig
-arm                          simpad_defconfig
-i386                          debian-10.3-kvm
-i386                        debian-10.3-kunit
-i386                         debian-10.3-func
-m68k                            q40_defconfig
-mips                  decstation_64_defconfig
-powerpc                     tqm8548_defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-powerpc                      cm5200_defconfig
-arm                           viper_defconfig
-
-clang tested configs:
-x86_64               randconfig-a001-20221003
-hexagon              randconfig-r041-20221003
-i386                 randconfig-a005-20221003
-x86_64               randconfig-a005-20221003
-i386                 randconfig-a006-20221003
-riscv                randconfig-r042-20221002
-hexagon              randconfig-r041-20221002
-x86_64               randconfig-a002-20221003
-s390                 randconfig-r044-20221002
-x86_64               randconfig-a003-20221003
-x86_64               randconfig-a004-20221003
-hexagon              randconfig-r045-20221002
-hexagon              randconfig-r045-20221003
-i386                 randconfig-a001-20221003
-i386                 randconfig-a002-20221003
-i386                 randconfig-a003-20221003
-i386                 randconfig-a004-20221003
-x86_64               randconfig-a006-20221003
-x86_64                        randconfig-k001
-
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 2f12fbe229c1..f1e5809f4d22 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -2044,12 +2044,16 @@ static int ixgbevf_vlan_rx_add_vid(struct net_device *netdev,
+ 
+ 	spin_unlock_bh(&adapter->mbx_lock);
+ 
+-	/* translate error return types so error makes sense */
+-	if (err == IXGBE_ERR_MBX)
+-		return -EIO;
++	if (err) {
++		netdev_err(netdev, "VF could not set VLAN %d\n", vid);
++
++		/* translate error return types so error makes sense */
++		if (err == IXGBE_ERR_MBX)
++			return -EIO;
+ 
+-	if (err == IXGBE_ERR_INVALID_ARGUMENT)
+-		return -EACCES;
++		if (err == IXGBE_ERR_INVALID_ARGUMENT)
++			return -EACCES;
++	}
+ 
+ 	set_bit(vid, adapter->active_vlans);
+ 
+@@ -2070,6 +2074,9 @@ static int ixgbevf_vlan_rx_kill_vid(struct net_device *netdev,
+ 
+ 	spin_unlock_bh(&adapter->mbx_lock);
+ 
++	if (err)
++		netdev_err(netdev, "Could not remove VLAN %d\n", vid);
++
+ 	clear_bit(vid, adapter->active_vlans);
+ 
+ 	return err;
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.31.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
