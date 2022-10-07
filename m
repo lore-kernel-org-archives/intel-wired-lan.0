@@ -4,80 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67FFFC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Oct 2022 17:58:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABDC6C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Oct 2022 17:58:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E2E2F6068D;
-	Fri,  7 Oct 2022 17:58:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E2E2F6068D
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5483360008;
+	Fri,  7 Oct 2022 17:58:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5483360008
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1665165502;
-	bh=ge9S5GLfQUIdjt7xzM+hlOKSwXvSpiaXP6dL04+49sw=;
+	s=default; t=1665165506;
+	bh=nxpBvJy3mUIEdrOU66+w2nhHqY4tA2en6UKNbZZKgeU=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ny7wZGHg3WyxcjyJH4cYuk0BiiGvEY3Qjg062z8nbLLklAPv2ozfeaAQ9lRHDK1Qn
-	 OWMUnyfuXDQsUB/CiAaKiUSYhuokx0uToKHTuizWPVz5+MtqjQGBPxeOnmZwKPErQL
-	 BPNP3b5Pca7JpNSpa/IPuj+LK3wKkHvezh8RnlCWB9NupYI+0tZC2CWZA9x+HQbrRc
-	 sk1eeQfRJbN80VxIOQAeeGu0ZlL8Q4mS8sipjXzC3AprKOI2OHigRh7oy2bNTTlh8b
-	 8UVNmbVJzdkdzozAQvY6Jg5IOmcLiuOyPlags4arWhjlc8XDKXe8GQ/bOoTqJDr1VT
-	 Jf/2rr85aiSFw==
+	b=WDWdG3CIbKsVl/187Eu85f4KykqXtNEKWr4Av2OheQqRI4E1OR3g/d0JPGdzJgjED
+	 KHHZIgs2xR0J6VqBwL5UGDZYwKXBOkKoBsnb9peSZX3tbFhbf1aHpQCbZCe96ehaIi
+	 c46xTZKO+s/HWO+9zCgwYrLoCzBnd5vOnFv9TP74lQW/ew+65xriytSH/6GT1iAkhc
+	 QaWuERCT75ywNrDJXibQoBglPVrLL7w9V4/piC9M6RBY9anQfxKmq5L0832a/D1P4d
+	 D7tU5PxTTiuWlEwF5uxJ4+CjiKPhFmSJuNyOB4X5509goWvZLoer3gGBrWzXPrDX1e
+	 2TUpzgRl5wjxg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4CzHAN0gAyH9; Fri,  7 Oct 2022 17:58:21 +0000 (UTC)
+	with ESMTP id iNygxmriL_yy; Fri,  7 Oct 2022 17:58:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3C2FE60746;
-	Fri,  7 Oct 2022 17:58:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3C2FE60746
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 5B9651BF279
+	by smtp3.osuosl.org (Postfix) with ESMTP id 31D7360009;
+	Fri,  7 Oct 2022 17:58:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 31D7360009
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id DAC841BF279
  for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Oct 2022 17:58:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 332A060746
+ by smtp1.osuosl.org (Postfix) with ESMTP id B555B81775
  for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Oct 2022 17:58:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 332A060746
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B555B81775
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 5x1Eu6p5Oy8U for <intel-wired-lan@lists.osuosl.org>;
- Fri,  7 Oct 2022 17:58:19 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id y9T6y5l18MDL for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  7 Oct 2022 17:58:20 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0B3C1606ED
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com
- [IPv6:2607:f8b0:4864:20::52f])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 0B3C1606ED
- for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Oct 2022 17:58:18 +0000 (UTC)
-Received: by mail-pg1-x52f.google.com with SMTP id c7so5269979pgt.11
- for <intel-wired-lan@lists.osuosl.org>; Fri, 07 Oct 2022 10:58:18 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0E29581760
+Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com
+ [IPv6:2607:f8b0:4864:20::52e])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0E29581760
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Oct 2022 17:58:19 +0000 (UTC)
+Received: by mail-pg1-x52e.google.com with SMTP id 78so5250891pgb.13
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 07 Oct 2022 10:58:19 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=references:in-reply-to:message-id:date:subject:cc:to:from
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=KYs5i1UtSKwff4LZqDYKTEYs6XamWF2jUJRPKUQ5EPA=;
- b=GI9YplWcoxkl/b2oKWXJQJXb5sTlMZAlZiJcVSO4M8DPxTmrbuk2GQ7Inf5Uj/LnUf
- 6ZntAd70l0ilg4SDItsT1DkHGld7qrBO2krzJFzg+HNu52JaRE1skdeNicLQYQfFvcal
- SAhLRpunzvOpV6gJx6O0cqJ1SglJiLtanhrs9XwW3JAk4u7dM1SdJ9lmT5B34ADSKPuY
- Dnz3mmyjv1+iEbkiLLTKn/leEAfmrWKVXiHy7a/s0AO+a/To65gVDI5PB4TF4JNHdJ/o
- 5JrvhbJ0WJEmbur04MZTSGEEY+crvlf3wKam9lBiabzHVYP4yovmoTLHDuUIlDb7QVvN
- ULwQ==
-X-Gm-Message-State: ACrzQf07cu4iP3KxlhGrWzA1rtu6Xym3GAazvItsw8UcHQ/COMjuTHTe
- nC8WU9jUDhvx79FxR6ruAPpiKIqev2BmwBbRNvU9eBO1rod6QXNyMv9egGgpf2+y3vq7w0Sb+eE
- uaKt8oUU7sroBkP01bRbrqYl1KDy7eCwjNEZiz4MxtFc0oLcHDyvrzXXz5zZSD4oEDgPEycf/2c
- hdcIk5pg==
-X-Google-Smtp-Source: AMsMyM6W03wcqwAG9RpMDEjUqqAZTlA/ogFZ7vSBkI6/0T292dzmkF+4xoA0WXqqZ1lC2+ClDPlhZg==
-X-Received: by 2002:a05:6a00:21c2:b0:52b:ff44:6680 with SMTP id
- t2-20020a056a0021c200b0052bff446680mr6492275pfj.57.1665165498124; 
- Fri, 07 Oct 2022 10:58:18 -0700 (PDT)
+ bh=xNDjKLhwL2kTGNEr27xp8J5TsBdq4kDpkXlCpFhKrQ4=;
+ b=CBzKedN6JCm0BiNevsE3hI+VdwzKspT4T634TkHiZQxBw+a9VeUpQ7eLhccf3fVjnY
+ 6BQ3ZCfpAioXqShpnk888yBFONpdbeBP4A/cYtobLs3ZvPe/N8X26c9wcH3FM9ZIxcS8
+ YYwJ2U9lQ5xGk7F10UCcqLIYRtTdbKwykCkCxzvQbFCTTGfUxFPF3JPZsBG3RFPR+MoI
+ kgrv7qxCO6qoAnsiqWuQHyAm9aXatyFjf437Hv50ki9uIlGOQyOtfmPe2ttlQ8ajGNXt
+ zeUSxl8FIJeSzmBebCPpFUicNmTOB+flg2+Sh7+PNn3wTMorkSX4xJTYSlEmlO8ZQ+cT
+ 01Ww==
+X-Gm-Message-State: ACrzQf0Dr41pK7BWvPmn2qyOZz82QPeEW3dWiN20BHdvIanUqid12H7M
+ ebZXJeL39YzW+iFxORngYAl1mOF2YFAtQK2EOhP54PcxId4n+N2RcLHDsreuKnC4Q1BMCKAU6Wm
+ 95tC/XmGGUt8M4Q3O+AcyC6lcbXV+YAh1g9u7jmcutuGmMf+eywEBMfoWshJiJRQbFlzhObe8IQ
+ V2p4bH4Q==
+X-Google-Smtp-Source: AMsMyM7IChpX/p2Wi8BTYVgni+zYgmhYaNERksxzKmCqopDt+4St7h9AF/7EolCye6XF02Z+DY4dyg==
+X-Received: by 2002:a62:ea09:0:b0:562:a86f:63af with SMTP id
+ t9-20020a62ea09000000b00562a86f63afmr6247367pfh.71.1665165499206; 
+ Fri, 07 Oct 2022 10:58:19 -0700 (PDT)
 Received: from localhost.localdomain (c-24-6-151-244.hsd1.ca.comcast.net.
  [24.6.151.244]) by smtp.gmail.com with ESMTPSA id
- a29-20020a631a1d000000b0045c5a749a8fsm1937498pga.61.2022.10.07.10.58.17
+ a29-20020a631a1d000000b0045c5a749a8fsm1937498pga.61.2022.10.07.10.58.18
  (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 07 Oct 2022 10:58:17 -0700 (PDT)
+ Fri, 07 Oct 2022 10:58:18 -0700 (PDT)
 From: Joe Damato <jdamato@fastly.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri,  7 Oct 2022 10:57:24 -0700
-Message-Id: <1665165447-1802-2-git-send-email-jdamato@fastly.com>
+Date: Fri,  7 Oct 2022 10:57:25 -0700
+Message-Id: <1665165447-1802-3-git-send-email-jdamato@fastly.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1665165447-1802-1-git-send-email-jdamato@fastly.com>
 References: <1665165447-1802-1-git-send-email-jdamato@fastly.com>
@@ -85,15 +85,15 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=fastly.com; s=google;
  h=references:in-reply-to:message-id:date:subject:cc:to:from:from:to
  :cc:subject:date:message-id:reply-to;
- bh=KYs5i1UtSKwff4LZqDYKTEYs6XamWF2jUJRPKUQ5EPA=;
- b=QQwz1yhXpBlKXl/lwsNiWYara4M4y1mpfLgFqQL9UrYYwCrCy+lM90LF1g+CCipFiR
- fYGhF6iuJUJ2A+lf/kpAXGb0dv0Ej4gchNBCTJ1dF17nG1ELHzajsa1RJkykNkHsK+QA
- rTM3EMkVOVWZAg6bcjbW2XxpqansrVbZN8bI4=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=xNDjKLhwL2kTGNEr27xp8J5TsBdq4kDpkXlCpFhKrQ4=;
+ b=lLX2Y0kWHsstVysx6Gv7fOhnhvqzIzAvNoAn/thw7uqhn1mzMu8fAPyObWHDv8bROk
+ ae3+0gIQvIali3pi3pkj9+COsGxLlXPko6l4L4LkOzd/Fo+WLQ6o7GltwprGp+YVgzou
+ yBf14RSrDGfzlxn24NDSpBp9F0BowQCpc4nMg=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (1024-bit key) header.d=fastly.com header.i=@fastly.com
- header.a=rsa-sha256 header.s=google header.b=QQwz1yhX
+ header.a=rsa-sha256 header.s=google header.b=lLX2Y0kW
 Subject: [Intel-wired-lan] [RFC,
- next-queue 1/4] i40e: Store the irq number in i40e_q_vector
+ next-queue 2/4] i40e: Record number TXes cleaned during NAPI
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,39 +113,70 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Make it easy to figure out the IRQ number for a particular i40e_q_vector by
-storing the assigned IRQ in the structure itself.
+Update i40e_clean_tx_irq to take an out parameter (tx_cleaned) which stores
+the number TXs cleaned.
+
+No XDP related TX code is touched. Care has been taken to avoid changing
+the control flow of i40e_clean_tx_irq and i40e_napi_poll.
 
 Signed-off-by: Joe Damato <jdamato@fastly.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      | 1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
- 2 files changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 9926c4e..8e1f395 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -992,6 +992,7 @@ struct i40e_q_vector {
- 	struct rcu_head rcu;	/* to avoid race with update stats on free */
- 	char name[I40E_INT_NAME_STR_LEN];
- 	bool arm_wb_state;
-+	int irq_num;		/* IRQ assigned to this q_vector */
- } ____cacheline_internodealigned_in_smp;
- 
- /* lan device */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 6b7535a..6efe130 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4123,6 +4123,7 @@ static int i40e_vsi_request_irq_msix(struct i40e_vsi *vsi, char *basename)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index b97c95f..274de1c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -923,11 +923,13 @@ void i40e_detect_recover_hung(struct i40e_vsi *vsi)
+  * @vsi: the VSI we care about
+  * @tx_ring: Tx ring to clean
+  * @napi_budget: Used to determine if we are in netpoll
++ * @tx_cleaned: Out parameter set to the number of TXes cleaned
+  *
+  * Returns true if there's any budget left (e.g. the clean is finished)
+  **/
+ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+-			      struct i40e_ring *tx_ring, int napi_budget)
++			      struct i40e_ring *tx_ring, int napi_budget,
++			      unsigned int *tx_cleaned)
+ {
+ 	int i = tx_ring->next_to_clean;
+ 	struct i40e_tx_buffer *tx_buf;
+@@ -1048,6 +1050,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
  		}
+ 	}
  
- 		/* register for affinity change notifications */
-+		q_vector->irq_num = irq_num;
- 		q_vector->affinity_notify.notify = i40e_irq_affinity_notify;
- 		q_vector->affinity_notify.release = i40e_irq_affinity_release;
- 		irq_set_affinity_notifier(irq_num, &q_vector->affinity_notify);
++	*tx_cleaned = total_packets;
+ 	return !!budget;
+ }
+ 
+@@ -2689,10 +2692,12 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 			       container_of(napi, struct i40e_q_vector, napi);
+ 	struct i40e_vsi *vsi = q_vector->vsi;
+ 	struct i40e_ring *ring;
++	bool tx_clean_complete = true;
+ 	bool clean_complete = true;
+ 	bool arm_wb = false;
+ 	int budget_per_ring;
+ 	int work_done = 0;
++	unsigned int tx_cleaned = 0;
+ 
+ 	if (test_bit(__I40E_VSI_DOWN, vsi->state)) {
+ 		napi_complete(napi);
+@@ -2705,10 +2710,10 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 	i40e_for_each_ring(ring, q_vector->tx) {
+ 		bool wd = ring->xsk_pool ?
+ 			  i40e_clean_xdp_tx_irq(vsi, ring) :
+-			  i40e_clean_tx_irq(vsi, ring, budget);
++			  i40e_clean_tx_irq(vsi, ring, budget, &tx_cleaned);
+ 
+ 		if (!wd) {
+-			clean_complete = false;
++			clean_complete = tx_clean_complete = false;
+ 			continue;
+ 		}
+ 		arm_wb |= ring->arm_wb;
 -- 
 2.7.4
 
