@@ -1,85 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4A7DC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Oct 2022 14:24:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5B89C433F5
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Oct 2022 19:29:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 5FB12404E0;
-	Mon, 10 Oct 2022 14:24:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5FB12404E0
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3EF4460E66;
+	Mon, 10 Oct 2022 19:29:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3EF4460E66
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1665411855;
-	bh=thF8FMIv8Srl8gX9wYHQaXSfFDUasQmRcrFtjfQBESI=;
+	s=default; t=1665430169;
+	bh=gkmMKBZbZYYo1FNipSgqDTx0w+evnOSpHHYTdOM0g0c=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=xCks0wz5aRHJU+IecWfkwT8VQPH70x3j8xyVf+TeDZVonhxbmOIXAmhSFA5M/WjFh
-	 Rj9MUKL6foF48XrNlJToEzXEBJbLe6DV0iXKzLZnpb9R5+8konlSFw0gBGrR7o88Jf
-	 MAKQQhSn40AljksvxMDBxMubiCe2mvJfzm+bW5iG4hfOuBJ58W0Sn/jTMTJyGlBEqJ
-	 BI/4oflSH3LKDxzgmpp4vNPn7RNu4d8Q3ZDFyLrFc+ln9Ur2ojQgfv7iKGMQKNnjN+
-	 h3wnjpmynCnHN5cOwIoQu54DvtSiVo9y4T1d7MKSq5Y6eKsFM8+2ZCzBZLaciikMW4
-	 cURQPph9a27yQ==
+	b=kMZQsUQvbfZzvNWBdFbbFvUeZaYlqDW+toCLVE/6j8G7uBaoK+Nz4nCakbAASTy1f
+	 +E7opvUFGveGacKaHHjmKZxsrvHODc/5qYFbKL0Q05WivGbNycoMIyAjVRYXtpR1Ao
+	 jDwz3jFgbhthnojuT8ygQVVErdAoejwsYATuSSuti+YY6Yg0uXlP1zfZcG4AunvuGQ
+	 PhRsNKN963tbdA4VSwUIf/hTX17P5rvtgRoIeynvAM0SSgYBJS94Q9jDw7CGFC5H5S
+	 mlo2bRZTpMPQLNdN8Wwnhus4q+gAhGXhN86IzF7jgcBVmYDc/f0Mu6z1a0oc4kBYtK
+	 OgNQipMGULB/g==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id nzrXU2Wv316b; Mon, 10 Oct 2022 14:24:14 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 7dmNDKPuCzjM; Mon, 10 Oct 2022 19:29:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 330A140A80;
-	Mon, 10 Oct 2022 14:24:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 330A140A80
+	by smtp3.osuosl.org (Postfix) with ESMTP id 498D860EFE;
+	Mon, 10 Oct 2022 19:29:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 498D860EFE
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 764A91BF3BB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Oct 2022 14:24:13 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 668BC1BF28F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Oct 2022 19:29:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5C1F481516
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Oct 2022 14:24:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5C1F481516
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4148E81774
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Oct 2022 19:29:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4148E81774
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id W2M2vTdDq50E for <intel-wired-lan@lists.osuosl.org>;
- Mon, 10 Oct 2022 14:24:11 +0000 (UTC)
+ with ESMTP id hShtzEkt8Dko for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 10 Oct 2022 19:29:25 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 19FAF814BB
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 19FAF814BB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Oct 2022 14:24:10 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10496"; a="301846335"
-X-IronPort-AV: E=Sophos;i="5.95,173,1661842800"; d="scan'208";a="301846335"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Oct 2022 07:24:10 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EDE588175B
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id EDE588175B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Oct 2022 19:29:24 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10496"; a="303057147"
+X-IronPort-AV: E=Sophos;i="5.95,173,1661842800"; d="scan'208";a="303057147"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Oct 2022 12:29:24 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10496"; a="625982712"
-X-IronPort-AV: E=Sophos;i="5.95,173,1661842800"; d="scan'208";a="625982712"
-Received: from amlin-018-068.igk.intel.com ([10.102.18.68])
- by orsmga002.jf.intel.com with ESMTP; 10 Oct 2022 07:24:08 -0700
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+X-IronPort-AV: E=McAfee;i="6500,9779,10496"; a="659265723"
+X-IronPort-AV: E=Sophos;i="5.95,173,1661842800"; d="scan'208";a="659265723"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.232.13])
+ by orsmga001.jf.intel.com with ESMTP; 10 Oct 2022 12:29:23 -0700
+From: Benjamin Mikailenko <benjamin.mikailenko@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 10 Oct 2022 10:22:22 -0400
-Message-Id: <20221010142222.591646-1-mateusz.palczewski@intel.com>
-X-Mailer: git-send-email 2.31.1
+Date: Mon, 10 Oct 2022 15:22:21 -0400
+Message-Id: <20221010192223.916578-1-benjamin.mikailenko@intel.com>
+X-Mailer: git-send-email 2.34.3
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1665411851; x=1696947851;
+ t=1665430164; x=1696966164;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=IlZdQ4wKBG0bRWgEtMDRGSlvfiZVxpCgka3/tyNFiV0=;
- b=e/PkqHiDedt42inz9ZhkVanHFrT8pcYkec7ncatqoCJg0XhB/W6h72Oy
- btdQnPMiBhOq5Fjj3md8GiQ7oH7gtplMWbCzhIkTTWPTdr0LFIFAmEJjo
- /ITiWkxVc73ozDXod4FlAqUuHvlsIro8cfzbpy1yQK+MzTwQvMe/aa7So
- HNYOPAwUM+Mzws40Yea8BNkpPo59jAVjyVjmBKQ3JIHJPzpxZdVulSXPl
- v6QkzyLVtm14T/eQw6tDmwzkqPSXAYxlcYhPXXIyzEcIGbr5QCg5qwBCc
- xjNGWhquppMLmRujKFJLKhvGDnRx65D1Rw83bpOVw7vYAw47P9vPz4On0
- w==;
+ bh=8ukBsexHK8ukQ9iXIV6U7BEAoQgFUi67z8qV/JaztGI=;
+ b=j5L4I+Vb9vc07oS66S8ehQycoaWYVbyI//Ili1ybBFa1zrpx1wfsv/j8
+ RcvrZgmoMIe52Bfm0vY6UdnjA7r0lnj/ZWhxZJGAK9eAibUn/EqBuWdFH
+ w2W8hsECs1dGSy9e+IuVjEa28ZF6+bLfBx2G+5THBDcfSefvhoArMHZV8
+ GwplcEk382BXyZCJgh0wJuSPL31Do+tiXTYjaPMOCQx+WFDbhXt2AfxOM
+ 94z0iB5Hr/PfHp+cOeUjo8LaeLxfBu/92dOnGBWDoKMxCkVdu1sYsjkIu
+ iQaDhQs4OA3/D9OIQvbK66CkVlOOuKlGNkfs9tywCW7TQaLL0Cb6wfTFi
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=e/PkqHiD
-Subject: [Intel-wired-lan] [PATCH net v2] ice: Fix spurious interrupt during
- removal of trusted VF
+ header.a=rsa-sha256 header.s=Intel header.b=j5L4I+Vb
+Subject: [Intel-wired-lan] [net-next,
+ v2 0/2] ice: Accumulate statistics over reset
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,112 +92,43 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Norbert Zulinski <norbertx.zulinski@intel.com>
+Cc: Benjamin Mikailenko <benjamin.mikailenko@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Norbert Zulinski <norbertx.zulinski@intel.com>
+Resets happen with or without user interaction. For example, incidents
+such as TX hang or a reconfiguration of parameters will result in a reset.
+During reset, hardware and software statistics were set to zero. This
+created an issue for the user where a reset happens in the background,
+statistics set to zero, and the user checks statistics expecting them to
+be populated.
 
-Previously, during removal of trusted VF when VF is down there was
-number of spurious interrupt equal to number of queues on VF.
+Accumulate statistics over reset so the above doesn't happen.
 
-Add check if VF already has inactive queues. If VF is disabled and
-has inactive rx queues then do not disable rx queues.
-Add check in ice_vsi_stop_tx_ring if it's VF's vsi and if VF is
-disabled.
+Change is divided in two patches:
+1. Accumulate HW and netdev statistics over reset
+2. Accumulate ring statistics over reset
 
-Fixes: efe41860008e ("ice: Fix memory corruption in VF driver")
-Signed-off-by: Norbert Zulinski <norbertx.zulinski@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- v2: Addressed comments regarding initilization of variables and 
- added usage of ice_for_each_rxq function
----
- drivers/net/ethernet/intel/ice/ice_base.c   |  2 +-
- drivers/net/ethernet/intel/ice/ice_lib.c    | 25 +++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_lib.h    |  1 +
- drivers/net/ethernet/intel/ice/ice_vf_lib.c |  5 ++++-
- 4 files changed, 31 insertions(+), 2 deletions(-)
+Benjamin Mikailenko (2):
+  ice: Accumulate HW and Netdev statistics over reset
+  ice: Accumulate ring statistics over reset
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 9e36f01dfa4f..e864634d66bc 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -958,7 +958,7 @@ ice_vsi_stop_tx_ring(struct ice_vsi *vsi, enum ice_disq_rst_src rst_src,
- 	 * associated to the queue to schedule NAPI handler
- 	 */
- 	q_vector = ring->q_vector;
--	if (q_vector)
-+	if (q_vector && !(vsi->vf && ice_is_vf_disabled(vsi->vf)))
- 		ice_trigger_sw_intr(hw, q_vector);
- 
- 	status = ice_dis_vsi_txq(vsi->port_info, txq_meta->vsi_idx,
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 938ba8c215cb..7276badfa19e 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -2239,6 +2239,31 @@ int ice_vsi_stop_xdp_tx_rings(struct ice_vsi *vsi)
- 	return ice_vsi_stop_tx_rings(vsi, ICE_NO_RESET, 0, vsi->xdp_rings, vsi->num_xdp_txq);
- }
- 
-+/**
-+ * ice_vsi_is_rx_queue_active
-+ * @vsi: the VSI being configured
-+ *
-+ * Return true if at least one queue is active.
-+ */
-+bool ice_vsi_is_rx_queue_active(struct ice_vsi *vsi)
-+{
-+	struct ice_pf *pf = vsi->back;
-+	struct ice_hw *hw = &pf->hw;
-+	int i;
-+
-+	ice_for_each_rxq(vsi, i) {
-+		u32 rx_reg;
-+		int pf_q;
-+
-+		pf_q = vsi->rxq_map[i];
-+		rx_reg = rd32(hw, QRX_CTRL(pf_q));
-+		if (rx_reg & QRX_CTRL_QENA_STAT_M)
-+			return true;
-+	}
-+
-+	return false;
-+}
-+
- /**
-  * ice_vsi_is_vlan_pruning_ena - check if VLAN pruning is enabled or not
-  * @vsi: VSI to check whether or not VLAN pruning is enabled.
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index ec4bf0c89857..dcdf69a693e9 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -129,4 +129,5 @@ u16 ice_vsi_num_non_zero_vlans(struct ice_vsi *vsi);
- bool ice_is_feature_supported(struct ice_pf *pf, enum ice_feature f);
- void ice_clear_feature_support(struct ice_pf *pf, enum ice_feature f);
- void ice_init_feature_support(struct ice_pf *pf);
-+bool ice_vsi_is_rx_queue_active(struct ice_vsi *vsi);
- #endif /* !_ICE_LIB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 0abeed092de1..1c51778db951 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -576,7 +576,10 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 			return -EINVAL;
- 		}
- 		ice_vsi_stop_lan_tx_rings(vsi, ICE_NO_RESET, vf->vf_id);
--		ice_vsi_stop_all_rx_rings(vsi);
-+
-+		if (ice_vsi_is_rx_queue_active(vsi))
-+			ice_vsi_stop_all_rx_rings(vsi);
-+
- 		dev_dbg(dev, "VF is already disabled, there is no need for resetting it, telling VM, all is fine %d\n",
- 			vf->vf_id);
- 		return 0;
+ drivers/net/ethernet/intel/ice/ice.h          |   7 +
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |   3 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  12 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c      | 263 +++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  78 ++++--
+ drivers/net/ethernet/intel/ice/ice_repr.c     |  10 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c     |  40 ++-
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |  18 +-
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c |   2 +-
+ drivers/net/ethernet/intel/ice/ice_xsk.c      |  25 +-
+ 10 files changed, 396 insertions(+), 62 deletions(-)
+
 -- 
-2.31.1
+2.34.3
 
 _______________________________________________
 Intel-wired-lan mailing list
