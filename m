@@ -1,102 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1423CC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Oct 2022 13:56:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C411BC43219
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Oct 2022 16:02:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 88BF360B9B;
-	Wed, 12 Oct 2022 13:56:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 88BF360B9B
+	by smtp4.osuosl.org (Postfix) with ESMTP id 496BA4192D;
+	Wed, 12 Oct 2022 16:02:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 496BA4192D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1665582997;
-	bh=BUWGbYNQ1eydC8P6WpnEAwQ8DoAuog4BAXIHb2vrX9w=;
+	s=default; t=1665590574;
+	bh=W0kcWJHXzPDqloquf7rF0nyvrK80oPVDT54H+/TlMFY=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=ZOp+EuJbRjAnCH9TmNa/sQS88FtI8bRQlenjzrI5IBNTV3tvy4+He9/dvOz5YegeY
-	 dzmL20db2sqdDPVhRVO4NUm59P+wkwZ4v9RJ9TEEBibz7XJ+3BmqxU2Qk6PgqweoSL
-	 CO8D0F3ld2IahV+BInt/WtcOK6k1fFCWMO/Pnh9hC7vtx2MrUdnh8fFYMUysgWWMsM
-	 PNhlurgRG0xNaE0wXYhrt31uPf5i46o1QqWCQLcD9saonv206A0pctbAPUmXAWjiLU
-	 3J7fR+nllllDSkmZVvRfYGKnKltqW2nRg5kZWfjQlqo5jobCbcEl3ryk7snhlgEWiJ
-	 oJy0PxO4LSFUA==
+	b=EDM9V7ZQqK5EEAcghDgTi0yjqMf0Q3pQSJrB6B78YSs1TZd3iWQCnPbmTqNjF3op5
+	 Ybk0m0cINNKlVPxaRtcIDSH5Y9ymQviOHvdI1ruk9dZAA7qzIei0TNKUbVcorWeIqk
+	 Bz3xcJQ3Cgo5nLfb3Nie4fkrnGj3Wqo2+u7rmo7qsgTaZdofg7tP9Ec0CTecI5SoDS
+	 WcyrOLLg8oTagHoUSlkb7HEEdvdJv++NrFZtouuHyDhI4IvdnxoeYOpjeFmP1wmJH2
+	 l1vuzij40HneS8jm3ASN2lkhNVB46UAGmoun1wV1C2lkPl4rOACtmfZsBKyCJ0aqG7
+	 JhQhwxNnDaPSg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Y2cYL5asiVGu; Wed, 12 Oct 2022 13:56:36 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id u4VLBCYEGnSZ; Wed, 12 Oct 2022 16:02:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8A73C6103D;
-	Wed, 12 Oct 2022 13:56:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8A73C6103D
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0039441933;
+	Wed, 12 Oct 2022 16:02:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0039441933
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 7CC7B1BF296
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Oct 2022 11:16:52 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 404041BF4DD
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Oct 2022 16:02:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5014660D89
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Oct 2022 11:16:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5014660D89
+ by smtp3.osuosl.org (Postfix) with ESMTP id 19D6F60E13
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Oct 2022 16:02:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 19D6F60E13
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 7VuNJKi95y8H for <intel-wired-lan@lists.osuosl.org>;
- Tue, 11 Oct 2022 11:16:51 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 97EF460AC4
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com
- [IPv6:2607:f8b0:4864:20::102c])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 97EF460AC4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Oct 2022 11:16:51 +0000 (UTC)
-Received: by mail-pj1-x102c.google.com with SMTP id
- t10-20020a17090a4e4a00b0020af4bcae10so12856648pjl.3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Oct 2022 04:16:51 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=i4WAsnhbo3mj6+qRptDWdWyrS7sjNQ20usVEoY9BN20=;
- b=nhJD+vbKSYh0Z/CueueC/f1hdBIEG/qPXaxmXwdu7lInWrqdtJNiSKJpF9MG2Kg0v6
- fALrsAjKYL5UWRe3wsQFjn052tCcuCQjfx4Nc0vzfqMHjKl1pIpQs3xLOgcRKl79SIgQ
- 30Ee9lwXgTmWDRdcHn4z0MVSKU/vPr2C4A1raaj5IwDoKilssCbstzBLBZRnzdAd8yio
- SfgJvUjSauqthJwNP3DsG/7LGIpan97/vopDgGRdLHu/theh0NSOiuj6P7sSVddNSd6G
- yLudZEIO201hm0kRXRDfBy3SJ4H/7L3PeMdrAAMSM9BC0EIN1huFFwi2xeKE47i1SRGB
- dp5g==
-X-Gm-Message-State: ACrzQf0YGECZmSIkW6jvdMBvVOuEU1oK9DdawyNmNlpnb+KoinPeHyCs
- bougJgEW1YoB/pMsikSm9IM=
-X-Google-Smtp-Source: AMsMyM57ZWctsmlsdd6OOXLvsYniC7b+6zsqhFJ/dmNGqaEKN05YOuL3+RvxwzXFfbiONbkGUWd7GQ==
-X-Received: by 2002:a17:90b:3805:b0:20d:4e77:371f with SMTP id
- mq5-20020a17090b380500b0020d4e77371fmr9137587pjb.170.1665487010884; 
- Tue, 11 Oct 2022 04:16:50 -0700 (PDT)
-Received: from localhost.localdomain ([193.203.214.57])
- by smtp.gmail.com with ESMTPSA id
- s4-20020a170902ea0400b0017300ec80b0sm4510907plg.308.2022.10.11.04.16.47
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 11 Oct 2022 04:16:49 -0700 (PDT)
-From: yexingchen116@gmail.com
-X-Google-Original-From: ye.xingchen@zte.com.cn
-To: anthony.l.nguyen@intel.com
-Date: Tue, 11 Oct 2022 11:16:38 +0000
-Message-Id: <20221011111638.324346-1-ye.xingchen@zte.com.cn>
-X-Mailer: git-send-email 2.25.1
+ with ESMTP id KZe4-LokCQh0 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Oct 2022 16:02:51 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2C43460759
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2C43460759
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Oct 2022 16:02:51 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10498"; a="391137471"
+X-IronPort-AV: E=Sophos;i="5.95,179,1661842800"; d="scan'208";a="391137471"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 12 Oct 2022 09:02:49 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10498"; a="626815495"
+X-IronPort-AV: E=Sophos;i="5.95,179,1661842800"; d="scan'208";a="626815495"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.232.13])
+ by orsmga002.jf.intel.com with ESMTP; 12 Oct 2022 09:02:49 -0700
+From: Benjamin Mikailenko <benjamin.mikailenko@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed, 12 Oct 2022 11:55:35 -0400
+Message-Id: <20221012155535.666933-1-benjamin.mikailenko@intel.com>
+X-Mailer: git-send-email 2.34.3
 MIME-Version: 1.0
-X-Mailman-Approved-At: Wed, 12 Oct 2022 13:56:35 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=i4WAsnhbo3mj6+qRptDWdWyrS7sjNQ20usVEoY9BN20=;
- b=IK0W1JCopDHO3FpVF9n+RPJadViBF+kTshKxvh136W2VuPTpjvlRMiUxKRsrOixqxa
- 5T99NE4XznLUWsd9jV3vCmm1sfSt2hxRtYDLvNbwPFguMyWCsZ9VX2Tk2VjxS2BoBwDv
- LT8VNvWwoD786nbCibPy6Mnho3OWhscs+sO8ngbCFHKWxGWvkfO7KiNfRQ6A59uEdtr+
- QIwegXEPplXIT0Y+7oPME5PGfySTofgnyC3JiRKE65e1b5gGm1tdheBppmQOmsrA4RWW
- nKh/rY9uKHZgBlyb1ghXiVzRjBD4ZWfiCQOko/XgvaihXPv0nFBauQcfogOMQNGfcpog
- bPhA==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1665590571; x=1697126571;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=LLDlu+6Sf6zfb6tP4HefUNB1zwrSStkLPQOyCvDITtg=;
+ b=RiDXK1aDEBRGZhi4dTe/Ep/ygTf+NMGuxpmpkMu9I/h6xLwCaTypUM5b
+ M30JvHTbTo3i8beMOOM3SN2eHB9p/TC2Sl34uJP8KAk/uGAUfRcSM77HF
+ 9M+r0/NjZZsFIMCctBA0be4LqP+9GuNf1onWTdgLcc66R9xx/uC8/vr16
+ BIjTymvVCsBZxao36j/6VbDJjvjko3xGomFoI86rmgu7bU7QAjWHME4Go
+ 4G2qNn5GBCdohwMHFiahED7eAhSQhKDQiGAGXyUyKI4g6r+znqQ77SeEC
+ 0Nzmv6wWDuE9rtx0EZ/yqKhy+nbXSMJ/CRVRKmi90fVxXLnnsuzaV93Cy
+ w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=IK0W1JCo
-Subject: [Intel-wired-lan] [PATCH linux-next] iavf: Replace __FUNCTION__
- with __func__
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=RiDXK1aD
+Subject: [Intel-wired-lan] [net,v1] ice: Fix l2-fwd-offload toggle crash
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,39 +91,53 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, edumazet@google.com,
- intel-wired-lan@lists.osuosl.org, ye xingchen <ye.xingchen@zte.com.cn>,
- kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
+Cc: Benjamin Mikailenko <benjamin.mikailenko@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: ye xingchen <ye.xingchen@zte.com.cn>
+Running netperf traffic and toggling l2-fwd-offload in quick succession
+caused the driver to crash.
 
-__FUNCTION__ exists only for backwards compatibility reasons with old
-gcc versions. Replace it with __func__.
+BUG: kernel NULL pointer dereference, address: 0000000000000020
+[  861.517803] #PF: supervisor read access in kernel mode
+[  861.517805] #PF: error_code(0x0000) - not-present page
+[  861.517808] PGD 0 P4D 0
+[  861.517811] Oops: 0000 [#1] PREEMPT SMP PTI
+[  861.517815] CPU: 60 PID: 16471 Comm: netperf Kdump: loaded Tainted: G S
+[  861.517818] Hardware name: Intel Corporation S2600WTT/S2600WTT, BIOS SE
+[  861.517820] RIP: 0010:ice_start_xmit+0xb0/0x1420 [ice]
 
-Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
+This crash would happen because during l2-fwd-offload configuration,
+ice_init_macvlan or ice_deinit_macvlan would temporarily work on Tx rings.
+At the same time, ice_start_xmit would attempt to select the correct send
+buffer from Tx rings but reach a NULL pointer.
+
+Fix this by checking if ring exists before proceeding xmit. If ring does
+not exist, return NETDEV_TX_BUSY.
+
+Fixes: 2b245cb29421 ("ice: Implement transmit and NAPI support")
+Signed-off-by: Benjamin Mikailenko <benjamin.mikailenko@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 3fc572341781..98ab11972f5c 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -4820,7 +4820,7 @@ static void iavf_shutdown(struct pci_dev *pdev)
- 		iavf_close(netdev);
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 086f0b3ab68d..96bc8fad39c0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -2405,6 +2405,8 @@ netdev_tx_t ice_start_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 	struct ice_tx_ring *tx_ring;
  
- 	if (iavf_lock_timeout(&adapter->crit_lock, 5000))
--		dev_warn(&adapter->pdev->dev, "failed to acquire crit_lock in %s\n", __FUNCTION__);
-+		dev_warn(&adapter->pdev->dev, "failed to acquire crit_lock in %s\n", __func__);
- 	/* Prevent the watchdog from running. */
- 	iavf_change_state(adapter, __IAVF_REMOVE);
- 	adapter->aq_required = 0;
+ 	tx_ring = vsi->tx_rings[skb->queue_mapping];
++	if (!tx_ring)
++		return NETDEV_TX_BUSY;
+ 
+ 	/* hardware can't handle really short frames, hardware padding works
+ 	 * beyond this point
 -- 
-2.25.1
+2.34.3
 
 _______________________________________________
 Intel-wired-lan mailing list
