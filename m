@@ -4,90 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58940C433FE
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Oct 2022 00:50:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04834C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Oct 2022 01:09:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EA6BF608F5;
-	Tue, 18 Oct 2022 00:50:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EA6BF608F5
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9807E60FA3;
+	Tue, 18 Oct 2022 01:09:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9807E60FA3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1666054252;
-	bh=FNnvJT/mRTk1FRahGuJdaE8s3hKPDQWiobpADl6efwc=;
-	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=T0Etamm7tRUWCjXpLpmmf2aH71KhKvOWnexfw9vENyXK8YiU0ckyF7RbjuVuop8/h
-	 oAP7jxdUpkdBkGhQKw7rSwfbHgiKKYDb0Vk5gyBv3BGH8B/JHS1DncBZ+GnDCn5M5u
-	 ppENysVI45pR2p0WEnAZZ34Jlks6Ehxh3RCXeX5LIXz0Mi+5MOUaEVcfRUsX1T4zdy
-	 3OO6L0Mg6JtXAwlSm7R8lN3oVsWkSozyb+dN28iedxWvCkYbcqurp9q4HMHdAPXLc0
-	 EepavNNf2CenkgVMebCfqqSk5ARXkyxSU2hUwr4zi7mIffg948Qlp+kVIBsCYhlWm8
-	 i22/f9kP5kVOg==
+	s=default; t=1666055350;
+	bh=5b/VAz5G4Bf0bcg5jnqCA+HBPuxtmYiRVpzYfg49FiU=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=jRbTNSJwt0NvCT9D/H4Vp4m4Ae7O3oddi3UOjq+HJVP9hkb7Vq6bWQkSZiqxTSlK/
+	 FgT3Fg6baxvc1vdMTqEmthQ7pADADH34x+yyU6jXRpOc4+tNdY4gz4Pbq0DP1BKvVr
+	 Am1Qwl4UlKl6spVBt1EApYSwggoun6mvLuzFBByVnNIBW/ZniK+74m5P+DDZ7CAnXh
+	 qSpItVtmsy1B5B6e0Es5Y1l6zhEx+QEQXEnFSDCojlQHaIIdao6eF1K42DmdY/B5IS
+	 Tmzky4ybVulbjX/ltvo7xaT89ORnNPN27wz6iVZhn5sobsxbSdYqV+Zqc6/64WHr2O
+	 pD8nYrJLdD+ZA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ogCoA9bT3udz; Tue, 18 Oct 2022 00:50:51 +0000 (UTC)
+	with ESMTP id Q0Kh1GeJgzwc; Tue, 18 Oct 2022 01:09:09 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0847860ADB;
-	Tue, 18 Oct 2022 00:50:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0847860ADB
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 1BFD71BF982
- for <intel-wired-lan@osuosl.org>; Tue, 18 Oct 2022 00:50:50 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4D0DA60FA1;
+	Tue, 18 Oct 2022 01:09:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4D0DA60FA1
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id B09791BF399
+ for <intel-wired-lan@osuosl.org>; Tue, 18 Oct 2022 01:09:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0349982BC8
- for <intel-wired-lan@osuosl.org>; Tue, 18 Oct 2022 00:50:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0349982BC8
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8B891607C0
+ for <intel-wired-lan@osuosl.org>; Tue, 18 Oct 2022 01:09:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8B891607C0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id M-YTEj4uPNV4 for <intel-wired-lan@osuosl.org>;
- Tue, 18 Oct 2022 00:50:49 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id CteQbD7ohdkA for <intel-wired-lan@osuosl.org>;
+ Tue, 18 Oct 2022 01:09:06 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 29D3582BBA
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 29D3582BBA
- for <intel-wired-lan@osuosl.org>; Tue, 18 Oct 2022 00:50:48 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10503"; a="293328406"
-X-IronPort-AV: E=Sophos;i="5.95,192,1661842800"; d="scan'208";a="293328406"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Oct 2022 17:50:47 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10503"; a="628503188"
-X-IronPort-AV: E=Sophos;i="5.95,192,1661842800"; d="scan'208";a="628503188"
-Received: from vcostago-desk1.jf.intel.com (HELO vcostago-desk1)
- ([10.54.70.10])
- by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Oct 2022 17:50:47 -0700
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-To: Jacob Keller <jacob.e.keller@intel.com>, intel-wired-lan@osuosl.org
-In-Reply-To: <65b11d3a-8806-7d1d-e010-eb886af9f772@intel.com>
-References: <20221003095519.539390-1-karol.kolacinski@intel.com>
- <20221003095519.539390-2-karol.kolacinski@intel.com>
- <7b4176bc-a5a8-467f-f2f2-a7defb37b89f@intel.com>
- <MW4PR11MB5800C7EFFCA3CFE32A351EFB865D9@MW4PR11MB5800.namprd11.prod.outlook.com>
- <87bkqqou2e.fsf@intel.com>
- <65b11d3a-8806-7d1d-e010-eb886af9f772@intel.com>
-Date: Mon, 17 Oct 2022 17:50:47 -0700
-Message-ID: <877d0yt0ns.fsf@intel.com>
-MIME-Version: 1.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2417260776
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2417260776
+ for <intel-wired-lan@osuosl.org>; Tue, 18 Oct 2022 01:09:05 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10503"; a="307624101"
+X-IronPort-AV: E=Sophos;i="5.95,192,1661842800"; d="scan'208";a="307624101"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 Oct 2022 18:09:05 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10503"; a="717704389"
+X-IronPort-AV: E=Sophos;i="5.95,192,1661842800"; d="scan'208";a="717704389"
+Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
+ by FMSMGA003.fm.intel.com with ESMTP; 17 Oct 2022 18:09:01 -0700
+From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+To: intel-wired-lan@osuosl.org
+Date: Tue, 18 Oct 2022 09:07:28 +0800
+Message-Id: <20221018010733.4765-1-muhammad.husaini.zulkifli@intel.com>
+X-Mailer: git-send-email 2.17.1
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1666054249; x=1697590249;
- h=from:to:subject:in-reply-to:references:date:message-id:
- mime-version;
- bh=5pePKT8Ehh3a3dHjJUQ4pAV5KUIGjnFXM0X6uj3Yx7c=;
- b=Ey+Px5nwN1pane8+0ev9T+FI2ghwqyWcNkdzLcpxaZN1/fyg+YKEhQBr
- EA7VtrEznjyrU8BuV42hPwDxRmuSg02Wb+8+sKN36vlT2KkQcqKSu53w7
- PWeTsvEqV5rKMx4pQSKJc6FhsY0An2swOTPuOgLZhKAdEKwG4lqXE6loR
- +hX2HNPxXM7ooaQPMDxKsn4mk16+0YxsdPe4z6lO74obIYJv/br8+Adla
- 7iQBL9gN0+NWaXwnxqmo1RGop48k/BHdJTCgC72ONcoIIHjN2yqHHG4E+
- 4I/HNo8djEPS4m+1gRbtSUXIoIJoLxLfUsaBfZrY7ZYKFEjcgEt400lcn
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1666055346; x=1697591346;
+ h=from:to:cc:subject:date:message-id;
+ bh=0D9zTvrp8loy1p/wd/7ypz6za/bgpsN3QKuD9hC9aM4=;
+ b=BPnXJDLhHsAvy3ZoT0/+YcriRO6/NPe0ofGIG1Uhskwf5ckDEq00f4Fr
+ aEMXCEMzhTCYHpM2ZsLWmz5ZWtbq/yrsl6ufqbajKgUCQStYmzMOMhZWt
+ y3SqBBergYpWExdPA3ZWg43j3MduPJ9DHoPhtJlXPVT/d+cI3mRUHUV1W
+ cbMdH1Jic8gXpy+Hvf9PNQ7uajoZ1lKksi4NMtkTkPHxk1rENjbYpXmtw
+ ofDwKtq3nNj36nTEevQXEcC2too9soufhFwVjZ+AiiqhdIFNWKTjOJp4L
+ ms4b4DIpTIHMm9lx/aXkzw9pflJoqapMAtOFQAp5Das+oRHPJ5+WVNXxD
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Ey+Px5nw
-Subject: Re: [Intel-wired-lan] [PATCH net-next 2/2] ice: Remove gettime HW
- semaphore
+ header.a=rsa-sha256 header.s=Intel header.b=BPnXJDLh
+Subject: [Intel-wired-lan] [PATCH v2 0/5] Add support for DMA timestamp for
+ non-PTP packets
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,58 +90,94 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: leon@kernel.org, netdev@vger.kernel.org, richardcochran@gmail.com,
+ saeed@kernel.org, edumazet@google.com, gal@nvidia.com, kuba@kernel.org,
+ michael.chan@broadcom.com, muhammad.husaini.zulkifli@intel.com,
+ davem@davemloft.net, andy@greyhouse.net
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Jacob Keller <jacob.e.keller@intel.com> writes:
+The HW TX timestamps created by the NIC via socket options can be
+requested using the current network timestamps generation capability of
+SOF_TIMESTAMPING_TX_HARDWARE. The most common users of this socket flag
+is PTP, however other packet applications that require tx timestamps might
+also ask for it.
 
-> On 10/5/2022 2:10 PM, Vinicius Costa Gomes wrote:
->> "Kolacinski, Karol" <karol.kolacinski@intel.com> writes:
->> 
->>> Hi Vinicius,
->>>
->>>> I think the problem is less about concurrent writes/reads than
->>>> concurrent reads: the fact that the registers are latched when the
->>>> "lower" register is read, makes me worried that there's a (very narrow)
->>>> window during rollover in which the "losing" read (of multiple threads
->>>> doing reads) can return a wrong value.
->>>
->>> The issue in this case is, it's either risk of reading slightly wrong
->>> value or having multiple timeouts and errors.
->>> We experienced a lot of simultaneous reads on multiple PFs (especially
->>> on E822 HW with 8 ports) and even with increased timeout to acquire
->>> the HW semaphore, it still failed.
->> 
->> I am wondering if using a hw semaphore is making the problem worse than
->> it needs to be. Why a kernel spinlock can't be used?
->> 
->> 
->> Cheers,
->
-> The same clock is shared across multiple ports which operate as
-> independent PCIe devices, hence having their own instance of the ice
-> driver structures. A spinlock doesn't work because they wouldn't be
-> using the same lock.
->
+The problem is that, when there is a lot of traffic, there is a high chance
+that the timestamps for a PTP packet will be lost if both PTP and Non-PTP
+packets use the same SOF TIMESTAMPING TX HARDWARE causing the tx timeout.
 
-Oh! I should have realized that. The thought that there could be
-multiple devices/ports sharing some resources didn't cross my mind.
+DMA timestamps through socket options are not currently available to
+the user. Because if the user wants to, they can configure the hwtstamp
+config option to use the new introduced DMA Time Stamp flag through the
+setsockopt().
 
-> We could try to share the lock in software between PFs, but its actually
-> quite difficult to do that with the existing PCIe driver model.
+With these additional socket options, users can continue to utilise
+HW timestamps for PTP while specifying non-PTP packets to use DMA
+timestamps if the NIC can support them.
 
-I can see how that would be difficult, yeah.
+This patch series also add a new HWTSTAMP_FILTER_DMA_TIMESTAMP receive
+filters. This filter can be configured for devices that support/allow the
+DMA timestamp retrieval on receive side.
 
-Did you happen to test if my fears were true or not? For example,
-'phc2sys' running in parallel with a few (4?) 'while true { phc_ctl get }'.
-Do you notice any weirdness?
+Any socket application can be use to verify this.
+TSN Ref SW application is been used for testing by changing as below:
 
+	int timestamping_flags = SOF_TIMESTAMPING_TX_HARDWARE_DMA_FETCH;
 
-Cheers,
--- 
-Vinicius
+	strncpy(hwtstamp.ifr_name, opt->ifname, sizeof(hwtstamp.ifr_name)-1);
+	hwtstamp.ifr_data = (void *)&hwconfig;
+	hwconfig.tx_type = HWTSTAMP_TX_ON;
+	hwconfig.flags = HWTSTAMP_FLAG_DMA_TIMESTAMP;
+	hwconfig.rx_filter = HWTSTAMP_FILTER_ALL;
+
+	if (ioctl(sock, SIOCSHWTSTAMP, &hwtstamp) < 0) {
+		fprintf(stderr, "%s: %s\n", "ioctl", strerror(errno));
+		exit(1);
+	}
+
+	if (setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &timestamping_flags,
+			sizeof(timestamping_flags)) < 0)
+		exit_with_error("setsockopt SO_TIMESTAMPING");
+
+v1 -> v2:
+	- Move to the end for the new enum.
+	- Add new HWTSTAMP_FILTER_DMA_TIMESTAMP receive filters.
+
+Muhammad Husaini Zulkifli (4):
+  ethtool: Add new hwtstamp flag
+  net-timestamp: Increase the size of tsflags
+  net: sock: extend SO_TIMESTAMPING for DMA Fetch
+  ethtool: Add support for HWTSTAMP_FILTER_DMA_TIMESTAMP
+
+Vinicius Costa Gomes (1):
+  igc: Add support for DMA timestamp for non-PTP packets
+
+ drivers/net/ethernet/intel/igc/igc.h         | 10 +++
+ drivers/net/ethernet/intel/igc/igc_base.h    |  2 +-
+ drivers/net/ethernet/intel/igc/igc_defines.h |  2 +
+ drivers/net/ethernet/intel/igc/igc_ethtool.c |  5 +-
+ drivers/net/ethernet/intel/igc/igc_main.c    | 24 ++++--
+ drivers/net/ethernet/intel/igc/igc_ptp.c     | 84 ++++++++++++++++++++
+ include/linux/skbuff.h                       |  3 +
+ include/net/sock.h                           | 12 +--
+ include/uapi/linux/ethtool.h                 |  3 +
+ include/uapi/linux/ethtool_netlink.h         |  1 +
+ include/uapi/linux/net_tstamp.h              | 14 +++-
+ net/core/dev_ioctl.c                         |  1 +
+ net/ethtool/common.c                         |  8 ++
+ net/ethtool/common.h                         |  2 +
+ net/ethtool/strset.c                         |  5 ++
+ net/ethtool/tsinfo.c                         | 17 ++++
+ net/socket.c                                 |  5 +-
+ 17 files changed, 181 insertions(+), 17 deletions(-)
+
+--
+2.17.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
