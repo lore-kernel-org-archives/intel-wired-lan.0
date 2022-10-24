@@ -1,85 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86E73C38A2D
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Oct 2022 08:19:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 946B1ECDFA1
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Oct 2022 08:50:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F2DED60634;
-	Mon, 24 Oct 2022 08:19:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F2DED60634
+	by smtp2.osuosl.org (Postfix) with ESMTP id 333E6404B7;
+	Mon, 24 Oct 2022 08:50:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 333E6404B7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1666599596;
-	bh=gZ318AfrN/aGxYcdpTDTdPJ4px1J3k467ZnPvRhFeUw=;
+	s=default; t=1666601414;
+	bh=KftowHYRdpEemm+Pn39q31F+3f0tiWGUeOTC0d0ZnuU=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=pNB5Tf2UbdgKpRm3pJBfvkJnvQcuzMR5K1VXYQUhYlP1RcbQBKFwCIbbeJfCdWN0h
-	 DWaWYVHj4S6L6zuJ5/C/pCiHJlFGDapTjVLFrs6pJD/PevOfwoL/NRxWhMBg3+IwJw
-	 SPV7JsFP9kBxchogRCG94Bik7MH5dccvGxcyIg14ZsUd6pjtVl4xcR9ghxwq0UW/+M
-	 K4uY8NuBMYhGYygfsRK3vKnxHGyZQor4/oYejhMMeE36wnjTsoSgH6CU0m2mWzvAn6
-	 R/3FQu2V1fu1yCSn31PGym2noGazWr/5y0YuwRdK95QdCGxLx2M6JS4GzOOazdQdaS
-	 Z6inOOa0xrpiw==
+	b=6XP2X8XKC6UglwUPjDzO39OCZ/YzChGMHM3/thmhLQCy/6n2wH1Snj12nV1Fr1a3B
+	 pE7MmgCCvTg4/gyPNBxRfGaQGexDmB7iT6mklxHbe8x8jhfX36357lJrUeSLNaQhhg
+	 5w9xmoQWXsH8kXDnw8ra8QaN3bAkYMjfWYqvFuan1g6WzbN+iB5pSbWO0e8FMGTJn/
+	 NyfcDJGYzGpNIRRESspujqXwTOgXl/FZnb8X8Q4uMxQJJCG8Fms6wTH4sV70SZqjPC
+	 1HUPbyH1n5CklC6qRUsRnJ6FC90yV+MLEudcBFKMynjGppYVydBc7aAwgx/mV0T0OI
+	 gSkH9DlLr95aA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id iT3RHxtmBrKk; Mon, 24 Oct 2022 08:19:53 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id oOneZDjJGR6s; Mon, 24 Oct 2022 08:50:13 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7FC1B60AE8;
-	Mon, 24 Oct 2022 08:19:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7FC1B60AE8
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3756C404DD;
+	Mon, 24 Oct 2022 08:50:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3756C404DD
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 83F7A1BF40F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Oct 2022 08:19:51 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 6CF001BF40F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Oct 2022 08:50:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5DEB0813C3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Oct 2022 08:19:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5DEB0813C3
+ by smtp1.osuosl.org (Postfix) with ESMTP id 439FE80E55
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Oct 2022 08:50:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 439FE80E55
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id JuoFiOf_JGQw for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Oct 2022 08:19:50 +0000 (UTC)
+ with ESMTP id 50N1_lhhNOHd for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Oct 2022 08:50:10 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 697138138B
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 697138138B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Oct 2022 08:19:50 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10509"; a="306097335"
-X-IronPort-AV: E=Sophos;i="5.95,207,1661842800"; d="scan'208";a="306097335"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Oct 2022 01:19:49 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 62FA780DF9
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 62FA780DF9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Oct 2022 08:50:10 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10509"; a="371588457"
+X-IronPort-AV: E=Sophos;i="5.95,207,1661842800"; d="scan'208";a="371588457"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2022 01:50:01 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10509"; a="736328154"
-X-IronPort-AV: E=Sophos;i="5.95,207,1661842800"; d="scan'208";a="736328154"
+X-IronPort-AV: E=McAfee;i="6500,9779,10509"; a="700094095"
+X-IronPort-AV: E=Sophos;i="5.95,207,1661842800"; d="scan'208";a="700094095"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga002.fm.intel.com with ESMTP; 24 Oct 2022 01:19:48 -0700
+ by fmsmga004.fm.intel.com with ESMTP; 24 Oct 2022 01:50:00 -0700
 From: Kamil Maziarz <kamil.maziarz@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 24 Oct 2022 10:19:42 +0200
-Message-Id: <20221024081942.34809-1-kamil.maziarz@intel.com>
+Date: Mon, 24 Oct 2022 10:49:55 +0200
+Message-Id: <20221024084955.60038-1-kamil.maziarz@intel.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1666599590; x=1698135590;
+ t=1666601410; x=1698137410;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=x1Wo8cBKA3ylyXwXGsbyB6mAK97mvOz83dw6TQrTHog=;
- b=NaJG14a/y1Ex0OWgMUM2T0dSu6sR1IvO9uzH/Nmx1cTGOHFOgTIvKO9B
- MEGkCQoNVW5KujpTP0/JuYvWOQbT/KM0sgruZnKQ12QRzotAuuoB/wh50
- PKRHPTfS5FEUXe9YO4U6p1RHaodMCrdw0q5BRURjg4ecN5pMrdqysMqs6
- AoDVKzxBVc6A5ExVJzjUOLcf13f/nPIWr2GOS79WT5G3iQB8VSCKauKCC
- gLIxSW1MbAwC0qbtgVxS1Mr7nf6erFcrCNVeDn3UE6I+v7DNLPW0lNtJC
- eoCwBAs5QaP+EeFyAiPiCZ7KNYikfNUKyjwAt1QInC2F9Wa02z1Px/tg/
- g==;
+ bh=nehaLcLQNb8wl39/6QfxLLQUyzZSGLAkIp7DcKg5STE=;
+ b=KXOGrFs76uj5sD48UMWT6k1dYxKDT3z43UiY9ekrlJ+8lx4ZX5Z9XxXk
+ DL6tIGi2+QU6YHA2BpTWQDVeDidXdbT505ULttiUg4vnQA497QA4taNw0
+ 0opAkNF7AuvxAc/8z+tQzlbe/FwPU/UfWLGr8FrRvLyD1LccWECjwSwYg
+ W+iLANKOqkIQ2VY1YYLfEvSWH00i4i66sA2FHIkrYrkUgpoD3Oj9rKmOz
+ J53OEusUFVtGdRMAqxkHRewOdUpGNy4pwrIc7JtW9rsbH5x2zfzeMFEiM
+ katDrVKNko4Semo9W7Pl8PSKbWWsnFUH6YfHbpyIHz9UHlMb3FEr4JcBu
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NaJG14a/
-Subject: [Intel-wired-lan] [PATCH net v1] i40e: Fix not setting default
- xps_cpus after reset
+ header.a=rsa-sha256 header.s=Intel header.b=KXOGrFs7
+Subject: [Intel-wired-lan] [PATCH net-next v1] iavf: Change information
+ about device removal in dmesg
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,72 +92,42 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Michal Jaron <michalx.jaron@intel.com>,
- Kamil Maziarz <kamil.maziarz@intel.com>
+Cc: Kamil Maziarz <kamil.maziarz@intel.com>,
+ Bartosz Staszewski <bartoszx.staszewski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Jaron <michalx.jaron@intel.com>
+From: Bartosz Staszewski <bartoszx.staszewski@intel.com>
 
-During tx rings configuration default XPS queue config is set and
-__I40E_TX_XPS_INIT_DONE is locked. __I40E_TX_XPS_INIT_DONE state is
-cleared and set again with default mapping only during queues build,
-it means after first setup or reset with queues rebuild. (i.e.
-ethtool -L <interface> combined <number>) After other resets (i.e.
-ethtool -t <interface>) XPS_INIT_DONE is not cleared and those default
-maps cannot be set again. It results in cleared xps_cpus mapping
-until queues are not rebuild or mapping is not set by user.
+Changed information about device removal in dmesg.
+In function iavf_remove changed printed message from
+"Remove" to "Removing" after hot vf plug/unplug.
+Reason for this change is that, that "Removing" word
+is better because it is clearer for the user that
+the device is already being removed rather than implying
+that the user should remove this device.
 
-Add clearing __I40E_TX_XPS_INIT_DONE state during reset to let
-the driver set xps_cpus to defaults again after it was cleared.
-
-Fixes: 6f853d4f8e93 ("i40e: allow XPS with QoS enabled")
-Signed-off-by: Michal Jaron <michalx.jaron@intel.com>
+Signed-off-by: Bartosz Staszewski <bartoszx.staszewski@intel.com>
 Signed-off-by: Kamil Maziarz <kamil.maziarz@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4b3b6e5b612d..2828c3629e6b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10674,6 +10674,21 @@ static int i40e_rebuild_channels(struct i40e_vsi *vsi)
- 	return 0;
- }
- 
-+/**
-+ * i40e_clean_xps_state - clean xps state for every tx_ring
-+ * @vsi: ptr to the VSI
-+ **/
-+static void i40e_clean_xps_state(struct i40e_vsi *vsi)
-+{
-+	int i;
-+
-+	if (vsi->tx_rings)
-+		for (i = 0; i < vsi->num_queue_pairs; i++)
-+			if (vsi->tx_rings[i])
-+				clear_bit(__I40E_TX_XPS_INIT_DONE,
-+					  vsi->tx_rings[i]->state);
-+}
-+
- /**
-  * i40e_prep_for_reset - prep for the core to reset
-  * @pf: board private structure
-@@ -10698,8 +10713,10 @@ static void i40e_prep_for_reset(struct i40e_pf *pf)
- 	i40e_pf_quiesce_all_vsi(pf);
- 
- 	for (v = 0; v < pf->num_alloc_vsi; v++) {
--		if (pf->vsi[v])
-+		if (pf->vsi[v]) {
-+			i40e_clean_xps_state(pf->vsi[v]);
- 			pf->vsi[v]->seid = 0;
-+		}
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 3fc572341781..a61e0e3e39b6 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -5083,7 +5083,7 @@ static void iavf_remove(struct pci_dev *pdev)
  	}
  
- 	i40e_shutdown_adminq(&pf->hw);
+ 	mutex_lock(&adapter->crit_lock);
+-	dev_info(&adapter->pdev->dev, "Remove device\n");
++	dev_info(&adapter->pdev->dev, "Removing device\n");
+ 	iavf_change_state(adapter, __IAVF_REMOVE);
+ 
+ 	iavf_request_reset(adapter);
 -- 
 2.25.1
 
