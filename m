@@ -1,87 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CBEAFA373D
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Oct 2022 04:55:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73F17FA373D
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Oct 2022 04:56:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 22FA281331;
-	Sun, 30 Oct 2022 04:55:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 22FA281331
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1486A605D8;
+	Sun, 30 Oct 2022 04:56:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1486A605D8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667105757;
-	bh=m38cJ4VfQWC2BhL423BZLU3wj8R+MjCp4ynD8/u/1b4=;
+	s=default; t=1667105761;
+	bh=vNcmwXF9LUzpR0d5ZYN8rh7VoGzYSuzTem/GzwMlI1A=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=tLHkTQx20SglG0b5P4CDK60j+i2LHEpaTiby5IPjLHVaMKw/nf29EG9a0C5uBxLNu
-	 B26j02y5IH088/nQlcTVixmMmjvDj/5Mc7IGmlVrVjruB4v52Rjp5DC4vU8Q06jApL
-	 yAdQomgE4T9Lzic9yVvoUP7PqyPp4Qxue5pFsdDtodKMDyC2jHVLts5TpEoL9Jg0F+
-	 25G1giFMRgelotgdg5cE0NCifp3RTEiTFEbzwyardapYifnCyM6aIUZ+W8EKschVJ9
-	 jaXlvLoxT59WvY0/fOL+MpFFeL7Rd3/+ExXbE/ShCQrISLe9TP0HRDKjYbk9XTkiVi
-	 FfCsl1xHCg8Kg==
+	b=5yqU8FWOtK5uU6qfP/J9rG5TlBOAdPaKyUl0aqzE8EgUR8/lfy6043gxsYYzCyeQG
+	 qwFY6rOcUdtI1yyzesyzyG03sx9U380rLyF6Lggq1wDr3YWlj5hrk9kY8iXIYRwXz8
+	 +LIB+LkFCEAdTzlaPNoA17wXHzH8X9LoPsBFN8h0YhEcmkCoaLjIUf3tNO7ZK8PKXC
+	 Q4rq4xt7PdTWJ0Pr2hvtsVSps19O2Axr+I8IwQrg9CZqoIpMOR4RY2E20YI90MVdW1
+	 0WUfosfNbaE9m2JmYkz6SkpUe4aGyk6OOJEa1/DP7Dj+uBwbkuOdL8sCt7Cwui8dP0
+	 zMx9HjrIcUAHA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id n6genFV0WwKk; Sun, 30 Oct 2022 04:55:56 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lSvOiBVWtF26; Sun, 30 Oct 2022 04:56:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2DD6881367;
-	Sun, 30 Oct 2022 04:55:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2DD6881367
+	by smtp3.osuosl.org (Postfix) with ESMTP id 17DE0608B7;
+	Sun, 30 Oct 2022 04:56:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 17DE0608B7
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id EB2421BF36A
- for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:41 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id EE6F41BF36A
+ for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3DAF64046B
+ by smtp2.osuosl.org (Postfix) with ESMTP id B0CF940489
  for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3DAF64046B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B0CF940489
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id tnVxj711YkLk for <intel-wired-lan@osuosl.org>;
- Sun, 30 Oct 2022 04:55:37 +0000 (UTC)
+ with ESMTP id c5i3VEre008M for <intel-wired-lan@osuosl.org>;
+ Sun, 30 Oct 2022 04:55:36 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 48EC9404DF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CE6F24040D
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 48EC9404DF
- for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:37 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10515"; a="335367899"
-X-IronPort-AV: E=Sophos;i="5.95,225,1661842800"; d="scan'208";a="335367899"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id CE6F24040D
+ for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:36 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10515"; a="335367893"
+X-IronPort-AV: E=Sophos;i="5.95,225,1661842800"; d="scan'208";a="335367893"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Oct 2022 21:55:20 -0700
+ 29 Oct 2022 21:55:13 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10515"; a="635707905"
-X-IronPort-AV: E=Sophos;i="5.95,225,1661842800"; d="scan'208";a="635707905"
+X-IronPort-AV: E=McAfee;i="6500,9779,10515"; a="635707886"
+X-IronPort-AV: E=Sophos;i="5.95,225,1661842800"; d="scan'208";a="635707886"
 Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
- by fmsmga007.fm.intel.com with ESMTP; 29 Oct 2022 21:55:18 -0700
+ by fmsmga007.fm.intel.com with ESMTP; 29 Oct 2022 21:55:12 -0700
 From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
 To: intel-wired-lan@osuosl.org
-Date: Sun, 30 Oct 2022 12:53:24 +0800
-Message-Id: <20221030045324.25207-6-muhammad.husaini.zulkifli@intel.com>
+Date: Sun, 30 Oct 2022 12:53:20 +0800
+Message-Id: <20221030045324.25207-2-muhammad.husaini.zulkifli@intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221030045324.25207-1-muhammad.husaini.zulkifli@intel.com>
 References: <20221030045324.25207-1-muhammad.husaini.zulkifli@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667105737; x=1698641737;
+ t=1667105736; x=1698641736;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references;
- bh=0FfqC7/W+AwOcM5405J9hZdI+BhYQD5j5JLUvFMFp/I=;
- b=ah2aU5rpXcL+R01R3xTfGFR1uLQhA1bVqq0cI9Ay7ZznOB62Cs7WA8HL
- eOOJhgBzvCD8POFbmUvyHCuFEg1wUK/ZVqcz5jAoodwijKlqQ/qzpzsJT
- tuXfgSyNlCgnyYXUijvgdWfgF/lqJf1mOefbGK/EYKCs1nLr5eSiiyepR
- P7d/3ZOSjLFOYc7d4puYaMjEsptX+QlxAenZ1/UrWnuE7BwaSmd1yfjBg
- AMWD+89Qo+KDuYXZqWuGzF1N01kz2OAup+mvqtkmW/aOLfSb7hQ4VloHH
- A69L+LvfSEOfN/4TWO+v+YyI8NNiiH0iUa7wxPHVZyorlDc7EhhCBrUYs
- g==;
+ bh=J0p7QL+SK243NoebmWOlnZl+3a7u4m6gZThXwYJu19w=;
+ b=HZC1eq98rLWy+yTBytJlFyaiHUL29Z+Y7TvtfhlxQAX0MphriZ35Ihw+
+ vqxk2vPv2XoII8viYpQKc35DThWJiHuH7d6cuE4GC8PLy7zcj80qqo8u0
+ WOD0+1AyucVVs7TRJmDfKPXsPa/OswvjeoYD8hOWhkV89kyKFar1czcdu
+ lbEQ9kVzzlbk1ZgSrWqp8wg8A4c87BmW2o8sJgwC6BiHQJfbs68Aye5Ee
+ QZB1lccecmv8vLvdxFSLfCLtA9E5u7QH5YSBAxVXEEBgfDi5m2wBNdeDK
+ W7WBUySV9YxRh6GEASezuoU50IGJMZy8gX4spVC3qX26KE1OENjP3Tjow
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ah2aU5rp
-Subject: [Intel-wired-lan] [PATCH 5/5] igc: Set Qbv start_time and end_time
- to end_time if not being configured in GCL
+ header.a=rsa-sha256 header.s=Intel header.b=HZC1eq98
+Subject: [Intel-wired-lan] [PATCH 1/5] igc: allow BaseTime 0 enrollment for
+ Qbv
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,59 +103,55 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Tan Tee Min <tee.min.tan@linux.intel.com>
 
-The default setting of end_time minus start_time is whole 1 second.
-Thus, if it's not being configured in any GCL entry then it will be
-staying at original 1 second.
+Introduce qbv_enable flag in igc_adapter struct to store the Qbv on/off.
+So this allow the BaseTime to enroll with zero value.
 
-This patch is changing the start_time and end_time to be end_time as
-if setting zero will be having weird HW behavior where the gate will
-not be fully closed.
-
-Signed-off-by: Tan Tee Min <tee.min.tan@linux.intel.com>
 Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+Signed-off-by: Tan Tee Min <tee.min.tan@linux.intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igc/igc.h      | 1 +
+ drivers/net/ethernet/intel/igc/igc_main.c | 2 ++
+ drivers/net/ethernet/intel/igc/igc_tsn.c  | 2 +-
+ 3 files changed, 4 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 1e7e7071f64d..c816623dc521 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -182,6 +182,7 @@ struct igc_adapter {
+ 
+ 	ktime_t base_time;
+ 	ktime_t cycle_time;
++	bool qbv_enable;
+ 
+ 	/* OS defined structs */
+ 	struct pci_dev *pdev;
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 0b05d889db7d..3dfed282f726 100644
+index 671255edf3c2..cea7f4cc1eb7 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -5928,6 +5928,7 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
- 	struct igc_hw *hw = &adapter->hw;
+@@ -5925,6 +5925,8 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
  	u32 start_time = 0, end_time = 0;
  	size_t n;
-+	int i;
  
- 	adapter->qbv_enable = qopt->enable;
- 
-@@ -5945,7 +5946,6 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
- 
- 	for (n = 0; n < qopt->num_entries; n++) {
- 		struct tc_taprio_sched_entry *e = &qopt->entries[n];
--		int i;
- 
- 		end_time += e->interval;
- 
-@@ -5984,6 +5984,18 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
- 		start_time += e->interval;
- 	}
- 
-+	/* Check whether a queue gets configured.
-+	 * If not, set the start and end time to be end time.
-+	 */
-+	for (i = 0; i < adapter->num_tx_queues; i++) {
-+		if (!queue_configured[i]) {
-+			struct igc_ring *ring = adapter->tx_ring[i];
++	adapter->qbv_enable = qopt->enable;
 +
-+			ring->start_time = end_time;
-+			ring->end_time = end_time;
-+		}
-+	}
-+
- 	return 0;
- }
+ 	if (!qopt->enable)
+ 		return igc_tsn_clear_schedule(adapter);
  
+diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+index f975ed807da1..b63736176709 100644
+--- a/drivers/net/ethernet/intel/igc/igc_tsn.c
++++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+@@ -36,7 +36,7 @@ static unsigned int igc_tsn_new_flags(struct igc_adapter *adapter)
+ {
+ 	unsigned int new_flags = adapter->flags & ~IGC_FLAG_TSN_ANY_ENABLED;
+ 
+-	if (adapter->base_time)
++	if (adapter->qbv_enable)
+ 		new_flags |= IGC_FLAG_TSN_QBV_ENABLED;
+ 
+ 	if (is_any_launchtime(adapter))
 -- 
 2.17.1
 
