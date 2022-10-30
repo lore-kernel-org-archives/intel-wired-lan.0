@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89E95C38A02
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Oct 2022 04:55:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C133FFA373D
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Oct 2022 04:55:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 132824032E;
-	Sun, 30 Oct 2022 04:55:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 132824032E
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6958640457;
+	Sun, 30 Oct 2022 04:55:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6958640457
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667105749;
-	bh=k2KHIXxLK+kMo0aY2ZdgEiXducvKOjwzhKyRtD8BE3k=;
+	s=default; t=1667105753;
+	bh=zxN0zIVUO4I0ewRqmdhljU+0RGSs4FiF93k2PvslNzA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Q72hArosqcCmuA3uGHnep7zWiqU3l/b9oOmoNhiycWu95pPTW4AfwgctMKR9dAEa9
-	 EWfReKAN8tccnKeaml2t+R5ZqxCr4QkAY1JZ92sowuwWuTDSFWk7lTyxghKumMpZZF
-	 82+bfVs6lMe/ohLKdcSFbdSphzgx/6KE25aVVQZlmWNZhSnh4UlhiwzW/raI1Rl1kY
-	 HmpRh1Pn70swa27foHpoyWCufrlfTWiWS9BlYwTWMQI/Jx3InVDFzuc0/XCQ5tF2PH
-	 MR49bSU4NsL/ugAMqFJWtB+HVJj5eTnETAsrpRHosDg7V5B6ljmWE5tdvi15NGoYnH
-	 GBxvcCtmNuqAw==
+	b=v/VnXrx1mPEnBz4ZboUUPqnSe1FwPPNkYxA2cRlRLTrnY8y/E2wH2xWY/rkZy8Vax
+	 YnNT8trf1jCabbUzxAs9UckT5HzJ6AjXuJRzbcGM4FXdPRktqCVGOnV6F0EvLirWV+
+	 czA/QZLCeFRuLYu9sEflDONg6c78b/2c31sGmzuoeAgKMdBLjIdXralr+5MjV6WrGf
+	 7FeknhPLReNpc98XljSzSIQXIqR0OXv7zPI/xo0KprOd2A0pNZzrQI8K72wzvOsDyU
+	 6+0kSEP7N7AXIN6gqOqmzuTPtk3/AbdRXPPbgWc/X/TB09Y9Mk/twABqt2eHYu+2Z4
+	 c0zYoRQfv9Spg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bGGU59B3b6OZ; Sun, 30 Oct 2022 04:55:47 +0000 (UTC)
+	with ESMTP id 5IjZIT9g5V4h; Sun, 30 Oct 2022 04:55:52 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 903E740330;
-	Sun, 30 Oct 2022 04:55:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 903E740330
+	by smtp4.osuosl.org (Postfix) with ESMTP id F261A403A8;
+	Sun, 30 Oct 2022 04:55:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F261A403A8
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id CA1851BF36A
- for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:39 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id DA62F1BF36A
+ for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id ECD88401FB
- for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ECD88401FB
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0984A4046A
+ for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0984A4046A
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id eHys3OhwsCIJ for <intel-wired-lan@osuosl.org>;
+ with ESMTP id H--1ajM23fMC for <intel-wired-lan@osuosl.org>;
  Sun, 30 Oct 2022 04:55:37 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1803D4046B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 367E140489
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1803D4046B
- for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:36 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10515"; a="335367895"
-X-IronPort-AV: E=Sophos;i="5.95,225,1661842800"; d="scan'208";a="335367895"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 367E140489
+ for <intel-wired-lan@osuosl.org>; Sun, 30 Oct 2022 04:55:37 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10515"; a="335367897"
+X-IronPort-AV: E=Sophos;i="5.95,225,1661842800"; d="scan'208";a="335367897"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Oct 2022 21:55:15 -0700
+ 29 Oct 2022 21:55:18 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10515"; a="635707890"
-X-IronPort-AV: E=Sophos;i="5.95,225,1661842800"; d="scan'208";a="635707890"
+X-IronPort-AV: E=McAfee;i="6500,9779,10515"; a="635707901"
+X-IronPort-AV: E=Sophos;i="5.95,225,1661842800"; d="scan'208";a="635707901"
 Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
- by fmsmga007.fm.intel.com with ESMTP; 29 Oct 2022 21:55:13 -0700
+ by fmsmga007.fm.intel.com with ESMTP; 29 Oct 2022 21:55:17 -0700
 From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
 To: intel-wired-lan@osuosl.org
-Date: Sun, 30 Oct 2022 12:53:21 +0800
-Message-Id: <20221030045324.25207-3-muhammad.husaini.zulkifli@intel.com>
+Date: Sun, 30 Oct 2022 12:53:23 +0800
+Message-Id: <20221030045324.25207-5-muhammad.husaini.zulkifli@intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20221030045324.25207-1-muhammad.husaini.zulkifli@intel.com>
 References: <20221030045324.25207-1-muhammad.husaini.zulkifli@intel.com>
@@ -69,19 +69,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1667105737; x=1698641737;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references;
- bh=Oc8kT9qnaYLFj+0E2HgNuXULpf1gQQTQ+dM6QIqhFlw=;
- b=ebCitglYdGpb1URM2hISlj6dgzJUa3VkY2pVVqgQpeSdDu4x/ZXxyfq+
- pufWjIVFjIf/akknvNTkg2M72/G1f4JVHXcyuzvYE+dtc1AThKdSfXqBA
- kRp+Wvb5x8vDMkDucVe7/npST2xWPIOj87ZczHHQhlWv4rpk+BFZ5MlfV
- 2y5mQmpUF940aR70Abzd0eXEawmOALYZsnzCHZt9tXUw0diK2mFJYxVbo
- kTj2YSSnDT5k/ca0f0jFBNnn/qseLnc/uVsTGKKJ2LiIcudMKXBx4+slm
- q9tQI8YxmG9DmQCVtAQ5Y42eTllRWgDP8TVKcn6jFK84qQesNYif1UcKL
+ bh=KCXuuDdh4Ms5WBXfMyv3BXg661TcxbcBOY7uN31EVmY=;
+ b=gVt7gISb23xlbSsuvD0ju5Ndi89cdpQ4/Iujzyu1tiCpz7EkOIIg0Ikw
+ Uyovm1TTSRHYOWgYFTk2FT2VVPdko3alKalNvgHe4BweNfPv8YtsGutBi
+ mMrt2I0EXUGQDsq9AZY3SUax5y+AEc2oU1861dXOueWCIJ8gxS3Zu69on
+ cSpwQOS+0z41tv9J38OsJq3Enu+n7mpwh3kxY1ZwC4dA0EEZjd7vngLYd
+ 4UBJVAY3Ya0T/8HGV4An30GWijWifQjds3QLKe+nbf6vSzfucIQqVrSdL
+ qstm2rKLq8uKqeVS9n0Ha4mQsTIJGfsCHYJhKYXzCfuMQ2Lu7Ny75i2bb
  g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ebCitglY
-Subject: [Intel-wired-lan] [PATCH 2/5] igc: remove I226 Qbv BaseTime
- restriction
+ header.a=rsa-sha256 header.s=Intel header.b=gVt7gISb
+Subject: [Intel-wired-lan] [PATCH 4/5] igc: enable Qbv configuration for 2nd
+ GCL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,211 +101,125 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Remove the Qbv BaseTime restriction for I226 so that the BaseTime can be
-scheduled to the future time. A new register bit of Tx Qav Control
-(Bit-7: FutScdDis) was introduced to allow I226 scheduling future time as
-Qbv BaseTime and not having the Tx hang timeout issue.
+From: Tan Tee Min <tee.min.tan@linux.intel.com>
 
-Besides, according to datasheet section 7.5.2.9.3.3, FutScdDis bit has to
-be configured first before the cycle time and base time.
+Make reset task only executes for i225 and Qbv disabling to allow
+i226 configure for 2nd GCL without resetting the adapter.
 
-Indeed the FutScdDis bit is only active on re-configuration, thus we have
-to set the BASET_L to zero and then only set it to the desired value.
+In i226, Tx won't hang if there is a GCL is already running, so in
+this case we don't need to set FutScdDis bit.
 
-Please also note that the Qbv configuration flow is moved around based on
-the Qbv programming guideline that is documented in the latest datasheet.
-
-Co-Developed-by : Tan Tee Min <tee.min.tan@linux.intel.com>
 Signed-off-by: Tan Tee Min <tee.min.tan@linux.intel.com>
 Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_base.c    | 29 +++++++++++++
- drivers/net/ethernet/intel/igc/igc_base.h    |  2 +
- drivers/net/ethernet/intel/igc/igc_defines.h |  1 +
- drivers/net/ethernet/intel/igc/igc_main.c    |  5 ++-
- drivers/net/ethernet/intel/igc/igc_tsn.c     | 44 +++++++++++++-------
- 5 files changed, 65 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c |  9 +++++----
+ drivers/net/ethernet/intel/igc/igc_tsn.c  | 13 +++++++++----
+ drivers/net/ethernet/intel/igc/igc_tsn.h  |  2 +-
+ 3 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index a15927e77272..a1d815af507d 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -396,6 +396,35 @@ void igc_rx_fifo_flush_base(struct igc_hw *hw)
- 	rd32(IGC_MPC);
- }
- 
-+bool igc_is_device_id_i225(struct igc_hw *hw)
-+{
-+	switch (hw->device_id) {
-+	case IGC_DEV_ID_I225_LM:
-+	case IGC_DEV_ID_I225_V:
-+	case IGC_DEV_ID_I225_I:
-+	case IGC_DEV_ID_I225_K:
-+	case IGC_DEV_ID_I225_K2:
-+	case IGC_DEV_ID_I225_LMVP:
-+	case IGC_DEV_ID_I225_IT:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+bool igc_is_device_id_i226(struct igc_hw *hw)
-+{
-+	switch (hw->device_id) {
-+	case IGC_DEV_ID_I226_LM:
-+	case IGC_DEV_ID_I226_V:
-+	case IGC_DEV_ID_I226_K:
-+	case IGC_DEV_ID_I226_IT:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
- static struct igc_mac_operations igc_mac_ops_base = {
- 	.init_hw		= igc_init_hw_base,
- 	.check_for_link		= igc_check_for_copper_link,
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.h b/drivers/net/ethernet/intel/igc/igc_base.h
-index ce530f5fd7bd..7a992befca24 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.h
-+++ b/drivers/net/ethernet/intel/igc/igc_base.h
-@@ -7,6 +7,8 @@
- /* forward declaration */
- void igc_rx_fifo_flush_base(struct igc_hw *hw);
- void igc_power_down_phy_copper_base(struct igc_hw *hw);
-+bool igc_is_device_id_i225(struct igc_hw *hw);
-+bool igc_is_device_id_i226(struct igc_hw *hw);
- 
- /* Transmit Descriptor - Advanced */
- union igc_adv_tx_desc {
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index f7311aeb293b..25ba10f5df96 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -520,6 +520,7 @@
- /* Transmit Scheduling */
- #define IGC_TQAVCTRL_TRANSMIT_MODE_TSN	0x00000001
- #define IGC_TQAVCTRL_ENHANCED_QAV	0x00000008
-+#define IGC_TQAVCTRL_FUTSCDDIS		0x00000080
- 
- #define IGC_TXQCTL_QUEUE_MODE_LAUNCHT	0x00000001
- #define IGC_TXQCTL_STRICT_CYCLE		0x00000002
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index cea7f4cc1eb7..b321e0b2ddbd 100644
+index 9784af3afc57..0b05d889db7d 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -5839,6 +5839,7 @@ static bool validate_schedule(struct igc_adapter *adapter,
- 			      const struct tc_taprio_qopt_offload *qopt)
+@@ -5901,7 +5901,7 @@ static int igc_tsn_enable_launchtime(struct igc_adapter *adapter,
+ 	if (err)
+ 		return err;
+ 
+-	return igc_tsn_offload_apply(adapter);
++	return igc_tsn_offload_apply(adapter, qopt->enable);
+ }
+ 
+ static int igc_tsn_clear_schedule(struct igc_adapter *adapter)
+@@ -5925,6 +5925,7 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 				 struct tc_taprio_qopt_offload *qopt)
  {
- 	int queue_uses[IGC_MAX_TX_QUEUES] = { };
+ 	bool queue_configured[IGC_MAX_TX_QUEUES] = { };
 +	struct igc_hw *hw = &adapter->hw;
- 	struct timespec64 now;
+ 	u32 start_time = 0, end_time = 0;
  	size_t n;
  
-@@ -5851,8 +5852,10 @@ static bool validate_schedule(struct igc_adapter *adapter,
- 	 * in the future, it will hold all the packets until that
- 	 * time, causing a lot of TX Hangs, so to avoid that, we
- 	 * reject schedules that would start in the future.
-+	 * Note: Limitation above is no longer in i226.
- 	 */
--	if (!is_base_time_past(qopt->base_time, &now))
-+	if (!is_base_time_past(qopt->base_time, &now) &&
-+	    igc_is_device_id_i225(hw))
- 		return false;
+@@ -5933,7 +5934,7 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 	if (!qopt->enable)
+ 		return igc_tsn_clear_schedule(adapter);
  
- 	for (n = 0; n < qopt->num_entries; n++) {
+-	if (adapter->base_time)
++	if (igc_is_device_id_i225(hw) && adapter->base_time)
+ 		return -EALREADY;
+ 
+ 	if (!validate_schedule(adapter, qopt))
+@@ -5999,7 +6000,7 @@ static int igc_tsn_enable_qbv_scheduling(struct igc_adapter *adapter,
+ 	if (err)
+ 		return err;
+ 
+-	return igc_tsn_offload_apply(adapter);
++	return igc_tsn_offload_apply(adapter, qopt->enable);
+ }
+ 
+ static int igc_save_cbs_params(struct igc_adapter *adapter, int queue,
+@@ -6067,7 +6068,7 @@ static int igc_tsn_enable_cbs(struct igc_adapter *adapter,
+ 	if (err)
+ 		return err;
+ 
+-	return igc_tsn_offload_apply(adapter);
++	return igc_tsn_offload_apply(adapter, qopt->enable);
+ }
+ 
+ static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
 diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
-index b63736176709..d7832cf1bc5b 100644
+index d7832cf1bc5b..fffea07fa05e 100644
 --- a/drivers/net/ethernet/intel/igc/igc_tsn.c
 +++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-@@ -2,6 +2,7 @@
- /* Copyright (c)  2019 Intel Corporation */
- 
- #include "igc.h"
-+#include "igc_hw.h"
- #include "igc_tsn.h"
- 
- static bool is_any_launchtime(struct igc_adapter *adapter)
-@@ -92,7 +93,8 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 
- 	tqavctrl = rd32(IGC_TQAVCTRL);
- 	tqavctrl &= ~(IGC_TQAVCTRL_TRANSMIT_MODE_TSN |
--		      IGC_TQAVCTRL_ENHANCED_QAV);
-+		      IGC_TQAVCTRL_ENHANCED_QAV | IGC_TQAVCTRL_FUTSCDDIS);
-+
- 	wr32(IGC_TQAVCTRL, tqavctrl);
- 
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
-@@ -117,20 +119,10 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 	ktime_t base_time, systim;
- 	int i;
- 
--	cycle = adapter->cycle_time;
--	base_time = adapter->base_time;
--
- 	wr32(IGC_TSAUXC, 0);
- 	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
- 	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
- 
--	tqavctrl = rd32(IGC_TQAVCTRL);
--	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
--	wr32(IGC_TQAVCTRL, tqavctrl);
--
--	wr32(IGC_QBVCYCLET_S, cycle);
--	wr32(IGC_QBVCYCLET, cycle);
--
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
- 		struct igc_ring *ring = adapter->tx_ring[i];
- 		u32 txqctl = 0;
-@@ -240,21 +232,43 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+@@ -232,7 +232,7 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
  		wr32(IGC_TXQCTL(i), txqctl);
  	}
  
-+	tqavctrl = rd32(IGC_TQAVCTRL);
-+	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
-+
-+	cycle = adapter->cycle_time;
-+	base_time = adapter->base_time;
-+
- 	nsec = rd32(IGC_SYSTIML);
- 	sec = rd32(IGC_SYSTIMH);
+-	tqavctrl = rd32(IGC_TQAVCTRL);
++	tqavctrl = rd32(IGC_TQAVCTRL) & ~(IGC_TQAVCTRL_FUTSCDDIS);
+ 	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
  
- 	systim = ktime_set(sec, nsec);
--
- 	if (ktime_compare(systim, base_time) > 0) {
--		s64 n;
-+		s64 n = div64_s64(ktime_sub_ns(systim, base_time), cycle);
- 
--		n = div64_s64(ktime_sub_ns(systim, base_time), cycle);
- 		base_time = ktime_add_ns(base_time, (n + 1) * cycle);
-+	} else {
-+		/* According to datasheet section 7.5.2.9.3.3, FutScdDis bit
-+		 * has to be configured before the cycle time and base time.
-+		 */
-+		if (igc_is_device_id_i226(hw))
-+			tqavctrl |= IGC_TQAVCTRL_FUTSCDDIS;
+ 	cycle = adapter->cycle_time;
+@@ -249,8 +249,11 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+ 	} else {
+ 		/* According to datasheet section 7.5.2.9.3.3, FutScdDis bit
+ 		 * has to be configured before the cycle time and base time.
++		 * Tx won't hang if there is a GCL is already running,
++		 * so in this case we don't need to set FutScdDis.
+ 		 */
+-		if (igc_is_device_id_i226(hw))
++		if (igc_is_device_id_i226(hw) &&
++		    !(rd32(IGC_BASET_H) || rd32(IGC_BASET_L)))
+ 			tqavctrl |= IGC_TQAVCTRL_FUTSCDDIS;
  	}
  
--	baset_h = div_s64_rem(base_time, NSEC_PER_SEC, &baset_l);
-+	wr32(IGC_TQAVCTRL, tqavctrl);
-+
-+	wr32(IGC_QBVCYCLET_S, cycle);
-+	wr32(IGC_QBVCYCLET, cycle);
+@@ -293,11 +296,13 @@ int igc_tsn_reset(struct igc_adapter *adapter)
+ 	return err;
+ }
  
-+	baset_h = div_s64_rem(base_time, NSEC_PER_SEC, &baset_l);
- 	wr32(IGC_BASET_H, baset_h);
-+
-+	/* In i226, Future base time is only supported when FutScdDis bit
-+	 * is enabled and only active for re-configuration.
-+	 * In this case, initialize the base time with zero to create
-+	 * "re-configuration" scenario then only set the desired base time.
-+	 */
-+	if (tqavctrl & IGC_TQAVCTRL_FUTSCDDIS)
-+		wr32(IGC_BASET_L, 0);
- 	wr32(IGC_BASET_L, baset_l);
+-int igc_tsn_offload_apply(struct igc_adapter *adapter)
++int igc_tsn_offload_apply(struct igc_adapter *adapter, bool enable)
+ {
++	struct igc_hw *hw = &adapter->hw;
+ 	int err;
  
- 	return 0;
+-	if (netif_running(adapter->netdev)) {
++	if (netif_running(adapter->netdev) &&
++	    (igc_is_device_id_i225(hw) || !enable)) {
+ 		schedule_work(&adapter->reset_task);
+ 		return 0;
+ 	}
+diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.h b/drivers/net/ethernet/intel/igc/igc_tsn.h
+index b53e6af560b7..631222bb6eb5 100644
+--- a/drivers/net/ethernet/intel/igc/igc_tsn.h
++++ b/drivers/net/ethernet/intel/igc/igc_tsn.h
+@@ -4,7 +4,7 @@
+ #ifndef _IGC_TSN_H_
+ #define _IGC_TSN_H_
+ 
+-int igc_tsn_offload_apply(struct igc_adapter *adapter);
++int igc_tsn_offload_apply(struct igc_adapter *adapter, bool enable);
+ int igc_tsn_reset(struct igc_adapter *adapter);
+ void igc_tsn_adjust_txtime_offset(struct igc_adapter *adapter);
+ 
 -- 
 2.17.1
 
