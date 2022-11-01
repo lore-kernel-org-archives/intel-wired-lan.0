@@ -1,88 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71CD3C433FE
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  1 Nov 2022 22:54:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8477EC433FE
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  1 Nov 2022 22:54:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 26F4E81395;
-	Tue,  1 Nov 2022 22:54:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 26F4E81395
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3BABE40383;
+	Tue,  1 Nov 2022 22:54:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3BABE40383
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667343244;
-	bh=mkQiuMvQpZlJT5lUfAcLHC5eKrS3FhHCfVVFqWl0EGQ=;
+	s=default; t=1667343248;
+	bh=rY01dTW2wNab7cfwsr+OrE354kI7YFf5lRaN4KJSqcI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=gHfL1OawhMNvHQhqBLRBqP1/8PzFWiq4YRODlhWBUNP7WGSkSrOgvQWid06+c1XWB
-	 +EF9IZVZmFJk2dUPiFG3NL0Gl5h/Z54CLVE/eYTCwfHH088ZrKfiw9oi0guSrBDao+
-	 67Kvdq+t613G9FDA/W8jZNMn8YfGqO3LTQUeIS7MR2W/I5MR5wIZ2GcukfbXiXFgPU
-	 a2XiztZzSumoD9FdXOVMXZsAnfZX+wUV+9Y8OdgNb99epdykV1qCUO3+MnUNPWUGIl
-	 D6XdL9dYbvodLD0N3F+tvqyKmd+akVITSRNX01DXCZAFf7eljwuwiSncrHXPXYkiON
-	 fb7wjbxIBN7Qg==
+	b=K1eNKQg/hCDTkR6So0s9FwZa7EJrczI2y1xCS7rBLI67iBWlLEOXhFING009UJXQ8
+	 Wc7hCfDwlftCofsNnRNkGGwSZDeTSjCEkkwlFUwMP281BeB8AHLR6/GGkHgrjlxDmr
+	 TssVeS1rar2bV31A7gaO50FYc0ALHfp/bAI/FBjkOVPUIAtY2+ijVtcowngKtF9/Qa
+	 FU19ByFVeaL7Cl8TjVFJwA+NV2xkes8+djj58KHQsz/g02srziPmjJ1xqFvqNy6jo+
+	 bdp7NluJWa+XR94jmNBjX2ninQ3HZzSuqDvZnemZ2WDofQbjRi5pQ76mDx3GldVPeW
+	 XY+5/XSx67BBg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id P9exYPa0YTQh; Tue,  1 Nov 2022 22:54:03 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id AnxNbF0FCI0a; Tue,  1 Nov 2022 22:54:07 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 291F5813C3;
-	Tue,  1 Nov 2022 22:54:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 291F5813C3
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 482621BF95C
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:16 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 245424067B;
+	Tue,  1 Nov 2022 22:54:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 245424067B
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 187E31BF3E8
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 293E540941
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 293E540941
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id JKW4F5MbCP3s for <intel-wired-lan@lists.osuosl.org>;
- Tue,  1 Nov 2022 22:53:12 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2EE7040E47
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2EE7040E47
+ by smtp2.osuosl.org (Postfix) with ESMTP id C0CFF4055A
  for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:12 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="371348119"
-X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="371348119"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C0CFF4055A
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id aCXsspStE-qG for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  1 Nov 2022 22:53:10 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B2E0040141
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B2E0040141
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:10 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="371348103"
+X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="371348103"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Nov 2022 15:53:11 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="723324066"
-X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="723324066"
+ 01 Nov 2022 15:53:09 -0700
+X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="723324015"
+X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="723324015"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Nov 2022 15:53:10 -0700
+ 01 Nov 2022 15:53:09 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Tue,  1 Nov 2022 15:52:40 -0700
-Message-Id: <20221101225240.421525-16-jacob.e.keller@intel.com>
+Date: Tue,  1 Nov 2022 15:52:26 -0700
+Message-Id: <20221101225240.421525-2-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.0.83.gd420dda05763
 In-Reply-To: <20221101225240.421525-1-jacob.e.keller@intel.com>
 References: <20221101225240.421525-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667343192; x=1698879192;
+ t=1667343190; x=1698879190;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=aXX3y95DOEsbiVVkzaaPCGkNUmGMCo5kDUosplX1GZo=;
- b=MiDCtRzq/unh8C2K3pd8mzmTXXh1y+Q/MUVf0RNVX5qpwh473i2p8rTV
- Mj/4bhXjLlhNHVMSTbogs+ZBMw/PvGrdhQIa5nDYqCX98gEaWtqNpjtw7
- ub4cgOoQP+hC87v2ZG1ZCWSLR2K0FE83AaNxX8t4zTtHaDNCLOLZKIg1U
- Y6qlJI6x+toSXqIa1VS+ap/IvkciPuREBVCSkzOi/9X4b4BrdBXV3uvsR
- Lot30qWCIfbDPTTOsIK9qLG47dMzysiPW1md53uhsZX3si12X3ihwtMeb
- JpW8b7S/ggrB8refOTeJPwKN/yTtqM8RAblx/Ig6UxrAGJlKvQsUzrjdH
+ bh=qh7hqjFTjXmgwCHHaaNy3kycD/0WqbmTX11v4dpc+ps=;
+ b=lYiRNtiUlpB1o6JNzXMfRlciC6IWUB6OcZc/kjH0/rlCDBl5bXPxXkXv
+ 55ht+AfyjMH9Ri1EjzWIA/MTD40OpXxewkopL92JKDfAUKGXx5vUCtZJ5
+ b1hSi32Ff0MQOGad+ayF/SHZEvMtZYwiTprXfnzH0pL2+lW71arOhRVaT
+ R7UQ5wguqr/ckeeMchXZsXJxh9WKIchV7B23PNF7Llazw7x04yqbEhRyL
+ dfn6oZZ1X0882b8QetTmngNaSol79Uqk2tSk9nragCgAI6JmcpPhWkQDd
+ hdGtQtdHnuj0WMpvC9/AjcktdSCUhaU8TWLIeW7xkyLbmJwL3AxjEDQmY
  Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=MiDCtRzq
-Subject: [Intel-wired-lan] [PATCH net-next 15/15] ice: reschedule
- ice_ptp_wait_for_offset_valid during reset
+ header.a=rsa-sha256 header.s=Intel header.b=lYiRNtiU
+Subject: [Intel-wired-lan] [PATCH net-next 01/15] ice: Use more generic
+ names for ice_ptp_tx fields
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,46 +95,153 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Siddaraju DH <siddaraju.dh@intel.com>
+Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-If the ice_ptp_wait_for_offest_valid function is scheduled to run while the
-driver is resetting, it will exit without completing calibration. The work
-function gets scheduled by ice_ptp_port_phy_restart which will be called as
-part of the reset recovery process.
+From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 
-It is possible for the first execution to occur before the driver has
-completely cleared its resetting flags. Ensure calibration completes by
-rescheduling the task until reset is fully completed.
+Some supported devices have per-port timestamp memory blocks while
+others have shared ones within quads. Rename the struct ice_ptp_tx
+fields to reflect the block entities it works with
 
-Reported-by: Siddaraju DH <siddaraju.dh@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 26 ++++++++++++------------
+ drivers/net/ethernet/intel/ice/ice_ptp.h | 12 ++++++-----
+ 2 files changed, 20 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 9981a5f4b9bd..d15fa159d3ae 100644
+index ba2758449183..b3bd73714291 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1239,8 +1239,13 @@ static void ice_ptp_wait_for_offsets(struct kthread_work *work)
- 	pf = ptp_port_to_pf(port);
- 	hw = &pf->hw;
+@@ -648,14 +648,14 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
  
--	if (ice_is_reset_in_progress(pf->state))
-+	if (ice_is_reset_in_progress(pf->state)) {
-+		/* wait for device driver to complete reset */
-+		kthread_queue_delayed_work(pf->ptp.kworker,
-+					   &port->ov_work,
-+					   msecs_to_jiffies(100));
- 		return;
-+	}
+ 	for_each_set_bit(idx, tx->in_use, tx->len) {
+ 		struct skb_shared_hwtstamps shhwtstamps = {};
+-		u8 phy_idx = idx + tx->quad_offset;
++		u8 phy_idx = idx + tx->offset;
+ 		u64 raw_tstamp, tstamp;
+ 		struct sk_buff *skb;
+ 		int err;
  
- 	tx_err = ice_ptp_check_tx_fifo(port);
- 	if (!tx_err)
+ 		ice_trace(tx_tstamp_fw_req, tx->tstamps[idx].skb, idx);
+ 
+-		err = ice_read_phy_tstamp(&pf->hw, tx->quad, phy_idx,
++		err = ice_read_phy_tstamp(&pf->hw, tx->block, phy_idx,
+ 					  &raw_tstamp);
+ 		if (err)
+ 			continue;
+@@ -710,7 +710,7 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
+  * @tx: Tx tracking structure to initialize
+  *
+  * Assumes that the length has already been initialized. Do not call directly,
+- * use the ice_ptp_init_tx_e822 or ice_ptp_init_tx_e810 instead.
++ * use the ice_ptp_init_tx_* instead.
+  */
+ static int
+ ice_ptp_alloc_tx_tracker(struct ice_ptp_tx *tx)
+@@ -744,7 +744,7 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
+ 	u8 idx;
+ 
+ 	for (idx = 0; idx < tx->len; idx++) {
+-		u8 phy_idx = idx + tx->quad_offset;
++		u8 phy_idx = idx + tx->offset;
+ 
+ 		spin_lock(&tx->lock);
+ 		if (tx->tstamps[idx].skb) {
+@@ -757,7 +757,7 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
+ 
+ 		/* Clear any potential residual timestamp in the PHY block */
+ 		if (!pf->hw.reset_ongoing)
+-			ice_clear_phy_tstamp(&pf->hw, tx->quad, phy_idx);
++			ice_clear_phy_tstamp(&pf->hw, tx->block, phy_idx);
+ 	}
+ }
+ 
+@@ -798,9 +798,9 @@ ice_ptp_release_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
+ static int
+ ice_ptp_init_tx_e822(struct ice_pf *pf, struct ice_ptp_tx *tx, u8 port)
+ {
+-	tx->quad = port / ICE_PORTS_PER_QUAD;
+-	tx->quad_offset = (port % ICE_PORTS_PER_QUAD) * INDEX_PER_PORT;
+-	tx->len = INDEX_PER_PORT;
++	tx->block = port / ICE_PORTS_PER_QUAD;
++	tx->offset = (port % ICE_PORTS_PER_QUAD) * INDEX_PER_PORT_E822;
++	tx->len = INDEX_PER_PORT_E822;
+ 
+ 	return ice_ptp_alloc_tx_tracker(tx);
+ }
+@@ -816,9 +816,9 @@ ice_ptp_init_tx_e822(struct ice_pf *pf, struct ice_ptp_tx *tx, u8 port)
+ static int
+ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
+ {
+-	tx->quad = pf->hw.port_info->lport;
+-	tx->quad_offset = 0;
+-	tx->len = INDEX_PER_QUAD;
++	tx->block = pf->hw.port_info->lport;
++	tx->offset = 0;
++	tx->len = INDEX_PER_PORT_E810;
+ 
+ 	return ice_ptp_alloc_tx_tracker(tx);
+ }
+@@ -851,7 +851,7 @@ static void ice_ptp_tx_tstamp_cleanup(struct ice_pf *pf, struct ice_ptp_tx *tx)
+ 			continue;
+ 
+ 		/* Read tstamp to be able to use this register again */
+-		ice_read_phy_tstamp(hw, tx->quad, idx + tx->quad_offset,
++		ice_read_phy_tstamp(hw, tx->block, idx + tx->offset,
+ 				    &raw_tstamp);
+ 
+ 		spin_lock(&tx->lock);
+@@ -2401,7 +2401,7 @@ s8 ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb)
+ 	if (idx >= tx->len)
+ 		return -1;
+ 	else
+-		return idx + tx->quad_offset;
++		return idx + tx->offset;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index 028349295b71..5250ff29a574 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -108,8 +108,8 @@ struct ice_tx_tstamp {
+  * @lock: lock to prevent concurrent write to in_use bitmap
+  * @tstamps: array of len to store outstanding requests
+  * @in_use: bitmap of len to indicate which slots are in use
+- * @quad: which quad the timestamps are captured in
+- * @quad_offset: offset into timestamp block of the quad to get the real index
++ * @block: which memory block (quad or port) the timestamps are captured in
++ * @offset: offset into timestamp block to get the real index
+  * @len: length of the tstamps and in_use fields.
+  * @init: if true, the tracker is initialized;
+  * @calibrating: if true, the PHY is calibrating the Tx offset. During this
+@@ -119,8 +119,8 @@ struct ice_ptp_tx {
+ 	spinlock_t lock; /* lock protecting in_use bitmap */
+ 	struct ice_tx_tstamp *tstamps;
+ 	unsigned long *in_use;
+-	u8 quad;
+-	u8 quad_offset;
++	u8 block;
++	u8 offset;
+ 	u8 len;
+ 	u8 init;
+ 	u8 calibrating;
+@@ -128,7 +128,9 @@ struct ice_ptp_tx {
+ 
+ /* Quad and port information for initializing timestamp blocks */
+ #define INDEX_PER_QUAD			64
+-#define INDEX_PER_PORT			(INDEX_PER_QUAD / ICE_PORTS_PER_QUAD)
++#define INDEX_PER_PORT_E822		16
++#define INDEX_PER_PORT_E810		64
++#define INDEX_PER_PORT_ETH56G		64
+ 
+ /**
+  * struct ice_ptp_port - data used to initialize an external port for PTP
 -- 
 2.38.0.83.gd420dda05763
 
