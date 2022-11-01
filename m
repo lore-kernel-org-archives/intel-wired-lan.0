@@ -1,66 +1,66 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BA72C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  1 Nov 2022 22:53:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E428C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  1 Nov 2022 22:53:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id BBC33400EF;
-	Tue,  1 Nov 2022 22:53:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BBC33400EF
+	by smtp1.osuosl.org (Postfix) with ESMTP id E923E81490;
+	Tue,  1 Nov 2022 22:53:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E923E81490
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667343197;
-	bh=Zu21KgGsAWjiWbqeaC1BZ/Pz29Lgb367uh7YGBqaFCg=;
+	s=default; t=1667343202;
+	bh=ppDIf299Ra2oGLdvTv07JbhmEf25IJHz9OLmfX4gjhY=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=u/o7hLef1CRkKNqQUgs7VKl1STM12JVwDlN6JK9lgsUlYYnVOdtxQ6f3XFo2kxQpI
-	 rWizP7UxlUT/GbE2VsQy1W1pc0IqOQ53rHgznXSs4X01TS0WQuNgn1nl2Y2B/Fw84Q
-	 1K1+LNkVVH6riV0NKp/YK8aN6MFGCf2drWF4r3z2JXvZu4vb0rKYIU+XuauSv+qiKN
-	 HoguXpMkKdC8+C8u2K36fAmZFuk1MTLBZyHe7WxYvHVFrKO40EysVr5Rk+f/9GwaAQ
-	 AI17eqBextq2PINKsBXujY5mOyqaiuIHSgXMeAwhPabmmJs3h5u2jmhhbaQnuM4fra
-	 uzpLvbAIb+DkA==
+	b=TtA+3stN2Azt18QJk3sCb6ieSsS1ELotAiId73EP/9ElfKFQLSIQHsEwpJYNv262M
+	 njfxYr7nI3PTgHIyPdIyHLOL/V4HT+9Gz07Dm5kI4b0sL2aiqU2I4GpXRW2EykiKKg
+	 mNbls0AiIWTYT+qfduBJMsrj4A0l4hme8MGA92zQc0ynQ1QS5QXbCRMMZnYPZEi4Lq
+	 tNoOFi4iHZdZx8FGTHVMyNaZxRGgeoT7a81coRVqFJOVcNyCSkgQZd1nr1QTXawQYf
+	 Bgj/bV+y3zDuS3670OUdja9+7aaj7CYXhunxP4JxQ983cLKZ3aEJTMnRQa3Fx+Yc2J
+	 wNQlMg/f8UK5g==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id L1oKzc9h0p1X; Tue,  1 Nov 2022 22:53:17 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id b-UnserVf5Xh; Tue,  1 Nov 2022 22:53:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B394040643;
-	Tue,  1 Nov 2022 22:53:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B394040643
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2838E1BF3E8
+	by smtp1.osuosl.org (Postfix) with ESMTP id D50D981AC1;
+	Tue,  1 Nov 2022 22:53:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D50D981AC1
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id AFF571BF95C
  for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id C39044074E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C39044074E
+ by smtp1.osuosl.org (Postfix) with ESMTP id 98E9181AEA
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 98E9181AEA
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id r-2is6B0bdtD for <intel-wired-lan@lists.osuosl.org>;
- Tue,  1 Nov 2022 22:53:11 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id psvncj0WPl6V for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  1 Nov 2022 22:53:12 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 34B2F4055A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E4EB081490
 Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 34B2F4055A
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E4EB081490
  for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Nov 2022 22:53:11 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="371348109"
-X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="371348109"
+X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="371348116"
+X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="371348116"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Nov 2022 15:53:09 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="723324025"
-X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="723324025"
+ 01 Nov 2022 15:53:10 -0700
+X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="723324044"
+X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="723324044"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  01 Nov 2022 15:53:09 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Tue,  1 Nov 2022 15:52:29 -0700
-Message-Id: <20221101225240.421525-5-jacob.e.keller@intel.com>
+Date: Tue,  1 Nov 2022 15:52:34 -0700
+Message-Id: <20221101225240.421525-10-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.0.83.gd420dda05763
 In-Reply-To: <20221101225240.421525-1-jacob.e.keller@intel.com>
 References: <20221101225240.421525-1-jacob.e.keller@intel.com>
@@ -70,19 +70,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1667343191; x=1698879191;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=zoO5icx6agb3nHi2fzl/CNPsPc6q1j0SZBa8x9sWGmQ=;
- b=nMgOP9TONY/MuPW18pKElWFvL/TF+Z3ZT4nptAJRZx8QcELUNawj63EC
- GDzC0Sf1W0BznHE3mwJfb6HsYpg9XLspkWGy3hB0LfnXTpWtd54QBpztn
- cZZ9+BsR6c49kVrZaa5G6EfCBstmOPjgvHEvTJyA4pkPHZlfZJIgNOlJz
- ihcWj6rKQi8VwK6Ar427AaNhNoFOizPxj62DoVrVu3g3leE/seug612RL
- 7tlxiZmpT4i/2iJmd96asSNL/Ry8JkvaJI+xF9B5XH2iI5KaFoEUm2VW7
- NZMmSd8eBxlvpBOSQSN8FUx0b9eOQMaF1HtH6S0pWQ+UpHmEq+it5E1H6
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=WK72fPQfAkTcnTXXNaQrnxKl4VmmC+OPI8+uwItMnGY=;
+ b=Ddtsul2GP6rlCXkHgXI25AY6KHD95oF3k2tb3UFzii+OSoHR3ND0c5hT
+ n1iYAz36/jr4p3hq3pd7c4qqCpqsC/ytz5+JriRqey5bYySOVgrLYiDa7
+ yK1kv8Ko1TpPRtd5HoCyjq/jGV0K+F/2Bu8NgR4oZZ9/Mjaq0N+mb+2S1
+ Xw67ffdRXunPASWzM86L9l0dYZ+f0e5KSrEFHLmHT/DpvrHBAxNMN3G2c
+ xP6rW2h73RaN8FUJSfd+wqRreVsEgjPik9PBj+lunppw1odIU4ltPELMU
+ dHf93vqGY5Ot/nCF33gSo2cOa6F3HdPKU3pcVT1DncVdVv4tj7x2uAPqU
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nMgOP9TO
-Subject: [Intel-wired-lan] [PATCH net-next 04/15] ice: fix misuse of "link
- err" with "link status"
+ header.a=rsa-sha256 header.s=Intel header.b=Ddtsul2G
+Subject: [Intel-wired-lan] [PATCH net-next 09/15] ice: return true if Tx
+ tracker is uninitialized
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,34 +100,66 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_ptp_link_change function has a comment which mentions "link
-err" when referring to the current link status. We are storing the status
-of whether link is up or down, which is not an error.
+If the PTP Tx timestamp tracker is not initialized, then there is no work
+to complete, so the ice_ptp_tx_tstamp function should return true, rather
+than false.
 
-It is appears that this use of err accidentally got included due to an
-overzealous search and replace when removing the ice_status enum and local
-status variable.
+With this change, we also don't need to re-check the init status prior to
+calling the function as it now returns the correct value.
 
-Fix the wording to use the correct term.
+Also update the ice_ptp_tx_tstamp function comment to properly clarify the
+return value meaning.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 40606fa0c1d9..6a36256748fe 100644
+index e2c2b1e52346..91ee36d3d21f 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1324,7 +1324,7 @@ int ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
- 	if (ptp_port->port_num != port)
- 		return -EINVAL;
+@@ -650,11 +650,14 @@ ice_ptp_is_tx_tracker_up(struct ice_ptp_tx *tx)
+  * 2) extend the 40b timestamp value to get a 64bit timestamp
+  * 3) send that timestamp to the stack
+  *
+- * After looping, if we still have waiting SKBs, return true. This may cause us
+- * effectively poll even when not strictly necessary. We do this because it's
+- * possible a new timestamp was requested around the same time as the interrupt.
+- * In some cases hardware might not interrupt us again when the timestamp is
+- * captured.
++ * Returns true if all timestamps were handled, and false if any slots remain
++ * without a timestamp.
++ *
++ * After looping, if we still have waiting SKBs, return false. This may cause
++ * us effectively poll even when not strictly necessary. We do this because
++ * it's possible a new timestamp was requested around the same time as the
++ * interrupt. In some cases hardware might not interrupt us again when the
++ * timestamp is captured.
+  *
+  * Note that we only take the tracking lock when clearing the bit and when
+  * checking if we need to re-queue this task. The only place where bits can be
+@@ -697,7 +700,7 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
+ 	u8 idx;
  
--	/* Update cached link err for this port immediately */
-+	/* Update cached link status for this port immediately */
- 	ptp_port->link_up = linkup;
+ 	if (!ice_ptp_is_tx_tracker_init(tx))
+-		return false;
++		return true;
  
- 	if (!test_bit(ICE_FLAG_PTP, pf->flags))
+ 	ptp_port = container_of(tx, struct ice_ptp_port, tx);
+ 	pf = ptp_port_to_pf(ptp_port);
+@@ -2449,10 +2452,7 @@ s8 ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb)
+  */
+ bool ice_ptp_process_ts(struct ice_pf *pf)
+ {
+-	if (pf->ptp.port.tx.init)
+-		return ice_ptp_tx_tstamp(&pf->ptp.port.tx);
+-
+-	return false;
++	return ice_ptp_tx_tstamp(&pf->ptp.port.tx);
+ }
+ 
+ static void ice_ptp_periodic_work(struct kthread_work *work)
 -- 
 2.38.0.83.gd420dda05763
 
