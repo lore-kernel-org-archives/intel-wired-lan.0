@@ -1,88 +1,94 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 227E5C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Nov 2022 11:05:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D27CC433FE
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Nov 2022 11:52:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8026C817AC;
-	Wed,  2 Nov 2022 11:05:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8026C817AC
+	by smtp2.osuosl.org (Postfix) with ESMTP id 12E714013B;
+	Wed,  2 Nov 2022 11:52:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 12E714013B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667387159;
-	bh=cfbGl3kXKZqp3QvGgYzNmJegL9xF4zmUv1pVudrRU/E=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=cvdhjNkyCylVxGLbR/cT/cIBdMHkYz6gwhuoBP4X4X8/rh70ihbVClifdd6Jp5pjp
-	 RCq3xMnTcVnp5RvTF/et2ddB2u7y3gEDODSs7DGwOWb3TVBazoRiwNeRub1lyJ4izR
-	 yYwbip20wzqfPhC9BKZjy6BKYfEq0SxDG7FBGLWY4Icz0rZZj+icqvrhL1OE2w3avB
-	 jyydCLXFtlvWnXDJcgODUNmTaWt3yRJhsZjxWxdA1jbShx5T8yQWqXgHdjUb0USaZ1
-	 TlS74HX/kaSAq9nJ0Cw7TKPxIu7H2SiyrR29vGVELIrrfjPpBy+ar1z9wfbjIStrbx
-	 o3Est5wbUC6Pw==
+	s=default; t=1667389954;
+	bh=9Q2onQ3+aGtTQ475Am6TLfKdR+FNSfISZjgOCfbBs00=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=jM4YcurEQI0FX5eU6UofTU9J6cAYHEgD9qwDc+JZHMTy02bzYJMOu8x2Gbekp82QS
+	 adIrzk5o1v6qRf23mZHWfMbB8Y1yorjsCKIT8mBl1cMe/1CQj7iUO7BJQtmQxEzfPn
+	 M5fx5MtDdrapYBxgcOQoAEHRyWdCxjDbUEojBN8G5M7BJu7Gh0toHf0FKtwCt4LNs8
+	 36PqsllD8CRyeMb0GfFUW8n15t454S4B4wmIgUGzH6C1OWcYe0daCrcmRRBUeDSZSG
+	 qj3263CqJr2cVRAdxinyDlli4g4a6gNSaWyIHWDpSt2d5IDgFDSaZVwdkIVq7FbBpm
+	 yXiaZClYbXEmQ==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Lb1oPry4wYk3; Wed,  2 Nov 2022 11:52:33 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id F173C408BF;
+	Wed,  2 Nov 2022 11:52:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F173C408BF
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id B914B1BF831
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Nov 2022 11:52:31 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id A0B148175B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Nov 2022 11:52:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A0B148175B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Kq3vjHWV1ZOK; Wed,  2 Nov 2022 11:05:58 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6718281815;
-	Wed,  2 Nov 2022 11:05:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6718281815
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B00291BF2B5
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Nov 2022 11:05:56 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 96F8060A6A
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Nov 2022 11:05:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 96F8060A6A
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Ifb6KIYeVfVt for <intel-wired-lan@lists.osuosl.org>;
- Wed,  2 Nov 2022 11:05:55 +0000 (UTC)
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 9lHVuJqXfoK0 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  2 Nov 2022 11:52:30 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 65BA960A68
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 65BA960A68
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Nov 2022 11:05:55 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="310485087"
-X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="310485087"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Nov 2022 04:05:54 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CC3E581340
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CC3E581340
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Nov 2022 11:52:30 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="373609985"
+X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="373609985"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Nov 2022 04:52:30 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="963487804"
-X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="963487804"
-Received: from lkp-server02.sh.intel.com (HELO b6d29c1a0365) ([10.239.97.151])
- by fmsmga005.fm.intel.com with ESMTP; 02 Nov 2022 04:05:53 -0700
-Received: from kbuild by b6d29c1a0365 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1oqBZA-000EhI-2g;
- Wed, 02 Nov 2022 11:05:52 +0000
-Date: Wed, 02 Nov 2022 19:05:03 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <63624edf.0v3nX5kLrGhS2918%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="703240406"
+X-IronPort-AV: E=Sophos;i="5.95,232,1661842800"; d="scan'208";a="703240406"
+Received: from irvmail001.ir.intel.com ([10.43.11.63])
+ by fmsmga004.fm.intel.com with ESMTP; 02 Nov 2022 04:52:28 -0700
+Received: from newjersey.igk.intel.com (newjersey.igk.intel.com
+ [10.102.20.203])
+ by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
+ 2A2BqRgd002771; Wed, 2 Nov 2022 11:52:27 GMT
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
+To: "Staikov, Andrii" <andrii.staikov@intel.com>
+Date: Wed,  2 Nov 2022 12:50:08 +0100
+Message-Id: <20221102115008.3067605-1-alexandr.lobakin@intel.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <PH0PR11MB5611A463FA999509D6CA914C85379@PH0PR11MB5611.namprd11.prod.outlook.com>
+References: <20221025072705.1270255-1-andrii.staikov@intel.com>
+ <20221026164445.56155-1-alexandr.lobakin@intel.com>
+ <PH0PR11MB5611A463FA999509D6CA914C85379@PH0PR11MB5611.namprd11.prod.outlook.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667387155; x=1698923155;
- h=date:from:to:subject:message-id:mime-version:
- content-transfer-encoding;
- bh=KwsOKZ+YmZY1SeYXApafFnihId07QmvyQgHwdL7DEW4=;
- b=NB5NKZnos5VdLri8rOT1GtRb/W/ORm2WuzGokfo3+bO94Pu0DDP3nLPw
- jh6wli/plGoEj5p60nBuL+yRoO7W9rHuhGhZK38r6FUYn/ZpICw28rzZt
- 60VkILODrcFVy/dYRhgdoNjKdR93PBr+uI9i6HKEt2w11MlveXETHPONY
- MKzB0mSGgVxyHTUiAnA2eCM3J1AOI70BzzEQXXnYhRuTbhMl9hLzxolDj
- scmjfXLOxe463p/LEjghiHaDLsK3Xp76ffcnBSOqNjbfc8ZN+wbKZWcIq
- QGdNxm0D5328bcyBbqYHEA5JTp7Mapyq81bMmqZqwLfoJJLnUgohTMAxN
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1667389950; x=1698925950;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=pIy7yL0c6C0YkQntOv8trMu+Lr1Gb/Y46V98oHau+xk=;
+ b=Xt/zTsrOhHwDHY5dxV2lvKA7dTYZ6ufvV+Qj2CArIzDvmRxZROdVpbls
+ 19IAPjaV/lXs29yRf7H39i5S4Oa2Jwj5oPQD6pld981yScW2/WvZNFooI
+ 4szzHlxFBUr3Ob/BnEkDR3GN5W9sVYkOItL+9o6Iml4TvioD5dAtIMlZS
+ KoXsinFPWxniw1TAyqa/GrCvkEnqLt/0HYskZHNSfjGG97rY1LpmkuVtT
+ N2BNqqkHVfO9ZwCkT+9FZFNYFGg1LUvETqYV+CMakLXSUQlwFqchv6av6
+ 3A0+FIOYLpLMGdvVnR2riMKhsAjNz5cUOh4FQBXRggsHxZS5biLJdEvRQ
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NB5NKZno
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- c70e8985365ba84d8d668a27a45c21d1fc26f818
+ header.a=rsa-sha256 header.s=Intel header.b=Xt/zTsrO
+Subject: Re: [Intel-wired-lan] [PATCH net v1] i40e: Fix crash when rebuild
+ failed in i40e_xdp_setup
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,121 +101,71 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "Dziedziuch, SylwesterX" <sylwesterx.dziedziuch@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: c70e8985365ba84d8d668a27a45c21d1fc26f818  i40e: Fix for VF MAC address 0
+> From: "Staikov, Andrii" <andrii.staikov@intel.com>
+> Date: Mon, 31 Oct 2022 08:30:59 +0000
+> 
+> >From: Andrii Staikov <andrii.staikov@intel.com>
+> >Date: Tue, 25 Oct 2022 09:27:05 +0200
+> >
+> >> From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
 
-elapsed time: 721m
+[...]
 
-configs tested: 92
-configs skipped: 2
+> >> Fixes: 0c8493d90b6b ("i40e: add XDP support for pass and drop 
+> >> actions")
+> >> Title: i40e: Fix crash when rebuild failed in i40e_xdp_setup
+> >> Change-type: DefectResolution
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Those two tags shouldn't be here BTW, only Fixes and SoBs.
 
-gcc tested configs:
-um                           x86_64_defconfig
-um                             i386_defconfig
-arc                                 defconfig
-s390                             allmodconfig
-alpha                               defconfig
-s390                                defconfig
-s390                             allyesconfig
-arc                  randconfig-r043-20221101
-x86_64                        randconfig-a004
-i386                 randconfig-a011-20221031
-powerpc                           allnoconfig
-i386                 randconfig-a012-20221031
-x86_64                        randconfig-a002
-x86_64                           rhel-8.3-syz
-mips                             allyesconfig
-x86_64                         rhel-8.3-kunit
-x86_64                           rhel-8.3-kvm
-ia64                             allmodconfig
-i386                                defconfig
-i386                          randconfig-a001
-i386                 randconfig-a013-20221031
-x86_64                              defconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a013
-i386                          randconfig-a003
-i386                 randconfig-a015-20221031
-i386                 randconfig-a014-20221031
-i386                          randconfig-a005
-i386                 randconfig-a016-20221031
-x86_64                        randconfig-a011
-x86_64                          rhel-8.3-func
-powerpc                          allmodconfig
-sh                               allmodconfig
-x86_64                    rhel-8.3-kselftests
-i386                             allyesconfig
-x86_64                        randconfig-a015
-x86_64                               rhel-8.3
-x86_64                           allyesconfig
-arm                                 defconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-arc                              allyesconfig
-alpha                            allyesconfig
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-arm64                            allyesconfig
-arm                              allyesconfig
-x86_64               randconfig-k001-20221031
-arm64                            alldefconfig
-powerpc                 linkstation_defconfig
-m68k                        stmark2_defconfig
-arm                            mps2_defconfig
-i386                          randconfig-c001
-sparc                       sparc64_defconfig
-sh                          lboxre2_defconfig
-sparc                             allnoconfig
-xtensa                    smp_lx200_defconfig
-arm                          gemini_defconfig
-sh                 kfr2r09-romimage_defconfig
-xtensa                       common_defconfig
-arm                        keystone_defconfig
-powerpc                     stx_gp3_defconfig
-arm                         cm_x300_defconfig
-mips                           xway_defconfig
-arm                      footbridge_defconfig
-powerpc                     taishan_defconfig
-sh                  sh7785lcr_32bit_defconfig
-alpha                             allnoconfig
-i386                 randconfig-c001-20221031
-powerpc                      arches_defconfig
-powerpc                    klondike_defconfig
+> >> Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+> >> Signed-off-by: Andrii Staikov <andrii.staikov@intel.com>
+> >> ---
+> >>  drivers/net/ethernet/intel/i40e/i40e_main.c | 155 
+> >> ++++++++++++++------
+> >>  1 file changed, 112 insertions(+), 43 deletions(-)
+> >
+> >[...]
+> >
+> >-	old_prog = xchg(&vsi->xdp_prog, prog);
+> >+	if (if_running && !test_and_set_bit(__I40E_VSI_DOWN, vsi->state))
+> >+		i40e_down(vsi);
+> >
+> >Please don't. Unconditional down-up was removed from i40e, we've made XDP hotswap in ice in our recent patch queue and now you're trying to effectively revert all that ._.
+> >You don't need any interface actions when there is a prog and you want to install a new one as well, just RCU the pointers and that's it.
+> >
+> 
+> Can you please elaborate on this. I am not an author of this commit so it's hard for me to grasp what you are talking about.
+> Are you suggestion just leaving old_prog = xchg(&vsi->xdp_prog, prog); instread of the part that was added?
 
-clang tested configs:
-hexagon              randconfig-r041-20221101
-hexagon              randconfig-r045-20221101
-s390                 randconfig-r044-20221101
-riscv                randconfig-r042-20221101
-x86_64                        randconfig-a005
-x86_64                        randconfig-a014
-x86_64                        randconfig-a001
-i386                          randconfig-a002
-i386                          randconfig-a006
-x86_64                        randconfig-a003
-i386                          randconfig-a004
-x86_64                        randconfig-a016
-x86_64                        randconfig-a012
-arm                        vexpress_defconfig
-powerpc                       ebony_defconfig
-powerpc                      obs600_defconfig
-hexagon              randconfig-r041-20221102
-hexagon              randconfig-r045-20221102
-arm                      pxa255-idp_defconfig
-mips                      bmips_stb_defconfig
+if (!!prog == !!old_prog), you shouldn't do any
+resets/reallocatiions/etc, please leave it just how it was before
+(when they were being done conditionally on (need_reset)).
+Otherwise, you'll kill prog hotswapping by trying to fix this splat,
+which would be a major regression.
 
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+> 
+> >[...]
+> >
+> >> --
+> >> 2.25.1
+> >
+> >Thanks,
+> >Olek
+> >
+> 
+> Regards,
+> Staikov Andrii
+
+Thanks,
+Olek
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
