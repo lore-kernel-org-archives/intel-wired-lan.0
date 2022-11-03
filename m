@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F3FDC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:02:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37AA9C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:02:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DBE5A41856;
-	Thu,  3 Nov 2022 22:02:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DBE5A41856
+	by smtp4.osuosl.org (Postfix) with ESMTP id D80BA41864;
+	Thu,  3 Nov 2022 22:02:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D80BA41864
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667512972;
-	bh=M2LYl1yZKXaoHSQTsHHy9OFBKEi7+G5NNWyegAYAXoc=;
+	s=default; t=1667512977;
+	bh=mU4c61Ik9Y5NXxt7rhL63O1eYVv4TtX7c5V31ny47JU=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=F5qL7XHpNkj28+znxqPv10R9jCrllWtq3I3FH3S8F4peSlRfdoo/3O/qQf+qdEoLN
-	 H1jaxNFsxpi2AuMxjKgC2ISYhwAQal1jxdTaiQ/FVf+hBUQEbpW3ir/YTeV6HntnMn
-	 Vl2h18HdIYZuD+wl9zllVvoRRnXRnuw+00DBb+4BuUknHv54e6uVdmsp2NWM85R5Kg
-	 dRZYVoduhM3CkW3ysbAkI/QGVtw/0XgS6isTLs4C9ZINz/0CxoZIl470ixB5mRYQn7
-	 /9TbfEEW1RKf8mrWJxkP6LGaflBfgXWkVshztRsnQCmx5ofB0uB4Ap4ckKiGojEX6z
-	 dxWIo3hqNFXnQ==
+	 Cc:From;
+	b=VIn1pX30+dsmLcqdDpWNTf1/croTubVHKaNI6Wj/IP45UyPDLlcMV+NoVkz8BdD1J
+	 t6b0XxLCS/4UfAhJomq/ieN8gw2g0Irzt3adCR81v2w35KDSHV5USf8VGusW2AT3mb
+	 0asVmu3eV/CuNrhNrZVgnn4MtH/Kiafi1UPvu13HKBdbyq5R/LxLGPixyjzB1cFhgL
+	 z/naKL3Gc0Xs18BjMOHZYSH7Q9KoHfnM35dgZpf/2Tb77hoP4Rc0ZIbeWc/JzqvSH8
+	 2gU2VDdyAPH0NDcMPg3UhkroEkE+Sjgf/KiPUYSQprj1B04UI4KKjLAILCouX4sTQM
+	 hSEZ1ofv8uSOA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fGeUYShDY2wd; Thu,  3 Nov 2022 22:02:51 +0000 (UTC)
+	with ESMTP id A1gKN6dASWOH; Thu,  3 Nov 2022 22:02:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 79C6A41857;
-	Thu,  3 Nov 2022 22:02:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 79C6A41857
+	by smtp4.osuosl.org (Postfix) with ESMTP id 122B041880;
+	Thu,  3 Nov 2022 22:02:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 122B041880
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 166E51BF2F2
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:08 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 19C3D1BF2F2
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id F11AC81EEA
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F11AC81EEA
+ by smtp1.osuosl.org (Postfix) with ESMTP id 20B7A81F42
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 20B7A81F42
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id QilNiLyoMDFw for <intel-wired-lan@lists.osuosl.org>;
- Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
+ with ESMTP id 4I898J8WGfn5 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  3 Nov 2022 22:02:01 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D707081F61
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D707081F61
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:01:59 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="297278198"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="297278198"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C6B0F81F95
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C6B0F81F95
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="307436996"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="307436996"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2022 15:01:58 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480258"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480258"
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Nov 2022 15:02:00 -0700
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480306"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480306"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2022 15:01:58 -0700
+ 03 Nov 2022 15:01:59 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Thu,  3 Nov 2022 15:01:35 -0700
-Message-Id: <20221103220145.1851114-6-jacob.e.keller@intel.com>
+Date: Thu,  3 Nov 2022 15:01:44 -0700
+Message-Id: <20221103220145.1851114-15-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.0.83.gd420dda05763
 In-Reply-To: <20221103220145.1851114-1-jacob.e.keller@intel.com>
 References: <20221103220145.1851114-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667512919; x=1699048919;
+ t=1667512920; x=1699048920;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=Vwk8GOY0g7jByAKQrO1ByoncJ8Evd5I2WMZ8yvbexj0=;
- b=WiZmLiz6AMlQjTDl0QvOCXa23Er8rBM3WAWfDhdQkiTfx2lXvVRe8ELA
- JPNc+Sb7kqiZDoHcHS5zsdnF7fx9w/uQFvnhMUo5f9sjMcnzckarP9yOV
- UDSFkr94nwMVGwUhj/Uiw12AxawIvvPN+7PTsI5Y3gKhfx3qdOg4ggjg7
- 9p5z5wfWc1p0YK7n6e/j0R5TLbGbZ5oV1oiwi5maMPP5d6RnawJ7qkbUV
- 0I4o7BBH064ynV7qX4tKlzbyKiJF4V18vT6f5EAhaAYD4OnUviJFP83iI
- wUZHl7GCtuxfjo/u6cq+D6ljI/ohd8MSor9p97rucEOBHX776750AbxdL
- Q==;
+ bh=cNuBi/TtRA3dPscfKMUGpT5AVWkGD97sejyTR0M0lkI=;
+ b=i6e81YPEN4ApQ2Xl4xHBWzUONoyY3XlK9TBo4UhpDJw5fCKN1fT+XMQX
+ 1IBN7jTpDTtQL0f4mdnFlev1k+2jjcaGXowRaHXxmAS1k1sPXNA4BXHqp
+ ej1M0e6/xGY8RZxgbFAC3I/rsZRZjtb0vI2VBrTIRZAtfiWukIU6+GWkm
+ M0+gTP0M6lQfX+sgm4zBI94kWnsItP2yw1g3F/5f9fjfzRpxk4uZsiUVr
+ cwFXhQBuJ6qqvSOlLR7Tk2xaYZhvmFjcmmNCsh3V8YA7Ed49+9/abir5s
+ yOS/wxufQXWBpUzLf8q516AJxr/d5zRFanQHa1ikqiOo/osKmJevlmccT
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=WiZmLiz6
-Subject: [Intel-wired-lan] [PATCH net-next v2 05/15] ice: always call
- ice_ptp_link_change and make it void
+ header.a=rsa-sha256 header.s=Intel header.b=i6e81YPE
+Subject: [Intel-wired-lan] [PATCH net-next v2 14/15] ice: make Tx and Rx
+ vernier offset calibration independent
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,154 +95,444 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Siddaraju DH <siddaraju.dh@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_ptp_link_change function is currently only called for E822 based
-hardware. Future changes are going to extend this function to perform
-additional tasks on link change.
+From: Siddaraju DH <siddaraju.dh@intel.com>
 
-Always call this function, moving the E810 check from the callers down to
-just before we call the E822-specific function required to restart the PHY.
+The Tx and Rx calibration and timestamp generation blocks are independent.
+However, the ice driver waits until both blocks are ready before
+configuring either block.
 
-This function also returns an error value, but none of the callers actually
-check it. In general, the errors it produces are more likely systemic
-problems such as invalid or corrupt port numbers. No caller checks these,
-and so no warning is logged.
+This can result in delay of configuring one block because we have not yet
+received a packet in the other block.
 
-Re-order the flag checks so that ICE_FLAG_PTP is checked first. Drop the
-unnecessary check for ICE_FLAG_PTP_SUPPORTED, as ICE_FLAG_PTP will not be
-set except when ICE_FLAG_PTP_SUPPORTED is set.
+There is no reason to wait to finish programming Tx just because we haven't
+received a packet. Similarly there is no reason to wait to program Rx just
+because we haven't transmitted a packet.
 
-Convert the port checks to WARN_ON_ONCE, in order to generate a kernel
-stack trace when they are hit.
+Instead of checking both offset status before programming either block,
+refactor the ice_phy_cfg_tx_offset_e822 and ice_phy_cfg_rx_offset_e822
+functions so that they perform their own offset status checks.
+Additionally, make them also check the offset ready bit to determine if
+the offset values have already been programmed.
 
-Convert the function to void since no caller actually checks these return
-values.
+Call the individual configure functions directly in
+ice_ptp_wait_for_offset_valid. The functions will now correctly check
+status, and program the offsets if ready. Once the offset is programmed,
+the functions will exit quickly after just checking the offset ready
+register.
 
-Co-developed-by: Dave Ertman <david.m.ertman@intel.com>
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Remove the ice_phy_calc_vernier_e822 in ice_ptp_hw.c, as well as the offset
+valid check functions in ice_ptp.c entirely as they are no longer
+necessary.
+
+With this change, the Tx and Rx blocks will each be enabled as soon as
+possible without waiting for the other block to complete calibration. This
+can enable timestamps faster in setups which have a low rate of transmitted
+or received packets. In particular, it can stop a situation where one port
+never receives traffic, and thus never finishes calibration of the Tx
+block, resulting in continuous faults reported by the ptp4l daemon
+application.
+
+Signed-off-by: Siddaraju DH <siddaraju.dh@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 Changes since v1
-* Fixed the commit message to use E810 instead of e810
-* Fixed the tags to use Co-developed-by and add Dave's Signed-off-by
+* Fixed the string alignment for dev_info
 
- drivers/net/ethernet/intel/ice/ice_main.c |  9 +++------
- drivers/net/ethernet/intel/ice/ice_ptp.c  | 24 +++++++++++------------
- drivers/net/ethernet/intel/ice/ice_ptp.h  |  7 ++++---
- 3 files changed, 19 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c    | 128 ++++---------------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 133 ++++++++++----------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |   3 +-
+ 3 files changed, 91 insertions(+), 173 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 84fe01fbd83b..881dc9c29d63 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1125,8 +1125,7 @@ ice_link_event(struct ice_pf *pf, struct ice_port_info *pi, bool link_up,
- 	if (link_up == old_link && link_speed == old_link_speed)
- 		return 0;
- 
--	if (!ice_is_e810(&pf->hw))
--		ice_ptp_link_change(pf, pf->hw.pf_id, link_up);
-+	ice_ptp_link_change(pf, pf->hw.pf_id, link_up);
- 
- 	if (ice_is_dcb_active(pf)) {
- 		if (test_bit(ICE_FLAG_DCB_ENA, pf->flags))
-@@ -6434,8 +6433,7 @@ static int ice_up_complete(struct ice_vsi *vsi)
- 		ice_print_link_msg(vsi, true);
- 		netif_tx_start_all_queues(vsi->netdev);
- 		netif_carrier_on(vsi->netdev);
--		if (!ice_is_e810(&pf->hw))
--			ice_ptp_link_change(pf, pf->hw.pf_id, true);
-+		ice_ptp_link_change(pf, pf->hw.pf_id, true);
- 	}
- 
- 	/* Perform an initial read of the statistics registers now to
-@@ -6867,8 +6865,7 @@ int ice_down(struct ice_vsi *vsi)
- 
- 	if (vsi->netdev && vsi->type == ICE_VSI_PF) {
- 		vlan_err = ice_vsi_del_vlan_zero(vsi);
--		if (!ice_is_e810(&vsi->back->hw))
--			ice_ptp_link_change(vsi->back, vsi->back->hw.pf_id, false);
-+		ice_ptp_link_change(vsi->back, vsi->back->hw.pf_id, false);
- 		netif_carrier_off(vsi->netdev);
- 		netif_tx_disable(vsi->netdev);
- 	} else if (vsi->type == ICE_VSI_SWITCHDEV_CTRL) {
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 6a36256748fe..3b154cdb2a32 100644
+index 7c0caf0a566f..42b39b867606 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1305,33 +1305,33 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
+@@ -1219,132 +1219,46 @@ static int ice_ptp_check_tx_fifo(struct ice_ptp_port *port)
  }
  
  /**
-- * ice_ptp_link_change - Set or clear port registers for timestamping
-+ * ice_ptp_link_change - Reconfigure PTP after link status change
-  * @pf: Board private structure
-  * @port: Port for which the PHY start is set
-  * @linkup: Link is up or down
-  */
--int ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
-+void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
- {
- 	struct ice_ptp_port *ptp_port;
- 
--	if (!test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
--		return 0;
-+	if (!test_bit(ICE_FLAG_PTP, pf->flags))
-+		return;
- 
--	if (port >= ICE_NUM_EXTERNAL_PORTS)
--		return -EINVAL;
-+	if (WARN_ON_ONCE(port >= ICE_NUM_EXTERNAL_PORTS))
-+		return;
- 
- 	ptp_port = &pf->ptp.port;
--	if (ptp_port->port_num != port)
--		return -EINVAL;
-+	if (WARN_ON_ONCE(ptp_port->port_num != port))
-+		return;
- 
- 	/* Update cached link status for this port immediately */
- 	ptp_port->link_up = linkup;
- 
--	if (!test_bit(ICE_FLAG_PTP, pf->flags))
--		/* PTP is not setup */
+- * ice_ptp_check_tx_offset_valid - Check if the Tx PHY offset is valid
+- * @port: the PTP port to check
+- *
+- * Checks whether the Tx offset for the PHY associated with this port is
+- * valid. Returns 0 if the offset is valid, and a non-zero error code if it is
+- * not.
+- */
+-static int ice_ptp_check_tx_offset_valid(struct ice_ptp_port *port)
+-{
+-	struct ice_pf *pf = ptp_port_to_pf(port);
+-	struct device *dev = ice_pf_to_dev(pf);
+-	struct ice_hw *hw = &pf->hw;
+-	u32 val;
+-	int err;
+-
+-	err = ice_ptp_check_tx_fifo(port);
+-	if (err)
+-		return err;
+-
+-	err = ice_read_phy_reg_e822(hw, port->port_num, P_REG_TX_OV_STATUS,
+-				    &val);
+-	if (err) {
+-		dev_err(dev, "Failed to read TX_OV_STATUS for port %d, err %d\n",
+-			port->port_num, err);
 -		return -EAGAIN;
-+	/* E810 devices do not need to reconfigure the PHY */
-+	if (ice_is_e810(&pf->hw))
-+		return;
+-	}
+-
+-	if (!(val & P_REG_TX_OV_STATUS_OV_M))
+-		return -EAGAIN;
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_ptp_check_rx_offset_valid - Check if the Rx PHY offset is valid
+- * @port: the PTP port to check
+- *
+- * Checks whether the Rx offset for the PHY associated with this port is
+- * valid. Returns 0 if the offset is valid, and a non-zero error code if it is
+- * not.
+- */
+-static int ice_ptp_check_rx_offset_valid(struct ice_ptp_port *port)
+-{
+-	struct ice_pf *pf = ptp_port_to_pf(port);
+-	struct device *dev = ice_pf_to_dev(pf);
+-	struct ice_hw *hw = &pf->hw;
+-	int err;
+-	u32 val;
+-
+-	err = ice_read_phy_reg_e822(hw, port->port_num, P_REG_RX_OV_STATUS,
+-				    &val);
+-	if (err) {
+-		dev_err(dev, "Failed to read RX_OV_STATUS for port %d, err %d\n",
+-			port->port_num, err);
+-		return err;
+-	}
+-
+-	if (!(val & P_REG_RX_OV_STATUS_OV_M))
+-		return -EAGAIN;
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_ptp_check_offset_valid - Check port offset valid bit
+- * @port: Port for which offset valid bit is checked
+- *
+- * Returns 0 if both Tx and Rx offset are valid, and -EAGAIN if one of the
+- * offset is not ready.
+- */
+-static int ice_ptp_check_offset_valid(struct ice_ptp_port *port)
+-{
+-	int tx_err, rx_err;
+-
+-	/* always check both Tx and Rx offset validity */
+-	tx_err = ice_ptp_check_tx_offset_valid(port);
+-	rx_err = ice_ptp_check_rx_offset_valid(port);
+-
+-	if (tx_err || rx_err)
+-		return -EAGAIN;
+-
+-	return 0;
+-}
+-
+-/**
+- * ice_ptp_wait_for_offset_valid - Check for valid Tx and Rx offsets
++ * ice_ptp_wait_for_offsets - Check for valid Tx and Rx offsets
+  * @work: Pointer to the kthread_work structure for this task
+  *
+- * Check whether both the Tx and Rx offsets are valid for enabling the vernier
+- * calibration.
++ * Check whether hardware has completed measuring the Tx and Rx offset values
++ * used to configure and enable vernier timestamp calibration.
+  *
+- * Once we have valid offsets from hardware, update the total Tx and Rx
+- * offsets, and exit bypass mode. This enables more precise timestamps using
+- * the extra data measured during the vernier calibration process.
++ * Once the offset in either direction is measured, configure the associated
++ * registers with the calibrated offset values and enable timestamping. The Tx
++ * and Rx directions are configured independently as soon as their associated
++ * offsets are known.
++ *
++ * This function reschedules itself until both Tx and Rx calibration have
++ * completed.
+  */
+-static void ice_ptp_wait_for_offset_valid(struct kthread_work *work)
++static void ice_ptp_wait_for_offsets(struct kthread_work *work)
+ {
+ 	struct ice_ptp_port *port;
+-	int err;
+-	struct device *dev;
+ 	struct ice_pf *pf;
+ 	struct ice_hw *hw;
++	int tx_err;
++	int rx_err;
  
--	return ice_ptp_port_phy_restart(ptp_port);
-+	ice_ptp_port_phy_restart(ptp_port);
+ 	port = container_of(work, struct ice_ptp_port, ov_work.work);
+ 	pf = ptp_port_to_pf(port);
+ 	hw = &pf->hw;
+-	dev = ice_pf_to_dev(pf);
+ 
+ 	if (ice_is_reset_in_progress(pf->state))
+ 		return;
+ 
+-	if (ice_ptp_check_offset_valid(port)) {
+-		/* Offsets not ready yet, try again later */
++	tx_err = ice_ptp_check_tx_fifo(port);
++	if (!tx_err)
++		tx_err = ice_phy_cfg_tx_offset_e822(hw, port->port_num);
++	rx_err = ice_phy_cfg_rx_offset_e822(hw, port->port_num);
++	if (tx_err || rx_err) {
++		/* Tx and/or Rx offset not yet configured, try again later */
+ 		kthread_queue_delayed_work(pf->ptp.kworker,
+ 					   &port->ov_work,
+ 					   msecs_to_jiffies(100));
+ 		return;
+ 	}
+-
+-	/* Offsets are valid, so Vernier mode calculations are started */
+-	err = ice_phy_calc_vernier_e822(hw, port->port_num);
+-	if (err) {
+-		dev_warn(dev, "Failed to prepare Vernier mode for PHY port %u, err %d\n",
+-			 port->port_num, err);
+-		return;
+-	}
  }
  
  /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-index ca0fbfd71ed2..39cab020f1af 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -257,7 +257,7 @@ void ice_ptp_reset(struct ice_pf *pf);
- void ice_ptp_prepare_for_reset(struct ice_pf *pf);
- void ice_ptp_init(struct ice_pf *pf);
- void ice_ptp_release(struct ice_pf *pf);
--int ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup);
-+void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup);
- #else /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
- static inline int ice_ptp_set_ts_config(struct ice_pf *pf, struct ifreq *ifr)
+@@ -2614,7 +2528,7 @@ void ice_ptp_reset(struct ice_pf *pf)
+ 		err = ice_ptp_init_tx_e810(pf, &ptp->port.tx);
+ 	} else {
+ 		kthread_init_delayed_work(&ptp->port.ov_work,
+-					  ice_ptp_wait_for_offset_valid);
++					  ice_ptp_wait_for_offsets);
+ 		err = ice_ptp_init_tx_e822(pf, &ptp->port.tx,
+ 					   ptp->port.port_num);
+ 	}
+@@ -2777,7 +2691,7 @@ static int ice_ptp_init_port(struct ice_pf *pf, struct ice_ptp_port *ptp_port)
+ 		return ice_ptp_init_tx_e810(pf, &ptp_port->tx);
+ 
+ 	kthread_init_delayed_work(&ptp_port->ov_work,
+-				  ice_ptp_wait_for_offset_valid);
++				  ice_ptp_wait_for_offsets);
+ 	return ice_ptp_init_tx_e822(pf, &ptp_port->tx, ptp_port->port_num);
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index d5d51427580a..a38614d21ea8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -1741,21 +1741,48 @@ ice_calc_fixed_tx_offset_e822(struct ice_hw *hw, enum ice_ptp_link_spd link_spd)
+  * adjust Tx timestamps by. This is calculated by combining some known static
+  * latency along with the Vernier offset computations done by hardware.
+  *
+- * This function must be called only after the offset registers are valid,
+- * i.e. after the Vernier calibration wait has passed, to ensure that the PHY
+- * has measured the offset.
++ * This function will not return successfully until the Tx offset calculations
++ * have been completed, which requires waiting until at least one packet has
++ * been transmitted by the device. It is safe to call this function
++ * periodically until calibration succeeds, as it will only program the offset
++ * once.
+  *
+  * To avoid overflow, when calculating the offset based on the known static
+  * latency values, we use measurements in 1/100th of a nanosecond, and divide
+  * the TUs per second up front. This avoids overflow while allowing
+  * calculation of the adjustment using integer arithmetic.
++ *
++ * Returns zero on success, -EBUSY if the hardware vernier offset
++ * calibration has not completed, or another error code on failure.
+  */
+-static int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port)
++int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port)
  {
-@@ -292,7 +292,8 @@ static inline void ice_ptp_reset(struct ice_pf *pf) { }
- static inline void ice_ptp_prepare_for_reset(struct ice_pf *pf) { }
- static inline void ice_ptp_init(struct ice_pf *pf) { }
- static inline void ice_ptp_release(struct ice_pf *pf) { }
--static inline int ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
--{ return 0; }
-+static inline void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
-+{
-+}
- #endif /* IS_ENABLED(CONFIG_PTP_1588_CLOCK) */
- #endif /* _ICE_PTP_H_ */
+ 	enum ice_ptp_link_spd link_spd;
+ 	enum ice_ptp_fec_mode fec_mode;
+ 	u64 total_offset, val;
+ 	int err;
++	u32 reg;
++
++	/* Nothing to do if we've already programmed the offset */
++	err = ice_read_phy_reg_e822(hw, port, P_REG_TX_OR, &reg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read TX_OR for port %u, err %d\n",
++			  port, err);
++		return err;
++	}
++
++	if (reg)
++		return 0;
++
++	err = ice_read_phy_reg_e822(hw, port, P_REG_TX_OV_STATUS, &reg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read TX_OV_STATUS for port %u, err %d\n",
++			  port, err);
++		return err;
++	}
++
++	if (!(reg & P_REG_TX_OV_STATUS_OV_M))
++		return -EBUSY;
+ 
+ 	err = ice_phy_get_speed_and_fec_e822(hw, port, &link_spd, &fec_mode);
+ 	if (err)
+@@ -1809,6 +1836,9 @@ static int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port)
+ 	if (err)
+ 		return err;
+ 
++	dev_info(ice_hw_to_dev(hw), "Port=%d Tx vernier offset calibration complete\n",
++		 port);
++
+ 	return 0;
+ }
+ 
+@@ -2011,6 +2041,11 @@ ice_calc_fixed_rx_offset_e822(struct ice_hw *hw, enum ice_ptp_link_spd link_spd)
+  * measurements taken in hardware with some data about known fixed delay as
+  * well as adjusting for multi-lane alignment delay.
+  *
++ * This function will not return successfully until the Rx offset calculations
++ * have been completed, which requires waiting until at least one packet has
++ * been received by the device. It is safe to call this function periodically
++ * until calibration succeeds, as it will only program the offset once.
++ *
+  * This function must be called only after the offset registers are valid,
+  * i.e. after the Vernier calibration wait has passed, to ensure that the PHY
+  * has measured the offset.
+@@ -2019,13 +2054,38 @@ ice_calc_fixed_rx_offset_e822(struct ice_hw *hw, enum ice_ptp_link_spd link_spd)
+  * latency values, we use measurements in 1/100th of a nanosecond, and divide
+  * the TUs per second up front. This avoids overflow while allowing
+  * calculation of the adjustment using integer arithmetic.
++ *
++ * Returns zero on success, -EBUSY if the hardware vernier offset
++ * calibration has not completed, or another error code on failure.
+  */
+-static int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port)
++int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port)
+ {
+ 	enum ice_ptp_link_spd link_spd;
+ 	enum ice_ptp_fec_mode fec_mode;
+ 	u64 total_offset, pmd, val;
+ 	int err;
++	u32 reg;
++
++	/* Nothing to do if we've already programmed the offset */
++	err = ice_read_phy_reg_e822(hw, port, P_REG_RX_OR, &reg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read RX_OR for port %u, err %d\n",
++			  port, err);
++		return err;
++	}
++
++	if (reg)
++		return 0;
++
++	err = ice_read_phy_reg_e822(hw, port, P_REG_RX_OV_STATUS, &reg);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read RX_OV_STATUS for port %u, err %d\n",
++			  port, err);
++		return err;
++	}
++
++	if (!(reg & P_REG_RX_OV_STATUS_OV_M))
++		return -EBUSY;
+ 
+ 	err = ice_phy_get_speed_and_fec_e822(hw, port, &link_spd, &fec_mode);
+ 	if (err)
+@@ -2086,6 +2146,9 @@ static int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port)
+ 	if (err)
+ 		return err;
+ 
++	dev_info(ice_hw_to_dev(hw), "Port=%d Rx vernier offset calibration complete\n",
++		 port);
++
+ 	return 0;
+ }
+ 
+@@ -2357,66 +2420,6 @@ int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port)
+ 	return 0;
+ }
+ 
+-/**
+- * ice_phy_calc_vernier_e822 - Perform vernier calculations
+- * @hw: pointer to the HW struct
+- * @port: the PHY port to configure
+- *
+- * Perform vernier calculations for the Tx and Rx offset. This will enable
+- * hardware to include the more precise offset calibrations,
+- * increasing precision of the generated timestamps.
+- *
+- * This cannot be done until hardware has measured the offsets, which requires
+- * waiting until at least one packet has been sent and received by the device.
+- */
+-int ice_phy_calc_vernier_e822(struct ice_hw *hw, u8 port)
+-{
+-	int err;
+-	u32 val;
+-
+-	err = ice_read_phy_reg_e822(hw, port, P_REG_TX_OV_STATUS, &val);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read TX_OV_STATUS for port %u, err %d\n",
+-			  port, err);
+-		return err;
+-	}
+-
+-	if (!(val & P_REG_TX_OV_STATUS_OV_M)) {
+-		ice_debug(hw, ICE_DBG_PTP, "Tx offset is not yet valid for port %u\n",
+-			  port);
+-		return -EBUSY;
+-	}
+-
+-	err = ice_read_phy_reg_e822(hw, port, P_REG_RX_OV_STATUS, &val);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read RX_OV_STATUS for port %u, err %d\n",
+-			  port, err);
+-		return err;
+-	}
+-
+-	if (!(val & P_REG_TX_OV_STATUS_OV_M)) {
+-		ice_debug(hw, ICE_DBG_PTP, "Rx offset is not yet valid for port %u\n",
+-			  port);
+-		return -EBUSY;
+-	}
+-
+-	err = ice_phy_cfg_tx_offset_e822(hw, port);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to program total Tx offset for port %u, err %d\n",
+-			  port, err);
+-		return err;
+-	}
+-
+-	err = ice_phy_cfg_rx_offset_e822(hw, port);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to program total Rx offset for port %u, err %d\n",
+-			  port, err);
+-		return err;
+-	}
+-
+-	return 0;
+-}
+-
+ /**
+  * ice_get_phy_tx_tstamp_ready_e822 - Read Tx memory status register
+  * @hw: pointer to the HW struct
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index b781dadf5a39..3b68cb91bd81 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -188,7 +188,8 @@ static inline u64 ice_e822_pps_delay(enum ice_time_ref_freq time_ref)
+ /* E822 Vernier calibration functions */
+ int ice_stop_phy_timer_e822(struct ice_hw *hw, u8 port, bool soft_reset);
+ int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port);
+-int ice_phy_calc_vernier_e822(struct ice_hw *hw, u8 port);
++int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port);
++int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port);
+ 
+ /* E810 family functions */
+ int ice_ptp_init_phy_e810(struct ice_hw *hw);
 -- 
 2.38.0.83.gd420dda05763
 
