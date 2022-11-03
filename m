@@ -1,85 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17F4BC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:02:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D87B2C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:02:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A6DBB6102E;
-	Thu,  3 Nov 2022 22:02:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A6DBB6102E
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7997481EDD;
+	Thu,  3 Nov 2022 22:02:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7997481EDD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667512922;
-	bh=0idTVSlaiYUoshvY4nJ7LLffH+U2l+HM5QHRYrF8byU=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=ZV4vgvgXeh1RK880eaRK6iwObFZ9kAHgWusGUvHSXRy149QfIpX/PGjQZNSTF/x8y
-	 Z3MLJOdHy/+Ejgl7H+y4jc4ref1YwBfXgJjo9pOIpCN1kDuUK1US3DNveg9ZdQqCf2
-	 72Y46LTUFnGi78VSPKDkiQ2jD+mg0/CEbR6R3CJ2kFTRPYC+JCo3gG9n4Q+XuZEZq8
-	 wuvZFr6Hu6aS3wiuGJvR2FL+N5EVcqobCWIfZ2TYtlpqlcUbWuYZM43WFepVdtUXHS
-	 T4qjc7S+Y6h04DgVmgGjGWuPujqWRZtk7AAzmFLJUK8rQvcAnL5IauRA4xhAfiMUdt
-	 tUSmhEwvaw83w==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dkCjvjSBAL6j; Thu,  3 Nov 2022 22:02:01 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 92A4761038;
-	Thu,  3 Nov 2022 22:02:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 92A4761038
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 4A0231BF2F2
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2CD8681F6D
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2CD8681F6D
+	s=default; t=1667512926;
+	bh=q1ETH53GunsRzE3VcXSRh/2hxddBJ5WvbQb4lNeJEPk=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=giZD1VS3zrIXsT0rkC4tMC2IZGW8xxFQEjr913tm5HWZG4wP05dLJHzVo5Y0EA+H3
+	 VYDMBT1v1HH5mCZFI0gA5QrjzWamyr1Ru5o/cTcU8iK0mPWMUwcgeb7hilP+/CO4RI
+	 zfwM5gHKoOjRhIYTau0TBkcg1JF7nVz3nKa/sM/qjI5x0Fflsl8S3Vlqam95UMThVq
+	 SjRHIe3r7kKevO3qK4bMT6ztL4COXLTk9BSysRYKqfrcEMn0XvdhwrF7//g/39vePC
+	 hlY7E7DwjNaeNzc2BZRLHgJDojqjRJWkN/ZVz61pM3pg4rjXLIdYoIEqfx9egkEnVq
+	 t0YCmZM/avhUA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hUSu427qsZ3f for <intel-wired-lan@lists.osuosl.org>;
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 5FxNkvpYxHIr; Thu,  3 Nov 2022 22:02:05 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 76ECC81F59;
+	Thu,  3 Nov 2022 22:02:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 76ECC81F59
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 8C1901BF2F2
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 74C4E40520
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 74C4E40520
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 4Xd_7vCwP6I1 for <intel-wired-lan@lists.osuosl.org>;
  Thu,  3 Nov 2022 22:01:59 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E49F581EDC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C75B240519
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E49F581EDC
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:01:58 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="297278188"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="297278188"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C75B240519
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:01:59 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="297278196"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="297278196"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2022 15:01:57 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480234"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480234"
+ 03 Nov 2022 15:01:58 -0700
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480251"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480251"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2022 15:01:57 -0700
+ 03 Nov 2022 15:01:58 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Thu,  3 Nov 2022 15:01:30 -0700
-Message-Id: <20221103220145.1851114-1-jacob.e.keller@intel.com>
+Date: Thu,  3 Nov 2022 15:01:34 -0700
+Message-Id: <20221103220145.1851114-5-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.0.83.gd420dda05763
+In-Reply-To: <20221103220145.1851114-1-jacob.e.keller@intel.com>
+References: <20221103220145.1851114-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667512918; x=1699048918;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=pvO2XDOnCIdLKwScboAkJYhr6oa/M3oj4csZgVXqRGg=;
- b=WO2iT37ISi398t2PzBV4mkl2zv1kFVhCQ2FyO+8qZRPLvSh2jw81cEhZ
- kf92+F+OxxrJqNTfUJYHSDak6onDhR1qrYgNRXYevgGSz9yBP0TIHkPG8
- JrRiAF1hMDCmFVAi1iqUBXQnu32yJjxOMWxRfsj4xF9/miHkQLZmiMmc4
- HsuhUWvGwbES4TUkrcXfa/YRLNs9hoKv3Rm7+yOXnXZAKKSP7s9wLfetV
- ITlSAKzCC2Y7Ky++79A2anznDeWClANdplLbeGqNbigWMU3xpbdz1U3RN
- +MdFgIOYHY9OroRJhZSEsFo8MhmTRkv6joff0v1XvPtPNCNI76sFxpvYX
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1667512919; x=1699048919;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=yOh7Md7J+WSuCy6Qkg+3+b+odOquy32BAuUIS1IW/uo=;
+ b=nFoiHN+wKD9k+gMzfScc4stLaNY1od6gaFPBTnx1c1sSjOvvWcz8zHaw
+ eGYqbR4AE+b576gBpJQCZrsqmP8sb1KOL0jenno+QMHFhMkocyM6Wqupm
+ kIn5caE9t3eoqqU6EpQcGBLCNSvVyUXnVHH9JwPEkwbCBVMD8A4CoO5aX
+ WRBSdHKTZ9Ia+UIxFesJJiPJlwjjXUIPmS+N243OiHZe6nYT0tCFm5goI
+ 3nLU3QICZvi8f3jAtVM7bRsYhfFHy+EJrbge81U+rAGX+wFpNtiJW5fzc
+ Oru8nPqOUEXSLL7iuQmO0z0aa/FxWOjHFJVGMCTfzKkoJdG3OIA8vDN0Q
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=WO2iT37I
-Subject: [Intel-wired-lan] [PATCH net-next v2 00/15] ice: improve Tx
- timestamp corner cases
+ header.a=rsa-sha256 header.s=Intel header.b=nFoiHN+w
+Subject: [Intel-wired-lan] [PATCH net-next v2 04/15] ice: fix misuse of
+ "link err" with "link status"
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,101 +100,36 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series of patches primarily consists of changes to fix some corner
-cases that can cause Tx timestamp failures. The issues were discovered and
-reported by Siddaraju DH and primarily affect E822 hardware, though this
-series also includes some improvements that affect E810 hardware as well.
+The ice_ptp_link_change function has a comment which mentions "link
+err" when referring to the current link status. We are storing the status
+of whether link is up or down, which is not an error.
 
-The primary issue is regarding the way that E822 determines when to generate
-timestamp interrupts. If the driver reads timestamp indexes which do not
-have a valid timestamp, the E822 interrupt tracking logic can get stuck.
-This is due to the way that E822 hardware tracks timestamp index reads
-internally. I was previously unaware of this behavior as it is significantly
-different in E810 hardware.
+It is appears that this use of err accidentally got included due to an
+overzealous search and replace when removing the ice_status enum and local
+status variable.
 
-Most of the fixes target refactors to ensure that the ice driver does not
-read timestamp indexes which are not valid on E822 hardware. This is done by
-using the Tx timestamp ready bitmap register from the PHY. This register
-indicates what timestamp indexes have outstanding timestamps waiting to be
-captured.
+Fix the wording to use the correct term.
 
-Care must be taken in all cases where we read the timestamp registers, and
-thus all flows which might have read these registers are refactored. The
-ice_ptp_tx_tstamp function is modified to consolidate as much of the logic
-relating to these registers as possible. It now handles discarding stale
-timestamps which are old or which occurred after a PHC time update. This
-replaces previously standalone thread functions like the periodic work
-function and the ice_ptp_flush_tx_tracker function.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+No changes since v1
 
-In addition, some minor cleanups noticed while writing these refactors are
-included.
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The remaining patches refactor the E822 implementation to remove the
-"bypass" mode for timestamps. The E822 hardware has the ability to provide a
-more precise timestamp by making use of measurements of the precise way that
-packets flow through the hardware pipeline. These measurements are known as
-"Vernier" calibration. The "bypass" mode disables many of these measurements
-in favor of a faster start up time for Tx and Rx timestamping. Instead, once
-these measurements were captured, the driver tries to reconfigure the PHY to
-enable the vernier calibrations.
-
-Unfortunately this recalibration does not work. Testing indicates that the
-PHY simply remains in bypass mode without the increased timestamp precision.
-Remove the attempt at recalibration and always use vernier mode. This has
-one disadvantage that Tx and Rx timestamps cannot begin until after at least
-one packet of that type goes through the hardware pipeline. Because of this,
-further refactor the driver to separate Tx and Rx vernier calibration.
-Complete the Tx and Rx independently, enabling the appropriate type of
-timestamp as soon as the relevant packet has traversed the hardware
-pipeline. This was reported by Milena Olech.
-
-Note that although these might be considered "bug fixes", the required
-changes in order to appropriately resolve these issues is large. Thus it
-does not feel suitable to send this series to net.
-
-Changes since v1:
-* Dropped ETH56G reference
-* Fixed commit messages which used e8<NN> instead of E8<NN> when describing
-  device families
-* Dropped an unnecessary else statement
-* Switched an ice_is_e810 check to a flag in ice_ptp_tx
-* Fixed checkpatch errors
-* Fixed kdoc comments
-
-Jacob Keller (10):
-  ice: fix misuse of "link err" with "link status"
-  ice: always call ice_ptp_link_change and make it void
-  ice: handle discarding old Tx requests in ice_ptp_tx_tstamp
-  ice: check Tx timestamp memory register for ready timestamps
-  ice: protect init and calibrating fields with spinlock
-  ice: return true if Tx tracker is uninitialized
-  ice: disable Tx timestamps while link is down
-  ice: cleanup allocations in ice_ptp_alloc_tx_tracker
-  ice: handle flushing stale Tx timestamps in ice_ptp_tx_tstamp
-  ice: only check set bits in ice_ptp_flush_tx_tracker
-  ice: reschedule ice_ptp_wait_for_offset_valid during reset
-
-Karol Kolacinski (1):
-  ice: Reset TS memory for all quads
-
-Milena Olech (1):
-  ice: Remove the E822 vernier "bypass" logic
-
-Sergey Temerkhanov (1):
-  ice: Use more generic names for ice_ptp_tx fields
-
-Siddaraju DH (1):
-  ice: make Tx and Rx vernier offset calibration independent
-
- drivers/net/ethernet/intel/ice/ice_main.c   |   9 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 584 ++++++++++----------
- drivers/net/ethernet/intel/ice/ice_ptp.h    |  41 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 336 ++++++-----
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |   8 +-
- 5 files changed, 500 insertions(+), 478 deletions(-)
-
-
-base-commit: 1516071e3b9d1f2ba59eabaa4ef49e077c5348d2
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 40606fa0c1d9..6a36256748fe 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1324,7 +1324,7 @@ int ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
+ 	if (ptp_port->port_num != port)
+ 		return -EINVAL;
+ 
+-	/* Update cached link err for this port immediately */
++	/* Update cached link status for this port immediately */
+ 	ptp_port->link_up = linkup;
+ 
+ 	if (!test_bit(ICE_FLAG_PTP, pf->flags))
 -- 
 2.38.0.83.gd420dda05763
 
