@@ -1,191 +1,183 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22E46C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 20:44:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C41C8C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 20:45:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BA8F060669;
-	Thu,  3 Nov 2022 20:44:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BA8F060669
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6EDEA81270;
+	Thu,  3 Nov 2022 20:45:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6EDEA81270
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667508282;
-	bh=suqwtODYecz7oCgbWFGL0OtmvRx2/d89vAMB/3fd+xM=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1667508311;
+	bh=oU8xGgML9jNKjMGMmfp+hySwGRQ5f0EVfgyUBZO2FtU=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=AfCPUnrfkapI3UmrFfvSEz4ENFAv+RUTxYIAB3CFMIdmIGIerW0wER3bepddrJAV7
-	 7fGOKLuXNDeTBm+QxBnBHjr/Fbhd5Ij3wFgtaw24m+7nkSpZd7MAiDZwgnagnxBro8
-	 ZwVkRT++JJ72Ba0GOd04y5lUSMN5m1HCCguMDnLnVFOEstK0KRkE3V+tga14bY1enl
-	 49M1jl0dluV0PbbrGQ2IMu3j8u5PHaruPdST6UIlbIX7O5Um939ht77vjyXHuKlCj5
-	 d5u7pj2UR7PVBHmZYxTbO0LdM4i/h8fVmFXSK3W8HtwKtQafuX9Vk3f2MWm23UxFYb
-	 G/rlPKxFjR1YA==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7U6l8C_iEVW5; Thu,  3 Nov 2022 20:44:42 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CF4AB606A9;
-	Thu,  3 Nov 2022 20:44:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CF4AB606A9
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 1E2241BF2F2
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 20:44:40 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0181180C58
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 20:44:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0181180C58
+	 From;
+	b=63lmrnweg3slySV4D5ls2WSwhOKKPzq2mW1DIJ8f2Mv5brac91WJ56kyrZfhl/95l
+	 XQNdnuN8rMMfwrGwtaRkWEtIw/+x/Jk9V+iGE01qayhktLwN0wiOaLv654PcYcy9aC
+	 +13OVtQmapOjdP8naMIo7XAMiP80c5E6xbM3BBMmTMGr4/9ZXarMutEpFzdKBIuQEp
+	 tqMk7+y1TO8ZSnKoV4tXSZjRi+YtC30+CIIK0HiHqXSmXUnHnka0r+YeGH1T818BsR
+	 NPVU5BfQeqxzFveF/TQBD/GJryGQIxtnsG2wXeasz4yyj6dlP8D/ihuYrTVhASemWS
+	 mGd/GGKXe5nLA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3NW-y6Hcu_3z for <intel-wired-lan@lists.osuosl.org>;
- Thu,  3 Nov 2022 20:44:38 +0000 (UTC)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id DEY2GiyPKSkV; Thu,  3 Nov 2022 20:45:10 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1FF5281F72;
+	Thu,  3 Nov 2022 20:45:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1FF5281F72
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id C2AC81BF2F2
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 20:45:08 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 9AE5C4094C
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 20:45:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9AE5C4094C
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id BusVeOJuv1xE for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  3 Nov 2022 20:45:06 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D53F280BC4
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D53F280BC4
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 20:44:37 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="336498273"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="336498273"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2022 13:44:28 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B0CBC407D7
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id B0CBC407D7
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 20:45:06 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="310918382"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="310918382"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Nov 2022 13:45:06 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="964082342"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="964082342"
-Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
- by fmsmga005.fm.intel.com with ESMTP; 03 Nov 2022 13:44:28 -0700
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="634821546"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="634821546"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+ by orsmga002.jf.intel.com with ESMTP; 03 Nov 2022 13:45:06 -0700
+Received: from orsmsx612.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Thu, 3 Nov 2022 13:44:28 -0700
-Received: from orsmsx602.amr.corp.intel.com (10.22.229.15) by
- ORSMSX610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ 15.1.2375.31; Thu, 3 Nov 2022 13:45:05 -0700
+Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX612.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Thu, 3 Nov 2022 13:44:27 -0700
+ 15.1.2375.31; Thu, 3 Nov 2022 13:45:05 -0700
 Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
- orsmsx602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+ orsmsx611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31 via Frontend Transport; Thu, 3 Nov 2022 13:44:27 -0700
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com (104.47.58.104)
+ 15.1.2375.31 via Frontend Transport; Thu, 3 Nov 2022 13:45:05 -0700
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.169)
  by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2375.31; Thu, 3 Nov 2022 13:44:25 -0700
+ 15.1.2375.31; Thu, 3 Nov 2022 13:45:04 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Dn2jaUCaIzpxvIWUFIF4yG9+vmr0wavK0IZLvpsjhq7cuKZExVawGHpukYuYKfH/DzPmb0AzBGorqQPQ2SZBR9iYnDZUvdsFkYwG/GcUu1NNDnbfveCubjLFEmENM4jimHFEUWXNjFDTrlU+iMTvr2i20TvoQ3E0OcpB+cx4BF1W3ughQNy6Wh4tE03edEplr+GLuvsyDHz0Da1m2kHMd2OFL3ifKb8HvoQUQSjnRfQ6FTZxvU+i+OrhtGWbuRf9dWAYFxDRwYguSnaRKPRNTkVz9IXqUeQPjf02JqZodr3rClbMNOQrZMO6HNwwyMAgpccuov4bKNw+dasrwbxcUw==
+ b=eGVqJCPX5Fw/o0SWUigRJe3WEUJBPImjRKzuxuVZr1bv0DNWAGLDSvk3eUw/2n60VTuvkw3fcZTkdi8pDf15kEIbR7I28vBNUvqyFAIhLJEHCGbP87NQ45kpTAcyhsTWlh0fjLGVVGgFSzRCTrCpOhfy8GAAiXD+4TPRkdypWD9p5Ia+qw7dfAldILsJ6ksl2O55f3sGYnwL4uGoWBeTHyEvODzNfcBT3PwJkVZbyvfqDtd/7TOo4tNNSJjFmyWa0jUoPYX7VRMtBZOsM8wLduEdfvi7sOiDYGh8SziaTTP91TerkjYkoBElDvxuUaJZUux0VdPqdEiAhFzJgFHFOg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=15LPMYJqIm8SIIDbP7PajlxLysr3malsGab9FzjukBo=;
- b=JkzUGWa/o816P8cXVag0EcCtDbLM7nd6XxBffSnGEzDCfQO/vpb+5AEsdfi0hsmTNNdaHa2XTaXBmnn3QZWbI9ctVqT/1Xlwj+wKelXRoLS8JtB7ExmVg0n3D4yiverfz1zle2JiUlGE8BTVZsxqOunNhfnBY0YFfB2PoaxJdIhYlgOBvPs/gbOPDGjwvRJ9Kg2CoEbAnQcfLY9PE4wET1Wu/iKw3QDBt42lFN3UR7wo0hWGKZMgkN5d9WgAkw1NU1euJXa6G8i63d1nL/98+1eCsXwKxfQJEtkCjnebVMq0dbDSeWKP9OvSKhzB/y9n2pQEm+Wq2wX2w3yZRl0Cwg==
+ bh=dowIN4d2dEa3Lt3DszbN3/R8Hi87VvRu3s6jXKTSbhY=;
+ b=JT+GUIYJMCTpalesAfcuIy03Ugu92gor/0rs3e7s3l8VAyoBfHDSdjtATT8qygNjq9cWPX4wQruVBHwbaBdiK2A2sGOMaHKCNeoiGPYiM96oz51G+j/m5fouhtHCpdinTRS9NZh61v5ubQ2ekSgqFAOj4m/6ZBvOU0l12w0hYPxyPgKtYHnOwCWqx8UNhZWsg7AsHVx0UFDvZgM5u5aIBch8pwjNJNW9ZSkwsL5wz03bpbYx/bjaJbEqo9FlA5gY43Z6qFiKkHZguDv7zMN0VSEp7z4bInOgeunFKnwOB0l632WZzBEFFUCuNg2sXgtwAiNs7i1oKyNWVUONnq+uig==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
-Received: from SN6PR11MB3229.namprd11.prod.outlook.com (2603:10b6:805:ba::28)
- by SJ1PR11MB6276.namprd11.prod.outlook.com (2603:10b6:a03:455::8)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5791.20; Thu, 3 Nov
- 2022 20:44:23 +0000
-Received: from SN6PR11MB3229.namprd11.prod.outlook.com
- ([fe80::87e2:5ca4:32bc:79bb]) by SN6PR11MB3229.namprd11.prod.outlook.com
- ([fe80::87e2:5ca4:32bc:79bb%6]) with mapi id 15.20.5791.022; Thu, 3 Nov 2022
- 20:44:23 +0000
-Message-ID: <16f5979a-0df0-0f21-0654-72d8791a0a76@intel.com>
-Date: Thu, 3 Nov 2022 13:44:20 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.1
-Content-Language: en-US
-To: Jacob Keller <jacob.e.keller@intel.com>, Intel Wired LAN
+Received: from CO6PR11MB5636.namprd11.prod.outlook.com (2603:10b6:5:357::21)
+ by DS0PR11MB7505.namprd11.prod.outlook.com (2603:10b6:8:153::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5769.16; Thu, 3 Nov
+ 2022 20:45:02 +0000
+Received: from CO6PR11MB5636.namprd11.prod.outlook.com
+ ([fe80::e071:9750:b84c:2461]) by CO6PR11MB5636.namprd11.prod.outlook.com
+ ([fe80::e071:9750:b84c:2461%8]) with mapi id 15.20.5791.022; Thu, 3 Nov 2022
+ 20:45:01 +0000
+From: "Stillwell Jr, Paul M" <paul.m.stillwell.jr@intel.com>
+To: "Keller, Jacob E" <jacob.e.keller@intel.com>, Intel Wired LAN
  <intel-wired-lan@lists.osuosl.org>
+Thread-Topic: [Intel-wired-lan] [PATCH net-next 07/15] ice: check Tx timestamp
+ memory register for ready timestamps
+Thread-Index: AQHY7kTdVH4HpUe8fk+HQXaFesap6a4trAyg
+Date: Thu, 3 Nov 2022 20:45:01 +0000
+Message-ID: <CO6PR11MB56369632E158CC5AD92D59C6E0389@CO6PR11MB5636.namprd11.prod.outlook.com>
 References: <20221101225240.421525-1-jacob.e.keller@intel.com>
- <20221101225240.421525-2-jacob.e.keller@intel.com>
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-In-Reply-To: <20221101225240.421525-2-jacob.e.keller@intel.com>
-X-ClientProxiedBy: SJ0PR03CA0107.namprd03.prod.outlook.com
- (2603:10b6:a03:333::22) To SN6PR11MB3229.namprd11.prod.outlook.com
- (2603:10b6:805:ba::28)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SN6PR11MB3229:EE_|SJ1PR11MB6276:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7b7cbf49-8b39-4048-8222-08dabddc305f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: Q44y5KsEIulW/Y0bhv+uho15R1VwQkXkDwmAOb5tUt/1WCRbr81BBrP/OfHz5h9K24Kz+TizVuI3URbAXaStrab1XPf+mj/e4rZTPUPo0WaEuV/Fr7pENGBNpSje4Q7kTZB9HfistIRL68bX+al3Dxrgky7Eww8X2QYHa9zKD0b6p6C0wizvred6C3XiwJ7xVeDE0hZLOfpobLYzPgtfmVr+zXiDfC2HVrP/wRvI076zH5LimDMiaBWIWidYZ3npNubmNIa1THkxwLTeoMnpJiJWWormXSk1Hmg5Yu5ir0IV0MeRQLmK6k2TIisURIMste3q93cpUjocLiPLGunOxd+00M+P1a+dcIehowfEUdzeLHlVgTjFt41LtYYO3dHEKMna/aRDhtVOiyt8kMmpyOI/uo3q0RsmDFCf8X69ICF2jokyOq1PotZy9FoLSWaHhbvsk+2IYe8jzC+PCClrwq2bLrvmWCBCeavNTSi8xpWUnfjGDniLEasrVV7cDxnZSH51ikDcI+w/JFoiK3sgqVXQ39rBj9ejYKpM/v4RMx5flVxJFgIw2HiveIGQ6C7eUuHvmWvKnsUaBGNmgH1P4PkjfHKyVX8EHsk+XvTYJijX2TnQx3I+NTZ2Qbh6sFvbqKLy+9zAsPWloqDHDFEL/5z3RhwJXBpmnFsMdSALTbpszIdCUUroLDVrktb+NZWwZsk313wn2QWeVrEMCZJviMvRcKdxB78V1kJXo0u8e6j3dLXCV41n8r7yCFx9YOcG0xn3e5XteQ4dmW1inwmIVOFeMjwNh5e8bhtrLRobSkyp+c37ox4369IcJl4559MzygM5pL/VSJGnhHKtisgPxw==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:SN6PR11MB3229.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230022)(136003)(39860400002)(376002)(396003)(366004)(346002)(451199015)(83380400001)(31686004)(86362001)(107886003)(6506007)(478600001)(2906002)(4744005)(6486002)(38100700002)(82960400001)(36756003)(66556008)(6512007)(316002)(31696002)(186003)(2616005)(26005)(66476007)(4326008)(66946007)(53546011)(5660300002)(8936002)(41300700001)(110136005)(8676002)(41533002)(43740500002)(45980500001);
+ <20221101225240.421525-8-jacob.e.keller@intel.com>
+In-Reply-To: <20221101225240.421525-8-jacob.e.keller@intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: CO6PR11MB5636:EE_|DS0PR11MB7505:EE_
+x-ms-office365-filtering-correlation-id: d21baa69-ce17-4832-dfe2-08dabddc474e
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: ANGi4GUsXriW4TdSLwQNEjCXSpardTUzKk90QYsAucHybRbJnVkyUDidyWutsR4QvRDbwYQlNEHgNnXkzGGkJXZYSLUnFBw4VK2xojxLH97eO4hPfhCJcsOLmceLzD93A1rSC5aLNoAs93b78YZ6eJZX7LR8YfBvwyd4agRl1n0N5jeZL1KWGs3i9FnRkMJj6/VFbj/T7bj5pqE2HbNvpN8V73n1BursohKY8rUz9Tu0YahQpeRYhQV2UTPyRDp+1p2rKM0gkVbZ7cMAMAx+/jY0b2p5x0ouDlugKqEtZ04NjNvX58mrGxEu0wqTiiFsK/m6Uz6mLyAQ3MF7ZjZKAFfKoKb5Liatl1+ARQWrFw702Cpbo86JgYl/sD20T0ywf9S9URvpxA5b7WapXnkfuiokavsEMVRNep8ZUeDg1D28FovdwrbnIrLxX/GgoHUQi7BVmbzoH8vK9rb08EtACwnlUqjWmudDuc3wZYBN/F58CHrVd9N9HyaWBzljbTxfP8AYepYP38jItm8asL9/eL/VJZy8zTDgsBlg0DDufMY+y4kReS1hXFHuCZ5QvwXzrQM011o5EIJGBgE1bN+9ZevDjx+eXWmM+VT6nvImZVLjNjLEDCTBFHVFINg8b5pAiGhTvuGBxwwfhy7qn8HfN4VhcQniylBffA/kcjhgqXbtGLgSr4fjfsVrxME85CJnP8DLRnWlNIpdaoEXaEuz22fj/DQ4CFv0M0BOWtg2na+MncwMmyTuz9trrz35LIQgQEKhRLaC5hMmXKMxe/ZQCISIvh/9jMEXMfsJQG3WbQk=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:CO6PR11MB5636.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230022)(346002)(396003)(376002)(39860400002)(366004)(136003)(451199015)(110136005)(316002)(966005)(8676002)(66476007)(66556008)(76116006)(66946007)(66446008)(64756008)(71200400001)(6506007)(53546011)(5660300002)(8936002)(41300700001)(2906002)(9686003)(52536014)(26005)(86362001)(186003)(33656002)(83380400001)(478600001)(7696005)(82960400001)(38070700005)(55016003)(122000001)(38100700002);
  DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?QWhhRGxudFY1Z3R0d0xUTFY2RWhudFdkOHdzbWFTOStwSU93bG5NaGIzT0JO?=
- =?utf-8?B?akxnYmRBSW8rcnhwc0QwWjdHVVQ1YVQrNG5BMHY3Nk9aeXhRMnRaMlJpWENk?=
- =?utf-8?B?TTdEMnhKS2tNNjFOWHhEcThBaTJCY1dScDhxMWYybXMweDQ5bStRekZ3c3JX?=
- =?utf-8?B?QUlWWEZXS2dEQ1dzV2xrRitFOVdFNVF1Tkw2OXZwMHlCTFJRUnNvalpIR0dX?=
- =?utf-8?B?UjExU3o1VDBlNXlmTWFpdjhLUHJ3ZlJYTlJvWUI2NEVaS2VQaFNwQnUrQkxU?=
- =?utf-8?B?anJlcFZMZzFMNi9yNHpBYW5uOWFmUUU5WEwzT0JaRDIrVUxHelMvWDk3enVo?=
- =?utf-8?B?Yy9XL1NCMmdVV1I1MHlmOVZicnVJRDF3RlRBMERkU3YzVzNwUzhNZXkxU1RC?=
- =?utf-8?B?SUhTZUx5ZDVveEFORnBSU2p0OVJweXRrRFpRcTVYcFBWUkhSR1BNamFDYWtU?=
- =?utf-8?B?ZHp0WExMcjhybmRSMjc4V3BveS9nUHJMODI0TWtXWlpQS1J2TFhDQVZjbFJT?=
- =?utf-8?B?RFExVldGSW1uL2VvbldhVW5rWlR6ZWdERFBjZlhsQnRPTUd6MnJ3UmpadWM2?=
- =?utf-8?B?NmVjaGlLOHZ1KzBiN3ZoYTJzT2ROUlFEK1kwVEI4RVlYdy9OMUsvL0Z3L1Nm?=
- =?utf-8?B?OXk5eThOb1R5cVhhMHd4Y21Rd2N5KzVVZndTSWtZUU5HWGRNYlBpaXBRQWE0?=
- =?utf-8?B?S0o1Z0t5VTVRWkdHamROUmpTdEk4WXF0NlFCMTZVREZ4RUdSODV0Q0p1N2pV?=
- =?utf-8?B?UkFUVk5IT2tpUEk3bUQ4KzRpMkt4bVpTV1MzTjVKelQrQ1JiQ2JQSlJ4clR4?=
- =?utf-8?B?R0oyekl1OFpvZU5mM2R2WTZZU0s1R0RPYWNwcnBhYmtKeXU4YTY3ZGp3RFd5?=
- =?utf-8?B?OVJwTXE2TWQ3Mkd0R2N4bnpVdGpEVFNmV1BqWUhrK1dIUUdIZDJLeGdoS0JG?=
- =?utf-8?B?ZW9UVGdwZUZIeWZ2Q3pSZ1JOVUM4VUF2MXg5L1BFNEZJc3ZDRzkvRjdMVEF2?=
- =?utf-8?B?elc0Z3pzZ1dVQjRnUzFlWG1SVkhGaFRNSDNhVFFkUXFvak12ZzFnQ05nSllr?=
- =?utf-8?B?Zm52dnFKeDhNL2FZTHFOcnVOTE1oT0IvMmI4NzVNZ2Z4OFdFNWdld0dXeVhp?=
- =?utf-8?B?Qkt5QmVVOXFSbUxGR2NSRmtGUUFQZENXcGVoTFdrUGRac2ZNeDExSHQwbGNW?=
- =?utf-8?B?aU8renVucVF2c3hzb2ozYTYzTC9EeW1jNWpBdUdndEErZ1oxNlFnRDVHdzBi?=
- =?utf-8?B?UEN2OFRWN0FWaGFoTzhranhVSWRuYmZSOFlvY1ZGN1daOVJFTXcrc1BNTXVh?=
- =?utf-8?B?YnpvaTFtSHVjSG1QZ2FIYmtHdllHMnlOSUx3T3p1T1VDck8zbmhzL2FuSkk2?=
- =?utf-8?B?c09RTnlNQVJ3UmpBNFk2bXZ4REJ0bktQSk1zeE0rMmpFTEtCd3c3T2MwVVpj?=
- =?utf-8?B?U2JJdEQxMk5EeEZBQVpIQWEvWUpuWGxXZWVWRXVTbGxUa0d2Z2VIMGpqUUZ5?=
- =?utf-8?B?L2w4d3ZrT1dwcDhYWWQxeGJCMmJ1MktaNVdFbk5pcFdONWpCb1NRRkxUdFR5?=
- =?utf-8?B?dVRRdmwzTHFubXZuMnNqaTNyVUNrWlpza1djWDFIQ3JYalF5ZHpCWVFZdVU5?=
- =?utf-8?B?bC9CZ3RIdWp1cHBaSUpyeE53bENVMUZBVVhYQSs0SlRBU1ZWdEtOaThFSDNH?=
- =?utf-8?B?dTFjK3pSUmpETk1iUnBsSTNHbWpEa3ZkR2Nad0IxMmZoOHRUU1JWeUVHMVlM?=
- =?utf-8?B?dFY0V3JyWERQNGN4TUxoWGMvcnJVQmVreXhqM2RsbEVGNmhrcmtrQmFQU2g0?=
- =?utf-8?B?Mit0cHgvNnZiYWYwTHFNWXJvZ3lHNlNPNW5GUzllWHdkek51R3RiUlpkTTRF?=
- =?utf-8?B?dEdWY2JRd2UvQ290VkhHYzd0c3REYnROWU1KaElRWXJZUFlmczI3Vytyd0FI?=
- =?utf-8?B?MU5vdTdBM3A2UWNuQWZlRS91RmR1MVR2R2oySzZFZ0ZSWW1TOHoya2VncTE3?=
- =?utf-8?B?eVllRkN2Smg0VVdiQkhwbThSQWVVcFFYNWtsd05hOXlVajJYUW1VVDgxVmhG?=
- =?utf-8?B?MHF6SEQzZ2hocTc2QTBsaXgvTU5ZendHTnpYVkZHWVRsYWR0NXE0eS83NGdQ?=
- =?utf-8?B?MmZSdDVJZUxDc2ZMZmZma1VVZXBuYm0wZ1JTSWhqQ1hpdGltV3FOTUNLMFBo?=
- =?utf-8?B?UVE9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7b7cbf49-8b39-4048-8222-08dabddc305f
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR11MB3229.namprd11.prod.outlook.com
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?83kjiEhmhmjib5MV+8Kvw1f94DyJKw/iC4FwUkNs5kkzkX/T+jaPvukIjLZq?=
+ =?us-ascii?Q?Wvp8Oodso6r0qozId8vKxqlCFPy6RAHT42cwc4CjXEuEL+u8u8FmdT2eAqei?=
+ =?us-ascii?Q?dzmBVLOjzrQM3njd58Oz5m8ZfAobZ+OYqHf5G6JQhzkj4KGA7ixC2j/DV7Dm?=
+ =?us-ascii?Q?yduZL4YAVFsMAsB3HS72mB7/yYp7fUxCP+efImNpzQDrLqHjYKUMNirkC6rT?=
+ =?us-ascii?Q?pwm/QIpW5oa/y3dmdGICvJ3YIHOmPmsLEZ27lwKikBM/GuJHm23zynybnvl/?=
+ =?us-ascii?Q?pz/Fyyn8+Q+MDKUmIAcW4iwpyklGAfDsZBYaoegLKR2uEJRvLvvI4JBDH/Gs?=
+ =?us-ascii?Q?xbVJmsz5QY25KUIAI6CSgGcuvOXqUyJzQRnsZavqNpCiqDz26x8TB9yY8FXD?=
+ =?us-ascii?Q?UapTEY7fcQ/Zy/NFtUoDHoLgThX0C8C6CsbV5EBo6sTwsYU6G0MqPEoZgpOt?=
+ =?us-ascii?Q?+JxaimeUv9/vBuOfqGv3IxPm2IX5JkFgFSayVH7ygm5GLE4UlI2pIHOEMqpj?=
+ =?us-ascii?Q?7IR2+0l0Cn8MAAYTI4Ofs7WNwCdqMPCxoNZxgFH8Lc1Unl0oR7uMskRs4edY?=
+ =?us-ascii?Q?gOtgJ/sWYFg03PWmfTvDpKEGTGCJUd56ywQuLW5a6wnQf6Rp6Rdb666E7DyY?=
+ =?us-ascii?Q?untVZpE6oI8ydiVmNI1gRewYG9q+/ldG5s4FHMO2usTznza4tGJUTBrMcvTn?=
+ =?us-ascii?Q?H5GfzCA2gcZUTCOcVHc7Y1Rjo9d5z6BKbh0ZhGvjAqm1f5yCFpAiIVxVXCfL?=
+ =?us-ascii?Q?ztjKTfaj4KF8dF4i3m2augq+Ujj7IiV2NeQ1iRt8Quw1hZbQg9XAMTvqCNdA?=
+ =?us-ascii?Q?lxcsiGX2CsaAlGTN0T9PQfQlUitNWvDtQ6493CH2IDStT07qOOxomD46Ja3t?=
+ =?us-ascii?Q?ZWXPfGjwWNgQDL4ksTNJfW6o5Q2egbukSiJ5wJulqgo/DQIdtqqieVeiiNU5?=
+ =?us-ascii?Q?bQ00L/3V3tJunSqLmwg5viXaellry5agouyIKIDZehTndwlnO6cEYkeIfWGZ?=
+ =?us-ascii?Q?9t9W3XmeP25TObXntTbUZET0t/TXQLr86VNOlhZaEGae84J/a7SKOK0SOHdb?=
+ =?us-ascii?Q?HSpaZjinPaxfU75lY+vUyEuZ67BEmdtSDjwPkzIZW47ku3sSjtBiCq5YzX37?=
+ =?us-ascii?Q?EhBFvN5WJTvqzkCBbU2yLm3hT6yaV2GVl6Qr25aRpRVeIA20uhchLwmbtHO2?=
+ =?us-ascii?Q?pqafzM3nXWWJZhZ8bok2M3eeFKUgBWW4IL9Yx90k9aLj5cwXQXg/WXg2li+l?=
+ =?us-ascii?Q?2svm8KjAz3MfcOD4Uqe66L33zys2NTQyYA95LylJZieYKIS5SMr3HJx9XXKW?=
+ =?us-ascii?Q?ybHGeCaEkRUynR0xCa5zVFjpO5Z+00OtLm3PJ3hmbua+B6opsUB3E1HQ3LAG?=
+ =?us-ascii?Q?OUv1t/XFmPaZ0/5qSmWzmC5YRHvOob8cmBJtCtRIPRO87yVI9t9Vyjmg05FP?=
+ =?us-ascii?Q?M1jtKpaFPU/aVwcmtpGQ1K95r0dihLjPDI3LxwPYeMr/20kUidAd7wzTIAiO?=
+ =?us-ascii?Q?JtqhaRmtCHbxpjhc4lGt0Yt3/OueZA2O0rNuWEgGYh3RvTstcMEdJtuTrVlU?=
+ =?us-ascii?Q?WMPOqvqaSYIBuoeaFibb2orC7nKBfAPteTyyQLQcqB0p7Ej02/IjykM9XeB9?=
+ =?us-ascii?Q?NQ=3D=3D?=
+MIME-Version: 1.0
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 03 Nov 2022 20:44:23.1179 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: S+wwcfa/oIdXWCKhkZeefHy8dgrhYUAqcanyOOCZBjnhvPSWZ5Zz2PmtnwlYGWk/0R7ugjgnVCCbPkJ2SE5TRADn8QNFDFwE5gl/dWL3F8s=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ1PR11MB6276
+X-MS-Exchange-CrossTenant-AuthSource: CO6PR11MB5636.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d21baa69-ce17-4832-dfe2-08dabddc474e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Nov 2022 20:45:01.2684 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 3fsMpOYy31S7vvd6v9W0Uvvq7EWd68aWnVmh8oZHhoK9lcQvOoN6ei3C7KhVtWkmRZKMBMBuSz09y8L/QoBP2raf0xCOW/NbzbT7A4ZMMh4=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB7505
 X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667508277; x=1699044277;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=X25q1LEpPKTyb0TGvZzvPPfwfXy4WxX53eZnPFASpr0=;
- b=IN/4I1iMoLGTmHcJkr/Ts3XlCG2lOe/vqNyZVGqvRHLuAQE+d6oTj2Qn
- EiOWfXilSqumxIJ+njrQ3c50D0j1RqPNYUogqhH+tkvKSm1KG/SMk9l4W
- JyftW0uer5Tfzz3auCKjikDeVUyS8mDlNnr/FmkZSQIWDBxECtkBiPdJ2
- IGinapS2Hf35WvFvdyLe12jO2erbrzYP9vJxVMvC255gWu9fVJrNDkZe+
- ex7RgnaivcwYKHryn1pb+j14jp5KUU3qIhYbkZB9xt3r7EGQHcxZO+Y3d
- mXGsyXPf9RN9FCTiQ8dxQLaOOFJdSRXFh5e/EyZr+wl44IoJmsyLvEwh2
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1667508306; x=1699044306;
+ h=from:to:subject:date:message-id:references:in-reply-to:
+ content-transfer-encoding:mime-version;
+ bh=asPVUraBeR97k7kzwTJOhNGsrxgn6vafDb23UjMsNKU=;
+ b=Yyf1MwsUCPqZBVTQWd9yrjXkgx38z6sMzi4huqsboVgIomxcDhHXuGQL
+ 5gwcMBZdhyLRpqg4fKLmyf59fxv+cS5Laifg+5SMys6zYIw4gyjROO/jM
+ NFZPR5lB5Sypp4tdmoGZi31QOuWJ7rR9U5+f6agvnzcQEskjkU3GsRumC
+ 8DJW+Udvnz/t6d7FG5gJhsB2XYm6vNq8wa81gYj/pf77CkrvGSWLVVd0I
+ BZqGX9jki8C+M7i4OTOtsZdL8n4m4a1E58t9sp/5V3LpyQD30M6fMEIFO
+ J3t6oNmPy5GdT2sQ45tJWERl694xB9Cv7LIDw0N0es3zeF270z7xPHg8H
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IN/4I1iM
+ header.a=rsa-sha256 header.s=Intel header.b=Yyf1MwsU
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net-next 01/15] ice: Use more generic
- names for ice_ptp_tx fields
+Subject: Re: [Intel-wired-lan] [PATCH net-next 07/15] ice: check Tx
+ timestamp memory register for ready timestamps
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -198,31 +190,283 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 11/1/2022 3:52 PM, Jacob Keller wrote:
 
-<snip>
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Jacob
+> Keller
+> Sent: Tuesday, November 1, 2022 3:53 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PATCH net-next 07/15] ice: check Tx timestamp
+> memory register for ready timestamps
+> 
+> The PHY for e822 based hardware has a register which indicates which
+> timestamps are valid in the PHY timestamp memory block. Each bit in the
+> register indicates whether the associated index in the timestamp memory is
+> valid.
+> 
+> Hardware sets this bit when the timestamp is captured, and clears the bit when
+> the timestamp is read. Use of this register is important as reading timestamp
+> registers can impact the way that hardware generates timestamp interrupts.
+> 
+> This occurs because the PHY has an internal value which is incremented when
+> hardware captures a timestamp and decremented when software reads a
+> timestamp. Reading timestamps which are not marked as valid still decrement
+> the internal value and can result in the Tx timestamp interrupt not triggering in
+> the future.
+> 
+> To prevent this, use the timestamp memory value to determine which
+> timestamps are ready to be read. The ice_get_phy_tx_tstamp_ready function
+> reads this value. For e810 devices, this just always returns with all bits set.
+> 
+> Skip any timestamp which is not set in this bitmap, avoiding reading extra
+> timestamps on e822 devices.
+> 
+> Modify the stale check to apply only to e810 devices. It is not necessary for e822
+> devices because the timestamp memory register will prevent us from reading a
+> stale timestamp.
+> 
+> Modify the ICE_PTP_TS_VALID check to simply drop the timestamp immediately
+> so that in an event of getting such an invalid timestamp the driver does not
+> attempt to re-read the timestamp again in a future poll of the register.
+> 
+> With these changes, the driver now reads each timestamp register exactly once,
+> and does not attempt any re-reads. This ensures the interrupt tracking logic in
+> the PHY will not get stuck.
+> 
 
-> @@ -128,7 +128,9 @@ struct ice_ptp_tx {
->   
->   /* Quad and port information for initializing timestamp blocks */
->   #define INDEX_PER_QUAD			64
-> -#define INDEX_PER_PORT			(INDEX_PER_QUAD / ICE_PORTS_PER_QUAD)
-> +#define INDEX_PER_PORT_E822		16
-> +#define INDEX_PER_PORT_E810		64
-> +#define INDEX_PER_PORT_ETH56G		64
+Minor nit: for the E8xx devices we should capitalize the E in the commit message
+(e.g. E822, E810, et al)
 
-I believe this is an extra define (INDEX_PER_PORT_ETH56G)? I'm not 
-seeing it used anywhere.
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_ptp.c    | 41 ++++++++++--
+>  drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 72 +++++++++++++++++++++
+> drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 +
+>  3 files changed, 108 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c
+> b/drivers/net/ethernet/intel/ice/ice_ptp.c
+> index ebe910326963..39c68a272c6a 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+> @@ -655,6 +655,9 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
+>  	struct ice_ptp_port *ptp_port;
+>  	bool ts_handled = true;
+>  	struct ice_pf *pf;
+> +	struct ice_hw *hw;
+> +	u64 tstamp_ready;
+> +	int err;
+>  	u8 idx;
+> 
+>  	if (!tx->init)
+> @@ -662,6 +665,12 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
+> 
+>  	ptp_port = container_of(tx, struct ice_ptp_port, tx);
+>  	pf = ptp_port_to_pf(ptp_port);
+> +	hw = &pf->hw;
+> +
+> +	/* Read the Tx ready status first */
+> +	err = ice_get_phy_tx_tstamp_ready(hw, tx->block, &tstamp_ready);
+> +	if (err)
+> +		return false;
+> 
+>  	for_each_set_bit(idx, tx->in_use, tx->len) {
+>  		struct skb_shared_hwtstamps shhwtstamps = {}; @@ -669,7
+> +678,6 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
+>  		u64 raw_tstamp, tstamp;
+>  		bool drop_ts = false;
+>  		struct sk_buff *skb;
+> -		int err;
+> 
+>  		/* Drop packets which have waited for more than 2 seconds */
+>  		if (time_is_before_jiffies(tx->tstamps[idx].start + 2 * HZ)) { @@
+> -677,24 +685,45 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
+> 
+>  			/* Count the number of Tx timestamps that timed out
+> */
+>  			pf->ptp.tx_hwtstamp_timeouts++;
+> +		}
+> 
+> -			goto skip_ts_read;
+> +		/* Only read a timestamp from the PHY if its marked as ready
+> +		 * by the tstamp_ready register. This avoids unnecessary
+> +		 * reading of timestamps which are not yet valid. This is
+> +		 * important as we must read all timestamps which are valid
+> +		 * and only timestamps which are valid during each interrupt.
+> +		 * If we do not, the hardware logic for generating a new
+> +		 * interrupt can get stuck on some devices.
+> +		 */
+> +		if (!(tstamp_ready & BIT_ULL(phy_idx))) {
+> +			if (drop_ts)
+> +				goto skip_ts_read;
+> +			else
+> +				continue;
+>  		}
+> 
+>  		ice_trace(tx_tstamp_fw_req, tx->tstamps[idx].skb, idx);
+> 
+> -		err = ice_read_phy_tstamp(&pf->hw, tx->block, phy_idx,
+> -					  &raw_tstamp);
+> +		err = ice_read_phy_tstamp(hw, tx->block, phy_idx,
+> &raw_tstamp);
+>  		if (err)
+>  			continue;
+> 
+>  		ice_trace(tx_tstamp_fw_done, tx->tstamps[idx].skb, idx);
+> 
+> -		/* Check if the timestamp is invalid or stale */
+> -		if (!(raw_tstamp & ICE_PTP_TS_VALID) ||
+> +		/* For e810 hardware, the tstamp_ready bitmask does not
 
->   
->   /**
->    * struct ice_ptp_port - data used to initialize an external port for PTP
+Same comment about capital E in comment
+
+> +		 * indicate whether a timestamp is ready. Instead, we check to
+> +		 * make sure the timestamp is different from the previous
+> +		 * cached value. If it is not, we need to re-read the
+> +		 * timestamp later until we get a valid value.
+> +		 */
+> +		if (!drop_ts && ice_is_e810(hw) &&
+>  		    raw_tstamp == tx->tstamps[idx].cached_tstamp)
+>  			continue;
+> 
+> +		/* Discard any timestamp value without the valid bit set */
+> +		if (!(raw_tstamp & ICE_PTP_TS_VALID))
+> +			drop_ts = true;
+> +
+>  skip_ts_read:
+>  		spin_lock(&tx->lock);
+>  		tx->tstamps[idx].cached_tstamp = raw_tstamp; diff --git
+> a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> index 6c149b88c235..55bbe76ce0bd 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+> @@ -2417,6 +2417,43 @@ int ice_phy_calc_vernier_e822(struct ice_hw *hw,
+> u8 port)
+>  	return 0;
+>  }
+> 
+> +/**
+> + * ice_get_phy_tx_tstamp_ready_e822 - Read Tx memory status register
+> + * @hw: pointer to the HW struct
+> + * @quad: the timestamp quad to read from
+> + * @tstamp_ready: contents of the Tx memory status register
+> + *
+> + * Read the Q_REG_TX_MEMORY_STATUS register indicating which timestamps
+> +in
+> + * the PHY are ready. A set bit means the corresponding timestamp is
+> +valid and
+> + * ready to be captured from the PHY timestamp block.
+> + */
+> +static int
+> +ice_get_phy_tx_tstamp_ready_e822(struct ice_hw *hw, u8 quad, u64
+> +*tstamp_ready) {
+> +	u32 hi, lo;
+> +	int err;
+> +
+> +	err = ice_read_quad_reg_e822(hw, quad,
+> Q_REG_TX_MEMORY_STATUS_U,
+> +					&hi);
+> +	if (err) {
+> +		ice_debug(hw, ICE_DBG_PTP, "Failed to read
+> TX_MEMORY_STATUS_U for quad %u, err %d\n",
+> +			  quad, err);
+> +		return err;
+> +	}
+> +
+> +	err = ice_read_quad_reg_e822(hw, quad,
+> Q_REG_TX_MEMORY_STATUS_L,
+> +					&lo);
+> +	if (err) {
+> +		ice_debug(hw, ICE_DBG_PTP, "Failed to read
+> TX_MEMORY_STATUS_L for quad %u, err %d\n",
+> +			  quad, err);
+> +		return err;
+> +	}
+> +
+> +	*tstamp_ready = (u64)hi << 32 | (u64)lo;
+> +
+> +	return 0;
+> +}
+> +
+>  /* E810 functions
+>   *
+>   * The following functions operate on the E810 series devices which use @@ -
+> 3091,6 +3128,21 @@ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8
+> idx)
+>  		return ice_clear_phy_tstamp_e822(hw, block, idx);  }
+> 
+> +/* ice_get_phy_tx_tstamp_ready_e810 - Read Tx memory status register
+> + * @hw: pointer to the HW struct
+> + * @port: the PHY port to read
+> + * @tstamp_ready: contents of the Tx memory status register
+> + *
+> + * E810 devices do not use a Tx memory status register. Instead simply
+> + * indicate that all timestamps are currently ready.
+> + */
+> +static int
+> +ice_get_phy_tx_tstamp_ready_e810(struct ice_hw *hw, u8 port, u64
+> +*tstamp_ready) {
+> +	*tstamp_ready = 0xFFFFFFFFFFFFFFFF;
+> +	return 0;
+> +}
+> +
+>  /* E810T SMA functions
+>   *
+>   * The following functions operate specifically on E810T hardware and are used
+> @@ -3306,3 +3358,23 @@ int ice_ptp_init_phc(struct ice_hw *hw)
+>  	else
+>  		return ice_ptp_init_phc_e822(hw);
+>  }
+> +
+> +/* ice_get_phy_tx_tstamp_ready - Read PHY Tx memory status indication
+> + * @hw: pointer to the HW struct
+> + * @block: the timestamp block to check
+> + * @tstamp_ready: storage for the PHY Tx memory status information
+> + *
+> + * Check the PHY for Tx timestamp memory status. This reports a 64 bit
+> +value
+> + * which indicates which timestamps in the block may be captured. A set
+> +bit
+> + * means the timestamp can be read. An unset bit means the timestamp is
+> +not
+> + * ready and software should avoid reading the register.
+> + */
+> +int ice_get_phy_tx_tstamp_ready(struct ice_hw *hw, u8 block, u64
+> +*tstamp_ready) {
+> +	if (ice_is_e810(hw))
+> +		return ice_get_phy_tx_tstamp_ready_e810(hw, block,
+> +							tstamp_ready);
+> +	else
+> +		return ice_get_phy_tx_tstamp_ready_e822(hw, block,
+> +							tstamp_ready);
+> +}
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+> b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+> index b0cd73aaac6b..b781dadf5a39 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+> @@ -135,6 +135,7 @@ int ice_read_phy_tstamp(struct ice_hw *hw, u8 block,
+> u8 idx, u64 *tstamp);  int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8
+> idx);  void ice_ptp_reset_ts_memory(struct ice_hw *hw);  int
+> ice_ptp_init_phc(struct ice_hw *hw);
+> +int ice_get_phy_tx_tstamp_ready(struct ice_hw *hw, u8 block, u64
+> +*tstamp_ready);
+> 
+>  /* E822 family functions */
+>  int ice_read_phy_reg_e822(struct ice_hw *hw, u8 port, u16 offset, u32 *val);
+> --
+> 2.38.0.83.gd420dda05763
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan@osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
