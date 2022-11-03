@@ -1,88 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9289C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:02:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2B4FC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:02:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 873BE6102E;
-	Thu,  3 Nov 2022 22:02:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 873BE6102E
+	by smtp2.osuosl.org (Postfix) with ESMTP id 60D0340519;
+	Thu,  3 Nov 2022 22:02:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 60D0340519
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667512956;
-	bh=XjkI3B6qUvgvs+f0drHNum7UvWwEj6vfJgi6eNY40z0=;
+	s=default; t=1667512960;
+	bh=s3cbSKUis1cw72DKZYJfMYtCCnVfFxLMDR2DHwWVIjQ=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=DmQmxkkCHg9/c1WBPQWXYHJr5c58X5QI2hGBkaoYKUK5mzxdm91ilF4Nn+Y0650vZ
-	 mb+QFolETsfQmpJ93xlEc6trneLpeTffP5oUtdpx9yt8qBnV3lLAysIwGVe6iyRSic
-	 ViGK10TNSjpgxCn4ANEwCC9UF0rIFYd1jITbfMlrOwdZwap+91Kszx4kK2ynneqbOc
-	 9nMIEXQB3uuh5jNy+JUJGKzXm7vQRj+6J0+FnO5wkOQFChPT8f+McFPI6XMeVmVUe5
-	 dDbmPf0kT3oCZv7oeCJ3QILwM00/uP6qeMH4f+8Gg6NYwkI0tmQM+lDhCej0YZjERq
-	 l/S/iRkt0P22w==
+	b=D69s+YJOzRFmw5+xNZu+07S47N0O0GROBwn6nTaKnWzE5sv2o9uRQQc6p1U6Y7jMc
+	 eRls9TTWrYg/mdGx90k28xHLCLheAxloKRBSqkWBIXb53V0xIq1q3Goi4YBo1IJnwt
+	 jXpCzUkblYTntwuZ1z70+NIKQ+VSPt9XcI/5tY/aoKc0vLfJq62D3evRF4eLAnxXA6
+	 cVEDBLWlkJgOd6iXuTk1GjUzbz4tYzh5I+LfCjq7UD5Z4O986V9zPlOKgqExjyNiK/
+	 HlJDIvYodGIfq2tAtv4wHdlCvYbYm+5ourvRI8M7GEBcaPeGvz15kjPBTmWmpsJXFa
+	 zyPPwYxrKRs0w==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id I8DPmp2h4YEG; Thu,  3 Nov 2022 22:02:35 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id IkBxy6e-aFWU; Thu,  3 Nov 2022 22:02:39 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8EEA161048;
-	Thu,  3 Nov 2022 22:02:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8EEA161048
+	by smtp2.osuosl.org (Postfix) with ESMTP id 6E24540520;
+	Thu,  3 Nov 2022 22:02:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6E24540520
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 80DE01BF2F2
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:04 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 75DF91BF2F2
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2095481F59
+ by smtp1.osuosl.org (Postfix) with ESMTP id 379F381F6D
  for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2095481F59
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 379F381F6D
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id v56YpsRVlOsK for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id YMhACy_PlYah for <intel-wired-lan@lists.osuosl.org>;
  Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DD5A581F66
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 27BC481F77
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp1.osuosl.org (Postfix) with ESMTPS id DD5A581F66
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:01:59 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="307436987"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="307436987"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 27BC481F77
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="307436989"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="307436989"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  03 Nov 2022 15:01:59 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480280"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480280"
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480286"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480286"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  03 Nov 2022 15:01:59 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Thu,  3 Nov 2022 15:01:39 -0700
-Message-Id: <20221103220145.1851114-10-jacob.e.keller@intel.com>
+Date: Thu,  3 Nov 2022 15:01:40 -0700
+Message-Id: <20221103220145.1851114-11-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.0.83.gd420dda05763
 In-Reply-To: <20221103220145.1851114-1-jacob.e.keller@intel.com>
 References: <20221103220145.1851114-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667512919; x=1699048919;
+ t=1667512920; x=1699048920;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=K8N+JYXOzJy2Uo/xpmMGjY3HgrS4sD5u2BP/iZedbog=;
- b=gbhdkUCmY8HMKV05CxVYfVEYjOA024jKdQ4JhrwSeCc1zuY8y+c185Hz
- mzObhHJcNzRDbFnEACBA+LjGiqdXFXhCfouk7lVug3151+LxxgZpD6Yft
- zRzPojD5OzLxe1g32z9f4PcPxoR0C7qIoBYSuujvR38M/zPu9sUTS4ZC2
- 2m1hj/Lj/hywRDRClifuEKxwMtO4EPcBbqxhtQcYQ2ipxbFosBBpwqajX
- qcfWy7VjKoCOrpgXLu44JiriomdDqPOMgyhk5gtqtQ6E1GdVhvTJjZKjt
- jdUzM5rU3+q8TtYzYZSE7Zt1kRLvkZPsrG1ucGnFpKK3MP1hWow8HDAoo
+ bh=qBPuaM5gFobxqj7IZ+rOBD5Hy4Q0tK1pHeTW8cSMzD4=;
+ b=l/rl40cnhla+t6a0+2LBcmg3R54pXKB08ZEjjUqrQYAzGBuowiECff1u
+ U370Y7XJOUSJs8BbZnH/KwEr3o0tOjFKasr6FpnKoahuE5u1NscoAPDEH
+ 9LYd2tRG+i4V/GCCHXilCCgWSzBQk5NBG3/Mxb4LzDs54EVt5daQpxFus
+ g1iE2gKsFxzs1OoxAkg+zHeSCwQNG8CVepx9k9iQ8vx+5pIzqOnAd7znz
+ rdTBhWCW2jTJqaD/U4D8+pr1io6VW4lMdIBvehgWHGWQR/TxqPToqWU35
+ W8gZJTBoUFEitMj09GibCf14uE2fjfBrs2q/oWOuNkt+vPQR0BBTX35ZE
  A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=gbhdkUCm
-Subject: [Intel-wired-lan] [PATCH net-next v2 09/15] ice: return true if Tx
- tracker is uninitialized
+ header.a=rsa-sha256 header.s=Intel header.b=l/rl40cn
+Subject: [Intel-wired-lan] [PATCH net-next v2 10/15] ice: disable Tx
+ timestamps while link is down
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,68 +100,79 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-If the PTP Tx timestamp tracker is not initialized, then there is no work
-to complete, so the ice_ptp_tx_tstamp function should return true, rather
-than false.
+Introduce a new link_down field for the Tx tracker which indicates whether
+the link is down for a given port.
 
-With this change, we also don't need to re-check the init status prior to
-calling the function as it now returns the correct value.
-
-Also update the ice_ptp_tx_tstamp function comment to properly clarify the
-return value meaning.
+Use this bit to prevent any Tx timestamp requests from starting while link
+is down. This ensures that we do not try to start new timestamp requests
+until after link has been restored.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-No changes since v1
+Changes since v1
+* Moved the changes to the init and calibrating fields out of this patch and
+  into patch 7 of the series.
 
- drivers/net/ethernet/intel/ice/ice_ptp.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 11 ++++++++++-
+ drivers/net/ethernet/intel/ice/ice_ptp.h |  2 ++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index dbd4aacfcb0f..d9581472a139 100644
+index d9581472a139..5d69fc633322 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -650,11 +650,14 @@ ice_ptp_is_tx_tracker_up(struct ice_ptp_tx *tx)
-  * 2) extend the 40b timestamp value to get a 64bit timestamp
-  * 3) send that timestamp to the stack
-  *
-- * After looping, if we still have waiting SKBs, return true. This may cause us
-- * effectively poll even when not strictly necessary. We do this because it's
-- * possible a new timestamp was requested around the same time as the interrupt.
-- * In some cases hardware might not interrupt us again when the timestamp is
-- * captured.
-+ * Returns true if all timestamps were handled, and false if any slots remain
-+ * without a timestamp.
-+ *
-+ * After looping, if we still have waiting SKBs, return false. This may cause
-+ * us effectively poll even when not strictly necessary. We do this because
-+ * it's possible a new timestamp was requested around the same time as the
-+ * interrupt. In some cases hardware might not interrupt us again when the
-+ * timestamp is captured.
-  *
-  * Note that we only take the tracking lock when clearing the bit and when
-  * checking if we need to re-queue this task. The only place where bits can be
-@@ -697,7 +700,7 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
- 	u8 idx;
- 
- 	if (!ice_ptp_is_tx_tracker_init(tx))
--		return false;
-+		return true;
- 
- 	ptp_port = container_of(tx, struct ice_ptp_port, tx);
- 	pf = ptp_port_to_pf(ptp_port);
-@@ -2455,10 +2458,7 @@ s8 ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb)
-  */
- bool ice_ptp_process_ts(struct ice_pf *pf)
+@@ -632,7 +632,7 @@ ice_ptp_is_tx_tracker_up(struct ice_ptp_tx *tx)
  {
--	if (pf->ptp.port.tx.init)
--		return ice_ptp_tx_tstamp(&pf->ptp.port.tx);
--
--	return false;
-+	return ice_ptp_tx_tstamp(&pf->ptp.port.tx);
+ 	lockdep_assert_held(&tx->lock);
+ 
+-	return tx->init && !tx->calibrating;
++	return tx->init && !tx->calibrating && !tx->link_down;
  }
  
- static void ice_ptp_periodic_work(struct kthread_work *work)
+ /**
+@@ -829,6 +829,8 @@ ice_ptp_alloc_tx_tracker(struct ice_ptp_tx *tx)
+ 
+ 	spin_lock(&tx->lock);
+ 	tx->init = 1;
++	tx->link_down = 0;
++	tx->calibrating = 0;
+ 	spin_unlock(&tx->lock);
+ 
+ 	return 0;
+@@ -1395,6 +1397,13 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
+ 	/* Update cached link status for this port immediately */
+ 	ptp_port->link_up = linkup;
+ 
++	/* Set the link status of the Tx tracker. While link is down, all Tx
++	 * timestamp requests will be ignored.
++	 */
++	spin_lock(&ptp_port->tx.lock);
++	ptp_port->tx.link_down = !linkup;
++	spin_unlock(&ptp_port->tx.lock);
++
+ 	/* E810 devices do not need to reconfigure the PHY */
+ 	if (ice_is_e810(&pf->hw))
+ 		return;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index 0bfafaaab6c7..75dcab8e1124 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -119,6 +119,7 @@ struct ice_tx_tstamp {
+  * @init: if true, the tracker is initialized;
+  * @calibrating: if true, the PHY is calibrating the Tx offset. During this
+  *               window, timestamps are temporarily disabled.
++ * @link_down: if true, the link is down and timestamp requests are disabled
+  * @verify_cached: if true, verify new timestamp differs from last read value
+  */
+ struct ice_ptp_tx {
+@@ -130,6 +131,7 @@ struct ice_ptp_tx {
+ 	u8 len;
+ 	u8 init : 1;
+ 	u8 calibrating : 1;
++	u8 link_down : 1;
+ 	u8 verify_cached : 1;
+ };
+ 
 -- 
 2.38.0.83.gd420dda05763
 
