@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB620C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:02:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A02FC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:02:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 69C6B61038;
-	Thu,  3 Nov 2022 22:02:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 69C6B61038
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4D0FF61048;
+	Thu,  3 Nov 2022 22:02:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4D0FF61048
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667512931;
-	bh=xBjqm91+Nmoqx8OwWTqN8ifMC63Ovj0yGKxGXsMgjB0=;
+	s=default; t=1667512935;
+	bh=q3bsxo7j8Lwzhkjr+InCSb05QUuvWeBbEDMlElvHmz4=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=WOYn3YpLdcyU6j3CVQ6BdZSPdOiZyKR72zu32Jw7zWp4cjXkVouIXboqZw2Sk95DG
-	 i24I6Wwf+myIVM9wNUCzY2cRMCaTM5Az9i03vBxELHSkCA9QTmzzZDHKtyG6jIlvpu
-	 lrjW9JylRziucZjTsDyvvYtGFNMcLEv57j+zXcnnqXv2HQJ4XgCECOv/r4jiOUWdez
-	 le7bfAja3OrEzAys9YqRxrEioX12IUQy4HRj0mgtAIadlv91CwvCJVLFS7UPVcqBi2
-	 747IvsU2xt13wjWlrR9wG1RC0bzxw24eVuUY5RC/T3xEhEwijA1yTUylxRDSmscEEL
-	 t4IhdjUSzZlmw==
+	 Cc:From;
+	b=hIxaS+p5JAO1lSjVNzXXhoDh9c/7fZ8A1v6aBjOsQ6JDmRThiQ2Pw/ynW/BDW6fLI
+	 pczPheW6LQaQ8+4VRrIgiEwLnIfM1xx1VwXIBvVhiV8e6OSOK82MUyKPfog/O3lIeh
+	 VAIF/jhkH8xis+jJmw9L+BLdlyJ2/eBn8+k1nEREGam+5Upw/Wzcvh++tmux1Ib+Qi
+	 oSIIRoBJqcLRVZ4+sVTyOkg9BhdbjhTllfSSr1xfzgssszMUDoA91i80VpoQud7lCI
+	 5Jf8zROLEqPelD1atKhvxva8r4d9WCzXHeDOIdyJ8CajjBOP4uCVLOKsbh81p15E/7
+	 x4uoCruq6XVuQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Z4husQMhK5dX; Thu,  3 Nov 2022 22:02:10 +0000 (UTC)
+	with ESMTP id bbNjjK_ZA4wk; Thu,  3 Nov 2022 22:02:14 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E38AE61048;
-	Thu,  3 Nov 2022 22:02:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E38AE61048
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id E69CA1BF2F2
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D2D0E61060;
+	Thu,  3 Nov 2022 22:02:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D2D0E61060
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 188451BF8B4
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BE4ED41850
+ by smtp1.osuosl.org (Postfix) with ESMTP id 774E581F6D
  for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BE4ED41850
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 774E581F6D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Dt4tdGIsYgHT for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 3b5mRCRm0p0A for <intel-wired-lan@lists.osuosl.org>;
  Thu,  3 Nov 2022 22:01:59 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6E9614183C
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6E9614183C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5E45781EDE
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 5E45781EDE
  for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:01:59 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="289534529"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="289534529"
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="297278191"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="297278191"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  03 Nov 2022 15:01:58 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480264"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480264"
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480242"
+X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480242"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2022 15:01:58 -0700
+ 03 Nov 2022 15:01:57 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Thu,  3 Nov 2022 15:01:36 -0700
-Message-Id: <20221103220145.1851114-7-jacob.e.keller@intel.com>
+Date: Thu,  3 Nov 2022 15:01:32 -0700
+Message-Id: <20221103220145.1851114-3-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.0.83.gd420dda05763
 In-Reply-To: <20221103220145.1851114-1-jacob.e.keller@intel.com>
 References: <20221103220145.1851114-1-jacob.e.keller@intel.com>
@@ -70,19 +70,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1667512919; x=1699048919;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=efOo68xd5FphTfzv9zBVDyry8trLC1hr7SdBDeexZ5E=;
- b=MCaW39YtqjOw47HpTJop68li0D7oB7+/c2Jmc6435pkWYJISZEuKIbeR
- NxJ2QnzRqdRrI687lT/SOK25F2tODlyjiZck6I5fvL1U/m5J47LbSLFI+
- +cf7z9dFJOJItENSkBsZWStNFJDdagSkTORLQTVOKlYD6VRrz2SNo1ymB
- jbfZ/aoC4J5oyuglN4ZeMxOKMIIhTwLF+ayUyhGzTvfp7O4HVBtZeropY
- G/FR7dTL68+Rjxmv3mghI1kRfMq76aBkW4ePGOCLitpCMt6JIB/lIwAdl
- hKxyvXym3gkJJ0IwivHzbfF5+xPl9YX5zmnfCcHjXJRiePSNBFuqd6TXk
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=W5a4qq5NjQQYoTj8IVhU/DOXC2lAIwO3RmOUpucDycs=;
+ b=c4CI69iCrEPkcBcwdcmsOXxExfpkfO6BEs1/AStVtV4VaSnJ9PIDoWKD
+ t50Y65QnMsOoYUqKGIHFAZbNYYi/ZU0OJvefsTReuerNCSfftYIuznRYY
+ Pn79o0+u8jAlzuFnFHSKThV+/nMukwc0lZQYhuvXoE3roGTgNefK5ITV/
+ t1r8as9402W4roK+ITFkAg/fTMUF4cIpH2Q3BHMc0NnbJYcd181QUywub
+ 740xQobyHzy3sM8lMle2rYWs2iLvyEznhatl4dJbxGUWjOeG34Zc2cXNx
+ GaTjQyNiPn1hEmOOh8VJrzQ4ZmRf+gW6z30E5fI8oeGFUSmJE+JrfMzXw
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=MCaW39Yt
-Subject: [Intel-wired-lan] [PATCH net-next v2 06/15] ice: handle discarding
- old Tx requests in ice_ptp_tx_tstamp
+ header.a=rsa-sha256 header.s=Intel header.b=c4CI69iC
+Subject: [Intel-wired-lan] [PATCH net-next v2 02/15] ice: Remove the E822
+ vernier "bypass" logic
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,193 +95,293 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Milena Olech <milena.olech@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently the driver uses the PTP kthread to process handling and
-discarding of stale Tx timestamp requests. The function
-ice_ptp_tx_tstamp_cleanup is used for this.
+From: Milena Olech <milena.olech@intel.com>
 
-A separate thread creates complications for the driver as we now have both
-the main Tx timestamp processing IRQ checking timestamps as well as the
-kthread.
+The E822 devices support an extended "vernier" calibration which enables
+higher precision timestamps by accounting for delays in the PHY, and
+compensating for them. These delays are measured by hardware as part of its
+vernier calibration logic.
 
-Rather than using the kthread to handle this, simply check for stale
-timestamps within the ice_ptp_tx_tstamp function. This function must
-already process the timestamps anyways.
+The driver currently starts the PHY in "bypass" mode which skips
+the compensation. Then it later attempts to switch from bypass to vernier.
+This unfortunately does not work as expected. Instead of properly
+compensating for the delays, the hardware continues operating in bypass
+without the improved precision expected.
 
-If a Tx timestamp has been waiting for 2 seconds we simply clear the bit
-and discard the SKB. This avoids the complication of having separate
-threads polling, reducing overall CPU work.
+Because we cannot dynamically switch between bypass and vernier mode,
+refactor the driver to always operate in vernier mode. This has a slight
+downside: Tx timestamp and Rx timestamp requests that occur as the very
+first packet set after link up will not complete properly and may be
+reported to applications as missing timestamps.
 
+This occurs frequently in test environments where traffic is light or
+targeted specifically at testing PTP. However, in practice most
+environments will have transmitted or received some data over the network
+before such initial requests are made.
+
+Signed-off-by: Milena Olech <milena.olech@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 No changes since v1
 
- drivers/net/ethernet/intel/ice/ice_ptp.c | 106 ++++++++++-------------
- 1 file changed, 45 insertions(+), 61 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c    |  10 +-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 145 +-------------------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |   4 +-
+ 3 files changed, 14 insertions(+), 145 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 3b154cdb2a32..ebe910326963 100644
+index b3bd73714291..3c5965681f06 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -623,15 +623,32 @@ static u64 ice_ptp_extend_40b_ts(struct ice_pf *pf, u64 in_tstamp)
-  * Note that we only take the tracking lock when clearing the bit and when
-  * checking if we need to re-queue this task. The only place where bits can be
-  * set is the hard xmit routine where an SKB has a request flag set. The only
-- * places where we clear bits are this work function, or the periodic cleanup
-- * thread. If the cleanup thread clears a bit we're processing we catch it
-- * when we lock to clear the bit and then grab the SKB pointer. If a Tx thread
-- * starts a new timestamp, we might not begin processing it right away but we
-- * will notice it at the end when we re-queue the task. If a Tx thread starts
-- * a new timestamp just after this function exits without re-queuing,
-- * the interrupt when the timestamp finishes should trigger. Avoiding holding
-- * the lock for the entire function is important in order to ensure that Tx
-- * threads do not get blocked while waiting for the lock.
-+ * places where we clear bits are this work function, or when flushing the Tx
-+ * timestamp tracker.
-+ *
-+ * If the Tx tracker gets flushed while we're processing a packet, we catch
-+ * this because we grab the SKB pointer under lock. If the SKB is NULL we know
-+ * that another thread already discarded the SKB and we can avoid passing it
-+ * up to the stack.
-+ *
-+ * If a Tx thread starts a new timestamp, we might not begin processing it
-+ * right away but we will notice it at the end when we re-queue the task.
-+ *
-+ * If a Tx thread starts a new timestamp just after this function exits, the
-+ * interrupt for that timestamp should re-trigger this function once
-+ * a timestamp is ready.
-+ *
-+ * Note that minimizing the time we hold the lock is important. If we held the
-+ * lock for the entire function we would unnecessarily block the Tx hot path
-+ * which needs to set the timestamp index. Limiting how long we hold the lock
-+ * ensures we do not block Tx threads.
-+ *
-+ * If a Tx packet has been waiting for more than 2 seconds, it is not possible
-+ * to correctly extend the timestamp using the cached PHC time. It is
-+ * extremely unlikely that a packet will ever take this long to timestamp. If
-+ * we detect a Tx timestamp request that has waited for this long we assume
-+ * the packet will never be sent by hardware and discard it without reading
-+ * the timestamp register.
-  */
- static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
- {
-@@ -650,9 +667,20 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
- 		struct skb_shared_hwtstamps shhwtstamps = {};
- 		u8 phy_idx = idx + tx->offset;
- 		u64 raw_tstamp, tstamp;
-+		bool drop_ts = false;
- 		struct sk_buff *skb;
- 		int err;
+@@ -1229,10 +1229,10 @@ static void ice_ptp_wait_for_offset_valid(struct kthread_work *work)
+ 		return;
+ 	}
  
-+		/* Drop packets which have waited for more than 2 seconds */
-+		if (time_is_before_jiffies(tx->tstamps[idx].start + 2 * HZ)) {
-+			drop_ts = true;
-+
-+			/* Count the number of Tx timestamps that timed out */
-+			pf->ptp.tx_hwtstamp_timeouts++;
-+
-+			goto skip_ts_read;
-+		}
-+
- 		ice_trace(tx_tstamp_fw_req, tx->tstamps[idx].skb, idx);
+-	/* Offsets are valid, so it is safe to exit bypass mode */
+-	err = ice_phy_exit_bypass_e822(hw, port->port_num);
++	/* Offsets are valid, so Vernier mode calculations are started */
++	err = ice_phy_calc_vernier_e822(hw, port->port_num);
+ 	if (err) {
+-		dev_warn(dev, "Failed to exit bypass mode for PHY port %u, err %d\n",
++		dev_warn(dev, "Failed to prepare Vernier mode for PHY port %u, err %d\n",
+ 			 port->port_num, err);
+ 		return;
+ 	}
+@@ -1297,8 +1297,8 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
+ 	ptp_port->tx.calibrating = true;
+ 	ptp_port->tx_fifo_busy_cnt = 0;
  
- 		err = ice_read_phy_tstamp(&pf->hw, tx->block, phy_idx,
-@@ -667,9 +695,7 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
- 		    raw_tstamp == tx->tstamps[idx].cached_tstamp)
- 			continue;
+-	/* Start the PHY timer in bypass mode */
+-	err = ice_start_phy_timer_e822(hw, port, true);
++	/* Start the PHY timer in Vernier mode */
++	err = ice_start_phy_timer_e822(hw, port);
+ 	if (err)
+ 		goto out_unlock;
  
--		/* The timestamp is valid, so we'll go ahead and clear this
--		 * index and then send the timestamp up to the stack.
--		 */
-+skip_ts_read:
- 		spin_lock(&tx->lock);
- 		tx->tstamps[idx].cached_tstamp = raw_tstamp;
- 		clear_bit(idx, tx->in_use);
-@@ -677,12 +703,17 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
- 		tx->tstamps[idx].skb = NULL;
- 		spin_unlock(&tx->lock);
- 
--		/* it's (unlikely but) possible we raced with the cleanup
--		 * thread for discarding old timestamp requests.
-+		/* It is unlikely but possible that the SKB will have been
-+		 * flushed at this point due to link change or teardown.
- 		 */
- 		if (!skb)
- 			continue;
- 
-+		if (drop_ts) {
-+			dev_kfree_skb_any(skb);
-+			continue;
-+		}
-+
- 		/* Extend the timestamp using cached PHC time */
- 		tstamp = ice_ptp_extend_40b_ts(pf, raw_tstamp);
- 		if (tstamp) {
-@@ -823,51 +854,6 @@ ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
- 	return ice_ptp_alloc_tx_tracker(tx);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 1f8dd50db524..242c4db65171 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -1786,47 +1786,6 @@ static int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port)
+ 	return 0;
  }
  
 -/**
-- * ice_ptp_tx_tstamp_cleanup - Cleanup old timestamp requests that got dropped
-- * @pf: pointer to the PF struct
-- * @tx: PTP Tx tracker to clean up
+- * ice_phy_cfg_fixed_tx_offset_e822 - Configure Tx offset for bypass mode
+- * @hw: pointer to the HW struct
+- * @port: the PHY port to configure
 - *
-- * Loop through the Tx timestamp requests and see if any of them have been
-- * waiting for a long time. Discard any SKBs that have been waiting for more
-- * than 2 seconds. This is long enough to be reasonably sure that the
-- * timestamp will never be captured. This might happen if the packet gets
-- * discarded before it reaches the PHY timestamping block.
+- * Calculate and program the fixed Tx offset, and indicate that the offset is
+- * ready. This can be used when operating in bypass mode.
 - */
--static void ice_ptp_tx_tstamp_cleanup(struct ice_pf *pf, struct ice_ptp_tx *tx)
+-static int
+-ice_phy_cfg_fixed_tx_offset_e822(struct ice_hw *hw, u8 port)
 -{
--	struct ice_hw *hw = &pf->hw;
--	u8 idx;
+-	enum ice_ptp_link_spd link_spd;
+-	enum ice_ptp_fec_mode fec_mode;
+-	u64 total_offset;
+-	int err;
 -
--	if (!tx->init)
--		return;
+-	err = ice_phy_get_speed_and_fec_e822(hw, port, &link_spd, &fec_mode);
+-	if (err)
+-		return err;
 -
--	for_each_set_bit(idx, tx->in_use, tx->len) {
--		struct sk_buff *skb;
--		u64 raw_tstamp;
+-	total_offset = ice_calc_fixed_tx_offset_e822(hw, link_spd);
 -
--		/* Check if this SKB has been waiting for too long */
--		if (time_is_after_jiffies(tx->tstamps[idx].start + 2 * HZ))
--			continue;
+-	/* Program the fixed Tx offset into the P_REG_TOTAL_TX_OFFSET_L
+-	 * register, then indicate that the Tx offset is ready. After this,
+-	 * timestamps will be enabled.
+-	 *
+-	 * Note that this skips including the more precise offsets generated
+-	 * by the Vernier calibration.
+-	 */
+-	err = ice_write_64b_phy_reg_e822(hw, port, P_REG_TOTAL_TX_OFFSET_L,
+-					 total_offset);
+-	if (err)
+-		return err;
 -
--		/* Read tstamp to be able to use this register again */
--		ice_read_phy_tstamp(hw, tx->block, idx + tx->offset,
--				    &raw_tstamp);
+-	err = ice_write_phy_reg_e822(hw, port, P_REG_TX_OR, 1);
+-	if (err)
+-		return err;
 -
--		spin_lock(&tx->lock);
--		skb = tx->tstamps[idx].skb;
--		tx->tstamps[idx].skb = NULL;
--		clear_bit(idx, tx->in_use);
--		spin_unlock(&tx->lock);
--
--		/* Count the number of Tx timestamps which have timed out */
--		pf->ptp.tx_hwtstamp_timeouts++;
--
--		/* Free the SKB after we've cleared the bit */
--		dev_kfree_skb_any(skb);
--	}
+-	return 0;
 -}
 -
  /**
-  * ice_ptp_update_cached_phctime - Update the cached PHC time values
-  * @pf: Board specific private structure
-@@ -2404,8 +2390,6 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
+  * ice_phy_calc_pmd_adj_e822 - Calculate PMD adjustment for Rx
+  * @hw: pointer to the HW struct
+@@ -2104,47 +2063,6 @@ static int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port)
+ 	return 0;
+ }
  
- 	err = ice_ptp_update_cached_phctime(pf);
- 
--	ice_ptp_tx_tstamp_cleanup(pf, &pf->ptp.port.tx);
+-/**
+- * ice_phy_cfg_fixed_rx_offset_e822 - Configure fixed Rx offset for bypass mode
+- * @hw: pointer to the HW struct
+- * @port: the PHY port to configure
+- *
+- * Calculate and program the fixed Rx offset, and indicate that the offset is
+- * ready. This can be used when operating in bypass mode.
+- */
+-static int
+-ice_phy_cfg_fixed_rx_offset_e822(struct ice_hw *hw, u8 port)
+-{
+-	enum ice_ptp_link_spd link_spd;
+-	enum ice_ptp_fec_mode fec_mode;
+-	u64 total_offset;
+-	int err;
 -
- 	/* Run twice a second or reschedule if phc update failed */
- 	kthread_queue_delayed_work(ptp->kworker, &ptp->work,
- 				   msecs_to_jiffies(err ? 10 : 500));
+-	err = ice_phy_get_speed_and_fec_e822(hw, port, &link_spd, &fec_mode);
+-	if (err)
+-		return err;
+-
+-	total_offset = ice_calc_fixed_rx_offset_e822(hw, link_spd);
+-
+-	/* Program the fixed Rx offset into the P_REG_TOTAL_RX_OFFSET_L
+-	 * register, then indicate that the Rx offset is ready. After this,
+-	 * timestamps will be enabled.
+-	 *
+-	 * Note that this skips including the more precise offsets generated
+-	 * by Vernier calibration.
+-	 */
+-	err = ice_write_64b_phy_reg_e822(hw, port, P_REG_TOTAL_RX_OFFSET_L,
+-					 total_offset);
+-	if (err)
+-		return err;
+-
+-	err = ice_write_phy_reg_e822(hw, port, P_REG_RX_OR, 1);
+-	if (err)
+-		return err;
+-
+-	return 0;
+-}
+-
+ /**
+  * ice_read_phy_and_phc_time_e822 - Simultaneously capture PHC and PHY time
+  * @hw: pointer to the HW struct
+@@ -2323,20 +2241,14 @@ ice_stop_phy_timer_e822(struct ice_hw *hw, u8 port, bool soft_reset)
+  * ice_start_phy_timer_e822 - Start the PHY clock timer
+  * @hw: pointer to the HW struct
+  * @port: the PHY port to start
+- * @bypass: if true, start the PHY in bypass mode
+  *
+  * Start the clock of a PHY port. This must be done as part of the flow to
+  * re-calibrate Tx and Rx timestamping offsets whenever the clock time is
+  * initialized or when link speed changes.
+  *
+- * Bypass mode enables timestamps immediately without waiting for Vernier
+- * calibration to complete. Hardware will still continue taking Vernier
+- * measurements on Tx or Rx of packets, but they will not be applied to
+- * timestamps. Use ice_phy_exit_bypass_e822 to exit bypass mode once hardware
+- * has completed offset calculation.
++ * Hardware will take Vernier measurements on Tx or Rx of packets.
+  */
+-int
+-ice_start_phy_timer_e822(struct ice_hw *hw, u8 port, bool bypass)
++int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port)
+ {
+ 	u32 lo, hi, val;
+ 	u64 incval;
+@@ -2414,44 +2326,24 @@ ice_start_phy_timer_e822(struct ice_hw *hw, u8 port, bool bypass)
+ 	if (err)
+ 		return err;
+ 
+-	if (bypass) {
+-		val |= P_REG_PS_BYPASS_MODE_M;
+-		/* Enter BYPASS mode, enabling timestamps immediately. */
+-		err = ice_write_phy_reg_e822(hw, port, P_REG_PS, val);
+-		if (err)
+-			return err;
+-
+-		/* Program the fixed Tx offset */
+-		err = ice_phy_cfg_fixed_tx_offset_e822(hw, port);
+-		if (err)
+-			return err;
+-
+-		/* Program the fixed Rx offset */
+-		err = ice_phy_cfg_fixed_rx_offset_e822(hw, port);
+-		if (err)
+-			return err;
+-	}
+-
+ 	ice_debug(hw, ICE_DBG_PTP, "Enabled clock on PHY port %u\n", port);
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * ice_phy_exit_bypass_e822 - Exit bypass mode, after vernier calculations
++ * ice_phy_calc_vernier_e822 - Perform vernier calculations
+  * @hw: pointer to the HW struct
+  * @port: the PHY port to configure
+  *
+- * After hardware finishes vernier calculations for the Tx and Rx offset, this
+- * function can be used to exit bypass mode by updating the total Tx and Rx
+- * offsets, and then disabling bypass. This will enable hardware to include
+- * the more precise offset calibrations, increasing precision of the generated
+- * timestamps.
++ * Perform vernier calculations for the Tx and Rx offset. This will enable
++ * hardware to include the more precise offset calibrations,
++ * increasing precision of the generated timestamps.
+  *
+  * This cannot be done until hardware has measured the offsets, which requires
+  * waiting until at least one packet has been sent and received by the device.
+  */
+-int ice_phy_exit_bypass_e822(struct ice_hw *hw, u8 port)
++int ice_phy_calc_vernier_e822(struct ice_hw *hw, u8 port)
+ {
+ 	int err;
+ 	u32 val;
+@@ -2496,29 +2388,6 @@ int ice_phy_exit_bypass_e822(struct ice_hw *hw, u8 port)
+ 		return err;
+ 	}
+ 
+-	/* Exit bypass mode now that the offset has been updated */
+-	err = ice_read_phy_reg_e822(hw, port, P_REG_PS, &val);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to read P_REG_PS for port %u, err %d\n",
+-			  port, err);
+-		return err;
+-	}
+-
+-	if (!(val & P_REG_PS_BYPASS_MODE_M))
+-		ice_debug(hw, ICE_DBG_PTP, "Port %u not in bypass mode\n",
+-			  port);
+-
+-	val &= ~P_REG_PS_BYPASS_MODE_M;
+-	err = ice_write_phy_reg_e822(hw, port, P_REG_PS, val);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to disable bypass for port %u, err %d\n",
+-			  port, err);
+-		return err;
+-	}
+-
+-	dev_info(ice_hw_to_dev(hw), "Exiting bypass mode on PHY port %u\n",
+-		 port);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 2bda64c76abc..db4f57cb9ec9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -184,8 +184,8 @@ static inline u64 ice_e822_pps_delay(enum ice_time_ref_freq time_ref)
+ 
+ /* E822 Vernier calibration functions */
+ int ice_stop_phy_timer_e822(struct ice_hw *hw, u8 port, bool soft_reset);
+-int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port, bool bypass);
+-int ice_phy_exit_bypass_e822(struct ice_hw *hw, u8 port);
++int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port);
++int ice_phy_calc_vernier_e822(struct ice_hw *hw, u8 port);
+ 
+ /* E810 family functions */
+ int ice_ptp_init_phy_e810(struct ice_hw *hw);
 -- 
 2.38.0.83.gd420dda05763
 
