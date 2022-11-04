@@ -1,88 +1,69 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B922C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  3 Nov 2022 22:03:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D39B1C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Nov 2022 05:48:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 082B040519;
-	Thu,  3 Nov 2022 22:03:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 082B040519
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5DF626104D;
+	Fri,  4 Nov 2022 05:48:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5DF626104D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667512987;
-	bh=mqMrr2k6bkdIUyzwFxgJHW3I8pPkxjrSaV2GVrFtSs0=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=7ZO5Q1Dyb9wmV8Jd1jSmEoyQJ0Pk2T37HDafLvDgJQXN+HrvTguTzLX6wLBdCDfWc
-	 VykFcfdR4CBjbA7WyGoivHZc4/OnjU9gj/6j58AY65Wa2dzdwgrkN0eAlnqjA1c2bz
-	 oW+SBFLXgxZoo7DAEJwnjPowYjlM6NuXBwI/CrzeGE5b0tnaHnEtxiXrBYDSJ0YNaS
-	 fwCcreKn6jAusmrfka0jKvAFB32DuBCHpmu2D4wqhopdGO7+VkM8WtuxmXVDAgMS7m
-	 WA8/uzNV/gvwUDL5bOT1zideRSD0BFQKs1biw4DKwrpIOmuE/yXdnjE+ji2vNaLvM0
-	 kLKxL04GklpyA==
+	s=default; t=1667540934;
+	bh=m21GDT9iT+55F9k7XlqmXnHuPqzO7dNn/wWMxZPqXdc=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=D4Fc5lDa/2TtMsYzbm7fBuN9LxwtG6ugU+oUVPYm/RSX7SOQu4rI4t6//lZjmsVgv
+	 pFMDQKielfvtQafHCyJbwRKRFfqOvRisZMSfqvcYgzjr3dzLwm5vhhCEw4jACNfR4B
+	 Cu6vVcdVWyFSi5JdeqL2Tba7/ku1eliFSDKkyuVYY0lk+PY7rjJhqGttY36tNFIJSS
+	 aAGudmI+ww/yQ1eSewzAm24pxo2MBwVYMmzpVMOBKuzxMAxfP0qC2Eb11LkNftXn06
+	 UwAQLgx1IErLu+bjOfvs4Gi0RKBZmKyIcWuq83g25f/92d8UP0JqXyeSXjjiCzP9aV
+	 NYq82EZHt7guw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id iRxFJ5YNXq2Z; Thu,  3 Nov 2022 22:03:06 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id EWDRXKT_WHMn; Fri,  4 Nov 2022 05:48:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id DBA5B40520;
-	Thu,  3 Nov 2022 22:03:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DBA5B40520
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 127D61BF2F2
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 119376102D;
+	Fri,  4 Nov 2022 05:48:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 119376102D
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 5EFC91BF3AA
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Nov 2022 05:48:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4BECE81EDC
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:02:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4BECE81EDC
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2DAC94186B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Nov 2022 05:48:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2DAC94186B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 5ayW71648EGF for <intel-wired-lan@lists.osuosl.org>;
- Thu,  3 Nov 2022 22:01:59 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id vLa-mmQNsn2O for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  4 Nov 2022 05:48:49 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 285D781EDD
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 285D781EDD
- for <intel-wired-lan@lists.osuosl.org>; Thu,  3 Nov 2022 22:01:59 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="297278189"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="297278189"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2022 15:01:58 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="777480238"
-X-IronPort-AV: E=Sophos;i="5.96,135,1665471600"; d="scan'208";a="777480238"
-Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.7])
- by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Nov 2022 15:01:57 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Thu,  3 Nov 2022 15:01:31 -0700
-Message-Id: <20221103220145.1851114-2-jacob.e.keller@intel.com>
-X-Mailer: git-send-email 2.38.0.83.gd420dda05763
-In-Reply-To: <20221103220145.1851114-1-jacob.e.keller@intel.com>
-References: <20221103220145.1851114-1-jacob.e.keller@intel.com>
-MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667512919; x=1699048919;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=xphY25oeNAmZsytc68cJsBykkQ3iNAzrtOYvoN13BBM=;
- b=LnNavvfD7B/bnpX+fFUj5e7h5WJMFbumhzSnXF/nR1n4GL036Vq92sI4
- zqI8UR9u31IWKhOyGGzMdVg8kcmzC1i3tgkSpJGc8NmS3RWwzhe8thWh2
- G2m9C00GDfieqTGyQ+NAfmdqfWaXddxXYdERvRk7yKu6NE/qX+E7rPEW2
- wY/WvJaRlwkT1RG7PAD6ZjDoRzvO5HE62eKVvtrDP4TqdRW/t91rVqQ/R
- PyCv5wD4a7Jv9zitEFed11vH/lLf+keM3Kj03IFO1OHbnlUbo4Dl54EwP
- vbuEX4GFuO6gdF6i79JZhhiG0nYgBQOUe3V6pRs99sFIrntwga53Eb4da
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=LnNavvfD
-Subject: [Intel-wired-lan] [PATCH net-next v2 01/15] ice: Use more generic
- names for ice_ptp_tx fields
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2376E4186A
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 2376E4186A
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Nov 2022 05:48:48 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 32B4AB82BE6;
+ Fri,  4 Nov 2022 05:48:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4911C433D6;
+ Fri,  4 Nov 2022 05:48:45 +0000 (UTC)
+Received: from rostedt by gandalf.local.home with local (Exim 4.96)
+ (envelope-from <rostedt@goodmis.org>) id 1oqpZo-0070xm-08;
+ Fri, 04 Nov 2022 01:49:12 -0400
+Message-ID: <20221104054053.431922658@goodmis.org>
+User-Agent: quilt/0.66
+Date: Fri, 04 Nov 2022 01:40:53 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Subject: [Intel-wired-lan] [RFC][PATCH v3 00/33] timers: Use
+ timer_shutdown*() before freeing timers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,158 +76,225 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Cc: alsa-devel@alsa-project.org, linux-staging@lists.linux.dev,
+ linux-doc@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linaro-mm-sig@lists.linaro.org, Thomas Gleixner <tglx@linutronix.de>,
+ linux-leds@vger.kernel.org, drbd-dev@lists.linbit.com,
+ linux-s390@vger.kernel.org, linux-nilfs@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-atm-general@lists.sourceforge.net, linux-afs@lists.infradead.org,
+ lvs-devel@vger.kernel.org, linux-acpi@vger.kernel.org, coreteam@netfilter.org,
+ intel-wired-lan@lists.osuosl.org, linux-input@vger.kernel.org,
+ tipc-discussion@lists.sourceforge.net, linux-ext4@vger.kernel.org,
+ Guenter Roeck <linux@roeck-us.net>, linux-media@vger.kernel.org,
+ bridge@lists.linux-foundation.org, linux-pm@vger.kernel.org,
+ intel-gfx@lists.freedesktop.org, rcu@vger.kernel.org, cgroups@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net,
+ Anna-Maria Gleixner <anna-maria@linutronix.de>, linux-edac@vger.kernel.org,
+ linux-block@vger.kernel.org, linux-nfs@vger.kernel.org,
+ linux-parisc@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-bluetooth@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
 
-Some supported devices have per-port timestamp memory blocks while
-others have shared ones within quads. Rename the struct ice_ptp_tx
-fields to reflect the block entities it works with
+Back in April, I posted an RFC patch set to help mitigate a common issue
+where a timer gets armed just before it is freed, and when the timer
+goes off, it crashes in the timer code without any evidence of who the
+culprit was. I got side tracked and never finished up on that patch set.
+Since this type of crash is still our #1 crash we are seeing in the field,
+it has become a priority again to finish it.
 
-Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
----
-Changes since v1
-* Dropped the ETH56G macro that won't be used until later patches
+This is v3 of that patch set. Thomas Gleixner posted an untested version
+that makes timer->function NULL as the flag that it is shutdown. I took that
+code, tested it (fixed it up), added more comments, and changed the
+name to timer_shutdown_sync(). I also converted it to use WARN_ON_ONCE()
+instead of just WARN_ON() as Linus asked for.
 
- drivers/net/ethernet/intel/ice/ice_ptp.c | 26 ++++++++++++------------
- drivers/net/ethernet/intel/ice/ice_ptp.h | 11 +++++-----
- 2 files changed, 19 insertions(+), 18 deletions(-)
+I then created a trivial coccinelle script to find where del_timer*()
+is called before being freed, and converted them all to timer_shutdown*()
+(There was a couple that still used del_timer() instead of del_timer_sync()).
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index ba2758449183..b3bd73714291 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -648,14 +648,14 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
- 
- 	for_each_set_bit(idx, tx->in_use, tx->len) {
- 		struct skb_shared_hwtstamps shhwtstamps = {};
--		u8 phy_idx = idx + tx->quad_offset;
-+		u8 phy_idx = idx + tx->offset;
- 		u64 raw_tstamp, tstamp;
- 		struct sk_buff *skb;
- 		int err;
- 
- 		ice_trace(tx_tstamp_fw_req, tx->tstamps[idx].skb, idx);
- 
--		err = ice_read_phy_tstamp(&pf->hw, tx->quad, phy_idx,
-+		err = ice_read_phy_tstamp(&pf->hw, tx->block, phy_idx,
- 					  &raw_tstamp);
- 		if (err)
- 			continue;
-@@ -710,7 +710,7 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
-  * @tx: Tx tracking structure to initialize
-  *
-  * Assumes that the length has already been initialized. Do not call directly,
-- * use the ice_ptp_init_tx_e822 or ice_ptp_init_tx_e810 instead.
-+ * use the ice_ptp_init_tx_* instead.
-  */
- static int
- ice_ptp_alloc_tx_tracker(struct ice_ptp_tx *tx)
-@@ -744,7 +744,7 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
- 	u8 idx;
- 
- 	for (idx = 0; idx < tx->len; idx++) {
--		u8 phy_idx = idx + tx->quad_offset;
-+		u8 phy_idx = idx + tx->offset;
- 
- 		spin_lock(&tx->lock);
- 		if (tx->tstamps[idx].skb) {
-@@ -757,7 +757,7 @@ ice_ptp_flush_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
- 
- 		/* Clear any potential residual timestamp in the PHY block */
- 		if (!pf->hw.reset_ongoing)
--			ice_clear_phy_tstamp(&pf->hw, tx->quad, phy_idx);
-+			ice_clear_phy_tstamp(&pf->hw, tx->block, phy_idx);
- 	}
- }
- 
-@@ -798,9 +798,9 @@ ice_ptp_release_tx_tracker(struct ice_pf *pf, struct ice_ptp_tx *tx)
- static int
- ice_ptp_init_tx_e822(struct ice_pf *pf, struct ice_ptp_tx *tx, u8 port)
- {
--	tx->quad = port / ICE_PORTS_PER_QUAD;
--	tx->quad_offset = (port % ICE_PORTS_PER_QUAD) * INDEX_PER_PORT;
--	tx->len = INDEX_PER_PORT;
-+	tx->block = port / ICE_PORTS_PER_QUAD;
-+	tx->offset = (port % ICE_PORTS_PER_QUAD) * INDEX_PER_PORT_E822;
-+	tx->len = INDEX_PER_PORT_E822;
- 
- 	return ice_ptp_alloc_tx_tracker(tx);
- }
-@@ -816,9 +816,9 @@ ice_ptp_init_tx_e822(struct ice_pf *pf, struct ice_ptp_tx *tx, u8 port)
- static int
- ice_ptp_init_tx_e810(struct ice_pf *pf, struct ice_ptp_tx *tx)
- {
--	tx->quad = pf->hw.port_info->lport;
--	tx->quad_offset = 0;
--	tx->len = INDEX_PER_QUAD;
-+	tx->block = pf->hw.port_info->lport;
-+	tx->offset = 0;
-+	tx->len = INDEX_PER_PORT_E810;
- 
- 	return ice_ptp_alloc_tx_tracker(tx);
- }
-@@ -851,7 +851,7 @@ static void ice_ptp_tx_tstamp_cleanup(struct ice_pf *pf, struct ice_ptp_tx *tx)
- 			continue;
- 
- 		/* Read tstamp to be able to use this register again */
--		ice_read_phy_tstamp(hw, tx->quad, idx + tx->quad_offset,
-+		ice_read_phy_tstamp(hw, tx->block, idx + tx->offset,
- 				    &raw_tstamp);
- 
- 		spin_lock(&tx->lock);
-@@ -2401,7 +2401,7 @@ s8 ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb)
- 	if (idx >= tx->len)
- 		return -1;
- 	else
--		return idx + tx->quad_offset;
-+		return idx + tx->offset;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
-index 028349295b71..ca0fbfd71ed2 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
-@@ -108,8 +108,8 @@ struct ice_tx_tstamp {
-  * @lock: lock to prevent concurrent write to in_use bitmap
-  * @tstamps: array of len to store outstanding requests
-  * @in_use: bitmap of len to indicate which slots are in use
-- * @quad: which quad the timestamps are captured in
-- * @quad_offset: offset into timestamp block of the quad to get the real index
-+ * @block: which memory block (quad or port) the timestamps are captured in
-+ * @offset: offset into timestamp block to get the real index
-  * @len: length of the tstamps and in_use fields.
-  * @init: if true, the tracker is initialized;
-  * @calibrating: if true, the PHY is calibrating the Tx offset. During this
-@@ -119,8 +119,8 @@ struct ice_ptp_tx {
- 	spinlock_t lock; /* lock protecting in_use bitmap */
- 	struct ice_tx_tstamp *tstamps;
- 	unsigned long *in_use;
--	u8 quad;
--	u8 quad_offset;
-+	u8 block;
-+	u8 offset;
- 	u8 len;
- 	u8 init;
- 	u8 calibrating;
-@@ -128,7 +128,8 @@ struct ice_ptp_tx {
- 
- /* Quad and port information for initializing timestamp blocks */
- #define INDEX_PER_QUAD			64
--#define INDEX_PER_PORT			(INDEX_PER_QUAD / ICE_PORTS_PER_QUAD)
-+#define INDEX_PER_PORT_E822		16
-+#define INDEX_PER_PORT_E810		64
- 
- /**
-  * struct ice_ptp_port - data used to initialize an external port for PTP
--- 
-2.38.0.83.gd420dda05763
+I also updated DEBUG_OBJECTS_TIMERS to check from where the timer is ever
+armed, to calling of timer_shutdown_sync(), and it will trigger if a timer
+is freed in between. The current way is to only check if the timer is armed,
+but that means it only triggers if the race condition is hit, and with
+experience, it's not run on enough machines to catch all of them. By triggering
+it from the time the timer is armed to the time it is shutdown, it catches
+all potential cases even if the race condition is not hit.
 
+I went though the result of the cocinelle script, and updated the locations.
+Some locations were caught by DEBUG_OBJECTS_TIMERS as the coccinelle script
+only checked for timers being freed in the same function as the del_timer*().
+
+Ideally, I would have the first patch go into this rc cycle, which is mostly
+non functional as it will allow the other patches to come in via the respective
+subsystems in the next merge window.
+
+Changes since v2: https://lore.kernel.org/all/20221027150525.753064657@goodmis.org/
+
+ - Talking with Thomas Gleixner, he wanted a better name space and to remove
+   the "del_" portion of the API.
+
+ - Since there's now a shutdown interface that does not synchronize, to keep
+   it closer to del_timer() and del_timer_sync(), the API is now:
+
+    timer_shutdown() - same as del_timer() but deactivates the timer.
+
+    timer_shutdown_sync() - same as del_timer_sync() but deactivates the timer.
+
+ - Added a few more locations that got converted.
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git
+trace/timers
+
+Head SHA1: 25106f0bb7968b3e8c746a7853f44b51840746c3
+
+
+Steven Rostedt (Google) (33):
+      timers: Add timer_shutdown_sync() and timer_shutdown() to be called before freeing timers
+      timers: s390/cmm: Use timer_shutdown_sync() before freeing timer
+      timers: sh: Use timer_shutdown_sync() before freeing timer
+      timers: block: Use timer_shutdown_sync() before freeing timer
+      timers: ACPI: Use timer_shutdown_sync() before freeing timer
+      timers: atm: Use timer_shutdown_sync() before freeing timer
+      timers: PM: Use timer_shutdown_sync()
+      timers: Bluetooth: Use timer_shutdown_sync() before freeing timer
+      timers: hangcheck: Use timer_shutdown_sync() before freeing timer
+      timers: ipmi: Use timer_shutdown_sync() before freeing timer
+      random: use timer_shutdown_sync() before freeing timer
+      timers: dma-buf: Use timer_shutdown_sync() before freeing timer
+      timers: drm: Use timer_shutdown_sync() before freeing timer
+      timers: HID: Use timer_shutdown_sync() before freeing timer
+      timers: Input: Use timer_shutdown_sync() before freeing timer
+      timers: mISDN: Use timer_shutdown_sync() before freeing timer
+      timers: leds: Use timer_shutdown_sync() before freeing timer
+      timers: media: Use timer_shutdown_sync() before freeing timer
+      timers: net: Use timer_shutdown_sync() before freeing timer
+      timers: usb: Use timer_shutdown_sync() before freeing timer
+      timers: cgroup: Use timer_shutdown_sync() before freeing timer
+      timers: workqueue: Use timer_shutdown_sync() before freeing timer
+      timers: nfc: pn533: Use timer_shutdown_sync() before freeing timer
+      timers: pcmcia: Use timer_shutdown_sync() before freeing timer
+      timers: scsi: Use timer_shutdown_sync() and timer_shutdown() before freeing timer
+      timers: tty: Use timer_shutdown_sync() before freeing timer
+      timers: ext4: Use timer_shutdown_sync() before freeing timer
+      timers: fs/nilfs2: Use timer_shutdown_sync() before freeing timer
+      timers: ALSA: Use timer_shutdown_sync() before freeing timer
+      timers: jbd2: Use timer_shutdown() before freeing timer
+      timers: sched/psi: Use timer_shutdown_sync() before freeing timer
+      timers: x86/mce: Use __init_timer() for resetting timers
+      timers: Expand DEBUG_OBJECTS_TIMER to check if it ever was used
+
+----
+ .../RCU/Design/Requirements/Requirements.rst       |   2 +-
+ Documentation/core-api/local_ops.rst               |   2 +-
+ Documentation/kernel-hacking/locking.rst           |   5 +
+ arch/s390/mm/cmm.c                                 |   4 +-
+ arch/sh/drivers/push-switch.c                      |   2 +-
+ arch/x86/kernel/cpu/mce/core.c                     |  14 ++-
+ block/blk-iocost.c                                 |   2 +-
+ block/blk-iolatency.c                              |   2 +-
+ block/blk-stat.c                                   |   2 +-
+ block/blk-throttle.c                               |   2 +-
+ block/kyber-iosched.c                              |   2 +-
+ drivers/acpi/apei/ghes.c                           |   2 +-
+ drivers/atm/idt77105.c                             |   4 +-
+ drivers/atm/idt77252.c                             |   4 +-
+ drivers/atm/iphase.c                               |   2 +-
+ drivers/base/power/wakeup.c                        |   7 +-
+ drivers/block/drbd/drbd_main.c                     |   2 +-
+ drivers/block/loop.c                               |   2 +-
+ drivers/block/sunvdc.c                             |   2 +-
+ drivers/bluetooth/hci_bcsp.c                       |   2 +-
+ drivers/bluetooth/hci_h5.c                         |   2 +-
+ drivers/bluetooth/hci_qca.c                        |   4 +-
+ drivers/char/hangcheck-timer.c                     |   4 +-
+ drivers/char/ipmi/ipmi_msghandler.c                |   2 +-
+ drivers/char/ipmi/ipmi_ssif.c                      |   4 +-
+ drivers/char/random.c                              |   2 +-
+ drivers/dma-buf/st-dma-fence.c                     |   2 +-
+ drivers/gpu/drm/gud/gud_pipe.c                     |   2 +-
+ drivers/gpu/drm/i915/i915_sw_fence.c               |   2 +-
+ drivers/hid/hid-wiimote-core.c                     |   2 +-
+ drivers/input/keyboard/locomokbd.c                 |   2 +-
+ drivers/input/keyboard/omap-keypad.c               |   2 +-
+ drivers/input/mouse/alps.c                         |   2 +-
+ drivers/input/serio/hil_mlc.c                      |   2 +-
+ drivers/input/serio/hp_sdc.c                       |   2 +-
+ drivers/isdn/hardware/mISDN/hfcmulti.c             |   6 +-
+ drivers/isdn/mISDN/l1oip_core.c                    |   4 +-
+ drivers/isdn/mISDN/timerdev.c                      |   4 +-
+ drivers/leds/trigger/ledtrig-activity.c            |   2 +-
+ drivers/leds/trigger/ledtrig-heartbeat.c           |   2 +-
+ drivers/leds/trigger/ledtrig-pattern.c             |   2 +-
+ drivers/leds/trigger/ledtrig-transient.c           |   2 +-
+ drivers/media/pci/ivtv/ivtv-driver.c               |   2 +-
+ drivers/media/usb/pvrusb2/pvrusb2-hdw.c            |  18 ++--
+ drivers/media/usb/s2255/s2255drv.c                 |   4 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |   6 +-
+ drivers/net/ethernet/marvell/sky2.c                |   2 +-
+ drivers/net/ethernet/sun/sunvnet.c                 |   2 +-
+ drivers/net/usb/sierra_net.c                       |   2 +-
+ drivers/net/wireless/intel/iwlwifi/iwl-dbg-tlv.c   |   2 +-
+ drivers/net/wireless/intersil/hostap/hostap_ap.c   |   2 +-
+ drivers/net/wireless/marvell/mwifiex/main.c        |   2 +-
+ drivers/net/wireless/microchip/wilc1000/hif.c      |   8 +-
+ drivers/nfc/pn533/pn533.c                          |   2 +-
+ drivers/nfc/pn533/uart.c                           |   2 +-
+ drivers/pcmcia/bcm63xx_pcmcia.c                    |   2 +-
+ drivers/pcmcia/electra_cf.c                        |   2 +-
+ drivers/pcmcia/omap_cf.c                           |   2 +-
+ drivers/pcmcia/pd6729.c                            |   4 +-
+ drivers/pcmcia/yenta_socket.c                      |   4 +-
+ drivers/scsi/qla2xxx/qla_edif.c                    |   4 +-
+ drivers/scsi/scsi_lib.c                            |   1 +
+ drivers/staging/media/atomisp/i2c/atomisp-lm3554.c |   2 +-
+ drivers/tty/n_gsm.c                                |   2 +-
+ drivers/tty/sysrq.c                                |   2 +-
+ drivers/usb/gadget/udc/m66592-udc.c                |   2 +-
+ drivers/usb/serial/garmin_gps.c                    |   2 +-
+ drivers/usb/serial/mos7840.c                       |   2 +-
+ fs/ext4/super.c                                    |   2 +-
+ fs/jbd2/journal.c                                  |   2 +
+ fs/nilfs2/segment.c                                |   2 +-
+ include/linux/timer.h                              | 100 +++++++++++++++++--
+ include/linux/workqueue.h                          |   4 +-
+ kernel/cgroup/cgroup.c                             |   2 +-
+ kernel/sched/psi.c                                 |   1 +
+ kernel/time/timer.c                                | 106 ++++++++++++++-------
+ kernel/workqueue.c                                 |   4 +-
+ net/802/garp.c                                     |   2 +-
+ net/802/mrp.c                                      |   2 +-
+ net/bridge/br_multicast.c                          |   6 +-
+ net/bridge/br_multicast_eht.c                      |   4 +-
+ net/core/gen_estimator.c                           |   2 +-
+ net/core/neighbour.c                               |   2 +
+ net/ipv4/inet_connection_sock.c                    |   2 +-
+ net/ipv4/inet_timewait_sock.c                      |   3 +-
+ net/ipv4/ipmr.c                                    |   2 +-
+ net/ipv6/ip6mr.c                                   |   2 +-
+ net/mac80211/mesh_pathtbl.c                        |   2 +-
+ net/netfilter/ipset/ip_set_list_set.c              |   2 +-
+ net/netfilter/ipvs/ip_vs_lblc.c                    |   2 +-
+ net/netfilter/ipvs/ip_vs_lblcr.c                   |   2 +-
+ net/netfilter/xt_LED.c                             |   2 +-
+ net/rxrpc/conn_object.c                            |   2 +-
+ net/sched/cls_flow.c                               |   2 +-
+ net/sunrpc/svc.c                                   |   2 +-
+ net/sunrpc/xprt.c                                  |   2 +-
+ net/tipc/discover.c                                |   2 +-
+ net/tipc/monitor.c                                 |   2 +-
+ sound/i2c/other/ak4117.c                           |   2 +-
+ sound/synth/emux/emux.c                            |   2 +-
+ 100 files changed, 310 insertions(+), 175 deletions(-)
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
