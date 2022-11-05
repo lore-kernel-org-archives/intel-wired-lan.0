@@ -4,67 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16C9DC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  5 Nov 2022 18:06:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BAB1C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  5 Nov 2022 18:29:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A0BDE60A94;
-	Sat,  5 Nov 2022 18:06:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A0BDE60A94
+	by smtp3.osuosl.org (Postfix) with ESMTP id 10E956063B;
+	Sat,  5 Nov 2022 18:29:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 10E956063B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667671561;
-	bh=oEfJPc4sgOhq8H+fuzSFoXGnkJo1vm2KWI9XIIiJLoU=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1667672945;
+	bh=G2FPELHNSSJ1wT3mhlcpuAkox1KzqoWf6g8YxDlW1gE=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=0M9lVfSBaZVCxyNnb3baPjkEhS+IUf1AbRNifB6+f0qFSyZvCVUHXkQcMEw0cXKVG
-	 N8mnp68CWO+HCoEgWLNQXre4dXJLC6mL9xqPjw/bawOABPJ53e0PNYzXEm/m7mONsQ
-	 gMh2InC+HYxzm6vlysWMMwCcRsCX4SO04aNuFEj9TwJSE7QFlgqUemQHPljvg0evvR
-	 iM0xhEpk43Xjj8dmRR0EpfZFk5rHHs5HTGx6VwCEgw06HCysMf8bZLWDwqvUoi7m1h
-	 iTukEu3Eww74fifzAPZX2EG9z2+92OoIulQ6pNYn5uWm2I6Auyr36ntqhqzAJPS/kQ
-	 a3tuXTTnjt8yA==
+	b=j/kxgPajrRvB3qCaUcwDhOsx1BcWl46rdzOdMhI0Vx+kEFNCIZXmFB+MMEFzDMBlC
+	 nUppPHJQzwDJs/iB5qk9V7/YbyLSCIrc24AcvTlxOeQ/mqZWWo6x8Vg8u8vHYQNyE8
+	 v9FYhn5PnVR6G6+x8HnLwmQyil2hyIjjrBFRoGBNczsGk0+d3c6eER821oxS1atTZx
+	 7px4xIeFvRk+qnz2dVhDrUv1hchoKcklVYm1X3kvE7rxi5hJteqD+Lzjft6YKci8Pv
+	 kjSghy7HQ3UWs0cCb+p1oJq2274ldW+9nnp4x+O+Ulg6sz4AFwFNPo0liAJhIFPcQl
+	 i/TL7oIrqkx/w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Nb0sIX6xQM-W; Sat,  5 Nov 2022 18:06:01 +0000 (UTC)
+	with ESMTP id px1s7X3ZZFsH; Sat,  5 Nov 2022 18:29:04 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AD40860AAE;
-	Sat,  5 Nov 2022 18:06:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AD40860AAE
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 941911BF375
- for <intel-wired-lan@lists.osuosl.org>; Sat,  5 Nov 2022 18:05:59 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 101D760A94;
+	Sat,  5 Nov 2022 18:29:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 101D760A94
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 673781BF375
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  5 Nov 2022 18:29:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6ECD160AAE
- for <intel-wired-lan@lists.osuosl.org>; Sat,  5 Nov 2022 18:05:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6ECD160AAE
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4597781A46
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  5 Nov 2022 18:29:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4597781A46
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id H5acSTslMMFo for <intel-wired-lan@lists.osuosl.org>;
- Sat,  5 Nov 2022 18:05:57 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 06C2A60A94
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 06C2A60A94
- for <intel-wired-lan@lists.osuosl.org>; Sat,  5 Nov 2022 18:05:56 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id D7826B80689;
- Sat,  5 Nov 2022 18:05:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08FEEC433D6;
- Sat,  5 Nov 2022 18:05:51 +0000 (UTC)
-Date: Sat, 5 Nov 2022 14:05:50 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Message-ID: <20221105140550.0ccb277c@rorschach.local.home>
-In-Reply-To: <20221105140356.6a3da628@rorschach.local.home>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 4nXuFUd79kZ1 for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  5 Nov 2022 18:29:01 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7B66681A3E
+Received: from mail-qk1-x72a.google.com (mail-qk1-x72a.google.com
+ [IPv6:2607:f8b0:4864:20::72a])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7B66681A3E
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  5 Nov 2022 18:29:01 +0000 (UTC)
+Received: by mail-qk1-x72a.google.com with SMTP id i9so5116751qki.10
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 05 Nov 2022 11:29:01 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=+1YQb6nXk/q0EHljp4F8v1bXvbOovOAnj80btawKRAY=;
+ b=oeKzoLXOmrFP+jrz6zvrok2pGNJZr5hafQ1TIKV1mhhnT3XAYI27ObfiWeFSWBuzut
+ aC87zHaxpSZRy0O8W0r7WmSdbmJ37ATVXmcFLA7u12CWU7b+T7eNjeeoB0q22iFjdMop
+ Zd48IVZtusg18uq3t+joET0YmufzV1/t/9E0pFX5oYk+jwHc08OLIoreq5YUtpWvnQYA
+ VZgnyEkzLCatyyXtjo6ULkWdXs3lAXUIjv5l6ggWhTgg/jT1V/te72aNYMZbEh20ixOw
+ lA+22n00F6LUqrIU+FFSsyJWIDiB7I12xCQIFqc0K+Amlsz2NJvGCbPP4Rx7QoK7/vwJ
+ hnGw==
+X-Gm-Message-State: ACrzQf2KNWNoQ+tGL4dHugr6ywMXIc5S1bzLpdKSe2atENUQZbA+xxOw
+ XoXRobOCqM8u2ejN4S+IKqhjBalMdcu1Ig==
+X-Google-Smtp-Source: AMsMyM52Deep+CFH0z1qrgnkpAT2Aj9yc78PRb/HyyBp/V8q43apyVc49yrZA6Pfwhy2BoNfAcInHA==
+X-Received: by 2002:ae9:f40c:0:b0:6fa:43b8:44d0 with SMTP id
+ y12-20020ae9f40c000000b006fa43b844d0mr20720757qkl.637.1667672939931; 
+ Sat, 05 Nov 2022 11:28:59 -0700 (PDT)
+Received: from mail-yb1-f178.google.com (mail-yb1-f178.google.com.
+ [209.85.219.178]) by smtp.gmail.com with ESMTPSA id
+ y22-20020a05620a44d600b006f9c2be0b4bsm2382617qkp.135.2022.11.05.11.28.59
+ for <intel-wired-lan@lists.osuosl.org>
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Sat, 05 Nov 2022 11:28:59 -0700 (PDT)
+Received: by mail-yb1-f178.google.com with SMTP id 129so9257675ybb.12
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 05 Nov 2022 11:28:59 -0700 (PDT)
+X-Received: by 2002:a25:bb02:0:b0:6ca:9345:b2ee with SMTP id
+ z2-20020a25bb02000000b006ca9345b2eemr26793220ybg.362.1667672929161; Sat, 05
+ Nov 2022 11:28:49 -0700 (PDT)
+MIME-Version: 1.0
 References: <20221105060024.598488967@goodmis.org>
  <CAHk-=wi95dGkg7DiuOZ27gGW+mxJipn9ykB6LHB-HrbbLG6OMQ@mail.gmail.com>
  <20221105123642.596371c7@rorschach.local.home>
  <20221105140356.6a3da628@rorschach.local.home>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
-MIME-Version: 1.0
+In-Reply-To: <20221105140356.6a3da628@rorschach.local.home>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 5 Nov 2022 11:28:33 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wjnASLkTdPd+wxto2RBQH+S9MUm4FrNPWvU87opFG5SKQ@mail.gmail.com>
+Message-ID: <CAHk-=wjnASLkTdPd+wxto2RBQH+S9MUm4FrNPWvU87opFG5SKQ@mail.gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=+1YQb6nXk/q0EHljp4F8v1bXvbOovOAnj80btawKRAY=;
+ b=DONWs6/FiwPtVJ4h9P9G1D+xI2OZ4sOZ++B4h9lOUr90grPUMADKKtOkyMNK85AsEf
+ yHs4XotTZQfbZFXiKO1vIPQf4cjf9p2EEuLbIK2DwoG1VitJXDxI/Fg0k/P20CNhLtpT
+ 5yTAOviUwyDAlllMzqQFpJUoXjW0aoAYitY3g=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key) header.d=linux-foundation.org
+ header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google
+ header.b=DONWs6/F
 Subject: Re: [Intel-wired-lan] [PATCH v4a 00/38] timers: Use
  timer_shutdown*() before freeing timers
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -106,24 +143,60 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, 5 Nov 2022 14:03:56 -0400
-Steven Rostedt <rostedt@goodmis.org> wrote:
+On Sat, Nov 5, 2022 at 11:04 AM Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> Here's the changes I made after running the script
 
-> --- a/drivers/isdn/hardware/mISDN/hfcmulti.c
-> +++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
-> @@ -4544,7 +4544,7 @@ release_port(struct hfc_multi *hc, struct dchannel *dch)
->  	spin_lock_irqsave(&hc->lock, flags);
->  
->  	if (dch->timer.function) {
-> -		del_timer(&dch->timer);
-> +		timer_shutdown(&dch->timer);
->  		dch->timer.function = NULL;
->  	}
->  
+Please. No.
 
-I still hate the above.
+What part of "I don't want extra crud" was I unclear on?
 
--- Steve
+I'm not interested in converting everything. That's clearly a 6.,2
+issue, possibly even longer considering how complicated the networking
+side has been.
+
+I'm not AT ALL interested in "oh, I then added my own small cleanups
+on top to random files because I happened to notice them".
+
+Repeat after me: "If the script didn't catch them, they weren't
+trivially obvious".
+
+And it does seem that right now the script itself is a bit too
+generous, which is why it didn't notice that sometimes there wasn't a
+kfree after all because of a goto around it. So clearly that "..."
+doesn't really work, I think it accepts "_any_ path leads to the
+second situation" rather than "_all_ paths lead to the second
+situation".
+
+But yeah, my coccinelle-foo is very weak too, and maybe there's no
+pattern for "no flow control".
+
+I would also like the coccinelle script to notice the "timer is used
+afterwards", so that it does *not* modify that case that does
+
+                del_timer(&dch->timer);
+                dch->timer.function = NULL;
+
+since now the timer is modified in between the del_timer() and the kfree.
+
+Again, that timer modification is then made pointless by changing the
+del_timer() to a "timer_shutdown()", but at that point it is no longer
+a "so obvious non-semantic change that it should be scripted". At that
+point it's a manual thing.
+
+So I think the "..." in your script should be "no flow control, and no
+access to the timer", but do not know how to do that in coccinelle.
+
+Julia?
+
+And this thread has way too many participants, I suspect some email
+systems will just mark it as spam as a result. Which is partly *why* I
+would like to get rid of noisy changes that really don't matter - but
+I would like it to be truly mindlessly obvious that there are *zero*
+questions about it, and absolutely no manual intervention because the
+patch is so strict that it's just unquestionably correct.
+
+              Linus
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
