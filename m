@@ -1,69 +1,67 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F49BC352A1
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  6 Nov 2022 21:26:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59E52C4321E
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Nov 2022 03:33:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id DFD484029B;
-	Sun,  6 Nov 2022 21:26:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DFD484029B
+	by smtp3.osuosl.org (Postfix) with ESMTP id C6BBF607CE;
+	Mon,  7 Nov 2022 03:33:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C6BBF607CE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667769997;
-	bh=dWHpL5lUmAxSwxuQEwk3q4xWzSlWTHtQTnkeFIhgtqQ=;
+	s=default; t=1667791984;
+	bh=2eIoI3dirQ7Dyq5XRhOkWaR9MAzXGfhztXOt5R+06Z8=;
 	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Ir2t6ebxBdDxQEmismpn2Kzy7d0pYJ3/EpSDAN38xZOvnw3o2hihPO2VbI26S0paQ
-	 BxFdGrhjslcTV8pEu0oFvoHmOwR+GLNoIYUBI1cOYtn0iwKXVdRrIUtbgAir1k8A+B
-	 c1GSVtgI0njgWZVBIWpG7SnB0XayuxxUEJq7tKYPDPfnbUWaIYgVCmrYRy4qdterhj
-	 3wH4PMIGMQ/URCEVgGCqC1ntr9iHJqMMq3eFA5YVPkcNJA+xxAh6A/eOKyP+nBO7L4
-	 vtdGobFRQsmMZRdS8n7mUNrPyu/3cU6Utanh3/9VikLKKHYqwc2XjxFOKHPrDmKkhM
-	 phrgWXz1rp5PA==
+	b=qz5qd1+4T94pyIANS2l6oOrYJBLjXZmnb5NBo3yPtMrrVZCEtgDWoG022J8YMMdx4
+	 hTTTxrmmW/eWtU5ZDb6OuzPMNyFA1b0jZkJIlFl88KPY4krttoDWonPmsUPUI76T1X
+	 FtXwv5tK9G5UCvVMV9P7v6N3zLLdkiFkEEHBd7mwXrYK/rLL7I8NLQnDkUuSQgw3+d
+	 m4TaiQecDP3VEIScxtaB5jxiDnJ65yOzGu4gJrycR3qTjTm2Ht4O8JJFKxQGK37bXn
+	 B24ac7ffTim1HqlAq5/T+ZDRLDfQi+la/wjw9WqJFC3V+vZwroDZfo+YMao9MWoyhw
+	 Mvn+LnYTBcwAA==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id KbElKgU7bYYq; Mon,  7 Nov 2022 03:33:03 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 89CE960A9B;
+	Mon,  7 Nov 2022 03:33:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 89CE960A9B
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id AB3C51BF94D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 03:33:02 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 92D8240191
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 03:33:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 92D8240191
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Pn8fSchzncud; Sun,  6 Nov 2022 21:26:36 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A429D403AA;
-	Sun,  6 Nov 2022 21:26:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A429D403AA
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id A68D41BF346
- for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Nov 2022 21:26:34 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 83E1240425
- for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Nov 2022 21:26:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 83E1240425
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 8N_Y7QydQVrt for <intel-wired-lan@lists.osuosl.org>;
- Sun,  6 Nov 2022 21:26:33 +0000 (UTC)
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id VmBBEif6jAmD for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Nov 2022 03:33:01 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1E17E403B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5F55A400C4
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1E17E403B8
- for <intel-wired-lan@lists.osuosl.org>; Sun,  6 Nov 2022 21:26:33 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5F55A400C4
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 03:33:01 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 11DF460DBE;
- Sun,  6 Nov 2022 21:26:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C35DC433C1;
- Sun,  6 Nov 2022 21:26:31 +0000 (UTC)
-Received: from rostedt by gandalf.local.home with local (Exim 4.96)
- (envelope-from <rostedt@goodmis.org>) id 1ornAT-008Cga-2Z;
- Sun, 06 Nov 2022 16:27:01 -0500
-Message-ID: <20221106212427.739928660@goodmis.org>
-User-Agent: quilt/0.66
-Date: Sun, 06 Nov 2022 16:24:27 -0500
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 626B960E94;
+ Mon,  7 Nov 2022 03:33:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 780BFC433C1;
+ Mon,  7 Nov 2022 03:32:58 +0000 (UTC)
+Date: Sun, 6 Nov 2022 22:32:56 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Subject: [Intel-wired-lan] [PATCH v6a 0/5] timers: Use timer_shutdown*()
- before freeing timers
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Message-ID: <20221106223256.4bbdb018@rorschach.local.home>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+MIME-Version: 1.0
+Subject: [Intel-wired-lan] [GIT PULL] treewide: timers: Use
+ timer_shutdown*() before freeing timers
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,34 +91,49 @@ Cc: alsa-devel@alsa-project.org, linux-staging@lists.linux.dev,
  linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
  linux-kernel@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>,
  linux-bluetooth@vger.kernel.org, netfilter-devel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
-MIME-Version: 1.0
+ Andrew Morton <akpm@linux-foundation.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-del_timer_sync() is often called before the object that owns the timer is
-freed. But sometimes there's a race that enables the timer again before it is
-freed and causes a use after free when that timer triggers. This patch set
-adds a new "shutdown" timer state, which is set on the new timer_shutdown()
-API. Once a timer is in this state, it can not be re-armed and if it is, it
-will warn.
 
-The first three patches change existing timer_shutdown() functions used
-locally in ARM and some drivers to better namespace names.
 
-The fourth patch implements the new API.
+Linus,
 
-The fifth patch is now a treewide patch that uses a coccinelle script to
-convert the trivial locations where a del_timer*() is called on a timer of an
-object that is freed immediately afterward (or at least in the same function).
+As discussed here:
 
-Changes since v5a: https://lore.kernel.org/all/20221106054535.709068702@goodmis.org/
+  https://lore.kernel.org/all/20221106212427.739928660@goodmis.org/
 
- - Updated the script to make ptr and slab into expressions instead of
-   using identifiers (Julia Lawall and Linus Torvalds)
+Add a "shutdown" state for timers. This is performed by the new
+timer_shutdown_sync() and timer_shutdown() function calls. When this is
+called on a timer, it will no longer be able to be re-armed. This should
+be called before a timer is freed to prevent it from being re-armed after
+being removed from the timer queue and then causing a crash in the timer
+code when the timer triggers.
+
+This required renaming some functions that were using the name
+timer_shutdown() statically to something more appropriate.
+
+Then a coccinelle script was executed on the entire kernel tree to find
+the trivial locations that remove the timer and then frees the object that
+the timer exists on.
+
+These changes are not enough to solve all the locations where timers may
+be of an issue. But by adding the shutdown infrastructure and the obvious
+cases, the more complex cases can be added after they have been reviewed
+more closely.
+
+
+Please pull the following tree, which can be found at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git
+add-timer-shutdown
+
+Tag SHA1: 7685328352dfd2908e23048f563e328dbd3526e9
+Head SHA1: 870556da63870e01ade9bb8418ac5a21862f2f10
+
 
 Steven Rostedt (Google) (5):
       ARM: spear: Do not use timer namespace for timer_shutdown() function
@@ -209,6 +222,7 @@ Steven Rostedt (Google) (5):
  sound/i2c/other/ak4117.c                           |  2 +-
  sound/synth/emux/emux.c                            |  2 +-
  78 files changed, 207 insertions(+), 148 deletions(-)
+---------------------------
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
