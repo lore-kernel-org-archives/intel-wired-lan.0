@@ -1,88 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A79CC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Nov 2022 16:11:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE4F0C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Nov 2022 17:45:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9697E40012;
-	Mon,  7 Nov 2022 16:11:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9697E40012
+	by smtp1.osuosl.org (Postfix) with ESMTP id 82798813CB;
+	Mon,  7 Nov 2022 17:45:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 82798813CB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667837470;
-	bh=0pWbIfnOqnPpESh/ZwUFaui9e48fIE7pbNrq85SyuY4=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=4cAeVNVfqj03kNAtrQouqq2g7YEH2bnYkq8oOgId57skY+YhTKP0eDhOHuNpnjfPD
-	 Ww4u3ZELqeSn5pZFozve6vY3S7plI6Wa+FS+XMk1hWFvIKi/eL8JUxLYGyBSBcTrOk
-	 AlNkbtkS4ei4PtJndITkke5B4vOK+lsq9xpJzsulyn4Ehq6l/OGlPVzfZUivGN3nqz
-	 CeZ8fWX7tF7XtAQcwCjhDYyN3CqmKXDFgCzgDUDQb+3FZ/lq9J14iyWLEoplW7WyLA
-	 lvnZu72kbSONOHAA9y70JecNUa51cU2Bcyd1dW+8bjvRmwS31C2OOGLHY08TfWQWex
-	 cmGu3hnHjUsZA==
+	s=default; t=1667843126;
+	bh=eUU01E8fV1W+ZXtCyV8M4ZXMM5jICvueadzsDIBm3BA=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=Nxcuqrjv9Xb1iqKr9byGJ2Dk0gzPG3n6RIuMr1fT/FYn2uYj8cfIe/zMaEaKjN5nl
+	 WpO6MTo+pDmaMInRdsAh5WWJ7R9zAAY8C645Lpr65JegT4dCCTq6uyMgT5vwfVwmRP
+	 ux0FsfxFhgTkRQOivWjpOiQIY5tQ9NnVcb5Npm6zU683txBFhPE3+er/sF4+3rMqUd
+	 faE+YfFN3CxoAPceD9aBRmeeauAFSSnxMBqAElV/nRdgvnpSlW3pXpcNL4efcxDeuY
+	 2tKf1qdyR2bbU0z27KaGQFLODx0qeefqn0yGK8TivnZlXMucJiUmYpILf8qyfPJnTl
+	 u5c/I2U7IFpnA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Oh5Wu3IuJaut; Mon,  7 Nov 2022 16:11:09 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Akk6kHfUOozP; Mon,  7 Nov 2022 17:45:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A1185400D3;
-	Mon,  7 Nov 2022 16:11:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A1185400D3
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 443B01BF2B4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 16:11:08 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 64A03813CD;
+	Mon,  7 Nov 2022 17:45:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 64A03813CD
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 6BD4E1BF2EF
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 17:45:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 27FB8400D3
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 16:11:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 27FB8400D3
+ by smtp4.osuosl.org (Postfix) with ESMTP id 513824031E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 17:45:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 513824031E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id W41h6krARNdy for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Nov 2022 16:11:04 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id yp18BtkYoJt0 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Nov 2022 17:45:22 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7999940012
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7999940012
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 16:11:04 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10524"; a="396746894"
-X-IronPort-AV: E=Sophos;i="5.96,145,1665471600"; d="scan'208";a="396746894"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Nov 2022 08:11:03 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10524"; a="699527773"
-X-IronPort-AV: E=Sophos;i="5.96,145,1665471600"; d="scan'208";a="699527773"
-Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by fmsmga008.fm.intel.com with ESMTP; 07 Nov 2022 08:11:01 -0800
-Received: from giewont.igk.intel.com (giewont.igk.intel.com [10.211.8.15])
- by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 2A7GAvec020487; Mon, 7 Nov 2022 16:10:57 GMT
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  7 Nov 2022 17:10:38 +0100
-Message-Id: <20221107161038.7097-1-marcin.szycik@linux.intel.com>
-X-Mailer: git-send-email 2.31.1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3CDFD402A8
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3CDFD402A8
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Nov 2022 17:45:22 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 212A4611DA;
+ Mon,  7 Nov 2022 17:45:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00C71C433C1;
+ Mon,  7 Nov 2022 17:45:19 +0000 (UTC)
+Date: Mon, 7 Nov 2022 19:45:15 +0200
+From: Leon Romanovsky <leon@kernel.org>
+To: "Ruhl, Michael J" <michael.j.ruhl@intel.com>
+Message-ID: <Y2lEK4CMdCyEMBLf@unreal>
+References: <20221104205414.2354973-1-anthony.l.nguyen@intel.com>
+ <20221104205414.2354973-6-anthony.l.nguyen@intel.com>
+ <Y2itqqGQm6uZ/2Wf@unreal>
+ <DM5PR11MB1324FDF4D4399A6A99727B5EC13C9@DM5PR11MB1324.namprd11.prod.outlook.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <DM5PR11MB1324FDF4D4399A6A99727B5EC13C9@DM5PR11MB1324.namprd11.prod.outlook.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1667837464; x=1699373464;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=ET1VYzYqlW62b9pPCV0WLmsfITh9wLhe+pRtn8yqC9M=;
- b=N08AqAKU1ro56CuI8Q3tZ1M6DQY06aAq10tx0LXWsKNGNINilTi1emCa
- 2E7PKykKKsCLuJiUwKcuT0wOmnjlzF/q9ZuWHaUxcwRVnMeXnGQQQZf+W
- Ms1x0g4eCjG2eKc515A0BuATOpIzI2Qfg985UJpV2umomd9W8NRPwbJHp
- GfYEpgP/S4Y6qPkIDHDSFcHPUnTdzmlJu2J25b9cJzI5siPkAverN0Fs+
- sNlUDGEZgYMVzRTbaCcGpCVg9rPiTbTT24ceRegRXFtZ32VBaqYGV/U32
- YGG4mxFxvmGHL9Aa7Wx7WYOglsFIzHShTyW3skMxIMUolcOVOTBZ6zOq5
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=N08AqAKU
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Fix configuring
- VIRTCHNL_OP_CONFIG_VSI_QUEUES with unbalanced queues
+ d=kernel.org; s=k20201202; t=1667843120;
+ bh=cL0Cmn1wMSgyZwA7z18q8ng4pj7xfO231EleFGDrTNs=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=cKLweVQxAximlaYYUdVyVnlFYThWpbJvwt/OhHpsbx0ZhBjl+pqGe2N05tE5v4gzH
+ FEIC13zcYsdlm/CSLM/RCPBYrbq+CEj7lePrRvbyt1bXIDq93WRKQ49ZEYsgsN2eKI
+ pZfRawMG4B3K3I41fnUDcXRApzmmojsuoX/V/n8Io0K+3aYyMXQ1JwGgN6RKIDl2T1
+ H3oIaOpCLds4DQbsa8aGZ8TTm65XPqyb1cBTgIF/GSRuP/uKm5hDQmtN5vDvLb1Rg3
+ HaWmEdKsh2IJCixttrZZ4yUtiyAfFFYy1P/CkxTVoaHOAfBSgH59G+4P0QH/ipCX8t
+ Xh8taIO0hAnng==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=cKLweVQx
+Subject: Re: [Intel-wired-lan] [PATCH net-next 5/6] igb: Do not free
+ q_vector unless new one was allocated
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,91 +93,113 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: maxime.coquelin@redhat.com
+Cc: Kees Cook <keescook@chromium.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "edumazet@google.com" <edumazet@google.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
+ "davem@davemloft.net" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently the VIRTCHNL_OP_CONFIG_VSI_QUEUES command may fail if there are
-less RX queues than TX queues requested.
+On Mon, Nov 07, 2022 at 01:55:58PM +0000, Ruhl, Michael J wrote:
+> >-----Original Message-----
+> >From: Leon Romanovsky <leon@kernel.org>
+> >Sent: Monday, November 7, 2022 2:03 AM
+> >To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
+> >Cc: davem@davemloft.net; kuba@kernel.org; pabeni@redhat.com;
+> >edumazet@google.com; Kees Cook <keescook@chromium.org>;
+> >netdev@vger.kernel.org; Brandeburg, Jesse <jesse.brandeburg@intel.com>;
+> >intel-wired-lan@lists.osuosl.org; Ruhl, Michael J <michael.j.ruhl@intel.com>;
+> >Keller, Jacob E <jacob.e.keller@intel.com>; G, GurucharanX
+> ><gurucharanx.g@intel.com>
+> >Subject: Re: [PATCH net-next 5/6] igb: Do not free q_vector unless new one
+> >was allocated
+> >
+> >On Fri, Nov 04, 2022 at 01:54:13PM -0700, Tony Nguyen wrote:
+> >> From: Kees Cook <keescook@chromium.org>
+> >>
+> >> Avoid potential use-after-free condition under memory pressure. If the
+> >> kzalloc() fails, q_vector will be freed but left in the original
+> >> adapter->q_vector[v_idx] array position.
+> >>
+> >> Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> >> Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+> >> Cc: "David S. Miller" <davem@davemloft.net>
+> >> Cc: Eric Dumazet <edumazet@google.com>
+> >> Cc: Jakub Kicinski <kuba@kernel.org>
+> >> Cc: Paolo Abeni <pabeni@redhat.com>
+> >> Cc: intel-wired-lan@lists.osuosl.org
+> >> Cc: netdev@vger.kernel.org
+> >> Signed-off-by: Kees Cook <keescook@chromium.org>
+> >> Reviewed-by: Michael J. Ruhl <michael.j.ruhl@intel.com>
+> >> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+> >> Tested-by: Gurucharan <gurucharanx.g@intel.com> (A Contingent worker
+> >at Intel)
+> >
+> >You should use first and last names here.
+> >
+> >> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> >> ---
+> >>  drivers/net/ethernet/intel/igb/igb_main.c | 8 ++++++--
+> >>  1 file changed, 6 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+> >b/drivers/net/ethernet/intel/igb/igb_main.c
+> >> index d6c1c2e66f26..c2bb658198bf 100644
+> >> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> >> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> >> @@ -1202,8 +1202,12 @@ static int igb_alloc_q_vector(struct igb_adapter
+> >*adapter,
+> >>  	if (!q_vector) {
+> >>  		q_vector = kzalloc(size, GFP_KERNEL);
+> >>  	} else if (size > ksize(q_vector)) {
+> >> -		kfree_rcu(q_vector, rcu);
+> >> -		q_vector = kzalloc(size, GFP_KERNEL);
+> >> +		struct igb_q_vector *new_q_vector;
+> >> +
+> >> +		new_q_vector = kzalloc(size, GFP_KERNEL);
+> >> +		if (new_q_vector)
+> >> +			kfree_rcu(q_vector, rcu);
+> >> +		q_vector = new_q_vector;
+> >
+> >I wonder if this is correct.
+> >1. if new_q_vector is NULL, you will overwrite q_vector without releasing it.
+> >2. kfree_rcu() doesn't immediately release memory, but after grace
+> >period, but here you are overwriting the pointer which is not release
+> >yet.
+> 
+> The actual pointer is: adapter->q_vector[v_idx]
+> 
+> q_vector is just a convenience pointer.
+> 
+> If the allocation succeeds, the q_vector[v_idx] will be replaced (later in the code).
+> 
+> If the allocation fails, this is not being freed.  The original code freed the adapter
+> pointer but didn't not remove the pointer.
+> 
+> If q_vector is NULL,  (i.e. the allocation failed), the function exits, but the original
+> pointer is left in place.
+> 
+> I think this logic is correct.
+> 
+> The error path leaves the original allocation in place.  If this is incorrect behavior,
+> a different change would be:
+> 
+> 	q_vector = adapter->q_vector[v_idx];
+> 	adapter->q_vector[v_idx] = NULL;
+> 	... the original code...
+> 
+> But I am not sure if that is what is desired?
 
-To fix it, only configure RXDID if RX queue exists.
+I understand the issue what you are trying to solve, I just don't
+understand your RCU code. I would expect calls to rcu_dereference()
+in order to get q_vector and rcu_assign_pointer() to clear
+adapter->q_vector[v_idx], but igb has none.
 
-Fixes: e753df8fbca5 ("ice: Add support Flex RXD")
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_virtchnl.c | 37 +++++++++----------
- 1 file changed, 17 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index c1fa94381f4e..d27ddce5d1c3 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -1621,9 +1621,6 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 	}
- 
- 	for (i = 0; i < qci->num_queue_pairs; i++) {
--		struct ice_hw *hw;
--		u32 rxdid;
--		u16 pf_q;
- 		qpi = &qci->qpair[i];
- 		if (qpi->txq.vsi_id != qci->vsi_id ||
- 		    qpi->rxq.vsi_id != qci->vsi_id ||
-@@ -1664,6 +1661,7 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 		/* copy Rx queue info from VF into VSI */
- 		if (qpi->rxq.ring_len > 0) {
- 			u16 max_frame_size = ice_vc_get_max_frame_size(vf);
-+			u32 rxdid;
- 
- 			vsi->rx_rings[i]->dma = qpi->rxq.dma_ring_addr;
- 			vsi->rx_rings[i]->count = qpi->rxq.ring_len;
-@@ -1691,26 +1689,25 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
- 					 vf->vf_id, i);
- 				goto error_param;
- 			}
--		}
- 
--		/* VF Rx queue RXDID configuration */
--		pf_q = vsi->rxq_map[qpi->rxq.queue_id];
--		rxdid = qpi->rxq.rxdid;
--		hw = &vsi->back->hw;
-+			/* If Rx flex desc is supported, select RXDID for Rx
-+			 * queues. Otherwise, use legacy 32byte descriptor
-+			 * format. Legacy 16byte descriptor is not supported.
-+			 * If this RXDID is selected, return error.
-+			 */
-+			if (vf->driver_caps &
-+			    VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC) {
-+				rxdid = qpi->rxq.rxdid;
-+				if (!(BIT(rxdid) & pf->supported_rxdids))
-+					goto error_param;
-+			} else {
-+				rxdid = ICE_RXDID_LEGACY_1;
-+			}
- 
--		/* If Rx flex desc is supported, select RXDID for Rx queues.
--		 * Otherwise, use legacy 32byte descriptor format.
--		 * Legacy 16byte descriptor is not supported. If this RXDID
--		 * is selected, return error.
--		 */
--		if (vf->driver_caps & VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC) {
--			if (!(BIT(rxdid) & pf->supported_rxdids))
--				goto error_param;
--		} else {
--			rxdid = ICE_RXDID_LEGACY_1;
-+			ice_write_qrxflxp_cntxt(&vsi->back->hw,
-+						vsi->rxq_map[q_idx],
-+						rxdid, 0x03, false);
- 		}
--
--		ice_write_qrxflxp_cntxt(hw, pf_q, rxdid, 0x03, false);
- 	}
- 
- 	/* send the response to the VF */
--- 
-2.31.1
-
+Thanks
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
