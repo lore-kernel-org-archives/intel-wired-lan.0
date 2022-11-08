@@ -1,86 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFF78C433FE
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Nov 2022 03:55:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BE7AC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Nov 2022 09:36:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5009260797;
-	Tue,  8 Nov 2022 03:55:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5009260797
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0511E400F8;
+	Tue,  8 Nov 2022 09:36:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0511E400F8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1667879736;
-	bh=01CqHuQQ4Wy9tMnk4sv/+QVUJKuxKsCO16KXlQApEhA=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=JurFo4KiI6qKT44rvqjmzQwUc7HWQ3InIudlhFlqla8oGZRPYFjiHPtkjrwuzqpfB
-	 85Au2Ym7nXI1uO9mEgBLg/VcwW29ghG4WVKrmjoz81KEW1UqhTDxLVHDrsv/q5zlJ4
-	 KDHPW9jeckg5eRHC+zG+mTE0cf7lJwxCJUdUK2cps7gV7tTQ7j/BdZ1h8v+rjRH4s7
-	 V3Zy3bM06b07Hhtaph5qF5XRJ5E71R77rg+RHymbukv3HBQjlOyJDO5szjqD5kRbGs
-	 FI6H4qSZa9AGyTaEut1Pk3OALm8RpfZiOIibkc9QwNXJXPTXzvtk2GKPVO+d9fNAJc
-	 S3VQLkFjAZN2w==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VVaGwT_mOZUm; Tue,  8 Nov 2022 03:55:35 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5EEEF60881;
-	Tue,  8 Nov 2022 03:55:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5EEEF60881
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 65CA61BF390
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Nov 2022 03:55:34 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 37294408AF
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Nov 2022 03:55:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 37294408AF
+	s=default; t=1667900170;
+	bh=oSe3C/cNEcIEtXrSGo/hrf6iXs2vb/qJiVhdu78OwJM=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=aMAxyMh6D/rR/PZ+iDhyLkgY+KXrZ6HxSSIkxG4g9eK2qlDx6m3bsxbuFyB78xNcL
+	 PLOS/OCRo5Mj8EjqxxGGzTkA8ajuK2oYzFEF7LOh2fzUy4eS+4R9Y8sC88KgqU94ZO
+	 qzyrkcq/OlzRqIv46q62D0w6tuVUGnquBhEv0jc/KQsNj7XREbaar6oEe345Yk9Hk0
+	 Daa2fo2J791wcvCTG+nVT9HFNa5MSikuBCTgHzn91E+7h/dRo407prevhCGS9KO0mH
+	 weQqRaN2jJAI7ZDxVUPrYKyfkkwLde/R/xYGAPV3scJgGwGcBXPqjqLY6+a9Imv7Vb
+	 dy/NTU7vcfgdg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id t2neSRQjGahN for <intel-wired-lan@lists.osuosl.org>;
- Tue,  8 Nov 2022 03:55:33 +0000 (UTC)
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 1Lb9bib9mBMJ; Tue,  8 Nov 2022 09:36:09 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id E701240127;
+	Tue,  8 Nov 2022 09:36:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E701240127
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 300901BF2F6
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Nov 2022 09:36:08 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 17B8E60C2C
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Nov 2022 09:36:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 17B8E60C2C
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id DSzzmKcOei_K for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  8 Nov 2022 09:36:07 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E0CC64013B
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E0CC64013B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Nov 2022 03:55:32 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4EC4E6079E
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4EC4E6079E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Nov 2022 09:36:06 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-36-sJJJvCkyNT29kytn07vuWg-1; Tue, 08 Nov 2022 04:36:02 -0500
+X-MC-Unique: sJJJvCkyNT29kytn07vuWg-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.7])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id C40E9B8188B;
- Tue,  8 Nov 2022 03:55:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00169C433D6;
- Tue,  8 Nov 2022 03:55:27 +0000 (UTC)
-Date: Mon, 7 Nov 2022 19:55:26 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Jacob Keller <jacob.e.keller@intel.com>
-Message-ID: <20221107195526.5ef1262e@kernel.org>
-In-Reply-To: <c051fa25-6047-0efb-7049-be08f566d1fb@intel.com>
-References: <20221104205414.2354973-1-anthony.l.nguyen@intel.com>
- <20221104205414.2354973-6-anthony.l.nguyen@intel.com>
- <Y2itqqGQm6uZ/2Wf@unreal>
- <DM5PR11MB1324FDF4D4399A6A99727B5EC13C9@DM5PR11MB1324.namprd11.prod.outlook.com>
- <Y2lEK4CMdCyEMBLf@unreal>
- <c051fa25-6047-0efb-7049-be08f566d1fb@intel.com>
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id D0CCE2A59554;
+ Tue,  8 Nov 2022 09:35:51 +0000 (UTC)
+Received: from p1.luc.cera.cz (ovpn-193-136.brq.redhat.com [10.40.193.136])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 4C10A141511F;
+ Tue,  8 Nov 2022 09:35:36 +0000 (UTC)
+From: Ivan Vecera <ivecera@redhat.com>
+To: netdev@vger.kernel.org
+Date: Tue,  8 Nov 2022 10:35:34 +0100
+Message-Id: <20221108093534.1957820-1-ivecera@redhat.com>
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1667879728;
- bh=jfSoGwo546XyLcE1uccBGS6De2TD0dAjfZXKPspZBdw=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=aGhgILqCEVDt6EWAqsWWrysxlK7H3uEVANEME1KqxgLcyUWVKiSULyjZEfKMDrru6
- nUqYggNQAFBr9K4aqvyBpj2ZwL9hUtJsIxx2c1xsLgORGt/XJSYbI7Tyc2cnxR3woq
- N9IDKbzXcrFUnNnxyC3YD00hIXyPi9Y01dcJekwb6Fj170uYm1dmxnP0jCf7c7yqbC
- 9G6cZMjSu/2e0jpdqsw3AuUhSJOUsjvhbFWzJEm9DPyLQUpJ/0r2kaGYIZAP1kHvjV
- 5MhhTVlY4lQnetAICBBGWGrKVYTaaxBlBTHhWaXCAFqYvsNVA6PD3wz+H1Q7hUhTVY
- lRPbM88bxF7ag==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=aGhgILqC
-Subject: Re: [Intel-wired-lan] [PATCH net-next 5/6] igb: Do not free
- q_vector unless new one was allocated
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.7
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1667900165;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=ni7nJ+LyNnIMnJA8lMlyLPnJImyjWtt2FYs+ZUBq6os=;
+ b=WqVMuWQh/JY50yumWpiZXdOkgfSwoiHRvoBhgwakX/ffhS2OMkbPjQvcR6M2hcleMG5RLV
+ vwpYob624uEIRx0kR7Rzsj+bf3btF7Kxy0iE4S90mRN3viQAGRhWPy6XdvhpQ7zdV9E6GT
+ CEh2bMMVU4MIf3H8KtpibpxAsGWVsLY=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=WqVMuWQh
+Subject: [Intel-wired-lan] [PATCH net] iavf: Fix a crash during reset task
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,36 +93,102 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Kees Cook <keescook@chromium.org>, Leon Romanovsky <leon@kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Ruhl,
- Michael J" <michael.j.ruhl@intel.com>,
- "edumazet@google.com" <edumazet@google.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "pabeni@redhat.com" <pabeni@redhat.com>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: SlawomirX Laba <slawomirx.laba@intel.com>,
+ Eric Dumazet <edumazet@google.com>,
+ "moderated list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ Patryk Piotrowski <patryk.piotrowski@intel.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>, sassmann@redhat.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 7 Nov 2022 10:35:14 -0800 Jacob Keller wrote:
-> > I understand the issue what you are trying to solve, I just don't
-> > understand your RCU code. I would expect calls to rcu_dereference()
-> > in order to get q_vector and rcu_assign_pointer() to clear
-> > adapter->q_vector[v_idx], but igb has none.
-> 
-> the uses of kfree_rcu were introduced by 5536d2102a2d ("igb: Combine 
-> q_vector and ring allocation into a single function")
-> 
-> The commit doesn't mention switching from kfree to kfree_rcu and I 
-> suspect that the igb driver is not actually really using RCU semantics 
-> properly.
-> 
-> The closest explanation is that the get_stats64 function might be 
-> accessing the ring and thus needs the RCU grace period.. but I think 
-> you're right in that we're missing the necessary RCU access macros.
+Recent commit aa626da947e9 ("iavf: Detach device during reset task")
+removed netif_tx_stop_all_queues() with an assumption that Tx queues
+are already stopped by netif_device_detach() in the beginning of
+reset task. This assumption is incorrect because during reset
+task a potential link event can start Tx queues again.
+Revert this change to fix this issue.
 
-Alright, expecting a follow up for this.
+Reproducer:
+1. Run some Tx traffic (e.g. iperf3) over iavf interface
+2. Switch MTU of this interface in a loop
+
+[root@host ~]# cat repro.sh
+#!/bin/sh
+
+IF=enp2s0f0v0
+
+iperf3 -c 192.168.0.1 -t 600 --logfile /dev/null &
+sleep 2
+
+while :; do
+        for i in 1280 1500 2000 900 ; do
+                ip link set $IF mtu $i
+                sleep 2
+        done
+done
+[root@host ~]# ./repro.sh
+
+Result:
+[  306.199917] iavf 0000:02:02.0 enp2s0f0v0: NIC Link is Up Speed is 40 Gbps Full Duplex
+[  308.205944] iavf 0000:02:02.0 enp2s0f0v0: NIC Link is Up Speed is 40 Gbps Full Duplex
+[  310.103223] BUG: kernel NULL pointer dereference, address: 0000000000000008
+[  310.110179] #PF: supervisor write access in kernel mode
+[  310.115396] #PF: error_code(0x0002) - not-present page
+[  310.120526] PGD 0 P4D 0
+[  310.123057] Oops: 0002 [#1] PREEMPT SMP NOPTI
+[  310.127408] CPU: 24 PID: 183 Comm: kworker/u64:9 Kdump: loaded Not tainted 6.1.0-rc3+ #2
+[  310.135485] Hardware name: Abacus electric, s.r.o. - servis@abacus.cz Super Server/H12SSW-iN, BIOS 2.4 04/13/2022
+[  310.145728] Workqueue: iavf iavf_reset_task [iavf]
+[  310.150520] RIP: 0010:iavf_xmit_frame_ring+0xd1/0xf70 [iavf]
+[  310.156180] Code: d0 0f 86 da 00 00 00 83 e8 01 0f b7 fa 29 f8 01 c8 39 c6 0f 8f a0 08 00 00 48 8b 45 20 48 8d 14 92 bf 01 00 00 00 4c 8d 3c d0 <49> 89 5f 08 8b 43 70 66 41 89 7f 14 41 89 47 10 f6 83 82 00 00 00
+[  310.174918] RSP: 0018:ffffbb5f0082caa0 EFLAGS: 00010293
+[  310.180137] RAX: 0000000000000000 RBX: ffff92345471a6e8 RCX: 0000000000000200
+[  310.187259] RDX: 0000000000000000 RSI: 000000000000000d RDI: 0000000000000001
+[  310.194385] RBP: ffff92341d249000 R08: ffff92434987fcac R09: 0000000000000001
+[  310.201509] R10: 0000000011f683b9 R11: 0000000011f50641 R12: 0000000000000008
+[  310.208631] R13: ffff923447500000 R14: 0000000000000000 R15: 0000000000000000
+[  310.215756] FS:  0000000000000000(0000) GS:ffff92434ee00000(0000) knlGS:0000000000000000
+[  310.223835] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  310.229572] CR2: 0000000000000008 CR3: 0000000fbc210004 CR4: 0000000000770ee0
+[  310.236696] PKRU: 55555554
+[  310.239399] Call Trace:
+[  310.241844]  <IRQ>
+[  310.243855]  ? dst_alloc+0x5b/0xb0
+[  310.247260]  dev_hard_start_xmit+0x9e/0x1f0
+[  310.251439]  sch_direct_xmit+0xa0/0x370
+[  310.255276]  __qdisc_run+0x13e/0x580
+[  310.258848]  __dev_queue_xmit+0x431/0xd00
+[  310.262851]  ? selinux_ip_postroute+0x147/0x3f0
+[  310.267377]  ip_finish_output2+0x26c/0x540
+
+Fixes: aa626da947e9 ("iavf: Detach device during reset task")
+Cc: Jacob Keller <jacob.e.keller@intel.com>
+Cc: Patryk Piotrowski <patryk.piotrowski@intel.com>
+Cc: SlawomirX Laba <slawomirx.laba@intel.com>
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index 3fc572341781..5abcd66e7c7a 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -3033,6 +3033,7 @@ static void iavf_reset_task(struct work_struct *work)
+ 
+ 	if (running) {
+ 		netif_carrier_off(netdev);
++		netif_tx_stop_all_queues(netdev);
+ 		adapter->link_up = false;
+ 		iavf_napi_disable_all(adapter);
+ 	}
+-- 
+2.37.4
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
