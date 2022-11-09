@@ -4,89 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68C87C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Nov 2022 17:06:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 392F8C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Nov 2022 17:16:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E341C60AA3;
-	Wed,  9 Nov 2022 17:06:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E341C60AA3
+	by smtp3.osuosl.org (Postfix) with ESMTP id C888D60AA3;
+	Wed,  9 Nov 2022 17:16:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C888D60AA3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668013594;
-	bh=SIVjoFStvB3pK07C4GNU+4WkOMi9WwP1PL2Nmdy5IRo=;
+	s=default; t=1668014162;
+	bh=y6cV76UpaKBZzVfYnwW2T6JgHj9xcyZ6Rxn3UImfK9Y=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=NTNzZN+VHjvxyBsYjweXxdoVonPecnceEcPHJUfUFE0wUK22gWf+frzCtLQ8hurz8
-	 NoPViJy+RQDfmZViN2xI1xvPjGWfuD9NbDguRYL3rMQyMpMrFoEvdFIxOYwDJ4B4ok
-	 xJTS8NXtlbikKN1Qr9q19g7BWDn+91ouNVcaszs6X3pOyIoZcL8xRuBNf7249JsYcH
-	 tFiwFCvEE2zaHD3uejzEv1a6+NqdFed7u4SO3jJ2q3pCksNObj/UQZrVoITJRsTktq
-	 QKgb2genaSBcHzfWEEFpZzHYMFQZ/Y/tHQR/SjI814VjIVXsKnnLM8P5sxQSB2X4bZ
-	 hOSEpS5CJa7Fw==
+	b=dPDNPy+wCQURFxVUdPR91AKB4Q4FGS9r9KsknEnJsy2dTAiQFoLTqhIS8R7EYWuoY
+	 yBsKitRq2UdtMelGY0SBEBxerQgzX5TveY/OJA1Xvojf34ATWWSBkZZAX5np2zYNk7
+	 qcKZQ1/urMU19IshjRPFLbKBXNAJV1cyetF7iMF4M0MdeJJCT3Bimd+dZKy3+57Gn5
+	 dYI8fVfrbo+rjFbcNaYzv7TNpK293y/d+hsOJzctbwoGuWVLiNZ9ElVCKT3VafmGmC
+	 kfhhRTLhCKBQVZyjiML8iHC2hYLnGm3s8WKchzufGSvQ94qSY7fFn/0cjd42wue+Pj
+	 9SWYAEz9CK+jQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id u3sptvUZ5DN4; Wed,  9 Nov 2022 17:06:33 +0000 (UTC)
+	with ESMTP id qXHxHB9hec70; Wed,  9 Nov 2022 17:16:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4284C60BA8;
-	Wed,  9 Nov 2022 17:06:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4284C60BA8
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 9FFE41BF31B
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Nov 2022 17:06:31 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4D8CF60BA8;
+	Wed,  9 Nov 2022 17:16:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4D8CF60BA8
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id A35941BF31B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Nov 2022 17:15:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6EBCB40977
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Nov 2022 17:06:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6EBCB40977
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7D88760BA8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Nov 2022 17:15:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7D88760BA8
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id T2nx9FwYlW8i for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Nov 2022 17:06:30 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 29yXuPpw0hJz for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Nov 2022 17:15:57 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A5A81404F4
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A5A81404F4
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Nov 2022 17:06:29 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10526"; a="312197161"
-X-IronPort-AV: E=Sophos;i="5.96,151,1665471600"; d="scan'208";a="312197161"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Nov 2022 09:05:59 -0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6CF4960AA3
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6CF4960AA3
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Nov 2022 17:15:57 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10526"; a="373185570"
+X-IronPort-AV: E=Sophos;i="5.96,151,1665471600"; d="scan'208";a="373185570"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Nov 2022 09:13:42 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10526"; a="614757062"
-X-IronPort-AV: E=Sophos;i="5.96,151,1665471600"; d="scan'208";a="614757062"
+X-IronPort-AV: E=McAfee;i="6500,9779,10526"; a="882001426"
+X-IronPort-AV: E=Sophos;i="5.96,151,1665471600"; d="scan'208";a="882001426"
 Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by orsmga006.jf.intel.com with ESMTP; 09 Nov 2022 09:05:56 -0800
+ by fmsmga006.fm.intel.com with ESMTP; 09 Nov 2022 09:13:40 -0800
 Received: from newjersey.igk.intel.com (newjersey.igk.intel.com
  [10.102.20.203])
  by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 2A9H5tHv007416; Wed, 9 Nov 2022 17:05:55 GMT
+ 2A9HDdjx008525; Wed, 9 Nov 2022 17:13:39 GMT
 From: Alexander Lobakin <alexandr.lobakin@intel.com>
-To: Tirthendu Sarkar <tirthendu.sarkar@intel.com>
-Date: Wed,  9 Nov 2022 18:02:10 +0100
-Message-Id: <20221109170210.1155273-1-alexandr.lobakin@intel.com>
+To: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Date: Wed,  9 Nov 2022 18:10:27 +0100
+Message-Id: <20221109171027.1155468-1-alexandr.lobakin@intel.com>
 X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221109152016.66326-1-tirthendu.sarkar@intel.com>
-References: <20221109152016.66326-1-tirthendu.sarkar@intel.com>
+In-Reply-To: <20221109100548.8990-1-arkadiusz.kubalewski@intel.com>
+References: <20221109100548.8990-1-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1668013589; x=1699549589;
+ t=1668014157; x=1699550157;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=jUB98y9lDg/2WtNPN7G6LrAoGSJw8m7DnhcvXdCGarE=;
- b=frRtVDqUDhHSVu5FpmgWZLBrMCE0a2gFvP59aRlpLDn5HGbTRdtu1bPJ
- eAcAXDYP2JAcPl2XE9xrVhCPngswoHhPhO6vQqwF3R6gpbIlK7vQRB4MY
- xHoak/AZaqCRSc+X31NmpYgwZ9sU8P08tR4peEPAfVGV1imVMVz9Jw6fo
- TZ498d+pFb6t6+t54QueDEpnIG4rlF6DElwqYNtvfLGwi7wWKmJOrpUAa
- euI4nzmulH7bln5LgqlZT8uYK+X2r3er3HXfMplXKARM0dFQJhwQkWDAs
- NbbzcF2YCauMOq1MdVFaKPpvLq3RS1x960gJpbqWgIVabo493mRyyPGUK
+ bh=q88IJ88ebzltFoz+jPhGLa4PiEMxcGNjvgGj+Qbrz3M=;
+ b=KaGF72H4LiPu0GaGdBDeiHFk1QsNYePtIx5zpRUi1P3eN3uI8NIetfeF
+ 3B47rfl74M5J1kWNjLERHXoHwV2S4vceB2YloJtZ0QPMZWn2SjZTMLKqY
+ 75d2W919vepTe0nkVFlhigYS88P/n/66lQ2ZiSXl1dagB3OcitV9ik+xX
+ n5aRsvAnGIYt+l5Dgdgsx68zLsu4mEIjrxOGrsYhnRaQogOAhCI1FgKMp
+ MhgXhLlkpIbuyGe46LHpSiG1X3tiasUani+ibByuqXbvsn+37aQlDD/J2
+ NfBLkSuse6j8YFKlx59GPruP2gSKjM0nzupNgymd6CcJz03rt29K5erUH
  w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=frRtVDqU
-Subject: Re: [Intel-wired-lan] [PATCH intel-next] i40e: allow toggling
- loopback mode via
+ header.a=rsa-sha256 header.s=Intel header.b=KaGF72H4
+Subject: Re: [Intel-wired-lan] [PATCH next v9] ice: use GNSS subsystem
+ instead of TTY
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,63 +99,139 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: tirtha@gmail.com, netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- magnus.karlsson@intel.com
+Cc: intel-wired-lan@lists.osuosl.org,
+ Karol Kolacinski <karol.kolacinski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Tirthendu Sarkar <tirthendu.sarkar@intel.com>
-Date: Wed,  9 Nov 2022 20:50:16 +0530
+From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Date: Wed,  9 Nov 2022 11:05:48 +0100
 
-> Add support for NETIF_F_LOOPBACK. This feature can be set via:
-> $ ethtool -K eth0 loopback <on|off>
+> Previously support for GNSS was implemented as a TTY driver, it allowed
+> to access GNSS receiver on /dev/ttyGNSS_<bus><func>.
 > 
-> This sets the MAC Tx->Rx loopback.
+> Use generic GNSS subsystem API instead of implementing own TTY driver.
+> The receiver is accessible on /dev/gnss<id>. In case of multiple
+> receivers in the OS, correct device can be found by enumerating either:
+> - /sys/class/net/<eth port>/device/gnss/
+> - /sys/class/gnss/gnss<id>/device/
 > 
-> This feature is used for the xsk selftests, and might have other uses
-> too.
+> User expecting onboard GNSS receiver support is required to enable
+> CONFIG_GNSS=y/m in kernel config.
 > 
-> Signed-off-by: Tirthendu Sarkar <tirthendu.sarkar@intel.com>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+> Signed-off-by: Michal Michalik <michal.michalik@intel.com>
+> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 22 +++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_main.c   | 28 +++++++++++++++++++
->  .../net/ethernet/intel/i40e/i40e_prototype.h  |  3 ++
->  3 files changed, 53 insertions(+)
+> v9:
+> - fix GNSS ifeq(..) in Makefile, add ICE_GNSS in Kconfig
+> - remove IS_REACHABLE macro
+> - fix 'TTY' from trace indicating GNSS was initialized or failure
+> 
+> v8:
+> - fix example path to gnss device in commit message
+> 
+> v7:
+> - add blank lines around 'GNSS module' paragraph in ice.rst
+> - mark '/dev/gnss<id>' as a code in ice.rst
+> 
+> v6:
+> - enable support for CONFIG_GNSS=m
+> - improve commit message
+> 
+> v5:
+> - fix "ifeq" in Makefile (wrong usage of string)
+> - fix description in "#endif" to IS_BUILDIN
+> 
+> v4: change Makefile to build ice_gnss.c only if CONFIG_GNSS is set
+> 
+> v3:
+> - remove unnecessary #include,
+> - change the IS_ENABLED to IS_BUILTIN - right now if GNSS kernel subsystem
+>   is not enabled, we also won't enable it in our ice driver.
+> 
+> v2: fix sparse check warning, remove fixes tags, fix commit title
+> 
+>  .../device_drivers/ethernet/intel/ice.rst     |  16 +-
+>  drivers/net/ethernet/intel/Kconfig            |   3 +
+>  drivers/net/ethernet/intel/ice/Makefile       |   2 +-
+>  drivers/net/ethernet/intel/ice/ice.h          |   6 +-
+>  drivers/net/ethernet/intel/ice/ice_gnss.c     | 375 +++++++-----------
+>  drivers/net/ethernet/intel/ice/ice_gnss.h     |  18 +-
+>  6 files changed, 158 insertions(+), 262 deletions(-)
+> 
+> diff --git a/Documentation/networking/device_drivers/ethernet/intel/ice.rst b/Documentation/networking/device_drivers/ethernet/intel/ice.rst
+> index dc2e60ced927..1aa029d08cb1 100644
+> --- a/Documentation/networking/device_drivers/ethernet/intel/ice.rst
+> +++ b/Documentation/networking/device_drivers/ethernet/intel/ice.rst
+> @@ -901,15 +901,17 @@ To enable/disable UDP Segmentation Offload, issue the following command::
+>  
+>    # ethtool -K <ethX> tx-udp-segmentation [off|on]
+>  
+> +
+>  GNSS module
+>  -----------
+> -Allows user to read messages from the GNSS module and write supported commands.
+> -If the module is physically present, driver creates 2 TTYs for each supported
+> -device in /dev, ttyGNSS_<device>:<function>_0 and _1. First one (_0) is RW and
+> -the second one is RO.
+> -The protocol of write commands is dependent on the GNSS module as the driver
+> -writes raw bytes from the TTY to the GNSS i2c. Please refer to the module
+> -documentation for details.
+> +Requires kernel compiled with CONFIG_GNSS=y or CONFIG_GNSS=m.
+> +Allows user to read messages from the GNSS hardware module and write supported
+> +commands. If the module is physically present, a GNSS device is spawned:
+> +``/dev/gnss<id>``.
+> +The protocol of write command is dependent on the GNSS hardware module as the
+> +driver writes raw bytes by the GNSS object to the receiver through i2c. Please
+> +refer to the hardware GNSS module documentation for configuration details.
+> +
+>  
+>  Performance Optimization
+>  ========================
+> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+> index 3facb55b7161..a3c84bf05e44 100644
+> --- a/drivers/net/ethernet/intel/Kconfig
+> +++ b/drivers/net/ethernet/intel/Kconfig
+> @@ -337,6 +337,9 @@ config ICE_HWTS
+>  	  the PTP clock driver precise cross-timestamp ioctl
+>  	  (PTP_SYS_OFFSET_PRECISE).
+>  
+> +config ICE_GNSS
+> +	def_bool GNSS = y || GNSS = ICE
+> +
+>  config FM10K
+>  	tristate "Intel(R) FM10000 Ethernet Switch Host Interface Support"
+>  	default n
+> diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
+> index 9183d480b70b..02a448406777 100644
+> --- a/drivers/net/ethernet/intel/ice/Makefile
+> +++ b/drivers/net/ethernet/intel/ice/Makefile
+> @@ -42,8 +42,8 @@ ice-$(CONFIG_PCI_IOV) +=	\
+>  	ice_vf_vsi_vlan_ops.o	\
+>  	ice_vf_lib.o
+>  ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
+> -ice-$(CONFIG_TTY) += ice_gnss.o
+>  ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
+>  ice-$(CONFIG_RFS_ACCEL) += ice_arfs.o
+>  ice-$(CONFIG_XDP_SOCKETS) += ice_xsk.o
+>  ice-$(CONFIG_ICE_SWITCHDEV) += ice_eswitch.o
+> +ice-$(CONFIG_GNSS) += ice_gnss.o
+
+Forgot to replace it with CONFIG_ICE_GNSS here.
+
+> diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+> index 2f0b604abc5e..ae93ae488bc2 100644
+> --- a/drivers/net/ethernet/intel/ice/ice.h
+> +++ b/drivers/net/ethernet/intel/ice/ice.h
 
 [...]
 
-> @@ -13721,6 +13747,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
->  	if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
->  		hw_features |= NETIF_F_NTUPLE | NETIF_F_HW_TC;
->  
-> +	hw_features |= NETIF_F_LOOPBACK;
-> +
->  	netdev->hw_features |= hw_features;
->  
->  	netdev->features |= hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
-
-So here it will be enabled by default, which shouldn't happen as it
-breaks traffic flow.
-Just add it directly to netdev->hw_features one line above.
-
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-> index ebdcde6f1aeb..9a71121420c3 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-> @@ -105,6 +105,9 @@ enum i40e_status_code i40e_aq_set_phy_config(struct i40e_hw *hw,
->  				struct i40e_asq_cmd_details *cmd_details);
->  enum i40e_status_code i40e_set_fc(struct i40e_hw *hw, u8 *aq_failures,
->  				  bool atomic_reset);
-> +i40e_status i40e_aq_set_mac_loopback(struct i40e_hw *hw,
-> +				     bool ena_lpbk,
-> +				     struct i40e_asq_cmd_details *cmd_details);
->  i40e_status i40e_aq_set_phy_int_mask(struct i40e_hw *hw, u16 mask,
->  				     struct i40e_asq_cmd_details *cmd_details);
->  i40e_status i40e_aq_clear_pxe_mode(struct i40e_hw *hw,
 > -- 
-> 2.34.1
+> 2.34.3
 
 Thanks,
 Olek
