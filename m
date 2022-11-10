@@ -1,86 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 834D7C43217
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Nov 2022 17:07:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7493DC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Nov 2022 19:19:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 19C9181E98;
-	Thu, 10 Nov 2022 17:07:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 19C9181E98
+	by smtp3.osuosl.org (Postfix) with ESMTP id ED67760F60;
+	Thu, 10 Nov 2022 19:19:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ED67760F60
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668100035;
-	bh=FJvDIn8vg0MXlBVwTC0F+TzpWepAKRnuv4/U5JJUiVQ=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=yUmL2uNeG/QrciFcBnkvH7/aaXH3CTItC16bEcbkfSJKs7Lits6MVlHsd0veHMrJM
-	 m+h/ik1uJRsv8M1fJt/OBsFqMhsq+FKveK5kq82cLwooPjDrc4YvBnw8BFGV0MBE/C
-	 +wHv1ZaF808+/nS/MkM6mHoiX9xqADyC7a5L5Wl/cjB49PZ+KMPU+W7owXFf7n6f1V
-	 QzOxa5DSd00SyQBwLweO7aEdYHbp2mQXifvI07EOYgcrI3/mw+bEH7/S2WEHiS+P2K
-	 DG6LcyjU9EaFNYsZOjHkr1lKwUPydz22b3cvJS6V+QPoZK7CegtJ5/JsUzpRbrZgjT
-	 dZVWhSDD9F7ug==
+	s=default; t=1668107952;
+	bh=6IuAo2d6iGjgosjLE1Ky/fDLewOwjmGxk8aZUthM9hQ=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=VN66BSbMBJjNURW3v1i4eN0doh5Fa9j6tqkRrZcj6I9rxwcTBNFy1XvXBEJZxCBdj
+	 Jftpthj+iKcy1Z2KdEuedkl6Rc3O+IMBlJcjHMuQWO7D6ZVLxgVQnMytQ5caTPrBfK
+	 0f5rl6dJk43grTGPUl29RTc7kWqAPUaA/wlv2leYH3zLHP+AuUsw/+GBwrjxNJc7xA
+	 7ZsK1dtGW+ho52xrHnpJxJOn3MyorzG+1pn29PKCG51X3eOwV6bx0pZS82kwKbpUWM
+	 1FzK5Ej2HUiy42x6vhFscVFWfHL1YCP7jdv6MSEDGFMXVOmBDeJ1oS9rST5XJoCVgz
+	 hFd1RbXpihNIw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1YiR15FTBq6S; Thu, 10 Nov 2022 17:07:14 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 4qewonx0PY5L; Thu, 10 Nov 2022 19:19:11 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 361F581EA3;
-	Thu, 10 Nov 2022 17:07:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 361F581EA3
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 08A331BF408
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Nov 2022 17:07:13 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D5F8A605B3;
+	Thu, 10 Nov 2022 19:19:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D5F8A605B3
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 19E6D1BF392
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Nov 2022 19:19:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D6394417CE
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Nov 2022 17:07:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D6394417CE
+ by smtp2.osuosl.org (Postfix) with ESMTP id F2AA440B8C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Nov 2022 19:19:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F2AA440B8C
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MVP6OLVJzhF9 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 10 Nov 2022 17:07:11 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id y0LHRKWj3Pad for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 10 Nov 2022 19:19:08 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 78DD3417C0
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 78DD3417C0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Nov 2022 17:07:11 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 5967CB82261;
- Thu, 10 Nov 2022 17:07:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35FEFC433D6;
- Thu, 10 Nov 2022 17:07:05 +0000 (UTC)
-Date: Thu, 10 Nov 2022 19:07:02 +0200
-From: Leon Romanovsky <leon@kernel.org>
-To: Ivan Vecera <ivecera@redhat.com>
-Message-ID: <Y20vtqd6raqg8iwy@unreal>
-References: <20221108102502.2147389-1-ivecera@redhat.com>
- <Y2vvbwkvAIOdtZaA@unreal>
- <CO1PR11MB508996B0D00B5FE6187AF085D63E9@CO1PR11MB5089.namprd11.prod.outlook.com>
- <20221110155147.1a2c57f6@p1.luc.cera.cz>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5F5F040B8A
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5F5F040B8A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Nov 2022 19:19:08 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10527"; a="291139521"
+X-IronPort-AV: E=Sophos;i="5.96,154,1665471600"; d="scan'208";a="291139521"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Nov 2022 11:13:37 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10527"; a="668534674"
+X-IronPort-AV: E=Sophos;i="5.96,154,1665471600"; d="scan'208";a="668534674"
+Received: from lkp-server01.sh.intel.com (HELO e783503266e8) ([10.239.97.150])
+ by orsmga008.jf.intel.com with ESMTP; 10 Nov 2022 11:13:36 -0800
+Received: from kbuild by e783503266e8 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1otCzX-00038V-1l;
+ Thu, 10 Nov 2022 19:13:35 +0000
+Date: Fri, 11 Nov 2022 03:13:29 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <636d4d59.cweQZ6b6JTB2v3Yk%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20221110155147.1a2c57f6@p1.luc.cera.cz>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1668100027;
- bh=rj3ISQCkCco2AbbC4p5BztsDjwUFjBW0QWdyLsCUyq8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=YmORyJ0NKtlSVkovWmaabP0b9SgZQ1lh3Ym059adNM78LU2bsgoG9df90eYdUQt6y
- k5/I4sdiGRMTPgbuueWayNeCIFe7KTk/TZ3peRxCj2E06LfextPj/54SM2gxmQXcMQ
- vD3KG6xUxHxX0UrhgDmrbngWgKGqifl8Y2mII+FTvFHb4O0p1rEEloGAW+GMdeGmSP
- yjzhvbl01cvkHE7xniSFg1ZkB8+Mso5xNAiMAEbufp+1hbujiFnUm9JPgQ/P8ErZnl
- HKizbNHytdfuWh8htn10atiLOK274b5fWq2H9LamSj/xx8Mflu7htI2Rz87eg5x4Pu
- 0KsWK8sqe1oGQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=YmORyJ0N
-Subject: Re: [Intel-wired-lan] [PATCH net] iavf: Do not restart Tx queues
- after reset task failure
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1668107948; x=1699643948;
+ h=date:from:to:subject:message-id:mime-version:
+ content-transfer-encoding;
+ bh=OQXBQJA2oefiZBYXASbM4IhQQlwiHhXrtb5jYHAJV5g=;
+ b=UTm0iINNatXOlwC6gDnuqgT4pFlZfk4TDpIbzb39TiEvGENdKy1IRMX9
+ BrNQMjG64g7qMMWfAXgKuiHPpq5ouznetyjf/OG2pVQnRUqyPnoBoLIMc
+ uQItvZkXztpORYNyv99vn6p5WyVaw2UeUsVKg3TWw6HAgwd2MXBgoXQJl
+ XwbUdrgmSkHBHRtuuun754Wy6utykYxZLtjwp0QqRylAmpapZD5FhO+aC
+ eNmYnqvWNGNXjYyQrwmZVLl/BRVTsH8ULeZaaIDtCwuLpiMSv660dEpVT
+ qhbfKGl0nEkv/St10rvOSsk2+5FQZrL6KFCIhc1R1FZKOEC0vG3W14rBK
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=UTm0iINN
+Subject: [Intel-wired-lan] [tnguy-net-queue:100GbE] BUILD SUCCESS
+ 0e710a3ffd0caaf23b8791b041e8792f252f8e4f
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,44 +95,100 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: SlawomirX Laba <slawomirx.laba@intel.com>,
- Eric Dumazet <edumazet@google.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>, "Piotrowski,
- Patryk" <patryk.piotrowski@intel.com>,
- "moderated list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>,
- "sassmann@redhat.com" <sassmann@redhat.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Nov 10, 2022 at 03:51:47PM +0100, Ivan Vecera wrote:
-> On Wed, 9 Nov 2022 20:11:55 +0000
-> "Keller, Jacob E" <jacob.e.keller@intel.com> wrote:
-> 
-> > > Sorry for my naive question, I see this pattern a lot (including RDMA),
-> > > so curious. Everyone checks netif_running() outside of rtnl_lock, while
-> > > dev_close() changes state bit __LINK_STATE_START. Shouldn't rtnl_lock()
-> > > placed before netif_running()?  
-> > 
-> > Yes I think you're right. A ton of people check it without the lock but I think thats not strictly safe. Is dev_close safe to call when netif_running is false? Why not just remove the check and always call dev_close then.
-> > 
-> > Thanks,
-> > Jake
-> 
-> Check for a bit value (like netif_runnning()) is much cheaper than unconditionally
-> taking global lock like RTNL.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git 100GbE
+branch HEAD: 0e710a3ffd0caaf23b8791b041e8792f252f8e4f  iavf: Fix VF driver counting VLAN 0 filters
 
-This cheap operation is racy and performed in non-performance critical path.
+elapsed time: 1111m
 
-Thanks
+configs tested: 71
+configs skipped: 2
 
-> 
-> Ivan
-> 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+x86_64                           rhel-8.3-kvm
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                             allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
+sh                               allmodconfig
+arc                                 defconfig
+alpha                               defconfig
+arm                                 defconfig
+s390                             allmodconfig
+x86_64                            allnoconfig
+x86_64                              defconfig
+s390                                defconfig
+s390                             allyesconfig
+s390                       zfcpdump_defconfig
+powerpc                      arches_defconfig
+powerpc                     sequoia_defconfig
+mips                         cobalt_defconfig
+arm                      footbridge_defconfig
+xtensa                  cadence_csp_defconfig
+mips                         db1xxx_defconfig
+arm                        spear6xx_defconfig
+powerpc                      pasemi_defconfig
+m68k                             allmodconfig
+x86_64                               rhel-8.3
+arc                              allyesconfig
+alpha                            allyesconfig
+x86_64                           allyesconfig
+i386                             allyesconfig
+i386                                defconfig
+m68k                             allyesconfig
+sh                           se7722_defconfig
+arm                         cm_x300_defconfig
+powerpc              randconfig-c003-20221110
+ia64                             allmodconfig
+arm                         lpc18xx_defconfig
+nios2                         10m50_defconfig
+powerpc                 mpc837x_rdb_defconfig
+sh                      rts7751r2d1_defconfig
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+sh                           se7724_defconfig
+microblaze                          defconfig
+parisc                           alldefconfig
+arm                          pxa910_defconfig
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+arm64                            allyesconfig
+arm                              allyesconfig
+
+clang tested configs:
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a004
+s390                 randconfig-r044-20221110
+riscv                randconfig-r042-20221110
+hexagon              randconfig-r041-20221110
+hexagon              randconfig-r045-20221110
+x86_64                        randconfig-a003
+i386                          randconfig-a002
+i386                          randconfig-a006
+x86_64                        randconfig-a005
+x86_64                        randconfig-a001
+x86_64                        randconfig-a012
+powerpc                        fsp2_defconfig
+powerpc                    gamecube_defconfig
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
