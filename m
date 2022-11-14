@@ -1,89 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FA6BC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Nov 2022 13:12:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E2D7C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Nov 2022 13:12:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2D461415C7;
-	Mon, 14 Nov 2022 13:12:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2D461415C7
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4B9D2817D3;
+	Mon, 14 Nov 2022 13:12:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4B9D2817D3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668431551;
-	bh=HwDrpJbWZIC6irCpkiAJvcmX1uZ5rIwuytHOYojLsn8=;
+	s=default; t=1668431553;
+	bh=wwBAaZuz6+RHsEZmJpx1e+VHEVRggeD3IqJKe9Yu3Dk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=FQQRm/a7uQiVKz23RKlNrKA8xRZAEElmbUgigfreD/ERmI5Io6VwybV5NGGwcXjHI
-	 WK9I6glYzJW7KzsJiz2NjJH0iUbxT5/G0Q8E0mNFc9tCvO1gU8cJ47d952PlV9bbJ2
-	 JUD+fYFCa8uunh1dhdlJvjKzRtovJp6Pxvxv+4bYcJMTZ4UAXDKYNp0isaXIe1i8u1
-	 Cn0sAjD2HVsRmgIGgtHB8m1b5qMyPkWWl1joPcPP4UuZlD6KRgrAhYUiUCH1EF78NF
-	 Q1yXry14+zrx0CuFPBKRm2YM18ysonmet4+jwSGZC9oiWLIXUaHVmWeof265BH3aKs
-	 d56o7K+m1Ym5g==
+	b=U4UA2BdJ5aC2lm0LTqRJIeSeVlNd1xpWfGkGg6tbVzGlivtebIXlJ1GX0c9WU6nZA
+	 UtxTA8X3n3J8IdTpTM/h3DKhAupcxghupCChkhDxoSAxmoazOozVvonTYKyy2ippLW
+	 hNU95O9dWoh1ZX997Lv5IWMMpWxiqyvYN+IofRKu3ycc3g/Qiqk5+VLBQ2Ny2z22Jk
+	 wRF59Rw91ZjuMoPIumUKchpubuqkKy7Cwn63GRpqKIv6X0IprnP0gzlcNRVGOIAcc+
+	 XhfLl3MMYRXUcc4zfrwVkWlRI/1PFnwfMuMj/iKHx6N6nZg4E9GyFnUZaoyHOC8+Ys
+	 ng2+oOXhTjJjw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7AKoGbWFHAeb; Mon, 14 Nov 2022 13:12:26 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id MosyHRp_7UrH; Mon, 14 Nov 2022 13:12:30 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D79204098B;
-	Mon, 14 Nov 2022 13:12:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D79204098B
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 76BF21BF379
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:12:20 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6497F81826;
+	Mon, 14 Nov 2022 13:12:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6497F81826
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 314C51BF379
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:12:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 523D260DDF
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:12:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 523D260DDF
+ by smtp1.osuosl.org (Postfix) with ESMTP id 0C4D981826
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:12:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0C4D981826
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HYArwgfeER-0 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 14 Nov 2022 13:12:18 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id MPaF3CMDWbKL for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 14 Nov 2022 13:12:23 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 88AA360DCA
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 88AA360DCA
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:12:18 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="310672436"
-X-IronPort-AV: E=Sophos;i="5.96,161,1665471600"; d="scan'208";a="310672436"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 10802817D3
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 10802817D3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:12:22 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="313766716"
+X-IronPort-AV: E=Sophos;i="5.96,161,1665471600"; d="scan'208";a="313766716"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Nov 2022 05:12:12 -0800
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Nov 2022 05:12:22 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="616305939"
-X-IronPort-AV: E=Sophos;i="5.96,161,1665471600"; d="scan'208";a="616305939"
+X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="616305992"
+X-IronPort-AV: E=Sophos;i="5.96,161,1665471600"; d="scan'208";a="616305992"
 Received: from wasp.igk.intel.com ([10.102.20.192])
- by orsmga006.jf.intel.com with ESMTP; 14 Nov 2022 05:12:06 -0800
+ by orsmga006.jf.intel.com with ESMTP; 14 Nov 2022 05:12:17 -0800
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
  pabeni@redhat.com, edumazet@google.com
-Date: Mon, 14 Nov 2022 13:57:46 +0100
-Message-Id: <20221114125755.13659-5-michal.swiatkowski@linux.intel.com>
+Date: Mon, 14 Nov 2022 13:57:48 +0100
+Message-Id: <20221114125755.13659-7-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20221114125755.13659-1-michal.swiatkowski@linux.intel.com>
 References: <20221114125755.13659-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1668431538; x=1699967538;
+ t=1668431543; x=1699967543;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=qVmbCiixoxgd5wqB6Vt3p8AnCwMjCYDT/JqiFV+0Qi4=;
- b=kDeQGl6f8p1dSDNV0+JpnMgFStPhBBGCubqmCBzrLJpw7sSeExFTKI+7
- hzk7kzGYkFwas86yC3JSK2w1N6MUX2GJkXwngx3lfD334bso+VzJanpJ6
- GGPZzfpvf7Ff+xkh4B0TF7DQjeRWHBg8d75Uw8PKCfCimA/8CJFI6sc4Y
- q4yrxOItK6H7UFXMJVZefV+FIDsxUJbn0p/DYuU9+AisIazvNq6WJkr6w
- MbtVdTRseEIe11BUfUyqgE0Wk2Uj2395jFECXWBQwxqYtAiURZ1dpiiCl
- pWbjuU751lyQD2gRQIXjgzcp1QUMhNavV+8ubOsL1xdp1Dq2mYpxiY+rc
+ bh=H23wPFre84Eiqe2JaFMTuy4YXxIJ6b2eUozWj3eO1FU=;
+ b=lZV5OqOZBeE9WmNxCT+MQE9m3OLwFDM2NBImBr+oRmyAg04IKOuTSPc3
+ DO5Rcz+9ltw1L4S8XtjJ5DCbcZl32/Cgt07kxs3q9JDGyG3twBF4R90ty
+ Iik59oY3WR9IYmjBc9ENPrZw1e+H6+z2L8MKQ3Uip0YcB4x04AdDoSKue
+ UptlXQY0/pyb4s/ReHk3N5unafJe5Tb/MTlb4UrhdZt2Ie8UTo/1cQe9o
+ 8VzsqOPvS9+2+B+a9+/V6t/bbttqqGkXkKN7AsMD/g9t0fN3wVKU0i+Q1
+ naUdm3TIra+O/V0aLcWJwNK153PHwu4av/YTSC2Zsg93c/LOjoFMm1YMc
  Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=kDeQGl6f
-Subject: [Intel-wired-lan] [PATCH net-next 04/13] ice: split ice_vsi_setup
- into smaller functions
+ header.a=rsa-sha256 header.s=Intel header.b=lZV5OqOZ
+Subject: [Intel-wired-lan] [PATCH net-next 06/13] ice: split probe into
+ smaller functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,968 +104,1137 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Main goal is to reuse the same functions in VSI config and rebuild
-paths.
-To do this split ice_vsi_setup into smaller pieces and reuse it during
-rebuild.
+Part of code from probe can be reused in reload flow. Move this code to
+separate function. Create unroll functions for each part of
+initialization, like: ice_init_dev() and ice_deinit_dev(). It
+simplifies unrolling and can be used in remove flow.
 
-ice_vsi_alloc() should only alloc memory, not set the default values
-for VSI.
-Move setting defaults to separate function. This will allow config of
-already allocated VSI, for example in reload path.
-
-The path is mostly moving code around without introducing new
-functionality. Functions ice_vsi_cfg() and ice_vsi_decfg() were
-added, but they are using code that already exist.
-
-Use flag to pass information about VSI initialization during rebuild
-instead of using boolean value.
+Avoid freeing port info as it could be reused in reload path.
+Will be freed in remove path since is allocated via devm_kzalloc().
 
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Co-developed-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c    | 648 +++++++++-----------
- drivers/net/ethernet/intel/ice/ice_lib.h    |   7 +-
- drivers/net/ethernet/intel/ice/ice_main.c   |  12 +-
- drivers/net/ethernet/intel/ice/ice_vf_lib.c |   2 +-
- 4 files changed, 301 insertions(+), 368 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h        |   2 +
+ drivers/net/ethernet/intel/ice/ice_common.c |  11 +-
+ drivers/net/ethernet/intel/ice/ice_main.c   | 896 ++++++++++++--------
+ 3 files changed, 562 insertions(+), 347 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 42203a0efcac..298bb901e4e7 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -447,9 +447,55 @@ static irqreturn_t ice_eswitch_msix_clean_rings(int __always_unused irq, void *d
- 	return IRQ_HANDLED;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 5c5b188fb3e9..62219f995cf2 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -924,6 +924,8 @@ int ice_open(struct net_device *netdev);
+ int ice_open_internal(struct net_device *netdev);
+ int ice_stop(struct net_device *netdev);
+ void ice_service_task_schedule(struct ice_pf *pf);
++int ice_load(struct ice_pf *pf);
++void ice_unload(struct ice_pf *pf);
  
-+/**
-+ * ice_vsi_alloc_def - set default values for already allocated VSI
-+ * @vsi_type: type of VSI
-+ * @ch: ptr to channel
-+ * @vf: VF for ICE_VSI_VF and ICE_VSI_CTRL
-+ */
-+static int
-+ice_vsi_alloc_def(struct ice_vsi *vsi, struct ice_vf *vf,
-+		  struct ice_channel *ch)
-+{
-+	if (vsi->type != ICE_VSI_CHNL) {
-+		ice_vsi_set_num_qs(vsi, vf);
-+		if (ice_vsi_alloc_arrays(vsi))
-+			return -ENOMEM;
-+	}
-+
-+	switch (vsi->type) {
-+	case ICE_VSI_SWITCHDEV_CTRL:
-+		/* Setup eswitch MSIX irq handler for VSI */
-+		vsi->irq_handler = ice_eswitch_msix_clean_rings;
-+		break;
-+	case ICE_VSI_PF:
-+		/* Setup default MSIX irq handler for VSI */
-+		vsi->irq_handler = ice_msix_clean_rings;
-+		break;
-+	case ICE_VSI_CTRL:
-+		/* Setup ctrl VSI MSIX irq handler */
-+		vsi->irq_handler = ice_msix_clean_ctrl_vsi;
-+		break;
-+	case ICE_VSI_CHNL:
-+		if (!ch)
-+			return -EINVAL;
-+
-+		vsi->num_rxq = ch->num_rxq;
-+		vsi->num_txq = ch->num_txq;
-+		vsi->next_base_q = ch->base_q;
-+		break;
-+	default:
-+		ice_vsi_free_arrays(vsi);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
  /**
-  * ice_vsi_alloc - Allocates the next available struct VSI in the PF
-  * @pf: board private structure
-+ * @pi: pointer to the port_info instance
-  * @vsi_type: type of VSI
-  * @ch: ptr to channel
-  * @vf: VF for ICE_VSI_VF and ICE_VSI_CTRL
-@@ -461,8 +507,9 @@ static irqreturn_t ice_eswitch_msix_clean_rings(int __always_unused irq, void *d
-  * returns a pointer to a VSI on success, NULL on failure.
-  */
- static struct ice_vsi *
--ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type,
--	      struct ice_channel *ch, struct ice_vf *vf)
-+ice_vsi_alloc(struct ice_pf *pf, struct ice_port_info *pi,
-+	      enum ice_vsi_type vsi_type, struct ice_channel *ch,
-+	      struct ice_vf *vf)
- {
- 	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_vsi *vsi = NULL;
-@@ -488,61 +535,11 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type,
+  * ice_set_rdma_cap - enable RDMA support
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 039342a0ed15..9c48e6cf5a0e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -1088,8 +1088,10 @@ int ice_init_hw(struct ice_hw *hw)
+ 	if (status)
+ 		goto err_unroll_cqinit;
  
- 	vsi->type = vsi_type;
- 	vsi->back = pf;
-+	vsi->port_info = pi;
-+	/* For VSIs which don't have a connected VF, this will be NULL */
-+	vsi->vf = vf;
- 	set_bit(ICE_VSI_DOWN, vsi->state);
+-	hw->port_info = devm_kzalloc(ice_hw_to_dev(hw),
+-				     sizeof(*hw->port_info), GFP_KERNEL);
++	if (!hw->port_info)
++		hw->port_info = devm_kzalloc(ice_hw_to_dev(hw),
++					     sizeof(*hw->port_info),
++					     GFP_KERNEL);
+ 	if (!hw->port_info) {
+ 		status = -ENOMEM;
+ 		goto err_unroll_cqinit;
+@@ -1214,11 +1216,6 @@ void ice_deinit_hw(struct ice_hw *hw)
+ 	ice_free_hw_tbls(hw);
+ 	mutex_destroy(&hw->tnl_lock);
  
--	if (vsi_type == ICE_VSI_VF)
--		ice_vsi_set_num_qs(vsi, vf);
--	else if (vsi_type != ICE_VSI_CHNL)
--		ice_vsi_set_num_qs(vsi, NULL);
--
--	switch (vsi->type) {
--	case ICE_VSI_SWITCHDEV_CTRL:
--		if (ice_vsi_alloc_arrays(vsi))
--			goto err_rings;
--
--		/* Setup eswitch MSIX irq handler for VSI */
--		vsi->irq_handler = ice_eswitch_msix_clean_rings;
--		break;
--	case ICE_VSI_PF:
--		if (ice_vsi_alloc_arrays(vsi))
--			goto err_rings;
--
--		/* Setup default MSIX irq handler for VSI */
--		vsi->irq_handler = ice_msix_clean_rings;
--		break;
--	case ICE_VSI_CTRL:
--		if (ice_vsi_alloc_arrays(vsi))
--			goto err_rings;
--
--		/* Setup ctrl VSI MSIX irq handler */
--		vsi->irq_handler = ice_msix_clean_ctrl_vsi;
--
--		/* For the PF control VSI this is NULL, for the VF control VSI
--		 * this will be the first VF to allocate it.
--		 */
--		vsi->vf = vf;
--		break;
--	case ICE_VSI_VF:
--		if (ice_vsi_alloc_arrays(vsi))
--			goto err_rings;
--		vsi->vf = vf;
--		break;
--	case ICE_VSI_CHNL:
--		if (!ch)
--			goto err_rings;
--		vsi->num_rxq = ch->num_rxq;
--		vsi->num_txq = ch->num_txq;
--		vsi->next_base_q = ch->base_q;
--		break;
--	case ICE_VSI_LB:
--		if (ice_vsi_alloc_arrays(vsi))
--			goto err_rings;
--		break;
--	default:
--		dev_warn(dev, "Unknown VSI type %d\n", vsi->type);
--		goto unlock_pf;
+-	if (hw->port_info) {
+-		devm_kfree(ice_hw_to_dev(hw), hw->port_info);
+-		hw->port_info = NULL;
 -	}
 -
- 	if (vsi->type == ICE_VSI_CTRL && !vf) {
- 		/* Use the last VSI slot as the index for PF control VSI */
- 		vsi->idx = pf->num_alloc_vsi - 1;
-@@ -560,11 +557,7 @@ ice_vsi_alloc(struct ice_pf *pf, enum ice_vsi_type vsi_type,
- 
- 	if (vsi->type == ICE_VSI_CTRL && vf)
- 		vf->ctrl_vsi_idx = vsi->idx;
--	goto unlock_pf;
- 
--err_rings:
--	devm_kfree(dev, vsi);
--	vsi = NULL;
- unlock_pf:
- 	mutex_unlock(&pf->sw_mutex);
- 	return vsi;
-@@ -1129,12 +1122,12 @@ ice_chnl_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- /**
-  * ice_vsi_init - Create and initialize a VSI
-  * @vsi: the VSI being configured
-- * @init_vsi: is this call creating a VSI
-+ * @init_vsi: flag, tell if VSI need to be initialized
-  *
-  * This initializes a VSI context depending on the VSI type to be added and
-  * passes it down to the add_vsi aq command to create a new VSI.
-  */
--static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
-+static int ice_vsi_init(struct ice_vsi *vsi, int init_vsi)
- {
- 	struct ice_pf *pf = vsi->back;
- 	struct ice_hw *hw = &pf->hw;
-@@ -1196,7 +1189,7 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
- 		/* if updating VSI context, make sure to set valid_section:
- 		 * to indicate which section of VSI context being updated
- 		 */
--		if (!init_vsi)
-+		if (!(init_vsi & ICE_VSI_FLAG_INIT))
- 			ctxt->info.valid_sections |=
- 				cpu_to_le16(ICE_AQ_VSI_PROP_Q_OPT_VALID);
- 	}
-@@ -1209,7 +1202,8 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
- 		if (ret)
- 			goto out;
- 
--		if (!init_vsi) /* means VSI being updated */
-+		if (!(init_vsi & ICE_VSI_FLAG_INIT))
-+			/* means VSI being updated */
- 			/* must to indicate which section of VSI context are
- 			 * being modified
- 			 */
-@@ -1224,7 +1218,7 @@ static int ice_vsi_init(struct ice_vsi *vsi, bool init_vsi)
- 			cpu_to_le16(ICE_AQ_VSI_PROP_SECURITY_VALID);
- 	}
- 
--	if (init_vsi) {
-+	if (init_vsi & ICE_VSI_FLAG_INIT) {
- 		ret = ice_add_vsi(hw, vsi->idx, ctxt, NULL);
- 		if (ret) {
- 			dev_err(dev, "Add VSI failed, err %d\n", ret);
-@@ -2493,39 +2487,89 @@ static void ice_set_agg_vsi(struct ice_vsi *vsi)
- }
- 
- /**
-- * ice_vsi_setup - Set up a VSI by a given type
-- * @pf: board private structure
-- * @pi: pointer to the port_info instance
-- * @vsi_type: VSI type
-- * @vf: pointer to VF to which this VSI connects. This field is used primarily
-- *      for the ICE_VSI_VF type. Other VSI types should pass NULL.
-- * @ch: ptr to channel
-- *
-- * This allocates the sw VSI structure and its queue resources.
-+ * ice_free_vf_ctrl_res - Free the VF control VSI resource
-+ * @pf: pointer to PF structure
-+ * @vsi: the VSI to free resources for
-  *
-- * Returns pointer to the successfully allocated and configured VSI sw struct on
-- * success, NULL on failure.
-+ * Check if the VF control VSI resource is still in use. If no VF is using it
-+ * any more, release the VSI resource. Otherwise, leave it to be cleaned up
-+ * once no other VF uses it.
-  */
--struct ice_vsi *
--ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
--	      enum ice_vsi_type vsi_type, struct ice_vf *vf,
--	      struct ice_channel *ch)
-+static void ice_free_vf_ctrl_res(struct ice_pf *pf,  struct ice_vsi *vsi)
-+{
-+	struct ice_vf *vf;
-+	unsigned int bkt;
-+
-+	rcu_read_lock();
-+	ice_for_each_vf_rcu(pf, bkt, vf) {
-+		if (vf != vsi->vf && vf->ctrl_vsi_idx != ICE_NO_VSI) {
-+			rcu_read_unlock();
-+			return;
-+		}
-+	}
-+	rcu_read_unlock();
-+
-+	/* No other VFs left that have control VSI. It is now safe to reclaim
-+	 * SW interrupts back to the common pool.
-+	 */
-+	ice_free_res(pf->irq_tracker, vsi->base_vector,
-+		     ICE_RES_VF_CTRL_VEC_ID);
-+	pf->num_avail_sw_msix += vsi->num_q_vectors;
-+}
-+
-+static int ice_vsi_cfg_tc_lan(struct ice_pf *pf, struct ice_vsi *vsi)
- {
- 	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
- 	struct device *dev = ice_pf_to_dev(pf);
--	struct ice_vsi *vsi;
- 	int ret, i;
- 
--	vsi = ice_vsi_alloc(pf, vsi_type, ch, vf);
-+	/* configure VSI nodes based on number of queues and TC's */
-+	ice_for_each_traffic_class(i) {
-+		if (!(vsi->tc_cfg.ena_tc & BIT(i)))
-+			continue;
- 
--	if (!vsi) {
--		dev_err(dev, "could not allocate VSI\n");
--		return NULL;
-+		if (vsi->type == ICE_VSI_CHNL) {
-+			if (!vsi->alloc_txq && vsi->num_txq)
-+				max_txqs[i] = vsi->num_txq;
-+			else
-+				max_txqs[i] = pf->num_lan_tx;
-+		} else {
-+			max_txqs[i] = vsi->alloc_txq;
-+		}
- 	}
- 
--	vsi->port_info = pi;
-+	dev_dbg(dev, "vsi->tc_cfg.ena_tc = %d\n", vsi->tc_cfg.ena_tc);
-+	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
-+			      max_txqs);
-+	if (ret) {
-+		dev_err(dev, "VSI %d failed lan queue config, error %d\n",
-+			vsi->vsi_num, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_vsi_cfg_def - configure default VSI based on the type
-+ * @vsi: pointer to VSI
-+ * @vf: pointer to VF to which this VSI connects. This field is used primarily
-+ *      for the ICE_VSI_VF type. Other VSI types should pass NULL.
-+ * @ch: ptr to channel
-+ */
-+static int
-+ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_vf *vf, struct ice_channel *ch)
-+{
-+	struct device *dev = ice_pf_to_dev(vsi->back);
-+	struct ice_pf *pf = vsi->back;
-+	int ret;
-+
- 	vsi->vsw = pf->first_sw;
- 
-+	ret = ice_vsi_alloc_def(vsi, vf, ch);
-+	if (ret)
-+		return ret;
-+
- 	ice_alloc_fd_res(vsi);
- 
- 	if (ice_vsi_get_qs(vsi)) {
-@@ -2568,6 +2612,14 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 			goto unroll_vector_base;
- 
- 		ice_vsi_map_rings_to_vectors(vsi);
-+		if (ice_is_xdp_ena_vsi(vsi)) {
-+			ret = ice_vsi_determine_xdp_res(vsi);
-+			if (ret)
-+				goto unroll_vector_base;
-+			ret = ice_prepare_xdp_rings(vsi, vsi->xdp_prog);
-+			if (ret)
-+				goto unroll_vector_base;
-+		}
- 
- 		/* ICE_VSI_CTRL does not need RSS so skip RSS processing */
- 		if (vsi->type != ICE_VSI_CTRL)
-@@ -2624,29 +2676,135 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 		goto unroll_vsi_init;
- 	}
- 
--	/* configure VSI nodes based on number of queues and TC's */
--	ice_for_each_traffic_class(i) {
--		if (!(vsi->tc_cfg.ena_tc & BIT(i)))
--			continue;
-+	return 0;
- 
--		if (vsi->type == ICE_VSI_CHNL) {
--			if (!vsi->alloc_txq && vsi->num_txq)
--				max_txqs[i] = vsi->num_txq;
--			else
--				max_txqs[i] = pf->num_lan_tx;
--		} else {
--			max_txqs[i] = vsi->alloc_txq;
--		}
-+unroll_vector_base:
-+	/* reclaim SW interrupts back to the common pool */
-+	ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
-+	pf->num_avail_sw_msix += vsi->num_q_vectors;
-+unroll_alloc_q_vector:
-+	ice_vsi_free_q_vectors(vsi);
-+unroll_vsi_init:
-+	ice_vsi_delete(vsi);
-+unroll_get_qs:
-+	ice_vsi_put_qs(vsi);
-+unroll_vsi_alloc:
-+	ice_vsi_free_arrays(vsi);
-+	return ret;
-+}
-+
-+/**
-+ * ice_vsi_cfg - configure VSI and tc on it
-+ * @vsi: pointer to VSI
-+ * @vf: pointer to VF to which this VSI connects. This field is used primarily
-+ *      for the ICE_VSI_VF type. Other VSI types should pass NULL.
-+ * @ch: ptr to channel
-+ */
-+int ice_vsi_cfg(struct ice_vsi *vsi, struct ice_vf *vf, struct ice_channel *ch)
-+{
-+	int ret;
-+
-+	ret = ice_vsi_cfg_def(vsi, vf, ch);
-+	if (ret)
-+		return ret;
-+
-+	ret = ice_vsi_cfg_tc_lan(vsi->back, vsi);
-+	if (ret)
-+		ice_vsi_decfg(vsi);
-+
-+	return ret;
-+}
-+
-+/**
-+ * ice_vsi_decfg - remove all VSI configuration
-+ * @vsi: pointer to VSI
-+ */
-+void ice_vsi_decfg(struct ice_vsi *vsi)
-+{
-+	struct ice_pf *pf = vsi->back;
-+	int err;
-+
-+	/* The Rx rule will only exist to remove if the LLDP FW
-+	 * engine is currently stopped
-+	 */
-+	if (!ice_is_safe_mode(pf) && vsi->type == ICE_VSI_PF &&
-+	    !test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
-+		ice_cfg_sw_lldp(vsi, false, false);
-+
-+	ice_fltr_remove_all(vsi);
-+	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
-+	err = ice_rm_vsi_rdma_cfg(vsi->port_info, vsi->idx);
-+	if (err)
-+		dev_err(ice_pf_to_dev(pf), "Failed to remove RDMA scheduler config for VSI %u, err %d\n",
-+			vsi->vsi_num, err);
-+
-+	if (ice_is_xdp_ena_vsi(vsi))
-+		/* return value check can be skipped here, it always returns
-+		 * 0 if reset is in progress
-+		 */
-+		ice_destroy_xdp_rings(vsi);
-+
-+	ice_vsi_clear_rings(vsi);
-+	ice_vsi_free_q_vectors(vsi);
-+	ice_vsi_delete(vsi);
-+	ice_vsi_put_qs(vsi);
-+	ice_vsi_free_arrays(vsi);
-+
-+	/* SR-IOV determines needed MSIX resources all at once instead of per
-+	 * VSI since when VFs are spawned we know how many VFs there are and how
-+	 * many interrupts each VF needs. SR-IOV MSIX resources are also
-+	 * cleared in the same manner.
-+	 */
-+	if (vsi->type == ICE_VSI_CTRL && vsi->vf) {
-+		ice_free_vf_ctrl_res(pf, vsi);
-+	} else if (vsi->type != ICE_VSI_VF) {
-+		/* reclaim SW interrupts back to the common pool */
-+		ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
-+		pf->num_avail_sw_msix += vsi->num_q_vectors;
-+		vsi->base_vector = 0;
- 	}
- 
--	dev_dbg(dev, "vsi->tc_cfg.ena_tc = %d\n", vsi->tc_cfg.ena_tc);
--	ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, vsi->tc_cfg.ena_tc,
--			      max_txqs);
--	if (ret) {
--		dev_err(dev, "VSI %d failed lan queue config, error %d\n",
--			vsi->vsi_num, ret);
--		goto unroll_clear_rings;
-+	if (vsi->type == ICE_VSI_VF &&
-+	    vsi->agg_node && vsi->agg_node->valid)
-+		vsi->agg_node->num_vsis--;
-+	if (vsi->agg_node) {
-+		vsi->agg_node->valid = false;
-+		vsi->agg_node->agg_id = 0;
- 	}
-+}
-+
-+/**
-+ * ice_vsi_setup - Set up a VSI by a given type
-+ * @pf: board private structure
-+ * @pi: pointer to the port_info instance
-+ * @vsi_type: VSI type
-+ * @vf: pointer to VF to which this VSI connects. This field is used primarily
-+ *      for the ICE_VSI_VF type. Other VSI types should pass NULL.
-+ * @ch: ptr to channel
-+ *
-+ * This allocates the sw VSI structure and its queue resources.
-+ *
-+ * Returns pointer to the successfully allocated and configured VSI sw struct on
-+ * success, NULL on failure.
-+ */
-+struct ice_vsi *
-+ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
-+	      enum ice_vsi_type vsi_type, struct ice_vf *vf,
-+	      struct ice_channel *ch)
-+{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_vsi *vsi;
-+	int ret;
-+
-+	vsi = ice_vsi_alloc(pf, pi, vsi_type, ch, vf);
-+	if (!vsi) {
-+		dev_err(dev, "could not allocate VSI\n");
-+		return NULL;
-+	}
-+
-+	ret = ice_vsi_cfg(vsi, vf, ch);
-+	if (ret)
-+		goto err_vsi_cfg;
- 
- 	/* Add switch rule to drop all Tx Flow Control Frames, of look up
- 	 * type ETHERTYPE from VSIs, and restrict malicious VF from sending
-@@ -2657,30 +2815,18 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	 * be dropped so that VFs cannot send LLDP packets to reconfig DCB
- 	 * settings in the HW.
- 	 */
--	if (!ice_is_safe_mode(pf))
--		if (vsi->type == ICE_VSI_PF) {
--			ice_fltr_add_eth(vsi, ETH_P_PAUSE, ICE_FLTR_TX,
--					 ICE_DROP_PACKET);
--			ice_cfg_sw_lldp(vsi, true, true);
--		}
-+	if (!ice_is_safe_mode(pf) && vsi->type == ICE_VSI_PF) {
-+		ice_fltr_add_eth(vsi, ETH_P_PAUSE, ICE_FLTR_TX,
-+				 ICE_DROP_PACKET);
-+		ice_cfg_sw_lldp(vsi, true, true);
-+	}
- 
- 	if (!vsi->agg_node)
- 		ice_set_agg_vsi(vsi);
-+
- 	return vsi;
- 
--unroll_clear_rings:
--	ice_vsi_clear_rings(vsi);
--unroll_vector_base:
--	/* reclaim SW interrupts back to the common pool */
--	ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
--	pf->num_avail_sw_msix += vsi->num_q_vectors;
--unroll_alloc_q_vector:
--	ice_vsi_free_q_vectors(vsi);
--unroll_vsi_init:
--	ice_vsi_delete(vsi);
--unroll_get_qs:
--	ice_vsi_put_qs(vsi);
--unroll_vsi_alloc:
-+err_vsi_cfg:
- 	if (vsi_type == ICE_VSI_VF)
- 		ice_enable_lag(pf->lag);
- 	ice_vsi_free(vsi);
-@@ -2946,37 +3092,6 @@ void ice_napi_del(struct ice_vsi *vsi)
- 		netif_napi_del(&vsi->q_vectors[v_idx]->napi);
+ 	/* Attempt to disable FW logging before shutting down control queues */
+ 	ice_cfg_fw_log(hw, false);
+ 	ice_destroy_all_ctrlq(hw);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index c71f60c3bb15..bf98334fadbc 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3405,53 +3405,6 @@ static void ice_set_netdev_features(struct net_device *netdev)
+ 	netdev->hw_features |= NETIF_F_RXFCS;
  }
  
 -/**
-- * ice_free_vf_ctrl_res - Free the VF control VSI resource
-- * @pf: pointer to PF structure
-- * @vsi: the VSI to free resources for
+- * ice_cfg_netdev - Allocate, configure and register a netdev
+- * @vsi: the VSI associated with the new netdev
 - *
-- * Check if the VF control VSI resource is still in use. If no VF is using it
-- * any more, release the VSI resource. Otherwise, leave it to be cleaned up
-- * once no other VF uses it.
+- * Returns 0 on success, negative value on failure
 - */
--static void ice_free_vf_ctrl_res(struct ice_pf *pf,  struct ice_vsi *vsi)
+-static int ice_cfg_netdev(struct ice_vsi *vsi)
 -{
--	struct ice_vf *vf;
--	unsigned int bkt;
+-	struct ice_netdev_priv *np;
+-	struct net_device *netdev;
+-	u8 mac_addr[ETH_ALEN];
 -
--	rcu_read_lock();
--	ice_for_each_vf_rcu(pf, bkt, vf) {
--		if (vf != vsi->vf && vf->ctrl_vsi_idx != ICE_NO_VSI) {
--			rcu_read_unlock();
--			return;
--		}
+-	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
+-				    vsi->alloc_rxq);
+-	if (!netdev)
+-		return -ENOMEM;
+-
+-	set_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
+-	vsi->netdev = netdev;
+-	np = netdev_priv(netdev);
+-	np->vsi = vsi;
+-
+-	ice_set_netdev_features(netdev);
+-
+-	ice_set_ops(netdev);
+-
+-	if (vsi->type == ICE_VSI_PF) {
+-		SET_NETDEV_DEV(netdev, ice_pf_to_dev(vsi->back));
+-		ether_addr_copy(mac_addr, vsi->port_info->mac.perm_addr);
+-		eth_hw_addr_set(netdev, mac_addr);
+-		ether_addr_copy(netdev->perm_addr, mac_addr);
 -	}
--	rcu_read_unlock();
 -
--	/* No other VFs left that have control VSI. It is now safe to reclaim
--	 * SW interrupts back to the common pool.
--	 */
--	ice_free_res(pf->irq_tracker, vsi->base_vector,
--		     ICE_RES_VF_CTRL_VEC_ID);
--	pf->num_avail_sw_msix += vsi->num_q_vectors;
+-	netdev->priv_flags |= IFF_UNICAST_FLT;
+-
+-	/* Setup netdev TC information */
+-	ice_vsi_cfg_netdev_tc(vsi, vsi->tc_cfg.ena_tc);
+-
+-	/* setup watchdog timeout value to be 5 second */
+-	netdev->watchdog_timeo = 5 * HZ;
+-
+-	netdev->min_mtu = ETH_MIN_MTU;
+-	netdev->max_mtu = ICE_MAX_MTU;
+-
+-	return 0;
 -}
 -
  /**
-  * ice_vsi_release - Delete a VSI and free its resources
-  * @vsi: the VSI being removed
-@@ -2986,7 +3101,6 @@ static void ice_free_vf_ctrl_res(struct ice_pf *pf,  struct ice_vsi *vsi)
- int ice_vsi_release(struct ice_vsi *vsi)
- {
- 	struct ice_pf *pf;
--	int err;
+  * ice_fill_rss_lut - Fill the RSS lookup table with default values
+  * @lut: Lookup table
+@@ -3704,78 +3657,6 @@ static int ice_tc_indir_block_register(struct ice_vsi *vsi)
+ 	return flow_indr_dev_register(ice_indr_setup_tc_cb, np);
+ }
  
- 	if (!vsi->back)
- 		return -ENODEV;
-@@ -3004,41 +3118,14 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 		clear_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state);
- 	}
- 
-+	if (vsi->type == ICE_VSI_PF)
-+		ice_devlink_destroy_pf_port(pf);
-+
- 	if (test_bit(ICE_FLAG_RSS_ENA, pf->flags))
- 		ice_rss_clean(vsi);
- 
- 	ice_vsi_close(vsi);
+-/**
+- * ice_setup_pf_sw - Setup the HW switch on startup or after reset
+- * @pf: board private structure
+- *
+- * Returns 0 on success, negative value on failure
+- */
+-static int ice_setup_pf_sw(struct ice_pf *pf)
+-{
+-	struct device *dev = ice_pf_to_dev(pf);
+-	bool dvm = ice_is_dvm_ena(&pf->hw);
+-	struct ice_vsi *vsi;
+-	int status;
 -
--	/* SR-IOV determines needed MSIX resources all at once instead of per
--	 * VSI since when VFs are spawned we know how many VFs there are and how
--	 * many interrupts each VF needs. SR-IOV MSIX resources are also
--	 * cleared in the same manner.
--	 */
--	if (vsi->type == ICE_VSI_CTRL && vsi->vf) {
--		ice_free_vf_ctrl_res(pf, vsi);
--	} else if (vsi->type != ICE_VSI_VF) {
--		/* reclaim SW interrupts back to the common pool */
--		ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
--		pf->num_avail_sw_msix += vsi->num_q_vectors;
+-	if (ice_is_reset_in_progress(pf->state))
+-		return -EBUSY;
+-
+-	status = ice_aq_set_port_params(pf->hw.port_info, dvm, NULL);
+-	if (status)
+-		return -EIO;
+-
+-	vsi = ice_pf_vsi_setup(pf, pf->hw.port_info);
+-	if (!vsi)
+-		return -ENOMEM;
+-
+-	/* init channel list */
+-	INIT_LIST_HEAD(&vsi->ch_list);
+-
+-	status = ice_cfg_netdev(vsi);
+-	if (status)
+-		goto unroll_vsi_setup;
+-	/* netdev has to be configured before setting frame size */
+-	ice_vsi_cfg_frame_size(vsi);
+-
+-	/* init indirect block notifications */
+-	status = ice_tc_indir_block_register(vsi);
+-	if (status) {
+-		dev_err(dev, "Failed to register netdev notifier\n");
+-		goto unroll_cfg_netdev;
 -	}
 -
--	/* The Rx rule will only exist to remove if the LLDP FW
--	 * engine is currently stopped
+-	/* Setup DCB netlink interface */
+-	ice_dcbnl_setup(vsi);
+-
+-	/* registering the NAPI handler requires both the queues and
+-	 * netdev to be created, which are done in ice_pf_vsi_setup()
+-	 * and ice_cfg_netdev() respectively
 -	 */
--	if (!ice_is_safe_mode(pf) && vsi->type == ICE_VSI_PF &&
--	    !test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
--		ice_cfg_sw_lldp(vsi, false, false);
+-	ice_napi_add(vsi);
 -
--	if (ice_is_vsi_dflt_vsi(vsi))
--		ice_clear_dflt_vsi(vsi);
--	ice_fltr_remove_all(vsi);
--	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
--	err = ice_rm_vsi_rdma_cfg(vsi->port_info, vsi->idx);
--	if (err)
--		dev_err(ice_pf_to_dev(vsi->back), "Failed to remove RDMA scheduler config for VSI %u, err %d\n",
--			vsi->vsi_num, err);
--	ice_vsi_delete(vsi);
--	ice_vsi_free_q_vectors(vsi);
-+	ice_vsi_decfg(vsi);
- 
- 	if (vsi->netdev) {
- 		if (test_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state)) {
-@@ -3052,16 +3139,6 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 		}
- 	}
- 
--	if (vsi->type == ICE_VSI_PF)
--		ice_devlink_destroy_pf_port(pf);
+-	status = ice_init_mac_fltr(pf);
+-	if (status)
+-		goto unroll_napi_add;
 -
--	if (vsi->type == ICE_VSI_VF &&
--	    vsi->agg_node && vsi->agg_node->valid)
--		vsi->agg_node->num_vsis--;
--	ice_vsi_clear_rings(vsi);
+-	return 0;
 -
--	ice_vsi_put_qs(vsi);
+-unroll_napi_add:
+-	ice_tc_indir_block_unregister(vsi);
+-unroll_cfg_netdev:
+-	if (vsi) {
+-		ice_napi_del(vsi);
+-		if (vsi->netdev) {
+-			clear_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
+-			free_netdev(vsi->netdev);
+-			vsi->netdev = NULL;
+-		}
+-	}
 -
- 	/* retain SW VSI data structure since it is needed to unregister and
- 	 * free VSI netdev when PF is not in reset recovery pending state,\
- 	 * for ex: during rmmod.
-@@ -3189,29 +3266,24 @@ ice_vsi_rebuild_set_coalesce(struct ice_vsi *vsi,
+-unroll_vsi_setup:
+-	ice_vsi_release(vsi);
+-	return status;
+-}
+-
  /**
-  * ice_vsi_rebuild - Rebuild VSI after reset
-  * @vsi: VSI to be rebuild
-- * @init_vsi: is this an initialization or a reconfigure of the VSI
-+ * @init_vsi: flag, tell if VSI need to be initialized
-  *
-  * Returns 0 on success and negative value on failure
-  */
--int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
-+int ice_vsi_rebuild(struct ice_vsi *vsi, int init_vsi)
- {
--	u16 max_txqs[ICE_MAX_TRAFFIC_CLASS] = { 0 };
- 	struct ice_coalesce_stored *coalesce;
--	int prev_num_q_vectors = 0;
--	enum ice_vsi_type vtype;
-+	int prev_num_q_vectors;
- 	struct ice_pf *pf;
--	int ret, i;
-+	int ret;
+  * ice_get_avail_q_count - Get count of queues in use
+  * @pf_qmap: bitmap to get queue use count from
+@@ -4473,6 +4354,21 @@ static int ice_init_fdir(struct ice_pf *pf)
+ 	return err;
+ }
  
- 	if (!vsi)
- 		return -EINVAL;
- 
- 	pf = vsi->back;
--	vtype = vsi->type;
--	if (WARN_ON(vtype == ICE_VSI_VF && !vsi->vf))
-+	if (WARN_ON(vsi->type == ICE_VSI_VF && !vsi->vf))
- 		return -EINVAL;
- 
--	ice_vsi_init_vlan_ops(vsi);
--
- 	coalesce = kcalloc(vsi->num_q_vectors,
- 			   sizeof(struct ice_coalesce_stored), GFP_KERNEL);
- 	if (!coalesce)
-@@ -3219,174 +3291,30 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 
- 	prev_num_q_vectors = ice_vsi_rebuild_get_coalesce(vsi, coalesce);
- 
--	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
--	ret = ice_rm_vsi_rdma_cfg(vsi->port_info, vsi->idx);
-+	ice_vsi_decfg(vsi);
-+	ret = ice_vsi_cfg_def(vsi, vsi->vf, vsi->ch);
- 	if (ret)
--		dev_err(ice_pf_to_dev(vsi->back), "Failed to remove RDMA scheduler config for VSI %u, err %d\n",
--			vsi->vsi_num, ret);
--	ice_vsi_free_q_vectors(vsi);
--
--	/* SR-IOV determines needed MSIX resources all at once instead of per
--	 * VSI since when VFs are spawned we know how many VFs there are and how
--	 * many interrupts each VF needs. SR-IOV MSIX resources are also
--	 * cleared in the same manner.
--	 */
--	if (vtype != ICE_VSI_VF) {
--		/* reclaim SW interrupts back to the common pool */
--		ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
--		pf->num_avail_sw_msix += vsi->num_q_vectors;
--		vsi->base_vector = 0;
--	}
--
--	if (ice_is_xdp_ena_vsi(vsi))
--		/* return value check can be skipped here, it always returns
--		 * 0 if reset is in progress
--		 */
--		ice_destroy_xdp_rings(vsi);
--	ice_vsi_put_qs(vsi);
--	ice_vsi_clear_rings(vsi);
--	ice_vsi_free_arrays(vsi);
--	if (vtype == ICE_VSI_VF)
--		ice_vsi_set_num_qs(vsi, vsi->vf);
--	else
--		ice_vsi_set_num_qs(vsi, NULL);
--
--	ret = ice_vsi_alloc_arrays(vsi);
--	if (ret < 0)
--		goto err_vsi;
--
--	ice_vsi_get_qs(vsi);
--
--	ice_alloc_fd_res(vsi);
--	ice_vsi_set_tc_cfg(vsi);
--
--	/* Initialize VSI struct elements and create VSI in FW */
--	ret = ice_vsi_init(vsi, init_vsi);
--	if (ret < 0)
--		goto err_vsi;
--
--	switch (vtype) {
--	case ICE_VSI_CTRL:
--	case ICE_VSI_SWITCHDEV_CTRL:
--	case ICE_VSI_PF:
--		ret = ice_vsi_alloc_q_vectors(vsi);
--		if (ret)
--			goto err_rings;
--
--		ret = ice_vsi_setup_vector_base(vsi);
--		if (ret)
--			goto err_vectors;
--
--		ret = ice_vsi_set_q_vectors_reg_idx(vsi);
--		if (ret)
--			goto err_vectors;
--
--		ret = ice_vsi_alloc_rings(vsi);
--		if (ret)
--			goto err_vectors;
--
--		ice_vsi_map_rings_to_vectors(vsi);
--		if (ice_is_xdp_ena_vsi(vsi)) {
--			ret = ice_vsi_determine_xdp_res(vsi);
--			if (ret)
--				goto err_vectors;
--			ret = ice_prepare_xdp_rings(vsi, vsi->xdp_prog);
--			if (ret)
--				goto err_vectors;
--		}
--		/* ICE_VSI_CTRL does not need RSS so skip RSS processing */
--		if (vtype != ICE_VSI_CTRL)
--			/* Do not exit if configuring RSS had an issue, at
--			 * least receive traffic on first queue. Hence no
--			 * need to capture return value
--			 */
--			if (test_bit(ICE_FLAG_RSS_ENA, pf->flags))
--				ice_vsi_cfg_rss_lut_key(vsi);
--
--		/* disable or enable CRC stripping */
--		if (vsi->netdev)
--			ice_vsi_cfg_crc_strip(vsi, !!(vsi->netdev->features &
--					      NETIF_F_RXFCS));
--
--		break;
--	case ICE_VSI_VF:
--		ret = ice_vsi_alloc_q_vectors(vsi);
--		if (ret)
--			goto err_rings;
--
--		ret = ice_vsi_set_q_vectors_reg_idx(vsi);
--		if (ret)
--			goto err_vectors;
--
--		ret = ice_vsi_alloc_rings(vsi);
--		if (ret)
--			goto err_vectors;
--
--		break;
--	case ICE_VSI_CHNL:
--		if (test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
--			ice_vsi_cfg_rss_lut_key(vsi);
--			ice_vsi_set_rss_flow_fld(vsi);
--		}
--		break;
--	default:
--		break;
--	}
--
--	/* configure VSI nodes based on number of queues and TC's */
--	for (i = 0; i < vsi->tc_cfg.numtc; i++) {
--		/* configure VSI nodes based on number of queues and TC's.
--		 * ADQ creates VSIs for each TC/Channel but doesn't
--		 * allocate queues instead it reconfigures the PF queues
--		 * as per the TC command. So max_txqs should point to the
--		 * PF Tx queues.
--		 */
--		if (vtype == ICE_VSI_CHNL)
--			max_txqs[i] = pf->num_lan_tx;
--		else
--			max_txqs[i] = vsi->alloc_txq;
--
--		if (ice_is_xdp_ena_vsi(vsi))
--			max_txqs[i] += vsi->num_xdp_txq;
--	}
--
--	if (test_bit(ICE_FLAG_TC_MQPRIO, pf->flags))
--		/* If MQPRIO is set, means channel code path, hence for main
--		 * VSI's, use TC as 1
--		 */
--		ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx, 1, max_txqs);
--	else
--		ret = ice_cfg_vsi_lan(vsi->port_info, vsi->idx,
--				      vsi->tc_cfg.ena_tc, max_txqs);
-+		goto err_vsi_cfg;
- 
-+	ret = ice_vsi_cfg_tc_lan(pf, vsi);
- 	if (ret) {
--		dev_err(ice_pf_to_dev(pf), "VSI %d failed lan queue config, error %d\n",
--			vsi->vsi_num, ret);
--		if (init_vsi) {
-+		if (init_vsi & ICE_VSI_FLAG_INIT) {
- 			ret = -EIO;
--			goto err_vectors;
-+			goto err_vsi_cfg_tc_lan;
- 		} else {
- 			kfree(coalesce);
- 			return ice_schedule_reset(pf, ICE_RESET_PFR);
- 		}
- 	}
++static void ice_deinit_fdir(struct ice_pf *pf)
++{
++	struct ice_vsi *vsi = ice_get_ctrl_vsi(pf);
 +
- 	ice_vsi_rebuild_set_coalesce(vsi, coalesce, prev_num_q_vectors);
- 	kfree(coalesce);
++	if (!vsi)
++		return;
++
++	ice_vsi_manage_fdir(vsi, false);
++	ice_vsi_release(vsi);
++	if (pf->ctrl_vsi_idx != ICE_NO_VSI) {
++		pf->vsi[pf->ctrl_vsi_idx] = NULL;
++		pf->ctrl_vsi_idx = ICE_NO_VSI;
++	}
++}
++
+ /**
+  * ice_get_opt_fw_name - return optional firmware file name or NULL
+  * @pf: pointer to the PF instance
+@@ -4573,14 +4469,13 @@ static void ice_print_wake_reason(struct ice_pf *pf)
+ 
+ /**
+  * ice_register_netdev - register netdev and devlink port
+- * @pf: pointer to the PF struct
++ * @vsi: pointer to the VSI struct
+  */
+-static int ice_register_netdev(struct ice_pf *pf)
++static int ice_register_netdev(struct ice_vsi *vsi)
+ {
+-	struct ice_vsi *vsi;
+-	int err = 0;
++	struct ice_pf *pf = vsi->back;
++	int err;
+ 
+-	vsi = ice_get_main_vsi(pf);
+ 	if (!vsi || !vsi->netdev)
+ 		return -EIO;
+ 
+@@ -4598,168 +4493,208 @@ static int ice_register_netdev(struct ice_pf *pf)
+ 	netif_tx_stop_all_queues(vsi->netdev);
  
  	return 0;
- 
--err_vectors:
--	ice_vsi_free_q_vectors(vsi);
--err_rings:
--	if (vsi->netdev) {
--		vsi->current_netdev_flags = 0;
--		unregister_netdev(vsi->netdev);
--		free_netdev(vsi->netdev);
--		vsi->netdev = NULL;
--	}
--err_vsi:
--	ice_vsi_free(vsi);
--	set_bit(ICE_RESET_FAILED, pf->state);
-+err_vsi_cfg_tc_lan:
-+	ice_vsi_decfg(vsi);
-+err_vsi_cfg:
- 	kfree(coalesce);
- 	return ret;
++
+ err_register_netdev:
+ 	ice_devlink_destroy_pf_port(pf);
+ err_devlink_create:
+-	free_netdev(vsi->netdev);
+-	vsi->netdev = NULL;
+-	clear_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
++	unregister_netdev(vsi->netdev);
++	clear_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state);
+ 	return err;
  }
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index 6203114b805c..ad4d5314ca76 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -61,8 +61,11 @@ int ice_vsi_release(struct ice_vsi *vsi);
  
- void ice_vsi_close(struct ice_vsi *vsi);
++static void ice_unregister_netdev(struct ice_vsi *vsi)
++{
++	if (!vsi || !vsi->netdev)
++		return;
++
++	unregister_netdev(vsi->netdev);
++	ice_devlink_destroy_pf_port(vsi->back);
++	clear_bit(ICE_VSI_NETDEV_REGISTERED, vsi->state);
++}
++
+ /**
+- * ice_probe - Device initialization routine
+- * @pdev: PCI device information struct
+- * @ent: entry in ice_pci_tbl
++ * ice_cfg_netdev - Allocate, configure and register a netdev
++ * @vsi: the VSI associated with the new netdev
+  *
+- * Returns 0 on success, negative on failure
++ * Returns 0 on success, negative value on failure
+  */
+-static int
+-ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
++static int ice_cfg_netdev(struct ice_vsi *vsi)
+ {
+-	struct device *dev = &pdev->dev;
+-	struct ice_pf *pf;
+-	struct ice_hw *hw;
+-	int i, err;
++	struct ice_netdev_priv *np;
++	struct net_device *netdev;
++	u8 mac_addr[ETH_ALEN];
  
-+int ice_vsi_cfg(struct ice_vsi *vsi, struct ice_vf *vf,
-+		struct ice_channel *ch);
- int ice_ena_vsi(struct ice_vsi *vsi, bool locked);
+-	if (pdev->is_virtfn) {
+-		dev_err(dev, "can't probe a virtual function\n");
+-		return -EINVAL;
+-	}
++	netdev = alloc_etherdev_mqs(sizeof(*np), vsi->alloc_txq,
++				    vsi->alloc_rxq);
++	if (!netdev)
++		return -ENOMEM;
  
-+void ice_vsi_decfg(struct ice_vsi *vsi);
- void ice_dis_vsi(struct ice_vsi *vsi, bool locked);
+-	/* this driver uses devres, see
+-	 * Documentation/driver-api/driver-model/devres.rst
+-	 */
+-	err = pcim_enable_device(pdev);
+-	if (err)
+-		return err;
++	set_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
++	vsi->netdev = netdev;
++	np = netdev_priv(netdev);
++	np->vsi = vsi;
  
- int ice_free_res(struct ice_res_tracker *res, u16 index, u16 id);
-@@ -70,7 +73,9 @@ int ice_free_res(struct ice_res_tracker *res, u16 index, u16 id);
- int
- ice_get_res(struct ice_pf *pf, struct ice_res_tracker *res, u16 needed, u16 id);
- 
--int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi);
-+#define ICE_VSI_FLAG_INIT	BIT(0)
-+#define ICE_VSI_FLAG_NO_INIT	0
-+int ice_vsi_rebuild(struct ice_vsi *vsi, int init_vsi);
- 
- bool ice_is_reset_in_progress(unsigned long *state);
- int ice_wait_for_reset(struct ice_pf *pf, unsigned long timeout);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d39ceb3a3b72..c71f60c3bb15 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4204,13 +4204,13 @@ int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx)
- 
- 	/* set for the next time the netdev is started */
- 	if (!netif_running(vsi->netdev)) {
--		ice_vsi_rebuild(vsi, false);
-+		ice_vsi_rebuild(vsi, ICE_VSI_FLAG_NO_INIT);
- 		dev_dbg(ice_pf_to_dev(pf), "Link is down, queue count change happens when link is brought up\n");
- 		goto done;
+-	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), dev_driver_string(dev));
+-	if (err) {
+-		dev_err(dev, "BAR0 I/O map error %d\n", err);
+-		return err;
++	ice_set_netdev_features(netdev);
++	ice_set_ops(netdev);
++
++	if (vsi->type == ICE_VSI_PF) {
++		SET_NETDEV_DEV(netdev, ice_pf_to_dev(vsi->back));
++		ether_addr_copy(mac_addr, vsi->port_info->mac.perm_addr);
++		eth_hw_addr_set(netdev, mac_addr);
  	}
  
- 	ice_vsi_close(vsi);
--	ice_vsi_rebuild(vsi, false);
-+	ice_vsi_rebuild(vsi, ICE_VSI_FLAG_NO_INIT);
- 	ice_pf_dcb_recfg(pf);
- 	ice_vsi_open(vsi);
- done:
-@@ -6994,7 +6994,7 @@ static int ice_vsi_rebuild_by_type(struct ice_pf *pf, enum ice_vsi_type type)
+-	pf = ice_allocate_pf(dev);
+-	if (!pf)
+-		return -ENOMEM;
++	netdev->priv_flags |= IFF_UNICAST_FLT;
+ 
+-	/* initialize Auxiliary index to invalid value */
+-	pf->aux_idx = -1;
++	/* Setup netdev TC information */
++	ice_vsi_cfg_netdev_tc(vsi, vsi->tc_cfg.ena_tc);
+ 
+-	/* set up for high or low DMA */
+-	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
+-	if (err) {
+-		dev_err(dev, "DMA configuration failed: 0x%x\n", err);
+-		return err;
+-	}
++	netdev->max_mtu = ICE_MAX_MTU;
+ 
+-	pci_enable_pcie_error_reporting(pdev);
+-	pci_set_master(pdev);
++	return 0;
++}
+ 
+-	pf->pdev = pdev;
+-	pci_set_drvdata(pdev, pf);
+-	set_bit(ICE_DOWN, pf->state);
+-	/* Disable service task until DOWN bit is cleared */
+-	set_bit(ICE_SERVICE_DIS, pf->state);
++static void ice_decfg_netdev(struct ice_vsi *vsi)
++{
++	clear_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
++	free_netdev(vsi->netdev);
++	vsi->netdev = NULL;
++}
+ 
+-	hw = &pf->hw;
+-	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
+-	pci_save_state(pdev);
++static int ice_start_eth(struct ice_vsi *vsi)
++{
++	int err;
+ 
+-	hw->back = pf;
+-	hw->vendor_id = pdev->vendor;
+-	hw->device_id = pdev->device;
+-	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw->revision_id);
+-	hw->subsystem_vendor_id = pdev->subsystem_vendor;
+-	hw->subsystem_device_id = pdev->subsystem_device;
+-	hw->bus.device = PCI_SLOT(pdev->devfn);
+-	hw->bus.func = PCI_FUNC(pdev->devfn);
+-	ice_set_ctrlq_len(hw);
++	err = ice_init_mac_fltr(vsi->back);
++	if (err)
++		return err;
+ 
+-	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
++	rtnl_lock();
++	err = ice_vsi_open(vsi);
++	rtnl_unlock();
+ 
+-#ifndef CONFIG_DYNAMIC_DEBUG
+-	if (debug < -1)
+-		hw->debug_mask = debug;
+-#endif
++	return err;
++}
+ 
+-	err = ice_init_hw(hw);
+-	if (err) {
+-		dev_err(dev, "ice_init_hw failed: %d\n", err);
+-		err = -EIO;
+-		goto err_exit_unroll;
+-	}
++static int ice_init_eth(struct ice_pf *pf)
++{
++	struct ice_vsi *vsi = ice_get_main_vsi(pf);
++	struct device *dev = ice_pf_to_dev(pf);
++	int err;
+ 
+-	ice_init_feature_support(pf);
++	if (!vsi)
++		return -EINVAL;
+ 
+-	ice_request_fw(pf);
++	/* init channel list */
++	INIT_LIST_HEAD(&vsi->ch_list);
+ 
+-	/* if ice_request_fw fails, ICE_FLAG_ADV_FEATURES bit won't be
+-	 * set in pf->state, which will cause ice_is_safe_mode to return
+-	 * true
+-	 */
+-	if (ice_is_safe_mode(pf)) {
+-		/* we already got function/device capabilities but these don't
+-		 * reflect what the driver needs to do in safe mode. Instead of
+-		 * adding conditional logic everywhere to ignore these
+-		 * device/function capabilities, override them.
+-		 */
+-		ice_set_safe_mode_caps(hw);
+-	}
++	err = ice_cfg_netdev(vsi);
++	if (err)
++		return err;
++	/* Setup DCB netlink interface */
++	ice_dcbnl_setup(vsi);
+ 
+-	err = ice_init_pf(pf);
++	err = ice_set_cpu_rx_rmap(vsi);
+ 	if (err) {
+-		dev_err(dev, "ice_init_pf failed: %d\n", err);
+-		goto err_init_pf_unroll;
++		dev_err(dev, "Failed to set CPU Rx map VSI %d error %d\n",
++			vsi->vsi_num, err);
++		goto err_set_cpu_rx_rmap;
+ 	}
++	err = ice_init_mac_fltr(pf);
++	if (err)
++		goto err_init_mac_fltr;
+ 
+-	ice_devlink_init_regions(pf);
++	err = ice_register_netdev(vsi);
++	if (err)
++		goto err_register_netdev;
+ 
+-	pf->hw.udp_tunnel_nic.set_port = ice_udp_tunnel_set_port;
+-	pf->hw.udp_tunnel_nic.unset_port = ice_udp_tunnel_unset_port;
++	err = ice_tc_indir_block_register(vsi);
++	if (err)
++		goto err_tc_indir_block_register;
++
++	ice_napi_add(vsi);
++
++	return 0;
++
++err_tc_indir_block_register:
++	ice_unregister_netdev(vsi);
++err_register_netdev:
++err_init_mac_fltr:
++	ice_free_cpu_rx_rmap(vsi);
++err_set_cpu_rx_rmap:
++	ice_decfg_netdev(vsi);
++	return err;
++}
++
++static void ice_deinit_eth(struct ice_pf *pf)
++{
++	struct ice_vsi *vsi = ice_get_main_vsi(pf);
++
++	if (!vsi)
++		return;
++
++	ice_vsi_close(vsi);
++	ice_unregister_netdev(vsi);
++	ice_free_cpu_rx_rmap(vsi);
++	ice_tc_indir_block_unregister(vsi);
++	ice_decfg_netdev(vsi);
++}
++
++static int ice_init_dev(struct ice_pf *pf)
++{
++	struct device *dev = ice_pf_to_dev(pf);
++	int err;
++
++	err = ice_init_hw(&pf->hw);
++	if (err) {
++		dev_err(dev, "ice_init_hw failed: %d\n", err);
++		return err;
++	}
++
++	ice_init_feature_support(pf);
++
++	ice_request_fw(pf);
++
++	/* if ice_request_fw fails, ICE_FLAG_ADV_FEATURES bit won't be
++	 * set in pf->state, which will cause ice_is_safe_mode to return
++	 * true
++	 */
++	if (ice_is_safe_mode(pf)) {
++		/* we already got function/device capabilities but these don't
++		 * reflect what the driver needs to do in safe mode. Instead of
++		 * adding conditional logic everywhere to ignore these
++		 * device/function capabilities, override them.
++		 */
++		ice_set_safe_mode_caps(&pf->hw);
++	}
++
++	err = ice_init_pf(pf);
++	if (err) {
++		dev_err(dev, "ice_init_pf failed: %d\n", err);
++		goto err_init_pf;
++	}
++
++	pf->hw.udp_tunnel_nic.set_port = ice_udp_tunnel_set_port;
++	pf->hw.udp_tunnel_nic.unset_port = ice_udp_tunnel_unset_port;
+ 	pf->hw.udp_tunnel_nic.flags = UDP_TUNNEL_NIC_INFO_MAY_SLEEP;
+ 	pf->hw.udp_tunnel_nic.shared = &pf->hw.udp_tunnel_shared;
+-	i = 0;
+ 	if (pf->hw.tnl.valid_count[TNL_VXLAN]) {
+-		pf->hw.udp_tunnel_nic.tables[i].n_entries =
++		pf->hw.udp_tunnel_nic.tables[0].n_entries =
+ 			pf->hw.tnl.valid_count[TNL_VXLAN];
+-		pf->hw.udp_tunnel_nic.tables[i].tunnel_types =
++		pf->hw.udp_tunnel_nic.tables[0].tunnel_types =
+ 			UDP_TUNNEL_TYPE_VXLAN;
+-		i++;
+ 	}
+ 	if (pf->hw.tnl.valid_count[TNL_GENEVE]) {
+-		pf->hw.udp_tunnel_nic.tables[i].n_entries =
++		pf->hw.udp_tunnel_nic.tables[1].n_entries =
+ 			pf->hw.tnl.valid_count[TNL_GENEVE];
+-		pf->hw.udp_tunnel_nic.tables[i].tunnel_types =
++		pf->hw.udp_tunnel_nic.tables[1].tunnel_types =
+ 			UDP_TUNNEL_TYPE_GENEVE;
+-		i++;
+-	}
+-
+-	pf->num_alloc_vsi = hw->func_caps.guar_num_vsi;
+-	if (!pf->num_alloc_vsi) {
+-		err = -EIO;
+-		goto err_init_pf_unroll;
+-	}
+-	if (pf->num_alloc_vsi > UDP_TUNNEL_NIC_MAX_SHARING_DEVICES) {
+-		dev_warn(&pf->pdev->dev,
+-			 "limiting the VSI count due to UDP tunnel limitation %d > %d\n",
+-			 pf->num_alloc_vsi, UDP_TUNNEL_NIC_MAX_SHARING_DEVICES);
+-		pf->num_alloc_vsi = UDP_TUNNEL_NIC_MAX_SHARING_DEVICES;
+-	}
+-
+-	pf->vsi = devm_kcalloc(dev, pf->num_alloc_vsi, sizeof(*pf->vsi),
+-			       GFP_KERNEL);
+-	if (!pf->vsi) {
+-		err = -ENOMEM;
+-		goto err_init_pf_unroll;
+ 	}
+ 
+ 	err = ice_init_interrupt_scheme(pf);
+ 	if (err) {
+ 		dev_err(dev, "ice_init_interrupt_scheme failed: %d\n", err);
+ 		err = -EIO;
+-		goto err_init_vsi_unroll;
++		goto err_init_interrupt_scheme;
+ 	}
+ 
+ 	/* In case of MSIX we are going to setup the misc vector right here
+@@ -4770,49 +4705,94 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	err = ice_req_irq_msix_misc(pf);
+ 	if (err) {
+ 		dev_err(dev, "setup of misc vector failed: %d\n", err);
+-		goto err_init_interrupt_unroll;
++		goto err_req_irq_msix_misc;
+ 	}
+ 
+-	/* create switch struct for the switch element created by FW on boot */
+-	pf->first_sw = devm_kzalloc(dev, sizeof(*pf->first_sw), GFP_KERNEL);
+-	if (!pf->first_sw) {
+-		err = -ENOMEM;
+-		goto err_msix_misc_unroll;
+-	}
++	return 0;
+ 
+-	if (hw->evb_veb)
+-		pf->first_sw->bridge_mode = BRIDGE_MODE_VEB;
+-	else
+-		pf->first_sw->bridge_mode = BRIDGE_MODE_VEPA;
++err_req_irq_msix_misc:
++	ice_clear_interrupt_scheme(pf);
++err_init_interrupt_scheme:
++	ice_deinit_pf(pf);
++err_init_pf:
++	ice_deinit_hw(&pf->hw);
++	return err;
++}
+ 
+-	pf->first_sw->pf = pf;
++static void ice_deinit_dev(struct ice_pf *pf)
++{
++	ice_free_irq_msix_misc(pf);
++	ice_clear_interrupt_scheme(pf);
++	ice_deinit_pf(pf);
++	ice_deinit_hw(&pf->hw);
++}
+ 
+-	/* record the sw_id available for later use */
+-	pf->first_sw->sw_id = hw->port_info->sw_id;
++static void ice_init_features(struct ice_pf *pf)
++{
++	struct device *dev = ice_pf_to_dev(pf);
+ 
+-	err = ice_setup_pf_sw(pf);
+-	if (err) {
+-		dev_err(dev, "probe failed due to setup PF switch: %d\n", err);
+-		goto err_alloc_sw_unroll;
+-	}
++	if (ice_is_safe_mode(pf))
++		return;
+ 
+-	clear_bit(ICE_SERVICE_DIS, pf->state);
++	/* initialize DDP driven features */
++	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
++		ice_ptp_init(pf);
+ 
+-	/* tell the firmware we are up */
+-	err = ice_send_version(pf);
+-	if (err) {
+-		dev_err(dev, "probe failed sending driver version %s. error: %d\n",
+-			UTS_RELEASE, err);
+-		goto err_send_version_unroll;
++	if (ice_is_feature_supported(pf, ICE_F_GNSS))
++		ice_gnss_init(pf);
++
++	/* Note: Flow director init failure is non-fatal to load */
++	if (ice_init_fdir(pf))
++		dev_err(dev, "could not initialize flow director\n");
++
++	/* Note: DCB init failure is non-fatal to load */
++	if (ice_init_pf_dcb(pf, false)) {
++		clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
++		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
++	} else {
++		ice_cfg_lldp_mib_change(&pf->hw, true);
+ 	}
+ 
+-	/* since everything is good, start the service timer */
+-	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
++	if (ice_init_lag(pf))
++		dev_warn(dev, "Failed to init link aggregation support\n");
++}
++
++static void ice_deinit_features(struct ice_pf *pf)
++{
++	ice_deinit_lag(pf);
++	if (test_bit(ICE_FLAG_DCB_CAPABLE, pf->flags))
++		ice_cfg_lldp_mib_change(&pf->hw, false);
++	ice_deinit_fdir(pf);
++	if (ice_is_feature_supported(pf, ICE_F_GNSS))
++		ice_gnss_exit(pf);
++	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
++		ice_ptp_release(pf);
++}
++
++static void ice_init_wakeup(struct ice_pf *pf)
++{
++	/* Save wakeup reason register for later use */
++	pf->wakeup_reason = rd32(&pf->hw, PFPM_WUS);
++
++	/* check for a power management event */
++	ice_print_wake_reason(pf);
++
++	/* clear wake status, all bits */
++	wr32(&pf->hw, PFPM_WUS, U32_MAX);
++
++	/* Disable WoL at init, wait for user to enable */
++	device_set_wakeup_enable(ice_pf_to_dev(pf), false);
++}
++
++static int ice_init_link(struct ice_pf *pf)
++{
++	struct device *dev = ice_pf_to_dev(pf);
++	int err;
+ 
+ 	err = ice_init_link_events(pf->hw.port_info);
+ 	if (err) {
+ 		dev_err(dev, "ice_init_link_events failed: %d\n", err);
+-		goto err_send_version_unroll;
++		return err;
+ 	}
+ 
+ 	/* not a fatal error if this fails */
+@@ -4848,91 +4828,336 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 		set_bit(ICE_FLAG_NO_MEDIA, pf->flags);
+ 	}
+ 
+-	ice_verify_cacheline_size(pf);
++	return err;
++}
+ 
+-	/* Save wakeup reason register for later use */
+-	pf->wakeup_reason = rd32(hw, PFPM_WUS);
++static int ice_init_pf_sw(struct ice_pf *pf)
++{
++	bool dvm = ice_is_dvm_ena(&pf->hw);
++	struct ice_vsi *vsi;
++	int err;
+ 
+-	/* check for a power management event */
+-	ice_print_wake_reason(pf);
++	/* create switch struct for the switch element created by FW on boot */
++	pf->first_sw = kzalloc(sizeof(*pf->first_sw), GFP_KERNEL);
++	if (!pf->first_sw)
++		return -ENOMEM;
+ 
+-	/* clear wake status, all bits */
+-	wr32(hw, PFPM_WUS, U32_MAX);
++	if (pf->hw.evb_veb)
++		pf->first_sw->bridge_mode = BRIDGE_MODE_VEB;
++	else
++		pf->first_sw->bridge_mode = BRIDGE_MODE_VEPA;
+ 
+-	/* Disable WoL at init, wait for user to enable */
+-	device_set_wakeup_enable(dev, false);
++	pf->first_sw->pf = pf;
+ 
+-	if (ice_is_safe_mode(pf)) {
+-		ice_set_safe_mode_vlan_cfg(pf);
+-		goto probe_done;
++	/* record the sw_id available for later use */
++	pf->first_sw->sw_id = pf->hw.port_info->sw_id;
++
++	err = ice_aq_set_port_params(pf->hw.port_info, dvm, NULL);
++	if (err)
++		goto err_aq_set_port_params;
++
++	vsi = ice_pf_vsi_setup(pf, pf->hw.port_info);
++	if (!vsi) {
++		err = -ENOMEM;
++		goto err_pf_vsi_setup;
+ 	}
+ 
+-	/* initialize DDP driven features */
+-	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+-		ice_ptp_init(pf);
++	return 0;
+ 
+-	if (ice_is_feature_supported(pf, ICE_F_GNSS))
+-		ice_gnss_init(pf);
++err_pf_vsi_setup:
++err_aq_set_port_params:
++	kfree(pf->first_sw);
++	return err;
++}
+ 
+-	/* Note: Flow director init failure is non-fatal to load */
+-	if (ice_init_fdir(pf))
+-		dev_err(dev, "could not initialize flow director\n");
++static void ice_deinit_pf_sw(struct ice_pf *pf)
++{
++	struct ice_vsi *vsi = ice_get_main_vsi(pf);
+ 
+-	/* Note: DCB init failure is non-fatal to load */
+-	if (ice_init_pf_dcb(pf, false)) {
+-		clear_bit(ICE_FLAG_DCB_CAPABLE, pf->flags);
+-		clear_bit(ICE_FLAG_DCB_ENA, pf->flags);
+-	} else {
+-		ice_cfg_lldp_mib_change(&pf->hw, true);
++	if (!vsi)
++		return;
++
++	ice_vsi_release(vsi);
++	kfree(pf->first_sw);
++}
++
++static int ice_alloc_vsis(struct ice_pf *pf)
++{
++	struct device *dev = ice_pf_to_dev(pf);
++
++	pf->num_alloc_vsi = pf->hw.func_caps.guar_num_vsi;
++	if (!pf->num_alloc_vsi)
++		return -EIO;
++
++	if (pf->num_alloc_vsi > UDP_TUNNEL_NIC_MAX_SHARING_DEVICES) {
++		dev_warn(dev,
++			 "limiting the VSI count due to UDP tunnel limitation %d > %d\n",
++			 pf->num_alloc_vsi, UDP_TUNNEL_NIC_MAX_SHARING_DEVICES);
++		pf->num_alloc_vsi = UDP_TUNNEL_NIC_MAX_SHARING_DEVICES;
+ 	}
+ 
+-	if (ice_init_lag(pf))
+-		dev_warn(dev, "Failed to init link aggregation support\n");
++	pf->vsi = devm_kcalloc(dev, pf->num_alloc_vsi, sizeof(*pf->vsi),
++			       GFP_KERNEL);
++	if (!pf->vsi)
++		return -ENOMEM;
+ 
+-	/* print PCI link speed and width */
+-	pcie_print_link_status(pf->pdev);
++	return 0;
++}
+ 
+-probe_done:
+-	err = ice_register_netdev(pf);
+-	if (err)
+-		goto err_netdev_reg;
++static void ice_dealloc_vsis(struct ice_pf *pf)
++{
++	pf->num_alloc_vsi = 0;
++	devm_kfree(ice_pf_to_dev(pf), pf->vsi);
++	pf->vsi = NULL;
++}
++
++static int ice_init_devlink(struct ice_pf *pf)
++{
++	int err;
+ 
+ 	err = ice_devlink_register_params(pf);
+ 	if (err)
+-		goto err_netdev_reg;
++		return err;
++
++	ice_devlink_init_regions(pf);
++	ice_devlink_register(pf);
++
++	return 0;
++}
++
++static void ice_deinit_devlink(struct ice_pf *pf)
++{
++	ice_devlink_unregister(pf);
++	ice_devlink_destroy_regions(pf);
++	ice_devlink_unregister_params(pf);
++}
++
++static int ice_init(struct ice_pf *pf)
++{
++	int err;
++
++	err = ice_init_dev(pf);
++	if (err)
++		return err;
++
++	err = ice_alloc_vsis(pf);
++	if (err)
++		goto err_alloc_vsis;
++
++	err = ice_init_pf_sw(pf);
++	if (err)
++		goto err_init_pf_sw;
++
++	ice_init_wakeup(pf);
++
++	err = ice_init_link(pf);
++	if (err)
++		goto err_init_link;
++
++	err = ice_send_version(pf);
++	if (err)
++		goto err_init_link;
++
++	ice_verify_cacheline_size(pf);
++
++	if (ice_is_safe_mode(pf))
++		ice_set_safe_mode_vlan_cfg(pf);
++	else
++		/* print PCI link speed and width */
++		pcie_print_link_status(pf->pdev);
+ 
+ 	/* ready to go, so clear down state bit */
+ 	clear_bit(ICE_DOWN, pf->state);
++	clear_bit(ICE_SERVICE_DIS, pf->state);
++
++	/* since everything is good, start the service timer */
++	mod_timer(&pf->serv_tmr, round_jiffies(jiffies + pf->serv_tmr_period));
++
++	return 0;
++
++err_init_link:
++	ice_deinit_pf_sw(pf);
++err_init_pf_sw:
++	ice_dealloc_vsis(pf);
++err_alloc_vsis:
++	ice_deinit_dev(pf);
++	return err;
++}
++
++static void ice_deinit(struct ice_pf *pf)
++{
++	set_bit(ICE_SERVICE_DIS, pf->state);
++	set_bit(ICE_DOWN, pf->state);
++
++	ice_deinit_dev(pf);
++	ice_dealloc_vsis(pf);
++	ice_deinit_pf_sw(pf);
++}
++
++/**
++ * ice_load - load pf by init hw and starting VSI
++ * @pf: pointer to the pf instance
++ */
++int ice_load(struct ice_pf *pf)
++{
++	struct ice_vsi *vsi;
++	int err;
++
++	err = ice_reset(&pf->hw, ICE_RESET_PFR);
++	if (err)
++		return err;
++
++	err = ice_init_dev(pf);
++	if (err)
++		return err;
++
++	vsi = ice_get_main_vsi(pf);
++	err = ice_vsi_cfg(vsi, NULL, NULL);
++	if (err)
++		goto err_vsi_cfg;
++
++	err = ice_start_eth(ice_get_main_vsi(pf));
++	if (err)
++		goto err_start_eth;
++
+ 	err = ice_init_rdma(pf);
++	if (err)
++		goto err_init_rdma;
++
++	ice_init_features(pf);
++	ice_service_task_restart(pf);
++
++	clear_bit(ICE_DOWN, pf->state);
++
++	return 0;
++
++err_init_rdma:
++	ice_vsi_close(ice_get_main_vsi(pf));
++err_start_eth:
++	ice_vsi_decfg(ice_get_main_vsi(pf));
++err_vsi_cfg:
++	ice_deinit_dev(pf);
++	return err;
++}
++
++/**
++ * ice_unload - unload pf by stopping VSI and deinit hw
++ * @pf: pointer to the pf instance
++ */
++void ice_unload(struct ice_pf *pf)
++{
++	ice_deinit_features(pf);
++	ice_deinit_rdma(pf);
++	ice_vsi_close(ice_get_main_vsi(pf));
++	ice_vsi_decfg(ice_get_main_vsi(pf));
++	ice_deinit_dev(pf);
++}
++
++/**
++ * ice_probe - Device initialization routine
++ * @pdev: PCI device information struct
++ * @ent: entry in ice_pci_tbl
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int
++ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
++{
++	struct device *dev = &pdev->dev;
++	struct ice_pf *pf;
++	struct ice_hw *hw;
++	int err;
++
++	if (pdev->is_virtfn) {
++		dev_err(dev, "can't probe a virtual function\n");
++		return -EINVAL;
++	}
++
++	/* this driver uses devres, see
++	 * Documentation/driver-api/driver-model/devres.rst
++	 */
++	err = pcim_enable_device(pdev);
++	if (err)
++		return err;
++
++	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), dev_driver_string(dev));
+ 	if (err) {
+-		dev_err(dev, "Failed to initialize RDMA: %d\n", err);
+-		err = -EIO;
+-		goto err_devlink_reg_param;
++		dev_err(dev, "BAR0 I/O map error %d\n", err);
++		return err;
+ 	}
+ 
+-	ice_devlink_register(pf);
+-	return 0;
++	pf = ice_allocate_pf(dev);
++	if (!pf)
++		return -ENOMEM;
+ 
+-err_devlink_reg_param:
+-	ice_devlink_unregister_params(pf);
+-err_netdev_reg:
+-err_send_version_unroll:
+-	ice_vsi_release_all(pf);
+-err_alloc_sw_unroll:
+-	set_bit(ICE_SERVICE_DIS, pf->state);
++	/* initialize Auxiliary index to invalid value */
++	pf->aux_idx = -1;
++
++	/* set up for high or low DMA */
++	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
++	if (err) {
++		dev_err(dev, "DMA configuration failed: 0x%x\n", err);
++		return err;
++	}
++
++	pci_enable_pcie_error_reporting(pdev);
++	pci_set_master(pdev);
++
++	pf->pdev = pdev;
++	pci_set_drvdata(pdev, pf);
+ 	set_bit(ICE_DOWN, pf->state);
+-	devm_kfree(dev, pf->first_sw);
+-err_msix_misc_unroll:
+-	ice_free_irq_msix_misc(pf);
+-err_init_interrupt_unroll:
+-	ice_clear_interrupt_scheme(pf);
+-err_init_vsi_unroll:
+-	devm_kfree(dev, pf->vsi);
+-err_init_pf_unroll:
+-	ice_deinit_pf(pf);
+-	ice_devlink_destroy_regions(pf);
+-	ice_deinit_hw(hw);
+-err_exit_unroll:
++	/* Disable service task until DOWN bit is cleared */
++	set_bit(ICE_SERVICE_DIS, pf->state);
++
++	hw = &pf->hw;
++	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
++	pci_save_state(pdev);
++
++	hw->back = pf;
++	hw->port_info = NULL;
++	hw->vendor_id = pdev->vendor;
++	hw->device_id = pdev->device;
++	pci_read_config_byte(pdev, PCI_REVISION_ID, &hw->revision_id);
++	hw->subsystem_vendor_id = pdev->subsystem_vendor;
++	hw->subsystem_device_id = pdev->subsystem_device;
++	hw->bus.device = PCI_SLOT(pdev->devfn);
++	hw->bus.func = PCI_FUNC(pdev->devfn);
++	ice_set_ctrlq_len(hw);
++
++	pf->msg_enable = netif_msg_init(debug, ICE_DFLT_NETIF_M);
++
++#ifndef CONFIG_DYNAMIC_DEBUG
++	if (debug < -1)
++		hw->debug_mask = debug;
++#endif
++
++	err = ice_init(pf);
++	if (err)
++		goto err_init;
++
++	err = ice_init_eth(pf);
++	if (err)
++		goto err_init_eth;
++
++	err = ice_init_rdma(pf);
++	if (err)
++		goto err_init_rdma;
++
++	err = ice_init_devlink(pf);
++	if (err)
++		goto err_init_devlink;
++
++	ice_init_features(pf);
++
++	return 0;
++
++err_init_devlink:
++	ice_deinit_rdma(pf);
++err_init_rdma:
++	ice_deinit_eth(pf);
++err_init_eth:
++	ice_deinit(pf);
++err_init:
+ 	pci_disable_pcie_error_reporting(pdev);
+ 	pci_disable_device(pdev);
+ 	return err;
+@@ -5008,7 +5233,7 @@ static void ice_remove(struct pci_dev *pdev)
+ 	struct ice_pf *pf = pci_get_drvdata(pdev);
+ 	int i;
+ 
+-	ice_devlink_unregister(pf);
++	ice_deinit_devlink(pf);
+ 	for (i = 0; i < ICE_MAX_RESET_WAIT; i++) {
+ 		if (!ice_is_reset_in_progress(pf->state))
+ 			break;
+@@ -5025,30 +5250,22 @@ static void ice_remove(struct pci_dev *pdev)
+ 	ice_service_task_stop(pf);
+ 
+ 	ice_aq_cancel_waiting_tasks(pf);
+-	ice_deinit_rdma(pf);
+-	ice_devlink_unregister_params(pf);
+ 	set_bit(ICE_DOWN, pf->state);
+ 
+-	ice_deinit_lag(pf);
+-	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+-		ice_ptp_release(pf);
+-	if (ice_is_feature_supported(pf, ICE_F_GNSS))
+-		ice_gnss_exit(pf);
++	ice_deinit_features(pf);
++	ice_deinit_rdma(pf);
+ 	if (!ice_is_safe_mode(pf))
+ 		ice_remove_arfs(pf);
+ 	ice_setup_mc_magic_wake(pf);
+ 	ice_vsi_release_all(pf);
+ 	mutex_destroy(&(&pf->hw)->fdir_fltr_lock);
+ 	ice_set_wake(pf);
+-	ice_free_irq_msix_misc(pf);
++	ice_deinit_dev(pf);
+ 	ice_for_each_vsi(pf, i) {
+ 		if (!pf->vsi[i])
  			continue;
+ 		ice_vsi_free_q_vectors(pf->vsi[i]);
+ 	}
+-	ice_deinit_pf(pf);
+-	ice_devlink_destroy_regions(pf);
+-	ice_deinit_hw(&pf->hw);
  
- 		/* rebuild the VSI */
--		err = ice_vsi_rebuild(vsi, true);
-+		err = ice_vsi_rebuild(vsi, ICE_VSI_FLAG_INIT);
- 		if (err) {
- 			dev_err(dev, "rebuild VSI failed, err %d, VSI index %d, type %s\n",
- 				err, vsi->idx, ice_vsi_type_str(type));
-@@ -8403,7 +8403,7 @@ static int ice_rebuild_channels(struct ice_pf *pf)
- 		type = vsi->type;
- 
- 		/* rebuild ADQ VSI */
--		err = ice_vsi_rebuild(vsi, true);
-+		err = ice_vsi_rebuild(vsi, ICE_VSI_FLAG_INIT);
- 		if (err) {
- 			dev_err(dev, "VSI (type:%s) at index %d rebuild failed, err %d\n",
- 				ice_vsi_type_str(type), vsi->idx, err);
-@@ -8629,14 +8629,14 @@ static int ice_setup_tc_mqprio_qdisc(struct net_device *netdev, void *type_data)
- 	cur_rxq = vsi->num_rxq;
- 
- 	/* proceed with rebuild main VSI using correct number of queues */
--	ret = ice_vsi_rebuild(vsi, false);
-+	ret = ice_vsi_rebuild(vsi, ICE_VSI_FLAG_NO_INIT);
- 	if (ret) {
- 		/* fallback to current number of queues */
- 		dev_info(dev, "Rebuild failed with new queues, try with current number of queues\n");
- 		vsi->req_txq = cur_txq;
- 		vsi->req_rxq = cur_rxq;
- 		clear_bit(ICE_RESET_FAILED, pf->state);
--		if (ice_vsi_rebuild(vsi, false)) {
-+		if (ice_vsi_rebuild(vsi, ICE_VSI_FLAG_NO_INIT)) {
- 			dev_err(dev, "Rebuild of main VSI failed again\n");
- 			return ret;
- 		}
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 1c51778db951..149642765874 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -256,7 +256,7 @@ static int ice_vf_rebuild_vsi(struct ice_vf *vf)
- 	if (WARN_ON(!vsi))
- 		return -EINVAL;
- 
--	if (ice_vsi_rebuild(vsi, true)) {
-+	if (ice_vsi_rebuild(vsi, ICE_VSI_FLAG_INIT)) {
- 		dev_err(ice_pf_to_dev(pf), "failed to rebuild VF %d VSI\n",
- 			vf->vf_id);
- 		return -EIO;
+ 	/* Issue a PFR as part of the prescribed driver unload flow.  Do not
+ 	 * do it via ice_schedule_reset() since there is no need to rebuild
+@@ -5056,7 +5273,6 @@ static void ice_remove(struct pci_dev *pdev)
+ 	 */
+ 	ice_reset(&pf->hw, ICE_RESET_PFR);
+ 	pci_wait_for_pending_transaction(pdev);
+-	ice_clear_interrupt_scheme(pf);
+ 	pci_disable_pcie_error_reporting(pdev);
+ 	pci_disable_device(pdev);
+ }
 -- 
 2.36.1
 
