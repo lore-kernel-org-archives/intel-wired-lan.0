@@ -1,86 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8731DC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Nov 2022 13:11:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F59FC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Nov 2022 13:12:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1E831817D3;
-	Mon, 14 Nov 2022 13:11:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1E831817D3
+	by smtp4.osuosl.org (Postfix) with ESMTP id 98354408AD;
+	Mon, 14 Nov 2022 13:11:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 98354408AD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668431515;
-	bh=VYkty6NFUtlx0OngjJz1dmRqu67NQ4y4/N8MWbw+qrk=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=tcj722eNEc6K6QJ9Sc2AW9LAuQzv4m+vOcEO8elvSfe3OPzvFY7FRs032eikCq62D
-	 +CS5FanZkue4dK+GCr2ZNGHFzIaKsEbJWcH2FcJkkzPFgBb51HH9fiPd6Jc+F4cRKR
-	 9JuHuoFu2Hq0ueVLoS4fELxCFLTzFT9a/VYEJRw4e2nmi0HLqinwNk5XNyAQx4UcoE
-	 oxEZJA6OJZtTp01P8TxngHGvEQx0xRtAZpBrDwhLSsndHce6Ya3JHS3urZrw9zjswe
-	 6q0UdfH7F/xVq7JQYMj7kn/ofXytPU18eRQ/hr+KWS54TOGn60QiShRm/H1RXl6j6S
-	 3N40tavyTiUIQ==
+	s=default; t=1668431519;
+	bh=47IxZYaVRBnKq1LoMssIGBlcurITiVdxEsFKOJxQBg4=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=SP6mQNHxX7kkEBDaqeeqRphY2WczxnS9Q4zwIJIlW/xFiZMzdvO7JewcpVX9Ct0m1
+	 Q/JYk20rDoA96NVzbIgYCJWgLFvwKS+d0Se2zbMBT+R2WlpH+pVssz39amEqvOmK6K
+	 T1BdUjuilaHxIGLT5GZjHYBt0Cth8mR+3swJi7h50QP9vcOerq2omIQWDf0nH6YamS
+	 Sc20U4pwlTW4Fu27oWhgnIl8VAKJET303jf6KpkaHaX+zqPUe0jT8bLX3xA5J9ILym
+	 cdS80ar41Dc/KGnasyCyryj/8RxqGDGNojlkIXuXLzD+Po/ic60bVlD+x2LaqbshUD
+	 CcQrcDvLaD2+A==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id O-2GoGIypt6Z; Mon, 14 Nov 2022 13:11:54 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 5YJ6Zu5mAjUr; Mon, 14 Nov 2022 13:11:58 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0E438817FF;
-	Mon, 14 Nov 2022 13:11:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0E438817FF
+	by smtp4.osuosl.org (Postfix) with ESMTP id 38A954098B;
+	Mon, 14 Nov 2022 13:11:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 38A954098B
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 422C91BF379
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:11:52 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id A09401BF379
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:11:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 292C0817FF
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:11:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 292C0817FF
+ by smtp1.osuosl.org (Postfix) with ESMTP id 7BFCA8186B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:11:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7BFCA8186B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id yqo99HjR4TE5 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 14 Nov 2022 13:11:51 +0000 (UTC)
+ with ESMTP id OxDGdSxUsnNJ for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 14 Nov 2022 13:11:55 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 68EDC817D3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BB17E817FF
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 68EDC817D3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:11:51 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="309590999"
-X-IronPort-AV: E=Sophos;i="5.96,161,1665471600"; d="scan'208";a="309590999"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id BB17E817FF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 13:11:55 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="309591017"
+X-IronPort-AV: E=Sophos;i="5.96,161,1665471600"; d="scan'208";a="309591017"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Nov 2022 05:11:50 -0800
+ 14 Nov 2022 05:11:55 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="616305813"
-X-IronPort-AV: E=Sophos;i="5.96,161,1665471600"; d="scan'208";a="616305813"
+X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="616305842"
+X-IronPort-AV: E=Sophos;i="5.96,161,1665471600"; d="scan'208";a="616305842"
 Received: from wasp.igk.intel.com ([10.102.20.192])
- by orsmga006.jf.intel.com with ESMTP; 14 Nov 2022 05:11:45 -0800
+ by orsmga006.jf.intel.com with ESMTP; 14 Nov 2022 05:11:50 -0800
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: netdev@vger.kernel.org, davem@davemloft.net, kuba@kernel.org,
  pabeni@redhat.com, edumazet@google.com
-Date: Mon, 14 Nov 2022 13:57:42 +0100
-Message-Id: <20221114125755.13659-1-michal.swiatkowski@linux.intel.com>
+Date: Mon, 14 Nov 2022 13:57:43 +0100
+Message-Id: <20221114125755.13659-2-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.36.1
+In-Reply-To: <20221114125755.13659-1-michal.swiatkowski@linux.intel.com>
+References: <20221114125755.13659-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1668431511; x=1699967511;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=u1XEetprpcT9DVPX1AZNlJyceve4yFTp+k+XYN2n7A8=;
- b=LpyLr3Vmk6A4UJkeFnGu/aSv4FWvqXiWyEsxJ3x+nt34GLRNWPPwkNhb
- ZSf+Xktpd5yQ8FTqe9D1u3qN2XO+26kYD5iN0Lq7uzz0BSgRP4Ol4JiY0
- 1DL7O9tY1xkMl6EaztAmn5Iu+vfTvrfjbiLBV7m1ckVyShSTJkFzur1Tc
- W84qYcsyxwUrSCXQ7mnj+5f/CB7B8uyQlU+ojKDUoPsnNuu8hKGplZ2wx
- Ki4GFekWYCeWyt2CcYS6OIwGtuZ2j0bhrDDH/VGtNxrOtY0grQkzcKNEQ
- zWxsMFO+rjzF0B9bPhHsZKkJwMTKI1HHm9tpUpsz/A2OTYSk1kltyiaFT
- A==;
+ t=1668431515; x=1699967515;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=7Ce8aRJrwaIeECv3XGlXlz0W0+lnMTqEOS/2LgKL3XE=;
+ b=TqAA9tW1ttO6qhRCXoV3NWjH5pCwfpKHdkpuhvBy68K2WbTWwRUYQHWw
+ E6lj1kw9QZH+uzUGM1s2Yvx/QFXEsAV64QnnbDy6m8XxAjV6NBrhItyXz
+ FVPFpT3AxKjMRjzs+V04uUPFHkcV6/pv/AqIGJ+ppjwOa3Xj9IKwHDi6G
+ yd8zBY7NR2VJ2H1PtQY+SLpFiMG6vx/se8TU9rYnBrXpBUS49UPpe7VHq
+ grP9QjGP6gEfA0/WeXl2m0csLruyqYIL+Q+GbPDNKHI2TaAU5Fm3TR/tj
+ sKHITB06EJtM5fZgCrROHvyLHHcAJuPwoGVeLjxhwR6nCKDicmIjbItHz
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=LpyLr3Vm
-Subject: [Intel-wired-lan] [PATCH net-next 00/13] resource management using
- devlink reload
+ header.a=rsa-sha256 header.s=Intel header.b=TqAA9tW1
+Subject: [Intel-wired-lan] [PATCH net-next 01/13] ice: move RDMA init to
+ ice_idc.c
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,87 +104,171 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently the default value for number of PF vectors is number of CPUs.
-Because of that there are cases when all vectors are used for PF
-and user can't create more VFs. It is hard to set default number of
-CPUs right for all different use cases. Instead allow user to choose
-how many vectors should be used for various features. After implementing
-subdevices this mechanism will be also used to set number of vectors
-for subfunctions.
+Simplify probe flow by moving all RDMA related code to ice_init_rdma().
+Unroll irq allocation if RDMA initialization fails.
 
-The idea is to set vectors for eth or VFs using devlink resource API.
-New value of vectors will be used after devlink reinit. Example
-commands:
-$ sudo devlink resource set pci/0000:31:00.0 path msix/msix_eth size 16
-$ sudo devlink dev reload pci/0000:31:00.0
-After reload driver will work with 16 vectors used for eth instead of
-num_cpus.
+Implement ice_deinit_rdma() and use it in remove flow.
 
-The default number of queues is implicitly derived from interrupt
-vectors and can be later changed by ethtool.
-To decrease queues used on eth user can decrease vectors on eth.
-The result will be the same. Still user can change number of queues
-using ethtool:
-$ sudo ethtool -L enp24s0f0 tx 72 rx 72
-but maximum queues amount is equal to amount of vectors.
+Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Acked-by: Dave Ertman <david.m.ertman@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h      |  1 +
+ drivers/net/ethernet/intel/ice/ice_idc.c  | 52 ++++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_main.c | 29 +++----------
+ 3 files changed, 57 insertions(+), 25 deletions(-)
 
-Most of this patchset is about implementing driver reload mechanism.
-Part of code from probe and rebuild is used to not duplicate code.
-To allow this reuse probe and rebuild path are split into smaller
-functions.
-
-Patch "ice: split ice_vsi_setup into smaller functions" changes
-boolean variable in function call to integer and adds define
-for it. Instead of having the function called with true/false now it
-can be called with readable defines ICE_VSI_FLAG_INIT or
-ICE_VSI_FLAG_NO_INIT. It was suggested by Jacob Keller and probably this
-mechanism will be implemented across ice driver in follow up patchset.
-
-Patch 1 - 10	-> cleanup code to reuse most of the already
-                   implemented function in reload path
-Patch 11	-> implement devlink reload API
-Patch 12        -> prepare interrupts reservation, make irdma see
-                   changeable vectors count
-Patch 13        -> changing number of vectors
-
-
-Jacob Keller (1):
-  ice: stop hard coding the ICE_VSI_CTRL location
-
-Michal Kubiak (1):
-  devlink, ice: add MSIX vectors as devlink resource
-
-Michal Swiatkowski (11):
-  ice: move RDMA init to ice_idc.c
-  ice: alloc id for RDMA using xa_array
-  ice: cleanup in VSI config/deconfig code
-  ice: split ice_vsi_setup into smaller functions
-  ice: split probe into smaller functions
-  ice: sync netdev filters after clearing VSI
-  ice: move VSI delete outside deconfig
-  ice: update VSI instead of init in some case
-  ice: implement devlink reinit action
-  ice: introduce eswitch capable flag
-  ice, irdma: prepare reservation of MSI-X to reload
-
- .../networking/devlink/devlink-resource.rst   |   10 +
- drivers/infiniband/hw/irdma/main.c            |    2 +-
- drivers/net/ethernet/intel/ice/ice.h          |   23 +-
- drivers/net/ethernet/intel/ice/ice_common.c   |   11 +-
- drivers/net/ethernet/intel/ice/ice_devlink.c  |  263 +++-
- drivers/net/ethernet/intel/ice/ice_devlink.h  |    2 +
- drivers/net/ethernet/intel/ice/ice_eswitch.c  |    6 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |    6 +-
- drivers/net/ethernet/intel/ice/ice_fltr.c     |    5 +
- drivers/net/ethernet/intel/ice/ice_idc.c      |   57 +-
- drivers/net/ethernet/intel/ice/ice_lib.c      |  789 +++++-----
- drivers/net/ethernet/intel/ice/ice_lib.h      |    8 +-
- drivers/net/ethernet/intel/ice/ice_main.c     | 1354 ++++++++++-------
- drivers/net/ethernet/intel/ice/ice_sriov.c    |    3 +-
- drivers/net/ethernet/intel/ice/ice_vf_lib.c   |    2 +-
- include/net/devlink.h                         |   14 +
- 16 files changed, 1517 insertions(+), 1038 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index f88ee051e71c..c0079e88cda7 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -900,6 +900,7 @@ void ice_print_link_msg(struct ice_vsi *vsi, bool isup);
+ int ice_plug_aux_dev(struct ice_pf *pf);
+ void ice_unplug_aux_dev(struct ice_pf *pf);
+ int ice_init_rdma(struct ice_pf *pf);
++void ice_deinit_rdma(struct ice_pf *pf);
+ const char *ice_aq_str(enum ice_aq_err aq_err);
+ bool ice_is_wol_supported(struct ice_hw *hw);
+ void ice_fdir_del_all_fltrs(struct ice_vsi *vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_idc.c b/drivers/net/ethernet/intel/ice/ice_idc.c
+index 895c32bcc8b5..579d2a433ea1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_idc.c
++++ b/drivers/net/ethernet/intel/ice/ice_idc.c
+@@ -6,6 +6,8 @@
+ #include "ice_lib.h"
+ #include "ice_dcb_lib.h"
+ 
++static DEFINE_IDA(ice_aux_ida);
++
+ /**
+  * ice_get_auxiliary_drv - retrieve iidc_auxiliary_drv struct
+  * @pf: pointer to PF struct
+@@ -245,6 +247,17 @@ static int ice_reserve_rdma_qvector(struct ice_pf *pf)
+ 	return 0;
+ }
+ 
++/**
++ * ice_free_rdma_qvector - free vector resources reserved for RDMA driver
++ * @pf: board private structure to initialize
++ */
++static void ice_free_rdma_qvector(struct ice_pf *pf)
++{
++	pf->num_avail_sw_msix -= pf->num_rdma_msix;
++	ice_free_res(pf->irq_tracker, pf->rdma_base_vector,
++		     ICE_RES_RDMA_VEC_ID);
++}
++
+ /**
+  * ice_adev_release - function to be mapped to AUX dev's release op
+  * @dev: pointer to device to free
+@@ -331,12 +344,47 @@ int ice_init_rdma(struct ice_pf *pf)
+ 	struct device *dev = &pf->pdev->dev;
+ 	int ret;
+ 
++	if (!ice_is_rdma_ena(pf)) {
++		dev_warn(dev, "RDMA is not supported on this device\n");
++		return 0;
++	}
++
++	pf->aux_idx = ida_alloc(&ice_aux_ida, GFP_KERNEL);
++	if (pf->aux_idx < 0) {
++		dev_err(dev, "Failed to allocate device ID for AUX driver\n");
++		return -ENOMEM;
++	}
++
+ 	/* Reserve vector resources */
+ 	ret = ice_reserve_rdma_qvector(pf);
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to reserve vectors for RDMA\n");
+-		return ret;
++		goto err_reserve_rdma_qvector;
+ 	}
+ 	pf->rdma_mode |= IIDC_RDMA_PROTOCOL_ROCEV2;
+-	return ice_plug_aux_dev(pf);
++	ret = ice_plug_aux_dev(pf);
++	if (ret)
++		goto err_plug_aux_dev;
++	return 0;
++
++err_plug_aux_dev:
++	ice_free_rdma_qvector(pf);
++err_reserve_rdma_qvector:
++	pf->adev = NULL;
++	ida_free(&ice_aux_ida, pf->aux_idx);
++	return ret;
++}
++
++/**
++ * ice_deinit_rdma - deinitialize RDMA on PF
++ * @pf: ptr to ice_pf
++ */
++void ice_deinit_rdma(struct ice_pf *pf)
++{
++	if (!ice_is_rdma_ena(pf))
++		return;
++
++	ice_unplug_aux_dev(pf);
++	ice_free_rdma_qvector(pf);
++	ida_free(&ice_aux_ida, pf->aux_idx);
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a9fc89aebebe..d5bd56a213ae 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -44,7 +44,6 @@ MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all), hw debug_mask (0x8XXXX
+ MODULE_PARM_DESC(debug, "netif level (0=none,...,16=all)");
+ #endif /* !CONFIG_DYNAMIC_DEBUG */
+ 
+-static DEFINE_IDA(ice_aux_ida);
+ DEFINE_STATIC_KEY_FALSE(ice_xdp_locking_key);
+ EXPORT_SYMBOL(ice_xdp_locking_key);
+ 
+@@ -4904,30 +4903,16 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 
+ 	/* ready to go, so clear down state bit */
+ 	clear_bit(ICE_DOWN, pf->state);
+-	if (ice_is_rdma_ena(pf)) {
+-		pf->aux_idx = ida_alloc(&ice_aux_ida, GFP_KERNEL);
+-		if (pf->aux_idx < 0) {
+-			dev_err(dev, "Failed to allocate device ID for AUX driver\n");
+-			err = -ENOMEM;
+-			goto err_devlink_reg_param;
+-		}
+-
+-		err = ice_init_rdma(pf);
+-		if (err) {
+-			dev_err(dev, "Failed to initialize RDMA: %d\n", err);
+-			err = -EIO;
+-			goto err_init_aux_unroll;
+-		}
+-	} else {
+-		dev_warn(dev, "RDMA is not supported on this device\n");
++	err = ice_init_rdma(pf);
++	if (err) {
++		dev_err(dev, "Failed to initialize RDMA: %d\n", err);
++		err = -EIO;
++		goto err_devlink_reg_param;
+ 	}
+ 
+ 	ice_devlink_register(pf);
+ 	return 0;
+ 
+-err_init_aux_unroll:
+-	pf->adev = NULL;
+-	ida_free(&ice_aux_ida, pf->aux_idx);
+ err_devlink_reg_param:
+ 	ice_devlink_unregister_params(pf);
+ err_netdev_reg:
+@@ -5040,9 +5025,7 @@ static void ice_remove(struct pci_dev *pdev)
+ 	ice_service_task_stop(pf);
+ 
+ 	ice_aq_cancel_waiting_tasks(pf);
+-	ice_unplug_aux_dev(pf);
+-	if (pf->aux_idx >= 0)
+-		ida_free(&ice_aux_ida, pf->aux_idx);
++	ice_deinit_rdma(pf);
+ 	ice_devlink_unregister_params(pf);
+ 	set_bit(ICE_DOWN, pf->state);
+ 
 -- 
 2.36.1
 
