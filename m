@@ -1,79 +1,147 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 034DBC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Nov 2022 16:09:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57485C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 14 Nov 2022 16:09:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AE72581316;
-	Mon, 14 Nov 2022 16:09:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AE72581316
+	by smtp4.osuosl.org (Postfix) with ESMTP id E74594012C;
+	Mon, 14 Nov 2022 16:09:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E74594012C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668442158;
-	bh=0/zd8ETCDdyHP61WqoBSCGfCGHufpBN98yNv5NDw/VQ=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1668442163;
+	bh=zpfWul2H2B3QZErmtu+ncMleRh5SYXUGv8yntiaLhDM=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Z/c91T8zNx0vN/1tfHjU4TFOOTRhMWrPEtoQexv8lmztZv8wb9HVLAnV+KTA7XL38
-	 4pfCN0b1Zv+4ldQcWtsHSFORdSfhbX+OdawsaCg661Uwx4FbJ5CJowMhU5Wf8KaaDJ
-	 vORUkY9NUUmUOCZ3iQYo9OxM9aPCJaa80rX86QfCPlgDONXTZE3QeQ22aLwmSBnoou
-	 xgLEWXOkVQikPgNtPmrJ1a6YrO5UHCOrFR0Rp+b8eJlU+FOY/NHSM1uWHUslbgq4GA
-	 D4geiqmqW6GWzOcEHpgcnKwMnBk8ibjdwtu0AGZkLCFws6lbmZcfPyyRSvr9nkxaWW
-	 G8IZQ4QLCOv7A==
+	b=oI0gIjC7qa1Lizd73GUxA7EDZtdLDxDIgp/g2wAVS82pdlkLqbJd8xcxfSsB1G4Uq
+	 5e7bc175JpNWgtUz5/NfFbwsG5mKWlErd1Wb84h+HRu0XwJBE812L/tVRSyN2dylcU
+	 I3a0R+ktqepqL6UfUU384EWp59a5A5t6IGxw6ZiJk5sn0d8d2ViciY9zYIJLYN7Kgl
+	 zGnfAfs3YK/COM01A6HQ3UWNJN4DwUQOKnfkSGydQSDKVqG4WAxYuUB4G9U8ENdLpv
+	 SNF+GDel2tbn5EshHqySLemUr+xEhIAZ3yQQ80uoQIwJ5afOl8IzkXARREsIzwrxtq
+	 kMeYzsVCdKagg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id mros8H7gCLdC; Mon, 14 Nov 2022 16:09:18 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id xXHDZDTf709Z; Mon, 14 Nov 2022 16:09:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C7EE981319;
-	Mon, 14 Nov 2022 16:09:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C7EE981319
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id B08D21BF2FF
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 08:28:31 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A8AB7415FC;
+	Mon, 14 Nov 2022 16:09:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A8AB7415FC
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 952681BF2C5
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 15:28:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 96B81409D3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 08:28:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 96B81409D3
+ by smtp3.osuosl.org (Postfix) with ESMTP id 72F6060681
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 15:28:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 72F6060681
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id iWg5XvRFd3hw for <intel-wired-lan@lists.osuosl.org>;
- Mon, 14 Nov 2022 08:28:28 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 615D4409FF
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 615D4409FF
- for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 08:28:28 +0000 (UTC)
-Received: from dggpeml500024.china.huawei.com (unknown [172.30.72.55])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4N9j9l1zm7zHvrl;
- Mon, 14 Nov 2022 16:27:55 +0800 (CST)
-Received: from huawei.com (10.175.112.208) by dggpeml500024.china.huawei.com
- (7.185.36.10) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Mon, 14 Nov
- 2022 16:28:23 +0800
-From: Yuan Can <yuancan@huawei.com>
-To: <jesse.brandeburg@intel.com>, <anthony.l.nguyen@intel.com>,
- <davem@davemloft.net>, <edumazet@google.com>, <kuba@kernel.org>,
- <pabeni@redhat.com>, <alexander.h.duyck@intel.com>,
- <jeffrey.t.kirsher@intel.com>, <matthew.vick@intel.com>,
- <jacob.e.keller@intel.com>, <intel-wired-lan@lists.osuosl.org>,
- <netdev@vger.kernel.org>
-Date: Mon, 14 Nov 2022 08:26:39 +0000
-Message-ID: <20221114082640.91128-2-yuancan@huawei.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20221114082640.91128-1-yuancan@huawei.com>
-References: <20221114082640.91128-1-yuancan@huawei.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id l_qPK8uvZ9i7 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 14 Nov 2022 15:28:44 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1C5A46059F
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com
+ (mail-mw2nam10on2045.outbound.protection.outlook.com [40.107.94.45])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1C5A46059F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 14 Nov 2022 15:28:44 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=h2bPylDmw+/fbLAXUWwAcP8T8/arwEOTZsaa9RS0GDgxUCGckgHaMac1q384xIskOcbHrZkmpiTA4rjmhQEw3IGPMbABAEGvgSeuNwsBmkK0M6OWijRoKgWq6ZzdROX60+2I9to+RKGQhLt6yggN+1DVCmY9EHt9GFYVMADpQwXOT1oUDDgdDi+5ObidFVkpC2ujUa/3ZoP5XQD6Vvi1V4JB8CoOHzIY4nuCJcOA6zIRnTZCUsMi40cczuM2lqioF26jwXCk2jwM90EKWSLNhHr5e3j6RwEVJudJ4Gtr4AYod3dB8q1z9w3OX9BGORpuLHSwY8B7BlK7ffjsdd6+kw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=sEkKuiNddioMGP1g/ATHRypsCCvUAU2QJDlxOhMdyaA=;
+ b=hdv9jVvVe//365TniETR8gYrc49SCS2vlSP+Ht+B+w8ICs51oXMVbqLqh8Hhu9PNplkqWBi8N/yw28pHk5t8/kqb4TXgkbpaJmqiGbkZWYdTjfDfBgwYX6Em8hhWMX5kQTqyHEkcNKKhI7ud2eMExhyWE27BDJXsV0mHHJKqo+wt55xgib1Qs5LblEEdaOAjUVou7JJF2tfNqwb61TdkVWQUlodncTBgp+5Py8i2jHmnQI7At5NynjXWNdQA5JdkhU+z+/8bb8TgohBpqNd8hqqLlgmpe1bT0FRVna5F3sy1dV8TkzXUMUwHkHTg/+GaNlxdItnZrmCfxQYtOV/GXQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+Received: from MN0PR12MB5979.namprd12.prod.outlook.com (2603:10b6:208:37e::15)
+ by DM4PR12MB6112.namprd12.prod.outlook.com (2603:10b6:8:aa::7) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.5813.17; Mon, 14 Nov 2022 15:28:42 +0000
+Received: from MN0PR12MB5979.namprd12.prod.outlook.com
+ ([fe80::62b2:b96:8fd1:19f5]) by MN0PR12MB5979.namprd12.prod.outlook.com
+ ([fe80::62b2:b96:8fd1:19f5%4]) with mapi id 15.20.5813.013; Mon, 14 Nov 2022
+ 15:28:42 +0000
+Date: Mon, 14 Nov 2022 16:28:38 +0100
+From: Jiri Pirko <jiri@nvidia.com>
+To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Message-ID: <Y3Jepn7bxkCFP+cg@nanopsycho>
+References: <20221114125755.13659-1-michal.swiatkowski@linux.intel.com>
+ <20221114125755.13659-14-michal.swiatkowski@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <20221114125755.13659-14-michal.swiatkowski@linux.intel.com>
+X-ClientProxiedBy: FR3P281CA0068.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:4b::15) To MN0PR12MB5979.namprd12.prod.outlook.com
+ (2603:10b6:208:37e::15)
 MIME-Version: 1.0
-X-Originating-IP: [10.175.112.208]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- dggpeml500024.china.huawei.com (7.185.36.10)
-X-CFilter-Loop: Reflected
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: MN0PR12MB5979:EE_|DM4PR12MB6112:EE_
+X-MS-Office365-Filtering-Correlation-Id: fcde5a1a-6226-461e-a1dc-08dac654e955
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: zSaw3UMHJoCTvaGeJYvJ0xsMnypsWv8WFAmfz73+HYShcQu9j/oVV6cfESmrQHuvP3tZlomeZX+a9FTxLVGEzA5d70/9hGFlWX50bIV/APve/ZPJ9fy+fQegCVC5/G98ItkFuXWzobp/dGOmH2tgfN4H52VwUt0JCE35X1VUlS9TEXfv4neCOyJlYWvQW4d+Ls3JnzHajP4Vi01AQ4FVc22Phb8+i9HuyPVwDU9lfq5J9/NIp6qHUawtITIhE8cGusV/Y0QlKzO3blbDAilJMjpej4AU+koRe2bngRGLShqBPbKjimLFrDjCsXvj4r2nM88gP6Iuhvhk0ESS27njMKxPoSHZh2oUjhraKoGr/JoUmFf8PdKnMYSG7793+Qt1nj9mrg8lMfdW2kLG0SEtrvv8kr4o59c5vjm7eTW+z5EKmZrKLGFp5kk6DcBszGbiapLz6HfI+0lXqIXCMQ3PSZHjFulTobFM6cbiOl+xxDWKv3y9uLE/8vKjvRQqsr6DCOnv4PymyxsF7+UdQFFlx/kPaFdBe1lmP21hl1eqA3MZSb5MceiD/YTqjXJcPmy1LxGnbYmQ/EX9h7hegsVA/VLahZom3sBh3UDdxXhgNa98bcaU+tAerda2YOZh02lwwCciOiO5K+XxBCs5WLgnQGboErDmfEm/550bxbBtYeg3dd0AlvYj0B2lYobDbHOAq4OsLkWXy91t+2qinvLUjHonnt5SDHTxq/VdS7QY4wZM6pKUMBcmwy14tR9ccnDG
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MN0PR12MB5979.namprd12.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230022)(7916004)(4636009)(396003)(136003)(376002)(346002)(366004)(39860400002)(451199015)(86362001)(38100700002)(33716001)(83380400001)(6506007)(186003)(2906002)(6512007)(26005)(9686003)(4326008)(41300700001)(7416002)(8936002)(5660300002)(6666004)(6486002)(478600001)(6916009)(8676002)(66556008)(66946007)(316002)(66476007)(67856001);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?1pDATQlH22U6HkQehY8r3Ga2ZlX7dL+f7A9XKFyCBrVpt66C4C5cYU/bXPeo?=
+ =?us-ascii?Q?tM0w9wPanFfS6bpEkeJIE5ldKg1bhkRMPsNniZK79t6bDbKQusdv7dezS4Z5?=
+ =?us-ascii?Q?qsiDuq1n3a2QSGp8jB9G5TPRSuYo9WxNYXrBG51KNA+7EMUfyS41y3vIZY6/?=
+ =?us-ascii?Q?8ZnejniTbL52hspqwskmY+/OolF9JhPFZetC0xr8CqpLT2krTMQ8KJwHHwxi?=
+ =?us-ascii?Q?mbebxQ0r5BWVPhPUbJI+o7Ozy5tpE2JRRyPxtgSFCYXiagNaJdf7bDQYK7Ri?=
+ =?us-ascii?Q?TAL5RBJNgUricy/MWQ8R/hAftbKVszlhpnVf/ApmGweeKz87V3KhRDLCn+Gs?=
+ =?us-ascii?Q?RuMyCyBQWFLlNIeSkp2a7AYgZVCOeeDZv2lUGocZu32E11QaU+LdXjnpnz7T?=
+ =?us-ascii?Q?YY/vQCeNLBv5Xgo2XupasRfb3knaMvhHktvWzEjnrHhFtLeWV7WgIcbFi/fS?=
+ =?us-ascii?Q?AxfEuHGYkY1JKtdGZu3wMCZ3hUlwuoohQsiISdo0P1ohiN8fAQF3o72hRlDt?=
+ =?us-ascii?Q?4/Yy4V+hUZHJUmEojGKmk69e5SrgTASfGpla4vxLS0CWHDF5pfFCnehJU4m6?=
+ =?us-ascii?Q?olRLXRHDC/TJhl7C/C3m0xa+lzjGuDcdRwyApi+emXzpDrnCf9CzWwJVILfz?=
+ =?us-ascii?Q?fwDOAEqLyX4o0khwIh1+Xs0CI38FNQDrto17nv6TSN8CCEWo8GIN6RO4WO99?=
+ =?us-ascii?Q?WoqldLVLfifEveVQmYHF51AQdVOfzJxyDCt8h/QfkRnwmzu5x8TYZF9swFPw?=
+ =?us-ascii?Q?dnZJ6QKvv2ECPSUImLshtstAfBsOtarIMX3c2t4X4pr2faVTueerIuUeVOJY?=
+ =?us-ascii?Q?v6jrnWrc1zZMNkl/fMM2nUlyZoZN30v+P2LooOm1wcKPxKlhApMlMqw6wi2o?=
+ =?us-ascii?Q?MVDLMPHsRssBhxpOyMtNvgoJsl3G/q4A0ULofBWWOLxLTqx7aokUBhKq+LNw?=
+ =?us-ascii?Q?6/MpZdZQgLd8kPcMVkzVWhlOuj58nz5/+t1B0O1nPhCwS8ITFMF6vX3Ox1S/?=
+ =?us-ascii?Q?NkkbAlkZFzmpSeG5ED4rI0LYNiWn0WKsi1A76pPLTt0l8Iz4Ez6aJtT5eEQk?=
+ =?us-ascii?Q?NrgX9CnOi8Fzhk8xQu4QMwhoPLV2mHqLB9VCGcAXhuDxpz6zth26iJhWSZIf?=
+ =?us-ascii?Q?8iMmPQiGI29msTmIIdN02hmu2BMGg/nft2M9P4JVa/VAh/HtnpbDbqmLlkqo?=
+ =?us-ascii?Q?6HlhTvTMYSYfNXpL4OJdBZQz2oV4VLc/ke/Q0/Zc9sV9YtS/UySEThxl/vaI?=
+ =?us-ascii?Q?0hFjqcqZ9Hma39Sz7fW5G2wm2k834w5SE4QgCeY8J5wpfHexqBU+4uKT5od5?=
+ =?us-ascii?Q?1m6l6Yt0soheZiuzQVuDAXDJNaGwG2eQm4aj4tXUCJ6GXG4VyRMdepBAmxJ3?=
+ =?us-ascii?Q?IiG0AMSzQxlrcGdik261yqticPMYHmxvHvEpL1BAnR/JRJ+hzCAt2RTy/wdM?=
+ =?us-ascii?Q?HsFAbpH7IZITfXI7PqUvRWsL23kQsO4D0mMCkB/rqCbbgeKRlsD+dD9iP/Rn?=
+ =?us-ascii?Q?8/E838BEM9n0YLv3lMI4+qdfcwEGnd+JTIbdpm3a7tLx8Yp2OMeDJ4l1M+u/?=
+ =?us-ascii?Q?UcqfSQuAchLM4elKSck=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: fcde5a1a-6226-461e-a1dc-08dac654e955
+X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB5979.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Nov 2022 15:28:42.2476 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: R4Qv49jTgU3wTEMXe1MJ90yLaAKC/SGnUDDFsHlNJBHebJtFyekVyJq1CjBi9yij
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB6112
 X-Mailman-Approved-At: Mon, 14 Nov 2022 16:09:00 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] fm10k: Fix error handling in
- fm10k_init_module()
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=Nvidia.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=sEkKuiNddioMGP1g/ATHRypsCCvUAU2QJDlxOhMdyaA=;
+ b=RFu0cAZ9AwLvNewAas/OHA9gx6VtgXdaT9z8pBgfdRPRpKKRRKfXcHWTuq3N23rItZYPOguI3pW5Z/NmzCtgmBdTocVylqDtMcNjqeZld0uYpSNyxnDiXRxOtxrsGn8JbfZN8ypLYid23UoeuKVGE1DfFEQANjxTnIN0cDubuIpaS4FGsdLh1vqjwwzvp0PsmpxFnK0/FevSBaykbgFgKoy24EUnUecAxyrzzyU+uWoT+XzsJC5kZOc0J8gw9x064hLuL1IneRZ/Xn+cbopccLpnUxdLQF2a7YfouIbMUDbXUCVG1aqM5DpPWLAGTswsM+v+Ptq65nFUTYDSIqGqUw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
+ header.s=selector2 header.b=RFu0cAZ9
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Subject: Re: [Intel-wired-lan] [PATCH net-next 13/13] devlink,
+ ice: add MSIX vectors as devlink resource
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,76 +154,66 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: yuancan@huawei.com
+Cc: mustafa.ismail@intel.com, netdev@vger.kernel.org,
+ leszek.kaliszczuk@intel.com, przemyslaw.kitszel@intel.com, edumazet@google.com,
+ Michal Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org,
+ kuba@kernel.org, pabeni@redhat.com, shiraz.saleem@intel.com,
+ davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-A problem about modprobe fm10k failed is triggered with the following log
-given:
+Mon, Nov 14, 2022 at 01:57:55PM CET, michal.swiatkowski@linux.intel.com wrote:
+>From: Michal Kubiak <michal.kubiak@intel.com>
+>
+>Implement devlink resource to control how many MSI-X vectors are
+>used for eth, VF and RDMA. Show misc MSI-X as read only.
+>
+>This is first approach to control the mix of resources managed
+>by ice driver. This commit registers number of available MSI-X
+>as devlink resource and also add specific resources for eth, vf and RDMA.
+>
+>Also, make those resources generic.
+>
+>$ devlink resource show pci/0000:31:00.0
+>  name msix size 1024 occ 172 unit entry dpipe_tables none
 
- Intel(R) Ethernet Switch Host Interface Driver
- Copyright(c) 2013 - 2019 Intel Corporation.
- debugfs: Directory 'fm10k' with parent '/' already present!
 
-The reason is that fm10k_init_module() returns fm10k_register_pci_driver()
-directly without checking its return value, if fm10k_register_pci_driver()
-failed, it returns without removing debugfs and destroy workqueue,
-resulting the debugfs of fm10k can never be created later and leaks the
-workqueue.
+So, 1024 is the total vector count available in your hw?
 
- fm10k_init_module()
-   alloc_workqueue()
-   fm10k_dbg_init() # create debugfs
-   fm10k_register_pci_driver()
-     pci_register_driver()
-       driver_register()
-         bus_add_driver()
-           priv = kzalloc(...) # OOM happened
-   # return without remove debugfs and destroy workqueue
 
-Fix by remove debugfs and destroy workqueue when
-fm10k_register_pci_driver() returns error.
+>    resources:
+>      name msix_misc size 4 unit entry dpipe_tables none
 
-Fixes: 7461fd913afe ("fm10k: Add support for debugfs")
-Fixes: b382bb1b3e2d ("fm10k: use separate workqueue for fm10k driver")
-Signed-off-by: Yuan Can <yuancan@huawei.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+What's misc? Why you don't show occupancy for it? Yet, it seems to be
+accounted in the total (172)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 4a6630586ec9..fc373472e4e1 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -32,6 +32,8 @@ struct workqueue_struct *fm10k_workqueue;
-  **/
- static int __init fm10k_init_module(void)
- {
-+	int ret;
-+
- 	pr_info("%s\n", fm10k_driver_string);
- 	pr_info("%s\n", fm10k_copyright);
- 
-@@ -43,7 +45,13 @@ static int __init fm10k_init_module(void)
- 
- 	fm10k_dbg_init();
- 
--	return fm10k_register_pci_driver();
-+	ret = fm10k_register_pci_driver();
-+	if (ret) {
-+		fm10k_dbg_exit();
-+		destroy_workqueue(fm10k_workqueue);
-+	}
-+
-+	return ret;
- }
- module_init(fm10k_init_module);
- 
--- 
-2.17.1
+Also, drop the "msix_" prefix from all, you already have parent called
+"msix".
 
+
+>      name msix_eth size 92 occ 92 unit entry size_min 1 size_max
+
+Why "size_min is not 0 here?
+
+
+>	128 size_gran 1 dpipe_tables none
+>      name msix_vf size 128 occ 0 unit entry size_min 0 size_max
+>	1020 size_gran 1 dpipe_tables none
+>      name msix_rdma size 76 occ 76 unit entry size_min 0 size_max
+
+Okay, this means that for eth and rdma, the vectors are fully used, no
+VF is instanciated?
+
+
+
+>	132 size_gran 1 dpipe_tables none
+>
+>example commands:
+>$ devlink resource set pci/0000:31:00.0 path msix/msix_eth size 16
+>$ devlink resource set pci/0000:31:00.0 path msix/msix_vf size 512
+>$ devlink dev reload pci/0000:31:00.0
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
