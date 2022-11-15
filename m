@@ -1,90 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFC0CC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Nov 2022 07:00:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F6F4C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Nov 2022 07:13:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7017A40333;
-	Tue, 15 Nov 2022 07:00:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7017A40333
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9478240496;
+	Tue, 15 Nov 2022 07:13:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9478240496
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668495641;
-	bh=CtuZY3kIoKMF9YrKEpuwPklaQ1C8imYgqCQFAt4KoZ8=;
+	s=default; t=1668496385;
+	bh=+mNpGhV9vemYceFeyKxnUGXSiorgIZMB8lECrMPfRd0=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=BYjVG0L+mzOhT6KBAzE6OrRH2uAx5KtHocALa14s4XGsfeYXgfRkHME68J8MzaNAy
-	 G87//1rLLPxUNMUJpY4UYPPsWc3+z3jBM530MLZRR1uXjf4rny84crFWd4qiodtdMg
-	 6NvoyQeXl2liXnUI6DnvDXxejGaq5q2t++3esLwQs/xQRKthyPbCMDRx+aOcyQ/aZN
-	 g6A9nGBDxds33BbxIFhMStXHFIYPZQAH0UkuxJ1zISw6NVLm0C53t8j/wPEN/Q2EhZ
-	 X2xaKiihLwpIASXJX0FSX/bXl9OeCFwKcWW9oYeW7OnA7u/KxW94HHitlEEVTkWm7D
-	 mZ+kZDYPT+7aw==
+	b=WubjBrL55+WoLRlHoule7elFb0S2o9Rw4w6+OC7wRZ+c2Yjzwy4dPVoN8/CdbPM3d
+	 t1XL2OGbj9P9i8NXti0sKWtKYYAc49s9koXt57FQkJ75Nx/B+fW2G8G9SnMGqzBsrC
+	 ke8gntrc+QXm5PEHY1TgCC72PkwttS2Ytd8qN0p+rCo3yLUb812A5xeHDl2hYT2yjj
+	 +n23worRmiywUAa0FmfN/MwezzY/NjIlgTnvjfqslVFSUzVVYrFVFiMqiTElf4rELx
+	 3OILddMDktsjtFJfJLkLKw08rAnuT2X69/tGydVO0U1HOj7a5m7ZA1ET4/ASPzkfiE
+	 DWmjCnuFTwi3Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id nhfWc6AC13iq; Tue, 15 Nov 2022 07:00:40 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id DFVR1YwTsyei; Tue, 15 Nov 2022 07:13:04 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 072604051E;
-	Tue, 15 Nov 2022 07:00:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 072604051E
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 762B21BF295
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 07:00:38 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 7D8A0404A0;
+	Tue, 15 Nov 2022 07:13:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7D8A0404A0
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id DCE391BF293
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 07:13:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4FEA8813B9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 07:00:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4FEA8813B9
+ by smtp3.osuosl.org (Postfix) with ESMTP id C124860B0F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 07:13:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C124860B0F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MikLVAgR9l2j for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Nov 2022 07:00:37 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id SQYA0chWz-px for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Nov 2022 07:13:01 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EAED6813B0
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp1.osuosl.org (Postfix) with ESMTPS id EAED6813B0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 07:00:36 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="374314594"
-X-IronPort-AV: E=Sophos;i="5.96,165,1665471600"; d="scan'208";a="374314594"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Nov 2022 23:00:36 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="707629281"
-X-IronPort-AV: E=Sophos;i="5.96,165,1665471600"; d="scan'208";a="707629281"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C5F3460B0E
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C5F3460B0E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 07:13:01 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="376450460"
+X-IronPort-AV: E=Sophos;i="5.96,165,1665471600"; d="scan'208";a="376450460"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Nov 2022 23:13:01 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10531"; a="883850552"
+X-IronPort-AV: E=Sophos;i="5.96,165,1665471600"; d="scan'208";a="883850552"
 Received: from unknown (HELO localhost.localdomain) ([10.237.112.144])
- by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Nov 2022 23:00:31 -0800
-Date: Tue, 15 Nov 2022 08:00:28 +0100
+ by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Nov 2022 23:12:56 -0800
+Date: Tue, 15 Nov 2022 08:12:52 +0100
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: Leon Romanovsky <leon@kernel.org>
-Message-ID: <Y3M5DOEhbAdbCtEC@localhost.localdomain>
+Message-ID: <Y3M79CuAQNLkFV0S@localhost.localdomain>
 References: <20221114125755.13659-1-michal.swiatkowski@linux.intel.com>
  <Y3JBaQ7+p5ncsjuW@unreal>
  <49e2792d-7580-e066-8d4e-183a9c826e68@intel.com>
- <CO1PR11MB5089C5B17D186C6FF17C5599D6059@CO1PR11MB5089.namprd11.prod.outlook.com>
- <Y3J2UEPHDKNL2n4O@unreal>
+ <Y3J16ueuhwYeDaww@unreal>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <Y3J2UEPHDKNL2n4O@unreal>
+In-Reply-To: <Y3J16ueuhwYeDaww@unreal>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1668495637; x=1700031637;
+ t=1668496381; x=1700032381;
  h=date:from:to:cc:subject:message-id:references:
  mime-version:in-reply-to;
- bh=CHGIKomhVc9j2XHvy7ULB6e0SooPCWvnAIwmpNwi7+c=;
- b=VYwWRzjPFerRshjbggsaQtj6uxwtuM3OE5JKPeKaxsqtdlDvHwzLxt/u
- o2UoJkoIVcUEoNisivLh2/EShhT81pK5fNYlSRS4WG9loSN2E2SjZB4z/
- jvyT3whRQBR1d4HSu7iZdJ0DZkLbOuuWsXQuyGVdzYt1zvkZMpwa02qyH
- NYAEsjdeGklodLvSjqRmI7pwlxCPA61TV0NOwizQXTlFEmWudQjgneefg
- yaCXPXxknrkys/VVQbXubCeklDSVw05fn+2iyfo9+x5dHs9vuIScRol+g
- 8r+Y4+sG8wlgLcfwCYMyjjOWeM4wxl/qectwsayZkqSC789zLnMli5ANF
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=U0cuLmTVT0o6Qnp0FZRYpkRPVW6YaC5U9TAwsuoNBTk=;
+ b=YliNckUVbpoY+5AxEOjTAC4qW67aAgjahw5wxT/kNaiTg3VPHGscIMTz
+ vtCSxes3pND9bfoRMEXVk4R+bSmG2XVpLHH4xksL10XjA2YiJ59BinAyq
+ +gOXfKTnNhBoevOl3z4gmAkUO7cDFsKGYPUW+ZFI5/NAt3BGjgLVehHkC
+ bAWtLsW+pWTP+cOWhE0/Cg8X7B0ahuAEo1BAxuMVRMwF69r1V44HV3ruX
+ cSbtkcHx8bOaixUd/p8Qfn2pEx0vI7hVDxuE+C+t3iNitDCeAxyYupQAu
+ QUt7LOUEBSodDsDQ/0miqR+Ur/sBYITkTaIKTRQEqkpTUg/78J6YophBW
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=VYwWRzjP
+ header.a=rsa-sha256 header.s=Intel header.b=YliNckUV
 Subject: Re: [Intel-wired-lan] [PATCH net-next 00/13] resource management
  using devlink reload
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -99,89 +98,68 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "jiri@nvidia.com" <jiri@nvidia.com>, "Kaliszczuk,
- Leszek" <leszek.kaliszczuk@intel.com>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>,
- "edumazet@google.com" <edumazet@google.com>, "Ismail,
- Mustafa" <mustafa.ismail@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
- "Saleem, Shiraz" <shiraz.saleem@intel.com>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: jiri@nvidia.com, leszek.kaliszczuk@intel.com, przemyslaw.kitszel@intel.com,
+ edumazet@google.com, mustafa.ismail@intel.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, kuba@kernel.org,
+ pabeni@redhat.com, shiraz.saleem@intel.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Nov 14, 2022 at 07:09:36PM +0200, Leon Romanovsky wrote:
-> On Mon, Nov 14, 2022 at 04:58:57PM +0000, Keller, Jacob E wrote:
+On Mon, Nov 14, 2022 at 07:07:54PM +0200, Leon Romanovsky wrote:
+> On Mon, Nov 14, 2022 at 09:31:11AM -0600, Samudrala, Sridhar wrote:
+> > On 11/14/2022 7:23 AM, Leon Romanovsky wrote:
+> > > On Mon, Nov 14, 2022 at 01:57:42PM +0100, Michal Swiatkowski wrote:
+> > > > Currently the default value for number of PF vectors is number of CPUs.
+> > > > Because of that there are cases when all vectors are used for PF
+> > > > and user can't create more VFs. It is hard to set default number of
+> > > > CPUs right for all different use cases. Instead allow user to choose
+> > > > how many vectors should be used for various features. After implementing
+> > > > subdevices this mechanism will be also used to set number of vectors
+> > > > for subfunctions.
+> > > > 
+> > > > The idea is to set vectors for eth or VFs using devlink resource API.
+> > > > New value of vectors will be used after devlink reinit. Example
+> > > > commands:
+> > > > $ sudo devlink resource set pci/0000:31:00.0 path msix/msix_eth size 16
+> > > > $ sudo devlink dev reload pci/0000:31:00.0
+> > > > After reload driver will work with 16 vectors used for eth instead of
+> > > > num_cpus.
+> > > By saying "vectors", are you referring to MSI-X vectors?
+> > > If yes, you have specific interface for that.
+> > > https://lore.kernel.org/linux-pci/20210314124256.70253-1-leon@kernel.org/
 > > 
-> > 
-> > > -----Original Message-----
-> > > From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
-> > > Sent: Monday, November 14, 2022 7:31 AM
-> > > To: Leon Romanovsky <leon@kernel.org>; Michal Swiatkowski
-> > > <michal.swiatkowski@linux.intel.com>
-> > > Cc: netdev@vger.kernel.org; davem@davemloft.net; kuba@kernel.org;
-> > > pabeni@redhat.com; edumazet@google.com; intel-wired-lan@lists.osuosl.org;
-> > > jiri@nvidia.com; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Lobakin,
-> > > Alexandr <alexandr.lobakin@intel.com>; Drewek, Wojciech
-> > > <wojciech.drewek@intel.com>; Czapnik, Lukasz <lukasz.czapnik@intel.com>;
-> > > Saleem, Shiraz <shiraz.saleem@intel.com>; Brandeburg, Jesse
-> > > <jesse.brandeburg@intel.com>; Ismail, Mustafa <mustafa.ismail@intel.com>;
-> > > Kitszel, Przemyslaw <przemyslaw.kitszel@intel.com>; Raczynski, Piotr
-> > > <piotr.raczynski@intel.com>; Keller, Jacob E <jacob.e.keller@intel.com>; Ertman,
-> > > David M <david.m.ertman@intel.com>; Kaliszczuk, Leszek
-> > > <leszek.kaliszczuk@intel.com>
-> > > Subject: Re: [PATCH net-next 00/13] resource management using devlink reload
-> > > 
-> > > On 11/14/2022 7:23 AM, Leon Romanovsky wrote:
-> > > > On Mon, Nov 14, 2022 at 01:57:42PM +0100, Michal Swiatkowski wrote:
-> > > >> Currently the default value for number of PF vectors is number of CPUs.
-> > > >> Because of that there are cases when all vectors are used for PF
-> > > >> and user can't create more VFs. It is hard to set default number of
-> > > >> CPUs right for all different use cases. Instead allow user to choose
-> > > >> how many vectors should be used for various features. After implementing
-> > > >> subdevices this mechanism will be also used to set number of vectors
-> > > >> for subfunctions.
-> > > >>
-> > > >> The idea is to set vectors for eth or VFs using devlink resource API.
-> > > >> New value of vectors will be used after devlink reinit. Example
-> > > >> commands:
-> > > >> $ sudo devlink resource set pci/0000:31:00.0 path msix/msix_eth size 16
-> > > >> $ sudo devlink dev reload pci/0000:31:00.0
-> > > >> After reload driver will work with 16 vectors used for eth instead of
-> > > >> num_cpus.
-> > > > By saying "vectors", are you referring to MSI-X vectors?
-> > > > If yes, you have specific interface for that.
-> > > > https://lore.kernel.org/linux-pci/20210314124256.70253-1-leon@kernel.org/
-> > > 
-> > > This patch series is exposing a resources API to split the device level MSI-X vectors
-> > > across the different functions supported by the device (PF, RDMA, SR-IOV VFs
-> > > and
-> > > in future subfunctions). Today this is all hidden in a policy implemented within
-> > > the PF driver.
-> > > 
-> > > The patch you are referring to seems to be providing an interface to change the
-> > > msix count for a particular VF. This patch is providing a interface to set the total
-> > > msix count for all the possible VFs from the available device level pool of
-> > > msix-vectors.
-> > > 
-> > 
-> > It looks like we should implement both: resources to configure the "pool" of available vectors for each VF, and the sysfs VF Interface to allow configuring individual VFs.
+> > This patch series is exposing a resources API to split the device level MSI-X vectors
+> > across the different functions supported by the device (PF, RDMA, SR-IOV VFs and
+> > in future subfunctions). Today this is all hidden in a policy implemented within
+> > the PF driver.
 > 
-> Yes, to be aligned with PCI spec and see coherent lspci output for VFs.
+> Maybe we are talking about different VFs, but if you refer to PCI VFs,
+> the amount of MSI-X comes from PCI config space for that specific VF.
 > 
+> You shouldn't set any value through netdev as it will cause to
+> difference in output between lspci (which doesn't require any driver)
+> and your newly set number.
+
+If I understand correctly, lspci shows the MSI-X number for individual
+VF. Value set via devlink is the total number of MSI-X that can be used
+when creating VFs. As Jake said I will fix the code to track both
+values. Thanks for pointing the patch.
+
+> 
+> Also in RDMA case, it is not clear what will you achieve by this
+> setting too.
+>
+
+We have limited number of MSI-X (1024) in the device. Because of that
+the amount of MSI-X for each feature is set to the best values. Half for
+ethernet, half for RDMA. This patchset allow user to change this values.
+If he wants more MSI-X for ethernet, he can decrease MSI-X for RDMA.
+
 > Thanks
-> 
 
-Thanks, I will implement this sysf interface to configure individual
-VFs.
-
-> > 
-> > Thanks,
-> > Jake
+Thanks for reviewing
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
