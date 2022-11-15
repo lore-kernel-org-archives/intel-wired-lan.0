@@ -1,148 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70C76C433FE
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Nov 2022 16:29:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F8B1C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 15 Nov 2022 17:57:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1BE75416B1;
-	Tue, 15 Nov 2022 16:29:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1BE75416B1
+	by smtp3.osuosl.org (Postfix) with ESMTP id E1D2F60709;
+	Tue, 15 Nov 2022 17:57:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E1D2F60709
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668529750;
-	bh=x3en437hecI10ySDwdlB/vj0RQogEMLtFmNIQ2uc9gw=;
+	s=default; t=1668535041;
+	bh=zqBruil9++Jp5S6QTA12jtDpFUKf3aX5DESoPq9x2H0=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=JiSznudNl9g+WiQtRYPRye4dBnOhRq1yvwX18jjCSKv4LStoFVh8WEvfoevWXUH9u
-	 z948bgMd5dC+Ktd9x853df9U8Fg020mk7eHUMM4Fa5ouXE2gpInul52MRnmy+0PBCv
-	 BgI1Iu73GscXB6IV+OXRHQiNWNXFF5eOUyzieJLc2NmCj91EQNw2eeKxoxpKp8uEV5
-	 3znRY26k6sFF3szgY3PiHrll5dGx8wQUu1Rdj3g+KAZw+WrlKFvcbxTYTioRnb+8KE
-	 0whpto54IGIhKH3D7PDTAJh2DD+IIu9QYw+Ay7ZzytX8jvvr9cXPmky5TJcBzR8yXw
-	 CxWI759pUwezw==
+	b=fXBPfCRguGfW2ywXpHATGtMYN7hEqd0HHtQzMivVOzrYajGHQ1vmRfq1wVfWENF3L
+	 FPAgReLNczvI3631bW0diEiYuel+F6esyaASDCKmsOYny6Wzl+otH+YBiQcH9a2bfN
+	 HL637mTW5MBvOfYaL5Q+WMHFc4vHko84T2LTuAjtWNKhac6EInNi9btLIzae6HcF3G
+	 FkSt1SoYP7A67kO58vexlVyGNVJh+p/VuLTKc66bO9vBVTOCmRgFzBXWlepGJgOjQ3
+	 Ci6sPjAf3VtQWph/LcZI2WNwx2XvzcUWe5eneLZlrgMExb0Q1zt8IlG5xu44TDd+Ms
+	 U0AR7wb07EiKA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id gLwY3m5Xk2Xh; Tue, 15 Nov 2022 16:29:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id xlMMtzsYI6nE; Tue, 15 Nov 2022 17:57:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 969FD416BF;
-	Tue, 15 Nov 2022 16:29:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 969FD416BF
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id BCEA41BF348
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 12:08:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A7F8F60C1F;
+	Tue, 15 Nov 2022 17:57:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A7F8F60C1F
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id CAD691BF5DF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 17:57:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 72881401D9
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 12:08:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 72881401D9
+ by smtp3.osuosl.org (Postfix) with ESMTP id A41D460C1F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 17:57:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A41D460C1F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id i1_vCGzghjWj for <intel-wired-lan@lists.osuosl.org>;
- Tue, 15 Nov 2022 12:08:25 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3281D401D2
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam11on2040.outbound.protection.outlook.com [40.107.220.40])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 3281D401D2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 12:08:25 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=D/j6s9aWNrr/V4Cah4URmQT8OSUG6rwN1thDRAWMCQk369hkWikuHpnDav366Ri+mHGYRZn0war8/birv+nOX0ygWkMfNbdpZ/ZEf1T3VvvSYKuKFgYRi7JpCvRYTuG9nhlyfJ2V6AJz3VnIc4xu83ro0AqoCxv8MbRYGt+kLh5iAwJXuJ8js0UxvGkBipzWv1pYit6p61pY7vo2gmuLzpiTWdBWFPFf6DkN7PMiGeAKPUxv8Ta4iXDBeHd8RAqMXvyINHOtG8hogdphPiha3xBKemQUdEgCaCcKhIejy3gpjprEYaPasBqjv6NqineUkBIVskJHVt+g/SEzrOywjg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=mPKf3FH4E4SqYx4RWVVT1nqU0Omrt3YjdAgFm1vHpKc=;
- b=Gc24HSlNyHaPLFAl9VyJL/D+mQ5x5PcgjaAjKOKM62IvZ6GT8bcZrhbvYTGY6q4aaMkHYzVh52bTSK8STr0/D/9O034ABzgDzAlro3P2ODUJ5LpF4eIr6JIcsZV5JQcu8y+3pKe6T41SOjOzDckkY1SVbeKz/sBebF7pgni/hygvTK5i9jmH6Znbwq+VqS3gfW+fnBh2/LcjIjnfb9q+tlng+pc2SE/miMU4v9bIz6X3RxOs7F7VRWEodpJVMOVYvG0Vn1vR2DZNdzGHaV5zhnUkwRd8aWhjzyfabuADDJPIKRyQq+5x6i1HkINY/Kutw1FJmAG/ucavofKlsRXeRQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-Received: from MN0PR12MB5979.namprd12.prod.outlook.com (2603:10b6:208:37e::15)
- by BN9PR12MB5035.namprd12.prod.outlook.com (2603:10b6:408:134::8)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5813.18; Tue, 15 Nov
- 2022 12:08:23 +0000
-Received: from MN0PR12MB5979.namprd12.prod.outlook.com
- ([fe80::62b2:b96:8fd1:19f5]) by MN0PR12MB5979.namprd12.prod.outlook.com
- ([fe80::62b2:b96:8fd1:19f5%4]) with mapi id 15.20.5813.013; Tue, 15 Nov 2022
- 12:08:23 +0000
-Date: Tue, 15 Nov 2022 13:08:20 +0100
-From: Jiri Pirko <jiri@nvidia.com>
-To: Piotr Raczynski <piotr.raczynski@intel.com>
-Message-ID: <Y3OBNC8LBFZjIXXO@nanopsycho>
-References: <20221114125755.13659-1-michal.swiatkowski@linux.intel.com>
- <20221114125755.13659-14-michal.swiatkowski@linux.intel.com>
- <Y3Jepn7bxkCFP+cg@nanopsycho> <Y3Jm36rYH4J1jSoc@praczyns-desk3>
-Content-Disposition: inline
-In-Reply-To: <Y3Jm36rYH4J1jSoc@praczyns-desk3>
-X-ClientProxiedBy: FR0P281CA0050.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:48::13) To MN0PR12MB5979.namprd12.prod.outlook.com
- (2603:10b6:208:37e::15)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id i5DtmfJIHDnQ for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 15 Nov 2022 17:57:18 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1FE8360709
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1FE8360709
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 15 Nov 2022 17:57:17 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 47970B81A58;
+ Tue, 15 Nov 2022 17:57:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14661C433B5;
+ Tue, 15 Nov 2022 17:57:13 +0000 (UTC)
+Date: Tue, 15 Nov 2022 19:57:09 +0200
+From: Leon Romanovsky <leon@kernel.org>
+To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Message-ID: <Y3PS9e9MJEZo++z5@unreal>
+References: <Y3JBaQ7+p5ncsjuW@unreal>
+ <49e2792d-7580-e066-8d4e-183a9c826e68@intel.com>
+ <Y3J16ueuhwYeDaww@unreal> <Y3M79CuAQNLkFV0S@localhost.localdomain>
+ <Y3NJnhxetoSIvqYV@unreal> <Y3NWMVF2LV/0lqJX@localhost.localdomain>
+ <Y3NcnnNtmL+SSLU+@unreal> <Y3NnGk7DCo/1KfpD@localhost.localdomain>
+ <Y3OCHLiCzOUKLlHa@unreal> <Y3OcAJBfzgggVll9@localhost.localdomain>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN0PR12MB5979:EE_|BN9PR12MB5035:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5e37b1c9-44e6-4eaf-e229-08dac7021804
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: de/sctKBMUSLmZts09r4ccpeRtYHY6aRFlOqELOa2L6XPE5vuaHsszAZC65+6QBp9fmF9KG1ZG/fK4VYwAjwTmBpRJkqopdN1YDeFrfTJZh+loqb/FulLbXMfdj/cRC9QBz8G/QsBWFcZsCXM0TBE+UeyIfnt6WaaHqUhVD+q8rLN/ww8lXwuFZVQuX9TZiBuAjTfwm4Tzpli1xc6we8qjm9gD0o90eoQ3oOVk+quEFdeKwQdqf+HVzkCc8Pk/DCoeOBWTNM1edX/dSZZRM0vg0rGLZoMTmxLlWm4XG57Y90Z7L3quxGRMgMhgPZ06sy1lDsHM2vfYYPaHETJJRprtqC8KoNxbE7NgrYsaUfrlHGMUHmsGDOenlaQY8owBiQrKiAoto4buTB5UCXll3wwp9IDWWTXZWtgiq+tldd6ic3P4JBN7n+pXXTPYvd3/9N+O0X2J/Ynk18KGj7Onnc3XG+2CMBSWsuIJRLdgy9+r/qPHIsFYCFXHgcxvNkDD/gUTUnr0lyXUKY5/qZqP1Nixq3NBfVDKIcaJnUGS+8EznDDW18z7pfiKlxKYTy1j88fpQYSdpPzqx+6AiUSm/Qo12OQI9A/KOld22aD5QLL1t1MLFvs4n4Rk/dtABYP6ORUmMRNidItEPFVTVOhRZO/hWiIthtOsFbjt2+SM7ydMwhXh8ON2DQ+gH89Fiwi6Y5E0Ixx6ZtBj9p3S1LW5isbQ==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MN0PR12MB5979.namprd12.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230022)(4636009)(7916004)(39860400002)(136003)(366004)(346002)(396003)(376002)(451199015)(38100700002)(2906002)(41300700001)(83380400001)(86362001)(8676002)(4326008)(316002)(66946007)(66476007)(66556008)(186003)(6512007)(9686003)(26005)(6486002)(54906003)(6916009)(7416002)(5660300002)(33716001)(8936002)(478600001)(6506007);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?8pleQHbxH2IValAI1bVfiRwCgjzUkvl4y0atUOLTfOcuKYpv/BxXtjDzvy2i?=
- =?us-ascii?Q?+w4gIlqZwcsjfWIr/ggSJjRxSy6EHInvEaqA4vM34679pOFwi24tX51XaH8u?=
- =?us-ascii?Q?KvHFxwoFKzJMNXs4rgKCfPxs/bB8J//IAli73vWq3iF8LtOhxtubH/TKIQRD?=
- =?us-ascii?Q?1CdIqc9ymUCTHYadwfwoY7bRDLwv/6zE89Zvssr+OCL2VuwAQdHiKAm3eXmV?=
- =?us-ascii?Q?8Zrh6t6qm61UAINkagip5TaQUAGqLekhjhhPBMhsmbISmvjQWpsqQFU7qJTI?=
- =?us-ascii?Q?0fzcKZ0/ftL5nOBC4uuI9suAzWlK0EZHI0Av9ygkAXoOxy5CillRRcWTguBK?=
- =?us-ascii?Q?lwLN9ijUU/flk8oG8kQ0/x2pcrk8DOUG1V9OG/NVJl1g63hp8A5A/uwl4UE7?=
- =?us-ascii?Q?Cxsh/fxdvcRm+P5+mNlz88TPBphj/EpZQZzaWxmV6CjIGThxsgCj8RVzDmDg?=
- =?us-ascii?Q?JrmAsnYcDY4oRq2QsHL3ry1zZQnrGshgmsJ5Uf+ORf+600VrYnTHug0m0Yzg?=
- =?us-ascii?Q?wugHoDKDKZpD8XQWvExb2D4I/qTQven/pHNT97hBCI5jQ+jGwG8JkRnQyPs0?=
- =?us-ascii?Q?Mq7X6hHyEeMn64l6DNsAJ43008+TyOOsrpWy9WJ9Ss8X3sJw6prrk2og9/1E?=
- =?us-ascii?Q?CoOWFLBKy7SV9sTdQFiBk5Pv/IrnV5M1SGNtRMSOtgekGcu4UU+2i0w1ul7b?=
- =?us-ascii?Q?XtdR2V/EeD8uVK9343dTRqjBB1uI/+JaNNsvAMUZuDINGM4Oea+WOzmZN5LB?=
- =?us-ascii?Q?RzhbUQA8FPWN4meEpbYYHvmu44nAUWS/eOXAqBrPsxJaQkb1UjKWEWBoIFuW?=
- =?us-ascii?Q?MMfiryWphqy4kalRqwaW98LGqMC3EH5vUWMgq99ZkbM1q9ivl3oQMlxfA4CV?=
- =?us-ascii?Q?NFLgGMYGC2vZE3f5/2w2HNNLy8Dejnhnza1Dzxi3tYfO0R5lyFLNZr8At3Zg?=
- =?us-ascii?Q?5JrPJqf8v/Yk1IQWbCfK7sHlDij2aKdPt7C/WRes+ebGy9EET177TBwIJlg6?=
- =?us-ascii?Q?QpwlZ1vuv9x9Xd4A9dmmw4sDbPccziSCl0s60XtLGTEqL8KfoJ/XO1/7RXLy?=
- =?us-ascii?Q?hfqtb1d/zkJBBKEvxXR3BYir/bROLHBNFOm5SjAMJQ4nnJg1z3F0uGr2/INm?=
- =?us-ascii?Q?ufr6rChcA0x6UFH07MMaxNPoqya67KWvWq1zIeiOonm2kTXLXIPcd08r6UiR?=
- =?us-ascii?Q?/Sj6HoyoWuZgPVfgdj3nbk9AfiXMyISmVvBVg0/oVHV5nXvr+YM3AvYeNaow?=
- =?us-ascii?Q?nCr0thKuriQAsiOIFSuLBx/ST9z/nMM7BZjySMtI90n6RDHqCAqrf1HV0pS+?=
- =?us-ascii?Q?yBBdPNzzT98d0SgWnIgPXcl9iuq2GLwKx45nMKwyMo6TckdZMtvsLnF+tTKe?=
- =?us-ascii?Q?ZwjnJzR4iCHqiwtcKrt076VbBGJSrLLM66/YiEPptwzU46lzMVUkO5gc4uqk?=
- =?us-ascii?Q?8JKHB5FQhkr+ZQyFaTk1OAG16tOM0VVPO3mVcNMFxTEqMEKVisW5gggyRaZl?=
- =?us-ascii?Q?Pav03+2OTSlMUIoLNY1Ayci4ectukNjs/M7ldomGYlZ5T4h6vwj8ckLkoCPI?=
- =?us-ascii?Q?f7+tFvGtItZTa6/qsn675Bp/LkC/+vqr77l53XbG?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5e37b1c9-44e6-4eaf-e229-08dac7021804
-X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB5979.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Nov 2022 12:08:23.4743 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: qlwqAuoSmZ1A2jvjHIs7vvbVEOtLSBkTaoTJU45Fs3AZ+aawuxeuwS5X6J4uuU/D
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN9PR12MB5035
-X-Mailman-Approved-At: Tue, 15 Nov 2022 16:29:02 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=Nvidia.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=mPKf3FH4E4SqYx4RWVVT1nqU0Omrt3YjdAgFm1vHpKc=;
- b=qMFwHPCWP4t5mKUiQO/+iNeeJEmW+xSnmrx6rgmeJALjIXcxvQkhATus8rMlW+9vU2fO0dzfTTgigLCpK38ZczHa93lzkeHW8DsZQoF5CqFGq8X82B8vagADQ7CKsz8bYkA9gdKjaXeTBWL/nvgFmo5esyvu9iuMnui0nKyQ8nd+1/qjihKWdq7/wMpDNX1/X1vanTZN+Z9jV4DmSUxa9vnrseWLvV77Q7ImtV0dja2ofGYTe6unzMDjcJWXYxxvnUkemm4hrD4GJlamhRs/C4hQFb05reAIqkUhMNbpWtCzs5lGh0v9iCh7Bq71b0/zSXRrH4MD47XUJZrhUQ0MCQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256
- header.s=selector2 header.b=qMFwHPCW
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Subject: Re: [Intel-wired-lan] [PATCH net-next 13/13] devlink,
- ice: add MSIX vectors as devlink resource
+Content-Disposition: inline
+In-Reply-To: <Y3OcAJBfzgggVll9@localhost.localdomain>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1668535033;
+ bh=ytdtL8Krb2Fy+/2ovCnOJ064N/5g/txm0wO9lFhbuEM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Drq5vCtOJRGwbRZCxWide6MhePg2ScL3R5k+u9p6hnOHu8D4qr/jFiWcjJXcsRDqJ
+ Nk9oW4pWOjxHVrx1dWQtW0O75Xju4XkMrqEhqgFoVgNjs96jK274/vq+6KI9KHgWvk
+ rkHH2ajFs2Yr/JvszpCtsd4eVgjQlGaj5FleJDRJAdkA++JhRohUXX8vfAQ5CaCHm1
+ I0+d9j1wOglnZgEk36o2vFGRJztKi0oKzUmArduQQCtMq+x1vLGC52kpeOnfIkR+4L
+ hAp8SNBfExwmmOm3lcUcXy7XGtdoe/X5T78eXWjUVbdkzY2nrhIcQvbHzdVNwf/Gol
+ FKOWlsEqIfG7g==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Drq5vCtO
+Subject: Re: [Intel-wired-lan] [PATCH net-next 00/13] resource management
+ using devlink reload
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -155,97 +95,161 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Michal Kubiak <michal.kubiak@intel.com>, mustafa.ismail@intel.com,
- netdev@vger.kernel.org, leszek.kaliszczuk@intel.com,
- przemyslaw.kitszel@intel.com, edumazet@google.com,
- intel-wired-lan@lists.osuosl.org, kuba@kernel.org, pabeni@redhat.com,
- shiraz.saleem@intel.com, davem@davemloft.net
+Cc: jiri@nvidia.com, leszek.kaliszczuk@intel.com, przemyslaw.kitszel@intel.com,
+ edumazet@google.com, mustafa.ismail@intel.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, kuba@kernel.org,
+ pabeni@redhat.com, shiraz.saleem@intel.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Mon, Nov 14, 2022 at 05:03:43PM CET, piotr.raczynski@intel.com wrote:
->On Mon, Nov 14, 2022 at 04:28:38PM +0100, Jiri Pirko wrote:
->> Mon, Nov 14, 2022 at 01:57:55PM CET, michal.swiatkowski@linux.intel.com wrote:
->> >From: Michal Kubiak <michal.kubiak@intel.com>
->> >
->> >Implement devlink resource to control how many MSI-X vectors are
->> >used for eth, VF and RDMA. Show misc MSI-X as read only.
->> >
->> >This is first approach to control the mix of resources managed
->> >by ice driver. This commit registers number of available MSI-X
->> >as devlink resource and also add specific resources for eth, vf and RDMA.
->> >
->> >Also, make those resources generic.
->> >
->> >$ devlink resource show pci/0000:31:00.0
->> >  name msix size 1024 occ 172 unit entry dpipe_tables none
->> 
->> 
->> So, 1024 is the total vector count available in your hw?
->> 
->
->For this particular device and physical function, yes.
->
->
->> 
->> >    resources:
->> >      name msix_misc size 4 unit entry dpipe_tables none
->> 
->> What's misc? Why you don't show occupancy for it? Yet, it seems to be
->> accounted in the total (172)
->> 
->> Also, drop the "msix_" prefix from all, you already have parent called
->> "msix".
->
->misc interrupts are for miscellaneous purposes like communication with
->Firmware or other control plane interrupts (if any).
->
->> 
->> 
->> >      name msix_eth size 92 occ 92 unit entry size_min 1 size_max
->> 
->> Why "size_min is not 0 here?
->
->Thanks, actually 0 would mean disable the eth, default, netdev at all.
->It could be done, however not implemented in this patchset. But for
->cases when the default port is not needed at all, it seems like a good
->idea.
+On Tue, Nov 15, 2022 at 03:02:40PM +0100, Michal Swiatkowski wrote:
+> On Tue, Nov 15, 2022 at 02:12:12PM +0200, Leon Romanovsky wrote:
+> > On Tue, Nov 15, 2022 at 11:16:58AM +0100, Michal Swiatkowski wrote:
+> > > On Tue, Nov 15, 2022 at 11:32:14AM +0200, Leon Romanovsky wrote:
+> > > > On Tue, Nov 15, 2022 at 10:04:49AM +0100, Michal Swiatkowski wrote:
+> > > > > On Tue, Nov 15, 2022 at 10:11:10AM +0200, Leon Romanovsky wrote:
+> > > > > > On Tue, Nov 15, 2022 at 08:12:52AM +0100, Michal Swiatkowski wrote:
+> > > > > > > On Mon, Nov 14, 2022 at 07:07:54PM +0200, Leon Romanovsky wrote:
+> > > > > > > > On Mon, Nov 14, 2022 at 09:31:11AM -0600, Samudrala, Sridhar wrote:
+> > > > > > > > > On 11/14/2022 7:23 AM, Leon Romanovsky wrote:
+> > > > > > > > > > On Mon, Nov 14, 2022 at 01:57:42PM +0100, Michal Swiatkowski wrote:
+> > > > > > > > > > > Currently the default value for number of PF vectors is number of CPUs.
+> > > > > > > > > > > Because of that there are cases when all vectors are used for PF
+> > > > > > > > > > > and user can't create more VFs. It is hard to set default number of
+> > > > > > > > > > > CPUs right for all different use cases. Instead allow user to choose
+> > > > > > > > > > > how many vectors should be used for various features. After implementing
+> > > > > > > > > > > subdevices this mechanism will be also used to set number of vectors
+> > > > > > > > > > > for subfunctions.
+> > > > > > > > > > > 
+> > > > > > > > > > > The idea is to set vectors for eth or VFs using devlink resource API.
+> > > > > > > > > > > New value of vectors will be used after devlink reinit. Example
+> > > > > > > > > > > commands:
+> > > > > > > > > > > $ sudo devlink resource set pci/0000:31:00.0 path msix/msix_eth size 16
+> > > > > > > > > > > $ sudo devlink dev reload pci/0000:31:00.0
+> > > > > > > > > > > After reload driver will work with 16 vectors used for eth instead of
+> > > > > > > > > > > num_cpus.
+> > > > > > > > > > By saying "vectors", are you referring to MSI-X vectors?
+> > > > > > > > > > If yes, you have specific interface for that.
+> > > > > > > > > > https://lore.kernel.org/linux-pci/20210314124256.70253-1-leon@kernel.org/
+> > > > > > > > > 
+> > > > > > > > > This patch series is exposing a resources API to split the device level MSI-X vectors
+> > > > > > > > > across the different functions supported by the device (PF, RDMA, SR-IOV VFs and
+> > > > > > > > > in future subfunctions). Today this is all hidden in a policy implemented within
+> > > > > > > > > the PF driver.
+> > > > > > > > 
+> > > > > > > > Maybe we are talking about different VFs, but if you refer to PCI VFs,
+> > > > > > > > the amount of MSI-X comes from PCI config space for that specific VF.
+> > > > > > > > 
+> > > > > > > > You shouldn't set any value through netdev as it will cause to
+> > > > > > > > difference in output between lspci (which doesn't require any driver)
+> > > > > > > > and your newly set number.
+> > > > > > > 
+> > > > > > > If I understand correctly, lspci shows the MSI-X number for individual
+> > > > > > > VF. Value set via devlink is the total number of MSI-X that can be used
+> > > > > > > when creating VFs. 
+> > > > > > 
+> > > > > > Yes and no, lspci shows how much MSI-X vectors exist from HW point of
+> > > > > > view. Driver can use less than that. It is exactly as your proposed
+> > > > > > devlink interface.
+> > > > > > 
+> > > > > > 
+> > > > > 
+> > > > > Ok, I have to take a closer look at it. So, are You saing that we should
+> > > > > drop this devlink solution and use sysfs interface fo VFs or are You
+> > > > > fine with having both? What with MSI-X allocation for subfunction?
+> > > > 
+> > > > You should drop for VFs and PFs and keep it for SFs only.
+> > > > 
+> > > 
+> > > I understand that MSI-X for VFs can be set via sysfs interface, but what
+> > > with PFs? 
+> > 
+> > PFs are even more tricker than VFs, as you are changing that number
+> > while driver is bound. This makes me wonder what will be lspci output,
+> > as you will need to show right number before driver starts to load.
+> > 
+> > You need to present right value if user decided to unbind driver from PF too.
+> >
+> 
+> In case of ice driver lspci -vs shows:
+> Capabilities: [70] MSI-X: Enable+ Count=1024 Masked
+> 
+> so all vectors that hw supports (PFs, VFs, misc, etc). Because of that
+> total number of MSI-X in the devlink example from cover letter is 1024.
+> 
+> I see that mellanox shows:
+> Capabilities: [9c] MSI-X: Enable+ Count=64 Masked
+> 
+> I assume that 64 is in this case MSI-X ony for this one PF (it make
+> sense).
 
-So the behaviour you describe is, if you set number of vectors to 0, the
-driver won't instantiate netdev ? That sounds quite odd. In that case,
-the minimal value should really be 1. The same goes to rdma.
+Yes and PF MSI-X count can be changed through FW configuration tool, as
+we need to write new value when the driver is unbound and we need it to
+be persistent. Users are expecting to see "stable" number any time they
+reboot the server. It is not the case for VFs, as they are explicitly
+created after reboots and start "fresh" after every boot.
 
+So we set large enough but not too large value as a default for PFs.
+If you find sane model of how to change it through kernel, you can count
+on our support.
 
->
->> 
->> 
->> >	128 size_gran 1 dpipe_tables none
->> >      name msix_vf size 128 occ 0 unit entry size_min 0 size_max
->> >	1020 size_gran 1 dpipe_tables none
->> >      name msix_rdma size 76 occ 76 unit entry size_min 0 size_max
->> 
->> Okay, this means that for eth and rdma, the vectors are fully used, no
->> VF is instanciated?
->
->Yes, in this driver implementation, both eth and rdma will most probably
->be always fully utilized, but the moment you change the size and execute
->`devlink reload` then they will reconfigure with new values.
->
->The VF allocation here is the maximum number of interrupt vectors that
->can be assigned to actually created VFs. If so, then occ shows how many
->are actually utilized by the VFs.
->
->> 
->> 
->> 
->> >	132 size_gran 1 dpipe_tables none
->> >
->> >example commands:
->> >$ devlink resource set pci/0000:31:00.0 path msix/msix_eth size 16
->> >$ devlink resource set pci/0000:31:00.0 path msix/msix_vf size 512
->> >$ devlink dev reload pci/0000:31:00.0
+> To be honest I don't know why we show maximum MSI-X for the device
+> there, but because of that the value will be the same afer changing
+> allocation of MSI-X across features.
+> 
+> Isn't the MSI-X capabilities read from HW register?
+
+Yes, it comes from Message Control register.
+
+> 
+> > > Should we always allow max MSI-X for PFs? So hw_max - used -
+> > > sfs? Is it save to call pci_enable_msix always with max vectors
+> > > supported by device?
+> > 
+> > I'm not sure. I think that it won't give you much if you enable
+> > more than num_online_cpu().
+> > 
+> 
+> Oh, yes, correct, I missed that.
+> 
+> > > 
+> > > I added the value for PFs, because we faced a problem with MSI-X
+> > > allocation on 8 port device. Our default value (num_cpus) was too big
+> > > (not enough vectors in hw). Changing the amount of vectors that can be
+> > > used on PFs was solving the issue.
+> > 
+> > We had something similar for mlx5 SFs, where we don't have enough vectors.
+> > Our solution is simply to move to automatic shared MSI-X mode. I would
+> > advocate for that for you as well. 
+> >
+> 
+> Thanks for proposing solution, I will take a look how this work in mlx5.
+
+BTW, PCI spec talks about something like that in short paragraph
+"Handling MSI-X Vector Shortages".
+
+<...>
+
+> > > 
+> > > Assuming that I gave 64 MSI-X for RDMA by setting num_comp_vectors to
+> > > 64, how I will know if I can or can't use these vectors in ethernet?
+> > 
+> > Why should you need to know? Vectors are not exclusive and they can be
+> > used by many applications at the same time. The thing is that it is far
+> > fetch to except that high performance RDMA applications and high
+> > performance ethernet can coexist on same device at the same time.
+> >
+> 
+> Yes, but after loading aux device part of vectors (num_comp_vectors) are
+> reserved for only RDMA use case (at least in ice driver). We though that
+> devlink resource interface can be a good way to change the
+> num_comp_vectors in this case.
+
+It can be, but is much better to save from users devlink magic. :)
+
+Thanks
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
