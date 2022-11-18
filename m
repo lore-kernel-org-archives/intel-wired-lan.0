@@ -4,82 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CE3BC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Nov 2022 00:43:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4E67C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Nov 2022 03:36:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 118C980C8C;
-	Fri, 18 Nov 2022 00:43:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 118C980C8C
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2BA158209E;
+	Fri, 18 Nov 2022 03:36:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2BA158209E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668732226;
-	bh=cmJctxGXeY289I8CaOKqhXWXgOgvZmhBprUDwN5QYdw=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=kgKauCZa0zhnWbHmFKxrncpLRJQD6LXCFeQuFl3vXLpwMj4yphoaNYZJOTbFAc+Pd
-	 VxsLnf9hmU/xxqeT/iQDrXbU4TotkVoRJ+EL7Uu0rDOcyb+AsqmoRNf44MYFODfe0n
-	 n8TzaBC+ge0oLpmzf8LiOQHgvmYHmFwKHXEnnk2FQoWCbeJOYsdyMR2pHe/cgnFNjZ
-	 jjz+RMlprhOuQgbCr8AZOmTK+ue9gFMwuRwvPlayXPKxzOjO/fa6gABHCBftPeY781
-	 thWvFxhDXeNeh1q0qC8awyjCBg1CugbNuQvkdgHuoqbTOMI/RxwrORrb2AtuEfizWt
-	 ITWLE+osOkC+Q==
+	s=default; t=1668742588;
+	bh=gTXqZkmokzcuNfzpJZjGFfxjco3G6xjq3AkKvkqvkV0=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=o93aFni/FaUHkd7toRpTvyg2VpJZAF6GKqGGsgx0ZKWO+sQ8uLslExalXtGZHbKBA
+	 8EYl49lA4GDhFo/hw1BnBQoUXHzqykqzMAJt0MMsg03b/r+HdoQN7m5pewYMUia2Dh
+	 LU+DjXP9UhC/uu97GxQOWlMMxxPVAkfnq3FM2yGnxo75pwYDKQXZ6ehMVf07Qpw0dA
+	 YmLsqSpUgPZtpbWoCKM0oQPCs/qBh6o9cVA8T4t5Z4pB7LMveZAGG/dpEYd1epLyJC
+	 fBWAfC3skMm9msFK4qfP66PWtxVcIy3C865eMWKz+UE0fxinKg//vghMKox/Jh6nF9
+	 RP5VCodMbCBBw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id SuXWbpC0639K; Fri, 18 Nov 2022 00:43:45 +0000 (UTC)
+	with ESMTP id QdwPFd-RaSxc; Fri, 18 Nov 2022 03:36:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 02D8E80FA4;
-	Fri, 18 Nov 2022 00:43:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 02D8E80FA4
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id D350E1BF95E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 00:43:42 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4027C820A0;
+	Fri, 18 Nov 2022 03:36:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4027C820A0
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id DD2F41BF8A8
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 03:36:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id ADB9180C8C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 00:43:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ADB9180C8C
+ by smtp4.osuosl.org (Postfix) with ESMTP id C37F1418E6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 03:36:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C37F1418E6
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 9YbMWvpRn5D1 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 18 Nov 2022 00:43:42 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Ye2RyAdeGb_u for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 18 Nov 2022 03:36:24 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D246680C3E
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D246680C3E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 00:43:41 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10534"; a="377285806"
-X-IronPort-AV: E=Sophos;i="5.96,172,1665471600"; d="scan'208";a="377285806"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Nov 2022 16:43:40 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10534"; a="634251075"
-X-IronPort-AV: E=Sophos;i="5.96,172,1665471600"; d="scan'208";a="634251075"
-Received: from pmstillw-desk1.amr.corp.intel.com ([10.212.93.2])
- by orsmga007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Nov 2022 16:43:40 -0800
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 17 Nov 2022 16:43:28 -0800
-Message-Id: <20221118004328.578-1-paul.m.stillwell.jr@intel.com>
-X-Mailer: git-send-email 2.25.1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ACEE44179B
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id ACEE44179B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 03:36:24 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id B1AE3B82207;
+ Fri, 18 Nov 2022 03:36:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7352AC433C1;
+ Fri, 18 Nov 2022 03:36:19 +0000 (UTC)
+Date: Thu, 17 Nov 2022 19:36:18 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Leon Romanovsky <leon@kernel.org>
+Message-ID: <20221117193618.2cd47268@kernel.org>
+In-Reply-To: <Y3ZxqAq3bR7jYc3H@unreal>
+References: <Y3OCHLiCzOUKLlHa@unreal> <Y3OcAJBfzgggVll9@localhost.localdomain>
+ <Y3PS9e9MJEZo++z5@unreal>
+ <be2954f2-e09c-d2ef-c84a-67b8e6fc3967@intel.com>
+ <Y3R9iAMtkk8zGyaC@unreal> <Y3TR1At4In5Q98OG@localhost.localdomain>
+ <Y3UlD499Yxj77vh3@unreal> <Y3YWkT/lMmYU5T+3@localhost.localdomain>
+ <Y3Ye4kwmtPrl33VW@unreal> <Y3Y5phsWzatdnwok@localhost.localdomain>
+ <Y3ZxqAq3bR7jYc3H@unreal>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1668732221; x=1700268221;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=Y1ecaqZx145TarMEhfubaRed+Wzhiy0pFdwb1VvVVh4=;
- b=k7Xg/TuOSWYg4twZhI/ZGCC/X50woLwqUDZ34lE6wbfz48EimwlGEVw4
- f/DEGtXQir1kt9aeurztPpnTXXHbu3nGJaF++MZw+uHG8M3u8csPUgIdz
- 69pUxJudi1aek3cze1S98nUaYgZAFhhtbGWkGOVkLxh6kjUohDiTK72GX
- enQVE9li2VQlftX/8I76l2qB7tdIv4zPTQZAwsYzjMAp8E4VN/pw6fX1v
- 2HQJJ5nGi2wRgWbjd0slUYAqo11lIav54GNmqqYcw5YPTezvf0xyJ9jCf
- aAwq8B/WauqvJWHISRPhMkV1hZoNgVdmsGMtBqHc93fx+Lxh3DbN4k10b
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=k7Xg/TuO
-Subject: [Intel-wired-lan] [PATCH net-next v3] ice: move devlink port
- creation/deletion
+ d=kernel.org; s=k20201202; t=1668742580;
+ bh=K5aDIe2SlBtdw1FEkWSbLjXw0euK3i24cnforADV39A=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=aAaps6knSbkcdj6Nyouj1Mz46EOtiuVFbb0GTuc3XTJvS3EFQeW6rcVG/xgUlS6UI
+ kMz4nYDnGFhsfeQkzBmPHaYr/T01bY8/1MkLZzBYmNShJghgJcL2mMbRceGpkvxrRW
+ ZIHZnsYOk7D0d2TVinkhZqfHM4EZHm6MAskCeNEHfHR0QYuRQqWWr5Mf8Z3sfM46Vx
+ I7FuvR61SoikI5SMrBG1RvotdL6cTSZvuazjiPj7u1Sys1uVC5BKgr/D9Vnhv7AXbG
+ wc5xZyDjeRNh9kNf5+pdLdgFXkfi2xAsJXVpyxeinzXC7jeJhqXQ5dEfmtM55/aGxL
+ sgE5+osQjF+Tw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=aAaps6kn
+Subject: Re: [Intel-wired-lan] [PATCH net-next 00/13] resource management
+ using devlink reload
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,150 +94,33 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, netdev@vger.kernel.org,
+ jiri@nvidia.com, leszek.kaliszczuk@intel.com, przemyslaw.kitszel@intel.com,
+ edumazet@google.com, mustafa.ismail@intel.com,
+ intel-wired-lan@lists.osuosl.org, pabeni@redhat.com, shiraz.saleem@intel.com,
+ davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Commit a286ba738714 ("ice: reorder PF/representor devlink
-port register/unregister flows") moved the code to create
-and destroy the devlink PF port. This was fine, but created
-a corner case issue in the case of ice_register_netdev()
-failing. In that case, the driver would end up calling
-ice_devlink_destroy_pf_port() twice.
+On Thu, 17 Nov 2022 19:38:48 +0200 Leon Romanovsky wrote:
+> I don't think that management of PCI specific parameters in devlink is
+> right idea. PCI has his own subsystem with rules and assumptions, netdev
+> shouldn't mangle them.
 
-Additionally, it makes no sense to tie creation of the devlink
-PF port to the creation of the netdev so separate out the
-code to create/destroy the devlink PF port from the netdev
-code. This makes it a cleaner interface.
+Not netdev, devlink, which covers netdev, RDMA and others.
 
-Note: This will conflict with net-next. Resolution:
+> In MSI-X case, this even more troublesome as users
+> sees these values through lspci without driver attached to it.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 60bd5ba1632b..9b4888d79972 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4680,7 +4680,6 @@ static int ice_register_netdev(struct ice_pf *pf)
-        if (!vsi || !vsi->netdev)
-                return -EIO;
+I'm no PCI expert either but FWIW to me the patch set seems reasonable.
+Whether management FW policies are configured via core PCI sysfs or
+subsystem-specific-ish APIs is a toss up. Adding Bjorn and please CC him
+on the next rev.
 
--       SET_NETDEV_DEVLINK_PORT(vsi->netdev, &pf->devlink_port);
-        err = register_netdev(vsi->netdev);
-        if (err)
-                goto err_register_netdev;
-@@ -4708,6 +4707,7 @@ static int
- ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- {
-        struct device *dev = &pdev->dev;
-+       struct ice_vsi *vsi;
-        struct ice_pf *pf;
-        struct ice_hw *hw;
-        int i, err;
-@@ -5001,6 +5001,12 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
-        if (err)
-                goto err_create_pf_port;
-
-+       vsi = ice_get_main_vsi(pf);
-+       if (!vsi || !vsi->netdev)
-+               goto err_netdev_reg;
-+
-+       SET_NETDEV_DEVLINK_PORT(vsi->netdev, &pf->devlink_port);
-+
-        err = ice_register_netdev(pf);
-        if (err)
-                goto err_netdev_reg;
-
-Fixes: a286ba738714 ("ice: reorder PF/representor devlink port register/unregister flows")
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
----
-v3:
-- update patch with resolution on conflict with net-next
-
-v2:
-- move Fixes above SOB line
----
- drivers/net/ethernet/intel/ice/ice_lib.c  |  3 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 15 ++++++++-------
- 2 files changed, 8 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index a2cfa0c614ce..d80a56f9af81 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3070,9 +3070,6 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 		}
- 	}
- 
--	if (vsi->type == ICE_VSI_PF)
--		ice_devlink_destroy_pf_port(pf);
--
- 	if (vsi->type == ICE_VSI_VF &&
- 	    vsi->agg_node && vsi->agg_node->valid)
- 		vsi->agg_node->num_vsis--;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 20a838e427e9..b7a303e91299 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4645,7 +4645,7 @@ static void ice_print_wake_reason(struct ice_pf *pf)
- }
- 
- /**
-- * ice_register_netdev - register netdev and devlink port
-+ * ice_register_netdev - register netdev
-  * @pf: pointer to the PF struct
-  */
- static int ice_register_netdev(struct ice_pf *pf)
-@@ -4657,10 +4657,6 @@ static int ice_register_netdev(struct ice_pf *pf)
- 	if (!vsi || !vsi->netdev)
- 		return -EIO;
- 
--	err = ice_devlink_create_pf_port(pf);
--	if (err)
--		goto err_devlink_create;
--
- 	SET_NETDEV_DEVLINK_PORT(vsi->netdev, &pf->devlink_port);
- 	err = register_netdev(vsi->netdev);
- 	if (err)
-@@ -4672,8 +4668,6 @@ static int ice_register_netdev(struct ice_pf *pf)
- 
- 	return 0;
- err_register_netdev:
--	ice_devlink_destroy_pf_port(pf);
--err_devlink_create:
- 	free_netdev(vsi->netdev);
- 	vsi->netdev = NULL;
- 	clear_bit(ICE_VSI_NETDEV_ALLOCD, vsi->state);
-@@ -4972,6 +4966,10 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	pcie_print_link_status(pf->pdev);
- 
- probe_done:
-+	err = ice_devlink_create_pf_port(pf);
-+	if (err)
-+		goto err_create_pf_port;
-+
- 	err = ice_register_netdev(pf);
- 	if (err)
- 		goto err_netdev_reg;
-@@ -5009,6 +5007,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- err_devlink_reg_param:
- 	ice_devlink_unregister_params(pf);
- err_netdev_reg:
-+	ice_devlink_destroy_pf_port(pf);
-+err_create_pf_port:
- err_send_version_unroll:
- 	ice_vsi_release_all(pf);
- err_alloc_sw_unroll:
-@@ -5134,6 +5134,7 @@ static void ice_remove(struct pci_dev *pdev)
- 	ice_setup_mc_magic_wake(pf);
- 	ice_vsi_release_all(pf);
- 	mutex_destroy(&(&pf->hw)->fdir_fltr_lock);
-+	ice_devlink_destroy_pf_port(pf);
- 	ice_set_wake(pf);
- 	ice_free_irq_msix_misc(pf);
- 	ice_for_each_vsi(pf, i) {
--- 
-2.35.1
-
+Link to the series:
+https://lore.kernel.org/all/20221114125755.13659-1-michal.swiatkowski@linux.intel.com/
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
