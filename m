@@ -1,88 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FCA2C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Nov 2022 17:31:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21297C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Nov 2022 19:29:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9DD1460B9A;
-	Fri, 18 Nov 2022 17:31:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9DD1460B9A
+	by smtp1.osuosl.org (Postfix) with ESMTP id 986F1820AC;
+	Fri, 18 Nov 2022 19:29:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 986F1820AC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1668792684;
-	bh=a8MvRSISRVfhOiIMVj3rm1hraAiijnX8LDtUMjQJ45s=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1668799761;
+	bh=ATzQIvkmBybJt4D2DsrhsYtRqtg+iRrtqF1zkMDMTX4=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=RG4XRXqbytWdvIy/7Mh2D1wDNqRr8Xu5AYwWf3f/bvnaAiyw3GJ/lpyGj4/iLzznT
-	 DTTNbZUI6B26qDVPHgRtyuc7Cfy2Ctqpk83xouFpboJqJdMxPS1oGpuhwhIxr49sdo
-	 VdeBdBk7FbzAVuEKccUgMbAnfxAUK4wkvhnTlIKDUsCdH3oK0pZvSmq5pZtj4TQ/Gb
-	 iMbEU9MDAA3LS+cWyBdSkp37TQIpHHiqqLT42KoH3lw/GHjIr3Nf92/R+rRtNpTZB0
-	 SejwVxXYIzsvqKbb1wD0VXZwHtUdc/N7R3plWFa3a6OlOTAuEEiD3x7zVHOGwTpbtm
-	 VKr0kRO6eCrOg==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id nWXc2IWFW8Ta; Fri, 18 Nov 2022 17:31:23 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 950CF60BA4;
-	Fri, 18 Nov 2022 17:31:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 950CF60BA4
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 305E41BF2EB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 17:31:21 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0AA7582266
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 17:31:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0AA7582266
+	b=VNPMwIVseq8IuS0jtD/vUpy1s73wHCjFsTVT8nL8M/j6/RuqIvdzEIwVbO7O02c7h
+	 wqkji4a2o3/R6kiX2zK5Npw1MHlo1f30TOBGKpFHgqS4+reoP3pnrZeFSBe83qo8Tr
+	 uqGCte2al7jtWNj7/J29xpqrWukb7EWqhK5kp0B0NG0gvqti8hYwq56oThfE92Bzw6
+	 c8YO4M4QyiiQs9GwzPEaqcVUhxDlXIB87Lo5axksgnVjuHthU3Qd0chXWDmeg6c0ND
+	 aqTBxasnVDHfhg+0CrV6mTuGDxLWvPB9LDGD8i+CIZnDZ3kYcd+8QI6FwkmPpVnIsW
+	 rz/D4zwAloocQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id nCJcjPng6-Ze for <intel-wired-lan@lists.osuosl.org>;
- Fri, 18 Nov 2022 17:31:20 +0000 (UTC)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id sqSXOqzoJPdw; Fri, 18 Nov 2022 19:29:20 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8897982148;
+	Fri, 18 Nov 2022 19:29:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8897982148
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id A4C2B1BF424
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 19:29:19 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 85F83419FB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 19:29:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 85F83419FB
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id q1INJHvPPFUG for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 18 Nov 2022 19:29:17 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 04D6182265
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 04D6182265
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 17:31:19 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id DED9562691;
- Fri, 18 Nov 2022 17:31:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C293C433D6;
- Fri, 18 Nov 2022 17:31:17 +0000 (UTC)
-Date: Fri, 18 Nov 2022 19:31:13 +0200
-From: Leon Romanovsky <leon@kernel.org>
-To: "Saleem, Shiraz" <shiraz.saleem@intel.com>
-Message-ID: <Y3fBYXclZbNsiE1J@unreal>
-References: <Y3R9iAMtkk8zGyaC@unreal> <Y3TR1At4In5Q98OG@localhost.localdomain>
- <Y3UlD499Yxj77vh3@unreal> <Y3YWkT/lMmYU5T+3@localhost.localdomain>
- <Y3Ye4kwmtPrl33VW@unreal> <Y3Y5phsWzatdnwok@localhost.localdomain>
- <Y3ZxqAq3bR7jYc3H@unreal> <20221117193618.2cd47268@kernel.org>
- <Y3ckRWtAtZU1BdXm@unreal>
- <MWHPR11MB002998FAA385731E21E20868E9099@MWHPR11MB0029.namprd11.prod.outlook.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7A4A0419E5
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7A4A0419E5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 19:29:17 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10535"; a="315033705"
+X-IronPort-AV: E=Sophos;i="5.96,175,1665471600"; d="scan'208";a="315033705"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Nov 2022 11:29:17 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10535"; a="746114938"
+X-IronPort-AV: E=Sophos;i="5.96,175,1665471600"; d="scan'208";a="746114938"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.232.13])
+ by fmsmga002.fm.intel.com with ESMTP; 18 Nov 2022 11:29:16 -0800
+From: Benjamin Mikailenko <benjamin.mikailenko@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Fri, 18 Nov 2022 14:20:41 -0500
+Message-Id: <20221118192042.14329-2-benjamin.mikailenko@intel.com>
+X-Mailer: git-send-email 2.34.3
+In-Reply-To: <20221118192042.14329-1-benjamin.mikailenko@intel.com>
+References: <20221118192042.14329-1-benjamin.mikailenko@intel.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <MWHPR11MB002998FAA385731E21E20868E9099@MWHPR11MB0029.namprd11.prod.outlook.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1668792678;
- bh=YUMZTiR2BSL9KNrQOfhCVO4wu38lNiw1qRPb9aJ4w5k=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=S7W2K0H3db6yLqd5Fj/Fe6kvQxS7GPM4bpm1kes5aaUN77/gflTLQ4HmtGueNPySE
- 29XksfPom5VQWikAzvNT4MgjYPPUNZrvPZJWiP8MVSfvYzatiBOKktK7GD4mX8KPHx
- I4Gv6XQNQDHkBbu48KDIKZnLXHEV40dvoAGFz1sORcpN6va1V9HfGBaUEKy693TjsQ
- ijHpnpu0fkEvUgLWIgJt0EeoUofNV/LZwQnDi6eGi4kvXvI4T8I60EXQ07JP1bl/aX
- RvnDaV5sRZhqt4/Q+h2U8qdhquxC6XZfgjD2aWdN73xfB1I+41i6zxOMpUYs3kbznp
- B1NqZzxhrC1gg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=S7W2K0H3
-Subject: Re: [Intel-wired-lan] [PATCH net-next 00/13] resource management
- using devlink reload
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1668799757; x=1700335757;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=EmptAOG44CCKljZLc46TZYjK2iRtI4dZOJF6Hmj+ezs=;
+ b=OC3R8m/5NPCgctdlgxyF286QrHvAvAAvpIcM2qDM9sScXMTWe2cwQF6u
+ bWhYQkm8lk5nNX5wBggW40yI/kfJ0uykUblknnjtXl6YYKc/zZmGK3dJB
+ g5+i3HyKwg48jSIOflyAetQjImXyL5PLsWn9VjRFStSYZ2i5YJ+FI74Jx
+ uFp5Wcl7flyKS7AOJdqQTILVS6WU2x8kcThwmd/FAGch/PRoewKCTv2RA
+ JrnIqhW57pqcBbnRslr5Jb9UTu0ZXkulr2LCQpF0lKhAdWylxebuZf/s2
+ K/5BJjcudIGvK2VkAuZ9NCVAVVLi43y7Tk/7JfTPl06Umj4Nv1K+I9qpm
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=OC3R8m/5
+Subject: [Intel-wired-lan] [net-next,
+ v7 1/2] ice: Accumulate HW and Netdev statistics over reset
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,62 +95,153 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "jiri@nvidia.com" <jiri@nvidia.com>,
- "Kaliszczuk, Leszek" <leszek.kaliszczuk@intel.com>, "Kitszel,
- Przemyslaw" <przemyslaw.kitszel@intel.com>,
- "edumazet@google.com" <edumazet@google.com>, "Ismail,
- Mustafa" <mustafa.ismail@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Jakub Kicinski <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: Benjamin Mikailenko <benjamin.mikailenko@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Nov 18, 2022 at 02:23:50PM +0000, Saleem, Shiraz wrote:
-> > Subject: Re: [PATCH net-next 00/13] resource management using devlink reload
-> > 
-> > On Thu, Nov 17, 2022 at 07:36:18PM -0800, Jakub Kicinski wrote:
-> > > On Thu, 17 Nov 2022 19:38:48 +0200 Leon Romanovsky wrote:
-> > > > I don't think that management of PCI specific parameters in devlink
-> > > > is right idea. PCI has his own subsystem with rules and assumptions,
-> > > > netdev shouldn't mangle them.
-> > >
-> > > Not netdev, devlink, which covers netdev, RDMA and others.
-> > 
-> > devlink is located in net/*, it is netdev.
-> > Regarding RDMA, it is not fully accurate. We use devlink to convey information to
-> > FW through pci device located in netdev. Some of such parameters are RDMA
-> > related. However, we don't configure RDMA properties through devlink, there is a
-> > special tool for that (rdmatool).
-> 
-> rdmatool though is usable only once the rdma driver probe() completes and the ib_device is registered.
-> And cannot be used for any configurations at driver init time.
+Resets happen with or without user interaction. For example, incidents
+such as TX hang or a reconfiguration of parameters will result in a reset.
+During reset, hardware and software statistics were set to zero. This
+created an issue for the user where a reset happens in the background,
+statistics set to zero, and the user checks statistics expecting them to
+be populated.
 
-Like I said, we use devlink to configure FW and "core" device to which
-ib_device is connected. We don't configure RDMA specific properties, but
-only device specific ones.
+To ensure this doesn't happen, keep accumulating stats over reset.
 
-> 
-> Don't we already have PCI specific parameters managed through devlink today?
-> 
-> https://docs.kernel.org/networking/devlink/devlink-params.html
-> enable_sriov
-> ignore_ari
-> msix_vec_per_pf_max
-> msix_vec_per_pf_min
-> 
-> How are these in a different bracket from what Michal is trying to do? Or were these ones a bad idea in hindsight?
+1. Remove function calls which reset hardware and netdev statistics.
+2. Do not rollover statistics in ice_stat_update40 during reset.
 
-Yes as it doesn't belong to net/* and it exists there just because of
-one reason: ability to write to FW of specific device.
+Signed-off-by: Benjamin Mikailenko <benjamin.mikailenko@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h         |  1 +
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c |  3 ++
+ drivers/net/ethernet/intel/ice/ice_lib.c     |  7 +++++
+ drivers/net/ethernet/intel/ice/ice_main.c    | 30 +++++++++++++++++---
+ 4 files changed, 37 insertions(+), 4 deletions(-)
 
-At least for ARI, I don't see that bnxt driver masked ARI Extended Capability
-and informed PCI subsystem about it, so PCI core will recreate device.
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 841fa149c407..3b84f77d6993 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -358,6 +358,7 @@ struct ice_vsi {
+ 
+ 	/* VSI stats */
+ 	struct rtnl_link_stats64 net_stats;
++	struct rtnl_link_stats64 net_stats_prev;
+ 	struct ice_eth_stats eth_stats;
+ 	struct ice_eth_stats eth_stats_prev;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index add90e75f05c..01da9389de84 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -874,6 +874,9 @@ void ice_update_dcb_stats(struct ice_pf *pf)
+ 	prev_ps = &pf->stats_prev;
+ 	cur_ps = &pf->stats;
+ 
++	if (ice_is_reset_in_progress(pf->state))
++		pf->stat_prev_loaded = false;
++
+ 	for (i = 0; i < 8; i++) {
+ 		ice_stat_update32(hw, GLPRT_PXOFFRXC(port, i),
+ 				  pf->stat_prev_loaded,
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 58d483e2f539..fea65735b2ad 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1778,11 +1778,15 @@ void ice_update_eth_stats(struct ice_vsi *vsi)
+ {
+ 	struct ice_eth_stats *prev_es, *cur_es;
+ 	struct ice_hw *hw = &vsi->back->hw;
++	struct ice_pf *pf = vsi->back;
+ 	u16 vsi_num = vsi->vsi_num;    /* HW absolute index of a VSI */
+ 
+ 	prev_es = &vsi->eth_stats_prev;
+ 	cur_es = &vsi->eth_stats;
+ 
++	if (ice_is_reset_in_progress(pf->state))
++		vsi->stat_offsets_loaded = false;
++
+ 	ice_stat_update40(hw, GLV_GORCL(vsi_num), vsi->stat_offsets_loaded,
+ 			  &prev_es->rx_bytes, &cur_es->rx_bytes);
+ 
+@@ -3262,6 +3266,8 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
+ 			goto err_vectors;
+ 
+ 		ice_vsi_map_rings_to_vectors(vsi);
++
++		vsi->stat_offsets_loaded = false;
+ 		if (ice_is_xdp_ena_vsi(vsi)) {
+ 			ret = ice_vsi_determine_xdp_res(vsi);
+ 			if (ret)
+@@ -3292,6 +3298,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
+ 		if (ret)
+ 			goto err_vectors;
+ 
++		vsi->stat_offsets_loaded = false;
+ 		break;
+ 	case ICE_VSI_CHNL:
+ 		if (test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index e109cb93886b..e09c4912c9c3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -6337,6 +6337,7 @@ ice_update_vsi_tx_ring_stats(struct ice_vsi *vsi,
+  */
+ static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
+ {
++	struct rtnl_link_stats64 *net_stats, *stats_prev;
+ 	struct rtnl_link_stats64 *vsi_stats;
+ 	u64 pkts, bytes;
+ 	int i;
+@@ -6376,10 +6377,28 @@ static void ice_update_vsi_ring_stats(struct ice_vsi *vsi)
+ 
+ 	rcu_read_unlock();
+ 
+-	vsi->net_stats.tx_packets = vsi_stats->tx_packets;
+-	vsi->net_stats.tx_bytes = vsi_stats->tx_bytes;
+-	vsi->net_stats.rx_packets = vsi_stats->rx_packets;
+-	vsi->net_stats.rx_bytes = vsi_stats->rx_bytes;
++	net_stats = &vsi->net_stats;
++	stats_prev = &vsi->net_stats_prev;
++
++	/* clear prev counters after reset */
++	if (vsi_stats->tx_packets < stats_prev->tx_packets ||
++	    vsi_stats->rx_packets < stats_prev->rx_packets) {
++		stats_prev->tx_packets = 0;
++		stats_prev->tx_bytes = 0;
++		stats_prev->rx_packets = 0;
++		stats_prev->rx_bytes = 0;
++	}
++
++	/* update netdev counters */
++	net_stats->tx_packets += vsi_stats->tx_packets - stats_prev->tx_packets;
++	net_stats->tx_bytes += vsi_stats->tx_bytes - stats_prev->tx_bytes;
++	net_stats->rx_packets += vsi_stats->rx_packets - stats_prev->rx_packets;
++	net_stats->rx_bytes += vsi_stats->rx_bytes - stats_prev->rx_bytes;
++
++	stats_prev->tx_packets = vsi_stats->tx_packets;
++	stats_prev->tx_bytes = vsi_stats->tx_bytes;
++	stats_prev->rx_packets = vsi_stats->rx_packets;
++	stats_prev->rx_bytes = vsi_stats->rx_bytes;
+ 
+ 	kfree(vsi_stats);
+ }
+@@ -6441,6 +6460,9 @@ void ice_update_pf_stats(struct ice_pf *pf)
+ 	prev_ps = &pf->stats_prev;
+ 	cur_ps = &pf->stats;
+ 
++	if (ice_is_reset_in_progress(pf->state))
++		pf->stat_prev_loaded = false;
++
+ 	ice_stat_update40(hw, GLPRT_GORCL(port), pf->stat_prev_loaded,
+ 			  &prev_ps->eth.rx_bytes,
+ 			  &cur_ps->eth.rx_bytes);
+-- 
+2.34.3
 
-Thanks
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
