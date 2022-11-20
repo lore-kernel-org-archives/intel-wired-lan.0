@@ -1,91 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ED83C43219
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 21 Nov 2022 16:50:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40ACCC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 21 Nov 2022 16:50:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C6D25416D0;
-	Mon, 21 Nov 2022 16:50:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C6D25416D0
+	by smtp2.osuosl.org (Postfix) with ESMTP id D7D2C400FE;
+	Mon, 21 Nov 2022 16:50:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D7D2C400FE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669049425;
-	bh=HqjHPR2rLdDi8bf+NczhUKM5gMVvKg8+Z62W4Nt7dm0=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=XXYFqwjlJIhYYZeuKjUzaQ0y/0HSQdRf8SX7f5Y6aUtMY1FZ/92+7BlHd51aJt9ob
-	 al9alm/Dc7Trgc3QksgWK28KcoAQ8p6PJZ0EhLpbg69G8SvJJMXuhN69hHoQK6W0NI
-	 MZF+rpYFlMrnjhhLedYF6GJyDvF13jFPyT9segnqqFhDOfyCkA5W5n1ah1HiVotKRS
-	 9JhWGFqQV/H8KS1AXQEX6nFKcYWMQ94tzd0qElRPVHT1D4Z7IQw4ktjfM9eUJUxE8t
-	 AlNa1NT1s5LOZzKuJmoovRI+hajVKo+NvqT8W2lKmEqKy14FzsoqeBQQCwstb3H/qS
-	 OIJMsfU2z9HZA==
+	s=default; t=1669049430;
+	bh=gQ2t3JXUk5r9/YuplxobELhFk6gu4XApPdAtorRsZe4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=cFZBpxThIxzccMhCj/r0z35xSJQsOogXZsyz3tOQ28Q4yVWOpoGaqzYEEexo7mXZ3
+	 oGxD2t14k7yEwzOuoyq/IKHvNLvTOLEBLaf7Dhr0xxaq6OHOOCHSnAG0dpK88vYXj7
+	 se9Ocda4JpUkcPGzfenodSsZgd44hMIEjQ1MO+vQTHuEsHedVgNAzSZfiUbFcJMeS7
+	 594o0OWd0OmVHGHy2Js1dpJTIEdWZvcPQOCbTZ9P8OhAxlCMMYlxLrvc1id6oOtJ6p
+	 yv2497svpTRIs/RV9gzzQ+4bdtsP4HXbCeQJBPULoyfV4V14t/mQE/wP2cVcFkV58x
+	 a4X8DjdKv0Odw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 81A_j8-x0PqB; Mon, 21 Nov 2022 16:50:24 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id DSuqdPrN2YWB; Mon, 21 Nov 2022 16:50:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7B0FE416F2;
-	Mon, 21 Nov 2022 16:50:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7B0FE416F2
+	by smtp2.osuosl.org (Postfix) with ESMTP id 7F35040AD9;
+	Mon, 21 Nov 2022 16:50:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7F35040AD9
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8A8D81BF5E9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 23:21:32 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 6C0811BF4DB
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 20 Nov 2022 06:18:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 68619610DD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 23:21:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 68619610DD
+ by smtp3.osuosl.org (Postfix) with ESMTP id 53A8260AC4
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 20 Nov 2022 06:18:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 53A8260AC4
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0O-wpyaEvbYs for <intel-wired-lan@lists.osuosl.org>;
- Fri, 18 Nov 2022 23:21:31 +0000 (UTC)
+ with ESMTP id 6q39uHHiunX8 for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 20 Nov 2022 06:18:03 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4FA4A60AFF
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4FA4A60AFF
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Nov 2022 23:21:31 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 8ECEC627F0;
- Fri, 18 Nov 2022 23:21:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7F10C433D7;
- Fri, 18 Nov 2022 23:21:28 +0000 (UTC)
-Date: Fri, 18 Nov 2022 23:21:26 +0000
-From: Conor Dooley <conor@kernel.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Message-ID: <Y3gTdsg4l71L0vz9@spud>
-References: <CAPAtJa_o5q-sU+AD=G3y43H_5pBKnOZTQGXM99uszPXNkn8Z9A@mail.gmail.com>
- <20221031170535.77be0eb5@kernel.org>
- <03f7dc73-3e7c-1e6d-275f-85539493cd7f@intel.com>
- <CAPAtJa8qupPZZ0AiMWSxNKSd-WMg0MQDQeZcCO_Z-GGBu3jZCg@mail.gmail.com>
- <CAPAtJa_-yMusW5-C3BDivMu=MOyfKF9VQkxQotX3L_P+Q48oMA@mail.gmail.com>
- <CAPAtJa_nL5edyiN61ghXZxVUSDBFQQR3uiYJM0uo9mEao=RC0w@mail.gmail.com>
- <CAPAtJa_hbFbVXQbiNnb_byLqtZ-Dy_EBcvTFH9GyPqt__dFmLQ@mail.gmail.com>
- <Y3gKkYeijrAIhxjc@spud> <20221118145443.427ecf10@kernel.org>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1109060A82
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1109060A82
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 20 Nov 2022 06:18:02 +0000 (UTC)
+Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.56])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4NFKwZ3wWdzqSPs;
+ Sun, 20 Nov 2022 14:14:06 +0800 (CST)
+Received: from cgs.huawei.com (10.244.148.83) by
+ kwepemi500012.china.huawei.com (7.221.188.12) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Sun, 20 Nov 2022 14:17:58 +0800
+From: Gaosheng Cui <cuigaosheng1@huawei.com>
+To: <jesse.brandeburg@intel.com>, <anthony.l.nguyen@intel.com>,
+ <davem@davemloft.net>, <edumazet@google.com>, <kuba@kernel.org>,
+ <pabeni@redhat.com>, <jeffrey.t.kirsher@intel.com>,
+ <alexander.h.duyck@intel.com>, <cuigaosheng1@huawei.com>
+Date: Sun, 20 Nov 2022 14:17:57 +0800
+Message-ID: <20221120061757.264242-1-cuigaosheng1@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20221118145443.427ecf10@kernel.org>
+X-Originating-IP: [10.244.148.83]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ kwepemi500012.china.huawei.com (7.221.188.12)
+X-CFilter-Loop: Reflected
 X-Mailman-Approved-At: Mon, 21 Nov 2022 16:50:22 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1668813690;
- bh=yq4XAD6qbEKFHEDjO0C0tq5Twf+Stcvxb7JwJYeanAE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=N9HFfJIPaBKxGk4Co8pZ6E3sHfINVr02Vr2NTmWOL6vQ5byFsFAcjSwPZtUiyeyC8
- X4VEk+HNQgMMau6kaMq4BDhd0ZB0AxPg3FalGeTq1wQWbecyim2nKlxRknUpzXi065
- z8+jqsxvMCf1xjaFPnHETHbuwaqq4bsTPlDsQVJE+66pwHOL3sXwXMAQw44SyP9Ktl
- s0kXLqwr+kM6TVD9fgUs+g073nrVCkd9Oq2yG6Kw9YigmGWOPlQGmrrxT+Q+chWoa+
- mRfKoafpAKraFlhhVEwMgwDkMZe42hkLQWyKBo5GWqFWrtIP6cDmQV7E/TsRUs0Aej
- +xmu+yOsGs1pg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=N9HFfJIP
-Subject: Re: [Intel-wired-lan] igc kernel module crashes on new hardware
- (Intel Ethernet I225-V)
+Subject: [Intel-wired-lan] [PATCH net] intel/igbvf: free irq on the error
+ path in igbvf_request_msix()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,57 +81,52 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Fuxbrumer, Devora" <devora.fuxbrumer@intel.com>,
- regressions@lists.linux.dev, intel-wired-lan@lists.osuosl.org,
- Ivan Smirnov <isgsmirnov@gmail.com>, "Ruinskiy,
- Dima" <dima.ruinskiy@intel.com>, "Avivi, Amir" <amir.avivi@intel.com>
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Nov 18, 2022 at 02:54:43PM -0800, Jakub Kicinski wrote:
-> On Fri, 18 Nov 2022 22:43:29 +0000 Conor Dooley wrote:
-> > > Is there any update for the community? More and more folks are asking. We
-> > > are all techies and happy to help debug.  
-> > 
-> > Vested interest since I am suffering from the same issue (X670E-F
-> > Gaming), but is it okay to add this to regzbot? Not sure whether it
-> > counts as a regression or not since it's new hw with the existing driver,
-> > but this seems to be falling through the cracks without a response for
-> > several weeks.
-> 
-> Dunno, Thorsten's will decide. The line has to be drawn somewhere
-> on "vendor doesn't care about Linux support" vs "we broke uAPI".
-> This is the kind of situation I was alluding to in my line of
-> questioning at the maintainer summit: https://lwn.net/Articles/908324/
+In igbvf_request_msix(), irqs have not been freed on the err path,
+we need to free it. Fix it.
 
-Yeah & it is /regression/ tracking which I don't (or rather didn't)
-consider this situation to be. I'm generally a little unsure as to when
-I should trigger regzbot in general:
-- immediately when I find something?
-- only if it goes a while with nothing constructive?
-- is it okay to use it outside of "this used to work and now doesnt"?
+Fixes: d4e0fe01a38a ("igbvf: add new driver to support 82576 virtual functions")
+Signed-off-by: Gaosheng Cui <cuigaosheng1@huawei.com>
+---
+ drivers/net/ethernet/intel/igbvf/netdev.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-Either way, but I did some more googling and found this reddit thread:
-https://www.reddit.com/r/intel/comments/lqb4km/for_people_having_i225v_connection_issues/
-
-That's being reported against windows & I dunno if the dude is using
-firmware and driver interchangeably etc. But the disabling power saving
-etc sounds oddly like the issue we have here, since that was a proposed
-workaround in Ivan's 2022 reddit thread.
-
-Supposedly I am on firmware-version 1082:8770, but /I/ I have no idea
-how that corresponds to windows versioning. That may lend some credence
-to your assertion about firmware being the source of many issues.
-
-> Finding a kernel release which does not suffer from the problem
-> would certainly strengthen your case.
-
-Aye, likely to be a little difficult to do a meaningful bisection for
-me at least, since the motherboard I have with the problem is an AM5
-one for the new Zen4 stuff. I'm not an x86 person, so not entirely
-sure when that support landed. I may do some poking tomorrow..
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index 3a32809510fc..e212ca16df00 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -1074,7 +1074,7 @@ static int igbvf_request_msix(struct igbvf_adapter *adapter)
+ 			  igbvf_intr_msix_rx, 0, adapter->rx_ring->name,
+ 			  netdev);
+ 	if (err)
+-		goto out;
++		goto free_irq1;
+ 
+ 	adapter->rx_ring->itr_register = E1000_EITR(vector);
+ 	adapter->rx_ring->itr_val = adapter->current_itr;
+@@ -1083,10 +1083,14 @@ static int igbvf_request_msix(struct igbvf_adapter *adapter)
+ 	err = request_irq(adapter->msix_entries[vector].vector,
+ 			  igbvf_msix_other, 0, netdev->name, netdev);
+ 	if (err)
+-		goto out;
++		goto free_irq2;
+ 
+ 	igbvf_configure_msix(adapter);
+ 	return 0;
++free_irq2:
++	free_irq(adapter->msix_entries[--vector].vector, netdev);
++free_irq1:
++	free_irq(adapter->msix_entries[--vector].vector, netdev);
+ out:
+ 	return err;
+ }
+-- 
+2.25.1
 
 _______________________________________________
 Intel-wired-lan mailing list
