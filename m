@@ -1,99 +1,107 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB197C433FE
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Nov 2022 15:27:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 405CAC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Nov 2022 15:29:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7F940417CE;
-	Tue, 22 Nov 2022 15:27:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7F940417CE
+	by smtp1.osuosl.org (Postfix) with ESMTP id DCE9982060;
+	Tue, 22 Nov 2022 15:29:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DCE9982060
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669130825;
-	bh=VDyV739BD9u6bE4ncWn2oxMl7Tw2nD43J+ciJTO11BM=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=MJ/S+10HF6mEjALdShPMrOIarJHoxskDsCBDNFFyhzQgnUqcu+7FzaXiNfiBl2D/u
-	 4LrKw3t/8Ve8ljtO7zXDcoGcHrZVqMUPy5sUiblZtJug5K/BK+ldJGG2BCeC0dHTr6
-	 AcaiTAlrrJqJ+62agtdH4YIT7kEc6DqDP1kdSQf4rVk13pyqx70PUroU6/FyLs8lMF
-	 udwb89aYzY//t2bjspFAl+f5YbX7OeIuV5ovko37LvzRMz/XMLPewinQu6O4r+TtoK
-	 CggfrcxGDZTSYE0Gk2iXxajGlABwm6WgBhb/pDBaRmjsMSNoQ/hI7fbHGMoJOQD8vQ
-	 pIppauRc8iImw==
+	s=default; t=1669130945;
+	bh=bSg5fEJ4VAqtbPLO69dSxsX9yD7nwB7SfNOXcG44dv8=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=uHzB7G5j/KMApZ78lywMhj+DR3Q2YvTvrc9byr7p39/MpJEX7bOZIaTmjgB0QW5wE
+	 VtZDMPmsApZzVM+NL1ODxQAbwTI0Qbq718UW1Mi2HrJjRZhsLoVh37VJC52fw1lBdO
+	 4MD3vJKBiUrNhuwJV8SCQj9RWAbmBwq2ZwYueTPd9DFKkmtJwfDtO7dGaXFw/EGU1P
+	 1Pe84Y31fXsRubcEES2mPn5gHUoaQoHH0LCj03NtAvnUz8fxEOMaIGmRgoaluEECrf
+	 mBZ4elWifx7dIq2KTVzj+cSY6jGRO/LrFuH7EFaU+CAszdNR50Maw9cYXVEZ1gThO7
+	 XirNERZYRZiwg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Bii1_1kkKp05; Tue, 22 Nov 2022 15:27:04 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Qp99WPvG2weF; Tue, 22 Nov 2022 15:29:05 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 272DA417CF;
-	Tue, 22 Nov 2022 15:27:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 272DA417CF
+	by smtp1.osuosl.org (Postfix) with ESMTP id DFAA982045;
+	Tue, 22 Nov 2022 15:29:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DFAA982045
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 357481BF330
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Nov 2022 15:27:02 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 69B691BF330
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Nov 2022 15:29:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1996540133
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Nov 2022 15:27:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1996540133
+ by smtp2.osuosl.org (Postfix) with ESMTP id 43F8040B39
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Nov 2022 15:29:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 43F8040B39
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ba4sjFOdLrcu for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Nov 2022 15:27:01 +0000 (UTC)
+ with ESMTP id 7RW-QLEN1j3M for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Nov 2022 15:29:02 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D38C6400CB
-Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com
- [IPv6:2607:f8b0:4864:20::52c])
- by smtp2.osuosl.org (Postfix) with ESMTPS id D38C6400CB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Nov 2022 15:27:00 +0000 (UTC)
-Received: by mail-pg1-x52c.google.com with SMTP id b62so14405096pgc.0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Nov 2022 07:27:00 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B752740133
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com
+ [IPv6:2607:f8b0:4864:20::632])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B752740133
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Nov 2022 15:29:02 +0000 (UTC)
+Received: by mail-pl1-x632.google.com with SMTP id io19so13971694plb.8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Nov 2022 07:29:02 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=3eN8PG1tu0zv6ECYGZ0bUFaylUuOM6J9ZGH6Fn6kJHo=;
- b=wUOt35roP7c8ggDVasA9IYpr+V3T8borABVhplRBYp3CuKP1hfI+Gihgi9pJHqP07k
- rvejkeyoOgExHrPUxMjIkxUpJyLOjJKQ8iNHozdjsWVai2VtiiKJhw2D46D3LgAGouCG
- NajH11pk2tJm16onoU9m3f8yfqRf7t+Jj6nUf67nxtVm56elEiPe5UBgoZ697QxywaYZ
- w/eeuB/e3zG5vCHA4gx4lZOZS90TU8sE5nZywm6sl8R8XpVqrdOSWBhh53rb5pT+ChuJ
- KHBaVOlNsWP8Ov+Dvz+1PL9VkGYSTSn3BGCMhnZ+ybGTvlL9h9zlwOZ4DGuvfNGR9xlG
- 7IHw==
-X-Gm-Message-State: ANoB5pmi+Y7AVoay5zJ/h84VBUt5ijufgaZnavRJIko/EwJKl0KmvdwM
- x7IBkBj6rSWdsNLSwNgbzwNOxg==
-X-Google-Smtp-Source: AA0mqf62k0bqINVN7BK4sgHzvRy7LZL/c5HZpP1IiynzWyp5FdyrjeP2xnyMjAcErD7lncdNpbEc4w==
-X-Received: by 2002:a62:5e41:0:b0:56b:db09:a235 with SMTP id
- s62-20020a625e41000000b0056bdb09a235mr6211427pfb.20.1669130820272; 
- Tue, 22 Nov 2022 07:27:00 -0800 (PST)
-Received: from fedora.flets-east.jp ([2400:4050:c360:8200:8ae8:3c4:c0da:7419])
+ h=content-transfer-encoding:in-reply-to:from:references:cc:to
+ :content-language:subject:user-agent:mime-version:date:message-id
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=BWsgnK4bCpDB0AGVqu1iCJY+iEdGgMNXNw3iuBWpKl4=;
+ b=ZQM7mhwfU0Kir+Y7pZGpTxV6QGotsf1OpkCRoCP4tZUsimaQVhrcaX90wQ1P9gG110
+ ChERDylrdeaw1FW6MJie0PGD3/L99VQCtIeiraU7b+3+Jugl/hIRkbXE9N6F4Zm6Gxrw
+ GoGyhs3IN+mQFviJJ9ktAuS7n1HML9YtQZJRRW3A+BJVlckDnRXLSZTnd1FRkhSOmW+Z
+ RZieGXIE+Of6lWloLc/rkxH/6OJHnIyPQdM7RFgMlbAsqHdC/odm0tbrrKEXu64CSEEt
+ aumA60Zre7r69ASPCFC77+wJGo8FhjTnyzp2Ux8n2jF/xvYsCsZrxveBfXYG+iEtXwiG
+ NAQA==
+X-Gm-Message-State: ANoB5pmZTWoZ3xBSqocxnWq1HHenejk6ERtkzE6G9D15tpqYhTEkFHQs
+ NalROZxfgH91l9/KC+655KnI6Q==
+X-Google-Smtp-Source: AA0mqf7B1EtJOIh1AdECaEOUjkvP/y56NRXjQ7NLbasAhREBuuunEHbSNrXkp4b0Tqc0hez5awtz+w==
+X-Received: by 2002:a17:90b:2544:b0:20a:f341:4ed9 with SMTP id
+ nw4-20020a17090b254400b0020af3414ed9mr31723607pjb.11.1669130942296; 
+ Tue, 22 Nov 2022 07:29:02 -0800 (PST)
+Received: from ?IPV6:2400:4050:c360:8200:8ae8:3c4:c0da:7419?
+ ([2400:4050:c360:8200:8ae8:3c4:c0da:7419])
  by smtp.gmail.com with ESMTPSA id
- m9-20020a170902f64900b00176d218889esm12161633plg.228.2022.11.22.07.26.57
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 22 Nov 2022 07:26:59 -0800 (PST)
-From: Akihiko Odaki <akihiko.odaki@daynix.com>
-To: 
-Date: Wed, 23 Nov 2022 00:26:30 +0900
-Message-Id: <20221122152630.76190-1-akihiko.odaki@daynix.com>
-X-Mailer: git-send-email 2.38.1
+ b8-20020aa78ec8000000b0056b8b17f914sm10736086pfr.216.2022.11.22.07.28.59
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Tue, 22 Nov 2022 07:29:02 -0800 (PST)
+Message-ID: <647a4053-bae0-6c06-3049-274d389c2bdd@daynix.com>
+Date: Wed, 23 Nov 2022 00:28:58 +0900
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.1
+Content-Language: en-US
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+References: <20221122092707.30981-1-akihiko.odaki@daynix.com>
+ <24fd3d18-0c09-8235-c88d-d7e151110ebe@molgen.mpg.de>
+From: Akihiko Odaki <akihiko.odaki@daynix.com>
+In-Reply-To: <24fd3d18-0c09-8235-c88d-d7e151110ebe@molgen.mpg.de>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=daynix-com.20210112.gappssmtp.com; s=20210112;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=3eN8PG1tu0zv6ECYGZ0bUFaylUuOM6J9ZGH6Fn6kJHo=;
- b=MF2ry8jCjEfJSczD2TlSQRhxgxw/769GkaMOON9oAkxuEIN97YK7PZjef+RkvUqmn6
- c7AjFerXB1PJT2u2UzDPulK7aXgB17t38IkHEMHHKIogmM4cbG1WwJK6iglP6/5mXOrt
- JmUu/ADf6amE5NTKz6Npi0hz37SGswSnxd+WcFtY0rB4YMUuwQ2w+DwouTzl4kNxpGZr
- CrgSBr2d6j1OSLNtjFltNveJZwLExs/unNW9lRX31lK/abl95eV/kH0TDAvbWCtkhje9
- EkbTVXMgxMLewSuaN4hKU4P4MDuGb074N7xhcU37E00p2MKSPiBCSK+7zoaWT6ce5axZ
- o2ng==
+ h=content-transfer-encoding:in-reply-to:from:references:cc:to
+ :content-language:subject:user-agent:mime-version:date:message-id
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=BWsgnK4bCpDB0AGVqu1iCJY+iEdGgMNXNw3iuBWpKl4=;
+ b=N6MluBTM8SIc6fkevZ4t+ccu7hYeeTAmlk8FRw7dcD9ZYNCTgsxpTZszko8Bo19BUs
+ ZdiJCJ7IhfZE0FMjWhzZEoOHIeB8zfbCBJIP4XUeJT7I+/Mk7IVeTKkH/UmLtR+mzHJv
+ q3wJjBzRFi/GARJ1G0RyGi2OHP0W+hez4n4CVGHbtfdMdNbwaGMxJzk+uQo8Hb7WzXnr
+ RWfdo4rTs/HhxDUu6tDLan38dWvK6tBrBe4jCV5r/HVS6+c9NDbf/d8pBS1vy3Ed8o7x
+ CWfu/D/G3gJcr12lcTpTiMOc7IJ3ZHP+FM0TCJ1I08nHGKo62GHiXDGdsy3SCTzn4NBR
+ 1RNQ==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=daynix-com.20210112.gappssmtp.com
  header.i=@daynix-com.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=MF2ry8jC
-Subject: [Intel-wired-lan] [PATCH v2] igbvf: Regard vf reset nack as success
+ header.s=20210112 header.b=N6MluBTM
+Subject: Re: [Intel-wired-lan] [PATCH] igbvf: Regard vf reset nack as success
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,65 +116,29 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  Yuri Benditovich <yuri.benditovich@daynix.com>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Yan Vugenfirer <yan@daynix.com>, intel-wired-lan@lists.osuosl.org,
+ Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
+ Yan Vugenfirer <yan@daynix.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-vf reset nack actually represents the reset operation itself is
-performed but no address is assigned. Therefore, e1000_reset_hw_vf
-should fill the "perm_addr" with the zero address and return success on
-such an occasion. This prevents its callers in netdev.c from saying PF
-still resetting, and instead allows them to correctly report that no
-address is assigned.
-
-Signed-off-by: Akihiko Odaki <akihiko.odaki@daynix.com>
----
- drivers/net/ethernet/intel/igbvf/vf.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igbvf/vf.c b/drivers/net/ethernet/intel/igbvf/vf.c
-index b8ba3f94c363..2691ae2a8002 100644
---- a/drivers/net/ethernet/intel/igbvf/vf.c
-+++ b/drivers/net/ethernet/intel/igbvf/vf.c
-@@ -1,6 +1,8 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2009 - 2018 Intel Corporation. */
- 
-+#include <linux/etherdevice.h>
-+
- #include "vf.h"
- 
- static s32 e1000_check_for_link_vf(struct e1000_hw *hw);
-@@ -131,11 +133,18 @@ static s32 e1000_reset_hw_vf(struct e1000_hw *hw)
- 		/* set our "perm_addr" based on info provided by PF */
- 		ret_val = mbx->ops.read_posted(hw, msgbuf, 3);
- 		if (!ret_val) {
--			if (msgbuf[0] == (E1000_VF_RESET |
--					  E1000_VT_MSGTYPE_ACK))
-+			switch (msgbuf[0]) {
-+			case E1000_VF_RESET | E1000_VT_MSGTYPE_ACK:
- 				memcpy(hw->mac.perm_addr, addr, ETH_ALEN);
--			else
-+				break;
-+
-+			case E1000_VF_RESET | E1000_VT_MSGTYPE_NACK:
-+				eth_zero_addr(hw->mac.perm_addr);
-+				break;
-+
-+			default:
- 				ret_val = -E1000_ERR_MAC_INIT;
-+			}
- 		}
- 	}
- 
--- 
-2.38.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+SGksCgpPbiAyMDIyLzExLzIyIDIzOjE3LCBQYXVsIE1lbnplbCB3cm90ZToKPiBEZWFyIEFraWhp
+a28sCj4gCj4gCj4gVGhhbmsgeW91IGZvciB5b3VyIHBhdGNoLgo+IAo+IAo+IEFtIDIyLjExLjIy
+IHVtIDEwOjI3IHNjaHJpZWIgQWtpaGlrbyBPZGFraToKPj4gdmYgcmVzZXQgbmFjayBhY3R1YWxs
+eSByZXByZXNlbnRzIHRoZSByZXNldCBvcGVyYXRpb24gaXRzZWxmIGlzCj4+IHBlcmZvcm1lZCBi
+dXQgbm8gYWRkcmVzcyBpcyBub3QgYXNzaWduZWQuIFRoZXJlZm9yZSwgZTEwMDBfcmVzZXRfaHdf
+dmYKPiAKPiBJcyDigKYgbm8g4oCmIG5vdCBhc3NpZ25lZCDigKYgaW50ZW50aW9uYWw/Cj4gCj4+
+IHNob3VsZCBmaWxsIHRoZSAicGVybV9hZGRyIiB3aXRoIHRoZSB6ZXJvIGFkZHJlc3MgYW5kIHJl
+dHVybiBzdWNjZXNzIG9uCj4+IHN1Y2ggYW4gb2NjYXNzaW9uLiBUaGlzIHByZXZlbnRzIGl0cyBj
+YWxsZXJzIGluIG5ldGRldi5jIGZyb20gc2F5aW5nIFBGCj4gCj4gb2NjYXNpb24KCkkgaGF2ZSBq
+dXN0IHNlbnQgdjIgd2l0aCB0aGUgbWVzc2FnZSBmaXhlZC4KCj4gCj4+IHN0aWxsIHJlc2V0dGlu
+ZywgYW5kIGluc3RlYWQgYWxsb3dzIHRoZW0gdG8gY29ycmVjdGx5IHJlcG9ydCB0aGF0IG5vCj4+
+IGFkZHJlc3MgaXMgYXNzaWduZWQuCj4gCj4gSW4gd2hhdCBlbnZpcm9ubWVudCBkbyB5b3UgaGl0
+IHRoZSBwcm9ibGVtPwoKSSBmb3VuZCB0aGlzIGJ1ZyB3aGVuIEkgd2FzIGRldmVsb3BpbmcgYSBR
+RU1VIHBhdGNoIHRvIGVtdWxhdGUgODI1NzYuCgpSZWdhcmRzLApBa2loaWtvIE9kYWtpCgo+IAo+
+IFvigKZdCj4gCj4gCj4gS2luZCByZWdhcmRzLAo+IAo+IFBhdWwKX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtd2lyZWQtbGFuIG1haWxpbmcgbGlz
+dApJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczovL2xpc3RzLm9zdW9zbC5vcmcvbWFp
+bG1hbi9saXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
