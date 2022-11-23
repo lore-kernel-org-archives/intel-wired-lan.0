@@ -1,84 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FB37C433FE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Nov 2022 12:13:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB9D8C433FE
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Nov 2022 16:31:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2C22D60808;
-	Mon, 28 Nov 2022 12:13:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2C22D60808
+	by smtp4.osuosl.org (Postfix) with ESMTP id 656DA409B1;
+	Mon, 28 Nov 2022 16:31:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 656DA409B1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669637615;
-	bh=FoVPf992Q6JkDs/tsgj1vulomJajA/BT3YlPfoSsoXw=;
+	s=default; t=1669653115;
+	bh=24pXhnZNclgOFaZAay2uGQnuRAEwfUNwLjEYE61yL1Q=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=MtpJ8j9IjSxm2EVSawZ8TMJgNI4qcHkUG3vQSmIybWQHCPqls28hKIDpGIiAz/aCy
-	 33vw7efa4CNcEeLwlUVwoz59CEiaQIoDDAx9RawsT0Jy2ptI6Jw3FurFcayOyLiWcG
-	 8E/fMtksR/NTiQHr56Bd6ioEnbt8mViHcJjvx6V/OvdyJEgbBN9LeSEBJUrklzPjhz
-	 raYDE3h2GT9rhkvfphuY2urA6PyFxR0mt822ZIX8FPgvkCF1MJJEMoD45dHp6X3epI
-	 CiIuFTU30fHPcjg5Gcf2jxDQpf9EdZJ64ZqGE2ofOfxWbKyGftdN477HPsrX2BeAPO
-	 h5KlC0dfJPtFw==
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=17+QzpLUk9TK9TtnA4QKxyRaC2gLO2Okm65K9C5wF54F46mZs2EEQDVWGhKjkwZCe
+	 p0zV/18rE7FdP6BLxh+lDuKkp9p8S0U792wN3zpOTqfms0ZVYibjj0GaMzJO6FAY13
+	 N0HiK1QPwgERK36I8mV5pepCU6TsBC3iScllpNw1NnOJcjIIM++5QADX+yycf8Ul4i
+	 dyeaqSf5hXyVvILXZE4zLy04g5lI6Q/ZRRIaCyNkwVfIOamL/qA3W8kRHEHfFofrto
+	 J0iyGfLkp+u7XMjiYpGGEwIqHob+U+pHhnn1S4+olNyEVOY8HiPn40gpfTQ7ryfyH9
+	 EjMMFcNg/ZIIw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id hkJm8TpNwven; Mon, 28 Nov 2022 12:13:34 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 4LzqhijrLpXB; Mon, 28 Nov 2022 16:31:51 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 36B9E60A70;
-	Mon, 28 Nov 2022 12:13:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 36B9E60A70
+	by smtp4.osuosl.org (Postfix) with ESMTP id 597D8408BD;
+	Mon, 28 Nov 2022 16:31:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 597D8408BD
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 8E1BB1BF39C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 12:13:32 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B44D61BF59F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Nov 2022 20:24:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7268580C2D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 12:13:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7268580C2D
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9B54181A2B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Nov 2022 20:24:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9B54181A2B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id D_j6acdux_cZ for <intel-wired-lan@lists.osuosl.org>;
- Mon, 28 Nov 2022 12:13:31 +0000 (UTC)
+ with ESMTP id rrynnqX2W0-U for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 23 Nov 2022 20:24:16 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 96ABF80C1A
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 96ABF80C1A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 12:13:31 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="298173671"
-X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="298173671"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Nov 2022 04:13:30 -0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BE79F819ED
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id BE79F819ED
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Nov 2022 20:24:16 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10540"; a="315304924"
+X-IronPort-AV: E=Sophos;i="5.96,187,1665471600"; d="scan'208";a="315304924"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 23 Nov 2022 12:24:16 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10544"; a="643367013"
-X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="643367013"
-Received: from amlin-018-068.igk.intel.com ([10.102.18.68])
- by orsmga002.jf.intel.com with ESMTP; 28 Nov 2022 04:13:29 -0800
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+X-IronPort-AV: E=McAfee;i="6500,9779,10540"; a="674845837"
+X-IronPort-AV: E=Sophos;i="5.96,187,1665471600"; d="scan'208";a="674845837"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.80.24])
+ by orsmga001.jf.intel.com with ESMTP; 23 Nov 2022 12:24:16 -0800
+From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 28 Nov 2022 07:10:54 -0500
-Message-Id: <20221128121054.167142-1-mateusz.palczewski@intel.com>
-X-Mailer: git-send-email 2.31.1
+Date: Wed, 23 Nov 2022 15:19:26 -0500
+Message-Id: <20221123201926.159418-1-pavan.kumar.linga@intel.com>
+X-Mailer: git-send-email 2.37.3
 MIME-Version: 1.0
+X-Mailman-Approved-At: Mon, 28 Nov 2022 16:31:50 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1669637611; x=1701173611;
+ t=1669235056; x=1700771056;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=18/O3PHIaiqKRc6+KstiXap2efhDTtMr+TU4UdJLsQM=;
- b=OhNMwWJtmJmbe8v6J7NOu5dCf4y1yi1E1Y+8AeS4yufeLNjnvonmQncm
- PtmhgHCd+RMnD/kNd+wOPUNevlvw/UvLhB0RURuHDhyB71eKfm/3QyXKV
- 8Z6yiD4pv2mErR3J7Dxje0nF6CUs614ils6ggRAi2qffS8gRPiHejlM+k
- 9vGF6aVWM5k3I1aF2p3FpmPUT8spRcu39gv7D8zwApondbNlY0g+aSN9O
- 3T2xOXscHsW2CD3KkLqLSt6tVDY7WCgvkNyLDnwv+AyapOiPk8Y8BIv7x
- 6QXl20p48ky7T7F81EURv7ryWZf9heo8vvX3wBxn8r3L4zt5aMGiG7mkg
- w==;
+ bh=QXeMTFACCvSY22g+Ei44Qv6n9p0lbxSzaaN0Fsuv3es=;
+ b=B6GByVYq+74tWVIFx4etUtm29ai7fc0xvHhtwfuGoAd99w7nUMlLMgVT
+ nmYcQT3OArc6DtNtMLdW2bNg0Rtmp6qerVahBpi2a9C/T2/lPqe/wrGvK
+ pJdN0EjOyt5WTWiYHeZrrbIULVvHCkTedZVJIdZkVi0p+EIBdo2oOTHa4
+ 1M24PBycvt8NTxvqeRRsntzK3ehiMNyGzSbPoANBS6a2gv+ZVC9+OeEbg
+ cnkn6M+QyacD9XaEtGWdJYkktpIVPs5xmaF2c/AFm/vXW3C248ow4lY5v
+ cz06PTiGz0mUmv9DpP+cqJr6/YTqUb4G/qcZrlkIvUYqls+yvzjxwpMbp
+ g==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=OhNMwWJt
-Subject: [Intel-wired-lan] [PATCH net v1] ice: Fix deadlock on the rtnl_mutex
+ header.a=rsa-sha256 header.s=Intel header.b=B6GByVYq
+Subject: [Intel-wired-lan] [PATCH RFC net-next 0/1] idpf: add IDPF driver
+ for initial feedback
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,47 +93,79 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Pavan Kumar Linga <pavan.kumar.linga@intel.com>,
+ shailendra.bhatnagar@intel.com, madhu.chittim@intel.com,
+ phani.r.burra@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-There is a deadlock on rtnl_mutex when attempting to take the lock
-in unregister_netdev() after it has already been taken by
-ethnl_set_channels(). This happened when unregister_netdev() was
-called inside of ice_vsi_rebuild().
-Fix that by removing the unregister_netdev() usage and replace it with
-ice_vsi_clear_rings() that deallocates the tx and rx rings for the VSI.
+This adds the Infrastructure Data Path Function (IDPF) driver
+code as a single RFC patch. The main idea is to introduce the
+IDPF driver just for initial feedback while this code is being
+prepared into a proper series to be submitted to the mailing list
+i.e. this patch is not intended to be merged but to get the feedback.
 
-Fixes: df0f847915b4 ("ice: Move common functions out of ice_main.c part 6/7")
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_lib.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+IDPF driver is used for both physical and virtual functions.
+Except for some of the device operations, rest of the functionality
+is same for both PF and VF. It uses virtchnl version2 opcodes and
+structures defined in 'virtchnl2' header file which helps the driver
+to learn most of the capabilities and register offsets from the
+device Control Plane (CP) instead of assuming the default values.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index fcf11abe64f1..5550e5aebf9f 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3392,12 +3392,10 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- err_vectors:
- 	ice_vsi_free_q_vectors(vsi);
- err_rings:
--	if (vsi->netdev) {
--		vsi->current_netdev_flags = 0;
--		unregister_netdev(vsi->netdev);
--		free_netdev(vsi->netdev);
--		vsi->netdev = NULL;
--	}
-+	ice_vsi_clear_rings(vsi);
-+	set_bit(ICE_RESET_FAILED, pf->state);
-+	kfree(coalesce);
-+	return ret;
- err_vsi:
- 	ice_vsi_clear(vsi);
- 	set_bit(ICE_RESET_FAILED, pf->state);
+Pavan Kumar Linga (1):
+  idpf: introduce IDPF driver
+
+ drivers/net/ethernet/intel/Makefile           |    1 +
+ drivers/net/ethernet/intel/idpf/Makefile      |   20 +
+ drivers/net/ethernet/intel/idpf/idpf.h        |  847 +++
+ .../net/ethernet/intel/idpf/idpf_controlq.c   |  646 +++
+ .../net/ethernet/intel/idpf/idpf_controlq.h   |  128 +
+ .../ethernet/intel/idpf/idpf_controlq_api.h   |  190 +
+ .../ethernet/intel/idpf/idpf_controlq_setup.c |  175 +
+ drivers/net/ethernet/intel/idpf/idpf_dev.c    |  212 +
+ drivers/net/ethernet/intel/idpf/idpf_devids.h |   10 +
+ .../net/ethernet/intel/idpf/idpf_ethtool.c    | 1477 +++++
+ .../ethernet/intel/idpf/idpf_lan_pf_regs.h    |  136 +
+ .../net/ethernet/intel/idpf/idpf_lan_txrx.h   |  422 ++
+ .../ethernet/intel/idpf/idpf_lan_vf_regs.h    |  119 +
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    | 2663 +++++++++
+ drivers/net/ethernet/intel/idpf/idpf_main.c   |  128 +
+ drivers/net/ethernet/intel/idpf/idpf_mem.h    |   20 +
+ .../ethernet/intel/idpf/idpf_singleq_txrx.c   | 1331 +++++
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 4937 +++++++++++++++++
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  852 +++
+ drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |  195 +
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 3980 +++++++++++++
+ include/linux/avf/virtchnl2.h                 | 1490 +++++
+ include/linux/avf/virtchnl2_lan_desc.h        |  605 ++
+ 23 files changed, 20584 insertions(+)
+ create mode 100644 drivers/net/ethernet/intel/idpf/Makefile
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq_api.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq_setup.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_dev.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devids.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_lan_pf_regs.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_lan_txrx.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_lan_vf_regs.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_lib.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_main.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_mem.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_txrx.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_txrx.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+ create mode 100644 include/linux/avf/virtchnl2.h
+ create mode 100644 include/linux/avf/virtchnl2_lan_desc.h
+
 -- 
-2.31.1
+2.37.3
 
 _______________________________________________
 Intel-wired-lan mailing list
