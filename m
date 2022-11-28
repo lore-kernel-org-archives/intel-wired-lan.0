@@ -1,92 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52AB0C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Nov 2022 16:50:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFCEEC433FE
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Nov 2022 17:04:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E4586400DB;
-	Mon, 28 Nov 2022 16:50:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E4586400DB
+	by smtp3.osuosl.org (Postfix) with ESMTP id 30FFF60E03;
+	Mon, 28 Nov 2022 17:04:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 30FFF60E03
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669654231;
-	bh=OTACC8aki73j3iKBtaDkRtUUsuEMtVbgkihbgEVt67s=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=eqmbg7kLrp5LxgWLt26NoGIX4glODeWlebnhTIe2e4L4EB158UU8OIC3TnNwdCi0X
-	 ntj0ArywRYBRLa8gQ31AW4l4p6heWFtTWr8A3mfUJJ/Sm02LCQOME4f8ydlNDCpbw+
-	 JUo2++XZ0/kUan6lCj9RGecSnaUTm9sz/IkSDlzFH8JNnhtB0sGgiktxZwQ0qyX497
-	 MhafmL2NoVdexMuq/jTCnVpV7WaSGYYgiv11HJsNOL8lGWZFscwQen1suuki7f+FYR
-	 +9JJq+YDoFRJDlYcK0QVIncNDaG80gV9RQanK6Uw0X2EAioEejqpPBj4NxQJULYyF5
-	 m3z50mLkAdWxQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ghBGThqoPoqL; Mon, 28 Nov 2022 16:50:31 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D5D32403A7;
-	Mon, 28 Nov 2022 16:50:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D5D32403A7
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id BB8F51BF2C8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 16:50:29 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 95AC860BA6
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 16:50:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 95AC860BA6
+	s=default; t=1669655048;
+	bh=NNMioCE1wKT2g6E42iexpfHQeN0iNMI+hpH5/R5zDTA=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=LG2ymgcysDE9amRawvLsU+1WMcZIiwA6IZnjvo8mN+kuK0YBbDqtu6zwOi+++ddI3
+	 QRgfpw6uJmec/bSw+g6HhboXLpqZnfI5Jcu3PqyaQ+YvpdkeYoDENw+AOdfFTJZb9e
+	 uoFKhaJR3RaGyFCZ2aHiEJaAbJA+Ktaz/8o+6NC1yqStQ0lsWQwSxDoscQmGUq07lN
+	 iv3+LmFeKIuHdwe/QkQPhsrQQT6Q2t8VJOwZg8jxjCIFqa251RjxajDY9i8aaLapcH
+	 YWWF5ZkU1iWJSap5eYYBNQPTCRP4uMX0q8revMUdRT47hpNI8uTwqJReQ2RKipS8EK
+	 4KMPZfp+BFrJg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qq4xpqXONNyv for <intel-wired-lan@lists.osuosl.org>;
- Mon, 28 Nov 2022 16:50:28 +0000 (UTC)
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lGLWG6KLtpQq; Mon, 28 Nov 2022 17:04:07 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id C7E1460C07;
+	Mon, 28 Nov 2022 17:04:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C7E1460C07
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 38E401BF2C8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:05 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 12CC1813B9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 12CC1813B9
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id m4YvbsPbEhvG for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 28 Nov 2022 17:04:03 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C368260AB8
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C368260AB8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 16:50:28 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10545"; a="377028637"
-X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="377028637"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Nov 2022 08:50:27 -0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 933C1813AC
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 933C1813AC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:03 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10545"; a="379149291"
+X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="379149291"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 28 Nov 2022 09:03:34 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10545"; a="749461169"
-X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="749461169"
+X-IronPort-AV: E=McAfee;i="6500,9779,10545"; a="676111114"
+X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="676111114"
 Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by fmsmga002.fm.intel.com with ESMTP; 28 Nov 2022 08:50:25 -0800
-Received: from newjersey.igk.intel.com (newjersey.igk.intel.com
- [10.102.20.203])
+ by orsmga001.jf.intel.com with ESMTP; 28 Nov 2022 09:03:33 -0800
+Received: from kord.igk.intel.com (kord.igk.intel.com [10.123.220.9])
  by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 2ASGoO3N015269; Mon, 28 Nov 2022 16:50:24 GMT
-From: Alexander Lobakin <alexandr.lobakin@intel.com>
-To: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-Date: Mon, 28 Nov 2022 17:49:32 +0100
-Message-Id: <20221128164932.2859005-1-alexandr.lobakin@intel.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221123201926.159418-1-pavan.kumar.linga@intel.com>
-References: <20221123201926.159418-1-pavan.kumar.linga@intel.com>
+ 2ASH3VNr017147; Mon, 28 Nov 2022 17:03:31 GMT
+From: Mikael Barsehyan <mikael.barsehyan@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Mon, 28 Nov 2022 18:03:52 +0100
+Message-Id: <20221128170354.2537171-1-mikael.barsehyan@intel.com>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1669654228; x=1701190228;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=Cl5fgFmc0MlHJPJqQ9rZ/u8C9vOTLw5KNO4jPDxMI9c=;
- b=nSpYiOZp+iK1NdKsU19QpR50Yzj1ebunN+LFMeDqmjn90gtYfClnI02U
- oXHlYRdpL+r1Rkjn4bW2cGvtGVJghzH7+hmjNG7135wnP+gjhli0W1I9x
- +mags9bf6Z18MhVplXdh+E1n9uoSm/gUADcqwKbcSxDYZsAWT4Ouh9FEK
- +Ife9nSJNkpveTrH9z7YcaJhaxxyp/QO0Z9Fi50ZruEfp2necuNkBjSBJ
- vb6rNx5LNwLtshdumGm3DE4m7AYyHRSIb8h8iv7hzmoCBHk2DMM4+Zd74
- FyYMfF37Vbruk1xU6y6gPFz1csQcGandGnsXVf03wErPCnSfO66mzS+S1
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1669655043; x=1701191043;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=ISuGzeO0pB/4hpV7uZBjHJFGwo4SXNyJdmWWemWOEzM=;
+ b=dEEBqcdSMZ1N7ebqsYgoLBzVxhqaDpploU34fNpJuzWFHF1KM2a6nRi3
+ XgblaV/YSQ+ouVYiUBJz0YoUeUJP8AH/GQDoLmdg5FHu+U0n+xLHtMt7k
+ X0EpwtyZ3ZPB3ofKTNg9oVVBFaYU+qhTUk6NlMQ8wtx7bl3Aa2OAr1wdc
+ wREAnFGyihRgYNCNTvJYwRBOFamzFKROGuN05Nu4qCTe6YcRDe/LI5Mg8
+ P2UeusjVVZePWEafVczIrx6Eru5SDL5noNJ6hqwyHPlPyfc80SojUAl7L
+ kzoEB9zoa3X7xaY1XD8fcHLeK8qOTU2DaDf7bCK9VfqJDSeAS9T5ibj9D
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nSpYiOZp
-Subject: Re: [Intel-wired-lan] [PATCH RFC net-next 0/1] idpf: add IDPF
- driver for initial feedback
+ header.a=rsa-sha256 header.s=Intel header.b=dEEBqcdS
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/2] add ethtool FEC-all option
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,51 +94,54 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org, phani.r.burra@intel.com,
- madhu.chittim@intel.com, shailendra.bhatnagar@intel.com
+Cc: Mikael Barsehyan <mikael.barsehyan@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
-Date: Wed, 23 Nov 2022 15:19:26 -0500
+This change introduces the new "all" mode into the Link Establishment
+State Machine for ICE. Currently we have options to set FEC configuration:
+force one of the supported FEC modes, no-FEC or auto-FEC. To establish
+link we need to be able to add no-FEC mode into LESM procedure when the
+user has set Auto-FEC. Basically, the idea is "automatically select a
+suitable FEC mode, no FEC is also allowed". After that the LESM procedure
+will cycle through all available modes (including No-FEC) during link
+establishment process w/ LR/SR modules. However, the approach of using
+two flags at once (AUTO and NO_FEC) was rejected by the community [1].
+This results in a change to kernel side ethtool adding a new
+ETHTOOL_A_FEC_ALL bool flag. For ETHTOOL_A_FEC_ALL the behavior is
+similar to ETHTOOL_A_FEC_AUTO except no-FEC is one of the valid options.
 
-> This adds the Infrastructure Data Path Function (IDPF) driver
-> code as a single RFC patch. The main idea is to introduce the
-> IDPF driver just for initial feedback while this code is being
-> prepared into a proper series to be submitted to the mailing list
-> i.e. this patch is not intended to be merged but to get the feedback.
-> 
-> IDPF driver is used for both physical and virtual functions.
-> Except for some of the device operations, rest of the functionality
-> is same for both PF and VF. It uses virtchnl version2 opcodes and
-> structures defined in 'virtchnl2' header file which helps the driver
-> to learn most of the capabilities and register offsets from the
-> device Control Plane (CP) instead of assuming the default values.
+The user is able to change FEC behavior at runtime - by sending an
+appropriate command to the base driver.
+Example usage:
+ # ethtool --set-fec <device> encoding All
 
-Eeeeh, how came you completely ignored all the already existing
-comments from the internal MLs and didn't even provide a proper
-series to review there internally, not speaking of sending a 20k+
-chunk to IWL, which is a part of LKML? Are you aware LKML rejects
-messages containing more than a couple thousand lines? LKML is not
-the internal MLs to throw raw diffs or poor quality patches at.
-You know the rules of submitting networking patches, right? Which
-are the same for all the Intel networking folks? Why do you
-deliberately violate them then? I haven't seen a word in those
-rules saying "you can ignore this if your deadline is coming".
+[1] https://lore.kernel.org/netdev/20220823150438.3613327-1-jacob.e.keller@intel.com/
 
-> 
-> Pavan Kumar Linga (1):
->   idpf: introduce IDPF driver
+Mikael Barsehyan (1):
+  ethtool: add ETHTOOL_A_FEC_ALL request for FEC
 
-[...]
+Wojciech Drewek (1):
+  ice: Implement ETHTOOL_FEC_ALL support
 
-> -- 
-> 2.37.3
+ Documentation/networking/ethtool-netlink.rst  | 14 +++--
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
+ drivers/net/ethernet/intel/ice/ice_common.c   | 53 ++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_common.h   |  1 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  | 13 ++++-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  3 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |  9 +++-
+ include/uapi/linux/ethtool.h                  |  3 ++
+ include/uapi/linux/ethtool_netlink.h          |  1 +
+ net/ethtool/fec.c                             | 26 ++++++---
+ net/ethtool/netlink.h                         |  2 +-
+ 11 files changed, 111 insertions(+), 15 deletions(-)
 
-Thanks,
-Olek
+-- 
+2.35.3
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
