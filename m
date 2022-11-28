@@ -1,87 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFCEEC433FE
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Nov 2022 17:04:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35E1CC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 28 Nov 2022 17:04:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 30FFF60E03;
-	Mon, 28 Nov 2022 17:04:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 30FFF60E03
+	by smtp2.osuosl.org (Postfix) with ESMTP id BE5424045C;
+	Mon, 28 Nov 2022 17:04:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BE5424045C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669655048;
-	bh=NNMioCE1wKT2g6E42iexpfHQeN0iNMI+hpH5/R5zDTA=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=LG2ymgcysDE9amRawvLsU+1WMcZIiwA6IZnjvo8mN+kuK0YBbDqtu6zwOi+++ddI3
-	 QRgfpw6uJmec/bSw+g6HhboXLpqZnfI5Jcu3PqyaQ+YvpdkeYoDENw+AOdfFTJZb9e
-	 uoFKhaJR3RaGyFCZ2aHiEJaAbJA+Ktaz/8o+6NC1yqStQ0lsWQwSxDoscQmGUq07lN
-	 iv3+LmFeKIuHdwe/QkQPhsrQQT6Q2t8VJOwZg8jxjCIFqa251RjxajDY9i8aaLapcH
-	 YWWF5ZkU1iWJSap5eYYBNQPTCRP4uMX0q8revMUdRT47hpNI8uTwqJReQ2RKipS8EK
-	 4KMPZfp+BFrJg==
+	s=default; t=1669655056;
+	bh=Ezo7txvZDs+rgzd50Gn9ekZjOItuDVnw3cC+Ns9WuWU=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=BdQmmmnK6EoM1DcN2Lc5OG/8xdDsuBz/Zjw5i3wjQxEmq5H9BFxZXWdn2OnX1JypG
+	 L13wOwlGfGb24RX4TRgSyks5BGcjsELXLVfEyDaG2yEuSFxsX4L+5vwN0un9+61W1M
+	 BeEjvb2xNoNoxWALFtjfZgdj2TqvHi2ZNNP70B3h3U+20Y9phuRepIfSqZCUqoCOqi
+	 1CKrtNbIgmXMSbNgvpcgXcN6gRoVdDvaBuWR19nMLx7ukeeDaa5ayXr0kdHDKSii/p
+	 XAN2hKfpdenAO0oggnL6gX29Mr/48a3xTDqyoO3YXOg3IvEeBm3Anxnk9JXKVw72oO
+	 4pZTDVmvhYmNA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lGLWG6KLtpQq; Mon, 28 Nov 2022 17:04:07 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id umaiShbCDupp; Mon, 28 Nov 2022 17:04:15 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C7E1460C07;
-	Mon, 28 Nov 2022 17:04:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C7E1460C07
+	by smtp2.osuosl.org (Postfix) with ESMTP id 80B7740580;
+	Mon, 28 Nov 2022 17:04:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 80B7740580
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 38E401BF2C8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:05 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 530DF1BF2C8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 12CC1813B9
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 12CC1813B9
+ by smtp1.osuosl.org (Postfix) with ESMTP id 348D3813C4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 348D3813C4
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id m4YvbsPbEhvG for <intel-wired-lan@lists.osuosl.org>;
- Mon, 28 Nov 2022 17:04:03 +0000 (UTC)
+ with ESMTP id 1FuAHPTlizTY for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 28 Nov 2022 17:04:13 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 933C1813AC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2A153813AC
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 933C1813AC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:03 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10545"; a="379149291"
-X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="379149291"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2A153813AC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 28 Nov 2022 17:04:13 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10545"; a="379149406"
+X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="379149406"
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 28 Nov 2022 09:03:34 -0800
+ 28 Nov 2022 09:03:46 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10545"; a="676111114"
-X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="676111114"
+X-IronPort-AV: E=McAfee;i="6500,9779,10545"; a="676111177"
+X-IronPort-AV: E=Sophos;i="5.96,200,1665471600"; d="scan'208";a="676111177"
 Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by orsmga001.jf.intel.com with ESMTP; 28 Nov 2022 09:03:33 -0800
+ by orsmga001.jf.intel.com with ESMTP; 28 Nov 2022 09:03:45 -0800
 Received: from kord.igk.intel.com (kord.igk.intel.com [10.123.220.9])
  by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 2ASH3VNr017147; Mon, 28 Nov 2022 17:03:31 GMT
+ 2ASH3VNs017147; Mon, 28 Nov 2022 17:03:43 GMT
 From: Mikael Barsehyan <mikael.barsehyan@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 28 Nov 2022 18:03:52 +0100
-Message-Id: <20221128170354.2537171-1-mikael.barsehyan@intel.com>
+Date: Mon, 28 Nov 2022 18:03:53 +0100
+Message-Id: <20221128170354.2537171-2-mikael.barsehyan@intel.com>
 X-Mailer: git-send-email 2.35.3
+In-Reply-To: <20221128170354.2537171-1-mikael.barsehyan@intel.com>
+References: <20221128170354.2537171-1-mikael.barsehyan@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1669655043; x=1701191043;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=ISuGzeO0pB/4hpV7uZBjHJFGwo4SXNyJdmWWemWOEzM=;
- b=dEEBqcdSMZ1N7ebqsYgoLBzVxhqaDpploU34fNpJuzWFHF1KM2a6nRi3
- XgblaV/YSQ+ouVYiUBJz0YoUeUJP8AH/GQDoLmdg5FHu+U0n+xLHtMt7k
- X0EpwtyZ3ZPB3ofKTNg9oVVBFaYU+qhTUk6NlMQ8wtx7bl3Aa2OAr1wdc
- wREAnFGyihRgYNCNTvJYwRBOFamzFKROGuN05Nu4qCTe6YcRDe/LI5Mg8
- P2UeusjVVZePWEafVczIrx6Eru5SDL5noNJ6hqwyHPlPyfc80SojUAl7L
- kzoEB9zoa3X7xaY1XD8fcHLeK8qOTU2DaDf7bCK9VfqJDSeAS9T5ibj9D
- Q==;
+ t=1669655053; x=1701191053;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=FyjMTB1qQ5AZD1L3MGgMkjnokKS2CKmCBCNVbbDHO84=;
+ b=Mp7IseYYkuqEgkLPXaetfkqXHqMawQdDO6ymrxdhsvV9ptkefZFkfPgg
+ cEmoRJVYK5IbQ/bxmhXUUodyRBEG1pE3/9qUp3x7L5QSShBkJsWd95FfR
+ uKJ0SSWXrQV5ZEwPARihtdateoaMKEu+wFJUwqdJRF251hBp+7VZ6XmS3
+ So58kbOewkN76kL0qWFrG7ROnb0XVfcDowfOeHOgyFnDCeJYLQ785KShN
+ 2I9WTWwJqQnNqyBnQHD/yycd9iPJ9n/K+r2rpeVF/xER0Yudn+ij/puGt
+ G89jBKL+pvv8H8NZ4TSeCF9KrWdGm3/b8Xd4k4snzL50t13guSHKx+D9e
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=dEEBqcdS
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/2] add ethtool FEC-all option
+ header.a=rsa-sha256 header.s=Intel header.b=Mp7IseYY
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/2] ethtool: add
+ ETHTOOL_A_FEC_ALL request for FEC
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,45 +104,236 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This change introduces the new "all" mode into the Link Establishment
-State Machine for ICE. Currently we have options to set FEC configuration:
-force one of the supported FEC modes, no-FEC or auto-FEC. To establish
-link we need to be able to add no-FEC mode into LESM procedure when the
-user has set Auto-FEC. Basically, the idea is "automatically select a
-suitable FEC mode, no FEC is also allowed". After that the LESM procedure
-will cycle through all available modes (including No-FEC) during link
-establishment process w/ LR/SR modules. However, the approach of using
-two flags at once (AUTO and NO_FEC) was rejected by the community [1].
-This results in a change to kernel side ethtool adding a new
-ETHTOOL_A_FEC_ALL bool flag. For ETHTOOL_A_FEC_ALL the behavior is
-similar to ETHTOOL_A_FEC_AUTO except no-FEC is one of the valid options.
+ETHTOOL_A_FEC_ALL requests the driver to choose FEC mode (including no FEC)
+based on SFP module parameters.
 
-The user is able to change FEC behavior at runtime - by sending an
-appropriate command to the base driver.
-Example usage:
- # ethtool --set-fec <device> encoding All
+Suggested-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Signed-off-by: Mikael Barsehyan <mikael.barsehyan@intel.com>
+---
+ Documentation/networking/ethtool-netlink.rst | 14 ++++++++---
+ include/uapi/linux/ethtool.h                 |  3 +++
+ include/uapi/linux/ethtool_netlink.h         |  1 +
+ net/ethtool/fec.c                            | 26 ++++++++++++++------
+ net/ethtool/netlink.h                        |  2 +-
+ 5 files changed, 35 insertions(+), 11 deletions(-)
 
-[1] https://lore.kernel.org/netdev/20220823150438.3613327-1-jacob.e.keller@intel.com/
-
-Mikael Barsehyan (1):
-  ethtool: add ETHTOOL_A_FEC_ALL request for FEC
-
-Wojciech Drewek (1):
-  ice: Implement ETHTOOL_FEC_ALL support
-
- Documentation/networking/ethtool-netlink.rst  | 14 +++--
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_common.c   | 53 ++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_common.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  | 13 ++++-
- drivers/net/ethernet/intel/ice/ice_main.c     |  3 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |  9 +++-
- include/uapi/linux/ethtool.h                  |  3 ++
- include/uapi/linux/ethtool_netlink.h          |  1 +
- net/ethtool/fec.c                             | 26 ++++++---
- net/ethtool/netlink.h                         |  2 +-
- 11 files changed, 111 insertions(+), 15 deletions(-)
-
+diff --git a/Documentation/networking/ethtool-netlink.rst b/Documentation/networking/ethtool-netlink.rst
+index bede24ef44fd..c682e5bf727b 100644
+--- a/Documentation/networking/ethtool-netlink.rst
++++ b/Documentation/networking/ethtool-netlink.rst
+@@ -1383,6 +1383,7 @@ Kernel response contents:
+   ``ETHTOOL_A_FEC_HEADER``               nested  request header
+   ``ETHTOOL_A_FEC_MODES``                bitset  configured modes
+   ``ETHTOOL_A_FEC_AUTO``                 bool    FEC mode auto selection
++  ``ETHTOOL_A_FEC_ALL``                  bool    auto selection(incl. NO FEC)
+   ``ETHTOOL_A_FEC_ACTIVE``               u32     index of active FEC mode
+   ``ETHTOOL_A_FEC_STATS``                nested  FEC statistics
+   =====================================  ======  ==========================
+@@ -1391,10 +1392,13 @@ Kernel response contents:
+ active on the interface. This attribute may not be present if device does
+ not support FEC.
+ 
+-``ETHTOOL_A_FEC_MODES`` and ``ETHTOOL_A_FEC_AUTO`` are only meaningful when
+-autonegotiation is disabled. If ``ETHTOOL_A_FEC_AUTO`` is non-zero driver will
+-select the FEC mode automatically based on the parameters of the SFP module.
++``ETHTOOL_A_FEC_MODES``, ``ETHTOOL_A_FEC_AUTO`` and ``ETHTOOL_A_FEC_ALL``
++are only meaningful when autonegotiation is disabled.
++If ``ETHTOOL_A_FEC_AUTO`` is non-zero driver will select the FEC mode
++automatically based on the parameters of the SFP module.
+ This is equivalent to the ``ETHTOOL_FEC_AUTO`` bit of the ioctl interface.
++If ``ETHTOOL_A_FEC_ALL`` is non-zero driver will select the FEC mode
++automatically (including no FEC) based on the parameters of the SFP module.
+ ``ETHTOOL_A_FEC_MODES`` carry the current FEC configuration using link mode
+ bits (rather than old ``ETHTOOL_FEC_*`` bits).
+ 
+@@ -1429,6 +1433,7 @@ Request contents:
+   ``ETHTOOL_A_FEC_HEADER``               nested  request header
+   ``ETHTOOL_A_FEC_MODES``                bitset  configured modes
+   ``ETHTOOL_A_FEC_AUTO``                 bool    FEC mode auto selection
++  ``ETHTOOL_A_FEC_ALL``                  bool    auto selection(incl. NO FEC)
+   =====================================  ======  ==========================
+ 
+ ``FEC_SET`` is only meaningful when autonegotiation is disabled. Otherwise
+@@ -1441,6 +1446,9 @@ in an implementation specific way.
+ ``ETHTOOL_A_FEC_AUTO`` requests the driver to choose FEC mode based on SFP
+ module parameters. This does not mean autonegotiation.
+ 
++``ETHTOOL_A_FEC_ALL`` requests the driver to choose FEC mode (including not using
++FEC) based on SFP module parameters. This does not mean autonegotiation.
++
+ MODULE_EEPROM_GET
+ =================
+ 
+diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
+index 58e587ba0450..274b28ed1f8e 100644
+--- a/include/uapi/linux/ethtool.h
++++ b/include/uapi/linux/ethtool.h
+@@ -1516,6 +1516,7 @@ struct ethtool_fecparam {
+  * @ETHTOOL_FEC_BASER_BIT: Base-R/Reed-Solomon FEC Mode
+  * @ETHTOOL_FEC_LLRS_BIT: Low Latency Reed Solomon FEC Mode (25G/50G Ethernet
+  *			Consortium)
++ * @ETHTOOL_FEC_ALL_BIT: Same as AUTO but also includes NO FEC.
+  */
+ enum ethtool_fec_config_bits {
+ 	ETHTOOL_FEC_NONE_BIT,
+@@ -1524,6 +1525,7 @@ enum ethtool_fec_config_bits {
+ 	ETHTOOL_FEC_RS_BIT,
+ 	ETHTOOL_FEC_BASER_BIT,
+ 	ETHTOOL_FEC_LLRS_BIT,
++	ETHTOOL_FEC_ALL_BIT,
+ };
+ 
+ #define ETHTOOL_FEC_NONE		(1 << ETHTOOL_FEC_NONE_BIT)
+@@ -1532,6 +1534,7 @@ enum ethtool_fec_config_bits {
+ #define ETHTOOL_FEC_RS			(1 << ETHTOOL_FEC_RS_BIT)
+ #define ETHTOOL_FEC_BASER		(1 << ETHTOOL_FEC_BASER_BIT)
+ #define ETHTOOL_FEC_LLRS		(1 << ETHTOOL_FEC_LLRS_BIT)
++#define ETHTOOL_FEC_ALL			(1 << ETHTOOL_FEC_ALL_BIT)
+ 
+ /* CMDs currently supported */
+ #define ETHTOOL_GSET		0x00000001 /* DEPRECATED, Get settings.
+diff --git a/include/uapi/linux/ethtool_netlink.h b/include/uapi/linux/ethtool_netlink.h
+index aaf7c6963d61..7f3857f1a7cb 100644
+--- a/include/uapi/linux/ethtool_netlink.h
++++ b/include/uapi/linux/ethtool_netlink.h
+@@ -684,6 +684,7 @@ enum {
+ 	ETHTOOL_A_FEC_AUTO,				/* u8 */
+ 	ETHTOOL_A_FEC_ACTIVE,				/* u32 */
+ 	ETHTOOL_A_FEC_STATS,				/* nest - _A_FEC_STAT */
++	ETHTOOL_A_FEC_ALL,				/* nest - _A_FEC_STAT */
+ 
+ 	__ETHTOOL_A_FEC_CNT,
+ 	ETHTOOL_A_FEC_MAX = (__ETHTOOL_A_FEC_CNT - 1)
+diff --git a/net/ethtool/fec.c b/net/ethtool/fec.c
+index 9f5a134e2e01..48b0d091cd0a 100644
+--- a/net/ethtool/fec.c
++++ b/net/ethtool/fec.c
+@@ -13,6 +13,7 @@ struct fec_reply_data {
+ 	__ETHTOOL_DECLARE_LINK_MODE_MASK(fec_link_modes);
+ 	u32 active_fec;
+ 	u8 fec_auto;
++	u8 fec_all;
+ 	struct fec_stat_grp {
+ 		u64 stats[1 + ETHTOOL_MAX_LANES];
+ 		u8 cnt;
+@@ -29,10 +30,13 @@ const struct nla_policy ethnl_fec_get_policy[ETHTOOL_A_FEC_HEADER + 1] = {
+ };
+ 
+ static void
+-ethtool_fec_to_link_modes(u32 fec, unsigned long *link_modes, u8 *fec_auto)
++ethtool_fec_to_link_modes(u32 fec, unsigned long *link_modes, u8 *fec_auto,
++			  u8 *fec_all)
+ {
+ 	if (fec_auto)
+ 		*fec_auto = !!(fec & ETHTOOL_FEC_AUTO);
++	if (fec_all)
++		*fec_all = !!(fec & ETHTOOL_FEC_ALL);
+ 
+ 	if (fec & ETHTOOL_FEC_OFF)
+ 		__set_bit(ETHTOOL_LINK_MODE_FEC_NONE_BIT, link_modes);
+@@ -46,12 +50,14 @@ ethtool_fec_to_link_modes(u32 fec, unsigned long *link_modes, u8 *fec_auto)
+ 
+ static int
+ ethtool_link_modes_to_fecparam(struct ethtool_fecparam *fec,
+-			       unsigned long *link_modes, u8 fec_auto)
++			       unsigned long *link_modes, u8 fec_auto, u8 fec_all)
+ {
+ 	memset(fec, 0, sizeof(*fec));
+ 
+ 	if (fec_auto)
+ 		fec->fec |= ETHTOOL_FEC_AUTO;
++	if (fec_all)
++		fec->fec |= ETHTOOL_FEC_ALL;
+ 
+ 	if (__test_and_clear_bit(ETHTOOL_LINK_MODE_FEC_NONE_BIT, link_modes))
+ 		fec->fec |= ETHTOOL_FEC_OFF;
+@@ -123,9 +129,9 @@ static int fec_prepare_data(const struct ethnl_req_info *req_base,
+ 	WARN_ON_ONCE(fec.reserved);
+ 
+ 	ethtool_fec_to_link_modes(fec.fec, data->fec_link_modes,
+-				  &data->fec_auto);
++				  &data->fec_auto, &data->fec_all);
+ 
+-	ethtool_fec_to_link_modes(fec.active_fec, active_fec_modes, NULL);
++	ethtool_fec_to_link_modes(fec.active_fec, active_fec_modes, NULL, NULL);
+ 	data->active_fec = find_first_bit(active_fec_modes,
+ 					  __ETHTOOL_LINK_MODE_MASK_NBITS);
+ 	/* Don't report attr if no FEC mode set. Note that
+@@ -155,6 +161,7 @@ static int fec_reply_size(const struct ethnl_req_info *req_base,
+ 	len += ret;
+ 
+ 	len += nla_total_size(sizeof(u8)) +	/* _FEC_AUTO */
++	       nla_total_size(sizeof(u8)) + /* _FEC_ALL */
+ 	       nla_total_size(sizeof(u32));	/* _FEC_ACTIVE */
+ 
+ 	if (req_base->flags & ETHTOOL_FLAG_STATS)
+@@ -207,6 +214,7 @@ static int fec_fill_reply(struct sk_buff *skb,
+ 		return ret;
+ 
+ 	if (nla_put_u8(skb, ETHTOOL_A_FEC_AUTO, data->fec_auto) ||
++	    nla_put_u8(skb, ETHTOOL_A_FEC_ALL, data->fec_all) ||
+ 	    (data->active_fec &&
+ 	     nla_put_u32(skb, ETHTOOL_A_FEC_ACTIVE, data->active_fec)))
+ 		return -EMSGSIZE;
+@@ -231,10 +239,11 @@ const struct ethnl_request_ops ethnl_fec_request_ops = {
+ 
+ /* FEC_SET */
+ 
+-const struct nla_policy ethnl_fec_set_policy[ETHTOOL_A_FEC_AUTO + 1] = {
++const struct nla_policy ethnl_fec_set_policy[ETHTOOL_A_FEC_ALL + 1] = {
+ 	[ETHTOOL_A_FEC_HEADER]	= NLA_POLICY_NESTED(ethnl_header_policy),
+ 	[ETHTOOL_A_FEC_MODES]	= { .type = NLA_NESTED },
+ 	[ETHTOOL_A_FEC_AUTO]	= NLA_POLICY_MAX(NLA_U8, 1),
++	[ETHTOOL_A_FEC_ALL]		= NLA_POLICY_MAX(NLA_U8, 1),
+ };
+ 
+ int ethnl_set_fec(struct sk_buff *skb, struct genl_info *info)
+@@ -247,6 +256,7 @@ int ethnl_set_fec(struct sk_buff *skb, struct genl_info *info)
+ 	struct net_device *dev;
+ 	bool mod = false;
+ 	u8 fec_auto;
++	u8 fec_all;
+ 	int ret;
+ 
+ 	ret = ethnl_parse_header_dev_get(&req_info, tb[ETHTOOL_A_FEC_HEADER],
+@@ -268,7 +278,7 @@ int ethnl_set_fec(struct sk_buff *skb, struct genl_info *info)
+ 	if (ret < 0)
+ 		goto out_ops;
+ 
+-	ethtool_fec_to_link_modes(fec.fec, fec_link_modes, &fec_auto);
++	ethtool_fec_to_link_modes(fec.fec, fec_link_modes, &fec_auto, &fec_all);
+ 
+ 	ret = ethnl_update_bitset(fec_link_modes,
+ 				  __ETHTOOL_LINK_MODE_MASK_NBITS,
+@@ -277,12 +287,14 @@ int ethnl_set_fec(struct sk_buff *skb, struct genl_info *info)
+ 	if (ret < 0)
+ 		goto out_ops;
+ 	ethnl_update_u8(&fec_auto, tb[ETHTOOL_A_FEC_AUTO], &mod);
++	ethnl_update_u8(&fec_all, tb[ETHTOOL_A_FEC_ALL], &mod);
+ 
+ 	ret = 0;
+ 	if (!mod)
+ 		goto out_ops;
+ 
+-	ret = ethtool_link_modes_to_fecparam(&fec, fec_link_modes, fec_auto);
++	ret = ethtool_link_modes_to_fecparam(&fec, fec_link_modes, fec_auto,
++					     fec_all);
+ 	if (ret) {
+ 		NL_SET_ERR_MSG_ATTR(info->extack, tb[ETHTOOL_A_FEC_MODES],
+ 				    "invalid FEC modes requested");
+diff --git a/net/ethtool/netlink.h b/net/ethtool/netlink.h
+index 1bfd374f9718..3d553363532e 100644
+--- a/net/ethtool/netlink.h
++++ b/net/ethtool/netlink.h
+@@ -378,7 +378,7 @@ extern const struct nla_policy ethnl_cable_test_act_policy[ETHTOOL_A_CABLE_TEST_
+ extern const struct nla_policy ethnl_cable_test_tdr_act_policy[ETHTOOL_A_CABLE_TEST_TDR_CFG + 1];
+ extern const struct nla_policy ethnl_tunnel_info_get_policy[ETHTOOL_A_TUNNEL_INFO_HEADER + 1];
+ extern const struct nla_policy ethnl_fec_get_policy[ETHTOOL_A_FEC_HEADER + 1];
+-extern const struct nla_policy ethnl_fec_set_policy[ETHTOOL_A_FEC_AUTO + 1];
++extern const struct nla_policy ethnl_fec_set_policy[ETHTOOL_A_FEC_ALL + 1];
+ extern const struct nla_policy ethnl_module_eeprom_get_policy[ETHTOOL_A_MODULE_EEPROM_I2C_ADDRESS + 1];
+ extern const struct nla_policy ethnl_stats_get_policy[ETHTOOL_A_STATS_GROUPS + 1];
+ extern const struct nla_policy ethnl_phc_vclocks_get_policy[ETHTOOL_A_PHC_VCLOCKS_HEADER + 1];
 -- 
 2.35.3
 
