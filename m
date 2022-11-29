@@ -1,89 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AE46C433FE
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Nov 2022 16:30:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22B67C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Nov 2022 17:11:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DDC4D40333;
-	Tue, 29 Nov 2022 16:30:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DDC4D40333
+	by smtp1.osuosl.org (Postfix) with ESMTP id B460381E57;
+	Tue, 29 Nov 2022 17:11:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B460381E57
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669739422;
-	bh=55ayBpTcs3w9db73ekoMmR94uK0sO1Xitb8iTUv2kPM=;
+	s=default; t=1669741900;
+	bh=Fiun1WLdXcUnwxJgXqfpcHYnsikW4T7FuWfgwHfs3FI=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=ktw+LIN0wYy3McTHE5Ue2s1J5a72ZG1QC1zdE+21JKKuK6E2a102YvEOcHiosL9La
-	 epkIlA1nfBXOezCUOnjlVp+M/quqif6eN5SGQXk3UQKPTDb3VYDdieEDCyqaiYQPwO
-	 ItyQjv+67eadlA8pbJocDEeKqxUrUIg8N3NetiK0Upr0j6pYVVAZYIFWZJzkZMvuqB
-	 /1fYRwk5KaKlAzPMWIc5mNPG4g+1e+NQcPwTIOZrSG6hHVri2g04wX4e/MDAAwa4fC
-	 DSE+nYrhF+ll36+2nyFbPIRpKdv3uyp5qu18d7FruAReBWZcTsWSZvd38gdu2iauDz
-	 y2zkYDFkc8rzg==
+	b=f8siB0Z3N30XoQBS2CTigrba9iNG2kVR9FsKT+1kjLsBqgJ/TFckJ2YHPyGBNpsmF
+	 S0Mbniafkvxz9BHNcl6oZGzqahgqLb7XG+t/FOfO/D4zH9DsTAqv3INnzCVMWoH5nC
+	 cNJajfRb1HEfd7VaRADIcerbBmvmsLgx3aZl+vRGwITJv3HmrhFnCFUkhOntNAVPqq
+	 bdlDCfJsIxIlNjPpyx4NpE6XGWd0nj0ZEI0ZsmvW/05/vpa5fAdYYXNx7pCMfJnJ/l
+	 t1MACnylV9zG9edTK7ui2fbJeR4ze6FOPvipLiE+RjSfWslso1LRXJD9DMnESxhu7+
+	 5UQsQ8SwNiWlA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id YzBnp-RJj1D8; Tue, 29 Nov 2022 16:30:21 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id KxxgEa7vd3zt; Tue, 29 Nov 2022 17:11:40 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9B44B4033C;
-	Tue, 29 Nov 2022 16:30:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9B44B4033C
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 0C4881BF2BB
- for <intel-wired-lan@osuosl.org>; Tue, 29 Nov 2022 15:27:36 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C12AB81E62;
+	Tue, 29 Nov 2022 17:11:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C12AB81E62
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 4372F1BF855
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 17:11:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D904B408C6
- for <intel-wired-lan@osuosl.org>; Tue, 29 Nov 2022 15:27:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D904B408C6
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2A53181E62
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 17:11:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2A53181E62
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oVDmMiPUoZCY for <intel-wired-lan@osuosl.org>;
- Tue, 29 Nov 2022 15:27:35 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id YCXCHhgEiFF8 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 29 Nov 2022 17:11:38 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D3CCC408AD
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D3CCC408AD
- for <intel-wired-lan@osuosl.org>; Tue, 29 Nov 2022 15:27:34 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="294828305"
-X-IronPort-AV: E=Sophos;i="5.96,203,1665471600"; d="scan'208";a="294828305"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Nov 2022 07:23:28 -0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7128C81E57
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7128C81E57
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 17:11:38 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="312792139"
+X-IronPort-AV: E=Sophos;i="5.96,203,1665471600"; d="scan'208";a="312792139"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Nov 2022 09:11:37 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="645930333"
-X-IronPort-AV: E=Sophos;i="5.96,203,1665471600"; d="scan'208";a="645930333"
-Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by fmsmga007.fm.intel.com with ESMTP; 29 Nov 2022 07:23:27 -0800
-Received: from vecna.. (vecna.igk.intel.com [10.123.220.17])
- by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 2ATFNPZe015209; Tue, 29 Nov 2022 15:23:25 GMT
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-To: intel-wired-lan@osuosl.org
-Date: Tue, 29 Nov 2022 16:12:53 +0100
-Message-Id: <20221129151253.2239967-1-przemyslaw.kitszel@intel.com>
-X-Mailer: git-send-email 2.34.3
+X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="643862494"
+X-IronPort-AV: E=Sophos;i="5.96,203,1665471600"; d="scan'208";a="643862494"
+Received: from boxer.igk.intel.com ([10.102.20.173])
+ by orsmga002.jf.intel.com with ESMTP; 29 Nov 2022 09:11:34 -0800
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue, 29 Nov 2022 18:11:25 +0100
+Message-Id: <20221129171125.4092238-1-maciej.fijalkowski@intel.com>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-X-Mailman-Approved-At: Tue, 29 Nov 2022 16:29:52 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1669735654; x=1701271654;
+ t=1669741898; x=1701277898;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=8DaPoguemd1xeM/9bB0k2RpU7Gpd1O1W61mg5haAZC0=;
- b=QZ0FZvS05nAVqLvwJJgPvG53MkvvsIjhK6suUzednz2ErJH4OqN6BSSI
- G/K1j/APLyBPbFsSi1nMRZ2h1TmmytmDxnF2CdjN3f0pF/T0Oj+pcq8/M
- bOOnbQI3BhX9/GFX2djq6+EgPmgTqFhs3R4Zw72155nEUmBOjSB4ijG9u
- uLezCFFDzkh7NHUJTXVvZQ99Nn9hOm8QntO2fScvad5E30u+R4e+w4R5+
- FJlaiFoPky/79IleoNgQMXozuWHsC6uiJnvq97CVS7hzkq8uQtwJ6E96O
- VzrCNVbA+NsRcy2Jdv0OrptFQgdYqtvo8mGjtx+CBEFN0z1WWCb5Ro6mf
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=7M5v88T9DtcIFzCeKmaHBS7GEm5CVug8t2O/Fw9p5Cc=;
+ b=Xmm/GOO55tzmPmEFi035KiY02vtZrsYGc3psIPqZwAx4YU6jb1td7dRM
+ kjb+jGMk0TbveIDyeP1WxaCWKeUFinzZq4Lk8L9tO9nK30Fr+W+F2Sqk1
+ RjLhv96lViJrnoXFB3SSw4aI5o+pUlfsRozhc59NAwg9bA5MmcszH0XPw
+ LppO0HP+7iriB2foEI90rm06ppKisAavJFBBaEqUtYAwiI7uUTaKVK+gr
+ 9d6evhZfTrPSQSJ66CfNR5J6E9Ow4bShOpUKNZkhYBNTe0DF6xlKA58bC
+ MdkoBz7bAGXms17jjKWWzvLMMTlf7F+AUExp3jxngtnQqOIjoPrzl8JgA
+ w==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QZ0FZvS0
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Enable extended PTP support
- for E823L & E823C devices
+ header.a=rsa-sha256 header.s=Intel header.b=Xmm/GOO5
+Subject: [Intel-wired-lan] [PATCH intel-net] ice: xsk: do not use
+ xdp_return_frame() on tx_buf->raw_buf
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,48 +92,50 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Maciej Machnikowski <maciej.machnikowski@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Robin Cowley <robin.cowley@thehutgroup.com>, netdev@vger.kernel.org,
+ bpf@vger.kernel.org, magnus.karlsson@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Maciej Machnikowski <maciej.machnikowski@intel.com>
+Previously ice XDP xmit routine was changed in a way that it avoids
+xdp_buff->xdp_frame conversion as it is simply not needed for handling
+XDP_TX action and what is more it saves us CPU cycles. This routine is
+re-used on ZC driver to handle XDP_TX action.
 
-Enable extended PTP support for E823C and E823L devices.
+Although for XDP_TX on Rx ZC xdp_buff that comes from xsk_buff_pool is
+converted to xdp_frame, xdp_frame itself is not stored inside
+ice_tx_buf, we only store raw data pointer. Casting this pointer to
+xdp_frame and calling against it xdp_return_frame in
+ice_clean_xdp_tx_buf() results in undefined behavior.
 
-Signed-off-by: Maciej Machnikowski <maciej.machnikowski@intel.com>
-Co-developed-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+To fix this, simply call page_frag_free() on tx_buf->raw_buf.
+Later intention is to remove the buff->frame conversion in order to
+simplify the codebase and improve XDP_TX performance on ZC.
+
+Fixes: 126cdfe1007a ("ice: xsk: Improve AF_XDP ZC Tx and use batching API")
+Reported-and-tested-by: Robin Cowley <robin.cowley@thehutgroup.com>
+Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_xsk.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 938ba8c215cb..ea813306e6cd 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -4199,6 +4199,16 @@ void ice_init_feature_support(struct ice_pf *pf)
- 	case ICE_DEV_ID_E810C_BACKPLANE:
- 	case ICE_DEV_ID_E810C_QSFP:
- 	case ICE_DEV_ID_E810C_SFP:
-+	case ICE_DEV_ID_E823L_BACKPLANE:
-+	case ICE_DEV_ID_E823L_SFP:
-+	case ICE_DEV_ID_E823L_10G_BASE_T:
-+	case ICE_DEV_ID_E823L_1GBE:
-+	case ICE_DEV_ID_E823L_QSFP:
-+	case ICE_DEV_ID_E823C_BACKPLANE:
-+	case ICE_DEV_ID_E823C_SFP:
-+	case ICE_DEV_ID_E823C_10G_BASE_T:
-+	case ICE_DEV_ID_E823C_SGMII:
-+	case ICE_DEV_ID_E823C_QSFP:
- 		ice_set_feature_support(pf, ICE_F_DSCP);
- 		ice_set_feature_support(pf, ICE_F_PTP_EXTTS);
- 		if (ice_is_e810t(&pf->hw)) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
+index 056c904b83cc..79fa65d1cf20 100644
+--- a/drivers/net/ethernet/intel/ice/ice_xsk.c
++++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
+@@ -772,7 +772,7 @@ int ice_clean_rx_irq_zc(struct ice_rx_ring *rx_ring, int budget)
+ static void
+ ice_clean_xdp_tx_buf(struct ice_tx_ring *xdp_ring, struct ice_tx_buf *tx_buf)
+ {
+-	xdp_return_frame((struct xdp_frame *)tx_buf->raw_buf);
++	page_frag_free(tx_buf->raw_buf);
+ 	xdp_ring->xdp_tx_active--;
+ 	dma_unmap_single(xdp_ring->dev, dma_unmap_addr(tx_buf, dma),
+ 			 dma_unmap_len(tx_buf, len), DMA_TO_DEVICE);
 -- 
-2.34.3
+2.34.1
 
 _______________________________________________
 Intel-wired-lan mailing list
