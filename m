@@ -1,85 +1,74 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6761BC47088
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Nov 2022 16:23:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B2EFC46467
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Nov 2022 16:29:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D61CA60F84;
-	Tue, 29 Nov 2022 16:23:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D61CA60F84
+	by smtp1.osuosl.org (Postfix) with ESMTP id E5AFF81E57;
+	Tue, 29 Nov 2022 16:29:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E5AFF81E57
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669739017;
-	bh=8Be7YfSSuqidG8L6JXuqbvWyPH+6Ia0rSbTPtpmaQSY=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=BAITyNGMFL88dziWVPEm1Efbyjc5U3wNHROps1cSMWeFoTjdI4kB3l5X85U7HXC0g
-	 G8vkyVfJECj71ccR1tBdHZS4ujsL6jj5Is7ZH8mjx0gXNJWp+g5RzlPoEKgEh7g+yV
-	 mVdOnZFvF6lS131tbxB77FCibRhzXrzM33XHgdheLgcjW23Ing5kKiIEEROaI3ed0f
-	 Gp7XcQTyXGsXdjvTcvflGj+qS/p5CospTTEwJeYkjUTrQsx5T80Uak6ezkq8nz4c0m
-	 V0PsC5dpN6/qhXaK/3Pyq1UsOTZPPIjpHV2I7l1CznvbOPl5MEes/x856wctuyNaY8
-	 iKefyVaoBlgbw==
+	s=default; t=1669739398;
+	bh=u6ppzEQuMexKZlVou95gntk8SwC8ZmWeaYO8GFMaylw=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=CWq8TGrKMZk1QO5b7MNiCYOpjGgh6JoeoY9hROcIUOV0HP6c2R87O77usa+qIBqM/
+	 AUtzmqGiBvOXxpvvYqzTpojehGY5Z2RmSGYs+VuctB9YDin20eGUDB+Wl+wnwMJ/+w
+	 mN4LjaVAS8cCljqW6XQyC+J5cwWp1itf1zlPnB0azvCg++aBuEf3RpXbZSrf98klO9
+	 OvXNfRH1wt307EXjmD+/CxGbuiHwQqEptfOMSW2T26Y+r0H7F6NN+LXfR3DOlmU3ZV
+	 KghMMXfze4GkXDnNlZUzx8r1P2AK+/vyiDxVIEGhk5E8masy9Ww2HOvNnvW1tzgGEq
+	 lQZIhj8Ok6vnw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lInWmTDo6qJ8; Tue, 29 Nov 2022 16:23:37 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id qpYqQzbxoqiI; Tue, 29 Nov 2022 16:29:57 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F001160597;
-	Tue, 29 Nov 2022 16:23:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F001160597
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id C9E2F1BF4D7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 16:23:35 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 959E581E40;
+	Tue, 29 Nov 2022 16:29:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 959E581E40
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id EE0FA1BF39C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 02:00:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A39D3409EA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 16:23:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A39D3409EA
+ by smtp1.osuosl.org (Postfix) with ESMTP id C2ACC81750
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 02:00:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C2ACC81750
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 4xpt3c5rM2Js for <intel-wired-lan@lists.osuosl.org>;
- Tue, 29 Nov 2022 16:23:34 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id p8VltELtZ2AQ for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 29 Nov 2022 02:00:05 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 822F140B54
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 822F140B54
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 16:23:34 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 50956617A9;
- Tue, 29 Nov 2022 16:23:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84196C433B5;
- Tue, 29 Nov 2022 16:23:30 +0000 (UTC)
-Date: Tue, 29 Nov 2022 08:23:29 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Vincent MAILHOL <mailhol.vincent@wanadoo.fr>
-Message-ID: <20221129082329.2a97d67a@kernel.org>
-In-Reply-To: <CAMZ6RqJnxkDmMtXSvUF2aondZ_8BGYq4XL35Cg7Vxy9qqsfAeg@mail.gmail.com>
-References: <20221129000550.3833570-1-mailhol.vincent@wanadoo.fr>
- <20221129000550.3833570-3-mailhol.vincent@wanadoo.fr>
- <Y4XCCl6F+N2w+ngn@nanopsycho>
- <CAMZ6RqJnxkDmMtXSvUF2aondZ_8BGYq4XL35Cg7Vxy9qqsfAeg@mail.gmail.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0ABF4817FD
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0ABF4817FD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 02:00:04 +0000 (UTC)
+Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.57])
+ by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4NLlnK6dcyzJnfJ;
+ Tue, 29 Nov 2022 09:56:37 +0800 (CST)
+Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
+ dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Tue, 29 Nov 2022 09:59:59 +0800
+Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
+ (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Tue, 29 Nov
+ 2022 09:59:59 +0800
+From: Yang Yingliang <yangyingliang@huawei.com>
+To: <netdev@vger.kernel.org>, <intel-wired-lan@lists.osuosl.org>
+Date: Tue, 29 Nov 2022 09:57:48 +0800
+Message-ID: <20221129015748.2066603-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1669739012;
- bh=cGjM50Wf3CjbI5CufedpeRJgmUVOB+oAD7sMhicvcvc=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=iGGqHvYp3sWtlvL3jCszoyk0Brtf4U7s5IZ36y4/y1m554vmFunVA5ClffSXnH849
- yt1hdu1rUqoJE7r7VOV3tfT0J2smr71P3tQMbjnIRA8cMt+170myHsgSoVSucd0bYi
- OjMhYsiSqUsyk/SVaonvZnGvOho+Y94h9/yNkGZzPui9wIXrQpviLgKo+/UFhWOxIA
- M/mUJkkdbPaXcqsEf4mq/p9pO0g7uKimEwyyDHDcE4ff7z24vz0ap1DzqqCQyFv6Rh
- zI07kmFsHNsqft+khjFYFwCqfphkmhqIOyLb20egHw818U8HUNGAANKuqd6ofsW2wo
- F6ISh741HsxKg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=iGGqHvYp
-Subject: Re: [Intel-wired-lan] [PATCH net-next v5 2/4] net: devlink: remove
- devlink_info_driver_name_put()
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggpemm500007.china.huawei.com (7.185.36.183)
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Tue, 29 Nov 2022 16:29:52 +0000
+Subject: [Intel-wired-lan] [PATCH net v2] ixgbe: fix pci device refcount leak
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,47 +81,80 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Shijith Thotton <sthotton@marvell.com>,
- Simon Horman <simon.horman@corigine.com>, Kurt Kanzenbach <kurt@linutronix.de>,
- Eric Dumazet <edumazet@google.com>, Subbaraya Sundeep <sbhatta@marvell.com>,
- Ioana Ciornei <ioana.ciornei@nxp.com>, Ariel Elior <aelior@marvell.com>,
- drivers@pensando.io, Linu Cherian <lcherian@marvell.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, Leon Romanovsky <leon@kernel.org>,
- linux-rdma@vger.kernel.org, Shalom Toledo <shalomt@mellanox.com>,
- Srujana Challa <schalla@marvell.com>, Minghao Chi <chi.minghao@zte.com.cn>,
- Hao Chen <chenhao288@hisilicon.com>,
- Guangbin Huang <huangguangbin2@huawei.com>,
- Shannon Nelson <snelson@pensando.io>, intel-wired-lan@lists.osuosl.org,
- Vadim Fedorenko <vadfed@fb.com>, Paolo Abeni <pabeni@redhat.com>,
- Yisen Zhuang <yisen.zhuang@huawei.com>, Sunil Goutham <sgoutham@marvell.com>,
- Jiri Pirko <jiri@resnulli.us>, Ido Schimmel <idosch@nvidia.com>,
- Richard Cochran <richardcochran@gmail.com>, Arnaud Ebalard <arno@natisbad.org>,
- Jiri Pirko <jiri@mellanox.com>, Jiri Pirko <jiri@nvidia.com>,
- Michael Chan <michael.chan@broadcom.com>, Petr Machata <petrm@nvidia.com>,
- Salil Mehta <salil.mehta@huawei.com>,
- Dimitris Michailidis <dmichail@fungible.com>,
- Manish Chopra <manishc@marvell.com>, Boris Brezillon <bbrezillon@kernel.org>,
- netdev@vger.kernel.org, oss-drivers@corigine.com,
- Vadim Pasternak <vadimp@mellanox.com>, linux-kernel@vger.kernel.org,
- Geetha sowjanya <gakula@marvell.com>, Taras Chornyi <tchornyi@marvell.com>,
- hariprasad <hkelam@marvell.com>, linux-crypto@vger.kernel.org,
- Jonathan Lemon <jonathan.lemon@gmail.com>, Jerin Jacob <jerinj@marvell.com>,
- Vladimir Oltean <olteanv@gmail.com>, Saeed Mahameed <saeedm@nvidia.com>,
- "David S . Miller" <davem@davemloft.net>
+Cc: andrew@lunn.ch, f.fainelli@gmail.com, stephend@silicom-usa.com,
+ edumazet@google.com, jeffrey.t.kirsher@intel.com, kuba@kernel.org,
+ pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 29 Nov 2022 18:37:41 +0900 Vincent MAILHOL wrote:
-> > I agree with Jacob that this could be easily squashed to the previous
-> > patch. One way or another:  
-> 
-> OK. Let's have the majority decide: I will squash patches 1 and 2 and send a v6.
+As the comment of pci_get_domain_bus_and_slot() says, it
+returns a PCI device with refcount incremented, when finish
+using it, the caller must decrement the reference count by
+calling pci_dev_put().
 
-FTR I prefer v5, much easier to review the code when driver changes are
-separated from core changes. But doesn't matter.
+In ixgbe_get_first_secondary_devfn() and ixgbe_x550em_a_has_mii(),
+pci_dev_put() is called to avoid leak.
+
+Fixes: 8fa10ef01260 ("ixgbe: register a mdiobus")
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+v1 -> v2:
+  Introduce a local variable, and put pci_dev_put() after value checks.
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 24aa97f993ca..123dca9ce468 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -855,9 +855,11 @@ static struct pci_dev *ixgbe_get_first_secondary_devfn(unsigned int devfn)
+ 	rp_pdev = pci_get_domain_bus_and_slot(0, 0, devfn);
+ 	if (rp_pdev && rp_pdev->subordinate) {
+ 		bus = rp_pdev->subordinate->number;
++		pci_dev_put(rp_pdev);
+ 		return pci_get_domain_bus_and_slot(0, bus, 0);
+ 	}
+ 
++	pci_dev_put(rp_pdev);
+ 	return NULL;
+ }
+ 
+@@ -874,6 +876,7 @@ static bool ixgbe_x550em_a_has_mii(struct ixgbe_hw *hw)
+ 	struct ixgbe_adapter *adapter = hw->back;
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct pci_dev *func0_pdev;
++	bool has_mii = false;
+ 
+ 	/* For the C3000 family of SoCs (x550em_a) the internal ixgbe devices
+ 	 * are always downstream of root ports @ 0000:00:16.0 & 0000:00:17.0
+@@ -884,15 +887,16 @@ static bool ixgbe_x550em_a_has_mii(struct ixgbe_hw *hw)
+ 	func0_pdev = ixgbe_get_first_secondary_devfn(PCI_DEVFN(0x16, 0));
+ 	if (func0_pdev) {
+ 		if (func0_pdev == pdev)
+-			return true;
+-		else
+-			return false;
++			has_mii = true;
++		goto out;
+ 	}
+ 	func0_pdev = ixgbe_get_first_secondary_devfn(PCI_DEVFN(0x17, 0));
+ 	if (func0_pdev == pdev)
+-		return true;
++		has_mii = true;
+ 
+-	return false;
++out:
++	pci_dev_put(func0_pdev);
++	return has_mii;
+ }
+ 
+ /**
+-- 
+2.25.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
