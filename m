@@ -1,180 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABA68C4321E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Nov 2022 14:41:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6761BC47088
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Nov 2022 16:23:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3B87A4170B;
-	Tue, 29 Nov 2022 14:41:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3B87A4170B
+	by smtp3.osuosl.org (Postfix) with ESMTP id D61CA60F84;
+	Tue, 29 Nov 2022 16:23:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D61CA60F84
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669732873;
-	bh=EVIlWWwPVPyE6U9ntLCPDGSurFQTA/pIQuC57WNVmsA=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1669739017;
+	bh=8Be7YfSSuqidG8L6JXuqbvWyPH+6Ia0rSbTPtpmaQSY=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=kNlQ7bJ+YlQj3dUurO7ntN8NftXY59IItdsUOxjZkL0CzeMK5mUvfZvBMJYBsD+sc
-	 /ApsuT4nQZjHBOdy6B03ON7slI8b5AK18rpX3zx1Ae8LVGcQqABd1uDIvC8c6+/tXZ
-	 hF7auNeADgoyuKjr+8a5Iqvob8ZGfzUp+cKlZSW3qaZf3jo1DjS+/tZvO5yHBWUdIe
-	 kehHopF+HU4P8KF6lOhuc6fDN/Yn6QZe6VwoSF9bEQ3XX6PgbAksx85CwiEbE0R7sv
-	 mAo3N0fD7vQDLYQCKv2SdBwF8NnqAXzXja2fRhcBQelsh/RyR4GLb1kZa+oLQOtuAR
-	 6fAiim9e8FKHg==
+	b=BAITyNGMFL88dziWVPEm1Efbyjc5U3wNHROps1cSMWeFoTjdI4kB3l5X85U7HXC0g
+	 G8vkyVfJECj71ccR1tBdHZS4ujsL6jj5Is7ZH8mjx0gXNJWp+g5RzlPoEKgEh7g+yV
+	 mVdOnZFvF6lS131tbxB77FCibRhzXrzM33XHgdheLgcjW23Ing5kKiIEEROaI3ed0f
+	 Gp7XcQTyXGsXdjvTcvflGj+qS/p5CospTTEwJeYkjUTrQsx5T80Uak6ezkq8nz4c0m
+	 V0PsC5dpN6/qhXaK/3Pyq1UsOTZPPIjpHV2I7l1CznvbOPl5MEes/x856wctuyNaY8
+	 iKefyVaoBlgbw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IaFwSXJVLxvR; Tue, 29 Nov 2022 14:41:12 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lInWmTDo6qJ8; Tue, 29 Nov 2022 16:23:37 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BA1BF41714;
-	Tue, 29 Nov 2022 14:41:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BA1BF41714
+	by smtp3.osuosl.org (Postfix) with ESMTP id F001160597;
+	Tue, 29 Nov 2022 16:23:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F001160597
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2B3421BF429
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 14:41:10 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id C9E2F1BF4D7
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 16:23:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0498D40441
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 14:41:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0498D40441
+ by smtp2.osuosl.org (Postfix) with ESMTP id A39D3409EA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 16:23:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A39D3409EA
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id xFn_AdomQqnK for <intel-wired-lan@lists.osuosl.org>;
- Tue, 29 Nov 2022 14:41:06 +0000 (UTC)
+ with ESMTP id 4xpt3c5rM2Js for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 29 Nov 2022 16:23:34 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0B2D240195
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0B2D240195
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 14:41:05 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="294815911"
-X-IronPort-AV: E=Sophos;i="5.96,203,1665471600"; d="scan'208";a="294815911"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Nov 2022 06:41:05 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="674640886"
-X-IronPort-AV: E=Sophos;i="5.96,203,1665471600"; d="scan'208";a="674640886"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
- by orsmga008.jf.intel.com with ESMTP; 29 Nov 2022 06:41:04 -0800
-Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.16; Tue, 29 Nov 2022 06:41:04 -0800
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.16; Tue, 29 Nov 2022 06:41:04 -0800
-Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
- orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.16 via Frontend Transport; Tue, 29 Nov 2022 06:41:04 -0800
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.169)
- by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.16; Tue, 29 Nov 2022 06:41:04 -0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=g64pbgsveBKrg3orMOHiMrBf9669VNabJ06EE8xIwQoJ36DdLtwbez4SV6J5VPcQEIynRojRU0zW+QB21kc9TD5RNwMaSFpMydweXaE21Stg4UekIDuKLg8uvHyYyxOAB6Phjv7loZIRKu1zJqEG9zLPH724kszLNy0AQNHNkRQX/iwfFNfKwqYbiqPRMgHcBFnNfdvXP9cpnQK2hD2//wQ18QxDx5Sqp3wdexgKQFGlmk0vY68Vu/xvce73C1znR/eZzigEyUvMGuaqXRM8mnO0P94PZRkc4FUUq4MyKDCvdICt8CB3+2Roz1e/WA0o5P3XDqkm/WjWYMktfw8CxA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=qlEbECNwsTnRomQ+Ftq0Szhpr/yJNBjIjLMc+etdXDw=;
- b=Ch5DRvEXkvRfQrz+u7zb1Haut4FQcaLF3Is1Zm6CX2+xnqONRCUyjWVMAwsC5ic/YCdrL7punpmSYnSgAwcRV8mk3Ap3pP/Td+YaZxMNubjo0vq+MC3L1POBPidc94gFBlbJBDrHX7VyUDDcvk6PJP4BAZ/FMP+ebgfAa1AqFSnvLxzV2JUO33r2cX36l+zfOjiKuUfb6Pw13tKschLAIKCIKLQgZmVGDi7vvSShKEcs6jwOJ87SmN2jxxP0NhKw90quAtUynqHLBXVlwoNzHO7Jfoqufqz8eBasqbBxcLAQD5oowo/JE2aevWYZt+Em/N8it0Onawtvzq5vUB65Dw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from BYAPR11MB3367.namprd11.prod.outlook.com (2603:10b6:a03:79::29)
- by CY5PR11MB6115.namprd11.prod.outlook.com (2603:10b6:930:2c::19)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5791.27; Tue, 29 Nov
- 2022 14:41:02 +0000
-Received: from BYAPR11MB3367.namprd11.prod.outlook.com
- ([fe80::86b7:ffac:438a:5f44]) by BYAPR11MB3367.namprd11.prod.outlook.com
- ([fe80::86b7:ffac:438a:5f44%5]) with mapi id 15.20.5857.023; Tue, 29 Nov 2022
- 14:41:02 +0000
-From: "G, GurucharanX" <gurucharanx.g@intel.com>
-To: Akihiko Odaki <akihiko.odaki@daynix.com>
-Thread-Topic: [Intel-wired-lan] [PATCH net v4] igb: Allocate MSI-X vector when
- testing
-Thread-Index: AQHZANI65tHc8YIWGUO076whpgIGrK5V/1Nw
-Date: Tue, 29 Nov 2022 14:41:02 +0000
-Message-ID: <BYAPR11MB336772D78CBD1F38C8054636FC129@BYAPR11MB3367.namprd11.prod.outlook.com>
-References: <20221125133031.46845-1-akihiko.odaki@daynix.com>
-In-Reply-To: <20221125133031.46845-1-akihiko.odaki@daynix.com>
-Accept-Language: en-GB, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BYAPR11MB3367:EE_|CY5PR11MB6115:EE_
-x-ms-office365-filtering-correlation-id: 30e2224e-c6c0-42c9-e3ed-08dad217bd15
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: eOjZiefESzbhuxq+QTKnidxV8f895+SOn5gDtZG5DAjLXVQFU6LykD+PMBSDTKHL0fEfCiI6T01QacjgfaR8S3G0EgzkCYH1mRDpTqQGllck73HyT6uiDL1sYYER2w0Z7Z7O+VEA35/53n9a8tRyXZnX0RXEHXsv2yraAHJXumDR1d9KvvsuxO7T8gEojHFqPGVRQBooClKDY3DrQWcXtTjFQSUaddofWhKAvJiti9bjHlBA7x0k4dUXHC065vODR76wXvM4tEwX6hhEJmAsW2WQw88knuxdSUKj6Ptu7GAfHPkXLGbI2g2tY6hW2eU/hZSvlBA+wKqT1En7E82VOTNob5dUMuv/voV7jJSoDIGpLwDixSvosuwsudpNPQR66g+ODSYDxHcwt5YwnP4FRbVS8fkvL496+64nE2o9bZHENA1OzCEzeu6a1ElPey4k719gHYny4Tsu1YbyWBmZuI70Y+frJopUqmPjdnGViSU+8ATKGa3E9MbWa44E9jGgYXA8mRXWuyGikpU8A6CLVDGO6y7vGMhGWTpdQtBvM8Qbt7hwT0nDnPtAvZiuezxtXgn2qKh0P+ZAJeWTk7xA8fEwvYPh4WHe3ZYJtD6hMDv3D/+AWtaagCqPVQCy1MhCL8XRLMuBnTPF2WtrIaU+MNN4dkxM2F3BRTGd+I8YyuHZ5Na4U4VnU8a0MrxrCtYliUsua6YtXhya3yJJKNKLGQ==
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:BYAPR11MB3367.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230022)(346002)(136003)(39860400002)(376002)(366004)(396003)(451199015)(54906003)(83380400001)(186003)(2906002)(26005)(7696005)(6916009)(316002)(6506007)(9686003)(33656002)(478600001)(86362001)(55016003)(71200400001)(7416002)(64756008)(66556008)(8676002)(66476007)(5660300002)(66446008)(41300700001)(4326008)(52536014)(8936002)(76116006)(122000001)(82960400001)(38070700005)(66946007)(38100700002);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?LWttWkPrTwKoCpzoOydKaBURjzlzCAbFWe6sFp7thQgN4PWcGhEP3YoctK6P?=
- =?us-ascii?Q?xebrn3yOADgKWl0D169N9d6HMAHGZaPUqUcJGcJRhhPM7+uS7Wx4GoGy+9V4?=
- =?us-ascii?Q?CxJbszBlRWql1diBLbfdKUyGM/zE8LKhhZmrGCm3r5UIN1F3GyRKL/KHFFlF?=
- =?us-ascii?Q?8BL49KFqpReCS8OFW323iEzogCm92awx+Gh38xqaXclEknuz3JB1qN+kjCkC?=
- =?us-ascii?Q?BEt3kfgbvuxjW+lqZoKoW+S/rvvkrTRA/ZfSyZq/441OOTuTOs/g5UjggiR6?=
- =?us-ascii?Q?zv1PeXkDCGAKte9h6viUKV9rrlqRWocW4fyVMpjxOshgCDxTqBwiupnAx71Z?=
- =?us-ascii?Q?pV+ozurn5Xsxyw2aZgxzozwzFCuLxRduL6hu+XoxxT80QJECKu0WFger9iNL?=
- =?us-ascii?Q?p1wadBpPbmQMamNCA8Sh0FBUNyiWtaO5nVbexPhZHt5HdruUKBJHSJhnZYP/?=
- =?us-ascii?Q?i+VFre9Qg38XodzO11ONSN4V6gbiQjxESFWrXkGGrWFrdhHXafImUbINjWSg?=
- =?us-ascii?Q?g7QvK0lcDYSn83e1zALN/07NgA0Qbi0NZrZFwac3Ly11/tpUL6qgbOvcs30R?=
- =?us-ascii?Q?94paaNOBK8mxjwS73pp2X8txjp2ZPyIZ0UCKQFUmT3zNiu4Df2DzJep3WuKy?=
- =?us-ascii?Q?fbr4GGJdWForGVRRnBHRqWYQerQlo5vudCQgvExRTCiWUh2jDZGRGiRcahKQ?=
- =?us-ascii?Q?NX4iOouRrBn+Pn/NS7kmPUr4uzc6qqyDQq9lGwrzRAQDsLtOSIV5NiA0gqya?=
- =?us-ascii?Q?WPCFHIdMGuvXxTLnhMlfWW/osnA5AvY6gi692Diroiil+h3KxLLUG9VQmKQX?=
- =?us-ascii?Q?qlWSKJG5nQC/knnYx7S6hU6Qwiq5sV3o8EwB7QM8vPuvOOF3MyCoiI8HM/eN?=
- =?us-ascii?Q?HocAoYMtdb2KhuhUOz0u1VAn705DVFLC/UATt95fVtgu1KNhbAoYzpWXPqXa?=
- =?us-ascii?Q?QgqVJApvJrPCxBNdQaVZH9q1lMLiLmryumb+GvDkM9j0MLAkx1LzXg+DQCy+?=
- =?us-ascii?Q?5VfS6CR31WHzDtDziyWwF2D+NdS8HrKtb8at4FK9SHdc0fz5MlXBGS7pu+Rk?=
- =?us-ascii?Q?h5Ec7pN6WL06PZ+9IuSp+qILBWxKi6BkcKxWLBzeJz3CNrMgs260wEB3W/mk?=
- =?us-ascii?Q?IkSmPGQIFzyxGOpo7X0JRWTKN+8gau7t9MHf5jSwKEsL4YG43KlLGdSvIjTI?=
- =?us-ascii?Q?rM8C+oHUJi+5bOQ69S72dIwtBpyyvwtRnZADeQaapu8HXcXjFhzfCfh+7MrB?=
- =?us-ascii?Q?IkEBHceiZ2st4FABbYqMRHvKetD6tT/6Rz1rGE0ENmRIUn4ql6He0sfteWrC?=
- =?us-ascii?Q?srpayMMuqJpO5k7NV+Te5xr7Ogalbzq3Ouyw72ffMIZquDroxGkc0eMWu6ii?=
- =?us-ascii?Q?DphXJlEuhuM98Wg1tRsjxSbpPA9LKeoX4kiqF0ZA97hORatbJJsuvP7ySDMF?=
- =?us-ascii?Q?/z0esHMIy+zokUCzpq9X88m3RWDRxGUQ77FwL0Su6s4ToGFz99AIYfZyvi+m?=
- =?us-ascii?Q?G94NMCAQaVjjFAwih62utUCauPD9uqJZNKwm9VFO3TSrht5LOzbMmTWGpCjm?=
- =?us-ascii?Q?DS4cFckTG+zpJdixCZ/X7ZqwqnMbpr3fqzBjrl6K?=
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 822F140B54
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 822F140B54
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Nov 2022 16:23:34 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 50956617A9;
+ Tue, 29 Nov 2022 16:23:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84196C433B5;
+ Tue, 29 Nov 2022 16:23:30 +0000 (UTC)
+Date: Tue, 29 Nov 2022 08:23:29 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Vincent MAILHOL <mailhol.vincent@wanadoo.fr>
+Message-ID: <20221129082329.2a97d67a@kernel.org>
+In-Reply-To: <CAMZ6RqJnxkDmMtXSvUF2aondZ_8BGYq4XL35Cg7Vxy9qqsfAeg@mail.gmail.com>
+References: <20221129000550.3833570-1-mailhol.vincent@wanadoo.fr>
+ <20221129000550.3833570-3-mailhol.vincent@wanadoo.fr>
+ <Y4XCCl6F+N2w+ngn@nanopsycho>
+ <CAMZ6RqJnxkDmMtXSvUF2aondZ_8BGYq4XL35Cg7Vxy9qqsfAeg@mail.gmail.com>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB3367.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 30e2224e-c6c0-42c9-e3ed-08dad217bd15
-X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Nov 2022 14:41:02.4599 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: a5vXraSo2u0vqMTc9qvGdJk+X86J7wym8E6vite7ZNmMxZaNp4NhjMKF14Etp3eyW9CGBt+BBrMQDnWAKpSjhQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY5PR11MB6115
-X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1669732866; x=1701268866;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=Czjti7ZRgm4dDMJ2KAISr+athsk4Ebdq4ZcUByffXLg=;
- b=YO8aQJTKUK0qh0kWw7lUzsn7o/rhl70bzvxojLe9UNABNxv29k5xKgHM
- 5D71obSlGO2vqru0xYIi3uK2upQcbvSKwnQKY7L/J5qrzI+Egmw2tmGOY
- o7Z657ngjakJOp9S8iy69oa037xc5cPJKbgdkThhufFt9NFKuAaFEA7dg
- XqY4oKy3ucolrq185kQNcMyKqF0BHJsxFWDWdjESEQXrXmOUXth/fXkXF
- XQ3ekj42lDNjHi/MnTI4faORASu5Be5HuHKsFce4sIND7Gagtz/TGtpCo
- Qo9JJkg2WnLSwjw/lDO2+1CuXjZLNkT4BvA/wzMa5c+HA6VulNr3+jpKi
- A==;
+ d=kernel.org; s=k20201202; t=1669739012;
+ bh=cGjM50Wf3CjbI5CufedpeRJgmUVOB+oAD7sMhicvcvc=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=iGGqHvYp3sWtlvL3jCszoyk0Brtf4U7s5IZ36y4/y1m554vmFunVA5ClffSXnH849
+ yt1hdu1rUqoJE7r7VOV3tfT0J2smr71P3tQMbjnIRA8cMt+170myHsgSoVSucd0bYi
+ OjMhYsiSqUsyk/SVaonvZnGvOho+Y94h9/yNkGZzPui9wIXrQpviLgKo+/UFhWOxIA
+ M/mUJkkdbPaXcqsEf4mq/p9pO0g7uKimEwyyDHDcE4ff7z24vz0ap1DzqqCQyFv6Rh
+ zI07kmFsHNsqft+khjFYFwCqfphkmhqIOyLb20egHw818U8HUNGAANKuqd6ofsW2wo
+ F6ISh741HsxKg==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=YO8aQJTK
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net v4] igb: Allocate MSI-X vector
- when testing
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=iGGqHvYp
+Subject: Re: [Intel-wired-lan] [PATCH net-next v5 2/4] net: devlink: remove
+ devlink_info_driver_name_put()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -187,78 +92,47 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Yuri
- Benditovich <yuri.benditovich@daynix.com>, Eric Dumazet <edumazet@google.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- Yan Vugenfirer <yan@daynix.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: Andrew Lunn <andrew@lunn.ch>, Shijith Thotton <sthotton@marvell.com>,
+ Simon Horman <simon.horman@corigine.com>, Kurt Kanzenbach <kurt@linutronix.de>,
+ Eric Dumazet <edumazet@google.com>, Subbaraya Sundeep <sbhatta@marvell.com>,
+ Ioana Ciornei <ioana.ciornei@nxp.com>, Ariel Elior <aelior@marvell.com>,
+ drivers@pensando.io, Linu Cherian <lcherian@marvell.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, Leon Romanovsky <leon@kernel.org>,
+ linux-rdma@vger.kernel.org, Shalom Toledo <shalomt@mellanox.com>,
+ Srujana Challa <schalla@marvell.com>, Minghao Chi <chi.minghao@zte.com.cn>,
+ Hao Chen <chenhao288@hisilicon.com>,
+ Guangbin Huang <huangguangbin2@huawei.com>,
+ Shannon Nelson <snelson@pensando.io>, intel-wired-lan@lists.osuosl.org,
+ Vadim Fedorenko <vadfed@fb.com>, Paolo Abeni <pabeni@redhat.com>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>, Sunil Goutham <sgoutham@marvell.com>,
+ Jiri Pirko <jiri@resnulli.us>, Ido Schimmel <idosch@nvidia.com>,
+ Richard Cochran <richardcochran@gmail.com>, Arnaud Ebalard <arno@natisbad.org>,
+ Jiri Pirko <jiri@mellanox.com>, Jiri Pirko <jiri@nvidia.com>,
+ Michael Chan <michael.chan@broadcom.com>, Petr Machata <petrm@nvidia.com>,
+ Salil Mehta <salil.mehta@huawei.com>,
+ Dimitris Michailidis <dmichail@fungible.com>,
+ Manish Chopra <manishc@marvell.com>, Boris Brezillon <bbrezillon@kernel.org>,
+ netdev@vger.kernel.org, oss-drivers@corigine.com,
+ Vadim Pasternak <vadimp@mellanox.com>, linux-kernel@vger.kernel.org,
+ Geetha sowjanya <gakula@marvell.com>, Taras Chornyi <tchornyi@marvell.com>,
+ hariprasad <hkelam@marvell.com>, linux-crypto@vger.kernel.org,
+ Jonathan Lemon <jonathan.lemon@gmail.com>, Jerin Jacob <jerinj@marvell.com>,
+ Vladimir Oltean <olteanv@gmail.com>, Saeed Mahameed <saeedm@nvidia.com>,
+ "David S . Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+On Tue, 29 Nov 2022 18:37:41 +0900 Vincent MAILHOL wrote:
+> > I agree with Jacob that this could be easily squashed to the previous
+> > patch. One way or another:  
+> 
+> OK. Let's have the majority decide: I will squash patches 1 and 2 and send a v6.
 
-
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Akihiko Odaki
-> Sent: Friday, November 25, 2022 7:01 PM
-> Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; Yuri Benditovich
-> <yuri.benditovich@daynix.com>; Eric Dumazet <edumazet@google.com>;
-> Jakub Kicinski <kuba@kernel.org>; Yan Vugenfirer <yan@daynix.com>; intel-
-> wired-lan@lists.osuosl.org; Paolo Abeni <pabeni@redhat.com>; David S.
-> Miller <davem@davemloft.net>
-> Subject: [Intel-wired-lan] [PATCH net v4] igb: Allocate MSI-X vector when
-> testing
-> 
-> Without this change, the interrupt test fail with MSI-X environment:
-> 
-> $ sudo ethtool -t enp0s2 offline
-> [   43.921783] igb 0000:00:02.0: offline testing starting
-> [   44.855824] igb 0000:00:02.0 enp0s2: igb: enp0s2 NIC Link is Down
-> [   44.961249] igb 0000:00:02.0 enp0s2: igb: enp0s2 NIC Link is Up 1000 Mbps
-> Full Duplex, Flow Control: RX/TX
-> [   51.272202] igb 0000:00:02.0: testing shared interrupt
-> [   56.996975] igb 0000:00:02.0 enp0s2: igb: enp0s2 NIC Link is Up 1000 Mbps
-> Full Duplex, Flow Control: RX/TX
-> The test result is FAIL
-> The test extra info:
-> Register test  (offline)	 0
-> Eeprom test    (offline)	 0
-> Interrupt test (offline)	 4
-> Loopback test  (offline)	 0
-> Link test   (on/offline)	 0
-> 
-> Here, "4" means an expected interrupt was not delivered.
-> 
-> To fix this, route IRQs correctly to the first MSI-X vector by setting
-> IVAR_MISC. Also, set bit 0 of EIMS so that the vector will not be masked. The
-> interrupt test now runs properly with this change:
-> 
-> $ sudo ethtool -t enp0s2 offline
-> [   42.762985] igb 0000:00:02.0: offline testing starting
-> [   50.141967] igb 0000:00:02.0: testing shared interrupt
-> [   56.163957] igb 0000:00:02.0 enp0s2: igb: enp0s2 NIC Link is Up 1000 Mbps
-> Full Duplex, Flow Control: RX/TX
-> The test result is PASS
-> The test extra info:
-> Register test  (offline)	 0
-> Eeprom test    (offline)	 0
-> Interrupt test (offline)	 0
-> Loopback test  (offline)	 0
-> Link test   (on/offline)	 0
-> 
-> Fixes: 4eefa8f01314 ("igb: add single vector msi-x testing to interrupt test")
-> Signed-off-by: Akihiko Odaki <akihiko.odaki@daynix.com>
-> ---
-> V3 -> V4: Added Fixes: tag
-> 
->  drivers/net/ethernet/intel/igb/igb_ethtool.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+FTR I prefer v5, much easier to review the code when driver changes are
+separated from core changes. But doesn't matter.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
