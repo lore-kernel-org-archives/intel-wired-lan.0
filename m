@@ -1,88 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D5A8C352A1
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 30 Nov 2022 12:00:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3C67C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 30 Nov 2022 12:35:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 099CB402BC;
-	Wed, 30 Nov 2022 12:00:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 099CB402BC
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2666841578;
+	Wed, 30 Nov 2022 12:35:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2666841578
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1669809631;
-	bh=n5ekdy6xpfARCjVLiJqelZwUEI9C6XSRqAn+6i3WGQ0=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=SOMlgrABIlcOaAtcr/mmGmjxgS2ZuYA5woSmP+2jXtj0xHTQfEE45rr9JSYsR634U
-	 T/DC+L7wNaDPHq47I10fBNohLVOF/Op9Vm0Lziq2WboAE1vg+TDBtCROKhW/wlBb+E
-	 CByAfgk6UY5p3SOE924exiF0qg6o2Dp+XQTOnZsJ1bj0YGZdE1y1yzxpulMJUUG0gz
-	 vMdchrDHf+R2QgWlyLOVJybWE1MAOXPPy4xURkpiwLZphcjJ7iVKKvP5ZPuFOF0sqU
-	 MoVn8rZbQqk7IEpCBtG/n8G+HwQe6mb0fy6BStb9DpiBbmZAhnOGDD8+NpJu5qTgQp
-	 9iqe32wEyBqXA==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id baYT58xOAbUk; Wed, 30 Nov 2022 12:00:30 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 195D140338;
-	Wed, 30 Nov 2022 12:00:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 195D140338
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 1CCB41BF2FC
- for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Nov 2022 12:00:29 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C56524089F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Nov 2022 12:00:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C56524089F
+	s=default; t=1669811727;
+	bh=wlutla7pQSTS56X5HS7zjNxTXUBubc5khXArUgyL98M=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=WznxUlUgYVV/E67Jx2eUxRekdxoz1Cicl5QtSJBCR1iczQO4gWxo776kSvKbQpWCG
+	 vnZDveiYtpOqfkFaNf+t02dsBS0y/IxIHOkf3lmuIfHxfFOcnUdcL38GI62PCYZ9D/
+	 Pr2SMd+0QjGkL1MEkNperYzfNGJU0j5m3s+/rUVqeW+XUxSPHjPUgj9lcui7C+kKA5
+	 LGkn2YcMSvMQokOGsddGLiG5e2DC4N5e/7W++akmMl+G8M44RGLn/7Nk/AxrWVNuWK
+	 he10tIoMU/AWb23o3leK/IUcpmoDKxhQY08YNgArH8zmJE16amSb019er15MH56toB
+	 E6iiOXVIj+thQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id scDdVC7daA0L for <intel-wired-lan@lists.osuosl.org>;
- Wed, 30 Nov 2022 12:00:25 +0000 (UTC)
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 7QOh3PPodPwg; Wed, 30 Nov 2022 12:35:26 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id EF1B5415BF;
+	Wed, 30 Nov 2022 12:35:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF1B5415BF
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 4E05C1BF3E3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Nov 2022 12:35:24 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 27FC240377
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Nov 2022 12:35:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 27FC240377
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id bl7hn8PiQwv3 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 30 Nov 2022 12:35:23 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B3088406E0
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B3088406E0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Nov 2022 12:00:24 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="302981106"
-X-IronPort-AV: E=Sophos;i="5.96,206,1665471600"; d="scan'208";a="302981106"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Nov 2022 04:00:22 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="621858800"
-X-IronPort-AV: E=Sophos;i="5.96,206,1665471600"; d="scan'208";a="621858800"
-Received: from unknown (HELO ocsbesrhlrepo01.amr.corp.intel.com)
- ([10.237.94.20])
- by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 Nov 2022 04:00:16 -0800
-From: Radoslaw Tyl <radoslawx.tyl@intel.com>
-To: yangyicong@huawei.com
-Date: Wed, 30 Nov 2022 13:00:03 +0100
-Message-Id: <20221130120003.88695-1-radoslawx.tyl@intel.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <9f37e68c-e960-5188-f52a-4761866c37ad@huawei.com>
-References: <9f37e68c-e960-5188-f52a-4761866c37ad@huawei.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4486140121
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4486140121
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 30 Nov 2022 12:35:23 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="295080564"
+X-IronPort-AV: E=Sophos;i="5.96,206,1665471600"; d="scan'208";a="295080564"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 30 Nov 2022 04:35:21 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10546"; a="707631238"
+X-IronPort-AV: E=Sophos;i="5.96,206,1665471600"; d="scan'208";a="707631238"
+Received: from irvmail001.ir.intel.com ([10.43.11.63])
+ by fmsmga008.fm.intel.com with ESMTP; 30 Nov 2022 04:35:20 -0800
+Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
+ by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
+ 2AUCZIEK027695; Wed, 30 Nov 2022 12:35:18 GMT
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed, 30 Nov 2022 13:34:14 +0100
+Message-Id: <20221130123414.892879-1-marcin.szycik@linux.intel.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1669809624; x=1701345624;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=NngERSQQm2PI/lvOc14nEOde3ssUcI30Njv4YH5aweI=;
- b=CGTkpS0uD4rnNrLlSKLg91OXM64eMnCDyXy/l84SMLHNPXw6xpLBxU9p
- RGlq/YqcFqMnY9qPC7WwIqXOKbuvFENBIFaI7ifcj/xQE9dFJ5rJLT4bc
- NtvLvqGI3VTrFE/Eyqgf1A7TtbxR7wsTN7LWqJDbB7514zDhawPoF3Ilp
- O1alWl9OrmcxLQQLSvnebqaF0kuaFuQ6IR0l9ms/MhJBKK3ofr5T1cB+a
- 5zXv+R7U0iLUNrr8U2uQTzkB0nBDtEEeLyQwjOufd2609x5B6bmKDqJkq
- P437HMClIRy4pqToYbS/TGLGLCLv5bwzd5nfUdSKQfjgxIhHeRNYOnAWz
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1669811723; x=1701347723;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=btLG74tAby/hcJpBjoOqrJGVzSJlq5cHTtvHnTda1jE=;
+ b=OGG4UKaxCvb3wUFCtC9sRzYZcOeWClvlcnOGC/t+Mi6dQmD39g2bxa3u
+ UWrNBL0zDYn9cDfK0jXA8Q6BFaP5kcBG6SpxPsZtJgwEDR+TwjQmhZnsD
+ kU73mqNwm6uZtuEZzeGrHE9Vsaks+Rm3OOVXg+rR5pS1Z2EnSmHdJvJMf
+ KsqIk1Tc8298PpTQSjgxCezaRtuF5EYYSlgy/Wwm2+cLQwKIW0bnxTW5a
+ /4YV5QS/5FUtuOVzSzbH0tKXTAkk55kGEZt8Thw18UFnb8XV/U4SmLbS9
+ Kxyo1yDNy7myVucFyOQBArQeD0+kOrlXpMuKtkzjmL0SJqYnfmj601nMt
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=CGTkpS0u
-Subject: [Intel-wired-lan] [ISSUE] Cannot enable VF after remove/rescan
+ header.a=rsa-sha256 header.s=Intel header.b=OGG4UKax
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Do not use WQ_MEM_RECLAIM
+ flag for workqueue
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,42 +95,43 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, zhoulei154@h-partners.com, linuxarm@huawei.com,
- intel-wired-lan@lists.osuosl.org, yangyicong@hisilicon.com,
- linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: mustafa.ismail@intel.com, shiraz.saleem@intel.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-SGkgWWljb25nLAoKVkYgb2Zmc2V0IGRlcGVuZHMgb24gc2V0IG9mIEFSSUhlaXJhcmNoeSgrLy0p
-IGluIHRoZSBQQ0kgY29uZmlnLgpBZnRlciBQb3dlciBjeWNsZSB0aGlzIGJpdCBpcyBzZXQgdG8g
-KCspLiBXaGVuIHdlIGZvcmNlIHRoZSBwb3J0IHJlbW92YWwKCiAgICAjIGVjaG8gMSA+IC9zeXMv
-YnVzL3BjaS9kZXZpY2VzLzAwMDBcOjA0XDowMC4wL3JlbW92ZQoKYW5kIHBvcnQgcmVzY2FuCgog
-ICAgIyBlY2hvIDEgPiAvc3lzL2J1cy9wY2kvcmVzY2FuCgp0aGlzIGNhdXNlIHRoYXQgdGhlIEFS
-SUhpZXJhcmNoeSBpcyBzZXQgdG8gKC0pIGFuZCB0aGUgb2ZmZXQgaXMgc2V0IHRvIDM4NC4KTG9v
-ayBpbnRvIHRoZSAiSW50ZWzCriA4MjU5OSAxMCBHYkUgQ29udHJvbGxlciBEYXRhc2hlZXQiLApj
-aGFwdGVyIDcuMTAuMi42LjEuMSBBUkkgTW9kZS4gSW4gbW9kZSBub24tQVJJICIxIiBpcyBhZGRl
-ZCB0byB0aGUgYnVzIGFuZAp0aGF0IGNhdXNlIHlvdSd2ZSBnb3QgYW4gZXJyb3IuCgpEdXJpbmcg
-Ym9vdCBzZXF1ZW5jZSB3aGVuIGFsbCBwaHlzaWNhbCBmdW5jdGlvbiAoUEYpIGFyZSBpbml0aWFs
-aXplZCwKcGNpIGRyaXZlciBpbiBmaXJzdCBhdHRlbXB0IHNldCBBUkkgb24gdGhlIGZpcnN0IGVu
-Y291bnRlcmVkIFBGIGFuZCBpZ25vcmUKb3RoZXIuIFdoZW4gd2UgcmVtb3ZlIHRoYXQgZmlyc3Qg
-ZW5jb3VudGVyZWQgUEYgd2hpY2ggaGFzIEFSSSBlbmFibGVkCmluIGluaXRpYWxpemFpb24gc3Rh
-Z2UsIHBlcmZvcm1pbmcgcmVzY2FuIGNhdXNlcyB0aGF0IHRoZSBwY2kgZHJpdmVyIG9ubHkKdGFr
-ZSBpbnRvIGFjY291bnQgZXhpc3RpbmcgZWFybGllciBQRi4gSW4gcmVzdWx0IHBjaSBkcml2ZXIg
-ZG9lc24ndCBzZXQgQVJJCm9uIGFueSBvZiB0aGVtIGFuZCB0aGUgb2Zmc2V0IGlzIHNldCB0byAz
-ODQuCgoKICAgIHN0YXRpYyBpbnQgc3Jpb3ZfaW5pdChzdHJ1Y3QgcGNpX2RldiAqZGV2LCBpbnQg
-cG9zKQogICAgewogICAgICAgIGN0cmwgPSAwOwogICAgICAgIGxpc3RfZm9yX2VhY2hfZW50cnko
-cGRldiwgJmRldi0+YnVzLT5kZXZpY2VzLCBidXNfbGlzdCkKICAgICAgICAgICAgaWYgKHBkZXYt
-PmlzX3BoeXNmbikgICAgICA8LS0tLS0tCiAgICAgICAgICAgICAgICBnb3RvIGZvdW5kOwogICAg
-ICAgIHBkZXYgPSBOVUxMOwogICAgICAgIGlmIChwY2lfYXJpX2VuYWJsZWQoZGV2LT5idXMpKQog
-ICAgICAgICAgICBjdHJsIHw9IFBDSV9TUklPVl9DVFJMX0FSSTsKICAgIAogICAgZm91bmQ6CiAg
-ICAKICAgIC4uLgoKCkl0IGlzIG5vdCB0aGUgcHJvYmxlbSByZWxhdGVkIHRvIHRoZSBkZXZpY2Ug
-ZHJpdmVyLCBidXQgd2l0aCBwY2kgZHJpdmVyLAphcyBhIHdvcmthcm91bmQgeW91IG1heSB1c2Ug
-b25lIG9mIHRoZXNlIG9wdGlvbnM6CgoxLiByZW1vdmUgYWxsIFBGIGJlbG9uZ2luZyB0byBidXMs
-IGJlZm9yZSBhdHRlbXB0IHRvIHJlc2Nhbi4KMi4gZGlzYWJsZSBBUkkgaW4gZ3J1YiBhZGQgIm5v
-YXJpIiB0byB0aGUga2VybmVsIHBhcmFtZXRlcnMuCiAgICMgbm9hcmkgICAgICAgICAgIGRvIG5v
-dCB1c2UgUENJZSBBUkkuCgoKLS0KQlIsClJhZGVrCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCkludGVsLXdpcmVkLWxhbiBtYWlsaW5nIGxpc3QKSW50ZWwt
-d2lyZWQtbGFuQG9zdW9zbC5vcmcKaHR0cHM6Ly9saXN0cy5vc3Vvc2wub3JnL21haWxtYW4vbGlz
-dGluZm8vaW50ZWwtd2lyZWQtbGFuCg==
+When both ice and the irdma driver are loaded, a warning
+in check_flush_dependency is being triggered. This seems
+to be because of the ice driver workqueue is allocated with
+the WQ_MEM_RECLAIM flag, and the irdma one is not.
+
+Looking at the kernel documentation, it doesn't seem like
+the ice driver needs to use WQ_MEM_RECLAIM. Remove it.
+
+Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 69984fea7fce..d01d1073ffec 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5617,7 +5617,7 @@ static int __init ice_module_init(void)
+ 	pr_info("%s\n", ice_driver_string);
+ 	pr_info("%s\n", ice_copyright);
+ 
+-	ice_wq = alloc_workqueue("%s", WQ_MEM_RECLAIM, 0, KBUILD_MODNAME);
++	ice_wq = alloc_workqueue("%s", 0, 0, KBUILD_MODNAME);
+ 	if (!ice_wq) {
+ 		pr_err("Failed to create workqueue\n");
+ 		return -ENOMEM;
+-- 
+2.38.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
