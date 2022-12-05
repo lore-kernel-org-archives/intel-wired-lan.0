@@ -1,89 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EDFDC636F9
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Dec 2022 19:53:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A7E6C636F9
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Dec 2022 19:53:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C9FB660DF0;
-	Mon,  5 Dec 2022 19:53:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C9FB660DF0
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4794A4162D;
+	Mon,  5 Dec 2022 19:53:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4794A4162D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1670270002;
-	bh=0AGI8oV4qyJsUtUJyIRkL4T+evJiYz9wUc5NX7yF4Pw=;
+	s=default; t=1670270007;
+	bh=Ax/T6Ll7ErwBqv7RpJsNH6Djogr5yrq6FogDiRJgH2Q=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=3+DVCrd1uk7zZO/r+9X9Qza3b3UvkbUE70gF+u4Z65x41kuGj3uNMMKUxLQJdB+7D
-	 QUlHRLtZPkT6pVC+8wF8RAIX1VasbLmvSh2ybEp00Su5y0gG55//58TPLXtN10tnVv
-	 0jrbjabc3RVu/lJa3w9f8Cpr+6oIVjP5LsH0hBctXJZK6ZkEVSvkqnkFFRfmySato/
-	 WWkh4tmyuD1UjXGY2OCsfmaJFaLeUWJ7PMsSxyFuS1z49bXuCSR2GCxqmxjT+zNJvM
-	 THBb6rUlyrqv1djrWh4HOO/gytxsr35veLzsEr0jUJ2W+BEaiV8cepRDafFLEUi892
-	 1RQi/hSTPbWlw==
+	 From;
+	b=dc8UVYQHL8d6IbeXCqScdkZEkSk2nHGVyYMC5QJAIqJ4tH9YpEPEuw0g6kGh4hASF
+	 2s+N0eByVr7+x36A1mSDpT0U4geVkX1BGM61Wunz/Qq7dweTecz7j72Ih7G9PL1S1Y
+	 pKXGfv6ScLUOPBMZiRbkmSVa9X9DqG49Z4fHX/S7uELxDiONhXS9Rwlhee/Yz+V0dA
+	 weox4WJ5S2nioerxWYBYXk3R/tKqZnl2I5gqXQYTfm6p1G3wgazvGmyFhzw97SZ9pU
+	 GTSnWq23gvSdtuhQ7AgUiwSqix+HKSAxKj8UfK2QVl4xzrCZZzX8eqDCBiFkqHzaxN
+	 1THy61PGdG0/A==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id qHQVVnkbSiik; Mon,  5 Dec 2022 19:53:22 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id SjbSAlmJXT0B; Mon,  5 Dec 2022 19:53:26 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B330560E06;
-	Mon,  5 Dec 2022 19:53:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B330560E06
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 4883E1BF865
+	by smtp4.osuosl.org (Postfix) with ESMTP id 19D0341686;
+	Mon,  5 Dec 2022 19:53:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 19D0341686
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 49E5D1BF955
  for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 19:53:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D8EB5607E1
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 19:53:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D8EB5607E1
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2515340292
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 19:53:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2515340292
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 5nGwRHeAsbOd for <intel-wired-lan@lists.osuosl.org>;
- Mon,  5 Dec 2022 19:53:03 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id XBbbuJfGocok for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  5 Dec 2022 19:53:04 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 162DE60E06
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6F30240193
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 162DE60E06
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 19:53:03 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10552"; a="317592367"
-X-IronPort-AV: E=Sophos;i="5.96,220,1665471600"; d="scan'208";a="317592367"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6F30240193
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 19:53:04 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10552"; a="317592389"
+X-IronPort-AV: E=Sophos;i="5.96,220,1665471600"; d="scan'208";a="317592389"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2022 11:53:01 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10552"; a="709379280"
-X-IronPort-AV: E=Sophos;i="5.96,220,1665471600"; d="scan'208";a="709379280"
+ 05 Dec 2022 11:53:03 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10552"; a="709379315"
+X-IronPort-AV: E=Sophos;i="5.96,220,1665471600"; d="scan'208";a="709379315"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.7])
  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2022 11:53:00 -0800
+ 05 Dec 2022 11:53:03 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Mon,  5 Dec 2022 11:52:41 -0800
-Message-Id: <20221205195253.2475492-4-jacob.e.keller@intel.com>
+Date: Mon,  5 Dec 2022 11:52:49 -0800
+Message-Id: <20221205195253.2475492-12-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.1.420.g319605f8f00e
 In-Reply-To: <20221205195253.2475492-1-jacob.e.keller@intel.com>
 References: <20221205195253.2475492-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1670269983; x=1701805983;
+ t=1670269984; x=1701805984;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=f0MOR3hsxwDj70cS/H9yivlkiSvn7Xwcyhfsdr1W1ok=;
- b=LhbJcFHF9v3TnjUS/XHR/1TFedqY3gIHnsBrTVsYs0VsxKXrRyPJBbGp
- BFVVL+AU1UpnELRy7YID5D8o6tc7mizSjI8sixGBRspyK2kn6/lnVU+8O
- whyZ+ZMHffHA7baDrJ1d+TBk7Wkpdu9tsnGKW5+GbSlNSWk3BMwNVH8ii
- 5YYwadOEbZDmtOk3BAtCz7uMdwAx6cZJZ0nwVC92zCbau98aY26B4qnOZ
- gw1c3m83vI8lW0Mts4VImcS2sqKQydDDJvhxKQ8Kpc6ivbeDsLSJ6KoIa
- xSGI3k7Q0wp3Yg8mY5tyvbLPElaTcVeVxyXaFUimDBZvhlKEJf+xCFfNx
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=lkfwkeYeUTBdyyysbzjtmH7kKFqJ1IWXAc/+Jbkx0tM=;
+ b=bkEurt59im+B2ZXelkwJvnpa/DP5G3fQcrnb3hvaaFlxRyvbkqz+kiCE
+ aCuhnoFqb0bhwA4cGIilwJZ3GIVirCnEOuyCm1C8uzhYI/9Yxo9Y1Q6SM
+ 4kwdujq7Q7i9Sd5R8PEnHcnjQSWcDCB5Xspl1HDdG9anJxfMWf/Q5UOn1
+ 4souV1fzf4Ri/KsW3cKWs1Df/bkxG101GO+o6VQpabbnYNU/V24BmQWG9
+ PC8hzt189zLoKFcC/6io5wU+7vJDc7QNqFqz6H9zl7UHCvolw7McnoFFZ
+ F56d1V4hlAiQv1Q1WlHx3E1cgEiEWhLWGZiSmxlKlAHmUuFx6jB+8stah
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=LhbJcFHF
-Subject: [Intel-wired-lan] [PATCH net-next v3 03/15] ice: Reset TS memory
- for all quads
+ header.a=rsa-sha256 header.s=Intel header.b=bkEurt59
+Subject: [Intel-wired-lan] [PATCH net-next v3 11/15] ice: cleanup
+ allocations in ice_ptp_alloc_tx_tracker
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,165 +96,74 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Karol Kolacinski <karol.kolacinski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Karol Kolacinski <karol.kolacinski@intel.com>
+The ice_ptp_alloc_tx_tracker function must allocate the timestamp array and
+the bitmap for tracking the currently in use indexes. A future change is
+going to add yet another allocation to this function.
 
-In E822 products, the owner PF should reset memory for all quads, not
-only for the one where assigned lport is.
+If these allocations fail we need to ensure that we properly cleanup and
+ensure that the pointers in the ice_ptp_tx structure are NULL.
 
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Simplify this logic by allocating to local variables first. If any
+allocation fails, then free everything and exit. Only update the ice_ptp_tx
+structure if all allocations succeed.
+
+This ensures that we have no side effects on the Tx structure unless all
+allocations have succeeded. Thus, no code will see an invalid pointer and
+we don't need to re-assign NULL on cleanup.
+
+This is safe because kernel "free" functions are designed to be NULL safe
+and perform no action if passed a NULL pointer. Thus its safe to simply
+always call kfree or bitmap_free even if one of those pointers was NULL.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-No changes since v2.
+Changes since v2:
+* Context changes to account for change in ice_ptp_alloc_tx_tracker now
+  initializing spin lock last.
 
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 29 ++--------------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 38 +++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  2 ++
- 3 files changed, 42 insertions(+), 27 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 9539d2d37c5b..f93fa0273252 100644
+index dffcd50bac3f..fbafa82ea1ed 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1059,19 +1059,6 @@ static u64 ice_base_incval(struct ice_pf *pf)
- 	return incval;
- }
+@@ -794,17 +794,21 @@ static bool ice_ptp_tx_tstamp(struct ice_ptp_tx *tx)
+ static int
+ ice_ptp_alloc_tx_tracker(struct ice_ptp_tx *tx)
+ {
+-	tx->tstamps = kcalloc(tx->len, sizeof(*tx->tstamps), GFP_KERNEL);
+-	if (!tx->tstamps)
+-		return -ENOMEM;
++	struct ice_tx_tstamp *tstamps;
++	unsigned long *in_use;
++
++	tstamps = kcalloc(tx->len, sizeof(*tstamps), GFP_KERNEL);
++	in_use = bitmap_zalloc(tx->len, GFP_KERNEL);
++
++	if (!tstamps || !in_use) {
++		kfree(tstamps);
++		bitmap_free(in_use);
  
--/**
-- * ice_ptp_reset_ts_memory_quad - Reset timestamp memory for one quad
-- * @pf: The PF private data structure
-- * @quad: The quad (0-4)
-- */
--static void ice_ptp_reset_ts_memory_quad(struct ice_pf *pf, int quad)
--{
--	struct ice_hw *hw = &pf->hw;
--
--	ice_write_quad_reg_e822(hw, quad, Q_REG_TS_CTRL, Q_REG_TS_CTRL_M);
--	ice_write_quad_reg_e822(hw, quad, Q_REG_TS_CTRL, ~(u32)Q_REG_TS_CTRL_M);
--}
--
- /**
-  * ice_ptp_check_tx_fifo - Check whether Tx FIFO is in an OK state
-  * @port: PTP port for which Tx FIFO is checked
-@@ -1124,7 +1111,7 @@ static int ice_ptp_check_tx_fifo(struct ice_ptp_port *port)
- 		dev_dbg(ice_pf_to_dev(pf),
- 			"Port %d Tx FIFO still not empty; resetting quad %d\n",
- 			port->port_num, quad);
--		ice_ptp_reset_ts_memory_quad(pf, quad);
-+		ice_ptp_reset_ts_memory_quad_e822(hw, quad);
- 		port->tx_fifo_busy_cnt = FIFO_OK;
- 		return 0;
+-	tx->in_use = bitmap_zalloc(tx->len, GFP_KERNEL);
+-	if (!tx->in_use) {
+-		kfree(tx->tstamps);
+-		tx->tstamps = NULL;
+ 		return -ENOMEM;
  	}
-@@ -1370,18 +1357,6 @@ int ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
- 	return ice_ptp_port_phy_restart(ptp_port);
- }
  
--/**
-- * ice_ptp_reset_ts_memory - Reset timestamp memory for all quads
-- * @pf: The PF private data structure
-- */
--static void ice_ptp_reset_ts_memory(struct ice_pf *pf)
--{
--	int quad;
--
--	quad = pf->hw.port_info->lport / ICE_PORTS_PER_QUAD;
--	ice_ptp_reset_ts_memory_quad(pf, quad);
--}
--
- /**
-  * ice_ptp_tx_ena_intr - Enable or disable the Tx timestamp interrupt
-  * @pf: PF private structure
-@@ -1397,7 +1372,7 @@ static int ice_ptp_tx_ena_intr(struct ice_pf *pf, bool ena, u32 threshold)
- 	int quad;
- 	u32 val;
- 
--	ice_ptp_reset_ts_memory(pf);
-+	ice_ptp_reset_ts_memory(hw);
- 
- 	for (quad = 0; quad < ICE_MAX_QUAD; quad++) {
- 		err = ice_read_quad_reg_e822(hw, quad, Q_REG_TX_MEM_GBL_CFG,
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 242c4db65171..6c149b88c235 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -655,6 +655,32 @@ ice_clear_phy_tstamp_e822(struct ice_hw *hw, u8 quad, u8 idx)
- 	return 0;
- }
- 
-+/**
-+ * ice_ptp_reset_ts_memory_quad_e822 - Clear all timestamps from the quad block
-+ * @hw: pointer to the HW struct
-+ * @quad: the quad to read from
-+ *
-+ * Clear all timestamps from the PHY quad block that is shared between the
-+ * internal PHYs on the E822 devices.
-+ */
-+void ice_ptp_reset_ts_memory_quad_e822(struct ice_hw *hw, u8 quad)
-+{
-+	ice_write_quad_reg_e822(hw, quad, Q_REG_TS_CTRL, Q_REG_TS_CTRL_M);
-+	ice_write_quad_reg_e822(hw, quad, Q_REG_TS_CTRL, ~(u32)Q_REG_TS_CTRL_M);
-+}
-+
-+/**
-+ * ice_ptp_reset_ts_memory_e822 - Clear all timestamps from all quad blocks
-+ * @hw: pointer to the HW struct
-+ */
-+static void ice_ptp_reset_ts_memory_e822(struct ice_hw *hw)
-+{
-+	unsigned int quad;
-+
-+	for (quad = 0; quad < ICE_MAX_QUAD; quad++)
-+		ice_ptp_reset_ts_memory_quad_e822(hw, quad);
-+}
-+
- /**
-  * ice_read_cgu_reg_e822 - Read a CGU register
-  * @hw: pointer to the HW struct
-@@ -3247,6 +3273,18 @@ bool ice_is_pca9575_present(struct ice_hw *hw)
- 	return !status && handle;
- }
- 
-+/**
-+ * ice_ptp_reset_ts_memory - Reset timestamp memory for all blocks
-+ * @hw: pointer to the HW struct
-+ */
-+void ice_ptp_reset_ts_memory(struct ice_hw *hw)
-+{
-+	if (ice_is_e810(hw))
-+		return;
-+
-+	ice_ptp_reset_ts_memory_e822(hw);
-+}
-+
- /**
-  * ice_ptp_init_phc - Initialize PTP hardware clock
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index db4f57cb9ec9..b0cd73aaac6b 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -133,6 +133,7 @@ int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval);
- int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj);
- int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp);
- int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx);
-+void ice_ptp_reset_ts_memory(struct ice_hw *hw);
- int ice_ptp_init_phc(struct ice_hw *hw);
- 
- /* E822 family functions */
-@@ -141,6 +142,7 @@ int ice_write_phy_reg_e822(struct ice_hw *hw, u8 port, u16 offset, u32 val);
- int ice_read_quad_reg_e822(struct ice_hw *hw, u8 quad, u16 offset, u32 *val);
- int ice_write_quad_reg_e822(struct ice_hw *hw, u8 quad, u16 offset, u32 val);
- int ice_ptp_prep_port_adj_e822(struct ice_hw *hw, u8 port, s64 time);
-+void ice_ptp_reset_ts_memory_quad_e822(struct ice_hw *hw, u8 quad);
- 
- /**
-  * ice_e822_time_ref - Get the current TIME_REF from capabilities
++	tx->tstamps = tstamps;
++	tx->in_use = in_use;
+ 	tx->init = 1;
+ 	tx->link_down = 0;
+ 	tx->calibrating = 0;
 -- 
 2.38.1.420.g319605f8f00e
 
