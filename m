@@ -1,89 +1,192 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECAD9C4321E
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Dec 2022 19:54:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E72CC47089
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Dec 2022 23:10:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9619040292;
-	Mon,  5 Dec 2022 19:54:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9619040292
+	by smtp3.osuosl.org (Postfix) with ESMTP id 03FBB6059E;
+	Mon,  5 Dec 2022 23:10:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 03FBB6059E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1670270047;
-	bh=ZbdZsiCzEKMF86Nu707r+2K+dYzYXHXNwerSSWGlbWY=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1670281809;
+	bh=AgLfQVPmNOUIpPsU/CAPKq6RuKLPWd1tAtgv4cpu84M=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=m/g8G/PrpwFWkfBqh3qDGu9/j3SLdHsOjKhiJjGPODHVApduWAo5rR0BntU2xCO5Q
-	 GvO49J43mZC5X+XhLlGovc/tmXZ43U9W7rLSgZJPqdQ9I56FAxYEthK0zwP4MZbei8
-	 S0FhR5UdIdsyqQCq1uaV2h5gJEirtY/7QXKkmKJ2/tUyZoNFsLMKGqwzcZ+gyPN1TX
-	 SN2hr4jhLMcgYml2kFYtpcx91tmu9JT7GQRe8slgYBzgnJGk0adkhiM+tpi4uNECnv
-	 5lhRNrU86oC3C3i2teRcsazb43nLq98xrzj1msCiDg3ePM64KkckWy6TO/H0V+eBfm
-	 UgOE94512jw+Q==
+	b=B8Wm+vVmIYQCadb4ekajB0qMusA7XIha88dnPPFagIZztau0pIMQGok3d/LeQAvJF
+	 WRaQdb68mX/wdL30PPa4gyeIW94651r5WXcVF4l3h07nA6aQVscftCI7LY5WgNW254
+	 7B+tXpKGTaZBsaIVi5eRjRtTwQ4kcRUxm8ieq20fPQDKMD7rcHSdYMphn0Dabbupqn
+	 i3vLjvcKH7VzSEKfQBKnUagDKEHOSVPPgmD3PNASqJ6ECQ2+5W14yRc44QOxT4r2T2
+	 n2zSuWCF76EbTLeNs8AAO3fUTpCmmb+ysk16Ks0tZ1LYXK7ZMr6kXxofS0BkT5WKan
+	 UpicWxjC5Vrig==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id dbvMbevxuuqX; Mon,  5 Dec 2022 23:10:08 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id F03BF606AA;
+	Mon,  5 Dec 2022 23:10:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F03BF606AA
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 818871BF2EB
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 23:10:06 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 52305404DB
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 23:10:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 52305404DB
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id nZwYtUbFEDOA; Mon,  5 Dec 2022 19:54:06 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 0D5834044D;
-	Mon,  5 Dec 2022 19:54:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0D5834044D
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 7EF251BF3EF
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 19:53:11 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 34B6B818D0
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 19:53:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 34B6B818D0
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lf1QGWyEAvqs for <intel-wired-lan@lists.osuosl.org>;
- Mon,  5 Dec 2022 19:53:05 +0000 (UTC)
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 9wMGH0A5sZsa for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  5 Dec 2022 23:10:05 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 82D66817B5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1AA4F40199
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 82D66817B5
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 19:53:05 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10552"; a="317592401"
-X-IronPort-AV: E=Sophos;i="5.96,220,1665471600"; d="scan'208";a="317592401"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1AA4F40199
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Dec 2022 23:10:05 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10552"; a="317628180"
+X-IronPort-AV: E=Sophos;i="5.96,220,1665471600"; d="scan'208";a="317628180"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2022 11:53:04 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10552"; a="709379327"
-X-IronPort-AV: E=Sophos;i="5.96,220,1665471600"; d="scan'208";a="709379327"
-Received: from jekeller-desk.amr.corp.intel.com (HELO
- jekeller-desk.jekeller.internal) ([10.166.241.7])
- by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2022 11:53:04 -0800
-From: Jacob Keller <jacob.e.keller@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Mon,  5 Dec 2022 11:52:52 -0800
-Message-Id: <20221205195253.2475492-15-jacob.e.keller@intel.com>
-X-Mailer: git-send-email 2.38.1.420.g319605f8f00e
-In-Reply-To: <20221205195253.2475492-1-jacob.e.keller@intel.com>
-References: <20221205195253.2475492-1-jacob.e.keller@intel.com>
+ 05 Dec 2022 15:10:04 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10552"; a="974859851"
+X-IronPort-AV: E=Sophos;i="5.96,220,1665471600"; d="scan'208";a="974859851"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+ by fmsmga005.fm.intel.com with ESMTP; 05 Dec 2022 15:09:47 -0800
+Received: from orsmsx612.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.16; Mon, 5 Dec 2022 15:09:46 -0800
+Received: from orsmsx603.amr.corp.intel.com (10.22.229.16) by
+ ORSMSX612.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.16; Mon, 5 Dec 2022 15:09:46 -0800
+Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
+ orsmsx603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.16 via Frontend Transport; Mon, 5 Dec 2022 15:09:46 -0800
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (104.47.70.104)
+ by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.16; Mon, 5 Dec 2022 15:09:46 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=JkG8NAoeB/HsCNUYE1YFbIWpka9VroKazcWn95O4V/U54M8FC1PhxKNXk5ag8v+FVtsPU/2Prv2e0bd2Xz5cWi1KXkag1Sx0LA2RaYj5FUXluvq2kRsz4BVQPNC+F24CWWbKLqxriGakT/oghGsC1C/gp52q1MLK4cowiTk+/yVMh+QUDfPQ+5dyrDiQin+fck/qFZB99jrL+CH/qqPa6sxe+hMl00tr1SzvfudB2q+kbrbpa3S+suPhjj8f0b9tJKNERnRkHNeTWf7yyDPQ5sC7wBReZ2VzfCkj6QXTYqcqYVhoFGTR78NRM6wofhEGyvPrjW00ZFn6rbW7eSY29A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=rjAc0xauke5YbNykaOX02wyOYTtmaCRK5yfvG/+IYfM=;
+ b=jSlrpHR4ykftjvg6sFryzR9I8rvhaqPKV4yrsbVqpXFSpiEBsaQpYGO9DgoD8sF6sTd1Ey4g+2iFd8yzji0E7mPmZHlN9XZubyQWxJfCBBrqCfq+qdd/cUwsdRiB1ihPfKUqzIcLEjgKBgrMXYnDCbYwwXLew8A3oV1Fp3AhEjGwRdD+5iVqd5S6V0OBnt8/QrkwXg68N6hyiXgzR87QTIK+6B71Ul4NmnOHgrHcVnzldfcAI+TqZS1MEh4FTa0GN/4noCFo+sTW7Q+fq52gtcOQixmf9GXTctyoqU/cp95uA5gP1bekEWjhH8FpZXatpfq/qfIArTryZYhrXh9IAg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from SN6PR11MB3229.namprd11.prod.outlook.com (2603:10b6:805:ba::28)
+ by SA2PR11MB4889.namprd11.prod.outlook.com (2603:10b6:806:110::8)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5880.13; Mon, 5 Dec
+ 2022 23:09:44 +0000
+Received: from SN6PR11MB3229.namprd11.prod.outlook.com
+ ([fe80::933:90f8:7128:f1c5]) by SN6PR11MB3229.namprd11.prod.outlook.com
+ ([fe80::933:90f8:7128:f1c5%5]) with mapi id 15.20.5857.023; Mon, 5 Dec 2022
+ 23:09:44 +0000
+Message-ID: <68320104-0a05-782e-f083-575f43428aa8@intel.com>
+Date: Mon, 5 Dec 2022 15:09:41 -0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.1
+To: Mateusz Palczewski <mateusz.palczewski@intel.com>,
+ <intel-wired-lan@lists.osuosl.org>, Maciej Fijalkowski
+ <maciej.fijalkowski@intel.com>, <bjorn@kernel.org>, "Karlsson, Magnus"
+ <magnus.karlsson@intel.com>
+References: <20221205123932.470119-1-mateusz.palczewski@intel.com>
+Content-Language: en-US
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+In-Reply-To: <20221205123932.470119-1-mateusz.palczewski@intel.com>
+X-ClientProxiedBy: MW4P221CA0009.NAMP221.PROD.OUTLOOK.COM
+ (2603:10b6:303:8b::14) To SN6PR11MB3229.namprd11.prod.outlook.com
+ (2603:10b6:805:ba::28)
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN6PR11MB3229:EE_|SA2PR11MB4889:EE_
+X-MS-Office365-Filtering-Correlation-Id: e4faf565-16ce-4783-90b6-08dad715cbe3
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: igO1WF2Zy+rdHR2qKemQzpeggwJM+7RfcnD/Q0eA6Wx0oIatJjikptu/b4wvuRxigYboKjOwQbVZr8CVeeMuz1o6vUiUoDrdkU7dnlrsP7Seg0CzMobJde437jmXdp8DHO/OmA5o+2GHMECoUBmzGG0WNNqus/Pq6OnQFJrJ7hccMSK/830HtqKIb2G1pzJsNbs3LvCDuZCWtYw9dz139z+tyNHx0l5Yd2/x5Rnq5lgrsPZTSemzyukmwCoj5i2YB819uF26F5wiPO4v7JuOLeJos+9wuG9WxLUuTSLb6d7dTJ6fErqlnHL6cQ0v+Xxb3nm/mlSDcZzKGkyxWX4ghZ8MSS0ayoNCoybOeOXVkQ85PDJ/nrcTOX1cimFSXdz/uaIDHc6ge0jmiYe2CTbCDeoUlV/Yak3ED0NhTUph5G1TCerFREsooeLTAH/9oDE0ZinHnCbOsnHYuoiMwZq7fb1F8Z1pfbP+NpJHwBg2LEHEwCfnZqIE8x/DQcovl4ZC4NW9Y/IgehSZbgsB/U4gg2UEsed81482olAjqES/Ic0HjJ01htyGakhdi73vA1nNAtn4jcNsylZV/ovjQinGIzjrj60PpaRGpj8cM4HafICnzZ+skjtqfi4gxRacPfAnXMKMj5tc2QiYXHyiGhllWdTcmkZgK7HomBUw+83E3jxON4G4BOiDm1cjpP47L9AC3MwF6fF/r5/t0RzZsd58YBpVXlwJWCmyabLC909UoZ5LWqRlzo8LRRoe0gafuz7SJ0vgZ4KERkj5hu1uKGuWaQ==
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SN6PR11MB3229.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230022)(366004)(136003)(376002)(346002)(39860400002)(396003)(451199015)(6666004)(107886003)(53546011)(6506007)(26005)(186003)(83380400001)(2616005)(6486002)(66556008)(38100700002)(41300700001)(86362001)(66476007)(8676002)(4326008)(66946007)(8936002)(110136005)(966005)(316002)(82960400001)(5660300002)(478600001)(31686004)(6512007)(6636002)(31696002)(36756003)(2906002)(43740500002)(45980500001);
+ DIR:OUT; SFP:1102; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?OEJUdWt2VzQ2UTJ5S1gyL3BSdk1CcTA5bGRXbGpUT1NLc3gya0FheEllMTZm?=
+ =?utf-8?B?aEo0RitYQ1RBN2xsWnFSTmxzbnNpVnRoZ2dCWjY3NjZzMFB6bEk0d1IxR1N2?=
+ =?utf-8?B?VmZTcDI1YWJLbCswNStmbExubG10MW1HNzRLNWFKY25SdTVXejhKekZCcVNB?=
+ =?utf-8?B?SCtnc1VoUWl6TDRKdUxNaVBIaVpvZDNaaGhNWlBNbkxXSXFQbVRJR0FYM0Nm?=
+ =?utf-8?B?SUZ6dlBML2h2NGJscmsvQlJpZ0tJenBkQWYwUXF3SEplNDBUYlRaRTA5Kytr?=
+ =?utf-8?B?WWRacHVRTnhFRVdSMWg4SmdoV0lsNE92c3ZLenNBMFg2dFZhalNVT1c2dXpv?=
+ =?utf-8?B?RWlZMUJLM0JjYTNiSGJycjB0ekVBWmNOaG5tVHUyTytKdXdqVWMwSUlFVDds?=
+ =?utf-8?B?LzNQb0owc2t1MGpkZ0t0eWhad3AxNXE1T0NFRDVBSXVSaDFMVnRxWFRvL1dz?=
+ =?utf-8?B?ZGJmSXRMMHBrTEgzYzVNbjU0N05IYnY4UFUyVno1YzZ1UFp2T1F1SHIzdWNl?=
+ =?utf-8?B?ZmRQMVRkVVp2YjBKRk9TZEZxWU51Q0hUd3V0QnZqblR6M3dDeis1bzVSN3dK?=
+ =?utf-8?B?WGZDRkE5TkxrU2pQZGpzUFZuWmpZZkE5anJ6YTFFSEhlS2E2QVhWd1FLdkNv?=
+ =?utf-8?B?ZUFuMmNSNVFQVE50bVEra2ZXYTVpclBJd1UyVVBuenlmWGNtZzNNS1A2MHpn?=
+ =?utf-8?B?SHBHejJkcGJ0cnJ4eC9vdVZlY3ZYQm5meksxUStod0RRRFQvamkrM2ZScW95?=
+ =?utf-8?B?TnA3UXRHTDd4SWN3Y3N0QTU1VDRyTTk4QUdMLzQxZU0wMmdmSWo0cENlUkg5?=
+ =?utf-8?B?MVRCVHU2bG4xd1pvLzExS25iNEdPUzROdUxsUU16LzArS1NOa3JmRVFPdjds?=
+ =?utf-8?B?dkhKbWUwVFZEVit1RTNIZ3RoKzBQWGVUNnlRWkNPa2t0SmptSGdtOVdoOVB3?=
+ =?utf-8?B?U2NXRmFnM2x0ZkhNSFFLK2o2L1RCSnNCSGxweTBRekJRN0Q3SzVFNHM5dXZi?=
+ =?utf-8?B?NWpZMmZDZzNVUmVYK0M1ZFgxM0M4UjNEWHlNc0s1VUxBcGEyV21ybC9tNDZx?=
+ =?utf-8?B?RFBGYXNlVFkzU3JFMGJSTGtJMDlTOE93T1ZZTmdrcHBMc1ZKS2NtRTEvOVJM?=
+ =?utf-8?B?a3RKbmttYUdqdWhia2pYNHA5SkllbnZQRVFuWkhTYXZRT3VmSjNadWhIeGRR?=
+ =?utf-8?B?a3RraW5sWFR6YmtFOVMzOW90bHoyUlpKeE9KTWl6S3F6czAzc2tLVGhNZzM5?=
+ =?utf-8?B?VVFtMlBNditjT3daelZPbkJ4cW9QU25zL0NIL2JTcjlQTGs0dllLZGJnZjg5?=
+ =?utf-8?B?SFR5TGRFT0lYemZKVStFTE5CTGtLcVh3Uzk5TzBMUUlPS2lReXJzc1psaEJ2?=
+ =?utf-8?B?WjdteDh1c2FUYlIyRHE0STV4aDk2M1QvS0NjRnFOTE5BYkZZVHI5SElNSzR2?=
+ =?utf-8?B?ZkRkcW1PZWd2TUFBT0d4TDdTam1DWWFEZGhiTUptb1RNcjlnbFowR21wVlU0?=
+ =?utf-8?B?ZHlWNll6ZmxFRXFqVGhVNEZhRHZ0WjN3ZVQrc04vZ2JDa01XNnRJSDZMRzg1?=
+ =?utf-8?B?ZjhJNGlhdGFMUllXTGVDeS85ejFvdzA5MEdaaSt2UVhUOHRYWUxlMTFhTnZ6?=
+ =?utf-8?B?eTNna3FSaEYvUFUxNjN3TC9JaU9TV2REWisrdTlMSDVGZnY5T1FKZmtCc3lm?=
+ =?utf-8?B?MVl2dGlsclpLQjlKeGV1UElTRWU2eDJHK1NDOFpRRHQvRStVV0NnMWV5L0xl?=
+ =?utf-8?B?WVZsVTFYMnIzZ3dMemNJWW5LZm1TRnJWT1FDaUJDYzgwT2tFeSt5Q2tselhZ?=
+ =?utf-8?B?K1VGK0NqU1FJemE1L1ovNy9Fb0tTeUdRRWJCRVl1TnRyWWhjVzVHTkJrb1dI?=
+ =?utf-8?B?MDVjb3hTRmZzQkpOaloybGVWenZDSVNUWVhXWklSdWVkRTkrSm0wVFhXenQx?=
+ =?utf-8?B?anFSYVh1V0lYU1M4K2paTmpVdlJ1K2xveUNlWC84Y0daSGVRY05HYkt1cU8z?=
+ =?utf-8?B?YnpXeXIvWklpV3dRMmoxUUN1Y1lqekVxVHhKSGIyeXJncWxwOE44U1RqWW94?=
+ =?utf-8?B?T3VZbFlsTTc3K2tnVFM2QnM0YWU5M21FRElvWUJHWmNpcGtLL2M5RlRCNmdu?=
+ =?utf-8?B?T3pSSExxYVUxdkd0RWVoUlAyMkF1bkNieTd5c05uOFgwUGJQS2w2cnlUMFpl?=
+ =?utf-8?B?alE9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: e4faf565-16ce-4783-90b6-08dad715cbe3
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR11MB3229.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Dec 2022 23:09:44.3038 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: gkwomRRitSSLmKAkXnXg6TkDmn+n//DXndtFUqRaFwN79CR3aS3KVzNA8Wy1FLFcpJ2GhFFLBfWbluydt7+KA+bOm2k7aQdEkguWbPySXL0=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA2PR11MB4889
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1670269985; x=1701805985;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=JV3s8IrvRBzVQG2K6F48OO9DjF8BtQG40nUSgwMHwiI=;
- b=JhO0L1raYkBo5rIuL0K2x6xDC1hMmVZ/Tj8iiGPCyiDZ2iUutT5BrUwi
- JHeOpyT8SNRGjr0hrl0B/v2dOsfA5OYGeY1PBztj8iLnbTK+S1e4XHu//
- Zw0g8Zi8DvXMb7w8M5u404fLtWk9C0Vz5j6B+ELHadZBbyAi9gpxh/StF
- 3BJ4azIl+Wv+v6z00bw0qtStn70GQKIFA5vpPlE7TJqhkaZc/YxNVl06s
- vIG/2F/YwJ686XIjqLs5QDvnkmps47DdBbHN+ir6qT0RNDNsnj2+5YIDH
- tKln3iWjQ9ErVAy5r2/FurIf+j71pBxXdrxrqEzYG5V6+EbbbFnxvMhVv
+ t=1670281805; x=1701817805;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=FlEXjWywoyQOvtEdkqqSIq0GjtWVegQT14sbDYzRp90=;
+ b=jgKMkEwr0o3J5Tq+21hdwF83BokdENP53sdCtNIAOkBGVJSP3WcOtoqQ
+ cwgS2CYCDIUTObf7/sRXrn0CvpFT7wR6qJkvU4TUr69ntbo7LhP6CLe+D
+ uZkS4sLjRcW4OM07X4B8wNulu+2DyKKtW2grxN4S7d+r+Hga5sJcnFI69
+ JtACRl3GRt2ZTswESvdV7OQzs3nb/yMf+kYyEIf7LaIueLIM7335YfiOF
+ 5Mg3xoDSgO0WMGbpZE/e9WENjbbOg1jwztSrJCLDoayyVrn7K8QYI6+Q2
+ 4fscyP9S4KZwwYB9oD3A4o2I1XYaI9zFNEdwt+GfEuuzwApg27gEaoC4P
  w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=JhO0L1ra
-Subject: [Intel-wired-lan] [PATCH net-next v3 14/15] ice: make Tx and Rx
- vernier offset calibration independent
+ header.a=rsa-sha256 header.s=Intel header.b=jgKMkEwr
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net v2] i40e: Fix the inability to
+ attach XDP program on downed interface
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,448 +199,118 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Siddaraju DH <siddaraju.dh@intel.com>
-Content-Type: text/plain; charset="us-ascii"
+Cc: "Staszewski, BartoszX" <bartoszx.staszewski@intel.com>
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Siddaraju DH <siddaraju.dh@intel.com>
++ Maciej, Bjorn, and Magnus as I presume this is the update to this patch
 
-The Tx and Rx calibration and timestamp generation blocks are independent.
-However, the ice driver waits until both blocks are ready before
-configuring either block.
+https://lore.kernel.org/netdev/Y3OFmgLa56rwVQ4j@boxer/
 
-This can result in delay of configuring one block because we have not yet
-received a packet in the other block.
 
-There is no reason to wait to finish programming Tx just because we haven't
-received a packet. Similarly there is no reason to wait to program Rx just
-because we haven't transmitted a packet.
+On 12/5/2022 4:39 AM, Mateusz Palczewski wrote:
+> From: "Staszewski, BartoszX" <bartoszx.staszewski@intel.com>
 
-Instead of checking both offset status before programming either block,
-refactor the ice_phy_cfg_tx_offset_e822 and ice_phy_cfg_rx_offset_e822
-functions so that they perform their own offset status checks.
-Additionally, make them also check the offset ready bit to determine if
-the offset values have already been programmed.
+This is incorrect; first name then last name, no 'X'.
 
-Call the individual configure functions directly in
-ice_ptp_wait_for_offset_valid. The functions will now correctly check
-status, and program the offsets if ready. Once the offset is programmed,
-the functions will exit quickly after just checking the offset ready
-register.
-
-Remove the ice_phy_calc_vernier_e822 in ice_ptp_hw.c, as well as the offset
-valid check functions in ice_ptp.c entirely as they are no longer
-necessary.
-
-With this change, the Tx and Rx blocks will each be enabled as soon as
-possible without waiting for the other block to complete calibration. This
-can enable timestamps faster in setups which have a low rate of transmitted
-or received packets. In particular, it can stop a situation where one port
-never receives traffic, and thus never finishes calibration of the Tx
-block, resulting in continuous faults reported by the ptp4l daemon
-application.
-
-Signed-off-by: Siddaraju DH <siddaraju.dh@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
-No changes since v2.
-
- drivers/net/ethernet/intel/ice/ice_ptp.c    | 128 ++++---------------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 133 ++++++++++----------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |   3 +-
- 3 files changed, 91 insertions(+), 173 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index e383dd7f0caf..b1cc1f45e419 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1219,132 +1219,46 @@ static int ice_ptp_check_tx_fifo(struct ice_ptp_port *port)
- }
- 
- /**
-- * ice_ptp_check_tx_offset_valid - Check if the Tx PHY offset is valid
-- * @port: the PTP port to check
-- *
-- * Checks whether the Tx offset for the PHY associated with this port is
-- * valid. Returns 0 if the offset is valid, and a non-zero error code if it is
-- * not.
-- */
--static int ice_ptp_check_tx_offset_valid(struct ice_ptp_port *port)
--{
--	struct ice_pf *pf = ptp_port_to_pf(port);
--	struct device *dev = ice_pf_to_dev(pf);
--	struct ice_hw *hw = &pf->hw;
--	u32 val;
--	int err;
--
--	err = ice_ptp_check_tx_fifo(port);
--	if (err)
--		return err;
--
--	err = ice_read_phy_reg_e822(hw, port->port_num, P_REG_TX_OV_STATUS,
--				    &val);
--	if (err) {
--		dev_err(dev, "Failed to read TX_OV_STATUS for port %d, err %d\n",
--			port->port_num, err);
--		return -EAGAIN;
--	}
--
--	if (!(val & P_REG_TX_OV_STATUS_OV_M))
--		return -EAGAIN;
--
--	return 0;
--}
--
--/**
-- * ice_ptp_check_rx_offset_valid - Check if the Rx PHY offset is valid
-- * @port: the PTP port to check
-- *
-- * Checks whether the Rx offset for the PHY associated with this port is
-- * valid. Returns 0 if the offset is valid, and a non-zero error code if it is
-- * not.
-- */
--static int ice_ptp_check_rx_offset_valid(struct ice_ptp_port *port)
--{
--	struct ice_pf *pf = ptp_port_to_pf(port);
--	struct device *dev = ice_pf_to_dev(pf);
--	struct ice_hw *hw = &pf->hw;
--	int err;
--	u32 val;
--
--	err = ice_read_phy_reg_e822(hw, port->port_num, P_REG_RX_OV_STATUS,
--				    &val);
--	if (err) {
--		dev_err(dev, "Failed to read RX_OV_STATUS for port %d, err %d\n",
--			port->port_num, err);
--		return err;
--	}
--
--	if (!(val & P_REG_RX_OV_STATUS_OV_M))
--		return -EAGAIN;
--
--	return 0;
--}
--
--/**
-- * ice_ptp_check_offset_valid - Check port offset valid bit
-- * @port: Port for which offset valid bit is checked
-- *
-- * Returns 0 if both Tx and Rx offset are valid, and -EAGAIN if one of the
-- * offset is not ready.
-- */
--static int ice_ptp_check_offset_valid(struct ice_ptp_port *port)
--{
--	int tx_err, rx_err;
--
--	/* always check both Tx and Rx offset validity */
--	tx_err = ice_ptp_check_tx_offset_valid(port);
--	rx_err = ice_ptp_check_rx_offset_valid(port);
--
--	if (tx_err || rx_err)
--		return -EAGAIN;
--
--	return 0;
--}
--
--/**
-- * ice_ptp_wait_for_offset_valid - Check for valid Tx and Rx offsets
-+ * ice_ptp_wait_for_offsets - Check for valid Tx and Rx offsets
-  * @work: Pointer to the kthread_work structure for this task
-  *
-- * Check whether both the Tx and Rx offsets are valid for enabling the vernier
-- * calibration.
-+ * Check whether hardware has completed measuring the Tx and Rx offset values
-+ * used to configure and enable vernier timestamp calibration.
-  *
-- * Once we have valid offsets from hardware, update the total Tx and Rx
-- * offsets, and exit bypass mode. This enables more precise timestamps using
-- * the extra data measured during the vernier calibration process.
-+ * Once the offset in either direction is measured, configure the associated
-+ * registers with the calibrated offset values and enable timestamping. The Tx
-+ * and Rx directions are configured independently as soon as their associated
-+ * offsets are known.
-+ *
-+ * This function reschedules itself until both Tx and Rx calibration have
-+ * completed.
-  */
--static void ice_ptp_wait_for_offset_valid(struct kthread_work *work)
-+static void ice_ptp_wait_for_offsets(struct kthread_work *work)
- {
- 	struct ice_ptp_port *port;
--	int err;
--	struct device *dev;
- 	struct ice_pf *pf;
- 	struct ice_hw *hw;
-+	int tx_err;
-+	int rx_err;
- 
- 	port = container_of(work, struct ice_ptp_port, ov_work.work);
- 	pf = ptp_port_to_pf(port);
- 	hw = &pf->hw;
--	dev = ice_pf_to_dev(pf);
- 
- 	if (ice_is_reset_in_progress(pf->state))
- 		return;
- 
--	if (ice_ptp_check_offset_valid(port)) {
--		/* Offsets not ready yet, try again later */
-+	tx_err = ice_ptp_check_tx_fifo(port);
-+	if (!tx_err)
-+		tx_err = ice_phy_cfg_tx_offset_e822(hw, port->port_num);
-+	rx_err = ice_phy_cfg_rx_offset_e822(hw, port->port_num);
-+	if (tx_err || rx_err) {
-+		/* Tx and/or Rx offset not yet configured, try again later */
- 		kthread_queue_delayed_work(pf->ptp.kworker,
- 					   &port->ov_work,
- 					   msecs_to_jiffies(100));
- 		return;
- 	}
--
--	/* Offsets are valid, so Vernier mode calculations are started */
--	err = ice_phy_calc_vernier_e822(hw, port->port_num);
--	if (err) {
--		dev_warn(dev, "Failed to prepare Vernier mode for PHY port %u, err %d\n",
--			 port->port_num, err);
--		return;
--	}
- }
- 
- /**
-@@ -2549,7 +2463,7 @@ void ice_ptp_reset(struct ice_pf *pf)
- 		err = ice_ptp_init_tx_e810(pf, &ptp->port.tx);
- 	} else {
- 		kthread_init_delayed_work(&ptp->port.ov_work,
--					  ice_ptp_wait_for_offset_valid);
-+					  ice_ptp_wait_for_offsets);
- 		err = ice_ptp_init_tx_e822(pf, &ptp->port.tx,
- 					   ptp->port.port_num);
- 	}
-@@ -2712,7 +2626,7 @@ static int ice_ptp_init_port(struct ice_pf *pf, struct ice_ptp_port *ptp_port)
- 		return ice_ptp_init_tx_e810(pf, &ptp_port->tx);
- 
- 	kthread_init_delayed_work(&ptp_port->ov_work,
--				  ice_ptp_wait_for_offset_valid);
-+				  ice_ptp_wait_for_offsets);
- 	return ice_ptp_init_tx_e822(pf, &ptp_port->tx, ptp_port->port_num);
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index d5d51427580a..a38614d21ea8 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -1741,21 +1741,48 @@ ice_calc_fixed_tx_offset_e822(struct ice_hw *hw, enum ice_ptp_link_spd link_spd)
-  * adjust Tx timestamps by. This is calculated by combining some known static
-  * latency along with the Vernier offset computations done by hardware.
-  *
-- * This function must be called only after the offset registers are valid,
-- * i.e. after the Vernier calibration wait has passed, to ensure that the PHY
-- * has measured the offset.
-+ * This function will not return successfully until the Tx offset calculations
-+ * have been completed, which requires waiting until at least one packet has
-+ * been transmitted by the device. It is safe to call this function
-+ * periodically until calibration succeeds, as it will only program the offset
-+ * once.
-  *
-  * To avoid overflow, when calculating the offset based on the known static
-  * latency values, we use measurements in 1/100th of a nanosecond, and divide
-  * the TUs per second up front. This avoids overflow while allowing
-  * calculation of the adjustment using integer arithmetic.
-+ *
-+ * Returns zero on success, -EBUSY if the hardware vernier offset
-+ * calibration has not completed, or another error code on failure.
-  */
--static int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port)
-+int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port)
- {
- 	enum ice_ptp_link_spd link_spd;
- 	enum ice_ptp_fec_mode fec_mode;
- 	u64 total_offset, val;
- 	int err;
-+	u32 reg;
-+
-+	/* Nothing to do if we've already programmed the offset */
-+	err = ice_read_phy_reg_e822(hw, port, P_REG_TX_OR, &reg);
-+	if (err) {
-+		ice_debug(hw, ICE_DBG_PTP, "Failed to read TX_OR for port %u, err %d\n",
-+			  port, err);
-+		return err;
-+	}
-+
-+	if (reg)
-+		return 0;
-+
-+	err = ice_read_phy_reg_e822(hw, port, P_REG_TX_OV_STATUS, &reg);
-+	if (err) {
-+		ice_debug(hw, ICE_DBG_PTP, "Failed to read TX_OV_STATUS for port %u, err %d\n",
-+			  port, err);
-+		return err;
-+	}
-+
-+	if (!(reg & P_REG_TX_OV_STATUS_OV_M))
-+		return -EBUSY;
- 
- 	err = ice_phy_get_speed_and_fec_e822(hw, port, &link_spd, &fec_mode);
- 	if (err)
-@@ -1809,6 +1836,9 @@ static int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port)
- 	if (err)
- 		return err;
- 
-+	dev_info(ice_hw_to_dev(hw), "Port=%d Tx vernier offset calibration complete\n",
-+		 port);
-+
- 	return 0;
- }
- 
-@@ -2011,6 +2041,11 @@ ice_calc_fixed_rx_offset_e822(struct ice_hw *hw, enum ice_ptp_link_spd link_spd)
-  * measurements taken in hardware with some data about known fixed delay as
-  * well as adjusting for multi-lane alignment delay.
-  *
-+ * This function will not return successfully until the Rx offset calculations
-+ * have been completed, which requires waiting until at least one packet has
-+ * been received by the device. It is safe to call this function periodically
-+ * until calibration succeeds, as it will only program the offset once.
-+ *
-  * This function must be called only after the offset registers are valid,
-  * i.e. after the Vernier calibration wait has passed, to ensure that the PHY
-  * has measured the offset.
-@@ -2019,13 +2054,38 @@ ice_calc_fixed_rx_offset_e822(struct ice_hw *hw, enum ice_ptp_link_spd link_spd)
-  * latency values, we use measurements in 1/100th of a nanosecond, and divide
-  * the TUs per second up front. This avoids overflow while allowing
-  * calculation of the adjustment using integer arithmetic.
-+ *
-+ * Returns zero on success, -EBUSY if the hardware vernier offset
-+ * calibration has not completed, or another error code on failure.
-  */
--static int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port)
-+int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port)
- {
- 	enum ice_ptp_link_spd link_spd;
- 	enum ice_ptp_fec_mode fec_mode;
- 	u64 total_offset, pmd, val;
- 	int err;
-+	u32 reg;
-+
-+	/* Nothing to do if we've already programmed the offset */
-+	err = ice_read_phy_reg_e822(hw, port, P_REG_RX_OR, &reg);
-+	if (err) {
-+		ice_debug(hw, ICE_DBG_PTP, "Failed to read RX_OR for port %u, err %d\n",
-+			  port, err);
-+		return err;
-+	}
-+
-+	if (reg)
-+		return 0;
-+
-+	err = ice_read_phy_reg_e822(hw, port, P_REG_RX_OV_STATUS, &reg);
-+	if (err) {
-+		ice_debug(hw, ICE_DBG_PTP, "Failed to read RX_OV_STATUS for port %u, err %d\n",
-+			  port, err);
-+		return err;
-+	}
-+
-+	if (!(reg & P_REG_RX_OV_STATUS_OV_M))
-+		return -EBUSY;
- 
- 	err = ice_phy_get_speed_and_fec_e822(hw, port, &link_spd, &fec_mode);
- 	if (err)
-@@ -2086,6 +2146,9 @@ static int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port)
- 	if (err)
- 		return err;
- 
-+	dev_info(ice_hw_to_dev(hw), "Port=%d Rx vernier offset calibration complete\n",
-+		 port);
-+
- 	return 0;
- }
- 
-@@ -2357,66 +2420,6 @@ int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port)
- 	return 0;
- }
- 
--/**
-- * ice_phy_calc_vernier_e822 - Perform vernier calculations
-- * @hw: pointer to the HW struct
-- * @port: the PHY port to configure
-- *
-- * Perform vernier calculations for the Tx and Rx offset. This will enable
-- * hardware to include the more precise offset calibrations,
-- * increasing precision of the generated timestamps.
-- *
-- * This cannot be done until hardware has measured the offsets, which requires
-- * waiting until at least one packet has been sent and received by the device.
-- */
--int ice_phy_calc_vernier_e822(struct ice_hw *hw, u8 port)
--{
--	int err;
--	u32 val;
--
--	err = ice_read_phy_reg_e822(hw, port, P_REG_TX_OV_STATUS, &val);
--	if (err) {
--		ice_debug(hw, ICE_DBG_PTP, "Failed to read TX_OV_STATUS for port %u, err %d\n",
--			  port, err);
--		return err;
--	}
--
--	if (!(val & P_REG_TX_OV_STATUS_OV_M)) {
--		ice_debug(hw, ICE_DBG_PTP, "Tx offset is not yet valid for port %u\n",
--			  port);
--		return -EBUSY;
--	}
--
--	err = ice_read_phy_reg_e822(hw, port, P_REG_RX_OV_STATUS, &val);
--	if (err) {
--		ice_debug(hw, ICE_DBG_PTP, "Failed to read RX_OV_STATUS for port %u, err %d\n",
--			  port, err);
--		return err;
--	}
--
--	if (!(val & P_REG_TX_OV_STATUS_OV_M)) {
--		ice_debug(hw, ICE_DBG_PTP, "Rx offset is not yet valid for port %u\n",
--			  port);
--		return -EBUSY;
--	}
--
--	err = ice_phy_cfg_tx_offset_e822(hw, port);
--	if (err) {
--		ice_debug(hw, ICE_DBG_PTP, "Failed to program total Tx offset for port %u, err %d\n",
--			  port, err);
--		return err;
--	}
--
--	err = ice_phy_cfg_rx_offset_e822(hw, port);
--	if (err) {
--		ice_debug(hw, ICE_DBG_PTP, "Failed to program total Rx offset for port %u, err %d\n",
--			  port, err);
--		return err;
--	}
--
--	return 0;
--}
--
- /**
-  * ice_get_phy_tx_tstamp_ready_e822 - Read Tx memory status register
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index b781dadf5a39..3b68cb91bd81 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -188,7 +188,8 @@ static inline u64 ice_e822_pps_delay(enum ice_time_ref_freq time_ref)
- /* E822 Vernier calibration functions */
- int ice_stop_phy_timer_e822(struct ice_hw *hw, u8 port, bool soft_reset);
- int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port);
--int ice_phy_calc_vernier_e822(struct ice_hw *hw, u8 port);
-+int ice_phy_cfg_tx_offset_e822(struct ice_hw *hw, u8 port);
-+int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port);
- 
- /* E810 family functions */
- int ice_ptp_init_phy_e810(struct ice_hw *hw);
--- 
-2.38.1.420.g319605f8f00e
-
+> Whenever interface was down, function
+> i40e_xdp was passing vsi->rx_buf_len field
+> to i40e_xdp_setup() which was equal 0.
+> i40e_open() calls i40e_vsi_configure_rx()
+> which configures that field, but that only
+> happens when interface is up. When it is
+> down, i40e_open() is not being called, thus
+> vsi->rx_buf_len is not set.
+> 
+> Solution for this is calculate buffer length
+> in newly created function - i40e_calculate_vsi_rx_buf_len()
+> that return actual buffer length. Buffer length is
+> being calculated based on the same rules applied previously in
+> i40e_vsi_configure_rx() function.
+> 
+> Fixes: 613142b0bb88 ("i40e: Log error for oversized MTU on device")
+> Fixes: 0c8493d90b6b ("i40e: add XDP support for pass and drop actions")
+> Signed-off-by: "Staszewski, BartoszX" <bartoszx.staszewski@intel.com>
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> ---
+>   v2: Fixed commit title and message, this patch is only for a case of
+>       fresh start so I believe there is no need for rx_buf_len clearance
+> ---
+>   drivers/net/ethernet/intel/i40e/i40e_main.c | 42 +++++++++++++++------
+>   1 file changed, 30 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index b5dcd15ced36..2fec0cff282c 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -3693,6 +3693,30 @@ static int i40e_vsi_configure_tx(struct i40e_vsi *vsi)
+>   	return err;
+>   }
+>   
+> +/**
+> + * i40e_calculate_vsi_rx_buf_len - Calculates buffer length
+> + *
+> + * @vsi: VSI to calculate rx_buf_len from
+> + */
+> +static u16 i40e_calculate_vsi_rx_buf_len(struct i40e_vsi *vsi)
+> +{
+> +	u16 ret;
+> +
+> +	if (!vsi->netdev || (vsi->back->flags & I40E_FLAG_LEGACY_RX)) {
+> +		ret = I40E_RXBUFFER_2048;
+> +#if (PAGE_SIZE < 8192)
+> +	} else if (!I40E_2K_TOO_SMALL_WITH_PADDING &&
+> +		   (vsi->netdev->mtu <= ETH_DATA_LEN)) {
+> +		ret = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
+> +#endif
+> +	} else {
+> +		ret = (PAGE_SIZE < 8192) ? I40E_RXBUFFER_3072 :
+> +					   I40E_RXBUFFER_2048;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+>   /**
+>    * i40e_vsi_configure_rx - Configure the VSI for Rx
+>    * @vsi: the VSI being configured
+> @@ -3704,20 +3728,14 @@ static int i40e_vsi_configure_rx(struct i40e_vsi *vsi)
+>   	int err = 0;
+>   	u16 i;
+>   
+> -	if (!vsi->netdev || (vsi->back->flags & I40E_FLAG_LEGACY_RX)) {
+> -		vsi->max_frame = I40E_MAX_RXBUFFER;
+> -		vsi->rx_buf_len = I40E_RXBUFFER_2048;
+> +	vsi->max_frame = I40E_MAX_RXBUFFER;
+> +	vsi->rx_buf_len = i40e_calculate_vsi_rx_buf_len(vsi);
+> +
+>   #if (PAGE_SIZE < 8192)
+> -	} else if (!I40E_2K_TOO_SMALL_WITH_PADDING &&
+> -		   (vsi->netdev->mtu <= ETH_DATA_LEN)) {
+> +	if (vsi->netdev && !I40E_2K_TOO_SMALL_WITH_PADDING &&
+> +	    vsi->netdev->mtu <= ETH_DATA_LEN)
+>   		vsi->max_frame = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
+> -		vsi->rx_buf_len = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
+>   #endif
+> -	} else {
+> -		vsi->max_frame = I40E_MAX_RXBUFFER;
+> -		vsi->rx_buf_len = (PAGE_SIZE < 8192) ? I40E_RXBUFFER_3072 :
+> -						       I40E_RXBUFFER_2048;
+> -	}
+>   
+>   	/* set up individual rings */
+>   	for (i = 0; i < vsi->num_queue_pairs && !err; i++)
+> @@ -13265,7 +13283,7 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
+>   	int i;
+>   
+>   	/* Don't allow frames that span over multiple buffers */
+> -	if (frame_size > vsi->rx_buf_len) {
+> +	if (frame_size > i40e_calculate_vsi_rx_buf_len(vsi)) {
+>   		NL_SET_ERR_MSG_MOD(extack, "MTU too large to enable XDP");
+>   		return -EINVAL;
+>   	}
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
