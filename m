@@ -1,76 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 057DAC4708C
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Dec 2022 16:34:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8278C352A1
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Dec 2022 16:34:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9FF54605AD;
-	Tue,  6 Dec 2022 16:34:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9FF54605AD
+	by smtp2.osuosl.org (Postfix) with ESMTP id 6CD72400BB;
+	Tue,  6 Dec 2022 16:34:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6CD72400BB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1670344494;
-	bh=56seCu2gyODqodwiDPoACIFEIUeQmIMbrE4qfzb8SSk=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=o+p84NgmrOWQw9gVv3lmdWCZFTNkWQtW2nMm1xmWdsSFAlKqxInQGfBehkj//m92A
-	 nSam3nxaqCre+yRrGCWoCWgWR9nF88IpTYdJTOCB5vWu/QPbRoUjhsnh2NqInaCyy5
-	 CXq7cvY+WkCUTQQVqJUPWKHNwYjMiRV/3mr/B/j1k04ZXBCJUgG4Smvwd8/gZ76Hwr
-	 7yUnPCw2bGVPZwXycsKwh9bkH1TNyFxfH5kohXRrteudRTU/n/qrYNgU4rFuc4/0z4
-	 cMakD4mGSiQ6tkma3ta4AgmpL0ye7JzZpwjeksihMZ/P5yjguqmCBKDxj68dZHnuvl
-	 tQ5+PJ5OXQB1A==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VeQHAjiS_nYq; Tue,  6 Dec 2022 16:34:54 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BD9216101C;
-	Tue,  6 Dec 2022 16:34:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BD9216101C
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id E6CD61BF215
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Dec 2022 10:28:45 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CE75E40641
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Dec 2022 10:28:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CE75E40641
+	s=default; t=1670344498;
+	bh=l4ZUPIZKX/o9IC2Jms5EkXejirYMhnsItTgyzvU3qCs=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=vy+9jXvd1J/787zN3yfPP1jamZVzB7bhT8UGvi2VT37hjGNWBbENCEdgKKIYDvC8C
+	 tfTmb6yV9BDQtzZjjhl58y7KPVGMppdKnuo5o4OOguhB+Dq4X9BIGM0lv3fXaWhFMt
+	 sAd3lpArwhV2oCQ3RGCJ5ox1343g7aVPMDItAEYn5NuMTFqpYqjQLoyMXtv6BeFfTA
+	 Vdsa3VOKioeNIxF0J4Y928wrpbmiXBxKekvjFviHwCMp/8oowqBLC6KHKe9eVMzJ/A
+	 TA2z0oMH7djWxR6pg9rZTVdnFlopJMQ71R4Aw1GVHwfb08yJiio4akYUUSDwtquAcQ
+	 4GeR9Gpl553ag==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id XCInDAf7RGy2 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  6 Dec 2022 10:28:44 +0000 (UTC)
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id KYEgjsEnY1OQ; Tue,  6 Dec 2022 16:34:57 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id 8A08F40272;
+	Tue,  6 Dec 2022 16:34:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8A08F40272
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 8D44A1BF215
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Dec 2022 10:32:30 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 684E381E3E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Dec 2022 10:32:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 684E381E3E
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id p3f0d82y7kT5 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  6 Dec 2022 10:32:29 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A4DBD40150
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A4DBD40150
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Dec 2022 10:28:44 +0000 (UTC)
-Received: from dggpeml500024.china.huawei.com (unknown [172.30.72.57])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4NRGnm0qnPzFqv0;
- Tue,  6 Dec 2022 18:27:39 +0800 (CST)
-Received: from [10.174.178.41] (10.174.178.41) by
- dggpeml500024.china.huawei.com (7.185.36.10) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Tue, 6 Dec 2022 18:28:27 +0800
-Message-ID: <e9f5eeae-6785-5fb8-06a4-3d846e8658c9@huawei.com>
-Date: Tue, 6 Dec 2022 18:28:26 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.0
-To: Leon Romanovsky <leon@kernel.org>
-References: <20221206092613.122952-1-yuancan@huawei.com>
- <Y48TO7s0K9J0kVh0@unreal>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E3BEC81E34
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E3BEC81E34
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Dec 2022 10:32:28 +0000 (UTC)
+Received: from dggpeml500024.china.huawei.com (unknown [172.30.72.56])
+ by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4NRGtJ3zyLz15N7B;
+ Tue,  6 Dec 2022 18:31:36 +0800 (CST)
+Received: from huawei.com (10.175.112.208) by dggpeml500024.china.huawei.com
+ (7.185.36.10) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Tue, 6 Dec
+ 2022 18:32:23 +0800
 From: Yuan Can <yuancan@huawei.com>
-In-Reply-To: <Y48TO7s0K9J0kVh0@unreal>
-X-Originating-IP: [10.174.178.41]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+To: <jesse.brandeburg@intel.com>, <anthony.l.nguyen@intel.com>,
+ <davem@davemloft.net>, <edumazet@google.com>, <kuba@kernel.org>,
+ <pabeni@redhat.com>, <alice.michael@intel.com>, <piotr.marczak@intel.com>,
+ <jeffrey.t.kirsher@intel.com>, <leon@kernel.org>,
+ <intel-wired-lan@lists.osuosl.org>, <netdev@vger.kernel.org>
+Date: Tue, 6 Dec 2022 10:29:59 +0000
+Message-ID: <20221206102959.20255-1-yuancan@huawei.com>
+X-Mailer: git-send-email 2.17.1
+MIME-Version: 1.0
+X-Originating-IP: [10.175.112.208]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
  dggpeml500024.china.huawei.com (7.185.36.10)
 X-CFilter-Loop: Reflected
 X-Mailman-Approved-At: Tue, 06 Dec 2022 16:34:43 +0000
-Subject: Re: [Intel-wired-lan] [PATCH] intel/i40e: Fix potential memory leak
- in i40e_init_recovery_mode()
+Subject: [Intel-wired-lan] [PATCH net v2] intel/i40e: Fix potential memory
+ leak in i40e_init_recovery_mode()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,40 +82,42 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
- edumazet@google.com, netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- jeffrey.t.kirsher@intel.com, piotr.marczak@intel.com, kuba@kernel.org,
- pabeni@redhat.com, davem@davemloft.net
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Cc: yuancan@huawei.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-CuWcqCAyMDIyLzEyLzYgMTg6MDIsIExlb24gUm9tYW5vdnNreSDlhpnpgZM6Cj4gT24gVHVlLCBE
-ZWMgMDYsIDIwMjIgYXQgMDk6MjY6MTNBTSArMDAwMCwgWXVhbiBDYW4gd3JvdGU6Cj4+IElmIGk0
-MGVfdnNpX21lbV9hbGxvYygpIGZhaWxlZCBpbiBpNDBlX2luaXRfcmVjb3ZlcnlfbW9kZSgpLCB0
-aGUgcGYgd2lsbCBiZQo+PiBmcmVlZCB3aXRoIHRoZSBwZi0+dnNpIGxlYWtlZC4KPj4gRml4IGJ5
-IGZyZWUgcGYtPnZzaSBpbiB0aGUgZXJyb3IgaGFuZGxpbmcgcGF0aC4KPj4KPj4gRml4ZXM6IDRm
-ZjBlZTFhZjAxNiAoImk0MGU6IEludHJvZHVjZSByZWNvdmVyeSBtb2RlIHN1cHBvcnQiKQo+PiBT
-aWduZWQtb2ZmLWJ5OiBZdWFuIENhbiA8eXVhbmNhbkBodWF3ZWkuY29tPgo+PiAtLS0KPj4gICBk
-cml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pNDBlL2k0MGVfbWFpbi5jIHwgMSArCj4+ICAgMSBm
-aWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspCj4gVGhlIHBhdGNoIHRpdGxlIG5lZWRzIHRvIGJl
-ICJbUEFUQ0ggbmV0XS4uLiIKPgo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQv
-aW50ZWwvaTQwZS9pNDBlX21haW4uYyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2k0MGUv
-aTQwZV9tYWluLmMKPj4gaW5kZXggYjVkY2QxNWNlZDM2Li5kMjMwODFjMjI0ZDYgMTAwNjQ0Cj4+
-IC0tLSBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2k0MGUvaTQwZV9tYWluLmMKPj4gKysr
-IGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaTQwZS9pNDBlX21haW4uYwo+PiBAQCAtMTU1
-MzYsNiArMTU1MzYsNyBAQCBzdGF0aWMgaW50IGk0MGVfaW5pdF9yZWNvdmVyeV9tb2RlKHN0cnVj
-dCBpNDBlX3BmICpwZiwgc3RydWN0IGk0MGVfaHcgKmh3KQo+PiAgIAlwY2lfZGlzYWJsZV9wY2ll
-X2Vycm9yX3JlcG9ydGluZyhwZi0+cGRldik7Cj4+ICAgCXBjaV9yZWxlYXNlX21lbV9yZWdpb25z
-KHBmLT5wZGV2KTsKPj4gICAJcGNpX2Rpc2FibGVfZGV2aWNlKHBmLT5wZGV2KTsKPj4gKwlrZnJl
-ZShwZi0+dnNpKTsKPj4gICAJa2ZyZWUocGYpOwo+PiAgIAo+PiAgIAlyZXR1cm4gZXJyOwo+IFRo
-ZSBjaGFuZ2UgaXMgb2ssIGJ1dCBpdCBpcyB3b3J0aCB0byBjbGVhbnVwIGVycm9yIGZsb3cgb2Yg
-aTQwZV9wcm9iZSBhbmQgaTQwZV9yZW1vdmUKPiBhcyB0aGV5IGFyZSBub3QgcmVhbGx5IGluIHRo
-ZSBzYW1lIG9yZGVyLgo+Cj4gVGhhbmtzLAo+IFJldmlld2VkLWJ5OiBMZW9uIFJvbWFub3Zza3kg
-PGxlb25yb0BudmlkaWEuY29tPgpUaGFua3MgZm9yIHRoZSByZXZpZXcsIHRoZSB0aXRsZSBwcm9i
-bGVtIHdpbGwgYmUgZml4ZWQgaW4gdGhlIG5leHQgdmVyc2lvbi4KCi0tIApCZXN0IHJlZ2FyZHMs
-Cll1YW4gQ2FuCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3Jn
-Cmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxh
-bgo=
+If i40e_vsi_mem_alloc() failed in i40e_init_recovery_mode(), the pf will be
+freed with the pf->vsi leaked.
+Fix by free pf->vsi in the error handling path.
+
+Fixes: 4ff0ee1af016 ("i40e: Introduce recovery mode support")
+Signed-off-by: Yuan Can <yuancan@huawei.com>
+Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
+---
+Changes in v2:
+- Add net in patch title
+- Add Leon Romanovsky's reviewed by
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b5dcd15ced36..d23081c224d6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -15536,6 +15536,7 @@ static int i40e_init_recovery_mode(struct i40e_pf *pf, struct i40e_hw *hw)
+ 	pci_disable_pcie_error_reporting(pf->pdev);
+ 	pci_release_mem_regions(pf->pdev);
+ 	pci_disable_device(pf->pdev);
++	kfree(pf->vsi);
+ 	kfree(pf);
+ 
+ 	return err;
+-- 
+2.17.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
