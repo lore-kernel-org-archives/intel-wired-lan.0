@@ -1,102 +1,79 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8689AC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Dec 2022 16:02:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06067C3A5A7
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Dec 2022 16:28:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1B33D4014E;
-	Thu,  8 Dec 2022 16:02:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1B33D4014E
+	by smtp1.osuosl.org (Postfix) with ESMTP id 807ED81E56;
+	Thu,  8 Dec 2022 16:28:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 807ED81E56
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1670515336;
-	bh=VV//v1YEHWaB8p3LQDJPk8mdU88UKC1yCGB4FX6qaOw=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=6aK6CL0meG2qYZ7KK1O5a7crW2sP4ZtAq5mwGSx3W07iJcTt023cigoYk39IMnqY2
-	 rZmORlzEuMTAwwnWtyC0csaZIPZ0cdEazwhbpa9JkC/PPnkmqh+ZlK3sKHqDyidOTH
-	 3a1iavX4xM0NHxPzVKu/H4ajxvuE/M5WW5l6ZaO9EFziRtZfxvUN5o/MK1mu3VTjrz
-	 TdNxPmH0mgVEPp0/1lDYL4bNBYCEFwogFwAyGP+tlTP0wWHdtZPQtLX2unBUNRbuIe
-	 2MVcOpMCdU1YrINvin6RLKA19u0cTSHJEn5TVZo+VKnAO8kiGphSp5guZ+sYjsZAEy
-	 QCPpxTsV/9EyQ==
+	s=default; t=1670516910;
+	bh=GK6OJ15KzenVctCBvyqQ9hzB0OqB7HNS7vXeixry58Y=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=kblMfsfQzJlqbV9Ew7jlDRHZJxFuzW0+4ELHwHC6v+tUZMDSdHUOJNT/dnyGss01L
+	 l2oLvKWugZppOYL043rJqgYfNOjXypEbPuUng56IP/aex2r/EHM5dYOelZCmAQlQG8
+	 Vd0G+KOQhMNDgEaNWU3KVyZ7t2Crm75wic8oczsMwctWJqStclNg1UAAs6ERQlKkiW
+	 IbdN8Kycjtn7/xH/rxymQ6AylPm7/rO9sZczTo1kAKXwmVnBj2kjGtBeIAcaa3N5hr
+	 esUMw1FmcRm1uJPV2/YTwBUE7DfFsmSqmi7DwGh83J6QWwGEMo6aJRCpH41Bgj3n1D
+	 VMlDDlThE3P8g==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id sL3HXThzR46O; Thu,  8 Dec 2022 16:02:15 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Dn6IUlCUscTA; Thu,  8 Dec 2022 16:28:29 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2D96D40C03;
-	Thu,  8 Dec 2022 16:02:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2D96D40C03
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 747BC1BF576
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 16:02:14 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7FFC281F38;
+	Thu,  8 Dec 2022 16:28:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7FFC281F38
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 302F21BF407
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 10:06:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5959241927
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 16:02:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5959241927
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0B78E610CC
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 10:06:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0B78E610CC
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id mgWNImum7yxp for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Dec 2022 16:02:13 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B5EB0415EB
-Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com
- [IPv6:2a00:1450:4864:20::62b])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B5EB0415EB
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 16:02:12 +0000 (UTC)
-Received: by mail-ej1-x62b.google.com with SMTP id n21so5088732ejb.9
- for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Dec 2022 08:02:12 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=PgTcP7Sb6G+mxt6RrmX5diGBUpEOwhypZwyQEkEjZUo=;
- b=XHfeoD/ABeIUXPcs9qs+m2weRqkSNwRMrx22IK/llrZgjHNwfUVQ075OWIx0O1DRs0
- KjBP0h/6VD+Wcz6qtCLEYmFVzTzSgA7nlhBnOOrJSgM2c2CqxDMsgaJeHXeccdtSTJqU
- O0ynasOgmbXvW/2hO4jVQ6oArBfEl5hSMUxd8nXi/4YPJ9HoHUZfIvZUyemyBWw97mHz
- nyhVv06Cl5DMpVGBnI7TjQJj1R1+HyKhD+7Rxjx5qnDyWdP0XstQX5O0l1wkxgz+tScd
- LbKgQ4NEPRhwqrNzi0LYvYaHWOmck2QqVga9YL87Rx2nWHHb26gr9z+yyQJIcq9ZbGr5
- /6iA==
-X-Gm-Message-State: ANoB5pkWHquzcsD6Qg57b20jsINxQX4JdsMwSRmHG8CL7YLMkVJqG6FE
- khcxE2i53t7l0spKNaqKifMUYA==
-X-Google-Smtp-Source: AA0mqf7BntqxGCpKPwxV6jdJ+uAdbt8+2G6+VAMqcwwJNz/syMYkGpO94/UjsegtDWOy3jZydWHzVQ==
-X-Received: by 2002:a17:906:1e4d:b0:7c1:ac8:73a0 with SMTP id
- i13-20020a1709061e4d00b007c10ac873a0mr2285776ejj.51.1670515330398; 
- Thu, 08 Dec 2022 08:02:10 -0800 (PST)
-Received: from localhost (host-213-179-129-39.customer.m-online.net.
- [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
- z16-20020a1709060f1000b007c1175334basm2675858eji.78.2022.12.08.08.02.07
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 08 Dec 2022 08:02:08 -0800 (PST)
-Date: Thu, 8 Dec 2022 17:02:04 +0100
-From: Jiri Pirko <jiri@resnulli.us>
-To: Jiasheng Jiang <jiasheng@iscas.ac.cn>
-Message-ID: <Y5IKfOOhinE66+Kt@nanopsycho>
-References: <20221208133552.21915-1-jiasheng@iscas.ac.cn>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id SRQUyHfHanHo for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Dec 2022 10:06:17 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5EB0360ADC
+Received: from cstnet.cn (smtp23.cstnet.cn [159.226.251.23])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5EB0360ADC
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 10:06:15 +0000 (UTC)
+Received: from localhost.localdomain (unknown [124.16.138.125])
+ by APP-03 (Coremail) with SMTP id rQCowADnJswMt5Fj7Eh1BQ--.11268S2;
+ Thu, 08 Dec 2022 18:06:04 +0800 (CST)
+From: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+To: leon@kernel.org
+Date: Thu,  8 Dec 2022 18:06:03 +0800
+Message-Id: <20221208100603.29588-1-jiasheng@iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20221208133552.21915-1-jiasheng@iscas.ac.cn>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=resnulli-us.20210112.gappssmtp.com; s=20210112;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=PgTcP7Sb6G+mxt6RrmX5diGBUpEOwhypZwyQEkEjZUo=;
- b=KLiZD2qBOu/qNsJ2cZjRu0xhRjkjzMUvesjTwJF+Nj34blnUwi+EXBP1laZJLS8qQj
- cAr+pVGQEkgP7EGIXfq2cAWyFCTDfhDG4cfZCYyiuGXVclg4Ynx/DWUMEaRSTGz833dN
- NCoHV26jGRcTcQFsYg2jyVoKA97rHaaFhk9n7HsPuWB/Tb8YKl8MTuMkV3zveMStl4JV
- Fs1Hau6UHdvfP1TGdyZ2wg9UWxVTI+u/sCEEHMSHyEXMjnoVcHwKffCOiWvuQNiEBOqL
- qxXGyjwsH7GGufZlywGdDJo7ICy0YGaGpAj92BiZSrgKRLKt3z8huikoi8IE9RYGETD6
- s8fg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=resnulli-us.20210112.gappssmtp.com
- header.i=@resnulli-us.20210112.gappssmtp.com header.a=rsa-sha256
- header.s=20210112 header.b=KLiZD2qB
-Subject: Re: [Intel-wired-lan] [PATCH net v4] ice: Add check for kzalloc
+X-CM-TRANSID: rQCowADnJswMt5Fj7Eh1BQ--.11268S2
+X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
+ VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUUYf7AC8VAFwI0_Gr0_Xr1l1xkIjI8I6I8E
+ 6xAIw20EY4v20xvaj40_Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l8cAvFVAK0II2c7xJM28Cjx
+ kF64kEwVA0rcxSw2x7M28EF7xvwVC0I7IYx2IY67AKxVW8JVW5JwA2z4x0Y4vE2Ix0cI8I
+ cVCY1x0267AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIE14v26F4UJVW0owA2z4x0Y4vEx4A2js
+ IEc7CjxVAFwI0_GcCE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE
+ 5I8CrVC2j2WlYx0E2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r4j6F4UMcvjeV
+ CFs4IE7xkEbVWUJVW8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1l
+ FIxGxcIEc7CjxVA2Y2ka0xkIwI1lc2xSY4AK67AK6r4DMxAIw28IcxkI7VAKI48JMxC20s
+ 026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_
+ JrI_JrWlx4CE17CEb7AF67AKxVWUtVW8ZwCIc40Y0x0EwIxGrwCI42IY6xIIjxv20xvE14
+ v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwCI42IY6xAIw20EY4v20xva
+ j40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1lIxAIcVC2z280aVCY1x0267AKxVW8JV
+ W8JrUvcSsGvfC2KfnxnUUI43ZEXa7VUb8hL5UUUUU==
+X-Originating-IP: [124.16.138.125]
+X-CM-SenderInfo: pmld2xxhqjqxpvfd2hldfou0/
+X-Mailman-Approved-At: Thu, 08 Dec 2022 16:28:28 +0000
+Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: Add check for kzalloc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,24 +86,30 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: leon@kernel.org, intel-wired-lan@lists.osuosl.org,
- jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org, edumazet@google.com,
- anthony.l.nguyen@intel.com, netdev@vger.kernel.org, kuba@kernel.org,
- pabeni@redhat.com, davem@davemloft.net
+Cc: jiri@resnulli.us, intel-wired-lan@lists.osuosl.org,
+ Jiasheng Jiang <jiasheng@iscas.ac.cn>, jesse.brandeburg@intel.com,
+ linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Thu, Dec 08, 2022 at 02:35:52PM CET, jiasheng@iscas.ac.cn wrote:
->Add the check for the return value of kzalloc in order to avoid
->NULL pointer dereference.
->Moreover, use the goto-label to share the clean code.
->
->Fixes: d6b98c8d242a ("ice: add write functionality for GNSS TTY")
->Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+On Thu, Dec 08, 2022 at 05:25:02PM +0800, Leon Romanovsky wrote:
+>> +err_out:
+>> +	for (j = 0; j < i; j++) {
+> 
+> You don't need an extra variable, "while(i--)" will do the trick.
 
-Reviewed-by: Jiri Pirko <jiri@nvidia.com>
+No, the right range is [0, i - 1], but the "while(i--)" is [1, i].
+If using "while(i--)", the code should be "tty_port_destroy(pf->gnss_tty_port[i - 1]);".
+It will be more complex.
+Therefore, it is worthwhile to use an extra varaible.
+
+Thanks,
+Jiang
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
