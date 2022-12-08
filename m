@@ -4,91 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BDA4C3A5A7
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Dec 2022 11:21:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92EEBC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Dec 2022 13:06:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EEF5A82029;
-	Thu,  8 Dec 2022 11:21:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EEF5A82029
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1F12A82004;
+	Thu,  8 Dec 2022 13:06:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1F12A82004
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1670498480;
-	bh=Mi9NK9+6QAxiUFx80S1VbvEs1B8cMgfWJ09cGlg7y74=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1670504818;
+	bh=ML8zBJYuE+By4LSjhY294BBmfQ1FR0GwflCWHO47E0g=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Guf448hcwEoDGlnXXBoUK8Kxxldh2BkO9HLruf7AoEwAXjeueszR3X4RSCgnHVMbb
-	 zOkIZPfdMxq5ZXZ89I/8hopgYoSLm0WX2gx3RliUJk0JIrKgPivJWTragM+583tBqB
-	 TC7PrXBWANfgS0w63/c6SaitE62p741svglhUsPbHfrifVCuNqUv9GtT4j+Mfc1urM
-	 D2wstHODdSWzOjqAphgG6qhbbytTrImq1Zlhko63uvGRX+oqrep5yVrM04nN1aRsS0
-	 A14lNC0U/FCBdo60GZGgOujxbTymrPjc2WTJTQpcyQVD7EYwDh4+U6aIHbo7+e6HU2
-	 WHhkY7Xe23MKQ==
+	b=Guj+JIdDwVCTX8g2PhwAr0nfMA/MKON1okknQ+jsUjxkkSiCvssKaF037Z0JS+6VW
+	 +0JjhOClVBfUqG8M+bGbt9LvvW0e4mwzlnq9YAoJSMMXy1LuqaNFxtRX5XnQRx+8i+
+	 IUjKsV1M2MbfBiklRgGchOfBLuIX2zBIQpSJ1J2zzLeE86/bWOFJNp5a1G1cS6v4ZJ
+	 eD3lq6Bkrv1+HneBmNE5ofBNwzp5hwxs0OMr04GLf9zaiokN4EcUBE5cHsBrSLWwFe
+	 bpzXcxeXueRfu7i3J1kVIn9z24YJLaK4SPtob27qC8/WHtbFZuqwGWvULFMlLGC1Sm
+	 Op1eiL9tj6zlQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FUx0ciZnglST; Thu,  8 Dec 2022 11:21:18 +0000 (UTC)
+	with ESMTP id cD1GDvnA2T_e; Thu,  8 Dec 2022 13:06:57 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 36AC88202A;
-	Thu,  8 Dec 2022 11:21:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 36AC88202A
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0926E81F9E;
+	Thu,  8 Dec 2022 13:06:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0926E81F9E
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id EC2AC1BF2A3
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 11:21:16 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 497211BF3EB
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 13:06:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D20254173E
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 11:21:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D20254173E
+ by smtp4.osuosl.org (Postfix) with ESMTP id 22162410D4
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 13:06:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 22162410D4
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id FpPUDuuTJZPl for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Dec 2022 11:21:15 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9507441634
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9507441634
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 11:21:15 +0000 (UTC)
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-9-8P74pipKO7-_r69o9_jdeg-1; Thu, 08 Dec 2022 06:21:09 -0500
-X-MC-Unique: 8P74pipKO7-_r69o9_jdeg-1
-Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com
- [10.11.54.10])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 8A4D1802E5D;
- Thu,  8 Dec 2022 11:21:08 +0000 (UTC)
-Received: from calimero.vinschen.de (unknown [10.39.192.219])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 3DA58492B04;
- Thu,  8 Dec 2022 11:21:08 +0000 (UTC)
-Received: by calimero.vinschen.de (Postfix, from userid 500)
- id CA625A80A3A; Thu,  8 Dec 2022 12:21:04 +0100 (CET)
-From: Corinna Vinschen <vinschen@redhat.com>
-To: intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Leon Romanovsky <leon@kernel.org>
-Date: Thu,  8 Dec 2022 12:21:04 +0100
-Message-Id: <20221208112104.2769660-1-vinschen@redhat.com>
-In-Reply-To: <Y5GjAu4Uu6mg9a1I@unreal>
-References: <Y5GjAu4Uu6mg9a1I@unreal>
+ with ESMTP id ezN4Gci7m8bi for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Dec 2022 13:06:53 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F09ED410D0
+Received: from mail-ej1-x62c.google.com (mail-ej1-x62c.google.com
+ [IPv6:2a00:1450:4864:20::62c])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id F09ED410D0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Dec 2022 13:06:52 +0000 (UTC)
+Received: by mail-ej1-x62c.google.com with SMTP id x22so3643433ejs.11
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Dec 2022 05:06:52 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=j7y7mXoiRYM8+gZyOMzLUWwVsrDJFgNfdOoDhY7I1hA=;
+ b=bUe60fr/tVEUYmMVxW4lnz9CUk9EtHUVgAHjVvaVoc6QQeS5tECbSxn+wy+bKOc2hh
+ mO20/ulYuToCJ6kzuxeE8/KCC5SyZYjTyMrCIhdWSxewy97/mC77Lax+Q7RiiunlpVOi
+ z9hKihM+ZB5cVE4JPHolShTQcIFF/UsXWj6IFvynQiNJuyg7+KQH+tnCoJsUlEawMeoc
+ caCwTpWfenq64UqTBVNGi+o7/JW3PP7k9W6OoogkdXQMi401OmFNl3QUryPrEO253ykE
+ szOCTJanuKgkQ18d1bLyC8v5e2+NdUX/3PtxtYC0py+6kvE+Jk8zzJgcKgOq0U7P6yxP
+ QOkw==
+X-Gm-Message-State: ANoB5pnwCP9WThu+R56RL1UKs3110732waQNgsZZ16GCaaleR1q0vKQY
+ Ey2o9MLttQedQn5K9Le4EPGNGg==
+X-Google-Smtp-Source: AA0mqf4aEkLvSoesNyuO9RAmKvnynXKYC/lLSIrkJohqLRpK2kurlnF35xYRAlYzs/b6H0+yAIGnGw==
+X-Received: by 2002:a17:906:4cd0:b0:7ad:c3b5:8d55 with SMTP id
+ q16-20020a1709064cd000b007adc3b58d55mr1789236ejt.67.1670504810463; 
+ Thu, 08 Dec 2022 05:06:50 -0800 (PST)
+Received: from localhost (host-213-179-129-39.customer.m-online.net.
+ [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
+ v16-20020a1709061dd000b007b47749838asm9609320ejh.45.2022.12.08.05.06.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 08 Dec 2022 05:06:49 -0800 (PST)
+Date: Thu, 8 Dec 2022 14:06:48 +0100
+From: Jiri Pirko <jiri@resnulli.us>
+To: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+Message-ID: <Y5HhaLOle2tZuT9S@nanopsycho>
+References: <20221208125847.45342-1-jiasheng@iscas.ac.cn>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.10
+Content-Disposition: inline
+In-Reply-To: <20221208125847.45342-1-jiasheng@iscas.ac.cn>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1670498474;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=JwEklUVcE2hY+E8ByQ+1DVAaQ4gbfmB2fYCEDol6FwY=;
- b=VOMuSWzxJU1gxeadPr6+PIXOSk5iOAaYbc/R+iOrEmiIXmub38I36lttS/8CpnbdwCKQwm
- RshaLC1aeYy6Kb8Vsethrrsp1mXAvyjfpV8O7HlxPJGtRsS69IfI0qwWVLk18NexGRyk1k
- JhorV4QTPcB9lX2lJpv8yLxeOVboQkk=
+ d=resnulli-us.20210112.gappssmtp.com; s=20210112;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=j7y7mXoiRYM8+gZyOMzLUWwVsrDJFgNfdOoDhY7I1hA=;
+ b=QhhF3HkYaexoVfJbdwuHNaq4sMJ+Nk16bnoGP7jJJb7a/Oc99VPO2S60SzklpxzHhK
+ dJnPqCq20C25lqYhFym4XvwQu65gb6pl7ZZ5B9E5sTRGXaaJiPMUgHlgCCcyYebPycgU
+ ifaR2JTex+NNDy0r/oI67pvVciHJJ8OZgKS+E403wMyV8vMfbO7twR2jjU67eArl7btJ
+ GRO9MK/hd5tBE5goa7Qd2wwj99rSblOH+fHYNiA62jcw3g5Eg4VM7RrADkQpj++WjX2T
+ JkWJnl3iLupTy6EqZ54XyCfEmSipYSqup4YHF4hlRClA0wYE5zltCIugSPwPnjv7VNtX
+ jAkg==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=VOMuSWzx
-Subject: [Intel-wired-lan] [PATCH net v2] igb: conditionalize I2C bit
- banging on external thermal sensor support
+ dkim=pass (2048-bit key) header.d=resnulli-us.20210112.gappssmtp.com
+ header.i=@resnulli-us.20210112.gappssmtp.com header.a=rsa-sha256
+ header.s=20210112 header.b=QhhF3HkY
+Subject: Re: [Intel-wired-lan] [PATCH net v3] ice: Add check for kzalloc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,158 +109,100 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: patryk.piotrowski@intel.com
+Cc: leon@kernel.org, intel-wired-lan@lists.osuosl.org,
+ jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org, edumazet@google.com,
+ anthony.l.nguyen@intel.com, netdev@vger.kernel.org, kuba@kernel.org,
+ pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Commit a97f8783a937 ("igb: unbreak I2C bit-banging on i350") introduced
-code to change I2C settings to bit banging unconditionally.
+Thu, Dec 08, 2022 at 01:58:47PM CET, jiasheng@iscas.ac.cn wrote:
+>As kzalloc may return NULL pointer, the return value should
+>be checked and return error if fails in order to avoid the
+>NULL pointer dereference.
 
-However, this patch introduced a regression:  On an Intel S2600CWR
-Server Board with three NICs:
+It would be nice if you change the sentence above to imperative mood.
+Tell the codebase what to do.
 
-- 1x dual-port copper
-  Intel I350 Gigabit Network Connection [8086:1521] (rev 01)
-  fw 1.63, 0x80000dda
 
-- 2x quad-port SFP+ with copper SFP Avago ABCU-5700RZ
-  Intel I350 Gigabit Fiber Network Connection [8086:1522] (rev 01)
-  fw 1.52.0
+>Moreover, use the goto-label to share the clean code.
+>
+>Fixes: d6b98c8d242a ("ice: add write functionality for GNSS TTY")
+>Signed-off-by: Jiasheng Jiang <jiasheng@iscas.ac.cn>
+>---
+>Changelog:
+>
+>v2 -> v3:
+>
+>1. Use "while (i--)" to simplify the code.
+>
+>v1 -> v2:
+>
+>1. Use goto-label to share the clean code.
+>---
+> drivers/net/ethernet/intel/ice/ice_gnss.c | 23 ++++++++++++++---------
+> 1 file changed, 14 insertions(+), 9 deletions(-)
+>
+>diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.c b/drivers/net/ethernet/intel/ice/ice_gnss.c
+>index b5a7f246d230..90c620c26516 100644
+>--- a/drivers/net/ethernet/intel/ice/ice_gnss.c
+>+++ b/drivers/net/ethernet/intel/ice/ice_gnss.c
+>@@ -462,6 +462,9 @@ static struct tty_driver *ice_gnss_create_tty_driver(struct ice_pf *pf)
+> 					       GFP_KERNEL);
+> 		pf->gnss_serial[i] = NULL;
+> 
+>+		if (!pf->gnss_tty_port[i])
+>+			goto err_out;
 
-the SFP NICs no longer get link at all.  Reverting commit a97f8783a937
-or switching to the Intel out-of-tree driver both fix the problem.
+Move the check right after the alloc.
 
-Per the igb out-of-tree driver, I2C bit banging on i350 depends on
-support for an external thermal sensor (ETS).  However, commit
-a97f8783a937 added bit banging unconditionally.  Additionally, the
-out-of-tree driver always calls init_thermal_sensor_thresh on probe,
-while our driver only calls init_thermal_sensor_thresh only in
-igb_reset(), and only if an ETS is present, ignoring the internal
-thermal sensor.  The affected SFPs don't provide an ETS.  Per Intel,
-the behaviour is a result of i350 firmware requirements.
 
-This patch fixes the problem by aligning the behaviour to the
-out-of-tree driver:
+>+
+> 		tty_port_init(pf->gnss_tty_port[i]);
+> 		tty_port_link_device(pf->gnss_tty_port[i], tty_driver, i);
+> 	}
+>@@ -469,21 +472,23 @@ static struct tty_driver *ice_gnss_create_tty_driver(struct ice_pf *pf)
+> 	err = tty_register_driver(tty_driver);
+> 	if (err) {
+> 		dev_err(dev, "Failed to register TTY driver err=%d\n", err);
+>-
+>-		for (i = 0; i < ICE_GNSS_TTY_MINOR_DEVICES; i++) {
+>-			tty_port_destroy(pf->gnss_tty_port[i]);
+>-			kfree(pf->gnss_tty_port[i]);
+>-		}
+>-		kfree(ttydrv_name);
+>-		tty_driver_kref_put(pf->ice_gnss_tty_driver);
+>-
+>-		return NULL;
+>+		goto err_out;
+> 	}
+> 
+> 	for (i = 0; i < ICE_GNSS_TTY_MINOR_DEVICES; i++)
+> 		dev_info(dev, "%s%d registered\n", ttydrv_name, i);
+> 
+> 	return tty_driver;
+>+
+>+err_out:
+>+	while (i--) {
+>+		tty_port_destroy(pf->gnss_tty_port[i]);
+>+		kfree(pf->gnss_tty_port[i]);
+>+	}
+>+	kfree(ttydrv_name);
+>+	tty_driver_kref_put(pf->ice_gnss_tty_driver);
+>+
+>+	return NULL;
 
-- split igb_init_i2c() into two functions:
-  - igb_init_i2c() only performs the basic I2C initialization.
-  - igb_set_i2c_bb() makes sure that E1000_CTRL_I2C_ENA is set
-    and enables bit-banging.
+This looks fine now.
 
-- igb_probe() only calls igb_set_i2c_bb() if an ETS is present.
 
-- igb_probe() calls init_thermal_sensor_thresh() unconditionally.
-
-- igb_reset() aligns its behaviour to igb_probe(), i. e., call
-  igb_set_i2c_bb() if an ETS is present and call
-  init_thermal_sensor_thresh() unconditionally.
-
-v2: Add variable name in function declaration,
-    rearrange declaration of local variables
-
-Fixes: a97f8783a937 ("igb: unbreak I2C bit-banging on i350")
-Co-authored-by: Jamie Bainbridge <jbainbri@redhat.com>
-Tested-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
-Signed-off-by: Jamie Bainbridge <jbainbri@redhat.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 44 +++++++++++++++++------
- 1 file changed, 34 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 4e65ffe3f4e3..7f56322b3ec2 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -138,6 +138,9 @@ static irqreturn_t igb_msix_ring(int irq, void *);
- static void igb_update_dca(struct igb_q_vector *);
- static void igb_setup_dca(struct igb_adapter *);
- #endif /* CONFIG_IGB_DCA */
-+#ifdef CONFIG_IGB_HWMON
-+static void igb_set_i2c_bb(struct e1000_hw *hw);
-+#endif /* CONFIG_IGB_HWMON */
- static int igb_poll(struct napi_struct *, int);
- static bool igb_clean_tx_irq(struct igb_q_vector *, int);
- static int igb_clean_rx_irq(struct igb_q_vector *, int);
-@@ -2399,7 +2402,8 @@ void igb_reset(struct igb_adapter *adapter)
- 			 * interface.
- 			 */
- 			if (adapter->ets)
--				mac->ops.init_thermal_sensor_thresh(hw);
-+				igb_set_i2c_bb(hw);
-+			mac->ops.init_thermal_sensor_thresh(hw);
- 		}
- 	}
- #endif
-@@ -3116,21 +3120,12 @@ static void igb_init_mas(struct igb_adapter *adapter)
-  **/
- static s32 igb_init_i2c(struct igb_adapter *adapter)
- {
--	struct e1000_hw *hw = &adapter->hw;
- 	s32 status = 0;
--	s32 i2cctl;
- 
- 	/* I2C interface supported on i350 devices */
- 	if (adapter->hw.mac.type != e1000_i350)
- 		return 0;
- 
--	i2cctl = rd32(E1000_I2CPARAMS);
--	i2cctl |= E1000_I2CBB_EN
--		| E1000_I2C_CLK_OUT | E1000_I2C_CLK_OE_N
--		| E1000_I2C_DATA_OUT | E1000_I2C_DATA_OE_N;
--	wr32(E1000_I2CPARAMS, i2cctl);
--	wrfl();
--
- 	/* Initialize the i2c bus which is controlled by the registers.
- 	 * This bus will use the i2c_algo_bit structure that implements
- 	 * the protocol through toggling of the 4 bits in the register.
-@@ -3146,6 +3141,30 @@ static s32 igb_init_i2c(struct igb_adapter *adapter)
- 	return status;
- }
- 
-+#ifdef CONFIG_IGB_HWMON
-+/**
-+ *  igb_set_i2c_bb - Init I2C interface
-+ *  @adapter: pointer to adapter structure
-+ **/
-+static void igb_set_i2c_bb(struct e1000_hw *hw)
-+{
-+	u32 ctrl_ext;
-+	s32 i2cctl;
-+
-+	ctrl_ext = rd32(E1000_CTRL_EXT);
-+	ctrl_ext |= E1000_CTRL_I2C_ENA;
-+	wr32(E1000_CTRL_EXT, ctrl_ext);
-+	wrfl();
-+
-+	i2cctl = rd32(E1000_I2CPARAMS);
-+	i2cctl |= E1000_I2CBB_EN
-+		| E1000_I2C_CLK_OE_N
-+		| E1000_I2C_DATA_OE_N;
-+	wr32(E1000_I2CPARAMS, i2cctl);
-+	wrfl();
-+}
-+#endif
-+
- /**
-  *  igb_probe - Device Initialization Routine
-  *  @pdev: PCI device information struct
-@@ -3520,6 +3539,11 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			adapter->ets = true;
- 		else
- 			adapter->ets = false;
-+		/* Only enable I2C bit banging if an external thermal
-+		   sensor is supported. */
-+		if (adapter->ets)
-+		  igb_set_i2c_bb(hw);
-+		hw->mac.ops.init_thermal_sensor_thresh(hw);
- 		if (igb_sysfs_init(adapter))
- 			dev_err(&pdev->dev,
- 				"failed to allocate sysfs resources\n");
--- 
-2.31.1
-
+> }
+> 
+> /**
+>-- 
+>2.25.1
+>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
