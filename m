@@ -1,88 +1,181 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58945C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Dec 2022 02:40:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 902C7C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Dec 2022 04:29:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0C95460BFE;
-	Mon, 12 Dec 2022 02:40:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0C95460BFE
+	by smtp4.osuosl.org (Postfix) with ESMTP id 08E9F40332;
+	Mon, 12 Dec 2022 04:29:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 08E9F40332
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1670812816;
-	bh=D/nRu+Dz1KkVDZGTSLwbg6f33Ffk1CHDOBcvUED/P9w=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1670819360;
+	bh=fpzYhYsZGbcqmK8fFVZXi2uXmzW/fMywqfshRfAb19k=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=SHkTvhZwJUshXiyifMhgV+g1D+KLfYy1w9mQW19eidQD8qYIxUm6f720QE13hLkXC
-	 WwYIlvyaaNRJVUMmnMS38kiAwWGAT8MmTsWHvzA/Ngyw9JkqWirjHjFX93Oj8e0oUc
-	 9CiC84BeFUJp4LvbwlOViggYHHXnsDk/rUKyx7rNlbQP/QKPmVa5sOFGgnyIu+AYN5
-	 eSku3QLDOcWwFoRE2e866beZSg40tl/ftWiOKsxj/aHe3/zdGRuF2OOpEwIY4Vorhh
-	 MBSwj93WgN/h7eO1KFEtJ7Uct0Cq70bDOpM7WjWLC0M9vNvGJaI5Sfvim9hxJcuC6n
-	 dfO6tgWDLocSg==
+	b=4lwT0QRHZtxJm/J8N5Djr0eyELMiHy+Rlz+w8howEVgMwj/3zPTDM8qe78KKGqH5/
+	 /+3lpmT61cHk6Dm1yRNRi7G66VS64Z+cgjrJ7ckSjMC5T5vvBWSzjVVeY+Lzvcs3/2
+	 q7HP6412anHgm7BIRdFWIjprJTsPDaqaSd48DSrxFDHckdAvF3GJfxJ/2bsQih7AuI
+	 goihfTmWctJ5Rp9M8y0g0MKIJ/XbjZ/Aw/77NOtkfm8ra6J5Tij70M3kxSD2i2jgjJ
+	 /wf4ZUaOsfLA3desJFpk2JWmyzO4LapQppaaSJkBzOG/1vOzFTwuxVVRGNhG3+JZ+w
+	 LkBwRG0n0C6Vw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id b-W2SUOg1ipE; Mon, 12 Dec 2022 02:40:15 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id QwhAX5XK-oD0; Mon, 12 Dec 2022 04:29:19 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DCC7160C06;
-	Mon, 12 Dec 2022 02:40:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DCC7160C06
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 7C65B1BF29D
- for <intel-wired-lan@osuosl.org>; Mon, 12 Dec 2022 02:40:04 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8C3D340580;
+	Mon, 12 Dec 2022 04:29:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8C3D340580
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id EA4AC1BF3A0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Dec 2022 04:29:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 55F0760BE9
- for <intel-wired-lan@osuosl.org>; Mon, 12 Dec 2022 02:40:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 55F0760BE9
+ by smtp4.osuosl.org (Postfix) with ESMTP id B658E40580
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Dec 2022 04:29:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B658E40580
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id y5ehahzlvwgp for <intel-wired-lan@osuosl.org>;
- Mon, 12 Dec 2022 02:40:01 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id PlxvoSsfhf7N for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 12 Dec 2022 04:29:14 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 24C3960BFE
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 24C3960BFE
- for <intel-wired-lan@osuosl.org>; Mon, 12 Dec 2022 02:40:01 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10558"; a="297431575"
-X-IronPort-AV: E=Sophos;i="5.96,237,1665471600"; d="scan'208";a="297431575"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Dec 2022 18:39:56 -0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5BEEE40332
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5BEEE40332
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Dec 2022 04:29:14 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10558"; a="382073995"
+X-IronPort-AV: E=Sophos;i="5.96,237,1665471600"; d="scan'208";a="382073995"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Dec 2022 20:29:13 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10558"; a="648006962"
-X-IronPort-AV: E=Sophos;i="5.96,237,1665471600"; d="scan'208";a="648006962"
-Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
- by orsmga002.jf.intel.com with ESMTP; 11 Dec 2022 18:39:51 -0800
-From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-To: intel-wired-lan@osuosl.org,
-	vinicius.gomes@intel.com
-Date: Mon, 12 Dec 2022 10:37:04 +0800
-Message-Id: <20221212023706.13384-2-muhammad.husaini.zulkifli@intel.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20221212023706.13384-1-muhammad.husaini.zulkifli@intel.com>
-References: <20221212023706.13384-1-muhammad.husaini.zulkifli@intel.com>
+X-IronPort-AV: E=McAfee;i="6500,9779,10558"; a="822353857"
+X-IronPort-AV: E=Sophos;i="5.96,237,1665471600"; d="scan'208";a="822353857"
+Received: from fmsmsx603.amr.corp.intel.com ([10.18.126.83])
+ by orsmga005.jf.intel.com with ESMTP; 11 Dec 2022 20:29:13 -0800
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.16; Sun, 11 Dec 2022 20:29:13 -0800
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.16; Sun, 11 Dec 2022 20:29:12 -0800
+Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.16 via Frontend Transport; Sun, 11 Dec 2022 20:29:12 -0800
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (104.47.59.169)
+ by edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.16; Sun, 11 Dec 2022 20:29:12 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Dkd9vwLu8t0bO5ojusfburn7A9YXlKAHgDCp4Une/K6ZAeVGrOem1AP/OQbknVR7BVsHl2o/1G2x/WpuPkWyZBHR9U8VnbuEsCU60iOegNMH9IO85EjnxnmH8rGguK/BImdxsrHbcYl9qgfo643K84QoobCMVIlVn8263bJQPZh9TODo2ijnS+XNCezAdY/u7H/tB4LrZdswVP2Q6ioHh2WkJsLpj5u4YKVAkD9hiSmkiMVVAXv5f2EUYCpZ8x1UXkr/aLhgX4UYjUF03WPYVScmekt35AyVV0NeTY4IMRGLPi9h4k0MBMC49bqzrM8ZQGmqZ3h9Fk9SNm8rM0MRsg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/J3UIqx3FSqk+lFNim3P1N5QRFIZhXPDW85Da9vo0m4=;
+ b=LX+CQU2fH+kjOAnRwNf85nLk73+58w5Scjjo6j0kGd1NLPVDfI6tqr74X4Tn2ZKlnYwOTnvFYILX9hvllcQRZfrTrtarhGKvi/zUISrRwO00dEXsKLQWHRNoGZ7LpTa00GwYBtiy0u4TukxE9/zsdbPlqjxKm7kiIExaXK3EOEx7vYVwFy7/oPS8yg+cu2cqqr4dZct7wPut7b+aH++1dIOYAGAcRkS9Q68n+GWlvVog3xDrChhtFHnuWiUA/IbEHtzYn/+qJ3/Yj1RHCxdOPfsutGdC+OmT0CZjbYAG5GGdiykVz8soE4e337QqhE1yseGI5p6C2BGU7HTRAnstsg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from MN2PR11MB4045.namprd11.prod.outlook.com (2603:10b6:208:135::27)
+ by SJ0PR11MB5200.namprd11.prod.outlook.com (2603:10b6:a03:2df::7)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5880.19; Mon, 12 Dec
+ 2022 04:29:10 +0000
+Received: from MN2PR11MB4045.namprd11.prod.outlook.com
+ ([fe80::39f1:b5ed:24d2:fa46]) by MN2PR11MB4045.namprd11.prod.outlook.com
+ ([fe80::39f1:b5ed:24d2:fa46%6]) with mapi id 15.20.5880.019; Mon, 12 Dec 2022
+ 04:29:10 +0000
+From: "Rout, ChandanX" <chandanx.rout@intel.com>
+To: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Thread-Topic: [Intel-wired-lan] [PATCH net-next v2] ixgbe: XDP: fix checker
+ warning from rcu pointer
+Thread-Index: AQHY/sz/Sv8jARlexke/JNO44GSTHK5MpgYAgB0ewFA=
+Date: Mon, 12 Dec 2022 04:29:10 +0000
+Message-ID: <MN2PR11MB404525CB9B0F77A01D9C9413EAE29@MN2PR11MB4045.namprd11.prod.outlook.com>
+References: <20221122234825.3360663-1-jesse.brandeburg@intel.com>
+ <Y34+won6ZEU1uxal@boxer>
+In-Reply-To: <Y34+won6ZEU1uxal@boxer>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MN2PR11MB4045:EE_|SJ0PR11MB5200:EE_
+x-ms-office365-filtering-correlation-id: 1dd21421-2152-450c-8444-08dadbf96a55
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: IhQatVnEyxxPnFCaR+I7j5UxrOOatl0XyIEwrZNphH1YthQrkuFy8isaJwhSJBx126c2mMAXA2OlBYi/jOAdUicR2lgupSTPAf6qOg22159H4mZ13rgfG6aEMRQExzK577OwzS+cmV2u3f+rya4q8jX3R5TrwFRK896sc9Eq1AeoSsZw0SDK/kcQq6UEG1HuBpEC7JFCN9pd9QQ6/8RgSRJbD7lyl0vW+aSi/jsdXPiaC2p7KFS3kvNUn0fE5YiqlAm+C2hgg24mquY1L1iqwt+KmFkhYWeh/y4kiQFjlXg1tM99Z4UYmaR92BnckV3mp9eR8/bp9TmBhZfAlEZYADwFEnPkPQ6w0zul/zGPwahGdtKsdoni5nK3JLpor1rIgXYgDJ32Q9XBoblMZTfMyKHhNPWvOnokI9yg1MkKwuRNntQFAyounGBQYs/Ai1fqgkoUsFzFHL2UT2YQcpZg7enO6AHZV96wYwhGMuFZdB7SJfyLOYpMrtB7Qe7CPd1Jc+vprIgHA9fWj/Cdo/5STV6wi13UABFbNVw2zLYSKaDBPY/OeJYlbkilvp8baHUCAQUm6q5r+HGjcopqD+JqWRWFf3mlJRi+01jUuOoQqmt2SqDEC0Hlkjg3BxsPRwxbxPdeQId73MDF/xEcuDdhLfr8wh7SiJWH3ZqMgOBnZcHkJn0L8P8aHBb6y1zEf90vCQDGFgaWOzO+phW+ye1BXA==
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MN2PR11MB4045.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230022)(39860400002)(366004)(136003)(376002)(346002)(396003)(451199015)(86362001)(2906002)(33656002)(6916009)(54906003)(83380400001)(186003)(66946007)(66556008)(64756008)(8936002)(55016003)(8676002)(76116006)(66446008)(52536014)(5660300002)(66476007)(4326008)(38070700005)(316002)(38100700002)(478600001)(71200400001)(9686003)(107886003)(122000001)(41300700001)(82960400001)(6506007)(53546011)(26005)(7696005);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?1iFGmzv2nf+HopJTMeAJL5hksptlLUH9p5EocjOruvc0dBQKx2g3qqw2aXK7?=
+ =?us-ascii?Q?+pCrzxKvxxQg0qd8CHVR+30HSWaRXiyo2e1kPWKv2yRNK798/B4JPvYWJr02?=
+ =?us-ascii?Q?O2aflmu3SDWWOQyC8ByO6eOSHarmpMdRhOBH9Z6q1kAhE0oqQIbnQ8ankgD4?=
+ =?us-ascii?Q?WN3CTc9ygVGxV5U6nzwEADRq3ogy1DVxGKNxUamGd+RjMW5CxceIhkdvRuBG?=
+ =?us-ascii?Q?UHkM7s7ajqmzJ0WhesgHSoCBxP2mBW+5V34Wpzg5TPnHSGKrLo6RFIgHez/O?=
+ =?us-ascii?Q?j3nqs4uaIoATerSluco7lT5hoGCW6BivbPaUjtmc2LiPVtY8Atp+G3/sskco?=
+ =?us-ascii?Q?2N+2+QY6/thnLVOfmgmEOBwfnuYPwhr7UVPkkCBlWC647139MbV8oP+YAe10?=
+ =?us-ascii?Q?+wrEGYCmQRabEYDI2jeDHDP2m/qW+qA9zXbSbuKWoq3hvx/dTzWLXeNT1w9Z?=
+ =?us-ascii?Q?H7rP8bDDEZLnJ32zOKc30GmZTBhvWqAkio2O6a3zuhWwJiOYhqCbEt3k7mgD?=
+ =?us-ascii?Q?tbJkNsEN/QB11hawqxegkEsmAPdm43oRgDYAhWpmBPQHxC3Pal+Z2GxuEWts?=
+ =?us-ascii?Q?4jo4D8+YklX1BTOF7tdsqFLlb77nzPqxEgLYxtx93fIZBtx/NJW1FBuSHFkr?=
+ =?us-ascii?Q?cdTjuDB/igfUk3V6cTe0nmD72JNDQefJSeOVzRRXYS8PH0a33D8FntnFnpnm?=
+ =?us-ascii?Q?qOaCk3FNF69/eklqUS5KO5sRt4kJ+2dMUMPuiC9vapQOXXA3wdG4Qfmatjnn?=
+ =?us-ascii?Q?Mm9aNLVRuMNOOuZ4GdzFCnWD34samfw/gHOljWJdH9VVHivrzCmrH0muBvkm?=
+ =?us-ascii?Q?pvh3KEPdZgH+qE8y/k4wKWAGaS1ZbE69lXJ2RaLipaYgJxbNUoRwkMncpqEE?=
+ =?us-ascii?Q?ke4GjyBiyAobZMiDJ0XFvagxwCmxVyzDxpugIxvKgIeLNe+L1GRwJvpZ8t1D?=
+ =?us-ascii?Q?FrvMUx+J0cRe7duDlvSoqyK24RoXISwSTNSyr8hg98UA8oOpCYtwBab5cDcU?=
+ =?us-ascii?Q?nATC68CH9DWmXXg4ps1UeWlpNezRItsI0sLbLo0yYhDbTKuNfsD3WU22iuV6?=
+ =?us-ascii?Q?X4dpp8xnltudIjEz7VS2EApbylkMul2QrZetlryf3HhPSojGe1zaNX8R1mrc?=
+ =?us-ascii?Q?l1kI8jpfb3PIqMJVRNQZpxd1Gf7/miAxsKk6XnsC/BxjTpr75O95Kb6boTV1?=
+ =?us-ascii?Q?ldBWooYA3cw1HmDATyDN4kYqwjj75Utr9xW84S1uEcq3pUtLJ+FGORhkw7Zf?=
+ =?us-ascii?Q?flVr+JAAKzwORzL3sJYw3RDG18tWEoDYPzqAoJh94JxXaN/0uDigpc/hlpk5?=
+ =?us-ascii?Q?Yj3FrlHvaxd0cMjRVv8WPUVQwQQcXP6atYYTu6sRzLxFtwDaRZ4atRNzKITu?=
+ =?us-ascii?Q?x7tuNCGrrtP8NC26+vzxrBLkKUy2yiA20de6q+e6M0I3vSaPGZziX6u7Olz5?=
+ =?us-ascii?Q?pA0K2qLJxXH5FB6r3zA0pq3JAAIu+xvtlu0k1RaZuhalfem+jyBkG1JgPOiJ?=
+ =?us-ascii?Q?8y1WHIvcJvFCl2p11eT6kKIfQ0WSwPC8iSi/hHjvbc6xXsW7Tkvf7qorukBm?=
+ =?us-ascii?Q?WhQH+0YVFrelaod7/+xx53sTkbf7EdBcot0+oYYw?=
+MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MN2PR11MB4045.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1dd21421-2152-450c-8444-08dadbf96a55
+X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Dec 2022 04:29:10.3362 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: dGg6JcWz7w8Rrt9880wHUPCg5N9MW82+MqteEQh25Y2SKzrqYiiBiMXEioe3FjTZ5Y6jyTNFRA4HGJPORiuC8A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB5200
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1670812801; x=1702348801;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references;
- bh=lKQvb6SokO7jtJ34fl9tHyIibS2q6nSvi1NAmylM19g=;
- b=XeN4WWXwInFuFkn9ejzi/OH9Z+EFyjOF8zrWguhh1t0npDpNjGRaj4Q1
- xHMFuvnhE+S6q5oMRfOzE7zEGZp05IbkRBQ7EzXxlbXsoh5IZ+HqUHCFQ
- IY8kMP8zI5+VWFcLfqOP1caeS5+T1v0WofIMktrtcCQzALsYmBeV1LNTj
- /1KSYDCc2Sp+qo9b26v7lPoMVA6WsOxErTENzYlDP5aDoLPMH2cykgp4R
- H35gEsoNuZgmvs/9YEWERS8bGCmvRJP+yDh/HyqlNMhCMsnHB06rJk7O/
- FMa1n+HC8+0B8yGwm+/fiJjhQJPCFj21CpmMd3TloEcuupQMRd2YyQg1h
+ t=1670819354; x=1702355354;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=ok1tR0JvsYpBRkKTKWlwXZ8B7vHwx5FQVXWEB5Qu3Tw=;
+ b=n9awxlWfHxXRJd22KpZ/xKgl+kzhXe0iT1VyMevAwpZQJPSuVFjYdiUu
+ 2cnKBrJqDlEPRQu0EVWNHqfOqX8GfD+LJSvFjK4yQ1LmuXlHlTm1t1lj8
+ PoqspmZQT6zX80oGF1PAQgFeJP7qHlk/A6E5yWfJapqJDaSjwtOx4pVgz
+ pOVS9lQK7mhCHWkKiPZZ4gp+q6+aNClNSYvC185phCnZUDDl3tSwaK7KH
+ USPN+Tm8KwCiYiKTU22sR3N5aJg0iVwkW6lgcWUnXw3QABZNqI7Z0seRA
+ 8u0E8APrQxA2pF/qngmHQ20wO0eAJzjKn2Jh+ojmfsNWjzi607KyuGUl6
  Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=XeN4WWXw
-Subject: [Intel-wired-lan] [PATCH net-next v1 1/3] igc: remove I226 Qbv
- BaseTime restriction
+ header.a=rsa-sha256 header.s=Intel header.b=n9awxlWf
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2] ixgbe: XDP: fix checker
+ warning from rcu pointer
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,222 +188,58 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: muhammad.husaini.zulkifli@intel.com, anthony.l.nguyen@intel.com,
- tee.min.tan@linux.intel.com
-MIME-Version: 1.0
+Cc: "Nagraj, Shravan" <shravan.nagraj@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Remove the Qbv BaseTime restriction for I226 so that the BaseTime can be
-scheduled to the future time. A new register bit of Tx Qav Control
-(Bit-7: FutScdDis) was introduced to allow I226 scheduling future time as
-Qbv BaseTime and not having the Tx hang timeout issue.
 
-Besides, according to datasheet section 7.5.2.9.3.3, FutScdDis bit has to
-be configured first before the cycle time and base time.
 
-Indeed the FutScdDis bit is only active on re-configuration, thus we have
-to set the BASET_L to zero and then only set it to the desired value.
+-----Original Message-----
+From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Fijalkowski, Maciej
+Sent: 23 November 2022 21:10
+To: Brandeburg, Jesse <jesse.brandeburg@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org; Karlsson, Magnus <magnus.karlsson@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2] ixgbe: XDP: fix checker warning from rcu pointer
 
-Please also note that the Qbv configuration flow is moved around based on
-the Qbv programming guideline that is documented in the latest datasheet.
+On Tue, Nov 22, 2022 at 03:48:25PM -0800, Jesse Brandeburg wrote:
+> The ixgbe driver uses an older style failure mode when initializing 
+> the XDP program and the queues. It causes some warnings when running 
+> C=2 checking builds (and it's the last one in the ethernet/intel tree).
+> 
+> $ make W=1 C=2 M=`pwd`/drivers/net/ethernet/intel modules
+> .../ixgbe_main.c:10301:25: error: incompatible types in comparison expression (different address spaces):
+> .../ixgbe_main.c:10301:25:    struct bpf_prog [noderef] __rcu *
+> .../ixgbe_main.c:10301:25:    struct bpf_prog *
+> 
+> Fix the problem by removing the line that tried to re-xchg "the 
+> old_prog pointer" if there was an error, to make this driver act like 
+> the other drivers which return the error code without "pointer restoration."
+> 
+> Also, update the "copy the pointer" logic to use WRITE_ONCE as 
+> many/all the other drivers do, which required making a change in two 
+> separate functions that write the xdp_prog variable in the ring.
+> 
+> The code here was modeled after the code in i40e/i40e_xdp_setup().
+> 
+> NOTE: Compile-tested only.
 
-Co-Developed-by: Tan Tee Min <tee.min.tan@linux.intel.com>
-Signed-off-by: Tan Tee Min <tee.min.tan@linux.intel.com>
-Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_base.c    | 29 +++++++++++++
- drivers/net/ethernet/intel/igc/igc_base.h    |  2 +
- drivers/net/ethernet/intel/igc/igc_defines.h |  1 +
- drivers/net/ethernet/intel/igc/igc_main.c    |  5 ++-
- drivers/net/ethernet/intel/igc/igc_tsn.c     | 44 +++++++++++++-------
- 5 files changed, 65 insertions(+), 16 deletions(-)
+Giving samples/bpf/xdp1 a spin wouldn't hurt :P
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index a15927e77272..a1d815af507d 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -396,6 +396,35 @@ void igc_rx_fifo_flush_base(struct igc_hw *hw)
- 	rd32(IGC_MPC);
- }
- 
-+bool igc_is_device_id_i225(struct igc_hw *hw)
-+{
-+	switch (hw->device_id) {
-+	case IGC_DEV_ID_I225_LM:
-+	case IGC_DEV_ID_I225_V:
-+	case IGC_DEV_ID_I225_I:
-+	case IGC_DEV_ID_I225_K:
-+	case IGC_DEV_ID_I225_K2:
-+	case IGC_DEV_ID_I225_LMVP:
-+	case IGC_DEV_ID_I225_IT:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+bool igc_is_device_id_i226(struct igc_hw *hw)
-+{
-+	switch (hw->device_id) {
-+	case IGC_DEV_ID_I226_LM:
-+	case IGC_DEV_ID_I226_V:
-+	case IGC_DEV_ID_I226_K:
-+	case IGC_DEV_ID_I226_IT:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
- static struct igc_mac_operations igc_mac_ops_base = {
- 	.init_hw		= igc_init_hw_base,
- 	.check_for_link		= igc_check_for_copper_link,
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.h b/drivers/net/ethernet/intel/igc/igc_base.h
-index ce530f5fd7bd..7a992befca24 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.h
-+++ b/drivers/net/ethernet/intel/igc/igc_base.h
-@@ -7,6 +7,8 @@
- /* forward declaration */
- void igc_rx_fifo_flush_base(struct igc_hw *hw);
- void igc_power_down_phy_copper_base(struct igc_hw *hw);
-+bool igc_is_device_id_i225(struct igc_hw *hw);
-+bool igc_is_device_id_i226(struct igc_hw *hw);
- 
- /* Transmit Descriptor - Advanced */
- union igc_adv_tx_desc {
-diff --git a/drivers/net/ethernet/intel/igc/igc_defines.h b/drivers/net/ethernet/intel/igc/igc_defines.h
-index a7b22639cfcd..0e23f6244ffb 100644
---- a/drivers/net/ethernet/intel/igc/igc_defines.h
-+++ b/drivers/net/ethernet/intel/igc/igc_defines.h
-@@ -522,6 +522,7 @@
- /* Transmit Scheduling */
- #define IGC_TQAVCTRL_TRANSMIT_MODE_TSN	0x00000001
- #define IGC_TQAVCTRL_ENHANCED_QAV	0x00000008
-+#define IGC_TQAVCTRL_FUTSCDDIS		0x00000080
- 
- #define IGC_TXQCTL_QUEUE_MODE_LAUNCHT	0x00000001
- #define IGC_TXQCTL_STRICT_CYCLE		0x00000002
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index e07287e05862..37221c99b899 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -5941,6 +5941,7 @@ static bool validate_schedule(struct igc_adapter *adapter,
- 			      const struct tc_taprio_qopt_offload *qopt)
- {
- 	int queue_uses[IGC_MAX_TX_QUEUES] = { };
-+	struct igc_hw *hw = &adapter->hw;
- 	struct timespec64 now;
- 	size_t n;
- 
-@@ -5953,8 +5954,10 @@ static bool validate_schedule(struct igc_adapter *adapter,
- 	 * in the future, it will hold all the packets until that
- 	 * time, causing a lot of TX Hangs, so to avoid that, we
- 	 * reject schedules that would start in the future.
-+	 * Note: Limitation above is no longer in i226.
- 	 */
--	if (!is_base_time_past(qopt->base_time, &now))
-+	if (!is_base_time_past(qopt->base_time, &now) &&
-+	    igc_is_device_id_i225(hw))
- 		return false;
- 
- 	for (n = 0; n < qopt->num_entries; n++) {
-diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
-index bb10d7b65232..28325dc4fc5b 100644
---- a/drivers/net/ethernet/intel/igc/igc_tsn.c
-+++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-@@ -2,6 +2,7 @@
- /* Copyright (c)  2019 Intel Corporation */
- 
- #include "igc.h"
-+#include "igc_hw.h"
- #include "igc_tsn.h"
- 
- static bool is_any_launchtime(struct igc_adapter *adapter)
-@@ -92,7 +93,8 @@ static int igc_tsn_disable_offload(struct igc_adapter *adapter)
- 
- 	tqavctrl = rd32(IGC_TQAVCTRL);
- 	tqavctrl &= ~(IGC_TQAVCTRL_TRANSMIT_MODE_TSN |
--		      IGC_TQAVCTRL_ENHANCED_QAV);
-+		      IGC_TQAVCTRL_ENHANCED_QAV | IGC_TQAVCTRL_FUTSCDDIS);
-+
- 	wr32(IGC_TQAVCTRL, tqavctrl);
- 
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
-@@ -117,20 +119,10 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 	ktime_t base_time, systim;
- 	int i;
- 
--	cycle = adapter->cycle_time;
--	base_time = adapter->base_time;
--
- 	wr32(IGC_TSAUXC, 0);
- 	wr32(IGC_DTXMXPKTSZ, IGC_DTXMXPKTSZ_TSN);
- 	wr32(IGC_TXPBS, IGC_TXPBSIZE_TSN);
- 
--	tqavctrl = rd32(IGC_TQAVCTRL);
--	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
--	wr32(IGC_TQAVCTRL, tqavctrl);
--
--	wr32(IGC_QBVCYCLET_S, cycle);
--	wr32(IGC_QBVCYCLET, cycle);
--
- 	for (i = 0; i < adapter->num_tx_queues; i++) {
- 		struct igc_ring *ring = adapter->tx_ring[i];
- 		u32 txqctl = 0;
-@@ -233,21 +225,43 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
- 		wr32(IGC_TXQCTL(i), txqctl);
- 	}
- 
-+	tqavctrl = rd32(IGC_TQAVCTRL);
-+	tqavctrl |= IGC_TQAVCTRL_TRANSMIT_MODE_TSN | IGC_TQAVCTRL_ENHANCED_QAV;
-+
-+	cycle = adapter->cycle_time;
-+	base_time = adapter->base_time;
-+
- 	nsec = rd32(IGC_SYSTIML);
- 	sec = rd32(IGC_SYSTIMH);
- 
- 	systim = ktime_set(sec, nsec);
--
- 	if (ktime_compare(systim, base_time) > 0) {
--		s64 n;
-+		s64 n = div64_s64(ktime_sub_ns(systim, base_time), cycle);
- 
--		n = div64_s64(ktime_sub_ns(systim, base_time), cycle);
- 		base_time = ktime_add_ns(base_time, (n + 1) * cycle);
-+	} else {
-+		/* According to datasheet section 7.5.2.9.3.3, FutScdDis bit
-+		 * has to be configured before the cycle time and base time.
-+		 */
-+		if (igc_is_device_id_i226(hw))
-+			tqavctrl |= IGC_TQAVCTRL_FUTSCDDIS;
- 	}
- 
--	baset_h = div_s64_rem(base_time, NSEC_PER_SEC, &baset_l);
-+	wr32(IGC_TQAVCTRL, tqavctrl);
-+
-+	wr32(IGC_QBVCYCLET_S, cycle);
-+	wr32(IGC_QBVCYCLET, cycle);
- 
-+	baset_h = div_s64_rem(base_time, NSEC_PER_SEC, &baset_l);
- 	wr32(IGC_BASET_H, baset_h);
-+
-+	/* In i226, Future base time is only supported when FutScdDis bit
-+	 * is enabled and only active for re-configuration.
-+	 * In this case, initialize the base time with zero to create
-+	 * "re-configuration" scenario then only set the desired base time.
-+	 */
-+	if (tqavctrl & IGC_TQAVCTRL_FUTSCDDIS)
-+		wr32(IGC_BASET_L, 0);
- 	wr32(IGC_BASET_L, baset_l);
- 
- 	return 0;
--- 
-2.17.1
+Otherwise, this LGTM, shouldn't break anything:
+Acked-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 
+> 
+> CC: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+> CC: Magnus Karlsson <magnus.karlsson@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 13 ++++++-------
+>  1 file changed, 6 insertions(+), 7 deletions(-)
+> 
+
+Tested-by: Chandan Kumar Rout <chandanx.rout@intel.com> (A Contingent Worker at Intel)
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
