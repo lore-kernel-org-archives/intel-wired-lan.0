@@ -1,106 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57999C10F1D
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Dec 2022 15:58:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4AB41C10F1D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Dec 2022 16:01:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C8BEF607C7;
-	Tue, 13 Dec 2022 15:58:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C8BEF607C7
+	by smtp1.osuosl.org (Postfix) with ESMTP id C9809813F5;
+	Tue, 13 Dec 2022 16:01:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C9809813F5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1670947104;
-	bh=Tqn4mJEaRbhTlI8doOd0+cvouDPGRvQKI0kAbV1jDX0=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=UTxJ2rqUA9ezaygqASdgxB5qItfY9xEgl4NcY2ChD4DBshOHgDjKpqsbploHP22JX
-	 sFbGrV0nsuYJcI/CgFyrCSFRit62Ae5L0xl3+A1bhyfUF6BisEQPiTTDS/SX5/hjYz
-	 3YEYAlVQ8FVjS9zC8tfneO3MM+dz5gdbVbCqRxNILgCZBEOud+z3bHvV13kso+IO14
-	 rCZ4AbwRpxzx8pxUgJamqbfmi0DY/BHC0NTiPrfcty7sk9jy1bRisMc3tLVO0SOkJI
-	 UdY6n41eLsYGrB2/9EsC9IGndK/ibQGLBkgXW7Pl0341iVTpC8LPsnhkm/kQ6mfKZM
-	 OpALKtYTv2P+w==
+	s=default; t=1670947289;
+	bh=35E8PvC9L23YTOO5GhOvGiytUzzF/TBgZ2bQm1DW/hc=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=P+jzQwQpDYNWRw1QcBm2ydz8hnU86A33PnRfqePMAWRAMfutEfJjrjHKkBk8f7h0o
+	 xwJPIXPSUMeRzxHeXcwYFqkuFd6np+eUS2Iz4FoPF+TxOHvmvVZ6zK0dKi3bGWKZjZ
+	 xd3p4zrTNLEkoNvzQFQq5bsPDcRH4sW7hIRrw9qR0QJlrzejeODyqh4JGVVImiiA8O
+	 MqLxeP6+K/MHMbMj9nu7b3t5pgsxH+onjye/3WjDAk3uk0b8blHSx4aW1k95fbrJg9
+	 AMde2xu0/r8Mrw83tK2gagTQVpu20swbIqEa1o9BA4MtvRTtCCq5Jy/xy6XHGJrMBP
+	 MuqeKdxXOR55A==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id EA6cY8sF8K9H; Tue, 13 Dec 2022 15:58:24 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id e8n7KbAk1Grq; Tue, 13 Dec 2022 16:01:29 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C8AD960A8B;
-	Tue, 13 Dec 2022 15:58:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C8AD960A8B
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 040491BF3A8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Dec 2022 15:58:23 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id E42DA8143C;
+	Tue, 13 Dec 2022 16:01:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E42DA8143C
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 69A961BF29C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Dec 2022 11:04:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D238B60A8B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Dec 2022 15:58:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D238B60A8B
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3EEAA416C7
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Dec 2022 11:04:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3EEAA416C7
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HXD47Gpo1IX9 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Dec 2022 15:58:22 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3F09A607C7
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com
- [IPv6:2607:f8b0:4864:20::630])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3F09A607C7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Dec 2022 15:58:22 +0000 (UTC)
-Received: by mail-pl1-x630.google.com with SMTP id w23so172955ply.12
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Dec 2022 07:58:22 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=mime-version:user-agent:content-transfer-encoding:references
- :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
- :from:to:cc:subject:date:message-id:reply-to;
- bh=L2KwEdJdz8SZz3waYhraeZmfXbWgedoNQcqshGcRjyQ=;
- b=mWOT1FySTkjktHwxGjT4qxQ5BwzLf/HjY7GEpxYIxR3kkN3dUzkz/oSCU9CZE6MBQx
- 8Rry2YpAXSMzBpZwSQN9DTFgOibpZRlEPtfSTn1a55DxbaZWRr//FBxsJMtkbQhjRr6P
- +NtmKoH9X+ndr79y3GMU2LfIX8/vUnwSHWoBlneUZl0pftDdv89/NmZDjRaVI1zVnN1V
- fjpnNb+pUYP9HMlq80KdIw2Eu1IhLeaqEIwH5FIaAT5qiNys9riRa/3VyNyfgN9m5aJM
- WVSwmmdW1TNAMzvEJ6kOYJqWM9t79IMRm8UbAkxRRHnvkn8I7xSLuNpGIHgdeXqsLcOg
- X54Q==
-X-Gm-Message-State: ANoB5pkOWNsI2oMDPlL+0ExFwZyoH6pLngJ3qJsc1/J8eY1fv5lUIKvs
- QpcM3Ik8WT8uoQX504PjGh8=
-X-Google-Smtp-Source: AA0mqf4ASAm91c18uzbgdF0yT/tzLVd89/CZlvbaX4MOqMjsoYKxBEikl31a3JskKH0GZN9iwuRcgg==
-X-Received: by 2002:a17:902:9a43:b0:187:16c2:d52c with SMTP id
- x3-20020a1709029a4300b0018716c2d52cmr19322313plv.50.1670947101435; 
- Tue, 13 Dec 2022 07:58:21 -0800 (PST)
-Received: from [192.168.0.128] ([98.97.42.38])
- by smtp.googlemail.com with ESMTPSA id
- ix17-20020a170902f81100b001895f7c8a71sm71952plb.97.2022.12.13.07.58.20
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 13 Dec 2022 07:58:21 -0800 (PST)
-Message-ID: <cf6f03d04c8f2ad2627a924f7ee66645d661d746.camel@gmail.com>
-From: Alexander H Duyck <alexander.duyck@gmail.com>
-To: Tirthendu Sarkar <tirthendu.sarkar@intel.com>, tirtha@gmail.com, 
- jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
- davem@davemloft.net,  edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, ast@kernel.org,  daniel@iogearbox.net, hawk@kernel.org,
- john.fastabend@gmail.com,  intel-wired-lan@lists.osuosl.org
-Date: Tue, 13 Dec 2022 07:58:19 -0800
-In-Reply-To: <20221213105023.196409-1-tirthendu.sarkar@intel.com>
-References: <20221213105023.196409-1-tirthendu.sarkar@intel.com>
-User-Agent: Evolution 3.44.4 (3.44.4-2.fc36) 
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id fOaPeYNEF1Ql for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Dec 2022 11:04:14 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5E538416C3
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5E538416C3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Dec 2022 11:04:14 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10559"; a="305744347"
+X-IronPort-AV: E=Sophos;i="5.96,241,1665471600"; d="scan'208";a="305744347"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Dec 2022 03:04:13 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10559"; a="679263020"
+X-IronPort-AV: E=Sophos;i="5.96,241,1665471600"; d="scan'208";a="679263020"
+Received: from unknown (HELO paamrpdk12-S2600BPB.aw.intel.com)
+ ([10.228.151.145])
+ by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Dec 2022 03:04:11 -0800
+From: Tirthendu Sarkar <tirthendu.sarkar@intel.com>
+To: tirtha@gmail.com, jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com, ast@kernel.org, daniel@iogearbox.net, hawk@kernel.org,
+ john.fastabend@gmail.com, intel-wired-lan@lists.osuosl.org
+Date: Tue, 13 Dec 2022 16:20:18 +0530
+Message-Id: <20221213105023.196409-1-tirthendu.sarkar@intel.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=mime-version:user-agent:content-transfer-encoding:references
- :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
- :date:message-id:reply-to;
- bh=L2KwEdJdz8SZz3waYhraeZmfXbWgedoNQcqshGcRjyQ=;
- b=KnUh26J7JZRs5EIrjhCuhTh0mR4I4x0Ew2N5op3jpJnsa4Yw+nMuPEPNwrYmve9DTD
- mVQP6RtncAKCTBt/N9udvh3n2Qzj+/bV0YsglSLWzr1jOJzGDAAu4jCbHzIxoO5L/vOo
- bL0jAUFUW9baIcGA/BE9WAmdLJv6nCApYuhn5ngTkmwBewEjIK1QFFVlW1PHyDZ3/g2L
- p2M3F4A5vCD7qzRU9rger8MO4NszpALiP3uT4bDvSdrEtRF4eAFwjW1oL6uS0bHFrElt
- zIqvH2Dv7YdSjr/Sr0V/pdNih3GwgqcB6iHueHlz7D7VqIs92IBbm/lOTGO5+EFC34L7
- 1bxw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=KnUh26J7
-Subject: Re: [Intel-wired-lan] [PATCH intel-next 0/5] i40e: support XDP
+X-Mailman-Approved-At: Tue, 13 Dec 2022 16:01:27 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1670929454; x=1702465454;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=qUgI9kJMyxfeIBUg1MqvWukhfpYdTN7aNnJshDSAb0o=;
+ b=IPw/dRoPVE1aEQp0LPUWPHFQly03zqFLYB4zhoMg8AceZR0eqeaa1cKE
+ LrmBpxsSlNAiQptWVgfDUGkUXv9NaQL8n64rvbUvdRkxjXcF791O0mK8X
+ 3GPSb4jkM0MVxbtNBNscVhEwSmhz1oZeQKmlYVMKjKWlU7YArwxHLbX3T
+ NqZpp73vCZo1f9Pvz7wR99ai0Kn18NW6wDmFyLxaEGNCeH7JXH7Yn6yG4
+ deXb/cm2jB0aYvLmc7Fa9ICULqTWh0S82IkhGi06G5efsYHnlRDaC+I1+
+ RJz1J3exr9uM+GZ7UItAf3AWJ2xnXDVfwspuXHqCdURWWmFp22GthxuDD
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=IPw/dRoP
+Subject: [Intel-wired-lan] [PATCH intel-next 0/5] i40e: support XDP
  multi-buffer
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -121,34 +104,25 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 2022-12-13 at 16:20 +0530, Tirthendu Sarkar wrote:
-> This patchset adds multi-buffer support for XDP. The first four patches
-> are prepatory patches while the fifth one contains actual multi-buffer
-> changes. 
-> 
-> Tirthendu Sarkar (5):
->   i40e: add pre-xdp page_count in rx_buffer
->   i40e: avoid per buffer next_to_clean access from i40e_ring
->   i40e: introduce next_to_process to i40e_ring
->   i40e: pull out rx buffer allocation to end of i40e_clean_rx_irq()
->   i40e: add support for XDP multi-buffer Rx
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c |  18 +-
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 378 ++++++++++++++------
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h |  13 +-
->  3 files changed, 280 insertions(+), 129 deletions(-)
-> 
+This patchset adds multi-buffer support for XDP. The first four patches
+are prepatory patches while the fifth one contains actual multi-buffer
+changes. 
 
-This approach seems kind of convoluted to me. Basically you are trying
-to clean the ring without cleaning the ring in the cases where you
-encounter a non EOP descriptor.
+Tirthendu Sarkar (5):
+  i40e: add pre-xdp page_count in rx_buffer
+  i40e: avoid per buffer next_to_clean access from i40e_ring
+  i40e: introduce next_to_process to i40e_ring
+  i40e: pull out rx buffer allocation to end of i40e_clean_rx_irq()
+  i40e: add support for XDP multi-buffer Rx
 
-Why not just replace the skb pointer with an xdp_buff in the ring? Then
-you just build an xdp_buff w/ frags and then convert it after after
-i40e_is_non_eop? You should then still be able to use all the same page
-counting tricks and the pages would just be dropped into the shared
-info of an xdp_buff instead of an skb and function the same assuming
-you have all the logic in place to clean them up correctly.
+ drivers/net/ethernet/intel/i40e/i40e_main.c |  18 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 378 ++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h |  13 +-
+ 3 files changed, 280 insertions(+), 129 deletions(-)
+
+-- 
+2.34.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
