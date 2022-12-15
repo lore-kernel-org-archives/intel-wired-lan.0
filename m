@@ -1,85 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B3C4C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Dec 2022 21:37:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BE14C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Dec 2022 21:37:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2704E820EC;
-	Thu, 15 Dec 2022 21:37:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2704E820EC
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0C26360DA5;
+	Thu, 15 Dec 2022 21:37:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0C26360DA5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1671140255;
-	bh=ssXy+gkOwYMAOUE+FZ9wKrBOBV5aVL9wowquu7W8tHE=;
+	s=default; t=1671140269;
+	bh=GieofwDCQ7cRJQ8m53/2394jsikIzwFoFHnKmHAr5AE=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=Osm4XsaSbrCIQzl9vBrS6NzTppQYQpsnacXwEhTuYIVQ/r/KdJn4CbHawcQUYi/C9
-	 VuX3WcGlTuOhpxUucIcrktgUA3xfJaN0vKC0UURXW91YjpcqOJUMQwg2hxIhfHN/bi
-	 6mgSAxtyQDXBTV/7wWfr5RJFHhJwOj3a4ky649Fafvw5RROJc7B7K/CgDYk0mM8n+W
-	 EhTZNyF6ZRwJBNoTXTMC9kzwZkmmZQFGxGjOjHiJ70tj9vXpS+hyCu2Y/5qSReyTU2
-	 5m8kioKCNkLAkAeuZ3q85KcJuCkjRDEOpssaDcs/1eMx5lckYutCESFZxnp7WOkXSi
-	 XLX8hQltUMpfw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id k-323OR4hZz5; Thu, 15 Dec 2022 21:37:34 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2B7A1820FF;
-	Thu, 15 Dec 2022 21:37:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2B7A1820FF
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id A2FE11BF2C8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Dec 2022 21:37:32 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 8A73560E17
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Dec 2022 21:37:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8A73560E17
+	b=HD2Rf48QIXFpO9aHyDx/bCM+ZcIuyYgQgJrVewS6MJu+gJJYCgTqZ+iV7kSbHNKaI
+	 tV5xPEZdunYqc8VM3fM+oMRKybpkj0bl5M3RytSjhtKoKPvxXXTu69Pje2xo/CWup6
+	 WbqwnEgubE+Zbz+lelXsW+/vWylHJeKHExvN4X3ByZ5DGSF/uZR15eOj+gm5ILjJbN
+	 KyOUj2XvQWAJ9YASS7gFYlwcqdisqFyQj4MDUil/rWGb0TuO7t+glDafg0ftk6USXG
+	 Tn1DRS136qDwR/Q0vISbrCymxXdQZkq9MGn2dWpvjqcEagk9VtJv990uO0Fhc43a55
+	 lVSe51VGT3kWQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gWozKIJi_htu for <intel-wired-lan@lists.osuosl.org>;
- Thu, 15 Dec 2022 21:37:32 +0000 (UTC)
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 4S0x2nBKmbDT; Thu, 15 Dec 2022 21:37:48 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1391C60E17;
+	Thu, 15 Dec 2022 21:37:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1391C60E17
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id CCC6D1BF2C8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Dec 2022 21:37:46 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id B47AC820FF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Dec 2022 21:37:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B47AC820FF
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id vjJLEShJjfom for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 15 Dec 2022 21:37:46 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E327B60DA5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D68EE820EC
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E327B60DA5
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Dec 2022 21:37:31 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10562"; a="383139041"
-X-IronPort-AV: E=Sophos;i="5.96,248,1665471600"; d="scan'208";a="383139041"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D68EE820EC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Dec 2022 21:37:45 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10562"; a="383139068"
+X-IronPort-AV: E=Sophos;i="5.96,248,1665471600"; d="scan'208";a="383139068"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Dec 2022 13:37:31 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10562"; a="756502436"
-X-IronPort-AV: E=Sophos;i="5.96,248,1665471600"; d="scan'208";a="756502436"
+ 15 Dec 2022 13:37:45 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10562"; a="756502444"
+X-IronPort-AV: E=Sophos;i="5.96,248,1665471600"; d="scan'208";a="756502444"
 Received: from unknown (HELO anguy11-linux.jf.intel.com) ([10.166.241.12])
  by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Dec 2022 13:37:30 -0800
+ 15 Dec 2022 13:37:44 -0800
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 15 Dec 2022 13:36:37 -0800
-Message-Id: <20221215213637.45065-1-anthony.l.nguyen@intel.com>
+Date: Thu, 15 Dec 2022 13:36:51 -0800
+Message-Id: <20221215213651.45135-1-anthony.l.nguyen@intel.com>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1671140251; x=1702676251;
+ t=1671140265; x=1702676265;
  h=from:to:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=L0+ad0E4mc3TVvZm1i1Wv8dqYj2az52sYznjOD14gjA=;
- b=VMpR9H39aMGjTvyqbcdsfArm+ehu/kl+IqZKFYp6JsSToxZmlb7+nsuT
- O7I9B6CgKiw8YI8Eqhqm9OWFMRk0nrbyH+oA/GWX34wI9kYpmh4Ub2laV
- 8AAFlQsQlHLfY6Smeb9WxC/65dTKKEHoDJKm8i/Ee+RZvY0wDyoUD4w4h
- 9fHcwGG1WcInS52zCvg9KkDvsDG5nbxD5XkFYuHpswlAZ0C4lHa+o1V6q
- Z26sxftzRIxlgXOOwLbpZuZAXEtarxzw40XZUKSVg+BHbyC5XbhLtz+cf
- pe17jDL5gxycsEEnUM/uM9Wqx8r4RoB/5taCWoPhzgSZaXep9abkZRQL4
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=6mjy8Rkc75VnvtKnzasjX9DECRgO6XBMdGv7j0wCtLM=;
+ b=U1vvUylwv/91QzK1Tg5r3FjSo9QFNE91Kgl+ddZngn7eh5S2kDua3C70
+ y59M6tIDioAP8/ZlMpZpw6GOaZpveVoSOGvQKnGlmG6tk8jOV7P165u3v
+ NthhkYCKDg438bc6UyFa+RODnV7j8OGatsLL4PVEXKVfiHf5vigeLb/3T
+ E+xk9DDkzx5lCoQPthQxVKmElWi2XiD78a8Pd9v3WkLs1wN7F1B+QVMJO
+ Yf/zQnii089Du48Q8mA1jNilPnIfwM3LGn14r9vr4FBSZOnmlUfL7zaNv
+ TaPS3HGMng+tIWX8ghBU2IIFdHlyhvz19pOT3xk170EEEitg/Jeb9SfSc
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=VMpR9H39
-Subject: [Intel-wired-lan] [PATCH net-next] ice: Match parameter name for
- ice_cfg_phy_fc()
+ header.a=rsa-sha256 header.s=Intel header.b=U1vvUylw
+Subject: [Intel-wired-lan] [PATCH net-next] ice: Introduce local var for
+ readability
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,27 +97,57 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The parameter name in the function declaration and definition do not
-match; adjust the naming for consistency and to avoid confusion.
+Based on previous feedback[1], introduce a local var to make things more
+readable.
+
+[1] https://lore.kernel.org/netdev/20220315203218.607f612b@kicinski-fedora-pc1c0hjn.dhcp.thefacebook.com/
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 6a7898565072..8ba5f935a092 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -122,7 +122,7 @@ ice_set_fc(struct ice_port_info *pi, u8 *aq_failures,
- 	   bool ena_auto_link_update);
- int
- ice_cfg_phy_fc(struct ice_port_info *pi, struct ice_aqc_set_phy_cfg_data *cfg,
--	       enum ice_fc_mode fc);
-+	       enum ice_fc_mode req_mode);
- bool
- ice_phy_caps_equals_cfg(struct ice_aqc_get_phy_caps_data *caps,
- 			struct ice_aqc_set_phy_cfg_data *cfg);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 57d762cdaf2a..3c5e06acad62 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -5058,8 +5058,11 @@ static void ice_setup_mc_magic_wake(struct ice_pf *pf)
+ static void ice_remove(struct pci_dev *pdev)
+ {
+ 	struct ice_pf *pf = pci_get_drvdata(pdev);
++	struct ice_hw *hw;
+ 	int i;
+ 
++	hw = &pf->hw;
++
+ 	ice_devlink_unregister(pf);
+ 	for (i = 0; i < ICE_MAX_RESET_WAIT; i++) {
+ 		if (!ice_is_reset_in_progress(pf->state))
+@@ -5092,7 +5095,7 @@ static void ice_remove(struct pci_dev *pdev)
+ 		ice_remove_arfs(pf);
+ 	ice_setup_mc_magic_wake(pf);
+ 	ice_vsi_release_all(pf);
+-	mutex_destroy(&(&pf->hw)->fdir_fltr_lock);
++	mutex_destroy(&hw->fdir_fltr_lock);
+ 	ice_devlink_destroy_pf_port(pf);
+ 	ice_set_wake(pf);
+ 	ice_free_irq_msix_misc(pf);
+@@ -5105,13 +5108,13 @@ static void ice_remove(struct pci_dev *pdev)
+ 	pf->vsi_stats = NULL;
+ 	ice_deinit_pf(pf);
+ 	ice_devlink_destroy_regions(pf);
+-	ice_deinit_hw(&pf->hw);
++	ice_deinit_hw(hw);
+ 
+ 	/* Issue a PFR as part of the prescribed driver unload flow.  Do not
+ 	 * do it via ice_schedule_reset() since there is no need to rebuild
+ 	 * and the service task is already stopped.
+ 	 */
+-	ice_reset(&pf->hw, ICE_RESET_PFR);
++	ice_reset(hw, ICE_RESET_PFR);
+ 	pci_wait_for_pending_transaction(pdev);
+ 	ice_clear_interrupt_scheme(pf);
+ 	pci_disable_pcie_error_reporting(pdev);
 -- 
 2.20.1
 
