@@ -1,84 +1,103 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C230C001B2
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Dec 2022 15:06:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDB15C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Dec 2022 16:29:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1DB3C607F1;
-	Fri, 16 Dec 2022 15:06:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1DB3C607F1
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6133481336;
+	Fri, 16 Dec 2022 16:29:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6133481336
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1671203213;
-	bh=s5ZtZ1N6PqgTdQeFhbNXeq5lG6blkU33vN4M7UYlRNQ=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=5ffEIqHkLn6ukxmZyyrzfjUpgkTWLmGHhdjZ1g6k5XDJszC99xiwzxBWHsDhlR4XX
-	 FH2bOF/x8b1SSu0HwcXn0+7G86ENtv0IGtFaficKNpTmPHeiObeAuf/r5ti9TpaITU
-	 +ENGHbm8GIEOII3ewCee7qHr9Gr1WX5D++VnImRkT/+nMOE66xd8P32foAbkNk8GeC
-	 Z3nYjDGxwDhK2C7h9GiR7+cCCH051+NwzVuVIlDsix62Fe8SmjxWdqBrkAgNVpqQp/
-	 KkYz2RjLUAu2sMrOIELK9aDs6GAVvu4EB6nylA3Aj7VejwOMS4t6QWIxjVvBZ59Y5S
-	 F9zv3HWSd14gw==
+	s=default; t=1671208174;
+	bh=xPlWXBzsBEGy8t11hSoy2Z6nv6LIHaX80gyiSDVTuFM=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=kLxqqiK3Yb2Gc7Ku7CQkJgIUS8oYa6RXlieAjWN214KrgM8liCEm0xrBQiBZnr25q
+	 PlT2aePZcIrRnfewkF6/xSCCg3f0XBNbxJ+BbJr1t3Zo4wGrHgwGrxBrercyDrGonr
+	 39Qlvz1oMBysU1A6oIfiN4O0rHmnqmiskwkM9LiST45sNFqmGrQtgnwCuSPjoZXjAB
+	 bhvvC7ugLsAqXJ+lKWiza8KUVMBWwriTSeK0N6JO5R0i7lNFYW5qBROFwWUAlO52sH
+	 vMGBEYwTvDvRNrO62O0D8a5fOY2wC1rvFIll7NjrEMnWhn7L+8cNRjI4jkMrfane1w
+	 p0Es5sSL2VZyA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XuoSphPBehPs; Fri, 16 Dec 2022 15:06:52 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 6eMMWpq8hONR; Fri, 16 Dec 2022 16:29:33 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2031D60BD9;
-	Fri, 16 Dec 2022 15:06:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2031D60BD9
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 3030D1BF342
- for <intel-wired-lan@osuosl.org>; Fri, 16 Dec 2022 15:06:50 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 755CD81344;
+	Fri, 16 Dec 2022 16:29:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 755CD81344
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 72B221BF2C3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 16:29:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 173B8404FE
- for <intel-wired-lan@osuosl.org>; Fri, 16 Dec 2022 15:06:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 173B8404FE
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4AAFA415FD
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 16:29:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4AAFA415FD
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Ig1vJL9x2W2m for <intel-wired-lan@osuosl.org>;
- Fri, 16 Dec 2022 15:06:49 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 647FA40106
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 647FA40106
- for <intel-wired-lan@osuosl.org>; Fri, 16 Dec 2022 15:06:49 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10563"; a="405241077"
-X-IronPort-AV: E=Sophos;i="5.96,249,1665471600"; d="scan'208";a="405241077"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Dec 2022 07:06:48 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10563"; a="599979417"
-X-IronPort-AV: E=Sophos;i="5.96,249,1665471600"; d="scan'208";a="599979417"
-Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
- by orsmga003.jf.intel.com with ESMTP; 16 Dec 2022 07:06:45 -0800
-From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-To: intel-wired-lan@osuosl.org,
-	vinicius.gomes@intel.com
-Date: Fri, 16 Dec 2022 23:03:57 +0800
-Message-Id: <20221216150357.12721-1-muhammad.husaini.zulkifli@intel.com>
-X-Mailer: git-send-email 2.17.1
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1671203209; x=1702739209;
- h=from:to:cc:subject:date:message-id;
- bh=OeXMTLxw0wWGtT6lAWeksKRNAiSkK/9syol4Gnzq8G8=;
- b=Vi/NYMMPXvzLOhsNohTxCkn7dFceU3dTY1B+8CzTB3OSWvcTHzT1JMSD
- 8Grr+fpkl3irStRmr52ostDbeg3dOxiF/PaeT/WpHCPKio+0S/AFPcfAF
- yO1D2BJ/767fAAqxP/LhQE9XF1OGGuO5U9iOlZq/1manFsxzL+XrvO78R
- u5p+J1ukFHJSu8oM4TRDDp9qWZWtXPTmFoh2J/6UbX4TKKagRP56rmo9R
- /CcEgNBjyU7QRr7dWa7bNysRmUqoCgVwMjDRsnvtemUTSLmC4HxZoZKia
- yo3QfdCt8qBdrWPZHelI2+i/EvD+5Qj26E3c1x9FRZQ3rleROfarjFZoz
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Vi/NYMMP
-Subject: [Intel-wired-lan] [PATCH net-next v2] igc: offload queue max SDU
- from tc-taprio
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id GNRiYNx0gJTg for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Dec 2022 16:29:30 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7C85D415CD
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com
+ [IPv6:2607:f8b0:4864:20::62b])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7C85D415CD
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 16:29:30 +0000 (UTC)
+Received: by mail-pl1-x62b.google.com with SMTP id m4so2829685pls.4
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 08:29:30 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=mime-version:user-agent:content-transfer-encoding:references
+ :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=kP/FoMB1Yj/qY7ZBSatxXAMle19ZjD4rvZ91q9C/PSM=;
+ b=D0iBX9XgcnAGoaN3u7JstCC5nCWEptQkqkJv9cxbIbLe+YwwHULXRQLfN++ZQIQ1BV
+ PuAHSHv8u3IitPPfUI9FMNpX1Vaocl8Y2bJLO/FbT4AhjQDvPdvXE8Hb8Kga+3kBeSyM
+ Ogikd/9yGhCdAndgyK/H54d8XfPkfssEpllZt1Xqay6uEWhLQxiZw/l4bTNobzxY5eh2
+ OAzvFxonCQQ8qqVz8H0zUjaRpvYYCAEpQTL1eEr28IHhaxhvsAFQDAExLfOe+cynaUYQ
+ YFzloc7miyuuz1P4wwP+1zmL6D51UIe5P1UWBn6GHKXEBMz42z5XPrDaEszqE7sMVVJ6
+ Fqkg==
+X-Gm-Message-State: ANoB5plAnGZkJrxYypEuB/vHFlleZ9EWxQlTUVQTxqvlshNO++hh6gGt
+ 1D+yKWGWtUGS9wZnqwQhpqg=
+X-Google-Smtp-Source: AA0mqf7/EWAwq/mPcEBrQBEIPEl7QKavJQnPIidVqOy2mCfvTOaaHp565ziXNcoVzGI6iysNBs6FCw==
+X-Received: by 2002:a05:6a20:1be2:b0:a7:ce31:f342 with SMTP id
+ cv34-20020a056a201be200b000a7ce31f342mr27044309pzb.52.1671208169840; 
+ Fri, 16 Dec 2022 08:29:29 -0800 (PST)
+Received: from [192.168.0.128] ([98.97.117.20])
+ by smtp.googlemail.com with ESMTPSA id
+ s24-20020a63f058000000b00473c36ea150sm1659196pgj.92.2022.12.16.08.29.28
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 16 Dec 2022 08:29:29 -0800 (PST)
+Message-ID: <c4109e30b644df218b7e601071a64197bf17b1f4.camel@gmail.com>
+From: Alexander H Duyck <alexander.duyck@gmail.com>
+To: Michal Schmidt <mschmidt@redhat.com>, intel-wired-lan@lists.osuosl.org
+Date: Fri, 16 Dec 2022 08:29:28 -0800
+In-Reply-To: <20221215225049.508812-1-mschmidt@redhat.com>
+References: <20221215225049.508812-1-mschmidt@redhat.com>
+User-Agent: Evolution 3.44.4 (3.44.4-2.fc36) 
+MIME-Version: 1.0
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20210112;
+ h=mime-version:user-agent:content-transfer-encoding:references
+ :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc:subject
+ :date:message-id:reply-to;
+ bh=kP/FoMB1Yj/qY7ZBSatxXAMle19ZjD4rvZ91q9C/PSM=;
+ b=W/OL8VTWs3dVmAhVDxbmhuv9Rd7+/pdKHXI44Jpe/hfHlPvPzddof3IsVDLys9PoNw
+ j0Uj8/uHeYac+sO4Lx4ScVVG2ZZ8mDyqCW1G7Jh1sV53Fm7nJNJDwbz5vYMnsSZTHR8Q
+ uLg7j3bVCcp0ar4gCYBb4uf+sEB8vSY4le4wC43Pua74B68gtQeaMv7dInSVgVP381vx
+ BG3rpIHlsA3RBzQnl2riakl6p0mdqy6S2GYUaYP1Z8YZIbDd6tvTfHguQIFSzXkI2OOy
+ Telvj864fhJLJDKzDqAMAkNofeeSO2RGrzDhRU7Yg/js+GOD/CO5nKghMNnlgQZYLxHq
+ qCDQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20210112 header.b=W/OL8VTW
+Subject: Re: [Intel-wired-lan] [PATCH net v2 0/2] iavf: fix temporary
+ deadlock and failure to set MAC address
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,162 +110,35 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com, kuba@kernel.org,
- muhammad.husaini.zulkifli@intel.com, davem@davemloft.net,
- tee.min.tan@linux.intel.com
-MIME-Version: 1.0
+Cc: Ivan Vecera <ivecera@redhat.com>, netdev@vger.kernel.org,
+ Patryk Piotrowski <patryk.piotrowski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Tan Tee Min <tee.min.tan@linux.intel.com>
+On Thu, 2022-12-15 at 23:50 +0100, Michal Schmidt wrote:
+> This fixes an issue where setting the MAC address on iavf runs into a
+> timeout and fails with EAGAIN.
+> 
+> Changes in v2:
+>  - Removed unused 'ret' variable in patch 1.
+>  - Added patch 2 to fix another cause of the same timeout.
+> 
+> Michal Schmidt (2):
+>   iavf: fix temporary deadlock and failure to set MAC address
+>   iavf: avoid taking rtnl_lock in adminq_task
+> 
+>  drivers/net/ethernet/intel/iavf/iavf.h        |   4 +-
+>  .../net/ethernet/intel/iavf/iavf_ethtool.c    |  10 +-
+>  drivers/net/ethernet/intel/iavf/iavf_main.c   | 135 ++++++++++--------
+>  .../net/ethernet/intel/iavf/iavf_virtchnl.c   |   8 +-
+>  4 files changed, 86 insertions(+), 71 deletions(-)
+> 
 
-Add support for configuring the max SDU for each Tx queue.
-If not specified, keep the default.
+The series looks good to me.
 
-All link speeds have been tested with this implementation.
-No performance issue observed.
-
-How to test:
-
-1) Configure the tc with max-sdu
-
-tc qdisc replace dev $IFACE parent root handle 100 taprio \
-    num_tc 4 \
-    map 0 1 2 3 3 3 3 3 3 3 3 3 3 3 3 3 \
-    queues 1@0 1@1 1@2 1@3 \
-    base-time $BASE \
-    sched-entry S 0xF 1000000 \
-    max-sdu 1500 1498 0 0 0 0 0 0 0 0 0 0 0 0 0 0 \
-    flags 0x2 \
-    txtime-delay 0
-
-2) Use network statistic to watch the tx queue packet to see if
-packet able to go out or drop.
-
-Signed-off-by: Tan Tee Min <tee.min.tan@linux.intel.com>
-Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-
----
-V1 -> V2: Rework based on Vinicius's comment.
----
----
- drivers/net/ethernet/intel/igc/igc.h      |  1 +
- drivers/net/ethernet/intel/igc/igc_main.c | 44 +++++++++++++++++++++++
- 2 files changed, 45 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 5da8d162cd38..ce9e88687d8c 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -99,6 +99,7 @@ struct igc_ring {
- 
- 	u32 start_time;
- 	u32 end_time;
-+	u32 max_sdu;
- 
- 	/* CBS parameters */
- 	bool cbs_enable;                /* indicates if CBS is enabled */
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index fdb7f0b26ed0..741c938313cf 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1508,6 +1508,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 	__le32 launch_time = 0;
- 	u32 tx_flags = 0;
- 	unsigned short f;
-+	u32 max_sdu = 0;
- 	ktime_t txtime;
- 	u8 hdr_len = 0;
- 	int tso = 0;
-@@ -1527,6 +1528,14 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 		return NETDEV_TX_BUSY;
- 	}
- 
-+	if (tx_ring->max_sdu > 0) {
-+		max_sdu = tx_ring->max_sdu +
-+			  (skb_vlan_tagged(skb) ? VLAN_HLEN : 0);
-+
-+		if (skb->len > max_sdu)
-+			goto skb_drop;
-+	}
-+
- 	if (!tx_ring->launchtime_enable)
- 		goto done;
- 
-@@ -1606,6 +1615,12 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 	dev_kfree_skb_any(first->skb);
- 	first->skb = NULL;
- 
-+	return NETDEV_TX_OK;
-+
-+skb_drop:
-+	dev_kfree_skb_any(skb);
-+	skb = NULL;
-+
- 	return NETDEV_TX_OK;
- }
- 
-@@ -6018,6 +6033,7 @@ static int igc_tsn_clear_schedule(struct igc_adapter *adapter)
- 
- 		ring->start_time = 0;
- 		ring->end_time = NSEC_PER_SEC;
-+		ring->max_sdu = 0;
- 	}
- 
- 	return 0;
-@@ -6101,6 +6117,16 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
- 		}
- 	}
- 
-+	for (i = 0; i < adapter->num_tx_queues; i++) {
-+		struct igc_ring *ring = adapter->tx_ring[i];
-+		struct net_device *dev = adapter->netdev;
-+
-+		if (qopt->max_sdu[i])
-+			ring->max_sdu = qopt->max_sdu[i] + dev->hard_header_len;
-+		else
-+			ring->max_sdu = 0;
-+	}
-+
- 	return 0;
- }
- 
-@@ -6188,12 +6214,30 @@ static int igc_tsn_enable_cbs(struct igc_adapter *adapter,
- 	return igc_tsn_offload_apply(adapter);
- }
- 
-+static int igc_tsn_query_caps(struct tc_query_caps_base *base)
-+{
-+	switch (base->type) {
-+	case TC_SETUP_QDISC_TAPRIO: {
-+		struct tc_taprio_caps *caps = base->caps;
-+
-+		caps->supports_queue_max_sdu = true;
-+
-+		return 0;
-+	}
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
- static int igc_setup_tc(struct net_device *dev, enum tc_setup_type type,
- 			void *type_data)
- {
- 	struct igc_adapter *adapter = netdev_priv(dev);
- 
- 	switch (type) {
-+	case TC_QUERY_CAPS:
-+		return igc_tsn_query_caps(type_data);
-+
- 	case TC_SETUP_QDISC_TAPRIO:
- 		return igc_tsn_enable_qbv_scheduling(adapter, type_data);
- 
--- 
-2.17.1
-
+Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
