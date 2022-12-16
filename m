@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DDC2C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Dec 2022 08:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC606C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Dec 2022 08:58:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9D06E41B8E;
-	Fri, 16 Dec 2022 08:58:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9D06E41B8E
+	by smtp4.osuosl.org (Postfix) with ESMTP id 913B941B9D;
+	Fri, 16 Dec 2022 08:58:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 913B941B9D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1671181123;
-	bh=kKaPNTZJwQ5qCWikjEpAVWte+HN3MjGhKe2k9dHOLuI=;
+	s=default; t=1671181127;
+	bh=LO+KouCt22OiGc95nO2R7Ldh+uSYvl/5PE+A5JUjYs0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=eL95GiSD9g6COZ0vOoi5BCJt8cs1/6UuBUgsmpakxf0m2nJvg99BtAvhAv668a90D
-	 zF3l8oV/tXIVb+yrfZqpBxSdq1yuR7jowvbWJ/EBdGR9BexJ/R+0y56qeQyyDNx9pv
-	 gQlW4K6b3cLsAsYZs7aVVnGTD0IbyPfFzt8T+HPC91kY+4T3Gkji4mCWKVV1TNwLmc
-	 p2TesNKbDypd9hev6h81Fyo6NegVJ67086tHKxnk09/1h/9+MSAopmpoKvPolfnEcd
-	 tLoxk31kBvihN3D1AZBZ44WXwibLggL7B21+mR5O9fZVhvwpONEuYZ5jWZjIxWL1/D
-	 TNnVA1zsQPiDw==
+	b=Rxtx31WLd0CVh4MqXVee686adUk48dqQO8pWbBbSsdEF35P37bjAWIt/ths5gh3+P
+	 0NIZsZ9AsYe2MkuFIHxeAQFQvBCf8Ns776o0ohdO7RBIPYt9qH6AWE7gI7M3hrkmhI
+	 wewPTgqF7VwQwf0Y/xG5BERaHixoVIZN5FQqryvf3BfLhoJ5clRG1Zc5+cT6mKc50T
+	 BbJ2fmm9n6qNJ+1vGJ74CevCm54qt2jJn/2ZrAKeLi+zdj14a2dAoMn9zXDcImoQ9W
+	 CrfI12sMq0CM7a1OF2QGxqrqOR9aUGCILOX4L+u3Fjvx28G2iL+hbl40FuK4Cs47mo
+	 EBlzMtZq4iq5Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zjHOq1kPgrW6; Fri, 16 Dec 2022 08:58:42 +0000 (UTC)
+	with ESMTP id spA05EuS-V_w; Fri, 16 Dec 2022 08:58:46 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 083EB41B94;
-	Fri, 16 Dec 2022 08:58:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 083EB41B94
+	by smtp4.osuosl.org (Postfix) with ESMTP id 68F9141BA2;
+	Fri, 16 Dec 2022 08:58:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 68F9141BA2
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 41F191BF3B5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 08:58:38 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id F27441BF3B5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 08:58:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8E4CF4104C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 08:58:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8E4CF4104C
+ by smtp2.osuosl.org (Postfix) with ESMTP id D629240569
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 08:58:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D629240569
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3RlqCBmjQvH7 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 16 Dec 2022 08:58:36 +0000 (UTC)
+ with ESMTP id TcR-8Ai4MLdr for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Dec 2022 08:58:39 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 90AC8404DA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 21131404DA
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 90AC8404DA
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 08:58:36 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10562"; a="383256538"
-X-IronPort-AV: E=Sophos;i="5.96,249,1665471600"; d="scan'208";a="383256538"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 21131404DA
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 08:58:39 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10562"; a="383256593"
+X-IronPort-AV: E=Sophos;i="5.96,249,1665471600"; d="scan'208";a="383256593"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Dec 2022 00:58:23 -0800
+ 16 Dec 2022 00:58:30 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10562"; a="738471619"
-X-IronPort-AV: E=Sophos;i="5.96,249,1665471600"; d="scan'208";a="738471619"
+X-IronPort-AV: E=McAfee;i="6500,9779,10562"; a="738471709"
+X-IronPort-AV: E=Sophos;i="5.96,249,1665471600"; d="scan'208";a="738471709"
 Received: from wasp.igk.intel.com ([10.102.20.192])
- by FMSMGA003.fm.intel.com with ESMTP; 16 Dec 2022 00:58:19 -0800
+ by FMSMGA003.fm.intel.com with ESMTP; 16 Dec 2022 00:58:27 -0800
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 16 Dec 2022 09:43:12 +0100
-Message-Id: <20221216084319.11699-4-michal.swiatkowski@linux.intel.com>
+Date: Fri, 16 Dec 2022 09:43:14 +0100
+Message-Id: <20221216084319.11699-6-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20221216084319.11699-1-michal.swiatkowski@linux.intel.com>
 References: <20221216084319.11699-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1671181116; x=1702717116;
+ t=1671181119; x=1702717119;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=lwrn4F3i2nx5rkSDIdyu10ErjqScKWIlSGn2dP2TrRI=;
- b=E1SZNQZiOcgd/enyeOUKfbJd++VGEPV+bp6HRm6zK0g/abMN84RK/MS4
- tT4DyVLAh3I0Vawf8YKso1ul5DFYHeeCu+8uifMv2ETriLY0crNyUpBgr
- Hf1syTYhqsHzwuGTFc6i4GSGupkJmNUJ78nLXDRFNh17/wslfSqjMY+FM
- NkRDYg0nn933NtZC2r/3pfN86S/SoQB76uOokCwk0zzNuoi63wGkCNBWQ
- XyUaAAIcFy5OmnWn1n5db8I+Qxi7eudu3SaM1cL6TZA+m4LnN4KWYTZK+
- 4V25sTvNr68Y4OQLsCIdUX0AKYvZKMYvEKU8EgTnW900fzXdbrqkZL3pu
- Q==;
+ bh=PJ2xPl+I3Hbvd+/PM4lb3fv1R6jPltUwBnuwPnxe9I4=;
+ b=M5KsJywpDeRgzYB9mA7Hxl4OHlKr1eX0A/SW4eNDJ3oOskrroDXW7rEL
+ RSaAqHRd2AOjvhAuemtPyg61hfFpomS9B5hNb4UakV6zn+w8SGX7qLMim
+ b2L9xGwiUlf/ZdHvhfMalRs9CkajbHh6F9OjnAUYDJSIrYaVAKj5sm6pk
+ 7Opy1+TGTyshXHA5Ihp37SOI1xYEnAGQUvPzLoRhGtSU7Lx4rrLQQD+NE
+ zJUm5IkHzTvOhHHJj02px9lxTMSGloUyUlOTYt21trt22ennKNh0EK1GK
+ EaABcDkA912HZUHiPHM6wg+pSLDIvqkVHc3S70QxS0lLBjNWZPxorBK8o
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=E1SZNQZi
-Subject: [Intel-wired-lan] [PATCH net-next v2 03/10] ice: cleanup in VSI
- config/deconfig code
+ header.a=rsa-sha256 header.s=Intel header.b=M5KsJywp
+Subject: [Intel-wired-lan] [PATCH net-next v2 05/10] ice: stop hard coding
+ the ICE_VSI_CTRL location
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,281 +103,79 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Do few small cleanups:
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-1) Rename the function to reflect that it doesn't configure all things
-related to VSI. ice_vsi_cfg_lan() better fits to what function is doing.
+When allocating the ICE_VSI_CTRL, the allocated struct ice_vsi pointer is
+stored into the PF's pf->vsi array at a fixed location. This was
+historically done on the basis that it could provide an O(1) lookup for the
+special control VSI.
 
-ice_vsi_cfg() can be use to name function that will configure whole VSI.
+Since we store the ctrl_vsi_idx, we already have O(1) lookup regardless of
+where in the array we store this VSI.
 
-2) Remove unused ethtype field from VSI. There is no need to set
-ethtype here, because it is never used.
+Simplify the logic in ice_vsi_alloc by using the same method of storing the
+control VSI as other types of VSIs.
 
-3) Remove unnecessary check for ICE_VSI_CHNL. There is check for
-ICE_VSI_CHNL in ice_vsi_get_qs, so there is no need to check it before
-calling the function.
-
-4) Simplify ice_vsi_alloc() call. There is no need to check the type of
-VSI before calling ice_vsi_alloc(). For ICE_VSI_CHNL vf is always NULL
-(ice_vsi_setup() is called with vf=NULL).
-For ICE_VSI_VF or ICE_VSI_CTRL ch is always NULL and for other VSI types
-ch and vf are always NULL.
-
-5) Remove unnecessary call to ice_vsi_dis_irq(). ice_vsi_dis_irq() will
-be called in ice_vsi_close() flow (ice_vsi_close() -> ice_vsi_down() ->
-ice_vsi_dis_irq()). Remove unnecessary call.
-
-6) Don't remove specific filters in release. All hw filters are removed
-in ice_fltr_remove_alli(), which is always called in VSI release flow.
-There is no need to remove only ethertype filters before calling
-ice_fltr_remove_all().
-
-7) Rename ice_vsi_clear() to ice_vsi_free(). As ice_vsi_clear() only
-free memory allocated in ice_vsi_alloc() rename it to ice_vsi_free()
-which better shows what function is doing.
-
-8) Free coalesce param in rebuild. There is potential memory leak if
-configuration of VSI lan fails. Free coalesce to avoid it.
-
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         |  3 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c |  2 +-
- drivers/net/ethernet/intel/ice/ice_lib.c     | 51 +++++++-------------
- drivers/net/ethernet/intel/ice/ice_lib.h     |  2 +-
- drivers/net/ethernet/intel/ice/ice_main.c    | 12 ++---
- 5 files changed, 26 insertions(+), 44 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 34 +++++++++++-------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index f461a1b3c100..70a9609f1b80 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -354,7 +354,6 @@ struct ice_vsi {
- 
- 	struct ice_vf *vf;		/* VF associated with this VSI */
- 
--	u16 ethtype;			/* Ethernet protocol for pause frame */
- 	u16 num_gfltr;
- 	u16 num_bfltr;
- 
-@@ -891,7 +890,7 @@ ice_fetch_u64_stats_per_ring(struct u64_stats_sync *syncp,
- int ice_up(struct ice_vsi *vsi);
- int ice_down(struct ice_vsi *vsi);
- int ice_down_up(struct ice_vsi *vsi);
--int ice_vsi_cfg(struct ice_vsi *vsi);
-+int ice_vsi_cfg_lan(struct ice_vsi *vsi);
- struct ice_vsi *ice_lb_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi);
- int ice_vsi_determine_xdp_res(struct ice_vsi *vsi);
- int ice_prepare_xdp_rings(struct ice_vsi *vsi, struct bpf_prog *prog);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 626480677cc1..63b7568a9d72 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -656,7 +656,7 @@ static int ice_lbtest_prepare_rings(struct ice_vsi *vsi)
- 	if (status)
- 		goto err_setup_rx_ring;
- 
--	status = ice_vsi_cfg(vsi);
-+	status = ice_vsi_cfg_lan(vsi);
- 	if (status)
- 		goto err_setup_rx_ring;
- 
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 703f73e54561..a7225de4a1e1 100644
+index 709e58820937..4751092e02ef 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -348,7 +348,7 @@ static void ice_vsi_free_arrays(struct ice_vsi *vsi)
- }
+@@ -479,10 +479,7 @@ int ice_vsi_free(struct ice_vsi *vsi)
+ 	/* updates the PF for this cleared VSI */
  
- /**
-- * ice_vsi_clear - clean up and deallocate the provided VSI
-+ * ice_vsi_free - clean up and deallocate the provided VSI
-  * @vsi: pointer to VSI being cleared
-  *
-  * This deallocates the VSI's queue resources, removes it from the PF's
-@@ -356,7 +356,7 @@ static void ice_vsi_free_arrays(struct ice_vsi *vsi)
-  *
-  * Returns 0 on success, negative on failure
-  */
--int ice_vsi_clear(struct ice_vsi *vsi)
-+int ice_vsi_free(struct ice_vsi *vsi)
- {
- 	struct ice_pf *pf = NULL;
- 	struct device *dev;
-@@ -2668,12 +2668,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- 	struct ice_vsi *vsi;
- 	int ret, i;
+ 	pf->vsi[vsi->idx] = NULL;
+-	if (vsi->idx < pf->next_vsi && vsi->type != ICE_VSI_CTRL)
+-		pf->next_vsi = vsi->idx;
+-	if (vsi->idx < pf->next_vsi && vsi->type == ICE_VSI_CTRL && vsi->vf)
+-		pf->next_vsi = vsi->idx;
++	pf->next_vsi = vsi->idx;
  
--	if (vsi_type == ICE_VSI_CHNL)
--		vsi = ice_vsi_alloc(pf, vsi_type, ch, NULL);
--	else if (vsi_type == ICE_VSI_VF || vsi_type == ICE_VSI_CTRL)
--		vsi = ice_vsi_alloc(pf, vsi_type, NULL, vf);
--	else
--		vsi = ice_vsi_alloc(pf, vsi_type, NULL, NULL);
-+	vsi = ice_vsi_alloc(pf, vsi_type, ch, vf);
+ 	ice_vsi_free_stats(vsi);
+ 	ice_vsi_free_arrays(vsi);
+@@ -690,23 +687,22 @@ ice_vsi_alloc(struct ice_pf *pf, struct ice_port_info *pi,
+ 	vsi->vf = vf;
+ 	set_bit(ICE_VSI_DOWN, vsi->state);
  
- 	if (!vsi) {
- 		dev_err(dev, "could not allocate VSI\n");
-@@ -2682,17 +2677,13 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
+-	if (vsi->type == ICE_VSI_CTRL && !vf) {
+-		/* Use the last VSI slot as the index for PF control VSI */
+-		vsi->idx = pf->num_alloc_vsi - 1;
+-		pf->ctrl_vsi_idx = vsi->idx;
+-		pf->vsi[vsi->idx] = vsi;
+-	} else {
+-		/* fill slot and make note of the index */
+-		vsi->idx = pf->next_vsi;
+-		pf->vsi[pf->next_vsi] = vsi;
++	/* fill slot and make note of the index */
++	vsi->idx = pf->next_vsi;
++	pf->vsi[pf->next_vsi] = vsi;
  
- 	vsi->port_info = pi;
- 	vsi->vsw = pf->first_sw;
--	if (vsi->type == ICE_VSI_PF)
--		vsi->ethtype = ETH_P_PAUSE;
- 
- 	ice_alloc_fd_res(vsi);
- 
--	if (vsi_type != ICE_VSI_CHNL) {
--		if (ice_vsi_get_qs(vsi)) {
--			dev_err(dev, "Failed to allocate queues. vsi->idx = %d\n",
--				vsi->idx);
--			goto unroll_vsi_alloc;
--		}
-+	if (ice_vsi_get_qs(vsi)) {
-+		dev_err(dev, "Failed to allocate queues. vsi->idx = %d\n",
-+			vsi->idx);
-+		goto unroll_vsi_alloc;
- 	}
- 
- 	/* set RSS capabilities */
-@@ -2857,7 +2848,7 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_port_info *pi,
- unroll_vsi_alloc:
- 	if (vsi_type == ICE_VSI_VF)
- 		ice_enable_lag(pf->lag);
--	ice_vsi_clear(vsi);
-+	ice_vsi_free(vsi);
- 
- 	return NULL;
- }
-@@ -3181,9 +3172,6 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	if (test_bit(ICE_FLAG_RSS_ENA, pf->flags))
- 		ice_rss_clean(vsi);
- 
--	/* Disable VSI and free resources */
--	if (vsi->type != ICE_VSI_LB)
--		ice_vsi_dis_irq(vsi);
- 	ice_vsi_close(vsi);
- 
- 	/* SR-IOV determines needed MSIX resources all at once instead of per
-@@ -3199,18 +3187,12 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 		pf->num_avail_sw_msix += vsi->num_q_vectors;
- 	}
- 
--	if (!ice_is_safe_mode(pf)) {
--		if (vsi->type == ICE_VSI_PF) {
--			ice_fltr_remove_eth(vsi, ETH_P_PAUSE, ICE_FLTR_TX,
--					    ICE_DROP_PACKET);
--			ice_cfg_sw_lldp(vsi, true, false);
--			/* The Rx rule will only exist to remove if the LLDP FW
--			 * engine is currently stopped
--			 */
--			if (!test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
--				ice_cfg_sw_lldp(vsi, false, false);
--		}
+-		/* prepare pf->next_vsi for next use */
+-		pf->next_vsi = ice_get_free_slot(pf->vsi, pf->num_alloc_vsi,
+-						 pf->next_vsi);
 -	}
-+	/* The Rx rule will only exist to remove if the LLDP FW
-+	 * engine is currently stopped
-+	 */
-+	if (!ice_is_safe_mode(pf) && vsi->type == ICE_VSI_PF &&
-+	    !test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
-+		ice_cfg_sw_lldp(vsi, false, false);
++	/* prepare pf->next_vsi for next use */
++	pf->next_vsi = ice_get_free_slot(pf->vsi, pf->num_alloc_vsi,
++					 pf->next_vsi);
  
- 	if (ice_is_vsi_dflt_vsi(vsi))
- 		ice_clear_dflt_vsi(vsi);
-@@ -3247,7 +3229,7 @@ int ice_vsi_release(struct ice_vsi *vsi)
- 	 * for ex: during rmmod.
- 	 */
- 	if (!ice_is_reset_in_progress(pf->state))
--		ice_vsi_clear(vsi);
-+		ice_vsi_free(vsi);
+-	if (vsi->type == ICE_VSI_CTRL && vf)
+-		vf->ctrl_vsi_idx = vsi->idx;
++	if (vsi->type == ICE_VSI_CTRL) {
++		if (vf) {
++			vf->ctrl_vsi_idx = vsi->idx;
++		} else {
++			WARN_ON(pf->ctrl_vsi_idx != ICE_NO_VSI);
++			pf->ctrl_vsi_idx = vsi->idx;
++		}
++	}
  
- 	return 0;
- }
-@@ -3601,6 +3583,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 			ret = -EIO;
- 			goto err_vectors;
- 		} else {
-+			kfree(coalesce);
- 			return ice_schedule_reset(pf, ICE_RESET_PFR);
- 		}
- 	}
-@@ -3621,7 +3604,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 	kfree(coalesce);
- 	return ret;
- err_vsi:
--	ice_vsi_clear(vsi);
-+	ice_vsi_free(vsi);
- 	set_bit(ICE_RESET_FAILED, pf->state);
- 	kfree(coalesce);
- 	return ret;
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index dcdf69a693e9..6203114b805c 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -42,7 +42,7 @@ void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create);
- int ice_set_link(struct ice_vsi *vsi, bool ena);
- 
- void ice_vsi_delete(struct ice_vsi *vsi);
--int ice_vsi_clear(struct ice_vsi *vsi);
-+int ice_vsi_free(struct ice_vsi *vsi);
- 
- int ice_vsi_cfg_tc(struct ice_vsi *vsi, u8 ena_tc);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index ca1c2535b56c..016ce3645a21 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6131,12 +6131,12 @@ static int ice_vsi_vlan_setup(struct ice_vsi *vsi)
- }
- 
- /**
-- * ice_vsi_cfg - Setup the VSI
-+ * ice_vsi_cfg_lan - Setup the VSI lan related config
-  * @vsi: the VSI being configured
-  *
-  * Return 0 on success and negative value on error
-  */
--int ice_vsi_cfg(struct ice_vsi *vsi)
-+int ice_vsi_cfg_lan(struct ice_vsi *vsi)
- {
- 	int err;
- 
-@@ -6352,7 +6352,7 @@ int ice_up(struct ice_vsi *vsi)
- {
- 	int err;
- 
--	err = ice_vsi_cfg(vsi);
-+	err = ice_vsi_cfg_lan(vsi);
- 	if (!err)
- 		err = ice_up_complete(vsi);
- 
-@@ -6920,7 +6920,7 @@ int ice_vsi_open_ctrl(struct ice_vsi *vsi)
- 	if (err)
- 		goto err_setup_rx;
- 
--	err = ice_vsi_cfg(vsi);
-+	err = ice_vsi_cfg_lan(vsi);
- 	if (err)
- 		goto err_setup_rx;
- 
-@@ -6974,7 +6974,7 @@ int ice_vsi_open(struct ice_vsi *vsi)
- 	if (err)
- 		goto err_setup_rx;
- 
--	err = ice_vsi_cfg(vsi);
-+	err = ice_vsi_cfg_lan(vsi);
- 	if (err)
- 		goto err_setup_rx;
- 
-@@ -8408,7 +8408,7 @@ static void ice_remove_q_channels(struct ice_vsi *vsi, bool rem_fltr)
- 		ice_vsi_delete(ch->ch_vsi);
- 
- 		/* Delete VSI from PF and HW VSI arrays */
--		ice_vsi_clear(ch->ch_vsi);
-+		ice_vsi_free(ch->ch_vsi);
- 
- 		/* free the channel */
- 		kfree(ch);
+ unlock_pf:
+ 	mutex_unlock(&pf->sw_mutex);
 -- 
 2.36.1
 
