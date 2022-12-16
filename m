@@ -1,85 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 494D1C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Dec 2022 19:11:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14A93C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Dec 2022 20:07:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CDD1741916;
-	Fri, 16 Dec 2022 19:11:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CDD1741916
+	by smtp2.osuosl.org (Postfix) with ESMTP id 8E61740272;
+	Fri, 16 Dec 2022 20:07:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8E61740272
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1671217870;
-	bh=PuLBtTe58BVTiWyf6fqtqNFCVCRdcRmjYo9T/xxVR2Q=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=XiqpJuMWAAZEF6kNuKhBfd8xt76Eb1zODR0sc+Iix/N5xs93MKKa1Co14tg/lr5Wq
-	 Odm+wbk2swbK/u7GKNO+K/CslYRhYraxlmFI4qUnrB0dvulv2eGGqaOW4XC0BLiry5
-	 qCicxA5VbLldtZ0deav7T7aooEY5EGDip7SgGIMJW6IFkum6JnrE/E4W4OApcExQmX
-	 UaTYDbh8tsTlyyXUf9/+OFIs++dtx2meTlNDIHkH9WM5VQQOe1DZwUPA++7KKTyjkb
-	 dgRA5PqFhSZJDt536OC/vXTFbRoRLg4hfS4euEswHtr68TuuV4FBi2dOAlwh6s4L1z
-	 USp94kl4405Dw==
+	s=default; t=1671221231;
+	bh=R9BUWNFlwa5459B5sB4flDkKqawLJoDBRuKh8WEobcA=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=uv7axwmaubSBrF1XGXT0Wbk3h7Ag9xK7M0LusDJf3I8g4yPC3MSguby3F8ZqUKrNm
+	 5e3DgEW4huXuQzYNNKvV2TGuqwNF9LA+SORD8tclMObuulfkXvyQSVx4tiycLfsZiQ
+	 W6inEuz6ui2FnC5DkpJL5H+/LESHjAJL3+PmomeSUrJKfxjj4Qese4f/qaHLQtsgfh
+	 BjVTUIhQSoOCyWOH/93DcEMksLScc6h6QdApCz3O8ECj+sX3+5fuAJskm4NaKV5J4C
+	 rzbyFSi3dG5v/hmXSz7d4FO2irmkElqC/d8WNuW7Q/NHI7foxdT9M+YrHFW0epq0jf
+	 BP3eDePh08kyw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id F-s0SrRTlJVD; Fri, 16 Dec 2022 19:11:09 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id BYQRExPE2bYB; Fri, 16 Dec 2022 20:07:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9B6F641994;
-	Fri, 16 Dec 2022 19:11:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9B6F641994
+	by smtp2.osuosl.org (Postfix) with ESMTP id A2444404E9;
+	Fri, 16 Dec 2022 20:07:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A2444404E9
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id DE84B1BF429
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 19:11:07 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id EAA931BF2A7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 20:07:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B750641994
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 19:11:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B750641994
+ by smtp4.osuosl.org (Postfix) with ESMTP id C339641983
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 20:07:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C339641983
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id xD25bcE05Z4Y for <intel-wired-lan@lists.osuosl.org>;
- Fri, 16 Dec 2022 19:11:04 +0000 (UTC)
+ with ESMTP id j6ZatvMX4vNI for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Dec 2022 20:07:08 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9EEC241916
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9EEC241916
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 19:11:04 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10563"; a="306713078"
-X-IronPort-AV: E=Sophos;i="5.96,251,1665471600"; d="scan'208";a="306713078"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Dec 2022 11:11:03 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10563"; a="738631801"
-X-IronPort-AV: E=Sophos;i="5.96,251,1665471600"; d="scan'208";a="738631801"
-Received: from dmert-dev.jf.intel.com ([10.166.241.14])
- by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Dec 2022 11:11:02 -0800
-From: Dave Ertman <david.m.ertman@intel.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C5DF441900
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C5DF441900
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Dec 2022 20:07:08 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10563"; a="320932434"
+X-IronPort-AV: E=Sophos;i="5.96,251,1665471600"; d="scan'208";a="320932434"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Dec 2022 12:07:08 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10563"; a="682385362"
+X-IronPort-AV: E=Sophos;i="5.96,251,1665471600"; d="scan'208";a="682385362"
+Received: from jbrandeb-coyote30.jf.intel.com ([10.166.29.19])
+ by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 16 Dec 2022 12:07:08 -0800
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 16 Dec 2022 11:11:34 -0800
-Message-Id: <20221216191134.1015946-1-david.m.ertman@intel.com>
-X-Mailer: git-send-email 2.37.3
+Date: Fri, 16 Dec 2022 12:06:55 -0800
+Message-Id: <20221216200658.59833-2-jesse.brandeburg@intel.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20221216200658.59833-1-jesse.brandeburg@intel.com>
+References: <20221216200658.59833-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1671217864; x=1702753864;
- h=from:to:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=t/sVRnKNdtJD28TeyeXrQ7MyIjFFCSyKXImZeZoU4vU=;
- b=DooKdEMt/nWZWPdauK5DOVBhEKXIdYWfLMxF4H2+UtcbG/1lcYc+tYwq
- 2gyjyrSv1Emz0YwEJuYQHqroiKc8cmMvUVS5qNwls1AhLnXmUr6HgNUfl
- MTHybtv8GPZrhrdgXHwBg0UZlzYcYCBTr7FdMuMtFBvrkuvjIf2tCsRkZ
- iuA/i+xtAAkKh4iz0QYR3GI/MUr9+Bb9GXn9gSB+lgJeqAUR4al12fhkU
- Fy0o6fyM+xkW3xZxIuxC1deS1bfzE1KLyvvpJfMwz76YLeidg0KEaLLQh
- Fi2TvljNC8OqybVTDXFhiVjHo/6OqgXQz6+g+IvbG0XPtJTqKuZ3YW1Iw
- g==;
+ t=1671221228; x=1702757228;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=dGGNpeG5ghFWKLBxxunkVNLuyA9oZwYh/oIwYY0lOoM=;
+ b=JzmeA4tbIj0o6tMvc1yzgqLyaTS3IbdpfWnoxsBKCeDIxYJImQmCMHEn
+ 0/0k2U9ZDJBHBMjk63Q1K25cp5yHEtJDAK/lBaaNBmOV6AdKLFAuK5sUZ
+ yzY1kavKQZqApUp0Bns8QcnfgK2+/aggo0CkuQ55DcrGwmxp4gOtqFkJp
+ 6MAF0STBBq0/7FsmGRZJ4PoFEDxX/yQH/noXRKHa7KBWDWtbvqoZouvr3
+ 52miPDJJcuwRphUOMcCrC6IO+bjJPgtsHbAjLtwX9KyQqul3NxIVh05lL
+ 2j34rvulOMlwq9iPSq2bRkFP3VF79rhBqkGa0+mxu247s/pRwoBUqnsPJ
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=DooKdEMt
-Subject: [Intel-wired-lan] [PATCH net] ice: Prevent set_channel from
- changing queues while RDMA active
+ header.a=rsa-sha256 header.s=Intel header.b=JzmeA4tb
+Subject: [Intel-wired-lan] [PATCH net-next v1 1/4] virtchnl: remove unused
+ structure declaration
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,67 +95,45 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The PF controls the set of queues that the RDMA auxiliary_driver requests
-resources from.  The set_channel command will alter that pool and trigger a
-reconfiguration of the VSI, which breaks RDMA functionality.
+Nothing uses virtchnl_msg, just remove it.
 
-Prevent set_channel from executing when RDMA driver bound to auxiliary
-device.
-
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+ include/linux/avf/virtchnl.h | 13 -------------
+ 1 file changed, 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index b7be84bbe72d..79704fcc0cb5 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3473,6 +3473,7 @@ static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
- 	struct ice_pf *pf = vsi->back;
- 	int new_rx = 0, new_tx = 0;
- 	u32 curr_combined;
-+	int ret = 0;
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index d91af50ac58d..b1cfa84904b1 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -162,19 +162,6 @@ enum virtchnl_ops {
+ #define VIRTCHNL_CHECK_UNION_LEN(n, X) enum virtchnl_static_asset_enum_##X \
+ 	{ virtchnl_static_assert_##X = (n)/((sizeof(union X) == (n)) ? 1 : 0) }
  
- 	/* do not support changing channels in Safe Mode */
- 	if (ice_is_safe_mode(pf)) {
-@@ -3536,15 +3537,26 @@ static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
- 		return -EINVAL;
- 	}
+-/* Virtual channel message descriptor. This overlays the admin queue
+- * descriptor. All other data is passed in external buffers.
+- */
+-
+-struct virtchnl_msg {
+-	u8 pad[8];			 /* AQ flags/opcode/len/retval fields */
+-	enum virtchnl_ops v_opcode; /* avoid confusion with desc->opcode */
+-	enum virtchnl_status_code v_retval;  /* ditto for desc->retval */
+-	u32 vfid;			 /* used by PF when sending to VF */
+-};
+-
+-VIRTCHNL_CHECK_STRUCT_LEN(20, virtchnl_msg);
+-
+ /* Message descriptions and data structures. */
  
-+	mutex_lock(&pf->adev_mutex);
-+	if (pf->adev->dev->driver) {
-+		netdev_err(dev, "Cannot change channels when RDMA is active\n");
-+		ret = -EINVAL;
-+		goto adev_unlock;
-+	}
-+
- 	ice_vsi_recfg_qs(vsi, new_rx, new_tx);
- 
--	if (!netif_is_rxfh_configured(dev))
--		return ice_vsi_set_dflt_rss_lut(vsi, new_rx);
-+	if (!netif_is_rxfh_configured(dev)) {
-+		ret = ice_vsi_set_dflt_rss_lut(vsi, new_rx);
-+		goto adev_unlock;
-+	}
- 
- 	/* Update rss_size due to change in Rx queues */
- 	vsi->rss_size = ice_get_valid_rss_size(&pf->hw, new_rx);
- 
--	return 0;
-+adev_unlock:
-+	mutex_unlock(&pf->adev);
-+	return ret;
- }
- 
- /**
+ /* VIRTCHNL_OP_VERSION
 -- 
-2.37.3
+2.31.1
 
 _______________________________________________
 Intel-wired-lan mailing list
