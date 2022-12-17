@@ -1,84 +1,77 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0F35C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Dec 2022 15:47:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C642C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Dec 2022 16:34:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7FF77600CC;
-	Mon, 19 Dec 2022 15:47:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7FF77600CC
+	by smtp2.osuosl.org (Postfix) with ESMTP id E566640116;
+	Mon, 19 Dec 2022 16:34:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E566640116
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1671464861;
-	bh=DkVtj8LYTD2hrEKrm9LbVqKrn1MD8x5tmJy1KV9PjcM=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1671467664;
+	bh=T1AdFDCTG4xG5yWzcRsI6qOT2/RsBkwHr82rYzU3LUw=;
+	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Hpr9dXuj2kEuO1ZdqD9CCqjdrGdZJQG46cslj6pmGjfzKyFl6K9nY2QDr9nN3Rx6J
-	 ygb3eGYWeISAYohRupDfkf3OAE0zs0+kOz3/kxXeISZ23KncOuSKpAAZ2vnLIjI4xK
-	 U11Rj97LkAs8wTj16VpgU4o2f3f3lkWnm2QG5YSkRLQMiqVobFNNAtlnbbCBdYJ+fu
-	 YIs4enWCzEaMK1j8EQFTbGUxG2WejxYQL1GpBc+iqbYm7gEKc1mgT1kEV8OwQiw1Dl
-	 1Nv2olHKVnbINCgGbFfpph+Z8/+pA2IYQnI79DR9y9AcYZZQI0ssBYO+zxGUPPJhCd
-	 2wRJIRUuSOWgA==
+	b=I9Meii0K4xJB7s8t85u2YrDcdGeCTAnBrASPiDwzLUYXSMAqCURw3wKGOFIF7qQy9
+	 DUIFg3rN762G1jUxq2Xc70mnMGrJNuUgu/S2wUnMqLpui5OV7phLIexUBGlwjxBOm3
+	 rf6/sTat3hFhcX2btJk/Hghz37rrFzYgq9vHMtOYsaHWzOG5eZJL4TNC+GRMydNiHP
+	 8avjyfbljw1a/jEyQifRjGS0S7dm21V6baIwP11ut50i9YOwYsAD42XeDuoxh/MHV5
+	 nL/1O/7y/fuQFXcp2tj4jr8yfqrzc03JmLEkHKf5C0ZH/eBCEg0c7lft6+X/fe1HJr
+	 dkxpBi/ZgHUbQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id a38vmDlNp0G9; Mon, 19 Dec 2022 15:47:40 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id tcG4bpCmSeAC; Mon, 19 Dec 2022 16:34:24 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7BBF460B04;
-	Mon, 19 Dec 2022 15:47:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7BBF460B04
+	by smtp2.osuosl.org (Postfix) with ESMTP id D1BFE405A7;
+	Mon, 19 Dec 2022 16:34:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D1BFE405A7
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 2FF4F1BF317
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:47:39 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id AE5FC1BF3F2
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 17 Dec 2022 03:05:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 09B5C814B5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:47:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 09B5C814B5
+ by smtp1.osuosl.org (Postfix) with ESMTP id 881228217E
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 17 Dec 2022 03:05:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 881228217E
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id LKhuiLBvevbn for <intel-wired-lan@lists.osuosl.org>;
- Mon, 19 Dec 2022 15:47:38 +0000 (UTC)
-X-Greylist: delayed 00:08:25 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4606B8138E
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4606B8138E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:47:38 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 3F58BB80E7B;
- Mon, 19 Dec 2022 15:39:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F583C433D2;
- Mon, 19 Dec 2022 15:39:07 +0000 (UTC)
-Date: Mon, 19 Dec 2022 16:39:05 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: "wanghai (M)" <wanghai38@huawei.com>
-Message-ID: <Y6CFma6PPcvJDGje@kroah.com>
-References: <20221219144103.34789-1-wanghai38@huawei.com>
- <Y6B7MKZxjaoQlpgf@kroah.com>
- <dd4d0619-8287-1650-aa43-5db2e86ff8cd@huawei.com>
+ with ESMTP id 6YNpMe_YvNJQ for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 17 Dec 2022 03:05:32 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 23CDA8217D
+Received: from chinatelecom.cn (prt-mail.chinatelecom.cn [42.123.76.220])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 23CDA8217D
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 17 Dec 2022 03:05:31 +0000 (UTC)
+HMM_SOURCE_IP: 172.18.0.218:60306.2040010943
+HMM_ATTACHE_NUM: 0000
+HMM_SOURCE_TYPE: SMTP
+Received: from clientip-101.90.10.131 (unknown [172.18.0.218])
+ by chinatelecom.cn (HERMES) with SMTP id C070A280098;
+ Sat, 17 Dec 2022 11:05:11 +0800 (CST)
+X-189-SAVE-TO-SEND: 31801060@chinatelecom.cn
+Received: from  ([101.90.10.131])
+ by app0025 with ESMTP id 2d1bfcc411d945cb8abb9071dcc10071 for
+ jesse.brandeburg@intel.com; Sat, 17 Dec 2022 11:05:24 CST
+X-Transaction-ID: 2d1bfcc411d945cb8abb9071dcc10071
+X-Real-From: shensongjie.sh@chinatelecom.cn
+X-Receive-IP: 101.90.10.131
+X-MEDUSA-Status: 0
+From: "shensongjie.sh" <shensongjie.sh@chinatelecom.cn>
+Message-ID: <9F6F7958-EF01-492B-BD2F-ED33C20D7C43@chinatelecom.cn>
+Date: Sat, 17 Dec 2022 11:05:09 +0800
+References: <BB603E57-30F2-425B-9901-E715B1FE63DF@chinatelecom.cn>
+In-Reply-To: <140a1757-878d-3235-7053-146c3715590d@intel.com>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>
+X-Mailer: MailMasterIOS/7.11.1.1885 (15.7.1)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <dd4d0619-8287-1650-aa43-5db2e86ff8cd@huawei.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=linuxfoundation.org; 
- s=korg; t=1671464348;
- bh=abQAHntBQcTBqm2NuQ5VKUAc8kU4maN4os+8XBDoq/4=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=CP5UoDATyz4FQuO5IiIX6XpSMv/2ikU14jWCB7LIFbSgZZ7jwOo/fnOFT/5hwvyQi
- rdqcUz7wfe9NETBSpwVtW++nz0XLfkp943GDb1tMXmOVXuuYa2LPKWOwIJy49L91bo
- naLxbREWQGiqzrMeHbvT6d/xyJG8sodX9eaYMGnM=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=linuxfoundation.org
- header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg
- header.b=CP5UoDAT
-Subject: Re: [Intel-wired-lan] [PATCH] kobject: Fix slab-out-of-bounds in
- fill_kobj_path()
+X-Mailman-Approved-At: Mon, 19 Dec 2022 16:34:17 +0000
+Subject: Re: [Intel-wired-lan] [need help]after insmod Ice.ko message show A
+ parallel fault was detected which port unlink.intel E810 2 port card
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,80 +84,111 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: rafael@kernel.org, jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- Alice Chao <alice.chao@mediatek.com>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Content-Type: multipart/mixed; boundary="===============6585078646385405615=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Dec 19, 2022 at 11:27:58PM +0800, wanghai (M) wrote:
-> Can I send v2 like this?
-> =
+--===============6585078646385405615==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-> diff --git a/lib/kobject.c b/lib/kobject.c
-> index a0b2dbfcfa23..3f97d903266a 100644
-> --- a/lib/kobject.c
-> +++ b/lib/kobject.c
-> @@ -112,7 +112,7 @@ static int get_kobj_path_length(struct kobject *kobj)
-> =A0=A0=A0=A0=A0=A0=A0 return length;
-> =A0}
-> =
+Thanks for replying=21&nbsp;<div><br></div><div>My Intel server have two =
+&nbsp;e810 dual port card.&nbsp;</div><div>And we connect cable to switch=
+ two link by every card one link.&nbsp;</div><div><br><div>Which ports ha=
+ve no cable link will report the message nonstop. Ports Connect to switch=
+ was on.&nbsp;</div></div><div><br></div><div>And we have test if we clos=
+e the switch port, the ports have cable also report same message nonstop.=
+&nbsp;</div><div><br></div><div>I try ethtool off msglevel for link probe=
+ drv, but not work.&nbsp;</div><div><br></div><div>I will upload the info=
+ soon.&nbsp;</div><div><br></div><div>Thanks again</div><div id=3D=22imai=
+l=5Fsignature=22 class=3D=22ntes-signature=22></div><div class=3D=22ntes-=
+mailmaster-quote=22 style=3D=22padding-top: 1px; padding-bottom: 1px=22><=
+div style=3D=22margin-top: 2em;margin-bottom: 1em;font-size: 14px;line-he=
+ight: 1.25;color: =2378787a;=22>---- Replied Message ----</div><div style=
+=3D=22margin-bottom: 1em;font-size: 12px;line-height: 1.25;color: =232323=
+24;padding: 0.5em 0.25em;border-radius: 0.67em;background-color: =23f0f0f=
+0;=22><table width=3D=22100%=22 cellpadding=3D=220=22 cellspacing=3D=229=22=
+ border=3D=220=22><tbody><tr><td valign=3D=22top=22 style=3D=22width: 4.2=
+5em;font-size: 12px;line-height: 1.25;color: =2378787a;=22><span style=3D=
+=22color:=238b8d94=22>=46rom</span></td><td valign=3D=22top=22 style=3D=22=
+font-size: 12px;line-height: 1.25;color: =23232324;word-break: break-all;=
+=22><a class=3D=22mail-from=22 style=3D=22color: =230886e8; text-decorati=
+on: none=22 href=3D=22mailto:jesse.brandeburg=40intel.com=22>Jesse Brande=
+burg&lt;jesse.brandeburg=40intel.com&gt;</a></td></tr><tr><td valign=3D=22=
+top=22 style=3D=22width: 4.25em;font-size: 12px;line-height: 1.25;color: =
+=2378787a;=22><span style=3D=22color:=238b8d94=22>Date</span></td><td cla=
+ss=3D=22mail-date=22 valign=3D=22top=22 style=3D=22font-size: 12px;line-h=
+eight: 1.25;color: =23232324;word-break: break-all;=22><span class=3D=22m=
+ail-date=22 style=3D=22color:black=22>12/17/2022 01:42</span></td></tr><t=
+r><td valign=3D=22top=22 style=3D=22width: 4.25em;font-size: 12px;line-he=
+ight: 1.25;color: =2378787a;=22> <span style=3D=22color:=238b8d94=22>To</=
+span></td><td valign=3D=22top=22 style=3D=22font-size: 12px;line-height: =
+1.25;color: =23232324;word-break: break-all;=22><a class=3D=22mail-to=22 =
+style=3D=22color: =230886e8; text-decoration: none=22 href=3D=22mailto:sh=
+ensongjie.sh=40chinatelecom.cn=22>shensongjie.sh&lt;shensongjie.sh=40chin=
+atelecom.cn&gt;</a>,<br><a class=3D=22mail-to=22 style=3D=22color: =23088=
+6e8; text-decoration: none=22 href=3D=22mailto:intel-wired-lan=40lists.os=
+uosl.org=22>intel-wired-lan=40lists.osuosl.org&lt;intel-wired-lan=40lists=
+.osuosl.org&gt;</a></td></tr><tr><td valign=3D=22top=22 style=3D=22width:=
+ 4.25em;font-size: 12px;line-height: 1.25;color: =2378787a;=22><span styl=
+e=3D=22color:=238b8d94=22>Subject</span></td><td class=3D=22mail-subject=22=
+ valign=3D=22top=22 style=3D=22font-size: 12px;line-height: 1.25;color: =23=
+232324;word-break: break-all;=22><span class=3D=22mail-subject=22 style=3D=
+=22color:black=22>Re: =5BIntel-wired-lan=5D =5Bneed help=5Dafter insmod I=
+ce.ko message show A parallel fault was detected which port unlink.intel =
+E810 2 port card</span></td></tr></tbody></table></div><div>On 12/12/2022=
+ 4:39 AM, shensongjie.sh wrote:
+<br>&gt; =5B601618.781778=5D ice 0000:17:00.1&nbsp;A parallel fault was d=
+etected
+<br>&gt; Possible Solution: Check link partner connection and configurati=
+ol
+<br>&gt; Port Mumber: 1
+<br>&gt; Aparallel fault was detected
+<br>&gt; Possible Solution: Check link partner connection and configurati=
+or
+<br>&gt; Part Number:1
+<br>
+<br>Hello, sorry for the delay in replying. This message indicates that y=
+our =20
+<br>card is having trouble linking with the remote link partner, this cou=
+ld =20
+<br>be due to the cable you're using or due to your link partner or link =
+=20
+<br>partner settings. Have you tried a different cable or link partner=3F=
 
-> -static void fill_kobj_path(struct kobject *kobj, char *path, int length)
-> +static int fill_kobj_path(struct kobject *kobj, char *path, int length)
-> =A0{
-> =A0=A0=A0=A0=A0=A0=A0 struct kobject *parent;
-> =
+<br>
+<br>What kind of device / brand is your link partner=3F
+<br>Is it a switch=3F
+<br>Does it have any logs saying what's wrong=3F
+<br>What speed is your device and switch port set to=3F
+<br>
+<br>please include ethtool -m eth0 output on your device. Actually please=
+ =20
+<br>include all the troubleshooting info.
+<br>
+<br>ethtool -i
+<br>ethtool -S
+<br>devlink dev info
+<br>uname -r
+<br>full dmesg from boot.
+<br>
+<br>This info can be attached to a bug report at e1000.sourceforge.net or=
+ =20
+<br>you can email it.
+<br>
+<br>Jesse
+<br></div></div>
 
-> @@ -121,12 +121,16 @@ static void fill_kobj_path(struct kobject *kobj, ch=
-ar
-> *path, int length)
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 int cur =3D strlen(kobject_=
-name(parent));
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 /* back up enough to print =
-this name with '/' */
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 length -=3D cur;
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 if (length <=3D 0)
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 retur=
-n -EINVAL;
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 memcpy(path + length, kobje=
-ct_name(parent), cur);
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 *(path + --length) =3D '/';
-> =A0=A0=A0=A0=A0=A0=A0 }
-> =
+--===============6585078646385405615==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> =A0=A0=A0=A0=A0=A0=A0 pr_debug("kobject: '%s' (%p): %s: path =3D '%s'\n",
-> kobject_name(kobj),
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 kobj, __func__, path);
-> +
-> +=A0=A0=A0=A0=A0=A0 return 0;
-> =A0}
-> =
-
-> =A0/**
-> @@ -141,13 +145,17 @@ char *kobject_get_path(struct kobject *kobj, gfp_t
-> gfp_mask)
-> =A0=A0=A0=A0=A0=A0=A0 char *path;
-> =A0=A0=A0=A0=A0=A0=A0 int len;
-> =
-
-> +retry:
-> =A0=A0=A0=A0=A0=A0=A0 len =3D get_kobj_path_length(kobj);
-> =A0=A0=A0=A0=A0=A0=A0 if (len =3D=3D 0)
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 return NULL;
-> =A0=A0=A0=A0=A0=A0=A0 path =3D kzalloc(len, gfp_mask);
-> =A0=A0=A0=A0=A0=A0=A0 if (!path)
-> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 return NULL;
-> -=A0=A0=A0=A0=A0=A0 fill_kobj_path(kobj, path, len);
-> +=A0=A0=A0=A0=A0=A0 if (fill_kobj_path(kobj, path, len)) {
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 kfree(path);
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 goto retry;
-> +=A0=A0=A0=A0=A0=A0 }
-
-Much nicer, thanks!
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============6585078646385405615==--
