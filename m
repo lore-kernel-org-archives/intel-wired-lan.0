@@ -4,77 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C1B1C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Dec 2022 14:54:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E456C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Dec 2022 15:28:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C87768123F;
-	Mon, 19 Dec 2022 14:54:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C87768123F
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8B1A981457;
+	Mon, 19 Dec 2022 15:28:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8B1A981457
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1671461687;
-	bh=VDnyMmH7fAbqwPMpUEKILF3RZvPjdWiyWTO8s7tGvXY=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1671463693;
+	bh=jSPw5kDPdbvGFBh0Lw34j8xZO2AZYYW7xoz+bUkv9QI=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=i1ryFKeIiaH91aCiKOPlxEIbFnaZTYOXjClBX8NLlIRRvH7gnCglpSNHr2zglN7Fu
-	 ETgfpGzrIShnWUi08SzKv84GIkTPzItLZS9HhLBQTVQ28fCMivxv9wPWJbRIu9kkeN
-	 UeQzYeJV7O4lS+gtsn/7/A+dsxBpRG4KTRpwfuckKNcUTwuecOaP5Wd+MXW/vUKeL/
-	 aSEVwzegF+EftMpp/37txA0zJxZAgSUzNoDlL6VaSWRhZ+tE0uzMAVHg4e7qItXZ9l
-	 fIScWz1wYMwYtlZifA53CvMW9qTB9uRn5tl500lKLa3iRsVmoApcTL3LBpwId8A36S
-	 sGXvRgXC5F69g==
+	b=IUb44BUozD8aY74QAC8EskFf6IZ5zatLAxzczJ86CB/AgkxW5R2jMwCSv/eBK9FzE
+	 B4fTxvw/vCruPcFoGkcCzl+xtmFMtFznuv6+uX3yh9aohAZJepxHRl4nt7DeWjON/7
+	 yq+bg3A+LtSTgbip8NLtazjgUbzkjKU3a6P1SGXSg9XjD9DHxlZPcy/zLBwraMVOCx
+	 u6EDTcP/I7eoRE8hUWvBvFadHKou9g6bki79PxAh2rab7CwiTKQgoPOWGxgaIALzB9
+	 f5EbotJuk67vttSkElms3HySN9VLieVErn4uMLtVFqUfkfNvhbbOk4M+RCuKBFe+KX
+	 Btc/pV2bUapMA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 361IAdyikRfZ; Mon, 19 Dec 2022 14:54:47 +0000 (UTC)
+	with ESMTP id oCtNPEDYUz6J; Mon, 19 Dec 2022 15:28:09 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B417E8124C;
-	Mon, 19 Dec 2022 14:54:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B417E8124C
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id E360D1BF2C9
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 14:54:45 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 85C0C8145D;
+	Mon, 19 Dec 2022 15:28:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 85C0C8145D
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 800C31BF28F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:28:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B993A40143
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 14:54:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B993A40143
+ by smtp1.osuosl.org (Postfix) with ESMTP id 56F598145D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:28:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 56F598145D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 7y6s-lPLPU3A for <intel-wired-lan@lists.osuosl.org>;
- Mon, 19 Dec 2022 14:54:44 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A3DC040116
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A3DC040116
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 14:54:44 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 9046960FCB;
- Mon, 19 Dec 2022 14:54:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D1EDCC433EF;
- Mon, 19 Dec 2022 14:54:42 +0000 (UTC)
-Date: Mon, 19 Dec 2022 15:54:40 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Wang Hai <wanghai38@huawei.com>, Alice Chao <alice.chao@mediatek.com>
-Message-ID: <Y6B7MKZxjaoQlpgf@kroah.com>
-References: <20221219144103.34789-1-wanghai38@huawei.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id uihtN_T--J7l for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 19 Dec 2022 15:28:06 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4BC9E81457
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4BC9E81457
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:28:03 +0000 (UTC)
+Received: from kwepemm600001.china.huawei.com (unknown [172.30.72.57])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4NbNq94b6dzJqHG;
+ Mon, 19 Dec 2022 23:27:01 +0800 (CST)
+Received: from [10.174.176.245] (10.174.176.245) by
+ kwepemm600001.china.huawei.com (7.193.23.3) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.34; Mon, 19 Dec 2022 23:27:59 +0800
+Message-ID: <dd4d0619-8287-1650-aa43-5db2e86ff8cd@huawei.com>
+Date: Mon, 19 Dec 2022 23:27:58 +0800
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20221219144103.34789-1-wanghai38@huawei.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=linuxfoundation.org; 
- s=korg; t=1671461683;
- bh=wOJC6lzxLzI4/rdLQoX0fj3Ksu94I8e0ImMBtduC86U=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=lKeIoCzOzLDSDGz8TK0g93ZGEpDjeOoqy1+37bMZ+6z1ZvGd3SSHWe0Pa2AstHKTR
- kFzDZ8YIZn6l3A6+SajUK3if1OhDH/+BlBoSeFBw6hzIQg6ZwQlfdw/MY5bPjntKeu
- 8zLAMrbmhD5FcxlQd7jeitlZ7pkWh98yMcOnqkC8=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key) header.d=linuxfoundation.org
- header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg
- header.b=lKeIoCzO
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
+ Thunderbird/91.7.0
+To: Greg KH <gregkh@linuxfoundation.org>, Alice Chao <alice.chao@mediatek.com>
+References: <20221219144103.34789-1-wanghai38@huawei.com>
+ <Y6B7MKZxjaoQlpgf@kroah.com>
+From: "wanghai (M)" <wanghai38@huawei.com>
+In-Reply-To: <Y6B7MKZxjaoQlpgf@kroah.com>
+X-Originating-IP: [10.174.176.245]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ kwepemm600001.china.huawei.com (7.193.23.3)
+X-CFilter-Loop: Reflected
 Subject: Re: [Intel-wired-lan] [PATCH] kobject: Fix slab-out-of-bounds in
  fill_kobj_path()
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -91,176 +84,144 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org, rafael@kernel.org
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Dec 19, 2022 at 10:41:03PM +0800, Wang Hai wrote:
-> In kobject_get_path(), if kobj->name is changed between calls
-> get_kobj_path_length() and fill_kobj_path() and the length becomes
-> longer, then fill_kobj_path() will have an out-of-bounds bug.
-> 
-> The actual current problem occurs when the ixgbe probe.
-> 
-> In ixgbe_mii_bus_init(), if the length of netdev->dev.kobj.name
-> length becomes longer, out-of-bounds will occur.
-> 
-> cpu0                                         cpu1
-> ixgbe_probe
->  register_netdev(netdev)
->   netdev_register_kobject
->    device_add
->     kobject_uevent // Sending ADD events
->                                              systemd-udevd // rename netdev
->                                               dev_change_name
->                                                device_rename
->                                                 kobject_rename
->                                                 |
->  ixgbe_mii_bus_init                             |
->   mdiobus_register                              |
->    __mdiobus_register                           |
->     device_register                             |
->      device_add                                 |
->       kobject_uevent                            |
->        kobject_get_path                         |
->         len = get_kobj_path_length // old name  |
->         path = kzalloc(len, gfp_mask);          |
->                                                 kobj->name = name;
->                                                 /* name length becomes
->                                                  * longer
->                                                  */
->         fill_kobj_path /* kobj path length is
->                         * longer than path,
->                         * resulting in out of
->                         * bounds when filling path
->                         */
-> 
-> This is the kasan report:
-> 
-> ==================================================================
-> BUG: KASAN: slab-out-of-bounds in fill_kobj_path+0x50/0xc0
-> Write of size 7 at addr ff1100090573d1fd by task kworker/28:1/673
-> 
->  Workqueue: events work_for_cpu_fn
->  Call Trace:
->  <TASK>
->  dump_stack_lvl+0x34/0x48
->  print_address_description.constprop.0+0x86/0x1e7
->  print_report+0x36/0x4f
->  kasan_report+0xad/0x130
->  kasan_check_range+0x35/0x1c0
->  memcpy+0x39/0x60
->  fill_kobj_path+0x50/0xc0
->  kobject_get_path+0x5a/0xc0
->  kobject_uevent_env+0x140/0x460
->  device_add+0x5c7/0x910
->  __mdiobus_register+0x14e/0x490
->  ixgbe_probe.cold+0x441/0x574 [ixgbe]
->  local_pci_probe+0x78/0xc0
->  work_for_cpu_fn+0x26/0x40
->  process_one_work+0x3b6/0x6a0
->  worker_thread+0x368/0x520
->  kthread+0x165/0x1a0
->  ret_from_fork+0x1f/0x30
-> 
-> This reproducer triggers that bug:
-> 
-> while:
-> do
->     rmmod ixgbe
->     sleep 0.5
->     modprobe ixgbe
->     sleep 0.5
-> 
-> When calling fill_kobj_path() to fill path, if the name length of
-> kobj becomes longer, return failure and retry.
-> 
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> Signed-off-by: Wang Hai <wanghai38@huawei.com>
-> ---
->  lib/kobject.c | 14 ++++++++++++--
->  1 file changed, 12 insertions(+), 2 deletions(-)
-
-Nice find, and a much better description than was reported here:
-	https://lore.kernel.org/all/20221216031320.2634-1-alice.chao@mediatek.com/
-
-Alice, does this patch resolve your problem as well?
-
-> 
-> diff --git a/lib/kobject.c b/lib/kobject.c
-> index a0b2dbfcfa23..d129f437b200 100644
-> --- a/lib/kobject.c
-> +++ b/lib/kobject.c
-> @@ -112,7 +112,7 @@ static int get_kobj_path_length(struct kobject *kobj)
->  	return length;
->  }
->  
-> -static void fill_kobj_path(struct kobject *kobj, char *path, int length)
-> +static bool fill_kobj_path(struct kobject *kobj, char *path, int length)
-
-Just return an int and an error value, bool isn't a normal return value,
-right?
-
->  {
->  	struct kobject *parent;
->  
-> @@ -121,12 +121,16 @@ static void fill_kobj_path(struct kobject *kobj, char *path, int length)
->  		int cur = strlen(kobject_name(parent));
->  		/* back up enough to print this name with '/' */
->  		length -= cur;
-> +		if (length < 0)
-> +			return false;
-
-Return -EINVAL or something?
-
-What if length ends up 0 here, is that going to be ok?
-
-
->  		memcpy(path + length, kobject_name(parent), cur);
->  		*(path + --length) = '/';
->  	}
->  
->  	pr_debug("kobject: '%s' (%p): %s: path = '%s'\n", kobject_name(kobj),
->  		 kobj, __func__, path);
-> +
-> +	return true;
-
-return 0;
-
->  }
->  
->  /**
-> @@ -140,14 +144,20 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
->  {
->  	char *path;
->  	int len;
-> +	bool ret;
-
-No need for this variable
-
->  
-> +retry:
->  	len = get_kobj_path_length(kobj);
->  	if (len == 0)
->  		return NULL;
->  	path = kzalloc(len, gfp_mask);
->  	if (!path)
->  		return NULL;
-> -	fill_kobj_path(kobj, path, len);
-> +	ret = fill_kobj_path(kobj, path, len);
-> +	if (!ret) {
-
-Make this one line:
-
-	if (fill_kobj_path(kobj, path, len)) {
-
-But, you now have a loop, what guarantees that you can get out of it?
-
-thanks,
-
-greg k-h
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+CuWcqCAyMDIyLzEyLzE5IDIyOjU0LCBHcmVnIEtIIOWGmemBkzoKPiBPbiBNb24sIERlYyAxOSwg
+MjAyMiBhdCAxMDo0MTowM1BNICswODAwLCBXYW5nIEhhaSB3cm90ZToKPj4gSW4ga29iamVjdF9n
+ZXRfcGF0aCgpLCBpZiBrb2JqLT5uYW1lIGlzIGNoYW5nZWQgYmV0d2VlbiBjYWxscwo+PiBnZXRf
+a29ial9wYXRoX2xlbmd0aCgpIGFuZCBmaWxsX2tvYmpfcGF0aCgpIGFuZCB0aGUgbGVuZ3RoIGJl
+Y29tZXMKPj4gbG9uZ2VyLCB0aGVuIGZpbGxfa29ial9wYXRoKCkgd2lsbCBoYXZlIGFuIG91dC1v
+Zi1ib3VuZHMgYnVnLgo+Pgo+PiBUaGUgYWN0dWFsIGN1cnJlbnQgcHJvYmxlbSBvY2N1cnMgd2hl
+biB0aGUgaXhnYmUgcHJvYmUuCj4+Cj4+IEluIGl4Z2JlX21paV9idXNfaW5pdCgpLCBpZiB0aGUg
+bGVuZ3RoIG9mIG5ldGRldi0+ZGV2LmtvYmoubmFtZQo+PiBsZW5ndGggYmVjb21lcyBsb25nZXIs
+IG91dC1vZi1ib3VuZHMgd2lsbCBvY2N1ci4KPj4KPj4gY3B1MCAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgY3B1MQo+PiBpeGdiZV9wcm9iZQo+PiAgIHJlZ2lzdGVyX25l
+dGRldihuZXRkZXYpCj4+ICAgIG5ldGRldl9yZWdpc3Rlcl9rb2JqZWN0Cj4+ICAgICBkZXZpY2Vf
+YWRkCj4+ICAgICAga29iamVjdF91ZXZlbnQgLy8gU2VuZGluZyBBREQgZXZlbnRzCj4+ICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzeXN0ZW1kLXVkZXZkIC8v
+IHJlbmFtZSBuZXRkZXYKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICBkZXZfY2hhbmdlX25hbWUKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgZGV2aWNlX3JlbmFtZQo+PiAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAga29iamVjdF9yZW5hbWUKPj4gICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICBpeGdiZV9taWlfYnVz
+X2luaXQgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgbWRpb2J1c19yZWdpc3Rl
+ciAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgIF9fbWRpb2J1c19yZWdpc3Rl
+ciAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICBkZXZpY2VfcmVnaXN0ZXIgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgZGV2aWNlX2FkZCAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgIGtvYmplY3RfdWV2ZW50ICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgICBrb2JqZWN0X2dldF9wYXRoICAgICAgICAg
+ICAgICAgICAgICAgICAgIHwKPj4gICAgICAgICAgbGVuID0gZ2V0X2tvYmpfcGF0aF9sZW5ndGgg
+Ly8gb2xkIG5hbWUgIHwKPj4gICAgICAgICAgcGF0aCA9IGt6YWxsb2MobGVuLCBnZnBfbWFzayk7
+ICAgICAgICAgIHwKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIGtvYmotPm5hbWUgPSBuYW1lOwo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgLyogbmFtZSBsZW5ndGggYmVjb21lcwo+PiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICogbG9uZ2VyCj4+ICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKi8KPj4gICAgICAg
+ICAgZmlsbF9rb2JqX3BhdGggLyoga29iaiBwYXRoIGxlbmd0aCBpcwo+PiAgICAgICAgICAgICAg
+ICAgICAgICAgICAgKiBsb25nZXIgdGhhbiBwYXRoLAo+PiAgICAgICAgICAgICAgICAgICAgICAg
+ICAgKiByZXN1bHRpbmcgaW4gb3V0IG9mCj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAqIGJv
+dW5kcyB3aGVuIGZpbGxpbmcgcGF0aAo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgKi8KPj4K
+Pj4gVGhpcyBpcyB0aGUga2FzYW4gcmVwb3J0Ogo+Pgo+PiA9PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPj4gQlVHOiBLQVNB
+Tjogc2xhYi1vdXQtb2YtYm91bmRzIGluIGZpbGxfa29ial9wYXRoKzB4NTAvMHhjMAo+PiBXcml0
+ZSBvZiBzaXplIDcgYXQgYWRkciBmZjExMDAwOTA1NzNkMWZkIGJ5IHRhc2sga3dvcmtlci8yODox
+LzY3Mwo+Pgo+PiAgIFdvcmtxdWV1ZTogZXZlbnRzIHdvcmtfZm9yX2NwdV9mbgo+PiAgIENhbGwg
+VHJhY2U6Cj4+ICAgPFRBU0s+Cj4+ICAgZHVtcF9zdGFja19sdmwrMHgzNC8weDQ4Cj4+ICAgcHJp
+bnRfYWRkcmVzc19kZXNjcmlwdGlvbi5jb25zdHByb3AuMCsweDg2LzB4MWU3Cj4+ICAgcHJpbnRf
+cmVwb3J0KzB4MzYvMHg0Zgo+PiAgIGthc2FuX3JlcG9ydCsweGFkLzB4MTMwCj4+ICAga2FzYW5f
+Y2hlY2tfcmFuZ2UrMHgzNS8weDFjMAo+PiAgIG1lbWNweSsweDM5LzB4NjAKPj4gICBmaWxsX2tv
+YmpfcGF0aCsweDUwLzB4YzAKPj4gICBrb2JqZWN0X2dldF9wYXRoKzB4NWEvMHhjMAo+PiAgIGtv
+YmplY3RfdWV2ZW50X2VudisweDE0MC8weDQ2MAo+PiAgIGRldmljZV9hZGQrMHg1YzcvMHg5MTAK
+Pj4gICBfX21kaW9idXNfcmVnaXN0ZXIrMHgxNGUvMHg0OTAKPj4gICBpeGdiZV9wcm9iZS5jb2xk
+KzB4NDQxLzB4NTc0IFtpeGdiZV0KPj4gICBsb2NhbF9wY2lfcHJvYmUrMHg3OC8weGMwCj4+ICAg
+d29ya19mb3JfY3B1X2ZuKzB4MjYvMHg0MAo+PiAgIHByb2Nlc3Nfb25lX3dvcmsrMHgzYjYvMHg2
+YTAKPj4gICB3b3JrZXJfdGhyZWFkKzB4MzY4LzB4NTIwCj4+ICAga3RocmVhZCsweDE2NS8weDFh
+MAo+PiAgIHJldF9mcm9tX2ZvcmsrMHgxZi8weDMwCj4+Cj4+IFRoaXMgcmVwcm9kdWNlciB0cmln
+Z2VycyB0aGF0IGJ1ZzoKPj4KPj4gd2hpbGU6Cj4+IGRvCj4+ICAgICAgcm1tb2QgaXhnYmUKPj4g
+ICAgICBzbGVlcCAwLjUKPj4gICAgICBtb2Rwcm9iZSBpeGdiZQo+PiAgICAgIHNsZWVwIDAuNQo+
+Pgo+PiBXaGVuIGNhbGxpbmcgZmlsbF9rb2JqX3BhdGgoKSB0byBmaWxsIHBhdGgsIGlmIHRoZSBu
+YW1lIGxlbmd0aCBvZgo+PiBrb2JqIGJlY29tZXMgbG9uZ2VyLCByZXR1cm4gZmFpbHVyZSBhbmQg
+cmV0cnkuCj4+Cj4+IEZpeGVzOiAxZGExNzdlNGMzZjQgKCJMaW51eC0yLjYuMTItcmMyIikKPj4g
+U2lnbmVkLW9mZi1ieTogV2FuZyBIYWkgPHdhbmdoYWkzOEBodWF3ZWkuY29tPgo+PiAtLS0KPj4g
+ICBsaWIva29iamVjdC5jIHwgMTQgKysrKysrKysrKysrLS0KPj4gICAxIGZpbGUgY2hhbmdlZCwg
+MTIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKPiBOaWNlIGZpbmQsIGFuZCBhIG11Y2gg
+YmV0dGVyIGRlc2NyaXB0aW9uIHRoYW4gd2FzIHJlcG9ydGVkIGhlcmU6Cj4gCWh0dHBzOi8vbG9y
+ZS5rZXJuZWwub3JnL2FsbC8yMDIyMTIxNjAzMTMyMC4yNjM0LTEtYWxpY2UuY2hhb0BtZWRpYXRl
+ay5jb20vCj4KPiBBbGljZSwgZG9lcyB0aGlzIHBhdGNoIHJlc29sdmUgeW91ciBwcm9ibGVtIGFz
+IHdlbGw/Cj4KPj4gZGlmZiAtLWdpdCBhL2xpYi9rb2JqZWN0LmMgYi9saWIva29iamVjdC5jCj4+
+IGluZGV4IGEwYjJkYmZjZmEyMy4uZDEyOWY0MzdiMjAwIDEwMDY0NAo+PiAtLS0gYS9saWIva29i
+amVjdC5jCj4+ICsrKyBiL2xpYi9rb2JqZWN0LmMKPj4gQEAgLTExMiw3ICsxMTIsNyBAQCBzdGF0
+aWMgaW50IGdldF9rb2JqX3BhdGhfbGVuZ3RoKHN0cnVjdCBrb2JqZWN0ICprb2JqKQo+PiAgIAly
+ZXR1cm4gbGVuZ3RoOwo+PiAgIH0KPj4gICAKPj4gLXN0YXRpYyB2b2lkIGZpbGxfa29ial9wYXRo
+KHN0cnVjdCBrb2JqZWN0ICprb2JqLCBjaGFyICpwYXRoLCBpbnQgbGVuZ3RoKQo+PiArc3RhdGlj
+IGJvb2wgZmlsbF9rb2JqX3BhdGgoc3RydWN0IGtvYmplY3QgKmtvYmosIGNoYXIgKnBhdGgsIGlu
+dCBsZW5ndGgpCj4gSnVzdCByZXR1cm4gYW4gaW50IGFuZCBhbiBlcnJvciB2YWx1ZSwgYm9vbCBp
+c24ndCBhIG5vcm1hbCByZXR1cm4gdmFsdWUsCj4gcmlnaHQ/CgpIaSwgR3JlZy4KClRoYW5rcyBm
+b3IgdGhlIHN1Z2dlc3Rpb24sIEkgd2lsbCBjaGFuZ2UgaXQgdG8gaW50LgoKPj4gICB7Cj4+ICAg
+CXN0cnVjdCBrb2JqZWN0ICpwYXJlbnQ7Cj4+ICAgCj4+IEBAIC0xMjEsMTIgKzEyMSwxNiBAQCBz
+dGF0aWMgdm9pZCBmaWxsX2tvYmpfcGF0aChzdHJ1Y3Qga29iamVjdCAqa29iaiwgY2hhciAqcGF0
+aCwgaW50IGxlbmd0aCkKPj4gICAJCWludCBjdXIgPSBzdHJsZW4oa29iamVjdF9uYW1lKHBhcmVu
+dCkpOwo+PiAgIAkJLyogYmFjayB1cCBlbm91Z2ggdG8gcHJpbnQgdGhpcyBuYW1lIHdpdGggJy8n
+ICovCj4+ICAgCQlsZW5ndGggLT0gY3VyOwo+PiArCQlpZiAobGVuZ3RoIDwgMCkKPj4gKwkJCXJl
+dHVybiBmYWxzZTsKPiBSZXR1cm4gLUVJTlZBTCBvciBzb21ldGhpbmc/Cj4KPiBXaGF0IGlmIGxl
+bmd0aCBlbmRzIHVwIDAgaGVyZSwgaXMgdGhhdCBnb2luZyB0byBiZSBvaz8KSWYgbGVuZ3RoIGlz
+IDAsIHRoZXJlIGlzIG5vdCBlbm91Z2ggc3BhY2UgZm9yICcvJywgd2hpY2ggaXMgYWxzbwpwcm9i
+bGVtYXRpYy4gVGhhbmsgeW91IGZvciB0aGUgcmVtaW5kZXIuCj4KPj4gICAJCW1lbWNweShwYXRo
+ICsgbGVuZ3RoLCBrb2JqZWN0X25hbWUocGFyZW50KSwgY3VyKTsKPj4gICAJCSoocGF0aCArIC0t
+bGVuZ3RoKSA9ICcvJzsKPj4gICAJfQo+PiAgIAo+PiAgIAlwcl9kZWJ1Zygia29iamVjdDogJyVz
+JyAoJXApOiAlczogcGF0aCA9ICclcydcbiIsIGtvYmplY3RfbmFtZShrb2JqKSwKPj4gICAJCSBr
+b2JqLCBfX2Z1bmNfXywgcGF0aCk7Cj4+ICsKPj4gKwlyZXR1cm4gdHJ1ZTsKPiByZXR1cm4gMDsK
+Pgo+PiAgIH0KPj4gICAKPj4gICAvKioKPj4gQEAgLTE0MCwxNCArMTQ0LDIwIEBAIGNoYXIgKmtv
+YmplY3RfZ2V0X3BhdGgoc3RydWN0IGtvYmplY3QgKmtvYmosIGdmcF90IGdmcF9tYXNrKQo+PiAg
+IHsKPj4gICAJY2hhciAqcGF0aDsKPj4gICAJaW50IGxlbjsKPj4gKwlib29sIHJldDsKPiBObyBu
+ZWVkIGZvciB0aGlzIHZhcmlhYmxlCj4KPj4gICAKPj4gK3JldHJ5Ogo+PiAgIAlsZW4gPSBnZXRf
+a29ial9wYXRoX2xlbmd0aChrb2JqKTsKPj4gICAJaWYgKGxlbiA9PSAwKQo+PiAgIAkJcmV0dXJu
+IE5VTEw7Cj4+ICAgCXBhdGggPSBremFsbG9jKGxlbiwgZ2ZwX21hc2spOwo+PiAgIAlpZiAoIXBh
+dGgpCj4+ICAgCQlyZXR1cm4gTlVMTDsKPj4gLQlmaWxsX2tvYmpfcGF0aChrb2JqLCBwYXRoLCBs
+ZW4pOwo+PiArCXJldCA9IGZpbGxfa29ial9wYXRoKGtvYmosIHBhdGgsIGxlbik7Cj4+ICsJaWYg
+KCFyZXQpIHsKPiBNYWtlIHRoaXMgb25lIGxpbmU6Cj4KPiAJaWYgKGZpbGxfa29ial9wYXRoKGtv
+YmosIHBhdGgsIGxlbikpIHsKPgo+IEJ1dCwgeW91IG5vdyBoYXZlIGEgbG9vcCwgd2hhdCBndWFy
+YW50ZWVzIHRoYXQgeW91IGNhbiBnZXQgb3V0IG9mIGl0PwoKZmlsbF9rb2JqX3BhdGgoKSBtYXkg
+ZmFpbCBvbmx5IHdoZW4gdGhlIG5hbWUgb2Yga29iaiBvciBwYXJlbnQgaXMgY2hhbmdlZCwKdGhp
+cyBjaGFuZ2UgZG9lcyBub3QgaGFwcGVuIGZvcmV2ZXIuCgpBbmQgd2hlbiByZXRyeWluZywgdGhl
+IGxlbmd0aCBvZiB0aGUgY3VycmVudCBrb2JqIHBhdGggaXMgcmVjYWxjdWxhdGVkLAp3aGljaCBj
+YW4gZ3VhcmFudGVlIHRoYXQgdGhlIGxlbmd0aCBpcyBzYXRpc2ZpZWQgbmV4dCB0aW1lLgoKCkNh
+biBJIHNlbmQgdjIgbGlrZSB0aGlzPwoKZGlmZiAtLWdpdCBhL2xpYi9rb2JqZWN0LmMgYi9saWIv
+a29iamVjdC5jCmluZGV4IGEwYjJkYmZjZmEyMy4uM2Y5N2Q5MDMyNjZhIDEwMDY0NAotLS0gYS9s
+aWIva29iamVjdC5jCisrKyBiL2xpYi9rb2JqZWN0LmMKQEAgLTExMiw3ICsxMTIsNyBAQCBzdGF0
+aWMgaW50IGdldF9rb2JqX3BhdGhfbGVuZ3RoKHN0cnVjdCBrb2JqZWN0ICprb2JqKQogwqDCoMKg
+wqDCoMKgwqAgcmV0dXJuIGxlbmd0aDsKIMKgfQoKLXN0YXRpYyB2b2lkIGZpbGxfa29ial9wYXRo
+KHN0cnVjdCBrb2JqZWN0ICprb2JqLCBjaGFyICpwYXRoLCBpbnQgbGVuZ3RoKQorc3RhdGljIGlu
+dCBmaWxsX2tvYmpfcGF0aChzdHJ1Y3Qga29iamVjdCAqa29iaiwgY2hhciAqcGF0aCwgaW50IGxl
+bmd0aCkKIMKgewogwqDCoMKgwqDCoMKgwqAgc3RydWN0IGtvYmplY3QgKnBhcmVudDsKCkBAIC0x
+MjEsMTIgKzEyMSwxNiBAQCBzdGF0aWMgdm9pZCBmaWxsX2tvYmpfcGF0aChzdHJ1Y3Qga29iamVj
+dCAqa29iaiwgCmNoYXIgKnBhdGgsIGludCBsZW5ndGgpCiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqAgaW50IGN1ciA9IHN0cmxlbihrb2JqZWN0X25hbWUocGFyZW50KSk7CiDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgLyogYmFjayB1cCBlbm91Z2ggdG8gcHJpbnQgdGhpcyBu
+YW1lIHdpdGggJy8nICovCiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgbGVuZ3RoIC09
+IGN1cjsKK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgaWYgKGxlbmd0aCA8PSAwKQorwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcmV0dXJuIC1FSU5WQUw7
+CiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgbWVtY3B5KHBhdGggKyBsZW5ndGgsIGtv
+YmplY3RfbmFtZShwYXJlbnQpLCBjdXIpOwogwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+ICoocGF0aCArIC0tbGVuZ3RoKSA9ICcvJzsKIMKgwqDCoMKgwqDCoMKgIH0KCiDCoMKgwqDCoMKg
+wqDCoCBwcl9kZWJ1Zygia29iamVjdDogJyVzJyAoJXApOiAlczogcGF0aCA9ICclcydcbiIsIApr
+b2JqZWN0X25hbWUoa29iaiksCiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBrb2Jq
+LCBfX2Z1bmNfXywgcGF0aCk7CisKK8KgwqDCoMKgwqDCoCByZXR1cm4gMDsKIMKgfQoKIMKgLyoq
+CkBAIC0xNDEsMTMgKzE0NSwxNyBAQCBjaGFyICprb2JqZWN0X2dldF9wYXRoKHN0cnVjdCBrb2Jq
+ZWN0ICprb2JqLCBnZnBfdCAKZ2ZwX21hc2spCiDCoMKgwqDCoMKgwqDCoCBjaGFyICpwYXRoOwog
+wqDCoMKgwqDCoMKgwqAgaW50IGxlbjsKCityZXRyeToKIMKgwqDCoMKgwqDCoMKgIGxlbiA9IGdl
+dF9rb2JqX3BhdGhfbGVuZ3RoKGtvYmopOwogwqDCoMKgwqDCoMKgwqAgaWYgKGxlbiA9PSAwKQog
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHJldHVybiBOVUxMOwogwqDCoMKgwqDCoMKg
+wqAgcGF0aCA9IGt6YWxsb2MobGVuLCBnZnBfbWFzayk7CiDCoMKgwqDCoMKgwqDCoCBpZiAoIXBh
+dGgpCiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcmV0dXJuIE5VTEw7Ci3CoMKgwqDC
+oMKgwqAgZmlsbF9rb2JqX3BhdGgoa29iaiwgcGF0aCwgbGVuKTsKK8KgwqDCoMKgwqDCoCBpZiAo
+ZmlsbF9rb2JqX3BhdGgoa29iaiwgcGF0aCwgbGVuKSkgeworwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoCBrZnJlZShwYXRoKTsKK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgZ290byBy
+ZXRyeTsKK8KgwqDCoMKgwqDCoCB9CgogwqDCoMKgwqDCoMKgwqAgcmV0dXJuIHBhdGg7CiDCoH0K
+Cj4KPiB0aGFua3MsCj4KPiBncmVnIGstaAo+IC4KCi0tIApXYW5nIEhhaQoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtd2lyZWQtbGFuIG1haWxp
+bmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczovL2xpc3RzLm9zdW9zbC5v
+cmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
