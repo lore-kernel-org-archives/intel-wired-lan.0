@@ -1,75 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E456C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Dec 2022 15:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6956C3DA71
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 19 Dec 2022 15:42:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8B1A981457;
-	Mon, 19 Dec 2022 15:28:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8B1A981457
+	by smtp3.osuosl.org (Postfix) with ESMTP id 595E460030;
+	Mon, 19 Dec 2022 15:42:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 595E460030
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1671463693;
-	bh=jSPw5kDPdbvGFBh0Lw34j8xZO2AZYYW7xoz+bUkv9QI=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=IUb44BUozD8aY74QAC8EskFf6IZ5zatLAxzczJ86CB/AgkxW5R2jMwCSv/eBK9FzE
-	 B4fTxvw/vCruPcFoGkcCzl+xtmFMtFznuv6+uX3yh9aohAZJepxHRl4nt7DeWjON/7
-	 yq+bg3A+LtSTgbip8NLtazjgUbzkjKU3a6P1SGXSg9XjD9DHxlZPcy/zLBwraMVOCx
-	 u6EDTcP/I7eoRE8hUWvBvFadHKou9g6bki79PxAh2rab7CwiTKQgoPOWGxgaIALzB9
-	 f5EbotJuk67vttSkElms3HySN9VLieVErn4uMLtVFqUfkfNvhbbOk4M+RCuKBFe+KX
-	 Btc/pV2bUapMA==
+	s=default; t=1671464546;
+	bh=g6jjPsh2QX00WLhZzactO9zqG/aES0dl7lYz9si3o5g=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=CYFY1vcxHlDzASn5Hy84J5XBlpowZRP1EoZdSQ+a97dhJeG7mVHlcamEfXMP+/Z+v
+	 woD0DQP3CbAdVHOq+DD4Kas3IfOFUVJ4pmaaMSAiMlJx04e3C/S6MtStDFOqQcAiH0
+	 Ha7u+ruyYU6WPkiRBWJh6YxhpbniJBY7Yn9Diov+E4I5PMISHfW0PA0DxbTsqk9AgX
+	 OoSHSqLTWR+oQiJ4xZ3KKveJuywGDNtt+stFcWcJfWO//YMuR/ayHY0UN1eCJdiii9
+	 VwTH1DpSNr3/QUHFjr9wto0Da+DpQ/p4Z7oXL9gJPygWM3VHlz3dGxBtpftatF31gM
+	 bbfn5PbZDJbIA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id oCtNPEDYUz6J; Mon, 19 Dec 2022 15:28:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 17Qr5yJ3uhNV; Mon, 19 Dec 2022 15:42:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 85C0C8145D;
-	Mon, 19 Dec 2022 15:28:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 85C0C8145D
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 800C31BF28F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:28:07 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3C53360B46;
+	Mon, 19 Dec 2022 15:42:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3C53360B46
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 148CA1BF317
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:42:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 56F598145D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:28:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 56F598145D
+ by smtp4.osuosl.org (Postfix) with ESMTP id E11FF4093E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:42:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E11FF4093E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id uihtN_T--J7l for <intel-wired-lan@lists.osuosl.org>;
- Mon, 19 Dec 2022 15:28:06 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id u-C2RjO20PwK for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 19 Dec 2022 15:42:22 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4BC9E81457
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4BC9E81457
- for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:28:03 +0000 (UTC)
-Received: from kwepemm600001.china.huawei.com (unknown [172.30.72.57])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4NbNq94b6dzJqHG;
- Mon, 19 Dec 2022 23:27:01 +0800 (CST)
-Received: from [10.174.176.245] (10.174.176.245) by
- kwepemm600001.china.huawei.com (7.193.23.3) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.34; Mon, 19 Dec 2022 23:27:59 +0800
-Message-ID: <dd4d0619-8287-1650-aa43-5db2e86ff8cd@huawei.com>
-Date: Mon, 19 Dec 2022 23:27:58 +0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 86EA740939
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 86EA740939
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 19 Dec 2022 15:42:22 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id 09A29B80EA1;
+ Mon, 19 Dec 2022 15:42:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 428EAC433EF;
+ Mon, 19 Dec 2022 15:42:19 +0000 (UTC)
+From: Lorenzo Bianconi <lorenzo@kernel.org>
+To: bpf@vger.kernel.org
+Date: Mon, 19 Dec 2022 16:41:29 +0100
+Message-Id: <cover.1671462950.git.lorenzo@kernel.org>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.7.0
-To: Greg KH <gregkh@linuxfoundation.org>, Alice Chao <alice.chao@mediatek.com>
-References: <20221219144103.34789-1-wanghai38@huawei.com>
- <Y6B7MKZxjaoQlpgf@kroah.com>
-From: "wanghai (M)" <wanghai38@huawei.com>
-In-Reply-To: <Y6B7MKZxjaoQlpgf@kroah.com>
-X-Originating-IP: [10.174.176.245]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemm600001.china.huawei.com (7.193.23.3)
-X-CFilter-Loop: Reflected
-Subject: Re: [Intel-wired-lan] [PATCH] kobject: Fix slab-out-of-bounds in
- fill_kobj_path()
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1671464539;
+ bh=tZDVjbL0ZWIptwNSQ822sM+4L3GOnBEYSN9bYCt+/R8=;
+ h=From:To:Cc:Subject:Date:From;
+ b=Z9R3pLLvaG4tAk5nWmynGQqmva0Sh2x+pbGmcO+FryktleNpiu7RpJdOXwMKMgPJm
+ lFkEaDWfXwt2bfQxETjM7lk/qslBXHzHzaQ3PHFT/C5LYmDaRtB+08e4OTSkpDUv9t
+ TWD8J9/6l903mX1YwDqbkS8GQr12+Vv1lTE+P8OYG58ErcdXlsuCLRTPOryHTqwvht
+ epICnM02/xatD/NmdOzjlCpMclyY6N/3JCSBfHFQbs0g/BqzRfMp1OIXPpqPW3RrhB
+ Yq6mNPx8ORD2zV8+6l97vCqvw5igLKVpIKzmMviSs1M6Go2qCjQG6F0aaMZhGsLG2K
+ sAVXtEDuwbY4w==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Z9R3pLLv
+Subject: [Intel-wired-lan] [RFC bpf-next 0/8] xdp: introduce xdp-feature
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,146 +87,114 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org, rafael@kernel.org
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
+ edumazet@google.com, anthony.l.nguyen@intel.com, daniel@iogearbox.net,
+ andrii@kernel.org, intel-wired-lan@lists.osuosl.org, simon.horman@corigine.com,
+ kuba@kernel.org, pabeni@redhat.com, grygorii.strashko@ti.com,
+ aelior@marvell.com, hawk@kernel.org, christophe.jaillet@wanadoo.fr,
+ memxor@gmail.com, john@phrozen.org, bjorn@kernel.org,
+ magnus.karlsson@intel.com, leon@kernel.org, netdev@vger.kernel.org,
+ toke@redhat.com, ecree.xilinx@gmail.com, alardam@gmail.com, gospo@broadcom.com,
+ saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-CuWcqCAyMDIyLzEyLzE5IDIyOjU0LCBHcmVnIEtIIOWGmemBkzoKPiBPbiBNb24sIERlYyAxOSwg
-MjAyMiBhdCAxMDo0MTowM1BNICswODAwLCBXYW5nIEhhaSB3cm90ZToKPj4gSW4ga29iamVjdF9n
-ZXRfcGF0aCgpLCBpZiBrb2JqLT5uYW1lIGlzIGNoYW5nZWQgYmV0d2VlbiBjYWxscwo+PiBnZXRf
-a29ial9wYXRoX2xlbmd0aCgpIGFuZCBmaWxsX2tvYmpfcGF0aCgpIGFuZCB0aGUgbGVuZ3RoIGJl
-Y29tZXMKPj4gbG9uZ2VyLCB0aGVuIGZpbGxfa29ial9wYXRoKCkgd2lsbCBoYXZlIGFuIG91dC1v
-Zi1ib3VuZHMgYnVnLgo+Pgo+PiBUaGUgYWN0dWFsIGN1cnJlbnQgcHJvYmxlbSBvY2N1cnMgd2hl
-biB0aGUgaXhnYmUgcHJvYmUuCj4+Cj4+IEluIGl4Z2JlX21paV9idXNfaW5pdCgpLCBpZiB0aGUg
-bGVuZ3RoIG9mIG5ldGRldi0+ZGV2LmtvYmoubmFtZQo+PiBsZW5ndGggYmVjb21lcyBsb25nZXIs
-IG91dC1vZi1ib3VuZHMgd2lsbCBvY2N1ci4KPj4KPj4gY3B1MCAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgY3B1MQo+PiBpeGdiZV9wcm9iZQo+PiAgIHJlZ2lzdGVyX25l
-dGRldihuZXRkZXYpCj4+ICAgIG5ldGRldl9yZWdpc3Rlcl9rb2JqZWN0Cj4+ICAgICBkZXZpY2Vf
-YWRkCj4+ICAgICAga29iamVjdF91ZXZlbnQgLy8gU2VuZGluZyBBREQgZXZlbnRzCj4+ICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzeXN0ZW1kLXVkZXZkIC8v
-IHJlbmFtZSBuZXRkZXYKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBkZXZfY2hhbmdlX25hbWUKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgZGV2aWNlX3JlbmFtZQo+PiAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAga29iamVjdF9yZW5hbWUKPj4gICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICBpeGdiZV9taWlfYnVz
-X2luaXQgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgbWRpb2J1c19yZWdpc3Rl
-ciAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgIF9fbWRpb2J1c19yZWdpc3Rl
-ciAgICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICBkZXZpY2VfcmVnaXN0ZXIgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgZGV2aWNlX2FkZCAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgIGtvYmplY3RfdWV2ZW50ICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIHwKPj4gICAgICAgICBrb2JqZWN0X2dldF9wYXRoICAgICAgICAg
-ICAgICAgICAgICAgICAgIHwKPj4gICAgICAgICAgbGVuID0gZ2V0X2tvYmpfcGF0aF9sZW5ndGgg
-Ly8gb2xkIG5hbWUgIHwKPj4gICAgICAgICAgcGF0aCA9IGt6YWxsb2MobGVuLCBnZnBfbWFzayk7
-ICAgICAgICAgIHwKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIGtvYmotPm5hbWUgPSBuYW1lOwo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgLyogbmFtZSBsZW5ndGggYmVjb21lcwo+PiAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICogbG9uZ2VyCj4+ICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKi8KPj4gICAgICAg
-ICAgZmlsbF9rb2JqX3BhdGggLyoga29iaiBwYXRoIGxlbmd0aCBpcwo+PiAgICAgICAgICAgICAg
-ICAgICAgICAgICAgKiBsb25nZXIgdGhhbiBwYXRoLAo+PiAgICAgICAgICAgICAgICAgICAgICAg
-ICAgKiByZXN1bHRpbmcgaW4gb3V0IG9mCj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAqIGJv
-dW5kcyB3aGVuIGZpbGxpbmcgcGF0aAo+PiAgICAgICAgICAgICAgICAgICAgICAgICAgKi8KPj4K
-Pj4gVGhpcyBpcyB0aGUga2FzYW4gcmVwb3J0Ogo+Pgo+PiA9PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KPj4gQlVHOiBLQVNB
-Tjogc2xhYi1vdXQtb2YtYm91bmRzIGluIGZpbGxfa29ial9wYXRoKzB4NTAvMHhjMAo+PiBXcml0
-ZSBvZiBzaXplIDcgYXQgYWRkciBmZjExMDAwOTA1NzNkMWZkIGJ5IHRhc2sga3dvcmtlci8yODox
-LzY3Mwo+Pgo+PiAgIFdvcmtxdWV1ZTogZXZlbnRzIHdvcmtfZm9yX2NwdV9mbgo+PiAgIENhbGwg
-VHJhY2U6Cj4+ICAgPFRBU0s+Cj4+ICAgZHVtcF9zdGFja19sdmwrMHgzNC8weDQ4Cj4+ICAgcHJp
-bnRfYWRkcmVzc19kZXNjcmlwdGlvbi5jb25zdHByb3AuMCsweDg2LzB4MWU3Cj4+ICAgcHJpbnRf
-cmVwb3J0KzB4MzYvMHg0Zgo+PiAgIGthc2FuX3JlcG9ydCsweGFkLzB4MTMwCj4+ICAga2FzYW5f
-Y2hlY2tfcmFuZ2UrMHgzNS8weDFjMAo+PiAgIG1lbWNweSsweDM5LzB4NjAKPj4gICBmaWxsX2tv
-YmpfcGF0aCsweDUwLzB4YzAKPj4gICBrb2JqZWN0X2dldF9wYXRoKzB4NWEvMHhjMAo+PiAgIGtv
-YmplY3RfdWV2ZW50X2VudisweDE0MC8weDQ2MAo+PiAgIGRldmljZV9hZGQrMHg1YzcvMHg5MTAK
-Pj4gICBfX21kaW9idXNfcmVnaXN0ZXIrMHgxNGUvMHg0OTAKPj4gICBpeGdiZV9wcm9iZS5jb2xk
-KzB4NDQxLzB4NTc0IFtpeGdiZV0KPj4gICBsb2NhbF9wY2lfcHJvYmUrMHg3OC8weGMwCj4+ICAg
-d29ya19mb3JfY3B1X2ZuKzB4MjYvMHg0MAo+PiAgIHByb2Nlc3Nfb25lX3dvcmsrMHgzYjYvMHg2
-YTAKPj4gICB3b3JrZXJfdGhyZWFkKzB4MzY4LzB4NTIwCj4+ICAga3RocmVhZCsweDE2NS8weDFh
-MAo+PiAgIHJldF9mcm9tX2ZvcmsrMHgxZi8weDMwCj4+Cj4+IFRoaXMgcmVwcm9kdWNlciB0cmln
-Z2VycyB0aGF0IGJ1ZzoKPj4KPj4gd2hpbGU6Cj4+IGRvCj4+ICAgICAgcm1tb2QgaXhnYmUKPj4g
-ICAgICBzbGVlcCAwLjUKPj4gICAgICBtb2Rwcm9iZSBpeGdiZQo+PiAgICAgIHNsZWVwIDAuNQo+
-Pgo+PiBXaGVuIGNhbGxpbmcgZmlsbF9rb2JqX3BhdGgoKSB0byBmaWxsIHBhdGgsIGlmIHRoZSBu
-YW1lIGxlbmd0aCBvZgo+PiBrb2JqIGJlY29tZXMgbG9uZ2VyLCByZXR1cm4gZmFpbHVyZSBhbmQg
-cmV0cnkuCj4+Cj4+IEZpeGVzOiAxZGExNzdlNGMzZjQgKCJMaW51eC0yLjYuMTItcmMyIikKPj4g
-U2lnbmVkLW9mZi1ieTogV2FuZyBIYWkgPHdhbmdoYWkzOEBodWF3ZWkuY29tPgo+PiAtLS0KPj4g
-ICBsaWIva29iamVjdC5jIHwgMTQgKysrKysrKysrKysrLS0KPj4gICAxIGZpbGUgY2hhbmdlZCwg
-MTIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKPiBOaWNlIGZpbmQsIGFuZCBhIG11Y2gg
-YmV0dGVyIGRlc2NyaXB0aW9uIHRoYW4gd2FzIHJlcG9ydGVkIGhlcmU6Cj4gCWh0dHBzOi8vbG9y
-ZS5rZXJuZWwub3JnL2FsbC8yMDIyMTIxNjAzMTMyMC4yNjM0LTEtYWxpY2UuY2hhb0BtZWRpYXRl
-ay5jb20vCj4KPiBBbGljZSwgZG9lcyB0aGlzIHBhdGNoIHJlc29sdmUgeW91ciBwcm9ibGVtIGFz
-IHdlbGw/Cj4KPj4gZGlmZiAtLWdpdCBhL2xpYi9rb2JqZWN0LmMgYi9saWIva29iamVjdC5jCj4+
-IGluZGV4IGEwYjJkYmZjZmEyMy4uZDEyOWY0MzdiMjAwIDEwMDY0NAo+PiAtLS0gYS9saWIva29i
-amVjdC5jCj4+ICsrKyBiL2xpYi9rb2JqZWN0LmMKPj4gQEAgLTExMiw3ICsxMTIsNyBAQCBzdGF0
-aWMgaW50IGdldF9rb2JqX3BhdGhfbGVuZ3RoKHN0cnVjdCBrb2JqZWN0ICprb2JqKQo+PiAgIAly
-ZXR1cm4gbGVuZ3RoOwo+PiAgIH0KPj4gICAKPj4gLXN0YXRpYyB2b2lkIGZpbGxfa29ial9wYXRo
-KHN0cnVjdCBrb2JqZWN0ICprb2JqLCBjaGFyICpwYXRoLCBpbnQgbGVuZ3RoKQo+PiArc3RhdGlj
-IGJvb2wgZmlsbF9rb2JqX3BhdGgoc3RydWN0IGtvYmplY3QgKmtvYmosIGNoYXIgKnBhdGgsIGlu
-dCBsZW5ndGgpCj4gSnVzdCByZXR1cm4gYW4gaW50IGFuZCBhbiBlcnJvciB2YWx1ZSwgYm9vbCBp
-c24ndCBhIG5vcm1hbCByZXR1cm4gdmFsdWUsCj4gcmlnaHQ/CgpIaSwgR3JlZy4KClRoYW5rcyBm
-b3IgdGhlIHN1Z2dlc3Rpb24sIEkgd2lsbCBjaGFuZ2UgaXQgdG8gaW50LgoKPj4gICB7Cj4+ICAg
-CXN0cnVjdCBrb2JqZWN0ICpwYXJlbnQ7Cj4+ICAgCj4+IEBAIC0xMjEsMTIgKzEyMSwxNiBAQCBz
-dGF0aWMgdm9pZCBmaWxsX2tvYmpfcGF0aChzdHJ1Y3Qga29iamVjdCAqa29iaiwgY2hhciAqcGF0
-aCwgaW50IGxlbmd0aCkKPj4gICAJCWludCBjdXIgPSBzdHJsZW4oa29iamVjdF9uYW1lKHBhcmVu
-dCkpOwo+PiAgIAkJLyogYmFjayB1cCBlbm91Z2ggdG8gcHJpbnQgdGhpcyBuYW1lIHdpdGggJy8n
-ICovCj4+ICAgCQlsZW5ndGggLT0gY3VyOwo+PiArCQlpZiAobGVuZ3RoIDwgMCkKPj4gKwkJCXJl
-dHVybiBmYWxzZTsKPiBSZXR1cm4gLUVJTlZBTCBvciBzb21ldGhpbmc/Cj4KPiBXaGF0IGlmIGxl
-bmd0aCBlbmRzIHVwIDAgaGVyZSwgaXMgdGhhdCBnb2luZyB0byBiZSBvaz8KSWYgbGVuZ3RoIGlz
-IDAsIHRoZXJlIGlzIG5vdCBlbm91Z2ggc3BhY2UgZm9yICcvJywgd2hpY2ggaXMgYWxzbwpwcm9i
-bGVtYXRpYy4gVGhhbmsgeW91IGZvciB0aGUgcmVtaW5kZXIuCj4KPj4gICAJCW1lbWNweShwYXRo
-ICsgbGVuZ3RoLCBrb2JqZWN0X25hbWUocGFyZW50KSwgY3VyKTsKPj4gICAJCSoocGF0aCArIC0t
-bGVuZ3RoKSA9ICcvJzsKPj4gICAJfQo+PiAgIAo+PiAgIAlwcl9kZWJ1Zygia29iamVjdDogJyVz
-JyAoJXApOiAlczogcGF0aCA9ICclcydcbiIsIGtvYmplY3RfbmFtZShrb2JqKSwKPj4gICAJCSBr
-b2JqLCBfX2Z1bmNfXywgcGF0aCk7Cj4+ICsKPj4gKwlyZXR1cm4gdHJ1ZTsKPiByZXR1cm4gMDsK
-Pgo+PiAgIH0KPj4gICAKPj4gICAvKioKPj4gQEAgLTE0MCwxNCArMTQ0LDIwIEBAIGNoYXIgKmtv
-YmplY3RfZ2V0X3BhdGgoc3RydWN0IGtvYmplY3QgKmtvYmosIGdmcF90IGdmcF9tYXNrKQo+PiAg
-IHsKPj4gICAJY2hhciAqcGF0aDsKPj4gICAJaW50IGxlbjsKPj4gKwlib29sIHJldDsKPiBObyBu
-ZWVkIGZvciB0aGlzIHZhcmlhYmxlCj4KPj4gICAKPj4gK3JldHJ5Ogo+PiAgIAlsZW4gPSBnZXRf
-a29ial9wYXRoX2xlbmd0aChrb2JqKTsKPj4gICAJaWYgKGxlbiA9PSAwKQo+PiAgIAkJcmV0dXJu
-IE5VTEw7Cj4+ICAgCXBhdGggPSBremFsbG9jKGxlbiwgZ2ZwX21hc2spOwo+PiAgIAlpZiAoIXBh
-dGgpCj4+ICAgCQlyZXR1cm4gTlVMTDsKPj4gLQlmaWxsX2tvYmpfcGF0aChrb2JqLCBwYXRoLCBs
-ZW4pOwo+PiArCXJldCA9IGZpbGxfa29ial9wYXRoKGtvYmosIHBhdGgsIGxlbik7Cj4+ICsJaWYg
-KCFyZXQpIHsKPiBNYWtlIHRoaXMgb25lIGxpbmU6Cj4KPiAJaWYgKGZpbGxfa29ial9wYXRoKGtv
-YmosIHBhdGgsIGxlbikpIHsKPgo+IEJ1dCwgeW91IG5vdyBoYXZlIGEgbG9vcCwgd2hhdCBndWFy
-YW50ZWVzIHRoYXQgeW91IGNhbiBnZXQgb3V0IG9mIGl0PwoKZmlsbF9rb2JqX3BhdGgoKSBtYXkg
-ZmFpbCBvbmx5IHdoZW4gdGhlIG5hbWUgb2Yga29iaiBvciBwYXJlbnQgaXMgY2hhbmdlZCwKdGhp
-cyBjaGFuZ2UgZG9lcyBub3QgaGFwcGVuIGZvcmV2ZXIuCgpBbmQgd2hlbiByZXRyeWluZywgdGhl
-IGxlbmd0aCBvZiB0aGUgY3VycmVudCBrb2JqIHBhdGggaXMgcmVjYWxjdWxhdGVkLAp3aGljaCBj
-YW4gZ3VhcmFudGVlIHRoYXQgdGhlIGxlbmd0aCBpcyBzYXRpc2ZpZWQgbmV4dCB0aW1lLgoKCkNh
-biBJIHNlbmQgdjIgbGlrZSB0aGlzPwoKZGlmZiAtLWdpdCBhL2xpYi9rb2JqZWN0LmMgYi9saWIv
-a29iamVjdC5jCmluZGV4IGEwYjJkYmZjZmEyMy4uM2Y5N2Q5MDMyNjZhIDEwMDY0NAotLS0gYS9s
-aWIva29iamVjdC5jCisrKyBiL2xpYi9rb2JqZWN0LmMKQEAgLTExMiw3ICsxMTIsNyBAQCBzdGF0
-aWMgaW50IGdldF9rb2JqX3BhdGhfbGVuZ3RoKHN0cnVjdCBrb2JqZWN0ICprb2JqKQogwqDCoMKg
-wqDCoMKgwqAgcmV0dXJuIGxlbmd0aDsKIMKgfQoKLXN0YXRpYyB2b2lkIGZpbGxfa29ial9wYXRo
-KHN0cnVjdCBrb2JqZWN0ICprb2JqLCBjaGFyICpwYXRoLCBpbnQgbGVuZ3RoKQorc3RhdGljIGlu
-dCBmaWxsX2tvYmpfcGF0aChzdHJ1Y3Qga29iamVjdCAqa29iaiwgY2hhciAqcGF0aCwgaW50IGxl
-bmd0aCkKIMKgewogwqDCoMKgwqDCoMKgwqAgc3RydWN0IGtvYmplY3QgKnBhcmVudDsKCkBAIC0x
-MjEsMTIgKzEyMSwxNiBAQCBzdGF0aWMgdm9pZCBmaWxsX2tvYmpfcGF0aChzdHJ1Y3Qga29iamVj
-dCAqa29iaiwgCmNoYXIgKnBhdGgsIGludCBsZW5ndGgpCiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqAgaW50IGN1ciA9IHN0cmxlbihrb2JqZWN0X25hbWUocGFyZW50KSk7CiDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgLyogYmFjayB1cCBlbm91Z2ggdG8gcHJpbnQgdGhpcyBu
-YW1lIHdpdGggJy8nICovCiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgbGVuZ3RoIC09
-IGN1cjsKK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgaWYgKGxlbmd0aCA8PSAwKQorwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcmV0dXJuIC1FSU5WQUw7
-CiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgbWVtY3B5KHBhdGggKyBsZW5ndGgsIGtv
-YmplY3RfbmFtZShwYXJlbnQpLCBjdXIpOwogwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-ICoocGF0aCArIC0tbGVuZ3RoKSA9ICcvJzsKIMKgwqDCoMKgwqDCoMKgIH0KCiDCoMKgwqDCoMKg
-wqDCoCBwcl9kZWJ1Zygia29iamVjdDogJyVzJyAoJXApOiAlczogcGF0aCA9ICclcydcbiIsIApr
-b2JqZWN0X25hbWUoa29iaiksCiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBrb2Jq
-LCBfX2Z1bmNfXywgcGF0aCk7CisKK8KgwqDCoMKgwqDCoCByZXR1cm4gMDsKIMKgfQoKIMKgLyoq
-CkBAIC0xNDEsMTMgKzE0NSwxNyBAQCBjaGFyICprb2JqZWN0X2dldF9wYXRoKHN0cnVjdCBrb2Jq
-ZWN0ICprb2JqLCBnZnBfdCAKZ2ZwX21hc2spCiDCoMKgwqDCoMKgwqDCoCBjaGFyICpwYXRoOwog
-wqDCoMKgwqDCoMKgwqAgaW50IGxlbjsKCityZXRyeToKIMKgwqDCoMKgwqDCoMKgIGxlbiA9IGdl
-dF9rb2JqX3BhdGhfbGVuZ3RoKGtvYmopOwogwqDCoMKgwqDCoMKgwqAgaWYgKGxlbiA9PSAwKQog
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIHJldHVybiBOVUxMOwogwqDCoMKgwqDCoMKg
-wqAgcGF0aCA9IGt6YWxsb2MobGVuLCBnZnBfbWFzayk7CiDCoMKgwqDCoMKgwqDCoCBpZiAoIXBh
-dGgpCiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgcmV0dXJuIE5VTEw7Ci3CoMKgwqDC
-oMKgwqAgZmlsbF9rb2JqX3BhdGgoa29iaiwgcGF0aCwgbGVuKTsKK8KgwqDCoMKgwqDCoCBpZiAo
-ZmlsbF9rb2JqX3BhdGgoa29iaiwgcGF0aCwgbGVuKSkgeworwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoCBrZnJlZShwYXRoKTsKK8KgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAgZ290byBy
-ZXRyeTsKK8KgwqDCoMKgwqDCoCB9CgogwqDCoMKgwqDCoMKgwqAgcmV0dXJuIHBhdGg7CiDCoH0K
-Cj4KPiB0aGFua3MsCj4KPiBncmVnIGstaAo+IC4KCi0tIApXYW5nIEhhaQoKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtd2lyZWQtbGFuIG1haWxp
-bmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczovL2xpc3RzLm9zdW9zbC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
+Introduce the capability to export the XDP features supported by the NIC.
+Introduce a XDP compliance test tool (xdp_features) to check the features
+exported by the NIC match the real features supported by the driver.
+Allow XDP_REDIRECT of non-linear XDP frames into a devmap.
+Export XDP features for each XDP capable driver.
+
+Kumar Kartikeya Dwivedi (1):
+  libbpf: add API to get XDP/XSK supported features
+
+Lorenzo Bianconi (3):
+  tools: uapi: align if_link.h
+  bpf: devmap: check XDP features in bpf_map_update_elem and
+    __xdp_enqueue
+  selftests/bpf: introduce XDP compliance test tool
+
+Marek Majtyka (4):
+  net: introduce XDP features flag
+  drivers: net: turn on XDP features
+  xsk: add usage of XDP features flags
+  xsk: add check for full support of XDP in bind
+
+ .../networking/netdev-xdp-features.rst        |  60 ++
+ drivers/net/ethernet/amazon/ena/ena_netdev.c  |   5 +
+ .../net/ethernet/aquantia/atlantic/aq_nic.c   |   3 +
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c     |   2 +
+ drivers/net/ethernet/broadcom/bnxt/bnxt_xdp.c |   2 +
+ .../net/ethernet/cavium/thunder/nicvf_main.c  |   2 +
+ .../net/ethernet/freescale/dpaa/dpaa_eth.c    |   2 +
+ .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |   1 +
+ .../net/ethernet/freescale/enetc/enetc_pf.c   |   3 +
+ .../ethernet/fungible/funeth/funeth_main.c    |   6 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |   9 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   5 +
+ drivers/net/ethernet/intel/igb/igb_main.c     |   9 +-
+ drivers/net/ethernet/intel/igc/igc_main.c     |   2 +
+ drivers/net/ethernet/intel/igc/igc_xdp.c      |   5 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   5 +
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |   1 +
+ drivers/net/ethernet/marvell/mvneta.c         |   3 +
+ .../net/ethernet/marvell/mvpp2/mvpp2_main.c   |   3 +
+ .../ethernet/marvell/octeontx2/nic/otx2_pf.c  |   9 +-
+ drivers/net/ethernet/mediatek/mtk_eth_soc.c   |   5 +
+ .../net/ethernet/mellanox/mlx4/en_netdev.c    |   2 +
+ .../net/ethernet/mellanox/mlx5/core/en_main.c |   9 +
+ drivers/net/ethernet/microsoft/mana/mana_en.c |   2 +
+ .../ethernet/netronome/nfp/nfp_net_common.c   |   3 +
+ drivers/net/ethernet/qlogic/qede/qede_main.c  |   2 +
+ drivers/net/ethernet/sfc/efx.c                |   2 +
+ drivers/net/ethernet/sfc/siena/efx.c          |   2 +
+ drivers/net/ethernet/socionext/netsec.c       |   2 +
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c |   1 +
+ drivers/net/ethernet/ti/cpsw.c                |   2 +
+ drivers/net/ethernet/ti/cpsw_new.c            |   2 +
+ drivers/net/hyperv/netvsc_drv.c               |   2 +
+ drivers/net/netdevsim/netdev.c                |   1 +
+ drivers/net/tun.c                             |   3 +
+ drivers/net/veth.c                            |   4 +
+ drivers/net/virtio_net.c                      |   5 +
+ drivers/net/xen-netfront.c                    |   1 +
+ include/linux/netdevice.h                     |   2 +
+ include/linux/xdp_features.h                  |  64 ++
+ include/net/xdp.h                             |  39 +
+ include/uapi/linux/if_link.h                  |   7 +
+ include/uapi/linux/if_xdp.h                   |   1 +
+ include/uapi/linux/xdp_features.h             |  34 +
+ kernel/bpf/devmap.c                           |  25 +-
+ net/core/filter.c                             |  13 +-
+ net/core/rtnetlink.c                          |  34 +
+ net/xdp/xsk.c                                 |   4 +-
+ net/xdp/xsk_buff_pool.c                       |  20 +-
+ tools/include/uapi/linux/if_link.h            |  10 +
+ tools/include/uapi/linux/if_xdp.h             |   1 +
+ tools/include/uapi/linux/xdp_features.h       |  34 +
+ tools/lib/bpf/libbpf.h                        |   1 +
+ tools/lib/bpf/libbpf.map                      |   1 +
+ tools/lib/bpf/netlink.c                       |  62 ++
+ tools/testing/selftests/bpf/Makefile          |   5 +-
+ .../selftests/bpf/progs/test_xdp_features.c   | 235 ++++++
+ .../selftests/bpf/test_xdp_features.sh        |  99 +++
+ tools/testing/selftests/bpf/xdp_features.c    | 745 ++++++++++++++++++
+ tools/testing/selftests/bpf/xsk.c             |   3 +
+ 60 files changed, 1602 insertions(+), 24 deletions(-)
+ create mode 100644 Documentation/networking/netdev-xdp-features.rst
+ create mode 100644 include/linux/xdp_features.h
+ create mode 100644 include/uapi/linux/xdp_features.h
+ create mode 100644 tools/include/uapi/linux/xdp_features.h
+ create mode 100644 tools/testing/selftests/bpf/progs/test_xdp_features.c
+ create mode 100755 tools/testing/selftests/bpf/test_xdp_features.sh
+ create mode 100644 tools/testing/selftests/bpf/xdp_features.c
+
+-- 
+2.38.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
