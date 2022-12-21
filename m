@@ -4,84 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60D9AC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 21 Dec 2022 10:47:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A98D4C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 21 Dec 2022 11:09:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id EEFB8400F6;
-	Wed, 21 Dec 2022 10:47:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EEFB8400F6
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2F57D40B53;
+	Wed, 21 Dec 2022 11:09:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F57D40B53
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1671619646;
-	bh=w0KhHbmVg0QIUN5FhyCFuajeE2ITfogZIJmI8OMaCKw=;
+	s=default; t=1671620951;
+	bh=xu7jXQ7hY2HdvC6jQSuhgIObY2K6/LirO3HHoP96Gn0=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=m0cCNvYJIdzt46+VcabSYcXPhs1FpHL92AwKDjPflXG4YeLeqkDenVHTVthHyhTyQ
-	 UDdbJMCJqXeLCqoLoUk9njjdaQHbMvQDPEQzdcsvR/FedssivGXFO70d7FtgAtcaz8
-	 ILQvPTiOVRt9fOK/aCE70tkdfvBfX0cxb54liOd2+bugn9rC01sUn9pylPAquq1Aon
-	 s01CmZ0Oi05l15Ryt3K8L/Wgv+a6xemdsHkgSEE/LLejPpCUGst5D5crAU/acUrJcu
-	 YrFLZLdvAcMJW5NpwAtTuQj6rVDtwQZ/R9cgogOu76T8+g96+w50t+qu6SR3p3PmkO
-	 6wCBpfxN/rzHw==
+	b=hOBsIBKWfNCM+k9DcYT011RrL4YxOGl/+J9PVEu4XJcIe1p7faViWHiXAsOBHw8+o
+	 sLUUFMuJ2fBte22PXkHseh8h2FQ1pz1fP8RvGYteItNCtN+XRdvC7AOof0chzAMOqi
+	 GhVBUO+1ZmgZ8VZRERlH+colvaF3L60QAI8CD552rpd5eHM8AhlU1g7lVoVvhLZaen
+	 pnBmL3PvXURYjKyBw9sl+9f7j112E1tvSVScolcZccHuVuacvZT61j1jif1yX2ZOkU
+	 z8DInEBcdJ7mxn5Majr8pHzhtvUSyPNv0aC8zemZDoepz81UjnqX/xM4YU0SZBOI6J
+	 ubA/urswiLSGg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id L6p9pXoki7sP; Wed, 21 Dec 2022 10:47:25 +0000 (UTC)
+	with ESMTP id wd9N1DN9KW6c; Wed, 21 Dec 2022 11:09:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1513240B53;
-	Wed, 21 Dec 2022 10:47:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1513240B53
+	by smtp2.osuosl.org (Postfix) with ESMTP id 09D1A40461;
+	Wed, 21 Dec 2022 11:09:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 09D1A40461
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 6C7BA1BF5E0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Dec 2022 10:47:24 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1AE1F1BF616
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Dec 2022 11:09:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5261940B53
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Dec 2022 10:47:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5261940B53
+ by smtp2.osuosl.org (Postfix) with ESMTP id E7FBD4011C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Dec 2022 11:09:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E7FBD4011C
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 4iYeO14Vdj8j for <intel-wired-lan@lists.osuosl.org>;
- Wed, 21 Dec 2022 10:47:23 +0000 (UTC)
+ with ESMTP id AA2NZw06d__O for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 21 Dec 2022 11:09:07 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 57BAF400F6
-Received: from sin.source.kernel.org (sin.source.kernel.org
- [IPv6:2604:1380:40e1:4800::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 57BAF400F6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Dec 2022 10:47:23 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by sin.source.kernel.org (Postfix) with ESMTPS id DDD2ECE17C8;
- Wed, 21 Dec 2022 10:47:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73A87C433EF;
- Wed, 21 Dec 2022 10:47:17 +0000 (UTC)
-Date: Wed, 21 Dec 2022 11:47:14 +0100
-From: Lorenzo Bianconi <lorenzo@kernel.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Message-ID: <Y6LkMtURZEjfVWVv@lore-desk>
-References: <cover.1671462950.git.lorenzo@kernel.org>
- <43c340d440d8a87396198b301c5ffbf5ab56f304.1671462950.git.lorenzo@kernel.org>
- <20221219171321.7a67002b@kernel.org> <Y6F+YJSkI19m/kMv@lore-desk>
- <CAAOQfrF963NoMhQUTdGXyzLMdAjHfUmvzvxpOL0A1Cv4NhY97w@mail.gmail.com>
- <20221220153903.3fb7a54b@kernel.org>
- <20221220204102.5e516196@kernel.org>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D47BA400F6
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D47BA400F6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 21 Dec 2022 11:09:06 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10567"; a="307526026"
+X-IronPort-AV: E=Sophos;i="5.96,262,1665471600"; d="scan'208";a="307526026"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Dec 2022 03:09:05 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10567"; a="714781775"
+X-IronPort-AV: E=Sophos;i="5.96,262,1665471600"; d="scan'208";a="714781775"
+Received: from unknown (HELO localhost.localdomain) ([10.237.112.144])
+ by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Dec 2022 03:09:03 -0800
+Date: Wed, 21 Dec 2022 12:08:54 +0100
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+To: Wang Hai <wanghai38@huawei.com>
+Message-ID: <Y6LpRq5iqw6kcVPj@localhost.localdomain>
+References: <20221220012143.52141-1-wanghai38@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <20221220204102.5e516196@kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20221220012143.52141-1-wanghai38@huawei.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1671619638;
- bh=aVDDiFOJK4tI1KD4ouwvUzCRM24HCXz/rMHIn+pJYrE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=BsWtqG42vKr4ZSW4MqJiGO60bXWpHqLTGur2mwIPQNOZIKVyNM94y+cJFVSMhgtzH
- vHb99vGAuKzJ/Kd4gzeBaOf8B5R0at23nab4n/jZvlxW9KMRA1U3FGK4RcBqFZ3gVj
- 6YeR7SzFwy7a9GL3i271y1pKRPVasqALKhW4Hzddfc2agMMgj2hRHjvL0Gb1jLhFex
- FQZbger9/Dojk/+PlXp2eW2UbWPJ6XdAOBrHHMQckyvvwRjgFavN0hGxz9IY5Vh0yV
- MeHMymapK01kCl3XTmUuUrKinju6+ynUStIbQE2YhUsYF8/NZhnDIsNrauz5B+mA4f
- 7XqXM+q6pudjw==
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1671620946; x=1703156946;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=0dOjGHomxz9RIGOYuVsBPcooO8qIHWpCc2q3IWmiQA0=;
+ b=T+w0fphyTzKRbZZoSW3rCVa6fWpjVxn/mGEM7EPIcegpYbqfql1p54OL
+ jDKxZZbPZ1/McC84gL1/VaDKZcaDAKziXUt5+ytWwtgPoOxTscbPLcSsM
+ uCSxboFUrdFSV+xtv8lHo+eM1OgOMJglpjRqpGwrgtsjIvsjh+q3TJuPU
+ +v+ppEeC9OWztLiS1dJj/A6WNXuhXJJxMXbz6fiMjKntdSxXcEj8Z2V8Y
+ wOGfn7xjEA/J4GvJaLuTFuuYzqBnTu2d2azO0EaAdPmOsDPOyFJxNQ0GL
+ 3z2dwrMc6TcI4lVwpjhbUxN6TaF9AYKWxq9hJ0K06xNvNSMYvqYtWfBNM
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=BsWtqG42
-Subject: Re: [Intel-wired-lan] [RFC bpf-next 2/8] net: introduce XDP
- features flag
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=T+w0fphy
+Subject: Re: [Intel-wired-lan] [PATCH v2] kobject: Fix slab-out-of-bounds in
+ fill_kobj_path()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,74 +95,161 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: mst@redhat.com, simon.horman@corigine.com, ast@kernel.org,
- edumazet@google.com, anthony.l.nguyen@intel.com, daniel@iogearbox.net,
- andrii@kernel.org, intel-wired-lan@lists.osuosl.org, vladimir.oltean@nxp.com,
- pabeni@redhat.com, grygorii.strashko@ti.com, aelior@marvell.com,
- hawk@kernel.org, christophe.jaillet@wanadoo.fr, memxor@gmail.com,
- john@phrozen.org, bjorn@kernel.org, bpf@vger.kernel.org,
- magnus.karlsson@intel.com, leon@kernel.org, netdev@vger.kernel.org,
- toke@redhat.com, ecree.xilinx@gmail.com, Marek Majtyka <alardam@gmail.com>,
- gospo@broadcom.com, saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
-Content-Type: multipart/mixed; boundary="===============2399413934364582943=="
+Cc: rafael@kernel.org, gregkh@linuxfoundation.org, jesse.brandeburg@intel.com,
+ linux-kernel@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ anthony.l.nguyen@intel.com, alice.chao@mediatek.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+On Tue, Dec 20, 2022 at 09:21:43AM +0800, Wang Hai wrote:
+> In kobject_get_path(), if kobj->name is changed between calls
+> get_kobj_path_length() and fill_kobj_path() and the length becomes
+> longer, then fill_kobj_path() will have an out-of-bounds bug.
+> 
+> The actual current problem occurs when the ixgbe probe.
+> 
+> In ixgbe_mii_bus_init(), if the length of netdev->dev.kobj.name
+> length becomes longer, out-of-bounds will occur.
+> 
+> cpu0                                         cpu1
+> ixgbe_probe
+>  register_netdev(netdev)
+>   netdev_register_kobject
+>    device_add
+>     kobject_uevent // Sending ADD events
+>                                              systemd-udevd // rename netdev
+>                                               dev_change_name
+>                                                device_rename
+>                                                 kobject_rename
+>  ixgbe_mii_bus_init                             |
+>   mdiobus_register                              |
+>    __mdiobus_register                           |
+>     device_register                             |
+>      device_add                                 |
+>       kobject_uevent                            |
+>        kobject_get_path                         |
+>         len = get_kobj_path_length // old name  |
+>         path = kzalloc(len, gfp_mask);          |
+>                                                 kobj->name = name;
+>                                                 /* name length becomes
+>                                                  * longer
+>                                                  */
+>         fill_kobj_path /* kobj path length is
+>                         * longer than path,
+>                         * resulting in out of
+>                         * bounds when filling path
+>                         */
+> 
+> This is the kasan report:
+> 
+> ==================================================================
+> BUG: KASAN: slab-out-of-bounds in fill_kobj_path+0x50/0xc0
+> Write of size 7 at addr ff1100090573d1fd by task kworker/28:1/673
+> 
+>  Workqueue: events work_for_cpu_fn
+>  Call Trace:
+>  <TASK>
+>  dump_stack_lvl+0x34/0x48
+>  print_address_description.constprop.0+0x86/0x1e7
+>  print_report+0x36/0x4f
+>  kasan_report+0xad/0x130
+>  kasan_check_range+0x35/0x1c0
+>  memcpy+0x39/0x60
+>  fill_kobj_path+0x50/0xc0
+>  kobject_get_path+0x5a/0xc0
+>  kobject_uevent_env+0x140/0x460
+>  device_add+0x5c7/0x910
+>  __mdiobus_register+0x14e/0x490
+>  ixgbe_probe.cold+0x441/0x574 [ixgbe]
+>  local_pci_probe+0x78/0xc0
+>  work_for_cpu_fn+0x26/0x40
+>  process_one_work+0x3b6/0x6a0
+>  worker_thread+0x368/0x520
+>  kthread+0x165/0x1a0
+>  ret_from_fork+0x1f/0x30
+> 
+> This reproducer triggers that bug:
+> 
+> while:
+> do
+>     rmmod ixgbe
+>     sleep 0.5
+>     modprobe ixgbe
+>     sleep 0.5
+> 
+> When calling fill_kobj_path() to fill path, if the name length of
+> kobj becomes longer, return failure and retry. This fixes the problem.
+> 
+> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+> Signed-off-by: Wang Hai <wanghai38@huawei.com>
+> ---
+> v1->v2: Return value type change and some formatting adjustments.
+>  lib/kobject.c | 12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/lib/kobject.c b/lib/kobject.c
+> index a0b2dbfcfa23..3f97d903266a 100644
+> --- a/lib/kobject.c
+> +++ b/lib/kobject.c
+> @@ -112,7 +112,7 @@ static int get_kobj_path_length(struct kobject *kobj)
+>  	return length;
+>  }
+>  
+> -static void fill_kobj_path(struct kobject *kobj, char *path, int length)
+> +static int fill_kobj_path(struct kobject *kobj, char *path, int length)
+>  {
+>  	struct kobject *parent;
+>  
+> @@ -121,12 +121,16 @@ static void fill_kobj_path(struct kobject *kobj, char *path, int length)
+>  		int cur = strlen(kobject_name(parent));
+>  		/* back up enough to print this name with '/' */
+>  		length -= cur;
+> +		if (length <= 0)
+> +			return -EINVAL;
+>  		memcpy(path + length, kobject_name(parent), cur);
+>  		*(path + --length) = '/';
+>  	}
+>  
+>  	pr_debug("kobject: '%s' (%p): %s: path = '%s'\n", kobject_name(kobj),
+>  		 kobj, __func__, path);
+> +
+> +	return 0;
+>  }
+>  
+>  /**
+> @@ -141,13 +145,17 @@ char *kobject_get_path(struct kobject *kobj, gfp_t gfp_mask)
+>  	char *path;
+>  	int len;
+>  
+> +retry:
+>  	len = get_kobj_path_length(kobj);
+>  	if (len == 0)
+>  		return NULL;
+>  	path = kzalloc(len, gfp_mask);
+>  	if (!path)
+>  		return NULL;
+> -	fill_kobj_path(kobj, path, len);
+> +	if (fill_kobj_path(kobj, path, len)) {
+> +		kfree(path);
+> +		goto retry;
+> +	}
+Thanks for the fix.
 
---===============2399413934364582943==
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="+eCb0XDvva+nTJ1R"
-Content-Disposition: inline
-
-
---+eCb0XDvva+nTJ1R
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-> On Tue, 20 Dec 2022 15:39:03 -0800 Jakub Kicinski wrote:
-> > On Tue, 20 Dec 2022 23:51:31 +0100 Marek Majtyka wrote:
-> > > Everybody is allowed to make a good use of it. Every improvement is
-> > > highly appreciated. Thanks Lorenzo for taking this over. =20
-> >=20
-> > IIUC this comment refers to the rtnl -> genl/yaml conversion.
-> > In which case, unless someone objects, I'll take a stab at it=20
-> > in an hour or two and push the result out my kernel.org tree ...
->=20
-> I pushed something here:
->=20
-> https://github.com/kuba-moo/ynl/commits/xdp-features
->=20
-> without replacing all you have. But it should give enough of an idea=20
-> to comment on.
-
-ack, thx. I will look into it.
-
-Regards,
-Lorenzo
-
---+eCb0XDvva+nTJ1R
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQTquNwa3Txd3rGGn7Y6cBh0uS2trAUCY6LkMgAKCRA6cBh0uS2t
-rOyiAQD5NVL/9N4NHfxoSJKlDMMG7ppq80Eax6fJ/Klm4n2WrAD9EA8vAIZ4TItH
-WtCvhtFiz0xWJmKiDgKq9r6AMiTB5gs=
-=nnX9
------END PGP SIGNATURE-----
-
---+eCb0XDvva+nTJ1R--
-
---===============2399413934364582943==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
+I wonder if there is no case we end up with infinite loop
+(fill_kobj_path always returning error). Do You know?
+>  
+>  	return path;
+>  }
+> -- 
+> 2.17.1
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan@osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
---===============2399413934364582943==--
