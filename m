@@ -1,81 +1,82 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE52DC3DA7A
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Dec 2022 15:53:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6085DC3DA7A
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Dec 2022 16:40:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 54650402D2;
-	Wed, 28 Dec 2022 15:53:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 54650402D2
+	by smtp1.osuosl.org (Postfix) with ESMTP id DFCCC812F0;
+	Wed, 28 Dec 2022 16:40:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DFCCC812F0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1672242780;
-	bh=deZ5hMypfUk/X4kCxFxSAKWMa5WHVAP9YbYsvAKDxJM=;
+	s=default; t=1672245647;
+	bh=+H11TmrnwDr3KyArhIC3SkWbha7C6+fWyax7TYVJCYg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=S7ZVfKhXKaLEiWKK+ow7IZlY6mlLhu1ffsUovY6yLMA7KTLzFOjjBK3KkjnL19XSH
-	 J86Wf7m/hH9XniJZ2psWLL/KuExKKZCiIF30tPI3TpmySu5vQ4cQh1iAL8biOZT2gA
-	 WdQFBWAD5QH/WP+UgqOEFg7lJ+H1xBIRi1vF6Q8cRerTHEa2nrJtnFAyXVq0odpfYJ
-	 HYyVXIEr4Hr8mp5S7rf71tG3/Rq9sOqAfnaZt81MlbBj0Uo/f/vXhxa4Syg0+7ezyc
-	 kKXmABvOhYuZBez55AYWxRUTghOuMn9lpeLomCwvb8bYCIzjLT3SJvSzHkrMDlUrFo
-	 fBwut4FUZl5dQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZcOERhF2MRdK; Wed, 28 Dec 2022 15:52:59 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0514D402EF;
-	Wed, 28 Dec 2022 15:52:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0514D402EF
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 64E7D1BF3C2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Dec 2022 15:52:57 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3EAFA812DB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Dec 2022 15:52:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3EAFA812DB
+	b=3QxPQ6+HhYMI2tZDT8yLFhky5b3kufRaIy4HV0hBLC3xC4LyWDqwsYylPpGW7kPBH
+	 vnC+iAV1p+ha8mZ2y/7L1emBEXyOCbS22C1q82OoVnmdfTkX2P5O7/wJYGjiG/VP5x
+	 aZhF6P8cJ8Hi/Nz1eYUzXKTXT775giWBnVXytNodXnGYPkte4tPV0kCYgoTyfcvO3x
+	 x1HjmsGbnxztx3xFA2y2jsoS3k9S4HzmBmEtkW1zEENRJWl5GiMQX7Xbke+Deh/YW6
+	 7gpcxR3XtzIWoRdtBmyXaZEQ4+fEunByqg/uujx4QaGmPi36TuZdWz52/4Tis5RV09
+	 p8OxEM9WG67jQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id yVFHGXjIRPo8 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Dec 2022 15:52:56 +0000 (UTC)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 7a4puHEC3POO; Wed, 28 Dec 2022 16:40:46 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id AD630812F8;
+	Wed, 28 Dec 2022 16:40:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AD630812F8
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 1B95D1BF3AA
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Dec 2022 16:40:44 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id E83E74029F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Dec 2022 16:40:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E83E74029F
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id nzhocNFDk69L for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Dec 2022 16:40:42 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 68977812AB
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 68977812AB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Dec 2022 15:52:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DF07F4026E
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DF07F4026E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Dec 2022 16:40:41 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 6D87BB81730;
- Wed, 28 Dec 2022 15:52:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A3FDC433EF;
- Wed, 28 Dec 2022 15:52:50 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id CC15461563;
+ Wed, 28 Dec 2022 16:40:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AA04FC433EF;
+ Wed, 28 Dec 2022 16:40:39 +0000 (UTC)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: stable@vger.kernel.org
-Date: Wed, 28 Dec 2022 15:42:30 +0100
-Message-Id: <20221228144315.148014413@linuxfoundation.org>
+Date: Wed, 28 Dec 2022 15:41:58 +0100
+Message-Id: <20221228144353.288173346@linuxfoundation.org>
 X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20221228144256.536395940@linuxfoundation.org>
-References: <20221228144256.536395940@linuxfoundation.org>
+In-Reply-To: <20221228144328.162723588@linuxfoundation.org>
+References: <20221228144328.162723588@linuxfoundation.org>
 User-Agent: quilt/0.67
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=linuxfoundation.org; 
- s=korg; t=1672242771;
- bh=M+k0+5VQoTiQ28+qOM0SuLz5NZ4u1yl9Hi3eY/xvBAo=;
+ s=korg; t=1672245640;
+ bh=nilXHjgldc9XTgg0lD9mFlU36zpJXUpepdvHnO0xafY=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=GowJcS2S2btxdjrr8VsIVQa7Ijk5KFRHxcX3uLOdr9wpzvbEz9uxID0UPmRL2A13l
- eMmU70xBM/WPWlBf3kvov0kF+ZY/Ljk2swP9sGvUkZmcHrbii3EQv4aXPBYWfiphRN
- S3SQTbN5DlCd4Hyev+wtzYQcOHicKmgfRMxdtGQU=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=0Wt6JWa0x5Z/H0S5daDPm3TpMvuyjS0vX7f7ylHpX8H1GkSEGimH5KQDW7Fss9ATn
+ TUpZJseI5e/xxRKGbgiqkcZcny4v+TGtwSJ3kiYRI17/Zw6ne99Fpszehn/qVlLMLL
+ ajs4Sd25Ku0XNPBmhB5Tvtg2gYwXakci1nC7w/Wg=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=linuxfoundation.org
  header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg
- header.b=GowJcS2S
-Subject: [Intel-wired-lan] [PATCH 5.15 643/731] igb: Do not free q_vector
+ header.b=0Wt6JWa0
+Subject: [Intel-wired-lan] [PATCH 6.0 0930/1073] igb: Do not free q_vector
  unless new one was allocated
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -129,10 +130,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 70667b46858a..b246ff8b7c20 100644
+index ea46649b2ed3..0e36894db986 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -1204,8 +1204,12 @@ static int igb_alloc_q_vector(struct igb_adapter *adapter,
+@@ -1202,8 +1202,12 @@ static int igb_alloc_q_vector(struct igb_adapter *adapter,
  	if (!q_vector) {
  		q_vector = kzalloc(size, GFP_KERNEL);
  	} else if (size > ksize(q_vector)) {
