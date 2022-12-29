@@ -1,101 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8CFEC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 29 Dec 2022 17:31:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B44AC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 29 Dec 2022 17:31:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 640D68124A;
-	Thu, 29 Dec 2022 17:31:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 640D68124A
+	by smtp2.osuosl.org (Postfix) with ESMTP id C118340235;
+	Thu, 29 Dec 2022 17:31:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C118340235
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1672335060;
-	bh=EWrcwYvPg37Vlzm4fXS1KZ5BhDZFlaDlGNEOiynhBuM=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1672335066;
+	bh=vYU2HR9i+rg4gm/LQ09bl76V/PhdrI1jrYzatA6/MEI=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=1bFyunnQgsIxUO+creXcV+J+SOtzbmSkolsl3zCiUq57LAZv8nde8DAZxW1jrpQ3T
-	 4CYXGzGaX00/j8s0OeJEXUwO7RgxothQURyfpcFEj4JnPGHUY22IivTTBlKcEMsi4E
-	 wnCX7A8pHpKhym/dBvCgAvLlHfM/kDtax8wIHLC3fWJ+N3C45yZvxHOAlhRSUXoGxu
-	 7PRZRfOmgTr50r4e5ta2DtEdixy8wDYseEwnnnYlWMFHG464m66diZRJD9aCZcLcOZ
-	 Kcoi/qsSAVR2AfXo71klIMSRIL29Tk3fO+BpfoPSNimIqTJunKetb1/UkuzirUzMEi
-	 dbqDvtzYWEZlw==
+	b=G7YKPH6diouGQK8ahqRFGtlYlHaipVHF6xYGc37LvhgJnp1moTyOYY231AEQ+Wz92
+	 CuSRCEjaji88Lmv7TmwAvLB46zbVHTT+Q85HYfzdexxMEtnM1LfW4SXUvdHfooMINp
+	 y75XFB6CxTrx/NDKQrR5DT3qIkrV4WZUWswLap264EVBAQh1y9scj7HGU6KjDaAFfs
+	 teMfkIScuWBJDyP5vz3dTNLwmsJDbQs8D8QT1eWShyaprUHNbB2klAPL72miRLDtBx
+	 870XuDCgyNOpZLDuP+TIRLKkk4q1Ce66o2oLZaz7eqKwt/5+OyE9FPkX/65SjGYfIF
+	 esS1Zo5vt+fSA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XKjrV-pLwCIs; Thu, 29 Dec 2022 17:30:57 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id C0FTUOJrEeFi; Thu, 29 Dec 2022 17:31:06 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9D4E380C24;
-	Thu, 29 Dec 2022 17:30:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D4E380C24
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9E7E140181;
+	Thu, 29 Dec 2022 17:31:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9E7E140181
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 3EC171BF393
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Dec 2022 09:06:07 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3AF731BF32A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Dec 2022 12:26:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 17EC140470
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Dec 2022 09:06:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 17EC140470
+ by smtp2.osuosl.org (Postfix) with ESMTP id 14D3F400F8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Dec 2022 12:26:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 14D3F400F8
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ZJXY0TzykBto for <intel-wired-lan@lists.osuosl.org>;
- Thu, 29 Dec 2022 09:06:04 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E553540498
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com
- [IPv6:2a00:1450:4864:20::329])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E553540498
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Dec 2022 09:06:03 +0000 (UTC)
-Received: by mail-wm1-x329.google.com with SMTP id
- p1-20020a05600c1d8100b003d8c9b191e0so12767324wms.4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Dec 2022 01:06:03 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=content-disposition:mime-version:message-id:subject:cc:to:from:date
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=75Rhb7yr4CFALeAESpUIY1hruG7ddcbfO3zbvxmqiH0=;
- b=Je873J7Mpkp0+qt7Bg51jzC00AZhw+SyhxB9GdwlLbEv9JRNO5QRRhOUAFCPwvX0ch
- ctVUmJxPFplzJSj9DGwDv1F8hZ8IRVkukykbiZ+3F6rVvZpuL6wtWrwLIuKwVWcAGHZj
- oJUZ8JhREi0Ec/AZti6eD8h4gLcVFrcaam/TkByfTtgAra0Nf6KgMPSxTkxRKLSWtnGX
- 0EvpEblJQ1hgFZLY7YgAFBFUC6Up2PGy4WgR+1O4NdyeZIZKrwK/jCFva5HARSNU/Wq6
- kKw+6ovaHqMvj/pv/t3wTVfvwfsc7TJq1urq/XiFDQBgVTKtmB733sGJpoYIfUJfTBJd
- seeA==
-X-Gm-Message-State: AFqh2krx71Ccg2lxmhndfiEn9X4DGvAmlpzDqk1wSHlSc22hCNeGLl7f
- V8YWnOQVPGlBw+htenPzNzA=
-X-Google-Smtp-Source: AMrXdXvCenDHhsBYy4xBubR3lORanAhgPCqxK/T3BBuB7Sp/HUqghcPB1BewFS3CuRYHnLckAcsr0w==
-X-Received: by 2002:a05:600c:4e53:b0:3c6:e60f:3f4a with SMTP id
- e19-20020a05600c4e5300b003c6e60f3f4amr19246203wmq.1.1672304762056; 
- Thu, 29 Dec 2022 01:06:02 -0800 (PST)
-Received: from localhost ([102.36.222.112]) by smtp.gmail.com with ESMTPSA id
- iv7-20020a05600c548700b003d35c09d4b9sm32514263wmb.40.2022.12.29.00.58.25
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 29 Dec 2022 01:06:01 -0800 (PST)
-Date: Thu, 29 Dec 2022 11:58:08 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: oe-kbuild@lists.linux.dev,
- Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
-Message-ID: <202212291532.mOisbpke-lkp@intel.com>
+ with ESMTP id 50K_CbLMAemc for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 29 Dec 2022 12:26:39 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C6FA3400DD
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C6FA3400DD
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 29 Dec 2022 12:26:38 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10574"; a="348243045"
+X-IronPort-AV: E=Sophos;i="5.96,284,1665471600"; d="scan'208";a="348243045"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Dec 2022 04:26:38 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10574"; a="795956079"
+X-IronPort-AV: E=Sophos;i="5.96,284,1665471600"; d="scan'208";a="795956079"
+Received: from unknown (HELO rajath-NUC10i7FNH..) ([10.223.165.88])
+ by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Dec 2022 04:26:34 -0800
+From: Rajat Khandelwal <rajat.khandelwal@linux.intel.com>
+To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com
+Date: Thu, 29 Dec 2022 17:56:40 +0530
+Message-Id: <20221229122640.239859-1-rajat.khandelwal@linux.intel.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Disposition: inline
 X-Mailman-Approved-At: Thu, 29 Dec 2022 17:30:44 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=content-disposition:mime-version:message-id:subject:cc:to:from:date
- :from:to:cc:subject:date:message-id:reply-to;
- bh=75Rhb7yr4CFALeAESpUIY1hruG7ddcbfO3zbvxmqiH0=;
- b=DQGCnoF7rxoGdN6dXxDyiHk5VWScUYolP70xQ9EroV7lyVX74VHu0QdVuJybHSBSj+
- UmIsNdkzni1wSXtj7AcXlPuIGgyr8JB9d8l7pQG6F45XP7ia1KULgmZr7LzoXv7Iqn7A
- NnOSpsm08Hco5aXkjScGpQ9z0oj9FyZWkaWHwXZqUxFCFjpf6rS8poI44nSO4AAbji26
- G3hGTRCvKZPrhCPWUQLlzsGcClqPfESph9qtqfzEO0rKmilzp4zvbXS8ywWGxq8zpPZD
- DI2xW5tT1MCsbNhywVH1TfPQDhvcWjsej6MFrK/3tXWGAaHdcw9Mg4gSHvtaglplTNnu
- s94Q==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1672316798; x=1703852798;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=dn3epGzIAwWUMYhcvjgvIraCnxNDGBxxZThnjliU4Tw=;
+ b=Z+3/Dx+hEFfWZ/sCBI1YvpUQ59mO+HGjoUbRf7n6iQ4+do1cOFk5K+p8
+ 5Azf0GI9dNqszWyFX3nc0jDoXLIeUPxFyF5Ud1q8hM6inagu2ILLTKESv
+ Q8mSZQ/5pFugLwP/I153CGTF1MHth9nHcluMcqtTGf/mqi/Fv03FS8DHf
+ ANDoLtuS1KrFAHO2VQ+emWXJ5FauZLYz9YdY3/y/vvcX7wS6kzpnua9Ao
+ N40jQpOcz9oSejYeS3pk51Ke1jFjWO6G9wCjEUf44T6wH1B6n+iLQnYYC
+ JL8ZEm3pMwuhnXstN31Q+SEenPHonuSHa05q6jihbnRahJxdSNebhViht
+ A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=DQGCnoF7
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue 2/17]
- drivers/net/ethernet/intel/ice/ice_main.c:4921 ice_probe() warn: missing
- error code 'err'
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=Z+3/Dx+h
+Subject: [Intel-wired-lan] [PATCH] igc: Mask replay rollover/timeout errors
+ in I225_LMVP
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,116 +95,84 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>,
- Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
- oe-kbuild-all@lists.linux.dev
+Cc: netdev@vger.kernel.org, Rajat Khandelwal <rajat.khandelwal@linux.intel.com>,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ rajat.khandelwal@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-head:   c342bc11f5a438cf39e2280bafda39ec2c6953f1
-commit: e51d0e34580892d22107a85390d1752fa7a7d56a [2/17] ice: move devlink port creation/deletion
-config: powerpc-randconfig-m031-20221226
-compiler: powerpc-linux-gcc (GCC) 12.1.0
+The CPU logs get flooded with replay rollover/timeout AER errors in
+the system with i225_lmvp connected, usually inside thunderbolt devices.
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Reported-by: Dan Carpenter <error27@gmail.com>
+One of the prominent TBT4 docks we use is HP G4 Hook2, which incorporates
+an Intel Foxville chipset, which uses the igc driver.
+On connecting ethernet, CPU logs get inundated with these errors. The point
+is we shouldn't be spamming the logs with such correctible errors as it
+confuses other kernel developers less familiar with PCI errors, support
+staff, and users who happen to look at the logs.
 
-smatch warnings:
-drivers/net/ethernet/intel/ice/ice_main.c:4921 ice_probe() warn: missing error code 'err'
+Signed-off-by: Rajat Khandelwal <rajat.khandelwal@linux.intel.com>
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 28 +++++++++++++++++++++--
+ 1 file changed, 26 insertions(+), 2 deletions(-)
 
-vim +/err +4921 drivers/net/ethernet/intel/ice/ice_main.c
-
-df006dd4b1dca8 Dave Ertman            2020-11-20  4908  	if (ice_init_lag(pf))
-df006dd4b1dca8 Dave Ertman            2020-11-20  4909  		dev_warn(dev, "Failed to init link aggregation support\n");
-df006dd4b1dca8 Dave Ertman            2020-11-20  4910  
-e18ff118181bca Paul Greenwalt         2019-10-09  4911  	/* print PCI link speed and width */
-e18ff118181bca Paul Greenwalt         2019-10-09  4912  	pcie_print_link_status(pf->pdev);
-e18ff118181bca Paul Greenwalt         2019-10-09  4913  
-de75135b5c04c9 Anirudh Venkataramanan 2020-05-07  4914  probe_done:
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4915  	err = ice_devlink_create_pf_port(pf);
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4916  	if (err)
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4917  		goto err_create_pf_port;
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4918  
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4919  	vsi = ice_get_main_vsi(pf);
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4920  	if (!vsi || !vsi->netdev)
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18 @4921  		goto err_netdev_reg;
-
-This seems like an error path so "err = -EINVAL;"
-
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4922  
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4923  	SET_NETDEV_DEVLINK_PORT(vsi->netdev, &pf->devlink_port);
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4924  
-1e23f076b25424 Anirudh Venkataramanan 2021-03-02  4925  	err = ice_register_netdev(pf);
-1e23f076b25424 Anirudh Venkataramanan 2021-03-02  4926  	if (err)
-1e23f076b25424 Anirudh Venkataramanan 2021-03-02  4927  		goto err_netdev_reg;
-1e23f076b25424 Anirudh Venkataramanan 2021-03-02  4928  
-e523af4ee56090 Shiraz Saleem          2021-10-18  4929  	err = ice_devlink_register_params(pf);
-e523af4ee56090 Shiraz Saleem          2021-10-18  4930  	if (err)
-e523af4ee56090 Shiraz Saleem          2021-10-18  4931  		goto err_netdev_reg;
-e523af4ee56090 Shiraz Saleem          2021-10-18  4932  
-de75135b5c04c9 Anirudh Venkataramanan 2020-05-07  4933  	/* ready to go, so clear down state bit */
-7e408e07b42dce Anirudh Venkataramanan 2021-03-02  4934  	clear_bit(ICE_DOWN, pf->state);
-88f62aea1cff0c Dave Ertman            2022-02-11  4935  	if (ice_is_rdma_ena(pf)) {
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4936  		pf->aux_idx = ida_alloc(&ice_aux_ida, GFP_KERNEL);
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4937  		if (pf->aux_idx < 0) {
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4938  			dev_err(dev, "Failed to allocate device ID for AUX driver\n");
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4939  			err = -ENOMEM;
-e523af4ee56090 Shiraz Saleem          2021-10-18  4940  			goto err_devlink_reg_param;
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4941  		}
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4942  
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4943  		err = ice_init_rdma(pf);
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4944  		if (err) {
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4945  			dev_err(dev, "Failed to initialize RDMA: %d\n", err);
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4946  			err = -EIO;
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4947  			goto err_init_aux_unroll;
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4948  		}
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4949  	} else {
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4950  		dev_warn(dev, "RDMA is not supported on this device\n");
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4951  	}
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4952  
-838cefd5e52c4a Leon Romanovsky        2021-09-25  4953  	ice_devlink_register(pf);
-837f08fdecbe4b Anirudh Venkataramanan 2018-03-20  4954  	return 0;
-f31e4b6fe227df Anirudh Venkataramanan 2018-03-20  4955  
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4956  err_init_aux_unroll:
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4957  	pf->adev = NULL;
-d25a0fc41c1f92 Dave Ertman            2021-05-20  4958  	ida_free(&ice_aux_ida, pf->aux_idx);
-e523af4ee56090 Shiraz Saleem          2021-10-18  4959  err_devlink_reg_param:
-e523af4ee56090 Shiraz Saleem          2021-10-18  4960  	ice_devlink_unregister_params(pf);
-1e23f076b25424 Anirudh Venkataramanan 2021-03-02  4961  err_netdev_reg:
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4962  	ice_devlink_destroy_pf_port(pf);
-e51d0e34580892 Paul M Stillwell Jr    2022-11-18  4963  err_create_pf_port:
-78116e979ddc49 Marcin Szycik          2020-07-13  4964  err_send_version_unroll:
-78116e979ddc49 Marcin Szycik          2020-07-13  4965  	ice_vsi_release_all(pf);
-3a858ba392c3b1 Anirudh Venkataramanan 2018-03-20  4966  err_alloc_sw_unroll:
-7e408e07b42dce Anirudh Venkataramanan 2021-03-02  4967  	set_bit(ICE_SERVICE_DIS, pf->state);
-7e408e07b42dce Anirudh Venkataramanan 2021-03-02  4968  	set_bit(ICE_DOWN, pf->state);
-4015d11e4b9720 Brett Creeley          2019-11-08  4969  	devm_kfree(dev, pf->first_sw);
-940b61af02f497 Anirudh Venkataramanan 2018-03-20  4970  err_msix_misc_unroll:
-940b61af02f497 Anirudh Venkataramanan 2018-03-20  4971  	ice_free_irq_msix_misc(pf);
-940b61af02f497 Anirudh Venkataramanan 2018-03-20  4972  err_init_interrupt_unroll:
-940b61af02f497 Anirudh Venkataramanan 2018-03-20  4973  	ice_clear_interrupt_scheme(pf);
-288ecf491b1654 Benjamin Mikailenko    2022-11-18  4974  err_init_vsi_stats_unroll:
-288ecf491b1654 Benjamin Mikailenko    2022-11-18  4975  	devm_kfree(dev, pf->vsi_stats);
-288ecf491b1654 Benjamin Mikailenko    2022-11-18  4976  	pf->vsi_stats = NULL;
-bc3a024101ca49 Jacob Keller           2020-05-15  4977  err_init_vsi_unroll:
-77ed84f49aeed1 Bruce Allan            2019-02-08  4978  	devm_kfree(dev, pf->vsi);
-940b61af02f497 Anirudh Venkataramanan 2018-03-20  4979  err_init_pf_unroll:
-940b61af02f497 Anirudh Venkataramanan 2018-03-20  4980  	ice_deinit_pf(pf);
-dce730f17825f4 Jacob Keller           2020-03-26  4981  	ice_devlink_destroy_regions(pf);
-940b61af02f497 Anirudh Venkataramanan 2018-03-20  4982  	ice_deinit_hw(hw);
-f31e4b6fe227df Anirudh Venkataramanan 2018-03-20  4983  err_exit_unroll:
-f31e4b6fe227df Anirudh Venkataramanan 2018-03-20  4984  	pci_disable_pcie_error_reporting(pdev);
-769c500dcc1edb Akeem G Abodunrin      2020-07-09  4985  	pci_disable_device(pdev);
-f31e4b6fe227df Anirudh Venkataramanan 2018-03-20  4986  	return err;
-837f08fdecbe4b Anirudh Venkataramanan 2018-03-20  4987  }
-
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index ebff0e04045d..a3a6e8086c8d 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -6201,6 +6201,26 @@ u32 igc_rd32(struct igc_hw *hw, u32 reg)
+ 	return value;
+ }
+ 
++#ifdef CONFIG_PCIEAER
++static void igc_mask_aer_replay_correctible(struct igc_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	u32 aer_pos, corr_mask;
++
++	if (pdev->device != IGC_DEV_ID_I225_LMVP)
++		return;
++
++	aer_pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_ERR);
++	if (!aer_pos)
++		return;
++
++	pci_read_config_dword(pdev, aer_pos + PCI_ERR_COR_MASK, &corr_mask);
++
++	corr_mask |= PCI_ERR_COR_REP_ROLL | PCI_ERR_COR_REP_TIMER;
++	pci_write_config_dword(pdev, aer_pos + PCI_ERR_COR_MASK, corr_mask);
++}
++#endif
++
+ /**
+  * igc_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+@@ -6236,8 +6256,6 @@ static int igc_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		goto err_pci_reg;
+ 
+-	pci_enable_pcie_error_reporting(pdev);
+-
+ 	err = pci_enable_ptm(pdev, NULL);
+ 	if (err < 0)
+ 		dev_info(&pdev->dev, "PCIe PTM not supported by PCIe bus/controller\n");
+@@ -6272,6 +6290,12 @@ static int igc_probe(struct pci_dev *pdev,
+ 	if (!adapter->io_addr)
+ 		goto err_ioremap;
+ 
++#ifdef CONFIG_PCIEAER
++	igc_mask_aer_replay_correctible(adapter);
++#endif
++
++	pci_enable_pcie_error_reporting(pdev);
++
+ 	/* hw->hw_addr can be zeroed, so use adapter->io_addr for unmap */
+ 	hw->hw_addr = adapter->io_addr;
+ 
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.34.1
 
 _______________________________________________
 Intel-wired-lan mailing list
