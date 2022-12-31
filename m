@@ -1,88 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84C6CC3DA7D
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Jan 2023 16:47:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 095CDC3DA7D
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  3 Jan 2023 16:48:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 12240400CB;
-	Tue,  3 Jan 2023 16:47:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 12240400CB
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8F60B607BC;
+	Tue,  3 Jan 2023 16:48:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8F60B607BC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1672764429;
-	bh=QUwjuHLtC9HKvlWRw/BaERgSgA443JVMKVqb7nnqjxQ=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=5u1uB3GGywJlenB9kzBXRG/psv2gSXVZd/fINmS+Q3Kt9q0omx1Xmv6ySv8fMSeZK
-	 F5tz0kOMm3rxSI5O/Knca4xsdeCQJqxBJ5D7tvcqJq8cCMXKSHir58BoK1LNPynWzF
-	 fFbbaNZI3I3MK7V1Q4SEPQydjXaLshcBFs0gPtDCr51vySMkecqW2an9CPhFvwTaKz
-	 BYdVDewMfPIYcMnCEBS+8Fi+FGzMenSj29wlOyir0KgPRAyEG0e/cS5Qqny5FQZQJM
-	 UVgo/iRAgHVlxnbsah47+E1hw/d3w8mTuf75CZQ+4mOYfjRNgiudiT6WR24TWTH0Ei
-	 yUF0Df+behymw==
+	s=default; t=1672764516;
+	bh=X+O4nBxqJP3Pft31pMOH0nvwUMu3IAgekSfpUBoIr54=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=N2r4MbzwWs+ALFjEk9SqL6GD/IZdeMn1mCCY5NLhMxfF2ymuLbYU6wz7b5kcTb/Dz
+	 0wv48sJlYZWtVRWGdDBCtSYfCl+332B/CKJpAgXCSphwJ+jEe9db4CYncN/EbKSCcb
+	 AsUePRXMK4ishlJ4eRgwJFAHdwgDvUbLeJivD8Z1zoxoCu2yFCKql+vyoa9CYlbCCt
+	 /LgtZO5E+V36X0c0EUGRGREzL94GK7bM49uDry5vdiQxgKVKvgJ52eYMXL4VmDEghx
+	 hxsYyQvIq8IhB2DG1timZAk1jpb1NFrfYea8wTzTowDTNJtaLkYuHu7xzXNA/2HYzf
+	 3zQpmhsYSN51w==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IagrZvJHtYxl; Tue,  3 Jan 2023 16:47:08 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Uqkru64oqL3B; Tue,  3 Jan 2023 16:48:35 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 06FEF40A18;
-	Tue,  3 Jan 2023 16:47:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 06FEF40A18
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5D6ED60D68;
+	Tue,  3 Jan 2023 16:48:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5D6ED60D68
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 010341BF83B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Jan 2023 16:47:06 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B7C861BF292
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Dec 2022 15:03:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CC8DE409EF
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Jan 2023 16:47:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CC8DE409EF
+ by smtp2.osuosl.org (Postfix) with ESMTP id 952F8402A8
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Dec 2022 15:03:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 952F8402A8
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oPnJ__OSdi3s for <intel-wired-lan@lists.osuosl.org>;
- Tue,  3 Jan 2023 16:47:05 +0000 (UTC)
+ with ESMTP id 86fLUjUc-pba for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 31 Dec 2022 15:03:04 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 66FD7409ED
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 66FD7409ED
- for <intel-wired-lan@lists.osuosl.org>; Tue,  3 Jan 2023 16:47:05 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10579"; a="322931583"
-X-IronPort-AV: E=Sophos;i="5.96,297,1665471600"; d="scan'208";a="322931583"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Jan 2023 08:47:04 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10579"; a="828895242"
-X-IronPort-AV: E=Sophos;i="5.96,297,1665471600"; d="scan'208";a="828895242"
-Received: from irvmail001.ir.intel.com ([10.43.11.63])
- by orsmga005.jf.intel.com with ESMTP; 03 Jan 2023 08:47:02 -0800
-Received: from giewont.igk.intel.com (giewont.igk.intel.com [10.211.8.15])
- by irvmail001.ir.intel.com (8.14.3/8.13.6/MailSET/Hub) with ESMTP id
- 303Gl1JQ028830; Tue, 3 Jan 2023 16:47:01 GMT
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  3 Jan 2023 17:42:27 +0100
-Message-Id: <20230103164227.33546-1-marcin.szycik@linux.intel.com>
-X-Mailer: git-send-email 2.31.1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 137584029B
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 137584029B
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 31 Dec 2022 15:03:03 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id D8C0C60AAD;
+ Sat, 31 Dec 2022 15:03:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DCC71C433D2;
+ Sat, 31 Dec 2022 15:02:59 +0000 (UTC)
+Date: Sat, 31 Dec 2022 15:02:57 +0000
+From: Conor Dooley <conor@kernel.org>
+To: "Neftin, Sasha" <sasha.neftin@intel.com>
+Message-ID: <Y7BPIYsBXN0ivoLE@spud>
+References: <CAPAtJa8qupPZZ0AiMWSxNKSd-WMg0MQDQeZcCO_Z-GGBu3jZCg@mail.gmail.com>
+ <CAPAtJa_-yMusW5-C3BDivMu=MOyfKF9VQkxQotX3L_P+Q48oMA@mail.gmail.com>
+ <CAPAtJa_nL5edyiN61ghXZxVUSDBFQQR3uiYJM0uo9mEao=RC0w@mail.gmail.com>
+ <CAPAtJa_hbFbVXQbiNnb_byLqtZ-Dy_EBcvTFH9GyPqt__dFmLQ@mail.gmail.com>
+ <Y3gKkYeijrAIhxjc@spud> <20221118145443.427ecf10@kernel.org>
+ <Y3gTdsg4l71L0vz9@spud>
+ <a15508df-eab4-ce00-7340-69323c462fdc@intel.com>
+ <Y3qGHROcvdL1vKip@spud> <Y6NCzgXZzv+oJKV1@spud>
 MIME-Version: 1.0
+In-Reply-To: <Y6NCzgXZzv+oJKV1@spud>
+X-Mailman-Approved-At: Tue, 03 Jan 2023 16:48:34 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1672764425; x=1704300425;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=2gOcuZUmY83g4z1fFFZJz6QnjBRjKero/aYkB92aD6Q=;
- b=fYNrv2ZWmR5ah08UfcFqbWZXkSuKZH7WIHeCBZ8uqKELM/knnJ0SMrG6
- evzBUolhW6WR+9Pi3wvFhIzV+Hq0kPWPQG9/HFYH6MhzFVcCe/u6Do6nk
- 2DUZPUu9InYl+Rkw9BUWJujApCyTZa5CKce0XquoS5eejpwQmW0xs3E4T
- ZpsJcUrvfqInbBfJKcB0A/2lUe4gpfU0F3AWY6sg+rndIDrKm9TiptUNJ
- lC4IHdwtR6pmZrzbLzva8G4BHYPOI6NGyh08jg/qkzzZ7WKbPGsaG+7A8
- FlicOu7Jb/oZ012Y5lxCWo7pcEQ42ThkfsH47f2ynhITLtueJN02TZzxh
- Q==;
+ d=kernel.org; s=k20201202; t=1672498982;
+ bh=DRvrEzXvhk/WTMZtkXGdXs+d6WC46CQ4JRn21psmgIU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=rqFWiwhHVPRTSegBVCKqUhTpSTUR0XhRBxJ6UCANex0hb1QoMn2L0m3T2rHBbPrZ8
+ wsiC2OqJaFA3SPhE6WhQOZvNvbqdfEa0F8usUw3VRqP5iLn+YcPEYqoGGJUB8LfNv4
+ hViIFCBpubZxdD6OgcQuzUgx9zgQSpX3s14IXBR9HqoCfy72bdrnLZLMgN803pK8ks
+ 5Ft72yL779/khuvd+RUHmWboitsXERkYhSArt5n0STr/TPp9HYAvLw786a9i6ijJzR
+ B+knNsUG/zBjBLiGdBGmnoAgc0/sEfwWEfSa802NWRGwjLIQ80hUzh3TwRkmfDI9XS
+ xAKiKwE4EJKhA==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=fYNrv2ZW
-Subject: [Intel-wired-lan] [PATCH net] iavf: Move netdev_update_features()
- into watchdog task
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=rqFWiwhH
+Subject: Re: [Intel-wired-lan] igc kernel module crashes on new hardware
+ (Intel Ethernet I225-V)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,101 +96,188 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: dawidx.wesierski@intel.com, anthony.l.nguyen@intel.com,
- Phani Burra <phani.r.burra@intel.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: "Fuxbrumer, Devora" <devora.fuxbrumer@intel.com>, helgaas@kernel.org,
+ regressions@lists.linux.dev, "Meir, NaamaX" <naamax.meir@intel.com>,
+ Ivan Smirnov <isgsmirnov@gmail.com>, intel-wired-lan@lists.osuosl.org,
+ Jakub Kicinski <kuba@kernel.org>, "Ruinskiy, Dima" <dima.ruinskiy@intel.com>,
+ "Avivi, Amir" <amir.avivi@intel.com>
+Content-Type: multipart/mixed; boundary="===============5685893136271595873=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Remove netdev_update_features() from iavf_adminq_task(), as it can cause
-deadlocks due to needing rtnl_lock. Instead use the
-IAVF_FLAG_SETUP_NETDEV_FEATURES flag to indicate that netdev features need
-to be updated in the watchdog task. iavf_set_vlan_offload_features()
-and iavf_set_queue_vlan_tag_loc() can be called directly from
-iavf_virtchnl_completion().
 
-Suggested-by: Phani Burra <phani.r.burra@intel.com>
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Reviewed-by: Alexander Lobakin <alexandr.lobakin@intel.com>
----
-This patch is a suggested replacement for patch [1], and as such will
-currently not apply to dev-queue. It solves the same issue, but does not
-increase code complexity by introducing a new task.
-[1] https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20221215225049.508812-3-mschmidt@redhat.com/
+--===============5685893136271595873==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="wuPkSkaRgTHeR4DW"
+Content-Disposition: inline
 
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 27 +++++++------------
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  8 ++++++
- 2 files changed, 17 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 931422485074..92ae7137584c 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2692,6 +2692,15 @@ static void iavf_watchdog_task(struct work_struct *work)
- 		goto restart_watchdog;
- 	}
- 
-+	if ((adapter->flags & IAVF_FLAG_SETUP_NETDEV_FEATURES) &&
-+	    adapter->netdev_registered &&
-+	    !test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section) &&
-+	    rtnl_trylock()) {
-+		netdev_update_features(adapter->netdev);
-+		rtnl_unlock();
-+		adapter->flags &= ~IAVF_FLAG_SETUP_NETDEV_FEATURES;
-+	}
-+
- 	if (adapter->flags & IAVF_FLAG_PF_COMMS_FAILED)
- 		iavf_change_state(adapter, __IAVF_COMM_FAILED);
- 
-@@ -3233,24 +3242,6 @@ static void iavf_adminq_task(struct work_struct *work)
- 	} while (pending);
- 	mutex_unlock(&adapter->crit_lock);
- 
--	if ((adapter->flags & IAVF_FLAG_SETUP_NETDEV_FEATURES)) {
--		if (adapter->netdev_registered ||
--		    !test_bit(__IAVF_IN_REMOVE_TASK, &adapter->crit_section)) {
--			struct net_device *netdev = adapter->netdev;
--
--			rtnl_lock();
--			netdev_update_features(netdev);
--			rtnl_unlock();
--			/* Request VLAN offload settings */
--			if (VLAN_V2_ALLOWED(adapter))
--				iavf_set_vlan_offload_features
--					(adapter, 0, netdev->features);
--
--			iavf_set_queue_vlan_tag_loc(adapter);
--		}
--
--		adapter->flags &= ~IAVF_FLAG_SETUP_NETDEV_FEATURES;
--	}
- 	if ((adapter->flags &
- 	     (IAVF_FLAG_RESET_PENDING | IAVF_FLAG_RESET_NEEDED)) ||
- 	    adapter->state == __IAVF_RESETTING)
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 0752fd67c96e..365ca0c710c4 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -2226,6 +2226,14 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 
- 		iavf_process_config(adapter);
- 		adapter->flags |= IAVF_FLAG_SETUP_NETDEV_FEATURES;
-+
-+		/* Request VLAN offload settings */
-+		if (VLAN_V2_ALLOWED(adapter))
-+			iavf_set_vlan_offload_features(adapter, 0,
-+						       netdev->features);
-+
-+		iavf_set_queue_vlan_tag_loc(adapter);
-+
- 		was_mac_changed = !ether_addr_equal(netdev->dev_addr,
- 						    adapter->hw.mac.addr);
- 
--- 
-2.31.1
+--wuPkSkaRgTHeR4DW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Dec 21, 2022 at 05:30:54PM +0000, Conor Dooley wrote:
+> On Sun, Nov 20, 2022 at 07:55:09PM +0000, Conor Dooley wrote:
+> > On Sat, Nov 19, 2022 at 08:06:05PM +0200, Neftin, Sasha wrote:
+> > > On 11/19/2022 01:21, Conor Dooley wrote:
+> > > > On Fri, Nov 18, 2022 at 02:54:43PM -0800, Jakub Kicinski wrote:
+> > > > > On Fri, 18 Nov 2022 22:43:29 +0000 Conor Dooley wrote:
+> > > > > > > Is there any update for the community? More and more folks ar=
+e asking. We
+> > > > > > > are all techies and happy to help debug.
+> > > > > >=20
+> > > > > > Vested interest since I am suffering from the same issue (X670E=
+-F
+> > > > > > Gaming), but is it okay to add this to regzbot? Not sure whethe=
+r it
+> > > > > > counts as a regression or not since it's new hw with the existi=
+ng driver,
+> > > > > > but this seems to be falling through the cracks without a respo=
+nse for
+> > > > > > several weeks.
+> > > > >=20
+> > > > > Dunno, Thorsten's will decide. The line has to be drawn somewhere
+> > > > > on "vendor doesn't care about Linux support" vs "we broke uAPI".
+> > > > > This is the kind of situation I was alluding to in my line of
+> > > > > questioning at the maintainer summit: https://lwn.net/Articles/90=
+8324/
+> > > >=20
+> > > > Yeah & it is /regression/ tracking which I don't (or rather didn't)
+> > > > consider this situation to be. I'm generally a little unsure as to =
+when
+> > > > I should trigger regzbot in general:
+> > > > - immediately when I find something?
+> > > > - only if it goes a while with nothing constructive?
+> > > > - is it okay to use it outside of "this used to work and now doesnt=
+"?
+> > > >=20
+> > > > Either way, but I did some more googling and found this reddit thre=
+ad:
+> > > > https://www.reddit.com/r/intel/comments/lqb4km/for_people_having_i2=
+25v_connection_issues/
+> > > >=20
+> > > > That's being reported against windows & I dunno if the dude is using
+> > > > firmware and driver interchangeably etc. But the disabling power sa=
+ving
+> > > > etc sounds oddly like the issue we have here, since that was a prop=
+osed
+> > > > workaround in Ivan's 2022 reddit thread.
+> > > >=20
+> > > > Supposedly I am on firmware-version 1082:8770, but /I/ I have no id=
+ea
+> > > > how that corresponds to windows versioning. That may lend some cred=
+ence
+> > > > to your assertion about firmware being the source of many issues.
+> > > >=20
+> > > > > Finding a kernel release which does not suffer from the problem
+> > > > > would certainly strengthen your case.
+> > > >=20
+> > > > Aye, likely to be a little difficult to do a meaningful bisection f=
+or
+> > > > me at least, since the motherboard I have with the problem is an AM5
+> > > > one for the new Zen4 stuff. I'm not an x86 person, so not entirely
+> > > > sure when that support landed. I may do some poking tomorrow..
+> > > >=20
+> > > I do not think we can resolve this problem on this forum.
+> > > In early Ivan's report was reported error to netdev "PCIe link lost, =
+device
+> > > now detached"). Since the PCIe link unexpectedly drops it could lead =
+to many
+> > > problems (not only crashes).
+> >=20
+> > Hmm, I'll take a look at what mine spits out next time it dies, but I
+> > would imagine that you're correct and I see it too.
+>=20
+> It does in fact say that, but interestingly only this peripheral has any
+> issues. My GPUs etc have no problem at all.
+>=20
+> > > Before you go to SW/FW bisection (change FW(NVM), go back with a kern=
+el
+> > > version) - please, contact your board vendor (ASUS). Why PCIe link dr=
+op?
+> >=20
+> > I dunno, I suppose it just entered a lower power state!
+> >=20
+> > > Circuit problem on board, the system performs power management flows =
+and
+> > > does not stop the driver.
+> >=20
+> > My GPU and other PCI devices are returning from lower power modes prope=
+rly.
+> > I wonder what's different about this specific device. As I said, not too
+> > familiar with x86 stuff - is there someone from AMD worth poking as the
+> > output from lspci is a wall of AMD bridges w/ endpoints mixed in.
+> >=20
+> > Doing a cursory look at other x670 stuff - the non-asus ones that I
+> > looked at are not using Intel ethernet.
+> >=20
+> > > "failed to read reg 0xc030" (just symptom) happen after PCIe link los=
+t.
+> >=20
+> > Per 47e16692b26b ("igb/igc: warn when fatal read failure happens"), it
+> > looks as though this is not a *new* problem though as you guys have seen
+> > this while testing.
+> >=20
+> > I've got a 1 G NIC, I like my dev machine to "just work" so I'll probab=
+ly
+> > throw that in and see how far that gets me. IIRC it's an igb one so will
+> > at least make for a datapoint.
+>=20
+> FWIW I gave up on the igc driver and am using my NIC, couldn't be
+> bothered with the disruption. I'll give the bios stuff mentioned
+> elsewhere a go over Christmas now that v6.1.1 exists and see if that
+> helps. Hopefully it does!
+
+Hallo, me again...
+
+I didn't actually give the bios stuff a go in the end. I figured that
+changing everything at once would likely not be a good idea - but what I
+did do was try v6.1.1 & have now been running for 50-something hours
+without any issues while using the igc iface.
+
+Whole-ly unscientific of course, but I had noticed this thread:
+https://lore.kernel.org/all/20221226225045.GA400369@bhelgaas/
+and that commit c01163dbd1b8 ("PCI/PM: Always disable PTM for all devices
+during suspend") was not part of the v6.0.y kernels I was running but
+*is* in v6.1.y, which was my impetus for trying the kernel upgrade.
+
+I checked v6.0.16-rc2 and that commit does not appear to have been
+backported yet.
+Perhaps some of the other "victims" in this thread who have not yet
+tried changing BIOS etc, could give v6.1.y a go & see if they still have
+issues.
+
+I may backport the aforementioned patch myself and see how it does, but
+someone else trying v6.1.y & not seeing the iface dying would certainly
+help with motivation :)
+
+Thanks,
+Conor.
+
+
+--wuPkSkaRgTHeR4DW
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCY7BPIQAKCRB4tDGHoIJi
+0uNCAQCiLQIDr2rkDhaLaBC29crc7MlSY26+tdKPWiO/SswOuAEAlZnlgmKi2gn9
+8JD7K9xR6E9lDMmad3cjDmgb5epjuQQ=
+=Li+b
+-----END PGP SIGNATURE-----
+
+--wuPkSkaRgTHeR4DW--
+
+--===============5685893136271595873==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============5685893136271595873==--
