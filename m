@@ -1,92 +1,92 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A07BC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  1 Jan 2023 11:15:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1B16C4708E
+	for <intel-wired-lan@archiver.kernel.org>; Sun,  1 Jan 2023 11:16:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 06F3660DCA;
-	Sun,  1 Jan 2023 11:15:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 06F3660DCA
+	by smtp4.osuosl.org (Postfix) with ESMTP id 460114089F;
+	Sun,  1 Jan 2023 11:16:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 460114089F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1672571717;
-	bh=U62+BM0secWAJlEqy6/EMyokrmbMLYGfNceLWz3XtJw=;
+	s=default; t=1672571792;
+	bh=CVY7Yu4MFecYTotttLr1Erz4xUhWVhIM0mzCTaxIVb8=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=WT6sUSWmilxbiGHXr/9QwYMkPfWGV7btr5iDMhE4F5Nsw1YWlI/cJdYdQ4IixtdPq
-	 vwtdqXzOQzCFNdyVVZTzcZafWRi5zVTf7QXB0x4YDDuSAIrvweJ7Y4Ot/Ri+ryeil0
-	 gZN0n5I/kqsPym/wW0WiN5EEW/vQZz+67BX42dwg/PFlvr5AraawFzU/E93lVnV3Yx
-	 FfTebQzf+jLdiGDwYv8KquiDUkVEzRDLRfi3iFu76oRe1EUbMGcVI12TxlfIE3w13c
-	 sKovFHPsRXldrN4C/I90/c9XyAYuxz0gldtm4Ie6ier+Tf4T8LJZRqZCcyhJ+6eoj/
-	 gC4rU4+Mme+DQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id MWkKCeP2m9Eh; Sun,  1 Jan 2023 11:15:16 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 224F660E11;
-	Sun,  1 Jan 2023 11:15:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 224F660E11
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id AE21E1BF392
- for <intel-wired-lan@osuosl.org>; Sun,  1 Jan 2023 11:15:14 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 93B6A402C5
- for <intel-wired-lan@osuosl.org>; Sun,  1 Jan 2023 11:15:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 93B6A402C5
+	b=rxiv4x5ybuGLXhoo4ja6vyZcExCLcDVTVB85dgtJvFPhrARObPMkgUHKBPTXrMuMi
+	 fWzZjjRHgwXYDAPygHpqSngNH+trvF5EYEQ4E98tD17iz+g0vzxhteyyMQcEp16zov
+	 i4XpzIYpF8pk9s/ni0vyuon4/pyOUquKPY+tIDXj3d4nLk/m5zuxXSC1np6dmQUo+m
+	 M8nIuY1xGmE8cSJ2KSK6/Rpafs7AYA9FJ5iu5O76z+ChUiu2cN4w728KcSAlTCn0/l
+	 RlXhturEMVMIu+/oR0pdVnyUvZ1J+HFg5emTTqH5wMODeEMoyvktKCQLog/qlEYGji
+	 cbliNg3c0U16w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qO3yPs9mxdCf for <intel-wired-lan@osuosl.org>;
- Sun,  1 Jan 2023 11:15:14 +0000 (UTC)
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id WBjkbLI0EXHk; Sun,  1 Jan 2023 11:16:31 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 311D940874;
+	Sun,  1 Jan 2023 11:16:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 311D940874
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id AD1321BF392
+ for <intel-wired-lan@osuosl.org>; Sun,  1 Jan 2023 11:16:29 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 876A060E24
+ for <intel-wired-lan@osuosl.org>; Sun,  1 Jan 2023 11:16:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 876A060E24
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id EfkNggDif2wY for <intel-wired-lan@osuosl.org>;
+ Sun,  1 Jan 2023 11:16:29 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CE0C1402BA
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp4.osuosl.org (Postfix) with ESMTPS id CE0C1402BA
- for <intel-wired-lan@osuosl.org>; Sun,  1 Jan 2023 11:15:13 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10577"; a="319076345"
-X-IronPort-AV: E=Sophos;i="5.96,291,1665471600"; d="scan'208";a="319076345"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Jan 2023 03:15:13 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10577"; a="828331256"
-X-IronPort-AV: E=Sophos;i="5.96,291,1665471600"; d="scan'208";a="828331256"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E9E8E60E15
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id E9E8E60E15
+ for <intel-wired-lan@osuosl.org>; Sun,  1 Jan 2023 11:16:28 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10577"; a="407640743"
+X-IronPort-AV: E=Sophos;i="5.96,291,1665471600"; d="scan'208";a="407640743"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jan 2023 03:16:28 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10577"; a="654260466"
+X-IronPort-AV: E=Sophos;i="5.96,291,1665471600"; d="scan'208";a="654260466"
 Received: from naamamex-mobl.ger.corp.intel.com (HELO [10.13.11.251])
  ([10.13.11.251])
- by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Jan 2023 03:15:11 -0800
-Message-ID: <26dc7694-128e-3529-83f7-b52ab338abca@linux.intel.com>
-Date: Sun, 1 Jan 2023 13:15:08 +0200
+ by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Jan 2023 03:16:25 -0800
+Message-ID: <71b8226c-06c6-efac-50f6-6b4f43a61bc9@linux.intel.com>
+Date: Sun, 1 Jan 2023 13:16:23 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
  Thunderbird/102.6.1
 Content-Language: en-US
 To: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>,
  intel-wired-lan@osuosl.org, vinicius.gomes@intel.com
-References: <20221215225211.1071-1-muhammad.husaini.zulkifli@intel.com>
+References: <20221216150357.12721-1-muhammad.husaini.zulkifli@intel.com>
 From: "naamax.meir" <naamax.meir@linux.intel.com>
-In-Reply-To: <20221215225211.1071-1-muhammad.husaini.zulkifli@intel.com>
+In-Reply-To: <20221216150357.12721-1-muhammad.husaini.zulkifli@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1672571713; x=1704107713;
+ t=1672571788; x=1704107788;
  h=message-id:date:mime-version:subject:to:cc:references:
  from:in-reply-to:content-transfer-encoding;
- bh=VXXl42xujqT01DrBebD6kSyyIgx3j1rgm8JVY6xGrMA=;
- b=Y6CKJ0Sh/GZeVmGhfDbxAdx1nj8P9nLwsJ7Yx14CdHaJLOWPpUhRW6Fv
- onOl4g1zN5GH3YApnChRMgGts1355kv4WD4PwfgrKarxwWNLHv3bBIx20
- QJDNTIksVKWSwngzv13A65BZbP/f3UFer3Y/i0sze8ybqXk1NjpHwn+Ob
- gYsOY55JgCXxgPt/lpMUcZGgB9ds6Tw2rJUr/a50BGgDTOoWfeUST1nkq
- 2w/wt1RjNoNk3RF/dVOKzeMVUm7AgqacaF1yPmFDlsM633K7uOhKoZdPx
- qMBboOqLCTIy96lB+QArDUdXU4yrIR9V/dlHN/Lf9ZatgBb2dYDt4QwTs
+ bh=V/Drwe46nNm8ImYDn+F+kyPBWTptKXLn2Dws9TEbR+8=;
+ b=NF8SzHuhL8Jibqtufgk+Zlp1cinHF3ti4RvLQtSAXxgNA4qkjgtkkfZn
+ LDAjdpYR/gk86xvSpPEnIhHuLmy/ccR83SPbTNJEXyB5mxGuA1hb/aw9N
+ X/acPPJjcHCgL7O23/5OmFs3Nc02hYVsQAEAfPS/oVSkUVMeSt/nHmCRw
+ WGHnqcCkRn91u4nh9ZO7NOFeiE1lBQghwZzjN9L0CwCgnoFiYgeYnZPRu
+ XK999Fyg5au6i7ImFPq/lePGxXYl6aJqrd23tad/VcBNCJNkuKK2xpC1X
+ a7IEL7pACaIR3GZqoBbA0Juw7m01+g/zGoKBP1QxzoLo+QYSPbRuyftvj
  Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Y6CKJ0Sh
-Subject: Re: [Intel-wired-lan] [PATCH net-next v2] igc: Add
- qbv_config_change_errors counter
+ header.a=rsa-sha256 header.s=Intel header.b=NF8SzHuh
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2] igc: offload queue max
+ SDU from tc-taprio
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,33 +99,49 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: anthony.l.nguyen@intel.com
+Cc: kuba@kernel.org, netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ tee.min.tan@linux.intel.com, davem@davemloft.net
 Content-Transfer-Encoding: 7bit
 Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 12/16/2022 00:52, Muhammad Husaini Zulkifli wrote:
-> Add ConfigChangeError(qbv_config_change_errors) when user try to set the
-> AdminBaseTime to past value while the current GCL is still running.
+On 12/16/2022 17:03, Muhammad Husaini Zulkifli wrote:
+> From: Tan Tee Min <tee.min.tan@linux.intel.com>
 > 
-> The ConfigChangeError counter should not be increased when a gate control
-> list is scheduled into the future.
+> Add support for configuring the max SDU for each Tx queue.
+> If not specified, keep the default.
 > 
-> User can use "ethtool -S <interface> | grep qbv_config_change_errors"
-> command to check the counter values.
+> All link speeds have been tested with this implementation.
+> No performance issue observed.
 > 
+> How to test:
+> 
+> 1) Configure the tc with max-sdu
+> 
+> tc qdisc replace dev $IFACE parent root handle 100 taprio \
+>      num_tc 4 \
+>      map 0 1 2 3 3 3 3 3 3 3 3 3 3 3 3 3 \
+>      queues 1@0 1@1 1@2 1@3 \
+>      base-time $BASE \
+>      sched-entry S 0xF 1000000 \
+>      max-sdu 1500 1498 0 0 0 0 0 0 0 0 0 0 0 0 0 0 \
+>      flags 0x2 \
+>      txtime-delay 0
+> 
+> 2) Use network statistic to watch the tx queue packet to see if
+> packet able to go out or drop.
+> 
+> Signed-off-by: Tan Tee Min <tee.min.tan@linux.intel.com>
 > Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
 > 
 > ---
-> V1 -> V2: Fix wrong tree applied
+> V1 -> V2: Rework based on Vinicius's comment.
 > ---
 > ---
->   drivers/net/ethernet/intel/igc/igc.h         | 1 +
->   drivers/net/ethernet/intel/igc/igc_ethtool.c | 1 +
->   drivers/net/ethernet/intel/igc/igc_main.c    | 1 +
->   drivers/net/ethernet/intel/igc/igc_tsn.c     | 6 ++++++
->   4 files changed, 9 insertions(+)
+>   drivers/net/ethernet/intel/igc/igc.h      |  1 +
+>   drivers/net/ethernet/intel/igc/igc_main.c | 44 +++++++++++++++++++++++
+>   2 files changed, 45 insertions(+)
 Tested-by: Naama Meir <naamax.meir@linux.intel.com>
 _______________________________________________
 Intel-wired-lan mailing list
