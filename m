@@ -1,83 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40F5CC3DA7A
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Jan 2023 13:19:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C4A8C3DA7D
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Jan 2023 13:46:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CD9C4607F9;
-	Thu,  5 Jan 2023 13:19:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CD9C4607F9
+	by smtp2.osuosl.org (Postfix) with ESMTP id A2B6D40104;
+	Thu,  5 Jan 2023 13:46:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A2B6D40104
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1672924747;
-	bh=s1J4qSU52YeAuKCVtT/6NEmX8BDx4LHUs1OQUoNLwao=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=qV8b42iFGfG1TsPIcB9g3TJ4qcMKEUYZkHHOR5HnhMJj6V0KD1ITk82pQJZKpjiqZ
-	 m9SFHPYyIXvBBQ/SNq/QUUBTKF8HMCmvZvj2RuHLN/+ClWJXfuS0aHF6BbEAmUgGF0
-	 FvKN1ofFBEA1kd06Ziuue5SXiyeolmYCTXQiF5Z401SzBw46io8thHDigelRG7Yr+b
-	 y9aEg6UvWtV7avrUj5G3RWwI0dVfROjSzMp6cSAsYS7AW/XhISTAYdcx/xR7DFIlXC
-	 sRPjTT4b6CbMRo/WAIw87yiu6BCIKPV+KtPWu1v+rKgM+Oic3oL2rrZE4BJDqc2p3g
-	 ih6eaVKbRG4LQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FQvWp_ZzmbTU; Thu,  5 Jan 2023 13:19:07 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DA69760804;
-	Thu,  5 Jan 2023 13:19:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DA69760804
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 06D9B1BF409
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Jan 2023 13:19:05 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D530340C2F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Jan 2023 13:19:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D530340C2F
+	s=default; t=1672926406;
+	bh=5WiSLesAaf+tp9jLZi9GSJYcoTODwjJr69hVgAOd3V4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=3L3TUS/FYj1bqerF10C3gWF6RiqGfaN3Z3mpzY4ZKcGkrB6fqQUYPVN5hpLgEmUEE
+	 cdwj2G4VebMubS3hORu+GTXu800d0im9fxI4lU+IM4mwCchqwmQq5Or96zIEUFc5Yu
+	 OdLqZu5OInfttEFdGXyyIbMje9qQh7/dFsSTfwjFYFr7MQMtTNQ6fAkgrdPa7qPsA/
+	 HSHcYCmcpvBN9Y2PnZE/ElE91vIrGQx85hZipnHQFKNkeC4p+O8gHLqDB/RladBvGW
+	 0m/7jLUfNCiT8X1YrfO+JpDun1+BjXS8PW3ROVVr3i4kE16bsimh8tKrGteyHGqIJq
+	 DBMLerTV0PM0g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id knjaB9Rejlbw for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Jan 2023 13:19:04 +0000 (UTC)
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id wIbgHk8rGs4m; Thu,  5 Jan 2023 13:46:45 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id AACF940125;
+	Thu,  5 Jan 2023 13:46:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AACF940125
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 559181BF409
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Jan 2023 13:46:44 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2E0D641990
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Jan 2023 13:46:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2E0D641990
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id FLbMl0fULOvc for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Jan 2023 13:46:43 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4E8CC40125
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4E8CC40125
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Jan 2023 13:19:04 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 9D9E561A01;
- Thu,  5 Jan 2023 13:19:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8AFB7C433EF;
- Thu,  5 Jan 2023 13:19:02 +0000 (UTC)
-Date: Thu, 5 Jan 2023 15:18:58 +0200
-From: Leon Romanovsky <leon@kernel.org>
-To: Mateusz Palczewski <mateusz.palczewski@intel.com>
-Message-ID: <Y7bOQoFJQUhsB1kC@unreal>
-References: <20230105120518.29776-1-mateusz.palczewski@intel.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1F42E41852
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1F42E41852
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Jan 2023 13:46:42 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10580"; a="305708086"
+X-IronPort-AV: E=Sophos;i="5.96,303,1665471600"; d="scan'208";a="305708086"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Jan 2023 05:46:42 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10580"; a="657526815"
+X-IronPort-AV: E=Sophos;i="5.96,303,1665471600"; d="scan'208";a="657526815"
+Received: from gklab-18-202.igk.intel.com (HELO s048.nql.local)
+ ([10.102.18.202])
+ by fmsmga007.fm.intel.com with ESMTP; 05 Jan 2023 05:46:41 -0800
+From: Jan Sokolowski <jan.sokolowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Thu,  5 Jan 2023 14:49:41 +0100
+Message-Id: <20230105134946.66077-1-jan.sokolowski@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20230105120518.29776-1-mateusz.palczewski@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1672924743;
- bh=oeiqTX+YktoVuCEksUYADqphwlZpszjcAzOZO0MUgZU=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=a6mlhy57XL4NNdsfanSq8y9rXhWOQTlnSPehyeCmIZ+/cmcDmQliInZEyi2t7syr1
- qan+Kt132Hwei+/NPSla1LoVHJSAEWi9zXfQd+x9KLqrwC4Pip+0XBStSdgu3/VdAJ
- kBElWcf4WFdaISl8v6Xo3FxS/OCwTAHIAJ9xSQ1jB43hB6mEvNdVH7yflG108qTyxG
- C7jLnzNJyn0dNZ3pY9ZaUdcwkIIPabzzE1U7+HMid1pkMRO5plNpTJrXmrHvPKHuzf
- WlSAv1qIgwZlJl+S1RZPSd497E0hmODfbijcjD0/LiYWiXoljpbhr5LTPPsVggeTIn
- r3A96+7j7V+6Q==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=a6mlhy57
-Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: Fix deadlock on the
- rtnl_mutex
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1672926403; x=1704462403;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=sKSZ0tO/VReH3ZZwyMDQZWR98mxYyH5UaE59IpP7dxc=;
+ b=IH1jsjdLCSg9+FqNtArrzm9nLpRd/znHc4q5NGrDFkdJNsfvRvnIK4A9
+ guhQ+d55US4d/MBtxYUnv0vrJ3+DFLAPVuShNpDMA+PfxH+56A2GucBKN
+ b13LDox2T4M4bTJBaGI0H0N6zF+fV/DJ2Jc6mtcN1W8whiGuIj5oT6Mr2
+ 5Q4/XmD2dRLe/8+nNqP6JSM9UNUf3uJlYERtNW/zahNeES+HNwJOIQDTX
+ 5SbcVJ7rIQVh3KwfgRwYpd7pswwepLxQ8FZsmt4KHUWB3cz02FxFXL+Lo
+ jDY4eIrZPubhN+s7PEmL5MdDq38NWT+4RZ71bp+1zaigqFW8Lt/NavJEF
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=IH1jsjdL
+Subject: [Intel-wired-lan] [PATCH net-next v4 0/5] i40e_status removal series
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,33 +92,70 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Jan 05, 2023 at 07:05:18AM -0500, Mateusz Palczewski wrote:
-> There is a deadlock on rtnl_mutex when attempting to take the lock
-> in unregister_netdev() after it has already been taken by
-> ethnl_set_channels(). This happened when unregister_netdev() was
-> called inside of ice_vsi_rebuild().
-> Fix that by removing the unregister_netdev() usage and replace it with
-> ice_vsi_clear_rings() that deallocates the tx and rx rings for the VSI.
-> 
-> Fixes: df0f847915b4 ("ice: Move common functions out of ice_main.c part 6/7")
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
-> ---
->  v2: Fixed goto unwind to remove code redundancy
-> ---
->  drivers/net/ethernet/intel/ice/ice_lib.c | 35 ++++++++++++------------
->  1 file changed, 17 insertions(+), 18 deletions(-)
-> 
+This series contains a refactoring that removes i40e_status
+values from i40e driver, and replaces them with standard
+kernel error values.
 
-I think that it will be beneficial to have lockdep trace in commit message too.
+Jan Sokolowski (5):
+  i40e: Remove unused i40e status codes
+  i40e: Remove string printing for i40e_status
+  i40e: use int for i40e_status
+  i40e: remove i40e_status
+  i40e: use ERR_PTR error print in i40e messages
 
-Thanks,
-Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
+---
+v2: Previous version didn't include cover letter, and had
+a problem where one patch was erroneously not sent to
+intel-wired-lan mailing list.
+
+v3: Fixed build problems found in v2, and reformatted
+the patch to conform to checkpatch here applicable,
+as not all lines could be fixed without introducing other
+checkpatch warnings. 
+
+v4: Rebased to current head, and added a new patch
+in series to adress a comment received in previous
+version. The patch adds human-readable error messages.
+
+---
+
+ drivers/net/ethernet/intel/i40e/i40e.h        |    8 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c |  117 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h |    3 +-
+ drivers/net/ethernet/intel/i40e/i40e_alloc.h  |   22 +-
+ drivers/net/ethernet/intel/i40e/i40e_client.c |   12 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 1146 ++++++++---------
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c    |   80 +-
+ drivers/net/ethernet/intel/i40e/i40e_dcb.h    |   28 +-
+ drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c |   16 +-
+ drivers/net/ethernet/intel/i40e/i40e_ddp.c    |   16 +-
+ .../net/ethernet/intel/i40e/i40e_debugfs.c    |   12 +-
+ drivers/net/ethernet/intel/i40e/i40e_diag.c   |   18 +-
+ drivers/net/ethernet/intel/i40e/i40e_diag.h   |    4 +-
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |   65 +-
+ drivers/net/ethernet/intel/i40e/i40e_hmc.c    |   75 +-
+ drivers/net/ethernet/intel/i40e/i40e_hmc.h    |   46 +-
+ .../net/ethernet/intel/i40e/i40e_lan_hmc.c    |  148 +--
+ .../net/ethernet/intel/i40e/i40e_lan_hmc.h    |   34 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  459 +++----
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c    |  292 ++---
+ drivers/net/ethernet/intel/i40e/i40e_osdep.h  |    1 -
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |  643 ++++-----
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c    |    2 +-
+ drivers/net/ethernet/intel/i40e/i40e_status.h |   78 --
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |    1 -
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    |  271 ++--
+ 26 files changed, 1689 insertions(+), 1908 deletions(-)
+ delete mode 100644 drivers/net/ethernet/intel/i40e/i40e_status.h
+
+-- 
+2.31.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
