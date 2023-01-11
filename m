@@ -1,86 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E774C54EBC
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Jan 2023 14:20:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E5D1C5479D
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Jan 2023 15:07:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2A0B6403E5;
-	Wed, 11 Jan 2023 14:20:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2A0B6403E5
+	by smtp4.osuosl.org (Postfix) with ESMTP id E120A419A5;
+	Wed, 11 Jan 2023 15:07:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E120A419A5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1673446837;
-	bh=QhqSPt2u/nzknL5U60/OBgEY2NwyrF9puRlgDuPU2cs=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=DW5kad7kuzQJ16XUHwZUvil/Go2zCiCSaRefY3LlDJGYhANzJZveDSUWhcbxRDw93
-	 8xLkLLfaU5sCC/DyZ3eh0xFNrX6desXsrAx6QTd7zTQ9w793YXuxgf3OOy1oEE2zS/
-	 Pu95N9KQDfNf1TPu37W+UYE4c3/lxW5ZWwaPTzINBz2KLnoLSuuv8HUfObIYE7dUn8
-	 4DvUZp5cfgUGXyQrFtBZgfmPJ3Gv3gZp312icmS6C0bMUDPkdPCJA23omYDtFfZRqq
-	 pEGnNgiLlv3RMmy400SGvjtWj5AnlSm9YQyahhZkatEeEYvnAT8L5xN2NDxVDMQdYw
-	 rkekr+SSHVIRA==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id rbBhB6RMAcrn; Wed, 11 Jan 2023 14:20:36 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 22D79404CA;
-	Wed, 11 Jan 2023 14:20:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 22D79404CA
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id EFA031BF2A0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jan 2023 14:20:34 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C7A8841940
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jan 2023 14:20:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C7A8841940
+	s=default; t=1673449655;
+	bh=aw9MpNsdBoIf3s+61mv5PKo81v64y4rtUXwMxiRR2V0=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=vrM/zfBNXixT6nGtMJf0EUmgVubqb4XyBcuWn+QTZDG7vmPW/e+qNktKKG60I1ZK7
+	 uIa3TztN3GeJI4eksykqlnYJgXlvjCW0zZfZ9ZeIj5YOR/WH5OROhhuz+P9eXTuVnw
+	 wr45ZLIMIu/nuVLz6UKEX+aj7Jz0o9AJZWkFLUWkOZBr9u/WooiR/e+IbE040EGGhx
+	 WpAHbtXEOg4/5XJ0ok/VRBIbNgmLaOONiiH0GWmQHBOYHsU3qJDlkaiRO6qGwN3Kgt
+	 6oQEywrNNdEojS7Gb0AkWa71WekX+iyzirEhJP9MbpRzu8y58r2qSwrOEtF2C24DdD
+	 7d7ZmQFEKOQPw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lcD3OV51akPZ for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Jan 2023 14:20:33 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C6D894193C
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C6D894193C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jan 2023 14:20:33 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10586"; a="306937929"
-X-IronPort-AV: E=Sophos;i="5.96,317,1665471600"; d="scan'208";a="306937929"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Jan 2023 06:20:33 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10586"; a="765160152"
-X-IronPort-AV: E=Sophos;i="5.96,317,1665471600"; d="scan'208";a="765160152"
-Received: from gklab-018-208.igk.intel.com (HELO localhost.igk.intel.com)
- ([10.102.18.208])
- by fmsmga002.fm.intel.com with ESMTP; 11 Jan 2023 06:20:31 -0800
-From: Kamil Maziarz <kamil.maziarz@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 11 Jan 2023 15:20:29 +0100
-Message-Id: <20230111142029.318092-1-kamil.maziarz@intel.com>
-X-Mailer: git-send-email 2.31.1
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id qbGIIjaZ12Bn; Wed, 11 Jan 2023 15:07:35 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id C0329419BC;
+	Wed, 11 Jan 2023 15:07:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C0329419BC
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 457061BF3C0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jan 2023 15:07:33 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1F54881FD2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jan 2023 15:07:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1F54881FD2
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id sbP6j_sh8KQX for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Jan 2023 15:07:31 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B8E4E820EE
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B8E4E820EE
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Jan 2023 15:07:31 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ams.source.kernel.org (Postfix) with ESMTPS id E1349B81ACA;
+ Wed, 11 Jan 2023 15:07:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDE85C433EF;
+ Wed, 11 Jan 2023 15:07:26 +0000 (UTC)
+Date: Wed, 11 Jan 2023 16:07:24 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Wang Hai <wanghai38@huawei.com>
+Message-ID: <Y77QrFNIQrKB8xvV@kroah.com>
+References: <20221220012143.52141-1-wanghai38@huawei.com>
+ <54066d0e-ef50-183f-74fe-551bb99741eb@huawei.com>
+ <Y7vtbayi+2GfkhEa@kroah.com>
+ <6fcc6c81-96fb-112f-3aa9-3e2d58ecb2c8@huawei.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <6fcc6c81-96fb-112f-3aa9-3e2d58ecb2c8@huawei.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1673446833; x=1704982833;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=J4PYqO1opnIaND9q6+HeG4xOYnfvGa+8e/dgt0jy1l8=;
- b=h0imyRPsmCUPstmSiyjUR1lm5CMmOYhD0jMvKv5+66Bp1WCwwjBvOl0t
- owzRams6JnlXvtzYA+xW1OMOC6B45cpSrAXadUZvR7jGUn8Z7iJuetiPB
- Rtkjg1lfcGjS49CS6UJgkmQ5MSY7Bb9Jrv+ol63IhDjalo+APYHlecrtE
- /4tc1hxTAf6qsU/sJ7DAvrg0CoPcUK8Cs9Ik6BJZwaLqg8d4B92MgOhp9
- Z4s33urxA2mq1rwdxPjSd0dWzvbY0aWCXckoWDPnRale+/y+IC86KXqq4
- bAqRDK0IDVJtofoAHaF9NvjOZecCCyGehsB17bbxaVnk4f/lMIccTIt5U
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=h0imyRPs
-Subject: [Intel-wired-lan] [PATCH net v1] ice: Ignore RDMA message on setup
- tc qdisc
+ d=linuxfoundation.org; 
+ s=korg; t=1673449647;
+ bh=aFrvoqKWG153xIDPgIDZp4R1sSPgs+OyQK/bgpbZFjE=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=V1Zt1eHKFeGTo6EMQ/caKrK+6KQgb78mOIMzztorWNFbzBGiqJwPFdRyC1IN7n8H0
+ TUInbFJ2uvaJgm3b8l8uJzbYE3ESrbHNfjlCPWaabC3lCxsyIFzBZOpDh6LEyzE/Dd
+ /SkKcuicMD3XO5Z8Kyd6lnqH+T6lN53WisMufKrs=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key) header.d=linuxfoundation.org
+ header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg
+ header.b=V1Zt1eHK
+Subject: Re: [Intel-wired-lan] [PATCH v2] kobject: Fix slab-out-of-bounds in
+ fill_kobj_path()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,84 +91,20 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Kamil Maziarz <kamil.maziarz@intel.com>,
- Rafal Rogalski <rafalx.rogalski@intel.com>
+Cc: rafael@kernel.org, jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org,
+ anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
+ alice.chao@mediatek.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Rafal Rogalski <rafalx.rogalski@intel.com>
+On Mon, Jan 09, 2023 at 07:15:05PM +0800, Wang Hai wrote:
+> Thanks, I thought you had forgotten about it. I hope I'm not disturbing you.
 
-Commit f70b9d5f4426 ("ice: check for a leaf node presence") prevents
-removal of VSI with leaf nodes. This is an expectation of driver action
-induced by FW requirements. However, this caused RDMA scheduler config
-removal to fail every time a qdisc was added or deleted.
+No bother at all, it's now added to my tree, thanks!
 
-Fix this by ignoring errors from RDMA configuration removal when qdisc are
-being reconfigured.
-
-Fixes: ff7e93219442 ("ice: Fix failure to re-add LAN/RDMA Tx queues")
-Signed-off-by: Rafal Rogalski <rafalx.rogalski@intel.com>
-Signed-off-by: Kamil Maziarz <kamil.maziarz@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h      | 1 +
- drivers/net/ethernet/intel/ice/ice_lib.c  | 2 +-
- drivers/net/ethernet/intel/ice/ice_main.c | 3 +++
- 3 files changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 2f0b604abc5e..b572d07bc126 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -306,6 +306,7 @@ enum ice_pf_state {
- 	ICE_PHY_INIT_COMPLETE,
- 	ICE_FD_VF_FLUSH_CTX,		/* set at FD Rx IRQ or timeout */
- 	ICE_AUX_ERR_PENDING,
-+	ICE_SETUP_TC_QDISC,
- 	ICE_STATE_NBITS		/* must be last */
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 22bcb414546a..0ee3acbea108 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3448,7 +3448,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, bool init_vsi)
- 
- 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
- 	ret = ice_rm_vsi_rdma_cfg(vsi->port_info, vsi->idx);
--	if (ret)
-+	if (ret && !(test_bit(ICE_SETUP_TC_QDISC, pf->state) && ret == -EBUSY))
- 		dev_err(ice_pf_to_dev(vsi->back), "Failed to remove RDMA scheduler config for VSI %u, err %d\n",
- 			vsi->vsi_num, ret);
- 	ice_vsi_free_q_vectors(vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a9a7f8b52140..5ff137645f08 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -8706,6 +8706,7 @@ static int ice_setup_tc_mqprio_qdisc(struct net_device *netdev, void *type_data)
- 	cur_txq = vsi->num_txq;
- 	cur_rxq = vsi->num_rxq;
- 
-+	set_bit(ICE_SETUP_TC_QDISC, pf->state);
- 	/* proceed with rebuild main VSI using correct number of queues */
- 	ret = ice_vsi_rebuild(vsi, false);
- 	if (ret) {
-@@ -8716,9 +8717,11 @@ static int ice_setup_tc_mqprio_qdisc(struct net_device *netdev, void *type_data)
- 		clear_bit(ICE_RESET_FAILED, pf->state);
- 		if (ice_vsi_rebuild(vsi, false)) {
- 			dev_err(dev, "Rebuild of main VSI failed again\n");
-+			clear_bit(ICE_SETUP_TC_QDISC, pf->state);
- 			return ret;
- 		}
- 	}
-+	clear_bit(ICE_SETUP_TC_QDISC, pf->state);
- 
- 	vsi->all_numtc = num_tcf;
- 	vsi->all_enatc = ena_tc_qdisc;
--- 
-2.31.1
-
+greg k-h
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
