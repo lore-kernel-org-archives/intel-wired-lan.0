@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 077E5C3DA78
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Jan 2023 22:38:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE478C3DA78
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Jan 2023 22:38:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id AF5024158D;
-	Fri, 13 Jan 2023 22:38:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AF5024158D
+	by smtp2.osuosl.org (Postfix) with ESMTP id A9DB0415C0;
+	Fri, 13 Jan 2023 22:38:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A9DB0415C0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1673649486;
-	bh=35eKFithxhDYpQ8T+PiLUpxvrVdg/4mEYBr05JaxBJE=;
+	s=default; t=1673649490;
+	bh=XikpQSki1xOjJ7srMza6aDyOfnHkGhhAasx2qEkLIKI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=2o64XvALJOTjIWt4+mESTQ/wTa8XHRfEFLH/hpmTi1jWq9pxFUsbgMwSHG3flmf25
-	 pYVeGAbeE/bPggD27wwgwkjIc4/Hy44+1ZfHPgc+4VdyJ+i6FdAp8fkg/gbhtqXy6Q
-	 cECmrl0sUUf7umk2XtwJC6KGf9s87nV7DyQD/IX0bk5/CMGCAu/9pSWYP7TxY1ybW1
-	 zxHwnn75N3BvnDL0BjgE0eaaDK4CRV9SvTY7f6l5PiUxVu4bJuNxhMQ9j9O5WOvBnC
-	 2c0xkfheKfPUv9tRnP0mgxhZPiU3PbK5QGLvKobJ2XkqgcGNphFpsKaZchZJMoA3Ph
-	 cYjB8cpucvJhA==
+	b=hBVbYy7/jm70TiEwEOe2+shC9oISsHkhgH+l7eLbGqY1BwGqXALirKD45SZ4iPr+n
+	 3YdIdRgNG+Ee/yXM2xoLljVhlFiyl4sX6WVcf4zPJsTSNXVa4HOutl4nKkN324yWGJ
+	 tTq90r1FEvu2hJXUXwQDjS8EYaaXjAEWHRdtqp6+OMdutdaKL6XTUL5g9tQboqilv4
+	 jSBBgD25JRCSPcZhtxFZLc05xL+RUvkOr8SV56l3QH6zpy5UsUE7mY9bOlseiOAQ7i
+	 mNppgAsiPolpw/0jdEfxRwwgoiSUAfC9xjQ0qQhsTLYRx5XLkcx5dTRe2scdlGALBh
+	 keF+3DKEGOXCQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XTSSbHK11E_v; Fri, 13 Jan 2023 22:38:06 +0000 (UTC)
+	with ESMTP id Z56yjT8nukgu; Fri, 13 Jan 2023 22:38:09 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B2CEA415C0;
-	Fri, 13 Jan 2023 22:38:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B2CEA415C0
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 2CE8E1BF399
+	by smtp2.osuosl.org (Postfix) with ESMTP id 91496415C5;
+	Fri, 13 Jan 2023 22:38:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 91496415C5
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id BF6571BF399
  for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 22:37:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 4737941B61
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 22:37:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4737941B61
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 03exjX3cYnen for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Jan 2023 22:37:45 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 675E441B5B
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 675E441B5B
+ by smtp1.osuosl.org (Postfix) with ESMTP id 96979821FE
  for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 22:37:45 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="351354058"
-X-IronPort-AV: E=Sophos;i="5.97,215,1669104000"; d="scan'208";a="351354058"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 96979821FE
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id IFB9MTYo8pVi for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Jan 2023 22:37:44 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4DE3E82200
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4DE3E82200
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 22:37:44 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="351354048"
+X-IronPort-AV: E=Sophos;i="5.97,215,1669104000"; d="scan'208";a="351354048"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Jan 2023 14:37:45 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="726859776"
-X-IronPort-AV: E=Sophos;i="5.97,215,1669104000"; d="scan'208";a="726859776"
+ 13 Jan 2023 14:37:44 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="726859764"
+X-IronPort-AV: E=Sophos;i="5.97,215,1669104000"; d="scan'208";a="726859764"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Jan 2023 14:37:44 -0800
+ 13 Jan 2023 14:37:43 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Fri, 13 Jan 2023 14:37:29 -0800
-Message-Id: <20230113223735.2514364-8-jacob.e.keller@intel.com>
+Date: Fri, 13 Jan 2023 14:37:26 -0800
+Message-Id: <20230113223735.2514364-5-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.1.420.g319605f8f00e
 In-Reply-To: <20230113223735.2514364-1-jacob.e.keller@intel.com>
 References: <20230113223735.2514364-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1673649465; x=1705185465;
+ t=1673649464; x=1705185464;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=TT1MhXFCmbGtFh7vbCvkBIQgWd9UNQB5BVY/8qe7wt8=;
- b=lxfTqWM0F5oLxDbeLWJxwPOk84LM2tRlVDgANSYJZHmxmTwnKK2oHcjh
- rElco4iSK7trZCrTxndSrpV6Osn1dACONVZYWZmN60SKujQPb7LgopQiq
- yaSoL9/Nqteh4S7ddHKySwTnO0eui8zn4N1EzEE+KEeLXPrRYM4DJKDKg
- Z0bx9zrI9MT+n2m+6bi47BuiEKzXMoYpn92DoxoEeDxeiUQXO1pSNfDD1
- 92V1rIQxDDIeLuxFGJdEBJcDksWysm9BroMW7u0WNjvYmZlSOo0/yThZD
- QjeDFk0Kl4taD9qo1Ijohs3pdnSsMijK7UW8H5Eb7ngyIrbsMsp4kMnVh
+ bh=2Kg4GHbXxhgNPK366gvYzX+IzQ4xEXOTb5hXnkB4fMk=;
+ b=XNQxiP6vnRXqZ00pgAD2PvkCdPva8cV9FHvi4Asuy4Ljx5VNGA4mWid/
+ za2FIZC3uGo9HAyKhbOwneIqqnbFV+moyrbfWjSekNjU03NTfVU4GgGza
+ Ubrqryc/+TyThOsVPZF3F2+9XQCCCxKl3OXYogG4GQsH92ypoOkAiwKds
+ dJG7z5j1kxqv+gV8zZYpuldTjZH6i74oMWPG/wGuZ0lXPuRmhgtEMGVZW
+ xUFyYENzHjk+I9WVWxtO1j9UDSc9DznDNric4VdiKAGCvF8vUJnbS8wu4
+ 8BfpIBT+/SH3+OdRgnnsoTwLEWA9pVWeLYAztnqdgmHpwWhZs9781Igws
  g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lxfTqWM0
-Subject: [Intel-wired-lan] [PATCH net-next 07/13] ice: Pull common tasks
- into ice_vf_post_vsi_rebuild
+ header.a=rsa-sha256 header.s=Intel header.b=XNQxiP6v
+Subject: [Intel-wired-lan] [PATCH net-next 04/13] ice: add helper function
+ for checking VSI VF requirement
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,82 +102,82 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The Single Root IOV implementation of .post_vsi_rebuild performs some tasks
-that will ultimately need to be shared with the Scalable IOV implementation
-such as rebuilding the host configuration.
+A few places in ice_lib.c WARN if the VSI type is VF and the VF pointer is
+NULL. This helps protect against accidentally creating a ICE_VSI_VF without
+providing a VF pointer.
 
-Refactor by introducing a new wrapper function, ice_vf_post_vsi_rebuild
-which performs the tasks that will be shared between SR-IOV and Scalable
-IOV. Move the ice_vf_rebuild_host_cfg and ice_vf_set_initialized calls into
-this wrapper. Then call the implementation specific post_vsi_rebuild
-handler afterwards.
+A future change is going to introduce another type of VSI which has the
+same requirement, ICE_VSI_ADI. Instead of expanding each WARN_ON check to
+include both types, introduce a helper function to do this check. The
+ice_vsi_requires_vf function returns true if the VSI *must* have a VF, and
+returns false otherwise.
 
-This ensures that we will properly re-initialize filters and expected
-settings for both SR-IOV and Scalable IOV.
+Of specific note is that some VSI types may optionally have a VF but do not
+require them, such as the ICE_VSI_CTRL type. These return false.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sriov.c  |  2 --
- drivers/net/ethernet/intel/ice/ice_vf_lib.c | 19 +++++++++++++++++--
- 2 files changed, 17 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 26 +++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index c5129923001f..34d52e1b6f05 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -811,8 +811,6 @@ static int ice_sriov_vsi_rebuild(struct ice_vf *vf)
-  */
- static void ice_sriov_post_vsi_rebuild(struct ice_vf *vf)
- {
--	ice_vf_rebuild_host_cfg(vf);
--	ice_vf_set_initialized(vf);
- 	ice_ena_vf_mappings(vf);
- 	wr32(&vf->pf->hw, VFGEN_RSTAT(vf->vf_id), VIRTCHNL_VFR_VFACTIVE);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 2ad905442ba8..e64f2afe0850 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -270,6 +270,21 @@ static int ice_vf_rebuild_vsi(struct ice_vf *vf)
- 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index f89279ede9a1..79555e22a9be 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -34,6 +34,26 @@ const char *ice_vsi_type_str(enum ice_vsi_type vsi_type)
+ 	}
  }
  
 +/**
-+ * ice_vf_post_vsi_rebuild - Reset tasks that occur after VSI rebuild
-+ * @vf: the VF being reset
++ * ice_vsi_requires_vf - Does this VSI type always require a VF?
++ * @vsi_type: the VSI type
 + *
-+ * Perform reset tasks which must occur after the VSI has been re-created or
-+ * rebuilt during a VF reset.
++ * Returns true if the VSI type *must* have a VF pointer. Returns false
++ * otherwise. In particular, VSI types which may *optionally* have a VF
++ * pointer return false.
++ *
++ * Used to WARN in cases where we always expect a VF pointer to be non-NULL.
 + */
-+static void ice_vf_post_vsi_rebuild(struct ice_vf *vf)
++static int ice_vsi_requires_vf(enum ice_vsi_type vsi_type)
 +{
-+	ice_vf_rebuild_host_cfg(vf);
-+	ice_vf_set_initialized(vf);
-+
-+	vf->vf_ops->post_vsi_rebuild(vf);
++	switch (vsi_type) {
++	case ICE_VSI_VF:
++		return true;
++	default:
++		return false;
++	}
 +}
 +
  /**
-  * ice_is_any_vf_in_unicast_promisc - check if any VF(s)
-  * are in unicast promiscuous mode
-@@ -495,7 +510,7 @@ void ice_reset_all_vfs(struct ice_pf *pf)
+  * ice_vsi_ctrl_all_rx_rings - Start or stop a VSI's Rx rings
+  * @vsi: the VSI being configured
+@@ -175,7 +195,7 @@ static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
+ 	struct ice_pf *pf = vsi->back;
+ 	struct ice_vf *vf = vsi->vf;
  
- 		ice_vf_pre_vsi_rebuild(vf);
- 		ice_vf_rebuild_vsi(vf);
--		vf->vf_ops->post_vsi_rebuild(vf);
-+		ice_vf_post_vsi_rebuild(vf);
+-	if (WARN_ON(vsi_type == ICE_VSI_VF && !vf))
++	if (WARN_ON(ice_vsi_requires_vf(vsi_type) && !vf))
+ 		return;
  
- 		mutex_unlock(&vf->cfg_lock);
- 	}
-@@ -646,7 +661,7 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 		goto out_unlock;
- 	}
+ 	switch (vsi_type) {
+@@ -2854,7 +2874,7 @@ int ice_vsi_cfg(struct ice_vsi *vsi, enum ice_vsi_type vsi_type,
+ 	struct ice_pf *pf = vsi->back;
+ 	int ret;
  
--	vf->vf_ops->post_vsi_rebuild(vf);
-+	ice_vf_post_vsi_rebuild(vf);
- 	vsi = ice_get_vf_vsi(vf);
- 	if (WARN_ON(!vsi)) {
- 		err = -EINVAL;
+-	if (WARN_ON(vsi_type == ICE_VSI_VF && !vf))
++	if (WARN_ON(ice_vsi_requires_vf(vsi_type) && !vf))
+ 		return -EINVAL;
+ 
+ 	vsi->type = vsi_type;
+@@ -3487,7 +3507,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, int init_vsi)
+ 		return -EINVAL;
+ 
+ 	pf = vsi->back;
+-	if (WARN_ON(vsi->type == ICE_VSI_VF && !vsi->vf))
++	if (WARN_ON(ice_vsi_requires_vf(vsi->type) && !vsi->vf))
+ 		return -EINVAL;
+ 
+ 	coalesce = kcalloc(vsi->num_q_vectors,
 -- 
 2.38.1.420.g319605f8f00e
 
