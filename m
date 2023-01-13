@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78F36C6379F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Jan 2023 22:38:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8915DC677F1
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Jan 2023 22:38:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 22C36404F1;
-	Fri, 13 Jan 2023 22:38:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 22C36404F1
+	by smtp2.osuosl.org (Postfix) with ESMTP id 369CD404F1;
+	Fri, 13 Jan 2023 22:38:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 369CD404F1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1673649511;
-	bh=/aMQE1dyZXf5jcECPZUC0qqqRAYQnQwl54mugE7XeIg=;
+	s=default; t=1673649515;
+	bh=KdGlcY0aYp6PNmoj6t3QpDrMTu87iHt9ho0I9EJTY+A=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=TC1XJ5+4CNwsNkSniiDtMovgAoa1ZWkMpj3QMSwQEi4LeEaEsAutVYheT16BkGoAb
-	 WBqRT04zXnB/fzE24cO051oRFlL7P0ltb3zN5hj4q9/fq6JAia27eWAPdqfsboKvSG
-	 8ZRpAuWwFZUSl08WqKIqvamoKRfZWkdviufOcFYD+l8ux7VZh2LXgmlnRJEw17Yc4v
-	 T4qe7xKSTA+bdeedL4VaioD45JyRDugbstFk3oXgBn4UrkFe8bEC58L9FjzxesJovE
-	 rhGqKH+BbzNXl84qYLcyiLVsFLD5Opa3ZLUJrXGLIRgjVs2eLby6SxJ6cMsStIrjyb
-	 h2Xk1PJ1c3+jQ==
+	b=kpiTVp85fnLRs0X09dCL5JFB4C+4/gL//LLq8dM9Q29iqFX3VuqA9mvsQKKsHEpnY
+	 HfP4yA5jvV56VUgaFMNk0c2yVAcvtJr+/9R1duNpbObYdCuEX3+Nz8Fg0JxpuBjLqm
+	 pyUEDbAB6P+N1kEkqr87i+pdQYmS9jcDpTFpp1KKpNyIncFZc1U4fz51aJCvuazR6h
+	 leNck7B7AC7jZEdhQ0cIWSNM8ZFQl2pd1ArIrWiv1Orb4hSaU7C6/5op8tbKiDT8vo
+	 cbVCB7/9qh4ujWJK6yrsJqdeYqt2WgiflBo70NNQrDY35y1Vzxks74r/2uRTHribsv
+	 qSZZf1kMIu2QQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id RNcR3ziCAZjV; Fri, 13 Jan 2023 22:38:30 +0000 (UTC)
+	with ESMTP id xbvkDKv1EHCC; Fri, 13 Jan 2023 22:38:34 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 226BD415BD;
-	Fri, 13 Jan 2023 22:38:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 226BD415BD
+	by smtp2.osuosl.org (Postfix) with ESMTP id 06E2B415D2;
+	Fri, 13 Jan 2023 22:38:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 06E2B415D2
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 394FA1BF399
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 22:37:52 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3CFD21BF399
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 22:37:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D66A941B6B
+ by smtp4.osuosl.org (Postfix) with ESMTP id EE18D41B61
  for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 22:37:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D66A941B6B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EE18D41B61
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id iH-0UG0YODon for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Jan 2023 22:37:47 +0000 (UTC)
+ with ESMTP id hYMpAJj0f8vP for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Jan 2023 22:37:46 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 03FD941B69
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D26CF41B51
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 03FD941B69
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D26CF41B51
  for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 22:37:46 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="351354074"
-X-IronPort-AV: E=Sophos;i="5.97,215,1669104000"; d="scan'208";a="351354074"
+X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="351354072"
+X-IronPort-AV: E=Sophos;i="5.97,215,1669104000"; d="scan'208";a="351354072"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  13 Jan 2023 14:37:46 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="726859794"
-X-IronPort-AV: E=Sophos;i="5.97,215,1669104000"; d="scan'208";a="726859794"
+X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="726859791"
+X-IronPort-AV: E=Sophos;i="5.97,215,1669104000"; d="scan'208";a="726859791"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  13 Jan 2023 14:37:46 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Fri, 13 Jan 2023 14:37:34 -0800
-Message-Id: <20230113223735.2514364-13-jacob.e.keller@intel.com>
+Date: Fri, 13 Jan 2023 14:37:33 -0800
+Message-Id: <20230113223735.2514364-12-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.38.1.420.g319605f8f00e
 In-Reply-To: <20230113223735.2514364-1-jacob.e.keller@intel.com>
 References: <20230113223735.2514364-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1673649467; x=1705185467;
+ t=1673649466; x=1705185466;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=4QaEbEfpRTYoMU+n9eMPwNZKbcfKdvHABklGpDwm9bA=;
- b=fw2i5PxPzeDVbSi/3mWT7NFAw30mgLglfc0pK+a+8H/puPs0lQ7HN5bx
- nohZyKbTASTy1qHi5SMYg/QtNAeHqc2EoTYdESgOVd0i6keM2WxNWtP4h
- UrABp90HOxBTOxFa1uv0KVul4bOx7041/Uxrrbfvf2PwXg0gGtjSofVfd
- pmvcP0KRy2xdHjPmNCdbEI+RdCDVCaepTqlDHSmc3ppXLgS5iKiSx5Any
- RIu4NUCkTdFBmOi157wV41hsAOYDdUqzFAMGPKSMtI3tAYz2CjqJgfabW
- vCC1uT1Y5MAjlU/qZjN/O+J/spPHcLJy2oe6S8PuQTwx3OMEvA9HhK2K+
- w==;
+ bh=YRqekB2YjvrGSnwD93/59EQuyfFpxA4QXKEYGKcwKUk=;
+ b=EnSX+abyoTEG335xuXo1/zoP7Skjfa0hz0g8ukdqnfWasfEXqwt/CclM
+ jBNpwP9g9jXwD+1W2ckgcZHocSCgJodiPX/jYp4ZPwCMWeqqtgt1rT3xi
+ eD4DcffOgUIxordc5JE41gAGUzdVn290jpzyvtsgLM7Arz9fke6KyLzS5
+ 3mmt4AL5emCnVSNDWhnwsqizT9BXDeeGtQOdtYuy6ix6u3DkI3A7wIeYC
+ Q3gX0ZamXmyIwftQTu/XzO1L9LDSWo0x1Di5HOhBpv8Dz26NbfMtF9PQf
+ T+vdzpBaJTvm8pxVqV6T5bdKtj2nAJSyCRMcDU+AuI5LbTAdjxillCD4O
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=fw2i5PxP
-Subject: [Intel-wired-lan] [PATCH net-next 12/13] ice: introduce .irq_close
- VF operation
+ header.a=rsa-sha256 header.s=Intel header.b=EnSX+aby
+Subject: [Intel-wired-lan] [PATCH net-next 11/13] ice: introduce
+ clear_reset_state operation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,63 +102,124 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The Scalable IOV implementation will require notifying the VDCM driver when
-an IRQ must be closed. This allows the VDCM to handle releasing stale IRQ
-context values and properly reconfigure.
+When hardware is reset, the VF relies on the VFGEN_RSTAT register to detect
+when the VF is finished resetting. This is a tri-state register where 0
+indicates a reset is in progress, 1 indicates the hardware is done
+resetting, and 2 indicates that the software is done resetting.
 
-To handle this, introduce a new optional .irq_close callback to the VF
-operations structure. This will be implemented by Scalable IOV to handle
-the shutdown of the IRQ context.
+Currently the PF driver relies on the device hardware resetting VFGEN_RSTAT
+when a global reset occurs. This works ok, but it does mean that the VF
+might not immediately notice a reset when the driver first detects that the
+global reset is occurring.
 
-Since the SR-IOV implementation does not need this, we must check that its
-non-NULL before calling it.
+This is also problematic for Scalable IOV, because there is no read/write
+equivalent VFGEN_RSTAT register for the Scalable VSI type. Instead, the
+Scalable IOV VFs will need to emulate this register.
+
+To support this, introduce a new VF operation, clear_reset_state, which is
+called when the PF driver first detects a global reset. The Single Root IOV
+implementation can just write to VFGEN_RSTAT to ensure its cleared
+immediately, without waiting for the actual hardware reset to begin. The
+Scalable IOV implementation will use this as part of its tracking of the
+reset status to allow properly reporting the emulated VFGEN_RSTAT to the VF
+driver.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sriov.c  | 1 +
- drivers/net/ethernet/intel/ice/ice_vf_lib.c | 4 ++++
- drivers/net/ethernet/intel/ice/ice_vf_lib.h | 1 +
- 3 files changed, 6 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_main.c   |  2 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c  | 16 ++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c | 10 ++++++++++
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h |  2 ++
+ 4 files changed, 29 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 5ddd9fe7514f..2865f8983b6c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -537,7 +537,7 @@ ice_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	/* Disable VFs until reset is completed */
+ 	mutex_lock(&pf->vfs.table_lock);
+ 	ice_for_each_vf(pf, bkt, vf)
+-		ice_set_vf_state_qs_dis(vf);
++		ice_set_vf_state_dis(vf);
+ 	mutex_unlock(&pf->vfs.table_lock);
+ 
+ 	if (ice_is_eswitch_mode_switchdev(pf)) {
 diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 58eb35504c27..c466d15697a7 100644
+index fb9fbff56332..58eb35504c27 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -802,6 +802,7 @@ static const struct ice_vf_ops ice_sriov_vf_ops = {
+@@ -649,6 +649,21 @@ static void ice_sriov_free_vf(struct ice_vf *vf)
+ 	kfree_rcu(vf, rcu);
+ }
+ 
++/**
++ * ice_sriov_clear_reset_state - clears VF Reset status register
++ * @vf: the vf to configure
++ */
++static void ice_sriov_clear_reset_state(struct ice_vf *vf)
++{
++	struct ice_hw *hw = &vf->pf->hw;
++
++	/* Clear the reset status register so that VF immediately sees that
++	 * the device is resetting, even if hardware hasn't yet gotten around
++	 * to clearing VFGEN_RSTAT for us.
++	 */
++	wr32(hw, VFGEN_RSTAT(vf->vf_id), VIRTCHNL_VFR_INPROGRESS);
++}
++
+ /**
+  * ice_sriov_clear_mbx_register - clears SRIOV VF's mailbox registers
+  * @vf: the vf to configure
+@@ -782,6 +797,7 @@ static void ice_sriov_post_vsi_rebuild(struct ice_vf *vf)
+ static const struct ice_vf_ops ice_sriov_vf_ops = {
+ 	.reset_type = ICE_VF_RESET,
+ 	.free = ice_sriov_free_vf,
++	.clear_reset_state = ice_sriov_clear_reset_state,
+ 	.clear_mbx_register = ice_sriov_clear_mbx_register,
  	.trigger_reset_register = ice_sriov_trigger_reset_register,
  	.poll_reset_status = ice_sriov_poll_reset_status,
- 	.clear_reset_trigger = ice_sriov_clear_reset_trigger,
-+	.irq_close = NULL,
- 	.create_vsi = ice_sriov_create_vsi,
- 	.post_vsi_rebuild = ice_sriov_post_vsi_rebuild,
- };
 diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index f9ac76d4826a..90b7b0d16b23 100644
+index 7b48a116cd34..f9ac76d4826a 100644
 --- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -237,6 +237,10 @@ static void ice_vf_clear_counters(struct ice_vf *vf)
-  */
- static void ice_vf_pre_vsi_rebuild(struct ice_vf *vf)
- {
-+	/* Close any IRQ mapping now */
-+	if (vf->vf_ops->irq_close)
-+		vf->vf_ops->irq_close(vf);
-+
- 	ice_vf_clear_counters(vf);
- 	vf->vf_ops->clear_reset_trigger(vf);
+@@ -725,6 +725,16 @@ void ice_set_vf_state_qs_dis(struct ice_vf *vf)
+ 	clear_bit(ICE_VF_STATE_QS_ENA, vf->vf_states);
  }
+ 
++/**
++ * ice_set_vf_state_dis - Set VF state to disabled
++ * @vf: pointer to the VF structure
++ */
++void ice_set_vf_state_dis(struct ice_vf *vf)
++{
++	ice_set_vf_state_qs_dis(vf);
++	vf->vf_ops->clear_reset_state(vf);
++}
++
+ /* Private functions only accessed from other virtualization files */
+ 
+ /**
 diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index 2085d1a6cd7c..69301f5baf87 100644
+index e3d94f3ca40d..2085d1a6cd7c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
 +++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -61,6 +61,7 @@ struct ice_vf_ops {
+@@ -56,6 +56,7 @@ struct ice_mdd_vf_events {
+ struct ice_vf_ops {
+ 	enum ice_disq_rst_src reset_type;
+ 	void (*free)(struct ice_vf *vf);
++	void (*clear_reset_state)(struct ice_vf *vf);
+ 	void (*clear_mbx_register)(struct ice_vf *vf);
  	void (*trigger_reset_register)(struct ice_vf *vf, bool is_vflr);
  	bool (*poll_reset_status)(struct ice_vf *vf);
- 	void (*clear_reset_trigger)(struct ice_vf *vf);
-+	void (*irq_close)(struct ice_vf *vf);
- 	int (*create_vsi)(struct ice_vf *vf);
- 	void (*post_vsi_rebuild)(struct ice_vf *vf);
- };
+@@ -214,6 +215,7 @@ struct ice_vsi *ice_get_vf_vsi(struct ice_vf *vf);
+ bool ice_is_vf_disabled(struct ice_vf *vf);
+ int ice_check_vf_ready_for_cfg(struct ice_vf *vf);
+ void ice_set_vf_state_qs_dis(struct ice_vf *vf);
++void ice_set_vf_state_dis(struct ice_vf *vf);
+ bool ice_is_any_vf_in_unicast_promisc(struct ice_pf *pf);
+ void
+ ice_vf_get_promisc_masks(struct ice_vf *vf, struct ice_vsi *vsi,
 -- 
 2.38.1.420.g319605f8f00e
 
