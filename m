@@ -1,76 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52CB5C54EBD
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Jan 2023 16:27:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 528F3C3DA78
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Jan 2023 18:22:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C6D1941A2A;
-	Fri, 13 Jan 2023 16:27:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C6D1941A2A
+	by smtp1.osuosl.org (Postfix) with ESMTP id CD98382167;
+	Fri, 13 Jan 2023 18:22:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CD98382167
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1673627220;
-	bh=e7UxSxoBMXS/a6NnMWYqRbGY899L/VXQVGWVHGQMlOw=;
-	h=Date:To:From:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=64gqYHckoXxZ7R290Cm3POUoxztdKuPU7wCxMHl1BMoFjqe0NzL9NLiUfqXZKtPWD
-	 rn6keLbZslylTMbMHJZgWB84dpi7emGYeyF+4+kc0EItKaU/8etHBhCHXymliT+GwM
-	 G7/jvJc73N87eRfFCgYdhnZHYCaIgLI3EjSu0Rz7kT8xqdgqOQFSjq84H5HXn17Chr
-	 xQU9/qHMxL5dKsC1pA0aURMC72OHJ5EQZVSwfox0hnW20Cx8nr7iMKmohn4X8Osbk6
-	 MT+hMGqIew5aAnDwRIVHNiff7ewJbfw5V2qfNdR8n+l8G/7TwVU2kcbc7F2n/UZT2i
-	 g3OYQL8jCrpYw==
+	s=default; t=1673634174;
+	bh=dPH66x+mShwrQ8EWm+MUBnRNYkp/RmV01B9ZTmMZxq8=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=vlYqP7h+KesyUxbE8+CuYtuL+xH6/M1busF+5c/4fYyHetUyr95C+32VxqdRSpu3n
+	 sAXQiB4TV/DTqUqFasv8bwPtxxpgh9lWwjYKKR1ikrKFj67aFHytR38YvqdNeUjYdF
+	 dZwhAZfZK8KvtSUGcdpspaFHfSwp2uLGVj/i9GRQLm/QxE1xs9kLnvB+Nsjx0h7Ww2
+	 NifruGSY4+PC40PzFZsFhicCmGbs1qsefI17dtgBHmQSG/lpKMCZoG2zMLiz6z7oCH
+	 3z+j0Vsq0ce6Mw99smMs7vIF7bBPlEn5LYH3I6JFSIBKN7RJP93znXAP5m1rrtbyNz
+	 KTJ4EvwqVGsEg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0jVBgrFRZHT4; Fri, 13 Jan 2023 16:26:58 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id GPEO23w7yQzd; Fri, 13 Jan 2023 18:22:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id DF1D541B36;
-	Fri, 13 Jan 2023 16:26:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DF1D541B36
+	by smtp1.osuosl.org (Postfix) with ESMTP id BE6BC82169;
+	Fri, 13 Jan 2023 18:22:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BE6BC82169
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 378F41BF31C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 13:40:30 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 585111BF3EC
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 18:22:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 06F32414E6
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 13:40:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 06F32414E6
+ by smtp2.osuosl.org (Postfix) with ESMTP id 32A2D41593
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 18:22:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 32A2D41593
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id KAZ7VCAQNu02 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Jan 2023 13:40:28 +0000 (UTC)
-X-Greylist: delayed 00:06:15 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4C441400FD
-Received: from shelob.oktetlabs.ru (shelob.oktetlabs.ru [91.220.146.113])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4C441400FD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 13:40:28 +0000 (UTC)
-Received: by shelob.oktetlabs.ru (Postfix, from userid 115)
- id 63FB367; Fri, 13 Jan 2023 16:34:07 +0300 (MSK)
-Received: from [192.168.38.37] (gondor.oktetlabs.ru [192.168.38.37])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
- (No client certificate requested)
- by shelob.oktetlabs.ru (Postfix) with ESMTPS id 7EEFB5D;
- Fri, 13 Jan 2023 16:34:06 +0300 (MSK)
-DKIM-Filter: OpenDKIM Filter v2.11.0 shelob.oktetlabs.ru 7EEFB5D
-Message-ID: <4f771cb4-634e-9a1e-0eef-60ba2e6ebaa0@oktetlabs.ru>
-Date: Fri, 13 Jan 2023 16:34:06 +0300
+ with ESMTP id BcV8qFBaJRBz for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Jan 2023 18:22:51 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 467D2414E6
+Received: from mail-ej1-x631.google.com (mail-ej1-x631.google.com
+ [IPv6:2a00:1450:4864:20::631])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 467D2414E6
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 18:22:51 +0000 (UTC)
+Received: by mail-ej1-x631.google.com with SMTP id qk9so54215388ejc.3
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Jan 2023 10:22:51 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=SwxEeoGBgqRIV/iTuXNna3YResob5aMiHbzkuhRkD6k=;
+ b=i7uj5ibzyg2KCHZULCEcyzkGHMbk7u4DqymM2KmGZl+1Lebq8A4EDc7bvzEPl2rl6e
+ 0O82T9DHJ0l4D1DLgjkbAQL9DsOmX6wWjoGBWDcF/jByfNADfSAvVXDFhymjdYwi7O0U
+ mNmFo5ckUh3xWdWSMxVpIhhz+HAKQb562CZSpcNxqpHukoBdqXT/h8Qr9nbxBKbuaURL
+ 7ckJ32TNxU0WFia7FLWW05GACfTJA3Cr8SDw9+wB6kbH6hsPZilMfKtfQcOTdv9wcI+w
+ oFpc7glYGf6CKh2JgXJ18528EXJ/GT+LuYftwHdkflCsTtSQJW+ayVJMra82k+i76eQC
+ 71/A==
+X-Gm-Message-State: AFqh2ko1NSM+idYEW//dBRWsWUiWJGA7O9BnY2Mjr6YiuQG+PSQWEtTH
+ YO92j3VZCDgpRnKsW13qh8k+IDP8nsytwgm2njg=
+X-Google-Smtp-Source: AMrXdXtDQ5zbeXxwiqexSN7tlDEbCSIXvSEfo9MUWeOCXq3VPu76R7iqDQmEY6zHzqbrZU0+ecj+i45QIdtFWZ+WGwc=
+X-Received: by 2002:a17:906:75a:b0:855:d6ed:60d8 with SMTP id
+ z26-20020a170906075a00b00855d6ed60d8mr1030695ejb.302.1673634169384; Fri, 13
+ Jan 2023 10:22:49 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Content-Language: en-GB
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org, bpf@vger.kernel.org
-From: "Alexandra N. Kossovsky" <Alexandra.Kossovsky@oktetlabs.ru>
-Organization: OKTET Labs
-X-Mailman-Approved-At: Fri, 13 Jan 2023 16:26:56 +0000
-X-Mailman-Original-Authentication-Results: shelob.oktetlabs.ru/7EEFB5D;
- dkim=none; dkim-atps=neutral
-Subject: [Intel-wired-lan] Intel i810 (ice driver) + AF_XDP: list_add
- corruption
+References: <cover.1671462950.git.lorenzo@kernel.org>
+ <6cce9b15a57345402bb94366434a5ac5609583b8.1671462951.git.lorenzo@kernel.org>
+ <CAEf4BzbOF-S3kjbNVXCZR-K=TGarfi06ZwG1cbNF=HSSodwEfg@mail.gmail.com>
+ <Y72f1U2/dw8jo0/0@lore-desk>
+In-Reply-To: <Y72f1U2/dw8jo0/0@lore-desk>
+From: Andrii Nakryiko <andrii.nakryiko@gmail.com>
+Date: Fri, 13 Jan 2023 10:22:37 -0800
+Message-ID: <CAEf4BzawqXs6q18U8e5GD5d+9v1_w2+QOJYqmEpNb9rZ40E1Tw@mail.gmail.com>
+To: Lorenzo Bianconi <lorenzo@kernel.org>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20210112;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=SwxEeoGBgqRIV/iTuXNna3YResob5aMiHbzkuhRkD6k=;
+ b=qrUJyijRNovU1IU30Vqk0MDytJbYIrCDe+OrzY8r2B4HvjGDXaETA9j1xBZPQcrRyw
+ lCQZ55u//NbIUmrKleGsDP742Lmxmdk5dSwrm9rFkHry5YqZQa2/CP5Ur6Da/a/iHqiP
+ Sj0OAU9aYU3OC9HxwMV2FWdJicVaAY7KrwVCCjUe88QFVWHfoLG+G+IijWkdsKTQSgNI
+ Vgq8HapnzEAqUXZ5b3B3TOScfQAuZT8jQgxizfPPowxJ/ocSti634/M+SH7jySsbBsVe
+ +SnU8Pigbn6pL+U///bJs1il7DueHjH6vYVjQoR0qltcmxPeFiTuLdM4FpVwEpOm7a+X
+ Dxsg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20210112 header.b=qrUJyijR
+Subject: Re: [Intel-wired-lan] [RFC bpf-next 6/8] libbpf: add API to get
+ XDP/XSK supported features
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,207 +106,103 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
+ edumazet@google.com, anthony.l.nguyen@intel.com, daniel@iogearbox.net,
+ andrii@kernel.org, intel-wired-lan@lists.osuosl.org, simon.horman@corigine.com,
+ kuba@kernel.org, pabeni@redhat.com, grygorii.strashko@ti.com,
+ aelior@marvell.com, hawk@kernel.org, christophe.jaillet@wanadoo.fr,
+ memxor@gmail.com, john@phrozen.org, bjorn@kernel.org, bpf@vger.kernel.org,
+ magnus.karlsson@intel.com, leon@kernel.org, netdev@vger.kernel.org,
+ toke@redhat.com, ecree.xilinx@gmail.com, alardam@gmail.com, gospo@broadcom.com,
+ saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi.
+On Tue, Jan 10, 2023 at 9:26 AM Lorenzo Bianconi <lorenzo@kernel.org> wrote:
+>
+> > On Mon, Dec 19, 2022 at 7:42 AM Lorenzo Bianconi <lorenzo@kernel.org> wrote:
+> > >
+> > > From: Kumar Kartikeya Dwivedi <memxor@gmail.com>
+> > >
+> > > Add functions to get XDP/XSK supported function of netdev over route
+> > > netlink interface. These functions provide functionalities that are
+> > > going to be used in upcoming change.
+> > >
+> > > The newly added bpf_xdp_query_features takes a fflags_cnt parameter,
+> > > which denotes the number of elements in the output fflags array. This
+> > > must be at least 1 and maybe greater than XDP_FEATURES_WORDS. The
+> > > function only writes to words which is min of fflags_cnt and
+> > > XDP_FEATURES_WORDS.
+> > >
+> > > Co-developed-by: Lorenzo Bianconi <lorenzo@kernel.org>
+> > > Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
+> > > Co-developed-by: Marek Majtyka <alardam@gmail.com>
+> > > Signed-off-by: Marek Majtyka <alardam@gmail.com>
+> > > Signed-off-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
+> > > ---
+> > >  tools/lib/bpf/libbpf.h   |  1 +
+> > >  tools/lib/bpf/libbpf.map |  1 +
+> > >  tools/lib/bpf/netlink.c  | 62 ++++++++++++++++++++++++++++++++++++++++
+> > >  3 files changed, 64 insertions(+)
+> > >
+> > > diff --git a/tools/lib/bpf/libbpf.h b/tools/lib/bpf/libbpf.h
+> > > index eee883f007f9..9d102eb5007e 100644
+> > > --- a/tools/lib/bpf/libbpf.h
+> > > +++ b/tools/lib/bpf/libbpf.h
+> > > @@ -967,6 +967,7 @@ LIBBPF_API int bpf_xdp_detach(int ifindex, __u32 flags,
+> > >                               const struct bpf_xdp_attach_opts *opts);
+> > >  LIBBPF_API int bpf_xdp_query(int ifindex, int flags, struct bpf_xdp_query_opts *opts);
+> > >  LIBBPF_API int bpf_xdp_query_id(int ifindex, int flags, __u32 *prog_id);
+> > > +LIBBPF_API int bpf_xdp_query_features(int ifindex, __u32 *fflags, __u32 *fflags_cnt);
+> >
+> > no need to add new API, just extend bpf_xdp_query()?
+>
+> Hi Andrii,
+>
+> AFAIK libbpf supports just NETLINK_ROUTE protocol. In order to connect with the
+> genl family code shared by Jakub we need to add NETLINK_GENERIC protocol support
+> to libbf. Is it ok to introduce a libmnl or libnl dependency in libbpf or do you
+> prefer to add open code to just what we need?
 
-I'm running a custom AF_XDP application (and unfortunately I'm not 
-allowed to share it), and I see following Call Trace when running it 
-with Inter e810 NIC (ice driver).  The crash happens when my application 
-closes its AF_XDP sockets.  There are 2 AF_XDP sockets in the 
-application, and they are using different channels of the same network 
-interface.
+I'd very much like to avoid any extra dependencies. But I also have no
+clue how much new code we are talking about, tbh. Either way, the less
+dependencies, the better, if the result is an acceptable amount of
+extra code to maintain.
 
-My application runs properly in non-zerocopy mode, and in zerocopy mode 
-with following NICs/drivers:
-- Intel x710 (i40e driver)
-- Mellanox 5 (mlx5_core driver)
-- various Solarlfare NICs (sfc driver)
+> I guess we should have a dedicated API to dump xdp features in this case since
+> all the other code relies on NETLINK_ROUTE protocol. What do you think?
+>
 
-There is the kernel log:
+From API standpoint it looks like an extension to bpf_xdp_query()
+family of APIs, which is already extendable through opts. Which is why
+I suggested that there is no need for new API. NETLINK_ROUTE vs
+NETLINK_GENERIC seems like an internal implementation detail (but
+again, I spent literally zero time trying to understand what's going
+on here).
 
-[  391.084249] list_add corruption. prev->next should be next 
-(ffff973474ebd4f0), but was ffff973474ebb880. (prev=ffff973452662450).
-[  391.084249] list_del corruption. next->prev should be 
-ffff973474eb79f0, but was ffff973474ecf630. (next=ffff973474ecf630)
-[  391.084258] ------------[ cut here ]------------
-[  391.084265] kernel BUG at lib/list_debug.c:62!
-[  391.084265] ------------[ cut here ]------------
-[  391.084269] invalid opcode: 0000 [#1] PREEMPT SMP NOPTI
-[  391.084270] kernel BUG at lib/list_debug.c:30!
-[  391.084276] CPU: 3 PID: 31 Comm: ksoftirqd/3 Tainted: G           OE 
-     6.1.5-sasha1 #6
-[  391.084279] Hardware name: System manufacturer System Product 
-Name/PRIME X299-A II, BIOS 0901 11/06/2020
-[  391.084282] RIP: 0010:__list_del_entry_valid.cold+0x23/0x6f
-[  391.084289] Code: e8 55 a0 fe ff 0f 0b 48 89 fe 48 c7 c7 08 d3 54 88 
-e8 44 a0 fe ff 0f 0b 48 89 d1 48 c7 c7 28 d4 54 88 4c 89 c2 e8 30 a0 fe 
-ff <0f> 0b 48 89 f2 48 89 fe 48 c7 c7 d8 d3 54 88 e8 1c a0 fe ff 0f 0b
-[  391.084293] RSP: 0018:ffffaf93c02a7c70 EFLAGS: 00010246
-[  391.084296] RAX: 000000000000006d RBX: ffff973474eb79f0 RCX: 
-0000000000000000
-[  391.084299] RDX: 0000000000000000 RSI: ffffffff8853538e RDI: 
-00000000ffffffff
-[  391.084302] RBP: ffff973452662400 R08: ffffffff88c622c0 R09: 
-000000000000000f
-[  391.084304] R10: 000000000000000f R11: ffffffff8958bb2e R12: 
-0000000000000011
-[  391.084306] R13: ffff9734a38b42d0 R14: ffff9734a38b4298 R15: 
-0000000000000200
-[  391.084309] FS:  0000000000000000(0000) GS:ffff97439fd80000(0000) 
-knlGS:0000000000000000
-[  391.084312] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[  391.084315] CR2: 000056067c3f20a0 CR3: 0000000340c10001 CR4: 
-00000000003706e0
-[  391.084318] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[  391.084320] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 
-0000000000000400
-[  391.084322] Call Trace:
-[  391.084325]  <TASK>
-[  391.084327]  xp_alloc_batch+0x24d/0x2c0
-[  391.084334]  __ice_alloc_rx_bufs_zc+0xfc/0x170 [ice]
-[  391.084368]  ice_clean_rx_irq_z[  391.084388] 
-ice_napi_poll+0x47f/0x680 [ice]
-[  391.084408]  __napi_poll+0x29/0x160
-[  391.084413]  net_rx_action+0x2a2/0x360
-[  391.084417]  __do_softirq+0xe9/0x2e9
-[  391.084420]  run_ksoftirqd+0x34/0x40
-[  391.084425]  smpboot_thread_fn+0x185/0x220
-[  391.084429]  ? sort_range+0x20/0x20
-[  391.084432]  kthread+0xe5/0x110
-[  391.084435]  ? kthread_complete_and_exit+0x20/0x20
-[  391.084438]  ret_from_fork+0x1f/0x30
-[  391.084443]  </TASK>
-[  391.084446] Modules linked in: onload(OE) sfc_char(OE) 
-sfc_resource(OE) netconsole(E) cts(E) rpcsec_gss_krb5(E) nfsv4(E) 
-dns_resolver(E) nfs(E) fscache(E) netfs(E) intel_rapl_msr(E) 
-intel_rapl_common(E) nfit(E) libnvdimm(E) x86_pkg_temp_thermal(E) 
-intel_powerclamp(E) nouveau(E) kvm_intel(E) kvm(E) 
-ghash_clmulni_intel(E) sha512_ssse3(E) sha512_generic(E) 
-snd_hda_codec_realtek(E) drm_display_helper(E) snd_hda_codec_hdmi(E) 
-cec(E) aesni_intel(E) rc_core(E) snd_hda_codec_generic(E) eeepc_wmi(E) 
-drm_ttm_helper(E) crypto_simd(E) cryptd(E) asus_wmi(E) snd_hda_intel(E) 
-ttm(E) platform_profile(E) irdma(E) battery(E) rapl(E) sparse_keymap(E) 
-drm_kms_helper(E) snd_intel_dspcfg(E) snd_intel_sdw_acpi(E) i40e(E) 
-i2c_algo_bit(E) intel_cstate(E) ledtrig_audio(E) evdev(E) 
-intel_uncore(E) snd_hda_codec(E) rfkill(E) efi_pstore(E) pcspkr(E) 
-video(E) ib_uverbs(E) iTCO_wdt(E) intel_wmi_thunderbolt(E) 
-snd_hda_core(E) wmi_bmof(E) intel_pmc_bxt(E) snd_hwdep(E) 
-iTCO_vendor_support(E) ib_core(E) sg(E) snd_pcm(E)
-[  391.084485]  watchdog(E) ioatdma(E) snd_timer(E) mei_me(E) snd(E) 
-mei(E) dca(E) soundcore(E) button(E) acpi_tad(E) mxm_wmi(E) nct6775(E) 
-nct6775_core(E) hwmon_vid(E) coretemp(E) vfio_pci(E) vfio_pci_core(E) 
-vfio_virqfd(E) vfio_iommu_type1(E) vfio(E) irqbypass(E) nfsd(E) 
-uio_pci_generic(E) uio(E) nfs_acl(E) lockd(E) grace(E) auth_rpcgss(E) 
-configfs(E) sunrpc(E) fuse(E) drm(E) efivarfs(E) ip_tables(E) 
-x_tables(E) autofs4(E) ext4(E) crc32c_generic(E) crc16(E) mbcache(E) 
-jbd2(E) uas(E) usb_storage(E) hid_generic(E) usbhid(E) hid(E) dm_mod(E) 
-sd_mod(E) nvme([  391.084543] invalid opcode: 0000 [#2] PREEMPT SMP NOPTI
-[  391.084545] ---[ end trace 0000000000000000 ]---
-[  391.084547] CPU: 8 PID: 24541 Comm: kworker/8:0 Tainted: G      D 
-OE      6.1.5-sasha1 #6
-[  391.084554] Hardware name: System manufacturer System Product 
-Name/PRIME X299-A II, BIOS 0901 11/06/2020
-[  391.084557] Workqueue: events xp_release_deferred
-[  391.084563] RIP: 0010:__list_add_valid.cold+0x3a/0x5b
-[  391.084568] Code: f2 4c 89 c1 48 89 fe 48 c7 c7 d0 d2 54 88 e8 8b a0 
-fe ff 0f 0b 48 89 d1 4c 89 c6 4c 89 ca 48 c7 c7 78 d2 54 88 e8 74 a0 fe 
-ff <0f> 0b 4c 89 c1 48 c7 c7 20 d2 54 88 e8 63 a0 fe ff 0f 0b 48 c7 c7
-[  391.084572] RSP: 0018:ffffaf93ce43fd40 EFLAGS: 00010246
-[  391.084576] RAX: 0000000000000075 RBX: ffff973474ebe8e8 RCX: 
-0000000000000000
-[  391.084578] RDX: 0000000000000000 RSI: ffffffff8853538e RDI: 
-00000000ffffffff
-[  391.084581] RBP: ffff973474ebe940 R08: 0000000000000001 R09: 
-0000000000000019
-[  391.084583] R10: 0000000000000729 R11: 6c65645f7473696c R12: 
-ffff973452662400
-[  391.084586] R13: ffff973474ebd4f0 R14: ffff973452662450 R15: 
-ffff973452662d00
-[  391.084588] FS:  0000000000000000(0000) GS:ffff9743a0000000(0000) 
-knlGS:0000000000000000
-[  391.084592] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[  391.084594] CR2: 00007f6c0515b198 CR3: 0000000340c10004 CR4: 
-00000000003706e0
-[  391.084597] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-
-[  391.084599] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7[ 
-391.084602] Call Trace:
-[  391.084604]  <TASK>
-[  391.084606]  xp_free+0x51/0x80
-[  391.084611]  ice_xsk_clean_rx_ring+0x39/0x60 [ice]
-[  391.084638]  ice_clean_rx_ring+0x152/0x170 [ice]
-[  391.084659]  ice_xsk_pool_setup+0x5ed/0x7b0 [ice]
-[  391.084679]  xp_disable_drv_zc+0x60/0xd0
-[  391.084682]  ? __schedule+0x30e/0xa40
-[  391.084686]  xp_release_deferred+0x22/0xb0
-[  391.084689]  process_one_work+0x1e2/0x3b0
-[  391.084694]  ? rescuer_thread+0x390/0x390
-[  391.084698]  worker_thread+0x50/0x3a0
-[  391.084701]  ? rescuer_thread+0x390/0x390
-[  391.084705]  kthread+0xe5/0x110
-[  391.084708]  ? kthread_complete_and_exit+0x20/0x20
-[  391.084711]  ret_from_fork+0x1f/0x30
-[  391.084716]  </TASK>
-[  391.084717] Modules linked in: onload(OE) sfc_char(OE) 
-sfc_resource(OE) netconsole(E) cts(E) rpcsec_gss_krb5(E) nfsv4(E) 
-dns_resolver(E) nfs(E) fscache(E) netfs(E) intel_rapl_msr(E) 
-intel_rapl_common(E) nfit(E) libnvdimm(E) x86_pkg_temp_thermal(E) 
-intel_powerclamp(E) nouveau(E) kvm_intel(E) kvm(E) 
-ghash_clmulni_intel(E) sha512_ssse3(E) sha512_generic(E) 
-snd_hda_codec_realtek(E) drm_display_helper(E) snd_hda_codec_hdmi(E) 
-cec(E) aesni_intel(E) rc_core(E) snd_hda_codec_generic(E) eeepc_wmi(E) 
-drm_ttm_helper(E) crypto_simd(E) cryptd(E) asus_wmi(E) snd_hda_intel(E) 
-ttm(E) platform_profile(E) irdma(E) battery(E) rapl(E) sparse_keymap(E) 
-drm_kms_helper(E) snd_intel_dspcfg(E) snd_intel_sdw_acpi(E) i40e(E) 
-i2c_algo_bit(E) intel_cstate(E) ledtrig_audio(E) evdev(E) 
-intel_uncore(E) snd_hda_codec(E) rfkill(E) efi_pstore(E) pcspkr(E) 
-video(E) ib_uverbs(E) iTCO_wdt(E) intel_wmi_thunderbolt(E) 
-snd_hda_core(E) wmi_bmof(E) intel_pmc_bxt(E) snd_hwdep(E) 
-iTCO_vendor_support(E) ib_core(E) sg(E) snd_pcm(E)
-[  391.084749]  watchdog(E) ioatdma(E) snd_timer(E) mei_me(E) snd(E) 
-mei(E) dca(E) soundcore(E) button(E) acpi_tad(E) mxm_wmi(E) nct6775(E) 
-nct6775_core(E) hwmon_vid(E) coretemp(E) vfio_pci(E) vfio_pci_core(E) 
-vfio_virqfd(E) vfio_iommu_type1(E) vfio(E) irqbypass(E) nfsd(E) uio_[ 
-391.084803] ---[ end trace 0000000000000000 ]---
-[  391.111804] RIP: 0010:__list_del_entry_valid.cold+0x23/0x6f
-[  391.111812] Code: e8 55 a0 fe ff 0f 0b 48 89 fe 48 c7 c7 08 d3 54 88 
-e8 44 a0 fe ff 0f 0b 48 89 d1 48 c7 c7 28 d4 54 88 4c 89 c2 e8 30 a0 fe 
-ff <0f> 0b 48 89 f2 48 89 fe 48 c7 c7 d8 d3 54 88 e8 1c a0 fe ff 0f 0b
-[  391.111817] RSP: 0018:ffffaf93c02a7c70 EFLAGS: 00010246
-[  391.111821] RAX: 000000000000006d RBX: ffff973474eb79f0 RCX: 
-0000000000000000
-[  391.111824] RDX: 0000000000000000 RSI: ffffffff8853538e RDI: 
-00000000ffffffff
-[  391.111826] RBP: ffff973452662400 R08: ffffffff88c622c0 R09: 
-000000000000000f
-[  391.111829] R10: 000000000000000f R11: ffffffff8958bb2e R12: 
-0000000000000011
-[  391.111832] R13: ffff9734a38b42d0 R14: ffff9734a38b4298 R15: 
-0000000000000200
-[  391.111835] FS:  0000000000000000(0000) GS:ffff97439fd80000(0000) 
-knlGS:0000000000000000
-[  391.111838] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[  391.111840] CR2: 000056067c3f20a0 CR3: 00000002b4e0a006 CR4: 
-00000000003706e0
-[  391.111843] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[  391.111846] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 
-0000000000000400
-[  391.111848] Kernel panic - not syncing: Fatal exception in interrupt
-[  391.140375] Kernel Offset: 0x6200000 from 0xffffffff81000000 
-(relocation range: 0xffffffff80000000-0xffffffffbfffffff)
-[  391.169096] ---[ end Kernel panic - not syncing: Fatal exception in 
-interrupt ]---
-
--- 
-Alexandra N. Kossovsky
-OKTET Labs (http://www.oktetlabs.ru/)
+> Regards,
+> Lorenzo
+>
+> >
+> > >
+> > >  /* TC related API */
+> > >  enum bpf_tc_attach_point {
+> > > diff --git a/tools/lib/bpf/libbpf.map b/tools/lib/bpf/libbpf.map
+> > > index 71bf5691a689..9c2abb58fa4b 100644
+> > > --- a/tools/lib/bpf/libbpf.map
+> > > +++ b/tools/lib/bpf/libbpf.map
+> > > @@ -362,6 +362,7 @@ LIBBPF_1.0.0 {
+> > >                 bpf_program__set_autoattach;
+> > >                 btf__add_enum64;
+> > >                 btf__add_enum64_value;
+> > > +               bpf_xdp_query_features;
+> > >                 libbpf_bpf_attach_type_str;
+> > >                 libbpf_bpf_link_type_str;
+> > >                 libbpf_bpf_map_type_str;
+> >
+> > [...]
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
