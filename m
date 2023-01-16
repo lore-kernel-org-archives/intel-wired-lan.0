@@ -1,62 +1,62 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EB55C677F1
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Jan 2023 16:23:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA5DDC3DA78
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Jan 2023 16:24:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CDCE940BFD;
-	Tue, 17 Jan 2023 16:23:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CDCE940BFD
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6A80261096;
+	Tue, 17 Jan 2023 16:24:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6A80261096
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1673972636;
-	bh=ZYlc9V8MK1Yprj49U/T0jiB2bTYDe2ZpGI70I2HRLJU=;
+	s=default; t=1673972641;
+	bh=HC3RMvjoGjyQkvDOqjIod0CPZpKq6UK9SFhbpuIZ0PQ=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=b5fyai7voA34RQEGpPMjpwdPewEtOXRJZJ1l4A6YYeo/ZVwKOcMf23MZgnzEZYqpI
-	 jnwla0FIEGP6h9SM+S0a01LnZCdC8wFlLGPaZJvYe0ENulU/UseVDp4kv5cDAyLo1G
-	 8umtoemi+4VHmswSaf1HRmpvZ5gPkGTGcFUAXHL4zufcRZ6JJh76bgqp9ZYLijH72H
-	 u7IJXe744IsN8/H8zQk5w1yi8S4oBG92FpWAbv/jtm7L8y5MYULn642ccIQ6kYK8lZ
-	 pFliw1HUdR99IaaSI4KoSYXtCxpSXhZHWZfX7RWnDKqPOe3sqRAf3+zTv1ySY+HeZr
-	 X9NgH+hz5+L7Q==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Znsi1OIT4zhj; Tue, 17 Jan 2023 16:23:56 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D237840BFA;
-	Tue, 17 Jan 2023 16:23:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D237840BFA
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 519BB1BF3BC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:47 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 2D55B60AB0
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2D55B60AB0
+	b=op84SN/afjXFPb0hFVTDputCbzlMiKNo2e2IQuBvdpUwBlSdefgnQoj6o/0mfc/uG
+	 gh3F+Hl+1d0yjnSrp18bIvR8ufIbnlwj/STRa36PiawHIv4BtX+Q8ezMaVkLjf868f
+	 bTpNsXkbDasDKtWYlCEEmNRtzYcO2iyhD41mM6L7cot+k2t8i4Gr71acDugwLwg1Ko
+	 YJmysrkXbCiPlWAfpaoW77yTYjLUnOZmH6KPpzDh606fanXCK9jsFryH4AIC13dRmj
+	 eWUiWrey3S03EHA1mU1Of7HMmRpKj/n1r6NSwokfGeKkAiXVtGKnjXJgimLXcFusr4
+	 ZOa4STyEXHkvg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wukqSlsnpvbM for <intel-wired-lan@lists.osuosl.org>;
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id OPruTTlfZWQo; Tue, 17 Jan 2023 16:24:00 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3E6DC61098;
+	Tue, 17 Jan 2023 16:24:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3E6DC61098
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id B6C0E1BF3BC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:47 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9E11E402B1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9E11E402B1
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id xo0Dt9hBnxKN for <intel-wired-lan@lists.osuosl.org>;
  Mon, 16 Jan 2023 23:58:46 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6240060A99
-Received: from mail.3ffe.de (0001.3ffe.de [IPv6:2a01:4f8:c0c:9d57::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6240060A99
+X-Greylist: delayed 00:05:55 by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4938540BC3
+Received: from mail.3ffe.de (0001.3ffe.de [159.69.201.130])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4938540BC3
  for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:46 +0000 (UTC)
 Received: from mwalle01.sab.local (unknown [213.135.10.150])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mail.3ffe.de (Postfix) with ESMTPSA id D8A0816EA;
- Tue, 17 Jan 2023 00:52:47 +0100 (CET)
+ by mail.3ffe.de (Postfix) with ESMTPSA id D81451645;
+ Tue, 17 Jan 2023 00:52:45 +0100 (CET)
 From: Michael Walle <michael@walle.cc>
-Date: Tue, 17 Jan 2023 00:52:21 +0100
+Date: Tue, 17 Jan 2023 00:52:18 +0100
 MIME-Version: 1.0
-Message-Id: <20230116-net-next-c45-seperation-part-3-v1-6-0c53afa56aad@walle.cc>
+Message-Id: <20230116-net-next-c45-seperation-part-3-v1-3-0c53afa56aad@walle.cc>
 References: <20230116-net-next-c45-seperation-part-3-v1-0-0c53afa56aad@walle.cc>
 In-Reply-To: <20230116-net-next-c45-seperation-part-3-v1-0-0c53afa56aad@walle.cc>
 To: Sean Wang <sean.wang@mediatek.com>, Landen Chao <Landen.Chao@mediatek.com>,
@@ -76,22 +76,22 @@ To: Sean Wang <sean.wang@mediatek.com>, Landen Chao <Landen.Chao@mediatek.com>,
 X-Mailer: b4 0.11.1
 X-Mailman-Approved-At: Tue, 17 Jan 2023 16:23:09 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=walle.cc; s=mail2022082101; t=1673913168;
+ d=walle.cc; s=mail2022082101; t=1673913166;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=OmJ+9CmwjBTs3CG9j8tedbOIS1gGBtjDkwnDw2VO6LM=;
- b=eItgcFr83H0p1PU0iNChDNdiOgj8KhYJ8woVXKsLke+s9Qzn4YWii5eReEsBuleyYQt6qF
- zdB3j5sZRNRt7IYX77xPINY9PI563Domlhi3UUM6iYnR/7cJNfvw2qJ9K/pFln4/WldMhR
- KLEda5zh67qih83Ir652RtZkToIDVhs+vwYaXJQkzFrYdR4NRzGcjoj7o0P9BTVYD+HGzh
- e91HRJCCAaJRUCf8LXpvVLVkoVWluGPxBaeiv+On9tzW4vLvj/LrS/kvi4VC8xZIjuV/fH
- dq6rAn7Pjrjnz7XuZr3iXlIGBZFY2xdOTT7geNfbJloqNBU6E5xeHvWycz+NAw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=qrw3VdQJ88seeNfsCmHZ0Ug/EiNIUO7V5SWjfSjWOKQ=;
+ b=rvBx26LB/U/ku27CC+lu1uAY7KDI3oh4SWNBjiMZKuPQB+vluqypoYHhh5/2/VukYWWUlc
+ UT7lV2rpdokc5dCe1bAjyAZtkHwq8etN0SQsfmTRnLepJAbIYpc6feOCz4+pNTSiWpzhn8
+ IHadilsFnOnfAEsWsBPVi+83xk/a5TeB1rOgjQfqySx9PDK2/QQ3m6Ao35i2v3GGXy4iYp
+ Wjwk75qQuCMUwq8PSkAVJFdPd0mgfRA5PJlGfZ9KfhJlVZU4lX0g/tWza991VE/YnhVlVa
+ /CyBLp1jcHEkB1AwLQMAdwxpXE3r6i4YX3YA1GEqJXimD20zJljhis3cRes2Zw==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=walle.cc header.i=@walle.cc
- header.a=rsa-sha256 header.s=mail2022082101 header.b=eItgcFr8
-Subject: [Intel-wired-lan] [PATCH net-next 06/12] ixgbe: Use C45 mdiobus
- accessors
+ header.a=rsa-sha256 header.s=mail2022082101 header.b=rvBx26LB
+Subject: [Intel-wired-lan] [PATCH net-next 03/12] net: nixge: Separate C22
+ and C45 transactions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,40 +115,213 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Andrew Lunn <andrew@lunn.ch>
 
-When performing a C45 bus transaction, make use of the c45 variants of
-the bus read/write helpers. The ability to pass a special register
-value is being removed to clean up the mdio bus driver API.
+The nixge MDIO bus driver can perform both C22 and C45 transfers.
+Create separate functions for each and register the C45 versions using
+the new API calls where appropriate.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/ni/nixge.c | 141 ++++++++++++++++++++++++----------------
+ 1 file changed, 85 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index ab8370c413f3..59f9d82ce532 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8937,7 +8937,8 @@ ixgbe_mdio_read(struct net_device *netdev, int prtad, int devad, u16 addr)
- 		int regnum = addr;
+diff --git a/drivers/net/ethernet/ni/nixge.c b/drivers/net/ethernet/ni/nixge.c
+index 62320be4de5a..56e02cba0b8a 100644
+--- a/drivers/net/ethernet/ni/nixge.c
++++ b/drivers/net/ethernet/ni/nixge.c
+@@ -1081,40 +1081,59 @@ static const struct ethtool_ops nixge_ethtool_ops = {
+ 	.get_link		= ethtool_op_get_link,
+ };
  
- 		if (devad != MDIO_DEVAD_NONE)
--			regnum |= (devad << 16) | MII_ADDR_C45;
-+			return mdiobus_c45_read(adapter->mii_bus, prtad,
-+						devad, regnum);
+-static int nixge_mdio_read(struct mii_bus *bus, int phy_id, int reg)
++static int nixge_mdio_read_c22(struct mii_bus *bus, int phy_id, int reg)
+ {
+ 	struct nixge_priv *priv = bus->priv;
+ 	u32 status, tmp;
+ 	int err;
+ 	u16 device;
  
- 		return mdiobus_read(adapter->mii_bus, prtad, regnum);
+-	if (reg & MII_ADDR_C45) {
+-		device = (reg >> 16) & 0x1f;
++	device = reg & 0x1f;
+ 
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_ADDR, reg & 0xffff);
++	tmp = NIXGE_MDIO_CLAUSE22 | NIXGE_MDIO_OP(NIXGE_MDIO_C22_READ) |
++	      NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
+ 
+-		tmp = NIXGE_MDIO_CLAUSE45 | NIXGE_MDIO_OP(NIXGE_MDIO_OP_ADDRESS)
+-			| NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_CTRL, 1);
+ 
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_CTRL, 1);
++	err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
++				      !status, 10, 1000);
++	if (err) {
++		dev_err(priv->dev, "timeout setting read command");
++		return err;
++	}
+ 
+-		err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
+-					      !status, 10, 1000);
+-		if (err) {
+-			dev_err(priv->dev, "timeout setting address");
+-			return err;
+-		}
++	status = nixge_ctrl_read_reg(priv, NIXGE_REG_MDIO_DATA);
+ 
+-		tmp = NIXGE_MDIO_CLAUSE45 | NIXGE_MDIO_OP(NIXGE_MDIO_C45_READ) |
+-			NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
+-	} else {
+-		device = reg & 0x1f;
++	return status;
++}
+ 
+-		tmp = NIXGE_MDIO_CLAUSE22 | NIXGE_MDIO_OP(NIXGE_MDIO_C22_READ) |
+-			NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
++static int nixge_mdio_read_c45(struct mii_bus *bus, int phy_id, int device,
++			       int reg)
++{
++	struct nixge_priv *priv = bus->priv;
++	u32 status, tmp;
++	int err;
++
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_ADDR, reg & 0xffff);
++
++	tmp = NIXGE_MDIO_CLAUSE45 |
++	      NIXGE_MDIO_OP(NIXGE_MDIO_OP_ADDRESS) |
++	      NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
++
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_CTRL, 1);
++
++	err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
++				      !status, 10, 1000);
++	if (err) {
++		dev_err(priv->dev, "timeout setting address");
++		return err;
  	}
-@@ -8960,7 +8961,8 @@ static int ixgbe_mdio_write(struct net_device *netdev, int prtad, int devad,
- 		int regnum = addr;
  
- 		if (devad != MDIO_DEVAD_NONE)
--			regnum |= (devad << 16) | MII_ADDR_C45;
-+			return mdiobus_c45_write(adapter->mii_bus, prtad, devad,
-+						 regnum, value);
++	tmp = NIXGE_MDIO_CLAUSE45 | NIXGE_MDIO_OP(NIXGE_MDIO_C45_READ) |
++	      NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
++
+ 	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
+ 	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_CTRL, 1);
  
- 		return mdiobus_write(adapter->mii_bus, prtad, regnum, value);
+@@ -1130,57 +1149,65 @@ static int nixge_mdio_read(struct mii_bus *bus, int phy_id, int reg)
+ 	return status;
+ }
+ 
+-static int nixge_mdio_write(struct mii_bus *bus, int phy_id, int reg, u16 val)
++static int nixge_mdio_write_c22(struct mii_bus *bus, int phy_id, int reg,
++				u16 val)
+ {
+ 	struct nixge_priv *priv = bus->priv;
+ 	u32 status, tmp;
+ 	u16 device;
+ 	int err;
+ 
+-	if (reg & MII_ADDR_C45) {
+-		device = (reg >> 16) & 0x1f;
++	device = reg & 0x1f;
+ 
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_ADDR, reg & 0xffff);
++	tmp = NIXGE_MDIO_CLAUSE22 | NIXGE_MDIO_OP(NIXGE_MDIO_C22_WRITE) |
++	      NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
+ 
+-		tmp = NIXGE_MDIO_CLAUSE45 | NIXGE_MDIO_OP(NIXGE_MDIO_OP_ADDRESS)
+-			| NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_DATA, val);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_CTRL, 1);
+ 
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_CTRL, 1);
++	err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
++				      !status, 10, 1000);
++	if (err)
++		dev_err(priv->dev, "timeout setting write command");
+ 
+-		err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
+-					      !status, 10, 1000);
+-		if (err) {
+-			dev_err(priv->dev, "timeout setting address");
+-			return err;
+-		}
++	return err;
++}
+ 
+-		tmp = NIXGE_MDIO_CLAUSE45 | NIXGE_MDIO_OP(NIXGE_MDIO_C45_WRITE)
+-			| NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
++static int nixge_mdio_write_c45(struct mii_bus *bus, int phy_id,
++				int device, int reg, u16 val)
++{
++	struct nixge_priv *priv = bus->priv;
++	u32 status, tmp;
++	int err;
+ 
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_DATA, val);
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
+-		err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
+-					      !status, 10, 1000);
+-		if (err)
+-			dev_err(priv->dev, "timeout setting write command");
+-	} else {
+-		device = reg & 0x1f;
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_ADDR, reg & 0xffff);
+ 
+-		tmp = NIXGE_MDIO_CLAUSE22 |
+-			NIXGE_MDIO_OP(NIXGE_MDIO_C22_WRITE) |
+-			NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
++	tmp = NIXGE_MDIO_CLAUSE45 |
++	      NIXGE_MDIO_OP(NIXGE_MDIO_OP_ADDRESS) |
++	      NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
+ 
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_DATA, val);
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
+-		nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_CTRL, 1);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_CTRL, 1);
+ 
+-		err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
+-					      !status, 10, 1000);
+-		if (err)
+-			dev_err(priv->dev, "timeout setting write command");
++	err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
++				      !status, 10, 1000);
++	if (err) {
++		dev_err(priv->dev, "timeout setting address");
++		return err;
  	}
+ 
++	tmp = NIXGE_MDIO_CLAUSE45 | NIXGE_MDIO_OP(NIXGE_MDIO_C45_WRITE) |
++	      NIXGE_MDIO_ADDR(phy_id) | NIXGE_MDIO_MMD(device);
++
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_DATA, val);
++	nixge_ctrl_write_reg(priv, NIXGE_REG_MDIO_OP, tmp);
++
++	err = nixge_ctrl_poll_timeout(priv, NIXGE_REG_MDIO_CTRL, status,
++				      !status, 10, 1000);
++	if (err)
++		dev_err(priv->dev, "timeout setting write command");
++
+ 	return err;
+ }
+ 
+@@ -1195,8 +1222,10 @@ static int nixge_mdio_setup(struct nixge_priv *priv, struct device_node *np)
+ 	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-mii", dev_name(priv->dev));
+ 	bus->priv = priv;
+ 	bus->name = "nixge_mii_bus";
+-	bus->read = nixge_mdio_read;
+-	bus->write = nixge_mdio_write;
++	bus->read = nixge_mdio_read_c22;
++	bus->write = nixge_mdio_write_c22;
++	bus->read_c45 = nixge_mdio_read_c45;
++	bus->write_c45 = nixge_mdio_write_c45;
+ 	bus->parent = priv->dev;
+ 
+ 	priv->mii_bus = bus;
 
 -- 
 2.30.2
