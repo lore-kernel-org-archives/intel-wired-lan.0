@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E050DC3DA78
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Jan 2023 16:24:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 186DFC6379F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 17 Jan 2023 16:24:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 930CF61087;
-	Tue, 17 Jan 2023 16:24:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 930CF61087
+	by smtp3.osuosl.org (Postfix) with ESMTP id BFAB861081;
+	Tue, 17 Jan 2023 16:24:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BFAB861081
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1673972645;
-	bh=/9m9A7k4qxb7or85MLceywuUXSMaCUunjp/SafNmvqc=;
+	s=default; t=1673972649;
+	bh=TxJe6Ju6VhXT4UYQs2H921cs1yD5ofvZhDun6FjowRw=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=QRs44ZsM370E5MdrLs1dQ7SMVJFUkD4rP6IU6j/zzjrdo3qrEjUuXcPyrdqZqwe7p
-	 UgeUJDzCtpv3CSnLm52l67oLv8nNGutSK8wJl2LDDunX3sET2ZO/Q87K7DJ/fJqMjG
-	 /jdHiz23/ZjgUQvM1F0ylajx2z+tLscTuhDuW569pjmUoBzjzmbcY/KA6Tr1IUOW+q
-	 TB8CEm6ee3YEgTpglS+gncmWZaWS7y0wX0JW/HhQqpeW0mXrvBaOYG4rJ8jqTKamKL
-	 IxJAQFJNA53K+LfHyZxNVCORQ3kq0LzVSEidGwke6zz2lOgWpXq6zDVRUsl4fymxba
-	 dTcLNdXB15Qkw==
+	b=FRm+NW+W9QC8egLrBadmSYLnGh0rqB24bqNIKsXZ6t396V9nOUg+TdQ+4Zw4FSvif
+	 y7+cc0vsGANVStsv3j241qD77qlUGGNGT+enGiaJEqfYcFB2wkvC66F0tDtT+8XcK5
+	 DqyjNFooInrZPCDJbZIxjGBuA6RT9IMoeYWdYPpYB9e8nKORUAfcFy3vgVPDKYy9B+
+	 Q0+LhxQY2tW8y6bUxW1JCD8uiWWaUUM5511KdAMBUgrXbKXOUV3WGACEE9M8W+E8MN
+	 sagBaFH6wcSnCDnoGjmQFuQj4FqrQMr40S5o6xZZKPJY5HpZID+smEzkYdrbN2Ah00
+	 O9cG10E9yHRRg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Tbs6s4gwjKSu; Tue, 17 Jan 2023 16:24:04 +0000 (UTC)
+	with ESMTP id 6lctXSxTJwLM; Tue, 17 Jan 2023 16:24:08 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6611F60C02;
-	Tue, 17 Jan 2023 16:24:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6611F60C02
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6B00161085;
+	Tue, 17 Jan 2023 16:24:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6B00161085
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id F05931BF3BC
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 915001BF3BC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D760640362
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D760640362
+ by smtp4.osuosl.org (Postfix) with ESMTP id 6BBCF403ED
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6BBCF403ED
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id jL59jVJ8ZqkI for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id UNXg-evIJvj9 for <intel-wired-lan@lists.osuosl.org>;
  Mon, 16 Jan 2023 23:58:46 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 72D95402C2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 54B5A40290
 Received: from mail.3ffe.de (0001.3ffe.de [159.69.201.130])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 72D95402C2
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 54B5A40290
  for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Jan 2023 23:58:46 +0000 (UTC)
 Received: from mwalle01.sab.local (unknown [213.135.10.150])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mail.3ffe.de (Postfix) with ESMTPSA id 6F428D5C;
- Tue, 17 Jan 2023 00:52:44 +0100 (CET)
+ by mail.3ffe.de (Postfix) with ESMTPSA id 4B4EA16EE;
+ Tue, 17 Jan 2023 00:52:48 +0100 (CET)
 From: Michael Walle <michael@walle.cc>
-Date: Tue, 17 Jan 2023 00:52:16 +0100
+Date: Tue, 17 Jan 2023 00:52:22 +0100
 MIME-Version: 1.0
-Message-Id: <20230116-net-next-c45-seperation-part-3-v1-1-0c53afa56aad@walle.cc>
+Message-Id: <20230116-net-next-c45-seperation-part-3-v1-7-0c53afa56aad@walle.cc>
 References: <20230116-net-next-c45-seperation-part-3-v1-0-0c53afa56aad@walle.cc>
 In-Reply-To: <20230116-net-next-c45-seperation-part-3-v1-0-0c53afa56aad@walle.cc>
 To: Sean Wang <sean.wang@mediatek.com>, Landen Chao <Landen.Chao@mediatek.com>,
@@ -76,22 +76,22 @@ To: Sean Wang <sean.wang@mediatek.com>, Landen Chao <Landen.Chao@mediatek.com>,
 X-Mailer: b4 0.11.1
 X-Mailman-Approved-At: Tue, 17 Jan 2023 16:23:09 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=walle.cc; s=mail2022082101; t=1673913164;
+ d=walle.cc; s=mail2022082101; t=1673913168;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=fbfQoq+/nP40y3Od/7KPlEsF8XCF4vb8Tsl/JXpv37c=;
- b=RIRLUnFhk4lbuRdXBZHwvVY5XR0+dcNDfp4iMVgeUJ/UMEQKXYirRkgdpUGsMF3lEheMEu
- J7n7W4g5GkNe3Ys5h5VF9sorDHMDoon2yECEhIi6H+GgsOB58yXiBggLDlClmOgvMvYtuc
- JalLhD+AYTo6z6j+OUTifMY64KrLoQeoSOzrQQwQbDgxmGlfhhf1lrqUZztKAOuRTAXK1f
- kUqJqu9UC9YABe4lSZmAuB8eAa1kwA3Pl9ZUzsCuP9KGgYTaUswHOLtGA8/u+n4YrBxDx5
- xUqH6i3Zxn684NGuVXqt0uHK1+Xu2e86DjuAgPpa2ZFyVlOBAMl6EmWDewyUEg==
+ bh=FP6Dfe7S3M3hCeaRI1q2BDnXh3eLy37Yd4LAgViRJ1k=;
+ b=akUvi4nTSTzYmjPbkFEuJoTMNw3gVMOk55vUK+WTdFBQ1CFr0QJ3R0Fn6gIvD+XvMBSGHG
+ PFVed9eFfifdqML3SzPqMUHI2GAbwUGpsu0w5XIf7hha1qRWeE+j9Qmjhq1c6Ctkr31s/Z
+ 2saNhC1zyEOAL+EvKzmlJ4KFjgVGAwG9yDZvdviRHqoqJEvHw5/t8QzNCa21zofLwUknJE
+ xRR1i1edEj2+Xvw6d6FHRFQ6Ss/w/PoyMntuAWMCD/qIJlN6ow4zO3U/hbfzGvqQcoMOGJ
+ +msggqphhalz1CJ/DTMKRCae/4/jYeE9ciSgUgIjdal5n9iLthQx2T3KXcC0LA==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=walle.cc header.i=@walle.cc
- header.a=rsa-sha256 header.s=mail2022082101 header.b=RIRLUnFh
-Subject: [Intel-wired-lan] [PATCH net-next 01/12] net: dsa: mt7530: Separate
- C22 and C45 MDIO bus transactions
+ header.a=rsa-sha256 header.s=mail2022082101 header.b=akUvi4nT
+Subject: [Intel-wired-lan] [PATCH net-next 07/12] net: hns: Separate C22 and
+ C45 transactions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,233 +115,283 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Andrew Lunn <andrew@lunn.ch>
 
-mt7530 does support C45, but its uses a mix of registering its MDIO
-bus and providing its private MDIO bus to the DSA core, too. This makes
-the change a bit more complex.
+The hns MDIO bus driver can perform both C22 and C45 transfers.
+Create separate functions for each and register the C45 versions using
+the new API calls where appropriate.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
 ---
-v3 (the 'new' v1):
-[mw] Remove dsa core comment
-[mw] Rephrase commit message
+ drivers/net/ethernet/hisilicon/hns_mdio.c | 192 +++++++++++++++++++++---------
+ 1 file changed, 135 insertions(+), 57 deletions(-)
 
-v2:
-[al] Remove conditional c45, since all switches support c45
-[al] Remove dsa core changes, they are not needed
-[al] Add comment that DSA provided MDIO bus is C22 only.
----
- drivers/net/dsa/mt7530.c | 87 ++++++++++++++++++++++++------------------------
- drivers/net/dsa/mt7530.h | 15 ++++++---
- 2 files changed, 55 insertions(+), 47 deletions(-)
-
-diff --git a/drivers/net/dsa/mt7530.c b/drivers/net/dsa/mt7530.c
-index 908fa89444c9..616b21c90d05 100644
---- a/drivers/net/dsa/mt7530.c
-+++ b/drivers/net/dsa/mt7530.c
-@@ -608,17 +608,29 @@ mt7530_mib_reset(struct dsa_switch *ds)
- 	mt7530_write(priv, MT7530_MIB_CCR, CCR_MIB_ACTIVATE);
+diff --git a/drivers/net/ethernet/hisilicon/hns_mdio.c b/drivers/net/ethernet/hisilicon/hns_mdio.c
+index c2ae1b4f9a5f..9232caaf0bdc 100644
+--- a/drivers/net/ethernet/hisilicon/hns_mdio.c
++++ b/drivers/net/ethernet/hisilicon/hns_mdio.c
+@@ -206,7 +206,7 @@ static void hns_mdio_cmd_write(struct hns_mdio_device *mdio_dev,
  }
  
--static int mt7530_phy_read(struct mt7530_priv *priv, int port, int regnum)
-+static int mt7530_phy_read_c22(struct mt7530_priv *priv, int port, int regnum)
+ /**
+- * hns_mdio_write - access phy register
++ * hns_mdio_write_c22 - access phy register
+  * @bus: mdio bus
+  * @phy_id: phy id
+  * @regnum: register num
+@@ -214,21 +214,19 @@ static void hns_mdio_cmd_write(struct hns_mdio_device *mdio_dev,
+  *
+  * Return 0 on success, negative on failure
+  */
+-static int hns_mdio_write(struct mii_bus *bus,
+-			  int phy_id, int regnum, u16 data)
++static int hns_mdio_write_c22(struct mii_bus *bus,
++			      int phy_id, int regnum, u16 data)
  {
- 	return mdiobus_read_nested(priv->bus, port, regnum);
- }
+-	int ret;
+ 	struct hns_mdio_device *mdio_dev = (struct hns_mdio_device *)bus->priv;
+-	u8 devad = ((regnum >> 16) & 0x1f);
+-	u8 is_c45 = !!(regnum & MII_ADDR_C45);
+ 	u16 reg = (u16)(regnum & 0xffff);
+-	u8 op;
+ 	u16 cmd_reg_cfg;
++	int ret;
++	u8 op;
  
--static int mt7530_phy_write(struct mt7530_priv *priv, int port, int regnum,
--			    u16 val)
-+static int mt7530_phy_write_c22(struct mt7530_priv *priv, int port, int regnum,
-+				u16 val)
- {
- 	return mdiobus_write_nested(priv->bus, port, regnum, val);
- }
+ 	dev_dbg(&bus->dev, "mdio write %s,base is %p\n",
+ 		bus->id, mdio_dev->vbase);
+-	dev_dbg(&bus->dev, "phy id=%d, is_c45=%d, devad=%d, reg=%#x, write data=%d\n",
+-		phy_id, is_c45, devad, reg, data);
++	dev_dbg(&bus->dev, "phy id=%d, reg=%#x, write data=%d\n",
++		phy_id, reg, data);
  
-+static int mt7530_phy_read_c45(struct mt7530_priv *priv, int port,
-+			       int devad, int regnum)
-+{
-+	return mdiobus_c45_read_nested(priv->bus, port, devad, regnum);
+ 	/* wait for ready */
+ 	ret = hns_mdio_wait_ready(bus);
+@@ -237,58 +235,91 @@ static int hns_mdio_write(struct mii_bus *bus,
+ 		return ret;
+ 	}
+ 
+-	if (!is_c45) {
+-		cmd_reg_cfg = reg;
+-		op = MDIO_C22_WRITE;
+-	} else {
+-		/* config the cmd-reg to write addr*/
+-		MDIO_SET_REG_FIELD(mdio_dev, MDIO_ADDR_REG, MDIO_ADDR_DATA_M,
+-				   MDIO_ADDR_DATA_S, reg);
++	cmd_reg_cfg = reg;
++	op = MDIO_C22_WRITE;
+ 
+-		hns_mdio_cmd_write(mdio_dev, is_c45,
+-				   MDIO_C45_WRITE_ADDR, phy_id, devad);
++	MDIO_SET_REG_FIELD(mdio_dev, MDIO_WDATA_REG, MDIO_WDATA_DATA_M,
++			   MDIO_WDATA_DATA_S, data);
+ 
+-		/* check for read or write opt is finished */
+-		ret = hns_mdio_wait_ready(bus);
+-		if (ret) {
+-			dev_err(&bus->dev, "MDIO bus is busy\n");
+-			return ret;
+-		}
++	hns_mdio_cmd_write(mdio_dev, false, op, phy_id, cmd_reg_cfg);
++
++	return 0;
 +}
 +
-+static int mt7530_phy_write_c45(struct mt7530_priv *priv, int port, int devad,
-+				int regnum, u16 val)
++/**
++ * hns_mdio_write_c45 - access phy register
++ * @bus: mdio bus
++ * @phy_id: phy id
++ * @devad: device address to read
++ * @regnum: register num
++ * @data: register value
++ *
++ * Return 0 on success, negative on failure
++ */
++static int hns_mdio_write_c45(struct mii_bus *bus, int phy_id, int devad,
++			      int regnum, u16 data)
 +{
-+	return mdiobus_c45_write_nested(priv->bus, port, devad, regnum, val);
++	struct hns_mdio_device *mdio_dev = (struct hns_mdio_device *)bus->priv;
++	u16 reg = (u16)(regnum & 0xffff);
++	u16 cmd_reg_cfg;
++	int ret;
++	u8 op;
++
++	dev_dbg(&bus->dev, "mdio write %s,base is %p\n",
++		bus->id, mdio_dev->vbase);
++	dev_dbg(&bus->dev, "phy id=%d, devad=%d, reg=%#x, write data=%d\n",
++		phy_id, devad, reg, data);
++
++	/* wait for ready */
++	ret = hns_mdio_wait_ready(bus);
++	if (ret) {
++		dev_err(&bus->dev, "MDIO bus is busy\n");
++		return ret;
++	}
++
++	/* config the cmd-reg to write addr*/
++	MDIO_SET_REG_FIELD(mdio_dev, MDIO_ADDR_REG, MDIO_ADDR_DATA_M,
++			   MDIO_ADDR_DATA_S, reg);
+ 
+-		/* config the data needed writing */
+-		cmd_reg_cfg = devad;
+-		op = MDIO_C45_WRITE_DATA;
++	hns_mdio_cmd_write(mdio_dev, true, MDIO_C45_WRITE_ADDR, phy_id, devad);
++
++	/* check for read or write opt is finished */
++	ret = hns_mdio_wait_ready(bus);
++	if (ret) {
++		dev_err(&bus->dev, "MDIO bus is busy\n");
++		return ret;
+ 	}
+ 
++	/* config the data needed writing */
++	cmd_reg_cfg = devad;
++	op = MDIO_C45_WRITE_DATA;
++
+ 	MDIO_SET_REG_FIELD(mdio_dev, MDIO_WDATA_REG, MDIO_WDATA_DATA_M,
+ 			   MDIO_WDATA_DATA_S, data);
+ 
+-	hns_mdio_cmd_write(mdio_dev, is_c45, op, phy_id, cmd_reg_cfg);
++	hns_mdio_cmd_write(mdio_dev, true, op, phy_id, cmd_reg_cfg);
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * hns_mdio_read - access phy register
++ * hns_mdio_read_c22 - access phy register
+  * @bus: mdio bus
+  * @phy_id: phy id
+  * @regnum: register num
+  *
+  * Return phy register value
+  */
+-static int hns_mdio_read(struct mii_bus *bus, int phy_id, int regnum)
++static int hns_mdio_read_c22(struct mii_bus *bus, int phy_id, int regnum)
+ {
+-	int ret;
+-	u16 reg_val;
+-	u8 devad = ((regnum >> 16) & 0x1f);
+-	u8 is_c45 = !!(regnum & MII_ADDR_C45);
+-	u16 reg = (u16)(regnum & 0xffff);
+ 	struct hns_mdio_device *mdio_dev = (struct hns_mdio_device *)bus->priv;
++	u16 reg = (u16)(regnum & 0xffff);
++	u16 reg_val;
++	int ret;
+ 
+ 	dev_dbg(&bus->dev, "mdio read %s,base is %p\n",
+ 		bus->id, mdio_dev->vbase);
+-	dev_dbg(&bus->dev, "phy id=%d, is_c45=%d, devad=%d, reg=%#x!\n",
+-		phy_id, is_c45, devad, reg);
++	dev_dbg(&bus->dev, "phy id=%d, reg=%#x!\n", phy_id, reg);
+ 
+ 	/* Step 1: wait for ready */
+ 	ret = hns_mdio_wait_ready(bus);
+@@ -297,29 +328,74 @@ static int hns_mdio_read(struct mii_bus *bus, int phy_id, int regnum)
+ 		return ret;
+ 	}
+ 
+-	if (!is_c45) {
+-		hns_mdio_cmd_write(mdio_dev, is_c45,
+-				   MDIO_C22_READ, phy_id, reg);
+-	} else {
+-		MDIO_SET_REG_FIELD(mdio_dev, MDIO_ADDR_REG, MDIO_ADDR_DATA_M,
+-				   MDIO_ADDR_DATA_S, reg);
++	hns_mdio_cmd_write(mdio_dev, false, MDIO_C22_READ, phy_id, reg);
+ 
+-		/* Step 2; config the cmd-reg to write addr*/
+-		hns_mdio_cmd_write(mdio_dev, is_c45,
+-				   MDIO_C45_WRITE_ADDR, phy_id, devad);
++	/* Step 2: waiting for MDIO_COMMAND_REG 's mdio_start==0,*/
++	/* check for read or write opt is finished */
++	ret = hns_mdio_wait_ready(bus);
++	if (ret) {
++		dev_err(&bus->dev, "MDIO bus is busy\n");
++		return ret;
++	}
+ 
+-		/* Step 3: check for read or write opt is finished */
+-		ret = hns_mdio_wait_ready(bus);
+-		if (ret) {
+-			dev_err(&bus->dev, "MDIO bus is busy\n");
+-			return ret;
+-		}
++	reg_val = MDIO_GET_REG_BIT(mdio_dev, MDIO_STA_REG, MDIO_STATE_STA_B);
++	if (reg_val) {
++		dev_err(&bus->dev, " ERROR! MDIO Read failed!\n");
++		return -EBUSY;
++	}
+ 
+-		hns_mdio_cmd_write(mdio_dev, is_c45,
+-				   MDIO_C45_READ, phy_id, devad);
++	/* Step 3; get out data*/
++	reg_val = (u16)MDIO_GET_REG_FIELD(mdio_dev, MDIO_RDATA_REG,
++					  MDIO_RDATA_DATA_M, MDIO_RDATA_DATA_S);
++
++	return reg_val;
 +}
 +
- static int
- mt7531_ind_c45_phy_read(struct mt7530_priv *priv, int port, int devad,
- 			int regnum)
-@@ -670,7 +682,7 @@ mt7531_ind_c45_phy_read(struct mt7530_priv *priv, int port, int devad,
++/**
++ * hns_mdio_read_c45 - access phy register
++ * @bus: mdio bus
++ * @phy_id: phy id
++ * @devad: device address to read
++ * @regnum: register num
++ *
++ * Return phy register value
++ */
++static int hns_mdio_read_c45(struct mii_bus *bus, int phy_id, int devad,
++			     int regnum)
++{
++	struct hns_mdio_device *mdio_dev = (struct hns_mdio_device *)bus->priv;
++	u16 reg = (u16)(regnum & 0xffff);
++	u16 reg_val;
++	int ret;
++
++	dev_dbg(&bus->dev, "mdio read %s,base is %p\n",
++		bus->id, mdio_dev->vbase);
++	dev_dbg(&bus->dev, "phy id=%d, devad=%d, reg=%#x!\n",
++		phy_id, devad, reg);
++
++	/* Step 1: wait for ready */
++	ret = hns_mdio_wait_ready(bus);
++	if (ret) {
++		dev_err(&bus->dev, "MDIO bus is busy\n");
++		return ret;
++	}
++
++	MDIO_SET_REG_FIELD(mdio_dev, MDIO_ADDR_REG, MDIO_ADDR_DATA_M,
++			   MDIO_ADDR_DATA_S, reg);
++
++	/* Step 2; config the cmd-reg to write addr*/
++	hns_mdio_cmd_write(mdio_dev, true, MDIO_C45_WRITE_ADDR, phy_id, devad);
++
++	/* Step 3: check for read or write opt is finished */
++	ret = hns_mdio_wait_ready(bus);
++	if (ret) {
++		dev_err(&bus->dev, "MDIO bus is busy\n");
++		return ret;
+ 	}
  
- static int
- mt7531_ind_c45_phy_write(struct mt7530_priv *priv, int port, int devad,
--			 int regnum, u32 data)
-+			 int regnum, u16 data)
- {
- 	struct mii_bus *bus = priv->bus;
- 	struct mt7530_dummy_poll p;
-@@ -793,55 +805,36 @@ mt7531_ind_c22_phy_write(struct mt7530_priv *priv, int port, int regnum,
- }
+-	/* Step 5: waiting for MDIO_COMMAND_REG's mdio_start==0,*/
++	hns_mdio_cmd_write(mdio_dev, true, MDIO_C45_READ, phy_id, devad);
++
++	/* Step 5: waiting for MDIO_COMMAND_REG 's mdio_start==0,*/
+ 	/* check for read or write opt is finished */
+ 	ret = hns_mdio_wait_ready(bus);
+ 	if (ret) {
+@@ -438,8 +514,10 @@ static int hns_mdio_probe(struct platform_device *pdev)
+ 	}
  
- static int
--mt7531_ind_phy_read(struct mt7530_priv *priv, int port, int regnum)
-+mt753x_phy_read_c22(struct mii_bus *bus, int port, int regnum)
- {
--	int devad;
--	int ret;
--
--	if (regnum & MII_ADDR_C45) {
--		devad = (regnum >> MII_DEVADDR_C45_SHIFT) & 0x1f;
--		ret = mt7531_ind_c45_phy_read(priv, port, devad,
--					      regnum & MII_REGADDR_C45_MASK);
--	} else {
--		ret = mt7531_ind_c22_phy_read(priv, port, regnum);
--	}
-+	struct mt7530_priv *priv = bus->priv;
- 
--	return ret;
-+	return priv->info->phy_read_c22(priv, port, regnum);
- }
- 
- static int
--mt7531_ind_phy_write(struct mt7530_priv *priv, int port, int regnum,
--		     u16 data)
-+mt753x_phy_read_c45(struct mii_bus *bus, int port, int devad, int regnum)
- {
--	int devad;
--	int ret;
--
--	if (regnum & MII_ADDR_C45) {
--		devad = (regnum >> MII_DEVADDR_C45_SHIFT) & 0x1f;
--		ret = mt7531_ind_c45_phy_write(priv, port, devad,
--					       regnum & MII_REGADDR_C45_MASK,
--					       data);
--	} else {
--		ret = mt7531_ind_c22_phy_write(priv, port, regnum, data);
--	}
-+	struct mt7530_priv *priv = bus->priv;
- 
--	return ret;
-+	return priv->info->phy_read_c45(priv, port, devad, regnum);
- }
- 
- static int
--mt753x_phy_read(struct mii_bus *bus, int port, int regnum)
-+mt753x_phy_write_c22(struct mii_bus *bus, int port, int regnum, u16 val)
- {
- 	struct mt7530_priv *priv = bus->priv;
- 
--	return priv->info->phy_read(priv, port, regnum);
-+	return priv->info->phy_write_c22(priv, port, regnum, val);
- }
- 
- static int
--mt753x_phy_write(struct mii_bus *bus, int port, int regnum, u16 val)
-+mt753x_phy_write_c45(struct mii_bus *bus, int port, int devad, int regnum,
-+		     u16 val)
- {
- 	struct mt7530_priv *priv = bus->priv;
- 
--	return priv->info->phy_write(priv, port, regnum, val);
-+	return priv->info->phy_write_c45(priv, port, devad, regnum, val);
- }
- 
- static void
-@@ -2086,8 +2079,10 @@ mt7530_setup_mdio(struct mt7530_priv *priv)
- 	bus->priv = priv;
- 	bus->name = KBUILD_MODNAME "-mii";
- 	snprintf(bus->id, MII_BUS_ID_SIZE, KBUILD_MODNAME "-%d", idx++);
--	bus->read = mt753x_phy_read;
--	bus->write = mt753x_phy_write;
-+	bus->read = mt753x_phy_read_c22;
-+	bus->write = mt753x_phy_write_c22;
-+	bus->read_c45 = mt753x_phy_read_c45;
-+	bus->write_c45 = mt753x_phy_write_c45;
- 	bus->parent = dev;
- 	bus->phy_mask = ~ds->phys_mii_mask;
- 
-@@ -3182,8 +3177,10 @@ static const struct mt753x_info mt753x_table[] = {
- 		.id = ID_MT7621,
- 		.pcs_ops = &mt7530_pcs_ops,
- 		.sw_setup = mt7530_setup,
--		.phy_read = mt7530_phy_read,
--		.phy_write = mt7530_phy_write,
-+		.phy_read_c22 = mt7530_phy_read_c22,
-+		.phy_write_c22 = mt7530_phy_write_c22,
-+		.phy_read_c45 = mt7530_phy_read_c45,
-+		.phy_write_c45 = mt7530_phy_write_c45,
- 		.pad_setup = mt7530_pad_clk_setup,
- 		.mac_port_get_caps = mt7530_mac_port_get_caps,
- 		.mac_port_config = mt7530_mac_config,
-@@ -3192,8 +3189,10 @@ static const struct mt753x_info mt753x_table[] = {
- 		.id = ID_MT7530,
- 		.pcs_ops = &mt7530_pcs_ops,
- 		.sw_setup = mt7530_setup,
--		.phy_read = mt7530_phy_read,
--		.phy_write = mt7530_phy_write,
-+		.phy_read_c22 = mt7530_phy_read_c22,
-+		.phy_write_c22 = mt7530_phy_write_c22,
-+		.phy_read_c45 = mt7530_phy_read_c45,
-+		.phy_write_c45 = mt7530_phy_write_c45,
- 		.pad_setup = mt7530_pad_clk_setup,
- 		.mac_port_get_caps = mt7530_mac_port_get_caps,
- 		.mac_port_config = mt7530_mac_config,
-@@ -3202,8 +3201,10 @@ static const struct mt753x_info mt753x_table[] = {
- 		.id = ID_MT7531,
- 		.pcs_ops = &mt7531_pcs_ops,
- 		.sw_setup = mt7531_setup,
--		.phy_read = mt7531_ind_phy_read,
--		.phy_write = mt7531_ind_phy_write,
-+		.phy_read_c22 = mt7531_ind_c22_phy_read,
-+		.phy_write_c22 = mt7531_ind_c22_phy_write,
-+		.phy_read_c45 = mt7531_ind_c45_phy_read,
-+		.phy_write_c45 = mt7531_ind_c45_phy_write,
- 		.pad_setup = mt7531_pad_setup,
- 		.cpu_port_config = mt7531_cpu_port_config,
- 		.mac_port_get_caps = mt7531_mac_port_get_caps,
-@@ -3263,7 +3264,7 @@ mt7530_probe(struct mdio_device *mdiodev)
- 	 * properly.
- 	 */
- 	if (!priv->info->sw_setup || !priv->info->pad_setup ||
--	    !priv->info->phy_read || !priv->info->phy_write ||
-+	    !priv->info->phy_read_c22 || !priv->info->phy_write_c22 ||
- 	    !priv->info->mac_port_get_caps ||
- 	    !priv->info->mac_port_config)
- 		return -EINVAL;
-diff --git a/drivers/net/dsa/mt7530.h b/drivers/net/dsa/mt7530.h
-index e8d966435350..6b2fc6290ea8 100644
---- a/drivers/net/dsa/mt7530.h
-+++ b/drivers/net/dsa/mt7530.h
-@@ -750,8 +750,10 @@ struct mt753x_pcs {
- /* struct mt753x_info -	This is the main data structure for holding the specific
-  *			part for each supported device
-  * @sw_setup:		Holding the handler to a device initialization
-- * @phy_read:		Holding the way reading PHY port
-- * @phy_write:		Holding the way writing PHY port
-+ * @phy_read_c22:	Holding the way reading PHY port using C22
-+ * @phy_write_c22:	Holding the way writing PHY port using C22
-+ * @phy_read_c45:	Holding the way reading PHY port using C45
-+ * @phy_write_c45:	Holding the way writing PHY port using C45
-  * @pad_setup:		Holding the way setting up the bus pad for a certain
-  *			MAC port
-  * @phy_mode_supported:	Check if the PHY type is being supported on a certain
-@@ -767,8 +769,13 @@ struct mt753x_info {
- 	const struct phylink_pcs_ops *pcs_ops;
- 
- 	int (*sw_setup)(struct dsa_switch *ds);
--	int (*phy_read)(struct mt7530_priv *priv, int port, int regnum);
--	int (*phy_write)(struct mt7530_priv *priv, int port, int regnum, u16 val);
-+	int (*phy_read_c22)(struct mt7530_priv *priv, int port, int regnum);
-+	int (*phy_write_c22)(struct mt7530_priv *priv, int port, int regnum,
-+			     u16 val);
-+	int (*phy_read_c45)(struct mt7530_priv *priv, int port, int devad,
-+			    int regnum);
-+	int (*phy_write_c45)(struct mt7530_priv *priv, int port, int devad,
-+			     int regnum, u16 val);
- 	int (*pad_setup)(struct dsa_switch *ds, phy_interface_t interface);
- 	int (*cpu_port_config)(struct dsa_switch *ds, int port);
- 	void (*mac_port_get_caps)(struct dsa_switch *ds, int port,
+ 	new_bus->name = MDIO_BUS_NAME;
+-	new_bus->read = hns_mdio_read;
+-	new_bus->write = hns_mdio_write;
++	new_bus->read = hns_mdio_read_c22;
++	new_bus->write = hns_mdio_write_c22;
++	new_bus->read_c45 = hns_mdio_read_c45;
++	new_bus->write_c45 = hns_mdio_write_c45;
+ 	new_bus->reset = hns_mdio_reset;
+ 	new_bus->priv = mdio_dev;
+ 	new_bus->parent = &pdev->dev;
 
 -- 
 2.30.2
