@@ -4,79 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4648CC677F1
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jan 2023 23:47:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA002C677F1
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jan 2023 23:47:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E61BC82288;
-	Wed, 18 Jan 2023 23:47:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E61BC82288
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5956682287;
+	Wed, 18 Jan 2023 23:47:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5956682287
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674085628;
-	bh=sCyD52zXNrQB/yInoNgRnwAv5flxdu70hZoGVYyoXLM=;
+	s=default; t=1674085633;
+	bh=YlMKwlmVGMakNhLxnPpYKYDxQyitCRBsvfZ6dtnVxps=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=JWLghGP1MadvpyaHqHGl9OA7CNcMNVVLJQe7Mp0eOrBBLViSikLkpoAmALzD+g6Mk
-	 ksoACubBLSQGSjPIMBqXfSopmlhNXefQ0SfDYDvFpOTYBgWLpT5yCKTxseUafnXMzh
-	 tRxbYFwSGmFWkfqepIcG1vZ1XOVMJRfrP05JTraCgdYmzIWAcUwvnFDXySfp1HTeVc
-	 l7NEc9pdQ6D/RUHetGrav72/NBTrBbUc72ZSOutL21w4F1pbbfVnWx+1i+X0A0VTOx
-	 U6Ln68cX40py5HvO+0T/Y7gnB4t/5C/ffGf0VJTkqECzkpVOwn4HpsLw42t/4jM4Tw
-	 LLN/0ozTt6F7Q==
+	b=DoB1EIBAKvfEf1ubu5QPDUnIsatpcGNIP8Qt1Z2XbQg8JMpQ9aymlbScgdASralmP
+	 OoOy/t0/SKIGNpBA/brrjjFT0VqdIDkbTyLveB2xQOHj6AUWsjxisISfuY4jSk4M9y
+	 tr2rKFp/BZY/+4mM6Gz7AyTDOkGnYksZfnfd3eIlYp9Cp49r1+PecraUjqxNj6s3xO
+	 g6HcdY5BCUEc+fHrEUOaLIPrt8bGh+tVOXB3f4vN8jT5iVb+QBaztbfMZlhdPKbEnR
+	 5LPNvkCKgeHiAP32lebUXnq8rvLGwCoD+55HTNIocydkfzED6fchQoCzCUMdktyZfS
+	 NjtRdldWT9bpA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id mgt7mCx27u-h; Wed, 18 Jan 2023 23:47:08 +0000 (UTC)
+	with ESMTP id t7QLvfBylosY; Wed, 18 Jan 2023 23:47:12 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 05DAA8225B;
-	Wed, 18 Jan 2023 23:47:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 05DAA8225B
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6E55A82267;
+	Wed, 18 Jan 2023 23:47:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6E55A82267
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 0529A1BF870
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:46:58 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 7D8DF1BF392
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D492B6107E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:46:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D492B6107E
+ by smtp3.osuosl.org (Postfix) with ESMTP id 58C736109A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 58C736109A
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NNYK4sjqAeaR for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Jan 2023 23:46:57 +0000 (UTC)
+ with ESMTP id gi0KnhwGtw7d for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Jan 2023 23:47:00 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3EC9C60B1E
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3EC9C60B1E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:46:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C261260B1E
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C261260B1E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:00 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 2A8F461AC4;
- Wed, 18 Jan 2023 23:46:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB45FC433D2;
- Wed, 18 Jan 2023 23:46:55 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 2395661AC1;
+ Wed, 18 Jan 2023 23:47:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BBA28C433EF;
+ Wed, 18 Jan 2023 23:46:59 +0000 (UTC)
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: linux-pci@vger.kernel.org
-Date: Wed, 18 Jan 2023 17:46:08 -0600
-Message-Id: <20230118234612.272916-6-helgaas@kernel.org>
+Date: Wed, 18 Jan 2023 17:46:10 -0600
+Message-Id: <20230118234612.272916-8-helgaas@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20230118234612.272916-1-helgaas@kernel.org>
 References: <20230118234612.272916-1-helgaas@kernel.org>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674085616;
- bh=RCRB2Sodh20rzeiGD9Rq4QFz+CL1puYq259qdSn4tqs=;
+ d=kernel.org; s=k20201202; t=1674085620;
+ bh=Gfwvn53sy7/1OA4WjgdfWmy9e90PwOSc2SBfrJghS2M=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=gL7QXTAN2TyKR8sIPSZ7euQKX3zxOZLjUBUonjKrKa6I9Ks21AyGS6fb25oOH+VCZ
- kf53JEp27CdnYsLGRstGeo6mJErrzLolxHJXk/IU+SRbosCUHxNrPKjIEL1F2GKYHW
- sfRnw65gAhwfuHjdvb5f5qpSLvpvm7RBHIrBQORvI/NJ5WqHPsnQKgRgmu+W6jHo7g
- XOstWhB4nUX7MLI5HLb0E5JYyWNR5fpWPANAXg0wgWpEyxEC4FN3XwosaKy8Volzf+
- M/0ywd2v3SJ1kBxVbKDJghimHpeUapKEYwmE44XAxAvr7os+FNRo7uKg3+N5L0Xbwn
- erzGzPmLkncWw==
+ b=DvjHgKGekNLdHpc8ojQEuGgV8t992eddxElqZ6jWyK8yPZuKe/IFbrugnJBS/rPNB
+ xTsHlc5CCJBNFxgVC3elNiAg1py5be+Sh+pmWBA/ExVfaqS+Xnd16tlP/mT8QwbOXc
+ 8Yo6qSPa8aIIps+GK4d0IW7yIEMY/vzDPcRhCgnRXQYC8O5/MSvoUm9zQkVpVrr+u6
+ GVMjjC5Gd5mmKnUks9z0D7adsLqBDpeFwXZ2U7nd7XjRTE4sNRq9snguid573PVDEO
+ POhSJ7MP4/1voLyfWToyNTbT0I5EfJo/HR3xt669qJzzh31eomDqXdrOcYC7gE291w
+ Rxqbu4/5E5dMg==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=gL7QXTAN
-Subject: [Intel-wired-lan] [PATCH 5/9] iavf: Remove redundant
+ header.a=rsa-sha256 header.s=k20201202 header.b=DvjHgKGe
+Subject: [Intel-wired-lan] [PATCH 7/9] igb: Remove redundant
  pci_enable_pcie_error_reporting()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -119,32 +118,32 @@ Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 5 -----
+ drivers/net/ethernet/intel/igb/igb_main.c | 5 -----
  1 file changed, 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index c4e451ef7942..2835af20ec19 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -4876,8 +4876,6 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 3c0c35ecea10..c56b991fa610 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3194,8 +3194,6 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (err)
  		goto err_pci_reg;
- 	}
  
 -	pci_enable_pcie_error_reporting(pdev);
 -
  	pci_set_master(pdev);
+ 	pci_save_state(pdev);
  
- 	netdev = alloc_etherdev_mq(sizeof(struct iavf_adapter),
-@@ -4956,7 +4954,6 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -3626,7 +3624,6 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  err_ioremap:
  	free_netdev(netdev);
  err_alloc_etherdev:
 -	pci_disable_pcie_error_reporting(pdev);
- 	pci_release_regions(pdev);
+ 	pci_release_mem_regions(pdev);
  err_pci_reg:
  err_dma:
-@@ -5172,8 +5169,6 @@ static void iavf_remove(struct pci_dev *pdev)
- 
+@@ -3837,8 +3834,6 @@ static void igb_remove(struct pci_dev *pdev)
+ 	kfree(adapter->shadow_vfta);
  	free_netdev(netdev);
  
 -	pci_disable_pcie_error_reporting(pdev);
