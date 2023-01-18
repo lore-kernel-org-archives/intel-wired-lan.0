@@ -1,82 +1,111 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C95F6C38159
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jan 2023 23:47:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A47FCC38159
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Jan 2023 00:09:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6C59582238;
-	Wed, 18 Jan 2023 23:47:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6C59582238
+	by smtp3.osuosl.org (Postfix) with ESMTP id 360CB610BA;
+	Thu, 19 Jan 2023 00:09:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 360CB610BA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674085645;
-	bh=xeimzwK64gTb35w8Xz9gaDAf7t9lI4XSUZrhM2G+sp8=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1674086973;
+	bh=+9ZWxKanB2o2UTPVvr4myQ92SQZgEzYAqW6oo1xbhOs=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=GDBiFY52VbR48t8j4KzyPhZnkYp4ohvMUHVuaHu3lgisvjSKEx80w8D86dC+aBXeU
-	 vNma33qr/UCv+vjxnHbcx2D/Zfzmve5Sjv3XBLAo7XDX2i6FOcfhmpAy3NMCSDtrEI
-	 +z3ZK2KbZjOYPpLn5OZvm+W8tvkSv4EEGE7usyB0zEpsP984BDsZLu8pwYxUTI4pIp
-	 5oQC0POKmqI5GRw7Rwi6fEkRlcIQJSogfoKDBxtpkE7OsJ9JsAVHBsdRRCTokGjGVu
-	 WKKORIW1aBSmedxRn5i4vNUyvU7sOxVv7sDxgA55g2UUD4wzb0P3IxG5bzHG5iOIKb
-	 BqTfMo6mo0y4A==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id kHYAVZ9mbn_K; Wed, 18 Jan 2023 23:47:24 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 83A378223E;
-	Wed, 18 Jan 2023 23:47:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 83A378223E
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 601D31BF392
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:06 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3AF206107E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3AF206107E
+	b=kV6XDUp1V+mfICpSV0DBLKR19nMRAHE3i64b3rEMJA4nV1Izfisvw5gZXZqL9KOCB
+	 YFZO21LEnGsDSkmsZgcx3bUnFlyEtdGaF8Thvj4fL41dMfYIO3FQAy0mBU6Wqvt5DO
+	 wEVXAOQ5oce1oIz40oUH8ZktV2cjyBUTd59dnNgrT8xoTt1QBctNQyZsGNkuFSCEOU
+	 7d+1uYbAU7cd8F1aC4iNH/q0ivcRxGeA9A7kc3GqJAlId27368rN41HCaRb4bMrk9V
+	 gzbYbInz7BIud7k5ymyVFUlL1/a+bECfWv/TJkU3st/+mjfY6H//ljC3QHn2kCVFj3
+	 cJJrO6yGU+wtw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id XhO1lBFY01W9 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Jan 2023 23:47:05 +0000 (UTC)
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id dhcWyhmw1-RW; Thu, 19 Jan 2023 00:09:32 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id EFD4E610AB;
+	Thu, 19 Jan 2023 00:09:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EFD4E610AB
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 0E8601BF3F9
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 22:12:06 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id DC3D1821B0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 22:12:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DC3D1821B0
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id kz8yJJlLBmji for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Jan 2023 22:12:05 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9614660B1E
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9614660B1E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:05 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 0256561AC2;
- Wed, 18 Jan 2023 23:47:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 42631C433D2;
- Wed, 18 Jan 2023 23:47:04 +0000 (UTC)
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: linux-pci@vger.kernel.org
-Date: Wed, 18 Jan 2023 17:46:12 -0600
-Message-Id: <20230118234612.272916-10-helgaas@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230118234612.272916-1-helgaas@kernel.org>
-References: <20230118234612.272916-1-helgaas@kernel.org>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 03469821AE
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 03469821AE
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 22:12:04 +0000 (UTC)
+Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com
+ [209.85.210.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-619-25R-d2eDMP6lx4UynxQ54w-1; Wed, 18 Jan 2023 17:12:01 -0500
+X-MC-Unique: 25R-d2eDMP6lx4UynxQ54w-1
+Received: by mail-pf1-f200.google.com with SMTP id
+ u3-20020a056a00124300b0056d4ab0c7cbso21186pfi.7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 14:12:01 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=ZMEMrcYWxCYgncCZ7gZI9FW1ZAN3xqpELmriu9FkXc0=;
+ b=sHCqfjHQnnfSnKDRVykRWhx4dFhJ7id9P3A61INdWOcifNDCa/WXKmCKHQppqBew8c
+ L6ZpwIoVXEj6SMGurVwM5OyVKZqFkjZ3snch+ahkNR+7EFvKhhM92nCHjdRQHGYXK7Je
+ cX0oWS2KijQuGRu5AAnETVVX38mg9LvO08WOuLCg159eLO37tu/R7aTW0z4DN33r/Qgi
+ 9qp6RXeA+Gh/UkbC8jUH8nyscbUjTHlcod4rkwBH41ga1/mVxO8AYZ4vpPfpbTB3GJ1O
+ 4HLQtHX4nStF2xq6sxWvY3UvqTisH2OIU+HQsRE+2rjK1cFhEtSfabV3O5B7I8+BTzqi
+ P49Q==
+X-Gm-Message-State: AFqh2kqK+4N/vPUMcu7hQU+Fbs0RryLcfJuwRiw7w8n8LgJcS++AZcig
+ BJFv+616/6z4GCc+PYA+vo/ky19zetWmReCpm8d0wb8rAIYnOsRWmJipk1eqhrm+xOQAkTdd4++
+ 1Bp7s0N1BKF6gcOLv6/kpBYFyRArWepim4QNDUVVTWuF/zA==
+X-Received: by 2002:a17:90a:bd8b:b0:229:3b43:a31f with SMTP id
+ z11-20020a17090abd8b00b002293b43a31fmr1010112pjr.81.1674079920393; 
+ Wed, 18 Jan 2023 14:12:00 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXsEVBmBylWpQyn2dcYBw+l/HGBhJWmGomA3c22HZNKZfJ0OUa8lD0ANX47rTRzPNb7JB63lpkyMuZfIjLQXNyI=
+X-Received: by 2002:a17:90a:bd8b:b0:229:3b43:a31f with SMTP id
+ z11-20020a17090abd8b00b002293b43a31fmr1010097pjr.81.1674079920131; Wed, 18
+ Jan 2023 14:12:00 -0800 (PST)
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674085624;
- bh=pLbQ/HGmJ0E41EsVj1qrzz7ZQK/1deMQHyH8FrWG9c8=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Y7PPT4VstGXz7JfMrERSl7oaxAJY3RMktbR01aCo+HyYqZ9D2WZJviA16585gX9bp
- Z3o29/mZMxhs+Uq8V6YqtIWyxQDqFji5V79Xew/JblsbBoNcUiIDIN4EMUSdpCI/CC
- HYarjE0Y6q2IbZ8iqFE/1WNbGYRVYGXf6FxNgPeJqNsLeqcvBSrsijazrc+os6G+L7
- Zuf//lsgWYMME5bhkdlxLUi7nnwG2umUJSUZqMaIbhJTNuD1Cna6VvzQjAa7aXcOvE
- UXWwGwEb/j9k6vMknIpjxQKwfGJrxcM+ELewyuPWOG7zANRIUmnNYA0C/yzykvFpyb
- 5kW1Gcz0QhwiA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=Y7PPT4Vs
-Subject: [Intel-wired-lan] [PATCH 9/9] ixgbe: Remove redundant
- pci_enable_pcie_error_reporting()
+References: <20230117181533.2350335-1-neelx@redhat.com>
+ <2bdeb975-6d45-67bb-3017-f19df62fe7af@intel.com>
+ <CACjP9X-hKf8g2UqitV8_G7WQW7u6Js5EsCNutsAMA4WD7YYSwA@mail.gmail.com>
+ <42e74619-f2d0-1079-28b1-61e9e17ae953@intel.com>
+In-Reply-To: <42e74619-f2d0-1079-28b1-61e9e17ae953@intel.com>
+From: Daniel Vacek <neelx@redhat.com>
+Date: Wed, 18 Jan 2023 23:11:23 +0100
+Message-ID: <CACjP9X8SHZAd_+HSLJCxYxSRQuRmq3r48id13r17n2ehrec2YQ@mail.gmail.com>
+To: Jacob Keller <jacob.e.keller@intel.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+X-Mailman-Approved-At: Thu, 19 Jan 2023 00:09:30 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1674079923;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=ZMEMrcYWxCYgncCZ7gZI9FW1ZAN3xqpELmriu9FkXc0=;
+ b=SjA+O/j/B90caiKtZLGm7wbr5y7v8rXE2de4aj28+IrgP7u+MIeiZEIxCa6Bnk20Y+G2Cg
+ VSUh0bz5xLBI7rsh6po9y7BbeP2EgfEpVTvfAZiuhptAugXEdiU1x5SvEO6zoOp8GJ4rvg
+ ypVXPbdO+ZfA/cJvUgz5r4zaGA7TYi8=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=SjA+O/j/
+Subject: Re: [Intel-wired-lan] [PATCH] ice/ptp: fix the PTP worker retrying
+ indefinitely if the link went down
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,70 +118,67 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- intel-wired-lan@lists.osuosl.org, Bjorn Helgaas <bhelgaas@google.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: "Kolacinski, Karol" <karol.kolacinski@intel.com>, netdev@vger.kernel.org,
+ Richard Cochran <richardcochran@gmail.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+ Siddaraju <siddaraju.dh@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+On Wed, Jan 18, 2023 at 9:59 PM Jacob Keller <jacob.e.keller@intel.com> wrote:
+> On 1/18/2023 7:14 AM, Daniel Vacek wrote:
+> > On Tue, Jan 17, 2023 at 7:47 PM Jacob Keller <jacob.e.keller@intel.com> wrote:
+> >>
+> >> At a minimum I think I would only set drop_ts but not not goto skip_ts_read.
+> >
+> > IIUC, that would still fail to clear the tx->in_use bit in case ice_read_phy_tstamp()
+> > returns with error. It would only work for the other case where no error is
+> > returned but rather the returned &raw_tstamp is invalid. I'll send a v2 of
+> > this fix trying to address the goto concern.
+> >
+>
+> Please re-send the patch with the goto concern addressed. (only set
+> drop_ts, and still read the timestamp just in case and make sure that if
+> the read function fails while drop_ts is set we still drop the ts).
 
-pci_enable_pcie_error_reporting() enables the device to send ERR_*
-Messages.  Since f26e58bf6f54 ("PCI/AER: Enable error reporting when AER is
-native"), the PCI core does this for all devices during enumeration.
+Just in case it got lost I did send the patch here:
 
-Remove the redundant pci_enable_pcie_error_reporting() call from the
-driver.  Also remove the corresponding pci_disable_pcie_error_reporting()
-from the driver .remove() path.
+https://lore.kernel.org/intel-wired-lan/20230118161727.2485457-1-neelx@redhat.com/
 
-Note that this doesn't control interrupt generation by the Root Port; that
-is controlled by the AER Root Error Command register, which is managed by
-the AER service driver.
+But unfortunately I misplaced the --in-reply-to header with --reply-to one :-(
+Hopefully it arrived to you safely.
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
-Cc: intel-wired-lan@lists.osuosl.org
-Cc: netdev@vger.kernel.org
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 -----
- 1 file changed, 5 deletions(-)
+> I believe that alleviates my concerns regarding the potential link down
+> race with a completed timestamp above.
+>
+> We also should already be preventing requesting new timestamps while
+> link is down so that should be sufficient to combine with this and cover
+> the three flows:
+>
+> 1) request tx timestamp
+> 2) link down
+> 3) timestamp never occurs
+>
+> 1) request tx timestamp
+> 2) timestamp occurs
+> 3) link goes down while processing
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index ab8370c413f3..cb718c6216fc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -10808,8 +10808,6 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err_pci_reg;
- 	}
- 
--	pci_enable_pcie_error_reporting(pdev);
--
- 	pci_set_master(pdev);
- 	pci_save_state(pdev);
- 
-@@ -11237,7 +11235,6 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
- 	free_netdev(netdev);
- err_alloc_etherdev:
--	pci_disable_pcie_error_reporting(pdev);
- 	pci_release_mem_regions(pdev);
- err_pci_reg:
- err_dma:
-@@ -11326,8 +11323,6 @@ static void ixgbe_remove(struct pci_dev *pdev)
- 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
- 	free_netdev(netdev);
- 
--	pci_disable_pcie_error_reporting(pdev);
--
- 	if (disable_dev)
- 		pci_disable_device(pdev);
- }
--- 
-2.25.1
+I was thinking this is the case we got reported. But then again, I'm
+not really experienced in this field.
+
+--nX
+
+> 1) link down
+> 2) request tx timestamp rejected
+>
+> Thanks!
+>
+> -Jake
 
 _______________________________________________
 Intel-wired-lan mailing list
