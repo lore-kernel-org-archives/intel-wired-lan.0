@@ -1,85 +1,152 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82DA8C32793
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jan 2023 15:41:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EAA9AC32793
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jan 2023 16:28:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0DA0260803;
-	Wed, 18 Jan 2023 15:41:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0DA0260803
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5279640B2E;
+	Wed, 18 Jan 2023 16:28:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5279640B2E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674056499;
-	bh=7Pto4kbGtYsaZq96vRHhhzw/EeCQA/D2/qrEZlgJv+E=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=Z//NK4tL9DfhaYGoMELO0dRjVQLPfkqYUdMfl8L87KghMY5x/DRzKW9se9JxrKyNB
-	 SXm/EOTxFy3Hs8a07oTkdB9P+G8/7vbqsCYEq/b9I2IO9EGmXfyHIXHm85H7D+eP/N
-	 Y4V1jWl6Gs+irqsFykaHhPFDckkSNR8ZasMINLG9YWMHdDPMp7D7wPi/PDVDA8zmmu
-	 iKSObK2ypqaN2tdeDUKSUbMtobwO6fx0ZjwV2+cCfrDbh9jdPfQyGsU6Q7pSAvMU46
-	 hHJCmMBudX1TCXMsLbVAUlINxuTrhLBQ4iyglBkxxM8l70Ev+1lNrSeLe299hZNkL2
-	 5KyGExVBLvi6A==
+	s=default; t=1674059334;
+	bh=pBAPiL1PNno4x1/r7hz283HPNLGoxnLO1E+ELm87Ieg=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=dYez+XNzIaDx1ajijBf27wdndWBOjziFNWUCfgQYg+Ws2CL5XtrP0dMJI4ie4SlF3
+	 24zjAeeZ6+wabO0vZm22rU4TCgqlEsVRbhgoMdTXJj4bmy2WFnvQ+J86uQH1ymSG2M
+	 kJUFnD/tEtfD8H1DyVGZ3yO+ezV6Ci+m8dciq0ssNQMeS0dBpSrB3qOZsUrfDzv94d
+	 +Bz8RSu7d+T7EwDWhfDdn1uqMFtZBh/5rVZ8zVQezfVNDY2KwfVfRp5ohQg/ohCD9q
+	 GHFmH6l3tbm4MWRSIfPBidq1v70NSrvEzrXJi06qYcrx4Ec6Y5gLHkQbkswwjULQ4f
+	 KkBLlnny43ATQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VoFr9HCI6yOG; Wed, 18 Jan 2023 15:41:38 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 3zOU9mHtFA8k; Wed, 18 Jan 2023 16:28:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B7F0B60F82;
-	Wed, 18 Jan 2023 15:41:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B7F0B60F82
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id D8A511BF312
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 15:41:35 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 430DB40B1D;
+	Wed, 18 Jan 2023 16:28:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 430DB40B1D
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 5723D1BF425
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 08:51:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B2C074168F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 15:41:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B2C074168F
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2C0A140377
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 08:51:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2C0A140377
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ycM_oeAHhgfD for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Jan 2023 15:41:34 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 18488415E5
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 18488415E5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 15:41:33 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="304692815"
-X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="304692815"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Jan 2023 07:39:34 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10593"; a="767790967"
-X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="767790967"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga002.fm.intel.com with ESMTP; 18 Jan 2023 07:39:32 -0800
-From: Kamil Maziarz <kamil.maziarz@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 18 Jan 2023 16:39:26 +0100
-Message-Id: <20230118153926.1335517-1-kamil.maziarz@intel.com>
-X-Mailer: git-send-email 2.25.1
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id j9crG89Dweix for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Jan 2023 08:51:12 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CA3B1400AF
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com
+ (mail-bn8nam11on2100.outbound.protection.outlook.com [40.107.236.100])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id CA3B1400AF
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 08:51:11 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ThbJw0NVN+gb74XrjIYjcamA/OGPRQTxbgLs39j/cmeKUTLF2iadzQNQqSjzSXQnXb2MUhmGjuOaFnxpQFbpitOgdrktfzNGO4n00T+Jo0kxIWkOaRDRlenuYzn5x0WbgNSMG+QZxlRghN/qwDpdKXK42CBPqK1p3HV8l/VW9D3Sm7PoNLzqAca4EAFN5tlo4+2bZHaQigvio6VnabN50OPOIvBs8hzBsJJQmcv7e4SCubw9Uvtqc84Y2V23zlrpQDQwCgmkYz3YeeHkJgflesUop8cfFMZOf+aP2LeA2U5c+/3hFeICqd/zrxNLM86o/E/U/W7czMHUNZVick9hTA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=lNPNchCe3qPJwRBtuDTPPZ5vZFfOWodutanIKrZso2c=;
+ b=BEEt4fthH8ZNg1QJV1wNoNtlgFpmyL6DUG3GnrvnWuzlAtLi2Cy+2xiagYSsbS+zFcmHMEOZQiMAI+SSJxH18mea3CWcSTZBtWhV7ByxOTxuuON8QiFHptmv2SAxjKP+qNOIR0jwiTO2vrM0xEsvMLuLwrttNwx/4zL2S425XgHPYXz+XjGt/ZjFq1cKc1dEAtklC1zLXVdhUWG0PnB110FatSBr5Rdp21i/oGZXViQ6P0I3Lb+wGqyNIgpVNBqj+uGjcdczEvEiJxWy5R/BqYtLxXaCm2WLC8dWjqyJFQWjJcSaDibi/yzHx552bRjal9B3Xm3D+tnDKNeY3m8xew==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=corigine.com; dmarc=pass action=none header.from=corigine.com;
+ dkim=pass header.d=corigine.com; arc=none
+Received: from SJ0PR13MB6037.namprd13.prod.outlook.com (2603:10b6:a03:3e2::9)
+ by DM6PR13MB4049.namprd13.prod.outlook.com (2603:10b6:5:2a3::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.13; Wed, 18 Jan
+ 2023 08:51:09 +0000
+Received: from SJ0PR13MB6037.namprd13.prod.outlook.com
+ ([fe80::a17f:495a:6870:18c0]) by SJ0PR13MB6037.namprd13.prod.outlook.com
+ ([fe80::a17f:495a:6870:18c0%9]) with mapi id 15.20.6002.024; Wed, 18 Jan 2023
+ 08:51:09 +0000
+Date: Wed, 18 Jan 2023 09:50:53 +0100
+From: Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@corigine.com>
+To: Lorenzo Bianconi <lorenzo@kernel.org>
+Message-ID: <Y8ey7Sg3BcPfsU9d@sleipner.dyn.berto.se>
+References: <cover.1673710866.git.lorenzo@kernel.org>
+ <b606e729c9baf36a28be246bf0bfa4d21cc097fb.1673710867.git.lorenzo@kernel.org>
+ <Y8cTKOmCBbMEZK8D@sleipner.dyn.berto.se>
+ <Y8czKD8/yXywbl+f@lore-desk>
+Content-Disposition: inline
+In-Reply-To: <Y8czKD8/yXywbl+f@lore-desk>
+X-ClientProxiedBy: FR3P281CA0094.DEUP281.PROD.OUTLOOK.COM
+ (2603:10a6:d10:a1::9) To SJ0PR13MB6037.namprd13.prod.outlook.com
+ (2603:10b6:a03:3e2::9)
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1674056494; x=1705592494;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=wCBNnICQw8npUui83+26xA8hWF54Hb2Rjpp/stpQZDk=;
- b=BI9xLJeNksdw9P3ZvsK9bnsQWyYqRxwJnmkUuh4dfGti2CXDM9sU/w0H
- dLREEeeIowAblTnuiTK6InqkG2mjKB6kvn6wQwfQ4+j7uFvqyt64FLphc
- v5T3VqbS4Hv5B9/wTrGRZQpmcZ/QdfDul45Daxd41U7gl14gy1JC1KYE9
- Jlxo2GFMliIci4TIdARcC43zpBVV2amfmhncwI+N0RHRIK9kV0GYEQ7a0
- nZ17emBNlFlrDLzbdvmDfxIeOh7oEDHin+3UQqqRu2vTH4z7BWbRbllw4
- Pj/H8bqThCHWcH8xcHvaudjA2dIObkIWHed3+iSCgFIm19xgo2wuVKC4L
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=BI9xLJeN
-Subject: [Intel-wired-lan] [PATCH net v4] i40e: Fix crash when rebuild fails
- in i40e_xdp_setup
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ0PR13MB6037:EE_|DM6PR13MB4049:EE_
+X-MS-Office365-Filtering-Correlation-Id: f2bbde9f-a473-47b3-031b-08daf93124c9
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 4XaM9lp+GFn7RTX2ceMQD9SXfg3S4CB9o2CFtk0lFBd0NBDoCS0sjQjR4nweEb1WFOQsSBIw56C/Ds0h7cyvynZQWVmmEXgKVo/Ks/83S4/WBZcrFu/jr3a3eV11bMQe4G96e1bsqMro4NkpgL2RBDNxcMpH1tnvANXnOgqaO2h4E6B9XnZ8SJgdz5ejpYQFxET9diCdDqw3/nfTf9AwbNqjG3Clh4um/3hcQRA3ib7VjdtAjsTBae2e+fAkiOrbcxsGM7P1oCsjKsyaZmF29YJI9fw9UjdXBmzY7n97ERowvLo1Hhkt6ntSP+N0RcfqwbKVS/HblBpUzA0ZvMLCEFo781HBDeji9s+683+3AOeST1Fww6Y3UmttFxDP5fug+N3db9GF+xl3t8fDsvCUxlhN2C+6RP4si/r1IMCb369HLpn+aJxIkCSkyNs/p8Bn/z0mGji1+XMERGVE8L0wG3phhfs4iXkMD2dEntdtCvX8BhFwRc12nNs69nViChx5pCgeCy/RVzfOH09FnJBks1rAYSqwHUYoW06UsZV8UAUrlOStJiQW0Jw7BtvbToyxtL99BxD7Z/H0ZwUsDx/3m678S890/pRt0rogZUmJEKDl5bEHHF5uEwnhV6ah7M76cKM89XvC8n+485r9n6lw371CkU7xhNCSpKuImVRfEPEg7jBdiOFTV0uNwxWDRdu2
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SJ0PR13MB6037.namprd13.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230022)(4636009)(366004)(136003)(346002)(39840400004)(376002)(396003)(451199015)(478600001)(52116002)(6486002)(6512007)(9686003)(6506007)(6666004)(2906002)(26005)(8936002)(53546011)(316002)(41300700001)(5660300002)(7416002)(66946007)(6916009)(7406005)(4326008)(66556008)(66476007)(8676002)(38100700002)(186003)(38350700002)(86362001)(66574015);
+ DIR:OUT; SFP:1102; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?iso-8859-1?Q?+q3sNeG7ICGrdWyTiPIYw2pw5O6FxNOCfajs6uikLmH+OIR9K9K7bkvO1Z?=
+ =?iso-8859-1?Q?JZegmjl54H//vV6qw3k54KwWsdoYOIlZM7zXABI2Xiksel2Miq4wDmleFn?=
+ =?iso-8859-1?Q?N+c36ssboenBeexUnv9I4sJ9tkqoyAh4nVhqfnZqLQp41J2n37UBRS6vP2?=
+ =?iso-8859-1?Q?Og0K/asxl5qPiSABgVVmj2bzrP+8c0ZPZXxj4pP39dRqvmYbSBk7N7oALw?=
+ =?iso-8859-1?Q?GzFrx8wTaP/5O97y+SgSIBYSo4yu32DWZp6zpkXDYBGvkDfbAmKeRPTLWg?=
+ =?iso-8859-1?Q?ZAlIg0fstzIoQRxofGAoRwa0ozP5by/f5/PmpCuDyomGDa0AnxPadnZ2VH?=
+ =?iso-8859-1?Q?UBRDRF5FP5yizMJG54h5OQLUjXPzwJ8+ZW8zNxymncWFYWxgZUBVf76ElD?=
+ =?iso-8859-1?Q?MdlwIwGOBRKSeTJW1J0YalfLUTtvIHA0Yk9iqsxiCG2AEq+gsI/MED1IgR?=
+ =?iso-8859-1?Q?THLB+jgdsHdfGR8wZnIM9SZzfcaZ0hNbIPzYaqP+ZFzkbaYbLfCp38G0nV?=
+ =?iso-8859-1?Q?xA5uH1Trha5iCvR5ymCf9fjMvlEccmEqaxqGEU0cf9KWWLq+dBXbC85aYw?=
+ =?iso-8859-1?Q?2Tau5EOkZw+f1VvsntPZgwFLmWK5Rkvp2CLO/yv4nSCErDeH6xCFrKsBkX?=
+ =?iso-8859-1?Q?juE9YoCHOTDjkFCSe4zlrzm4xUYIVbl9R4JS/1mT8DY0NHaXOGK8jVxNbW?=
+ =?iso-8859-1?Q?v8vSE5qXcy2U+s5/XXZI2vxdHcPmG3EXOIpLtsnTQLQmuDxMLJnj2JdqvU?=
+ =?iso-8859-1?Q?GyctlF/MO2zI61xMFuzH+XpsPHgiPcFiaIZw7wAsSaENl6G0tGCyQGmzU2?=
+ =?iso-8859-1?Q?GK1iDY5w9tcLe4CfRsw/PQrx2cHw4PJMntGR/6FxGQ9XduudWybLe7QFPw?=
+ =?iso-8859-1?Q?o2r4mhg9wF7/piGBGvKK+E7/pu76YZOI/h3XT5X3RMgNZBSFtdIl5/DeMP?=
+ =?iso-8859-1?Q?XrI/hWiPmcsrCNnmUq/j/TA40VM9LwvDXLfLmfCdsmxAeEQMj4Bxlq5Jiq?=
+ =?iso-8859-1?Q?GA1KQNXI5ZpVODD/ekWwI8GnRlFv/mApR6PSXZmD6Lw0Rew1Tvj6ZZz4q1?=
+ =?iso-8859-1?Q?CXlg6U1Bt+Tm613NAvwcfRHB7T+mHFYEL4oruWaVOdhghkFewZ/+sjQnwr?=
+ =?iso-8859-1?Q?47u9MoSGp4cBj5BZifHMVtH/Z35MwBDLsGuROMdH9cQU/AsNSVfatlj/lB?=
+ =?iso-8859-1?Q?2ZJXbHJ29qMTxNTOADTuMFZmEaNHjm7mrx/UL6TMVy2QNoRUB0ZiLDTzgS?=
+ =?iso-8859-1?Q?HEZ0ipwDUZ2pQuhoe161Buc1Vn91/PivX2XXIfqNuEiAND59gnbgZ2RcMF?=
+ =?iso-8859-1?Q?GijGWH+Lc4RpAKdYODxek8Grd///iEjyeLn9UGUA+zZxhnyqNStkIT66qK?=
+ =?iso-8859-1?Q?6nv6p2FNv72H5dj4mWiI14rhOsdgMy3vIUUQpMDma0DsvsfDkisPje+pM5?=
+ =?iso-8859-1?Q?4qxbgP+ax8zd/b8ZTX8d+1CEZjvbHRzdubmEADtzcJz7pnTqWbBV0+Mvgd?=
+ =?iso-8859-1?Q?Bhey2IcOz8ovV3GbgZocOcvXLnHZUy9Qr64yLm/hkHjdznQLo7BzMYZfQF?=
+ =?iso-8859-1?Q?Q8O5Iju+sfYGauf5drI9bvHEY6O70sDOgCCYe5RRlpfsie0ke7vGFGRgBa?=
+ =?iso-8859-1?Q?KEi/sMDGRVJL9y2A5VQWzOTVAIuRPbat02mhNApMCmkDiJic2xNR75+A?=
+ =?iso-8859-1?Q?=3D=3D?=
+X-OriginatorOrg: corigine.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f2bbde9f-a473-47b3-031b-08daf93124c9
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR13MB6037.namprd13.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jan 2023 08:51:09.4556 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: fe128f2c-073b-4c20-818e-7246a585940c
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: J8UVxIGA7uXee0xu4r9bCkl6/pNtPzstziV1/OtXoxoPM7UR8L+jTsTcQYcyohVo3VNnjFO3Uzyc+CRvGtRdVQZGvMlrosn4lh+pxiTeSCU=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR13MB4049
+X-Mailman-Approved-At: Wed, 18 Jan 2023 16:28:51 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=corigine.onmicrosoft.com; s=selector2-corigine-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=lNPNchCe3qPJwRBtuDTPPZ5vZFfOWodutanIKrZso2c=;
+ b=vMYHQ7CiwOZbBvr0hw59pgRDQ8JiGtCL85+7NMqLoKPwkpGwx3BvAm30IYzxYXl80jzgZRy80N9v3ChKsNl2wlytgz6ioChVq4+xAUA3/Y7U60zpN+VZbSKwFATR0B9+dB3jrD9lJYEJxeQOjP11zHBLz5lXzAPPVipZxorPsoM=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=fail reason="signature verification failed" (1024-bit key)
+ header.d=corigine.onmicrosoft.com header.i=@corigine.onmicrosoft.com
+ header.a=rsa-sha256 header.s=selector2-corigine-onmicrosoft-com
+ header.b=vMYHQ7Ci
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=corigine.com;
+Subject: Re: [Intel-wired-lan] [RFC v2 bpf-next 2/7] drivers: net: turn on
+ XDP features
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,306 +159,165 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Kamil Maziarz <kamil.maziarz@intel.com>,
- Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>,
- Andrii Staikov <andrii.staikov@intel.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
+ edumazet@google.com, anthony.l.nguyen@intel.com, daniel@iogearbox.net,
+ andrii@kernel.org, intel-wired-lan@lists.osuosl.org, simon.horman@corigine.com,
+ kuba@kernel.org, pabeni@redhat.com, aelior@marvell.com, hawk@kernel.org,
+ christophe.jaillet@wanadoo.fr, memxor@gmail.com, john@phrozen.org,
+ bjorn@kernel.org, bpf@vger.kernel.org, magnus.karlsson@intel.com,
+ leon@kernel.org, netdev@vger.kernel.org, toke@redhat.com,
+ ecree.xilinx@gmail.com, alardam@gmail.com, gospo@broadcom.com,
+ saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
+Hi Lorenzo,
 
-When attaching XDP program on i40e driver there was a reset and rebuild of
-the interface to reconfigure the queues for XDP operation. If one of the
-steps of rebuild failed then the interface was left in incorrect state that
-could lead to a crash. If rebuild failed while getting capabilities from HW
-such crash occurs:
+On 2023-01-18 00:45:44 +0100, Lorenzo Bianconi wrote:
+> > Hi Lorenzo and Marek,
+> > =
 
-capability discovery failed, err I40E_ERR_ADMIN_QUEUE_TIMEOUT aq_err OK
-BUG: unable to handle kernel NULL pointer dereference at
-0000000000000000 Call Trace:
-? i40e_reconfig_rss_queues+0x120/0x120 [i40e]
-  dev_xdp_install+0x70/0x100
-  dev_xdp_attach+0x1d7/0x530
-  dev_change_xdp_fd+0x1f4/0x230
-  do_setlink+0x45f/0xf30
-  ? irq_work_interrupt+0xa/0x20
-  ? __nla_validate_parse+0x12d/0x1a0
-  rtnl_setlink+0xb5/0x120
-  rtnetlink_rcv_msg+0x2b1/0x360
-  ? sock_has_perm+0x80/0xa0
-  ? rtnl_calcit.isra.42+0x120/0x120
-  netlink_rcv_skb+0x4c/0x120
-  netlink_unicast+0x196/0x230
-  netlink_sendmsg+0x204/0x3d0
-  sock_sendmsg+0x4c/0x50
-  __sys_sendto+0xee/0x160
-  ? handle_mm_fault+0xc1/0x1e0
-  ? syscall_trace_enter+0x1fb/0x2c0
-  ? __sys_setsockopt+0xd6/0x1d0
-  __x64_sys_sendto+0x24/0x30
-  do_syscall_64+0x5b/0x1a0
-  entry_SYSCALL_64_after_hwframe+0x65/0xca
-  RIP: 0033:0x7f3535d99781
+> > Thanks for your work.
+> > =
 
-Fix this by removing reset and rebuild from i40e_xdp_setup and replace it by
-interface down, reconfigure queues and interface up. This way if any step fails
-the interface will remain in a correct state.
+> > On 2023-01-14 16:54:32 +0100, Lorenzo Bianconi wrote:
+> > =
 
-Fixes: 0c8493d90b6b ("i40e: add XDP support for pass and drop actions")
-Signed-off-by: Sylwester Dziedziuch <sylwesterx.dziedziuch@intel.com>
-Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
-Signed-off-by: Andrii Staikov <andrii.staikov@intel.com>
-Signed-off-by: Kamil Maziarz <kamil.maziarz@intel.com>
----
-v2: don't reinitialize rings while hotswapping program
----
-v3: error code 'ret' set to -EIO
----
-v4: fixed the subject
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 145 +++++++++++++++-----
- 1 file changed, 109 insertions(+), 36 deletions(-)
+> > [...]
+> > =
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 53d0083e35da..94ff72d38e06 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -50,6 +50,8 @@ static int i40e_veb_get_bw_info(struct i40e_veb *veb);
- static int i40e_get_capabilities(struct i40e_pf *pf,
- 				 enum i40e_admin_queue_opc list_type);
- static bool i40e_is_total_port_shutdown_enabled(struct i40e_pf *pf);
-+static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi,
-+					      bool is_xdp);
- 
- /* i40e_pci_tbl - PCI Device ID Table
-  *
-@@ -3563,11 +3565,17 @@ static int i40e_configure_rx_ring(struct i40e_ring *ring)
- 	/* clear the context structure first */
- 	memset(&rx_ctx, 0, sizeof(rx_ctx));
- 
--	if (ring->vsi->type == I40E_VSI_MAIN)
--		xdp_rxq_info_unreg_mem_model(&ring->xdp_rxq);
-+	if (ring->vsi->type == I40E_VSI_MAIN) {
-+		if (!xdp_rxq_info_is_reg(&ring->xdp_rxq))
-+			xdp_rxq_info_reg(&ring->xdp_rxq, ring->netdev,
-+					 ring->queue_index,
-+					 ring->q_vector->napi.napi_id);
-+	}
- 
- 	ring->xsk_pool = i40e_xsk_pool(ring);
- 	if (ring->xsk_pool) {
-+		xdp_rxq_info_unreg_mem_model(&ring->xdp_rxq);
-+
- 		ring->rx_buf_len =
- 		  xsk_pool_get_rx_frame_size(ring->xsk_pool);
- 		/* For AF_XDP ZC, we disallow packets to span on
-@@ -13305,6 +13313,34 @@ static netdev_features_t i40e_features_check(struct sk_buff *skb,
- 	return features & ~(NETIF_F_CSUM_MASK | NETIF_F_GSO_MASK);
- }
- 
-+/**
-+ * i40e_vsi_assign_bpf_prog - set or clear bpf prog pointer on VSI
-+ * @vsi: VSI to changed
-+ * @prog: XDP program
-+ **/
-+static void i40e_vsi_assign_bpf_prog(struct i40e_vsi *vsi,
-+						 struct bpf_prog *prog)
-+{
-+	int i;
-+
-+	for (i = 0; i < vsi->num_queue_pairs; i++)
-+		WRITE_ONCE(vsi->rx_rings[i]->xdp_prog, vsi->xdp_prog);
-+}
-+
-+/**
-+ * i40e_vsi_rx_napi_schedule - Schedule napi on RX queues from VSI
-+ * @vsi: VSI to schedule napi on
-+ */
-+static void i40e_vsi_rx_napi_schedule(struct i40e_vsi *vsi)
-+{
-+	int i;
-+
-+	for (i = 0; i < vsi->num_queue_pairs; i++)
-+		if (vsi->xdp_rings[i]->xsk_pool)
-+			(void)i40e_xsk_wakeup(vsi->netdev, i,
-+					      XDP_WAKEUP_RX);
-+}
-+
- /**
-  * i40e_xdp_setup - add/remove an XDP program
-  * @vsi: VSI to changed
-@@ -13315,10 +13351,12 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
- 			  struct netlink_ext_ack *extack)
- {
- 	int frame_size = vsi->netdev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
-+	bool is_xdp_enabled = i40e_enabled_xdp_vsi(vsi);
-+	bool if_running = netif_running(vsi->netdev);
-+	bool need_reinit = is_xdp_enabled != !!prog;
- 	struct i40e_pf *pf = vsi->back;
- 	struct bpf_prog *old_prog;
--	bool need_reset;
--	int i;
-+	int ret = 0;
- 
- 	/* Don't allow frames that span over multiple buffers */
- 	if (frame_size > i40e_calculate_vsi_rx_buf_len(vsi)) {
-@@ -13326,35 +13364,59 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
- 		return -EINVAL;
- 	}
- 
--	/* When turning XDP on->off/off->on we reset and rebuild the rings. */
--	need_reset = (i40e_enabled_xdp_vsi(vsi) != !!prog);
--
--	if (need_reset)
--		i40e_prep_for_reset(pf);
--
- 	/* VSI shall be deleted in a moment, just return EINVAL */
- 	if (test_bit(__I40E_IN_REMOVE, pf->state))
- 		return -EINVAL;
- 
- 	old_prog = xchg(&vsi->xdp_prog, prog);
- 
--	if (need_reset) {
--		if (!prog)
--			/* Wait until ndo_xsk_wakeup completes. */
--			synchronize_rcu();
--		i40e_reset_and_rebuild(pf, true, true);
-+	if (!need_reinit)
-+		goto assign_prog;
-+
-+	if (if_running && !test_and_set_bit(__I40E_VSI_DOWN, vsi->state))
-+		i40e_down(vsi);
-+
-+	vsi = i40e_vsi_reinit_setup(vsi, true);
-+
-+	if (!vsi) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to reinitialize VSI during XDP setup");
-+		ret = -EIO;
-+		goto err_vsi_setup;
- 	}
- 
--	if (!i40e_enabled_xdp_vsi(vsi) && prog) {
--		if (i40e_realloc_rx_bi_zc(vsi, true))
--			return -ENOMEM;
--	} else if (i40e_enabled_xdp_vsi(vsi) && !prog) {
--		if (i40e_realloc_rx_bi_zc(vsi, false))
--			return -ENOMEM;
-+	/* allocate descriptors */
-+	ret = i40e_vsi_setup_tx_resources(vsi);
-+	if (ret) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to configure TX resources during XDP setup");
-+		goto err_setup_tx;
-+	}
-+	ret = i40e_vsi_setup_rx_resources(vsi);
-+	if (ret) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to configure RX resources during XDP setup");
-+		goto err_setup_rx;
- 	}
- 
--	for (i = 0; i < vsi->num_queue_pairs; i++)
--		WRITE_ONCE(vsi->rx_rings[i]->xdp_prog, vsi->xdp_prog);
-+	if (!is_xdp_enabled && prog)
-+		ret = i40e_realloc_rx_bi_zc(vsi, true);
-+	else if (is_xdp_enabled && !prog)
-+		ret = i40e_realloc_rx_bi_zc(vsi, false);
-+
-+	if (ret) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to reallocate RX resources during XDP setup");
-+		goto err_vsi_setup;
-+	}
-+
-+	if (if_running) {
-+		ret = i40e_up(vsi);
-+
-+		if (ret) {
-+			NL_SET_ERR_MSG_MOD(extack, "Failed to open VSI during XDP setup");
-+			goto err_vsi_setup;
-+		}
-+	}
-+
-+assign_prog:
-+	i40e_vsi_assign_bpf_prog(vsi, prog);
- 
- 	if (old_prog)
- 		bpf_prog_put(old_prog);
-@@ -13362,13 +13424,20 @@ static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
- 	/* Kick start the NAPI context if there is an AF_XDP socket open
- 	 * on that queue id. This so that receiving will start.
- 	 */
--	if (need_reset && prog)
--		for (i = 0; i < vsi->num_queue_pairs; i++)
--			if (vsi->xdp_rings[i]->xsk_pool)
--				(void)i40e_xsk_wakeup(vsi->netdev, i,
--						      XDP_WAKEUP_RX);
-+	if (need_reinit && prog)
-+		i40e_vsi_rx_napi_schedule(vsi);
- 
- 	return 0;
-+
-+err_setup_rx:
-+	i40e_vsi_free_rx_resources(vsi);
-+err_setup_tx:
-+	i40e_vsi_free_tx_resources(vsi);
-+err_vsi_setup:
-+	i40e_do_reset(pf, I40E_PF_RESET_FLAG, true);
-+	i40e_vsi_assign_bpf_prog(vsi, old_prog);
-+
-+	return ret;
- }
- 
- /**
-@@ -14310,13 +14379,14 @@ static int i40e_vsi_setup_vectors(struct i40e_vsi *vsi)
- /**
-  * i40e_vsi_reinit_setup - return and reallocate resources for a VSI
-  * @vsi: pointer to the vsi.
-+ * @is_xdp: flag indicating if this is reinit during XDP setup
-  *
-  * This re-allocates a vsi's queue resources.
-  *
-  * Returns pointer to the successfully allocated and configured VSI sw struct
-  * on success, otherwise returns NULL on failure.
-  **/
--static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
-+static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi, bool is_xdp)
- {
- 	u16 alloc_queue_pairs;
- 	struct i40e_pf *pf;
-@@ -14352,12 +14422,14 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 	/* Update the FW view of the VSI. Force a reset of TC and queue
- 	 * layout configurations.
- 	 */
--	enabled_tc = pf->vsi[pf->lan_vsi]->tc_config.enabled_tc;
--	pf->vsi[pf->lan_vsi]->tc_config.enabled_tc = 0;
--	pf->vsi[pf->lan_vsi]->seid = pf->main_vsi_seid;
--	i40e_vsi_config_tc(pf->vsi[pf->lan_vsi], enabled_tc);
--	if (vsi->type == I40E_VSI_MAIN)
--		i40e_rm_default_mac_filter(vsi, pf->hw.mac.perm_addr);
-+	if (!is_xdp) {
-+		enabled_tc = pf->vsi[pf->lan_vsi]->tc_config.enabled_tc;
-+		pf->vsi[pf->lan_vsi]->tc_config.enabled_tc = 0;
-+		pf->vsi[pf->lan_vsi]->seid = pf->main_vsi_seid;
-+		i40e_vsi_config_tc(pf->vsi[pf->lan_vsi], enabled_tc);
-+		if (vsi->type == I40E_VSI_MAIN)
-+			i40e_rm_default_mac_filter(vsi, pf->hw.mac.perm_addr);
-+	}
- 
- 	/* assign it some queues */
- 	ret = i40e_alloc_rings(vsi);
-@@ -15123,7 +15195,8 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit, bool lock_acqui
- 		if (pf->lan_vsi == I40E_NO_VSI)
- 			vsi = i40e_vsi_setup(pf, I40E_VSI_MAIN, uplink_seid, 0);
- 		else if (reinit)
--			vsi = i40e_vsi_reinit_setup(pf->vsi[pf->lan_vsi]);
-+			vsi = i40e_vsi_reinit_setup(pf->vsi[pf->lan_vsi],
-+						    false);
- 		if (!vsi) {
- 			dev_info(&pf->pdev->dev, "setup of MAIN VSI failed\n");
- 			i40e_cloud_filter_exit(pf);
--- 
-2.25.1
+> > > =
 
+> > > Turn 'hw-offload' feature flag on for:
+> > >  - netronome (nfp)
+> > >  - netdevsim.
+> > =
+
+> > Is there a definition of the 'hw-offload' written down somewhere? From =
+
+> > reading this series I take it is the ability to offload a BPF program?  =
+
+> =
+
+> correct
+> =
+
+> > It would also be interesting to read documentation for the other flags =
+
+> > added in this series.
+> =
+
+> maybe we can add definitions in Documentation/netlink/specs/netdev.yaml?
+> =
+
+> > =
+
+> > [...]
+> > =
+
+> > > diff --git a/drivers/net/ethernet/netronome/nfp/nfp_net_common.c =
+
+> > > b/drivers/net/ethernet/netronome/nfp/nfp_net_common.c
+> > > index 18fc9971f1c8..5a8ddeaff74d 100644
+> > > --- a/drivers/net/ethernet/netronome/nfp/nfp_net_common.c
+> > > +++ b/drivers/net/ethernet/netronome/nfp/nfp_net_common.c
+> > > @@ -2529,10 +2529,14 @@ static void nfp_net_netdev_init(struct nfp_ne=
+t *nn)
+> > >  	netdev->features &=3D ~NETIF_F_HW_VLAN_STAG_RX;
+> > >  	nn->dp.ctrl &=3D ~NFP_NET_CFG_CTRL_RXQINQ;
+> > >  =
+
+> > > +	nn->dp.netdev->xdp_features =3D NETDEV_XDP_ACT_BASIC |
+> > > +				      NETDEV_XDP_ACT_HW_OFFLOAD;
+> > =
+
+> > If my assumption about the 'hw-offload' flag above is correct I think =
+
+> > NETDEV_XDP_ACT_HW_OFFLOAD should be conditioned on that the BPF firmwar=
+e =
+
+> > flavor is in use.
+> > =
+
+> >     nn->dp.netdev->xdp_features =3D NETDEV_XDP_ACT_BASIC;
+> > =
+
+> >     if (nn->app->type->id =3D=3D NFP_APP_BPF_NIC)
+> >         nn->dp.netdev->xdp_features |=3D NETDEV_XDP_ACT_HW_OFFLOAD;
+> =
+
+> ack, I will fix it.
+
+Thanks. I have just been informed from Yinjun Zhang that this check is =
+
+not enough as this function is reused for VF where nn->app is not set. I =
+
+think a better check would be
+
+    if (nn->app && nn->app->type->id =3D=3D NFP_APP_BPF_NIC)
+
+Yinjun also informed me that you can make this code a bit neater by,
+
+    s/nn->dp.netdev->xdp_features/netdev->xdp_features/
+
+Thanks again for your work.
+
+> =
+
+> > =
+
+> > > +
+> > >  	/* Finalise the netdev setup */
+> > >  	switch (nn->dp.ops->version) {
+> > >  	case NFP_NFD_VER_NFD3:
+> > >  		netdev->netdev_ops =3D &nfp_nfd3_netdev_ops;
+> > > +		nn->dp.netdev->xdp_features |=3D NETDEV_XDP_ACT_XSK_ZEROCOPY;
+> > >  		break;
+> > >  	case NFP_NFD_VER_NFDK:
+> > >  		netdev->netdev_ops =3D &nfp_nfdk_netdev_ops;
+> > =
+
+> > This is also a wrinkle I would like to understand. Currently NFP suppor=
+t =
+
+> > zero-copy on NFD3, but not for offloaded BPF programs. But with the BPF =
+
+> > firmware flavor running the device can still support zero-copy for =
+
+> > non-offloaded programs.
+> > =
+
+> > Is it a problem that the driver advertises support for both =
+
+> > hardware-offload _and_ zero-copy at the same time, even if they can't b=
+e =
+
+> > used together but separately?
+> =
+
+> xdp_features should export NIC supported features in the current
+> configuration and it is expected they can be used concurrently.
+> =
+
+> Regards,
+> Lorenzo
+> =
+
+> > =
+
+> > -- =
+
+> > Kind Regards,
+> > Niklas S=F6derlund
+
+
+
+-- =
+
+Kind Regards,
+Niklas S=F6derlund
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
