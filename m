@@ -1,81 +1,82 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC69FC38159
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jan 2023 23:47:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEB80C677F1
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Jan 2023 23:47:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 56F1A8223E;
-	Wed, 18 Jan 2023 23:47:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 56F1A8223E
+	by smtp4.osuosl.org (Postfix) with ESMTP id 89FC2405AE;
+	Wed, 18 Jan 2023 23:47:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 89FC2405AE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674085637;
-	bh=d58q9bQlevIpLeSg6w9RA58sdkOPCgq5/iTZBAlQRF0=;
+	s=default; t=1674085641;
+	bh=Ib9/qN9uq8oCieI0obkEH2ie9ZDDELVLOygYDtXfXqk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=eLGkVOexr2dGe8u4Z1B0yhy/pwkHu0GAbqIHvrenzGhkvF4slpsixMAFfdJ5gm/+k
-	 pX9b1w12lMiq9ziA9aKbbdwFTOoH935Sxo2lsrg1QpMAT65mx/kTSajRadgFIv/YM1
-	 Z6y48OYbwWug/7ai6b1g+9dXile4tJctNCm9lAuJcFhV+7KUwALRdDBifpullmcVPF
-	 +UmmpRB6XAz//BZq7f+wwATJU6DOFAVgihBkEJfaRgM6urTmIeKSkPFadGVHKA2h/x
-	 71uFdPI8dB4QTtZOCw2MrLCRPf9F0WFHfj5lNujpMTgu45hka8AoxX6s5AoMZM0iWQ
-	 HGWnYuyNpkwyQ==
+	b=Ba8VlNtx3cyUrF9wGmBzselGtdmbaciVa05Z+pT9+6DHhxScjJAI9SmXAkF5WcOVD
+	 xMNhLLF7Tx31vCqe/vPaBiuk43TPvkRkEGFVcOb4eXJAo6jbovHMquh2dlElEbnHEd
+	 XwCA1nqXgBLwtSpQpb4stsO43YhatxSK7VijV5jeSLxxcA5BtX0afgE88pvMhQOLpr
+	 zeCwDTSaWhu4fqCveq+vfkosGMYdE1p3hosKy6NBcwC4fV4+x7NpG130QOZATbUXe2
+	 EOM7ibvUP40zgtlmsb7BcdqLtw2avFQiA02fd4CgCigHvcNfqiLoyUoQfJ0GfgbzJX
+	 5KVteBvlPYp1A==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id PNKDRdSXoOoz; Wed, 18 Jan 2023 23:47:16 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id JXaW8fovU4pv; Wed, 18 Jan 2023 23:47:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4FABF82247;
-	Wed, 18 Jan 2023 23:47:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4FABF82247
+	by smtp4.osuosl.org (Postfix) with ESMTP id 51C464092C;
+	Wed, 18 Jan 2023 23:47:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 51C464092C
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 1FD271BF392
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:02 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 64E931BF392
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id EF22960B1E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EF22960B1E
+ by smtp3.osuosl.org (Postfix) with ESMTP id 40DA4610AD
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 40DA4610AD
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 969imCJcM8Op for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Jan 2023 23:47:01 +0000 (UTC)
+ with ESMTP id 5DUoxNyqv603 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Jan 2023 23:47:03 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 21B6F6107E
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 21B6F6107E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 954CB6107E
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 954CB6107E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 23:47:03 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 5319DB81F9E;
- Wed, 18 Jan 2023 23:46:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B012CC433A8;
- Wed, 18 Jan 2023 23:46:57 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id DC46161ACF;
+ Wed, 18 Jan 2023 23:47:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 36586C433F1;
+ Wed, 18 Jan 2023 23:47:02 +0000 (UTC)
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: linux-pci@vger.kernel.org
-Date: Wed, 18 Jan 2023 17:46:09 -0600
-Message-Id: <20230118234612.272916-7-helgaas@kernel.org>
+Date: Wed, 18 Jan 2023 17:46:11 -0600
+Message-Id: <20230118234612.272916-9-helgaas@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20230118234612.272916-1-helgaas@kernel.org>
 References: <20230118234612.272916-1-helgaas@kernel.org>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674085617;
- bh=Q7STsSb6Kr+DZwWQHS/EQAYfGdVa2M58+aA/Ne1n18Y=;
+ d=kernel.org; s=k20201202; t=1674085622;
+ bh=jU3LaV/UIN+dmBuggye012PcdlnkG7nIjHD98dbjUpk=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=cIxtHpdDD818WpJWzpuP3a2PWgCskj8A81KrTlMGgFf7ETrwZ44Tjq9Z4c1a3i+Cj
- g6nCxHs2TevgKTpDIhBYE0MfwhGLBuoxiG8Y7G32fxwjTa7H0QYRNp41yqtIUxANFU
- z16nmYiEkuUUJEdnKDqG4z7kElqfRkfgmMSaCqYTNqnaWF4gWYoHCPVU5i2+San+MK
- Z0ZJCFEZ3L20USwjy/WKXOXAxreCc4nVF0pJtdq01l2LHV0cno4jUzKaV43vQ8fivb
- C63oqlF5SIX3bMUB1FZ+rj4agT8L5qr34it77kZzR+hjsRLf/TsBXuDviaqQlnZb0m
- fNpBsh/3U7n3g==
+ b=i4ewNbWLwndEi0QGob/RnVhLVMjzuxxSDIsj4Wz1njkOXrN9upsBTs0ek+BPlL5as
+ abQIZHzIDFX9Jwrt81zSgXU7iG8Dbwt1h94kki3ko5cioXiZCIEOkfZy25ZCh1f3dr
+ cwwgILQ4BWtV58AG2KtydiFYCCAOURTCsyziY0YAzmDaWvSTIo8CbjQ0m+Kduuv8KF
+ a5m+O4VBqcZLRX63ASPiFiX6tv4WrapyoAdu8xmNdUJFKlAq3GU9Bbw/9tXyKRoDdh
+ ioomQ2xowXpviJFHoiZqGEtYa8ZQnlTel79kH9P1YvHZBQ3eW1ffOOj5raLHnFojuh
+ cQDucPtnpq7qQ==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=cIxtHpdD
-Subject: [Intel-wired-lan] [PATCH 6/9] ice: Remove redundant
+ header.a=rsa-sha256 header.s=k20201202 header.b=i4ewNbWL
+Subject: [Intel-wired-lan] [PATCH 8/9] igc: Remove redundant
  pci_enable_pcie_error_reporting()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -118,34 +119,36 @@ Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
 Cc: intel-wired-lan@lists.osuosl.org
 Cc: netdev@vger.kernel.org
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a9a7f8b52140..9fb68919df02 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4672,7 +4672,6 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		return err;
- 	}
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 44b1740dc098..a4df4ef088a9 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -6430,8 +6430,6 @@ static int igc_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		goto err_pci_reg;
  
 -	pci_enable_pcie_error_reporting(pdev);
- 	pci_set_master(pdev);
+-
+ 	err = pci_enable_ptm(pdev, NULL);
+ 	if (err < 0)
+ 		dev_info(&pdev->dev, "PCIe PTM not supported by PCIe bus/controller\n");
+@@ -6636,7 +6634,6 @@ static int igc_probe(struct pci_dev *pdev,
+ err_ioremap:
+ 	free_netdev(netdev);
+ err_alloc_etherdev:
+-	pci_disable_pcie_error_reporting(pdev);
+ 	pci_release_mem_regions(pdev);
+ err_pci_reg:
+ err_dma:
+@@ -6684,8 +6681,6 @@ static void igc_remove(struct pci_dev *pdev)
  
- 	pf->pdev = pdev;
-@@ -4975,7 +4974,6 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	ice_devlink_destroy_regions(pf);
- 	ice_deinit_hw(hw);
- err_exit_unroll:
+ 	free_netdev(netdev);
+ 
 -	pci_disable_pcie_error_reporting(pdev);
- 	pci_disable_device(pdev);
- 	return err;
- }
-@@ -5103,7 +5101,6 @@ static void ice_remove(struct pci_dev *pdev)
- 	ice_reset(&pf->hw, ICE_RESET_PFR);
- 	pci_wait_for_pending_transaction(pdev);
- 	ice_clear_interrupt_scheme(pf);
--	pci_disable_pcie_error_reporting(pdev);
+-
  	pci_disable_device(pdev);
  }
  
