@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BEAB7C677F1
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Jan 2023 01:17:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F438C38159
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Jan 2023 01:18:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6F96840393;
-	Thu, 19 Jan 2023 01:17:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6F96840393
+	by smtp2.osuosl.org (Postfix) with ESMTP id E0E0940393;
+	Thu, 19 Jan 2023 01:18:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E0E0940393
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674091078;
-	bh=El5HGLSTAoUmsJy9GOtD+qhpLVtuPZxLO67v9bbtm4Q=;
+	s=default; t=1674091083;
+	bh=U8+kdwT/Q950QYaAdiDP5tvilIuIr6XSDAHil8HKiGw=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=9U+g4LdofTT2ZDbIofsl6zLOlXNzcOymHJ4aWYj5AxNVssHXCoatutHREWKYlV3wj
-	 05XiHwgthnwF+D4ophoPhTJIavuW7W/gubqTiSCrUqAAciNeJJqZ9YRwdbwKzO42c2
-	 sdmsq1NnGc0yo5Cw+bY1/2i6ejUoU6Xnu0yDtD5SFd2EVuTWgrwFjwz3kOlZOSD625
-	 7ywN1+nYF2tiG3BR/msqVSB1r8bmzjpKF/EgR6fA2TYhsn4wCif/CoOGpd+hhb7u72
-	 m115jqRYNzGH3Lytgs31ziTnMHX6RrGMBKlvPziFbyiBkCFZ2baxKAf0n3IIJYb6Ey
-	 IhPX8Ma2q9QkQ==
+	b=qXgAiKrgl7gIhSN25Tx8AljxZVGGRmyiPntXUFh0xbegb1hGkTjMOxdfccdhSY2BB
+	 83j9R7ZIplHk8uKdwigS9Fe9qFiZnz8RbxlNjFlRWzD84m5BSPg1sj8kgdPil6qwzJ
+	 489SogkbjT/dpc1d81pIdfVu+clM4IaGiSo8ERkMOIfXZ//y6KYuHDvoXF4B2RjZw9
+	 67qWVG70ZMspThad9z8kNWhBQKcj0cQttQ3uMnlWs91dzNun7yZqYtrivEdVrlk5K8
+	 csM92XwRiAa7E2h7Ng4qtmsHjMGUkWtQ/8FNr12mloWrakrXLw+smOaXUd24OGPft5
+	 dlH/w3zUAwteg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Flv3BTsbRVD3; Thu, 19 Jan 2023 01:17:57 +0000 (UTC)
+	with ESMTP id Kuzfkx85zm7O; Thu, 19 Jan 2023 01:18:02 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D108640C30;
-	Thu, 19 Jan 2023 01:17:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D108640C30
+	by smtp2.osuosl.org (Postfix) with ESMTP id B70F840C33;
+	Thu, 19 Jan 2023 01:18:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B70F840C33
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id B556F1BF95F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:18 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id C6B2B1BF95F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 65B024191B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 65B024191B
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2F53241921
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2F53241921
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zSffpHaRrs5S for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Jan 2023 01:17:05 +0000 (UTC)
+ with ESMTP id 52ifRbtaNdLt for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Jan 2023 01:17:07 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DFAAF41921
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6F0D04192B
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DFAAF41921
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:04 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="304840725"
-X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="304840725"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6F0D04192B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:05 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="304840731"
+X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="304840731"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Jan 2023 17:17:03 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="783881870"
-X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="783881870"
+X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="783881889"
+X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="783881889"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Jan 2023 17:17:02 -0800
+ 18 Jan 2023 17:17:03 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 18 Jan 2023 17:16:45 -0800
-Message-Id: <20230119011653.311675-6-jacob.e.keller@intel.com>
+Date: Wed, 18 Jan 2023 17:16:51 -0800
+Message-Id: <20230119011653.311675-12-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.39.1.405.gd4c25cc71f83
 In-Reply-To: <20230119011653.311675-1-jacob.e.keller@intel.com>
 References: <20230119011653.311675-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1674091024; x=1705627024;
+ t=1674091025; x=1705627025;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=xAMP0fr5qggukQRLWZYYd3ocbNfxIwjbzlKV8/x5DuI=;
- b=NZbho/9f2X5w19i2BuCVo3wOfR0e8Lb1UFZO6KvvdlaJYOQrcESm4szQ
- 9CkXEy3S1ZKpnbgJL0pybrK9jleDWmpwO/R2KQKg+6ME6QCFo8cBbK64c
- jnwzBOADlZ9wRAOevs/dZa9E7A1P5VFk9fA5bgUUsr2lya2u3p4C8wOOm
- IXg3Ll+EC7mjjZkhILjyEPW3KqgGr0CjD0kcbAY5uWx5Ra/5oY9mkIv2d
- KlLv90apSgekF8P7NW4tMTXA1ayLOPxgMRvEFek/Sv0XZHoSKtK4hgETM
- 6Adog3wfbHuSd8nePJmVMV4E9mtoWRuAt6Cq85IiAInr5n4xSNNd4t7HL
- w==;
+ bh=q4KTo0e7pUKxywTbconhlpox5Dwj3C8+TRjFMwncTdE=;
+ b=eAfjJudevSyYDv7+v9BoAAMTyFXMBxWJXr6dwNElPnVeWHKIGbPqvSL5
+ yiHrg7CXLzqdP1PvrFKQq2cTj3e4lA82uI3zhZ3ywH6pQvlmx2woexAe8
+ XuU0RwdrioecNPxK1bOrQpaFKjaKD0TK4PRTNkJ4HUpV4PyTkW7z4fn6x
+ Fx+AiwipEt0jfPS/+1AjWKAwdPoTbEEIRXAExwTvu/GYexP+lBqBxUbzK
+ 6oIWHgZgl9qYR2QmeNE/Ew5OL/eQdaze5TFuu0Zv+dp+8sraZn4BZWpMZ
+ 2O/iCCh802B37irMnLnAF0pLNoA5MdKu7nlV1Y0sOPDgKGBjrYcSB4//l
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NZbho/9f
-Subject: [Intel-wired-lan] [PATCH net-next v2 05/13] ice: Fix RDMA latency
- issue by allowing write-combining
+ header.a=rsa-sha256 header.s=Intel header.b=eAfjJude
+Subject: [Intel-wired-lan] [PATCH net-next v2 11/13] ice: introduce
+ clear_reset_state operation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,437 +102,149 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The current method of mapping the entire BAR region as a single uncacheable
-region does not allow RDMA to use write combining (WC). This results in
-increased latency with RDMA.
+When hardware is reset, the VF relies on the VFGEN_RSTAT register to detect
+when the VF is finished resetting. This is a tri-state register where 0
+indicates a reset is in progress, 1 indicates the hardware is done
+resetting, and 2 indicates that the software is done resetting.
 
-To fix this, we initially planned to reduce the size of the map made by the
-PF driver to include only up to the beginning of the RDMA space.
-Unfortunately this will not work in the future as there are some hardware
-features which use registers beyond the RDMA area. This includes Scalable
-IOV, a virtualization feature being worked on currently.
+Currently the PF driver relies on the device hardware resetting VFGEN_RSTAT
+when a global reset occurs. This works ok, but it does mean that the VF
+might not immediately notice a reset when the driver first detects that the
+global reset is occurring.
 
-Instead of simply reducing the size of the map, we need a solution which
-will allow access to all areas of the address space while leaving the RDMA
-area open to be mapped with write combining.
+This is also problematic for Scalable IOV, because there is no read/write
+equivalent VFGEN_RSTAT register for the Scalable VSI type. Instead, the
+Scalable IOV VFs will need to emulate this register.
 
-To allow for this, and fix the RMDA latency issue without blocking the
-higher areas of the BAR, we need to create multiple separate memory maps.
-Doing so will create a sparse mapping rather than a contiguous single area.
+To support this, introduce a new VF operation, clear_reset_state, which is
+called when the PF driver first detects a global reset. The Single Root IOV
+implementation can just write to VFGEN_RSTAT to ensure its cleared
+immediately, without waiting for the actual hardware reset to begin. The
+Scalable IOV implementation will use this as part of its tracking of the
+reset status to allow properly reporting the emulated VFGEN_RSTAT to the VF
+driver.
 
-Replace the void *hw_addr with a special ice_hw_addr structure which
-represents the multiple mappings as a flexible array.
-
-Based on the available BAR size, map up to 3 regions:
-
- * The space before the RDMA section
- * The RDMA section which wants write combining behavior
- * The space after the RDMA section
-
-Add an ice_get_hw_addr function which converts a register offset into the
-appropriate kernel address based on which chunk it falls into. This does
-cost us slightly more computation overhead for register access as we now
-must check the table each access. However, we can pre-compute the addresses
-where this would most be a problem.
-
-With this change, the RDMA driver is now free to map the RDMA register
-section as write-combined without impacting access to other device
-registers used by the main PF driver.
-
-Reported-by: Dave Ertman <david.m.ertman@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 Changes since v1:
-* Export ice_get_hw_addr
-* Use ice_get_hw_addr in iRDMA driver
-* Fix the WARN_ON to use %pa instead of %llx for printing a resource_size_t
+* Add no-op version of  ice_set_vf_state_dis for when CONFIG_PCI_IOV is
+  disabled.
+* Make ice_set_state_qs_dis static since there are no callers outsice
+  ice_vf_lib.c
 
- drivers/infiniband/hw/irdma/main.c           |   2 +-
- drivers/net/ethernet/intel/ice/ice.h         |   4 +-
- drivers/net/ethernet/intel/ice/ice_base.c    |   5 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c |   3 +-
- drivers/net/ethernet/intel/ice/ice_main.c    | 177 +++++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_osdep.h   |  48 ++++-
- drivers/net/ethernet/intel/ice/ice_txrx.h    |   2 +-
- drivers/net/ethernet/intel/ice/ice_type.h    |   2 +-
- 8 files changed, 219 insertions(+), 24 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c   |  2 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c  | 16 ++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c | 12 +++++++++++-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h |  5 +++--
+ 4 files changed, 31 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/infiniband/hw/irdma/main.c b/drivers/infiniband/hw/irdma/main.c
-index 514453777e07..37a2650abbbb 100644
---- a/drivers/infiniband/hw/irdma/main.c
-+++ b/drivers/infiniband/hw/irdma/main.c
-@@ -228,7 +228,7 @@ static void irdma_fill_device_info(struct irdma_device *iwdev, struct ice_pf *pf
- 	rf->cdev = pf;
- 	rf->gen_ops.register_qset = irdma_lan_register_qset;
- 	rf->gen_ops.unregister_qset = irdma_lan_unregister_qset;
--	rf->hw.hw_addr = pf->hw.hw_addr;
-+	rf->hw.hw_addr = ice_get_hw_addr(&pf->hw, 0);
- 	rf->pcidev = pf->pdev;
- 	rf->msix_count =  pf->num_rdma_msix;
- 	rf->pf_id = pf->hw.pf_id;
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 51a1a89f7b5a..cd81974822cc 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -75,7 +75,9 @@
- #include "ice_vsi_vlan_ops.h"
- #include "ice_gnss.h"
- 
--#define ICE_BAR0		0
-+#define ICE_BAR0			0
-+#define ICE_BAR_RDMA_WC_START		0x0800000
-+#define ICE_BAR_RDMA_WC_END		0x1000000
- #define ICE_REQ_DESC_MULTIPLE	32
- #define ICE_MIN_NUM_DESC	64
- #define ICE_MAX_NUM_DESC	8160
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 554095b25f44..332d5a1b326c 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -480,7 +480,7 @@ static int ice_setup_rx_ctx(struct ice_rx_ring *ring)
- 	ring->rx_offset = ice_rx_offset(ring);
- 
- 	/* init queue specific tail register */
--	ring->tail = hw->hw_addr + QRX_TAIL(pf_q);
-+	ring->tail = ice_get_hw_addr(hw, QRX_TAIL(pf_q));
- 	writel(0, ring->tail);
- 
- 	return 0;
-@@ -790,8 +790,7 @@ ice_vsi_cfg_txq(struct ice_vsi *vsi, struct ice_tx_ring *ring,
- 	/* init queue specific tail reg. It is referred as
- 	 * transmit comm scheduler queue doorbell.
- 	 */
--	ring->tail = hw->hw_addr + QTX_COMM_DBELL(pf_q);
--
-+	ring->tail = ice_get_hw_addr(hw, QTX_COMM_DBELL(pf_q));
- 	if (IS_ENABLED(CONFIG_DCB))
- 		tc = ring->dcb_tc;
- 	else
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index 936f0e0c553d..b54f470be8d7 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -3085,7 +3085,8 @@ ice_set_ringparam(struct net_device *netdev, struct ethtool_ringparam *ring,
- 		/* this is to allow wr32 to have something to write to
- 		 * during early allocation of Rx buffers
- 		 */
--		rx_rings[i].tail = vsi->back->hw.hw_addr + PRTGEN_STATUS;
-+		rx_rings[i].tail = ice_get_hw_addr(&vsi->back->hw,
-+						   PRTGEN_STATUS);
- 
- 		err = ice_setup_rx_ring(&rx_rings[i]);
- 		if (err)
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 4165fde0106d..3b98721fd9d8 100644
+index 3b98721fd9d8..5d890b6aa9d2 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -596,6 +596,163 @@ ice_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	set_bit(ICE_PREPARED_FOR_RESET, pf->state);
+@@ -537,7 +537,7 @@ ice_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	/* Disable VFs until reset is completed */
+ 	mutex_lock(&pf->vfs.table_lock);
+ 	ice_for_each_vf(pf, bkt, vf)
+-		ice_set_vf_state_qs_dis(vf);
++		ice_set_vf_state_dis(vf);
+ 	mutex_unlock(&pf->vfs.table_lock);
+ 
+ 	if (ice_is_eswitch_mode_switchdev(pf)) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index 46088c05d485..4d8930b83b35 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -654,6 +654,21 @@ static void ice_sriov_free_vf(struct ice_vf *vf)
+ 	kfree_rcu(vf, rcu);
  }
  
 +/**
-+ * ice_get_hw_addr - Get memory address for a given device register
-+ * @hw: pointer to the HW struct
-+ * @reg: the register to get address of
-+ *
-+ * Convert a register offset into the appropriate memory mapped kernel
-+ * address.
-+ *
-+ * Returns the pointer address or an ERR_PTR on failure.
++ * ice_sriov_clear_reset_state - clears VF Reset status register
++ * @vf: the vf to configure
 + */
-+void __iomem *ice_get_hw_addr(struct ice_hw *hw, resource_size_t reg)
++static void ice_sriov_clear_reset_state(struct ice_vf *vf)
 +{
-+	struct ice_hw_addr *hw_addr = (struct ice_hw_addr *)hw->hw_addr;
-+	struct ice_hw_addr_map *map;
-+	unsigned int i;
++	struct ice_hw *hw = &vf->pf->hw;
 +
-+	if (WARN_ON(!hw_addr))
-+		return (void __iomem *)ERR_PTR(-EIO);
-+
-+	for (i = 0, map = hw_addr->maps; i < hw_addr->nr; i++, map++)
-+		if (reg >= map->start && reg < map->end)
-+			return (u8 __iomem *)map->addr + (reg - map->start);
-+
-+	WARN_ONCE(1, "Unable to map register address %pa to kernel address",
-+		  &reg);
-+
-+	return (void __iomem *)ERR_PTR(-EFAULT);
-+}
-+EXPORT_SYMBOL_GPL(ice_get_hw_addr);
-+
-+/**
-+ * ice_map_hw_addr - map a region of device registers to memory
-+ * @pdev: the PCI device
-+ * @map: the address map structure
-+ *
-+ * Map the specified section of the hardware registers into memory, storing
-+ * the memory mapped address in the provided structure.
-+ *
-+ * Returns 0 on success or an error code on failure.
-+ */
-+static int ice_map_hw_addr(struct pci_dev *pdev, struct ice_hw_addr_map *map)
-+{
-+	struct device *dev = &pdev->dev;
-+	resource_size_t size, base;
-+	void __iomem *addr;
-+
-+	if (WARN_ON(map->end <= map->start))
-+		return -EIO;
-+
-+	size = map->end - map->start;
-+	base = pci_resource_start(pdev, map->bar) + map->start;
-+	addr = ioremap(base, size);
-+	if (!addr) {
-+		dev_err(dev, "%s: remap at offset %llu failed\n",
-+			__func__, map->start);
-+		return -EIO;
-+	}
-+
-+	map->addr = addr;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_map_all_hw_addr - Request and map PCI BAR memory
-+ * @pf: pointer to the PF structure
-+ *
-+ * Request and reserve all PCI BAR regions. Memory map chunks of the PCI BAR
-+ * 0 into a sparse memory map to allow the RDMA region to be mapped with write
-+ * combining.
-+ *
-+ * Returns 0 on success or an error code on failure.
-+ */
-+static int ice_map_all_hw_addr(struct ice_pf *pf)
-+{
-+	struct pci_dev *pdev = pf->pdev;
-+	struct device *dev = &pdev->dev;
-+	struct ice_hw_addr *hw_addr;
-+	resource_size_t bar_len;
-+	unsigned int nr_maps;
-+	int err;
-+
-+	bar_len = pci_resource_len(pdev, 0);
-+	if (bar_len > ICE_BAR_RDMA_WC_END)
-+		nr_maps = 2;
-+	else
-+		nr_maps = 1;
-+
-+	hw_addr = kzalloc(struct_size(hw_addr, maps, nr_maps), GFP_KERNEL);
-+	if (!hw_addr)
-+		return -ENOMEM;
-+
-+	hw_addr->nr = nr_maps;
-+
-+	err = pci_request_mem_regions(pdev, dev_driver_string(dev));
-+	if (err) {
-+		dev_err(dev, "pci_request_mem_regions failed, err %pe\n",
-+			ERR_PTR(err));
-+		goto err_free_hw_addr;
-+	}
-+
-+	/* Map the start of the BAR as uncachable */
-+	hw_addr->maps[0].bar = 0;
-+	hw_addr->maps[0].start = 0;
-+	hw_addr->maps[0].end = min_t(resource_size_t, bar_len,
-+				     ICE_BAR_RDMA_WC_START);
-+	err = ice_map_hw_addr(pdev, &hw_addr->maps[0]);
-+	if (err)
-+		goto err_release_mem_regions;
-+
-+	/* Map everything past the RDMA section as uncachable */
-+	if (nr_maps > 1) {
-+		hw_addr->maps[1].bar = 0;
-+		hw_addr->maps[1].start = ICE_BAR_RDMA_WC_END;
-+		hw_addr->maps[1].end = bar_len;
-+		err = ice_map_hw_addr(pdev, &hw_addr->maps[1]);
-+		if (err)
-+			goto err_unmap_bar_start;
-+	}
-+
-+	pf->hw.hw_addr = (typeof(pf->hw.hw_addr))hw_addr;
-+
-+	return 0;
-+
-+err_unmap_bar_start:
-+	iounmap(hw_addr->maps[0].addr);
-+err_release_mem_regions:
-+	pci_release_mem_regions(pdev);
-+err_free_hw_addr:
-+	kfree(hw_addr);
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_unmap_all_hw_addr - Release device register memory maps
-+ * @pf: pointer to the PF structure
-+ *
-+ * Release all PCI memory maps and regions.
-+ */
-+static void ice_unmap_all_hw_addr(struct ice_pf *pf)
-+{
-+	struct ice_hw_addr *hw_addr = (struct ice_hw_addr *)pf->hw.hw_addr;
-+	struct pci_dev *pdev = pf->pdev;
-+	unsigned int i;
-+
-+	if (WARN_ON(!hw_addr))
-+		return;
-+
-+	pf->hw.hw_addr = NULL;
-+	for (i = 0; i < hw_addr->nr; i++)
-+		iounmap(hw_addr->maps[i].addr);
-+	kfree(hw_addr);
-+
-+	pci_release_mem_regions(pdev);
++	/* Clear the reset status register so that VF immediately sees that
++	 * the device is resetting, even if hardware hasn't yet gotten around
++	 * to clearing VFGEN_RSTAT for us.
++	 */
++	wr32(hw, VFGEN_RSTAT(vf->vf_id), VIRTCHNL_VFR_INPROGRESS);
 +}
 +
  /**
-  * ice_do_reset - Initiate one of many types of resets
-  * @pf: board private structure
-@@ -5101,19 +5258,10 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 		return -EINVAL;
- 	}
- 
--	/* this driver uses devres, see
--	 * Documentation/driver-api/driver-model/devres.rst
--	 */
--	err = pcim_enable_device(pdev);
-+	err = pci_enable_device(pdev);
- 	if (err)
- 		return err;
- 
--	err = pcim_iomap_regions(pdev, BIT(ICE_BAR0), dev_driver_string(dev));
--	if (err) {
--		dev_err(dev, "BAR0 I/O map error %d\n", err);
--		return err;
--	}
--
- 	pf = ice_allocate_pf(dev);
- 	if (!pf)
- 		return -ENOMEM;
-@@ -5138,7 +5286,11 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- 	set_bit(ICE_SERVICE_DIS, pf->state);
- 
- 	hw = &pf->hw;
--	hw->hw_addr = pcim_iomap_table(pdev)[ICE_BAR0];
-+
-+	err = ice_map_all_hw_addr(pf);
-+	if (err)
-+		goto err_init_iomap_fail;
-+
- 	pci_save_state(pdev);
- 
- 	hw->back = pf;
-@@ -5186,6 +5338,8 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
- err_init_eth:
- 	ice_deinit(pf);
- err_init:
-+	ice_unmap_all_hw_addr(pf);
-+err_init_iomap_fail:
- 	pci_disable_pcie_error_reporting(pdev);
- 	pci_disable_device(pdev);
- 	return err;
-@@ -5295,6 +5449,7 @@ static void ice_remove(struct pci_dev *pdev)
- 	 */
- 	ice_reset(&pf->hw, ICE_RESET_PFR);
- 	pci_wait_for_pending_transaction(pdev);
-+	ice_unmap_all_hw_addr(pf);
- 	pci_disable_pcie_error_reporting(pdev);
- 	pci_disable_device(pdev);
+  * ice_sriov_clear_mbx_register - clears SRIOV VF's mailbox registers
+  * @vf: the vf to configure
+@@ -787,6 +802,7 @@ static void ice_sriov_post_vsi_rebuild(struct ice_vf *vf)
+ static const struct ice_vf_ops ice_sriov_vf_ops = {
+ 	.reset_type = ICE_VF_RESET,
+ 	.free = ice_sriov_free_vf,
++	.clear_reset_state = ice_sriov_clear_reset_state,
+ 	.clear_mbx_register = ice_sriov_clear_mbx_register,
+ 	.trigger_reset_register = ice_sriov_trigger_reset_register,
+ 	.poll_reset_status = ice_sriov_poll_reset_status,
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+index 1a5d64454f99..2ea801ebb2ac 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
+@@ -717,7 +717,7 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
+  * ice_set_vf_state_qs_dis - Set VF queues state to disabled
+  * @vf: pointer to the VF structure
+  */
+-void ice_set_vf_state_qs_dis(struct ice_vf *vf)
++static void ice_set_vf_state_qs_dis(struct ice_vf *vf)
+ {
+ 	/* Clear Rx/Tx enabled queues flag */
+ 	bitmap_zero(vf->txq_ena, ICE_MAX_RSS_QS_PER_VF);
+@@ -725,6 +725,16 @@ void ice_set_vf_state_qs_dis(struct ice_vf *vf)
+ 	clear_bit(ICE_VF_STATE_QS_ENA, vf->vf_states);
  }
-diff --git a/drivers/net/ethernet/intel/ice/ice_osdep.h b/drivers/net/ethernet/intel/ice/ice_osdep.h
-index 82bc54fec7f3..4b16ff489c3a 100644
---- a/drivers/net/ethernet/intel/ice/ice_osdep.h
-+++ b/drivers/net/ethernet/intel/ice/ice_osdep.h
-@@ -18,10 +18,49 @@
- #endif
- #include <net/udp_tunnel.h>
  
--#define wr32(a, reg, value)	writel((value), ((a)->hw_addr + (reg)))
--#define rd32(a, reg)		readl((a)->hw_addr + (reg))
--#define wr64(a, reg, value)	writeq((value), ((a)->hw_addr + (reg)))
--#define rd64(a, reg)		readq((a)->hw_addr + (reg))
-+struct ice_hw;
-+
 +/**
-+ * struct ice_hw_addr_map - a single hardware address memory map
-+ * @addr: iomem address of the start of this map
-+ * @start: register offset at the start of this map, inclusive bound
-+ * @end: register offset at the end of this map, exclusive bound
-+ * @bar: the BAR this map is for
-+ *
-+ * Structure representing one map of a device BAR register space. Stored as
-+ * part of the ice_hw_addr structure in an array ordered by the start offset.
-+ *
-+ * The addr value is an iomem address returned by ioremap. The start indicates
-+ * the first register offset this map is valid for. The end indicates the end
-+ * of the map, and is an exclusive bound.
++ * ice_set_vf_state_dis - Set VF state to disabled
++ * @vf: pointer to the VF structure
 + */
-+struct ice_hw_addr_map {
-+	void __iomem *addr;
-+	resource_size_t start;
-+	resource_size_t end;
-+	int bar;
-+};
++void ice_set_vf_state_dis(struct ice_vf *vf)
++{
++	ice_set_vf_state_qs_dis(vf);
++	vf->vf_ops->clear_reset_state(vf);
++}
 +
-+/**
-+ * struct ice_hw_addr - a list of hardware address memory maps
-+ * @nr: the number of maps made
-+ * @maps: flexible array of maps made during device initialization
-+ *
-+ * Structure representing a series of sparse maps of the device BAR 0 address
-+ * space to kernel addresses. Users must convert a register offset to an iomem
-+ * address using ice_get_hw_addr.
-+ */
-+struct ice_hw_addr {
-+	unsigned int nr;
-+	struct ice_hw_addr_map maps[];
-+};
-+
-+void __iomem *ice_get_hw_addr(struct ice_hw *hw, resource_size_t reg);
-+
-+#define wr32(a, reg, value)	writel((value), ice_get_hw_addr((a), (reg)))
-+#define rd32(a, reg)		readl(ice_get_hw_addr((a), (reg)))
-+#define wr64(a, reg, value)	writeq((value), ice_get_hw_addr((a), (reg)))
-+#define rd64(a, reg)		readq(ice_get_hw_addr((a), (reg)))
+ /* Private functions only accessed from other virtualization files */
  
- #define ice_flush(a)		rd32((a), GLGEN_STAT)
- #define ICE_M(m, s)		((m) << (s))
-@@ -32,7 +71,6 @@ struct ice_dma_mem {
- 	size_t size;
- };
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+index e3d94f3ca40d..5bb75edb6cef 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+@@ -56,6 +56,7 @@ struct ice_mdd_vf_events {
+ struct ice_vf_ops {
+ 	enum ice_disq_rst_src reset_type;
+ 	void (*free)(struct ice_vf *vf);
++	void (*clear_reset_state)(struct ice_vf *vf);
+ 	void (*clear_mbx_register)(struct ice_vf *vf);
+ 	void (*trigger_reset_register)(struct ice_vf *vf, bool is_vflr);
+ 	bool (*poll_reset_status)(struct ice_vf *vf);
+@@ -213,7 +214,7 @@ u16 ice_get_num_vfs(struct ice_pf *pf);
+ struct ice_vsi *ice_get_vf_vsi(struct ice_vf *vf);
+ bool ice_is_vf_disabled(struct ice_vf *vf);
+ int ice_check_vf_ready_for_cfg(struct ice_vf *vf);
+-void ice_set_vf_state_qs_dis(struct ice_vf *vf);
++void ice_set_vf_state_dis(struct ice_vf *vf);
+ bool ice_is_any_vf_in_unicast_promisc(struct ice_pf *pf);
+ void
+ ice_vf_get_promisc_masks(struct ice_vf *vf, struct ice_vsi *vsi,
+@@ -259,7 +260,7 @@ static inline int ice_check_vf_ready_for_cfg(struct ice_vf *vf)
+ 	return -EOPNOTSUPP;
+ }
  
--struct ice_hw;
- struct device *ice_hw_to_dev(struct ice_hw *hw);
+-static inline void ice_set_vf_state_qs_dis(struct ice_vf *vf)
++static inline void ice_set_vf_state_dis(struct ice_vf *vf)
+ {
+ }
  
- #ifdef CONFIG_DYNAMIC_DEBUG
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index 4fd0e5d0a313..3d2834673903 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -272,7 +272,7 @@ struct ice_rx_ring {
- 	struct net_device *netdev;	/* netdev ring maps to */
- 	struct ice_vsi *vsi;		/* Backreference to associated VSI */
- 	struct ice_q_vector *q_vector;	/* Backreference to associated vector */
--	u8 __iomem *tail;
-+	void __iomem *tail;
- 	union {
- 		struct ice_rx_buf *rx_buf;
- 		struct xdp_buff **xdp_buf;
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index e3f622cad425..f34975efeed7 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -821,7 +821,7 @@ struct ice_mbx_data {
- 
- /* Port hardware description */
- struct ice_hw {
--	u8 __iomem *hw_addr;
-+	void *hw_addr;
- 	void *back;
- 	struct ice_aqc_layer_props *layer_info;
- 	struct ice_port_info *port_info;
 -- 
 2.39.1.405.gd4c25cc71f83
 
