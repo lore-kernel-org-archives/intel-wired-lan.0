@@ -1,111 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A47FCC38159
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Jan 2023 00:09:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 812E4C678D4
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Jan 2023 01:17:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 360CB610BA;
-	Thu, 19 Jan 2023 00:09:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 360CB610BA
+	by smtp1.osuosl.org (Postfix) with ESMTP id E53CA821E1;
+	Thu, 19 Jan 2023 01:17:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E53CA821E1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674086973;
-	bh=+9ZWxKanB2o2UTPVvr4myQ92SQZgEzYAqW6oo1xbhOs=;
-	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	s=default; t=1674091028;
+	bh=9QwBPwruz5j5jtyFBKkuzfYy4eYBBWSo0/BAJUDCL9Q=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=kV6XDUp1V+mfICpSV0DBLKR19nMRAHE3i64b3rEMJA4nV1Izfisvw5gZXZqL9KOCB
-	 YFZO21LEnGsDSkmsZgcx3bUnFlyEtdGaF8Thvj4fL41dMfYIO3FQAy0mBU6Wqvt5DO
-	 wEVXAOQ5oce1oIz40oUH8ZktV2cjyBUTd59dnNgrT8xoTt1QBctNQyZsGNkuFSCEOU
-	 7d+1uYbAU7cd8F1aC4iNH/q0ivcRxGeA9A7kc3GqJAlId27368rN41HCaRb4bMrk9V
-	 gzbYbInz7BIud7k5ymyVFUlL1/a+bECfWv/TJkU3st/+mjfY6H//ljC3QHn2kCVFj3
-	 cJJrO6yGU+wtw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dhcWyhmw1-RW; Thu, 19 Jan 2023 00:09:32 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EFD4E610AB;
-	Thu, 19 Jan 2023 00:09:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EFD4E610AB
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 0E8601BF3F9
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 22:12:06 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id DC3D1821B0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 22:12:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DC3D1821B0
+	b=0xHzeWPitHRC32Z/7b/Du2lSN6+Rr/yXsA8XnbAT6J86CJfP1plEu/sddSxdhl+lS
+	 jw80ftbSs8vsjFCRDoE01tXxTvWcJ3R9dRQDExs6r3q0dOoGaMQ1BTYE1UZQsGMy28
+	 wOwB82lEUcJH4ElXG0AZfvw0LmsQrZddmjM4QTNFNl9EnZz5A/bXthBMZl3OCDtjNq
+	 ZGpDYwkVr0z5QWxzgdgiFV1Z8jZ6RY7B/2EWKCn/+QSwblbVYOreemSu7IzSYC8Nk5
+	 tdLfV1IZnZ1sZLiO5mLzZw78Qt0dJch04Q7mGNHCy4RIUIEKUwTBIRGDEbNvJyARzM
+	 4N8oEnVnjoYsg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id kz8yJJlLBmji for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Jan 2023 22:12:05 +0000 (UTC)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 7o70PPjNab7u; Thu, 19 Jan 2023 01:17:08 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 09D48821BA;
+	Thu, 19 Jan 2023 01:17:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 09D48821BA
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 93C111BF95F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:06 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 683C34192D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 683C34192D
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id zQPdqrKoGFlQ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Jan 2023 01:17:04 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 03469821AE
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 03469821AE
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 22:12:04 +0000 (UTC)
-Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com
- [209.85.210.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-619-25R-d2eDMP6lx4UynxQ54w-1; Wed, 18 Jan 2023 17:12:01 -0500
-X-MC-Unique: 25R-d2eDMP6lx4UynxQ54w-1
-Received: by mail-pf1-f200.google.com with SMTP id
- u3-20020a056a00124300b0056d4ab0c7cbso21186pfi.7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Jan 2023 14:12:01 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=cc:to:subject:message-id:date:from:in-reply-to:references
- :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=ZMEMrcYWxCYgncCZ7gZI9FW1ZAN3xqpELmriu9FkXc0=;
- b=sHCqfjHQnnfSnKDRVykRWhx4dFhJ7id9P3A61INdWOcifNDCa/WXKmCKHQppqBew8c
- L6ZpwIoVXEj6SMGurVwM5OyVKZqFkjZ3snch+ahkNR+7EFvKhhM92nCHjdRQHGYXK7Je
- cX0oWS2KijQuGRu5AAnETVVX38mg9LvO08WOuLCg159eLO37tu/R7aTW0z4DN33r/Qgi
- 9qp6RXeA+Gh/UkbC8jUH8nyscbUjTHlcod4rkwBH41ga1/mVxO8AYZ4vpPfpbTB3GJ1O
- 4HLQtHX4nStF2xq6sxWvY3UvqTisH2OIU+HQsRE+2rjK1cFhEtSfabV3O5B7I8+BTzqi
- P49Q==
-X-Gm-Message-State: AFqh2kqK+4N/vPUMcu7hQU+Fbs0RryLcfJuwRiw7w8n8LgJcS++AZcig
- BJFv+616/6z4GCc+PYA+vo/ky19zetWmReCpm8d0wb8rAIYnOsRWmJipk1eqhrm+xOQAkTdd4++
- 1Bp7s0N1BKF6gcOLv6/kpBYFyRArWepim4QNDUVVTWuF/zA==
-X-Received: by 2002:a17:90a:bd8b:b0:229:3b43:a31f with SMTP id
- z11-20020a17090abd8b00b002293b43a31fmr1010112pjr.81.1674079920393; 
- Wed, 18 Jan 2023 14:12:00 -0800 (PST)
-X-Google-Smtp-Source: AMrXdXsEVBmBylWpQyn2dcYBw+l/HGBhJWmGomA3c22HZNKZfJ0OUa8lD0ANX47rTRzPNb7JB63lpkyMuZfIjLQXNyI=
-X-Received: by 2002:a17:90a:bd8b:b0:229:3b43:a31f with SMTP id
- z11-20020a17090abd8b00b002293b43a31fmr1010097pjr.81.1674079920131; Wed, 18
- Jan 2023 14:12:00 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EADC4418A4
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id EADC4418A4
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:03 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="304840721"
+X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="304840721"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Jan 2023 17:17:02 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="783881857"
+X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="783881857"
+Received: from jekeller-desk.amr.corp.intel.com (HELO
+ jekeller-desk.jekeller.internal) ([10.166.241.1])
+ by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Jan 2023 17:17:02 -0800
+From: Jacob Keller <jacob.e.keller@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Date: Wed, 18 Jan 2023 17:16:41 -0800
+Message-Id: <20230119011653.311675-2-jacob.e.keller@intel.com>
+X-Mailer: git-send-email 2.39.1.405.gd4c25cc71f83
+In-Reply-To: <20230119011653.311675-1-jacob.e.keller@intel.com>
+References: <20230119011653.311675-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
-References: <20230117181533.2350335-1-neelx@redhat.com>
- <2bdeb975-6d45-67bb-3017-f19df62fe7af@intel.com>
- <CACjP9X-hKf8g2UqitV8_G7WQW7u6Js5EsCNutsAMA4WD7YYSwA@mail.gmail.com>
- <42e74619-f2d0-1079-28b1-61e9e17ae953@intel.com>
-In-Reply-To: <42e74619-f2d0-1079-28b1-61e9e17ae953@intel.com>
-From: Daniel Vacek <neelx@redhat.com>
-Date: Wed, 18 Jan 2023 23:11:23 +0100
-Message-ID: <CACjP9X8SHZAd_+HSLJCxYxSRQuRmq3r48id13r17n2ehrec2YQ@mail.gmail.com>
-To: Jacob Keller <jacob.e.keller@intel.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-X-Mailman-Approved-At: Thu, 19 Jan 2023 00:09:30 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1674079923;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=ZMEMrcYWxCYgncCZ7gZI9FW1ZAN3xqpELmriu9FkXc0=;
- b=SjA+O/j/B90caiKtZLGm7wbr5y7v8rXE2de4aj28+IrgP7u+MIeiZEIxCa6Bnk20Y+G2Cg
- VSUh0bz5xLBI7rsh6po9y7BbeP2EgfEpVTvfAZiuhptAugXEdiU1x5SvEO6zoOp8GJ4rvg
- ypVXPbdO+ZfA/cJvUgz5r4zaGA7TYi8=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=SjA+O/j/
-Subject: Re: [Intel-wired-lan] [PATCH] ice/ptp: fix the PTP worker retrying
- indefinitely if the link went down
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1674091023; x=1705627023;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=dtN6cqfICt/yfq4MCOGCN4azNN5Kau///aMcbthSyJA=;
+ b=aid6iDCq6K6pQ7hLbyb1au85GknyqeapenY5a0i8Dgt8Gm+VcjnWB9Fw
+ baoxSjkUMTHBbyW3pehpQ0zihKGcsqoM5LipY8Sjgx+cV/6T5T5pAQ1FE
+ 6GsPOxG1yCB6es/I3KGoV8hGUzcoo/4O3DnbLlJK/CDRysa3p7wq5Ps2i
+ O4fdPmnf5otwruokgJfaMECysVj04mdKi+yUhJckCsFQihYwI+wvdJKvV
+ nD509AqcMtb/IG/IbbGYPy/BVWJfRRaUROM8Vs58G5lxkfwN1K5cfm5Lq
+ 9I4BLszr9Tf4E3zN2Z7J3fXshxJdDU2NQmpkcQd3UZhE6va2XyTY77qfp
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=aid6iDCq
+Subject: [Intel-wired-lan] [PATCH net-next v2 01/13] ice: fix function
+ comment referring to ice_vsi_alloc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,67 +96,42 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Kolacinski, Karol" <karol.kolacinski@intel.com>, netdev@vger.kernel.org,
- Richard Cochran <richardcochran@gmail.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- Siddaraju <siddaraju.dh@intel.com>
+Cc: Anthony Nguyen <anthony.l.nguyen@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Jan 18, 2023 at 9:59 PM Jacob Keller <jacob.e.keller@intel.com> wrote:
-> On 1/18/2023 7:14 AM, Daniel Vacek wrote:
-> > On Tue, Jan 17, 2023 at 7:47 PM Jacob Keller <jacob.e.keller@intel.com> wrote:
-> >>
-> >> At a minimum I think I would only set drop_ts but not not goto skip_ts_read.
-> >
-> > IIUC, that would still fail to clear the tx->in_use bit in case ice_read_phy_tstamp()
-> > returns with error. It would only work for the other case where no error is
-> > returned but rather the returned &raw_tstamp is invalid. I'll send a v2 of
-> > this fix trying to address the goto concern.
-> >
->
-> Please re-send the patch with the goto concern addressed. (only set
-> drop_ts, and still read the timestamp just in case and make sure that if
-> the read function fails while drop_ts is set we still drop the ts).
+Since commit 1d2e32275de7 ("ice: split ice_vsi_setup into smaller
+functions") ice_vsi_alloc has not been responsible for all of the behavior
+implied by the comment for ice_vsi_setup_vector_base.
 
-Just in case it got lost I did send the patch here:
+Fix the comment to refer to the new function ice_vsi_alloc_def().
 
-https://lore.kernel.org/intel-wired-lan/20230118161727.2485457-1-neelx@redhat.com/
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+---
+Changes since v1:
+* Add Reviewed-by tag
 
-But unfortunately I misplaced the --in-reply-to header with --reply-to one :-(
-Hopefully it arrived to you safely.
+ drivers/net/ethernet/intel/ice/ice_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> I believe that alleviates my concerns regarding the potential link down
-> race with a completed timestamp above.
->
-> We also should already be preventing requesting new timestamps while
-> link is down so that should be sufficient to combine with this and cover
-> the three flows:
->
-> 1) request tx timestamp
-> 2) link down
-> 3) timestamp never occurs
->
-> 1) request tx timestamp
-> 2) timestamp occurs
-> 3) link goes down while processing
-
-I was thinking this is the case we got reported. But then again, I'm
-not really experienced in this field.
-
---nX
-
-> 1) link down
-> 2) request tx timestamp rejected
->
-> Thanks!
->
-> -Jake
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 04f31a83e327..62d27e50f40e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1527,7 +1527,7 @@ static int ice_get_vf_ctrl_res(struct ice_pf *pf, struct ice_vsi *vsi)
+  * ice_vsi_setup_vector_base - Set up the base vector for the given VSI
+  * @vsi: ptr to the VSI
+  *
+- * This should only be called after ice_vsi_alloc() which allocates the
++ * This should only be called after ice_vsi_alloc_def() which allocates the
+  * corresponding SW VSI structure and initializes num_queue_pairs for the
+  * newly allocated VSI.
+  *
+-- 
+2.39.1.405.gd4c25cc71f83
 
 _______________________________________________
 Intel-wired-lan mailing list
