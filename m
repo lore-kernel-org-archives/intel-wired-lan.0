@@ -1,89 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B51EAC677F1
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Jan 2023 01:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41B50C677F1
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Jan 2023 01:17:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 5A0EC400D3;
-	Thu, 19 Jan 2023 01:17:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5A0EC400D3
+	by smtp4.osuosl.org (Postfix) with ESMTP id CC562418A4;
+	Thu, 19 Jan 2023 01:17:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CC562418A4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674091049;
-	bh=WUHYTFQ6mqgLFbkhFwcpkX8aqkkenghhRCNxMgFAzMA=;
+	s=default; t=1674091053;
+	bh=+nPIKPhbZ+7hJ6a8hr+HjeHY/Hlq6TZQN+e7/XO8t6E=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=CjDFd6k8YMuNGFRPMclu99mjEo6KpgdqKX0pm9LVKjeYonI+xIWlUjlGw8MO8+YNw
-	 T7zE/oovwNr4maCrDR0eO1Af4YP5C2EyftfBl7tV+FuRWrh/9cmz/QomIPek8sjFCz
-	 1BYAUNIH+UiiwmH1A4BhBn6mFKTQAilkwRkP8S2Hmqn/bkPFcFgI4IaIrwYwO2oeGO
-	 HjriCGZHAFwP3xYikcoGCUu8oixY1cYm8h3CHxAawO0ygumhKcs3dPJ/V6KUTjAF/l
-	 ii4p2ckvrQj4ifKI4+JGVhkYd/byh31SMzOdI7cgE4V5uo1eg4l4jYXLWqfJMFv5rl
-	 HhI6k8GQ2RxQg==
+	b=Nruji001EJ+kZTlZ48JDTcatGNlOEoQx+EZ21wheKsMMmLpe7eM9hNRF/pZIlkLEn
+	 ZVpZF5+icp3AR5SkQC2YJ+gPT/y3KgIX6hO2zVN51vbYL6WlJqYpgHYOYQdBGfWkFF
+	 TYIi2aubDq0vb8wLTEb7vwPpmVY5i8Tn5DbTXzYgQW3mozqh13gXmECp0CJx/KSLMj
+	 i4SxMeP7TaaKhbKAGGQ45nGj257uAHpFMEIMCUP0URJJPAjPIzW3FgD87Z11XZXdaP
+	 f4uUl/st5fgyc+8fyhVZj/5T4Y4KSjFt2J/oD0uZvRI6wxPSW1UZ2nc4bGOLNVBgsw
+	 Jrh0ut+hCeP3w==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zWYk7LrtL421; Thu, 19 Jan 2023 01:17:28 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id kEx9DjMsKVkt; Thu, 19 Jan 2023 01:17:32 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3A64240C30;
-	Thu, 19 Jan 2023 01:17:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3A64240C30
+	by smtp4.osuosl.org (Postfix) with ESMTP id 67D7341900;
+	Thu, 19 Jan 2023 01:17:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 67D7341900
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 582731BF95F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:11 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 68E801BF95F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id C13724191E
+ by smtp4.osuosl.org (Postfix) with ESMTP id EE2C141920
  for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C13724191E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EE2C141920
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Mdesscprvilx for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Jan 2023 01:17:07 +0000 (UTC)
+ with ESMTP id SufkCRcRlELP for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Jan 2023 01:17:04 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2513641924
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 329CF4190C
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2513641924
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:05 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="304840728"
-X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="304840728"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 329CF4190C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Jan 2023 01:17:04 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="304840722"
+X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="304840722"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Jan 2023 17:17:03 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="783881880"
-X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="783881880"
+X-IronPort-AV: E=McAfee;i="6500,9779,10594"; a="783881860"
+X-IronPort-AV: E=Sophos;i="5.97,226,1669104000"; d="scan'208";a="783881860"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  18 Jan 2023 17:17:02 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 18 Jan 2023 17:16:48 -0800
-Message-Id: <20230119011653.311675-9-jacob.e.keller@intel.com>
+Date: Wed, 18 Jan 2023 17:16:42 -0800
+Message-Id: <20230119011653.311675-3-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.39.1.405.gd4c25cc71f83
 In-Reply-To: <20230119011653.311675-1-jacob.e.keller@intel.com>
 References: <20230119011653.311675-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1674091025; x=1705627025;
+ t=1674091024; x=1705627024;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=e0S7SX40nqcYkl2B2fk0IMmym40otqXNOAG5SH+NYWM=;
- b=ZWJ88JvY1wOpZnEd0Ss7CLq2/302tSyb8JRMmxjqGLZNuOeNWcFbk8IR
- Tei75x/aE5CxUUJWTJbMa8GYUgKAD8kaC6pq61OuaEto3gwQcw6CoOR9q
- zI9eOH6zR1iQ/i3awfIBg2wtzyKAcAbKZ1FuvQVrTYzQgF97lERx6tTPI
- nFN18zM5+JNnDBVee6SnrROsNcmos/9etPGM9C/rbzuadEOwCkyxT6jh3
- n/AHWqPSg4zzbeoJkKplhXz6qK9If/ipW2ZhyeW8RxABLorgbdcJMyBBJ
- J4ymsVyUU1gWmrOJxl7qEht8aaXMhECN+7CaNEtVRfAUQ2HfVthbPq7QN
- w==;
+ bh=ZaVat+/w0JD+HYGTykHv95kgUoJx/om5eeko29yK8AE=;
+ b=ae4drFZutHcOIT7yu0qtkGKVxh6HPtjvgj+URCogyLuTIrUhTvKGgthI
+ XPxrfhV1y/vLwfG5LC8d+lvnUOhzJZnx7rh6Q+SYqbg8POF2NBEEDu2EB
+ PuKXauD2uvWID0gH5eyO59o/i1tygC4MthWtCCxTgKqKlddv7Fr6LGOIP
+ cpbZizjOCM7uJu+hWK2wBw9zU8fOW4+c94yccXnjaZrQm0rvSR47OvXf3
+ rkE5M3bOIYXLQKj/0MgjcgnbH0PMVM5sW08LswwYvU1rE9QEG7+gxhWZm
+ NgDXA8PZMF2DWH4wTnTLBdu5w82pV/R3ZyWr4/VfYs23qUet1/b33IfUX
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ZWJ88JvY
-Subject: [Intel-wired-lan] [PATCH net-next v2 08/13] ice: add a function to
- initialize vf entry
+ header.a=rsa-sha256 header.s=Intel header.b=ae4drFZu
+Subject: [Intel-wired-lan] [PATCH net-next v2 02/13] ice: drop unnecessary
+ VF parameter from several VSI functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,114 +96,113 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Anthony Nguyen <anthony.l.nguyen@intel.com>,
- Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Cc: Anthony Nguyen <anthony.l.nguyen@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Some of the initialization code for Single Root IOV VFs will need to be
-reused when we introduce Scalable IOV. Pull this code out into a new
-ice_initialize_vf_entry helper function.
+The vsi->vf pointer gets assigned early on during ice_vsi_alloc. Several
+functions currently take a VF pointer, but they can just use the existing
+vsi->vf pointer as needed. Modify these functions to drop the unnecessary
+VF parameter.
 
-Co-developed-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Note that ice_vsi_cfg is not changed as a following change will refactor so
+that the VF pointer is assigned during ice_vsi_cfg rather than
+ice_vsi_alloc.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
 Changes since v1:
-* Added Harshitha's Co-developed-by and Signed-off-by
+* Add Reviewed-by tag
+* Fix kdoc warning about non-existent function argument
 
-Note that this patch was originally authored by Harshitha internally, but
-she no longer works for Intel. I took over authorship with her blessing.
-I've added her Co-developed-by to indicate authorship, but her @intel.com
-address is no longer valid.
+ drivers/net/ethernet/intel/ice/ice_lib.c | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
 
-I did not think it right to have her be the "From:" address since she will
-not be responsible for addressing feedback.
-
- drivers/net/ethernet/intel/ice/ice_sriov.c    | 16 ++----------
- drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 26 +++++++++++++++++++
- .../ethernet/intel/ice/ice_vf_lib_private.h   |  1 +
- 3 files changed, 29 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 6ff29be974c5..6c07f661d44c 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -867,21 +867,9 @@ static int ice_create_vf_entries(struct ice_pf *pf, u16 num_vfs)
- 		/* set sriov vf ops for VFs created during SRIOV flow */
- 		vf->vf_ops = &ice_sriov_vf_ops;
- 
-+		ice_initialize_vf_entry(vf);
-+
- 		vf->vf_sw_id = pf->first_sw;
--		/* assign default capabilities */
--		vf->spoofchk = true;
--		vf->num_vf_qs = pf->vfs.num_qps_per;
--		ice_vc_set_default_allowlist(vf);
--
--		/* ctrl_vsi_idx will be set to a valid value only when VF
--		 * creates its first fdir rule.
--		 */
--		ice_vf_ctrl_invalidate_vsi(vf);
--		ice_vf_fdir_init(vf);
--
--		ice_virtchnl_set_dflt_ops(vf);
--
--		mutex_init(&vf->cfg_lock);
- 
- 		hash_add_rcu(vfs->table, &vf->entry, vf_id);
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 624c7de8b205..b6fd1e852968 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -698,6 +698,32 @@ void ice_set_vf_state_qs_dis(struct ice_vf *vf)
- 
- /* Private functions only accessed from other virtualization files */
- 
-+/**
-+ * ice_initialize_vf_entry - Initialize a VF entry
-+ * @vf: pointer to the VF structure
-+ */
-+void ice_initialize_vf_entry(struct ice_vf *vf)
-+{
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_vfs *vfs;
-+
-+	vfs = &pf->vfs;
-+
-+	/* assign default capabilities */
-+	vf->spoofchk = true;
-+	vf->num_vf_qs = vfs->num_qps_per;
-+	ice_vc_set_default_allowlist(vf);
-+	ice_virtchnl_set_dflt_ops(vf);
-+
-+	/* ctrl_vsi_idx will be set to a valid value only when iAVF
-+	 * creates its first fdir rule.
-+	 */
-+	ice_vf_ctrl_invalidate_vsi(vf);
-+	ice_vf_fdir_init(vf);
-+
-+	mutex_init(&vf->cfg_lock);
-+}
-+
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 62d27e50f40e..46af8b2707b6 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -166,14 +166,14 @@ static void ice_vsi_set_num_desc(struct ice_vsi *vsi)
  /**
-  * ice_dis_vf_qs - Disable the VF queues
-  * @vf: pointer to the VF structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib_private.h b/drivers/net/ethernet/intel/ice/ice_vf_lib_private.h
-index a0f204746f4e..552d1d02982d 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib_private.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib_private.h
-@@ -23,6 +23,7 @@
- #warning "Only include ice_vf_lib_private.h in CONFIG_PCI_IOV virtualization files"
- #endif
+  * ice_vsi_set_num_qs - Set number of queues, descriptors and vectors for a VSI
+  * @vsi: the VSI being configured
+- * @vf: the VF associated with this VSI, if any
+  *
+  * Return 0 on success and a negative value on error
+  */
+-static void ice_vsi_set_num_qs(struct ice_vsi *vsi, struct ice_vf *vf)
++static void ice_vsi_set_num_qs(struct ice_vsi *vsi)
+ {
+ 	enum ice_vsi_type vsi_type = vsi->type;
+ 	struct ice_pf *pf = vsi->back;
++	struct ice_vf *vf = vsi->vf;
  
-+void ice_initialize_vf_entry(struct ice_vf *vf);
- void ice_dis_vf_qs(struct ice_vf *vf);
- int ice_check_vf_init(struct ice_vf *vf);
- enum virtchnl_status_code ice_err_to_virt_err(int err);
+ 	if (WARN_ON(vsi_type == ICE_VSI_VF && !vf))
+ 		return;
+@@ -594,15 +594,13 @@ static int ice_vsi_alloc_stat_arrays(struct ice_vsi *vsi)
+ /**
+  * ice_vsi_alloc_def - set default values for already allocated VSI
+  * @vsi: ptr to VSI
+- * @vf: VF for ICE_VSI_VF and ICE_VSI_CTRL
+  * @ch: ptr to channel
+  */
+ static int
+-ice_vsi_alloc_def(struct ice_vsi *vsi, struct ice_vf *vf,
+-		  struct ice_channel *ch)
++ice_vsi_alloc_def(struct ice_vsi *vsi, struct ice_channel *ch)
+ {
+ 	if (vsi->type != ICE_VSI_CHNL) {
+-		ice_vsi_set_num_qs(vsi, vf);
++		ice_vsi_set_num_qs(vsi);
+ 		if (ice_vsi_alloc_arrays(vsi))
+ 			return -ENOMEM;
+ 	}
+@@ -2702,14 +2700,11 @@ static int ice_vsi_cfg_tc_lan(struct ice_pf *pf, struct ice_vsi *vsi)
+ /**
+  * ice_vsi_cfg_def - configure default VSI based on the type
+  * @vsi: pointer to VSI
+- * @vf: pointer to VF to which this VSI connects. This field is used primarily
+- *      for the ICE_VSI_VF type. Other VSI types should pass NULL.
+  * @ch: ptr to channel
+  * @init_vsi: is this an initialization or a reconfigure of the VSI
+  */
+ static int
+-ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_vf *vf, struct ice_channel *ch,
+-		int init_vsi)
++ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_channel *ch, int init_vsi)
+ {
+ 	struct device *dev = ice_pf_to_dev(vsi->back);
+ 	struct ice_pf *pf = vsi->back;
+@@ -2717,7 +2712,7 @@ ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_vf *vf, struct ice_channel *ch,
+ 
+ 	vsi->vsw = pf->first_sw;
+ 
+-	ret = ice_vsi_alloc_def(vsi, vf, ch);
++	ret = ice_vsi_alloc_def(vsi, ch);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -2875,7 +2870,7 @@ int ice_vsi_cfg(struct ice_vsi *vsi, struct ice_vf *vf, struct ice_channel *ch,
+ {
+ 	int ret;
+ 
+-	ret = ice_vsi_cfg_def(vsi, vf, ch, init_vsi);
++	ret = ice_vsi_cfg_def(vsi, ch, init_vsi);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -3504,7 +3499,7 @@ int ice_vsi_rebuild(struct ice_vsi *vsi, int init_vsi)
+ 	prev_rxq = vsi->num_rxq;
+ 
+ 	ice_vsi_decfg(vsi);
+-	ret = ice_vsi_cfg_def(vsi, vsi->vf, vsi->ch, init_vsi);
++	ret = ice_vsi_cfg_def(vsi, vsi->ch, init_vsi);
+ 	if (ret)
+ 		goto err_vsi_cfg;
+ 
 -- 
 2.39.1.405.gd4c25cc71f83
 
