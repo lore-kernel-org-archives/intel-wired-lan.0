@@ -1,80 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99C35C38142
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Jan 2023 03:17:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 640CDC46467
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 20 Jan 2023 05:36:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 33D58400FC;
-	Fri, 20 Jan 2023 03:17:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 33D58400FC
+	by smtp4.osuosl.org (Postfix) with ESMTP id D0B6541D84;
+	Fri, 20 Jan 2023 05:36:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D0B6541D84
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674184664;
-	bh=Ln4qLnMccr7KsOHi+qbSMoMk3HCIKqKsNk2MXMeZUCc=;
+	s=default; t=1674192964;
+	bh=HN8FB91B9/T3wXMlJKPQhQBrZDeZXbtxv7dzrZpviDY=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=mwEk6z/hw+VyXoGkBcp57KD7n27JCe8lqwGvx6aq7l4AMyMZKDoKfHoeKW9WNUF3i
-	 RuOlfoKb67fq+P0YtA9+rIfhuFkWGYggAiqN86MiMici1Csfh6PCqrxlTqmajpuMEP
-	 C7aLGP7xbluZ0aYK7M/udyXnFjU2XFN+/DV+L9wvjeQBJ2QQTsJQU3YgPsvlH6kAk0
-	 Zwrel05oD4FqB6BOn8K3/RZsJg8nvpIU+PHAWZM9+MbJAvh7LzbgJlWt/6BnDQ1NhE
-	 C28RA1tYiZXP1pbqZBB0UyrKmLoD+RNmp95CldX4uWbar3M/X36H9uX7uG0GeeP5pL
-	 Io4LepM4+Tspw==
+	b=AdLaDwe59CJCgaKzYPHtcLEM3cGfRcZadBuHy1GtMiFuYSryRfyjjwykUTEnKxD0t
+	 KOtr50uon/mK1xEeuDlw34D/LSAMn+bxsDFfelZrcExLnGIqyiQFgD3yzOvjsFGuxw
+	 ypYHH5rzkxfv4R5ROa21t4NVBNZ1+JJTyDHPFgedZMxQbmgXsY2FtIyUWhYM6BgFID
+	 gf28AeVczDeQtjCGkCt4gZHrDssTsssXfgTKKiWWLs2oMKRx2w4w4Yz44LuNU7fe+c
+	 tZFa8ZyRNGeBRs5MZrxPjAsGmz56fkKpbOBCCFRwH3h164iVPguCfu02Ql7rrzS4GV
+	 YsaIz9c5e//hQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xrBpa8MN_HLX; Fri, 20 Jan 2023 03:17:43 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 1Rza_51YMl3K; Fri, 20 Jan 2023 05:36:03 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3215E40126;
-	Fri, 20 Jan 2023 03:17:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3215E40126
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 9B49E1BF470
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Jan 2023 03:17:41 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 99B0441D7F;
+	Fri, 20 Jan 2023 05:36:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 99B0441D7F
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 7341A1BF397
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Jan 2023 05:36:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 75BDD40126
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Jan 2023 03:17:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 75BDD40126
+ by smtp4.osuosl.org (Postfix) with ESMTP id 43A7F41D7D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Jan 2023 05:36:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 43A7F41D7D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id rFCixJmn71d4 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 20 Jan 2023 03:17:40 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 1LBXG8EA--Vm for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 20 Jan 2023 05:36:00 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9BDBE400FC
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 9BDBE400FC
- for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Jan 2023 03:17:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 729DD41D6C
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 729DD41D6C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 20 Jan 2023 05:36:00 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id A596EB826F9;
- Fri, 20 Jan 2023 03:17:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 03EE5C433F1;
- Fri, 20 Jan 2023 03:17:35 +0000 (UTC)
-Date: Thu, 19 Jan 2023 19:17:35 -0800
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 592F361E1D;
+ Fri, 20 Jan 2023 05:35:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61686C433D2;
+ Fri, 20 Jan 2023 05:35:58 +0000 (UTC)
+Date: Thu, 19 Jan 2023 21:35:57 -0800
 From: Jakub Kicinski <kuba@kernel.org>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Message-ID: <20230119191735.4bc11fd2@kernel.org>
-In-Reply-To: <20230118234612.272916-3-helgaas@kernel.org>
-References: <20230118234612.272916-1-helgaas@kernel.org>
- <20230118234612.272916-3-helgaas@kernel.org>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>
+Message-ID: <20230119213557.57598e8f@kernel.org>
+In-Reply-To: <2c722338-c113-14a1-040b-70326e2e2451@intel.com>
+References: <20230119184045.GA482553@bhelgaas>
+ <2c722338-c113-14a1-040b-70326e2e2451@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674184656;
- bh=uU3oYI54L8VUNcIszGsQrFwwcTkBniJmQ4MJV8jgxeU=;
+ d=kernel.org; s=k20201202; t=1674192958;
+ bh=8fStNEoSsGqotQjU+mQkrtNKHP0mDcCwZkH9P+/tZzk=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=X3IJSsoJlyArYgPxfFji8JJ141V1EnCDTsHj9ob0eTDDZV0plBOD289ABFprkPp2B
- AOPSuN8cf9XjiRx2B7m0rbBnfdY1zVSBAqImK4HcrYZ3nD71tMO7/IrjZwt1foHMH9
- XT35k/MAw3kgcM6jQUZDW628l8GyrtxPY4FuURpp1+ovx2k6bqF4494bpV8kqeeZ3n
- qKFT9XD6KolBzJJtZM1Qoq+JU8bVOddZRgFb0n8FoLX1vKj9D6qWG7+HEA/mc05KIt
- x4ICHCaEUBvtbM5KHlVNRXvETKVMJBbac76tNDpJW5seXBx3XyqF30XgS2MvFct1rx
- ZQjWWK3/GmIpw==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=Nia8b2pq9XxzIMd3lyGpEAN0Pu2CG6R/GrdcTOZCV4rgawIEe5u3WFJu2zMwOjyZG
+ 8eEBY+03XA+j95KK5CCOiiWA9sXNPWwz2vFhJzWV3mNQotav9sq+K0i/IZJ/Cr6itK
+ q1pRC7CcHDb23n3UfaPPtScqf9+o5Y9UBXKndLHQRiR7KKYi4BfKO6EIjltz9VBnHe
+ ORM8i89pvcJDHieagLHpp1wDMAZCl8BnxhP/qDOrPJfe+bxGoUK/FpTrjLrFUv5JmJ
+ qpfaAS6LoYjQeyVqWaQEbykyPEh8BPopyy8Jop/IBYEorFcFoXeAlfgN6kfHfE8lsX
+ n5v0uF+zOoXUQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=X3IJSsoJ
+ header.a=rsa-sha256 header.s=k20201202 header.b=Nia8b2pq
 Subject: Re: [Intel-wired-lan] [PATCH 2/9] e1000e: Remove redundant
  pci_enable_pcie_error_reporting()
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -89,34 +89,35 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+Cc: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
  Jesse Brandeburg <jesse.brandeburg@intel.com>,
  intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- Bjorn Helgaas <bhelgaas@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>
+ Bjorn Helgaas <bhelgaas@google.com>, Bjorn Helgaas <helgaas@kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, 18 Jan 2023 17:46:05 -0600 Bjorn Helgaas wrote:
-> From: Bjorn Helgaas <bhelgaas@google.com>
+On Thu, 19 Jan 2023 13:31:39 -0800 Tony Nguyen wrote:
+> > Thanks a million for taking a look at these, Tony!
+> > 
+> > These driver patches are all independent and have no dependency on the
+> > 1/9 PCI/AER patch.  What's your opinion on merging these?  Should they
+> > go via netdev?  Should they be squashed into a single patch that does
+> > all the Intel drivers at once?
+> > 
+> > I'm happy to squash them and/or merge them via the PCI tree, whatever
+> > is easiest.  
 > 
-> pci_enable_pcie_error_reporting() enables the device to send ERR_*
-> Messages.  Since f26e58bf6f54 ("PCI/AER: Enable error reporting when AER is
-> native"), the PCI core does this for all devices during enumeration.
-> 
-> Remove the redundant pci_enable_pcie_error_reporting() call from the
-> driver.  Also remove the corresponding pci_disable_pcie_error_reporting()
-> from the driver .remove() path.
-> 
-> Note that this doesn't control interrupt generation by the Root Port; that
-> is controlled by the AER Root Error Command register, which is managed by
-> the AER service driver.
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> Since there's no dependency, IMO, it'd make sense to go through 
+> Intel-wired-lan/netdev. Keeping them per driver is fine.
 
-How would you like to route these? Looks like there's no dependency 
-so we can pick them up?
+Ah, damn, I spammed Bjorn with the same question because email was
+pooped most of the day :/ Reportedly not vger, email in general but 
+fool me once...
+
+Tony, if you could take these via your tree that'd be best.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
