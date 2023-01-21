@@ -1,82 +1,82 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68D47C25B4E
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Jan 2023 03:11:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98A7DC25B4E
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 21 Jan 2023 03:12:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D1C6041D94;
-	Sat, 21 Jan 2023 03:11:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D1C6041D94
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3567160F98;
+	Sat, 21 Jan 2023 03:12:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3567160F98
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674270696;
-	bh=5FZA0tYrlTD/x1FDYm/kqNeLkaLEpKA3UOPUl/MDsLE=;
+	s=default; t=1674270722;
+	bh=NyDlCZqKC/mkfnVWHKiNKjm8JsXMBQIm2aVhjU1XEfg=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=KzvHRfRt6c9QDZWm4cH3CpteUkJ6wMnNgspKhsPou06AUpg/S9yEgEjCBAW6ilOyD
-	 1JmzLdmI3SOoBwZEWpxtlD0165MrU/FF4NuukHEozDXxUXrACJbNSbbAEtyCttw2z+
-	 +2gtIMwP31PIT4SZOevKw/NmXKM5xFkJOHsRsDPpQ2FCccjKECOwZgdHpY3fc7mHOp
-	 ZlK02u9DpDcmwztX6fEoKgL25E0VWIDveBri2+SynpKHPB0bf/E/erL8MDXLOXwKjI
-	 rbm0FC2KCrVEHGfj84vWACszDLjXNOXvJgcnDZolUVsqmxyj9cWRgeRSSgCBouvVb5
-	 9EZPjYy7Ec4Qw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7AKxwwfHiCUF; Sat, 21 Jan 2023 03:11:35 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 61DE241D95;
-	Sat, 21 Jan 2023 03:11:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 61DE241D95
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 82F8C1BF3C8
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Jan 2023 03:11:34 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 58C9461015
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Jan 2023 03:11:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 58C9461015
+	b=RItSH+0s6uZtcxulVj8P4dpFxCwvvX+akOuve0KLRYg1mWQoHv+5rH9bX4/0ieLn9
+	 zRF+QJ5qU4QjFDHDdyOBLP9tmAA/SQrTPNFsrZ3dcqH0g37sb6+ACw2GRrgpbfRvcF
+	 seKVJqdGOTVAa/lHjqLD/+qlxQkaQhmV9fgI5Q9J734C8suADxAntv7EE4rRfvJTig
+	 dKXGcXHcC5uc3j2427+/WOLk69TsAhJ4hoamGqdZkPcyfWncXS65lIrwj4b0PiedB6
+	 cUjZ7toGjAxGiX35HcSomXMmbYFZfU3OUVXNHeBvS52e2OAco/LcVPQqaSo5cyl2ZO
+	 BdOkmczcGwyTA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id tKxx02CWPxbY for <intel-wired-lan@lists.osuosl.org>;
- Sat, 21 Jan 2023 03:11:33 +0000 (UTC)
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id gQ9ib9aNe-W0; Sat, 21 Jan 2023 03:12:01 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 19D5F61015;
+	Sat, 21 Jan 2023 03:12:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 19D5F61015
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id F019E1BF3C8
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Jan 2023 03:11:58 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id C911741D94
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Jan 2023 03:11:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C911741D94
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id DlfA2zo8wGEg for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 21 Jan 2023 03:11:58 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 313CD60F98
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E3E1541D95
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 313CD60F98
- for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Jan 2023 03:11:33 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E3E1541D95
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 21 Jan 2023 03:11:57 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ams.source.kernel.org (Postfix) with ESMTPS id 1E736B82B88;
- Sat, 21 Jan 2023 03:11:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 89DB8C433D2;
- Sat, 21 Jan 2023 03:11:27 +0000 (UTC)
-Date: Fri, 20 Jan 2023 19:11:26 -0800
+ by ams.source.kernel.org (Postfix) with ESMTPS id 1118EB82B88;
+ Sat, 21 Jan 2023 03:11:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E036C433D2;
+ Sat, 21 Jan 2023 03:11:53 +0000 (UTC)
+Date: Fri, 20 Jan 2023 19:11:52 -0800
 From: Jakub Kicinski <kuba@kernel.org>
 To: Lorenzo Bianconi <lorenzo@kernel.org>
-Message-ID: <20230120191126.06c9d514@kernel.org>
-In-Reply-To: <272fa19f57de2d14e9666b4cd9b1ae8a61a94807.1674234430.git.lorenzo@kernel.org>
+Message-ID: <20230120191152.44d29bb1@kernel.org>
+In-Reply-To: <861224c406f78694530fde0d52c49d92e1e990a2.1674234430.git.lorenzo@kernel.org>
 References: <cover.1674234430.git.lorenzo@kernel.org>
- <272fa19f57de2d14e9666b4cd9b1ae8a61a94807.1674234430.git.lorenzo@kernel.org>
+ <861224c406f78694530fde0d52c49d92e1e990a2.1674234430.git.lorenzo@kernel.org>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674270688;
- bh=0Ahj2+lLhgamHf1JuTMBQvTGpUhCziAO+zN7cZlAgC8=;
+ d=kernel.org; s=k20201202; t=1674270714;
+ bh=+ECSThDtgHq6VGg+SpyqaVTiA6kkOP5Gz3WruwdxuCs=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=svDoaH82a7e6lBsakjnsprasdriJYV5fpwVBhgA/gbE6g9PX1jrqMkqnFVWV7TwLk
- X3Zeg0eteiYeAmcW4hC0VOug9SlqzDWNvm0xxa7emc/RqzNyHkGxro9Yv+DK/dv1Ri
- 92r02by2ezsn9dkkE1vsIGlmQ2alDPRKEKLcRaJF8d6O1sRXl57GRf/59sf7GwUGxz
- /Uj2zP+lYxnaRJlyta7+8tVJHeov8gTyUjH/Ewrzo9Wokruj0T9189gPaHDK4fqetZ
- grpMZy67/YX6VoTXviUDO0rdd9cLS3fi7NjGkVRaBYBNCeRi2en3IgVg4BSN8S74w9
- TFu08XGxYEbYw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=Q7fCzHWAYbDwT4PYu3HePieOlwppJsOEOFtdfUuolfJPWgFq0jBNXAdrvnAOgquy8
+ O1XVFROVjdXeWMYkxtLP1j+W4W2I78YxWIkhGt3aKVVJdE5ryRxRXvQR4hNIseKnmy
+ paFDe+9oEu9pVRQgkWYhkeTw4M8zsMmwf0x4eDo8qXG2JOfmYZ/Kuh8PxFkYaX9c+R
+ w9UyryL+dHSOi3qRsGfVWZLeyhpsKJ1i1yczFjpFeL8w7oKhVCBzk51CR/FzJ2UXWd
+ 6SIwaIz7a8BrPWmEE3ICu9TKPSQvrod+3UPzt9Lj5yB5x0ygjpkNavxF01pdY+ihlf
+ f63olYqn4KsrQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=svDoaH82
-Subject: Re: [Intel-wired-lan] [PATCH bpf-next 1/7] netdev-genl: create a
- simple family for netdev stuff
+ header.a=rsa-sha256 header.s=k20201202 header.b=Q7fCzHWA
+Subject: Re: [Intel-wired-lan] [PATCH bpf-next 2/7] drivers: net: turn on
+ XDP features
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,131 +103,24 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, 20 Jan 2023 18:16:50 +0100 Lorenzo Bianconi wrote:
-> From: Jakub Kicinski <kuba@kernel.org>
-> 
-> Add a Netlink spec-compatible family for netdevs.
-> This is a very simple implementation without much
-> thought going into it.
-> 
-> It allows us to reap all the benefits of Netlink specs,
-> one can use the generic client to issue the commands:
-> 
->   $ ./gen.py --spec netdev.yaml --do dev_get --json='{"ifindex": 2}'
->   {'ifindex': 2, 'xdp-features': 31}
-> 
->   $ ./gen.py --spec netdev.yaml --dump dev_get
->   [{'ifindex': 1, 'xdp-features': 0}, {'ifindex': 2, 'xdp-features': 31}]
-
-In the meantime I added support for rendering enums in Python.
-So you can show names in the example. eg:
-
-$ ./cli.py --spec netdev.yaml --dump dev_get 
-[{'ifindex': 1, 'xdp-features': set()},
- {'ifindex': 2,
-  'xdp-features': {'ndo-xmit', 'pass', 'redirect', 'aborted', 'drop'}},
- {'ifindex': 3, 'xdp-features': {'rx-sg'}}]
-
-> the generic python library does not have flags-by-name
-> support, yet, but we also don't have to carry strings
-> in the messages, as user space can get the names from
-> the spec.
-> 
-> Co-developed-by: Lorenzo Bianconi <lorenzo@kernel.org>
-> Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
-> Co-developed-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
-> Signed-off-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
-> Co-developed-by: Marek Majtyka <alardam@gmail.com>
-> Signed-off-by: Marek Majtyka <alardam@gmail.com>
-> Signed-off-by: Jakub Kicinski <kuba@kernel.org>
-> ---
->  Documentation/netlink/specs/netdev.yaml |  72 ++++++++++
-
-FWIW I'm not 100% sure if we should scope the family to all of netdev
-or just xdp. Same for the name of the op, should we call the op dev_get
-or dev_xdp_get..
-
-> diff --git a/include/uapi/linux/netdev.h b/include/uapi/linux/netdev.h
-> new file mode 100644
-> index 000000000000..254fc336d469
-> --- /dev/null
-> +++ b/include/uapi/linux/netdev.h
-> @@ -0,0 +1,66 @@
-> +/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-> +/* Do not edit directly, auto-generated from: */
-
-Like this line says, you can't hand edit this file.
-Next time someone adds an attribute all your changes will be wiped.
-
-> +/*	Documentation/netlink/specs/netdev.yaml */
-> +/* YNL-GEN uapi header */
-> +
-> +#ifndef _UAPI_LINUX_NETDEV_H
-> +#define _UAPI_LINUX_NETDEV_H
-> +
-> +#define NETDEV_FAMILY_NAME	"netdev"
-> +#define NETDEV_FAMILY_VERSION	1
-> +
-> +enum netdev_xdp_act {
-> +	NETDEV_XDP_ACT_ABORTED_BIT,
-> +	NETDEV_XDP_ACT_DROP_BIT,
-> +	NETDEV_XDP_ACT_PASS_BIT,
-> +	NETDEV_XDP_ACT_TX_BIT,
-> +	NETDEV_XDP_ACT_REDIRECT_BIT,
-> +	NETDEV_XDP_ACT_NDO_XMIT_BIT,
-> +	NETDEV_XDP_ACT_XSK_ZEROCOPY_BIT,
-> +	NETDEV_XDP_ACT_HW_OFFLOAD_BIT,
-> +	NETDEV_XDP_ACT_RX_SG_BIT,
-> +	NETDEV_XDP_ACT_NDO_XMIT_SG_BIT
-
-You need to add -bit to all the enum names in the yaml if you want 
-to have _BIT in the name here.
-
-> +};
-> +
-> +#define NETDEV_XDP_ACT_ABORTED		BIT(NETDEV_XDP_ACT_ABORTED_BIT)
-> +#define NETDEV_XDP_ACT_DROP		BIT(NETDEV_XDP_ACT_DROP_BIT)
-> +#define NETDEV_XDP_ACT_PASS		BIT(NETDEV_XDP_ACT_PASS_BIT)
-> +#define NETDEV_XDP_ACT_TX		BIT(NETDEV_XDP_ACT_TX_BIT)
-> +#define NETDEV_XDP_ACT_REDIRECT		BIT(NETDEV_XDP_ACT_REDIRECT_BIT)
-> +#define NETDEV_XDP_ACT_NDO_XMIT		BIT(NETDEV_XDP_ACT_NDO_XMIT_BIT)
-> +#define NETDEV_XDP_ACT_XSK_ZEROCOPY	BIT(NETDEV_XDP_ACT_XSK_ZEROCOPY_BIT)
-> +#define NETDEV_XDP_ACT_HW_OFFLOAD	BIT(NETDEV_XDP_ACT_HW_OFFLOAD_BIT)
-> +#define NETDEV_XDP_ACT_RX_SG		BIT(NETDEV_XDP_ACT_RX_SG_BIT)
-> +#define NETDEV_XDP_ACT_NDO_XMIT_SG	BIT(NETDEV_XDP_ACT_NDO_XMIT_SG_BIT)
-> +
-> +#define NETDEV_XDP_ACT_BASIC		(NETDEV_XDP_ACT_DROP |	\
-> +					 NETDEV_XDP_ACT_PASS |	\
-> +					 NETDEV_XDP_ACT_TX |	\
-> +					 NETDEV_XDP_ACT_ABORTED)
-> +#define NETDEV_XDP_ACT_FULL		(NETDEV_XDP_ACT_BASIC |	\
-> +					 NETDEV_XDP_ACT_REDIRECT)
-> +#define NETDEV_XDP_ACT_ZC		(NETDEV_XDP_ACT_FULL |	\
-> +					 NETDEV_XDP_ACT_XSK_ZEROCOPY)
-
-These defines don't belong in uAPI. Especially the use of BIT().
-
-> +			if (err < 0)
-> +				break;
-> +cont:
-> +			idx++;
-> +		}
-> +	}
-> +
-> +	rtnl_unlock();
-> +
-> +	if (err != -EMSGSIZE)
-> +		return err;
-> +
-> +	cb->args[1] = idx;
-> +	cb->args[0] = h;
-> +	cb->seq = net->dev_base_seq;
-> +	nl_dump_check_consistent(cb, nlmsg_hdr(skb));
-
-I think that this line can be dropped.
-
-> +	return skb->len;
+On Fri, 20 Jan 2023 18:16:51 +0100 Lorenzo Bianconi wrote:
+> +static inline void
+> +xdp_features_set_redirect_target(xdp_features_t *xdp_features, bool support_sg)
+> +{
+> +	*xdp_features |= NETDEV_XDP_ACT_NDO_XMIT;
+> +	if (support_sg)
+> +		*xdp_features |= NETDEV_XDP_ACT_NDO_XMIT_SG;
 > +}
+> +
+> +static inline void
+> +xdp_features_clear_redirect_target(xdp_features_t *xdp_features)
+> +{
+> +	*xdp_features &= ~(NETDEV_XDP_ACT_NDO_XMIT |
+> +			   NETDEV_XDP_ACT_NDO_XMIT_SG);
+> +}
+> +
+
+Shouldn't these generate netlink notifications?
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
