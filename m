@@ -4,81 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D81E7C27C76
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 22 Jan 2023 11:49:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 811EEC25B4E
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 22 Jan 2023 12:09:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5C3F760E53;
-	Sun, 22 Jan 2023 11:49:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5C3F760E53
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1A91B60E51;
+	Sun, 22 Jan 2023 12:09:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1A91B60E51
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674388170;
-	bh=djHw7evFhNMyY1kGZ348Cqkl5M3C/1m893ZxsG1HncM=;
+	s=default; t=1674389388;
+	bh=SdLR6fPRQYZiRWE7Z8siTH4uKE3W3t83HIBL/17hU4s=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=QUZR+KmjhaRSh5mtU65Q4eLh1lLck8TJfDFXr8gWfyVEVO5+jUxIUfhZNXZMnPI/X
-	 LpRamnfSi50KBc0j8s0z6knU3y5VT7WlYFU/ns14G+Wc8S2bdcJrqq/i/kq3Y0v4vi
-	 kHCCoGI8y1f3OfBzUQ1O+6iirUAOBI99Cl7GOrM5cReC80MiFHamNqFw4fVKYKK0Kk
-	 ceyRNOb+MQeGNhF+e2Lp3t7DDlvfPYB7nUK4DlO9STluD1T45xgiu6EsnT/a5crzwT
-	 oJ0hGbkXs2/hpClW7ly7+iL9sZYlf19RJ/DIk3ZI9OsuHyEfseyWaXJQIYHDuaJiVx
-	 IjnY877exB45g==
+	b=bA2jFaI59gpd6AqBXHRm97XLdY5H4gSkTgUQbAhA9lE1zzPQM/87QZsM7yTBEcoGQ
+	 z2Oz4gAFfguWe3fSSfhV1kVcagQhRnSQ1eJ39lG+yzRU0i8TlaSGrdEMBNYBFUYDgk
+	 fhZO+85LlovpY7i+KyfvWXzKMzEUwTz7Py+6iqgSrgfqGQY2lNe5JpG8dOOx12Kj7w
+	 QlZsGpMwYapkedEr+2E2Y0Ot+bO4v0RPz/ReM4iExFm7S2O7rwNg2hMROMyGKC+xS+
+	 8DHY/zg5OVnBk+68EmMT87pXLLRVFyhl5EUPpgcbJBzWMSy1OFIZdD7hjvkPkgoILA
+	 cLn66eBjfO0EQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VxRJ8aEp1V-w; Sun, 22 Jan 2023 11:49:29 +0000 (UTC)
+	with ESMTP id 7AH65xF7DtT6; Sun, 22 Jan 2023 12:09:47 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6353060BF0;
-	Sun, 22 Jan 2023 11:49:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6353060BF0
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 15C041BF379
- for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Jan 2023 11:49:27 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 33A8460BF0;
+	Sun, 22 Jan 2023 12:09:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 33A8460BF0
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 5B8BC1BF5E6
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Jan 2023 12:09:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EACFD415CB
- for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Jan 2023 11:49:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EACFD415CB
+ by smtp2.osuosl.org (Postfix) with ESMTP id 4316E40328
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Jan 2023 12:09:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4316E40328
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id J57hePrGQ1yM for <intel-wired-lan@lists.osuosl.org>;
- Sun, 22 Jan 2023 11:49:26 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 8GteJAo2CaIl for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 22 Jan 2023 12:09:44 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 279C5413D3
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 279C5413D3
- for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Jan 2023 11:49:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 099894010E
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 099894010E
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 22 Jan 2023 12:09:43 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id E143060BA6;
- Sun, 22 Jan 2023 11:49:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BAE01C433D2;
- Sun, 22 Jan 2023 11:49:23 +0000 (UTC)
-Date: Sun, 22 Jan 2023 12:49:20 +0100
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 46B3B60BE9;
+ Sun, 22 Jan 2023 12:09:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2B0EBC433EF;
+ Sun, 22 Jan 2023 12:09:42 +0000 (UTC)
+Date: Sun, 22 Jan 2023 13:09:38 +0100
 From: Lorenzo Bianconi <lorenzo@kernel.org>
 To: Jakub Kicinski <kuba@kernel.org>
-Message-ID: <Y80iwBNd3tPvEbMd@lore-desk>
+Message-ID: <Y80ngqGcHIp3b8Rz@lore-desk>
 References: <cover.1674234430.git.lorenzo@kernel.org>
- <861224c406f78694530fde0d52c49d92e1e990a2.1674234430.git.lorenzo@kernel.org>
- <20230120191152.44d29bb1@kernel.org>
+ <31e46f564a30e0d3d1e06edb27045be9f318ff0b.1674234430.git.lorenzo@kernel.org>
+ <20230120192059.66d058bf@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20230120191152.44d29bb1@kernel.org>
+In-Reply-To: <20230120192059.66d058bf@kernel.org>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674388164;
- bh=Vx8kZgpecl8j894UuS9Gy9fQuZxp9dtbzjLs5dhZuiU=;
+ d=kernel.org; s=k20201202; t=1674389382;
+ bh=T0RMawtfeLWYRS29q6KiwNJBY0Mqii5zhUzrcZ1hlOU=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=M13eMLVacR/YRSqNczt3ZXzVnr7q5dfyicuZPEXGiMjZ63P+TpCeUD1qRt3g6PRiQ
- 83MIGHNJm3ZZULp3JZbGVXlQRIXP41xEuheEDPP7DJpbp1mMU4WZggOo/dO0Yj0x8q
- rKfMMa1pkQGKAJBo42r+KnSy+tvUnlcz3Vy57ohLw+jrGdhJuKMTWxe9zbUMLQR8Jb
- OAtsVvntsNbS4wS7DT6NVqzhVkq0YtmO35XgwOEPxKJHPrhXih7QG/CB2sUuON38br
- meH6mkihj2+3/thSEC9o6A9vTAuUbjgmOrhCc2CLRuyO7DqLpfc0TGqrtJ7Poa7LdI
- R/6uawCbo0NUg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=idc1lXaUwHxDTM8i2sAyiYggmThJuVvFcd0+c2Wn2eeRAMCexSlzIZ9VT9Ob7NzwC
+ RIPcjCvsaa+9tFOY5SbfvcUdXGyNxMca9zNvHphm8DwZEFinxaiUN31bcDbTLB2ndz
+ uF/sK/TBJxGaIrUKXrZekCxwrl2zWJWsYhCucC79x0QoS7RryYL0o/2iXwADXGFsbu
+ iJYjB+44HX42srxP41X0EKZ3wB9jcq/jg+HQOWCxWChui47HlV1Vbct05yKOkRPEAU
+ q39st4NHWaFI3/CaBQTgcoSUXpP6EAsM4TkffO82pO5tCZi2PW9PFhtVQMAKtOGZXr
+ qQYBZo0lHJ5cw==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=M13eMLVa
-Subject: Re: [Intel-wired-lan] [PATCH bpf-next 2/7] drivers: net: turn on
- XDP features
+ header.a=rsa-sha256 header.s=k20201202 header.b=idc1lXaU
+Subject: Re: [Intel-wired-lan] [PATCH bpf-next 5/7] libbpf: add API to get
+ XDP/XSK supported features
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,63 +99,54 @@ Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
  magnus.karlsson@intel.com, leon@kernel.org, netdev@vger.kernel.org,
  toke@redhat.com, ecree.xilinx@gmail.com, alardam@gmail.com, gospo@broadcom.com,
  saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
-Content-Type: multipart/mixed; boundary="===============0668144023696231801=="
+Content-Type: multipart/mixed; boundary="===============3261137354890073696=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
---===============0668144023696231801==
+--===============3261137354890073696==
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="w+GUdlDdqYVq1hNu"
+	protocol="application/pgp-signature"; boundary="0tACK8m4bRM0/8/P"
 Content-Disposition: inline
 
 
---w+GUdlDdqYVq1hNu
+--0tACK8m4bRM0/8/P
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-> On Fri, 20 Jan 2023 18:16:51 +0100 Lorenzo Bianconi wrote:
-> > +static inline void
-> > +xdp_features_set_redirect_target(xdp_features_t *xdp_features, bool su=
-pport_sg)
+> On Fri, 20 Jan 2023 18:16:54 +0100 Lorenzo Bianconi wrote:
+> > +static int libbpf_netlink_resolve_genl_family_id(const char *name,
+> > +						 __u16 len, __u16 *id)
 > > +{
-> > +	*xdp_features |=3D NETDEV_XDP_ACT_NDO_XMIT;
-> > +	if (support_sg)
-> > +		*xdp_features |=3D NETDEV_XDP_ACT_NDO_XMIT_SG;
-> > +}
-> > +
-> > +static inline void
-> > +xdp_features_clear_redirect_target(xdp_features_t *xdp_features)
-> > +{
-> > +	*xdp_features &=3D ~(NETDEV_XDP_ACT_NDO_XMIT |
-> > +			   NETDEV_XDP_ACT_NDO_XMIT_SG);
-> > +}
-> > +
+> > +	struct libbpf_nla_req req =3D {
+> > +		.nh.nlmsg_len	=3D NLMSG_LENGTH(GENL_HDRLEN),
+> > +		.nh.nlmsg_type	=3D GENL_ID_CTRL,
+> > +		.nh.nlmsg_flags	=3D NLM_F_REQUEST,
+> > +		.gnl.cmd	=3D CTRL_CMD_GETFAMILY,
+> > +		.gnl.version	=3D 1,
 >=20
-> Shouldn't these generate netlink notifications?
+> nlctrl is version 2, shouldn't matter in practice
 
-ack, I would say we need to add NETDEV_XDP_FEAT_CHANGE case in
-netdev_genl_netdevice_event routine and maybe add a new
-NETDEV_XDP_FEAT_CHANGE flag in netdev_cmd. What do you think?
+ack, I will fix it.
 
 Regards,
 Lorenzo
 
---w+GUdlDdqYVq1hNu
+--0tACK8m4bRM0/8/P
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYKAB0WIQTquNwa3Txd3rGGn7Y6cBh0uS2trAUCY80iwAAKCRA6cBh0uS2t
-rAxtAP9ZfJkB37hk72ekJNDpeCVLGZ9NJ+YCmn3/JWHaNxQTzQEAycDTiwQ0yNkk
-GG1x89Gce/hWDOmYnA2ThF+j/KgquQo=
-=vN6K
+iHUEABYKAB0WIQTquNwa3Txd3rGGn7Y6cBh0uS2trAUCY80nggAKCRA6cBh0uS2t
+rPC7AQDu6l1kKMwrf9Bhnb/F1h4rjFppYj8nmw/lsCuNWc4JSwD+OxLIp1k3DkBy
+Ts1xkVfkP6+VjvYnGb9NCb5k9adttwU=
+=1C3N
 -----END PGP SIGNATURE-----
 
---w+GUdlDdqYVq1hNu--
+--0tACK8m4bRM0/8/P--
 
---===============0668144023696231801==
+--===============3261137354890073696==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -167,4 +157,4 @@ Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
---===============0668144023696231801==--
+--===============3261137354890073696==--
