@@ -1,84 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF1D6C54E94
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Jan 2023 14:01:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0300BC05027
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 23 Jan 2023 14:01:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7B9F74163D;
-	Mon, 23 Jan 2023 14:01:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7B9F74163D
+	by smtp1.osuosl.org (Postfix) with ESMTP id A9FB581F27;
+	Mon, 23 Jan 2023 14:01:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A9FB581F27
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674482485;
-	bh=h0pnkFJ7y5eEFjc8eE93s63DUJNBY0XE07ih2HwOQLQ=;
+	s=default; t=1674482493;
+	bh=2BUhAB2S+Sg6ORS9YioMZ7NnYyQyCA4u5c+zlzhFYak=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=JVoSAfFGonjHAVb/Kpt6UQNeLjqnz0ued2ujkPYeQe7rswV8IO0pMj46LpWRozx8k
-	 F+0U2eEVyqy4VxyMoXy40oW39122dKPRqhoSjUY28JPk5I9zfOt7NtoyYJU9jRJllS
-	 lYEJvZH1Hn5lGw/9N9gi+N/uBfzll8MkxjL9h+r0lV1A4x6nLJRNf1pkFTKwGXMjlQ
-	 BWraSLkqNkLTSZgt2u5iWOmfFTkz1555vTGhoZZrFFL1MAc7WIBhHM36yXaC71mqp+
-	 AySOn4gbElvwvY21RAtdsX0NBDPT+rzK7acjEPxML8MadoMWfGqd1Ta3fW29DoIp6Y
-	 7oPWBGdL4vV2w==
+	b=j9qRB0f+oplJiGF+kxyOcuiXRuaSajo6Gbma4vIjzY+gMGsbEzy7Zg9mA7ODp/z7+
+	 uYSYKyegqCf5SbcoFBFJ6TbhFKityT2EYD3N53miJM6b9cTN9NC1Kd8hWdh6FRR9IA
+	 xfxhz/pvWJRrlxtiIa9/fSz+JNrb7yZoZEPK+uISxI6KGchLgHJcYBIJed4SEEHmug
+	 R8jdS1O3qQfVzSy/Yi92BvHkm/0m+wfND0bTmV1mWCcvsrSIOhkLKrUd5+2iZGIkLl
+	 fipk8sbQsw23owmTTO2KtKfBXVPxLWYvxucRxQWjBP0FW/mx1REg400XHbNk40mcUL
+	 ZvtkDfvZXhtTg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id oSNPrgoRSj20; Mon, 23 Jan 2023 14:01:24 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id TXmsGCck23wT; Mon, 23 Jan 2023 14:01:33 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 42DF941687;
-	Mon, 23 Jan 2023 14:01:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 42DF941687
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 0FE9C1BF359
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Jan 2023 14:01:22 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id B971181F30;
+	Mon, 23 Jan 2023 14:01:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B971181F30
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 541FD1BF359
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Jan 2023 14:01:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DF05041687
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Jan 2023 14:01:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DF05041687
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3CCCD81F27
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Jan 2023 14:01:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3CCCD81F27
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id diIN2eAa2TNL for <intel-wired-lan@lists.osuosl.org>;
- Mon, 23 Jan 2023 14:01:21 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id wa51F5pCGhFC for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 23 Jan 2023 14:01:30 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1E36C4163D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 67C7081F38
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1E36C4163D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Jan 2023 14:01:21 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 67C7081F38
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 23 Jan 2023 14:01:30 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 693CC60F32;
- Mon, 23 Jan 2023 14:01:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10E01C433EF;
- Mon, 23 Jan 2023 14:01:18 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id C120460EFF;
+ Mon, 23 Jan 2023 14:01:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F83AC433D2;
+ Mon, 23 Jan 2023 14:01:27 +0000 (UTC)
 From: Leon Romanovsky <leon@kernel.org>
 To: "David S . Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
  Steffen Klassert <steffen.klassert@secunet.com>
-Date: Mon, 23 Jan 2023 16:00:18 +0200
-Message-Id: <cef36e8974c9eb4f00638dbd6358433261186a62.1674481435.git.leon@kernel.org>
+Date: Mon, 23 Jan 2023 16:00:20 +0200
+Message-Id: <7266423af6d87245a9c6b6b6e5e4383738546d35.1674481435.git.leon@kernel.org>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <cover.1674481435.git.leon@kernel.org>
 References: <cover.1674481435.git.leon@kernel.org>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674482479;
- bh=QarXgBmFo9Lr1ix7J8WZiX91oF3jhpemgSzB0Bn6K10=;
+ d=kernel.org; s=k20201202; t=1674482489;
+ bh=GleyYOFN9Inb6Jktq6moCT30z9tyU4vJ+NL054LW1jU=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=bTwOrd2zcI9ksQxLCUmrMCV5yAAHTB8YtbEMlg7vVQNFLQgPR/f79/UKyUDh9UDOf
- 2EuHvzoa+/c60M0kUCDlDO9bIGcRG7b/OCPyc7XnoeQk8rnE+Hc4tt+TzQOd9HBEEd
- CaAd1C+YsB2r/VQzD4x0qcP2yRU9e+M5VdAwx5XNkreAd5PKvSLRa+qRWO1w2/zFZl
- WK2QcJnnC+0lMJdJ41IEZRQIraC4t050iX1w4RUwxkd0twgpjbqnU8ddSbjddBmypW
- m6emc0N3yhYQdNqqhEgMAJQZotfcAqrUlG57C1pChgpaKt9dtrpfW40QCve+Dx+uzE
- zXg9zoUMc8MVQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=hLzwgeiqh9Ldxq4BxKziSWVt6KJ8tY1sgy/nUMu4M3KU2+4JMgghLjmEnXPeNN5l/
+ SeIUj/93r6bwrnvbNeO1R/kCVqAdVxbExJkj60CRALCW2TTOrTlqFHzN9GYiDGUyVb
+ av1spA4CmkOpmwgCTfWAPGBOrA+HHMzJKZ+ddNtJGYBSzwdB5Zn4G2Ojff1hhtzp4Q
+ Lh/Lynu78AuHrYa1Z4/LTbyH6NMr3IA5qHIV/G54QuqTG7nUs2GduohbmkA5womajB
+ 65t15xOk7RbsmFIevn7PXQBqbgRfLAMCZPBN/Mmv5Jn3h+9yXKnb07HAWvyB/8455a
+ +zaSVoXMQ332A==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=bTwOrd2z
-Subject: [Intel-wired-lan] [PATCH net-next 05/10] netdevsim: Fill IPsec
- state validation failure reason
+ header.a=rsa-sha256 header.s=k20201202 header.b=hLzwgeiq
+Subject: [Intel-wired-lan] [PATCH net-next 07/10] ixgbevf: fill IPsec state
+ validation failure reason
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,26 +114,26 @@ Rely on extack to return failure reason.
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 Signed-off-by: Leon Romanovsky <leon@kernel.org>
 ---
- drivers/net/netdevsim/ipsec.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ipsec.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/netdevsim/ipsec.c b/drivers/net/netdevsim/ipsec.c
-index 84a02d69abad..f0d58092e7e9 100644
---- a/drivers/net/netdevsim/ipsec.c
-+++ b/drivers/net/netdevsim/ipsec.c
-@@ -140,25 +140,24 @@ static int nsim_ipsec_add_sa(struct xfrm_state *xs,
- 	ipsec = &ns->ipsec;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ipsec.c b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+index 752b9df4fb51..66cf17f19408 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ipsec.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ipsec.c
+@@ -272,18 +272,17 @@ static int ixgbevf_ipsec_add_sa(struct xfrm_state *xs,
+ 	ipsec = adapter->ipsec;
  
  	if (xs->id.proto != IPPROTO_ESP && xs->id.proto != IPPROTO_AH) {
--		netdev_err(dev, "Unsupported protocol 0x%04x for ipsec offload\n",
+-		netdev_err(dev, "Unsupported protocol 0x%04x for IPsec offload\n",
 -			   xs->id.proto);
-+		NL_SET_ERR_MSG_MOD(extack, "Unsupported protocol for ipsec offload");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported protocol for IPsec offload");
  		return -EINVAL;
  	}
  
- 	if (xs->calg) {
--		netdev_err(dev, "Compression offload not supported\n");
-+		NL_SET_ERR_MSG_MOD(extack, "Compression offload not supported");
+ 	if (xs->props.mode != XFRM_MODE_TRANSPORT) {
+-		netdev_err(dev, "Unsupported mode for ipsec offload\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported mode for ipsec offload");
  		return -EINVAL;
  	}
  
@@ -143,23 +143,50 @@ index 84a02d69abad..f0d58092e7e9 100644
  		return -EINVAL;
  	}
  
- 	/* find the first unused index */
- 	ret = nsim_ipsec_find_empty_idx(ipsec);
- 	if (ret < 0) {
--		netdev_err(dev, "No space for SA in Rx table!\n");
-+		NL_SET_ERR_MSG_MOD(extack, "No space for SA in Rx table!");
- 		return ret;
- 	}
- 	sa_idx = (u16)ret;
-@@ -173,7 +172,7 @@ static int nsim_ipsec_add_sa(struct xfrm_state *xs,
- 	/* get the key and salt */
- 	ret = nsim_ipsec_parse_proto_keys(xs, sa.key, &sa.salt);
- 	if (ret) {
--		netdev_err(dev, "Failed to get key data for SA table\n");
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to get key data for SA table");
- 		return ret;
- 	}
+@@ -291,14 +290,14 @@ static int ixgbevf_ipsec_add_sa(struct xfrm_state *xs,
+ 		struct rx_sa rsa;
  
+ 		if (xs->calg) {
+-			netdev_err(dev, "Compression offload not supported\n");
++			NL_SET_ERR_MSG_MOD(extack, "Compression offload not supported");
+ 			return -EINVAL;
+ 		}
+ 
+ 		/* find the first unused index */
+ 		ret = ixgbevf_ipsec_find_empty_idx(ipsec, true);
+ 		if (ret < 0) {
+-			netdev_err(dev, "No space for SA in Rx table!\n");
++			NL_SET_ERR_MSG_MOD(extack, "No space for SA in Rx table!");
+ 			return ret;
+ 		}
+ 		sa_idx = (u16)ret;
+@@ -313,7 +312,7 @@ static int ixgbevf_ipsec_add_sa(struct xfrm_state *xs,
+ 		/* get the key and salt */
+ 		ret = ixgbevf_ipsec_parse_proto_keys(xs, rsa.key, &rsa.salt);
+ 		if (ret) {
+-			netdev_err(dev, "Failed to get key data for Rx SA table\n");
++			NL_SET_ERR_MSG_MOD(extack, "Failed to get key data for Rx SA table");
+ 			return ret;
+ 		}
+ 
+@@ -352,7 +351,7 @@ static int ixgbevf_ipsec_add_sa(struct xfrm_state *xs,
+ 		/* find the first unused index */
+ 		ret = ixgbevf_ipsec_find_empty_idx(ipsec, false);
+ 		if (ret < 0) {
+-			netdev_err(dev, "No space for SA in Tx table\n");
++			NL_SET_ERR_MSG_MOD(extack, "No space for SA in Tx table");
+ 			return ret;
+ 		}
+ 		sa_idx = (u16)ret;
+@@ -366,7 +365,7 @@ static int ixgbevf_ipsec_add_sa(struct xfrm_state *xs,
+ 
+ 		ret = ixgbevf_ipsec_parse_proto_keys(xs, tsa.key, &tsa.salt);
+ 		if (ret) {
+-			netdev_err(dev, "Failed to get key data for Tx SA table\n");
++			NL_SET_ERR_MSG_MOD(extack, "Failed to get key data for Tx SA table");
+ 			memset(&tsa, 0, sizeof(tsa));
+ 			return ret;
+ 		}
 -- 
 2.39.1
 
