@@ -4,79 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74CB7C25B4E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jan 2023 12:15:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD787C25B50
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jan 2023 12:15:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0E44D60F4E;
-	Tue, 24 Jan 2023 12:15:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0E44D60F4E
+	by smtp3.osuosl.org (Postfix) with ESMTP id 58C0C61091;
+	Tue, 24 Jan 2023 12:15:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 58C0C61091
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674562553;
-	bh=9qXY9u+rEceyLl43Ad88HnP5lPKqQaEnXRgJaAhe990=;
+	s=default; t=1674562557;
+	bh=T94t3TQBxFTPQdGVSSkuR+nlJIKrUi7CT8haB4DnbJk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=DxisDeop6B317FKBHycBHtcGMuzUALysyFuRFbCws0P5P77hPpJcglI3D9PW8ZLMi
-	 Mym7eupR1AjgFA8phk/6izlTJWLL+tXU7Tagp+TVLtxbLr1P9r6q6W9gIBhsqhOE9L
-	 9Iwxx2jVKOk2JYl5pjoteTKUO0cArmMNiqIpwRPO0ekwQAEx7hYYsur2e06AMLuTvo
-	 48w0z9kCqTb79s8Yn1zfhPmzB8cdNBK8dbNRuHcqd5HgKN7J0YcquZjvyyVVm9FnyV
-	 sUBXg1iWvk9ig7g7ISKdAdT9A169eLYvaZAuRRAhs01+d6hFYusMP0j61dy6dXu4Ay
-	 k3Akrf79b8+mA==
+	b=RDJm3FMKez/lQYbVRWj9/BB0K4Gt9M/V+bVnFcJmc22F7IEvpjwggXZoT/kqACvVm
+	 U31KUgPQrAJT6PT6pktPzvHtTN+yHVLxZGeg7LVq6ueEJY97xQQMdAwDAIardA3+HF
+	 gACPZ++nEYawuu+hIhM8w+oTK7R1+78Xh96d56i97p3Qt7hJERkZQNAcfaf1MNdYFo
+	 CAazc/sR5XOJmSGJRZXLM4pZ20FBsBKdWMl4c8f+XtuwQAz3zspqJPunh45XPmr6sf
+	 yobU6CJxX6FVwLRgfSpLKy2/Az+wMSnpWy6WfxT6GIKn23JsvHyyeROpoE5Jv2HT6w
+	 /+iozqwagBOAg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fYtHE1BO8qNa; Tue, 24 Jan 2023 12:15:52 +0000 (UTC)
+	with ESMTP id BliwuHIhQCQ4; Tue, 24 Jan 2023 12:15:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 08D3960F7A;
-	Tue, 24 Jan 2023 12:15:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 08D3960F7A
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A502A1BF2C5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:46 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 0E7FF61069;
+	Tue, 24 Jan 2023 12:15:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0E7FF61069
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 708D01BF2C5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7F1B782151
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7F1B782151
+ by smtp4.osuosl.org (Postfix) with ESMTP id 47B74418CE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 47B74418CE
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id VjCEOQydhq1o for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Jan 2023 12:15:45 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id JJw0iJU0O1tc for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Jan 2023 12:15:47 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 70D3381F74
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 70D3381F74
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 21FF04186A
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 21FF04186A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:47 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by sin.source.kernel.org (Postfix) with ESMTPS id 79D1BCE1AE2;
- Tue, 24 Jan 2023 12:15:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CAD39C433D2;
- Tue, 24 Jan 2023 12:15:40 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 6B60F61156;
+ Tue, 24 Jan 2023 12:15:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0EDC1C4339B;
+ Tue, 24 Jan 2023 12:15:45 +0000 (UTC)
 From: Leon Romanovsky <leon@kernel.org>
 To: "David S . Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
  Steffen Klassert <steffen.klassert@secunet.com>
-Date: Tue, 24 Jan 2023 13:55:04 +0200
-Message-Id: <4e932956112ee5d80e585c863f31a3ffa6e2dff5.1674560845.git.leon@kernel.org>
+Date: Tue, 24 Jan 2023 13:55:02 +0200
+Message-Id: <3acc2d1ac500ddf10d44176075f77b59803f16de.1674560845.git.leon@kernel.org>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <cover.1674560845.git.leon@kernel.org>
 References: <cover.1674560845.git.leon@kernel.org>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674562541;
- bh=j/LUFLtGTe8h6SuWbBFnx6+OY1rNANjavJbH6/Fbit0=;
+ d=kernel.org; s=k20201202; t=1674562545;
+ bh=zun5JgndHtJIzbIsz3B4MBY+SwvMGsLucQPZaw1nVtE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=FpcLLTE7debXojcHc8IiLRrjP8hoWhnK9pC9ARBDJveWOoU/evGnB3GItD6H7QJ+b
- xv6PbFME90YHicC1R0NI6cNqBW6HqmWLlfHRr8sn4wDsaM29YYhILkSMYs3b46tfEq
- LALEER1AxBAxJ1TKvGpILrQCX3iMuqKzJrJs0eAqz9hEpFHvyuXQh6OEcmEt6hAoYr
- P9Mp/dqLpwJ49L2mqlS1696/DHbpR1NVAp8qeo1naqXE6q8xmHOW0/Ivc36eOBr2M2
- 7Mr1hAbQqY82xkKAHZJ/ZZ3IqbDSsscNM6j2Jkh64ISLQbg6jbOn5lHf4hL2LwKSt+
- 2KDUYkLG7mODg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ b=bzXc1VnMqRelQRqJN5SiPSywszwi7j7elU1wP0YQU0JkjFCZ+YeG1N6r0fFJuSJYe
+ 3HIROMxUBuVZg4XUcciC49ApZqqSVm2MOaef0s0oJ11a2MBHS0BX8N94gm8aVfRpj7
+ g1OHW1DcYAATx9zWSAZbOQfzgEFlgW8NMbiPwpnZv/rwWgWEyfR8lqW1UG31EvE30N
+ ZwIjNRyjNH9lnPa3pbAsjBqQ9OcQQP9iTF2UIm1lTOG/JtzPpzkLjS9Dif3Fl233Ac
+ Zr5K8nMPF2sedx7ga1AG96Q3XpSH6dp52LcpWPPiqk/bQ7ORdxflFSF+43lSME87m8
+ dcLmMpJp0nRNQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=FpcLLTE7
-Subject: [Intel-wired-lan] [PATCH net-next v1 08/10] ixgbe: fill IPsec state
+ header.a=rsa-sha256 header.s=k20201202 header.b=bzXc1VnM
+Subject: [Intel-wired-lan] [PATCH net-next v1 06/10] nfp: fill IPsec state
  validation failure reason
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -110,96 +111,166 @@ From: Leon Romanovsky <leonro@nvidia.com>
 
 Rely on extack to return failure reason.
 
+Reviewed-by: Simon Horman <simon.horman@corigine.com>
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- .../net/ethernet/intel/ixgbe/ixgbe_ipsec.c    | 21 +++++++++----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+ .../net/ethernet/netronome/nfp/crypto/ipsec.c | 38 +++++++++----------
+ 1 file changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-index 07c37dc619e8..13a6fca31004 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ipsec.c
-@@ -572,23 +572,22 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs,
- 	int i;
- 
- 	if (xs->id.proto != IPPROTO_ESP && xs->id.proto != IPPROTO_AH) {
--		netdev_err(dev, "Unsupported protocol 0x%04x for ipsec offload\n",
--			   xs->id.proto);
-+		NL_SET_ERR_MSG_MOD(extack, "Unsupported protocol for ipsec offload");
+diff --git a/drivers/net/ethernet/netronome/nfp/crypto/ipsec.c b/drivers/net/ethernet/netronome/nfp/crypto/ipsec.c
+index 41b98f2b7402..b44263177981 100644
+--- a/drivers/net/ethernet/netronome/nfp/crypto/ipsec.c
++++ b/drivers/net/ethernet/netronome/nfp/crypto/ipsec.c
+@@ -282,7 +282,7 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 		cfg->ctrl_word.mode = NFP_IPSEC_PROTMODE_TRANSPORT;
+ 		break;
+ 	default:
+-		nn_err(nn, "Unsupported mode for xfrm offload\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported mode for xfrm offload");
  		return -EINVAL;
  	}
  
- 	if (xs->props.mode != XFRM_MODE_TRANSPORT) {
--		netdev_err(dev, "Unsupported mode for ipsec offload\n");
-+		NL_SET_ERR_MSG_MOD(extack, "Unsupported mode for ipsec offload");
+@@ -294,17 +294,17 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 		cfg->ctrl_word.proto = NFP_IPSEC_PROTOCOL_AH;
+ 		break;
+ 	default:
+-		nn_err(nn, "Unsupported protocol for xfrm offload\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported protocol for xfrm offload");
  		return -EINVAL;
  	}
  
- 	if (ixgbe_ipsec_check_mgmt_ip(xs)) {
--		netdev_err(dev, "IPsec IP addr clash with mgmt filters\n");
-+		NL_SET_ERR_MSG_MOD(extack, "IPsec IP addr clash with mgmt filters");
+ 	if (x->props.flags & XFRM_STATE_ESN) {
+-		nn_err(nn, "Unsupported XFRM_REPLAY_MODE_ESN for xfrm offload\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported XFRM_REPLAY_MODE_ESN for xfrm offload");
  		return -EINVAL;
  	}
  
- 	if (xs->xso.type != XFRM_DEV_OFFLOAD_CRYPTO) {
--		netdev_err(dev, "Unsupported ipsec offload type\n");
-+		NL_SET_ERR_MSG_MOD(extack, "Unsupported ipsec offload type");
+ 	if (x->xso.type != XFRM_DEV_OFFLOAD_CRYPTO) {
+-		nn_err(nn, "Unsupported xfrm offload tyoe\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported xfrm offload type");
  		return -EINVAL;
  	}
  
-@@ -596,14 +595,14 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs,
- 		struct rx_sa rsa;
+@@ -321,7 +321,7 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 		if (x->aead) {
+ 			trunc_len = -1;
+ 		} else {
+-			nn_err(nn, "Unsupported authentication algorithm\n");
++			NL_SET_ERR_MSG_MOD(extack, "Unsupported authentication algorithm");
+ 			return -EINVAL;
+ 		}
+ 		break;
+@@ -345,19 +345,19 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 		set_sha2_512hmac(cfg, &trunc_len);
+ 		break;
+ 	default:
+-		nn_err(nn, "Unsupported authentication algorithm\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported authentication algorithm");
+ 		return -EINVAL;
+ 	}
  
- 		if (xs->calg) {
--			netdev_err(dev, "Compression offload not supported\n");
-+			NL_SET_ERR_MSG_MOD(extack, "Compression offload not supported");
+ 	if (!trunc_len) {
+-		nn_err(nn, "Unsupported authentication algorithm trunc length\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported authentication algorithm trunc length");
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (x->aalg) {
+ 		key_len = DIV_ROUND_UP(x->aalg->alg_key_len, BITS_PER_BYTE);
+ 		if (key_len > sizeof(cfg->auth_key)) {
+-			nn_err(nn, "Insufficient space for offloaded auth key\n");
++			NL_SET_ERR_MSG_MOD(extack, "Insufficient space for offloaded auth key");
+ 			return -EINVAL;
+ 		}
+ 		for (i = 0; i < key_len / sizeof(cfg->auth_key[0]) ; i++)
+@@ -379,12 +379,12 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 	case SADB_X_EALG_AES_GCM_ICV16:
+ 	case SADB_X_EALG_NULL_AES_GMAC:
+ 		if (!x->aead) {
+-			nn_err(nn, "Invalid AES key data\n");
++			NL_SET_ERR_MSG_MOD(extack, "Invalid AES key data");
  			return -EINVAL;
  		}
  
- 		/* find the first unused index */
- 		ret = ixgbe_ipsec_find_empty_idx(ipsec, true);
- 		if (ret < 0) {
--			netdev_err(dev, "No space for SA in Rx table!\n");
-+			NL_SET_ERR_MSG_MOD(extack, "No space for SA in Rx table!");
- 			return ret;
+ 		if (x->aead->alg_icv_len != 128) {
+-			nn_err(nn, "ICV must be 128bit with SADB_X_EALG_AES_GCM_ICV16\n");
++			NL_SET_ERR_MSG_MOD(extack, "ICV must be 128bit with SADB_X_EALG_AES_GCM_ICV16");
+ 			return -EINVAL;
  		}
- 		sa_idx = (u16)ret;
-@@ -618,7 +617,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs,
- 		/* get the key and salt */
- 		ret = ixgbe_ipsec_parse_proto_keys(xs, rsa.key, &rsa.salt);
- 		if (ret) {
--			netdev_err(dev, "Failed to get key data for Rx SA table\n");
-+			NL_SET_ERR_MSG_MOD(extack, "Failed to get key data for Rx SA table");
- 			return ret;
+ 		cfg->ctrl_word.cimode = NFP_IPSEC_CIMODE_CTR;
+@@ -392,23 +392,23 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 
+ 		/* Aead->alg_key_len includes 32-bit salt */
+ 		if (set_aes_keylen(cfg, x->props.ealgo, x->aead->alg_key_len - 32)) {
+-			nn_err(nn, "Unsupported AES key length %d\n", x->aead->alg_key_len);
++			NL_SET_ERR_MSG_MOD(extack, "Unsupported AES key length");
+ 			return -EINVAL;
+ 		}
+ 		break;
+ 	case SADB_X_EALG_AESCBC:
+ 		cfg->ctrl_word.cimode = NFP_IPSEC_CIMODE_CBC;
+ 		if (!x->ealg) {
+-			nn_err(nn, "Invalid AES key data\n");
++			NL_SET_ERR_MSG_MOD(extack, "Invalid AES key data");
+ 			return -EINVAL;
+ 		}
+ 		if (set_aes_keylen(cfg, x->props.ealgo, x->ealg->alg_key_len) < 0) {
+-			nn_err(nn, "Unsupported AES key length %d\n", x->ealg->alg_key_len);
++			NL_SET_ERR_MSG_MOD(extack, "Unsupported AES key length");
+ 			return -EINVAL;
+ 		}
+ 		break;
+ 	default:
+-		nn_err(nn, "Unsupported encryption algorithm for offload\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported encryption algorithm for offload");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -419,7 +419,7 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 		key_len -= salt_len;
+ 
+ 		if (key_len > sizeof(cfg->ciph_key)) {
+-			nn_err(nn, "aead: Insufficient space for offloaded key\n");
++			NL_SET_ERR_MSG_MOD(extack, "aead: Insufficient space for offloaded key");
+ 			return -EINVAL;
  		}
  
-@@ -678,7 +677,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs,
+@@ -435,7 +435,7 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 		key_len = DIV_ROUND_UP(x->ealg->alg_key_len, BITS_PER_BYTE);
  
- 		} else {
- 			/* no match and no empty slot */
--			netdev_err(dev, "No space for SA in Rx IP SA table\n");
-+			NL_SET_ERR_MSG_MOD(extack, "No space for SA in Rx IP SA table");
- 			memset(&rsa, 0, sizeof(rsa));
- 			return -ENOSPC;
+ 		if (key_len > sizeof(cfg->ciph_key)) {
+-			nn_err(nn, "ealg: Insufficient space for offloaded key\n");
++			NL_SET_ERR_MSG_MOD(extack, "ealg: Insufficient space for offloaded key");
+ 			return -EINVAL;
  		}
-@@ -713,7 +712,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs,
- 		/* find the first unused index */
- 		ret = ixgbe_ipsec_find_empty_idx(ipsec, false);
- 		if (ret < 0) {
--			netdev_err(dev, "No space for SA in Tx table\n");
-+			NL_SET_ERR_MSG_MOD(extack, "No space for SA in Tx table");
- 			return ret;
+ 		for (i = 0; i < key_len / sizeof(cfg->ciph_key[0]) ; i++)
+@@ -458,7 +458,7 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
  		}
- 		sa_idx = (u16)ret;
-@@ -727,7 +726,7 @@ static int ixgbe_ipsec_add_sa(struct xfrm_state *xs,
+ 		break;
+ 	default:
+-		nn_err(nn, "Unsupported address family\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unsupported address family");
+ 		return -EINVAL;
+ 	}
  
- 		ret = ixgbe_ipsec_parse_proto_keys(xs, tsa.key, &tsa.salt);
- 		if (ret) {
--			netdev_err(dev, "Failed to get key data for Tx SA table\n");
-+			NL_SET_ERR_MSG_MOD(extack, "Failed to get key data for Tx SA table");
- 			memset(&tsa, 0, sizeof(tsa));
- 			return ret;
- 		}
+@@ -473,7 +473,7 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 	err = xa_alloc(&nn->xa_ipsec, &saidx, x,
+ 		       XA_LIMIT(0, NFP_NET_IPSEC_MAX_SA_CNT - 1), GFP_KERNEL);
+ 	if (err < 0) {
+-		nn_err(nn, "Unable to get sa_data number for IPsec\n");
++		NL_SET_ERR_MSG_MOD(extack, "Unable to get sa_data number for IPsec");
+ 		return err;
+ 	}
+ 
+@@ -481,7 +481,7 @@ static int nfp_net_xfrm_add_state(struct xfrm_state *x,
+ 	err = nfp_ipsec_cfg_cmd_issue(nn, NFP_IPSEC_CFG_MSSG_ADD_SA, saidx, &msg);
+ 	if (err) {
+ 		xa_erase(&nn->xa_ipsec, saidx);
+-		nn_err(nn, "Failed to issue IPsec command err ret=%d\n", err);
++		NL_SET_ERR_MSG_MOD(extack, "Failed to issue IPsec command");
+ 		return err;
+ 	}
+ 
 -- 
 2.39.1
 
