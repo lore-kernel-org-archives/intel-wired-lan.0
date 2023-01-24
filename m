@@ -1,84 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54F86C25B4E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jan 2023 12:15:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F816C25B4E
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jan 2023 12:15:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E18A681D2D;
-	Tue, 24 Jan 2023 12:15:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E18A681D2D
+	by smtp2.osuosl.org (Postfix) with ESMTP id A6C8D4051F;
+	Tue, 24 Jan 2023 12:15:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A6C8D4051F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674562525;
-	bh=V6KkoG2AnuaUbGpqmYYTN/M875SxhZ0ab+mA49iLudU=;
+	s=default; t=1674562530;
+	bh=74D1JwuBpG6NkVe2rqTM7NetOtP5Db0z7gIZcqvCeKM=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=d7YVxWIxvy45ezL9VrIkGoJnTIbcHozrlaWSqKRszV5/PuCfoUJkdal+xI30nozjb
-	 ME2fkT4eHQkoWx4F/gWc9LLZ4fkuwpMq0JMg/0FuqOyJN+Ep+UE6SiXUIvRvtTiaN5
-	 2+oE9X0eu6SGcrCe1C9Avo/WjgdI60jPnqJwM53HSJs8LEdByRPmqab+8Oos0EXVVH
-	 UQhoNeBcOm5rpfUR/964YU1aauLqMqj2bWhhGgXq9QVmqPnOTwg+Np+5Sdnf1q5xUT
-	 5d8j/Un58YH5mZi/+1194MrDlxHwyL7wJdZyiRPPdMJIAxCO1KFhJmLe3F4/XaSSf7
-	 e7JMSoqqMPFxg==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id MNrVyn8LaI3r; Tue, 24 Jan 2023 12:15:25 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DB9B581F21;
-	Tue, 24 Jan 2023 12:15:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DB9B581F21
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 019181BF2C5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:23 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id DD7F84051F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DD7F84051F
+	b=jInuMGha+ot99gGvmDN0UCOErqdmf2lUmzd+t3DP+qIUfXkHz2w7nB+TgDBuu2kac
+	 HtaTBiVYyjUr0zFttljIXm3CS7uWZPKpGI14SsAJ4ibJBMe8G0gZFvsGZSaeiCl8Fv
+	 UaUGzv45Qy9A/NuT7VHeUa48/fCV6AtaNBIQytvN04O+UMFc9C/wH5u7OH79NCnsPZ
+	 tktUkX0yI+uIRuP4GXVOCVfCt8uFl3ooxEVxTpgRLWj1YMyVPdw1QkLwbvqdjsM/hb
+	 AYWHkuIUudSBwzmso9IutN+veZFfztMgH18xQ5oddLdHFVTtde6VrQghU57D0C0Jdn
+	 3huWLxbhPCdYQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fboQpAMstcln for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Jan 2023 12:15:22 +0000 (UTC)
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 6phuJeHowY8J; Tue, 24 Jan 2023 12:15:29 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id 837BF40C11;
+	Tue, 24 Jan 2023 12:15:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 837BF40C11
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 48AF11BF2C5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:27 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 222764186A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 222764186A
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id U74PnMjgkAA6 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Jan 2023 12:15:26 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3A15140157
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0251D418A3
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3A15140157
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:22 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 0251D418A3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 12:15:25 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 890AE61152;
- Tue, 24 Jan 2023 12:15:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2F218C433D2;
- Tue, 24 Jan 2023 12:15:20 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 4A2186110F;
+ Tue, 24 Jan 2023 12:15:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 504C9C4339C;
+ Tue, 24 Jan 2023 12:15:24 +0000 (UTC)
 From: Leon Romanovsky <leon@kernel.org>
 To: "David S . Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
  Steffen Klassert <steffen.klassert@secunet.com>
-Date: Tue, 24 Jan 2023 13:54:58 +0200
-Message-Id: <827fc088e41d891a651ea7c0c10c0343ffe8177d.1674560845.git.leon@kernel.org>
+Date: Tue, 24 Jan 2023 13:55:00 +0200
+Message-Id: <90d9d78d81ea0b6bffeeb76e8663dae106007d61.1674560845.git.leon@kernel.org>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <cover.1674560845.git.leon@kernel.org>
 References: <cover.1674560845.git.leon@kernel.org>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674562521;
- bh=d0TP8CzjY3P9mUlZWC+vtoSEaggJpOjFfgdxsGSGWBc=;
+ d=kernel.org; s=k20201202; t=1674562525;
+ bh=YGgQziornQTvmUD4H4CPX7PJFSO8N6MDyXh7nj8fJHg=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=TMKXaontAlLIceLepXNK4HHP3gk3+4OXAM4jJ+RzKhwHzHQE+o9iBhL62JRVoFyVM
- p8Nxov+BeojR7/LAg72V7NX1ni/kA6Vo/4RglMCOogS8ySASOmH6P3/4mTtirdlG0/
- bBzJIe7IFL+C6CroKvW6gDR7jhpYMtDMuIMe75x5P2gVh9VN5wicuUhkJ7DbXOwL+c
- r5n4DYyHK/Kd2xfIJwMbj34Nfnw9DhuqQjrK5ig1QVjmGpCZgC8t/Yz9EgKrmBYq+6
- qd7fh1250VdlFdZbWEj4ozEFW/8Jibz3PNjKiKOTDqFNYVntQHBUBNMDVMX4KUQGMl
- KnR/nlu993igw==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=RvstJDhe1idgKqJsjPl9fifv5nV9lo3mbWxGrlwrILf5ofxUf9Dh4jG7HeMcnKJ1V
+ mLJ7Q3LjDfdXIQwBR3z4UHa4MtJB/Q47QLJUsKV+F+VRnQ0j07y/VJNqu/k11J7b3J
+ VyPPajE8Ei1+RbGdfXlsnrWkpU5IpKqVNJ9jHH00owuoiup7GZKHXUiocb0XFve3Wq
+ Qn3VwjVs9mvH31RyzWCSq2Sev5i23ItNXY5IeV5sLLiDQNmEmXpu5iWUXlBl5/n9rJ
+ rlJ75iy4sYaAtjrG4vtWXnIUjdQGN4zD8PUU2vcLs44XmcWxE/RyTFDkhW1d4St2t5
+ FL6wt5ZyS5+Kg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=TMKXaont
-Subject: [Intel-wired-lan] [PATCH net-next v1 02/10] net/mlx5e: Fill IPsec
- policy validation failure reason
+ header.a=rsa-sha256 header.s=k20201202 header.b=RvstJDhe
+Subject: [Intel-wired-lan] [PATCH net-next v1 04/10] net/mlx5e: Fill IPsec
+ state validation failure reason
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,74 +113,193 @@ Rely on extack to return failure reason.
 
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- .../mellanox/mlx5/core/en_accel/ipsec.c       | 22 ++++++++++---------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ .../mellanox/mlx5/core/en_accel/ipsec.c       | 75 ++++++++-----------
+ 1 file changed, 32 insertions(+), 43 deletions(-)
 
 diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c b/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c
-index 83e0f874484e..3236c3b43149 100644
+index a889df77dd2d..e84c3400ba1d 100644
 --- a/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c
 +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_accel/ipsec.c
-@@ -497,34 +497,33 @@ static void mlx5e_xfrm_update_curlft(struct xfrm_state *x)
- 	mlx5e_ipsec_aso_update_curlft(sa_entry, &x->curlft.packets);
+@@ -162,91 +162,87 @@ void mlx5e_ipsec_build_accel_xfrm_attrs(struct mlx5e_ipsec_sa_entry *sa_entry,
+ 	mlx5e_ipsec_init_limits(sa_entry, attrs);
  }
  
--static int mlx5e_xfrm_validate_policy(struct xfrm_policy *x)
-+static int mlx5e_xfrm_validate_policy(struct xfrm_policy *x,
-+				      struct netlink_ext_ack *extack)
+-static inline int mlx5e_xfrm_validate_state(struct xfrm_state *x)
++static int mlx5e_xfrm_validate_state(struct mlx5_core_dev *mdev,
++				     struct xfrm_state *x,
++				     struct netlink_ext_ack *extack)
  {
--	struct net_device *netdev = x->xdo.real_dev;
+-	struct net_device *netdev = x->xso.real_dev;
+-	struct mlx5e_priv *priv;
 -
- 	if (x->type != XFRM_POLICY_TYPE_MAIN) {
--		netdev_info(netdev, "Cannot offload non-main policy types\n");
-+		NL_SET_ERR_MSG_MOD(extack, "Cannot offload non-main policy types");
+-	priv = netdev_priv(netdev);
+-
+ 	if (x->props.aalgo != SADB_AALG_NONE) {
+-		netdev_info(netdev, "Cannot offload authenticated xfrm states\n");
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload authenticated xfrm states");
  		return -EINVAL;
  	}
- 
- 	/* Please pay attention that we support only one template */
- 	if (x->xfrm_nr > 1) {
--		netdev_info(netdev, "Cannot offload more than one template\n");
-+		NL_SET_ERR_MSG_MOD(extack, "Cannot offload more than one template");
+ 	if (x->props.ealgo != SADB_X_EALG_AES_GCM_ICV16) {
+-		netdev_info(netdev, "Only AES-GCM-ICV16 xfrm state may be offloaded\n");
++		NL_SET_ERR_MSG_MOD(extack, "Only AES-GCM-ICV16 xfrm state may be offloaded");
  		return -EINVAL;
  	}
- 
- 	if (x->xdo.dir != XFRM_DEV_OFFLOAD_IN &&
- 	    x->xdo.dir != XFRM_DEV_OFFLOAD_OUT) {
--		netdev_info(netdev, "Cannot offload forward policy\n");
-+		NL_SET_ERR_MSG_MOD(extack, "Cannot offload forward policy");
+ 	if (x->props.calgo != SADB_X_CALG_NONE) {
+-		netdev_info(netdev, "Cannot offload compressed xfrm states\n");
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload compressed xfrm states");
  		return -EINVAL;
  	}
- 
- 	if (!x->xfrm_vec[0].reqid) {
--		netdev_info(netdev, "Cannot offload policy without reqid\n");
-+		NL_SET_ERR_MSG_MOD(extack, "Cannot offload policy without reqid");
+ 	if (x->props.flags & XFRM_STATE_ESN &&
+-	    !(mlx5_ipsec_device_caps(priv->mdev) & MLX5_IPSEC_CAP_ESN)) {
+-		netdev_info(netdev, "Cannot offload ESN xfrm states\n");
++	    !(mlx5_ipsec_device_caps(mdev) & MLX5_IPSEC_CAP_ESN)) {
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload ESN xfrm states");
  		return -EINVAL;
  	}
+ 	if (x->props.family != AF_INET &&
+ 	    x->props.family != AF_INET6) {
+-		netdev_info(netdev, "Only IPv4/6 xfrm states may be offloaded\n");
++		NL_SET_ERR_MSG_MOD(extack, "Only IPv4/6 xfrm states may be offloaded");
+ 		return -EINVAL;
+ 	}
+ 	if (x->id.proto != IPPROTO_ESP) {
+-		netdev_info(netdev, "Only ESP xfrm state may be offloaded\n");
++		NL_SET_ERR_MSG_MOD(extack, "Only ESP xfrm state may be offloaded");
+ 		return -EINVAL;
+ 	}
+ 	if (x->encap) {
+-		netdev_info(netdev, "Encapsulated xfrm state may not be offloaded\n");
++		NL_SET_ERR_MSG_MOD(extack, "Encapsulated xfrm state may not be offloaded");
+ 		return -EINVAL;
+ 	}
+ 	if (!x->aead) {
+-		netdev_info(netdev, "Cannot offload xfrm states without aead\n");
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload xfrm states without aead");
+ 		return -EINVAL;
+ 	}
+ 	if (x->aead->alg_icv_len != 128) {
+-		netdev_info(netdev, "Cannot offload xfrm states with AEAD ICV length other than 128bit\n");
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload xfrm states with AEAD ICV length other than 128bit");
+ 		return -EINVAL;
+ 	}
+ 	if ((x->aead->alg_key_len != 128 + 32) &&
+ 	    (x->aead->alg_key_len != 256 + 32)) {
+-		netdev_info(netdev, "Cannot offload xfrm states with AEAD key length other than 128/256 bit\n");
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload xfrm states with AEAD key length other than 128/256 bit");
+ 		return -EINVAL;
+ 	}
+ 	if (x->tfcpad) {
+-		netdev_info(netdev, "Cannot offload xfrm states with tfc padding\n");
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload xfrm states with tfc padding");
+ 		return -EINVAL;
+ 	}
+ 	if (!x->geniv) {
+-		netdev_info(netdev, "Cannot offload xfrm states without geniv\n");
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload xfrm states without geniv");
+ 		return -EINVAL;
+ 	}
+ 	if (strcmp(x->geniv, "seqiv")) {
+-		netdev_info(netdev, "Cannot offload xfrm states with geniv other than seqiv\n");
++		NL_SET_ERR_MSG_MOD(extack, "Cannot offload xfrm states with geniv other than seqiv");
+ 		return -EINVAL;
+ 	}
+ 	switch (x->xso.type) {
+ 	case XFRM_DEV_OFFLOAD_CRYPTO:
+-		if (!(mlx5_ipsec_device_caps(priv->mdev) &
+-		      MLX5_IPSEC_CAP_CRYPTO)) {
+-			netdev_info(netdev, "Crypto offload is not supported\n");
++		if (!(mlx5_ipsec_device_caps(mdev) & MLX5_IPSEC_CAP_CRYPTO)) {
++			NL_SET_ERR_MSG_MOD(extack, "Crypto offload is not supported");
+ 			return -EINVAL;
+ 		}
  
- 	if (x->xdo.type != XFRM_DEV_OFFLOAD_PACKET) {
--		netdev_info(netdev, "Unsupported xfrm offload type\n");
+ 		if (x->props.mode != XFRM_MODE_TRANSPORT &&
+ 		    x->props.mode != XFRM_MODE_TUNNEL) {
+-			netdev_info(netdev, "Only transport and tunnel xfrm states may be offloaded\n");
++			NL_SET_ERR_MSG_MOD(extack, "Only transport and tunnel xfrm states may be offloaded");
+ 			return -EINVAL;
+ 		}
+ 		break;
+ 	case XFRM_DEV_OFFLOAD_PACKET:
+-		if (!(mlx5_ipsec_device_caps(priv->mdev) &
++		if (!(mlx5_ipsec_device_caps(mdev) &
+ 		      MLX5_IPSEC_CAP_PACKET_OFFLOAD)) {
+-			netdev_info(netdev, "Packet offload is not supported\n");
++			NL_SET_ERR_MSG_MOD(extack, "Packet offload is not supported");
+ 			return -EINVAL;
+ 		}
+ 
+ 		if (x->props.mode != XFRM_MODE_TRANSPORT) {
+-			netdev_info(netdev, "Only transport xfrm states may be offloaded in packet mode\n");
++			NL_SET_ERR_MSG_MOD(extack, "Only transport xfrm states may be offloaded in packet mode");
+ 			return -EINVAL;
+ 		}
+ 
+@@ -254,35 +250,30 @@ static inline int mlx5e_xfrm_validate_state(struct xfrm_state *x)
+ 		    x->replay_esn->replay_window != 64 &&
+ 		    x->replay_esn->replay_window != 128 &&
+ 		    x->replay_esn->replay_window != 256) {
+-			netdev_info(netdev,
+-				    "Unsupported replay window size %u\n",
+-				    x->replay_esn->replay_window);
++			NL_SET_ERR_MSG_MOD(extack, "Unsupported replay window size");
+ 			return -EINVAL;
+ 		}
+ 
+ 		if (!x->props.reqid) {
+-			netdev_info(netdev, "Cannot offload without reqid\n");
++			NL_SET_ERR_MSG_MOD(extack, "Cannot offload without reqid");
+ 			return -EINVAL;
+ 		}
+ 
+ 		if (x->lft.hard_byte_limit != XFRM_INF ||
+ 		    x->lft.soft_byte_limit != XFRM_INF) {
+-			netdev_info(netdev,
+-				    "Device doesn't support limits in bytes\n");
++			NL_SET_ERR_MSG_MOD(extack, "Device doesn't support limits in bytes");
+ 			return -EINVAL;
+ 		}
+ 
+ 		if (x->lft.soft_packet_limit >= x->lft.hard_packet_limit &&
+ 		    x->lft.hard_packet_limit != XFRM_INF) {
+ 			/* XFRM stack doesn't prevent such configuration :(. */
+-			netdev_info(netdev,
+-				    "Hard packet limit must be greater than soft one\n");
++			NL_SET_ERR_MSG_MOD(extack, "Hard packet limit must be greater than soft one");
+ 			return -EINVAL;
+ 		}
+ 		break;
+ 	default:
+-		netdev_info(netdev, "Unsupported xfrm offload type %d\n",
+-			    x->xso.type);
 +		NL_SET_ERR_MSG_MOD(extack, "Unsupported xfrm offload type");
  		return -EINVAL;
  	}
- 
-@@ -559,10 +558,12 @@ static int mlx5e_xfrm_add_policy(struct xfrm_policy *x,
- 	int err;
- 
- 	priv = netdev_priv(netdev);
--	if (!priv->ipsec)
-+	if (!priv->ipsec) {
-+		NL_SET_ERR_MSG_MOD(extack, "Device doesn't support IPsec packet offload");
+ 	return 0;
+@@ -312,15 +303,13 @@ static int mlx5e_xfrm_add_state(struct xfrm_state *x,
  		return -EOPNOTSUPP;
-+	}
  
--	err = mlx5e_xfrm_validate_policy(x);
-+	err = mlx5e_xfrm_validate_policy(x, extack);
+ 	ipsec = priv->ipsec;
+-	err = mlx5e_xfrm_validate_state(x);
++	err = mlx5e_xfrm_validate_state(priv->mdev, x, extack);
  	if (err)
  		return err;
  
-@@ -583,6 +584,7 @@ static int mlx5e_xfrm_add_policy(struct xfrm_policy *x,
+ 	sa_entry = kzalloc(sizeof(*sa_entry), GFP_KERNEL);
+-	if (!sa_entry) {
+-		err = -ENOMEM;
+-		goto out;
+-	}
++	if (!sa_entry)
++		return -ENOMEM;
  
- err_fs:
- 	kfree(pol_entry);
+ 	sa_entry->x = x;
+ 	sa_entry->ipsec = ipsec;
+@@ -361,7 +350,7 @@ static int mlx5e_xfrm_add_state(struct xfrm_state *x,
+ 	mlx5_ipsec_free_sa_ctx(sa_entry);
+ err_xfrm:
+ 	kfree(sa_entry);
+-out:
 +	NL_SET_ERR_MSG_MOD(extack, "Device failed to offload this policy");
  	return err;
  }
