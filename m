@@ -1,81 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CD49C38142
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jan 2023 16:03:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C572C54E94
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jan 2023 17:19:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9A77B40A21;
-	Tue, 24 Jan 2023 16:03:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9A77B40A21
+	by smtp4.osuosl.org (Postfix) with ESMTP id E00D241863;
+	Tue, 24 Jan 2023 17:19:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E00D241863
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674576211;
-	bh=pIwVl4BDyfAlLctAF2uUWpvscVPPA1DEZfqoLoWa2hg=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=sM/HqJv5GQMI/uQx5hLzSK+PT1+FgAYFAn5DEKdA2lFo1awSqY0MB8Ol4cu96J/IU
-	 U2w2SBhhypVi0cP5UMKhFAARWQFOapm1XNe1zD9BlQoR7KTX2FbEwW1M8YkumKvYP6
-	 cxut2hVnSrd8sIkimKYeTuBB5PRQjCIlfghvUu+aMk/pJuCsTsIZi+CyCuxqBkEh5a
-	 8FtnAEpCIGBWe3k0ZbqsfEf4f6kN3U7cRW/26yiHEXBPYdN1+jlBjr1rkspR5ol/Af
-	 KQmsvti//q9Gqzvp/gpZCbFTuFOEHInJTkKWh/ExYfPxCBi8WuTPlUS/y2TSFt51jD
-	 z8hqinq1/Omkg==
+	s=default; t=1674580760;
+	bh=W4/haeiBVUVQ/QDOgFNlcKIaB8NtQ07/BgYgcR2fBZ0=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=p1sVMbbJKAoudb4kEqkIHJge1C+WEd+Smn3EavVZQm5NrZH9Nxl6Gej7AfX8vpWdb
+	 OkooJuF+RQl2i0vDGbAX8FwlksRElbB5WAtpeVs3h+h+YQM6yXpUqH2IR9TOIC9WDF
+	 RCbJwyVpgawYA60bpS6RCaPg2hf3ovTs03jVV/y7x+FG5Sh1+bYqcYHehlOtCAUUGq
+	 N3aFDiM0+9kixVFesLsqCdZhJJivZqsEzAOdX/aKD/jFT/mpV24xEi2ECGqCg93P3z
+	 az987JhBwUmupqPCIvpTwfvU1TzjzF6pjnPRexDiq39OOzsXICV4kBSBxpBdSYyuYm
+	 Npkl3WpYgpC0w==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ww4Za23HuVeL; Tue, 24 Jan 2023 16:03:30 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id FCvzQT40mGDs; Tue, 24 Jan 2023 17:19:19 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8465040396;
-	Tue, 24 Jan 2023 16:03:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8465040396
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8475E1BF370
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 06:34:58 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5D82A4184F;
+	Tue, 24 Jan 2023 17:19:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D82A4184F
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id AC58E1BF473
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 17:19:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1CAD260AFC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 06:34:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1CAD260AFC
+ by smtp1.osuosl.org (Postfix) with ESMTP id 844C8820EB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 17:19:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 844C8820EB
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1ZseMCl6nX5r for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Jan 2023 06:34:56 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2CF3760AC3
-Received: from out2.migadu.com (out2.migadu.com [IPv6:2001:41d0:2:aacc::])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2CF3760AC3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 06:34:55 +0000 (UTC)
-Message-ID: <d2606312-1e04-55ff-e01e-daf83ed99836@linux.dev>
-Date: Mon, 23 Jan 2023 22:34:36 -0800
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id uvIa5fYtNsP4 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Jan 2023 17:19:16 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 99A6881E52
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 99A6881E52
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 17:19:16 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10600"; a="390853001"
+X-IronPort-AV: E=Sophos;i="5.97,242,1669104000"; d="scan'208";a="390853001"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Jan 2023 09:19:11 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10600"; a="664167815"
+X-IronPort-AV: E=Sophos;i="5.97,242,1669104000"; d="scan'208";a="664167815"
+Received: from dmert-dev.jf.intel.com ([10.166.241.14])
+ by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Jan 2023 09:19:11 -0800
+From: Dave Ertman <david.m.ertman@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue, 24 Jan 2023 09:19:43 -0800
+Message-Id: <20230124171943.1625923-1-david.m.ertman@intel.com>
+X-Mailer: git-send-email 2.37.3
 MIME-Version: 1.0
-Content-Language: en-US
-To: Lorenzo Bianconi <lorenzo@kernel.org>
-References: <cover.1674234430.git.lorenzo@kernel.org>
- <986321f8621e9367653e21b35566e7cda976b886.1674234430.git.lorenzo@kernel.org>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Martin KaFai Lau <martin.lau@linux.dev>
-In-Reply-To: <986321f8621e9367653e21b35566e7cda976b886.1674234430.git.lorenzo@kernel.org>
-X-Migadu-Flow: FLOW_OUT
-X-Mailman-Approved-At: Tue, 24 Jan 2023 16:03:29 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1674542090;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=XoQl7uUFk5a4iB7hSBnRz259kIa6WGS8ZI2M0mlcDxc=;
- b=UJ00gwjq4gFjn29yUIgtP3vJKG2pGDukPyC0hkIVIP2nqN05joUBN4WcO+osDMjimoNFlw
- jsl0LQkfUx6HI3nz1gtWCAc7b2kCr0XlXsGZTlLXXEj3jCpUP8Pj0JXXPRLcpiWXydy+1m
- UfNa2J/CmihbLVVjWaz3Ys4ifQ5VFxU=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=UJ00gwjq
-Subject: Re: [Intel-wired-lan] [PATCH bpf-next 7/7] selftests/bpf: introduce
- XDP compliance test tool
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1674580756; x=1706116756;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=e1hiVOg5swSC6bI/vBDOWzCT188usV4PkS1QhB4vSec=;
+ b=HMo7/h3W419z3bL7OqU+5uH0oQFyCyHF3LWNTBvg5LrGdUUa0q+8/AUh
+ 45LBBKTEXOQtExv+eicJq5W0iQ1r5VOr41i0QbQ9xYA7b+8uFvn3FHwQr
+ imVinMgcx80x647pIit8H6qhy97Uj7b0ftq2h6mES6S4plD3I7Q9krAty
+ ajCbViMcF5Jk3k9GDSprVdnmfCF6pvmk3oHCcA+7psQmnHvzFSAyc3j1S
+ ysib7e3QKE+s1SaQxpcFNYKYj2/PqNREOW9FHUbTVleZ1hEQeVU5Vl3W4
+ HpVcdhUMw0OSqpivBd2q9VpVR4JrZhjN5cS/KTOxSMQUa19PUb2g8VTeY
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=HMo7/h3W
+Subject: [Intel-wired-lan] [PATCH net v4] ice: Prevent set_channel from
+ changing queues while RDMA active
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,152 +92,219 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
- edumazet@google.com, anthony.l.nguyen@intel.com, daniel@iogearbox.net,
- niklas.soderlund@corigine.com, andrii@kernel.org,
- intel-wired-lan@lists.osuosl.org, simon.horman@corigine.com, kuba@kernel.org,
- pabeni@redhat.com, aelior@marvell.com, hawk@kernel.org,
- christophe.jaillet@wanadoo.fr, memxor@gmail.com, john@phrozen.org,
- bjorn@kernel.org, bpf@vger.kernel.org, magnus.karlsson@intel.com,
- leon@kernel.org, netdev@vger.kernel.org, toke@redhat.com,
- ecree.xilinx@gmail.com, alardam@gmail.com, gospo@broadcom.com,
- saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 1/20/23 9:16 AM, Lorenzo Bianconi wrote:
-> +static __always_inline int xdp_process_echo_packet(struct xdp_md *xdp, bool dut)
-> +{
-> +	void *data_end = (void *)(long)xdp->data_end;
-> +	__be32 saddr = dut ? tester_ip : dut_ip;
-> +	__be32 daddr = dut ? dut_ip : tester_ip;
-> +	void *data = (void *)(long)xdp->data;
-> +	struct ethhdr *eh = data;
-> +	struct tlv_hdr *tlv;
-> +	struct udphdr *uh;
-> +	struct iphdr *ih;
-> +	__be16 port;
-> +	__u8 *cmd;
-> +
-> +	if (eh + 1 > (struct ethhdr *)data_end)
-> +		return -EINVAL;
-> +
-> +	if (eh->h_proto != bpf_htons(ETH_P_IP))
-> +		return -EINVAL;
+The PF controls the set of queues that the RDMA auxiliary_driver requests
+resources from.  The set_channel command will alter that pool and trigger a
+reconfiguration of the VSI, which breaks RDMA functionality.
 
-Both v6 and v4 support are needed as a tool.
+Prevent set_channel from executing when RDMA driver bound to auxiliary
+device.
 
-[ ... ]
+Adding a locked variable to pass down the call chain to avoid double
+locking the device_lock.
 
-> diff --git a/tools/testing/selftests/bpf/test_xdp_features.sh b/tools/testing/selftests/bpf/test_xdp_features.sh
-> new file mode 100755
-> index 000000000000..98b8fd2b6c16
-> --- /dev/null
-> +++ b/tools/testing/selftests/bpf/test_xdp_features.sh
-> @@ -0,0 +1,99 @@
-> +#!/bin/bash
-> +# SPDX-License-Identifier: GPL-2.0
-> +
-> +# Create 2 namespaces with two veth peers, and
-> +# check reported and detected XDP capabilities
-> +#
-> +#   NS0(v00)              NS1(v11)
-> +#       |                     |
-> +#       |                     |
-> +# (v01, id:111)  ------  (v10,id:222)
-> +
-> +readonly NS0="ns1-$(mktemp -u XXXXXX)"
-> +readonly NS1="ns2-$(mktemp -u XXXXXX)"
-> +ret=1
-> +
-> +setup() {
-> +	{
-> +		ip netns add ${NS0}
-> +		ip netns add ${NS1}
-> +
-> +		ip link add v01 index 111 type veth peer name v00 netns ${NS0}
-> +		ip link add v10 index 222 type veth peer name v11 netns ${NS1}
-> +
-> +		ip link set v01 up
-> +		ip addr add 10.10.0.1/24 dev v01
-> +		ip link set v01 address 00:11:22:33:44:55
-> +		ip -n ${NS0} link set dev v00 up
-> +		ip -n ${NS0} addr add 10.10.0.11/24 dev v00
-> +		ip -n ${NS0} route add default via 10.10.0.1
-> +		ip -n ${NS0} link set v00 address 00:12:22:33:44:55
-> +
-> +		ip link set v10 up
-> +		ip addr add 10.10.1.1/24 dev v10
-> +		ip link set v10 address 00:13:22:33:44:55
-> +		ip -n ${NS1} link set dev v11 up
-> +		ip -n ${NS1} addr add 10.10.1.11/24 dev v11
-> +		ip -n ${NS1} route add default via 10.10.1.1
-> +		ip -n ${NS1} link set v11 address 00:14:22:33:44:55
-> +
-> +		sysctl -w net.ipv4.ip_forward=1
-> +		# Enable XDP mode
-> +		ethtool -K v01 gro on
-> +		ethtool -K v01 tx-checksumming off
-> +		ip netns exec ${NS0} ethtool -K v00 gro on
-> +		ip netns exec ${NS0} ethtool -K v00 tx-checksumming off
-> +		ethtool -K v10 gro on
-> +		ethtool -K v10 tx-checksumming off
-> +		ip netns exec ${NS1} ethtool -K v11 gro on
-> +		ip netns exec ${NS1} ethtool -K v11 tx-checksumming off
-> +	} > /dev/null 2>&1
-> +}
-> +
-> +cleanup() {
-> +	ip link del v01 2> /dev/null
-> +	ip link del v10 2> /dev/null
-> +	ip netns del ${NS0} 2> /dev/null
-> +	ip netns del ${NS1} 2> /dev/null
-> +	[ "$(pidof xdp_features)" = "" ] || kill $(pidof xdp_features) 2> /dev/null
-> +}
-> +
-> +test_xdp_features() {
-> +	setup
-> +
-> +	## XDP_PASS
-> +	ip netns exec ${NS1} ./xdp_features -f XDP_PASS -D 10.10.1.11 -T 10.10.0.11 v11 &
-> +	ip netns exec ${NS0} ./xdp_features -t -f XDP_PASS -D 10.10.1.11 -C 10.10.1.11 -T 10.10.0.11 v00
-> +
-> +	[ $? -ne 0 ] && exit
-> +
-> +	# XDP_DROP
-> +	ip netns exec ${NS1} ./xdp_features -f XDP_DROP -D 10.10.1.11 -T 10.10.0.11 v11 &
-> +	ip netns exec ${NS0} ./xdp_features -t -f XDP_DROP -D 10.10.1.11 -C 10.10.1.11 -T 10.10.0.11 v00
-> +
-> +	[ $? -ne 0 ] && exit
-> +
-> +	## XDP_TX
-> +	./xdp_features -f XDP_TX -D 10.10.0.1 -T 10.10.0.11 v01 &
-> +	ip netns exec ${NS0} ./xdp_features -t -f XDP_TX -D 10.10.0.1 -C 10.10.0.1 -T 10.10.0.11 v00
-> +
-> +	## XDP_REDIRECT
-> +	ip netns exec ${NS1} ./xdp_features -f XDP_REDIRECT -D 10.10.1.11 -T 10.10.0.11 v11 &
-> +	ip netns exec ${NS0} ./xdp_features -t -f XDP_REDIRECT -D 10.10.1.11 -C 10.10.1.11 -T 10.10.0.11 v00
-> +
-> +	[ $? -ne 0 ] && exit
-> +
-> +	## XDP_NDO_XMIT
-> +	./xdp_features -f XDP_NDO_XMIT -D 10.10.0.1 -T 10.10.0.11 v01 &
-> +	ip netns exec ${NS0} ./xdp_features -t -f XDP_NDO_XMIT -D 10.10.0.1 -C 10.10.0.1 -T 10.10.0.11 v00
-> +
-> +	ret=$?
-> +	cleanup
-> +}
-> +
-> +set -e
-> +trap cleanup 2 3 6 9
-> +
-> +test_xdp_features
+Fixes: 348048e724a0 ("ice: Implement iidc operations")
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+---
+Changes since v3:
+Protected driver with device_lock.
+sent variable down the call chain to avoid double lock
 
-This won't be run by bpf CI.
+Changes since v2:
+Added check for NULL pointer
 
-A selftest in test_progs is needed to test the libbpf changes in patch 6.
+Changes since v1:
+Fixed typos and pointer reference
+---
+ drivers/net/ethernet/intel/ice/ice.h         |  2 +-
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.c | 23 +++++++++-------
+ drivers/net/ethernet/intel/ice/ice_dcb_lib.h |  4 +--
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 28 +++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_main.c    |  5 ++--
+ 5 files changed, 43 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 2f0b604abc5e..713069f809ec 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -880,7 +880,7 @@ void ice_set_ethtool_repr_ops(struct net_device *netdev);
+ void ice_set_ethtool_safe_mode_ops(struct net_device *netdev);
+ u16 ice_get_avail_txq_count(struct ice_pf *pf);
+ u16 ice_get_avail_rxq_count(struct ice_pf *pf);
+-int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx);
++int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx, bool locked);
+ void ice_update_vsi_stats(struct ice_vsi *vsi);
+ void ice_update_pf_stats(struct ice_pf *pf);
+ void
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+index 4f24d441c35e..0a55c552189a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
+@@ -441,7 +441,7 @@ int ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked)
+ 		goto out;
+ 	}
+ 
+-	ice_pf_dcb_recfg(pf);
++	ice_pf_dcb_recfg(pf, false);
+ 
+ out:
+ 	/* enable previously downed VSIs */
+@@ -731,12 +731,13 @@ static int ice_dcb_noncontig_cfg(struct ice_pf *pf)
+ /**
+  * ice_pf_dcb_recfg - Reconfigure all VEBs and VSIs
+  * @pf: pointer to the PF struct
++ * @locked: is adev device lock held
+  *
+  * Assumed caller has already disabled all VSIs before
+  * calling this function. Reconfiguring DCB based on
+  * local_dcbx_cfg.
+  */
+-void ice_pf_dcb_recfg(struct ice_pf *pf)
++void ice_pf_dcb_recfg(struct ice_pf *pf, bool locked)
+ {
+ 	struct ice_dcbx_cfg *dcbcfg = &pf->hw.port_info->qos_cfg.local_dcbx_cfg;
+ 	struct iidc_event *event;
+@@ -783,14 +784,16 @@ void ice_pf_dcb_recfg(struct ice_pf *pf)
+ 		if (vsi->type == ICE_VSI_PF)
+ 			ice_dcbnl_set_all(vsi);
+ 	}
+-	/* Notify the AUX drivers that TC change is finished */
+-	event = kzalloc(sizeof(*event), GFP_KERNEL);
+-	if (!event)
+-		return;
++	if (!locked) {
++		/* Notify the AUX drivers that TC change is finished */
++		event = kzalloc(sizeof(*event), GFP_KERNEL);
++		if (!event)
++			return;
+ 
+-	set_bit(IIDC_EVENT_AFTER_TC_CHANGE, event->type);
+-	ice_send_event_to_aux(pf, event);
+-	kfree(event);
++		set_bit(IIDC_EVENT_AFTER_TC_CHANGE, event->type);
++		ice_send_event_to_aux(pf, event);
++		kfree(event);
++	}
+ }
+ 
+ /**
+@@ -1044,7 +1047,7 @@ ice_dcb_process_lldp_set_mib_change(struct ice_pf *pf,
+ 	}
+ 
+ 	/* changes in configuration update VSI */
+-	ice_pf_dcb_recfg(pf);
++	ice_pf_dcb_recfg(pf, false);
+ 
+ 	/* enable previously downed VSIs */
+ 	ice_dcb_ena_dis_vsi(pf, true, true);
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+index 4c421c842a13..800879a88c5e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.h
+@@ -23,7 +23,7 @@ u8 ice_dcb_get_tc(struct ice_vsi *vsi, int queue_index);
+ int
+ ice_pf_dcb_cfg(struct ice_pf *pf, struct ice_dcbx_cfg *new_cfg, bool locked);
+ int ice_dcb_bwchk(struct ice_pf *pf, struct ice_dcbx_cfg *dcbcfg);
+-void ice_pf_dcb_recfg(struct ice_pf *pf);
++void ice_pf_dcb_recfg(struct ice_pf *pf, bool locked);
+ void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi);
+ int ice_init_pf_dcb(struct ice_pf *pf, bool locked);
+ void ice_update_dcb_stats(struct ice_pf *pf);
+@@ -128,7 +128,7 @@ static inline u8 ice_get_pfc_mode(struct ice_pf *pf)
+ 	return 0;
+ }
+ 
+-static inline void ice_pf_dcb_recfg(struct ice_pf *pf) { }
++static inline void ice_pf_dcb_recfg(struct ice_pf *pf, bool locked) { }
+ static inline void ice_vsi_cfg_dcb_rings(struct ice_vsi *vsi) { }
+ static inline void ice_update_dcb_stats(struct ice_pf *pf) { }
+ static inline void
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index 4191994d8f3a..9206ef33c755 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -3641,7 +3641,9 @@ static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
+ 	struct ice_vsi *vsi = np->vsi;
+ 	struct ice_pf *pf = vsi->back;
+ 	int new_rx = 0, new_tx = 0;
++	bool locked = false;
+ 	u32 curr_combined;
++	int ret = 0;
+ 
+ 	/* do not support changing channels in Safe Mode */
+ 	if (ice_is_safe_mode(pf)) {
+@@ -3705,15 +3707,33 @@ static int ice_set_channels(struct net_device *dev, struct ethtool_channels *ch)
+ 		return -EINVAL;
+ 	}
+ 
+-	ice_vsi_recfg_qs(vsi, new_rx, new_tx);
++	if (pf->adev) {
++		mutex_lock(&pf->adev_mutex);
++		device_lock(&pf->adev->dev);
++		locked = true;
++		if (pf->adev->dev.driver) {
++			netdev_err(dev, "Cannot change channels when RDMA is active\n");
++			ret = -EINVAL;
++			goto adev_unlock;
++		}
++	}
++
++	ice_vsi_recfg_qs(vsi, new_rx, new_tx, locked);
+ 
+-	if (!netif_is_rxfh_configured(dev))
+-		return ice_vsi_set_dflt_rss_lut(vsi, new_rx);
++	if (!netif_is_rxfh_configured(dev)) {
++		ret = ice_vsi_set_dflt_rss_lut(vsi, new_rx);
++		goto adev_unlock;
++	}
+ 
+ 	/* Update rss_size due to change in Rx queues */
+ 	vsi->rss_size = ice_get_valid_rss_size(&pf->hw, new_rx);
+ 
+-	return 0;
++adev_unlock:
++	if (locked) {
++		device_unlock(&pf->adev->dev);
++		mutex_unlock(&pf->adev_mutex);
++	}
++	return ret;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a9a7f8b52140..4f1e7f0fa008 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4195,12 +4195,13 @@ bool ice_is_wol_supported(struct ice_hw *hw)
+  * @vsi: VSI being changed
+  * @new_rx: new number of Rx queues
+  * @new_tx: new number of Tx queues
++ * @locked: is adev device_lock held
+  *
+  * Only change the number of queues if new_tx, or new_rx is non-0.
+  *
+  * Returns 0 on success.
+  */
+-int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx)
++int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx, bool locked)
+ {
+ 	struct ice_pf *pf = vsi->back;
+ 	int err = 0, timeout = 50;
+@@ -4229,7 +4230,7 @@ int ice_vsi_recfg_qs(struct ice_vsi *vsi, int new_rx, int new_tx)
+ 
+ 	ice_vsi_close(vsi);
+ 	ice_vsi_rebuild(vsi, false);
+-	ice_pf_dcb_recfg(pf);
++	ice_pf_dcb_recfg(pf, locked);
+ 	ice_vsi_open(vsi);
+ done:
+ 	clear_bit(ICE_CFG_BUSY, pf->state);
+-- 
+2.37.3
 
 _______________________________________________
 Intel-wired-lan mailing list
