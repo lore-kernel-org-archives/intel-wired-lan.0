@@ -1,88 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86368C54E94
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Jan 2023 22:15:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FE71C38142
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Jan 2023 00:34:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2C55C60F74;
-	Tue, 24 Jan 2023 22:15:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2C55C60F74
+	by smtp4.osuosl.org (Postfix) with ESMTP id D9F2B414BF;
+	Wed, 25 Jan 2023 00:34:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D9F2B414BF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674598504;
-	bh=mTO22NcjeR/yAQmrVn34vwS9jPWijcVPhG0FvdYfjZ8=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=sX4H41nvlUlJLfCRsokZULPJAJjDvGvbi4/X8liZQ96NVBF5PIwybnQmbhUjTuJxE
-	 /YIGDh0MG//EcTsMvGQa8viuchKorbq0rxIeLsbtvq+FcNSkuObrcXWy+NvePLCQSq
-	 nuFlZ2nKm11y+L1AdnSn8uwP0vvCok4zqMbfqUtfCppTKdce5hRSBLOmJyQ61cz2OW
-	 VM+t388Jpb7FO056qj1hzsog2THbs1wvxQYHigFhct95gbZ1X78Cf00CnYYIdTvMbS
-	 l2II06p/FjFThKnqRAWdr2K5uA6IgCTyxvDutXr1RJOmS9/wOUqW7XkngWRoXHUZCY
-	 v1kOkHUnABLeQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Amfx-DknVqXU; Tue, 24 Jan 2023 22:15:02 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 91ED2610D1;
-	Tue, 24 Jan 2023 22:15:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 91ED2610D1
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id E29CB1BF5E0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 22:14:44 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BC3FF41838
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 22:14:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BC3FF41838
+	s=default; t=1674606855;
+	bh=7/z6aI11zueTda510r72ETsDy5qH5FwzrFqvawte7XY=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=wXvIgkl1dfU+q0Zuu2l5XmIJ0vJMuiWypOKK6746+8NeQM+UCIIULyL/uYKs9n/cB
+	 8rWaEjzSPOmgW5t2NOQ91txAzmVj84PZTOywoNV5dYUeHaX41i2RchulraVii1ptK6
+	 GO/5jC45v5leeckKX8bczzTzmylJC7eDU+ZEIHn25uuTE0njgy3HaeIBxF0mPT8t2O
+	 sQyiGstNyQ4ILeUiM5kVWyxNneNEXz0IG0tp5NtzIEvXMm5vSJtUH9OPHNId59nKMb
+	 M3bVwW74dvqisPRWH665/xV9zQQ0l/qXpMBSihpjSEjYF+bymDXZENMjlmYaPF062i
+	 jXSE7XIkIDDGQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1xcvISOkYeNu for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Jan 2023 22:14:39 +0000 (UTC)
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id kD-MFTdywFyt; Wed, 25 Jan 2023 00:34:14 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 604AD4155E;
+	Wed, 25 Jan 2023 00:34:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 604AD4155E
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id A78C51BF3F0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Jan 2023 00:34:12 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7C03A60E09
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Jan 2023 00:34:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7C03A60E09
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id lmzP85nfE9O6 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 25 Jan 2023 00:34:11 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C7F6541895
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C7F6541895
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Jan 2023 22:14:38 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10600"; a="388767214"
-X-IronPort-AV: E=Sophos;i="5.97,243,1669104000"; d="scan'208";a="388767214"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jan 2023 14:14:37 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10600"; a="907674590"
-X-IronPort-AV: E=Sophos;i="5.97,243,1669104000"; d="scan'208";a="907674590"
-Received: from pmstillw-desk1.amr.corp.intel.com ([10.213.174.112])
- by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jan 2023 14:14:36 -0800
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 24 Jan 2023 14:14:26 -0800
-Message-Id: <20230124221428.114-4-paul.m.stillwell.jr@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230124221428.114-1-paul.m.stillwell.jr@intel.com>
-References: <20230124221428.114-1-paul.m.stillwell.jr@intel.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7DB7260D6D
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 7DB7260D6D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Jan 2023 00:34:11 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 544B361353;
+ Wed, 25 Jan 2023 00:34:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 363B0C433EF;
+ Wed, 25 Jan 2023 00:34:09 +0000 (UTC)
+From: Lorenzo Bianconi <lorenzo@kernel.org>
+To: bpf@vger.kernel.org
+Date: Wed, 25 Jan 2023 01:33:20 +0100
+Message-Id: <cover.1674606193.git.lorenzo@kernel.org>
+X-Mailer: git-send-email 2.39.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1674598478; x=1706134478;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=SK6oQROuXv/0G1pOu/DSX7P4783AgelfR1cCaJRkiHU=;
- b=dRtXZHY/pJ+ikJ5mRZDuGvw1tZz/UFO2H1/aeYgx9s2RTOFeaDz7Zonw
- 5F0O5tm9gjf8SfFJcJvJRy9Th8J776HxI5ETtg6JvmTvsEIo5seDX92dM
- LDNR8TJGWkjxGl6kAOSclPJlkdxeyhrhWjB4r59ccf6GjYXBpMwMVxt8a
- 5vDK2fs6PSCdyDfOTCEVitxo3+zksB7cInFBR8kiCDFpFprTQiyb17Wsn
- TOpEzUAcnZjLDMFYocnfw5+Fk8IJMnCh3tIBUwR9JTlH1iZpJuK+As1Qm
- /N0hERbFoxdZNz01J3p2dMhGHgHNVHtApuAadOXDs8hwfriTDXYtJE70d
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=dRtXZHY/
-Subject: [Intel-wired-lan] [PATCH net-next v8 3/5] ice: add ability to
- query/set FW log level and resolution
+ d=kernel.org; s=k20201202; t=1674606849;
+ bh=SRGp775Dw4iczGKOvax1cyuR58kWMnZ3Ff36MCaDGd4=;
+ h=From:To:Cc:Subject:Date:From;
+ b=nt11yJqk90UVuOv7Rnvqyv8LCEgXmixqkEFWrFDFkZ1QofcDjyNN5gBTdt16FaOLO
+ xNzZRBj7usTXANjFcoJAoo8MxrAdMorPhW/NzNpuGqG/ezMgp76CfzP5bktGUtzNM7
+ fT5rX2DKfNz/YfB02c8W2y/chHr5S6H7cmgmoELD686TL0LTxeT52k974y2JIuBhh1
+ FXfgMNE1JtN6TNPkkV9WPxVVMmci6vfgbyZaQ+aV3CmPUxtKiAihN8mCnjbsvntdfV
+ 5Mq+08SC4gmZasaGhVdxcPN4Ae+22PIScJCFtUvqUEjDKQK37AFoBKwroNcinRw+82
+ YaIM2ZWHYtENA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=nt11yJqk
+Subject: [Intel-wired-lan] [PATCH v2 bpf-next 0/8] xdp: introduce
+ xdp-feature support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,545 +87,147 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
+ edumazet@google.com, anthony.l.nguyen@intel.com, daniel@iogearbox.net,
+ andrii@kernel.org, intel-wired-lan@lists.osuosl.org, simon.horman@corigine.com,
+ kuba@kernel.org, pabeni@redhat.com, aelior@marvell.com, hawk@kernel.org,
+ christophe.jaillet@wanadoo.fr, memxor@gmail.com, john@phrozen.org,
+ bjorn@kernel.org, magnus.karlsson@intel.com, leon@kernel.org,
+ netdev@vger.kernel.org, toke@redhat.com, martin.lau@linux.dev,
+ ecree.xilinx@gmail.com, alardam@gmail.com, gospo@broadcom.com,
+ saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The E8xx has the ability to change the FW log level and
-the granularity at which the logs get output. Enable
-the ability to see what the current values are and to
-change them.
+Introduce the capability to export the XDP features supported by the NIC.
+Introduce a XDP compliance test tool (xdp_features) to check the features
+exported by the NIC match the real features supported by the driver.
+Allow XDP_REDIRECT of non-linear XDP frames into a devmap.
+Export XDP features for each XDP capable driver.
+Extend libbpf netlink implementation in order to support netlink_generic
+protocol.
+Introduce a simple generic netlink family for netdev data.
 
-The following devlink commands are now supported:
+Changes since v1:
+- add Documentation to netdev.yaml
+- use flags instead of enum as type for netdev.yaml definitions
+- squash XDP_PASS, XDP_DROP, XDP_TX and XDP_ABORTED into XDP_BASIC since they
+  are supported by all drivers.
+- add notifier event to xdp_features_set_redirect_target() and
+  xdp_features_clear_redirect_target()
+- add selftest for xdp-features support in bpf_xdp_detach()
+- add IPv6 preliminary support to XDP compliance test tool
 
-devlink dev param set <pci dev> name fwlog_enabled value <true/false> cmode runtime
-devlink dev param set <pci dev> name fwlog_level value <0-4> cmode runtime
-devlink dev param set <pci dev> name fwlog_resolution value <1-128> cmode runtime
+Changes since RFCv2:
+- do not assume fixed layout for genl kernel messages
+- fix warnings in netdev_nl_dev_fill
+- fix capabilities for nfp driver
+- add supported_sg parameter to xdp_features_set_redirect_target and drop
+  __xdp_features_set_redirect_target routine
 
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   2 +
- drivers/net/ethernet/intel/ice/ice_common.c   |   4 +-
- drivers/net/ethernet/intel/ice/ice_devlink.c  | 131 ++++++++-
- drivers/net/ethernet/intel/ice/ice_fwlog.c    | 260 +++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_fwlog.h    |   5 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
- 6 files changed, 395 insertions(+), 8 deletions(-)
+Changes since RFCv1:
+- Introduce netdev-genl implementation and get rid of rtnl one.
+- Introduce netlink_generic support in libbpf netlink implementation
+- Rename XDP_FEATURE_* in NETDEV_XDP_ACT_*
+- Rename XDP_FEATURE_REDIRECT_TARGET in NETDEV_XDP_ACT_NDO_XMIT
+- Rename XDP_FEATURE_FRAG_RX in NETDEV_XDP_ACT_RX_SG
+- Rename XDP_FEATURE_FRAG_TARFET in NETDEV_XDP_ACT_NDO_XMIT
+- Get rid of XDP_LOCK feature.
+- Move xdp_feature field in a netdevice struct hole in the 4th cacheline.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 0d560287ec23..1af036beeb45 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -2374,6 +2374,8 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_event_lan_overflow			= 0x1001,
- 
- 	/* FW Logging Commands */
-+	ice_aqc_opc_fw_logs_config			= 0xFF30,
-+	ice_aqc_opc_fw_logs_register			= 0xFF31,
- 	ice_aqc_opc_fw_logs_query			= 0xFF32,
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index ef7e5d7c18f2..da55db0170dd 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -879,7 +879,9 @@ int ice_init_hw(struct ice_hw *hw)
- 	if (status)
- 		goto err_unroll_cqinit;
- 
--	ice_fwlog_set_supported(hw);
-+	status = ice_fwlog_init(hw);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Error initializing FW logging: %d\n", status);
- 
- 	status = ice_clear_pf_cfg(hw);
- 	if (status)
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index 0e76fd19b61a..307ae6be2b8c 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -374,6 +374,8 @@ enum ice_devlink_param_id {
- 	ICE_DEVLINK_PARAM_ID_TX_BALANCE,
- 	ICE_DEVLINK_PARAM_ID_FWLOG_SUPPORTED,
- 	ICE_DEVLINK_PARAM_ID_FWLOG_ENABLED,
-+	ICE_DEVLINK_PARAM_ID_FWLOG_LEVEL,
-+	ICE_DEVLINK_PARAM_ID_FWLOG_RESOLUTION,
- };
- 
- /**
-@@ -1430,8 +1432,111 @@ static int
- ice_devlink_fwlog_enabled_set(struct devlink *devlink, u32 id,
- 			      struct devlink_param_gset_ctx *ctx)
- {
--	/* set operation is unsupported at this time */
--	return -EOPNOTSUPP;
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	struct ice_hw *hw = &pf->hw;
-+	int status;
-+
-+	/* only support fw log commands on PF 0 */
-+	if (hw->bus.func)
-+		return -EOPNOTSUPP;
-+
-+	if (hw->fwlog_ena == ctx->val.vbool)
-+		return 0;
-+
-+	hw->fwlog_ena = ctx->val.vbool;
-+
-+	if (hw->fwlog_ena)
-+		hw->fwlog_cfg.options |= ICE_FWLOG_OPTION_ARQ_ENA;
-+	else
-+		hw->fwlog_cfg.options &= ~ICE_FWLOG_OPTION_ARQ_ENA;
-+
-+	/* send the cfg to FW and register for events */
-+	status = ice_fwlog_set(hw, &hw->fwlog_cfg);
-+	if (status)
-+		return status;
-+
-+	return hw->fwlog_ena ? ice_fwlog_register(hw) : ice_fwlog_unregister(hw);
-+}
-+
-+static int
-+ice_devlink_fwlog_level_get(struct devlink *devlink, u32 id,
-+			    struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+
-+	/* only support fw log commands on PF 0 */
-+	if (pf->hw.bus.func)
-+		return -EOPNOTSUPP;
-+
-+	/* all the log levels are the same so pick the first one */
-+	ctx->val.vu8 = pf->hw.fwlog_cfg.module_entries[0].log_level;
-+
-+	return 0;
-+}
-+
-+static int
-+ice_devlink_fwlog_level_set(struct devlink *devlink, u32 id,
-+			    struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+	struct ice_fwlog_cfg *cfg;
-+	int i;
-+
-+	if (pf->hw.bus.func)
-+		return -EOPNOTSUPP;
-+
-+	if (ctx->val.vu8 >= ICE_FWLOG_LEVEL_INVALID) {
-+		dev_err(ice_pf_to_dev(pf), "Log level is greater than allowed! %d\n",
-+			ctx->val.vu8);
-+		return -EINVAL;
-+	}
-+
-+	cfg = &pf->hw.fwlog_cfg;
-+
-+	/* update the log level for all modules to the same thing. this gets
-+	 * written to the FW when the user says enable logging
-+	 */
-+	for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++)
-+		cfg->module_entries[i].log_level = ctx->val.vu8;
-+
-+	return 0;
-+}
-+
-+static int
-+ice_devlink_fwlog_resolution_get(struct devlink *devlink, u32 id,
-+				 struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+
-+	/* only support fw log commands on PF 0 */
-+	if (pf->hw.bus.func)
-+		return -EOPNOTSUPP;
-+
-+	ctx->val.vu8 = pf->hw.fwlog_cfg.log_resolution;
-+
-+	return 0;
-+}
-+
-+static int
-+ice_devlink_fwlog_resolution_set(struct devlink *devlink, u32 id,
-+				 struct devlink_param_gset_ctx *ctx)
-+{
-+	struct ice_pf *pf = devlink_priv(devlink);
-+
-+	/* only support fw log commands on PF 0 */
-+	if (pf->hw.bus.func)
-+		return -EOPNOTSUPP;
-+
-+	if (ctx->val.vu8 < ICE_AQC_FW_LOG_MIN_RESOLUTION ||
-+	    ctx->val.vu8 > ICE_AQC_FW_LOG_MAX_RESOLUTION) {
-+		dev_err(ice_pf_to_dev(pf), "Log resolution is out of range. Should be between 1 - 128: %d\n",
-+			ctx->val.vu8);
-+		return -EINVAL;
-+	}
-+
-+	pf->hw.fwlog_cfg.log_resolution = ctx->val.vu8;
-+
-+	return 0;
- }
- 
- static const struct devlink_param ice_devlink_params[] = {
-@@ -1455,6 +1560,18 @@ static const struct devlink_param ice_devlink_params[] = {
- 			     ice_devlink_fwlog_enabled_get,
- 			     ice_devlink_fwlog_enabled_set,
- 			     NULL),
-+	DEVLINK_PARAM_DRIVER(ICE_DEVLINK_PARAM_ID_FWLOG_LEVEL,
-+			     "fwlog_level", DEVLINK_PARAM_TYPE_U8,
-+			     BIT(DEVLINK_PARAM_CMODE_RUNTIME),
-+			     ice_devlink_fwlog_level_get,
-+			     ice_devlink_fwlog_level_set,
-+			     NULL),
-+	DEVLINK_PARAM_DRIVER(ICE_DEVLINK_PARAM_ID_FWLOG_RESOLUTION,
-+			     "fwlog_resolution", DEVLINK_PARAM_TYPE_U8,
-+			     BIT(DEVLINK_PARAM_CMODE_RUNTIME),
-+			     ice_devlink_fwlog_resolution_get,
-+			     ice_devlink_fwlog_resolution_set,
-+			     NULL),
- };
- 
- static void ice_devlink_free(void *devlink_ptr)
-@@ -1559,6 +1676,16 @@ int ice_devlink_register_params(struct ice_pf *pf)
- 					   ICE_DEVLINK_PARAM_ID_FWLOG_ENABLED,
- 					   value);
- 
-+	value.vu8 = ICE_FWLOG_LEVEL_NORMAL;
-+	devlink_param_driverinit_value_set(devlink,
-+					   ICE_DEVLINK_PARAM_ID_FWLOG_LEVEL,
-+					   value);
-+
-+	/* set the default value for the FW to pack 10 messages per AQ event */
-+	value.vu8 = 10;
-+	devlink_param_driverinit_value_set(devlink,
-+					   ICE_DEVLINK_PARAM_ID_FWLOG_RESOLUTION,
-+					   value);
- 	return 0;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.c b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-index fac970f03dd0..a6b468123bc0 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-@@ -4,6 +4,146 @@
- #include "ice_common.h"
- #include "ice_fwlog.h"
- 
-+/**
-+ * valid_module_entries - validate all the module entry IDs and log levels
-+ * @hw: pointer to the HW structure
-+ * @entries: entries to validate
-+ * @num_entries: number of entries to validate
-+ */
-+static bool
-+valid_module_entries(struct ice_hw *hw, struct ice_fwlog_module_entry *entries,
-+		     u16 num_entries)
-+{
-+	int i;
-+
-+	if (!entries) {
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Null ice_fwlog_module_entry array\n");
-+		return false;
-+	}
-+
-+	if (!num_entries) {
-+		ice_debug(hw, ICE_DBG_FW_LOG, "num_entries must be non-zero\n");
-+		return false;
-+	}
-+
-+	for (i = 0; i < num_entries; i++) {
-+		struct ice_fwlog_module_entry *entry = &entries[i];
-+
-+		if (entry->module_id >= ICE_AQC_FW_LOG_ID_MAX) {
-+			ice_debug(hw, ICE_DBG_FW_LOG, "Invalid module_id %u, max valid module_id is %u\n",
-+				  entry->module_id, ICE_AQC_FW_LOG_ID_MAX - 1);
-+			return false;
-+		}
-+
-+		if (entry->log_level >= ICE_FWLOG_LEVEL_INVALID) {
-+			ice_debug(hw, ICE_DBG_FW_LOG, "Invalid log_level %u, max valid log_level is %u\n",
-+				  entry->log_level,
-+				  ICE_AQC_FW_LOG_ID_MAX - 1);
-+			return false;
-+		}
-+	}
-+
-+	return true;
-+}
-+
-+/**
-+ * valid_cfg - validate entire configuration
-+ * @hw: pointer to the HW structure
-+ * @cfg: config to validate
-+ */
-+static bool valid_cfg(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
-+{
-+	if (!cfg) {
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Null ice_fwlog_cfg\n");
-+		return false;
-+	}
-+
-+	if (cfg->log_resolution < ICE_AQC_FW_LOG_MIN_RESOLUTION ||
-+	    cfg->log_resolution > ICE_AQC_FW_LOG_MAX_RESOLUTION) {
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Unsupported log_resolution %u, must be between %u and %u\n",
-+			  cfg->log_resolution, ICE_AQC_FW_LOG_MIN_RESOLUTION,
-+			  ICE_AQC_FW_LOG_MAX_RESOLUTION);
-+		return false;
-+	}
-+
-+	return valid_module_entries(hw, cfg->module_entries,
-+				    ICE_AQC_FW_LOG_ID_MAX);
-+}
-+
-+/**
-+ * ice_fwlog_init - Initialize FW logging configuration
-+ * @hw: pointer to the HW structure
-+ *
-+ * This function should be called on driver initialization during
-+ * ice_init_hw().
-+ */
-+int ice_fwlog_init(struct ice_hw *hw)
-+{
-+	int status;
-+
-+	ice_fwlog_set_supported(hw);
-+
-+	if (ice_fwlog_supported(hw)) {
-+		/* read the current config from the FW and store it */
-+		status = ice_fwlog_get(hw, &hw->fwlog_cfg);
-+		if (status)
-+			return status;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_aq_fwlog_set - Set FW logging configuration AQ command (0xFF30)
-+ * @hw: pointer to the HW structure
-+ * @entries: entries to configure
-+ * @num_entries: number of @entries
-+ * @options: options from ice_fwlog_cfg->options structure
-+ * @log_resolution: logging resolution
-+ */
-+static int
-+ice_aq_fwlog_set(struct ice_hw *hw, struct ice_fwlog_module_entry *entries,
-+		 u16 num_entries, u16 options, u16 log_resolution)
-+{
-+	struct ice_aqc_fw_log_cfg_resp *fw_modules;
-+	struct ice_aqc_fw_log *cmd;
-+	struct ice_aq_desc desc;
-+	int status;
-+	int i;
-+
-+	fw_modules = kcalloc(num_entries, sizeof(*fw_modules), GFP_KERNEL);
-+	if (!fw_modules)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < num_entries; i++) {
-+		fw_modules[i].module_identifier =
-+			cpu_to_le16(entries[i].module_id);
-+		fw_modules[i].log_level = entries[i].log_level;
-+	}
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logs_config);
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+
-+	cmd = &desc.params.fw_log;
-+
-+	cmd->cmd_flags = ICE_AQC_FW_LOG_CONF_SET_VALID;
-+	cmd->ops.cfg.log_resolution = cpu_to_le16(log_resolution);
-+	cmd->ops.cfg.mdl_cnt = cpu_to_le16(num_entries);
-+
-+	if (options & ICE_FWLOG_OPTION_ARQ_ENA)
-+		cmd->cmd_flags |= ICE_AQC_FW_LOG_CONF_AQ_EN;
-+	if (options & ICE_FWLOG_OPTION_UART_ENA)
-+		cmd->cmd_flags |= ICE_AQC_FW_LOG_CONF_UART_EN;
-+
-+	status = ice_aq_send_cmd(hw, &desc, fw_modules,
-+				 sizeof(*fw_modules) * num_entries,
-+				 NULL);
-+
-+	kfree(fw_modules);
-+
-+	return status;
-+}
-+
- /**
-  * ice_fwlog_supported - Cached for whether FW supports FW logging or not
-  * @hw: pointer to the HW structure
-@@ -16,13 +156,102 @@ bool ice_fwlog_supported(struct ice_hw *hw)
- 	return hw->fwlog_supported;
- }
- 
-+/**
-+ * ice_fwlog_set - Set the firmware logging settings
-+ * @hw: pointer to the HW structure
-+ * @cfg: config used to set firmware logging
-+ *
-+ * This function should be called whenever the driver needs to set the firmware
-+ * logging configuration. It can be called on initialization, reset, or during
-+ * runtime.
-+ *
-+ * If the PF wishes to receive FW logging then it must register via
-+ * ice_fwlog_register. Note, that ice_fwlog_register does not need to be called
-+ * for init.
-+ */
-+int ice_fwlog_set(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
-+{
-+	int status;
-+
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	if (!valid_cfg(hw, cfg))
-+		return -EINVAL;
-+
-+	status = ice_aq_fwlog_set(hw, cfg->module_entries,
-+				  ICE_AQC_FW_LOG_ID_MAX, cfg->options,
-+				  cfg->log_resolution);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_aq_fwlog_register - Register PF for firmware logging events (0xFF31)
-+ * @hw: pointer to the HW structure
-+ * @reg: true to register and false to unregister
-+ */
-+static int ice_aq_fwlog_register(struct ice_hw *hw, bool reg)
-+{
-+	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logs_register);
-+
-+	if (reg)
-+		desc.params.fw_log.cmd_flags = ICE_AQC_FW_LOG_AQ_REGISTER;
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
-+}
-+
-+/**
-+ * ice_fwlog_register - Register the PF for firmware logging
-+ * @hw: pointer to the HW structure
-+ *
-+ * After this call the PF will start to receive firmware logging based on the
-+ * configuration set in ice_fwlog_set.
-+ */
-+int ice_fwlog_register(struct ice_hw *hw)
-+{
-+	int status;
-+
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	status = ice_aq_fwlog_register(hw, true);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Failed to register for firmware logging events over ARQ\n");
-+	else
-+		hw->fwlog_cfg.options |= ICE_FWLOG_OPTION_IS_REGISTERED;
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_fwlog_unregister - Unregister the PF from firmware logging
-+ * @hw: pointer to the HW structure
-+ */
-+int ice_fwlog_unregister(struct ice_hw *hw)
-+{
-+	int status;
-+
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	status = ice_aq_fwlog_register(hw, false);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Failed to unregister from firmware logging events over ARQ\n");
-+	else
-+		hw->fwlog_cfg.options &= ~ICE_FWLOG_OPTION_IS_REGISTERED;
-+
-+	return status;
-+}
-+
- /**
-  * ice_aq_fwlog_get - Get the current firmware logging configuration (0xFF32)
-  * @hw: pointer to the HW structure
-  * @cfg: firmware logging configuration to populate
-  */
--static int
--ice_aq_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
-+static int ice_aq_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
- {
- 	struct ice_aqc_fw_log_cfg_resp *fw_modules;
- 	struct ice_aqc_fw_log *cmd;
-@@ -102,9 +331,8 @@ void ice_fwlog_set_supported(struct ice_hw *hw)
- 	if (!cfg)
- 		return;
- 
--	/* don't call ice_fwlog_get() because that would overwrite the cached
--	 * configuration from the call to ice_fwlog_init(), which is expected to
--	 * be called prior to this function
-+	/* don't call ice_fwlog_get() because that would check to see if FW
-+	 * logging is supported which is what the driver is determining now
- 	 */
- 	status = ice_aq_fwlog_get(hw, cfg);
- 	if (status)
-@@ -115,3 +343,25 @@ void ice_fwlog_set_supported(struct ice_hw *hw)
- 
- 	kfree(cfg);
- }
-+
-+/**
-+ * ice_fwlog_get - Get the firmware logging settings
-+ * @hw: pointer to the HW structure
-+ * @cfg: config to populate based on current firmware logging settings
-+ */
-+int ice_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
-+{
-+	int status;
-+
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	if (!cfg)
-+		return -EINVAL;
-+
-+	status = ice_aq_fwlog_get(hw, cfg);
-+	if (status)
-+		return status;
-+
-+	return 0;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.h b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-index 3a2c83502763..fcfceb9f6ec2 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-@@ -49,4 +49,9 @@ struct ice_fwlog_cfg {
- 
- void ice_fwlog_set_supported(struct ice_hw *hw);
- bool ice_fwlog_supported(struct ice_hw *hw);
-+int ice_fwlog_init(struct ice_hw *hw);
-+int ice_fwlog_set(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
-+int ice_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
-+int ice_fwlog_register(struct ice_hw *hw);
-+int ice_fwlog_unregister(struct ice_hw *hw);
- #endif /* _ICE_FWLOG_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 476b85e0a0ee..5aa3415f22d4 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -860,6 +860,7 @@ struct ice_hw {
- 	u8 fw_patch;		/* firmware patch version */
- 	u32 fw_build;		/* firmware build number */
- 
-+	struct ice_fwlog_cfg fwlog_cfg;
- 	bool fwlog_supported; /* does hardware support FW logging? */
- 	bool fwlog_ena; /* currently logging? */
- 
+Jakub Kicinski (1):
+  netdev-genl: create a simple family for netdev stuff
+
+Lorenzo Bianconi (5):
+  libbpf: add the capability to specify netlink proto in
+    libbpf_netlink_send_recv
+  libbpf: add API to get XDP/XSK supported features
+  bpf: devmap: check XDP features in __xdp_enqueue routine
+  selftests/bpf: add test for bpf_xdp_query xdp-features support
+  selftests/bpf: introduce XDP compliance test tool
+
+Marek Majtyka (2):
+  drivers: net: turn on XDP features
+  xsk: add usage of XDP features flags
+
+ Documentation/netlink/specs/netdev.yaml       | 100 +++
+ drivers/net/ethernet/amazon/ena/ena_netdev.c  |   4 +
+ .../net/ethernet/aquantia/atlantic/aq_nic.c   |   5 +
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c     |   3 +
+ drivers/net/ethernet/broadcom/bnxt/bnxt_xdp.c |   2 +
+ .../net/ethernet/cavium/thunder/nicvf_main.c  |   2 +
+ .../net/ethernet/freescale/dpaa/dpaa_eth.c    |   4 +
+ .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |   4 +
+ .../net/ethernet/freescale/enetc/enetc_pf.c   |   3 +
+ .../ethernet/fungible/funeth/funeth_main.c    |   6 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  10 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   5 +
+ drivers/net/ethernet/intel/igb/igb_main.c     |   9 +-
+ drivers/net/ethernet/intel/igc/igc_main.c     |   3 +
+ drivers/net/ethernet/intel/igc/igc_xdp.c      |   5 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   6 +
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |   1 +
+ drivers/net/ethernet/marvell/mvneta.c         |   3 +
+ .../net/ethernet/marvell/mvpp2/mvpp2_main.c   |   4 +
+ .../ethernet/marvell/octeontx2/nic/otx2_pf.c  |   8 +-
+ drivers/net/ethernet/mediatek/mtk_eth_soc.c   |   6 +
+ .../net/ethernet/mellanox/mlx4/en_netdev.c    |   2 +
+ .../net/ethernet/mellanox/mlx5/core/en_main.c |  11 +
+ drivers/net/ethernet/microsoft/mana/mana_en.c |   2 +
+ .../ethernet/netronome/nfp/nfp_net_common.c   |   5 +
+ drivers/net/ethernet/qlogic/qede/qede_main.c  |   3 +
+ drivers/net/ethernet/sfc/efx.c                |   4 +
+ drivers/net/ethernet/sfc/siena/efx.c          |   4 +
+ drivers/net/ethernet/socionext/netsec.c       |   3 +
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c |   2 +
+ drivers/net/ethernet/ti/cpsw.c                |   4 +
+ drivers/net/ethernet/ti/cpsw_new.c            |   4 +
+ drivers/net/hyperv/netvsc_drv.c               |   2 +
+ drivers/net/netdevsim/netdev.c                |   1 +
+ drivers/net/tun.c                             |   5 +
+ drivers/net/veth.c                            |   4 +
+ drivers/net/virtio_net.c                      |   4 +
+ drivers/net/xen-netfront.c                    |   2 +
+ include/linux/netdevice.h                     |   3 +
+ include/net/xdp.h                             |  18 +
+ include/uapi/linux/netdev.h                   |  59 ++
+ kernel/bpf/devmap.c                           |  16 +-
+ net/core/Makefile                             |   3 +-
+ net/core/dev.c                                |   1 +
+ net/core/filter.c                             |  13 +-
+ net/core/netdev-genl-gen.c                    |  48 ++
+ net/core/netdev-genl-gen.h                    |  23 +
+ net/core/netdev-genl.c                        | 179 +++++
+ net/core/xdp.c                                |  18 +
+ net/xdp/xsk_buff_pool.c                       |   7 +-
+ tools/include/uapi/linux/netdev.h             |  59 ++
+ tools/lib/bpf/libbpf.h                        |   3 +-
+ tools/lib/bpf/netlink.c                       | 121 ++-
+ tools/lib/bpf/nlattr.h                        |  12 +
+ tools/testing/selftests/bpf/.gitignore        |   1 +
+ tools/testing/selftests/bpf/Makefile          |  11 +-
+ .../bpf/prog_tests/xdp_do_redirect.c          |  27 +-
+ .../selftests/bpf/prog_tests/xdp_info.c       |   8 +
+ .../selftests/bpf/progs/xdp_features.c        | 249 ++++++
+ .../selftests/bpf/test_xdp_features.sh        |  99 +++
+ tools/testing/selftests/bpf/xdp_features.c    | 736 ++++++++++++++++++
+ tools/testing/selftests/bpf/xdp_features.h    |  33 +
+ 62 files changed, 1969 insertions(+), 33 deletions(-)
+ create mode 100644 Documentation/netlink/specs/netdev.yaml
+ create mode 100644 include/uapi/linux/netdev.h
+ create mode 100644 net/core/netdev-genl-gen.c
+ create mode 100644 net/core/netdev-genl-gen.h
+ create mode 100644 net/core/netdev-genl.c
+ create mode 100644 tools/include/uapi/linux/netdev.h
+ create mode 100644 tools/testing/selftests/bpf/progs/xdp_features.c
+ create mode 100755 tools/testing/selftests/bpf/test_xdp_features.sh
+ create mode 100644 tools/testing/selftests/bpf/xdp_features.c
+ create mode 100644 tools/testing/selftests/bpf/xdp_features.h
+
 -- 
-2.35.1
+2.39.1
 
 _______________________________________________
 Intel-wired-lan mailing list
