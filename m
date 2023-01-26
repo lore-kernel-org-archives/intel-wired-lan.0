@@ -1,84 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C028C54E94
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Jan 2023 07:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6478BC54E94
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Jan 2023 08:18:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B4C8461035;
-	Thu, 26 Jan 2023 07:28:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B4C8461035
+	by smtp4.osuosl.org (Postfix) with ESMTP id CFE584086F;
+	Thu, 26 Jan 2023 08:18:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CFE584086F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674718092;
-	bh=1D+x0yignGByGcCaC5IT0K27PFwf3P3OFz7A49CxiAw=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1674721101;
+	bh=Cytu7xYKFBZ+zppZUvdzGCM7wUj02ixa5pU1vzBlp44=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=1sB65amjf+gqM2x72mOMQ/5MiPW2+SdbfUjAJ/MeSBSmbq0+d89720TLwqB+jUoGa
-	 scOzDUlbOo+mnG3msRiDCWcoudpoM+lwbcqzuuGvfc+skRzf3ajC0+oepOxs91wIJd
-	 8Q1rERWwJRhWa4EysOZpWLWG5wcFW6WrApBudSBCndACQ9RDYDTGmyULfaWgocJyoO
-	 rGeODlypg+/9Ye/56+C65V1y3XK0UD0rK7sPpVicOFPFpUaIGwQKoCVom4Q8ufp6+i
-	 MYs/fNCu5aSV/P6k1Dw08KTuMVxOpgkxp4fBcrOeymt4LIFnC/An4jVlcwmmTasjYh
-	 rexABQxfWoj2w==
+	b=sUfRB7eNSBPiqSFs4cNXGqk4DZ1fTkwmrYkaVzbcctpftEVeQrczfanpSpXw35V9b
+	 rNIBVSKSQRbX3jgRTR2B+rH0mp3nEOIeoznFDPzbgZJYKZb+Se4624FrkHo81hGoDR
+	 vu5ig7Mfl7ua/CE7I3aGVZFPYHHj8y27XUO63TXEWZAHgY9SB7frhWq95Ld2B9wwQu
+	 +8gD9PwgG3thB1Vl6WkDFEenAm8OhLeUZ3gt0hk1lVdDkayw2W15f3riweNezvwUyI
+	 ipHQQnd/vSRdLcQKq0eiNHIh+uZiJTOqX/4wIB6kCrlyETHOJLTgqKwgBa3V+EUwyk
+	 z93abO8Td35Kg==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Xyp-9tbkWzh9; Thu, 26 Jan 2023 08:18:20 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9EC4940876;
+	Thu, 26 Jan 2023 08:18:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9EC4940876
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 543111BF3B0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Jan 2023 08:18:19 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 398E160E1A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Jan 2023 08:18:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 398E160E1A
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 8pKTVE9Rb4yC; Thu, 26 Jan 2023 07:28:12 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C1CA260FEE;
-	Thu, 26 Jan 2023 07:28:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C1CA260FEE
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 765EA1BF4E7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Jan 2023 07:28:10 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4AB5D40A0E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Jan 2023 07:28:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4AB5D40A0E
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id M-tYE9UydFmG for <intel-wired-lan@lists.osuosl.org>;
- Thu, 26 Jan 2023 07:28:09 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8E96E409E7
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8E96E409E7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Jan 2023 07:28:09 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 85D9361752;
- Thu, 26 Jan 2023 07:28:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 386EBC433EF;
- Thu, 26 Jan 2023 07:28:05 +0000 (UTC)
-Date: Thu, 26 Jan 2023 09:28:02 +0200
-From: Leon Romanovsky <leon@kernel.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Message-ID: <Y9Irgrgf3uxOjwUm@unreal>
-References: <cover.1674560845.git.leon@kernel.org>
- <c182cae29914fa19ce970859e74234d3de506853.1674560845.git.leon@kernel.org>
- <20230125110226.66dc7eeb@kernel.org>
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id MFe5Jj7JXABw for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 26 Jan 2023 08:18:17 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 62F8C60E18
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 62F8C60E18
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Jan 2023 08:18:17 +0000 (UTC)
+Received: from [192.168.0.2] (ip5f5aed4b.dynamic.kabel-deutschland.de
+ [95.90.237.75])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 0986D61CC457B;
+ Thu, 26 Jan 2023 09:18:13 +0100 (CET)
+Message-ID: <dab01afa-cb7e-16ac-5498-918c60955c6e@molgen.mpg.de>
+Date: Thu, 26 Jan 2023 09:18:10 +0100
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20230125110226.66dc7eeb@kernel.org>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1674718087;
- bh=FP9vuXTK892fNGc55uvufWHZKaEX/J0FjCpiBCeGi28=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=ahanLAX1jHk2265b+uqA+hNuR4qWvgo2XQ8DgoPW1fhBpx3U/md7lhcB5uVvG2aBz
- ewBTvWBB0UFZvZQEs8a1Hox8blCimFkmeMveP+r3xVPULc68P7m3R/g6RI2OPtksIO
- oh5LM5BNVdd6OZoNY/gPsKVmW7WNU9IUpC7BzEDIpyKCcfwbVfdzhCmE4W58Z4L68P
- OGlEQpS1YmaKofixwlx3mHha+mbnTgXmsTPYx6s6BpCMruQsHKpn6z14eDmaEzh6AT
- 0QVOSED+Vn1VjoIR1g34IvH+sQHOEc0o/wYxbs+zJDd4VuU+0JIKUNJRpzILAukx31
- 9f2kVcePtzJcg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=ahanLAX1
-Subject: Re: [Intel-wired-lan] [PATCH net-next v1 01/10] xfrm: extend add
- policy callback to set failure reason
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+To: Karen Ostrowska <karen.ostrowska@intel.com>
+References: <20230125160149.1899331-1-karen.ostrowska@intel.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20230125160149.1899331-1-karen.ostrowska@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH net v1] ice: Fix DSCP PFC TLV creation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,88 +77,39 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Steffen Klassert <steffen.klassert@secunet.com>,
- Veaceslav Falico <vfalico@gmail.com>, Herbert Xu <herbert@gondor.apana.org.au>,
- Jonathan Corbet <corbet@lwn.net>, Jay Vosburgh <j.vosburgh@gmail.com>,
- oss-drivers@corigine.com, linux-doc@vger.kernel.org,
- Raju Rangoju <rajur@chelsio.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, Ayush Sawal <ayush.sawal@chelsio.com>,
- Simon Horman <simon.horman@corigine.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Paolo Abeni <pabeni@redhat.com>,
- Saeed Mahameed <saeedm@nvidia.com>, "David S . Miller" <davem@davemloft.net>,
- Andy Gospodarek <andy@greyhouse.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: intel-wired-lan@lists.osuosl.org
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Jan 25, 2023 at 11:02:26AM -0800, Jakub Kicinski wrote:
-> On Tue, 24 Jan 2023 13:54:57 +0200 Leon Romanovsky wrote:
-> > -	err = dev->xfrmdev_ops->xdo_dev_policy_add(xp);
-> > +	err = dev->xfrmdev_ops->xdo_dev_policy_add(xp, extack);
-> >  	if (err) {
-> >  		xdo->dev = NULL;
-> >  		xdo->real_dev = NULL;
-> >  		xdo->type = XFRM_DEV_OFFLOAD_UNSPECIFIED;
-> >  		xdo->dir = 0;
-> >  		netdev_put(dev, &xdo->dev_tracker);
-> > -		NL_SET_ERR_MSG(extack, "Device failed to offload this policy");
-> 
-> In a handful of places we do:
-> 
-> if (!extack->msg)
-> 	NL_SET_ERR_MSG(extack, "Device failed to offload this policy");
-> 
-> in case the device did not provide the extack.
-> Dunno if it's worth doing here.
-
-Honestly, I followed devlink.c which didn't do that, but looked again
-and found that devlink can potentially overwrite messages :)
-
-For example in this case:
-    997         err = ops->port_fn_state_get(port, &state, &opstate, extack);
-    998         if (err) {
-    999                 if (err == -EOPNOTSUPP)
-   1000                         return 0;
-   1001                 return err;
-   1002         }
-   1003         if (!devlink_port_fn_state_valid(state)) {
-   1004                 WARN_ON_ONCE(1);
-   1005                 NL_SET_ERR_MSG_MOD(extack, "Invalid state read from driver");
-   1006                 return -EINVAL;
-   1007         }
-
-
-So what do you think about the following change, so we can leave
-NL_SET_ERR_MSG_MOD() in devlink and xfrm intact? 
-
-diff --git a/include/linux/netlink.h b/include/linux/netlink.h
-index 38f6334f408c..d6f3a958e30b 100644
---- a/include/linux/netlink.h
-+++ b/include/linux/netlink.h
-@@ -101,7 +101,7 @@ struct netlink_ext_ack {
-                                                        \
-        do_trace_netlink_extack(__msg);                 \
-                                                        \
--       if (__extack)                                   \
-+       if (__extack && !__extack->msg)                 \
-                __extack->_msg = __msg;                 \
- } while (0)
-
-@@ -111,7 +111,7 @@ struct netlink_ext_ack {
- #define NL_SET_ERR_MSG_FMT(extack, fmt, args...) do {                         \
-        struct netlink_ext_ack *__extack = (extack);                           \
-                                                                               \
--       if (!__extack)                                                         \
-+       if (!__extack || __extack->msg)                                        \
-                break;                                                         \
-        if (snprintf(__extack->_msg_buf, NETLINK_MAX_FMTMSG_LEN,               \
-                     "%s" fmt "%s", "", ##args, "") >=                         \
-
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RGVhciBLYXJlbiwKCgpUaGFuayB5b3UgZm9yIHRoZSBwYXRjaC4KCkFtIDI1LjAxLjIzIHVtIDE3
+OjAxIHNjaHJpZWIgS2FyZW4gT3N0cm93c2thOgo+IEZyb206IERhdmUgRXJ0bWFuIDxkYXZpZC5t
+LmVydG1hbkBpbnRlbC5jb20+Cj4gCj4gV2hlbiBjcmVhdGluZyB0aGUgVExWIHRvIHNlbmQgdG8g
+dGhlIEZXIGZvciBjb25maWd1cmluZyBEU0NQCj4gbW9kZSBQRkMsIHRoZSBQRkNFTkFCTEUgZmll
+bGQgd2FzIGJlaW5nIG1hc2tlZCB3aXRoIGEgNCBiaXQKPiBtYXNrICgweEYpLCBidXQgdGhpcyBp
+cyBhbiA4IGJpdCBiaXRtYXNrIGZvciBlbmFibGVkIGNsYXNzZXMKPiBmb3IgUEZDLiAgVGhpcyBt
+ZWFucyB0aGF0IHRyYWZmaWMgY2xhc3NlcyA0LTcgY291bGQgbm90IGJlCj4gZW5hYmxlZCBmb3Ig
+UEZDLgo+IAo+IFJlbW92ZSB0aGUgbWFzayBjb21wbGV0ZWx5LCBhcyBpdCBpcyBub3QgbmVjZXNz
+YXJ5LCBhcyB3ZSBhcmUKPiBhc3NpZ25pbmcgOGJpdHMgdG8gYW4gOCBiaXQgZmllbGQuCgpQbGVh
+c2UgcmVmbG93IHRoZSB0ZXh0IHRvIHVzZSB0aGUgZnVsbCA3NSBjaGFyYWN0ZXJzIG9mIGFsbG93
+ZWQgdGV4dCB3aWR0aC4KClBsZWFzZSBhZGQgYSBzcGFjZSBpbiDigJw4IGJpdHPigJ0uCgo+IEZp
+eGVzOiAyYTg3YmQ3M2U1MGQoImljZTogQWRkIERTQ1Agc3VwcG9ydCIpCgpQbGVhc2UgYWRkIGEg
+c3BhY2UgYWZ0ZXIgdGhlIGNvbW1pdCBoYXNoIGJlZm9yZSB0aGUgKC4KCj4gU2lnbmVkLW9mZi1i
+eTogRGF2ZSBFcnRtYW4gPGRhdmlkLm0uZXJ0bWFuQGludGVsLmNvbT4KPiBTaWduZWQtb2ZmLWJ5
+OiBLYXJlbiBPc3Ryb3dza2EgPGthcmVuLm9zdHJvd3NrYUBpbnRlbC5jb20+Cj4gLS0tCj4gICBk
+cml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2UvaWNlX2RjYi5jIHwgMiArLQo+ICAgMSBmaWxl
+IGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pCj4gCj4gZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9pY2VfZGNiLmMgYi9kcml2ZXJzL25ldC9l
+dGhlcm5ldC9pbnRlbC9pY2UvaWNlX2RjYi5jCj4gaW5kZXggNmJlMDJmOWIwYjhjLi43ODliOTk5
+NjM5MTAgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV9k
+Y2IuYwo+ICsrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9pY2VfZGNiLmMKPiBA
+QCAtMTM3Miw3ICsxMzcyLDcgQEAgaWNlX2FkZF9kc2NwX3BmY190bHYoc3RydWN0IGljZV9sbGRw
+X29yZ190bHYgKnRsdiwgc3RydWN0IGljZV9kY2J4X2NmZyAqZGNiY2ZnKQo+ICAgCXRsdi0+b3Vp
+c3VidHlwZSA9IGh0b25sKG91aXN1YnR5cGUpOwo+ICAgCj4gICAJYnVmWzBdID0gZGNiY2ZnLT5w
+ZmMucGZjY2FwICYgMHhGOwo+IC0JYnVmWzFdID0gZGNiY2ZnLT5wZmMucGZjZW5hICYgMHhGOwo+
+ICsJYnVmWzFdID0gZGNiY2ZnLT5wZmMucGZjZW5hOwo+ICAgfQo+ICAgCj4gICAvKioKCgpLaW5k
+IHJlZ2FyZHMsCgpQYXVsCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCkludGVsLXdpcmVkLWxhbiBtYWlsaW5nIGxpc3QKSW50ZWwtd2lyZWQtbGFuQG9zdW9z
+bC5vcmcKaHR0cHM6Ly9saXN0cy5vc3Vvc2wub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtd2ly
+ZWQtbGFuCg==
