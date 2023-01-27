@@ -1,82 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DAF4C54EAA
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Jan 2023 16:34:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66A2CC61D97
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Jan 2023 16:34:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1A1A24014B;
-	Fri, 27 Jan 2023 16:34:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1A1A24014B
+	by smtp1.osuosl.org (Postfix) with ESMTP id EFE2A824DC;
+	Fri, 27 Jan 2023 16:34:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EFE2A824DC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1674837257;
-	bh=csrdS9dnH+ex/CTQreNHWbRzziJ9ZQOR0BzvZR6ZzDo=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=faLkhRgRlSRp4umdGonwTEP4XRdoJdq8mOx2N4p3S16ipJFf5tqZ5zDRtXC3NHeaX
-	 1Kerhx3kZ6bUldrRg93w007NCBRuU1LGa75w5ziQHil1doeetkIK63eR7B7beZsaOi
-	 JagVOtyCX23VdHTixEs30oThCqtQW6hdTg9ZFhjvCfxxFi5VMFyOtRm8wQKG6Rwmk3
-	 Ob+iqQBBVfSH+jxn0DPjdlqE4f/2r2gWGb+nAULiwqtAtQc9jsuK9IrkbbMj9S47Wn
-	 GfdVvVEMr9cQB05av603YllxlHR8QJEzjJMi7LOl3RRYHrxG+j+PXTrWpopAWj60jB
-	 QffHK3Znd5tgg==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DXhEtZ2xxXYJ; Fri, 27 Jan 2023 16:34:16 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1D3BC4183E;
-	Fri, 27 Jan 2023 16:34:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1D3BC4183E
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E27881BF363
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Jan 2023 08:20:08 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BAB7E82566
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Jan 2023 08:20:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BAB7E82566
+	s=default; t=1674837261;
+	bh=MJzsNWbMiFMIhcMLjlvSORE0I2qNhT/6wTVdnX4yIXE=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=66mJaWzopFdy2/T3mwLF7CVoogRoXwpl5EsdXD3tW9yL4kxFVYBqpln7L2bO2MkBQ
+	 oLjqOifO2DpkMepRsIIKLEf4exlUOTq8xfYA8MFSJ6hONEms3LxI7POdHeaKkxPthU
+	 +YiJJX1GyepIx86FxlBq5YPsk4/IOrcD0uyZiBxR3PUE7YCBkoG7NtNnRjfj8pzcPe
+	 l+goihxJaAJzzdNkGPaMwJWITRrEhmxpztUp600cBKvWA/fUOmiYmq1x0G83eF0MdQ
+	 Tc8cU7q44/qWnxIo/ctuOucD4+1S7EGP9bJTt6rYiR69ZyKRx9QL0PcL/tZEgQ1Rpo
+	 C914zL8sDA+Og==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id xCbSclwq1FmP for <intel-wired-lan@lists.osuosl.org>;
- Fri, 27 Jan 2023 08:20:07 +0000 (UTC)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id OCCzlREbKcKz; Fri, 27 Jan 2023 16:34:20 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id F3F5B82549;
+	Fri, 27 Jan 2023 16:34:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F3F5B82549
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 18A7D1BF284
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Jan 2023 13:23:01 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id E45F061202
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Jan 2023 13:23:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E45F061202
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id KwbExl8nsVta for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 27 Jan 2023 13:23:00 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 858B582716
-Received: from out2.migadu.com (out2.migadu.com [IPv6:2001:41d0:2:aacc::])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 858B582716
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Jan 2023 08:20:06 +0000 (UTC)
-Message-ID: <a208ed96-20e5-43d3-13e9-122776230da1@linux.dev>
-Date: Fri, 27 Jan 2023 00:19:54 -0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2BBEB60EB8
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2BBEB60EB8
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Jan 2023 13:22:59 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10602"; a="327104428"
+X-IronPort-AV: E=Sophos;i="5.97,251,1669104000"; d="scan'208";a="327104428"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 27 Jan 2023 05:22:59 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10602"; a="665251026"
+X-IronPort-AV: E=Sophos;i="5.97,251,1669104000"; d="scan'208";a="665251026"
+Received: from amlin-019-051.igk.intel.com ([10.102.19.51])
+ by fmsmga007.fm.intel.com with ESMTP; 27 Jan 2023 05:22:58 -0800
+From: Karen Ostrowska <karen.ostrowska@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Fri, 27 Jan 2023 14:24:10 +0100
+Message-Id: <20230127132410.2057599-1-karen.ostrowska@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Language: en-US
-To: Lorenzo Bianconi <lorenzo@kernel.org>
-References: <cover.1674737592.git.lorenzo@kernel.org>
- <0b05b08d4579b017dd96869d1329cd82801bd803.1674737592.git.lorenzo@kernel.org>
- <Y9LIPaojtpTjYlNu@google.com>
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Martin KaFai Lau <martin.lau@linux.dev>
-In-Reply-To: <Y9LIPaojtpTjYlNu@google.com>
-X-Migadu-Flow: FLOW_OUT
 X-Mailman-Approved-At: Fri, 27 Jan 2023 16:34:14 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1674807601;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=ov/FJthsCODGeWj8ILAwNRT93LKgz9Jx2BLZQJFGouA=;
- b=VvpwaWRgkPXmVGVaxMPg0j7GTF9JSJn1hndRbmKIDgfs8CFaBdUmYJOfni4D7xIfmVL7bN
- ZrttmyNQPsGKC8xh6GxIWlIDzD9wwK9DjIgVcYjx4tWVV+43dzRET5LsMtobKHNxUfUq09
- 3IabGtps6eJVAfRUs/mF28o+asZtQr0=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=VvpwaWRg
-Subject: Re: [Intel-wired-lan] [PATCH v3 bpf-next 8/8] selftests/bpf:
- introduce XDP compliance test tool
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1674825780; x=1706361780;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=kac3eQGDUMMk7dysz32fYnsUiDeO0zYiWeLeaPqZNbk=;
+ b=hzN2sB3i1aBaU3PdZSM8hVxBwcTPjXA9e9ID1SU8qQr0FGI6jK7o1yOX
+ Lge/UmRutFQToruV9fBumUScdMdWyOg0cvcDO6HTy23rb5E2vMJvSQtIV
+ E6FAK3GPcZ8LegVfCqADG8p1RTdtIoNj1UD3LiT0Ts7c4TtBEKiznewI0
+ LNeVz4xD3z+de1Ij9urMS1SVuSZp8wawpIsQYyTB4gxp8hZdm/28PFbCi
+ Cj2+YKfQZCbVEZuon7aTWuLUUrlRSeE74J4XR735JqSuGHjgI4gQ8cxXz
+ 2NTrzUiphF9wp8lIKaVNkZyBSAMQ1ohBwpQO+DRKeBNHyzSL4jw+Cb4PQ
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=hzN2sB3i
+Subject: [Intel-wired-lan] [PATCH net v1] ice: Fix DSCP PFC TLV creation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,39 +92,46 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
- edumazet@google.com, anthony.l.nguyen@intel.com, sdf@google.com,
- daniel@iogearbox.net, andrii@kernel.org, intel-wired-lan@lists.osuosl.org,
- simon.horman@corigine.com, kuba@kernel.org, pabeni@redhat.com,
- aelior@marvell.com, hawk@kernel.org, christophe.jaillet@wanadoo.fr,
- memxor@gmail.com, john@phrozen.org, bjorn@kernel.org, bpf@vger.kernel.org,
- magnus.karlsson@intel.com, leon@kernel.org, netdev@vger.kernel.org,
- toke@redhat.com, ecree.xilinx@gmail.com, alardam@gmail.com, gospo@broadcom.com,
- saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Cc: Karen Ostrowska <karen.ostrowska@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gMS8yNi8yMyAxMDozNiBBTSwgc2RmQGdvb2dsZS5jb20gd3JvdGU6Cj4gCj4+ICvCoMKgwqAg
-c29ja2ZkID0gc29ja2V0KEFGX0lORVQsIFNPQ0tfREdSQU0sIDApOwo+PiArwqDCoMKgIGlmIChz
-b2NrZmQgPCAwKSB7Cj4+ICvCoMKgwqDCoMKgwqDCoCBmcHJpbnRmKHN0ZGVyciwgIkZhaWxlZCB0
-byBjcmVhdGUgZWNobyBzb2NrZXRcbiIpOwo+PiArwqDCoMKgwqDCoMKgwqAgcmV0dXJuIC1lcnJu
-bzsKPj4gK8KgwqDCoCB9Cj4+ICsKPj4gK8KgwqDCoCBlcnIgPSBzZXRzb2Nrb3B0KHNvY2tmZCwg
-U09MX1NPQ0tFVCwgU09fUkVVU0VBRERSLCAmb3B0dmFsLAo+PiArwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgIHNpemVvZihvcHR2YWwpKTsKPj4gK8KgwqDCoCBpZiAoZXJyIDwgMCkgewo+PiArwqDC
-oMKgwqDCoMKgwqAgZnByaW50ZihzdGRlcnIsICJGYWlsZWQgc29ja29wdCBvbiBlY2hvIHNvY2tl
-dFxuIik7Cj4+ICvCoMKgwqDCoMKgwqDCoCByZXR1cm4gLWVycm5vOwo+PiArwqDCoMKgIH0KPj4g
-Kwo+PiArwqDCoMKgIGVyciA9IGJpbmQoc29ja2ZkLCAoc3RydWN0IHNvY2thZGRyICopJmFkZHIs
-IHNpemVvZihhZGRyKSk7Cj4+ICvCoMKgwqAgaWYgKGVycikgewo+PiArwqDCoMKgwqDCoMKgwqAg
-ZnByaW50ZihzdGRlcnIsICJGYWlsZWQgdG8gYmluZCBlY2hvIHNvY2tldFxuIik7Cj4+ICvCoMKg
-wqDCoMKgwqDCoCByZXR1cm4gLWVycm5vOwo+PiArwqDCoMKgIH0KPiAKPiBJSVJDLCBNYXJ0aW4g
-bWVudGlvbmVkIElQdjYgc3VwcG9ydCBpbiB0aGUgcHJldmlvdXMgdmVyc2lvbi4gU2hvdWxkIHdl
-Cj4gYWxzbyBtYWtlIHRoZSB1c2Vyc3BhY2UgdjYgYXdhcmUgYnkgYXQgbGVhc3QgdXNpbmcgQUZf
-SU5FVDYgZHVhbHN0YWNrCj4gc29ja2V0cz8gSSBmZWVsIGxpa2UgbGlzdGVuaW5nIG9uIGluYWRk
-cl9hbnkgd2l0aCBBRl9JTkVUNiBzaG91bGQKPiBnZXQgdXMgdGhlcmUgd2l0aG91dCB0b28gbXVj
-aCBwYWluLi4KClllYWguIFRoaW5rIGFib3V0IGhvc3QgdGhhdCBvbmx5IGhhcyBJUHY2IGFkZHJl
-c3MuIEEgdG9vbCBub3Qgc3VwcG9ydGluZyBJUHY2IGlzIAphIG5vLWdvIG5vd2FkYXlzLgpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1s
-YW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMu
-b3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
+From: Dave Ertman <david.m.ertman@intel.com>
+
+When creating the TLV to send to the FW for configuring DSCP mode PFC,the 
+PFCENABLE field was being masked with a 4 bit mask (0xF), but this is an 8
+bit bitmask for enabled classes for PFC.  This means that traffic classes 
+4-7 could not be enabled for PFC.
+
+Remove the mask completely, as it is not necessary, as we are assigning 8 
+bits to an 8 bit field.
+
+Fixes: 2a87bd73e50d ("ice: Add DSCP support")
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Signed-off-by: Karen Ostrowska <karen.ostrowska@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_dcb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
+index 6be02f9b0b8c..789b99963910 100644
+--- a/drivers/net/ethernet/intel/ice/ice_dcb.c
++++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
+@@ -1372,7 +1372,7 @@ ice_add_dscp_pfc_tlv(struct ice_lldp_org_tlv *tlv, struct ice_dcbx_cfg *dcbcfg)
+ 	tlv->ouisubtype = htonl(ouisubtype);
+ 
+ 	buf[0] = dcbcfg->pfc.pfccap & 0xF;
+-	buf[1] = dcbcfg->pfc.pfcena & 0xF;
++	buf[1] = dcbcfg->pfc.pfcena;
+ }
+ 
+ /**
+-- 
+2.31.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
