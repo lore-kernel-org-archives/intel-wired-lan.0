@@ -1,94 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BCE2C54EED
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Jan 2023 16:38:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2160FC54EED
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Jan 2023 16:38:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B35CC41825;
-	Mon, 30 Jan 2023 16:38:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B35CC41825
+	by smtp1.osuosl.org (Postfix) with ESMTP id AB28F81C6E;
+	Mon, 30 Jan 2023 16:38:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AB28F81C6E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675096730;
-	bh=Gvu3WD49KGVXaag6hJFpxEQtBEFmB1wNkz7R/mP4g6E=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=biOgocaZVgv9guj8Okn0N7M3O6tY2bAW8PISf1zTcfzA1FAmlXpEofkgYGZA4zfs3
-	 8Ps9FoKifRIWuK6LLk3UmFESvZBkiGBGevg/wS8XYkSwlaQHD9RRWhzj8bdtx+M9aE
-	 bEaV+BiArfO5ZauI3qD6rVnLqeHlVkikemArweG5fy/INb4vOrpL2DbMeP359YL8kX
-	 4g4WoJTQdUzFINzCDiPWuFhTcjdaxs6m4kvnjzDMxyDUHNvhwnyLeYGN+vMkZAiC8J
-	 JUbKknMFL4vDvcH0ruIrCjdwU0b1z5G2Y4SccJrxY+f/UELV7ele0RAei7QPVJMAyS
-	 oMoHtXgaJlCUQ==
+	s=default; t=1675096734;
+	bh=k05otfgvDWSbGcVjZYHNpN0hux7dvKK4so5MbgWlDZc=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=i2JZL/OVgCdBZA5iEQyhXBlLCbwHQnp33jOb8yA2Jb00gbQwlvxDy08js+5g0s/yo
+	 6yV/nYSJb+K0w4BLdd9UmsXGZNRbeqvjdVoDTSMs586aqnhhuncSBNlWbkLZRq64lj
+	 sKIGdjQ3An9Ti5TFWcHnK5fjZmINvl+GUGci8Dv2xlWNV8yv09EEHKqfmuAQwJoAuG
+	 0jI+MelzbeUgqMpwHoMXgIy+bnQpUd+wsMIvZHB+nbSY/6H+vydYLhZKUhlYgoVLV9
+	 MQ8pqSzOcfPHFZAFomGlxGx3cIbyw7jSwU0jjRvwFV+El/9QpPOmOf5F+Vn9i1IM8I
+	 vWJssC1TTd1Hg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id RKlWvLfFhhIQ; Mon, 30 Jan 2023 16:38:49 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id j3Yal1EiSTjI; Mon, 30 Jan 2023 16:38:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5D6B04181F;
-	Mon, 30 Jan 2023 16:38:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D6B04181F
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 266551BF307
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Jan 2023 01:29:06 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9F8C581D11;
+	Mon, 30 Jan 2023 16:38:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9F8C581D11
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 41C591BF37C
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Jan 2023 14:10:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0B25341BF2
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Jan 2023 01:29:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0B25341BF2
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1B5C640A1B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Jan 2023 14:10:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1B5C640A1B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id McEP06y-7ldg for <intel-wired-lan@lists.osuosl.org>;
- Sat, 28 Jan 2023 01:29:05 +0000 (UTC)
-X-Greylist: delayed 00:10:00 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C870041BEE
-Received: from evilolive.daedalian.us (evilolive.daedalian.us
- [IPv6:2600:3c00::f03c:91ff:fe73:cd86])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C870041BEE
- for <intel-wired-lan@lists.osuosl.org>; Sat, 28 Jan 2023 01:29:04 +0000 (UTC)
-Received: by evilolive.daedalian.us (Postfix, from userid 111)
- id E1732120BB; Fri, 27 Jan 2023 17:13:13 -0800 (PST)
-Received: from localhost.localdomain
- (static-47-181-121-78.lsan.ca.frontiernet.net [47.181.121.78])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by evilolive.daedalian.us (Postfix) with ESMTPSA id 4D6E812084;
- Fri, 27 Jan 2023 17:13:07 -0800 (PST)
-From: John Hickey <jjh@daedalian.us>
-To: anthony.l.nguyen@intel.com
-Date: Fri, 27 Jan 2023 17:12:12 -0800
-Message-Id: <20230128011213.150171-1-jjh@daedalian.us>
-X-Mailer: git-send-email 2.37.2
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id NBOEkfM9AQoo for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 30 Jan 2023 14:10:11 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ED21040A1E
+Received: from mx05lb.world4you.com (mx05lb.world4you.com [81.19.149.115])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id ED21040A1E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 30 Jan 2023 14:10:10 +0000 (UTC)
+Received: from [81.19.149.42] (helo=webmail.world4you.com)
+ by mx05lb.world4you.com with esmtpa (Exim 4.94.2)
+ (envelope-from <gerhard@engleder-embedded.com>)
+ id 1pMUql-0002na-QU; Mon, 30 Jan 2023 15:09:35 +0100
 MIME-Version: 1.0
+Date: Mon, 30 Jan 2023 15:09:35 +0100
+From: Gerhard Engleder <gerhard@engleder-embedded.com>
+To: Lorenzo Bianconi <lorenzo@kernel.org>
+In-Reply-To: <Y9ZvA7+RMwbNlFoy@lore-desk>
+References: <cover.1674606193.git.lorenzo@kernel.org>
+ <c1171111f8af76da11331277b1e4a930c10f3c30.1674606197.git.lorenzo@kernel.org>
+ <28eedfd5-4444-112b-bfbc-1c7682385c88@engleder-embedded.com>
+ <Y9ZvA7+RMwbNlFoy@lore-desk>
+User-Agent: World4You Webmail
+Message-ID: <6e2e5b8f5735fc3243dea3a050399e34@engleder-embedded.com>
+X-Sender: gerhard@engleder-embedded.com
+X-SA-Do-Not-Run: Yes
+X-AV-Do-Run: Yes
 X-Mailman-Approved-At: Mon, 30 Jan 2023 16:38:48 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=daedalian.us; s=default; t=1674868393;
- bh=m80g/qcKyF6Y8HG7sLJ+YFMv8oIIC64vqUP0h+rSuYc=;
- h=From:To:Cc:Subject:Date:From;
- b=awyBtdjQdqQVfsZ7PiH5u6JlvTbp5wOS5K0jJurL5WBeA2aHkcYJcHwCtxGww7+J4
- VNwk7UXx8Por2XMqvpUW8v0Teu/hityTQUrBAs5ndED2PHOPjHMh/f3zPQCnvNFSFy
- F1TnuGRycNw34gcAWPidSFcW4m9N0a4rKs6d/5UagrMeJ5meZwlZICfXP2n1G15ant
- adSoc4csFda9Cqkha6gWLBvu+l9NFsNVgJ1p+AtheJ+NQ3U9SolIbCl40rpJjtfJbs
- OhhJbiV7C1dSQw47zfDwzwfoYJGtGYuntsqWALKSgoJ6BQzrwMdcNTrGS++DUv23Il
- Jn2cF7XxkDcVg==
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=daedalian.us; s=default; t=1674868388;
- bh=m80g/qcKyF6Y8HG7sLJ+YFMv8oIIC64vqUP0h+rSuYc=;
- h=From:To:Cc:Subject:Date:From;
- b=LWdhKwSL1TP2BNDpHoX8FR54V51X2xLvhQuQZ1s7cpGSIMUQqPvKvKq+U5f0/npoP
- 8bbbsE/nl+1flnwe29uTdqd2Na6IgRCBPNturH8x8ckRStUYWDkc6CBECd4F1u/QAC
- 2pVQeaN5t8EweUJIlMAz2QvNPPijF2gwjGm4PxEWXAyWAcRr0muYlj6ISbe/i3PHZI
- ICYHVKTJSu5/C4+8RsC0/eL7aS+XiJJEWPj1Ro+ZMgN0tq4IXzZfkTpR7xH2DHdDzG
- VGcL8BiuMEkWqddjEPEhY/Q/LCMvCpqTnTOMGpcydjh1CSPdOmTrCSl4BgN2CWeS6Y
- YNICl+IGu3erg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=daedalian.us header.i=@daedalian.us
- header.a=rsa-sha256 header.s=default header.b=awyBtdjQ; 
- dkim=pass (2048-bit key) header.d=daedalian.us header.i=@daedalian.us
- header.a=rsa-sha256 header.s=default header.b=LWdhKwSL
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Panic during XDP_TX with > 64 CPUs
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; 
+ d=engleder-embedded.com; s=dkim11; h=Content-Transfer-Encoding:Content-Type:
+ Message-ID:References:In-Reply-To:Subject:Cc:To:From:Date:MIME-Version:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=dX5joPSrXHt51h5qeLC3Xq8xdcevddD07C/9Rn/Wh2A=; b=m46iI2brqSGyfUUajUeA7OZa3t
+ vcYvSFW2JLP/W4gBxZjJX9vF13bZh+kZTCC+XSSxAUr73cW9EuaJuiRFnXdafpbjZuH/BctPcwJnC
+ C0Nxl72vj+dhI4aFem34n+hOI/pGP5lUrqDsrjZXzMMUbl10Wxf88529acWRhPIgF2Po=;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=engleder-embedded.com
+ header.i=@engleder-embedded.com header.a=rsa-sha256 header.s=dkim11
+ header.b=m46iI2br
+Subject: Re: [Intel-wired-lan] [PATCH v2 bpf-next 2/8] drivers: net: turn on
+ XDP features
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,93 +94,118 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Alexei Starovoitov <ast@kernel.org>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, netdev@vger.kernel.org,
- John Fastabend <john.fastabend@gmail.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>, John Hickey <jjh@daedalian.us>,
- Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, bpf@vger.kernel.org,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
+Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
+ edumazet@google.com, anthony.l.nguyen@intel.com, daniel@iogearbox.net,
+ andrii@kernel.org, intel-wired-lan@lists.osuosl.org, simon.horman@corigine.com,
+ kuba@kernel.org, pabeni@redhat.com, aelior@marvell.com, hawk@kernel.org,
+ christophe.jaillet@wanadoo.fr, memxor@gmail.com, john@phrozen.org,
+ bjorn@kernel.org, bpf@vger.kernel.org, magnus.karlsson@intel.com,
+ leon@kernel.org, netdev@vger.kernel.org, toke@redhat.com, martin.lau@linux.dev,
+ ecree.xilinx@gmail.com, alardam@gmail.com, gospo@broadcom.com,
+ saeedm@nvidia.com, davem@davemloft.net, nbd@nbd.name
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In commit 'ixgbe: let the xdpdrv work with more than 64 cpus'
-(4fe815850bdc8d4cc94e06fe1de069424a895826), support was added to allow
-XDP programs to run on systems with more than 64 CPUs by locking the
-XDP TX rings and indexing them using cpu % 64 (IXGBE_MAX_XDP_QS).
+On 29.01.2023 14:05, Lorenzo Bianconi wrote:
+>> On 25.01.23 01:33, Lorenzo Bianconi wrote:
+>> > From: Marek Majtyka <alardam@gmail.com>
+>> >
+>> > A summary of the flags being set for various drivers is given below.
+>> > Note that XDP_F_REDIRECT_TARGET and XDP_F_FRAG_TARGET are features
+>> > that can be turned off and on at runtime. This means that these flags
+>> > may be set and unset under RTNL lock protection by the driver. Hence,
+>> > READ_ONCE must be used by code loading the flag value.
+>> >
+>> > Also, these flags are not used for synchronization against the availability
+>> > of XDP resources on a device. It is merely a hint, and hence the read
+>> > may race with the actual teardown of XDP resources on the device. This
+>> > may change in the future, e.g. operations taking a reference on the XDP
+>> > resources of the driver, and in turn inhibiting turning off this flag.
+>> > However, for now, it can only be used as a hint to check whether device
+>> > supports becoming a redirection target.
+>> >
+>> > Turn 'hw-offload' feature flag on for:
+>> >   - netronome (nfp)
+>> >   - netdevsim.
+>> >
+>> > Turn 'native' and 'zerocopy' features flags on for:
+>> >   - intel (i40e, ice, ixgbe, igc)
+>> >   - mellanox (mlx5).
+>> >   - stmmac
+>> >
+>> > Turn 'native' features flags on for:
+>> >   - amazon (ena)
+>> >   - broadcom (bnxt)
+>> >   - freescale (dpaa, dpaa2, enetc)
+>> >   - funeth
+>> >   - intel (igb)
+>> >   - marvell (mvneta, mvpp2, octeontx2)
+>> >   - mellanox (mlx4)
+>> >   - qlogic (qede)
+>> >   - sfc
+>> >   - socionext (netsec)
+>> >   - ti (cpsw)
+>> >   - tap
+>> >   - veth
+>> >   - xen
+>> >   - virtio_net.
+>> >
+>> > Turn 'basic' (tx, pass, aborted and drop) features flags on for:
+>> >   - netronome (nfp)
+>> >   - cavium (thunder)
+>> >   - hyperv.
+>> >
+>> > Turn 'redirect_target' feature flag on for:
+>> >   - amanzon (ena)
+>> >   - broadcom (bnxt)
+>> >   - freescale (dpaa, dpaa2)
+>> >   - intel (i40e, ice, igb, ixgbe)
+>> >   - ti (cpsw)
+>> >   - marvell (mvneta, mvpp2)
+>> >   - sfc
+>> >   - socionext (netsec)
+>> >   - qlogic (qede)
+>> >   - mellanox (mlx5)
+>> >   - tap
+>> >   - veth
+>> >   - virtio_net
+>> >   - xen
+>> 
+>> XDP support for tsnep was merged to net-next last week. So this driver
+>> cannot get XDP feature support in bpf-next as it is not there 
+>> currently.
+>> Should I add these flags with a fix afterwards? Or would net-next be 
+>> the
+>> better target for this patch series?
+> 
+> bpf-next has been rebased on top of net-next so we can add tsnep 
+> support to the
+> series. Do you think the patch below is fine?
+> 
+> Regards,
+> Lorenzo
+> 
+> diff --git a/drivers/net/ethernet/engleder/tsnep_main.c
+> b/drivers/net/ethernet/engleder/tsnep_main.c
+> index c3cf427a9409..6982aaa928b5 100644
+> --- a/drivers/net/ethernet/engleder/tsnep_main.c
+> +++ b/drivers/net/ethernet/engleder/tsnep_main.c
+> @@ -1926,6 +1926,10 @@ static int tsnep_probe(struct platform_device 
+> *pdev)
+>  	netdev->features = NETIF_F_SG;
+>  	netdev->hw_features = netdev->features | NETIF_F_LOOPBACK;
+> 
+> +	netdev->xdp_features = NETDEV_XDP_ACT_BASIC | NETDEV_XDP_ACT_REDIRECT 
+> |
+> +			       NETDEV_XDP_ACT_NDO_XMIT |
+> +			       NETDEV_XDP_ACT_NDO_XMIT_SG;
+> +
 
-Upon trying this out patch via the Intel 5.18.6 out of tree driver
-on a system with more than 64 cores, the kernel paniced with an
-array-index-out-of-bounds at the return in ixgbe_determine_xdp_ring in
-ixgbe.h, which means ixgbe_determine_xdp_q_idx was just returning the
-cpu instead of cpu % IXGBE_MAX_XDP_QS.
+Looks good. Thanks!
 
-I think this is how it happens:
-
-Upon loading the first XDP program on a system with more than 64 CPUs,
-ixgbe_xdp_locking_key is incremented in ixgbe_xdp_setup.  However,
-immediately after this, the rings are reconfigured by ixgbe_setup_tc.
-ixgbe_setup_tc calls ixgbe_clear_interrupt_scheme which calls
-ixgbe_free_q_vectors which calls ixgbe_free_q_vector in a loop.
-ixgbe_free_q_vector decrements ixgbe_xdp_locking_key once per call if
-it is non-zero.  Commenting out the decrement in ixgbe_free_q_vector
-stopped my system from panicing.
-
-I suspect to make the original patch work, I would need to load an XDP
-program and then replace it in order to get ixgbe_xdp_locking_key back
-above 0 since ixgbe_setup_tc is only called when transitioning between
-XDP and non-XDP ring configurations, while ixgbe_xdp_locking_key is
-incremented every time ixgbe_xdp_setup is called.
-
-Also, ixgbe_setup_tc can be called via ethtool --set-channels, so this
-becomes another path to decrement ixgbe_xdp_locking_key to 0 on systems
-with greater than 64 CPUs.
-
-For this patch, I have changed static_branch_inc to static_branch_enable
-in ixgbe_setup_xdp.  We aren't counting references and I don't see any
-reason to turn it off, since all the locking appears to be in the XDP_TX
-path, which isn't run if a XDP program isn't loaded.
-
-Signed-off-by: John Hickey <jjh@daedalian.us>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  | 3 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
- 2 files changed, 1 insertion(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index f8156fe4b1dc..0ee943db3dc9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -1035,9 +1035,6 @@ static void ixgbe_free_q_vector(struct ixgbe_adapter *adapter, int v_idx)
- 	adapter->q_vector[v_idx] = NULL;
- 	__netif_napi_del(&q_vector->napi);
- 
--	if (static_key_enabled(&ixgbe_xdp_locking_key))
--		static_branch_dec(&ixgbe_xdp_locking_key);
--
- 	/*
- 	 * after a call to __netif_napi_del() napi may still be used and
- 	 * ixgbe_get_stats64() might access the rings on this vector,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index ab8370c413f3..cd2fb72c67be 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -10283,7 +10283,7 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
- 	if (nr_cpu_ids > IXGBE_MAX_XDP_QS * 2)
- 		return -ENOMEM;
- 	else if (nr_cpu_ids > IXGBE_MAX_XDP_QS)
--		static_branch_inc(&ixgbe_xdp_locking_key);
-+		static_branch_enable(&ixgbe_xdp_locking_key);
- 
- 	old_prog = xchg(&adapter->xdp_prog, prog);
- 	need_reset = (!!prog != !!old_prog);
--- 
-2.37.2
-
+Gerhard
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
