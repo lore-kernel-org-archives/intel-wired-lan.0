@@ -1,92 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5000EC38142
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 31 Jan 2023 16:24:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C28B8C636CD
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 31 Jan 2023 20:45:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EB26660BBC;
-	Tue, 31 Jan 2023 16:24:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EB26660BBC
+	by smtp2.osuosl.org (Postfix) with ESMTP id 41A6B400C8;
+	Tue, 31 Jan 2023 20:45:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 41A6B400C8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675182245;
-	bh=f2v4+sPGL9dkAYIb7ql45+l+P/AwoN3V4HNo7WJQRlg=;
-	h=Date:To:From:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=7qlfQUKdBTwRdLAO+BAGE8hUttajuae8APspz47drcVBID38z3ip4PlUyIrTv4lrk
-	 dDhx4NlGab327Nd1HRE/dmIkw/skz+8UnmlAE1JWmr6qG3Xlm7R4qwKeutZhy+VRPq
-	 YGBJC6PIJWwD8fZg/tGhkKzP3ATxWZ2LRVKyTh2i7baSxjBeAQ1d9QKatAWmxsXazi
-	 QrsmUOL98tfho2XAlo8Ccz4oPzQ7Yn38htklO22Vg6Nfq/qDTBlVLKO54C2Jrn/ff4
-	 H0NKe+KkmCYT500iTsmFPBj+D5wXIf3Gv9FduncGDQWgFBYlOOVHOOBbi4AOxohVzg
-	 ZFG8rEagup7MQ==
+	s=default; t=1675197917;
+	bh=EbvSSZUIJdSHSxe5Gz23ftugntPnv7DBSr20k4XiGG0=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=eegIMwRDGW1Nog+JOMQ40j6eDdfJUDWRXWvolSPgo+TtXMRA1Kf7TgxbnFYLK4URp
+	 mOn/Cbc02TUmkAWPWkxZbsrf/ZlYOD/8abAjx4wrXqibr0fvruemDO+5+Qyk6Ihflq
+	 OuDClp48bvLkY2FL9X9VRf/VcRYU2geAa8T3l7WpymRVP1V6fjDRR2mafhysCXen2T
+	 ximqJt0AK8C11sESkDeyRo24uhiLx32JbJnA1eewF4UC1wvbzDY/7wb/dm4lk5+ZzB
+	 iMHP203dzcmMPkj6keJGmMm7+3Edh6x47ZUWMpp+QosPQoFgjaipmOH3NB4z43GfuP
+	 33r+qsOsPd/DQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id GiIHZlsio4W0; Tue, 31 Jan 2023 16:24:04 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id l5_5M6oeUJhb; Tue, 31 Jan 2023 20:45:16 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0028160BC4;
-	Tue, 31 Jan 2023 16:24:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0028160BC4
+	by smtp2.osuosl.org (Postfix) with ESMTP id 371D8404F6;
+	Tue, 31 Jan 2023 20:45:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 371D8404F6
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B7EB21BF34D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 07:54:03 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id BC5221BF316
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:45:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9D301606F5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 07:54:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9D301606F5
+ by smtp3.osuosl.org (Postfix) with ESMTP id 943DA60BDE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:45:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 943DA60BDE
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id EeQRldOk1UQ4 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 31 Jan 2023 07:54:02 +0000 (UTC)
-X-Greylist: delayed 00:29:38 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 28B69605AC
-Received: from mail.as397444.net (mail.as397444.net [69.59.18.99])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 28B69605AC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 07:54:02 +0000 (UTC)
-Received: by mail.as397444.net with esmtpsa (TLS1.3) (Exim)
- (envelope-from <ntp-lists@mattcorallo.com>) id 1pMl07-006ggH-2m;
- Tue, 31 Jan 2023 07:24:19 +0000
-Message-ID: <4fc70178-dea4-4b88-dc32-8774f977af27@bluematt.me>
-Date: Mon, 30 Jan 2023 23:24:19 -0800
+ with ESMTP id mLzD5dDtV05x for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 31 Jan 2023 20:45:13 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3040760B77
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3040760B77
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:45:12 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="414167065"
+X-IronPort-AV: E=Sophos;i="5.97,261,1669104000"; d="scan'208";a="414167065"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 Jan 2023 12:45:12 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="788595218"
+X-IronPort-AV: E=Sophos;i="5.97,261,1669104000"; d="scan'208";a="788595218"
+Received: from boxer.igk.intel.com ([10.102.20.173])
+ by orsmga004.jf.intel.com with ESMTP; 31 Jan 2023 12:45:09 -0800
+From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue, 31 Jan 2023 21:44:53 +0100
+Message-Id: <20230131204506.219292-1-maciej.fijalkowski@intel.com>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-Content-Language: en-US
-To: chrony-users@chrony.tuxfamily.org,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-From: Matt Corallo <ntp-lists@mattcorallo.com>
-X-DKIM-Note: Keys used to sign are likely public at
- https://as397444.net/dkim/mattcorallo.com
-X-DKIM-Note: For more info, see https://as397444.net/dkim/
-X-Mailman-Approved-At: Tue, 31 Jan 2023 16:23:58 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=mattcorallo.com; s=1675149661; h=Subject:From:To:From:Subject:To:Cc:Cc:
- Reply-To:In-Reply-To:References;
- bh=tgnRMtOCuOy+bj3m5yX0q2KVkTG6QWubdZWE7pBcuHk=; b=PUfja+K0rNkXxLlotzeWg7lzjA
- /xGZ3bKAMhO8h7jW/Q9cpqD/blZvdQfuo0T7o+e+54wxlSHTFtNLgbVdkG5lic262/pHokV2sAyfW
- o/k1MezEiOehGlyvRD/Gc/PAsDj4XAjD1ItdPJRnr+Wd6OsHOh54s4mbAF58bH8A0uBmZQT1003Bv
- H1roKtmDsR1eMa72s83KDlQQTCz4CtFhsY4ejuXn/Hb0QfajW05gvdvG1rK25tX6h1vzsMdgB+Emh
- zMKbN54sgWOj6vv7rqKgxq8l24gWMfyhDwU8fgCLLuen7coMJ2YscI4/brUgSl8hxIs5SWsFXjZQe
- Xo1qgFOQ==;
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=clients.mail.as397444.net; s=1675149662; h=Subject:From:To:From:Subject:To:
- Cc:Cc:Reply-To:In-Reply-To:References;
- bh=tgnRMtOCuOy+bj3m5yX0q2KVkTG6QWubdZWE7pBcuHk=; b=Put/b8NDBHU33tx8dBCExuijxz
- kwZEHS80BTllWyPpTDmE3sdtY8YvDfIgeWo3zruzVMI/WVt1OunN/eqFJa/wXdkmO+d/ggq2oau/M
- gCI5mAmxvg86fuywIKYqkIxubCFnvPsasv89IX6AwEo7pTIEpX9mZ05VIgtJKGPe7Y4KHqYkRR6Ki
- p/bhfYg/xLdYNa31w0ymGoOHqsG1DMJXze0Ptw4bbR6yN0b3w9EvkruoxoaaaUAq2c0JBsBvEIWhZ
- Yt2oFfM8Lk4FJqb/jPgLSuGOPD3a1OyJH4X51Z+zsIOvfEz2fMq3uKzREoBfLCjUbLe2yCm/9NLix
- Nb7MWhgw==;
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1675197913; x=1706733913;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=jmq7RRGlshhZoJmSbplAEOtDxmbFHh5q1JoifDLUQ20=;
+ b=U6Oqkq7mgYW3tH5Agheoqy6HNwBMm+qLTs2Mgx4m0HBXUHvRagZ2oWip
+ w94jdm/jY8gQwWOdqPNW0gGlJcgUrjvTAGH/TgVJAsPcIeK7IugGyLgRT
+ 8xL6XnHov+nPmbooWZloGDELWDzzknUcdYGyGfc03v5XR0qwxgEMy6F+t
+ qH1REGHDw+PF/pSsy3Vurco7ALcsGVlYv6SiLb0SZ2y5weyYhoLOCIceX
+ PBYsJRgjNpxvztNubRY8dAUPLDiZrYDGsaecR6ppzRfsnT2bR6XuOauZV
+ y+HehmRgw4Rp+HTEqrHc7muK1pfdjNsLIkLETm6gc+scBWvlbmXWPt3+I
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=mattcorallo.com header.i=@mattcorallo.com
- header.a=rsa-sha256 header.s=1675149661 header.b=PUfja+K0; 
- dkim=pass (2048-bit key) header.d=clients.mail.as397444.net
- header.i=@clients.mail.as397444.net header.a=rsa-sha256 header.s=1675149662
- header.b=Put/b8ND
-Subject: [Intel-wired-lan] 5.10 -> 6.1 i211 second PPS pin on SDP-3 gone
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=U6Oqkq7m
+Subject: [Intel-wired-lan] [PATCH bpf-next 00/13] ice: add XDP mbuf support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,20 +91,87 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: tirthendu.sarkar@intel.com, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, bpf@vger.kernel.org, magnus.karlsson@intel.com
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-I have a device with two separate PPS time sources wired up to two of the Software Defined Pins on 
-an Intel i211 NIC (ala https://blog.dan.drown.org/apu2-ntp-server-2/). This works great with chrony 
-4.0 (and even better in 4.3, thanks!) on Linux 5.10.
+Hi there,
 
-However, I just tried to upgrade to 6.1 and the second PPS went silent. The testptp utility in the 
-kernel tree shows the first pin working fine, but when I hook the fourth pin up to channel two (as 
-chrony does as well), I get radio silence.
+although this work started as an effort to add multi-buffer XDP support
+to ice driver, as usual it turned out that some other side stuff needed
+to be addressed, so let me give you an overview.
 
-Matt
+First patch adjusts legacy-rx in a way that it will be possible to refer
+to skb_shared_info being at the end of the buffer when gathering up
+frame fragments within xdp_buff.
+
+Then, patches 2-9 prepare ice driver in a way that actual multi-buffer
+patches will be easier to swallow.
+
+10 and 11 are the meat. What is worth mentioning is that this set
+actually *fixes* things as patch 11 removes the logic based on
+next_dd/rs and we previously stepped away from this for ice_xmit_zc().
+Currently, AF_XDP ZC XDP_TX workload is off as there are two cleaning
+sides that can be triggered and two of them work on different internal
+logic. This set unifies that and allows us to improve the performance by
+2x with a trick on the last (13) patch.
+
+12th is a simple cleanup of no longer fields from Tx ring.
+
+I might be wrong but I have not seen anyone reporting performance impact
+among patches that add XDP multi-buffer support to a particular driver.
+Numbers below were gathered via xdp_rxq_info and xdp_redirect_map on
+1500 MTU:
+
+XDP_DROP      +1%
+XDP_PASS      -1,2%
+XDP_TX        -0,5%
+XDP_REDIRECT  -3,3%
+
+Cherry on top, which is not directly related to mbuf support (last
+patch):
+XDP_TX ZC +126%
+
+Target the we agreed on was to not degrade performance for any action by
+anything that would be over 5%, so our goal was met. Basically this set
+keeps the performance where it was. Redirect is slower due to more
+frequent tail bumps.
+
+Thanks!
+
+
+Maciej Fijalkowski (13):
+  ice: prepare legacy-rx for upcoming XDP multi-buffer support
+  ice: add xdp_buff to ice_rx_ring struct
+  ice: store page count inside ice_rx_buf
+  ice: pull out next_to_clean bump out of ice_put_rx_buf()
+  ice: inline eop check
+  ice: centrallize Rx buffer recycling
+  ice: use ice_max_xdp_frame_size() in ice_xdp_setup_prog()
+  ice: do not call ice_finalize_xdp_rx() unnecessarily
+  ice: use xdp->frame_sz instead of recalculating truesize
+  ice: add support for XDP multi-buffer on Rx side
+  ice: add support for XDP multi-buffer on Tx side
+  ice: remove next_{dd,rs} fields from ice_tx_ring
+  ice: xsk: do not convert to buff to frame for XDP_TX
+
+ drivers/net/ethernet/intel/ice/ice_base.c     |  21 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |   4 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   8 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  47 +-
+ drivers/net/ethernet/intel/ice/ice_txrx.c     | 408 ++++++++++--------
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |  54 ++-
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 236 ++++++----
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.h |  75 +++-
+ drivers/net/ethernet/intel/ice/ice_xsk.c      | 192 +++++----
+ 9 files changed, 629 insertions(+), 416 deletions(-)
+
+-- 
+2.34.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
