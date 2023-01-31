@@ -1,88 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B111FC38142
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 31 Jan 2023 20:45:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 484D9C38142
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 31 Jan 2023 20:46:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6995460B77;
-	Tue, 31 Jan 2023 20:45:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6995460B77
+	by smtp1.osuosl.org (Postfix) with ESMTP id DA30381398;
+	Tue, 31 Jan 2023 20:46:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DA30381398
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675197946;
-	bh=WDQZw5E28Hs0h3S+fn6bO90Lf1bNL5tkOO2e8VauIfI=;
+	s=default; t=1675197978;
+	bh=18N4sHf/tfAJqneR8EvL1hZYQeeEH4ZGkh2G5GUqJEA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=DFcTZlSiWtYz16IZ+VYGSxb6D6JpZ3fHPU25yJLWsNDZJqarYK+MNtmfnN9unFNdu
-	 nH50yKENFyxxgMgSgmXstrJCRg2ysqueoe0ONe2pBDSlKjyPTduk7ta3LeAthtsCms
-	 4GHeidNnRiq5vTEzaoT1XCGX3NcMKvALX1NHoRRUHxnkiSLu1m+RYjsfGNVA9fW/F6
-	 JLMLa92vZHLrUa1MlxvFGb5hNKhlRpi9cPVjWyzHrPD8WPXU6On0I8ki4prsdugj1B
-	 5swI2fzMlLqBPq7exehhbjt+i+1kITY/ZuvbB12UcqnyftU3Wrz1CeMy/z/kmLLrJP
-	 QbDbeTiByR0XQ==
+	b=1RQPqZqHPSmkVihwm2tWIu8nKCoRW4uGTbuQk8BKv534NP7JCq3i85K8aiBCRoKU7
+	 hPW2ydI+cOxA8UmARStAGipSbL75618gmelzfH6ABm3CLlMP8KqsMy8RPluU8ByktI
+	 cMuU3lQYyLvAc9iihAZx6YBdEouLHypMq9cR9v6zloEiK4chCUqEnJT/luJlzwd4H6
+	 odv/HBpTnmPixTHWbAI5QtX08TMtX6aq0sE71ZVggyTiM9D39G+Fl0vsYGtUZYU0lM
+	 nHUXPMJttUMrYXMnGQAZ0+3rlY9mKmav1nRw2lGvoxLbQAw1gKXU5Ll2QMqzVPQLSV
+	 SZD4KFrN7gp3g==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id s0mmdtKj5rzy; Tue, 31 Jan 2023 20:45:45 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id R7ONLOSPVbTw; Tue, 31 Jan 2023 20:46:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7791C60BA8;
-	Tue, 31 Jan 2023 20:45:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7791C60BA8
+	by smtp1.osuosl.org (Postfix) with ESMTP id EA5BF813D9;
+	Tue, 31 Jan 2023 20:46:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EA5BF813D9
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 4CB871BF316
- for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:45:34 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 18F511BF316
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:46:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2676081AF6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:45:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2676081AF6
+ by smtp1.osuosl.org (Postfix) with ESMTP id E5540813D9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:46:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E5540813D9
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ri5iUd3loAtQ for <intel-wired-lan@lists.osuosl.org>;
- Tue, 31 Jan 2023 20:45:33 +0000 (UTC)
+ with ESMTP id u9XpXfm_12I7 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 31 Jan 2023 20:46:15 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 76A8C81A34
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 51E3C81398
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 76A8C81A34
- for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:45:33 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="414167191"
-X-IronPort-AV: E=Sophos;i="5.97,261,1669104000"; d="scan'208";a="414167191"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 51E3C81398
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 31 Jan 2023 20:46:15 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="414167435"
+X-IronPort-AV: E=Sophos;i="5.97,261,1669104000"; d="scan'208";a="414167435"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 Jan 2023 12:45:32 -0800
+ 31 Jan 2023 12:46:14 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="788595293"
-X-IronPort-AV: E=Sophos;i="5.97,261,1669104000"; d="scan'208";a="788595293"
+X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="788595450"
+X-IronPort-AV: E=Sophos;i="5.97,261,1669104000"; d="scan'208";a="788595450"
 Received: from boxer.igk.intel.com ([10.102.20.173])
- by orsmga004.jf.intel.com with ESMTP; 31 Jan 2023 12:45:26 -0800
+ by orsmga004.jf.intel.com with ESMTP; 31 Jan 2023 12:45:29 -0800
 From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 31 Jan 2023 21:45:00 +0100
-Message-Id: <20230131204506.219292-8-maciej.fijalkowski@intel.com>
+Date: Tue, 31 Jan 2023 21:45:01 +0100
+Message-Id: <20230131204506.219292-9-maciej.fijalkowski@intel.com>
 X-Mailer: git-send-email 2.35.3
 In-Reply-To: <20230131204506.219292-1-maciej.fijalkowski@intel.com>
 References: <20230131204506.219292-1-maciej.fijalkowski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1675197933; x=1706733933;
+ t=1675197975; x=1706733975;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=ckiQmM973dMAl5oTy8Y59xEi2bspMtjYPeLZuf6LzCk=;
- b=JxIl4rGgVd5un12W8Itq+lr+ALD/jrNDL2P4fNTNhmZCURGxa9XDbTdy
- Qwx0XsB1j5hB7rjoAWN5PVpmGBnAGMGwTcNLLdOmui21L0nElonAdg+bG
- wR5w6uq6Ki+6fPXMEPnKL+N1qWn9HrlgtnPiOtT55WEY7Z1cqQ1lIP12R
- MFxmcbicnUrQjONs9cvzbWidZQpOoJXjxzvdJEzHhE0GmCu7tsuyG2a0r
- 0eeQdhJufiGSJRCVNH5HyaQyihgOSX0vwCsin6fzLpPOuPIeIYfM5bjkV
- v+XfrwpXBErkH8yDadVBLRy7oT7ZsOP1fR01paa+YIiabvG6/UvTt0G0e
- A==;
+ bh=zuXDR2goHILHeYo/VC77mXekbgvxaavn5dGa6cEHTrI=;
+ b=BILYcLaMkSqvatnIRQINEUj0BOBP/ePsR+5g8C5Ical5PToAlsjtAV3X
+ IDBVxVlLs0eUDi1lZuJo09ozP89hzGTZj5YcFD36SJQbLRwodd6HjBKYH
+ f1zv9yF0qIvIvHH9Lvw3ZtAfXENeMcdxMSwZI+1sbKC6CT+o9PESjrjCC
+ 9Vb4V5w3UKuV/uHzfSdinFB21jxAzXQnCLJ0Av6U2NeJK1A1cjavaCycT
+ j8jyWwv5vGvQ4PrEZg7R6c8sMSFgbwn9my6wnaVmKhQuZRKd2dbUrj9Xp
+ 2fWDz5w10/MZTX2fVKmxjiM2ShRNVEDXqpixmmjwzw0Ldck5EFzoqIfjA
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=JxIl4rGg
-Subject: [Intel-wired-lan] [PATCH bpf-next 07/13] ice: use
- ice_max_xdp_frame_size() in ice_xdp_setup_prog()
+ header.a=rsa-sha256 header.s=Intel header.b=BILYcLaM
+Subject: [Intel-wired-lan] [PATCH bpf-next 08/13] ice: do not call
+ ice_finalize_xdp_rx() unnecessarily
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,70 +102,31 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This should have been used in there from day 1, let us address that
-before introducing XDP multi-buffer support for Rx side.
+Currently ice_finalize_xdp_rx() is called only when xdp_prog is present
+on VSI, which is a good thing. However, this optimization can be
+enhanced and check only if any of the XDP_TX/XDP_REDIRECT took place in
+current Rx processing. Non-zero value of @xdp_xmit indicates that
+xdp_prog is present on VSI. This way XDP_DROP-based workloads will not
+suffer from unnecessary calls to external function.
 
 Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 28 +++++++++++------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_txrx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 88b4a017990d..a9d644276dfd 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2862,6 +2862,18 @@ int ice_vsi_determine_xdp_res(struct ice_vsi *vsi)
- 	return 0;
- }
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
+index 661a66c3d0b5..3a8639608f0b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
+@@ -1252,7 +1252,7 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
+ 	/* return up to cleaned_count buffers to hardware */
+ 	failure = ice_alloc_rx_bufs(rx_ring, cleaned_count);
  
-+/**
-+ * ice_max_xdp_frame_size - returns the maximum allowed frame size for XDP
-+ * @vsi: Pointer to VSI structure
-+ */
-+static int ice_max_xdp_frame_size(struct ice_vsi *vsi)
-+{
-+	if (test_bit(ICE_FLAG_LEGACY_RX, vsi->back->flags))
-+		return ICE_RXBUF_1664;
-+	else
-+		return ICE_RXBUF_3072;
-+}
-+
- /**
-  * ice_xdp_setup_prog - Add or remove XDP eBPF program
-  * @vsi: VSI to setup XDP for
-@@ -2872,11 +2884,11 @@ static int
- ice_xdp_setup_prog(struct ice_vsi *vsi, struct bpf_prog *prog,
- 		   struct netlink_ext_ack *extack)
- {
--	int frame_size = vsi->netdev->mtu + ICE_ETH_PKT_HDR_PAD;
-+	unsigned int frame_size = vsi->netdev->mtu + ICE_ETH_PKT_HDR_PAD;
- 	bool if_running = netif_running(vsi->netdev);
- 	int ret = 0, xdp_ring_err = 0;
+-	if (xdp_prog)
++	if (xdp_xmit)
+ 		ice_finalize_xdp_rx(xdp_ring, xdp_xmit);
+ 	rx_ring->skb = skb;
  
--	if (frame_size > vsi->rx_buf_len) {
-+	if (frame_size > ice_max_xdp_frame_size(vsi)) {
- 		NL_SET_ERR_MSG_MOD(extack, "MTU too large for loading XDP");
- 		return -EOPNOTSUPP;
- 	}
-@@ -7321,18 +7333,6 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 	dev_err(dev, "Rebuild failed, unload and reload driver\n");
- }
- 
--/**
-- * ice_max_xdp_frame_size - returns the maximum allowed frame size for XDP
-- * @vsi: Pointer to VSI structure
-- */
--static int ice_max_xdp_frame_size(struct ice_vsi *vsi)
--{
--	if (test_bit(ICE_FLAG_LEGACY_RX, vsi->back->flags))
--		return ICE_RXBUF_1664;
--	else
--		return ICE_RXBUF_3072;
--}
--
- /**
-  * ice_change_mtu - NDO callback to change the MTU
-  * @netdev: network interface device structure
 -- 
 2.34.1
 
