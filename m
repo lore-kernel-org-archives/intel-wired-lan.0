@@ -1,73 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24CF1C05027
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Feb 2023 16:25:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6D88C38142
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Feb 2023 16:25:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B1D6D40A17;
-	Wed,  1 Feb 2023 16:25:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B1D6D40A17
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4FE794148F;
+	Wed,  1 Feb 2023 16:25:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4FE794148F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675268745;
-	bh=yH+hU+8NfZEcaLo3kezOEHP4KcUbfklY4HKh3K736nk=;
+	s=default; t=1675268748;
+	bh=xbNihxi/FpIp42wiBDE1XdomNQPAOuRE9SJ+2cqVSTA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=YAHO0+uZaLcQqEFPf653m+gK8nhRtixhetfaLEQ6habKMyztqCl0SooOwp0WsYXPN
-	 iHDgpI8A3gUS1GzGNzZIVGvuPTCJ+YaubP0ckOgEIpT3AOln5A/2XdsLvyTxs3PWP9
-	 0If4kVMwZ8JzUrrXTsUKwXagELmHqICYG97R23YVbflcdxN3yqemwnCaVTQu47GD6j
-	 OqP7CN4XDRnVVPHrwwyNyCrhjxWrMIwDi9KUjZbtEm5VnmfN32Eopv/9gEjvb4P3Ks
-	 umvi35C6GskaeV9kybVPC9+pxNj06UV6et35rKKzeBRSb32QDj6TV+WXy7o55drHw3
-	 LM0txvyE99JEQ==
+	b=wGpSz1JHrMD45mrujEh9OwJn6rwmT9vesFJr8ENx2e1NmPM5zU/AknDuMwLDdP21X
+	 SetAvvhUdjYNFOSoZU50gd/Umb2K9lQG0mFO/PMeAVDzF3es24kdHNEf0ZWPZNLQ9+
+	 oFteXI8I7FqsadNHMi8dhSgQghWmVi4/ule10MGIPh8nUGsbBOc3Us56Qiqw4/B9+c
+	 CeKLwTLuLehh6hxoBcPX2rS7/gxpoo+Wu31vZO4IZYkKALCviv6hSvQkeoGpYv/I4T
+	 Amq5AJOIvgSEB7B8BwCY8So3l96q9tYRvo4y9K2vXDy1Vr6vutwU6Cr+gO01u+h6Ry
+	 idAxMGRmGlnhA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dGpcDIueH7wg; Wed,  1 Feb 2023 16:25:43 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ujwrham0SP5U; Wed,  1 Feb 2023 16:25:47 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1511E40A42;
-	Wed,  1 Feb 2023 16:25:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1511E40A42
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 33E7A1BF31A
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 09:06:18 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0D4B3418F5;
+	Wed,  1 Feb 2023 16:25:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0D4B3418F5
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 20F671BF388
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0D8FB40734
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 09:06:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0D8FB40734
+ by smtp1.osuosl.org (Postfix) with ESMTP id ED2DD81E9A
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ED2DD81E9A
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id FM6qKr_QsTgy for <intel-wired-lan@lists.osuosl.org>;
- Wed,  1 Feb 2023 09:06:16 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 88A8040629
-Received: from exchange.fintech.ru (e10edge.fintech.ru [195.54.195.159])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 88A8040629
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 09:06:16 +0000 (UTC)
-Received: from Ex16-01.fintech.ru (10.0.10.18) by exchange.fintech.ru
- (195.54.195.169) with Microsoft SMTP Server (TLS) id 14.3.498.0; Wed, 1 Feb
- 2023 12:06:13 +0300
-Received: from KANASHIN1.fintech.ru (10.0.253.125) by Ex16-01.fintech.ru
- (10.0.10.18) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Wed, 1 Feb 2023
- 12:06:13 +0300
-From: Natalia Petrova <n.petrova@fintech.ru>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 1 Feb 2023 12:06:10 +0300
-Message-ID: <20230201090610.52782-1-n.petrova@fintech.ru>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230125141328.8479-1-n.petrova@fintech.ru>
-References: 
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ac0Bp2_qBwZa for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  1 Feb 2023 15:17:00 +0000 (UTC)
+X-Greylist: delayed 00:17:49 by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B793A81E96
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B793A81E96
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:00 +0000 (UTC)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ore@pengutronix.de>)
+ id 1pNEZY-0002rf-0D; Wed, 01 Feb 2023 15:58:52 +0100
+Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
+ by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+ (envelope-from <ore@pengutronix.de>)
+ id 1pNEZX-001w1V-48; Wed, 01 Feb 2023 15:58:50 +0100
+Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
+ (envelope-from <ore@pengutronix.de>)
+ id 1pNEZT-009hWs-H9; Wed, 01 Feb 2023 15:58:47 +0100
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
+ Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Vladimir Oltean <olteanv@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
+ Heiner Kallweit <hkallweit1@gmail.com>
+Date: Wed,  1 Feb 2023 15:58:38 +0100
+Message-Id: <20230201145845.2312060-17-o.rempel@pengutronix.de>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20230201145845.2312060-1-o.rempel@pengutronix.de>
+References: <20230201145845.2312060-1-o.rempel@pengutronix.de>
 MIME-Version: 1.0
-X-Originating-IP: [10.0.253.125]
-X-ClientProxiedBy: Ex16-01.fintech.ru (10.0.10.18) To Ex16-01.fintech.ru
- (10.0.10.18)
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ore@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Wed, 01 Feb 2023 16:25:41 +0000
-Subject: [Intel-wired-lan] [PATCH v3] i40e: Add checking for null for
- nlmsg_find_attr()
+Subject: [Intel-wired-lan] [PATCH net-next v4 16/23] net: fec: add support
+ for PHYs with SmartEEE support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,47 +95,67 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: lvc-project@linuxtesting.org, intel-wired-lan@lists.osuosl.org,
- Natalia Petrova <n.petrova@fintech.ru>, linux-kernel@vger.kernel.org, Eric
- Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: Arun.Ramadoss@microchip.com, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Oleksij Rempel <o.rempel@pengutronix.de>,
+ intel-wired-lan@lists.osuosl.org, kernel@pengutronix.de
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The result of nlmsg_find_attr() 'br_spec' is dereferenced in
-nla_for_each_nested(), but it can take NULL value in nla_find() function,
-which will result in an error.
+Ethernet controller in i.MX6*/i.MX7* series do not provide EEE support.
+But this chips are used sometimes in combinations with SmartEEE capable
+PHYs.
+So, instead of aborting get/set_eee access on MACs without EEE support,
+ask PHY if it is able to do the EEE job by using SmartEEE.
 
-Found by Linux Verification Center (linuxtesting.org) with SVACE.
-
-Fixes: 51616018dd1b ("i40e: Add support for getlink, setlink ndo ops")
-Signed-off-by: Natalia Petrova <n.petrova@fintech.ru>
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
 ---
-v3: Fixed mailing list.
-v2: The remark about the error code by Simon Horman <simon.horman@corigine.com> 
-was taken into account; return value -ENOENT was changed to -EINVAL.
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/freescale/fec_main.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 53d0083e35da..4626d2a1af91 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -13167,6 +13167,8 @@ static int i40e_ndo_bridge_setlink(struct net_device *dev,
- 	}
+diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
+index 5ff45b1a74a5..fb5c050f3fd3 100644
+--- a/drivers/net/ethernet/freescale/fec_main.c
++++ b/drivers/net/ethernet/freescale/fec_main.c
+@@ -3102,8 +3102,15 @@ fec_enet_get_eee(struct net_device *ndev, struct ethtool_eee *edata)
+ 	struct fec_enet_private *fep = netdev_priv(ndev);
+ 	struct ethtool_eee *p = &fep->eee;
  
- 	br_spec = nlmsg_find_attr(nlh, sizeof(struct ifinfomsg), IFLA_AF_SPEC);
-+	if (!br_spec)
-+		return -EINVAL;
+-	if (!(fep->quirks & FEC_QUIRK_HAS_EEE))
+-		return -EOPNOTSUPP;
++	if (!(fep->quirks & FEC_QUIRK_HAS_EEE)) {
++		if (!netif_running(ndev))
++			return -ENETDOWN;
++
++		if (!phy_has_smarteee(ndev->phydev))
++			return -EOPNOTSUPP;
++
++		return phy_ethtool_get_eee(ndev->phydev, edata);
++	}
  
- 	nla_for_each_nested(attr, br_spec, rem) {
- 		__u16 mode;
+ 	if (!netif_running(ndev))
+ 		return -ENETDOWN;
+@@ -3123,8 +3130,15 @@ fec_enet_set_eee(struct net_device *ndev, struct ethtool_eee *edata)
+ 	struct ethtool_eee *p = &fep->eee;
+ 	int ret = 0;
+ 
+-	if (!(fep->quirks & FEC_QUIRK_HAS_EEE))
+-		return -EOPNOTSUPP;
++	if (!(fep->quirks & FEC_QUIRK_HAS_EEE)) {
++		if (!netif_running(ndev))
++			return -ENETDOWN;
++
++		if (!phy_has_smarteee(ndev->phydev))
++			return -EOPNOTSUPP;
++
++		return phy_ethtool_set_eee(ndev->phydev, edata);
++	}
+ 
+ 	if (!netif_running(ndev))
+ 		return -ENETDOWN;
 -- 
-2.34.1
+2.30.2
 
 _______________________________________________
 Intel-wired-lan mailing list
