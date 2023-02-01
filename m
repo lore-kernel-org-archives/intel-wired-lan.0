@@ -1,85 +1,78 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F21C3C38142
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Feb 2023 16:27:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D312C38142
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Feb 2023 17:07:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A391D410DB;
-	Wed,  1 Feb 2023 16:27:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A391D410DB
+	by smtp2.osuosl.org (Postfix) with ESMTP id 335FB4014B;
+	Wed,  1 Feb 2023 17:07:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 335FB4014B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675268843;
-	bh=g4jlYXxJE8ywA7F7Sc5N+COQsyEryIem7rKMHpR/1o8=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=UH00FBYPxwfo+GX7Jux1shejNh1SWY0rbcK35H4iB4LIjgPwiGNpIRejRXma9GbOb
-	 HCTZ6HoGiVAZ0M2FxGNDot/MkX3x7H1DH3bG+91dzaf8YVLgYV2xAGbQb2W9kqMg6X
-	 UKyjvRZz+1YyNroZuoqAv2q6Ms7bJ3JD0sq9URs18e2z5VE5dHFG8RqzaLXaH6KDq6
-	 k5sq9kI3WTolbrMIjnMEonm9kjFdH1+0DeEaI+tcBVo2X8Maf2BajV2hQY7GJ8aA0z
-	 7Xv18KPMLdQ67MSWmOwmzgmmx/Mb0QF6kdBt06iCDbtelg/cLAJPKsQXd1ByGXyzvO
-	 NDPou5HNPrrTQ==
+	s=default; t=1675271231;
+	bh=/AjV/sCz+QGvLh16t90fXTi4uFFgkukYTa+P2fuj8I4=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=HNlG1kS9870EDpNZ7ZVFINNGvwn9IwSJsBCH9Mq2FnNUo+uvUFHnfSDaE6VArXFvI
+	 oZdxMrMbMlNUgOa23aB0zKu1g42rcrVUuiU5vR7D4CI2tiXjlCbuPuAcGNRs8vtewC
+	 aNTlbTdYomNylQZYv7OE+80oteZ6hErNVuJ4nEbpoWmrRzY66Y0Z278K/koEJHeqSl
+	 41IW9KYfYV/NvVoslY0UBYhX2Ldh5NXB7ho2gZIUYruaIJ0d/lT4qMkua2D6GMoQ3r
+	 m1pPH1tyUpUVk9tgCSALVjjYk1EWiAG6ESiUsg1Qa04KGRPWnayzc0tWH83WL6KmzG
+	 TDII4nc3lJQfg==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id zpCeqHmwZ9mG; Wed,  1 Feb 2023 17:07:10 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id 50F44403A7;
+	Wed,  1 Feb 2023 17:07:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 50F44403A7
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 2890B1BF29F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 17:07:09 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 0074A40294
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 17:07:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0074A40294
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ah6gFmYmKDAv; Wed,  1 Feb 2023 16:27:22 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4AF014194A;
-	Wed,  1 Feb 2023 16:27:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4AF014194A
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id D63411BF388
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:45 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B01F160FB0
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B01F160FB0
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id IhC4dG-7oN4S for <intel-wired-lan@lists.osuosl.org>;
- Wed,  1 Feb 2023 15:17:45 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D73756104B
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D73756104B
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:44 +0000 (UTC)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
- by metis.ext.pengutronix.de with esmtps
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <ore@pengutronix.de>)
- id 1pNEZY-0002ra-0C; Wed, 01 Feb 2023 15:58:52 +0100
-Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
- by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
- (envelope-from <ore@pengutronix.de>)
- id 1pNEZW-001w1G-Ih; Wed, 01 Feb 2023 15:58:49 +0100
-Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
- (envelope-from <ore@pengutronix.de>)
- id 1pNEZT-009hUY-6r; Wed, 01 Feb 2023 15:58:47 +0100
-From: Oleksij Rempel <o.rempel@pengutronix.de>
-To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
- Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Vladimir Oltean <olteanv@gmail.com>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
- Heiner Kallweit <hkallweit1@gmail.com>
-Date: Wed,  1 Feb 2023 15:58:22 +0100
-Message-Id: <20230201145845.2312060-1-o.rempel@pengutronix.de>
-X-Mailer: git-send-email 2.30.2
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id wR9OJ_DBPBlR for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  1 Feb 2023 17:07:06 +0000 (UTC)
+X-Greylist: delayed 00:24:57 by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E544A40292
+Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E544A40292
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 17:07:05 +0000 (UTC)
+Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
+ (envelope-from <andrew@lunn.ch>)
+ id 1pNGBD-003oEr-D7; Wed, 01 Feb 2023 17:41:51 +0100
+Date: Wed, 1 Feb 2023 17:41:51 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: Oleksij Rempel <o.rempel@pengutronix.de>
+Message-ID: <Y9qWT11Ckf0g+whv@lunn.ch>
+References: <20230201145845.2312060-1-o.rempel@pengutronix.de>
+ <20230201145845.2312060-9-o.rempel@pengutronix.de>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ore@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
-X-Mailman-Approved-At: Wed, 01 Feb 2023 16:25:41 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v4 00/23] net: add EEE support
- for KSZ9477 and AR8035 with i.MX6
+Content-Disposition: inline
+In-Reply-To: <20230201145845.2312060-9-o.rempel@pengutronix.de>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; d=lunn.ch; 
+ s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
+ Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
+ Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
+ bh=SgddTTKAGF4Pttul+G878Am4ZtBBoyVHLpFQBrA5TvI=; b=4uAr010FWqz5h8GkiMsnC/YeF9
+ GKNm8kkHE/KzalFSu8IpBOj0vbMvoNWL3oXAvyhQlPyo2v5bLY487HnGMk7tNgNd4tn5BuuTY31uC
+ 13bkA8Fdg+4TPlyjEF88jxCXk/Oum7BB/pxA55X1Hm3XYlwQAQbLJLA9C86tjmHzqmlI=;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch
+ header.a=rsa-sha256 header.s=20171124 header.b=4uAr010F
+Subject: Re: [Intel-wired-lan] [PATCH net-next v4 08/23] net: phy: migrate
+ phy_init_eee() to genphy_c45_eee_is_active()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,86 +85,44 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Arun.Ramadoss@microchip.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Oleksij Rempel <o.rempel@pengutronix.de>,
- intel-wired-lan@lists.osuosl.org, kernel@pengutronix.de
+Cc: Woojung Huh <woojung.huh@microchip.com>, Arun.Ramadoss@microchip.com,
+ Florian Fainelli <f.fainelli@gmail.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Vivien Didelot <vivien.didelot@gmail.com>,
+ UNGLinuxDriver@microchip.com, Eric Dumazet <edumazet@google.com>,
+ Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
+ kernel@pengutronix.de, intel-wired-lan@lists.osuosl.org,
+ Jakub Kicinski <kuba@kernel.org>, Vladimir Oltean <olteanv@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Heiner Kallweit <hkallweit1@gmail.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-changes v4:
-- remove following helpers:
-  mmd_eee_cap_to_ethtool_sup_t
-  mmd_eee_adv_to_ethtool_adv_t
-  ethtool_adv_to_mmd_eee_adv_t
-  and port drivers from this helpers to linkmode helpers.
-- rebase against latest net-next
-- port phy_init_eee() to genphy_c45_eee_is_active()
+>  int phy_init_eee(struct phy_device *phydev, bool clk_stop_enable)
+>  {
+> +	int ret;
+> +
+>  	if (!phydev->drv)
+>  		return -EIO;
+>  
+> -	/* According to 802.3az,the EEE is supported only in full duplex-mode.
+> -	 */
+> -	if (phydev->duplex == DUPLEX_FULL) {
 
-changes v3:
-- rework some parts of EEE infrastructure and move it to c45 code.
-- add supported_eee storage and start using it in EEE code and by the
-  micrel driver.
-- add EEE support for ar8035 PHY
-- add SmartEEE support to FEC i.MX series.
+This got me for a while, where did the duplex check go?
 
-changes v2:
-- use phydev->supported instead of reading MII_BMSR regiaster
-- fix @get_eee > @set_eee
+But you now compare the local advertised EEE and the link peer EEE.
+Since it is impossible to advertise a half duplex mode, the result can
+never contain a half duplex mode.
 
-With this patch series we provide EEE control for KSZ9477 family of switches and
-AR8035 with i.MX6 configuration.
-According to my tests, on a system with KSZ8563 switch and 100Mbit idle link,
-we consume 0,192W less power per port if EEE is enabled.
+I've done the work now, but a comment about this in the commit message
+would of been nice.
 
-Oleksij Rempel (23):
-  net: dsa: microchip: enable EEE support
-  net: phy: add genphy_c45_read_eee_abilities() function
-  net: phy: micrel: add ksz9477_get_features()
-  net: phy: export phy_check_valid() function
-  net: phy: add genphy_c45_ethtool_get/set_eee() support
-  net: phy: c22: migrate to genphy_c45_write_eee_adv()
-  net: phy: c45: migrate to genphy_c45_write_eee_adv()
-  net: phy: migrate phy_init_eee() to genphy_c45_eee_is_active()
-  net: phy: start using genphy_c45_ethtool_get/set_eee()
-  net: phy: add driver specific get/set_eee support
-  net: phy: at803x: implement ethtool access to SmartEEE functionality
-  net: phy: at803x: ar8035: fix EEE support for half duplex links
-  net: phy: add PHY specifica flag to signal SmartEEE support
-  net: phy: at803x: add PHY_SMART_EEE flag to AR8035
-  net: phy: add phy_has_smarteee() helper
-  net: fec: add support for PHYs with SmartEEE support
-  e1000e: replace EEE ethtool helpers to linkmode variants
-  igb: replace EEE ethtool helpers to linkmode variants
-  igc: replace EEE ethtool helpers to linkmode variants
-  tg3: replace EEE ethtool helpers to linkmode variants
-  r8152: replace EEE ethtool helpers to linkmode variants
-  net: usb: ax88179_178a: replace EEE ethtool helpers to linkmode
-    variants
-  net: mdio: drop EEE ethtool helpers in favor to linkmode variants
+FYI: Thanks for converting all users of the old functions. I was not
+expecting that.
 
- drivers/net/dsa/microchip/ksz_common.c       |  66 ++++
- drivers/net/ethernet/broadcom/tg3.c          |   9 +-
- drivers/net/ethernet/freescale/fec_main.c    |  22 +-
- drivers/net/ethernet/intel/e1000e/ethtool.c  |  16 +-
- drivers/net/ethernet/intel/igb/igb_ethtool.c |  23 +-
- drivers/net/ethernet/intel/igc/igc_ethtool.c |  12 +-
- drivers/net/phy/at803x.c                     | 142 ++++++++-
- drivers/net/phy/micrel.c                     |  21 ++
- drivers/net/phy/phy-c45.c                    | 298 ++++++++++++++++++-
- drivers/net/phy/phy.c                        | 155 ++--------
- drivers/net/phy/phy_device.c                 |  26 +-
- drivers/net/usb/ax88179_178a.c               |  24 +-
- drivers/net/usb/r8152.c                      |  34 ++-
- include/linux/mdio.h                         | 136 ++++-----
- include/linux/phy.h                          |  28 ++
- include/uapi/linux/mdio.h                    |   8 +
- 16 files changed, 760 insertions(+), 260 deletions(-)
-
--- 
-2.30.2
-
+	Andrew
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
