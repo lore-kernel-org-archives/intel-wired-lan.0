@@ -1,83 +1,79 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54628C05027
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Feb 2023 10:32:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36AA0C636D4
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Feb 2023 10:32:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 97DC9410A1;
-	Wed,  1 Feb 2023 10:32:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 97DC9410A1
+	by smtp1.osuosl.org (Postfix) with ESMTP id 08AC581D3A;
+	Wed,  1 Feb 2023 10:32:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 08AC581D3A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675247532;
-	bh=BWkhUVqkbodLL9houEAevjwPt/7dSy6s8+yGgpb1WkM=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=SiW+8HPwVqMs4GtWsoM5Dzsc55WGmHcU3WiLDDBFjGm6NB432HEg06S7JTBy1QZHR
-	 NmY9Uzit68v6FGRga3VWV/sPsjNAZtNXWQfbe2yLp0p2MSNKkaqdnAUUs9FW5A2RRW
-	 oUDo2HUgk5X0ZA72FiXJWbllPm4APl+Nidj/6bJ9XnIjlgf+ikefyGJvFrQpcX2T3b
-	 yb5zNadH+yZSAyMtZe2wQ9EiO1IWv0AzwKUGT+M0HTxMQYyWLf5iTfHOuQ6OdmwUpk
-	 uQYVjyc5opMXx4XqAzk2g4fMT4zAlaGP83SpgI2FsQsYMMo3Ftn9TBKec5hkL1W3tY
-	 EmelwrAfE01wg==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DoqSE-NfY9kw; Wed,  1 Feb 2023 10:32:11 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5C6C1410B7;
-	Wed,  1 Feb 2023 10:32:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5C6C1410B7
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 019A01BF59C
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 10:32:10 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id CC80681392
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 10:32:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CC80681392
+	s=default; t=1675247537;
+	bh=ZZB+tly9XUIgh1Q92lA6dme0Rbocgz4woy07QamdRQk=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=g796e0eplvZUgGjB701NtmjFAK9BxixpasOnrr9OO0TY/DLj3u+1N/HzueVOrBgRn
+	 PBuWPkIJ/lxRuRzHMeJYckVUhSxVRDaGbCYFPcQIjKqkIZRdBG76PTOl1f/+Z5bzo0
+	 ooIBZUJHn3ZOX4YSTZPbNPlMhnsK04fQf1AlBxUwTWrvY2NyP1QDdmryfm/q9vcl9p
+	 8EHHKHiywT87mVQgZ2G35J4cOflxPr/tbbr+yg3jx1WWX0m5tfpEzyNgv54dWOR9i5
+	 YR5yIuxq9Z+b9aTYr2+lGKrzHK7yv9MSruEDI9xUf4CIAeM4g2bIiBxPDskLuczTLn
+	 Kb1EB9BQhaKFQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gXL5uYbhCUfn for <intel-wired-lan@lists.osuosl.org>;
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id kWewgdPObLNi; Wed,  1 Feb 2023 10:32:16 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id CA3FF8139E;
+	Wed,  1 Feb 2023 10:32:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CA3FF8139E
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 567AE1BF59C
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 10:32:10 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 3D54E408D8
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 10:32:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3D54E408D8
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qhgYHDt-mYcO for <intel-wired-lan@lists.osuosl.org>;
  Wed,  1 Feb 2023 10:32:09 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 37F4E8139E
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 37F4E8139E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5F04C408D7
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5F04C408D7
  for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 10:32:09 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 2E84E61739;
- Wed,  1 Feb 2023 10:25:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1866AC433EF;
- Wed,  1 Feb 2023 10:25:14 +0000 (UTC)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 1F6D66174C;
+ Wed,  1 Feb 2023 10:25:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 075F9C433D2;
+ Wed,  1 Feb 2023 10:25:02 +0000 (UTC)
 From: Lorenzo Bianconi <lorenzo@kernel.org>
 To: bpf@vger.kernel.org
-Date: Wed,  1 Feb 2023 11:24:19 +0100
-Message-Id: <45a98ec67b4556a6a22dfd85df3eb8276beeeb74.1675245258.git.lorenzo@kernel.org>
+Date: Wed,  1 Feb 2023 11:24:16 +0100
+Message-Id: <cover.1675245257.git.lorenzo@kernel.org>
 X-Mailer: git-send-email 2.39.1
-In-Reply-To: <cover.1675245257.git.lorenzo@kernel.org>
-References: <cover.1675245257.git.lorenzo@kernel.org>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1675247114;
- bh=EUEjHYCFZLBlSjnOAZ24J2T1iHJ/3Lz1NQeBwSmXZYY=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=SVuI+zUN+v/ek6atT1jY434aD2dCGtiIjY+g9Le3DZhK1eUvqLDLkHkbt1VZN2fdd
- 7zUL77gnq7DUrn6Nk4og1Ex6zCaJ3cgr1y8YvDOmmb6bbBWsHaVSkkH5yOHK6BUOO2
- 699hJV5Yr0qfhIMqe/FcESgRfY/UVXXFzf7+IhB/wARSkHHKlTlHflqJVi6rCEWkEp
- z/ZZKsy7EPKAVwyxsbP3agqy4Sl/VeJDEHedv0NSY6BbleiusKe+I0g0UJuvPM/L40
- ngaTjdBEqs1CyE3Bo4vekiEQotEhNw+Hh60Q+SU5xA+u8YWSAb7Cydsl7FXPLgOc34
- XsS5KqerglTcw==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=kernel.org; s=k20201202; t=1675247102;
+ bh=Gnuijlikm1O785voXzUwrttoVBA0l8YR5XPtX5J4Kfk=;
+ h=From:To:Cc:Subject:Date:From;
+ b=RRlElD9E0KlkHPuSVoykG+lPIRubwCcC0vCs8kO2bgURUstVwKKheLRGKHCpbzVC8
+ KjBeOs+VkWSgE25N6jxDURIF4pDpyeXqUNfpkBCeambUy5rLo60NecPkOT2JknP03+
+ UGbopZQXCju/KwH0+d3T5s2QlVSwUazMkKVsizGouK5oiWzVbMo9k1IHkh9IV2eu7T
+ Y7d+QPD0LKOe0RXyM2doJqx5ngXdM55+CAJkFAiQiyjMQu7w1WTdApa7MVtvd1HjwP
+ pb+GHXmSKN6ljncnvfs7ctlYOO+8XZqApyLyzXZSuSVInE7P5eVwSe21BTRu4IOcxu
+ MaDSu8WyCRdug==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=SVuI+zUN
-Subject: [Intel-wired-lan] [PATCH v5 bpf-next 3/8] xsk: add usage of XDP
- features flags
+ header.a=rsa-sha256 header.s=k20201202 header.b=RRlElD9E
+Subject: [Intel-wired-lan] [PATCH v5 bpf-next 0/8] xdp: introduce
+ xdp-feature support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,42 +101,148 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Marek Majtyka <alardam@gmail.com>
+Introduce the capability to export the XDP features supported by the NIC.
+Introduce a XDP compliance test tool (xdp_features) to check the features
+exported by the NIC match the real features supported by the driver.
+Allow XDP_REDIRECT of non-linear XDP frames into a devmap.
+Export XDP features for each XDP capable driver.
+Extend libbpf netlink implementation in order to support netlink_generic
+protocol.
+Introduce a simple generic netlink family for netdev data.
 
-Change necessary condition check for XSK from ndo functions to
-xdp features flags.
+Changes since v4:
+- rebase on top of bpf-next
+- get rid of XDP_FEATURE_* enum in XDP compliance test tool
+- rely on AF_INET6 address family and on IPv6-mapped-IPv6 addresses for IPv4
+  in XDP compliance test tool
+- add tsnep driver support
 
-Signed-off-by: Marek Majtyka <alardam@gmail.com>
-Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
----
- net/xdp/xsk_buff_pool.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Changes since v3:
+- add IPv6 support to XDP compliance test tool
+- rely on network_helpers in XDP compliance test tool
+- cosmetics changes
 
-diff --git a/net/xdp/xsk_buff_pool.c b/net/xdp/xsk_buff_pool.c
-index ed6c71826d31..b2df1e0f8153 100644
---- a/net/xdp/xsk_buff_pool.c
-+++ b/net/xdp/xsk_buff_pool.c
-@@ -140,6 +140,10 @@ static void xp_disable_drv_zc(struct xsk_buff_pool *pool)
- 	}
- }
- 
-+#define NETDEV_XDP_ACT_ZC	(NETDEV_XDP_ACT_BASIC |		\
-+				 NETDEV_XDP_ACT_REDIRECT |	\
-+				 NETDEV_XDP_ACT_XSK_ZEROCOPY)
-+
- int xp_assign_dev(struct xsk_buff_pool *pool,
- 		  struct net_device *netdev, u16 queue_id, u16 flags)
- {
-@@ -178,8 +182,7 @@ int xp_assign_dev(struct xsk_buff_pool *pool,
- 		/* For copy-mode, we are done. */
- 		return 0;
- 
--	if (!netdev->netdev_ops->ndo_bpf ||
--	    !netdev->netdev_ops->ndo_xsk_wakeup) {
-+	if ((netdev->xdp_features & NETDEV_XDP_ACT_ZC) != NETDEV_XDP_ACT_ZC) {
- 		err = -EOPNOTSUPP;
- 		goto err_unreg_pool;
- 	}
+Changes since v2:
+- rebase on top of bpf-next
+- fix compilation error
+
+Changes since v1:
+- add Documentation to netdev.yaml
+- use flags instead of enum as type for netdev.yaml definitions
+- squash XDP_PASS, XDP_DROP, XDP_TX and XDP_ABORTED into XDP_BASIC since they
+  are supported by all drivers.
+- add notifier event to xdp_features_set_redirect_target() and
+  xdp_features_clear_redirect_target()
+- add selftest for xdp-features support in bpf_xdp_detach()
+- add IPv6 preliminary support to XDP compliance test tool
+
+Changes since RFCv2:
+- do not assume fixed layout for genl kernel messages
+- fix warnings in netdev_nl_dev_fill
+- fix capabilities for nfp driver
+- add supported_sg parameter to xdp_features_set_redirect_target and drop
+  __xdp_features_set_redirect_target routine
+
+Changes since RFCv1:
+- Introduce netdev-genl implementation and get rid of rtnl one.
+- Introduce netlink_generic support in libbpf netlink implementation
+- Rename XDP_FEATURE_* in NETDEV_XDP_ACT_*
+- Rename XDP_FEATURE_REDIRECT_TARGET in NETDEV_XDP_ACT_NDO_XMIT
+- Rename XDP_FEATURE_FRAG_RX in NETDEV_XDP_ACT_RX_SG
+- Rename XDP_FEATURE_FRAG_TARFET in NETDEV_XDP_ACT_NDO_XMIT
+- Get rid of XDP_LOCK feature.
+- Move xdp_feature field in a netdevice struct hole in the 4th cacheline.
+
+Jakub Kicinski (1):
+  netdev-genl: create a simple family for netdev stuff
+
+Lorenzo Bianconi (5):
+  libbpf: add the capability to specify netlink proto in
+    libbpf_netlink_send_recv
+  libbpf: add API to get XDP/XSK supported features
+  bpf: devmap: check XDP features in __xdp_enqueue routine
+  selftests/bpf: add test for bpf_xdp_query xdp-features support
+  selftests/bpf: introduce XDP compliance test tool
+
+Marek Majtyka (2):
+  drivers: net: turn on XDP features
+  xsk: add usage of XDP features flags
+
+ Documentation/netlink/specs/netdev.yaml       | 100 +++
+ drivers/net/ethernet/amazon/ena/ena_netdev.c  |   4 +
+ .../net/ethernet/aquantia/atlantic/aq_nic.c   |   5 +
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c     |   3 +
+ drivers/net/ethernet/broadcom/bnxt/bnxt_xdp.c |   2 +
+ .../net/ethernet/cavium/thunder/nicvf_main.c  |   2 +
+ drivers/net/ethernet/engleder/tsnep_main.c    |   4 +
+ .../net/ethernet/freescale/dpaa/dpaa_eth.c    |   4 +
+ .../net/ethernet/freescale/dpaa2/dpaa2-eth.c  |   4 +
+ .../net/ethernet/freescale/enetc/enetc_pf.c   |   3 +
+ .../ethernet/fungible/funeth/funeth_main.c    |   6 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  10 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   5 +
+ drivers/net/ethernet/intel/igb/igb_main.c     |   9 +-
+ drivers/net/ethernet/intel/igc/igc_main.c     |   3 +
+ drivers/net/ethernet/intel/igc/igc_xdp.c      |   5 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   6 +
+ .../net/ethernet/intel/ixgbevf/ixgbevf_main.c |   1 +
+ drivers/net/ethernet/marvell/mvneta.c         |   3 +
+ .../net/ethernet/marvell/mvpp2/mvpp2_main.c   |   4 +
+ .../ethernet/marvell/octeontx2/nic/otx2_pf.c  |   8 +-
+ drivers/net/ethernet/mediatek/mtk_eth_soc.c   |   6 +
+ .../net/ethernet/mellanox/mlx4/en_netdev.c    |   2 +
+ .../net/ethernet/mellanox/mlx5/core/en_main.c |  11 +
+ drivers/net/ethernet/microsoft/mana/mana_en.c |   2 +
+ .../ethernet/netronome/nfp/nfp_net_common.c   |   5 +
+ drivers/net/ethernet/qlogic/qede/qede_main.c  |   3 +
+ drivers/net/ethernet/sfc/efx.c                |   4 +
+ drivers/net/ethernet/sfc/siena/efx.c          |   4 +
+ drivers/net/ethernet/socionext/netsec.c       |   3 +
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c |   2 +
+ drivers/net/ethernet/ti/cpsw.c                |   4 +
+ drivers/net/ethernet/ti/cpsw_new.c            |   4 +
+ drivers/net/hyperv/netvsc_drv.c               |   2 +
+ drivers/net/netdevsim/netdev.c                |   1 +
+ drivers/net/tun.c                             |   5 +
+ drivers/net/veth.c                            |   4 +
+ drivers/net/virtio_net.c                      |   4 +
+ drivers/net/xen-netfront.c                    |   2 +
+ include/linux/netdevice.h                     |   3 +
+ include/net/xdp.h                             |  15 +
+ include/uapi/linux/netdev.h                   |  59 ++
+ kernel/bpf/devmap.c                           |  16 +-
+ net/core/Makefile                             |   3 +-
+ net/core/dev.c                                |   1 +
+ net/core/filter.c                             |  13 +-
+ net/core/netdev-genl-gen.c                    |  48 ++
+ net/core/netdev-genl-gen.h                    |  23 +
+ net/core/netdev-genl.c                        | 179 +++++
+ net/core/xdp.c                                |  18 +
+ net/xdp/xsk_buff_pool.c                       |   7 +-
+ tools/include/uapi/linux/netdev.h             |  59 ++
+ tools/lib/bpf/libbpf.h                        |   3 +-
+ tools/lib/bpf/netlink.c                       | 118 ++-
+ tools/lib/bpf/nlattr.h                        |  12 +
+ tools/testing/selftests/bpf/.gitignore        |   1 +
+ tools/testing/selftests/bpf/Makefile          |  11 +-
+ .../bpf/prog_tests/xdp_do_redirect.c          |  27 +-
+ .../selftests/bpf/prog_tests/xdp_info.c       |   8 +
+ .../selftests/bpf/progs/xdp_features.c        | 269 +++++++
+ .../selftests/bpf/test_xdp_features.sh        | 107 +++
+ tools/testing/selftests/bpf/xdp_features.c    | 699 ++++++++++++++++++
+ tools/testing/selftests/bpf/xdp_features.h    |  20 +
+ 63 files changed, 1945 insertions(+), 33 deletions(-)
+ create mode 100644 Documentation/netlink/specs/netdev.yaml
+ create mode 100644 include/uapi/linux/netdev.h
+ create mode 100644 net/core/netdev-genl-gen.c
+ create mode 100644 net/core/netdev-genl-gen.h
+ create mode 100644 net/core/netdev-genl.c
+ create mode 100644 tools/include/uapi/linux/netdev.h
+ create mode 100644 tools/testing/selftests/bpf/progs/xdp_features.c
+ create mode 100755 tools/testing/selftests/bpf/test_xdp_features.sh
+ create mode 100644 tools/testing/selftests/bpf/xdp_features.c
+ create mode 100644 tools/testing/selftests/bpf/xdp_features.h
+
 -- 
 2.39.1
 
