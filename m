@@ -1,65 +1,64 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6F6DC38142
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Feb 2023 16:27:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F21C3C38142
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  1 Feb 2023 16:27:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 55B6581E1E;
-	Wed,  1 Feb 2023 16:27:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 55B6581E1E
+	by smtp4.osuosl.org (Postfix) with ESMTP id A391D410DB;
+	Wed,  1 Feb 2023 16:27:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A391D410DB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675268839;
-	bh=/xX1/OskSj+59kftbWaRZIqv7+fR1tqKgnf5ix6PEmU=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=1o8SMgcRiNAAQunLfYQ2EvVW5IC7TTIAg92tO3L+LzT7d5DQ9pgqcDUEOMg346+kb
-	 kHY0loPBL9Emkv98bS/G7u7XvGfea5V9aFO/Z53hCcW+fDmf2hicUSX0dNPl0ish54
-	 n9tkJU7ok/k0paZqNnOfCYAZ5RmYECjsvNXK8tHMer6n9La3ZW8PPZyarlC0Bx60pS
-	 N/RG1YMQ/9kmY2oPWY/OMSu8vZ+UKqXxKosYCH9IdBRWXy8ifmYPLNYfil55uvuggb
-	 aPkXSqPJgkvaPfExDi97xlI1ov6fUFUoMCYfO5I59fUvs2RY9nEvHDG6kfqfkzHSXu
-	 y29tzI6iu0mXw==
+	s=default; t=1675268843;
+	bh=g4jlYXxJE8ywA7F7Sc5N+COQsyEryIem7rKMHpR/1o8=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=UH00FBYPxwfo+GX7Jux1shejNh1SWY0rbcK35H4iB4LIjgPwiGNpIRejRXma9GbOb
+	 HCTZ6HoGiVAZ0M2FxGNDot/MkX3x7H1DH3bG+91dzaf8YVLgYV2xAGbQb2W9kqMg6X
+	 UKyjvRZz+1YyNroZuoqAv2q6Ms7bJ3JD0sq9URs18e2z5VE5dHFG8RqzaLXaH6KDq6
+	 k5sq9kI3WTolbrMIjnMEonm9kjFdH1+0DeEaI+tcBVo2X8Maf2BajV2hQY7GJ8aA0z
+	 7Xv18KPMLdQ67MSWmOwmzgmmx/Mb0QF6kdBt06iCDbtelg/cLAJPKsQXd1ByGXyzvO
+	 NDPou5HNPrrTQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zbVx0Ho8mWMA; Wed,  1 Feb 2023 16:27:18 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ah6gFmYmKDAv; Wed,  1 Feb 2023 16:27:22 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 343B781EEC;
-	Wed,  1 Feb 2023 16:27:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 343B781EEC
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E0B0F1BF388
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:43 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4AF014194A;
+	Wed,  1 Feb 2023 16:27:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4AF014194A
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id D63411BF388
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BAE7F81EA9
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BAE7F81EA9
+ by smtp3.osuosl.org (Postfix) with ESMTP id B01F160FB0
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B01F160FB0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id n9WXQkmy4I05 for <intel-wired-lan@lists.osuosl.org>;
- Wed,  1 Feb 2023 15:17:43 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id IhC4dG-7oN4S for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  1 Feb 2023 15:17:45 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E913681EA2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D73756104B
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E913681EA2
- for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:42 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D73756104B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  1 Feb 2023 15:17:44 +0000 (UTC)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pNEZc-0002re-1H; Wed, 01 Feb 2023 15:58:56 +0100
+ id 1pNEZY-0002ra-0C; Wed, 01 Feb 2023 15:58:52 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
  by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pNEZX-001w1S-1S; Wed, 01 Feb 2023 15:58:50 +0100
+ id 1pNEZW-001w1G-Ih; Wed, 01 Feb 2023 15:58:49 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pNEZT-009hW9-EV; Wed, 01 Feb 2023 15:58:47 +0100
+ id 1pNEZT-009hUY-6r; Wed, 01 Feb 2023 15:58:47 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
@@ -69,11 +68,9 @@ To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
  Heiner Kallweit <hkallweit1@gmail.com>
-Date: Wed,  1 Feb 2023 15:58:33 +0100
-Message-Id: <20230201145845.2312060-12-o.rempel@pengutronix.de>
+Date: Wed,  1 Feb 2023 15:58:22 +0100
+Message-Id: <20230201145845.2312060-1-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20230201145845.2312060-1-o.rempel@pengutronix.de>
-References: <20230201145845.2312060-1-o.rempel@pengutronix.de>
 MIME-Version: 1.0
 X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
 X-SA-Exim-Mail-From: ore@pengutronix.de
@@ -81,8 +78,8 @@ X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
  SAEximRunCond expanded to false
 X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Wed, 01 Feb 2023 16:25:41 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v4 11/23] net: phy: at803x:
- implement ethtool access to SmartEEE functionality
+Subject: [Intel-wired-lan] [PATCH net-next v4 00/23] net: add EEE support
+ for KSZ9477 and AR8035 with i.MX6
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,183 +100,75 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-If AR8035 PHY is used with a MAC without EEE support
-(iMX6, etc), then we need to process ethtool_eee::tx_lpi_timer and
-tx_lpi_enabled by the PHY driver. So, add get/set_eee support for this
-functionality.
+changes v4:
+- remove following helpers:
+  mmd_eee_cap_to_ethtool_sup_t
+  mmd_eee_adv_to_ethtool_adv_t
+  ethtool_adv_to_mmd_eee_adv_t
+  and port drivers from this helpers to linkmode helpers.
+- rebase against latest net-next
+- port phy_init_eee() to genphy_c45_eee_is_active()
 
-Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
----
- drivers/net/phy/at803x.c | 109 +++++++++++++++++++++++++++++++++++++--
- 1 file changed, 104 insertions(+), 5 deletions(-)
+changes v3:
+- rework some parts of EEE infrastructure and move it to c45 code.
+- add supported_eee storage and start using it in EEE code and by the
+  micrel driver.
+- add EEE support for ar8035 PHY
+- add SmartEEE support to FEC i.MX series.
 
-diff --git a/drivers/net/phy/at803x.c b/drivers/net/phy/at803x.c
-index 22f4458274aa..9eb4439b0afc 100644
---- a/drivers/net/phy/at803x.c
-+++ b/drivers/net/phy/at803x.c
-@@ -166,8 +166,18 @@
- 
- #define AT803X_MMD3_SMARTEEE_CTL1		0x805b
- #define AT803X_MMD3_SMARTEEE_CTL2		0x805c
-+#define AT803X_MMD3_SMARTEEE_LPI_TIME_LOW	GENMASK(15, 0)
-+#define AT803X_MMD3_SMARTEEE_LPI_TIME_15_0	GENMASK(15, 0)
- #define AT803X_MMD3_SMARTEEE_CTL3		0x805d
- #define AT803X_MMD3_SMARTEEE_CTL3_LPI_EN	BIT(8)
-+#define AT803X_MMD3_SMARTEEE_LPI_TIME_HIGH	GENMASK(7, 0)
-+#define AT803X_MMD3_SMARTEEE_LPI_TIME_23_16	GENMASK(23, 16)
-+/* Tx LPI timer resolution */
-+#define AT803X_MMD3_SMARTEEE_LPI_TIME_RESOL_NS	163840
-+#define AT803X_MMD3_SMARTEEE_LPI_TIME_MAX_US	\
-+	((GENMASK(23, 0) * AT803X_MMD3_SMARTEEE_LPI_TIME_RESOL_NS) / \
-+	       NSEC_PER_USEC)
-+#define AT803X_MMD3_SMARTEEE_LPI_TIME_DEF_US	335544
- 
- #define ATH9331_PHY_ID				0x004dd041
- #define ATH8030_PHY_ID				0x004dd076
-@@ -951,17 +961,26 @@ static int at803x_get_features(struct phy_device *phydev)
- 	return 0;
- }
- 
--static int at803x_smarteee_config(struct phy_device *phydev)
-+static int at803x_smarteee_config(struct phy_device *phydev, bool enable,
-+				  u32 tx_lpi_timer_us)
- {
- 	struct at803x_priv *priv = phydev->priv;
-+	u64 tx_lpi_timer_raw;
-+	u64 tx_lpi_timer_ns;
- 	u16 mask = 0, val = 0;
- 	int ret;
- 
--	if (priv->flags & AT803X_DISABLE_SMARTEEE)
-+	if (priv->flags & AT803X_DISABLE_SMARTEEE || !enable)
- 		return phy_modify_mmd(phydev, MDIO_MMD_PCS,
- 				      AT803X_MMD3_SMARTEEE_CTL3,
- 				      AT803X_MMD3_SMARTEEE_CTL3_LPI_EN, 0);
- 
-+	if (tx_lpi_timer_us > AT803X_MMD3_SMARTEEE_LPI_TIME_MAX_US) {
-+		phydev_err(phydev, "Max LPI timer is %lu microsecs\n",
-+			   AT803X_MMD3_SMARTEEE_LPI_TIME_MAX_US);
-+		return -EINVAL;
-+	}
-+
- 	if (priv->smarteee_lpi_tw_1g) {
- 		mask |= 0xff00;
- 		val |= priv->smarteee_lpi_tw_1g << 8;
-@@ -978,9 +997,27 @@ static int at803x_smarteee_config(struct phy_device *phydev)
- 	if (ret)
- 		return ret;
- 
-+	tx_lpi_timer_ns = tx_lpi_timer_us * NSEC_PER_USEC;
-+	tx_lpi_timer_raw =
-+		DIV_ROUND_CLOSEST_ULL(tx_lpi_timer_ns,
-+				      AT803X_MMD3_SMARTEEE_LPI_TIME_RESOL_NS);
-+	val = FIELD_PREP(AT803X_MMD3_SMARTEEE_LPI_TIME_LOW,
-+			 FIELD_GET(AT803X_MMD3_SMARTEEE_LPI_TIME_15_0,
-+				   tx_lpi_timer_raw));
-+
-+	ret = phy_write_mmd(phydev, MDIO_MMD_PCS, AT803X_MMD3_SMARTEEE_CTL2,
-+			    val);
-+	if (ret)
-+		return ret;
-+
-+	val = AT803X_MMD3_SMARTEEE_CTL3_LPI_EN |
-+		FIELD_PREP(AT803X_MMD3_SMARTEEE_LPI_TIME_HIGH,
-+			   FIELD_GET(AT803X_MMD3_SMARTEEE_LPI_TIME_23_16,
-+				     tx_lpi_timer_raw));
-+
- 	return phy_modify_mmd(phydev, MDIO_MMD_PCS, AT803X_MMD3_SMARTEEE_CTL3,
--			      AT803X_MMD3_SMARTEEE_CTL3_LPI_EN,
--			      AT803X_MMD3_SMARTEEE_CTL3_LPI_EN);
-+			      AT803X_MMD3_SMARTEEE_CTL3_LPI_EN |
-+			      AT803X_MMD3_SMARTEEE_LPI_TIME_HIGH, val);
- }
- 
- static int at803x_clk_out_config(struct phy_device *phydev)
-@@ -1067,7 +1104,8 @@ static int at803x_config_init(struct phy_device *phydev)
- 	if (ret < 0)
- 		return ret;
- 
--	ret = at803x_smarteee_config(phydev);
-+	ret = at803x_smarteee_config(phydev, true,
-+				     AT803X_MMD3_SMARTEEE_LPI_TIME_DEF_US);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -1612,6 +1650,65 @@ static int at803x_cable_test_start(struct phy_device *phydev)
- 	return 0;
- }
- 
-+static int at803x_get_eee(struct phy_device *phydev, struct ethtool_eee *data)
-+{
-+	struct at803x_priv *priv = phydev->priv;
-+	u32 tx_timer_raw;
-+	u64 tx_timer_ns;
-+	int ret;
-+
-+	/* If SmartEEE is not enabled, it is expected that tx_lpi_* fields
-+	 * are processed by the MAC driver.
-+	 */
-+	if (priv->flags & AT803X_DISABLE_SMARTEEE)
-+		return genphy_c45_ethtool_get_eee(phydev, data);
-+
-+	ret = phy_read_mmd(phydev, MDIO_MMD_PCS,
-+			   AT803X_MMD3_SMARTEEE_CTL2);
-+	tx_timer_raw = FIELD_PREP(AT803X_MMD3_SMARTEEE_LPI_TIME_15_0,
-+				  FIELD_GET(AT803X_MMD3_SMARTEEE_LPI_TIME_LOW,
-+					    ret));
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = phy_read_mmd(phydev, MDIO_MMD_PCS,
-+			   AT803X_MMD3_SMARTEEE_CTL3);
-+	if (ret < 0)
-+		return ret;
-+
-+	tx_timer_raw |= FIELD_PREP(AT803X_MMD3_SMARTEEE_LPI_TIME_23_16,
-+				   FIELD_GET(AT803X_MMD3_SMARTEEE_LPI_TIME_HIGH,
-+					     ret));
-+	tx_timer_ns = tx_timer_raw * AT803X_MMD3_SMARTEEE_LPI_TIME_RESOL_NS;
-+	data->tx_lpi_timer = DIV_ROUND_CLOSEST_ULL(tx_timer_ns, NSEC_PER_USEC);
-+
-+	data->tx_lpi_enabled = !!(ret & AT803X_MMD3_SMARTEEE_CTL3_LPI_EN);
-+
-+	return genphy_c45_ethtool_get_eee(phydev, data);
-+}
-+
-+static int at803x_set_eee(struct phy_device *phydev, struct ethtool_eee *data)
-+{
-+	struct at803x_priv *priv = phydev->priv;
-+	int ret;
-+
-+	/* If SmartEEE is not enabled, it is expected that tx_lpi_* fields
-+	 * are processed by the MAC driver.
-+	 */
-+	if (priv->flags & AT803X_DISABLE_SMARTEEE)
-+		return genphy_c45_ethtool_set_eee(phydev, data);
-+
-+	/* Changing Tx LPI on/off or Tx LPI timer settings
-+	 * do not require link reset.
-+	 */
-+	ret = at803x_smarteee_config(phydev, data->tx_lpi_enabled,
-+				     data->tx_lpi_timer);
-+	if (ret)
-+		return ret;
-+
-+	return genphy_c45_ethtool_set_eee(phydev, data);
-+}
-+
- static int qca83xx_config_init(struct phy_device *phydev)
- {
- 	u8 switch_revision;
-@@ -2038,6 +2135,8 @@ static struct phy_driver at803x_driver[] = {
- 	.set_tunable		= at803x_set_tunable,
- 	.cable_test_start	= at803x_cable_test_start,
- 	.cable_test_get_status	= at803x_cable_test_get_status,
-+	.get_eee		= at803x_get_eee,
-+	.set_eee		= at803x_set_eee,
- }, {
- 	/* Qualcomm Atheros AR8030 */
- 	.phy_id			= ATH8030_PHY_ID,
+changes v2:
+- use phydev->supported instead of reading MII_BMSR regiaster
+- fix @get_eee > @set_eee
+
+With this patch series we provide EEE control for KSZ9477 family of switches and
+AR8035 with i.MX6 configuration.
+According to my tests, on a system with KSZ8563 switch and 100Mbit idle link,
+we consume 0,192W less power per port if EEE is enabled.
+
+Oleksij Rempel (23):
+  net: dsa: microchip: enable EEE support
+  net: phy: add genphy_c45_read_eee_abilities() function
+  net: phy: micrel: add ksz9477_get_features()
+  net: phy: export phy_check_valid() function
+  net: phy: add genphy_c45_ethtool_get/set_eee() support
+  net: phy: c22: migrate to genphy_c45_write_eee_adv()
+  net: phy: c45: migrate to genphy_c45_write_eee_adv()
+  net: phy: migrate phy_init_eee() to genphy_c45_eee_is_active()
+  net: phy: start using genphy_c45_ethtool_get/set_eee()
+  net: phy: add driver specific get/set_eee support
+  net: phy: at803x: implement ethtool access to SmartEEE functionality
+  net: phy: at803x: ar8035: fix EEE support for half duplex links
+  net: phy: add PHY specifica flag to signal SmartEEE support
+  net: phy: at803x: add PHY_SMART_EEE flag to AR8035
+  net: phy: add phy_has_smarteee() helper
+  net: fec: add support for PHYs with SmartEEE support
+  e1000e: replace EEE ethtool helpers to linkmode variants
+  igb: replace EEE ethtool helpers to linkmode variants
+  igc: replace EEE ethtool helpers to linkmode variants
+  tg3: replace EEE ethtool helpers to linkmode variants
+  r8152: replace EEE ethtool helpers to linkmode variants
+  net: usb: ax88179_178a: replace EEE ethtool helpers to linkmode
+    variants
+  net: mdio: drop EEE ethtool helpers in favor to linkmode variants
+
+ drivers/net/dsa/microchip/ksz_common.c       |  66 ++++
+ drivers/net/ethernet/broadcom/tg3.c          |   9 +-
+ drivers/net/ethernet/freescale/fec_main.c    |  22 +-
+ drivers/net/ethernet/intel/e1000e/ethtool.c  |  16 +-
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |  23 +-
+ drivers/net/ethernet/intel/igc/igc_ethtool.c |  12 +-
+ drivers/net/phy/at803x.c                     | 142 ++++++++-
+ drivers/net/phy/micrel.c                     |  21 ++
+ drivers/net/phy/phy-c45.c                    | 298 ++++++++++++++++++-
+ drivers/net/phy/phy.c                        | 155 ++--------
+ drivers/net/phy/phy_device.c                 |  26 +-
+ drivers/net/usb/ax88179_178a.c               |  24 +-
+ drivers/net/usb/r8152.c                      |  34 ++-
+ include/linux/mdio.h                         | 136 ++++-----
+ include/linux/phy.h                          |  28 ++
+ include/uapi/linux/mdio.h                    |   8 +
+ 16 files changed, 760 insertions(+), 260 deletions(-)
+
 -- 
 2.30.2
 
