@@ -4,102 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82E89C636CC
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  4 Feb 2023 01:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C3CCC636D4
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  4 Feb 2023 02:01:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 173B860E8E;
-	Sat,  4 Feb 2023 01:11:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 173B860E8E
+	by smtp3.osuosl.org (Postfix) with ESMTP id EB7C160AF6;
+	Sat,  4 Feb 2023 02:01:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EB7C160AF6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675473102;
-	bh=M4ThoEuuFQzsbErKv0mjtM+buSosOgFG5a8DiaNyyp4=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=dyiUtlOvum+BvmZGxh9bB3TN4iZwzfDYvyUA2wDyXqY8sJGVbU+J/LxMiay7RVi8L
-	 z1RvhYetfGAYgn1x38kIFLzOHpD8oQDi5AHxWNbi1SdBV97peqTXzObK04qmW3brh8
-	 JLnC9hmYJiPKztMjcRezmcpC+y7U8KXeNOZrZtjVYcQzWzRN4vwRBDvEuYxxZ0rVEF
-	 +kXhQnO7mg7dv8RNBlctnjFbigwDUe8gd8tyyUV1PMaRKFEyOr1FLrM7yyafqZpuCj
-	 y1KBB5UnRX/h8pTPvs9+l/2x0V1EK/dG7nb/cyLL3zNTB691vNXAzpP0Msb+Csn6RY
-	 XKuNrZgEdtCLw==
+	s=default; t=1675476086;
+	bh=nUEwTBsgbCLPXKXDW2AJrvAtiHU/pbOYJONC5fE2Ljs=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=cA8c2SwpyJKBAQNYDJw0vlwEGEENDpr5voK+qfYh9WSq1QggtHLsWCUiDw0hs0VNR
+	 PCZP7mBsj80nFfI9rkXdjJ9tYdHES3gjU24TDldbcoLW30ff1KNIuA9GHALjZaAIs9
+	 DUNWOL7mickSh4N1B12M0+IP+FcFuJMBRWL1E3bP/9g+NRlkLiOwSrinueqlVdQ2dy
+	 4q7B1iuKNmf4VVJ4mUnlUYKyYKdMqKRz1feExOpSHWCNN1x2NJpWIJFB6tWPPG1Xix
+	 TwOp5gFEc4ddo7huIueNml2NBxh+p5N/Q59v79kCd2WE4k7IVBH8yoSvEpJR81StCs
+	 vjuP6UiaX09oA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4gBbVA8cYDaU; Sat,  4 Feb 2023 01:11:41 +0000 (UTC)
+	with ESMTP id D0B6r962OXga; Sat,  4 Feb 2023 02:01:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EAD7860B53;
-	Sat,  4 Feb 2023 01:11:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EAD7860B53
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 47EBC1BF2EF
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Feb 2023 01:11:39 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D43AC60B1A;
+	Sat,  4 Feb 2023 02:01:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D43AC60B1A
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id D81EF1BF2EF
+ for <intel-wired-lan@osuosl.org>; Sat,  4 Feb 2023 02:01:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2049A40199
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Feb 2023 01:11:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2049A40199
+ by smtp1.osuosl.org (Postfix) with ESMTP id B054A81E96
+ for <intel-wired-lan@osuosl.org>; Sat,  4 Feb 2023 02:01:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B054A81E96
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BrGjejkpXHFf for <intel-wired-lan@lists.osuosl.org>;
- Sat,  4 Feb 2023 01:11:38 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 30A324018A
-Received: from mail-ej1-x635.google.com (mail-ej1-x635.google.com
- [IPv6:2a00:1450:4864:20::635])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 30A324018A
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Feb 2023 01:11:37 +0000 (UTC)
-Received: by mail-ej1-x635.google.com with SMTP id k4so20029191eje.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 03 Feb 2023 17:11:37 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=qqfZVRPG0odmwop2SRWZxGUPdrvoaTxo4/skd7wde9A=;
- b=N59S3a3Hy5bGALPglKUpY5Bz3Tr5JNYbsV7DqjCIWfM7dwW9xanDj2crqSSe9gtggn
- Cq2scXDaMvoTFJTs9fwcD3caBKnS+bzO98RmKMK1ys6WzdeMFoC+RjjdFXQzwisiZ9VW
- m2UID++DITIW4slRGQFb5okAwuruyUPG86hKilAaepRQjscKsPagkK5Ya4ja7u/6BfN7
- dlzQ7eCiI29WyZ+29qeBjvWsr8CWtC0+td9ZP32zEGhMhGFb4F6YmVG2jTlTN7DlBh/a
- Byg1mC61UlvLm1vjtB3pzZ97KXkdoUiZnFNlYf53+BCW3zN9NJzTSfqQRdv936gLvUuV
- Qm+A==
-X-Gm-Message-State: AO0yUKW6XknSheLFTmzZZVEeUTBH6RTHBXC3AYfO5qQumJHbV5f7UhwZ
- tdQAybqZ+7K2X3XV6aNibBE=
-X-Google-Smtp-Source: AK7set8DV5gzvCghxDgyOTP/UCdf5kMGdnwpjZM5SIdQlNyoDe2oUw3IUtWY3CYCdKwcPFNeBYxusg==
-X-Received: by 2002:a17:906:49c9:b0:884:c6d8:e291 with SMTP id
- w9-20020a17090649c900b00884c6d8e291mr12572217ejv.57.1675473096088; 
- Fri, 03 Feb 2023 17:11:36 -0800 (PST)
-Received: from skbuf ([188.26.57.116]) by smtp.gmail.com with ESMTPSA id
- kg11-20020a17090776eb00b0088519b92074sm2093986ejc.128.2023.02.03.17.11.34
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 03 Feb 2023 17:11:35 -0800 (PST)
-Date: Sat, 4 Feb 2023 03:11:33 +0200
-From: Vladimir Oltean <olteanv@gmail.com>
-To: Oleksij Rempel <o.rempel@pengutronix.de>
-Message-ID: <20230204011133.5mgam2ik7znsrqxu@skbuf>
-References: <20230201145845.2312060-1-o.rempel@pengutronix.de>
- <20230201145845.2312060-1-o.rempel@pengutronix.de>
- <20230201145845.2312060-6-o.rempel@pengutronix.de>
- <20230201145845.2312060-6-o.rempel@pengutronix.de>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id D6b-74pivgKf for <intel-wired-lan@osuosl.org>;
+ Sat,  4 Feb 2023 02:01:21 +0000 (UTC)
+X-Greylist: delayed 00:09:57 by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B13C581E8F
+Received: from mail.wantstofly.org (hmm.wantstofly.org [213.239.204.108])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B13C581E8F
+ for <intel-wired-lan@osuosl.org>; Sat,  4 Feb 2023 02:01:21 +0000 (UTC)
+Received: by mail.wantstofly.org (Postfix, from userid 1000)
+ id 5BD2E7F54B; Sat,  4 Feb 2023 03:51:20 +0200 (EET)
+Date: Sat, 4 Feb 2023 03:51:20 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: intel-wired-lan@osuosl.org
+Message-ID: <Y926GPvm0f544ogG@wantstofly.org>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20230201145845.2312060-6-o.rempel@pengutronix.de>
- <20230201145845.2312060-6-o.rempel@pengutronix.de>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20210112;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=qqfZVRPG0odmwop2SRWZxGUPdrvoaTxo4/skd7wde9A=;
- b=pPqK+3Dw8pmeSk05ycX+JFGuXEM/oqEn4OmA7PYVwmfYu48LyQIlJNOlCB7TCsDilQ
- OqrBOuGEdJnxNwukwMmjHZMeF7t/+cKQwgeg/Bxl4d7ya3YLuMrfaBczlMu2XCF5f7uZ
- n0AYpOWzLL4m7/A4ChKlGAOkfYV9ja2I6/wx8s74I9zlMrYez1nSBXwwZuUXOZECMYEE
- v77FxLbrj6yT5o6fYHKDaEigVgkQ4dr+1M5f5FQThsrSYCB+WpLcQmr+fgousLl1fdqR
- ci67Xxyj46/+Qep+TY6TBgVPz3uQW7MxbR10M5T3eN/GNH8Sp02CUSiuG3fj6RokwKT+
- g6VQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=pPqK+3Dw
-Subject: Re: [Intel-wired-lan] [PATCH net-next v4 05/23] net: phy: add
- genphy_c45_ethtool_get/set_eee() support
+Subject: [Intel-wired-lan] igc driver doesn't power down the PHY when link
+ is brought down
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,74 +68,50 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Woojung Huh <woojung.huh@microchip.com>, Andrew Lunn <andrew@lunn.ch>,
- Arun.Ramadoss@microchip.com, Florian Fainelli <f.fainelli@gmail.com>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Vivien Didelot <vivien.didelot@gmail.com>, Eric Dumazet <edumazet@google.com>,
- Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
- kernel@pengutronix.de, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, UNGLinuxDriver@microchip.com,
- "David S. Miller" <davem@davemloft.net>,
- Heiner Kallweit <hkallweit1@gmail.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Feb 01, 2023 at 03:58:27PM +0100, Oleksij Rempel wrote:
-> Add replacement for phy_ethtool_get/set_eee() functions.
+Hi,
+
+When I run 'ip link set FOO down' on an I226 adapter, the link partner
+keeps seeing link up, which is not what I would expect.  The igc driver
+contains this code snippet that references this behavior (igc_phy.c):
+
+> /**
+>  * igc_power_down_phy_copper - Power down copper PHY
+>  * @hw: pointer to the HW structure
+>  *
+>  * Power down PHY to save power when interface is down and wake on lan
+>  * is not enabled.
+>  */
+> void igc_power_down_phy_copper(struct igc_hw *hw)
+> {
+>         u16 mii_reg = 0;
 > 
-> - it is able to support only limited amount of link modes. We have more
->   EEE link modes...
+>         /* The PHY will retain its settings across a power down/up cycle */
+>         hw->phy.ops.read_reg(hw, PHY_CONTROL, &mii_reg);
+>         mii_reg |= MII_CR_POWER_DOWN;
 > 
-> By refactoring this code I address most of this point except of the last
-> one. Adding additional EEE link modes will need more work.
+>         /* Temporary workaround - should be removed when PHY will implement
+>          * IEEE registers as properly
+>          */
+>         /* hw->phy.ops.write_reg(hw, PHY_CONTROL, mii_reg);*/
+>         usleep_range(1000, 2000);
+> }
 
-> +/**
-> + * genphy_c45_ethtool_get_eee - get EEE supported and status
-> + * @phydev: target phy_device struct
-> + * @data: ethtool_eee data
-> + *
-> + * Description: it reports the Supported/Advertisement/LP Advertisement
-> + * capabilities.
-> + */
-> +int genphy_c45_ethtool_get_eee(struct phy_device *phydev,
-> +			       struct ethtool_eee *data)
-> +{
-> +	__ETHTOOL_DECLARE_LINK_MODE_MASK(adv) = {};
-> +	__ETHTOOL_DECLARE_LINK_MODE_MASK(lp) = {};
-> +	bool overflow = false, is_enabled;
-> +	int ret;
-> +
-> +	ret = genphy_c45_eee_is_active(phydev, adv, lp, &is_enabled);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	data->eee_enabled = is_enabled;
-> +	data->eee_active = ret;
-> +
-> +	if (!ethtool_convert_link_mode_to_legacy_u32(&data->supported,
-> +						     phydev->supported_eee))
-> +		overflow = true;
-> +	if (!ethtool_convert_link_mode_to_legacy_u32(&data->advertised, adv))
-> +		overflow = true;
-> +	if (!ethtool_convert_link_mode_to_legacy_u32(&data->lp_advertised, lp))
-> +		overflow = true;
+I tried uncommenting the phy write and that seems to work fine, and the
+link partner now sees link down when I bring down the interface.
 
-ah, ok, so since struct ethtool_eee stores the link modes in the old u32
-format, link modes equal to ETHTOOL_LINK_MODE_25000baseKR_Full_BIT or
-higher would truncate. Makes sense.
+Does anyone know what this comment refers to, and which revisions of the
+I225/I226 this applies to?  I looked at the git history of this code and
+it seems that it has been this way since the code was merged.  Is it safe
+for me to uncomment this code for I226 adapters in my kernel tree?
 
-> +
-> +	if (overflow)
-> +		phydev_warn(phydev, "Not all supported or advertised EEE link modes was passed to the user space\n");
 
-were passed
-
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(genphy_c45_ethtool_get_eee);
+Thanks,
+Lennert
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
