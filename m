@@ -1,65 +1,65 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24E70C636D3
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 16:30:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F043C05027
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 16:30:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B43F060B38;
-	Mon,  6 Feb 2023 16:30:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B43F060B38
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1413F416E3;
+	Mon,  6 Feb 2023 16:30:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1413F416E3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675701009;
-	bh=f/r016XKxpn8TE2Da3RRpsKqAz9GuwU2O3+QXAKNtvw=;
+	s=default; t=1675701014;
+	bh=wiGqU2FmBx8fugw5yY3sVWK4dVj15Jx0OKS/xaWloTE=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=C4oCfGyFhph4cU3b0/+bTGDcVNrlETiRA9FvQ6nWCTkKoL6Ji/DJizy7DvofwU9bN
-	 u5xvOw5qbVYd+mq0DMhpcCmyT44AFIDrUvvYsWEm6cLWseCozWH62j9hC+SY/QSHGy
-	 eE0UQJrSOGmj5RNPsB0yh2vtjsnqmxIS+Fg4HnMWPhtg0UKr+jQ9TD8SaYhCW1qFzX
-	 HU3xFUBpYffdg/RwHeevrZx4aeOAQ4yC9MyJ2lIDPDmIkL0V0xyCrwVLZVB0a/YsxH
-	 Wnc//TVTlSrH9VFLI8IIvEGXj3nIwElr1HKi2GAld1GSrs2nrxcWN/mrI9ayLOkK0u
-	 PZIk/26sNN0Jw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FLF0AG11r7sk; Mon,  6 Feb 2023 16:30:09 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 41A6B60B36;
-	Mon,  6 Feb 2023 16:30:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 41A6B60B36
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 120FA1BF2A7
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:44 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id EDAD740255
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EDAD740255
+	b=n0E8Ue8GnTy8nyrBsecjDMAQe8s6V7tP14jCnyKLMKhdfoAoxYDV9TG4y3LRxNafE
+	 O3WIIRze+xk7yLVxpqelD+1Ev8KBmCfpYs4qxe6wiAphF8qRNmKWTE+ylNr1Ud65Rv
+	 ZABpA5h/UsnomiLl9jW3plZAOvrd/PDinxN5Qn9/UO92FIZ/MMQwdV4aOTWVm7LEn4
+	 HDszUifS8AqKtZnd1Vw6H6gVHnk0b3ZNDVICdYy5UYQ5kXDtYeJn/VDg5fAvsSndkK
+	 yKTjN5y4RyXEXVhFmAidKpbgpjVgz+dkVeFqDs0eqkfuX2jNY4lZUMRxrW0nGF0OTQ
+	 LIKjzckRy692A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wNrJwGtmCwPB for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Feb 2023 13:51:43 +0000 (UTC)
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 4mUBlB4uP8iG; Mon,  6 Feb 2023 16:30:13 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id B8A2C416F9;
+	Mon,  6 Feb 2023 16:30:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B8A2C416F9
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 2FDBE1BF951
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:44 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id C58B440477
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C58B440477
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Bi3HNILcySTr for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Feb 2023 13:51:41 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2DFD740253
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ECEC540459
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 2DFD740253
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:43 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id ECEC540459
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:40 +0000 (UTC)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pP1tZ-0007J8-1m; Mon, 06 Feb 2023 14:50:57 +0100
+ id 1pP1tZ-0007Jd-96; Mon, 06 Feb 2023 14:50:57 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
  by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pP1tW-0034eS-P6; Mon, 06 Feb 2023 14:50:55 +0100
+ id 1pP1tX-0034ec-0G; Mon, 06 Feb 2023 14:50:56 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pP1tV-00DaQy-Ap; Mon, 06 Feb 2023 14:50:53 +0100
+ id 1pP1tT-00DaNi-UJ; Mon, 06 Feb 2023 14:50:51 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
@@ -69,8 +69,8 @@ To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
  Heiner Kallweit <hkallweit1@gmail.com>
-Date: Mon,  6 Feb 2023 14:50:47 +0100
-Message-Id: <20230206135050.3237952-21-o.rempel@pengutronix.de>
+Date: Mon,  6 Feb 2023 14:50:28 +0100
+Message-Id: <20230206135050.3237952-2-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230206135050.3237952-1-o.rempel@pengutronix.de>
 References: <20230206135050.3237952-1-o.rempel@pengutronix.de>
@@ -81,8 +81,8 @@ X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
  SAEximRunCond expanded to false
 X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Mon, 06 Feb 2023 16:29:04 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 20/23] tg3: replace EEE
- ethtool helpers to linkmode variants
+Subject: [Intel-wired-lan] [PATCH net-next v5 01/23] net: dsa: microchip:
+ enable EEE support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,47 +103,98 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Replace EEE ethtool helpers with linkmode variants. This will
-reduce similar code snippets and prepare ethtool EEE interface to linkmode
-migration.
+Some of KSZ9477 family switches provides EEE support. To enable it, we
+just need to register set_mac_eee/set_mac_eee handlers and validate
+supported chip version and port.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
 ---
- drivers/net/ethernet/broadcom/tg3.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/net/dsa/microchip/ksz_common.c | 65 ++++++++++++++++++++++++++
+ 1 file changed, 65 insertions(+)
 
-diff --git a/drivers/net/ethernet/broadcom/tg3.c b/drivers/net/ethernet/broadcom/tg3.c
-index 58747292521d..ba1913e88372 100644
---- a/drivers/net/ethernet/broadcom/tg3.c
-+++ b/drivers/net/ethernet/broadcom/tg3.c
-@@ -2339,6 +2339,8 @@ static void tg3_phy_apply_otp(struct tg3 *tp)
+diff --git a/drivers/net/dsa/microchip/ksz_common.c b/drivers/net/dsa/microchip/ksz_common.c
+index 46becc0382d6..0a2d78253d17 100644
+--- a/drivers/net/dsa/microchip/ksz_common.c
++++ b/drivers/net/dsa/microchip/ksz_common.c
+@@ -2673,6 +2673,69 @@ static int ksz_max_mtu(struct dsa_switch *ds, int port)
+ 	return -EOPNOTSUPP;
+ }
  
- static void tg3_eee_pull_config(struct tg3 *tp, struct ethtool_eee *eee)
- {
-+	__ETHTOOL_DECLARE_LINK_MODE_MASK(adv) = {};
-+	__ETHTOOL_DECLARE_LINK_MODE_MASK(lp) = {};
- 	u32 val;
- 	struct ethtool_eee *dest = &tp->eee;
- 
-@@ -2361,13 +2363,16 @@ static void tg3_eee_pull_config(struct tg3 *tp, struct ethtool_eee *eee)
- 	/* Pull lp advertised settings */
- 	if (tg3_phy_cl45_read(tp, MDIO_MMD_AN, MDIO_AN_EEE_LPABLE, &val))
- 		return;
--	dest->lp_advertised = mmd_eee_adv_to_ethtool_adv_t(val);
-+	mii_eee_cap1_mod_linkmode_t(lp, val);
-+	ethtool_convert_link_mode_to_legacy_u32(&dest->lp_advertised, lp);
++static int ksz_validate_eee(struct dsa_switch *ds, int port)
++{
++	struct ksz_device *dev = ds->priv;
 +
++	if (!dev->info->internal_phy[port])
++		return -EOPNOTSUPP;
++
++	switch (dev->chip_id) {
++	case KSZ8563_CHIP_ID:
++	case KSZ9477_CHIP_ID:
++	case KSZ9563_CHIP_ID:
++	case KSZ9567_CHIP_ID:
++	case KSZ9893_CHIP_ID:
++	case KSZ9896_CHIP_ID:
++	case KSZ9897_CHIP_ID:
++		return 0;
++	}
++
++	return -EOPNOTSUPP;
++}
++
++static int ksz_get_mac_eee(struct dsa_switch *ds, int port,
++			   struct ethtool_eee *e)
++{
++	int ret;
++
++	ret = ksz_validate_eee(ds, port);
++	if (ret)
++		return ret;
++
++	/* There is no documented control of Tx LPI configuration. */
++	e->tx_lpi_enabled = true;
++	/* There is no documented control of Tx LPI timer. According to tests
++	 * Tx LPI timer seems to be set by default to minimal value.
++	 */
++	e->tx_lpi_timer = 0;
++
++	return 0;
++}
++
++static int ksz_set_mac_eee(struct dsa_switch *ds, int port,
++			   struct ethtool_eee *e)
++{
++	struct ksz_device *dev = ds->priv;
++	int ret;
++
++	ret = ksz_validate_eee(ds, port);
++	if (ret)
++		return ret;
++
++	if (!e->tx_lpi_enabled) {
++		dev_err(dev->dev, "Disabling EEE Tx LPI is not supported\n");
++		return -EINVAL;
++	}
++
++	if (e->tx_lpi_timer) {
++		dev_err(dev->dev, "Setting EEE Tx LPI timer is not supported\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static void ksz_set_xmii(struct ksz_device *dev, int port,
+ 			 phy_interface_t interface)
+ {
+@@ -3130,6 +3193,8 @@ static const struct dsa_switch_ops ksz_switch_ops = {
+ 	.port_txtstamp		= ksz_port_txtstamp,
+ 	.port_rxtstamp		= ksz_port_rxtstamp,
+ 	.port_setup_tc		= ksz_setup_tc,
++	.get_mac_eee		= ksz_get_mac_eee,
++	.set_mac_eee		= ksz_set_mac_eee,
+ };
  
- 	/* Pull advertised and eee_enabled settings */
- 	if (tg3_phy_cl45_read(tp, MDIO_MMD_AN, MDIO_AN_EEE_ADV, &val))
- 		return;
- 	dest->eee_enabled = !!val;
--	dest->advertised = mmd_eee_adv_to_ethtool_adv_t(val);
-+	mii_eee_cap1_mod_linkmode_t(adv, val);
-+	ethtool_convert_link_mode_to_legacy_u32(&dest->advertised, adv);
- 
- 	/* Pull tx_lpi_enabled */
- 	val = tr32(TG3_CPMU_EEE_MODE);
+ struct ksz_device *ksz_switch_alloc(struct device *base, void *priv)
 -- 
 2.30.2
 
