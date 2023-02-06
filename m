@@ -1,65 +1,65 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47CFAC636D3
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 16:29:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6900CC6379F
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 16:29:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E12B760B32;
-	Mon,  6 Feb 2023 16:29:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E12B760B32
+	by smtp2.osuosl.org (Postfix) with ESMTP id 09B78403AC;
+	Mon,  6 Feb 2023 16:29:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 09B78403AC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675700992;
-	bh=AhVONSP06vkVo1wMy9SYok1dbUWtADFT3htF2WkaJ2I=;
+	s=default; t=1675700997;
+	bh=SUagxt/C4jp0fFTzfT6DUS68tx1AUk4zW76KkyTTCq0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=YWDCUJ8W+qAjzAb+kSHaOnFGI3KrK7DkrLcz6v6AAHvfeBs8/3ovtFJ5UoffNG+kT
-	 62fGLUd2oyhhBn/g366JWf010p02CRatE+kUupuBwFKX7YvpRxubDewltXnXP/Kgrx
-	 9eAIxMkk0Ln6J1AbsvbT3Iy13h222XqV3OpCVu/qw5D/f5KHDqF6TOGQRBFLgqwlYG
-	 uQlAkyAfYY4L5hwbvPn8NokMLxaFckMEvA6xa3Bg2ntjyErK/JK662ovOLnH2S/Pzb
-	 y2lL/0QczZJpRSt+1FKH/ET5xZpOKu939WBfkD63FjNpnPD8pvnzZSZrQ2v6Vg04/O
-	 ZlzbCZ7gI3Qpw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZMpKWi5D8h5B; Mon,  6 Feb 2023 16:29:52 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C540060B36;
-	Mon,  6 Feb 2023 16:29:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C540060B36
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2C98A1BF2A7
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:38 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 7D0FC40360
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7D0FC40360
+	b=jJ0yBXSWopzbdK9EI3lpqTa+Ti4jbhqul6PCBhXWqLwOTdPguZXJ53OWPDhdhfD4L
+	 QKW579JUoDt1H5xZfiO/MaePcejKN8LqquCqH5PqwD4A7m+JLGpd+R20P2iChHnGut
+	 uayi2m1C6mgcRHzZ5Xjh2dOgg/rKV1qquT0vVoTkRfH1EuaQYp8+vXEm1PA6DTARXe
+	 npcDxpVOMfMJADgNESnVbu8XmzxcPtz06ttN1Ll693qIZZaLYGp03W/YJo4COFz50j
+	 3cyJFFP1YEvglxOyWJVjS3o3APE7KP6uFeEcFZaDsYWnG7okZiU9l7QFnsEiEOrX58
+	 mIYR1ngeBR4xQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fKWa2DlqWzkz for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Feb 2023 13:51:36 +0000 (UTC)
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Du00DIBqOqAt; Mon,  6 Feb 2023 16:29:56 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id DB8E140499;
+	Mon,  6 Feb 2023 16:29:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DB8E140499
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 10BD91BF2A7
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:39 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id DBB7940230
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DBB7940230
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 30zsXIrfsR2L for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Feb 2023 13:51:38 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C8FE2403B8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DD41740226
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C8FE2403B8
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:35 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DD41740226
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 13:51:37 +0000 (UTC)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pP1tX-0007EO-4g; Mon, 06 Feb 2023 14:50:55 +0100
+ id 1pP1tX-0007Gh-Vh; Mon, 06 Feb 2023 14:50:56 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
  by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pP1tU-0034db-OC; Mon, 06 Feb 2023 14:50:53 +0100
+ id 1pP1tV-0034dp-Q0; Mon, 06 Feb 2023 14:50:55 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pP1tU-00DaPA-I0; Mon, 06 Feb 2023 14:50:52 +0100
+ id 1pP1tV-00DaRT-J6; Mon, 06 Feb 2023 14:50:53 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
@@ -69,8 +69,8 @@ To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
  Heiner Kallweit <hkallweit1@gmail.com>
-Date: Mon,  6 Feb 2023 14:50:37 +0100
-Message-Id: <20230206135050.3237952-11-o.rempel@pengutronix.de>
+Date: Mon,  6 Feb 2023 14:50:50 +0100
+Message-Id: <20230206135050.3237952-24-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230206135050.3237952-1-o.rempel@pengutronix.de>
 References: <20230206135050.3237952-1-o.rempel@pengutronix.de>
@@ -81,8 +81,8 @@ X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
  SAEximRunCond expanded to false
 X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Mon, 06 Feb 2023 16:29:04 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 10/23] net: phy: add driver
- specific get/set_eee support
+Subject: [Intel-wired-lan] [PATCH net-next v5 23/23] net: mdio: drop EEE
+ ethtool helpers in favor to linkmode variants
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,55 +103,110 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Not all PHYs can be handled by generic phy_ethtool_get/set_eee()
-functions. So, add driver specific get/set_eee support.
+IEEE 802.3 specification provides more EEE capable link modes as this
+helpers will be able to handle. So, remove them in favor of:
+mii_eee_cap1_mod_linkmode_t
+linkmode_to_mii_eee_cap1_t
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
 ---
- drivers/net/phy/phy.c | 6 ++++++
- include/linux/phy.h   | 5 +++++
- 2 files changed, 11 insertions(+)
+ include/linux/mdio.h | 83 --------------------------------------------
+ 1 file changed, 83 deletions(-)
 
-diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
-index 2f1041a7211e..c42df62df302 100644
---- a/drivers/net/phy/phy.c
-+++ b/drivers/net/phy/phy.c
-@@ -1520,6 +1520,9 @@ int phy_ethtool_get_eee(struct phy_device *phydev, struct ethtool_eee *data)
- 	if (!phydev->drv)
- 		return -EIO;
+diff --git a/include/linux/mdio.h b/include/linux/mdio.h
+index 6776eea770fa..082a9115b5e2 100644
+--- a/include/linux/mdio.h
++++ b/include/linux/mdio.h
+@@ -205,89 +205,6 @@ mdio45_ethtool_ksettings_get(const struct mdio_if_info *mdio,
+ extern int mdio_mii_ioctl(const struct mdio_if_info *mdio,
+ 			  struct mii_ioctl_data *mii_data, int cmd);
  
-+	if (phydev->drv->get_eee)
-+		return phydev->drv->get_eee(phydev, data);
-+
- 	return genphy_c45_ethtool_get_eee(phydev, data);
- }
- EXPORT_SYMBOL(phy_ethtool_get_eee);
-@@ -1536,6 +1539,9 @@ int phy_ethtool_set_eee(struct phy_device *phydev, struct ethtool_eee *data)
- 	if (!phydev->drv)
- 		return -EIO;
- 
-+	if (phydev->drv->set_eee)
-+		return phydev->drv->set_eee(phydev, data);
-+
- 	return genphy_c45_ethtool_set_eee(phydev, data);
- }
- EXPORT_SYMBOL(phy_ethtool_set_eee);
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index ef0e3212f68e..b14ca4b06607 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -1051,6 +1051,11 @@ struct phy_driver {
- 	/** @get_plca_status: Return the current PLCA status info */
- 	int (*get_plca_status)(struct phy_device *dev,
- 			       struct phy_plca_status *plca_st);
-+
-+	/** @get_eee: Return the current EEE configuration */
-+	int (*get_eee)(struct phy_device *phydev, struct ethtool_eee *e);
-+	/** @set_eee: Set the EEE configuration */
-+	int (*set_eee)(struct phy_device *phydev, struct ethtool_eee *e);
- };
- #define to_phy_driver(d) container_of(to_mdio_common_driver(d),		\
- 				      struct phy_driver, mdiodrv)
+-/**
+- * mmd_eee_cap_to_ethtool_sup_t
+- * @eee_cap: value of the MMD EEE Capability register
+- *
+- * A small helper function that translates MMD EEE Capability (3.20) bits
+- * to ethtool supported settings.
+- */
+-static inline u32 mmd_eee_cap_to_ethtool_sup_t(u16 eee_cap)
+-{
+-	u32 supported = 0;
+-
+-	if (eee_cap & MDIO_EEE_100TX)
+-		supported |= SUPPORTED_100baseT_Full;
+-	if (eee_cap & MDIO_EEE_1000T)
+-		supported |= SUPPORTED_1000baseT_Full;
+-	if (eee_cap & MDIO_EEE_10GT)
+-		supported |= SUPPORTED_10000baseT_Full;
+-	if (eee_cap & MDIO_EEE_1000KX)
+-		supported |= SUPPORTED_1000baseKX_Full;
+-	if (eee_cap & MDIO_EEE_10GKX4)
+-		supported |= SUPPORTED_10000baseKX4_Full;
+-	if (eee_cap & MDIO_EEE_10GKR)
+-		supported |= SUPPORTED_10000baseKR_Full;
+-
+-	return supported;
+-}
+-
+-/**
+- * mmd_eee_adv_to_ethtool_adv_t
+- * @eee_adv: value of the MMD EEE Advertisement/Link Partner Ability registers
+- *
+- * A small helper function that translates the MMD EEE Advertisment (7.60)
+- * and MMD EEE Link Partner Ability (7.61) bits to ethtool advertisement
+- * settings.
+- */
+-static inline u32 mmd_eee_adv_to_ethtool_adv_t(u16 eee_adv)
+-{
+-	u32 adv = 0;
+-
+-	if (eee_adv & MDIO_EEE_100TX)
+-		adv |= ADVERTISED_100baseT_Full;
+-	if (eee_adv & MDIO_EEE_1000T)
+-		adv |= ADVERTISED_1000baseT_Full;
+-	if (eee_adv & MDIO_EEE_10GT)
+-		adv |= ADVERTISED_10000baseT_Full;
+-	if (eee_adv & MDIO_EEE_1000KX)
+-		adv |= ADVERTISED_1000baseKX_Full;
+-	if (eee_adv & MDIO_EEE_10GKX4)
+-		adv |= ADVERTISED_10000baseKX4_Full;
+-	if (eee_adv & MDIO_EEE_10GKR)
+-		adv |= ADVERTISED_10000baseKR_Full;
+-
+-	return adv;
+-}
+-
+-/**
+- * ethtool_adv_to_mmd_eee_adv_t
+- * @adv: the ethtool advertisement settings
+- *
+- * A small helper function that translates ethtool advertisement settings
+- * to EEE advertisements for the MMD EEE Advertisement (7.60) and
+- * MMD EEE Link Partner Ability (7.61) registers.
+- */
+-static inline u16 ethtool_adv_to_mmd_eee_adv_t(u32 adv)
+-{
+-	u16 reg = 0;
+-
+-	if (adv & ADVERTISED_100baseT_Full)
+-		reg |= MDIO_EEE_100TX;
+-	if (adv & ADVERTISED_1000baseT_Full)
+-		reg |= MDIO_EEE_1000T;
+-	if (adv & ADVERTISED_10000baseT_Full)
+-		reg |= MDIO_EEE_10GT;
+-	if (adv & ADVERTISED_1000baseKX_Full)
+-		reg |= MDIO_EEE_1000KX;
+-	if (adv & ADVERTISED_10000baseKX4_Full)
+-		reg |= MDIO_EEE_10GKX4;
+-	if (adv & ADVERTISED_10000baseKR_Full)
+-		reg |= MDIO_EEE_10GKR;
+-
+-	return reg;
+-}
+-
+ /**
+  * linkmode_adv_to_mii_10gbt_adv_t
+  * @advertising: the linkmode advertisement settings
 -- 
 2.30.2
 
