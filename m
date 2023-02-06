@@ -1,87 +1,83 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70C3BC636D3
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 16:04:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2017DC636D3
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 16:29:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F29DF605A6;
-	Mon,  6 Feb 2023 16:04:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F29DF605A6
+	by smtp1.osuosl.org (Postfix) with ESMTP id CEAD881852;
+	Mon,  6 Feb 2023 16:29:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CEAD881852
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675699458;
-	bh=4svVZ7DuWzdd9CtOcYGXPj62DBSGIRmkXaBWRDSgqtI=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=1Kwd7TERIlPDB40IBnflHmKGfarD32VCj/PS/OtoJWngSAHDoLlHDTZxKqXiBcgzu
-	 0hfosCuxXjTin+aCqTl+iilZbqAjFDGftaz9sRXS5WMZv68cGr/l6r081uSv0MaT62
-	 3ZQlPxk2Yfy0u8FCjYaJ9IL62XBAimcgZ3YZZRurp74u3SIl0kSYumxgzPiN0ei+2/
-	 k77gP1SWsAe8G015w17Fa67sy8n+Au/AkzgJlnZVkOOgCV0B315TAQ4j9jIwy2XsdS
-	 /T7emOd7l91P0bjBoyVuC7xJCTeMPxqsHYiAS3uymw5b1IPnyYAd48++0sgmaqljLb
-	 SIUPHij3h3c3g==
+	s=default; t=1675700947;
+	bh=WfOPIYv2cg9ZwbrxLu6r6vlxxjPHuVCd4frOHxB1vgI=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=mmRCb1R1T4HegR/7joFAMQJjjwSmFzVbjCNqYipVh13jNsxjhkxRqbB2dT95/MEhW
+	 4nLOUiRCWLP1BfBMhAUC5bUmpmqK5QZBwFnwsvKG/vHI8LhX8G5rC/CZnhrh4eYsIR
+	 CEF0Aaa8t6f9Fn0B+JboSmN9s24zkA5Z8ju0B7HZPesBoBl+VG+9okrbbUlGPvueAW
+	 4Lh3uQiwqgSNXZHIMWOol8zbswYaWvG21yNFCs8daeeRqxVLNjao0M6tWDKWL8rdCh
+	 boogsriQSRYY4Wflusz5nRwdjJvW5wMy01rk0La2AydRR1Dy6x4Uhl5SKreP+WYSWQ
+	 ezKwvRxJn80pA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id eMIMx5Og2REt; Mon,  6 Feb 2023 16:04:17 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id R455AnwarAJX; Mon,  6 Feb 2023 16:29:05 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0BC6960B23;
-	Mon,  6 Feb 2023 16:04:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0BC6960B23
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 127431BF3E0
- for <intel-wired-lan@osuosl.org>; Mon,  6 Feb 2023 16:04:16 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4DDEA81886;
+	Mon,  6 Feb 2023 16:29:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4DDEA81886
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id A45321BF35E
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 05:47:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id DEACC60B23
- for <intel-wired-lan@osuosl.org>; Mon,  6 Feb 2023 16:04:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DEACC60B23
+ by smtp2.osuosl.org (Postfix) with ESMTP id 89D3C400DD
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 05:47:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 89D3C400DD
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3RstA6MRmEL0 for <intel-wired-lan@osuosl.org>;
- Mon,  6 Feb 2023 16:04:15 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ADE51605A6
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id ADE51605A6
- for <intel-wired-lan@osuosl.org>; Mon,  6 Feb 2023 16:04:14 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="330530943"
-X-IronPort-AV: E=Sophos;i="5.97,276,1669104000"; d="scan'208";a="330530943"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Feb 2023 08:04:10 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="809181794"
-X-IronPort-AV: E=Sophos;i="5.97,276,1669104000"; d="scan'208";a="809181794"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga001.fm.intel.com with ESMTP; 06 Feb 2023 08:04:08 -0800
-Received: from baltimore.igk.intel.com (baltimore.igk.intel.com [10.102.21.1])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id F01E233E1E;
- Mon,  6 Feb 2023 16:04:07 +0000 (GMT)
-From: Pawel Chmielewski <pawel.chmielewski@intel.com>
-To: netdev@vger.kernel.org
-Date: Mon,  6 Feb 2023 16:59:12 +0100
-Message-Id: <20230206155912.2032457-1-pawel.chmielewski@intel.com>
-X-Mailer: git-send-email 2.37.3
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 9N3o5cDarsao for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Feb 2023 05:47:47 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2E5C4400AF
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 2E5C4400AF
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 05:47:47 +0000 (UTC)
+Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
+ by metis.ext.pengutronix.de with esmtps
+ (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
+ (envelope-from <ore@pengutronix.de>)
+ id 1pOuLT-0007FS-UW; Mon, 06 Feb 2023 06:47:15 +0100
+Received: from ore by ptx.hi.pengutronix.de with local (Exim 4.92)
+ (envelope-from <ore@pengutronix.de>)
+ id 1pOuLR-0004Iw-Ji; Mon, 06 Feb 2023 06:47:13 +0100
+Date: Mon, 6 Feb 2023 06:47:13 +0100
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: Vladimir Oltean <olteanv@gmail.com>
+Message-ID: <20230206054713.GD12366@pengutronix.de>
+References: <20230201145845.2312060-1-o.rempel@pengutronix.de>
+ <20230204001332.dd4oq4nxqzmuhmb2@skbuf>
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1675699454; x=1707235454;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=tsywCx2Puj3tEwthQozDScSn4JJ2oxvtOw+X9d6OgFw=;
- b=KINrW4b8e5XahOvOkdP/z8HcOw62+KHRKzZS0Ghg3i6lMCD5mmV5tdtU
- tGYSITAqgpE9k/MscjyeJtwLvjrZRf4gzb4b0uDFJZ0wiyxK75ZFk3cdh
- zQdGvioiNr5MFec8cFFb6mYvkqDcI++GxHjy/asNXhAOIBG4843J1tkGV
- fsq9p6qAS2bOG7mFTKHdDK0g/OH9JVzUOf68GNEZgoS8Wbs9I0omWuD11
- lHNeWfvrrXETSwlT3HMcoi/eMyhZ7yi8yK99RVRpbNmAUabMTDMyXMtMj
- Au3gTsBQ85OZTHVGmdEbury0VsL+cGIrYVOOKBlc9YaP9dHoYuBwrtHO0
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=KINrW4b8
-Subject: [Intel-wired-lan] [PATCH 1/1] ice: add support BIG TCP on IPv6
+Content-Disposition: inline
+In-Reply-To: <20230204001332.dd4oq4nxqzmuhmb2@skbuf>
+X-Sent-From: Pengutronix Hildesheim
+X-URL: http://www.pengutronix.de/
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
+X-SA-Exim-Mail-From: ore@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
+ SAEximRunCond expanded to false
+X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
+X-Mailman-Approved-At: Mon, 06 Feb 2023 16:29:04 +0000
+Subject: Re: [Intel-wired-lan] [PATCH net-next v4 00/23] net: add EEE
+ support for KSZ9477 and AR8035 with i.MX6
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,71 +90,66 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@osuosl.org
+Cc: Woojung Huh <woojung.huh@microchip.com>, Andrew Lunn <andrew@lunn.ch>,
+ Arun.Ramadoss@microchip.com, Florian Fainelli <f.fainelli@gmail.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Vivien Didelot <vivien.didelot@gmail.com>, Eric Dumazet <edumazet@google.com>,
+ Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
+ kernel@pengutronix.de, intel-wired-lan@lists.osuosl.org,
+ Jakub Kicinski <kuba@kernel.org>, UNGLinuxDriver@microchip.com,
+ "David S. Miller" <davem@davemloft.net>,
+ Heiner Kallweit <hkallweit1@gmail.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This change enables sending BIG TCP packets on IPv6 in the ice driver using
-generic ipv6_hopopt_jumbo_remove helper for stripping HBH header.
+On Sat, Feb 04, 2023 at 02:13:32AM +0200, Vladimir Oltean wrote:
+> On Wed, Feb 01, 2023 at 03:58:22PM +0100, Oleksij Rempel wrote:
+> > With this patch series we provide EEE control for KSZ9477 family of switches and
+> > AR8035 with i.MX6 configuration.
+> > According to my tests, on a system with KSZ8563 switch and 100Mbit idle link,
+> > we consume 0,192W less power per port if EEE is enabled.
+> 
+> What is the code flow through the kernel with EEE? I wasn't able to find
+> a good explanation about it.
+> 
+> Is it advertised by default, if supported? I guess phy_advertise_supported()
+> does that.
 
-Tested:
-netperf -t TCP_RR -H 2001:db8:0:f101::1  -- -r80000,80000 -O MIN_LATENCY,P90_LATENCY,P99_LATENCY,THROUGHPUT
+Ack.
 
-Results varied from one setup to another, but in every case we got lower
-latencies and increased transactions rate.
+> But is that desirable? Doesn't EEE cause undesired latency for MAC-level
+> PTP timestamping on an otherwise idle link?
 
-Signed-off-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h      | 2 ++
- drivers/net/ethernet/intel/ice/ice_main.c | 2 ++
- drivers/net/ethernet/intel/ice/ice_txrx.c | 3 +++
- 3 files changed, 7 insertions(+)
+Theoretically, MAC controls Low Power Idle states and even with some
+"Wake" latency should be fully aware of actual ingress and egress time
+stamps.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 3d26ff4122e0..c774fdd482cd 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -122,6 +122,8 @@
- 
- #define ICE_MAX_MTU	(ICE_AQ_SET_MAC_FRAME_SIZE_MAX - ICE_ETH_PKT_HDR_PAD)
- 
-+#define ICE_MAX_TSO_SIZE 131072
-+
- #define ICE_UP_TABLE_TRANSLATE(val, i) \
- 		(((val) << ICE_AQ_VSI_UP_TABLE_UP##i##_S) & \
- 		  ICE_AQ_VSI_UP_TABLE_UP##i##_M)
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 22b8ad058286..8c74a48ad0d3 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3421,6 +3421,8 @@ static void ice_set_netdev_features(struct net_device *netdev)
- 	 * be changed at runtime
- 	 */
- 	netdev->hw_features |= NETIF_F_RXFCS;
-+
-+	netif_set_tso_max_size(netdev, ICE_MAX_TSO_SIZE);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index ccf09c957a1c..bef927afb766 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -2297,6 +2297,9 @@ ice_xmit_frame_ring(struct sk_buff *skb, struct ice_tx_ring *tx_ring)
- 
- 	ice_trace(xmit_frame_ring, tx_ring, skb);
- 
-+	if (unlikely(ipv6_hopopt_jumbo_remove(skb)))
-+		goto out_drop;
-+
- 	count = ice_xmit_desc_count(skb);
- 	if (ice_chk_linearize(skb, count)) {
- 		if (__skb_linearize(skb))
+Practically, right now I do not have such HW to confirm it. My project
+is affected by EEE in different ways:
+- with EEE PTP has too much jitter
+- without EEE, the devices consumes too much power in standby mode with
+  WoL enabled. Even switching to 10BaseT less power as 100BaseTX with
+  EEE would do.
+
+My view is probably biased by my environment - PTP is relatively rare
+use case. EEE saves power (0,2W+0,2W per link in my case). Summary power
+saving of all devices is potentially equal to X amount of power plants. 
+So, EEE should be enabled by default.
+
+Beside, flow control (enabled by default) affects PTP in some cases too.
+
+May be ptp4l should warn about this options? We should be able to detect
+it from user space.
+
+Regards,
+Oleksij
 -- 
-2.37.3
-
+Pengutronix e.K.                           |                             |
+Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
+31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
