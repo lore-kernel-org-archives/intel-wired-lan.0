@@ -4,82 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42E69C05027
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 23:55:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 244A5C636D3
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 23:57:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5D3F341776;
-	Mon,  6 Feb 2023 23:55:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D3F341776
+	by smtp4.osuosl.org (Postfix) with ESMTP id B5906408BC;
+	Mon,  6 Feb 2023 23:57:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B5906408BC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675727708;
-	bh=lvcopaoqZi3COeJiyGVjCOdOPVKsGD2C8eOuJJgzJ1E=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=ypkMPPra6Xx//z0V959WVdP4ciInuY7bQWBS+ytpmaxRCHoyPjU/rA9t5m01bm55b
-	 dyvaJXMCnulfHmOTdPlcNeUvJ0o8FEWgoKmTc7rG8hFjKoW1UOFFykh5sWo47m9unD
-	 FzZaFSiIDpvOIK+vM1UDVuWr1tf6Nk75GPZXiB+cfBvR2s2JLwIepC1FS7SpSypmcP
-	 CA5j36TcbOlHC9BF8buKBmr5BjLlT/Xv0q1KWJ3b5EIpT6s1IAvrMbavliY36IPphV
-	 w8LzzDxy0i1NxR4sDt5tO0QT7Phkcrt7YpbrO2s+ChLSUbi7tOA/VrKMPSDZA3SeEQ
-	 wqw+pFgUniGRQ==
+	s=default; t=1675727828;
+	bh=ZlBuco3wQo0CgmiSpWjmp/fOD1XD5vAJKK4nvAF13HM=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=FWhZLK6+tPo6azNpW5q7H0omDS4AgxfXOZQwBTG78lJJa6CFyIybvBYfUWVmGsSgP
+	 5/bnVyR7frt2/8rCMKOlQneD7cAgF0wl5Blf24RsVIqxR8t/0uqTH/mXjv3tHsmFA2
+	 LAlxHiRKUpG9XgNJxT1VwihsmAj4i1AxyMAKQ8kf5a7MHMwe3+jGx9aesDF4kbedGF
+	 KrjSOzh0P491IaWBoqf4vuCVG69/QqQcoq9GrvPMc/7kg5hlBTG0yEhEzk6genWS77
+	 /gjJzajAxd322k4fUrFq0544j/REseV+qSTz1GCnO7uIoTb9AgSDik53QyzktajF1i
+	 SwOf5KRUFANQg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xRmnCB7pzU5u; Mon,  6 Feb 2023 23:55:06 +0000 (UTC)
+	with ESMTP id hJ1TpqZ3F0wy; Mon,  6 Feb 2023 23:57:07 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8005341758;
-	Mon,  6 Feb 2023 23:55:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8005341758
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7B1BE40905;
+	Mon,  6 Feb 2023 23:57:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7B1BE40905
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 007041BF3C5
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 23:55:03 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 472421BF3C5
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 23:57:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CBFEB4157D
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 23:55:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CBFEB4157D
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1EDC140905
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 23:57:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1EDC140905
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fh8_PYFc8OYf for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Feb 2023 23:55:02 +0000 (UTC)
+ with ESMTP id SYjPxWx0K1uc for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Feb 2023 23:57:04 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8792140928
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8792140928
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 23:55:02 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="317365734"
-X-IronPort-AV: E=Sophos;i="5.97,276,1669104000"; d="scan'208";a="317365734"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Feb 2023 15:54:53 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="790597035"
-X-IronPort-AV: E=Sophos;i="5.97,276,1669104000"; d="scan'208";a="790597035"
-Received: from jbrandeb-coyote30.jf.intel.com ([10.166.29.19])
- by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Feb 2023 15:54:53 -0800
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  6 Feb 2023 15:54:36 -0800
-Message-Id: <20230206235436.2254802-1-jesse.brandeburg@intel.com>
-X-Mailer: git-send-email 2.31.1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0673A408BC
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 0673A408BC
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 23:57:03 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="327034370"
+X-IronPort-AV: E=Sophos;i="5.97,276,1669104000"; d="scan'208";a="327034370"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Feb 2023 15:57:01 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10613"; a="616606982"
+X-IronPort-AV: E=Sophos;i="5.97,276,1669104000"; d="scan'208";a="616606982"
+Received: from anguy11-upstream.jf.intel.com ([10.166.9.133])
+ by orsmga003.jf.intel.com with ESMTP; 06 Feb 2023 15:57:01 -0800
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+To: davem@davemloft.net, kuba@kernel.org, pabeni@redhat.com,
+ edumazet@google.com
+Date: Mon,  6 Feb 2023 15:56:35 -0800
+Message-Id: <20230206235635.662263-7-anthony.l.nguyen@intel.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20230206235635.662263-1-anthony.l.nguyen@intel.com>
+References: <20230206235635.662263-1-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1675727702; x=1707263702;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=rqonhSCze2Ze0QFZvj0hciiw74zLE0sfkGG+fKH1h2Q=;
- b=doOkefbX9bDw2RZSShDFYM3DTH6ndRgwNNZs7K26nncbANqRy4h2dlRR
- NjRI0J1DRBoTYUlSEGRltTp+acEgcN52IVij2Ybc9MQzDtxeu3IO3Rgpq
- Gy5LUs2FA4QhL8asHQmcu4JU+q8HWdLYe65jP06PdaCuTKgsvE60ppjut
- 3LQFbwBjInl3EeG9JkadFN92muCYi5MYHUn1SB8vtpazTK4TX4wv6Id0Q
- f2EXO6xdVB2qA2RJoKl9EyNzn/1hLKwLtDF3GDpfEFgd8YGecMvM13hvD
- NUcT4I5mE8u/d5qLXzhf0VJYuOD6/VTnoHavM0A48DFW4LTJZ9elEXylH
+ t=1675727824; x=1707263824;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=PX6gOGQCKgkMTkVGOsvAFMU6mr14Coj7ILxTYQtpsO8=;
+ b=XKxcC7nE2liTm1Lwrge2M7oUPuFONHZFxFilZCMqCDQ1qOBeQ56JG44H
+ KQizdh+/o00i+/dUCiaaBR0/JW5FuvaXajgbFUPAn8WuFfP29QWAWH2On
+ jFycxB68nEFmh9NwaebxSPnKCnwCEWh53yF4GDYkJBLc0YXTPl0307kE2
+ K9/a6dFp+tqRGXxi0WYzFnArGvp+5//3f44+N/7SM4iTr1mRvNPpJJ7UK
+ u0VaP7XUhfL7FlZI3qkE2/iMi0AODKbR8S/Sqxd6ubNJN6Ixk9LvilzCz
+ EXr9iLplfyyF/LmH/veMHhBx9/hWx1uFWeK23vz8nbFpzhYLloQzXj6rc
  A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=doOkefbX
-Subject: [Intel-wired-lan] [PATCH net v2] ice: fix lost multicast packets in
- promisc mode
+ header.a=rsa-sha256 header.s=Intel header.b=XKxcC7nE
+Subject: [Intel-wired-lan] [PATCH net-next 6/6] net/i40e: Replace 0-length
+ array with flexible array
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,107 +96,67 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Kees Cook <keescook@chromium.org>, netdev@vger.kernel.org,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Jiri Pirko <jiri@nvidia.com>,
+ anthony.l.nguyen@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-There was a problem reported to us where the addition of a VF with an IPv6
-address ending with a particular sequence would cause the parent device on
-the PF to no longer be able to respond to neighbor discovery packets.
+From: Kees Cook <keescook@chromium.org>
 
-In this case, we had an ovs-bridge device living on top of a VLAN, which
-was on top of a PF, and it would not be able to talk anymore (the neighbor
-entry would expire and couldn't be restored).
+Zero-length arrays are deprecated[1]. Replace struct i40e_lump_tracking's
+"list" 0-length array with a flexible array. Detected with GCC 13,
+using -fstrict-flex-arrays=3:
 
-The root cause of the issue is that if the PF is asked to be in IFF_PROMISC
-mode (promiscuous mode) and it had an ipv6 address that needed the
-33:33:ff:00:00:04 multicast address to work, then when the VF was added
-with the need for the same multicast address, the VF would steal all the
-traffic destined for that address.
+In function 'i40e_put_lump',
+    inlined from 'i40e_clear_interrupt_scheme' at drivers/net/ethernet/intel/i40e/i40e_main.c:5145:2:
+drivers/net/ethernet/intel/i40e/i40e_main.c:278:27: warning: array subscript <unknown> is outside array bounds of 'u16[0]' {aka 'short unsigned int[]'} [-Warray-bounds=]
+  278 |                 pile->list[i] = 0;
+      |                 ~~~~~~~~~~^~~
+drivers/net/ethernet/intel/i40e/i40e.h: In function 'i40e_clear_interrupt_scheme':
+drivers/net/ethernet/intel/i40e/i40e.h:179:13: note: while referencing 'list'
+  179 |         u16 list[0];
+      |             ^~~~
 
-The ice driver didn't auto-subscribe a request of IFF_PROMISC to the
-"multicast replication from other port's traffic" meaning that it won't get
-for instance, packets with an exact destination in the VF, as above.
+[1] https://www.kernel.org/doc/html/latest/process/deprecated.html#zero-length-and-one-element-arrays
 
-The VF's IPv6 address, which adds a "perfect filter" for 33:33:ff:00:00:04,
-results in no packets for that multicast address making it to the PF (which
-is in promisc but NOT "multicast replication").
-
-The fix is to enable "multicast promiscuous" whenever the driver is asked
-to enable IFF_PROMISC, and make sure to disable it when appropriate.
-
-Fixes: e94d44786693 ("ice: Implement filter sync, NDO operations and bump version")
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Eric Dumazet <edumazet@google.com>
+Cc: Jakub Kicinski <kuba@kernel.org>
+Cc: Paolo Abeni <pabeni@redhat.com>
+Cc: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Reviewed-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+Reviewed-by: Jiri Pirko <jiri@nvidia.com>
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
-v2: added fixes
----
- drivers/net/ethernet/intel/ice/ice_main.c | 26 +++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 5f86e4111fa9..3a5f9c15b69c 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -275,6 +275,8 @@ static int ice_set_promisc(struct ice_vsi *vsi, u8 promisc_m)
- 	if (status && status != -EEXIST)
- 		return status;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 40a2914ed0ba..be66dbc9c1d4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -177,7 +177,7 @@ enum i40e_interrupt_policy {
  
-+	netdev_dbg(vsi->netdev, "set promisc filter bits for VSI %i: 0x%x\n",
-+		   vsi->vsi_num, promisc_m);
- 	return 0;
- }
- 
-@@ -300,6 +302,8 @@ static int ice_clear_promisc(struct ice_vsi *vsi, u8 promisc_m)
- 						    promisc_m, 0);
- 	}
- 
-+	netdev_dbg(vsi->netdev, "clear promisc filter bits for VSI %i: 0x%x\n",
-+		   vsi->vsi_num, promisc_m);
- 	return status;
- }
- 
-@@ -414,6 +418,16 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
- 				}
- 				err = 0;
- 				vlan_ops->dis_rx_filtering(vsi);
-+
-+				/* promiscuous mode implies allmulticast so
-+				 * that VSIs that are in promiscuous mode are
-+				 * subscribed to multicast packets coming to
-+				 * the port
-+				 */
-+				err = ice_set_promisc(vsi,
-+						      ICE_MCAST_PROMISC_BITS);
-+				if (err)
-+					goto out_promisc;
- 			}
- 		} else {
- 			/* Clear Rx filter to remove traffic from wire */
-@@ -430,6 +444,18 @@ static int ice_vsi_sync_fltr(struct ice_vsi *vsi)
- 				    NETIF_F_HW_VLAN_CTAG_FILTER)
- 					vlan_ops->ena_rx_filtering(vsi);
- 			}
-+
-+			/* disable allmulti here, but only if allmulti is not
-+			 * still enabled for the netdev
-+			 */
-+			if (!(vsi->current_netdev_flags & IFF_ALLMULTI)) {
-+				err = ice_clear_promisc(vsi,
-+							ICE_MCAST_PROMISC_BITS);
-+				if (err) {
-+					netdev_err(netdev, "Error %d clearing multicast promiscuous on VSI %i\n",
-+						   err, vsi->vsi_num);
-+				}
-+			}
- 		}
- 	}
- 	goto exit;
-
-base-commit: 811d581194f7412eda97acc03d17fc77824b561f
+ struct i40e_lump_tracking {
+ 	u16 num_entries;
+-	u16 list[0];
++	u16 list[];
+ #define I40E_PILE_VALID_BIT  0x8000
+ #define I40E_IWARP_IRQ_PILE_ID  (I40E_PILE_VALID_BIT - 2)
+ };
 -- 
-2.31.1
+2.38.1
 
 _______________________________________________
 Intel-wired-lan mailing list
