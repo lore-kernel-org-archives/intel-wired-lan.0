@@ -1,70 +1,71 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2017DC636D3
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 16:29:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45C69C636D3
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Feb 2023 16:29:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CEAD881852;
-	Mon,  6 Feb 2023 16:29:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CEAD881852
+	by smtp2.osuosl.org (Postfix) with ESMTP id CC82D400D0;
+	Mon,  6 Feb 2023 16:29:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CC82D400D0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675700947;
-	bh=WfOPIYv2cg9ZwbrxLu6r6vlxxjPHuVCd4frOHxB1vgI=;
+	s=default; t=1675700950;
+	bh=R/51twfR5Mmh68OrzN4ty3ILMiZnx+JL1iwXXhfcyVI=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=mmRCb1R1T4HegR/7joFAMQJjjwSmFzVbjCNqYipVh13jNsxjhkxRqbB2dT95/MEhW
-	 4nLOUiRCWLP1BfBMhAUC5bUmpmqK5QZBwFnwsvKG/vHI8LhX8G5rC/CZnhrh4eYsIR
-	 CEF0Aaa8t6f9Fn0B+JboSmN9s24zkA5Z8ju0B7HZPesBoBl+VG+9okrbbUlGPvueAW
-	 4Lh3uQiwqgSNXZHIMWOol8zbswYaWvG21yNFCs8daeeRqxVLNjao0M6tWDKWL8rdCh
-	 boogsriQSRYY4Wflusz5nRwdjJvW5wMy01rk0La2AydRR1Dy6x4Uhl5SKreP+WYSWQ
-	 ezKwvRxJn80pA==
+	b=rbQjY1X98QcPu0BC+8I96NhpH3pUBW53j6WxUSwh4wXRXQ7OoGHLQrUdPxOMF+iXI
+	 NXdWgYfq0EqW7kGJ8524ruL+h92nJYsPy3vq4sHcS4yPJ5k4KOMMhgxulg5CCyj4zJ
+	 LU79zN5Zu9wrFbLxA7uNDn/e3QOEY404652d+zES3ioV4uKyzXI5B9EphRmFjA+7QJ
+	 MaJ+8i4E6hmBpyw2133Syq4f/4A15PZS+C7R2xQGOI8aBfCTvLnEHkhFfQkr9+BD2c
+	 SE1wlwwg9L/Tr9GiuoJNdyM5dBnCQ+cgLP0YkJXq5Fvjndwj4D5KkVBIv/oeb75gsu
+	 YeZoy7m6I9nRQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id R455AnwarAJX; Mon,  6 Feb 2023 16:29:05 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id XRuY82pKOm6R; Mon,  6 Feb 2023 16:29:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4DDEA81886;
-	Mon,  6 Feb 2023 16:29:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4DDEA81886
+	by smtp2.osuosl.org (Postfix) with ESMTP id B9DAC403AC;
+	Mon,  6 Feb 2023 16:29:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B9DAC403AC
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id A45321BF35E
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 05:47:48 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 99FD91BF2CF
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 10:50:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 89D3C400DD
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 05:47:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 89D3C400DD
+ by smtp2.osuosl.org (Postfix) with ESMTP id 730364031D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 10:50:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 730364031D
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 9N3o5cDarsao for <intel-wired-lan@lists.osuosl.org>;
- Mon,  6 Feb 2023 05:47:47 +0000 (UTC)
+ with ESMTP id Z-CSiv0oQ3JB for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  6 Feb 2023 10:50:21 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2E5C4400AF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1D666402EB
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 2E5C4400AF
- for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 05:47:47 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1D666402EB
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  6 Feb 2023 10:50:21 +0000 (UTC)
 Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pOuLT-0007FS-UW; Mon, 06 Feb 2023 06:47:15 +0100
+ id 1pOz4P-0004HP-Jh; Mon, 06 Feb 2023 11:49:57 +0100
 Received: from ore by ptx.hi.pengutronix.de with local (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pOuLR-0004Iw-Ji; Mon, 06 Feb 2023 06:47:13 +0100
-Date: Mon, 6 Feb 2023 06:47:13 +0100
+ id 1pOz4N-0006lC-3o; Mon, 06 Feb 2023 11:49:55 +0100
+Date: Mon, 6 Feb 2023 11:49:55 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Vladimir Oltean <olteanv@gmail.com>
-Message-ID: <20230206054713.GD12366@pengutronix.de>
+Message-ID: <20230206104955.GE12366@pengutronix.de>
 References: <20230201145845.2312060-1-o.rempel@pengutronix.de>
- <20230204001332.dd4oq4nxqzmuhmb2@skbuf>
+ <20230201145845.2312060-3-o.rempel@pengutronix.de>
+ <20230204005418.7ryb4ihuzxlbs2nl@skbuf>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20230204001332.dd4oq4nxqzmuhmb2@skbuf>
+In-Reply-To: <20230204005418.7ryb4ihuzxlbs2nl@skbuf>
 X-Sent-From: Pengutronix Hildesheim
 X-URL: http://www.pengutronix.de/
 X-Accept-Language: de,en
@@ -76,8 +77,8 @@ X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
  SAEximRunCond expanded to false
 X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Mon, 06 Feb 2023 16:29:04 +0000
-Subject: Re: [Intel-wired-lan] [PATCH net-next v4 00/23] net: add EEE
- support for KSZ9477 and AR8035 with i.MX6
+Subject: Re: [Intel-wired-lan] [PATCH net-next v4 02/23] net: phy: add
+ genphy_c45_read_eee_abilities() function
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,44 +105,62 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, Feb 04, 2023 at 02:13:32AM +0200, Vladimir Oltean wrote:
-> On Wed, Feb 01, 2023 at 03:58:22PM +0100, Oleksij Rempel wrote:
-> > With this patch series we provide EEE control for KSZ9477 family of switches and
-> > AR8035 with i.MX6 configuration.
-> > According to my tests, on a system with KSZ8563 switch and 100Mbit idle link,
-> > we consume 0,192W less power per port if EEE is enabled.
+Hi Vladimir,
+
+On Sat, Feb 04, 2023 at 02:54:18AM +0200, Vladimir Oltean wrote:
+> On Wed, Feb 01, 2023 at 03:58:24PM +0100, Oleksij Rempel wrote:
+
+[....]
+
+> > +static const int phy_eee_100_10000_features_array[6] = {
 > 
-> What is the code flow through the kernel with EEE? I wasn't able to find
-> a good explanation about it.
+> Don't need array length unless the array is sparse, which isn't the case here.
 > 
-> Is it advertised by default, if supported? I guess phy_advertise_supported()
-> does that.
+> > +	ETHTOOL_LINK_MODE_100baseT_Full_BIT,
+> > +	ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+> > +	ETHTOOL_LINK_MODE_10000baseT_Full_BIT,
+> > +	ETHTOOL_LINK_MODE_1000baseKX_Full_BIT,
+> > +	ETHTOOL_LINK_MODE_10000baseKX4_Full_BIT,
+> > +	ETHTOOL_LINK_MODE_10000baseKR_Full_BIT,
+> 
+> Why stop at 10GBase-KR? Register 3.20 defines EEE abilities up to 100G
+> (for speeds >10G, there seem to be 2 modes, "deep sleep" or "fast wake",
+> with "deep sleep" being essentially equivalent to the only mode
+> available for <=10G modes).
 
-Ack.
+Hm,
 
-> But is that desirable? Doesn't EEE cause undesired latency for MAC-level
-> PTP timestamping on an otherwise idle link?
+If i take only deep sleep, missing modes are:
+3.20.13 100GBASE-R deep sleep
+       family of Physical Layer devices using 100GBASE-R encoding:
+       100000baseCR4_Full
+       100000baseKR4_Full
+       100000baseCR10_Full (missing)
+       100000baseSR4_Full
+       100000baseSR10_Full (missing)
+       100000baseLR4_ER4_Full
 
-Theoretically, MAC controls Low Power Idle states and even with some
-"Wake" latency should be fully aware of actual ingress and egress time
-stamps.
+3.20.11 25GBASE-R deep sleep
+       family of Physical Layer devices using 25GBASE-R encoding:
+       25000baseCR_Full
+       25000baseER_Full (missing)
+       25000baseKR_Full
+       25000baseLR_Full (missing)
+       25000baseSR_Full
 
-Practically, right now I do not have such HW to confirm it. My project
-is affected by EEE in different ways:
-- with EEE PTP has too much jitter
-- without EEE, the devices consumes too much power in standby mode with
-  WoL enabled. Even switching to 10BaseT less power as 100BaseTX with
-  EEE would do.
+3.20.9 40GBASE-R deep sleep
+       family of Physical Layer devices using 40GBASE-R encoding:
+       40000baseKR4_Full
+       40000baseCR4_Full
+       40000baseSR4_Full
+       40000baseLR4_Full
 
-My view is probably biased by my environment - PTP is relatively rare
-use case. EEE saves power (0,2W+0,2W per link in my case). Summary power
-saving of all devices is potentially equal to X amount of power plants. 
-So, EEE should be enabled by default.
+3.20.7 40GBASE-T
+       40000baseT_Full (missing)
 
-Beside, flow control (enabled by default) affects PTP in some cases too.
-
-May be ptp4l should warn about this options? We should be able to detect
-it from user space.
+I have no experience with modes > 1Gbit. Do all of them correct? What
+should we do with missing modes? Or may be it make sense to implement >
+10G modes separately?
 
 Regards,
 Oleksij
