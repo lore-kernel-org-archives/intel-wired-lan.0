@@ -1,83 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88AA1C636D4
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Feb 2023 16:30:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF2A8C05027
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Feb 2023 16:30:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2946761123;
-	Wed,  8 Feb 2023 16:30:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2946761123
+	by smtp2.osuosl.org (Postfix) with ESMTP id 8376A4046D;
+	Wed,  8 Feb 2023 16:30:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8376A4046D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675873811;
-	bh=vC5u+wQtb4DS9A7ohR/BBvtC6VfZKUZ2ezZjX4JMKPQ=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=OAZXrfRQpfk61Yp++AFsCUbUyNjZ/F/plCsip2ubqxPBYMNqA8Og1R+OC27qgDGV/
-	 5kwJM6ixsQAZYgKLpklDMmqQ3B77r8LTjTKPEgp6N3+aJLe7/ZTa4Uqa8iREm20Mpw
-	 g//oW9WLJKB3o6jrjruM+dcIjkyUPFkOgNkewiAL3xjcc64r7wxB7b4wHhDH6xOOBd
-	 dDK3BaEPQqPdvzCJNR4dAjVb/oMQ48lltPwvI+qaVSCqJAD9xEBQIE95kS0NWkrDk1
-	 JQrQz88378qDIWWhgqBli5v026UPgfuye0xWCOdRz2I5YFgmpMpRoxo740rkM45XPi
-	 /kTOdI/BZb20w==
+	s=default; t=1675873814;
+	bh=mM7WWzQISVpKDoHe/UbBamm+wfKY3fQTd1Dsx/SSgUo=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=6HiWLhM247b9xRVFuAPSIOcJ0PH8UovTBifseOO55ElWCiMuZ3GJjSeeGamz5RmmE
+	 GapK8OKotlD69D16YkUbc6uUEA8Ve9a8A6ceVJRhABi3bU10vNqDrXot/78kWhz3a/
+	 k7z1NOgXX5LjJ1hQrzKZ+0gc2elbBnn7ipleTdew1104eBlZaYW++mUDPJ5gveFjOt
+	 7oRd4yv+XQC9MwzuH4NYqGdVGhGtxgBorfz6QoUrm8jaRZQ2NBGlMt++npU7nngHwz
+	 w67g44cqh+pISvF6pJiXpAeq8GLX7HO/gEoeO7Re89lQu8dYdB8p/s23VYBtfzHBvK
+	 yv2wxCA6ALVXw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id I6PT6VX47kXR; Wed,  8 Feb 2023 16:30:10 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id j8-hA8mxoPaY; Wed,  8 Feb 2023 16:30:13 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 725B161133;
-	Wed,  8 Feb 2023 16:30:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 725B161133
+	by smtp2.osuosl.org (Postfix) with ESMTP id 6F95440C2D;
+	Wed,  8 Feb 2023 16:30:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6F95440C2D
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 620611BF5EA
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Feb 2023 08:30:42 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 9DCBB1BF3FD
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Feb 2023 13:28:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 4701240BA7
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Feb 2023 08:30:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4701240BA7
+ by smtp2.osuosl.org (Postfix) with ESMTP id 7137740B48
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Feb 2023 13:28:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7137740B48
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NgF_C4b2CSDF for <intel-wired-lan@lists.osuosl.org>;
- Wed,  8 Feb 2023 08:30:40 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 23CC540150
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 23CC540150
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Feb 2023 08:30:40 +0000 (UTC)
-Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
- by metis.ext.pengutronix.de with esmtps
- (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
- (envelope-from <ore@pengutronix.de>)
- id 1pPfqO-0007Z6-QC; Wed, 08 Feb 2023 09:30:20 +0100
-Received: from ore by ptx.hi.pengutronix.de with local (Exim 4.92)
- (envelope-from <ore@pengutronix.de>)
- id 1pPfqL-00041i-JF; Wed, 08 Feb 2023 09:30:17 +0100
-Date: Wed, 8 Feb 2023 09:30:17 +0100
-From: Oleksij Rempel <o.rempel@pengutronix.de>
-To: Jakub Kicinski <kuba@kernel.org>
-Message-ID: <20230208083017.GI12366@pengutronix.de>
-References: <20230206135050.3237952-1-o.rempel@pengutronix.de>
- <20230207212555.79ffbc26@kernel.org>
+ with ESMTP id S5pt6kqjVQfQ for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  8 Feb 2023 13:28:43 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7C532400F2
+Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com
+ [IPv6:2a00:1450:4864:20::331])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7C532400F2
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Feb 2023 13:28:43 +0000 (UTC)
+Received: by mail-wm1-x331.google.com with SMTP id
+ f47-20020a05600c492f00b003dc584a7b7eso1448472wmp.3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 08 Feb 2023 05:28:43 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20210112;
+ h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=OJYQbwZP2YmJ+sqBx1h0cphUKHsAJqEQS1lQRiPxzgE=;
+ b=YdEDnQElNuixC3vpI5k4nl0l6a1EsKaNHmeLBtIaMKK0DWfvMKXOSL54wDIpZByFUg
+ PBobxfZP9PseHxZ5+9nmFQx91tijvRakJ8BioVj5FkIEmzrWf/s20ABhRw7ZjyK41EJ6
+ +I42CiSsKDyixjv7IWQVmAp+eePfZ8UQl4g/t/Tlja/LSKXuv+mp8J61EnjcitmMrewg
+ Uuumjdg8nD6gHZcRVv40GgjPAMSENqMtJhqyIM3/NIkks8IoxWitXgXGaQrRHouFOEon
+ C1AXCb5hcSGlNBtD+IfRV1eOQIv0G01H78da5VLaKClV1kkxAWxf00XvuIi26n5Mo6+z
+ tudQ==
+X-Gm-Message-State: AO0yUKUJop4JzzsfAGqEpiRirQ2Yn34kHkV1b3ESThHC0Vtr/5lsxblh
+ UIx8slXhVksxjcwiqbvpvrQ=
+X-Google-Smtp-Source: AK7set9neI2aTSQMx+E/+o5gcxxStGGo+qOIYkHvptFkp4WDHERxJEYyIFWSrHoUp5mWSpqifpqNmA==
+X-Received: by 2002:a05:600c:3416:b0:3df:50eb:7ca6 with SMTP id
+ y22-20020a05600c341600b003df50eb7ca6mr6737092wmp.15.1675862921402; 
+ Wed, 08 Feb 2023 05:28:41 -0800 (PST)
+Received: from localhost ([102.36.222.112]) by smtp.gmail.com with ESMTPSA id
+ a1-20020a05600c348100b003db0ee277b2sm2046632wmq.5.2023.02.08.05.28.40
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 08 Feb 2023 05:28:41 -0800 (PST)
+Date: Wed, 8 Feb 2023 16:07:14 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: michal.swiatkowski@linux.intel.com
+Message-ID: <Y+OegpUGZy2RtmjV@kili>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20230207212555.79ffbc26@kernel.org>
-X-Sent-From: Pengutronix Hildesheim
-X-URL: http://www.pengutronix.de/
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
-X-SA-Exim-Mail-From: ore@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Wed, 08 Feb 2023 16:30:08 +0000
-Subject: Re: [Intel-wired-lan] [PATCH net-next v5 00/23] net: add EEE
- support for KSZ9477 and AR8035 with i.MX6
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20210112;
+ h=content-disposition:mime-version:message-id:subject:cc:to:from:date
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=OJYQbwZP2YmJ+sqBx1h0cphUKHsAJqEQS1lQRiPxzgE=;
+ b=Z1kMt6WpsHGQrCy8VOpsXcjfu5ObQbrF4BBrKNxvhDuZfDLp77xWU2wkVLliBna4Su
+ DSh3B8UVixqs6x0ik0wPQC1qIIs1O3kIYGlCVcDs8u5+DTydxt7zQYu2CNO0jH+Qy1Q5
+ QsOFi6hFwisY3hnBCKYfFKdcFMdr5SIsP5NBP8pIm+jEvyPQrtrs9Zb4/bcgDnsoVqSy
+ 6wCP+YqPOPeoHPIauypPVgJ5yomPnAsgjWuXtHcu9CJw6l7OeuHtfXGKV9ySgWsBLhzr
+ Z7qcC8B1t+1Gdf+bdM7z3a85iIW+xGzZVC0FqZeYRhJpcoudfx/2OMPwf41Db1VXaUl0
+ 0ALg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20210112 header.b=Z1kMt6Wp
+Subject: [Intel-wired-lan] [bug report] ice: split ice_vsi_setup into
+ smaller functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,40 +106,191 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Woojung Huh <woojung.huh@microchip.com>, Andrew Lunn <andrew@lunn.ch>,
- Arun.Ramadoss@microchip.com, Florian Fainelli <f.fainelli@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, UNGLinuxDriver@microchip.com,
- Eric Dumazet <edumazet@google.com>, Wei Fang <wei.fang@nxp.com>,
- kernel@pengutronix.de, intel-wired-lan@lists.osuosl.org,
- Paolo Abeni <pabeni@redhat.com>, Vladimir Oltean <olteanv@gmail.com>,
- Vivien Didelot <vivien.didelot@gmail.com>,
- Heiner Kallweit <hkallweit1@gmail.com>
+Cc: intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Feb 07, 2023 at 09:25:55PM -0800, Jakub Kicinski wrote:
-> On Mon,  6 Feb 2023 14:50:27 +0100 Oleksij Rempel wrote:
-> > With this patch series we provide EEE control for KSZ9477 family of switches and
-> > AR8035 with i.MX6 configuration.
-> > According to my tests, on a system with KSZ8563 switch and 100Mbit idle link,
-> > we consume 0,192W less power per port if EEE is enabled.
-> 
-> Can we carve this series up a little bit to avoid large reposts?
-> Perhaps you can hold off on reposting the cleanup patches starting
-> at patch 17 - repost those separately after the first 16 go in?
+Hello Michal Swiatkowski,
 
-ACK. Sounds good.
-I'll make a cut on 00/09 patch. SmartEEE need probably more discussion and
-changes.
+The patch 6624e780a577: "ice: split ice_vsi_setup into smaller
+functions" from Dec 21, 2022, leads to the following Smatch static
+checker warning:
 
--- 
-Pengutronix e.K.                           |                             |
-Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
-31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+drivers/net/ethernet/intel/ice/ice_lib.c:2150 ice_vsi_cfg_xdp_txqs() info: returning a literal zero is cleaner
+drivers/net/ethernet/intel/ice/ice_lib.c:2722 ice_vsi_cfg_def() warn: missing error code here? 'ice_vsi_alloc_stat_arrays()' failed. 'ret' = '0'
+drivers/net/ethernet/intel/ice/ice_lib.c:2729 ice_vsi_cfg_def() warn: missing error code here? 'ice_vsi_get_qs()' failed. 'ret' = '0'
+drivers/net/ethernet/intel/ice/ice_lib.c:3521 ice_vsi_rebuild() warn: missing error code 'ret'
+drivers/net/ethernet/intel/ice/ice_lib.c:3766 ice_vsi_cfg_tc() info: returning a literal zero is cleaner
+
+drivers/net/ethernet/intel/ice/ice_lib.c
+    2706 static int
+    2707 ice_vsi_cfg_def(struct ice_vsi *vsi, struct ice_vf *vf, struct ice_channel *ch,
+    2708                 int init_vsi)
+    2709 {
+    2710         struct device *dev = ice_pf_to_dev(vsi->back);
+    2711         struct ice_pf *pf = vsi->back;
+    2712         int ret;
+    2713 
+    2714         vsi->vsw = pf->first_sw;
+    2715 
+    2716         ret = ice_vsi_alloc_def(vsi, vf, ch);
+    2717         if (ret)
+    2718                 return ret;
+    2719 
+    2720         /* allocate memory for Tx/Rx ring stat pointers */
+    2721         if (ice_vsi_alloc_stat_arrays(vsi))
+    2722                 goto unroll_vsi_alloc;
+
+Missing error code.
+
+    2723 
+    2724         ice_alloc_fd_res(vsi);
+    2725 
+    2726         if (ice_vsi_get_qs(vsi)) {
+    2727                 dev_err(dev, "Failed to allocate queues. vsi->idx = %d\n",
+    2728                         vsi->idx);
+--> 2729                 goto unroll_vsi_alloc_stat;
+
+Needs error code.
+
+    2730         }
+    2731 
+    2732         /* set RSS capabilities */
+    2733         ice_vsi_set_rss_params(vsi);
+    2734 
+    2735         /* set TC configuration */
+    2736         ice_vsi_set_tc_cfg(vsi);
+    2737 
+    2738         /* create the VSI */
+    2739         ret = ice_vsi_init(vsi, init_vsi);
+    2740         if (ret)
+    2741                 goto unroll_get_qs;
+    2742 
+    2743         ice_vsi_init_vlan_ops(vsi);
+    2744 
+    2745         switch (vsi->type) {
+    2746         case ICE_VSI_CTRL:
+    2747         case ICE_VSI_SWITCHDEV_CTRL:
+    2748         case ICE_VSI_PF:
+    2749                 ret = ice_vsi_alloc_q_vectors(vsi);
+    2750                 if (ret)
+    2751                         goto unroll_vsi_init;
+    2752 
+    2753                 ret = ice_vsi_setup_vector_base(vsi);
+    2754                 if (ret)
+    2755                         goto unroll_alloc_q_vector;
+    2756 
+    2757                 ret = ice_vsi_set_q_vectors_reg_idx(vsi);
+    2758                 if (ret)
+    2759                         goto unroll_vector_base;
+    2760 
+    2761                 ret = ice_vsi_alloc_rings(vsi);
+    2762                 if (ret)
+    2763                         goto unroll_vector_base;
+    2764 
+    2765                 ret = ice_vsi_alloc_ring_stats(vsi);
+    2766                 if (ret)
+    2767                         goto unroll_vector_base;
+    2768 
+    2769                 ice_vsi_map_rings_to_vectors(vsi);
+    2770                 if (ice_is_xdp_ena_vsi(vsi)) {
+    2771                         ret = ice_vsi_determine_xdp_res(vsi);
+    2772                         if (ret)
+    2773                                 goto unroll_vector_base;
+    2774                         ret = ice_prepare_xdp_rings(vsi, vsi->xdp_prog);
+    2775                         if (ret)
+    2776                                 goto unroll_vector_base;
+    2777                 }
+    2778 
+    2779                 /* ICE_VSI_CTRL does not need RSS so skip RSS processing */
+    2780                 if (vsi->type != ICE_VSI_CTRL)
+    2781                         /* Do not exit if configuring RSS had an issue, at
+    2782                          * least receive traffic on first queue. Hence no
+    2783                          * need to capture return value
+    2784                          */
+    2785                         if (test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+    2786                                 ice_vsi_cfg_rss_lut_key(vsi);
+    2787                                 ice_vsi_set_rss_flow_fld(vsi);
+    2788                         }
+    2789                 ice_init_arfs(vsi);
+    2790                 break;
+    2791         case ICE_VSI_CHNL:
+    2792                 if (test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+    2793                         ice_vsi_cfg_rss_lut_key(vsi);
+    2794                         ice_vsi_set_rss_flow_fld(vsi);
+    2795                 }
+    2796                 break;
+    2797         case ICE_VSI_VF:
+    2798                 /* VF driver will take care of creating netdev for this type and
+    2799                  * map queues to vectors through Virtchnl, PF driver only
+    2800                  * creates a VSI and corresponding structures for bookkeeping
+    2801                  * purpose
+    2802                  */
+    2803                 ret = ice_vsi_alloc_q_vectors(vsi);
+    2804                 if (ret)
+    2805                         goto unroll_vsi_init;
+    2806 
+    2807                 ret = ice_vsi_alloc_rings(vsi);
+    2808                 if (ret)
+    2809                         goto unroll_alloc_q_vector;
+    2810 
+    2811                 ret = ice_vsi_set_q_vectors_reg_idx(vsi);
+    2812                 if (ret)
+    2813                         goto unroll_vector_base;
+    2814 
+    2815                 ret = ice_vsi_alloc_ring_stats(vsi);
+    2816                 if (ret)
+    2817                         goto unroll_vector_base;
+    2818                 /* Do not exit if configuring RSS had an issue, at least
+    2819                  * receive traffic on first queue. Hence no need to capture
+    2820                  * return value
+    2821                  */
+    2822                 if (test_bit(ICE_FLAG_RSS_ENA, pf->flags)) {
+    2823                         ice_vsi_cfg_rss_lut_key(vsi);
+    2824                         ice_vsi_set_vf_rss_flow_fld(vsi);
+    2825                 }
+    2826                 break;
+    2827         case ICE_VSI_LB:
+    2828                 ret = ice_vsi_alloc_rings(vsi);
+    2829                 if (ret)
+    2830                         goto unroll_vsi_init;
+    2831 
+    2832                 ret = ice_vsi_alloc_ring_stats(vsi);
+    2833                 if (ret)
+    2834                         goto unroll_vector_base;
+    2835 
+    2836                 break;
+    2837         default:
+    2838                 /* clean up the resources and exit */
+    2839                 goto unroll_vsi_init;
+
+Error code here as well?
+
+    2840         }
+    2841 
+    2842         return 0;
+    2843 
+    2844 unroll_vector_base:
+    2845         /* reclaim SW interrupts back to the common pool */
+    2846         ice_free_res(pf->irq_tracker, vsi->base_vector, vsi->idx);
+    2847         pf->num_avail_sw_msix += vsi->num_q_vectors;
+    2848 unroll_alloc_q_vector:
+    2849         ice_vsi_free_q_vectors(vsi);
+    2850 unroll_vsi_init:
+    2851         ice_vsi_delete_from_hw(vsi);
+    2852 unroll_get_qs:
+    2853         ice_vsi_put_qs(vsi);
+    2854 unroll_vsi_alloc_stat:
+    2855         ice_vsi_free_stats(vsi);
+    2856 unroll_vsi_alloc:
+    2857         ice_vsi_free_arrays(vsi);
+    2858         return ret;
+    2859 }
+
+regards,
+dan carpenter
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
