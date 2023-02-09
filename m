@@ -1,96 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E5C1C636D3
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Feb 2023 01:08:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 117A2C05027
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Feb 2023 02:23:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 258CD812D0;
-	Thu,  9 Feb 2023 01:08:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 258CD812D0
+	by smtp4.osuosl.org (Postfix) with ESMTP id 90337405AE;
+	Thu,  9 Feb 2023 02:23:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 90337405AE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675904936;
-	bh=j5xUv1nVyVsc+RGRyvUyTHleJGo5sHVZEVw04L+S2fU=;
+	s=default; t=1675909383;
+	bh=hxthgw9MKuGJNO141ccTtfbZ1w7pvQAFDYJFKZjhT04=;
 	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=8ElUbVWenIZAp11hPc8WPRdvpZ5uKLFvAnjOssMDW4LBj4SUOdcCK0zfDll+KcMea
-	 YCfwBqNpoaZnuUJYbX/94CmXt955NKF6mj8cZ0od5NhtjgnvI6YrRKYHbrcvYhs8oX
-	 YAsp71f5vAM2oNp0bCKonCh0CzMaLsupXAuyBc/CWZbwBOhSJ8dILCFBd32i94idPw
-	 kklTymnaMADxBONxy8QJdDf0Qsu+KOX3NW1dPmrR9jAPusxXXCPSGvU0U7X2D7Jpic
-	 qkWorOWvVoL/RRva+VBRYgKxy+gQ75Ucilhm0ebyhI6hxdYnMVgHCkV7r7h18HqGfe
-	 siKXpAq2cG4pw==
+	b=19A0fwiiYx82JsLHcpKqqJUjBiYZW5peIB5cWqnvIBt32Sqh/LFVMm/uQWzLwEwrG
+	 sFJDLpKTWDMa5uL8w4bpVW3QcXiubO9uNUrUeUeq79ZQomyPUdOvFb87zED4CuGFzD
+	 zbnD5wmrazA0vKlf6RddBC49FPGLp6jZOIDTCqeZnboBqjP+o4wlBE66RjzqzOn3A2
+	 9HOlsaNSnwHo9uYPAheho2JYwc0u1B9ugt7T2HsIt9cXbneTx+AvT6bl7VRtKpWJiW
+	 yiZN4lb4DILOvJTYHJErmcNBJqPhI/eURZkGUDZ+lQsT4S+BfGuukfexsSCR7c148i
+	 KIpfTTowLNfrw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dXc_l3Z6wURQ; Thu,  9 Feb 2023 01:08:55 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 3J71eUhP9aT4; Thu,  9 Feb 2023 02:23:02 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2AAEA812E1;
-	Thu,  9 Feb 2023 01:08:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2AAEA812E1
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 5E60C1BF409
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 01:08:54 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4799A40877;
+	Thu,  9 Feb 2023 02:23:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4799A40877
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 3D94B1BF31B
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 02:23:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 2E1D9611A0
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 01:08:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2E1D9611A0
+ by smtp4.osuosl.org (Postfix) with ESMTP id 22BD240877
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 02:23:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 22BD240877
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pUzIXV9DgTqW for <intel-wired-lan@lists.osuosl.org>;
- Thu,  9 Feb 2023 01:08:53 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id p_vmdAmHT0K2 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  9 Feb 2023 02:23:00 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3EB8061019
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com
- [IPv6:2607:f8b0:4864:20::62d])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3EB8061019
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 01:08:53 +0000 (UTC)
-Received: by mail-pl1-x62d.google.com with SMTP id g17so1167790ply.11
- for <intel-wired-lan@lists.osuosl.org>; Wed, 08 Feb 2023 17:08:53 -0800 (PST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D61D2405AE
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com
+ [IPv6:2a00:1450:4864:20::636])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D61D2405AE
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 02:22:59 +0000 (UTC)
+Received: by mail-ej1-x636.google.com with SMTP id dr8so2308941ejc.12
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 08 Feb 2023 18:22:59 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20210112;
  h=cc:to:subject:message-id:date:from:in-reply-to:references
  :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
  :reply-to;
- bh=aeYFdVMeaGXZ8pQboFFMn+nx5SREQ527KN43sqYMZK4=;
- b=RQ2fbgvZMavJ7iLur+iBRLlhO/Xadongkb/e0WCnXFZcCKOf/X+YnCbWwnCg8e/UYL
- hLisGqHOfw34l6oIpAAT4tXph0NuxMsC8z0zDKLpl7+1TaPbFsYY5bYuOQAwKf4LpbtY
- 7G/TWlYqeXmWPTPstdiETB6btSkpl0ylbXmzt/VAms19Zyvb2McHCHLHBfTyGYES6v5+
- kiiI+4VoOf5zpN6Xbgr2eh2khfuiWVC6agZfCZfMOBtuGZeMQy0r83+xPF2uO5sElaOK
- JpVDZI6mkjNBRTuwh8yBdijohs1eRIJGNbteWRXGohv47369pvLBKXpKfTnApAfSe7ku
- A8UQ==
-X-Gm-Message-State: AO0yUKVHAl594wXKG/kN6i6X/2ZeqeJMCTUu88HoTsZrk0rE65rn0+Qi
- JxhSNleaBR3F/6b8VlXHCjcrhXuXV2ogyRnr5AI=
-X-Google-Smtp-Source: AK7set/L/4PK5i4Nk/tyPcro29I7KmIGdPeypqvLUROocj5T/PUnxi+fk2QbitZqJPpg97x6sOnqA/3zjYpVYE3ZEg4=
-X-Received: by 2002:a17:90a:3f10:b0:22c:1179:3b8f with SMTP id
- l16-20020a17090a3f1000b0022c11793b8fmr1157190pjc.118.1675904932512; Wed, 08
- Feb 2023 17:08:52 -0800 (PST)
+ bh=leuP8yKTp3aOhzWpWEwkgHZjeuEA988zNE5XLgEB/so=;
+ b=EI1XnuEGnvdk6R+LBgmDHvH2NLjoGoBoCn1DGBKFEjRiIOhMK02jbw6OLk/EYoOXpM
+ 4hLrm1gRADO2ZA+WJd7NvzKeQcOZD8PLvGkQfEWY406GkZIZ8e/xplPCkDQxt/jwVK7z
+ +lwB0sxqWx8WTxu4WYFyfvbSqWu5zEGnq6sh7nuXFW0lGdKOHDMP1piS0po829pE22X+
+ ebeZcIYr9Fvydw3/FTmp87NGyuGP7w66vCTbVn77Hx+FQiSWS8405GzYlRXruaZGeRZV
+ IgA/2z8KR6P9B5NvnAKCIXl3K1jxDKz1kxOzkevW1mkSXuRuDKYusN9bq/IqX2qgeFWR
+ d4sQ==
+X-Gm-Message-State: AO0yUKXrwXVYNiWj6s7sPi17KwkqoWgbgI2of5G4iBIMnmgyoFaIad7Q
+ SJvfO0n0j5oMfy1vkve3LDtfYBktiHtYdplhZGw=
+X-Google-Smtp-Source: AK7set/4KZ2LcrSiwi/BxXZmB2rIF+nIQeFkZYqrqhk6Msqj4/lIOf9JfPU+15yabUHY0Mp2clYxFyOL0ldkEU+Ccs8=
+X-Received: by 2002:a17:906:2ed1:b0:882:177f:34bb with SMTP id
+ s17-20020a1709062ed100b00882177f34bbmr2067833eji.16.1675909377887; Wed, 08
+ Feb 2023 18:22:57 -0800 (PST)
 MIME-Version: 1.0
 References: <20230204133535.99921-1-kerneljasonxing@gmail.com>
  <20230204133535.99921-4-kerneljasonxing@gmail.com>
  <CAL+tcoD9nE-Ad7+XoshoQ8qp7C0H+McKX=F6xt2+UF1BeWXKbg@mail.gmail.com>
-In-Reply-To: <CAL+tcoD9nE-Ad7+XoshoQ8qp7C0H+McKX=F6xt2+UF1BeWXKbg@mail.gmail.com>
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 8 Feb 2023 17:08:41 -0800
-Message-ID: <CAKgT0Uc7d5iomJnrvPdngt6u9ns7S1ismhH_C2R1YWarg04wWg@mail.gmail.com>
-To: Jason Xing <kerneljasonxing@gmail.com>
+ <CAKgT0Uc7d5iomJnrvPdngt6u9ns7S1ismhH_C2R1YWarg04wWg@mail.gmail.com>
+In-Reply-To: <CAKgT0Uc7d5iomJnrvPdngt6u9ns7S1ismhH_C2R1YWarg04wWg@mail.gmail.com>
+From: Jason Xing <kerneljasonxing@gmail.com>
+Date: Thu, 9 Feb 2023 10:22:19 +0800
+Message-ID: <CAL+tcoBEv6tiAES-JPF4er_bkQWuqZ1m0ouVc19EARCOcaDidQ@mail.gmail.com>
+To: Alexander Duyck <alexander.duyck@gmail.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=gmail.com; s=20210112;
  h=cc:to:subject:message-id:date:from:in-reply-to:references
  :mime-version:from:to:cc:subject:date:message-id:reply-to;
- bh=aeYFdVMeaGXZ8pQboFFMn+nx5SREQ527KN43sqYMZK4=;
- b=m5qVYRU6vrrvo3NCP1kIhk82cUP8n1q+wscOOGZ3Nfs+BH1TzSokfpoFyz7E0llJIA
- elebF+cIMLkX4iASQm6US6FGFeK2eb967qwsEuc6dK+SliWi+3mVW7iNnIsQ8ps5T6Cj
- wooz9gfrvTvIcdOe+VN1eFXF0LrDpvAJH62ZxRIADFWqMfRAMFGWorIAUmIlhJMazU53
- TNRbW+lPDu7Pmr+6HjfwqtrrumxoQuhTSHkGpAu41pIGW84aiZa+ylKWYPH5oeZVYwj/
- J1AllVYSAPExNzjWfNc85MJSUrPWoJcaAqIsJqxf/64ofhZGS9V+CbzrW3J5ePkXNDQa
- HkAw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=leuP8yKTp3aOhzWpWEwkgHZjeuEA988zNE5XLgEB/so=;
+ b=STC9BSG74WRy2CJ0lOKy/cq0WnQPt0M1fWU6T3DIy4zcmrsWzaUSpLgckFebj07crB
+ vRwGZagzqcxscD757/zI1xFocxXOV+2QhjoOtlnSB3E/A1Rl0H1b14kdHnOprxCjqSOu
+ qDm2sx2F1dHKeRxzkYcbOS4rmifY2dfeNuoixFaFffEBmMgG+ROoSa77Rw4ny4Ok4P3q
+ ltsfAmFjErMFYgqEtHhYPZvI3yf4H41KVbL/izEO4lETjN0nwW7NQTfT/y1VF1NdVFcl
+ MCgfzn/Q7ITcX9AsP8NptN6O2WO0Z4FPOD5BKz1Ap4yFwMqz5kFvq3l9rDswTUqPCdsq
+ FNnw==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20210112 header.b=m5qVYRU6
+ header.a=rsa-sha256 header.s=20210112 header.b=STC9BSG7
 Subject: Re: [Intel-wired-lan] [PATCH net 3/3] ixgbe: add double of VLAN
  header when computing the max MTU
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -116,24 +117,39 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Feb 8, 2023 at 4:47 PM Jason Xing <kerneljasonxing@gmail.com> wrote:
+On Thu, Feb 9, 2023 at 9:08 AM Alexander Duyck
+<alexander.duyck@gmail.com> wrote:
 >
-> CC Alexander Duyck
+> On Wed, Feb 8, 2023 at 4:47 PM Jason Xing <kerneljasonxing@gmail.com> wrote:
+> >
+> > CC Alexander Duyck
+> >
+> > Hello Alexander, thanks for reviewing the other two patches of this
+> > patchset last night. Would you mind reviewing the last one? :)
+> >
+> > Thanks,
+> > Jason
 >
-> Hello Alexander, thanks for reviewing the other two patches of this
-> patchset last night. Would you mind reviewing the last one? :)
+> It looks like this patch isn't in the patch queue at:
+> https://patchwork.kernel.org/project/netdevbpf/list/
 >
-> Thanks,
-> Jason
 
-It looks like this patch isn't in the patch queue at:
-https://patchwork.kernel.org/project/netdevbpf/list/
+I got it.
 
-I believe you will need to resubmit it to get it accepted upstream.
+I have no clue on how patchwork works, I searched the current email,
+see https://patchwork.kernel.org/project/netdevbpf/patch/20230204133535.99921-4-kerneljasonxing@gmail.com/.
 
-The patch itself looks fine. Feel free to add my reviewed by when you submit it.
+> I believe you will need to resubmit it to get it accepted upstream.
+>
+> The patch itself looks fine. Feel free to add my reviewed by when you submit it.
+>
+> Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
 
-Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
+Anyway, I'm going to send a v2 version with your reviewed-by label.
+
+Thank you, Alexander :)
+
+Jason
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
