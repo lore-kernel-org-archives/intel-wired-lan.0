@@ -1,86 +1,81 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92F09C05027
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Feb 2023 02:57:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97A55C05027
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Feb 2023 05:30:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 169ED4091F;
-	Thu,  9 Feb 2023 02:57:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 169ED4091F
+	by smtp3.osuosl.org (Postfix) with ESMTP id 08DC860BA9;
+	Thu,  9 Feb 2023 05:30:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 08DC860BA9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1675911475;
-	bh=1ZepYvMyJOrPjxHtEr/JU5OqLJ3VtB5oaaYZj+QypAk=;
+	s=default; t=1675920626;
+	bh=yQhBWr5x3wbKOcBhOsVFalmXiVliqvKspMX1NiIOyZY=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=gS7Dw2GNZZ9aGSbVXvgUn/DsT8nE3i7QLXZ3qXiTsE1rNbK3Ff0UtvMpp1h/n3LDr
-	 7e9KzSKXF4m0PpHGXrQhjTlLhhifLqLdqPFG4Vevhx3r36E6PRmnRDezUQD+Uwp/IO
-	 J3ZEOLlR6lwHLXDCAi6lQqDOO7hzrEDD4zoBgXWnyJ+SRmvjLfWOu3BqUaU7PJqxfe
-	 1FLy7S3cyqbyjhWUayil/NGuCUACdXIoRpEGdDFgaq5zMHBGXwpFjJeB8N3oKlpuTi
-	 i7kVx8KyefrrjbbyJVjAK2x9za9lhMfq8kUVERpFBvptRRzYp9qioj6kf0ewr8Bwfy
-	 2M5ZnDj4e66Wg==
+	b=Jo5XfWa5qaG5m3cBOJ3NjHHEd68XVN8SlDdkw5n1kaf3IaRYFrbSEBasNVWEYfKEL
+	 bHm3w8xCDMDAgUoOpR/t3IU0Rm4e/u60VkbaOa8kSdEfqwjHMFKyCt4fdNMboeWigI
+	 OW4cQUbMvYRysDptXNmsHomIqyx9cf5drsGZyJssYmOyfI0N8eHImFW+GWGgjfKewR
+	 Jo6ACB1BzgP7QwWdQway5g4J55YuhIWmPeMKAd6ye6cN2Sl9OZU13syp8uuPHXiIi9
+	 muxYrQpeUzvNu2aGPu2tKwqq0+cQZbwpRICiEgGweKJ7iLWCASfKtuCH/Wr4DtjO9E
+	 Cihg7yRh5Lifg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id yNpZzwIMBGfF; Thu,  9 Feb 2023 02:57:54 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 8zudDlT81UK0; Thu,  9 Feb 2023 05:30:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E13A240929;
-	Thu,  9 Feb 2023 02:57:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E13A240929
+	by smtp3.osuosl.org (Postfix) with ESMTP id 05FF860BBF;
+	Thu,  9 Feb 2023 05:30:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 05FF860BBF
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id B76C41BF31B
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 02:57:52 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id AFE021BF3CA
+ for <intel-wired-lan@osuosl.org>; Thu,  9 Feb 2023 05:30:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8627640948
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 02:57:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8627640948
+ by smtp4.osuosl.org (Postfix) with ESMTP id 881BE408FC
+ for <intel-wired-lan@osuosl.org>; Thu,  9 Feb 2023 05:30:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 881BE408FC
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zaR-xkZFE_ic for <intel-wired-lan@lists.osuosl.org>;
- Thu,  9 Feb 2023 02:57:51 +0000 (UTC)
+ with ESMTP id NnP_bmXVZ90w for <intel-wired-lan@osuosl.org>;
+ Thu,  9 Feb 2023 05:30:22 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 42CAC4091F
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 42CAC4091F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Feb 2023 02:57:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9087240342
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9087240342
+ for <intel-wired-lan@osuosl.org>; Thu,  9 Feb 2023 05:30:22 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 1C18861857;
- Thu,  9 Feb 2023 02:57:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B614FC4339B;
- Thu,  9 Feb 2023 02:57:48 +0000 (UTC)
-Date: Wed, 8 Feb 2023 18:57:47 -0800
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 60A9961910;
+ Thu,  9 Feb 2023 05:30:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 26224C433D2;
+ Thu,  9 Feb 2023 05:30:20 +0000 (UTC)
+Date: Wed, 8 Feb 2023 21:30:19 -0800
 From: Jakub Kicinski <kuba@kernel.org>
-To: Alexander Duyck <alexander.duyck@gmail.com>
-Message-ID: <20230208185747.1266ff72@kernel.org>
-In-Reply-To: <CAL+tcoBEv6tiAES-JPF4er_bkQWuqZ1m0ouVc19EARCOcaDidQ@mail.gmail.com>
-References: <20230204133535.99921-1-kerneljasonxing@gmail.com>
- <20230204133535.99921-4-kerneljasonxing@gmail.com>
- <CAL+tcoD9nE-Ad7+XoshoQ8qp7C0H+McKX=F6xt2+UF1BeWXKbg@mail.gmail.com>
- <CAKgT0Uc7d5iomJnrvPdngt6u9ns7S1ismhH_C2R1YWarg04wWg@mail.gmail.com>
- <CAL+tcoBEv6tiAES-JPF4er_bkQWuqZ1m0ouVc19EARCOcaDidQ@mail.gmail.com>
+To: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+Message-ID: <20230208213019.460d7163@kernel.org>
+In-Reply-To: <20230208003327.29538-1-muhammad.husaini.zulkifli@intel.com>
+References: <20230208003327.29538-1-muhammad.husaini.zulkifli@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1675911469;
- bh=a28hWGAgXHcKzAwvAl61mkMfOBl1pXY4hll/Ho3lNJU=;
+ d=kernel.org; s=k20201202; t=1675920620;
+ bh=uWW9dWpkbiGcWrVSQm1mz+11j5Dg0e8H4KXyOQIpb8E=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=hFGueY1iBFTGzvoCXw8WuYMojfQ7hm/W72zRL2305nodv0mlftmUGZavHgrsI4p9c
- TG5mJ5zSKf6rzrUOpIIJN225l2j2nVRUoKxRulY6qucGkDe2QxVBBvQSOLt7ONNURk
- KXrFIoTiQRzoE2gSh9f90/8Qgke2CQMQV68kCVqLMcHb+//khyYuJ9iUmG28FQq1oI
- sEPqYWPur0GwmuZ8Fdy7H2L1Rw9gWCii0xeNTpmYrmDyuBXY3Ve05uqQjCn2IvxTEv
- z/exISKVOoMgyRHdC2rWmDW2eIQcMKLpPA8yEDhAC+8EmNjBdtHLqsth5lnn11BG4F
- 9oHzLIq+aNUuA==
+ b=snKZxoxFzmqJLrxK+Df3USmMOEjNd1Otm5Mnwg7ZQ/uuHalrZVMDA7DZIRnepDNhg
+ /h4zPkgxOZMfk69OSUZUE3FbcfoxYVZouTqssqgAGcOtV38ow+x0AgcJheVdBMfcl+
+ 4XURkbBC2zYl8S9lV+KV35hv9erbwVqqLJm0mxRHS/aXQ1o0UDWWy6tQr1yMHPEk/h
+ 97P9v7czahrQTDrzj6QRCJAJ91p4j8PuXuzD7DkHinaNkVk22LWSGrv4nz/upPoO90
+ TqiNSMlXDeKwpISgy/5QmuwCPQvYNXsXtx6UGevFIB9HRsBASRnrleGfc+F2tYg1ar
+ yy3sEq0nonMng==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=hFGueY1i
-Subject: Re: [Intel-wired-lan] [PATCH net 3/3] ixgbe: add double of VLAN
- header when computing the max MTU
+ header.a=rsa-sha256 header.s=k20201202 header.b=snKZxoxF
+Subject: Re: [Intel-wired-lan] [PATCH net-next v3] igc: offload queue max
+ SDU from tc-taprio
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,32 +88,84 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: daniel@iogearbox.net, Jason Xing <kerneljasonxing@gmail.com>,
- intel-wired-lan@lists.osuosl.org, richardcochran@gmail.com,
- john.fastabend@gmail.com, jesse.brandeburg@intel.com, ast@kernel.org,
- edumazet@google.com, anthony.l.nguyen@intel.com,
- Jason Xing <kernelxing@tencent.com>, netdev@vger.kernel.org,
- bpf@vger.kernel.org, pabeni@redhat.com, davem@davemloft.net,
- linux-kernel@vger.kernel.org, hawk@kernel.org
+Cc: leon@kernel.org, intel-wired-lan@osuosl.org, edumazet@google.com,
+ anthony.l.nguyen@intel.com, netdev@vger.kernel.org, pabeni@redhat.com,
+ davem@davemloft.net, tee.min.tan@linux.intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 9 Feb 2023 10:22:19 +0800 Jason Xing wrote:
-> > It looks like this patch isn't in the patch queue at:
-> > https://patchwork.kernel.org/project/netdevbpf/list/
+On Wed,  8 Feb 2023 08:33:27 +0800 Muhammad Husaini Zulkifli wrote:
+> From: Tan Tee Min <tee.min.tan@linux.intel.com>
 > 
-> I got it.
-> 
-> I have no clue on how patchwork works, I searched the current email,
-> see https://patchwork.kernel.org/project/netdevbpf/patch/20230204133535.99921-4-kerneljasonxing@gmail.com/.
-> 
-> > I believe you will need to resubmit it to get it accepted upstream.
+> Add support for configuring the max SDU for each Tx queue.
+> If not specified, keep the default.
 
-The patches are marked as Awaiting Upstream, that's why they don't show
-up. We usually let Tony pick up patches for Intel's drivers rather than
-applying directly.
+> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+> index 0cc327294dfb5..38ad437957ada 100644
+> --- a/drivers/net/ethernet/intel/igc/igc_main.c
+> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
+> @@ -1508,6 +1508,7 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+>  	__le32 launch_time = 0;
+>  	u32 tx_flags = 0;
+>  	unsigned short f;
+> +	u32 max_sdu = 0;
+
+This variable can be moved to the scope of the if() ?
+
+>  	ktime_t txtime;
+>  	u8 hdr_len = 0;
+>  	int tso = 0;
+> @@ -1527,6 +1528,14 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+>  		return NETDEV_TX_BUSY;
+>  	}
+>  
+> +	if (tx_ring->max_sdu > 0) {
+> +		max_sdu = tx_ring->max_sdu +
+> +			  (skb_vlan_tagged(skb) ? VLAN_HLEN : 0);
+> +
+> +		if (skb->len > max_sdu)
+
+You should increment some counter here. Otherwise it's a silent discard.
+
+> +			goto skb_drop;
+> +	}
+> +
+>  	if (!tx_ring->launchtime_enable)
+>  		goto done;
+>  
+> @@ -1606,6 +1615,11 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+>  	dev_kfree_skb_any(first->skb);
+
+first->skb is skb, as far as I can tell, you can reshuffle this code to
+avoid adding the new return flow.
+
+>  	first->skb = NULL;
+>  
+> +	return NETDEV_TX_OK;
+> +
+> +skb_drop:
+> +	dev_kfree_skb_any(skb);
+> +
+>  	return NETDEV_TX_OK;
+>  }
+
+> @@ -6122,6 +6137,16 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+>  		}
+>  	}
+>  
+> +	for (i = 0; i < adapter->num_tx_queues; i++) {
+> +		struct igc_ring *ring = adapter->tx_ring[i];
+> +		struct net_device *dev = adapter->netdev;
+> +
+> +		if (qopt->max_sdu[i])
+> +			ring->max_sdu = qopt->max_sdu[i] + dev->hard_header_len;
+
+why hard_header_len? Isn't it always ETH_HLEN?
+
+> +		else
+> +			ring->max_sdu = 0;
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
