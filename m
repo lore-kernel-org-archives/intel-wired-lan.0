@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58D8BC636D4
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Feb 2023 16:24:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25922C6379F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Feb 2023 16:24:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0662E402ED;
-	Mon, 13 Feb 2023 16:24:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0662E402ED
+	by smtp4.osuosl.org (Postfix) with ESMTP id B1616402E5;
+	Mon, 13 Feb 2023 16:24:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B1616402E5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1676305450;
-	bh=YB106DdWgji4vk7QxDeG/pyQq55lK1sTD+lectaLtWc=;
+	s=default; t=1676305454;
+	bh=6KLEmKtXawQ/QKwV+gCYoTAvNua8XeDiSv0OHEAOAjA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=gh/xgz1I6CQPL9LcWat9goI6iH7VbcbUs82r+FLnaJqNHxi9aKEyLkXJQCgXFJt5J
-	 j3GrtZtdml/FO/TSIe0NbhWtSO3blrBQCSlUFm7OAdDlpGO3HWJ3HQ+Z1PVtO2/ZFT
-	 v7K52kdIDyUr6wIqLkqex/cz7jeo009MA8MUFaSGAKFQbGG0qQuP2sH7RDg74wcUDm
-	 qBp/CmUl906SdvkX4Tx6uTNwfiLEw5DwLXVmNKNI6TOVkYYG3wrepx3qk55nV2yKsH
-	 dtqWHNq8GOvoG8FglmTWOfEypgBVloy/ylT3de1QdWhiftIVy92aXbYccVbdxbX5Fw
-	 ee0guJfSB9rvw==
+	b=QEGoh+FzWkla+jOSw/q5Kuwa7ak01iiGWZUYDpduZ8yVK1V1wzWy6gF+V04PM1Wo1
+	 qDJ4s5rcRWqp+uorKXnKNpodneDQdYZva6sJXUa+M7ju0kVZh4Rja+4Y/pqjV73MPl
+	 dU09ThYMV33taH90Tb4IJgH1EZwtKPGzbJgSEAVBzZFnOxQsTG7y2apvyu1FpPB0Wg
+	 mmTfSzs/IUEFvzzkGIPnxlXHOasjX6a6PH2gxI46gPkMHq9ks/8DF6GxeWrCeivdXV
+	 Ra72cL0A0Sc7RTMJUiwvWnS5BD6LXfLfHxIZIWyb0c6lbk1bApV9e1VqWCgvH1UcW2
+	 wGji12tYrsW9g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id I8fvEM6jXRrp; Mon, 13 Feb 2023 16:24:09 +0000 (UTC)
+	with ESMTP id ChjzlBihNgq2; Mon, 13 Feb 2023 16:24:13 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7AE8F40304;
-	Mon, 13 Feb 2023 16:24:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7AE8F40304
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 251F21BF421
+	by smtp4.osuosl.org (Postfix) with ESMTP id CAA2440304;
+	Mon, 13 Feb 2023 16:24:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CAA2440304
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 3485E1BF853
  for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 63D7041731
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 63D7041731
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1B41941A1C
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1B41941A1C
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id RmZmt8LQxKlj for <intel-wired-lan@lists.osuosl.org>;
- Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id xT6hCSByofZ7 for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 11 Feb 2023 07:41:41 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8700B41733
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 63E4B41A4B
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8700B41733
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 63E4B41A4B
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:41 +0000 (UTC)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVc-0003zZ-Rr; Sat, 11 Feb 2023 08:41:20 +0100
+ id 1pQkVc-0003ze-Rr; Sat, 11 Feb 2023 08:41:20 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
  by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVX-004ALj-Lz; Sat, 11 Feb 2023 08:41:16 +0100
+ id 1pQkVX-004ALx-Ty; Sat, 11 Feb 2023 08:41:17 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVX-00BfsL-0r; Sat, 11 Feb 2023 08:41:15 +0100
+ id 1pQkVX-00Bfsv-3d; Sat, 11 Feb 2023 08:41:15 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
@@ -69,8 +69,8 @@ To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
  Heiner Kallweit <hkallweit1@gmail.com>
-Date: Sat, 11 Feb 2023 08:41:05 +0100
-Message-Id: <20230211074113.2782508-2-o.rempel@pengutronix.de>
+Date: Sat, 11 Feb 2023 08:41:09 +0100
+Message-Id: <20230211074113.2782508-6-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230211074113.2782508-1-o.rempel@pengutronix.de>
 References: <20230211074113.2782508-1-o.rempel@pengutronix.de>
@@ -81,8 +81,8 @@ X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
  SAEximRunCond expanded to false
 X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Mon, 13 Feb 2023 16:23:36 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v8 1/9] net: dsa: microchip:
- enable EEE support
+Subject: [Intel-wired-lan] [PATCH net-next v8 5/9] net: phy: add
+ genphy_c45_ethtool_get/set_eee() support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,110 +103,403 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Some of KSZ9477 family switches provides EEE support. To enable it, we
-just need to register set_mac_eee/set_mac_eee handlers and validate
-supported chip version and port.
+Add replacement for phy_ethtool_get/set_eee() functions.
 
-Currently supported chip variants are: KSZ8563, KSZ9477, KSZ9563,
-KSZ9567, KSZ9893, KSZ9896, KSZ9897. KSZ8563 supports EEE only with
-100BaseTX/Full.  Other chips support 100BaseTX/Full and 1000BaseTX/Full.
-Low Power Idle configuration is not supported and currently not
-documented in the datasheets.
+Current phy_ethtool_get/set_eee() implementation is great and it is
+possible to make it even better:
+- this functionality is for devices implementing parts of IEEE 802.3
+  specification beyond Clause 22. The better place for this code is
+  phy-c45.c
+- currently it is able to do read/write operations on PHYs with
+  different abilities to not existing registers. It is better to
+  use stored supported_eee abilities to avoid false read/write
+  operations.
+- the eee_active detection will provide wrong results on not supported
+  link modes. It is better to validate speed/duplex properties against
+  supported EEE link modes.
+- it is able to support only limited amount of link modes. We have more
+  EEE link modes...
 
-EEE PHY specific tunings are not documented in the switch datasheets, but can
-overlap with KSZ9131 specification.
+By refactoring this code I address most of this point except of the last
+one. Adding additional EEE link modes will need more work.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
-Acked-by: Arun Ramadoss <arun.ramadoss@microchip.com>
 ---
- drivers/net/dsa/microchip/ksz_common.c | 66 ++++++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
+ drivers/net/phy/phy-c45.c | 238 ++++++++++++++++++++++++++++++++++++++
+ include/linux/mdio.h      |  58 ++++++++++
+ include/linux/phy.h       |   7 ++
+ include/uapi/linux/mdio.h |   8 ++
+ 4 files changed, 311 insertions(+)
 
-diff --git a/drivers/net/dsa/microchip/ksz_common.c b/drivers/net/dsa/microchip/ksz_common.c
-index 46becc0382d6..729b36eeb2c4 100644
---- a/drivers/net/dsa/microchip/ksz_common.c
-+++ b/drivers/net/dsa/microchip/ksz_common.c
-@@ -2673,6 +2673,70 @@ static int ksz_max_mtu(struct dsa_switch *ds, int port)
- 	return -EOPNOTSUPP;
+diff --git a/drivers/net/phy/phy-c45.c b/drivers/net/phy/phy-c45.c
+index 2d10d22e7684..b4910c4c21d7 100644
+--- a/drivers/net/phy/phy-c45.c
++++ b/drivers/net/phy/phy-c45.c
+@@ -661,6 +661,129 @@ int genphy_c45_read_mdix(struct phy_device *phydev)
+ }
+ EXPORT_SYMBOL_GPL(genphy_c45_read_mdix);
+ 
++/**
++ * genphy_c45_write_eee_adv - write advertised EEE link modes
++ * @phydev: target phy_device struct
++ * @adv: the linkmode advertisement settings
++ */
++int genphy_c45_write_eee_adv(struct phy_device *phydev, unsigned long *adv)
++{
++	int val, changed;
++
++	if (linkmode_intersects(phydev->supported, PHY_EEE_CAP1_FEATURES)) {
++		val = linkmode_to_mii_eee_cap1_t(adv);
++
++		/* In eee_broken_modes are stored MDIO_AN_EEE_ADV specific raw
++		 * register values.
++		 */
++		val &= ~phydev->eee_broken_modes;
++
++		/* IEEE 802.3-2018 45.2.7.13 EEE advertisement 1
++		 * (Register 7.60)
++		 */
++		val = phy_modify_mmd_changed(phydev, MDIO_MMD_AN,
++					     MDIO_AN_EEE_ADV,
++					     MDIO_EEE_100TX | MDIO_EEE_1000T |
++					     MDIO_EEE_10GT | MDIO_EEE_1000KX |
++					     MDIO_EEE_10GKX4 | MDIO_EEE_10GKR,
++					     val);
++		if (val < 0)
++			return val;
++		if (val > 0)
++			changed = 1;
++	}
++
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_10baseT1L_Full_BIT,
++			      phydev->supported_eee)) {
++		val = linkmode_adv_to_mii_10base_t1_t(adv);
++		/* IEEE 802.3cg-2019 45.2.7.25 10BASE-T1 AN control register
++		 * (Register 7.526)
++		 */
++		val = phy_modify_mmd_changed(phydev, MDIO_MMD_AN,
++					     MDIO_AN_10BT1_AN_CTRL,
++					     MDIO_AN_10BT1_AN_CTRL_ADV_EEE_T1L,
++					     val);
++		if (val < 0)
++			return val;
++		if (val > 0)
++			changed = 1;
++	}
++
++	return changed;
++}
++
++/**
++ * genphy_c45_read_eee_adv - read advertised EEE link modes
++ * @phydev: target phy_device struct
++ * @adv: the linkmode advertisement status
++ */
++static int genphy_c45_read_eee_adv(struct phy_device *phydev,
++				   unsigned long *adv)
++{
++	int val;
++
++	if (linkmode_intersects(phydev->supported, PHY_EEE_CAP1_FEATURES)) {
++		/* IEEE 802.3-2018 45.2.7.13 EEE advertisement 1
++		 * (Register 7.60)
++		 */
++		val = phy_read_mmd(phydev, MDIO_MMD_AN, MDIO_AN_EEE_ADV);
++		if (val < 0)
++			return val;
++
++		mii_eee_cap1_mod_linkmode_t(adv, val);
++	}
++
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_10baseT1L_Full_BIT,
++			      phydev->supported_eee)) {
++		/* IEEE 802.3cg-2019 45.2.7.25 10BASE-T1 AN control register
++		 * (Register 7.526)
++		 */
++		val = phy_read_mmd(phydev, MDIO_MMD_AN, MDIO_AN_10BT1_AN_CTRL);
++		if (val < 0)
++			return val;
++
++		mii_10base_t1_adv_mod_linkmode_t(adv, val);
++	}
++
++	return 0;
++}
++
++/**
++ * genphy_c45_read_eee_lpa - read advertised LP EEE link modes
++ * @phydev: target phy_device struct
++ * @lpa: the linkmode LP advertisement status
++ */
++static int genphy_c45_read_eee_lpa(struct phy_device *phydev,
++				   unsigned long *lpa)
++{
++	int val;
++
++	if (linkmode_intersects(phydev->supported, PHY_EEE_CAP1_FEATURES)) {
++		/* IEEE 802.3-2018 45.2.7.14 EEE link partner ability 1
++		 * (Register 7.61)
++		 */
++		val = phy_read_mmd(phydev, MDIO_MMD_AN, MDIO_AN_EEE_LPABLE);
++		if (val < 0)
++			return val;
++
++		mii_eee_cap1_mod_linkmode_t(lpa, val);
++	}
++
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_10baseT1L_Full_BIT,
++			      phydev->supported_eee)) {
++		/* IEEE 802.3cg-2019 45.2.7.26 10BASE-T1 AN status register
++		 * (Register 7.527)
++		 */
++		val = phy_read_mmd(phydev, MDIO_MMD_AN, MDIO_AN_10BT1_AN_STAT);
++		if (val < 0)
++			return val;
++
++		mii_10base_t1_adv_mod_linkmode_t(lpa, val);
++	}
++
++	return 0;
++}
++
+ /**
+  * genphy_c45_read_eee_cap1 - read supported EEE link modes from register 3.20
+  * @phydev: target phy_device struct
+@@ -1194,6 +1317,121 @@ int genphy_c45_plca_get_status(struct phy_device *phydev,
+ }
+ EXPORT_SYMBOL_GPL(genphy_c45_plca_get_status);
+ 
++/**
++ * genphy_c45_eee_is_active - get EEE status
++ * @phydev: target phy_device struct
++ * @adv: variable to store advertised linkmodes
++ * @lp: variable to store LP advertised linkmodes
++ * @is_enabled: variable to store EEE enabled/disabled configuration value
++ *
++ * Description: this function will read local and link partner PHY
++ * advertisements. Compare them return current EEE state.
++ */
++int genphy_c45_eee_is_active(struct phy_device *phydev, unsigned long *adv,
++			     unsigned long *lp, bool *is_enabled)
++{
++	__ETHTOOL_DECLARE_LINK_MODE_MASK(tmp_adv) = {};
++	__ETHTOOL_DECLARE_LINK_MODE_MASK(tmp_lp) = {};
++	__ETHTOOL_DECLARE_LINK_MODE_MASK(common);
++	bool eee_enabled, eee_active;
++	int ret;
++
++	ret = genphy_c45_read_eee_adv(phydev, tmp_adv);
++	if (ret)
++		return ret;
++
++	ret = genphy_c45_read_eee_lpa(phydev, tmp_lp);
++	if (ret)
++		return ret;
++
++	eee_enabled = !linkmode_empty(tmp_adv);
++	linkmode_and(common, tmp_adv, tmp_lp);
++	if (eee_enabled && !linkmode_empty(common))
++		eee_active = phy_check_valid(phydev->speed, phydev->duplex,
++					     common);
++	else
++		eee_active = false;
++
++	if (adv)
++		linkmode_copy(adv, tmp_adv);
++	if (lp)
++		linkmode_copy(lp, tmp_lp);
++	if (is_enabled)
++		*is_enabled = eee_enabled;
++
++	return eee_active;
++}
++EXPORT_SYMBOL(genphy_c45_eee_is_active);
++
++/**
++ * genphy_c45_ethtool_get_eee - get EEE supported and status
++ * @phydev: target phy_device struct
++ * @data: ethtool_eee data
++ *
++ * Description: it reports the Supported/Advertisement/LP Advertisement
++ * capabilities.
++ */
++int genphy_c45_ethtool_get_eee(struct phy_device *phydev,
++			       struct ethtool_eee *data)
++{
++	__ETHTOOL_DECLARE_LINK_MODE_MASK(adv) = {};
++	__ETHTOOL_DECLARE_LINK_MODE_MASK(lp) = {};
++	bool overflow = false, is_enabled;
++	int ret;
++
++	ret = genphy_c45_eee_is_active(phydev, adv, lp, &is_enabled);
++	if (ret < 0)
++		return ret;
++
++	data->eee_enabled = is_enabled;
++	data->eee_active = ret;
++
++	if (!ethtool_convert_link_mode_to_legacy_u32(&data->supported,
++						     phydev->supported_eee))
++		overflow = true;
++	if (!ethtool_convert_link_mode_to_legacy_u32(&data->advertised, adv))
++		overflow = true;
++	if (!ethtool_convert_link_mode_to_legacy_u32(&data->lp_advertised, lp))
++		overflow = true;
++
++	if (overflow)
++		phydev_warn(phydev, "Not all supported or advertised EEE link modes were passed to the user space\n");
++
++	return 0;
++}
++EXPORT_SYMBOL(genphy_c45_ethtool_get_eee);
++
++/**
++ * genphy_c45_ethtool_set_eee - get EEE supported and status
++ * @phydev: target phy_device struct
++ * @data: ethtool_eee data
++ *
++ * Description: it reportes the Supported/Advertisement/LP Advertisement
++ * capabilities.
++ */
++int genphy_c45_ethtool_set_eee(struct phy_device *phydev,
++			       struct ethtool_eee *data)
++{
++	__ETHTOOL_DECLARE_LINK_MODE_MASK(adv) = {};
++	int ret;
++
++	if (data->eee_enabled) {
++		if (data->advertised)
++			adv[0] = data->advertised;
++		else
++			linkmode_copy(adv, phydev->supported_eee);
++	}
++
++	ret = genphy_c45_write_eee_adv(phydev, adv);
++	if (ret < 0)
++		return ret;
++	if (ret > 0)
++		return phy_restart_aneg(phydev);
++
++	return 0;
++}
++EXPORT_SYMBOL(genphy_c45_ethtool_set_eee);
++
+ struct phy_driver genphy_c45_driver = {
+ 	.phy_id         = 0xffffffff,
+ 	.phy_id_mask    = 0xffffffff,
+diff --git a/include/linux/mdio.h b/include/linux/mdio.h
+index e75583f5d967..27013d6bf24a 100644
+--- a/include/linux/mdio.h
++++ b/include/linux/mdio.h
+@@ -428,6 +428,64 @@ static inline void mii_eee_cap1_mod_linkmode_t(unsigned long *adv, u32 val)
+ 			 adv, val & MDIO_EEE_10GKR);
  }
  
-+static int ksz_validate_eee(struct dsa_switch *ds, int port)
++/**
++ * linkmode_to_mii_eee_cap1_t()
++ * @adv: the linkmode advertisement settings
++ *
++ * A function that translates linkmode to value for IEEE 802.3-2018 45.2.7.13
++ * "EEE advertisement 1" register (7.60)
++ */
++static inline u32 linkmode_to_mii_eee_cap1_t(unsigned long *adv)
 +{
-+	struct ksz_device *dev = ds->priv;
++	u32 result = 0;
 +
-+	if (!dev->info->internal_phy[port])
-+		return -EOPNOTSUPP;
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_100baseT_Full_BIT, adv))
++		result |= MDIO_EEE_100TX;
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT, adv))
++		result |= MDIO_EEE_1000T;
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_10000baseT_Full_BIT, adv))
++		result |= MDIO_EEE_10GT;
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_1000baseKX_Full_BIT, adv))
++		result |= MDIO_EEE_1000KX;
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_10000baseKX4_Full_BIT, adv))
++		result |= MDIO_EEE_10GKX4;
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_10000baseKR_Full_BIT, adv))
++		result |= MDIO_EEE_10GKR;
 +
-+	switch (dev->chip_id) {
-+	case KSZ8563_CHIP_ID:
-+	case KSZ9477_CHIP_ID:
-+	case KSZ9563_CHIP_ID:
-+	case KSZ9567_CHIP_ID:
-+	case KSZ9893_CHIP_ID:
-+	case KSZ9896_CHIP_ID:
-+	case KSZ9897_CHIP_ID:
-+		return 0;
-+	}
-+
-+	return -EOPNOTSUPP;
++	return result;
 +}
 +
-+static int ksz_get_mac_eee(struct dsa_switch *ds, int port,
-+			   struct ethtool_eee *e)
++/**
++ * mii_10base_t1_adv_mod_linkmode_t()
++ * @adv: linkmode advertisement settings
++ * @val: register value
++ *
++ * A function that translates IEEE 802.3cg-2019 45.2.7.26 "10BASE-T1 AN status"
++ * register (7.527) value to the linkmode.
++ */
++static inline void mii_10base_t1_adv_mod_linkmode_t(unsigned long *adv, u16 val)
 +{
-+	int ret;
-+
-+	ret = ksz_validate_eee(ds, port);
-+	if (ret)
-+		return ret;
-+
-+	/* There is no documented control of Tx LPI configuration. */
-+	e->tx_lpi_enabled = true;
-+
-+	/* There is no documented control of Tx LPI timer. According to tests
-+	 * Tx LPI timer seems to be set by default to minimal value.
-+	 */
-+	e->tx_lpi_timer = 0;
-+
-+	return 0;
++	linkmode_mod_bit(ETHTOOL_LINK_MODE_10baseT1L_Full_BIT,
++			 adv, val & MDIO_AN_10BT1_AN_CTRL_ADV_EEE_T1L);
 +}
 +
-+static int ksz_set_mac_eee(struct dsa_switch *ds, int port,
-+			   struct ethtool_eee *e)
++/**
++ * linkmode_adv_to_mii_10base_t1_t()
++ * @adv: linkmode advertisement settings
++ *
++ * A function that translates the linkmode to IEEE 802.3cg-2019 45.2.7.25
++ * "10BASE-T1 AN control" register (7.526) value.
++ */
++static inline u32 linkmode_adv_to_mii_10base_t1_t(unsigned long *adv)
 +{
-+	struct ksz_device *dev = ds->priv;
-+	int ret;
++	u32 result = 0;
 +
-+	ret = ksz_validate_eee(ds, port);
-+	if (ret)
-+		return ret;
++	if (linkmode_test_bit(ETHTOOL_LINK_MODE_10baseT1L_Full_BIT, adv))
++		result |= MDIO_AN_10BT1_AN_CTRL_ADV_EEE_T1L;
 +
-+	if (!e->tx_lpi_enabled) {
-+		dev_err(dev->dev, "Disabling EEE Tx LPI is not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	if (e->tx_lpi_timer) {
-+		dev_err(dev->dev, "Setting EEE Tx LPI timer is not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
++	return result;
 +}
 +
- static void ksz_set_xmii(struct ksz_device *dev, int port,
- 			 phy_interface_t interface)
- {
-@@ -3130,6 +3194,8 @@ static const struct dsa_switch_ops ksz_switch_ops = {
- 	.port_txtstamp		= ksz_port_txtstamp,
- 	.port_rxtstamp		= ksz_port_rxtstamp,
- 	.port_setup_tc		= ksz_setup_tc,
-+	.get_mac_eee		= ksz_get_mac_eee,
-+	.set_mac_eee		= ksz_set_mac_eee,
- };
+ int __mdiobus_read(struct mii_bus *bus, int addr, u32 regnum);
+ int __mdiobus_write(struct mii_bus *bus, int addr, u32 regnum, u16 val);
+ int __mdiobus_modify_changed(struct mii_bus *bus, int addr, u32 regnum,
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index 7a8e541de3f3..727bff531a14 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -1758,6 +1758,13 @@ int genphy_c45_plca_set_cfg(struct phy_device *phydev,
+ 			    const struct phy_plca_cfg *plca_cfg);
+ int genphy_c45_plca_get_status(struct phy_device *phydev,
+ 			       struct phy_plca_status *plca_st);
++int genphy_c45_eee_is_active(struct phy_device *phydev, unsigned long *adv,
++			     unsigned long *lp, bool *is_enabled);
++int genphy_c45_ethtool_get_eee(struct phy_device *phydev,
++			       struct ethtool_eee *data);
++int genphy_c45_ethtool_set_eee(struct phy_device *phydev,
++			       struct ethtool_eee *data);
++int genphy_c45_write_eee_adv(struct phy_device *phydev, unsigned long *adv);
  
- struct ksz_device *ksz_switch_alloc(struct device *base, void *priv)
+ /* Generic C45 PHY driver */
+ extern struct phy_driver genphy_c45_driver;
+diff --git a/include/uapi/linux/mdio.h b/include/uapi/linux/mdio.h
+index 75b7257a51e1..256b463e47a6 100644
+--- a/include/uapi/linux/mdio.h
++++ b/include/uapi/linux/mdio.h
+@@ -79,6 +79,8 @@
+ #define MDIO_AN_T1_LP_L		517	/* BASE-T1 AN LP Base Page ability register [15:0] */
+ #define MDIO_AN_T1_LP_M		518	/* BASE-T1 AN LP Base Page ability register [31:16] */
+ #define MDIO_AN_T1_LP_H		519	/* BASE-T1 AN LP Base Page ability register [47:32] */
++#define MDIO_AN_10BT1_AN_CTRL	526	/* 10BASE-T1 AN control register */
++#define MDIO_AN_10BT1_AN_STAT	527	/* 10BASE-T1 AN status register */
+ #define MDIO_PMA_PMD_BT1_CTRL	2100	/* BASE-T1 PMA/PMD control register */
+ 
+ /* LASI (Link Alarm Status Interrupt) registers, defined by XENPAK MSA. */
+@@ -340,6 +342,12 @@
+ #define MDIO_AN_T1_LP_H_10L_TX_HI_REQ	0x1000	/* 10BASE-T1L High Level LP Transmit Request */
+ #define MDIO_AN_T1_LP_H_10L_TX_HI	0x2000	/* 10BASE-T1L High Level LP Transmit Ability */
+ 
++/* 10BASE-T1 AN control register */
++#define MDIO_AN_10BT1_AN_CTRL_ADV_EEE_T1L	0x4000 /* 10BASE-T1L EEE ability advertisement */
++
++/* 10BASE-T1 AN status register */
++#define MDIO_AN_10BT1_AN_STAT_LPA_EEE_T1L	0x4000 /* 10BASE-T1L LP EEE ability advertisement */
++
+ /* BASE-T1 PMA/PMD control register */
+ #define MDIO_PMA_PMD_BT1_CTRL_CFG_MST	0x4000 /* MASTER-SLAVE config value */
+ 
 -- 
 2.30.2
 
