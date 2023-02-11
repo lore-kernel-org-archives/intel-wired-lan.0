@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47100C636CC
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Feb 2023 16:24:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58D8BC636D4
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Feb 2023 16:24:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E4D2040245;
-	Mon, 13 Feb 2023 16:24:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E4D2040245
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0662E402ED;
+	Mon, 13 Feb 2023 16:24:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0662E402ED
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1676305445;
-	bh=E9X8/dVqprVIsZAWVocsM0Jn5Um2C8bFztNkBfCG3TA=;
+	s=default; t=1676305450;
+	bh=YB106DdWgji4vk7QxDeG/pyQq55lK1sTD+lectaLtWc=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ogubkb6ph4hIjhG/AQ6BTSJsZaO6eERkJ0H33UwdrdiIA0naCmAMLPHZkmqMg6X5t
-	 /8sOwYwA3STqgZXDGk2b+3Z51eDVfKpjALksGcOouSAglWtuSl2RXgWYui/9PYqjVF
-	 ybMf56K2CbU01Ebgb8r6szvSCe1C7HpeX+2sER3IAEdA8GywTvAgKA936CXdQrVeU2
-	 DZcYt57hsrkEifAQnG7HPhjgb785IbnuVENhCMLV3gsP7/s2ws/vkHadoFT8taszct
-	 kPibAUyq+UMyfKPieCkqQ0YKao8gNhRVb8f4gjlkXF29hngHxJwKt17myEV8KicYBT
-	 cIEe+OZA1Opzg==
+	b=gh/xgz1I6CQPL9LcWat9goI6iH7VbcbUs82r+FLnaJqNHxi9aKEyLkXJQCgXFJt5J
+	 j3GrtZtdml/FO/TSIe0NbhWtSO3blrBQCSlUFm7OAdDlpGO3HWJ3HQ+Z1PVtO2/ZFT
+	 v7K52kdIDyUr6wIqLkqex/cz7jeo009MA8MUFaSGAKFQbGG0qQuP2sH7RDg74wcUDm
+	 qBp/CmUl906SdvkX4Tx6uTNwfiLEw5DwLXVmNKNI6TOVkYYG3wrepx3qk55nV2yKsH
+	 dtqWHNq8GOvoG8FglmTWOfEypgBVloy/ylT3de1QdWhiftIVy92aXbYccVbdxbX5Fw
+	 ee0guJfSB9rvw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VRVc9bENEN6Z; Mon, 13 Feb 2023 16:24:04 +0000 (UTC)
+	with ESMTP id I8fvEM6jXRrp; Mon, 13 Feb 2023 16:24:09 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2891340304;
-	Mon, 13 Feb 2023 16:24:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2891340304
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7AE8F40304;
+	Mon, 13 Feb 2023 16:24:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7AE8F40304
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 1194D1BF421
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:42 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 251F21BF421
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3D3ED41732
+ by smtp2.osuosl.org (Postfix) with ESMTP id 63D7041731
  for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3D3ED41732
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 63D7041731
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id QMrUoexdFSZ5 for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id RmZmt8LQxKlj for <intel-wired-lan@lists.osuosl.org>;
  Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 85E0B41731
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8700B41733
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 85E0B41731
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8700B41733
  for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVc-0003zY-Rs; Sat, 11 Feb 2023 08:41:21 +0100
+ id 1pQkVc-0003zZ-Rr; Sat, 11 Feb 2023 08:41:20 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
  by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVX-004ALg-BS; Sat, 11 Feb 2023 08:41:16 +0100
+ id 1pQkVX-004ALj-Lz; Sat, 11 Feb 2023 08:41:16 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVX-00Bfsd-2N; Sat, 11 Feb 2023 08:41:15 +0100
+ id 1pQkVX-00BfsL-0r; Sat, 11 Feb 2023 08:41:15 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
@@ -69,8 +69,8 @@ To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
  Heiner Kallweit <hkallweit1@gmail.com>
-Date: Sat, 11 Feb 2023 08:41:07 +0100
-Message-Id: <20230211074113.2782508-4-o.rempel@pengutronix.de>
+Date: Sat, 11 Feb 2023 08:41:05 +0100
+Message-Id: <20230211074113.2782508-2-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230211074113.2782508-1-o.rempel@pengutronix.de>
 References: <20230211074113.2782508-1-o.rempel@pengutronix.de>
@@ -81,8 +81,8 @@ X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
  SAEximRunCond expanded to false
 X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Mon, 13 Feb 2023 16:23:36 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v8 3/9] net: phy: micrel: add
- ksz9477_get_features()
+Subject: [Intel-wired-lan] [PATCH net-next v8 1/9] net: dsa: microchip:
+ enable EEE support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,61 +103,110 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-KSZ8563R, which has same PHYID as KSZ9477 family, will change "EEE control
-and capability 1" (Register 3.20) content depending on configuration of
-"EEE advertisement 1" (Register 7.60). Changes on the 7.60 will affect
-3.20 register.
+Some of KSZ9477 family switches provides EEE support. To enable it, we
+just need to register set_mac_eee/set_mac_eee handlers and validate
+supported chip version and port.
 
-So, instead of depending on register 3.20, driver should set supported_eee.
+Currently supported chip variants are: KSZ8563, KSZ9477, KSZ9563,
+KSZ9567, KSZ9893, KSZ9896, KSZ9897. KSZ8563 supports EEE only with
+100BaseTX/Full.  Other chips support 100BaseTX/Full and 1000BaseTX/Full.
+Low Power Idle configuration is not supported and currently not
+documented in the datasheets.
 
-Proper supported_eee configuration is needed to make use of generic
-PHY c45 set/get_eee functions provided by next patches.
+EEE PHY specific tunings are not documented in the switch datasheets, but can
+overlap with KSZ9131 specification.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
 Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+Acked-by: Arun Ramadoss <arun.ramadoss@microchip.com>
 ---
- drivers/net/phy/micrel.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ drivers/net/dsa/microchip/ksz_common.c | 66 ++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-diff --git a/drivers/net/phy/micrel.c b/drivers/net/phy/micrel.c
-index 727de4f4a14d..20738314635e 100644
---- a/drivers/net/phy/micrel.c
-+++ b/drivers/net/phy/micrel.c
-@@ -1387,6 +1387,26 @@ static int ksz9131_config_aneg(struct phy_device *phydev)
- 	return genphy_config_aneg(phydev);
+diff --git a/drivers/net/dsa/microchip/ksz_common.c b/drivers/net/dsa/microchip/ksz_common.c
+index 46becc0382d6..729b36eeb2c4 100644
+--- a/drivers/net/dsa/microchip/ksz_common.c
++++ b/drivers/net/dsa/microchip/ksz_common.c
+@@ -2673,6 +2673,70 @@ static int ksz_max_mtu(struct dsa_switch *ds, int port)
+ 	return -EOPNOTSUPP;
  }
  
-+static int ksz9477_get_features(struct phy_device *phydev)
++static int ksz_validate_eee(struct dsa_switch *ds, int port)
++{
++	struct ksz_device *dev = ds->priv;
++
++	if (!dev->info->internal_phy[port])
++		return -EOPNOTSUPP;
++
++	switch (dev->chip_id) {
++	case KSZ8563_CHIP_ID:
++	case KSZ9477_CHIP_ID:
++	case KSZ9563_CHIP_ID:
++	case KSZ9567_CHIP_ID:
++	case KSZ9893_CHIP_ID:
++	case KSZ9896_CHIP_ID:
++	case KSZ9897_CHIP_ID:
++		return 0;
++	}
++
++	return -EOPNOTSUPP;
++}
++
++static int ksz_get_mac_eee(struct dsa_switch *ds, int port,
++			   struct ethtool_eee *e)
 +{
 +	int ret;
 +
-+	ret = genphy_read_abilities(phydev);
++	ret = ksz_validate_eee(ds, port);
 +	if (ret)
 +		return ret;
 +
-+	/* The "EEE control and capability 1" (Register 3.20) seems to be
-+	 * influenced by the "EEE advertisement 1" (Register 7.60). Changes
-+	 * on the 7.60 will affect 3.20. So, we need to construct our own list
-+	 * of caps.
-+	 * KSZ8563R should have 100BaseTX/Full only.
++	/* There is no documented control of Tx LPI configuration. */
++	e->tx_lpi_enabled = true;
++
++	/* There is no documented control of Tx LPI timer. According to tests
++	 * Tx LPI timer seems to be set by default to minimal value.
 +	 */
-+	linkmode_and(phydev->supported_eee, phydev->supported,
-+		     PHY_EEE_CAP1_FEATURES);
++	e->tx_lpi_timer = 0;
 +
 +	return 0;
 +}
 +
- #define KSZ8873MLL_GLOBAL_CONTROL_4	0x06
- #define KSZ8873MLL_GLOBAL_CONTROL_4_DUPLEX	BIT(6)
- #define KSZ8873MLL_GLOBAL_CONTROL_4_SPEED	BIT(4)
-@@ -3597,6 +3617,7 @@ static struct phy_driver ksphy_driver[] = {
- 	.handle_interrupt = kszphy_handle_interrupt,
- 	.suspend	= genphy_suspend,
- 	.resume		= genphy_resume,
-+	.get_features	= ksz9477_get_features,
- } };
++static int ksz_set_mac_eee(struct dsa_switch *ds, int port,
++			   struct ethtool_eee *e)
++{
++	struct ksz_device *dev = ds->priv;
++	int ret;
++
++	ret = ksz_validate_eee(ds, port);
++	if (ret)
++		return ret;
++
++	if (!e->tx_lpi_enabled) {
++		dev_err(dev->dev, "Disabling EEE Tx LPI is not supported\n");
++		return -EINVAL;
++	}
++
++	if (e->tx_lpi_timer) {
++		dev_err(dev->dev, "Setting EEE Tx LPI timer is not supported\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static void ksz_set_xmii(struct ksz_device *dev, int port,
+ 			 phy_interface_t interface)
+ {
+@@ -3130,6 +3194,8 @@ static const struct dsa_switch_ops ksz_switch_ops = {
+ 	.port_txtstamp		= ksz_port_txtstamp,
+ 	.port_rxtstamp		= ksz_port_rxtstamp,
+ 	.port_setup_tc		= ksz_setup_tc,
++	.get_mac_eee		= ksz_get_mac_eee,
++	.set_mac_eee		= ksz_set_mac_eee,
+ };
  
- module_phy_driver(ksphy_driver);
+ struct ksz_device *ksz_switch_alloc(struct device *base, void *priv)
 -- 
 2.30.2
 
