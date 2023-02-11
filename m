@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B16DDC636D4
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Feb 2023 16:23:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D493CC64EC7
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Feb 2023 16:23:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 58B9040493;
-	Mon, 13 Feb 2023 16:23:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 58B9040493
+	by smtp4.osuosl.org (Postfix) with ESMTP id 71A3540926;
+	Mon, 13 Feb 2023 16:23:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 71A3540926
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1676305424;
-	bh=G3AvN+RCBOempyaxAnBRXFc4FcqmXLSJitNJJASdLf4=;
+	s=default; t=1676305428;
+	bh=eoBINQvWpSstz08loFluTOlcdql+02jJs4iFqqFOZ3o=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=2LURdtlS7R2x0Q0GCgrMLoMjx8VtDO7eIo97WHAVwX5g+P/gUdkxJT4mYizcOBlx9
-	 PpB3lpl2aueOKlCf+TYZkijREhLyxS7SaauzfvaeBWbahaoKIX0DRKdGUcTajXQq3W
-	 H+gxQV4b5PwaQ5y2GhVXCowJRciJ+TvzbEveRoGR5DQeiEk/MDS8WnjpeUMpVacRcx
-	 z2Noypkjd5FLPmAOGeiRkdI8vRBdHAnOJAbSNvIOPB//YauNlN6jfcjGx6RHf8aw/s
-	 1DFlk/SORVxhYuhnGxTRvSJPBoi/AqVKM6NPhKrizPCrMuqKYDKnRgix3ERISs1TyI
-	 Hsc339uouIDXA==
+	b=Digu6dbfDH70zj/5PUE3CDjvdz+DRWU6BIfub0ltLht412a4es6ZNhhyndllv/NJE
+	 EmvDSiwwAhmmVII6kkXG0hScjB/ksHlRVLGxZimkW8nU0E4RmWzpzUPISbT3lex0Yz
+	 8wPQckxBEQHsKujoVXwsxedY53R1TY1UQdPQFYI0VfW4FPpV16tCTdlZVxnSanfDap
+	 035Fdbs7VYhtz3UOF5IC303e5OU2tAuNwefG+XypH3UpZ4fduUcebZn6YNasOOKwAU
+	 WtMhP2bFOV0epjp5P4f1XRx5+2j5Gpcj0kC2K/c+gbrt0hG5cnq3zCbRAfXAvCn/34
+	 SkZh4/AIsjSYg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xsO2v8uYD0LJ; Mon, 13 Feb 2023 16:23:43 +0000 (UTC)
+	with ESMTP id MMSqtXFGc1h5; Mon, 13 Feb 2023 16:23:47 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B59C8402AA;
-	Mon, 13 Feb 2023 16:23:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B59C8402AA
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2BE25402E5;
+	Mon, 13 Feb 2023 16:23:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2BE25402E5
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 1273E1BF853
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 625401BF421
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E112141731
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E112141731
+ by smtp2.osuosl.org (Postfix) with ESMTP id B35CC41734
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B35CC41734
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CngcYQgd0hiU for <intel-wired-lan@lists.osuosl.org>;
- Sat, 11 Feb 2023 07:41:39 +0000 (UTC)
+ with ESMTP id DS-vtEU6goAQ for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DAEB6400D7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 005E841732
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp2.osuosl.org (Postfix) with ESMTPS id DAEB6400D7
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:38 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 005E841732
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:39 +0000 (UTC)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVc-0003zf-Rq; Sat, 11 Feb 2023 08:41:20 +0100
+ id 1pQkVc-0003zX-Rt; Sat, 11 Feb 2023 08:41:21 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
  by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVX-004ALz-VP; Sat, 11 Feb 2023 08:41:17 +0100
+ id 1pQkVX-004ALc-6G; Sat, 11 Feb 2023 08:41:16 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVX-00BftM-5b; Sat, 11 Feb 2023 08:41:15 +0100
+ id 1pQkVX-00Bft4-4N; Sat, 11 Feb 2023 08:41:15 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
@@ -69,8 +69,8 @@ To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
  Heiner Kallweit <hkallweit1@gmail.com>
-Date: Sat, 11 Feb 2023 08:41:12 +0100
-Message-Id: <20230211074113.2782508-9-o.rempel@pengutronix.de>
+Date: Sat, 11 Feb 2023 08:41:10 +0100
+Message-Id: <20230211074113.2782508-7-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230211074113.2782508-1-o.rempel@pengutronix.de>
 References: <20230211074113.2782508-1-o.rempel@pengutronix.de>
@@ -81,8 +81,8 @@ X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
  SAEximRunCond expanded to false
 X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Mon, 13 Feb 2023 16:23:36 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v8 8/9] net: phy: migrate
- phy_init_eee() to genphy_c45_eee_is_active()
+Subject: [Intel-wired-lan] [PATCH net-next v8 6/9] net: phy: c22: migrate to
+ genphy_c45_write_eee_adv()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,127 +103,48 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Reduce code duplicated by migrating phy_init_eee() to
-genphy_c45_eee_is_active().
+Migrate from genphy_config_eee_advert() to genphy_c45_write_eee_adv().
+
+It should work as before except write operation to the EEE adv registers
+will be done only if some EEE abilities was detected.
+
+If some driver will have a regression, related driver should provide own
+.get_features callback. See micrel.c:ksz9477_get_features() as example.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
 Reviewed-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/net/phy/phy.c | 89 +++++++------------------------------------
- 1 file changed, 14 insertions(+), 75 deletions(-)
+ drivers/net/phy/phy_device.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
-index 41cfb24c48c1..36533746630e 100644
---- a/drivers/net/phy/phy.c
-+++ b/drivers/net/phy/phy.c
-@@ -1457,30 +1457,6 @@ void phy_mac_interrupt(struct phy_device *phydev)
- }
- EXPORT_SYMBOL(phy_mac_interrupt);
- 
--static void mmd_eee_adv_to_linkmode(unsigned long *advertising, u16 eee_adv)
--{
--	linkmode_zero(advertising);
--
--	if (eee_adv & MDIO_EEE_100TX)
--		linkmode_set_bit(ETHTOOL_LINK_MODE_100baseT_Full_BIT,
--				 advertising);
--	if (eee_adv & MDIO_EEE_1000T)
--		linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
--				 advertising);
--	if (eee_adv & MDIO_EEE_10GT)
--		linkmode_set_bit(ETHTOOL_LINK_MODE_10000baseT_Full_BIT,
--				 advertising);
--	if (eee_adv & MDIO_EEE_1000KX)
--		linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseKX_Full_BIT,
--				 advertising);
--	if (eee_adv & MDIO_EEE_10GKX4)
--		linkmode_set_bit(ETHTOOL_LINK_MODE_10000baseKX4_Full_BIT,
--				 advertising);
--	if (eee_adv & MDIO_EEE_10GKR)
--		linkmode_set_bit(ETHTOOL_LINK_MODE_10000baseKR_Full_BIT,
--				 advertising);
--}
--
- /**
-  * phy_init_eee - init and check the EEE feature
-  * @phydev: target phy_device struct
-@@ -1493,62 +1469,25 @@ static void mmd_eee_adv_to_linkmode(unsigned long *advertising, u16 eee_adv)
-  */
- int phy_init_eee(struct phy_device *phydev, bool clk_stop_enable)
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index 66a4e62009bb..8d927c5e3bf8 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -2231,7 +2231,10 @@ int __genphy_config_aneg(struct phy_device *phydev, bool changed)
  {
-+	int ret;
+ 	int err;
+ 
+-	if (genphy_config_eee_advert(phydev))
++	err = genphy_c45_write_eee_adv(phydev, phydev->supported_eee);
++	if (err < 0)
++		return err;
++	else if (err)
+ 		changed = true;
+ 
+ 	err = genphy_setup_master_slave(phydev);
+@@ -2653,6 +2656,11 @@ int genphy_read_abilities(struct phy_device *phydev)
+ 				 phydev->supported, val & ESTATUS_1000_XFULL);
+ 	}
+ 
++	/* This is optional functionality. If not supported, we may get an error
++	 * which should be ignored.
++	 */
++	genphy_c45_read_eee_abilities(phydev);
 +
- 	if (!phydev->drv)
- 		return -EIO;
- 
--	/* According to 802.3az,the EEE is supported only in full duplex-mode.
--	 */
--	if (phydev->duplex == DUPLEX_FULL) {
--		__ETHTOOL_DECLARE_LINK_MODE_MASK(common);
--		__ETHTOOL_DECLARE_LINK_MODE_MASK(lp);
--		__ETHTOOL_DECLARE_LINK_MODE_MASK(adv);
--		int eee_lp, eee_cap, eee_adv;
--		int status;
--		u32 cap;
--
--		/* Read phy status to properly get the right settings */
--		status = phy_read_status(phydev);
--		if (status)
--			return status;
--
--		/* First check if the EEE ability is supported */
--		eee_cap = phy_read_mmd(phydev, MDIO_MMD_PCS, MDIO_PCS_EEE_ABLE);
--		if (eee_cap <= 0)
--			goto eee_exit_err;
--
--		cap = mmd_eee_cap_to_ethtool_sup_t(eee_cap);
--		if (!cap)
--			goto eee_exit_err;
--
--		/* Check which link settings negotiated and verify it in
--		 * the EEE advertising registers.
--		 */
--		eee_lp = phy_read_mmd(phydev, MDIO_MMD_AN, MDIO_AN_EEE_LPABLE);
--		if (eee_lp <= 0)
--			goto eee_exit_err;
--
--		eee_adv = phy_read_mmd(phydev, MDIO_MMD_AN, MDIO_AN_EEE_ADV);
--		if (eee_adv <= 0)
--			goto eee_exit_err;
--
--		mmd_eee_adv_to_linkmode(adv, eee_adv);
--		mmd_eee_adv_to_linkmode(lp, eee_lp);
--		linkmode_and(common, adv, lp);
--
--		if (!phy_check_valid(phydev->speed, phydev->duplex, common))
--			goto eee_exit_err;
-+	ret = genphy_c45_eee_is_active(phydev, NULL, NULL, NULL);
-+	if (ret < 0)
-+		return ret;
-+	if (!ret)
-+		return -EPROTONOSUPPORT;
- 
--		if (clk_stop_enable)
--			/* Configure the PHY to stop receiving xMII
--			 * clock while it is signaling LPI.
--			 */
--			phy_set_bits_mmd(phydev, MDIO_MMD_PCS, MDIO_CTRL1,
--					 MDIO_PCS_CTRL1_CLKSTOP_EN);
-+	if (clk_stop_enable)
-+		/* Configure the PHY to stop receiving xMII
-+		 * clock while it is signaling LPI.
-+		 */
-+		ret = phy_set_bits_mmd(phydev, MDIO_MMD_PCS, MDIO_CTRL1,
-+				       MDIO_PCS_CTRL1_CLKSTOP_EN);
- 
--		return 0; /* EEE supported */
--	}
--eee_exit_err:
--	return -EPROTONOSUPPORT;
-+	return ret < 0 ? ret : 0;
+ 	return 0;
  }
- EXPORT_SYMBOL(phy_init_eee);
- 
+ EXPORT_SYMBOL(genphy_read_abilities);
 -- 
 2.30.2
 
