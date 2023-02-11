@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D493CC64EC7
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Feb 2023 16:23:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0944C636CC
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Feb 2023 16:23:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 71A3540926;
-	Mon, 13 Feb 2023 16:23:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 71A3540926
+	by smtp4.osuosl.org (Postfix) with ESMTP id 99DB2402E5;
+	Mon, 13 Feb 2023 16:23:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 99DB2402E5
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1676305428;
-	bh=eoBINQvWpSstz08loFluTOlcdql+02jJs4iFqqFOZ3o=;
+	s=default; t=1676305432;
+	bh=BtFbUw09kz1l3RSjEV+iUmbamqsmt8WlCLTG0dgTo30=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Digu6dbfDH70zj/5PUE3CDjvdz+DRWU6BIfub0ltLht412a4es6ZNhhyndllv/NJE
-	 EmvDSiwwAhmmVII6kkXG0hScjB/ksHlRVLGxZimkW8nU0E4RmWzpzUPISbT3lex0Yz
-	 8wPQckxBEQHsKujoVXwsxedY53R1TY1UQdPQFYI0VfW4FPpV16tCTdlZVxnSanfDap
-	 035Fdbs7VYhtz3UOF5IC303e5OU2tAuNwefG+XypH3UpZ4fduUcebZn6YNasOOKwAU
-	 WtMhP2bFOV0epjp5P4f1XRx5+2j5Gpcj0kC2K/c+gbrt0hG5cnq3zCbRAfXAvCn/34
-	 SkZh4/AIsjSYg==
+	b=OP6DCdd6HZ0qv0085DR1+BLTEbMjHSBa2dRvg4/Rti4EqXmja6unMszdaRxHWrTkY
+	 eFPTFZ2yJ4FSG5ggGK9nucprjIQYZV4rdddaTkMt8fXJFOVd2SyAbt9U0F/ew6d+9X
+	 M0A/ICq0FpnqHove+nYm5L5zxtnIlx19KdYqqmh/orWTDSDtSwWh24gvPhO+VO5xVJ
+	 oYeoKC+ls6yrjMyXS3iFPK89MIWPVcrgAAqhc7YZlWukbpQ3vTTM/IIFO3Nf0Qtdod
+	 S5polq5cLziYzTYepY7cZ6xopz+Ju154zl27P9g+2x/jN+fzIAsn5oJPEPBDYK4Cot
+	 2QNzIR1qDpiBg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id MMSqtXFGc1h5; Mon, 13 Feb 2023 16:23:47 +0000 (UTC)
+	with ESMTP id 1_Xv9G7Cf2kB; Mon, 13 Feb 2023 16:23:51 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2BE25402E5;
-	Mon, 13 Feb 2023 16:23:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2BE25402E5
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 625401BF421
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5D074402ED;
+	Mon, 13 Feb 2023 16:23:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D074402ED
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 715A41BF853
  for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B35CC41734
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B35CC41734
+ by smtp1.osuosl.org (Postfix) with ESMTP id 51617822C9
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 51617822C9
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id DS-vtEU6goAQ for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ZQ6V24IJ0BPH for <intel-wired-lan@lists.osuosl.org>;
  Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 005E841732
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9AF38822C6
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 005E841732
- for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:39 +0000 (UTC)
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9AF38822C6
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 11 Feb 2023 07:41:40 +0000 (UTC)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
  by metis.ext.pengutronix.de with esmtps
  (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.92)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVc-0003zX-Rt; Sat, 11 Feb 2023 08:41:21 +0100
+ id 1pQkVc-0003zd-Rw; Sat, 11 Feb 2023 08:41:20 +0100
 Received: from [2a0a:edc0:0:1101:1d::ac] (helo=dude04.red.stw.pengutronix.de)
  by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVX-004ALc-6G; Sat, 11 Feb 2023 08:41:16 +0100
+ id 1pQkVX-004ALv-SS; Sat, 11 Feb 2023 08:41:17 +0100
 Received: from ore by dude04.red.stw.pengutronix.de with local (Exim 4.94.2)
  (envelope-from <ore@pengutronix.de>)
- id 1pQkVX-00Bft4-4N; Sat, 11 Feb 2023 08:41:15 +0100
+ id 1pQkVX-00Bfsm-2y; Sat, 11 Feb 2023 08:41:15 +0100
 From: Oleksij Rempel <o.rempel@pengutronix.de>
 To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Andrew Lunn <andrew@lunn.ch>, Vivien Didelot <vivien.didelot@gmail.com>,
@@ -69,8 +69,8 @@ To: Woojung Huh <woojung.huh@microchip.com>, UNGLinuxDriver@microchip.com,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Wei Fang <wei.fang@nxp.com>,
  Heiner Kallweit <hkallweit1@gmail.com>
-Date: Sat, 11 Feb 2023 08:41:10 +0100
-Message-Id: <20230211074113.2782508-7-o.rempel@pengutronix.de>
+Date: Sat, 11 Feb 2023 08:41:08 +0100
+Message-Id: <20230211074113.2782508-5-o.rempel@pengutronix.de>
 X-Mailer: git-send-email 2.30.2
 In-Reply-To: <20230211074113.2782508-1-o.rempel@pengutronix.de>
 References: <20230211074113.2782508-1-o.rempel@pengutronix.de>
@@ -81,8 +81,8 @@ X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
  SAEximRunCond expanded to false
 X-PTX-Original-Recipient: intel-wired-lan@lists.osuosl.org
 X-Mailman-Approved-At: Mon, 13 Feb 2023 16:23:36 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v8 6/9] net: phy: c22: migrate to
- genphy_c45_write_eee_adv()
+Subject: [Intel-wired-lan] [PATCH net-next v8 4/9] net: phy: export
+ phy_check_valid() function
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,55 +96,54 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Arun.Ramadoss@microchip.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, Oleksij Rempel <o.rempel@pengutronix.de>,
- intel-wired-lan@lists.osuosl.org, kernel@pengutronix.de
+ Alexander Duyck <alexanderduyck@fb.com>, linux-kernel@vger.kernel.org,
+ Oleksij Rempel <o.rempel@pengutronix.de>, intel-wired-lan@lists.osuosl.org,
+ kernel@pengutronix.de
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Migrate from genphy_config_eee_advert() to genphy_c45_write_eee_adv().
-
-It should work as before except write operation to the EEE adv registers
-will be done only if some EEE abilities was detected.
-
-If some driver will have a regression, related driver should provide own
-.get_features callback. See micrel.c:ksz9477_get_features() as example.
+This function will be needed for genphy_c45_ethtool_get_eee() provided
+by next patch.
 
 Signed-off-by: Oleksij Rempel <o.rempel@pengutronix.de>
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+Reviewed-by: Alexander Duyck <alexanderduyck@fb.com>
 ---
- drivers/net/phy/phy_device.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/net/phy/phy.c | 4 ++--
+ include/linux/phy.h   | 1 +
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 66a4e62009bb..8d927c5e3bf8 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -2231,7 +2231,10 @@ int __genphy_config_aneg(struct phy_device *phydev, bool changed)
+diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+index 3378ca4f49b6..41cfb24c48c1 100644
+--- a/drivers/net/phy/phy.c
++++ b/drivers/net/phy/phy.c
+@@ -242,11 +242,11 @@ unsigned int phy_supported_speeds(struct phy_device *phy,
+  *
+  * Description: Returns true if there is a valid setting, false otherwise.
+  */
+-static inline bool phy_check_valid(int speed, int duplex,
+-				   unsigned long *features)
++bool phy_check_valid(int speed, int duplex, unsigned long *features)
  {
- 	int err;
- 
--	if (genphy_config_eee_advert(phydev))
-+	err = genphy_c45_write_eee_adv(phydev, phydev->supported_eee);
-+	if (err < 0)
-+		return err;
-+	else if (err)
- 		changed = true;
- 
- 	err = genphy_setup_master_slave(phydev);
-@@ -2653,6 +2656,11 @@ int genphy_read_abilities(struct phy_device *phydev)
- 				 phydev->supported, val & ESTATUS_1000_XFULL);
- 	}
- 
-+	/* This is optional functionality. If not supported, we may get an error
-+	 * which should be ignored.
-+	 */
-+	genphy_c45_read_eee_abilities(phydev);
-+
- 	return 0;
+ 	return !!phy_lookup_setting(speed, duplex, features, true);
  }
- EXPORT_SYMBOL(genphy_read_abilities);
++EXPORT_SYMBOL(phy_check_valid);
+ 
+ /**
+  * phy_sanitize_settings - make sure the PHY is set to supported speed and duplex
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index c183a8a27986..7a8e541de3f3 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -1619,6 +1619,7 @@ int phy_start_aneg(struct phy_device *phydev);
+ int phy_aneg_done(struct phy_device *phydev);
+ int phy_speed_down(struct phy_device *phydev, bool sync);
+ int phy_speed_up(struct phy_device *phydev);
++bool phy_check_valid(int speed, int duplex, unsigned long *features);
+ 
+ int phy_restart_aneg(struct phy_device *phydev);
+ int phy_reset_after_clk_enable(struct phy_device *phydev);
 -- 
 2.30.2
 
