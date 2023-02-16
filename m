@@ -4,82 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54667C61DA4
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Feb 2023 03:20:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13B09C636D7
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Feb 2023 03:20:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DA26D81FD4;
-	Thu, 16 Feb 2023 03:20:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DA26D81FD4
+	by smtp1.osuosl.org (Postfix) with ESMTP id B993481FDB;
+	Thu, 16 Feb 2023 03:20:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B993481FDB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1676517621;
-	bh=vugmlpxrBxaL21L/4Zb207XDXndBwwrjEUewr7r/QWI=;
+	s=default; t=1676517628;
+	bh=qunBo1OU5WcBCsWmL1wLX48P1ZCcZ8HYXIVgYQQvuB4=;
 	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=HqSAJiP59qcsTZ2bTpHrRMGX2DA4FpyM+Yd54q9vppuPee9UqM/G/1Yze5Zy7H8KA
-	 3cGZNtCswUc7p5Na+PojAjT31vYfRNQ4gQ6/bgS4J2Wo6kURQ6jENPA9ONUtUKJU8A
-	 h91DpN3Op/zILfOTB5AhIvV0zZiPokODY09mVynm/wgm1gMm67o6rhwga28xkOroLO
-	 kHTeFIqSOgn6SfsDjK6W/yp27enjKRZDpmNTeUBv9Wts0mHFLOf/TbayvDfByUTLwX
-	 vEznT5wGy88WzJp/pL0uwpIoyL6+/3XNtM5dwLfqiJm/SPsmr3R7WpEHwD2pZFz6Pd
-	 Y7EwbXR84lprw==
+	b=d7+Vt2DgXqUaViyaNEjNq36Poktky5ceXSK6mdlkg0J/OoPPwSgdUrAYI0crCSP2J
+	 dxLHwvBSC4LShE7atGMtowS1Zw9CUS2TewF9LDi8lge0Z7bG3YPa3J1qSjB/4+tUQl
+	 +cxchOVjChUYrPU4pAm9if7I9qzZI1tV3Co6ow8hGv6Q4/TWOFeqEsLVtXrjdtz0b6
+	 pjdPC/lghZ4CDMxTntaMtXkQJ3FYepYAh+rLUKD2u1BD9M+Xuk4QSSKjEuAWUWYANM
+	 YebZQZMTTMNZs9pBd4GSODKhzOmhvlK44BA9Kexz8C22sssiY/glNG+LN/ZEglZu/G
+	 DB0YVlDcetN2w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0j6UmNBBG7pT; Thu, 16 Feb 2023 03:20:21 +0000 (UTC)
+	with ESMTP id 5J8X_pdZQUda; Thu, 16 Feb 2023 03:20:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DA36081FDE;
-	Thu, 16 Feb 2023 03:20:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DA36081FDE
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id F3C3C1BF968
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 03:20:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BD81581FE4;
+	Thu, 16 Feb 2023 03:20:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BD81581FE4
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 224C81BF96B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 03:20:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id CC6E860BE4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 03:20:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CC6E860BE4
+ by smtp4.osuosl.org (Postfix) with ESMTP id 09801417CF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 03:20:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 09801417CF
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id rLrdrh-agX05 for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id XC3iZOpCN-EP for <intel-wired-lan@lists.osuosl.org>;
  Thu, 16 Feb 2023 03:20:19 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F149A600BA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF7DC4176B
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp3.osuosl.org (Postfix) with ESMTPS id F149A600BA
+ by smtp4.osuosl.org (Postfix) with ESMTPS id EF7DC4176B
  for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 03:20:18 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 3D82561DAB;
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 3613861C55;
  Thu, 16 Feb 2023 03:20:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 908D5C4339C;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 8C289C433EF;
  Thu, 16 Feb 2023 03:20:17 +0000 (UTC)
 Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
  (localhost.localdomain [127.0.0.1])
  by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
- 78C57E29F41; Thu, 16 Feb 2023 03:20:17 +0000 (UTC)
+ 71292E68D2E; Thu, 16 Feb 2023 03:20:17 +0000 (UTC)
 MIME-Version: 1.0
 From: patchwork-bot+netdevbpf@kernel.org
-Message-Id: <167651761749.25163.14521954005933969050.git-patchwork-notify@kernel.org>
+Message-Id: <167651761745.25163.6662453649144442284.git-patchwork-notify@kernel.org>
 Date: Thu, 16 Feb 2023 03:20:17 +0000
-References: <8a4781511ab6e3cd280e944eef69158954f1a15f.1676385351.git.lorenzo@kernel.org>
-In-Reply-To: <8a4781511ab6e3cd280e944eef69158954f1a15f.1676385351.git.lorenzo@kernel.org>
+References: <f2b537f86b34fc176fbc6b3d249b46a20a87a2f3.1676405131.git.lorenzo@kernel.org>
+In-Reply-To: <f2b537f86b34fc176fbc6b3d249b46a20a87a2f3.1676405131.git.lorenzo@kernel.org>
 To: Lorenzo Bianconi <lorenzo@kernel.org>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=kernel.org; s=k20201202; t=1676517617;
- bh=8NHn6VdKmI/xRIUDKwYgIbZ3NyPBK5jc5xiBk/fK0YQ=;
+ bh=yfqzy3EU2KiH1d0N1+Ms3rlY626BGZ1PQE/BDfIiaog=;
  h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
- b=l4uLC7pb5PmD8rliE0qMqrCPgILviXBnl/Y7u//1esBfQzvBWbqu9GlSuNwzd8tFo
- OAm+VVQjxei6iBqBAi1N37Opc2y3gQSy12xJver+G95gUjQgTH8I9SxZ/TJdvOIsHH
- radNvm9ZwjvGC+ApuFTsJdSyfKlZXWifO9ntdT1QSMGIm9ZpUKa5f1/00NaoN2pGDz
- p72ncjx77djdTTpimkaBpqBiYqIHmwZKHqcjPelD8n2vMBMQUMzlFWUUuQPolF+9qb
- nkcDsOeVnnhy65aDJxI3b2HPcqPvghasLT2FohDwc96r2ZJKmG31ww/1ukn63gCd7X
- DRO3flQhvwVLA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ b=qZpKVw5mKJD5eZyxvJgxFtGpo6nrsHsiY9n3ziO5kr5tKEmEIgxJnR9uUGp1BNYsD
+ 4ozTy9I1R2HqDfvoemSX8TzxwZ2orzEeOlSxtlLVPJUph1oylIppplJhW8hmtvV2vn
+ C8OZ9eRpiprKdD+b1IuDSsKQOQLGTN2ljY4jTeY27oQiSXUz00cTfxPR209RfCkJGR
+ 5/IWOaAW6nv88gVdXK9fINsBpbHjKN8gojp7WFK+CxVVNzp/WuISk4nVSDDDMpsSmR
+ Ybszik6tja9Io+DsocjH3JDuOFXuMDpAJg6pEQG0FlPtgS9YqxF86IB0AiAORiJQ1S
+ a/PdzWyCsZ1zA==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=l4uLC7pb
-Subject: Re: [Intel-wired-lan] [PATCH v2 net-next] ice: update xdp_features
- with xdp multi-buff
+ header.a=rsa-sha256 header.s=k20201202 header.b=qZpKVw5m
+Subject: Re: [Intel-wired-lan] [PATCH net-next] i40e: check vsi type before
+ setting xdp_features flag
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,21 +105,18 @@ Hello:
 This patch was applied to netdev/net-next.git (master)
 by Jakub Kicinski <kuba@kernel.org>:
 
-On Tue, 14 Feb 2023 15:39:27 +0100 you wrote:
-> Now ice driver supports xdp multi-buffer so add it to xdp_features.
-> Check vsi type before setting xdp_features flag.
+On Tue, 14 Feb 2023 21:07:33 +0100 you wrote:
+> Set xdp_features flag just for I40E_VSI_MAIN vsi type since XDP is
+> supported just in this configuration.
 > 
 > Signed-off-by: Lorenzo Bianconi <lorenzo@kernel.org>
 > ---
-> Changes since v1:
-> - rebase on top of net-next
-> - check vsi type before setting xdp_features flag
-> 
-> [...]
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 
 Here is the summary with links:
-  - [v2,net-next] ice: update xdp_features with xdp multi-buff
-    https://git.kernel.org/netdev/net-next/c/b6a4103c3538
+  - [net-next] i40e: check vsi type before setting xdp_features flag
+    https://git.kernel.org/netdev/net-next/c/9dd6e53ef63d
 
 You are awesome, thank you!
 -- 
