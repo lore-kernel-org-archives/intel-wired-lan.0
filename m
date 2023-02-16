@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDEF2C636D7
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Feb 2023 16:17:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E23A3C636CC
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Feb 2023 16:17:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9890561249;
-	Thu, 16 Feb 2023 16:17:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9890561249
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8B1DB61293;
+	Thu, 16 Feb 2023 16:17:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8B1DB61293
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1676564236;
-	bh=j0fTRiVvVB1SiTBrqqLXVg3F8Q3fbFUTC/3lsgzO8zE=;
+	s=default; t=1676564240;
+	bh=TnLrmP13Q+gu5iUPZTCZnqx06f24PBu6zKs6m2pZbAc=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=DuP6zf/+8WOq3C1z2RP8DhNs1LBdja4MoUVtZZtvu+mGhqXMndFyZBU7XxQ79VLvN
-	 ycuNJ4/xOMXZPg7+6cxqj/Tzh3JGXK5PLHY3bQQbGMIc2DHo69EuTD2j68lGl9ch+n
-	 /eQpbFAdphga2fE/RFFLZPJTkDEYCHxgM4o+iDfxrsU3PDJ6l/NqTsVBNz9lHETGlL
-	 1wDBoGiAVRdGtoeQAzy4MEs7zj2ebhYPP1DEqKs3tTTyvagXb311g6m52xKAgSz6Rl
-	 LTyuC0YDDh1rNK3EvhDWZM+SYEI+AntFKN1TkviF8V2rzTlwERaQVWIVCnit/bO8A4
-	 eBlvwilf3vd5Q==
+	b=e/9XLS4RYiGXvbzx7aV/nggGh3n/EL/i24T5ytQnWosFrMuLmEGf+MwW0lUdUdjfD
+	 VZg52pNPiq8g0T/VwSXuQNkhkUOQo7Qb/KALl2GZjlUh4t6rcwPNNa4TINlT5/UHV8
+	 lX/3ftDpK23XTAA/LZ9ILOG1XbdXCeGgxVy7H+16jXRey8FMmrO4lvS/GoZxVHWPBy
+	 cfsH6OqwC6UjQlKmWio1I4b4YNZ5vauAuQNW7cc1mxbOQIsRGWdHiKwHI8AJz/CHhZ
+	 VY9w9LLTwuqTnj+acRfK7QOLqdbUbLfiT6qDdz3Xr5fbQpc6UuvjB4kWjjGn6C14wk
+	 9lPWO9exUSXlg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id GyC4Qm3VOZIV; Thu, 16 Feb 2023 16:17:15 +0000 (UTC)
+	with ESMTP id HhOsV2g2yz4g; Thu, 16 Feb 2023 16:17:19 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 89B33612E6;
-	Thu, 16 Feb 2023 16:17:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 89B33612E6
+	by smtp3.osuosl.org (Postfix) with ESMTP id 74CDF612E6;
+	Thu, 16 Feb 2023 16:17:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 74CDF612E6
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8EFB61BF5A5
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 14:15:29 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 77A121BF5A5
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 14:15:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 61518611E0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 14:15:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 61518611E0
+ by smtp3.osuosl.org (Postfix) with ESMTP id 75106611FB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 14:15:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 75106611FB
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1QC1YZ0xUmKr for <intel-wired-lan@lists.osuosl.org>;
- Thu, 16 Feb 2023 14:15:27 +0000 (UTC)
+ with ESMTP id h9W27iZAJPd6 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 Feb 2023 14:15:28 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4EBF6611EB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C64A1611EB
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4EBF6611EB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 14:15:27 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10623"; a="359154738"
-X-IronPort-AV: E=Sophos;i="5.97,302,1669104000"; d="scan'208";a="359154738"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C64A1611EB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Feb 2023 14:15:28 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10623"; a="359154744"
+X-IronPort-AV: E=Sophos;i="5.97,302,1669104000"; d="scan'208";a="359154744"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Feb 2023 06:15:23 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10623"; a="738838100"
-X-IronPort-AV: E=Sophos;i="5.97,302,1669104000"; d="scan'208";a="738838100"
+ 16 Feb 2023 06:15:24 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10623"; a="738838113"
+X-IronPort-AV: E=Sophos;i="5.97,302,1669104000"; d="scan'208";a="738838113"
 Received: from unknown (HELO paamrpdk12-S2600BPB.aw.intel.com)
  ([10.228.151.145])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Feb 2023 06:15:22 -0800
+ 16 Feb 2023 06:15:23 -0800
 From: Tirthendu Sarkar <tirthendu.sarkar@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 16 Feb 2023 19:30:36 +0530
-Message-Id: <20230216140043.109345-2-tirthendu.sarkar@intel.com>
+Date: Thu, 16 Feb 2023 19:30:37 +0530
+Message-Id: <20230216140043.109345-3-tirthendu.sarkar@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230216140043.109345-1-tirthendu.sarkar@intel.com>
 References: <20230216140043.109345-1-tirthendu.sarkar@intel.com>
@@ -69,22 +69,22 @@ MIME-Version: 1.0
 X-Mailman-Approved-At: Thu, 16 Feb 2023 16:16:58 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1676556927; x=1708092927;
+ t=1676556928; x=1708092928;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=VI3uC2glJOwhMEciCdFYKY+0NKCtItuh395jj3Zt7l4=;
- b=nnL1I5iE5trJtuMa4rCoWjceLDSxaLzEaHEM6MGU52FfpnqMsmS5GWfZ
- BIjMIWpS/SUmzUFAvPJZxJQGeuOz6Ep/F5NtjpzhI4swVg77L+lF4yIQz
- dNrHsjkfOxrJdphVKN6x2tMmBOE1JjTo85e/AxgtBvECVT1TWHaxuxVqE
- vW9V+dYblVP6Von/gBtl0oiTAElRob19C7+lkwGjvNfjKakwFa195LWDn
- 7d25/fQj/xi8dWXVjMh/yFnIFbLeRRfGvpwryM+iQxk1mzt1Go47vjiw2
- KWkQqaPSupSI8XnWDrW9bu1WuIVc32bjgWb7ASBPkeiY5E5yC/aj9YV1s
- g==;
+ bh=fQOCxIE8Vug33nuPr6N/oWj2esZ1BirVCdf4vT/UzE0=;
+ b=QXnaqOQz2646X7dqqFFznPUVup/rNeaLdyOSrOabsmQ0fFMtd9gu9ZOZ
+ vy9KJvmJKuw2w6+mZLaZDBc+u9s7vkdFiCvI3giSwbepAdTPfJi95PGde
+ CrK7fH7oGivh4S73Vn1pa9cJb1Y514X8EwnHXSBbRkjhOzAsk2YORCp+5
+ E798T2bEmnW1vtQpTv9plWv6S1guvovxRPiuxeZnAVRDsocX14P8t+DWg
+ 8r+mxjp9uZI1oNpkVjW/Wxk8JozOe2ZZGEZvPZcqAWt7x69f76EFSO44q
+ 559ANKSPuB1aXhqs/Il9rG1OJoEgtj4KX+/Xk6ybqNbWGDc/KaSVcSkKC
+ w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nnL1I5iE
-Subject: [Intel-wired-lan] [PATCH intel-next v5 1/8] i40e: consolidate
- maximum frame size calculation for vsi
+ header.a=rsa-sha256 header.s=Intel header.b=QXnaqOQz
+Subject: [Intel-wired-lan] [PATCH intel-next v5 2/8] i40e: change Rx buffer
+ size for legacy-rx to support XDP multi-buffer
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,143 +105,48 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Introduce new helper function to calculate max frame size for validating
-and setting of vsi frame size. This is used while configuring vsi,
-changing the MTU and attaching an XDP program to the vsi.
+Adding support for XDP multi-buffer entails adding information of all
+the fragments of the packet in the xdp_buff. This approach implies that
+underlying buffer has to provide tailroom for skb_shared_info.
 
-This is in preparation of the legacy rx and multi-buffer changes to be
-introduced in later patches.
+In the legacy-rx mode, driver can only configure upto 2k sized Rx buffers
+and with the current configuration of 2k sized Rx buffers there is no way
+to do tailroom reservation for skb_shared_info. Hence size of Rx buffers
+is now lowered to 1664 (2k - sizeof(skb_shared_info)). Also, driver can
+only chain upto 5 Rx buffers and this means max MTU supported for
+legacy-rx is now 8320.
 
 Signed-off-by: Tirthendu Sarkar <tirthendu.sarkar@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 71 +++++++++++----------
- 1 file changed, 38 insertions(+), 33 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 11711886c3be..1c7b1f4d4936 100644
+index 1c7b1f4d4936..3c387f6037d5 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2896,15 +2896,35 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
- }
- 
- /**
-- * i40e_max_xdp_frame_size - returns the maximum allowed frame size for XDP
-+ * i40e_calculate_vsi_rx_buf_len - Calculates buffer length
-+ *
-+ * @vsi: VSI to calculate rx_buf_len from
-+ */
-+static u16 i40e_calculate_vsi_rx_buf_len(struct i40e_vsi *vsi)
-+{
-+	if (!vsi->netdev || (vsi->back->flags & I40E_FLAG_LEGACY_RX))
-+		return I40E_RXBUFFER_2048;
-+
-+	return PAGE_SIZE < 8192 ? I40E_RXBUFFER_3072 : I40E_RXBUFFER_2048;
-+}
-+
-+/**
-+ * i40e_max_vsi_frame_size - returns the maximum allowed frame size for VSI
-  * @vsi: the vsi
-+ * @xdp_prog: XDP program
-  **/
--static int i40e_max_xdp_frame_size(struct i40e_vsi *vsi)
-+static int i40e_max_vsi_frame_size(struct i40e_vsi *vsi,
-+				   struct bpf_prog *xdp_prog)
+@@ -2903,7 +2903,7 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
+ static u16 i40e_calculate_vsi_rx_buf_len(struct i40e_vsi *vsi)
  {
--	if (PAGE_SIZE >= 8192 || (vsi->back->flags & I40E_FLAG_LEGACY_RX))
+ 	if (!vsi->netdev || (vsi->back->flags & I40E_FLAG_LEGACY_RX))
 -		return I40E_RXBUFFER_2048;
-+	u16 rx_buf_len = i40e_calculate_vsi_rx_buf_len(vsi);
-+	u16 chain_len;
-+
-+	if (xdp_prog)
-+		chain_len = 1;
- 	else
--		return I40E_RXBUFFER_3072;
-+		chain_len = I40E_MAX_CHAINED_RX_BUFFERS;
-+
-+	return min_t(u16, rx_buf_len * chain_len, I40E_MAX_RXBUFFER);
++		return I40E_RXBUFFER_1664;
+ 
+ 	return PAGE_SIZE < 8192 ? I40E_RXBUFFER_3072 : I40E_RXBUFFER_2048;
  }
- 
- /**
-@@ -2919,12 +2939,13 @@ static int i40e_change_mtu(struct net_device *netdev, int new_mtu)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
-+	int frame_size;
- 
--	if (i40e_enabled_xdp_vsi(vsi)) {
--		int frame_size = new_mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
--
--		if (frame_size > i40e_max_xdp_frame_size(vsi))
--			return -EINVAL;
-+	frame_size = i40e_max_vsi_frame_size(vsi, vsi->xdp_prog);
-+	if (new_mtu > frame_size - I40E_PACKET_HDR_PAD) {
-+		netdev_err(netdev, "Error changing mtu to %d, Max is %d\n",
-+			   new_mtu, frame_size - I40E_PACKET_HDR_PAD);
-+		return -EINVAL;
- 	}
- 
- 	netdev_dbg(netdev, "changing MTU from %d to %d\n",
-@@ -3693,24 +3714,6 @@ static int i40e_vsi_configure_tx(struct i40e_vsi *vsi)
- 	return err;
- }
- 
--/**
-- * i40e_calculate_vsi_rx_buf_len - Calculates buffer length
-- *
-- * @vsi: VSI to calculate rx_buf_len from
-- */
--static u16 i40e_calculate_vsi_rx_buf_len(struct i40e_vsi *vsi)
--{
--	if (!vsi->netdev || (vsi->back->flags & I40E_FLAG_LEGACY_RX))
--		return I40E_RXBUFFER_2048;
--
--#if (PAGE_SIZE < 8192)
--	if (!I40E_2K_TOO_SMALL_WITH_PADDING && vsi->netdev->mtu <= ETH_DATA_LEN)
--		return I40E_RXBUFFER_1536 - NET_IP_ALIGN;
--#endif
--
--	return PAGE_SIZE < 8192 ? I40E_RXBUFFER_3072 : I40E_RXBUFFER_2048;
--}
--
- /**
-  * i40e_vsi_configure_rx - Configure the VSI for Rx
-  * @vsi: the VSI being configured
-@@ -3722,13 +3725,15 @@ static int i40e_vsi_configure_rx(struct i40e_vsi *vsi)
- 	int err = 0;
- 	u16 i;
- 
--	vsi->max_frame = I40E_MAX_RXBUFFER;
-+	vsi->max_frame = i40e_max_vsi_frame_size(vsi, vsi->xdp_prog);
- 	vsi->rx_buf_len = i40e_calculate_vsi_rx_buf_len(vsi);
- 
- #if (PAGE_SIZE < 8192)
- 	if (vsi->netdev && !I40E_2K_TOO_SMALL_WITH_PADDING &&
--	    vsi->netdev->mtu <= ETH_DATA_LEN)
--		vsi->max_frame = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
-+	    vsi->netdev->mtu <= ETH_DATA_LEN) {
-+		vsi->rx_buf_len = I40E_RXBUFFER_1536 - NET_IP_ALIGN;
-+		vsi->max_frame = vsi->rx_buf_len;
-+	}
- #endif
- 
- 	/* set up individual rings */
-@@ -13314,14 +13319,14 @@ static netdev_features_t i40e_features_check(struct sk_buff *skb,
- static int i40e_xdp_setup(struct i40e_vsi *vsi, struct bpf_prog *prog,
- 			  struct netlink_ext_ack *extack)
- {
--	int frame_size = vsi->netdev->mtu + ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN;
-+	int frame_size = i40e_max_vsi_frame_size(vsi, prog);
- 	struct i40e_pf *pf = vsi->back;
- 	struct bpf_prog *old_prog;
- 	bool need_reset;
- 	int i;
- 
- 	/* Don't allow frames that span over multiple buffers */
--	if (frame_size > i40e_calculate_vsi_rx_buf_len(vsi)) {
-+	if (vsi->netdev->mtu > frame_size - I40E_PACKET_HDR_PAD) {
- 		NL_SET_ERR_MSG_MOD(extack, "MTU too large to enable XDP");
- 		return -EINVAL;
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index 768290dc6f48..1382efb43ffd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -97,6 +97,7 @@ enum i40e_dyn_idx_t {
+ /* Supported Rx Buffer Sizes (a multiple of 128) */
+ #define I40E_RXBUFFER_256   256
+ #define I40E_RXBUFFER_1536  1536  /* 128B aligned standard Ethernet frame */
++#define I40E_RXBUFFER_1664  1664  /* For legacy Rx with tailroom for frags */
+ #define I40E_RXBUFFER_2048  2048
+ #define I40E_RXBUFFER_3072  3072  /* Used for large frames w/ padding */
+ #define I40E_MAX_RXBUFFER   9728  /* largest size for single descriptor */
 -- 
 2.34.1
 
