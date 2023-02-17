@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71D09C05027
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 17 Feb 2023 19:56:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62890C636D6
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 17 Feb 2023 19:56:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 24CBA40AE2;
-	Fri, 17 Feb 2023 19:56:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 24CBA40AE2
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0EC2E40C85;
+	Fri, 17 Feb 2023 19:56:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0EC2E40C85
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1676663766;
-	bh=QiBPxaQOxNkStYuj6OaJ7q9uOl9PG6CA7Q6NS3SSv7k=;
+	s=default; t=1676663770;
+	bh=pDFKwVgLGUaw2n2lwYBNlfP+fFAWpUrGzsp4aovtrPg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Dv/IUTF/xdvfrHo298txPgBkJ9gQfrxEewFDX+IkiS2P2VF/Iv4MXTWa6EEZ/cXEE
-	 2jNKP4WbVQuHZ79kMJ1UyqhXLxu94z5vM00IMMSEnDe+54ilgvJF7aLsuqrk7R1eum
-	 oFLRgbp/f9IsEPMDrTNae0vZ+cW27B9xoVpgGH2ejc+0nPU3xvmDY8EN5AtDQSDwZ8
-	 BjohgN8K3tqUsR9bWj73XUP0sXyVwvn0gwSUPZUn8p4ECVI2zZjwPzXuZEimdouuna
-	 ViOgrxwu1Z12kOa1ou+6sxeefTWGoLNa7cAdaB6FTxPz8VgPYbqujENcCunomZrEQg
-	 VIGe03FDc2eKA==
+	b=cFfCviylkFo/270/IdaTwl8nmCUC4gjVnsfd8MaVrDpVO4xWahekC+saxedkqun20
+	 QP3WMTQ9V9AnXrQq2tr33ONjDENEleH5UVBPj/0NOrdYA748uonSDV6MJgZ7ztweRM
+	 r6ZI6RQpduY2UQ/Pl8Z572jUGAVfzCoqoMsnTYbbyJjDrLCuNcHRbwcNAAbMSIam36
+	 x9Iw92qcuQrHBpxs/Su485mqUWQiOxHOQg34Lj58kVaEUAykBRoryijInmHYqQT+p6
+	 1isVt0HmfoSdJFXFQCIuKqhfHGkniblKUWZYmcct6gMcyYtFrzV5WtnzZoU8xmmTdw
+	 Tw6fggZlMMZFQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id v_P_aou8_2FE; Fri, 17 Feb 2023 19:56:05 +0000 (UTC)
+	with ESMTP id kpilI7rUTCNZ; Fri, 17 Feb 2023 19:56:09 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E530E40C85;
-	Fri, 17 Feb 2023 19:56:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E530E40C85
+	by smtp2.osuosl.org (Postfix) with ESMTP id EDBD340471;
+	Fri, 17 Feb 2023 19:56:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EDBD340471
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 563C61BF295
- for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Feb 2023 19:29:52 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1D6691BF295
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Feb 2023 19:29:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 142C4401D2
+ by smtp2.osuosl.org (Postfix) with ESMTP id CF14E400CE
  for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Feb 2023 19:29:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 142C4401D2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CF14E400CE
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id XoJEgme2wUgk for <intel-wired-lan@lists.osuosl.org>;
- Fri, 17 Feb 2023 19:29:50 +0000 (UTC)
+ with ESMTP id RXBZbY-KyiRG for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 17 Feb 2023 19:29:51 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4A58540AE2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2C072402F7
 Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 4A58540AE2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Feb 2023 19:29:50 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10624"; a="394550057"
-X-IronPort-AV: E=Sophos;i="5.97,306,1669104000"; d="scan'208";a="394550057"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 2C072402F7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 17 Feb 2023 19:29:51 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10624"; a="394550061"
+X-IronPort-AV: E=Sophos;i="5.97,306,1669104000"; d="scan'208";a="394550061"
 Received: from orsmga008.jf.intel.com ([10.7.209.65])
  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Feb 2023 11:29:50 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10624"; a="701013388"
-X-IronPort-AV: E=Sophos;i="5.97,306,1669104000"; d="scan'208";a="701013388"
+ 17 Feb 2023 11:29:51 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10624"; a="701013391"
+X-IronPort-AV: E=Sophos;i="5.97,306,1669104000"; d="scan'208";a="701013391"
 Received: from unknown (HELO paamrpdk12-S2600BPB.aw.intel.com)
  ([10.228.151.145])
  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Feb 2023 11:29:49 -0800
+ 17 Feb 2023 11:29:50 -0800
 From: Tirthendu Sarkar <tirthendu.sarkar@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Sat, 18 Feb 2023 00:45:11 +0530
-Message-Id: <20230217191515.166819-5-tirthendu.sarkar@intel.com>
+Date: Sat, 18 Feb 2023 00:45:12 +0530
+Message-Id: <20230217191515.166819-6-tirthendu.sarkar@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230217191515.166819-1-tirthendu.sarkar@intel.com>
 References: <20230217191515.166819-1-tirthendu.sarkar@intel.com>
@@ -69,22 +69,22 @@ MIME-Version: 1.0
 X-Mailman-Approved-At: Fri, 17 Feb 2023 19:55:48 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1676662190; x=1708198190;
+ t=1676662191; x=1708198191;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=P7FjsWu3MVGBk9JhbCvWu8kJATCkxSj6ISwNnsFzxxU=;
- b=hgZBKGLMdhJfqiyUHjRHSGsL+4/31vc+w6crN5C+TtOFnvYPfQ/o1GXv
- jdvc9sWew4A40mYyejFllgbi42fNv9/IQxTS3q5y8uTDA1FOqtzzoDx9R
- 8/aA8AefwWZMZH02dVFv/Q5smzDO6FX8J12RNy02mj8KHPLRNg+uvuRKj
- CospDzVw2ObJaKFV1l0ctaO73RuCpb5LOBNi22/PAwSka6QzjzM8htr38
- gtBeXjcIbqKBYdLime8DL99uJDuLoXaIluSb+McZtyvDNvDER7sq9A1HF
- YVo4Cy8nNhy54q98FmQNHU0KaZtpAf3SC6N2/lqgxeOXgTiilnFBt0X0n
+ bh=4pFUgogt9bqox2rhMdnsKjEOVqWd0AEf78XAdhv5ZaE=;
+ b=YziZftzBY/l3GVYS83VSW5pv3OiEP/ls/EbM3KS/jYNIh+RoCdsDpgZ0
+ uV+wirnCAEOsC2VZHKA5fC7nC04BYp3Sz0W2nTx7qV3hFmM1D2zSSctwy
+ HLveSe8pt3KRM8bWyuepic5dQC+IFZfhFCg0cP9EEzXh0u9f16KasmYKv
+ IY/HoQ7f9Wq4Wci2HyNDW1/t6aXluLfwm26IzqgMF3DU3qGbTN49A7s79
+ 0F/Mw32qo9l0e1pcNLkbxHIjvhTjukRCrhf/e18mTzvPsA29HdDhZyJzV
+ rFJ65b8InRBKZ43h0PYRXkqiLPK/pk35UM9aLmX7QQYoubkPpBeSphVhH
  A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hgZBKGLM
-Subject: [Intel-wired-lan] [PATCH intel-next v6 4/8] i40e: Change size to
- truesize when using i40e_rx_buffer_flip()
+ header.a=rsa-sha256 header.s=Intel header.b=YziZftzB
+Subject: [Intel-wired-lan] [PATCH intel-next v6 5/8] i40e: use frame_sz
+ instead of recalculating truesize for building skb
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,119 +105,76 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Truesize is now passed directly to i40e_rx_buffer_flip() instead of size
-so that it does not need to recalculate truesize from size using
-i40e_rx_frame_truesize() before adjusting page offset.
-
-With these change the function can now be used during skb building and
-adding frags. In later patches it will also be easier for adjusting
-page offsets for multi-buffers.
+In skb path truesize is calculated while building skb. This is now
+avoided and xdp->frame_is used instead for both i40e_build_skb() and
+i40e_construct_skb().
 
 Signed-off-by: Tirthendu Sarkar <tirthendu.sarkar@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 54 ++++++++-------------
- 1 file changed, 19 insertions(+), 35 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 20 ++++----------------
+ 1 file changed, 4 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index a7fba294a8f4..019abd7273a2 100644
+index 019abd7273a2..01340f620d96 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2018,6 +2018,21 @@ static bool i40e_can_reuse_rx_page(struct i40e_rx_buffer *rx_buffer,
- 	return true;
- }
- 
-+/**
-+ * i40e_rx_buffer_flip - adjusted rx_buffer to point to an unused region
-+ * @rx_buffer: Rx buffer to adjust
-+ * @size: Size of adjustment
-+ **/
-+static void i40e_rx_buffer_flip(struct i40e_rx_buffer *rx_buffer,
-+				unsigned int truesize)
-+{
-+#if (PAGE_SIZE < 8192)
-+	rx_buffer->page_offset ^= truesize;
-+#else
-+	rx_buffer->page_offset += truesize;
-+#endif
-+}
-+
- /**
-  * i40e_add_rx_frag - Add contents of Rx buffer to sk_buff
-  * @rx_ring: rx descriptor ring to transact packets on
-@@ -2045,11 +2060,7 @@ static void i40e_add_rx_frag(struct i40e_ring *rx_ring,
- 			rx_buffer->page_offset, size, truesize);
- 
- 	/* page is being used so we must update the page offset */
+@@ -2113,11 +2113,6 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
+ 					  struct xdp_buff *xdp)
+ {
+ 	unsigned int size = xdp->data_end - xdp->data;
 -#if (PAGE_SIZE < 8192)
--	rx_buffer->page_offset ^= truesize;
+-	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
 -#else
--	rx_buffer->page_offset += truesize;
+-	unsigned int truesize = SKB_DATA_ALIGN(size);
 -#endif
-+	i40e_rx_buffer_flip(rx_buffer, truesize);
- }
+ 	unsigned int headlen;
+ 	struct sk_buff *skb;
  
- /**
-@@ -2154,11 +2165,7 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
- 				size, truesize);
+@@ -2162,10 +2157,10 @@ static struct sk_buff *i40e_construct_skb(struct i40e_ring *rx_ring,
+ 	if (size) {
+ 		skb_add_rx_frag(skb, 0, rx_buffer->page,
+ 				rx_buffer->page_offset + headlen,
+-				size, truesize);
++				size, xdp->frame_sz);
  
  		/* buffer is used by skb, update page_offset */
--#if (PAGE_SIZE < 8192)
--		rx_buffer->page_offset ^= truesize;
--#else
--		rx_buffer->page_offset += truesize;
--#endif
-+		i40e_rx_buffer_flip(rx_buffer, truesize);
+-		i40e_rx_buffer_flip(rx_buffer, truesize);
++		i40e_rx_buffer_flip(rx_buffer, xdp->frame_sz);
  	} else {
  		/* buffer is unused, reset bias back to rx_buffer */
  		rx_buffer->pagecnt_bias++;
-@@ -2209,11 +2216,7 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
+@@ -2188,13 +2183,6 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
+ 				      struct xdp_buff *xdp)
+ {
+ 	unsigned int metasize = xdp->data - xdp->data_meta;
+-#if (PAGE_SIZE < 8192)
+-	unsigned int truesize = i40e_rx_pg_size(rx_ring) / 2;
+-#else
+-	unsigned int truesize = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) +
+-				SKB_DATA_ALIGN(xdp->data_end -
+-					       xdp->data_hard_start);
+-#endif
+ 	struct sk_buff *skb;
+ 
+ 	/* Prefetch first cache line of first page. If xdp->data_meta
+@@ -2205,7 +2193,7 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
+ 	net_prefetch(xdp->data_meta);
+ 
+ 	/* build an skb around the page buffer */
+-	skb = napi_build_skb(xdp->data_hard_start, truesize);
++	skb = napi_build_skb(xdp->data_hard_start, xdp->frame_sz);
+ 	if (unlikely(!skb))
+ 		return NULL;
+ 
+@@ -2216,7 +2204,7 @@ static struct sk_buff *i40e_build_skb(struct i40e_ring *rx_ring,
  		skb_metadata_set(skb, metasize);
  
  	/* buffer is used by skb, update page_offset */
--#if (PAGE_SIZE < 8192)
--	rx_buffer->page_offset ^= truesize;
--#else
--	rx_buffer->page_offset += truesize;
--#endif
-+	i40e_rx_buffer_flip(rx_buffer, truesize);
+-	i40e_rx_buffer_flip(rx_buffer, truesize);
++	i40e_rx_buffer_flip(rx_buffer, xdp->frame_sz);
  
  	return skb;
  }
-@@ -2326,25 +2329,6 @@ static int i40e_run_xdp(struct i40e_ring *rx_ring, struct xdp_buff *xdp, struct
- 	return result;
- }
- 
--/**
-- * i40e_rx_buffer_flip - adjusted rx_buffer to point to an unused region
-- * @rx_ring: Rx ring
-- * @rx_buffer: Rx buffer to adjust
-- * @size: Size of adjustment
-- **/
--static void i40e_rx_buffer_flip(struct i40e_ring *rx_ring,
--				struct i40e_rx_buffer *rx_buffer,
--				unsigned int size)
--{
--	unsigned int truesize = i40e_rx_frame_truesize(rx_ring, size);
--
--#if (PAGE_SIZE < 8192)
--	rx_buffer->page_offset ^= truesize;
--#else
--	rx_buffer->page_offset += truesize;
--#endif
--}
--
- /**
-  * i40e_xdp_ring_update_tail - Updates the XDP Tx ring tail register
-  * @xdp_ring: XDP Tx ring
-@@ -2513,7 +2497,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget,
- 		if (xdp_res) {
- 			if (xdp_res & (I40E_XDP_TX | I40E_XDP_REDIR)) {
- 				xdp_xmit |= xdp_res;
--				i40e_rx_buffer_flip(rx_ring, rx_buffer, size);
-+				i40e_rx_buffer_flip(rx_buffer, xdp.frame_sz);
- 			} else {
- 				rx_buffer->pagecnt_bias++;
- 			}
 -- 
 2.34.1
 
