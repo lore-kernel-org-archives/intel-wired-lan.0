@@ -1,84 +1,69 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F044C61DA4
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Feb 2023 14:11:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9502C636D6
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Feb 2023 14:22:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C95D041964;
-	Wed, 22 Feb 2023 14:11:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C95D041964
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3170641032;
+	Wed, 22 Feb 2023 14:22:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3170641032
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1677075111;
-	bh=K5y2AbPVNy1043gi0Bqhp0MnW7oMHQX2WzBv6b5dDC8=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=S8bKrIjiUxjFFymJ597A8JXj0ia62e0adCOaloLaL9kg5gB18rKRla++unSNnPAO2
-	 Lc4IB+CRSy/9dRWN1WCewy2+i32V7Ign9cKeA/UaF89E9EIh/dapDYQ7O4+HofdZKn
-	 nPiFTIRaTRVbW84wSTfq1CCaSef3a6dgusAN7K3fTHY3MCWt/XHZepqWRn1i9JHrXX
-	 A+h8/Bi0pxX1g6jE+eOdaFxaG7oLkP73Dt0mxwSxVCaYfnew/3CXtHeODgljHyFo4n
-	 qw9WYNxN/pjkg/j7Yp7LJvA2j/Zk19+ixPfP2n52IUJcEg9hIIcssXemMleQOT9sSC
-	 xAJavIClR5QOA==
+	s=default; t=1677075764;
+	bh=R/4uNiqMX40AJ8MtDz7Nq2Oj9VtNI+L7mRmvvcHnki4=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=jtV+RrvcDfzHvfwIpCHMvdxdPC36DilIdogomWQgCch3CG/xgA0G/bM1rudx0bQFf
+	 hgkXEWlDamE7WTky5t4XB2ESBTpCV+NQsY08Qzkb5RYqQCUlIW1JKq6ge/aYChlFJV
+	 4xwDu+vpZpcUvQxayF04GDgVoSzNbwr8PvhtpjUDtl+ghHVwN9EJvjDmjiJ1oIXKmD
+	 BNkLTD9aXoTy7VxNM2/NgncXxf1CKrrQ0lf12OoiK9k+WTqDJmMf1jI9Ujr3G/grFM
+	 p/iDGpSpi5SMANp7ScduizTe8tBO/a00yTvONfbRSXX7yDhJSUvT+eA3UXSPQsPL5C
+	 Is3HK2+s6sjZQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jmiv3sXWpFMa; Wed, 22 Feb 2023 14:11:50 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id l-a59al0IjEw; Wed, 22 Feb 2023 14:22:43 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 860D141969;
-	Wed, 22 Feb 2023 14:11:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 860D141969
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 776E51BF589
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 14:11:49 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3523141039;
+	Wed, 22 Feb 2023 14:22:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3523141039
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id E7AFD1BF589
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 14:22:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5CC5461107
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 14:11:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5CC5461107
+ by smtp1.osuosl.org (Postfix) with ESMTP id CCF4A8144B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 14:22:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CCF4A8144B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id IGbHwUDBTMps for <intel-wired-lan@lists.osuosl.org>;
- Wed, 22 Feb 2023 14:11:48 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F0BC7610FA
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- by smtp3.osuosl.org (Postfix) with ESMTPS id F0BC7610FA
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 14:11:47 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="316656755"
-X-IronPort-AV: E=Sophos;i="5.97,318,1669104000"; d="scan'208";a="316656755"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Feb 2023 06:11:46 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="672080420"
-X-IronPort-AV: E=Sophos;i="5.97,318,1669104000"; d="scan'208";a="672080420"
-Received: from amlin-018-068.igk.intel.com ([10.102.18.68])
- by orsmga002.jf.intel.com with ESMTP; 22 Feb 2023 06:11:44 -0800
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 22 Feb 2023 09:07:41 -0500
-Message-Id: <20230222140741.35550-1-mateusz.palczewski@intel.com>
-X-Mailer: git-send-email 2.31.1
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id HLjsxKKUwrSy for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 22 Feb 2023 14:22:40 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 091F681448
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 091F681448
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 14:22:39 +0000 (UTC)
+Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id CA89261CC457B;
+ Wed, 22 Feb 2023 15:22:36 +0100 (CET)
+Message-ID: <20c52c7c-c3c6-ff3c-469f-ed3cfea88e1d@molgen.mpg.de>
+Date: Wed, 22 Feb 2023 15:22:36 +0100
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1677075107; x=1708611107;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=fCLcHbEgMvzzi56tfMDZvPGucf+ER51FByogUMBYyzo=;
- b=gYn/jRMn4AO1b6KbhnzyD5xQt9EqfhlilXj6E1BSiT95j1Fn4XWPFxak
- 0rbsK86Rsn8ucjekj+eP2zOJRWbyTxHmFFQTnRkz4vC6PPrvtSVsuA6TC
- 6Q8W+DuhXEatjB4UPIf+26/5JScy7Nw0/oR8R3izkfkQdhEdotPKkdmJQ
- V2A0GSlF0fB56TSDtKnMvR4v1Jc0ndHwy6Ilh+WJnteSuyb5ideSidvBb
- iPuL1Q9Y1Bt+iw1Pz+qNE/+ANM9zuutMKK1sOD7MeOPZTN9Gp7zGzRTVI
- ad6RvrbWQWyp7iYwsSUDqGNnwqpDU7xr+Linnb/faAzs9oGNhGNG8XJRF
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=gYn/jRMn
-Subject: [Intel-wired-lan] [PATCH net v3] e1000e: Disable TSO on i219-LM
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Content-Language: en-US
+To: Mateusz Palczewski <mateusz.palczewski@intel.com>
+References: <20230222140741.35550-1-mateusz.palczewski@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20230222140741.35550-1-mateusz.palczewski@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH net v3] e1000e: Disable TSO on i219-LM
  card to increase speed
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -92,51 +77,77 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: pmenzel@molgen.mpg.de, Sebastian Basierski <sebastianx.basierski@intel.com>
-Content-Type: text/plain; charset="us-ascii"
+Cc: Kai-Heng Feng <kai.heng.feng@canonical.com>,
+ intel-wired-lan@lists.osuosl.org,
+ Sebastian Basierski <sebastianx.basierski@intel.com>
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sebastian Basierski <sebastianx.basierski@intel.com>
+[Cc: +Kai-Heng]
 
-While using i219-LM card currently it was only possible to achieve
-about 60% of maximum speed due to regression introduced in Linux 5.8-rc1.
-This was caused by TSO not being disabled by default despite commit
-f29801030ac6 ("e1000e: Disable TSO for buffer overrun workaround")
-implementation. Fix that by disabling TSO during driver probe.
 
-Signed-off-by: Sebastian Basierski <sebastianx.basierski@intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
----
- v3: Changed the patch to disable TSO during the probe
- v2: Fixed commit message and comment inside the code
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Dear Mateusz, dear Sebastian,
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 04acd1a992fa..863796acf8d7 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7529,6 +7529,14 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			    NETIF_F_RXCSUM |
- 			    NETIF_F_HW_CSUM);
- 
-+	 /* Disable TSO for i219 to avoid transfer speed
-+	  * being capped at 60%.
-+	  */
-+	if (hw->mac.type == e1000_pch_spt) {
-+		netdev->features &= ~NETIF_F_TSO;
-+		netdev->features &= ~NETIF_F_TSO6;
-+	}
-+
- 	/* Set user-changeable features (subset of all device features) */
- 	netdev->hw_features = netdev->features;
- 	netdev->hw_features |= NETIF_F_RXFCS;
--- 
-2.31.1
 
+Thank you for the patch.
+
+Am 22.02.23 um 15:07 schrieb Mateusz Palczewski:
+> From: Sebastian Basierski <sebastianx.basierski@intel.com>
+> 
+> While using i219-LM card currently it was only possible to achieve
+> about 60% of maximum speed due to regression introduced in Linux 5.8-rc1.
+> This was caused by TSO not being disabled by default despite commit
+> f29801030ac6 ("e1000e: Disable TSO for buffer overrun workaround")
+> implementation. Fix that by disabling TSO during driver probe.
+
+Can the code added by the referenced commit then be removed?
+
+Also the questions from the discussion of v2(?) was not answered, why 
+the conditions in the if statement of the code added by commit 
+f29801030ac6 where not true.
+
+     /* disable TSO for pcie and 10/100 speeds, to avoid
+      * some hardware issues
+      */
+     if (!(adapter->flags & FLAG_TSO_FORCE)) {
+
+Missing Fixes: tag below.
+
+> Signed-off-by: Sebastian Basierski <sebastianx.basierski@intel.com>
+> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> ---
+>   v3: Changed the patch to disable TSO during the probe
+>   v2: Fixed commit message and comment inside the code
+> ---
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++++++
+>   1 file changed, 8 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> index 04acd1a992fa..863796acf8d7 100644
+> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> @@ -7529,6 +7529,14 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>   			    NETIF_F_RXCSUM |
+>   			    NETIF_F_HW_CSUM);
+>   
+> +	 /* Disable TSO for i219 to avoid transfer speed
+> +	  * being capped at 60%.
+> +	  */
+> +	if (hw->mac.type == e1000_pch_spt) {
+> +		netdev->features &= ~NETIF_F_TSO;
+> +		netdev->features &= ~NETIF_F_TSO6;
+> +	}
+> +
+>   	/* Set user-changeable features (subset of all device features) */
+>   	netdev->hw_features = netdev->features;
+>   	netdev->hw_features |= NETIF_F_RXFCS;
+
+
+Kind regards,
+
+Paul
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
