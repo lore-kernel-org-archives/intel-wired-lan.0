@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FD29C61DA4
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Feb 2023 17:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 623B7C61DA4
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Feb 2023 17:16:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 455FB4174B;
-	Wed, 22 Feb 2023 17:16:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 455FB4174B
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1FEB44176E;
+	Wed, 22 Feb 2023 17:16:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1FEB44176E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1677086193;
-	bh=2QFUNpy6PBgPsxLds3qhAPDBwerNfd46WxC4IjiRJ28=;
+	s=default; t=1677086197;
+	bh=QgqJckQnb5J8EgmkQ8vor1R685koi8M1H+nw9EAal9k=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=XEdeULnBK6D8/L1D7Fc24lGV4m1HJ5/s+2N2ieAXGIrvTDlKRDDpvqxEeRVOYiIl1
-	 bu8wmbF8r08wMdEUZPBoIIX2oh7bB1tJwFerDeSdZ9C4rKgmTc9iyOixEcg3gNU2QI
-	 C9AWgd2KsX3e93z1eUtb0twsC3lZUPvcoeSOv/YIsHR6r9/HbaaK3XmJv5nn/f5eL9
-	 Sm/M+zbWUxJtNdP5TfYxoCShGJwimEUan7SkajFnuWxo4HNsVePnqSBPzGXK4barM4
-	 xjswlrq9TcDSpp2AUBGKABiM2HR84Rt4VVEPQk8MSto0BPbeXzdM4aVrePKLPVX2fq
-	 9rNn1jaNk+faA==
+	b=Z/9Kb11qDH3KLhPYotkMh9avNnnpNOEln41uDblb/8KcXG2G/2LLXoCRyaHR1JmZ0
+	 Clc1Kh57Vq+TFKLgRiz3b5eBJELsJ7cPHMoLsajonTmcEuLytF82xwU4d4IveXEq/x
+	 rt+xzNiyjmCAeSWfSPsbRfd07d8a39buVa+WXsWOM2s3LodEqqWr/NbxYPgK1ph70C
+	 2CbDzx9dcRI/gd0DWlHdQKqXxeDxSESv/sJAj7qXqDwJ6PLGqIimyEelCG0ulxYoXR
+	 rEhxT53hp0W+6TncnflFs+HwJ5iH+WZ8gjgK5dJXmLMWhd6lQSSzLB3BhdM0vI8z8p
+	 2qQ8cibZ47o1w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id duA01_Da79jy; Wed, 22 Feb 2023 17:16:32 +0000 (UTC)
+	with ESMTP id kv9BW_eIm3Kx; Wed, 22 Feb 2023 17:16:36 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 29B20417B7;
-	Wed, 22 Feb 2023 17:16:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 29B20417B7
+	by smtp2.osuosl.org (Postfix) with ESMTP id 14F23417B7;
+	Wed, 22 Feb 2023 17:16:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 14F23417B7
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 0BB521BF364
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:54 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 7BD431BF364
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id EF42041739
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EF42041739
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0A0614173C
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0A0614173C
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id yWEyBjSWqrak for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id Z5npMCINoIKg for <intel-wired-lan@lists.osuosl.org>;
  Wed, 22 Feb 2023 17:09:49 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3818A41733
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 496B241734
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3818A41733
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 496B241734
  for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:49 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="360466661"
-X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="360466661"
+X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="360466659"
+X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="360466659"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  22 Feb 2023 09:09:26 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="735980072"
-X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="735980072"
+X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="735980066"
+X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="735980066"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  22 Feb 2023 09:09:26 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 22 Feb 2023 09:09:18 -0800
-Message-Id: <20230222170920.1629293-13-jacob.e.keller@intel.com>
+Date: Wed, 22 Feb 2023 09:09:16 -0800
+Message-Id: <20230222170920.1629293-11-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.39.1.405.gd4c25cc71f83
 In-Reply-To: <20230222170920.1629293-1-jacob.e.keller@intel.com>
 References: <20230222170920.1629293-1-jacob.e.keller@intel.com>
@@ -71,19 +71,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1677085789; x=1708621789;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=H9IbOwK2A6dH9hsf8rL/HG2GDzrwbps0oqiDwnhYwqA=;
- b=Bmf4jOhLxQr6HQqhBM37KBhmNYQSAOFEOIkvrY+rbIg5mQRZwLAm4Ljt
- KmGFkMVNV5g4XZ4HJ3IpFcIYuCm6UNNdursMyzF+I/lRCFxwF8Wm9tivn
- JIpoMkKsrlKltsSMiyHHGx+gx6pMcZ5WQ2HLKoJ8Be7n5NERkUqTw3Oxc
- lgZjDbhtGiEh/ji9t/kEf9qqnMXIW50uXy4XAhXU/a0rJKmV6BevPCS+o
- XT1TpuHA9m1dTQwRRxzkJKEFGByNGcng0Q6ygauPwwSXWmxm2Z8aHiqCM
- QfueakR551mSk7dkfBUoKbFDytb8qfUVRYxMHQ1GjV/THmYX7lN2+LqJT
+ bh=lZ8QJrKIhovD3ID8DnRS4HGMt2DtjXvyjfiIPIW01Ps=;
+ b=kLKVrwsg8TktOOapCwm67fD6SXeVTGVr1fclTB2z6wh5FHPTc88pFc+y
+ BwGfEB+rNCJs4wuHzsNOFl2+sC2X45/EXT0L0q7qePvJRfMJ8nxya/T86
+ APeBevfJdd5XhN9OuS2V9g8nXpDCWB+7MY6irkB72w/98ifo1n9MSIq08
+ uFCIFg5gLewQkTBXE6YsXd6b/36m8IeIqgUgq8wyaPTZOQdeXabNEoVJZ
+ /U8pEVzTspRGEkNUO8VtXSbm4PwtIxGvZcQAKupfpsIFzsdNHHDLm/UTI
+ /RpaN1CP8ofeoOByTQxdMBZhV779WwOeBJ+COCdgcANgptG5r4qbP4bdS
  g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Bmf4jOhL
-Subject: [Intel-wired-lan] [intel-next PATCH 12/14] ice: print message if
- ice_mbx_vf_state_handler returns an error
+ header.a=rsa-sha256 header.s=Intel header.b=kLKVrwsg
+Subject: [Intel-wired-lan] [intel-next PATCH 10/14] ice: remove unnecessary
+ &array[0] and just use array
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,38 +103,29 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-If ice_mbx_vf_state_handler() returns an error, the ice_is_malicious_vf()
-function just exits without printing anything.
-
-Instead, use dev_warn_ratelimited to print a warning that we were unable to
-check the status for this VF. The _ratelimited variant is used to avoid
-potentially spamming the log if this function is failing consistently for
-every single mailbox message.
-
-Also we can drop the "goto" as it simply skips over a report_malvf check.
-That variable should always be false if ice_mbx_vf_state_handler returns
-non-zero.
+In ice_is_malicious_vf we print the VF MAC address using %pM by passing the
+address of the first element of vf->dev_lan_addr. This is equivalent to
+just passing vf->dev_lan_addr, so do that.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sriov.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_sriov.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 5ae923ea979c..f0daeda236de 100644
+index 185673afb781..938be486721e 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -1805,7 +1805,8 @@ ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
- 	status = ice_mbx_vf_state_handler(&pf->hw, mbxdata, &vf->mbx_info,
- 					  &report_malvf);
- 	if (status)
--		goto out_put_vf;
-+		dev_warn_ratelimited(dev, "Unable to check status of mailbox overflow for VF %u MAC %pM, status %d\n",
-+				     vf->vf_id, vf->dev_lan_addr, status);
+@@ -1820,7 +1820,7 @@ ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
+ 		u8 zero_addr[ETH_ALEN] = {};
  
- 	if (report_malvf) {
- 		struct ice_vsi *pf_vsi = ice_get_main_vsi(pf);
+ 		dev_warn(dev, "VF MAC %pM on PF MAC %pM is generating asynchronous messages and may be overflowing the PF message queue. Please see the Adapter User Guide for more information\n",
+-			 &vf->dev_lan_addr[0],
++			 vf->dev_lan_addr,
+ 			 pf_vsi ? pf_vsi->netdev->dev_addr : zero_addr);
+ 	}
+ 
 -- 
 2.39.1.405.gd4c25cc71f83
 
