@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B60AC636D6
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Feb 2023 17:16:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47F96C636D6
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Feb 2023 17:16:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id EB74E41758;
-	Wed, 22 Feb 2023 17:16:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EB74E41758
+	by smtp2.osuosl.org (Postfix) with ESMTP id D3EC940C4C;
+	Wed, 22 Feb 2023 17:16:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D3EC940C4C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1677086177;
-	bh=KxSCfxzqgrEBqSz8QzzdEGHhWBjCcdM6NlQfzbRJ6ng=;
+	s=default; t=1677086180;
+	bh=fZ46K1H2xzi/XM+73Za1BH8hmi6lPqu1bKL2a7SJQfI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=O8BROVYkJg+Jii1cLh+KXXuwtbVYtrfZzzdpWoE+1D5Ct2dZHvizpv4H8i/Ay2++B
-	 K6mgVAzcMjByHliqpln3u61Q/G/GU1z0F8Ly8b3XogzxZy/0p6j1da/xGZSdXCEzxZ
-	 AS9cpbLBLbcVmmtNEN5snFFvqRdkaWin7oG8NyFIiEi9XNfrAezNZodN4ewVnB+Se8
-	 aQkXvT5BOEa1aKjqgKrFUKxLdDlXF9yI63KJ5igZ8TxPuZYZbbR+ztDW7dxHBsOxkz
-	 PLEfwVE4Ya6dxbRrTtnUTpkQdR3XuUi6JnLBurmZ/6ClKs8Lr9tZfNBtIpZhRttqh5
-	 G/KtelZJoGOPA==
+	b=MjqxLfAYsy5GCJM+iXGyOWLW4FDE2wROpFepYm1Z9wBvxI9RJvN88UtfLz+mRgyO+
+	 PPepmO4y5gGiUJYbVTdEjrTx1qo5fXsTYJywRNzGknVXLbhvA0b/efzNR7+bZju1W2
+	 zbCJqACwnwq+tH3irFr6u9loMvN6TBl/2JDTlKqkZeqfZ/B1UWfM9iZpdPtM1+EGzZ
+	 cdzfZ/fCcy13Q5NeOfjCSISGDbgqr17fBTo0D9d6Nh7KSUWZAj95Ruu19a18iJn+K3
+	 2FmXzj0NX8Z9jKVrLknrN+RowEFVXLfFpWSeCFYzknLVJZ/D3u+mMRTpwFlnXLDIjZ
+	 2jf6VMWSHWWsw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3VtUzpuT2oc9; Wed, 22 Feb 2023 17:16:16 +0000 (UTC)
+	with ESMTP id VagbSMO0hCVQ; Wed, 22 Feb 2023 17:16:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CDD8541795;
-	Wed, 22 Feb 2023 17:16:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CDD8541795
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 1E3841BF364
+	by smtp2.osuosl.org (Postfix) with ESMTP id D07EF417C0;
+	Wed, 22 Feb 2023 17:16:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D07EF417C0
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 515CB1BF97A
  for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 89D574173A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 89D574173A
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3623960B4D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3623960B4D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id c_3vN2xa8Ger for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qifxBbEPJIq6 for <intel-wired-lan@lists.osuosl.org>;
  Wed, 22 Feb 2023 17:09:49 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E19114172E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 89A9160B12
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E19114172E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:48 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="360466651"
-X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="360466651"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 89A9160B12
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:49 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="360466657"
+X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="360466657"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Feb 2023 09:09:25 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="735980050"
-X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="735980050"
+ 22 Feb 2023 09:09:26 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="735980063"
+X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="735980063"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Feb 2023 09:09:25 -0800
+ 22 Feb 2023 09:09:26 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 22 Feb 2023 09:09:11 -0800
-Message-Id: <20230222170920.1629293-6-jacob.e.keller@intel.com>
+Date: Wed, 22 Feb 2023 09:09:15 -0800
+Message-Id: <20230222170920.1629293-10-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.39.1.405.gd4c25cc71f83
 In-Reply-To: <20230222170920.1629293-1-jacob.e.keller@intel.com>
 References: <20230222170920.1629293-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1677085788; x=1708621788;
+ t=1677085789; x=1708621789;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=dk59IuB1Pvb3Af8YJxuXRNJqLbYqYTqjCVLjYjShFQs=;
- b=gVq4WBe1yEZI1EIQ17EmjYvnh0PzEtFVpXCmSaZBPCAGgdjIuJ9/bti9
- 6EN6WtXRnpTaTR1W5YE7ebJVzy+HIQFXPoIHqJ6xiciDXl/Q9UsCtJqfW
- rXCgeZboQ2KCnMC+W8f1r4bauxG0FY4JZJsErw39YVQKNT/S45Yhmp6wz
- NQ5mY0fJOlJkJhdyAWDkp9lE45Lbzkpu2cgEnQ2GnWvgK7eDHl8J/M9iT
- Mg6KZ8Etz4Y9thkca+g5VGgKYXPYlxT0EKLN3vQ3ib6g69LTekf2wFGqd
- rD4SzBwiWAmoZoDIAeX723eZrOch2osSTvicwrPiOK9kn4suyIaoQVTyc
+ bh=X9RV0KLcG359zULA6xpQ/mV8kdwxu1wRuJIOuMwYmVg=;
+ b=MBuv2mTqsqcCrOlmwy3hCG1JESdXe380unqqS+qA/G4LMAXSyYxfCytp
+ NXIhwAsYsVpgh712tH2JkO1uZ8TF+dleFtgRHcnTsmy3Wd1z6q6AoNixh
+ J+1AtSSVs1Lui4UPkO8U2MW1dndGgWECTfhYRhrmyOxPWdsKa4dgwX174
+ 6Pcj1cOkNEFGBQ05/vVquU8+z0PCfHmdZtbDONxDnQt6rZa6oMZL/jVJn
+ jymKa0Wr1SzBZgAdvdywpB4oQ14lGXDz3qExVX8zA7JxchX9nFhudt0dj
+ 6Gx7JoRWeH/Iu8jwfKBle89TdGtwFsG1tHhQhmSs840aoLB5n0kjc9JdN
  g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=gVq4WBe1
-Subject: [Intel-wired-lan] [intel-next PATCH 05/14] ice: remove
- ice_mbx_deinit_snapshot
+ header.a=rsa-sha256 header.s=Intel header.b=MBuv2mTq
+Subject: [Intel-wired-lan] [intel-next PATCH 09/14] ice: always report VF
+ overflowing mailbox even without PF VSI
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,78 +103,44 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_mbx_deinit_snapshot function's only remaining job is to clear the
-previous snapshot data. This snapshot data is initialized when SR-IOV adds
-VFs, so it is not necessary to clear this data when removing VFs. Since no
-allocation occurs we no longer need to free anything and we can safely
-remove this function.
+In ice_is_malicious_vf we report a message warning the system administrator
+when a VF is potentially spamming the PF with asynchronous messages that
+could overflow the PF mailbox.
+
+The specific message was requested by our customer support team to include
+the VF and PF MAC address. In some cases we may not be able to locate the
+PF VSI to obtain the MAC address for the PF. The current implementation
+discards the message entirely in this case. Fix this to instead print a
+zero address in that case so that we always print something here. Note that
+dev_warn will also include the PCI device information allowing another
+mechanism for determining on which PF the potentially malicious VF belongs.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sriov.c  |  5 +----
- drivers/net/ethernet/intel/ice/ice_vf_mbx.c | 14 --------------
- drivers/net/ethernet/intel/ice/ice_vf_mbx.h |  1 -
- 3 files changed, 1 insertion(+), 19 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sriov.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 8820f269bfdf..b65025b51526 100644
+index 6764e677a345..185673afb781 100644
 --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
 +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -1014,7 +1014,6 @@ int ice_sriov_configure(struct pci_dev *pdev, int num_vfs)
- 	if (!num_vfs) {
- 		if (!pci_vfs_assigned(pdev)) {
- 			ice_free_vfs(pf);
--			ice_mbx_deinit_snapshot(&pf->hw);
- 			if (pf->lag)
- 				ice_enable_lag(pf->lag);
- 			return 0;
-@@ -1027,10 +1026,8 @@ int ice_sriov_configure(struct pci_dev *pdev, int num_vfs)
- 	ice_mbx_init_snapshot(&pf->hw);
+@@ -1817,11 +1817,11 @@ ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
  
- 	err = ice_pci_sriov_ena(pf, num_vfs);
--	if (err) {
--		ice_mbx_deinit_snapshot(&pf->hw);
-+	if (err)
- 		return err;
--	}
+ 	if (report_malvf) {
+ 		struct ice_vsi *pf_vsi = ice_get_main_vsi(pf);
++		u8 zero_addr[ETH_ALEN] = {};
  
- 	if (pf->lag)
- 		ice_disable_lag(pf->lag);
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_mbx.c b/drivers/net/ethernet/intel/ice/ice_vf_mbx.c
-index 4bfed5fb3a88..1f332ab43b00 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_mbx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_mbx.c
-@@ -399,17 +399,3 @@ void ice_mbx_init_snapshot(struct ice_hw *hw)
- 	INIT_LIST_HEAD(&snap->mbx_vf);
- 	ice_mbx_reset_snapshot(snap);
- }
--
--/**
-- * ice_mbx_deinit_snapshot - Free mailbox snapshot structure
-- * @hw: pointer to the hardware structure
-- *
-- * Clear the mailbox snapshot structure and free the VF counter array.
-- */
--void ice_mbx_deinit_snapshot(struct ice_hw *hw)
--{
--	struct ice_mbx_snapshot *snap = &hw->mbx_snapshot;
--
--	/* Clear mbx_buf in the mailbox snaphot structure */
--	memset(&snap->mbx_buf, 0, sizeof(snap->mbx_buf));
--}
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_mbx.h b/drivers/net/ethernet/intel/ice/ice_vf_mbx.h
-index a6d42f467dc5..e4bdd93ccef1 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_mbx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_mbx.h
-@@ -25,7 +25,6 @@ ice_mbx_vf_state_handler(struct ice_hw *hw, struct ice_mbx_data *mbx_data,
- void ice_mbx_clear_malvf(struct ice_mbx_vf_info *vf_info);
- void ice_mbx_init_vf_info(struct ice_hw *hw, struct ice_mbx_vf_info *vf_info);
- void ice_mbx_init_snapshot(struct ice_hw *hw);
--void ice_mbx_deinit_snapshot(struct ice_hw *hw);
- int
- ice_mbx_report_malvf(struct ice_hw *hw, struct ice_mbx_vf_info *vf_info,
- 		     bool *report_malvf);
+-		if (pf_vsi)
+-			dev_warn(dev, "VF MAC %pM on PF MAC %pM is generating asynchronous messages and may be overflowing the PF message queue. Please see the Adapter User Guide for more information\n",
+-					&vf->dev_lan_addr[0],
+-					pf_vsi->netdev->dev_addr);
++		dev_warn(dev, "VF MAC %pM on PF MAC %pM is generating asynchronous messages and may be overflowing the PF message queue. Please see the Adapter User Guide for more information\n",
++			 &vf->dev_lan_addr[0],
++			 pf_vsi ? pf_vsi->netdev->dev_addr : zero_addr);
+ 	}
+ 
+ out_put_vf:
 -- 
 2.39.1.405.gd4c25cc71f83
 
