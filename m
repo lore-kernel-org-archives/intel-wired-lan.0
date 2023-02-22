@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F37AC636D6
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Feb 2023 17:16:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0376BC61DA4
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Feb 2023 17:16:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4345A41743;
-	Wed, 22 Feb 2023 17:16:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4345A41743
+	by smtp2.osuosl.org (Postfix) with ESMTP id AC9E7417CE;
+	Wed, 22 Feb 2023 17:16:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AC9E7417CE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1677086206;
-	bh=mQuG6V8JOt2moOfJOdjjif+qlYa61hVKkhIBVYGem3Q=;
+	s=default; t=1677086210;
+	bh=Rs1YR2RSwz9P07Vdnx0m09Opk8JeIWKTYiRi+QdfXmo=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=cVzTO6a/LSZ6k0v2etIZZ3ejiKIONaYd68xs5hi+5LrQUEzzYJ1p10dmXAWY0IfYK
-	 9NqcOd3ql6ol6MSK2UN1oz1aqhg5SJSl76Bzxq9ixAtMVucionXrlx4huUKm689FIj
-	 aAckSjc9+rGgtQsf9C2Anm15x0hxWUHArHgQHFoc288xooM2H+fXX9sZzsN9HKx9hR
-	 c5PtxM192+8cLf0tdHXw+RAZWzmxBL3trWnpW32DYTmYQd7Sc7nEisFxT9WRIwkB5J
-	 BnvpksDL3Bx+xPPZY+/zav6xQCBjv7zkluMMA8O5PlANbpCj93jGNkmNCbKOmsdK5M
-	 lyKWsPkUSvlKw==
+	b=K1v8ZaLk5AMpq29XO9Xqeocd5O273l7wWJBaj0p2RyGvxIvy1982pYwPODOdvL9y8
+	 +48Hi8DTmABzAaY6wfiKyM2/9JfyGFkGixvlM3e1MKMF3u1v2mEjqilkD8AhR/w+fi
+	 5VO2rzUsI8WM3OApWr5chLPZUe9nFxV+XbQ2n7gDdeKwcnzH2BMLo9nF15oNj8qGBL
+	 wLW9uc3c7D2XJICjf20ipZ7oHdK4nfDhigyBxCMfBH27ki6cyiLe/Q1PXQcWAEePXx
+	 I4w7/iz5vj5AuBWq4SIuRu/OmqoQQlC+XZYJ4oHZpsM3vLfrX9wYazGHHio3EPWdNt
+	 Fha7ILWXqrQPQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1FOWC7lsv0Eg; Wed, 22 Feb 2023 17:16:45 +0000 (UTC)
+	with ESMTP id DCQIg1upnLhe; Wed, 22 Feb 2023 17:16:49 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CFDD3417CD;
-	Wed, 22 Feb 2023 17:16:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CFDD3417CD
+	by smtp2.osuosl.org (Postfix) with ESMTP id 77807417C9;
+	Wed, 22 Feb 2023 17:16:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 77807417C9
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 163BC1BF364
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:57 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 10E5B1BF364
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 7616141733
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9104F41731
  for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7616141733
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9104F41731
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id d9kkUr8MnWht for <intel-wired-lan@lists.osuosl.org>;
- Wed, 22 Feb 2023 17:09:48 +0000 (UTC)
+ with ESMTP id FxEr4McWpQbG for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 22 Feb 2023 17:09:49 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8EA5341731
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ACE134172E
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8EA5341731
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:48 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="360466648"
-X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="360466648"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id ACE134172E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Feb 2023 17:09:49 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="360466664"
+X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="360466664"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Feb 2023 09:09:25 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="735980043"
-X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="735980043"
+ 22 Feb 2023 09:09:26 -0800
+X-IronPort-AV: E=McAfee;i="6500,9779,10629"; a="735980079"
+X-IronPort-AV: E=Sophos;i="5.97,319,1669104000"; d="scan'208";a="735980079"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Feb 2023 09:09:25 -0800
+ 22 Feb 2023 09:09:26 -0800
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 22 Feb 2023 09:09:09 -0800
-Message-Id: <20230222170920.1629293-4-jacob.e.keller@intel.com>
+Date: Wed, 22 Feb 2023 09:09:20 -0800
+Message-Id: <20230222170920.1629293-15-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.39.1.405.gd4c25cc71f83
 In-Reply-To: <20230222170920.1629293-1-jacob.e.keller@intel.com>
 References: <20230222170920.1629293-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1677085788; x=1708621788;
+ t=1677085789; x=1708621789;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=pfDdJUtIVORwAHdBICKwUpU3blgg674F3O3Y5HInsh8=;
- b=etFzl/PSuTRyplRRDHwKA/Hoxbf02sjbvDpEBpjwcMNXdrpTcsOqj2Bs
- 6qLG8GK6VSyx4fy12eFuHBFDkJbYfdrmOmGuKiEcR4yoU1ewXpEo9Y9l9
- Moz+kuCXrj3bmDY1e8Vx5W4zW7L8NJkJE3cBH99LM/SDYdoCTyBSvAfVn
- NkbyP7nFM5+yNzIDccXw7gbm3t91flxP1Iz1KjOFnWF50EebrMlO01alr
- PcheZsC6cRU7KKaTI9WsZfUG+33Ybsa8/Ubg6qhlLKcZTkRhZpa7QlCK6
- wKMPSNaqyhEjY5IRkLStQOrUWzg4zPbPoqg26LTgiF61cvZz2fLwnARrD
- Q==;
+ bh=24NjmYV99Ep6dB4a+CfKynynbD1Q69NhMkneHF9RUhs=;
+ b=AL4BBXv+l49wZGdPs9IrEbX6p78LOK6537+R5fxAGg7pfrngkJ3CB3uw
+ BmYiBxmVPsaaR0WC/ap3FfgDfPG89Pu37ROqGGfsyq18DSr0rDifBrg4a
+ j8GidWq/WZEzYjGcXQHrVs5YboWj6YtDqq2Rp8ADgm9/zCc5gl27JSUag
+ h+EY7FwPTpI8Rv8SdgIaKKVGpxCrH2cx9ggwIIkKI8cYueKDf4lpu+noP
+ G0KS+ls5wBb1du6J3G3nIreJbxtZYk0xV2IkuosrGAYVxcbiqNyKuLAwG
+ LxFqlR0hbt9TYUJNhb+nOsY1i154AcDiD5n0d6AKuxJ2y2dNvPWxz1WsN
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=etFzl/PS
-Subject: [Intel-wired-lan] [intel-next PATCH 03/14] ice: track malicious VFs
- in new ice_mbx_vf_info structure
+ header.a=rsa-sha256 header.s=Intel header.b=AL4BBXv+
+Subject: [Intel-wired-lan] [intel-next PATCH 14/14] ice: call
+ ice_is_malicious_vf() from ice_vc_process_vf_msg()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,272 +103,166 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently the PF tracks malicious VFs in a malvfs bitmap which is used by
-the ice_mbx_clear_malvf and ice_mbx_report_malvf functions. This bitmap is
-used to ensure that we only report a VF as malicious once rather than
-continuously spamming the event log.
+The main loop in __ice_clean_ctrlq first checks if a VF might be malicious
+before calling ice_vc_process_vf_msg(). This results in duplicate code in
+both functions to obtain a reference to the VF, and exports the
+ice_is_malicious_vf() from ice_virtchnl.c unnecessarily.
 
-This mechanism of storage for the malicious indication works well enough
-for SR-IOV. However, it will not work with Scalable IOV. This is because
-Scalable IOV VFs can be allocated dynamically and might change VF ID when
-their underlying VSI changes.
+Refactor ice_is_malicious_vf() to be a static function that takes a pointer
+to the VF. Call this in ice_vc_process_vf_msg() just after we obtain a
+reference to the VF by calling ice_get_vf_by_id.
 
-To support this, the mailbox overflow logic will need to be refactored.
-First, introduce a new ice_mbx_vf_info structure which will be used to
-store data about a VF. Embed this structure in the struct ice_vf, and
-ensure it gets initialized when a new VF is created.
+Pass the mailbox data from the __ice_clean_ctrlq function into
+ice_vc_process_vf_msg() instead of calling ice_is_malicious_vf().
 
-For now this only stores the malicious indicator bit. Pass a pointer to the
-VF's mbx_info structure instead of using a bitmap to keep track of these
-bits.
+This reduces the number of exported functions and avoids the need to obtain
+the VF reference twice for every mailbox message.
 
-A future change will extend this structure and the rest of the logic
-associated with the overflow detection.
+Note that the state check for ICE_VF_STATE_DIS is kept in
+ice_is_malicious_vf() and we call this before checking that state in
+ice_vc_process_vf_msg. This is intentional, as we stop responding to VF
+messages from a VF once we detect that it may be overflowing the mailbox.
+This ensures that we continue to silently ignore the message as before
+without responding via ice_vc_send_msg_to_vf().
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sriov.c  |  7 +-
- drivers/net/ethernet/intel/ice/ice_type.h   |  7 ++
- drivers/net/ethernet/intel/ice/ice_vf_lib.c | 10 +--
- drivers/net/ethernet/intel/ice/ice_vf_lib.h |  2 +-
- drivers/net/ethernet/intel/ice/ice_vf_mbx.c | 71 +++++++++------------
- drivers/net/ethernet/intel/ice/ice_vf_mbx.h |  9 +--
- 6 files changed, 53 insertions(+), 53 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c     |  3 +-
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 36 ++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_virtchnl.h | 17 +++------
+ 3 files changed, 24 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 7107c279752a..44b94276df91 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -204,8 +204,8 @@ void ice_free_vfs(struct ice_pf *pf)
- 		}
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a7e7a186009e..20b3f3e6eda1 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -1517,8 +1517,7 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+ 			data.max_num_msgs_mbx = hw->mailboxq.num_rq_entries;
+ 			data.async_watermark_val = ICE_MBX_OVERFLOW_WATERMARK;
  
- 		/* clear malicious info since the VF is getting released */
--		ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->vfs.malvfs,
--				    ICE_MAX_SRIOV_VFS, vf->vf_id);
-+		ice_mbx_clear_malvf(&hw->mbx_snapshot, vf->vf_id,
-+				    &vf->mbx_info);
- 
- 		mutex_unlock(&vf->cfg_lock);
- 	}
-@@ -1828,8 +1828,7 @@ ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
- 		/* if the VF is malicious and we haven't let the user
- 		 * know about it, then let them know now
- 		 */
--		status = ice_mbx_report_malvf(&pf->hw, pf->vfs.malvfs,
--					      ICE_MAX_SRIOV_VFS, vf_id,
-+		status = ice_mbx_report_malvf(&pf->hw, &vf->mbx_info,
- 					      &report_vf);
- 		if (status)
- 			dev_dbg(dev, "Error reporting malicious VF\n");
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index e3f622cad425..d243a0c59ea4 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -794,6 +794,13 @@ struct ice_mbx_vf_counter {
- 	u32 vfcntr_len;
- };
- 
-+/* Structure used to track a single VF's messages on the mailbox:
-+ * 1. malicious: whether this VF has been detected as malicious before
-+ */
-+struct ice_mbx_vf_info {
-+	u8 malicious : 1;
-+};
-+
- /* Structure to hold data relevant to the captured static snapshot
-  * of the PF-VF mailbox.
-  */
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 116b43588389..69e89e960950 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -496,8 +496,8 @@ void ice_reset_all_vfs(struct ice_pf *pf)
- 
- 	/* clear all malicious info if the VFs are getting reset */
- 	ice_for_each_vf(pf, bkt, vf)
--		ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->vfs.malvfs,
--				    ICE_MAX_SRIOV_VFS, vf->vf_id);
-+		ice_mbx_clear_malvf(&hw->mbx_snapshot, vf->vf_id,
-+				    &vf->mbx_info);
- 
- 	/* If VFs have been disabled, there is no need to reset */
- 	if (test_and_set_bit(ICE_VF_DIS, pf->state)) {
-@@ -703,8 +703,7 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 	ice_eswitch_replay_vf_mac_rule(vf);
- 
- 	/* if the VF has been reset allow it to come up again */
--	ice_mbx_clear_malvf(&hw->mbx_snapshot, pf->vfs.malvfs,
--			    ICE_MAX_SRIOV_VFS, vf->vf_id);
-+	ice_mbx_clear_malvf(&hw->mbx_snapshot, vf->vf_id, &vf->mbx_info);
- 
- out_unlock:
- 	if (flags & ICE_VF_RESET_LOCK)
-@@ -760,6 +759,9 @@ void ice_initialize_vf_entry(struct ice_vf *vf)
- 	ice_vf_ctrl_invalidate_vsi(vf);
- 	ice_vf_fdir_init(vf);
- 
-+	/* Initialize mailbox info for this VF */
-+	ice_mbx_init_vf_info(&pf->hw, &vf->mbx_info);
-+
- 	mutex_init(&vf->cfg_lock);
+-			if (!ice_is_malicious_vf(pf, &event, &data))
+-				ice_vc_process_vf_msg(pf, &event);
++			ice_vc_process_vf_msg(pf, &event, &data);
+ 			break;
+ 		case ice_aqc_opc_fw_logging:
+ 			ice_output_fw_log(hw, &event.desc, event.msg_buf);
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index e0c573d9d1b9..97243c616d5d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -3834,27 +3834,26 @@ void ice_virtchnl_set_repr_ops(struct ice_vf *vf)
  }
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index ef30f05b5d02..e3cda6fb71ab 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -74,7 +74,6 @@ struct ice_vfs {
- 	u16 num_qps_per;		/* number of queue pairs per VF */
- 	u16 num_msix_per;		/* number of MSI-X vectors per VF */
- 	unsigned long last_printed_mdd_jiffies;	/* MDD message rate limit */
--	DECLARE_BITMAP(malvfs, ICE_MAX_SRIOV_VFS); /* malicious VF indicator */
- };
- 
- /* VF information structure */
-@@ -105,6 +104,7 @@ struct ice_vf {
- 	DECLARE_BITMAP(rxq_ena, ICE_MAX_RSS_QS_PER_VF);
- 	struct ice_vlan port_vlan_info;	/* Port VLAN ID, QoS, and TPID */
- 	struct virtchnl_vlan_caps vlan_v2_caps;
-+	struct ice_mbx_vf_info mbx_info;
- 	u8 pf_set_mac:1;		/* VF MAC address set by VMM admin */
- 	u8 trusted:1;
- 	u8 spoofchk:1;
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_mbx.c b/drivers/net/ethernet/intel/ice/ice_vf_mbx.c
-index 9f6acfeb0fc6..2e769bd0bf7e 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_mbx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_mbx.c
-@@ -345,35 +345,23 @@ ice_mbx_vf_state_handler(struct ice_hw *hw,
  /**
-  * ice_mbx_report_malvf - Track and note malicious VF
-  * @hw: pointer to the HW struct
-- * @all_malvfs: all malicious VFs tracked by PF
-- * @bitmap_len: length of bitmap in bits
-- * @vf_id: relative virtual function ID of the malicious VF
-+ * @vf_info: the mailbox tracking info structure for a VF
-  * @report_malvf: boolean to indicate if malicious VF must be reported
-  *
-- * This function will update a bitmap that keeps track of the malicious
-- * VFs attached to the PF. A malicious VF must be reported only once if
-- * discovered between VF resets or loading so the function checks
-- * the input vf_id against the bitmap to verify if the VF has been
-- * detected in any previous mailbox iterations.
-+ * This function updates the malicious indicator bit in the VF mailbox
-+ * tracking structure. A malicious VF must be reported only once if discovered
-+ * between VF resets or loading so the function first checks if the VF has
-+ * already been detected in any previous mailbox iterations.
-  */
- int
--ice_mbx_report_malvf(struct ice_hw *hw, unsigned long *all_malvfs,
--		     u16 bitmap_len, u16 vf_id, bool *report_malvf)
-+ice_mbx_report_malvf(struct ice_hw *hw, struct ice_mbx_vf_info *vf_info,
-+		     bool *report_malvf)
- {
--	if (!all_malvfs || !report_malvf)
-+	if (!report_malvf)
- 		return -EINVAL;
- 
--	*report_malvf = false;
--
--	if (bitmap_len < hw->mbx_snapshot.mbx_vf.vfcntr_len)
--		return -EINVAL;
--
--	if (vf_id >= bitmap_len)
--		return -EIO;
--
--	/* If the vf_id is found in the bitmap set bit and boolean to true */
--	if (!test_and_set_bit(vf_id, all_malvfs))
--		*report_malvf = true;
-+	*report_malvf = !vf_info->malicious;
-+	vf_info->malicious = 1;
- 
- 	return 0;
- }
-@@ -381,33 +369,24 @@ ice_mbx_report_malvf(struct ice_hw *hw, unsigned long *all_malvfs,
- /**
-  * ice_mbx_clear_malvf - Clear VF bitmap and counter for VF ID
-  * @snap: pointer to the mailbox snapshot structure
-- * @all_malvfs: all malicious VFs tracked by PF
-- * @bitmap_len: length of bitmap in bits
-  * @vf_id: relative virtual function ID of the malicious VF
-+ * @vf_info: mailbox tracking structure for this VF
-  *
-- * In case of a VF reset, this function can be called to clear
-- * the bit corresponding to the VF ID in the bitmap tracking all
-- * malicious VFs attached to the PF. The function also clears the
-- * VF counter array at the index of the VF ID. This is to ensure
-- * that the new VF loaded is not considered malicious before going
-- * through the overflow detection algorithm.
-- */
-+* In case of a VF reset, this function shall be called to clear the VF's
-+* current mailbox tracking state.
-+*/
- void
--ice_mbx_clear_malvf(struct ice_mbx_snapshot *snap, unsigned long *all_malvfs,
--		    u16 bitmap_len, u16 vf_id)
-+ice_mbx_clear_malvf(struct ice_mbx_snapshot *snap, u16 vf_id,
-+		    struct ice_mbx_vf_info *vf_info)
- {
--	if (WARN_ON(!snap || !all_malvfs))
--		return;
--
--	if (WARN_ON(bitmap_len < snap->mbx_vf.vfcntr_len))
-+	if (WARN_ON(!snap))
- 		return;
- 
- 	/* Ensure VF ID value is not larger than bitmap or VF counter length */
--	if (WARN_ON(vf_id >= bitmap_len || vf_id >= snap->mbx_vf.vfcntr_len))
-+	if (WARN_ON(vf_id >= snap->mbx_vf.vfcntr_len))
- 		return;
- 
--	/* Clear VF ID bit in the bitmap tracking malicious VFs attached to PF */
--	clear_bit(vf_id, all_malvfs);
-+	vf_info->malicious = 0;
- 
- 	/* Clear the VF counter in the mailbox snapshot structure for that VF ID.
- 	 * This is to ensure that if a VF is unloaded and a new one brought back
-@@ -418,6 +397,18 @@ ice_mbx_clear_malvf(struct ice_mbx_snapshot *snap, unsigned long *all_malvfs,
- 	snap->mbx_vf.vf_cntr[vf_id] = 0;
- }
- 
-+/**
-+ * ice_mbx_init_vf_info - Initialize a new VF mailbox tracking info
-+ * @hw: pointer to the hardware structure
-+ * @vf_info: the mailbox tracking info structure for a VF
+- * ice_is_malicious_vf - helper function to detect a malicious VF
+- * @pf: ptr to struct ice_pf
+- * @event: pointer to the AQ event
++ * ice_is_malicious_vf - check if this vf might be overflowing mailbox
++ * @vf: the VF to check
+  * @mbxdata: data about the state of the mailbox
 + *
-+ * Initialize a VF mailbox tracking info structure.
-+ */
-+void ice_mbx_init_vf_info(struct ice_hw *hw, struct ice_mbx_vf_info *vf_info)
-+{
-+	vf_info->malicious = 0;
-+}
++ * Detect if a given VF might be malicious and attempting to overflow the PF
++ * mailbox. If so, log a warning message and ignore this event.
+  */
+-bool
+-ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
+-		    struct ice_mbx_data *mbxdata)
++static bool
++ice_is_malicious_vf(struct ice_vf *vf, struct ice_mbx_data *mbxdata)
+ {
+-	s16 vf_id = le16_to_cpu(event->desc.retval);
+-	struct device *dev = ice_pf_to_dev(pf);
+ 	bool report_malvf = false;
+-	struct ice_vf *vf;
++	struct device *dev;
++	struct ice_pf *pf;
+ 	int status;
+ 
+-	vf = ice_get_vf_by_id(pf, vf_id);
+-	if (!vf)
+-		return false;
++	pf = vf->pf;
++	dev = ice_pf_to_dev(pf);
+ 
+ 	if (test_bit(ICE_VF_STATE_DIS, vf->vf_states))
+-		goto out_put_vf;
++		return vf->mbx_info.malicious;
+ 
+ 	/* check to see if we have a newly malicious VF */
+ 	status = ice_mbx_vf_state_handler(&pf->hw, mbxdata, &vf->mbx_info,
+@@ -3872,9 +3871,6 @@ ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
+ 			 pf_vsi ? pf_vsi->netdev->dev_addr : zero_addr);
+ 	}
+ 
+-out_put_vf:
+-	ice_put_vf(vf);
+-
+ 	return vf->mbx_info.malicious;
+ }
+ 
+@@ -3882,11 +3878,13 @@ ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
+  * ice_vc_process_vf_msg - Process request from VF
+  * @pf: pointer to the PF structure
+  * @event: pointer to the AQ event
++ * @mbxdata: information used to detect VF attempting mailbox overflow
+  *
+  * called from the common asq/arq handler to
+  * process request from VF
+  */
+-void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
++void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
++			   struct ice_mbx_data *mbxdata)
+ {
+ 	u32 v_opcode = le32_to_cpu(event->desc.cookie_high);
+ 	s16 vf_id = le16_to_cpu(event->desc.retval);
+@@ -3908,6 +3906,10 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 
+ 	mutex_lock(&vf->cfg_lock);
+ 
++	/* Check if the VF is trying to overflow the mailbox */
++	if (ice_is_malicious_vf(vf, mbxdata))
++		goto finish;
 +
- /**
-  * ice_mbx_init_snapshot - Initialize mailbox snapshot structure
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_mbx.h b/drivers/net/ethernet/intel/ice/ice_vf_mbx.h
-index be593b951642..2613cba61ac7 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_mbx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_mbx.h
-@@ -23,13 +23,14 @@ int
- ice_mbx_vf_state_handler(struct ice_hw *hw, struct ice_mbx_data *mbx_data,
- 			 u16 vf_id, bool *is_mal_vf);
- void
--ice_mbx_clear_malvf(struct ice_mbx_snapshot *snap, unsigned long *all_malvfs,
--		    u16 bitmap_len, u16 vf_id);
-+ice_mbx_clear_malvf(struct ice_mbx_snapshot *snap, u16 vf_id,
-+		    struct ice_mbx_vf_info *vf_info);
-+void ice_mbx_init_vf_info(struct ice_hw *hw, struct ice_mbx_vf_info *vf_info);
- int ice_mbx_init_snapshot(struct ice_hw *hw, u16 vf_count);
- void ice_mbx_deinit_snapshot(struct ice_hw *hw);
- int
--ice_mbx_report_malvf(struct ice_hw *hw, unsigned long *all_malvfs,
--		     u16 bitmap_len, u16 vf_id, bool *report_malvf);
-+ice_mbx_report_malvf(struct ice_hw *hw, struct ice_mbx_vf_info *vf_info,
-+		     bool *report_malvf);
+ 	/* Check if VF is disabled. */
+ 	if (test_bit(ICE_VF_STATE_DIS, vf->vf_states)) {
+ 		err = -EPERM;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.h b/drivers/net/ethernet/intel/ice/ice_virtchnl.h
+index 648a383fad85..cd747718de73 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.h
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.h
+@@ -63,10 +63,8 @@ int
+ ice_vc_send_msg_to_vf(struct ice_vf *vf, u32 v_opcode,
+ 		      enum virtchnl_status_code v_retval, u8 *msg, u16 msglen);
+ bool ice_vc_isvalid_vsi_id(struct ice_vf *vf, u16 vsi_id);
+-bool
+-ice_is_malicious_vf(struct ice_pf *pf, struct ice_rq_event_info *event,
+-		    struct ice_mbx_data *mbxdata);
+-void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event);
++void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
++			   struct ice_mbx_data *mbxdata);
  #else /* CONFIG_PCI_IOV */
- static inline int
- ice_aq_send_msg_to_vf(struct ice_hw __always_unused *hw,
+ static inline void ice_virtchnl_set_dflt_ops(struct ice_vf *vf) { }
+ static inline void ice_virtchnl_set_repr_ops(struct ice_vf *vf) { }
+@@ -86,16 +84,9 @@ static inline bool ice_vc_isvalid_vsi_id(struct ice_vf *vf, u16 vsi_id)
+ 	return false;
+ }
+ 
+-static inline bool
+-ice_is_malicious_vf(struct ice_pf __always_unused *pf,
+-		    struct ice_rq_event_info __always_unused *event,
+-		    struct ice_mbx_data *mbxdata)
+-{
+-	return false;
+-}
+-
+ static inline void
+-ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event)
++ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
++		      struct ice_mbx_data *mbxdata)
+ {
+ }
+ #endif /* !CONFIG_PCI_IOV */
 -- 
 2.39.1.405.gd4c25cc71f83
 
