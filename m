@@ -1,88 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11A62C6FA8E
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 25 Feb 2023 12:09:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 448A4C64ED6
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 26 Feb 2023 14:45:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 71FDC60B1A;
-	Sat, 25 Feb 2023 12:09:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 71FDC60B1A
+	by smtp2.osuosl.org (Postfix) with ESMTP id B900D40328;
+	Sun, 26 Feb 2023 14:45:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B900D40328
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1677326975;
-	bh=54Rh6yvD5ltrCv/lnrxXmcmgmvp1TQR/oqUTnhWiGJw=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=paVYk9XSrARsmhMP0A0YsW5Oq+uXf/oWpH/Gt5WHtFwor2+UngFb/ZJw1IgC8WDiF
-	 NA/gMUlq0E96m0O42u9gyhAFNHRwIm7VlTt7or9H8HryjRLkk/eZcxny6D5v+6OiLl
-	 vNwIdgcj9u24ZuG+nyZDQv9bIuAVNqGd+jFIWtnBaxCnpqOSRHrmXUPYATWhx9rt1w
-	 pAMV+iTeUWHQDtfdKmH5XYh8Xn+YgFPfBL6En1lW9v+rmDthmseUbFSm5lT1YR3dr8
-	 dDM9pn1pBoUhQe/BqTWUgOMpLDYdWlu4h14PzcWV8bNweNjYQDi16LREjY9Lh2MEfC
-	 jemGkJzCqmTZw==
+	s=default; t=1677422737;
+	bh=abGa4yeV1cu3GmGK3b6X4n7TXZl2pBkvOHeWkDd6tRY=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=5zWos6Zj4Bpi93h/4cwpQ3GhLmXgPo1L5YYRR/cS3FeyVTHmfzm6zM/MPJnMdO0M1
+	 2W65NPv6qhQtoMePw9fnFFIXnYM1aP4+qvucB/rdvECJyg0s41FDN/SntgLt1p31uv
+	 +0zr7diuDUL97qJ602OvViy+P41xdTMC6qM0Bk15AFEViWElhHpWeUrrIoFEA10lIn
+	 64EnuDNk1qaZNqfox7qoj5JF+m4bjF8hIKTTvSJa3dBCorD/aKyDO4wUvK0oRfb/6O
+	 /esZsKUrVeFDiaFRlF3xbZ1yxjar5czM2RAYpJuQkrIq3NtdlVa4wlo9+TnJ6u7i3U
+	 NiduYWxy026Vg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id b58sHvvUvPpN; Sat, 25 Feb 2023 12:09:34 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Cw9E2gt40S6P; Sun, 26 Feb 2023 14:45:37 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5653D60B1C;
-	Sat, 25 Feb 2023 12:09:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5653D60B1C
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id E06811BF3BB
- for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Feb 2023 12:09:32 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id C94BC40547;
+	Sun, 26 Feb 2023 14:45:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C94BC40547
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 840EB1BF41C
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 26 Feb 2023 14:45:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B889441655
- for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Feb 2023 12:09:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B889441655
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5D0A740396
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 26 Feb 2023 14:45:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5D0A740396
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id F41mc92iabGw for <intel-wired-lan@lists.osuosl.org>;
- Sat, 25 Feb 2023 12:09:31 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id meXnq6xszlBs for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 26 Feb 2023 14:45:33 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A2764159D
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9A2764159D
- for <intel-wired-lan@lists.osuosl.org>; Sat, 25 Feb 2023 12:09:31 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10631"; a="419889225"
-X-IronPort-AV: E=Sophos;i="5.97,327,1669104000"; d="scan'208";a="419889225"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Feb 2023 04:09:31 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10631"; a="797040899"
-X-IronPort-AV: E=Sophos;i="5.97,327,1669104000"; d="scan'208";a="797040899"
-Received: from lkp-server01.sh.intel.com (HELO 3895f5c55ead) ([10.239.97.150])
- by orsmga004.jf.intel.com with ESMTP; 25 Feb 2023 04:09:30 -0800
-Received: from kbuild by 3895f5c55ead with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1pVtMn-0003Ap-1D;
- Sat, 25 Feb 2023 12:09:29 +0000
-Date: Sat, 25 Feb 2023 20:09:27 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <63f9fa77.50tb+v8X9qVEMW9A%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 70D3240328
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 70D3240328
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 26 Feb 2023 14:45:33 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 57F5360C49;
+ Sun, 26 Feb 2023 14:45:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EE76EC4331D;
+ Sun, 26 Feb 2023 14:45:30 +0000 (UTC)
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Date: Sun, 26 Feb 2023 09:44:11 -0500
+Message-Id: <20230226144446.824580-19-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230226144446.824580-1-sashal@kernel.org>
+References: <20230226144446.824580-1-sashal@kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1677326971; x=1708862971;
- h=date:from:to:subject:message-id:mime-version:
- content-transfer-encoding;
- bh=M6HGwQHDlYHBFw0E6r04ockss7jS2zyjtm5ODJxgcT4=;
- b=T6/gV6aIU0C6Z6xji8JcoMNASHUVgt49Olv54zib66ewU6lCA79TllI5
- m1QphwQp/vgjMO7jb39pydZwJ+c4l6s5iN3uztvXg1qSv+68b3p0VK2X1
- oW5ClxO/+blmdcH8mK3OwBHo+TeQX4BCkaGJkx57Kvq75ApdR9m13JjD1
- oDJKgjaRK/l4fzqU6vgui/rAapWSq5b1TA0+jxj97kU6eBTMZTyUn3ZsN
- ampDK32WBLnPob1a2ge1oQTzSzjGcedPUZ/tuoD5654Y5+lcUoC2I/Ltr
- kFaS/Pzztp5Cy8GDY8VcGuzQudwHtFSvPSdlPd6AdhjxQpnnaKF+yaVq0
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=T6/gV6aI
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 98d6714e4c9315aa2d3d8fd940c98ac5adc7c87f
+ d=kernel.org; s=k20201202; t=1677422732;
+ bh=AxnxOlSN62BnFiT6lQKnSPsUpSQfhY1u7OhqD5HnXxw=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=PFdwp3DOGbxYMHfenf31+A70PxJXFBSFnSNwyohFRmQXQ0CkJ+SJV7xA/coaOyUxA
+ mHpfkIbSeQkXVhaw9BRlrfBNAjo0RhhwxOBjI++up6OEyKnxffCMFOjCDNoSXEFhWt
+ tlHvRtyYa3GwA1JhycA/W66hAocn00EZz+dq0WF0QR15wqz+ECVic6y4j6AwO5uzBa
+ +GpW97mOIA2DlkCXtDSTDlCdLYdXBSUUwudT9cRjotLzkfumOR1ZkQvfNno15R5xSq
+ ZPd7458VIJA5W6j5OFtCWqtvhDOduWH7xY87pAoTkJJv3R4sD8hcI1ndKu9rWuk37U
+ pk1Te9+qyOF2g==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=PFdwp3DO
+Subject: [Intel-wired-lan] [PATCH AUTOSEL 6.2 19/53] ice: add missing checks
+ for PF vsi type
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,47 +93,82 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Sasha Levin <sashal@kernel.org>, intel-wired-lan@lists.osuosl.org,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, edumazet@google.com,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org,
+ kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 98d6714e4c9315aa2d3d8fd940c98ac5adc7c87f  i40e: Fix kernel crash during reboot when adapter is in recovery mode
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-elapsed time: 821m
+[ Upstream commit 6a8d013e904ad9a66706fcc926ec9993bed7d190 ]
 
-configs tested: 19
-configs skipped: 3
+There were a few places we had missed checking the VSI type to make sure
+it was definitely a PF VSI, before calling setup functions intended only
+for the PF VSI.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+This doesn't fix any explicit bugs but cleans up the code in a few
+places and removes one explicit != vsi->type check that can be
+superseded by this code (it's a super set)
 
-tested configs:
-clang                                   alpha   defconfig
-gcc                                       arc   defconfig
-gcc                                       arm   defconfig
-gcc                                     arm64   defconfig
-gcc                                      csky   defconfig
-gcc                                      i386   defconfig
-gcc                                      ia64   defconfig
-gcc                                 loongarch   defconfig
-gcc                                      m68k   defconfig
-gcc                                     nios2   defconfig
-gcc                                    parisc   defconfig
-gcc                                  parisc64   defconfig
-gcc                                     riscv   defconfig
-gcc                                     riscv   rv32_defconfig
-gcc                                      s390   defconfig
-gcc                                     sparc   defconfig
-gcc                                        um   i386_defconfig
-gcc                                        um   x86_64_defconfig
-gcc                                    x86_64   defconfig
-gcc                                                  
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Tested-by: Gurucharan G <gurucharanx.g@intel.com> (A Contingent worker at Intel)
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 8ec24f6cf6beb..3811462824390 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -6182,15 +6182,12 @@ int ice_vsi_cfg(struct ice_vsi *vsi)
+ {
+ 	int err;
+ 
+-	if (vsi->netdev) {
++	if (vsi->netdev && vsi->type == ICE_VSI_PF) {
+ 		ice_set_rx_mode(vsi->netdev);
+ 
+-		if (vsi->type != ICE_VSI_LB) {
+-			err = ice_vsi_vlan_setup(vsi);
+-
+-			if (err)
+-				return err;
+-		}
++		err = ice_vsi_vlan_setup(vsi);
++		if (err)
++			return err;
+ 	}
+ 	ice_vsi_cfg_dcb_rings(vsi);
+ 
+@@ -6371,7 +6368,7 @@ static int ice_up_complete(struct ice_vsi *vsi)
+ 
+ 	if (vsi->port_info &&
+ 	    (vsi->port_info->phy.link_info.link_info & ICE_AQ_LINK_UP) &&
+-	    vsi->netdev) {
++	    vsi->netdev && vsi->type == ICE_VSI_PF) {
+ 		ice_print_link_msg(vsi, true);
+ 		netif_tx_start_all_queues(vsi->netdev);
+ 		netif_carrier_on(vsi->netdev);
+@@ -6382,7 +6379,9 @@ static int ice_up_complete(struct ice_vsi *vsi)
+ 	 * set the baseline so counters are ready when interface is up
+ 	 */
+ 	ice_update_eth_stats(vsi);
+-	ice_service_task_schedule(pf);
++
++	if (vsi->type == ICE_VSI_PF)
++		ice_service_task_schedule(pf);
+ 
+ 	return 0;
+ }
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+2.39.0
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
