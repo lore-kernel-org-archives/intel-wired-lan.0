@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94D9CC64ED6
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Feb 2023 16:48:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46846C64ED6
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Feb 2023 16:48:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2AF2781237;
-	Tue, 28 Feb 2023 16:48:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2AF2781237
+	by smtp1.osuosl.org (Postfix) with ESMTP id EBBE881207;
+	Tue, 28 Feb 2023 16:48:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EBBE881207
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1677602895;
-	bh=5v5OVvuuIFFOwF+Ai+2PycPRiq6mq6zSheNekFgzuDc=;
+	s=default; t=1677602899;
+	bh=oUOkAJApbElKPnzsxmQiqiq8WYwECuAr+CatfBedlIU=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=2erwqC74xmuIR08Dg8nwgaRcP/RES/c/v9VwAbCktWhliPZBU/CcPkXHu0uh9p6Co
-	 tIsDf2g/r+CSu0V5hLjUL0lyhkvsUwBR2/ey+bGiYcMPXk4YBq/tLTuFFVhuozNl7F
-	 G2A6cR1CZAgO9DbdfAqNAroXgG2H+6c0E/FqSAXqynXSm9zehD8aHn7fh6auRKhUQp
-	 53waCz1vbblcklNLS8AUVf8WIAGKygFFub4ePNlv+cOGmpVGQUfprDrXCobyire5Dh
-	 uKhJi5onX/F3KBhGe/I/tO8fdJEvlQQ6sXdP/YJdZgZptBw0m4LzkrVPRvEUea9S3r
-	 hmi9v2u4wr8GA==
+	b=uQpbxBEaKSN8qkvFhdsdFYyftnPJwD5+MeHgD2qP3s+VFr7TKkNomVdfusgmd+ydT
+	 eevCsjhuHIvRWEwef6skq8NKSs5esXGUR4roRZv6kb3O/gAyc2PaeMuOFimHAtGGt/
+	 ExAuSVc85n2egZTal1yslTqI3/pU94BLNCYu8KiZtvlFeC/MagG3NmvIYc3Oa1Sd92
+	 Y/NHvcdapViLsOMm/Itl3q1VG+x1t0HcuQUazaiU4+RPX2LMz/siZvWt3a+RK56KTJ
+	 yIVY1T4lD3iKDs7wibOuWgi9Bn4wlbzcV96pQK70Vr2Un8XjS13QSw7UGg140/iDDW
+	 tWNlvEzsdR+Dg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id nopJhd0MGTqg; Tue, 28 Feb 2023 16:48:14 +0000 (UTC)
+	with ESMTP id qf7nq-reWEnd; Tue, 28 Feb 2023 16:48:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 21DF48124A;
-	Tue, 28 Feb 2023 16:48:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 21DF48124A
+	by smtp1.osuosl.org (Postfix) with ESMTP id EEB8A81257;
+	Tue, 28 Feb 2023 16:48:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EEB8A81257
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 2E0261BF5A8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 16:48:09 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 314AA1BF5A8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 16:48:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 47CED60E83
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 16:48:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 47CED60E83
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1550C60736
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 16:48:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1550C60736
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Xu6-A6Y5Lo89 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Feb 2023 16:48:07 +0000 (UTC)
+ with ESMTP id dAh6Is-xnohM for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Feb 2023 16:48:08 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8C9D760736
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4AFF06116D
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 8C9D760736
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 16:48:07 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10635"; a="317986836"
-X-IronPort-AV: E=Sophos;i="5.98,222,1673942400"; d="scan'208";a="317986836"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4AFF06116D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 16:48:08 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10635"; a="317986844"
+X-IronPort-AV: E=Sophos;i="5.98,222,1673942400"; d="scan'208";a="317986844"
 Received: from orsmga003.jf.intel.com ([10.7.209.27])
  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  28 Feb 2023 08:48:07 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10635"; a="624107467"
-X-IronPort-AV: E=Sophos;i="5.98,222,1673942400"; d="scan'208";a="624107467"
+X-IronPort-AV: E=McAfee;i="6500,9779,10635"; a="624107471"
+X-IronPort-AV: E=Sophos;i="5.98,222,1673942400"; d="scan'208";a="624107471"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
  by orsmga003.jf.intel.com with ESMTP; 28 Feb 2023 08:48:04 -0800
 Received: from newjersey.igk.intel.com (newjersey.igk.intel.com
  [10.102.20.203])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id CC0F9369F0;
- Tue, 28 Feb 2023 16:48:02 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 9B821369F2;
+ Tue, 28 Feb 2023 16:48:03 +0000 (GMT)
 From: Alexander Lobakin <aleksander.lobakin@intel.com>
 To: Tony Nguyen <anthony.l.nguyen@intel.com>,
  "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>
-Date: Tue, 28 Feb 2023 17:46:12 +0100
-Message-Id: <20230228164613.1360409-2-aleksander.lobakin@intel.com>
+Date: Tue, 28 Feb 2023 17:46:13 +0100
+Message-Id: <20230228164613.1360409-3-aleksander.lobakin@intel.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230228164613.1360409-1-aleksander.lobakin@intel.com>
 References: <20230228164613.1360409-1-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1677602887; x=1709138887;
+ t=1677602888; x=1709138888;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=exlFMpVF5vBUX97QGUIEERFQuxyaIwqV/MHoSJIWeoc=;
- b=T1WQN/gxnPOdTnMSKrH/q7H+BzRou7/PrZxu1GjrjxVybTmvkaZRa1/E
- HqmvKSnwHJmcyYv4MrEcM6zeFh3cSLi7utH78mnaZ54BSA2yKRaKP9N85
- AWZ4TjK7D9HxKfrCdWWPrObwtm8X+XrMr0we4cx8W9Pt92hQ3uO38IiB3
- N5PBlNzU2fGaDBrPAc4pUx/RBS8YYeBwWF8cKyqiQkEH8B3QYOc/dZV0b
- c2sOVkJMiCrXmvG3rYe6JIwCZWgTurqCaOsMHndxjcNFYi3woOz8AadB4
- DK+ysnwq/UvMIxTUV2D9h6TUaGXB4hYUTvh4tIsOsmnDKRVF9jmWsIjRS
- w==;
+ bh=1BRx1cFZ8aFmlbAEYzeOUIKMH3jxuLSG/wPSL5VXqZs=;
+ b=TK7icgY8QSXSYvnZTij9UPnfG2QpfUtf4WKYIRDWSr35h+xU4DD6l1Dz
+ Dr1i+Q9GY0nG/uyozROCx5mjEhyYEi8qkkSWiR0Qy58h+GZQ8nMK1Tb7F
+ 1QBE+3eXf+Wx6R1K7i80XIDLZSCefkxdAr1+cHuiw/d+znmP93WMWO7LE
+ XOyh5gZ0JTAHstoRz/9/v1gKS7wOcaYdnQ9CGfzZpeCTi47M596cUoiHr
+ hbL/gK5GtOMa60a7/svDvNiyQ0MCTN7habm2edvYeD37NfJllmTVI9e0d
+ aDBnr4NkHA76gJlcypbgcEQZQdQVTkDKpJdDiarexZcDIE9tBLwA6EChE
+ g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=T1WQN/gx
-Subject: [Intel-wired-lan] [PATCH net 1/2] iavf: fix inverted Rx hash
- condition leading to disabled hash
+ header.a=rsa-sha256 header.s=Intel header.b=TK7icgY8
+Subject: [Intel-wired-lan] [PATCH net v2 2/2] iavf: fix non-tunneled IPv6
+ UDP packet type and hashing
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,34 +110,38 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Condition, which checks whether the netdev has hashing enabled is
-inverted. Basically, the tagged commit effectively disabled passing flow
-hash from descriptor to skb, unless user *disables* it via Ethtool.
-Commit a876c3ba59a6 ("i40e/i40evf: properly report Rx packet hash")
-fixed this problem, but only for i40e.
-Invert the condition now in iavf and unblock passing hash to skbs again.
+Currently, IAVF's decode_rx_desc_ptype() correctly reports payload type
+of L4 for IPv4 UDP packets and IPv{4,6} TCP, but only L3 for IPv6 UDP.
+Originally, i40e, ice and iavf were affected.
+Commit 73df8c9e3e3d ("i40e: Correct UDP packet header for non_tunnel-ipv6")
+fixed that in i40e, then
+commit 638a0c8c8861 ("ice: fix incorrect payload indicator on PTYPE")
+fixed that for ice.
+IPv6 UDP is L4 obviously. Fix it and make iavf report correct L4 hash
+type for such packets, so that the stack won't calculate it on CPU when
+needs it.
 
-Fixes: 857942fd1aa1 ("i40e: Fix Rx hash reported to the stack by our driver")
+Fixes: 206812b5fccb ("i40e/i40evf: i40e implementation for skb_set_hash")
 Reviewed-by: Larysa Zaremba <larysa.zaremba@intel.com>
 Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
 Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_txrx.c | 2 +-
+ drivers/net/ethernet/intel/iavf/iavf_common.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 18b6a702a1d6..e989feda133c 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -1096,7 +1096,7 @@ static inline void iavf_rx_hash(struct iavf_ring *ring,
- 		cpu_to_le64((u64)IAVF_RX_DESC_FLTSTAT_RSS_HASH <<
- 			    IAVF_RX_DESC_STATUS_FLTSTAT_SHIFT);
- 
--	if (ring->netdev->features & NETIF_F_RXHASH)
-+	if (!(ring->netdev->features & NETIF_F_RXHASH))
- 		return;
- 
- 	if ((rx_desc->wb.qword1.status_error_len & rss_mask) == rss_mask) {
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_common.c b/drivers/net/ethernet/intel/iavf/iavf_common.c
+index 16c490965b61..dd11dbbd5551 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_common.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_common.c
+@@ -661,7 +661,7 @@ struct iavf_rx_ptype_decoded iavf_ptype_lookup[BIT(8)] = {
+ 	/* Non Tunneled IPv6 */
+ 	IAVF_PTT(88, IP, IPV6, FRG, NONE, NONE, NOF, NONE, PAY3),
+ 	IAVF_PTT(89, IP, IPV6, NOF, NONE, NONE, NOF, NONE, PAY3),
+-	IAVF_PTT(90, IP, IPV6, NOF, NONE, NONE, NOF, UDP,  PAY3),
++	IAVF_PTT(90, IP, IPV6, NOF, NONE, NONE, NOF, UDP,  PAY4),
+ 	IAVF_PTT_UNUSED_ENTRY(91),
+ 	IAVF_PTT(92, IP, IPV6, NOF, NONE, NONE, NOF, TCP,  PAY4),
+ 	IAVF_PTT(93, IP, IPV6, NOF, NONE, NONE, NOF, SCTP, PAY4),
 -- 
 2.39.2
 
