@@ -4,84 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 039D3C64EC7
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Feb 2023 20:41:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E20EC7EE31
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Feb 2023 22:12:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9949360AED;
-	Tue, 28 Feb 2023 20:41:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9949360AED
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2222260AD4;
+	Tue, 28 Feb 2023 22:12:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2222260AD4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1677616914;
-	bh=EeaizVZYeluDALAg2UmrbdhlTi4swJRGQxSHHBq5F5U=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=z4t8fRl5dcllzW0/l/OMkXgoE6QKFRJDS15MNGoXbkOhQi5BnHsKn865HmhdLqKmd
-	 cTAsCw55Sf6hVZ70ASkE8EtO9hcyNio6wFMBC6bdBEbwy+5kMRK/YJPC/ttDGbTV4N
-	 toOp77U5l+10VJXex42sgtLpLH6oJOglftBPkcKxWQNSyXantZRZ8kze2GnXb+lJjh
-	 YFp6uR7YoqAq03K3Wuy9wCbuhUVGiyANzJe/f75QLg4Jqtnp3Jzbp1HZh8SBVkJg0A
-	 4DPkQjiR9b6phMT19znPS/fA8t9nC5sDxcb+TPKZVQkYp3P+jvaf1yzoDF/2fyHVFI
-	 FYQl6lPxEo/Ng==
+	s=default; t=1677622324;
+	bh=f208brtPol4GqlwZlA9gUJS8Xd+Z4Dbi4NEysPZvkLQ=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=htFEjXqOrNEqdKHPCv5nlGyoUHIj7FrTEQQXqnisYKPpmH+j8Qbkd2akPf98IdJJ5
+	 PLupHQ4taykMm+du6qVdttB1GZ1WMkpYv80rLZQpkl5v5vwdwyGl8jeqPYL0Oh0yHT
+	 GhAH+q2zq2InMS4ZEIP1Ig/nZqVyGED6JiAi+v01Y1dCPMxlRtomjU6WeW7KQZIHIj
+	 Eq27qT8kR6veAgonTcANTtxlIvROUH//1DOIY4o96eDuSDYLlmCERvoGRitaR4q3c3
+	 bGK4e6Op+OQ5OKYx9yN2iolTyxYIgqK7IDxuQtzteb6ofPKsmyVY9JriSdpa6VBreM
+	 YDjC6mmYat5sA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id aftq9IhX_jfm; Tue, 28 Feb 2023 20:41:53 +0000 (UTC)
+	with ESMTP id kkujmMe18Quq; Tue, 28 Feb 2023 22:12:03 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 418D460AD2;
-	Tue, 28 Feb 2023 20:41:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 418D460AD2
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id CD59B1BF293
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 20:41:51 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F1B0860AE7;
+	Tue, 28 Feb 2023 22:12:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F1B0860AE7
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id B17691BF580
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 22:12:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B24FD60AD2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 20:41:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B24FD60AD2
+ by smtp2.osuosl.org (Postfix) with ESMTP id 89DEE40190
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 22:12:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 89DEE40190
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dgQbAAGLfMGj for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Feb 2023 20:41:50 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qPWZD_ODawRw for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Feb 2023 22:12:00 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2F5496059B
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2F5496059B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 20:41:50 +0000 (UTC)
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-563-n88w3L0tPlmNNPE3pXkhnQ-1; Tue, 28 Feb 2023 15:41:43 -0500
-X-MC-Unique: n88w3L0tPlmNNPE3pXkhnQ-1
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com
- [10.11.54.4])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C519A400C8
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C519A400C8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Feb 2023 22:12:00 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C1FDC882820;
- Tue, 28 Feb 2023 20:41:41 +0000 (UTC)
-Received: from swamp.redhat.com (unknown [10.39.192.177])
- by smtp.corp.redhat.com (Postfix) with ESMTP id CF0FE2026D68;
- Tue, 28 Feb 2023 20:41:39 +0000 (UTC)
-From: Petr Oros <poros@redhat.com>
-To: netdev@vger.kernel.org
-Date: Tue, 28 Feb 2023 21:41:39 +0100
-Message-Id: <20230228204139.2264495-1-poros@redhat.com>
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 0477B611D6;
+ Tue, 28 Feb 2023 22:12:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E21AFC433EF;
+ Tue, 28 Feb 2023 22:11:58 +0000 (UTC)
+Date: Tue, 28 Feb 2023 23:11:55 +0100
+From: Lorenzo Bianconi <lorenzo@kernel.org>
+To: Shay Agroskin <shayagr@amazon.com>
+Message-ID: <Y/58Kzah/ERCYMGD@lore-desk>
+References: <cover.1674913191.git.lorenzo@kernel.org>
+ <948292cc7d72f2bc04b5973008ecf384f9296677.1674913191.git.lorenzo@kernel.org>
+ <pj41zlcz5v1kkg.fsf@u570694869fb251.ant.amazon.com>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.4
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1677616908;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=+n5ao7sZl4YPF+uvuG7GgDxKNOHxoWdmpB6UrFdBImU=;
- b=HUyuLKOpZkRHQ0FUTfjWEepgCvbqhrS/kMr4NFwHc3cJ3hySziykFw1J4p2VIXz6bOldsL
- XGG5Nyz/IRelt+jg2/UclisOtVXkhlQfM+xyhMa3ihdZ9WjxPtX9ree4dTm2WcQ24E315X
- zUoOrhkyXQ+aXFesxgDD/bswL4g4oHA=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=HUyuLKOp
-Subject: [Intel-wired-lan] [PATCH net] ice: copy last block omitted in
- ice_get_module_eeprom()
+In-Reply-To: <pj41zlcz5v1kkg.fsf@u570694869fb251.ant.amazon.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1677622319;
+ bh=Ko8B2Ke9vuu9enxqAJfFgtkV4iIhtcxQhPpeZO6LJZY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=B49WSNmZNSoOAYuuji8BrzI2neC5SBuPf8A2Ey5Rt6OaxZQ5rgwSNCIqHEuf/iIqv
+ 7J6AE4mqsVAawMdBgL4w2jYG6DsENOwSUbruH30cCVvrH68BdOKz1TWdbDMj62pKJH
+ WPCHlZ752a9J31MGt6wmY45TMzHSLOtNQc3pMzpF/NnHixaNTedROFSeeZ5C4EUuLg
+ /1N/FyFBbYgbrQYe/+iOYKNXVbKnZ2SRNEQCx0kcrpr/rFK3xCZ6dsq2nIvnEAe3Qi
+ NzI42z8sGwUxepJ66pjcHUSb93T6LHfw/a/pd/XNhXKKAZ3JmFWnshE+cVlS3wBWgA
+ kl0SBtr14etqA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=B49WSNmZ
+Subject: Re: [Intel-wired-lan] [PATCH v4 bpf-next 2/8] drivers: net: turn on
+ XDP features
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,107 +91,143 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
- linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
- kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: mst@redhat.com, vladimir.oltean@nxp.com, ast@kernel.org,
+ edumazet@google.com, anthony.l.nguyen@intel.com, sdf@google.com,
+ daniel@iogearbox.net, andrii@kernel.org, intel-wired-lan@lists.osuosl.org,
+ simon.horman@corigine.com, kuba@kernel.org, pabeni@redhat.com,
+ aelior@marvell.com, hawk@kernel.org, christophe.jaillet@wanadoo.fr,
+ memxor@gmail.com, john@phrozen.org, bjorn@kernel.org, bpf@vger.kernel.org,
+ magnus.karlsson@intel.com, leon@kernel.org, netdev@vger.kernel.org,
+ toke@redhat.com, martin.lau@linux.dev, ecree.xilinx@gmail.com,
+ alardam@gmail.com, gospo@broadcom.com, saeedm@nvidia.com, davem@davemloft.net,
+ nbd@nbd.name
+Content-Type: multipart/mixed; boundary="===============3144815866359256235=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ice_get_module_eeprom() is broken since commit e9c9692c8a81 ("ice:
-Reimplement module reads used by ethtool") In this refactor,
-ice_get_module_eeprom() reads the eeprom in blocks of size 8.
-But the condition that should protect the buffer overflow
-ignores the last block. The last block always contains zeros.
-Fix adding memcpy for last block.
 
-Bug uncovered by ethtool upstream commit 9538f384b535
-("netlink: eeprom: Defer page requests to individual parsers")
-After this commit, ethtool reads a block with length = 1;
-to read the SFF-8024 identifier value.
+--===============3144815866359256235==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="2LGuPtBJE1KxgoLc"
+Content-Disposition: inline
 
-unpatched driver:
-$ ethtool -m enp65s0f0np0 offset 0x90 length 8
-Offset          Values
-------          ------
-0x0090:         00 00 00 00 00 00 00 00
-$ ethtool -m enp65s0f0np0 offset 0x90 length 12
-Offset          Values
-------          ------
-0x0090:         00 00 01 a0 4d 65 6c 6c 00 00 00 00
-$
 
-$ ethtool -m enp65s0f0np0
-Offset          Values
-------          ------
-0x0000:         11 06 06 00 00 00 00 00 00 00 00 00 00 00 00 00
-0x0010:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-0x0020:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-0x0030:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-0x0040:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-0x0050:         00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-0x0060:         00 00 00 00 00 00 00 00 00 00 00 00 00 01 08 00
-0x0070:         00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+--2LGuPtBJE1KxgoLc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-patched driver:
-$ ethtool -m enp65s0f0np0 offset 0x90 length 8
-Offset          Values
-------          ------
-0x0090:         00 00 01 a0 4d 65 6c 6c
-$ ethtool -m enp65s0f0np0 offset 0x90 length 12
-Offset          Values
-------          ------
-0x0090:         00 00 01 a0 4d 65 6c 6c 61 6e 6f 78
-$ ethtool -m enp65s0f0np0
-    Identifier                                : 0x11 (QSFP28)
-    Extended identifier                       : 0x00
-    Extended identifier description           : 1.5W max. Power consumption
-    Extended identifier description           : No CDR in TX, No CDR in RX
-    Extended identifier description           : High Power Class (> 3.5 W) not enabled
-    Connector                                 : 0x23 (No separable connector)
-    Transceiver codes                         : 0x88 0x00 0x00 0x00 0x00 0x00 0x00 0x00
-    Transceiver type                          : 40G Ethernet: 40G Base-CR4
-    Transceiver type                          : 25G Ethernet: 25G Base-CR CA-N
-    Encoding                                  : 0x05 (64B/66B)
-    BR, Nominal                               : 25500Mbps
-    Rate identifier                           : 0x00
-    Length (SMF,km)                           : 0km
-    Length (OM3 50um)                         : 0m
-    Length (OM2 50um)                         : 0m
-    Length (OM1 62.5um)                       : 0m
-    Length (Copper or Active cable)           : 1m
-    Transmitter technology                    : 0xa0 (Copper cable unequalized)
-    Attenuation at 2.5GHz                     : 4db
-    Attenuation at 5.0GHz                     : 5db
-    Attenuation at 7.0GHz                     : 7db
-    Attenuation at 12.9GHz                    : 10db
-    ........
-    ....
+>=20
+> Lorenzo Bianconi <lorenzo@kernel.org> writes:
+>=20
+> > From: Marek Majtyka <alardam@gmail.com>
+> >=20
+> > ...
+> >=20
+> > diff --git a/drivers/net/ethernet/amazon/ena/ena_netdev.c
+> > b/drivers/net/ethernet/amazon/ena/ena_netdev.c
+> > index e8ad5ea31aff..d3999db7c6a2 100644
+> > --- a/drivers/net/ethernet/amazon/ena/ena_netdev.c
+> > +++ b/drivers/net/ethernet/amazon/ena/ena_netdev.c
+> > @@ -597,7 +597,9 @@ static int ena_xdp_set(struct net_device *netdev,
+> > struct netdev_bpf *bpf)
+> >  				if (rc)
+> >  					return rc;
+> >  			}
+> > +			xdp_features_set_redirect_target(netdev, false);
+> >  		} else if (old_bpf_prog) {
+> > + xdp_features_clear_redirect_target(netdev);
+> >  			rc =3D  ena_destroy_and_free_all_xdp_queues(adapter);
+> >  			if (rc)
+> >  				return rc;
+> > @@ -4103,6 +4105,8 @@ static void ena_set_conf_feat_params(struct
+> > ena_adapter *adapter,
+> >  	/* Set offload features */
+> >  	ena_set_dev_offloads(feat, netdev);
+> >   +	netdev->xdp_features =3D NETDEV_XDP_ACT_BASIC |
+> > NETDEV_XDP_ACT_REDIRECT;
+> > +
+> >  	adapter->max_mtu =3D feat->dev_attr.max_mtu;
+> >  	netdev->max_mtu =3D adapter->max_mtu;
+> >  	netdev->min_mtu =3D ENA_MIN_MTU;
+> >=20
+>=20
+> Hi, thanks for the time you put in adjusting the ENA driver as well.
 
-Fixes: e9c9692c8a81 ("ice: Reimplement module reads used by ethtool")
-Signed-off-by: Petr Oros <poros@redhat.com>
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 2 ++
- 1 file changed, 2 insertions(+)
+Hi Shay,
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index b360bd8f15998b..33b2bee5cfb40f 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -4356,6 +4356,8 @@ ice_get_module_eeprom(struct net_device *netdev,
- 			/* Make sure we have enough room for the new block */
- 			if ((i + SFF_READ_BLOCK_SIZE) < ee->len)
- 				memcpy(data + i, value, SFF_READ_BLOCK_SIZE);
-+			else if (ee->len - i > 0)
-+				memcpy(data + i, value, ee->len - i);
- 		}
- 	}
- 	return 0;
--- 
-2.39.2
+>=20
+> Why did you set NETDEV_XDP_ACT_NDO_XMIT dynamically for some drivers (like
+> ENA and mlx5) and statically for others (like atlantic driver which also
+> redirects packets only when XDP program is loaded) ?
+> Is it only for the sake of notifying the user that an XDP program has been
+> loaded ?
+
+there are some drivers (e.g. mvneta) where NETDEV_XDP_ACT_NDO_XMIT is always
+supported while there are other drivers (e.g. intel drivers) where it
+depends on other configurations (e.g. if the driver needs to reserve
+some queues for xdp).
+
+Regards,
+Lorenzo
+
+>=20
+> Thanks,
+> Shay
+>=20
+> > ...
+> > diff --git a/net/core/xdp.c b/net/core/xdp.c
+> > index a5a7ecf6391c..82727b47259d 100644
+> > --- a/net/core/xdp.c
+> > +++ b/net/core/xdp.c
+> > @@ -773,3 +773,21 @@ static int __init xdp_metadata_init(void)
+> >  	return register_btf_kfunc_id_set(BPF_PROG_TYPE_XDP,
+> > &xdp_metadata_kfunc_set);
+> >  }
+> >  late_initcall(xdp_metadata_init);
+> > +
+> > +void xdp_features_set_redirect_target(struct net_device *dev, bool
+> > support_sg)
+> > +{
+> > +	dev->xdp_features |=3D NETDEV_XDP_ACT_NDO_XMIT;
+> > +	if (support_sg)
+> > +		dev->xdp_features |=3D NETDEV_XDP_ACT_NDO_XMIT_SG;
+> > +
+> > +	call_netdevice_notifiers(NETDEV_XDP_FEAT_CHANGE, dev);
+> > +}
+> > +EXPORT_SYMBOL_GPL(xdp_features_set_redirect_target);
+> > +
+> > +void xdp_features_clear_redirect_target(struct net_device *dev)
+> > +{
+> > +	dev->xdp_features &=3D ~(NETDEV_XDP_ACT_NDO_XMIT |
+> > +			       NETDEV_XDP_ACT_NDO_XMIT_SG);
+> > +	call_netdevice_notifiers(NETDEV_XDP_FEAT_CHANGE, dev);
+> > +}
+> > +EXPORT_SYMBOL_GPL(xdp_features_clear_redirect_target);
+>=20
+
+--2LGuPtBJE1KxgoLc
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQTquNwa3Txd3rGGn7Y6cBh0uS2trAUCY/58KwAKCRA6cBh0uS2t
+rLKPAQDQyKfTANyIcDmS/mWg8vodAL3S9+fGnbTjTcIElAlHxwD9EWMFpLyzB8od
+kMPPssGYZhGW38vxvWYGIyRAEAIMaAM=
+=Y0Sa
+-----END PGP SIGNATURE-----
+
+--2LGuPtBJE1KxgoLc--
+
+--===============3144815866359256235==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============3144815866359256235==--
