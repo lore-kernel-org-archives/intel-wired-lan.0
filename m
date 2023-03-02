@@ -1,88 +1,75 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F937C6FA8E
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Mar 2023 15:13:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF328C6FA8E
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Mar 2023 16:24:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F3B9A4017A;
-	Thu,  2 Mar 2023 15:13:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F3B9A4017A
+	by smtp1.osuosl.org (Postfix) with ESMTP id 36C64820AB;
+	Thu,  2 Mar 2023 16:24:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 36C64820AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1677770003;
-	bh=KHkFpMnXGwZ0Tpmm+V9fpZAO4Eq3C2zEWyTWB4T1t5s=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=GimlfirE381Umli6O42+AiVseISx/wParX3E22LKhw8E3Kdjv+gKn3L2ORU2PqWoM
-	 wVdQJqjpYevBSG/KcLx1p6roFoDW7mIF2Jn2Hdu9DSUTi4EAQn+9T3D4SWy0bT2IgM
-	 srhagiXf2Z3LdsGUiu1Y9NCGQEtd81n52ymnZZILcNJ/iFsR86/wgadd99ZNDoUeoW
-	 Q5sw3pEWX++LUSX8ukWQDm97nJ53+mS5DRUX/tPWmju2hrda5VRdjCrtiyT4KDSnMH
-	 F/dSfOUOO5nl9ixGvfARscBIc16UgqY8LvHVElOnbozSdz5zUOqp5XQ8Ata9sAI7q6
-	 ESqz4x0AANRQw==
+	s=default; t=1677774271;
+	bh=cMOdSzPQ+uv/uEzzXGQhJCSPKEzYXq5OeOBv3/pE9Xo=;
+	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=Qsn6fwpqWIoJN7vVZbmHFEzSGbUkdEItKCD1gwNkfKjRMu8iLMcFlBRZVLJJXuGqv
+	 8ZmvlAuNxUVeBxVxa/I/XnrmVIHw62zVXaFCvGxCFuNISGjesVKJMLbDM/JhNdjfA0
+	 t6KRamJg7kPmu8/dYQB0+lSDER5U1xjAWm4AQFIagGAwApgGxwIRboQmKVzgfhtphm
+	 Z4j+QI7Dg+rK/L3BFtiStZb2doaEFn2DISljByMJW3WiyNgg3dS/mAarAs96Q1vFg2
+	 7kM5GFxRJ4DrKHoqcXHtUI/2tEcD30dHvBNZQvp4R24PIuTZbUA2KQhZXXl3095ra6
+	 JGjDx+v/w9nIA==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id VNZdWCPuYIch; Thu,  2 Mar 2023 16:24:30 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0FE6F82099;
+	Thu,  2 Mar 2023 16:24:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0FE6F82099
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id DA73C1BF2F3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Mar 2023 12:38:24 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id B794540CB0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Mar 2023 12:38:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B794540CB0
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id eQEVGP0wzLLW; Thu,  2 Mar 2023 15:13:22 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F1A6C41005;
-	Thu,  2 Mar 2023 15:13:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F1A6C41005
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 0576B1BF59D
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Mar 2023 15:13:20 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id DD7CF612C1
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Mar 2023 15:13:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DD7CF612C1
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 6cSx6M0onC63 for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Mar 2023 15:13:18 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D24D1612AC
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D24D1612AC
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Mar 2023 15:13:18 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10637"; a="333468000"
-X-IronPort-AV: E=Sophos;i="5.98,228,1673942400"; d="scan'208";a="333468000"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Mar 2023 07:13:18 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10637"; a="677252470"
-X-IronPort-AV: E=Sophos;i="5.98,228,1673942400"; d="scan'208";a="677252470"
-Received: from lkp-server01.sh.intel.com (HELO 776573491cc5) ([10.239.97.150])
- by fmsmga007.fm.intel.com with ESMTP; 02 Mar 2023 07:13:17 -0800
-Received: from kbuild by 776573491cc5 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1pXkcO-0000YC-1E;
- Thu, 02 Mar 2023 15:13:16 +0000
-Date: Thu, 02 Mar 2023 23:13:15 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <6400bd0b.HBMm18/8IZZInuMD%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 2ARe5fjCgCPx for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Mar 2023 12:38:23 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 20E30400F6
+Received: from sosiego.soundray.org (sosiego.soundray.org [116.203.207.114])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 20E30400F6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Mar 2023 12:38:23 +0000 (UTC)
+From: Linus Heckemann <git@sphalerite.org>
+To: "Ertman, David M" <david.m.ertman@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+In-Reply-To: <MW5PR11MB5811C3D002B5A5FB3A8806F4DDA89@MW5PR11MB5811.namprd11.prod.outlook.com>
+References: <20230215191757.1826508-1-david.m.ertman@intel.com>
+ <ygay1oxikvo.fsf@localhost>
+ <MW5PR11MB5811C3D002B5A5FB3A8806F4DDA89@MW5PR11MB5811.namprd11.prod.outlook.com>
+Date: Thu, 02 Mar 2023 13:38:14 +0100
+Message-ID: <ygattz3tjk9.fsf@localhost>
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1677769998; x=1709305998;
- h=date:from:to:subject:message-id:mime-version:
- content-transfer-encoding;
- bh=xMH0mRFbsfcLwxvAWqlFOEXWKZEVEaTusjFV0LBJRaU=;
- b=grR1zVBaSB65sfaQcvJnZ4rThw6AbFzqsHiWMdvgGtaEy8EdJt0FvchW
- 5Cjb5yRRndFCrxKj7eooVCh1uudAx00I+qtvfjEflPkG4xsGUV40iq4gY
- 9Z0eKR1TYefGaWjoHDFVaBZRHzApmkjXbpSM7cZLbceXVCOCrYY+mkIvJ
- 1yNObkVVVj4FRjiHaDqr2MnTXLF+qrCatvZIb0/I3JoS8iDQhbtQVSy9u
- 6DSiWvgG+agGWqoNCCMvzewLbb0Yw1OQCJl0K2bVYenJkcjdGsQI73KuE
- Ruz93452DjqJ6ySFOaYboJxqXcNUmXk1Q7JSGC4B44aV8gtoIg/EfyQmm
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=grR1zVBa
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 9720e8b1250ff31687ada520211d3e5af5099a85
+X-Mailman-Approved-At: Thu, 02 Mar 2023 16:24:28 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=sphalerite.org; s=sosiego; t=1677760696;
+ bh=f15Twj69E0mZwYKKYwmVetWbSyygrlvDq/ffVHKHTEY=;
+ h=From:To:Cc:Subject:In-Reply-To:References:Date;
+ b=DjSTfv3gEOKj7jNqmcDnfRevjAU/aEf7rgWpjtveyZ93hkRVtmDOnJYodUxHn+v63
+ XDCeW6LIf1Ld6TURJJGNY7d9k0OOKpOniF3mqFlAUKKj6WhS3UDSfnZjvlUoSM7lIH
+ Dp1l1yEy5CvuFWUD440pDMq1tQRF25yAzPJm1/rg=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=sphalerite.org header.i=@sphalerite.org
+ header.a=rsa-sha256 header.s=sosiego header.b=DjSTfv3g
+Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: avoid bonding causing
+ auxiliary plug/unplug under RTNL lock
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,130 +82,132 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 9720e8b1250ff31687ada520211d3e5af5099a85  ice: avoid bonding causing auxiliary plug/unplug under RTNL lock
+"Ertman, David M" <david.m.ertman@intel.com> writes:
 
-elapsed time: 1014m
+>> -----Original Message-----
+>> From: Linus Heckemann <git@sphalerite.org>
+>> Sent: Thursday, February 16, 2023 9:24 AM
+>> To: Ertman, David M <david.m.ertman@intel.com>; intel-wired-
+>> lan@lists.osuosl.org
+>> Cc: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
+>> Subject: Re: [Intel-wired-lan] [PATCH net v2] ice: avoid bonding causing
+>> auxiliary plug/unplug under RTNL lock
+>> 
+>> Dave Ertman <david.m.ertman@intel.com> writes:
+>> > RDMA is not supported in ice on a PF that has been added to a bonded
+>> > interface. To enforce this, when an interface enters a bond, we unplug
+>> > the auxiliary device that supports RDMA functionality.  This unplug
+>> > currently happens in the context of handling the netdev bonding event.
+>> > This event is sent to the ice driver under RTNL context.  This is causing
+>> > a deadlock where the RDMA driver is waiting for the RTNL lock to complete
+>> > the removal.
+>> >
+>> > Defer the unplugging/re-plugging of the auxiliary device to the service
+>> > task so that it is not performed under the RTNL lock context.
+>> >
+>> > Reported-by: Jaroslav Pulchart <jaroslav.pulchart@gooddata.com>
+>> > Link: https://lore.kernel.org/linux-rdma/68b14b11-d0c7-65c9-4eeb-
+>> 0487c95e395d@leemhuis.info/
+>> > Fixes: 5cb1ebdbc434 ("ice: Fix race condition during interface enslave")
+>> > Fixes: 425c9bd06b7a ("RDMA/irdma: Report the correct link speed")
+>> > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+>> > ---
+>> > Changes since v1:
+>> > Reversed order of bit processing in ice_service_task for PLUG/UNPLUG
+>> 
+>> Hi Dave,
+>> 
+>> Thanks for your continued work on this! We've tested this on a system
+>> affected by the original issue (with 8086:1593 cards) and, unlike v1 of
+>> the patch, it appears not to resolve it:
+>
+> Hi Linus,
+>
+> This error confuses me.  The only difference between v1 and v2 of this patch
+> is the order in which we process state bits in the service task thread.  They are
+> still being processed outside of RTNL context.
+>
+> Can you provide the steps you used to reproduce this issue? 
+>
+> Thanks,
+> DaveE
 
-configs tested: 103
-configs skipped: 3
+Hi Dave,
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+It confuses me as well!
 
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r012-20230302   gcc  
-arc                  randconfig-r036-20230302   gcc  
-arc                  randconfig-r043-20230302   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r001-20230302   clang
-arm                  randconfig-r003-20230302   clang
-arm                  randconfig-r046-20230302   gcc  
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r025-20230302   clang
-arm64                randconfig-r035-20230302   gcc  
-csky         buildonly-randconfig-r006-20230302   gcc  
-csky                                defconfig   gcc  
-csky                 randconfig-r022-20230302   gcc  
-hexagon      buildonly-randconfig-r005-20230302   clang
-hexagon              randconfig-r041-20230302   clang
-hexagon              randconfig-r045-20230302   clang
-i386                             allyesconfig   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                          randconfig-a001   gcc  
-i386                          randconfig-a002   clang
-i386                          randconfig-a003   gcc  
-i386                          randconfig-a004   clang
-i386                          randconfig-a005   gcc  
-i386                          randconfig-a006   clang
-i386                          randconfig-a011   clang
-i386                          randconfig-a012   gcc  
-i386                          randconfig-a013   clang
-i386                          randconfig-a014   gcc  
-i386                          randconfig-a015   clang
-i386                          randconfig-a016   gcc  
-ia64                             allmodconfig   gcc  
-ia64                                defconfig   gcc  
-ia64                 randconfig-r014-20230302   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-m68k                             allmodconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r026-20230302   gcc  
-m68k                 randconfig-r032-20230302   gcc  
-microblaze   buildonly-randconfig-r003-20230302   gcc  
-microblaze           randconfig-r023-20230302   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                 randconfig-r004-20230302   clang
-mips                 randconfig-r005-20230302   clang
-nios2                               defconfig   gcc  
-nios2                randconfig-r015-20230302   gcc  
-openrisc     buildonly-randconfig-r004-20230302   gcc  
-openrisc             randconfig-r016-20230302   gcc  
-parisc       buildonly-randconfig-r002-20230302   gcc  
-parisc                              defconfig   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc              randconfig-r011-20230302   clang
-powerpc              randconfig-r024-20230302   clang
-powerpc              randconfig-r031-20230302   gcc  
-powerpc              randconfig-r033-20230302   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r042-20230302   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r006-20230302   gcc  
-s390                 randconfig-r021-20230302   clang
-s390                 randconfig-r044-20230302   clang
-sh                               allmodconfig   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r002-20230302   gcc  
-sparc64              randconfig-r013-20230302   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                            allnoconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64                        randconfig-a001   clang
-x86_64                        randconfig-a002   gcc  
-x86_64                        randconfig-a003   clang
-x86_64                        randconfig-a004   gcc  
-x86_64                        randconfig-a005   clang
-x86_64                        randconfig-a006   gcc  
-x86_64                        randconfig-a011   gcc  
-x86_64                        randconfig-a012   clang
-x86_64                        randconfig-a013   gcc  
-x86_64                        randconfig-a014   clang
-x86_64                        randconfig-a015   gcc  
-x86_64                        randconfig-a016   clang
-x86_64                               rhel-8.3   gcc  
-xtensa       buildonly-randconfig-r001-20230302   gcc  
-xtensa               randconfig-r034-20230302   gcc  
+Like before, this was reproduced by booting a system configured to bond
+the interfaces provided by two of the cards (using systemd-networkd,
+relevant config below). The failure occurred less frequently than prior
+to applying the patch, but still enough to be quite an annoyance!
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+According to the provider, the machine's card was on an older firmware
+(3.00 0x8000893f 20.5.13), and upgrading to the latest available version
+resolved this issue for our purposes. Nevertheless, I think the kernel
+shouldn't be deadlock on the RTNL lock regardless of which firmware
+version is running. If there's any more information that would be
+helpful for debugging, let us know -- though we can't get at machines
+running the old firmware trivially, so it's hard for us to reproduce at
+this point.
+
+As mentioned, upgrading the firmware has resolved the problem for us,
+though it certainly feels unsatisfying to leave the bug there. I have no
+strong opinion on whether the patch should be included as is
+anyway. Maybe the firmware version info is enough to help you reproduce
+the problem?
+
+Linus
+
+
+________
+/etc/systemd/network/10-bond0.netdev:
+[NetDev]
+Kind=bond
+Name=bond0
+
+[Bond]
+DownDelaySec=0.200000
+LACPTransmitRate=fast
+MIIMonitorSec=0.100000
+Mode=802.3ad
+TransmitHashPolicy=layer3+4
+UpDelaySec=0.200000
+
+________
+/etc/systemd/network/40-bond0.network:
+[Match]
+Name=bond0
+
+[Link]
+#MACAddress=<omitted>
+RequiredForOnline=carrier
+
+[Network]
+LinkLocalAddressing=no
+
+# some Address and Route sections omitted
+________
+/etc/systemd/network/30-eno12419.network:
+[Match]
+Name=eno12419
+
+[Network]
+Bond=bond0
+
+________
+/etc/systemd/network/30-eno12399.network:
+[Match]
+Name=eno12399
+
+[Network]
+Bond=bond0
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
