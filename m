@@ -4,98 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAEAAC6FD1E
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Mar 2023 15:59:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9180C6FD1A
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Mar 2023 16:33:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 338AC40AC9;
-	Tue,  7 Mar 2023 15:59:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 338AC40AC9
+	by smtp2.osuosl.org (Postfix) with ESMTP id 361EC40B26;
+	Tue,  7 Mar 2023 16:33:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 361EC40B26
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1678204756;
-	bh=BDpFI98DrV77glyfSGBxHGa/5Pt36kYWnsK+5q/BI0g=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=cEut1cWvubGYjmfgrHFsfIr7XEVxNtv2uPQK1uO7Gud3wi1kIONINb2jXq9L++ScX
-	 g6GSmUIXn+fCo/y5V5ENBGKlWk8Sd/0ilIUreRW+3PC1/UpsW9PQcxfzJP5ZWHznsT
-	 ygGQZXxGEyK+EhV6Y42fDtxy5WVirp1SFgkvWigX/0P2Vmvq49WaAhFcM6LVOp9noA
-	 aGY3US0FCb8aStDQk/Z8PprlxNByUAeEPA5ENgwLVrtUDI+B5LXoPdqbx0xxM7FE5H
-	 KkjmcKzg5yF7OR6UoUxw9Y7KBqpbw8bzT0lboxB3V7mY26/Sp0FX6/aIHIDjTWzrbx
-	 EIEN1nDTV3XGw==
+	s=default; t=1678206805;
+	bh=Ei6nQrNyva0xe3xtWbh9ptMserFpawhVgDELZ84xx7k=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Reply-To:Cc:From;
+	b=JBbVUtBQe4DKb1hrMZbxkJW3/yDGMZUNnX4LvKwgxiQokomQ2q67sLEUkIpSupeJq
+	 E1mtQ2xB7d9oe5/2+Gxrz08xRNg1eEQwE/HC+IkIqG7Za0W0m0bz+ld5K20/pm5dJ9
+	 o6MPTibkwdbwLhyT5FlawOITDEM+zCpk+5d3Pcl8pvIrXmQd7O5y+PTalHKGcLGDXK
+	 7Q1bo38kAG0jp2CiPv2Il6r8O6YyyoCTJ2EkX9Yhphsn9CLKxpG2WKO2ug4b/iqWon
+	 6e/wuBUs1AsrwlB418XclNDkOKEU0PJcqIqXIPfCMgYnFcSQMdbpyL2H+PLyFxwGwR
+	 i+yvl9ugkGJUQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0QCf9cjCPN8j; Tue,  7 Mar 2023 15:59:15 +0000 (UTC)
+	with ESMTP id KwgLsSZgHKpX; Tue,  7 Mar 2023 16:33:24 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3822E40B34;
-	Tue,  7 Mar 2023 15:59:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3822E40B34
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4272740B29;
+	Tue,  7 Mar 2023 16:33:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4272740B29
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id C65411BF34E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 06:45:56 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id A51DA1BF5AA
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 16:33:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id AAB03416D6
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 06:45:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AAB03416D6
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7C7F540499
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 16:33:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7C7F540499
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Kq278ENlh5Hc for <intel-wired-lan@lists.osuosl.org>;
- Tue,  7 Mar 2023 06:45:52 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F05424088B
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com
- [IPv6:2607:f8b0:4864:20::633])
- by smtp4.osuosl.org (Postfix) with ESMTPS id F05424088B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 06:45:51 +0000 (UTC)
-Received: by mail-pl1-x633.google.com with SMTP id x11so8534152pln.12
- for <intel-wired-lan@lists.osuosl.org>; Mon, 06 Mar 2023 22:45:51 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20210112; t=1678171551;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=tWUDbUcn72lVUggRq+lO9GshVKKZ994KDZUSopdffjk=;
- b=IVGbdetmiv5YnpamnjYzhTfMNiUkemBl0UzmthWKJwSEokVnz5dPoHfaXdv/TL96Xs
- NdoRnmEkNZ1u5eCjhQAsYOzT6PM460ZwWqtFMdpjI90FqmO2JJqFqddhSHD3l0JeMwvm
- vBLzWm0bcCsXBWMcY/ujhQxOMLenAjaab0G8E+LdwNyn2sRa6vd+yvOyS4DXq041e28I
- X6nja/yBXiT+CqAVjXLu/7SOCdAWK2AxwyR+41RNu7/EwZb/NgDn+wXDIJEWzO8RyLGz
- KR+Au99KjS8T0FCVxMZaNRpMtg3Y48r5J8fXCte77yI6rr/1MaM+c7XBCoJtcjSQ/oJT
- Tykg==
-X-Gm-Message-State: AO0yUKUiCIJ+z5UbPl5of+XAfYf9DtsjcMLqQuMBeYMlC9JnD9srAVri
- uRGlT/vxgr+uAZC8qeuu6ZbP9w==
-X-Google-Smtp-Source: AK7set8rh2u5j/0EPcSDVJEwvP75wz/kiHS1dWTOFQI1LbU9KthiLs7z+VQlDEDHd30q5GeV3Klvvg==
-X-Received: by 2002:a05:6a20:7f9c:b0:cb:af96:9436 with SMTP id
- d28-20020a056a207f9c00b000cbaf969436mr18950112pzj.0.1678171551249; 
- Mon, 06 Mar 2023 22:45:51 -0800 (PST)
-Received: from laputa.. ([2400:4050:c3e1:100:5c46:b5f3:8bc0:caeb])
- by smtp.gmail.com with ESMTPSA id
- p16-20020a62ab10000000b0059261bd5bacsm7175297pff.202.2023.03.06.22.45.49
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Mon, 06 Mar 2023 22:45:50 -0800 (PST)
-From: AKASHI Takahiro <takahiro.akashi@linaro.org>
-To: jesse.brandeburg@intel.com,
-	anthony.l.nguyen@intel.com
-Date: Tue,  7 Mar 2023 15:45:31 +0900
-Message-Id: <20230307064531.68840-1-takahiro.akashi@linaro.org>
-X-Mailer: git-send-email 2.37.3
+ with ESMTP id BioWKkRgBmyO for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  7 Mar 2023 16:33:21 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 271094046D
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 271094046D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 16:33:20 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-149-DyI-u7sfNMyppRNjIEtT9Q-1; Tue, 07 Mar 2023 11:33:17 -0500
+X-MC-Unique: DyI-u7sfNMyppRNjIEtT9Q-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.8])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1ECB790F923;
+ Tue,  7 Mar 2023 16:27:21 +0000 (UTC)
+Received: from calimero.vinschen.de (unknown [10.39.192.200])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 2061FC15BAE;
+ Tue,  7 Mar 2023 16:27:20 +0000 (UTC)
+Received: by calimero.vinschen.de (Postfix, from userid 500)
+ id BEFC2A80C30; Tue,  7 Mar 2023 17:27:18 +0100 (CET)
+Date: Tue, 7 Mar 2023 17:27:18 +0100
+From: Corinna Vinschen <vinschen@redhat.com>
+To: Lin Ma <linma@zju.edu.cn>
+Message-ID: <ZAdl5jr3rBoTb7qZ@calimero.vinschen.de>
+Mail-Followup-To: Lin Ma <linma@zju.edu.cn>, jesse.brandeburg@intel.com,
+ anthony.l.nguyen@intel.com, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ richardcochran@gmail.com, ast@kernel.org, daniel@iogearbox.net,
+ hawk@kernel.org, john.fastabend@gmail.com,
+ intel-wired-lan@lists.osuosl.org, pmenzel@molgen.mpg.de,
+ regressions@lists.linux.dev, stable@vger.kernel.org
+References: <ZAc/3oVos9DBx3iR@calimero.vinschen.de>
+ <20230307152917.32182-1-linma@zju.edu.cn>
 MIME-Version: 1.0
-X-Mailman-Approved-At: Tue, 07 Mar 2023 15:59:13 +0000
+Content-Disposition: inline
+In-Reply-To: <20230307152917.32182-1-linma@zju.edu.cn>
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linaro.org; s=google; t=1678171551;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=tWUDbUcn72lVUggRq+lO9GshVKKZ994KDZUSopdffjk=;
- b=SWYj+1CHK2cbF079IF9kquFU+AA7SkK8E72Uxxd7ctBL7wuPHzQhPc6jdfJGnrwZEG
- s/+v28kS3XHNrPAu7flZwfZZ6L3SfXqx/WKzzRRcHxZbAMonjh8bSp7FA115xNX4Udko
- u2XnGvtxkUWR1VuVaSb1kRPHxvlFM1YDJ6JFe/ABxvFZXNU6yYfKO9782+1WS/nFugvM
- uJ3UwodhQ9UB2GIL3xNihNd14tUajsc3q5KJHtoho+VPy0e1MUaP+rjHi4/9i7rppcAZ
- eP18cCLNl/6dv7sS23naWg31nJF+QeB/SxTEvGi59GbM7tiRFIc6ZO0F7WNkabKbxFKZ
- G74w==
+ d=redhat.com; 
+ s=mimecast20190719; t=1678206800;
+ h=from:from:reply-to:reply-to:subject:subject:date:date:
+ message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+ content-type:content-type:in-reply-to:in-reply-to:  references:references;
+ bh=NwQ3wDlpFiZI+BrzfSgoKWGDASiKEaVASGy92MgjLxs=;
+ b=fR1CT9+7d9YMTx4x1PpalztrFl3cr4VK5HQMvZ3anMtBzT2n9R5XS/T3CPNccwUFrTw+vU
+ evR9AvZZ8FJ/rr5HSm03xTH9YX0r3yKi5k6uIetGIPANfmgrZoo7UwI/s7HJtoR5a4kawz
+ NijkicVHW+t5SkhJraUM8cLVSH12sIM=
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org
- header.a=rsa-sha256 header.s=google header.b=SWYj+1CH
-Subject: [Intel-wired-lan] [PATCH] igc: fix the validation logic for
- taprio's gate list
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=fR1CT9+7
+Subject: Re: [Intel-wired-lan] [PATCH v2] igb: revert rtnl_lock() that
+ causes deadlock
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,74 +109,81 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>, kurt@linutronix.de,
- intel-wired-lan@lists.osuosl.org
+Reply-To: intel-wired-lan@lists.osuosl.org
+Cc: pmenzel@molgen.mpg.de, ast@kernel.org, hawk@kernel.org,
+ daniel@iogearbox.net, netdev@vger.kernel.org, richardcochran@gmail.com,
+ john.fastabend@gmail.com, jesse.brandeburg@intel.com, stable@vger.kernel.org,
+ linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ intel-wired-lan@lists.osuosl.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net, regressions@lists.linux.dev
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The check introduced in the commit a5fd39464a40 ("igc: Lift TAPRIO schedule
-restriction") can detect a false positive error in some corner case.
-For instance,
-    tc qdisc replace ... taprio num_tc 4
-	...
-	sched-entry S 0x01 100000	# slot#1
-	sched-entry S 0x03 100000	# slot#2
-	sched-entry S 0x04 100000	# slot#3
-	sched-entry S 0x08 200000	# slot#4
-	flags 0x02			# hardware offload
+On Mar  7 23:29, Lin Ma wrote:
+> The commit 6faee3d4ee8b ("igb: Add lock to avoid data race") adds
+> rtnl_lock to eliminate a false data race shown below
+> 
+>  (FREE from device detaching)      |   (USE from netdev core)
+> igb_remove                         |  igb_ndo_get_vf_config
+>  igb_disable_sriov                 |  vf >= adapter->vfs_allocated_count?
+>   kfree(adapter->vf_data)          |
+>   adapter->vfs_allocated_count = 0 |
+>                                    |    memcpy(... adapter->vf_data[vf]
+> 
+> The above race will never happen and the extra rtnl_lock causes deadlock
+> below
+> 
+> [  141.420169]  <TASK>
+> [  141.420672]  __schedule+0x2dd/0x840
+> [  141.421427]  schedule+0x50/0xc0
+> [  141.422041]  schedule_preempt_disabled+0x11/0x20
+> [  141.422678]  __mutex_lock.isra.13+0x431/0x6b0
+> [  141.423324]  unregister_netdev+0xe/0x20
+> [  141.423578]  igbvf_remove+0x45/0xe0 [igbvf]
+> [  141.423791]  pci_device_remove+0x36/0xb0
+> [  141.423990]  device_release_driver_internal+0xc1/0x160
+> [  141.424270]  pci_stop_bus_device+0x6d/0x90
+> [  141.424507]  pci_stop_and_remove_bus_device+0xe/0x20
+> [  141.424789]  pci_iov_remove_virtfn+0xba/0x120
+> [  141.425452]  sriov_disable+0x2f/0xf0
+> [  141.425679]  igb_disable_sriov+0x4e/0x100 [igb]
+> [  141.426353]  igb_remove+0xa0/0x130 [igb]
+> [  141.426599]  pci_device_remove+0x36/0xb0
+> [  141.426796]  device_release_driver_internal+0xc1/0x160
+> [  141.427060]  driver_detach+0x44/0x90
+> [  141.427253]  bus_remove_driver+0x55/0xe0
+> [  141.427477]  pci_unregister_driver+0x2a/0xa0
+> [  141.428296]  __x64_sys_delete_module+0x141/0x2b0
+> [  141.429126]  ? mntput_no_expire+0x4a/0x240
+> [  141.429363]  ? syscall_trace_enter.isra.19+0x126/0x1a0
+> [  141.429653]  do_syscall_64+0x5b/0x80
+> [  141.429847]  ? exit_to_user_mode_prepare+0x14d/0x1c0
+> [  141.430109]  ? syscall_exit_to_user_mode+0x12/0x30
+> [  141.430849]  ? do_syscall_64+0x67/0x80
+> [  141.431083]  ? syscall_exit_to_user_mode_prepare+0x183/0x1b0
+> [  141.431770]  ? syscall_exit_to_user_mode+0x12/0x30
+> [  141.432482]  ? do_syscall_64+0x67/0x80
+> [  141.432714]  ? exc_page_fault+0x64/0x140
+> [  141.432911]  entry_SYSCALL_64_after_hwframe+0x72/0xdc
+> 
+> Since the igb_disable_sriov() will call pci_disable_sriov() before
+> releasing any resources, the netdev core will synchronize the cleanup to
+> avoid any races. This patch removes the useless rtnl_(un)lock to guarantee
+> correctness.
+> 
+> CC: stable@vger.kernel.org
+> Fixes: 6faee3d4ee8b ("igb: Add lock to avoid data race")
+> Reported-by: Corinna Vinschen <vinschen@redhat.com>
+> Link: https://lore.kernel.org/intel-wired-lan/ZAcJvkEPqWeJHO2r@calimero.vinschen.de/
+> Signed-off-by: Lin Ma <linma@zju.edu.cn>
 
-Here the queue#0 (the first queue) is on at the slot#1 and #2,
-and off at the slot#3 and #4. Under the current logic, when the slot#4
-is examined, validate_schedule() returns *false* since the enablement
-count for the queue#0 is two and it is already off at the previous slot
-(i.e. #3). But this definition is truely correct.
+Tested-by: Corinna Vinschen <vinschen@redhat.com>
 
-Let's fix the logic to enforce a strict validation for consecutively-opened
-slots.
 
-Fixes: a5fd39464a40 ("igc: Lift TAPRIO schedule restriction")
-Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 2928a6c73692..25fc6c65209b 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6010,18 +6010,18 @@ static bool validate_schedule(struct igc_adapter *adapter,
- 		if (e->command != TC_TAPRIO_CMD_SET_GATES)
- 			return false;
- 
--		for (i = 0; i < adapter->num_tx_queues; i++) {
--			if (e->gate_mask & BIT(i))
-+		for (i = 0; i < adapter->num_tx_queues; i++)
-+			if (e->gate_mask & BIT(i)) {
- 				queue_uses[i]++;
- 
--			/* There are limitations: A single queue cannot be
--			 * opened and closed multiple times per cycle unless the
--			 * gate stays open. Check for it.
--			 */
--			if (queue_uses[i] > 1 &&
--			    !(prev->gate_mask & BIT(i)))
--				return false;
--		}
-+				/* There are limitations: A single queue cannot
-+				 * be opened and closed multiple times per cycle
-+				 * unless the gate stays open. Check for it.
-+				 */
-+				if (queue_uses[i] > 1 &&
-+				    !(prev->gate_mask & BIT(i)))
-+					return false;
-+			}
- 	}
- 
- 	return true;
--- 
-2.37.3
+Thanks,
+Corinna
 
 _______________________________________________
 Intel-wired-lan mailing list
