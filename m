@@ -4,73 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87AEBC678D5
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Mar 2023 13:18:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E150EC678D4
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Mar 2023 13:45:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 17E0B4023E;
-	Tue,  7 Mar 2023 13:18:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 17E0B4023E
+	by smtp4.osuosl.org (Postfix) with ESMTP id 707214173E;
+	Tue,  7 Mar 2023 13:45:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 707214173E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1678195095;
-	bh=aRhWwA59b7MY6XnygqfO6PWn4olNGbqrLu7Y12MhltM=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1678196714;
+	bh=CuR4Oj3EcjE2cZNd2+uCLGAahwM50TFVO74uvMi5wa4=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Reply-To:Cc:From;
-	b=ssC0+ecdrt1wngC3wJGieY2LsZhkk4gEojSCb26Wmz9v3iy6uHI/2/hgNPiodCiiE
-	 nSZiHDE3O53x6Bqu5kT42VP9sucn2RlYdMea4bJcRnyCGz/UuITLEQYGKciNt2VTVi
-	 BeZkObxk8SJHW1PTCCSN42EgU/iIEAxcOoFG7ktGPp0gWo7lfXbTdqPPOoEs3S94hw
-	 PRp/igx1S4buzgHcqhGt+XMp4w5i7TFfRFCmMqr1yELHgtsuD4vwMJ6nuLtrHP6mFU
-	 pICoLihTFtWqRgu3SBwuPTlB3WyCq4htz2aoeI87tdLlHSrFV37N5/DfUM93xKuss2
-	 CkA9b+D/BlAYw==
+	b=wlllYwyZjywzM6VwIONgZ0LOvYYNwkvkECQLjRAzB5HgPFN4EZS8OVCMtTl3lJpbC
+	 2TSiHtUFhAufPLn76+s9znKWOUqZPWn6SFQv/MnEDp/EwFD2KMhYQ3KIHl6/3xJuG5
+	 U8zYm2cjBwz1GkDnQoRyOvrdtGAiuFFv1cq3/OWSyMuC992d+vPnUsw80L+kqKuKgc
+	 Zfr8OEpbFzgtoPBbqRJ5GScw9nkAgkU/S9d61+L1eEd2meJgB9wnDKMAe4Svb9WiFG
+	 RXfa78WFiCz5AIGHCgmw+/qK5EYaGBDPMLOB9vw3GG8NnAMb+/zw4UcjKRov6TW2On
+	 oosFrWCrVcrBg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VupiVPloFvvu; Tue,  7 Mar 2023 13:18:13 +0000 (UTC)
+	with ESMTP id n8b2mHE1SGNo; Tue,  7 Mar 2023 13:45:13 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 651E940276;
-	Tue,  7 Mar 2023 13:18:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 651E940276
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3DE664173F;
+	Tue,  7 Mar 2023 13:45:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3DE664173F
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 6A46F1BF46D
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 13:18:12 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id F1EA41BF46D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 13:45:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4F9468140C
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 13:18:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4F9468140C
+ by smtp1.osuosl.org (Postfix) with ESMTP id D6AB781768
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 13:45:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D6AB781768
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oQeYGaRVlOL3 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  7 Mar 2023 13:18:11 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 03508813E1
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
- [80.237.130.52])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 03508813E1
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 13:18:10 +0000 (UTC)
-Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
- by wp530.webpack.hosteurope.de running ExIM with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- id 1pZXCX-0004FP-AK; Tue, 07 Mar 2023 14:17:57 +0100
-Message-ID: <f3531259-626c-3182-3dba-7118d0c1445c@leemhuis.info>
-Date: Tue, 7 Mar 2023 14:17:56 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Content-Language: en-US, de-DE
-To: Lin Ma <linma@zju.edu.cn>, jesse.brandeburg@intel.com,
- anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, richardcochran@gmail.com, ast@kernel.org,
- daniel@iogearbox.net, hawk@kernel.org, john.fastabend@gmail.com
+ with ESMTP id LkRKAVCSswzt for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  7 Mar 2023 13:45:11 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1346281468
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1346281468
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 13:45:10 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-407-h5hR5eD8O2uvXWN4CpUT_A-1; Tue, 07 Mar 2023 08:45:06 -0500
+X-MC-Unique: h5hR5eD8O2uvXWN4CpUT_A-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.8])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 3EA28803520;
+ Tue,  7 Mar 2023 13:45:05 +0000 (UTC)
+Received: from calimero.vinschen.de (unknown [10.39.192.200])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 61ADCC15BAD;
+ Tue,  7 Mar 2023 13:45:04 +0000 (UTC)
+Received: by calimero.vinschen.de (Postfix, from userid 500)
+ id F0CD1A80B97; Tue,  7 Mar 2023 14:45:02 +0100 (CET)
+Date: Tue, 7 Mar 2023 14:45:02 +0100
+From: Corinna Vinschen <vinschen@redhat.com>
+To: Lin Ma <linma@zju.edu.cn>
+Message-ID: <ZAc/3oVos9DBx3iR@calimero.vinschen.de>
+Mail-Followup-To: Lin Ma <linma@zju.edu.cn>, jesse.brandeburg@intel.com,
+ anthony.l.nguyen@intel.com, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ richardcochran@gmail.com, ast@kernel.org, daniel@iogearbox.net,
+ hawk@kernel.org, john.fastabend@gmail.com,
+ intel-wired-lan@lists.osuosl.org, pmenzel@molgen.mpg.de,
+ regressions@lists.linux.dev, stable@vger.kernel.org
 References: <301b585a.80249.186bbe6cc50.Coremail.linma@zju.edu.cn>
  <20230307130547.31446-1-linma@zju.edu.cn>
-From: "Linux regression tracking (Thorsten Leemhuis)"
- <regressions@leemhuis.info>
+MIME-Version: 1.0
+Content-Disposition: inline
 In-Reply-To: <20230307130547.31446-1-linma@zju.edu.cn>
-X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1678195091;
- 0aab537f; 
-X-HE-SMSGID: 1pZXCX-0004FP-AK
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.8
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1678196709;
+ h=from:from:reply-to:reply-to:subject:subject:date:date:
+ message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+ content-type:content-type:in-reply-to:in-reply-to:  references:references;
+ bh=CjSk2U3oMAFmhtNturhD3NcmwhqwU56rdcLTkQIFSg8=;
+ b=MFrsJMT/90oNGAw8PKaaSl22u94CA08FtIpc3zp8//UbZqoi6ZGLw5NEE7hBCerOTm4hhM
+ lb5icVTWehoGnJi+ggvgHWTH7kRoJQ24xmf2oCb8rNI41Psb7Ghte4V28Xr7d2LHbAdiNc
+ iSfBN+3ZcXc4XImLO4mpGoW4vGTPc6E=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=MFrsJMT/
 Subject: Re: [Intel-wired-lan] [PATCH] igb: revert rtnl_lock() that causes
  deadlock
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -85,16 +109,19 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
-Cc: pmenzel@molgen.mpg.de, vinschen@redhat.com,
- intel-wired-lan@lists.osuosl.org, regressions@lists.linux.dev,
- stable@vger.kernel.org
+Reply-To: intel-wired-lan@lists.osuosl.org
+Cc: pmenzel@molgen.mpg.de, ast@kernel.org, hawk@kernel.org,
+ daniel@iogearbox.net, netdev@vger.kernel.org, richardcochran@gmail.com,
+ john.fastabend@gmail.com, jesse.brandeburg@intel.com, stable@vger.kernel.org,
+ linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ intel-wired-lan@lists.osuosl.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net, regressions@lists.linux.dev
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 07.03.23 14:05, Lin Ma wrote:
+On Mar  7 21:05, Lin Ma wrote:
 > The commit 6faee3d4ee8b ("igb: Add lock to avoid data race") adds
 > rtnl_lock to eliminate a false data race shown below
 > 
@@ -105,22 +132,19 @@ On 07.03.23 14:05, Lin Ma wrote:
 >   adapter->vfs_allocated_count = 0 |
 >                                    |    memcpy(... adapter->vf_data[vf]
 > 
+> The above race will never happen and the extra rtnl_lock causes deadlock
+> below
 > [...]
 > CC: stable@vger.kernel.org
 > Fixes: 6faee3d4ee8b ("igb: Add lock to avoid data race")
 > Reported-by: Corinna <vinschen@redhat.com>
-> Link: https://lore.kernel.org/regressions/3ef31c0b-ce40-20d0-7740-5dc0cca278ca@molgen.mpg.de/
 
-FWIW, that afaics should be:
+Thank you, but "Corinna Vinschen", please.
 
-Link:
-https://lore.kernel.org/intel-wired-lan/ZAcJvkEPqWeJHO2r@calimero.vinschen.de/
 
-(that's the parent of the mail above)
+Thanks,
+Corinna
 
-> Signed-off-by: Lin Ma <linma@zju.edu.cn>
-
-Ciao, Thorsten
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
