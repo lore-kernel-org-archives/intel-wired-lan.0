@@ -4,74 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74A0CC678D4
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Mar 2023 10:44:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C92DFC678D4
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Mar 2023 10:54:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1DF0E606DC;
-	Tue,  7 Mar 2023 10:44:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1DF0E606DC
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5593060C2A;
+	Tue,  7 Mar 2023 10:54:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5593060C2A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1678185893;
-	bh=kFw5lBTTUGx4W9jY4c2RPRBKajVZRn7OJC3C6pvcsSg=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1678186488;
+	bh=f3yefCd5SvXBF5tRRtaB476Dd847ZbTF+2PXY8wCf68=;
+	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=fC5HL8Ven9+OzlSOZZ8yNqg/8ARBHCL9rc9njT02j1E42QhezxTIx9VtEx5zTGhH5
-	 JXCVFx9VG7M1Tvp181pZiT9dVjO8QTkXsU4lOt+f0QPtyifV5TuTf8KLmnX7+QMYjG
-	 AXpOk8Iw632cezBKQn4FQky4bcj6qNiHgUMaseczZY3XGXP9YAENNvZKmUp31dwVd2
-	 nquFIj2DfhC59ji1L6eDHq7jUdrumRD59FlhaznNUA88eCkHHh+a8iuvbbVPrFMlBE
-	 gXEayYGhZTwi4b9D0yvqV/7LB8TvlaXptkLu4R2bzEorB7wPb8OXJGWZsLFHKgvQNt
-	 azHLG8XyHjcWw==
+	b=O0budaC1e5lyRO8shfMLs3u4+fxJUkPVKVW+NxiyRfXnn+b10Ri4J6poRed9Rc8ft
+	 xUu4HG2jVJdf37McvCOUkArO9vLPPDaVOCTkVfsLdWt4E9JbnsV/tRBY+J5LGYdlM2
+	 chq+gDQgaIg82D7FLpbJgTVtb9HwhTSvUnbDa+dU6MMmVZPmoypUiYUrGwDv1JDLmd
+	 A/DlELW4rIAbsDWhTZ6BPFviEDjrXGSScDc4hDinMQLPz51ZwMTf5AoWP6eb7Kk8tt
+	 sfkKp7CcAYmXizpgPr8DTESMD+vpBJItu2OXe2iEWLN1LCviRl1aApn1ApwSjqw5w3
+	 lWTNx46KHpVDQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jDdd1U0WtCUd; Tue,  7 Mar 2023 10:44:52 +0000 (UTC)
+	with ESMTP id snzXTF7XSaE8; Tue,  7 Mar 2023 10:54:47 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 16DB660B38;
-	Tue,  7 Mar 2023 10:44:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 16DB660B38
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6647460D5F;
+	Tue,  7 Mar 2023 10:54:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6647460D5F
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 60B631BF28A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 10:44:50 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 5D3461BF28A
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 10:54:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3852681C18
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 10:44:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3852681C18
+ by smtp1.osuosl.org (Postfix) with ESMTP id 34EB481E05
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 10:54:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 34EB481E05
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NJ7WQF9COQ2n for <intel-wired-lan@lists.osuosl.org>;
- Tue,  7 Mar 2023 10:44:48 +0000 (UTC)
-X-Greylist: delayed 00:07:38 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DC7B381B10
-Received: from zg8tmja2lje4os4yms4ymjma.icoremail.net
- (zg8tmja2lje4os4yms4ymjma.icoremail.net [206.189.21.223])
- by smtp1.osuosl.org (Postfix) with SMTP id DC7B381B10
- for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 10:44:47 +0000 (UTC)
-Received: by ajax-webmail-mail-app3 (Coremail) ; Tue, 7 Mar 2023 18:36:13
- +0800 (GMT+08:00)
-X-Originating-IP: [36.28.190.156]
-Date: Tue, 7 Mar 2023 18:36:13 +0800 (GMT+08:00)
-X-CM-HeaderCharset: UTF-8
-From: "Lin Ma" <linma@zju.edu.cn>
-To: "Paul Menzel" <pmenzel@molgen.mpg.de>
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version XT5.0.13 build 20210104(ab8c30b6)
- Copyright (c) 2002-2023 www.mailtech.cn zju.edu.cn
-In-Reply-To: <882d6a36-d3ac-c231-ba02-bc2235984cfd@molgen.mpg.de>
-References: <ZAcJvkEPqWeJHO2r@calimero.vinschen.de>
- <3ef31c0b-ce40-20d0-7740-5dc0cca278ca@molgen.mpg.de>
- <882d6a36-d3ac-c231-ba02-bc2235984cfd@molgen.mpg.de>
+ with ESMTP id 2LXbQKRfM_DQ for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  7 Mar 2023 10:54:45 +0000 (UTC)
+X-Greylist: delayed 00:08:03 by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5FB3F81E04
+Received: from galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a0a:51c0:0:12e:550::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 5FB3F81E04
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Mar 2023 10:54:45 +0000 (UTC)
+From: Kurt Kanzenbach <kurt@linutronix.de>
+To: AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com
+In-Reply-To: <20230307064531.68840-1-takahiro.akashi@linaro.org>
+References: <20230307064531.68840-1-takahiro.akashi@linaro.org>
+Date: Tue, 07 Mar 2023 11:46:33 +0100
+Message-ID: <871qm0j0ty.fsf@kurt>
 MIME-Version: 1.0
-Message-ID: <43532635.82161.186bba49ec2.Coremail.linma@zju.edu.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID: cC_KCgCXnQydEwdkOWnqDQ--.27890W
-X-CM-SenderInfo: qtrwiiyqvtljo62m3hxhgxhubq/1tbiAwUFElNG3KE1WAAGsS
-X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJ3iIAIbVAYjsxI4VWxJw
- CS07vEb4IE77IF4wCS07vE1I0E4x80FVAKz4kxMIAIbVAFxVCaYxvI4VCIwcAKzIAtYxBI
- daVFxhVjvjDU=
-Subject: Re: [Intel-wired-lan] [REGRESSION] Deadlock since commit
- 6faee3d4ee8b ("igb: Add lock to avoid data race")
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020; t=1678185996;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=ObrbMdqU0lu6uA2iywkZi4GzQ4lsKGLzl32oWr0AMDo=;
+ b=iI2WSac5gOkObudYyBTatJRMEs0fUHGDQvBGapyWIDjotk26dC7mENEZdetZlMDcr1H3sU
+ yORxD5yeK4H0ab5InNnD3dU/O3o9njkaEGWIe2jmkF9z0tAcIwVuEWC14qV56q71JnV94M
+ wCHR1ONZSLAZOcIGl1n4KxPVyUJ+FWd5SAFwr7wJuAs+s7C21j2TqwWkw/ywABXiib4mrF
+ xUhaTRtOXS+N7/EDLYGyTyZMISnmNLJtFF68HM9nqU9HZmh8lsMuKJ0uFfioNOVZYs75E2
+ 6hxyFUQkGvdak5JvzWsDZMB1rzcy/bJaIR6DoH9I0iFVeVmGoEOpmWuYu3R/LA==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1678185996;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=ObrbMdqU0lu6uA2iywkZi4GzQ4lsKGLzl32oWr0AMDo=;
+ b=/9fCRj23q8b0aobck8YMLr37aZ55iJK32vXqyEe8c5W3Cri0FOTN0XeK0HHOjskZviLzjj
+ 5GHSFQbkBlzcUfDg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
+ header.a=rsa-sha256 header.s=2020 header.b=iI2WSac5; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=/9fCRj23
+Subject: Re: [Intel-wired-lan] [PATCH] igc: fix the validation logic for
+ taprio's gate list
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,31 +94,78 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>,
- Corinna Vinschen <vinschen@redhat.com>,
- regressions <regressions@lists.linux.dev>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ intel-wired-lan@lists.osuosl.org
+Content-Type: multipart/mixed; boundary="===============3991988058004450203=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-SGVsbG8gdGhlcmUKClllYWggSSBhbSBsb29raW5nIGF0IGl0LiBDb3VsZCB5b3UgcGxlYXNlIG9m
-ZmVyIHRoZSBjcmFzaCBsb2cgb3IgbG9ja2luZyBkZWJ1ZyBtZXNzYWdlIGlmIGFjY2Vzc2libGU/
-IFRoYW5rcyBpbiBhZHZhbmNlLgoKUmVnYXJkcwpMaW4KCj5bQWRkIENvcmlubmEgYmFjayB0byBD
-YzosIHdobyB3YXMgcmVtb3ZlZCBieSBNb3ppbGxhIFRodW5kZXJiaXJkIGJlY2F1c2UgCj5SZXBs
-eS1UbyBoZWFkZXIgd2FzIHNldCBmb3Igc29tZSByZWFzb24gaW4gdGhlIG9yaWdpbmFsIHJlcG9y
-dC5dCj4KPkFtIDA3LjAzLjIzIHVtIDExOjEyIHNjaHJpZWIgUGF1bCBNZW56ZWw6Cj4+IFtBZGRp
-bmcgcmVncmVzc2lvbnNAbGlzdHMubGludXguZGV2XQo+PiAKPj4gI3JlZ3pib3QgXmludHJvZHVj
-ZWQ6IDZmYWVlM2Q0ZWU4Ygo+PiAKPj4gQW0gMDcuMDMuMjMgdW0gMTA6NTQgc2NocmllYiBDb3Jp
-bm5hIFZpbnNjaGVuOgo+Pj4gSGksCj4+Pgo+Pj4KPj4+IEFmdGVyIHBhdGNoIDZmYWVlM2Q0ZWU4
-YiAoImlnYjogQWRkIGxvY2sgdG8gYXZvaWQgZGF0YSByYWNlIiksIHdlIHNlZQo+Pj4gYSBkZWFk
-bG9jayBzY2VuYXJpbyB3aGVuIHRyeWluZyB0byB1bmxvYWQgdGhlIGlnYiBtb2R1bGUuCj4+Pgo+
-Pj4gVGhlIHJlcHJvZHVjZXIgaXMgcHJldHR5IHNpbXBsZToKPj4+Cj4+PiDCoMKgICMgZWNobyAy
-ID4gL3N5cy9jbGFzcy9uZXQvZW5zNWYyL2RldmljZS9zcmlvdl9udW12ZnMKPj4+IMKgwqAgIyBt
-b2Rwcm9iZSAtciBpZ2IKPj4+Cj4+PiBUaGUgaGFuZyBpcyBxdWl0ZSB0aG9yb3VnaCwgSSBhc3N1
-bWUgaXQncyBzdWZmZXJpbmcgYSBkZWFkbG9jayBiZXR3ZWVuCj4+PiB0aGUgcnRubF9sb2NrIGFu
-ZCB0aGUgc3BpbmxvY2sgaW50cm9kdWNlZCBieSA2ZmFlZTNkNGVlOGIuCj4+Pgo+Pj4gQW55IGNo
-YW5jZSB5b3UgY291bGQgaGF2ZSBhIGxvb2s/Cj4+Pgo+Pj4KPj4+IFRoYW5rcywKPj4+IENvcmlu
-bmEKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwt
-d2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczov
-L2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
+--===============3991988058004450203==
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha512; protocol="application/pgp-signature"
+
+--=-=-=
+Content-Type: text/plain
+
+On Tue Mar 07 2023, AKASHI Takahiro wrote:
+> The check introduced in the commit a5fd39464a40 ("igc: Lift TAPRIO schedule
+> restriction") can detect a false positive error in some corner case.
+> For instance,
+>     tc qdisc replace ... taprio num_tc 4
+> 	...
+> 	sched-entry S 0x01 100000	# slot#1
+> 	sched-entry S 0x03 100000	# slot#2
+> 	sched-entry S 0x04 100000	# slot#3
+> 	sched-entry S 0x08 200000	# slot#4
+> 	flags 0x02			# hardware offload
+>
+> Here the queue#0 (the first queue) is on at the slot#1 and #2,
+> and off at the slot#3 and #4. Under the current logic, when the slot#4
+> is examined, validate_schedule() returns *false* since the enablement
+> count for the queue#0 is two and it is already off at the previous slot
+> (i.e. #3). But this definition is truely correct.
+>
+> Let's fix the logic to enforce a strict validation for consecutively-opened
+> slots.
+>
+> Fixes: a5fd39464a40 ("igc: Lift TAPRIO schedule restriction")
+> Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
+
+Grml. Thanks!
+
+Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJHBAEBCgAxFiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmQHFgkTHGt1cnRAbGlu
+dXRyb25peC5kZQAKCRDBk9HyqkZzgpbnD/9FfpobNY/3VeArd3CCnEwhBaXypTLq
+0CIwh5kAtIG0Z5DDB26zvnLEVr6crYmA1aD472A6x/HUV49oj6Bmefs4eWmqO6Gf
+6lEpRGR1v9kfXGg2AwG56aPythVBwN55BWqbrQa4yCy5fIiCKhoUn4hEFeCFSq+a
+YFMSkVNTojVfrIhPqGL0Qnnb+VBtxRxT0dkK4aNmqxjpzG5Q1S7VPvfxkcnTyaU8
+sUKvr7APcmdthuNr2Fm03ba/aooPiZkGG3x1F0H/il6GpgTThqh/EKuqdieM1s6r
+XRhBe9rkEYGDb7WDZa0W1uG1PGzKBbcBXTvbS5dS9FWQyOA6ubJFsoceI59/AbWM
+4NdOpsuSgixwuKtEZvY0j9hHgsFOSJmoBdxZJ6ywFAPefq+sj68hfUferZe1E1bx
+UWRdbXaDoGpl7aYnAsgEu8M2bdMCkvllimE8lowyfkZvAr5BNOXeHSikYVAuikGk
+Em3X8nv7Ae7D1W76aLc2AgeHI9yze5Tp17aVDROGf6gdrrd9E++czizldRLzLc3r
+VMkjB5twPf062J/W9Oi4E1AByE0rRYlo9tVwWW5tN5zvcavStslQddZ7aOQAPkfL
+HD5c/tYh2FK7RhDF3CqW5QET52Ygx3vy6kPv6BkItI/41u/puhrKAJi0KZBCwXWZ
+ZDoZG6x4f8SpUw==
+=lXNq
+-----END PGP SIGNATURE-----
+--=-=-=--
+
+--===============3991988058004450203==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============3991988058004450203==--
