@@ -4,86 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44BBAC64EC4
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  8 Mar 2023 23:51:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69C55C64EC4
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  9 Mar 2023 02:50:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E4C7360E2F;
-	Wed,  8 Mar 2023 23:51:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E4C7360E2F
+	by smtp3.osuosl.org (Postfix) with ESMTP id E72436123A;
+	Thu,  9 Mar 2023 02:50:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E72436123A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1678319500;
-	bh=XRy5Lq+uOJkLAqJfg40a7cnkKyhocKLnSdCflyGxTak=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=aSSJGVb8PSAO4G7Di6NgLn2Yv2YiF2m6E5O/IrG4QoPsEOuDexTXL+CF2INosjZ0R
-	 fD85LtNH3k4wu3vLtd8SB33O/gVnNvhP4yZ/F2dPhd0YEwFYyYHlCpU8fyX77LmDP1
-	 UeBvHj2SBNAC/o0EXvnd8HrmyPomRveA+dNtg0ge2PPGgQJU1KeFHAqVqdQ8xd8N8/
-	 gD4wnFnjsLqry4DXbAS4bgIUhxBY7KgDwHYCt+ZuvBKmGzpKA21LnMaJh0PT/R0Uv4
-	 LZMfEUE09Wm7VUny4D6alL+TIUAzzqvkjVg/PiPZW8OQIqXCPoinCbFjvLeEYZH9Af
-	 dBp/21DUqz3XQ==
+	s=default; t=1678330253;
+	bh=gbQ5jws5XwPFmw3p49avAB8cMzfs1PJR4PvJeIIfugg=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=Vrx47kdW6Crpny2Svd/hAxVEnSInb7e4jkhOTlqkU0YaJcbVR3sz8tUMkQfI6Tu1F
+	 dCt6+WEl0625/5YXyYTsOML127WkgFt5+BEk1YZ4k0bOReVL9MbeqG/gUpVYe2CBua
+	 22G9B7i4lxSdyg9Tv4CULmavkm2QKS8fsNmUUfjv7pRlBWTnj4eHoNMkh6wiJW8QsT
+	 jpbzdWaWulBMH3vcfDWMCvFm4g1bFvpl6lwBTNWjIX3Qx+Ib1/+wzkkj0Qogz0BwJ3
+	 TqzR/f1UoW4r6WMihr212RNY8qwPtuluWEEG4HiN1tTsidlAuT7hjQ00nZlc6MrLfQ
+	 RZsBx1gjv/K5w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 5kbqD9_I07g8; Wed,  8 Mar 2023 23:51:38 +0000 (UTC)
+	with ESMTP id OAqGvLbmcbQs; Thu,  9 Mar 2023 02:50:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 477816124A;
-	Wed,  8 Mar 2023 23:51:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 477816124A
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 9FDF71BF417
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Mar 2023 23:51:18 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EF35D6123D;
+	Thu,  9 Mar 2023 02:50:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EF35D6123D
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id CB86A1BF405
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Mar 2023 02:50:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 83BF782000
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Mar 2023 23:51:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 83BF782000
+ by smtp4.osuosl.org (Postfix) with ESMTP id A2E2A4187B
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Mar 2023 02:50:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A2E2A4187B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id J7dLQam14hBP for <intel-wired-lan@lists.osuosl.org>;
- Wed,  8 Mar 2023 23:51:16 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id NQLwpwVUwuaJ for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  9 Mar 2023 02:50:50 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 679B382002
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 679B382002
- for <intel-wired-lan@lists.osuosl.org>; Wed,  8 Mar 2023 23:51:16 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10643"; a="363945070"
-X-IronPort-AV: E=Sophos;i="5.98,244,1673942400"; d="scan'208";a="363945070"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Mar 2023 15:51:12 -0800
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 05ABC41855
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 05ABC41855
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  9 Mar 2023 02:50:49 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10643"; a="336354428"
+X-IronPort-AV: E=Sophos;i="5.98,245,1673942400"; d="scan'208";a="336354428"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Mar 2023 18:50:48 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10643"; a="679526325"
-X-IronPort-AV: E=Sophos;i="5.98,244,1673942400"; d="scan'208";a="679526325"
-Received: from pmstillw-desk1.amr.corp.intel.com ([10.213.174.11])
- by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Mar 2023 15:51:12 -0800
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+X-IronPort-AV: E=McAfee;i="6500,9779,10643"; a="741376446"
+X-IronPort-AV: E=Sophos;i="5.98,245,1673942400"; d="scan'208";a="741376446"
+Received: from dpdk-liulingy-1.sh.intel.com ([10.67.118.207])
+ by fmsmga008.fm.intel.com with ESMTP; 08 Mar 2023 18:50:47 -0800
+From: Lingyu Liu <lingyu.liu@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  8 Mar 2023 15:51:01 -0800
-Message-Id: <20230308235102.170-5-paul.m.stillwell.jr@intel.com>
+Date: Thu,  9 Mar 2023 02:49:34 +0000
+Message-Id: <20230309024934.151120-1-lingyu.liu@intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230308235102.170-1-paul.m.stillwell.jr@intel.com>
-References: <20230308235102.170-1-paul.m.stillwell.jr@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1678319476; x=1709855476;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=/nQILP4PH95Czpn88f8qNxX1KeHqxGJ/6t9oBkQUJrw=;
- b=alDOXPEeO/MCqR0T92P1WBGACxoh6iN4xjRKIGSTGJJ3IqsXwmXN6UJC
- m3oXPRIDqg0yOd1wpzEPbc8PtN0ZP0MZe7kiGT2uV4Rmm88PImBZjEvbT
- 0xqLy+jxHM1OA3/uOofBYSdBoDnKubrAEQyFCYgNIZ2Q/BouC2jhcH2sT
- 4XlOIdE8Ut0tyBqqwmXQ3aTeYaJSEUziQfXq/84pzJCaEOyW/U+3JNqr+
- V8hN1UmMuItT+9T7YrGfR//N4osVfiurFxFFy8s/O7uJgHDTioh5zS8iq
- awi0UHkHxgAzfRQy0B2Pr7YREw0484Z+7SEQPF6WdSfBG4+ltGjD72MGn
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1678330250; x=1709866250;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=crAaLsDWh2QI574hKQDa3QT3bJzPhZmvaVt0Ntv2kX0=;
+ b=lI1cfjesBLqYcfozpn/yXNE58zSmKSO9Uy9Ac2z3FL8c4i5aRJS1qRUU
+ f/W9vPd7N+N6dATkOb9ol/LrUjHnfsn6t1G53uNV8eVjC+Xwig560ePnG
+ NQodVtWiSLgqU1yInYQPZbhtA97HigtcsZmhagHXkjcoAw33acyVPa9RR
+ zCyVKZ93/J0EA8iqUhyuLe4Qe4NGHQuJWOPEOE742OXWII1iYdW7mLrYr
+ ek6xYxglmLmRDn1Xgq3n4ahzk2DCMBwnoU7lAymzxgn2oXZPnmIGmMVhC
+ ah653D2ZCMUb96Rbahr+Wa11CTXDeyzqtQTirn9dlHeP8FgYCTotQxQO2
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=alDOXPEe
-Subject: [Intel-wired-lan] [PATCH net-next v10 4/5] ice: enable FW logging
- based on stored configuration
+ header.a=rsa-sha256 header.s=Intel header.b=lI1cfjes
+Subject: [Intel-wired-lan] [PATCH net v2] ice: add FDIR counter reset in
+ FDIR init stage
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,347 +92,64 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Brett Creeley <brett.creeley@intel.com>
+Cc: Junfeng Guo <junfeng.guo@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Give users the ability to enable/disable the FW logging configuration
-that is staged. Enabling the logging causes ARQ events to start
-being received by the driver with FW logging data in them.
+From: Junfeng Guo <junfeng.guo@intel.com>
 
-To enable/disable FW logging use 'enable fwlog' and 'disable fwlog'. An
-example command to enable FW logging:
+This patch added the missing FDIR counters reset process when
+FDIR inits. Without this patch, when VF initializes or resets,
+all the FDIR counters will not be cleaned, which may cause
+unexpected behaviors for future FDIR rule create (e.g., rule
+conflict).
 
-echo enable fwlog > /sys/kernel/debug/ice/0000\:18\:00.0/fwlog
-
-Similarly to disable FW logging:
-
-echo disable fwlog > /sys/kernel/debug/ice/0000\:18\:00.0/fwlog
-
-Co-developed-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Brett Creeley <brett.creeley@intel.com>
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+Fixes: 1f7ea1cd6a37 ("ice: Enable FDIR Configure for AVF")
+Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
+Signed-off-by: Lingyu Liu <lingyu.liu@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   4 +
- drivers/net/ethernet/intel/ice/ice_debugfs.c  |  24 +++
- drivers/net/ethernet/intel/ice/ice_fwlog.c    | 203 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_fwlog.h    |   3 +
- 4 files changed, 234 insertions(+)
+v2: change commit message to apply more to a kernel use
+---
+ drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 558a17d38918..1af036beeb45 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -2075,6 +2075,7 @@ enum ice_aqc_fw_logging_mod {
- };
- 
- /* Set FW Logging configuration (indirect 0xFF30)
-+ * Register for FW Logging (indirect 0xFF31)
-  * Query FW Logging (indirect 0xFF32)
-  */
- struct ice_aqc_fw_log {
-@@ -2082,6 +2083,8 @@ struct ice_aqc_fw_log {
- #define ICE_AQC_FW_LOG_CONF_UART_EN	BIT(0)
- #define ICE_AQC_FW_LOG_CONF_AQ_EN	BIT(1)
- #define ICE_AQC_FW_LOG_QUERY_REGISTERED	BIT(2)
-+#define ICE_AQC_FW_LOG_CONF_SET_VALID	BIT(3)
-+#define ICE_AQC_FW_LOG_AQ_REGISTER	BIT(0)
- #define ICE_AQC_FW_LOG_AQ_QUERY		BIT(2)
- 
- 	u8 rsp_flag;
-@@ -2372,6 +2375,7 @@ enum ice_adminq_opc {
- 
- 	/* FW Logging Commands */
- 	ice_aqc_opc_fw_logs_config			= 0xFF30,
-+	ice_aqc_opc_fw_logs_register			= 0xFF31,
- 	ice_aqc_opc_fw_logs_query			= 0xFF32,
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_debugfs.c b/drivers/net/ethernet/intel/ice/ice_debugfs.c
-index 7cc1621fb237..62ff065798fc 100644
---- a/drivers/net/ethernet/intel/ice/ice_debugfs.c
-+++ b/drivers/net/ethernet/intel/ice/ice_debugfs.c
-@@ -233,11 +233,35 @@ ice_debugfs_command_write(struct file *filp, const char __user *buf,
- 			goto command_write_error;
- 
- 		hw->fwlog_cfg.log_resolution = resolution;
-+	} else if (argc == 2 && !strncmp(argv[0], "enable", 6) &&
-+		   !strncmp(argv[1], "fwlog", 5)) {
-+		struct ice_hw *hw = &pf->hw;
-+
-+		hw->fwlog_cfg.options |= ICE_FWLOG_OPTION_ARQ_ENA;
-+
-+		ret = ice_fwlog_set(hw, &hw->fwlog_cfg);
-+		if (ret)
-+			goto command_write_error;
-+
-+		ret = ice_fwlog_register(hw);
-+	} else if (argc == 2 && !strncmp(argv[0], "disable", 7) &&
-+		   !strncmp(argv[1], "fwlog", 5)) {
-+		struct ice_hw *hw = &pf->hw;
-+
-+		hw->fwlog_cfg.options &= ~ICE_FWLOG_OPTION_ARQ_ENA;
-+
-+		ret = ice_fwlog_set(hw, &hw->fwlog_cfg);
-+		if (ret)
-+			goto command_write_error;
-+
-+		ret = ice_fwlog_unregister(hw);
- 	} else {
- 		dev_info(dev, "unknown or invalid command '%s'\n", cmd_buf);
- 		dev_info(dev, "available commands\n");
- 		dev_info(dev, "\t dump fwlog_cfg\n");
- 		dev_info(dev, "\t update fwlog_cfg <fwlog_level> <fwlog_events> <fwlog_resolution>");
-+		dev_info(dev, "\t enable fwlog\n");
-+		dev_info(dev, "\t disable fwlog\n");
- 		ret = -EINVAL;
- 		goto command_write_error;
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+index e6ef6b303222..60c9da4aac1d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
+@@ -541,6 +541,20 @@ static void ice_vc_fdir_rem_prof_all(struct ice_vf *vf)
  	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.c b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-index ffbbaef08ad6..3022f464e62a 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-@@ -5,6 +5,72 @@
- #include "ice_common.h"
- #include "ice_fwlog.h"
- 
-+/**
-+ * valid_module_entries - validate all the module entry IDs and log levels
-+ * @hw: pointer to the HW structure
-+ * @entries: entries to validate
-+ * @num_entries: number of entries to validate
-+ */
-+static bool
-+valid_module_entries(struct ice_hw *hw, struct ice_fwlog_module_entry *entries,
-+		     u16 num_entries)
-+{
-+	int i;
-+
-+	if (!entries) {
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Null ice_fwlog_module_entry array\n");
-+		return false;
-+	}
-+
-+	if (!num_entries) {
-+		ice_debug(hw, ICE_DBG_FW_LOG, "num_entries must be non-zero\n");
-+		return false;
-+	}
-+
-+	for (i = 0; i < num_entries; i++) {
-+		struct ice_fwlog_module_entry *entry = &entries[i];
-+
-+		if (entry->module_id >= ICE_AQC_FW_LOG_ID_MAX) {
-+			ice_debug(hw, ICE_DBG_FW_LOG, "Invalid module_id %u, max valid module_id is %u\n",
-+				  entry->module_id, ICE_AQC_FW_LOG_ID_MAX - 1);
-+			return false;
-+		}
-+
-+		if (entry->log_level >= ICE_FWLOG_LEVEL_INVALID) {
-+			ice_debug(hw, ICE_DBG_FW_LOG, "Invalid log_level %u, max valid log_level is %u\n",
-+				  entry->log_level,
-+				  ICE_AQC_FW_LOG_ID_MAX - 1);
-+			return false;
-+		}
-+	}
-+
-+	return true;
-+}
-+
-+/**
-+ * valid_cfg - validate entire configuration
-+ * @hw: pointer to the HW structure
-+ * @cfg: config to validate
-+ */
-+static bool valid_cfg(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
-+{
-+	if (!cfg) {
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Null ice_fwlog_cfg\n");
-+		return false;
-+	}
-+
-+	if (cfg->log_resolution < ICE_AQC_FW_LOG_MIN_RESOLUTION ||
-+	    cfg->log_resolution > ICE_AQC_FW_LOG_MAX_RESOLUTION) {
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Unsupported log_resolution %u, must be between %u and %u\n",
-+			  cfg->log_resolution, ICE_AQC_FW_LOG_MIN_RESOLUTION,
-+			  ICE_AQC_FW_LOG_MAX_RESOLUTION);
-+		return false;
-+	}
-+
-+	return valid_module_entries(hw, cfg->module_entries,
-+				    ICE_AQC_FW_LOG_ID_MAX);
-+}
-+
- /**
-  * ice_fwlog_init - Initialize FW logging configuration
-  * @hw: pointer to the HW structure
-@@ -44,6 +110,83 @@ bool ice_fwlog_supported(struct ice_hw *hw)
- 	return hw->fwlog_supported;
  }
  
 +/**
-+ * ice_aq_fwlog_set - Set FW logging configuration AQ command (0xFF30)
-+ * @hw: pointer to the HW structure
-+ * @entries: entries to configure
-+ * @num_entries: number of @entries
-+ * @options: options from ice_fwlog_cfg->options structure
-+ * @log_resolution: logging resolution
++ * ice_vc_fdir_reset_cnt_all - reset all FDIR counters for this VF FDIR
++ * @fdir: pointer to the VF FDIR structure
 + */
-+static int
-+ice_aq_fwlog_set(struct ice_hw *hw, struct ice_fwlog_module_entry *entries,
-+		 u16 num_entries, u16 options, u16 log_resolution)
++static void ice_vc_fdir_reset_cnt_all(struct ice_vf_fdir *fdir)
 +{
-+	struct ice_aqc_fw_log_cfg_resp *fw_modules;
-+	struct ice_aqc_fw_log *cmd;
-+	struct ice_aq_desc desc;
-+	int status;
-+	int i;
++	enum ice_fltr_ptype flow = ICE_FLTR_PTYPE_NONF_NONE;
 +
-+	fw_modules = kcalloc(num_entries, sizeof(*fw_modules), GFP_KERNEL);
-+	if (!fw_modules)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < num_entries; i++) {
-+		fw_modules[i].module_identifier =
-+			cpu_to_le16(entries[i].module_id);
-+		fw_modules[i].log_level = entries[i].log_level;
++	for (; flow < ICE_FLTR_PTYPE_MAX; flow++) {
++		fdir->fdir_fltr_cnt[flow][0] = 0;
++		fdir->fdir_fltr_cnt[flow][1] = 0;
 +	}
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logs_config);
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+
-+	cmd = &desc.params.fw_log;
-+
-+	cmd->cmd_flags = ICE_AQC_FW_LOG_CONF_SET_VALID;
-+	cmd->ops.cfg.log_resolution = cpu_to_le16(log_resolution);
-+	cmd->ops.cfg.mdl_cnt = cpu_to_le16(num_entries);
-+
-+	if (options & ICE_FWLOG_OPTION_ARQ_ENA)
-+		cmd->cmd_flags |= ICE_AQC_FW_LOG_CONF_AQ_EN;
-+	if (options & ICE_FWLOG_OPTION_UART_ENA)
-+		cmd->cmd_flags |= ICE_AQC_FW_LOG_CONF_UART_EN;
-+
-+	status = ice_aq_send_cmd(hw, &desc, fw_modules,
-+				 sizeof(*fw_modules) * num_entries,
-+				 NULL);
-+
-+	kfree(fw_modules);
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_fwlog_set - Set the firmware logging settings
-+ * @hw: pointer to the HW structure
-+ * @cfg: config used to set firmware logging
-+ *
-+ * This function should be called whenever the driver needs to set the firmware
-+ * logging configuration. It can be called on initialization, reset, or during
-+ * runtime.
-+ *
-+ * If the PF wishes to receive FW logging then it must register via
-+ * ice_fwlog_register. Note, that ice_fwlog_register does not need to be called
-+ * for init.
-+ */
-+int ice_fwlog_set(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
-+{
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	if (!valid_cfg(hw, cfg))
-+		return -EINVAL;
-+
-+	return ice_aq_fwlog_set(hw, cfg->module_entries,
-+				ICE_AQC_FW_LOG_ID_MAX, cfg->options,
-+				cfg->log_resolution);
 +}
 +
  /**
-  * ice_aq_fwlog_get - Get the current firmware logging configuration (0xFF32)
-  * @hw: pointer to the HW structure
-@@ -124,6 +267,66 @@ int ice_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
- 	return ice_aq_fwlog_get(hw, cfg);
+  * ice_vc_fdir_write_flow_prof
+  * @vf: pointer to the VF structure
+@@ -1924,6 +1938,7 @@ void ice_vf_fdir_init(struct ice_vf *vf)
+ 	spin_lock_init(&fdir->ctx_lock);
+ 	fdir->ctx_irq.flags = 0;
+ 	fdir->ctx_done.flags = 0;
++	ice_vc_fdir_reset_cnt_all(fdir);
  }
  
-+/**
-+ * ice_aq_fwlog_register - Register PF for firmware logging events (0xFF31)
-+ * @hw: pointer to the HW structure
-+ * @reg: true to register and false to unregister
-+ */
-+static int ice_aq_fwlog_register(struct ice_hw *hw, bool reg)
-+{
-+	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logs_register);
-+
-+	if (reg)
-+		desc.params.fw_log.cmd_flags = ICE_AQC_FW_LOG_AQ_REGISTER;
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
-+}
-+
-+/**
-+ * ice_fwlog_register - Register the PF for firmware logging
-+ * @hw: pointer to the HW structure
-+ *
-+ * After this call the PF will start to receive firmware logging based on the
-+ * configuration set in ice_fwlog_set.
-+ */
-+int ice_fwlog_register(struct ice_hw *hw)
-+{
-+	int status;
-+
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	status = ice_aq_fwlog_register(hw, true);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Failed to register for firmware logging events over ARQ\n");
-+	else
-+		hw->fwlog_cfg.options |= ICE_FWLOG_OPTION_IS_REGISTERED;
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_fwlog_unregister - Unregister the PF from firmware logging
-+ * @hw: pointer to the HW structure
-+ */
-+int ice_fwlog_unregister(struct ice_hw *hw)
-+{
-+	int status;
-+
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	status = ice_aq_fwlog_register(hw, false);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Failed to unregister from firmware logging events over ARQ\n");
-+	else
-+		hw->fwlog_cfg.options &= ~ICE_FWLOG_OPTION_IS_REGISTERED;
-+
-+	return status;
-+}
-+
  /**
-  * ice_fwlog_set_supported - Set if FW logging is supported by FW
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.h b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-index 9d60e77e2c5b..fcfceb9f6ec2 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-@@ -50,5 +50,8 @@ struct ice_fwlog_cfg {
- void ice_fwlog_set_supported(struct ice_hw *hw);
- bool ice_fwlog_supported(struct ice_hw *hw);
- int ice_fwlog_init(struct ice_hw *hw);
-+int ice_fwlog_set(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
- int ice_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
-+int ice_fwlog_register(struct ice_hw *hw);
-+int ice_fwlog_unregister(struct ice_hw *hw);
- #endif /* _ICE_FWLOG_H_ */
 -- 
-2.35.1
+2.25.1
 
 _______________________________________________
 Intel-wired-lan mailing list
