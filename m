@@ -1,88 +1,91 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60815C61DA4
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Mar 2023 20:36:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE91FC61DA4
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Mar 2023 22:13:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 060A960E26;
-	Mon, 13 Mar 2023 20:36:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 060A960E26
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5EF7F81770;
+	Mon, 13 Mar 2023 22:13:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5EF7F81770
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1678739790;
-	bh=/PWpIgsNGWFFqwS4pGIZcxzlK+nRnPNwkud/cedwinY=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1678745597;
+	bh=8fu9NBs1TbzwbI8nrfojP6fOHRmax8XRvQf8GoLNAWI=;
+	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Dgbp2anBpFmCDlx19bkgWSm5kIHTsVpZ7CPQLjJlao7j6HIMmRmTtgjEONqwySTz0
-	 aqTxJyXhZZXu7J+cK2k1IVYkupQtZyi+iJR2gmcVGM59lF8Y/ORfn1AXfr6ZT++PF9
-	 5Ygks2Wl7VOukiZsiIM17riJNsn2xMW/0fHBtfaLhgSs8bgr41p0b0+jBi2yMePcBx
-	 CV5M73Qo5XHW7djxwWR2IGsZ6FVIJytnxtThQ99MiCnFQMUMbpV6XjroNrOJnQ7340
-	 XkESi6XNhexEcw6Sh7Wt9pdju3bkZ3npi0Lhsie+8enSVaUTCt/MyPMBo+YH6vsH39
-	 aNjFMq7rzGFFw==
+	b=JFXYHJu0qJS+LkDzCn+k/lj3nSg5zPmGLUl909j5pOTlhb/I2tg04LyhAqPNlI+Cn
+	 fo38GSHyD/WPhhFMV5V0/sVR/wsdHhmWKYkLr1IO4/YPulut2vdjJFkK/Nbd+209wq
+	 u3TUTfwZiZwq92lcpvLUwExSFYanksTubDt5rezX4NtVL6TPBLfj8P0QYKTOxeTQDI
+	 Uk6g+UKoUZe8NlQuovdEsjxvR6c68150H2OdorVuFYOyBJxgm09yWfSWTIJECho9bW
+	 Idpl31CafODtY4oOMxo3UiHI5gtRIm+DyzevtnXr1PsIuto+DEtJfiwoYePn98TI6r
+	 65hHjV0J9cl8w==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id k2LQrps7KAPt; Mon, 13 Mar 2023 22:13:16 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8167181760;
+	Mon, 13 Mar 2023 22:13:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8167181760
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id BD7981BF30C
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 22:13:14 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 91EB260FEF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 22:13:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 91EB260FEF
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id n9lvnbDap5ey; Mon, 13 Mar 2023 20:36:29 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EEE6960FEE;
-	Mon, 13 Mar 2023 20:36:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EEE6960FEE
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id B7A791BF2C2
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 20:36:22 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7C80041726
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 20:36:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7C80041726
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 6A3Ikr4sdB_H for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Mar 2023 20:36:19 +0000 (UTC)
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Zfg7jg3ty4gb for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Mar 2023 22:13:13 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8C8214173B
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8C8214173B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 20:36:19 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="364913217"
-X-IronPort-AV: E=Sophos;i="5.98,257,1673942400"; d="scan'208";a="364913217"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Mar 2023 13:36:17 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CFD9B60E73
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id CFD9B60E73
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 22:13:13 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="321123989"
+X-IronPort-AV: E=Sophos;i="5.98,258,1673942400"; d="scan'208";a="321123989"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Mar 2023 15:13:13 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="747732597"
-X-IronPort-AV: E=Sophos;i="5.98,257,1673942400"; d="scan'208";a="747732597"
-Received: from jbrandeb-saw1.jf.intel.com ([10.166.28.102])
- by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Mar 2023 13:36:17 -0700
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 13 Mar 2023 13:36:07 -0700
-Message-Id: <20230313203608.1680781-2-jesse.brandeburg@intel.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230313203608.1680781-1-jesse.brandeburg@intel.com>
-References: <20230313203608.1680781-1-jesse.brandeburg@intel.com>
+X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="628797639"
+X-IronPort-AV: E=Sophos;i="5.98,258,1673942400"; d="scan'208";a="628797639"
+Received: from snehanja-mobl1.amr.corp.intel.com (HELO vcostago-mobl3)
+ ([10.209.43.37])
+ by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Mar 2023 15:13:12 -0700
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+To: Marc Kleine-Budde <mkl@pengutronix.de>
+In-Reply-To: <20230313100207.ztxhu3cbxkb5c6iy@pengutronix.de>
+References: <20230228054534.1093483-1-vinicius.gomes@intel.com>
+ <20230228054534.1093483-4-vinicius.gomes@intel.com>
+ <20230313100207.ztxhu3cbxkb5c6iy@pengutronix.de>
+Date: Mon, 13 Mar 2023 15:13:12 -0700
+Message-ID: <87edpsi9l3.fsf@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1678739779; x=1710275779;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=nD0xEsja5qWGknrZQyyc58B4k+83OgAe1HUr/wkbYVI=;
- b=lwvpUaErWzNj0339su/ngZo8AHWY9dr+VdoCOtnMmgRgX1gFBr6LxYo+
- km/aLpJAMIGJDQWfEvYktllS3u+i3tMZ2R6d6K7AcyPSDYR6Cv5HuRDRG
- SUbmWQgyBE/7bf65jCbRQi3IRXU5aLXcmUBkQYXaswst4H8QCVHgQVqGZ
- DOu2/mIgOm0hve5tcaYT/fMg7uMGwaRHTqYR4SRZwnSOdSfTQJznchU+6
- /+KydSfjWx2ibzUlXXGNQZ3tyxWtipd0Ek+/y7c+iSTw7FHroSQO+0D/4
- G3dmFb06T+wgI4GvAzUB+82Lyl7fysNwpkLoMGu3p8PRh5pHj/HSwLRXl
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1678745593; x=1710281593;
+ h=from:to:cc:subject:in-reply-to:references:date:
+ message-id:mime-version;
+ bh=r6OC6ohMDH431tKy07iboe7CGls/DJ9v+jC1Bi4j9bY=;
+ b=OOlilI6oqNn7BeS+6wsWWUgS5sUa1YOm6hu2koNK2p2nzZtZrGs9519v
+ E3VcG6eW+U4TlQslaNuuR7kgxRpq1WKwBNHk1MdxEv2PnGHw0plLGR/dk
+ mPA4Yrx5H2m9BJtx44R0N3GQXhHWgR5pSlKtO6XOqiNhbMWAhjIcXfLoO
+ 0/EEgyyKwEenmDieOw/1I1fKq45gQnvTT+rDVph+Ydo3L6Q5Hy7iYS78Q
+ 8LT1B6lscHNBm5wPp/AUnMJP5nsFcM2qJpLRRZgfv6UK6D78wQLqRSI1R
+ NwTOgr/uGgGWxM1KKHc369RWqols5HXHA8WN70bH+i4COx3dNR7OJhDcA
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lwvpUaEr
-Subject: [Intel-wired-lan] [PATCH net v1 1/2] ice: fix W=1 headers mismatch
+ header.a=rsa-sha256 header.s=Intel header.b=OOlilI6o
+Subject: Re: [Intel-wired-lan] [PATCH next-queue v1 3/3] igc: Use
+ ptp->aux_worker to retrieve TX timestamps
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,64 +98,39 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: vladimir.oltean@nxp.com, kurt@linutronix.de, anthony.l.nguyen@intel.com,
+ kernel@pengutronix.de, intel-wired-lan@lists.osuosl.org, jzi@pengutronix.de
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-make modules W=1 returns:
-.../ice/ice_txrx_lib.c:448: warning: Function parameter or member 'first_idx' not described in 'ice_finalize_xdp_rx'
-.../ice/ice_txrx.c:948: warning: Function parameter or member 'ntc' not described in 'ice_get_rx_buf'
-.../ice/ice_txrx.c:1038: warning: Excess function parameter 'rx_buf' description in 'ice_construct_skb'
+Hi,
 
-Fix these warnings by adding and deleting the deviant arguments.
+Marc Kleine-Budde <mkl@pengutronix.de> writes:
 
-Fixes: 2fba7dc5157b ("ice: Add support for XDP multi-buffer on Rx side")
-Fixes: d7956d81f150 ("ice: Pull out next_to_clean bump out of ice_put_rx_buf()")
-CC: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Reviewed-by: Piotr Raczynski <piotr.raczynski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_txrx.c     | 2 +-
- drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+> On 27.02.2023 21:45:34, Vinicius Costa Gomes wrote:
+>> ptp->aux_worker is a kthread and allows the user to set it's priority,
+>> which is useful for workloads that time synchronization is required.
+>> 
+>> As an optimization, when the interrupt is handled try to retrieve the
+>> timestamps "inline", if they are not, schedule the workload. This
+>> should reduce the delay before the TX timestamp is available to
+>> userspace.
+>> 
+>> Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+>
+> Can this optimization also be applied to the igb?
+>
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index dfd22862e926..21c1e1bb214a 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -938,6 +938,7 @@ ice_reuse_rx_page(struct ice_rx_ring *rx_ring, struct ice_rx_buf *old_buf)
-  * ice_get_rx_buf - Fetch Rx buffer and synchronize data for use
-  * @rx_ring: Rx descriptor ring to transact packets on
-  * @size: size of buffer to add to skb
-+ * @ntc: index of next to clean element
-  *
-  * This function will pull an Rx buffer from the ring and synchronize it
-  * for use by the CPU.
-@@ -1026,7 +1027,6 @@ ice_build_skb(struct ice_rx_ring *rx_ring, struct xdp_buff *xdp)
- /**
-  * ice_construct_skb - Allocate skb and populate it
-  * @rx_ring: Rx descriptor ring to transact packets on
-- * @rx_buf: Rx buffer to pull data from
-  * @xdp: xdp_buff pointing to the data
-  *
-  * This function allocates an skb. It then populates it with the page
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-index 7bc5aa340c7d..c8322fb6f2b3 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-@@ -438,6 +438,7 @@ int __ice_xmit_xdp_ring(struct xdp_buff *xdp, struct ice_tx_ring *xdp_ring,
-  * ice_finalize_xdp_rx - Bump XDP Tx tail and/or flush redirect map
-  * @xdp_ring: XDP ring
-  * @xdp_res: Result of the receive batch
-+ * @first_idx: index to write from caller
-  *
-  * This function bumps XDP Tx tail and/or flush redirect map, and
-  * should be called when a batch of packets has been processed in the
+The idea behind this optimization applies, but I think that also
+introducing something like patch 1/3 (the spinlock) would make the code
+easier to reason about.
+
+
+Cheers,
 -- 
-2.39.2
-
+Vinicius
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
