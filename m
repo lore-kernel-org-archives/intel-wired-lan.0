@@ -4,82 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B162C61DA4
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Mar 2023 12:27:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37E01C61DA4
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Mar 2023 12:29:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9317F4012F;
-	Mon, 13 Mar 2023 12:27:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9317F4012F
+	by smtp2.osuosl.org (Postfix) with ESMTP id D1E4B4012F;
+	Mon, 13 Mar 2023 12:29:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D1E4B4012F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1678710445;
-	bh=xES85ARYDEKuhQkxfjJ7Er9IjLE+dEQPOiYvKbxATD4=;
+	s=default; t=1678710557;
+	bh=U834AaNhd3Kryt5uFk7c7IaSdh/AoDs2ywMBFADpdXM=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=kDzYIGFRa1ozzsZvO9yb93TDR7vyaw34rZ2Hahbn97ZrNcgBeNvFbQxBwxaDos8CR
-	 CNfmdBC8OgX1hmxJiV/uCNbAWT1JcE8VebKnOaJa3Bm7H5lGmopYLFx61F12tESQJC
-	 ToBDJdN81xCr6uMIu8rulkb2fkIz2Kpjy6Y4TMXvJBUn6VDXizm8fDKr9v1Ls8jc6f
-	 mpnyegAuD3mBDNB+biQVZFi6ipOHReMiSVtHn/UhsROD6hNq7nrs1w1auwYkWAiBs9
-	 fxX+vyqshl0cffxVzoeMQqgFkwDhbzWC5dmU/aVkcBiRMq2TymqGvQDW6xmgbFjeYk
-	 UMC6YM+OWhGPg==
+	 List-Post:List-Help:List-Subscribe:From;
+	b=XqBGa8ZvQkLgcBTB0wLGLy0PCLAjjqVnOeUNOYZIVtnsH1HjedGspkNfG4CD57XxT
+	 pZvcimLHPlOg3uByDhqWywHHXLDu3lpBiqlL7m8jWma6l22CC16452cYSWF0YiOLQQ
+	 8wwGOqxnNuvAJqNDna0dd/XKIR4NVkCXAKCGLlAdTqZzzb8cdKqTM/nSWqVRRDmeiu
+	 WiCEpGiTW7VX2OwvXEwsX+yqs2xq7nelIsS4WwOj81HFxoU4hUYqSIj+lspkey3/tz
+	 adysAOjPAxn/tcdzibaQbFLLli/RLRzRpwl+inLl2KZKzI5wck1nzgLx/Mi3s161zQ
+	 yQftRwDTCRMaA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 889glroUB7OW; Mon, 13 Mar 2023 12:27:24 +0000 (UTC)
+	with ESMTP id vb1vonKAUH-W; Mon, 13 Mar 2023 12:29:17 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9406340472;
-	Mon, 13 Mar 2023 12:27:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9406340472
+	by smtp2.osuosl.org (Postfix) with ESMTP id A7E9540472;
+	Mon, 13 Mar 2023 12:29:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A7E9540472
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 8D31F1BF2AB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 12:27:23 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 62E801BF2AB
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 12:29:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6583E40341
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 12:27:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6583E40341
+ by smtp4.osuosl.org (Postfix) with ESMTP id 477F94156E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 12:29:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 477F94156E
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id OfusgEQSP7X1 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Mar 2023 12:27:22 +0000 (UTC)
+ with ESMTP id y4qb92LfIK6x for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Mar 2023 12:29:14 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 801494027E
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 801494027E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 12:27:22 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10647"; a="402003322"
-X-IronPort-AV: E=Sophos;i="5.98,256,1673942400"; d="scan'208";a="402003322"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Mar 2023 05:27:21 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3B8B4410EC
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3B8B4410EC
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Mar 2023 12:29:14 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6500,9779,10647"; a="423397870"
+X-IronPort-AV: E=Sophos;i="5.98,256,1673942400"; d="scan'208";a="423397870"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Mar 2023 05:29:13 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10647"; a="655960190"
-X-IronPort-AV: E=Sophos;i="5.98,256,1673942400"; d="scan'208";a="655960190"
+X-IronPort-AV: E=McAfee;i="6500,9779,10647"; a="681016843"
+X-IronPort-AV: E=Sophos;i="5.98,256,1673942400"; d="scan'208";a="681016843"
 Received: from wasp.igk.intel.com ([10.102.20.192])
- by orsmga006.jf.intel.com with ESMTP; 13 Mar 2023 05:27:20 -0700
+ by fmsmga007.fm.intel.com with ESMTP; 13 Mar 2023 05:29:12 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 13 Mar 2023 13:09:15 +0100
-Message-Id: <20230313120915.4143379-1-michal.swiatkowski@linux.intel.com>
+Date: Mon, 13 Mar 2023 13:11:10 +0100
+Message-Id: <20230313121110.4144813-1-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1678710442; x=1710246442;
+ t=1678710554; x=1710246554;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=jA3YkMx3bnmESoqpPd5LE7ITVwLuSPMw5p6/scsJ4t4=;
- b=Sl+57AXAWXt+TG6/wOsdnkypY1kyW9QrOm+4CiuF5Ceuj3Q05SI0za98
- Y2bHOFBEj0eAcLxYz4xZBkOHDS55Rj9Kj0xdjdOIisV2CKn4TlJN9mMyC
- ZFButocIiBEOEnrg2Xha6r4zV0iKGSmJnxXLdmCDPlacNtRGXwwt6sMec
- J6EFvr4EEUctkdKpK8nJv0cumbuFrQdRrpzTfx17rF/7NQld18eF3c6xz
- 37T4+Dg6RpvfjuNGgHvO7QLVs9/L81vEJSXcSVuRm6lj2YYw5Ektz/nT7
- sGjSMrUzqfHCprKJ3yYX0JO79LDHcnt5AxYEovTlrT7ljKwhA/Mr/V3Hg
- A==;
+ bh=HiVau5to04wBWF7fnGd7Xj9iq7rIdN+GP3gyO5HOOVE=;
+ b=HF93ulTq9lf23BtYjuk282o9wKDTDoBVRuhR7qT0tlmC8QttgC7B58k/
+ HwxyXoZoQHuKViHWOa+DdF2kgGUYMt8HrkAWYrgf0S7vTQVolcxFJ6LDG
+ XXz9VRqWlHgHNAx6abhm2fBVYP7AmRjAe6X6i9Wf6UNJJH777dUaAOCHE
+ i3tIDfuOIqdnuz+vAKEZU/nibBnLhZg5QJdOT+TKD6coTZ/OJnHm3q38f
+ aNCQA/m2F7h8yG1clMQOi2mXZwhBn2WnEHgzBvgFVjl6JO79P1k07fDwe
+ MkTX+E58YD6xLkybkIDDcgaZKOa6zO24nKJmPFnYRwrFQyuSjnl/0SkUO
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Sl+57AXA
-Subject: [Intel-wired-lan] [PATCH net v1] ice: remove filters only if VSI is
- deleted
+ header.a=rsa-sha256 header.s=Intel header.b=HF93ulTq
+Subject: [Intel-wired-lan] [PATCH net-next v1] ice: clear number of qs when
+ rings are free
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,73 +92,73 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: jesse.brandeburg@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Filters shouldn't be removed in VSI rebuild path. Removing them on PF
-VSI results in no rule for PF MAC after changing for example queues
-amount.
+In case rebuild fails not clearing this field can lead to call trace.
 
-Remove all filters only in the VSI remove flow. As unload should also
-cause the filter to be removed introduce, a new function ice_stop_eth().
-It will unroll ice_start_eth(), so remove filters and close VSI.
+[  +0.009792] BUG: kernel NULL pointer dereference, address: 0000000000000000
+[  +0.000009] #PF: supervisor read access in kernel mode
+[  +0.000006] #PF: error_code(0x0000) - not-present page
+[  +0.000005] PGD 0 P4D 0
+[  +0.000009] Oops: 0000 [#1] PREEMPT SMP PTI
+[  +0.000009] CPU: 45 PID: 77867 Comm: ice-ptp-0000:60 Kdump: loaded Tainted: G S         OE      6.2.0-rc6+ #110
+[  +0.000010] Hardware name: Dell Inc. PowerEdge R740/0JMK61, BIOS 2.11.2 004/21/2021
+[  +0.000005] RIP: 0010:ice_ptp_update_cached_phctime+0xb0/0x130 [ice]
+[  +0.000145] Code: fa 7e 55 48 8b 93 48 01 00 00 48 8b 0c fa 48 85 c9 74 e1 8b 51 68 85 d2 75 da 66 83 b9 86 04 00 00 00 74 d0 31 d2 48 8b 71 20 <48> 8b 34 d6 48 85 f6 74 07 48 89 86 d8 00 00 00 0f b7 b1 86 04 00
+[  +0.000008] RSP: 0018:ffffa036cf7c7ea8 EFLAGS: 00010246
+[  +0.000008] RAX: 174ab1a8ab400f43 RBX: ffff937cda2c01a0 RCX: ffff937cdca9b028
+[  +0.000005] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
+[  +0.000005] RBP: ffffa036cf7c7eb8 R08: 0000000000000000 R09: 0000000000000000
+[  +0.000005] R10: 0000000000000080 R11: 0000000000000001 R12: ffff937cdc971f40
+[  +0.000006] R13: ffff937cdc971f44 R14: 0000000000000001 R15: ffffffffc13f3210
+[  +0.000005] FS:  0000000000000000(0000) GS:ffff93826f980000(0000) knlGS:0000000000000000
+[  +0.000006] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  +0.000006] CR2: 0000000000000000 CR3: 00000004b7310002 CR4: 00000000007726e0
+[  +0.000006] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  +0.000004] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[  +0.000005] PKRU: 55555554
+[  +0.000004] Call Trace:
+[  +0.000004]  <TASK>
+[  +0.000007]  ice_ptp_periodic_work+0x2a/0x60 [ice]
+[  +0.000126]  kthread_worker_fn+0xa6/0x250
+[  +0.000014]  ? __pfx_kthread_worker_fn+0x10/0x10
+[  +0.000010]  kthread+0xfc/0x130
+[  +0.000009]  ? __pfx_kthread+0x10/0x10
+[  +0.000010]  ret_from_fork+0x29/0x50
 
-Fixes: 6624e780a577 ("ice: split ice_vsi_setup into smaller functions")
+ice_ptp_update_cached_phctime() is calling ice_for_each_rxq macro, in
+case of rebuild fail the rx_ring is NULL and there is NULL pointer
+dereference.
+
+Also for future safety it is better to clear the size values for tx and
+rx ring when they are cleared.
+
+Reported-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c  | 2 +-
- drivers/net/ethernet/intel/ice/ice_main.c | 8 +++++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lib.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 0f52ea38b6f3..450317dfcca7 100644
+index 0f52ea38b6f3..b8317001ad34 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lib.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -291,6 +291,7 @@ static void ice_vsi_delete_from_hw(struct ice_vsi *vsi)
- 	struct ice_vsi_ctx *ctxt;
- 	int status;
- 
-+	ice_fltr_remove_all(vsi);
- 	ctxt = kzalloc(sizeof(*ctxt), GFP_KERNEL);
- 	if (!ctxt)
- 		return;
-@@ -2892,7 +2893,6 @@ void ice_vsi_decfg(struct ice_vsi *vsi)
- 	    !test_bit(ICE_FLAG_FW_LLDP_AGENT, pf->flags))
- 		ice_cfg_sw_lldp(vsi, false, false);
- 
--	ice_fltr_remove_all(vsi);
- 	ice_rm_vsi_lan_cfg(vsi->port_info, vsi->idx);
- 	err = ice_rm_vsi_rdma_cfg(vsi->port_info, vsi->idx);
- 	if (err)
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 567694bf098b..db57735f5b22 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4644,6 +4644,12 @@ static int ice_start_eth(struct ice_vsi *vsi)
- 	return err;
- }
- 
-+static void ice_stop_eth(struct ice_vsi *vsi)
-+{
-+	ice_fltr_remove_all(vsi);
-+	ice_vsi_close(vsi);
-+}
-+
- static int ice_init_eth(struct ice_pf *pf)
- {
- 	struct ice_vsi *vsi = ice_get_main_vsi(pf);
-@@ -5132,7 +5138,7 @@ void ice_unload(struct ice_pf *pf)
- {
- 	ice_deinit_features(pf);
- 	ice_deinit_rdma(pf);
--	ice_vsi_close(ice_get_main_vsi(pf));
-+	ice_stop_eth(ice_get_main_vsi(pf));
- 	ice_vsi_decfg(ice_get_main_vsi(pf));
- 	ice_deinit_dev(pf);
- }
+@@ -330,10 +330,12 @@ static void ice_vsi_free_arrays(struct ice_vsi *vsi)
+ 		vsi->q_vectors = NULL;
+ 	}
+ 	if (vsi->tx_rings) {
++		vsi->num_txq = 0;
+ 		devm_kfree(dev, vsi->tx_rings);
+ 		vsi->tx_rings = NULL;
+ 	}
+ 	if (vsi->rx_rings) {
++		vsi->num_rxq = 0;
+ 		devm_kfree(dev, vsi->rx_rings);
+ 		vsi->rx_rings = NULL;
+ 	}
 -- 
 2.36.1
 
