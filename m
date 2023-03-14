@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D542C7618D
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Mar 2023 10:27:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 566C6C6FD1D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Mar 2023 10:27:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 189FE40525;
-	Tue, 14 Mar 2023 10:27:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 189FE40525
+	by smtp2.osuosl.org (Postfix) with ESMTP id F2EC140111;
+	Tue, 14 Mar 2023 10:27:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F2EC140111
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1678789628;
-	bh=dlAn6FJlaa7M42OH7vsq1qJ/aRbYKRYTntDz0RKeGh4=;
+	s=default; t=1678789632;
+	bh=CTLzrRG3y84CpPXU8RRDLpLOT/ccLa7JGCskDoMvOx0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=HEEdAQb2QhQeFU4ZbSapcBBWOUX4F8HJHRu7lYwKGB8huQJCghG07i2SiwHuj/zlW
-	 kmZ0f+eKvfWU3n7xq4Q0mwib9UoA6L4jBO2kO+Q+wCd7oLVtVZxeo1u/MANeynkwpJ
-	 OioCdTjARN+wjjGiuoTbtpaGmZ8U0yg+BmYvX5ws7hEjqK7xVg5G879iGMlz2yyI0n
-	 xP33gmlwE3PUFMLeqrkme2ZwsizCQ6LFKqViuGpzVWrwWBofBG3CvlFTiGcKssRk+9
-	 SvbZIdPGLaxuA+IfkTZBNsUrY5S1WuzFgNh+UmBDqvf5h2Emq1rqXdZWijrWu1Pufk
-	 FSSeMBa7yEJuA==
+	b=fGoJcpFYDS3xVue2BzQA2noLIiiS//pynv1EB5nqXVf+L70QOk06wmidqTMjabVXP
+	 F3/IBPdvGe6BcgUUafEkQlKO8DHd/LdV0tko+V4QBXdV7otzlH2J7DlMBaWNYPe9W6
+	 s5YFQ67jD8uVMxrPN9W5qvjBYuevcTAIVXRbnzR6wKaqhUPxPOs+tRDRODwE3JLa8O
+	 W1a8GznDgn44ccB5yCRBeflkxl7SJUlRkS2R2X6JuFxA8HIlnmtPBNBJwtnMPPxFUT
+	 SaIxWy4+su0gKLkYM05h9H3lTSvS2REyeF4cebHFgBfE1Zm9rV9x1e25kd/ojjpXRq
+	 psbylJsieo6QQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Hc78mnJ4QgUQ; Tue, 14 Mar 2023 10:27:07 +0000 (UTC)
+	with ESMTP id tuPPELEs7qRu; Tue, 14 Mar 2023 10:27:11 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id BD418408ED;
-	Tue, 14 Mar 2023 10:27:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BD418408ED
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id D43A81BF33D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 10:26:57 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id CBB9C409FC;
+	Tue, 14 Mar 2023 10:27:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CBB9C409FC
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 9882B1BF33D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 10:26:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B9F20417F7
+ by smtp2.osuosl.org (Postfix) with ESMTP id 728E3402CE
  for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 10:26:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B9F20417F7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 728E3402CE
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dJgsQHlPzyPA for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id SPNr4mbFWGbG for <intel-wired-lan@lists.osuosl.org>;
  Tue, 14 Mar 2023 10:26:56 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7420C417D3
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C3F5E401ED
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7420C417D3
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C3F5E401ED
  for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 10:26:56 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="325749588"
-X-IronPort-AV: E=Sophos;i="5.98,259,1673942400"; d="scan'208";a="325749588"
+X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="325749603"
+X-IronPort-AV: E=Sophos;i="5.98,259,1673942400"; d="scan'208";a="325749603"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Mar 2023 03:25:36 -0700
+ 14 Mar 2023 03:25:41 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="656292612"
-X-IronPort-AV: E=Sophos;i="5.98,259,1673942400"; d="scan'208";a="656292612"
+X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="656292672"
+X-IronPort-AV: E=Sophos;i="5.98,259,1673942400"; d="scan'208";a="656292672"
 Received: from hextor.igk.intel.com ([10.123.220.6])
  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Mar 2023 03:25:34 -0700
+ 14 Mar 2023 03:25:40 -0700
 From: Michal Wilczynski <michal.wilczynski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 14 Mar 2023 11:25:12 +0100
-Message-Id: <20230314102514.46636-4-michal.wilczynski@intel.com>
+Date: Tue, 14 Mar 2023 11:25:14 +0100
+Message-Id: <20230314102514.46636-6-michal.wilczynski@intel.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230314102514.46636-1-michal.wilczynski@intel.com>
 References: <20230314102514.46636-1-michal.wilczynski@intel.com>
@@ -71,19 +71,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1678789616; x=1710325616;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=HKTYPI8md4FMekyMKvlX7tKaBYIwrBPr2bsG/9f0NC8=;
- b=UPDMOccfkGIzqFlGwPa/TR+jSO+LWDczTbkb+Mc++J58botIgi/t/V7W
- pc2BM+RUwjPh48iFg5R3B1AIU6FAWNST5XZMHVcoG7h5Lf4R+6CJwkf+F
- foXM+diQsGR0zCJHvqNjzldzfPsptsb0SYMPvqEDZkKL8Lb8759BOAxCn
- 0wYsvZ8AG1+s4uFs+Mjd4Xuvn+7FMn53PiUsT4HBtXxVqhzYSP7WLMnGo
- 8duUJI/U8kjBxvWYL90KXFxM1Z1pM7Zs03eY1WHzui5tnwmYNYj/GlGro
- M7hqttJZoV1dPxXs+tUy+3NRpcVs326klo1EAVx1oZxOtcwlMpu6bR+S2
+ bh=K1DYs1dQ66bNGY8cZrGWT0LFE5ifpSmcR5jYHoQ2Q3g=;
+ b=O1sYu5Oy049KPvNFI88VYbGFkgoGAIygpdanI2EgaWDnFc2saISTsaQf
+ u7ZOirCn3nGVXSN4Cy1JnVj+B7/gfkks/vt6zLzpN2HR4nexBUzu9lFZg
+ aLhXQ4Nrt34OjgYXYPsRjCLCc1H++xQb9RO70ANaXJ5ElV3Sb4cdXN/LS
+ wWHQnJkAgxGRqBFrG6TRXVmio3Wk7Bs/n1se5tGWeVWj2PRwDMwULbF/c
+ fhIBAojq4u9AcSCa8416ygArQX/JxR18n5juzThMh/x2Xc5UISjjbxqBW
+ BSoogLuTcsXuB+YOZPPi/NkHpko7nFzeuuZZmdF772rOlJa+OFC3MQKi1
  A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=UPDMOccf
-Subject: [Intel-wired-lan] [PATCH net-next v10 3/5] ice: Enable switching
- default tx scheduler topology
+ header.a=rsa-sha256 header.s=Intel header.b=O1sYu5Oy
+Subject: [Intel-wired-lan] [PATCH net-next v10 5/5] ice: Document
+ txbalancing parameter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,191 +101,42 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Introduce support for tx scheduler topology change, based on user
-selection, from default 9-layer to 5-layer. In order for switch to be
-successful there is a new NVM(version 3.20 or older) and DDP package(OS
-Package 1.3.29 or older).
-
-Enable 5-layer topology switch in init path of the driver. To accomplish
-that upload of the DDP package needs to be delayed, until change in Tx
-topology is finished. To trigger the Tx change user selection should be
-changed in NVM using devlink. Then the platform should be rebooted.
+New driver specific parameter 'txbalancing' was introduced.
+Describe parameter in the documentation.
 
 Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c |   2 +
- drivers/net/ethernet/intel/ice/ice_ddp.c    |   3 +-
- drivers/net/ethernet/intel/ice/ice_main.c   | 104 ++++++++++++++++----
- 3 files changed, 89 insertions(+), 20 deletions(-)
+ Documentation/networking/devlink/ice.rst | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 477a6b15100f..37f27b147122 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1696,6 +1696,8 @@ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf,
- 	case ice_aqc_opc_set_port_params:
- 	case ice_aqc_opc_get_vlan_mode_parameters:
- 	case ice_aqc_opc_set_vlan_mode_parameters:
-+	case ice_aqc_opc_set_tx_topo:
-+	case ice_aqc_opc_get_tx_topo:
- 	case ice_aqc_opc_add_recipe:
- 	case ice_aqc_opc_recipe_to_profile:
- 	case ice_aqc_opc_get_recipe:
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index e9abbe428727..d83a5ad2fd51 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -2065,7 +2065,8 @@ int ice_cfg_tx_topo(struct ice_hw *hw, u8 *buf, u32 len)
- 	/* acquire global lock to make sure that set topology issued
- 	 * by one PF
- 	 */
--	status = ice_acquire_global_cfg_lock(hw, ICE_RES_WRITE);
-+	status = ice_acquire_res(hw, ICE_GLOBAL_CFG_LOCK_RES_ID, ICE_RES_WRITE,
-+				 ICE_GLOBAL_CFG_LOCK_TIMEOUT);
- 	if (status) {
- 		ice_debug(hw, ICE_DBG_INIT, "Failed to acquire global lock\n");
- 		return status;
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 8dc1ae3f8e53..8e0d54345a0b 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4490,11 +4490,11 @@ static char *ice_get_opt_fw_name(struct ice_pf *pf)
- /**
-  * ice_request_fw - Device initialization routine
-  * @pf: pointer to the PF instance
-+ * @firmware: double pointer to firmware struct
-  */
--static void ice_request_fw(struct ice_pf *pf)
-+static int ice_request_fw(struct ice_pf *pf, const struct firmware **firmware)
- {
- 	char *opt_fw_filename = ice_get_opt_fw_name(pf);
--	const struct firmware *firmware = NULL;
- 	struct device *dev = ice_pf_to_dev(pf);
- 	int err = 0;
+diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
+index 10f282c2117c..6ffe230f71a5 100644
+--- a/Documentation/networking/devlink/ice.rst
++++ b/Documentation/networking/devlink/ice.rst
+@@ -7,6 +7,23 @@ ice devlink support
+ This document describes the devlink features implemented by the ``ice``
+ device driver.
  
-@@ -4503,29 +4503,95 @@ static void ice_request_fw(struct ice_pf *pf)
- 	 * and warning messages for other errors.
- 	 */
- 	if (opt_fw_filename) {
--		err = firmware_request_nowarn(&firmware, opt_fw_filename, dev);
--		if (err) {
--			kfree(opt_fw_filename);
--			goto dflt_pkg_load;
--		}
--
--		/* request for firmware was successful. Download to device */
--		ice_load_pkg(firmware, pf);
-+		err = firmware_request_nowarn(firmware, opt_fw_filename, dev);
- 		kfree(opt_fw_filename);
--		release_firmware(firmware);
--		return;
-+		if (!err)
-+			return err;
-+	}
-+	err = request_firmware(firmware, ICE_DDP_PKG_FILE, dev);
-+	if (err)
-+		dev_err(dev, "The DDP package file was not found or could not be read. Entering Safe Mode\n");
++Parameters
++=============
 +
-+	return err;
-+}
++.. list-table:: Driver-specific parameters implemented
++   :widths: 5 5 5 85
 +
-+/**
-+ * ice_init_tx_topology - performs Tx topology initialization
-+ * @hw: pointer to the hardware structure
-+ * @firmware: pointer to firmware structure
-+ */
-+static int
-+ice_init_tx_topology(struct ice_hw *hw, const struct firmware *firmware)
-+{
-+	u8 num_tx_sched_layers = hw->num_tx_sched_layers;
-+	struct ice_pf *pf = hw->back;
-+	struct device *dev;
-+	u8 *buf_copy;
-+	int err;
++   * - Name
++     - Type
++     - Mode
++     - Description
++   * - ``txbalancing``
++     - Boolean
++     - permanent
++     - This parameter gives user flexibility to choose the 5-layer
++       transmit scheduler topology which helps to smooth out the transmit
++       performance.
 +
-+	dev = ice_pf_to_dev(pf);
-+	/* ice_cfg_tx_topo buf argument is not a constant,
-+	 * so we have to make a copy
-+	 */
-+	buf_copy = kmemdup(firmware->data, firmware->size, GFP_KERNEL);
-+
-+	err = ice_cfg_tx_topo(hw, buf_copy, firmware->size);
-+	if (!err) {
-+		if (hw->num_tx_sched_layers > num_tx_sched_layers)
-+			dev_info(dev, "Transmit balancing feature disabled\n");
-+		else
-+			dev_info(dev, "Transmit balancing feature enabled\n");
-+		/* if there was a change in topology ice_cfg_tx_topo triggered
-+		 * a CORER and we need to re-init hw
-+		 */
-+		ice_deinit_hw(hw);
-+		err = ice_init_hw(hw);
-+
-+		/* in this case we're not allowing safe mode */
-+		kfree(buf_copy);
-+
-+		return err;
-+
-+	} else if (err == -EIO) {
-+		dev_info(dev, "DDP package does not support transmit balancing feature - please update to the latest DDP package and try again\n");
- 	}
+ Info versions
+ =============
  
--dflt_pkg_load:
--	err = request_firmware(&firmware, ICE_DDP_PKG_FILE, dev);
-+	kfree(buf_copy);
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_init_ddp_config - DDP related configuration
-+ * @hw: pointer to the hardware structure
-+ * @pf: pointer to pf structure
-+ *
-+ * This function loads DDP file from the disk, then initializes Tx
-+ * topology. At the end DDP package is loaded on the card.
-+ */
-+static int ice_init_ddp_config(struct ice_hw *hw, struct ice_pf *pf)
-+{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	const struct firmware *firmware = NULL;
-+	int err;
-+
-+	err = ice_request_fw(pf, &firmware);
-+	if (err)
-+		return err;
-+
-+	err = ice_init_tx_topology(hw, firmware);
- 	if (err) {
--		dev_err(dev, "The DDP package file was not found or could not be read. Entering Safe Mode\n");
--		return;
-+		dev_err(dev, "ice_init_hw during change of tx topology failed: %d\n",
-+			err);
-+		release_firmware(firmware);
-+		return err;
- 	}
- 
--	/* request for firmware was successful. Download to device */
-+	/* Download firmware to device */
- 	ice_load_pkg(firmware, pf);
- 	release_firmware(firmware);
-+
-+	return err;
- }
- 
- /**
-@@ -4726,9 +4792,9 @@ static int ice_init_dev(struct ice_pf *pf)
- 
- 	ice_init_feature_support(pf);
- 
--	ice_request_fw(pf);
-+	ice_init_ddp_config(hw, pf);
- 
--	/* if ice_request_fw fails, ICE_FLAG_ADV_FEATURES bit won't be
-+	/* if ice_init_ddp_config fails, ICE_FLAG_ADV_FEATURES bit won't be
- 	 * set in pf->state, which will cause ice_is_safe_mode to return
- 	 * true
- 	 */
 -- 
 2.37.2
 
