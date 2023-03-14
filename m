@@ -1,89 +1,133 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59AF0C6FD1C
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Mar 2023 10:27:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EA09C6FD1D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 14 Mar 2023 12:13:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 09C7140A2B;
-	Tue, 14 Mar 2023 10:27:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 09C7140A2B
+	by smtp4.osuosl.org (Postfix) with ESMTP id AEC4041877;
+	Tue, 14 Mar 2023 12:13:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AEC4041877
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1678789641;
-	bh=Rkk8NmNOKqmcWPd8R01TJ5LnUlQWKSeGhcdNke2sYHU=;
+	s=default; t=1678796014;
+	bh=unfkVfIAldTQA4NBWbP4kuEjxjf7T2biySzg2MdwTYQ=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=JH9iOGzIaxSEJCk4k2Zdv0q9n40J45M+84OxGEhI29WdQqutXjBQm2K27KFvJ0b0s
-	 nRDFGxgObYVT4Cv7KfEriRgzOYifD0kAYVHPTqXe0T9exzEbFe93NAIbJHKHa5drwU
-	 EInUluD3gEGopsasKVfPuWIl7+m8a5rwGFDSi7R+NyHYMmJvwiJDwraFlX11GCKlvT
-	 yPJSWYzPyrIYYCXEYTMC/m5EPxuMAiUSheOgKbvf01TckLwbM03NvY1vNBfuExGpaJ
-	 0u3F/s+kViq6sb4pUw4y6GheOpCBXcr6WPrJX1fGznjw1SOj5eh/Cvgeit36dzt+Yk
-	 aRWUhQ0r5wcvg==
+	b=IYCwebBVu2tqB8gLxv0EcWT3pHmotUPTBpELxxLIApHQzaQtGRZo2IZsI9bZaKl+H
+	 vNRw+SR54dvo4otWqwZbtO0qCSzzMvRbNQoBdqEdvvhNXVUwyDKSr0lF9lf+MvOX5j
+	 /cpX7K/e0ZLi8n2CtRRMJ7nzE2cKmJDaIvSJszqRPjCqRaq2d0eoAi+uwh7vj5F/QF
+	 3GXfbOdKFaUT+cohXAJ50J8CBw/bOGQfAYbd3wEoFksTkBRhWLK9LEyXhhhtaU9nb8
+	 J3lb58ewBM2rakE/Xl+3dyqOFUjSMq65Gj+35NxTMX5y1nIJ0BXebbaiDhpniahHqs
+	 zxi399xr9XeZg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id QrcMfhRjzFTG; Tue, 14 Mar 2023 10:27:20 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id MH26XphKHIZa; Tue, 14 Mar 2023 12:13:33 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id BBB2540A38;
-	Tue, 14 Mar 2023 10:27:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BBB2540A38
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 8A4791BF33D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 10:27:00 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id DE7934187B;
+	Tue, 14 Mar 2023 12:13:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DE7934187B
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 252971BF3D4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 12:13:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D9EAC408ED
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 10:26:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D9EAC408ED
+ by smtp4.osuosl.org (Postfix) with ESMTP id EF1B341877
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 12:13:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF1B341877
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BBSIvER1jYBK for <intel-wired-lan@lists.osuosl.org>;
- Tue, 14 Mar 2023 10:26:56 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id WiNwiIX6VwvE for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 14 Mar 2023 12:13:30 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5C9AF40525
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5C9AF40525
- for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 10:26:56 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="325749561"
-X-IronPort-AV: E=Sophos;i="5.98,259,1673942400"; d="scan'208";a="325749561"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Mar 2023 03:25:33 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10648"; a="656292583"
-X-IronPort-AV: E=Sophos;i="5.98,259,1673942400"; d="scan'208";a="656292583"
-Received: from hextor.igk.intel.com ([10.123.220.6])
- by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Mar 2023 03:25:32 -0700
-From: Michal Wilczynski <michal.wilczynski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 14 Mar 2023 11:25:11 +0100
-Message-Id: <20230314102514.46636-3-michal.wilczynski@intel.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CF9BA4187B
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CF9BA4187B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Mar 2023 12:13:28 +0000 (UTC)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id
+ 32EBC7WD013154; Tue, 14 Mar 2023 12:12:46 GMT
+Received: from pps.reinject (localhost [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3paqu91m2a-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Mar 2023 12:12:45 +0000
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+ by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32EBC0rq012223;
+ Tue, 14 Mar 2023 12:12:45 GMT
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com
+ [149.81.74.107])
+ by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3paqu91m0t-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Mar 2023 12:12:44 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+ by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32E8vTca013644;
+ Tue, 14 Mar 2023 12:12:42 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+ by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3p8h96bsgh-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+ Tue, 14 Mar 2023 12:12:42 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com
+ [10.20.54.104])
+ by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ 32ECCdKD29950664
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 14 Mar 2023 12:12:39 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 92B6720080;
+ Tue, 14 Mar 2023 12:12:39 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D2C5D2007A;
+ Tue, 14 Mar 2023 12:12:38 +0000 (GMT)
+Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
+ by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+ Tue, 14 Mar 2023 12:12:38 +0000 (GMT)
+From: Niklas Schnelle <schnelle@linux.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>,
+ Michael Grzeschik <m.grzeschik@pengutronix.de>,
+ Wolfgang Grandegger <wg@grandegger.com>,
+ Marc Kleine-Budde <mkl@pengutronix.de>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "Maciej W. Rozycki" <macro@orcam.me.uk>, Ralf Baechle <ralf@linux-mips.org>
+Date: Tue, 14 Mar 2023 13:11:58 +0100
+Message-Id: <20230314121216.413434-21-schnelle@linux.ibm.com>
 X-Mailer: git-send-email 2.37.2
-In-Reply-To: <20230314102514.46636-1-michal.wilczynski@intel.com>
-References: <20230314102514.46636-1-michal.wilczynski@intel.com>
+In-Reply-To: <20230314121216.413434-1-schnelle@linux.ibm.com>
+References: <20230314121216.413434-1-schnelle@linux.ibm.com>
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1678789616; x=1710325616;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=VB4peKre0mss4bKukCYJk8ToNGQpN0e8nPohOKBTlUQ=;
- b=fioW4oyt7GQg6anOFnNn3LmK2RYQx3k0WhK5buQY9Du1PwkEvOhyhJDM
- XWAhwXTLhxc6Tsw5nIYR6/lvyz6skrT2a3xXnqyxhxi92cBpvBM4OEdt6
- HpPL6FppcL4lIPMvtlakXSS6NWCQNDo0EOP2Tn68SXSHUpwuxCYInEu/r
- VoFhigcZkH/8BtgIzXbfBWgjJKXYqGFzhm6O6EjbUmpkQ8MWB0Jlga9pQ
- YJJs7IxKqpxRPJ61z3KWXaHUB1OYsXwfJrRLXCS5qlo4r6uq34xBfxgjL
- emXvXYp9qCLi2IfyP7NotlAJ42QuYnKAltOApn1xOI90jv7/XJXSxb+nm
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=fioW4oyt
-Subject: [Intel-wired-lan] [PATCH net-next v10 2/5] ice: Adjust the
- VSI/Aggregator layers
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: RDcYd4HdLr-RCELWHZr1DfNkznTBDiOs
+X-Proofpoint-GUID: wvwDSIeVayuWTRUNyzgYqIly_xoGuCKW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-03-14_04,2023-03-14_02,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 mlxscore=0
+ lowpriorityscore=0 spamscore=0 malwarescore=0 suspectscore=0
+ priorityscore=1501 phishscore=0 impostorscore=0 mlxlogscore=999
+ adultscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2303140103
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=Rdo7qHjLu7RlQxuSnXnEeLTmgkFNbRweTxvYtXJOPjw=;
+ b=hHa50onhAcSsoGzqY5BQwUrt6BUiy+h5EVNf9kF8FhpptC7qQwovg5w6VIOw0455YGcU
+ sW6pNTlICcg5cmk4fChXbLT+mmGWZ0WIFXjU7DlIK/kLNTkiiaAkLKAYpd2pkYalQdnu
+ /wafBQlFqlpW1DXX92hGRlpUBU+3gK+rRaSlJi1D90MBbgASSAHYVWYc9TWMIHoD4zft
+ EyB0i15kChFQL1TfuQIcYMvzkXQIE5W/NGELxcaFg3w5UZGJQam7WEzN6L75soxxYyXI
+ H0EX6tlWQGqAi1wQR3BEoSkLStFRriRzthx1/b9PjJr/GUFd5XEjHp5g94mPrifLGGon pA== 
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com
+ header.a=rsa-sha256 header.s=pp1 header.b=hHa50onh
+Subject: [Intel-wired-lan] [PATCH v3 20/38] net: handle HAS_IOPORT
+ dependencies
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,117 +140,361 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Raj Victor <victor.raj@intel.com>
+Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@kernel.org>,
+ Albert Ou <aou@eecs.berkeley.edu>, linux-hams@vger.kernel.org,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paul Walmsley <paul.walmsley@sifive.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-can@vger.kernel.org,
+ netdev@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+ =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Bjorn Helgaas <bhelgaas@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Raj Victor <victor.raj@intel.com>
+In a future patch HAS_IOPORT=n will result in inb()/outb() and friends
+not being declared. We thus need to add HAS_IOPORT as dependency for
+those drivers requiring them. For the DEFXX driver there use of I/O
+ports is optional and we only need to fence those paths.can It also
+turns out that with HAS_IOPORT handled explicitly HAMRADIO does not need
+the !S390 dependency and successfully builds the bpqether driver.
 
-Adjust the VSI/Aggregator layers based on the number of logical layers
-supported by the FW. Currently the VSI and aggregator layers are
-fixed based on the 9 layer scheduler tree layout. Due to performance
-reasons the number of layers of the scheduler tree is changing from
-9 to 5. It requires a readjustment of these VSI/Aggregator layer values.
-
-Signed-off-by: Raj Victor <victor.raj@intel.com>
-Co-developed-by: Michal Wilczynski <michal.wilczynski@intel.com>
-Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
+Acked-by: Marc Kleine-Budde <mkl@pengutronix.de>
+Co-developed-by: Arnd Bergmann <arnd@kernel.org>
+Signed-off-by: Niklas Schnelle <schnelle@linux.ibm.com>
 ---
- drivers/net/ethernet/intel/ice/ice_sched.c | 34 +++++++++++-----------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ drivers/net/Kconfig                  | 2 +-
+ drivers/net/arcnet/Kconfig           | 2 +-
+ drivers/net/can/cc770/Kconfig        | 1 +
+ drivers/net/can/sja1000/Kconfig      | 1 +
+ drivers/net/ethernet/3com/Kconfig    | 4 ++--
+ drivers/net/ethernet/8390/Kconfig    | 6 +++---
+ drivers/net/ethernet/amd/Kconfig     | 4 ++--
+ drivers/net/ethernet/fujitsu/Kconfig | 2 +-
+ drivers/net/ethernet/intel/Kconfig   | 2 +-
+ drivers/net/ethernet/sis/Kconfig     | 4 ++--
+ drivers/net/ethernet/smsc/Kconfig    | 2 +-
+ drivers/net/ethernet/ti/Kconfig      | 2 +-
+ drivers/net/ethernet/via/Kconfig     | 1 +
+ drivers/net/ethernet/xircom/Kconfig  | 2 +-
+ drivers/net/fddi/Kconfig             | 2 +-
+ drivers/net/fddi/defxx.c             | 2 +-
+ drivers/net/hamradio/Kconfig         | 6 +++---
+ drivers/net/wan/Kconfig              | 2 +-
+ net/ax25/Kconfig                     | 2 +-
+ 19 files changed, 26 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 4eca8d195ef0..c1b2f1a181c6 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -1132,12 +1132,11 @@ static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
- 	 *     5 or less       sw_entry_point_layer
- 	 */
- 	/* calculate the VSI layer based on number of layers. */
--	if (hw->num_tx_sched_layers > ICE_VSI_LAYER_OFFSET + 1) {
--		u8 layer = hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
--
--		if (layer > hw->sw_entry_point_layer)
--			return layer;
--	}
-+	if (hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS)
-+		return hw->num_tx_sched_layers - ICE_VSI_LAYER_OFFSET;
-+	if (hw->num_tx_sched_layers == ICE_SCHED_5_LAYERS)
-+		/* qgroup and VSI layers are same */
-+		return hw->num_tx_sched_layers - ICE_QGRP_LAYER_OFFSET;
- 	return hw->sw_entry_point_layer;
- }
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index c34bd432da27..170387314f1b 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -474,7 +474,7 @@ source "drivers/net/ipa/Kconfig"
  
-@@ -1154,12 +1153,8 @@ static u8 ice_sched_get_agg_layer(struct ice_hw *hw)
- 	 *     7 or less       sw_entry_point_layer
- 	 */
- 	/* calculate the aggregator layer based on number of layers. */
--	if (hw->num_tx_sched_layers > ICE_AGG_LAYER_OFFSET + 1) {
--		u8 layer = hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
--
--		if (layer > hw->sw_entry_point_layer)
--			return layer;
--	}
-+	if (hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS)
-+		return hw->num_tx_sched_layers - ICE_AGG_LAYER_OFFSET;
- 	return hw->sw_entry_point_layer;
- }
+ config NET_SB1000
+ 	tristate "General Instruments Surfboard 1000"
+-	depends on PNP
++	depends on ISA && PNP
+ 	help
+ 	  This is a driver for the General Instrument (also known as
+ 	  NextLevel) SURFboard 1000 internal
+diff --git a/drivers/net/arcnet/Kconfig b/drivers/net/arcnet/Kconfig
+index a51b9dab6d3a..d1d07a1d4fbc 100644
+--- a/drivers/net/arcnet/Kconfig
++++ b/drivers/net/arcnet/Kconfig
+@@ -4,7 +4,7 @@
+ #
  
-@@ -1515,10 +1510,11 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- {
- 	struct ice_sched_node *vsi_node, *qgrp_node;
- 	struct ice_vsi_ctx *vsi_ctx;
-+	u8 qgrp_layer, vsi_layer;
- 	u16 max_children;
--	u8 qgrp_layer;
+ menuconfig ARCNET
+-	depends on NETDEVICES && (ISA || PCI || PCMCIA)
++	depends on NETDEVICES && (ISA || PCI || PCMCIA) && HAS_IOPORT
+ 	tristate "ARCnet support"
+ 	help
+ 	  If you have a network card of this type, say Y and check out the
+diff --git a/drivers/net/can/cc770/Kconfig b/drivers/net/can/cc770/Kconfig
+index 9ef1359319f0..467ef19de1c1 100644
+--- a/drivers/net/can/cc770/Kconfig
++++ b/drivers/net/can/cc770/Kconfig
+@@ -7,6 +7,7 @@ if CAN_CC770
  
- 	qgrp_layer = ice_sched_get_qgrp_layer(pi->hw);
-+	vsi_layer = ice_sched_get_vsi_layer(pi->hw);
- 	max_children = pi->hw->max_children[qgrp_layer];
+ config CAN_CC770_ISA
+ 	tristate "ISA Bus based legacy CC770 driver"
++	depends on ISA
+ 	help
+ 	  This driver adds legacy support for CC770 and AN82527 chips
+ 	  connected to the ISA bus using I/O port, memory mapped or
+diff --git a/drivers/net/can/sja1000/Kconfig b/drivers/net/can/sja1000/Kconfig
+index 4b2f9cb17fc3..01168db4c106 100644
+--- a/drivers/net/can/sja1000/Kconfig
++++ b/drivers/net/can/sja1000/Kconfig
+@@ -87,6 +87,7 @@ config CAN_PLX_PCI
  
- 	vsi_ctx = ice_get_vsi_ctx(pi->hw, vsi_handle);
-@@ -1529,6 +1525,12 @@ ice_sched_get_free_qparent(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
- 	if (!vsi_node)
- 		return NULL;
+ config CAN_SJA1000_ISA
+ 	tristate "ISA Bus based legacy SJA1000 driver"
++	depends on ISA
+ 	help
+ 	  This driver adds legacy support for SJA1000 chips connected to
+ 	  the ISA bus using I/O port, memory mapped or indirect access.
+diff --git a/drivers/net/ethernet/3com/Kconfig b/drivers/net/ethernet/3com/Kconfig
+index 706bd59bf645..1fbab79e2be4 100644
+--- a/drivers/net/ethernet/3com/Kconfig
++++ b/drivers/net/ethernet/3com/Kconfig
+@@ -44,7 +44,7 @@ config 3C515
  
-+	/* If the queue group and vsi layer are same then queues
-+	 * are all attached directly to VSI
-+	 */
-+	if (qgrp_layer == vsi_layer)
-+		return vsi_node;
-+
- 	/* get the first queue group node from VSI sub-tree */
- 	qgrp_node = ice_sched_get_first_node(pi, vsi_node, qgrp_layer);
- 	while (qgrp_node) {
-@@ -3210,7 +3212,7 @@ ice_sched_add_rl_profile(struct ice_port_info *pi,
- 	u8 profile_type;
- 	int status;
+ config PCMCIA_3C574
+ 	tristate "3Com 3c574 PCMCIA support"
+-	depends on PCMCIA
++	depends on PCMCIA && HAS_IOPORT
+ 	help
+ 	  Say Y here if you intend to attach a 3Com 3c574 or compatible PCMCIA
+ 	  (PC-card) Fast Ethernet card to your computer.
+@@ -54,7 +54,7 @@ config PCMCIA_3C574
  
--	if (layer_num >= ICE_AQC_TOPO_MAX_LEVEL_NUM)
-+	if (!pi || layer_num >= pi->hw->num_tx_sched_layers)
- 		return NULL;
- 	switch (rl_type) {
- 	case ICE_MIN_BW:
-@@ -3226,8 +3228,6 @@ ice_sched_add_rl_profile(struct ice_port_info *pi,
- 		return NULL;
- 	}
+ config PCMCIA_3C589
+ 	tristate "3Com 3c589 PCMCIA support"
+-	depends on PCMCIA
++	depends on PCMCIA && HAS_IOPORT
+ 	help
+ 	  Say Y here if you intend to attach a 3Com 3c589 or compatible PCMCIA
+ 	  (PC-card) Ethernet card to your computer.
+diff --git a/drivers/net/ethernet/8390/Kconfig b/drivers/net/ethernet/8390/Kconfig
+index a4130e643342..345f250781c6 100644
+--- a/drivers/net/ethernet/8390/Kconfig
++++ b/drivers/net/ethernet/8390/Kconfig
+@@ -19,7 +19,7 @@ if NET_VENDOR_8390
  
--	if (!pi)
--		return NULL;
- 	hw = pi->hw;
- 	list_for_each_entry(rl_prof_elem, &pi->rl_prof_list[layer_num],
- 			    list_entry)
-@@ -3457,7 +3457,7 @@ ice_sched_rm_rl_profile(struct ice_port_info *pi, u8 layer_num, u8 profile_type,
- 	struct ice_aqc_rl_profile_info *rl_prof_elem;
- 	int status = 0;
+ config PCMCIA_AXNET
+ 	tristate "Asix AX88190 PCMCIA support"
+-	depends on PCMCIA
++	depends on PCMCIA && HAS_IOPORT
+ 	help
+ 	  Say Y here if you intend to attach an Asix AX88190-based PCMCIA
+ 	  (PC-card) Fast Ethernet card to your computer.  These cards are
+@@ -117,7 +117,7 @@ config NE2000
  
--	if (layer_num >= ICE_AQC_TOPO_MAX_LEVEL_NUM)
-+	if (layer_num >= pi->hw->num_tx_sched_layers)
- 		return -EINVAL;
- 	/* Check the existing list for RL profile */
- 	list_for_each_entry(rl_prof_elem, &pi->rl_prof_list[layer_num],
+ config NE2K_PCI
+ 	tristate "PCI NE2000 and clones support (see help)"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	select CRC32
+ 	help
+ 	  This driver is for NE2000 compatible PCI cards. It will not work
+@@ -146,7 +146,7 @@ config APNE
+ 
+ config PCMCIA_PCNET
+ 	tristate "NE2000 compatible PCMCIA support"
+-	depends on PCMCIA
++	depends on PCMCIA && HAS_IOPORT
+ 	select CRC32
+ 	help
+ 	  Say Y here if you intend to attach an NE2000 compatible PCMCIA
+diff --git a/drivers/net/ethernet/amd/Kconfig b/drivers/net/ethernet/amd/Kconfig
+index ab42f75b9413..2f19b4a24d53 100644
+--- a/drivers/net/ethernet/amd/Kconfig
++++ b/drivers/net/ethernet/amd/Kconfig
+@@ -56,7 +56,7 @@ config LANCE
+ 
+ config PCNET32
+ 	tristate "AMD PCnet32 PCI support"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	select CRC32
+ 	select MII
+ 	help
+@@ -122,7 +122,7 @@ config MVME147_NET
+ 
+ config PCMCIA_NMCLAN
+ 	tristate "New Media PCMCIA support"
+-	depends on PCMCIA
++	depends on PCMCIA && HAS_IOPORT
+ 	help
+ 	  Say Y here if you intend to attach a New Media Ethernet or LiveWire
+ 	  PCMCIA (PC-card) Ethernet card to your computer.
+diff --git a/drivers/net/ethernet/fujitsu/Kconfig b/drivers/net/ethernet/fujitsu/Kconfig
+index 0a1400cb410a..06a28bce5d27 100644
+--- a/drivers/net/ethernet/fujitsu/Kconfig
++++ b/drivers/net/ethernet/fujitsu/Kconfig
+@@ -18,7 +18,7 @@ if NET_VENDOR_FUJITSU
+ 
+ config PCMCIA_FMVJ18X
+ 	tristate "Fujitsu FMV-J18x PCMCIA support"
+-	depends on PCMCIA
++	depends on PCMCIA && HAS_IOPORT
+ 	select CRC32
+ 	help
+ 	  Say Y here if you intend to attach a Fujitsu FMV-J18x or compatible
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index c18c3b373846..bfb182310135 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -41,7 +41,7 @@ config E100
+ 
+ config E1000
+ 	tristate "Intel(R) PRO/1000 Gigabit Ethernet support"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	help
+ 	  This driver supports Intel(R) PRO/1000 gigabit ethernet family of
+ 	  adapters.  For more information on how to identify your adapter, go
+diff --git a/drivers/net/ethernet/sis/Kconfig b/drivers/net/ethernet/sis/Kconfig
+index 775d76d9890e..7e498bdbca73 100644
+--- a/drivers/net/ethernet/sis/Kconfig
++++ b/drivers/net/ethernet/sis/Kconfig
+@@ -19,7 +19,7 @@ if NET_VENDOR_SIS
+ 
+ config SIS900
+ 	tristate "SiS 900/7016 PCI Fast Ethernet Adapter support"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	select CRC32
+ 	select MII
+ 	help
+@@ -35,7 +35,7 @@ config SIS900
+ 
+ config SIS190
+ 	tristate "SiS190/SiS191 gigabit ethernet support"
+-	depends on PCI
++	depends on PCI && HAS_IOPORT
+ 	select CRC32
+ 	select MII
+ 	help
+diff --git a/drivers/net/ethernet/smsc/Kconfig b/drivers/net/ethernet/smsc/Kconfig
+index 5f22a8a4d27b..13ce9086a9ca 100644
+--- a/drivers/net/ethernet/smsc/Kconfig
++++ b/drivers/net/ethernet/smsc/Kconfig
+@@ -54,7 +54,7 @@ config SMC91X
+ 
+ config PCMCIA_SMC91C92
+ 	tristate "SMC 91Cxx PCMCIA support"
+-	depends on PCMCIA
++	depends on PCMCIA && HAS_IOPORT
+ 	select CRC32
+ 	select MII
+ 	help
+diff --git a/drivers/net/ethernet/ti/Kconfig b/drivers/net/ethernet/ti/Kconfig
+index fce06663e1e1..20068acce9fe 100644
+--- a/drivers/net/ethernet/ti/Kconfig
++++ b/drivers/net/ethernet/ti/Kconfig
+@@ -161,7 +161,7 @@ config TI_KEYSTONE_NETCP_ETHSS
+ 
+ config TLAN
+ 	tristate "TI ThunderLAN support"
+-	depends on (PCI || EISA)
++	depends on (PCI || EISA) && HAS_IOPORT
+ 	help
+ 	  If you have a PCI Ethernet network card based on the ThunderLAN chip
+ 	  which is supported by this driver, say Y here.
+diff --git a/drivers/net/ethernet/via/Kconfig b/drivers/net/ethernet/via/Kconfig
+index da287ef65be7..00773f5e4d7e 100644
+--- a/drivers/net/ethernet/via/Kconfig
++++ b/drivers/net/ethernet/via/Kconfig
+@@ -20,6 +20,7 @@ config VIA_RHINE
+ 	tristate "VIA Rhine support"
+ 	depends on PCI || (OF_IRQ && GENERIC_PCI_IOMAP)
+ 	depends on PCI || ARCH_VT8500 || COMPILE_TEST
++	depends on HAS_IOPORT
+ 	depends on HAS_DMA
+ 	select CRC32
+ 	select MII
+diff --git a/drivers/net/ethernet/xircom/Kconfig b/drivers/net/ethernet/xircom/Kconfig
+index 7497b9bea511..bfbdcf758afb 100644
+--- a/drivers/net/ethernet/xircom/Kconfig
++++ b/drivers/net/ethernet/xircom/Kconfig
+@@ -19,7 +19,7 @@ if NET_VENDOR_XIRCOM
+ 
+ config PCMCIA_XIRC2PS
+ 	tristate "Xircom 16-bit PCMCIA support"
+-	depends on PCMCIA
++	depends on PCMCIA && HAS_IOPORT
+ 	help
+ 	  Say Y here if you intend to attach a Xircom 16-bit PCMCIA (PC-card)
+ 	  Ethernet or Fast Ethernet card to your computer.
+diff --git a/drivers/net/fddi/Kconfig b/drivers/net/fddi/Kconfig
+index 846bf41c2717..fa3f1e0fe143 100644
+--- a/drivers/net/fddi/Kconfig
++++ b/drivers/net/fddi/Kconfig
+@@ -29,7 +29,7 @@ config DEFZA
+ 
+ config DEFXX
+ 	tristate "Digital DEFTA/DEFEA/DEFPA adapter support"
+-	depends on FDDI && (PCI || EISA || TC)
++	depends on FDDI && (PCI || EISA || TC) && HAS_IOPORT
+ 	help
+ 	  This is support for the DIGITAL series of TURBOchannel (DEFTA),
+ 	  EISA (DEFEA) and PCI (DEFPA) controllers which can connect you
+diff --git a/drivers/net/fddi/defxx.c b/drivers/net/fddi/defxx.c
+index 1fef8a9b1a0f..5f386eba9618 100644
+--- a/drivers/net/fddi/defxx.c
++++ b/drivers/net/fddi/defxx.c
+@@ -254,7 +254,7 @@ static const char version[] =
+ #define DFX_BUS_TC(dev) 0
+ #endif
+ 
+-#if defined(CONFIG_EISA) || defined(CONFIG_PCI)
++#ifdef HAS_IOPORT
+ #define dfx_use_mmio bp->mmio
+ #else
+ #define dfx_use_mmio true
+diff --git a/drivers/net/hamradio/Kconfig b/drivers/net/hamradio/Kconfig
+index a9c44f08199d..0ac87b90b01e 100644
+--- a/drivers/net/hamradio/Kconfig
++++ b/drivers/net/hamradio/Kconfig
+@@ -83,7 +83,7 @@ config SCC_TRXECHO
+ 
+ config BAYCOM_SER_FDX
+ 	tristate "BAYCOM ser12 fullduplex driver for AX.25"
+-	depends on AX25 && !S390
++	depends on AX25 && HAS_IOPORT
+ 	select CRC_CCITT
+ 	help
+ 	  This is one of two drivers for Baycom style simple amateur radio
+@@ -103,7 +103,7 @@ config BAYCOM_SER_FDX
+ 
+ config BAYCOM_SER_HDX
+ 	tristate "BAYCOM ser12 halfduplex driver for AX.25"
+-	depends on AX25 && !S390
++	depends on AX25 && HAS_IOPORT
+ 	select CRC_CCITT
+ 	help
+ 	  This is one of two drivers for Baycom style simple amateur radio
+@@ -151,7 +151,7 @@ config BAYCOM_EPP
+ 
+ config YAM
+ 	tristate "YAM driver for AX.25"
+-	depends on AX25 && !S390
++	depends on AX25 && HAS_IOPORT
+ 	help
+ 	  The YAM is a modem for packet radio which connects to the serial
+ 	  port and includes some of the functions of a Terminal Node
+diff --git a/drivers/net/wan/Kconfig b/drivers/net/wan/Kconfig
+index dcb069dde66b..417e2c2d349d 100644
+--- a/drivers/net/wan/Kconfig
++++ b/drivers/net/wan/Kconfig
+@@ -178,7 +178,7 @@ config C101
+ 
+ config FARSYNC
+ 	tristate "FarSync T-Series support"
+-	depends on HDLC && PCI
++	depends on HDLC && PCI && HAS_IOPORT
+ 	help
+ 	  Support for the FarSync T-Series X.21 (and V.35/V.24) cards by
+ 	  FarSite Communications Ltd.
+diff --git a/net/ax25/Kconfig b/net/ax25/Kconfig
+index d3a9843a043d..f769e8f4bd02 100644
+--- a/net/ax25/Kconfig
++++ b/net/ax25/Kconfig
+@@ -4,7 +4,7 @@
+ #
+ 
+ menuconfig HAMRADIO
+-	depends on NET && !S390
++	depends on NET
+ 	bool "Amateur Radio support"
+ 	help
+ 	  If you want to connect your Linux box to an amateur radio, answer Y
 -- 
 2.37.2
 
