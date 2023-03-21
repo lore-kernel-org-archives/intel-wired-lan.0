@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67A19C74A5B
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 21 Mar 2023 13:47:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99A62C6FD1D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 21 Mar 2023 13:48:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1BCBF40BCD;
-	Tue, 21 Mar 2023 13:47:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1BCBF40BCD
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4B2F540BC1;
+	Tue, 21 Mar 2023 13:48:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4B2F540BC1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1679406464;
-	bh=JriyV6RKsptCYFyi7gwL+EsQ4jaFGvrSWyxnTa9gAwA=;
+	s=default; t=1679406509;
+	bh=HKoidpqkjA+J1iXKd6CYjf5ElxQhLO3dJXOeHZ/h/f4=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=lsLJViSoTH9E+1MZ8Hv2c1DE91bNpfNmcb+7+PbWST/DtAJfHhvB4iqV1DWegIQvU
-	 ZuShGSUXzA0xQyY+jTAHUhR1E4Vraa+TVeWtvXdO5remtz+IwO0PTPynK/1sHuicYL
-	 IhlLT95mnH2mNIiurA+MqPfvR7R7m1DH5aCtC7AKxfteVJgd0T75avqRp6ONOpAyqd
-	 NItnxnlpHRbnVnqr4c34EOwG6LUpK2EDodNu33MdkljIT0RTqPwtMSaZGRlLTu1lsJ
-	 ymjSKILRmaofFN31/aRNhlsIzYxNnwTQRTlEcBaXdunUQWQhTCs5Nu5X2OUMsf3NYn
-	 oGW67JwUp80rA==
+	b=guF6/mziTZ3sDVOp0M0P5+mGYj/TYhCXSS++RtuCSriShgc6LyJek4tU1/1HJGv8y
+	 Ix/3NHBEC+y96ZOQFacjANRlD7oMHQPI09yE91O9QnIaGDFoktlrjm3NCnFFU/PjSX
+	 b7t8XLY8Zoa2ndqR7C4R4AzAvL4E87vEX5CSbpxHz7MAIl+/v85jIaxGQvZ7vrel3S
+	 WyPQi5KSkWMakM72HneSXVO/o/Tdiigjb5unSbTrza6m3O+3HcNVjDohr0NyFSbc5G
+	 7Y0zk0Cu38DfGlbgpGH35QA07BiZZUx6Zq5i6Py4gXf/WE7fpDjceBd+KgjN6kMDKH
+	 B+lzRHB2ltTHw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IGTBnCQ8WMeX; Tue, 21 Mar 2023 13:47:43 +0000 (UTC)
+	with ESMTP id xPeCEUiw7nbt; Tue, 21 Mar 2023 13:48:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F281440BD0;
-	Tue, 21 Mar 2023 13:47:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F281440BD0
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 105411BF327
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Mar 2023 13:47:41 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1573140BCB;
+	Tue, 21 Mar 2023 13:48:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1573140BCB
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 0AEA61BF327
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Mar 2023 13:48:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DF14641870
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Mar 2023 13:47:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DF14641870
+ by smtp1.osuosl.org (Postfix) with ESMTP id D8FE081FD6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Mar 2023 13:48:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D8FE081FD6
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 6hi0ycLOzuY2 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 21 Mar 2023 13:47:40 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id gSav8SEauZeP for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 21 Mar 2023 13:48:25 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DA3784181C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 995A981FD5
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DA3784181C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Mar 2023 13:47:39 +0000 (UTC)
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 995A981FD5
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 21 Mar 2023 13:48:25 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-44-I1xUYhZROsWtd0UiXsgw2A-1; Tue, 21 Mar 2023 09:47:33 -0400
-X-MC-Unique: I1xUYhZROsWtd0UiXsgw2A-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
- [10.11.54.7])
+ us-mta-2-m6fLM9DzOWS9TtWpFcAgtg-1; Tue, 21 Mar 2023 09:47:13 -0400
+X-MC-Unique: m6fLM9DzOWS9TtWpFcAgtg-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id B101A857FB5;
- Tue, 21 Mar 2023 13:47:32 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 9497F2806042;
+ Tue, 21 Mar 2023 13:47:12 +0000 (UTC)
 Received: from firesoul.localdomain (unknown [10.45.242.23])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 763FA140E95F;
- Tue, 21 Mar 2023 13:47:32 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 3B45B40C6E67;
+ Tue, 21 Mar 2023 13:47:12 +0000 (UTC)
 Received: from [10.1.1.1] (localhost [IPv6:::1])
- by firesoul.localdomain (Postfix) with ESMTP id E0E2D30721A6C;
- Tue, 21 Mar 2023 14:47:31 +0100 (CET)
+ by firesoul.localdomain (Postfix) with ESMTP id A475130721A6C;
+ Tue, 21 Mar 2023 14:47:11 +0100 (CET)
 From: Jesper Dangaard Brouer <brouer@redhat.com>
 To: bpf@vger.kernel.org
-Date: Tue, 21 Mar 2023 14:47:31 +0100
-Message-ID: <167940645187.2718137.8645052024109756542.stgit@firesoul>
+Date: Tue, 21 Mar 2023 14:47:11 +0100
+Message-ID: <167940643162.2718137.8570573496056995556.stgit@firesoul>
 In-Reply-To: <167940634187.2718137.10209374282891218398.stgit@firesoul>
 References: <167940634187.2718137.10209374282891218398.stgit@firesoul>
 User-Agent: StGit/1.4
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.7
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1679406458;
+ s=mimecast20190719; t=1679406504;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=SNzfne+ehiwMF7uvGVh6OwjGKWcTNK9/K/phIg4/2Ik=;
- b=d7oct5XvnFgpn14j9i1Eo3TgQSVMXgtDBWqkaaLRevY+y88cA0XnzPzqzNuLp0DTVMXYKJ
- WKT8Yp2SLw8H32XUq7PMAMP/vQgwXwGCQOBGDrMxz05ryYsV2sFb9iTv9rMII075OORCfb
- arSPCTd52xZ8tVKyW5J81HD9y1MK9H8=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=7XInFRBUHO3MAh9r7zJFmhOIJ9vpsIZWXbrw7tTwZk8=;
+ b=i/3d25BT7aCCCxOXWtQzo4ZOoEnNSiAFOZYLA0cW9wvy8UmrQjxjlYwuI4V/ndoXqWuzH0
+ QNaIlGzGvt1Y1sfVLCgZr/YL9rMSaLC3Sfok03kLz7tD4ZQKU3tHDQwmpUZXpCa22DRyWI
+ JGfubB4OaNMu2+1a4+tPkFOUkOXDJLg=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=d7oct5Xv
-Subject: [Intel-wired-lan] [PATCH bpf-next V2 6/6] igc: add XDP hints kfuncs
- for RX hash
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=i/3d25BT
+Subject: [Intel-wired-lan] [PATCH bpf-next V2 2/6] selftests/bpf:
+ xdp_hw_metadata track more timestamps
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,49 +114,183 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This implements XDP hints kfunc for RX-hash (xmo_rx_hash) straightforward
-by returning the u32 hash value.
+To correlate the hardware RX timestamp with something, add tracking of
+two software timestamps both clock source CLOCK_TAI (see description in
+man clock_gettime(2)).
 
-The associated RSS-type for the hash value isn't available to the BPF-prog
-caller. This is problematic if BPF-prog tries to do L4 load-balancing with
-the hardware hash, but the RSS hash type is L3 based.
+XDP metadata is extended with xdp_timestamp for capturing when XDP
+received the packet. Populated with BPF helper bpf_ktime_get_tai_ns(). I
+could not find a BPF helper for getting CLOCK_REALTIME, which would have
+been preferred. In userspace when AF_XDP sees the packet another
+software timestamp is recorded via clock_gettime() also clock source
+CLOCK_TAI.
 
-For this driver this issue occurs for UDP packets, as driver (default
-config) does L3 hashing for UDP packets (excludes UDP src/dest ports in
-hash calc). Tested that the igc_rss_type_num for UDP is either
-IGC_RSS_TYPE_HASH_IPV4 or IGC_RSS_TYPE_HASH_IPV6.
+Example output shortly after loading igc driver:
+
+  poll: 1 (0)
+  xsk_ring_cons__peek: 1
+  0x11fc958: rx_desc[7]->addr=10000000000f000 addr=f100 comp_addr=f000
+  rx_hash: 0x00000000
+  rx_timestamp:  1676297171760293047 (sec:1676297171.7603)
+  XDP RX-time:   1676297208760355863 (sec:1676297208.7604) delta sec:37.0001
+  AF_XDP time:   1676297208760416292 (sec:1676297208.7604) delta sec:0.0001 (60.429 usec)
+  0x11fc958: complete idx=15 addr=f000
+
+The first observation is that the 37 sec difference between RX HW vs XDP
+timestamps, which indicate hardware is likely clock source
+CLOCK_REALTIME, because (as of this writing) CLOCK_TAI is initialised
+with a 37 sec offset.
+
+The 60 usec (microsec) difference between XDP vs AF_XDP userspace is the
+userspace wakeup time. On this hardware it was caused by CPU idle sleep
+states, which can be reduced by tuning /dev/cpu_dma_latency.
+
+View current requested/allowed latency bound via:
+  hexdump --format '"%d\n"' /dev/cpu_dma_latency
+
+More explanation of the output and how this can be used to identify
+clock drift for the HW clock can be seen here[1]:
+
+[1] https://github.com/xdp-project/xdp-project/blob/master/areas/hints/xdp_hints_kfuncs02_driver_igc.org
 
 Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+Acked-by: Stanislav Fomichev <sdf@google.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ .../testing/selftests/bpf/progs/xdp_hw_metadata.c  |    9 +++-
+ tools/testing/selftests/bpf/xdp_hw_metadata.c      |   46 ++++++++++++++++++--
+ tools/testing/selftests/bpf/xdp_metadata.h         |    1 
+ 3 files changed, 48 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index f66285c85444..846041119fd4 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6496,8 +6496,21 @@ static int igc_xdp_rx_timestamp(const struct xdp_md *_ctx, u64 *timestamp)
- 	return -ENODATA;
+diff --git a/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c b/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
+index 4c55b4d79d3d..40c17adbf483 100644
+--- a/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
++++ b/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
+@@ -69,10 +69,13 @@ int rx(struct xdp_md *ctx)
+ 		return XDP_PASS;
+ 	}
+ 
+-	if (!bpf_xdp_metadata_rx_timestamp(ctx, &meta->rx_timestamp))
+-		bpf_printk("populated rx_timestamp with %llu", meta->rx_timestamp);
+-	else
++	if (!bpf_xdp_metadata_rx_timestamp(ctx, &meta->rx_timestamp)) {
++		meta->xdp_timestamp = bpf_ktime_get_tai_ns();
++		bpf_printk("populated rx_timestamp with  %llu", meta->rx_timestamp);
++		bpf_printk("populated xdp_timestamp with %llu", meta->xdp_timestamp);
++	} else {
+ 		meta->rx_timestamp = 0; /* Used by AF_XDP as not avail signal */
++	}
+ 
+ 	if (!bpf_xdp_metadata_rx_hash(ctx, &meta->rx_hash))
+ 		bpf_printk("populated rx_hash with %u", meta->rx_hash);
+diff --git a/tools/testing/selftests/bpf/xdp_hw_metadata.c b/tools/testing/selftests/bpf/xdp_hw_metadata.c
+index 1c8acb68b977..400bfe19abfe 100644
+--- a/tools/testing/selftests/bpf/xdp_hw_metadata.c
++++ b/tools/testing/selftests/bpf/xdp_hw_metadata.c
+@@ -27,6 +27,7 @@
+ #include <sys/mman.h>
+ #include <net/if.h>
+ #include <poll.h>
++#include <time.h>
+ 
+ #include "xdp_metadata.h"
+ 
+@@ -134,14 +135,47 @@ static void refill_rx(struct xsk *xsk, __u64 addr)
+ 	}
  }
  
-+static int igc_xdp_rx_hash(const struct xdp_md *_ctx, u32 *hash)
+-static void verify_xdp_metadata(void *data)
++#define NANOSEC_PER_SEC 1000000000 /* 10^9 */
++static __u64 gettime(clockid_t clock_id)
 +{
-+	const struct igc_xdp_buff *ctx = (void *)_ctx;
++	struct timespec t;
++	int res;
 +
-+	if (!(ctx->xdp.rxq->dev->features & NETIF_F_RXHASH))
-+		return -ENODATA;
++	/* See man clock_gettime(2) for type of clock_id's */
++	res = clock_gettime(clock_id, &t);
 +
-+	*hash = le32_to_cpu(ctx->rx_desc->wb.lower.hi_dword.rss);
++	if (res < 0)
++		error(res, errno, "Error with clock_gettime()");
 +
-+	return 0;
++	return (__u64) t.tv_sec * NANOSEC_PER_SEC + t.tv_nsec;
 +}
 +
- const struct xdp_metadata_ops igc_xdp_metadata_ops = {
- 	.xmo_rx_timestamp		= igc_xdp_rx_timestamp,
-+	.xmo_rx_hash			= igc_xdp_rx_hash,
- };
++static void verify_xdp_metadata(void *data, clockid_t clock_id)
+ {
+ 	struct xdp_meta *meta;
  
- /**
+ 	meta = data - sizeof(*meta);
+ 
+-	printf("rx_timestamp: %llu\n", meta->rx_timestamp);
+ 	printf("rx_hash: %u\n", meta->rx_hash);
++	printf("rx_timestamp:  %llu (sec:%0.4f)\n", meta->rx_timestamp,
++	       (double)meta->rx_timestamp / NANOSEC_PER_SEC);
++	if (meta->rx_timestamp) {
++		__u64 usr_clock = gettime(clock_id);
++		__u64 xdp_clock = meta->xdp_timestamp;
++		__s64 delta_X = xdp_clock - meta->rx_timestamp;
++		__s64 delta_X2U = usr_clock - xdp_clock;
++
++		printf("XDP RX-time:   %llu (sec:%0.4f) delta sec:%0.4f (%0.3f usec)\n",
++		       xdp_clock, (double)xdp_clock / NANOSEC_PER_SEC,
++		       (double)delta_X / NANOSEC_PER_SEC,
++		       (double)delta_X / 1000);
++
++		printf("AF_XDP time:   %llu (sec:%0.4f) delta sec:%0.4f (%0.3f usec)\n",
++		       usr_clock, (double)usr_clock / NANOSEC_PER_SEC,
++		       (double)delta_X2U / NANOSEC_PER_SEC,
++		       (double)delta_X2U / 1000);
++	}
++
+ }
+ 
+ static void verify_skb_metadata(int fd)
+@@ -189,7 +223,7 @@ static void verify_skb_metadata(int fd)
+ 	printf("skb hwtstamp is not found!\n");
+ }
+ 
+-static int verify_metadata(struct xsk *rx_xsk, int rxq, int server_fd)
++static int verify_metadata(struct xsk *rx_xsk, int rxq, int server_fd, clockid_t clock_id)
+ {
+ 	const struct xdp_desc *rx_desc;
+ 	struct pollfd fds[rxq + 1];
+@@ -237,7 +271,8 @@ static int verify_metadata(struct xsk *rx_xsk, int rxq, int server_fd)
+ 			addr = xsk_umem__add_offset_to_addr(rx_desc->addr);
+ 			printf("%p: rx_desc[%u]->addr=%llx addr=%llx comp_addr=%llx\n",
+ 			       xsk, idx, rx_desc->addr, addr, comp_addr);
+-			verify_xdp_metadata(xsk_umem__get_data(xsk->umem_area, addr));
++			verify_xdp_metadata(xsk_umem__get_data(xsk->umem_area, addr),
++					    clock_id);
+ 			xsk_ring_cons__release(&xsk->rx, 1);
+ 			refill_rx(xsk, comp_addr);
+ 		}
+@@ -364,6 +399,7 @@ static void timestamping_enable(int fd, int val)
+ 
+ int main(int argc, char *argv[])
+ {
++	clockid_t clock_id = CLOCK_TAI;
+ 	int server_fd = -1;
+ 	int ret;
+ 	int i;
+@@ -437,7 +473,7 @@ int main(int argc, char *argv[])
+ 		error(1, -ret, "bpf_xdp_attach");
+ 
+ 	signal(SIGINT, handle_signal);
+-	ret = verify_metadata(rx_xsk, rxq, server_fd);
++	ret = verify_metadata(rx_xsk, rxq, server_fd, clock_id);
+ 	close(server_fd);
+ 	cleanup();
+ 	if (ret)
+diff --git a/tools/testing/selftests/bpf/xdp_metadata.h b/tools/testing/selftests/bpf/xdp_metadata.h
+index f6780fbb0a21..260345b2c6f1 100644
+--- a/tools/testing/selftests/bpf/xdp_metadata.h
++++ b/tools/testing/selftests/bpf/xdp_metadata.h
+@@ -11,5 +11,6 @@
+ 
+ struct xdp_meta {
+ 	__u64 rx_timestamp;
++	__u64 xdp_timestamp;
+ 	__u32 rx_hash;
+ };
 
 
 _______________________________________________
