@@ -4,83 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3533CC6FD1F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Mar 2023 12:49:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9D6DC6FD1C
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 22 Mar 2023 13:12:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BA416418B0;
-	Wed, 22 Mar 2023 12:49:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BA416418B0
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6FBCA4194E;
+	Wed, 22 Mar 2023 13:12:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6FBCA4194E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1679489351;
-	bh=VOy3RbV317UUTVXQ+g8QhD2xbD5BXmymibik2DMfmAk=;
+	s=default; t=1679490763;
+	bh=BNBIWcy/KxUqs2kfT7A5biUHvww5iZxL2p2Gbdv3v+0=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=k6TTWp6kkCWJf1g22iihS/+XK5XZtyhQMH1zzqyON5PW/Hb9ppNtkA+IuFOG2zBFb
-	 DHtzH9bp5587lB4s7WCbCBdYTASUgpYSIlqVils5smg8/08/vrZkuzvN5H6ZmHaumu
-	 R4akrAAis/92pWP7HKaQ8NJ8CxFt+gLxs/68rmle6GYQ2PJ0BPmY3qujgKvvDdJLUT
-	 04e8syaXT5XOPBMAWyJxzioAhDGDZ28DIbJ0BvYJ1yGWiOF7CXpyuTA+elIvqC1axk
-	 ym7W+ZPy2YoAkX2PkmPcLi4N6BFcqgrnfhubsHaeqS1wy/AQcKhZOAhOIvqRFBksHF
-	 zQ2/7twJeVlpQ==
+	 List-Post:List-Help:List-Subscribe:From;
+	b=BIGP90LzDFmZYVUnBLL0YZ7OMYiYAMG7GsJMaLKhFj7sywrvoy4KVPUXC4Jpt840C
+	 hNbIJqjecUQoYAVHgs5nTZz8NosmtumywSEtQ7nUfCmDqQqDA9KRCZWY+tTfiG0swY
+	 Xwag2xm5fR9scpIkXWyjMQgcOWO9dzYXVx3XD4mWH4s4dfC+WGDe2SVbJtKlU1U7ca
+	 zk4kuhRejllHgMDkGqyrNrAvtpkJXuxKtF4HNVQydszdClgM7vSf/d/021kfQXb/UJ
+	 5ixxRI60EJLP5ZIe/KBY/9qtqQGs9G0yxwuXQh53xZPfuvWp4qsgZ7rz1e1ImI9JYG
+	 XWpheUlw8LZvA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XiOs5uN_g28V; Wed, 22 Mar 2023 12:49:10 +0000 (UTC)
+	with ESMTP id 9buGqwG2ViAN; Wed, 22 Mar 2023 13:12:42 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8C003418A0;
-	Wed, 22 Mar 2023 12:49:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8C003418A0
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id DF07C1BF82D
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Mar 2023 12:49:08 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3FAA6419C3;
+	Wed, 22 Mar 2023 13:12:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3FAA6419C3
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 342BA1BF5DC
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Mar 2023 13:12:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B6AD5613B3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Mar 2023 12:49:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B6AD5613B3
+ by smtp4.osuosl.org (Postfix) with ESMTP id 08F61419C3
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Mar 2023 13:12:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 08F61419C3
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zMF1bPfK8w2z for <intel-wired-lan@lists.osuosl.org>;
- Wed, 22 Mar 2023 12:49:07 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id MrwWubfe4xgc for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 22 Mar 2023 13:12:40 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 589D760D52
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 589D760D52
- for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Mar 2023 12:49:07 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10656"; a="318846352"
-X-IronPort-AV: E=Sophos;i="5.98,281,1673942400"; d="scan'208";a="318846352"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Mar 2023 05:49:06 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 07F9E4194E
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 07F9E4194E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 22 Mar 2023 13:12:39 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10656"; a="340743694"
+X-IronPort-AV: E=Sophos;i="5.98,281,1673942400"; d="scan'208";a="340743694"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 22 Mar 2023 06:12:39 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10656"; a="631987288"
-X-IronPort-AV: E=Sophos;i="5.98,281,1673942400"; d="scan'208";a="631987288"
-Received: from unknown (HELO ocsbesrhlrepo01.igk.intel.com) ([10.237.94.20])
- by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Mar 2023 05:49:05 -0700
-From: Radoslaw Tyl <radoslawx.tyl@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10656"; a="714394648"
+X-IronPort-AV: E=Sophos;i="5.98,281,1673942400"; d="scan'208";a="714394648"
+Received: from hextor.igk.intel.com ([10.123.220.6])
+ by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 22 Mar 2023 06:12:38 -0700
+From: Michal Wilczynski <michal.wilczynski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 22 Mar 2023 13:48:20 +0100
-Message-Id: <20230322124820.128431-1-radoslawx.tyl@intel.com>
-X-Mailer: git-send-email 2.31.1
+Date: Wed, 22 Mar 2023 14:12:22 +0100
+Message-Id: <20230322131227.244687-1-michal.wilczynski@intel.com>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1679489347; x=1711025347;
+ t=1679490760; x=1711026760;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=8WFFWKXKtwqdrrTjK8u3SaJGEUX12ZLSEFIvBwOzcjM=;
- b=DHf/h9nG5RkunorA4oVesgWdN7FUFFm7KioBMpt7KQxYnIUGQbpvXwby
- yFTmkvTXOjdTnaxeIP6OQJhM6C7bsTaDLSWGHwlkGBaL2Y4I0dfMT17PI
- tK1Y6fkqBDLJJ9Vax7MwmRot4f5zJMXbiTDwZeiumrnYMqbtj7TrBwygp
- aDseusHOWwrxe9xoelROevZTeIfWEBw4Uj2myDliQlcx636VE47kPkHaP
- 6Ms2mbdrLbNfHDmKiiacH5KaprlctScQtHegUG8TOR6WVnuEYYQuUOdQU
- a6zJxinMBEH5ECiG1P+JU5mHAH4ylh/6qyKtSAGC+EG025TRmXUDK5pWf
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=xV4ISycTlO8VBiix2fHIGkqXmGFNf6XbxaJcnYPuexI=;
+ b=EuK+zTp1pdv7FASLsufUwhvzH9hEGe3pxW5XSzNFI2xs1gbsbyb7dOD1
+ QH6HcUFTrPALyhQjH9YZmc9V99m39yd5XkN+fmCw6nfHTBSeOY6jLN1TY
+ qPwGZIC8pCPz/b0pfgBAjLkCvunJfY0hQlAFo6RwwBCeQbRSGbbcPb67o
+ LkfLLs/is60QdBRMXSG3pCFrbBgG69xQBpaljSgJSfGYg/FzUQgNVs4un
+ 25UYdMj9yO8PNl4LHnZuJaI6jkZveX+rV2vfRgpadL0p6+gnBc7wl9AS1
+ die3P4l7KQyPlEaUXGuPmOwYl8HOGquwyhAVYPVEEgom071w+d7y7n/UA
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=DHf/h9nG
-Subject: [Intel-wired-lan] [PATCH net] i40e: fix registers dump after run
- ethtool adapter self test
+ header.a=rsa-sha256 header.s=Intel header.b=EuK+zTp1
+Subject: [Intel-wired-lan] [PATCH net-next v11 0/5] ice: Support 5 layer tx
+ scheduler topology
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,87 +93,100 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Radoslaw Tyl <radoslawx.tyl@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Fix invalid registers dump from ethtool -d ethX after adapter self test
-by ethtool -t ethY. It causes invalid data display.
+This is a re-send of series that was previously accepted and merged to
+the tree, but testing discovered problems with this series so it was
+later dropped. This version fixes the bug found by validation.
 
-The problem was caused by overwriting i40e_reg_list[].elements
-which is common for ethtool self test and dump.
+For performance reasons there is a need to have support for selectable
+tx scheduler topology. Currently firmware supports only the default
+9-layer and 5-layer topology. This patch series enables switch from
+default to 5-layer topology, if user decides to opt-in.
 
-Fixes: 22dd9ae8afcc ("i40e: Rework register diagnostic")
-Signed-off-by: Radoslaw Tyl <radoslawx.tyl@intel.com>
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_diag.c | 11 ++++++-----
- drivers/net/ethernet/intel/i40e/i40e_diag.h |  2 +-
- 2 files changed, 7 insertions(+), 6 deletions(-)
+v11: 
+- added check for return value of ice_init_ddp_config call
+- moved code related to patch 1 from patch 3
+- removed unnecessary casts
+- added a newline
+- added additional info about network layers in transmit scheduler
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_diag.c b/drivers/net/ethernet/intel/i40e/i40e_diag.c
-index 5b3519c6e362..97fe1787a8f4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_diag.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_diag.c
-@@ -44,7 +44,7 @@ static int i40e_diag_reg_pattern_test(struct i40e_hw *hw,
- 	return 0;
- }
- 
--struct i40e_diag_reg_test_info i40e_reg_list[] = {
-+const struct i40e_diag_reg_test_info i40e_reg_list[] = {
- 	/* offset               mask         elements   stride */
- 	{I40E_QTX_CTL(0),       0x0000FFBF, 1,
- 		I40E_QTX_CTL(1) - I40E_QTX_CTL(0)},
-@@ -78,27 +78,28 @@ int i40e_diag_reg_test(struct i40e_hw *hw)
- {
- 	int ret_code = 0;
- 	u32 reg, mask;
-+	u32 elements;
- 	u32 i, j;
- 
- 	for (i = 0; i40e_reg_list[i].offset != 0 &&
- 					     !ret_code; i++) {
- 
-+		elements = i40e_reg_list[i].elements;
- 		/* set actual reg range for dynamically allocated resources */
- 		if (i40e_reg_list[i].offset == I40E_QTX_CTL(0) &&
- 		    hw->func_caps.num_tx_qp != 0)
--			i40e_reg_list[i].elements = hw->func_caps.num_tx_qp;
-+			elements = hw->func_caps.num_tx_qp;
- 		if ((i40e_reg_list[i].offset == I40E_PFINT_ITRN(0, 0) ||
- 		     i40e_reg_list[i].offset == I40E_PFINT_ITRN(1, 0) ||
- 		     i40e_reg_list[i].offset == I40E_PFINT_ITRN(2, 0) ||
- 		     i40e_reg_list[i].offset == I40E_QINT_TQCTL(0) ||
- 		     i40e_reg_list[i].offset == I40E_QINT_RQCTL(0)) &&
- 		    hw->func_caps.num_msix_vectors != 0)
--			i40e_reg_list[i].elements =
--				hw->func_caps.num_msix_vectors - 1;
-+			elements = hw->func_caps.num_msix_vectors - 1;
- 
- 		/* test register access */
- 		mask = i40e_reg_list[i].mask;
--		for (j = 0; j < i40e_reg_list[i].elements && !ret_code; j++) {
-+		for (j = 0; j < elements && !ret_code; j++) {
- 			reg = i40e_reg_list[i].offset +
- 			      (j * i40e_reg_list[i].stride);
- 			ret_code = i40e_diag_reg_pattern_test(hw, reg, mask);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_diag.h b/drivers/net/ethernet/intel/i40e/i40e_diag.h
-index e641035c7297..c3ce5f35211f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_diag.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_diag.h
-@@ -20,7 +20,7 @@ struct i40e_diag_reg_test_info {
- 	u32 stride;	/* bytes between each element */
- };
- 
--extern struct i40e_diag_reg_test_info i40e_reg_list[];
-+extern const struct i40e_diag_reg_test_info i40e_reg_list[];
- 
- int i40e_diag_reg_test(struct i40e_hw *hw);
- int i40e_diag_eeprom_test(struct i40e_hw *hw);
+v10: Fixed incorrect call to ice_fill_dflt_direct_cmd_desc that caused
+     the bug found by validation.
+
+v9: Nothing changed, this is a re-send per validation request
+
+Lukasz Czapnik (1):
+  ice: Add txbalancing devlink param
+v6: Added this commit
+v7: Fixed nitpicks, checkpatch issue, changed functions to static
+
+Michal Wilczynski (2):
+  ice: Enable switching default tx scheduler topology
+v2:
+- Moved definitions of scheduling layers to other commit
+v3:
+- Removed wrong tags
+- Added blank line
+- Indented a comment
+- Moved parts of code to separate commit
+- Removed unnecessary initializations
+- Change from unnecessary devm_kmemdup to kmemdup
+v5:
+- Changed freeing to kfree
+- Changed commit message to clarify that parameter change is not yet
+  upstream
+
+  ice: Document txbalancing parameter
+v7: Added this commit
+
+Raj Victor (2):
+  ice: Support 5 layer topology
+v2:
+- Added example of performance decrease in commit message
+- Reworded commit message for imperative mood
+- Removed unnecessary tags
+- Refactored duplicated function call
+- Fixed RCT
+- Fixed unnecessary call to devm_kfree
+- Defined constants
+v3:
+- Changed title
+- Changes in commit description, added versions of DDP
+  and firmware, also added test methodology
+- Removed unnecessary defines
+- Added a newline for define separation
+- Did s/tx/Tx in comments
+- Removed newline between error check
+v8:
+- Removed msleep's in the loops
+
+  ice: Adjust the VSI/Aggregator layers
+v3:
+- Added this commit
+- Removed unnecessary 'else'
+
+ Documentation/networking/devlink/ice.rst      |  20 ++
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  31 +++
+ drivers/net/ethernet/intel/ice/ice_common.c   |   6 +
+ drivers/net/ethernet/intel/ice/ice_ddp.c      | 201 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_ddp.h      |   7 +-
+ drivers/net/ethernet/intel/ice/ice_devlink.c  | 163 +++++++++++++-
+ .../net/ethernet/intel/ice/ice_fw_update.c    |   2 +-
+ .../net/ethernet/intel/ice/ice_fw_update.h    |   3 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 106 +++++++--
+ drivers/net/ethernet/intel/ice/ice_nvm.c      |   2 +-
+ drivers/net/ethernet/intel/ice/ice_nvm.h      |   3 +
+ drivers/net/ethernet/intel/ice/ice_sched.c    |  34 +--
+ drivers/net/ethernet/intel/ice/ice_sched.h    |   3 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ 14 files changed, 541 insertions(+), 41 deletions(-)
+
 -- 
-2.31.1
+2.37.2
 
 _______________________________________________
 Intel-wired-lan mailing list
