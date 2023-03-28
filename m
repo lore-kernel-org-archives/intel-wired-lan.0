@@ -1,70 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E5C6C76196
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Mar 2023 11:26:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59FC8C6FD18
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Mar 2023 12:48:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C835E82206;
-	Tue, 28 Mar 2023 11:26:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C835E82206
+	by smtp2.osuosl.org (Postfix) with ESMTP id E7B60401DD;
+	Tue, 28 Mar 2023 12:48:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E7B60401DD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680002767;
-	bh=lu4tQqyNi+AA9MX2rgVdvRQyqFr2eLmruhXyCIL6NXA=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=cGxPvPb9jGdlEMtV7jvmnjrugCUu44x0v3Oaw/kj0Eh8s2aVuOp71g6svgfihBlJI
-	 8kXB3n9Hir9oXzd/DVBWVqb8WWXdssLrBM/1NQyICUUd6te6pO6FJEa0ggsnSEAVsP
-	 D630DQH5evltlOrDGrL8apH5j4D2G8/wI1Xqb6k5Orv9DLH9a+wX97axEa7J8Jvn3I
-	 nt6NkJkVul0ELHeQ4DuuVaWiDySQZc5gZHGM/JMh/6vhQevqTK7RRsB+qrRPTpXM6E
-	 C7ADarU+Fa01EHAjX0zYpY7JlCyzHoGVey7W9qJInMnG7WMFBT79oVQF7ZEI+bJUEa
-	 vE9hcBcV/FNVQ==
+	s=default; t=1680007684;
+	bh=Po8vLBEGOgmlpMBQhnV+L/aBumZHetnQqbOxRSUsTuw=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=cWCRwGqwc4eNdCqfyUANKEiBtjmf4BuD7T3uTD8irFP4wgz7XKu7Ou60lW3TDHiBP
+	 VOFjx/0gM7rwLpXIgfQ+zNOYCzZXnQUU8lRFB773bz5NzNbSnx6uwP3uxNTdRjH6Fl
+	 Rii0OQdnnGbVfL8Fw99dC1plA3xxCCHGdG4ANZdGze7TBCbqY31uG5j+At3tBGqNaA
+	 tnH/A7rrj/2nOPA9PLq0Hvby4vHUlaHFOr90Sfdad0smXb76QQmJoKwNADZY39G3uM
+	 YW4k4yTVTtON1WEQ6xaM31YteTEBhTqQUn01vp2gmmFeuj7I4BojxcbPV5YJQ0O+3o
+	 9DGr7wxwzAUkA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id gy4s1FodBMH6; Tue, 28 Mar 2023 11:26:07 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id deK3MKXejJ2F; Tue, 28 Mar 2023 12:48:04 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DA5F6821F5;
-	Tue, 28 Mar 2023 11:26:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DA5F6821F5
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 5A74A1BF616
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 11:26:05 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id DDE9A4038B;
+	Tue, 28 Mar 2023 12:48:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DDE9A4038B
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 8955D1BF429
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 12:48:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3F3026121E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 11:26:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3F3026121E
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5F263401DD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 12:48:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5F263401DD
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pnsERAEe1lPB for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Mar 2023 11:25:59 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6B42160F47
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6B42160F47
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 11:25:58 +0000 (UTC)
-Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id C386661CC40F9;
- Tue, 28 Mar 2023 13:25:55 +0200 (CEST)
-Message-ID: <2c1aeff8-4ed6-4971-5505-8df0da32d1ce@molgen.mpg.de>
-Date: Tue, 28 Mar 2023 13:25:55 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Content-Language: en-US
-To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-References: <20230328054111.803638-1-aleksandr.loktionov@intel.com>
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20230328054111.803638-1-aleksandr.loktionov@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH net v1] i40e: fix passing tainted
- expression to kzalloc()
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 41PON0tX1AQN for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Mar 2023 12:48:01 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 278DC4038B
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 278DC4038B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 12:48:01 +0000 (UTC)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+ (No client certificate requested)
+ by smtp-out1.suse.de (Postfix) with ESMTPS id E786F21A1E;
+ Tue, 28 Mar 2023 12:40:33 +0000 (UTC)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+ (No client certificate requested)
+ by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D2B631390D;
+ Tue, 28 Mar 2023 12:40:33 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+ by imap2.suse-dmz.suse.de with ESMTPSA id +CQBM0HgImTWOgAAMHmgww
+ (envelope-from <tiwai@suse.de>); Tue, 28 Mar 2023 12:40:33 +0000
+Date: Tue, 28 Mar 2023 14:40:33 +0200
+Message-ID: <87jzz13v7i.wl-tiwai@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>
+User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
+MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=suse.de; s=susede2_rsa; 
+ t=1680007233; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type;
+ bh=vqqlZblvF32Oc3IEsXbE37GU4gfQk/3dHtRa1C6odSg=;
+ b=xHt7RMHDZj9iis1BjDPp6W38V2IQqat+XbSH3pDFr3Q8lMsHhl6OUz4BbYU3sA+TAgW0yZ
+ Ggu1w7SxsIRtvWZzMX9xKCfrTnUEVCcHQngs3zUc4bEE5jkLd/mrFq9nGCWDKHC53Blgvx
+ aRpaNBKDFvI7RbL9f17QXIRbUb1qFSI=
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=suse.de; s=susede2_ed25519; t=1680007233;
+ h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+ mime-version:mime-version:content-type:content-type;
+ bh=vqqlZblvF32Oc3IEsXbE37GU4gfQk/3dHtRa1C6odSg=;
+ b=o5Jo4JPHBesRVld4amUIZZUpKqjp/6hduT5zW2BbvcHXU86DH/woDQc6NLpc9eMdEXszql
+ bDnM1A3n/EFvo3DQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de
+ header.a=rsa-sha256 header.s=susede2_rsa header.b=xHt7RMHD; 
+ dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
+ header.s=susede2_ed25519 header.b=o5Jo4JPH
+Subject: [Intel-wired-lan] [REGRESSION] e1000e probe/link detection fails
+ since 6.2 kernel
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,52 +102,60 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ regressions@lists.linux.dev, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Aleksandr,
+Hi,
+
+we've got a regression report for e1000e device on Lenovo T460p since
+6.2 kernel (with openSUSE Tumbleweed).  The details are found in
+  https://bugzilla.opensuse.org/show_bug.cgi?id=1209254
+
+It seems that the driver can't detect the 1000Mbps but only 10/100Mbps
+link, eventually making the device unusable.
+
+On 6.1.12:
+[    5.119117] e1000e: Intel(R) PRO/1000 Network Driver
+[    5.119120] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    5.121754] e1000e 0000:00:1f.6: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
+[    7.905526] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): Failed to disable ULP
+[    7.988925] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): registered PHC clock
+[    8.069935] e1000e 0000:00:1f.6 eth0: (PCI Express:2.5GT/s:Width x1) 50:7b:9d:cf:13:43
+[    8.069942] e1000e 0000:00:1f.6 eth0: Intel(R) PRO/1000 Network Connection
+[    8.072691] e1000e 0000:00:1f.6 eth0: MAC: 12, PHY: 12, PBA No: 1000FF-0FF
+[   11.643919] e1000e 0000:00:1f.6 eth0: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+[   15.437437] e1000e 0000:00:1f.6 eth0: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
+
+On 6.2.4:
+[    4.344140] e1000e: Intel(R) PRO/1000 Network Driver
+[    4.344143] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+[    4.344933] e1000e 0000:00:1f.6: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
+[    7.113334] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): Failed to disable ULP
+[    7.201715] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): registered PHC clock
+[    7.284038] e1000e 0000:00:1f.6 eth0: (PCI Express:2.5GT/s:Width x1) 50:7b:9d:cf:13:43
+[    7.284044] e1000e 0000:00:1f.6 eth0: Intel(R) PRO/1000 Network Connection
+[    7.284125] e1000e 0000:00:1f.6 eth0: MAC: 12, PHY: 12, PBA No: 1000FF-0FF
+[   10.897973] e1000e 0000:00:1f.6 eth0: NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
+[   10.897977] e1000e 0000:00:1f.6 eth0: 10/100 speed: disabling TSO
+[   14.710059] e1000e 0000:00:1f.6 eth0: NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
+[   14.710064] e1000e 0000:00:1f.6 eth0: 10/100 speed: disabling TSO
+[   59.894807] e1000e 0000:00:1f.6 eth0: NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
+[   59.894812] e1000e 0000:00:1f.6 eth0: 10/100 speed: disabling TSO
+[   63.808662] e1000e 0000:00:1f.6 eth0: NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
+[   63.808668] e1000e 0000:00:1f.6 eth0: 10/100 speed: disabling TSO
+
+The same problem persists with 6.3-rc3.
+
+Can you guys check what can go wrong, or if there is a fix?
 
 
-Thank you for your patch.
+Thanks!
 
-Am 28.03.23 um 07:41 schrieb Loktionov, Aleksandr:
-> From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> 
-> Add buff_size limit of 1280 bytes for user input value.
-
-Why did you choose 1280 bytes and not some other number?
-
-For the commit message summary/title you could use:
-
-i40e: Limit expression passed to kzalloc() to 1280 bytes
-
-> Fixes: f1143c4b0f60 ("i40e: Expose AQ debugfs hooks")
-> Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> index c9dcd6d..b10d00d 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> @@ -1356,7 +1356,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
->   			goto command_write_done;
->   		}
->   		/* Just stub a buffer big enough in case user messed up */
-> -		if (buffer_len == 0)
-> +		if (buffer_len == 0 || buffer_len > 1280)
->   			buffer_len = 1280;
->   
->   		buff = kzalloc(buffer_len, GFP_KERNEL);
-
-
-Kind regards,
-
-Paul
+Takashi
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
