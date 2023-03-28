@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A36C1C6FD18
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Mar 2023 20:16:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AA39C77B6E
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Mar 2023 20:16:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 53EA840862;
-	Tue, 28 Mar 2023 20:16:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 53EA840862
+	by smtp4.osuosl.org (Postfix) with ESMTP id A3E6E40059;
+	Tue, 28 Mar 2023 20:16:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A3E6E40059
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680034577;
-	bh=jt5/qxNNwL2aj3mvk4rs+SMkb28h17WQ5wyA0Wk4Slo=;
+	s=default; t=1680034581;
+	bh=6yIPT+L3+2La0hjFzuPNbScsPnmmevejRHk8sIrQWdY=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=pmYhgIZel53ChVmNGx4Wx1JIqfp489OtjrzZw0g76xuICo5fANxaVV9SiUSKMp9n2
-	 /lwXnyRiriNeYaMdjrrkW6xI/vQB9Q8CFVDn789iq79V/k7E21W7IRkUZbX5VyVF9l
-	 1L+gR4gtAag3tmaJRILCiAf7tsfXAgNwlV3muFqp0DSK2vYL/eUiXVmf9DyeJttVeg
-	 rY7ag96TSYiwfar9cY2E3k1xloTV8JxkjBCUT2s+/SQ+IMDyxJW+NrzhSj5d/E2+3g
-	 4DUvICq/O6ZUkci87SjTXGYAUcrD+7DbvJ8WEHtyC8QR08wXUVNpPVh32du7LZ6oKy
-	 kC1C7i91e7uEA==
+	b=umBHIyBbWVX81IGW2eNLNrLB2dOCvjXc1l7TZXwMHIqY9NN4mw0bkL7s+cFlre76G
+	 c+AqLMpBST49geAu1t9FlqgdDsLMqvsip3tTbgw1Z3VXFAGjgNMY/ZRAjdvtD6txDI
+	 grTiZtMHs3xZN4+DyH8AoqwVOiv5ZP8jPPQrKfvt2Mc6LACtQbczoGOT0nGQasY/vU
+	 prLsKpSFlg6aG7D4FnS3wACn42nLoLjJrh+o897XqYV/0NHytHcghDXw+vuz3sWUIY
+	 lAgKvyEOKmmhYNdqJpvWHS2MAQIk3B4Uruw0aor46VlStG9qTWiIQkmbSsh8GiuVBD
+	 vGiAoXBie76XA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 6uKfiWiJYN-E; Tue, 28 Mar 2023 20:16:16 +0000 (UTC)
+	with ESMTP id IQ8CBaaI7dXp; Tue, 28 Mar 2023 20:16:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E350F4071B;
-	Tue, 28 Mar 2023 20:16:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E350F4071B
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 995AB1BF3C4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:11 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 390324005F;
+	Tue, 28 Mar 2023 20:16:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 390324005F
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 30B131BF3C4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7FCA16142A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7FCA16142A
+ by smtp4.osuosl.org (Postfix) with ESMTP id 16D3940059
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 16D3940059
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id jLxcvzUFWquL for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Mar 2023 20:16:10 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Z0THKo8njSUh for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Mar 2023 20:16:16 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 862D660768
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 20A5640862
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 862D660768
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:10 +0000 (UTC)
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 20A5640862
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:15 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-645-3VB9WbnRMUWoRxrLLCTkdQ-1; Tue, 28 Mar 2023 16:16:07 -0400
-X-MC-Unique: 3VB9WbnRMUWoRxrLLCTkdQ-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
- [10.11.54.7])
+ us-mta-608-6nCBLlI-NnamgUygy5UhhA-1; Tue, 28 Mar 2023 16:16:10 -0400
+X-MC-Unique: 6nCBLlI-NnamgUygy5UhhA-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.8])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5E042185A78F;
- Tue, 28 Mar 2023 20:16:04 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 82363280BF64;
+ Tue, 28 Mar 2023 20:16:09 +0000 (UTC)
 Received: from firesoul.localdomain (unknown [10.45.242.4])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 22D7614171BD;
- Tue, 28 Mar 2023 20:16:04 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 30AC8C15BA0;
+ Tue, 28 Mar 2023 20:16:09 +0000 (UTC)
 Received: from [10.1.1.1] (localhost [IPv6:::1])
- by firesoul.localdomain (Postfix) with ESMTP id 44BBF30736C72;
- Tue, 28 Mar 2023 22:16:03 +0200 (CEST)
+ by firesoul.localdomain (Postfix) with ESMTP id 530E130736C72;
+ Tue, 28 Mar 2023 22:16:08 +0200 (CEST)
 From: Jesper Dangaard Brouer <brouer@redhat.com>
 To: bpf@vger.kernel.org
-Date: Tue, 28 Mar 2023 22:16:03 +0200
-Message-ID: <168003456323.3027256.2973825783029955917.stgit@firesoul>
+Date: Tue, 28 Mar 2023 22:16:08 +0200
+Message-ID: <168003456829.3027256.12371018603759735483.stgit@firesoul>
 In-Reply-To: <168003451121.3027256.13000250073816770554.stgit@firesoul>
 References: <168003451121.3027256.13000250073816770554.stgit@firesoul>
 User-Agent: StGit/1.4
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.7
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.8
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1680034569;
+ s=mimecast20190719; t=1680034575;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=vdLO4Y9b3BsmrzeQcmRa2KtBaNDjkTa0G8yC7xzEAHs=;
- b=DzOu8/u/NJayIlttqPd5TkP1eDxvJ6YXw7/S5A0dDExH9ebUCdQXrUCh2I4KxgfygY3sd6
- Ac5oWkxYXNWWMP+UUuB1CeWJ4rObIMwjpln5XasdbQlf8bTztsvPB8AklmJx80q1KbEBsg
- aZ+vy3UN17abCPA6AB5lXWlUkGGarIQ=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=5g4mrXl41+GFKanErFDMONuv//RKV9fef6DjptIgCzo=;
+ b=Y1LM2AEQRAjnADMJhs0LprU/paR6mfnHL4yeIc4GQZZHSRClFu6CSqrVHmygGe8XSl0Lms
+ q0o9D5NADUXlmR+LeQnhVJVfk65pKI7q8CKYVkRpQC9X3sJTlWJetXOiDEmn31Eyj0cUsv
+ McX3CBUPN/OomEmkt9RTKuPmnQJlowM=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=DzOu8/u/
-Subject: [Intel-wired-lan] [PATCH bpf RFC 2/4] igc: bpf_xdp_metadata_rx_hash
- return xdp rss hash type
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Y1LM2AEQ
+Subject: [Intel-wired-lan] [PATCH bpf RFC 3/4] veth:
+ bpf_xdp_metadata_rx_hash return xdp rss hash type
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,54 +114,35 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Update API for bpf_xdp_metadata_rx_hash() by returning xdp rss hash type
-via mapping table.
+Update API for bpf_xdp_metadata_rx_hash() by returning xdp rss hash type.
+
+The veth driver currently only support XDP-hints based on SKB code path.
+The SKB have lost information about the RSS hash type, by compressing
+the information down to a single bitfield skb->l4_hash, that only knows
+if this was a L4 hash value.
+
+In preparation for veth, the xdp_rss_hash_type have an L4 indication
+bit that allow us to return a meaningful L4 indication when working
+with SKB based packets.
 
 Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
 ---
- drivers/net/ethernet/intel/igc/igc_main.c |   22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+ drivers/net/veth.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index b382476f347c..a14f0597524a 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6496,6 +6496,26 @@ static int igc_xdp_rx_timestamp(const struct xdp_md *_ctx, u64 *timestamp)
- 	return -ENODATA;
- }
+diff --git a/drivers/net/veth.c b/drivers/net/veth.c
+index 046461ee42ea..6b1084e39b25 100644
+--- a/drivers/net/veth.c
++++ b/drivers/net/veth.c
+@@ -1624,7 +1624,7 @@ static int veth_xdp_rx_hash(const struct xdp_md *ctx, u32 *hash)
+ 		return -ENODATA;
  
-+/* Mapping HW RSS Type to enum xdp_rss_hash_type */
-+enum xdp_rss_hash_type igc_xdp_rss_type[IGC_RSS_TYPE_MAX_TABLE] = {
-+	[IGC_RSS_TYPE_NO_HASH]		= XDP_RSS_TYPE_L2,
-+	[IGC_RSS_TYPE_HASH_TCP_IPV4]	= XDP_RSS_TYPE_L4_IPV4_TCP,
-+	[IGC_RSS_TYPE_HASH_IPV4]	= XDP_RSS_TYPE_L3_IPV4,
-+	[IGC_RSS_TYPE_HASH_TCP_IPV6]	= XDP_RSS_TYPE_L4_IPV6_TCP,
-+	[IGC_RSS_TYPE_HASH_IPV6_EX]	= XDP_RSS_TYPE_L3_IPV6_EX,
-+	[IGC_RSS_TYPE_HASH_IPV6]	= XDP_RSS_TYPE_L3_IPV6,
-+	[IGC_RSS_TYPE_HASH_TCP_IPV6_EX] = XDP_RSS_TYPE_L4_IPV6_TCP_EX,
-+	[IGC_RSS_TYPE_HASH_UDP_IPV4]	= XDP_RSS_TYPE_L4_IPV4_UDP,
-+	[IGC_RSS_TYPE_HASH_UDP_IPV6]	= XDP_RSS_TYPE_L4_IPV6_UDP,
-+	[IGC_RSS_TYPE_HASH_UDP_IPV6_EX] = XDP_RSS_TYPE_L4_IPV6_UDP_EX,
-+	[10] = XDP_RSS_TYPE_NONE, /* RSS Type above 9 "Reserved" by HW  */
-+	[11] = XDP_RSS_TYPE_NONE, /* keep array sized for SW bit-mask   */
-+	[12] = XDP_RSS_TYPE_NONE, /* to handle future HW revisons       */
-+	[13] = XDP_RSS_TYPE_NONE,
-+	[14] = XDP_RSS_TYPE_NONE,
-+	[15] = XDP_RSS_TYPE_NONE,
-+};
-+
- static int igc_xdp_rx_hash(const struct xdp_md *_ctx, u32 *hash)
- {
- 	const struct igc_xdp_buff *ctx = (void *)_ctx;
-@@ -6505,7 +6525,7 @@ static int igc_xdp_rx_hash(const struct xdp_md *_ctx, u32 *hash)
- 
- 	*hash = le32_to_cpu(ctx->rx_desc->wb.lower.hi_dword.rss);
- 
+ 	*hash = skb_get_hash(_ctx->skb);
 -	return 0;
-+	return igc_xdp_rss_type[igc_rss_type(ctx->rx_desc)];
++	return _ctx->skb->l4_hash ? XDP_RSS_TYPE_L4_BIT : XDP_RSS_TYPE_NONE;
  }
  
- const struct xdp_metadata_ops igc_xdp_metadata_ops = {
+ static const struct net_device_ops veth_netdev_ops = {
 
 
 _______________________________________________
