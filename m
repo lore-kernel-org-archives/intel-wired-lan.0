@@ -1,95 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59FC8C6FD18
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Mar 2023 12:48:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCEAEC76196
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Mar 2023 14:39:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E7B60401DD;
-	Tue, 28 Mar 2023 12:48:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E7B60401DD
+	by smtp4.osuosl.org (Postfix) with ESMTP id 539C6417DA;
+	Tue, 28 Mar 2023 14:39:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 539C6417DA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680007684;
-	bh=Po8vLBEGOgmlpMBQhnV+L/aBumZHetnQqbOxRSUsTuw=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=cWCRwGqwc4eNdCqfyUANKEiBtjmf4BuD7T3uTD8irFP4wgz7XKu7Ou60lW3TDHiBP
-	 VOFjx/0gM7rwLpXIgfQ+zNOYCzZXnQUU8lRFB773bz5NzNbSnx6uwP3uxNTdRjH6Fl
-	 Rii0OQdnnGbVfL8Fw99dC1plA3xxCCHGdG4ANZdGze7TBCbqY31uG5j+At3tBGqNaA
-	 tnH/A7rrj/2nOPA9PLq0Hvby4vHUlaHFOr90Sfdad0smXb76QQmJoKwNADZY39G3uM
-	 YW4k4yTVTtON1WEQ6xaM31YteTEBhTqQUn01vp2gmmFeuj7I4BojxcbPV5YJQ0O+3o
-	 9DGr7wxwzAUkA==
+	s=default; t=1680014350;
+	bh=EozeJWPjvZtrwG9gWdBzybV/Jeb7Wry6lsz9y1W69Tk=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=fPWO5mQdOeaGHzdFpmXLJzDerYrzbh/9495QKkk59l7HgFgRC9HYG3Vfp/QDo6Ccf
+	 WFWlYXULCvxd5Cli4UqqOgGkJrCpgQ4Y4dVAGh4L8GEPjtXyZXAdeb+UuVJXa0NQMT
+	 LRQ2hr/nGZ9L19QQGalEe22ZVThufjhL30NQ6yQ6Hdxq8bdU+Lzx5G0MjsARToXih2
+	 bCw6iBHSZqLAJF4LUWmODOcCYcJI+rBWVTdAtBaIp6mYjvH4CVqFw12bd0xdVOM1qP
+	 OlVDZcqjJV0x/qzouKWkAm/EuTANK7xb2cIMZVynlO7UH/DZztTXWvqhNM1vHUMvrK
+	 YPk02qgZD+X4w==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id deK3MKXejJ2F; Tue, 28 Mar 2023 12:48:04 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id R9vTprQQO1R5; Tue, 28 Mar 2023 14:39:09 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id DDE9A4038B;
-	Tue, 28 Mar 2023 12:48:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DDE9A4038B
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 8955D1BF429
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 12:48:02 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0D8224187A;
+	Tue, 28 Mar 2023 14:39:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0D8224187A
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 82B6C1BF3C6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 14:39:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5F263401DD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 12:48:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5F263401DD
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5AAD861382
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 14:39:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5AAD861382
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 41PON0tX1AQN for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Mar 2023 12:48:01 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 278DC4038B
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 278DC4038B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 12:48:01 +0000 (UTC)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by smtp-out1.suse.de (Postfix) with ESMTPS id E786F21A1E;
- Tue, 28 Mar 2023 12:40:33 +0000 (UTC)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
- (No client certificate requested)
- by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D2B631390D;
- Tue, 28 Mar 2023 12:40:33 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
- by imap2.suse-dmz.suse.de with ESMTPSA id +CQBM0HgImTWOgAAMHmgww
- (envelope-from <tiwai@suse.de>); Tue, 28 Mar 2023 12:40:33 +0000
-Date: Tue, 28 Mar 2023 14:40:33 +0200
-Message-ID: <87jzz13v7i.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=suse.de; s=susede2_rsa; 
- t=1680007233; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type;
- bh=vqqlZblvF32Oc3IEsXbE37GU4gfQk/3dHtRa1C6odSg=;
- b=xHt7RMHDZj9iis1BjDPp6W38V2IQqat+XbSH3pDFr3Q8lMsHhl6OUz4BbYU3sA+TAgW0yZ
- Ggu1w7SxsIRtvWZzMX9xKCfrTnUEVCcHQngs3zUc4bEE5jkLd/mrFq9nGCWDKHC53Blgvx
- aRpaNBKDFvI7RbL9f17QXIRbUb1qFSI=
-X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=suse.de; s=susede2_ed25519; t=1680007233;
- h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
- mime-version:mime-version:content-type:content-type;
- bh=vqqlZblvF32Oc3IEsXbE37GU4gfQk/3dHtRa1C6odSg=;
- b=o5Jo4JPHBesRVld4amUIZZUpKqjp/6hduT5zW2BbvcHXU86DH/woDQc6NLpc9eMdEXszql
- bDnM1A3n/EFvo3DQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de
- header.a=rsa-sha256 header.s=susede2_rsa header.b=xHt7RMHD; 
- dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256
- header.s=susede2_ed25519 header.b=o5Jo4JPH
-Subject: [Intel-wired-lan] [REGRESSION] e1000e probe/link detection fails
- since 6.2 kernel
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id knhgoIITYuA6 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Mar 2023 14:39:05 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2680D60A6A
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2680D60A6A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 14:39:04 +0000 (UTC)
+Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id DF99261CC457B;
+ Tue, 28 Mar 2023 16:39:01 +0200 (CEST)
+Message-ID: <652a9a96-f499-f31f-2a55-3c80b6ac9c75@molgen.mpg.de>
+Date: Tue, 28 Mar 2023 16:39:01 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Content-Language: en-US
+To: Takashi Iwai <tiwai@suse.de>
+References: <87jzz13v7i.wl-tiwai@suse.de>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <87jzz13v7i.wl-tiwai@suse.de>
+Subject: Re: [Intel-wired-lan] [REGRESSION] e1000e probe/link detection
+ fails since 6.2 kernel
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,61 +77,66 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- regressions@lists.linux.dev, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: regressions@lists.linux.dev, netdev@vger.kernel.org,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi,
-
-we've got a regression report for e1000e device on Lenovo T460p since
-6.2 kernel (with openSUSE Tumbleweed).  The details are found in
-  https://bugzilla.opensuse.org/show_bug.cgi?id=1209254
-
-It seems that the driver can't detect the 1000Mbps but only 10/100Mbps
-link, eventually making the device unusable.
-
-On 6.1.12:
-[    5.119117] e1000e: Intel(R) PRO/1000 Network Driver
-[    5.119120] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
-[    5.121754] e1000e 0000:00:1f.6: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
-[    7.905526] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): Failed to disable ULP
-[    7.988925] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): registered PHC clock
-[    8.069935] e1000e 0000:00:1f.6 eth0: (PCI Express:2.5GT/s:Width x1) 50:7b:9d:cf:13:43
-[    8.069942] e1000e 0000:00:1f.6 eth0: Intel(R) PRO/1000 Network Connection
-[    8.072691] e1000e 0000:00:1f.6 eth0: MAC: 12, PHY: 12, PBA No: 1000FF-0FF
-[   11.643919] e1000e 0000:00:1f.6 eth0: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
-[   15.437437] e1000e 0000:00:1f.6 eth0: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: None
-
-On 6.2.4:
-[    4.344140] e1000e: Intel(R) PRO/1000 Network Driver
-[    4.344143] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
-[    4.344933] e1000e 0000:00:1f.6: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
-[    7.113334] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): Failed to disable ULP
-[    7.201715] e1000e 0000:00:1f.6 0000:00:1f.6 (uninitialized): registered PHC clock
-[    7.284038] e1000e 0000:00:1f.6 eth0: (PCI Express:2.5GT/s:Width x1) 50:7b:9d:cf:13:43
-[    7.284044] e1000e 0000:00:1f.6 eth0: Intel(R) PRO/1000 Network Connection
-[    7.284125] e1000e 0000:00:1f.6 eth0: MAC: 12, PHY: 12, PBA No: 1000FF-0FF
-[   10.897973] e1000e 0000:00:1f.6 eth0: NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
-[   10.897977] e1000e 0000:00:1f.6 eth0: 10/100 speed: disabling TSO
-[   14.710059] e1000e 0000:00:1f.6 eth0: NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
-[   14.710064] e1000e 0000:00:1f.6 eth0: 10/100 speed: disabling TSO
-[   59.894807] e1000e 0000:00:1f.6 eth0: NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
-[   59.894812] e1000e 0000:00:1f.6 eth0: 10/100 speed: disabling TSO
-[   63.808662] e1000e 0000:00:1f.6 eth0: NIC Link is Up 10 Mbps Full Duplex, Flow Control: None
-[   63.808668] e1000e 0000:00:1f.6 eth0: 10/100 speed: disabling TSO
-
-The same problem persists with 6.3-rc3.
-
-Can you guys check what can go wrong, or if there is a fix?
-
-
-Thanks!
-
-Takashi
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RGVhciBUYWthc2hpLAoKCkFtIDI4LjAzLjIzIHVtIDE0OjQwIHNjaHJpZWIgVGFrYXNoaSBJd2Fp
+OgoKPiB3ZSd2ZSBnb3QgYSByZWdyZXNzaW9uIHJlcG9ydCBmb3IgZTEwMDBlIGRldmljZSBvbiBM
+ZW5vdm8gVDQ2MHAgc2luY2UKPiA2LjIga2VybmVsICh3aXRoIG9wZW5TVVNFIFR1bWJsZXdlZWQp
+LiAgVGhlIGRldGFpbHMgYXJlIGZvdW5kIGluCj4gICAgaHR0cHM6Ly9idWd6aWxsYS5vcGVuc3Vz
+ZS5vcmcvc2hvd19idWcuY2dpP2lkPTEyMDkyNTQKClRoYW5rIHlvdSBmb3IgZm9yd2FyZGluZyB0
+aGUgcmVwb3J0LgoKPiBJdCBzZWVtcyB0aGF0IHRoZSBkcml2ZXIgY2FuJ3QgZGV0ZWN0IHRoZSAx
+MDAwTWJwcyBidXQgb25seSAxMC8xMDBNYnBzCj4gbGluaywgZXZlbnR1YWxseSBtYWtpbmcgdGhl
+IGRldmljZSB1bnVzYWJsZS4KPiAKPiBPbiA2LjEuMTI6Cj4gWyAgICA1LjExOTExN10gZTEwMDBl
+OiBJbnRlbChSKSBQUk8vMTAwMCBOZXR3b3JrIERyaXZlcgo+IFsgICAgNS4xMTkxMjBdIGUxMDAw
+ZTogQ29weXJpZ2h0KGMpIDE5OTkgLSAyMDE1IEludGVsIENvcnBvcmF0aW9uLgo+IFsgICAgNS4x
+MjE3NTRdIGUxMDAwZSAwMDAwOjAwOjFmLjY6IEludGVycnVwdCBUaHJvdHRsaW5nIFJhdGUgKGlu
+dHMvc2VjKSBzZXQgdG8gZHluYW1pYyBjb25zZXJ2YXRpdmUgbW9kZQo+IFsgICAgNy45MDU1MjZd
+IGUxMDAwZSAwMDAwOjAwOjFmLjYgMDAwMDowMDoxZi42ICh1bmluaXRpYWxpemVkKTogRmFpbGVk
+IHRvIGRpc2FibGUgVUxQCj4gWyAgICA3Ljk4ODkyNV0gZTEwMDBlIDAwMDA6MDA6MWYuNiAwMDAw
+OjAwOjFmLjYgKHVuaW5pdGlhbGl6ZWQpOiByZWdpc3RlcmVkIFBIQyBjbG9jawo+IFsgICAgOC4w
+Njk5MzVdIGUxMDAwZSAwMDAwOjAwOjFmLjYgZXRoMDogKFBDSSBFeHByZXNzOjIuNUdUL3M6V2lk
+dGggeDEpIDUwOjdiOjlkOmNmOjEzOjQzCj4gWyAgICA4LjA2OTk0Ml0gZTEwMDBlIDAwMDA6MDA6
+MWYuNiBldGgwOiBJbnRlbChSKSBQUk8vMTAwMCBOZXR3b3JrIENvbm5lY3Rpb24KPiBbICAgIDgu
+MDcyNjkxXSBlMTAwMGUgMDAwMDowMDoxZi42IGV0aDA6IE1BQzogMTIsIFBIWTogMTIsIFBCQSBO
+bzogMTAwMEZGLTBGRgo+IFsgICAxMS42NDM5MTldIGUxMDAwZSAwMDAwOjAwOjFmLjYgZXRoMDog
+TklDIExpbmsgaXMgVXAgMTAwMCBNYnBzIEZ1bGwgRHVwbGV4LCBGbG93IENvbnRyb2w6IE5vbmUK
+PiBbICAgMTUuNDM3NDM3XSBlMTAwMGUgMDAwMDowMDoxZi42IGV0aDA6IE5JQyBMaW5rIGlzIFVw
+IDEwMDAgTWJwcyBGdWxsIER1cGxleCwgRmxvdyBDb250cm9sOiBOb25lCj4gCj4gT24gNi4yLjQ6
+Cj4gWyAgICA0LjM0NDE0MF0gZTEwMDBlOiBJbnRlbChSKSBQUk8vMTAwMCBOZXR3b3JrIERyaXZl
+cgo+IFsgICAgNC4zNDQxNDNdIGUxMDAwZTogQ29weXJpZ2h0KGMpIDE5OTkgLSAyMDE1IEludGVs
+IENvcnBvcmF0aW9uLgo+IFsgICAgNC4zNDQ5MzNdIGUxMDAwZSAwMDAwOjAwOjFmLjY6IEludGVy
+cnVwdCBUaHJvdHRsaW5nIFJhdGUgKGludHMvc2VjKSBzZXQgdG8gZHluYW1pYyBjb25zZXJ2YXRp
+dmUgbW9kZQo+IFsgICAgNy4xMTMzMzRdIGUxMDAwZSAwMDAwOjAwOjFmLjYgMDAwMDowMDoxZi42
+ICh1bmluaXRpYWxpemVkKTogRmFpbGVkIHRvIGRpc2FibGUgVUxQCj4gWyAgICA3LjIwMTcxNV0g
+ZTEwMDBlIDAwMDA6MDA6MWYuNiAwMDAwOjAwOjFmLjYgKHVuaW5pdGlhbGl6ZWQpOiByZWdpc3Rl
+cmVkIFBIQyBjbG9jawo+IFsgICAgNy4yODQwMzhdIGUxMDAwZSAwMDAwOjAwOjFmLjYgZXRoMDog
+KFBDSSBFeHByZXNzOjIuNUdUL3M6V2lkdGggeDEpIDUwOjdiOjlkOmNmOjEzOjQzCj4gWyAgICA3
+LjI4NDA0NF0gZTEwMDBlIDAwMDA6MDA6MWYuNiBldGgwOiBJbnRlbChSKSBQUk8vMTAwMCBOZXR3
+b3JrIENvbm5lY3Rpb24KPiBbICAgIDcuMjg0MTI1XSBlMTAwMGUgMDAwMDowMDoxZi42IGV0aDA6
+IE1BQzogMTIsIFBIWTogMTIsIFBCQSBObzogMTAwMEZGLTBGRgo+IFsgICAxMC44OTc5NzNdIGUx
+MDAwZSAwMDAwOjAwOjFmLjYgZXRoMDogTklDIExpbmsgaXMgVXAgMTAgTWJwcyBGdWxsIER1cGxl
+eCwgRmxvdyBDb250cm9sOiBOb25lCj4gWyAgIDEwLjg5Nzk3N10gZTEwMDBlIDAwMDA6MDA6MWYu
+NiBldGgwOiAxMC8xMDAgc3BlZWQ6IGRpc2FibGluZyBUU08KPiBbICAgMTQuNzEwMDU5XSBlMTAw
+MGUgMDAwMDowMDoxZi42IGV0aDA6IE5JQyBMaW5rIGlzIFVwIDEwIE1icHMgRnVsbCBEdXBsZXgs
+IEZsb3cgQ29udHJvbDogTm9uZQo+IFsgICAxNC43MTAwNjRdIGUxMDAwZSAwMDAwOjAwOjFmLjYg
+ZXRoMDogMTAvMTAwIHNwZWVkOiBkaXNhYmxpbmcgVFNPCj4gWyAgIDU5Ljg5NDgwN10gZTEwMDBl
+IDAwMDA6MDA6MWYuNiBldGgwOiBOSUMgTGluayBpcyBVcCAxMCBNYnBzIEZ1bGwgRHVwbGV4LCBG
+bG93IENvbnRyb2w6IE5vbmUKPiBbICAgNTkuODk0ODEyXSBlMTAwMGUgMDAwMDowMDoxZi42IGV0
+aDA6IDEwLzEwMCBzcGVlZDogZGlzYWJsaW5nIFRTTwo+IFsgICA2My44MDg2NjJdIGUxMDAwZSAw
+MDAwOjAwOjFmLjYgZXRoMDogTklDIExpbmsgaXMgVXAgMTAgTWJwcyBGdWxsIER1cGxleCwgRmxv
+dyBDb250cm9sOiBOb25lCj4gWyAgIDYzLjgwODY2OF0gZTEwMDBlIDAwMDA6MDA6MWYuNiBldGgw
+OiAxMC8xMDAgc3BlZWQ6IGRpc2FibGluZyBUU08KPiAKPiBUaGUgc2FtZSBwcm9ibGVtIHBlcnNp
+c3RzIHdpdGggNi4zLXJjMy4KPiAKPiBDYW4geW91IGd1eXMgY2hlY2sgd2hhdCBjYW4gZ28gd3Jv
+bmcsIG9yIGlmIHRoZXJlIGlzIGEgZml4PwoKRG9lcyBvcGVuU1VTRSBUdW1ibGV3ZWVkIG1ha2Ug
+aXQgZWFzeSB0byBiaXNlY3QgdGhlIHJlZ3Jlc3Npb24gYXQgbGVhc3QgCm9uIOKAnHJjIGxldmVs
+4oCdPyBJdCBiZSBncmVhdCBpZiBuYXJyb3cgaXQgbW9yZSBkb3duLCBzbyB3ZSBrbm93IGl0IGZv
+ciAKZXhhbXBsZSByZWdyZXNzZWQgaW4gNi4yLXJjNy4KCgpLaW5kIHJlZ2FyZHMsCgpQYXVsCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLXdpcmVk
+LWxhbiBtYWlsaW5nIGxpc3QKSW50ZWwtd2lyZWQtbGFuQG9zdW9zbC5vcmcKaHR0cHM6Ly9saXN0
+cy5vc3Vvc2wub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtd2lyZWQtbGFuCg==
