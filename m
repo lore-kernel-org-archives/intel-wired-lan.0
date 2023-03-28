@@ -4,91 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AA39C77B6E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Mar 2023 20:16:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F0EBC761A6
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 28 Mar 2023 20:16:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A3E6E40059;
-	Tue, 28 Mar 2023 20:16:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A3E6E40059
+	by smtp4.osuosl.org (Postfix) with ESMTP id CF02B40862;
+	Tue, 28 Mar 2023 20:16:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CF02B40862
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680034581;
-	bh=6yIPT+L3+2La0hjFzuPNbScsPnmmevejRHk8sIrQWdY=;
+	s=default; t=1680034586;
+	bh=K4QNk1ZMo7StwXiWj5jTiO/fhWdL5VWK02+n1MS0lhs=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=umBHIyBbWVX81IGW2eNLNrLB2dOCvjXc1l7TZXwMHIqY9NN4mw0bkL7s+cFlre76G
-	 c+AqLMpBST49geAu1t9FlqgdDsLMqvsip3tTbgw1Z3VXFAGjgNMY/ZRAjdvtD6txDI
-	 grTiZtMHs3xZN4+DyH8AoqwVOiv5ZP8jPPQrKfvt2Mc6LACtQbczoGOT0nGQasY/vU
-	 prLsKpSFlg6aG7D4FnS3wACn42nLoLjJrh+o897XqYV/0NHytHcghDXw+vuz3sWUIY
-	 lAgKvyEOKmmhYNdqJpvWHS2MAQIk3B4Uruw0aor46VlStG9qTWiIQkmbSsh8GiuVBD
-	 vGiAoXBie76XA==
+	b=EvwUzYlCDl55dLGpuC0Ea/zYg7bXvdyk6yG7TH/A8wFtYS05o3KzYJ3YCgW6RKJDV
+	 i7pVIy/S+sIxTXORAGXZhB+7FYd4doJ2f1d2H0kHBDYBxlrlKLiTiny6UnTMpVfCE/
+	 gzIFnDQIiGmEjNjktoZi0PfkJmKYjTvHUXYYRPiuPeuk+voiSZTl08UB6Ad08kNBh4
+	 aWmEPGMu/yyIayLKUYUnv9bkKnMnQ9rqjF7eM5pj/WXU2lWVyLe5CA7jmj/CWgNpjg
+	 254aYFcYFK/uxgHEEpztcDuSgX7ktwB+7bvZC4Nl6iiq4kZZLbZuwZkH3eXcL7rsAy
+	 i4O/xIA/FW1GA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IQ8CBaaI7dXp; Tue, 28 Mar 2023 20:16:20 +0000 (UTC)
+	with ESMTP id kwW2n92dFOcc; Tue, 28 Mar 2023 20:16:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 390324005F;
-	Tue, 28 Mar 2023 20:16:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 390324005F
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 30B131BF3C4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6706A4071B;
+	Tue, 28 Mar 2023 20:16:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6706A4071B
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 69E871BF3C4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 16D3940059
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 16D3940059
+ by smtp2.osuosl.org (Postfix) with ESMTP id 500B6400DD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 500B6400DD
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Z0THKo8njSUh for <intel-wired-lan@lists.osuosl.org>;
- Tue, 28 Mar 2023 20:16:16 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id sY0VnkwTM4qy for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 28 Mar 2023 20:16:23 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 20A5640862
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6B71B400D9
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 20A5640862
- for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:15 +0000 (UTC)
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 6B71B400D9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 28 Mar 2023 20:16:23 +0000 (UTC)
 Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
  [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-608-6nCBLlI-NnamgUygy5UhhA-1; Tue, 28 Mar 2023 16:16:10 -0400
-X-MC-Unique: 6nCBLlI-NnamgUygy5UhhA-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com
- [10.11.54.8])
+ us-mta-671-qEp2KWvYOquJdgk6GqCUdQ-1; Tue, 28 Mar 2023 16:16:17 -0400
+X-MC-Unique: qEp2KWvYOquJdgk6GqCUdQ-1
+Received: from smtp.corp.redhat.com (int-mx09.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.9])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 82363280BF64;
- Tue, 28 Mar 2023 20:16:09 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 9B01B3C1068F;
+ Tue, 28 Mar 2023 20:16:14 +0000 (UTC)
 Received: from firesoul.localdomain (unknown [10.45.242.4])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 30AC8C15BA0;
- Tue, 28 Mar 2023 20:16:09 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 3F9F4492C13;
+ Tue, 28 Mar 2023 20:16:14 +0000 (UTC)
 Received: from [10.1.1.1] (localhost [IPv6:::1])
- by firesoul.localdomain (Postfix) with ESMTP id 530E130736C72;
- Tue, 28 Mar 2023 22:16:08 +0200 (CEST)
+ by firesoul.localdomain (Postfix) with ESMTP id 6170330736C72;
+ Tue, 28 Mar 2023 22:16:13 +0200 (CEST)
 From: Jesper Dangaard Brouer <brouer@redhat.com>
 To: bpf@vger.kernel.org
-Date: Tue, 28 Mar 2023 22:16:08 +0200
-Message-ID: <168003456829.3027256.12371018603759735483.stgit@firesoul>
+Date: Tue, 28 Mar 2023 22:16:13 +0200
+Message-ID: <168003457335.3027256.7577085917635608718.stgit@firesoul>
 In-Reply-To: <168003451121.3027256.13000250073816770554.stgit@firesoul>
 References: <168003451121.3027256.13000250073816770554.stgit@firesoul>
 User-Agent: StGit/1.4
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.8
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.9
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1680034575;
+ s=mimecast20190719; t=1680034582;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=5g4mrXl41+GFKanErFDMONuv//RKV9fef6DjptIgCzo=;
- b=Y1LM2AEQRAjnADMJhs0LprU/paR6mfnHL4yeIc4GQZZHSRClFu6CSqrVHmygGe8XSl0Lms
- q0o9D5NADUXlmR+LeQnhVJVfk65pKI7q8CKYVkRpQC9X3sJTlWJetXOiDEmn31Eyj0cUsv
- McX3CBUPN/OomEmkt9RTKuPmnQJlowM=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=J7UgUDHgyEUlKSNxXIij1X+qewlo91D1CaFgRDEtS24=;
+ b=EtUVhuXd1kF/QIPExLkuthNiQiwmhoBydTxW7RS/7yxo68SLdc3Gxvl7os3ZfHq/Ae7ssc
+ 1o3xWXKx3k25+gDa2RHWhBX0P5KnamxdVm4v3Om51E9j93w4R1FnLz8rdop7rA2ju1nVYd
+ VYIaH/iyd8hz3rbA94Ot7pr4Z16AFrg=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Y1LM2AEQ
-Subject: [Intel-wired-lan] [PATCH bpf RFC 3/4] veth:
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=EtUVhuXd
+Subject: [Intel-wired-lan] [PATCH bpf RFC 4/4] mlx5:
  bpf_xdp_metadata_rx_hash return xdp rss hash type
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -114,35 +114,169 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Update API for bpf_xdp_metadata_rx_hash() by returning xdp rss hash type.
+Update API for bpf_xdp_metadata_rx_hash() by returning xdp rss hash type
+via mapping table.
 
-The veth driver currently only support XDP-hints based on SKB code path.
-The SKB have lost information about the RSS hash type, by compressing
-the information down to a single bitfield skb->l4_hash, that only knows
-if this was a L4 hash value.
+The mlx5 hardware can also identify and RSS hash IPSEC.  This indicate
+hash includes SPI (Security Parameters Index) as part of IPSEC hash.
 
-In preparation for veth, the xdp_rss_hash_type have an L4 indication
-bit that allow us to return a meaningful L4 indication when working
-with SKB based packets.
+Extend xdp core enum xdp_rss_hash_type with IPSEC hash type.
 
 Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
 ---
- drivers/net/veth.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c |   61 +++++++++++++++++++++-
+ include/linux/mlx5/device.h                      |   14 ++++-
+ include/net/xdp.h                                |    3 +
+ 3 files changed, 74 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/veth.c b/drivers/net/veth.c
-index 046461ee42ea..6b1084e39b25 100644
---- a/drivers/net/veth.c
-+++ b/drivers/net/veth.c
-@@ -1624,7 +1624,7 @@ static int veth_xdp_rx_hash(const struct xdp_md *ctx, u32 *hash)
- 		return -ENODATA;
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+index c5dae48b7932..07bd70249c42 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en/xdp.c
+@@ -34,6 +34,7 @@
+ #include <net/xdp_sock_drv.h>
+ #include "en/xdp.h"
+ #include "en/params.h"
++#include <linux/bitfield.h>
  
- 	*hash = skb_get_hash(_ctx->skb);
--	return 0;
-+	return _ctx->skb->l4_hash ? XDP_RSS_TYPE_L4_BIT : XDP_RSS_TYPE_NONE;
+ int mlx5e_xdp_max_mtu(struct mlx5e_params *params, struct mlx5e_xsk_param *xsk)
+ {
+@@ -169,15 +170,71 @@ static int mlx5e_xdp_rx_timestamp(const struct xdp_md *ctx, u64 *timestamp)
+ 	return 0;
  }
  
- static const struct net_device_ops veth_netdev_ops = {
++/* Mapping HW RSS Type bits CQE_RSS_HTYPE_IP + CQE_RSS_HTYPE_L4 into 4-bits*/
++#define RSS_TYPE_MAX_TABLE	16 /* 4-bits max 16 entries */
++#define RSS_L4		GENMASK(1,0)
++#define RSS_L3		GENMASK(3,2) /* Same as CQE_RSS_HTYPE_IP */
++
++/* Valid combinations of CQE_RSS_HTYPE_IP + CQE_RSS_HTYPE_L4 sorted numerical */
++enum mlx5_rss_hash_type {
++	RSS_TYPE_NO_HASH	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IP_NONE)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_NONE)),
++	RSS_TYPE_L3_IPV4	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IPV4)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_NONE)),
++	RSS_TYPE_L4_IPV4_TCP	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IPV4)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_TCP)),
++	RSS_TYPE_L4_IPV4_UDP	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IPV4)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_UDP)),
++	RSS_TYPE_L4_IPV4_IPSEC	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IPV4)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_IPSEC)),
++	RSS_TYPE_L3_IPV6	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IPV6)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_NONE)),
++	RSS_TYPE_L4_IPV6_TCP	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IPV6)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_TCP)),
++	RSS_TYPE_L4_IPV6_UDP	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IPV6)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_UDP)),
++	RSS_TYPE_L4_IPV6_IPSEC	= (FIELD_PREP_CONST(RSS_L3, CQE_RSS_IPV6)| \
++				   FIELD_PREP_CONST(RSS_L4, CQE_RSS_L4_IPSEC)),
++} mlx5_rss_hash_type;
++
++/* The invalid combinations will simply return zero */
++static const enum xdp_rss_hash_type mlx5_xdp_rss_type[RSS_TYPE_MAX_TABLE] = {
++	[RSS_TYPE_NO_HASH]	= XDP_RSS_TYPE_NONE,
++	[1]			= XDP_RSS_TYPE_NONE, /* Implicit zero */
++	[2]			= XDP_RSS_TYPE_NONE, /* Implicit zero */
++	[3]			= XDP_RSS_TYPE_NONE, /* Implicit zero */
++	[RSS_TYPE_L3_IPV4]	= XDP_RSS_TYPE_L3_IPV4,
++	[RSS_TYPE_L4_IPV4_TCP]	= XDP_RSS_TYPE_L4_IPV4_TCP,
++	[RSS_TYPE_L4_IPV4_UDP]	= XDP_RSS_TYPE_L4_IPV4_UDP,
++	[RSS_TYPE_L4_IPV4_IPSEC]= XDP_RSS_TYPE_L4_IPV4_IPSEC,
++	[RSS_TYPE_L3_IPV6]	= XDP_RSS_TYPE_L3_IPV6,
++	[RSS_TYPE_L4_IPV6_TCP]	= XDP_RSS_TYPE_L4_IPV6_TCP,
++	[RSS_TYPE_L4_IPV6_UDP]  = XDP_RSS_TYPE_L4_IPV6_UDP,
++	[RSS_TYPE_L4_IPV6_IPSEC]= XDP_RSS_TYPE_L4_IPV6_IPSEC,
++	[12]			= XDP_RSS_TYPE_NONE, /* Implicit zero */
++	[13]			= XDP_RSS_TYPE_NONE, /* Implicit zero */
++	[14]			= XDP_RSS_TYPE_NONE, /* Implicit zero */
++	[15]			= XDP_RSS_TYPE_NONE, /* Implicit zero */
++};
++
+ static int mlx5e_xdp_rx_hash(const struct xdp_md *ctx, u32 *hash)
+ {
+ 	const struct mlx5e_xdp_buff *_ctx = (void *)ctx;
++	const struct mlx5_cqe64 *cqe = _ctx->cqe;
++	u32 hash_type, l4_type, ip_type, lookup;
+ 
+ 	if (unlikely(!(_ctx->xdp.rxq->dev->features & NETIF_F_RXHASH)))
+ 		return -ENODATA;
+ 
+-	*hash = be32_to_cpu(_ctx->cqe->rss_hash_result);
+-	return 0;
++	*hash = be32_to_cpu(cqe->rss_hash_result);
++
++	hash_type = cqe->rss_hash_type;
++	BUILD_BUG_ON(CQE_RSS_HTYPE_IP != RSS_L3); /* same mask */
++	ip_type = hash_type & CQE_RSS_HTYPE_IP;
++	l4_type = FIELD_GET(CQE_RSS_HTYPE_L4, hash_type);
++	lookup = ip_type | l4_type;
++
++	return mlx5_xdp_rss_type[lookup];
+ }
+ 
+ const struct xdp_metadata_ops mlx5e_xdp_metadata_ops = {
+diff --git a/include/linux/mlx5/device.h b/include/linux/mlx5/device.h
+index 71b06ebad402..27aa9ae10996 100644
+--- a/include/linux/mlx5/device.h
++++ b/include/linux/mlx5/device.h
+@@ -36,6 +36,7 @@
+ #include <linux/types.h>
+ #include <rdma/ib_verbs.h>
+ #include <linux/mlx5/mlx5_ifc.h>
++#include <linux/bitfield.h>
+ 
+ #if defined(__LITTLE_ENDIAN)
+ #define MLX5_SET_HOST_ENDIANNESS	0
+@@ -980,14 +981,23 @@ enum {
+ };
+ 
+ enum {
+-	CQE_RSS_HTYPE_IP	= 0x3 << 2,
++	CQE_RSS_HTYPE_IP	= GENMASK(3,2),
+ 	/* cqe->rss_hash_type[3:2] - IP destination selected for hash
+ 	 * (00 = none,  01 = IPv4, 10 = IPv6, 11 = Reserved)
+ 	 */
+-	CQE_RSS_HTYPE_L4	= 0x3 << 6,
++	CQE_RSS_IP_NONE		= 0x0,
++	CQE_RSS_IPV4		= 0x1,
++	CQE_RSS_IPV6		= 0x2,
++	CQE_RSS_RESERVED	= 0x3,
++
++	CQE_RSS_HTYPE_L4	= GENMASK(7,6),
+ 	/* cqe->rss_hash_type[7:6] - L4 destination selected for hash
+ 	 * (00 = none, 01 = TCP. 10 = UDP, 11 = IPSEC.SPI
+ 	 */
++	CQE_RSS_L4_NONE		= 0x0,
++	CQE_RSS_L4_TCP		= 0x1,
++	CQE_RSS_L4_UDP		= 0x2,
++	CQE_RSS_L4_IPSEC	= 0x3,
+ };
+ 
+ enum {
+diff --git a/include/net/xdp.h b/include/net/xdp.h
+index 63f462f5ea7f..962611d5bc02 100644
+--- a/include/net/xdp.h
++++ b/include/net/xdp.h
+@@ -429,16 +429,19 @@ enum xdp_rss_hash_type {
+ 	XDP_RSS_TYPE_L4_IPV4_TCP     = L4_BIT|FIELD_PREP_CONST(RSS_L4_IPV4, 1),
+ 	XDP_RSS_TYPE_L4_IPV4_UDP     = L4_BIT|FIELD_PREP_CONST(RSS_L4_IPV4, 2),
+ 	XDP_RSS_TYPE_L4_IPV4_SCTP    = L4_BIT|FIELD_PREP_CONST(RSS_L4_IPV4, 3),
++	XDP_RSS_TYPE_L4_IPV4_IPSEC   = L4_BIT|FIELD_PREP_CONST(RSS_L4_IPV4, 4),
+ 
+ 	XDP_RSS_TYPE_L4_IPV6_MASK    = RSS_L4_IPV6,
+ 	XDP_RSS_TYPE_L4_IPV6_TCP     = L4_BIT|FIELD_PREP_CONST(RSS_L4_IPV6, 1),
+ 	XDP_RSS_TYPE_L4_IPV6_UDP     = L4_BIT|FIELD_PREP_CONST(RSS_L4_IPV6, 2),
+ 	XDP_RSS_TYPE_L4_IPV6_SCTP    = L4_BIT|FIELD_PREP_CONST(RSS_L4_IPV6, 3),
++	XDP_RSS_TYPE_L4_IPV6_IPSEC   = L4_BIT|FIELD_PREP_CONST(RSS_L4_IPV6, 4),
+ 
+ 	XDP_RSS_TYPE_L4_IPV6_EX_MASK = L4_IPV6_EX_BIT,
+ 	XDP_RSS_TYPE_L4_IPV6_TCP_EX  = XDP_RSS_TYPE_L4_IPV6_TCP |L4_IPV6_EX_BIT,
+ 	XDP_RSS_TYPE_L4_IPV6_UDP_EX  = XDP_RSS_TYPE_L4_IPV6_UDP |L4_IPV6_EX_BIT,
+ 	XDP_RSS_TYPE_L4_IPV6_SCTP_EX = XDP_RSS_TYPE_L4_IPV6_SCTP|L4_IPV6_EX_BIT,
++	XDP_RSS_TYPE_L4_IPV6_IPSEC_EX= XDP_RSS_TYPE_L4_IPV6_IPSEC|L4_IPV6_EX_BIT,
+ };
+ #undef RSS_L3
+ #undef L4_BIT
 
 
 _______________________________________________
