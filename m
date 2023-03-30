@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C989FC761A6
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Mar 2023 17:08:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E736C761A6
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 30 Mar 2023 17:08:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 5FD7941EAF;
-	Thu, 30 Mar 2023 17:08:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5FD7941EAF
+	by smtp2.osuosl.org (Postfix) with ESMTP id E09FF41E8C;
+	Thu, 30 Mar 2023 17:08:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E09FF41E8C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680196086;
-	bh=SsspbTCOYI89k6vmr439x03C8ouejofShp6GXv/LKoQ=;
+	s=default; t=1680196098;
+	bh=kkTf5FidwqS0ZFJzCpL371B5OIiKRkgzon9BuSTKldI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Qf5/Fub1r5YDclv7I9j7q25JsCbhP/7zZJbd+AgZ588VprvGDVOpwA2c4jSVr0M44
-	 UAqHKJ7qNgBaVLJNVt84Q5Qzx+P7tfrxTEztxyCTb8uWSJlLVOutvQfKvJ10+DOUiO
-	 UQDUeqC7Q4Yfwzbgb95mRT1SuMKoeTcbz1WLK6j0wzfwVJ+ry67+9US79WPAzirklN
-	 GxpOqgWuJGGWI3u3bbHSRDVZkSErzWmMamju52NqTgbrRT60ay5JYVL+MWqk9Hf2wR
-	 hIZRhcVfswDBd+ObbKw9G8zsNDI1KlalJox+vhEK+uv3bfMpJbzGuS1jSpDIjBfSqB
-	 CEWwtfo+T1/5Q==
+	b=mACB/XrKeQKFCRrjbq5x4Dk6pomw1zosSs+O7RLi5bCiat/zmw9SawhzN1X2ha16N
+	 ksmSIpYX8VR8OJTWt7euOV4FOd4GSSk7a+43lHRFjdhpWBItjzyRpd6nNCGkbAmCzI
+	 plVvQF5GRU38A0ibuP16f41cZcMnRkkLMzrLI3+IaZRHzOjW+NThha9y4kCdfWqY6E
+	 hokOe9RbTPOkzm3LGNPoLjyAGRpbgc5qkg3+KnbMX9URHg+OndVmCaefxzOsg4kTrx
+	 2/b2Yj2/XgZif8spNa5HCCEHY74LNrUk1p7ZFIRcBVbHzqmq7RcFEe+a+8OiqRSgmY
+	 I/XrQQP/K6dVA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id onGPyT20Vg31; Thu, 30 Mar 2023 17:08:05 +0000 (UTC)
+	with ESMTP id HaznGY7l2R0D; Thu, 30 Mar 2023 17:08:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id DC10441EA7;
-	Thu, 30 Mar 2023 17:08:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DC10441EA7
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 6872A1BF3C8
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Mar 2023 17:08:02 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id BEB4041E8D;
+	Thu, 30 Mar 2023 17:08:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BEB4041E8D
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 0765A1BF3C8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Mar 2023 17:08:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4F4E961672
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Mar 2023 17:08:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4F4E961672
+ by smtp2.osuosl.org (Postfix) with ESMTP id D380941E8D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Mar 2023 17:08:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D380941E8D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id YXcWJjwAS68e for <intel-wired-lan@lists.osuosl.org>;
- Thu, 30 Mar 2023 17:08:01 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id OegJagMaBPPC for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 30 Mar 2023 17:08:15 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 998F46166D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F25F741E8C
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 998F46166D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Mar 2023 17:08:01 +0000 (UTC)
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id F25F741E8C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 30 Mar 2023 17:08:14 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-452-aug2f9xDNsKg0k9hF4gfzg-1; Thu, 30 Mar 2023 13:07:58 -0400
-X-MC-Unique: aug2f9xDNsKg0k9hF4gfzg-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com
- [10.11.54.1])
+ us-mta-261-7dlY1MtQN3CqUPOVkfBPlA-1; Thu, 30 Mar 2023 13:08:09 -0400
+X-MC-Unique: 7dlY1MtQN3CqUPOVkfBPlA-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.7])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C643A101A54F;
- Thu, 30 Mar 2023 17:07:56 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5895B3811F21;
+ Thu, 30 Mar 2023 17:08:07 +0000 (UTC)
 Received: from firesoul.localdomain (unknown [10.45.242.8])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 860244042AC0;
- Thu, 30 Mar 2023 17:07:56 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id EA01A14171C3;
+ Thu, 30 Mar 2023 17:08:06 +0000 (UTC)
 Received: from [10.1.1.1] (localhost [IPv6:::1])
- by firesoul.localdomain (Postfix) with ESMTP id E2D5430736C72;
- Thu, 30 Mar 2023 19:07:55 +0200 (CEST)
+ by firesoul.localdomain (Postfix) with ESMTP id 0CC0A30736C72;
+ Thu, 30 Mar 2023 19:08:06 +0200 (CEST)
 From: Jesper Dangaard Brouer <brouer@redhat.com>
 To: bpf@vger.kernel.org, Stanislav Fomichev <sdf@google.com>
-Date: Thu, 30 Mar 2023 19:07:55 +0200
-Message-ID: <168019607588.3557870.8079404138352729694.stgit@firesoul>
+Date: Thu, 30 Mar 2023 19:08:06 +0200
+Message-ID: <168019608600.3557870.7120119859607204078.stgit@firesoul>
 In-Reply-To: <168019602958.3557870.9960387532660882277.stgit@firesoul>
 References: <168019602958.3557870.9960387532660882277.stgit@firesoul>
 User-Agent: StGit/1.4
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.1
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.7
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1680196080;
+ s=mimecast20190719; t=1680196094;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=NZoFlTLlLEFnWNA/e5RUGygzU5KPyB6B2U1PTeQjWe4=;
- b=VGnkd3e/u9oFxYtGAgfw48qiLlsYSoYG4d6P5SKUBc+/y5wdiBdOO4iuxH2JmkxFWYXsPE
- JrKRUE484oQUYahNAS0EX1GYQC79XogZ3W7S/LTYxUL04+EglxP4bQ4bsBnhcUG5bXKnLy
- VMwAYpVIST02PtsBN5yfChaI253TUj0=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=bSAIg+VQz7pDyr1tmWltn+wlC+zEEhL6e8qNwdj8hqQ=;
+ b=Sa+a1K+AHmq6iYDheoFwtmYFXhC2//YRBDmvWK11MavqayKxmIAebusKxqccwa7esI/k24
+ jArAGFN0NjwhFfH1TtQIuFpisqZZ18hIPhpvf1BR08YFL/6EHsJ1M/MNYEZlA3wQRy3foS
+ /1Sg5ivqflLcPbDC/3Io6Wd9i0or2ec=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=VGnkd3e/
-Subject: [Intel-wired-lan] [PATCH bpf RFC-V3 3/5] veth:
- bpf_xdp_metadata_rx_hash add xdp rss hash type
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Sa+a1K+A
+Subject: [Intel-wired-lan] [PATCH bpf RFC-V3 5/5] selftests/bpf: Adjust
+ bpf_xdp_metadata_rx_hash for new arg
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,49 +114,135 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Update API for bpf_xdp_metadata_rx_hash() with arg for xdp rss hash type.
-
-The veth driver currently only support XDP-hints based on SKB code path.
-The SKB have lost information about the RSS hash type, by compressing
-the information down to a single bitfield skb->l4_hash, that only knows
-if this was a L4 hash value.
-
-In preparation for veth, the xdp_rss_hash_type have an L4 indication
-bit that allow us to return a meaningful L4 indication when working
-with SKB based packets.
-
 Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
 ---
- drivers/net/veth.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ .../selftests/bpf/prog_tests/xdp_metadata.c        |    2 ++
+ .../testing/selftests/bpf/progs/xdp_hw_metadata.c  |   14 +++++++++-----
+ tools/testing/selftests/bpf/progs/xdp_metadata.c   |    6 +++---
+ tools/testing/selftests/bpf/progs/xdp_metadata2.c  |    7 ++++---
+ tools/testing/selftests/bpf/xdp_hw_metadata.c      |    2 +-
+ tools/testing/selftests/bpf/xdp_metadata.h         |    1 +
+ 6 files changed, 20 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/veth.c b/drivers/net/veth.c
-index c1178915496d..f5381e7c9310 100644
---- a/drivers/net/veth.c
-+++ b/drivers/net/veth.c
-@@ -1648,14 +1648,19 @@ static int veth_xdp_rx_timestamp(const struct xdp_md *ctx, u64 *timestamp)
- 	return 0;
- }
+diff --git a/tools/testing/selftests/bpf/prog_tests/xdp_metadata.c b/tools/testing/selftests/bpf/prog_tests/xdp_metadata.c
+index aa4beae99f4f..8c5e98da9ae9 100644
+--- a/tools/testing/selftests/bpf/prog_tests/xdp_metadata.c
++++ b/tools/testing/selftests/bpf/prog_tests/xdp_metadata.c
+@@ -273,6 +273,8 @@ static int verify_xsk_metadata(struct xsk *xsk)
+ 	if (!ASSERT_NEQ(meta->rx_hash, 0, "rx_hash"))
+ 		return -1;
  
--static int veth_xdp_rx_hash(const struct xdp_md *ctx, u32 *hash)
-+static int veth_xdp_rx_hash(const struct xdp_md *ctx, u32 *hash,
-+			    enum xdp_rss_hash_type *rss_type)
++	ASSERT_EQ(meta->rx_hash_type, 0, "rx_hash_type");
 +
+ 	xsk_ring_cons__release(&xsk->rx, 1);
+ 	refill_rx(xsk, comp_addr);
+ 
+diff --git a/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c b/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
+index 4c55b4d79d3d..7b3fc12e96d6 100644
+--- a/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
++++ b/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
+@@ -14,8 +14,8 @@ struct {
+ 
+ extern int bpf_xdp_metadata_rx_timestamp(const struct xdp_md *ctx,
+ 					 __u64 *timestamp) __ksym;
+-extern int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx,
+-				    __u32 *hash) __ksym;
++extern int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx, __u32 *hash,
++				    enum xdp_rss_hash_type *rss_type) __ksym;
+ 
+ SEC("xdp")
+ int rx(struct xdp_md *ctx)
+@@ -74,10 +74,14 @@ int rx(struct xdp_md *ctx)
+ 	else
+ 		meta->rx_timestamp = 0; /* Used by AF_XDP as not avail signal */
+ 
+-	if (!bpf_xdp_metadata_rx_hash(ctx, &meta->rx_hash))
+-		bpf_printk("populated rx_hash with %u", meta->rx_hash);
+-	else
++	if (!bpf_xdp_metadata_rx_hash(ctx, &meta->rx_hash, &meta->rx_hash_type)) {
++		bpf_printk("populated rx_hash:0x%X type:0x%X",
++			   meta->rx_hash, meta->rx_hash_type);
++		if (!(meta->rx_hash_type & XDP_RSS_L4))
++			bpf_printk("rx_hash low quality L3 hash type");
++	} else {
+ 		meta->rx_hash = 0; /* Used by AF_XDP as not avail signal */
++	}
+ 
+ 	return bpf_redirect_map(&xsk, ctx->rx_queue_index, XDP_PASS);
+ }
+diff --git a/tools/testing/selftests/bpf/progs/xdp_metadata.c b/tools/testing/selftests/bpf/progs/xdp_metadata.c
+index 77678b034389..d151d406a123 100644
+--- a/tools/testing/selftests/bpf/progs/xdp_metadata.c
++++ b/tools/testing/selftests/bpf/progs/xdp_metadata.c
+@@ -21,8 +21,8 @@ struct {
+ 
+ extern int bpf_xdp_metadata_rx_timestamp(const struct xdp_md *ctx,
+ 					 __u64 *timestamp) __ksym;
+-extern int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx,
+-				    __u32 *hash) __ksym;
++extern int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx, __u32 *hash,
++				    enum xdp_rss_hash_type *rss_type) __ksym;
+ 
+ SEC("xdp")
+ int rx(struct xdp_md *ctx)
+@@ -56,7 +56,7 @@ int rx(struct xdp_md *ctx)
+ 	if (timestamp == 0)
+ 		meta->rx_timestamp = 1;
+ 
+-	bpf_xdp_metadata_rx_hash(ctx, &meta->rx_hash);
++	bpf_xdp_metadata_rx_hash(ctx, &meta->rx_hash, &meta->rx_hash_type);
+ 
+ 	return bpf_redirect_map(&xsk, ctx->rx_queue_index, XDP_PASS);
+ }
+diff --git a/tools/testing/selftests/bpf/progs/xdp_metadata2.c b/tools/testing/selftests/bpf/progs/xdp_metadata2.c
+index cf69d05451c3..85f88d9d7a78 100644
+--- a/tools/testing/selftests/bpf/progs/xdp_metadata2.c
++++ b/tools/testing/selftests/bpf/progs/xdp_metadata2.c
+@@ -5,17 +5,18 @@
+ #include <bpf/bpf_helpers.h>
+ #include <bpf/bpf_endian.h>
+ 
+-extern int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx,
+-				    __u32 *hash) __ksym;
++extern int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx, __u32 *hash,
++				    enum xdp_rss_hash_type *rss_type) __ksym;
+ 
+ int called;
+ 
+ SEC("freplace/rx")
+ int freplace_rx(struct xdp_md *ctx)
  {
- 	struct veth_xdp_buff *_ctx = (void *)ctx;
-+	struct sk_buff *skb = _ctx->skb;
++	enum xdp_rss_hash_type type = 0;
+ 	u32 hash = 0;
+ 	/* Call _any_ metadata function to make sure we don't crash. */
+-	bpf_xdp_metadata_rx_hash(ctx, &hash);
++	bpf_xdp_metadata_rx_hash(ctx, &hash, &type);
+ 	called++;
+ 	return XDP_PASS;
+ }
+diff --git a/tools/testing/selftests/bpf/xdp_hw_metadata.c b/tools/testing/selftests/bpf/xdp_hw_metadata.c
+index 1c8acb68b977..4ca29e0c9646 100644
+--- a/tools/testing/selftests/bpf/xdp_hw_metadata.c
++++ b/tools/testing/selftests/bpf/xdp_hw_metadata.c
+@@ -141,7 +141,7 @@ static void verify_xdp_metadata(void *data)
+ 	meta = data - sizeof(*meta);
  
--	if (!_ctx->skb)
-+	if (!skb)
- 		return -ENODATA;
- 
--	*hash = skb_get_hash(_ctx->skb);
-+	*hash = skb_get_hash(skb);
-+	*rss_type = skb->l4_hash ? XDP_RSS_TYPE_L4_ANY : XDP_RSS_TYPE_NONE;
-+
- 	return 0;
+ 	printf("rx_timestamp: %llu\n", meta->rx_timestamp);
+-	printf("rx_hash: %u\n", meta->rx_hash);
++	printf("rx_hash: 0x%X RSS type:0x%X\n", meta->rx_hash, meta->rx_hash_type);
  }
  
+ static void verify_skb_metadata(int fd)
+diff --git a/tools/testing/selftests/bpf/xdp_metadata.h b/tools/testing/selftests/bpf/xdp_metadata.h
+index f6780fbb0a21..899da872fee1 100644
+--- a/tools/testing/selftests/bpf/xdp_metadata.h
++++ b/tools/testing/selftests/bpf/xdp_metadata.h
+@@ -12,4 +12,5 @@
+ struct xdp_meta {
+ 	__u64 rx_timestamp;
+ 	__u32 rx_hash;
++	__u32 rx_hash_type;
+ };
 
 
 _______________________________________________
