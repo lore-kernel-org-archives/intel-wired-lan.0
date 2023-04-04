@@ -1,88 +1,178 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91143C6FD1D
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Apr 2023 07:47:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 191B5C77B62
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  4 Apr 2023 09:25:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4174C405CE;
-	Tue,  4 Apr 2023 07:47:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4174C405CE
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8F12781AF4;
+	Tue,  4 Apr 2023 09:25:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8F12781AF4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680594461;
-	bh=DIC2723Pmllf+csg9qRveYb6YmSaazSjpoOL7GZBLfQ=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1680600329;
+	bh=irTMveZ5m+wNQ2bbgFUwTAOnHHKHix2VAk/SqQfk8hs=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=gAqnmOk5HgC2WeVUL1hhJh4XHvnFeEb36EB7q3Xyd0SJrT43oqEQFmGebMVN7RoSJ
-	 Ainr7D/OmDHwtUw6HtBvMHwRR3S0Vts57385cAXPcw6HoXg6oPm8Cw0I1Bb0Vbn5Ku
-	 81ctVaTiDzgzyR9hd6Qj7tr2IBvDUtDQKk92aWWixRIq2o9fz5WXyawjs6yOgTpjES
-	 u6zgtz9gAAXYiSEIF6QHo91SicOEGr6vzqCzjNNfzlz2vp3JVxri3rZswz/d93UCiS
-	 mqbjq7oMPZvsq8HD/JekAF+GRiOm543InfnNztu0o397p1lT+Q0czyA0uuWE2MFSG0
-	 m3KnWrnFWwMIw==
+	b=aPdurO8j0Gdol5HezpbzKLy+ngp2Bxh2qUgSfWdKHgaZpKipiTLPBD9BZJyyGi51U
+	 isIlPdH+6aIwYl+I3L6Z2qug0jKe0gZsb03mItyuKkrFY5R54ZxQa0PUSx97vMHlB3
+	 coxZ/fAFNn8K/I+y9fDjFtMfBz5dH5kfzamlplqtNUgkQHcs4C6ys9idzLfp5xvMqd
+	 2IGBzBRbGWeHUyhMbV9FwKmELZJqfMj+/qHu6eVEE6CYg8AlDlpgSx+J2+uGnbY3Sp
+	 /GiyOOScIfvfGdCTNERxBc7A6238KN4LQeQGJI+VOIVeccZqaihBJr0ZKn3Dl2fJWR
+	 NiFfLILHQNKgA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 8LU6olxJP_ri; Tue,  4 Apr 2023 07:47:40 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id LNzT4FZlTxet; Tue,  4 Apr 2023 09:25:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 36349408B9;
-	Tue,  4 Apr 2023 07:47:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 36349408B9
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9089081AF5;
+	Tue,  4 Apr 2023 09:25:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9089081AF5
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 011E61C275B
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Apr 2023 07:47:27 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 255891C27A3
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Apr 2023 09:25:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D2474405CE
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Apr 2023 07:47:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D2474405CE
+ by smtp4.osuosl.org (Postfix) with ESMTP id EF1924099B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Apr 2023 09:25:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EF1924099B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id GPVTdrisRpM2 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  4 Apr 2023 07:47:25 +0000 (UTC)
+ with ESMTP id YnHwmPusNibh for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  4 Apr 2023 09:25:25 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5308A4088E
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 5308A4088E
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Apr 2023 07:47:25 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="404877634"
-X-IronPort-AV: E=Sophos;i="5.98,317,1673942400"; d="scan'208";a="404877634"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Apr 2023 00:47:24 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7E14D40996
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7E14D40996
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Apr 2023 09:25:25 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="428418488"
+X-IronPort-AV: E=Sophos;i="5.98,317,1673942400"; d="scan'208";a="428418488"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Apr 2023 02:25:24 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="797421827"
-X-IronPort-AV: E=Sophos;i="5.98,317,1673942400"; d="scan'208";a="797421827"
-Received: from wasp.igk.intel.com ([10.102.20.192])
- by fmsmga002.fm.intel.com with ESMTP; 04 Apr 2023 00:47:23 -0700
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  4 Apr 2023 09:28:33 +0200
-Message-Id: <20230404072833.3676891-5-michal.swiatkowski@linux.intel.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230404072833.3676891-1-michal.swiatkowski@linux.intel.com>
-References: <20230404072833.3676891-1-michal.swiatkowski@linux.intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10669"; a="829908217"
+X-IronPort-AV: E=Sophos;i="5.98,317,1673942400"; d="scan'208";a="829908217"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+ by fmsmga001.fm.intel.com with ESMTP; 04 Apr 2023 02:25:24 -0700
+Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Tue, 4 Apr 2023 02:25:24 -0700
+Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
+ orsmsx611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21 via Frontend Transport; Tue, 4 Apr 2023 02:25:24 -0700
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.169)
+ by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.21; Tue, 4 Apr 2023 02:25:23 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=A9egBSXNVmUrD59caT2CtUnq4LJmyic1xWTFTx1ORW4nu272xaSeS9wM3OFpDCK94J2oocbwdDyK5ILCL0f6Jqj40afyzTIWr/eoB/wwYG4UQlKIu/33GRu2MzbREcEbt/xa3pTrEkm059Hno7tEYr3cOqeQGxrr0CRrsdEp3XAXe0FDyqkRF00S/NPUCyYAi93tquHvrKq8TB22HARJ8W0vd4ZnDkCz3uRHPVb1Tjv3EQfxV0/s90PmX0n66y//KgV/z4FJ6Vk0VnIwlEzPWj4bP9v08bvMKjWOOd4Njr43Qja+f9unsjarbFF3IdeTWuPThiWxnlNoG1jdvUDvcQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=X+M05HIMTqZbDMEm1KF+aN7bDgbNckt/kf5OfKr+s9w=;
+ b=k65TRwbXIuQ4ed4z6EF40qv/73TjJssf8SfJ1YVneAgZ6b42BaxyPfoSgaTSraheTFTVhUEYY6adyF1knQgTVPBcunxTSTsBXEFCTvZ8Fki0sPuj322KmfBfcsNDtoWsdS/lc2OZDIsO+gLb1tYgYETg9L74JwmC4qmz4En6SY/a8c+vrvgYzNrOmz3dRandYrTMbsQh4qCUdRAr3dTMF2sXSWTdF3v58k9eZ6mhl7GWtTsOU4oitK9ZIBo9Vo+lR3walnLWb6fzAeVQR41JXt0FTewtW+5E0VaRWST8eYYuus76SQViivc9bVV0e/88aFLvqTgJv0gDRSHCin2O2w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from MW4PR11MB5800.namprd11.prod.outlook.com (2603:10b6:303:186::21)
+ by MW4PR11MB6838.namprd11.prod.outlook.com (2603:10b6:303:213::14)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6254.33; Tue, 4 Apr
+ 2023 09:25:22 +0000
+Received: from MW4PR11MB5800.namprd11.prod.outlook.com
+ ([fe80::bf39:c299:c011:1177]) by MW4PR11MB5800.namprd11.prod.outlook.com
+ ([fe80::bf39:c299:c011:1177%8]) with mapi id 15.20.6254.033; Tue, 4 Apr 2023
+ 09:25:21 +0000
+From: "Kolacinski, Karol" <karol.kolacinski@intel.com>
+To: mschmidt <mschmidt@redhat.com>, "intel-wired-lan@lists.osuosl.org"
+ <intel-wired-lan@lists.osuosl.org>
+Thread-Topic: [PATCH net-next 1/4] ice: lower CPU usage of the GNSS read thread
+Thread-Index: AQHZZL89sSVSkMdLr0Sl4EZIHAEuz68a5RDw
+Date: Tue, 4 Apr 2023 09:25:21 +0000
+Message-ID: <MW4PR11MB580066F8B4EC54948C0B43B186939@MW4PR11MB5800.namprd11.prod.outlook.com>
+References: <20230401172659.38508-1-mschmidt@redhat.com>
+ <20230401172659.38508-2-mschmidt@redhat.com>
+In-Reply-To: <20230401172659.38508-2-mschmidt@redhat.com>
+Accept-Language: pl-PL, en-US
+Content-Language: pl-PL
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MW4PR11MB5800:EE_|MW4PR11MB6838:EE_
+x-ms-office365-filtering-correlation-id: 0d576459-9f45-43ed-b666-08db34ee8381
+x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: 1RFBKvjwGKNaig29A+eOR73d6m9MNWUPJGnLcJUr+qOQVH6pc/mOy1Imy9ipuuaU5jnB0neYubkDia7f0B9HfaWZzOtd4YbBQ+WErgYpF9Idtp4fWKl2cO8lG7gsCEEsd4Ffy4JB0+H7mu70O4cQAdqLWoI0FKGzPzEvQTe/YPlTeKglF2/tJlFzwW0YkLCpLbO0pgGTK2ryCkT1d7pnw8/shiHI3MAN4pMWYlOZRwCQwZEH/rB20eKbI3SNSofEUesbINtdFQb80aQoLtLqj2pYBtNGV8TWz7opOz5r3kGXuDfBRWCTUucIGGjkPEhLywnaAUSfqdxsxeHlJGfGGnPRTDaI6xvoh1qoPfXDuGfwLSLQBeQcwYiFSumLxrAx2d2EENTmlsRq6Tx4PMTUY3vl8uW1udJWKnsp41TUXoj9GPIWx3URCU/K8nmtmQ7YbKe3Iq62xkicw+Q5vWCzKgOpyCGpfZd95xhMxpMV3hw4nwiYm/z4JOms+lwJvltfHaxkDShllhMJJykMnH+M/SrOSbQnBdjpLih1xRnhtPAi69u15uU8OMxpR8X6oMxzaWo8EP2UXWhB8dEB1h28RvrHq4iBzw9Wx1hzYX1TcPm9RUYerrZawwmIw6PaT/Xz
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:MW4PR11MB5800.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(136003)(39860400002)(346002)(376002)(396003)(366004)(451199021)(55016003)(76116006)(4326008)(64756008)(66556008)(66476007)(66946007)(478600001)(8676002)(66446008)(4744005)(110136005)(41300700001)(54906003)(52536014)(8936002)(316002)(5660300002)(122000001)(38100700002)(82960400001)(186003)(7696005)(71200400001)(6506007)(26005)(9686003)(86362001)(2906002)(33656002)(38070700005);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?ReqYv6esZTmuXPL/LNgtMQNgwc37D19ARG9XadktR+FVTJuk5JL/a/3ZbEJq?=
+ =?us-ascii?Q?/iHa9Sl0G90WEaMIE/xFx1w8QNu6ZWn3Rab+eeKM289gF+pYQJjGL+LioUth?=
+ =?us-ascii?Q?vfWYN0BzLOqJiEcN6U/1QrY4g8QUAe6mO7Zb+/y6cLmsVmHJK3A1ts+V6qK4?=
+ =?us-ascii?Q?qU89H7W/DRU8fpo8NECk7DKRvBZXO16BoL1TPf4ZUlsx6HeSXE5uPhBCxAK5?=
+ =?us-ascii?Q?GV15IR3PBYhny/z9sNi6OqWbNYVI5ExRX+RaQnIiydjHwHI1M2446hhZ5F2K?=
+ =?us-ascii?Q?jkxKzXlqArsJAF6PCAOo7rk7Q7rrxbuh9WtErq3mZ5QBT7N+mkJXouhqfVKJ?=
+ =?us-ascii?Q?TflyeoRV+8G79bYL9i8eYc8aATaijapN1bfvq+wW3l9vBVVSXVKi/Odd8Xd8?=
+ =?us-ascii?Q?LwqMfdbQNaLY5MKDz7Kq+aK54lr6Iyucv6H7IZ19dv43fsyDNaqUcv/T+pTX?=
+ =?us-ascii?Q?kk5R9Xx6Oo//b6u3RiFOMy5H0G6qjj9cDlEFacN7qfQEWRzAWSZGdYDl43SB?=
+ =?us-ascii?Q?VlERBdRKUQ/ygKbi5nhVjQQ5U+ach3xXMs22+5UwKp3lfj6WnVR1ZhNaScqo?=
+ =?us-ascii?Q?wTUyvDvPBY1Qm1b2v34IQdhHOKszQmuGh8UWY84uqhN0Wz7/FypjrHMrevEP?=
+ =?us-ascii?Q?eOAS7JlY3FdPfUhYhMKqMTvwRQfcMM/0t6VOVGveTSZkFPxd2cKy6GM8cvMX?=
+ =?us-ascii?Q?ooU3aLeCLGkUMpGVoLyvbRYotTCrqblaKMvbZMJjOCnBc+DXX1byzYMClOKl?=
+ =?us-ascii?Q?6EKGWaXMwfDb8m1cDsNnEYpguvVDxCU1J2jkxGy50OZgT4IsB+UtF/P6qTbG?=
+ =?us-ascii?Q?ks5lyHxIiktjmZIj7raM4XvBw9xemiJ6anKmfhDXdBFksERPnFK5ph8vWJQo?=
+ =?us-ascii?Q?MW6leUw7KNPXLRtOC19M6rPvLzEECDkM3hKEbvm4R0B8p3tk8Wk80UWMoFh+?=
+ =?us-ascii?Q?gt9ivCsiyuYlD8g3+3Z52VcRvMP0ChOuCdOk65l+CrGarkBugD8+WMdjMSv/?=
+ =?us-ascii?Q?dNO68i2XRa/GEMVbfMge1aNUb2gh0tFjJzOdO7/2DCIr8ChLZF56Xvx59caX?=
+ =?us-ascii?Q?7ClpMut74Ox+dec03EfTkcJSLGts6+KCY0uWM77mSGRfp7OpNWuGu96rlD5Z?=
+ =?us-ascii?Q?nLzbtJgyHHuT2FZlDS4sPH5BRLdySVbTC7E5kw8HmQAqh1XsHnY1zr9NApIL?=
+ =?us-ascii?Q?gc1Exl+cf/kE8z+if7y3hNll6yGvEzyyvpXvROfeMsq/xIQ5FnJZ07e/Mb8p?=
+ =?us-ascii?Q?hDMpEZ25lXsLnZuBxMpaezAF4GBb62P5Us1PXVkg0XsVI0Pxk9qW3aWP2eJL?=
+ =?us-ascii?Q?Wqlv1TxO3vFfO+h+wZc+SPicTso9sA860AuIquOtm5sZdy3bdNZMy87LanOH?=
+ =?us-ascii?Q?Dyx537Wx+zMxRN69KsxMtsc/NWfgBJgjH3+ZYY6I2UKLNXtCh/n8JPRxLWMP?=
+ =?us-ascii?Q?5zL+1f8a3CJEtZKozjq6vvHqbZUGvtuHVO1sxtVMCGVu9XIRPXC1rRkq81QT?=
+ =?us-ascii?Q?gLF3r9SLx6lFM14dJOYNyudApBQJQDA01IlDSMfSl5P/iID1psMfTBHlr+cf?=
+ =?us-ascii?Q?QO8Wu7waHz2nRbmto/zX6wR7pznxXjWkNxzn1azK?=
 MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MW4PR11MB5800.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0d576459-9f45-43ed-b666-08db34ee8381
+X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Apr 2023 09:25:21.6182 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: qPh0d2hpPLQrMTH6zLwQbftwwHtK1iXcVR+exVU4Jzbi4vT7h3IvzI2hI/GePHOE/+BMmIFBije4NsDWcDKKQVfNlbRjnNy3rN2g4bexAlY=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR11MB6838
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1680594445; x=1712130445;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=QJGCCsI596xvwsy+ySKTKk/ZX+mwQwM8Iv+ShZFhEbA=;
- b=ZCHk6HwETp79LSKSOw/qMGfKXYtcE8N3wz8hnUrWkIyPgWLetbLFqADO
- QBs/jBsjn5cpuFmYDPXJXnq2t6nQyIlklWMyWsxSYzbCkKVAh4MI2Qo6x
- qNskd4T5r+IfFf/Xu8N0hi5hrSuBP+f6N1ugRelhqWL89jUs3JnHdc/1z
- frLv62iKkKDP7uXi7Pl0csn4cPet/riwDZosum45/RemaE6Z79aMiINHP
- th0Jl0bhct90YThyyug+GgtuF7VsOxXGiHPxDjg77szXWxiAdNUyOIt/V
- L26lyYN1d9zKJ9CS4TICQ8QQEKG3gQ3mEkAniseZOazSar2n/D2LoXhx3
- g==;
+ t=1680600325; x=1712136325;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=X+M05HIMTqZbDMEm1KF+aN7bDgbNckt/kf5OfKr+s9w=;
+ b=c9hNZnjmop07RTd3CcNULnmxjEJ2nzQbTR5yvkTX2fRFilug72GnYO72
+ 22f0g8vrUuhvTZI5Qyw+DgmBfJS7MTUhBBhtQ8Ob0RGjF+ibUqWECfBMo
+ tQSHatFxZ7p0N8+Y42FPfA1Uu2ReQG+i56DXWlemvWErBLs0JR2wFnDOv
+ 9baUzPq2skNAGCzLpE4/SLckcGCDQC7n0bjOManyPYuHG2RO4hGcpn9Hq
+ j7JeAnB4EGRCRIaHwWi5K5HOuB5XADSNg/DDiBqorU8ctMapYk+O1lYv3
+ 7MqnJvjerQ7UPAf1GQYBQ0fM7BJC4MKQriziPyV5CCYwcadtmtlHPqbnS
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ZCHk6HwE
-Subject: [Intel-wired-lan] [PATCH net-next v2 4/4] ice: use src VSI instead
- of src MAC in slow-path
+ header.a=rsa-sha256 header.s=Intel header.b=c9hNZnjm
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net-next 1/4] ice: lower CPU usage of
+ the GNSS read thread
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,378 +185,33 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Simon Horman <simon.horman@corigine.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Brandeburg,
+ Jesse" <jesse.brandeburg@intel.com>, "Nguyen,
+ Anthony L" <anthony.l.nguyen@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The use of a source  MAC to direct packets from the VF to the
-corresponding port representor is only ok if there is only one
-MAC on a VF. To support this functionality when the number
-of MACs on a VF is greater, it is necessary to match a source
-VSI instead of a source MAC.
+On Sat, Apr 01, 2023 at 07:26:56PM +0200, Michal Schmidt wrote:
+> A simple improvement would be to replace the "mdelay(10);" in
+> ice_gnss_read() with sleeping. A better fix is to not do any waiting directly in the function and just requeue this delayed work as needed.
+> The advantage is that canceling the work from ice_gnss_exit() becomes immediate, rather than taking up to ~2.5 seconds (ICE_MAX_UBX_READ_TRIES
+> * 10 ms).
+> 
+> This lowers the CPU usage of the ice-gnss-<dev_name> thread on my system from ~90 % to ~8 %.
+> 
+> I am not sure if the larger 0.1 s pause after inserting data into the gnss subsystem is really necessary, but I'm keeping that as it was.
 
-Let's use the new switch API that allows matching on metadata.
+Hi Michal,
 
-If MAC isn't used in match criteria there is no need to handle adding
-rule after virtchnl command. Instead add new rule while port representor
-is being configured.
+We were planning to upstream 20 ms sleep instead of 10 ms delay but your
+solution looks better.
+To align with our code, ICE_GNSS_POLL_DATA_DELAY_TIME could be increased
+to 20 ms.
 
-Remove rule_added field, checking for sp_rule can be used instead.
-Remove also checking for switchdev running in deleting rule as it can be
-call from unroll context when running flag isn't set. Checking for
-sp_rule cover both context (with and without running flag).
-
-Rules are added in eswitch configuration flow, so there is no need to
-have replay function.
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Reviewed-by: Piotr Raczynski <piotr.raczynski@intel.com>
-Reviewed-by: Simon Horman <simon.horman@corigine.com>
----
- drivers/net/ethernet/intel/ice/ice_eswitch.c  | 75 +++++++------------
- drivers/net/ethernet/intel/ice/ice_eswitch.h  | 14 ----
- .../ethernet/intel/ice/ice_protocol_type.h    |  4 +-
- drivers/net/ethernet/intel/ice/ice_repr.c     | 17 -----
- drivers/net/ethernet/intel/ice/ice_repr.h     |  5 +-
- drivers/net/ethernet/intel/ice/ice_switch.c   |  6 ++
- drivers/net/ethernet/intel/ice/ice_switch.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_vf_lib.c   |  3 -
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |  8 --
- 9 files changed, 37 insertions(+), 96 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index 2c80d57331d0..69fc25a213ef 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -10,16 +10,15 @@
- #include "ice_tc_lib.h"
- 
- /**
-- * ice_eswitch_add_vf_mac_rule - add adv rule with VF's MAC
-+ * ice_eswitch_add_vf_sp_rule - add adv rule with VF's VSI index
-  * @pf: pointer to PF struct
-  * @vf: pointer to VF struct
-- * @mac: VF's MAC address
-  *
-  * This function adds advanced rule that forwards packets with
-- * VF's MAC address (src MAC) to the corresponding switchdev ctrl VSI queue.
-+ * VF's VSI index to the corresponding switchdev ctrl VSI queue.
-  */
--int
--ice_eswitch_add_vf_mac_rule(struct ice_pf *pf, struct ice_vf *vf, const u8 *mac)
-+static int
-+ice_eswitch_add_vf_sp_rule(struct ice_pf *pf, struct ice_vf *vf)
- {
- 	struct ice_vsi *ctrl_vsi = pf->switchdev.control_vsi;
- 	struct ice_adv_rule_info rule_info = { 0 };
-@@ -32,11 +31,9 @@ ice_eswitch_add_vf_mac_rule(struct ice_pf *pf, struct ice_vf *vf, const u8 *mac)
- 	if (!list)
- 		return -ENOMEM;
- 
--	list[0].type = ICE_MAC_OFOS;
--	ether_addr_copy(list[0].h_u.eth_hdr.src_addr, mac);
--	eth_broadcast_addr(list[0].m_u.eth_hdr.src_addr);
-+	ice_rule_add_src_vsi_metadata(&list[0]);
- 
--	rule_info.sw_act.flag |= ICE_FLTR_TX;
-+	rule_info.sw_act.flag = ICE_FLTR_TX;
- 	rule_info.sw_act.vsi_handle = ctrl_vsi->idx;
- 	rule_info.sw_act.fltr_act = ICE_FWD_TO_Q;
- 	rule_info.sw_act.fwd_id.q_id = hw->func_caps.common_cap.rxq_first_id +
-@@ -44,63 +41,31 @@ ice_eswitch_add_vf_mac_rule(struct ice_pf *pf, struct ice_vf *vf, const u8 *mac)
- 	rule_info.flags_info.act |= ICE_SINGLE_ACT_LB_ENABLE;
- 	rule_info.flags_info.act_valid = true;
- 	rule_info.tun_type = ICE_SW_TUN_AND_NON_TUN;
-+	rule_info.src_vsi = vf->lan_vsi_idx;
- 
- 	err = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info,
--			       vf->repr->mac_rule);
-+			       &vf->repr->sp_rule);
- 	if (err)
--		dev_err(ice_pf_to_dev(pf), "Unable to add VF mac rule in switchdev mode for VF %d",
-+		dev_err(ice_pf_to_dev(pf), "Unable to add VF slow-path rule in switchdev mode for VF %d",
- 			vf->vf_id);
--	else
--		vf->repr->rule_added = true;
- 
- 	kfree(list);
- 	return err;
- }
- 
- /**
-- * ice_eswitch_replay_vf_mac_rule - replay adv rule with VF's MAC
-- * @vf: pointer to vF struct
-- *
-- * This function replays VF's MAC rule after reset.
-- */
--void ice_eswitch_replay_vf_mac_rule(struct ice_vf *vf)
--{
--	int err;
--
--	if (!ice_is_switchdev_running(vf->pf))
--		return;
--
--	if (is_valid_ether_addr(vf->hw_lan_addr)) {
--		err = ice_eswitch_add_vf_mac_rule(vf->pf, vf,
--						  vf->hw_lan_addr);
--		if (err) {
--			dev_err(ice_pf_to_dev(vf->pf), "Failed to add MAC %pM for VF %d\n, error %d\n",
--				vf->hw_lan_addr, vf->vf_id, err);
--			return;
--		}
--		vf->num_mac++;
--
--		ether_addr_copy(vf->dev_lan_addr, vf->hw_lan_addr);
--	}
--}
--
--/**
-- * ice_eswitch_del_vf_mac_rule - delete adv rule with VF's MAC
-+ * ice_eswitch_del_vf_sp_rule - delete adv rule with VF's VSI index
-  * @vf: pointer to the VF struct
-  *
-- * Delete the advanced rule that was used to forward packets with the VF's MAC
-- * address (src MAC) to the corresponding switchdev ctrl VSI queue.
-+ * Delete the advanced rule that was used to forward packets with the VF's VSI
-+ * index to the corresponding switchdev ctrl VSI queue.
-  */
--void ice_eswitch_del_vf_mac_rule(struct ice_vf *vf)
-+static void ice_eswitch_del_vf_sp_rule(struct ice_vf *vf)
- {
--	if (!ice_is_switchdev_running(vf->pf))
-+	if (!vf->repr)
- 		return;
- 
--	if (!vf->repr->rule_added)
--		return;
--
--	ice_rem_adv_rule_by_id(&vf->pf->hw, vf->repr->mac_rule);
--	vf->repr->rule_added = false;
-+	ice_rem_adv_rule_by_id(&vf->pf->hw, &vf->repr->sp_rule);
- }
- 
- /**
-@@ -236,6 +201,7 @@ ice_eswitch_release_reprs(struct ice_pf *pf, struct ice_vsi *ctrl_vsi)
- 		ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
- 		metadata_dst_free(vf->repr->dst);
- 		vf->repr->dst = NULL;
-+		ice_eswitch_del_vf_sp_rule(vf);
- 		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr,
- 					       ICE_FWD_TO_VSI);
- 
-@@ -269,10 +235,18 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
- 			goto err;
- 		}
- 
-+		if (ice_eswitch_add_vf_sp_rule(pf, vf)) {
-+			ice_fltr_add_mac_and_broadcast(vsi,
-+						       vf->hw_lan_addr,
-+						       ICE_FWD_TO_VSI);
-+			goto err;
-+		}
-+
- 		if (ice_vsi_update_security(vsi, ice_vsi_ctx_clear_antispoof)) {
- 			ice_fltr_add_mac_and_broadcast(vsi,
- 						       vf->hw_lan_addr,
- 						       ICE_FWD_TO_VSI);
-+			ice_eswitch_del_vf_sp_rule(vf);
- 			metadata_dst_free(vf->repr->dst);
- 			vf->repr->dst = NULL;
- 			goto err;
-@@ -282,6 +256,7 @@ static int ice_eswitch_setup_reprs(struct ice_pf *pf)
- 			ice_fltr_add_mac_and_broadcast(vsi,
- 						       vf->hw_lan_addr,
- 						       ICE_FWD_TO_VSI);
-+			ice_eswitch_del_vf_sp_rule(vf);
- 			metadata_dst_free(vf->repr->dst);
- 			vf->repr->dst = NULL;
- 			ice_vsi_update_security(vsi, ice_vsi_ctx_set_antispoof);
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.h b/drivers/net/ethernet/intel/ice/ice_eswitch.h
-index 6a413331572b..b18bf83a2f5b 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.h
-@@ -20,11 +20,6 @@ bool ice_is_eswitch_mode_switchdev(struct ice_pf *pf);
- void ice_eswitch_update_repr(struct ice_vsi *vsi);
- 
- void ice_eswitch_stop_all_tx_queues(struct ice_pf *pf);
--int
--ice_eswitch_add_vf_mac_rule(struct ice_pf *pf, struct ice_vf *vf,
--			    const u8 *mac);
--void ice_eswitch_replay_vf_mac_rule(struct ice_vf *vf);
--void ice_eswitch_del_vf_mac_rule(struct ice_vf *vf);
- 
- void ice_eswitch_set_target_vsi(struct sk_buff *skb,
- 				struct ice_tx_offload_params *off);
-@@ -34,15 +29,6 @@ ice_eswitch_port_start_xmit(struct sk_buff *skb, struct net_device *netdev);
- static inline void ice_eswitch_release(struct ice_pf *pf) { }
- 
- static inline void ice_eswitch_stop_all_tx_queues(struct ice_pf *pf) { }
--static inline void ice_eswitch_replay_vf_mac_rule(struct ice_vf *vf) { }
--static inline void ice_eswitch_del_vf_mac_rule(struct ice_vf *vf) { }
--
--static inline int
--ice_eswitch_add_vf_mac_rule(struct ice_pf *pf, struct ice_vf *vf,
--			    const u8 *mac)
--{
--	return -EOPNOTSUPP;
--}
- 
- static inline void
- ice_eswitch_set_target_vsi(struct sk_buff *skb,
-diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-index ed0ab8177c61..664e2f45e249 100644
---- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-@@ -256,7 +256,9 @@ struct ice_nvgre_hdr {
-  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  *
-  * Source VSI = Source VSI of packet loopbacked in switch (for egress) (10b).
-- *
-+ */
-+#define ICE_MDID_SOURCE_VSI_MASK 0x3ff
-+/*
-  * MDID 20
-  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  * |A|B|C|D|E|F|R|R|G|H|I|J|K|L|M|N|
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index fd1f8b0ad0ab..e30e12321abd 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -298,14 +298,6 @@ static int ice_repr_add(struct ice_vf *vf)
- 	if (!repr)
- 		return -ENOMEM;
- 
--#ifdef CONFIG_ICE_SWITCHDEV
--	repr->mac_rule = kzalloc(sizeof(*repr->mac_rule), GFP_KERNEL);
--	if (!repr->mac_rule) {
--		err = -ENOMEM;
--		goto err_alloc_rule;
--	}
--#endif
--
- 	repr->netdev = alloc_etherdev(sizeof(struct ice_netdev_priv));
- 	if (!repr->netdev) {
- 		err =  -ENOMEM;
-@@ -351,11 +343,6 @@ static int ice_repr_add(struct ice_vf *vf)
- 	free_netdev(repr->netdev);
- 	repr->netdev = NULL;
- err_alloc:
--#ifdef CONFIG_ICE_SWITCHDEV
--	kfree(repr->mac_rule);
--	repr->mac_rule = NULL;
--err_alloc_rule:
--#endif
- 	kfree(repr);
- 	vf->repr = NULL;
- 	return err;
-@@ -376,10 +363,6 @@ static void ice_repr_rem(struct ice_vf *vf)
- 	ice_devlink_destroy_vf_port(vf);
- 	free_netdev(vf->repr->netdev);
- 	vf->repr->netdev = NULL;
--#ifdef CONFIG_ICE_SWITCHDEV
--	kfree(vf->repr->mac_rule);
--	vf->repr->mac_rule = NULL;
--#endif
- 	kfree(vf->repr);
- 	vf->repr = NULL;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.h b/drivers/net/ethernet/intel/ice/ice_repr.h
-index 378a45bfa256..5a28bb42f72a 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.h
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.h
-@@ -13,9 +13,8 @@ struct ice_repr {
- 	struct net_device *netdev;
- 	struct metadata_dst *dst;
- #ifdef CONFIG_ICE_SWITCHDEV
--	/* info about slow path MAC rule  */
--	struct ice_rule_query_data *mac_rule;
--	u8 rule_added;
-+	/* info about slow path rule  */
-+	struct ice_rule_query_data sp_rule;
- #endif
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 8c2bbfd2613f..76f5a817929a 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -6007,6 +6007,12 @@ void ice_rule_add_vlan_metadata(struct ice_adv_lkup_elem *lkup)
- 		cpu_to_be16(ICE_PKT_VLAN_MASK);
- }
- 
-+void ice_rule_add_src_vsi_metadata(struct ice_adv_lkup_elem *lkup)
-+{
-+	lkup->type = ICE_HW_METADATA;
-+	lkup->m_u.metadata.source_vsi = cpu_to_be16(ICE_MDID_SOURCE_VSI_MASK);
-+}
-+
- /**
-  * ice_add_adv_rule - helper function to create an advanced switch rule
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 245d4ad4e9bc..fbd0936750af 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -344,6 +344,7 @@ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- /* Switch/bridge related commands */
- void ice_rule_add_tunnel_metadata(struct ice_adv_lkup_elem *lkup);
- void ice_rule_add_vlan_metadata(struct ice_adv_lkup_elem *lkup);
-+void ice_rule_add_src_vsi_metadata(struct ice_adv_lkup_elem *lkup);
- int
- ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 		 u16 lkups_cnt, struct ice_adv_rule_info *rinfo,
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.c b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-index 68142facc85d..294e91c3453c 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.c
-@@ -670,8 +670,6 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 	 */
- 	ice_vf_clear_all_promisc_modes(vf, vsi);
- 
--	ice_eswitch_del_vf_mac_rule(vf);
--
- 	ice_vf_fdir_exit(vf);
- 	ice_vf_fdir_init(vf);
- 	/* clean VF control VSI when resetting VF since it should be setup
-@@ -697,7 +695,6 @@ int ice_reset_vf(struct ice_vf *vf, u32 flags)
- 	}
- 
- 	ice_eswitch_update_repr(vsi);
--	ice_eswitch_replay_vf_mac_rule(vf);
- 
- 	/* if the VF has been reset allow it to come up again */
- 	ice_mbx_clear_malvf(&vf->mbx_info);
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 97243c616d5d..dcf628b1fccd 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -3730,7 +3730,6 @@ static int ice_vc_repr_add_mac(struct ice_vf *vf, u8 *msg)
- 
- 	for (i = 0; i < al->num_elements; i++) {
- 		u8 *mac_addr = al->list[i].addr;
--		int result;
- 
- 		if (!is_unicast_ether_addr(mac_addr) ||
- 		    ether_addr_equal(mac_addr, vf->hw_lan_addr))
-@@ -3742,13 +3741,6 @@ static int ice_vc_repr_add_mac(struct ice_vf *vf, u8 *msg)
- 			goto handle_mac_exit;
- 		}
- 
--		result = ice_eswitch_add_vf_mac_rule(pf, vf, mac_addr);
--		if (result) {
--			dev_err(ice_pf_to_dev(pf), "Failed to add MAC %pM for VF %d\n, error %d\n",
--				mac_addr, vf->vf_id, result);
--			goto handle_mac_exit;
--		}
--
- 		ice_vfhw_mac_add(vf, &al->list[i]);
- 		vf->num_mac++;
- 		break;
--- 
-2.39.2
-
+Thanks,
+Karol
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
