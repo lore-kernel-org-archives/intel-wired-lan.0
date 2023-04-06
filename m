@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DD9DC77B6C
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Apr 2023 11:32:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7247DC77B70
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Apr 2023 11:35:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B029241D96;
-	Thu,  6 Apr 2023 11:32:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B029241D96
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1C2D84015B;
+	Thu,  6 Apr 2023 11:35:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1C2D84015B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680780732;
-	bh=EQR5y5zxU9oQ7+m6A4i7PXBXxIG3aWUg9c4EmY2JhDg=;
+	s=default; t=1680780903;
+	bh=a93nowkQKGGg3O5gK40e6FkykyrYfd9XmH8Lgox7zss=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=f1DviUMXGbxQdiiijz2sCK3boWCiAA22CTw+Z7x2zyr2vHCgXfXinZPYwJUgM/kYA
-	 6hBk8o7kAdZAKHpQCYVZU5jXXbRBO9Q6RWQ3HYuhFJODcEpxh9/bgCCoocxSHpl8jI
-	 wE0krz304aWUJxj0m1hDu2ChPkk0wdQjC8NWat1i23Yty2kWzM3Arb5MRcc9McrJHc
-	 XtJXe9QdjJiJvfuwtyZQI6rYgpkf36s5bdrKYU+joB21mr/fDkRtcWvguaPUNVkHCs
-	 EMHZ3etv013TnRpEByJRWop1/IaDd5G2Er1nXD3mc8pSzvZTkuznpE8yyKvbWoQpxQ
-	 HALccyKlYbPpg==
+	b=MvnJdedLW9HqrSVeoXwJ7iz5se0TTz0jxtGEITGyIfKnZxFsIDz0UZN74II3vldce
+	 x/XUUAWQoyx3tkfxXjnrpzDuE1LZ1rF83CR9VPCQhFJGonD/QpLiy610FP4j7WqgXw
+	 ruIFTbd2Wch7ab84TtdEua1YZ1Z4ubFvrRcrgj47igGMLgYxcZxQf9ehkzNyF1OMmy
+	 gVInVm/JK+aNJn8fi/zCFBX8zogpOiI5NEnVbVc0txn5Zwt+0IRYixc//arU8h4QOY
+	 AFCcePH/WH5oG6UnkovrEnAWLIL5u06rR0cV5RNQbtpYh26PyzWpFpV7VH/ZVamTfL
+	 YC3q9HsGzunHQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BKu3y-AmP-DM; Thu,  6 Apr 2023 11:32:11 +0000 (UTC)
+	with ESMTP id 5i9Z24BWEx0G; Thu,  6 Apr 2023 11:35:01 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 89E9941DD8;
-	Thu,  6 Apr 2023 11:32:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 89E9941DD8
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id A5E881C2D01
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 11:32:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8446341C46;
+	Thu,  6 Apr 2023 11:35:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8446341C46
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 5A1A01C2CD2
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 11:35:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7B9DD41D96
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 11:32:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7B9DD41D96
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3EE8E60E22
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 11:35:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3EE8E60E22
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id y9UmCPxcMZ4r for <intel-wired-lan@lists.osuosl.org>;
- Thu,  6 Apr 2023 11:32:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id a5mSxdoczArg for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  6 Apr 2023 11:34:59 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A42F641DD8
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A42F641DD8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 11:32:09 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10671"; a="331323667"
-X-IronPort-AV: E=Sophos;i="5.98,323,1673942400"; d="scan'208";a="331323667"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Apr 2023 04:32:09 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4E93C60BE8
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4E93C60BE8
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 11:34:59 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10671"; a="326755188"
+X-IronPort-AV: E=Sophos;i="5.98,323,1673942400"; d="scan'208";a="326755188"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Apr 2023 04:34:58 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10671"; a="717417206"
-X-IronPort-AV: E=Sophos;i="5.98,323,1673942400"; d="scan'208";a="717417206"
+X-IronPort-AV: E=McAfee;i="6600,9927,10671"; a="776450222"
+X-IronPort-AV: E=Sophos;i="5.98,323,1673942400"; d="scan'208";a="776450222"
 Received: from unknown (HELO localhost.localdomain) ([10.237.112.144])
- by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Apr 2023 04:32:07 -0700
-Date: Thu, 6 Apr 2023 13:32:04 +0200
+ by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 06 Apr 2023 04:34:56 -0700
+Date: Thu, 6 Apr 2023 13:34:53 +0200
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <ZC6ttC+qX/Z0UZb2@localhost.localdomain>
+Message-ID: <ZC6uXW5WMcnAet7F@localhost.localdomain>
 References: <20230405075113.455662-1-michal.swiatkowski@linux.intel.com>
- <20230405075113.455662-4-michal.swiatkowski@linux.intel.com>
- <8559d4df-71a8-8d4f-b2f6-91f69281f2d9@intel.com>
+ <20230405075113.455662-5-michal.swiatkowski@linux.intel.com>
+ <68714dbe-3a43-9e3a-2bb5-8f1659b4a979@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <8559d4df-71a8-8d4f-b2f6-91f69281f2d9@intel.com>
+In-Reply-To: <68714dbe-3a43-9e3a-2bb5-8f1659b4a979@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1680780729; x=1712316729;
+ t=1680780899; x=1712316899;
  h=date:from:to:cc:subject:message-id:references:
  mime-version:in-reply-to;
- bh=iek0YMET6BA2WBV/5OtxKMjiMxedxx7tDo0er7rQnM0=;
- b=ahhfqFokd/PQW4e+YaWK1FOdqDTqCJcoik67g/01y+1EiS8IJ7OSZE0m
- x4BakqtCYmF/l3N6O8rEa1iqLvTY2+T1l22Uag2niwywCOoBkx01csO2Q
- fFY3S9rzI+AZxjPDvdQs4K66au5eh46tQ+ge6aAzIvjzzj+RLCLiBa+iQ
- /Cg/9QodrA/dWRg9fYlKFTrPLSjwMq6IMal9bQYBw/2nwSd5G/WBzMlLD
- t/JLCkJJSVfF+1y/fDqwOOHuEJGlptq5CfWevBqyJKXFE8myEcCtxOMX5
- jHDZ7Y3PMhscr30XUZh/Ic9Bt/KbPufraphpXAhHJVgJRsG/4vETKr3wa
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=TYCI1MKcaL1MNZiKdaUVy/2CYgHHghIwYri0YjG/a/4=;
+ b=hyep8bwmH/X2hWe/P4XFo04FTdajLGBF/IiFOgpb7F/nWfXJ3hubaPOv
+ lAGV0liworlxRy2XQ/6lbJkWpX0/a1JqxPyf8bTtJxLie0dUFQEioQWXx
+ jVEOb4S3/S04LLZ5uocWy62rZJf1E/J40f/jqv3quq5nF6/g2ERnv0tCP
+ 1xdCHPCQLQ7wz3o3mDPD6lQ69IqZJ/C3gOpyvQbT+0fFbFYT2OeDejOg+
+ I+Qw9ivQt7XLhDO0vFo9vVd1Qy/cB/jVK/YkVeoqPFN/ojlRzxpuLYcrI
+ qL4JQTriXu1SA2Hr4qktgrlE/Ku3Gc3M/ZJnt4Cq4zPPuXZZ0eLLzJl1D
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ahhfqFok
-Subject: Re: [Intel-wired-lan] [PATCH net-next v3 3/5] ice: allow matching
- on meta data
+ header.a=rsa-sha256 header.s=Intel header.b=hyep8bwm
+Subject: Re: [Intel-wired-lan] [PATCH net-next v3 4/5] ice: specify field
+ names in ice_prot_ext init
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,53 +105,144 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Apr 05, 2023 at 03:31:01PM +0200, Alexander Lobakin wrote:
+On Wed, Apr 05, 2023 at 03:25:53PM +0200, Alexander Lobakin wrote:
 > From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-> Date: Wed, 5 Apr 2023 09:51:11 +0200
+> Date: Wed, 5 Apr 2023 09:51:12 +0200
 > 
-> > Add meta data matching criteria in the same place as protocol matching
-> > criteria. There is no need to add meta data as special words after
-> > parsing all lookups. Trade meta data in the same why as other lookups.
+> > Anonymous initializers are now discouraged. Define ICE_PROTCOL_ENTRY
+> > macro to rewrite anonymous initializers to named one. No functional
+> > changes here.
 > > 
-> > The one difference between meta data lookups and protocol lookups is
-> > that meta data doesn't impact how the packets looks like. Because of that
-> > ignore it when filling testing packet.
-> 
-> [...]
-> 
-> > --- a/drivers/net/ethernet/intel/ice/ice_switch.h
-> > +++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-> > @@ -186,12 +186,14 @@ struct ice_adv_rule_flags_info {
-> >  };
+> > Suggested-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+> > Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/ice/ice_switch.c | 68 +++++++++++----------
+> >  1 file changed, 36 insertions(+), 32 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+> > index b55cdb9a009f..8872e26d1368 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_switch.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+> > @@ -4540,6 +4540,11 @@ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
+> >  	return status;
+> >  }
 > >  
-> >  struct ice_adv_rule_info {
-> > +	/* Store metadata values in rule info */
-> >  	enum ice_sw_tunnel_type tun_type;
-> >  	u16 vlan_type;
-> >  	u16 fltr_rule_id;
-> >  	u32 priority;
-> >  	struct ice_sw_act_ctrl sw_act;
-> >  	struct ice_adv_rule_flags_info flags_info;
-> > +	u16 src_vsi;
+> > +#define ICE_PROTOCOL_ENTRY(id, ...) {	\
+> > +	.prot_type = id,		\
+> > +	.offs	   = {__VA_ARGS__},	\
 > 
-> Minor: since these 2 bytes will introduce 2-byte hole or padding either
-> way, I think it's okay to put this field somewhere around rule ID or
-> priority, i.e. other primitives. So that when someone is adding new
-> short field, he'll see there is a hole and use it. u16 after 2 big
-> structures looks a bit off to me, sorry for the initial confusion with
-> this "please no holes at all!11" -- it's highly desired, but not by
-> sacrificing logical grouping :D
+> Minor: please use one tab in between field name and `=` sign (you have
+> spaces there for now).
+> 
+> > +}
+> > +
+> >  /* This is mapping table entry that maps every word within a given protocol
+> >   * structure to the real byte offset as per the specification of that
+> >   * protocol header.
+> > @@ -4550,38 +4555,37 @@ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
+> >   * structure is added to that union.
+> >   */
+> >  static const struct ice_prot_ext_tbl_entry ice_prot_ext[ICE_PROTOCOL_LAST] = {
+> > -	{ ICE_MAC_OFOS,		{ 0, 2, 4, 6, 8, 10, 12 } },
+> > -	{ ICE_MAC_IL,		{ 0, 2, 4, 6, 8, 10, 12 } },
+> > -	{ ICE_ETYPE_OL,		{ 0 } },
+> > -	{ ICE_ETYPE_IL,		{ 0 } },
+> > -	{ ICE_VLAN_OFOS,	{ 2, 0 } },
+> > -	{ ICE_IPV4_OFOS,	{ 0, 2, 4, 6, 8, 10, 12, 14, 16, 18 } },
+> > -	{ ICE_IPV4_IL,		{ 0, 2, 4, 6, 8, 10, 12, 14, 16, 18 } },
+> > -	{ ICE_IPV6_OFOS,	{ 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24,
+> > -				 26, 28, 30, 32, 34, 36, 38 } },
+> > -	{ ICE_IPV6_IL,		{ 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24,
+> > -				 26, 28, 30, 32, 34, 36, 38 } },
+> > -	{ ICE_TCP_IL,		{ 0, 2 } },
+> > -	{ ICE_UDP_OF,		{ 0, 2 } },
+> > -	{ ICE_UDP_ILOS,		{ 0, 2 } },
+> > -	{ ICE_VXLAN,		{ 8, 10, 12, 14 } },
+> > -	{ ICE_GENEVE,		{ 8, 10, 12, 14 } },
+> > -	{ ICE_NVGRE,		{ 0, 2, 4, 6 } },
+> > -	{ ICE_GTP,		{ 8, 10, 12, 14, 16, 18, 20, 22 } },
+> > -	{ ICE_GTP_NO_PAY,	{ 8, 10, 12, 14 } },
+> > -	{ ICE_PPPOE,		{ 0, 2, 4, 6 } },
+> > -	{ ICE_L2TPV3,		{ 0, 2, 4, 6, 8, 10 } },
+> > -	{ ICE_VLAN_EX,          { 2, 0 } },
+> > -	{ ICE_VLAN_IN,          { 2, 0 } },
+> > -	{ ICE_HW_METADATA,	{ ICE_SOURCE_PORT_MDID_OFFSET,
+> > -				  ICE_PTYPE_MDID_OFFSET,
+> > -				  ICE_PACKET_LENGTH_MDID_OFFSET,
+> > -				  ICE_SOURCE_VSI_MDID_OFFSET,
+> > -				  ICE_PKT_VLAN_MDID_OFFSET,
+> > -				  ICE_PKT_TUNNEL_MDID_OFFSET,
+> > -				  ICE_PKT_TCP_MDID_OFFSET,
+> > -				  ICE_PKT_ERROR_MDID_OFFSET,
+> > -				}},
+> > +	ICE_PROTOCOL_ENTRY(ICE_MAC_OFOS, 0, 2, 4, 6, 8, 10, 12),
+> > +	ICE_PROTOCOL_ENTRY(ICE_MAC_IL, 0, 2, 4, 6, 8, 10, 12),
+> > +	ICE_PROTOCOL_ENTRY(ICE_ETYPE_OL, 0),
+> > +	ICE_PROTOCOL_ENTRY(ICE_ETYPE_IL, 0),
+> 
+> BTW, as offset arguments go into the array declaration, you can even
+> omit such single-zero-element declarations. I.e., if I'm not mistaken,
+> these two equal to just:
+> 
+> 	ICE_PROTOCOL_ENTRY(ICE_ETYPE_OL),
+> 	ICE_PROTOCOL_ENTRY(ICE_ETYPE_IL),
+> 
+> But: 1) better to recheck; 2) up to you, maybe it's better to explicitly
+> mention zero offsets here.
 > 
 
-Good point, it looks a little strange, I will move it :)
+Good to know, will recheck.
+
+As 0 offset is valid (0 means 0 offset not protocol without offset) I
+preffere to mention 0 here.
+
+> > +	ICE_PROTOCOL_ENTRY(ICE_VLAN_OFOS, 2, 0),
+> > +	ICE_PROTOCOL_ENTRY(ICE_IPV4_OFOS, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18),
+> > +	ICE_PROTOCOL_ENTRY(ICE_IPV4_IL,	0, 2, 4, 6, 8, 10, 12, 14, 16, 18),
+> > +	ICE_PROTOCOL_ENTRY(ICE_IPV6_OFOS, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18,
+> > +			   20, 22, 24, 26, 28, 30, 32, 34, 36, 38),
+> > +	ICE_PROTOCOL_ENTRY(ICE_IPV6_IL, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20,
+> > +			   22, 24, 26, 28, 30, 32, 34, 36, 38),
+> > +	ICE_PROTOCOL_ENTRY(ICE_TCP_IL, 0, 2),
+> > +	ICE_PROTOCOL_ENTRY(ICE_UDP_OF, 0, 2),
+> > +	ICE_PROTOCOL_ENTRY(ICE_UDP_ILOS, 0, 2),
+> > +	ICE_PROTOCOL_ENTRY(ICE_VXLAN, 8, 10, 12, 14),
+> > +	ICE_PROTOCOL_ENTRY(ICE_GENEVE, 8, 10, 12, 14),
+> > +	ICE_PROTOCOL_ENTRY(ICE_NVGRE, 0, 2, 4, 6),
+> > +	ICE_PROTOCOL_ENTRY(ICE_GTP, 8, 10, 12, 14, 16, 18, 20, 22),
+> > +	ICE_PROTOCOL_ENTRY(ICE_GTP_NO_PAY, 8, 10, 12, 14),
+> > +	ICE_PROTOCOL_ENTRY(ICE_PPPOE, 0, 2, 4, 6),
+> > +	ICE_PROTOCOL_ENTRY(ICE_L2TPV3, 0, 2, 4, 6, 8, 10),
+> > +	ICE_PROTOCOL_ENTRY(ICE_VLAN_EX, 2, 0),
+> > +	ICE_PROTOCOL_ENTRY(ICE_VLAN_IN, 2, 0),
+> > +	ICE_PROTOCOL_ENTRY(ICE_HW_METADATA, ICE_SOURCE_PORT_MDID_OFFSET,
+> 
+> Nit: I think here's the exceptional case when you can specify this
+> second argument on the next line, i.e. break the line even though it
+> fits into 80 chars. This looks a bit off to me :D
+>
+
+Right, will move it
+
+> > +			   ICE_PTYPE_MDID_OFFSET,
+> > +			   ICE_PACKET_LENGTH_MDID_OFFSET,
+> > +			   ICE_SOURCE_VSI_MDID_OFFSET,
+> > +			   ICE_PKT_VLAN_MDID_OFFSET,
+> > +			   ICE_PKT_TUNNEL_MDID_OFFSET,
+> > +			   ICE_PKT_TCP_MDID_OFFSET,
+> > +			   ICE_PKT_ERROR_MDID_OFFSET),
+> 
+> Hmm, could this patch go as 3/5, i.e. before this last element is
+> introduced, so that there'll be 16 lines less in diffstat?
+>
+
+Sure, I will rebase
 
 Thanks,
 Michal
-
 > >  };
 > >  
-> >  /* A collection of one or more four word recipe */
-> [...]
+> >  static struct ice_protocol_entry ice_prot_id_tbl[ICE_PROTOCOL_LAST] = {
 > 
 > Thanks,
 > Olek
