@@ -1,90 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18D24C76196
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  6 Apr 2023 21:36:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A90CFC76196
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  7 Apr 2023 11:55:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A257B844B2;
-	Thu,  6 Apr 2023 21:36:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A257B844B2
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3EB474012A;
+	Fri,  7 Apr 2023 11:55:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3EB474012A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680816962;
-	bh=ATjdcuAdVsdg2NORVm8tJUykmXe0RUR7f9FXqV/Z014=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=ug2kgOnGpIbYJv3v6UfOnHH/6CNV72uzjCt1mgkdUVptKiMwmV4eL7Vtn9QI6VifJ
-	 AHqMPmEurHgZyNPGIyXcGq9HnRpbGVkgwLkBNmowAe7nt88QTmAxIN888k4GVzMMM6
-	 c1JZeHt8Mbz4TmxBUU15cWolFyZZeQ/9ir7gGQQUin5ZnpxFef22DJf+m9O3xcbC5C
-	 0yZ+NePqeC3JzxvmHOGSZ059wCgGY5IKlBbNn0ymbCrnt+ZcKrIqn6pyZ676+YwufD
-	 KIE02jUT6ANPBL3KId0712OudTgss7i1P/j+2dVOKwZwnWbss7SHFVnpvnHJKBFBzG
-	 36cpbEavdpUqA==
+	s=default; t=1680868552;
+	bh=uWgBgdTi5HgYlQzbJivJdy7Dalhpi71FywKFQ7Ta628=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=gJ/D1lK8bREaw8FqeSQh3UXEeHqv5ozlW5wK8hlyHRJZVVavuHa1pWSLHcZTqNjk5
+	 TahuxlLeCkpHhS31Etn5amuRYJSdcwFousEfJd51I1Ed9vwXbF+7uLFDOOyZehtQGD
+	 QUgqFXU1Ug8utJgP98q3/Q7yJY0KvrIOYo8j5hGiZn+Tsc/5zw5+WJtFQ4SXKwyw5F
+	 JG/Yk1T4RuD5jBXw/8k8zwbEeSa2A8RP9megl/vjojO/hdp+RZW5c8PnnafedcvA5j
+	 MFLxZaGMElLxS8R0XSg5Lfy6yuN3lBkFZHR8Q3IBTEy9e/tBkMhJgOFRRXazlaIulb
+	 VL9RPCklg9dLg==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id iz7jv9ky3_96; Fri,  7 Apr 2023 11:55:51 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id 37658405F0;
+	Fri,  7 Apr 2023 11:55:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 37658405F0
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 3C1571C2E3B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Apr 2023 11:55:49 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 211C484553
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Apr 2023 11:55:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 211C484553
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id NEF7eOuKAWUy; Thu,  6 Apr 2023 21:36:01 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 653B2844B0;
-	Thu,  6 Apr 2023 21:36:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 653B2844B0
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 397211BF354
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 21:35:54 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 0D0FF41E8D
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 21:35:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0D0FF41E8D
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1TcjXWg-YoUM for <intel-wired-lan@lists.osuosl.org>;
- Thu,  6 Apr 2023 21:35:50 +0000 (UTC)
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id H611Ds_rWNyq for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  7 Apr 2023 11:55:47 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A17F841F5C
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A17F841F5C
- for <intel-wired-lan@lists.osuosl.org>; Thu,  6 Apr 2023 21:35:50 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10672"; a="322496103"
-X-IronPort-AV: E=Sophos;i="5.98,323,1673942400"; d="scan'208";a="322496103"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Apr 2023 14:35:42 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C1AE984552
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C1AE984552
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  7 Apr 2023 11:55:47 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10672"; a="370809671"
+X-IronPort-AV: E=Sophos;i="5.98,326,1673942400"; d="scan'208";a="370809671"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Apr 2023 04:55:46 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10672"; a="756476380"
-X-IronPort-AV: E=Sophos;i="5.98,323,1673942400"; d="scan'208";a="756476380"
-Received: from unisar-mobl.ger.corp.intel.com (HELO azaki-desk1.intel.com)
- ([10.252.43.240])
- by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 06 Apr 2023 14:35:41 -0700
-From: Ahmed Zaki <ahmed.zaki@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  6 Apr 2023 15:35:27 -0600
-Message-Id: <20230406213528.266368-2-ahmed.zaki@intel.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230406213528.266368-1-ahmed.zaki@intel.com>
-References: <20230406213528.266368-1-ahmed.zaki@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10672"; a="664865687"
+X-IronPort-AV: E=Sophos;i="5.98,326,1673942400"; d="scan'208";a="664865687"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+ by orsmga006.jf.intel.com with ESMTP; 07 Apr 2023 04:55:44 -0700
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1pkkgx-000SSE-1A;
+ Fri, 07 Apr 2023 11:55:43 +0000
+Date: Fri, 07 Apr 2023 19:55:29 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <643004b1.hDX7efHbIjPsM4e6%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1680816950; x=1712352950;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=Gp6AjAHGamGarn02eW476WEd7OjhsSBeZJ1Xtm9ljEc=;
- b=m45LQGFCSFfs0y/sJPXbd6JrFyh9Z1rAyf6nDsfeUcgXdpB6gPtb7zTM
- F4x81Hwa/unkh88J33UcG//Fp/TCAJ5co1ofoUM9+XT+dydfLIU0U8bEY
- suSkpxnJUaWsWy1EFGMNPKEN29VgUub+mIBnrJSKsT+ONWAozxHoa8+ok
- B04TdiNGDegFHGFhnlFilaatlsbI+m1r5JSFztZ4iRAkYbIWwy+GvKrS9
- 0as9k55TCDt+tnz+y/FwAn5CZtd7J0uHNJ+wqcRpqI70kxwdVPGBNAd81
- OMePLLGChrTT+TFrexssOALCO02V25fCeI+pEZAclEcv8Qt9s+2G0fsoh
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1680868547; x=1712404547;
+ h=date:from:to:subject:message-id:mime-version:
+ content-transfer-encoding;
+ bh=+guG529CIctqhlhShJU7NTUO0NvkdLL73iOVWF+if9g=;
+ b=KpMyFV+JbGMpfp3J/nI+XFHjiUMF71pgwACi0aOtltESfwEJ1YLNLDoC
+ ZQuH+ugqmqpXn7cYeP4PJE8zmEa4lwwUeCq9oZP2W7ITJ24nB7FWhrnw3
+ AjKnGAoVfquXAYhPWGS5ugAy85SRRdW3XzXgtGymAhdViC87jzF+n/yK1
+ PotbfRGWJeJieNDOGVwEPjnBHsAGfOmSAHbZLB8XSZDvTQLzTRGVXi824
+ VnX9m5NHLdYXwfdRanx00k7gbVfQbpY6HwAkOgidf264d7vnDTdEY57F1
+ muzeQRPlLQ97iiICLxbyVbyrIUVDgmRNelAwsOAUDYBhsNk8LL7iOz+gV
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=m45LQGFC
-Subject: [Intel-wired-lan] [PATCH net v2 1/2] iavf: refactor VLAN filter
- states
+ header.a=rsa-sha256 header.s=Intel header.b=KpMyFV+J
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ e1da418893694508948fa7930a9f699027a25cfa
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,203 +100,148 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The VLAN filter states are currently being saved as individual bits.
-This is error prone as multiple bits might be mistakenly set.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: e1da418893694508948fa7930a9f699027a25cfa  iavf: remove active_cvlans and active_svlans bitmaps
 
-Fix by replacing the bits with a single state enum. Also, add an
-"ACTIVE" state for filters that are accepted by the PF.
+elapsed time: 728m
 
-Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf.h        | 15 +++++----
- drivers/net/ethernet/intel/iavf/iavf_main.c   |  8 ++---
- .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 31 +++++++++----------
- 3 files changed, 28 insertions(+), 26 deletions(-)
+configs tested: 126
+configs skipped: 4
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 2cdce251472c..baf6dd8dc93d 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -157,15 +157,18 @@ struct iavf_vlan {
- 	u16 tpid;
- };
- 
-+enum iavf_vlan_state_t {
-+	IAVF_VLAN_INVALID,
-+	IAVF_VLAN_ADD,		/* filter needs to be added */
-+	IAVF_VLAN_IS_NEW,	/* filter is new, wait for PF answer */
-+	IAVF_VLAN_ACTIVE,	/* filter is accepted by PF */
-+	IAVF_VLAN_REMOVE,	/* filter needs to be removed */
-+};
-+
- struct iavf_vlan_filter {
- 	struct list_head list;
- 	struct iavf_vlan vlan;
--	struct {
--		u8 is_new_vlan:1;	/* filter is new, wait for PF answer */
--		u8 remove:1;		/* filter needs to be removed */
--		u8 add:1;		/* filter needs to be added */
--		u8 padding:5;
--	};
-+	enum iavf_vlan_state_t state;
- };
- 
- #define IAVF_MAX_TRAFFIC_CLASS	4
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 095201e83c9d..fe9798e4b4ac 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -791,7 +791,7 @@ iavf_vlan_filter *iavf_add_vlan(struct iavf_adapter *adapter,
- 		f->vlan = vlan;
- 
- 		list_add_tail(&f->list, &adapter->vlan_filter_list);
--		f->add = true;
-+		f->state = IAVF_VLAN_ADD;
- 		adapter->aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
- 	}
- 
-@@ -813,7 +813,7 @@ static void iavf_del_vlan(struct iavf_adapter *adapter, struct iavf_vlan vlan)
- 
- 	f = iavf_find_vlan(adapter, vlan);
- 	if (f) {
--		f->remove = true;
-+		f->state = IAVF_VLAN_REMOVE;
- 		adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
- 	}
- 
-@@ -1296,11 +1296,11 @@ static void iavf_clear_mac_vlan_filters(struct iavf_adapter *adapter)
- 	/* remove all VLAN filters */
- 	list_for_each_entry_safe(vlf, vlftmp, &adapter->vlan_filter_list,
- 				 list) {
--		if (vlf->add) {
-+		if (vlf->state == IAVF_VLAN_ADD) {
- 			list_del(&vlf->list);
- 			kfree(vlf);
- 		} else {
--			vlf->remove = true;
-+			vlf->state = IAVF_VLAN_REMOVE;
- 		}
- 	}
- 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-index 4e17d006c52d..5047b4c83718 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
-@@ -642,7 +642,7 @@ static void iavf_vlan_add_reject(struct iavf_adapter *adapter)
- 
- 	spin_lock_bh(&adapter->mac_vlan_list_lock);
- 	list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
--		if (f->is_new_vlan) {
-+		if (f->state == IAVF_VLAN_IS_NEW) {
- 			if (f->vlan.tpid == ETH_P_8021Q)
- 				clear_bit(f->vlan.vid,
- 					  adapter->vsi.active_cvlans);
-@@ -679,7 +679,7 @@ void iavf_add_vlans(struct iavf_adapter *adapter)
- 	spin_lock_bh(&adapter->mac_vlan_list_lock);
- 
- 	list_for_each_entry(f, &adapter->vlan_filter_list, list) {
--		if (f->add)
-+		if (f->state == IAVF_VLAN_ADD)
- 			count++;
- 	}
- 	if (!count || !VLAN_FILTERING_ALLOWED(adapter)) {
-@@ -710,11 +710,10 @@ void iavf_add_vlans(struct iavf_adapter *adapter)
- 		vvfl->vsi_id = adapter->vsi_res->vsi_id;
- 		vvfl->num_elements = count;
- 		list_for_each_entry(f, &adapter->vlan_filter_list, list) {
--			if (f->add) {
-+			if (f->state == IAVF_VLAN_ADD) {
- 				vvfl->vlan_id[i] = f->vlan.vid;
- 				i++;
--				f->add = false;
--				f->is_new_vlan = true;
-+				f->state = IAVF_VLAN_IS_NEW;
- 				if (i == count)
- 					break;
- 			}
-@@ -760,7 +759,7 @@ void iavf_add_vlans(struct iavf_adapter *adapter)
- 		vvfl_v2->vport_id = adapter->vsi_res->vsi_id;
- 		vvfl_v2->num_elements = count;
- 		list_for_each_entry(f, &adapter->vlan_filter_list, list) {
--			if (f->add) {
-+			if (f->state == IAVF_VLAN_ADD) {
- 				struct virtchnl_vlan_supported_caps *filtering_support =
- 					&adapter->vlan_v2_caps.filtering.filtering_support;
- 				struct virtchnl_vlan *vlan;
-@@ -778,8 +777,7 @@ void iavf_add_vlans(struct iavf_adapter *adapter)
- 				vlan->tpid = f->vlan.tpid;
- 
- 				i++;
--				f->add = false;
--				f->is_new_vlan = true;
-+				f->state = IAVF_VLAN_IS_NEW;
- 			}
- 		}
- 
-@@ -822,10 +820,11 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
- 		 * filters marked for removal to enable bailing out before
- 		 * sending a virtchnl message
- 		 */
--		if (f->remove && !VLAN_FILTERING_ALLOWED(adapter)) {
-+		if (f->state == IAVF_VLAN_REMOVE &&
-+		    !VLAN_FILTERING_ALLOWED(adapter)) {
- 			list_del(&f->list);
- 			kfree(f);
--		} else if (f->remove) {
-+		} else if (f->state == IAVF_VLAN_REMOVE) {
- 			count++;
- 		}
- 	}
-@@ -857,7 +856,7 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
- 		vvfl->vsi_id = adapter->vsi_res->vsi_id;
- 		vvfl->num_elements = count;
- 		list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
--			if (f->remove) {
-+			if (f->state == IAVF_VLAN_REMOVE) {
- 				vvfl->vlan_id[i] = f->vlan.vid;
- 				i++;
- 				list_del(&f->list);
-@@ -901,7 +900,7 @@ void iavf_del_vlans(struct iavf_adapter *adapter)
- 		vvfl_v2->vport_id = adapter->vsi_res->vsi_id;
- 		vvfl_v2->num_elements = count;
- 		list_for_each_entry_safe(f, ftmp, &adapter->vlan_filter_list, list) {
--			if (f->remove) {
-+			if (f->state == IAVF_VLAN_REMOVE) {
- 				struct virtchnl_vlan_supported_caps *filtering_support =
- 					&adapter->vlan_v2_caps.filtering.filtering_support;
- 				struct virtchnl_vlan *vlan;
-@@ -2192,7 +2191,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 				list_for_each_entry(vlf,
- 						    &adapter->vlan_filter_list,
- 						    list)
--					vlf->add = true;
-+					vlf->state = IAVF_VLAN_ADD;
- 
- 				adapter->aq_required |=
- 					IAVF_FLAG_AQ_ADD_VLAN_FILTER;
-@@ -2260,7 +2259,7 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 				list_for_each_entry(vlf,
- 						    &adapter->vlan_filter_list,
- 						    list)
--					vlf->add = true;
-+					vlf->state = IAVF_VLAN_ADD;
- 
- 				aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
- 			}
-@@ -2444,8 +2443,8 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
- 
- 		spin_lock_bh(&adapter->mac_vlan_list_lock);
- 		list_for_each_entry(f, &adapter->vlan_filter_list, list) {
--			if (f->is_new_vlan) {
--				f->is_new_vlan = false;
-+			if (f->state == IAVF_VLAN_IS_NEW) {
-+				f->state = IAVF_VLAN_ACTIVE;
- 				if (f->vlan.tpid == ETH_P_8021Q)
- 					set_bit(f->vlan.vid,
- 						adapter->vsi.active_cvlans);
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r015-20230403   gcc  
+alpha                randconfig-r023-20230403   gcc  
+alpha                randconfig-r033-20230406   gcc  
+alpha                randconfig-r036-20230403   gcc  
+alpha                randconfig-r036-20230404   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r033-20230403   gcc  
+arc                  randconfig-r034-20230403   gcc  
+arc                  randconfig-r043-20230403   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                  randconfig-r034-20230403   gcc  
+arm                  randconfig-r046-20230403   clang
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+arm64                randconfig-r021-20230403   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r012-20230403   gcc  
+csky                 randconfig-r033-20230403   gcc  
+hexagon      buildonly-randconfig-r001-20230403   clang
+hexagon              randconfig-r035-20230403   clang
+hexagon              randconfig-r041-20230403   clang
+hexagon              randconfig-r045-20230403   clang
+i386                             allyesconfig   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                 randconfig-a001-20230403   clang
+i386                 randconfig-a002-20230403   clang
+i386                 randconfig-a003-20230403   clang
+i386                 randconfig-a004-20230403   clang
+i386                 randconfig-a005-20230403   clang
+i386                 randconfig-a006-20230403   clang
+i386                 randconfig-a011-20230403   gcc  
+i386                 randconfig-a012-20230403   gcc  
+i386                 randconfig-a013-20230403   gcc  
+i386                 randconfig-a014-20230403   gcc  
+i386                 randconfig-a015-20230403   gcc  
+i386                 randconfig-a016-20230403   gcc  
+i386                 randconfig-r022-20230403   gcc  
+i386                 randconfig-r036-20230403   clang
+ia64                             allmodconfig   gcc  
+ia64         buildonly-randconfig-r002-20230403   gcc  
+ia64                                defconfig   gcc  
+ia64                 randconfig-r011-20230403   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch            randconfig-r032-20230406   gcc  
+loongarch            randconfig-r034-20230406   gcc  
+m68k                             allmodconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                        mvme16x_defconfig   gcc  
+m68k                 randconfig-r016-20230403   gcc  
+m68k                 randconfig-r024-20230403   gcc  
+m68k                 randconfig-r034-20230404   gcc  
+m68k                 randconfig-r036-20230406   gcc  
+microblaze           randconfig-r031-20230403   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                  maltasmvp_eva_defconfig   gcc  
+mips                          rb532_defconfig   gcc  
+nios2                               defconfig   gcc  
+nios2                randconfig-r002-20230403   gcc  
+nios2                randconfig-r014-20230403   gcc  
+nios2                randconfig-r033-20230404   gcc  
+openrisc     buildonly-randconfig-r006-20230403   gcc  
+openrisc             randconfig-r026-20230403   gcc  
+parisc       buildonly-randconfig-r003-20230403   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc              randconfig-r025-20230403   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r006-20230403   clang
+riscv                randconfig-r031-20230406   gcc  
+riscv                randconfig-r042-20230403   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r031-20230404   gcc  
+s390                 randconfig-r044-20230403   gcc  
+sh                               allmodconfig   gcc  
+sh           buildonly-randconfig-r001-20230403   gcc  
+sh           buildonly-randconfig-r005-20230403   gcc  
+sh                        edosk7760_defconfig   gcc  
+sh                         microdev_defconfig   gcc  
+sh                   randconfig-r031-20230403   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r003-20230403   gcc  
+sparc                randconfig-r004-20230403   gcc  
+sparc                randconfig-r032-20230403   gcc  
+sparc64              randconfig-r001-20230403   gcc  
+sparc64              randconfig-r035-20230406   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-a001-20230403   clang
+x86_64               randconfig-a002-20230403   clang
+x86_64               randconfig-a003-20230403   clang
+x86_64               randconfig-a004-20230403   clang
+x86_64               randconfig-a005-20230403   clang
+x86_64               randconfig-a006-20230403   clang
+x86_64               randconfig-a011-20230403   gcc  
+x86_64               randconfig-a012-20230403   gcc  
+x86_64               randconfig-a013-20230403   gcc  
+x86_64               randconfig-a014-20230403   gcc  
+x86_64               randconfig-a015-20230403   gcc  
+x86_64               randconfig-a016-20230403   gcc  
+x86_64               randconfig-k001-20230403   gcc  
+x86_64               randconfig-r005-20230403   clang
+x86_64               randconfig-r013-20230403   gcc  
+x86_64               randconfig-r032-20230403   clang
+x86_64                               rhel-8.3   gcc  
+xtensa       buildonly-randconfig-r004-20230403   gcc  
+xtensa               randconfig-r035-20230404   gcc  
+
 -- 
-2.34.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
