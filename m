@@ -4,70 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1843CC77B6C
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  8 Apr 2023 14:07:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAF3DC77B6C
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  8 Apr 2023 19:24:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8C15441E19;
-	Sat,  8 Apr 2023 14:07:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8C15441E19
+	by smtp4.osuosl.org (Postfix) with ESMTP id 413B541DCE;
+	Sat,  8 Apr 2023 19:24:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 413B541DCE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1680962840;
-	bh=xBXx911lqxGJu9QYcus3FA5YchSXjF/9nPD+6iMJYpE=;
+	s=default; t=1680981890;
+	bh=oN+vuk+uRuSYy7BAwK2J7/iQ7vBMXLXv4jCPzSQiUWQ=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=a1ddTDbVQe9no132v3CNNjY9JpvEs+x3Lr5dVR0vkZaJ4ghzHeH/1gAwnhn2dJUy/
-	 YESDeUHNq3eWxBk6RBHb8KiPVw+nsumDEZZ5IXIt3GdCRBR7r9sL1qeR7LMyAqr80C
-	 D7N/yZtbXr00SOk0gRyCfVteGygtOF4gU50y08t6D0g9TrPWUhsaBjekejhTkzzgJB
-	 LmgjDFW0r6WF0uVbSa33lrozdz31oDcg0+0zC1SnYjFM/cUCBLnsWdUn7GHcHTMikN
-	 oV9O7M6qzUrygrd3UErKSH4IHNKuuTQnBcUi422iPisqQ0mHS9soKZMGMY8bPeM9vf
-	 xSmxzJ2o+Oliw==
+	b=pkf9aKKPKxQX1Js3f4xx5KYBJYJdf6Kty+emJeSk/VAxx6lQxIajtGiZakQRPyZ9x
+	 ax5A5xgz2VMpz+It8VFUCPbw+gFBf+liSrpmtq/M4Xi3fp+M3YmHsdfrQSJlWc9gSy
+	 Q/KPvfW2MtfAI3f9ztYCztSK5eJOHSEQ6AIt/4bd6PVy9PKB0lz4i0ruuViFKC59pg
+	 KlE7RC2d6rqZmIgouTYf4Qq0BSvyh8278Crx3L3IepDsBGomvhXUCjw6gEgdru+11D
+	 fTcOhh5xu5ve53CvXwmmbr2ntcS7iTwNCNelDQD1QpMSwIMH6tuGV4Qa0dZ09R7Plq
+	 D1aw8t4RF2SQg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bS0wkYiyo6TB; Sat,  8 Apr 2023 14:07:17 +0000 (UTC)
+	with ESMTP id a1RGHGknbXbQ; Sat,  8 Apr 2023 19:24:49 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id EE48A41E9D;
-	Sat,  8 Apr 2023 14:07:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EE48A41E9D
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 9B5161C32CF
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Apr 2023 14:07:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1A51F41DAA;
+	Sat,  8 Apr 2023 19:24:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1A51F41DAA
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 469491BF5DC
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Apr 2023 19:24:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 73017405C0
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Apr 2023 14:07:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 73017405C0
+ by smtp3.osuosl.org (Postfix) with ESMTP id 14D2460B8C
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Apr 2023 19:24:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 14D2460B8C
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HZtHpBvmlsji for <intel-wired-lan@lists.osuosl.org>;
- Sat,  8 Apr 2023 14:07:01 +0000 (UTC)
-X-Greylist: delayed 00:05:39 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 12BFA40127
-Received: from mail-m11880.qiye.163.com (mail-m11880.qiye.163.com
- [115.236.118.80])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 12BFA40127
- for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Apr 2023 14:07:00 +0000 (UTC)
-Received: from localhost.localdomain (unknown
- [IPV6:240e:3b7:3279:cf80:b96f:666f:20ca:bc83])
- by mail-m11880.qiye.163.com (Hmail) with ESMTPA id 60349201AB;
- Sat,  8 Apr 2023 22:01:12 +0800 (CST)
-From: Ding Hui <dinghui@sangfor.com.cn>
-To: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, intel-wired-lan@lists.osuosl.org
-Date: Sat,  8 Apr 2023 22:00:28 +0800
-Message-Id: <20230408140030.5769-1-dinghui@sangfor.com.cn>
-X-Mailer: git-send-email 2.17.1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
- tZV1koWUFITzdXWS1ZQUlXWQ8JGhUIEh9ZQVlDSB1MVkkfQ0lDH09MShlNH1UTARMWGhIXJBQOD1
- lXWRgSC1lBWUlPSx5BSBlMQUhJTEJBGB1DS0EZQk0dQU1NTR1BSUsYGkEZGENIWVdZFhoPEhUdFF
- lBWU9LSFVKSktCSE5VSktLVUtZBg++
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6PxQ6DQw5Pz0cTzcXSSo#HEox
- MzQaCi5VSlVKTUNLQk1JT0xISkJLVTMWGhIXVR8SFRwTDhI7CBoVHB0UCVUYFBZVGBVFWVdZEgtZ
- QVlJT0seQUgZTEFISUxCQRgdQ0tBGUJNHUFNTU0dQUlLGBpBGRhDSFlXWQgBWUFJTUJLNwY+
-X-HM-Tid: 0a87612bcb4d2eb6kusn60349201ab
-X-HM-MType: 1
-Subject: [Intel-wired-lan] [PATCH net 0/2] iavf: Fix issues when setting
- channels concurrency
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id rhsQ2Csz2TlI for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  8 Apr 2023 19:24:45 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D7ED360B73
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D7ED360B73
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  8 Apr 2023 19:24:44 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-170-eMMT_24CMTGEkuTyNfCu2g-1; Sat, 08 Apr 2023 15:24:39 -0400
+X-MC-Unique: eMMT_24CMTGEkuTyNfCu2g-1
+Received: from smtp.corp.redhat.com (int-mx09.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.9])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C8BE029AA2E7;
+ Sat,  8 Apr 2023 19:24:37 +0000 (UTC)
+Received: from firesoul.localdomain (unknown [10.45.242.3])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 3E273492C14;
+ Sat,  8 Apr 2023 19:24:37 +0000 (UTC)
+Received: from [10.1.1.1] (localhost [IPv6:::1])
+ by firesoul.localdomain (Postfix) with ESMTP id 4ED6B307372E8;
+ Sat,  8 Apr 2023 21:24:36 +0200 (CEST)
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+To: bpf@vger.kernel.org, Stanislav Fomichev <sdf@google.com>,
+ =?utf-8?q?Toke_H=C3=B8iland-J=C3=B8rgensen?= <toke@redhat.com>
+Date: Sat, 08 Apr 2023 21:24:36 +0200
+Message-ID: <168098183268.96582.7852359418481981062.stgit@firesoul>
+User-Agent: StGit/1.4
+MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.9
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1680981883;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=WHos8LM0VawSvsV7ilkV4J+3kFj+NjV9a1WkRGl+L9k=;
+ b=CJ0ZOJ3aFlqXV34dD3Wlmmnem03FbTuGFNq3bcrgO6weRUcHR4fKXxAT60hUlB9SqoGzjY
+ 3mR8h7VGz/Tqq6oXi1CvUDNWtOtVbE1XQL7cZLLPIIPqJDL9UdmTfR4JLzF1VNxOfJkpS+
+ oIoqTiLyumNPtZa9Py76lmqDycmhSl0=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=CJ0ZOJ3a
+Subject: [Intel-wired-lan] [PATCH bpf V7 0/7] XDP-hints: API change for
+ RX-hash kfunc bpf_xdp_metadata_rx_hash
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,77 +99,57 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: keescook@chromium.org, grzegorzx.szczurek@intel.com,
- Ding Hui <dinghui@sangfor.com.cn>, jesse.brandeburg@intel.com,
- linux-kernel@vger.kernel.org, anthony.l.nguyen@intel.com,
- linux-hardening@vger.kernel.org, netdev@vger.kernel.org
-MIME-Version: 1.0
+Cc: ast@kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ boon.leong.ong@intel.com, hawk@kernel.org, xdp-hints@xdp-project.net,
+ daniel@iogearbox.net, linux-rdma@vger.kernel.org, john.fastabend@gmail.com,
+ jesse.brandeburg@intel.com, intel-wired-lan@lists.osuosl.org,
+ Jesper Dangaard Brouer <brouer@redhat.com>, kuba@kernel.org, pabeni@redhat.com,
+ martin.lau@kernel.org, larysa.zaremba@intel.com, leon@kernel.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, tariqt@nvidia.com,
+ yoong.siang.song@intel.com, saeedm@nvidia.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-There are two issues can be reproduced by the following script:
+Current API for bpf_xdp_metadata_rx_hash() returns the raw RSS hash value,
+but doesn't provide information on the RSS hash type (part of 6.3-rc).
 
-[root@host ~]# cat test-iavf-1.sh
-#!/bin/bash
+This patchset proposal is to change the function call signature via adding
+a pointer value argument for providing the RSS hash type.
 
-pf_dbsf="0000:40:01.1/0000:41:00.0"
-vf0_dbsf="0000:40:01.1/0000:41:02.0"
-g_pids=()
+Patchset also disables all bpf_printk's from xdp_hw_metadata program
+that we expect driver developers to use.
 
-function do_set_numvf()
-{
-    echo "set 2 vfs"
-    echo 2 >/sys/bus/pci/devices/${pf_dbsf}/sriov_numvfs
-    sleep $((RANDOM%3+1))
-    echo "set 0 vfs"
-    echo 0 >/sys/bus/pci/devices/${pf_dbsf}/sriov_numvfs
-    sleep $((RANDOM%3+1))
-}
+---
 
-function do_nic_reset()
-{
-    local nic=$(ls -1 --indicator-style=none /sys/bus/pci/devices/${vf0_dbsf}/net/)
-    [ -z "$nic" ] && { sleep $((RANDOM%3)) ; return 1; }
-    ifconfig $nic 192.168.18.5 netmask 255.255.255.0
-    ifconfig $nic up
-    echo "set $nic 1 combined"
-    ethtool -L $nic combined 1
-    echo "set $nic 4 combined"
-    ethtool -L $nic combined 4
-    sleep $((RANDOM%3))
-}
-
-function on_exit()
-{
-    local pid
-    for pid in "${g_pids[@]}"; do
-        kill -0 "$pid" &>/dev/null && kill "$pid" &>/dev/null
-    done
-    g_pids=()
-}
-
-trap "on_exit; exit" EXIT
-
-while :; do do_set_numvf ; done &
-g_pids+=($!)
-while :; do do_nic_reset ; done &
-g_pids+=($!)
-
-wait
+Jesper Dangaard Brouer (7):
+      selftests/bpf: xdp_hw_metadata default disable bpf_printk
+      selftests/bpf: Add counters to xdp_hw_metadata
+      xdp: rss hash types representation
+      mlx5: bpf_xdp_metadata_rx_hash add xdp rss hash type
+      veth: bpf_xdp_metadata_rx_hash add xdp rss hash type
+      mlx4: bpf_xdp_metadata_rx_hash add xdp rss hash type
+      selftests/bpf: Adjust bpf_xdp_metadata_rx_hash for new arg
 
 
-Ding Hui (2):
-  iavf: Fix use-after-free in free_netdev
-  iavf: Fix out-of-bounds when setting channels on remove
+ drivers/net/ethernet/mellanox/mlx4/en_rx.c    | 22 ++++++-
+ drivers/net/ethernet/mellanox/mlx4/mlx4_en.h  |  3 +-
+ .../net/ethernet/mellanox/mlx5/core/en/xdp.c  | 63 ++++++++++++++++++-
+ drivers/net/veth.c                            | 10 ++-
+ include/linux/mlx5/device.h                   | 14 ++++-
+ include/linux/netdevice.h                     |  3 +-
+ include/net/xdp.h                             | 47 ++++++++++++++
+ net/core/xdp.c                                | 10 ++-
+ .../selftests/bpf/prog_tests/xdp_metadata.c   |  2 +
+ .../selftests/bpf/progs/xdp_hw_metadata.c     | 42 ++++++++++---
+ .../selftests/bpf/progs/xdp_metadata.c        |  6 +-
+ .../selftests/bpf/progs/xdp_metadata2.c       |  7 ++-
+ tools/testing/selftests/bpf/xdp_hw_metadata.c | 10 ++-
+ tools/testing/selftests/bpf/xdp_metadata.h    |  4 ++
+ 14 files changed, 213 insertions(+), 30 deletions(-)
 
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c | 4 +++-
- drivers/net/ethernet/intel/iavf/iavf_main.c    | 6 +-----
- 2 files changed, 4 insertions(+), 6 deletions(-)
-
--- 
-2.17.1
+--
 
 _______________________________________________
 Intel-wired-lan mailing list
