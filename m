@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60BD2C77B6E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Apr 2023 08:20:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60010C77B6E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Apr 2023 08:20:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 15FE06140E;
-	Wed, 12 Apr 2023 08:20:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 15FE06140E
+	by smtp3.osuosl.org (Postfix) with ESMTP id 19D45606EB;
+	Wed, 12 Apr 2023 08:20:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 19D45606EB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1681287607;
-	bh=7Q/JDG0SWuKzITUIZuv0PkCB7k6Oluad4NE1uFxnJFQ=;
+	s=default; t=1681287612;
+	bh=BOZaQD13Xjj3QQb6bLWTF9UAX8pHRl20ClKCwcREtP0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=kvByHyFeRUXNXgLNlZC7C21vbjnHT9ZFuAUkn2f+LK1VJS3LJM1XJ7qijbEulfum8
-	 VZ07OZ/wHhYlH9lOzH5sbY6IAb9P3PkwukqB4cUDb9jF6ujOzGfX5nQvgt/Ae/5BRO
-	 p0YHFSEmG7sIVunCyxKfJWKGeVSns6Ap/E9mRjj7IQ+zgnQxAjiuAE96tEAuP86Nmn
-	 9guhP9TRDotZKrKyH5YSShmzNsh9oSEcRrlAUa1DZ/LOB5XKiGd+RkK7KXXGcciGv7
-	 riyJquxxfR8m92CzbGux7Y0n6Vuh1jrC27KJxrUIxKYuHVIjtau7dgynkZTqik6bOX
-	 qnVJA05J81u+A==
+	b=C3fPQexO1Rz/+FD2aizw/vs4hiJAj7u3+hrGaE5i6R+s4cLgdxOk2Qz24ErOB1dU7
+	 fV2e3sdOvUhb3llj1jkw4A4xO/FB6kjFnK6XSPGkLoD9ZobDZD2pKwo6qaRa/uzLNv
+	 09VhK1lB5Vn6bPB3VH1syJ6x0BhyyqRFwkJCgbT9gKceMCy1Gjikwh+rCG6R5ydDOF
+	 ztpqeVN7nP/2N7x5XBOwxPgd9uaDtoLAXP+9B4jd84sJIyyhKJVEaOwn9gVmnhaLuE
+	 MM6EPoSUspVDzp/3TjfHZpk1YaFEYUK+nb2BDuaD0Cu2eMAqFcqEp+3pnR/Xf5E2hj
+	 nLOOeVn8UJiSA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4wZQslPVoP6S; Wed, 12 Apr 2023 08:20:06 +0000 (UTC)
+	with ESMTP id YrsjEj-WInxj; Wed, 12 Apr 2023 08:20:11 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 226A5614E5;
-	Wed, 12 Apr 2023 08:20:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 226A5614E5
+	by smtp3.osuosl.org (Postfix) with ESMTP id BE119614E5;
+	Wed, 12 Apr 2023 08:20:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BE119614E5
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 6339C1C3C00
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 08:20:00 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id BD4C81BF47D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 08:20:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3926E60F36
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 08:20:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3926E60F36
+ by smtp3.osuosl.org (Postfix) with ESMTP id 89AE7614E0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 08:20:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 89AE7614E0
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id kP16eIBN7iJG for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Apr 2023 08:19:59 +0000 (UTC)
+ with ESMTP id yixe4oeyQ21s for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Apr 2023 08:20:00 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 73E0C606EB
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B65A0606EB
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 73E0C606EB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 08:19:59 +0000 (UTC)
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B65A0606EB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 08:20:00 +0000 (UTC)
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-161-CKOTE8ekO56ZqDMvq37jpg-1; Wed, 12 Apr 2023 04:19:53 -0400
-X-MC-Unique: CKOTE8ekO56ZqDMvq37jpg-1
+ us-mta-367-BA94o5TDM0eoeJ4N_aoxmg-1; Wed, 12 Apr 2023 04:19:55 -0400
+X-MC-Unique: BA94o5TDM0eoeJ4N_aoxmg-1
 Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
  [10.11.54.7])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 805D885A588;
- Wed, 12 Apr 2023 08:19:52 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id AB7121C0754E;
+ Wed, 12 Apr 2023 08:19:54 +0000 (UTC)
 Received: from toolbox.infra.bos2.lab (ovpn-192-9.brq.redhat.com [10.40.192.9])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 721CD1415117;
- Wed, 12 Apr 2023 08:19:50 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id D49E01415117;
+ Wed, 12 Apr 2023 08:19:52 +0000 (UTC)
 From: Michal Schmidt <mschmidt@redhat.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 12 Apr 2023 10:19:25 +0200
-Message-Id: <20230412081929.173220-3-mschmidt@redhat.com>
+Date: Wed, 12 Apr 2023 10:19:26 +0200
+Message-Id: <20230412081929.173220-4-mschmidt@redhat.com>
 In-Reply-To: <20230412081929.173220-1-mschmidt@redhat.com>
 References: <20230412081929.173220-1-mschmidt@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.7
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1681287598;
+ s=mimecast20190719; t=1681287599;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=YojmIeWOLapko/tvK/5/pc2o9IOR5yAwswR/WYcGdig=;
- b=I/B5xiDFz3T8KOXVX6d/OFtSciPlfDHbC5eIv7PlMT/JICxfZKYCwV3ellf2mo6B8XnF5/
- yD93uEV1QgC7UuKx9Sv/XbBJKH6gCaBfnPcXOcUc9gczcpdwahGO7R96ygSWj+MTsdxSOa
- dL3bK0Zu66TsyZ1POkA834u1jpycCFg=
+ bh=hrDM6RNDF8iazisvGqbzUFWdh4RCgV/FJAY9/jrsClg=;
+ b=C7bL8w8T5wl0+qDArvOx9r3oiRDKnTsNEv6VtKK3ndri6Kaq5hONY30vNwJAJGklGTnV/7
+ Dm+EgEKuPwl+XCEOtS/u+iPobvB263EN1MTj2OFxjltW7jzmcV0fBvtjenIPFmQDuaPFQv
+ SPsrrAhS/0xUeUHIMTKH7B4/nTtGJBE=
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=I/B5xiDF
-Subject: [Intel-wired-lan] [PATCH net-next v2 2/6] ice: increase the GNSS
- data polling interval to 20 ms
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=C7bL8w8T
+Subject: [Intel-wired-lan] [PATCH net-next v2 3/6] ice: remove
+ ice_ctl_q_info::sq_cmd_timeout
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,28 +108,65 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Double the GNSS data polling interval from 10 ms to 20 ms.
-According to Karol Kolacinski from the Intel team, they have been
-planning to make this change.
+sq_cmd_timeout is initialized to ICE_CTL_Q_SQ_CMD_TIMEOUT and never
+changed, so just use the constant directly.
 
+Suggested-by: Simon Horman <simon.horman@corigine.com>
 Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 ---
- drivers/net/ethernet/intel/ice/ice_gnss.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_common.c   | 2 +-
+ drivers/net/ethernet/intel/ice/ice_controlq.c | 5 +----
+ drivers/net/ethernet/intel/ice/ice_controlq.h | 1 -
+ 3 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.h b/drivers/net/ethernet/intel/ice/ice_gnss.h
-index 640df7411373..b8bb8b63d081 100644
---- a/drivers/net/ethernet/intel/ice/ice_gnss.h
-+++ b/drivers/net/ethernet/intel/ice/ice_gnss.h
-@@ -5,7 +5,7 @@
- #define _ICE_GNSS_H_
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index c2fda4fa4188..f4c256563248 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2000,7 +2000,7 @@ void ice_release_res(struct ice_hw *hw, enum ice_aq_res_ids res)
+ 	/* there are some rare cases when trying to release the resource
+ 	 * results in an admin queue timeout, so handle them correctly
+ 	 */
+-	while ((status == -EIO) && (total_delay < hw->adminq.sq_cmd_timeout)) {
++	while ((status == -EIO) && (total_delay < ICE_CTL_Q_SQ_CMD_TIMEOUT)) {
+ 		mdelay(1);
+ 		status = ice_aq_release_res(hw, res, 0, NULL);
+ 		total_delay++;
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c b/drivers/net/ethernet/intel/ice/ice_controlq.c
+index 6bcfee295991..c8fb10106ec3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.c
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
+@@ -637,9 +637,6 @@ static int ice_init_ctrlq(struct ice_hw *hw, enum ice_ctl_q q_type)
+ 		return -EIO;
+ 	}
  
- #define ICE_E810T_GNSS_I2C_BUS		0x2
--#define ICE_GNSS_POLL_DATA_DELAY_TIME	(HZ / 100) /* poll every 10 ms */
-+#define ICE_GNSS_POLL_DATA_DELAY_TIME	(HZ / 50) /* poll every 20 ms */
- #define ICE_GNSS_TIMER_DELAY_TIME	(HZ / 10) /* 0.1 second per message */
- #define ICE_GNSS_TTY_WRITE_BUF		250
- #define ICE_MAX_I2C_DATA_SIZE		FIELD_MAX(ICE_AQC_I2C_DATA_SIZE_M)
+-	/* setup SQ command write back timeout */
+-	cq->sq_cmd_timeout = ICE_CTL_Q_SQ_CMD_TIMEOUT;
+-
+ 	/* allocate the ATQ */
+ 	ret_code = ice_init_sq(hw, cq);
+ 	if (ret_code)
+@@ -1066,7 +1063,7 @@ ice_sq_send_cmd(struct ice_hw *hw, struct ice_ctl_q_info *cq,
+ 
+ 		udelay(ICE_CTL_Q_SQ_CMD_USEC);
+ 		total_delay++;
+-	} while (total_delay < cq->sq_cmd_timeout);
++	} while (total_delay < ICE_CTL_Q_SQ_CMD_TIMEOUT);
+ 
+ 	/* if ready, copy the desc back to temp */
+ 	if (ice_sq_done(hw, cq)) {
+diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h b/drivers/net/ethernet/intel/ice/ice_controlq.h
+index c07e9cc9fc6e..e790b2f4e437 100644
+--- a/drivers/net/ethernet/intel/ice/ice_controlq.h
++++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
+@@ -87,7 +87,6 @@ struct ice_ctl_q_info {
+ 	enum ice_ctl_q qtype;
+ 	struct ice_ctl_q_ring rq;	/* receive queue */
+ 	struct ice_ctl_q_ring sq;	/* send queue */
+-	u32 sq_cmd_timeout;		/* send queue cmd write back timeout */
+ 	u16 num_rq_entries;		/* receive queue depth */
+ 	u16 num_sq_entries;		/* send queue depth */
+ 	u16 rq_buf_size;		/* receive queue buffer size */
 -- 
 2.39.2
 
