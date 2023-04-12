@@ -1,90 +1,193 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93D88C77B6E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Apr 2023 13:40:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFA38C7619A
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Apr 2023 15:14:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 201E94012A;
-	Wed, 12 Apr 2023 13:40:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 201E94012A
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4E0FB83BF2;
+	Wed, 12 Apr 2023 15:14:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4E0FB83BF2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1681306801;
-	bh=VYA+AnmXFyer4gnFc5cuw/qU4F1TIhgYm6mGH0yKLGs=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Ek1RVAOtoNWZ26G/Gn2N7h7iB4WvgYcWcS2fssiIB6C7XVeQQzb0NXUAvPAIX+rHT
-	 d4OenIKQt9YihInwrW9G36KNavClivIVd6FF2fe0iDzXj024nXH9VfrC2YPHm9HAFr
-	 HxsDH4N83wgEzBCBfVcpBFY/i7GJSJ7F91mjFSKs9TyW0bcvtXZXrYcNFm1FW9x8Jp
-	 Fql8XwvkTulVZTk2t7Fp4feG4EX9tw+A9+NtVi0E9o9xQELGJbVgXQq3++nU+4SSXi
-	 SAdHbY83YcDp3TAF28BhFug8Pw6wmG9U7grr2unqOP4lTM96I1TCzXH7hS9KyKYmRp
-	 UmlhM96XXaoAw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id YdqKSqfatj_R; Wed, 12 Apr 2023 13:40:00 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id DB832404EF;
-	Wed, 12 Apr 2023 13:39:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DB832404EF
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 321B41BF2B6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 13:39:58 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 13B8483B59
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 13:39:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 13B8483B59
+	s=default; t=1681312492;
+	bh=1oP61Jg3vKQSKtw/h4OspbPDnGKN0ppdRDUPmcKNhhQ=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=0G6o42r3S0TNw2/EpKk/4cBiGHWy9UFg+OhlHk2poc+T3YBxiskmrehmOcKqRkTo+
+	 oVWGaXNwT1YNsm9L8c1WekvmrSle7Zoj0hmyQvpz7CSYPrODORuZcJ97yeIL6AVZoQ
+	 7pNiHoYCnox7oTEBgknrc6kLDnIIrQ3BIOesq48a9hi9MvKfNUZpohmDYs88j63AJF
+	 1lsrh/BQ/jZf5yzIOH5EHnwWxAfTyL757nYk30tomKW1fUTnQwjP7a0SLo04QawNqr
+	 yzNlfC7SK/DEq/pJxQ/GWB/2lkX7MCggiL493urOUaUwYg9ICWkm2oOgjGsuEwKO3S
+	 mreCTVEAy1POg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BdwsTiRJmUHj for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Apr 2023 13:39:57 +0000 (UTC)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id xH5y1fqeknFR; Wed, 12 Apr 2023 15:14:50 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2291D83C02;
+	Wed, 12 Apr 2023 15:14:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2291D83C02
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id C392D1BF417
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 11:38:47 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id A78C6605EE
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 11:38:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A78C6605EE
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id oIxGO1hkf5FM for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Apr 2023 11:38:46 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DF66283B57
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp1.osuosl.org (Postfix) with ESMTPS id DF66283B57
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 13:39:56 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10678"; a="341390512"
-X-IronPort-AV: E=Sophos;i="5.98,339,1673942400"; d="scan'208";a="341390512"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Apr 2023 06:39:55 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 82059605B0
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 82059605B0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Apr 2023 11:38:45 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10677"; a="345660656"
+X-IronPort-AV: E=Sophos;i="5.98,339,1673942400"; d="scan'208";a="345660656"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 12 Apr 2023 04:38:43 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10678"; a="639232458"
-X-IronPort-AV: E=Sophos;i="5.98,339,1673942400"; d="scan'208";a="639232458"
-Received: from amlin-018-114.igk.intel.com ([10.102.18.114])
- by orsmga003.jf.intel.com with ESMTP; 12 Apr 2023 06:39:52 -0700
-From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-To: jiri@resnulli.us, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com, corbet@lwn.net,
- jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
- richardcochran@gmail.com, netdev@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org
-Date: Wed, 12 Apr 2023 15:38:11 +0200
-Message-Id: <20230412133811.2518336-1-arkadiusz.kubalewski@intel.com>
-X-Mailer: git-send-email 2.37.3
+X-IronPort-AV: E=McAfee;i="6600,9927,10677"; a="721536829"
+X-IronPort-AV: E=Sophos;i="5.98,339,1673942400"; d="scan'208";a="721536829"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+ by orsmga001.jf.intel.com with ESMTP; 12 Apr 2023 04:38:42 -0700
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 12 Apr 2023 04:38:41 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 12 Apr 2023 04:38:40 -0700
+Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23 via Frontend Transport; Wed, 12 Apr 2023 04:38:40 -0700
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (104.47.58.100)
+ by edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.23; Wed, 12 Apr 2023 04:38:40 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=QoqtuZfTc4nJMy5MWhrC7yAkhCjQPn7HDuaF/FFnt/F9HmXPnxmo24yBgs/bpLal5ceK4Qs0E1WUjrw1znFok+JyQ3J2gnvZLAUUOKvDVZu1XDr80si+GLlSnVqtSPEBfTqIvy8nsx+8SHvvfSjXZowbe/oSZp39hnxihzzXa73v9gw7IlmWhxdRhjiDbs3exEL8IWzG/+JdZgEXfCbYA7s0wYlowUdGGOrRrY7xG7EUdpjLwPZMOC7D49tBV8lu75hPBG/DjrxdiuCdpxPAKSAkLh35acSirav9RIroGA6E9y+8CNkNfk9KP+PgWJNqSF1AXhhEh2N06JU9VExXYA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=/hfvsYVSexZl4RoDjWHGHVyOXpHkiX7YSYgShp+G7tU=;
+ b=gs6cTXonSv7NnKZGnaJlTFQ1fvssanauZ1iGEXgrYm+jPWbMPfbNaO4+eJnmxu43LnbB8tzzvp4mLKgBYCWnsysZ5N8iURwPuNSaSRdTrTsWfyvtLmYFwpiBIoqF10suI5BEayZjKll//bMLVjPm9rBpAaO28Lk2bkabtrPuJySoQCSxhPp80GYTXIL0IsCZhuzWnLgPlysRbqbtu0Jfn6A4td6hZ98H/ClOXsbs0HmbwdMXG5OBVlQgRRaylSbqKJe1UteauGLdf55eKRvxgMNlH7vn2RfUayviEAxgO+21JyUJZjPHgW8dEWAdzflFSI2d5RrUHJNY6ju9ELgaHA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from PH0PR11MB5830.namprd11.prod.outlook.com (2603:10b6:510:129::20)
+ by DM4PR11MB6504.namprd11.prod.outlook.com (2603:10b6:8:8d::5) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6277.35; Wed, 12 Apr 2023 11:38:36 +0000
+Received: from PH0PR11MB5830.namprd11.prod.outlook.com
+ ([fe80::1c4e:86ae:810d:1fee]) by PH0PR11MB5830.namprd11.prod.outlook.com
+ ([fe80::1c4e:86ae:810d:1fee%2]) with mapi id 15.20.6277.036; Wed, 12 Apr 2023
+ 11:38:36 +0000
+From: "Song, Yoong Siang" <yoong.siang.song@intel.com>
+To: "Brouer, Jesper" <brouer@redhat.com>, "bpf@vger.kernel.org"
+ <bpf@vger.kernel.org>
+Thread-Topic: [PATCH bpf-next V3 1/6] igc: enable and fix RX hash usage by
+ netstack
+Thread-Index: AQHZXNeYSjXaM/mM1kuNy5qWdOfXCq8nqwNw
+Date: Wed, 12 Apr 2023 11:38:36 +0000
+Message-ID: <PH0PR11MB58307262FA2F2D68CBDFE7F8D89B9@PH0PR11MB5830.namprd11.prod.outlook.com>
+References: <167950085059.2796265.16405349421776056766.stgit@firesoul>
+ <167950087738.2796265.17812597177704199765.stgit@firesoul>
+In-Reply-To: <167950087738.2796265.17812597177704199765.stgit@firesoul>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PH0PR11MB5830:EE_|DM4PR11MB6504:EE_
+x-ms-office365-filtering-correlation-id: e23cf477-409d-47bb-96fc-08db3b4a743a
+x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: 87A8oX4i8UO8pADpC7xyyJ6fac21vwVcdYdrIN2qGDTqzmJU/bYK6TS6beyViWlz28fscVsgUAPE2FjlSg98/wZ+YP+09+sXD26cb937NmTCA7D9do/cksjSyzEKKOw9PdYH0GTK7cIviKTs4e2tFhZVzbsHO/ADQJgKyhA+DTl4M8mN0NwDG+SoT4l+fnYx3RKwVmncpjFYq1gJwcIMxF2JaV1iXpzisiuPJJ3e7+Y1rZB9fMbiQwmv4Pcbq4h1KdpjYxFAexuvHXiP/efDn9pVF+3WI4lckN/C/qC7E/fai0F3f5FTH9XfhV+2a5vr43dFpeXt+qrrS6JTrUR+IMiUlfYNtWU0mpWHOz9XPUKHW4GsBcE8QgXW5/q9Xh3BT1olOZPdIXknY0FIyLdpIXTwI25BrnRYWk8go0JEfkEn/5KfV2p4YX2eigCzPdGZKCr6OA5NyCWHrc6ffkcMCLRiB4zuxeQCUigP76wn2yGsNLw8Cw+WHDcQ3ICJ85dAdatRv+mDqxfB3VDEo1zP8nvvuc64rcYtNnIAxEiJtvHgA2d4NclQNj2ZUVyjAhfKnF2NQu89ToHoo8WR8xD2Beq4UGsse8lPo27zQgDe1zm8bvw51kQaCA4vCVTNEdkz
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:PH0PR11MB5830.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(39860400002)(136003)(366004)(376002)(346002)(396003)(451199021)(7696005)(71200400001)(54906003)(76116006)(66946007)(66556008)(66476007)(41300700001)(64756008)(8936002)(66446008)(8676002)(5660300002)(7416002)(52536014)(83380400001)(2906002)(26005)(9686003)(186003)(55236004)(6506007)(53546011)(478600001)(110136005)(82960400001)(122000001)(4326008)(38100700002)(38070700005)(86362001)(33656002)(316002)(55016003);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?aStFMEp6ZWN5TW9nc1ZsaGE3TXhnbFlGbkpsREZaL1NzbEp0N3A5UWlrMzNG?=
+ =?utf-8?B?eHp4VmIyaXBJNzZjR3BqTXRNWE40S2xKWGYyWkp5U1hIZWVtKzg3UjdOdWRi?=
+ =?utf-8?B?TFJLd3R4TUw2OThSSTlYaDdpcXhCZkhGd2dOZHYzQTUycnZoeG9ycUl3MzZJ?=
+ =?utf-8?B?R2NVb1B3eDlhTkRpTXRzczIzSXZscE9mdC9zS3N4dzlyczQrQnhTKzlFb3ZP?=
+ =?utf-8?B?UUl0MDVnaDBVOVFLV3lpT0NjT1ozVjAyRVdLQWg5cUd2NWhlQWhmVWlVMGhY?=
+ =?utf-8?B?WkRzdS9HZDZQL2xoVUhrelFwb0lISTRFejZBVHJSM1V3TEpWRDVFTFV1R04w?=
+ =?utf-8?B?d0cvdmd2b2dRNUo5eEc2d25LVHFsdkpvaW5JZnR0T2lHQmYraFFuNWdhb2hX?=
+ =?utf-8?B?KzRrZjRTRUp0Ym04TFhDWnFDU0dXQ0YySnJVc0MvS0g2eHJZeU1rWG9iOUJt?=
+ =?utf-8?B?eUFvQlNTTm9sWndoeFN1QWlCTkcxUmVFQS9HYjZMWXBCRGZYZ0xsaGlGL1lI?=
+ =?utf-8?B?eFZDUlpSaHo1WXlPbzVHcE1YMGt5aGR1bmk3MC9qSzRYY05UR1lHZFp3SEVh?=
+ =?utf-8?B?VUU0NmpCSmtIMWl6aUhvZXpuQ3ZMSkp5WDJuVDhJbmhTaGJSVXZIZWh1VGFC?=
+ =?utf-8?B?RndVUnBneWZMbWJMdFRiR3VKV2JVYXZUNTUvYjFXNlFpSnB6d1QwaFFLMkVY?=
+ =?utf-8?B?Z0pDVzJLQmorY3RTTm12cVhpTDlTRFZjK2tqdDJ4VTQxb2orVXgzZlRQNi9l?=
+ =?utf-8?B?TUt1K2lmRDRTSjV3K0doNElnUi9xWUNvb1MzaWF4bTJaREpWbmtvZ2Y3cFVW?=
+ =?utf-8?B?ZEVESGtZWFJEdmtLQm9rYTRKSG1XVmVVOXBnSDRPUHRrZGJsRjE0L25xWXN6?=
+ =?utf-8?B?TDgrVlpUeXRlTzR2LzN4OWR0L2ZzOGZNekwwNG8xaHg4bENRWFpxYjBMMFJy?=
+ =?utf-8?B?NVcxVVlaYXEvdUViQzRBS28zd0hjTFhDZldhQ2daZm1EVGNyU3J5N3lMNTJU?=
+ =?utf-8?B?OEhOM2V0bWNYczVVTUFpTi9LUUZlV0tTbTRFbDRWZGRjSVBKdWlmYXI3L3RK?=
+ =?utf-8?B?dlZkaXpic0FxYTZMQ3BEVXNyYTlvTkxTNE9OS08wWVM3WTcxZm1abktrcmhK?=
+ =?utf-8?B?TXUyaXJLYWNON2FiQUJYYytlTWFHbFowb2EraFRMM05IWFVLclVXTVB5cCtx?=
+ =?utf-8?B?bVZyU25XZHo1STcwbmNOVG1yOFlLaGhUL1hTWjI3UkxEY25uQXNrZHQvS0x5?=
+ =?utf-8?B?VTRDSy9ET2Q0WGtocUZ2dENpaU1saEdhTmtBZnRBS0hhWWVBdjBaQk1wbkgy?=
+ =?utf-8?B?cXVVcng3SVhoa2JYZXp3ZU9aTDlHWUFpN0NneEhRZGhwVXlUWHVSbjZyaVRz?=
+ =?utf-8?B?Qms4ZUZWNHgzaWJPMWp1ak02ek1MVkRSYWRoT01SdkEyejMxcjJNRjFJL2px?=
+ =?utf-8?B?dFVyWVNOY215OUtjbVEzNm1XMUc2R0QzcitFeU51SkRjbXFCNi9EMVZpU1NX?=
+ =?utf-8?B?NExXZnlERVJGVitRSWlEVkt3a1kzMUpIZXpDYno0MHNsemVYWGVOZFJNcGt6?=
+ =?utf-8?B?MHV5Y3lLOE9qMTVoRitaL2JCTEhVcW9tUTRLV1h1bmlGRWlad1FzV2Z6L1Q5?=
+ =?utf-8?B?elZxSVpLZXhSWjFWSG1KeHlhVVBXMUI5Nys3MG9reFl2bWg0QWk1RGpHOUdR?=
+ =?utf-8?B?dDVQVWU0YlNTeHpoajJ2bnlqMmNPOWxJTnNXNzhmZVhaYnZGQmJwVkFDUGF3?=
+ =?utf-8?B?UHA2RFc0MVUwSXYwNVBqLzRLSko0OHRWUlhQTFdkQUVmZ0pMZUpDeHZVV1Fw?=
+ =?utf-8?B?aC85SnlYWXhhVGZmZFZVSHEzT21USkpka21tRDFZWmFRZGxaS2dBcGZnd3ZR?=
+ =?utf-8?B?ME45a0t1NzFuQ08zK0NEd241WiszVjF6T1ppN0NjRDA3SUd5Ymp3d3B4cFMv?=
+ =?utf-8?B?WXZrajJMWVBTT0tUcmJNUXRwUURTTjFQN1VEZVlyTklZSHVqdnNQcVNOcFhF?=
+ =?utf-8?B?SVJBM1JaeHFUWTNzTnNIdzVhS0JDUE5UbG1TbjFUNkhUN2VBUjRqWmZBK3Yz?=
+ =?utf-8?B?aEdwR0JscUtCN1JiQnF6dHhCNkl3UFdYZFFoeUN3eFRMYWk0c3VwTkRXMGx1?=
+ =?utf-8?Q?mFSdV9feX36S3dSteHBnjrYsP?=
 MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR11MB5830.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e23cf477-409d-47bb-96fc-08db3b4a743a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Apr 2023 11:38:36.6555 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: /qb7EWQkQpSQCjNTnyeE9MqPedmFyAnAEbCMB5/PRSEXfCDYFk4HuSOFxHPUT6ViOjsX7ljHsP2S12c9zcsSSR2crR5DI3oeSgj4v7XI+/o=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB6504
+X-OriginatorOrg: intel.com
+X-Mailman-Approved-At: Wed, 12 Apr 2023 15:14:49 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1681306796; x=1712842796;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=4GCFBR6AvRzdkg82R+k92xqDhMfr7gxMVkai6zQEA5c=;
- b=nA3QXfUIg45/qb6gt/NXWQyG7fhozk1cfjwFrMD9wFj61Jlcf0l80S2s
- +TmHeHlUK09hal93ZTd9tjk+kmib6znejLXmgLW7LDA8efLBE8VpPF/m/
- INeLaMIaL/D/yrtLt6naB5pLi5fbvAMhYlZjDVU+K2mrOyWOwyF5CranF
- e5R1fnvvd4Fx95BgZ/bPXJOSfEHrXQpfW7y2Y1p0Y1/nuzQ9sMVyobTn7
- VxXxMw6BbcF4up4V1tkVQ7o7mgVZwDp2HE6gEaC0p8xjumTMEjuYjYHOD
- AgKahtzXSReYXsZRZI+lx6EIZ7jYU1eOelOTpSKkX36Pseq6JAf7bOgmF
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1681299526; x=1712835526;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=/hfvsYVSexZl4RoDjWHGHVyOXpHkiX7YSYgShp+G7tU=;
+ b=htk7wliu70gqKUm/T4pL8j8T9iNYjxAe5xVX4kgI0LpDMoYFo3RI0tMI
+ eaeYz/WHR62LSBVp4yiju+bpJkHbXKd72cni1hEZlmVmf9p0wpK1HG7y6
+ 50CHR+w0w0xALYcVBiOg4y7dTiyFgP+Z/N3iG5kzwp49a9ShVsjBTyuTn
+ oI9yUnTaq/ozB2D+uI1lUUeILmQIuZCoB6peaPZj9pbG5eT0iUrWVYFpo
+ 3Ykzy9mX0E7IFPekh4qVSZUWud+i6NR8Zz4R9UhucNAsaLnzYBH21JLUc
+ 85qr0UK6VQ677HkLuSlJPqfaB1rN2rX5ZFAD/VSNqEKhOtJCAToEVmWdF
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nA3QXfUI
-Subject: [Intel-wired-lan] [RFC PATCH v1] ice: add CGU info to devlink info
- callback
+ header.a=rsa-sha256 header.s=Intel header.b=htk7wliu
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH bpf-next V3 1/6] igc: enable and fix
+ RX hash usage by netstack
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,223 +200,174 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: "xdp-hints@xdp-project.net" <xdp-hints@xdp-project.net>,
+ "martin.lau@kernel.org" <martin.lau@kernel.org>,
+ "daniel@iogearbox.net" <daniel@iogearbox.net>, "Zaremba,
+ Larysa" <larysa.zaremba@intel.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "john.fastabend@gmail.com" <john.fastabend@gmail.com>,
+ "ast@kernel.org" <ast@kernel.org>, "Brandeburg,
+ Jesse" <jesse.brandeburg@intel.com>,
+ "edumazet@google.com" <edumazet@google.com>, "Nguyen,
+ Anthony L" <anthony.l.nguyen@intel.com>, Stanislav Fomichev <sdf@google.com>,
+ "kuba@kernel.org" <kuba@kernel.org>, "Brouer, Jesper" <brouer@redhat.com>,
+ "Ong, Boon Leong" <boon.leong.ong@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "pabeni@redhat.com" <pabeni@redhat.com>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "hawk@kernel.org" <hawk@kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-If Clock Generation Unit and dplls are present on NIC board user shall
-know its details.
-Provide the devlink info callback with a new:
-- fixed type object `cgu.id` - hardware variant of onboard CGU
-- running type object `fw.cgu` - CGU firmware version
-- running type object `fw.cgu.build` - CGU configuration build version
+On Thursday, March 23, 2023 12:01 AM, Jesper Dangaard Brouer <brouer@redhat.com> wrote:
+>When function igc_rx_hash() was introduced in v4.20 via commit 0507ef8a0372
+>("igc: Add transmit and receive fastpath and interrupt handlers"), the hardware
+>wasn't configured to provide RSS hash, thus it made sense to not enable
+>net_device NETIF_F_RXHASH feature bit.
+>
+>The NIC hardware was configured to enable RSS hash info in v5.2 via commit
+>2121c2712f82 ("igc: Add multiple receive queues control supporting"), but forgot
+>to set the NETIF_F_RXHASH feature bit.
+>
+>The original implementation of igc_rx_hash() didn't extract the associated
+>pkt_hash_type, but statically set PKT_HASH_TYPE_L3. The largest portions of this
+>patch are about extracting the RSS Type from the hardware and mapping this to
+>enum pkt_hash_types. This was based on Foxville i225 software user manual rev-
+>1.3.1 and tested on Intel Ethernet Controller I225-LM (rev 03).
+>
+>For UDP it's worth noting that RSS (type) hashing have been disabled both for
+>IPv4 and IPv6 (see IGC_MRQC_RSS_FIELD_IPV4_UDP +
+>IGC_MRQC_RSS_FIELD_IPV6_UDP) because hardware RSS doesn't handle
+>fragmented pkts well when enabled (can cause out-of-order). This results in
+>PKT_HASH_TYPE_L3 for UDP packets, and hash value doesn't include UDP port
+>numbers. Not being PKT_HASH_TYPE_L4, have the effect that netstack will do a
+>software based hash calc calling into flow_dissect, but only when code calls
+>skb_get_hash(), which doesn't necessary happen for local delivery.
+>
+>Fixes: 2121c2712f82 ("igc: Add multiple receive queues control supporting")
+>Signed-off-by: Jesper Dangaard Brouer <brouer@redhat.com>
+>---
+> drivers/net/ethernet/intel/igc/igc.h      |   28 ++++++++++++++++++++++++++
+> drivers/net/ethernet/intel/igc/igc_main.c |   31 +++++++++++++++++++++++++---
+>-
+> 2 files changed, 55 insertions(+), 4 deletions(-)
+>
+>diff --git a/drivers/net/ethernet/intel/igc/igc.h
+>b/drivers/net/ethernet/intel/igc/igc.h
+>index df3e26c0cf01..f83cbc4a1afa 100644
+>--- a/drivers/net/ethernet/intel/igc/igc.h
+>+++ b/drivers/net/ethernet/intel/igc/igc.h
+>@@ -13,6 +13,7 @@
+> #include <linux/ptp_clock_kernel.h>
+> #include <linux/timecounter.h>
+> #include <linux/net_tstamp.h>
+>+#include <linux/bitfield.h>
+>
+> #include "igc_hw.h"
+>
+>@@ -311,6 +312,33 @@ extern char igc_driver_name[];
+> #define IGC_MRQC_RSS_FIELD_IPV4_UDP	0x00400000
+> #define IGC_MRQC_RSS_FIELD_IPV6_UDP	0x00800000
+>
+>+/* RX-desc Write-Back format RSS Type's */ enum igc_rss_type_num {
+>+	IGC_RSS_TYPE_NO_HASH		= 0,
+>+	IGC_RSS_TYPE_HASH_TCP_IPV4	= 1,
+>+	IGC_RSS_TYPE_HASH_IPV4		= 2,
+>+	IGC_RSS_TYPE_HASH_TCP_IPV6	= 3,
+>+	IGC_RSS_TYPE_HASH_IPV6_EX	= 4,
+>+	IGC_RSS_TYPE_HASH_IPV6		= 5,
+>+	IGC_RSS_TYPE_HASH_TCP_IPV6_EX	= 6,
+>+	IGC_RSS_TYPE_HASH_UDP_IPV4	= 7,
+>+	IGC_RSS_TYPE_HASH_UDP_IPV6	= 8,
+>+	IGC_RSS_TYPE_HASH_UDP_IPV6_EX	= 9,
+>+	IGC_RSS_TYPE_MAX		= 10,
+>+};
+>+#define IGC_RSS_TYPE_MAX_TABLE		16
+>+#define IGC_RSS_TYPE_MASK		GENMASK(3,0) /* 4-bits (3:0) = mask
+>0x0F */
+>+
+>+/* igc_rss_type - Rx descriptor RSS type field */ static inline u32
+>+igc_rss_type(const union igc_adv_rx_desc *rx_desc) {
+>+	/* RSS Type 4-bits (3:0) number: 0-9 (above 9 is reserved)
+>+	 * Accessing the same bits via u16 (wb.lower.lo_dword.hs_rss.pkt_info)
+>+	 * is slightly slower than via u32 (wb.lower.lo_dword.data)
+>+	 */
+>+	return le32_get_bits(rx_desc->wb.lower.lo_dword.data,
+>+IGC_RSS_TYPE_MASK); }
+>+
+> /* Interrupt defines */
+> #define IGC_START_ITR			648 /* ~6000 ints/sec */
+> #define IGC_4K_ITR			980
+>diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
+>b/drivers/net/ethernet/intel/igc/igc_main.c
+>index 2928a6c73692..f6a54feec011 100644
+>--- a/drivers/net/ethernet/intel/igc/igc_main.c
+>+++ b/drivers/net/ethernet/intel/igc/igc_main.c
+>@@ -1677,14 +1677,36 @@ static void igc_rx_checksum(struct igc_ring *ring,
+> 		   le32_to_cpu(rx_desc->wb.upper.status_error));
+> }
+>
+>+/* Mapping HW RSS Type to enum pkt_hash_types */
+>+enum pkt_hash_types igc_rss_type_table[IGC_RSS_TYPE_MAX_TABLE] = {
 
-These information shall be known for debugging purposes.
+Hi Jesper,
 
-Test (on NIC board with CGU)
-$ devlink dev info <bus_name>/<dev_name> | grep cgu
-        cgu.id 8032
-        fw.cgu 6021
-        fw.cgu.build 0x1030001
+Since igc_rss_type_table is used on igc_main.c only, we can make it static to
+avoid following build warning:
 
-Test (on NIC board without CGU)
-$ devlink dev info <bus_name>/<dev_name> | grep cgu -c
-0
+drivers/net/ethernet/intel/igc/igc_main.c:1681:21: warning: symbol
+'igc_rss_type_table' was not declared. Should it be static?
 
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
----
- Documentation/networking/devlink/ice.rst     | 14 +++++++++
- drivers/net/ethernet/intel/ice/ice_devlink.c | 30 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_main.c    |  5 +++-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c  | 12 ++++----
- drivers/net/ethernet/intel/ice/ice_type.h    |  9 +++++-
- 5 files changed, 62 insertions(+), 8 deletions(-)
+Thanks & Regards
+Siang
 
-diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
-index 10f282c2117c..3a54421c503d 100644
---- a/Documentation/networking/devlink/ice.rst
-+++ b/Documentation/networking/devlink/ice.rst
-@@ -23,6 +23,11 @@ The ``ice`` driver reports the following versions
-       - fixed
-       - K65390-000
-       - The Product Board Assembly (PBA) identifier of the board.
-+    * - ``cgu.id``
-+      - fixed
-+      - 8032
-+      - The Clock Generation Unit (CGU) hardware version identifier on the
-+        board.
-     * - ``fw.mgmt``
-       - running
-       - 2.1.7
-@@ -89,6 +94,15 @@ The ``ice`` driver reports the following versions
-       - running
-       - 0xee16ced7
-       - The first 4 bytes of the hash of the netlist module contents.
-+    * - ``fw.cgu``
-+      - running
-+      - 6021
-+      - Version of Clock Generation Unit (CGU) firmware.
-+    * - ``fw.cgu.build``
-+      - running
-+      - 0x1030001
-+      - Version of Clock Generation Unit (CGU) firmware configuration build.
-+
- 
- Flash Update
- ============
-diff --git a/drivers/net/ethernet/intel/ice/ice_devlink.c b/drivers/net/ethernet/intel/ice/ice_devlink.c
-index bc44cc220818..06fe895739af 100644
---- a/drivers/net/ethernet/intel/ice/ice_devlink.c
-+++ b/drivers/net/ethernet/intel/ice/ice_devlink.c
-@@ -193,6 +193,33 @@ ice_info_pending_netlist_build(struct ice_pf __always_unused *pf,
- 		snprintf(ctx->buf, sizeof(ctx->buf), "0x%08x", netlist->hash);
- }
- 
-+static void ice_info_cgu_id(struct ice_pf *pf, struct ice_info_ctx *ctx)
-+{
-+	if (ice_is_feature_supported(pf, ICE_F_CGU)) {
-+		struct ice_hw *hw = &pf->hw;
-+
-+		snprintf(ctx->buf, sizeof(ctx->buf), "%u", hw->cgu.id);
-+	}
-+}
-+
-+static void ice_info_cgu_fw_version(struct ice_pf *pf, struct ice_info_ctx *ctx)
-+{
-+	if (ice_is_feature_supported(pf, ICE_F_CGU)) {
-+		struct ice_hw *hw = &pf->hw;
-+
-+		snprintf(ctx->buf, sizeof(ctx->buf), "%u", hw->cgu.fw_ver);
-+	}
-+}
-+
-+static void ice_info_cgu_fw_build(struct ice_pf *pf, struct ice_info_ctx *ctx)
-+{
-+	if (ice_is_feature_supported(pf, ICE_F_CGU)) {
-+		struct ice_hw *hw = &pf->hw;
-+
-+		snprintf(ctx->buf, sizeof(ctx->buf), "0x%x", hw->cgu.cfg_ver);
-+	}
-+}
-+
- #define fixed(key, getter) { ICE_VERSION_FIXED, key, getter, NULL }
- #define running(key, getter) { ICE_VERSION_RUNNING, key, getter, NULL }
- #define stored(key, getter, fallback) { ICE_VERSION_STORED, key, getter, fallback }
-@@ -224,6 +251,7 @@ static const struct ice_devlink_version {
- 	void (*fallback)(struct ice_pf *pf, struct ice_info_ctx *ctx);
- } ice_devlink_versions[] = {
- 	fixed(DEVLINK_INFO_VERSION_GENERIC_BOARD_ID, ice_info_pba),
-+	fixed("cgu.id", ice_info_cgu_id),
- 	running(DEVLINK_INFO_VERSION_GENERIC_FW_MGMT, ice_info_fw_mgmt),
- 	running("fw.mgmt.api", ice_info_fw_api),
- 	running("fw.mgmt.build", ice_info_fw_build),
-@@ -235,6 +263,8 @@ static const struct ice_devlink_version {
- 	running("fw.app.bundle_id", ice_info_ddp_pkg_bundle_id),
- 	combined("fw.netlist", ice_info_netlist_ver, ice_info_pending_netlist_ver),
- 	combined("fw.netlist.build", ice_info_netlist_build, ice_info_pending_netlist_build),
-+	running("fw.cgu", ice_info_cgu_fw_version),
-+	running("fw.cgu.build", ice_info_cgu_fw_build),
- };
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 6b28b95a7254..a3adc03bdd0a 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4822,8 +4822,11 @@ static void ice_init_features(struct ice_pf *pf)
- 		ice_gnss_init(pf);
- 
- 	if (ice_is_feature_supported(pf, ICE_F_CGU) ||
--	    ice_is_feature_supported(pf, ICE_F_PHY_RCLK))
-+	    ice_is_feature_supported(pf, ICE_F_PHY_RCLK)) {
-+		ice_aq_get_cgu_info(&pf->hw, &pf->hw.cgu.id,
-+				    &pf->hw.cgu.cfg_ver, &pf->hw.cgu.fw_ver);
- 		ice_dpll_init(pf);
-+	}
- 
- 	/* Note: Flow director init failure is non-fatal to load */
- 	if (ice_init_fdir(pf))
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 39b692945f73..90c1cc1e4401 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -3481,13 +3481,13 @@ bool ice_is_cgu_present(struct ice_hw *hw)
- 	if (!ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
- 				   ICE_ACQ_GET_LINK_TOPO_NODE_NR_ZL30632_80032,
- 				   NULL)) {
--		hw->cgu_part_number = ICE_ACQ_GET_LINK_TOPO_NODE_NR_ZL30632_80032;
-+		hw->cgu.part_number = ICE_ACQ_GET_LINK_TOPO_NODE_NR_ZL30632_80032;
- 		return true;
- 	} else if (!ice_find_netlist_node(hw,
- 					  ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
- 					  ICE_ACQ_GET_LINK_TOPO_NODE_NR_SI5383_5384,
- 					  NULL)) {
--		hw->cgu_part_number = ICE_ACQ_GET_LINK_TOPO_NODE_NR_SI5383_5384;
-+		hw->cgu.part_number = ICE_ACQ_GET_LINK_TOPO_NODE_NR_SI5383_5384;
- 		return true;
- 	}
- 
-@@ -3507,7 +3507,7 @@ ice_cgu_get_pin_desc_e823(struct ice_hw *hw, bool input, int *size)
- {
- 	static const struct ice_cgu_pin_desc *t;
- 
--	if (hw->cgu_part_number ==
-+	if (hw->cgu.part_number ==
- 	    ICE_ACQ_GET_LINK_TOPO_NODE_NR_ZL30632_80032) {
- 		if (input) {
- 			t = ice_e823_zl_cgu_inputs;
-@@ -3516,7 +3516,7 @@ ice_cgu_get_pin_desc_e823(struct ice_hw *hw, bool input, int *size)
- 			t = ice_e823_zl_cgu_outputs;
- 			*size = ARRAY_SIZE(ice_e823_zl_cgu_outputs);
- 		}
--	} else if (hw->cgu_part_number ==
-+	} else if (hw->cgu.part_number ==
- 		   ICE_ACQ_GET_LINK_TOPO_NODE_NR_SI5383_5384) {
- 		if (input) {
- 			t = ice_e823_si_cgu_inputs;
-@@ -3778,10 +3778,10 @@ int ice_get_cgu_rclk_pin_info(struct ice_hw *hw, u8 *base_idx, u8 *pin_num)
- 	case ICE_DEV_ID_E823C_SGMII:
- 		*pin_num = ICE_E822_RCLK_PINS_NUM;
- 		ret = 0;
--		if (hw->cgu_part_number ==
-+		if (hw->cgu.part_number ==
- 		    ICE_ACQ_GET_LINK_TOPO_NODE_NR_ZL30632_80032)
- 			*base_idx = ZL_REF1P;
--		else if (hw->cgu_part_number ==
-+		else if (hw->cgu.part_number ==
- 			 ICE_ACQ_GET_LINK_TOPO_NODE_NR_SI5383_5384)
- 			*base_idx = SI_REF1P;
- 		else
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 128bc4d326f9..814166d959ee 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -820,6 +820,13 @@ struct ice_mbx_data {
- 	u16 async_watermark_val;
- };
- 
-+struct ice_cgu_info {
-+	u32 id;
-+	u32 cfg_ver;
-+	u32 fw_ver;
-+	u8 part_number;
-+};
-+
- /* Port hardware description */
- struct ice_hw {
- 	u8 __iomem *hw_addr;
-@@ -963,7 +970,7 @@ struct ice_hw {
- 	DECLARE_BITMAP(hw_ptype, ICE_FLOW_PTYPE_MAX);
- 	u8 dvm_ena;
- 	u16 io_expander_handle;
--	u8 cgu_part_number;
-+	struct ice_cgu_info cgu;
- };
- 
- /* Statistics collected by each port, VSI, VEB, and S-channel */
--- 
-2.31.1
+>+	[IGC_RSS_TYPE_NO_HASH]		= PKT_HASH_TYPE_L2,
+>+	[IGC_RSS_TYPE_HASH_TCP_IPV4]	= PKT_HASH_TYPE_L4,
+>+	[IGC_RSS_TYPE_HASH_IPV4]	= PKT_HASH_TYPE_L3,
+>+	[IGC_RSS_TYPE_HASH_TCP_IPV6]	= PKT_HASH_TYPE_L4,
+>+	[IGC_RSS_TYPE_HASH_IPV6_EX]	= PKT_HASH_TYPE_L3,
+>+	[IGC_RSS_TYPE_HASH_IPV6]	= PKT_HASH_TYPE_L3,
+>+	[IGC_RSS_TYPE_HASH_TCP_IPV6_EX] = PKT_HASH_TYPE_L4,
+>+	[IGC_RSS_TYPE_HASH_UDP_IPV4]	= PKT_HASH_TYPE_L4,
+>+	[IGC_RSS_TYPE_HASH_UDP_IPV6]	= PKT_HASH_TYPE_L4,
+>+	[IGC_RSS_TYPE_HASH_UDP_IPV6_EX] = PKT_HASH_TYPE_L4,
+>+	[10] = PKT_HASH_TYPE_NONE, /* RSS Type above 9 "Reserved" by HW
+>*/
+>+	[11] = PKT_HASH_TYPE_NONE, /* keep array sized for SW bit-mask   */
+>+	[12] = PKT_HASH_TYPE_NONE, /* to handle future HW revisons       */
+>+	[13] = PKT_HASH_TYPE_NONE,
+>+	[14] = PKT_HASH_TYPE_NONE,
+>+	[15] = PKT_HASH_TYPE_NONE,
+>+};
+>+
+> static inline void igc_rx_hash(struct igc_ring *ring,
+> 			       union igc_adv_rx_desc *rx_desc,
+> 			       struct sk_buff *skb)
+> {
+>-	if (ring->netdev->features & NETIF_F_RXHASH)
+>-		skb_set_hash(skb,
+>-			     le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
+>-			     PKT_HASH_TYPE_L3);
+>+	if (ring->netdev->features & NETIF_F_RXHASH) {
+>+		u32 rss_hash = le32_to_cpu(rx_desc->wb.lower.hi_dword.rss);
+>+		u32 rss_type = igc_rss_type(rx_desc);
+>+
+>+		skb_set_hash(skb, rss_hash, igc_rss_type_table[rss_type]);
+>+	}
+> }
+>
+> static void igc_rx_vlan(struct igc_ring *rx_ring, @@ -6543,6 +6565,7 @@ static
+>int igc_probe(struct pci_dev *pdev,
+> 	netdev->features |= NETIF_F_TSO;
+> 	netdev->features |= NETIF_F_TSO6;
+> 	netdev->features |= NETIF_F_TSO_ECN;
+>+	netdev->features |= NETIF_F_RXHASH;
+> 	netdev->features |= NETIF_F_RXCSUM;
+> 	netdev->features |= NETIF_F_HW_CSUM;
+> 	netdev->features |= NETIF_F_SCTP_CRC;
+>
 
 _______________________________________________
 Intel-wired-lan mailing list
