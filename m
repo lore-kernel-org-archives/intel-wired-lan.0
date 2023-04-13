@@ -4,96 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32723C77B72
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Apr 2023 15:32:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFD8DC77B72
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Apr 2023 15:33:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AA7B3817D3;
-	Fri, 14 Apr 2023 15:32:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AA7B3817D3
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7617884129;
+	Fri, 14 Apr 2023 15:33:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7617884129
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1681486376;
-	bh=loGMdrjP7ccrVrzapSaVHOi2EvNNGXZdAxY0p4mF47o=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=wfcxPxhs2SVDhcDownB11ouGFawnIF8Ko0aeDqtfUtAnOHUZlRGIR3F3BRFy5sqhd
-	 dX7Ylm3eQeRvqYbU17XKPaDtz+tlMfew8XZAG1VqGSVW6z3zt8oFPO2LAGMHtdgupx
-	 YdzhU8/j9L++OrJ21vWFcqEFZkcGKxenBYrd/tkWr50SwjPqaIe8VieNgtzSkMKHjT
-	 7L0Wz4JjjQc3x/BlfiGfc6re77WyIkDSIvVyFQVExa7es5Ui9rq3MppJFOxFJ5PpPE
-	 /CGt5XjHJnLxyC4iE7oYQk1ap7gjK7SJhLjxciiZE6e2/GmWqSCyvitXV/nJ+uYNIl
-	 HVKeR3p42nlPg==
+	s=default; t=1681486382;
+	bh=NxTg+/k2ycfSJHqWfOQMDf3/D2ELdFpS4PF8kTSyQOE=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=9u1CUpa1P2JqNjBk5D3mhlWi4uGeKQl8RyHxJXAsRMLwzICxZiVyxIFL0itV4VS6Z
+	 aMc/D5ovDyn8yy9hQBvUsLFO0WuBiexHHrH5MQY6v8H6TXsoD+ntSEPzBP3vWGx2mr
+	 ZphE6aiFo6hpRvGq9cHmTvA6arZ0kQRGDi72wco/o9zQkSdJXLiJW473p949yS5jFZ
+	 E0+W68O+laI+Z9pXxNOBZLagdxSz8yGzeti7PSP94oSCjKd9ql8wFd81s6k0TMOTse
+	 PUC/aBlDgdHAcMjOX9ruBucY1FGTgNRpiAbBAguQjW3FNGBEDpMpwynzX/IvO1dsDm
+	 MxYkdlFSrDa7A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZRsBVxpPyRzQ; Fri, 14 Apr 2023 15:32:55 +0000 (UTC)
+	with ESMTP id euOgSF2PB8HQ; Fri, 14 Apr 2023 15:33:01 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4D16D81E3B;
-	Fri, 14 Apr 2023 15:32:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4D16D81E3B
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 39E441BF287
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Apr 2023 15:13:15 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 589A583BD7;
+	Fri, 14 Apr 2023 15:32:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 589A583BD7
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 947F11C3CB0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Apr 2023 23:03:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1F507840A9
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Apr 2023 15:13:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1F507840A9
+ by smtp3.osuosl.org (Postfix) with ESMTP id 65812616B0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Apr 2023 23:03:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 65812616B0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id WAaapdiexYVS for <intel-wired-lan@lists.osuosl.org>;
- Thu, 13 Apr 2023 15:13:14 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0ED4C840A2
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 0ED4C840A2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Apr 2023 15:13:13 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10679"; a="344203271"
-X-IronPort-AV: E=Sophos;i="5.99,194,1677571200"; d="scan'208";a="344203271"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Apr 2023 08:13:04 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10679"; a="666808531"
-X-IronPort-AV: E=Sophos;i="5.99,194,1677571200"; d="scan'208";a="666808531"
-Received: from p12ill20yoongsia.png.intel.com ([10.88.227.28])
- by orsmga006.jf.intel.com with ESMTP; 13 Apr 2023 08:12:57 -0700
-From: Song Yoong Siang <yoong.siang.song@intel.com>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "David S . Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Vedang Patel <vedang.patel@intel.com>,
- Jithu Joseph <jithu.joseph@intel.com>,
- Andre Guedes <andre.guedes@intel.com>,
- Jesper Dangaard Brouer <brouer@redhat.com>,
- Stanislav Fomichev <sdf@google.com>
-Date: Thu, 13 Apr 2023 23:12:22 +0800
-Message-Id: <20230413151222.1864307-1-yoong.siang.song@intel.com>
-X-Mailer: git-send-email 2.34.1
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id o8kNR-ciR77m for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 13 Apr 2023 23:03:38 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DA9ED60D65
+Received: from evilolive.daedalian.us (evilolive.daedalian.us
+ [IPv6:2600:3c00::f03c:91ff:fe73:cd86])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DA9ED60D65
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Apr 2023 23:03:36 +0000 (UTC)
+Received: by evilolive.daedalian.us (Postfix, from userid 111)
+ id 83BC31229C; Thu, 13 Apr 2023 16:03:35 -0700 (PDT)
+Received: from localhost.localdomain
+ (static-47-181-121-78.lsan.ca.frontiernet.net [47.181.121.78])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by evilolive.daedalian.us (Postfix) with ESMTPSA id A3F6312226;
+ Thu, 13 Apr 2023 16:03:29 -0700 (PDT)
+From: John Hickey <jjh@daedalian.us>
+To: maciej.fijalkowski@intel.com
+Date: Thu, 13 Apr 2023 16:03:00 -0700
+Message-Id: <20230413230300.54858-1-jjh@daedalian.us>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <ZC2IYWgTUFCnlKc9@boxer>
+References: <ZC2IYWgTUFCnlKc9@boxer>
 MIME-Version: 1.0
 X-Mailman-Approved-At: Fri, 14 Apr 2023 15:32:50 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1681398794; x=1712934794;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=f6ND7RnB4gbPxv8sBeifXq2wwq96IRhvnSOplOcfMXw=;
- b=iNEXWE4M7FgUyDKwHTObncUlTLY1qAi9fvR7JV1XWBN6Wlj8VYzEWcod
- aFBL2S9giWTcpJQq/EcBtENaAbiP5QpoI9+OlpNUflDey4Ox/cElSxe8p
- +ttK7dRE18U46K5rrRgvbhXqW1lUhnXvoPkKF2mYLQz2CZu+VBMH5MDer
- 9R0Pw9DvqWjAlUrUewBDwYMx+vobiRM9TJXLLszk8Ja5rv2inuCez6DrZ
- xQ3Anl0rzGbHUuRTMI2facsVHhQVLwK3Au3W9i3W5dQIQhYeYDen6yBM+
- GZAle0gudyxemZDRli9bFsxu4G09txhDTx1AhmobMFVFStsBlPoRGmbFb
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=iNEXWE4M
-Subject: [Intel-wired-lan] [PATCH net 1/1] igc: read before write to SRRCTL
- register
+ d=daedalian.us; s=default; t=1681427015;
+ bh=N/oTU12GaiVjXfEcbgH2DNQl+cPLB6Q4XtC5jYOopfM=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=XI+4AbpoJgoNS2fOY04JwNrwkKhAzZDDVJPwKuuNC9GKkFgCbPs8aVErfl57yT8ml
+ qspC9gPL+FOKALxZ+Ewa3VfttH7pHP3D//2e6KitYvcrjUzkC1LvsCJmRneHNWbOls
+ bG+HjYceNfUQBKOjI9Gu6kozEExSwVzSuMjJs6LrHJjJ+d4a9GO31K24nfecJHfbms
+ CRB5MOPCkMhE7o6uBOeLyqgErw5OhEYuc6wTtbvPU7ZT+dWyjnISvZiQobxbQ7qCW2
+ Myvkt+BSkqfxH9Y7BqzaaXdJlnRv8JUgGkrvjRJhZ8P/71MTN9kJAjzl2yrBNlC6IL
+ nnmVEe7UpBazg==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=daedalian.us; s=default; t=1681427011;
+ bh=N/oTU12GaiVjXfEcbgH2DNQl+cPLB6Q4XtC5jYOopfM=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=ZB/SixbBnXLz1zM0PVkZURtogr+lY+TFo6PiaT+LjuVRUe5gZFijXI7mwTgwEZWWb
+ mUbBMIbS/NlspZYhoU41ZPYeHA7TE3Q4JpTb4Nxvgkn/IBsjLrifR7l6ciFJaXScSP
+ 40WKITcP8KaGfz0/CmA0C8H2ll4BGpQjR4LWxPA3ZOHtZzuYWTzOkyqspZCcb1Cp0C
+ ytZh72KxwtM+jCnyN1mzDoCFAuPmfg+KRclOWpHRF1kob8u90/TJEo/ikXqyIgIjhm
+ rewvkJyk+G8q2yV85ngsbjFmz2kWZO/Wkf9uDpBbrkEPFl1aRfxqbEfLdoGLyye3aH
+ tLzAPekcWKFWg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=daedalian.us header.i=@daedalian.us
+ header.a=rsa-sha256 header.s=default header.b=XI+4Abpo; 
+ dkim=pass (2048-bit key) header.d=daedalian.us header.i=@daedalian.us
+ header.a=rsa-sha256 header.s=default header.b=ZB/SixbB
+Subject: [Intel-wired-lan] [PATCH net v4] ixgbe: Fix panic during XDP_TX
+ with > 64 CPUs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,82 +105,159 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: xdp-hints@xdp-project.net, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org,
- Song Yoong Siang <yoong.siang.song@intel.com>, bpf@vger.kernel.org
+Cc: Shujin Li <lishujin@kuaishou.com>, Alexei Starovoitov <ast@kernel.org>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>, intel-wired-lan@lists.osuosl.org,
+ John Fastabend <john.fastabend@gmail.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, John Hickey <jjh@daedalian.us>,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, bpf@vger.kernel.org,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+ linux-kernel@vger.kernel.org, Jason Xing <xingwanli@kuaishou.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-igc_configure_rx_ring() function will be called as part of XDP program
-setup. If Rx hardware timestamp is enabled prio to XDP program setup,
-this timestamp enablement will be overwritten when buffer size is
-written into SRRCTL register.
+Commit 4fe815850bdc ("ixgbe: let the xdpdrv work with more than 64 cpus")
+adds support to allow XDP programs to run on systems with more than
+64 CPUs by locking the XDP TX rings and indexing them using cpu % 64
+(IXGBE_MAX_XDP_QS).
 
-Thus, this commit read the register value before write to SRRCTL
-register. This commit is tested by using xdp_hw_metadata bpf selftest
-tool. The tool enables Rx hardware timestamp and then attach XDP program
-to igc driver. It will display hardware timestamp of UDP packet with
-port number 9092. Below are detail of test steps and results.
+Upon trying this out patch on a system with more than 64 cores,
+the kernel paniced with an array-index-out-of-bounds at the return in
+ixgbe_determine_xdp_ring in ixgbe.h, which means ixgbe_determine_xdp_q_idx
+was just returning the cpu instead of cpu % IXGBE_MAX_XDP_QS.  An example
+splat:
 
-Command on DUT:
-  sudo ./xdp_hw_metadata <interface name>
+ ==========================================================================
+ UBSAN: array-index-out-of-bounds in
+ /var/lib/dkms/ixgbe/5.18.6+focal-1/build/src/ixgbe.h:1147:26
+ index 65 is out of range for type 'ixgbe_ring *[64]'
+ ==========================================================================
+ BUG: kernel NULL pointer dereference, address: 0000000000000058
+ #PF: supervisor read access in kernel mode
+ #PF: error_code(0x0000) - not-present page
+ PGD 0 P4D 0
+ Oops: 0000 [#1] SMP NOPTI
+ CPU: 65 PID: 408 Comm: ksoftirqd/65
+ Tainted: G          IOE     5.15.0-48-generic #54~20.04.1-Ubuntu
+ Hardware name: Dell Inc. PowerEdge R640/0W23H8, BIOS 2.5.4 01/13/2020
+ RIP: 0010:ixgbe_xmit_xdp_ring+0x1b/0x1c0 [ixgbe]
+ Code: 3b 52 d4 cf e9 42 f2 ff ff 66 0f 1f 44 00 00 0f 1f 44 00 00 55 b9
+ 00 00 00 00 48 89 e5 41 57 41 56 41 55 41 54 53 48 83 ec 08 <44> 0f b7
+ 47 58 0f b7 47 5a 0f b7 57 54 44 0f b7 76 08 66 41 39 c0
+ RSP: 0018:ffffbc3fcd88fcb0 EFLAGS: 00010282
+ RAX: ffff92a253260980 RBX: ffffbc3fe68b00a0 RCX: 0000000000000000
+ RDX: ffff928b5f659000 RSI: ffff928b5f659000 RDI: 0000000000000000
+ RBP: ffffbc3fcd88fce0 R08: ffff92b9dfc20580 R09: 0000000000000001
+ R10: 3d3d3d3d3d3d3d3d R11: 3d3d3d3d3d3d3d3d R12: 0000000000000000
+ R13: ffff928b2f0fa8c0 R14: ffff928b9be20050 R15: 000000000000003c
+ FS:  0000000000000000(0000) GS:ffff92b9dfc00000(0000)
+ knlGS:0000000000000000
+ CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+ CR2: 0000000000000058 CR3: 000000011dd6a002 CR4: 00000000007706e0
+ DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+ DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+ PKRU: 55555554
+ Call Trace:
+  <TASK>
+  ixgbe_poll+0x103e/0x1280 [ixgbe]
+  ? sched_clock_cpu+0x12/0xe0
+  __napi_poll+0x30/0x160
+  net_rx_action+0x11c/0x270
+  __do_softirq+0xda/0x2ee
+  run_ksoftirqd+0x2f/0x50
+  smpboot_thread_fn+0xb7/0x150
+  ? sort_range+0x30/0x30
+  kthread+0x127/0x150
+  ? set_kthread_struct+0x50/0x50
+  ret_from_fork+0x1f/0x30
+  </TASK>
 
-Command on Link Partner:
-  echo -n skb | nc -u -q1 <destination IPv4 addr> 9092
+I think this is how it happens:
 
-Result before this patch:
-  skb hwtstamp is not found!
+Upon loading the first XDP program on a system with more than 64 CPUs,
+ixgbe_xdp_locking_key is incremented in ixgbe_xdp_setup.  However,
+immediately after this, the rings are reconfigured by ixgbe_setup_tc.
+ixgbe_setup_tc calls ixgbe_clear_interrupt_scheme which calls
+ixgbe_free_q_vectors which calls ixgbe_free_q_vector in a loop.
+ixgbe_free_q_vector decrements ixgbe_xdp_locking_key once per call if
+it is non-zero.  Commenting out the decrement in ixgbe_free_q_vector
+stopped my system from panicing.
 
-Result after this patch:
-  found skb hwtstamp = 1677762212.590696226
+I suspect to make the original patch work, I would need to load an XDP
+program and then replace it in order to get ixgbe_xdp_locking_key back
+above 0 since ixgbe_setup_tc is only called when transitioning between
+XDP and non-XDP ring configurations, while ixgbe_xdp_locking_key is
+incremented every time ixgbe_xdp_setup is called.
 
-Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
-Cc: <stable@vger.kernel.org> # 5.14+
-Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
+Also, ixgbe_setup_tc can be called via ethtool --set-channels, so this
+becomes another path to decrement ixgbe_xdp_locking_key to 0 on systems
+with more than 64 CPUs.
+
+Since ixgbe_xdp_locking_key only protects the XDP_TX path and is tied
+to the number of CPUs present, there is no reason to disable it upon
+unloading an XDP program.  To avoid confusion, I have moved enabling
+ixgbe_xdp_locking_key into ixgbe_sw_init, which is part of the probe path.
+
+Fixes: 4fe815850bdc ("ixgbe: let the xdpdrv work with more than 64 cpus")
+Signed-off-by: John Hickey <jjh@daedalian.us>
+Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_base.h | 7 +++++--
- drivers/net/ethernet/intel/igc/igc_main.c | 5 ++++-
- 2 files changed, 9 insertions(+), 3 deletions(-)
+v1 -> v2:
+	Added Fixes and net tag.  No code changes.
+v2 -> v3:
+	Added splat.  Slight clarification as to why ixgbe_xdp_locking_key
+	is not turned off.  Based on feedback from Maciej Fijalkowski.
+v3 -> v4:
+	Moved setting ixgbe_xdp_locking_key into the probe path.
+	Commit message cleanup.
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  | 3 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 6 ++++--
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.h b/drivers/net/ethernet/intel/igc/igc_base.h
-index 7a992befca24..b95007d51d13 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.h
-+++ b/drivers/net/ethernet/intel/igc/igc_base.h
-@@ -87,8 +87,11 @@ union igc_adv_rx_desc {
- #define IGC_RXDCTL_SWFLUSH		0x04000000 /* Receive Software Flush */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+index f8156fe4b1dc..0ee943db3dc9 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+@@ -1035,9 +1035,6 @@ static void ixgbe_free_q_vector(struct ixgbe_adapter *adapter, int v_idx)
+ 	adapter->q_vector[v_idx] = NULL;
+ 	__netif_napi_del(&q_vector->napi);
  
- /* SRRCTL bit definitions */
--#define IGC_SRRCTL_BSIZEPKT_SHIFT		10 /* Shift _right_ */
--#define IGC_SRRCTL_BSIZEHDRSIZE_SHIFT		2  /* Shift _left_ */
-+#define IGC_SRRCTL_BSIZEPKT_MASK	GENMASK(6, 0)
-+#define IGC_SRRCTL_BSIZEPKT_SHIFT	10 /* Shift _right_ */
-+#define IGC_SRRCTL_BSIZEHDRSIZE_MASK	GENMASK(13, 8)
-+#define IGC_SRRCTL_BSIZEHDRSIZE_SHIFT	2  /* Shift _left_ */
-+#define IGC_SRRCTL_DESCTYPE_MASK	GENMASK(27, 25)
- #define IGC_SRRCTL_DESCTYPE_ADV_ONEBUF	0x02000000
+-	if (static_key_enabled(&ixgbe_xdp_locking_key))
+-		static_branch_dec(&ixgbe_xdp_locking_key);
+-
+ 	/*
+ 	 * after a call to __netif_napi_del() napi may still be used and
+ 	 * ixgbe_get_stats64() might access the rings on this vector,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 773c35fecace..d7c247e46dfc 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6495,6 +6495,10 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
+ 	set_bit(0, adapter->fwd_bitmask);
+ 	set_bit(__IXGBE_DOWN, &adapter->state);
  
- #endif /* _IGC_BASE_H */
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 25fc6c65209b..de7b21c2ccd6 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -641,7 +641,10 @@ static void igc_configure_rx_ring(struct igc_adapter *adapter,
- 	else
- 		buf_size = IGC_RXBUFFER_2048;
++	/* enable locking for XDP_TX if we have more CPUs than queues */
++	if (nr_cpu_ids > IXGBE_MAX_XDP_QS)
++		static_branch_enable(&ixgbe_xdp_locking_key);
++
+ 	return 0;
+ }
  
--	srrctl = IGC_RX_HDR_LEN << IGC_SRRCTL_BSIZEHDRSIZE_SHIFT;
-+	srrctl = rd32(IGC_SRRCTL(reg_idx));
-+	srrctl &= ~(IGC_SRRCTL_BSIZEPKT_MASK | IGC_SRRCTL_BSIZEHDRSIZE_MASK |
-+		  IGC_SRRCTL_DESCTYPE_MASK);
-+	srrctl |= IGC_RX_HDR_LEN << IGC_SRRCTL_BSIZEHDRSIZE_SHIFT;
- 	srrctl |= buf_size >> IGC_SRRCTL_BSIZEPKT_SHIFT;
- 	srrctl |= IGC_SRRCTL_DESCTYPE_ADV_ONEBUF;
+@@ -10290,8 +10294,6 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 	 */
+ 	if (nr_cpu_ids > IXGBE_MAX_XDP_QS * 2)
+ 		return -ENOMEM;
+-	else if (nr_cpu_ids > IXGBE_MAX_XDP_QS)
+-		static_branch_inc(&ixgbe_xdp_locking_key);
  
+ 	old_prog = xchg(&adapter->xdp_prog, prog);
+ 	need_reset = (!!prog != !!old_prog);
 -- 
-2.34.1
+2.37.2
 
 _______________________________________________
 Intel-wired-lan mailing list
