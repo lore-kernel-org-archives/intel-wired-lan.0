@@ -4,78 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A46CC77B6E
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Apr 2023 17:29:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EE2DC77B72
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 14 Apr 2023 17:29:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CEFC260B0F;
-	Fri, 14 Apr 2023 17:29:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CEFC260B0F
+	by smtp3.osuosl.org (Postfix) with ESMTP id D1B656FFD3;
+	Fri, 14 Apr 2023 17:29:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D1B656FFD3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1681493349;
-	bh=lssKhnmTT5/xszfQVrQTJ2kzFzWXNbdWc/HddbRE+J8=;
+	s=default; t=1681493355;
+	bh=IuqO+/ujzQMb/J7Gis82g37F0WeIrr2GdL7tNlTYHYE=;
 	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=TOVhoClwJ7VGxUAkdJ6no/GxTuKBukmFtUcc6QZRYzUuIujyF/CPJ9VxKFEwc4EyH
-	 /oSkqhM+BSoOk7m86EoUkQuCGye4dXQkIycH6PNsM69XaajOEfOrEwCm8RBUJBD1J+
-	 lGNoq245oy8KW+vM907KtZ5dHqaSz4Dn3buutcJMDpaPQqn/sQsKeVHiTI4PTfq/eS
-	 6Ur81/Wh9+Ah7Dc1QlUaum3vMOPV8jbrpF2XuDlll/jgOLBd+eoc8mUbi+TSy91f51
-	 7N7ux98GhW6HMLnJmaJ9sXLNjJV/M7K2fDd6Hzp2m5EJlDIne03yAf54aX+0mXg9ni
-	 6J86b0ui4ox6w==
+	b=ZfZnUx7caMoEA7YbV3bA9GTg9z3EiThypIw/BI+pMtKG7cA1/13zhLo24aqGMOlQ7
+	 z9KH/tgICHpo5RYsEsbicB9/0QV0AKQTZIIEiGUco649eABHfaiMgWmJi4pOp7sYGv
+	 DIEuUHDOqDn6niLWiaYArUTGHfTsaUhTe8nqyER0v/p1gXatnvJMyRgq4W7/C5oodu
+	 bKodDkMKun/UkrugU72v+PP6/0g96dp8/HcWS3bklGw7InRF31nw7suPl3gkCH/ajr
+	 Sq/zKjpIN0xRBVMIEbGX01mjU47nCpkpLBuaACd/9Sr3Nx1KW/L8I2F+KGkKBM8Y6y
+	 x3TNSi/tWOx/w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jK8sZstQvrF0; Fri, 14 Apr 2023 17:29:09 +0000 (UTC)
+	with ESMTP id SpO3uqJTy2GI; Fri, 14 Apr 2023 17:29:15 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DE34C6FF36;
-	Fri, 14 Apr 2023 17:29:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DE34C6FF36
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id EC8421C3F64
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Apr 2023 17:29:06 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E1D9C6FFCA;
+	Fri, 14 Apr 2023 17:29:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E1D9C6FFCA
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id F2B8F1C3D4F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Apr 2023 17:29:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C2E7860B0F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Apr 2023 17:29:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C2E7860B0F
+ by smtp1.osuosl.org (Postfix) with ESMTP id CBB24843D8
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Apr 2023 17:29:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CBB24843D8
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id uZYkYOf88yD5 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 14 Apr 2023 17:29:06 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 2BgQUodrns2W for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 14 Apr 2023 17:29:12 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 094DB6FFCB
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 094DB6FFCB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Apr 2023 17:29:05 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="372388212"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; d="scan'208";a="372388212"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 14 Apr 2023 10:29:01 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CB6BE843B5
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CB6BE843B5
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Apr 2023 17:29:11 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="409724923"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; d="scan'208";a="409724923"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 14 Apr 2023 10:29:10 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="720357544"
-X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; d="scan'208";a="720357544"
-Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
- by orsmga008.jf.intel.com with ESMTP; 14 Apr 2023 10:29:00 -0700
-Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
- fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+X-IronPort-AV: E=McAfee;i="6600,9927,10680"; a="779252869"
+X-IronPort-AV: E=Sophos;i="5.99,197,1677571200"; d="scan'208";a="779252869"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+ by FMSMGA003.fm.intel.com with ESMTP; 14 Apr 2023 10:29:10 -0700
+Received: from orsmsx612.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Fri, 14 Apr 2023 10:29:00 -0700
-Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
- fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
+ 15.1.2507.23; Fri, 14 Apr 2023 10:29:10 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX612.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23 via Frontend Transport; Fri, 14 Apr 2023 10:29:00 -0700
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (104.47.70.101)
- by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
+ 15.1.2507.23; Fri, 14 Apr 2023 10:29:09 -0700
+Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23 via Frontend Transport; Fri, 14 Apr 2023 10:29:09 -0700
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.170)
+ by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.23; Fri, 14 Apr 2023 10:28:59 -0700
+ 15.1.2507.23; Fri, 14 Apr 2023 10:29:09 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=bI0iH5LEMa4i1OjvEvUGPfxANp95O/TwoCR/UenNGXv6WTV7TvX6kjkJ3HAmfLNeAO2ERBr5x6kGSPWgAXaokX8BbI51i1n79ExDlYBCswhciAn0vumMv8EM0TUlGZ5gCljkalyjlI85eNB0zRncoXd93KpMz+HUCikWy/McxuEQGHUMtHAHoPzezMKlA1KXvXX0Lvqbw+dW/kvbZC2C9hbMnK4Aj6Nhb7QDRBsdh8uMMdp/bTT+WAUX00xtuFbcGrD/4ny7SBoF+OUyom69OfJI7rEPecT5iXxfrHOUZywR2ntuPk5xBvKfE242QnmJOurMl379Cfu3GP05+X3u2w==
+ b=mVqlh9GCt5TJgitybESsJQj+ypTMdZjTt4tk0AxJJ+vBvHFFlI1bHwmYF+V2+7s9UNDL4NapUnKvans+cpfubJqsjUNgR4wqbo9CrMJUoodEqbRKWb1RTqTIlJqC0AEI7UdUskk5/qivikNsC9rLE6XHTHAyGVnd8vUnDIyDLNNZqiB5aOsPOsJK7IaG/dYIQ1CUmjp/OouB0pmICf3K1WOs8XAvehT5sRqqS2F4AsvYq0wow7XWEkSCWp92KGt7uhC0CXkF7NDDcLfrUvZwQrdHq2gkXylN6w+qArH0uU2yjnp65iZIDvoSMboAUEa/UqHeKwa3m94IDs6Z0EoU9Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=qZuTnqZMOvXWjusuiOorqPGkyQGDFmvXn3AsMBqo31E=;
- b=Ft4N6N5QKSrCe9UDBpReQe4PKo8gY6rj8wI4Lojl552wcOF1VBphJ4Yag+T1G4r/CAsJ/AOGtEI4BFhByq+y3qrNLH9IvJ3PFEKyLsM9p9x7gcHHc9XWUl1i91XTxGO3wlQvTEC2rhe4V1LcL++l9/M8ZUaP3aM9beM/M27Pa3q+E5ZAgBg12NKbvr4ixocNddipx87+ZcUz4QxKfMFReKKG4OS6dspKlUOhj5Ft1vVEOhix0VmmbiH2Q+Ifs9ec2dN+SqgQ/l9Sk3YRw0boyfGVNoICF30yW3FOEqRuARUOJJ+XsGB/Vs15zbOPWSy7LOrPrOz26CsI48jd1i86KA==
+ bh=s99C7EVXISgUu4kWAMO0zC9CREqQteM9SoueOd4yksU=;
+ b=cI09ci1a9pmawGx2Kdf5IY5lzgiEajqJNvW6/pQkDZH7hnCwDhT33OInMw4XA8aUo7ZH0M31hNgdir0XxV1AgBQbiFdaxzxUPLEVDnfS2biBIDPdxsEaAq4Lr52s4VQUOCeGy5gkM1n9AIchFB7VD1VuCwLmEwXVMsmTAvJKJPtqbRoo7g2NxwxhtL1eUjHjzCZHV2QBwmKl0ABCpKC6udnKDAoCBBvFacZtGkPoTtCRqwZF/QJ6eI6qQPuK7Ox/kkqALrTq0K/kgJws0LfIbHfMC1Xqwh0S6Q+vtsIAu2rTJamBeGiv+SchGEh/zH2oT+JU5AiKWT79KhJW/TBZ6w==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
@@ -83,29 +87,29 @@ Received: from DM6PR11MB4657.namprd11.prod.outlook.com (2603:10b6:5:2a6::7) by
  DM4PR11MB6454.namprd11.prod.outlook.com (2603:10b6:8:b8::5) with
  Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6156.28; Fri, 14 Apr 2023 17:28:57 +0000
+ 15.20.6156.28; Fri, 14 Apr 2023 17:29:05 +0000
 Received: from DM6PR11MB4657.namprd11.prod.outlook.com
  ([fe80::f829:c44d:af33:e2c8]) by DM6PR11MB4657.namprd11.prod.outlook.com
  ([fe80::f829:c44d:af33:e2c8%4]) with mapi id 15.20.6298.030; Fri, 14 Apr 2023
- 17:28:57 +0000
+ 17:29:05 +0000
 From: "Kubalewski, Arkadiusz" <arkadiusz.kubalewski@intel.com>
 To: mschmidt <mschmidt@redhat.com>, "intel-wired-lan@lists.osuosl.org"
  <intel-wired-lan@lists.osuosl.org>
-Thread-Topic: [PATCH net-next v2 2/6] ice: increase the GNSS data polling
- interval to 20 ms
-Thread-Index: AQHZbResqGZKsQBYCEW4elfha+rO7a8q3rCQ
-Date: Fri, 14 Apr 2023 17:28:56 +0000
-Message-ID: <DM6PR11MB465739C23C3C0D83E7ADA19E9B999@DM6PR11MB4657.namprd11.prod.outlook.com>
+Thread-Topic: [PATCH net-next v2 3/6] ice: remove
+ ice_ctl_q_info::sq_cmd_timeout
+Thread-Index: AQHZbRefxEt9vroxMUm1P7tr5uZoOq8q6Jlw
+Date: Fri, 14 Apr 2023 17:29:05 +0000
+Message-ID: <DM6PR11MB46576BF9C476045F93378E229B999@DM6PR11MB4657.namprd11.prod.outlook.com>
 References: <20230412081929.173220-1-mschmidt@redhat.com>
- <20230412081929.173220-3-mschmidt@redhat.com>
-In-Reply-To: <20230412081929.173220-3-mschmidt@redhat.com>
+ <20230412081929.173220-4-mschmidt@redhat.com>
+In-Reply-To: <20230412081929.173220-4-mschmidt@redhat.com>
 Accept-Language: pl-PL, en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 x-ms-publictraffictype: Email
 x-ms-traffictypediagnostic: DM6PR11MB4657:EE_|DM4PR11MB6454:EE_
-x-ms-office365-filtering-correlation-id: 25d1bae5-2ff4-4620-de6d-08db3d0dba26
+x-ms-office365-filtering-correlation-id: 6331ee8a-7b8e-4b2e-dfbb-08db3d0dbf0a
 x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
@@ -117,34 +121,34 @@ x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
 MIME-Version: 1.0
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB4657.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 25d1bae5-2ff4-4620-de6d-08db3d0dba26
-X-MS-Exchange-CrossTenant-originalarrivaltime: 14 Apr 2023 17:28:56.9513 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 6331ee8a-7b8e-4b2e-dfbb-08db3d0dbf0a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 14 Apr 2023 17:29:05.1581 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: DA9YZ7lTVTDM9XTa92Q02A+Pn7lOZeXFxXxpdUvlZggx03uLW1m/aJdi6z+WwtxnEpu5tgOKvBbB4ML2RmbW5p0dABAZXYc+rRWXyv58LeU=
+X-MS-Exchange-CrossTenant-userprincipalname: HmLzIt/xvULjZIj0v5ISWTdqSh4RhdcqsUWcsbOTkWtZ3IX3Gij8iBNfubzc+48aIaT1CAmeW3xIwZw/BwANR1InA7tgQ2ZGI666GzmDLgw=
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB6454
 X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1681493346; x=1713029346;
+ t=1681493351; x=1713029351;
  h=from:to:cc:subject:date:message-id:references:
  in-reply-to:content-transfer-encoding:mime-version;
- bh=6C7sAhgPeeJLNoluD6x2WjMCQ1o9pu2IdZTRA8BPkUY=;
- b=NmicCcaahxrx4wKNvD0mp3XV6e8Jm6ohuPyCh/wjvV1Qx4ujTteOKlqb
- D28kKJ38SdAXd4FLfQ6G+3L67MzS5b+E3mxHClSxKj++nP4AmaxuW++6V
- Nvs8YY1ayCB1h3HH84LPscClVWW8X/A3H5qjXqrF284KGO+ihyAin8Ns9
- yvrY9B8f1CV1eBuUvRF0RneB6a7X7HBbZgXyQ0RYalzXjABI3P6WrquaU
- 5FgbnC4u9RcX7t3IFkxmSoFXR74rMRKqJK2tHCH19OhU/t6f1uo7Ie3Ca
- hkdz9iseoQ4Fzq8+hv745Oe1CZSr6WtXQEBt/CBFwrwr73MZiSVWJQkev
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=5ecpbvs6aOCa0awNs3iUM71ntCvzm2m0LmC2byVaIuM=;
+ b=H+F+dp+RlEApp2h8djd3eOd4S+QaPEGtN/kPenEQ8y54F9CtMFLoX7Ta
+ TLRWYTcwKMF/uDpC75dzs53xzIujjhPUa8QYhk7xM16zv/srRiNol49PG
+ voDnua8HcP9/E+Hvwf5Ik5xb570Pp96oKjcTju0PXXasak0C91oTTrv91
+ CMrhUA5gcnFwWkFM+5bEp2frrRdvxp/uBWVRK2sfCW+AW2TAxwnLpbmoa
+ bx0uy9ic0kvIUYunnzLsTFaLfmcPBh7MdFpfB5FpdKm1SoTGy3LAoamqs
+ X1sy8Q64vQBLivGHEwPOcteGocbBkn0NA+v1fY1FjXYRhycuyWFDoMuX2
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NmicCcaa
+ header.a=rsa-sha256 header.s=Intel header.b=H+F+dp+R
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net-next v2 2/6] ice: increase the
- GNSS data polling interval to 20 ms
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2 3/6] ice: remove
+ ice_ctl_q_info::sq_cmd_timeout
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -171,30 +175,73 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 >From: Michal Schmidt <mschmidt@redhat.com>
 >Sent: Wednesday, April 12, 2023 10:19 AM
 >
->Double the GNSS data polling interval from 10 ms to 20 ms.
->According to Karol Kolacinski from the Intel team, they have been
->planning to make this change.
+>sq_cmd_timeout is initialized to ICE_CTL_Q_SQ_CMD_TIMEOUT and never
+>changed, so just use the constant directly.
 >
+>Suggested-by: Simon Horman <simon.horman@corigine.com>
 >Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 >---
-> drivers/net/ethernet/intel/ice/ice_gnss.h | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
+> drivers/net/ethernet/intel/ice/ice_common.c   | 2 +-
+> drivers/net/ethernet/intel/ice/ice_controlq.c | 5 +----
+> drivers/net/ethernet/intel/ice/ice_controlq.h | 1 -
+> 3 files changed, 2 insertions(+), 6 deletions(-)
 >
->diff --git a/drivers/net/ethernet/intel/ice/ice_gnss.h
->b/drivers/net/ethernet/intel/ice/ice_gnss.h
->index 640df7411373..b8bb8b63d081 100644
->--- a/drivers/net/ethernet/intel/ice/ice_gnss.h
->+++ b/drivers/net/ethernet/intel/ice/ice_gnss.h
->@@ -5,7 +5,7 @@
-> #define _ICE_GNSS_H_
+>diff --git a/drivers/net/ethernet/intel/ice/ice_common.c
+>b/drivers/net/ethernet/intel/ice/ice_common.c
+>index c2fda4fa4188..f4c256563248 100644
+>--- a/drivers/net/ethernet/intel/ice/ice_common.c
+>+++ b/drivers/net/ethernet/intel/ice/ice_common.c
+>@@ -2000,7 +2000,7 @@ void ice_release_res(struct ice_hw *hw, enum
+>ice_aq_res_ids res)
+> 	/* there are some rare cases when trying to release the resource
+> 	 * results in an admin queue timeout, so handle them correctly
+> 	 */
+>-	while ((status == -EIO) && (total_delay < hw->adminq.sq_cmd_timeout))
+>{
+>+	while ((status == -EIO) && (total_delay < ICE_CTL_Q_SQ_CMD_TIMEOUT))
+>{
+> 		mdelay(1);
+> 		status = ice_aq_release_res(hw, res, 0, NULL);
+> 		total_delay++;
+>diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.c
+>b/drivers/net/ethernet/intel/ice/ice_controlq.c
+>index 6bcfee295991..c8fb10106ec3 100644
+>--- a/drivers/net/ethernet/intel/ice/ice_controlq.c
+>+++ b/drivers/net/ethernet/intel/ice/ice_controlq.c
+>@@ -637,9 +637,6 @@ static int ice_init_ctrlq(struct ice_hw *hw, enum
+>ice_ctl_q q_type)
+> 		return -EIO;
+> 	}
 >
-> #define ICE_E810T_GNSS_I2C_BUS		0x2
->-#define ICE_GNSS_POLL_DATA_DELAY_TIME	(HZ / 100) /* poll every 10 ms */
->+#define ICE_GNSS_POLL_DATA_DELAY_TIME	(HZ / 50) /* poll every 20 ms */
-> #define ICE_GNSS_TIMER_DELAY_TIME	(HZ / 10) /* 0.1 second per message */
-> #define ICE_GNSS_TTY_WRITE_BUF		250
-> #define ICE_MAX_I2C_DATA_SIZE
->	FIELD_MAX(ICE_AQC_I2C_DATA_SIZE_M)
+>-	/* setup SQ command write back timeout */
+>-	cq->sq_cmd_timeout = ICE_CTL_Q_SQ_CMD_TIMEOUT;
+>-
+> 	/* allocate the ATQ */
+> 	ret_code = ice_init_sq(hw, cq);
+> 	if (ret_code)
+>@@ -1066,7 +1063,7 @@ ice_sq_send_cmd(struct ice_hw *hw, struct
+>ice_ctl_q_info *cq,
+>
+> 		udelay(ICE_CTL_Q_SQ_CMD_USEC);
+> 		total_delay++;
+>-	} while (total_delay < cq->sq_cmd_timeout);
+>+	} while (total_delay < ICE_CTL_Q_SQ_CMD_TIMEOUT);
+>
+> 	/* if ready, copy the desc back to temp */
+> 	if (ice_sq_done(hw, cq)) {
+>diff --git a/drivers/net/ethernet/intel/ice/ice_controlq.h
+>b/drivers/net/ethernet/intel/ice/ice_controlq.h
+>index c07e9cc9fc6e..e790b2f4e437 100644
+>--- a/drivers/net/ethernet/intel/ice/ice_controlq.h
+>+++ b/drivers/net/ethernet/intel/ice/ice_controlq.h
+>@@ -87,7 +87,6 @@ struct ice_ctl_q_info {
+> 	enum ice_ctl_q qtype;
+> 	struct ice_ctl_q_ring rq;	/* receive queue */
+> 	struct ice_ctl_q_ring sq;	/* send queue */
+>-	u32 sq_cmd_timeout;		/* send queue cmd write back timeout */
+> 	u16 num_rq_entries;		/* receive queue depth */
+> 	u16 num_sq_entries;		/* send queue depth */
+> 	u16 rq_buf_size;		/* receive queue buffer size */
 >--
 >2.39.2
 
