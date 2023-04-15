@@ -1,103 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79081C77B71
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 15 Apr 2023 05:49:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67599C77B70
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 15 Apr 2023 17:16:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1FDAA60BC0;
-	Sat, 15 Apr 2023 05:49:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1FDAA60BC0
+	by smtp1.osuosl.org (Postfix) with ESMTP id 15D2B84471;
+	Sat, 15 Apr 2023 17:16:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 15D2B84471
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1681537767;
-	bh=QALFYunArNKXqVeQpn+q4ThdfcOIAajxIA9GfO6YpWI=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1681578990;
+	bh=7cdnIJr4nlq/drT6Gdg/iigSJ7ObAXWBox1cWRig9Hg=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=P8gm5BKBzLFNHJgQBxRUuJEDEZhuk59SgqMCpSc5q13Id3LQucviEX9w7uNgE2Dv0
-	 Nswx3UshxlrXE742eNKmaKWxXgoKQiuWodyrRlW5i37ZjpzcFJZ5rASHVG6cmL7AgT
-	 jS9Jwx8sa1xGobKEXricF7gTJP95XkM9KryIxh8End0nzz1iLebUKEAXcPa0VMtq/G
-	 9Uiz0as+dHAQLAkKcCY2CaT3uVisGJn1cxcVpey+a83A8sJQf2Sb0kyJ57bA8N4+K2
-	 8M51DczlZVRgOei0OhaCu0IejT2w3oE/SNYhrnHiBXch+AgxhZI5kMUa+ULzcuqREp
-	 a0hOaYCB4PaHw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bSJnGgZ1OeTs; Sat, 15 Apr 2023 05:49:25 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id ADE1770016;
-	Sat, 15 Apr 2023 05:49:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ADE1770016
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A9F871C3E9C
- for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Apr 2023 05:49:17 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7FF9284131
- for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Apr 2023 05:49:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7FF9284131
+	b=pPLegFC8ief2wtqE3KOFFVW+5cBueqSYKyBfXeFkd1QM7m8I29DWkR6SzPVRmRYp/
+	 R7dnmQbBZNXKcuHWsbVW6PH8WJJ4DaenL9KKSJtH2VcfUcxWFXvfWETONmniKbmLNc
+	 JVaishtKHW3Ir3+rJD6v9Y1OTq9FcXQYj+F0w6HYgvRv/PqVpRuGRVX3bDKYYTY1FD
+	 c46SKavPKfiWyDT3lLTkxpXojmlMaCLa2U5N5h2cfdf4cYSDBhqE6LT/jX31unRUvF
+	 SGmnx9ppzAcgYsxs1YHgm5hfKXcBg/Vhpw27kqgzJSvf0KK7T6L6xsgXigXcuhRIW/
+	 HwZcyrMEQ8MKQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qO9v918H407c for <intel-wired-lan@lists.osuosl.org>;
- Sat, 15 Apr 2023 05:49:16 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 811D5840E0
-Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com
- [IPv6:2a00:1450:4864:20::630])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 811D5840E0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Apr 2023 05:49:16 +0000 (UTC)
-Received: by mail-ej1-x630.google.com with SMTP id jg21so50510220ejc.2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 14 Apr 2023 22:49:16 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1681537754; x=1684129754;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=KjriD5FCdH2a/g++1E9APszM1FlDTgYU+lq4VWSvnFA=;
- b=fWS7g9b1Fj4EK/j3vYjD36OBp39r08wzkcTktaZP+wi13Sj1RIAQO0fjwbxCT9Gq30
- lE/lfqlaKCi8NsrevlSMwXCMTYZ6XhZ+rHUivwoS7L18OIj0vgyR+4Pp91JHTtxage/d
- /n3XBirXNpoBSxsSDfArvE8HXWsxnI4DF5AUa1S1cFn+U49H1MqMyEZFdI7tLqHRQvH3
- irbrRcQKQuBdU5E3bbdeHjA9jHNCa2VaaonmujhL8vfhlA0yz/m70gf1oXuZK44zh26N
- qHy5LX1HFOWs/ehaA1YBWQSBLJltUJGO9fZqhlAPjWA70jZc6Izy3LD9E8lLXonEiahG
- 896A==
-X-Gm-Message-State: AAQBX9cs8QAZxs2WGBJTKgLS3eg+xUE3egFAIWFfp6qegjQ0wuo4JeGp
- 5C0QdwXsk2+gAZvVKlUTA828K9QHawn1Tzqbo5hrH6PU8Adt29IrCG9gCckTQwVVKK9j8isniR0
- cYwosG0tf1+AvocLFTwPgCz2vMTK/nvzEGfk31VPYBjrQKx/rn06ylkxmDrioYlmcRLiYSrX5pU
- A1He42LlK0v4DuzQ==
-X-Google-Smtp-Source: AKy350YssNhoqlKHwl8NnPvgqpYczYd2nxY8tzFvbqdPBCfbOkUOhKrfzokmXFpYgdzW8DuKepa16g==
-X-Received: by 2002:a17:906:6bd0:b0:94e:f969:fb3e with SMTP id
- t16-20020a1709066bd000b0094ef969fb3emr1252290ejs.43.1681537754369; 
- Fri, 14 Apr 2023 22:49:14 -0700 (PDT)
-Received: from perf-sql133-029021.hosts.secretcdn.net
- ([2620:11a:c018:0:ea8:be91:8d1:f59b])
- by smtp.gmail.com with ESMTPSA id
- b1-20020a170906038100b00947ccb6150bsm3294856eja.102.2023.04.14.22.49.12
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 14 Apr 2023 22:49:14 -0700 (PDT)
-From: Joe Damato <jdamato@fastly.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Sat, 15 Apr 2023 05:48:55 +0000
-Message-Id: <20230415054855.9293-3-jdamato@fastly.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230415054855.9293-1-jdamato@fastly.com>
-References: <20230415054855.9293-1-jdamato@fastly.com>
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 9YS5jaBF4URk; Sat, 15 Apr 2023 17:16:29 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2F4268449F;
+	Sat, 15 Apr 2023 17:16:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2F4268449F
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 90D1B1C409F
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Apr 2023 17:16:27 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7544060DF0
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Apr 2023 17:16:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7544060DF0
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qDV2l6NqlZUP for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 15 Apr 2023 17:16:26 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B282960C09
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B282960C09
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 15 Apr 2023 17:16:26 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 9FEB860B4B;
+ Sat, 15 Apr 2023 17:16:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D92B4C433D2;
+ Sat, 15 Apr 2023 17:16:24 +0000 (UTC)
+Date: Sat, 15 Apr 2023 13:16:23 -0400
+From: Sasha Levin <sashal@kernel.org>
+To: Jakub Kicinski <kuba@kernel.org>
+Message-ID: <ZDrb58HEqLvG6ZoQ@sashalap>
+References: <20230411011354.2619359-1-pavan.kumar.linga@intel.com>
+ <ZDb3rBo8iOlTzKRd@sashalap>
+ <643703892094_69bfb294a3@willemb.c.googlers.com.notmuch>
+ <d2585839-fcec-4a68-cc7a-d147ce7deb04@intel.com>
+ <20230412192434.53d55c20@kernel.org> <ZDnNRs6sWb45e4F6@sashalap>
+ <20230414152744.4fd219f9@kernel.org>
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=fastly.com; s=google; t=1681537754; x=1684129754;
- h=content-transfer-encoding:mime-version:references:in-reply-to
- :message-id:date:subject:cc:to:from:from:to:cc:subject:date
- :message-id:reply-to;
- bh=KjriD5FCdH2a/g++1E9APszM1FlDTgYU+lq4VWSvnFA=;
- b=vF7Xzuua89QO0OMIk2N15uCHG+sJA8D7jU2wjqPck/LO5zW/FNu2UIgOvsuvbvTuNh
- ptF5/2jvcuhM+TXobLpslSfnldvPNZHN5f0r4R7J0weQy+yZS7wVqsamSgFrC8I5RjZf
- 09jbk2ojae6rCV8XDIe9UEmXzU8DHuhsv9FXk=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=fastly.com header.i=@fastly.com
- header.a=rsa-sha256 header.s=google header.b=vF7Xzuua
-Subject: [Intel-wired-lan] [PATCH net 2/2] ixgbe: Allow ixgbe to reset
- default flow hash
+Content-Disposition: inline
+In-Reply-To: <20230414152744.4fd219f9@kernel.org>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1681578985;
+ bh=YBy+HV96SaoTKtOsia7TJlcxUKngGg+lySmETOQFiDU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=pZvRlbzT8g5sy23nmcxRBsbVliB3K69RMZK9GfGuGewFuTM60q8Xt9M0SZsC9ZggF
+ JIP9LLcA9muJvutXm8HpKDZbLGIqg9UUX/GbRxTu+pnyRzPnErb/WD5XtJ2ntNtIGU
+ C+NN8tcZELaSLs94/daCY9+ZfZPx65DRoHlvbzmRfpv3MpacEiTiEUjQoxpvW4GB9s
+ +qSarNqzLR5ICpSaM0lniqYbvjS0HyX23uok11az6zs9yxXuBKW9yqsUMmIsdYoi6Q
+ 0wEjHqA3zgVtHeVdHkO0y7HVmTZhBp5DMQ5vaCKBa4db7aFaGNVEtAy1FODgyxIDZk
+ VzAOwq7QM1COQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=pZvRlbzT
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2 00/15] Introduce Intel
+ IDPF driver
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,146 +94,69 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Joe Damato <jdamato@fastly.com>,
- anthony.l.nguyen@intel.com, jesse.brandeburg@intel.com, kuba@kernel.org
-Content-Type: text/plain; charset="us-ascii"
+Cc: Willem de Bruijn <willemdebruijn.kernel@gmail.com>, pabeni@redhat.com,
+ willemb@google.com, jesse.brandeburg@intel.com, edumazet@google.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, decot@google.com, davem@davemloft.net
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-ethtool uses `ETHTOOL_GRXRINGS` to compute how many queues are supported
-by RSS. The driver should return the smaller of either:
-  - The maximum number of RSS queues the device supports, OR
-  - The number of RX queues configured
+On Fri, Apr 14, 2023 at 03:27:44PM -0700, Jakub Kicinski wrote:
+>On Fri, 14 Apr 2023 18:01:42 -0400 Sasha Levin wrote:
+>>> As I said previously in [0] until there is a compatible, widely
+>>> available implementation from a second vendor - this is an Intel
+>>> driver and nothing more. It's not moving anywhere.
+>>
+>> My concern isn't around the OASIS legal stuff, it's about the users who
+>> end up using this and will end up getting confused when we have two (or
+>> more) in-kernel "IDPF" drivers.
+>>
+>> I don't think that moving is an option - it'll brake distros and upset
+>> users: we can't rename drivers as we go because it has a good chance of
+>> breaking users.
+>
+>Minor pain for backports but I don't think we need to rename anything,
+>just move.
+>
+>Or we can just leave it be under intel/, since there are not other
+>participant now. Unless perhaps under google/ is a better option?
+>
+>Drivers are organized by the vendor for better or worse. We have a
+>number of drivers under the "wrong directly" already. Companies merge /
+>buy each others product lines, there's also some confusion about common
+>IP drivers. It's all fine, whatever.
+>
+>Users are very, very unlikely to care.
+>
+>>> I think that's a reasonable position which should allow Intel to ship
+>>> your code and me to remain professional.
+>>
+>> No concerns about OASIS or the current code, I just don't want to make
+>> this a mess for the users.
+>
+>It's not a standard until someone else actually adopts it. What stops
+>all the other vendors from declaring that their driver interface is a
+>standard now, too?
+>
+>We have a long standing rule in netdev against using marketing language.
 
-Prior to this change, running `ethtool -X $iface default` fails if the
-number of queues configured is larger than the number supported by RSS,
-even though changing the queue count correctly resets the flowhash to
-use all supported queues.
+Sorry, I may not have explained myself well. My concern is not around
+what's standard and what's not, nor around where in the kernel tree
+these drivers live.
 
-Other drivers (for example, i40e) will succeed but the flow hash will
-reset to support the maximum number of queues supported by RSS, even if
-that amount is smaller than the configured amount.
+I'm concerned that down the road we may end up with two drivers that
+have the same name, and are working with hardware so similar that it
+might be confusing to understand which driver a user should be using.
 
-Prior to this change:
+Yes, it's not something too big, but we have an opportunity to think
+about this before committing to anything that might be a pain down the
+road.
 
-$ sudo ethtool -L eth1 combined 20
-$ sudo ethtool -x eth1
-RX flow hash indirection table for eth1 with 20 RX ring(s):
-    0:      0     1     2     3     4     5     6     7
-    8:      8     9    10    11    12    13    14    15
-   16:      0     1     2     3     4     5     6     7
-   24:      8     9    10    11    12    13    14    15
-   32:      0     1     2     3     4     5     6     7
-...
-
-You can see that the flowhash was correctly set to use the maximum
-number of queues supported by the driver (16).
-
-However, asking the NIC to reset to "default" fails:
-
-$ sudo ethtool -X eth1 default
-Cannot set RX flow hash configuration: Invalid argument
-
-After this change, the flowhash can be reset to default which will use
-all of the available RSS queues (16) or the configured queue count,
-whichever is smaller.
-
-Starting with eth1 which has 10 queues and a flowhash distributing to
-all 10 queues:
-
-$ sudo ethtool -x eth1
-RX flow hash indirection table for eth1 with 10 RX ring(s):
-    0:      0     1     2     3     4     5     6     7
-    8:      8     9     0     1     2     3     4     5
-   16:      6     7     8     9     0     1     2     3
-...
-
-Increasing the queue count to 48 resets the flowhash to distribute to 16
-queues, as it did before this patch:
-
-$ sudo ethtool -L eth1 combined 48
-$ sudo ethtool -x eth1
-RX flow hash indirection table for eth1 with 16 RX ring(s):
-    0:      0     1     2     3     4     5     6     7
-    8:      8     9    10    11    12    13    14    15
-   16:      0     1     2     3     4     5     6     7
-...
-
-Due to the other bugfix in this series, the flowhash can be set to use
-queues 0-5:
-
-$ sudo ethtool -X eth1 equal 5
-$ sudo ethtool -x eth1
-RX flow hash indirection table for eth1 with 16 RX ring(s):
-    0:      0     1     2     3     4     0     1     2
-    8:      3     4     0     1     2     3     4     0
-   16:      1     2     3     4     0     1     2     3
-...
-
-Due to this bugfix, the flowhash can be reset to default and use 16
-queues:
-
-$ sudo ethtool -X eth1 default
-$ sudo ethtool -x eth1
-RX flow hash indirection table for eth1 with 16 RX ring(s):
-    0:      0     1     2     3     4     5     6     7
-    8:      8     9    10    11    12    13    14    15
-   16:      0     1     2     3     4     5     6     7
-...
-
-Signed-off-by: Joe Damato <jdamato@fastly.com>
----
- .../net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 821dfd323fa9..0bbad4a5cc2f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2665,6 +2665,14 @@ static int ixgbe_get_rss_hash_opts(struct ixgbe_adapter *adapter,
- 	return 0;
- }
- 
-+static int ixgbe_rss_indir_tbl_max(struct ixgbe_adapter *adapter)
-+{
-+	if (adapter->hw.mac.type < ixgbe_mac_X550)
-+		return 16;
-+	else
-+		return 64;
-+}
-+
- static int ixgbe_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
- 			   u32 *rule_locs)
- {
-@@ -2673,7 +2681,8 @@ static int ixgbe_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
- 
- 	switch (cmd->cmd) {
- 	case ETHTOOL_GRXRINGS:
--		cmd->data = adapter->num_rx_queues;
-+		cmd->data = min_t(int, adapter->num_rx_queues,
-+				  ixgbe_rss_indir_tbl_max(adapter));
- 		ret = 0;
- 		break;
- 	case ETHTOOL_GRXCLSRLCNT:
-@@ -3075,14 +3084,6 @@ static int ixgbe_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 	return ret;
- }
- 
--static int ixgbe_rss_indir_tbl_max(struct ixgbe_adapter *adapter)
--{
--	if (adapter->hw.mac.type < ixgbe_mac_X550)
--		return 16;
--	else
--		return 64;
--}
--
- static u32 ixgbe_get_rxfh_key_size(struct net_device *netdev)
- {
- 	return IXGBE_RSS_KEY_SIZE;
 -- 
-2.25.1
-
+Thanks,
+Sasha
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
