@@ -4,85 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7569C77B70
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Apr 2023 09:35:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 396CEC77B70
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Apr 2023 09:35:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5DE1961374;
-	Mon, 17 Apr 2023 09:35:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5DE1961374
+	by smtp3.osuosl.org (Postfix) with ESMTP id DA0EA613AB;
+	Mon, 17 Apr 2023 09:35:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DA0EA613AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1681724125;
-	bh=hHcoeaF1KLU1YUQwxWVgotfgqLLoi9+1D0u/mtuDMIY=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=PxenqIDHqevrq7pU9b6ss6VUfgjhxBhtaq8hYYrgx29YteqdxJ2+ynR7lWVA1LDVj
-	 2dA5wmOgMC0tICqBBiVKcjLLa5Dx5sEy/h7DLSIUVaul0HZK9A2vT70yDiue4OAX4N
-	 2+6qw+OnulllSFrKDFSsfKfg8h00NryTvNMrbF6chvT/2DmkRDEhSr4c0J2EeIDbNQ
-	 Cs0mpUIKT0DO11qo5hiynpKM5qY6pClaLgUHJsWDf1JS6yIX469HHv1cBZ+vwHxhG0
-	 7eBcfWofYw3apnRGP0t3Ba2aI38/EUcWSIKhQ48SQVtdzvHGcO4L/Mls6cYN1XnviH
-	 xDOmJynn/HYYw==
+	s=default; t=1681724129;
+	bh=FwFKwFGZ5aKOqA6syJKI9VGh73Ba/Zfmnge8tf46yic=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=QpHQ617NPrSbwzmDVs5vhH/FIsEMwbLQdr/+iigEeChFTnsmcqrNmcayvqRihF+gJ
+	 dPmn2Rro7rAgbZJg4cymg11nKSVIBCCYLpTcn+v+c0+FMkcKeNx7nGL9UmhUycHPq9
+	 5gkbDGmCP2kcOyMJU8QF/K+TpLNPJIDSyZ8LvrSN/JVuianj1Xaazg/JfOiqlsPdXa
+	 0W30RurtAmERWaDxhvGZ3PCnCBfeyGQVLddt3a0A4pCWP6fPzJin29kjQM+mGGm8ib
+	 /0H5O2MqxhAidp6XjldFGXmwpqgOCq1xPuPJT8mFAW5D7RHSkoSF1ssdfG1HP7OvEo
+	 rB9Rfb7tbj2+A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Qj2NVd1viScc; Mon, 17 Apr 2023 09:35:24 +0000 (UTC)
+	with ESMTP id EMjFJ0DCbseN; Mon, 17 Apr 2023 09:35:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 421CE61130;
-	Mon, 17 Apr 2023 09:35:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 421CE61130
+	by smtp3.osuosl.org (Postfix) with ESMTP id 976F5613AC;
+	Mon, 17 Apr 2023 09:35:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 976F5613AC
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 73D301C4186
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:22 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 0D7571C4186
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 58794613A2
+ by smtp3.osuosl.org (Postfix) with ESMTP id BAFA660EA7
  for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 58794613A2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BAFA660EA7
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ocFH8dqWvK8Q for <intel-wired-lan@lists.osuosl.org>;
- Mon, 17 Apr 2023 09:35:21 +0000 (UTC)
+ with ESMTP id ygqaD161NPCe for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 17 Apr 2023 09:35:22 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5C81A60EA7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D0FD861374
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 5C81A60EA7
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D0FD861374
  for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:21 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="333644081"
-X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; d="scan'208";a="333644081"
+X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="333644085"
+X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; d="scan'208";a="333644085"
 Received: from orsmga003.jf.intel.com ([10.7.209.27])
  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Apr 2023 02:35:20 -0700
+ 17 Apr 2023 02:35:21 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="640899243"
-X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; d="scan'208";a="640899243"
+X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="640899249"
+X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; d="scan'208";a="640899249"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga003.jf.intel.com with ESMTP; 17 Apr 2023 02:35:18 -0700
+ by orsmga003.jf.intel.com with ESMTP; 17 Apr 2023 02:35:19 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 2848037E2A;
- Mon, 17 Apr 2023 10:35:17 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 4C00A37E32;
+ Mon, 17 Apr 2023 10:35:18 +0100 (IST)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 17 Apr 2023 11:34:00 +0200
-Message-Id: <20230417093412.12161-1-wojciech.drewek@intel.com>
+Date: Mon, 17 Apr 2023 11:34:02 +0200
+Message-Id: <20230417093412.12161-3-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230417093412.12161-1-wojciech.drewek@intel.com>
+References: <20230417093412.12161-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1681724121; x=1713260121;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=vuW0wz+O7zcEpcd8ZWQSik+qd6XqX8nuuqdf6+EcAjA=;
- b=brOJw2eMmQrtiXEX/JA47uPH+hpiV+NeaioudKJ8a+mMoZ4jD1OFQ+W2
- RWf9Em7ts+d8d3q4cf+f0xjDBaY9UHqtkzy40BtexcN6FcE3UcWavUqPM
- bjWYQb+Jy/hjxO3FgET3L2bGSp7n8e7cwLYtw+TeDw91D/FauV81za5m8
- WYTNVghzsdkmHcbHJyiRfr5TqJK9j3qtzdF9q9Cp8iclojIe1uh433u8O
- ZvcZjQmFdA5K9ysfz6Pv083NEM8+NsLySdu9svCV7UkLGWZ0TkVLjBSu3
- 7ezXi8xTgYb+ERb/PQFBneXogOJgae88HPC3NDHV/fPhatgz0YbCduqJn
- w==;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=jSa2tNLOdauWeehnM2Me5VdpkGOQRn5sRwvkfG15E/0=;
+ b=Uje9KdrU6WR2hbpIma2kwDoRGDPd/3UtwRLnSJTq1TKYSpuZCmRSQ7/O
+ kLgIhOdaNPzOvlH9PolqM41X5GUy2G6swuwcMIZDHz9UogTqKHg23rtKQ
+ Eir/58+nFdZnFsyFcr3vGGn5QZ7acjfGsyIazPZROl+5ThB7SHTH1YsNb
+ xLJA7yM46ENKPAIOzhMm55CPeGigNZuIOd8v8Ogvg1mfk8b2Mh/w3H0aW
+ pWXLH5JbBSfvOlEno5K8+GNEvgcjr0xMp1kO5pK8JqYYxGEyyXQszA32/
+ xP4rIYgPNiga6mUUbVs+taMY8gpzUGHUj4SoaaDFhQDZg7fzgn/MfNNEx
+ g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=brOJw2eM
-Subject: [Intel-wired-lan] [PATCH net-next 00/12] ice: switchdev bridge
- offload
+ header.a=rsa-sha256 header.s=Intel header.b=Uje9KdrU
+Subject: [Intel-wired-lan] [PATCH net-next 02/12] ice: Remove exclusion code
+ for RDMA+SRIOV
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,96 +104,210 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Linux bridge provides ability to learn MAC addresses and vlans
-detected on bridge's ports. As a result of this, FDB (forward data base)
-entries are created and they can be offloaded to the HW. By adding
-VF's port representors to the bridge together with the uplink netdev,
-we can learn VF's and link partner's MAC addresses. This is achieved
-by slow/exception-path, where packets that do not match any filters
-(FDB entries in this case) are send to the bridge ports.
+From: Dave Ertman <david.m.ertman@intel.com>
 
-Driver keeps track of the netdevs added to the bridge
-by listening for NETDEV_CHANGEUPPER event. We distinguish two types
-of bridge ports: uplink port and VF's representor port. Linux
-bridge always learns src MAC of the packet on rx path. With the
-current slow-path implementation, it means that we will learn
-VF's MAC on port repr (when the VF transmits the packet) and
-link partner's MAC on uplink (when we receive it on uplink from LAN).
+There was a change previously to stop SR-IOV and LAG from existing on the
+same interface.  This was to prevent the violation of LACP (Link
+Aggregation Control Protocol).  The method to achieve this was to add a
+no-op Rx handler onto the netdev when SR-IOV VFs were present, thus
+blocking bonding, bridging, etc from claiming the interface by adding
+its own Rx handler.  Also, when an interface was added into a aggregate,
+then the SR-IOV capability was set to false.
 
-The driver is notified about learning of the MAC/VLAN by
-SWITCHDEV_FDB_{ADD|DEL}_TO_DEVICE events. This is followed by creation
-of the HW filter. The direction of the filter is based on port
-type (uplink or VF repr). In case of the uplink, rule forwards
-the packets to the LAN (matching on link partner's MAC). When the
-notification is received on VF repr then the rule forwards the
-packets to the associated VF (matching on VF's MAC).
+There are some customers that have in house solutions using both SR-IOV and
+bridging/bonding that this method interferes with (e.g. creating duplicate
+VFs on the bonded interfaces and failing between them when the interface
+fails over).
 
-This approach would not work on its own however. This is because if
-one of the directions is offloaded, then the bridge would not be able
-to learn the other one. If the egress rule is added (learned on uplink)
-then the response from the VF will be sent directly to the LAN.
-The packet will not got through slow-path, it would not be seen on
-VF's port repr. Because of that, the bridge would not learn VF's MAC.
+It has been decided that to provide the most functionality
+possible, the restriction on co-existence of these features will be
+removed.  No additional functionality is currently being provided beyond
+what existed before the co-existence restriction was put into place.  It is
+up to the end user to not implement a solution that would interfere with
+existing network protocols.
 
-This is solved by introducing guard rule. It prevents forward rule from
-working until the opposite direction is offloaded.
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h       | 19 --------
+ drivers/net/ethernet/intel/ice/ice_lag.c   | 12 ------
+ drivers/net/ethernet/intel/ice/ice_lag.h   | 50 ----------------------
+ drivers/net/ethernet/intel/ice/ice_lib.c   |  2 -
+ drivers/net/ethernet/intel/ice/ice_sriov.c |  4 --
+ 5 files changed, 87 deletions(-)
 
-Aging is not fully supported yet, aging time is static for now. The
-follow up submissions will introduce counters that will allow us to
-keep track if the rule is actually being used or not.
-
-A few fixes/changes are needed for this feature to work with ice driver.
-These are introduced in first 3 patches.
-
-Dave Ertman (1):
-  ice: Remove exclusion code for RDMA+SRIOV
-
-Marcin Szycik (2):
-  ice: Add guard rule when creating FDB in switchdev
-  ice: Add VLAN FDB support in switchdev mode
-
-Michal Swiatkowski (2):
-  ice: implement bridge port vlan
-  ice: implement static version of ageing
-
-Pawel Chmielewski (1):
-  ice: add tracepoints for the switchdev bridge
-
-Wojciech Drewek (6):
-  ice: Minor switchdev fixes
-  ice: Unset src prune on uplink VSI
-  ice: Implement basic eswitch bridge setup
-  ice: Switchdev FDB events support
-  ice: Accept LAG netdevs in bridge offloads
-  ice: Ethtool fdb_cnt stats
-
- drivers/net/ethernet/intel/ice/Makefile       |    2 +-
- drivers/net/ethernet/intel/ice/ice.h          |   26 +-
- drivers/net/ethernet/intel/ice/ice_eswitch.c  |   43 +-
- .../net/ethernet/intel/ice/ice_eswitch_br.c   | 1350 +++++++++++++++++
- .../net/ethernet/intel/ice/ice_eswitch_br.h   |  112 ++
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |    1 +
- drivers/net/ethernet/intel/ice/ice_lag.c      |   12 -
- drivers/net/ethernet/intel/ice/ice_lag.h      |   50 -
- drivers/net/ethernet/intel/ice/ice_lib.c      |   26 +-
- drivers/net/ethernet/intel/ice/ice_lib.h      |    1 +
- drivers/net/ethernet/intel/ice/ice_main.c     |    4 +-
- drivers/net/ethernet/intel/ice/ice_repr.c     |    2 +-
- drivers/net/ethernet/intel/ice/ice_repr.h     |    3 +-
- drivers/net/ethernet/intel/ice/ice_sriov.c    |    4 -
- drivers/net/ethernet/intel/ice/ice_switch.c   |   45 +-
- drivers/net/ethernet/intel/ice/ice_switch.h   |    5 +
- drivers/net/ethernet/intel/ice/ice_trace.h    |   90 ++
- drivers/net/ethernet/intel/ice/ice_type.h     |    1 +
- .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c  |  195 ++-
- .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.h  |    3 +
- .../net/ethernet/intel/ice/ice_vsi_vlan_lib.c |   84 +-
- .../net/ethernet/intel/ice/ice_vsi_vlan_lib.h |    8 +
- .../net/ethernet/intel/ice/ice_vsi_vlan_ops.h |    1 +
- 23 files changed, 1876 insertions(+), 192 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch_br.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index d637032c8139..ac2971073fdd 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -813,25 +813,6 @@ static inline bool ice_is_switchdev_running(struct ice_pf *pf)
+ 	return pf->switchdev.is_running;
+ }
+ 
+-/**
+- * ice_set_sriov_cap - enable SRIOV in PF flags
+- * @pf: PF struct
+- */
+-static inline void ice_set_sriov_cap(struct ice_pf *pf)
+-{
+-	if (pf->hw.func_caps.common_cap.sr_iov_1_1)
+-		set_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
+-}
+-
+-/**
+- * ice_clear_sriov_cap - disable SRIOV in PF flags
+- * @pf: PF struct
+- */
+-static inline void ice_clear_sriov_cap(struct ice_pf *pf)
+-{
+-	clear_bit(ICE_FLAG_SRIOV_CAPABLE, pf->flags);
+-}
+-
+ #define ICE_FD_STAT_CTR_BLOCK_COUNT	256
+ #define ICE_FD_STAT_PF_IDX(base_idx) \
+ 			((base_idx) * ICE_FD_STAT_CTR_BLOCK_COUNT)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+index ee5b36941ba3..5a7753bda324 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.c
++++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+@@ -6,15 +6,6 @@
+ #include "ice.h"
+ #include "ice_lag.h"
+ 
+-/**
+- * ice_lag_nop_handler - no-op Rx handler to disable LAG
+- * @pskb: pointer to skb pointer
+- */
+-rx_handler_result_t ice_lag_nop_handler(struct sk_buff __always_unused **pskb)
+-{
+-	return RX_HANDLER_PASS;
+-}
+-
+ /**
+  * ice_lag_set_primary - set PF LAG state as Primary
+  * @lag: LAG info struct
+@@ -158,7 +149,6 @@ ice_lag_link(struct ice_lag *lag, struct netdev_notifier_changeupper_info *info)
+ 		lag->upper_netdev = upper;
+ 	}
+ 
+-	ice_clear_sriov_cap(pf);
+ 	ice_clear_rdma_cap(pf);
+ 
+ 	lag->bonded = true;
+@@ -205,7 +195,6 @@ ice_lag_unlink(struct ice_lag *lag,
+ 	}
+ 
+ 	lag->peer_netdev = NULL;
+-	ice_set_sriov_cap(pf);
+ 	ice_set_rdma_cap(pf);
+ 	lag->bonded = false;
+ 	lag->role = ICE_LAG_NONE;
+@@ -229,7 +218,6 @@ static void ice_lag_unregister(struct ice_lag *lag, struct net_device *netdev)
+ 	if (lag->upper_netdev) {
+ 		dev_put(lag->upper_netdev);
+ 		lag->upper_netdev = NULL;
+-		ice_set_sriov_cap(pf);
+ 		ice_set_rdma_cap(pf);
+ 	}
+ 	/* perform some cleanup in case we come back */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
+index 51b5cf467ce2..0bd6b96d7e01 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.h
++++ b/drivers/net/ethernet/intel/ice/ice_lag.h
+@@ -29,59 +29,9 @@ struct ice_lag {
+ 	/* each thing blocking bonding will increment this value by one.
+ 	 * If this value is zero, then bonding is allowed.
+ 	 */
+-	u16 dis_lag;
+ 	u8 role;
+ };
+ 
+ int ice_init_lag(struct ice_pf *pf);
+ void ice_deinit_lag(struct ice_pf *pf);
+-rx_handler_result_t ice_lag_nop_handler(struct sk_buff **pskb);
+-
+-/**
+- * ice_disable_lag - increment LAG disable count
+- * @lag: LAG struct
+- */
+-static inline void ice_disable_lag(struct ice_lag *lag)
+-{
+-	/* If LAG this PF is not already disabled, disable it */
+-	rtnl_lock();
+-	if (!netdev_is_rx_handler_busy(lag->netdev)) {
+-		if (!netdev_rx_handler_register(lag->netdev,
+-						ice_lag_nop_handler,
+-						NULL))
+-			lag->handler = true;
+-	}
+-	rtnl_unlock();
+-	lag->dis_lag++;
+-}
+-
+-/**
+- * ice_enable_lag - decrement disable count for a PF
+- * @lag: LAG struct
+- *
+- * Decrement the disable counter for a port, and if that count reaches
+- * zero, then remove the no-op Rx handler from that netdev
+- */
+-static inline void ice_enable_lag(struct ice_lag *lag)
+-{
+-	if (lag->dis_lag)
+-		lag->dis_lag--;
+-	if (!lag->dis_lag && lag->handler) {
+-		rtnl_lock();
+-		netdev_rx_handler_unregister(lag->netdev);
+-		rtnl_unlock();
+-		lag->handler = false;
+-	}
+-}
+-
+-/**
+- * ice_is_lag_dis - is LAG disabled
+- * @lag: LAG struct
+- *
+- * Return true if bonding is disabled
+- */
+-static inline bool ice_is_lag_dis(struct ice_lag *lag)
+-{
+-	return !!(lag->dis_lag);
+-}
+ #endif /* _ICE_LAG_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 387bb9cbafbe..3de9556b89ac 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2707,8 +2707,6 @@ ice_vsi_setup(struct ice_pf *pf, struct ice_vsi_cfg_params *params)
+ 	return vsi;
+ 
+ err_vsi_cfg:
+-	if (params->type == ICE_VSI_VF)
+-		ice_enable_lag(pf->lag);
+ 	ice_vsi_free(vsi);
+ 
+ 	return NULL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+index 80c643fb9f2f..a7e7debb1428 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sriov.c
++++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+@@ -979,8 +979,6 @@ int ice_sriov_configure(struct pci_dev *pdev, int num_vfs)
+ 	if (!num_vfs) {
+ 		if (!pci_vfs_assigned(pdev)) {
+ 			ice_free_vfs(pf);
+-			if (pf->lag)
+-				ice_enable_lag(pf->lag);
+ 			return 0;
+ 		}
+ 
+@@ -992,8 +990,6 @@ int ice_sriov_configure(struct pci_dev *pdev, int num_vfs)
+ 	if (err)
+ 		return err;
+ 
+-	if (pf->lag)
+-		ice_disable_lag(pf->lag);
+ 	return num_vfs;
+ }
+ 
 -- 
 2.39.2
 
