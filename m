@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90ECDC77B72
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Apr 2023 09:35:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6025C77B70
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Apr 2023 09:35:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 43331613AF;
-	Mon, 17 Apr 2023 09:35:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 43331613AF
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6A0D8613D7;
+	Mon, 17 Apr 2023 09:35:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6A0D8613D7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1681724143;
-	bh=Lh93g4YUsjb7q+DzrNxBDlj9QyD1UjGxepB/XGwQj7U=;
+	s=default; t=1681724148;
+	bh=ZH6n8/KP0xc7ZuA+jO4QxOUU606u2671fEi0oCzeNNs=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=cMMDcvZG+DpYBnqlIPy8ijau40ATEFvBZ5oljdqj9Yhra5T0y/u/PCCjb602f08Jz
-	 1h5D7oJyMorv+T1lfRB0xqgN4R3Y5BgdbCiYnqR1m6BErO6WOQ5wWfb1f4Lq8uojcM
-	 DYk0kIWPfua1WHWILRQeGce+U/1nS1w9YDvxIjs7a7A7nIvHLv/W+lVKonDfYwPgru
-	 zqKzXyeVWVQE9y6msJJhDmJaIdgLgbwvqm+miGmDCEiodmprxXcID5wfP481397hPk
-	 Lr9TRTglonf7PgmZHFtDlG9HSsRlMD1mWfXCcKSwZyJoHHepTI+GUdyizQQm0N3xyN
-	 7CS996UHF+w6g==
+	b=wdSUa05wAEVP6HQAvmbKrKPwxedhCBtz7ccO8t3VYzB952D0NeNlPCUCbqFZYnTey
+	 pPGqaktZ3dBglEJPQvMGZh6qWDjRFza6qKDg+t0KM0SXnSDNVZSo9dm+MkxRJywrGW
+	 r0SwI7UdPOZxpBCyArfZ23tH95n3FLntwoR9rrbH/rhE5m5bSlj8VaH/UEV2OQBlNX
+	 aowEZHl4w9ZOVKIFTcQTNXcbmrDhTdDCBgbNyIKFivockOwEgsXu+SFOte1XNjCmKG
+	 aVzgNmeBtrjdoQV/EedFwczlhrkFXcwlBcGnIdtQxd5jDEIcV/C3QGIt3cg+4aPRiy
+	 MeKWMVgm8+7LQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id rycYdlFVcxCE; Mon, 17 Apr 2023 09:35:40 +0000 (UTC)
+	with ESMTP id HED3tsyNarhP; Mon, 17 Apr 2023 09:35:44 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7C96B61374;
-	Mon, 17 Apr 2023 09:35:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7C96B61374
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 6D3EB1C4121
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7C8B5613D9;
+	Mon, 17 Apr 2023 09:35:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7C8B5613D9
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 28CF11C4121
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4771182194
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5D3AC61130
  for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4771182194
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5D3AC61130
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 4PTiJG-z-thH for <intel-wired-lan@lists.osuosl.org>;
- Mon, 17 Apr 2023 09:35:25 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id RKzNLkrc3Cgw for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 17 Apr 2023 09:35:22 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1E35682190
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6E23F613AB
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 1E35682190
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:24 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="333644091"
-X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; d="scan'208";a="333644091"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6E23F613AB
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 09:35:22 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="333644087"
+X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; d="scan'208";a="333644087"
 Received: from orsmga003.jf.intel.com ([10.7.209.27])
  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Apr 2023 02:35:24 -0700
+ 17 Apr 2023 02:35:22 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="640899261"
-X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; d="scan'208";a="640899261"
+X-IronPort-AV: E=McAfee;i="6600,9927,10682"; a="640899252"
+X-IronPort-AV: E=Sophos;i="5.99,203,1677571200"; d="scan'208";a="640899252"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga003.jf.intel.com with ESMTP; 17 Apr 2023 02:35:21 -0700
+ by orsmga003.jf.intel.com with ESMTP; 17 Apr 2023 02:35:19 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id C3DB237F56;
- Mon, 17 Apr 2023 10:35:20 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id D61E537F4C;
+ Mon, 17 Apr 2023 10:35:18 +0100 (IST)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 17 Apr 2023 11:34:06 +0200
-Message-Id: <20230417093412.12161-7-wojciech.drewek@intel.com>
+Date: Mon, 17 Apr 2023 11:34:03 +0200
+Message-Id: <20230417093412.12161-4-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230417093412.12161-1-wojciech.drewek@intel.com>
 References: <20230417093412.12161-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1681724125; x=1713260125;
+ t=1681724122; x=1713260122;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=GuJQiD6RkDYJhyVrZJC0Sje4NKSxONjJUI+NB333rdI=;
- b=fluguRuBiMfc/jZg13H0m+p9jiZ5mNi2LrLNoemSwL0SFP45ONqypARb
- CwXhdfYBJMqBDT7/1fcZ0/F1uMD/ku4HVc/kw9WVDB/SUscsb/aDnIdd1
- 3qK+dwBnzviyV5W0BVR0ndaJ9h/niC9vFY4CHxwX6Ks8mtoMN7/O7y5TU
- Oy/4gLoW6UcMp+mXc/o1fMl5gAWckWw5eajE5bcMy2AtjzC/zKNLbbxIO
- wrAHT3iEic8aSTLQryHJu5jf11+IwbU7Kc2EY6K217myaTCKWeyQ9UPyx
- lu6mNXpLK32c+wnvN8seAZHAcbECOoM80hEroFbN54OIS6FQ1JYVkNUCp
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=Xy3YGBxq6/GBvoqsMIyNCQtet3gVMtbraPd7JjguZUU=;
+ b=m/YoAKEoC0GmGChCMpuP2uU2Lh/QKhK/sM/0jVg5gR/0hRE8NoVEqRbr
+ enxrz5PErzFSFCFvz/NYKk+ZB6bkhIlJDbqcXNIyhT3pmm5OsWxEwAaVR
+ s9WCB85uE16HaRbNoyIgGL29eGdhzeuthAUp1J7jiIixZ8DXVSbzAUc4K
+ 746InASv+FPjPq6Vlp6Ksr+Hjgh9CDaBehkY3eN7QEdTXWQiarCqGw+XQ
+ 6Pi+Yvsa5JnHwrqlCz64WcIzPyVApYoMiFRCuD3NsgwVc92sqxh1huU+u
+ jKeTtQoXEy4RBEwx7G+32qepY7eSUA3x43uxXpRIR4kQFF5W/SKVv3TrG
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=fluguRuB
-Subject: [Intel-wired-lan] [PATCH net-next 06/12] ice: Add guard rule when
- creating FDB in switchdev
+ header.a=rsa-sha256 header.s=Intel header.b=m/YoAKEo
+Subject: [Intel-wired-lan] [PATCH net-next 03/12] ice: Unset src prune on
+ uplink VSI
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,333 +104,92 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Marcin Szycik <marcin.szycik@intel.com>
+In switchdev mode uplink VSI is supposed to receive all packets that
+were not matched by existing filters. If ICE_AQ_VSI_SW_FLAG_LOCAL_LB
+bit is unset and we have a filter associated with uplink VSI
+which matches on dst mac equal to MAC1, then packets with src mac equal
+to MAC1 will be pruned from reaching uplink VSI.
 
-Introduce new "guard" rule upon FDB entry creation.
+Fix this by updating uplink VSI with ICE_AQ_VSI_SW_FLAG_LOCAL_LB bit
+set when configuring switchdev mode.
 
-It matches on src_mac, has valid bit unset, allow_pass_l2 set
-and has a nop action.
-
-Previously introduced "forward" rule matches on dst_mac, has valid
-bit set, need_pass_l2 set and has a forward action.
-
-With these rules, a packet will be offloaded only if FDB exists in both
-directions (RX and TX).
-
-Let's assume link partner sends a packet to VF1: src_mac = LP_MAC,
-dst_mac = is VF1_MAC. Bridge adds FDB, two rules are created:
-1. Guard rule matching on src_mac == LP_MAC
-2. Forward rule matching on dst_mac == LP_MAC
-Now VF1 responds with src_mac = VF1_MAC, dst_mac = LP_MAC. Before this
-change, only one rule with dst_mac == LP_MAC would have existed, and the
-packet would have been offloaded, meaning the bridge wouldn't add FDB in
-the opposite direction. Now, the forward rule matches (dst_mac == LP_MAC),
-but it has need_pass_l2 set an there is no guard rule with
-src_mac == VF1_MAC, so the packet goes through slow-path and the bridge
-adds FDB. Two rules are created:
-1. Guard rule matching on src_mac == VF1_MAC
-2. Forward rule matching on dst_mac == VF1_MAC
-Further packets in both directions will be offloaded.
-
-The same example is true in opposite direction (i.e. VF1 is the first to
-send a packet out).
-
-Signed-off-by: Marcin Szycik <marcin.szycik@intel.com>
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_eswitch_br.c   | 66 ++++++++++++++++++-
- .../net/ethernet/intel/ice/ice_eswitch_br.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_switch.c   | 45 ++++++++++---
- drivers/net/ethernet/intel/ice/ice_switch.h   |  5 ++
- drivers/net/ethernet/intel/ice/ice_type.h     |  1 +
- 5 files changed, 109 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch.c |  6 +++++
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 24 ++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_lib.h     |  1 +
+ 3 files changed, 31 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-index 4008665d5383..82b5eb2020cd 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-@@ -116,6 +116,8 @@ ice_eswitch_br_fwd_rule_create(struct ice_hw *hw, u16 vsi_idx, int port_type,
- 		goto err_add_rule;
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index bfd003135fc8..4fe235da1182 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -113,8 +113,13 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ 	if (ice_vsi_update_security(ctrl_vsi, ice_vsi_ctx_set_allow_override))
+ 		goto err_override_control;
  
-+	rule_info.need_pass_l2 = true;
++	if (ice_vsi_update_local_lb(uplink_vsi, true))
++		goto err_override_local_lb;
 +
- 	rule_info.sw_act.fltr_act = ICE_FWD_TO_VSI;
+ 	return 0;
  
- 	err = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info, rule);
-@@ -134,11 +136,56 @@ ice_eswitch_br_fwd_rule_create(struct ice_hw *hw, u16 vsi_idx, int port_type,
- 	return ERR_PTR(err);
++err_override_local_lb:
++	ice_vsi_update_security(ctrl_vsi, ice_vsi_ctx_clear_allow_override);
+ err_override_control:
+ 	ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_clear_allow_override);
+ err_override_uplink:
+@@ -391,6 +396,7 @@ static void ice_eswitch_release_env(struct ice_pf *pf)
+ 
+ 	vlan_ops = ice_get_compat_vsi_vlan_ops(uplink_vsi);
+ 
++	ice_vsi_update_local_lb(uplink_vsi, false);
+ 	ice_vsi_update_security(ctrl_vsi, ice_vsi_ctx_clear_allow_override);
+ 	ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_clear_allow_override);
+ 	vlan_ops->ena_rx_filtering(uplink_vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 3de9556b89ac..60b123d3c9cf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -4112,3 +4112,27 @@ void ice_vsi_ctx_clear_allow_override(struct ice_vsi_ctx *ctx)
+ {
+ 	ctx->info.sec_flags &= ~ICE_AQ_VSI_SEC_FLAG_ALLOW_DEST_OVRD;
  }
- 
-+static struct ice_rule_query_data *
-+ice_eswitch_br_guard_rule_create(struct ice_hw *hw, u16 vsi_idx,
-+				 const unsigned char *mac)
++
++/**
++ * ice_vsi_update_local_lb - update sw block in VSI with local loopback bit
++ * @vsi: pointer to VSI structure
++ * @set: set or unset the bit
++ */
++int
++ice_vsi_update_local_lb(struct ice_vsi *vsi, bool set)
 +{
-+	struct ice_adv_rule_info rule_info = { 0 };
-+	struct ice_rule_query_data *rule;
-+	struct ice_adv_lkup_elem *list;
-+	const u16 lkups_cnt = 1;
-+	int err;
++	struct ice_vsi_ctx ctx = { 0 };
 +
-+	rule = kzalloc(sizeof(*rule), GFP_KERNEL);
-+	if (!rule) {
-+		err = -ENOMEM;
-+		goto err_exit;
-+	}
++	ctx.info = vsi->info;
++	ctx.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SW_VALID);
++	if (set)
++		ctx.info.sw_flags |= ICE_AQ_VSI_SW_FLAG_LOCAL_LB;
++	else
++		ctx.info.sw_flags &= ~ICE_AQ_VSI_SW_FLAG_LOCAL_LB;
 +
-+	list = kcalloc(lkups_cnt, sizeof(*list), GFP_ATOMIC);
-+	if (!list) {
-+		err = -ENOMEM;
-+		goto err_list_alloc;
-+	}
++	if (ice_update_vsi(&vsi->back->hw, vsi->idx, &ctx, NULL))
++		return -ENODEV;
 +
-+	list[0].type = ICE_MAC_OFOS;
-+	ether_addr_copy(list[0].h_u.eth_hdr.src_addr, mac);
-+	eth_broadcast_addr(list[0].m_u.eth_hdr.src_addr);
-+
-+	rule_info.allow_pass_l2 = true;
-+	rule_info.sw_act.vsi_handle = vsi_idx;
-+	rule_info.sw_act.fltr_act = ICE_NOP;
-+	rule_info.priority = 5;
-+
-+	err = ice_add_adv_rule(hw, list, lkups_cnt, &rule_info, rule);
-+	if (err)
-+		goto err_add_rule;
-+
-+	return rule;
-+
-+err_add_rule:
-+	kfree(list);
-+err_list_alloc:
-+	kfree(rule);
-+err_exit:
-+	return ERR_PTR(err);
++	vsi->info = ctx.info;
++	return 0;
 +}
-+
- static struct ice_esw_br_flow *
- ice_eswitch_br_flow_create(struct device *dev, struct ice_hw *hw, u16 vsi_idx,
- 			   int port_type, const unsigned char *mac)
- {
--	struct ice_rule_query_data *fwd_rule;
-+	struct ice_rule_query_data *fwd_rule, *guard_rule;
- 	struct ice_esw_br_flow *flow;
- 	int err;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index e985766e6bb5..1628385a9672 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -157,6 +157,7 @@ void ice_vsi_ctx_clear_antispoof(struct ice_vsi_ctx *ctx);
+ void ice_vsi_ctx_set_allow_override(struct ice_vsi_ctx *ctx);
  
-@@ -155,10 +202,22 @@ ice_eswitch_br_flow_create(struct device *dev, struct ice_hw *hw, u16 vsi_idx,
- 		goto err_fwd_rule;
- 	}
- 
-+	guard_rule = ice_eswitch_br_guard_rule_create(hw, vsi_idx, mac);
-+	if (IS_ERR(guard_rule)) {
-+		err = PTR_ERR(guard_rule);
-+		dev_err(dev, "Failed to create eswitch bridge %sgress guard rule, err: %d\n",
-+			port_type == ICE_ESWITCH_BR_UPLINK_PORT ? "e" : "in",
-+			err);
-+		goto err_guard_rule;
-+	}
-+
- 	flow->fwd_rule = fwd_rule;
-+	flow->guard_rule = guard_rule;
- 
- 	return flow;
- 
-+err_guard_rule:
-+	ice_eswitch_br_rule_delete(hw, fwd_rule);
- err_fwd_rule:
- 	kfree(flow);
- 
-@@ -188,6 +247,11 @@ ice_eswitch_br_flow_delete(struct ice_pf *pf, struct ice_esw_br_flow *flow)
- 		dev_err(dev, "Failed to delete FDB forward rule, err: %d\n",
- 			err);
- 
-+	err = ice_eswitch_br_rule_delete(&pf->hw, flow->guard_rule);
-+	if (err)
-+		dev_err(dev, "Failed to delete FDB guard rule, err: %d\n",
-+			err);
-+
- 	kfree(flow);
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-index 4069eb45617e..73ad81bad655 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-@@ -13,6 +13,7 @@ struct ice_esw_br_fdb_data {
- 
- struct ice_esw_br_flow {
- 	struct ice_rule_query_data *fwd_rule;
-+	struct ice_rule_query_data *guard_rule;
- };
- 
- enum {
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 2ea9e1ae5517..6fbed7ccc5a9 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -2277,6 +2277,10 @@ ice_get_recp_frm_fw(struct ice_hw *hw, struct ice_sw_recipe *recps, u8 rid,
- 		/* Propagate some data to the recipe database */
- 		recps[idx].is_root = !!is_root;
- 		recps[idx].priority = root_bufs.content.act_ctrl_fwd_priority;
-+		recps[idx].need_pass_l2 = root_bufs.content.act_ctrl &
-+					  ICE_AQ_RECIPE_ACT_NEED_PASS_L2;
-+		recps[idx].allow_pass_l2 = root_bufs.content.act_ctrl &
-+					   ICE_AQ_RECIPE_ACT_ALLOW_PASS_L2;
- 		bitmap_zero(recps[idx].res_idxs, ICE_MAX_FV_WORDS);
- 		if (root_bufs.content.result_indx & ICE_AQ_RECIPE_RESULT_EN) {
- 			recps[idx].chain_idx = root_bufs.content.result_indx &
-@@ -4624,7 +4628,7 @@ static struct ice_protocol_entry ice_prot_id_tbl[ICE_PROTOCOL_LAST] = {
-  */
- static u16
- ice_find_recp(struct ice_hw *hw, struct ice_prot_lkup_ext *lkup_exts,
--	      enum ice_sw_tunnel_type tun_type)
-+	      struct ice_adv_rule_info *rinfo)
- {
- 	bool refresh_required = true;
- 	struct ice_sw_recipe *recp;
-@@ -4685,9 +4689,12 @@ ice_find_recp(struct ice_hw *hw, struct ice_prot_lkup_ext *lkup_exts,
- 			}
- 			/* If for "i"th recipe the found was never set to false
- 			 * then it means we found our match
--			 * Also tun type of recipe needs to be checked
-+			 * Also tun type and *_pass_l2 of recipe needs to be
-+			 * checked
- 			 */
--			if (found && recp[i].tun_type == tun_type)
-+			if (found && recp[i].tun_type == rinfo->tun_type &&
-+			    recp[i].need_pass_l2 == rinfo->need_pass_l2 &&
-+			    recp[i].allow_pass_l2 == rinfo->allow_pass_l2)
- 				return i; /* Return the recipe ID */
- 		}
- 	}
-@@ -5075,6 +5082,14 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 		set_bit(buf[recps].recipe_indx,
- 			(unsigned long *)buf[recps].recipe_bitmap);
- 		buf[recps].content.act_ctrl_fwd_priority = rm->priority;
-+
-+		if (rm->need_pass_l2)
-+			buf[recps].content.act_ctrl |=
-+				ICE_AQ_RECIPE_ACT_NEED_PASS_L2;
-+
-+		if (rm->allow_pass_l2)
-+			buf[recps].content.act_ctrl |=
-+				ICE_AQ_RECIPE_ACT_ALLOW_PASS_L2;
- 		recps++;
- 	}
- 
-@@ -5225,6 +5240,8 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 		recp->priority = buf[buf_idx].content.act_ctrl_fwd_priority;
- 		recp->n_grp_count = rm->n_grp_count;
- 		recp->tun_type = rm->tun_type;
-+		recp->need_pass_l2 = rm->need_pass_l2;
-+		recp->allow_pass_l2 = rm->allow_pass_l2;
- 		recp->recp_created = true;
- 	}
- 	rm->root_buf = buf;
-@@ -5393,6 +5410,9 @@ ice_add_adv_recipe(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 	/* set the recipe priority if specified */
- 	rm->priority = (u8)rinfo->priority;
- 
-+	rm->need_pass_l2 = rinfo->need_pass_l2;
-+	rm->allow_pass_l2 = rinfo->allow_pass_l2;
-+
- 	/* Find offsets from the field vector. Pick the first one for all the
- 	 * recipes.
- 	 */
-@@ -5408,7 +5428,7 @@ ice_add_adv_recipe(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 	}
- 
- 	/* Look for a recipe which matches our requested fv / mask list */
--	*rid = ice_find_recp(hw, lkup_exts, rinfo->tun_type);
-+	*rid = ice_find_recp(hw, lkup_exts, rinfo);
- 	if (*rid < ICE_MAX_NUM_RECIPES)
- 		/* Success if found a recipe that match the existing criteria */
- 		goto err_unroll;
-@@ -5846,7 +5866,9 @@ static bool ice_rules_equal(const struct ice_adv_rule_info *first,
- 	return first->sw_act.flag == second->sw_act.flag &&
- 	       first->tun_type == second->tun_type &&
- 	       first->vlan_type == second->vlan_type &&
--	       first->src_vsi == second->src_vsi;
-+	       first->src_vsi == second->src_vsi &&
-+	       first->need_pass_l2 == second->need_pass_l2 &&
-+	       first->allow_pass_l2 == second->allow_pass_l2;
- }
- 
- /**
-@@ -6085,7 +6107,8 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 	if (!(rinfo->sw_act.fltr_act == ICE_FWD_TO_VSI ||
- 	      rinfo->sw_act.fltr_act == ICE_FWD_TO_Q ||
- 	      rinfo->sw_act.fltr_act == ICE_FWD_TO_QGRP ||
--	      rinfo->sw_act.fltr_act == ICE_DROP_PACKET)) {
-+	      rinfo->sw_act.fltr_act == ICE_DROP_PACKET ||
-+	      rinfo->sw_act.fltr_act == ICE_NOP)) {
- 		status = -EIO;
- 		goto free_pkt_profile;
- 	}
-@@ -6096,7 +6119,8 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 		goto free_pkt_profile;
- 	}
- 
--	if (rinfo->sw_act.fltr_act == ICE_FWD_TO_VSI)
-+	if (rinfo->sw_act.fltr_act == ICE_FWD_TO_VSI ||
-+	    rinfo->sw_act.fltr_act == ICE_NOP)
- 		rinfo->sw_act.fwd_id.hw_vsi_id =
- 			ice_get_hw_vsi_num(hw, vsi_handle);
- 
-@@ -6166,6 +6190,11 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP |
- 		       ICE_SINGLE_ACT_VALID_BIT;
- 		break;
-+	case ICE_NOP:
-+		act |= (rinfo->sw_act.fwd_id.hw_vsi_id <<
-+			ICE_SINGLE_ACT_VSI_ID_S) & ICE_SINGLE_ACT_VSI_ID_M;
-+		act &= ~ICE_SINGLE_ACT_VALID_BIT;
-+		break;
- 	default:
- 		status = -EIO;
- 		goto err_ice_add_adv_rule;
-@@ -6446,7 +6475,7 @@ ice_rem_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 			return -EIO;
- 	}
- 
--	rid = ice_find_recp(hw, &lkup_exts, rinfo->tun_type);
-+	rid = ice_find_recp(hw, &lkup_exts, rinfo);
- 	/* If did not find a recipe that match the existing criteria */
- 	if (rid == ICE_MAX_NUM_RECIPES)
- 		return -EINVAL;
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index c84b56fe84a5..5ecce39cf1f5 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -191,6 +191,8 @@ struct ice_adv_rule_info {
- 	u16 vlan_type;
- 	u16 fltr_rule_id;
- 	u32 priority;
-+	u8 need_pass_l2;
-+	u8 allow_pass_l2;
- 	u16 src_vsi;
- 	struct ice_sw_act_ctrl sw_act;
- 	struct ice_adv_rule_flags_info flags_info;
-@@ -254,6 +256,9 @@ struct ice_sw_recipe {
- 	 */
- 	u8 priority;
- 
-+	u8 need_pass_l2;
-+	u8 allow_pass_l2;
-+
- 	struct list_head rg_list;
- 
- 	/* AQ buffer associated with this recipe */
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 5602695243a8..96977d6fc149 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -1034,6 +1034,7 @@ enum ice_sw_fwd_act_type {
- 	ICE_FWD_TO_Q,
- 	ICE_FWD_TO_QGRP,
- 	ICE_DROP_PACKET,
-+	ICE_NOP,
- 	ICE_INVAL_ACT
- };
- 
+ void ice_vsi_ctx_clear_allow_override(struct ice_vsi_ctx *ctx);
++int ice_vsi_update_local_lb(struct ice_vsi *vsi, bool set);
+ int ice_vsi_add_vlan_zero(struct ice_vsi *vsi);
+ int ice_vsi_del_vlan_zero(struct ice_vsi *vsi);
+ bool ice_vsi_has_non_zero_vlans(struct ice_vsi *vsi);
 -- 
 2.39.2
 
