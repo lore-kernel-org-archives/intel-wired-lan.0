@@ -1,119 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82B98C6FD18
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Apr 2023 14:01:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97876C6FD18
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Apr 2023 15:13:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 14349614F7;
-	Tue, 18 Apr 2023 14:01:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 14349614F7
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2BFAC41DFB;
+	Tue, 18 Apr 2023 15:13:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2BFAC41DFB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1681826501;
-	bh=IViOvEYJg3pnG+oPSYVVrwMThsWHHUdyak7O63Ciuhg=;
-	h=From:Date:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1681830804;
+	bh=lruEr4bb1pAje/epE28iDSmoTyCPZbQ2eZFsukOiMZs=;
+	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=wdnH8X/e+Ei/gnWWbGgwsDxslBNCq2Z/Hden+Vkg1bxB4bg8kAVVWDJ8UP+DyM0sG
-	 shG12vtABTkGYzkELq94vhcX6Zle/vCHd/AsFvO5bS6eQewbMueu48ipUj/amOyNxw
-	 YkO7tNqlMLkpMpUW35NmLh+753axJNvMqnpbxc7+y35UQ7I4IhMwwoNiHjVKbLJ8D2
-	 f8/Yvo1oyC3rV4dZdUdpU2kpItxeOXe94BUvs+xbrzJuVx0g81XRtqps0suF+L1pjb
-	 9F6EfGJVUSEOot3sc68bDsM0+Al2qyPUDj9EfNeXOYHIpmsBcutnYW9RLzl398XEq+
-	 GFMiuSmEWPM7A==
+	b=uVaYznhjVfFEXtSyft76xjnlOlTfKlGLhvBj7kmgoQOwB1VJtjSEZr71AWRkNCkOy
+	 ZrKE0b41jxm2Oh/D7giNHOKV7ATHfdzNHufmkmmU2ar0LkdgZD+qFK3NssDAL7k2ao
+	 A3omjlZbksQL0DkoZOQtWON8ANWBs4prO+NAOZxiEKP80P/5K0t5bO9fucJIFKIfZz
+	 1OiBwIMe5sPzNd5wDwgxmVWxTQX1nMVBJHNP6zmIw4uQf/d8bd3BDRupqyg+h5tm3w
+	 hb2IuqUWHpQRqLlVIMb2lWfZbs/oOFhTpGc/Uy+mpjtgS0iNDR1DnBG7kM6QDmAuDf
+	 9asrZ5Qm6kBiw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zVPUNJgpH3nA; Tue, 18 Apr 2023 14:01:40 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ALg3QigCCT3M; Tue, 18 Apr 2023 15:13:23 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0A488614EF;
-	Tue, 18 Apr 2023 14:01:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0A488614EF
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2D21241E05;
+	Tue, 18 Apr 2023 15:13:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2D21241E05
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 02D071C42B8
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Apr 2023 14:01:39 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B2CA91BF860
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 15:39:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CD39F41DC0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Apr 2023 14:01:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CD39F41DC0
+ by smtp2.osuosl.org (Postfix) with ESMTP id 97614401DD
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 15:39:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 97614401DD
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id WtPD3kTN8Z66 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 18 Apr 2023 14:01:38 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C805E40103
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C805E40103
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Apr 2023 14:01:37 +0000 (UTC)
-Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com
- [209.85.208.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-325-POiQ3wT5MvqUAhSHKhD3iw-1; Tue, 18 Apr 2023 10:01:35 -0400
-X-MC-Unique: POiQ3wT5MvqUAhSHKhD3iw-1
-Received: by mail-ed1-f71.google.com with SMTP id
- j28-20020a508a9c000000b00504ee48e421so10673116edj.22
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Apr 2023 07:01:34 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1681826493; x=1684418493;
- h=content-transfer-encoding:in-reply-to:references:to
- :content-language:subject:cc:user-agent:mime-version:date:message-id
- :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=5fONgD5ZI0CkRixaJ2Z/vCiQZM4I6ehW6VIFsC+eLAk=;
- b=dt9qXVnJEH8jHuxfz8USc8OmOjN1wyAJ8sMCIW9KBHk6iisdKx2gFhzjBxOjH0p3OY
- IDiIjc4uSUuLmmgt6n3q9ujf2QWZiuuO4y+1OsRu3r+KXZNA6kFiAtWdhnxez/Eg0HaL
- rf8J3XEmkftHxMUFqa3fJ4gHo2yGDEgZbDVKkvZc15nePnzJdNGIaXuYvjZzWbgpdEv6
- nNcbye07jF63yD/OD+M4yt/6kSOZDxQkiuk4yaThBn5eYVGjYq+x4aAEt7If1ii5VUby
- 9tXdSdribXpY0mBva7Ih2dchlJBB/8AM9XPB55lOhqHX/8diRwAln+P+clXB04ocbgEJ
- Iteg==
-X-Gm-Message-State: AAQBX9d9Ro08XfayTzCSpct5dUr6rcKYdfu6zxz77QK3ErniO9jA50Uk
- M6gWW28T++D+zQStO78S1aZM+fKKwN55HN3gawQXjSAHNixxRl7Jery1+FI3ns84EXp0O97dIFo
- dj8NWHvQ3iDzbqRqqDEBlELwUbkcdXg==
-X-Received: by 2002:a17:907:d689:b0:953:1a7c:51b7 with SMTP id
- wf9-20020a170907d68900b009531a7c51b7mr1833375ejc.28.1681826493391; 
- Tue, 18 Apr 2023 07:01:33 -0700 (PDT)
-X-Google-Smtp-Source: AKy350aemARlMVPdy8kgJgXVuHzGD4sbX/Gl6p99Go7osU8PHjd+oUCms+1rCgpAgVHjctvdD0LBVw==
-X-Received: by 2002:a17:907:d689:b0:953:1a7c:51b7 with SMTP id
- wf9-20020a170907d68900b009531a7c51b7mr1833311ejc.28.1681826492813; 
- Tue, 18 Apr 2023 07:01:32 -0700 (PDT)
-Received: from [192.168.42.222] (194-45-78-10.static.kviknet.net.
- [194.45.78.10]) by smtp.gmail.com with ESMTPSA id
- qx11-20020a170906fccb00b0094f499257f7sm4053337ejb.151.2023.04.18.07.01.30
- (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Tue, 18 Apr 2023 07:01:31 -0700 (PDT)
-From: Jesper Dangaard Brouer <jbrouer@redhat.com>
-X-Google-Original-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Message-ID: <d805e350-1d59-eb3a-ec27-adaa72cdc20b@redhat.com>
-Date: Tue, 18 Apr 2023 16:01:30 +0200
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-To: Kurt Kanzenbach <kurt.kanzenbach@linutronix.de>, yoong.siang.song@intel.com
+ with ESMTP id VuA93lEQ0o-w for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 17 Apr 2023 15:39:30 +0000 (UTC)
+X-Greylist: delayed 00:07:25 by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BC0DA401A3
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id BC0DA401A3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Apr 2023 15:39:29 +0000 (UTC)
+From: Kurt Kanzenbach <kurt.kanzenbach@linutronix.de>
+To: Jesper Dangaard Brouer <brouer@redhat.com>, bpf@vger.kernel.org,
+ Stanislav Fomichev <sdf@google.com>, Toke =?utf-8?Q?H=C3=B8iland-J=C3=B8r?=
+ =?utf-8?Q?gensen?= <toke@redhat.com>
+In-Reply-To: <168174344813.593471.4026230439937368990.stgit@firesoul>
 References: <168174338054.593471.8312147519616671551.stgit@firesoul>
  <168174344813.593471.4026230439937368990.stgit@firesoul>
- <87leiqsexd.fsf@kurt>
-In-Reply-To: <87leiqsexd.fsf@kurt>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
+Date: Mon, 17 Apr 2023 17:31:58 +0200
+Message-ID: <87leiqsexd.fsf@kurt>
+MIME-Version: 1.0
+X-Mailman-Approved-At: Tue, 18 Apr 2023 15:13:21 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1681826496;
+ d=linutronix.de; s=2020; t=1681745520;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=5fONgD5ZI0CkRixaJ2Z/vCiQZM4I6ehW6VIFsC+eLAk=;
- b=OzUN5w8sLAWZg1BojZTPg1h/7kqgOoNdNjLdJV+JF/r1oV7nJcReGmeZCMzXGCitsUDbnb
- QAnhQ9nKWi7vgkgUqnNWR8yIAZRO4l+GihwagsS2mVFKI8jhhC2fyrRsKQP5t7yMEMuHrC
- Jr5ElEMGwxNVVFM48Kx5Idn+TtMfIYU=
+ bh=ZNqAznZucUwar6l9V+SpEqFf4WGQ4TaEWsz5LdTwLO0=;
+ b=h4MK9rQxCNldmspQ2ekSbav6OCDIBvW/lBNViHTg8Eew50AGem+33buONoPvC5dgnRyNij
+ kYFzHh2AjcCXT0UfeqyGUpQmiE2P+iyVUK6aqV7ATLBr/5XwJoyJ7BgsXOd6ZQTr9M5+Tg
+ InWl/G01MrXTXAN0bANkhXc9bchlAWRZI4pHLxPX+dxJuY7bxfgZ8MJFSaL3iQY8zqtDms
+ mg08ta0IdmXbR2GZu6zyujObgpf+0y8uU7Rk0xeDdegiPQ2xID2T3/hVZBrRg2WVWZEb2f
+ MSjlqc8bYzKxWS3wEN+YM9cJvhQnUK5G94/Bf3dszKvEP25KO9iBNailTkfepA==
+X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+ d=linutronix.de; s=2020e; t=1681745520;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=ZNqAznZucUwar6l9V+SpEqFf4WGQ4TaEWsz5LdTwLO0=;
+ b=3Rb4+K6SMPMktyFO3+RfZXH19dm4B/+tIp7Nz5cDQuXxblNrtx7bNM12NK/g7FFPDeLHs+
+ gC3+0zdB34IrhqCg==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=OzUN5w8s
-Subject: Re: [Intel-wired-lan] [xdp-hints] Re: [PATCH bpf-next V1 5/5]
- selftests/bpf: xdp_hw_metadata track more timestamps
+ dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
+ header.a=rsa-sha256 header.s=2020 header.b=h4MK9rQx; 
+ dkim=pass header.d=linutronix.de header.i=@linutronix.de
+ header.a=ed25519-sha256 header.s=2020e header.b=3Rb4+K6S
+Subject: Re: [Intel-wired-lan] [PATCH bpf-next V1 5/5] selftests/bpf:
+ xdp_hw_metadata track more timestamps
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -126,110 +96,91 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Pasi Vaananen <pvaanane@redhat.com>, xdp-hints@xdp-project.net,
- martin.lau@kernel.org, daniel@iogearbox.net, larysa.zaremba@intel.com,
- netdev@vger.kernel.org,
- =?UTF-8?Q?Toke_H=c3=b8iland-J=c3=b8rgensen?= <toke@redhat.com>,
- john.fastabend@gmail.com, ast@kernel.org, jesse.brandeburg@intel.com,
- kuba@kernel.org, edumazet@google.com, Stanislav Fomichev <sdf@google.com>,
- brouer@redhat.com, intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org,
+Cc: xdp-hints@xdp-project.net, martin.lau@kernel.org, daniel@iogearbox.net,
+ larysa.zaremba@intel.com, netdev@vger.kernel.org, john.fastabend@gmail.com,
+ ast@kernel.org, jesse.brandeburg@intel.com, kuba@kernel.org,
+ edumazet@google.com, yoong.siang.song@intel.com,
+ Jesper Dangaard Brouer <brouer@redhat.com>, intel-wired-lan@lists.osuosl.org,
  pabeni@redhat.com, davem@davemloft.net, hawk@kernel.org
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: multipart/mixed; boundary="===============6810745721388943016=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+--===============6810745721388943016==
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha512; protocol="application/pgp-signature"
 
-On 17/04/2023 17.31, Kurt Kanzenbach wrote:
-> On Mon Apr 17 2023, Jesper Dangaard Brouer wrote:
->> To correlate the hardware RX timestamp with something, add tracking of
->> two software timestamps both clock source CLOCK_TAI (see description in
->> man clock_gettime(2)).
->>
->> XDP metadata is extended with xdp_timestamp for capturing when XDP
->> received the packet. Populated with BPF helper bpf_ktime_get_tai_ns(). I
->> could not find a BPF helper for getting CLOCK_REALTIME, which would have
->> been preferred. In userspace when AF_XDP sees the packet another
->> software timestamp is recorded via clock_gettime() also clock source
->> CLOCK_TAI.
->>
->> Example output shortly after loading igc driver:
->>
->>    poll: 1 (0) skip=1 fail=0 redir=2
->>    xsk_ring_cons__peek: 1
->>    0x12557a8: rx_desc[1]->addr=100000000009000 addr=9100 comp_addr=9000
->>    rx_hash: 0x82A96531 with RSS type:0x1
->>    rx_timestamp:  1681740540304898909 (sec:1681740540.3049)
->>    XDP RX-time:   1681740577304958316 (sec:1681740577.3050) delta sec:37.0001 (37000059.407 usec)
->>    AF_XDP time:   1681740577305051315 (sec:1681740577.3051) delta sec:0.0001 (92.999 usec)
->>    0x12557a8: complete idx=9 addr=9000
->>
->> The first observation is that the 37 sec difference between RX HW vs XDP
->> timestamps, which indicate hardware is likely clock source
->> CLOCK_REALTIME, because (as of this writing) CLOCK_TAI is initialised
->> with a 37 sec offset.
-> 
-> Maybe I'm missing something here, but in order to compare the hardware
-> with software timestamps (e.g., by using bpf_ktime_get_tai_ns()) the
-> time sources have to be synchronized by using something like
-> phc2sys. That should make them comparable within reasonable range
-> (nanoseconds).
+--=-=-=
+Content-Type: text/plain
 
-Precisely, in this test I've not synchronized the clocks.
-The observation is that driver igc clock gets initialized to
-CLOCK_REALTIME wall-clock time, and it slowly drifts as documented in 
-provided link[1].
+On Mon Apr 17 2023, Jesper Dangaard Brouer wrote:
+> To correlate the hardware RX timestamp with something, add tracking of
+> two software timestamps both clock source CLOCK_TAI (see description in
+> man clock_gettime(2)).
+>
+> XDP metadata is extended with xdp_timestamp for capturing when XDP
+> received the packet. Populated with BPF helper bpf_ktime_get_tai_ns(). I
+> could not find a BPF helper for getting CLOCK_REALTIME, which would have
+> been preferred. In userspace when AF_XDP sees the packet another
+> software timestamp is recorded via clock_gettime() also clock source
+> CLOCK_TAI.
+>
+> Example output shortly after loading igc driver:
+>
+>   poll: 1 (0) skip=1 fail=0 redir=2
+>   xsk_ring_cons__peek: 1
+>   0x12557a8: rx_desc[1]->addr=100000000009000 addr=9100 comp_addr=9000
+>   rx_hash: 0x82A96531 with RSS type:0x1
+>   rx_timestamp:  1681740540304898909 (sec:1681740540.3049)
+>   XDP RX-time:   1681740577304958316 (sec:1681740577.3050) delta sec:37.0001 (37000059.407 usec)
+>   AF_XDP time:   1681740577305051315 (sec:1681740577.3051) delta sec:0.0001 (92.999 usec)
+>   0x12557a8: complete idx=9 addr=9000
+>
+> The first observation is that the 37 sec difference between RX HW vs XDP
+> timestamps, which indicate hardware is likely clock source
+> CLOCK_REALTIME, because (as of this writing) CLOCK_TAI is initialised
+> with a 37 sec offset.
 
-  [1] 
-https://github.com/xdp-project/xdp-project/blob/master/areas/hints/xdp_hints_kfuncs02_driver_igc.org#driver-igc-clock-drift-observations
-  [2] 
-https://github.com/xdp-project/xdp-project/blob/master/areas/hints/xdp_hints_kfuncs02_driver_igc.org#quick-time-sync-setup
+Maybe I'm missing something here, but in order to compare the hardware
+with software timestamps (e.g., by using bpf_ktime_get_tai_ns()) the
+time sources have to be synchronized by using something like
+phc2sys. That should make them comparable within reasonable range
+(nanoseconds).
 
-I've also played with using phc2sys (in same doc[2]) to sync HW clock
-with SW clock. I do *seek input* if I'm using it correctly?!?.
+Thanks,
+Kurt
 
-I don't have a PTP clock setup , so I manually: Use phc2sys to
-synchronize the system clock to the PTP hardware clock (PHC) on the
-network card (which driver inited to CLOCK_REALTIME wall-clock).
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Stop ntp clock sync and disable most CPU sleep states:
+-----BEGIN PGP SIGNATURE-----
 
-   sudo systemctl stop chronyd
-   sudo tuned-adm profile latency-performance
-   sudo hexdump --format '"%d\n"' /dev/cpu_dma_latency
-   2
+iQJSBAEBCgA8FiEEvLm/ssjDfdPf21mSwZPR8qpGc4IFAmQ9Zm4eHGt1cnQua2Fu
+emVuYmFjaEBsaW51dHJvbml4LmRlAAoJEMGT0fKqRnOCYtUP/3c5DAmd2vNkZ6A9
+Sy1VrS9EFf5Re6h3DXMxCBsNi1AC/lYiNfkF2YRIY45UPntexdrl8J1ehisiIrWs
+OPi2cIyZObXXrm5SCXDk/o//G3cwv0CwqCC5Wnhk1120d9kpAlXwiYpHZnzZRFGE
+2XKkAcNOaKqjwlC8eKxI8dTIfZEWl2w1nazOzNSQCGnQV9sll1TetJaempzYyXkp
+luI2fmsuLFt9z02xW33jS2W2fRQoIfBbb6PIuGPiAnjGMNiUNeyh6hg7wzDz4uHA
+RnM87yFtBbTlIwzAgpSMXXnmdyLL5uJUmqiiS9RvxZhWYklc2015OsynMBO7namn
+MtT1bPjrFxVrIRBYTQ+YaTuUwRN/sLkye92IG6AttUjcJElvL3xW20kWMs+nqgGP
+yBB2Y/DLsNzWVDIXY7406U1/6bZEZjHaCFawnXbrYUurAXr2zG27x13aFQWxHD69
+wyH3esfAZP8/0yBucSlpbgBiOOwz7ys2M/I9NaAQAKVitL11bDSqHBSuBAp3T1im
+UBZXIws7gqvQ1L3DMj1QnBi1QyheCcjvyS2bXgn00t27aRo5uy8Gdv750bW4RqES
+hMxSATWP2Ee+ePTYVMHOCsUStTkX0qyT7iaPARC7HbpId1dmTVulzrdz5eUGJDJU
+yNNSk0lrFfo1uXx7AScZAHpkl3zZ
+=YsLm
+-----END PGP SIGNATURE-----
+--=-=-=--
 
-Adjust for the 37 sec offset to TAI, such that our BPF-prog using TAI 
-will align:
-
-   sudo phc2sys -s igc1 -O -37 -R 2 -u 10
-
-Result on igc with xdp_hw_metadata:
-
-  poll: 1 (0) skip=1 fail=0 redir=6
-  xsk_ring_cons__peek: 1
-  rx_hash: 0x82A96531 with RSS type:0x1
-  rx_timestamp:  1681825632645744805 (sec:1681825632.6457)
-  XDP RX-time:   1681825632645755858 (sec:1681825632.6458) delta 
-sec:0.0000 (11.053 usec)
-  AF_XDP time:   1681825632645769371 (sec:1681825632.6458) delta 
-sec:0.0000 (13.513 usec)
-
-The log file from phc2sys says:
-
-  phc2sys[1294263]: [86275.140] CLOCK_REALTIME rms    6 max   11 freq 
-+13719 +/-   5 delay  1435 +/-   5
-
-Notice the delta between HW and SW timestamps is 11.053 usec.
-Even-though it is small, I don't really trust it, because the phc2sys
-log says frequency offset mean is "+13719" nanosec.
-
-So, it is true that latency/delay between HW to XDP-SW is 11 usec?
-Or is this due to (in)accuracy of phc2sys sync?
-
---Jesper
+--===============6810745721388943016==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============6810745721388943016==--
