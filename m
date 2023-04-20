@@ -4,79 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1EC9C77B72
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Apr 2023 14:59:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79702C77B73
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Apr 2023 15:23:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5F09F61042;
-	Thu, 20 Apr 2023 14:59:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5F09F61042
+	by smtp3.osuosl.org (Postfix) with ESMTP id F344960B42;
+	Thu, 20 Apr 2023 15:23:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F344960B42
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1682002789;
-	bh=dBjtazc71Qi9wicOZfQVrhpK4Kek6YB1apUJjcnq3iM=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=kvbCBHZYXRP0GCbzEOTPwwzktb+EawCcOutNmla517/rx+iXmfdRvUrc3DCa00HmS
-	 8V8V9PYzK9Lt91EoMnJP+aJeE92KNUFxuQQyOKFaBTBWVe6SXsqHCAmQ/xV83iGcm7
-	 /dqr0vu3SXgUSeInuTLc9+npPOdyBq/409F+rCXVVyf5YTzGUnEq5zGWMqq7SrrUf3
-	 2bcrmr69eTU6HXABHnIvw+zM7dM1dtSI0z1dRlx5ryPz5NXpsTuZYV1tDpbEmK5YKT
-	 j8d2etPSchLV6H0zNV+Y7A96g5QnY/zrjnig3+GPnk03mfs1fBtXpeKPmhrEu31S63
-	 lcTKs7NuuUG0w==
+	s=default; t=1682004198;
+	bh=U+p02Q/VOn26H4Di9tDmlbHO3AIBEJWLrjeP7eZznI4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=JOAxixcl/iVuf0M2TzG2sFm4hE/OhZ/OFaBj7THfqwgDZadQxg4yih3jJQ3lHjaDm
+	 O+sFGPfUM6enjjaInB60fls+Uaiqu8UkpSctA795JU7T2IMLVne+3W6Ekr+nssVCoz
+	 D33WEo/MvRtdshkA5Qjs+5c48QCNPdoUM8gHoettqncnJ4J1hJvOCRYwJv9KZCBdij
+	 f6uFhZEC0oTNU+/frR71G17LO+mJgN2UOShWVtLOFCVpG8mxCiBeiBtPF/bpBlh/rg
+	 mwlpzaKAN2HAML0sXp5UYXH2uWgU7AaLexL7tU7ucPfjmx5a02M/9qx/W3YVqsV2rs
+	 DExVdSU0AEC7A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jAwYmEN4Qoju; Thu, 20 Apr 2023 14:59:48 +0000 (UTC)
+	with ESMTP id 9jj2JlY0brKH; Thu, 20 Apr 2023 15:23:16 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 891706FF08;
-	Thu, 20 Apr 2023 14:59:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 891706FF08
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1FFF061106;
+	Thu, 20 Apr 2023 15:23:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1FFF061106
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id EAC5F1BF2CD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Apr 2023 14:59:46 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id D2FCF1BF836
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Apr 2023 14:10:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BC5A3418CF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Apr 2023 14:59:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BC5A3418CF
+ by smtp4.osuosl.org (Postfix) with ESMTP id A9621427BC
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Apr 2023 14:10:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A9621427BC
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Av1NyQ4MIn2Z for <intel-wired-lan@lists.osuosl.org>;
- Thu, 20 Apr 2023 14:59:46 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 026CB41866
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 026CB41866
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Apr 2023 14:59:45 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id E8BFF64A1C;
- Thu, 20 Apr 2023 14:59:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30528C433EF;
- Thu, 20 Apr 2023 14:59:44 +0000 (UTC)
-Date: Thu, 20 Apr 2023 07:59:43 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <20230420075943.4ef9b68a@kernel.org>
-In-Reply-To: <21b89328-8c74-596b-3cfe-e71affd193a8@intel.com>
-References: <20230419231751.11581-1-ahmed.zaki@intel.com>
- <21b89328-8c74-596b-3cfe-e71affd193a8@intel.com>
-MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1682002784;
- bh=/D8ISpki4l1J4whygb9ubLZyEG1f518zP3ZWZthbXPA=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=RNU4vKpt3/KIphM9zbptyAkV4k9sjA9q/cCcr3KgQi6jsSx4BLqR/gvbZeQJ+MCqH
- 4nxXQ1/wlpVHSEBnHh7JAVV3Trcb6OmzGZwFaabVOG/wuzPvPZSKhds64WeB0cdxUn
- ie9rnvvJtx4cJw/bbhm75O8x17oWvAbtjtvQy3e37xwCEzvtzEAYLOOc6j1IUKisv9
- TtUvoFgvxmfaeHqKKjT0d+toQp5kIXbpraeDF2WGjLuqftkI2hQ1bC0YOwUJznTFaY
- Ji9TJ12/DhsxqeoLASnjW17MKyeTGOfI8bZuc9uAPWM+mGf9KwObfVQSoJqT6Qc1HA
- 6cyv+ycDFrEIQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=RNU4vKpt
-Subject: Re: [Intel-wired-lan] [PATCH net-next] iavf: remove double
- underscores from states names
+ with ESMTP id ffho_uoNZCuP for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 20 Apr 2023 14:10:36 +0000 (UTC)
+X-Greylist: delayed 00:07:46 by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A2BAB427BB
+Received: from azure-sdnproxy.icoremail.net (azure-sdnproxy.icoremail.net
+ [207.46.229.174])
+ by smtp4.osuosl.org (Postfix) with ESMTP id A2BAB427BB
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Apr 2023 14:10:35 +0000 (UTC)
+Received: from ubuntu.localdomain (unknown [218.12.18.95])
+ by mail-app3 (Coremail) with SMTP id cC_KCgDn7w_XRUFkQSOLAA--.3844S2;
+ Thu, 20 Apr 2023 22:02:12 +0800 (CST)
+From: Duoming Zhou <duoming@zju.edu.cn>
+To: netdev@vger.kernel.org
+Date: Thu, 20 Apr 2023 22:01:57 +0800
+Message-Id: <20230420140157.22416-1-duoming@zju.edu.cn>
+X-Mailer: git-send-email 2.17.1
+X-CM-TRANSID: cC_KCgDn7w_XRUFkQSOLAA--.3844S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7Ar17Xr4fWF48CF17Cw1rZwb_yoW8Ar13p3
+ ySva4fJF10qr4YvFyxXr1kJFyrGas7ArWkKF1xCw4ru3Z7ArnYgr9Ykry0gFyrGFZ8ZF43
+ AF1F93y5CwnxAwUanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+ 9KBjDU0xBIdaVrnRJUUUkE14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+ rVWrJVCq3wAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+ 1l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r4U
+ JVWxJr1l84ACjcxK6I8E87Iv67AKxVW0oVCq3wA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gc
+ CE3s1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+ 2Ix0cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJV
+ W8JwACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lFIxGxcIEc7CjxVA2
+ Y2ka0xkIwI1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4
+ xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r1q6r43
+ MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I
+ 0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWU
+ JVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x0JUdHU
+ DUUUUU=
+X-CM-SenderInfo: qssqjiasttq6lmxovvfxof0/1tbiAwMLAWRAA1s8WwAwsh
+X-Mailman-Approved-At: Thu, 20 Apr 2023 15:23:14 +0000
+Subject: [Intel-wired-lan] [PATCH net] ethernet: ixgb: fix use after free
+ bugs caused by circular dependency problem
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,24 +88,64 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- intel-wired-lan@lists.osuosl.org
+Cc: intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ jesse.brandeburg@intel.com, edumazet@google.com,
+ Duoming Zhou <duoming@zju.edu.cn>, anthony.l.nguyen@intel.com, kuba@kernel.org,
+ pabeni@redhat.com, davem@davemloft.net
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 20 Apr 2023 16:33:54 +0200 Alexander Lobakin wrote:
-> > No need to prepend some states names with "__", especially that others do
-> > not have these underscores.  
-> 
-> What's the value of this change, apart from 400 locs diffstat? I don't
-> say having prefixes for general-purpose definitions is correct, but...
-> Dunno. Would be nice to have as a part of some series with assorted
-> improvements, but not standalone. Or it's just me =\
+The watchdog_timer can schedule tx_timeout_task and tx_timeout_task
+can also arm watchdog_timer. The process is shown below:
 
-Yeah, I'm not sure it's bad enough to justify the code churn, either.
-Up to you folks at Intel.
+----------- timer schedules work ------------
+ixgb_watchdog() //timer handler
+  schedule_work(&adapter->tx_timeout_task)
+
+----------- work arms timer ------------
+ixgb_tx_timeout_task() //workqueue callback function
+  ixgb_up()
+    mod_timer(&adapter->watchdog_timer,...)
+
+When ixgb device is detaching, the timer and workqueue
+could still be rearmed. The process is shown below:
+
+  (cleanup routine)           |  (timer and workqueue routine)
+ixgb_remove()                 |
+                              | ixgb_tx_timeout_task() //workqueue
+                              |   ixgb_up()
+                              |     mod_timer()
+  cancel_work_sync()          |
+  free_netdev(netdev) //FREE  | ixgb_watchdog() //timer
+                              |   netif_carrier_ok(netdev) //USE
+
+This patch adds timer_shutdown_sync() in ixgb_remove(), which
+could prevent rearming of the timer from the workqueue.
+
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Signed-off-by: Duoming Zhou <duoming@zju.edu.cn>
+---
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+index b4d47e7a76c..6ce3601904b 100644
+--- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
++++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+@@ -516,6 +516,7 @@ ixgb_remove(struct pci_dev *pdev)
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct ixgb_adapter *adapter = netdev_priv(netdev);
+ 
++	timer_shutdown_sync(&adapter->watchdog_timer);
+ 	cancel_work_sync(&adapter->tx_timeout_task);
+ 
+ 	unregister_netdev(netdev);
+-- 
+2.17.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
