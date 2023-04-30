@@ -4,103 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C1F8C77B7F
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Apr 2023 05:06:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC2DAC77B60
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Apr 2023 16:29:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AB9E084070;
-	Sun, 30 Apr 2023 05:06:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AB9E084070
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6497981337;
+	Sun, 30 Apr 2023 16:29:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6497981337
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1682831169;
-	bh=CEIZrlIfletnS2kNFUCHJfzDT87HgH62OsQXvBbb4sM=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1682872194;
+	bh=cKLC2UbivTismVvn/B7Zp/KEymxpHy1pNm6NZo7peBw=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=1mhm8YXDVMSSCg5rNGY4CzZjEQiqNh9jEpgrLXRxbz/egDdUiC9fKS4xmIxYI+vnj
-	 xw/blwLBgQr8l8mUwObk+7+RpskPKmSPcX8D2rzR/2+1VbtgqlxeAcJeWYCsYOYth4
-	 4/B1nPpeQ+k/uTu7WOfYLy4ODpO4iFEKYcNpMa+e+eSkpy8vIB4iYMclSg+5J538dU
-	 1TausYSf7d42U1ILAQozY/NlYq1OGMQB/6icWmNJ9wfafzJHDNIOyOvmKYH+G6zE5K
-	 rnjoIImyHHJZj9s+3FiHzOZoC/8LBKZ2gqOmlqu8tE7bpmLqTAVIcpt8f10iTnw7Ti
-	 7dWilC/RfJwEw==
+	b=mIUU+tATNNF+p3LbwPyDp8FGRzPKw3X/hoeadkGMIyowM78vKtsGBMlH4ZrO4Qqlz
+	 cN/DRWdchIWl6ZiUasZeU3G5Cv3T0XXuv5ijIS3TmlKNkVrvJ3AeWge7KPGHMXOZgr
+	 RvP57NvXVe3vaT76/bRKOWswG0iFkA3KjEBkLoKmCHsgQye1ao/hTB+FoACK5MQyRx
+	 I9PmxJquK0EkbdI+B/fFlPIfGMMTxloDoOfifBFeonMtFLl/1dzRZTtZziuT9Wnxne
+	 pzt8eVWcSTYyqMSPx3QqGu/KicUMk1mTcNPq9U6ZHFJ6JG2FE441QNbEgmgNwnDGzR
+	 lguMlhtBD7EWA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id hg0TNxegz9HH; Sun, 30 Apr 2023 05:06:09 +0000 (UTC)
+	with ESMTP id YKzzmqOnDs0m; Sun, 30 Apr 2023 16:29:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B631384108;
-	Sun, 30 Apr 2023 05:06:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B631384108
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 44CA21BF3C9
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 05:06:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 75C9781345;
+	Sun, 30 Apr 2023 16:29:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 75C9781345
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 413391BF47A
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 16:29:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1CD524074E
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 05:06:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1CD524074E
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2364B415FC
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 16:29:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2364B415FC
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id EOqErbVp7xNO for <intel-wired-lan@lists.osuosl.org>;
- Sun, 30 Apr 2023 05:06:06 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5F6384011C
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5F6384011C
- for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 05:06:06 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10695"; a="348029657"
-X-IronPort-AV: E=Sophos;i="5.99,238,1677571200"; d="scan'208";a="348029657"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Apr 2023 22:06:05 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10695"; a="728115425"
-X-IronPort-AV: E=Sophos;i="5.99,238,1677571200"; d="scan'208";a="728115425"
-Received: from naamamex-mobl.ger.corp.intel.com (HELO [10.13.12.36])
- ([10.13.12.36])
- by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Apr 2023 22:05:58 -0700
-Message-ID: <499598fd-05fc-e3bc-be85-d74b47a0b46c@linux.intel.com>
-Date: Sun, 30 Apr 2023 08:05:57 +0300
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 7pJbjwultR7h for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 30 Apr 2023 16:29:51 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BC312415E7
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com
+ [IPv6:2a00:1450:4864:20::52d])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id BC312415E7
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 16:29:50 +0000 (UTC)
+Received: by mail-ed1-x52d.google.com with SMTP id
+ 4fb4d7f45d1cf-50bc3a2d333so921705a12.0
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 09:29:50 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1682872188; x=1685464188;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=mksp2EbXNW2wgcwhANvHUI82fFo1K/yFsluJZOmKsIM=;
+ b=N2wYhqZxCYHpP003pSOKlBxdEmOIhwC4gjp8QFSIcQGQnhp3KBt1ZO6Vu2jqzbAAQS
+ vGHQuXCJhmgdXL55+OKYy5V+417L1MQiZEfBruKaZKnxOdz624VDEy6TCrgrLmsmFpCr
+ P7lUXo28dBdh4NTqDdgYFhadcdZOQENM1ekCR60oOZ2QncP+eEDtZHCvjPsUDZpIgTz3
+ O5ti/lPcscEfO92Ovup7apoPLFg2eJoY4mytTlwfpkypsvEOW5CMNGIHoy0uWWzIHff1
+ pdS4LwlTqkQh2QC/7E8EoDysCGLoAsHxNXfWGxvVtAG4ZIjq5kw/EEKZYO63UG1LKaBi
+ 1oGg==
+X-Gm-Message-State: AC+VfDwwUA7FacikaO8xNCp7DiINmf2U7MFNJp6fWWoC5UGyYSara3yG
+ kXXjdU2JkVJOLEjKif5BMPzVNBoLTejYOF4b5LA=
+X-Google-Smtp-Source: ACHHUZ6kMlUFNA1MwtGIJisEEpyMGEZ13nvEvZsSr2PkjlD5Fnfp/9BZsnlsltElMntOLkdhYcIeNJaTzO99bPZDJAw=
+X-Received: by 2002:aa7:db81:0:b0:504:a248:3741 with SMTP id
+ u1-20020aa7db81000000b00504a2483741mr3565902edt.14.1682872188211; Sun, 30 Apr
+ 2023 09:29:48 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Content-Language: en-US
-To: Song Yoong Siang <yoong.siang.song@intel.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "David S . Miller" <davem@davemloft.net>, Eric Dumazet
- <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- John Fastabend <john.fastabend@gmail.com>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Vedang Patel <vedang.patel@intel.com>, Jithu Joseph
- <jithu.joseph@intel.com>, Andre Guedes <andre.guedes@intel.com>,
- Jesper Dangaard Brouer <brouer@redhat.com>,
- Stanislav Fomichev <sdf@google.com>, Jacob Keller
- <jacob.e.keller@intel.com>, David Laight <David.Laight@ACULAB.COM>
-References: <20230414154902.2950535-1-yoong.siang.song@intel.com>
-From: "naamax.meir" <naamax.meir@linux.intel.com>
-In-Reply-To: <20230414154902.2950535-1-yoong.siang.song@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1682831166; x=1714367166;
- h=message-id:date:mime-version:subject:to:cc:references:
- from:in-reply-to:content-transfer-encoding;
- bh=wUIy27kaA7x1m/LYtCGQz0bQD3AE4rfsj1cxLUC2Tzk=;
- b=MV/bw3PpAmXweL4gp3ujplDciWYiOscjXD+Z93RytSZUTYujoAssLg7R
- mrMCUUmOg/s52DkRNpN2+ut0k+4DbBuJmpjo5/iRbw5e6p8mC4AlSYej4
- JMAXdPpE3sv5DUCiaQqkUwvAH7fjB5N4uvc5x8E/b2vjsQ2XJJEM5B/yD
- uPRZi/9XKVs5tP98fkIeM7UTI/ErLQwQf0yOd6wLnOF+xEJjDS0uJnCiV
- JXUNr2n8IGKH3nFdXkY/UXV8k2W97P38PxRkbFt69qhDPgOhy089ZVN0p
- hGsC4R1oL5DTNQojPkTVGxR8PJn+l5ZcNvcxqDvI9vj0mgTDDLAqAhpXs
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=MV/bw3Pp
-Subject: Re: [Intel-wired-lan] [PATCH net v3 1/1] igc: read before write to
- SRRCTL register
+References: <CAA85sZuTsq4cKMV0=pTP_=mgb5CxYXGxNDpmF1NCfrmpvCpJdQ@mail.gmail.com>
+In-Reply-To: <CAA85sZuTsq4cKMV0=pTP_=mgb5CxYXGxNDpmF1NCfrmpvCpJdQ@mail.gmail.com>
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Date: Sun, 30 Apr 2023 09:29:37 -0700
+Message-ID: <CAEuXFEzaFAzp_Lx-8pphyNsi=Cjff40CPTbBHD=oJo_WmKmgYA@mail.gmail.com>
+To: Ian Kumlien <ian.kumlien@gmail.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1682872188; x=1685464188;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=mksp2EbXNW2wgcwhANvHUI82fFo1K/yFsluJZOmKsIM=;
+ b=KjlgDDTJMygsHsoMcroXcF8SnAQJ5fi97o9Xhur/RvZQ/wh/KAnhq3G1MqWxoPfs8g
+ 5f3vcN5sINcg3sIqo4oPRzvVg0dRZvixDiFxx4S5DrVLKlSxJvlBdREjMLXb6GmeUDKw
+ nTvi1MSdlcb1nMjdiJbAVVtRcF+hzG767bVJ+gCS1zvk46Ipv2skCa4JqHfLhJ2kwA3w
+ ZXeiN6EWaFQnm6DjYLH2p6uO/8z+0U7+8wmnbHPXILNHYoQDpVmY1JseN4PbER0FrlhK
+ QLU9DdiOT+j8W/2ykZt2M4zRlo9LwraJ9zQ4aazq8J6LEyoRuTfz3nXmRus7jRFGtsaB
+ V83A==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20221208 header.b=KjlgDDTJ
+Subject: Re: [Intel-wired-lan] [ixgbe] regression: jumbo frames not working
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,59 +103,98 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: xdp-hints@xdp-project.net, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>
+Content-Type: multipart/mixed; boundary="===============2918902968496722674=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 4/14/2023 18:49, Song Yoong Siang wrote:
-> igc_configure_rx_ring() function will be called as part of XDP program
-> setup. If Rx hardware timestamp is enabled prio to XDP program setup,
-> this timestamp enablement will be overwritten when buffer size is
-> written into SRRCTL register.
-> 
-> Thus, this commit read the register value before write to SRRCTL
-> register. This commit is tested by using xdp_hw_metadata bpf selftest
-> tool. The tool enables Rx hardware timestamp and then attach XDP program
-> to igc driver. It will display hardware timestamp of UDP packet with
-> port number 9092. Below are detail of test steps and results.
-> 
-> Command on DUT:
->    sudo ./xdp_hw_metadata <interface name>
-> 
-> Command on Link Partner:
->    echo -n skb | nc -u -q1 <destination IPv4 addr> 9092
-> 
-> Result before this patch:
->    skb hwtstamp is not found!
-> 
-> Result after this patch:
->    found skb hwtstamp = 1677800973.642836757
-> 
-> Optionally, read PHC to confirm the values obtained are almost the same:
-> Command:
->    sudo ./testptp -d /dev/ptp0 -g
-> Result:
->    clock time: 1677800973.913598978 or Fri Mar  3 07:49:33 2023
-> 
-> Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
-> Cc: <stable@vger.kernel.org> # 5.14+
-> Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
-> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-> Reviewed-by: Jesper Dangaard Brouer <brouer@redhat.com>
-> ---
-> v2 -> v3: Refactor SRRCTL definitions to more human readable definitions
-> v1 -> v2: Fix indention
-> ---
->   drivers/net/ethernet/intel/igc/igc_base.h | 11 ++++++++---
->   drivers/net/ethernet/intel/igc/igc_main.c |  7 +++++--
->   2 files changed, 13 insertions(+), 5 deletions(-)
+--===============2918902968496722674==
+Content-Type: multipart/alternative; boundary="000000000000fb189205fa9036a8"
 
-Tested-by: Naama Meir <naamax.meir@linux.intel.com>
+--000000000000fb189205fa9036a8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Apr 28, 2023 at 2:13 PM Ian Kumlien <ian.kumlien@gmail.com> wrote:
+
+> Hi,
+>
+> Since upgrading to kenel 6.3, I've hit an issue...
+>
+> I historically use 9k jumboframes on my network as such:
+> 3: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP
+> group default qlen 1000
+
+
+Thanks for the report! Our team is investigating, hopefully we will be able
+to reproduce and get back to you this week.
+
+A detail that would help is lspci -nn -d ::0200 to get a list of the
+adapter type you=E2=80=99re using in case it=E2=80=99s relevant.
+
+
+>
+> But now the largest frame i can send is 2030 bytes (ie ping -s 2002)...
+>
+> I don't see any warning from the XDP subsystem so I almost assume
+> that's not it...
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan@osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
+
+--000000000000fb189205fa9036a8
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div><div><br></div><div><br><div class=3D"gmail_quote"><div dir=3D"ltr" cl=
+ass=3D"gmail_attr">On Fri, Apr 28, 2023 at 2:13 PM Ian Kumlien &lt;<a href=
+=3D"mailto:ian.kumlien@gmail.com" target=3D"_blank">ian.kumlien@gmail.com</=
+a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margin:0 =
+0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">Hi,<br>
+<br>
+Since upgrading to kenel 6.3, I&#39;ve hit an issue...<br>
+<br>
+I historically use 9k jumboframes on my network as such:<br>
+3: eno1: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc mq state UP=
+<br>
+group default qlen 1000</blockquote><div dir=3D"auto"><br></div><div dir=3D=
+"auto">Thanks for the report! Our team is investigating, hopefully we will =
+be able to reproduce and get back to you this week.=C2=A0</div><div dir=3D"=
+auto"><br></div><div dir=3D"auto">A detail that would help is lspci -nn -d =
+::0200 to get a list of the adapter type you=E2=80=99re using in case it=E2=
+=80=99s relevant.=C2=A0</div><div dir=3D"auto"><br></div><blockquote class=
+=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padd=
+ing-left:1ex" dir=3D"auto"><br>
+<br>
+But now the largest frame i can send is 2030 bytes (ie ping -s 2002)...<br>
+<br>
+I don&#39;t see any warning from the XDP subsystem so I almost assume<br>
+that&#39;s not it...<br>
+_______________________________________________<br>
+Intel-wired-lan mailing list<br>
+<a href=3D"mailto:Intel-wired-lan@osuosl.org" target=3D"_blank">Intel-wired=
+-lan@osuosl.org</a><br>
+<a href=3D"https://lists.osuosl.org/mailman/listinfo/intel-wired-lan" rel=
+=3D"noreferrer" target=3D"_blank">https://lists.osuosl.org/mailman/listinfo=
+/intel-wired-lan</a><br>
+</blockquote></div></div>
+</div>
+
+--000000000000fb189205fa9036a8--
+
+--===============2918902968496722674==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============2918902968496722674==--
