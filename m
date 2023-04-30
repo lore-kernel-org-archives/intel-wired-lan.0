@@ -1,77 +1,105 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14FCFC77B7E
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 29 Apr 2023 13:21:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D041C77B60
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 30 Apr 2023 05:03:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A5A4F60DFD;
-	Sat, 29 Apr 2023 13:21:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A5A4F60DFD
+	by smtp1.osuosl.org (Postfix) with ESMTP id E794684152;
+	Sun, 30 Apr 2023 05:03:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E794684152
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1682774504;
-	bh=eugLkP8BB31upvno0A1vK8uL9QKizFOpO/KzZZ+iUQk=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1682831000;
+	bh=D1ZrEfGncOsrxh3l9y+j6o/bHIeALEmNdvWF+jIGGy0=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=tqfUpBzlnVa5eWtvQWhFlTSIc8oMHXXBAZY7bze62V3B886v03zV+fm7gEqx3x51R
-	 vhOmDydTMqfsta0dSZn1F+ULgZigLvIsZcZheMnurwLaD2FJqBpewZGqcYC5z2tmem
-	 zz3JG7d4r1jWy0vqOc6ClAQ8lBLRRoqCLp53+zqQ6qm6dtEj1tXt6erTZJhHcFo/fG
-	 A4SpwJ7E9YRNPZS4cfq1k7rwkPoAn6aipPkTNDgLAZakSihLDPH9tpc3az4QmwtoR0
-	 IMklsxyitqVF3t7Nv43KZyRceTONtPjpVIqXNUlGzPA4UBBR6EGrB8Q7DdEI8wqhwr
-	 LwUACQspmGDFQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7xpOKPtkSLZg; Sat, 29 Apr 2023 13:21:43 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3084C60E00;
-	Sat, 29 Apr 2023 13:21:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3084C60E00
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 0DD691BF386
- for <intel-wired-lan@lists.osuosl.org>; Sat, 29 Apr 2023 13:21:35 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 03BBA84258
- for <intel-wired-lan@lists.osuosl.org>; Sat, 29 Apr 2023 13:21:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 03BBA84258
+	b=E/M4/prpE+ppumJXV2AdbUQDwoGM3aa8ZWnuSDvN3x/7fVkV2qTB3iRryNzZuxJcK
+	 QyI1Xb0yp8/PfzbyTXqGhrz6qlms/KmvTPl2O6AW3+VE58s0arsx62Ec9rXS62LeOh
+	 Fjb/EozgDUJoTdmlUKn3ugTkfeB1AHhAUFqkFd4KoFAwxGiDAMEPCC0FT7Kiqu7sha
+	 ogLTsEzLcuYg9FYG7p4fPQPsw4SygVbyWz6POr1k7uWyic3TTF+tJXhSS7ORK2QEFO
+	 IrvSjynL1qZp+wKYxqpnLQeLThrVDJ3U7cEoSqLbnPOW0pYFs2LMadvDQA6Yqx34S9
+	 MRb0ECdh/R0mg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id bamrQKEfORnN for <intel-wired-lan@lists.osuosl.org>;
- Sat, 29 Apr 2023 13:21:32 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 512058425A
-Received: from mail-m11876.qiye.163.com (mail-m11876.qiye.163.com
- [115.236.118.76])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 512058425A
- for <intel-wired-lan@lists.osuosl.org>; Sat, 29 Apr 2023 13:21:30 +0000 (UTC)
-Received: from localhost.localdomain (unknown
- [IPV6:240e:3b7:3271:1d90:5cf2:8ef5:1dc9:a429])
- by mail-m11876.qiye.163.com (Hmail) with ESMTPA id A5A7B3C02F6;
- Sat, 29 Apr 2023 21:21:08 +0800 (CST)
-From: Ding Hui <dinghui@sangfor.com.cn>
-To: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
- jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com
-Date: Sat, 29 Apr 2023 21:20:21 +0800
-Message-Id: <20230429132022.31765-2-dinghui@sangfor.com.cn>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20230429132022.31765-1-dinghui@sangfor.com.cn>
-References: <20230429132022.31765-1-dinghui@sangfor.com.cn>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
- tZV1koWUFITzdXWS1ZQUlXWQ8JGhUIEh9ZQVlDSR5DVk4eHhkaThoZTh8ZHlUTARMWGhIXJBQOD1
- lXWRgSC1lBWUlPSx5BSBlMQUhJTEpBSh9CS0FOGB1JQUMeHU5BSh8YQkEaT0lCWVdZFhoPEhUdFF
- lBWU9LSFVKSktISkxVSktLVUtZBg++
-X-HM-Tid: 0a87cd2caa742eb2kusna5a7b3c02f6
-X-HM-MType: 1
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Pj46Eio*SD0KQ0w1SlYMPgw9
- KzcKCxZVSlVKTUNJTExPT01CTE1LVTMWGhIXVR8SFRwTDhI7CBoVHB0UCVUYFBZVGBVFWVdZEgtZ
- QVlJT0seQUgZTEFISUxKQUofQktBThgdSUFDHh1OQUofGEJBGk9JQllXWQgBWUFKS0xNTzcG
-Subject: [Intel-wired-lan] [PATCH net v3 1/2] iavf: Fix use-after-free in
- free_netdev
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id I_IX4P6E66kJ; Sun, 30 Apr 2023 05:03:19 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id F19CE84153;
+	Sun, 30 Apr 2023 05:03:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F19CE84153
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 9AE4B1BF3D6
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 05:03:17 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6FF1B60FA4
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 05:03:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6FF1B60FA4
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id PGchuLSFE1q9 for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 30 Apr 2023 05:03:16 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DE76560F91
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DE76560F91
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 30 Apr 2023 05:03:15 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10695"; a="411108967"
+X-IronPort-AV: E=Sophos;i="5.99,238,1677571200"; d="scan'208";a="411108967"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Apr 2023 22:03:13 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10695"; a="941652643"
+X-IronPort-AV: E=Sophos;i="5.99,238,1677571200"; d="scan'208";a="941652643"
+Received: from naamamex-mobl.ger.corp.intel.com (HELO [10.13.12.36])
+ ([10.13.12.36])
+ by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Apr 2023 22:03:08 -0700
+Message-ID: <7733369a-c3a6-89d4-fb32-ab2bcdc1def0@linux.intel.com>
+Date: Sun, 30 Apr 2023 08:03:06 +0300
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+Content-Language: en-US
+To: Song Yoong Siang <yoong.siang.song@intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S . Miller" <davem@davemloft.net>, Eric Dumazet
+ <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Alexei Starovoitov <ast@kernel.org>,
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Vedang Patel <vedang.patel@intel.com>, Jithu Joseph
+ <jithu.joseph@intel.com>, Andre Guedes <andre.guedes@intel.com>,
+ Jesper Dangaard Brouer <brouer@redhat.com>,
+ Stanislav Fomichev <sdf@google.com>
+References: <20230413151222.1864307-1-yoong.siang.song@intel.com>
+From: "naamax.meir" <naamax.meir@linux.intel.com>
+In-Reply-To: <20230413151222.1864307-1-yoong.siang.song@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1682830995; x=1714366995;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=q7SEF4bArk/xxwIRZ987yc+xrZpMH3afDQGaBkiO/LA=;
+ b=EfFc+EaXNGNfs9iV4vt9Ow16OpkrOuxBVu82jt2OApTno4NTjDIllNNt
+ vDWA6ZTBw3LaonwfIHfw0OUHb70RapzPj2tQJHAnyH46gt8n2fJ06ehwK
+ 6VaQk5YMi/dTTH1Fcfhln3vEFNZKL8GsXYMO0FW7+WQ5LGwPSdsbnW/ba
+ yNMCNzE7z3L+c+0IXbJzrx9zimvt7Dx/u8uBguMAbQ6vG2s3gDR6Oh/p3
+ tFSmxK4whzZNjGX1zgXMK8seNzpKzIK8ItV6+O6akqlW32HNXMu/G8bHj
+ BDB6rrQAdx4lEy6eB31xtA1hIdfRyn8AfLNfn8u0IRxtjFO+7GFzKe3i2
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=EfFc+EaX
+Subject: Re: [Intel-wired-lan] [PATCH net 1/1] igc: read before write to
+ SRRCTL register
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,230 +112,47 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: keescook@chromium.org, grzegorzx.szczurek@intel.com,
- mitch.a.williams@intel.com, linux-kernel@vger.kernel.org,
- huangcun@sangfor.com.cn, gregory.v.rose@intel.com, michal.kubiak@intel.com,
- jeffrey.t.kirsher@intel.com, simon.horman@corigine.com,
- pengdonglin@sangfor.com.cn, Ding Hui <dinghui@sangfor.com.cn>,
- netdev@vger.kernel.org, linux-hardening@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Cc: xdp-hints@xdp-project.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-We do netif_napi_add() for all allocated q_vectors[], but potentially
-do netif_napi_del() for part of them, then kfree q_vectors and leave
-invalid pointers at dev->napi_list.
+On 4/13/2023 18:12, Song Yoong Siang wrote:
+> igc_configure_rx_ring() function will be called as part of XDP program
+> setup. If Rx hardware timestamp is enabled prio to XDP program setup,
+> this timestamp enablement will be overwritten when buffer size is
+> written into SRRCTL register.
+> 
+> Thus, this commit read the register value before write to SRRCTL
+> register. This commit is tested by using xdp_hw_metadata bpf selftest
+> tool. The tool enables Rx hardware timestamp and then attach XDP program
+> to igc driver. It will display hardware timestamp of UDP packet with
+> port number 9092. Below are detail of test steps and results.
+> 
+> Command on DUT:
+>    sudo ./xdp_hw_metadata <interface name>
+> 
+> Command on Link Partner:
+>    echo -n skb | nc -u -q1 <destination IPv4 addr> 9092
+> 
+> Result before this patch:
+>    skb hwtstamp is not found!
+> 
+> Result after this patch:
+>    found skb hwtstamp = 1677762212.590696226
+> 
+> Fixes: fc9df2a0b520 ("igc: Enable RX via AF_XDP zero-copy")
+> Cc: <stable@vger.kernel.org> # 5.14+
+> Signed-off-by: Song Yoong Siang <yoong.siang.song@intel.com>
+> ---
+>   drivers/net/ethernet/intel/igc/igc_base.h | 7 +++++--
+>   drivers/net/ethernet/intel/igc/igc_main.c | 5 ++++-
+>   2 files changed, 9 insertions(+), 3 deletions(-)
 
-Reproducer:
-
-  [root@host ~]# cat repro.sh
-  #!/bin/bash
-
-  pf_dbsf="0000:41:00.0"
-  vf0_dbsf="0000:41:02.0"
-  g_pids=()
-
-  function do_set_numvf()
-  {
-      echo 2 >/sys/bus/pci/devices/${pf_dbsf}/sriov_numvfs
-      sleep $((RANDOM%3+1))
-      echo 0 >/sys/bus/pci/devices/${pf_dbsf}/sriov_numvfs
-      sleep $((RANDOM%3+1))
-  }
-
-  function do_set_channel()
-  {
-      local nic=$(ls -1 --indicator-style=none /sys/bus/pci/devices/${vf0_dbsf}/net/)
-      [ -z "$nic" ] && { sleep $((RANDOM%3)) ; return 1; }
-      ifconfig $nic 192.168.18.5 netmask 255.255.255.0
-      ifconfig $nic up
-      ethtool -L $nic combined 1
-      ethtool -L $nic combined 4
-      sleep $((RANDOM%3))
-  }
-
-  function on_exit()
-  {
-      local pid
-      for pid in "${g_pids[@]}"; do
-          kill -0 "$pid" &>/dev/null && kill "$pid" &>/dev/null
-      done
-      g_pids=()
-  }
-
-  trap "on_exit; exit" EXIT
-
-  while :; do do_set_numvf ; done &
-  g_pids+=($!)
-  while :; do do_set_channel ; done &
-  g_pids+=($!)
-
-  wait
-
-Result:
-
-[ 4093.900222] ==================================================================
-[ 4093.900230] BUG: KASAN: use-after-free in free_netdev+0x308/0x390
-[ 4093.900232] Read of size 8 at addr ffff88b4dc145640 by task repro.sh/6699
-[ 4093.900233]
-[ 4093.900236] CPU: 10 PID: 6699 Comm: repro.sh Kdump: loaded Tainted: G           O     --------- -t - 4.18.0 #1
-[ 4093.900238] Hardware name: Powerleader PR2008AL/H12DSi-N6, BIOS 2.0 04/09/2021
-[ 4093.900239] Call Trace:
-[ 4093.900244]  dump_stack+0x71/0xab
-[ 4093.900249]  print_address_description+0x6b/0x290
-[ 4093.900251]  ? free_netdev+0x308/0x390
-[ 4093.900252]  kasan_report+0x14a/0x2b0
-[ 4093.900254]  free_netdev+0x308/0x390
-[ 4093.900261]  iavf_remove+0x825/0xd20 [iavf]
-[ 4093.900265]  pci_device_remove+0xa8/0x1f0
-[ 4093.900268]  device_release_driver_internal+0x1c6/0x460
-[ 4093.900271]  pci_stop_bus_device+0x101/0x150
-[ 4093.900273]  pci_stop_and_remove_bus_device+0xe/0x20
-[ 4093.900275]  pci_iov_remove_virtfn+0x187/0x420
-[ 4093.900277]  ? pci_iov_add_virtfn+0xe10/0xe10
-[ 4093.900278]  ? pci_get_subsys+0x90/0x90
-[ 4093.900280]  sriov_disable+0xed/0x3e0
-[ 4093.900282]  ? bus_find_device+0x12d/0x1a0
-[ 4093.900290]  i40e_free_vfs+0x754/0x1210 [i40e]
-[ 4093.900298]  ? i40e_reset_all_vfs+0x880/0x880 [i40e]
-[ 4093.900299]  ? pci_get_device+0x7c/0x90
-[ 4093.900300]  ? pci_get_subsys+0x90/0x90
-[ 4093.900306]  ? pci_vfs_assigned.part.7+0x144/0x210
-[ 4093.900309]  ? __mutex_lock_slowpath+0x10/0x10
-[ 4093.900315]  i40e_pci_sriov_configure+0x1fa/0x2e0 [i40e]
-[ 4093.900318]  sriov_numvfs_store+0x214/0x290
-[ 4093.900320]  ? sriov_totalvfs_show+0x30/0x30
-[ 4093.900321]  ? __mutex_lock_slowpath+0x10/0x10
-[ 4093.900323]  ? __check_object_size+0x15a/0x350
-[ 4093.900326]  kernfs_fop_write+0x280/0x3f0
-[ 4093.900329]  vfs_write+0x145/0x440
-[ 4093.900330]  ksys_write+0xab/0x160
-[ 4093.900332]  ? __ia32_sys_read+0xb0/0xb0
-[ 4093.900334]  ? fput_many+0x1a/0x120
-[ 4093.900335]  ? filp_close+0xf0/0x130
-[ 4093.900338]  do_syscall_64+0xa0/0x370
-[ 4093.900339]  ? page_fault+0x8/0x30
-[ 4093.900341]  entry_SYSCALL_64_after_hwframe+0x65/0xca
-[ 4093.900357] RIP: 0033:0x7f16ad4d22c0
-[ 4093.900359] Code: 73 01 c3 48 8b 0d d8 cb 2c 00 f7 d8 64 89 01 48 83 c8 ff c3 66 0f 1f 44 00 00 83 3d 89 24 2d 00 00 75 10 b8 01 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 31 c3 48 83 ec 08 e8 fe dd 01 00 48 89 04 24
-[ 4093.900360] RSP: 002b:00007ffd6491b7f8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-[ 4093.900362] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 00007f16ad4d22c0
-[ 4093.900363] RDX: 0000000000000002 RSI: 0000000001a41408 RDI: 0000000000000001
-[ 4093.900364] RBP: 0000000001a41408 R08: 00007f16ad7a1780 R09: 00007f16ae1f2700
-[ 4093.900364] R10: 0000000000000001 R11: 0000000000000246 R12: 0000000000000002
-[ 4093.900365] R13: 0000000000000001 R14: 00007f16ad7a0620 R15: 0000000000000001
-[ 4093.900367]
-[ 4093.900368] Allocated by task 820:
-[ 4093.900371]  kasan_kmalloc+0xa6/0xd0
-[ 4093.900373]  __kmalloc+0xfb/0x200
-[ 4093.900376]  iavf_init_interrupt_scheme+0x63b/0x1320 [iavf]
-[ 4093.900380]  iavf_watchdog_task+0x3d51/0x52c0 [iavf]
-[ 4093.900382]  process_one_work+0x56a/0x11f0
-[ 4093.900383]  worker_thread+0x8f/0xf40
-[ 4093.900384]  kthread+0x2a0/0x390
-[ 4093.900385]  ret_from_fork+0x1f/0x40
-[ 4093.900387]  0xffffffffffffffff
-[ 4093.900387]
-[ 4093.900388] Freed by task 6699:
-[ 4093.900390]  __kasan_slab_free+0x137/0x190
-[ 4093.900391]  kfree+0x8b/0x1b0
-[ 4093.900394]  iavf_free_q_vectors+0x11d/0x1a0 [iavf]
-[ 4093.900397]  iavf_remove+0x35a/0xd20 [iavf]
-[ 4093.900399]  pci_device_remove+0xa8/0x1f0
-[ 4093.900400]  device_release_driver_internal+0x1c6/0x460
-[ 4093.900401]  pci_stop_bus_device+0x101/0x150
-[ 4093.900402]  pci_stop_and_remove_bus_device+0xe/0x20
-[ 4093.900403]  pci_iov_remove_virtfn+0x187/0x420
-[ 4093.900404]  sriov_disable+0xed/0x3e0
-[ 4093.900409]  i40e_free_vfs+0x754/0x1210 [i40e]
-[ 4093.900415]  i40e_pci_sriov_configure+0x1fa/0x2e0 [i40e]
-[ 4093.900416]  sriov_numvfs_store+0x214/0x290
-[ 4093.900417]  kernfs_fop_write+0x280/0x3f0
-[ 4093.900418]  vfs_write+0x145/0x440
-[ 4093.900419]  ksys_write+0xab/0x160
-[ 4093.900420]  do_syscall_64+0xa0/0x370
-[ 4093.900421]  entry_SYSCALL_64_after_hwframe+0x65/0xca
-[ 4093.900422]  0xffffffffffffffff
-[ 4093.900422]
-[ 4093.900424] The buggy address belongs to the object at ffff88b4dc144200
-                which belongs to the cache kmalloc-8k of size 8192
-[ 4093.900425] The buggy address is located 5184 bytes inside of
-                8192-byte region [ffff88b4dc144200, ffff88b4dc146200)
-[ 4093.900425] The buggy address belongs to the page:
-[ 4093.900427] page:ffffea00d3705000 refcount:1 mapcount:0 mapping:ffff88bf04415c80 index:0x0 compound_mapcount: 0
-[ 4093.900430] flags: 0x10000000008100(slab|head)
-[ 4093.900433] raw: 0010000000008100 dead000000000100 dead000000000200 ffff88bf04415c80
-[ 4093.900434] raw: 0000000000000000 0000000000030003 00000001ffffffff 0000000000000000
-[ 4093.900434] page dumped because: kasan: bad access detected
-[ 4093.900435]
-[ 4093.900435] Memory state around the buggy address:
-[ 4093.900436]  ffff88b4dc145500: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900437]  ffff88b4dc145580: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900438] >ffff88b4dc145600: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900438]                                            ^
-[ 4093.900439]  ffff88b4dc145680: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900440]  ffff88b4dc145700: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900440] ==================================================================
-
-Although the patch #2 (of 2) can avoid the issuse triggered by this
-repro.sh, there still are other potential risks that if num_active_queues
-is changed to less than allocated q_vectors[] by unexpected, the
-mismatched netif_napi_add/del() can also casue UAF.
-
-Since we actually call netif_napi_add() for all allocated q_vectors
-unconditionally in iavf_alloc_q_vectors(), so we should fix it by
-letting netif_napi_del() match to netif_napi_add().
-
-Fixes: 5eae00c57f5e ("i40evf: main driver core")
-Signed-off-by: Ding Hui <dinghui@sangfor.com.cn>
-Cc: Donglin Peng <pengdonglin@sangfor.com.cn>
-Cc: Huang Cun <huangcun@sangfor.com.cn>
-Reviewed-by: Simon Horman <simon.horman@corigine.com>
-Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
----
-v2 to v3:
-  - fix review tag
-
-v1 to v2:
-  - add Fixes: tag
-  - add reproduction script
-  - update commit message
-
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 095201e83c9d..a57e3425f960 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1849,19 +1849,15 @@ static int iavf_alloc_q_vectors(struct iavf_adapter *adapter)
- static void iavf_free_q_vectors(struct iavf_adapter *adapter)
- {
- 	int q_idx, num_q_vectors;
--	int napi_vectors;
- 
- 	if (!adapter->q_vectors)
- 		return;
- 
- 	num_q_vectors = adapter->num_msix_vectors - NONQ_VECS;
--	napi_vectors = adapter->num_active_queues;
- 
- 	for (q_idx = 0; q_idx < num_q_vectors; q_idx++) {
- 		struct iavf_q_vector *q_vector = &adapter->q_vectors[q_idx];
--
--		if (q_idx < napi_vectors)
--			netif_napi_del(&q_vector->napi);
-+		netif_napi_del(&q_vector->napi);
- 	}
- 	kfree(adapter->q_vectors);
- 	adapter->q_vectors = NULL;
--- 
-2.17.1
-
+Tested-by: Naama Meir <naamax.meir@linux.intel.com>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
