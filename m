@@ -1,77 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE1DAC77B7F
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 May 2023 03:17:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55D7CC77B75
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  3 May 2023 03:41:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 884FF814B5;
-	Wed,  3 May 2023 03:17:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 884FF814B5
+	by smtp3.osuosl.org (Postfix) with ESMTP id F23F060FB8;
+	Wed,  3 May 2023 03:41:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F23F060FB8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1683083872;
-	bh=493G5Oh+3D3AGp708AmN0Ng8Yvapeo2XfbMWQhHMIUg=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=Hh1veInZHDjWv+tPtunDdJnRy6fSvttAXmN7xF8Uonl90ceJQYIR0obe0sHgV0TJ5
-	 a+X+TKWnTNHuvFPt24QipK5SF25c6+ky7TKOEVxWp2UrVBBp/MyQBliBC7EMd/NgLk
-	 oHNDqKe0aAmyEjSpkdBHBbAkgdrWsvYT/wA/PvHd+OGRpMxze31Otzh2fLJ1a0/R+n
-	 kIcIm39kpuZ9N3jbqs667pVOPlWBAGexsQ/ToesvF13NwSKzR9uiRI+UNGdmy7UZRQ
-	 pOgBqk1GE9WkbSkbAh4hSpsGvq57sFKluVYyjpGpM9MLKmE1vUrK6tkit6jrcAqs2M
-	 jSNOwE0A9S5eg==
+	s=default; t=1683085316;
+	bh=786NiBD5vnZogeeXDE2PIEReJJW8tn4KfJXfUiOamIE=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=k71R8tpnEF6dyJIn4xJjP+gtxiGLpMClnks/3tPtBv7oyaG5OUc0GyUAmYjXANblr
+	 YWvBy9ShpP2eRkuqjbOqkgtDMqR76j47x74SVZ5KePXiCtYOSlwr3IYS3EM79Va2Li
+	 A+8UtyNZOR3Vo2K/5PbliVKruD/Z1pRVcjCSSzrflgAo8H5rCj9FoikJVQEShEo2tb
+	 RvNI//cMO/QnmFwYSf4EnKqQM0DvrAjUh/AA091XZ3NF2AOEe1T2U1n5Owm52RDITJ
+	 4RfipM9L7i6YwTENBL4eJjgHnu70bggyFRHhThOHJQqIxkxmHSG+t8c6nRqGduc/Da
+	 WmglsG1yUC+2Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zByw4J94NbO3; Wed,  3 May 2023 03:17:51 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id SuchdQ3duE07; Wed,  3 May 2023 03:41:55 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5BACA83AE0;
-	Wed,  3 May 2023 03:17:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5BACA83AE0
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 4B7531BF470
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 May 2023 03:17:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CE69D60E8B;
+	Wed,  3 May 2023 03:41:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CE69D60E8B
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 908981BF470
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 May 2023 03:41:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 22FDE83AE0
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 May 2023 03:17:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 22FDE83AE0
+ by smtp2.osuosl.org (Postfix) with ESMTP id 646B0402D7
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 May 2023 03:41:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 646B0402D7
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id DaTScGeMVENk for <intel-wired-lan@lists.osuosl.org>;
- Wed,  3 May 2023 03:17:48 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2DEAD814B5
-Received: from mail-m11876.qiye.163.com (mail-m11876.qiye.163.com
- [115.236.118.76])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 2DEAD814B5
- for <intel-wired-lan@lists.osuosl.org>; Wed,  3 May 2023 03:17:46 +0000 (UTC)
-Received: from localhost.localdomain (unknown
- [IPV6:240e:3b7:327f:5c30:95e8:3d27:11c5:1ee8])
- by mail-m11876.qiye.163.com (Hmail) with ESMTPA id B4F873C0290;
- Wed,  3 May 2023 11:16:20 +0800 (CST)
-From: Ding Hui <dinghui@sangfor.com.cn>
-To: davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com, intel-wired-lan@lists.osuosl.org,
- jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com
-Date: Wed,  3 May 2023 11:15:40 +0800
-Message-Id: <20230503031541.27855-2-dinghui@sangfor.com.cn>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20230503031541.27855-1-dinghui@sangfor.com.cn>
-References: <20230503031541.27855-1-dinghui@sangfor.com.cn>
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
- tZV1koWUFITzdXWS1ZQUlXWQ8JGhUIEh9ZQVlCHhkYVk8fSE5LGUpOGkoZTVUTARMWGhIXJBQOD1
- lXWRgSC1lBWUlPSx5BSBlMQUhJTB1BThhIS0FCTh5DQUgfSUxBSkoYTkFKHh5DWVdZFhoPEhUdFF
- lBWU9LSFVKSktISkxVSktLVUtZBg++
-X-HM-Tid: 0a87df9c64c92eb2kusnb4f873c0290
-X-HM-MType: 1
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6My46LAw6Pz0JDToSMB0wQkkr
- NQ4wCVFVSlVKTUNIS0NITENKQ01LVTMWGhIXVR8SFRwTDhI7CBoVHB0UCVUYFBZVGBVFWVdZEgtZ
- QVlJT0seQUgZTEFISUwdQU4YSEtBQk4eQ0FIH0lMQUpKGE5BSh4eQ1lXWQgBWUFKS0NLQjcG
-Subject: [Intel-wired-lan] [PATCH net v4 1/2] iavf: Fix use-after-free in
- free_netdev
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id L1ocu71y1_Th for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  3 May 2023 03:41:50 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C3BE440120
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C3BE440120
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  3 May 2023 03:41:50 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10698"; a="346037191"
+X-IronPort-AV: E=Sophos;i="5.99,246,1677571200"; d="scan'208";a="346037191"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 May 2023 20:41:49 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10698"; a="726992891"
+X-IronPort-AV: E=Sophos;i="5.99,246,1677571200"; d="scan'208";a="726992891"
+Received: from lkp-server01.sh.intel.com (HELO e3434d64424d) ([10.239.97.150])
+ by orsmga008.jf.intel.com with ESMTP; 02 May 2023 20:41:48 -0700
+Received: from kbuild by e3434d64424d with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1pu3NE-0001TO-0e
+ for intel-wired-lan@lists.osuosl.org; Wed, 03 May 2023 03:41:48 +0000
+Date: Wed, 03 May 2023 11:41:00 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <20230503034100.vckMr%lkp@intel.com>
+User-Agent: s-nail v14.9.24
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1683085310; x=1714621310;
+ h=date:from:to:subject:message-id;
+ bh=53vQGi+rKZwlZlkj3gMsI1dHtMox+u0Z0+XeOyQWw6o=;
+ b=dW3zbIh9ta8qGKI7D5TRJo2isSFLFnn71zzGWpIzU3NjWVgDg8hLdqa/
+ tzeKw6KOKgjAnENsKiXMbLl8WZe0S9dvG4jp+Pbd3wPYbNLOFp6TFVRmi
+ rd5i/4tKmRzu+EH4/Jk5hCyIEEy/7vCD5/D32g4kVKMCmHQghQWAUQjV+
+ 6Ucxpo4X2izrno4OkE03foiBJ4wwjDBqc8vfT2305p8TrQkxy16HCh9IA
+ oiSqZE76AOk/YM95unErgNqfrNdjsbi0M6KQ3kobr66J63H0AEdRoqHGw
+ u9dj5o2ssDQoX+H8Pbzsh43/Asyc5wLC5dz1+GnUQ6T2EViDWtKdoshkJ
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=dW3zbIh9
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 56dce3a8f09a7c91ecfdb26f9841959a86c0f6cc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,233 +93,187 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: keescook@chromium.org, grzegorzx.szczurek@intel.com,
- mitch.a.williams@intel.com, linux-kernel@vger.kernel.org,
- huangcun@sangfor.com.cn, gregory.v.rose@intel.com, michal.kubiak@intel.com,
- jeffrey.t.kirsher@intel.com, simon.horman@corigine.com,
- pengdonglin@sangfor.com.cn, Ding Hui <dinghui@sangfor.com.cn>,
- netdev@vger.kernel.org, linux-hardening@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-We do netif_napi_add() for all allocated q_vectors[], but potentially
-do netif_napi_del() for part of them, then kfree q_vectors and leave
-invalid pointers at dev->napi_list.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 56dce3a8f09a7c91ecfdb26f9841959a86c0f6cc  ice: Fix undersized tx_flags variable
 
-Reproducer:
+elapsed time: 731m
 
-  [root@host ~]# cat repro.sh
-  #!/bin/bash
+configs tested: 159
+configs skipped: 13
 
-  pf_dbsf="0000:41:00.0"
-  vf0_dbsf="0000:41:02.0"
-  g_pids=()
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-  function do_set_numvf()
-  {
-      echo 2 >/sys/bus/pci/devices/${pf_dbsf}/sriov_numvfs
-      sleep $((RANDOM%3+1))
-      echo 0 >/sys/bus/pci/devices/${pf_dbsf}/sriov_numvfs
-      sleep $((RANDOM%3+1))
-  }
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r012-20230501   gcc  
+alpha                randconfig-r023-20230430   gcc  
+alpha                randconfig-r031-20230430   gcc  
+alpha                randconfig-r031-20230502   gcc  
+arc                              allyesconfig   gcc  
+arc          buildonly-randconfig-r001-20230430   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r003-20230501   gcc  
+arc                  randconfig-r005-20230430   gcc  
+arc                  randconfig-r013-20230501   gcc  
+arc                  randconfig-r022-20230430   gcc  
+arc                  randconfig-r024-20230502   gcc  
+arc                  randconfig-r032-20230502   gcc  
+arc                  randconfig-r033-20230502   gcc  
+arc                  randconfig-r043-20230430   gcc  
+arc                  randconfig-r043-20230501   gcc  
+arc                  randconfig-r043-20230502   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                  randconfig-r046-20230430   gcc  
+arm                  randconfig-r046-20230501   gcc  
+arm                  randconfig-r046-20230502   clang
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+arm64                randconfig-r016-20230502   gcc  
+csky         buildonly-randconfig-r002-20230430   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r015-20230502   gcc  
+csky                 randconfig-r021-20230430   gcc  
+hexagon      buildonly-randconfig-r005-20230430   clang
+hexagon              randconfig-r004-20230430   clang
+hexagon              randconfig-r024-20230501   clang
+hexagon              randconfig-r041-20230430   clang
+hexagon              randconfig-r041-20230501   clang
+hexagon              randconfig-r041-20230502   clang
+hexagon              randconfig-r045-20230430   clang
+hexagon              randconfig-r045-20230501   clang
+hexagon              randconfig-r045-20230502   clang
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-r006-20230501   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                 randconfig-a001-20230501   gcc  
+i386                 randconfig-a002-20230501   gcc  
+i386                 randconfig-a003-20230501   gcc  
+i386                 randconfig-a004-20230501   gcc  
+i386                 randconfig-a005-20230501   gcc  
+i386                 randconfig-a006-20230501   gcc  
+i386                 randconfig-a011-20230501   clang
+i386                 randconfig-a012-20230501   clang
+i386                 randconfig-a013-20230501   clang
+i386                 randconfig-a014-20230501   clang
+i386                 randconfig-a015-20230501   clang
+i386                 randconfig-a016-20230501   clang
+i386                 randconfig-r005-20230501   gcc  
+i386                 randconfig-r035-20230501   gcc  
+ia64                             allmodconfig   gcc  
+ia64                                defconfig   gcc  
+ia64                 randconfig-r013-20230430   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch            randconfig-r004-20230501   gcc  
+loongarch            randconfig-r021-20230502   gcc  
+loongarch            randconfig-r022-20230501   gcc  
+m68k                             allmodconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                 randconfig-r002-20230430   gcc  
+m68k                 randconfig-r025-20230502   gcc  
+m68k                 randconfig-r026-20230501   gcc  
+m68k                 randconfig-r035-20230430   gcc  
+microblaze   buildonly-randconfig-r001-20230501   gcc  
+microblaze   buildonly-randconfig-r006-20230430   gcc  
+microblaze           randconfig-r014-20230430   gcc  
+microblaze           randconfig-r025-20230430   gcc  
+microblaze           randconfig-r025-20230501   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                 randconfig-r001-20230430   clang
+mips                 randconfig-r014-20230501   gcc  
+mips                 randconfig-r034-20230501   clang
+mips                 randconfig-r036-20230430   clang
+nios2                               defconfig   gcc  
+nios2                randconfig-r004-20230502   gcc  
+nios2                randconfig-r006-20230501   gcc  
+nios2                randconfig-r012-20230502   gcc  
+nios2                randconfig-r014-20230502   gcc  
+nios2                randconfig-r023-20230501   gcc  
+nios2                randconfig-r032-20230430   gcc  
+nios2                randconfig-r034-20230502   gcc  
+nios2                randconfig-r036-20230502   gcc  
+openrisc             randconfig-r011-20230501   gcc  
+openrisc             randconfig-r011-20230502   gcc  
+openrisc             randconfig-r022-20230502   gcc  
+openrisc             randconfig-r026-20230502   gcc  
+openrisc             randconfig-r035-20230502   gcc  
+parisc                              defconfig   gcc  
+parisc               randconfig-r002-20230501   gcc  
+parisc               randconfig-r016-20230501   gcc  
+parisc               randconfig-r026-20230430   gcc  
+parisc               randconfig-r032-20230501   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc              randconfig-r013-20230502   gcc  
+powerpc              randconfig-r015-20230430   clang
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv        buildonly-randconfig-r003-20230430   clang
+riscv        buildonly-randconfig-r003-20230501   clang
+riscv        buildonly-randconfig-r004-20230430   clang
+riscv                               defconfig   gcc  
+riscv                randconfig-r021-20230501   clang
+riscv                randconfig-r031-20230501   gcc  
+riscv                randconfig-r033-20230430   gcc  
+riscv                randconfig-r034-20230430   gcc  
+riscv                randconfig-r042-20230430   clang
+riscv                randconfig-r042-20230501   clang
+riscv                randconfig-r042-20230502   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390         buildonly-randconfig-r005-20230501   clang
+s390                                defconfig   gcc  
+s390                 randconfig-r003-20230430   gcc  
+s390                 randconfig-r005-20230502   clang
+s390                 randconfig-r016-20230430   clang
+s390                 randconfig-r044-20230430   clang
+s390                 randconfig-r044-20230501   clang
+s390                 randconfig-r044-20230502   gcc  
+sh                               allmodconfig   gcc  
+sh                   randconfig-r011-20230430   gcc  
+sparc                               defconfig   gcc  
+sparc64              randconfig-r002-20230502   gcc  
+sparc64              randconfig-r012-20230430   gcc  
+sparc64              randconfig-r015-20230501   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-a001-20230501   gcc  
+x86_64               randconfig-a002-20230501   gcc  
+x86_64               randconfig-a003-20230501   gcc  
+x86_64               randconfig-a004-20230501   gcc  
+x86_64               randconfig-a005-20230501   gcc  
+x86_64               randconfig-a006-20230501   gcc  
+x86_64               randconfig-a011-20230501   clang
+x86_64               randconfig-a012-20230501   clang
+x86_64               randconfig-a013-20230501   clang
+x86_64               randconfig-a014-20230501   clang
+x86_64               randconfig-a015-20230501   clang
+x86_64               randconfig-a016-20230501   clang
+x86_64                               rhel-8.3   gcc  
+xtensa               randconfig-r036-20230501   gcc  
 
-  function do_set_channel()
-  {
-      local nic=$(ls -1 --indicator-style=none /sys/bus/pci/devices/${vf0_dbsf}/net/)
-      [ -z "$nic" ] && { sleep $((RANDOM%3)) ; return 1; }
-      ifconfig $nic 192.168.18.5 netmask 255.255.255.0
-      ifconfig $nic up
-      ethtool -L $nic combined 1
-      ethtool -L $nic combined 4
-      sleep $((RANDOM%3))
-  }
-
-  function on_exit()
-  {
-      local pid
-      for pid in "${g_pids[@]}"; do
-          kill -0 "$pid" &>/dev/null && kill "$pid" &>/dev/null
-      done
-      g_pids=()
-  }
-
-  trap "on_exit; exit" EXIT
-
-  while :; do do_set_numvf ; done &
-  g_pids+=($!)
-  while :; do do_set_channel ; done &
-  g_pids+=($!)
-
-  wait
-
-Result:
-
-[ 4093.900222] ==================================================================
-[ 4093.900230] BUG: KASAN: use-after-free in free_netdev+0x308/0x390
-[ 4093.900232] Read of size 8 at addr ffff88b4dc145640 by task repro.sh/6699
-[ 4093.900233]
-[ 4093.900236] CPU: 10 PID: 6699 Comm: repro.sh Kdump: loaded Tainted: G           O     --------- -t - 4.18.0 #1
-[ 4093.900238] Hardware name: Powerleader PR2008AL/H12DSi-N6, BIOS 2.0 04/09/2021
-[ 4093.900239] Call Trace:
-[ 4093.900244]  dump_stack+0x71/0xab
-[ 4093.900249]  print_address_description+0x6b/0x290
-[ 4093.900251]  ? free_netdev+0x308/0x390
-[ 4093.900252]  kasan_report+0x14a/0x2b0
-[ 4093.900254]  free_netdev+0x308/0x390
-[ 4093.900261]  iavf_remove+0x825/0xd20 [iavf]
-[ 4093.900265]  pci_device_remove+0xa8/0x1f0
-[ 4093.900268]  device_release_driver_internal+0x1c6/0x460
-[ 4093.900271]  pci_stop_bus_device+0x101/0x150
-[ 4093.900273]  pci_stop_and_remove_bus_device+0xe/0x20
-[ 4093.900275]  pci_iov_remove_virtfn+0x187/0x420
-[ 4093.900277]  ? pci_iov_add_virtfn+0xe10/0xe10
-[ 4093.900278]  ? pci_get_subsys+0x90/0x90
-[ 4093.900280]  sriov_disable+0xed/0x3e0
-[ 4093.900282]  ? bus_find_device+0x12d/0x1a0
-[ 4093.900290]  i40e_free_vfs+0x754/0x1210 [i40e]
-[ 4093.900298]  ? i40e_reset_all_vfs+0x880/0x880 [i40e]
-[ 4093.900299]  ? pci_get_device+0x7c/0x90
-[ 4093.900300]  ? pci_get_subsys+0x90/0x90
-[ 4093.900306]  ? pci_vfs_assigned.part.7+0x144/0x210
-[ 4093.900309]  ? __mutex_lock_slowpath+0x10/0x10
-[ 4093.900315]  i40e_pci_sriov_configure+0x1fa/0x2e0 [i40e]
-[ 4093.900318]  sriov_numvfs_store+0x214/0x290
-[ 4093.900320]  ? sriov_totalvfs_show+0x30/0x30
-[ 4093.900321]  ? __mutex_lock_slowpath+0x10/0x10
-[ 4093.900323]  ? __check_object_size+0x15a/0x350
-[ 4093.900326]  kernfs_fop_write+0x280/0x3f0
-[ 4093.900329]  vfs_write+0x145/0x440
-[ 4093.900330]  ksys_write+0xab/0x160
-[ 4093.900332]  ? __ia32_sys_read+0xb0/0xb0
-[ 4093.900334]  ? fput_many+0x1a/0x120
-[ 4093.900335]  ? filp_close+0xf0/0x130
-[ 4093.900338]  do_syscall_64+0xa0/0x370
-[ 4093.900339]  ? page_fault+0x8/0x30
-[ 4093.900341]  entry_SYSCALL_64_after_hwframe+0x65/0xca
-[ 4093.900357] RIP: 0033:0x7f16ad4d22c0
-[ 4093.900359] Code: 73 01 c3 48 8b 0d d8 cb 2c 00 f7 d8 64 89 01 48 83 c8 ff c3 66 0f 1f 44 00 00 83 3d 89 24 2d 00 00 75 10 b8 01 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 31 c3 48 83 ec 08 e8 fe dd 01 00 48 89 04 24
-[ 4093.900360] RSP: 002b:00007ffd6491b7f8 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-[ 4093.900362] RAX: ffffffffffffffda RBX: 0000000000000002 RCX: 00007f16ad4d22c0
-[ 4093.900363] RDX: 0000000000000002 RSI: 0000000001a41408 RDI: 0000000000000001
-[ 4093.900364] RBP: 0000000001a41408 R08: 00007f16ad7a1780 R09: 00007f16ae1f2700
-[ 4093.900364] R10: 0000000000000001 R11: 0000000000000246 R12: 0000000000000002
-[ 4093.900365] R13: 0000000000000001 R14: 00007f16ad7a0620 R15: 0000000000000001
-[ 4093.900367]
-[ 4093.900368] Allocated by task 820:
-[ 4093.900371]  kasan_kmalloc+0xa6/0xd0
-[ 4093.900373]  __kmalloc+0xfb/0x200
-[ 4093.900376]  iavf_init_interrupt_scheme+0x63b/0x1320 [iavf]
-[ 4093.900380]  iavf_watchdog_task+0x3d51/0x52c0 [iavf]
-[ 4093.900382]  process_one_work+0x56a/0x11f0
-[ 4093.900383]  worker_thread+0x8f/0xf40
-[ 4093.900384]  kthread+0x2a0/0x390
-[ 4093.900385]  ret_from_fork+0x1f/0x40
-[ 4093.900387]  0xffffffffffffffff
-[ 4093.900387]
-[ 4093.900388] Freed by task 6699:
-[ 4093.900390]  __kasan_slab_free+0x137/0x190
-[ 4093.900391]  kfree+0x8b/0x1b0
-[ 4093.900394]  iavf_free_q_vectors+0x11d/0x1a0 [iavf]
-[ 4093.900397]  iavf_remove+0x35a/0xd20 [iavf]
-[ 4093.900399]  pci_device_remove+0xa8/0x1f0
-[ 4093.900400]  device_release_driver_internal+0x1c6/0x460
-[ 4093.900401]  pci_stop_bus_device+0x101/0x150
-[ 4093.900402]  pci_stop_and_remove_bus_device+0xe/0x20
-[ 4093.900403]  pci_iov_remove_virtfn+0x187/0x420
-[ 4093.900404]  sriov_disable+0xed/0x3e0
-[ 4093.900409]  i40e_free_vfs+0x754/0x1210 [i40e]
-[ 4093.900415]  i40e_pci_sriov_configure+0x1fa/0x2e0 [i40e]
-[ 4093.900416]  sriov_numvfs_store+0x214/0x290
-[ 4093.900417]  kernfs_fop_write+0x280/0x3f0
-[ 4093.900418]  vfs_write+0x145/0x440
-[ 4093.900419]  ksys_write+0xab/0x160
-[ 4093.900420]  do_syscall_64+0xa0/0x370
-[ 4093.900421]  entry_SYSCALL_64_after_hwframe+0x65/0xca
-[ 4093.900422]  0xffffffffffffffff
-[ 4093.900422]
-[ 4093.900424] The buggy address belongs to the object at ffff88b4dc144200
-                which belongs to the cache kmalloc-8k of size 8192
-[ 4093.900425] The buggy address is located 5184 bytes inside of
-                8192-byte region [ffff88b4dc144200, ffff88b4dc146200)
-[ 4093.900425] The buggy address belongs to the page:
-[ 4093.900427] page:ffffea00d3705000 refcount:1 mapcount:0 mapping:ffff88bf04415c80 index:0x0 compound_mapcount: 0
-[ 4093.900430] flags: 0x10000000008100(slab|head)
-[ 4093.900433] raw: 0010000000008100 dead000000000100 dead000000000200 ffff88bf04415c80
-[ 4093.900434] raw: 0000000000000000 0000000000030003 00000001ffffffff 0000000000000000
-[ 4093.900434] page dumped because: kasan: bad access detected
-[ 4093.900435]
-[ 4093.900435] Memory state around the buggy address:
-[ 4093.900436]  ffff88b4dc145500: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900437]  ffff88b4dc145580: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900438] >ffff88b4dc145600: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900438]                                            ^
-[ 4093.900439]  ffff88b4dc145680: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900440]  ffff88b4dc145700: fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb fb
-[ 4093.900440] ==================================================================
-
-Although the patch #2 (of 2) can avoid the issuse triggered by this
-repro.sh, there still are other potential risks that if num_active_queues
-is changed to less than allocated q_vectors[] by unexpected, the
-mismatched netif_napi_add/del() can also cause UAF.
-
-Since we actually call netif_napi_add() for all allocated q_vectors
-unconditionally in iavf_alloc_q_vectors(), so we should fix it by
-letting netif_napi_del() match to netif_napi_add().
-
-Fixes: 5eae00c57f5e ("i40evf: main driver core")
-Signed-off-by: Ding Hui <dinghui@sangfor.com.cn>
-Cc: Donglin Peng <pengdonglin@sangfor.com.cn>
-Cc: Huang Cun <huangcun@sangfor.com.cn>
-Reviewed-by: Simon Horman <simon.horman@corigine.com>
-Reviewed-by: Michal Kubiak <michal.kubiak@intel.com>
-Reviewed-by: Madhu Chittim <madhu.chittim@intel.com>
----
-v3 to v4:
-  - fix typo in commit message
-
-v2 to v3:
-  - fix review tag
-
-v1 to v2:
-  - add Fixes: tag
-  - add reproduction script
-  - update commit message
-
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 095201e83c9d..a57e3425f960 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1849,19 +1849,15 @@ static int iavf_alloc_q_vectors(struct iavf_adapter *adapter)
- static void iavf_free_q_vectors(struct iavf_adapter *adapter)
- {
- 	int q_idx, num_q_vectors;
--	int napi_vectors;
- 
- 	if (!adapter->q_vectors)
- 		return;
- 
- 	num_q_vectors = adapter->num_msix_vectors - NONQ_VECS;
--	napi_vectors = adapter->num_active_queues;
- 
- 	for (q_idx = 0; q_idx < num_q_vectors; q_idx++) {
- 		struct iavf_q_vector *q_vector = &adapter->q_vectors[q_idx];
--
--		if (q_idx < napi_vectors)
--			netif_napi_del(&q_vector->napi);
-+		netif_napi_del(&q_vector->napi);
- 	}
- 	kfree(adapter->q_vectors);
- 	adapter->q_vectors = NULL;
 -- 
-2.17.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
