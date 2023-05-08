@@ -4,74 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2102BC77B7F
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 May 2023 08:42:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A55F9C77B7F
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  8 May 2023 12:43:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AE30182236;
-	Mon,  8 May 2023 08:42:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AE30182236
+	by smtp1.osuosl.org (Postfix) with ESMTP id 40F9F81586;
+	Mon,  8 May 2023 12:43:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 40F9F81586
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1683535341;
-	bh=CcYs2iYOj+PsT7gKD578BGXLSY5Ryww3kc2gnitOiQA=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Reply-To:Cc:From;
-	b=ZjKCjJ9hczHMrXsgKhRVcDuBNkeM7/VYU1jZLocjdPO6dTmGAM9YcAt3Uxh5WU+/l
-	 li0rTacSU6EWmb+oDEE6o10eSgEVCQj0vtq/DmGOPGK35YmZo25824lbFXrjeyA//B
-	 5aK2Hjl2RDczGPQ75fo/CCRJGfXmp9QhudXhj020/8YIKeRpSWJDDTsYN5oR6+zzcY
-	 W/j+t5uInNHdyTra3a8y4ZQ9ROkhwPqdBmO7ruSkShy7vRdmZIwXNMU9KUY3AzRu2G
-	 HsEac+vEsjFrGOFSVWFlfwfIBfnapnJCaAZ3LsHI5zaQ29bZrS50ijQSBqgaVQLv/8
-	 CTAypCNR7+qFA==
+	s=default; t=1683549816;
+	bh=sFSsUB2+VNIx9flqwbrq1vwd1y5r81sSCNKV6KsJOiM=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=rJNOY8p29LulYkgaq0kT1VetLbXXAYnTzgwftVd0MNFA9Sx6jb1LhWDh2ayfZQW1J
+	 NHf65EToo1t9WNp+EOABpkA6zIoZPkQwrjaK8hL4pD3j1S+VFj3jwQmUPdPZZrvYKm
+	 Q8mr2uWlY22GJUOtSGVJlFjnxPiGb8LmN4XdzZqL2z6AVW/ibXNJvN2gSeFSYQunIK
+	 XKMBalhhaWaa3HteM15eLbZ0Sp2S5Wn/iT4atXZ2YrAWEH6lvRbdCx6zi/tpY/48AP
+	 3Wfs8CTJgkX6tgywH/bMws8ORaqdQA/zmBlR11RQ05YbBqq/ozt2KuObeCmjyioY0z
+	 QOMcpBejkHTjA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id U7ww3zVlWLOh; Mon,  8 May 2023 08:42:20 +0000 (UTC)
+	with ESMTP id URUOLVdy_zRC; Mon,  8 May 2023 12:43:35 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B7DA48229D;
-	Mon,  8 May 2023 08:42:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B7DA48229D
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id D402B1BF25B
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 May 2023 08:42:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2536481E1A;
+	Mon,  8 May 2023 12:43:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2536481E1A
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 6A1E81BF364
+ for <intel-wired-lan@osuosl.org>; Mon,  8 May 2023 12:43:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id A500560E63
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 May 2023 08:42:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A500560E63
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4E97041D7C
+ for <intel-wired-lan@osuosl.org>; Mon,  8 May 2023 12:43:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4E97041D7C
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pvVqY0EZPpR5 for <intel-wired-lan@lists.osuosl.org>;
- Mon,  8 May 2023 08:42:18 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 819E260F33
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
- [80.237.130.52])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 819E260F33
- for <intel-wired-lan@lists.osuosl.org>; Mon,  8 May 2023 08:42:18 +0000 (UTC)
-Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
- by wp530.webpack.hosteurope.de running ExIM with esmtpsa
- (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
- id 1pvwRh-0007c7-7u; Mon, 08 May 2023 10:42:13 +0200
-Message-ID: <5cb53595-a5fd-3ead-7f65-60b247d6e975@leemhuis.info>
-Date: Mon, 8 May 2023 10:42:12 +0200
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id PIHKDFjLRWAu for <intel-wired-lan@osuosl.org>;
+ Mon,  8 May 2023 12:43:27 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0ACA440289
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 0ACA440289
+ for <intel-wired-lan@osuosl.org>; Mon,  8 May 2023 12:43:26 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10703"; a="349665067"
+X-IronPort-AV: E=Sophos;i="5.99,259,1677571200"; d="scan'208";a="349665067"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 May 2023 05:43:26 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10703"; a="676047858"
+X-IronPort-AV: E=Sophos;i="5.99,259,1677571200"; d="scan'208";a="676047858"
+Received: from nimitz.igk.intel.com ([10.102.21.231])
+ by orsmga006.jf.intel.com with ESMTP; 08 May 2023 05:43:23 -0700
+From: Piotr Raczynski <piotr.raczynski@intel.com>
+To: intel-wired-lan@osuosl.org
+Date: Mon,  8 May 2023 14:43:13 +0200
+Message-Id: <20230508124321.2927867-1-piotr.raczynski@intel.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.10.0
-Content-Language: en-US, de-DE
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
- Ian Kumlien <ian.kumlien@gmail.com>
-References: <CAA85sZvQV2_aTP=2_TZQOMm0cMfxp+NdLx2_yf_qzB=dUKFuwg@mail.gmail.com>
- <20230505142144.46622-1-piotrx.skajewski@intel.com>
- <CAA85sZsMdK6xWjf7JdujOhdXjKaLvSjbTjiGRw7n_Y+7afe5Vw@mail.gmail.com>
- <CAA85sZsZMFMCLtL_70AMXvVsQ+jNze0C=sNmZfwNdwUhTp_kxw@mail.gmail.com>
- <CAEuXFEzznsMofUJNLvRQKugDs+EpY1eEKkdykM5_O=9wkgBKPw@mail.gmail.com>
-From: "Linux regression tracking #update (Thorsten Leemhuis)"
- <regressions@leemhuis.info>
-In-Reply-To: <CAEuXFEzznsMofUJNLvRQKugDs+EpY1eEKkdykM5_O=9wkgBKPw@mail.gmail.com>
-X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1683535338;
- 4c69a777; 
-X-HE-SMSGID: 1pvwRh-0007c7-7u
-Subject: Re: [Intel-wired-lan] [ixgbe] regression: jumbo frames not working
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1683549807; x=1715085807;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=genUvGslq8O9Ufc9ajFGJBrpIC8lDTI4RYuNmnnyQiQ=;
+ b=VZNdWWnU21+VdXPGIByHDtXWquNMK5Hn7AnPdIQsYDoDtmlJx/IicVKx
+ Sh5EP/Atas7wtHYF4tmSjn2vMpNhwVLKH7IIdppfTfYC5an6kkNoff+Oq
+ nQPxWo6BSaBuS1AwZ2UO5ak57KcwIIgxZSoF8cAPexERWwfAC7gm1+SHs
+ DdBXlpsKJR6UaVrgV3FtzJnDWSVsw4X++ctN1wKhO8+ghiRMBO3D5F2/l
+ DDslnvSk5tmboXmALlaOWpxZxpMwhd5MILu7BXL9ch+yl9wK4OiRrZmIY
+ MRX9V7yEziOK3c6YZrkXAscYaf5iP48gk7oBRi7Y2Q0rn0ZREP9Ks3nwS
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=VZNdWWnU
+Subject: [Intel-wired-lan] [PATCH net-next v4 0/8] ice: support dynamic
+ interrupt allocation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,39 +92,113 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
-Cc: anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
- Piotr Skajewski <piotrx.skajewski@intel.com>, jesse.brandeburg@intel.com
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: michal.swiatkowski@intel.com, netdev@vger.kernel.org,
+ jesse.brandeburg@intel.com, simon.horman@corigine.com, shiraz.saleem@intel.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gMDYuMDUuMjMgMjA6MzMsIEplc3NlIEJyYW5kZWJ1cmcgd3JvdGU6Cj4gT24gRnJpLCBNYXkg
-NSwgMjAyMyBhdCAxOjI4IFBNIElhbiBLdW1saWVuIDxpYW4ua3VtbGllbkBnbWFpbC5jb20KPiA8
-bWFpbHRvOmlhbi5rdW1saWVuQGdtYWlsLmNvbT4+IHdyb3RlOgo+IAo+ICAgICBBcyBhIHNpZGUg
-bm90ZSwgSSBkb24ndCB1bmRlcnN0YW5kIGhvdyB0aGUgc3dpdGNoIGJvb3RlZCB3aXRoIGp1bWJv
-Cj4gICAgIGZyYW1lcyBvZmYgLSB0aGUgY29uZmlnIHN0YXRlZCB0aGF0IHRoZXkgc2hvdWxkIGJl
-IG9uLi4uLgo+ICAgICBTbywgc29tZSBraW5kIG9mIGZhaWxvdmVyLi4uIHNvcnJ5IGZvciB0aGUg
-bm9pc2UuLgo+IAo+ICAgICBPbiBGcmksIE1heSA1LCAyMDIzIGF0IDc6NTDigK9QTSBJYW4gS3Vt
-bGllbiA8aWFuLmt1bWxpZW5AZ21haWwuY29tCj4gICAgIDxtYWlsdG86aWFuLmt1bWxpZW5AZ21h
-aWwuY29tPj4gd3JvdGU6Cj4gICAgID4KPiAgICAgPiBTb3JyeS4uLiBJdCBzZWVtcyBsaWtlIG15
-IGNpc2NvIHN3aXRjaCBib290ZWQgd2l0aCBqdW1iby1mcmFtZXMKPiAgICAgPiBkaXNhYmxlZCBh
-ZnRlciBhIHBvd2VyIG91dGFnZS4uLgo+ICAgICA+IFRoZSBjb25mIHNheXMgaXQgc2hvdWxkIGJl
-IGVuYWJsZWQgLSBidXQgc29tZWhvdyBpdCB3YXNuJ3QgOi8KPiAKPiAKPiAKPiBUaGFua3MgZm9y
-IGxldHRpbmcgdXMga25vdyEKPiAjcmVnemJvdCByZXNvbHZlOiBub3QgYSByZWdyZXNzaW9uLiBU
-aGUgcmVwb3J0ZXIgZm91bmQgdGhlIGNhdXNlIHRvIGJlIGEKPiBuZXR3b3JrIGNvbmZpZyBpc3N1
-ZSBhZnRlciBhIHBvd2VyIG91dGFnZS7CoAoKSmVzc2UsIG1hbnkgdGh4IGZvciB0aGlzLCBidXQg
-dGhpcyBkaWRuJ3Qgd29yaywgYXMgcmVnemJvdCBleHBlY3RzCmNvbW1hbmRzIHRvIGJlIGluIGEg
-c2VwYXJhdGUgcGFyYWdyYXBoIHRvIGF2b2lkIGNhdGNoaW5nIHRoaW5ncyBub3QKbWVhbnQgZm9y
-IGl0LiBTbyBsZXQgbWUgcmVhbGl6ZSB5b3VyIGludGVudGlvbjoKCiNyZWd6Ym90IHJlc29sdmU6
-IG5vdCBhIHJlZ3Jlc3Npb24uIFRoZSByZXBvcnRlciBmb3VuZCB0aGUgY2F1c2UgdG8gYmUgYQpu
-ZXR3b3JrIGNvbmZpZyBpc3N1ZSBhZnRlciBhIHBvd2VyIG91dGFnZS4KCkNpYW8sIFRob3JzdGVu
-ICh3ZWFyaW5nIGhpcyAndGhlIExpbnV4IGtlcm5lbCdzIHJlZ3Jlc3Npb24gdHJhY2tlcicgaGF0
-KQotLQpFdmVyeXRoaW5nIHlvdSB3YW5uYSBrbm93IGFib3V0IExpbnV4IGtlcm5lbCByZWdyZXNz
-aW9uIHRyYWNraW5nOgpodHRwczovL2xpbnV4LXJlZ3RyYWNraW5nLmxlZW1odWlzLmluZm8vYWJv
-dXQvI3RsZHIKVGhhdCBwYWdlIGFsc28gZXhwbGFpbnMgd2hhdCB0byBkbyBpZiBtYWlscyBsaWtl
-IHRoaXMgYW5ub3kgeW91LgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vv
-c2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdp
-cmVkLWxhbgo=
+This patchset reimplements MSIX interrupt allocation logic to allow dynamic
+interrupt allocation after MSIX has been initially enabled. This allows
+current and future features to allocate and free interrupts as needed and
+will help to drastically decrease number of initially preallocated
+interrupts (even down to the API hard limit of 1). Although this patchset
+does not change behavior in terms of actual number of allocated interrupts
+during probe, it will be subject to change.
+
+First few patches prepares to introduce dynamic allocation by moving
+interrupt allocation code to separate file and update allocation API used
+in the driver to the currently preferred one.
+
+Due to the current contract between ice and irdma driver which is directly
+accessing msix entries allocated by ice driver, even after moving away from
+older pci_enable_msix_range function, still keep msix_entries array for
+irdma use.
+
+Next patches refactors and removes redundant code from SRIOV related logic
+as it also make it easier to move away from static allocation scheme.
+
+Last patches actually enables dynamic allocation of MSIX interrupts. First,
+introduce functions to allocate and free interrupts individually. This sets
+ground for the rest of the changes even if that patch still allocates the
+interrupts from the preallocated pool. Since this patch starts to keep
+interrupt details in ice_q_vector structure we can get rid of functions
+that calculates base vector number and register offset for the interrupt
+as it is equal to the interrupt index. Only keep separate register offset
+functions for the VF VSIs.
+
+Next, replace homegrown interrupt tracker with much simpler xarray based
+approach. As new API always allocate interrupts one by one, also track
+interrupts in the same manner.
+
+Lastly, extend the interrupt tracker to deal both with preallocated and
+dynamically allocated vectors and use pci_msix_alloc_irq_at and
+pci_msix_free_irq functions. Since not all architecture supports dynamic
+allocation, check it before trying to allocate a new interrupt.
+
+As previously mentioned, this patchset does not change number of initially
+allocated interrupts during init phase but now it can and will likely be
+changed.
+
+Patch 1-3 -> move code around and use newer API
+Patch 4-5 -> refactor and remove redundant SRIOV code
+Patch 6   -> allocate every interrupt individually
+Patch 7   -> replace homegrown interrupt tracker with xarray
+Patch 8   -> allow dynamic interrupt allocation
+
+Change history:
+v1 -> v2:
+- ice: refactor VF control VSI interrupt handling
+  - move ice_get_vf_ctrl_vsi to ice_lib.c (ice_vf_lib.c depends on
+    CONFIG_PCI_IOV)
+v2 -> v3:
+- ice: refactor VF control VSI interrupt handling
+  - revert v2 change and add no-op function in case of CONFIG_PCI_IOV=n
+- ice: add dynamic interrupt allocation
+  - fix commit message
+v3 -> v4:
+- ice: add individual interrupt allocation
+  - don't use devm alloc/free for q_vectors
+- ice: track interrupt vectors with xarray
+  - just return NULL instead of goto if interrupt allocation failed
+- ice: add dynamic interrupt allocation
+  - exit if released irq entry was not found in the tracker
+
+Piotr Raczynski (8):
+  ice: move interrupt related code to separate file
+  ice: use pci_irq_vector helper function
+  ice: use preferred MSIX allocation api
+  ice: refactor VF control VSI interrupt handling
+  ice: remove redundant SRIOV code
+  ice: add individual interrupt allocation
+  ice: track interrupt vectors with xarray
+  ice: add dynamic interrupt allocation
+
+ drivers/net/ethernet/intel/ice/Makefile      |   1 +
+ drivers/net/ethernet/intel/ice/ice.h         |  24 +-
+ drivers/net/ethernet/intel/ice/ice_arfs.c    |   5 +-
+ drivers/net/ethernet/intel/ice/ice_base.c    |  41 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c |   2 +-
+ drivers/net/ethernet/intel/ice/ice_idc.c     |  54 ++-
+ drivers/net/ethernet/intel/ice/ice_irq.c     | 378 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_irq.h     |  25 ++
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 288 +-------------
+ drivers/net/ethernet/intel/ice/ice_lib.h     |   5 -
+ drivers/net/ethernet/intel/ice/ice_main.c    | 268 ++-----------
+ drivers/net/ethernet/intel/ice/ice_ptp.c     |   2 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c   |  43 +--
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c  |  32 ++
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h  |   7 +
+ drivers/net/ethernet/intel/ice/ice_xsk.c     |   5 +-
+ 16 files changed, 560 insertions(+), 620 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_irq.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_irq.h
+
+-- 
+2.38.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
