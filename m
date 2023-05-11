@@ -1,88 +1,101 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73A11C77B7F
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 11 May 2023 09:57:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F3F2C77B7C
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 11 May 2023 15:10:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1AE8060ADD;
-	Thu, 11 May 2023 09:57:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1AE8060ADD
+	by smtp2.osuosl.org (Postfix) with ESMTP id 193A942C3D;
+	Thu, 11 May 2023 15:10:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 193A942C3D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1683799043;
-	bh=y3Kf/o90fHC7uKsjUtUTgfir8LgM/CA6wV4I1WgL1t0=;
+	s=default; t=1683817836;
+	bh=nXuTYnYJ4KSB5p/3YH9Cd8Lf3csChm9ZmTuGHkhwcSE=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=84qeQJZK6xLeH2YlsoSD7iwbDHFxExJ4DFh3uBjUz7iVQI6zX7spOKEsqBCswh0qn
-	 xZ2IYU+/kGuCKYFhTrwr2pmZCuzcH6ZSdReI3VK13k13Ltw+F60qNFtNpeAVoQulHL
-	 KFYDbuXfZMaObyDyABsXrd93xCAyxgIVyhWWzMFgJkI955ZU4hyVFLr6/cGodhKytD
-	 IWyPIxB2bZTlVi1hjeWPYnkIa+Idv3+VzZyyYSWUzfrFvOXnV2CmTVlZswHq9qgqSi
-	 yQtc5mmaUuAdX0dllIS3EgWA/XA4LIn2kAK8Qiyvns9k2EOzyjvXNi7Y124/fIZzXu
-	 EE5FVotgttXvQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fPZMFMAMlRY5; Thu, 11 May 2023 09:57:21 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D7093700CA;
-	Thu, 11 May 2023 09:57:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D7093700CA
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 6EBF31BF2A1
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 May 2023 09:57:06 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 024C042BEB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 May 2023 09:57:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 024C042BEB
+	b=GDVE973MdLclMIv2wZxFv95MNjhISK0RZYN4058+m76mny09ONX0aBlOtyG2kYhqM
+	 +mGLxVtlJ7ur1VAExbYZH494igw4sGpaW8dJaP83XudNboW890T68qYSCu1s2UTki4
+	 FP5QlNL9uFx5IW+YYI6KH+LwKxsCY7UBHdR4GrFUgAMS9Qv4bDNfgAkkKZFfRu8dXW
+	 YTlhkpXGPsX51OsnysK+aeEjXOXmejfS5WutIkAYLSMOE/WSXUVKc7kFqHPKYANZVM
+	 SSFSLrRAS2OhvR8pgJ6oR/c45VP4Exx5w1l5Wdhb3KEekDvq2KWtSQ8+UObHaz1V1L
+	 bpVT9tKhyLL8Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zMk2uZCg9X9h for <intel-wired-lan@lists.osuosl.org>;
- Thu, 11 May 2023 09:57:04 +0000 (UTC)
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id TDBaJH6yMZmm; Thu, 11 May 2023 15:10:35 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2923142C75;
+	Thu, 11 May 2023 15:10:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2923142C75
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 08C761BF86C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 May 2023 13:15:29 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id E254660BFE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 May 2023 13:15:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E254660BFE
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id G1MJRvXfPJTb for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 11 May 2023 13:15:28 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 49E6540904
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 49E6540904
- for <intel-wired-lan@lists.osuosl.org>; Thu, 11 May 2023 09:57:04 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10706"; a="436785542"
-X-IronPort-AV: E=Sophos;i="5.99,266,1677571200"; d="scan'208";a="436785542"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 May 2023 02:57:03 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3C00060BC8
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3C00060BC8
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 11 May 2023 13:15:28 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10706"; a="378619463"
+X-IronPort-AV: E=Sophos;i="5.99,266,1677571200"; d="scan'208";a="378619463"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 May 2023 06:15:19 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10706"; a="764677403"
-X-IronPort-AV: E=Sophos;i="5.99,266,1677571200"; d="scan'208";a="764677403"
-Received: from gklab-018-208.igk.intel.com ([10.102.18.208])
- by fmsmga008.fm.intel.com with ESMTP; 11 May 2023 02:57:03 -0700
-From: Kamil Maziarz <kamil.maziarz@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 11 May 2023 11:56:28 +0200
-Message-Id: <20230511095628.17907-5-kamil.maziarz@intel.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20230511095628.17907-1-kamil.maziarz@intel.com>
-References: <20230511095628.17907-1-kamil.maziarz@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10706"; a="650169748"
+X-IronPort-AV: E=Sophos;i="5.99,266,1677571200"; d="scan'208";a="650169748"
+Received: from jsanche3-mobl1.ger.corp.intel.com (HELO
+ ijarvine-MOBL2.ger.corp.intel.com) ([10.252.39.112])
+ by orsmga003-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 May 2023 06:15:15 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: linux-pci@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>,
+ Rob Herring <robh@kernel.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+ Lukas Wunner <lukas@wunner.de>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 11 May 2023 16:14:31 +0300
+Message-Id: <20230511131441.45704-8-ilpo.jarvinen@linux.intel.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20230511131441.45704-1-ilpo.jarvinen@linux.intel.com>
+References: <20230511131441.45704-1-ilpo.jarvinen@linux.intel.com>
 MIME-Version: 1.0
+X-Mailman-Approved-At: Thu, 11 May 2023 15:10:34 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1683799024; x=1715335024;
+ t=1683810928; x=1715346928;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=BNntiQMj1a5BcUcM/QcM/FFghAqjAT5QY7UU8Da9/iI=;
- b=L+qxxz4GJLqnyOVzWXFNv89oZeqhwOtfVQXI7vpYVfdscOYerJeQRG39
- TSjOXHy1IwDbFAZA147MOSCTxNqE+fglkUssLTAJUC5Et0BNobgZnuv/D
- j0X6IDPCbstfuwR2INCKX5ICAyKYmwKjzYVSXnHLgZE5fgCEFp9fRcY27
- LkbqKQukF5DQuzUUWcRyyPDMNDd0byrIV+o+Eez7ucXSrSqvMasBeRUGn
- WdsviX4yAnPjU6teFQ8FA6t+0h9ZeorGl0SWPoxcCn2gsPKghc2lHIVp/
- f3Nr/Qb1M/Q4922JM2E51V3A2Iuk/0ANrXw0retxCPQbn0uVqxXESibfa
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=W5cLSAaV+r+1ItVRXAcJDtR+e/em1mtYJ7N6Iy6IoQc=;
+ b=fgWXRBUFc6FKkdHbTFIpVdoz+8tU93NPzXhgmq3BTZwBvZ71uDlszDFf
+ 27MR5buWKhRtI4IbiBjQzXvWoM0LExp87ftsqaKW6PD3d1Z9XNHu0KuKj
+ ItwC5mdNDIK9lUEyR3uk/C6doDtDvUn9hRI4H+hHl7T9VEOtHkmUSNQk5
+ J36BKLg1Piele0mqA87Jd8SW/eia6NZsKdJW7cz9OlHEWW6cn9h0N5Cts
+ 4xuz8Uwj3r+IrPV6WkPJ/jIEKGZMwjPDP264UHB1jamN9WYN9mtym2ezW
+ E0vgecb/RiYzmI4nbYVMrbYMYYLsGGuX2FCqVJhDFOrDBuJXmLZo+mlzZ
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=L+qxxz4G
-Subject: [Intel-wired-lan] [PATCH iwl-net v6 4/4] Revert "iavf: Do not
- restart Tx queues after reset task failure"
+ header.a=rsa-sha256 header.s=Intel header.b=fgWXRBUF
+Subject: [Intel-wired-lan] [PATCH 07/17] e1000e: Use
+ pcie_lnkctl_clear_and_set() for changing LNKCTL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,72 +108,36 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Kamil Maziarz <kamil.maziarz@intel.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-
-This reverts commit 08f1c147b7265245d67321585c68a27e990e0c4b.
-
-Netdev is no longer being detached during reset, so this fix can be
-reverted.
-
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Signed-off-by: Kamil Maziarz <kamil.maziarz@intel.com>
----
-v1->v6: no changes
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 9cce67ffecdd..195476dcb7a4 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -2990,6 +2990,7 @@ static void iavf_disable_vf(struct iavf_adapter *adapter)
- 	iavf_free_queues(adapter);
- 	memset(adapter->vf_res, 0, IAVF_VIRTCHNL_VF_RESOURCE_SIZE);
- 	iavf_shutdown_adminq(&adapter->hw);
-+	adapter->netdev->flags &= ~IFF_UP;
- 	adapter->flags &= ~IAVF_FLAG_RESET_PENDING;
- 	iavf_change_state(adapter, __IAVF_DOWN);
- 	wake_up(&adapter->down_waitqueue);
-@@ -3084,11 +3085,6 @@ static void iavf_reset_task(struct work_struct *work)
- 		iavf_disable_vf(adapter);
- 		mutex_unlock(&adapter->client_lock);
- 		mutex_unlock(&adapter->crit_lock);
--		if (netif_running(netdev)) {
--			rtnl_lock();
--			dev_close(netdev);
--			rtnl_unlock();
--		}
- 		return; /* Do not attempt to reinit. It's dead, Jim. */
- 	}
- 
-@@ -3239,16 +3235,6 @@ static void iavf_reset_task(struct work_struct *work)
- 
- 	mutex_unlock(&adapter->client_lock);
- 	mutex_unlock(&adapter->crit_lock);
--
--	if (netif_running(netdev)) {
--		/* Close device to ensure that Tx queues will not be started
--		 * during netif_device_attach() at the end of the reset task.
--		 */
--		rtnl_lock();
--		dev_close(netdev);
--		rtnl_unlock();
--	}
--
- 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
- }
- 
--- 
-2.31.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RG9uJ3QgYXNzdW1lIHRoYXQgb25seSB0aGUgZHJpdmVyIHdvdWxkIGJlIGFjY2Vzc2luZyBMTktD
+VEwuIEFTUE0KcG9saWN5IGNoYW5nZXMgY2FuIHRyaWdnZXIgd3JpdGUgdG8gTE5LQ1RMIG91dHNp
+ZGUgb2YgZHJpdmVyJ3MgY29udHJvbC4KQW5kIGluIHRoZSBjYXNlIG9mIHVwc3RyZWFtIChwYXJl
+bnQpLCB0aGUgZHJpdmVyIGRvZXMgbm90IGV2ZW4gb3duIHRoZQpkZXZpY2UgaXQncyBjaGFuZ2lu
+ZyBMTktDVEwgZm9yLgoKVXNlIHBjaWVfbG5rY3RsX2NsZWFyX2FuZF9zZXQoKSB3aGljaCBkb2Vz
+IHByb3BlciBsb2NraW5nIHRvIGF2b2lkCmxvc2luZyBjb25jdXJyZW50IHVwZGF0ZXMgdG8gdGhl
+IHJlZ2lzdGVyIHZhbHVlLgoKU3VnZ2VzdGVkLWJ5OiBMdWthcyBXdW5uZXIgPGx1a2FzQHd1bm5l
+ci5kZT4KU2lnbmVkLW9mZi1ieTogSWxwbyBKw6RydmluZW4gPGlscG8uamFydmluZW5AbGludXgu
+aW50ZWwuY29tPgotLS0KIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2UxMDAwZS9uZXRkZXYu
+YyB8IDYgKystLS0tCiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9u
+cygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2UxMDAwZS9uZXRk
+ZXYuYyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2UxMDAwZS9uZXRkZXYuYwppbmRleCBi
+ZDdlZjU5YjFmMmUuLjI5ZDUwYWViMmMzZSAxMDA2NDQKLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJu
+ZXQvaW50ZWwvZTEwMDBlL25ldGRldi5jCisrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVs
+L2UxMDAwZS9uZXRkZXYuYwpAQCAtNjgyOSwxMSArNjgyOSw5IEBAIHN0YXRpYyB2b2lkIF9fZTEw
+MDBlX2Rpc2FibGVfYXNwbShzdHJ1Y3QgcGNpX2RldiAqcGRldiwgdTE2IHN0YXRlLCBpbnQgbG9j
+a2VkKQogCS8qIEJvdGggZGV2aWNlIGFuZCBwYXJlbnQgc2hvdWxkIGhhdmUgdGhlIHNhbWUgQVNQ
+TSBzZXR0aW5nLgogCSAqIERpc2FibGUgQVNQTSBpbiBkb3duc3RyZWFtIGNvbXBvbmVudCBmaXJz
+dCBhbmQgdGhlbiB1cHN0cmVhbS4KIAkgKi8KLQlwY2llX2NhcGFiaWxpdHlfY2xlYXJfd29yZChw
+ZGV2LCBQQ0lfRVhQX0xOS0NUTCwgYXNwbV9kaXNfbWFzayk7Ci0KKwlwY2llX2xua2N0bF9jbGVh
+cl9hbmRfc2V0KHBkZXYsIGFzcG1fZGlzX21hc2ssIDApOwogCWlmIChwYXJlbnQpCi0JCXBjaWVf
+Y2FwYWJpbGl0eV9jbGVhcl93b3JkKHBhcmVudCwgUENJX0VYUF9MTktDVEwsCi0JCQkJCSAgIGFz
+cG1fZGlzX21hc2spOworCQlwY2llX2xua2N0bF9jbGVhcl9hbmRfc2V0KHBhcmVudCwgYXNwbV9k
+aXNfbWFzaywgMCk7CiB9CiAKIC8qKgotLSAKMi4zMC4yCgpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0Cklu
+dGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
