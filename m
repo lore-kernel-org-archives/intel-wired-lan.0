@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C1D6C77B7C
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 May 2023 15:20:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01D3CC77B7C
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 May 2023 15:20:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3BBD042AAF;
-	Fri, 12 May 2023 15:20:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3BBD042AAF
+	by smtp4.osuosl.org (Postfix) with ESMTP id A2C6642C4D;
+	Fri, 12 May 2023 15:20:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A2C6642C4D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1683904825;
-	bh=AbbV08vsqG89uG/dlmxApflEMTxkZhDNdcyj9NNduEo=;
+	s=default; t=1683904828;
+	bh=Ny6E4BAy6c+/9+lA3/+E7GVmix9z11ikH6h8LwvM+Ek=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=bE41ymUKVgR/i2otxY4R9fHE2yJU66r23rv6GrseJdgIordsPh084g+33gOLLTBVP
-	 HZW4c0ifX0Bm8ww5HV8ifVbriuUtFEg1JCMG3YEYTrlUUziNx/gRDWeL5X+KjYT2Cg
-	 ZevHHqxSTTyNKzuanR6zLRlYz3nStdnXf9Jiu51P1fyA7htx9CCqLZJ30HH7Us/Du9
-	 o33o5xMvSkM50EDDyPw/LWxu9jh/u4KkjRW3dtLqXusHJSw4tIfnaZx52TLgbjidhI
-	 HYtLFTWc8ThvzcBuI08eW29/QNZHRdLUH6J8Wll5WVv4++VwESRooWwbKoCgI05Mcw
-	 QsdW0Zpzn/lfw==
+	b=jcejiza8NT7RvieEbQ/2jQEB85lVCDqnPwCP4Qd53qi+0iYb08zq1khQJyeemwt23
+	 yDPdEOt70B4fHMexxmGJdGie+FQ/nkzPqK1ejERzXfa5k6VtZXFY+Xp2jhTk7yZoAH
+	 WP6oHFxFDeaMqbdnYyne5UocYFZ1T3ygPtDhmRVhezZb9Ww223aiQvpe3ZnTotdD/8
+	 IBZOsDN8Oaon/P0pjN+YfqSAzeIlJck8zed9aSO2PFhzqRsDqjAFE7sVmEFva2dcbI
+	 c4QMsxmoMZZqESXAB2SLWyF1Z7KSH807hB1q+Gtev5H68Mvy4mg13JO/mLlaXrI491
+	 m4n7BH4y8FdCQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id z0JehYgpwSi8; Fri, 12 May 2023 15:20:22 +0000 (UTC)
+	with ESMTP id r7wdxIzy8gCy; Fri, 12 May 2023 15:20:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8250242C9E;
-	Fri, 12 May 2023 15:20:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8250242C9E
+	by smtp4.osuosl.org (Postfix) with ESMTP id 12AA042C9A;
+	Fri, 12 May 2023 15:20:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 12AA042C9A
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 789501BF2CB
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 15:20:16 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 517421BF2CB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 15:20:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5F0D5821E3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 15:20:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5F0D5821E3
+ by smtp1.osuosl.org (Postfix) with ESMTP id 2A03982207
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 15:20:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2A03982207
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ZiMvKDkAkIxB for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 May 2023 15:20:15 +0000 (UTC)
+ with ESMTP id 5epJydiDoB7B for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 12 May 2023 15:20:19 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 55A5C821B1
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 77D40821F7
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 55A5C821B1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 15:20:15 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10708"; a="331173836"
-X-IronPort-AV: E=Sophos;i="5.99,269,1677571200"; d="scan'208";a="331173836"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 77D40821F7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 15:20:19 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10708"; a="331173858"
+X-IronPort-AV: E=Sophos;i="5.99,269,1677571200"; d="scan'208";a="331173858"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 May 2023 08:20:14 -0700
+ 12 May 2023 08:20:18 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10708"; a="765196692"
-X-IronPort-AV: E=Sophos;i="5.99,269,1677571200"; d="scan'208";a="765196692"
+X-IronPort-AV: E=McAfee;i="6600,9927,10708"; a="765196706"
+X-IronPort-AV: E=Sophos;i="5.99,269,1677571200"; d="scan'208";a="765196706"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga008.fm.intel.com with ESMTP; 12 May 2023 08:20:09 -0700
+ by fmsmga008.fm.intel.com with ESMTP; 12 May 2023 08:20:14 -0700
 Received: from lincoln.igk.intel.com (lincoln.igk.intel.com [10.102.21.235])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 4EBEA36351;
- Fri, 12 May 2023 16:20:07 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id D702B3635B;
+ Fri, 12 May 2023 16:20:12 +0100 (IST)
 From: Larysa Zaremba <larysa.zaremba@intel.com>
 To: bpf@vger.kernel.org
-Date: Fri, 12 May 2023 17:16:29 +0200
-Message-Id: <20230512151639.992033-6-larysa.zaremba@intel.com>
+Date: Fri, 12 May 2023 17:16:30 +0200
+Message-Id: <20230512151639.992033-7-larysa.zaremba@intel.com>
 X-Mailer: git-send-email 2.35.3
 In-Reply-To: <20230512151639.992033-1-larysa.zaremba@intel.com>
 References: <20230512151639.992033-1-larysa.zaremba@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1683904815; x=1715440815;
+ t=1683904819; x=1715440819;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=5Hcz+nrahtGksGo46j3Eum/Gwzp1mNWWe+cvm9dkHi8=;
- b=kW0/His/9A3be0I2Mo7QEu5ucbjbR44DZpzyzeCCcdBPCY1KgqxvjX0D
- iPAkpI1qua+/yGbeYYS3cq3cOhmqrQF3tbhgEHxAdtmuToRHCF8vPUhc8
- gEd5G7+w7irQ+rxlbmciZHMAwgXWJ4iCGEMYszuA0wxNClZpqlB0BKJT9
- vYqWCNXoIvBmyJ4H/YN5SxHV7WGp203EL/CeQ+pk/SNPmildf2WkObdUU
- nrD7k7U1zlI/LKnPBy+Fx3zQQy8zpMLd+fdr/0qEUY/dpjhrgeS0RDef7
- UJiAjLN6Ps0hldx+FkvJ9zwxb9hi1VfuV/nua1ej71cBhSfMdUD7U54+r
+ bh=cqKMx2oSgYgFjniI/xbMp1UqCMkQn2DYgiq9853O1hY=;
+ b=QuNobgS8u5sjHdkjWMmd1Ndhtk1Z9rvvG2WjDoH6XjqhRwjVu81SUkcE
+ Izoz4zCjVqO8YZ8mxeIMqRxsdGS6tchZXnxu5eon5jnuNabxRedAf9o46
+ XtSF3QJ6PYAHS5jPIoaG5joiBtX81hMAV0ijV7RMqkmzLwuMM4PlVByfc
+ fUwVE7Fd+VWa+XxG+mKw7AKgmmKmwQzIIsTuX74y8nl6eKxm6QxSoveWI
+ HeudbpqltchIRE8Tp6rYxisCyBlDEvjJRYhnFgzjV9jbW52GbKTXEXrf4
+ 394PVhwHZeocRuiW2f8TJKUT+RimtS0MmSPU1wGL3CRVMwFfzjFCBPmyb
  Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=kW0/His/
-Subject: [Intel-wired-lan] [PATCH 05/15] ice: Introduce ice_xdp_buff
+ header.a=rsa-sha256 header.s=Intel header.b=QuNobgS8
+Subject: [Intel-wired-lan] [PATCH 06/15] ice: Support HW timestamp hint
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,149 +114,72 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In order to use XDP hints via kfuncs we need to put
-RX descriptor and ring pointers just next to xdp_buff.
-Same as in hints implementations in other drivers, we archieve
-this through putting xdp_buff into a child structure.
+Use previously refactored code and create a function
+that allows XDP code to read HW timestamp.
 
-Currently, xdp_buff is stored in the ring structure,
-so replace it with union that includes child structure.
-This way enough memory is available while existing XDP code
-remains isolated from hints.
-
-Size of the new child structure (ice_xdp_buff) is 72 bytes,
-therefore it does not fit into a single cache line.
-To at least place union at the start of cache line, move 'next'
-field from CL3 to CL1, as it isn't used often.
-
-Placing union at the start of cache line makes at least xdp_buff
-and descriptor fit into a single CL,
-ring pointer is used less often, so it can spill into the next CL.
+HW timestamp is the first supported hint in the driver,
+so also add xdp_metadata_ops.
 
 Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_txrx.c     |  7 ++++--
- drivers/net/ethernet/intel/ice/ice_txrx.h     | 23 ++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_txrx_lib.h | 11 +++++++++
- 3 files changed, 36 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h          |  2 ++
+ drivers/net/ethernet/intel/ice/ice_main.c     |  1 +
+ drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 22 +++++++++++++++++++
+ 3 files changed, 25 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index c9bb77da0861..ca21a71749b6 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -557,13 +557,14 @@ ice_rx_frame_truesize(struct ice_rx_ring *rx_ring, const unsigned int size)
-  * @xdp_prog: XDP program to run
-  * @xdp_ring: ring to be used for XDP_TX action
-  * @rx_buf: Rx buffer to store the XDP action
-+ * @eop_desc: Last descriptor in packet to read metadata from
-  *
-  * Returns any of ICE_XDP_{PASS, CONSUMED, TX, REDIR}
-  */
- static void
- ice_run_xdp(struct ice_rx_ring *rx_ring, struct xdp_buff *xdp,
- 	    struct bpf_prog *xdp_prog, struct ice_tx_ring *xdp_ring,
--	    struct ice_rx_buf *rx_buf)
-+	    struct ice_rx_buf *rx_buf, union ice_32b_rx_flex_desc *eop_desc)
- {
- 	unsigned int ret = ICE_XDP_PASS;
- 	u32 act;
-@@ -571,6 +572,8 @@ ice_run_xdp(struct ice_rx_ring *rx_ring, struct xdp_buff *xdp,
- 	if (!xdp_prog)
- 		goto exit;
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index aa32111afd6e..ba1bb8392db1 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -962,4 +962,6 @@ static inline void ice_clear_rdma_cap(struct ice_pf *pf)
+ 	set_bit(ICE_FLAG_UNPLUG_AUX_DEV, pf->flags);
+ 	clear_bit(ICE_FLAG_RDMA_ENA, pf->flags);
+ }
++
++extern const struct xdp_metadata_ops ice_xdp_md_ops;
+ #endif /* _ICE_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index a1f7c8edc22f..cda6c4a80737 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3378,6 +3378,7 @@ static void ice_set_ops(struct ice_vsi *vsi)
  
-+	ice_xdp_set_meta_srcs(xdp, eop_desc, rx_ring);
-+
- 	act = bpf_prog_run_xdp(xdp_prog, xdp);
- 	switch (act) {
- 	case XDP_PASS:
-@@ -1240,7 +1243,7 @@ int ice_clean_rx_irq(struct ice_rx_ring *rx_ring, int budget)
- 		if (ice_is_non_eop(rx_ring, rx_desc))
- 			continue;
+ 	netdev->netdev_ops = &ice_netdev_ops;
+ 	netdev->udp_tunnel_nic_info = &pf->hw.udp_tunnel_nic;
++	netdev->xdp_metadata_ops = &ice_xdp_md_ops;
+ 	ice_set_ethtool_ops(netdev);
  
--		ice_run_xdp(rx_ring, xdp, xdp_prog, xdp_ring, rx_buf);
-+		ice_run_xdp(rx_ring, xdp, xdp_prog, xdp_ring, rx_buf, rx_desc);
- 		if (rx_buf->act == ICE_XDP_PASS)
- 			goto construct_skb;
- 		total_rx_bytes += xdp_get_buff_len(xdp);
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.h b/drivers/net/ethernet/intel/ice/ice_txrx.h
-index fff0efe28373..f1ac2eb974f1 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.h
-@@ -260,6 +260,15 @@ enum ice_rx_dtype {
- 	ICE_RX_DTYPE_SPLIT_ALWAYS	= 2,
- };
- 
-+struct ice_xdp_buff {
-+	struct xdp_buff xdp_buff;
-+	union ice_32b_rx_flex_desc *eop_desc;	/* Required for all metadata */
-+	/* End of the 1st cache line */
-+	struct ice_rx_ring *rx_ring;
-+};
+ 	if (vsi->type != ICE_VSI_PF)
+diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+index 2515f5f7a2b6..e9589cadf811 100644
+--- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
+@@ -537,3 +537,25 @@ void ice_finalize_xdp_rx(struct ice_tx_ring *xdp_ring, unsigned int xdp_res,
+ 			spin_unlock(&xdp_ring->tx_lock);
+ 	}
+ }
 +
-+static_assert(offsetof(struct ice_xdp_buff, xdp_buff) == 0);
-+
- /* indices into GLINT_ITR registers */
- #define ICE_RX_ITR	ICE_IDX_ITR0
- #define ICE_TX_ITR	ICE_IDX_ITR1
-@@ -301,7 +310,6 @@ enum ice_dynamic_itr {
- /* descriptor ring, associated with a VSI */
- struct ice_rx_ring {
- 	/* CL1 - 1st cacheline starts here */
--	struct ice_rx_ring *next;	/* pointer to next ring in q_vector */
- 	void *desc;			/* Descriptor ring memory */
- 	struct device *dev;		/* Used for DMA mapping */
- 	struct net_device *netdev;	/* netdev ring maps to */
-@@ -313,12 +321,19 @@ struct ice_rx_ring {
- 	u16 count;			/* Number of descriptors */
- 	u16 reg_idx;			/* HW register index of the ring */
- 	u16 next_to_alloc;
--	/* CL2 - 2nd cacheline starts here */
-+
- 	union {
- 		struct ice_rx_buf *rx_buf;
- 		struct xdp_buff **xdp_buf;
- 	};
--	struct xdp_buff xdp;
-+	/* CL2 - 2nd cacheline starts here
-+	 * Size of ice_xdp_buff is 72 bytes,
-+	 * so it spills into CL3
-+	 */
-+	union {
-+		struct ice_xdp_buff xdp_ext;
-+		struct xdp_buff xdp;
-+	};
- 	/* CL3 - 3rd cacheline starts here */
- 	struct bpf_prog *xdp_prog;
- 	u16 rx_offset;
-@@ -328,6 +343,8 @@ struct ice_rx_ring {
- 	u16 next_to_clean;
- 	u16 first_desc;
- 
-+	struct ice_rx_ring *next;	/* pointer to next ring in q_vector */
-+
- 	/* stats structs */
- 	struct ice_ring_stats *ring_stats;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
-index e1d49e1235b3..2835a8348237 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.h
-@@ -151,4 +151,15 @@ ice_process_skb_fields(struct ice_rx_ring *rx_ring,
- 		       struct sk_buff *skb);
- void
- ice_receive_skb(struct ice_rx_ring *rx_ring, struct sk_buff *skb, u16 vlan_tag);
-+
-+static inline void
-+ice_xdp_set_meta_srcs(struct xdp_buff *xdp,
-+		      union ice_32b_rx_flex_desc *eop_desc,
-+		      struct ice_rx_ring *rx_ring)
++/**
++ * ice_xdp_rx_hw_ts - HW timestamp XDP hint handler
++ * @ctx: XDP buff pointer
++ * @ts_ns: destination address
++ *
++ * Copy HW timestamp (if available) to the destination address.
++ */
++static int ice_xdp_rx_hw_ts(const struct xdp_md *ctx, u64 *ts_ns)
 +{
-+	struct ice_xdp_buff *xdp_ext = (struct ice_xdp_buff *)xdp;
++	const struct ice_xdp_buff *xdp_ext = (void *)ctx;
 +
-+	xdp_ext->eop_desc = eop_desc;
-+	xdp_ext->rx_ring = rx_ring;
++	if (!ice_ptp_copy_rx_hwts_from_desc(xdp_ext->rx_ring,
++					    xdp_ext->eop_desc, ts_ns))
++		return -EOPNOTSUPP;
++
++	return 0;
 +}
- #endif /* !_ICE_TXRX_LIB_H_ */
++
++const struct xdp_metadata_ops ice_xdp_md_ops = {
++	.xmo_rx_timestamp		= ice_xdp_rx_hw_ts,
++};
 -- 
 2.35.3
 
