@@ -4,95 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83727C77B7C
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 May 2023 18:31:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0600C77B7F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 12 May 2023 18:33:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2A20B403BF;
-	Fri, 12 May 2023 18:31:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2A20B403BF
+	by smtp2.osuosl.org (Postfix) with ESMTP id 6A8B3404C1;
+	Fri, 12 May 2023 18:33:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6A8B3404C1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1683916287;
-	bh=GYtcEtB7eivw2BFqK9rI1b2GwKRK45rx7jsGGeGXOY4=;
+	s=default; t=1683916421;
+	bh=tou+ZzRtlcOxH44Jgn2liuV2JA4s7bJRDoQImBVX6bQ=;
 	h=Date:In-Reply-To:References:From:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=D2jPAzUh94iT+YaKX9LimDf+Z+1Owf6P3XOIbrgGjBiEjx9tBIFCW2EJkU7F11x6I
-	 kG/jm27PIzbWkPPR2qA64XVgh02OXyGd1ukeYSWnhaLsTF695hZDlljGUEjb1dQsSB
-	 zCWyr6uonPtILssuGjcmKMs1GedNaEOGKCWysTQ3VBdFifWJzYuFROwpfL36Z1nYj4
-	 qjT4jf8Jz3bd78+XFyIPg+/EThX/v99HRIGgdK204Xxi9Zsfju/6PbEwT7bujcq+CE
-	 1XYwSeEaTF1KPu1EsoKlti27YpMec+rICT5OWxLcUSxUtzAkWbDq2E1bfJCo6JcUNB
-	 eY8FdWIL9Dhyg==
+	b=l1o+cRdC24L9TV5is9e2gO2ozdFgoWRVLF1tMX8FOw4Qi6FCNyoPpCzI/zyki0f6K
+	 WuWTB91Py78DYjDVAIa/YTaH5eI7GyrKTm9LEUJs4LDjcnqmJNXJo5NkwNNFnc5cbt
+	 jSG/Zk+AwmGmGlPCws+AtFbjI1Qtpp9n+pMybV4HHTCXizFRWFYaUbsA6AFpmME+g0
+	 aO5klw2KsXNVrzArZnk3M7nRIZB7xLqt8DdyeX7vsLHoY+5yhQasW4IyV2meKWiDKy
+	 xISE6/T4p+Gf8XJOwIydjDrIqSbn2psOc3yiRlMOwTSFewMb/rvWIx/EuSPb6ThqTd
+	 iieARCgr+WPJw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id EBngV6uHbU4w; Fri, 12 May 2023 18:31:26 +0000 (UTC)
+	with ESMTP id GgGa2lZ9Zgvx; Fri, 12 May 2023 18:33:40 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 24551404C1;
-	Fri, 12 May 2023 18:31:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 24551404C1
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 168051BF836
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 18:31:24 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5A25A40525;
+	Fri, 12 May 2023 18:33:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5A25A40525
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 89A1C1BF836
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 18:33:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id F031584872
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 18:31:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F031584872
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6160460BFF
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 18:33:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6160460BFF
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id QOwxmEetK-Yh for <intel-wired-lan@lists.osuosl.org>;
- Fri, 12 May 2023 18:31:23 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id rGly8dkOQW65 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 12 May 2023 18:33:36 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5DBFA8485B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 763E760AEE
 Received: from mail-pf1-x449.google.com (mail-pf1-x449.google.com
  [IPv6:2607:f8b0:4864:20::449])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5DBFA8485B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 18:31:23 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 763E760AEE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 18:33:36 +0000 (UTC)
 Received: by mail-pf1-x449.google.com with SMTP id
- d2e1a72fcca58-6434307a64bso10398580b3a.2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 11:31:23 -0700 (PDT)
+ d2e1a72fcca58-645538f6101so35151598b3a.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 12 May 2023 11:33:36 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1683916283; x=1686508283;
+ d=1e100.net; s=20221208; t=1683916416; x=1686508416;
  h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
  :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=wq2By9mZuUQ7p1oM5SkoXHJiUzdgw169iTgadwLtfnQ=;
- b=hDeNNv+BOA033Jjyz/Rz7nboXZgM8s3prYouI2L3IzJp/3cYMH9yucPtRMEuK2a0bU
- 06LIjLZOqqCV47DIxDWLOSNoL2+OFeyoveMem6B5pnetUs9XPkQHMwVYVkWdtJWOw1az
- wCIvMfnZVEarAZ1oNG17eyJ6ZwPU8rifyVMw6IczMCK0PoyRKYGi6uGDPsoefwT3Z3oY
- 25kzXN/yPGhK8EbaiSuxKQRgp+LW6XEZ7/tIcnxMjolrF5//zedf5AzFYH2NyIuyoDbt
- WNY1SpmdsGkCqxBNfivCSyvSN0wVw69E3F0wxuEmmXBAuq9LghTL0XpY3ec8LeQrBoJL
- 6i6g==
-X-Gm-Message-State: AC+VfDxTsmXq/EFrzHuLlMAkGUyWZflOoqmNXLC8gHVoPjbBoPPmXe5D
- T2V6ebfoCRU9qvX5PfzxE14+iNQ=
-X-Google-Smtp-Source: ACHHUZ5yguYzBo0raBvnnA2xkJTrHlxk1B/ym21H6OwVm5I5+i5m5lU08ouAnUGmmP635rdcxpsTQfI=
+ bh=5+exEN8RF1B40fPaxoi0k2T6E5J3rfhVEZNB9EwpzSM=;
+ b=Xmv2VvUzlC16MeUi5Cz+WXeZwPEb2uV34Fyh1sxzOxEa4oCQyMUeoKHReNh7FCE1XT
+ Q5RERS8OuBDaNzPEmHRDQLJGspTe7BKmbhfvNwc/SnUrPQPtEVCrhCx/Eux76BSEkJlP
+ 1WY+PN9Hg8VEd4hS0AkpdypGXzPfzhh5WQpJkBwBg9M6VkZXwHG8NzLX8afEwlyHGBir
+ nJZpRzOGzNzkusdBlVhgd2ZFFiGCksAe9XFy+3uLIthFPx60zbWA5Yacy4nFzKEyzEEx
+ jh7+fkjOW9GYEJeMgo3USxhyHW3ovyUPxanMbKFbfd6tlY4RRcmclWwTA1fPaAWHwdpj
+ EDDg==
+X-Gm-Message-State: AC+VfDyszhy7GQINB1HyWCo5VSqhoJsMMrt6kaQ9SGsOaQdE1E3j5C6h
+ i13xrReTdQXWWaXJP2Km5zsZTM0=
+X-Google-Smtp-Source: ACHHUZ6izS/sXksepkikL2WJhUgl6hDj55lJDgbldJSMaJRr8WAp/vT3O0/iHqJ2+q6vfS70QyzAspA=
 X-Received: from sdf.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5935])
- (user=sdf job=sendgmr) by 2002:a05:6a00:7c6:b0:643:599b:4db4 with SMTP id
- n6-20020a056a0007c600b00643599b4db4mr6882664pfu.1.1683916282830; Fri, 12 May
- 2023 11:31:22 -0700 (PDT)
-Date: Fri, 12 May 2023 11:31:21 -0700
-In-Reply-To: <20230512152607.992209-11-larysa.zaremba@intel.com>
+ (user=sdf job=sendgmr) by 2002:a17:90b:23c8:b0:250:2099:783 with SMTP id
+ md8-20020a17090b23c800b0025020990783mr8403658pjb.2.1683916415913; Fri, 12 May
+ 2023 11:33:35 -0700 (PDT)
+Date: Fri, 12 May 2023 11:33:34 -0700
+In-Reply-To: <20230512152607.992209-14-larysa.zaremba@intel.com>
 Mime-Version: 1.0
 References: <20230512152607.992209-1-larysa.zaremba@intel.com>
- <20230512152607.992209-11-larysa.zaremba@intel.com>
-Message-ID: <ZF6F+UQlXA9REqag@google.com>
+ <20230512152607.992209-14-larysa.zaremba@intel.com>
+Message-ID: <ZF6GfoZVgKX78bpq@google.com>
 From: Stanislav Fomichev <sdf@google.com>
 To: Larysa Zaremba <larysa.zaremba@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20221208; t=1683916283; x=1686508283;
+ d=google.com; s=20221208; t=1683916416; x=1686508416;
  h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
  :date:from:to:cc:subject:date:message-id:reply-to;
- bh=wq2By9mZuUQ7p1oM5SkoXHJiUzdgw169iTgadwLtfnQ=;
- b=JWT1FrK7ck7EpDsQRE4pCSwDvUGJ63OfyV6gRQBf3N6utX08/U1OHXmvomU3P6Z3G6
- N5Tvx3vxz4Y6ynHYvG8gsQs85MZ7VK/EoDwOcb9T7Vuf16vwygdYAzo/UNwe5EPtiLD8
- HAQ764S9LE4N6qXozvAtzgduNz/lnpvl878hU17TpCFsRDDOzxM/9/Y7iSQQ3Zx2WZpj
- I4fJF+J/zB+k1AZUcc8RBSXW1+T9EWoDEQpcvOtBknUhsuo/Cja32EUu70hGOaWdrDKH
- 6PzSqv0XmVdYlay6qmzlhnjOFde/W19FX57pttk9HvCy1ixM/Fgu/A/6SlTmkdEkZhVw
- NRng==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=5+exEN8RF1B40fPaxoi0k2T6E5J3rfhVEZNB9EwpzSM=;
+ b=2ytWwJWpT3Nf+cnrsDcHH5KcIuij7GP+ouRdzIMCILh4WRZNrgSQNN19FSJ6vu+wm/
+ g0+G/4bQvlOFdtBGD5dHnfuOdk5TdxYByrmDF/2aFlZR2UBLds/mJtqx7rVI/xdWNV8a
+ A1sQZ3OALNJkgExEqH3hNisJlOeCU6VF+0abfQro0LL+7l/tUtTnsvTbjzSn/CFfEHbY
+ JftijlPqjlutp/AJ42j6ITeno9LWWA0lSoxJy/tp7dLa+Ew/jHMGV8EWdRRN483nrDsw
+ 9YTIf9wrfY8U9jS72O3GInOWIoyv2ASsoGVZklk/M7us4MtfGa8fvueuzWf/66l5Ffps
+ ZvDQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20221208 header.b=JWT1FrK7
-Subject: Re: [Intel-wired-lan] [PATCH RESEND bpf-next 10/15] ice: Implement
- VLAN tag hint
+ header.a=rsa-sha256 header.s=20221208 header.b=2ytWwJWp
+Subject: Re: [Intel-wired-lan] [PATCH RESEND bpf-next 13/15] selftests/bpf:
+ Allow VLAN packets in xdp_hw_metadata
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,86 +123,69 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 On 05/12, Larysa Zaremba wrote:
-> Implement .xmo_rx_vlan_tag callback to allow XDP code to read
-> packet's VLAN tag.
+> Make VLAN c-tag and s-tag XDP hint testing more convenient
+> by not skipping VLAN-ed packets.
+> 
+> Allow both 802.1ad and 802.1Q headers.
+
+Can we also extend non-hw test? That should require adding metadata
+handlers to veth to extract relevant parts from skb + update ip link
+commands to add vlan id. Should be relatively easy to do?
+
 > 
 > Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
 > ---
->  drivers/net/ethernet/intel/ice/ice_txrx_lib.c | 44 +++++++++++++++++++
->  1 file changed, 44 insertions(+)
+>  tools/testing/selftests/bpf/progs/xdp_hw_metadata.c | 9 ++++++++-
+>  tools/testing/selftests/bpf/xdp_metadata.h          | 8 ++++++++
+>  2 files changed, 16 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-> index 1caa73644e7b..39547feb6106 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_txrx_lib.c
-> @@ -627,7 +627,51 @@ static int ice_xdp_rx_hash(const struct xdp_md *ctx, u32 *hash,
->  	return 0;
->  }
+> diff --git a/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c b/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
+> index b2dfd7066c6e..f95f82a8b449 100644
+> --- a/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
+> +++ b/tools/testing/selftests/bpf/progs/xdp_hw_metadata.c
+> @@ -26,15 +26,22 @@ int rx(struct xdp_md *ctx)
+>  {
+>  	void *data, *data_meta, *data_end;
+>  	struct ipv6hdr *ip6h = NULL;
+> -	struct ethhdr *eth = NULL;
+>  	struct udphdr *udp = NULL;
+>  	struct iphdr *iph = NULL;
+>  	struct xdp_meta *meta;
+> +	struct ethhdr *eth;
+>  	int err;
 >  
-> +/**
-> + * ice_xdp_rx_ctag - VLAN tag XDP hint handler
-> + * @ctx: XDP buff pointer
-> + * @vlan_tag: destination address
-> + *
-> + * Copy VLAN tag (if was stripped) to the destination address.
-> + */
-> +static int ice_xdp_rx_ctag(const struct xdp_md *ctx, u16 *vlan_tag)
-> +{
-> +	const struct ice_xdp_buff *xdp_ext = (void *)ctx;
-> +	netdev_features_t features;
+>  	data = (void *)(long)ctx->data;
+>  	data_end = (void *)(long)ctx->data_end;
+>  	eth = data;
 > +
-
-[..]
-
-> +	features = xdp_ext->rx_ring->netdev->features;
+> +	if (eth + 1 < data_end && eth->h_proto == bpf_htons(ETH_P_8021AD))
+> +		eth = (void *)eth + sizeof(struct vlan_hdr);
 > +
-> +	if (!(features & NETIF_F_HW_VLAN_CTAG_RX))
-> +		return -EINVAL;
-
-Passing-by comment: why do we need to check features?
-ice_get_vlan_tag_from_rx_desc seems to be checking a bunch of
-fields in the descriptors, so that should be enough?
-
+> +	if (eth + 1 < data_end && eth->h_proto == bpf_htons(ETH_P_8021Q))
+> +		eth = (void *)eth + sizeof(struct vlan_hdr);
 > +
-> +	*vlan_tag = ice_get_vlan_tag_from_rx_desc(xdp_ext->eop_desc);
-
-Should we also do the following:
-
-if (!*vlan_tag)
-	return -ENODATA;
-
-?
-
-> +	return 0;
-> +}
+>  	if (eth + 1 < data_end) {
+>  		if (eth->h_proto == bpf_htons(ETH_P_IP)) {
+>  			iph = (void *)(eth + 1);
+> diff --git a/tools/testing/selftests/bpf/xdp_metadata.h b/tools/testing/selftests/bpf/xdp_metadata.h
+> index 938a729bd307..6664893c2c77 100644
+> --- a/tools/testing/selftests/bpf/xdp_metadata.h
+> +++ b/tools/testing/selftests/bpf/xdp_metadata.h
+> @@ -9,6 +9,14 @@
+>  #define ETH_P_IPV6 0x86DD
+>  #endif
+>  
+> +#ifndef ETH_P_8021Q
+> +#define ETH_P_8021Q 0x8100
+> +#endif
 > +
-> +/**
-> + * ice_xdp_rx_stag - VLAN s-tag XDP hint handler
-> + * @ctx: XDP buff pointer
-> + * @vlan_tag: destination address
-> + *
-> + * Copy VLAN s-tag (if was stripped) to the destination address.
-> + */
-> +static int ice_xdp_rx_stag(const struct xdp_md *ctx, u16 *vlan_tag)
-> +{
-> +	const struct ice_xdp_buff *xdp_ext = (void *)ctx;
-> +	netdev_features_t features;
+> +#ifndef ETH_P_8021AD
+> +#define ETH_P_8021AD 0x88A8
+> +#endif
 > +
-> +	features = xdp_ext->rx_ring->netdev->features;
-> +
-> +	if (!(features & NETIF_F_HW_VLAN_STAG_RX))
-> +		return -EINVAL;
-> +
-> +	*vlan_tag = ice_get_vlan_tag_from_rx_desc(xdp_ext->eop_desc);
-> +	return 0;
-> +}
-> +
->  const struct xdp_metadata_ops ice_xdp_md_ops = {
->  	.xmo_rx_timestamp		= ice_xdp_rx_hw_ts,
->  	.xmo_rx_hash			= ice_xdp_rx_hash,
-> +	.xmo_rx_ctag			= ice_xdp_rx_ctag,
-> +	.xmo_rx_stag			= ice_xdp_rx_stag,
->  };
+>  struct xdp_meta {
+>  	__u64 rx_timestamp;
+>  	__u64 xdp_timestamp;
 > -- 
 > 2.35.3
 > 
