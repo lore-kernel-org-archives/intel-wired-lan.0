@@ -4,91 +4,115 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02B21C77B7D
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 15 May 2023 15:13:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A555CC77B7D
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 15 May 2023 15:36:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A21864016C;
-	Mon, 15 May 2023 15:13:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A21864016C
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3EFBA4016C;
+	Mon, 15 May 2023 15:36:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3EFBA4016C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684163583;
-	bh=piEsAI82SLmmCoUaYATqyTlo5tIh0YyA8Z9D7R5XMUQ=;
-	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=kCo8OMwYQUMuM9Oy71YZVgeYTJKdflv3oDKb+FCFIDzUDENcKWplUWMY2VKdPed1B
-	 CSxMm3mTNZ/c8S4krmLs4odB1oo7GH/Cq/nYYAOIW7I7jMLW1tFXF7mpYU9DdUw79O
-	 3Sdblf88amVnWGWBFr/MtwvnILecLXsvM2UowTpcwB6fFOZy4CgoulcAE6//8PM/Ou
-	 1OwRHYlDzO1fY0xXJB1nO3ruinNLLaEDaGeWsrCmk10l5uCZfnBqEgOQknjih/4E3j
-	 aJ0/7s12pYI6b3WxJqRmNM2ZQc3ZZTM9Ur9PSI9kFj4yb1ecoil6vg7nL+EJ8Xogn5
-	 OziuwD1GczVZA==
+	s=default; t=1684164985;
+	bh=hRatMqwkro8tJTEHOr60gS0yYkmz9EAT7hk+A8jhjco=;
+	h=From:Date:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=79lpP3DipIw/RIl1Mq2o4z+on9UWdR3jKYqK7ISptz/AS5o5GgQ1K1OnfgZToDinO
+	 9wYIjSCCsSyhC4y/XFa5QcHKJcQOnNDGgjQmHGMF12cAtLrI/WYFx3weDqXS7tKLJI
+	 Ng64YxkD3tQtcZ3QQZdcikcnHYkyAJcqfKTpbYMm8h+H9H5P9Qb+Teu5PfmQxiOBlv
+	 4jZaICCkOw/IQSTmzFbPdKxZg8LaF+VqUoPG7PHWBL+3rIeRdqTPz0N70LBo9PDzUy
+	 0YlgNc1ys2djDN07sPHza516Ld11alca9UW7AtMLLf7/wH2r1BkWr3mnCKIwLx8Qs1
+	 TpxG7QM9ki8lw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 80xYEQCseLRp; Mon, 15 May 2023 15:13:02 +0000 (UTC)
+	with ESMTP id dZUP1l8X3RtC; Mon, 15 May 2023 15:36:24 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6EADF41D59;
-	Mon, 15 May 2023 15:13:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6EADF41D59
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 8501F1BF316
- for <intel-wired-lan@osuosl.org>; Mon, 15 May 2023 07:04:28 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3955441D54;
+	Mon, 15 May 2023 15:36:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3955441D54
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 62D051BF573
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 15 May 2023 15:36:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5D103821EB
- for <intel-wired-lan@osuosl.org>; Mon, 15 May 2023 07:04:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5D103821EB
+ by smtp3.osuosl.org (Postfix) with ESMTP id 471FF6159D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 15 May 2023 15:36:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 471FF6159D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id rhxJRnYkpl_c for <intel-wired-lan@osuosl.org>;
- Mon, 15 May 2023 07:04:27 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D6745821C8
-Received: from mail-ej1-x633.google.com (mail-ej1-x633.google.com
- [IPv6:2a00:1450:4864:20::633])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D6745821C8
- for <intel-wired-lan@osuosl.org>; Mon, 15 May 2023 07:04:26 +0000 (UTC)
-Received: by mail-ej1-x633.google.com with SMTP id
- a640c23a62f3a-969f90d71d4so1150986866b.3
- for <intel-wired-lan@osuosl.org>; Mon, 15 May 2023 00:04:26 -0700 (PDT)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id XhN4hnS4XD_r for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 15 May 2023 15:36:21 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 02C896159B
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 02C896159B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 15 May 2023 15:36:20 +0000 (UTC)
+Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com
+ [209.85.218.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-246-LX7HTc9iMzWkUnnnvf1nGw-1; Mon, 15 May 2023 11:36:16 -0400
+X-MC-Unique: LX7HTc9iMzWkUnnnvf1nGw-1
+Received: by mail-ej1-f70.google.com with SMTP id
+ a640c23a62f3a-966329c872bso1176017366b.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 15 May 2023 08:36:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1684134264; x=1686726264;
- h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
- :from:to:cc:subject:date:message-id:reply-to;
- bh=/gYRbTQBl+syqb2Eyh7/qFHtMJrGM887hszhGYQkyK4=;
- b=U2LH323FrCttECNegZ6K1H5GdyOJ1aO5Zx60c5sk/5dECN9EJoFR7G74aBcIzaoH1U
- 9EfW8TOA/3gmvPI+91ch8DE2G6DJJr/v3GV/XfrgBv5pfd79P40XyJsFHFhWNEObNVE/
- oSYP/voxFAz3RFXU/VH+O7fhqX7pEpbpQ8pwhgse2pcsqnpJF9JC61XNvwEpagfG8gDo
- 0dDQgcWphFzWvoP4rE2B+KMk8eqw0TnibizB3sw0gM1uJvmviYw2fZvs2KzPHlSmzyyM
- 22y5QeoTL41J9GWef6rlnmklEuGDElQMu0d6XNF53Ncf8l+dcXw/RZN7va5Q1evtIIZL
- uK4Q==
-X-Gm-Message-State: AC+VfDycnSjdZJTvBBgn10BWmwRGsAlgKufaF4FgTCDkI8JrhuUGqhwp
- A+GKk22Yhg5HImTNmgzieM8ruPRmScc0jjt1MhPgmlErp+hrgxmo8fU=
-X-Google-Smtp-Source: ACHHUZ7PF+HK+YcBKaV++9ppq8pCqVckGAbkLR6zc6iyvthR9gjWQLBbK7r4qdjVLgydmpHDsRMl5Mt9+pSXcaQkiz0=
-X-Received: by 2002:a17:907:3683:b0:94f:3b07:a708 with SMTP id
- bi3-20020a170907368300b0094f3b07a708mr28655056ejc.29.1684134264359; Mon, 15
- May 2023 00:04:24 -0700 (PDT)
+ d=1e100.net; s=20221208; t=1684164975; x=1686756975;
+ h=content-transfer-encoding:in-reply-to:references:to
+ :content-language:subject:cc:user-agent:mime-version:date:message-id
+ :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=x7CbMDqqB7Ef24aQqJke8PthcM5mzwIBmyE952+ZY6Q=;
+ b=KJZs7sC8ycGfmS4mQJ/y5ahYApDcVLlbwyw3fPMPDNw64Cmyff+ARYQEoYg8swxZdD
+ nCyXL+buQW8IJd1lGI4gpI9X42d5dBaQWOx+EbyMa40VqW+LlNlReLQ1Qdp44qUDbu+u
+ hUlBw8IM/uwuxGhKBksfvUcwaPGV+NJoUVRMaMcZQJimJlS1mLh7rZ8gJ8vUjwhth55v
+ MRr1Xt4+YWp//gzo+RVW9B/Vdhfh5c0ixYHrKKKHXb0EXME9zZKChiN/bB1bemf+rDb8
+ DIfRz0DhkFzV8NAYKb2K4RyXs4riavSkyG66bSwVvs+YS10hSYGU2jZDMfWunzlmgbG9
+ zJnw==
+X-Gm-Message-State: AC+VfDxB8yojZYtpFwP3pANdoMP0UebvHSlPYESokOXvHsK9ekP+0xp6
+ WlriMyJcmmMq+lhHeBvqu+0HUO7X1laFTsEiwH9yAw1m7vvnMBXrmSoAEqRosqmtq1NpIRTfcm/
+ MS+QzW1RjgjKjaQQwHS4FmafXq1RAqQ==
+X-Received: by 2002:a17:907:804:b0:94f:adb2:171f with SMTP id
+ wv4-20020a170907080400b0094fadb2171fmr27955065ejb.28.1684164975530; 
+ Mon, 15 May 2023 08:36:15 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ46GxPVBqoq2psgT5XG+XapuVBE6/4vYM0++VGwPutqBc+4LJ5jMPnxCh49EGXYSOjGcFb1gg==
+X-Received: by 2002:a17:907:804:b0:94f:adb2:171f with SMTP id
+ wv4-20020a170907080400b0094fadb2171fmr27955042ejb.28.1684164975130; 
+ Mon, 15 May 2023 08:36:15 -0700 (PDT)
+Received: from [192.168.41.200] (83-90-141-187-cable.dk.customer.tdc.net.
+ [83.90.141.187]) by smtp.gmail.com with ESMTPSA id
+ k18-20020a17090632d200b009661f07db93sm9660631ejk.223.2023.05.15.08.36.12
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Mon, 15 May 2023 08:36:14 -0700 (PDT)
+From: Jesper Dangaard Brouer <jbrouer@redhat.com>
+X-Google-Original-From: Jesper Dangaard Brouer <brouer@redhat.com>
+Message-ID: <b0694577-e2b3-f6de-cf85-aed99fdf2496@redhat.com>
+Date: Mon, 15 May 2023 17:36:12 +0200
 MIME-Version: 1.0
-From: Prasad Koya <prasad@arista.com>
-Date: Mon, 15 May 2023 00:04:13 -0700
-Message-ID: <CAKh1g57BP-RHN7uG7+v3mzni1ZLOmd7aiqTTTunm=8D5dnCJBQ@mail.gmail.com>
-To: intel-wired-lan@osuosl.org
-X-Mailman-Approved-At: Mon, 15 May 2023 15:12:52 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.10.0
+To: Larysa Zaremba <larysa.zaremba@intel.com>, bpf@vger.kernel.org
+References: <20230512152607.992209-1-larysa.zaremba@intel.com>
+ <20230512152607.992209-10-larysa.zaremba@intel.com>
+In-Reply-To: <20230512152607.992209-10-larysa.zaremba@intel.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=arista.com; s=google; t=1684134264; x=1686726264;
- h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
- :date:message-id:reply-to;
- bh=/gYRbTQBl+syqb2Eyh7/qFHtMJrGM887hszhGYQkyK4=;
- b=i2nQDl01QBW4YVb7oQ9bxCXWpFuz8PLzKDnt78HsHRVxlR/RLSYXiGcqRuTl96ZvVW
- sUuZe05LxPUeLxkvSiaIm/r0a8HYfmucUVelEt9g2xvO+pPoU5k3m4kxPxF7T4hhnfBk
- 3LHpzH+VlpO+Nfc1IHJRoz+0ATOZmyY7pzmgI7l7+/UKUKRXLrUJYbgaHbMmw7aBm4v6
- r8o8uWYsE0PPIXAxjVakjVn7h1OOkSRgqymLZBsJioU6yJuq9jIJAbpbaj+USDHE+78N
- YClTAQ2Rhyw0CosaEWp1ndZqrf42Wi8StDOltZ0fnclXfjvCR+l7xP1eySBX9VDwWyPD
- FCiA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=arista.com header.i=@arista.com
- header.a=rsa-sha256 header.s=google header.b=i2nQDl01
-Subject: [Intel-wired-lan] I225/I226 does not power down the PHY during "ip
- link set dev down"
+ d=redhat.com; 
+ s=mimecast20190719; t=1684164979;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=x7CbMDqqB7Ef24aQqJke8PthcM5mzwIBmyE952+ZY6Q=;
+ b=GSwGpctiY2kG1qAk7HwOJ71e3tOEXgo8cJ7TewAz5SEcR6XDN2M5Al6rYk5aVIV+abS6es
+ 1dqqgTX7gBbnXY51sTUbIlP/kRfTUcesJ35Ck5dMZeJikamvRFPr10dM/49xL1Zn0r+esF
+ MbZl7eLyU1Yenyc1IyVopuyIXPkM7KM=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=GSwGpcti
+Subject: Re: [Intel-wired-lan] [PATCH RESEND bpf-next 09/15] xdp: Add VLAN
+ tag hint
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,202 +125,104 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Salam Noureddine <noureddine@arista.com>
-Content-Type: text/plain; charset="us-ascii"
+Cc: Anatoly Burakov <anatoly.burakov@intel.com>,
+ Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>,
+ Song Liu <song@kernel.org>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Stanislav Fomichev <sdf@google.com>, Maryam Tahhan <mtahhan@redhat.com>,
+ xdp-hints@xdp-project.net, Daniel Borkmann <daniel@iogearbox.net>,
+ John Fastabend <john.fastabend@gmail.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ intel-wired-lan@lists.osuosl.org, brouer@redhat.com,
+ Yonghong Song <yhs@fb.com>, KP Singh <kpsingh@kernel.org>,
+ Jakub Kicinski <kuba@kernel.org>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>,
+ Martin KaFai Lau <martin.lau@linux.dev>
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi
-
-When we set the interface down with "ip link set dev <xyz> down", we
-see that the PHY is not powered off. That is, the LED next to the
-RJ-45 connector is still solid green on the host where the interface
-is "down" and at the peer port. After "ip link set dev <xyz> down",
-"ip link show dev <xyz>" show does not have the "UP" flag but the LED
-is not turned off.
-
-Here are the logs when I tried this on Ubuntu running 6.1.0 kernel:
-
-root@arista-Idaville:/home/arista# ethtool -i enp2s0
-driver: igc
-version: 6.1.0-rc4
-firmware-version: 2017:888d
-expansion-rom-version:
-bus-info: 0000:02:00.0
-supports-statistics: yes
-supports-test: yes
-supports-eeprom-access: yes
-supports-register-dump: yes
-supports-priv-flags: yes
-root@arista-Idaville:/home/arista#
-root@arista-Idaville:/home/arista# lspci -s 0000:02:00.0
-02:00.0 Ethernet controller: Intel Corporation Device 125b (rev 04)
-root@arista-Idaville:/home/arista#
-root@arista-Idaville:/home/arista# ip -d link show dev enp2s0
-2: enp2s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state
-UP mode DEFAULT group default qlen 1000
-    link/ether 00:1c:73:b4:e3:76 brd ff:ff:ff:ff:ff:ff promiscuity 0
-minmtu 68 maxmtu 9216 addrgenmode none numtxqueues 4 numrxqueues 4
-gso_max_size 65536
-gso_max_segs 65535
-root@arista-Idaville:/home/arista#
-root@arista-Idaville:/home/arista# ip link set dev enp2s0 down
-root@arista-Idaville:/home/arista#
 
 
-root@arista-Idaville:/home/arista# cat /sys/class/net/enp2s0/carrier
-/sys/class/net/enp2s0/operstate /sys/class/net/enp2s0/flags
-cat: /sys/class/net/enp2s0/carrier: Invalid argument
-down
-0x1002
-root@arista-Idaville:/home/arista#
+On 12/05/2023 17.26, Larysa Zaremba wrote:
+> Implement functionality that enables drivers to expose VLAN tag
+> to XDP code.
+> 
+> Signed-off-by: Larysa Zaremba <larysa.zaremba@intel.com>
+> ---
+[...]
 
-root@arista-Idaville:/home/arista# ethtool enp2s0
-Settings for enp2s0:
-        Supported ports: [ ]
-        Supported link modes:   10baseT/Half 10baseT/Full
-                                100baseT/Half 100baseT/Full
-                                1000baseT/Full
-                                2500baseT/Full
-        Supported pause frame use: Symmetric
-        Supports auto-negotiation: Yes
-        Supported FEC modes: Not reported
-        Advertised link modes:  10baseT/Half 10baseT/Full
-                                100baseT/Half 100baseT/Full
-                                1000baseT/Full
-                                2500baseT/Full
-        Advertised pause frame use: Symmetric
-        Advertised auto-negotiation: Yes
-        Advertised FEC modes: Not reported
-        Speed: 1000Mb/s
-        Duplex: Full
-        Port: Twisted Pair
-        PHYAD: 0
-        Transceiver: internal
-        Auto-negotiation: on
-        MDI-X: off (auto)
-        Supports Wake-on: pumbg
-        Wake-on: g
-        Current message level: 0x00000007 (7)
-                               drv probe link
-        Link detected: no
-root@arista-Idaville:/home/arista#
+> diff --git a/net/core/xdp.c b/net/core/xdp.c
+> index 41e5ca8643ec..eff21501609f 100644
+> --- a/net/core/xdp.c
+> +++ b/net/core/xdp.c
+> @@ -738,6 +738,30 @@ __bpf_kfunc int bpf_xdp_metadata_rx_hash(const struct xdp_md *ctx, u32 *hash,
+>   	return -EOPNOTSUPP;
+>   }
+>   
 
-root@arista-Idaville:/home/arista# ip -d link show dev enp2s0
-2: enp2s0: <BROADCAST,MULTICAST> mtu 1500 qdisc mq state DOWN mode
-DEFAULT group default qlen 1000
-    link/ether 00:1c:73:b4:e3:76 brd ff:ff:ff:ff:ff:ff promiscuity 0
-minmtu 68 maxmtu 9216 addrgenmode none numtxqueues 4 numrxqueues 4
-gso_max_size 65536 gso_max_segs 65535
-root@arista-Idaville:/home/arista#
+Remember below becomes part of main documentation on HW metadata hints:
+  - https://kernel.org/doc/html/latest/networking/xdp-rx-metadata.html
 
+Hint compiling locally I use:
+  make SPHINXDIRS="networking" htmldocs
 
-Looking at the sources, I see that the following code is commented out
-in igc_phy.c
+> +/**
+> + * bpf_xdp_metadata_rx_ctag - Read XDP packet inner vlan tag.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/drivers/net/ethernet/intel/igc/igc_phy.c?h=v6.3.2#n136
+Is bpf_xdp_metadata_rx_ctag a good function name for the inner vlan tag?
+Like wise below "stag".
 
-void igc_power_down_phy_copper(struct igc_hw *hw)
-{
-    u16 mii_reg = 0;
+I cannot remember if the C-tag or S-tag is the inner or outer vlan tag.
 
-    /* The PHY will retain its settings across a power down/up cycle */
-    hw->phy.ops.read_reg(hw, PHY_CONTROL, &mii_reg);
-    mii_reg |= MII_CR_POWER_DOWN;
+When reading BPF code that use these function names, then I would have
+to ask Google for help, or find-and-read this doc.
 
-    /* Temporary workaround - should be removed when PHY will implement
-     * IEEE registers as properly
-     */
-    /* hw->phy.ops.write_reg(hw, PHY_CONTROL, mii_reg); */
-    usleep_range(1000, 2000);
-}
+Can we come-up with a more intuitive name, that e.g. helps when reading
+the BPF-prog code?
 
-Uncommenting above line works. However, Intel support suggested using
-"Go Link Disconnect" (bit number 5) in the PHPM register to turn the
-PHY off. The documentation in the "Intel Ethernet Controller
-I225/I226" User manual suggests accessing this register by following
-the semantics to acquire and release the SW_FW_SYNC semaphore. If we
-go this way, after a few link down/up, I run into error. Please see
-the dmesg logs and my code below. Perhaps I'm accessing the register
-incorrectly?
+> + * @ctx: XDP context pointer.
+> + * @vlan_tag: Return value pointer.
+> + *
 
-bash-4.2# dmesg | grep -B3 igc_
+IMHO right here, there should be a description.
 
-[  8.936695] Copyright(c) 2018 Intel Corporation.
-[  8.936739] igc 0000:07:00.0: PCIe PTM not supported by PCIe bus/controller
-[  8.981607] igc 0000:07:00.0 (unnamed net_device) (uninitialized): PHC added
-[  9.003934] igc_power_down_phy_copper: 135 link DOWN. retval 0
-[  9.003942] igc_power_down_phy_copper: 142 link DOWN
+E.g. for what a VLAN "tag" means.  I assume a "tag" isn't the VLAN id,
+but the raw VLAN tag that also contains the prio numbers etc.
 
---
-:
-[  15.791931] igc_power_up_phy_copper: 113 link UP. retval 0
-[  15.791934] igc_power_up_phy_copper: 118 link UP
+It this VLAN tag expected to be in network-byte-order ?
+IMHO this doc should define what is expected (and driver devel must
+follow this).
 
---
-:
-[  71.918835] igc 0000:07:00.0 ma1: Error on hardware initialization.
-[  72.986277] igc_power_down_phy_copper: 135 link DOWN. retval -13.
-[  74.975243] igc_power_up_phy_copper: 113 link UP. retval -13
-[  77.074806] igc 0000:07:00.0 ma1: Error on hardware initialization
-[  78.142251] igc_power_down_phy_copper: 135 link DOWN. retval -13
+> + * Returns 0 on success or ``-errno`` on error.
+> + */
+> +__bpf_kfunc int bpf_xdp_metadata_rx_ctag(const struct xdp_md *ctx, u16 *vlan_tag)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> +
+> +/**
+> + * bpf_xdp_metadata_rx_stag - Read XDP packet outer vlan tag.
+> + * @ctx: XDP context pointer.
+> + * @vlan_tag: Return value pointer.
+> + *
+> + * Returns 0 on success or ``-errno`` on error.
 
---
-:
-[ 134.156688] igc_power_up_phy_copper: 113 link UP. retval -13
+IMHO we should provide more guidance to expected return codes, and what
+they mean.  IMHO driver developers must only return codes that are
+described here, and if they invent a new, add it as part of their patch.
 
-bash-4.2#
+See, formatting in bpf_xdp_metadata_rx_hash and check how this gets
+compiled into HTML.
 
 
-108 void igc_power_up_phy_copper(struct igc_hw *hw)
-109 {
-110   struct igc_phy_info *phy = &hw->phy;
-111   s32 ret_val = phy->ops.acquire(hw);
-112
-113   printk(KERN_INFO "%s: %d link UP. retval %d\n", __func__,
-__LINE__, ret_val);
-114   if (!ret_val) {
-115     u32 phpm = rd32(IGC_I225_PHPM);
-116     phpm &= ~0x20;
-117     wr32(IGC_I225_PHPM, phpm);
-118     printk(KERN_INFO "%s: %d link UP\n", __func__, __LINE__);
-119     usleep_range(1000, 2000);
-120   }
-121 }
-122
+> + */
+> +__bpf_kfunc int bpf_xdp_metadata_rx_stag(const struct xdp_md *ctx, u16 *vlan_tag)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> +
 
-123 /**
-124 * igc_power_down_phy_copper - Power down copper PHY
-125 * @hw: pointer to the HW structure
-126 *
-127 * Power down PHY to save power when interface is down and wake on lan
-128 * is not enabled.
-129 */
-130 void igc_power_down_phy_copper(struct igc_hw *hw)
-131 {
-132   struct igc_phy_info *phy = &hw->phy;
-133
-134   s32 ret_val = phy->ops.acquire(hw);
-135   printk(KERN_INFO "%s: %d link DOWN. retval %d\n", __func__,
-__LINE__, ret_val);
-136   if (!ret_val) {
-137     u32 phpm = rd32(IGC_I225_PHPM);
-138     phpm |= 0x20;
-139     wr32(IGC_I225_PHPM, phpm);
-140
-141     phy->ops.release(hw);
-142     printk(KERN_INFO "%s: %d link DOWN\n", __func__, __LINE__);
-143     usleep_range(1000, 2000);
-144   }
-145 }
-
-What is the preferred way? We are using linux kernel version 5.10.165
-but I see the same code for igc_power_down_phy_copper() in the kernel
-version 6.3.2.
-
-Thank you.
-Prasad
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
