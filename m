@@ -4,83 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32D17C77B75
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 17 May 2023 13:03:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 990D2C77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 17 May 2023 13:03:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id C9E9E4026E;
-	Wed, 17 May 2023 13:03:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C9E9E4026E
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4439A40913;
+	Wed, 17 May 2023 13:03:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4439A40913
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684328618;
-	bh=slFmYUDchfPoPeQhjiNZxA+PoYsSioYRRd4IbXe2xME=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=XA1kkjtxTorfBFK8WMG7cY9vYeHORVE2UL0Fe4QoDo9Oh1h7UwYPEnUK0QcFfysvd
-	 uiAloHfpWMm2xKWq76fegpzhmOiJRkvdf+SmakMaXQi9jXvZs6kJUHbR40879pC0h0
-	 XM3JaEWTN+SRm+tAnc2qtrC5qvculuUpjZa+XkSPo6/wndT7axkPyAbJvn68RNDtIc
-	 xnrVgntfR9nku3IFI4SWutriaVxs0xhOK5Ap/H4Bg7otvjRRHBy/j6mnAg+DZ/LQpz
-	 Z3hnptG/hC1rc1KJsVn0SAmn6gtEoN9ouojfLeqXjYCqBjleAgPsqnsML2Co1XeF6h
-	 6MwsH5Fb9QDRQ==
+	s=default; t=1684328623;
+	bh=i1KYZPNvHa/1xj2Ly12MHdSYrulPaO/rA87RfElb2Ro=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=4ILEOc+XbPqxcYh6B5L3gAlbFBLbM+6ULS2dJ6uZNJDZiXuGrU+7o/MtbGpMVapjV
+	 CnHHub/VDYl3lOPi6wsBAlJO5Ft5YWwLeORwaRasv8UfFMDKCtJCk5oFvTK4/MziXl
+	 /j4rfAWz+uQmTNNBE+nZRkZqdeG0LJcJqqWZpcmlIXnoK3m5mIWLEgZNZrpHju1E+a
+	 Susv75RaA8N2l/SJkO1TlzCweUXN8mRXYTu5P/EW/tMBTxgL840EpwZIZlY/V3FzQ9
+	 6gph+mdki0Za7BjFycWyByn3hCvWLMXnxRPeAcCW3MIvwHxNbSndS910ZCtBBDldzg
+	 NqUldWt6Z8DzQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Yg_Y33rhODSv; Wed, 17 May 2023 13:03:38 +0000 (UTC)
+	with ESMTP id 36BBKGyTmU1h; Wed, 17 May 2023 13:03:42 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CC60740182;
-	Wed, 17 May 2023 13:03:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CC60740182
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2F82741593;
+	Wed, 17 May 2023 13:03:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F82741593
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 4F4051BF489
- for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:03:36 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id C19821BF489
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:03:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 24951405CE
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9832340182
  for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:03:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 24951405CE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9832340182
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id b22H_KQrh2_S for <intel-wired-lan@lists.osuosl.org>;
- Wed, 17 May 2023 13:03:35 +0000 (UTC)
+ with ESMTP id Lq689BhvWEQv for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 17 May 2023 13:03:36 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5A26F40182
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0722A4026E
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5A26F40182
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 0722A4026E
  for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:03:35 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="332112190"
-X-IronPort-AV: E=Sophos;i="5.99,282,1677571200"; d="scan'208";a="332112190"
+X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="332112199"
+X-IronPort-AV: E=Sophos;i="5.99,282,1677571200"; d="scan'208";a="332112199"
 Received: from orsmga008.jf.intel.com ([10.7.209.65])
  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 May 2023 06:03:30 -0700
+ 17 May 2023 06:03:31 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="732418367"
-X-IronPort-AV: E=Sophos;i="5.99,282,1677571200"; d="scan'208";a="732418367"
+X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="732418383"
+X-IronPort-AV: E=Sophos;i="5.99,282,1677571200"; d="scan'208";a="732418383"
 Received: from pgardocx-mobl1.igk.intel.com ([10.237.95.41])
  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 May 2023 06:03:28 -0700
+ 17 May 2023 06:03:30 -0700
 From: Piotr Gardocki <piotrx.gardocki@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 17 May 2023 15:03:21 +0200
-Message-Id: <20230517130323.332462-1-piotrx.gardocki@intel.com>
+Date: Wed, 17 May 2023 15:03:22 +0200
+Message-Id: <20230517130323.332462-2-piotrx.gardocki@intel.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230517130323.332462-1-piotrx.gardocki@intel.com>
+References: <20230517130323.332462-1-piotrx.gardocki@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1684328615; x=1715864615;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=xrxODUmPKKMGPmZugmCF5BOwuF4i5BzlArV966rFs90=;
- b=nPDPdDFgMMezJFqZanlYLSkfJP9DHJpuxBa6jK+p7IJLY5xtgrtx/1hs
- SW33jCPFbl5ZHjh5Y3a5hcVZX2UDxRI+SzBr/zVReUp7317GaGFMPuHyq
- IKmf/3BSkBEhKVwqLuSY+AsjkExErO+JOf0zA7Mm6eEHF2wwx1SNKeIiJ
- hwp1EGXfAlayKAUxQiRSbtjGbhMv1OyYUIw/KQnwjMDeI0FzuNhUAi/Ti
- 38Nb62DozuSOCkw8NeNKu7MTUbTtX450h3pn987+6f1uTLugSPrVJneXA
- ZKc0JUvZkZohnLblITJbuNisV8foVXU8+uP/FREBckeEMm3D15myD6h7Q
- w==;
+ t=1684328616; x=1715864616;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=jPrzCUE6IAZlk2meSUQ8bOCLudIGvUHCb+t6Sa4sFI4=;
+ b=nbT84pGOk929Jzzubkq1VaJ7ZuALRnWQL04L48vCftT64I0JOLN8yxdd
+ dRfxEA9WXeR9Oh7WQuOuwUo3DnQG5PyL/7Z31Pe10AtBh3Mm98ou11ybz
+ jEOTvai0lmHir4Vh/fERvpKJUmpqoW5s3OUWpSZzJ+bYOkIGucg/jdv+U
+ LMHh5cjnd9rE4Xq74GaB9sjexCo9jyggaHign2AFd/WnHnGwpZ5hTKTPp
+ c2pVjYR/GeDerDNvXsvncDl76vVqbQZZ8ANlKmtc4WShPhuNp4BFjvI3W
+ Keo8pbz2U7dw83DJzJbMRuETj0DBhDHJVLaIBIOgCPe9aS+pUdCQrXLnS
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nPDPdDFg
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/2] iavf: cleanup procedure
- for changing interface's MAC address
+ header.a=rsa-sha256 header.s=Intel header.b=nbT84pGO
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 1/2] iavf: add check for
+ current MAC address in set_mac callback
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,31 +102,47 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This patchset cleanups .ndo_set_mac_address callback in iavf.
+In some cases it is possible for kernel to come with request
+to change primary MAC address to the address that is actually
+already set on the given interface.
 
-The second patch addresses potential issue with iavf_add_filter function
-failing to add a new MAC filter to the list. However, it does make
-an assumption that the new MAC address is different than the current one.
-The first patch protects from this issue by skipping the entire procedure
-if the MAC address doesn't actually change.
+If the old and new MAC addresses are equal there is no need
+for going through entire routine, including AdminQ and
+waitqueue.
 
-Without these two patches iavf is sending two AdminQ commands to PF driver:
-VIRTCHNL_OP_ADD_ETH_ADDR to add new MAC filter and VIRTCHNL_OP_DEL_ETH_ADDR
-to remove the old one. Even though it does not seem to cause issues, it is
-very error prone. Skipping these callbacks is more reliable.
+This patch adds proper check to return fast from the function
+in these cases. The same check can also be found in i40e and
+ice drivers.
 
-v2: added missing Signed-off-by and comma in second patch
-v3: fixed malformed second patch
+An example of such case is adding an interface to bonding
+channel in balance-alb mode:
+modprobe bonding mode=balance-alb miimon=100 max_bonds=1
+ip link set bond0 up
+ifenslave bond0 <eth>
 
-Piotr Gardocki (1):
-  iavf: add check for current MAC address in set_mac callback
+Signed-off-by: Piotr Gardocki <piotrx.gardocki@intel.com>
+Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+---
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Przemek Kitszel (1):
-  iavf: fix err handling for MAC replace
-
- drivers/net/ethernet/intel/iavf/iavf_main.c | 48 +++++++++++----------
- 1 file changed, 25 insertions(+), 23 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+index e18d7cacf99c..888d063478a1 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_main.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+@@ -1085,6 +1085,12 @@ static int iavf_set_mac(struct net_device *netdev, void *p)
+ 	if (!is_valid_ether_addr(addr->sa_data))
+ 		return -EADDRNOTAVAIL;
+ 
++	if (ether_addr_equal(netdev->dev_addr, addr->sa_data)) {
++		netdev_dbg(netdev, "already using mac address %pM\n",
++			   addr->sa_data);
++		return 0;
++	}
++
+ 	ret = iavf_replace_primary_mac(adapter, addr->sa_data);
+ 
+ 	if (ret)
 -- 
 2.34.1
 
