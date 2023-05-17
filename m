@@ -4,86 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF812C77B7A
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 17 May 2023 13:03:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F99FC7EE2E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 17 May 2023 13:33:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9928D4026E;
-	Wed, 17 May 2023 13:03:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9928D4026E
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1B98C4029F;
+	Wed, 17 May 2023 13:33:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1B98C4029F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684328627;
-	bh=dLbct2j7Afa6MSVqCezmtca1S+r/vI0OeIBHyEqpcRE=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1684330431;
+	bh=7a0AJaeH+Nxn7T6pd8CSjOtlaoZYtz7+akg3Ce83I0w=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=5w1267pEv5SnUmEdzac2Vj9oA+yB+cG1gGinAOf2+yOrcsJr5xMRkAU5XUgnGMMhV
-	 CzAfDiLbsBpex08KclasWDB1T0EZSYNZWiBO6tgpw4cHuI3C5Ey055uEbJYkDtuAsA
-	 BkvKDIgvSRXtN3Mum4OyuGMHkOUQB0PoxtjfiEnYKsXYneE6azUeMBVp60GNY5AQ7e
-	 T+/EZWJgWASyAKkXH/OfdMIKxWQMuTXH46xT5tvkc1HAauVlrqllvr9BL8agUX+3Hn
-	 gdh7igaro+K4o3vMga7FMNtyzNoQk7l2rw4r0r1/yGnvF9pkewr6sB3/9e+bIx9Cmy
-	 KEAl1BizAWMqQ==
+	b=YRnMLdZNgCFj9sxldi2zI/C59E4nJCE517kUTM9yYdBuNKX+KsUD7x53eedlP8Qdz
+	 uvdU5QosAw/DlRq0LLW/lUIf1G5md4lx+1X0AUj2ees07mOB/TYJm7ZtOL6JIjMhLh
+	 wEngi0Fp0IkwcI4+ygOwYcKN0E/iVs1eqkngs2rlus0z0jqzNzh7s1vMBk6ZXOHnHD
+	 PWiVlCBbegRjqTrONRG57bZWvjaghA7J7Xu/ZMsUPkXuLRedgjCYlvB4IxtLb4k3ul
+	 nckz6r4lIcErOzhW4nHXiDq8AOEPGsr2HGKUvoRcZEeEsO0Uv8QKs28rYjfTVXTAni
+	 JYQbDWgd/O6Sw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id yULj8dkniuyp; Wed, 17 May 2023 13:03:46 +0000 (UTC)
+	with ESMTP id a2Fe46vb0BCL; Wed, 17 May 2023 13:33:50 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8F5E1429E7;
-	Wed, 17 May 2023 13:03:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8F5E1429E7
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 830251BF489
- for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:03:38 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3B9A840438;
+	Wed, 17 May 2023 13:33:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3B9A840438
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 64FC91BF487
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:33:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5BCF5429E4
- for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:03:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5BCF5429E4
+ by smtp1.osuosl.org (Postfix) with ESMTP id 41D6F81B25
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:33:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 41D6F81B25
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HqI_aKTncJ4C for <intel-wired-lan@lists.osuosl.org>;
- Wed, 17 May 2023 13:03:37 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AD73B4026E
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- by smtp2.osuosl.org (Postfix) with ESMTPS id AD73B4026E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:03:37 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="332112220"
-X-IronPort-AV: E=Sophos;i="5.99,282,1677571200"; d="scan'208";a="332112220"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 May 2023 06:03:33 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="732418402"
-X-IronPort-AV: E=Sophos;i="5.99,282,1677571200"; d="scan'208";a="732418402"
-Received: from pgardocx-mobl1.igk.intel.com ([10.237.95.41])
- by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 May 2023 06:03:31 -0700
-From: Piotr Gardocki <piotrx.gardocki@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 17 May 2023 15:03:23 +0200
-Message-Id: <20230517130323.332462-3-piotrx.gardocki@intel.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230517130323.332462-1-piotrx.gardocki@intel.com>
-References: <20230517130323.332462-1-piotrx.gardocki@intel.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id FQ6cmGCwUy8Q for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 17 May 2023 13:33:46 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6CBCF81A6A
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 6CBCF81A6A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 13:33:46 +0000 (UTC)
+Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id E993C61EA1BFF;
+ Wed, 17 May 2023 15:33:21 +0200 (CEST)
+Message-ID: <52dbbc99-85a8-12a3-6c27-99c08a7e7ca1@molgen.mpg.de>
+Date: Wed, 17 May 2023 15:33:21 +0200
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1684328617; x=1715864617;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=HIMpICse2VNHuIzBD341lOC4xDdBwBXXE7eCBN8WofQ=;
- b=O2pj7eU8kgcQUYZ00VbWRsOaHNQVQt/xfs0zUFKVdFeA8rFhC3tGMMjP
- ndGQrlAVP5bQ6u2aA4E90EW67lH+U+mV+q5VOvKREExkJgxQvSi7BcLwo
- Aiqu092iXck5+TQreXVAmqTyxemtApuUQRIG485ADeqJcyhrV7GAJymA2
- MgpS9QlZNgcNXkp9/xuxdeJw5D0t2PrSvnJTRpvaia5avxeK2Mpy1IUJq
- 0ADJpzAfxnQCe0V+XYmV8saGm9nkAgYpsvuJ6r9tkKR0j4gRIa7cDHMPa
- f7NRcmS/8VtX4EQAX6hKq0B4Tf8v/zPIMnN85rpt9nmeH0XddpV61KfOU
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=O2pj7eU8
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 2/2] iavf: fix err handling
- for MAC replace
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+To: Piotr Gardocki <piotrx.gardocki@intel.com>
+References: <20230517125247.331227-1-piotrx.gardocki@intel.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20230517125247.331227-1-piotrx.gardocki@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 0/2] iavf: cleanup
+ procedure for changing interface's MAC address
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,96 +77,21 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: przemyslaw.kitszel@intel.com
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ intel-wired-lan@lists.osuosl.org
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-
-Defer removal of current primary MAC until a replacement is successfully added.
-Previous implementation would left filter list with no primary MAC.
-This was found while reading the code.
-
-The patch takes advantage of the fact that there can only be a single primary
-MAC filter at any time.
-
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Piotr Gardocki <piotrx.gardocki@intel.com>
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 42 ++++++++++-----------
- 1 file changed, 19 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 888d063478a1..68aa680f7fec 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1007,40 +1007,36 @@ int iavf_replace_primary_mac(struct iavf_adapter *adapter,
- 			     const u8 *new_mac)
- {
- 	struct iavf_hw *hw = &adapter->hw;
--	struct iavf_mac_filter *f;
-+	struct iavf_mac_filter *new_f;
-+	struct iavf_mac_filter *old_f;
- 
- 	spin_lock_bh(&adapter->mac_vlan_list_lock);
- 
--	list_for_each_entry(f, &adapter->mac_filter_list, list) {
--		f->is_primary = false;
-+	new_f = iavf_add_filter(adapter, new_mac);
-+	if (!new_f) {
-+		spin_unlock_bh(&adapter->mac_vlan_list_lock);
-+		return -ENOMEM;
- 	}
- 
--	f = iavf_find_filter(adapter, hw->mac.addr);
--	if (f) {
--		f->remove = true;
-+	old_f = iavf_find_filter(adapter, hw->mac.addr);
-+	if (old_f) {
-+		old_f->is_primary = false;
-+		old_f->remove = true;
- 		adapter->aq_required |= IAVF_FLAG_AQ_DEL_MAC_FILTER;
- 	}
--
--	f = iavf_add_filter(adapter, new_mac);
--
--	if (f) {
--		/* Always send the request to add if changing primary MAC
--		 * even if filter is already present on the list
--		 */
--		f->is_primary = true;
--		f->add = true;
--		adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
--		ether_addr_copy(hw->mac.addr, new_mac);
--	}
-+	/* Always send the request to add if changing primary MAC,
-+	 * even if filter is already present on the list
-+	 */
-+	new_f->is_primary = true;
-+	new_f->add = true;
-+	adapter->aq_required |= IAVF_FLAG_AQ_ADD_MAC_FILTER;
-+	ether_addr_copy(hw->mac.addr, new_mac);
- 
- 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
- 
- 	/* schedule the watchdog task to immediately process the request */
--	if (f) {
--		mod_delayed_work(adapter->wq, &adapter->watchdog_task, 0);
--		return 0;
--	}
--	return -ENOMEM;
-+	mod_delayed_work(adapter->wq, &adapter->watchdog_task, 0);
-+	return 0;
- }
- 
- /**
--- 
-2.34.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RGVhciBQaW90ciwKCgpUaGFuayB5b3UgZm9yIHlvdXIgcGF0Y2hlcy4KCkFtIDE3LjA1LjIzIHVt
+IDE0OjUyIHNjaHJpZWIgUGlvdHIgR2FyZG9ja2k6Cj4gVGhpcyBwYXRjaHNldCBjbGVhbnVwcyAu
+bmRvX3NldF9tYWNfYWRkcmVzcyBjYWxsYmFjayBpbiBpYXZmLgoKSnVzdCBhIHNtYWxsIHR5cG8g
+bm90ZSwgdGhhdCB0aGUgdmVyYiAqY2xlYW4gdXAqIGlzIHNwZWxsZWQgd2l0aCBhIHNwYWNlOgoK
+PiBDbGVhbiB1cCBwcm9jZWR1cmUgZm9yIGNoYW5nZSBpbnRlcmZhY2XigJlzIE1BQyBhZGRyZXNz
+Cgoob3IgQ2xlYW4gcHJvY2VkdXJlIOKApiB1cCkKClNhbWUgZm9yIHRoZSBmaXJzdCBsaW5lOgoK
+PiBUaGlzIHBhdGNoc2V0IGNsZWFucyAubmRvX3NldF9tYWNfYWRkcmVzcyBjYWxsYmFjayB1cCBp
+biBpYXZmLgoKCktpbmQgcmVnYXJkcywKClBhdWwKX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX18KSW50ZWwtd2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRlbC13
+aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczovL2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0
+aW5mby9pbnRlbC13aXJlZC1sYW4K
