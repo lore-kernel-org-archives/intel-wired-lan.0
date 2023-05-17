@@ -1,83 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20133C7EE2C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 17 May 2023 00:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A171DC77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 17 May 2023 01:28:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B4E8D40A9F;
-	Wed, 17 May 2023 00:19:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B4E8D40A9F
+	by smtp3.osuosl.org (Postfix) with ESMTP id 25DB761385;
+	Wed, 17 May 2023 01:28:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 25DB761385
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684282789;
-	bh=oeWWc+X4py9f0xCAlDGf26xEKD3p5NmNJLlucE4/8Vs=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=oyql1veRRK6VEKVeG7bW9g4NuUDuCV66JxrFtrcmi12bzzRRCM3htoVr000Ag3172
-	 8jkncFz7Nbe1OP8O/pXZvHe81aQ8xBoTmW7wI7hPAoRmm48W5Nm4o3yssg+jTThXUE
-	 nVPep3OGtseEARMVO8eGC8sowTES58SHHKDr0nGTCOGWrLLTPcHeAWcVihyG17D9qU
-	 ONVP3TGI6FwT5XusCWGGQ60SmNrtVPueC5AgTtvpsF9n9BVY5bHmVNXufIdHZVMfPI
-	 0/59sWvxXIhPvR/vn8+mniTOQBwcomOGPp5tWtfxYf8zlmXpozpsK7BBQ00nYMeHfT
-	 V2qCUI9kRmctQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3o4LPVm4QLwN; Wed, 17 May 2023 00:19:49 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id C43A640BDC;
-	Wed, 17 May 2023 00:19:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C43A640BDC
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 7DF851BF909
- for <intel-wired-lan@osuosl.org>; Wed, 17 May 2023 00:19:47 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4CE2260BF0
- for <intel-wired-lan@osuosl.org>; Wed, 17 May 2023 00:19:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4CE2260BF0
+	s=default; t=1684286891;
+	bh=T1X7W3wZRO1mU3iBhB8clNOMN8W9OZ60IQ2gfnJ/h08=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=tTr4+OANA4t18rGR0dEXvhOZROCL+clYkdb0WO3nQl2pblIndbAwNWYEH+ZUQz0wO
+	 dsiUcubl/9ZpyUF+hp8/gMXaTGKjjzMYtn5Exh6MXHmcQdEtNutQzXh9fYKzIrXOWB
+	 9oAWEF8WJPxsOVXz6W2rjqIQjnzZBg6lerXqqby18MzyqiuC+ZIgTwMEMwUh8dQyjj
+	 UQ7z0ew5jEOBX1o5UzwsvsVgw2TPUHxmfgm79/IFuZLX5WfCUojFBL+WzHv7G6DDTs
+	 wsTWs3WEi6aTwApA9kY7OzbnWUtfFJAxJsDttJjRrC2VBVgO/X7k6L5/giS2gYA9fG
+	 dWvUDiLzooMqQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ieftLjqCs1DH for <intel-wired-lan@osuosl.org>;
- Wed, 17 May 2023 00:19:46 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 05C2960A88
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 05C2960A88
- for <intel-wired-lan@osuosl.org>; Wed, 17 May 2023 00:19:45 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10712"; a="354794241"
-X-IronPort-AV: E=Sophos;i="5.99,280,1677571200"; d="scan'208";a="354794241"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 May 2023 17:19:44 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10712"; a="791276866"
-X-IronPort-AV: E=Sophos;i="5.99,280,1677571200"; d="scan'208";a="791276866"
-Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
- by FMSMGA003.fm.intel.com with ESMTP; 16 May 2023 17:19:42 -0700
-From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-To: intel-wired-lan@osuosl.org
-Date: Wed, 17 May 2023 08:18:12 +0800
-Message-Id: <20230517001812.8101-1-muhammad.husaini.zulkifli@intel.com>
-X-Mailer: git-send-email 2.17.1
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1684282786; x=1715818786;
- h=from:to:cc:subject:date:message-id;
- bh=UoamNPbMHjDvvT8xRRln/ycJc0PUyY/8ccy+6Q13KXA=;
- b=aWj7ty5RnoWYt+7yS2wOiAmwjxOEUSmeBJLgN2iFj8hik1TlnUKDUeaw
- DLw+oJ15rOrasaIeM9aMLCfZY1ksoKsNYTYwXYiB2no3ShtgzBmv3otWi
- Sv2W+FV/lMVbHBLI1VC39ngff5c3P1qTK12R8yoy2d1IwYrRVNXLD2E6/
- b0fjQns/6gOPAiAWS7s0hkOqyThTm+Y+MF9EM80+iA7qh6lSRvO9zoThl
- Vmm6+r6iTYm6JpeiQn8+44U400DmncgVMG4lImfA8BPKYR9dG0Ra15KGi
- CG9eDySGFW2MS+q3sSbL6Da5UQrNVDngeUXLsuSnPeUsfXEVDZJG7z1EP
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=aWj7ty5R
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] igc: Remove delay during TX
- ring configuration
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id yxFwItAEtrID; Wed, 17 May 2023 01:28:09 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7450961379;
+	Wed, 17 May 2023 01:28:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7450961379
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id CCB381BF2B6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 01:28:08 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9BA3240C12
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 01:28:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9BA3240C12
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id rwgZp5f7Z_UF for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 17 May 2023 01:28:06 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 459AD403FB
+Received: from mail-177132.yeah.net (mail-177132.yeah.net [123.58.177.132])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 459AD403FB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 17 May 2023 01:28:04 +0000 (UTC)
+Received: from john-VirtualBox (unknown [111.18.136.15])
+ by smtp2 (Coremail) with SMTP id C1UQrACHj19+LWRkaM5rCA--.15260S2;
+ Wed, 17 May 2023 09:27:28 +0800 (CST)
+Date: Wed, 17 May 2023 09:27:26 +0800
+From: Baozhu Ni <nibaozhu@yeah.net>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "moderated list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
+ "open list:NETWORKING DRIVERS" <netdev@vger.kernel.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ Outreachy <outreachy@lists.linux.dev>
+Message-ID: <20230517012726.GA1785@john-VirtualBox>
+MIME-Version: 1.0
+Content-Disposition: inline
+X-CM-TRANSID: C1UQrACHj19+LWRkaM5rCA--.15260S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7JF18GFW8KFWDJFW7JF4xZwb_yoWfWwbE9r
+ 4Iv3Z7KrZ8GF1Fkr45ArWxZ342kw1qqryvkFyfK3savryDZr4rWryv9r17GFsI9w4fJa4D
+ AryaqF1fC3y29jkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+ 9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUnk-BtUUUUU==
+X-Originating-IP: [111.18.136.15]
+X-CM-SenderInfo: 5qlet0x2kxq5hhdkh0dhw/1tbiBQByelsVBYuNKgAAsq
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=yeah.net; 
+ s=s110527; h=Date:From:Subject:Message-ID:MIME-Version:
+ Content-Type; bh=FMRYP780oGsC/V150FLH6SQ7V5SyK3kirmT0MA+o3jQ=;
+ b=nyWd2aKVJRk1LmAs2nu7eLkLXg4knrgjmR1HWQ/2YkWMjk7fgm9Iee+4tMiZNe
+ k0a7oAb0iCtEfIgmeWGpgMrs2KCvS/43HGuSetgP0v0LVj/Uht/IXS+cHid2GQ5i
+ IgHL7+pyuQrPliYzw5kuNgOCudnxPlA/9xB4KUS6/BJOo=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=yeah.net header.i=@yeah.net
+ header.a=rsa-sha256 header.s=s110527 header.b=nyWd2aKV
+Subject: [Intel-wired-lan] [PATCH v2 net-next] e1000e: Add @adapter
+ description to kdoc
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,49 +94,38 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: anthony.l.nguyen@intel.com
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Remove unnecessary delay during the TX ring configuration.
-This will cause delay, especially during link down and
-link up activity.
+Provide a description for the kernel doc of the @adapter
+of e1000e_trigger_lsc()
 
-Furthermore, old SKUs like as I225 will call the reset_adapter
-to reset the controller during TSN mode Gate Control List (GCL)
-setting. This will add more time to the configuration of the
-real-time use case.
-
-It doesn't mentioned about this delay in the Software User Manual.
-It might have been ported from legacy code I210 in the past.
-
-Fixes: 13b5b7fd6a4a ("igc: Add support for Tx/Rx rings")
-Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
-
+Signed-off-by: Baozhu Ni <nibaozhu@yeah.net>
 ---
-V1 -> V2: Update commit message.
----
----
- drivers/net/ethernet/intel/igc/igc_main.c | 1 -
- 1 file changed, 1 deletion(-)
+v2:
+  - let the subject and description clearer
+v1: https://lore.kernel.org/lkml/ZGNl8yHEko7LpCBr@corigine.com/
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index d1e8a5eee811b..a65ddddcda5d0 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -711,7 +711,6 @@ static void igc_configure_tx_ring(struct igc_adapter *adapter,
- 	/* disable the queue */
- 	wr32(IGC_TXDCTL(reg_idx), 0);
- 	wrfl();
--	mdelay(10);
+ drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 6f5c16aebcbf..cadeb5bc5e16 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4198,7 +4198,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
  
- 	wr32(IGC_TDLEN(reg_idx),
- 	     ring->count * sizeof(union igc_adv_tx_desc));
+ /**
+  * e1000e_trigger_lsc - trigger an LSC interrupt
+- * @adapter: 
++ * @adapter: board private structure
+  *
+  * Fire a link status change interrupt to start the watchdog.
+  **/
 -- 
-2.17.1
+2.25.1
 
 _______________________________________________
 Intel-wired-lan mailing list
