@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00ABEC77B7A
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 May 2023 10:26:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65837C77B7D
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 May 2023 10:26:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A308142845;
-	Thu, 18 May 2023 10:26:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A308142845
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0CA4D4282E;
+	Thu, 18 May 2023 10:26:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0CA4D4282E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684405613;
-	bh=Vyfcs0IH1tFVx/EkuinAYelocccVHAX4bCA0XqDAv3I=;
+	s=default; t=1684405618;
+	bh=ku1nNW4qnDVKKzrj6+W58eWGF594c6WXVx7g3+sJXD4=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Z8ZF2uGgaZSK42ugDuJMYzcM3pV2DH7e9opORejZVSnp/LDZoS9sgGJFEDXQG5hde
-	 NSH+7OsfOh8YndrX5BzxIc1dTJywY1qQQUliXPmbVEFcvTPZK1AOHUJO93uKhiKMCH
-	 RK+hJNRkWMokgXuHxleGkZpPB9oEeUag+xKwPesqFxx6IIYBYCL3TKBpCWR7+ZJr6B
-	 aRag2DFBz1hw25Z7z7vfXa792gzBAWieQUJ1vo2ZnRBfJPBDzBPP2T1O9hMQXb07G8
-	 RJc3hryZMEFt34XY0fEjf5CLeIwBbguolM/9HnkaAi5AF7rQnbTWa+ne+S+KN/OYNW
-	 IeuKmW7/uUXXw==
+	b=IvC/Ciw+HItVTApyewktvweaqUfl1FZizn2d5bXfZtseCtwa1geX0Noi/MOIrRtg4
+	 ZuAW1fHia9oTSZcOQzuALla6j+FjTT6ygp9QSRlDsIOuWGI9aqP96ZKf+Klj2zmAmV
+	 bvit2OUo4PKb8AdTfrG2oayQ9i0E4O3QUdW2SZvNs9PF3UvcS6Uj7dby+lCX7gQft4
+	 LWlZXUyc15BuifvFpbarRTORSCVWmVK8TKG8bKF4ESUu3oOVbdrb8XVpkqtwH0AkW4
+	 gQq8PR/tjl2oBq/Od3KmVylsdw/GsMgmqX4WZAKuibPjad4iTyBIL9gSN/LU9w176U
+	 oYt/5wR8gjpmg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id kRi0rlMoTGJX; Thu, 18 May 2023 10:26:52 +0000 (UTC)
+	with ESMTP id Q4EydPfJ4cUt; Thu, 18 May 2023 10:26:57 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3AF444287F;
-	Thu, 18 May 2023 10:26:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3AF444287F
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2F8F41BF955
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 May 2023 10:26:39 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 803E84287F;
+	Thu, 18 May 2023 10:26:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 803E84287F
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id C51A51BF574
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 May 2023 10:26:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 3CCAD405D7
+ by smtp1.osuosl.org (Postfix) with ESMTP id E9952843C4
  for <intel-wired-lan@lists.osuosl.org>; Thu, 18 May 2023 10:26:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3CCAD405D7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E9952843C4
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ZFcVOBHP9RAY for <intel-wired-lan@lists.osuosl.org>;
- Thu, 18 May 2023 10:26:37 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 4jDU9-CbD0jQ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 18 May 2023 10:26:38 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8283A4048D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 28814843C6
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 8283A4048D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 18 May 2023 10:26:37 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="438371434"
-X-IronPort-AV: E=Sophos;i="5.99,285,1677571200"; d="scan'208";a="438371434"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 28814843C6
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 18 May 2023 10:26:38 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="438371447"
+X-IronPort-AV: E=Sophos;i="5.99,285,1677571200"; d="scan'208";a="438371447"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 May 2023 03:26:25 -0700
+ 18 May 2023 03:26:28 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="767143743"
-X-IronPort-AV: E=Sophos;i="5.99,285,1677571200"; d="scan'208";a="767143743"
+X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="767143757"
+X-IronPort-AV: E=Sophos;i="5.99,285,1677571200"; d="scan'208";a="767143757"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga008.fm.intel.com with ESMTP; 18 May 2023 03:26:24 -0700
+ by fmsmga008.fm.intel.com with ESMTP; 18 May 2023 03:26:26 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 37C0A36C11;
- Thu, 18 May 2023 11:26:23 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id EA63936C1E;
+ Thu, 18 May 2023 11:26:25 +0100 (IST)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 18 May 2023 12:25:05 +0200
-Message-Id: <20230518102509.20913-7-wojciech.drewek@intel.com>
+Date: Thu, 18 May 2023 12:25:09 +0200
+Message-Id: <20230518102509.20913-11-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230518102509.20913-1-wojciech.drewek@intel.com>
 References: <20230518102509.20913-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1684405597; x=1715941597;
+ t=1684405598; x=1715941598;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=AlgnQdk73zCrGewRdJQyDhOw9Np8EC2kj0Np8NZ1S34=;
- b=nHD/HAI9qR9Ihts+zIvitl1pHFw3x2BLSNkLK2O503JSXSIOR2w01iXe
- qAnTJpS7cjz5QiI+PLVAo5MEQEADe8xCI68RZPTI6OCMXxecsc/chMoDn
- HtpGor+3QXRf9WZNyrVMOPbqZw44Ef12/jZsSawiOIqWlJQuSOje5X4CR
- hAXKyC87W+2v1hoD3SDF80570SThdj/y7fgrL5sSku7rXUCbpQVkCdasK
- 64w8mezrLyhp5hOJ+2E16lIzeGIW9zcHIuM1b2BmH6nwAUd+bvm8P57x7
- f3hvGzqP98BY1ereXHHjN166uyWoqCKw2yyp6/4htFtgK2HUenhpR9Vqy
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=Fk+MwS5mHyXXDU/+J9uuIfeeyhxFbj6y0BPlCSHgm2g=;
+ b=Je9Nq3Wsv3iHng+DT21VU2ZkY0YQqH1YvbmQHMckrBQe8rtPPbCsxSXa
+ /HHLPpkMiD4VLvBasjA/aKINFJj+KZ9QHrBmaEnyKbOQVdsHArSuAom+k
+ bHJsI2eWMzBZsvxTlAI0kanWPXJ1DmM5EmSs/71kRqjmCLeGg+HU2Nb3R
+ vqyBNbpzbHR2RIEFpZg6f88rCbyTOfXNqGyYz5E2BDuDZqngelO7aO3wx
+ PR1sYjuzCNNTVBOfkQ7UuX1joDrxMrK3YrsgmEir7IiCaZk1tCcU6HH0T
+ l2FgaTwJNxVdC8rFVkq6FCM74vy5leTAp0HVAtvd1me4zNHPLnEc3Wdnw
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nHD/HAI9
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 06/10] ice: Accept LAG netdevs
- in bridge offloads
+ header.a=rsa-sha256 header.s=Intel header.b=Je9Nq3Ws
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 10/10] ice: add tracepoints
+ for the switchdev bridge
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,91 +104,200 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Allow LAG interfaces to be used in bridge offload using
-netif_is_lag_master. In this case, search for ice netdev in
-the list of LAG's lower devices.
+From: Pawel Chmielewski <pawel.chmielewski@intel.com>
 
+Add tracepoints for the following events:
+- Add FDB entry
+- Delete FDB entry
+- Create bridge VLAN
+- Cleanup bridge VLAN
+- Link port to the bridge
+- Unlink port from the bridge
+
+Signed-off-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
-v2: braces added in ice_eswitch_br_get_uplnik_from_lag,
-    use else in ice_eswitch_br_netdev_to_port and
-    ice_eswitch_br_port_link
----
- .../net/ethernet/intel/ice/ice_eswitch_br.c   | 47 +++++++++++++++++--
- 1 file changed, 42 insertions(+), 5 deletions(-)
+ .../net/ethernet/intel/ice/ice_eswitch_br.c   |  9 ++
+ drivers/net/ethernet/intel/ice/ice_trace.h    | 90 +++++++++++++++++++
+ 2 files changed, 99 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-index 9941b0a5aaba..7b7eecec8497 100644
+index 41c47dec5d32..1e75f5210c85 100644
 --- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
 +++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-@@ -15,8 +15,23 @@ static const struct rhashtable_params ice_fdb_ht_params = {
+@@ -7,6 +7,7 @@
+ #include "ice_switch.h"
+ #include "ice_vlan.h"
+ #include "ice_vf_vsi_vlan_ops.h"
++#include "ice_trace.h"
  
- static bool ice_eswitch_br_is_dev_valid(const struct net_device *dev)
- {
--	/* Accept only PF netdev and PRs */
--	return ice_is_port_repr_netdev(dev) || netif_is_ice(dev);
-+	/* Accept only PF netdev, PRs and LAG */
-+	return ice_is_port_repr_netdev(dev) || netif_is_ice(dev) ||
-+		netif_is_lag_master(dev);
-+}
-+
-+static struct net_device *
-+ice_eswitch_br_get_uplnik_from_lag(struct net_device *lag_dev)
-+{
-+	struct net_device *lower;
-+	struct list_head *iter;
-+
-+	netdev_for_each_lower_dev(lag_dev, lower, iter) {
-+		if (netif_is_ice(lower))
-+			return lower;
-+	}
-+
-+	return NULL;
+ #define ICE_ESW_BRIDGE_UPDATE_INTERVAL msecs_to_jiffies(1000)
+ 
+@@ -399,6 +400,7 @@ ice_eswitch_br_fdb_entry_find_and_delete(struct ice_esw_br *bridge,
+ 		return;
+ 	}
+ 
++	trace_ice_eswitch_br_fdb_entry_find_and_delete(fdb_entry);
+ 	ice_eswitch_br_fdb_entry_notify_and_cleanup(bridge, fdb_entry);
  }
  
- static struct ice_esw_br_port *
-@@ -26,8 +41,19 @@ ice_eswitch_br_netdev_to_port(struct net_device *dev)
+@@ -468,6 +470,7 @@ ice_eswitch_br_fdb_entry_create(struct net_device *netdev,
+ 		goto err_fdb_insert;
+ 
+ 	list_add(&fdb_entry->list, &bridge->fdb_list);
++	trace_ice_eswitch_br_fdb_entry_create(fdb_entry);
+ 
+ 	ice_eswitch_br_fdb_offload_notify(netdev, mac, vid, event);
+ 
+@@ -642,6 +645,7 @@ static void
+ ice_eswitch_br_vlan_cleanup(struct ice_esw_br_port *port,
+ 			    struct ice_esw_br_vlan *vlan)
+ {
++	trace_ice_eswitch_br_vlan_cleanup(vlan);
+ 	xa_erase(&port->vlans, vlan->vid);
+ 	if (port->pvid == vlan->vid)
+ 		ice_eswitch_br_clear_pvid(port);
+@@ -725,6 +729,8 @@ ice_eswitch_br_vlan_create(u16 vid, u16 flags, struct ice_esw_br_port *port)
+ 	if (err)
+ 		goto err_insert;
+ 
++	trace_ice_eswitch_br_vlan_create(vlan);
++
+ 	return vlan;
+ 
+ err_insert:
+@@ -1083,6 +1089,7 @@ ice_eswitch_br_port_unlink(struct ice_esw_br_offloads *br_offloads,
+ 		return -EINVAL;
+ 	}
+ 
++	trace_ice_eswitch_br_port_unlink(br_port);
+ 	ice_eswitch_br_port_deinit(br_port->bridge, br_port);
+ 	ice_eswitch_br_verify_deinit(br_offloads, br_port->bridge);
+ 
+@@ -1111,6 +1118,7 @@ ice_eswitch_br_port_link(struct ice_esw_br_offloads *br_offloads,
  		struct ice_repr *repr = ice_netdev_to_repr(dev);
  
- 		return repr->br_port;
--	} else if (netif_is_ice(dev)) {
--		struct ice_pf *pf = ice_netdev_to_pf(dev);
-+	} else if (netif_is_ice(dev) || netif_is_lag_master(dev)) {
-+		struct net_device *ice_dev;
-+		struct ice_pf *pf;
-+
-+		if (netif_is_lag_master(dev))
-+			ice_dev = ice_eswitch_br_get_uplnik_from_lag(dev);
-+		else
-+			ice_dev = dev;
-+
-+		if (!ice_dev)
-+			return NULL;
-+
-+		pf = ice_netdev_to_pf(ice_dev);
- 
- 		return pf->br_port;
- 	}
-@@ -716,7 +742,18 @@ ice_eswitch_br_port_link(struct ice_esw_br_offloads *br_offloads,
- 
  		err = ice_eswitch_br_vf_repr_port_init(bridge, repr);
++		trace_ice_eswitch_br_port_link(repr->br_port);
  	} else {
--		struct ice_pf *pf = ice_netdev_to_pf(dev);
-+		struct net_device *ice_dev;
-+		struct ice_pf *pf;
-+
-+		if (netif_is_lag_master(dev))
-+			ice_dev = ice_eswitch_br_get_uplnik_from_lag(dev);
-+		else
-+			ice_dev = dev;
-+
-+		if (!ice_dev)
-+			return 0;
-+
-+		pf = ice_netdev_to_pf(ice_dev);
+ 		struct net_device *ice_dev;
+ 		struct ice_pf *pf;
+@@ -1126,6 +1134,7 @@ ice_eswitch_br_port_link(struct ice_esw_br_offloads *br_offloads,
+ 		pf = ice_netdev_to_pf(ice_dev);
  
  		err = ice_eswitch_br_uplink_port_init(bridge, pf);
++		trace_ice_eswitch_br_port_link(pf->br_port);
  	}
+ 	if (err) {
+ 		NL_SET_ERR_MSG_MOD(extack, "Failed to init bridge port");
+diff --git a/drivers/net/ethernet/intel/ice/ice_trace.h b/drivers/net/ethernet/intel/ice/ice_trace.h
+index ae98d5a8ff60..b2f5c9fe0149 100644
+--- a/drivers/net/ethernet/intel/ice/ice_trace.h
++++ b/drivers/net/ethernet/intel/ice/ice_trace.h
+@@ -21,6 +21,7 @@
+ #define _ICE_TRACE_H_
+ 
+ #include <linux/tracepoint.h>
++#include "ice_eswitch_br.h"
+ 
+ /* ice_trace() macro enables shared code to refer to trace points
+  * like:
+@@ -240,6 +241,95 @@ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_fw_req);
+ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_fw_done);
+ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_complete);
+ 
++DECLARE_EVENT_CLASS(ice_esw_br_fdb_template,
++		    TP_PROTO(struct ice_esw_br_fdb_entry *fdb),
++		    TP_ARGS(fdb),
++		    TP_STRUCT__entry(__array(char, dev_name, IFNAMSIZ)
++				     __array(unsigned char, addr, ETH_ALEN)
++				     __field(u16, vid)
++				     __field(int, flags)),
++		    TP_fast_assign(strscpy(__entry->dev_name,
++					   netdev_name(fdb->dev),
++					   IFNAMSIZ);
++				   memcpy(__entry->addr, fdb->data.addr, ETH_ALEN);
++				   __entry->vid = fdb->data.vid;
++				   __entry->flags = fdb->flags;),
++		    TP_printk("net_device=%s addr=%pM vid=%u flags=%x",
++			      __entry->dev_name,
++			      __entry->addr,
++			      __entry->vid,
++			      __entry->flags)
++);
++
++DEFINE_EVENT(ice_esw_br_fdb_template,
++	     ice_eswitch_br_fdb_entry_create,
++	     TP_PROTO(struct ice_esw_br_fdb_entry *fdb),
++	     TP_ARGS(fdb)
++);
++
++DEFINE_EVENT(ice_esw_br_fdb_template,
++	     ice_eswitch_br_fdb_entry_find_and_delete,
++	     TP_PROTO(struct ice_esw_br_fdb_entry *fdb),
++	     TP_ARGS(fdb)
++);
++
++DECLARE_EVENT_CLASS(ice_esw_br_vlan_template,
++		    TP_PROTO(struct ice_esw_br_vlan *vlan),
++		    TP_ARGS(vlan),
++		    TP_STRUCT__entry(__field(u16, vid)
++				     __field(u16, flags)),
++		    TP_fast_assign(__entry->vid = vlan->vid;
++				   __entry->flags = vlan->flags;),
++		    TP_printk("vid=%u flags=%x",
++			      __entry->vid,
++			      __entry->flags)
++);
++
++DEFINE_EVENT(ice_esw_br_vlan_template,
++	     ice_eswitch_br_vlan_create,
++	     TP_PROTO(struct ice_esw_br_vlan *vlan),
++	     TP_ARGS(vlan)
++);
++
++DEFINE_EVENT(ice_esw_br_vlan_template,
++	     ice_eswitch_br_vlan_cleanup,
++	     TP_PROTO(struct ice_esw_br_vlan *vlan),
++	     TP_ARGS(vlan)
++);
++
++#define ICE_ESW_BR_PORT_NAME_L 16
++
++DECLARE_EVENT_CLASS(ice_esw_br_port_template,
++		    TP_PROTO(struct ice_esw_br_port *port),
++		    TP_ARGS(port),
++		    TP_STRUCT__entry(__field(u16, vport_num)
++				     __array(char, port_type, ICE_ESW_BR_PORT_NAME_L)),
++		    TP_fast_assign(__entry->vport_num = port->vsi_idx;
++					if (port->type == ICE_ESWITCH_BR_UPLINK_PORT)
++						strscpy(__entry->port_type,
++							"Uplink",
++							ICE_ESW_BR_PORT_NAME_L);
++					else
++						strscpy(__entry->port_type,
++							"VF Representor",
++							ICE_ESW_BR_PORT_NAME_L);),
++		    TP_printk("vport_num=%u port type=%s",
++			      __entry->vport_num,
++			      __entry->port_type)
++);
++
++DEFINE_EVENT(ice_esw_br_port_template,
++	     ice_eswitch_br_port_link,
++	     TP_PROTO(struct ice_esw_br_port *port),
++	     TP_ARGS(port)
++);
++
++DEFINE_EVENT(ice_esw_br_port_template,
++	     ice_eswitch_br_port_unlink,
++	     TP_PROTO(struct ice_esw_br_port *port),
++	     TP_ARGS(port)
++);
++
+ /* End tracepoints */
+ 
+ #endif /* _ICE_TRACE_H_ */
 -- 
 2.40.1
 
