@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1EEEC77B7D
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 May 2023 10:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00ABEC77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 18 May 2023 10:26:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7A5CD4282E;
-	Thu, 18 May 2023 10:26:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7A5CD4282E
+	by smtp4.osuosl.org (Postfix) with ESMTP id A308142845;
+	Thu, 18 May 2023 10:26:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A308142845
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684405609;
-	bh=T11fH+P8f2HYjHsEpK86hRrXANbf/hhrfdFWfEYRJsA=;
+	s=default; t=1684405613;
+	bh=Vyfcs0IH1tFVx/EkuinAYelocccVHAX4bCA0XqDAv3I=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=IkcPRikx5d0d0jbpYErwvKCCN46OYwg9e6KsOxPrdmXYoUvf3paVsDYdgI103SzKV
-	 tX7cyiE3B1AlYG8TG2159JyrcnfdW+XIrI3ik+jUT1R3whwH0m55iccsqZhhCh4+eO
-	 hztfCDNqehdPfyG1d/Lr36ZBlmBFNqDy3xn6c2ednZ3hBVGgls58foEyzPODeThV6N
-	 pykMmOfapQ3sP9/akm+DceEflI+4OQKrU5lSDS69VHFYCMt3p0vjeA9OFU/qFX5jiB
-	 Ge4fDhOd3ZlNTisrM3fHA6O7VnZ27QQzohI3SHYLbKZUa31XDaa8mpWEVLin2v87PQ
-	 sRg25580UCihw==
+	b=Z8ZF2uGgaZSK42ugDuJMYzcM3pV2DH7e9opORejZVSnp/LDZoS9sgGJFEDXQG5hde
+	 NSH+7OsfOh8YndrX5BzxIc1dTJywY1qQQUliXPmbVEFcvTPZK1AOHUJO93uKhiKMCH
+	 RK+hJNRkWMokgXuHxleGkZpPB9oEeUag+xKwPesqFxx6IIYBYCL3TKBpCWR7+ZJr6B
+	 aRag2DFBz1hw25Z7z7vfXa792gzBAWieQUJ1vo2ZnRBfJPBDzBPP2T1O9hMQXb07G8
+	 RJc3hryZMEFt34XY0fEjf5CLeIwBbguolM/9HnkaAi5AF7rQnbTWa+ne+S+KN/OYNW
+	 IeuKmW7/uUXXw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BjPzC9mskFvu; Thu, 18 May 2023 10:26:48 +0000 (UTC)
+	with ESMTP id kRi0rlMoTGJX; Thu, 18 May 2023 10:26:52 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CF40C42845;
-	Thu, 18 May 2023 10:26:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CF40C42845
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 0E59C1BF574
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3AF444287F;
+	Thu, 18 May 2023 10:26:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3AF444287F
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 2F8F41BF955
  for <intel-wired-lan@lists.osuosl.org>; Thu, 18 May 2023 10:26:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B43EC812FD
+ by smtp2.osuosl.org (Postfix) with ESMTP id 3CCAD405D7
  for <intel-wired-lan@lists.osuosl.org>; Thu, 18 May 2023 10:26:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B43EC812FD
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3CCAD405D7
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 30vTuhvH1zha for <intel-wired-lan@lists.osuosl.org>;
- Thu, 18 May 2023 10:26:38 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ZFcVOBHP9RAY for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 18 May 2023 10:26:37 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BA25B843C4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8283A4048D
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp1.osuosl.org (Postfix) with ESMTPS id BA25B843C4
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8283A4048D
  for <intel-wired-lan@lists.osuosl.org>; Thu, 18 May 2023 10:26:37 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="438371443"
-X-IronPort-AV: E=Sophos;i="5.99,285,1677571200"; d="scan'208";a="438371443"
+X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="438371434"
+X-IronPort-AV: E=Sophos;i="5.99,285,1677571200"; d="scan'208";a="438371434"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 May 2023 03:26:28 -0700
+ 18 May 2023 03:26:25 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="767143753"
-X-IronPort-AV: E=Sophos;i="5.99,285,1677571200"; d="scan'208";a="767143753"
+X-IronPort-AV: E=McAfee;i="6600,9927,10713"; a="767143743"
+X-IronPort-AV: E=Sophos;i="5.99,285,1677571200"; d="scan'208";a="767143743"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga008.fm.intel.com with ESMTP; 18 May 2023 03:26:26 -0700
+ by fmsmga008.fm.intel.com with ESMTP; 18 May 2023 03:26:24 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 4FDCC36C17;
- Thu, 18 May 2023 11:26:25 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 37C0A36C11;
+ Thu, 18 May 2023 11:26:23 +0100 (IST)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 18 May 2023 12:25:08 +0200
-Message-Id: <20230518102509.20913-10-wojciech.drewek@intel.com>
+Date: Thu, 18 May 2023 12:25:05 +0200
+Message-Id: <20230518102509.20913-7-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230518102509.20913-1-wojciech.drewek@intel.com>
 References: <20230518102509.20913-1-wojciech.drewek@intel.com>
@@ -73,19 +73,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1684405597; x=1715941597;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=K3kpBK9SLQx9yogV9QhZwbURZfdtUbdLPkuDa6JNRyc=;
- b=TaUSQBKOxKX8AqoPpbmAGit/q9gtIVJzU+J91KZR0zIktJQWyWoGHfvm
- iVWVo/NuwX4cGvwlaN92BMyka/T/Q3KvDo4+GptljKfIwbh1xLqZLODrZ
- AOeKh+SeUC28RD39OBIW9QhYm8oJdZQSIFVN3+492KKtQoKb8Aq3/MEgf
- q8+43o5aJddnNiWrpYZyQvOp6av0VMv96IJ376NL9D5A6vxasXUUzKrp9
- Iio9BweeTK+kJkAg3nBZhk4MQtjhOuEKuLCl63M6vr+paKbGrly6r+ZOx
- aVBrjityFSlxuqC6MB7UTghgILX5X1o2q9D8yhNI7o9tyl9AqTS7eKDAR
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=AlgnQdk73zCrGewRdJQyDhOw9Np8EC2kj0Np8NZ1S34=;
+ b=nHD/HAI9qR9Ihts+zIvitl1pHFw3x2BLSNkLK2O503JSXSIOR2w01iXe
+ qAnTJpS7cjz5QiI+PLVAo5MEQEADe8xCI68RZPTI6OCMXxecsc/chMoDn
+ HtpGor+3QXRf9WZNyrVMOPbqZw44Ef12/jZsSawiOIqWlJQuSOje5X4CR
+ hAXKyC87W+2v1hoD3SDF80570SThdj/y7fgrL5sSku7rXUCbpQVkCdasK
+ 64w8mezrLyhp5hOJ+2E16lIzeGIW9zcHIuM1b2BmH6nwAUd+bvm8P57x7
+ f3hvGzqP98BY1ereXHHjN166uyWoqCKw2yyp6/4htFtgK2HUenhpR9Vqy
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=TaUSQBKO
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 09/10] ice: implement static
- version of ageing
+ header.a=rsa-sha256 header.s=Intel header.b=nHD/HAI9
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 06/10] ice: Accept LAG netdevs
+ in bridge offloads
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,172 +104,91 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Allow LAG interfaces to be used in bridge offload using
+netif_is_lag_master. In this case, search for ice netdev in
+the list of LAG's lower devices.
 
-Remove fdb entries always when ageing time expired.
-
-Allow user to set ageing time using port object attribute.
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
-v2: use msecs_to_jiffies upon definition of
-    ICE_ESW_BRIDGE_UPDATE_INTERVAL
+v2: braces added in ice_eswitch_br_get_uplnik_from_lag,
+    use else in ice_eswitch_br_netdev_to_port and
+    ice_eswitch_br_port_link
 ---
- .../net/ethernet/intel/ice/ice_eswitch_br.c   | 48 +++++++++++++++++++
- .../net/ethernet/intel/ice/ice_eswitch_br.h   | 10 ++++
- 2 files changed, 58 insertions(+)
+ .../net/ethernet/intel/ice/ice_eswitch_br.c   | 47 +++++++++++++++++--
+ 1 file changed, 42 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-index e4a8c9ac5e5d..41c47dec5d32 100644
+index 9941b0a5aaba..7b7eecec8497 100644
 --- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
 +++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-@@ -8,6 +8,8 @@
- #include "ice_vlan.h"
- #include "ice_vf_vsi_vlan_ops.h"
+@@ -15,8 +15,23 @@ static const struct rhashtable_params ice_fdb_ht_params = {
  
-+#define ICE_ESW_BRIDGE_UPDATE_INTERVAL msecs_to_jiffies(1000)
+ static bool ice_eswitch_br_is_dev_valid(const struct net_device *dev)
+ {
+-	/* Accept only PF netdev and PRs */
+-	return ice_is_port_repr_netdev(dev) || netif_is_ice(dev);
++	/* Accept only PF netdev, PRs and LAG */
++	return ice_is_port_repr_netdev(dev) || netif_is_ice(dev) ||
++		netif_is_lag_master(dev);
++}
 +
- static const struct rhashtable_params ice_fdb_ht_params = {
- 	.key_offset = offsetof(struct ice_esw_br_fdb_entry, data),
- 	.key_len = sizeof(struct ice_esw_br_fdb_data),
-@@ -452,6 +454,7 @@ ice_eswitch_br_fdb_entry_create(struct net_device *netdev,
- 	fdb_entry->br_port = br_port;
- 	fdb_entry->flow = flow;
- 	fdb_entry->dev = netdev;
-+	fdb_entry->last_use = jiffies;
- 	event = SWITCHDEV_FDB_ADD_TO_BRIDGE;
- 
- 	if (added_by_user) {
-@@ -845,6 +848,10 @@ ice_eswitch_br_port_obj_attr_set(struct net_device *netdev, const void *ctx,
- 		ice_eswitch_br_vlan_filtering_set(br_port->bridge,
- 						  attr->u.vlan_filtering);
- 		return 0;
-+	case SWITCHDEV_ATTR_ID_BRIDGE_AGEING_TIME:
-+		br_port->bridge->ageing_time =
-+			clock_t_to_jiffies(attr->u.ageing_time);
-+		return 0;
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-@@ -1016,6 +1023,7 @@ ice_eswitch_br_init(struct ice_esw_br_offloads *br_offloads, int ifindex)
- 	INIT_LIST_HEAD(&bridge->fdb_list);
- 	bridge->br_offloads = br_offloads;
- 	bridge->ifindex = ifindex;
-+	bridge->ageing_time = clock_t_to_jiffies(BR_DEFAULT_AGEING_TIME);
- 	xa_init(&bridge->ports);
- 	br_offloads->bridge = bridge;
- 
-@@ -1219,6 +1227,7 @@ ice_eswitch_br_offloads_deinit(struct ice_pf *pf)
- 	if (!br_offloads)
- 		return;
- 
-+	cancel_delayed_work_sync(&br_offloads->update_work);
- 	unregister_netdevice_notifier(&br_offloads->netdev_nb);
- 	unregister_switchdev_blocking_notifier(&br_offloads->switchdev_blk);
- 	unregister_switchdev_notifier(&br_offloads->switchdev_nb);
-@@ -1233,6 +1242,40 @@ ice_eswitch_br_offloads_deinit(struct ice_pf *pf)
- 	rtnl_unlock();
++static struct net_device *
++ice_eswitch_br_get_uplnik_from_lag(struct net_device *lag_dev)
++{
++	struct net_device *lower;
++	struct list_head *iter;
++
++	netdev_for_each_lower_dev(lag_dev, lower, iter) {
++		if (netif_is_ice(lower))
++			return lower;
++	}
++
++	return NULL;
  }
  
-+static void ice_eswitch_br_update(struct ice_esw_br_offloads *br_offloads)
-+{
-+	struct ice_esw_br *bridge = br_offloads->bridge;
-+	struct ice_esw_br_fdb_entry *entry, *tmp;
+ static struct ice_esw_br_port *
+@@ -26,8 +41,19 @@ ice_eswitch_br_netdev_to_port(struct net_device *dev)
+ 		struct ice_repr *repr = ice_netdev_to_repr(dev);
+ 
+ 		return repr->br_port;
+-	} else if (netif_is_ice(dev)) {
+-		struct ice_pf *pf = ice_netdev_to_pf(dev);
++	} else if (netif_is_ice(dev) || netif_is_lag_master(dev)) {
++		struct net_device *ice_dev;
++		struct ice_pf *pf;
 +
-+	if (!bridge)
-+		return;
++		if (netif_is_lag_master(dev))
++			ice_dev = ice_eswitch_br_get_uplnik_from_lag(dev);
++		else
++			ice_dev = dev;
 +
-+	rtnl_lock();
-+	list_for_each_entry_safe(entry, tmp, &bridge->fdb_list, list) {
-+		if (entry->flags & ICE_ESWITCH_BR_FDB_ADDED_BY_USER)
-+			continue;
++		if (!ice_dev)
++			return NULL;
 +
-+		if (time_is_after_eq_jiffies(entry->last_use +
-+					     bridge->ageing_time))
-+			continue;
-+
-+		ice_eswitch_br_fdb_entry_notify_and_cleanup(bridge, entry);
-+	}
-+	rtnl_unlock();
-+}
-+
-+static void ice_eswitch_br_update_work(struct work_struct *work)
-+{
-+	struct ice_esw_br_offloads *br_offloads;
-+
-+	br_offloads = ice_work_to_br_offloads(work);
-+
-+	ice_eswitch_br_update(br_offloads);
-+
-+	queue_delayed_work(br_offloads->wq, &br_offloads->update_work,
-+			   ICE_ESW_BRIDGE_UPDATE_INTERVAL);
-+}
-+
- int
- ice_eswitch_br_offloads_init(struct ice_pf *pf)
- {
-@@ -1281,6 +1324,11 @@ ice_eswitch_br_offloads_init(struct ice_pf *pf)
- 		goto err_reg_netdev_nb;
++		pf = ice_netdev_to_pf(ice_dev);
+ 
+ 		return pf->br_port;
  	}
+@@ -716,7 +742,18 @@ ice_eswitch_br_port_link(struct ice_esw_br_offloads *br_offloads,
  
-+	INIT_DELAYED_WORK(&br_offloads->update_work,
-+			  ice_eswitch_br_update_work);
-+	queue_delayed_work(br_offloads->wq, &br_offloads->update_work,
-+			   ICE_ESW_BRIDGE_UPDATE_INTERVAL);
+ 		err = ice_eswitch_br_vf_repr_port_init(bridge, repr);
+ 	} else {
+-		struct ice_pf *pf = ice_netdev_to_pf(dev);
++		struct net_device *ice_dev;
++		struct ice_pf *pf;
 +
- 	return 0;
- 
- err_reg_netdev_nb:
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-index 8c108fc25b2f..d17f7a6fefc4 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-@@ -5,6 +5,7 @@
- #define _ICE_ESWITCH_BR_H_
- 
- #include <linux/rhashtable.h>
-+#include <linux/workqueue.h>
- 
- struct ice_esw_br_fdb_data {
- 	unsigned char addr[ETH_ALEN];
-@@ -30,6 +31,8 @@ struct ice_esw_br_fdb_entry {
- 	struct net_device *dev;
- 	struct ice_esw_br_port *br_port;
- 	struct ice_esw_br_flow *flow;
++		if (netif_is_lag_master(dev))
++			ice_dev = ice_eswitch_br_get_uplnik_from_lag(dev);
++		else
++			ice_dev = dev;
 +
-+	unsigned long last_use;
- };
- 
- enum ice_esw_br_port_type {
-@@ -59,6 +62,7 @@ struct ice_esw_br {
- 
- 	int ifindex;
- 	u32 flags;
-+	unsigned long ageing_time;
- };
- 
- struct ice_esw_br_offloads {
-@@ -69,6 +73,7 @@ struct ice_esw_br_offloads {
- 	struct notifier_block switchdev_nb;
- 
- 	struct workqueue_struct *wq;
-+	struct delayed_work update_work;
- };
- 
- struct ice_esw_br_fdb_work {
-@@ -89,6 +94,11 @@ struct ice_esw_br_vlan {
- 		     struct ice_esw_br_offloads, \
- 		     nb_name)
- 
-+#define ice_work_to_br_offloads(w) \
-+	container_of(w, \
-+		     struct ice_esw_br_offloads, \
-+		     update_work.work)
++		if (!ice_dev)
++			return 0;
 +
- #define ice_work_to_fdb_work(w) \
- 	container_of(w, \
- 		     struct ice_esw_br_fdb_work, \
++		pf = ice_netdev_to_pf(ice_dev);
+ 
+ 		err = ice_eswitch_br_uplink_port_init(bridge, pf);
+ 	}
 -- 
 2.40.1
 
