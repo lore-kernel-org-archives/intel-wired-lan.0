@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE4C4C77B73
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 May 2023 09:07:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF659C7EE26
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 May 2023 09:07:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4F8A340C24;
-	Mon, 22 May 2023 09:07:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4F8A340C24
+	by smtp2.osuosl.org (Postfix) with ESMTP id 84DCC40BFE;
+	Mon, 22 May 2023 09:07:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 84DCC40BFE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684746422;
-	bh=iSCawQfPlzYIp6RhjPJ/F6L6xZaOniwuoG0RqfYhaio=;
+	s=default; t=1684746426;
+	bh=Vyfcs0IH1tFVx/EkuinAYelocccVHAX4bCA0XqDAv3I=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=zPDGNy+xBtCDi5ugcnZbutuk9+iuABN5zWhSQUAbRdDuxKr4cg0/LA26Vl3S96/1v
-	 n3P4m0UXvsaMpAsCdoawjwIzXT8stzbPk0Qydlmi1qmo7bcLhxHdOd+6yqB9WovsOa
-	 IQfw7Kup9zUwdSRR9SnwA9LIm6a8zpAMnyu8i6dkvnRkqRu9+mvwRNkk9iy+BSejbB
-	 ddpXzbiCisa56Isi/5wJLfLx8BRCMWEezozU5vuxvNbasDabMxwH1oK5DyFmPvzL3j
-	 KtVMhmFc2T3KmNtVzSwNOQFzTMq5DcBz9cA7jowPLws5rLYZ3DUeNfZA4eM4vnYG/4
-	 rLIAof+Shutdw==
+	b=YwevhyVt3mhOp3FPflH3T357ODnASvfrklH0tekMI+vhyeNYhyNryWJmpgE+eJ+Vh
+	 Hpt3wVlk+u1bWUXsDnbmYjW/3/gJO7PD27xuAF8V9luUpa/zHaDp8QDvi9/bCE1qqK
+	 cKkH02eSObhxyeS7e7IEiJR+LZX0WrlFlXGxxbi5OGQaL6vaj7yasewWdOZmDtFw2h
+	 pC5n4pc9OSkmDF3cgfXlSrbDfAON9TxQ7lZCvHJvmqJgRy3eKAKT1K4cWUWydwZGSY
+	 DKZxQkfDnNe4eKnPop+HecwoG6ofi/GD/T3hLNiFxJqFQcr0Gl3lL3EV7ZH56awWTP
+	 UbhlKlqHKfnpw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZUK52JIilQ5N; Mon, 22 May 2023 09:07:01 +0000 (UTC)
+	with ESMTP id Ajqr5gRmKRQc; Mon, 22 May 2023 09:07:05 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4CFE340C15;
-	Mon, 22 May 2023 09:07:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4CFE340C15
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4C45B40C15;
+	Mon, 22 May 2023 09:07:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4C45B40C15
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 40FA11BF39F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 09:06:56 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 4405E1BF39F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 09:06:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4C8E260BAA
+ by smtp3.osuosl.org (Postfix) with ESMTP id CB38261356
  for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 09:06:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4C8E260BAA
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CB38261356
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 65eBg4HNCDgj for <intel-wired-lan@lists.osuosl.org>;
- Mon, 22 May 2023 09:06:54 +0000 (UTC)
+ with ESMTP id SBm3AnqsPoxE for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 22 May 2023 09:06:55 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2597A60784
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2A47660701
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2597A60784
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 09:06:54 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10717"; a="337459267"
-X-IronPort-AV: E=Sophos;i="6.00,183,1681196400"; d="scan'208";a="337459267"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 2A47660701
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 09:06:55 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10717"; a="337459277"
+X-IronPort-AV: E=Sophos;i="6.00,183,1681196400"; d="scan'208";a="337459277"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 May 2023 02:06:52 -0700
+ 22 May 2023 02:06:54 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10717"; a="847765464"
-X-IronPort-AV: E=Sophos;i="6.00,183,1681196400"; d="scan'208";a="847765464"
+X-IronPort-AV: E=McAfee;i="6600,9927,10717"; a="847765475"
+X-IronPort-AV: E=Sophos;i="6.00,183,1681196400"; d="scan'208";a="847765475"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga001.fm.intel.com with ESMTP; 22 May 2023 02:06:50 -0700
+ by fmsmga001.fm.intel.com with ESMTP; 22 May 2023 02:06:53 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id AE3F1365CB;
- Mon, 22 May 2023 10:06:49 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 5B31B369E9;
+ Mon, 22 May 2023 10:06:52 +0100 (IST)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 22 May 2023 11:05:34 +0200
-Message-Id: <20230522090542.45679-3-wojciech.drewek@intel.com>
+Date: Mon, 22 May 2023 11:05:38 +0200
+Message-Id: <20230522090542.45679-7-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230522090542.45679-1-wojciech.drewek@intel.com>
 References: <20230522090542.45679-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1684746414; x=1716282414;
+ t=1684746415; x=1716282415;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=tJHYS1D+DuCqmg6wf2r4ihvHN4TALwGfSZd23lEepI4=;
- b=cvN+2eU9iAU8gqZr9b41AkqRapK1X74C04zjDOuqFpGbBHj2hM/48aBv
- Yfux2oCql1PfnNDS85tJlx9bGNNf4PBdzMDOeOj6gsU8MmmnjWfIkK8SL
- 41lGsdKm+2J14AyjEAI56AMeTOZh8MUqXcjNvGT4Ccxi8SZ4bPag+FOiE
- FL74tG+SWVPnYMn9s9OtJB4X9NSZ0hiayMtaCEq5NtimR52TgP/PrV/e0
- 1XR+N/D1yf2laTLxqcPo6SuAMOZjrInxJVlqvOJEFW/RQgVjo1rU5birq
- g22uMmgCelkdUqFhIbkikhGmRN2Hdozn5vKweRl790TVg0aOwb27eqrGf
+ bh=AlgnQdk73zCrGewRdJQyDhOw9Np8EC2kj0Np8NZ1S34=;
+ b=ZoiR9uUsH/3TXciKqCYQ3Z17DkNuUG+37ABEj9YxMFvwD0occrytrFj9
+ L/JkBQlcmfsqBJpDjtdcEaG4TxlfAAXGHEV9kTcMNo/A38anw08g30EaG
+ mr9WtQ4lkq+DNpRvKV38hARJI4kWAymWjJqIIHoXY9UnnJJRMfdGe5rMe
+ j9yq9vRtEoO5wcIh1q0UUaN1FygmaHzwqeexsaSkP2d1q1D346pRDAU1u
+ NbaixV8Fc2kjyKeWxeiPwLgT1HHwpejtc8HUvYItZBzqJ/oqmyh3poI1J
+ FQRjG7EV71TP7lTmezFHsOENyUxOxAzZdksFQAKvF8g8W9YM3o46uawPe
  Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=cvN+2eU9
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 02/10] ice: Unset src prune on
- uplink VSI
+ header.a=rsa-sha256 header.s=Intel header.b=ZoiR9uUs
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 06/10] ice: Accept LAG netdevs
+ in bridge offloads
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,95 +104,91 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In switchdev mode uplink VSI is supposed to receive all packets that
-were not matched by existing filters. If ICE_AQ_VSI_SW_FLAG_LOCAL_LB
-bit is unset and we have a filter associated with uplink VSI
-which matches on dst mac equal to MAC1, then packets with src mac equal
-to MAC1 will be pruned from reaching uplink VSI.
-
-Fix this by updating uplink VSI with ICE_AQ_VSI_SW_FLAG_LOCAL_LB bit
-set when configuring switchdev mode.
+Allow LAG interfaces to be used in bridge offload using
+netif_is_lag_master. In this case, search for ice netdev in
+the list of LAG's lower devices.
 
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
-v2: fix @ctx declaration in ice_vsi_update_local_lb
+v2: braces added in ice_eswitch_br_get_uplnik_from_lag,
+    use else in ice_eswitch_br_netdev_to_port and
+    ice_eswitch_br_port_link
 ---
- drivers/net/ethernet/intel/ice/ice_eswitch.c |  6 +++++
- drivers/net/ethernet/intel/ice/ice_lib.c     | 25 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_lib.h     |  1 +
- 3 files changed, 32 insertions(+)
+ .../net/ethernet/intel/ice/ice_eswitch_br.c   | 47 +++++++++++++++++--
+ 1 file changed, 42 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index bfd003135fc8..4fe235da1182 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -113,8 +113,13 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
- 	if (ice_vsi_update_security(ctrl_vsi, ice_vsi_ctx_set_allow_override))
- 		goto err_override_control;
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
+index 9941b0a5aaba..7b7eecec8497 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
+@@ -15,8 +15,23 @@ static const struct rhashtable_params ice_fdb_ht_params = {
  
-+	if (ice_vsi_update_local_lb(uplink_vsi, true))
-+		goto err_override_local_lb;
-+
- 	return 0;
- 
-+err_override_local_lb:
-+	ice_vsi_update_security(ctrl_vsi, ice_vsi_ctx_clear_allow_override);
- err_override_control:
- 	ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_clear_allow_override);
- err_override_uplink:
-@@ -391,6 +396,7 @@ static void ice_eswitch_release_env(struct ice_pf *pf)
- 
- 	vlan_ops = ice_get_compat_vsi_vlan_ops(uplink_vsi);
- 
-+	ice_vsi_update_local_lb(uplink_vsi, false);
- 	ice_vsi_update_security(ctrl_vsi, ice_vsi_ctx_clear_allow_override);
- 	ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_clear_allow_override);
- 	vlan_ops->ena_rx_filtering(uplink_vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 5ddb95d1073a..e8142bea2eb2 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -4117,3 +4117,28 @@ void ice_vsi_ctx_clear_allow_override(struct ice_vsi_ctx *ctx)
+ static bool ice_eswitch_br_is_dev_valid(const struct net_device *dev)
  {
- 	ctx->info.sec_flags &= ~ICE_AQ_VSI_SEC_FLAG_ALLOW_DEST_OVRD;
- }
-+
-+/**
-+ * ice_vsi_update_local_lb - update sw block in VSI with local loopback bit
-+ * @vsi: pointer to VSI structure
-+ * @set: set or unset the bit
-+ */
-+int
-+ice_vsi_update_local_lb(struct ice_vsi *vsi, bool set)
-+{
-+	struct ice_vsi_ctx ctx = {
-+		.info	= vsi->info,
-+	};
-+
-+	ctx.info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_SW_VALID);
-+	if (set)
-+		ctx.info.sw_flags |= ICE_AQ_VSI_SW_FLAG_LOCAL_LB;
-+	else
-+		ctx.info.sw_flags &= ~ICE_AQ_VSI_SW_FLAG_LOCAL_LB;
-+
-+	if (ice_update_vsi(&vsi->back->hw, vsi->idx, &ctx, NULL))
-+		return -ENODEV;
-+
-+	vsi->info = ctx.info;
-+	return 0;
+-	/* Accept only PF netdev and PRs */
+-	return ice_is_port_repr_netdev(dev) || netif_is_ice(dev);
++	/* Accept only PF netdev, PRs and LAG */
++	return ice_is_port_repr_netdev(dev) || netif_is_ice(dev) ||
++		netif_is_lag_master(dev);
 +}
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index e985766e6bb5..1628385a9672 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -157,6 +157,7 @@ void ice_vsi_ctx_clear_antispoof(struct ice_vsi_ctx *ctx);
- void ice_vsi_ctx_set_allow_override(struct ice_vsi_ctx *ctx);
++
++static struct net_device *
++ice_eswitch_br_get_uplnik_from_lag(struct net_device *lag_dev)
++{
++	struct net_device *lower;
++	struct list_head *iter;
++
++	netdev_for_each_lower_dev(lag_dev, lower, iter) {
++		if (netif_is_ice(lower))
++			return lower;
++	}
++
++	return NULL;
+ }
  
- void ice_vsi_ctx_clear_allow_override(struct ice_vsi_ctx *ctx);
-+int ice_vsi_update_local_lb(struct ice_vsi *vsi, bool set);
- int ice_vsi_add_vlan_zero(struct ice_vsi *vsi);
- int ice_vsi_del_vlan_zero(struct ice_vsi *vsi);
- bool ice_vsi_has_non_zero_vlans(struct ice_vsi *vsi);
+ static struct ice_esw_br_port *
+@@ -26,8 +41,19 @@ ice_eswitch_br_netdev_to_port(struct net_device *dev)
+ 		struct ice_repr *repr = ice_netdev_to_repr(dev);
+ 
+ 		return repr->br_port;
+-	} else if (netif_is_ice(dev)) {
+-		struct ice_pf *pf = ice_netdev_to_pf(dev);
++	} else if (netif_is_ice(dev) || netif_is_lag_master(dev)) {
++		struct net_device *ice_dev;
++		struct ice_pf *pf;
++
++		if (netif_is_lag_master(dev))
++			ice_dev = ice_eswitch_br_get_uplnik_from_lag(dev);
++		else
++			ice_dev = dev;
++
++		if (!ice_dev)
++			return NULL;
++
++		pf = ice_netdev_to_pf(ice_dev);
+ 
+ 		return pf->br_port;
+ 	}
+@@ -716,7 +742,18 @@ ice_eswitch_br_port_link(struct ice_esw_br_offloads *br_offloads,
+ 
+ 		err = ice_eswitch_br_vf_repr_port_init(bridge, repr);
+ 	} else {
+-		struct ice_pf *pf = ice_netdev_to_pf(dev);
++		struct net_device *ice_dev;
++		struct ice_pf *pf;
++
++		if (netif_is_lag_master(dev))
++			ice_dev = ice_eswitch_br_get_uplnik_from_lag(dev);
++		else
++			ice_dev = dev;
++
++		if (!ice_dev)
++			return 0;
++
++		pf = ice_netdev_to_pf(ice_dev);
+ 
+ 		err = ice_eswitch_br_uplink_port_init(bridge, pf);
+ 	}
 -- 
 2.40.1
 
