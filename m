@@ -1,86 +1,83 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F62DC7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 May 2023 12:03:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D68E1C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 23 May 2023 15:04:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 22BB44097D;
-	Tue, 23 May 2023 12:03:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 22BB44097D
+	by smtp1.osuosl.org (Postfix) with ESMTP id 663DC8202F;
+	Tue, 23 May 2023 15:04:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 663DC8202F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684843417;
-	bh=oDdAhV5gYnF2LEL/3FJG2Cuv3/Q6Rg5/yKQQncJXBB4=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=NfA/u5edFEfvzuwSTrrretYYc6VzN6SbYpBlHcBe87lleqcOzn7iJO0b/eLnfcO28
-	 WBV7eA6FhzVk3d8Zm7ME4d9QCbx8+wGQcOxFBkn0d1oDSqQHLmz6TyxI9hwKmHMd6b
-	 +euwh0nqio1s6/Jh2YsHH5ZA27s1Wpqgbu6lgbCVZ9/g356Ptb0c9wcneQLBgy2i+K
-	 T9udq4lCp9t8i4BG89Ys6KwVS6LqazJtWwCxiwjogl7HuvCN8DWJBSD3x//zyfwse4
-	 Cp5HNbZ8pibJmJQAtpZQsiRJafpMvbz5UHE0O0DsE80aWY1086FsRlMq9adm6PpBTg
-	 GUK3SGRMDXJyg==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id WyPmQnesErRU; Tue, 23 May 2023 12:03:36 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 27A4C402A3;
-	Tue, 23 May 2023 12:03:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 27A4C402A3
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 076B51BF37B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 May 2023 12:01:26 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B17B482021
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 May 2023 12:01:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B17B482021
+	s=default; t=1684854275;
+	bh=fOLEYtlm1edas10oR6UCOirsvsE+jahLnRsm+defuCs=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=DoKoDcEJbiJx1b0dYKBx2u14gO9InH9qSp8E/OGu1DZpCwPNK4zZeoOsxf8Mvevq5
+	 scCpuOTkl1bdxlnXJUAk1aiC3oHodV05yXrrj8NQHKu0ggyFQJL1Xbp4cil2DvLseq
+	 G0DV3l7gvXQ2tqy6ER2I4w4hsOzIsghFeu2qByRaR3YwXDWOpDfQ/NuE5qfYuls330
+	 +DfSh7Nth3KNUERuMGN7yrKwA7p2fUA7tu7GlBRTBItF+frAuAqyQNtfaGVlxfawpN
+	 zkU82dKjmEj6f5PS3EOML15FyYm1wOBtM+6QF5BJ1FeYCL0VOXX7OgsTy8WVcPIDgw
+	 fSqYuQZgkKB6A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id nQ_PaFTmUKHw for <intel-wired-lan@lists.osuosl.org>;
- Tue, 23 May 2023 12:01:22 +0000 (UTC)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id yLgAWw3R2Q6g; Tue, 23 May 2023 15:04:34 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0075F82035;
+	Tue, 23 May 2023 15:04:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0075F82035
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id AB55A1BF3B8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 21:32:44 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 8260260BE2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 21:32:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8260260BE2
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 66_IfdCURlgX for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 22 May 2023 21:32:43 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B3C5B822C3
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B3C5B822C3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 23 May 2023 12:01:22 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10718"; a="353242326"
-X-IronPort-AV: E=Sophos;i="6.00,186,1681196400"; d="scan'208";a="353242326"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 23 May 2023 05:01:10 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10718"; a="950520128"
-X-IronPort-AV: E=Sophos;i="6.00,186,1681196400"; d="scan'208";a="950520128"
-Received: from lkp-server01.sh.intel.com (HELO dea6d5a4f140) ([10.239.97.150])
- by fmsmga006.fm.intel.com with ESMTP; 23 May 2023 05:01:10 -0700
-Received: from kbuild by dea6d5a4f140 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1q1QhR-000Dhz-1s
- for intel-wired-lan@lists.osuosl.org; Tue, 23 May 2023 12:01:09 +0000
-Date: Tue, 23 May 2023 20:00:46 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <20230523120046.pvOja%lkp@intel.com>
-User-Agent: s-nail v14.9.24
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 193BA60BC6
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 193BA60BC6
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 21:32:42 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id F2D5E62B1F;
+ Mon, 22 May 2023 21:32:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55575C433EF;
+ Mon, 22 May 2023 21:32:41 +0000 (UTC)
+Date: Mon, 22 May 2023 14:32:40 -0700
+From: "Darrick J. Wong" <djwong@kernel.org>
+To: Kees Cook <keescook@chromium.org>
+Message-ID: <20230522213240.GE11642@frogsfrogsfrogs>
+References: <20230522211810.never.421-kees@kernel.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20230522211810.never.421-kees@kernel.org>
+X-Mailman-Approved-At: Tue, 23 May 2023 15:04:32 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1684843282; x=1716379282;
- h=date:from:to:subject:message-id;
- bh=SeNiu3iCEW23v5Vm+04v/MamYESMQuiUZ/x6jPOVsAM=;
- b=Ha79WXTvjd1GTAmccROKw3UzoyUZvsJttwkPORe4mKRf+MmB4mNCddSY
- wTeEJNIujUb+7cQbchc620CIV586d9bTMf0jhiJ95ym/5mPvxL6KghC7f
- dcSyWUNCl9HChmnzGFkJsvRJmEoQ0tNF112UE7Pgqu1Bahw4Sj0QCDFVX
- MS1KOclCpB3cQ4ZDs8tHPEmClEd4tMehttsfHxpXG0uNlLEupBx7w9m+E
- g8w3zyt7vc25CVE3QPnRUmxnVCBY9oIfiw3dEoqhCvwPX2SdfJ6nSNYMV
- kGbaf2Z4f8JdF0G0P+xaYOgwqUzq7hvHz9gc6j+pdNrMOnYu+/wcC0fSl
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Ha79WXTv
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- e2b24b8113f04632da7a9d51c0afd7552e8d1b51
+ d=kernel.org; s=k20201202; t=1684791161;
+ bh=DWjXZJSNUstF1LBdGh07RwUMWlyiWMi87JbY1HvUz4U=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Q1ZYN2fh8JKRZfhfqxZuh1DLsByiKtSlZQ7S/5AsJZqLRDetDzf0mOnmi2fm4gF/h
+ nLHRz9nvxy5GTYkLKhDs8mZaJX/bO2aTXbP835An+gogPVBNDpNbeMrsg5Qhupm8Vt
+ yo/vUxJSHRaLzhFtVG+d5lZk8uoRHy6A4lWWxQg+Jj3aUyPLxaWizr4AYq8nDVA+Nu
+ rMK9lYRQan+MvEGoyl60UTbGD1NsVQ/oHvdd+9QQwGUzJckZzGNqF3WNOq1cQXp5mX
+ YjodXI1x/VIchQ4Zf2XpU/Pp46DA8vbAjFnHZ3v2qbczey3MecDnsYR0Lno5NsxHE6
+ OtG3MzC8+pu7g==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=Q1ZYN2fh
+Subject: Re: [Intel-wired-lan] [PATCH] overflow: Add struct_size_t() helper
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,171 +90,331 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-MIME-Version: 1.0
+Cc: Daniel Latypov <dlatypov@google.com>, storagedev@microchip.com,
+ linux-nvme@lists.infradead.org, James Smart <james.smart@broadcom.com>,
+ Guo Xuenan <guoxuenan@huawei.com>, Eric Dumazet <edumazet@google.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>, linux-hardening@vger.kernel.org,
+ Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>,
+ linux-scsi@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Kashyap Desai <kashyap.desai@broadcom.com>,
+ Christoph Hellwig <hch@infradead.org>, intel-wired-lan@lists.osuosl.org,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>,
+ Dave Chinner <dchinner@redhat.com>, Keith Busch <kbusch@kernel.org>,
+ HighPoint Linux Team <linux@highpoint-tech.com>,
+ megaraidlinux.pdl@broadcom.com, Jens Axboe <axboe@kernel.dk>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Shivasharan S <shivasharan.srikanteshwara@broadcom.com>,
+ netdev@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>,
+ linux-kernel@vger.kernel.org, linux-xfs@vger.kernel.org,
+ Sumit Saxena <sumit.saxena@broadcom.com>,
+ Tales Aparecida <tales.aparecida@gmail.com>,
+ Don Brace <don.brace@microchip.com>, "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: INFO setup_repo_specs: /db/releases/20230523172912/lkp-src/repo/*/tnguy-next-queue
-https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: e2b24b8113f04632da7a9d51c0afd7552e8d1b51  iavf: fix err handling for MAC replace
+On Mon, May 22, 2023 at 02:18:13PM -0700, Kees Cook wrote:
+> While struct_size() is normally used in situations where the structure
+> type already has a pointer instance, there are places where no variable
+> is available. In the past, this has been worked around by using a typed
+> NULL first argument, but this is a bit ugly. Add a helper to do this,
+> and replace the handful of instances of the code pattern with it.
+> 
+> Instances were found with this Coccinelle script:
+> 
+> @struct_size_t@
+> identifier STRUCT, MEMBER;
+> expression COUNT;
+> @@
+> 
+> -       struct_size((struct STRUCT *)\(0\|NULL\),
+> +       struct_size_t(struct STRUCT,
+>                 MEMBER, COUNT)
+> 
+> Suggested-by: Christoph Hellwig <hch@infradead.org>
+> Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Cc: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Eric Dumazet <edumazet@google.com>
+> Cc: Jakub Kicinski <kuba@kernel.org>
+> Cc: Paolo Abeni <pabeni@redhat.com>
+> Cc: James Smart <james.smart@broadcom.com>
+> Cc: Keith Busch <kbusch@kernel.org>
+> Cc: Jens Axboe <axboe@kernel.dk>
+> Cc: Sagi Grimberg <sagi@grimberg.me>
+> Cc: HighPoint Linux Team <linux@highpoint-tech.com>
+> Cc: "James E.J. Bottomley" <jejb@linux.ibm.com>
+> Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+> Cc: Kashyap Desai <kashyap.desai@broadcom.com>
+> Cc: Sumit Saxena <sumit.saxena@broadcom.com>
+> Cc: Shivasharan S <shivasharan.srikanteshwara@broadcom.com>
+> Cc: Don Brace <don.brace@microchip.com>
+> Cc: "Darrick J. Wong" <djwong@kernel.org>
+> Cc: Dave Chinner <dchinner@redhat.com>
+> Cc: Guo Xuenan <guoxuenan@huawei.com>
+> Cc: Gwan-gyeong Mun <gwan-gyeong.mun@intel.com>
+> Cc: Nick Desaulniers <ndesaulniers@google.com>
+> Cc: Daniel Latypov <dlatypov@google.com>
+> Cc: kernel test robot <lkp@intel.com>
+> Cc: intel-wired-lan@lists.osuosl.org
+> Cc: netdev@vger.kernel.org
+> Cc: linux-nvme@lists.infradead.org
+> Cc: linux-scsi@vger.kernel.org
+> Cc: megaraidlinux.pdl@broadcom.com
+> Cc: storagedev@microchip.com
+> Cc: linux-xfs@vger.kernel.org
+> Cc: linux-hardening@vger.kernel.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> ---
+> Unless there are objections, I'll just take this via my tree...
+> ---
+>  drivers/net/ethernet/intel/ice/ice_ddp.h  |  9 ++++-----
+>  drivers/nvme/host/fc.c                    |  8 ++++----
+>  drivers/scsi/hptiop.c                     |  4 ++--
+>  drivers/scsi/megaraid/megaraid_sas_base.c | 12 ++++++------
+>  drivers/scsi/megaraid/megaraid_sas_fp.c   |  6 +++---
+>  drivers/scsi/smartpqi/smartpqi_init.c     |  2 +-
+>  fs/xfs/libxfs/xfs_btree.h                 |  2 +-
+>  fs/xfs/scrub/btree.h                      |  2 +-
+>  include/linux/overflow.h                  | 18 +++++++++++++++++-
+>  lib/overflow_kunit.c                      |  2 +-
+>  10 files changed, 40 insertions(+), 25 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.h b/drivers/net/ethernet/intel/ice/ice_ddp.h
+> index 37eadb3d27a8..41acfe26df1c 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_ddp.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_ddp.h
+> @@ -185,7 +185,7 @@ struct ice_buf_hdr {
+>  
+>  #define ICE_MAX_ENTRIES_IN_BUF(hd_sz, ent_sz)                                 \
+>  	((ICE_PKG_BUF_SIZE -                                                  \
+> -	  struct_size((struct ice_buf_hdr *)0, section_entry, 1) - (hd_sz)) / \
+> +	  struct_size_t(struct ice_buf_hdr,  section_entry, 1) - (hd_sz)) / \
+>  	 (ent_sz))
+>  
+>  /* ice package section IDs */
+> @@ -297,7 +297,7 @@ struct ice_label_section {
+>  };
+>  
+>  #define ICE_MAX_LABELS_IN_BUF                                             \
+> -	ICE_MAX_ENTRIES_IN_BUF(struct_size((struct ice_label_section *)0, \
+> +	ICE_MAX_ENTRIES_IN_BUF(struct_size_t(struct ice_label_section,  \
+>  					   label, 1) -                    \
+>  				       sizeof(struct ice_label),          \
+>  			       sizeof(struct ice_label))
+> @@ -352,7 +352,7 @@ struct ice_boost_tcam_section {
+>  };
+>  
+>  #define ICE_MAX_BST_TCAMS_IN_BUF                                               \
+> -	ICE_MAX_ENTRIES_IN_BUF(struct_size((struct ice_boost_tcam_section *)0, \
+> +	ICE_MAX_ENTRIES_IN_BUF(struct_size_t(struct ice_boost_tcam_section,  \
+>  					   tcam, 1) -                          \
+>  				       sizeof(struct ice_boost_tcam_entry),    \
+>  			       sizeof(struct ice_boost_tcam_entry))
+> @@ -372,8 +372,7 @@ struct ice_marker_ptype_tcam_section {
+>  };
+>  
+>  #define ICE_MAX_MARKER_PTYPE_TCAMS_IN_BUF                                    \
+> -	ICE_MAX_ENTRIES_IN_BUF(                                              \
+> -		struct_size((struct ice_marker_ptype_tcam_section *)0, tcam, \
+> +	ICE_MAX_ENTRIES_IN_BUF(struct_size_t(struct ice_marker_ptype_tcam_section,  tcam, \
+>  			    1) -                                             \
+>  			sizeof(struct ice_marker_ptype_tcam_entry),          \
+>  		sizeof(struct ice_marker_ptype_tcam_entry))
+> diff --git a/drivers/nvme/host/fc.c b/drivers/nvme/host/fc.c
+> index 2ed75923507d..691f2df574ce 100644
+> --- a/drivers/nvme/host/fc.c
+> +++ b/drivers/nvme/host/fc.c
+> @@ -2917,8 +2917,8 @@ nvme_fc_create_io_queues(struct nvme_fc_ctrl *ctrl)
+>  
+>  	ret = nvme_alloc_io_tag_set(&ctrl->ctrl, &ctrl->tag_set,
+>  			&nvme_fc_mq_ops, 1,
+> -			struct_size((struct nvme_fcp_op_w_sgl *)NULL, priv,
+> -				    ctrl->lport->ops->fcprqst_priv_sz));
+> +			struct_size_t(struct nvme_fcp_op_w_sgl, priv,
+> +				      ctrl->lport->ops->fcprqst_priv_sz));
+>  	if (ret)
+>  		return ret;
+>  
+> @@ -3536,8 +3536,8 @@ nvme_fc_init_ctrl(struct device *dev, struct nvmf_ctrl_options *opts,
+>  
+>  	ret = nvme_alloc_admin_tag_set(&ctrl->ctrl, &ctrl->admin_tag_set,
+>  			&nvme_fc_admin_mq_ops,
+> -			struct_size((struct nvme_fcp_op_w_sgl *)NULL, priv,
+> -				    ctrl->lport->ops->fcprqst_priv_sz));
+> +			struct_size_t(struct nvme_fcp_op_w_sgl, priv,
+> +				      ctrl->lport->ops->fcprqst_priv_sz));
+>  	if (ret)
+>  		goto fail_ctrl;
+>  
+> diff --git a/drivers/scsi/hptiop.c b/drivers/scsi/hptiop.c
+> index 06ccb51bf6a9..f5334ccbf2ca 100644
+> --- a/drivers/scsi/hptiop.c
+> +++ b/drivers/scsi/hptiop.c
+> @@ -1394,8 +1394,8 @@ static int hptiop_probe(struct pci_dev *pcidev, const struct pci_device_id *id)
+>  	host->cmd_per_lun = le32_to_cpu(iop_config.max_requests);
+>  	host->max_cmd_len = 16;
+>  
+> -	req_size = struct_size((struct hpt_iop_request_scsi_command *)0,
+> -			       sg_list, hba->max_sg_descriptors);
+> +	req_size = struct_size_t(struct hpt_iop_request_scsi_command,
+> +				 sg_list, hba->max_sg_descriptors);
+>  	if ((req_size & 0x1f) != 0)
+>  		req_size = (req_size + 0x1f) & ~0x1f;
+>  
+> diff --git a/drivers/scsi/megaraid/megaraid_sas_base.c b/drivers/scsi/megaraid/megaraid_sas_base.c
+> index 317c944c68e3..050eed8e2684 100644
+> --- a/drivers/scsi/megaraid/megaraid_sas_base.c
+> +++ b/drivers/scsi/megaraid/megaraid_sas_base.c
+> @@ -5153,8 +5153,8 @@ static void megasas_update_ext_vd_details(struct megasas_instance *instance)
+>  		fusion->max_map_sz = ventura_map_sz;
+>  	} else {
+>  		fusion->old_map_sz =
+> -			struct_size((struct MR_FW_RAID_MAP *)0, ldSpanMap,
+> -				    instance->fw_supported_vd_count);
+> +			struct_size_t(struct MR_FW_RAID_MAP, ldSpanMap,
+> +				      instance->fw_supported_vd_count);
+>  		fusion->new_map_sz =  sizeof(struct MR_FW_RAID_MAP_EXT);
+>  
+>  		fusion->max_map_sz =
+> @@ -5789,8 +5789,8 @@ megasas_setup_jbod_map(struct megasas_instance *instance)
+>  	struct fusion_context *fusion = instance->ctrl_context;
+>  	size_t pd_seq_map_sz;
+>  
+> -	pd_seq_map_sz = struct_size((struct MR_PD_CFG_SEQ_NUM_SYNC *)0, seq,
+> -				    MAX_PHYSICAL_DEVICES);
+> +	pd_seq_map_sz = struct_size_t(struct MR_PD_CFG_SEQ_NUM_SYNC, seq,
+> +				      MAX_PHYSICAL_DEVICES);
+>  
+>  	instance->use_seqnum_jbod_fp =
+>  		instance->support_seqnum_jbod_fp;
+> @@ -8033,8 +8033,8 @@ static void megasas_detach_one(struct pci_dev *pdev)
+>  	if (instance->adapter_type != MFI_SERIES) {
+>  		megasas_release_fusion(instance);
+>  		pd_seq_map_sz =
+> -			struct_size((struct MR_PD_CFG_SEQ_NUM_SYNC *)0,
+> -				    seq, MAX_PHYSICAL_DEVICES);
+> +			struct_size_t(struct MR_PD_CFG_SEQ_NUM_SYNC,
+> +				      seq, MAX_PHYSICAL_DEVICES);
+>  		for (i = 0; i < 2 ; i++) {
+>  			if (fusion->ld_map[i])
+>  				dma_free_coherent(&instance->pdev->dev,
+> diff --git a/drivers/scsi/megaraid/megaraid_sas_fp.c b/drivers/scsi/megaraid/megaraid_sas_fp.c
+> index 4463a538102a..b8b388a4e28f 100644
+> --- a/drivers/scsi/megaraid/megaraid_sas_fp.c
+> +++ b/drivers/scsi/megaraid/megaraid_sas_fp.c
+> @@ -326,9 +326,9 @@ u8 MR_ValidateMapInfo(struct megasas_instance *instance, u64 map_id)
+>  	else if (instance->supportmax256vd)
+>  		expected_size = sizeof(struct MR_FW_RAID_MAP_EXT);
+>  	else
+> -		expected_size = struct_size((struct MR_FW_RAID_MAP *)0,
+> -					    ldSpanMap,
+> -					    le16_to_cpu(pDrvRaidMap->ldCount));
+> +		expected_size = struct_size_t(struct MR_FW_RAID_MAP,
+> +					      ldSpanMap,
+> +					      le16_to_cpu(pDrvRaidMap->ldCount));
+>  
+>  	if (le32_to_cpu(pDrvRaidMap->totalSize) != expected_size) {
+>  		dev_dbg(&instance->pdev->dev, "megasas: map info structure size 0x%x",
+> diff --git a/drivers/scsi/smartpqi/smartpqi_init.c b/drivers/scsi/smartpqi/smartpqi_init.c
+> index 03de97cd72c2..f4e0aa262164 100644
+> --- a/drivers/scsi/smartpqi/smartpqi_init.c
+> +++ b/drivers/scsi/smartpqi/smartpqi_init.c
+> @@ -5015,7 +5015,7 @@ static int pqi_create_queues(struct pqi_ctrl_info *ctrl_info)
+>  }
+>  
+>  #define PQI_REPORT_EVENT_CONFIG_BUFFER_LENGTH	\
+> -	struct_size((struct pqi_event_config *)0, descriptors, PQI_MAX_EVENT_DESCRIPTORS)
+> +	struct_size_t(struct pqi_event_config,  descriptors, PQI_MAX_EVENT_DESCRIPTORS)
+>  
+>  static int pqi_configure_events(struct pqi_ctrl_info *ctrl_info,
+>  	bool enable_events)
+> diff --git a/fs/xfs/libxfs/xfs_btree.h b/fs/xfs/libxfs/xfs_btree.h
+> index a2aa36b23e25..4d68a58be160 100644
+> --- a/fs/xfs/libxfs/xfs_btree.h
+> +++ b/fs/xfs/libxfs/xfs_btree.h
+> @@ -301,7 +301,7 @@ struct xfs_btree_cur
+>  static inline size_t
+>  xfs_btree_cur_sizeof(unsigned int nlevels)
+>  {
+> -	return struct_size((struct xfs_btree_cur *)NULL, bc_levels, nlevels);
+> +	return struct_size_t(struct xfs_btree_cur, bc_levels, nlevels);
 
-elapsed time: 720m
+Oh, hey, this thing ^^^^^^^^ again.  I'm excited!
 
-configs tested: 142
-configs skipped: 10
+Reviewed-by: Darrick J. Wong <djwong@kernel.org>
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+--D
 
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha        buildonly-randconfig-r002-20230522   gcc  
-alpha        buildonly-randconfig-r004-20230521   gcc  
-alpha        buildonly-randconfig-r006-20230521   gcc  
-alpha                               defconfig   gcc  
-alpha                randconfig-r001-20230522   gcc  
-alpha                randconfig-r025-20230522   gcc  
-alpha                randconfig-r033-20230522   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r005-20230521   gcc  
-arc                  randconfig-r012-20230522   gcc  
-arc                  randconfig-r015-20230522   gcc  
-arc                  randconfig-r034-20230522   gcc  
-arc                  randconfig-r035-20230521   gcc  
-arc                  randconfig-r036-20230521   gcc  
-arc                  randconfig-r043-20230521   gcc  
-arc                  randconfig-r043-20230522   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r003-20230521   gcc  
-arm                  randconfig-r046-20230521   clang
-arm                  randconfig-r046-20230522   gcc  
-arm64                            allyesconfig   gcc  
-arm64        buildonly-randconfig-r005-20230522   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r016-20230522   clang
-csky                                defconfig   gcc  
-csky                 randconfig-r004-20230521   gcc  
-csky                 randconfig-r013-20230522   gcc  
-csky                 randconfig-r023-20230522   gcc  
-csky                 randconfig-r026-20230521   gcc  
-hexagon      buildonly-randconfig-r002-20230521   clang
-hexagon              randconfig-r041-20230521   clang
-hexagon              randconfig-r041-20230522   clang
-hexagon              randconfig-r045-20230521   clang
-hexagon              randconfig-r045-20230522   clang
-i386                             allyesconfig   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-ia64                             allmodconfig   gcc  
-ia64                                defconfig   gcc  
-ia64                 randconfig-r002-20230521   gcc  
-ia64                 randconfig-r014-20230523   gcc  
-ia64                 randconfig-r023-20230521   gcc  
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r001-20230521   gcc  
-loongarch            randconfig-r016-20230523   gcc  
-m68k                             allmodconfig   gcc  
-m68k                                defconfig   gcc  
-microblaze   buildonly-randconfig-r001-20230522   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips         buildonly-randconfig-r004-20230522   clang
-mips                 randconfig-r032-20230521   gcc  
-mips                 randconfig-r036-20230522   clang
-nios2        buildonly-randconfig-r003-20230522   gcc  
-nios2                               defconfig   gcc  
-nios2                randconfig-r013-20230523   gcc  
-nios2                randconfig-r021-20230522   gcc  
-openrisc             randconfig-r031-20230522   gcc  
-openrisc             randconfig-r034-20230521   gcc  
-parisc       buildonly-randconfig-r001-20230521   gcc  
-parisc                              defconfig   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc              randconfig-r004-20230522   gcc  
-powerpc              randconfig-r022-20230521   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r011-20230523   gcc  
-riscv                randconfig-r013-20230521   gcc  
-riscv                randconfig-r024-20230522   clang
-riscv                randconfig-r042-20230521   gcc  
-riscv                randconfig-r042-20230522   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r011-20230521   gcc  
-s390                 randconfig-r021-20230521   gcc  
-s390                 randconfig-r033-20230521   clang
-s390                 randconfig-r044-20230521   gcc  
-s390                 randconfig-r044-20230522   clang
-sh                               allmodconfig   gcc  
-sh           buildonly-randconfig-r005-20230521   gcc  
-sh                   randconfig-r003-20230522   gcc  
-sh                   randconfig-r006-20230521   gcc  
-sh                   randconfig-r016-20230521   gcc  
-sh                   randconfig-r035-20230522   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r012-20230521   gcc  
-sparc                randconfig-r014-20230521   gcc  
-sparc                randconfig-r022-20230522   gcc  
-sparc                randconfig-r025-20230521   gcc  
-sparc64      buildonly-randconfig-r006-20230522   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                            allnoconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64               randconfig-a001-20230522   gcc  
-x86_64               randconfig-a002-20230522   gcc  
-x86_64               randconfig-a003-20230522   gcc  
-x86_64               randconfig-a004-20230522   gcc  
-x86_64               randconfig-a011-20230522   clang
-x86_64               randconfig-a012-20230522   clang
-x86_64               randconfig-a013-20230522   clang
-x86_64               randconfig-a014-20230522   clang
-x86_64               randconfig-a015-20230522   clang
-x86_64               randconfig-x051-20230522   clang
-x86_64               randconfig-x052-20230522   clang
-x86_64               randconfig-x053-20230522   clang
-x86_64               randconfig-x054-20230522   clang
-x86_64               randconfig-x061-20230522   clang
-x86_64               randconfig-x062-20230522   clang
-x86_64               randconfig-x063-20230522   clang
-x86_64               randconfig-x064-20230522   clang
-x86_64               randconfig-x065-20230522   clang
-x86_64                        randconfig-x071   clang
-x86_64                        randconfig-x072   gcc  
-x86_64                        randconfig-x073   clang
-x86_64                        randconfig-x074   gcc  
-x86_64                        randconfig-x075   clang
-x86_64                        randconfig-x076   gcc  
-x86_64               randconfig-x081-20230522   gcc  
-x86_64               randconfig-x082-20230522   gcc  
-x86_64               randconfig-x083-20230522   gcc  
-x86_64               randconfig-x084-20230522   gcc  
-x86_64               randconfig-x085-20230522   gcc  
-x86_64                               rhel-8.3   gcc  
-xtensa       buildonly-randconfig-r003-20230521   gcc  
-xtensa               randconfig-r011-20230522   gcc  
-xtensa               randconfig-r012-20230523   gcc  
-xtensa               randconfig-r014-20230522   gcc  
-xtensa               randconfig-r024-20230521   gcc  
-
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+>  }
+>  
+>  /* cursor flags */
+> diff --git a/fs/xfs/scrub/btree.h b/fs/xfs/scrub/btree.h
+> index 9d7b9ee8bef4..c32b5fad6174 100644
+> --- a/fs/xfs/scrub/btree.h
+> +++ b/fs/xfs/scrub/btree.h
+> @@ -60,7 +60,7 @@ struct xchk_btree {
+>  static inline size_t
+>  xchk_btree_sizeof(unsigned int nlevels)
+>  {
+> -	return struct_size((struct xchk_btree *)NULL, lastkey, nlevels - 1);
+> +	return struct_size_t(struct xchk_btree, lastkey, nlevels - 1);
+>  }
+>  
+>  int xchk_btree(struct xfs_scrub *sc, struct xfs_btree_cur *cur,
+> diff --git a/include/linux/overflow.h b/include/linux/overflow.h
+> index 0e33b5cbdb9f..f9b60313eaea 100644
+> --- a/include/linux/overflow.h
+> +++ b/include/linux/overflow.h
+> @@ -283,7 +283,7 @@ static inline size_t __must_check size_sub(size_t minuend, size_t subtrahend)
+>   * @member: Name of the array member.
+>   * @count: Number of elements in the array.
+>   *
+> - * Calculates size of memory needed for structure @p followed by an
+> + * Calculates size of memory needed for structure of @p followed by an
+>   * array of @count number of @member elements.
+>   *
+>   * Return: number of bytes needed or SIZE_MAX on overflow.
+> @@ -293,4 +293,20 @@ static inline size_t __must_check size_sub(size_t minuend, size_t subtrahend)
+>  		sizeof(*(p)) + flex_array_size(p, member, count),	\
+>  		size_add(sizeof(*(p)), flex_array_size(p, member, count)))
+>  
+> +/**
+> + * struct_size_t() - Calculate size of structure with trailing flexible array
+> + * @type: structure type name.
+> + * @member: Name of the array member.
+> + * @count: Number of elements in the array.
+> + *
+> + * Calculates size of memory needed for structure @type followed by an
+> + * array of @count number of @member elements. Prefer using struct_size()
+> + * when possible instead, to keep calculations associated with a specific
+> + * instance variable of type @type.
+> + *
+> + * Return: number of bytes needed or SIZE_MAX on overflow.
+> + */
+> +#define struct_size_t(type, member, count)					\
+> +	struct_size((type *)NULL, member, count)
+> +
+>  #endif /* __LINUX_OVERFLOW_H */
+> diff --git a/lib/overflow_kunit.c b/lib/overflow_kunit.c
+> index dcd3ba102db6..34db0b3aa502 100644
+> --- a/lib/overflow_kunit.c
+> +++ b/lib/overflow_kunit.c
+> @@ -649,7 +649,7 @@ struct __test_flex_array {
+>  static void overflow_size_helpers_test(struct kunit *test)
+>  {
+>  	/* Make sure struct_size() can be used in a constant expression. */
+> -	u8 ce_array[struct_size((struct __test_flex_array *)0, data, 55)];
+> +	u8 ce_array[struct_size_t(struct __test_flex_array, data, 55)];
+>  	struct __test_flex_array *obj;
+>  	int count = 0;
+>  	int var;
+> -- 
+> 2.34.1
+> 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
