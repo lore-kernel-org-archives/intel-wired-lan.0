@@ -1,197 +1,71 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A199C77B75
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 May 2023 13:50:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFF73C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 22 May 2023 15:06:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EED1B60784;
-	Mon, 22 May 2023 13:50:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EED1B60784
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6918A83B81;
+	Mon, 22 May 2023 15:06:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6918A83B81
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684763434;
-	bh=p7uCbMW9fnz9VVmQuzzsrtU29IkCETmgmM5+4TBPmXg=;
+	s=default; t=1684767981;
+	bh=1MA7vJzOLZZ6aTg6zoIXfZ/tg8qJuolFSGZCfW4ZzRE=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=lXWUOOrbfy5NwHTKoCy3Tcac4Bd7IuoXP9gFrG0fuF3mTjD6qY0hddEv4ngjBvfSS
-	 0Xzvp1a0QrhXN4jxqT0VBeaV9jQ2TcOmmxjZOJT1/KYlZK9Ego2la1VKJ0PyUYfPzS
-	 pmIH8Se3QX6okUe5AIfUaUIDL4cnhZFpwCs5UepxIKsnCYdYsQeWsBYfoPrPqv+lXh
-	 7n/9D+65UQBTttc2o6UrR/lX35rswe8/1fL9rzBTOOLcIIaXp21zw6BQZFcdV8QNmg
-	 N85S9aVBLn/zwD6LbN6nOMWsJaqVmrPZ0SoS767KPJCY4bz/+RlHL7SfycqviUHEzW
-	 aBraFPX3GOlAg==
+	b=mGaBig83De5Lh00oZQKi+dHPSblV3aGPaSldw+vk1wRIZiCGEKufUyikdekmw97N/
+	 FEIjfnxc8ANZN04x3mkUgeR1ULrKDoDDLRFG/96ObC2H3QZeqH+cePl4YSFFtnuDYx
+	 Z5zUFe5pp+C4DENkuZ8Jd9gvPXGDeDXW+uY+sIo4oa1S9AOyBMz9AqW1G33imW4r+A
+	 7HofGU9NRvnksMBLpWmkezxJyIT6SfMh1d5ROVNtck9oDXeJeyioQL2Kr1e/K0OJi7
+	 Bwau3DluvfBuRANVuIG4PQJqbB+XJrpchRVIbJprdBQ1NLF/b1XNKPt49Qx4TEUaxs
+	 78Mok0qgnMIiw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dVLhbDFkRM2c; Mon, 22 May 2023 13:50:33 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id WRr13T3LuJTo; Mon, 22 May 2023 15:06:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0DB7960881;
-	Mon, 22 May 2023 13:50:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0DB7960881
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 04E0B1BF397
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 13:50:31 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2917D83B5B;
+	Mon, 22 May 2023 15:06:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2917D83B5B
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 4790E1BF393
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 15:06:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CA11A4119C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 13:50:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CA11A4119C
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2B0824191D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 15:06:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2B0824191D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id F-TD1DfmRBgo for <intel-wired-lan@lists.osuosl.org>;
- Mon, 22 May 2023 13:50:29 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 977AB400C8
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 977AB400C8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 13:50:29 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10718"; a="350434478"
-X-IronPort-AV: E=Sophos;i="6.00,184,1681196400"; d="scan'208";a="350434478"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 May 2023 06:50:28 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10718"; a="653961617"
-X-IronPort-AV: E=Sophos;i="6.00,184,1681196400"; d="scan'208";a="653961617"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
- by orsmga003.jf.intel.com with ESMTP; 22 May 2023 06:50:28 -0700
-Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Mon, 22 May 2023 06:50:28 -0700
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Mon, 22 May 2023 06:50:27 -0700
-Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
- orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23 via Frontend Transport; Mon, 22 May 2023 06:50:27 -0700
-Received: from NAM10-MW2-obe.outbound.protection.outlook.com (104.47.55.101)
- by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.23; Mon, 22 May 2023 06:50:27 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Om9vu2BgIYKH1Ga9mkvBACF2Jw4/vcaSmXCUQaZQB506cR0u+ZszUlF9mbQBmGBzayKwXaE6bL9QEJfp1WggjcdkyheU6t3TO57DFQmSqxpat/MFNOk2XDe7rfgGmV8ypn2bgykpCRRIJZsIRDpo9SndIBEzHH8gdNOD+q/g1wH8vRANORAfoAlwT5JYalf/Sn2Q2glLCcLHX2KtglHdN2MoXW1GKiqRg9XHKY3IraC3P94LUHVwnd6vy3XFyTSf0EajOxBugmBLYtXv4AF68505SpWYuABbqD597LYgGXZG2mFIicdO1vRfgA9AXCC0nWuNJmO3PnGpMqMSG/J3Rw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=6CnR8BmGWrxt7EpG0welhqunwrghdQHUyzc+qJSKOUQ=;
- b=nv5bAIe87TUIvPLHwOBXnwc30fnuqovLCspcXx4JmgMZRVQUywQqn7XsUHG5VAbLU9Vmaz0Zmw6Ar552cV/kYnsUotUkf7cRJ3ZNBPyES/b+0lyPMPcLAZhF2IMXo1wuj2NmLVVrFyOao8e7sNWUOWJ69NeTG807ZLC/h8iFWCfzvYdxyWQCFU0hklG8w50s6otuM2Z0id3Xk7QAKjIABD40tzLbecjVQb8+MuP9n5U6PMSsWal6DsLO29vaHOqTqKO2Un9Rfymmh19gm6N/+/SPNq5KvRaJau+4eFaJDKrjiRCMdWvLFZqWFnvZuWHDd4ljn7DkK5ZpP+LlNkjV1w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from DM6PR11MB3625.namprd11.prod.outlook.com (2603:10b6:5:13a::21)
- by CY8PR11MB7081.namprd11.prod.outlook.com (2603:10b6:930:53::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6411.28; Mon, 22 May
- 2023 13:50:26 +0000
-Received: from DM6PR11MB3625.namprd11.prod.outlook.com
- ([fe80::64d9:76b5:5b43:1590]) by DM6PR11MB3625.namprd11.prod.outlook.com
- ([fe80::64d9:76b5:5b43:1590%2]) with mapi id 15.20.6411.028; Mon, 22 May 2023
- 13:50:26 +0000
-Message-ID: <5effd41a-81c3-4815-826d-ba5d8f6c69b4@intel.com>
-Date: Mon, 22 May 2023 15:48:53 +0200
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id G5UXpL7b76Pl for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 22 May 2023 15:06:15 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4000A41924
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4000A41924
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 22 May 2023 15:06:14 +0000 (UTC)
+Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 9273061E4052B;
+ Mon, 22 May 2023 17:05:28 +0200 (CEST)
+Message-ID: <6bebe582-705c-2b7a-3286-1c86a15619f2@molgen.mpg.de>
+Date: Mon, 22 May 2023 17:05:28 +0200
+MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.11.0
 Content-Language: en-US
-To: Jakub Kicinski <kuba@kernel.org>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
 References: <20230516161841.37138-1-aleksander.lobakin@intel.com>
- <20230516161841.37138-8-aleksander.lobakin@intel.com>
- <20230517211211.1d1bbd0b@kernel.org>
- <9feef136-7ff3-91a4-4198-237b07a91c0c@intel.com>
- <20230518075643.3a242837@kernel.org>
- <0dfa36f1-a847-739e-4557-fc43e2e8c6a7@intel.com>
- <20230518133627.72747418@kernel.org>
- <77d929b2-c124-d3db-1cd9-8301d1d269d3@intel.com>
- <20230519134545.5807e1d8@kernel.org>
-From: Alexander Lobakin <aleksander.lobakin@intel.com>
-In-Reply-To: <20230519134545.5807e1d8@kernel.org>
-X-ClientProxiedBy: FR0P281CA0097.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:a9::10) To DM6PR11MB3625.namprd11.prod.outlook.com
- (2603:10b6:5:13a::21)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM6PR11MB3625:EE_|CY8PR11MB7081:EE_
-X-MS-Office365-Filtering-Correlation-Id: de4f5dba-c2ad-45f5-ed11-08db5acb7eb0
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: QXPx/e+J7j1gMflL+zU1fvz7h971ygztqbPMwFQC/6h91Y0BNn6D89rjd8/5xIJQCHgJPFFkaP9NuZdS4ERIYk/PzbQ4M/i+OwWB8rfuMBj0LH4yp2MorpmJ6GJEI5RbvCuyyz5LWgCAqg3GLsltOQco/eP0mCPSYzKlqD6RpxWI7G2Ra9zZ6iw/ooNHlZWDMPoYE20+B2oHsfzBInNTO11iXh6wNjuBMtZe/eRJM4bkFfUAcjGLf4L/Dxn+59zlPtJmM4HG8Jc0HOFYx9zBJFlKRveLv4mJ9rW6eZ77HAwSGERgOWpu9vm+jf5sUOJJDLCSEteiWuGKHSLBD8fVaWk9I6fuLCPjQDYjDevgP1MIAti6oRZEtMaj8cJHwQFn29I9Fwm/nxQAuv5HBb7j7EZh1CedC0A+ufzE2fQTGy05dp+ut+xIRBN9M2wQlwBfKLatveo/J5Fguy1TohhjjgeLZU6pM1xUM9CkIoCYaxr5mUoswy5aAjtNI+yIgSdu57qeBfhUaIXDgXZSkt9rJtR0JfYGMVfloFgSYI2vjtAJkcQTVVlMrTXKg9Y2bbdgXswwVFWi140JynpwlGc8JMu6eS0USX/UBzlUk+V9//lDDKRWFGIGuTwvc8kQSWmJMFTdgQnWd2eQ39t2IuacFg==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DM6PR11MB3625.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(396003)(136003)(346002)(366004)(376002)(39860400002)(451199021)(2616005)(186003)(2906002)(6916009)(4326008)(66476007)(66556008)(66946007)(41300700001)(6486002)(6666004)(316002)(54906003)(478600001)(5660300002)(26005)(6506007)(6512007)(107886003)(7416002)(8676002)(8936002)(31696002)(38100700002)(82960400001)(86362001)(36756003)(31686004)(43740500002)(45980500001);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?RVE2Zk1oOEVuYUMzY24xWnU0bmM3ZmhSZlhUdGZaaHNYQUcvRFlVWDJPZFFl?=
- =?utf-8?B?cEI2UkxuNW1PaFpXMmpvVlprSy8xdE5ZZDZIMU9GZEdZLzNlTVZyMHdMQy9w?=
- =?utf-8?B?d1BEQVk3UkM0VDA3Tms2M1Y1SUpqWkZmSlNzbGJlenZHQ3k2T3l0ekhqMTlQ?=
- =?utf-8?B?T25vQlpQS3dWYVoyVzdaNHBjdEhML1BzR0haSG9FczUxanR1dnZTcnNwc0FR?=
- =?utf-8?B?R2N2amRuWmM3TnQvM3JINzRodUxqeEs3ck16ejU4K1NqRlpnVkhKNEVXMnJN?=
- =?utf-8?B?SGd3REo3eFkybXFyNUhVdFFWSGNjUzk2Ty8zQ0FNYmNtVnhiRzk3N1MzaHlt?=
- =?utf-8?B?NCtNTWM3RWFPZy9ZeGlZK09nR1FseXdPZmJjNlJEeGNaSndoRUkvci9oaU9X?=
- =?utf-8?B?ZllsbTJKQTJoVVc1VzVwWnA0d3ZPbENKcmxPbGliQ1JCY2syRmZLdkhBbFZX?=
- =?utf-8?B?T3BLa0N6SU8yT3Q1OUZNSUp0M1A2R3BtdUFyamJ3ZUZmYVEvakJ0dUtYVnlU?=
- =?utf-8?B?ZWIrdVJvZitrNGs3WkM0WVE0Zk55T3pkZWtzbUovdlNDZmJUbW5Ialp0dGZt?=
- =?utf-8?B?Sk16MW9Oa1dsQkt4d09BR1lkclVVc1hHbzVDeUIvQnVtY3lubzUvVEhHZ3NR?=
- =?utf-8?B?V1VCeWovREpRank2RkVXeFBtc0tvQnU3NnJ3TXdDeGQ4VTFBN01wditDNVdS?=
- =?utf-8?B?NWFEb0xQdGIvWkM2SWRHRnZOdXMvWHZrR1R2cDBMVCtrT08vUnBIOWtpSUxl?=
- =?utf-8?B?L1lPa3RBZi9tMmNYZDZPdENNYTJZWFEvcm52Qnp0T1NYMVNtc1ppQlBJUDQy?=
- =?utf-8?B?ZXZOMWtLVXk0Ly9EclVTMWhEMnFheXh2QzIxeUNlOG13ckFSZG1UZDZBcXdN?=
- =?utf-8?B?NVI2dzJuemUzTmoyVkVWMmxIODc4dENjYnpwdzdnMG12bzZKdGtkVjhkMVlq?=
- =?utf-8?B?cFV6Nm9ZbTZQSEp6QmZWNGo0bzJHb1MxaGtPbmhhSW5yWHg1K2hxQjErRG53?=
- =?utf-8?B?aVc0dFNvTkFBMlBrYWVwSGNXQ012UEhERXl4WE8zTGRCQWNwanRUK05jWE9Z?=
- =?utf-8?B?L1RNS0JndXo1T0lZeUtBc2ZaSmpiTTlDNnFFWTVTSVpUd0hhalFGRFc4S2VU?=
- =?utf-8?B?ZGV6KzFUWUlrc1lTMnFMaGsxNDFHSGhWQUdZV3ZPUVgzL3k2UUk1ckRLb2ds?=
- =?utf-8?B?OGw5bXlHbDI0WmxZcjF2c0c3MzBqZVIzZDV6NVFmcUlkMTc1MXYzOWtpUlI2?=
- =?utf-8?B?QUdhNWZqYno2ZHNPR1BJVXplQlpyNWltM2FoSE5taG5RZ1p3MFNXbUllbXF0?=
- =?utf-8?B?c0lMTWttVHkwMTFIRXV6NTNtWU96QTByUnhST1hRS3hURTN3aTRnUCtZNWs2?=
- =?utf-8?B?REl6ODBWYzJpYW5VZkpveXlpVng2MUJQMHRZa3dYaTlweVN1WTg0Z2I0ZHo0?=
- =?utf-8?B?aUw5aVZtQUFpT21YemRUU3E0OFVSbjJ0ZkVzYTlPVElMSFFiOUhUZU5FMzJl?=
- =?utf-8?B?VC9ad0M3cldFQlFwSXhVRlJoZG5xY2pGVW9aVUhxcDk3c2EyS1BuYlFkRm5J?=
- =?utf-8?B?V0hxc045RWYyb2MxaW93Y2oxZ0tndUNzZ0o5YTJkSDNoNm04V1lFOUNaMjNs?=
- =?utf-8?B?TGZKZmNyOTgvN2hUem5ITEZFMzMydnhubkJTY1dIUUlVbW1td2EyWGpsVUhi?=
- =?utf-8?B?Um53U2FHZm80U2N5N2tPZzlja2Z5aVl4M1pDenlGMFA1WVJDenNxRGJ6aEk2?=
- =?utf-8?B?ak05MmVoeUhiN1FOdHhIVDRPYmhJUXBxY2kyRUc1Q1lNQnJ6SzRNRk1Ham9u?=
- =?utf-8?B?alI0WTRIWHBBMzROUzUzeHJsRlpOb3VnWkFrTFc1c3VYdWgrREFsQngrNXF5?=
- =?utf-8?B?c2d2Um5LUDJtTXRSYVVCemI4UU1HUzZxUWxnZWZDQ3EvbUpvZGFvWUY5ODFR?=
- =?utf-8?B?b3ZhaWR1b2tuaVlNOWtNMHZtNkFzL2VhNXo1QTNQREt1VUJhVHNvRjVvNnZs?=
- =?utf-8?B?UUQwZStJK3I5dmIzeU1OSHdyTnAyWHJqTXFmcVE1Vjh3UlpPWVhiMXZLZlBx?=
- =?utf-8?B?M1B0SjJDZ0hIMkhzOHBGbGJQUUFQLzh4K3M4Z3cxa2pCejJZT0hLMTZXTkM5?=
- =?utf-8?B?dWF1YUJlbXZ2ZCtnWU14V0kvdjQ3cTlQb3lMR1VvUTBXVmt2MzlHckw3dzhr?=
- =?utf-8?B?RGc9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: de4f5dba-c2ad-45f5-ed11-08db5acb7eb0
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB3625.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 May 2023 13:50:25.6134 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: em01oYZ1euMAPWFAqWlKj2BrzqlrrzwAjBh2MRwaTo5m498Q+4xGzXhoBU/82fFEAfQtFS4hCUfbGfvsk97dzmwz12Vm7okGHPkc3xmvOFg=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR11MB7081
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1684763429; x=1716299429;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=R27FXpR96pLKcblX9hSUYW12+lHGI58M3cSB9j1AXUc=;
- b=VetGfyhbtA3q8FYwfWPZRdUywSQ909VCvhpqBzQq4HClyZ/uinyI8vMd
- YqlPMHkZQbcM++5OhGVX1ggEh9eOeBEwBsa9OP4lQM9b6bQHAXxd0dUM2
- 3I106wtyqsCQQqUxOJZt/IMRuKTiPgC/Vdhvj5xlGmJ2m4y3lAaxZc0j3
- Jo3YPLhsXnnOixY9TQKMXoyROdxnqtKa20491LRvGyhXI6qi2jRspGbUY
- 6Qo3gDi27AFOYlLEAjzfeJPz8BeDURENVeP23TQfpMeFKQb14/zlJHkw6
- ofesBVuBxedMmFA4P5GsuVDk9jq19IZAgqCOYLKlC11VhrbC4Ch/JKdkO
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=VetGfyhb
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net-next 07/11] net: page_pool: add
- DMA-sync-for-CPU inline helpers
+ <20230516161841.37138-11-aleksander.lobakin@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20230516161841.37138-11-aleksander.lobakin@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH net-next 10/11] libie: add per-queue
+ Page Pool stats
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -207,47 +81,321 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Cc: Jesper Dangaard Brouer <hawk@kernel.org>,
  Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
  Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-kernel@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, Eric Dumazet <edumazet@google.com>, Michal
- Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org, Paolo
- Abeni <pabeni@redhat.com>, "David S.
- Miller" <davem@davemloft.net>, Magnus Karlsson <magnus.karlsson@intel.com>
-Content-Type: text/plain; charset="us-ascii"
+ Christoph Hellwig <hch@lst.de>, Eric Dumazet <edumazet@google.com>,
+ Michal Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Magnus Karlsson <magnus.karlsson@intel.com>
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jakub Kicinski <kuba@kernel.org>
-Date: Fri, 19 May 2023 13:45:45 -0700
+Dear Alexander,
 
-> On Fri, 19 May 2023 15:56:40 +0200 Alexander Lobakin wrote:
->> From: Jakub Kicinski <kuba@kernel.org>
->> Date: Thu, 18 May 2023 13:36:27 -0700
 
-[...]
+Thank you for your patch.
 
-> Ack, not saying that we need to split now, it's just about the naming
-> (everyone's favorite topic).
+Am 16.05.23 um 18:18 schrieb Alexander Lobakin:
+> Expand the libie generic per-queue stats with the generic Page Pool
+> stats provided by the API itself, when CONFIG_PAGE_POOL is enable.
+
+enable*d*
+
+> When it's not, there'll be no such fields in the stats structure, so
+> no space wasted.
+> They are also a bit special in terms of how they are obtained. One
+> &page_pool accumulates statistics until it's destroyed obviously,
+> which happens on ifdown. So, in order to not lose any statistics,
+> get the stats and store in the queue container before destroying
+> a pool. This container survives ifups/downs, so it basically stores
+> the statistics accumulated since the very first pool was allocated
+> on this queue. When it's needed to export the stats, first get the
+> numbers from this container and then add the "live" numbers -- the
+> ones that the current active pool returns. The result values will
+> always represent the actual device-lifetime* stats.
+> There's a cast from &page_pool_stats to `u64 *` in a couple functions,
+> but they are guarded with stats asserts to make sure it's safe to do.
+> FWIW it saves a lot of object code.
 > 
-> I think that it's a touch weird to name the header _drv.h and then
-> include it in the core in multiple places (*cough* xdp_sock_drv.h). 
-
-Hahaha, I also thought of it :>
-
-> Also If someone needs to add another "heavy" static line for use by 
-> the core they will try to put it in page_pool.h rather than _drv.h...
+> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+> ---
+>   drivers/net/ethernet/intel/libie/internal.h | 23 +++++++
+>   drivers/net/ethernet/intel/libie/rx.c       | 20 ++++++
+>   drivers/net/ethernet/intel/libie/stats.c    | 72 ++++++++++++++++++++-
+>   include/linux/net/intel/libie/rx.h          |  4 ++
+>   include/linux/net/intel/libie/stats.h       | 39 ++++++++++-
+>   5 files changed, 155 insertions(+), 3 deletions(-)
+>   create mode 100644 drivers/net/ethernet/intel/libie/internal.h
 > 
-> I'd rather split the includes by the basic language-level contents,
-> first, then by the intended consumer, only if necessary. Language 
-> level sorting require less thinking :)
-> 
-> But none of this is important, if you don't wanna to do it, just keep 
-> the new helpers in page_pool.h (let's not do another _drv.h).
+> diff --git a/drivers/net/ethernet/intel/libie/internal.h b/drivers/net/ethernet/intel/libie/internal.h
+> new file mode 100644
+> index 000000000000..083398dc37c6
+> --- /dev/null
+> +++ b/drivers/net/ethernet/intel/libie/internal.h
+> @@ -0,0 +1,23 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +/* libie internal declarations not to be used in drivers.
+> + *
+> + * Copyright(c) 2023 Intel Corporation.
+> + */
+> +
+> +#ifndef __LIBIE_INTERNAL_H
+> +#define __LIBIE_INTERNAL_H
+> +
+> +struct libie_rq_stats;
+> +struct page_pool;
+> +
+> +#ifdef CONFIG_PAGE_POOL_STATS
+> +void libie_rq_stats_sync_pp(struct libie_rq_stats *stats,
+> +			    struct page_pool *pool);
+> +#else
+> +static inline void libie_rq_stats_sync_pp(struct libie_rq_stats *stats,
+> +					  struct page_pool *pool)
+> +{
+> +}
+> +#endif
+> +
+> +#endif /* __LIBIE_INTERNAL_H */
+> diff --git a/drivers/net/ethernet/intel/libie/rx.c b/drivers/net/ethernet/intel/libie/rx.c
+> index d68eab76593c..128f134aca6d 100644
+> --- a/drivers/net/ethernet/intel/libie/rx.c
+> +++ b/drivers/net/ethernet/intel/libie/rx.c
+> @@ -3,6 +3,8 @@
+>   
+>   #include <linux/net/intel/libie/rx.h>
+>   
+> +#include "internal.h"
+> +
+>   /* O(1) converting i40e/ice/iavf's 8/10-bit hardware packet type to a parsed
+>    * bitfield struct.
+>    */
+> @@ -133,6 +135,24 @@ struct page_pool *libie_rx_page_pool_create(struct napi_struct *napi,
+>   }
+>   EXPORT_SYMBOL_NS_GPL(libie_rx_page_pool_create, LIBIE);
+>   
+> +/**
+> + * libie_rx_page_pool_destroy - destroy a &page_pool created by libie
+> + * @pool: pool to destroy
+> + * @stats: RQ stats from the ring (or %NULL to skip updating PP stats)
+> + *
+> + * As the stats usually has the same lifetime as the device, but PP is usually
+> + * created/destroyed on ifup/ifdown, in order to not lose the stats accumulated
+> + * during the last ifup, the PP stats need to be added to the driver stats
+> + * container. Then the PP gets destroyed.
+> + */
+> +void libie_rx_page_pool_destroy(struct page_pool *pool,
+> +				struct libie_rq_stats *stats)
+> +{
+> +	libie_rq_stats_sync_pp(stats, pool);
+> +	page_pool_destroy(pool);
+> +}
+> +EXPORT_SYMBOL_NS_GPL(libie_rx_page_pool_destroy, LIBIE);
+> +
+>   MODULE_AUTHOR("Intel Corporation");
+>   MODULE_DESCRIPTION("Intel(R) Ethernet common library");
+>   MODULE_LICENSE("GPL");
+> diff --git a/drivers/net/ethernet/intel/libie/stats.c b/drivers/net/ethernet/intel/libie/stats.c
+> index 61456842a362..95bbb38c39e3 100644
+> --- a/drivers/net/ethernet/intel/libie/stats.c
+> +++ b/drivers/net/ethernet/intel/libie/stats.c
+> @@ -4,6 +4,8 @@
+>   #include <linux/ethtool.h>
+>   #include <linux/net/intel/libie/stats.h>
+>   
+> +#include "internal.h"
+> +
+>   /* Rx per-queue stats */
+>   
+>   static const char * const libie_rq_stats_str[] = {
+> @@ -14,6 +16,70 @@ static const char * const libie_rq_stats_str[] = {
+>   
+>   #define LIBIE_RQ_STATS_NUM	ARRAY_SIZE(libie_rq_stats_str)
+>   
+> +#ifdef CONFIG_PAGE_POOL_STATS
+> +/**
+> + * libie_rq_stats_get_pp - get the current stats from a &page_pool
+> + * @sarr: local array to add stats to
+> + * @pool: pool to get the stats from
+> + *
+> + * Adds the current "live" stats from an online PP to the stats read from
+> + * the RQ container, so that the actual totals will be returned.
+> + */
+> +static void libie_rq_stats_get_pp(u64 *sarr, struct page_pool *pool)
+> +{
+> +	struct page_pool_stats *pps;
+> +	/* Used only to calculate pos below */
+> +	struct libie_rq_stats tmp;
+> +	u32 pos;
+> +
+> +	/* Validate the libie PP stats array can be casted <-> PP struct */
+> +	static_assert(sizeof(tmp.pp) == sizeof(*pps));
+> +
+> +	if (!pool)
+> +		return;
+> +
+> +	/* Position of the first Page Pool stats field */
+> +	pos = (u64_stats_t *)&tmp.pp - tmp.raw;
+> +	pps = (typeof(pps))&sarr[pos];
+> +
+> +	page_pool_get_stats(pool, pps);
+> +}
+> +
+> +/**
+> + * libie_rq_stats_sync_pp - add the current PP stats to the RQ stats container
+> + * @stats: stats structure to update
+> + * @pool: pool to read the stats
+> + *
+> + * Called by libie_rx_page_pool_destroy() to save the stats before destroying
+> + * the pool.
+> + */
+> +void libie_rq_stats_sync_pp(struct libie_rq_stats *stats,
+> +			    struct page_pool *pool)
+> +{
+> +	u64_stats_t *qarr = (u64_stats_t *)&stats->pp;
+> +	struct page_pool_stats pps = { };
+> +	u64 *sarr = (u64 *)&pps;
+> +
+> +	if (!stats)
+> +		return;
+> +
+> +	page_pool_get_stats(pool, &pps);
+> +
+> +	u64_stats_update_begin(&stats->syncp);
+> +
+> +	for (u32 i = 0; i < sizeof(pps) / sizeof(*sarr); i++)
+> +		u64_stats_add(&qarr[i], sarr[i]);
+> +
+> +	u64_stats_update_end(&stats->syncp);
+> +}
+> +#else
+> +static inline void libie_rq_stats_get_pp(u64 *sarr, struct page_pool *pool)
+> +{
+> +}
+> +
+> +/* static inline void libie_rq_stats_sync_pp() is declared in "internal.h" */
+> +#endif
+> +
+>   /**
+>    * libie_rq_stats_get_sset_count - get the number of Ethtool RQ stats provided
+>    *
+> @@ -41,8 +107,10 @@ EXPORT_SYMBOL_NS_GPL(libie_rq_stats_get_strings, LIBIE);
+>    * libie_rq_stats_get_data - get the RQ stats in Ethtool format
+>    * @data: reference to the cursor pointing to the output array
+>    * @stats: RQ stats container from the queue
+> + * @pool: &page_pool from the queue (%NULL to ignore PP "live" stats)
+>    */
+> -void libie_rq_stats_get_data(u64 **data, const struct libie_rq_stats *stats)
+> +void libie_rq_stats_get_data(u64 **data, const struct libie_rq_stats *stats,
+> +			     struct page_pool *pool)
+>   {
+>   	u64 sarr[LIBIE_RQ_STATS_NUM];
+>   	u32 start;
+> @@ -54,6 +122,8 @@ void libie_rq_stats_get_data(u64 **data, const struct libie_rq_stats *stats)
+>   			sarr[i] = u64_stats_read(&stats->raw[i]);
+>   	} while (u64_stats_fetch_retry(&stats->syncp, start));
+>   
+> +	libie_rq_stats_get_pp(sarr, pool);
+> +
+>   	for (u32 i = 0; i < LIBIE_RQ_STATS_NUM; i++)
+>   		(*data)[i] += sarr[i];
+>   
+> diff --git a/include/linux/net/intel/libie/rx.h b/include/linux/net/intel/libie/rx.h
+> index f6ba3b19b7e2..474ffd689001 100644
+> --- a/include/linux/net/intel/libie/rx.h
+> +++ b/include/linux/net/intel/libie/rx.h
+> @@ -160,7 +160,11 @@ static inline void libie_skb_set_hash(struct sk_buff *skb, u32 hash,
+>   /* Maximum frame size minus LL overhead */
+>   #define LIBIE_MAX_MTU		(LIBIE_MAX_RX_FRM_LEN - LIBIE_RX_LL_LEN)
+>   
+> +struct libie_rq_stats;
+> +
+>   struct page_pool *libie_rx_page_pool_create(struct napi_struct *napi,
+>   					    u32 size);
+> +void libie_rx_page_pool_destroy(struct page_pool *pool,
+> +				struct libie_rq_stats *stats);
+>   
+>   #endif /* __LIBIE_RX_H */
+> diff --git a/include/linux/net/intel/libie/stats.h b/include/linux/net/intel/libie/stats.h
+> index dbbc98bbd3a7..23ca0079a905 100644
+> --- a/include/linux/net/intel/libie/stats.h
+> +++ b/include/linux/net/intel/libie/stats.h
+> @@ -49,6 +49,17 @@
+>    * fragments: number of processed descriptors carrying only a fragment
+>    * alloc_page_fail: number of Rx page allocation fails
+>    * build_skb_fail: number of build_skb() fails
+> + * pp_alloc_fast: pages taken from the cache or ring
+> + * pp_alloc_slow: actual page allocations
+> + * pp_alloc_slow_ho: non-order-0 page allocations
+> + * pp_alloc_empty: number of times the pool was empty
+> + * pp_alloc_refill: number of cache refills
+> + * pp_alloc_waive: NUMA node mismatches during recycling
+> + * pp_recycle_cached: direct recyclings into the cache
+> + * pp_recycle_cache_full: number of times the cache was full
+> + * pp_recycle_ring: recyclings into the ring
+> + * pp_recycle_ring_full: number of times the ring was full
+> + * pp_recycle_released_ref: pages released due to elevated refcnt
+>    */
+>   
+>   #define DECLARE_LIBIE_RQ_NAPI_STATS(act)		\
+> @@ -60,9 +71,29 @@
+>   	act(alloc_page_fail)				\
+>   	act(build_skb_fail)
+>   
+> +#ifdef CONFIG_PAGE_POOL_STATS
+> +#define DECLARE_LIBIE_RQ_PP_STATS(act)			\
+> +	act(pp_alloc_fast)				\
+> +	act(pp_alloc_slow)				\
+> +	act(pp_alloc_slow_ho)				\
+> +	act(pp_alloc_empty)				\
+> +	act(pp_alloc_refill)				\
+> +	act(pp_alloc_waive)				\
+> +	act(pp_recycle_cached)				\
+> +	act(pp_recycle_cache_full)			\
+> +	act(pp_recycle_ring)				\
+> +	act(pp_recycle_ring_full)			\
+> +	act(pp_recycle_released_ref)
+> +#else
+> +#define DECLARE_LIBIE_RQ_PP_STATS(act)
+> +#endif
+> +
+>   #define DECLARE_LIBIE_RQ_STATS(act)			\
+>   	DECLARE_LIBIE_RQ_NAPI_STATS(act)		\
+> -	DECLARE_LIBIE_RQ_FAIL_STATS(act)
+> +	DECLARE_LIBIE_RQ_FAIL_STATS(act)		\
+> +	DECLARE_LIBIE_RQ_PP_STATS(act)
+> +
+> +struct page_pool;
+>   
+>   struct libie_rq_stats {
+>   	struct u64_stats_sync	syncp;
+> @@ -72,6 +103,9 @@ struct libie_rq_stats {
+>   #define act(s)	u64_stats_t	s;
+>   			DECLARE_LIBIE_RQ_NAPI_STATS(act);
+>   			DECLARE_LIBIE_RQ_FAIL_STATS(act);
+> +			struct_group(pp,
+> +				DECLARE_LIBIE_RQ_PP_STATS(act);
+> +			);
+>   #undef act
+>   		};
+>   		DECLARE_FLEX_ARRAY(u64_stats_t, raw);
+> @@ -110,7 +144,8 @@ libie_rq_napi_stats_add(struct libie_rq_stats *qs,
+>   
+>   u32 libie_rq_stats_get_sset_count(void);
+>   void libie_rq_stats_get_strings(u8 **data, u32 qid);
+> -void libie_rq_stats_get_data(u64 **data, const struct libie_rq_stats *stats);
+> +void libie_rq_stats_get_data(u64 **data, const struct libie_rq_stats *stats,
+> +			     struct page_pool *pool);
+>   
+>   /* Tx per-queue stats:
+>    * packets: packets sent from this queue
 
-Ack, will just put there. It doesn't get included by the whole kernel
-via skbuff.h anymore (in v2), so new inlines won't hurt.
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
-Thanks,
-Olek
+
+Kind regards,
+
+Paul
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
