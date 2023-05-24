@@ -4,88 +4,187 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 055B5C77B73
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 May 2023 12:23:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7521C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 24 May 2023 12:34:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A9F226113C;
-	Wed, 24 May 2023 12:23:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A9F226113C
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2C4C8611C0;
+	Wed, 24 May 2023 12:34:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2C4C8611C0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1684931016;
-	bh=Wkkl/7svJekP/PKKcykAiXZMrAnC7QxXzBOx/Dj30uA=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1684931650;
+	bh=9EC6PNpIQi1FCE5kINI6l/cwmLE6tPFu/z/etkH5WXA=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ZRVPAf5RKnkqcaT2OMkOJ9hGkEGmU3u5xoSaqqHhMvF9B675Du85Es9SN7J2TwtyI
-	 nwbC7KM+WgnLOiNwidFf270uwXXFw0oWdXLzvmyrIxrNSQw46Jl4MzIcHbwtLeHCk+
-	 aieLVMyht1UpqwcUI/InwkiQMoXewnq22Ur2ndRCBdznDqxteJymbIq0Go3rmSyK9Y
-	 0bZ3FD+UbS6gBxR2YK0GkLPCk1EGuRN//cvlyYMkzJo0yCaz4bTADfIwbWD7L9T0zM
-	 nJq/YCcOErWpp5T/tbZauHO7MkCWud7QjlcR5pBne4wGcLRFu+vMgptGyGP68IkxyH
-	 /1OmbAjgy4hmQ==
+	b=Rp5UryVNO9Lzt1iUzVKoH4Ut1PSqXKsmASnT2o9LmuYCGVcJzZ49GdJT8O1AvlzMm
+	 bvpAsEal6C2xyKAGWT7XRWgbHuLwDstrnnCexyeyiztOFjgeE8bqtfUvFQjc4HMOcF
+	 DqGVUUbxiBelpYvAAAp0YSYujqfUDw4Hyc4WzCHOK//ggUDB+/EbviD2GZrvUvlsnv
+	 Bw4kUyXeqOMRVy1UX/Ckejy7kiuU3QlXbWnnw1QVz41r1O5fWQoKN/wKMfQIjbZr19
+	 /DfentfNYdGzeMbTi8lxT2IGSGkCXbWuAg7Faqw+G4I3MNlzWRAaOSXi+EMaUZv2zX
+	 cIyXX24zAt/Ww==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id KOWVBNNNNk0Z; Wed, 24 May 2023 12:23:33 +0000 (UTC)
+	with ESMTP id n6LY5GOvThWc; Wed, 24 May 2023 12:34:08 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A0482615B5;
-	Wed, 24 May 2023 12:23:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A0482615B5
+	by smtp3.osuosl.org (Postfix) with ESMTP id E0F30611B8;
+	Wed, 24 May 2023 12:34:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E0F30611B8
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 809AF1BF354
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 May 2023 12:22:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id DF7571BF354
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 May 2023 12:34:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 582E1400C7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 May 2023 12:22:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 582E1400C7
+ by smtp2.osuosl.org (Postfix) with ESMTP id B450841605
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 May 2023 12:34:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B450841605
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id v8qwfnhfvwsz for <intel-wired-lan@lists.osuosl.org>;
- Wed, 24 May 2023 12:22:45 +0000 (UTC)
+ with ESMTP id lFAm5KKCNqsL for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 24 May 2023 12:34:05 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DA0044117A
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp2.osuosl.org (Postfix) with ESMTPS id DA0044117A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 24 May 2023 12:22:44 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10720"; a="439901001"
-X-IronPort-AV: E=Sophos;i="6.00,189,1681196400"; d="scan'208";a="439901001"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 May 2023 05:22:44 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4C48B400C7
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4C48B400C7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 24 May 2023 12:34:05 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10720"; a="353571738"
+X-IronPort-AV: E=Sophos;i="6.00,189,1681196400"; d="scan'208";a="353571738"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 May 2023 05:32:02 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10720"; a="950995950"
-X-IronPort-AV: E=Sophos;i="6.00,189,1681196400"; d="scan'208";a="950995950"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga006.fm.intel.com with ESMTP; 24 May 2023 05:22:40 -0700
-Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id C7C1837831;
- Wed, 24 May 2023 13:22:39 +0100 (IST)
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 24 May 2023 14:21:19 +0200
-Message-Id: <20230524122121.15012-12-wojciech.drewek@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230524122121.15012-1-wojciech.drewek@intel.com>
-References: <20230524122121.15012-1-wojciech.drewek@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10720"; a="737285964"
+X-IronPort-AV: E=Sophos;i="6.00,189,1681196400"; d="scan'208";a="737285964"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+ by orsmga001.jf.intel.com with ESMTP; 24 May 2023 05:31:59 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Wed, 24 May 2023 05:31:59 -0700
+Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23 via Frontend Transport; Wed, 24 May 2023 05:31:59 -0700
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.170)
+ by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.23; Wed, 24 May 2023 05:31:59 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=CZNlRF31OLOmlkYHCs+0fJp6nSbKUzPOVjY2GwHAoU7VknfGb48nJ1v0xEKOeQ8ruIMr0M7FTgmkwlWrqYFeEYB8WS3ZeiSZtBaS5DVedQWBUnmKAWDhvBh/ELYNAq0B7hM1+xtLMOCtYpOHxrhZxppDY8nvlOPNKZb9bBgQVPhMak838ZeQxgSqkZPJchOnoHH/ZGhUAYAo5puZXz5BFgkYa31Mqa7L9b5woSDAOF/SZcnQGWPUqyEI1l3jQ8y6B+HLjSmkGKGIA+qOUXoHQsmkVqh1HRYBwxlgjtDrdFDch1B/Ov9MQQ5dhJVrHbgBZdpUGcy/fmC6oDFmfue7kw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=U52dkw5VMzAeSg2daHm6G21hw5/BupFWqw6F6r1R6LU=;
+ b=B76jXXQoUweyyCPk7ps+Zv4m6M8xmFjoMDrwLUZbj+xfDJs7KwqvL7XEG+JSqSFafgyG0LzjBGCY3TjTFsvaVPPewmmd9Y5fRDNqcAx5xtREIhu9M8thxdFaelQyHNnFtc0dFwfLKrOjNJThqgzXpsOcfr8WO1y3LvKhvzARITrD3doam6s1y0foKhXRUyqdEdVDR8OyDk8pUFllWwam6lCZcH56pGxXh1klaR1ACkA95ok1Qsj9U40RE2EznMmtjgAFrjPK+6YanSXa0qPe6D5J3K3/kZ2neepf8tUzfXdjecYyLaWBOn6Z5ws2usu3YkM4fH/IP8UmMqU8OxbExw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from SJ0PR11MB5866.namprd11.prod.outlook.com (2603:10b6:a03:429::10)
+ by DS7PR11MB6079.namprd11.prod.outlook.com (2603:10b6:8:85::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6411.27; Wed, 24 May
+ 2023 12:31:57 +0000
+Received: from SJ0PR11MB5866.namprd11.prod.outlook.com
+ ([fe80::aeae:8c12:c98a:7f21]) by SJ0PR11MB5866.namprd11.prod.outlook.com
+ ([fe80::aeae:8c12:c98a:7f21%3]) with mapi id 15.20.6411.028; Wed, 24 May 2023
+ 12:31:57 +0000
+From: "Loktionov, Aleksandr" <aleksandr.loktionov@intel.com>
+To: "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>, Grant Grundler
+ <grundler@chromium.org>, Pavan Chebbi <pavan.chebbi@broadcom.com>, "Neftin,
+ Sasha" <sasha.neftin@intel.com>, "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
+Thread-Topic: [PATCH] igb: Fix igb_down hung on surprise removal
+Thread-Index: AQHZjaDt8QlYFL7ll06AyUjwV/9G6q9pW+eQ
+Date: Wed, 24 May 2023 12:31:57 +0000
+Message-ID: <SJ0PR11MB5866456B9007E3DC55FD8728E5419@SJ0PR11MB5866.namprd11.prod.outlook.com>
+References: <20230518072657.1.If9539da710217ed92e764cc0ba0f3d2d246a1aee@changeid>
+ <CALs4sv2+Uu=Bry=B3FYzWdNrHjGWDvPCDhTFcNERVpWTjpmEyA@mail.gmail.com>
+ <CANEJEGuzoBa_yYHRCa0KygUe=AOhUkSg4u6gWx+QNCuGtKod2Q@mail.gmail.com>
+ <52cfebaf-79f6-c318-c14b-3716555d0e8f@intel.com>
+In-Reply-To: <52cfebaf-79f6-c318-c14b-3716555d0e8f@intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SJ0PR11MB5866:EE_|DS7PR11MB6079:EE_
+x-ms-office365-filtering-correlation-id: 585d33c3-11d9-4f2c-e743-08db5c52dd9e
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: reiGHOE/2A7u0kFlYNZ8qT3CrunazgRVQiOPLvCclv5RRR8N/Ct4kx2TnAUFg20mQd6zDtsLfC0RKxtTxXlAgRGGLqSzWnWzeW3jq1DSkOBkwcuZ9MVbPp03Y2qBKXeMzXh8GNaU1bl6oDxnZB237293rH+3sucELS8X3zq2h52aBziLxvvMBL3XPePgImhukc78Qk88jayXg5uI+tA8Urvn/7LqJVLgMdlukt3JPyq4zxNYTmCBnCf5y5E09WWzN7Rq5d17g6G20T8l2kszsrBm+3cSXOFuviD8EtV6LrK1Xv/qTg9iJ7nltxDCA492dmU6fHZgWR8F4zDwOQg1yYDQ0TXrUtbdclA9bfH/WEB/GGTHXSkKGpyG+SPv8o7PimN2GoMZihqELV6HdMz+3yjuNE7NAJV7NpjIv6Cej7aT4U9jCmVN1eIJz9Iy3paEH9Rp9BociiSTYmQUKuk8QDWZcLlv11dU2UcJk0m6Mbo2mZyjI6APYiWqmxSHnzpFep6KMtUfav9Po3B2xs3NmgoEDVgnGQw/zHw24K+uszUO+h0j3eEWCk56O2OeXguN8cDxQf7mxKfGbTWRsPDb+JDkRrmKB6V41Jrs4NsjpeXX3jg1Wxd2W/XIRoPwG0zU
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SJ0PR11MB5866.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(136003)(376002)(39860400002)(346002)(396003)(366004)(451199021)(54906003)(38070700005)(7696005)(41300700001)(110136005)(316002)(55016003)(66946007)(66446008)(4326008)(66476007)(66556008)(6636002)(76116006)(64756008)(71200400001)(8936002)(8676002)(5660300002)(52536014)(478600001)(86362001)(38100700002)(82960400001)(6506007)(9686003)(122000001)(33656002)(53546011)(26005)(7416002)(186003)(2906002)(83380400001);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?T2NwQ0NGMGZuOEVTODRubFhRRk85K3p2TTN1eER1eHZvQ2J2YkNIUDFQZFpT?=
+ =?utf-8?B?L1kwZmpqZ3R0dGVkbUV5VmF5RE9NTU5IVkdPNnBqeXVEZXZwWTFDYnJzTWFl?=
+ =?utf-8?B?S0NOclJBbVlNUWFoVmJML0xUd2c2ZXBDbnZOeTlRY1Q3QVJuZmlwa21CSmx5?=
+ =?utf-8?B?cnZlejdZZkdKbzZySEt4YWdkcDhnKzBOMWwwSmFhTVF0UW1zVXQ2cDBwbURY?=
+ =?utf-8?B?T2dPVXZZWGNVbHp0ZnU4c2o3b3loRWk5OE5JY2puQzdXRzBNUG9kZ1FCUllL?=
+ =?utf-8?B?d1FMUUxxc0o2NEtVcmpwNHVEZkFtRmdPWmZnZllkVlB1V2xxbnpNNkJKTVQ5?=
+ =?utf-8?B?ZFZIQ0hKclBQL0cveUdwVXppRy9keUZ4TkJvMHhqbUVjWjJMSVBUWTdxLzFm?=
+ =?utf-8?B?aE01elRYQUdvWDY1QzNobm44akpRYVhTSk84bXhJeEFjREZOalhIclRNRXFJ?=
+ =?utf-8?B?T1FXN1ZrY203TURqS1hhVVBtNzRVMVcrcEpaYjdWbm5pU2tvem4rMVY1VEx6?=
+ =?utf-8?B?Vmp2TDErMUs0RGJuYXFORVlBL3BlTjlhWGp0ZE00NGJ6aUxIQk5aRjQ4Kzk2?=
+ =?utf-8?B?clpPTXZnemF6MlZieEU2WDhPUW8wWHVnNWZVdlhLNXpKQ3Y3U1lTNm9TWlFk?=
+ =?utf-8?B?OGJ4WkkwcENCQlVzRlBUMUNKbGpiSzhxa2NBNi8rUUlaUDFtSUsyeUZ4SWJN?=
+ =?utf-8?B?Ty9xZVhWTyttNTF6NHA0aFFxRm9hMkt1cGtZeXBMWk5zN29LRTcwcjV5TnNq?=
+ =?utf-8?B?RHQ0VU1zL09ZcnQwU2dqUG1iR2JMMTBxdTB1bmZnTVdONzRMYlc3eUNRRC9o?=
+ =?utf-8?B?QXgzR3VwVEZCM1Q1NXlsZDhmMTJwaVpvY1JFTHV1TW5DclhaT1pMNTJrb3c1?=
+ =?utf-8?B?cEpNYVNJY2hVekxORXRQTUFjOC8zN1NmclA4dUg3REdOVjcvOFpMaVRtNk10?=
+ =?utf-8?B?ZlprZTVkc2dIZ0o3Q3BlSXB6WkxQa0dIZDRVRVVWSDZhU0p3ZVMzNzdHbDVm?=
+ =?utf-8?B?ckRQUmJBQ3RnNi9GYkZISmVVVFpPdHlOYmVrbnZGcGZJMTkxSCtvNit6T2ll?=
+ =?utf-8?B?ckdnNDFGaTlUK1VKSVBqc0tJSXNyWVVSbTgzd3N6YkhWRTlWdVdCai9PVGFS?=
+ =?utf-8?B?ZE0ydzdsT2EzR05ZaS96Y052bjh0QWMraTNFQVBNL0VKOXBRenRZdzl4VDNS?=
+ =?utf-8?B?L256cU5NNmp3N2E4V09tNDBoYVQ2R1FmRzdYY00xTllBSmxwME9ERk42Q3Za?=
+ =?utf-8?B?dGFHQVV5T1dXSEIra0NuVFBIN3ZkUzRMT1JCNDRLbFVqVlVLUWg5SFE1bEln?=
+ =?utf-8?B?QUNhS3U1a2tHOC8wVzI1c1hsbXV4OWthRVZ2a3hmRlNpQTRLM2k1a0hZb0J3?=
+ =?utf-8?B?RTd6M0RqcC8ybkJaa3V6ekdldHFEZExDWkxZQ1hWZ0JtSWs0NEhjQUsybi9M?=
+ =?utf-8?B?a09YaFhQN1QrZ0NlTGtpb25zTlB1SnpzV0pJN1NtVzFGcDlJUDl5YXYzRlN6?=
+ =?utf-8?B?MlVDb0ZpT21sd3pwcUNpSGpxaUxtOEV0NkJwYTJiK2JFU3hKR291QjhPQXgv?=
+ =?utf-8?B?V0kxSEh2KzhJWDdiZU5EMmJaSldJbVhzTHE4TXZ0dHEvT1VNTTF0YjNBM3F3?=
+ =?utf-8?B?R1Q4QjN4MkNDZGRkVWNQczUwTmpmQm5kaHpPT1loZThhaVN2c3UyRk1GMlZp?=
+ =?utf-8?B?QTRZd3FlY2VUTGJEcUNJMjZpZmR1ZzBvMnU1bXVLeWlvblU4aGhzQWFKWmtZ?=
+ =?utf-8?B?UTNSNEtndnhManVFRGlKOWFZSGZMVm9rMVFYMVJKcHdWL042bXR0QlRhUUxx?=
+ =?utf-8?B?cnE1SFpKa3d0Si9XZzlidjNic08zRStjZjF4L20rTDFYL0V0YVZZcnhITnhk?=
+ =?utf-8?B?dldSemdEWll3emFuSGVWeXdXZmhtL1FWbXdrOFAwVUtsR3k1alRFRUhGU0xC?=
+ =?utf-8?B?WE41Vm4zK1Nrbk5kZTc0OFJGbnp1Y09NWUlOVGR4TmpCcW8rMDNZNUxmbHlQ?=
+ =?utf-8?B?UUdKY1hiSlJFNCtNc2c3YXZoUVNpMjRSdnJDYXpBM1c3N3BhOUg0OHcrRGlL?=
+ =?utf-8?B?anY1OEF1Q3YweFJoUHdtZ1JxL3BNb0hhQTV5MVdsQjVzdjlsV0crYnRTcnJ3?=
+ =?utf-8?B?amdhTzltcERRMGtFS3pXOEZiUUZMcC9YWHlWVXdZWm5sYUM1Wnp3RkNyMm5L?=
+ =?utf-8?B?Ync9PQ==?=
 MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR11MB5866.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 585d33c3-11d9-4f2c-e743-08db5c52dd9e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 24 May 2023 12:31:57.7886 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: fg9kywFmpcUIwFxYwyi7n/lgdbpRCRz6zsE6HAwyRQ8MrPKfF49y/2VW0dpM3u2fED90xnTad2fBqaOXTotp4cqW9xF+/kZVO+R0S92dDC8=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS7PR11MB6079
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1684930964; x=1716466964;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=O3VNKdet1xY6wNabyIPXYFcHG+/YCoYnBn3Iz+bwnaQ=;
- b=FVrxftEC4ztsQJhl9owoNORWn+Owx3wa/t7ZL3sENYlDylTVKRDE1dJ7
- b662rOA3wtbi3PYopXCCfKUTu4Xv19rbZo2zEKpQnt6m0HfjMnOsUjnAM
- 0wGlW+ETrh6E1z5Bdr1w47Jlus5+fHYNXN51s8o2gZPjbmK/aFnZ7r7rW
- IakJF1ZoqwKnNdKTQHlNBZgPUnn8GLzO5ChmkoBLMBM0rm0Dlx8Elf6fZ
- I6XEkB8yuqTM0K4At1ZjWx/j7IFuLOPvIBMTtFUdqyHBuv/8cZL/P54vx
- IJW3SsJuwr1MYP27j6OGRauFSve4oPlIsz5KrhSV6gpLBNMQkuFZ17eqQ
- g==;
+ t=1684931645; x=1716467645;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=U52dkw5VMzAeSg2daHm6G21hw5/BupFWqw6F6r1R6LU=;
+ b=IFygBuUt2nafWlPJvubiSizvHMSNP62CRqq5XMp2hh0LTg/uPcpXyMSt
+ QmGVK+gFXU18KgrbwCfBbWgDLgbmXqQrCoym7szWzsc+PL7+yzqCAadrk
+ uy94FeCyPIC2zLUrOITc8fiVfUJy3ex0S7BeWBNmPiZFfTxFlUN3AJM33
+ OsUpx5u3uVnSwzzu7foJDYzQ083Mg1PRr3vMLSYAu4o58pwPptkUnfLif
+ ttvbhIwuIGGJ+09RNOgkB40Zt9bP3HH41hJRKB/+xeIqOP+Q7JSFbF7Jx
+ OxYi819+OuEocYHqKETacQjVDEj211V1bkirzC0gOCJeWfOBy+Caw5vu5
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=FVrxftEC
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 11/13] ice: implement bridge
- port vlan
+ header.a=rsa-sha256 header.s=Intel header.b=IFygBuUt
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH] igb: Fix igb_down hung on surprise
+ removal
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,619 +197,65 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: pmenzel@molgen.mpg.de, netdev@vger.kernel.org, simon.horman@corigine.com,
- dan.carpenter@linaro.org
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Ying Hsu <yinghsu@chromium.org>, "Brandeburg,
+ Jesse" <jesse.brandeburg@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eric
+ Dumazet <edumazet@google.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-
-Port VLAN in this case means push and pop VLAN action on specific vid.
-There are a few limitation in hardware:
-- push and pop can't be used separately
-- if port VLAN is used there can't be any trunk VLANs, because pop
-  action is done on all traffic received by VSI in port VLAN mode
-- port VLAN mode on uplink port isn't supported
-
-Reflect these limitations in code using dev_info to inform the user
-about unsupported configuration.
-
-In bridge mode there is a need to configure port vlan without resetting
-VFs. To do that implement ice_port_vlan_on/off() functions. They are
-only configuring correct vlan_ops to allow setting port vlan.
-
-We also need to clear port vlan without resetting the VF which is not
-supported right now. Change it by implementing clear_port_vlan ops.
-As previous VLAN configuration isn't always the same, store current
-config while creating port vlan and restore it in clear function.
-
-Configuration steps:
-- configure switchdev with bridge
-- #bridge vlan add dev eth0 vid 120 pvid untagged
-- #bridge vlan add dev eth1 vid 120 pvid untagged
-- ping from VF0 to VF1
-
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
----
-v2: minor code style changes, optimize port vlan ops initialization
-    in ice_port_vlan_on and ice_port_vlan_off, replace WARN_ON
-    with WARN_ON_ONCE
-v3: fix traffic typo in the commit message
-v4: fix mem leak in ice_eswitch_br_vlan_create
----
- drivers/net/ethernet/intel/ice/ice.h          |   1 +
- .../net/ethernet/intel/ice/ice_eswitch_br.c   |  90 ++++++++-
- .../net/ethernet/intel/ice/ice_eswitch_br.h   |   1 +
- .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.c  | 186 ++++++++++--------
- .../ethernet/intel/ice/ice_vf_vsi_vlan_ops.h  |   3 +
- .../net/ethernet/intel/ice/ice_vsi_vlan_lib.c |  84 +++++++-
- .../net/ethernet/intel/ice/ice_vsi_vlan_lib.h |   8 +
- .../net/ethernet/intel/ice/ice_vsi_vlan_ops.h |   1 +
- 8 files changed, 284 insertions(+), 90 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 8876ed8ba268..176e281dfa24 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -370,6 +370,7 @@ struct ice_vsi {
- 	u16 rx_buf_len;
- 
- 	struct ice_aqc_vsi_props info;	 /* VSI properties */
-+	struct ice_vsi_vlan_info vlan_info;	/* vlan config to be restored */
- 
- 	/* VSI stats */
- 	struct rtnl_link_stats64 net_stats;
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-index 820b3296da60..6352bd04348b 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-@@ -5,6 +5,8 @@
- #include "ice_eswitch_br.h"
- #include "ice_repr.h"
- #include "ice_switch.h"
-+#include "ice_vlan.h"
-+#include "ice_vf_vsi_vlan_ops.h"
- 
- static const struct rhashtable_params ice_fdb_ht_params = {
- 	.key_offset = offsetof(struct ice_esw_br_fdb_entry, data),
-@@ -610,11 +612,27 @@ ice_eswitch_br_vlan_filtering_set(struct ice_esw_br *bridge, bool enable)
- 		bridge->flags &= ~ICE_ESWITCH_BR_VLAN_FILTERING;
- }
- 
-+static void
-+ice_eswitch_br_clear_pvid(struct ice_esw_br_port *port)
-+{
-+	struct ice_vsi_vlan_ops *vlan_ops;
-+
-+	vlan_ops = ice_get_compat_vsi_vlan_ops(port->vsi);
-+
-+	vlan_ops->clear_port_vlan(port->vsi);
-+
-+	ice_vf_vsi_disable_port_vlan(port->vsi);
-+
-+	port->pvid = 0;
-+}
-+
- static void
- ice_eswitch_br_vlan_cleanup(struct ice_esw_br_port *port,
- 			    struct ice_esw_br_vlan *vlan)
- {
- 	xa_erase(&port->vlans, vlan->vid);
-+	if (port->pvid == vlan->vid)
-+		ice_eswitch_br_clear_pvid(port);
- 	kfree(vlan);
- }
- 
-@@ -627,9 +645,50 @@ static void ice_eswitch_br_port_vlans_flush(struct ice_esw_br_port *port)
- 		ice_eswitch_br_vlan_cleanup(port, vlan);
- }
- 
-+static int
-+ice_eswitch_br_set_pvid(struct ice_esw_br_port *port,
-+			struct ice_esw_br_vlan *vlan)
-+{
-+	struct ice_vlan port_vlan = ICE_VLAN(ETH_P_8021Q, vlan->vid, 0);
-+	struct device *dev = ice_pf_to_dev(port->vsi->back);
-+	struct ice_vsi_vlan_ops *vlan_ops;
-+	int err;
-+
-+	if (port->pvid == vlan->vid || vlan->vid == 1)
-+		return 0;
-+
-+	/* Setting port vlan on uplink isn't supported by hw */
-+	if (port->type == ICE_ESWITCH_BR_UPLINK_PORT)
-+		return -EOPNOTSUPP;
-+
-+	if (port->pvid) {
-+		dev_info(dev,
-+			 "Port VLAN (vsi=%u, vid=%u) already exists on the port, remove it before adding new one\n",
-+			 port->vsi_idx, port->pvid);
-+		return -EEXIST;
-+	}
-+
-+	ice_vf_vsi_enable_port_vlan(port->vsi);
-+
-+	vlan_ops = ice_get_compat_vsi_vlan_ops(port->vsi);
-+	err = vlan_ops->set_port_vlan(port->vsi, &port_vlan);
-+	if (err)
-+		return err;
-+
-+	err = vlan_ops->add_vlan(port->vsi, &port_vlan);
-+	if (err)
-+		return err;
-+
-+	ice_eswitch_br_port_vlans_flush(port);
-+	port->pvid = vlan->vid;
-+
-+	return 0;
-+}
-+
- static struct ice_esw_br_vlan *
- ice_eswitch_br_vlan_create(u16 vid, u16 flags, struct ice_esw_br_port *port)
- {
-+	struct device *dev = ice_pf_to_dev(port->vsi->back);
- 	struct ice_esw_br_vlan *vlan;
- 	int err;
- 
-@@ -639,14 +698,30 @@ ice_eswitch_br_vlan_create(u16 vid, u16 flags, struct ice_esw_br_port *port)
- 
- 	vlan->vid = vid;
- 	vlan->flags = flags;
-+	if ((flags & BRIDGE_VLAN_INFO_PVID) &&
-+	    (flags & BRIDGE_VLAN_INFO_UNTAGGED)) {
-+		err = ice_eswitch_br_set_pvid(port, vlan);
-+		if (err)
-+			goto err_set_pvid;
-+	} else if ((flags & BRIDGE_VLAN_INFO_PVID) ||
-+		   (flags & BRIDGE_VLAN_INFO_UNTAGGED)) {
-+		dev_info(dev, "VLAN push and pop are supported only simultaneously\n");
-+		err = -EOPNOTSUPP;
-+		goto err_set_pvid;
-+	}
- 
- 	err = xa_insert(&port->vlans, vlan->vid, vlan, GFP_KERNEL);
--	if (err) {
--		kfree(vlan);
--		return ERR_PTR(err);
--	}
-+	if (err)
-+		goto err_insert;
- 
- 	return vlan;
-+
-+err_insert:
-+	if (port->pvid)
-+		ice_eswitch_br_clear_pvid(port);
-+err_set_pvid:
-+	kfree(vlan);
-+	return ERR_PTR(err);
- }
- 
- static int
-@@ -660,6 +735,13 @@ ice_eswitch_br_port_vlan_add(struct ice_esw_br *bridge, u16 vsi_idx, u16 vid,
- 	if (!port)
- 		return -EINVAL;
- 
-+	if (port->pvid) {
-+		dev_info(ice_pf_to_dev(port->vsi->back),
-+			 "Port VLAN (vsi=%u, vid=%d) exists on the port, remove it to add trunk VLANs\n",
-+			 port->vsi_idx, port->pvid);
-+		return -EEXIST;
-+	}
-+
- 	vlan = xa_load(&port->vlans, vid);
- 	if (vlan) {
- 		if (vlan->flags == flags)
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-index 895b32ece926..72316ba8ff4d 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-@@ -42,6 +42,7 @@ struct ice_esw_br_port {
- 	struct ice_vsi *vsi;
- 	enum ice_esw_br_port_type type;
- 	u16 vsi_idx;
-+	u16 pvid;
- 	struct xarray vlans;
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c b/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
-index b1ffb81893d4..d7b10dc67f03 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
-@@ -21,6 +21,99 @@ noop_vlan(struct ice_vsi __always_unused *vsi)
- 	return 0;
- }
- 
-+static void ice_port_vlan_on(struct ice_vsi *vsi)
-+{
-+	struct ice_vsi_vlan_ops *vlan_ops;
-+	struct ice_pf *pf = vsi->back;
-+
-+	if (ice_is_dvm_ena(&pf->hw)) {
-+		vlan_ops = &vsi->outer_vlan_ops;
-+
-+		/* setup outer VLAN ops */
-+		vlan_ops->set_port_vlan = ice_vsi_set_outer_port_vlan;
-+		vlan_ops->clear_port_vlan = ice_vsi_clear_outer_port_vlan;
-+		vlan_ops->clear_port_vlan = ice_vsi_clear_outer_port_vlan;
-+
-+		/* setup inner VLAN ops */
-+		vlan_ops = &vsi->inner_vlan_ops;
-+		vlan_ops->add_vlan = noop_vlan_arg;
-+		vlan_ops->del_vlan = noop_vlan_arg;
-+		vlan_ops->ena_stripping = ice_vsi_ena_inner_stripping;
-+		vlan_ops->dis_stripping = ice_vsi_dis_inner_stripping;
-+		vlan_ops->ena_insertion = ice_vsi_ena_inner_insertion;
-+		vlan_ops->dis_insertion = ice_vsi_dis_inner_insertion;
-+	} else {
-+		vlan_ops = &vsi->inner_vlan_ops;
-+
-+		vlan_ops->set_port_vlan = ice_vsi_set_inner_port_vlan;
-+		vlan_ops->clear_port_vlan = ice_vsi_clear_inner_port_vlan;
-+		vlan_ops->clear_port_vlan = ice_vsi_clear_inner_port_vlan;
-+	}
-+	vlan_ops->ena_rx_filtering = ice_vsi_ena_rx_vlan_filtering;
-+}
-+
-+static void ice_port_vlan_off(struct ice_vsi *vsi)
-+{
-+	struct ice_vsi_vlan_ops *vlan_ops;
-+	struct ice_pf *pf = vsi->back;
-+
-+	/* setup inner VLAN ops */
-+	vlan_ops = &vsi->inner_vlan_ops;
-+
-+	vlan_ops->ena_stripping = ice_vsi_ena_inner_stripping;
-+	vlan_ops->dis_stripping = ice_vsi_dis_inner_stripping;
-+	vlan_ops->ena_insertion = ice_vsi_ena_inner_insertion;
-+	vlan_ops->dis_insertion = ice_vsi_dis_inner_insertion;
-+
-+	if (ice_is_dvm_ena(&pf->hw)) {
-+		vlan_ops = &vsi->outer_vlan_ops;
-+
-+		vlan_ops->del_vlan = ice_vsi_del_vlan;
-+		vlan_ops->ena_stripping = ice_vsi_ena_outer_stripping;
-+		vlan_ops->dis_stripping = ice_vsi_dis_outer_stripping;
-+		vlan_ops->ena_insertion = ice_vsi_ena_outer_insertion;
-+		vlan_ops->dis_insertion = ice_vsi_dis_outer_insertion;
-+	} else {
-+		vlan_ops->del_vlan = ice_vsi_del_vlan;
-+	}
-+
-+	if (!test_bit(ICE_FLAG_VF_VLAN_PRUNING, pf->flags))
-+		vlan_ops->ena_rx_filtering = noop_vlan;
-+	else
-+		vlan_ops->ena_rx_filtering =
-+			ice_vsi_ena_rx_vlan_filtering;
-+}
-+
-+/**
-+ * ice_vf_vsi_enable_port_vlan - Set VSI VLAN ops to support port VLAN
-+ * @vsi: VF's VSI being configured
-+ *
-+ * The function won't create port VLAN, it only allows to create port VLAN
-+ * using VLAN ops on the VF VSI.
-+ */
-+void ice_vf_vsi_enable_port_vlan(struct ice_vsi *vsi)
-+{
-+	if (WARN_ON_ONCE(!vsi->vf))
-+		return;
-+
-+	ice_port_vlan_on(vsi);
-+}
-+
-+/**
-+ * ice_vf_vsi_disable_port_vlan - Clear VSI support for creating port VLAN
-+ * @vsi: VF's VSI being configured
-+ *
-+ * The function should be called after removing port VLAN on VSI
-+ * (using VLAN ops)
-+ */
-+void ice_vf_vsi_disable_port_vlan(struct ice_vsi *vsi)
-+{
-+	if (WARN_ON_ONCE(!vsi->vf))
-+		return;
-+
-+	ice_port_vlan_off(vsi);
-+}
-+
- /**
-  * ice_vf_vsi_init_vlan_ops - Initialize default VSI VLAN ops for VF VSI
-  * @vsi: VF's VSI being configured
-@@ -39,91 +132,18 @@ void ice_vf_vsi_init_vlan_ops(struct ice_vsi *vsi)
- 	if (WARN_ON(!vf))
- 		return;
- 
--	if (ice_is_dvm_ena(&pf->hw)) {
--		vlan_ops = &vsi->outer_vlan_ops;
-+	if (ice_vf_is_port_vlan_ena(vf))
-+		ice_port_vlan_on(vsi);
-+	else
-+		ice_port_vlan_off(vsi);
- 
--		/* outer VLAN ops regardless of port VLAN config */
--		vlan_ops->add_vlan = ice_vsi_add_vlan;
--		vlan_ops->ena_tx_filtering = ice_vsi_ena_tx_vlan_filtering;
--		vlan_ops->dis_tx_filtering = ice_vsi_dis_tx_vlan_filtering;
--
--		if (ice_vf_is_port_vlan_ena(vf)) {
--			/* setup outer VLAN ops */
--			vlan_ops->set_port_vlan = ice_vsi_set_outer_port_vlan;
--			/* all Rx traffic should be in the domain of the
--			 * assigned port VLAN, so prevent disabling Rx VLAN
--			 * filtering
--			 */
--			vlan_ops->dis_rx_filtering = noop_vlan;
--			vlan_ops->ena_rx_filtering =
--				ice_vsi_ena_rx_vlan_filtering;
--
--			/* setup inner VLAN ops */
--			vlan_ops = &vsi->inner_vlan_ops;
--			vlan_ops->add_vlan = noop_vlan_arg;
--			vlan_ops->del_vlan = noop_vlan_arg;
--			vlan_ops->ena_stripping = ice_vsi_ena_inner_stripping;
--			vlan_ops->dis_stripping = ice_vsi_dis_inner_stripping;
--			vlan_ops->ena_insertion = ice_vsi_ena_inner_insertion;
--			vlan_ops->dis_insertion = ice_vsi_dis_inner_insertion;
--		} else {
--			vlan_ops->dis_rx_filtering =
--				ice_vsi_dis_rx_vlan_filtering;
--
--			if (!test_bit(ICE_FLAG_VF_VLAN_PRUNING, pf->flags))
--				vlan_ops->ena_rx_filtering = noop_vlan;
--			else
--				vlan_ops->ena_rx_filtering =
--					ice_vsi_ena_rx_vlan_filtering;
--
--			vlan_ops->del_vlan = ice_vsi_del_vlan;
--			vlan_ops->ena_stripping = ice_vsi_ena_outer_stripping;
--			vlan_ops->dis_stripping = ice_vsi_dis_outer_stripping;
--			vlan_ops->ena_insertion = ice_vsi_ena_outer_insertion;
--			vlan_ops->dis_insertion = ice_vsi_dis_outer_insertion;
--
--			/* setup inner VLAN ops */
--			vlan_ops = &vsi->inner_vlan_ops;
--
--			vlan_ops->ena_stripping = ice_vsi_ena_inner_stripping;
--			vlan_ops->dis_stripping = ice_vsi_dis_inner_stripping;
--			vlan_ops->ena_insertion = ice_vsi_ena_inner_insertion;
--			vlan_ops->dis_insertion = ice_vsi_dis_inner_insertion;
--		}
--	} else {
--		vlan_ops = &vsi->inner_vlan_ops;
-+	vlan_ops = ice_is_dvm_ena(&pf->hw) ?
-+		&vsi->outer_vlan_ops : &vsi->inner_vlan_ops;
- 
--		/* inner VLAN ops regardless of port VLAN config */
--		vlan_ops->add_vlan = ice_vsi_add_vlan;
--		vlan_ops->dis_rx_filtering = ice_vsi_dis_rx_vlan_filtering;
--		vlan_ops->ena_tx_filtering = ice_vsi_ena_tx_vlan_filtering;
--		vlan_ops->dis_tx_filtering = ice_vsi_dis_tx_vlan_filtering;
--
--		if (ice_vf_is_port_vlan_ena(vf)) {
--			vlan_ops->set_port_vlan = ice_vsi_set_inner_port_vlan;
--			vlan_ops->ena_rx_filtering =
--				ice_vsi_ena_rx_vlan_filtering;
--			/* all Rx traffic should be in the domain of the
--			 * assigned port VLAN, so prevent disabling Rx VLAN
--			 * filtering
--			 */
--			vlan_ops->dis_rx_filtering = noop_vlan;
--		} else {
--			vlan_ops->dis_rx_filtering =
--				ice_vsi_dis_rx_vlan_filtering;
--			if (!test_bit(ICE_FLAG_VF_VLAN_PRUNING, pf->flags))
--				vlan_ops->ena_rx_filtering = noop_vlan;
--			else
--				vlan_ops->ena_rx_filtering =
--					ice_vsi_ena_rx_vlan_filtering;
--
--			vlan_ops->del_vlan = ice_vsi_del_vlan;
--			vlan_ops->ena_stripping = ice_vsi_ena_inner_stripping;
--			vlan_ops->dis_stripping = ice_vsi_dis_inner_stripping;
--			vlan_ops->ena_insertion = ice_vsi_ena_inner_insertion;
--			vlan_ops->dis_insertion = ice_vsi_dis_inner_insertion;
--		}
--	}
-+	vlan_ops->add_vlan = ice_vsi_add_vlan;
-+	vlan_ops->dis_rx_filtering = ice_vsi_dis_rx_vlan_filtering;
-+	vlan_ops->ena_tx_filtering = ice_vsi_ena_tx_vlan_filtering;
-+	vlan_ops->dis_tx_filtering = ice_vsi_dis_tx_vlan_filtering;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.h b/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.h
-index 875a4e615f39..845330b49608 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.h
-@@ -11,6 +11,9 @@ struct ice_vsi;
- void ice_vf_vsi_cfg_dvm_legacy_vlan_mode(struct ice_vsi *vsi);
- void ice_vf_vsi_cfg_svm_legacy_vlan_mode(struct ice_vsi *vsi);
- 
-+void ice_vf_vsi_enable_port_vlan(struct ice_vsi *vsi);
-+void ice_vf_vsi_disable_port_vlan(struct ice_vsi *vsi);
-+
- #ifdef CONFIG_PCI_IOV
- void ice_vf_vsi_init_vlan_ops(struct ice_vsi *vsi);
- #else
-diff --git a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-index 5b4a0abb4607..76266e709a39 100644
---- a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-@@ -202,6 +202,24 @@ int ice_vsi_dis_inner_insertion(struct ice_vsi *vsi)
- 	return ice_vsi_manage_vlan_insertion(vsi);
- }
- 
-+static void
-+ice_save_vlan_info(struct ice_aqc_vsi_props *info,
-+		   struct ice_vsi_vlan_info *vlan)
-+{
-+	vlan->sw_flags2 = info->sw_flags2;
-+	vlan->inner_vlan_flags = info->inner_vlan_flags;
-+	vlan->outer_vlan_flags = info->outer_vlan_flags;
-+}
-+
-+static void
-+ice_restore_vlan_info(struct ice_aqc_vsi_props *info,
-+		      struct ice_vsi_vlan_info *vlan)
-+{
-+	info->sw_flags2 = vlan->sw_flags2;
-+	info->inner_vlan_flags = vlan->inner_vlan_flags;
-+	info->outer_vlan_flags = vlan->outer_vlan_flags;
-+}
-+
- /**
-  * __ice_vsi_set_inner_port_vlan - set port VLAN VSI context settings to enable a port VLAN
-  * @vsi: the VSI to update
-@@ -218,6 +236,7 @@ static int __ice_vsi_set_inner_port_vlan(struct ice_vsi *vsi, u16 pvid_info)
- 	if (!ctxt)
- 		return -ENOMEM;
- 
-+	ice_save_vlan_info(&vsi->info, &vsi->vlan_info);
- 	ctxt->info = vsi->info;
- 	info = &ctxt->info;
- 	info->inner_vlan_flags = ICE_AQ_VSI_INNER_VLAN_TX_MODE_ACCEPTUNTAGGED |
-@@ -259,6 +278,33 @@ int ice_vsi_set_inner_port_vlan(struct ice_vsi *vsi, struct ice_vlan *vlan)
- 	return __ice_vsi_set_inner_port_vlan(vsi, port_vlan_info);
- }
- 
-+int ice_vsi_clear_inner_port_vlan(struct ice_vsi *vsi)
-+{
-+	struct ice_hw *hw = &vsi->back->hw;
-+	struct ice_aqc_vsi_props *info;
-+	struct ice_vsi_ctx *ctxt;
-+	int ret;
-+
-+	ctxt = kzalloc(sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
-+
-+	ice_restore_vlan_info(&vsi->info, &vsi->vlan_info);
-+	vsi->info.port_based_inner_vlan = 0;
-+	ctxt->info = vsi->info;
-+	info = &ctxt->info;
-+	info->valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID |
-+					   ICE_AQ_VSI_PROP_SW_VALID);
-+
-+	ret = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
-+	if (ret)
-+		dev_err(ice_hw_to_dev(hw), "update VSI for port VLAN failed, err %d aq_err %s\n",
-+			ret, ice_aq_str(hw->adminq.sq_last_status));
-+
-+	kfree(ctxt);
-+	return ret;
-+}
-+
- /**
-  * ice_cfg_vlan_pruning - enable or disable VLAN pruning on the VSI
-  * @vsi: VSI to enable or disable VLAN pruning on
-@@ -647,6 +693,7 @@ __ice_vsi_set_outer_port_vlan(struct ice_vsi *vsi, u16 vlan_info, u16 tpid)
- 	if (!ctxt)
- 		return -ENOMEM;
- 
-+	ice_save_vlan_info(&vsi->info, &vsi->vlan_info);
- 	ctxt->info = vsi->info;
- 
- 	ctxt->info.sw_flags2 |= ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA;
-@@ -689,9 +736,6 @@ __ice_vsi_set_outer_port_vlan(struct ice_vsi *vsi, u16 vlan_info, u16 tpid)
-  * used if DVM is supported. Also, this function should never be called directly
-  * as it should be part of ice_vsi_vlan_ops if it's needed.
-  *
-- * This function does not support clearing the port VLAN as there is currently
-- * no use case for this.
-- *
-  * Use the ice_vlan structure passed in to set this VSI in a port VLAN.
-  */
- int ice_vsi_set_outer_port_vlan(struct ice_vsi *vsi, struct ice_vlan *vlan)
-@@ -705,3 +749,37 @@ int ice_vsi_set_outer_port_vlan(struct ice_vsi *vsi, struct ice_vlan *vlan)
- 
- 	return __ice_vsi_set_outer_port_vlan(vsi, port_vlan_info, vlan->tpid);
- }
-+
-+/**
-+ * ice_vsi_clear_outer_port_vlan - clear outer port vlan
-+ * @vsi: VSI to configure
-+ *
-+ * The function is restoring previously set vlan config (saved in
-+ * vsi->vlan_info). Setting happens in port vlan configuration.
-+ */
-+int ice_vsi_clear_outer_port_vlan(struct ice_vsi *vsi)
-+{
-+	struct ice_hw *hw = &vsi->back->hw;
-+	struct ice_vsi_ctx *ctxt;
-+	int err;
-+
-+	ctxt = kzalloc(sizeof(*ctxt), GFP_KERNEL);
-+	if (!ctxt)
-+		return -ENOMEM;
-+
-+	ice_restore_vlan_info(&vsi->info, &vsi->vlan_info);
-+	vsi->info.port_based_outer_vlan = 0;
-+	ctxt->info = vsi->info;
-+
-+	ctxt->info.valid_sections =
-+		cpu_to_le16(ICE_AQ_VSI_PROP_OUTER_TAG_VALID |
-+			    ICE_AQ_VSI_PROP_SW_VALID);
-+
-+	err = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
-+	if (err)
-+		dev_err(ice_pf_to_dev(vsi->back), "update VSI for clearing outer port based VLAN failed, err %d aq_err %s\n",
-+			err, ice_aq_str(hw->adminq.sq_last_status));
-+
-+	kfree(ctxt);
-+	return err;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.h b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.h
-index f459909490ec..f0d84d11bd5b 100644
---- a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.h
-@@ -7,6 +7,12 @@
- #include <linux/types.h>
- #include "ice_vlan.h"
- 
-+struct ice_vsi_vlan_info {
-+	u8 sw_flags2;
-+	u8 inner_vlan_flags;
-+	u8 outer_vlan_flags;
-+};
-+
- struct ice_vsi;
- 
- int ice_vsi_add_vlan(struct ice_vsi *vsi, struct ice_vlan *vlan);
-@@ -17,6 +23,7 @@ int ice_vsi_dis_inner_stripping(struct ice_vsi *vsi);
- int ice_vsi_ena_inner_insertion(struct ice_vsi *vsi, u16 tpid);
- int ice_vsi_dis_inner_insertion(struct ice_vsi *vsi);
- int ice_vsi_set_inner_port_vlan(struct ice_vsi *vsi, struct ice_vlan *vlan);
-+int ice_vsi_clear_inner_port_vlan(struct ice_vsi *vsi);
- 
- int ice_vsi_ena_rx_vlan_filtering(struct ice_vsi *vsi);
- int ice_vsi_dis_rx_vlan_filtering(struct ice_vsi *vsi);
-@@ -28,5 +35,6 @@ int ice_vsi_dis_outer_stripping(struct ice_vsi *vsi);
- int ice_vsi_ena_outer_insertion(struct ice_vsi *vsi, u16 tpid);
- int ice_vsi_dis_outer_insertion(struct ice_vsi *vsi);
- int ice_vsi_set_outer_port_vlan(struct ice_vsi *vsi, struct ice_vlan *vlan);
-+int ice_vsi_clear_outer_port_vlan(struct ice_vsi *vsi);
- 
- #endif /* _ICE_VSI_VLAN_LIB_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_ops.h b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_ops.h
-index 5b47568f6256..b2d2330dedcb 100644
---- a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_ops.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_ops.h
-@@ -21,6 +21,7 @@ struct ice_vsi_vlan_ops {
- 	int (*ena_tx_filtering)(struct ice_vsi *vsi);
- 	int (*dis_tx_filtering)(struct ice_vsi *vsi);
- 	int (*set_port_vlan)(struct ice_vsi *vsi, struct ice_vlan *vlan);
-+	int (*clear_port_vlan)(struct ice_vsi *vsi);
- };
- 
- void ice_vsi_init_vlan_ops(struct ice_vsi *vsi);
--- 
-2.40.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+R29vZCBkYXkgVG9ueQ0KDQpXZSByZXZpZXdlZCB0aGUgcGF0Y2ggYW5kIGhhdmUgbm90aGluZyBh
+Z2FpbnN0Lg0KDQpXaXRoIHRoZSBiZXN0IHJlZ2FyZHMNCkFsZXgNCk5EIElUUCBMaW51eCA0MEcg
+YmFzZSBkcml2ZXIgVEwgDQoNCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
+b206IE5ndXllbiwgQW50aG9ueSBMIDxhbnRob255Lmwubmd1eWVuQGludGVsLmNvbT4NCj4gU2Vu
+dDogVHVlc2RheSwgTWF5IDIzLCAyMDIzIDg6MDQgUE0NCj4gVG86IEdyYW50IEdydW5kbGVyIDxn
+cnVuZGxlckBjaHJvbWl1bS5vcmc+OyBQYXZhbiBDaGViYmkNCj4gPHBhdmFuLmNoZWJiaUBicm9h
+ZGNvbS5jb20+OyBMb2t0aW9ub3YsIEFsZWtzYW5kcg0KPiA8YWxla3NhbmRyLmxva3Rpb25vdkBp
+bnRlbC5jb20+OyBOZWZ0aW4sIFNhc2hhIDxzYXNoYS5uZWZ0aW5AaW50ZWwuY29tPjsNCj4gUnVp
+bnNraXksIERpbWEgPGRpbWEucnVpbnNraXlAaW50ZWwuY29tPg0KPiBDYzogWWluZyBIc3UgPHlp
+bmdoc3VAY2hyb21pdW0ub3JnPjsgbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgRGF2aWQgUy4NCj4g
+TWlsbGVyIDxkYXZlbUBkYXZlbWxvZnQubmV0PjsgRXJpYyBEdW1hemV0IDxlZHVtYXpldEBnb29n
+bGUuY29tPjsNCj4gSmFrdWIgS2ljaW5za2kgPGt1YmFAa2VybmVsLm9yZz47IEJyYW5kZWJ1cmcs
+IEplc3NlDQo+IDxqZXNzZS5icmFuZGVidXJnQGludGVsLmNvbT47IFBhb2xvIEFiZW5pIDxwYWJl
+bmlAcmVkaGF0LmNvbT47IGludGVsLQ0KPiB3aXJlZC1sYW5AbGlzdHMub3N1b3NsLm9yZzsgbGlu
+dXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBpZ2I6IEZp
+eCBpZ2JfZG93biBodW5nIG9uIHN1cnByaXNlIHJlbW92YWwNCj4gDQo+IE9uIDUvMjIvMjAyMyAx
+OjE2IFBNLCBHcmFudCBHcnVuZGxlciB3cm90ZToNCj4gPiBPbiBUaHUsIE1heSAxOCwgMjAyMyBh
+dCAzOjM24oCvQU0gUGF2YW4gQ2hlYmJpDQo+IDxwYXZhbi5jaGViYmlAYnJvYWRjb20uY29tPiB3
+cm90ZToNCj4gPj4NCj4gPj4gT24gVGh1LCBNYXkgMTgsIDIwMjMgYXQgMTI6NTjigK9QTSBZaW5n
+IEhzdSA8eWluZ2hzdUBjaHJvbWl1bS5vcmc+DQo+IHdyb3RlOg0KPiA+Pj4NCj4gPj4+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZ2IvaWdiX21haW4uYw0KPiA+Pj4g
+Yi9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZ2IvaWdiX21haW4uYw0KPiA+Pj4gaW5kZXgg
+NTg4NzJhNGMyNTQwLi5hOGIyMTczNjhjYTEgMTAwNjQ0DQo+ID4+PiAtLS0gYS9kcml2ZXJzL25l
+dC9ldGhlcm5ldC9pbnRlbC9pZ2IvaWdiX21haW4uYw0KPiA+Pj4gKysrIGIvZHJpdmVycy9uZXQv
+ZXRoZXJuZXQvaW50ZWwvaWdiL2lnYl9tYWluLmMNCj4gPj4+IEBAIC05NTgxLDYgKzk1ODEsMTEg
+QEAgc3RhdGljIHBjaV9lcnNfcmVzdWx0X3QNCj4gaWdiX2lvX2Vycm9yX2RldGVjdGVkKHN0cnVj
+dCBwY2lfZGV2ICpwZGV2LA0KPiA+Pj4gICAgICAgICAgc3RydWN0IG5ldF9kZXZpY2UgKm5ldGRl
+diA9IHBjaV9nZXRfZHJ2ZGF0YShwZGV2KTsNCj4gPj4+ICAgICAgICAgIHN0cnVjdCBpZ2JfYWRh
+cHRlciAqYWRhcHRlciA9IG5ldGRldl9wcml2KG5ldGRldik7DQo+ID4+Pg0KPiA+Pj4gKyAgICAg
+ICBpZiAoc3RhdGUgPT0gcGNpX2NoYW5uZWxfaW9fbm9ybWFsKSB7DQo+ID4+PiArICAgICAgICAg
+ICAgICAgZGV2X3dhcm4oJnBkZXYtPmRldiwgIk5vbi1jb3JyZWN0YWJsZSBub24tZmF0YWwgZXJy
+b3INCj4gcmVwb3J0ZWQuXG4iKTsNCj4gPj4+ICsgICAgICAgICAgICAgICByZXR1cm4gUENJX0VS
+U19SRVNVTFRfQ0FOX1JFQ09WRVI7DQo+ID4+PiArICAgICAgIH0NCj4gPj4+ICsNCj4gPj4NCj4g
+Pj4gVGhpcyBjb2RlIG1heSBiZSBnb29kIHRvIGhhdmUuIEJ1dCBub3Qgc3VyZSBpZiB0aGlzIHNo
+b3VsZCBiZSB0aGUgZml4DQo+ID4+IGZvciBpZ2JfZG93bigpIHN5bmNocm9uaXphdGlvbi4NCj4g
+Pg0KPiA+IEkgaGF2ZSB0aGUgc2FtZSBvcGluaW9uLiBUaGlzIGFwcGVhcnMgdG8gc29sdmUgdGhl
+IHByb2JsZW0gLSBidXQgSQ0KPiA+IGRvbid0IGtub3cgaWYgdGhlcmUgaXMgYSBiZXR0ZXIgd2F5
+IHRvIHNvbHZlIHRoaXMgcHJvYmxlbS4NCj4gPg0KPiA+PiBJbnRlbCBndXlzIG1heSBjb21tZW50
+Lg0KPiA+DQo+ID4gUGluZz8gQ2FuIHdlIHBsZWFzZSBnZXQgZmVlZGJhY2sgZnJvbSBJR0IvSUdD
+IG1haW50YWluZXJzIHRoaXMgd2Vlaz8NCj4gPg0KPiA+IChJIGhvcGUgaWdjIG1haW50YWluZXJz
+IGNhbiBjb25maXJtIHRoaXMgaXNuJ3QgYW4gaXNzdWUgZm9yIGlnYy4pDQo+IA0KPiBBZGRpbmcg
+c29tZSBvZiB0aGUgaWdiIGFuZCBpZ2MgZGV2ZWxvcGVycy4NCj4gDQo+ID4gY2hlZXJzLA0KPiA+
+IGdyYW50DQo+ID4NCj4gPj4NCj4gPj4+ICAgICAgICAgIG5ldGlmX2RldmljZV9kZXRhY2gobmV0
+ZGV2KTsNCj4gPj4+DQo+ID4+PiAgICAgICAgICBpZiAoc3RhdGUgPT0gcGNpX2NoYW5uZWxfaW9f
+cGVybV9mYWlsdXJlKQ0KPiA+Pj4gLS0NCj4gPj4+IDIuNDAuMS42MDYuZ2E0YjFiMTI4ZDYtZ29v
+Zw0KPiA+Pj4NCj4gPj4+DQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vv
+c2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdp
+cmVkLWxhbgo=
