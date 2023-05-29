@@ -1,88 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F07D0C77B7E
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 29 May 2023 11:31:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 647A0C77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 29 May 2023 13:09:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 9AFF261289;
-	Mon, 29 May 2023 11:31:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9AFF261289
+	by smtp4.osuosl.org (Postfix) with ESMTP id D292C4187F;
+	Mon, 29 May 2023 13:09:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D292C4187F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685359899;
-	bh=KtwINRcFdfs9g11tvTRHrZmDfYti3zy5vHYd9vlRZQE=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=Yit+Y8MkuM5FqGrybuFB162MCbGTpDXiV++dRXL8K4TRbubXwULnjxOfFg4eIWpfK
-	 LZUwSFXn6Eao913jS+EwIwi4Q+SrbvDOiYP7IHJ4wE3v7ZUSzpyi/StLOwhJBrMm6j
-	 XjId3kzI2TDK6kRs1QgEn2iMVzDmmKVVtXOM/TIXpnWITpGTgb9OzwdOIEG9TctaCX
-	 p+oUY2cT+Q6adW0SR6pPw2nM0FvpmMpHO2q41bk1TPQGV/66PTLCJMzPECBzdtfjw7
-	 ZF7m47eHfQNG8fiysRTvPePcDSAbM7x0vF9gJwGdsMIpyCvOJBUeKMEvUid1RP8TpG
-	 BRw1cA8lA/PzQ==
+	s=default; t=1685365759;
+	bh=cQMWJislBzSj/q638PRbauXTeyKdCAPuuZQhLTdpubQ=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=bUFbDbQS1+rlQs6fPIECrprhTJmWLXuC+zOfkATgBjDVsSBReRNpNt8X0MXmJTkZ0
+	 kRpmbzWb5uLWOKvakoXo+HZ7Z19ggNSN9+M7Bs7JesH7jsJDOuccmJM3ANm7ttwdRm
+	 Ndx9vcfQ1b1dolWLJpPYYyRs7zAOxLnYek+mcwJZMXzWqW7dgjtPnvKEKuG6jE9TxL
+	 6BqvadINbXTERAT3WQKsEEo6d+AIU9NwLpDLnOB/o98tHaiI6/P4+ffxWKmalf65yM
+	 AWE936IcIZDwj16O7wFy3BQotopHrjSGGAz/m2iUjQMGnr8fpJj8D+RCc2+xXXRppI
+	 S6OSfhRkh3dsw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BRengNZtcFFL; Mon, 29 May 2023 11:31:37 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id FZ3pXoc-vKFQ; Mon, 29 May 2023 13:09:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 671966128C;
-	Mon, 29 May 2023 11:31:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 671966128C
+	by smtp4.osuosl.org (Postfix) with ESMTP id A322541877;
+	Mon, 29 May 2023 13:09:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A322541877
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 502281BF593
- for <intel-wired-lan@lists.osuosl.org>; Mon, 29 May 2023 11:31:28 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id E07361BF404
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 29 May 2023 13:09:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 282B861287
- for <intel-wired-lan@lists.osuosl.org>; Mon, 29 May 2023 11:31:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 282B861287
+ by smtp3.osuosl.org (Postfix) with ESMTP id C579361298
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 29 May 2023 13:09:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C579361298
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ITTED5265L1y for <intel-wired-lan@lists.osuosl.org>;
- Mon, 29 May 2023 11:31:27 +0000 (UTC)
+ with ESMTP id QLHKSlCJv_vw for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 29 May 2023 13:09:16 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 811F161289
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 811F161289
- for <intel-wired-lan@lists.osuosl.org>; Mon, 29 May 2023 11:31:27 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10724"; a="441041648"
-X-IronPort-AV: E=Sophos;i="6.00,201,1681196400"; d="scan'208";a="441041648"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 May 2023 04:31:27 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6F83A607C9
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 6F83A607C9
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 29 May 2023 13:09:16 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10725"; a="353544826"
+X-IronPort-AV: E=Sophos;i="6.00,201,1681196400"; d="scan'208";a="353544826"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 May 2023 06:09:15 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10724"; a="880358695"
-X-IronPort-AV: E=Sophos;i="6.00,201,1681196400"; d="scan'208";a="880358695"
-Received: from amlin-018-068.igk.intel.com ([10.102.18.68])
- by orsmga005.jf.intel.com with ESMTP; 29 May 2023 04:31:25 -0700
-From: Mateusz Palczewski <mateusz.palczewski@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10725"; a="850398901"
+X-IronPort-AV: E=Sophos;i="6.00,201,1681196400"; d="scan'208";a="850398901"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by fmsmga001.fm.intel.com with ESMTP; 29 May 2023 06:09:14 -0700
+Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id E033B34907;
+ Mon, 29 May 2023 14:09:13 +0100 (IST)
+From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 29 May 2023 07:25:58 -0400
-Message-Id: <20230529112558.893997-5-mateusz.palczewski@intel.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20230529112558.893997-1-mateusz.palczewski@intel.com>
-References: <20230529112558.893997-1-mateusz.palczewski@intel.com>
+Date: Mon, 29 May 2023 15:08:06 +0200
+Message-Id: <20230529130806.81157-1-wojciech.drewek@intel.com>
+X-Mailer: git-send-email 2.40.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1685359887; x=1716895887;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=FSBzNS7ftjj66o3m91o8reJQz0NWpzIQxk6kRAFdrP8=;
- b=clooDdHo5xcvkM54gG7ajO8bETWs8LdDpG1nAV9rYXiYH7TfZ4HUGhM5
- R6JxvU+Xh/G295crCBrg+fsCRVHH3qkevlidlTTgQVVHl7keH0s8jxTgs
- 5e8F/x2mm6nidxyZI1EtjuFStqyFPqf0ApEJG6fOMNywQc4EL0eR02DoZ
- 6Ut+S2oc7IM0ZO5MTVVlUzMpLohEAm412b+Hd9aOVrLx1Cad4fvAzo3bo
- 4GRRE10H8L0XBJA/wPe+O65dhYLPQIzKAnN/dKZOdTNMPsFcse2gZmmV0
- 24aZfT6tLnsSf53t6jd1aAvelTpufrrRtM2+gFt9FIrhVdae6o3YkdL2C
- A==;
+ t=1685365756; x=1716901756;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=dOeUv8Cx8S/3xZOo0LdsApkn/2k7AmJTci0AkI1mn2g=;
+ b=WY/KaSoJySY6h5feHvSyIPahVuBNuOI8QDbRnLcXHJwLWKedT6faE84F
+ ajjV76wxHzIC5CXp7qZdluYxmAgr96j+H+4Dis+DuEdTlMIVA3zj60PRo
+ ty+KkfSu+XhKSEAmrCyodqwIEjs8BjOXC+pYVfIpzuQ88Pm3WyzO5thNr
+ gtEKaWhHJk+WessZle2EiBcgY4v9fUQtLctyuahz5w1aK62N3osASTJR6
+ xiOIHRkHY58bEzpu1mzvfqpGd2FMweQK73a2Nmxokyi+4J36ntUNXcsJ0
+ 25mEzADfZRPXuCCMQ2vHCGgMTkVvMuAxybpxld6h7Q7NQ8ZXhpab7CR2P
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=clooDdHo
-Subject: [Intel-wired-lan] [PATCH iwl-net v9 4/4] Revert "iavf: Do not
- restart Tx queues after reset task failure"
+ header.a=rsa-sha256 header.s=Intel header.b=WY/KaSoJ
+Subject: [Intel-wired-lan] [PATCH iwl-next] ice: Fix mem leak when creating
+ guard rule
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,62 +95,39 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: anthony.l.nguyen@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
+Free list in ice_eswitch_br_guard_rule_create when
+rule creation is successful.
 
-This reverts commit 08f1c147b7265245d67321585c68a27e990e0c4b.
-
-Netdev is no longer being detached during reset, so this fix can be
-reverted. We leave the removal of "hacky" IFF_UP flag update.
-
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
-v1->v8: no changes
-v9: we leave the removal of "hacky" IFF_UP update that was implemented in this patch
+Tony, could you squash this patch into
+"ice: Add guard rule when creating FDB in switchdev",
+http://patchwork.ozlabs.org/project/intel-wired-lan/patch/20230524122121.15012-9-wojciech.drewek@intel.com/
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 15 ---------------
- 1 file changed, 15 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch_br.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 8e065dc34c92..e44c50a0ccd9 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3081,11 +3081,6 @@ static void iavf_reset_task(struct work_struct *work)
- 		iavf_disable_vf(adapter);
- 		mutex_unlock(&adapter->client_lock);
- 		mutex_unlock(&adapter->crit_lock);
--		if (netif_running(netdev)) {
--			rtnl_lock();
--			dev_close(netdev);
--			rtnl_unlock();
--		}
- 		return; /* Do not attempt to reinit. It's dead, Jim. */
- 	}
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
+index c225287be9e1..2463ededb9d5 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
+@@ -226,6 +226,8 @@ ice_eswitch_br_guard_rule_create(struct ice_hw *hw, u16 vsi_idx,
+ 	if (err)
+ 		goto err_add_rule;
  
-@@ -3236,16 +3231,6 @@ static void iavf_reset_task(struct work_struct *work)
++	kfree(list);
++
+ 	return rule;
  
- 	mutex_unlock(&adapter->client_lock);
- 	mutex_unlock(&adapter->crit_lock);
--
--	if (netif_running(netdev)) {
--		/* Close device to ensure that Tx queues will not be started
--		 * during netif_device_attach() at the end of the reset task.
--		 */
--		rtnl_lock();
--		dev_close(netdev);
--		rtnl_unlock();
--	}
--
- 	dev_err(&adapter->pdev->dev, "failed to allocate resources during reinit\n");
- }
- 
+ err_add_rule:
 -- 
-2.31.1
+2.40.1
 
 _______________________________________________
 Intel-wired-lan mailing list
