@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5FD8C77B73
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 May 2023 17:46:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 026FEC77B73
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 May 2023 17:46:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 87F6081FF0;
-	Tue, 30 May 2023 17:46:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 87F6081FF0
+	by smtp1.osuosl.org (Postfix) with ESMTP id AEDCE81FF8;
+	Tue, 30 May 2023 17:46:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AEDCE81FF8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685468804;
-	bh=SL0j+fIKKxGr5jGkRyB6RX+WYUs6vwkxrklm34ph4eQ=;
+	s=default; t=1685468808;
+	bh=n+GmH1tnDCehqqnveEsTiHI4BL4EbVFbmTJvO82gFAA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=kFMY2/+ucelYXUvj+v0MVz1SUPf1yAhrMPCN4U6Akumg5vKt0wF7AyTATkgfV6pPC
-	 B1XdbduXWPapKAnf8lE89+D9KYfZIXYWY7x5W0n5jscVjkf3NR4sBNV1UmKwsCHU+d
-	 rTBydo5/mDD7U6rn8X9uf5LSSlyThyCv5x0nfMwrF5dmZlv65s325B78jNje0iK+7z
-	 h/AtLzR9/6PPfqJU8PS/YQNJYgtOm58VQBQ3/qGehcwLSEfnyxLcEbegTXlZ9c0r/2
-	 tZxMH71X9uPJR7u+O/asrmj3oZhSZUlBuvKiJMxRyhNEn0Nd+/uzMulrJT3JwytwpM
-	 EtDNwQ9JE3baw==
+	 From;
+	b=8bXKABIKYXFu2vlYvJ2NCW4f7ec1V3p93e0vPDjjWYa2dWE/WGNAF7tS+vmbHKaVG
+	 tmsaP9sr3s9k947RHaqtk9pSzRO2/8T24oGj3XmCnQMysuQ70kB4qWKhqAi1rwYZPy
+	 AXe/Y7yVEEA/Qu3umNaW/Q/OCPS2uCaIjeMQr2xpI/y+4sebg3H8Th7YmtJyjyt0/3
+	 RcjJ1VuPpK2bfaH0aPvmOG5hqPwkNQxcNKhwuTmiDxJE0+IaiNYjL7Q8TBpAW+nsOv
+	 R8u7VRExsL+jj8pxshWbfCO5yS9He+cGI+VvK2pgIjWg+DfrqH2uMoWT8GHRfDUw+n
+	 ughlVZIL+zipA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id OB60fkam6fUV; Tue, 30 May 2023 17:46:43 +0000 (UTC)
+	with ESMTP id Z2-2Ou8sg8tC; Tue, 30 May 2023 17:46:48 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 93D3681FC1;
-	Tue, 30 May 2023 17:46:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 93D3681FC1
+	by smtp1.osuosl.org (Postfix) with ESMTP id AE3F981FBF;
+	Tue, 30 May 2023 17:46:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AE3F981FBF
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 15EB51BF966
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:26 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 2AB2D1BF5DA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8EC3A81F2D
+ by smtp1.osuosl.org (Postfix) with ESMTP id C436181F36
  for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8EC3A81F2D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C436181F36
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id jcNZbzMy6DcW for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id 0xsb-6oFJWYr for <intel-wired-lan@lists.osuosl.org>;
  Tue, 30 May 2023 17:46:24 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E0EC181F36
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2673581F4A
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by smtp1.osuosl.org (Postfix) with ESMTPS id E0EC181F36
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:23 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="358253148"
-X-IronPort-AV: E=Sophos;i="6.00,204,1681196400"; d="scan'208";a="358253148"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2673581F4A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:24 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="358253157"
+X-IronPort-AV: E=Sophos;i="6.00,204,1681196400"; d="scan'208";a="358253157"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  30 May 2023 10:46:22 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="776430986"
-X-IronPort-AV: E=Sophos;i="6.00,204,1681196400"; d="scan'208";a="776430986"
+X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="776430992"
+X-IronPort-AV: E=Sophos;i="6.00,204,1681196400"; d="scan'208";a="776430992"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 May 2023 10:46:21 -0700
+ 30 May 2023 10:46:22 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
  Anthony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 30 May 2023 10:46:02 -0700
-Message-ID: <20230530174605.2772054-3-jacob.e.keller@intel.com>
+Date: Tue, 30 May 2023 10:46:04 -0700
+Message-ID: <20230530174605.2772054-5-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.40.0.471.gbd7f14d9353b
 In-Reply-To: <20230530174605.2772054-1-jacob.e.keller@intel.com>
 References: <20230530174605.2772054-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1685468783; x=1717004783;
+ t=1685468784; x=1717004784;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=+vO9sAKa9BWHWRDXCbEdl9U+f86O7UOa/Gkyy+073tI=;
- b=QSycdx+qcsSHcfGXjBs2Cxzd1YZFWl0qhEoa7KWP4eWhJ5RU04XjZXsV
- I6VE0PtJd/foNzjRZHB42YLAYwh6Kmqk54H/qlQDkDf5AWN4/Wk5DXLz0
- QZ/HKLpCZq1Jc7u/vCkM0t5LYP9VlU73/ASyxKQ6BWYA6Z7uaxWkk+Mkw
- lY52wRcodON1+5kMObJeb72Rm2RbS75UkQid7rg8QID44n2w8VQiMV9ug
- TuM+2dmo+EOw2Zqlx5EDkhgziNLnytr1zW1woYwnQ3mB1xD+JcZmt2zdg
- hedgKY546OofLPmI9s3FveWQuIaB5eCRh4WQJT8hEeYCIseCJJbeYUT8H
+ bh=XRfyBLCTze/CBY8sOdhy62bTvmqiq3bi4OPOpd7PceA=;
+ b=nm/fM6RAfwUe7rMl/vqeIfEZBlMXFSgIKkFr5zQ5+lmMCRGsILuBdFVh
+ OvjzlQqUC0dOCmes3KnESDkwK1hu6Ae0NmEmDMBjjh4jpOx2Y7t9Vaw4G
+ i5hbnYxLQSB/c9jZ/aXhYJ61sEieUfibcHTpR9VnhMW02WFQaV7040/9o
+ ykm7yJg5gJTzbi74szdEUEWlAW6fZbjl1PDyBnJa6BvWxcAPSDK+wZGUD
+ 2rsrKhYC4yEDbTx7hEMvwP3xpgAW8mslKcBX5ju1jl+qgGuoxhFruwaGo
+ Y+X/vaIEexKEAzoOWajSnoxDj6L73LAmk/CG7/JHuhoiaiF8FnDlR0rb9
  A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QSycdx+q
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/5] ice: always return
- IRQ_WAKE_THREAD in ice_misc_intr()
+ header.a=rsa-sha256 header.s=Intel header.b=nm/fM6RA
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 4/5] ice: trigger
+ PFINT_OICR_TSYN_TX interrupt instead of polling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,94 +98,60 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Karol Kolacinski <karol.kolacinski@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Karol Kolacinski <karol.kolacinski@intel.com>
+In ice_misc_intr_thread_fn(), if we do not complete all Tx timestamp work,
+the thread function will poll continuously forever.
 
-Refactor the ice_misc_intr() function to always return IRQ_WAKE_THREAD, and
-schedule the service task during the soft IRQ thread function instead of at
-the end of the hard IRQ handler.
+For E822 hardware, this wastes time as the return value from
+ice_ptp_process_ts() is accurate and always reports correctly that the PHY
+actually has new timestamp data.
 
-Remove the duplicate call to ice_service_task_schedule() that happened when
-we got a PCI exception.
+In addition, if we receive enough timestamps at the right pacing, we might
+never exit this polling and thus prevent other interrupt tasks from being
+processed.
 
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Fix this by instead writing to PFINT_OICR, causing an emulated interrupt to
+be triggered immediately. This does take slightly more processing than just
+re-checking the timestamps. However, it allows all of the other interrupt
+causes a chance to be processed first in the hard IRQ function.
+
+Note that the OICR interrupt is throttled to 8K per second, so the hardware
+will not let the interrupt trigger more often than once every 124
+microseconds, so this should not cause a significant increase in CPU usage
+vs the sleeping method.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-
-Chances since v1:
-* Rewrote commit message, no longer justifying change with reference to
-  CONFIG_PREEMT_RT, as this is no longer true since v5.8. We still would
-  like this change since it simplifies the ice_misc_intr() function and
-  would more closely align with what we provided to our customer on an older
-  stable kernel.
-
- drivers/net/ethernet/intel/ice/ice_main.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 9e4d7d884115..8b59632ec6b1 100644
+index 481dccdb95cd..72e1b919b2d3 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3058,7 +3058,6 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- {
- 	struct ice_pf *pf = (struct ice_pf *)data;
- 	struct ice_hw *hw = &pf->hw;
--	irqreturn_t ret = IRQ_NONE;
- 	struct device *dev;
- 	u32 oicr, ena_mask;
- 
-@@ -3139,10 +3138,8 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 
- 	if (oicr & PFINT_OICR_TSYN_TX_M) {
- 		ena_mask &= ~PFINT_OICR_TSYN_TX_M;
--		if (!hw->reset_ongoing) {
-+		if (!hw->reset_ongoing)
- 			pf->oicr_misc |= PFINT_OICR_TSYN_TX_M;
--			ret = IRQ_WAKE_THREAD;
--		}
+@@ -3204,8 +3204,16 @@ static irqreturn_t ice_misc_intr_thread_fn(int __always_unused irq, void *data)
  	}
  
- 	if (oicr & PFINT_OICR_TSYN_EVNT_M) {
-@@ -3159,7 +3156,6 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 					       GLTSYN_STAT_EVENT2_M);
- 
- 			pf->oicr_misc |= PFINT_OICR_TSYN_EVNT_M;
--			ret = IRQ_WAKE_THREAD;
- 		}
- 	}
- 
-@@ -3180,16 +3176,12 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 		if (oicr & (PFINT_OICR_PCI_EXCEPTION_M |
- 			    PFINT_OICR_ECC_ERR_M)) {
- 			set_bit(ICE_PFR_REQ, pf->state);
--			ice_service_task_schedule(pf);
- 		}
- 	}
--	if (!ret)
--		ret = IRQ_HANDLED;
- 
--	ice_service_task_schedule(pf);
- 	ice_irq_dynamic_ena(hw, NULL, NULL);
- 
--	return ret;
-+	return IRQ_WAKE_THREAD;
- }
- 
- /**
-@@ -3204,6 +3196,8 @@ static irqreturn_t ice_misc_intr_thread_fn(int __always_unused irq, void *data)
- 	if (ice_is_reset_in_progress(pf->state))
- 		return IRQ_HANDLED;
- 
-+	ice_service_task_schedule(pf);
+ 	if (pf->oicr_misc & PFINT_OICR_TSYN_TX_M) {
+-		while (ice_ptp_process_ts(pf) == ICE_TX_TSTAMP_WORK_PENDING)
+-			usleep_range(50, 100);
++		struct ice_hw *hw = &pf->hw;
 +
- 	if (pf->oicr_misc & PFINT_OICR_TSYN_EVNT_M) {
- 		ice_ptp_extts_event(pf);
- 		pf->oicr_misc &= ~PFINT_OICR_TSYN_EVNT_M;
++		/* Process outstanding Tx timestamps. If there is more work,
++		 * re-arm the interrupt to trigger again.
++		 */
++		if (ice_ptp_process_ts(pf) == ICE_TX_TSTAMP_WORK_PENDING) {
++			wr32(hw, PFINT_OICR, PFINT_OICR_TSYN_TX_M);
++			ice_flush(hw);
++		}
++
+ 		pf->oicr_misc &= ~PFINT_OICR_TSYN_TX_M;
+ 	}
+ 
 -- 
 2.40.0.471.gbd7f14d9353b
 
