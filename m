@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 161D9C7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 May 2023 17:46:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAA76C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 30 May 2023 17:46:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AFFCF81F19;
-	Tue, 30 May 2023 17:46:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AFFCF81F19
+	by smtp1.osuosl.org (Postfix) with ESMTP id 594DD81F38;
+	Tue, 30 May 2023 17:46:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 594DD81F38
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685468795;
-	bh=uGWDscdbbFBgrbVTaIGEDY3D6+W3HFqVJDZQqysL+j4=;
+	s=default; t=1685468800;
+	bh=Tauut/mhugcxK85AL6lDFwMviQk/vjpnAcqOlcCxVEI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=DlBYw5YTlzsuZ6B0Yn7+vld+o7P8DrNnMRWu/vvKamjT2YJasH22i9TI2NCWXUggq
-	 VXVUtaMGnT4dRbfEaTSNd0lRWxHJYI2i2Rjwmd6eRDhnstDSV8+qZkKFoxjVuIOv8j
-	 JkivulUZyZjVm247QzilXtsYHarJ8EEwRq+a5pwmlyP3Baa2g2Xi3UHrqLIMjhr7nK
-	 S1OOXi/h/zYGmL09zXtWEcyA1CWW2HSS0xbo1Ut+h/jnnt3CPf/et+nFibo/5eTCvl
-	 XtqoAMenDMe+VQBjz92/DE3rFzaK+//ThZ6zlGFAf0pwMeJSMFDujPwIxnieQTHSLo
-	 Y0+9jn/2qS3HA==
+	 Cc:From;
+	b=q9uPcUnu5Dkrwu/TLPaUcm1DZaOMUBmLfMZnojon8KouOeSIJEBFhdEQqHqmK2qca
+	 C6RvpS9ZtN6rW8sT1XJAS5fD8DeSAnVqzbRqTdk7JaWhv/7BA44QkVqLkNbhBfSZP9
+	 VeB/fAxDlwRXXLMz/g84xTzC/2GEkYk9YRL2S7T4MJeeRVWL3sCf1yRzuHW7FOsIyr
+	 GseRhXdK6+7W7K4MgMpIBycztU8BF0f0H6jjXU4BawSNsTW3Ku6SajxcfwaAWbrewL
+	 zhKad97jQQ3089mZI2PrEvhwnPgzZz4mEqFsmskH+QzgGKSF+CitEknD25jrgPT23c
+	 2xkOP7BVhhcDA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id E3u5cq761Q9L; Tue, 30 May 2023 17:46:34 +0000 (UTC)
+	with ESMTP id w5xBYdvGxkSB; Tue, 30 May 2023 17:46:39 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8E23781F2D;
-	Tue, 30 May 2023 17:46:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8E23781F2D
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 1B78E1BF966
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2E9AF81FD8;
+	Tue, 30 May 2023 17:46:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2E9AF81FD8
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id ED1CC1BF5DA
  for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 01F5640160
- for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 01F5640160
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hdlmk1FIg_Ja for <intel-wired-lan@lists.osuosl.org>;
- Tue, 30 May 2023 17:46:24 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 43FC240286
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 43FC240286
+ by smtp1.osuosl.org (Postfix) with ESMTP id 674F681F19
  for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:24 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="358253160"
-X-IronPort-AV: E=Sophos;i="6.00,204,1681196400"; d="scan'208";a="358253160"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 674F681F19
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id AcOiofINnWKo for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 30 May 2023 17:46:23 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 83A6781F2D
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 83A6781F2D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 30 May 2023 17:46:23 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="358253145"
+X-IronPort-AV: E=Sophos;i="6.00,204,1681196400"; d="scan'208";a="358253145"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 May 2023 10:46:22 -0700
+ 30 May 2023 10:46:21 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="776430995"
-X-IronPort-AV: E=Sophos;i="6.00,204,1681196400"; d="scan'208";a="776430995"
+X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="776430983"
+X-IronPort-AV: E=Sophos;i="6.00,204,1681196400"; d="scan'208";a="776430983"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 30 May 2023 10:46:22 -0700
+ 30 May 2023 10:46:21 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
  Anthony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 30 May 2023 10:46:05 -0700
-Message-ID: <20230530174605.2772054-6-jacob.e.keller@intel.com>
+Date: Tue, 30 May 2023 10:46:01 -0700
+Message-ID: <20230530174605.2772054-2-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.40.0.471.gbd7f14d9353b
 In-Reply-To: <20230530174605.2772054-1-jacob.e.keller@intel.com>
 References: <20230530174605.2772054-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1685468784; x=1717004784;
+ t=1685468783; x=1717004783;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=jHIkguiVSGtmHbTx0JYDuHTTM4tGO/SGwOcDufN+LSk=;
- b=mBu4yHOT6btsDMkp9b32iiyPQcWBBQzYKZjNsd2S+eMScFRwlXlumT8z
- h4aR/UfzlrmlZCGK+n4IYHs5EhYLDE0P0rD6utOpEOv+YEC6PZw55rUHV
- xZgYhME3LJnMoe9VZFj8LSWX+hWFGXdmRZc3z1zeDDMt/89/KERfKdlmV
- eLytSrDU796aQomijrq8ypw3HIAMpowvpRe8jbZkA56XBImmihKGcKfbI
- 6ObpHSyC4fX2SIncNVhqiKpa2RCzVIBZxVR7QjgzXB1/LlqRHFucS9Njt
- UehZ8SCQcyVka9/c4tegR41TvvSYmoBsaH8mrPqjIfvrPzRv5aMvTScEK
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=6q0j80VQzN4U4hvyGzBGSAi4Yt+9v7W4+5H9W30Jbes=;
+ b=kD+CEx6ZlAL7z8A/KEQeMY0DilU5ImY4dShwmAk5/PsRmYyK9Pt/wv6i
+ ucIP/0etvKVOmNSYWfSV6ylNtOF6d18aUIxh2+IPGXyFbusGR5dsSSS8r
+ ndGmOKfQAgYE1sBmB6ooI2f4eyGR3C6Y1f9mdInd7FICBfBkFhJ3qb/pR
+ jNlH3ACxL3InvZEtGMRR3yOKa2LgT7MN01EJUkrr4i2ahRUrCcDhHXRhT
+ RnmPd//UKtUK03p/VQ46EZEfbogSSrHd+K56tbBkx0h9dtRMcWMAb3rto
+ CPewp1kdNKS/Mr4xihranInM+fbFANqJ8hmvMo4otNU6WuuSbl0rz6JkJ
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=mBu4yHOT
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 5/5] ice: do not re-enable
- miscellaneous interrupt until thread_fn completes
+ header.a=rsa-sha256 header.s=Intel header.b=kD+CEx6Z
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/5] ice: handle extts in the
+ miscellaneous interrupt thread
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,105 +98,192 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Karol Kolacinski <karol.kolacinski@intel.com>,
+ Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-At the end of ice_misc_intr() the driver calls ice_irq_dynamic_ena() to
-re-enable the miscellaneous interrupt. This is done before the
-ice_misc_intr_thread_fn can run and complete.
+From: Karol Kolacinski <karol.kolacinski@intel.com>
 
-According to the kernel function comment documentation for
-request_threaded_irq(), the interrupt should remain disabled until the
-thread function completes its task.
+The ice_ptp_extts_work() and ice_ptp_periodic_work() functions are both
+scheduled on the same kthread worker, pf.ptp.kworker. The
+ice_ptp_periodic_work() function sends to the firmware to interact with the
+PHY, and must block to wait for responses.
 
-By re-enabling the interrupt at the end of the hard IRQ, it is possible for
-a new interrupt to trigger while the thread function is processing. This is
-problematic for PTP Tx timestamps.
+This can cause delay in responding to the PFINT_OICR_TSYN_EVNT interrupt
+cause, ultimately resulting in disruption to processing an input signal of
+the frequency is high enough. In our testing, even 100 Hz signals get
+disrupted.
 
-For E822 devices, the hardware in the PHY keeps track of how many
-outstanding timestamps are generated and how many timestamps are read from
-the PHY.
+Fix this by instead processing the signal inside the miscellaneous
+interrupt thread prior to handling Tx timestamps.
 
-This counter is incremented once for each timestamp that is captured by
-hardware, and decremented once each time a timestamp is read from the PHY.
-The PHY will not generate a new interrupt unless this internal counter is
-zero before the most recently captured timestamp.
-
-Because of this counter behavior, a race with the hard IRQ and threaded IRQ
-function can result in the potential for the counter to get stuck such that
-no new interrupts will be triggered until the device is reset.
-
-Consider the following flow:
-
- 1 -> Tx timestamp completes in hardware
- 2 -> timestamp interrupt occurs
- 3 -> ice_misc_intr() re-enables timestamp interrupt, and wakes the
-      thread_fn
- 4 -> thread_fn is running and processing Tx timestamp
- 5 -> the Tx timestamp is read from PHY, clearing the counter
- 6 -> a new Tx timestamp completes in hardware, triggering interrupt
- 7 -> the thread_fn hasn't exited and reported IRQ handled
- 8 -> ice_misc_intr() triggers and sees PTP interrupt, so tries to wake thread
- 9 -> thread_fn is already running (IRQTF_RUNTHREAD is set still!) so we
-      skip running the thread...
-10 -> an outstanding timestamp is remaining but we never read it
-11 -> interrupt never triggers again
-
-The fix for this complicated race condition is simple: do not re-enable the
-miscellaneous interrupt until *after* the thread function completes. If a
-new timestamp event triggers while the interrupt is disabled, it will be
-remembered and should cause the interrupt to trigger again immediately
-after we re-enable the interrupt.
-
-Fixes: 1229b33973c7 ("ice: Add low latency Tx timestamp read")
+Fixes: 172db5f91d5f ("ice: add support for auxiliary input/output pins")
+Reported-by: Anatolii Gerasymenko <anatolii.gerasymenko@intel.com>
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ice/ice.h      |  1 +
+ drivers/net/ethernet/intel/ice/ice_main.c | 33 +++++++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_ptp.c  | 12 +++------
+ drivers/net/ethernet/intel/ice/ice_ptp.h  |  4 +--
+ 4 files changed, 31 insertions(+), 19 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 176e281dfa24..4256b9f5a25f 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -580,6 +580,7 @@ struct ice_pf {
+ 	u32 hw_csum_rx_error;
+ 	u32 oicr_err_reg;
+ 	struct msi_map oicr_irq;	/* Other interrupt cause MSIX vector */
++	u16 oicr_misc;		/* Misc interrupts to handle in bottom half */
+ 	u16 max_pf_txqs;	/* Total Tx queues PF wide */
+ 	u16 max_pf_rxqs;	/* Total Rx queues PF wide */
+ 	u16 num_lan_msix;	/* Total MSIX vectors for base driver */
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 72e1b919b2d3..51fe3da0d54f 100644
+index c7d7104dbadc..9e4d7d884115 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3179,8 +3179,6 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- 		}
+@@ -3139,20 +3139,28 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 
+ 	if (oicr & PFINT_OICR_TSYN_TX_M) {
+ 		ena_mask &= ~PFINT_OICR_TSYN_TX_M;
+-		if (!hw->reset_ongoing)
++		if (!hw->reset_ongoing) {
++			pf->oicr_misc |= PFINT_OICR_TSYN_TX_M;
+ 			ret = IRQ_WAKE_THREAD;
++		}
  	}
  
--	ice_irq_dynamic_ena(hw, NULL, NULL);
--
- 	return IRQ_WAKE_THREAD;
- }
+ 	if (oicr & PFINT_OICR_TSYN_EVNT_M) {
+ 		u8 tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
+ 		u32 gltsyn_stat = rd32(hw, GLTSYN_STAT(tmr_idx));
  
-@@ -3192,6 +3190,9 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
- static irqreturn_t ice_misc_intr_thread_fn(int __always_unused irq, void *data)
- {
- 	struct ice_pf *pf = data;
-+	struct ice_hw *hw;
+-		/* Save EVENTs from GTSYN register */
+-		pf->ptp.ext_ts_irq |= gltsyn_stat & (GLTSYN_STAT_EVENT0_M |
+-						     GLTSYN_STAT_EVENT1_M |
+-						     GLTSYN_STAT_EVENT2_M);
+ 		ena_mask &= ~PFINT_OICR_TSYN_EVNT_M;
+-		kthread_queue_work(pf->ptp.kworker, &pf->ptp.extts_work);
 +
-+	hw = &pf->hw;
++		if (hw->func_caps.ts_func_info.src_tmr_owned) {
++			/* Save EVENTs from GLTSYN register */
++			pf->ptp.ext_ts_irq |= gltsyn_stat &
++					      (GLTSYN_STAT_EVENT0_M |
++					       GLTSYN_STAT_EVENT1_M |
++					       GLTSYN_STAT_EVENT2_M);
++
++			pf->oicr_misc |= PFINT_OICR_TSYN_EVNT_M;
++			ret = IRQ_WAKE_THREAD;
++		}
+ 	}
  
+ #define ICE_AUX_CRIT_ERR (PFINT_OICR_PE_CRITERR_M | PFINT_OICR_HMC_ERR_M | PFINT_OICR_PE_PUSH_M)
+@@ -3196,8 +3204,16 @@ static irqreturn_t ice_misc_intr_thread_fn(int __always_unused irq, void *data)
  	if (ice_is_reset_in_progress(pf->state))
  		return IRQ_HANDLED;
-@@ -3204,8 +3205,6 @@ static irqreturn_t ice_misc_intr_thread_fn(int __always_unused irq, void *data)
- 	}
  
- 	if (pf->oicr_misc & PFINT_OICR_TSYN_TX_M) {
--		struct ice_hw *hw = &pf->hw;
--
- 		/* Process outstanding Tx timestamps. If there is more work,
- 		 * re-arm the interrupt to trigger again.
- 		 */
-@@ -3217,6 +3216,8 @@ static irqreturn_t ice_misc_intr_thread_fn(int __always_unused irq, void *data)
- 		pf->oicr_misc &= ~PFINT_OICR_TSYN_TX_M;
- 	}
- 
-+	ice_irq_dynamic_ena(hw, NULL, NULL);
+-	while (!ice_ptp_process_ts(pf))
+-		usleep_range(50, 100);
++	if (pf->oicr_misc & PFINT_OICR_TSYN_EVNT_M) {
++		ice_ptp_extts_event(pf);
++		pf->oicr_misc &= ~PFINT_OICR_TSYN_EVNT_M;
++	}
 +
++	if (pf->oicr_misc & PFINT_OICR_TSYN_TX_M) {
++		while (!ice_ptp_process_ts(pf))
++			usleep_range(50, 100);
++		pf->oicr_misc &= ~PFINT_OICR_TSYN_TX_M;
++	}
+ 
  	return IRQ_HANDLED;
  }
+@@ -4958,6 +4974,7 @@ ice_probe(struct pci_dev *pdev, const struct pci_device_id __always_unused *ent)
+ 	pf = ice_allocate_pf(dev);
+ 	if (!pf)
+ 		return -ENOMEM;
++	pf->oicr_misc = 0;
  
+ 	/* initialize Auxiliary index to invalid value */
+ 	pf->aux_idx = -1;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index d4b6c997141d..6f51ebaf1d70 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1458,15 +1458,11 @@ static int ice_ptp_adjfine(struct ptp_clock_info *info, long scaled_ppm)
+ }
+ 
+ /**
+- * ice_ptp_extts_work - Workqueue task function
+- * @work: external timestamp work structure
+- *
+- * Service for PTP external clock event
++ * ice_ptp_extts_event - Process PTP external clock event
++ * @pf: Board private structure
+  */
+-static void ice_ptp_extts_work(struct kthread_work *work)
++void ice_ptp_extts_event(struct ice_pf *pf)
+ {
+-	struct ice_ptp *ptp = container_of(work, struct ice_ptp, extts_work);
+-	struct ice_pf *pf = container_of(ptp, struct ice_pf, ptp);
+ 	struct ptp_clock_event event;
+ 	struct ice_hw *hw = &pf->hw;
+ 	u8 chan, tmr_idx;
+@@ -2558,7 +2554,6 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf)
+ 	ice_ptp_cfg_timestamp(pf, false);
+ 
+ 	kthread_cancel_delayed_work_sync(&ptp->work);
+-	kthread_cancel_work_sync(&ptp->extts_work);
+ 
+ 	if (test_bit(ICE_PFR_REQ, pf->state))
+ 		return;
+@@ -2656,7 +2651,6 @@ static int ice_ptp_init_work(struct ice_pf *pf, struct ice_ptp *ptp)
+ 
+ 	/* Initialize work functions */
+ 	kthread_init_delayed_work(&ptp->work, ice_ptp_periodic_work);
+-	kthread_init_work(&ptp->extts_work, ice_ptp_extts_work);
+ 
+ 	/* Allocate a kworker for handling work required for the ports
+ 	 * connected to the PTP hardware clock.
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index 9cda2f43e0e5..9f8902c1e743 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -169,7 +169,6 @@ struct ice_ptp_port {
+  * struct ice_ptp - data used for integrating with CONFIG_PTP_1588_CLOCK
+  * @port: data for the PHY port initialization procedure
+  * @work: delayed work function for periodic tasks
+- * @extts_work: work function for handling external Tx timestamps
+  * @cached_phc_time: a cached copy of the PHC time for timestamp extension
+  * @cached_phc_jiffies: jiffies when cached_phc_time was last updated
+  * @ext_ts_chan: the external timestamp channel in use
+@@ -190,7 +189,6 @@ struct ice_ptp_port {
+ struct ice_ptp {
+ 	struct ice_ptp_port port;
+ 	struct kthread_delayed_work work;
+-	struct kthread_work extts_work;
+ 	u64 cached_phc_time;
+ 	unsigned long cached_phc_jiffies;
+ 	u8 ext_ts_chan;
+@@ -256,6 +254,7 @@ int ice_ptp_get_ts_config(struct ice_pf *pf, struct ifreq *ifr);
+ void ice_ptp_cfg_timestamp(struct ice_pf *pf, bool ena);
+ int ice_get_ptp_clock_index(struct ice_pf *pf);
+ 
++void ice_ptp_extts_event(struct ice_pf *pf);
+ s8 ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb);
+ bool ice_ptp_process_ts(struct ice_pf *pf);
+ 
+@@ -284,6 +283,7 @@ static inline int ice_get_ptp_clock_index(struct ice_pf *pf)
+ 	return -1;
+ }
+ 
++static inline void ice_ptp_extts_event(struct ice_pf *pf) { }
+ static inline s8
+ ice_ptp_request_ts(struct ice_ptp_tx *tx, struct sk_buff *skb)
+ {
 -- 
 2.40.0.471.gbd7f14d9353b
 
