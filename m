@@ -4,83 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34572C77B73
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 31 May 2023 09:55:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52400C77B7C
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 31 May 2023 09:55:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B6F8C40003;
-	Wed, 31 May 2023 09:55:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B6F8C40003
+	by smtp2.osuosl.org (Postfix) with ESMTP id E182541CDC;
+	Wed, 31 May 2023 09:55:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E182541CDC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685526920;
-	bh=FXCkrJggQ4pjqOJ9EEONSBNfdUeb8u0jIdE+P2k64EM=;
+	s=default; t=1685526924;
+	bh=qqv5G8Gwv4oFhKzzzJZ72Ysmh9Y+dIZWhKHHCVRRo9E=;
 	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=wHx/hOWoJysbvoqZ5gwNvsQg40u4Ppx+QW17RCG+Py4yJIEPC0VBcFYVXQSj/45Li
-	 KBFKvwhhFjrD/tz6PaqeyPe38zxZHLw9jK2WytMKhxgRgw1UEDurjHxDpLgxB4Pi27
-	 aG0Ums27PyT/sumX2EqnasETclk4Lwml9SfQ/3u2dNPreAyceIMPbF9epPAqVYPVJr
-	 PG91PEmMhIQn2i6l5Ksf9aQb+D5u6UTUaqV82PjnA9gtFdhwEDI9PEQh2rYkU+GOPH
-	 AJFvABxF7lGxs99dlecweGU8aZL5QgH2WrfElIQ5ocebA1GFNmpcoR6iYA3+rZXnnT
-	 5jfk+oocv3W9w==
+	b=kYqIjAK0Kpj1I823TbOOWAuBkcLsT0hUM2YLp2KJbJq4nBSzga3esjSoL2LA00si1
+	 XChaaTtsFmhCPJugtzcwrQbwBJNv5f750j0R4c+A3h1NUM94XiSxHQ7x8mjZ1v7gFO
+	 yx9etT8TY/uICk7QSp1tITYyc1/ofM3A1xurARjGx3o7AOKj6tAgNHdrCdDUHXY/Oz
+	 qliT8G1+eWdRqi7uiBFJx/Ap0cEf1f3ajTRikEi8R1L40/93nhRTXXy3cLenrpUwpf
+	 KD5uzp1LyLZh2SczUDeW2W/Tw4oILcydCZw92rjDe7ys2qkA1MA7hBHfLn95bb1o/D
+	 W3jT70/MXYfgw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id EGUZTysmHgdN; Wed, 31 May 2023 09:55:20 +0000 (UTC)
+	with ESMTP id L5dF8jZQLU2o; Wed, 31 May 2023 09:55:24 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B98E84042B;
-	Wed, 31 May 2023 09:55:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B98E84042B
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 3EBA51BF25F
+	by smtp2.osuosl.org (Postfix) with ESMTP id D9E68404D3;
+	Wed, 31 May 2023 09:55:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D9E68404D3
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 6FF241BF97A
  for <intel-wired-lan@lists.osuosl.org>; Wed, 31 May 2023 09:55:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2107A4175C
+ by smtp3.osuosl.org (Postfix) with ESMTP id 494F460B6E
  for <intel-wired-lan@lists.osuosl.org>; Wed, 31 May 2023 09:55:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2107A4175C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 494F460B6E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id JKXaruMQSPjT for <intel-wired-lan@lists.osuosl.org>;
- Wed, 31 May 2023 09:55:16 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id YyzJqXa1NACm for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 31 May 2023 09:55:17 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A957B4171B
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A957B4171B
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 104A860807
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 104A860807
  for <intel-wired-lan@lists.osuosl.org>; Wed, 31 May 2023 09:55:16 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="355198571"
-X-IronPort-AV: E=Sophos;i="6.00,205,1681196400"; d="scan'208";a="355198571"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="420956328"
+X-IronPort-AV: E=Sophos;i="6.00,205,1681196400"; d="scan'208";a="420956328"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  31 May 2023 02:55:15 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="657264393"
-X-IronPort-AV: E=Sophos;i="6.00,205,1681196400"; d="scan'208";a="657264393"
+X-IronPort-AV: E=McAfee;i="6600,9927,10726"; a="771934608"
+X-IronPort-AV: E=Sophos;i="6.00,205,1681196400"; d="scan'208";a="771934608"
 Received: from lkp-server01.sh.intel.com (HELO fb1ced2c09fb) ([10.239.97.150])
- by orsmga003.jf.intel.com with ESMTP; 31 May 2023 02:55:14 -0700
+ by fmsmga008.fm.intel.com with ESMTP; 31 May 2023 02:55:14 -0700
 Received: from kbuild by fb1ced2c09fb with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1q4IXy-0001FG-0U
+ (envelope-from <lkp@intel.com>) id 1q4IXy-0001FV-1C
  for intel-wired-lan@lists.osuosl.org; Wed, 31 May 2023 09:55:14 +0000
-Date: Wed, 31 May 2023 17:55:04 +0800
+Date: Wed, 31 May 2023 17:55:09 +0800
 From: kernel test robot <lkp@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <20230531095504.Rykpx%lkp@intel.com>
+Message-ID: <20230531095509.SyFMq%lkp@intel.com>
 User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1685526916; x=1717062916;
+ t=1685526917; x=1717062917;
  h=date:from:to:subject:message-id;
- bh=Tb+hGbPWYoOg8r4uSHzczoygZTryrw/ZyNFQMArEG8I=;
- b=hpQh3NeN/BiVYR6J8GHvdjCiUb6o+I/Rk+FfF5iiNecvVJ41CbMnORf0
- 6Oq3E+FpRh1nIf5+gNVuyaSeShxdj5/Y6il26DVf6iApH/AVMGWIyjX1P
- g0W5vO5/rdY9Y8+YLe2F07HVbR1Jm3EevVlEnz2XBUXfrX5XTHYd0DVaz
- Kjs/RsMcl1TcDrb6qJTAgtVRPhJZtv512Mrv2tR3MCK27TJNX0nrOzyc5
- qu86VlinpIROqx/8tqKYLsEWq5JtMrMMlHdpZADSxdPT34y944Bb6ySQc
- bnYsSHuv/CowtKkgw/Wz09P016JYvc12fFc/kz5KAS8+6Q39hto4+Usiv
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=9AI87s3qBoHRmjUtuS6atymnQlTocX67beJNT3C1PgQ=;
+ b=FdeI52g62Zj+ntU/zJYiZUMyMvV5JPFH4/5o4fFEzVBFde2ZyzkmurbN
+ IBpdjhiZtQ9tQvFAM1hyrR0R4RywOgKAjJRfcs6WuSaT7c4V1Bc+O1Hlj
+ sT4e47tNkDltlRsWQkue86Uf280Nb9c9pzErlRZauXl6LzxGRkfJO2KwQ
+ Redq9YBM+cqH1Y3wWEN9qZ8NY8OTMBfQ/9QFNmYnXusPWwR2EapqdTOVx
+ 1k9VacjmIlYgvzv0IWLKo+ooN8gQNyVN0+jid3x8G0RSNVR0dEX0WB9iB
+ m9HW7XoBXpysEnIq4iumGBBw84I47pfQrUePxNcz2PhzmOJxWyRe6sMP9
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hpQh3NeN
-Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
- 313ab1c0eccfbdf2e74a4ca77460ecc6fdb90822
+ header.a=rsa-sha256 header.s=Intel header.b=FdeI52g6
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ 7497316dffc64eaf1a624b2255e166b595ce715e
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,13 +99,13 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
-branch HEAD: 313ab1c0eccfbdf2e74a4ca77460ecc6fdb90822  ice: Don't dereference NULL in ice_gns_read error path
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: 7497316dffc64eaf1a624b2255e166b595ce715e  ice: Don't dereference NULL in ice_gns_read error path
 
 elapsed time: 722m
 
-configs tested: 40
-configs skipped: 2
+configs tested: 42
+configs skipped: 4
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -115,6 +115,7 @@ alpha                            allyesconfig   gcc
 alpha                               defconfig   gcc  
 arc                              allyesconfig   gcc  
 arc                                 defconfig   gcc  
+arc                  randconfig-r006-20230531   gcc  
 arm                              allmodconfig   gcc  
 arm                              allyesconfig   gcc  
 arm                                 defconfig   gcc  
@@ -145,6 +146,7 @@ s390                             allyesconfig   gcc
 s390                                defconfig   gcc  
 sh                               allmodconfig   gcc  
 sparc                               defconfig   gcc  
+sparc                randconfig-r005-20230531   gcc  
 um                             i386_defconfig   gcc  
 um                           x86_64_defconfig   gcc  
 x86_64                           allyesconfig   gcc  
