@@ -1,180 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BF32C77B73
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 01:30:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD9C7C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 04:46:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 884D3614CE;
-	Thu,  1 Jun 2023 01:30:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 884D3614CE
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2675483B6E;
+	Thu,  1 Jun 2023 04:46:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2675483B6E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685583004;
-	bh=zLBnZbcB268cVkmJK71wv+ofyycOyPEGbAE/nWlqXoY=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=HnvBJ5eKX6Ph2houkJM180HvWcLH1kVYkTTo2c6CSskpkHEg32adTFElEaE3mflLc
-	 PpmO5i4qSsSOahrTMZevIozZHcg4OlLXmMQHtPnt+vozKMkd8ankV2Rnan+sq650Y4
-	 JCmurjNAXofboJuDbIf3vSZ7XXCiFl9gSDCVTOfUrmtyxkXXbieKiCqAkEEJ7SB/uC
-	 TQ3874BJeKPHkZRAGWMl/TH//toibNRQvqfaDzsltINeuSwXiIUnJkLOKP5clFRGuw
-	 cRdoPVX3kmTDz95d23VQwi4aBX+GCUURto+LzeX7WL2X+BHMQtc8eL1DUMQK/UCY5k
-	 YUtyfqibw6DdQ==
+	s=default; t=1685594770;
+	bh=5Ng3waIxfwivu2MTTkiYqZqQRSA4wfI4tbf2cl+Jhjs=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=LMhbytmsLwxveEK3HPQSVBWFCAZEu+GmvAeGUzDxOdPOrsyEwEyosLan4KyiQzRo7
+	 D/1cl7kTbcv7kKI8a2NPGOsx7KmPeV1JDnJ3tc43LKu43nXWEn4eMEuXpco7y0UQMj
+	 0t6cF63lTlHMAl5nomWTbhX3NeW8htDlVuBW7aHlkPTtV1dBuZCsMFsqHzLdmrMXPG
+	 x2Z0cBLR7JH1vN0Wol+DNOBd5UcyHyoQGNYNQTeceUWz+wOwH2W1dCqYvF6qTmm3g2
+	 J5m5sChxdBh+mNPM55Ipxyc6U+ZRYUji2y2RhLZZr+Gzv+I2cAxM6mEqXH/ICztFM9
+	 m2gp30+RiZXAw==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id q9v02lz0jQ34; Thu,  1 Jun 2023 04:46:09 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1C4B683B72;
+	Thu,  1 Jun 2023 04:46:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1C4B683B72
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 4B9631BF59F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 04:46:08 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1E5DB614EC
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 04:46:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1E5DB614EC
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CSOkIQRi8O4J; Thu,  1 Jun 2023 01:30:03 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5FFC4614D8;
-	Thu,  1 Jun 2023 01:30:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5FFC4614D8
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 5CEBF1BF5A1
- for <intel-wired-lan@osuosl.org>; Thu,  1 Jun 2023 01:30:01 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3C73842096
- for <intel-wired-lan@osuosl.org>; Thu,  1 Jun 2023 01:30:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3C73842096
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qFaL-1gZOf9e for <intel-wired-lan@osuosl.org>;
- Thu,  1 Jun 2023 01:29:59 +0000 (UTC)
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 5KJToVpgwI4x for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  1 Jun 2023 04:46:03 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A703E4204E
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id A703E4204E
- for <intel-wired-lan@osuosl.org>; Thu,  1 Jun 2023 01:29:59 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10727"; a="335041876"
-X-IronPort-AV: E=Sophos;i="6.00,207,1681196400"; d="scan'208";a="335041876"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 31 May 2023 18:29:58 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BFD82614E4
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id BFD82614E4
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 04:46:02 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10727"; a="441809351"
+X-IronPort-AV: E=Sophos;i="6.00,209,1681196400"; d="scan'208";a="441809351"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 May 2023 21:46:02 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10727"; a="796937580"
-X-IronPort-AV: E=Sophos;i="6.00,207,1681196400"; d="scan'208";a="796937580"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
- by FMSMGA003.fm.intel.com with ESMTP; 31 May 2023 18:29:58 -0700
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 18:29:58 -0700
-Received: from orsmsx602.amr.corp.intel.com (10.22.229.15) by
- ORSMSX610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Wed, 31 May 2023 18:29:57 -0700
-Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
- orsmsx602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23 via Frontend Transport; Wed, 31 May 2023 18:29:57 -0700
-Received: from NAM04-MW2-obe.outbound.protection.outlook.com (104.47.73.177)
- by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.23; Wed, 31 May 2023 18:29:57 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=eSqQd4LhLZAOYMu4FrI9DvYN4+w5wtckdhWSoUJZEEy/rnJ4MxEIy/iLFKChFn+ILi2ZNbvaMLpA7/3fGrtfqbmuX9UMDMKXXNMhEO4VNK+okL+UXXU4i1ht6BIlR0Ma5KkDZdM1fagirxuGF1f43pWcncN6bgINbE0evfMwWoClHpm9IcLbd7wWZ8j2oNX7lCJ0OmIuI9fz1+GZM34RoN1/9HPW2ec4apRNfvHGpzl0GZOKsAXJ7A5gGWaAEdVsuGkCYXkF4Zslq30gVrK3sL/O6j9bvn5iUardDAZiYXx/b0ziU/bVJn2iSy7jFcZuu4AATrb339ULhHlMSFhL4g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=7QsNwkJOU41/IqxUT0czsYKfs8zy3hhDfG3rYbgCnI0=;
- b=I9LUyJJ20X2w+H2+QIQ0k3NAVNjxI+uSCyiYlIQFyHSsrCG/TeSxYOcGiLLWLHuWkYWJDvZXXQFvEdtSCJ0l67v5oJLtjqumbUnoeiKbvZ0uGUJjb/+DRZcYMCPoIPZ/bkeJtdYz5Whuw5JFMaKE4YR1HPcqEi+aZ4A2/H+kad4V4ORDs5NNzyrMZSEy0sMBz7ednqs2F0rzOi45WHomgCdQ2RISOk1qo4R5zGIU4m0gb6D1TiwzJUl2AV44YC+OIVsRsYPh8ULvM/z9bd78bwVfHIwHhAXPzAXfSVSDDSWzN8I5hm0t+QydmJ0bqpizI3eDZU3xY6prN8nAsiWMgA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from SJ1PR11MB6180.namprd11.prod.outlook.com (2603:10b6:a03:459::14)
- by SA0PR11MB4591.namprd11.prod.outlook.com (2603:10b6:806:9c::23)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6433.23; Thu, 1 Jun
- 2023 01:29:55 +0000
-Received: from SJ1PR11MB6180.namprd11.prod.outlook.com
- ([fe80::748:8cea:e1b3:88f8]) by SJ1PR11MB6180.namprd11.prod.outlook.com
- ([fe80::748:8cea:e1b3:88f8%7]) with mapi id 15.20.6433.024; Thu, 1 Jun 2023
- 01:29:55 +0000
-From: "Zulkifli, Muhammad Husaini" <muhammad.husaini.zulkifli@intel.com>
-To: "intel-wired-lan@osuosl.org" <intel-wired-lan@osuosl.org>
-Thread-Topic: [PATCH iwl-net v3] igc: Add TransmissionOverrun counter
-Thread-Index: AQHZlCSRIAJsOJ7ZBUaDwOZZweIG1q91J4pA
-Date: Thu, 1 Jun 2023 01:29:55 +0000
-Message-ID: <SJ1PR11MB6180DE3DB1A7F2B1C35D8CD6B8499@SJ1PR11MB6180.namprd11.prod.outlook.com>
-References: <20230601005925.30473-1-muhammad.husaini.zulkifli@intel.com>
-In-Reply-To: <20230601005925.30473-1-muhammad.husaini.zulkifli@intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SJ1PR11MB6180:EE_|SA0PR11MB4591:EE_
-x-ms-office365-filtering-correlation-id: e4785472-4875-4c39-206c-08db623fb4a6
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: DFoCK3WgHnI8Pzm13PNFQJWBY9jibe4Hpr0ZMJulfk2Rxyc44VIgnfh0pIIKICPoJuSmP305lB8nPKZgpabeFtzUUHYEt3SkC/uyjtwGtKPk8BWftwALhrLqnLrU7Q4jSKeORQFF9KJzF4BE2wBK8PooZv8GKGTss9qSPQR0GsGCi0snueHnlPbaYQwyilY0gKAfNAZDY/roJSDfwZzC9XBaXSmsV/n2daCR9bgIzmN4aQWcccYLAtD+rmC0BjaZEU/+klchrMlbrUfa5G10iL6eyBP7JqZfrR9otDDteBCeu44BZaWxNT3hefVs0sOqMy+4uiF4u/heiO6GNC3i3Uh2+uQkgUM5K5ec02VZ/rI8QYZX+hkTRhXk7Lutim24oRBQFTS9fPXxkPY4cXs60AlxB8SeZa3LFIy/KGEkwV7evZbyvByz1ZSCDWEZ3psJZwGvTNmfmqI/I1NVrn/eKiLFyIlQeoyBZG/T5+aqlKvIETXPKSBD/HeAutJBIeG1zziCqiF1UnuKB4qOHdq9RsX23RiQJIcUlALCkowaA+1xnK8z39GdkuPzHcFoopW8vBSBjzwRbWiNmCYYWe0zI3OVoBN7Wq5Uj2EM6MuY9lWZDu/1DB0QQZGiehl0W9F0
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:SJ1PR11MB6180.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(39860400002)(366004)(136003)(346002)(396003)(376002)(451199021)(26005)(41300700001)(38100700002)(7696005)(53546011)(9686003)(83380400001)(6506007)(186003)(478600001)(54906003)(8676002)(71200400001)(66476007)(82960400001)(64756008)(66556008)(76116006)(66446008)(4326008)(122000001)(66946007)(6916009)(55016003)(316002)(5660300002)(8936002)(86362001)(38070700005)(33656002)(52536014)(2906002);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?uoalfPqIa76qy9Ac70xuA91oPaH88tgddH0j2VzKZnMbW4MZtvf7ZwN3GRkD?=
- =?us-ascii?Q?7wxg9y8SuyfyNqHjUzyQjz/dxL0LrrydldgG+0yN1Z1E6gMGk0x0wLl/EkFo?=
- =?us-ascii?Q?LGbiAiSkU3qCOyUihIYc+Q+39zl2vmg0mNGPxXEw6FBm5849qDKF3SlflrYW?=
- =?us-ascii?Q?vwB1X4ZzibQMDILKtkxg/X4XlwhRb/fqAniB5iHjdz3DO/uqyg8LgH3kzxY9?=
- =?us-ascii?Q?wLF9QETBD/8TSU60XiFLZ75fLCqKtC3ooEb6IJPICXr7KSkvmjF5sQe60EHW?=
- =?us-ascii?Q?BGbvF6llga0Ad6AgCIn0VoyQzVX8gksY3QDXINmvSi16+WPN+3/SfrdR7O7f?=
- =?us-ascii?Q?o3Lq+rxX4ptgWjjD7KQPvXWCnIacc5OgzrOXGPnrsikAp6ytlwqSAGOJcMTh?=
- =?us-ascii?Q?rlXXADFsEXT5EUDKbTHZWAngWBWHkCwi1yHhZEDyXbTBu5MOi7KuPFlXNyKf?=
- =?us-ascii?Q?VthmBoJRbA/M4Uxp8IiJ8RhCW9fzZBQCOqQEaD/btmTsmSVhtfskiCTd9Ghp?=
- =?us-ascii?Q?OeJazg/dhSmy5tGWj3x03A093QuSw/N61eFMoNqLt/dcF0ZOZb/il8V+M2dO?=
- =?us-ascii?Q?qZ+xUJRxccYF0x/8BniwdAfrRazpISQgNQfZhnEpzHQ9XZcU2jKDzsZe7EnK?=
- =?us-ascii?Q?aW6UMYrROEc8si2u6v1S9Gpctyb57BdwXb2QaN2CZO4o7mNDH+nERSwtP8tT?=
- =?us-ascii?Q?BMIINVPvI/U6OOhcOvi+tZ7kdal805Skpqw0MnBL0+cOniZWVHmWtEDRU2SW?=
- =?us-ascii?Q?HLo7lQK6Xq5Ud/LAGo4I5HCHdc5KsZOuO2ecuxW1nfRguH1E6k4Aa4rkBPud?=
- =?us-ascii?Q?wUMLH+MOXqrLRG/hFK9jIBbAXRtz650VeCPzpORScQ1WOzQbRiwRBrmh+JJ+?=
- =?us-ascii?Q?ptPkgemBwq7n7p65ZgALvRtKz0JQ2aUef5xBNmq2xNJCt5W13Lg8mpVOk2cZ?=
- =?us-ascii?Q?edZb/baDi78xPuZbAzE+iZoAzXp/mNUl1GaEtdCLIkUi6OM7qvCRojvkZ6o8?=
- =?us-ascii?Q?j5ncey/ljIFY1RMok+X1hDGcR2fGFVeTcxZ0zzXW49LV5/2KRSY7g5z0q/sP?=
- =?us-ascii?Q?HoyHeCDb+HPlzPQ/MXjibaH6Ey/z5TlVwDcelQyImV4smb2TN8SCODLPYnpw?=
- =?us-ascii?Q?BT09uHDCpPTlcfeB4jxbRZmbyafYme5+FaFtfEpspzcmQwGO0TY93/8ePmkb?=
- =?us-ascii?Q?ufdnaFhfC4ad95kWgBwlTDTBwLU3iCV+HTFQm7zBiRlVU0y/7PNPbcn+OSsE?=
- =?us-ascii?Q?+7RkIlQcS4b2eXtO4Fszrj7nO1VxwGNanLcVN47Nf3yAEUh9xzWjEDnJuvHp?=
- =?us-ascii?Q?0G+Eb/9aKg+qlwp0uZvfWyjTdfmnB/ISmHX+cLFiC2SAeiHH/QForfQkzi7U?=
- =?us-ascii?Q?ZP1yXAB6rBCvouu0mIVD12xowvVafFigzIbsag9hUj0UbgllZqdttJxQkmLB?=
- =?us-ascii?Q?B2Cys5912q0Aab64tH3F1DS69QDvSTk6FvwS05gwuUAXX7hrF46xOSm1nlVR?=
- =?us-ascii?Q?dUQSnON7EundmHMCJ9fiQtvpkZWK40bGnKg9PuAoTlNu1Ph4HeC6sv4HCmBR?=
- =?us-ascii?Q?SEsQu0Y684ix/RuxX1PaYCUiSVBNm2ARdrSlf+s17zkiEM5qBRZeZKCDMuZl?=
- =?us-ascii?Q?M3ja8FF45weu92xv8VdXWz0=3D?=
-MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SJ1PR11MB6180.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e4785472-4875-4c39-206c-08db623fb4a6
-X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Jun 2023 01:29:55.6102 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: xRseaAciA6ferEOQJ7kiklbYwi/bn57QE0uFew68eJsMutlNbopORHJZulOWR1StKE1ISAwVvch3OjI+cWFfYvzeZpIJSzqErDq1dmPmPjeRWjAVSvJGbfC8naZRQ698
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR11MB4591
-X-OriginatorOrg: intel.com
+X-IronPort-AV: E=McAfee;i="6600,9927,10727"; a="777009917"
+X-IronPort-AV: E=Sophos;i="6.00,209,1681196400"; d="scan'208";a="777009917"
+Received: from lkp-server01.sh.intel.com (HELO fb1ced2c09fb) ([10.239.97.150])
+ by fmsmga004.fm.intel.com with ESMTP; 31 May 2023 21:46:01 -0700
+Received: from kbuild by fb1ced2c09fb with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1q4aCG-0001ut-22
+ for intel-wired-lan@lists.osuosl.org; Thu, 01 Jun 2023 04:46:00 +0000
+Date: Thu, 01 Jun 2023 12:45:24 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <20230601044524.PgBkW%lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1685582999; x=1717118999;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=x9oiZ0ZMbgbRlHDL32H8V16fsWeHasupz9K9uX7Tpg8=;
- b=VKoZ9tjqNwF1RuHCljrfl+juWNgeMenQT4LpC4+N8VfVYXw9UeeJ/21v
- F8PhkTmQnRzQngwQnJXda2gM9IzC13hvIWh8knYjJzu/XbiEh9OrrDY+O
- xF46PglfJtJybBWUB/+zcklQWLj/77ekUGRJxfLhOCiyEQcXOg6wlb2H/
- VRsgjTwgbzYqDFeP+SXhCPHJfQfW8QjbySKEe3TQuWfj8MaVK5BFggsfO
- S2v/AVhsnxxn4PvvMoBiovBnFp8xy4utQEdguHTz2AQgjAe57uBaoZ9Qq
- lLa/6O4fTRPbPhJjEEPh8rUltNyBnY1mCESZYldyUuv8wFIl2fPlYspIu
- w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1685594762; x=1717130762;
+ h=date:from:to:subject:message-id;
+ bh=HovV/OmFozHfBspeDBuKMUuYBLcXXxAQRXT8l2cMEgw=;
+ b=dYDmn9DCrDo4l+Tq8H29HoZs4uukLt/7YZ1hpO9wBMU5jBfk9Uc73pTJ
+ 6E6mhzNZxureuOn2PGCEWnJKKjPz/RaetfYUfnS1/OrkQe651da7K7EQd
+ LVToJYwsHwUYCORHhkpnb27cRbo1kjJuHAJ1H6UlJDHq6TvGMDLxRLylE
+ Od+Zkp9Ro3zmSvYPC2SVkHvfOwtfO39YpLSn+18+UtjTibvR/xhqnM9/9
+ wZlEJWLxIJ9mszu8YvM3zZQduBLEAKwBoua4wdbnNYbOzx+1ARFC8t61W
+ j6jihESR0btISjS2GpVYssemHuHRKP0k03eUSR1ODxDKifBVI7SjzRvOC
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=VKoZ9tjq
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3] igc: Add
- TransmissionOverrun counter
+ header.a=rsa-sha256 header.s=Intel header.b=dYDmn9DC
+Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
+ e1dea1f7e9bce01737c06c955c2dc7d06ddbe56f
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -187,203 +93,150 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "tee.min.tan@linux.intel.com" <tee.min.tan@linux.intel.com>,
- "vladimir.oltean@nxp.com" <vladimir.oltean@nxp.com>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+branch HEAD: e1dea1f7e9bce01737c06c955c2dc7d06ddbe56f  ice: Don't dereference NULL in ice_gns_read error path
 
-> -----Original Message-----
-> From: Zulkifli, Muhammad Husaini <muhammad.husaini.zulkifli@intel.com>
-> Sent: Thursday, 1 June, 2023 8:59 AM
-> To: intel-wired-lan@osuosl.org
-> Cc: Gomes, Vinicius <vinicius.gomes@intel.com>; Zulkifli, Muhammad
-> Husaini <muhammad.husaini.zulkifli@intel.com>; Neftin, Sasha
-> <sasha.neftin@intel.com>; tee.min.tan@linux.intel.com;
-> vladimir.oltean@nxp.com; naamax.meir@linux.intel.com; Nguyen, Anthony L
-> <anthony.l.nguyen@intel.com>
-> Subject: [PATCH iwl-net v3] igc: Add TransmissionOverrun counter
+elapsed time: 723m
 
-Sorry I think I accidentally copy paste wrong subject prefix when generate
-this V3 patch. It should go to "net-next". My bad.
+configs tested: 122
+configs skipped: 4
 
-> 
-> Add TransmissionOverrun as per defined by IEEE 802.1Q Bridges.
-> TransmissionOverrun counter shall be incremented if the implementation
-> detects that a frame from a given queue is still being transmitted by the MAC
-> when that gate-close event for that queue occurs.
-> 
-> This counter is utilised by the Certification conformance test to inform the
-> user application whether any packets are currently being transmitted on a
-> particular queue during a gate-close event.
-> 
-> Intel Discrete I225/I226 have a mechanism to not transmit a packets if the
-> gate open time is insufficient for the packet transmission by setting the
-> Strict_End bit. Thus, it is expected for this counter to be always zero at this
-> moment.
-> 
-> Inspired from enetc_taprio_stats() and enetc_taprio_tc_stats(), now driver
-> also report the tx_overruns counter per traffic class.
-> 
-> User can get this counter by using below command:
-> 1) ethtool -S <interface> | grep Transmit_overruns
-> 2) tc -s qdisc show dev <interface> root
-> 3) tc -s class show dev <interface>
-> 
-> Signed-off-by: Muhammad Husaini Zulkifli
-> <muhammad.husaini.zulkifli@intel.com>
-> 
-> ---
-> V2 -> V3: Included new infra xstats to report back the counter to qdisc
-> V1 -> V2: Change per-queue stats. Driver still remains adding the
-> 	  statistic independently.
-> ---
-> ---
->  drivers/net/ethernet/intel/igc/igc.h         |  1 +
->  drivers/net/ethernet/intel/igc/igc_ethtool.c |  4 ++-
->  drivers/net/ethernet/intel/igc/igc_main.c    | 38 ++++++++++++++++++++
->  drivers/net/ethernet/intel/igc/igc_tsn.c     | 10 ++++++
->  4 files changed, 52 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc.h
-> b/drivers/net/ethernet/intel/igc/igc.h
-> index cb5751fab03c9..2a13e62b75d60 100644
-> --- a/drivers/net/ethernet/intel/igc/igc.h
-> +++ b/drivers/net/ethernet/intel/igc/igc.h
-> @@ -46,6 +46,7 @@ struct igc_tx_queue_stats {
->  	u64 bytes;
->  	u64 restart_queue;
->  	u64 restart_queue2;
-> +	u64 tx_overruns;
->  };
-> 
->  struct igc_rx_queue_stats {
-> diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> index 0e2cb00622d1a..6a10ae1474fc5 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> @@ -112,7 +112,7 @@ static const char
-> igc_gstrings_test[][ETH_GSTRING_LEN] = {
->  	(sizeof(igc_gstrings_net_stats) / sizeof(struct igc_stats))  #define
-> IGC_RX_QUEUE_STATS_LEN \
->  	(sizeof(struct igc_rx_queue_stats) / sizeof(u64)) -#define
-> IGC_TX_QUEUE_STATS_LEN 3 /* packets, bytes, restart_queue */
-> +#define IGC_TX_QUEUE_STATS_LEN 4 /* packets, bytes, restart_queue,
-> +tx_overruns */
->  #define IGC_QUEUE_STATS_LEN \
->  	((((struct igc_adapter *)netdev_priv(netdev))->num_rx_queues * \
->  	  IGC_RX_QUEUE_STATS_LEN) + \
-> @@ -781,6 +781,7 @@ static void igc_ethtool_get_strings(struct net_device
-> *netdev, u32 stringset,
->  			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
->  			ethtool_sprintf(&p, "tx_queue_%u_bytes", i);
->  			ethtool_sprintf(&p, "tx_queue_%u_restart", i);
-> +			ethtool_sprintf(&p,
-> "tx_queue_%u_Transmit_overruns", i);
->  		}
->  		for (i = 0; i < adapter->num_rx_queues; i++) {
->  			ethtool_sprintf(&p, "rx_queue_%u_packets", i); @@ -
-> 850,6 +851,7 @@ static void igc_ethtool_get_stats(struct net_device
-> *netdev,
->  			restart2  = ring->tx_stats.restart_queue2;
->  		} while (u64_stats_fetch_retry(&ring->tx_syncp2, start));
->  		data[i + 2] += restart2;
-> +		data[i + 3] = ring->tx_stats.tx_overruns;
-> 
->  		i += IGC_TX_QUEUE_STATS_LEN;
->  	}
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c
-> b/drivers/net/ethernet/intel/igc/igc_main.c
-> index aa9f23b7f0c1a..056925a7bcdd8 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -6109,11 +6109,43 @@ static int igc_tsn_clear_schedule(struct
-> igc_adapter *adapter)
->  		ring->start_time = 0;
->  		ring->end_time = NSEC_PER_SEC;
->  		ring->max_sdu = 0;
-> +		ring->tx_stats.tx_overruns = 0;
->  	}
-> 
->  	return 0;
->  }
-> 
-> +static void igc_taprio_stats(struct net_device *dev,
-> +			     struct tc_taprio_qopt_stats *stats) {
-> +	struct igc_adapter *adapter = netdev_priv(dev);
-> +	u64 tx_overruns = 0;
-> +	int i;
-> +
-> +	for (i = 0; i < adapter->num_tx_queues; i++) {
-> +		struct igc_ring *tx_ring = adapter->tx_ring[i];
-> +
-> +		tx_overruns += tx_ring->tx_stats.tx_overruns;
-> +	}
-> +
-> +	stats->tx_overruns = tx_overruns;
-> +}
-> +
-> +static void igc_taprio_tc_stats(struct net_device *dev,
-> +				struct tc_taprio_qopt_tc_stats *tc_stats) {
-> +	struct tc_taprio_qopt_stats *stats = &tc_stats->stats;
-> +	struct igc_adapter *adapter = netdev_priv(dev);
-> +	struct igc_ring *tx_ring;
-> +	int tc = tc_stats->tc;
-> +	int txq;
-> +
-> +	txq = dev->tc_to_txq[tc].offset;
-> +	tx_ring = adapter->tx_ring[txq];
-> +
-> +	stats->tx_overruns = tx_ring->tx_stats.tx_overruns; }
-> +
->  static int igc_save_qbv_schedule(struct igc_adapter *adapter,
->  				 struct tc_taprio_qopt_offload *qopt)  { @@ -
-> 6130,6 +6162,12 @@ static int igc_save_qbv_schedule(struct igc_adapter
-> *adapter,
->  	case TAPRIO_CMD_DESTROY:
->  		adapter->qbv_enable = false;
->  		break;
-> +	case TAPRIO_CMD_STATS:
-> +		igc_taprio_stats(adapter->netdev, &qopt->stats);
-> +		return 0;
-> +	case TAPRIO_CMD_TC_STATS:
-> +		igc_taprio_tc_stats(adapter->netdev, &qopt->tc_stats);
-> +		return 0;
->  	default:
->  		return -EOPNOTSUPP;
->  	}
-> diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c
-> b/drivers/net/ethernet/intel/igc/igc_tsn.c
-> index 6b299b83e7ef2..342530d11aae9 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_tsn.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-> @@ -136,6 +136,16 @@ static int igc_tsn_enable_offload(struct igc_adapter
-> *adapter)
->  		txqctl |= IGC_TXQCTL_STRICT_CYCLE |
->  			IGC_TXQCTL_STRICT_END;
-> 
-> +		/* If it notices that a frame from a particular queue is still
-> +		 * being transmitted by MAC, tx_overruns shall be increased.
-> +		 * But currently driver setting Strict_End bit which indicate
-> +		 * that packet from the queue can be transmitted only if they
-> +		 * are expected to be completed before the windows of the
-> +		 * queue is ended. Thus, this counter will always be zero
-> when
-> +		 * Strict_End is set.
-> +		 */
-> +		ring->tx_stats.tx_overruns  = 0;
-> +
->  		if (ring->launchtime_enable)
->  			txqctl |= IGC_TXQCTL_QUEUE_MODE_LAUNCHT;
-> 
-> --
-> 2.17.1
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r014-20230531   gcc  
+alpha                randconfig-r036-20230531   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r022-20230531   gcc  
+arc                  randconfig-r043-20230531   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                  randconfig-r046-20230531   gcc  
+arm64                            allyesconfig   gcc  
+arm64        buildonly-randconfig-r002-20230531   gcc  
+arm64                               defconfig   gcc  
+arm64                randconfig-r024-20230531   clang
+arm64                randconfig-r025-20230531   clang
+arm64                randconfig-r026-20230531   clang
+csky         buildonly-randconfig-r003-20230531   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r006-20230531   gcc  
+csky                 randconfig-r031-20230531   gcc  
+hexagon              randconfig-r001-20230531   clang
+hexagon              randconfig-r041-20230531   clang
+hexagon              randconfig-r045-20230531   clang
+i386                             allyesconfig   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                 randconfig-i001-20230531   gcc  
+i386                 randconfig-i002-20230531   gcc  
+i386                 randconfig-i003-20230531   gcc  
+i386                 randconfig-i004-20230531   gcc  
+i386                 randconfig-i005-20230531   gcc  
+i386                 randconfig-i006-20230531   gcc  
+i386                 randconfig-i011-20230531   clang
+i386                 randconfig-i012-20230531   clang
+i386                 randconfig-i013-20230531   clang
+i386                 randconfig-i014-20230531   clang
+i386                 randconfig-i015-20230531   clang
+i386                 randconfig-i016-20230531   clang
+i386                 randconfig-i051-20230531   gcc  
+i386                 randconfig-i052-20230531   gcc  
+i386                 randconfig-i053-20230531   gcc  
+i386                 randconfig-i054-20230531   gcc  
+i386                 randconfig-i055-20230531   gcc  
+i386                 randconfig-i056-20230531   gcc  
+i386                 randconfig-i061-20230531   gcc  
+i386                 randconfig-i062-20230531   gcc  
+i386                 randconfig-i063-20230531   gcc  
+i386                 randconfig-i064-20230531   gcc  
+i386                 randconfig-i065-20230531   gcc  
+i386                 randconfig-i066-20230531   gcc  
+i386                 randconfig-r034-20230531   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+m68k                             allmodconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                 randconfig-r003-20230531   gcc  
+m68k                 randconfig-r016-20230531   gcc  
+m68k                 randconfig-r021-20230531   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                 randconfig-r004-20230531   clang
+nios2                               defconfig   gcc  
+nios2                randconfig-r002-20230531   gcc  
+parisc                              defconfig   gcc  
+parisc               randconfig-r023-20230531   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc              randconfig-r035-20230531   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r005-20230531   gcc  
+riscv                randconfig-r032-20230531   gcc  
+riscv                randconfig-r042-20230531   clang
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r015-20230531   clang
+s390                 randconfig-r044-20230531   clang
+sh                               allmodconfig   gcc  
+sh           buildonly-randconfig-r001-20230531   gcc  
+sh           buildonly-randconfig-r004-20230531   gcc  
+sparc        buildonly-randconfig-r005-20230531   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r011-20230531   gcc  
+sparc                randconfig-r012-20230531   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-r006-20230531   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-a001-20230531   gcc  
+x86_64               randconfig-a002-20230531   gcc  
+x86_64               randconfig-a003-20230531   gcc  
+x86_64               randconfig-a004-20230531   gcc  
+x86_64               randconfig-a005-20230531   gcc  
+x86_64               randconfig-a006-20230531   gcc  
+x86_64               randconfig-a011-20230531   clang
+x86_64               randconfig-a012-20230531   clang
+x86_64               randconfig-a013-20230531   clang
+x86_64               randconfig-a014-20230531   clang
+x86_64               randconfig-a015-20230531   clang
+x86_64               randconfig-a016-20230531   clang
+x86_64               randconfig-x051-20230531   clang
+x86_64               randconfig-x052-20230531   clang
+x86_64               randconfig-x053-20230531   clang
+x86_64               randconfig-x054-20230531   clang
+x86_64               randconfig-x055-20230531   clang
+x86_64               randconfig-x056-20230531   clang
+x86_64               randconfig-x061-20230531   clang
+x86_64               randconfig-x062-20230531   clang
+x86_64               randconfig-x063-20230531   clang
+x86_64               randconfig-x064-20230531   clang
+x86_64               randconfig-x065-20230531   clang
+x86_64               randconfig-x066-20230531   clang
+x86_64                               rhel-8.3   gcc  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
