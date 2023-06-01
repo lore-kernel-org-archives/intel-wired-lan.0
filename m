@@ -4,143 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 646BEC77B73
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 31 May 2023 22:01:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFB1CC77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 01:01:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DB96D613E5;
-	Wed, 31 May 2023 22:01:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DB96D613E5
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5CE1561317;
+	Thu,  1 Jun 2023 01:01:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5CE1561317
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685570482;
-	bh=vATi4T4yeDWZqqL9hYgjLAlzDadVZ7dJMPpevaQ3K8E=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=5YLRXtrSPNGa09CmJXPTw4dy3azD2SczZIpc4CxrVxkMLrJ5OKqnXRfh9FWuMxI9J
-	 on6PO11bkJhQKP1y2ZOlj8YrcbnP0QqTgxEJRxtJWHvL2LJPkh7hnMopxygzK/uBNJ
-	 kTiu94fl9QNllbExxmfHCBn2tfkmeN8U+IVY+/3jcboYLzKL7FYIo13dxz4Kr5dtDk
-	 2hQAGuG+Nuv/7oVzPHS716ZRDhi6Qg/Cr65bviZrJi7ReR9629PBJcaoMgTKeHQ9sL
-	 RjJx53uTYK6WA2kdy4+waQHOOexVOiPC8hyUnor9eTWdZWR88jUkdsUZDGgJqPP0pL
-	 BKWRjsGzmWYZg==
+	s=default; t=1685581270;
+	bh=nnYaf6IiSYBkmAcBM4LeBIUxIqlI8uyeSoab2Le19LM=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=K142gQu02QC1c293l8qiVZXMylqsgsUsvD27+jF5QoSnFMTkqwO5Baf2IsZ2yyIpq
+	 2ai8cm5q4lKhRsdC0gYwHKXIs+PiQ5D+XTU+8WTdQtd10pv4lhutd9lDO4fmNIiFlG
+	 FHmu/eTzp5CSDJdowQ7nhCA5MgUka9r3xZVJRkL4oLhbFOn9msXgaEOmGm9KrrMwEk
+	 Q9Vs6qgXza/gUaDreMXrDNRygFJ3/ayuR1uCQjh+bwNKjfEX2eEPBjCASsVbhksFij
+	 NuMWHqhpyhvJuLuqoBu/XezU0ERLy1HduEZcCDdhhYdEMddJTVta7MhMpFXBZnvp9X
+	 IETrOZ/IU+mKg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id gVxARlCoOdpR; Wed, 31 May 2023 22:01:22 +0000 (UTC)
+	with ESMTP id reC8ik5XKr3P; Thu,  1 Jun 2023 01:01:09 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EBA5A61492;
-	Wed, 31 May 2023 22:01:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EBA5A61492
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B38871BF404
- for <intel-wired-lan@lists.osuosl.org>; Wed, 31 May 2023 22:01:20 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 39227614B9;
+	Thu,  1 Jun 2023 01:01:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 39227614B9
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id B820F1BF28E
+ for <intel-wired-lan@osuosl.org>; Thu,  1 Jun 2023 01:01:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 8AD6861492
- for <intel-wired-lan@lists.osuosl.org>; Wed, 31 May 2023 22:01:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8AD6861492
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9CFF583299
+ for <intel-wired-lan@osuosl.org>; Thu,  1 Jun 2023 01:01:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9CFF583299
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id kSNgXogKGVa8 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 31 May 2023 22:01:19 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A9907613E5
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam11on2100.outbound.protection.outlook.com [40.107.220.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id A9907613E5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 31 May 2023 22:01:19 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=CqfpySo9wceC556s3JRSwBNJTY74lpH27qUVCC6bQ5IxwTSv1C+2F7Rd3yUPNnwzMtyId0P1xld9TYD6EJvaWgAg+oGLnpNH47Bin1eg3RBVXPZj9PwtVmKgeE4KFzy9mreM39v6FmoLBuPdqslX8LM1fUPiiY0wXXHwLwNpafHLXbiMqvDYyqhNUCX51EeqLTIXZIQYJpg1TVbZvy5gGXSqQWvqZxLSwpKcnk1LWG4abZNI1Ek7gJ2eDLPUgqQ5Cej+NpN+xGUXbiq0czka/JVwdBDuBCwse5QQXwpIFI4GljJHox/HvAd5X+1p5Kp6ZslUZ7MqDBIBm16P9KCR0w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=EAiNwAA6svvJiDLfKU1x5DD/KClJ2bHwYMPjbbGKD5w=;
- b=OyDeZyrR6xmAQ44Q7bOnpSD8TuB1VmB1pWtw4IGderrAoDJQEfI4ZPn0oo1FOyFU0G9BiwKr1Gqkp2CS10JAbmjbf3o8o/OwFkO3XVZvkJ6xA5CG0c9hq1v11kZJlP9CiGxmmKTzgU2/3eCWciOhpkwLSZVisLW/qpNUd8WFZyyTD1R3QVX6EJd2Mn1uou/Gkh49NQGM/ehjMpwo1VmTLbijlmhko+0MW0ZzpELJlbdzeGXP+d1pY/EL+l6VaJ2XYz2Aj0iSU688h9+qrNteWLmZLwuV0qK60Ra9ROWS6dHzgrPPYzZC+frZ3qtYD4hEpJ+WYil62yxb4YotJ0RH0A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=corigine.com; dmarc=pass action=none header.from=corigine.com;
- dkim=pass header.d=corigine.com; arc=none
-Received: from PH0PR13MB4842.namprd13.prod.outlook.com (2603:10b6:510:78::6)
- by BN0PR13MB5214.namprd13.prod.outlook.com (2603:10b6:408:156::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6433.23; Wed, 31 May
- 2023 22:01:17 +0000
-Received: from PH0PR13MB4842.namprd13.prod.outlook.com
- ([fe80::5e55:9a39:751f:55f6]) by PH0PR13MB4842.namprd13.prod.outlook.com
- ([fe80::5e55:9a39:751f:55f6%3]) with mapi id 15.20.6433.024; Wed, 31 May 2023
- 22:01:17 +0000
-Date: Thu, 1 Jun 2023 00:01:11 +0200
-From: Simon Horman <simon.horman@corigine.com>
-To: Yuezhen Luan <eggcar.luan@gmail.com>
-Message-ID: <ZHfDp21V3zy9kuE3@corigine.com>
-References: <20230531090805.3959-1-eggcar.luan@gmail.com>
-Content-Disposition: inline
-In-Reply-To: <20230531090805.3959-1-eggcar.luan@gmail.com>
-X-ClientProxiedBy: AM9P195CA0027.EURP195.PROD.OUTLOOK.COM
- (2603:10a6:20b:21f::32) To PH0PR13MB4842.namprd13.prod.outlook.com
- (2603:10b6:510:78::6)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR13MB4842:EE_|BN0PR13MB5214:EE_
-X-MS-Office365-Filtering-Correlation-Id: 739b1169-852f-4cf4-4aa2-08db62228ef0
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 8nblcmxLaoAazcdRfMcZAN7lg1paHqmZDXAMVvwi992flRK4tvtYLXJtTepR8l3MtOFwzJd6TX2eRN9NKhtiYloc3PZG4pW6Qj4fiOA78PagPWh6D9ClBJahPMH/72uFS28vQQg8VFqFMGMsE09vqz5lPo+xsnD5mEAowKn0U3xrwqQRzRcfzsOv5/QEH/4KzyGfB24IHakWVvl4/PgwLv+DaiDZpXsRy1pua3JPZmyemds0idtK/zaOdwcF4KPhjW1I6riY7YxsV5eeUXaVksKbcvBwSmrzZ1VpYHtXIZ3LAmMTcgYfBNMkKM+KLpzTliz88EqXo0tSSZXDBMok4JO3TZGHwHrflcNv0TXEW5ny8uLkwCEs08/SmEFJmd7CW2W+xG1SrdvSh6w3Z+mv08bd+CguLbRwAit16iRLuzM0ifja+3htCMBq+FUlTGXhC9rCtInAjKwlUCjZdJ+O8aoaIXg8+MOwzoXXUwRIEjumPmwxO8+iBp6y5ys82cCT/WlKZTyKA6H9F8uh2hO2e4rzmX62eGY3NihMTR/vj8OtWxQ6uOIzrUGP/tKfSmr5
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:PH0PR13MB4842.namprd13.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(4636009)(39840400004)(366004)(136003)(346002)(396003)(376002)(451199021)(38100700002)(4326008)(478600001)(66476007)(66556008)(66946007)(6916009)(6666004)(36756003)(41300700001)(316002)(86362001)(6506007)(6512007)(26005)(83380400001)(2616005)(186003)(6486002)(2906002)(7416002)(8936002)(8676002)(5660300002)(44832011);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?0/ljMDulfNIoFy5cXdK4e73fiUihiyqfHAuxVLdvbmN3p0EZNIEnqZqJkmgV?=
- =?us-ascii?Q?SWdpFPTXGWML+BWi37cxUp1BiIgDgD7E/J33PcgcKrUp4ZHmz5BOLSW+cNzs?=
- =?us-ascii?Q?Y7NzZEO+5nSvIMinMHgQkMvPs2QvUw1kfqXF/GqcSTjxT5BeF6SCbpMULGI0?=
- =?us-ascii?Q?4iDz7o/pswolVzm2n/Ib2wFDO4A/dxKtywnpZP83tGfUISQ1K1l7TAV+5f5N?=
- =?us-ascii?Q?FhPZdVnHJxMNqo5BIZiXbb2ymMVPAQNsiCiHTuzOOHQoU9siTqXoIOdRzjsL?=
- =?us-ascii?Q?Cj57YVTDIANmGtj4tlFRg7R/YamjkTs6un/cvfUdUNcABj4cOzTMlm8Ppau4?=
- =?us-ascii?Q?hx8JAE2hd7qOiThDFe1sQSXpdCGs9UPvfA5HjG40hkbpfcJQhuC23LbO+ZOV?=
- =?us-ascii?Q?cmgal5zRwETtIeANMFt9iEJTqQngJWrQOE6pIddfonwp63bAcNb54oVDrjAB?=
- =?us-ascii?Q?UJ/THbZH+L8SDB8ZAexS6pryBqiRCQjconvm/R7rZgWobX+eSuZ1A4AwP01C?=
- =?us-ascii?Q?SBzgi34QPXGftk4YD9V/ReVdvmTCQ31zFJcV6J/myXKWrlfhBCZYpJjy5qsw?=
- =?us-ascii?Q?B/PKfV8Lg0dc6QChkyorrdKzYd/+uDg+oDmiuQ+kblEmZES1M1X0QJpB9XOY?=
- =?us-ascii?Q?GXfiw1Ec+xrsU2Ssz6hvcanRq21hghWU5JxNQu++JxALiWWgW8CSh3FiqMfg?=
- =?us-ascii?Q?cYplSKvfKTuolQJ5pbGKqhqT1oABh4p+DUTyGNIfPo2/jlFrwaaNj44p3jKp?=
- =?us-ascii?Q?baYm3QF/qHBildi3UdTmLXKB/fSk9fQgWH1p5AAjFXfpMwKIqcUE8yQ3dNLY?=
- =?us-ascii?Q?56ATUm226Kg3CKimv/yxWFRgVfrr0U6bwoy2lGDEzAa0lDsgHCEt97bwUyra?=
- =?us-ascii?Q?aGEyBgOMgGo7m+scBRVeh0P1+aIhD7MpnKRSLMCbNhqeZg3C/1rM7JcdUdSt?=
- =?us-ascii?Q?G1dtN3cMcW8z+JmvHFGn98oweaI4DG4UINlKouRf003d4fR/yK55Cz0k/AaD?=
- =?us-ascii?Q?LULbK51TCZnJ2nEGS7YQZn01TxNlyW3IUzz70vPyD9L5w8UicD1QpoBr03B2?=
- =?us-ascii?Q?GgHZTC5PCekYPQwQUmEI6NkXaJ9PA7JcI8Jw55/QDjFFtHweeMWiTlNwbFe/?=
- =?us-ascii?Q?dmUvVAonpi3dZZeEJuvN1Rh3VB45kq3lZDsGLA+TkNhViS2lguD48zeq+AV+?=
- =?us-ascii?Q?4i9fYZ3jrkvsj3x19YLvIlOS3DefpgVg724NclIFWxNekygJX8MZgpvzK2J3?=
- =?us-ascii?Q?Utdo6EZfC1Qx/FSeczD3NSZDUU921mOhmKoE+UoEIwBPOKLGCWe326Cchxa8?=
- =?us-ascii?Q?mmRHKazLLzaTUd9mVNcs6RIyBBQUDBa6UzsJuEaWoyskaMsQ5Iz0afipzwBs?=
- =?us-ascii?Q?AmC3ZL9EI4mpVYsAV5Fj4kFSwkZOp/DdsnCs9EOvLVpmPEgAyHYC9qkpgY8Y?=
- =?us-ascii?Q?N2Ligxb3L4T6gffZ6Ci8uiG+pyd/Gq0pysumyL2coI9gBzDmUGE9Spds5P85?=
- =?us-ascii?Q?4sap2RBXVQ0TvpgT1DB7peWNi7IFr5PUoAFWJ8blhgrYAao32aO3hIPF5yaZ?=
- =?us-ascii?Q?vnEi6PMs6+/Vp1Tz9YaH+hixg3t+GSFGzsXU7jaCXo6Qo/np2cOwtF3aaQPJ?=
- =?us-ascii?Q?EQ=3D=3D?=
-X-OriginatorOrg: corigine.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 739b1169-852f-4cf4-4aa2-08db62228ef0
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR13MB4842.namprd13.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 May 2023 22:01:17.1070 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: fe128f2c-073b-4c20-818e-7246a585940c
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: wPAF/GSl0z2z31qaaDcUIPJfEa6NUez69mi4WLhgIJd6EyxfW/+Pv5NfODyXEbq7WqvcfOYo7ioMUry5dj4sVMALOha0KjWCmT/wVRqY9I0=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN0PR13MB5214
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=corigine.onmicrosoft.com; s=selector2-corigine-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=EAiNwAA6svvJiDLfKU1x5DD/KClJ2bHwYMPjbbGKD5w=;
- b=X8wmicsFFju6ubwA0k52BvfsozN1Gil1sKP8tpIG5+u5rAAtwVy/b7bxFK3ZjrLm6luVSrdpmIS55fMjudNjz2eD9hjmle5cJpT9+aj071Ntfi9efGSNCEooZHfMCI2CYWmWzNAcf4kEnzy6LErAD3Cd3bWSrdo+wHRGmm+WVj4=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key) header.d=corigine.onmicrosoft.com
- header.i=@corigine.onmicrosoft.com header.a=rsa-sha256
- header.s=selector2-corigine-onmicrosoft-com header.b=X8wmicsF
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=corigine.com;
-Subject: Re: [Intel-wired-lan] [PATCH] igb: Fix extts capture value format
- for 82580/i354/i350
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id veeeK84hhwxJ for <intel-wired-lan@osuosl.org>;
+ Thu,  1 Jun 2023 01:01:05 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 51A6183281
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 51A6183281
+ for <intel-wired-lan@osuosl.org>; Thu,  1 Jun 2023 01:01:05 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10727"; a="383679343"
+X-IronPort-AV: E=Sophos;i="6.00,207,1681196400"; d="scan'208";a="383679343"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 31 May 2023 18:01:03 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10727"; a="710278635"
+X-IronPort-AV: E=Sophos;i="6.00,207,1681196400"; d="scan'208";a="710278635"
+Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
+ by fmsmga007.fm.intel.com with ESMTP; 31 May 2023 18:01:01 -0700
+From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+To: intel-wired-lan@osuosl.org
+Date: Thu,  1 Jun 2023 08:59:25 +0800
+Message-Id: <20230601005925.30473-1-muhammad.husaini.zulkifli@intel.com>
+X-Mailer: git-send-email 2.17.1
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1685581265; x=1717117265;
+ h=from:to:cc:subject:date:message-id;
+ bh=4e2KXMdeR17YOPXY8nJGQ0DWekewqCAZvUVDGTcFy3Q=;
+ b=ZRyW+2NWjirCeHn98YER7fTaynYBwnWgW4QCH40EvILjZ0i3rxVO1L11
+ XJGv7jfsLXFyUnoa1rtms2Z87GqAO4P7PESl6Q66PoFhqi3HdLQMt36o1
+ JjaP5cF5so3c3sBdzNmUx6oYYeN8H5OPZGOBW5ls62UOquKHkmqLCUdJp
+ UfArcB35i1WwI3cVjUS2Hd0gAJscE2oXEtvQGdTTglOGmWJB/GmoYKHL0
+ PCYwGaGEhigufzQvvvs9VdKCwU6ytQW6q4Q7K/CQCPUkuqrUb2XWKw7j7
+ +he/ayKGYnGadN0dqaGITw9ojtuIpFvFpm5p6gpKOgJdOyLrr9iPUs+7s
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=ZRyW+2NW
+Subject: [Intel-wired-lan] [PATCH iwl-net v3] igc: Add TransmissionOverrun
+ counter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -153,62 +90,175 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
- linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
- netdev@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
- davem@davemloft.net
+Cc: vladimir.oltean@nxp.com, anthony.l.nguyen@intel.com,
+ tee.min.tan@linux.intel.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, May 31, 2023 at 09:08:05AM +0000, Yuezhen Luan wrote:
-> 82580/i354/i350 features circle-counter-like timestamp registers
-> that are different with newer i210. The EXTTS capture value in
-> AUXTSMPx should be converted from raw circle counter value to
-> timestamp value in resolution of 1 nanosec by the driver.
-> 
-> Signed-off-by: Yuezhen Luan <eggcar.luan@gmail.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 58872a4c2..187daa8ef 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -6947,6 +6947,7 @@ static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
->  	struct e1000_hw *hw = &adapter->hw;
->  	struct ptp_clock_event event;
->  	struct timespec64 ts;
-> +	unsigned long flags;
->  
->  	if (pin < 0 || pin >= IGB_N_SDP)
->  		return;
-> @@ -6954,9 +6955,12 @@ static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
->  	if (hw->mac.type == e1000_82580 ||
->  	    hw->mac.type == e1000_i354 ||
->  	    hw->mac.type == e1000_i350) {
-> -		s64 ns = rd32(auxstmpl);
-> +		u64 ns = rd32(auxstmpl);
->  
-> -		ns += ((s64)(rd32(auxstmph) & 0xFF)) << 32;
-> +		ns += ((u64)(rd32(auxstmph) & 0xFF)) << 32;
-> +		spin_lock_irqsave(&adapter->tc, ns);
-> +		ns = timecounter_cyc2time(&adapter->tc, ns);
-> +		spin_unlock_irqrestore(&adapter->tc, ns);
+Add TransmissionOverrun as per defined by IEEE 802.1Q Bridges.
+TransmissionOverrun counter shall be incremented if the implementation
+detects that a frame from a given queue is still being transmitted by
+the MAC when that gate-close event for that queue occurs.
 
-Hi Yuezhen Luan,
+This counter is utilised by the Certification conformance test to
+inform the user application whether any packets are currently being
+transmitted on a particular queue during a gate-close event.
 
-unfortunately this doesn't compile because the arguments to
-spin_lock_irqsave/spin_unlock_irqrestore are wrong.
+Intel Discrete I225/I226 have a mechanism to not transmit a packets if
+the gate open time is insufficient for the packet transmission by setting
+the Strict_End bit. Thus, it is expected for this counter to be always
+zero at this moment.
 
->  		ts = ns_to_timespec64(ns);
->  	} else {
->  		ts.tv_nsec = rd32(auxstmpl);
+Inspired from enetc_taprio_stats() and enetc_taprio_tc_stats(), now
+driver also report the tx_overruns counter per traffic class.
 
+User can get this counter by using below command:
+1) ethtool -S <interface> | grep Transmit_overruns
+2) tc -s qdisc show dev <interface> root
+3) tc -s class show dev <interface>
+
+Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+
+---
+V2 -> V3: Included new infra xstats to report back the counter to qdisc
+V1 -> V2: Change per-queue stats. Driver still remains adding the
+	  statistic independently.
+---
+---
+ drivers/net/ethernet/intel/igc/igc.h         |  1 +
+ drivers/net/ethernet/intel/igc/igc_ethtool.c |  4 ++-
+ drivers/net/ethernet/intel/igc/igc_main.c    | 38 ++++++++++++++++++++
+ drivers/net/ethernet/intel/igc/igc_tsn.c     | 10 ++++++
+ 4 files changed, 52 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index cb5751fab03c9..2a13e62b75d60 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -46,6 +46,7 @@ struct igc_tx_queue_stats {
+ 	u64 bytes;
+ 	u64 restart_queue;
+ 	u64 restart_queue2;
++	u64 tx_overruns;
+ };
+ 
+ struct igc_rx_queue_stats {
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 0e2cb00622d1a..6a10ae1474fc5 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -112,7 +112,7 @@ static const char igc_gstrings_test[][ETH_GSTRING_LEN] = {
+ 	(sizeof(igc_gstrings_net_stats) / sizeof(struct igc_stats))
+ #define IGC_RX_QUEUE_STATS_LEN \
+ 	(sizeof(struct igc_rx_queue_stats) / sizeof(u64))
+-#define IGC_TX_QUEUE_STATS_LEN 3 /* packets, bytes, restart_queue */
++#define IGC_TX_QUEUE_STATS_LEN 4 /* packets, bytes, restart_queue, tx_overruns */
+ #define IGC_QUEUE_STATS_LEN \
+ 	((((struct igc_adapter *)netdev_priv(netdev))->num_rx_queues * \
+ 	  IGC_RX_QUEUE_STATS_LEN) + \
+@@ -781,6 +781,7 @@ static void igc_ethtool_get_strings(struct net_device *netdev, u32 stringset,
+ 			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
+ 			ethtool_sprintf(&p, "tx_queue_%u_bytes", i);
+ 			ethtool_sprintf(&p, "tx_queue_%u_restart", i);
++			ethtool_sprintf(&p, "tx_queue_%u_Transmit_overruns", i);
+ 		}
+ 		for (i = 0; i < adapter->num_rx_queues; i++) {
+ 			ethtool_sprintf(&p, "rx_queue_%u_packets", i);
+@@ -850,6 +851,7 @@ static void igc_ethtool_get_stats(struct net_device *netdev,
+ 			restart2  = ring->tx_stats.restart_queue2;
+ 		} while (u64_stats_fetch_retry(&ring->tx_syncp2, start));
+ 		data[i + 2] += restart2;
++		data[i + 3] = ring->tx_stats.tx_overruns;
+ 
+ 		i += IGC_TX_QUEUE_STATS_LEN;
+ 	}
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index aa9f23b7f0c1a..056925a7bcdd8 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -6109,11 +6109,43 @@ static int igc_tsn_clear_schedule(struct igc_adapter *adapter)
+ 		ring->start_time = 0;
+ 		ring->end_time = NSEC_PER_SEC;
+ 		ring->max_sdu = 0;
++		ring->tx_stats.tx_overruns = 0;
+ 	}
+ 
+ 	return 0;
+ }
+ 
++static void igc_taprio_stats(struct net_device *dev,
++			     struct tc_taprio_qopt_stats *stats)
++{
++	struct igc_adapter *adapter = netdev_priv(dev);
++	u64 tx_overruns = 0;
++	int i;
++
++	for (i = 0; i < adapter->num_tx_queues; i++) {
++		struct igc_ring *tx_ring = adapter->tx_ring[i];
++
++		tx_overruns += tx_ring->tx_stats.tx_overruns;
++	}
++
++	stats->tx_overruns = tx_overruns;
++}
++
++static void igc_taprio_tc_stats(struct net_device *dev,
++				struct tc_taprio_qopt_tc_stats *tc_stats)
++{
++	struct tc_taprio_qopt_stats *stats = &tc_stats->stats;
++	struct igc_adapter *adapter = netdev_priv(dev);
++	struct igc_ring *tx_ring;
++	int tc = tc_stats->tc;
++	int txq;
++
++	txq = dev->tc_to_txq[tc].offset;
++	tx_ring = adapter->tx_ring[txq];
++
++	stats->tx_overruns = tx_ring->tx_stats.tx_overruns;
++}
++
+ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 				 struct tc_taprio_qopt_offload *qopt)
+ {
+@@ -6130,6 +6162,12 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 	case TAPRIO_CMD_DESTROY:
+ 		adapter->qbv_enable = false;
+ 		break;
++	case TAPRIO_CMD_STATS:
++		igc_taprio_stats(adapter->netdev, &qopt->stats);
++		return 0;
++	case TAPRIO_CMD_TC_STATS:
++		igc_taprio_tc_stats(adapter->netdev, &qopt->tc_stats);
++		return 0;
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
+index 6b299b83e7ef2..342530d11aae9 100644
+--- a/drivers/net/ethernet/intel/igc/igc_tsn.c
++++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
+@@ -136,6 +136,16 @@ static int igc_tsn_enable_offload(struct igc_adapter *adapter)
+ 		txqctl |= IGC_TXQCTL_STRICT_CYCLE |
+ 			IGC_TXQCTL_STRICT_END;
+ 
++		/* If it notices that a frame from a particular queue is still
++		 * being transmitted by MAC, tx_overruns shall be increased.
++		 * But currently driver setting Strict_End bit which indicate
++		 * that packet from the queue can be transmitted only if they
++		 * are expected to be completed before the windows of the
++		 * queue is ended. Thus, this counter will always be zero when
++		 * Strict_End is set.
++		 */
++		ring->tx_stats.tx_overruns  = 0;
++
+ 		if (ring->launchtime_enable)
+ 			txqctl |= IGC_TXQCTL_QUEUE_MODE_LAUNCHT;
+ 
 -- 
-pw-bot: cr
+2.17.1
 
 _______________________________________________
 Intel-wired-lan mailing list
