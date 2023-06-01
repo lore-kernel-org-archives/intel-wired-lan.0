@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D66CC77B7E
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 13:32:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53F3EC77B7E
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 13:32:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CEF8C842BD;
-	Thu,  1 Jun 2023 13:32:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CEF8C842BD
+	by smtp1.osuosl.org (Postfix) with ESMTP id F0F7A84299;
+	Thu,  1 Jun 2023 13:32:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F0F7A84299
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685626343;
-	bh=e4A6WRhWpGTt49mMmGbNOxqg75D/eyxxPX0tJPpalKI=;
+	s=default; t=1685626348;
+	bh=0VbigkuiMftv2s1RvaiHM1c8IF3rNnijFTK61H8ofII=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=o25CFnDXyIdpnvMa9TtFOy0ABnMK1UgHAw12RxdKZ4gYg5YYi2m91/f3k1WOlVjyS
-	 a/Pwhkd+pXRfg4wdFy+0rgG1gYIia3BYyhxsqsZHcLk4b+wbVTUWgUgwoYz5Wu6DOb
-	 5508N3Rlh3PC+sdypYOJ8aH9RUy3sO6hP883TjKj/ejpqcSmg1XvBHr6BKoKZlUqPw
-	 wAR3Sbio+TgVDK9QtCo3lQkvN6P3GIuHoaEM6scQexZXVQKwILTvB40iPCvL7KWGbN
-	 63sntdVan6Rk0ffMjzHFL3BCzFm7Do1v0RqmXM7e7IcxgwNqQN6Wj5L2PBNofTRt6U
-	 YLuqWa9PhgR6w==
+	b=DM48NL1Yo55vpuoCne3rFhz75TiscANrwvvkfx9lKhNNReAtYXqWWW7ibica6aAd4
+	 7AApHNxWnpBPRzf4FKI3OXYEFRVYeOgsKoBkUWhboN5aAWURe44lToL5m9R4fAjhRg
+	 Uli9VcClXIiRkoJpoRNhTn9oNUGmPNXY1A8ogSIg9aal5oTJbo5eQQNiPA5BlnPpFt
+	 gQHdChlxacuvuMUEb5rbVtAgCbi3zMow6nlcCFo7gTC0rjy+jsIPVe8Kg1LiX9PXL3
+	 m0U+nJU/RaBhpy09bJzBznrAc35A4zxtXGGfuPSghrJgjhM8oOgPLit+VjwQMEeDit
+	 9lze2gjwOgpNw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id LpCSZW8HKtN6; Thu,  1 Jun 2023 13:32:21 +0000 (UTC)
+	with ESMTP id p8q3s8kR-yK4; Thu,  1 Jun 2023 13:32:26 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6071E842C0;
-	Thu,  1 Jun 2023 13:32:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6071E842C0
+	by smtp1.osuosl.org (Postfix) with ESMTP id A2FD2842C0;
+	Thu,  1 Jun 2023 13:32:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A2FD2842C0
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 22AA11BF316
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 13:32:16 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 9FD191BF316
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 13:32:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9129760FAF
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 13:32:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9129760FAF
+ by smtp3.osuosl.org (Postfix) with ESMTP id 483A660FAF
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 13:32:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 483A660FAF
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pYZVJ9UcFqig for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id HKZ1VVXoYUbJ for <intel-wired-lan@lists.osuosl.org>;
  Thu,  1 Jun 2023 13:32:14 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7639361544
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5ACEC61541
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7639361544
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 5ACEC61541
  for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 13:32:14 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="335906164"
-X-IronPort-AV: E=Sophos;i="6.00,210,1681196400"; d="scan'208";a="335906164"
+X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="335906142"
+X-IronPort-AV: E=Sophos;i="6.00,210,1681196400"; d="scan'208";a="335906142"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Jun 2023 06:32:11 -0700
+ 01 Jun 2023 06:32:09 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="772427597"
-X-IronPort-AV: E=Sophos;i="6.00,210,1681196400"; d="scan'208";a="772427597"
+X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="772427586"
+X-IronPort-AV: E=Sophos;i="6.00,210,1681196400"; d="scan'208";a="772427586"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga008.fm.intel.com with ESMTP; 01 Jun 2023 06:32:08 -0700
+ by fmsmga008.fm.intel.com with ESMTP; 01 Jun 2023 06:32:03 -0700
 Received: from giewont.igk.intel.com (giewont.igk.intel.com [10.211.8.15])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 5736F34943;
- Thu,  1 Jun 2023 14:32:07 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 4B6A634912;
+ Thu,  1 Jun 2023 14:32:02 +0100 (IST)
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  1 Jun 2023 15:19:29 +0200
-Message-Id: <20230601131929.294667-7-marcin.szycik@linux.intel.com>
+Date: Thu,  1 Jun 2023 15:19:24 +0200
+Message-Id: <20230601131929.294667-2-marcin.szycik@linux.intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20230601131929.294667-1-marcin.szycik@linux.intel.com>
 References: <20230601131929.294667-1-marcin.szycik@linux.intel.com>
@@ -73,19 +73,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1685626334; x=1717162334;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=F6ymLhdcKz//QIJ/bkiRyza0kTDM5ukjtMcxL8tY8eY=;
- b=B3DGjyw6ghsDEDBi3urcZp28tkU4e+7/SSbTjeQxg5Z0A3OnngWfuPmB
- l1wTxEN3tkqXNwsOy+tWRH/uYH+A0+gq67r+Iu4sNzs5dbo8cy3p6lz0b
- GSRaDBchjFSOB9Te4IjYpQ1AGAfVzCQsQ2+mJMp/7TRLbg8Y4L//2wC80
- /xvQ+Sqv1SucxKVxsFfJjchRrfHNKX7uR8U8G+aGPH956HfC5n8vtM1YZ
- JFgpEXI91a1OozFA/By1KcMYHU7qvsA19BAOir4+2mEG4PJ9Csm9WkvcD
- 0Xmhcnh1yoYM3Xq6hpj/xWTSR1Tv7GjZbwlU2FZACJCUQmdGjiFcJrV0n
+ bh=HHW13wrEwCjXdfwhuJWIu8totkBgYmE/Glge5cPG7VU=;
+ b=oFcp6LqPmnagGYdnnBb/nFaAM0nQ2HZQfAwIO0KPYZJ5sNCSpW9WQlAS
+ 3FkZQ7VeNkMqr9iSRT6lfjPxVK2aJ5tG0LQ11NHWcVateuXo10Y6AHjzf
+ utGxTYlxgSapFSikTe7lZMgF3I1n9UU58ITbb9TEPbHdsfXj/iBgwbp40
+ 2N5oguI/ggtgHLbLxm2nPM7AMYxQjqURKsXmWtUl1/F7/+NzGoHHFhwwV
+ P6n6lqYh9f6fGtG+ogLC4+SNNr7dcW+K4OdS8l3aEzfrkbaDtOeUUQHD+
+ OE4ymGMQ9SpVPT4/nTNJTB04Yn5WbNKDiw5mgLdeLOt06VJpbYmydGCYd
  A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=B3DGjyw6
-Subject: [Intel-wired-lan] [RFC PATCH iwl-next 6/6] ice: Add support for
- PFCP hardware offload in switchdev
+ header.a=rsa-sha256 header.s=Intel header.b=oFcp6LqP
+Subject: [Intel-wired-lan] [RFC PATCH iwl-next 1/6] ip_tunnel: use a
+ separate struct to store tunnel params in the kernel
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,432 +106,807 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add support for creating PFCP filters in switchdev mode. Add support
-for parsing PFCP-specific tc options: S flag and SEID.
+From: Alexander Lobakin <alexandr.lobakin@intel.com>
 
-To create a PFCP filter, a special netdev must be created and passed
-to tc command:
+Unlike IPv6 tunnels which use purely-kernel __ip6_tnl_parm structure
+to store params inside the kernel, IPv4 tunnel code uses the same
+ip_tunnel_parm which is being used to talk with the userspace.
+This makes it difficult to alter or add any fields or use a
+different format for whatever data.
+Define struct ip_tunnel_parm_kern, a 1:1 copy of ip_tunnel_parm for
+now, and use it throughout the code. The two places where the latter
+is used to interact with the userspace, now do a conversion from one
+type to another, with manual field-by-field assignments.
+Must be done at once, since ip_tunnel::parms is being used in most
+of those places.
 
-ip link add pfcp0 type pfcp
-tc filter add dev eth0 ingress prio 1 flower pfcp_opts \
-1:123/ff:fffffffffffffff0 skip_hw action mirred egress redirect dev pfcp0
-
-Changes in iproute2 are required to be able to add the pfcp netdev and use
-pfcp_opts in tc.
-
-ICE COMMS package is required to create a filter as it contains PFCP
-profiles.
-
+Signed-off-by: Alexander Lobakin <alexandr.lobakin@intel.com>
 Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ddp.c      |  9 ++
- .../net/ethernet/intel/ice/ice_flex_type.h    |  4 +-
- .../ethernet/intel/ice/ice_protocol_type.h    | 12 +++
- drivers/net/ethernet/intel/ice/ice_switch.c   | 85 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_switch.h   |  2 +
- drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 58 +++++++++++--
- drivers/net/ethernet/intel/ice/ice_tc_lib.h   |  5 ++
- 7 files changed, 168 insertions(+), 7 deletions(-)
+ .../ethernet/mellanox/mlxsw/spectrum_ipip.c   | 30 +++++++-----
+ .../ethernet/mellanox/mlxsw/spectrum_ipip.h   |  2 +-
+ .../ethernet/mellanox/mlxsw/spectrum_span.c   |  4 +-
+ include/linux/netdevice.h                     |  7 +--
+ include/net/ip_tunnels.h                      | 22 +++++++--
+ net/ipv4/ip_gre.c                             | 17 ++++---
+ net/ipv4/ip_tunnel.c                          | 49 ++++++++++++++-----
+ net/ipv4/ip_tunnel_core.c                     |  2 +-
+ net/ipv4/ip_vti.c                             | 12 ++---
+ net/ipv4/ipip.c                               | 12 ++---
+ net/ipv4/ipmr.c                               |  2 +-
+ net/ipv6/addrconf.c                           |  3 +-
+ net/ipv6/sit.c                                | 42 ++++++++++------
+ 13 files changed, 130 insertions(+), 74 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index d71ed210f9c4..b502405245dc 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -721,6 +721,12 @@ static bool ice_is_gtp_c_profile(u16 prof_idx)
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum_ipip.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum_ipip.c
+index 3340b4a694c3..d67df358a52f 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/spectrum_ipip.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum_ipip.c
+@@ -8,7 +8,7 @@
+ #include "spectrum_ipip.h"
+ #include "reg.h"
+ 
+-struct ip_tunnel_parm
++struct ip_tunnel_parm_kern
+ mlxsw_sp_ipip_netdev_parms4(const struct net_device *ol_dev)
+ {
+ 	struct ip_tunnel *tun = netdev_priv(ol_dev);
+@@ -24,7 +24,8 @@ mlxsw_sp_ipip_netdev_parms6(const struct net_device *ol_dev)
+ 	return tun->parms;
+ }
+ 
+-static bool mlxsw_sp_ipip_parms4_has_ikey(const struct ip_tunnel_parm *parms)
++static bool
++mlxsw_sp_ipip_parms4_has_ikey(const struct ip_tunnel_parm_kern *parms)
+ {
+ 	return !!(parms->i_flags & TUNNEL_KEY);
+ }
+@@ -34,7 +35,8 @@ static bool mlxsw_sp_ipip_parms6_has_ikey(const struct __ip6_tnl_parm *parms)
+ 	return !!(parms->i_flags & TUNNEL_KEY);
+ }
+ 
+-static bool mlxsw_sp_ipip_parms4_has_okey(const struct ip_tunnel_parm *parms)
++static bool
++mlxsw_sp_ipip_parms4_has_okey(const struct ip_tunnel_parm_kern *parms)
+ {
+ 	return !!(parms->o_flags & TUNNEL_KEY);
+ }
+@@ -44,7 +46,7 @@ static bool mlxsw_sp_ipip_parms6_has_okey(const struct __ip6_tnl_parm *parms)
+ 	return !!(parms->o_flags & TUNNEL_KEY);
+ }
+ 
+-static u32 mlxsw_sp_ipip_parms4_ikey(const struct ip_tunnel_parm *parms)
++static u32 mlxsw_sp_ipip_parms4_ikey(const struct ip_tunnel_parm_kern *parms)
+ {
+ 	return mlxsw_sp_ipip_parms4_has_ikey(parms) ?
+ 		be32_to_cpu(parms->i_key) : 0;
+@@ -56,7 +58,7 @@ static u32 mlxsw_sp_ipip_parms6_ikey(const struct __ip6_tnl_parm *parms)
+ 		be32_to_cpu(parms->i_key) : 0;
+ }
+ 
+-static u32 mlxsw_sp_ipip_parms4_okey(const struct ip_tunnel_parm *parms)
++static u32 mlxsw_sp_ipip_parms4_okey(const struct ip_tunnel_parm_kern *parms)
+ {
+ 	return mlxsw_sp_ipip_parms4_has_okey(parms) ?
+ 		be32_to_cpu(parms->o_key) : 0;
+@@ -69,7 +71,7 @@ static u32 mlxsw_sp_ipip_parms6_okey(const struct __ip6_tnl_parm *parms)
+ }
+ 
+ static union mlxsw_sp_l3addr
+-mlxsw_sp_ipip_parms4_saddr(const struct ip_tunnel_parm *parms)
++mlxsw_sp_ipip_parms4_saddr(const struct ip_tunnel_parm_kern *parms)
+ {
+ 	return (union mlxsw_sp_l3addr) { .addr4 = parms->iph.saddr };
+ }
+@@ -81,7 +83,7 @@ mlxsw_sp_ipip_parms6_saddr(const struct __ip6_tnl_parm *parms)
+ }
+ 
+ static union mlxsw_sp_l3addr
+-mlxsw_sp_ipip_parms4_daddr(const struct ip_tunnel_parm *parms)
++mlxsw_sp_ipip_parms4_daddr(const struct ip_tunnel_parm_kern *parms)
+ {
+ 	return (union mlxsw_sp_l3addr) { .addr4 = parms->iph.daddr };
+ }
+@@ -96,7 +98,7 @@ union mlxsw_sp_l3addr
+ mlxsw_sp_ipip_netdev_saddr(enum mlxsw_sp_l3proto proto,
+ 			   const struct net_device *ol_dev)
+ {
+-	struct ip_tunnel_parm parms4;
++	struct ip_tunnel_parm_kern parms4;
+ 	struct __ip6_tnl_parm parms6;
+ 
+ 	switch (proto) {
+@@ -115,7 +117,9 @@ mlxsw_sp_ipip_netdev_saddr(enum mlxsw_sp_l3proto proto,
+ static __be32 mlxsw_sp_ipip_netdev_daddr4(const struct net_device *ol_dev)
+ {
+ 
+-	struct ip_tunnel_parm parms4 = mlxsw_sp_ipip_netdev_parms4(ol_dev);
++	struct ip_tunnel_parm_kern parms4;
++
++	parms4 = mlxsw_sp_ipip_netdev_parms4(ol_dev);
+ 
+ 	return mlxsw_sp_ipip_parms4_daddr(&parms4).addr4;
+ }
+@@ -124,7 +128,7 @@ static union mlxsw_sp_l3addr
+ mlxsw_sp_ipip_netdev_daddr(enum mlxsw_sp_l3proto proto,
+ 			   const struct net_device *ol_dev)
+ {
+-	struct ip_tunnel_parm parms4;
++	struct ip_tunnel_parm_kern parms4;
+ 	struct __ip6_tnl_parm parms6;
+ 
+ 	switch (proto) {
+@@ -150,7 +154,7 @@ bool mlxsw_sp_l3addr_is_zero(union mlxsw_sp_l3addr addr)
+ static struct mlxsw_sp_ipip_parms
+ mlxsw_sp_ipip_netdev_parms_init_gre4(const struct net_device *ol_dev)
+ {
+-	struct ip_tunnel_parm parms = mlxsw_sp_ipip_netdev_parms4(ol_dev);
++	struct ip_tunnel_parm_kern parms = mlxsw_sp_ipip_netdev_parms4(ol_dev);
+ 
+ 	return (struct mlxsw_sp_ipip_parms) {
+ 		.proto = MLXSW_SP_L3_PROTO_IPV4,
+@@ -187,8 +191,8 @@ mlxsw_sp_ipip_decap_config_gre4(struct mlxsw_sp *mlxsw_sp,
+ {
+ 	u16 rif_index = mlxsw_sp_ipip_lb_rif_index(ipip_entry->ol_lb);
+ 	u16 ul_rif_id = mlxsw_sp_ipip_lb_ul_rif_id(ipip_entry->ol_lb);
++	struct ip_tunnel_parm_kern parms;
+ 	char rtdp_pl[MLXSW_REG_RTDP_LEN];
+-	struct ip_tunnel_parm parms;
+ 	unsigned int type_check;
+ 	bool has_ikey;
+ 	u32 daddr4;
+@@ -252,7 +256,7 @@ static struct mlxsw_sp_rif_ipip_lb_config
+ mlxsw_sp_ipip_ol_loopback_config_gre4(struct mlxsw_sp *mlxsw_sp,
+ 				      const struct net_device *ol_dev)
+ {
+-	struct ip_tunnel_parm parms = mlxsw_sp_ipip_netdev_parms4(ol_dev);
++	struct ip_tunnel_parm_kern parms = mlxsw_sp_ipip_netdev_parms4(ol_dev);
+ 	enum mlxsw_reg_ritr_loopback_ipip_type lb_ipipt;
+ 
+ 	lb_ipipt = mlxsw_sp_ipip_parms4_has_okey(&parms) ?
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum_ipip.h b/drivers/net/ethernet/mellanox/mlxsw/spectrum_ipip.h
+index a35f009da561..a66173779641 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/spectrum_ipip.h
++++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum_ipip.h
+@@ -9,7 +9,7 @@
+ #include <linux/if_tunnel.h>
+ #include <net/ip6_tunnel.h>
+ 
+-struct ip_tunnel_parm
++struct ip_tunnel_parm_kern
+ mlxsw_sp_ipip_netdev_parms4(const struct net_device *ol_dev);
+ struct __ip6_tnl_parm
+ mlxsw_sp_ipip_netdev_parms6(const struct net_device *ol_dev);
+diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum_span.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum_span.c
+index b3472fb94617..ee08184bd60f 100644
+--- a/drivers/net/ethernet/mellanox/mlxsw/spectrum_span.c
++++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum_span.c
+@@ -413,8 +413,8 @@ mlxsw_sp_span_gretap4_route(const struct net_device *to_dev,
+ 			    __be32 *saddrp, __be32 *daddrp)
+ {
+ 	struct ip_tunnel *tun = netdev_priv(to_dev);
++	struct ip_tunnel_parm_kern parms;
+ 	struct net_device *dev = NULL;
+-	struct ip_tunnel_parm parms;
+ 	struct rtable *rt = NULL;
+ 	struct flowi4 fl4;
+ 
+@@ -451,7 +451,7 @@ mlxsw_sp_span_entry_gretap4_parms(struct mlxsw_sp *mlxsw_sp,
+ 				  const struct net_device *to_dev,
+ 				  struct mlxsw_sp_span_parms *sparmsp)
+ {
+-	struct ip_tunnel_parm tparm = mlxsw_sp_ipip_netdev_parms4(to_dev);
++	struct ip_tunnel_parm_kern tparm = mlxsw_sp_ipip_netdev_parms4(to_dev);
+ 	union mlxsw_sp_l3addr saddr = { .addr4 = tparm.iph.saddr };
+ 	union mlxsw_sp_l3addr daddr = { .addr4 = tparm.iph.daddr };
+ 	bool inherit_tos = tparm.iph.tos & 0x1;
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 08fbd4622ccf..5cf9e74b9087 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -59,7 +59,7 @@ struct device;
+ struct ethtool_ops;
+ struct phy_device;
+ struct dsa_port;
+-struct ip_tunnel_parm;
++struct ip_tunnel_parm_kern;
+ struct macsec_context;
+ struct macsec_ops;
+ struct netdev_name_node;
+@@ -1401,7 +1401,7 @@ struct netdev_net_notifier {
+  *	queue id bound to an AF_XDP socket. The flags field specifies if
+  *	only RX, only Tx, or both should be woken up using the flags
+  *	XDP_WAKEUP_RX and XDP_WAKEUP_TX.
+- * int (*ndo_tunnel_ctl)(struct net_device *dev, struct ip_tunnel_parm *p,
++ * int (*ndo_tunnel_ctl)(struct net_device *dev, struct ip_tunnel_parm_kern *p,
+  *			 int cmd);
+  *	Add, change, delete or get information on an IPv4 tunnel.
+  * struct net_device *(*ndo_get_peer_dev)(struct net_device *dev);
+@@ -1642,7 +1642,8 @@ struct net_device_ops {
+ 	int			(*ndo_xsk_wakeup)(struct net_device *dev,
+ 						  u32 queue_id, u32 flags);
+ 	int			(*ndo_tunnel_ctl)(struct net_device *dev,
+-						  struct ip_tunnel_parm *p, int cmd);
++						  struct ip_tunnel_parm_kern *p,
++						  int cmd);
+ 	struct net_device *	(*ndo_get_peer_dev)(struct net_device *dev);
+ 	int                     (*ndo_fill_forward_path)(struct net_device_path_ctx *ctx,
+                                                          struct net_device_path *path);
+diff --git a/include/net/ip_tunnels.h b/include/net/ip_tunnels.h
+index ed4b6ad3fcac..0ff44ff3b940 100644
+--- a/include/net/ip_tunnels.h
++++ b/include/net/ip_tunnels.h
+@@ -109,6 +109,17 @@ struct ip_tunnel_prl_entry {
+ 
+ struct metadata_dst;
+ 
++/* Kernel-side copy of ip_tunnel_parm */
++struct ip_tunnel_parm_kern {
++	char			name[IFNAMSIZ];
++	int			link;
++	__be16			i_flags;
++	__be16			o_flags;
++	__be32			i_key;
++	__be32			o_key;
++	struct iphdr		iph;
++};
++
+ struct ip_tunnel {
+ 	struct ip_tunnel __rcu	*next;
+ 	struct hlist_node hash_node;
+@@ -135,7 +146,7 @@ struct ip_tunnel {
+ 
+ 	struct dst_cache dst_cache;
+ 
+-	struct ip_tunnel_parm parms;
++	struct ip_tunnel_parm_kern parms;
+ 
+ 	int		mlink;
+ 	int		encap_hlen;	/* Encap header length (FOU,GUE) */
+@@ -289,7 +300,8 @@ void ip_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
+ 		    const struct iphdr *tnl_params, const u8 protocol);
+ void ip_md_tunnel_xmit(struct sk_buff *skb, struct net_device *dev,
+ 		       const u8 proto, int tunnel_hlen);
+-int ip_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm *p, int cmd);
++int ip_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm_kern *p,
++		  int cmd);
+ int ip_tunnel_siocdevprivate(struct net_device *dev, struct ifreq *ifr,
+ 			     void __user *data, int cmd);
+ int __ip_tunnel_change_mtu(struct net_device *dev, int new_mtu, bool strict);
+@@ -305,16 +317,16 @@ int ip_tunnel_rcv(struct ip_tunnel *tunnel, struct sk_buff *skb,
+ 		  const struct tnl_ptk_info *tpi, struct metadata_dst *tun_dst,
+ 		  bool log_ecn_error);
+ int ip_tunnel_changelink(struct net_device *dev, struct nlattr *tb[],
+-			 struct ip_tunnel_parm *p, __u32 fwmark);
++			 struct ip_tunnel_parm_kern *p, __u32 fwmark);
+ int ip_tunnel_newlink(struct net_device *dev, struct nlattr *tb[],
+-		      struct ip_tunnel_parm *p, __u32 fwmark);
++		      struct ip_tunnel_parm_kern *p, __u32 fwmark);
+ void ip_tunnel_setup(struct net_device *dev, unsigned int net_id);
+ 
+ bool ip_tunnel_netlink_encap_parms(struct nlattr *data[],
+ 				   struct ip_tunnel_encap *encap);
+ 
+ void ip_tunnel_netlink_parms(struct nlattr *data[],
+-			     struct ip_tunnel_parm *parms);
++			     struct ip_tunnel_parm_kern *parms);
+ 
+ extern const struct header_ops ip_tunnel_header_ops;
+ __be16 ip_tunnel_parse_protocol(const struct sk_buff *skb);
+diff --git a/net/ipv4/ip_gre.c b/net/ipv4/ip_gre.c
+index e55a20264960..22aa5faa1f8b 100644
+--- a/net/ipv4/ip_gre.c
++++ b/net/ipv4/ip_gre.c
+@@ -780,7 +780,8 @@ static void ipgre_link_update(struct net_device *dev, bool set_mtu)
  	}
  }
  
-+static bool ice_is_pfcp_profile(u16 prof_idx)
-+{
-+	return prof_idx >= ICE_PROFID_IPV4_PFCP_NODE &&
-+	       prof_idx <= ICE_PROFID_IPV6_PFCP_SESSION;
-+}
-+
- /**
-  * ice_get_sw_prof_type - determine switch profile type
-  * @hw: pointer to the HW structure
-@@ -738,6 +744,9 @@ static enum ice_prof_type ice_get_sw_prof_type(struct ice_hw *hw,
- 	if (ice_is_gtp_u_profile(prof_idx))
- 		return ICE_PROF_TUN_GTPU;
+-static int ipgre_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm *p,
++static int ipgre_tunnel_ctl(struct net_device *dev,
++			    struct ip_tunnel_parm_kern *p,
+ 			    int cmd)
+ {
+ 	int err;
+@@ -1124,7 +1125,7 @@ static int erspan_validate(struct nlattr *tb[], struct nlattr *data[],
+ static int ipgre_netlink_parms(struct net_device *dev,
+ 				struct nlattr *data[],
+ 				struct nlattr *tb[],
+-				struct ip_tunnel_parm *parms,
++				struct ip_tunnel_parm_kern *parms,
+ 				__u32 *fwmark)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+@@ -1191,7 +1192,7 @@ static int ipgre_netlink_parms(struct net_device *dev,
+ static int erspan_netlink_parms(struct net_device *dev,
+ 				struct nlattr *data[],
+ 				struct nlattr *tb[],
+-				struct ip_tunnel_parm *parms,
++				struct ip_tunnel_parm_kern *parms,
+ 				__u32 *fwmark)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+@@ -1350,7 +1351,7 @@ static int ipgre_newlink(struct net *src_net, struct net_device *dev,
+ 			 struct nlattr *tb[], struct nlattr *data[],
+ 			 struct netlink_ext_ack *extack)
+ {
+-	struct ip_tunnel_parm p;
++	struct ip_tunnel_parm_kern p;
+ 	__u32 fwmark = 0;
+ 	int err;
  
-+	if (ice_is_pfcp_profile(prof_idx))
-+		return ICE_PROF_TUN_PFCP;
-+
- 	for (i = 0; i < hw->blk[ICE_BLK_SW].es.fvw; i++) {
- 		/* UDP tunnel will have UDP_OF protocol ID and VNI offset */
- 		if (fv->ew[i].prot_id == (u8)ICE_PROT_UDP_OF &&
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-index 4f42e14ed3ae..2dd8909dce2e 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
-@@ -93,6 +93,7 @@ enum ice_tunnel_type {
- 	TNL_GRETAP,
- 	TNL_GTPC,
- 	TNL_GTPU,
-+	TNL_PFCP,
- 	__TNL_TYPE_CNT,
- 	TNL_LAST = 0xFF,
- 	TNL_ALL = 0xFF,
-@@ -351,7 +352,8 @@ enum ice_prof_type {
- 	ICE_PROF_TUN_GRE = 0x4,
- 	ICE_PROF_TUN_GTPU = 0x8,
- 	ICE_PROF_TUN_GTPC = 0x10,
--	ICE_PROF_TUN_ALL = 0x1E,
-+	ICE_PROF_TUN_PFCP = 0x20,
-+	ICE_PROF_TUN_ALL = 0x3E,
- 	ICE_PROF_ALL = 0xFF,
- };
+@@ -1368,7 +1369,7 @@ static int erspan_newlink(struct net *src_net, struct net_device *dev,
+ 			  struct nlattr *tb[], struct nlattr *data[],
+ 			  struct netlink_ext_ack *extack)
+ {
+-	struct ip_tunnel_parm p;
++	struct ip_tunnel_parm_kern p;
+ 	__u32 fwmark = 0;
+ 	int err;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-index 6a9364761165..a1543e995fa1 100644
---- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-@@ -43,6 +43,7 @@ enum ice_protocol_type {
- 	ICE_NVGRE,
- 	ICE_GTP,
- 	ICE_GTP_NO_PAY,
-+	ICE_PFCP,
- 	ICE_PPPOE,
- 	ICE_L2TPV3,
- 	ICE_VLAN_EX,
-@@ -61,6 +62,7 @@ enum ice_sw_tunnel_type {
- 	ICE_SW_TUN_NVGRE,
- 	ICE_SW_TUN_GTPU,
- 	ICE_SW_TUN_GTPC,
-+	ICE_SW_TUN_PFCP,
- 	ICE_ALL_TUNNELS /* All tunnel types including NVGRE */
- };
+@@ -1387,8 +1388,8 @@ static int ipgre_changelink(struct net_device *dev, struct nlattr *tb[],
+ 			    struct netlink_ext_ack *extack)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
++	struct ip_tunnel_parm_kern p;
+ 	__u32 fwmark = t->fwmark;
+-	struct ip_tunnel_parm p;
+ 	int err;
  
-@@ -202,6 +204,15 @@ struct ice_udp_gtp_hdr {
- 	u8 rsvrd;
- };
+ 	err = ipgre_newlink_encap_setup(dev, data);
+@@ -1416,8 +1417,8 @@ static int erspan_changelink(struct net_device *dev, struct nlattr *tb[],
+ 			     struct netlink_ext_ack *extack)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
++	struct ip_tunnel_parm_kern p;
+ 	__u32 fwmark = t->fwmark;
+-	struct ip_tunnel_parm p;
+ 	int err;
  
-+struct ice_pfcp_hdr {
-+	u8 flags;
-+	u8 msg_type;
-+	__be16 length;
-+	__be64 seid;
-+	__be32 seq;
-+	u8 spare;
-+} __packed __aligned(__alignof__(u16));
-+
- struct ice_pppoe_hdr {
- 	u8 rsrvd_ver_type;
- 	u8 rsrvd_code;
-@@ -417,6 +428,7 @@ union ice_prot_hdr {
- 	struct ice_udp_tnl_hdr tnl_hdr;
- 	struct ice_nvgre_hdr nvgre_hdr;
- 	struct ice_udp_gtp_hdr gtp_hdr;
-+	struct ice_pfcp_hdr pfcp_hdr;
- 	struct ice_pppoe_hdr pppoe_hdr;
- 	struct ice_l2tpv3_sess_hdr l2tpv3_sess_hdr;
- 	struct ice_hw_metadata metadata;
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index d69efd33beee..bdcd38d6e9bf 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -43,6 +43,7 @@ enum {
- 	ICE_PKT_KMALLOC		= BIT(9),
- 	ICE_PKT_PPPOE		= BIT(10),
- 	ICE_PKT_L2TPV3		= BIT(11),
-+	ICE_PKT_PFCP		= BIT(12),
- };
+ 	err = ipgre_newlink_encap_setup(dev, data);
+@@ -1489,7 +1490,7 @@ static size_t ipgre_get_size(const struct net_device *dev)
+ static int ipgre_fill_info(struct sk_buff *skb, const struct net_device *dev)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+-	struct ip_tunnel_parm *p = &t->parms;
++	struct ip_tunnel_parm_kern *p = &t->parms;
+ 	__be16 o_flags = p->o_flags;
  
- struct ice_dummy_pkt_offsets {
-@@ -1111,6 +1112,77 @@ ICE_DECLARE_PKT_TEMPLATE(ipv6_gtp) = {
- 	0x00, 0x00,
- };
- 
-+ICE_DECLARE_PKT_OFFSETS(pfcp_session_ipv4) = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV4_OFOS,	14 },
-+	{ ICE_UDP_ILOS,		34 },
-+	{ ICE_PFCP,		42 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+ICE_DECLARE_PKT_TEMPLATE(pfcp_session_ipv4) = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x08, 0x00,		/* ICE_ETYPE_OL 12 */
-+
-+	0x45, 0x00, 0x00, 0x2c, /* ICE_IPV4_OFOS 14 */
-+	0x00, 0x01, 0x00, 0x00,
-+	0x00, 0x11, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x22, 0x65, /* ICE_UDP_ILOS 34 */
-+	0x00, 0x18, 0x00, 0x00,
-+
-+	0x21, 0x01, 0x00, 0x0c, /* ICE_PFCP 42 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00,		/* 2 bytes for 4 byte alignment */
-+};
-+
-+ICE_DECLARE_PKT_OFFSETS(pfcp_session_ipv6) = {
-+	{ ICE_MAC_OFOS,		0 },
-+	{ ICE_ETYPE_OL,		12 },
-+	{ ICE_IPV6_OFOS,	14 },
-+	{ ICE_UDP_ILOS,		54 },
-+	{ ICE_PFCP,		62 },
-+	{ ICE_PROTOCOL_LAST,	0 },
-+};
-+
-+ICE_DECLARE_PKT_TEMPLATE(pfcp_session_ipv6) = {
-+	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x86, 0xdd,		/* ICE_ETYPE_OL 12 */
-+
-+	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_OFOS 14 */
-+	0x00, 0x10, 0x11, 0x00, /* Next header UDP */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00, 0x22, 0x65, /* ICE_UDP_ILOS 54 */
-+	0x00, 0x18, 0x00, 0x00,
-+
-+	0x21, 0x01, 0x00, 0x0c, /* ICE_PFCP 62 */
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00,
-+
-+	0x00, 0x00,		/* 2 bytes for 4 byte alignment */
-+};
-+
- ICE_DECLARE_PKT_OFFSETS(pppoe_ipv4_tcp) = {
- 	{ ICE_MAC_OFOS,		0 },
- 	{ ICE_ETYPE_OL,		12 },
-@@ -1344,6 +1416,8 @@ static const struct ice_dummy_pkt_profile ice_dummy_pkt_profiles[] = {
- 	ICE_PKT_PROFILE(ipv4_gtpu_ipv4_tcp, ICE_PKT_TUN_GTPU),
- 	ICE_PKT_PROFILE(ipv6_gtp, ICE_PKT_TUN_GTPC | ICE_PKT_OUTER_IPV6),
- 	ICE_PKT_PROFILE(ipv4_gtpu_ipv4, ICE_PKT_TUN_GTPC),
-+	ICE_PKT_PROFILE(pfcp_session_ipv6, ICE_PKT_PFCP | ICE_PKT_OUTER_IPV6),
-+	ICE_PKT_PROFILE(pfcp_session_ipv4, ICE_PKT_PFCP),
- 	ICE_PKT_PROFILE(pppoe_ipv6_udp, ICE_PKT_PPPOE | ICE_PKT_OUTER_IPV6 |
- 					ICE_PKT_INNER_UDP),
- 	ICE_PKT_PROFILE(pppoe_ipv6_tcp, ICE_PKT_PPPOE | ICE_PKT_OUTER_IPV6),
-@@ -4578,6 +4652,7 @@ static const struct ice_prot_ext_tbl_entry ice_prot_ext[ICE_PROTOCOL_LAST] = {
- 	ICE_PROTOCOL_ENTRY(ICE_NVGRE, 0, 2, 4, 6),
- 	ICE_PROTOCOL_ENTRY(ICE_GTP, 8, 10, 12, 14, 16, 18, 20, 22),
- 	ICE_PROTOCOL_ENTRY(ICE_GTP_NO_PAY, 8, 10, 12, 14),
-+	ICE_PROTOCOL_ENTRY(ICE_PFCP, 8, 10, 12, 14, 16, 18, 20, 22),
- 	ICE_PROTOCOL_ENTRY(ICE_PPPOE, 0, 2, 4, 6),
- 	ICE_PROTOCOL_ENTRY(ICE_L2TPV3, 0, 2, 4, 6, 8, 10),
- 	ICE_PROTOCOL_ENTRY(ICE_VLAN_EX, 2, 0),
-@@ -4611,6 +4686,7 @@ static struct ice_protocol_entry ice_prot_id_tbl[ICE_PROTOCOL_LAST] = {
- 	{ ICE_NVGRE,		ICE_GRE_OF_HW },
- 	{ ICE_GTP,		ICE_UDP_OF_HW },
- 	{ ICE_GTP_NO_PAY,	ICE_UDP_ILOS_HW },
-+	{ ICE_PFCP,		ICE_UDP_ILOS_HW },
- 	{ ICE_PPPOE,		ICE_PPPOE_HW },
- 	{ ICE_L2TPV3,		ICE_L2TPV3_HW },
- 	{ ICE_VLAN_EX,          ICE_VLAN_OF_HW },
-@@ -5318,6 +5394,9 @@ ice_get_compat_fv_bitmap(struct ice_hw *hw, struct ice_adv_rule_info *rinfo,
- 	case ICE_SW_TUN_GTPC:
- 		prof_type = ICE_PROF_TUN_GTPC;
- 		break;
-+	case ICE_SW_TUN_PFCP:
-+		prof_type = ICE_PROF_TUN_PFCP;
-+		break;
- 	case ICE_SW_TUN_AND_NON_TUN:
- 	default:
- 		prof_type = ICE_PROF_ALL;
-@@ -5602,6 +5681,9 @@ ice_find_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 	case ICE_SW_TUN_VXLAN:
- 		match |= ICE_PKT_TUN_UDP;
- 		break;
-+	case ICE_SW_TUN_PFCP:
-+		match |= ICE_PKT_PFCP;
-+		break;
- 	default:
- 		break;
- 	}
-@@ -5742,6 +5824,9 @@ ice_fill_adv_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
- 		case ICE_GTP:
- 			len = sizeof(struct ice_udp_gtp_hdr);
- 			break;
-+		case ICE_PFCP:
-+			len = sizeof(struct ice_pfcp_hdr);
-+			break;
- 		case ICE_PPPOE:
- 			len = sizeof(struct ice_pppoe_hdr);
- 			break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 838a2823b3dc..3ae8429167fd 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -21,6 +21,8 @@
- #define ICE_PROFID_IPV6_GTPC_NO_TEID			45
- #define ICE_PROFID_IPV6_GTPU_TEID			46
- #define ICE_PROFID_IPV6_GTPU_IPV6_TCP_INNER		70
-+#define ICE_PROFID_IPV4_PFCP_NODE			79
-+#define ICE_PROFID_IPV6_PFCP_SESSION			82
- 
- /* VSI context structure for add/get/update/free operations */
- struct ice_vsi_ctx {
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index b48ded4bd067..f625d0920ae6 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -30,6 +30,9 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
- 	if (flags & ICE_TC_FLWR_FIELD_GTP_OPTS)
- 		lkups_cnt++;
- 
-+	if (flags & ICE_TC_FLWR_FIELD_PFCP_OPTS)
-+		lkups_cnt++;
-+
- 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
- 		     ICE_TC_FLWR_FIELD_ENC_DEST_IPV4 |
- 		     ICE_TC_FLWR_FIELD_ENC_SRC_IPV6 |
-@@ -138,6 +141,8 @@ ice_proto_type_from_tunnel(enum ice_tunnel_type type)
- 		return ICE_GTP;
- 	case TNL_GTPC:
- 		return ICE_GTP_NO_PAY;
-+	case TNL_PFCP:
-+		return ICE_PFCP;
- 	default:
- 		return 0;
- 	}
-@@ -157,6 +162,8 @@ ice_sw_type_from_tunnel(enum ice_tunnel_type type)
- 		return ICE_SW_TUN_GTPU;
- 	case TNL_GTPC:
- 		return ICE_SW_TUN_GTPC;
-+	case TNL_PFCP:
-+		return ICE_SW_TUN_PFCP;
- 	default:
- 		return ICE_NON_TUN;
- 	}
-@@ -237,6 +244,22 @@ ice_tc_fill_tunnel_outer(u32 flags, struct ice_tc_flower_fltr *fltr,
- 		i++;
- 	}
- 
-+	if (flags & ICE_TC_FLWR_FIELD_PFCP_OPTS) {
-+		struct ice_pfcp_hdr *hdr_h, *hdr_m;
-+
-+		hdr_h = &list[i].h_u.pfcp_hdr;
-+		hdr_m = &list[i].m_u.pfcp_hdr;
-+		list[i].type = ICE_PFCP;
-+
-+		hdr_h->flags = fltr->pfcp_meta_keys.type;
-+		hdr_m->flags = fltr->pfcp_meta_masks.type & 0x01;
-+
-+		hdr_h->seid = fltr->pfcp_meta_keys.seid;
-+		hdr_m->seid = fltr->pfcp_meta_masks.seid;
-+
-+		i++;
-+	}
-+
- 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
- 		     ICE_TC_FLWR_FIELD_ENC_DEST_IPV4)) {
- 		list[i].type = ice_proto_type_from_ipv4(false);
-@@ -365,8 +388,11 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
- 	if (tc_fltr->tunnel_type != TNL_LAST) {
- 		i = ice_tc_fill_tunnel_outer(flags, tc_fltr, list);
- 
--		headers = &tc_fltr->inner_headers;
--		inner = true;
-+		/* PFCP is considered non-tunneled - don't swap headers. */
-+		if (tc_fltr->tunnel_type != TNL_PFCP) {
-+			headers = &tc_fltr->inner_headers;
-+			inner = true;
-+		}
- 	}
- 
- 	if (flags & ICE_TC_FLWR_FIELD_ETH_TYPE_ID) {
-@@ -621,6 +647,8 @@ static int ice_tc_tun_get_type(struct net_device *tunnel_dev)
- 	 */
- 	if (netif_is_gtp(tunnel_dev))
- 		return TNL_GTPU;
-+	if (netif_is_pfcp(tunnel_dev))
-+		return TNL_PFCP;
- 	return TNL_LAST;
+ 	if (nla_put_u32(skb, IFLA_GRE_LINK, p->link) ||
+diff --git a/net/ipv4/ip_tunnel.c b/net/ipv4/ip_tunnel.c
+index beeae624c412..1cc27f62b024 100644
+--- a/net/ipv4/ip_tunnel.c
++++ b/net/ipv4/ip_tunnel.c
+@@ -56,7 +56,7 @@ static unsigned int ip_tunnel_hash(__be32 key, __be32 remote)
+ 			 IP_TNL_HASH_BITS);
  }
  
-@@ -1319,6 +1347,20 @@ ice_parse_tunnel_attr(struct net_device *dev, struct flow_rule *rule,
- 		fltr->flags |= ICE_TC_FLWR_FIELD_GTP_OPTS;
- 	}
+-static bool ip_tunnel_key_match(const struct ip_tunnel_parm *p,
++static bool ip_tunnel_key_match(const struct ip_tunnel_parm_kern *p,
+ 				__be16 flags, __be32 key)
+ {
+ 	if (p->i_flags & TUNNEL_KEY) {
+@@ -172,7 +172,7 @@ struct ip_tunnel *ip_tunnel_lookup(struct ip_tunnel_net *itn,
+ EXPORT_SYMBOL_GPL(ip_tunnel_lookup);
  
-+	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ENC_OPTS) &&
-+	    fltr->tunnel_type == TNL_PFCP) {
-+		struct flow_match_enc_opts match;
-+
-+		flow_rule_match_enc_opts(rule, &match);
-+
-+		memcpy(&fltr->pfcp_meta_keys, &match.key->data[0],
-+		       sizeof(struct pfcp_metadata));
-+		memcpy(&fltr->pfcp_meta_masks, &match.mask->data[0],
-+		       sizeof(struct pfcp_metadata));
-+
-+		fltr->flags |= ICE_TC_FLWR_FIELD_PFCP_OPTS;
-+	}
-+
- 	return 0;
+ static struct hlist_head *ip_bucket(struct ip_tunnel_net *itn,
+-				    struct ip_tunnel_parm *parms)
++				    struct ip_tunnel_parm_kern *parms)
+ {
+ 	unsigned int h;
+ 	__be32 remote;
+@@ -207,7 +207,7 @@ static void ip_tunnel_del(struct ip_tunnel_net *itn, struct ip_tunnel *t)
  }
  
-@@ -1377,10 +1419,14 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
- 			return err;
- 		}
+ static struct ip_tunnel *ip_tunnel_find(struct ip_tunnel_net *itn,
+-					struct ip_tunnel_parm *parms,
++					struct ip_tunnel_parm_kern *parms,
+ 					int type)
+ {
+ 	__be32 remote = parms->iph.daddr;
+@@ -231,7 +231,7 @@ static struct ip_tunnel *ip_tunnel_find(struct ip_tunnel_net *itn,
  
--		/* header pointers should point to the inner headers, outer
--		 * header were already set by ice_parse_tunnel_attr
--		 */
--		headers = &fltr->inner_headers;
-+		/* PFCP is considered non-tunneled - don't swap headers. */
-+		if (fltr->tunnel_type != TNL_PFCP) {
-+			/* Header pointers should point to the inner headers,
-+			 * outer header were already set by
-+			 * ice_parse_tunnel_attr().
-+			 */
-+			headers = &fltr->inner_headers;
-+		}
- 	} else if (dissector->used_keys &
- 		  (BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
- 		   BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.h b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
-index aed48d1ff83f..7e6560ec083c 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
-@@ -4,6 +4,8 @@
- #ifndef _ICE_TC_LIB_H_
- #define _ICE_TC_LIB_H_
+ static struct net_device *__ip_tunnel_create(struct net *net,
+ 					     const struct rtnl_link_ops *ops,
+-					     struct ip_tunnel_parm *parms)
++					     struct ip_tunnel_parm_kern *parms)
+ {
+ 	int err;
+ 	struct ip_tunnel *tunnel;
+@@ -327,7 +327,7 @@ static int ip_tunnel_bind_dev(struct net_device *dev)
  
-+#include <net/pfcp.h>
+ static struct ip_tunnel *ip_tunnel_create(struct net *net,
+ 					  struct ip_tunnel_net *itn,
+-					  struct ip_tunnel_parm *parms)
++					  struct ip_tunnel_parm_kern *parms)
+ {
+ 	struct ip_tunnel *nt;
+ 	struct net_device *dev;
+@@ -845,7 +845,7 @@ EXPORT_SYMBOL_GPL(ip_tunnel_xmit);
+ static void ip_tunnel_update(struct ip_tunnel_net *itn,
+ 			     struct ip_tunnel *t,
+ 			     struct net_device *dev,
+-			     struct ip_tunnel_parm *p,
++			     struct ip_tunnel_parm_kern *p,
+ 			     bool set_mtu,
+ 			     __u32 fwmark)
+ {
+@@ -877,7 +877,8 @@ static void ip_tunnel_update(struct ip_tunnel_net *itn,
+ 	netdev_state_change(dev);
+ }
+ 
+-int ip_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm *p, int cmd)
++int ip_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm_kern *p,
++		  int cmd)
+ {
+ 	int err = 0;
+ 	struct ip_tunnel *t = netdev_priv(dev);
+@@ -982,15 +983,37 @@ EXPORT_SYMBOL_GPL(ip_tunnel_ctl);
+ int ip_tunnel_siocdevprivate(struct net_device *dev, struct ifreq *ifr,
+ 			     void __user *data, int cmd)
+ {
++	struct ip_tunnel_parm_kern kp;
+ 	struct ip_tunnel_parm p;
+ 	int err;
+ 
+ 	if (copy_from_user(&p, data, sizeof(p)))
+ 		return -EFAULT;
+-	err = dev->netdev_ops->ndo_tunnel_ctl(dev, &p, cmd);
+-	if (!err && copy_to_user(data, &p, sizeof(p)))
 +
- #define ICE_TC_FLWR_FIELD_DST_MAC		BIT(0)
- #define ICE_TC_FLWR_FIELD_SRC_MAC		BIT(1)
- #define ICE_TC_FLWR_FIELD_VLAN			BIT(2)
-@@ -34,6 +36,7 @@
- #define ICE_TC_FLWR_FIELD_VLAN_PRIO		BIT(27)
- #define ICE_TC_FLWR_FIELD_CVLAN_PRIO		BIT(28)
- #define ICE_TC_FLWR_FIELD_VLAN_TPID		BIT(29)
-+#define ICE_TC_FLWR_FIELD_PFCP_OPTS		BIT(30)
++	strscpy(kp.name, p.name, sizeof(kp.name));
++	kp.link = p.link;
++	kp.i_flags = p.i_flags;
++	kp.o_flags = p.o_flags;
++	kp.i_key = p.i_key;
++	kp.o_key = p.o_key;
++	memcpy(&kp.iph, &p.iph, min(sizeof(kp.iph), sizeof(p.iph)));
++
++	err = dev->netdev_ops->ndo_tunnel_ctl(dev, &kp, cmd);
++	if (err)
++		return err;
++
++	strscpy(p.name, kp.name, sizeof(p.name));
++	p.link = kp.link;
++	p.i_flags = kp.i_flags;
++	p.o_flags = kp.o_flags;
++	p.i_key = kp.i_key;
++	p.o_key = kp.o_key;
++	memcpy(&p.iph, &kp.iph, min(sizeof(p.iph), sizeof(kp.iph)));
++
++	if (copy_to_user(data, &p, sizeof(p)))
+ 		return -EFAULT;
+-	return err;
++
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(ip_tunnel_siocdevprivate);
  
- #define ICE_TC_FLOWER_MASK_32   0xFFFFFFFF
+@@ -1067,7 +1090,7 @@ int ip_tunnel_init_net(struct net *net, unsigned int ip_tnl_net_id,
+ 				  struct rtnl_link_ops *ops, char *devname)
+ {
+ 	struct ip_tunnel_net *itn = net_generic(net, ip_tnl_net_id);
+-	struct ip_tunnel_parm parms;
++	struct ip_tunnel_parm_kern parms;
+ 	unsigned int i;
  
-@@ -161,6 +164,8 @@ struct ice_tc_flower_fltr {
- 	__be32 tenant_id;
- 	struct gtp_pdu_session_info gtp_pdu_info_keys;
- 	struct gtp_pdu_session_info gtp_pdu_info_masks;
-+	struct pfcp_metadata pfcp_meta_keys;
-+	struct pfcp_metadata pfcp_meta_masks;
- 	u32 flags;
- 	u8 tunnel_type;
- 	struct ice_tc_flower_action	action;
+ 	itn->rtnl_link_ops = ops;
+@@ -1147,7 +1170,7 @@ void ip_tunnel_delete_nets(struct list_head *net_list, unsigned int id,
+ EXPORT_SYMBOL_GPL(ip_tunnel_delete_nets);
+ 
+ int ip_tunnel_newlink(struct net_device *dev, struct nlattr *tb[],
+-		      struct ip_tunnel_parm *p, __u32 fwmark)
++		      struct ip_tunnel_parm_kern *p, __u32 fwmark)
+ {
+ 	struct ip_tunnel *nt;
+ 	struct net *net = dev_net(dev);
+@@ -1201,7 +1224,7 @@ int ip_tunnel_newlink(struct net_device *dev, struct nlattr *tb[],
+ EXPORT_SYMBOL_GPL(ip_tunnel_newlink);
+ 
+ int ip_tunnel_changelink(struct net_device *dev, struct nlattr *tb[],
+-			 struct ip_tunnel_parm *p, __u32 fwmark)
++			 struct ip_tunnel_parm_kern *p, __u32 fwmark)
+ {
+ 	struct ip_tunnel *t;
+ 	struct ip_tunnel *tunnel = netdev_priv(dev);
+diff --git a/net/ipv4/ip_tunnel_core.c b/net/ipv4/ip_tunnel_core.c
+index 92c02c886fe7..0c7cdb058855 100644
+--- a/net/ipv4/ip_tunnel_core.c
++++ b/net/ipv4/ip_tunnel_core.c
+@@ -1116,7 +1116,7 @@ bool ip_tunnel_netlink_encap_parms(struct nlattr *data[],
+ EXPORT_SYMBOL_GPL(ip_tunnel_netlink_encap_parms);
+ 
+ void ip_tunnel_netlink_parms(struct nlattr *data[],
+-			     struct ip_tunnel_parm *parms)
++			     struct ip_tunnel_parm_kern *parms)
+ {
+ 	if (data[IFLA_IPTUN_LINK])
+ 		parms->link = nla_get_u32(data[IFLA_IPTUN_LINK]);
+diff --git a/net/ipv4/ip_vti.c b/net/ipv4/ip_vti.c
+index 53bfd8af6920..f890807160ab 100644
+--- a/net/ipv4/ip_vti.c
++++ b/net/ipv4/ip_vti.c
+@@ -167,7 +167,7 @@ static netdev_tx_t vti_xmit(struct sk_buff *skb, struct net_device *dev,
+ 			    struct flowi *fl)
+ {
+ 	struct ip_tunnel *tunnel = netdev_priv(dev);
+-	struct ip_tunnel_parm *parms = &tunnel->parms;
++	struct ip_tunnel_parm_kern *parms = &tunnel->parms;
+ 	struct dst_entry *dst = skb_dst(skb);
+ 	struct net_device *tdev;	/* Device to other host */
+ 	int pkt_len = skb->len;
+@@ -373,7 +373,7 @@ static int vti4_err(struct sk_buff *skb, u32 info)
+ }
+ 
+ static int
+-vti_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm *p, int cmd)
++vti_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm_kern *p, int cmd)
+ {
+ 	int err = 0;
+ 
+@@ -529,7 +529,7 @@ static int vti_tunnel_validate(struct nlattr *tb[], struct nlattr *data[],
+ }
+ 
+ static void vti_netlink_parms(struct nlattr *data[],
+-			      struct ip_tunnel_parm *parms,
++			      struct ip_tunnel_parm_kern *parms,
+ 			      __u32 *fwmark)
+ {
+ 	memset(parms, 0, sizeof(*parms));
+@@ -564,7 +564,7 @@ static int vti_newlink(struct net *src_net, struct net_device *dev,
+ 		       struct nlattr *tb[], struct nlattr *data[],
+ 		       struct netlink_ext_ack *extack)
+ {
+-	struct ip_tunnel_parm parms;
++	struct ip_tunnel_parm_kern parms;
+ 	__u32 fwmark = 0;
+ 
+ 	vti_netlink_parms(data, &parms, &fwmark);
+@@ -576,8 +576,8 @@ static int vti_changelink(struct net_device *dev, struct nlattr *tb[],
+ 			  struct netlink_ext_ack *extack)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
++	struct ip_tunnel_parm_kern p;
+ 	__u32 fwmark = t->fwmark;
+-	struct ip_tunnel_parm p;
+ 
+ 	vti_netlink_parms(data, &p, &fwmark);
+ 	return ip_tunnel_changelink(dev, tb, &p, fwmark);
+@@ -604,7 +604,7 @@ static size_t vti_get_size(const struct net_device *dev)
+ static int vti_fill_info(struct sk_buff *skb, const struct net_device *dev)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+-	struct ip_tunnel_parm *p = &t->parms;
++	struct ip_tunnel_parm_kern *p = &t->parms;
+ 
+ 	if (nla_put_u32(skb, IFLA_VTI_LINK, p->link) ||
+ 	    nla_put_be32(skb, IFLA_VTI_IKEY, p->i_key) ||
+diff --git a/net/ipv4/ipip.c b/net/ipv4/ipip.c
+index 27b8f83c6ea2..0dd2d3b55c75 100644
+--- a/net/ipv4/ipip.c
++++ b/net/ipv4/ipip.c
+@@ -330,7 +330,7 @@ static bool ipip_tunnel_ioctl_verify_protocol(u8 ipproto)
+ }
+ 
+ static int
+-ipip_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm *p, int cmd)
++ipip_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm_kern *p, int cmd)
+ {
+ 	if (cmd == SIOCADDTUNNEL || cmd == SIOCCHGTUNNEL) {
+ 		if (p->iph.version != 4 ||
+@@ -405,8 +405,8 @@ static int ipip_tunnel_validate(struct nlattr *tb[], struct nlattr *data[],
+ }
+ 
+ static void ipip_netlink_parms(struct nlattr *data[],
+-			       struct ip_tunnel_parm *parms, bool *collect_md,
+-			       __u32 *fwmark)
++			       struct ip_tunnel_parm_kern *parms,
++			       bool *collect_md, __u32 *fwmark)
+ {
+ 	memset(parms, 0, sizeof(*parms));
+ 
+@@ -432,8 +432,8 @@ static int ipip_newlink(struct net *src_net, struct net_device *dev,
+ 			struct netlink_ext_ack *extack)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+-	struct ip_tunnel_parm p;
+ 	struct ip_tunnel_encap ipencap;
++	struct ip_tunnel_parm_kern p;
+ 	__u32 fwmark = 0;
+ 
+ 	if (ip_tunnel_netlink_encap_parms(data, &ipencap)) {
+@@ -452,8 +452,8 @@ static int ipip_changelink(struct net_device *dev, struct nlattr *tb[],
+ 			   struct netlink_ext_ack *extack)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+-	struct ip_tunnel_parm p;
+ 	struct ip_tunnel_encap ipencap;
++	struct ip_tunnel_parm_kern p;
+ 	bool collect_md;
+ 	__u32 fwmark = t->fwmark;
+ 
+@@ -510,7 +510,7 @@ static size_t ipip_get_size(const struct net_device *dev)
+ static int ipip_fill_info(struct sk_buff *skb, const struct net_device *dev)
+ {
+ 	struct ip_tunnel *tunnel = netdev_priv(dev);
+-	struct ip_tunnel_parm *parm = &tunnel->parms;
++	struct ip_tunnel_parm_kern *parm = &tunnel->parms;
+ 
+ 	if (nla_put_u32(skb, IFLA_IPTUN_LINK, parm->link) ||
+ 	    nla_put_in_addr(skb, IFLA_IPTUN_LOCAL, parm->iph.saddr) ||
+diff --git a/net/ipv4/ipmr.c b/net/ipv4/ipmr.c
+index eec1f6df80d8..f0435e2d2160 100644
+--- a/net/ipv4/ipmr.c
++++ b/net/ipv4/ipmr.c
+@@ -441,7 +441,7 @@ static bool ipmr_init_vif_indev(const struct net_device *dev)
+ static struct net_device *ipmr_new_tunnel(struct net *net, struct vifctl *v)
+ {
+ 	struct net_device *tunnel_dev, *new_dev;
+-	struct ip_tunnel_parm p = { };
++	struct ip_tunnel_parm_kern p = { };
+ 	int err;
+ 
+ 	tunnel_dev = __dev_get_by_name(net, "tunl0");
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index 3797917237d0..14b1b3487aeb 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -63,6 +63,7 @@
+ #include <linux/string.h>
+ #include <linux/hash.h>
+ 
++#include <net/ip_tunnels.h>
+ #include <net/net_namespace.h>
+ #include <net/sock.h>
+ #include <net/snmp.h>
+@@ -2839,7 +2840,7 @@ void addrconf_prefix_rcv(struct net_device *dev, u8 *opt, int len, bool sllao)
+ static int addrconf_set_sit_dstaddr(struct net *net, struct net_device *dev,
+ 		struct in6_ifreq *ireq)
+ {
+-	struct ip_tunnel_parm p = { };
++	struct ip_tunnel_parm_kern p = { };
+ 	int err;
+ 
+ 	if (!(ipv6_addr_type(&ireq->ifr6_addr) & IPV6_ADDR_COMPATv4))
+diff --git a/net/ipv6/sit.c b/net/ipv6/sit.c
+index cc24cefdb85c..7b326f89c4e3 100644
+--- a/net/ipv6/sit.c
++++ b/net/ipv6/sit.c
+@@ -132,8 +132,8 @@ static struct ip_tunnel *ipip6_tunnel_lookup(struct net *net,
+ 	return NULL;
+ }
+ 
+-static struct ip_tunnel __rcu **__ipip6_bucket(struct sit_net *sitn,
+-		struct ip_tunnel_parm *parms)
++static struct ip_tunnel __rcu **
++__ipip6_bucket(struct sit_net *sitn, struct ip_tunnel_parm_kern *parms)
+ {
+ 	__be32 remote = parms->iph.daddr;
+ 	__be32 local = parms->iph.saddr;
+@@ -226,7 +226,8 @@ static int ipip6_tunnel_create(struct net_device *dev)
+ }
+ 
+ static struct ip_tunnel *ipip6_tunnel_locate(struct net *net,
+-		struct ip_tunnel_parm *parms, int create)
++					     struct ip_tunnel_parm_kern *parms,
++					     int create)
+ {
+ 	__be32 remote = parms->iph.daddr;
+ 	__be32 local = parms->iph.saddr;
+@@ -1135,7 +1136,8 @@ static void ipip6_tunnel_bind_dev(struct net_device *dev)
+ 	dev->needed_headroom = t_hlen + hlen;
+ }
+ 
+-static void ipip6_tunnel_update(struct ip_tunnel *t, struct ip_tunnel_parm *p,
++static void ipip6_tunnel_update(struct ip_tunnel *t,
++				struct ip_tunnel_parm_kern *p,
+ 				__u32 fwmark)
+ {
+ 	struct net *net = t->net;
+@@ -1200,9 +1202,20 @@ ipip6_tunnel_get6rd(struct net_device *dev, struct ip_tunnel_parm __user *data)
+ 	struct ip_tunnel_parm p;
+ 
+ 	if (dev == dev_to_sit_net(dev)->fb_tunnel_dev) {
++		struct ip_tunnel_parm_kern kp;
++
+ 		if (copy_from_user(&p, data, sizeof(p)))
+ 			return -EFAULT;
+-		t = ipip6_tunnel_locate(t->net, &p, 0);
++
++		strscpy(kp.name, p.name, sizeof(kp.name));
++		kp.link = p.link;
++		kp.i_flags = p.i_flags;
++		kp.o_flags = p.o_flags;
++		kp.i_key = p.i_key;
++		kp.o_key = p.o_key;
++		memcpy(&kp.iph, &p.iph, min(sizeof(p.iph), sizeof(kp.iph)));
++
++		t = ipip6_tunnel_locate(t->net, &kp, 0);
+ 	}
+ 	if (!t)
+ 		t = netdev_priv(dev);
+@@ -1251,7 +1264,7 @@ static bool ipip6_valid_ip_proto(u8 ipproto)
+ }
+ 
+ static int
+-__ipip6_tunnel_ioctl_validate(struct net *net, struct ip_tunnel_parm *p)
++__ipip6_tunnel_ioctl_validate(struct net *net, struct ip_tunnel_parm_kern *p)
+ {
+ 	if (!ns_capable(net->user_ns, CAP_NET_ADMIN))
+ 		return -EPERM;
+@@ -1268,7 +1281,7 @@ __ipip6_tunnel_ioctl_validate(struct net *net, struct ip_tunnel_parm *p)
+ }
+ 
+ static int
+-ipip6_tunnel_get(struct net_device *dev, struct ip_tunnel_parm *p)
++ipip6_tunnel_get(struct net_device *dev, struct ip_tunnel_parm_kern *p)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+ 
+@@ -1281,7 +1294,7 @@ ipip6_tunnel_get(struct net_device *dev, struct ip_tunnel_parm *p)
+ }
+ 
+ static int
+-ipip6_tunnel_add(struct net_device *dev, struct ip_tunnel_parm *p)
++ipip6_tunnel_add(struct net_device *dev, struct ip_tunnel_parm_kern *p)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+ 	int err;
+@@ -1297,7 +1310,7 @@ ipip6_tunnel_add(struct net_device *dev, struct ip_tunnel_parm *p)
+ }
+ 
+ static int
+-ipip6_tunnel_change(struct net_device *dev, struct ip_tunnel_parm *p)
++ipip6_tunnel_change(struct net_device *dev, struct ip_tunnel_parm_kern *p)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+ 	int err;
+@@ -1328,7 +1341,7 @@ ipip6_tunnel_change(struct net_device *dev, struct ip_tunnel_parm *p)
+ }
+ 
+ static int
+-ipip6_tunnel_del(struct net_device *dev, struct ip_tunnel_parm *p)
++ipip6_tunnel_del(struct net_device *dev, struct ip_tunnel_parm_kern *p)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+ 
+@@ -1348,7 +1361,8 @@ ipip6_tunnel_del(struct net_device *dev, struct ip_tunnel_parm *p)
+ }
+ 
+ static int
+-ipip6_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm *p, int cmd)
++ipip6_tunnel_ctl(struct net_device *dev, struct ip_tunnel_parm_kern *p,
++		 int cmd)
+ {
+ 	switch (cmd) {
+ 	case SIOCGETTUNNEL:
+@@ -1494,7 +1508,7 @@ static int ipip6_validate(struct nlattr *tb[], struct nlattr *data[],
+ }
+ 
+ static void ipip6_netlink_parms(struct nlattr *data[],
+-				struct ip_tunnel_parm *parms,
++				struct ip_tunnel_parm_kern *parms,
+ 				__u32 *fwmark)
+ {
+ 	memset(parms, 0, sizeof(*parms));
+@@ -1603,8 +1617,8 @@ static int ipip6_changelink(struct net_device *dev, struct nlattr *tb[],
+ 			    struct netlink_ext_ack *extack)
+ {
+ 	struct ip_tunnel *t = netdev_priv(dev);
+-	struct ip_tunnel_parm p;
+ 	struct ip_tunnel_encap ipencap;
++	struct ip_tunnel_parm_kern p;
+ 	struct net *net = t->net;
+ 	struct sit_net *sitn = net_generic(net, sit_net_id);
+ #ifdef CONFIG_IPV6_SIT_6RD
+@@ -1691,7 +1705,7 @@ static size_t ipip6_get_size(const struct net_device *dev)
+ static int ipip6_fill_info(struct sk_buff *skb, const struct net_device *dev)
+ {
+ 	struct ip_tunnel *tunnel = netdev_priv(dev);
+-	struct ip_tunnel_parm *parm = &tunnel->parms;
++	struct ip_tunnel_parm_kern *parm = &tunnel->parms;
+ 
+ 	if (nla_put_u32(skb, IFLA_IPTUN_LINK, parm->link) ||
+ 	    nla_put_in_addr(skb, IFLA_IPTUN_LOCAL, parm->iph.saddr) ||
 -- 
 2.31.1
 
