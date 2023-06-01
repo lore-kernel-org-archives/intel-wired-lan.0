@@ -4,71 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3175C77B7A
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 06:06:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70EB4C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 06:14:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7537642108;
-	Thu,  1 Jun 2023 06:06:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7537642108
+	by smtp4.osuosl.org (Postfix) with ESMTP id F2EBF424D4;
+	Thu,  1 Jun 2023 06:14:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F2EBF424D4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685599608;
-	bh=NGfTy/MX4yNjxC/kSUSlOgvSqW/y9tLXDi5dornI/rg=;
+	s=default; t=1685600097;
+	bh=cWywpb7GFxs1johuEVXK6CuP9mft48+LVP2EANpm87I=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=WaLVRwEE2OET8CxHHGNd3OHl+eL2wHwVk0v4w90ENOovcI1glWZ7VW5ahUW0Q94V3
-	 ubA08umQDvFAdWJeQzctn6kZ0V7f3k8gg+gFsjuUErm/DBeBlKFHy5H73i4HJfiMIH
-	 QTjrUNSv1/SDcQv2k57yzpmooqfIFw8gbvBV1pq9Ecm6642Dwu7mNZwWP/eX8/GwxE
-	 84L8IqlIsOIsYcN3dgMbeiOT5haYDOLuTgnWgYkoh6Zvd3isjoybxFMKhp3WZ0MfPT
-	 LvSnrb3vSt8xFm7M6wmPdjEs7fSOJnvxZQamGaQmIyZHGnmm4iMY5wjdbcerJo96ub
-	 DOpS80bsFdwbg==
+	b=xogvmsfwJ08IlVWWPtEpRMsAT8dNkPFI1mqOw6rz5ICro1Y7QQMcxwCz9epXZE6Z6
+	 2gkEKsUfyoXvatUlCsYie2DeojgCNnqK6YK4P4vp/Yl99BLiZUQLp+IT8MDc/qlSbH
+	 tA1FAc2aGEhLPqUc2pnOKF3zkakYlCtWEqaXacmFo9PDbmand4kl5lTgxbqjrmVhkf
+	 Rq9kzaGXmVL09hQ5Oe+IAVxOe15/yJNHwKwf4/agq2375XmEswFfFqdQ94imppfjVH
+	 T8G5dJ5C0WfnkI4Nv+Os/+yB0oJR5I5S4qC+8BLU5MoPpUp/zQUupf29t1j15Y6ccj
+	 wGzdpSE1360oQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id qaG4z7tQu60f; Thu,  1 Jun 2023 06:06:47 +0000 (UTC)
+	with ESMTP id HJocaD1sLNto; Thu,  1 Jun 2023 06:14:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1C09242117;
-	Thu,  1 Jun 2023 06:06:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1C09242117
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 657E11BF82F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:06:45 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C56EC424E0;
+	Thu,  1 Jun 2023 06:14:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C56EC424E0
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id C414A1BF82F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:14:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3C1A242117
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:06:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3C1A242117
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9698D41693
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:14:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9698D41693
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id In8DeCfg9UkO for <intel-wired-lan@lists.osuosl.org>;
- Thu,  1 Jun 2023 06:06:43 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id FM_47X-PMjDC for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  1 Jun 2023 06:14:52 +0000 (UTC)
 X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CAC1042108
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BB71841667
 Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp4.osuosl.org (Postfix) with ESMTPS id CAC1042108
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:06:42 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id BB71841667
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:14:52 +0000 (UTC)
 Received: from [192.168.0.2] (ip5f5aef03.dynamic.kabel-deutschland.de
  [95.90.239.3])
  (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 1686E61E4052B;
- Thu,  1 Jun 2023 08:06:17 +0200 (CEST)
-Message-ID: <7cd22df9-6c26-8d8d-b132-9c36756a32e6@molgen.mpg.de>
-Date: Thu, 1 Jun 2023 08:06:16 +0200
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 3AB5E61E4052B;
+ Thu,  1 Jun 2023 08:14:15 +0200 (CEST)
+Message-ID: <15af2a2f-2235-b9c5-b104-a09836f11dd9@molgen.mpg.de>
+Date: Thu, 1 Jun 2023 08:14:14 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.11.0
 Content-Language: en-US
-To: Vladimir Oltean <olteanv@gmail.com>
-References: <20230531182758.5u5hv5leobeinxih@skbuf>
- <20230531183323.eozihhbax4tzho6w@skbuf>
+To: Egg Car <eggcar.luan@gmail.com>
+References: <20230531090805.3959-1-eggcar.luan@gmail.com>
+ <92180324-fa55-5427-839e-d555ac5a6cd7@molgen.mpg.de>
+ <CACMC4jY=c8kBwxRjLL++ro=Zz1O54h5Y6ADU6x+46pgN8XhkpA@mail.gmail.com>
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20230531183323.eozihhbax4tzho6w@skbuf>
-Subject: [Intel-wired-lan] Failed delivery to smtp.kernel.org: blocked using
- dbl.spamhaus.org; Error: open resolver;
- (was: [PATCH net-next 0/5] Improve the taprio qdisc's relationship with its
- children)
+In-Reply-To: <CACMC4jY=c8kBwxRjLL++ro=Zz1O54h5Y6ADU6x+46pgN8XhkpA@mail.gmail.com>
+Subject: Re: [Intel-wired-lan] [PATCH] igb: Fix extts capture value format
+ for 82580/i354/i350
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,98 +80,42 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jiri Pirko <jiri@resnulli.us>, "David S. Miller" <davem@davemloft.net>,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Jamal Hadi Salim <jhs@mojatatu.com>, Jakub Kicinski <kuba@kernel.org>,
- Eric Dumazet <edumazet@google.com>, Pedro Tammela <pctammela@mojatatu.com>,
- Cong Wang <xiyou.wangcong@gmail.com>, intel-wired-lan@lists.osuosl.org,
- Paolo Abeni <pabeni@redhat.com>, Peilin Ye <yepeilin.cs@gmail.com>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Cc: netdev@vger.kernel.org, jesse.brandeburg@intel.com,
+ linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ intel-wired-lan@lists.osuosl.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-[Cc: postmaster@kernel.org]
-
-
-Dear Vladimir,
-
-
-I have not seen this message. Maybe the postmasters know more.
-
-
-Kind regards,
-
-Paul
-
-
-Am 31.05.23 um 20:33 schrieb Vladimir Oltean:
-> Has anyone received this message? I guess at least vger and kuba@kernel.org
-> rejected it, because I got this bounce email:
-> 
-> kernel.org suspects your message is spam and rejected it.
-> 
-> Error:
-> 550 5.7.350 Remote server returned message detected as spam -> 554 5.7.1
-> Service unavailable; Helo command [EUR04-DB3-obe.outbound.protection.outlook.com]
-> blocked using dbl.spamhaus.org; Error: open resolver;
-> https://www.spamhaus.org/returnc/pub/34.216.226.155
-> 
-> Message rejected by: smtp.kernel.org
-> 
-> Interestingly, if I click the link above, it says "This is not due to an
-> issue with your email set-up", so I'm not sure what to believe...
-> 
-> ----- Forwarded message from Vladimir Oltean <vladimir.oltean@nxp.com> -----
-> 
-> Date: Wed, 31 May 2023 20:39:23 +0300
-> From: Vladimir Oltean <vladimir.oltean@nxp.com>
-> To: netdev@vger.kernel.org
-> Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet
->   <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
->   <pabeni@redhat.com>, Jamal Hadi Salim <jhs@mojatatu.com>, Cong Wang
->   <xiyou.wangcong@gmail.com>, Jiri Pirko <jiri@resnulli.us>, Vinicius Costa
->   Gomes <vinicius.gomes@intel.com>, linux-kernel@vger.kernel.org,
->   intel-wired-lan@lists.osuosl.org, Muhammad Husaini Zulkifli
->   <muhammad.husaini.zulkifli@intel.com>, Peilin Ye <yepeilin.cs@gmail.com>,
->   Pedro Tammela <pctammela@mojatatu.com>
-> Subject: [PATCH net-next 0/5] Improve the taprio qdisc's relationship with
->   its children
-> X-Mailer: git-send-email 2.34.1
-> 
-> Prompted by Vinicius' request to consolidate some child Qdisc
-> dereferences in taprio:
-> https://lore.kernel.org/netdev/87edmxv7x2.fsf@intel.com/
-> 
-> I remembered that I had left some unfinished work in this Qdisc, namely
-> commit af7b29b1deaa ("Revert "net/sched: taprio: make qdisc_leaf() see
-> the per-netdev-queue pfifo child qdiscs"").
-> 
-> This patch set represents another stab at, essentially, what's in the
-> title. Not only does taprio not properly detect when it's grafted as a
-> non-root qdisc, but it also returns incorrect per-class stats.
-> Eventually, Vinicius' request is addressed too, although in a different
-> form than the one he requested (which was purely cosmetic).
-> 
-> Review from people more experienced with Qdiscs than me would be
-> appreciated. I tried my best to explain what I consider to be problems.
-> I am deliberately targeting net-next because the changes are too
-> invasive for net - they were reverted from stable once already.
-> 
-> Vladimir Oltean (5):
->    net/sched: taprio: don't access q->qdiscs[] in unoffloaded mode during
->      attach()
->    net/sched: taprio: keep child Qdisc refcount elevated at 2 in offload
->      mode
->    net/sched: taprio: try again to report q->qdiscs[] to qdisc_leaf()
->    net/sched: taprio: delete misleading comment about preallocating child
->      qdiscs
->    net/sched: taprio: dump class stats for the actual q->qdiscs[]
-> 
->   net/sched/sch_taprio.c | 60 ++++++++++++++++++++++++------------------
->   1 file changed, 35 insertions(+), 25 deletions(-)
-> 
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+CkRlYXIgRWdnLAoKClRoYW5rIHlvdSBmb3IgeW91ciByZXBseS4KCkFtIDAxLjA2LjIzIHVtIDA3
+OjU1IHNjaHJpZWIgZWdnIGNhcjoKCj4+IEl04oCZZCBiZSBncmVhdCwgaWYgeW91IGFkZGVkIGEg
+cGFyYWdyYXBoIGhvdyB0byByZXByb2R1Y2UgdGhlCj4+IGlzc3VlLgo+IAo+IEkgaGF2ZSB0ZXN0
+ZWQgYW4gaTM1MCBOSUMgd2l0aCBhIDFQUFMgc2lnbmFsIGlucHV0IHRvIGEgU0RQIHBpbiwKPiBy
+dW5uaW5nICd0czJwaGMnIHByb2dyYW0gZnJvbSBsaW51eHB0cCBwcm9qZWN0LCBhbmQgZm91bmQg
+dGhhdCB0aGUKPiAxUFBTIHRpbWVzdGFtcHMgcmVhZGluZyBvdXQgYXJlIHJhdyByZWdpc3RlciB2
+YWx1ZSBpbiByZXNvbHV0aW9uIG9mCj4gMW5zIGFuZCBhIG1heGltdW0gcmFuZ2Ugb2YgMl40MCBu
+cywgdGh1cyBhYm91dCAxMDk5IHMuIEl0IHdhcwo+IHN1cHBvc2VkIHRvIGJlIGluIFRBSSB0aW1l
+c3RhbXAgZm9ybWF0Lgo+IAo+IFNvcnJ5IEknbSBuZXcgdG8ga2VybmVsIGRldmVsb3BtZW50LCBz
+aG91bGQgSSBtYWtlIGEgbmV3IHBhdGNoIHRvIGFkZAo+IGEgcGFyYWdyYXBoIGluIHRoZSBjb21t
+aXQgaW5mb3JtYXRpb24/CgpUaGVyZSBpcyBubyBoYXJkIHJ1bGUgYWJvdXQgaXQsIGJ1dCBJIHdv
+dWxkIGFwcHJlY2lhdGUgaXQuIEluIHRoZSBlbmQsCml04oCZcyB0aGUgbWFpbnRhaW5lcnPigJkg
+ZGVjaXNpb24uIFlvdSBjYW4gYW1lbmQgdGhlIGNvbW1pdCwgYW5kIHRoZW4gCnJlZ2VuZXJhdGUg
+dGhlIHBhdGNoIHdpdGggYGdpdCBmb3JtYXQtcGF0Y2ggLTEgLXYyYC4gQmVsb3cgdGhlIC0tLSBs
+aW5lIAp5b3UgY2FuIGFkZCBhIHNob3J0IGNoYW5nZS1sb2csIHdoYXQgeW91IGNoYW5nZWQgYmV0
+d2VlbiB0aGUgcGF0Y2ggCml0ZXJhdGlvbnMuCgo+PiBJIGRvIG5vdCBzZWUgdGhlIHZhcmlhYmxl
+ICpmbGFncyogYmVpbmcgdXNlZC4KPiAKPiBUaGlzIHBhdGNoIGhhcyBhIHR5cG8sIHBsZWFzZSBp
+Z25vcmUgdGhpcyBvbmUsIEkgaGF2ZSBzdWJtaXR0ZWQgYSBuZXcgb25lCj4gdGhhdCBmaXhlZCB0
+aGlzLgoKSSBoYXZlIG5vdCBzZWVuIHRoaXMgeWV0LgoKPiBJIGhhdmUgdGVzdGVkIHRoZSBwYXRj
+aCBvbiBhIFVidW50dSBzZXJ2ZXIgMjIuMDQgbWFjaGluZSB3aXRoIGtlcm5lbCAKPiB2ZXJzaW9u
+IDUuMTkuMTcsIHRoZW4gSSBnZW5lcmF0ZWQgdGhlIHBhdGNoIGluIHRoZSAnbmV0LXF1ZXVlJwo+
+IGRldmVsb3BtZW50IHJlcG8uIEkganVzdCBoYW5kd3JpdHRlbiB0aGUgY2hhbmdlcyBpbiB0aGUg
+ZGV2IHJlcG8sCj4gbWFkZSBhIHNpbGx5IG1pc3Rha2UuCj4gCj4gQXBvbG90OHplIGZvciB0aGF0
+LCBJJ2xsIGJlIG1vcmUgY2FyZWZ1bCBuZXh0IHRpbWUuCk5vIHByb2JsZW0uIFRoaXMgaGFzIGhh
+cHBlbmVkIHRvIGFsbCBvZiB1cy4gQ29uZ3JhdHVsYXRpb25zIG9uIHlvdXIgCmZpcnN0KD8pIExp
+bnV4IGtlcm5lbCBjb250cmlidXRpb24uIEdsYWQgdG8gaGF2ZSB5b3UgYW5kIEkgYW0gbG9va2lu
+ZyAKZm9yd2FyZCB0byB5b3VyIG5leHQgaW1wcm92ZW1lbnRzLgoKCktpbmQgcmVnYXJkcywKClBh
+dWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwt
+d2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczov
+L2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
