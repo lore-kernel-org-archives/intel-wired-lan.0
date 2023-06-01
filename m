@@ -4,99 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E49C0C7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 15:07:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 218F5C7EE2A
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 15:07:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8AE08831A2;
-	Thu,  1 Jun 2023 15:07:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8AE08831A2
+	by smtp1.osuosl.org (Postfix) with ESMTP id B31DF81F9C;
+	Thu,  1 Jun 2023 15:07:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B31DF81F9C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685632047;
-	bh=2cendpQ2znhB/nag8op3nUJFyrKCGBf4NkYNp/cwOAE=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=zE5+MypEJLEKj6PvyF4pg/Smy3Jo7MAUEU2zOyJaJSIflVkPQ7Kp+FD8ymgPHMs9E
-	 pytpmauLAYgWR+R4j+ZnlZlE/yP2t/TMtOrA2rGeU7x7J/J6GsLyLwRc3BH2ZKT+9S
-	 1+bJ/WCQVEK7BuIvMphl3CSkfd3T0x7gf3JnQ4M0VRr11xpzSj9z3FZA1gYFdrgFcC
-	 orYxF9ZMte6vx1wZYUS2HftbHtgs6orfl0By+pbECT+1e7cawBhbEZW2cYW9H7biH8
-	 kAnk/uGo5G17VHAmzNKVdDkgTeInhSpQxQ2pBdP7D9eWHz/DzVcjc4tmb0e7fYVMw4
-	 jGjCbR2pPSulQ==
+	s=default; t=1685632052;
+	bh=i67DdFvB1KcBgtHPkHHOewAjgD0BMWAIFi5DOgGQPcE=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=68YF6jTMxlQadubkCxcXI+FMIOZiwd6six5oWd/uU5a61zQlgzkJmWNOlpqC4DWhH
+	 YZzXD67DVBVn0MRHLrkYeh3EQkm8RhwedRHNir3bPPh+qeAnzZi4jEqAOXZY/Oeh86
+	 ypAGjy2+yrPy3oaT+Pl8sJG/bGv88EQNwd4RBag8XmPCcMsyMAgu8dSwBEvrmu7ofl
+	 lrV4S92Yp0hEZD9z8Nnfe+AYuxKuNq3q8QDcUFO2sPKLrRfAok1vIFnb8UKmGtgJDo
+	 00CNn0NBebU7VHKC0txVDbNDmmL2ffGsMcCcsbMdtkJACv8meZlwTPHbQhL9GVtmOP
+	 hJSP029eJWuCQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id QVxH4mGwbhRc; Thu,  1 Jun 2023 15:07:26 +0000 (UTC)
+	with ESMTP id YIiYyjDl4YuC; Thu,  1 Jun 2023 15:07:31 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 94FFF84272;
-	Thu,  1 Jun 2023 15:07:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 94FFF84272
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 19E3B1BF215
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 01:59:53 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id BBFBD84271;
+	Thu,  1 Jun 2023 15:07:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BBFBD84271
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id C5AFD1BF852
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 05:55:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E515E81EE8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 01:59:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E515E81EE8
+ by smtp2.osuosl.org (Postfix) with ESMTP id AB03F403B4
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 05:55:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AB03F403B4
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BJld7SLh7I_z for <intel-wired-lan@lists.osuosl.org>;
- Thu,  1 Jun 2023 01:59:51 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id uo24fMGP1D9K for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  1 Jun 2023 05:55:16 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A215081EE7
-Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com
- [IPv6:2607:f8b0:4864:20::52b])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A215081EE7
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 01:59:51 +0000 (UTC)
-Received: by mail-pg1-x52b.google.com with SMTP id
- 41be03b00d2f7-52cb78647ecso138548a12.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 31 May 2023 18:59:51 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2178840101
+Received: from mail-qv1-xf30.google.com (mail-qv1-xf30.google.com
+ [IPv6:2607:f8b0:4864:20::f30])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 2178840101
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 05:55:16 +0000 (UTC)
+Received: by mail-qv1-xf30.google.com with SMTP id
+ 6a1803df08f44-6263b2526a0so5291346d6.2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 31 May 2023 22:55:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1685584791; x=1688176791;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ d=1e100.net; s=20221208; t=1685598915; x=1688190915;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
  :reply-to;
- bh=Jdxxh2L1GD1WdZkYYziFAmyUtgwXwDB1emmhtFEA2sM=;
- b=NdVowRJ7kJLXTHQ/0MgRR2F2xrjMrT9RT7kYbgT2ka3aVzTb3A5kcQpqik2AQMWhZt
- 2gpuIFntjfpC6BXxHs9cbjWe8cBw74hnv6A3McwW1XN1QOy/I9gJgSoIiJy4vzkfVAjd
- o3BAhiaH5YSB+QZ9HW5/Wzap37GLkk4hi3EcgmihhdTLkWdT+TaiGzEPQpMMwo1Fk1c9
- NjfFizPSWsuyc3WND1FIVV5KDiaKqTGOta3+vIteQHreTFdQBV0v8k5DVxpO+7m6IBdG
- ZA8H7r88LDNFhZf0WCdZc+7H7+obnOKMO0ok8t0/8VCwXskR3KAEPIahxKx0x1m/YXk0
- AmAQ==
-X-Gm-Message-State: AC+VfDyImRpJY7Uppe0ByQZC0ZasoXymVW9zKS0XiwR+4XWaJk6r6YKL
- g2bm2bB/+p8PdnET/O00E6M=
-X-Google-Smtp-Source: ACHHUZ7ZFmpjxk6hnAAfSXhlZcWQV0HmU+rN1vBZNd7ozRoimzKvZknP67nyT/0Ui5qaytH93QtCww==
-X-Received: by 2002:a17:90a:c20d:b0:256:44f3:35e2 with SMTP id
- e13-20020a17090ac20d00b0025644f335e2mr5834673pjt.4.1685584790967; 
- Wed, 31 May 2023 18:59:50 -0700 (PDT)
-Received: from dnptp-9.. ([111.198.57.33]) by smtp.gmail.com with ESMTPSA id
- k59-20020a17090a4cc100b0024df7d7c35esm189547pjh.43.2023.05.31.18.59.48
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 31 May 2023 18:59:50 -0700 (PDT)
-From: Yuezhen Luan <eggcar.luan@gmail.com>
-To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Thu,  1 Jun 2023 01:59:43 +0000
-Message-Id: <20230601015943.1815-1-eggcar.luan@gmail.com>
-X-Mailer: git-send-email 2.34.1
+ bh=pmuR1dL8BN3S/VBquLiRUhN53n3pNEx4e85rlgu9ZQU=;
+ b=ISCsk858OFRIS6ap6X4vWCHGUqSFY5IPhKYrkF1cflhQgvIj+ygKEUjT9OPaFrj297
+ 46vfhVANGBiUxN8cqQRIpV1HHxKeup6gZVj01Q4BBZ22o/mHWKWjmwVXscpLbzgtHuT8
+ 3YG486pu3Aweuem+3tPTlyaelVSgDbweMQ6aGTzvNxyZ/hm88Epe28p5fhLdrmBYuqsN
+ BnMICkRz/DgmxRhVLei/tAZ8u93RmwSRcNfi5UOL9OuKp6kJDnI7EokzgLSMQL68ie9Z
+ 7IHLXpit5F/f3oT6dfwpWi15XzZFBFT9WnimCV0peD7ztDIplkpCF6/ghTBICfhTuEdQ
+ RQ9w==
+X-Gm-Message-State: AC+VfDzQJ5ZR2E0onm+0TdzrZKDRgVv87rkVjvQGvLkTXpCCw19+hBm9
+ xWW6idrhwqoc5PXLUo1Bd6sfSD0Pt3xnPNiDgqHN2LGL6O6tkwhzS7pM1Q==
+X-Google-Smtp-Source: ACHHUZ4qdNLeG5vVhyH7n1eupcWCzDRI9xIPuPA1J2gEarxS7lKc4CgWot7gEKKGiCs+aPjA/EQ2ydymB6pm0qmSQFA=
+X-Received: by 2002:a05:6214:29ce:b0:626:f3d:9e37 with SMTP id
+ gh14-20020a05621429ce00b006260f3d9e37mr7474274qvb.35.1685598914833; Wed, 31
+ May 2023 22:55:14 -0700 (PDT)
 MIME-Version: 1.0
+References: <20230531090805.3959-1-eggcar.luan@gmail.com>
+ <92180324-fa55-5427-839e-d555ac5a6cd7@molgen.mpg.de>
+In-Reply-To: <92180324-fa55-5427-839e-d555ac5a6cd7@molgen.mpg.de>
+From: egg car <eggcar.luan@gmail.com>
+Date: Thu, 1 Jun 2023 13:55:03 +0800
+Message-ID: <CACMC4jY=c8kBwxRjLL++ro=Zz1O54h5Y6ADU6x+46pgN8XhkpA@mail.gmail.com>
+To: Paul Menzel <pmenzel@molgen.mpg.de>
 X-Mailman-Approved-At: Thu, 01 Jun 2023 15:07:21 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20221208; t=1685584791; x=1688176791;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=Jdxxh2L1GD1WdZkYYziFAmyUtgwXwDB1emmhtFEA2sM=;
- b=Oih3AhNmb0cusPW/ZitzBoCgoGC9evQgOEor7/GXLLHcV2qvdgZW2RWLChJ/xN7MaB
- t1zaNsQdUfHkCeeYPV1IugTm5maq28JVw3Y6fGEdVeEzkiSApOaB3ofagN1IR7EB4pkI
- 9ur+SucXtYGfu/pAVhVRdPPq2p0udQme+keM6rPYgdH8kAevZubYO6aUhjpEcSUapXTR
- uokZ9DTzTWeqp1h466cWiHfX8f7voZGZLJVUEnGTmjePdl64svrWQPTODffe3VwuEeCP
- aCleDFmHNfiEFeZX+GJyVPEx9X9KkO8mRNVezGoK7QwpJ9xdFq6c4+KqBJQ0P4qqr71w
- BRmg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=gmail.com; s=20221208; t=1685598915; x=1688190915;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=pmuR1dL8BN3S/VBquLiRUhN53n3pNEx4e85rlgu9ZQU=;
+ b=WVh/hk0XzqcZT1+uW9aJ20vALUHKezA0SQU1QYhEjdQqauy+6c53fsOf05KMFJ0o1q
+ T5/01BpCh/Vg8rnLPq8/3Mvlkyp3xZmPnzRaIilkQxgGbk01UkdM9ieph4NsMiyTnSZd
+ v8T9JjJ7e8GQS4poitlukf/Y4F/8NSaxU+iAwZjTPq3I4PC/0OMtfxUe0ecUE9bn+pF4
+ qZUnmIBWcx7YdNALNzQFqCBCbPEBO62dU61esLVji8BPw3VUfUPvB0dY32qSK21hy51T
+ NmEy5DHX3BMDwstATawp14L/T+TvlNpoomDDdi1irWcRZAjHU8Jk5kQe+5QGZHXcBmWM
+ yh8w==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20221208 header.b=Oih3AhNm
-Subject: [Intel-wired-lan] [PATCH] igb: Fix extts capture value format for
- 82580/i354/i350
+ header.a=rsa-sha256 header.s=20221208 header.b=WVh/hk0X
+Subject: Re: [Intel-wired-lan] [PATCH] igb: Fix extts capture value format
+ for 82580/i354/i350
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,54 +106,81 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, Yuezhen Luan <eggcar.luan@gmail.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: netdev@vger.kernel.org, jesse.brandeburg@intel.com,
+ linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ intel-wired-lan@lists.osuosl.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net
+Content-Type: multipart/mixed; boundary="===============3353684133478305878=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-82580/i354/i350 features circle-counter-like timestamp registers
-that are different with newer i210. The EXTTS capture value in
-AUXTSMPx should be converted from raw circle counter value to
-timestamp value in resolution of 1 nanosec by the driver.
+--===============3353684133478305878==
+Content-Type: multipart/alternative; boundary="0000000000008d704605fd0b1488"
 
-Signed-off-by: Yuezhen Luan <eggcar.luan@gmail.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+--0000000000008d704605fd0b1488
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 58872a4c2..bb3db387d 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6947,6 +6947,7 @@ static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct ptp_clock_event event;
- 	struct timespec64 ts;
-+	unsigned long flags;
- 
- 	if (pin < 0 || pin >= IGB_N_SDP)
- 		return;
-@@ -6954,9 +6955,12 @@ static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
- 	if (hw->mac.type == e1000_82580 ||
- 	    hw->mac.type == e1000_i354 ||
- 	    hw->mac.type == e1000_i350) {
--		s64 ns = rd32(auxstmpl);
-+		u64 ns = rd32(auxstmpl);
- 
--		ns += ((s64)(rd32(auxstmph) & 0xFF)) << 32;
-+		ns += ((u64)(rd32(auxstmph) & 0xFF)) << 32;
-+		spin_lock_irqsave(&adapter->tmreg_lock, flags);
-+		ns = timecounter_cyc2time(&adapter->tc, ns);
-+		spin_unlock_irqrestore(&adapter->tmreg_lock, flags);
- 		ts = ns_to_timespec64(ns);
- 	} else {
- 		ts.tv_nsec = rd32(auxstmpl);
--- 
-2.34.1
+Dear Paul,
+
+> It=E2=80=99d be great, if you added a paragraph how to reproduce the issu=
+e.
+
+I have tested an i350 NIC with a 1PPS signal input to a SDP pin, running
+'ts2phc'
+program from linuxptp project, and found that the 1PPS timestamps reading
+out are
+raw register value in resolution of 1ns and a maximum range of 2^40 ns,
+thus about 1099 s.
+It was supposed to be in TAI timestamp format.
+
+Sorry I'm new to kernel development, should I make a new patch to add a
+paragraph
+in the commit information?
+
+> I do not see the variable *flags* being used.
+
+This patch has a typo, please ignore this one, I have submitted a new one
+that fixed this.
+
+I have tested the patch on a Ubuntu server 22.04 machine with kernel
+version 5.19.17, then I generated
+the patch in the 'net-queue' development repo. I just handwritten the
+changes in the dev repo, made a
+silly mistake.
+
+Apolotize for that, I'll be more careful next time.
+
+--0000000000008d704605fd0b1488
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Dear Paul,<br><br>&gt; It=E2=80=99d be great, if you added=
+ a paragraph how to reproduce the issue.<br><br>I have tested an i350 NIC w=
+ith a 1PPS signal input to a SDP pin, running &#39;ts2phc&#39;<br>program f=
+rom linuxptp project, and found that the 1PPS timestamps reading out are<br=
+>raw register value in resolution of 1ns and a maximum range of 2^40 ns, th=
+us about 1099 s.<br>It was supposed to be in TAI timestamp format.<br><br>S=
+orry I&#39;m new to kernel development, should I make a new patch to add a =
+paragraph<br>in the commit information?<br><br>&gt; I do not see the variab=
+le *flags* being used.<br><br>This patch has a typo, please ignore this one=
+, I have submitted a new one that fixed this.<br><br>I have tested the patc=
+h on a Ubuntu server 22.04 machine with kernel version 5.19.17, then I gene=
+rated<br>the patch in the &#39;net-queue&#39; development repo. I just hand=
+written the changes in the dev repo, made a<br>silly mistake.<br><br>Apolot=
+ize for that, I&#39;ll be more careful next time.<br></div>
+
+--0000000000008d704605fd0b1488--
+
+--===============3353684133478305878==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============3353684133478305878==--
