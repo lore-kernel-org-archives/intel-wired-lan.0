@@ -1,73 +1,101 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70EB4C7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 06:14:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62D97C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  1 Jun 2023 07:46:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id F2EBF424D4;
-	Thu,  1 Jun 2023 06:14:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F2EBF424D4
+	by smtp1.osuosl.org (Postfix) with ESMTP id DF350822FE;
+	Thu,  1 Jun 2023 07:46:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DF350822FE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685600097;
-	bh=cWywpb7GFxs1johuEVXK6CuP9mft48+LVP2EANpm87I=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=xogvmsfwJ08IlVWWPtEpRMsAT8dNkPFI1mqOw6rz5ICro1Y7QQMcxwCz9epXZE6Z6
-	 2gkEKsUfyoXvatUlCsYie2DeojgCNnqK6YK4P4vp/Yl99BLiZUQLp+IT8MDc/qlSbH
-	 tA1FAc2aGEhLPqUc2pnOKF3zkakYlCtWEqaXacmFo9PDbmand4kl5lTgxbqjrmVhkf
-	 Rq9kzaGXmVL09hQ5Oe+IAVxOe15/yJNHwKwf4/agq2375XmEswFfFqdQ94imppfjVH
-	 T8G5dJ5C0WfnkI4Nv+Os/+yB0oJR5I5S4qC+8BLU5MoPpUp/zQUupf29t1j15Y6ccj
-	 wGzdpSE1360oQ==
+	s=default; t=1685605609;
+	bh=Nw0yEJC2DIinBmC1mT9TChxeUoUTuYo0rS2d/N6oVI0=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=N2lLPjfzSWZ5gq8o2OcVMmp76fVkIfP0+GDEXvc7XFL4JNcM6bfdI7qs1wEvOrWaG
+	 uocu6YEz4YeDsUtXTHEdbZQsOtiFxpRdTXeECZIztS6CiKIx0pdt/nJ/rQKrP563cL
+	 Rd/SQquU0+LYeSf84dYx1Q6WJQuEQodDzd4nvq9FdpzNxOA4G54/JBjO7sC6TxorK3
+	 tNklIMkpwQldvsK9lESKJDR52ZM71Zv7ZWfIOnm+t7kWuhPEgkhLucGq5cgr/vTOUb
+	 hIYnwX0JKj/x2OAblfyeT0Rzk7cqA0RtgjAXi0T5ukYVK8C7L2HeiJM2F7QqF5m82u
+	 4DMQII7QIKTTg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id HJocaD1sLNto; Thu,  1 Jun 2023 06:14:56 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id zGsiiQ3cIsFI; Thu,  1 Jun 2023 07:46:49 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C56EC424E0;
-	Thu,  1 Jun 2023 06:14:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C56EC424E0
+	by smtp1.osuosl.org (Postfix) with ESMTP id E58F18213A;
+	Thu,  1 Jun 2023 07:46:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E58F18213A
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id C414A1BF82F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:14:54 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 7B8C61BF59E
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 07:46:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9698D41693
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:14:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9698D41693
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5EFB6405A7
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 07:46:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5EFB6405A7
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id FM_47X-PMjDC for <intel-wired-lan@lists.osuosl.org>;
- Thu,  1 Jun 2023 06:14:52 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BB71841667
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id BB71841667
- for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 06:14:52 +0000 (UTC)
-Received: from [192.168.0.2] (ip5f5aef03.dynamic.kabel-deutschland.de
- [95.90.239.3])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 3AB5E61E4052B;
- Thu,  1 Jun 2023 08:14:15 +0200 (CEST)
-Message-ID: <15af2a2f-2235-b9c5-b104-a09836f11dd9@molgen.mpg.de>
-Date: Thu, 1 Jun 2023 08:14:14 +0200
+ with ESMTP id hZrLOn4YegzD for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  1 Jun 2023 07:46:45 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 77810402E0
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com
+ [IPv6:2a00:1450:4864:20::32e])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 77810402E0
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  1 Jun 2023 07:46:45 +0000 (UTC)
+Received: by mail-wm1-x32e.google.com with SMTP id
+ 5b1f17b1804b1-3f604176322so1323005e9.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 01 Jun 2023 00:46:45 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1685605603; x=1688197603;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=UDvuyGKcE4u2rB8/mp0V+EeyHQy6wBtC2SMaZnT20Uw=;
+ b=g5qlFgb3uAwVn2ZD4Z904q60Yx2ru9MQUYpq4uzK/IqwG4+oBzCKv21Vxwd8/4IfDu
+ wHkvnuRuXn44klt74hrcazikcCky4yiaXEqJal+ePJrPHExB8M6rzdvt5LTs2FTVsIVe
+ 27/aAnv2hTMirFUOhF0G1U5mZRs4jYnNY7o9fsbcchWHo+XviaRZNS7fQ+sTvEkX1P2e
+ 46X7FEh3EI8xuV8k47P4QukMMcsqFYzaLd0yUVgGni8JVg0fTPcIkff4fygOl6S4z5VG
+ vObFsM44oDAmgywWk2cU1BBP5qYMC8AXXyeR2zfbH6/L80Fjlc+JWXUz2WqrNX7baHv5
+ /7PQ==
+X-Gm-Message-State: AC+VfDziH3TeuJP1l+i0r4o9vhp1Fx6VsJdukrsap0Lh7uSU/Wzwygx/
+ KgWZzdAZ+/u16Dr0nHBQamo=
+X-Google-Smtp-Source: ACHHUZ5ao6C+5pz+zF550bM9Hzn7MZh6x3oNgeWCAz8f8fCyHhR3KaBEgRmtv7zz3EnE8gZWMkPyiw==
+X-Received: by 2002:a5d:680b:0:b0:2f9:ee11:e5c3 with SMTP id
+ w11-20020a5d680b000000b002f9ee11e5c3mr5807970wru.2.1685605603177; 
+ Thu, 01 Jun 2023 00:46:43 -0700 (PDT)
+Received: from localhost.localdomain (h-176-10-144-222.NA.cust.bahnhof.se.
+ [176.10.144.222]) by smtp.gmail.com with ESMTPSA id
+ p12-20020adfcc8c000000b0030adfa48e1esm9350795wrj.29.2023.06.01.00.46.41
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 01 Jun 2023 00:46:42 -0700 (PDT)
+From: Magnus Karlsson <magnus.karlsson@gmail.com>
+To: magnus.karlsson@intel.com, intel-wired-lan@lists.osuosl.org,
+ anthony.l.nguyen@intel.com, maciej.fijalkowski@intel.com, hao.ma@intel.com
+Date: Thu,  1 Jun 2023 09:46:21 +0200
+Message-Id: <20230601074621.14755-1-magnus.karlsson@gmail.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Content-Language: en-US
-To: Egg Car <eggcar.luan@gmail.com>
-References: <20230531090805.3959-1-eggcar.luan@gmail.com>
- <92180324-fa55-5427-839e-d555ac5a6cd7@molgen.mpg.de>
- <CACMC4jY=c8kBwxRjLL++ro=Zz1O54h5Y6ADU6x+46pgN8XhkpA@mail.gmail.com>
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <CACMC4jY=c8kBwxRjLL++ro=Zz1O54h5Y6ADU6x+46pgN8XhkpA@mail.gmail.com>
-Subject: Re: [Intel-wired-lan] [PATCH] igb: Fix extts capture value format
- for 82580/i354/i350
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20221208; t=1685605603; x=1688197603;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=UDvuyGKcE4u2rB8/mp0V+EeyHQy6wBtC2SMaZnT20Uw=;
+ b=NI/JOH7aY0yZWpzrD1bPO9PDnk6QZrho8b5HQ6h6l7SKFqEqpWOjJibfJ8shwSVL7L
+ QIqOl9+OW0d86Sr0awwMMua9B+9L/IPUBgolxGCORQBkJbceM19r1ie2rk2G0MhHvBxz
+ Z8NbJGxV2JFF8zjpYF0OoWTxRUVrJvc3n0riAMuf4u/V2RyxEARh2h8g5NhpTUgb2pYt
+ RqpEJQ3u4Xlt0rV2ntkwomvmneW/wwPLfYic1PZ2RjKPq3TJTnSi4vYZyma45ERtRrrV
+ eVKp8XdjWzPUaHF5a4JgR5myFEMFtZMFod1I5fZ887nHgYr0Bl2M0LysnGt+DvIsJPou
+ +SvA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20221208 header.b=NI/JOH7a
+Subject: [Intel-wired-lan] [PATCH iwl-next] ixgbe: allow toggling loopback
+ mode via ndo_set_features callback
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,42 +108,170 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, jesse.brandeburg@intel.com,
- linux-kernel@vger.kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
- intel-wired-lan@lists.osuosl.org, kuba@kernel.org, pabeni@redhat.com,
- davem@davemloft.net
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Cc: netdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-CkRlYXIgRWdnLAoKClRoYW5rIHlvdSBmb3IgeW91ciByZXBseS4KCkFtIDAxLjA2LjIzIHVtIDA3
-OjU1IHNjaHJpZWIgZWdnIGNhcjoKCj4+IEl04oCZZCBiZSBncmVhdCwgaWYgeW91IGFkZGVkIGEg
-cGFyYWdyYXBoIGhvdyB0byByZXByb2R1Y2UgdGhlCj4+IGlzc3VlLgo+IAo+IEkgaGF2ZSB0ZXN0
-ZWQgYW4gaTM1MCBOSUMgd2l0aCBhIDFQUFMgc2lnbmFsIGlucHV0IHRvIGEgU0RQIHBpbiwKPiBy
-dW5uaW5nICd0czJwaGMnIHByb2dyYW0gZnJvbSBsaW51eHB0cCBwcm9qZWN0LCBhbmQgZm91bmQg
-dGhhdCB0aGUKPiAxUFBTIHRpbWVzdGFtcHMgcmVhZGluZyBvdXQgYXJlIHJhdyByZWdpc3RlciB2
-YWx1ZSBpbiByZXNvbHV0aW9uIG9mCj4gMW5zIGFuZCBhIG1heGltdW0gcmFuZ2Ugb2YgMl40MCBu
-cywgdGh1cyBhYm91dCAxMDk5IHMuIEl0IHdhcwo+IHN1cHBvc2VkIHRvIGJlIGluIFRBSSB0aW1l
-c3RhbXAgZm9ybWF0Lgo+IAo+IFNvcnJ5IEknbSBuZXcgdG8ga2VybmVsIGRldmVsb3BtZW50LCBz
-aG91bGQgSSBtYWtlIGEgbmV3IHBhdGNoIHRvIGFkZAo+IGEgcGFyYWdyYXBoIGluIHRoZSBjb21t
-aXQgaW5mb3JtYXRpb24/CgpUaGVyZSBpcyBubyBoYXJkIHJ1bGUgYWJvdXQgaXQsIGJ1dCBJIHdv
-dWxkIGFwcHJlY2lhdGUgaXQuIEluIHRoZSBlbmQsCml04oCZcyB0aGUgbWFpbnRhaW5lcnPigJkg
-ZGVjaXNpb24uIFlvdSBjYW4gYW1lbmQgdGhlIGNvbW1pdCwgYW5kIHRoZW4gCnJlZ2VuZXJhdGUg
-dGhlIHBhdGNoIHdpdGggYGdpdCBmb3JtYXQtcGF0Y2ggLTEgLXYyYC4gQmVsb3cgdGhlIC0tLSBs
-aW5lIAp5b3UgY2FuIGFkZCBhIHNob3J0IGNoYW5nZS1sb2csIHdoYXQgeW91IGNoYW5nZWQgYmV0
-d2VlbiB0aGUgcGF0Y2ggCml0ZXJhdGlvbnMuCgo+PiBJIGRvIG5vdCBzZWUgdGhlIHZhcmlhYmxl
-ICpmbGFncyogYmVpbmcgdXNlZC4KPiAKPiBUaGlzIHBhdGNoIGhhcyBhIHR5cG8sIHBsZWFzZSBp
-Z25vcmUgdGhpcyBvbmUsIEkgaGF2ZSBzdWJtaXR0ZWQgYSBuZXcgb25lCj4gdGhhdCBmaXhlZCB0
-aGlzLgoKSSBoYXZlIG5vdCBzZWVuIHRoaXMgeWV0LgoKPiBJIGhhdmUgdGVzdGVkIHRoZSBwYXRj
-aCBvbiBhIFVidW50dSBzZXJ2ZXIgMjIuMDQgbWFjaGluZSB3aXRoIGtlcm5lbCAKPiB2ZXJzaW9u
-IDUuMTkuMTcsIHRoZW4gSSBnZW5lcmF0ZWQgdGhlIHBhdGNoIGluIHRoZSAnbmV0LXF1ZXVlJwo+
-IGRldmVsb3BtZW50IHJlcG8uIEkganVzdCBoYW5kd3JpdHRlbiB0aGUgY2hhbmdlcyBpbiB0aGUg
-ZGV2IHJlcG8sCj4gbWFkZSBhIHNpbGx5IG1pc3Rha2UuCj4gCj4gQXBvbG90OHplIGZvciB0aGF0
-LCBJJ2xsIGJlIG1vcmUgY2FyZWZ1bCBuZXh0IHRpbWUuCk5vIHByb2JsZW0uIFRoaXMgaGFzIGhh
-cHBlbmVkIHRvIGFsbCBvZiB1cy4gQ29uZ3JhdHVsYXRpb25zIG9uIHlvdXIgCmZpcnN0KD8pIExp
-bnV4IGtlcm5lbCBjb250cmlidXRpb24uIEdsYWQgdG8gaGF2ZSB5b3UgYW5kIEkgYW0gbG9va2lu
-ZyAKZm9yd2FyZCB0byB5b3VyIG5leHQgaW1wcm92ZW1lbnRzLgoKCktpbmQgcmVnYXJkcywKClBh
-dWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwt
-d2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczov
-L2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
+From: Hao Ma <hao.ma@intel.com>
+
+Add support for NETIF_F_LOOPBACK. This feature can be set via: $
+ethtool -K eth0 loopback <on|off>. This sets the MAC Tx->Rx loopback
+used by selftests/bpf/xskxceiver.
+
+Signed-off-by: Hao Ma <hao.ma@intel.com>
+---
+ .../net/ethernet/intel/ixgbe/ixgbe_common.c   |  4 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 73 +++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  1 +
+ 3 files changed, 76 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 878dd8dff528..b8998a56ad24 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -3337,7 +3337,7 @@ s32 ixgbe_check_mac_link_generic(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
+ 
+ 	if (link_up_wait_to_complete) {
+ 		for (i = 0; i < IXGBE_LINK_UP_TIME; i++) {
+-			if (links_reg & IXGBE_LINKS_UP) {
++			if (links_reg & IXGBE_LINKS_UP || hw->loopback_on) {
+ 				*link_up = true;
+ 				break;
+ 			} else {
+@@ -3347,7 +3347,7 @@ s32 ixgbe_check_mac_link_generic(struct ixgbe_hw *hw, ixgbe_link_speed *speed,
+ 			links_reg = IXGBE_READ_REG(hw, IXGBE_LINKS);
+ 		}
+ 	} else {
+-		if (links_reg & IXGBE_LINKS_UP) {
++		if (links_reg & IXGBE_LINKS_UP || hw->loopback_on) {
+ 			if (crosstalk_fix_active) {
+ 				/* Check the link state again after a delay
+ 				 * to filter out spurious link up
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 5d83c887a3fc..70b34b7b5cb0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8864,6 +8864,57 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ 	return NETDEV_TX_OK;
+ }
+ 
++static int ixgbe_force_loopback(struct ixgbe_adapter *adapter, bool on)
++{	struct ixgbe_hw *hw = &adapter->hw;
++	u32 reg_data;
++
++	hw->loopback_on = on;
++	/* Setup MAC loopback */
++	reg_data = IXGBE_READ_REG(hw, IXGBE_HLREG0);
++	if (on)
++		reg_data |= IXGBE_HLREG0_LPBK;
++	else
++		reg_data &= ~IXGBE_HLREG0_LPBK;
++	IXGBE_WRITE_REG(hw, IXGBE_HLREG0, reg_data);
++
++	reg_data = IXGBE_READ_REG(hw, IXGBE_FCTRL);
++	if (on)
++		reg_data |= IXGBE_FCTRL_SBP | IXGBE_FCTRL_MPE;
++	else
++		reg_data &= ~(IXGBE_FCTRL_SBP | IXGBE_FCTRL_MPE);
++	reg_data &= ~(IXGBE_FCTRL_BAM);
++	IXGBE_WRITE_REG(hw, IXGBE_FCTRL, reg_data);
++
++	/* X540 and X550 needs to set the MACC.FLU bit to force link up */
++	switch (adapter->hw.mac.type) {
++	case ixgbe_mac_X540:
++	case ixgbe_mac_X550:
++	case ixgbe_mac_X550EM_x:
++	case ixgbe_mac_x550em_a:
++		reg_data = IXGBE_READ_REG(hw, IXGBE_MACC);
++		if (on)
++			reg_data |= IXGBE_MACC_FLU;
++		else
++			reg_data &= ~IXGBE_MACC_FLU;
++		IXGBE_WRITE_REG(hw, IXGBE_MACC, reg_data);
++		break;
++	default:
++		if (hw->mac.orig_autoc) {
++			if (on)
++				reg_data = hw->mac.orig_autoc | IXGBE_AUTOC_FLU;
++			else
++				reg_data = hw->mac.orig_autoc & ~IXGBE_AUTOC_FLU;
++			IXGBE_WRITE_REG(hw, IXGBE_AUTOC, reg_data);
++		} else {
++			return 10;
++		}
++	}
++
++	IXGBE_WRITE_FLUSH(hw);
++
++	return 0;
++}
++
+ static netdev_tx_t __ixgbe_xmit_frame(struct sk_buff *skb,
+ 				      struct net_device *netdev,
+ 				      struct ixgbe_ring *ring)
+@@ -9915,6 +9966,15 @@ static int ixgbe_set_features(struct net_device *netdev,
+ 	if (changed & NETIF_F_RXALL)
+ 		need_reset = true;
+ 
++	if (changed & NETIF_F_LOOPBACK) {
++		if (features & NETIF_F_LOOPBACK) {
++			ixgbe_force_loopback(adapter, true);
++		} else {
++			ixgbe_force_loopback(adapter, false);
++			need_reset = true;
++			}
++	}
++
+ 	netdev->features = features;
+ 
+ 	if ((changed & NETIF_F_HW_L2FW_DOFFLOAD) && adapter->num_rx_pools > 1)
+@@ -10286,6 +10346,17 @@ static int ixgbe_xdp_setup(struct net_device *dev, struct bpf_prog *prog)
+ 			/* Wait until ndo_xsk_wakeup completes. */
+ 			synchronize_rcu();
+ 		err = ixgbe_setup_tc(dev, adapter->hw_tcs);
++		if (adapter->hw.loopback_on) {
++			u32 reg_data;
++
++			reg_data = IXGBE_READ_REG(&adapter->hw, IXGBE_HLREG0);
++			reg_data |= IXGBE_HLREG0_LPBK;
++			IXGBE_WRITE_REG(&adapter->hw, IXGBE_HLREG0, reg_data);
++
++			reg_data = IXGBE_READ_REG(&adapter->hw, IXGBE_MACC);
++			reg_data |= IXGBE_MACC_FLU;
++			IXGBE_WRITE_REG(&adapter->hw, IXGBE_MACC, reg_data);
++		}
+ 
+ 		if (err)
+ 			return -EINVAL;
+@@ -10969,6 +11040,8 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (hw->mac.type >= ixgbe_mac_82599EB)
+ 		netdev->features |= NETIF_F_SCTP_CRC | NETIF_F_GSO_UDP_L4;
+ 
++	netdev->features |= NETIF_F_LOOPBACK;
++
+ #ifdef CONFIG_IXGBE_IPSEC
+ #define IXGBE_ESP_FEATURES	(NETIF_F_HW_ESP | \
+ 				 NETIF_F_HW_ESP_TX_CSUM | \
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 2b00db92b08f..ca50ccd59b50 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3652,6 +3652,7 @@ struct ixgbe_hw {
+ 	bool				allow_unsupported_sfp;
+ 	bool				wol_enabled;
+ 	bool				need_crosstalk_fix;
++	bool				loopback_on;
+ };
+ 
+ struct ixgbe_info {
+
+base-commit: 735c9ee9a374769b78c716de3c19a6c9440ede85
+-- 
+2.34.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
