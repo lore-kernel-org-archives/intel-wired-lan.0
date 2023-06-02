@@ -4,98 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC6BFC7EE24
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Jun 2023 15:20:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14816C7EE24
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Jun 2023 15:20:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7A0E94187B;
-	Fri,  2 Jun 2023 15:20:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7A0E94187B
+	by smtp2.osuosl.org (Postfix) with ESMTP id BDF3F405FA;
+	Fri,  2 Jun 2023 15:20:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BDF3F405FA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685719202;
-	bh=k1RgMkpXT1oKR6yaIjnTRV4MNNOAfJOXH2HfQjS5Cz0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=7UA9BPfTtq0H26EmsScoWjcBdiVN+3uLNihddwZhQSVKY3HwSq1RUUWCgJjKG6YiM
-	 7rgSEgUagDKV3qJ6q0VGqtgN8wn4q5TXnkF7Exou330u+bUqNc1WF0Mab6JQodZVuG
-	 YjzJP2RAe3qlcjJ1J9L8YAcD7y3W7caSzywZOSk0At7s7eu4/vab7ISkYSzSoTSbY/
-	 ICG72I6LOc+KrGzLAghtZQj3pgnNDvL29IH8g7/ORYCK4ewKyuKtOxz2jVK/APU4CN
-	 sV8B/NRcDKHTvMo9QAJZaB3cw0LyCOUcneZfIBy9+HYQZIlYcfd74mcxwhdG/X6LHP
-	 XWMkRqc0jxVjA==
+	s=default; t=1685719206;
+	bh=jVDKHlBqVzOtZLbPrB+lgsotbV+1mrHs+CKsR+lDfuY=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=CrTtAwKcIu4LFqr3huQqS6MqOdSiC/F0NGDLwnzsEiChRQov/rGhWIekFGvclK1VJ
+	 tSMrE2Oh8xhAO0uDPSIGPBMGT/I2gOGwqLWxRkCgxsoOk1gKqx3Cu0Eyrji4zhnGTm
+	 SRY2Lq4wd/xrHf5TVoJ0mqmoLCoHh0BpktnZkXmr2lwe3Yhl0EUVPW265328toQ5XR
+	 AH5eGjSVBxT4bnHu9cKwGen+enCbuzI6Bhq0Eoy/ehpAyvAu4SaOfVuqCz0tfpz0P1
+	 tCZYzLpe2sag7oRYIgpWhqVsVFtbVfF8XLrcJk+baiCy7Cyi0y1WjV2pEy62re+1Wv
+	 2QY/nmYUT74/g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id AD_aIme5tAdN; Fri,  2 Jun 2023 15:20:01 +0000 (UTC)
+	with ESMTP id pEZB39hkWU2d; Fri,  2 Jun 2023 15:20:06 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6C22A4187F;
-	Fri,  2 Jun 2023 15:20:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6C22A4187F
+	by smtp2.osuosl.org (Postfix) with ESMTP id C0B534188C;
+	Fri,  2 Jun 2023 15:20:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C0B534188C
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id D7A121BF291
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 08:23:51 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 298D21BF34D
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 11:48:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id AF8DE4016B
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 08:23:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AF8DE4016B
+ by smtp2.osuosl.org (Postfix) with ESMTP id ED7A440A55
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 11:48:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ED7A440A55
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gbCi--wNcjVq for <intel-wired-lan@lists.osuosl.org>;
- Fri,  2 Jun 2023 08:23:50 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B183140139
-Received: from mail-oi1-x22c.google.com (mail-oi1-x22c.google.com
- [IPv6:2607:f8b0:4864:20::22c])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B183140139
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 08:23:50 +0000 (UTC)
-Received: by mail-oi1-x22c.google.com with SMTP id
- 5614622812f47-3985f70cf1bso1194079b6e.3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 02 Jun 2023 01:23:50 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1685694229; x=1688286229;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=MM78kBmbjOQMknldd9jptuEZvjZhQgI216uXdC0hMys=;
- b=ZpmfjEs8hyAhV70MM+m8NEcr2Mg+g8o5al9ulyvyfvd6GFHzsC+aFfgksxRB4S5zCO
- IPIFATaLneRWdF8BRd0Ss5oFuUzP19O2QYBzVNlHW87Ux0TJtIJW7y7OC91qTP7qjmU4
- fcGifZnbsxWTtrXyoNF42EdkOMe8yDjStxFt0HuD89HvhOzPP1rKRSGkcd9lK9SovuRA
- 6p1NCvuYgfG6LeeicyGTCK2rwbdRVdaRFsi/k2DusY7LfQgnOQ5op42BBtI6KZOVm9GX
- YZMbf/N9pSBRfuyayPFLp9rqKVxXk2VYbNp4by/0NVXhpRbXKzSD9xSjTWlVqgaWAhjK
- O1aw==
-X-Gm-Message-State: AC+VfDyolVFhT8OVQ5k1wOJhxM7aM9pkrws88o4sbQgon25kTDEvbQ4J
- yyynNSS3ZWzmN5KFXxqMCdqI+kdCaSFILgzHlxg=
-X-Google-Smtp-Source: ACHHUZ5qKjLlcNkzLzR1/sIGodIrTWPln2mHg/hVxJYeD32X78JXHNYVpOyf9QQEFKM3HItG9HjirA==
-X-Received: by 2002:a05:6358:999e:b0:127:ae95:c089 with SMTP id
- j30-20020a056358999e00b00127ae95c089mr5439915rwb.29.1685694229231; 
- Fri, 02 Jun 2023 01:23:49 -0700 (PDT)
-Received: from arista-Idaville.sjc.aristanetworks.com ([74.123.28.10])
- by smtp.googlemail.com with ESMTPSA id
- fu1-20020a17090ad18100b0024e33c69ee5sm726251pjb.5.2023.06.02.01.23.48
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 02 Jun 2023 01:23:48 -0700 (PDT)
-From: prasad@arista.com
-To: intel-wired-lan@lists.osuosl.org
-Date: Fri,  2 Jun 2023 01:23:36 -0700
-Message-Id: <20230602082336.50220-1-prasad@arista.com>
-X-Mailer: git-send-email 2.25.1
+ with ESMTP id qVg3DZKVN3hG for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  2 Jun 2023 11:48:51 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 91ED7403C4
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 91ED7403C4
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 11:48:51 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="358279731"
+X-IronPort-AV: E=Sophos;i="6.00,212,1681196400"; d="scan'208";a="358279731"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Jun 2023 04:48:50 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10728"; a="707819513"
+X-IronPort-AV: E=Sophos;i="6.00,212,1681196400"; d="scan'208";a="707819513"
+Received: from rspatil-mobl3.gar.corp.intel.com (HELO
+ ijarvine-MOBL2.ger.corp.intel.com) ([10.251.208.112])
+ by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Jun 2023 04:48:44 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+To: linux-pci@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Rob Herring <robh@kernel.org>,
+ =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+ Lukas Wunner <lukas@wunner.de>, "Rafael J . Wysocki" <rafael@kernel.org>,
+ Heiner Kallweit <hkallweit1@gmail.com>,
+ Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri,  2 Jun 2023 14:47:45 +0300
+Message-Id: <20230602114751.19671-9-ilpo.jarvinen@linux.intel.com>
+X-Mailer: git-send-email 2.30.2
+In-Reply-To: <20230602114751.19671-1-ilpo.jarvinen@linux.intel.com>
+References: <20230602114751.19671-1-ilpo.jarvinen@linux.intel.com>
 MIME-Version: 1.0
 X-Mailman-Approved-At: Fri, 02 Jun 2023 15:19:39 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=arista.com; s=google; t=1685694229; x=1688286229;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=MM78kBmbjOQMknldd9jptuEZvjZhQgI216uXdC0hMys=;
- b=TGcoTco3Zo61cawFU91nWj6kEgpUA2bojJSw0O7oAmiU5dFSPBHgWp4lsKcdYIB4Z5
- x1g8JT8lGOkGXGYsc50lKqvKGNvlMf1sbOnO2roI72A+ZEZm6GGMlCU9bz0u7FzEvl9o
- mTwEGJnP1hK3mVZ2DMI9AuIq7/VuvGSJAjFZJgby/2L/ZBzwXhn1sKMIhu0MECII/PvZ
- jFcsvM+JC3dSTBsml4y8611/acXtsV/gSpdBOHeGhn7zFWJ/sjzW3fuCbfQKGd6apPlN
- qI/zdeBbDKUwPlE8ITKpcjV/lEW3WmTBf+NWCsH9kgGvGqa3zS3uM2DJiRUfzbt/pQC3
- FKBg==
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1685706531; x=1717242531;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=jGXAxasqLUJNCCsewqKuozH1mOZUvPCSOeFXiURbrcI=;
+ b=PCMuZbtVd5rDdlRR4qozScmjCBUl7ylOG6XyPSAC83py4aO1foM29BFl
+ beGNhPzVRZ7VdVDPP/8im/e+vnj2bv6SN2KPzRb1L7zeSFS8LngbAnfZK
+ JFS332heSB30PG3MCMlqANwYnDrCbYIvcR5JkeqTA8+b7/YCLDfEFlqvN
+ +zuQ8q24tNjUOQFfxYE0D51i4Z2sxevsEOd174DObM9NXqA52UwvbsECs
+ oqDGz0KEXmTBsu0xAqnGacMnoZgQYBVIMGZZ8UhhVEZ+VjBavHJDORmtX
+ u4CrdqzuYSUSkjty1QgEztC9D4lO8OlWimOZQTYYmDbsGkbHMwwEm3hi2
+ A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=arista.com header.i=@arista.com
- header.a=rsa-sha256 header.s=google header.b=TGcoTco3
-Subject: [Intel-wired-lan] [PATCH] intel-wired-lan: igc: set TP bit in
- ethtool_link_ksettings.supported field
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=PCMuZbtV
+Subject: [Intel-wired-lan] [RFC PATCH v1 08/13] e1000e: Remove unreliable
+ pci_disable_link_state{, _locked}() workaround
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,37 +110,78 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: gilligan@arista.com, Prasad Koya <prasad@arista.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Prasad Koya <prasad@arista.com>
-
-set the TP bit in the 'supported' field since I226 only supports twisted pair
-
-Signed-off-by: Prasad Koya <prasad@arista.com>
----
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 8cc077b712ad..c796bd805092 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1707,6 +1707,7 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
- 	/* twisted pair */
- 	cmd->base.port = PORT_TP;
- 	cmd->base.phy_address = hw->phy.addr;
-+	ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
- 
- 	/* advertising link modes */
- 	if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
--- 
-2.25.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+cGNpX2Rpc2FibGVfbGlua19zdGF0ZSgpIGFuZCBwY2lfZGlzYWJsZV9saW5rX3N0YXRlX2xvY2tl
+ZCgpIHdlcmUgbWFkZQpyZWxpYWJsZSByZWdhcmRsZXNzIG9mIEFTUE0gQ09ORklHIGFuZCBPUyBi
+ZWluZyBkaXNhbGxvd2VkIHRvIGNoYW5nZQpBU1BNIHN0YXRlcyB0byBhbGxvdyBkcml2ZXJzIHRv
+IHJlbHkgb24gdGhlbSB3b3JraW5nLgoKUmVtb3ZlIGRyaXZlciB3b3JraW5nIGFyb3VuZCB1bnJl
+bGlhYmxlCnBjaV9kaXNhYmxlX2xpbmtfc3RhdGV7LF9sb2NrZWR9KCkgZnJvbSBlMTAwMGUgZHJp
+dmVyIGFuZCBqdXN0IGNhbGwgdGhlCmZ1bmN0aW9ucyBkaXJlY3RseS4KClNpZ25lZC1vZmYtYnk6
+IElscG8gSsOkcnZpbmVuIDxpbHBvLmphcnZpbmVuQGxpbnV4LmludGVsLmNvbT4KLS0tCiBkcml2
+ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9lMTAwMGUvbmV0ZGV2LmMgfCA3NyArLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tCiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCA3NSBkZWxldGlvbnMo
+LSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9lMTAwMGUvbmV0ZGV2
+LmMgYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9lMTAwMGUvbmV0ZGV2LmMKaW5kZXggYmQ3
+ZWY1OWIxZjJlLi5kNjgwZDA1OWE2ODEgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbmV0L2V0aGVybmV0
+L2ludGVsL2UxMDAwZS9uZXRkZXYuYworKysgYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9l
+MTAwMGUvbmV0ZGV2LmMKQEAgLTY3NjMsNzkgKzY3NjMsNiBAQCBzdGF0aWMgaW50IF9fZTEwMDBf
+c2h1dGRvd24oc3RydWN0IHBjaV9kZXYgKnBkZXYsIGJvb2wgcnVudGltZSkKIAlyZXR1cm4gMDsK
+IH0KIAotLyoqCi0gKiBfX2UxMDAwZV9kaXNhYmxlX2FzcG0gLSBEaXNhYmxlIEFTUE0gc3RhdGVz
+Ci0gKiBAcGRldjogcG9pbnRlciB0byBQQ0kgZGV2aWNlIHN0cnVjdAotICogQHN0YXRlOiBiaXQt
+bWFzayBvZiBBU1BNIHN0YXRlcyB0byBkaXNhYmxlCi0gKiBAbG9ja2VkOiBpbmRpY2F0aW9uIGlm
+IHRoaXMgY29udGV4dCBob2xkcyBwY2lfYnVzX3NlbSBsb2NrZWQuCi0gKgotICogU29tZSBkZXZp
+Y2VzICptdXN0KiBoYXZlIGNlcnRhaW4gQVNQTSBzdGF0ZXMgZGlzYWJsZWQgcGVyIGhhcmR3YXJl
+IGVycmF0YS4KLSAqKi8KLXN0YXRpYyB2b2lkIF9fZTEwMDBlX2Rpc2FibGVfYXNwbShzdHJ1Y3Qg
+cGNpX2RldiAqcGRldiwgdTE2IHN0YXRlLCBpbnQgbG9ja2VkKQotewotCXN0cnVjdCBwY2lfZGV2
+ICpwYXJlbnQgPSBwZGV2LT5idXMtPnNlbGY7Ci0JdTE2IGFzcG1fZGlzX21hc2sgPSAwOwotCXUx
+NiBwZGV2X2FzcG1jLCBwYXJlbnRfYXNwbWM7Ci0KLQlzd2l0Y2ggKHN0YXRlKSB7Ci0JY2FzZSBQ
+Q0lFX0xJTktfU1RBVEVfTDBTOgotCWNhc2UgUENJRV9MSU5LX1NUQVRFX0wwUyB8IFBDSUVfTElO
+S19TVEFURV9MMToKLQkJYXNwbV9kaXNfbWFzayB8PSBQQ0lfRVhQX0xOS0NUTF9BU1BNX0wwUzsK
+LQkJZmFsbHRocm91Z2g7IC8qIGNhbid0IGhhdmUgTDEgd2l0aG91dCBMMHMgKi8KLQljYXNlIFBD
+SUVfTElOS19TVEFURV9MMToKLQkJYXNwbV9kaXNfbWFzayB8PSBQQ0lfRVhQX0xOS0NUTF9BU1BN
+X0wxOwotCQlicmVhazsKLQlkZWZhdWx0OgotCQlyZXR1cm47Ci0JfQotCi0JcGNpZV9jYXBhYmls
+aXR5X3JlYWRfd29yZChwZGV2LCBQQ0lfRVhQX0xOS0NUTCwgJnBkZXZfYXNwbWMpOwotCXBkZXZf
+YXNwbWMgJj0gUENJX0VYUF9MTktDVExfQVNQTUM7Ci0KLQlpZiAocGFyZW50KSB7Ci0JCXBjaWVf
+Y2FwYWJpbGl0eV9yZWFkX3dvcmQocGFyZW50LCBQQ0lfRVhQX0xOS0NUTCwKLQkJCQkJICAmcGFy
+ZW50X2FzcG1jKTsKLQkJcGFyZW50X2FzcG1jICY9IFBDSV9FWFBfTE5LQ1RMX0FTUE1DOwotCX0K
+LQotCS8qIE5vdGhpbmcgdG8gZG8gaWYgdGhlIEFTUE0gc3RhdGVzIHRvIGJlIGRpc2FibGVkIGFs
+cmVhZHkgYXJlICovCi0JaWYgKCEocGRldl9hc3BtYyAmIGFzcG1fZGlzX21hc2spICYmCi0JICAg
+ICghcGFyZW50IHx8ICEocGFyZW50X2FzcG1jICYgYXNwbV9kaXNfbWFzaykpKQotCQlyZXR1cm47
+Ci0KLQlkZXZfaW5mbygmcGRldi0+ZGV2LCAiRGlzYWJsaW5nIEFTUE0gJXMgJXNcbiIsCi0JCSAo
+YXNwbV9kaXNfbWFzayAmIHBkZXZfYXNwbWMgJiBQQ0lfRVhQX0xOS0NUTF9BU1BNX0wwUykgPwot
+CQkgIkwwcyIgOiAiIiwKLQkJIChhc3BtX2Rpc19tYXNrICYgcGRldl9hc3BtYyAmIFBDSV9FWFBf
+TE5LQ1RMX0FTUE1fTDEpID8KLQkJICJMMSIgOiAiIik7Ci0KLSNpZmRlZiBDT05GSUdfUENJRUFT
+UE0KLQlpZiAobG9ja2VkKQotCQlwY2lfZGlzYWJsZV9saW5rX3N0YXRlX2xvY2tlZChwZGV2LCBz
+dGF0ZSk7Ci0JZWxzZQotCQlwY2lfZGlzYWJsZV9saW5rX3N0YXRlKHBkZXYsIHN0YXRlKTsKLQot
+CS8qIERvdWJsZS1jaGVjayBBU1BNIGNvbnRyb2wuICBJZiBub3QgZGlzYWJsZWQgYnkgdGhlIGFi
+b3ZlLCB0aGUKLQkgKiBCSU9TIGlzIHByZXZlbnRpbmcgdGhhdCBmcm9tIGhhcHBlbmluZyAob3Ig
+Q09ORklHX1BDSUVBU1BNIGlzCi0JICogbm90IGVuYWJsZWQpOyBvdmVycmlkZSBieSB3cml0aW5n
+IFBDSSBjb25maWcgc3BhY2UgZGlyZWN0bHkuCi0JICovCi0JcGNpZV9jYXBhYmlsaXR5X3JlYWRf
+d29yZChwZGV2LCBQQ0lfRVhQX0xOS0NUTCwgJnBkZXZfYXNwbWMpOwotCXBkZXZfYXNwbWMgJj0g
+UENJX0VYUF9MTktDVExfQVNQTUM7Ci0KLQlpZiAoIShhc3BtX2Rpc19tYXNrICYgcGRldl9hc3Bt
+YykpCi0JCXJldHVybjsKLSNlbmRpZgotCi0JLyogQm90aCBkZXZpY2UgYW5kIHBhcmVudCBzaG91
+bGQgaGF2ZSB0aGUgc2FtZSBBU1BNIHNldHRpbmcuCi0JICogRGlzYWJsZSBBU1BNIGluIGRvd25z
+dHJlYW0gY29tcG9uZW50IGZpcnN0IGFuZCB0aGVuIHVwc3RyZWFtLgotCSAqLwotCXBjaWVfY2Fw
+YWJpbGl0eV9jbGVhcl93b3JkKHBkZXYsIFBDSV9FWFBfTE5LQ1RMLCBhc3BtX2Rpc19tYXNrKTsK
+LQotCWlmIChwYXJlbnQpCi0JCXBjaWVfY2FwYWJpbGl0eV9jbGVhcl93b3JkKHBhcmVudCwgUENJ
+X0VYUF9MTktDVEwsCi0JCQkJCSAgIGFzcG1fZGlzX21hc2spOwotfQotCiAvKioKICAqIGUxMDAw
+ZV9kaXNhYmxlX2FzcG0gLSBEaXNhYmxlIEFTUE0gc3RhdGVzLgogICogQHBkZXY6IHBvaW50ZXIg
+dG8gUENJIGRldmljZSBzdHJ1Y3QKQEAgLTY4NDYsNyArNjc3Myw3IEBAIHN0YXRpYyB2b2lkIF9f
+ZTEwMDBlX2Rpc2FibGVfYXNwbShzdHJ1Y3QgcGNpX2RldiAqcGRldiwgdTE2IHN0YXRlLCBpbnQg
+bG9ja2VkKQogICoqLwogc3RhdGljIHZvaWQgZTEwMDBlX2Rpc2FibGVfYXNwbShzdHJ1Y3QgcGNp
+X2RldiAqcGRldiwgdTE2IHN0YXRlKQogewotCV9fZTEwMDBlX2Rpc2FibGVfYXNwbShwZGV2LCBz
+dGF0ZSwgMCk7CisJcGNpX2Rpc2FibGVfbGlua19zdGF0ZShwZGV2LCBzdGF0ZSk7CiB9CiAKIC8q
+KgpAQCAtNjg1OSw3ICs2Nzg2LDcgQEAgc3RhdGljIHZvaWQgZTEwMDBlX2Rpc2FibGVfYXNwbShz
+dHJ1Y3QgcGNpX2RldiAqcGRldiwgdTE2IHN0YXRlKQogICoqLwogc3RhdGljIHZvaWQgZTEwMDBl
+X2Rpc2FibGVfYXNwbV9sb2NrZWQoc3RydWN0IHBjaV9kZXYgKnBkZXYsIHUxNiBzdGF0ZSkKIHsK
+LQlfX2UxMDAwZV9kaXNhYmxlX2FzcG0ocGRldiwgc3RhdGUsIDEpOworCXBjaV9kaXNhYmxlX2xp
+bmtfc3RhdGVfbG9ja2VkKHBkZXYsIHN0YXRlKTsKIH0KIAogc3RhdGljIGludCBlMTAwMGVfcG1f
+dGhhdyhzdHJ1Y3QgZGV2aWNlICpkZXYpCi0tIAoyLjMwLjIKCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLXdpcmVkLWxhbiBtYWlsaW5nIGxpc3QK
+SW50ZWwtd2lyZWQtbGFuQG9zdW9zbC5vcmcKaHR0cHM6Ly9saXN0cy5vc3Vvc2wub3JnL21haWxt
+YW4vbGlzdGluZm8vaW50ZWwtd2lyZWQtbGFuCg==
