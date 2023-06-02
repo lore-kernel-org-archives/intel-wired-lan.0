@@ -4,99 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2776BC7EE24
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Jun 2023 15:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77172C7EE24
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  2 Jun 2023 15:19:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CEC59405FA;
-	Fri,  2 Jun 2023 15:19:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CEC59405FA
+	by smtp2.osuosl.org (Postfix) with ESMTP id 2931E41877;
+	Fri,  2 Jun 2023 15:19:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2931E41877
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685719189;
-	bh=Ov4Dv54mzmTvZThsUt2f8wxj19RkKaQcqKAAOVTGJLI=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=ZqOegN9nUMGC/3SRVzP/XUxB3iBLwfv0et4vkU7jxzZs6+kY0bIT2eFfJv/1Vh1JC
-	 X4PgcE1zNVz5PlULqhJJw7VREXfp/F9UYv0dAjjQDtDEM/1D4TTJXF3CHd37kmB8N8
-	 xDqCJxpTrYNRWWETTsdjDEY4xxCSZit5hyUFU+jn1tCOk5e+wUUXeA1NoXE6S50iy7
-	 OAnz+kGufXeZ5tEmh2xDgvA+ssCRAJJjQK2pPHO+J/afNU5jY19t18k0yQnHUHCtaH
-	 uUzzLgZu6X5c/uJQzVi+L5Iptpbe/qdvdeGrTEF/LrSD0/0WzqpA0h++YqUJJ3+W2a
-	 Jv/SxZRLI7O2w==
+	s=default; t=1685719194;
+	bh=3ic6tS0u/Ls+ZJs/+TJhKdMqDcrlR/X9tXj7CmZ27rA=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=i7HJ/BWrxX0a6NleHFhwTxTjCdOEgNcw8PnC0HBl9mOF6Le1ASv43LuFNdjpQA9o8
+	 Pv1zJIxJCG125tkkuJ0iuiwxlIyD009rFIG1VKUSz25v58EDdMjoqHO9eOX/Kiq76Q
+	 TvVaDuq/Yzod7YA15Jei6VwuwABt2GZUcP1kiREWxjtLhBUih5QI8B6sR9oCdsJko/
+	 moIvK/uNaSmmhm8p1vU7E2K0vLXWPYjtJaaXTGqMQIIeQ2IaDk+yjzVhDx/2ShFkqG
+	 uWk5xfUvIsWZFnK/OkBvhRbX1P5U/chnfapo8rgfQxeLWPyOLj3f82CYu5CeNYA19p
+	 u5HzswJC0LUsg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id vkN7so_MjaqY; Fri,  2 Jun 2023 15:19:49 +0000 (UTC)
+	with ESMTP id FBqEo_hfth-Q; Fri,  2 Jun 2023 15:19:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CF39441884;
-	Fri,  2 Jun 2023 15:19:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CF39441884
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 562CE1BF599
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 07:04:30 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id DC79441866;
+	Fri,  2 Jun 2023 15:19:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DC79441866
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 8D4141BF599
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 07:50:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2CACE42080
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 07:04:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2CACE42080
+ by smtp1.osuosl.org (Postfix) with ESMTP id 719FA81E53
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 07:50:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 719FA81E53
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 6RyWZ_3cqVCT for <intel-wired-lan@lists.osuosl.org>;
- Fri,  2 Jun 2023 07:04:29 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id tj0xesnoYq0v for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  2 Jun 2023 07:50:06 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 52FA742064
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com
- [IPv6:2607:f8b0:4864:20::42f])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 52FA742064
- for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 07:04:28 +0000 (UTC)
-Received: by mail-pf1-x42f.google.com with SMTP id
- d2e1a72fcca58-64fbfe0d037so2293408b3a.0
- for <intel-wired-lan@lists.osuosl.org>; Fri, 02 Jun 2023 00:04:28 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DE14C83C19
+Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com
+ [IPv6:2a00:1450:4864:20::632])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id DE14C83C19
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  2 Jun 2023 07:50:05 +0000 (UTC)
+Received: by mail-ej1-x632.google.com with SMTP id
+ a640c23a62f3a-96f5d651170so645617766b.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 02 Jun 2023 00:50:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1685689468; x=1688281468;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ d=1e100.net; s=20221208; t=1685692204; x=1688284204;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
  :reply-to;
- bh=Zx4FMc0sVk+rwjCWqO76VEczo14IYbRluwgeL4nENPs=;
- b=gwN2C+aPmYsx1G7c10Kv76DY8ZTGDp4psaeP4mIS22K8a/bVeKwXRHfFUpPCyOT22y
- tRMge+vhW5KnsChaZ9ZDKh5Nm7vAVt+L7GMopMmgM/RaMkmqd60kQNVr2jGf9gkXxgQ4
- hzPBQH9BZExMQEoNEjZKMvy19AOIBqqLMgNL1Nk9iz73hlu+ZuaGzYIEWC5jq2Ze/B9J
- imv85tAAiAOvLPe/5CdojvGVuvYzz0cB3px8X49lZpfPiIqhXVBCBNAOKePCRaJJxLFQ
- C/Bf3mUpTiAJ5JrmKjLvc7skKBMjgtTiNoE7ZsDq12mfMOJ9X74us+qyhadVkbCyDvEe
- SiBg==
-X-Gm-Message-State: AC+VfDwjscoLO4avO5HJ0G3B0GiG5dUuVvUJdI4GM7hUDfGr8ALJkKAQ
- NHLQI4hqQ38LloYkUIns3Dw=
-X-Google-Smtp-Source: ACHHUZ4d2bX/UI/9TjW/+9fZety85pnDvoU1eN9s8tbpuQPK4d3S5wWBhLVhBjBL5PhUAvm4M56hKw==
-X-Received: by 2002:a05:6a21:7891:b0:10a:eea0:6987 with SMTP id
- bf17-20020a056a21789100b0010aeea06987mr4999826pzc.26.1685689468352; 
- Fri, 02 Jun 2023 00:04:28 -0700 (PDT)
-Received: from dnptp-9.. ([111.198.57.33]) by smtp.gmail.com with ESMTPSA id
- p30-20020a631e5e000000b00514256c05c2sm570259pgm.7.2023.06.02.00.04.25
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 02 Jun 2023 00:04:27 -0700 (PDT)
-From: Yuezhen Luan <eggcar.luan@gmail.com>
-To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Fri,  2 Jun 2023 07:04:22 +0000
-Message-Id: <20230602070422.1808-1-eggcar.luan@gmail.com>
-X-Mailer: git-send-email 2.34.1
+ bh=Nm6904e9uOTwjcadb4t+yWnWamyOPNPf3ur/MojkN0o=;
+ b=dEO4l9N8rRJYopCw4Ywkp81LWa9Px7iD9Nil+EeHMgwCvMG+MP15SAazQ+GBzkJmLo
+ il2v8oB7Cb2DC6jTMvYiLsPL7mWoJRDg11QgrnPu6wRAJZQrAZd7jX89Ffkm9rBFwOiL
+ Xhl1TVTk1iZPiCc9iJ/UlvLnofIXskkSre70ivcV2NERSfzL0VWvfWMuWIFdaQupPxfA
+ IBIb1Nd4RlbiLL6aREQeQfkuuz3DBAE0AP4E8hcMiUqd7O9Pj5HclSp8U6ZGK9+TWiFt
+ oCp3M5+FBd78lFVONYb8Ib/wFnA4Q4LIs/KD6zfZ76Wbayrc0FWQPz0NuabI7fbcn8di
+ C4wg==
+X-Gm-Message-State: AC+VfDwflhe8Nyc5wF1WztZRBBRFeuxC/PZ8QRNpFJooX5OgU9UDjNuA
+ /Hz9EbMcucShgUNk1dzEFxFyVk8kJDMpdBxQ+AEbKA==
+X-Google-Smtp-Source: ACHHUZ5f4MMmaN/T0CLf0iD4uGBRMw/+J0xQ6r10Lefy5sOrDczyeEpuYi5fSM8G+dxx2k2xOq6M1QmOTddP3ThfAgM=
+X-Received: by 2002:a17:907:86a3:b0:968:892b:1902 with SMTP id
+ qa35-20020a17090786a300b00968892b1902mr3598207ejc.6.1685692203986; Fri, 02
+ Jun 2023 00:50:03 -0700 (PDT)
 MIME-Version: 1.0
+References: <20230601185353.17012-1-prasad@arista.com>
+ <cbb5bf34-5082-13ec-45b8-590268279bae@intel.com>
+In-Reply-To: <cbb5bf34-5082-13ec-45b8-590268279bae@intel.com>
+From: Prasad Koya <prasad@arista.com>
+Date: Fri, 2 Jun 2023 00:49:52 -0700
+Message-ID: <CAKh1g57arCC3a0iv+pc+xKJk+8HgzqvK6SjJt83uVQedw2Hm9w@mail.gmail.com>
+To: "Neftin, Sasha" <sasha.neftin@intel.com>
 X-Mailman-Approved-At: Fri, 02 Jun 2023 15:19:39 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20221208; t=1685689468; x=1688281468;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=Zx4FMc0sVk+rwjCWqO76VEczo14IYbRluwgeL4nENPs=;
- b=PmVs8Q7YIRLQab59Z5PrWLF8LtScAkyvxfEyncKDeQn0VgRQpcn+CzE6E1yxwc8/Ve
- entQ11T96eUdvRIKVjiR0rd/k53AmAUnKvx4UJmgaHAVki9p9Q5bLjLOeXyTjThQnsbQ
- q0rYzTgbzEdVZ0A2HFo8ZylTih6paODNKbLwI9HKvGMB+AmSfVuOua5ZmIUCVHpuM4HH
- cpqxhbwbJQXH/lqswAJjWjaAazXQo3NJ2MDip/1OZaCnsOGV5HftC7x9uahIMsdzScTh
- kN+vQ2zjk3WpuxZpkxFgDAHYx/b3jArKlZQ7fLjcgm/AXiS1rHWzGsYSF4zwN0YF7zao
- INpQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20221208 header.b=PmVs8Q7Y
-Subject: [Intel-wired-lan] [PATCHv3 net] igb: Fix extts capture value format
- for 82580/i354/i350
+ d=arista.com; s=google; t=1685692204; x=1688284204;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=Nm6904e9uOTwjcadb4t+yWnWamyOPNPf3ur/MojkN0o=;
+ b=fbpP9sh9S6CHtQRspjhHpTeWEjUYQi6Uh8lIhQBAb5WWEzKfldZwJCrkMhPM50ia6n
+ vPnOyq6LDRZ5N364sJsRGvIV1t3j/rWW/Hr5baywFyRSSWOKNkSS+9qCBNMJ8zbLYr2K
+ osnWP2zSt4mq9OyBcWcaNZsDwhF91fDaQ2CjHoDe1KaOzN19wCq0/ytS/ixpkElEt3wZ
+ 7TpYZCCTQP/tPjV4Ka+p7gQhj9Udqqsp88zq9jmFiIQuIXMktEfzBMnQjziL2ulop3X7
+ Ww2Qfqlglh/88g8PYsq54GnzeTGFeg10WBVdDZyBqsSIUHYMoOicnrrqU6eFjfeDHPlZ
+ kceA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=arista.com header.i=@arista.com
+ header.a=rsa-sha256 header.s=google header.b=fbpP9sh9
+Subject: Re: [Intel-wired-lan] [PATCH] intel-wired-lan: igc: set TP bit in
+ ethtool_link_ksettings.supported field
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,72 +106,136 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, Yuezhen Luan <eggcar.luan@gmail.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: "Fuxbrumer, Devora" <devora.fuxbrumer@intel.com>, "Nguyen,
+ Anthony L" <anthony.l.nguyen@intel.com>, gilligan@arista.com,
+ intel-wired-lan@lists.osuosl.org, "Ruinskiy, Dima" <dima.ruinskiy@intel.com>,
+ "Avivi, Amir" <amir.avivi@intel.com>
+Content-Type: multipart/mixed; boundary="===============4063628762715040628=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-82580/i354/i350 features circle-counter-like timestamp registers
-that are different with newer i210. The EXTTS capture value in
-AUXTSMPx should be converted from raw circle counter value to
-timestamp value in resolution of 1 nanosec by the driver.
+--===============4063628762715040628==
+Content-Type: multipart/alternative; boundary="00000000000005147705fd20cd0d"
 
-This issue can be reproduced on i350 nics, connecting an 1PPS
-signal to a SDP pin, and run 'ts2phc' command to read external
-1PPS timestamp value. On i210 this works fine, but on i350 the
-extts is not correctly converted.
+--00000000000005147705fd20cd0d
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-The i350/i354/82580's SYSTIM and other timestamp registers are
-40bit counters, presenting time range of 2^40 ns, that means these
-registers overflows every about 1099s. This causes all these regs
-can't be used directly in contrast to the newer i210/i211s.
+Thanks for the quick review.
 
-The igb driver needs to convert these raw register values to
-valid time stamp format by using kernel timecounter apis for i350s
-families. Here the igb_extts() just forgot to do the convert.
+Yes, we use ETHTOOL_GLINKSETTINGS ioctl to retrieve interface settings and
+expect to see one of TP or MII set in the 'supported' bitmask.
 
-Fixes: 38970eac41db ("igb: support EXTTS on 82580/i354/i350")
-Signed-off-by: Yuezhen Luan <eggcar.luan@gmail.com>
----
-V2 -> V3: Add 'Fixes' tag, and add 'net' tag in patch title
-V1 -> V2: Fix typo in the source code, and add detailed explanation
+I'll send out a new patch removing the if(). Would you accept the patch
+into your staging tree and later push it to the stable kernel branch? This
+is my first time sending to intel-wired-lan. Not sure how it works.
 
- drivers/net/ethernet/intel/igb/igb_main.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+Thank you.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 58872a4c2..bb3db387d 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6947,6 +6947,7 @@ static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct ptp_clock_event event;
- 	struct timespec64 ts;
-+	unsigned long flags;
- 
- 	if (pin < 0 || pin >= IGB_N_SDP)
- 		return;
-@@ -6954,9 +6955,12 @@ static void igb_extts(struct igb_adapter *adapter, int tsintr_tt)
- 	if (hw->mac.type == e1000_82580 ||
- 	    hw->mac.type == e1000_i354 ||
- 	    hw->mac.type == e1000_i350) {
--		s64 ns = rd32(auxstmpl);
-+		u64 ns = rd32(auxstmpl);
- 
--		ns += ((s64)(rd32(auxstmph) & 0xFF)) << 32;
-+		ns += ((u64)(rd32(auxstmph) & 0xFF)) << 32;
-+		spin_lock_irqsave(&adapter->tmreg_lock, flags);
-+		ns = timecounter_cyc2time(&adapter->tc, ns);
-+		spin_unlock_irqrestore(&adapter->tmreg_lock, flags);
- 		ts = ns_to_timespec64(ns);
- 	} else {
- 		ts.tv_nsec = rd32(auxstmpl);
--- 
-2.34.1
+On Fri, Jun 2, 2023 at 12:34=E2=80=AFAM Neftin, Sasha <sasha.neftin@intel.c=
+om>
+wrote:
+
+> On 6/1/2023 21:53, prasad@arista.com wrote:
+> > From: Prasad Koya <prasad@arista.com>
+> >
+> > if the physical media is twisted pair copper, set the TP bit in the
+> > 'supported' field
+> >
+> > Signed-off-by: Prasad Koya <prasad@arista.com>
+> > ---
+> >   drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 ++
+> >   1 file changed, 2 insertions(+)
+> >
+> > diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> > index 8cc077b712ad..7d197fa80d5d 100644
+> > --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> > +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+> > @@ -1707,6 +1707,8 @@ static int igc_ethtool_get_link_ksettings(struct
+> net_device *netdev,
+> >       /* twisted pair */
+> >       cmd->base.port =3D PORT_TP;
+> >       cmd->base.phy_address =3D hw->phy.addr;
+> > +     if (hw->phy.media_type =3D=3D igc_media_type_copper)
+> Thank you Prasad. i225/6 parts supported only copper media type. We can
+> drop the "if" condition.
+> > +             ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
+> Do you want to see: "Supported ports: [ TP ]"? That's right.
+> >
+> >       /* advertising link modes */
+> >       if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
+>
+>
+
+--00000000000005147705fd20cd0d
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Thanks for the quick review.<div><br></div><div>Yes, we us=
+e ETHTOOL_GLINKSETTINGS ioctl to retrieve interface settings and expect to =
+see one of TP or MII set in the &#39;supported&#39; bitmask.</div><div><br>=
+</div><div>I&#39;ll send out a new patch removing the if(). Would you accep=
+t the patch into your staging tree and later push it to the stable kernel b=
+ranch? This is my first time sending to intel-wired-lan. Not sure how it wo=
+rks.=C2=A0</div><div><br></div><div>Thank you.</div></div><br><div class=3D=
+"gmail_quote"><div dir=3D"ltr" class=3D"gmail_attr">On Fri, Jun 2, 2023 at =
+12:34=E2=80=AFAM Neftin, Sasha &lt;<a href=3D"mailto:sasha.neftin@intel.com=
+">sasha.neftin@intel.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail=
+_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204=
+,204);padding-left:1ex">On 6/1/2023 21:53, <a href=3D"mailto:prasad@arista.=
+com" target=3D"_blank">prasad@arista.com</a> wrote:<br>
+&gt; From: Prasad Koya &lt;<a href=3D"mailto:prasad@arista.com" target=3D"_=
+blank">prasad@arista.com</a>&gt;<br>
+&gt; <br>
+&gt; if the physical media is twisted pair copper, set the TP bit in the<br=
+>
+&gt; &#39;supported&#39; field<br>
+&gt; <br>
+&gt; Signed-off-by: Prasad Koya &lt;<a href=3D"mailto:prasad@arista.com" ta=
+rget=3D"_blank">prasad@arista.com</a>&gt;<br>
+&gt; ---<br>
+&gt;=C2=A0 =C2=A0drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 ++<br>
+&gt;=C2=A0 =C2=A01 file changed, 2 insertions(+)<br>
+&gt; <br>
+&gt; diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/ne=
+t/ethernet/intel/igc/igc_ethtool.c<br>
+&gt; index 8cc077b712ad..7d197fa80d5d 100644<br>
+&gt; --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c<br>
+&gt; +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c<br>
+&gt; @@ -1707,6 +1707,8 @@ static int igc_ethtool_get_link_ksettings(struct=
+ net_device *netdev,<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0/* twisted pair */<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0cmd-&gt;base.port =3D PORT_TP;<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0cmd-&gt;base.phy_address =3D hw-&gt;phy.addr=
+;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0if (hw-&gt;phy.media_type =3D=3D igc_media_type_c=
+opper)<br>
+Thank you Prasad. i225/6 parts supported only copper media type. We can <br=
+>
+drop the &quot;if&quot; condition.<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ethtool_link_ksetting=
+s_add_link_mode(cmd, supported, TP);<br>
+Do you want to see: &quot;Supported ports: [ TP ]&quot;? That&#39;s right.<=
+br>
+&gt;=C2=A0 =C2=A0<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0/* advertising link modes */<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (hw-&gt;phy.autoneg_advertised &amp; ADVE=
+RTISE_10_HALF)<br>
+<br>
+</blockquote></div>
+
+--00000000000005147705fd20cd0d--
+
+--===============4063628762715040628==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============4063628762715040628==--
