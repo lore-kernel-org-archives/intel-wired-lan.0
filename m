@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D9C9C7EE2C
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 05:49:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9782EC7EE2A
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 05:49:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B86324186C;
-	Mon,  5 Jun 2023 05:49:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B86324186C
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4E37041811;
+	Mon,  5 Jun 2023 05:49:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4E37041811
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685944154;
-	bh=pOQQXtAfZXF+cyvz98XvsnGH6ES9dPOpaW8dCLUcSxg=;
+	s=default; t=1685944160;
+	bh=2mHDFgC3jDLUhymXPFThlX6xhBxcjM6W0a7L2jkPkrk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=t7bHEFcNUGb4lAc7UVbdaCxUTSg3j0cJmCI+UHOsZAAecfprK1t/qP0dvvGT5Yvys
-	 vdgViYfRH8iN/GgUb2wcUJDTPOQizKcGsK/9PvbrYFl4DB+eEuBgbovRtsKjY7Nr0v
-	 JkSGzLED1M/r9XKxzUgrLm09REpd0uylKsYMykCX4w/Quim1SO2vdYHtd+0BJYiIm1
-	 cYWq2YQvk590fAt2dM/nUwKCoWe9QxTNPNUdtB7aH5wpgKXfowq2F6lpFksjUpTc2Q
-	 llsFPBxUE73QGZvRzYuD6VgNQrG4qrAuFjO+gbxZik2tIMl92ORDtmwP4kOki+8zO/
-	 G6jONPP8pRKtA==
+	b=nlMiUtGK34/DU4jvkMfitCz6KDj1GvZJMyXcBiMOJd9DVQjxKDR1JfW+Xlu0iLDqi
+	 n9ku1fH1+kn/amTtYpHlTaZY1pRfdTaqZRRB5izDAeA+78hUcpphPusGZleJxeELsA
+	 RBYoEO3oYONr+2AgAMoMokaiK5mDyij6ek/JR8W68RGi8B4iWj95v0h9iuIvOF9g+J
+	 xHiOrHjkK6z/TVbQ5I7+WD8C9YRUbUjFIFgcxSewtbiB1YloEJ436FaiPxhaMq5keS
+	 qg5zZXkSlECnhqADLOsqdyWCNqLgmwTb+Jgwo/6sExffAIKAv2EfqSptkMzMSL/J8T
+	 +ZOXMxGT9lEtQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id frvXkEhaFTKz; Mon,  5 Jun 2023 05:49:13 +0000 (UTC)
+	with ESMTP id Ugkmj_slQYlA; Mon,  5 Jun 2023 05:49:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 975C341882;
-	Mon,  5 Jun 2023 05:49:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 975C341882
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5C6A541821;
+	Mon,  5 Jun 2023 05:49:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5C6A541821
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 674A11BF289
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 05:48:20 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1F2CB1BF289
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 05:48:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5BF1A403A2
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 05:48:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5BF1A403A2
+ by smtp2.osuosl.org (Postfix) with ESMTP id E898B4040D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 05:48:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E898B4040D
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3Ldyz9FhJmGC for <intel-wired-lan@lists.osuosl.org>;
- Mon,  5 Jun 2023 05:48:18 +0000 (UTC)
+ with ESMTP id EN-8wkhyoBbn for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  5 Jun 2023 05:48:20 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9F78940114
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F3BE40114
 Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 9F78940114
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 05:48:18 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="419831888"
-X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="419831888"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 2F3BE40114
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 05:48:20 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="419831891"
+X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="419831891"
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Jun 2023 22:48:18 -0700
+ 04 Jun 2023 22:48:19 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="741581533"
-X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="741581533"
+X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="741581538"
+X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="741581538"
 Received: from dpdk-jf-ntb-v2.sh.intel.com ([10.67.119.16])
- by orsmga001.jf.intel.com with ESMTP; 04 Jun 2023 22:48:16 -0700
+ by orsmga001.jf.intel.com with ESMTP; 04 Jun 2023 22:48:18 -0700
 From: Junfeng Guo <junfeng.guo@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  5 Jun 2023 13:46:39 +0800
-Message-Id: <20230605054641.2865142-14-junfeng.guo@intel.com>
+Date: Mon,  5 Jun 2023 13:46:40 +0800
+Message-Id: <20230605054641.2865142-15-junfeng.guo@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20230605054641.2865142-1-junfeng.guo@intel.com>
 References: <20230605054641.2865142-1-junfeng.guo@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1685944098; x=1717480098;
+ t=1685944100; x=1717480100;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=TP+H6AuDLgAzJxgFXrf1/+vWlPKxfe8XIiZpEduxqdg=;
- b=Kjq05mlG55xbIYgOukawkZ9VksI3v1k9uELjgOsd0f7iIddPEMu8xIg6
- slbR8exPbt0dSn0gm2TD9CsaYuZX0Qr8gbPGvlkqOwLzXrXeU8O+08kIX
- N+V0KtIWkK58HlaDSCJRap9oKY7M4bAs4X38JIZ/EMeYRrlUqplWu0Wk4
- wT8HgsTO+6rmp/mqk1OmiBUMqEdfpjqbWnQOW3CNtmqMcWCh/tKej8uM6
- YW1pmHadJ3NOAIhCh9CfcJFXd8XSULBeHINtWgVQNXJqG1X2dprwFKXoj
- ZmOvOrTIKt7FBLhSzv1bsLwDxrRC9LvHVA+uzSq3/E5fIykfdyuGQZv/c
- A==;
+ bh=rKAj4pqERmfjKSi2TCgJCE/+LLy5TPLHx3X5kQ20JAQ=;
+ b=VgpxY98lREb2p4dLcUDRvwylu1aZ87L+QjdWfXgyHswdWPY/zfklS2GL
+ v+NNEW43P1UIES8MXhkVoN8tBzAy3gxkWoAzx50kCkEzwY8XUSL2RBSlw
+ KW2/PIa8tQuakn2DVvUNVxyTIyK129Eq/YzyhZucaXVVPdZOUhO2c9Ojq
+ 43cg+htLDm1wyPN8vTFxs/uqeoB2Ywj7evYViD+mye8+96ZmQbVdK6GtH
+ VuXOaDpj03D7H00tHWE2zPD1lpMt147I71BoFjZZAk4fvjjA3f98b3i5E
+ Pbw9quCK68cIzFCQBLuYxxj8rSV6eUlKpT1homRrG8vJGHVskns4kFgfJ
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Kjq05mlG
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 13/15] ice: support double
- vlan mode configure for parser
+ header.a=rsa-sha256 header.s=Intel header.b=VgpxY98l
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 14/15] ice: add tunnel port
+ support for parser
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,77 +101,32 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add API ice_parser_dvm_set to support turn on/off parser's
-double vlan mode.
+UDP tunnel can be added/deleted for vxlan, geneve, ecpri through
+below APIs:
+ice_parser_vxlan_tunnel_set
+ice_parser_geneve_tunnel_set
+ice_parser_ecpri_tunnel_set
 
 Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_bst_tcam.c | 28 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_bst_tcam.h |  4 +++
- drivers/net/ethernet/intel/ice/ice_parser.c   | 29 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_parser.h   |  1 +
- 4 files changed, 62 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_parser.c | 76 +++++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_parser.h |  6 ++
+ 2 files changed, 82 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_bst_tcam.c b/drivers/net/ethernet/intel/ice/ice_bst_tcam.c
-index bd3ebc8a5f5b..e29c7d6c554b 100644
---- a/drivers/net/ethernet/intel/ice/ice_bst_tcam.c
-+++ b/drivers/net/ethernet/intel/ice/ice_bst_tcam.c
-@@ -267,3 +267,31 @@ ice_bst_tcam_match(struct ice_bst_tcam_item *tcam_table, u8 *pat)
- 
- 	return NULL;
- }
-+
-+static bool _start_with(const char *prefix, const char *string)
-+{
-+	int len1 = strlen(prefix);
-+	int len2 = strlen(string);
-+
-+	if (len2 < len1)
-+		return false;
-+
-+	return !memcmp(prefix, string, len1);
-+}
-+
-+struct ice_bst_tcam_item *
-+ice_bst_tcam_search(struct ice_bst_tcam_item *tcam_table,
-+		    struct ice_lbl_item *lbl_table,
-+		    const char *prefix, u16 *start)
-+{
-+	u16 i = *start;
-+
-+	for (; i < ICE_BST_TCAM_TABLE_SIZE; i++) {
-+		if (_start_with(prefix, lbl_table[i].label)) {
-+			*start = i;
-+			return &tcam_table[lbl_table[i].idx];
-+		}
-+	}
-+
-+	return NULL;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_bst_tcam.h b/drivers/net/ethernet/intel/ice/ice_bst_tcam.h
-index 7b69f3b88da5..873ff42fcdb7 100644
---- a/drivers/net/ethernet/intel/ice/ice_bst_tcam.h
-+++ b/drivers/net/ethernet/intel/ice/ice_bst_tcam.h
-@@ -27,4 +27,8 @@ struct ice_lbl_item *ice_bst_lbl_table_get(struct ice_hw *hw);
- 
- struct ice_bst_tcam_item *
- ice_bst_tcam_match(struct ice_bst_tcam_item *tcam_table, u8 *pat);
-+struct ice_bst_tcam_item *
-+ice_bst_tcam_search(struct ice_bst_tcam_item *tcam_table,
-+		    struct ice_lbl_item *lbl_table,
-+		    const char *prefix, u16 *start);
- #endif /*_ICE_BST_TCAM_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_parser.c b/drivers/net/ethernet/intel/ice/ice_parser.c
-index eddbc80d71fa..33b649a4644a 100644
+index 33b649a4644a..1ca0886e6590 100644
 --- a/drivers/net/ethernet/intel/ice/ice_parser.c
 +++ b/drivers/net/ethernet/intel/ice/ice_parser.c
-@@ -343,3 +343,32 @@ void ice_parser_result_dump(struct ice_hw *hw, struct ice_parser_result *rslt)
- 	dev_info(ice_hw_to_dev(hw), "flags_fd = 0x%04x\n", rslt->flags_fd);
- 	dev_info(ice_hw_to_dev(hw), "flags_rss = 0x%04x\n", rslt->flags_rss);
+@@ -372,3 +372,79 @@ void ice_parser_dvm_set(struct ice_parser *psr, bool on)
+ 	_bst_vm_set(psr, "BOOST_MAC_VLAN_DVM", on);
+ 	_bst_vm_set(psr, "BOOST_MAC_VLAN_SVM", !on);
  }
 +
-+static void _bst_vm_set(struct ice_parser *psr, const char *prefix, bool on)
++static int
++_tunnel_port_set(struct ice_parser *psr, const char *prefix, u16 udp_port,
++		 bool on)
 +{
++	u8 *buf = (u8 *)&udp_port;
 +	u16 i = 0;
 +
 +	while (true) {
@@ -182,31 +137,80 @@ index eddbc80d71fa..33b649a4644a 100644
 +					   prefix, &i);
 +		if (!item)
 +			break;
-+		item->key[0] = (u8)(on ? 0xff : 0xfe);
-+		item->key_inv[0] = (u8)(on ? 0xff : 0xfe);
++
++		/* found empty slot to add */
++		if (on && item->key[16] == 0xfe && item->key_inv[16] == 0xfe) {
++			item->key_inv[15] = buf[0];
++			item->key_inv[16] = buf[1];
++			item->key[15] = (u8)(0xff - buf[0]);
++			item->key[16] = (u8)(0xff - buf[1]);
++
++			return 0;
++		/* found a matched slot to delete */
++		} else if (!on && (item->key_inv[15] == buf[0] ||
++			   item->key_inv[16] == buf[1])) {
++			item->key_inv[15] = 0xff;
++			item->key_inv[16] = 0xfe;
++			item->key[15] = 0xff;
++			item->key[16] = 0xfe;
++
++			return 0;
++		}
 +		i++;
 +	}
++
++	return -EINVAL;
 +}
 +
 +/**
-+ * ice_parser_dvm_set - configure double vlan mode for parser
++ * ice_parser_vxlan_tunnel_set - configure vxlan tunnel for parser
 + * @psr: pointer to a parser instance
++ * @udp_port: vxlan tunnel port in UDP header
 + * @on: true to turn on; false to turn off
 + */
-+void ice_parser_dvm_set(struct ice_parser *psr, bool on)
++int ice_parser_vxlan_tunnel_set(struct ice_parser *psr,
++				u16 udp_port, bool on)
 +{
-+	_bst_vm_set(psr, "BOOST_MAC_VLAN_DVM", on);
-+	_bst_vm_set(psr, "BOOST_MAC_VLAN_SVM", !on);
++	return _tunnel_port_set(psr, "TNL_VXLAN", udp_port, on);
++}
++
++/**
++ * ice_parser_geneve_tunnel_set - configure geneve tunnel for parser
++ * @psr: pointer to a parser instance
++ * @udp_port: geneve tunnel port in UDP header
++ * @on: true to turn on; false to turn off
++ */
++int ice_parser_geneve_tunnel_set(struct ice_parser *psr,
++				 u16 udp_port, bool on)
++{
++	return _tunnel_port_set(psr, "TNL_GENEVE", udp_port, on);
++}
++
++/**
++ * ice_parser_ecpri_tunnel_set - configure ecpri tunnel for parser
++ * @psr: pointer to a parser instance
++ * @udp_port: ecpri tunnel port in UDP header
++ * @on: true to turn on; false to turn off
++ */
++int ice_parser_ecpri_tunnel_set(struct ice_parser *psr,
++				u16 udp_port, bool on)
++{
++	return _tunnel_port_set(psr, "TNL_UDP_ECPRI", udp_port, on);
 +}
 diff --git a/drivers/net/ethernet/intel/ice/ice_parser.h b/drivers/net/ethernet/intel/ice/ice_parser.h
-index d4de0796a292..02ea2ef5fc91 100644
+index 02ea2ef5fc91..432d47031298 100644
 --- a/drivers/net/ethernet/intel/ice/ice_parser.h
 +++ b/drivers/net/ethernet/intel/ice/ice_parser.h
-@@ -56,6 +56,7 @@ struct ice_parser {
- 
+@@ -57,6 +57,12 @@ struct ice_parser {
  int ice_parser_create(struct ice_hw *hw, struct ice_parser **psr);
  void ice_parser_destroy(struct ice_parser *psr);
-+void ice_parser_dvm_set(struct ice_parser *psr, bool on);
+ void ice_parser_dvm_set(struct ice_parser *psr, bool on);
++int ice_parser_vxlan_tunnel_set(struct ice_parser *psr,
++				u16 udp_port, bool on);
++int ice_parser_geneve_tunnel_set(struct ice_parser *psr,
++				 u16 udp_port, bool on);
++int ice_parser_ecpri_tunnel_set(struct ice_parser *psr,
++				u16 udp_port, bool on);
  
  struct ice_parser_proto_off {
  	u8 proto_id; /* hardware protocol ID */
