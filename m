@@ -1,88 +1,178 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8B15C7EE2C
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 02:45:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84AACC77B73
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 04:48:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7DA6560BB9;
-	Mon,  5 Jun 2023 02:45:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7DA6560BB9
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1096D40148;
+	Mon,  5 Jun 2023 04:48:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1096D40148
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685933121;
-	bh=/5ftpQ41cEFsOHphycQKMhobKxOihFKsgH4fXFUQATo=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1685940480;
+	bh=hdIGQvbSAnsgcp76i4DYbW4CEiKN5uJp64F3x86BHvI=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=VxXVJ43B/9MS6JNzcVolsBba1YrcpeFFDnzMPOBuf4sauZOEJ01uIJTEJ7KSggX0w
-	 Ixn/um13m1QMlhlBuDymcl+pAEQlLONPjhDMFFQtTrylkpRfiDF/UFoUowTlqEfbJ+
-	 nBwxyhj1B8s4BBjgevVZVZHWHEVwYHbvgHPjxT14wAKfbtfHIKfpdnPAROhST/Ve96
-	 jyels/UHdQVTkLWhGMLWqEQ/saNQIHjRBs+t1YYRyIFqjKoLBrL8jrHaH+PhDMZ2jH
-	 0FTQ1drRAtHpbodvkqLDfOf8pIaY1q96xddxUD62SS5vTEmVzoNaZw3w7iSxn/LLde
-	 RM7QBczVsgfqg==
+	b=NpBD88Fl8jJMVFci8+JyISGdS2FfkWG06Oj6KOMTmZdeCDujfCcKPf6tGGzfvJcTZ
+	 Nt2zi38TbCjK/YuIfcVyBTMBg0FW6+1W+TOfaIYcphxHmyZfVIouGjLfrr51n8b2RU
+	 hsvRj9BKuNjWdMw4hIGHks1syCLFsVfc0oNUXLYAqyYQqq5xvbaR17u3tkPsN3dM0x
+	 Wt+zsEnCa+Y7aIrzJYSXbnior+otMZ1wRifCfWCd+FSCC5rf/y9sViVWN/l+7fdQJs
+	 isHOcRsldo08jlEXz4DC7FrkhkQzUxcPP7G9Db0mzNRiy6tJ1lHD6x/LxIrtTCLIAH
+	 DIY0AnvRywENg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id yZs1FVo-UELn; Mon,  5 Jun 2023 02:45:18 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id dOmwLcDT_d8n; Mon,  5 Jun 2023 04:47:59 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1651D60BCC;
-	Mon,  5 Jun 2023 02:45:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1651D60BCC
+	by smtp2.osuosl.org (Postfix) with ESMTP id EE3DF402A7;
+	Mon,  5 Jun 2023 04:47:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EE3DF402A7
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 547821BF336
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:45:08 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 169491BF423
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 04:47:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2DA6C81FDA
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:45:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2DA6C81FDA
+ by smtp1.osuosl.org (Postfix) with ESMTP id D8A4582219
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 04:47:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D8A4582219
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ESaHzVrcDCb4 for <intel-wired-lan@lists.osuosl.org>;
- Mon,  5 Jun 2023 02:45:06 +0000 (UTC)
+ with ESMTP id EnWoV-hXazPA for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  5 Jun 2023 04:47:54 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 98EC981F97
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 98EC981F97
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:45:06 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="355119135"
-X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="355119135"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BA36782209
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id BA36782209
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 04:47:54 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="358728231"
+X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="358728231"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Jun 2023 19:45:06 -0700
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Jun 2023 21:47:53 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="821001606"
-X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="821001606"
-Received: from dpdk-jf-ntb-v2.sh.intel.com ([10.67.119.16])
- by fmsmga002.fm.intel.com with ESMTP; 04 Jun 2023 19:45:04 -0700
-From: Junfeng Guo <junfeng.guo@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  5 Jun 2023 10:44:53 +0800
-Message-Id: <20230605024453.2378898-4-junfeng.guo@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230605024453.2378898-1-junfeng.guo@intel.com>
-References: <20230605024453.2378898-1-junfeng.guo@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="821031309"
+X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="821031309"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+ by fmsmga002.fm.intel.com with ESMTP; 04 Jun 2023 21:47:53 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Sun, 4 Jun 2023 21:47:52 -0700
+Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23 via Frontend Transport; Sun, 4 Jun 2023 21:47:52 -0700
+Received: from NAM12-DM6-obe.outbound.protection.outlook.com (104.47.59.173)
+ by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.23; Sun, 4 Jun 2023 21:47:52 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=EhLHaeh3UsGprSo6DFS4f/Ojey8yaBZ/r6b/qett6Z4ZPXEu6KQ9eK+bYyItUHRtfaPvlVydjhuMUKuT5JF1SQ8J4D11N3RcTO+zOEpcPiT4Of1x86Nugz969rolCqPJ6Oa6lnNBD3k+2KqHNFvX8iZHS9VwzPX59BEqErlgAeNSpKN49dmAH6j2lK0WvtWyGhnfswY3lWZ658M2Yho02ROtWaUmXnTwSh9GpKGYLiJrINZQf2Gmmoull1/5KMaw9Z13Uku2tRr+O8+6ziyNCFUMWF6/3StJMf0N4LZ7tXmHP8qvCXvromX6QCXi8nLGirXNWUAFKQjpawe1qfpyKg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=o2Hqhnuim942NwSR0yrQKjaZ7TzHDIMdDU9/7uBjcYY=;
+ b=of+wcTp2v7gamGQ/M2qkduj30d3JEIEf2u7V3xVSC7a2McZW7Mp2kOvJeVrztZyX4hZbmQ91+x6KVoNEOTedKXdQAN9DGx50ezU8kp8NP0M9wwOL8MWdEqPgOgaXKo5zytcO+iy6MBN/E1VSofBmV9+RTBeqJtDhfZzzTCvSuNFWxrtBjOzvDgDLJkg4VmAiwVwibtUWo8k7C1aR3IoDU+N9vTiAZrWkz+nXxmInddXTx0apvuQqa2TZyhsAO1LqdcqAbohfwk1iFSdMxvS/ML4hSG4Pogg4LKt1LHAoeNmBT21I81JOsoGksc+PDj3wY4Wy288FxAKBVwxiYlScRw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from BL0PR11MB3122.namprd11.prod.outlook.com (2603:10b6:208:75::32)
+ by DM4PR11MB6216.namprd11.prod.outlook.com (2603:10b6:8:a8::7) with
+ Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6455.28; Mon, 5 Jun 2023 04:47:50 +0000
+Received: from BL0PR11MB3122.namprd11.prod.outlook.com
+ ([fe80::9723:863b:334a:b279]) by BL0PR11MB3122.namprd11.prod.outlook.com
+ ([fe80::9723:863b:334a:b279%6]) with mapi id 15.20.6455.030; Mon, 5 Jun 2023
+ 04:47:50 +0000
+From: "Pucha, HimasekharX Reddy" <himasekharx.reddy.pucha@intel.com>
+To: Ying Hsu <yinghsu@chromium.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+Thread-Topic: [Intel-wired-lan] [PATCH] igb: Fix igb_down hung on surprise
+ removal
+Thread-Index: AQHZiZs4Csxm/mDEk0y5moePAHW/va97vVpA
+Date: Mon, 5 Jun 2023 04:47:49 +0000
+Message-ID: <BL0PR11MB31222538EC9046D11BEC4885BD4DA@BL0PR11MB3122.namprd11.prod.outlook.com>
+References: <20230518072657.1.If9539da710217ed92e764cc0ba0f3d2d246a1aee@changeid>
+In-Reply-To: <20230518072657.1.If9539da710217ed92e764cc0ba0f3d2d246a1aee@changeid>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: BL0PR11MB3122:EE_|DM4PR11MB6216:EE_
+x-ms-office365-filtering-correlation-id: abf104cf-7034-46e9-25f7-08db658003ec
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: p3OXc8EjeI1e1Mgs9xKTe5YsLJfFtQG7ZfGJQ2rkZp6CuTQ96HKBXjEsAlvjKITta8JDw1t8IArnnTmHD4hQwX1rv9OtOJVGbTv1vOuh5TWy7YsbTX2J5Vt1LOn86fhKOt4eoU3/vcoerzvGr7d7rq6vzws8FdxmQ+jS51VESLvTDZm5xdiis0lIxWHOk7uMGyAnL0kJ2zCKa/FqHqqIbDr0M/RessErwHdWUk6H9kKg9ojHT4gzoYI93XyVRhHlDhQMVroRv57I/UG2wUXh+XbyYvpyG3u3yEAuGg+dm0bQXeCkoAdcht7tQiTyEqbPtbwIkhNupA15AA3JSmtp8jPqhxGg6Aa1osrjxU/nCJOpRrvitHeErQ0RIEONvnUd0IkX609H+k2PQQXLV6jFjFDP705orlinL7bWXShCrlazDJ/6EEbMfbrmB/iSnNmMFF4nN/7LbwUlZ2kHuQ0+36Y9+fuDe/DUIdBpxCiQebK24DunNHNLhEZi9vxM/gSsSzzukUV/bDrl2VYn3PaRVy9/Dv4uyz1Mf0RsNBJowoNiJki6dxuhDO3RZnnB63RLatutC3/eJtGnN61qKuAs6f5qFk/Ur5EgB5F+EFuFfiY4KdUqmj9IRHhwpz/la7Wc
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:BL0PR11MB3122.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(366004)(136003)(39860400002)(376002)(346002)(396003)(451199021)(110136005)(71200400001)(478600001)(52536014)(54906003)(5660300002)(8676002)(38070700005)(33656002)(2906002)(86362001)(8936002)(4326008)(66446008)(66946007)(64756008)(122000001)(66476007)(66556008)(76116006)(316002)(55016003)(82960400001)(38100700002)(41300700001)(83380400001)(9686003)(6506007)(53546011)(26005)(186003)(7696005);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?7vP2HZ0HKb/4iBYCJK5Nr6uQC3nhjOvD4fcS3s+lticddmER1hWt7Lwse+3A?=
+ =?us-ascii?Q?hzrfuM6ne6UzIrp+BBg2T2pkQDsO5Z6g91ibEShayNJAapBCB5FaRpBPkJ3c?=
+ =?us-ascii?Q?k5Xdxz3WFwJZvb4Q3TLx9dh+vOjfTw2kdjl8S/pddbOm17UK5YNIkVH6GTWt?=
+ =?us-ascii?Q?JIvMcK5aavEC0vLWfCM1VVhTPEfsAMtJOOJCeCIP/Ofc2HtZWbrv7IlPnrqI?=
+ =?us-ascii?Q?lqkDh7SyzF4zHOZbCDDOlrEG7V1oTCUIDE/5izoc/8K8DLcx0/oqvkDT/wcm?=
+ =?us-ascii?Q?KjJsokaxzTikwZyQSTpanw1fnjWJhCKwpA5n3RdJcOnBNlPok5V2WhMl/qxC?=
+ =?us-ascii?Q?qgRvruL2ulX5QWX2MdctTm0PAfG77CWcLZB6tX1R1JPHBtnzNvLC7l6hotF9?=
+ =?us-ascii?Q?E3XK15EhBHCB40g0Fr9TEry2yjZvTpPNUMChXGfTp1/DdfX4r/3DWqJ4Bx5R?=
+ =?us-ascii?Q?FWzJgKPOulGPCoHBWSlFyjzSFpRhoLkhbUAdZ3TIpXdV0pFsCHh6wLV6bNUj?=
+ =?us-ascii?Q?LqqadKIJtJMHp/LgfJFnuT9hj5KOgg5x2bRnhbZ5E6Dk0oGsIVFmFGBzZCWb?=
+ =?us-ascii?Q?jTE5qCBLmz4ABplDJqG5bLY1dTnOUHrF6dSS9lMPLvJ5p1Ch/mKhT0MU7YhS?=
+ =?us-ascii?Q?VGPCaX0PyglUtuuhN+8yKn4s5QMvMgLiPsIIUr72hVovDJna37TkmLL1o2ZN?=
+ =?us-ascii?Q?UVrUdTc7fQEzG7X7QmFhVqxV+r5H7D2omiN+MXZpmOoQNS8afuFLRlW9JYhd?=
+ =?us-ascii?Q?NUVsPfAdix554toBFbkeDtsH+bHAaAi4X2tKxuSaa5LzqksvKKeG7Fn7whXH?=
+ =?us-ascii?Q?owmOtW/CAZDnrMGamu54SFS1CRK5rlXHHSa52QYM19HMsdaEs0+51thUqiof?=
+ =?us-ascii?Q?l2rF3+lkVxydiGlAeiJRBPtXKHm6DCHi4z2dDbAkfpUBA6TdxlLEWf7UvYjs?=
+ =?us-ascii?Q?YNIwbmvjSyiVccTVM7DP46RwTuBY7X7uzgRQ5id+9fYfVLfJbW95D3mR6Tqn?=
+ =?us-ascii?Q?sp4ivY7Z8aFz7lszEnec078o90zvmKPYX+UU4mXFI/zdra3WGyYOg3CX/wQF?=
+ =?us-ascii?Q?HEDIxKH+5iShKSpYuoL4ph1/btWCRcbg//Xx+fZkWHPAAw8ynWJSfXoTN1lR?=
+ =?us-ascii?Q?zBvUeI9tCmyylL1jyAGr8paCGOCAqFhCj+ctIViHm6Wg3qOlRKNgmaw+FjCp?=
+ =?us-ascii?Q?ZTx2E1qJTVkBoLrZpu33w/komyrzlaj3MKAF4cMKrcBYlsmlqWsP4l04oULF?=
+ =?us-ascii?Q?f+hckdqiHWVRh61+RWxYVkudr5AZMxOomwGkBzlF13d5SOCRFfDASJ707MUI?=
+ =?us-ascii?Q?7CZIk3wy2UwNLP+SAaPEq8sQvf9ueU73m7Bew+AlBVkJUedbSyPY8YWtO6h2?=
+ =?us-ascii?Q?MKiKPjc8W3L3y4jMvlk7hWZJvJsd9Id+fZzOcCN5/6RdxhLZLWMo7hw7sIQG?=
+ =?us-ascii?Q?cW4YXBbBKSE70Ly9x6uLXNQHwwdALdcAaeDZxyXPsMKRgoHvMgHyNGbPhkIA?=
+ =?us-ascii?Q?nR2lbJPtXkKesjGh504Uj4aHQ/t0KIHWQMjDSlfW0AQoT4HdoeH81UIhyxkB?=
+ =?us-ascii?Q?aUbwh+mlPWWzUyLD/IrYamQIEAPuZk8fy/vw9od6ePCJMsqOBsnEVm6Iad4p?=
+ =?us-ascii?Q?lw=3D=3D?=
 MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: BL0PR11MB3122.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: abf104cf-7034-46e9-25f7-08db658003ec
+X-MS-Exchange-CrossTenant-originalarrivaltime: 05 Jun 2023 04:47:49.8873 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: +SqarNMSSePA4xA3mWS39E3DeBelua7dnWx+VF9x2l5nj18ub/Wd2Gf4z4jPoXWizE35PgKpijzR1v0zzAYe8rHORdn1g/Zq9EvOgeEc7tOukDkpYZt7smxDy4sJ5m1E
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB6216
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1685933106; x=1717469106;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=xcy2z0s1mK5eT6QsJ2pUaeIRoBBqhqafllKWCHN5l3g=;
- b=jzH4lz06vKvpB01WcukIrr46Ev7jyfQNuKlYjZ4L+US351hDjC2xPTVz
- fs7uWO0YjJVZEWTpg8ihF0w3QtWUSdyLeHHapJxHif4gm3j7FxN5uG582
- iSD8V11JZpsLAUUw+Uhtk5VJ+jNnYGpnj0P+JBGX4skSVTuRTtUKcs2Mh
- uCv3SABQO1V1UCQhb3j/iqwTofKgRoasmycUIiRMNFIvAKfLBv5bIrJ/c
- fbj1sxR9XjRqZsdOFGfeLl0xQFMYVp/IEzs8Il2YiaGo0hkRy0hef352d
- 5dPQeAAxbbdm0dmGIzRR7cTU/YbCFheaRsI2bl7RDEEp90qD1zVzfnQf/
+ t=1685940474; x=1717476474;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=IHPU/MtRNZHNt7rfmPfx90VK9oQMer4rYYLFHEDjw1k=;
+ b=cH3v3uLgUVHEeHDPrkE9UmB2YOT5rNUxdFmGLvk6itx7qp0vuPxQZZj9
+ tWetZ7sRyk99Aoc+MbIsoS0xd1gSoq9cQ+Asqn666sCQe9iAcZFxutfov
+ GME/8XfquTzsBTfZpnCeMmmI0RFcpr/oPyMcsfx4b7gnCzq+9cglGaTIH
+ v7V/m7rKWs3EVqpaLfms1YtxZi91mtLXBLdxS2Y/icS0dZPEnix6w7LSY
+ /4/tF3HkUvmaAX40EYSjoNtCRd5qtAmoFZv7RzVDHPm1olzVZ2SAjZQGT
+ cfYTP7GPa0nPhDKCPDmtQVqZHdQU4F1UdXdF+jAPPRvfyxFQ9YDDgECCh
  w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=jzH4lz06
-Subject: [Intel-wired-lan] [PATCH iwl-next 3/3] ice: enable Protocol
- Agnostic Flow Offloading FDIR
+ header.a=rsa-sha256 header.s=Intel header.b=cH3v3uLg
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH] igb: Fix igb_down hung on surprise
+ removal
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,827 +185,76 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: qi.z.zhang@intel.com
+Cc: "grundler@chromium.org" <grundler@chromium.org>, "Brandeburg,
+ Jesse" <jesse.brandeburg@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Eric Dumazet <edumazet@google.com>, "Nguyen,
+ Anthony L" <anthony.l.nguyen@intel.com>, Jakub Kicinski <kuba@kernel.org>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This patch enabled Protocol Agnostic Flow Offloading Flow (raw flow)
-with Flow Director feature in AVF driver. The corresponding processes
-for raw flow are added in the Parse / Create / Destroy stages.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Ying Hsu
+> Sent: Thursday, May 18, 2023 12:57 PM
+> To: netdev@vger.kernel.org
+> Cc: grundler@chromium.org; intel-wired-lan@lists.osuosl.org; Ying Hsu <yinghsu@chromium.org>; Brandeburg, Jesse <jesse.brandeburg@intel.com>; linux-kernel@vger.kernel.org; Eric Dumazet <edumazet@google.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Jakub Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; David S. Miller <davem@davemloft.net>
+> Subject: [Intel-wired-lan] [PATCH] igb: Fix igb_down hung on surprise removal
+>
+> In a setup where a Thunderbolt hub connects to Ethernet and a display through USB Type-C, users may experience a hung task timeout when they remove the cable between the PC and the Thunderbolt hub.
+> This is because the igb_down function is called multiple times when the Thunderbolt hub is unplugged. For example, the igb_io_error_detected triggers the first call, and the igb_remove triggers the second call.
+> The second call to igb_down will block at napi_synchronize.
+> Here's the call trace:
+>    __schedule+0x3b0/0xddb
+>    ? __mod_timer+0x164/0x5d3
+>    schedule+0x44/0xa8
+>    schedule_timeout+0xb2/0x2a4
+>    ? run_local_timers+0x4e/0x4e
+>    msleep+0x31/0x38
+>    igb_down+0x12c/0x22a [igb 6615058754948bfde0bf01429257eb59f13030d4]
+>    __igb_close+0x6f/0x9c [igb 6615058754948bfde0bf01429257eb59f13030d4]
+>    igb_close+0x23/0x2b [igb 6615058754948bfde0bf01429257eb59f13030d4]
+>    __dev_close_many+0x95/0xec
+>    dev_close_many+0x6e/0x103
+>    unregister_netdevice_many+0x105/0x5b1
+>    unregister_netdevice_queue+0xc2/0x10d
+>    unregister_netdev+0x1c/0x23
+>    igb_remove+0xa7/0x11c [igb 6615058754948bfde0bf01429257eb59f13030d4]
+>    pci_device_remove+0x3f/0x9c
+>    device_release_driver_internal+0xfe/0x1b4
+>    pci_stop_bus_device+0x5b/0x7f
+>    pci_stop_bus_device+0x30/0x7f
+>    pci_stop_bus_device+0x30/0x7f
+>    pci_stop_and_remove_bus_device+0x12/0x19
+>    pciehp_unconfigure_device+0x76/0xe9
+>    pciehp_disable_slot+0x6e/0x131
+>    pciehp_handle_presence_or_link_change+0x7a/0x3f7
+>   pciehp_ist+0xbe/0x194
+>    irq_thread_fn+0x22/0x4d
+>    ? irq_thread+0x1fd/0x1fd
+>    irq_thread+0x17b/0x1fd
+>    ? irq_forced_thread_fn+0x5f/0x5f
+>    kthread+0x142/0x153
+>    ? __irq_get_irqchip_state+0x46/0x46
+>    ? kthread_associate_blkcg+0x71/0x71
+>    ret_from_fork+0x1f/0x30
+>
+> In this case, igb_io_error_detected detaches the network interface and requests a PCIE slot reset, however, the PCIE reset callback is not being invoked and thus the Ethernet connection breaks down.
+> As the PCIE error in this case is a non-fatal one, requesting a slot reset can be avoided.
+> This patch fixes the task hung issue and preserves Ethernet connection by ignoring non-fatal PCIE errors.
+>
+> Signed-off-by: Ying Hsu <yinghsu@chromium.org>
+> ---
+> This commit has been tested on a HP Elite Dragonfly Chromebook and a Caldigit TS3+ Thunderbolt hub. The Ethernet driver for the hub is igb. Non-fatal PCIE errors happen when users hot-plug the cables connected to the chromebook or to the external display.
+>
+> drivers/net/ethernet/intel/igb/igb_main.c | 5 +++++
+> 1 file changed, 5 insertions(+)
+>
 
-Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
----
- .../net/ethernet/intel/ice/ice_flex_pipe.c    |  49 ++
- .../net/ethernet/intel/ice/ice_flex_pipe.h    |   3 +
- drivers/net/ethernet/intel/ice/ice_flow.c     | 107 +++++
- drivers/net/ethernet/intel/ice/ice_flow.h     |   5 +
- drivers/net/ethernet/intel/ice/ice_vf_lib.h   |   8 +
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 448 +++++++++++++++++-
- 6 files changed, 618 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 2362be913101..0816bd222f0f 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -4115,6 +4115,55 @@ ice_add_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl)
- 	return status;
- }
- 
-+/**
-+ * ice_flow_assoc_hw_prof - add profile id flow for main/ctrl VSI flow entry
-+ * @hw: pointer to the HW struct
-+ * @blk: HW block
-+ * @dest_vsi_handle: dest VSI handle
-+ * @fdir_vsi_handle: fdir programming VSI handle
-+ * @id: profile id (handle)
-+ *
-+ * Calling this function will update the hardware tables to enable the
-+ * profile indicated by the ID parameter for the VSIs specified in the VSI
-+ * array. Once successfully called, the flow will be enabled.
-+ */
-+int
-+ice_flow_assoc_hw_prof(struct ice_hw *hw, enum ice_block blk,
-+		       u16 dest_vsi_handle, u16 fdir_vsi_handle, int id)
-+{
-+	int status = 0;
-+	u16 vsi_num;
-+
-+	vsi_num = ice_get_hw_vsi_num(hw, dest_vsi_handle);
-+	status = ice_add_prof_id_flow(hw, blk, vsi_num, id);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_FLOW, "HW profile add failed for main VSI flow entry, %d\n",
-+			  status);
-+		goto err_add_prof;
-+	}
-+
-+	if (blk != ICE_BLK_FD)
-+		return status;
-+
-+	vsi_num = ice_get_hw_vsi_num(hw, fdir_vsi_handle);
-+	status = ice_add_prof_id_flow(hw, blk, vsi_num, id);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_FLOW, "HW profile add failed for ctrl VSI flow entry, %d\n",
-+			  status);
-+		goto err_add_entry;
-+	}
-+
-+	return status;
-+
-+err_add_entry:
-+	vsi_num = ice_get_hw_vsi_num(hw, dest_vsi_handle);
-+	ice_rem_prof_id_flow(hw, blk, vsi_num, id);
-+err_add_prof:
-+	ice_flow_rem_prof(hw, blk, id);
-+
-+	return status;
-+}
-+
- /**
-  * ice_rem_prof_from_list - remove a profile from list
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-index 2270e861fd39..e8aa3b0c7014 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.h
-@@ -47,6 +47,9 @@ int
- ice_add_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl);
- int
- ice_rem_prof_id_flow(struct ice_hw *hw, enum ice_block blk, u16 vsi, u64 hdl);
-+int
-+ice_flow_assoc_hw_prof(struct ice_hw *hw, enum ice_block blk,
-+		       u16 dest_vsi_handle, u16 fdir_vsi_handle, int id);
- enum ice_ddp_state ice_init_pkg(struct ice_hw *hw, u8 *buff, u32 len);
- enum ice_ddp_state
- ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf, u32 len);
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index ff7740df28c4..3348afbbeaea 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -409,6 +409,29 @@ static const u32 ice_ptypes_gtpc_tid[] = {
- };
- 
- /* Packet types for GTPU */
-+static const struct ice_ptype_attributes ice_attr_gtpu_session[] = {
-+	{ ICE_MAC_IPV4_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_UDP_PAY, ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_TCP,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV4_ICMP,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV4_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_FRAG,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_PAY,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_UDP_PAY, ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_TCP,	  ICE_PTYPE_ATTR_GTP_SESSION },
-+	{ ICE_MAC_IPV6_GTPU_IPV6_ICMPV6,  ICE_PTYPE_ATTR_GTP_SESSION },
-+};
-+
- static const struct ice_ptype_attributes ice_attr_gtpu_eh[] = {
- 	{ ICE_MAC_IPV4_GTPU_IPV4_FRAG,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
- 	{ ICE_MAC_IPV4_GTPU_IPV4_PAY,	  ICE_PTYPE_ATTR_GTP_PDU_EH },
-@@ -1523,6 +1546,90 @@ ice_flow_disassoc_prof(struct ice_hw *hw, enum ice_block blk,
- 	return status;
- }
- 
-+#define FLAG_GTP_EH_PDU_LINK	BIT_ULL(13)
-+#define FLAG_GTP_EH_PDU		BIT_ULL(14)
-+
-+#define FLAG_GTPU_MSK	\
-+	(FLAG_GTP_EH_PDU | FLAG_GTP_EH_PDU_LINK)
-+#define FLAG_GTPU_UP	\
-+	(FLAG_GTP_EH_PDU | FLAG_GTP_EH_PDU_LINK)
-+#define FLAG_GTPU_DW	\
-+	(FLAG_GTP_EH_PDU)
-+/**
-+ * ice_flow_set_hw_prof - Set HW flow profile based on the parsed profile info
-+ * @hw: pointer to the HW struct
-+ * @dest_vsi_handle: dest VSI handle
-+ * @fdir_vsi_handle: fdir programming VSI handle
-+ * @prof: stores parsed profile info from raw flow
-+ * @blk: classification stage
-+ */
-+int
-+ice_flow_set_hw_prof(struct ice_hw *hw, u16 dest_vsi_handle,
-+		     u16 fdir_vsi_handle, struct ice_parser_profile *prof,
-+		     enum ice_block blk)
-+{
-+	int id = find_first_bit(prof->ptypes, ICE_FLOW_PTYPE_MAX);
-+	struct ice_flow_prof_params *params;
-+	u8 fv_words = hw->blk[blk].es.fvw;
-+	int status;
-+	int i, idx;
-+
-+	params = devm_kzalloc(ice_hw_to_dev(hw), sizeof(*params), GFP_KERNEL);
-+	if (!params)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < ICE_MAX_FV_WORDS; i++) {
-+		params->es[i].prot_id = ICE_PROT_INVALID;
-+		params->es[i].off = ICE_FV_OFFSET_INVAL;
-+	}
-+
-+	for (i = 0; i < prof->fv_num; i++) {
-+		if (hw->blk[blk].es.reverse)
-+			idx = fv_words - i - 1;
-+		else
-+			idx = i;
-+		params->es[idx].prot_id = prof->fv[i].proto_id;
-+		params->es[idx].off = prof->fv[i].offset;
-+		params->mask[idx] = (((prof->fv[i].msk) << 8) & 0xff00) |
-+				    (((prof->fv[i].msk) >> 8) & 0x00ff);
-+	}
-+
-+	switch (prof->flags) {
-+	case FLAG_GTPU_DW:
-+		params->attr = ice_attr_gtpu_down;
-+		params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_down);
-+		break;
-+	case FLAG_GTPU_UP:
-+		params->attr = ice_attr_gtpu_up;
-+		params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_up);
-+		break;
-+	default:
-+		if (prof->flags_msk & FLAG_GTPU_MSK) {
-+			params->attr = ice_attr_gtpu_session;
-+			params->attr_cnt = ARRAY_SIZE(ice_attr_gtpu_session);
-+		}
-+		break;
-+	}
-+
-+	status = ice_add_prof(hw, blk, id, (u8 *)prof->ptypes,
-+			      params->attr, params->attr_cnt,
-+			      params->es, params->mask, false);
-+	if (status)
-+		goto free_params;
-+
-+	status = ice_flow_assoc_hw_prof(hw, blk, dest_vsi_handle,
-+					fdir_vsi_handle, id);
-+	if (status)
-+		goto free_params;
-+
-+	return 0;
-+
-+free_params:
-+	devm_kfree(ice_hw_to_dev(hw), params);
-+
-+	return status;
-+}
-+
- /**
-  * ice_flow_add_prof - Add a flow profile for packet segments and matched fields
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
-index b465d27d9b80..d7c234adbaaa 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.h
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.h
-@@ -5,6 +5,7 @@
- #define _ICE_FLOW_H_
- 
- #include "ice_flex_type.h"
-+#include "ice_parser.h"
- 
- #define ICE_FLOW_ENTRY_HANDLE_INVAL	0
- #define ICE_FLOW_FLD_OFF_INVAL		0xffff
-@@ -391,6 +392,10 @@ ice_flow_add_prof(struct ice_hw *hw, enum ice_block blk, enum ice_flow_dir dir,
- 		  struct ice_flow_prof **prof);
- int ice_flow_rem_prof(struct ice_hw *hw, enum ice_block blk, u64 prof_id);
- int
-+ice_flow_set_hw_prof(struct ice_hw *hw, u16 dest_vsi_handle,
-+		     u16 fdir_vsi_handle, struct ice_parser_profile *prof,
-+		     enum ice_block blk);
-+int
- ice_flow_add_entry(struct ice_hw *hw, enum ice_block blk, u64 prof_id,
- 		   u64 entry_id, u16 vsi, enum ice_flow_priority prio,
- 		   void *data, u64 *entry_h);
-diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-index e3cda6fb71ab..9898ec65b59f 100644
---- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-@@ -12,6 +12,7 @@
- #include <net/devlink.h>
- #include <linux/avf/virtchnl.h>
- #include "ice_type.h"
-+#include "ice_flow.h"
- #include "ice_virtchnl_fdir.h"
- #include "ice_vsi_vlan_ops.h"
- 
-@@ -52,6 +53,12 @@ struct ice_mdd_vf_events {
- 	u16 last_printed;
- };
- 
-+/* Structure to store fdir fv entry */
-+struct ice_fdir_prof_info {
-+	struct ice_parser_profile prof;
-+	u64 fdir_active_cnt;
-+};
-+
- /* VF operations */
- struct ice_vf_ops {
- 	enum ice_disq_rst_src reset_type;
-@@ -92,6 +99,7 @@ struct ice_vf {
- 	u16 lan_vsi_idx;		/* index into PF struct */
- 	u16 ctrl_vsi_idx;
- 	struct ice_vf_fdir fdir;
-+	struct ice_fdir_prof_info fdir_prof_info[ICE_MAX_PTGS];
- 	/* first vector index of this VF in the PF space */
- 	int first_vector_idx;
- 	struct ice_sw *vf_sw_id;	/* switch ID the VF VSIs connect to */
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index daa6a1e894cf..d5a15488ef14 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -39,6 +39,15 @@ enum ice_fdir_tunnel_type {
- 	ICE_FDIR_TUNNEL_TYPE_NONE = 0,
- 	ICE_FDIR_TUNNEL_TYPE_GTPU,
- 	ICE_FDIR_TUNNEL_TYPE_GTPU_EH,
-+	ICE_FDIR_TUNNEL_TYPE_ECPRI,
-+	ICE_FDIR_TUNNEL_TYPE_GTPU_INNER,
-+	ICE_FDIR_TUNNEL_TYPE_GTPU_EH_INNER,
-+	ICE_FDIR_TUNNEL_TYPE_GRE,
-+	ICE_FDIR_TUNNEL_TYPE_GTPOGRE,
-+	ICE_FDIR_TUNNEL_TYPE_GTPOGRE_INNER,
-+	ICE_FDIR_TUNNEL_TYPE_GRE_INNER,
-+	ICE_FDIR_TUNNEL_TYPE_L2TPV2,
-+	ICE_FDIR_TUNNEL_TYPE_L2TPV2_INNER,
- };
- 
- struct virtchnl_fdir_fltr_conf {
-@@ -46,6 +55,11 @@ struct virtchnl_fdir_fltr_conf {
- 	enum ice_fdir_tunnel_type ttype;
- 	u64 inset_flag;
- 	u32 flow_id;
-+
-+	struct ice_parser_profile *prof;
-+	bool parser_ena;
-+	u8 *pkt_buf;
-+	u8 pkt_len;
- };
- 
- struct virtchnl_fdir_inset_map {
-@@ -804,6 +818,95 @@ ice_vc_fdir_config_input_set(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
- 	return ret;
- }
- 
-+/**
-+ * ice_vc_fdir_is_raw_flow
-+ * @proto: virtchnl protocol headers
-+ *
-+ * Check if the FDIR rule is raw flow (protocol agnostic flow) or not.
-+ * Note that common FDIR rule must have non-zero proto->count.
-+ * Thus, we choose the tunnel_level and count of proto as the indicators.
-+ * If both tunnel_level and count of proto are zeros, this FDIR rule will
-+ * be regarded as raw flow.
-+ *
-+ * Returns wheater headers describe raw flow or not.
-+ */
-+static bool
-+ice_vc_fdir_is_raw_flow(struct virtchnl_proto_hdrs *proto)
-+{
-+	return (proto->tunnel_level == 0 && proto->count == 0);
-+}
-+
-+/**
-+ * ice_vc_fdir_parse_raw
-+ * @vf: pointer to the VF info
-+ * @proto: virtchnl protocol headers
-+ * @conf: FDIR configuration for each filter
-+ *
-+ * Parse the virtual channel filter's raw flow and store them into @conf
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_fdir_parse_raw(struct ice_vf *vf,
-+		      struct virtchnl_proto_hdrs *proto,
-+		      struct virtchnl_fdir_fltr_conf *conf)
-+{
-+	struct ice_parser_result rslt;
-+	struct ice_pf *pf = vf->pf;
-+	struct ice_parser *psr;
-+	u8 *pkt_buf, *msk_buf;
-+	int status = -ENOMEM;
-+	struct ice_hw *hw;
-+	u16 udp_port = 0;
-+
-+	pkt_buf = kzalloc(proto->raw.pkt_len, GFP_KERNEL);
-+	msk_buf = kzalloc(proto->raw.pkt_len, GFP_KERNEL);
-+	if (!pkt_buf || !msk_buf)
-+		goto err_pkt_msk_buf_alloc;
-+
-+	memcpy(pkt_buf, proto->raw.spec, proto->raw.pkt_len);
-+	memcpy(msk_buf, proto->raw.mask, proto->raw.pkt_len);
-+
-+	hw = &pf->hw;
-+	/* Get raw profile info via Parser Lib */
-+	if (ice_parser_create(hw, &psr))
-+		goto err_parser_process;
-+	if (ice_get_open_tunnel_port(hw, &udp_port, TNL_VXLAN))
-+		ice_parser_vxlan_tunnel_set(psr, udp_port, true);
-+	if (ice_parser_run(psr, pkt_buf, proto->raw.pkt_len, &rslt))
-+		goto err_parser_process;
-+	ice_parser_destroy(psr);
-+
-+	conf->prof = kzalloc(sizeof(*conf->prof), GFP_KERNEL);
-+	if (!conf->prof)
-+		goto err_conf_prof_alloc;
-+
-+	status = ice_parser_profile_init(&rslt, pkt_buf, msk_buf,
-+					 proto->raw.pkt_len, ICE_BLK_FD, true,
-+					 conf->prof);
-+	if (status)
-+		goto err_parser_profile_init;
-+
-+	/* Store raw flow info into @conf */
-+	conf->pkt_len = proto->raw.pkt_len;
-+	conf->pkt_buf = pkt_buf;
-+	kfree(msk_buf);
-+
-+	conf->parser_ena = true;
-+
-+	return 0;
-+
-+err_parser_profile_init:
-+	kfree(conf->prof);
-+err_conf_prof_alloc:
-+err_parser_process:
-+	ice_parser_destroy(psr);
-+err_pkt_msk_buf_alloc:
-+	kfree(msk_buf);
-+	kfree(pkt_buf);
-+	return status;
-+}
-+
- /**
-  * ice_vc_fdir_parse_pattern
-  * @vf: pointer to the VF info
-@@ -831,6 +934,10 @@ ice_vc_fdir_parse_pattern(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
- 		return -EINVAL;
- 	}
- 
-+	/* For Protocol Agnostic Flow Offloading case only */
-+	if (ice_vc_fdir_is_raw_flow(proto))
-+		return ice_vc_fdir_parse_raw(vf, proto, conf);
-+
- 	for (i = 0; i < proto->count; i++) {
- 		struct virtchnl_proto_hdr *hdr = &proto->proto_hdr[i];
- 		struct ip_esp_hdr *esph;
-@@ -1119,8 +1226,10 @@ ice_vc_validate_fdir_fltr(struct ice_vf *vf, struct virtchnl_fdir_add *fltr,
- 	struct virtchnl_proto_hdrs *proto = &fltr->rule_cfg.proto_hdrs;
- 	int ret;
- 
--	if (!ice_vc_validate_pattern(vf, proto))
--		return -EINVAL;
-+	/* For Protocol Agnostic Flow Offloading case only */
-+	if (!ice_vc_fdir_is_raw_flow(proto))
-+		if (!ice_vc_validate_pattern(vf, proto))
-+			return -EINVAL;
- 
- 	ret = ice_vc_fdir_parse_pattern(vf, fltr, conf);
- 	if (ret)
-@@ -1268,6 +1377,64 @@ static void ice_vc_fdir_flush_entry(struct ice_vf *vf)
- 	}
- }
- 
-+/**
-+ * ice_vc_fdir_add_del_raw - write raw flow filter rule into hardware
-+ * @vf: pointer to the VF info
-+ * @conf: FDIR configuration for each filter
-+ * @add: true implies add rule, false implies del rules
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int ice_vc_fdir_add_del_raw(struct ice_vf *vf,
-+				   struct virtchnl_fdir_fltr_conf *conf,
-+				   bool add)
-+{
-+	struct ice_fdir_fltr *input = &conf->input;
-+	struct ice_vsi *vsi, *ctrl_vsi;
-+	struct ice_fltr_desc desc;
-+	struct device *dev;
-+	struct ice_pf *pf;
-+	struct ice_hw *hw;
-+	int ret;
-+	u8 *pkt;
-+
-+	pf = vf->pf;
-+	dev = ice_pf_to_dev(pf);
-+	hw = &pf->hw;
-+	vsi = ice_get_vf_vsi(vf);
-+	if (!vsi) {
-+		dev_dbg(dev, "Invalid vsi for VF %d\n", vf->vf_id);
-+		return -EINVAL;
-+	}
-+
-+	input->dest_vsi = vsi->idx;
-+	input->comp_report = ICE_FXD_FLTR_QW0_COMP_REPORT_SW;
-+
-+	ctrl_vsi = pf->vsi[vf->ctrl_vsi_idx];
-+	if (!ctrl_vsi) {
-+		dev_dbg(dev, "Invalid ctrl_vsi for VF %d\n", vf->vf_id);
-+		return -EINVAL;
-+	}
-+
-+	pkt = devm_kzalloc(dev, ICE_FDIR_MAX_RAW_PKT_SIZE, GFP_KERNEL);
-+	if (!pkt)
-+		return -ENOMEM;
-+
-+	memcpy(pkt, conf->pkt_buf, conf->pkt_len);
-+
-+	ice_fdir_get_prgm_desc(hw, input, &desc, add);
-+
-+	ret = ice_prgm_fdir_fltr(ctrl_vsi, &desc, pkt);
-+	if (ret)
-+		goto err_free_pkt;
-+
-+	return 0;
-+
-+err_free_pkt:
-+	devm_kfree(dev, pkt);
-+	return ret;
-+}
-+
- /**
-  * ice_vc_fdir_write_fltr - write filter rule into hardware
-  * @vf: pointer to the VF info
-@@ -1529,6 +1696,16 @@ ice_vf_verify_rx_desc(struct ice_vf *vf, struct ice_vf_fdir_ctx *ctx,
- 	return ret;
- }
- 
-+static int ice_fdir_is_tunnel(enum ice_fdir_tunnel_type ttype)
-+{
-+	return (ttype == ICE_FDIR_TUNNEL_TYPE_GRE_INNER ||
-+		ttype == ICE_FDIR_TUNNEL_TYPE_GTPU_INNER ||
-+		ttype == ICE_FDIR_TUNNEL_TYPE_GTPU_EH_INNER ||
-+		ttype == ICE_FDIR_TUNNEL_TYPE_GTPOGRE_INNER ||
-+		ttype == ICE_FDIR_TUNNEL_TYPE_ECPRI ||
-+		ttype == ICE_FDIR_TUNNEL_TYPE_L2TPV2_INNER);
-+}
-+
- /**
-  * ice_vc_add_fdir_fltr_post
-  * @vf: pointer to the VF structure
-@@ -1787,6 +1964,167 @@ static void ice_vc_fdir_clear_irq_ctx(struct ice_vf *vf)
- 	spin_unlock_irqrestore(&vf->fdir.ctx_lock, flags);
- }
- 
-+/**
-+ * ice_vc_parser_fv_check_diff -  check two parsed FDIR profile fv context
-+ * @fv_a: struct of parsed FDIR profile field vector
-+ * @fv_b: struct of parsed FDIR profile field vector
-+ *
-+ * Check if the two parsed FDIR profile field vector context are different,
-+ * including proto_id, offset and mask.
-+ *
-+ * Return: true on differnet, false on otherwise.
-+ */
-+static bool ice_vc_parser_fv_check_diff(struct ice_parser_fv *fv_a,
-+					struct ice_parser_fv *fv_b)
-+{
-+	return (fv_a->proto_id	!= fv_b->proto_id ||
-+		fv_a->offset	!= fv_b->offset ||
-+		fv_a->msk	!= fv_b->msk);
-+}
-+
-+/**
-+ * ice_vc_parser_fv_save -  save parsed FDIR profile fv context
-+ * @fv: struct of parsed FDIR profile field vector
-+ * @fv_src: parsed FDIR profile field vector context to save
-+ *
-+ * Save the parsed FDIR profile field vector context, including proto_id,
-+ * offset and mask.
-+ */
-+static void ice_vc_parser_fv_save(struct ice_parser_fv *fv,
-+				  struct ice_parser_fv *fv_src)
-+{
-+	fv->proto_id	= fv_src->proto_id;
-+	fv->offset	= fv_src->offset;
-+	fv->msk		= fv_src->msk;
-+}
-+
-+/**
-+ * ice_vc_add_fdir_raw - add a raw FDIR filter for VF
-+ * @vf: pointer to the VF info
-+ * @conf: FDIR configuration for each filter
-+ * @stat: pointer to the VIRTCHNL_OP_ADD_FDIR_FILTER
-+ * @len: length of the stat
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_add_fdir_raw(struct ice_vf *vf,
-+		    struct virtchnl_fdir_fltr_conf *conf,
-+		    struct virtchnl_fdir_add *stat, int len)
-+{
-+	struct ice_vsi *vf_vsi, *ctrl_vsi;
-+	enum virtchnl_status_code v_ret;
-+	struct ice_fdir_prof_info *pi;
-+	struct ice_pf *pf = vf->pf;
-+	int ret, ptg, id, i;
-+	struct device *dev;
-+	struct ice_hw *hw;
-+	bool fv_found;
-+
-+	dev = ice_pf_to_dev(pf);
-+	hw = &pf->hw;
-+
-+	id = find_first_bit(conf->prof->ptypes, ICE_FLOW_PTYPE_MAX);
-+	ptg = hw->blk[ICE_BLK_FD].xlt1.t[id];
-+
-+	v_ret = VIRTCHNL_STATUS_SUCCESS;
-+	vf_vsi = ice_get_vf_vsi(vf);
-+	if (!vf_vsi) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_err(dev, "Can not get FDIR vf_vsi for VF %d\n", vf->vf_id);
-+		goto err_exit;
-+	}
-+
-+	ctrl_vsi = pf->vsi[vf->ctrl_vsi_idx];
-+	if (!ctrl_vsi) {
-+		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_err(dev, "Can not get FDIR ctrl_vsi for VF %d\n",
-+			vf->vf_id);
-+		goto err_exit;
-+	}
-+
-+	fv_found = false;
-+
-+	/* Check if profile info already existed, then update the counter */
-+	pi = &vf->fdir_prof_info[ptg];
-+	if (pi->fdir_active_cnt != 0) {
-+		for (i = 0; i < ICE_MAX_FV_WORDS; i++)
-+			if (ice_vc_parser_fv_check_diff(&pi->prof.fv[i],
-+							&conf->prof->fv[i]))
-+				break;
-+		if (i == ICE_MAX_FV_WORDS) {
-+			fv_found = true;
-+			pi->fdir_active_cnt++;
-+		}
-+	}
-+
-+	/* HW profile setting is only required for the first time */
-+	if (!fv_found) {
-+		ret = ice_flow_set_hw_prof(hw, vf_vsi->idx,
-+					   ctrl_vsi->idx, conf->prof,
-+					   ICE_BLK_FD);
-+
-+		if (ret)
-+			goto err_free_conf;
-+	}
-+
-+	ret = ice_vc_fdir_insert_entry(vf, conf, &conf->flow_id);
-+	if (ret) {
-+		v_ret = VIRTCHNL_STATUS_SUCCESS;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_dbg(dev, "VF %d: insert FDIR list failed\n",
-+			vf->vf_id);
-+		goto err_free_conf;
-+	}
-+
-+	ret = ice_vc_fdir_set_irq_ctx(vf, conf,
-+				      VIRTCHNL_OP_ADD_FDIR_FILTER);
-+	if (ret) {
-+		v_ret = VIRTCHNL_STATUS_SUCCESS;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_dbg(dev, "VF %d: set FDIR context failed\n",
-+			vf->vf_id);
-+		goto err_rem_entry;
-+	}
-+
-+	ret = ice_vc_fdir_add_del_raw(vf, conf, true);
-+	if (ret) {
-+		v_ret = VIRTCHNL_STATUS_SUCCESS;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_err(dev, "VF %d: adding FDIR raw flow rule failed, ret:%d\n",
-+			vf->vf_id, ret);
-+		goto err_clr_irq;
-+	}
-+
-+	/* Save parsed profile fv info of the FDIR rule for the first time */
-+	if (!fv_found) {
-+		for (i = 0; i < conf->prof->fv_num; i++)
-+			ice_vc_parser_fv_save(&pi->prof.fv[i],
-+					      &conf->prof->fv[i]);
-+		pi->fdir_active_cnt = 1;
-+	}
-+
-+	return 0;
-+
-+err_clr_irq:
-+	ice_vc_fdir_clear_irq_ctx(vf);
-+err_rem_entry:
-+	ice_vc_fdir_remove_entry(vf, conf, conf->flow_id);
-+err_free_conf:
-+	if (conf->parser_ena)
-+		conf->parser_ena = false;
-+	kfree(conf->prof);
-+	kfree(conf->pkt_buf);
-+	kfree(conf);
-+err_exit:
-+	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_ADD_FDIR_FILTER, v_ret,
-+				    (u8 *)stat, len);
-+	kfree(stat);
-+	return ret;
-+}
-+
- /**
-  * ice_vc_add_fdir_fltr - add a FDIR filter for VF by the msg buffer
-  * @vf: pointer to the VF info
-@@ -1855,6 +2193,11 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 		goto exit;
- 	}
- 
-+	/* For Protocol Agnostic Flow Offloading case only */
-+	if (conf->parser_ena)
-+		return ice_vc_add_fdir_raw(vf, conf, stat, len);
-+
-+	is_tun = ice_fdir_is_tunnel(conf->ttype);
- 	ret = ice_vc_fdir_config_input_set(vf, fltr, conf, is_tun);
- 	if (ret) {
- 		v_ret = VIRTCHNL_STATUS_SUCCESS;
-@@ -1915,6 +2258,93 @@ int ice_vc_add_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 	return ret;
- }
- 
-+/**
-+ * ice_vc_del_fdir_raw - delete a raw FDIR filter for VF
-+ * @vf: pointer to the VF info
-+ * @conf: FDIR configuration for each filter
-+ * @stat: pointer to the VIRTCHNL_OP_DEL_FDIR_FILTER
-+ * @len: length of the stat
-+ *
-+ * Return: 0 on success, and other on error.
-+ */
-+static int
-+ice_vc_del_fdir_raw(struct ice_vf *vf,
-+		    struct virtchnl_fdir_fltr_conf *conf,
-+		    struct virtchnl_fdir_del *stat, int len)
-+{
-+	struct ice_vsi *vf_vsi, *ctrl_vsi;
-+	enum ice_block blk = ICE_BLK_FD;
-+	enum virtchnl_status_code v_ret;
-+	struct ice_fdir_prof_info *pi;
-+	struct ice_pf *pf = vf->pf;
-+	struct device *dev;
-+	struct ice_hw *hw;
-+	u16 vsi_num;
-+	int ptg;
-+	int ret;
-+	int id;
-+
-+	dev = ice_pf_to_dev(pf);
-+	hw = &pf->hw;
-+
-+	id = find_first_bit(conf->prof->ptypes, ICE_FLOW_PTYPE_MAX);
-+	ptg = hw->blk[ICE_BLK_FD].xlt1.t[id];
-+
-+	ret = ice_vc_fdir_add_del_raw(vf, conf, false);
-+	if (ret) {
-+		v_ret = VIRTCHNL_STATUS_SUCCESS;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_err(dev, "VF %d: deleting FDIR raw flow rule failed, ret:%d\n",
-+			vf->vf_id, ret);
-+		goto err_del_tmr;
-+	}
-+
-+	vf_vsi = ice_get_vf_vsi(vf);
-+	if (!vf_vsi) {
-+		v_ret = VIRTCHNL_STATUS_SUCCESS;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_err(dev, "Can not get FDIR vf_vsi for VF %d\n", vf->vf_id);
-+		goto err_exit;
-+	}
-+
-+	ctrl_vsi = pf->vsi[vf->ctrl_vsi_idx];
-+	if (!ctrl_vsi) {
-+		v_ret = VIRTCHNL_STATUS_SUCCESS;
-+		stat->status = VIRTCHNL_FDIR_FAILURE_RULE_NORESOURCE;
-+		dev_err(dev, "Can not get FDIR ctrl_vsi for VF %d\n",
-+			vf->vf_id);
-+		goto err_exit;
-+	}
-+
-+	pi = &vf->fdir_prof_info[ptg];
-+	if (pi->fdir_active_cnt != 0) {
-+		pi->fdir_active_cnt--;
-+		/* Remove the profile id flow if no active FDIR rule left */
-+		if (!pi->fdir_active_cnt) {
-+			vsi_num = ice_get_hw_vsi_num(hw, ctrl_vsi->idx);
-+			ice_rem_prof_id_flow(hw, blk, vsi_num, id);
-+
-+			vsi_num = ice_get_hw_vsi_num(hw, vf_vsi->idx);
-+			ice_rem_prof_id_flow(hw, blk, vsi_num, id);
-+		}
-+	}
-+
-+	kfree(conf->prof);
-+	kfree(conf->pkt_buf);
-+	conf->parser_ena = false;
-+	kfree(stat);
-+
-+	return ret;
-+
-+err_del_tmr:
-+	ice_vc_fdir_clear_irq_ctx(vf);
-+err_exit:
-+	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_DEL_FDIR_FILTER, v_ret,
-+				    (u8 *)stat, len);
-+	kfree(stat);
-+	return ret;
-+}
-+
- /**
-  * ice_vc_del_fdir_fltr - delete a FDIR filter for VF by the msg buffer
-  * @vf: pointer to the VF info
-@@ -1927,7 +2357,10 @@ int ice_vc_del_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 	struct virtchnl_fdir_del *fltr = (struct virtchnl_fdir_del *)msg;
- 	struct virtchnl_fdir_del *stat = NULL;
- 	struct virtchnl_fdir_fltr_conf *conf;
-+	struct ice_vf_fdir *fdir = &vf->fdir;
- 	enum virtchnl_status_code v_ret;
-+	struct ice_fdir_fltr *input;
-+	enum ice_fltr_ptype flow;
- 	struct device *dev;
- 	struct ice_pf *pf;
- 	int is_tun = 0;
-@@ -1977,6 +2410,11 @@ int ice_vc_del_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 		goto err_exit;
- 	}
- 
-+	/* For Protocol Agnostic Flow Offloading case only */
-+	if (conf->parser_ena)
-+		return ice_vc_del_fdir_raw(vf, conf, stat, len);
-+
-+	is_tun = ice_fdir_is_tunnel(conf->ttype);
- 	ret = ice_vc_fdir_write_fltr(vf, conf, false, is_tun);
- 	if (ret) {
- 		v_ret = VIRTCHNL_STATUS_SUCCESS;
-@@ -1986,6 +2424,12 @@ int ice_vc_del_fdir_fltr(struct ice_vf *vf, u8 *msg)
- 		goto err_del_tmr;
- 	}
- 
-+	/* Remove unused profiles to avoid unexpected behaviors */
-+	input = &conf->input;
-+	flow = input->flow_type;
-+	if (fdir->fdir_fltr_cnt[flow][is_tun] == 1)
-+		ice_vc_fdir_rem_prof(vf, flow, is_tun);
-+
- 	kfree(stat);
- 
- 	return ret;
--- 
-2.25.1
+Tested-by: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com> (A Contingent worker at Intel)
 
 _______________________________________________
 Intel-wired-lan mailing list
