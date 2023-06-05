@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DBE2C7EE29
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 02:30:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08742C7EE2C
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 02:45:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 47E5B60E87;
-	Mon,  5 Jun 2023 02:30:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 47E5B60E87
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9889060BBE;
+	Mon,  5 Jun 2023 02:45:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9889060BBE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685932247;
-	bh=cQhOLOSqwUO3m3U6A/zmhlrKBlHMaFj40g6E3BTWm4c=;
+	s=default; t=1685933106;
+	bh=ieiG8CgkXbEPlPq4iSWkllkR7AyafafOvoP4ajrFXgk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=shqLJrCzRIt2CZMLGzhBvOLM8M1OTAydUew284dtNKL/oXz1n4NLmIEVSsvfFjQwl
-	 8O5/Bu5ihHo5onVW2hnJQlOE9e2cCHa7CoHT+ooObYSzhxMxFYruDjC5Q8BdtYmQrT
-	 zu1ZuSu/qjiGwhv7l0P0pMQUMtwb87N1CSX7e+nTtsraxMR7mtYpYDnUW5L3AKqClU
-	 fgz5mgM4uyF4YD3zFTvPybmUfLcS+DWKmOKTm/OKCKLjEnP/8UT/GJOV0uTxLaxDbx
-	 GvMJGQFucH6YBygIXbtG9xuTO7oEfABfAP3BzJ7N6HRhGq4Wdsx7xygl9YGfWI9GVG
-	 Oq9wGAvMuHzEg==
+	b=fo8cpxKiKQ3bst15DymYudzLLGRsb+AveXNsR24bvyFILk0A2ix0BvsZde9fWsyJZ
+	 GNDtI5vo9+swC3Vfwcs6Ml7rf4+Kq0aiCBS/3tOuKDgR84QTri5oEZUMJe024DVnnL
+	 PLTLAHowhL7rV8J6QHBW6WQHNgv2cxsLELRe4goxju9koT1bu0LithpxpippzvicxB
+	 o/7Ihlx5+nz9pBfAOzCN0TbJ+ZKSegUxGkqSySH+CuRgjZR00jCkMry24cXZiDSPlx
+	 EeHPbUjQaxd8EkCjNGBmLqG5wrHSuosjKSYXzMzDHaliM+3A2wtIp/sJNDrOBtP27J
+	 vlxtcGBTHjf8g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id iXGI94BVGASP; Mon,  5 Jun 2023 02:30:46 +0000 (UTC)
+	with ESMTP id jr8okSd_akgm; Mon,  5 Jun 2023 02:45:05 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 19BBB60E70;
-	Mon,  5 Jun 2023 02:30:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 19BBB60E70
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 361291BF336
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:29:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9B1D860BC3;
+	Mon,  5 Jun 2023 02:45:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9B1D860BC3
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 405F21BF95D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:45:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id A667560BF7
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:29:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A667560BF7
+ by smtp1.osuosl.org (Postfix) with ESMTP id 22B8581FDB
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:45:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 22B8581FDB
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CeQ3Um8DcXQl for <intel-wired-lan@lists.osuosl.org>;
- Mon,  5 Jun 2023 02:29:52 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id TTJqH9PoIvvk for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  5 Jun 2023 02:45:03 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6DA1960BEF
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6DA1960BEF
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:29:52 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="358710459"
-X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="358710459"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Jun 2023 19:29:52 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 20A9C81FDA
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 20A9C81FDA
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 02:45:03 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="355119125"
+X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="355119125"
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Jun 2023 19:45:02 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="1038604833"
-X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="1038604833"
+X-IronPort-AV: E=McAfee;i="6600,9927,10731"; a="821001548"
+X-IronPort-AV: E=Sophos;i="6.00,217,1681196400"; d="scan'208";a="821001548"
 Received: from dpdk-jf-ntb-v2.sh.intel.com ([10.67.119.16])
- by fmsmga005.fm.intel.com with ESMTP; 04 Jun 2023 19:29:50 -0700
+ by fmsmga002.fm.intel.com with ESMTP; 04 Jun 2023 19:45:01 -0700
 From: Junfeng Guo <junfeng.guo@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  5 Jun 2023 10:29:20 +0800
-Message-Id: <20230605022920.2361266-16-junfeng.guo@intel.com>
+Date: Mon,  5 Jun 2023 10:44:51 +0800
+Message-Id: <20230605024453.2378898-2-junfeng.guo@intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230605022920.2361266-1-junfeng.guo@intel.com>
-References: <20230605022920.2361266-1-junfeng.guo@intel.com>
+In-Reply-To: <20230605024453.2378898-1-junfeng.guo@intel.com>
+References: <20230605024453.2378898-1-junfeng.guo@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1685932192; x=1717468192;
+ t=1685933103; x=1717469103;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=JLYhMKlqEdqkYMPInBEcXsLQ985quawJRU4cIG9+pY0=;
- b=dYVOdSOofMn2byCZKKKNgEuXW0oxPhXSPWpi590/YD3490qYd679jFhC
- LIdTrk+ABN6DYykSzxejH+Q6BxKOI+0FNb6dxpJ4Jc39z7t4FAKYFMjcK
- 7A5UErCaudaUudxuJWZwqppG90138U4pvGMaMD5lc55mF4EXAkwKGUUAY
- RtzSAnRdq5TnOSE9yG/BQPyybUeGk0okQXMMy3I/WfAyeZKzECLUMYT+z
- DDAsF1B0n2n8haaFbJ0y5NAmmT189PyTG26a6PC0mTeXrdnwseeya4EAt
- PasubmkQNKso4pehto2BTkhlmEL0m6yYbAvZ/imEAhjqIZ2KrSKwsLJon
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=CVcekTVmTmI5+D9u4aKWL7S1xVXiU39E/HhDXDt4PjM=;
+ b=F6AXjHxfGnt7LDC8om5PV+a8x50lR9D9Oj55c3FzXcFKnHJiTRYTlqZN
+ IGUHk2pPV2O5Ax91CkYI8REEA7UZbjnHOGe9ZJTlLXBF8BGe4uQzjPrda
+ GuCPw5XzanBQaWSRGZbqpPO4g/G5X65g/oTIcL1Hg35pTXSl+myLbi0+L
+ xriSgPahfh4szfbb3or+Xh6FrlJbE0js4wk1mmfhD0wR9YZ0GVOK7IHQo
+ ntEkUJ6A1Uqqd8U2AJXb/Rqf06lBMqlMbzX5wOB2GWR7QpBzbEiAVTQRj
+ gUO+wg+q/ZDNZjdVgGIzIXmWNxz8MMUSZUiIqhrw0Mi+F1tXl7ngAZT9r
+ g==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=dYVOdSOo
-Subject: [Intel-wired-lan] [PATCH iwl-next 15/15] ice: add API for parser
- profile initialization
+ header.a=rsa-sha256 header.s=Intel header.b=F6AXjHxf
+Subject: [Intel-wired-lan] [PATCH iwl-next 1/3] virtchnl: support raw packet
+ in protocol header
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,170 +101,55 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add API ice_parser_profile_init to init a parser profile base on
-a parser result and a mask buffer. The ice_parser_profile can feed to
-low level FXP engine to create HW profile / field vector directly.
+The patch extends existing virtchnl_proto_hdrs structure to allow VF
+to pass a pair of buffers as packet data and mask that describe
+a match pattern of a filter rule. Then the kernel PF driver is requested
+to parse the pair of buffer and figure out low level hardware metadata
+(ptype, profile, field vector.. ) to program the expected FDIR or RSS
+rules.
 
+Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
 Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_parser.c | 113 ++++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_parser.h |  24 +++++
- 2 files changed, 137 insertions(+)
+ include/linux/avf/virtchnl.h | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_parser.c b/drivers/net/ethernet/intel/ice/ice_parser.c
-index b70c18044331..68f3be1e1846 100644
---- a/drivers/net/ethernet/intel/ice/ice_parser.c
-+++ b/drivers/net/ethernet/intel/ice/ice_parser.c
-@@ -444,3 +444,116 @@ int ice_parser_ecpri_tunnel_set(struct ice_parser *psr,
- {
- 	return _tunnel_port_set(psr, "TNL_UDP_ECPRI", udp_port, on);
- }
-+
-+static bool _nearest_proto_id(struct ice_parser_result *rslt, u16 offset,
-+			      u8 *proto_id, u16 *proto_off)
-+{
-+	u16 dist = 0xffff;
-+	u8 p = 0;
-+	int i;
-+
-+	for (i = 0; i < rslt->po_num; i++) {
-+		if (offset < rslt->po[i].offset)
-+			continue;
-+		if (offset - rslt->po[i].offset < dist) {
-+			p = rslt->po[i].proto_id;
-+			dist = offset - rslt->po[i].offset;
-+		}
-+	}
-+
-+	if (dist % 2)
-+		return false;
-+
-+	*proto_id = p;
-+	*proto_off = dist;
-+
-+	return true;
-+}
-+
-+/** default flag mask to cover GTP_EH_PDU, GTP_EH_PDU_LINK and TUN2
-+ * In future, the flag masks should learn from DDP
-+ */
-+#define ICE_KEYBUILD_FLAG_MASK_DEFAULT_SW	0x4002
-+#define ICE_KEYBUILD_FLAG_MASK_DEFAULT_ACL	0x0000
-+#define ICE_KEYBUILD_FLAG_MASK_DEFAULT_FD	0x6080
-+#define ICE_KEYBUILD_FLAG_MASK_DEFAULT_RSS	0x6010
-+
-+/**
-+ * ice_parser_profile_init  - initialize a FXP profile base on parser result
-+ * @rslt: a instance of a parser result
-+ * @pkt_buf: packet data buffer
-+ * @msk_buf: packet mask buffer
-+ * @buf_len: packet length
-+ * @blk: FXP pipeline stage
-+ * @prefix_match: match protocol stack exactly or only prefix
-+ * @prof: input/output parameter to save the profile
-+ */
-+int ice_parser_profile_init(struct ice_parser_result *rslt,
-+			    const u8 *pkt_buf, const u8 *msk_buf,
-+			    int buf_len, enum ice_block blk,
-+			    bool prefix_match,
-+			    struct ice_parser_profile *prof)
-+{
-+	u8 proto_id = 0xff;
-+	u16 proto_off = 0;
-+	u16 off;
-+
-+	memset(prof, 0, sizeof(*prof));
-+	set_bit(rslt->ptype, prof->ptypes);
-+	if (blk == ICE_BLK_SW) {
-+		prof->flags = rslt->flags_sw;
-+		prof->flags_msk = ICE_KEYBUILD_FLAG_MASK_DEFAULT_SW;
-+	} else if (blk == ICE_BLK_ACL) {
-+		prof->flags = rslt->flags_acl;
-+		prof->flags_msk = ICE_KEYBUILD_FLAG_MASK_DEFAULT_ACL;
-+	} else if (blk == ICE_BLK_FD) {
-+		prof->flags = rslt->flags_fd;
-+		prof->flags_msk = ICE_KEYBUILD_FLAG_MASK_DEFAULT_FD;
-+	} else if (blk == ICE_BLK_RSS) {
-+		prof->flags = rslt->flags_rss;
-+		prof->flags_msk = ICE_KEYBUILD_FLAG_MASK_DEFAULT_RSS;
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	for (off = 0; off < buf_len - 1; off++) {
-+		if (msk_buf[off] == 0 && msk_buf[off + 1] == 0)
-+			continue;
-+		if (!_nearest_proto_id(rslt, off, &proto_id, &proto_off))
-+			continue;
-+		if (prof->fv_num >= 32)
-+			return -EINVAL;
-+
-+		prof->fv[prof->fv_num].proto_id = proto_id;
-+		prof->fv[prof->fv_num].offset = proto_off;
-+		prof->fv[prof->fv_num].spec = *(const u16 *)&pkt_buf[off];
-+		prof->fv[prof->fv_num].msk = *(const u16 *)&msk_buf[off];
-+		prof->fv_num++;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_parser_profile_dump - dump an FXP profile info
-+ * @hw: pointer to the hardware structure
-+ * @prof: profile info to dump
-+ */
-+void ice_parser_profile_dump(struct ice_hw *hw, struct ice_parser_profile *prof)
-+{
-+	u16 i;
-+
-+	dev_info(ice_hw_to_dev(hw), "ptypes:\n");
-+	for (i = 0; i < ICE_FLOW_PTYPE_MAX; i++)
-+		if (test_bit(i, prof->ptypes))
-+			dev_info(ice_hw_to_dev(hw), "\t%d\n", i);
-+
-+	for (i = 0; i < prof->fv_num; i++)
-+		dev_info(ice_hw_to_dev(hw),
-+			 "proto = %d, offset = %d spec = 0x%04x, mask = 0x%04x\n",
-+			 prof->fv[i].proto_id, prof->fv[i].offset,
-+			 prof->fv[i].spec, prof->fv[i].msk);
-+
-+	dev_info(ice_hw_to_dev(hw), "flags = 0x%04x\n", prof->flags);
-+	dev_info(ice_hw_to_dev(hw), "flags_msk = 0x%04x\n", prof->flags_msk);
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_parser.h b/drivers/net/ethernet/intel/ice/ice_parser.h
-index 432d47031298..ecbec5843e9f 100644
---- a/drivers/net/ethernet/intel/ice/ice_parser.h
-+++ b/drivers/net/ethernet/intel/ice/ice_parser.h
-@@ -85,4 +85,28 @@ struct ice_parser_result {
- int ice_parser_run(struct ice_parser *psr, const u8 *pkt_buf,
- 		   int pkt_len, struct ice_parser_result *rslt);
- void ice_parser_result_dump(struct ice_hw *hw, struct ice_parser_result *rslt);
-+
-+struct ice_parser_fv {
-+	u8 proto_id; /* hardware protocol ID */
-+	u16 offset; /* offset from the start of the protocol header */
-+	u16 spec; /* 16 bits pattern to match */
-+	u16 msk; /* 16 bits pattern mask */
-+};
-+
-+struct ice_parser_profile {
-+	struct ice_parser_fv fv[48]; /* field vector arrary */
-+	int fv_num; /* field vector number must <= 48 */
-+	u16 flags; /* 16 bits key builder flag */
-+	u16 flags_msk; /* key builder flag masker */
-+	/* 1024 bits PTYPE bitmap */
-+	DECLARE_BITMAP(ptypes, ICE_FLOW_PTYPE_MAX);
-+};
-+
-+int ice_parser_profile_init(struct ice_parser_result *rslt,
-+			    const u8 *pkt_buf, const u8 *msk_buf,
-+					int buf_len, enum ice_block blk,
-+					bool prefix_match,
-+					struct ice_parser_profile *prof);
-+void ice_parser_profile_dump(struct ice_hw *hw,
-+			     struct ice_parser_profile *prof);
- #endif /* _ICE_PARSER_H_ */
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index c15221dcb75e..33b4c6db0c10 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -1083,6 +1083,7 @@ enum virtchnl_rss_algorithm {
+ };
+ 
+ #define VIRTCHNL_MAX_NUM_PROTO_HDRS	32
++#define VIRTCHNL_MAX_SIZE_RAW_PACKET	1024
+ #define PROTO_HDR_SHIFT			5
+ #define PROTO_HDR_FIELD_START(proto_hdr_type) ((proto_hdr_type) << PROTO_HDR_SHIFT)
+ #define PROTO_HDR_FIELD_MASK ((1UL << PROTO_HDR_SHIFT) - 1)
+@@ -1228,13 +1229,22 @@ struct virtchnl_proto_hdrs {
+ 	u8 pad[3];
+ 	/**
+ 	 * specify where protocol header start from.
++	 * must be 0 when sending a raw packet request.
+ 	 * 0 - from the outer layer
+ 	 * 1 - from the first inner layer
+ 	 * 2 - from the second inner layer
+ 	 * ....
+ 	 **/
+ 	int count; /* the proto layers must < VIRTCHNL_MAX_NUM_PROTO_HDRS */
+-	struct virtchnl_proto_hdr proto_hdr[VIRTCHNL_MAX_NUM_PROTO_HDRS];
++	union {
++		struct virtchnl_proto_hdr
++			proto_hdr[VIRTCHNL_MAX_NUM_PROTO_HDRS];
++		struct {
++			u16 pkt_len;
++			u8 spec[VIRTCHNL_MAX_SIZE_RAW_PACKET];
++			u8 mask[VIRTCHNL_MAX_SIZE_RAW_PACKET];
++		} raw;
++	};
+ };
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(2312, virtchnl_proto_hdrs);
 -- 
 2.25.1
 
