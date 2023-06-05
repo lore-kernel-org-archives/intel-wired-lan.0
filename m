@@ -4,99 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40513C7EE24
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 15:25:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37555C7EE24
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 15:44:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EFC09821DA;
-	Mon,  5 Jun 2023 15:25:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EFC09821DA
+	by smtp1.osuosl.org (Postfix) with ESMTP id BB9C38214A;
+	Mon,  5 Jun 2023 15:44:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BB9C38214A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685978751;
-	bh=+itBfW6c3RBHK7iD714JsmgUob+cl3EkRcSjXqJsPQU=;
+	s=default; t=1685979873;
+	bh=UufwogSMxAHwb/gcAapXmJjg9OypW+wfWOCoX4CYAZE=;
 	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=1UR61iOvTjDGO9mDdyD7MGydfNXEThSpEH7o6OARHVhBGijTfQm/LE9CqNSt8AGEn
-	 vrjorlpFWLe41JPs5yIaqbAGksigc47yCfPRH6mPzBtyK80mqZOwy8+cZTmZ8jNUVW
-	 T9GEKN5coWZj9XZrkBckzwTUbLaAeA1J4Ys/WD6m0MsFgy67PLuO4ioRKckkZe+k/R
-	 PqB05c48TzfMKEwLk1srrI56Fj/4rZOTcLnn8V2L3+gVvD1mAA/voJlHlOga6Jm2G5
-	 57oxfsOymeiPDRSA9sjCePzfbgA7uLjVEY2rrQKUHlTKZ6PUpIcLbPQrmuWuzseVi9
-	 M9aX9BaoNOmIg==
+	b=dnAwN2d/DciK4782fEqLw3n7pdXOLQlLBf8rpGFNwK+lNjdSqhq1C/i56koEEa7qN
+	 iXKKNlf7aquQL7I9r3C5FaubdoF3yW0KbEvLr8AKT+ZB+thm5adG/Zvhts1ggzR5l4
+	 CG+fdahkTlP/t3KdKT0xm8UbuZL5OWEKyGZjY5LyX6wFHe1PoLePe7/IqUO67nxEb8
+	 TlOXI5ua/WdzALSrVteVcfQ9AH3VUfehDby6d3/sGTZbWY+Gs3V6n+/lKmLMFDxF8U
+	 PTLVqgZXKj3bTRrJYtx+YZl1F2TY+YJ9neE9wc4QU9i+BcD5hnSiaEoGUWXxqq4MdL
+	 nf0s5US8noFAw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id AkdVg9NVRcyh; Mon,  5 Jun 2023 15:25:48 +0000 (UTC)
+	with ESMTP id Gg_ckEArCB92; Mon,  5 Jun 2023 15:44:32 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 63229821FB;
-	Mon,  5 Jun 2023 15:25:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 63229821FB
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 18F121BF3AD
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 03:17:53 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id AFBB08214C;
+	Mon,  5 Jun 2023 15:44:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AFBB08214C
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id E08F31BF424
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 15:44:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E683640382
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 03:17:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E683640382
+ by smtp3.osuosl.org (Postfix) with ESMTP id C4C5260FB2
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 15:44:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C4C5260FB2
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id QNh59iAGpy8Y for <intel-wired-lan@lists.osuosl.org>;
- Mon,  5 Jun 2023 03:17:52 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Q1ojhUs4YrMz for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  5 Jun 2023 15:44:30 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E070740017
-Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com
- [IPv6:2a00:1450:4864:20::62f])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E070740017
- for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 03:17:51 +0000 (UTC)
-Received: by mail-ej1-x62f.google.com with SMTP id
- a640c23a62f3a-976a0a1a92bso399814766b.1
- for <intel-wired-lan@lists.osuosl.org>; Sun, 04 Jun 2023 20:17:51 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 57EC460F17
+Received: from mail-ot1-x32c.google.com (mail-ot1-x32c.google.com
+ [IPv6:2607:f8b0:4864:20::32c])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 57EC460F17
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 15:44:30 +0000 (UTC)
+Received: by mail-ot1-x32c.google.com with SMTP id
+ 46e09a7af769-6af81142b6dso4637166a34.2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 05 Jun 2023 08:44:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1685935070; x=1688527070;
- h=cc:to:subject:message-id:date:from:in-reply-to:references
- :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=TNd83VG0/dDbVs1OhUC56FmXw3JtCLitD5vetXlHJ2s=;
- b=XwJSGew9tggUMivvQYjg1VgFBBwoa+ryli4EzQdU8WPWtJilIzyZvVn0EOmwrWOVsf
- kSHZfWiw754BofV9LNpWgtTjUTnIAvOfkGCJEIrsHsbrceyRBqNRnVVcU8FlalKWJvBe
- OIomTdf0ual9Zr72iMEBe1O4JjZltYKSXkrAvSM6eJ6SRwvRxLRfqAE7omvyKnnuVAIF
- h89KTAjPdWzNE+UDaMEozISMntReCnQdT7B78BQb3afmALeomBNoWyr1UWZprepS//dv
- +8FCjPOJLWUFJWvLgA3XQYG9TmwzWHE24waHGGuWUBFIqF1//adgLpnNtWJNlbGnMCW7
- WPjA==
-X-Gm-Message-State: AC+VfDxOYiUMIHcYO2ldvdD+KXWhvTiZJtRVsrl347PV3xj8J38g+37T
- yDJxgW/SSe6nzSM5pp0hO4IKOAK/HfT4KEx5xsdSlg==
-X-Google-Smtp-Source: ACHHUZ53/Jd0DPYtPHi9OKcr2tuzJ2NdBhZmHv1LFxMmJhiBf8zYg2fQKpYItAODqxQSiVaqEhJnlWamtFXr0ULbyq8=
-X-Received: by 2002:a17:907:7292:b0:974:6026:a312 with SMTP id
- dt18-20020a170907729200b009746026a312mr5310171ejc.51.1685935070022; Sun, 04
- Jun 2023 20:17:50 -0700 (PDT)
+ d=1e100.net; s=20221208; t=1685979869; x=1688571869;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=A90Mk0zhGtoGmxJxaQafKo6YzBEDqEFCob4w8O1kVaw=;
+ b=CoQbOGcgmHI9H+Cpk/gquZ3P+0QbxemQQ+F+KH2+AWYWfRim2zG+eNojW2ACu1YLbV
+ pJThH4xJWawVwF48cRAN38uWZvA4xUBQ4ZMu2V3MM9P5m12NLvpLwOqjdy48MX/8m8IS
+ qiqvJmRVypGmNAWXRyPSt7ODNRN7tuvm6zHtL5d31k/6jmtf7aRCmA14vyWtnJJFXxVV
+ Dv3jnsmAcVufpsdjQaCAlI2tMLENETSflbS51g5szN8dJPX7ojvmOx1J5aVWsfP6NuRh
+ G7I6OSApYJI/BrtgaqOEyGB+j774KJInZZX4LkUTEf3WqeyyT1dDWtcVwBl64vdrartb
+ daOw==
+X-Gm-Message-State: AC+VfDwYzV2a70bQELuRO+890xJy7GaSlkwee09KyBOlZHWZmLXTZG6A
+ cSekbarVYidDpQ3C56H0e7rYemqWOZKk9JQvGKaAoQ==
+X-Google-Smtp-Source: ACHHUZ4Tfjk8gbHFmBO99ECiDhiiGggbXGg15OtrRRxs+VRwIA/aSz9fY0Br9IG0xAYSxlcMfU2eCUAgu9MaGurWj+k=
+X-Received: by 2002:a05:6358:c4a9:b0:129:d026:e9f2 with SMTP id
+ fg41-20020a056358c4a900b00129d026e9f2mr188619rwb.11.1685979868907; Mon, 05
+ Jun 2023 08:44:28 -0700 (PDT)
 MIME-Version: 1.0
-References: <20230601185353.17012-1-prasad@arista.com>
- <cbb5bf34-5082-13ec-45b8-590268279bae@intel.com>
- <CAKh1g57arCC3a0iv+pc+xKJk+8HgzqvK6SjJt83uVQedw2Hm9w@mail.gmail.com>
- <CAKh1g548roQKgHu6aS+SAB2Ux+HkJHWgpfEFvvqqnHu56F1sDQ@mail.gmail.com>
- <61ead333-c9b1-1580-78e8-132337408e25@intel.com>
-In-Reply-To: <61ead333-c9b1-1580-78e8-132337408e25@intel.com>
-From: Prasad Koya <prasad@arista.com>
-Date: Sun, 4 Jun 2023 20:17:38 -0700
-Message-ID: <CAKh1g56u=8Csufc=XH9qZpeOf=ybH8URu=e7f7CQ5RRO0tpkzA@mail.gmail.com>
-To: "Neftin, Sasha" <sasha.neftin@intel.com>
-X-Mailman-Approved-At: Mon, 05 Jun 2023 15:25:30 +0000
+References: <20230602103750.2290132-1-vladimir.oltean@nxp.com>
+In-Reply-To: <20230602103750.2290132-1-vladimir.oltean@nxp.com>
+From: Jamal Hadi Salim <jhs@mojatatu.com>
+Date: Mon, 5 Jun 2023 11:44:17 -0400
+Message-ID: <CAM0EoMnqscw=OfWzyEKV10qFW5+EFMd5JWZxPSPCod3TvqpnuQ@mail.gmail.com>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=arista.com; s=google; t=1685935070; x=1688527070;
- h=cc:to:subject:message-id:date:from:in-reply-to:references
- :mime-version:from:to:cc:subject:date:message-id:reply-to;
- bh=TNd83VG0/dDbVs1OhUC56FmXw3JtCLitD5vetXlHJ2s=;
- b=WPk0s9jUfZqpFEAlYvL9wh7h432jkOOHCzpcSjfb/FzigY9LZfZSboih+JG3nlcIN6
- R4GBS+9tmx0BugoqlNV3941lPuziucPzY8Vfw497QBo6TKjf4qFNKMBX028MxXvOWuOj
- CZg10teNoZ1xkzdHj4ZdZdXxA4EMT9D1iBL9naO0gQZyKbearezEBiVi2ed+mn5j784s
- YL7Hfte/3CLMjFEOCqUi0saY6QDT89EIrkPghbDtTRSeb5Bf2XknP4D9kooGisyeYGvO
- CYxqF8A4LBp2CjzIRhVSX5KIFTZb/hWBw0qO08KsSGQIzDGi1kUusqzOT+59hkj2K/u5
- aHXg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=arista.com header.i=@arista.com
- header.a=rsa-sha256 header.s=google header.b=WPk0s9jU
-Subject: Re: [Intel-wired-lan] [PATCH] intel-wired-lan: igc: set TP bit in
- ethtool_link_ksettings.supported field
+ d=mojatatu-com.20221208.gappssmtp.com; s=20221208; t=1685979869; x=1688571869; 
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=A90Mk0zhGtoGmxJxaQafKo6YzBEDqEFCob4w8O1kVaw=;
+ b=zuuikebe6licttv8Tse/5e+gzZZ4D4z2gmA3z8mMAX2SdXkArSL4TUDb45v6l9IvZm
+ b6obQZQle3xp/hYInx2KWqpyQimwN/Zvin1udaN/o69/8313VKYotWXdbfUbz35UEKSz
+ 2l+BkCjqdSvM9Sw+7OpfSR7iaJ8L+gpE///pmBMS5iX82JUaP0KajO2hFaFAD5BAA0fm
+ CKO4vHpAzRbeqfq+FhBbKhFOfcmIyCPYp33PFMGhgmoB60APrXrx/XIPVWVTRWZTnwEi
+ n78sZ3QHSwLwLTkFCoHIC7aqzfCR99mAzaU+vvCvm5LfLGdxzZIRWJUFMo+8EV4w/Ae6
+ Q/tQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=mojatatu-com.20221208.gappssmtp.com
+ header.i=@mojatatu-com.20221208.gappssmtp.com header.a=rsa-sha256
+ header.s=20221208 header.b=zuuikebe
+Subject: Re: [Intel-wired-lan] [PATCH RESEND net-next 0/5] Improve the
+ taprio qdisc's relationship with its children
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,260 +106,58 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Fuxbrumer, Devora" <devora.fuxbrumer@intel.com>,
- Salam Noureddine <noureddine@arista.com>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>, gilligan@arista.com,
- intel-wired-lan@lists.osuosl.org, "Ruinskiy, Dima" <dima.ruinskiy@intel.com>,
- "Avivi, Amir" <amir.avivi@intel.com>
-Content-Type: multipart/mixed; boundary="===============6928211174734206870=="
+Cc: Jiri Pirko <jiri@resnulli.us>, Pedro Tammela <pctammela@mojatatu.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Peilin Ye <yepeilin.cs@gmail.com>, Eric Dumazet <edumazet@google.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Cong Wang <xiyou.wangcong@gmail.com>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---===============6928211174734206870==
-Content-Type: multipart/alternative; boundary="000000000000f6e5fd05fd5958bf"
-
---000000000000f6e5fd05fd5958bf
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
->>>
-2. please, use the [iwl-net] prefix, for example:
-[iwl-net, v2] igc: set TP bit in ethtool_link_ksettings.supported field
-3. you might add the fixes tag. Example:
-Fixes: 8c5ad0dae93c9 ("igc: Add ethtool support")
-<<<
-
-Sent the current version after adding (2) and (3)
-
-Thank you.
-
-On Sun, Jun 4, 2023 at 12:20=E2=80=AFAM Neftin, Sasha <sasha.neftin@intel.c=
-om>
-wrote:
-
-> On 6/3/2023 09:05, Prasad Koya wrote:
-> > Hi Sasha
-> >
-> > In our internal review, we found that igb and other vendors' drivers se=
-t
-> > the TP (or other media) bit in the 'advertising' field as well. So I
-> > made the and tested the change in 6.1.31 kernel. Will send that patch
-> > for review.
-> >
-> > Thank you.
-> >
-> > On Fri, Jun 2, 2023 at 12:49=E2=80=AFAM Prasad Koya <prasad@arista.com
-> > <mailto:prasad@arista.com>> wrote:
-> >
-> >     Thanks for the quick review.
-> >
-> >     Yes, we use ETHTOOL_GLINKSETTINGS ioctl to retrieve interface
-> >     settings and expect to see one of TP or MII set in the 'supported'
-> >     bitmask.
-> >
-> >     I'll send out a new patch removing the if(). Would you accept the
-> >     patch into your staging tree and later push it to the stable kernel
-> >     branch? This is my first time sending to intel-wired-lan. Not sure
-> >     how it works.
->
-> 1. yes, definitely we will accept.
-> 2. please, use the [iwl-net] prefix, for example:
-> [iwl-net, v2] igc: set TP bit in ethtool_link_ksettings.supported field
-> 3. you might add the fixes tag. Example:
-> Fixes: 8c5ad0dae93c9 ("igc: Add ethtool support")
-> Thanks,
-> Sasha
->
-> >
-> >     Thank you.
-> >
-> >     On Fri, Jun 2, 2023 at 12:34=E2=80=AFAM Neftin, Sasha
-> >     <sasha.neftin@intel.com <mailto:sasha.neftin@intel.com>> wrote:
-> >
-> >         On 6/1/2023 21:53, prasad@arista.com <mailto:prasad@arista.com>
-> >         wrote:
-> >          > From: Prasad Koya <prasad@arista.com <mailto:
-> prasad@arista.com>>
-> >          >
-> >          > if the physical media is twisted pair copper, set the TP bit
-> >         in the
-> >          > 'supported' field
-> >          >
-> >          > Signed-off-by: Prasad Koya <prasad@arista.com
-> >         <mailto:prasad@arista.com>>
-> >          > ---
-> >          >   drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 ++
-> >          >   1 file changed, 2 insertions(+)
-> >          >
-> >          > diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> >         b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> >          > index 8cc077b712ad..7d197fa80d5d 100644
-> >          > --- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> >          > +++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-> >          > @@ -1707,6 +1707,8 @@ static int
-> >         igc_ethtool_get_link_ksettings(struct net_device *netdev,
-> >          >       /* twisted pair */
-> >          >       cmd->base.port =3D PORT_TP;
-> >          >       cmd->base.phy_address =3D hw->phy.addr;
-> >          > +     if (hw->phy.media_type =3D=3D igc_media_type_copper)
-> >         Thank you Prasad. i225/6 parts supported only copper media type=
-.
-> >         We can
-> >         drop the "if" condition.
-> >          > +             ethtool_link_ksettings_add_link_mode(cmd,
-> >         supported, TP);
-> >         Do you want to see: "Supported ports: [ TP ]"? That's right.
-> >          >
-> >          >       /* advertising link modes */
-> >          >       if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
-> >
->
->
-
---000000000000f6e5fd05fd5958bf
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div>&gt;&gt;&gt;</div><div>2. please, use the [iwl-net] p=
-refix, for example:<br>[iwl-net, v2] igc: set TP bit in ethtool_link_ksetti=
-ngs.supported field<br>3. you might add the fixes tag. Example:<br>Fixes: 8=
-c5ad0dae93c9 (&quot;igc: Add ethtool support&quot;)<br></div><div>&lt;&lt;&=
-lt;</div><div><br></div>Sent the=C2=A0current version after adding (2) and =
-(3)=C2=A0<div><br></div><div>Thank you.</div></div><br><div class=3D"gmail_=
-quote"><div dir=3D"ltr" class=3D"gmail_attr">On Sun, Jun 4, 2023 at 12:20=
-=E2=80=AFAM Neftin, Sasha &lt;<a href=3D"mailto:sasha.neftin@intel.com">sas=
-ha.neftin@intel.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quot=
-e" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204)=
-;padding-left:1ex">On 6/3/2023 09:05, Prasad Koya wrote:<br>
-&gt; Hi Sasha<br>
-&gt; <br>
-&gt; In our internal review, we found that igb and other vendors&#39; drive=
-rs set <br>
-&gt; the TP (or other media) bit in the &#39;advertising&#39; field as well=
-. So I <br>
-&gt; made the and tested the change in 6.1.31 kernel. Will send that patch =
-<br>
-&gt; for review.<br>
-&gt; <br>
-&gt; Thank you.<br>
-&gt; <br>
-&gt; On Fri, Jun 2, 2023 at 12:49=E2=80=AFAM Prasad Koya &lt;<a href=3D"mai=
-lto:prasad@arista.com" target=3D"_blank">prasad@arista.com</a> <br>
-&gt; &lt;mailto:<a href=3D"mailto:prasad@arista.com" target=3D"_blank">pras=
-ad@arista.com</a>&gt;&gt; wrote:<br>
-&gt; <br>
-&gt;=C2=A0 =C2=A0 =C2=A0Thanks for the quick review.<br>
-&gt; <br>
-&gt;=C2=A0 =C2=A0 =C2=A0Yes, we use ETHTOOL_GLINKSETTINGS ioctl to retrieve=
- interface<br>
-&gt;=C2=A0 =C2=A0 =C2=A0settings and expect to see one of TP or MII set in =
-the &#39;supported&#39;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0bitmask.<br>
-&gt; <br>
-&gt;=C2=A0 =C2=A0 =C2=A0I&#39;ll send out a new patch removing the if(). Wo=
-uld you accept the<br>
-&gt;=C2=A0 =C2=A0 =C2=A0patch into your staging tree and later push it to t=
-he stable kernel<br>
-&gt;=C2=A0 =C2=A0 =C2=A0branch? This is my first time sending to intel-wire=
-d-lan. Not sure<br>
-&gt;=C2=A0 =C2=A0 =C2=A0how it works.<br>
-<br>
-1. yes, definitely we will accept.<br>
-2. please, use the [iwl-net] prefix, for example:<br>
-[iwl-net, v2] igc: set TP bit in ethtool_link_ksettings.supported field<br>
-3. you might add the fixes tag. Example:<br>
-Fixes: 8c5ad0dae93c9 (&quot;igc: Add ethtool support&quot;)<br>
-Thanks,<br>
-Sasha<br>
-<br>
-&gt; <br>
-&gt;=C2=A0 =C2=A0 =C2=A0Thank you.<br>
-&gt; <br>
-&gt;=C2=A0 =C2=A0 =C2=A0On Fri, Jun 2, 2023 at 12:34=E2=80=AFAM Neftin, Sas=
-ha<br>
-&gt;=C2=A0 =C2=A0 =C2=A0&lt;<a href=3D"mailto:sasha.neftin@intel.com" targe=
-t=3D"_blank">sasha.neftin@intel.com</a> &lt;mailto:<a href=3D"mailto:sasha.=
-neftin@intel.com" target=3D"_blank">sasha.neftin@intel.com</a>&gt;&gt; wrot=
-e:<br>
-&gt; <br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0On 6/1/2023 21:53, <a href=3D"mailto:=
-prasad@arista.com" target=3D"_blank">prasad@arista.com</a> &lt;mailto:<a hr=
-ef=3D"mailto:prasad@arista.com" target=3D"_blank">prasad@arista.com</a>&gt;=
-<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0wrote:<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; From: Prasad Koya &lt;<a href=
-=3D"mailto:prasad@arista.com" target=3D"_blank">prasad@arista.com</a> &lt;m=
-ailto:<a href=3D"mailto:prasad@arista.com" target=3D"_blank">prasad@arista.=
-com</a>&gt;&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; if the physical media is twiste=
-d pair copper, set the TP bit<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0in the<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; &#39;supported&#39; field<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; Signed-off-by: Prasad Koya &lt;=
-<a href=3D"mailto:prasad@arista.com" target=3D"_blank">prasad@arista.com</a=
-><br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0&lt;mailto:<a href=3D"mailto:prasad@a=
-rista.com" target=3D"_blank">prasad@arista.com</a>&gt;&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; ---<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;=C2=A0 =C2=A0drivers/net/etherne=
-t/intel/igc/igc_ethtool.c | 2 ++<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;=C2=A0 =C2=A01 file changed, 2 i=
-nsertions(+)<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; diff --git a/drivers/net/ethern=
-et/intel/igc/igc_ethtool.c<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0b/drivers/net/ethernet/intel/igc/igc_=
-ethtool.c<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; index 8cc077b712ad..7d197fa80d5=
-d 100644<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; --- a/drivers/net/ethernet/inte=
-l/igc/igc_ethtool.c<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; +++ b/drivers/net/ethernet/inte=
-l/igc/igc_ethtool.c<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; @@ -1707,6 +1707,8 @@ static in=
-t<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0igc_ethtool_get_link_ksettings(struct=
- net_device *netdev,<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0/* tw=
-isted pair */<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0cmd-&=
-gt;base.port =3D PORT_TP;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0cmd-&=
-gt;base.phy_address =3D hw-&gt;phy.addr;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; +=C2=A0 =C2=A0 =C2=A0if (hw-&gt=
-;phy.media_type =3D=3D igc_media_type_copper)<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Thank you Prasad. i225/6 parts suppor=
-ted only copper media type.<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0We can<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0drop the &quot;if&quot; condition.<br=
->
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0ethtool_link_ksettings_add_link_mode(cmd,<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0supported, TP);<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Do you want to see: &quot;Supported p=
-orts: [ TP ]&quot;? That&#39;s right.<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0/* ad=
-vertising link modes */<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 &gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0if (h=
-w-&gt;phy.autoneg_advertised &amp; ADVERTISE_10_HALF)<br>
-&gt; <br>
-<br>
-</blockquote></div>
-
---000000000000f6e5fd05fd5958bf--
-
---===============6928211174734206870==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
---===============6928211174734206870==--
+T24gRnJpLCBKdW4gMiwgMjAyMyBhdCA2OjM44oCvQU0gVmxhZGltaXIgT2x0ZWFuIDx2bGFkaW1p
+ci5vbHRlYW5AbnhwLmNvbT4gd3JvdGU6Cj4KPiBbIE9yaWdpbmFsIHBhdGNoIHNldCB3YXMgbG9z
+dCBkdWUgdG8gYW4gYXBwYXJlbnQgdHJhbnNpZW50IHByb2JsZW0gd2l0aAo+IGtlcm5lbC5vcmcn
+cyBETlNCTCBzZXR1cC4gVGhpcyBpcyBhbiBpZGVudGljYWwgcmVzZW5kLiBdCj4KPiBQcm9tcHRl
+ZCBieSBWaW5pY2l1cycgcmVxdWVzdCB0byBjb25zb2xpZGF0ZSBzb21lIGNoaWxkIFFkaXNjCj4g
+ZGVyZWZlcmVuY2VzIGluIHRhcHJpbzoKPiBodHRwczovL2xvcmUua2VybmVsLm9yZy9uZXRkZXYv
+ODdlZG14djd4Mi5mc2ZAaW50ZWwuY29tLwo+Cj4gSSByZW1lbWJlcmVkIHRoYXQgSSBoYWQgbGVm
+dCBzb21lIHVuZmluaXNoZWQgd29yayBpbiB0aGlzIFFkaXNjLCBuYW1lbHkKPiBjb21taXQgYWY3
+YjI5YjFkZWFhICgiUmV2ZXJ0ICJuZXQvc2NoZWQ6IHRhcHJpbzogbWFrZSBxZGlzY19sZWFmKCkg
+c2VlCj4gdGhlIHBlci1uZXRkZXYtcXVldWUgcGZpZm8gY2hpbGQgcWRpc2NzIiIpLgo+Cj4gVGhp
+cyBwYXRjaCBzZXQgcmVwcmVzZW50cyBhbm90aGVyIHN0YWIgYXQsIGVzc2VudGlhbGx5LCB3aGF0
+J3MgaW4gdGhlCj4gdGl0bGUuIE5vdCBvbmx5IGRvZXMgdGFwcmlvIG5vdCBwcm9wZXJseSBkZXRl
+Y3Qgd2hlbiBpdCdzIGdyYWZ0ZWQgYXMgYQo+IG5vbi1yb290IHFkaXNjLCBidXQgaXQgYWxzbyBy
+ZXR1cm5zIGluY29ycmVjdCBwZXItY2xhc3Mgc3RhdHMuCj4gRXZlbnR1YWxseSwgVmluaWNpdXMn
+IHJlcXVlc3QgaXMgYWRkcmVzc2VkIHRvbywgYWx0aG91Z2ggaW4gYSBkaWZmZXJlbnQKPiBmb3Jt
+IHRoYW4gdGhlIG9uZSBoZSByZXF1ZXN0ZWQgKHdoaWNoIHdhcyBwdXJlbHkgY29zbWV0aWMpLgo+
+Cj4gUmV2aWV3IGZyb20gcGVvcGxlIG1vcmUgZXhwZXJpZW5jZWQgd2l0aCBRZGlzY3MgdGhhbiBt
+ZSB3b3VsZCBiZQo+IGFwcHJlY2lhdGVkLiBJIHRyaWVkIG15IGJlc3QgdG8gZXhwbGFpbiB3aGF0
+IEkgY29uc2lkZXIgdG8gYmUgcHJvYmxlbXMuCgpJIGhhdmVudCBiZWVuIGZvbGxvd2luZyAtIGJ1
+dCBpZiB5b3Ugc2hvdyBtZSBzYW1wbGUgaW50ZW5kZWQgdGMKY29uZmlncyBmb3IgYm90aCBzL3cg
+YW5kIGhhcmR3YXJlIG9mZmxvYWRzIGkgY2FuIGNvbW1lbnQuCgpJbiBteSBjdXJzb3J5IGxvb2sg
+aSBhc3N1bWVkIHlvdSB3YW50ZWQgdG8gZ28gYWxvbmcgdGhlIHBhdGggb2YgbXFwcmlvCndoZXJl
+IG5vdGhpbmcgbXVjaCBoYXBwZW5zIGluIHRoZSBzL3cgZGF0YXBhdGggb3RoZXIgdGhhbiByZXF1
+ZXVlcwp3aGVuIHRoZSB0eCBoYXJkd2FyZSBwYXRoIGlzIGJ1c3kgKG5vdGljZSBpdCBpcyBtaXNz
+aW5nIGFuCmVucXVldWUvZGVxdWUgb3BzKS4gSW4gdGhhdCBjYXNlIHRoZSBoYXJkd2FyZSBzZWxl
+Y3Rpb24gaXMgZXNzZW50aWFsbHkKb2YgYSBETUEgcmluZyBiYXNlZCBvbiBza2IgdGFncy4gSXQg
+c2VlbXMgeW91IHRvb2sgaXQgdXAgYSBub3RjaCBieQppbmZhY3QgaGF2aW5nIGEgY2hvaWNlIG9m
+IHdoZXRoZXIgdG8gaGF2ZSBwdXJlIHMvdyBvciBvZmZsb2FkIHBhdGguCgpjaGVlcnMsCmphbWFs
+Cj4gSSBhbSBkZWxpYmVyYXRlbHkgdGFyZ2V0aW5nIG5ldC1uZXh0IGJlY2F1c2UgdGhlIGNoYW5n
+ZXMgYXJlIHRvbwo+IGludmFzaXZlIGZvciBuZXQgLSB0aGV5IHdlcmUgcmV2ZXJ0ZWQgZnJvbSBz
+dGFibGUgb25jZSBhbHJlYWR5Lgo+Cj4gVmxhZGltaXIgT2x0ZWFuICg1KToKPiAgIG5ldC9zY2hl
+ZDogdGFwcmlvOiBkb24ndCBhY2Nlc3MgcS0+cWRpc2NzW10gaW4gdW5vZmZsb2FkZWQgbW9kZSBk
+dXJpbmcKPiAgICAgYXR0YWNoKCkKPiAgIG5ldC9zY2hlZDogdGFwcmlvOiBrZWVwIGNoaWxkIFFk
+aXNjIHJlZmNvdW50IGVsZXZhdGVkIGF0IDIgaW4gb2ZmbG9hZAo+ICAgICBtb2RlCj4gICBuZXQv
+c2NoZWQ6IHRhcHJpbzogdHJ5IGFnYWluIHRvIHJlcG9ydCBxLT5xZGlzY3NbXSB0byBxZGlzY19s
+ZWFmKCkKPiAgIG5ldC9zY2hlZDogdGFwcmlvOiBkZWxldGUgbWlzbGVhZGluZyBjb21tZW50IGFi
+b3V0IHByZWFsbG9jYXRpbmcgY2hpbGQKPiAgICAgcWRpc2NzCj4gICBuZXQvc2NoZWQ6IHRhcHJp
+bzogZHVtcCBjbGFzcyBzdGF0cyBmb3IgdGhlIGFjdHVhbCBxLT5xZGlzY3NbXQo+Cj4gIG5ldC9z
+Y2hlZC9zY2hfdGFwcmlvLmMgfCA2MCArKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0t
+LS0tLS0tLS0KPiAgMSBmaWxlIGNoYW5nZWQsIDM1IGluc2VydGlvbnMoKyksIDI1IGRlbGV0aW9u
+cygtKQo+Cj4gLS0KPiAyLjM0LjEKPgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxh
+bkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2lu
+dGVsLXdpcmVkLWxhbgo=
