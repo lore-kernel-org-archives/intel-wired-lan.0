@@ -4,90 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCCF8C7EE24
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 15:25:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96955C77B73
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  5 Jun 2023 15:25:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 40596821E3;
-	Mon,  5 Jun 2023 15:25:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 40596821E3
+	by smtp1.osuosl.org (Postfix) with ESMTP id 529BC82213;
+	Mon,  5 Jun 2023 15:25:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 529BC82213
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1685978741;
-	bh=o7MxcxBCAiQ61qIyDfbBL9WCehhv5qrVhWyddwgKxaw=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1685978745;
+	bh=xseSJP0/ixJaa0uE7L3ebXs0H20d1gvda4AeGcirO7o=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=qOWC+N/wGcxAnyRa2XvWEl9/DolnUgpgv+FtbGDSaSTsRhJFeWEMM1yXTGbGN36Zy
-	 vok6PF6sUTCRnBLi2kFBpakvZWL+TAA232ubAQ2rh6BAk66sAPVKV3OhC4CferD2BF
-	 /kVzthLFI1howNdBiJCjF0AGHS0ifww4SrECqv8OvsR5RHLnfVH90jJbITkSrookEx
-	 Hv2JLNROwPU4K8J+/qAaNuB95qyQoQSISRao0tvgdG9LSurAAyabfSiDpldypWeJkv
-	 uJCGxNa6F5NWb0G2RRhgGV0y7z7V46F9DbWUww9cERaJ/oq9W1Zc+Dx2r6D+n35eWu
-	 rl5ef4vD5bdZg==
+	b=YAWf0Yo7Q3JI4IBRl1b5c8n7gt+jB9bcb2YhBb54TqvL+igWufm8fkgGKbDFspIQD
+	 hVzf+7RYT5RnZZMS5RMVleHzetNQM2pHpFASxTZDXRQtLCMVab44ekQcO+yCZR4FFQ
+	 oCc4o8JAbllytI3HvQmygl3rwRJohXUZx2nF/FFJtUnSNybZ6vr2hVXxidRRWZ/gcX
+	 FdAPt7pG/Hb8eputkC0d8zV2Gq6K57wwbAMURJq0fInrxi2P0u0SeruCl2z/Dn2GWb
+	 GkepFb/Yw5oZjRiaGs76lMI+v06TzuusyaxNiuk0HQJzT1Uxj9RMp58RCDsaJopS74
+	 +2AVNDpFEfVww==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id woCp1PrJD344; Mon,  5 Jun 2023 15:25:40 +0000 (UTC)
+	with ESMTP id Gb_J0qozIt23; Mon,  5 Jun 2023 15:25:44 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1A7D6821DA;
-	Mon,  5 Jun 2023 15:25:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1A7D6821DA
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A7D2D1BF2C0
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Jun 2023 02:54:19 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 519C7821FC;
+	Mon,  5 Jun 2023 15:25:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 519C7821FC
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 124E11BF3AD
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 03:15:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7F0CD83C92
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Jun 2023 02:54:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7F0CD83C92
+ by smtp3.osuosl.org (Postfix) with ESMTP id DE39860BD6
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 03:15:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DE39860BD6
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id rcLKrzsVt3eK for <intel-wired-lan@lists.osuosl.org>;
- Sun,  4 Jun 2023 02:54:18 +0000 (UTC)
-X-Greylist: delayed 00:07:26 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D2D1783C91
-Received: from pb-smtp2.pobox.com (pb-smtp2.pobox.com [64.147.108.71])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D2D1783C91
- for <intel-wired-lan@lists.osuosl.org>; Sun,  4 Jun 2023 02:54:17 +0000 (UTC)
-Received: from pb-smtp2.pobox.com (unknown [127.0.0.1])
- by pb-smtp2.pobox.com (Postfix) with ESMTP id 56FF718FCCE;
- Sat,  3 Jun 2023 22:46:48 -0400 (EDT)
- (envelope-from tdavies@darkphysics.net)
-Received: from pb-smtp2.nyi.icgroup.com (unknown [127.0.0.1])
- by pb-smtp2.pobox.com (Postfix) with ESMTP id 4D04D18FCCD;
- Sat,  3 Jun 2023 22:46:48 -0400 (EDT)
- (envelope-from tdavies@darkphysics.net)
-Received: from oatmeal.darkphysics (unknown [76.146.178.2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by pb-smtp2.pobox.com (Postfix) with ESMTPSA id 020BD18FCCC;
- Sat,  3 Jun 2023 22:46:46 -0400 (EDT)
- (envelope-from tdavies@darkphysics.net)
-Date: Sat, 3 Jun 2023 19:46:40 -0700
-From: Tree Davies <tdavies@darkphysics.net>
-To: anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, pabeni@redhat.com
-Message-ID: <ZHv7EDzikZPikoRh@oatmeal.darkphysics>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 4f2npGW-qJXZ for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  5 Jun 2023 03:15:41 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 09E6B60BCC
+Received: from mail-ot1-x32a.google.com (mail-ot1-x32a.google.com
+ [IPv6:2607:f8b0:4864:20::32a])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 09E6B60BCC
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  5 Jun 2023 03:15:40 +0000 (UTC)
+Received: by mail-ot1-x32a.google.com with SMTP id
+ 46e09a7af769-6b280319df5so50921a34.3
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 04 Jun 2023 20:15:40 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1685934939; x=1688526939;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=nc2J3HJlXpZkLRFWaVBOXrvhgmx1LpBFht68hU1KcEg=;
+ b=eEgTA08g7PxuZiDFELjYzuPysk9OVi/Bx6PdCewnwETNtFk5CWnmeR7ZKUU3sxle14
+ nrLdsSNyPeeEgCPV+keO/B5Ehkyrc28WleUice0lAKVaD65wWoDMFTmDS+EToEIAVjTY
+ zwLPzkcmEB+5oX4LdR+1+7mGUjxlzWOi7mCC98osMZWKws5tkSy86YXi60+ws/GAw64M
+ OVmQP9SLGsvGBscFIzoA0psVlvJhc1WVdWwta/iF/VUDhlFb2JO2PXZIdQ2RmtAkxYbD
+ kPlFxsY2Hb+kFL1e7ZVTZCTYaqC/xmXo+yI5M8mLrcNMqpfVk6+uPnUHT4LIMbMS/REu
+ jfYA==
+X-Gm-Message-State: AC+VfDx5CwnHjw9zNzv3DhwP21VVVI7Z4tTirmZUkX76WPEjezkeSuq2
+ 8Is+EKscDYPkhUUB4jJtOHV4EsWh/ImNqOCl5vU=
+X-Google-Smtp-Source: ACHHUZ79HyYtMdGKWkVl2khbAQQ7ST6k8beMJYWTtzY45aZF0Vs4uEsXdQynYKMIaQJqOj0Ts5JYrA==
+X-Received: by 2002:a9d:7503:0:b0:6b1:d372:2f8e with SMTP id
+ r3-20020a9d7503000000b006b1d3722f8emr1041274otk.17.1685934939630; 
+ Sun, 04 Jun 2023 20:15:39 -0700 (PDT)
+Received: from arista-Idaville.sjc.aristanetworks.com ([74.123.28.16])
+ by smtp.googlemail.com with ESMTPSA id
+ c10-20020aa781ca000000b0062e0c39977csm4189520pfn.139.2023.06.04.20.15.38
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sun, 04 Jun 2023 20:15:39 -0700 (PDT)
+From: Prasad Koya <prasad@arista.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Sun,  4 Jun 2023 20:15:34 -0700
+Message-Id: <20230605031534.9846-1-prasad@arista.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="ELWD20BX7LFhUz03"
-Content-Disposition: inline
-X-Pobox-Relay-ID: 0CB3580A-0282-11EE-BF0C-307A8E0A682E-45285927!pb-smtp2.pobox.com
 X-Mailman-Approved-At: Mon, 05 Jun 2023 15:25:30 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=pobox.com;
- h=date:from
- :to:cc:subject:message-id:mime-version:content-type; s=sasl; bh=
- dqDBRzC7tcn7+DMkBVjjohLM8iy8N4hgg2tVjJuNb/4=; b=yhGJ8/xEZG7kopHr
- kdZBOQwNVvbFb4XSF9hvBLKevM/nZFg0X4K6TNE9d5DBQSlhqMOs049rhjr3TuoJ
- VRGFfzgNAh9wbckxGccfzEMV+MbJGQjIot+Hl9utM/SIkmtI+ftQwwl8qEDyseOG
- wq+yCSbZhCs6X4X4G8XFV/3ji8M=
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed;
- d=darkphysics.net; 
- h=date:from:to:cc:subject:message-id:mime-version:content-type;
- s=2019-09.pbsmtp; bh=dqDBRzC7tcn7+DMkBVjjohLM8iy8N4hgg2tVjJuNb/4=;
- b=ZZypp/ISH1Lee9Io0GliZs/9oNn9OO4oO1KaewKaKbWb1t5snNrbEc0neN/Z3xCYsFFCXefpYcG7X+qkNyYhyZxPbAKdz9IYuIKcQhg+EtuCBalXExvj38XOJTyeH8NcT3FvcLT+t63wnUbPm0zIc2Atjya9YxEc5/Z92FnBZY8=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com
- header.a=rsa-sha256 header.s=sasl header.b=yhGJ8/xE; 
- dkim=temperror header.d=darkphysics.net header.i=@darkphysics.net
- header.a=rsa-sha256 header.s=2019-09.pbsmtp header.b=ZZypp/IS
-Subject: [Intel-wired-lan] [Patch] net/e1000: Fix extern warnings
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=arista.com; s=google; t=1685934939; x=1688526939;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=nc2J3HJlXpZkLRFWaVBOXrvhgmx1LpBFht68hU1KcEg=;
+ b=C92hnk1CoP+YTScQ2oH872oB/ZBdNfrKIudjF8RxmukOXYKJCV5FMRhANm7BJaPjag
+ X4gNv/MheBX23BEpu2g8WpdH27RlHD3cKN133s6lQyFeXgMtjOl8l1FvCldh2gZeSjpj
+ dMXcJJWlelCikdyQ8NMdQyU7QX+nsuSV+gRsleE/mQIzJ5UgPNN/yseYnSzawndgAQp8
+ zWz8v2Cl6ZUzFeMdbIaOgchonx1D2g3yqQCOJYz9UNbOo4Mw8XLgP7YEGoctw7AOgFAE
+ PB1JPIRPlfXwkxrtUjwq/1dTwuk7SQZkg1zFCqDAW0j9g2vZkInB2pRjjHUjtxYfzY9A
+ trmQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=arista.com header.i=@arista.com
+ header.a=rsa-sha256 header.s=google header.b=C92hnk1C
+Subject: [Intel-wired-lan] [PATCH] [iwl-net,
+ v2] igc: set TP bit in 'supported' and 'advertising' fields of
+ ethtool_link_ksettings
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,84 +109,41 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: tdavies@darkphysics.net, intel-wired-lan@lists.osuosl.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc: Devora Fuxbrumer <devora.fuxbrumer@intel.com>,
+ Salam Noureddine <noureddine@arista.com>,
+ Anthony L Nguyen <anthony.l.nguyen@intel.com>,
+ Bob Gilligan <gilligan@arista.com>, Dima Ruinskiy <dima.ruinskiy@intel.com>,
+ Amir Avivi <amir.avivi@intel.com>, Prasad Koya <prasad@arista.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+set TP bit in the 'supported' and 'advertising' fields. I226 only supports twisted pair copper.
 
---ELWD20BX7LFhUz03
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-
---ELWD20BX7LFhUz03
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment;
-	filename="0001-net-e1000-Fix-extern-warnings.patch"
-
-From 407d0e4641d67118c954d36cc829c35300669fc8 Mon Sep 17 00:00:00 2001
-From: Tree Davies <tdavies@darkphysics.net>
-Date: Sat, 3 Jun 2023 19:02:06 -0700
-Subject: [PATCH] net/e1000: Fix extern warnings
-
-This patch fixes 11 checkpatch.pl warnings of type:
-WARNING: externs should be avoided in .c files
-
-Signed-off-by: Tree Davies <tdavies@darkphysics.net>
+Fixes: 8c5ad0dae93c9 ("igc: Add ethtool support")
+Signed-off-by: Prasad Koya <prasad@arista.com>
 ---
- drivers/net/ethernet/intel/e1000/e1000_main.c | 11 -----------
- 1 file changed, 11 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index da6e303ad99b..44f1bfba8a1a 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -63,14 +63,6 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 8cc077b712ad..511fc3f41208 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -1707,6 +1707,8 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
+ 	/* twisted pair */
+ 	cmd->base.port = PORT_TP;
+ 	cmd->base.phy_address = hw->phy.addr;
++	ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
++	ethtool_link_ksettings_add_link_mode(cmd, advertising, TP);
  
- MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
- 
--int e1000_up(struct e1000_adapter *adapter);
--void e1000_down(struct e1000_adapter *adapter);
--void e1000_reinit_locked(struct e1000_adapter *adapter);
--void e1000_reset(struct e1000_adapter *adapter);
--int e1000_setup_all_tx_resources(struct e1000_adapter *adapter);
--int e1000_setup_all_rx_resources(struct e1000_adapter *adapter);
--void e1000_free_all_tx_resources(struct e1000_adapter *adapter);
--void e1000_free_all_rx_resources(struct e1000_adapter *adapter);
- static int e1000_setup_tx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_tx_ring *txdr);
- static int e1000_setup_rx_resources(struct e1000_adapter *adapter,
-@@ -79,7 +71,6 @@ static void e1000_free_tx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_tx_ring *tx_ring);
- static void e1000_free_rx_resources(struct e1000_adapter *adapter,
- 				    struct e1000_rx_ring *rx_ring);
--void e1000_update_stats(struct e1000_adapter *adapter);
- 
- static int e1000_init_module(void);
- static void e1000_exit_module(void);
-@@ -87,8 +78,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
- static void e1000_remove(struct pci_dev *pdev);
- static int e1000_alloc_queues(struct e1000_adapter *adapter);
- static int e1000_sw_init(struct e1000_adapter *adapter);
--int e1000_open(struct net_device *netdev);
--int e1000_close(struct net_device *netdev);
- static void e1000_configure_tx(struct e1000_adapter *adapter);
- static void e1000_configure_rx(struct e1000_adapter *adapter);
- static void e1000_setup_rctl(struct e1000_adapter *adapter);
+ 	/* advertising link modes */
+ 	if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
 -- 
-2.30.2
-
-
---ELWD20BX7LFhUz03
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+2.25.1
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
---ELWD20BX7LFhUz03--
