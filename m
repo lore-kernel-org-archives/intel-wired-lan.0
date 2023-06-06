@@ -1,89 +1,72 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09AD3C7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Jun 2023 01:33:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9A34C77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Jun 2023 05:07:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B0D3B817B0;
-	Tue,  6 Jun 2023 01:33:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B0D3B817B0
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6756C40891;
+	Tue,  6 Jun 2023 05:07:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6756C40891
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686015235;
-	bh=kqrJ1GhPajcWCwDILGuNviOQoLQHg9uKhypHY3ks92w=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1686028076;
+	bh=Qo6mg+8y2MhfcOiLmuJxGRd7isz472tCRJrRA4DLCMU=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Mbk4hp/MO8pESyCnYWeOWhBleu8EB3yr1jMyCxnKxCXO77FY1Ljt9+Vz7AQOkiuVa
-	 ALmyZXnUJHxRjzVA91SIRyvz2FwKlpfRLS8zKwD6BXKHI8ikG1yvHQ57ODY7L1jA4M
-	 FpDAk87yQsrBfiFfZTXgmUJ7iSnTWNK6kh8qe49WTijgCoE/CHkm/4ZRNRDTvQJYW3
-	 gGaRliIHADfp55Bo2ymObmlEDHXH8Q3XniYlMbpRnvSbfu/0z/XlaSuZkRgQo3LOui
-	 TOzm2bQ550xOw20ujUAP5ulXKTYKn/1X50MGaADMu7LyehIi3pYP6NgzAMrOwZJHXT
-	 S0hK5BaWY2/vg==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id nLDbw72_mKdk; Tue,  6 Jun 2023 01:33:54 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C716281865;
-	Tue,  6 Jun 2023 01:33:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C716281865
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 42FAF1BF4DD
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 01:33:37 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3964A4077D
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 01:33:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3964A4077D
+	b=1sVY8YsURW6MxAcVP5cb6YUB0244RYDeshTQM6nTkxcK7Ru6jDonLLBc1gvxhdfXB
+	 KDbBm96IDp9arExWSx1AySHtzot70SUhVTA42MDyLzfO4TeGOes+jJwjrYATjpn128
+	 ey9bUmq+cR8L7NF9LNdKCna00LS8c6F5SOhQ2b2MkzvC5rkWYnMHNcLfOS1SLKKur4
+	 LW+jAwroYeHOGFhhM7yo51UfXpRHmpCIXEWDrmmQIP0cFgqZ3jiwWiAZ1cQzqj/YrO
+	 pufnenfU3h+5LLpXeXHF7TSPfEYFLivMcKipy7IoPYO07irip40D2MB96eYjrQ/0pO
+	 JEycsPmADda9A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id iC8IDi9vGAM6 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  6 Jun 2023 01:33:32 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 85A9940861
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 85A9940861
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 01:33:32 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10732"; a="336887983"
-X-IronPort-AV: E=Sophos;i="6.00,218,1681196400"; d="scan'208";a="336887983"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Jun 2023 18:33:31 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10732"; a="833020980"
-X-IronPort-AV: E=Sophos;i="6.00,218,1681196400"; d="scan'208";a="833020980"
-Received: from unknown (HELO vcostago-mobl3.jf.intel.com) ([10.24.14.106])
- by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Jun 2023 18:33:30 -0700
-From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  5 Jun 2023 18:33:22 -0700
-Message-Id: <20230606013325.602823-2-vinicius.gomes@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230606013325.602823-1-vinicius.gomes@intel.com>
-References: <20230606013325.602823-1-vinicius.gomes@intel.com>
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id No37hm8bdrgO; Tue,  6 Jun 2023 05:07:55 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0063A40894;
+	Tue,  6 Jun 2023 05:07:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0063A40894
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id AD0681BF3D4
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 05:07:53 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8DE5781F17
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 05:07:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8DE5781F17
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id iLVmQQ_zG_IE for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  6 Jun 2023 05:07:51 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8DE4081EE5
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8DE4081EE5
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 05:07:51 +0000 (UTC)
+Received: from [192.168.0.2] (ip5f5aeed5.dynamic.kabel-deutschland.de
+ [95.90.238.213])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 01D6A61E4052B;
+ Tue,  6 Jun 2023 07:07:20 +0200 (CEST)
+Message-ID: <692a458e-f887-f9da-e3cb-904e64a40924@molgen.mpg.de>
+Date: Tue, 6 Jun 2023 07:07:19 +0200
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686015212; x=1717551212;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=JvmwDlkwypyx2zW/dLR5UipqupWXCi+4I5wYyUv5QKw=;
- b=NaZfNXVmWLVXeyU/jS+QcccltUKMzoWD31sDX9QYQxQCB4vKBe/RUu5m
- RgCBgPQRxDtsgIqBhs+UlVYrLYE4fsukVMnJk1RT/nttRShj6YeBQ0d6E
- CG710Oy/b5TrJN00YCFCUqyPw0gFQ7X+3QTbz4uN+xFhMiV5XKBSZjMHx
- DHNiYWq5d+glJiKlUnWPtFa59hvNq72CsmoXz6k9alnx2EE5njluwlIX+
- 1cDYG6uVvx9/U/tBH3OYe6cBNx8GhVoo5gCGrBcZnDx8MjsXvzo7jw0j/
- aNnZXGjMwIq1fPuhRJVEKlGMtnstNUl3A01uu3sXkDeusxRbKxbEnaao/
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NaZfNXVm
-Subject: [Intel-wired-lan] [PATCH iwl-net v3 1/4] igc: Fix race condition in
- PTP tx code
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+To: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+References: <20230606013325.602823-1-vinicius.gomes@intel.com>
+ <20230606013325.602823-5-vinicius.gomes@intel.com>
+Content-Language: en-US
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20230606013325.602823-5-vinicius.gomes@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3 4/4] igc: Add workaround
+ for missing timestamps
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,241 +79,90 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Andre Guedes <andre.guedes@intel.com>, vladimir.oltean@nxp.com,
- kurt@linutronix.de, anthony.l.nguyen@intel.com
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: vladimir.oltean@nxp.com, anthony.l.nguyen@intel.com, kurt@linutronix.de,
+ intel-wired-lan@lists.osuosl.org
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently, the igc driver supports timestamping only one tx packet at a
-time. During the transmission flow, the skb that requires hardware
-timestamping is saved in adapter->ptp_tx_skb. Once hardware has the
-timestamp, an interrupt is delivered, and adapter->ptp_tx_work is
-scheduled. In igc_ptp_tx_work(), we read the timestamp register, update
-adapter->ptp_tx_skb, and notify the network stack.
-
-While the thread executing the transmission flow (the user process
-running in kernel mode) and the thread executing ptp_tx_work don't
-access adapter->ptp_tx_skb concurrently, there are two other places
-where adapter->ptp_tx_skb is accessed: igc_ptp_tx_hang() and
-igc_ptp_suspend().
-
-igc_ptp_tx_hang() is executed by the adapter->watchdog_task worker
-thread which runs periodically so it is possible we have two threads
-accessing ptp_tx_skb at the same time. Consider the following scenario:
-right after __IGC_PTP_TX_IN_PROGRESS is set in igc_xmit_frame_ring(),
-igc_ptp_tx_hang() is executed. Since adapter->ptp_tx_start hasn't been
-written yet, this is considered a timeout and adapter->ptp_tx_skb is
-cleaned up.
-
-This patch fixes the issue described above by adding the ptp_tx_lock to
-protect access to ptp_tx_skb and ptp_tx_start fields from igc_adapter.
-Since igc_xmit_frame_ring() called in atomic context by the networking
-stack, ptp_tx_lock is defined as a spinlock, and the irq safe variants
-of lock/unlock are used.
-
-With the introduction of the ptp_tx_lock, the __IGC_PTP_TX_IN_PROGRESS
-flag doesn't provide much of a use anymore so this patch gets rid of it.
-
-Fixes: 2c344ae24501 ("igc: Add support for TX timestamping")
-Signed-off-by: Andre Guedes <andre.guedes@intel.com>
-Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
----
- drivers/net/ethernet/intel/igc/igc.h      |  5 +-
- drivers/net/ethernet/intel/igc/igc_main.c |  9 ++--
- drivers/net/ethernet/intel/igc/igc_ptp.c  | 61 ++++++++++++-----------
- 3 files changed, 43 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 34aebf00a512..7da0657ea48f 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -229,6 +229,10 @@ struct igc_adapter {
- 	struct ptp_clock *ptp_clock;
- 	struct ptp_clock_info ptp_caps;
- 	struct work_struct ptp_tx_work;
-+	/* Access to ptp_tx_skb and ptp_tx_start are protected by the
-+	 * ptp_tx_lock.
-+	 */
-+	spinlock_t ptp_tx_lock;
- 	struct sk_buff *ptp_tx_skb;
- 	struct hwtstamp_config tstamp_config;
- 	unsigned long ptp_tx_start;
-@@ -401,7 +405,6 @@ enum igc_state_t {
- 	__IGC_TESTING,
- 	__IGC_RESETTING,
- 	__IGC_DOWN,
--	__IGC_PTP_TX_IN_PROGRESS,
- };
- 
- enum igc_tx_flags {
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 1c4676882082..a61afa69975e 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -1583,9 +1583,10 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 		 * the other timer registers before skipping the
- 		 * timestamping request.
- 		 */
--		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
--		    !test_and_set_bit_lock(__IGC_PTP_TX_IN_PROGRESS,
--					   &adapter->state)) {
-+		unsigned long flags;
-+
-+		spin_lock_irqsave(&adapter->ptp_tx_lock, flags);
-+		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON && !adapter->ptp_tx_skb) {
- 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
- 			tx_flags |= IGC_TX_FLAGS_TSTAMP;
- 
-@@ -1594,6 +1595,8 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
- 		} else {
- 			adapter->tx_hwtstamp_skipped++;
- 		}
-+
-+		spin_unlock_irqrestore(&adapter->ptp_tx_lock, flags);
- 	}
- 
- 	if (skb_vlan_tag_present(skb)) {
-diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 4e10ced736db..56128e55f5c0 100644
---- a/drivers/net/ethernet/intel/igc/igc_ptp.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -603,6 +603,7 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
- 	return 0;
- }
- 
-+/* Requires adapter->ptp_tx_lock held by caller. */
- static void igc_ptp_tx_timeout(struct igc_adapter *adapter)
- {
- 	struct igc_hw *hw = &adapter->hw;
-@@ -610,7 +611,6 @@ static void igc_ptp_tx_timeout(struct igc_adapter *adapter)
- 	dev_kfree_skb_any(adapter->ptp_tx_skb);
- 	adapter->ptp_tx_skb = NULL;
- 	adapter->tx_hwtstamp_timeouts++;
--	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
- 	/* Clear the tx valid bit in TSYNCTXCTL register to enable interrupt. */
- 	rd32(IGC_TXSTMPH);
- 	netdev_warn(adapter->netdev, "Tx timestamp timeout\n");
-@@ -618,20 +618,20 @@ static void igc_ptp_tx_timeout(struct igc_adapter *adapter)
- 
- void igc_ptp_tx_hang(struct igc_adapter *adapter)
- {
--	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
--					      IGC_PTP_TX_TIMEOUT);
--
--	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
--		return;
--
--	/* If we haven't received a timestamp within the timeout, it is
--	 * reasonable to assume that it will never occur, so we can unlock the
--	 * timestamp bit when this occurs.
--	 */
--	if (timeout) {
--		cancel_work_sync(&adapter->ptp_tx_work);
--		igc_ptp_tx_timeout(adapter);
--	}
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&adapter->ptp_tx_lock, flags);
-+
-+	if (!adapter->ptp_tx_skb)
-+		goto unlock;
-+
-+	if (time_is_after_jiffies(adapter->ptp_tx_start + IGC_PTP_TX_TIMEOUT))
-+		goto unlock;
-+
-+	igc_ptp_tx_timeout(adapter);
-+
-+unlock:
-+	spin_unlock_irqrestore(&adapter->ptp_tx_lock, flags);
- }
- 
- /**
-@@ -641,6 +641,8 @@ void igc_ptp_tx_hang(struct igc_adapter *adapter)
-  * If we were asked to do hardware stamping and such a time stamp is
-  * available, then it must have been for this skb here because we only
-  * allow only one such packet into the queue.
-+ *
-+ * Context: Expects adapter->ptp_tx_lock to be held by caller.
-  */
- static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- {
-@@ -676,13 +678,7 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
- 	shhwtstamps.hwtstamp =
- 		ktime_add_ns(shhwtstamps.hwtstamp, adjust);
- 
--	/* Clear the lock early before calling skb_tstamp_tx so that
--	 * applications are not woken up before the lock bit is clear. We use
--	 * a copy of the skb pointer to ensure other threads can't change it
--	 * while we're notifying the stack.
--	 */
- 	adapter->ptp_tx_skb = NULL;
--	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
- 
- 	/* Notify the stack and free the skb after we've unlocked */
- 	skb_tstamp_tx(skb, &shhwtstamps);
-@@ -693,24 +689,33 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
-  * igc_ptp_tx_work
-  * @work: pointer to work struct
-  *
-- * This work function polls the TSYNCTXCTL valid bit to determine when a
-- * timestamp has been taken for the current stored skb.
-+ * This work function checks the TSYNCTXCTL valid bit to determine when
-+ * a timestamp has been taken for the current stored skb.
-  */
- static void igc_ptp_tx_work(struct work_struct *work)
- {
- 	struct igc_adapter *adapter = container_of(work, struct igc_adapter,
- 						   ptp_tx_work);
- 	struct igc_hw *hw = &adapter->hw;
-+	unsigned long flags;
- 	u32 tsynctxctl;
- 
--	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
--		return;
-+	spin_lock_irqsave(&adapter->ptp_tx_lock, flags);
-+
-+	if (!adapter->ptp_tx_skb)
-+		goto unlock;
- 
- 	tsynctxctl = rd32(IGC_TSYNCTXCTL);
--	if (WARN_ON_ONCE(!(tsynctxctl & IGC_TSYNCTXCTL_TXTT_0)))
--		return;
-+	tsynctxctl &= IGC_TSYNCTXCTL_TXTT_0;
-+	if (!tsynctxctl) {
-+		WARN_ONCE(1, "Received a TSTAMP interrupt but no TSTAMP is ready.\n");
-+		goto unlock;
-+	}
- 
- 	igc_ptp_tx_hwtstamp(adapter);
-+
-+unlock:
-+	spin_unlock_irqrestore(&adapter->ptp_tx_lock, flags);
- }
- 
- /**
-@@ -959,6 +964,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
- 		return;
- 	}
- 
-+	spin_lock_init(&adapter->ptp_tx_lock);
- 	spin_lock_init(&adapter->tmreg_lock);
- 	INIT_WORK(&adapter->ptp_tx_work, igc_ptp_tx_work);
- 
-@@ -1023,7 +1029,6 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
- 	cancel_work_sync(&adapter->ptp_tx_work);
- 	dev_kfree_skb_any(adapter->ptp_tx_skb);
- 	adapter->ptp_tx_skb = NULL;
--	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
- 
- 	if (pci_device_is_present(adapter->pdev)) {
- 		igc_ptp_time_save(adapter);
--- 
-2.40.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RGVhciBWaW5pY2l1cywKCgpUaGFuayB5b3UgZm9yIHlvdXIgcGF0Y2guCgpBbSAwNi4wNi4yMyB1
+bSAwMzozMyBzY2hyaWViIFZpbmljaXVzIENvc3RhIEdvbWVzOgoKWW91IGNvdWxkIG1ha2UgdGhl
+IGNvbW1pdCBtZXNzYWdlIHN1bW1hcnkgZXZlbiBtb3JlIHNwZWNpZmljOgoKaWdjOiBXb3JrIGFy
+b3VuZCBIVyBidWcgY2F1c2luZyBtaXNzaW5nIHRpbWVzdGFtcHMKCj4gVGhlcmUncyBhbiBoYXJk
+d2FyZSBpc3N1ZSB0aGF0IGNhbiBjYXVzZSBtaXNzaW5nIHRpbWVzdGFtcHMuIFRoZSBidWcKPiBp
+cyB0aGF0IHRoZSBpbnRlcnJ1cHQgaXMgb25seSBjbGVhcmVkIGlmIHRoZSBJR0NfVFhTVE1QSF8w
+IHJlZ2lzdGVyIGlzCj4gcmVhZC4KCklzIHRoYXQgaGFyZHdhcmUgYnVnIGRvY3VtZW50ZWQgaW4g
+c29tZSBlcnJhdGE/Cgo+IFRoZSBidWcgY2FuIGNhdXNlIGEgcmFjZSBjb25kaXRpb24gaWYgYSB0
+aW1lc3RhbXAgaXMgY2FwdHVyZWQgYXQgdGhlCj4gd3JvbmcgdGltZSwgYW5kIHdlIHdpbGwgbWlz
+cyB0aGF0IHRpbWVzdGFtcC4gVG8gcmVkdWNlIHRoZSB0aW1lIHdpbmRvdwo+IHRoYXQgdGhlIHBy
+b2JsZW0gaXMgYWJsZSB0byBoYXBwZW4sIGluIGNhc2Ugbm8gdGltZXN0YW1wIHdhcyByZWFkeSwg
+d2UKPiByZWFkIHRoZSAicHJldmlvdXMiIHZhbHVlIG9mIHRoZSB0aW1lc3RhbXAgcmVnaXN0ZXJz
+LCBhbmQgd2UgY29tcGFyZQo+IHdpdGggdGhlICJjdXJyZW50IiBvbmUsIGlmIGl0IGRpZG4ndCBj
+aGFuZ2Ugd2UgY2FuIHJlYXNvbmFibHkgc3VyZQoKY2FuICpiZSoKCj4gdGhhdCBubyB0aW1lc3Rh
+bXAgd2FzIGNhcHR1cmVkLiBJZiB0aGV5IGFyZSBkaWZmZXJlbnQsIHdlIHVzZSB0aGUgbmV3Cj4g
+dmFsdWUgYXMgdGhlIGNhcHR1cmVkIHRpbWVzdGFtcC4KPiAKPiBUaGlzIHdvcmthcm91bmQgaGFz
+IG1vcmUgaW1wYWN0IHdoZW4gbXVsdGlwbGUgdGltZXN0YW1wIHJlZ2lzdGVycyBhcmUKPiB1c2Vk
+LCBhbmQgdGhlIElHQ19UWFNUTVBIXzAgcmVnaXN0ZXIgYWx3YXlzIG5lZWQgdG8gYmUgcmVhZCwg
+c28gdGhlCj4gaW50ZXJydXB0IGlzIGNsZWFyZWQuCgpBbHRob3VnaCB5b3Ugc2hhcmVkIHNvbWUg
+dGVzdCBjYXNlcyBpbiB0aGUgY292ZXIgbGV0dGVyLCBpdOKAmWQgYmUgZ3JlYXQsIAppZiB5b3Ug
+ZG9jdW1lbnRlZCB0aGUgd2F5IHRvIHJlcHJvZHVjZSB0aGlzIGlzc3VlIGFsc28gaW4gdGhpcyBj
+b21taXQgCm1lc3NhZ2UuCgpJbiB0aGUgY292ZXIgbGV0dGVyIHlvdSBhbHNvIG1lbnRpb24gYW4g
+YWx0ZXJuYXRpdmUgYXBwcm9hY2guIFNob3VsZCBpdCAKYWxzbyBiZSBkb2N1bWVudGVkIGhlcmU/
+IChJZiB5b3UgaW1wbGVtZW50ZWQgaXQgYWxyZWFkeSwgeW91IGNvdWxkIGFsc28gCnNlbnQgaXQg
+dG8gdGhlIGxpc3QgYW5kIHJlZmVyZW5jZSBpdCBoZXJlLikKCj4gRml4ZXM6IDJjMzQ0YWUyNDUw
+MSAoImlnYzogQWRkIHN1cHBvcnQgZm9yIFRYIHRpbWVzdGFtcGluZyIpCj4gU2lnbmVkLW9mZi1i
+eTogVmluaWNpdXMgQ29zdGEgR29tZXMgPHZpbmljaXVzLmdvbWVzQGludGVsLmNvbT4KPiAtLS0K
+PiAgIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9pZ2NfcHRwLmMgfCA0OCArKysrKysr
+KysrKysrKysrKystLS0tLS0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAzNyBpbnNlcnRpb25zKCspLCAx
+MSBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50
+ZWwvaWdjL2lnY19wdHAuYyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9pZ2NfcHRw
+LmMKPiBpbmRleCBjZjk2M2ExMmE5MmYuLjMyZWYxMTJmODI5MSAxMDA2NDQKPiAtLS0gYS9kcml2
+ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZ2MvaWdjX3B0cC5jCj4gKysrIGIvZHJpdmVycy9uZXQv
+ZXRoZXJuZXQvaW50ZWwvaWdjL2lnY19wdHAuYwo+IEBAIC02ODUsMTQgKzY4NSw0OSBAQCBzdGF0
+aWMgdm9pZCBpZ2NfcHRwX3R4X2h3dHN0YW1wKHN0cnVjdCBpZ2NfYWRhcHRlciAqYWRhcHRlcikK
+PiAgIAlzdHJ1Y3Qgc2tfYnVmZiAqc2tiID0gYWRhcHRlci0+cHRwX3R4X3NrYjsKPiAgIAlzdHJ1
+Y3Qgc2tiX3NoYXJlZF9od3RzdGFtcHMgc2hod3RzdGFtcHM7Cj4gICAJc3RydWN0IGlnY19odyAq
+aHcgPSAmYWRhcHRlci0+aHc7Cj4gKwl1MzIgdHN5bmN0eGN0bDsKPiAgIAlpbnQgYWRqdXN0ID0g
+MDsKPiAgIAl1NjQgcmVndmFsOwo+ICAgCj4gICAJaWYgKFdBUk5fT05fT05DRSghc2tiKSkKPiAg
+IAkJcmV0dXJuOwo+ICAgCj4gLQlyZWd2YWwgPSByZDMyKElHQ19UWFNUTVBMKTsKPiAtCXJlZ3Zh
+bCB8PSAodTY0KXJkMzIoSUdDX1RYU1RNUEgpIDw8IDMyOwo+ICsJdHN5bmN0eGN0bCA9IHJkMzIo
+SUdDX1RTWU5DVFhDVEwpOwo+ICsJdHN5bmN0eGN0bCAmPSBJR0NfVFNZTkNUWENUTF9UWFRUXzA7
+Cj4gKwlpZiAodHN5bmN0eGN0bCkgewo+ICsJCXJlZ3ZhbCA9IHJkMzIoSUdDX1RYU1RNUEwpOwo+
+ICsJCXJlZ3ZhbCB8PSAodTY0KXJkMzIoSUdDX1RYU1RNUEgpIDw8IDMyOwo+ICsJfSBlbHNlIHsK
+PiArCQkvKiBUaGVyZSdzIGEgYnVnIGluIHRoZSBoYXJkd2FyZSB0aGF0IGNvdWxkIGNhdXNlCj4g
+KwkJICogbWlzc2luZyBpbnRlcnJ1cHRzIGZvciBUWCB0aW1lc3RhbXBpbmcuIFRoZSBpc3N1ZQo+
+ICsJCSAqIGlzIHRoYXQgZm9yIG5ldyBpbnRlcnJ1cHRzIHRvIGJlIHRyaWdnZXJlZCwgdGhlCj4g
+KwkJICogSUdDX1RYU1RNUEhfMCByZWdpc3RlciBtdXN0IGJlIHJlYWQuCj4gKwkJICoKPiArCQkg
+KiBUbyBhdm9pZCBkaXNjYXJkaW5nIGEgdmFsaWQgdGltZXN0YW1wIHRoYXQganVzdAo+ICsJCSAq
+IGhhcHBlbmVkIGF0IHRoZSAid3JvbmciIHRpbWUsIHdlIG5lZWQgdG8gY29uZmlybQo+ICsJCSAq
+IHRoYXQgdGhlcmUgd2FzIG5vIHRpbWVzdGFtcCBjYXB0dXJlZCwgd2UgZG8gdGhhdCBieQo+ICsJ
+CSAqIGFzc3VtaW5nIHRoYXQgbm8gdHdvIHRpbWVzdGFtcHMgaW4gc2VxdWVuY2UgaGF2ZQo+ICsJ
+CSAqIHRoZSBzYW1lIG5hbm9zZWNvbmQgdmFsdWUuCj4gKwkJICoKPiArCQkgKiBTbywgd2UgcmVh
+ZCB0aGUgImxvdyIgcmVnaXN0ZXIsIHJlYWQgdGhlICJoaWdoIgo+ICsJCSAqIHJlZ2lzdGVyICh0
+byBsYXRjaCBhIG5ldyB0aW1lc3RhbXApIGFuZCByZWFkIHRoZQo+ICsJCSAqICJsb3ciIHJlZ2lz
+dGVyIGFnYWluLCBpZiAib2xkIiBhbmQgIm5ldyIgdmVyc2lvbnMKPiArCQkgKiBvZiB0aGUgImxv
+dyIgcmVnaXN0ZXIgYXJlIGRpZmZlcmVudCwgYSB2YWxpZAo+ICsJCSAqIHRpbWVzdGFtcCB3YXMg
+Y2FwdHVyZWQsIHdlIGNhbiByZWFkIHRoZSAiaGlnaCIKPiArCQkgKiByZWdpc3RlciBhZ2Fpbi4K
+PiArCQkgKi8KPiArCQl1MzIgdHhzdG1wbF9vbGQsIHR4c3RtcGxfbmV3Owo+ICsKPiArCQl0eHN0
+bXBsX29sZCA9IHJkMzIoSUdDX1RYU1RNUEwpOwo+ICsJCXJkMzIoSUdDX1RYU1RNUEgpOwo+ICsJ
+CXR4c3RtcGxfbmV3ID0gcmQzMihJR0NfVFhTVE1QTCk7Cj4gKwo+ICsJCWlmICh0eHN0bXBsX29s
+ZCA9PSB0eHN0bXBsX25ldykKPiArCQkJcmV0dXJuOwo+ICsKPiArCQlyZWd2YWwgPSB0eHN0bXBs
+X25ldzsKPiArCQlyZWd2YWwgfD0gKHU2NClyZDMyKElHQ19UWFNUTVBIKSA8PCAzMjsKPiArCX0K
+PiAgIAlpZiAoaWdjX3B0cF9zeXN0aW1fdG9faHd0c3RhbXAoYWRhcHRlciwgJnNoaHd0c3RhbXBz
+LCByZWd2YWwpKQo+ICAgCQlyZXR1cm47Cj4gICAKPiBAQCAtNzMwLDIyICs3NjUsMTMgQEAgc3Rh
+dGljIHZvaWQgaWdjX3B0cF90eF9od3RzdGFtcChzdHJ1Y3QgaWdjX2FkYXB0ZXIgKmFkYXB0ZXIp
+Cj4gICAgKi8KPiAgIHZvaWQgaWdjX3B0cF90eF90c3RhbXBfZXZlbnQoc3RydWN0IGlnY19hZGFw
+dGVyICphZGFwdGVyKQo+ICAgewo+IC0Jc3RydWN0IGlnY19odyAqaHcgPSAmYWRhcHRlci0+aHc7
+Cj4gICAJdW5zaWduZWQgbG9uZyBmbGFnczsKPiAtCXUzMiB0c3luY3R4Y3RsOwo+ICAgCj4gICAJ
+c3Bpbl9sb2NrX2lycXNhdmUoJmFkYXB0ZXItPnB0cF90eF9sb2NrLCBmbGFncyk7Cj4gICAKPiAg
+IAlpZiAoIWFkYXB0ZXItPnB0cF90eF9za2IpCj4gICAJCWdvdG8gdW5sb2NrOwo+ICAgCj4gLQl0
+c3luY3R4Y3RsID0gcmQzMihJR0NfVFNZTkNUWENUTCk7Cj4gLQl0c3luY3R4Y3RsICY9IElHQ19U
+U1lOQ1RYQ1RMX1RYVFRfMDsKPiAtCWlmICghdHN5bmN0eGN0bCkgewo+IC0JCVdBUk5fT05DRSgx
+LCAiUmVjZWl2ZWQgYSBUU1RBTVAgaW50ZXJydXB0IGJ1dCBubyBUU1RBTVAgaXMgcmVhZHkuXG4i
+KTsKCldhcyB0aGlzIHdhcm5pbmcgcHJpbnRlZCBiZWZvcmUgeW91ciBwYXRjaD8KCj4gLQkJZ290
+byB1bmxvY2s7Cj4gLQl9Cj4gLQo+ICAgCWlnY19wdHBfdHhfaHd0c3RhbXAoYWRhcHRlcik7Cj4g
+ICAKPiAgIHVubG9jazoKCgpLaW5kIHJlZ2FyZHMsCgpQYXVsCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLXdpcmVkLWxhbiBtYWlsaW5nIGxpc3QK
+SW50ZWwtd2lyZWQtbGFuQG9zdW9zbC5vcmcKaHR0cHM6Ly9saXN0cy5vc3Vvc2wub3JnL21haWxt
+YW4vbGlzdGluZm8vaW50ZWwtd2lyZWQtbGFuCg==
