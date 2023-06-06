@@ -4,104 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0EBFC77B73
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Jun 2023 14:25:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1349EC77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  6 Jun 2023 15:03:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4EEBB418D2;
-	Tue,  6 Jun 2023 14:25:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4EEBB418D2
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9D9B64034D;
+	Tue,  6 Jun 2023 15:03:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9D9B64034D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686061530;
-	bh=l4Up3z7TlpjimMASD+yrslzROYMieIeOyvLHoKnxVKQ=;
-	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	s=default; t=1686063823;
+	bh=K1l+ZA1kgQKL5erprBbizL7BTwr1I5tz26KH4XKLTvo=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ng1odYCMu1Yg7Mt+RRw243nga6h7Qn+QepFAokVQfdFe78MAhRt/pn60ObKHFU9iB
-	 w7CRHUmpNTH7rBNi3K6PRo5D64ypWMoiMGT6WUYHuaxvnSPDwPb44CnLmt4nyDUhy6
-	 JFQiq1dl8/VPseL9jf7lV0OnxI84XrnEmewsbUu/CY1EDCht7GUwWCk3lDEfWekM2P
-	 g9bwpfMolH/C/Qnm4yfbf/AFqmOQ71DLoKW4XYUtwTcS7BLZ1ocMBSUWQHXOSCUHpW
-	 phA/bZxUtZJ/9rMusMXNxgeMDS2hDBeBfJVP5jib8fC56vzNHBipxVONMtDHMTKIp3
-	 7W1psp8ui7v2A==
+	b=nQns2B52ocyZRocWlsJKbO+SxCzxFtRJdUkh0YWS19iD9OCzikNFK/ZMrnx+W3P+C
+	 kJtMj6vhVNcyvxA4gWbA09rx4r/FlSyQ1xeiihyAxPTbr4+QDf0N7RS0MWbkqZszBb
+	 cfj7akUqfcrDg7NsZZyRH1+P/TZ6NSFfQWEy8FXNmG/PMx/p25hrIrtmefZRsw2POV
+	 04itg/PQuERgn8gKfIXlOSjL9+q6q2LnBIq+avNoO9hNHr46BbYzQdAd0enVY2fTx2
+	 0S9DbrIgL6oUPZSBBimlPw2UKHUKEmnEWKPMQD4ONHpzWkClKIXLwKj8iuXNArIdty
+	 nLqxEd+2AJNMw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lqwOQtzXK7A1; Tue,  6 Jun 2023 14:25:29 +0000 (UTC)
+	with ESMTP id bIOe91mbPFYQ; Tue,  6 Jun 2023 15:03:42 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 23A73418D3;
-	Tue,  6 Jun 2023 14:25:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 23A73418D3
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 26BD81BF57C
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 14:25:28 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5307A4034F;
+	Tue,  6 Jun 2023 15:03:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5307A4034F
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id CF8C41BF399
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 09:03:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id F2ABC81F34
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 14:25:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F2ABC81F34
+ by smtp2.osuosl.org (Postfix) with ESMTP id B47D0403B8
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 09:03:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B47D0403B8
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ydmMA_hQ7M5l for <intel-wired-lan@lists.osuosl.org>;
- Tue,  6 Jun 2023 14:25:25 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 21C4381F2F
-Received: from mail-pg1-x52f.google.com (mail-pg1-x52f.google.com
- [IPv6:2607:f8b0:4864:20::52f])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 21C4381F2F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 14:25:25 +0000 (UTC)
-Received: by mail-pg1-x52f.google.com with SMTP id
- 41be03b00d2f7-53fbf2c42bfso5601884a12.3
- for <intel-wired-lan@lists.osuosl.org>; Tue, 06 Jun 2023 07:25:25 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1686061524; x=1688653524;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
- :subject:date:message-id:reply-to;
- bh=/hmEz2MbCDzEXdAiTp6Aa2zyFmyqIvzUtehqc+a8JQM=;
- b=Gi7z78AVidG8aIGaR8+FR0Ht0Oty9LAfb04Sls5hgGa0llWbj1iO9Ekgq6R6qDu34j
- 0X5Vyh93N7u7P8ObYUdRuTS1Rg//88VERf2MthjQOEYfkr2Q8JJQgIU0O+IUSutq87Zi
- Pls7FBvBIxOaiWBG2S/KQj/Yt6//yqwiMOnS0EJ4k2xHAJRKe82c9/xQehrDWQA2vLRN
- RjZMHVxy8tH0qT/vW6F+Qd08jd0hGCV//bF0vWwyIemm7oNsi8kVU9f6Q1aT4qGRKdR6
- BIrkpqAuIxSpP/Gqc1WW9u9DoR/nJ6PixokwmsduDWxUrU7J98+JaZY2lBLzl8D5J5hF
- gsvA==
-X-Gm-Message-State: AC+VfDyqI3CtQegbq5+2iqWEOxwM0+vPez5RZwnbVsluouBc7+jR3hfC
- oecxsC3dZjoiD2WVo4TYSycB4nDZo/kzwtEG13k=
-X-Google-Smtp-Source: ACHHUZ7d+2TaEqKX/qlkdetQq2bn1illhFx2x6aBzSwuTkXTmCZiL6B4FG2rL7icmDKgrCjNKyk9TlvUUPAvcq5qcdE=
-X-Received: by 2002:a17:902:e5cd:b0:1b2:28ca:d16 with SMTP id
- u13-20020a170902e5cd00b001b228ca0d16mr2457853plf.44.1686061524285; Tue, 06
- Jun 2023 07:25:24 -0700 (PDT)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id I2A1Ozyk4Amb for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  6 Jun 2023 09:03:48 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3FE1C4047B
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com
+ [68.232.153.233])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3FE1C4047B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  6 Jun 2023 09:03:48 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.00,219,1681196400"; d="scan'208";a="217001330"
+X-Amp-Result: SKIPPED(no attachment in message)
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+ by esa5.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
+ 06 Jun 2023 02:03:47 -0700
+Received: from chn-vm-ex03.mchp-main.com (10.10.85.151) by
+ chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Tue, 6 Jun 2023 02:03:46 -0700
+Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex03.mchp-main.com
+ (10.10.85.151) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
+ Transport; Tue, 6 Jun 2023 02:03:45 -0700
+Date: Tue, 6 Jun 2023 09:03:45 +0000
+From: Daniel Machon <daniel.machon@microchip.com>
+To: Dave Ertman <david.m.ertman@intel.com>
+Message-ID: <20230606090345.lhbfllkslip7zbta@DEN-LT-70577>
+References: <20230605182258.557933-1-david.m.ertman@intel.com>
+ <20230605182258.557933-2-david.m.ertman@intel.com>
 MIME-Version: 1.0
-References: <20230525125746.553874-1-aleksander.lobakin@intel.com>
- <20230525125746.553874-4-aleksander.lobakin@intel.com>
- <8828262f1c238ab28be9ec87a7701acd791af926.camel@gmail.com>
- <cb7d3479-63a5-31b4-355d-b12a7e1b2878@intel.com>
- <CAKgT0Ud204CiJeB-5zcTKdrv7ODrfP09t73CqRhps7g3qhWU5w@mail.gmail.com>
- <d375fef9-43c4-9f2a-41c9-5247fcb3aa1e@intel.com>
- <CAKgT0Uc4UQ=PpVtjUAP=hjTDrWWkc79PeSwp39T6MSpo1ZyOag@mail.gmail.com>
- <cd88ac7e-fe82-fdc0-3410-0decf57d3c43@intel.com>
- <CAKgT0UeEz2Gqb62sn0pP3_yBMc-LpR0Twmv5_HTREvHBLpCsNw@mail.gmail.com>
- <5aac6822-6fe5-e182-935e-7aa86f1e820d@intel.com>
-In-Reply-To: <5aac6822-6fe5-e182-935e-7aa86f1e820d@intel.com>
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 6 Jun 2023 07:24:47 -0700
-Message-ID: <CAKgT0UegFu3LDhwx+ec8q1=c3OFzrKp=mhopzRFr84s4m9Ciug@mail.gmail.com>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20221208; t=1686061524; x=1688653524;
- h=content-transfer-encoding:cc:to:subject:message-id:date:from
- :in-reply-to:references:mime-version:from:to:cc:subject:date
- :message-id:reply-to;
- bh=/hmEz2MbCDzEXdAiTp6Aa2zyFmyqIvzUtehqc+a8JQM=;
- b=AgA8yJ2qSN0nKfzypklbbkOnFwubsWwLlNS1zuBDIfsGWUgRPxp4sXVz1ygkD7cM6T
- GcGX5fRp3+VQuDz3BG2Z8y3FcONjfMHDwCuxcO+jSaiOomqg5evWMmSjJcP/pA/N6yWY
- +iF9llU8Pu4KC8a/xjGJ7TsC0+wzeHpbwFjgHz2Rd38ed28bikd2JPt3KQE8LmWPb/7R
- xEY6cFSWXiYrvds/eg/8asRjB1q2dSwh4eupWCLOphNRJHKS5rJknVahnHLHZNQnQctd
- cxOzs0SkFVq7yEbHlsVMXSaYF+rU1vxQGuD04MkqqH1ZNTrERJtcPlLTonlhI/AKNzS/
- c0sQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20221208 header.b=AgA8yJ2q
-Subject: Re: [Intel-wired-lan] [PATCH net-next v2 03/12] iavf: optimize Rx
- buffer allocation a bunch
+Content-Disposition: inline
+In-Reply-To: <20230605182258.557933-2-david.m.ertman@intel.com>
+X-Mailman-Approved-At: Tue, 06 Jun 2023 15:03:41 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+ t=1686042228; x=1717578228;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=B4BpfQHm9MQd+abSJc8cnrChLaBqe1+11MVv5UTPxLI=;
+ b=ZokNanZ2A2U8Uljlu8mFncCZwj7ys5D/wFR40p0s/Y2GphzSKBkKwW6g
+ W28/1rASOOsWpTig5d6/E2WT61g64+oD2kz+qqZ70yDPk26puvDlg3q9P
+ +6+cbcyX7ag18gHPLl0IDvZ7V3MYhxHYcZBZT03JTqnnXWuH9H61QvJfq
+ eUw/UJUiaEBcd9PUHmYrDchRI2RFPCiSrGFq8we1a7r+7Hekm+McY8U3/
+ 20RutJ5hIc95JnxincMLe5TTjBC87yWaerotSqBlCE41aR88ggqXXunzC
+ 0QsQQ9seXAarj+kXtAseL4O2jeVIqnS1kiKksCwuyQ9sNwTl+uNDbyHzK
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com
+ header.a=rsa-sha256 header.s=mchp header.b=ZokNanZ2
+Subject: Re: [Intel-wired-lan] [PATCH net v2 01/10] ice: Correctly
+ initialize queue context values
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,44 +100,114 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-kernel@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, Eric Dumazet <edumazet@google.com>,
- Michal Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>,
- Magnus Karlsson <magnus.karlsson@intel.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gVHVlLCBKdW4gNiwgMjAyMyBhdCA1OjQ54oCvQU0gQWxleGFuZGVyIExvYmFraW4KPGFsZWtz
-YW5kZXIubG9iYWtpbkBpbnRlbC5jb20+IHdyb3RlOgo+Cj4gRnJvbTogQWxleGFuZGVyIER1eWNr
-IDxhbGV4YW5kZXIuZHV5Y2tAZ21haWwuY29tPgo+IERhdGU6IEZyaSwgMiBKdW4gMjAyMyAxMDo1
-MDowMiAtMDcwMAo+Cj4gU29ycnkgZm9yIHRoZSBzaWxlbmNlLCBoYWQgc29ydGEgbG9uZyB3ZWVr
-ZW5kIDpwCj4KPiA+IE9uIEZyaSwgSnVuIDIsIDIwMjMgYXQgOToxNuKAr0FNIEFsZXhhbmRlciBM
-b2Jha2luCj4gPiA8YWxla3NhbmRlci5sb2Jha2luQGludGVsLmNvbT4gd3JvdGU6Cj4KClsuLi5d
-Cgo+ID4gVGhlIG90aGVyIHRoaW5nIGlzIHlvdSBtYXkgd2FudCB0byBkb3VibGUgY2hlY2sgQ1BV
-KHMpIHlvdSBhcmUKPiA+IGV4cGVjdGVkIHRvIHN1cHBvcnQgYXMgbGFzdCBJIGtuZXcgc3dpdGNo
-IHN0YXRlbWVudHMgd2VyZSBzdGlsbAo+ID4gZXhwZW5zaXZlIGR1ZSB0byBhbGwgdGhlIG9sZCBz
-cGVjdHJlL21lbHRkb3duIHdvcmthcm91bmRzLgo+IFdhaXQsIGFyZSBzd2l0Y2gtY2FzZXMgYWxz
-byBhZmZlY3RlZD8gSSB3YXNuJ3QgYXdhcmUgb2YgdGhhdC4gRm9yIHN1cmUgSQo+IGRpZG4ndCBl
-dmVuIGNvbnNpZGVyIHVzaW5nIG9wcy9pbmRpcmVjdCBjYWxscywgYnV0IHN3aXRjaC1jYXNlcy4u
-LiBJIHNhdwo+IGxvdHMgbyd0aW1lcyBwZW9wbGUgcmVwbGFjaW5nIGluZGlyZWN0aW9ucyB3aXRo
-IHN3aXRjaC1jYXNlcywgd2hhdCdzIHRoZQo+IHBvaW50IG90aGVyd2lzZSA6RAo+Cj4gVGhhbmtz
-LAo+IE9sZWsKCkkgdGhpbmsgaXQgYWxsIGRlcGVuZHMgb24gaG93IHRoZSBjb21waWxlciBpbXBs
-ZW1lbnRzIHRoZW0uIEkga25vdwpzd2l0Y2ggY2FzZXMgdXNlZCB0byBiZSBkb25lIGFzIGluZGly
-ZWN0aW9ucyBpbiBzb21lIGNhc2VzLiBJdCBpcwpwb3NzaWJsZSB0aGV5IGRpZCBhd2F5IHdpdGgg
-dGhhdCBpbiB0aGUgY29tcGlsZXJzIHNvbWUgdGltZSBhZ28gb3IKY2FtZSB1cCB3aXRoIGEgZml4
-IHRvIHdvcmsgYXJvdW5kIHRoZW0uIEkganVzdCByZW1lbWJlciBiYWNrIHdoZW4gdGhhdApjYW1l
-IHVwIHBlb3BsZSB3ZXJlIGdvaW5nIHRocm91Z2ggYW5kIHJlcGxhY2luZyBzd2l0Y2ggY2FzZXMg
-d2l0aAppZi9lbHNlIGJsb2NrcyBpbiB0aGUgY2FzZSBvZiBwZXJmb3JtYW5jZSBzZW5zaXRpdmUg
-d29ya2xvYWRzLiBPZGRzCmFyZSB0aGVyZSBoYXZlIGJlZW4gd29ya2Fyb3VuZHMgYWRkZWQgdG8g
-YWRkcmVzcyB0aGF0LCBidXQgaXQgaXMganVzdApzb21ldGhpbmcgdG8gYmUgYXdhcmUgb2YuCgpU
-aGFua3MsCgotIEFsZXgKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KSW50ZWwtd2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1b3Ns
-Lm9yZwpodHRwczovL2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13aXJl
-ZC1sYW4K
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> The ice_alloc_lan_q_ctx function allocates the queue context array for a
+> given traffic class. This function uses devm_kcalloc which will
+> zero-allocate the structure. Thus, prior to any queue being setup by
+> ice_ena_vsi_txq, the q_ctx structure will have a q_handle of 0 and a q_teid
+> of 0. These are potentially valid values.
+> 
+> Modify the ice_alloc_lan_q_ctx function to initialize every member of the
+> q_ctx array to have invalid values. Modify ice_dis_vsi_txq to ensure that
+> it assigns q_teid to an invalid value when it assigns q_handle to the
+> invalid value as well.
+> 
+> This will allow other code to check whether the queue context is currently
+> valid before operating on it.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_common.c |  1 +
+>  drivers/net/ethernet/intel/ice/ice_sched.c  | 23 ++++++++++++++++-----
+>  2 files changed, 19 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+> index a9f2e6bff806..23a9f169bc71 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_common.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_common.c
+> @@ -4708,6 +4708,7 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_queues,
+>                         break;
+>                 ice_free_sched_node(pi, node);
+>                 q_ctx->q_handle = ICE_INVAL_Q_HANDLE;
+> +               q_ctx->q_teid = ICE_INVAL_TEID;
+>         }
+>         mutex_unlock(&pi->sched_lock);
+>         kfree(qg_list);
+> diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+> index 824bac5ce003..0db9eb8fd402 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_sched.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+> @@ -572,18 +572,24 @@ ice_alloc_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 new_numqs)
+>  {
+>         struct ice_vsi_ctx *vsi_ctx;
+>         struct ice_q_ctx *q_ctx;
+> +       u16 idx;
+> 
+>         vsi_ctx = ice_get_vsi_ctx(hw, vsi_handle);
+>         if (!vsi_ctx)
+>                 return -EINVAL;
+>         /* allocate LAN queue contexts */
+>         if (!vsi_ctx->lan_q_ctx[tc]) {
+> -               vsi_ctx->lan_q_ctx[tc] = devm_kcalloc(ice_hw_to_dev(hw),
+> -                                                     new_numqs,
+> -                                                     sizeof(*q_ctx),
+> -                                                     GFP_KERNEL);
+> -               if (!vsi_ctx->lan_q_ctx[tc])
+> +               q_ctx = devm_kcalloc(ice_hw_to_dev(hw), new_numqs,
+> +                                    sizeof(*q_ctx), GFP_KERNEL);
+> +               if (!q_ctx)
+>                         return -ENOMEM;
+> +
+> +               for (idx = 0; idx < new_numqs; idx++) {
+> +                       q_ctx[idx].q_handle = ICE_INVAL_Q_HANDLE;
+> +                       q_ctx[idx].q_teid = ICE_INVAL_TEID;
+> +               }
+> +
+> +               vsi_ctx->lan_q_ctx[tc] = q_ctx;
+>                 vsi_ctx->num_lan_q_entries[tc] = new_numqs;
+>                 return 0;
+>         }
+> @@ -595,9 +601,16 @@ ice_alloc_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 new_numqs)
+>                                      sizeof(*q_ctx), GFP_KERNEL);
+>                 if (!q_ctx)
+>                         return -ENOMEM;
+> +
+>                 memcpy(q_ctx, vsi_ctx->lan_q_ctx[tc],
+>                        prev_num * sizeof(*q_ctx));
+>                 devm_kfree(ice_hw_to_dev(hw), vsi_ctx->lan_q_ctx[tc]);
+> +
+> +               for (idx = prev_num; idx < new_numqs; idx++) {
+> +                       q_ctx[idx].q_handle = ICE_INVAL_Q_HANDLE;
+> +                       q_ctx[idx].q_teid = ICE_INVAL_TEID;
+> +               }
+> +
+>                 vsi_ctx->lan_q_ctx[tc] = q_ctx;
+>                 vsi_ctx->num_lan_q_entries[tc] = new_numqs;
+>         }
+> --
+> 2.40.1
+> 
+>
+
+Hi Dave,
+
+This does not apply to my net-next tree, but I guess that falls under
+your 'fat-fingered' comment. I am still going ahead and reviewing this
+version.
+
+As for this patch:
+
+Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
