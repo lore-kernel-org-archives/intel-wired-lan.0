@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FEF1C7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Jun 2023 21:32:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3322C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Jun 2023 21:33:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1E22241820;
-	Wed,  7 Jun 2023 21:32:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1E22241820
+	by smtp2.osuosl.org (Postfix) with ESMTP id 863D841844;
+	Wed,  7 Jun 2023 21:33:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 863D841844
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686173577;
-	bh=qgWE+4XL70m6JQ4stfV27+TELgfVxwSt+oj1QZ3hcJk=;
+	s=default; t=1686173581;
+	bh=kqrJ1GhPajcWCwDILGuNviOQoLQHg9uKhypHY3ks92w=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=BRkPOm9V94diZ/Tssq6bKWRFvS2F9LgP5mwq1T2zBiaoWWtyrKTEFkuVPhNiygm3x
-	 7qqutjSuM0Gf7cqjzOJIOyob/tzBZh4gj4EwL3qu+PYaBauNyEO0aMbb6MtYShHyWx
-	 g8ZgwClfoy6eIDqC2ey4VAPN8lZ2pcMVWagonU3E/NL0YfNouQXybRO7yE6sw9QKro
-	 AgOkMCTI36CczLXgfW4VJjGvcfxRw86ZtRJM86bXnnRo+3EMFrqCLvRyqdXYaRWojn
-	 YHJ3jlmlYlSjwuAEemoo+pyDQ4tz7erqx4xoqgeoUGo+BuFy4xIYmJv2nTro1EpYRY
-	 YI0sfJwZ0M43w==
+	b=tMH0FRLXt32Hqm04IKuhkO4YmaF9X2vxSVPotg900wegKkZanfH64Ebe5u/N7E5kZ
+	 8KlHYOWOhlw5pkOv9kDAGkoXTuogcOvXDtjV0yaKlF6/PofDJUo1yt30tM4v/lq7JT
+	 rhymJDEn+nqBDAUsX+FYn14fhBHM7LeeD16REciwDvTvj+frnq2Fbb23ptrINQS7Gr
+	 YcGjSFOlMVikri5PKg/p2K8V1DVHBkGDhLaHzr5UENpWy0xSi0fItwCwtUP4Xlg/57
+	 sI5rA1Y9Sj7KSgoFcYw9/6/Es9wJ+gMsL6NZCgNKMDLFmxDz/3PfjK2jIsz0bv+/Fa
+	 KvgInWVvgL8/Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zPaTN_46byyh; Wed,  7 Jun 2023 21:32:56 +0000 (UTC)
+	with ESMTP id MFUU-aL3C846; Wed,  7 Jun 2023 21:33:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id EA1334183B;
-	Wed,  7 Jun 2023 21:32:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EA1334183B
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3FF0641830;
+	Wed,  7 Jun 2023 21:33:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3FF0641830
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 3173D1BF3CD
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 21:32:43 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 35ABC1BF3CD
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 21:32:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4862E60FB6
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 21:32:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4862E60FB6
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0BDA460B36
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 21:32:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0BDA460B36
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id OijPYnLGlG1J for <intel-wired-lan@lists.osuosl.org>;
- Wed,  7 Jun 2023 21:32:41 +0000 (UTC)
+ with ESMTP id Wypb6dfh8cvE for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  7 Jun 2023 21:32:40 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3421561174
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9A24760F8F
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 3421561174
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 21:32:41 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10734"; a="336741889"
-X-IronPort-AV: E=Sophos;i="6.00,225,1681196400"; d="scan'208";a="336741889"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9A24760F8F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 21:32:40 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10734"; a="336741875"
+X-IronPort-AV: E=Sophos;i="6.00,225,1681196400"; d="scan'208";a="336741875"
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Jun 2023 14:32:40 -0700
+ 07 Jun 2023 14:32:39 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10734"; a="742853922"
-X-IronPort-AV: E=Sophos;i="6.00,225,1681196400"; d="scan'208";a="742853922"
+X-IronPort-AV: E=McAfee;i="6600,9927,10734"; a="742853912"
+X-IronPort-AV: E=Sophos;i="6.00,225,1681196400"; d="scan'208";a="742853912"
 Received: from adtotpal-mobl.amr.corp.intel.com (HELO
  vcostago-mobl3.intel.com) ([10.209.21.176])
  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Jun 2023 14:32:39 -0700
+ 07 Jun 2023 14:32:38 -0700
 From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  7 Jun 2023 14:32:31 -0700
-Message-Id: <20230607213232.875138-4-vinicius.gomes@intel.com>
+Date: Wed,  7 Jun 2023 14:32:29 -0700
+Message-Id: <20230607213232.875138-2-vinicius.gomes@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230607213232.875138-1-vinicius.gomes@intel.com>
 References: <20230607213232.875138-1-vinicius.gomes@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686173561; x=1717709561;
+ t=1686173560; x=1717709560;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=5NVTPa7/n7QlDI7nf+uv9siN9WmG4uJQtDtPdqmuqhI=;
- b=YQPBkslAo/yTFCRMLRAiknSyPSlTDV7h04B6wPrO82WV06xz53LvevZR
- CrZ6LGx92BrpW3BBVsnQrgaP88AMST1wSAh19bfsDybib3AEX/HIfWQp2
- oMsq9n6bPA+60RMDohsL52FgzJeHgk5QxQE/zHy0yKEcM1YQc3zdpn/8Q
- bmT0whjvwu5orkcAd6RUThqcCKbDNTuRlJRBKfWVTJsABXLK4CGay0kFp
- r+KzsHQG3YMJoR32TGh9uB0qfSMBaDoLpK42qqfXu8oTmzTDJ8kr5bEVw
- fRgVlI64UrEK4uaxa9VJZNnVg7Xea6Sjvh6Bn7UJlU1XlYi9gTMrNkNOU
- w==;
+ bh=JvmwDlkwypyx2zW/dLR5UipqupWXCi+4I5wYyUv5QKw=;
+ b=fJFjHKCdZaDU3ClhzpIRxAb/ar3sU29CVnrC+ybkEnTGlBnS4VchzGSv
+ bZbdtOy57F5c9f3kkBFLuEKtQv6VsJqLQ0ZdTHUsXvTNSWAc0HfNTmiMu
+ RNnxNmy6HzCXdsIb/x2ADHsejut+jHJmzoodMlhuXFM50urF1MM52Og2+
+ mcDPbXLHr+YwmxcqrDhiFOmZL+lRYpKkYFzeOBrDjr/I+mLiYR9XosdH3
+ N1Ho5AnZk2O6gsdojjcw4JhsHcZzgOsDofOJ2TJPB5zUSQpj/q/lk8AD7
+ W+4wZc07nvGJdRnamFbABlHfc6YzaYke9QiEGitxGgbaNBEqILYf3IxRK
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=YQPBkslA
-Subject: [Intel-wired-lan] [PATCH iwl-net v4 3/4] igc: Retrieve TX timestamp
- during interrupt handling
+ header.a=rsa-sha256 header.s=Intel header.b=fJFjHKCd
+Subject: [Intel-wired-lan] [PATCH iwl-net v4 1/4] igc: Fix race condition in
+ PTP tx code
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,155 +97,237 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: vladimir.oltean@nxp.com, kurt@linutronix.de, anthony.l.nguyen@intel.com
+Cc: Andre Guedes <andre.guedes@intel.com>, vladimir.oltean@nxp.com,
+ kurt@linutronix.de, anthony.l.nguyen@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When the interrupt is handled, the TXTT_0 bit in the TSYNCTXCTL
-register should already be set and the timestamp value already loaded
-in the appropriate register.
+Currently, the igc driver supports timestamping only one tx packet at a
+time. During the transmission flow, the skb that requires hardware
+timestamping is saved in adapter->ptp_tx_skb. Once hardware has the
+timestamp, an interrupt is delivered, and adapter->ptp_tx_work is
+scheduled. In igc_ptp_tx_work(), we read the timestamp register, update
+adapter->ptp_tx_skb, and notify the network stack.
 
-This simplifies the handling, and reduces the latency for retrieving
-the TX timestamp, which increase the amount of TX timestamps that can
-be handled in a given time period.
+While the thread executing the transmission flow (the user process
+running in kernel mode) and the thread executing ptp_tx_work don't
+access adapter->ptp_tx_skb concurrently, there are two other places
+where adapter->ptp_tx_skb is accessed: igc_ptp_tx_hang() and
+igc_ptp_suspend().
 
-As the "work" function doesn't run in a workqueue anymore, rename it
-to something more sensible, a event handler.
+igc_ptp_tx_hang() is executed by the adapter->watchdog_task worker
+thread which runs periodically so it is possible we have two threads
+accessing ptp_tx_skb at the same time. Consider the following scenario:
+right after __IGC_PTP_TX_IN_PROGRESS is set in igc_xmit_frame_ring(),
+igc_ptp_tx_hang() is executed. Since adapter->ptp_tx_start hasn't been
+written yet, this is considered a timeout and adapter->ptp_tx_skb is
+cleaned up.
 
-Using ntpperf[1] we can see the following performance improvements:
+This patch fixes the issue described above by adding the ptp_tx_lock to
+protect access to ptp_tx_skb and ptp_tx_start fields from igc_adapter.
+Since igc_xmit_frame_ring() called in atomic context by the networking
+stack, ptp_tx_lock is defined as a spinlock, and the irq safe variants
+of lock/unlock are used.
 
-Before:
+With the introduction of the ptp_tx_lock, the __IGC_PTP_TX_IN_PROGRESS
+flag doesn't provide much of a use anymore so this patch gets rid of it.
 
-$ sudo ./ntpperf -i enp3s0 -m 10:22:22:22:22:21 -d 192.168.1.3 -s 172.18.0.0/16 -I -H -o -37
-               |          responses            |     TX timestamp offset (ns)
-rate   clients |  lost invalid   basic  xleave |    min    mean     max stddev
-1000       100   0.00%   0.00%   0.00% 100.00%      -56      +9     +52     19
-1500       150   0.00%   0.00%   0.00% 100.00%      -40     +30     +75     22
-2250       225   0.00%   0.00%   0.00% 100.00%      -11     +29     +72     15
-3375       337   0.00%   0.00%   0.00% 100.00%      -18     +40     +88     22
-5062       506   0.00%   0.00%   0.00% 100.00%      -19     +23     +77     15
-7593       759   0.00%   0.00%   0.00% 100.00%       +7     +47   +5168     43
-11389     1138   0.00%   0.00%   0.00% 100.00%      -11     +41   +5240     39
-17083     1708   0.00%   0.00%   0.00% 100.00%      +19     +60   +5288     50
-25624     2562   0.00%   0.00%   0.00% 100.00%       +1     +56   +5368     58
-38436     3843   0.00%   0.00%   0.00% 100.00%      -84     +12   +8847     66
-57654     5765   0.00%   0.00% 100.00%   0.00%
-86481     8648   0.00%   0.00% 100.00%   0.00%
-129721   12972   0.00%   0.00% 100.00%   0.00%
-194581   16384   0.00%   0.00% 100.00%   0.00%
-291871   16384  27.35%   0.00%  72.65%   0.00%
-437806   16384  50.05%   0.00%  49.95%   0.00%
-
-After:
-
-$ sudo ./ntpperf -i enp3s0 -m 10:22:22:22:22:21 -d 192.168.1.3 -s 172.18.0.0/16 -I -H -o -37
-               |          responses            |     TX timestamp offset (ns)
-rate   clients |  lost invalid   basic  xleave |    min    mean     max stddev
-1000       100   0.00%   0.00%   0.00% 100.00%      -44      +0     +61     19
-1500       150   0.00%   0.00%   0.00% 100.00%       -6     +39     +81     16
-2250       225   0.00%   0.00%   0.00% 100.00%      -22     +25     +69     15
-3375       337   0.00%   0.00%   0.00% 100.00%      -28     +15     +56     14
-5062       506   0.00%   0.00%   0.00% 100.00%       +7     +78    +143     27
-7593       759   0.00%   0.00%   0.00% 100.00%      -54     +24    +144     47
-11389     1138   0.00%   0.00%   0.00% 100.00%      -90     -33     +28     21
-17083     1708   0.00%   0.00%   0.00% 100.00%      -50      -2     +35     14
-25624     2562   0.00%   0.00%   0.00% 100.00%      -62      +7     +66     23
-38436     3843   0.00%   0.00%   0.00% 100.00%      -33     +30   +5395     36
-57654     5765   0.00%   0.00% 100.00%   0.00%
-86481     8648   0.00%   0.00% 100.00%   0.00%
-129721   12972   0.00%   0.00% 100.00%   0.00%
-194581   16384  19.50%   0.00%  80.50%   0.00%
-291871   16384  35.81%   0.00%  64.19%   0.00%
-437806   16384  55.40%   0.00%  44.60%   0.00%
-
-[1] https://github.com/mlichvar/ntpperf
-
+Fixes: 2c344ae24501 ("igc: Add support for TX timestamping")
+Signed-off-by: Andre Guedes <andre.guedes@intel.com>
 Signed-off-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
 ---
- drivers/net/ethernet/intel/igc/igc.h      |  2 +-
- drivers/net/ethernet/intel/igc/igc_main.c |  2 +-
- drivers/net/ethernet/intel/igc/igc_ptp.c  | 15 +++++----------
- 3 files changed, 7 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/igc/igc.h      |  5 +-
+ drivers/net/ethernet/intel/igc/igc_main.c |  9 ++--
+ drivers/net/ethernet/intel/igc/igc_ptp.c  | 61 ++++++++++++-----------
+ 3 files changed, 43 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 66fb67c17e4f..a00738bf6b19 100644
+index 34aebf00a512..7da0657ea48f 100644
 --- a/drivers/net/ethernet/intel/igc/igc.h
 +++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -228,7 +228,6 @@ struct igc_adapter {
- 
+@@ -229,6 +229,10 @@ struct igc_adapter {
  	struct ptp_clock *ptp_clock;
  	struct ptp_clock_info ptp_caps;
--	struct work_struct ptp_tx_work;
- 	/* Access to ptp_tx_skb and ptp_tx_start are protected by the
- 	 * ptp_tx_lock.
- 	 */
-@@ -638,6 +637,7 @@ int igc_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
- int igc_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
- void igc_ptp_tx_hang(struct igc_adapter *adapter);
- void igc_ptp_read(struct igc_adapter *adapter, struct timespec64 *ts);
-+void igc_ptp_tx_tstamp_event(struct igc_adapter *adapter);
+ 	struct work_struct ptp_tx_work;
++	/* Access to ptp_tx_skb and ptp_tx_start are protected by the
++	 * ptp_tx_lock.
++	 */
++	spinlock_t ptp_tx_lock;
+ 	struct sk_buff *ptp_tx_skb;
+ 	struct hwtstamp_config tstamp_config;
+ 	unsigned long ptp_tx_start;
+@@ -401,7 +405,6 @@ enum igc_state_t {
+ 	__IGC_TESTING,
+ 	__IGC_RESETTING,
+ 	__IGC_DOWN,
+-	__IGC_PTP_TX_IN_PROGRESS,
+ };
  
- #define igc_rx_pg_size(_ring) (PAGE_SIZE << igc_rx_pg_order(_ring))
- 
+ enum igc_tx_flags {
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index d3cfb8e97ac8..3ee77d523fce 100644
+index 1c4676882082..a61afa69975e 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -5216,7 +5216,7 @@ static void igc_tsync_interrupt(struct igc_adapter *adapter)
+@@ -1583,9 +1583,10 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 		 * the other timer registers before skipping the
+ 		 * timestamping request.
+ 		 */
+-		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON &&
+-		    !test_and_set_bit_lock(__IGC_PTP_TX_IN_PROGRESS,
+-					   &adapter->state)) {
++		unsigned long flags;
++
++		spin_lock_irqsave(&adapter->ptp_tx_lock, flags);
++		if (adapter->tstamp_config.tx_type == HWTSTAMP_TX_ON && !adapter->ptp_tx_skb) {
+ 			skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+ 			tx_flags |= IGC_TX_FLAGS_TSTAMP;
  
- 	if (tsicr & IGC_TSICR_TXTS) {
- 		/* retrieve hardware timestamp */
--		schedule_work(&adapter->ptp_tx_work);
-+		igc_ptp_tx_tstamp_event(adapter);
- 		ack |= IGC_TSICR_TXTS;
+@@ -1594,6 +1595,8 @@ static netdev_tx_t igc_xmit_frame_ring(struct sk_buff *skb,
+ 		} else {
+ 			adapter->tx_hwtstamp_skipped++;
+ 		}
++
++		spin_unlock_irqrestore(&adapter->ptp_tx_lock, flags);
  	}
  
+ 	if (skb_vlan_tag_present(skb)) {
 diff --git a/drivers/net/ethernet/intel/igc/igc_ptp.c b/drivers/net/ethernet/intel/igc/igc_ptp.c
-index 42f622ceb64b..cf963a12a92f 100644
+index 4e10ced736db..56128e55f5c0 100644
 --- a/drivers/net/ethernet/intel/igc/igc_ptp.c
 +++ b/drivers/net/ethernet/intel/igc/igc_ptp.c
-@@ -540,8 +540,6 @@ static void igc_ptp_clear_tx_tstamp(struct igc_adapter *adapter)
+@@ -603,6 +603,7 @@ static int igc_ptp_set_timestamp_mode(struct igc_adapter *adapter,
+ 	return 0;
+ }
+ 
++/* Requires adapter->ptp_tx_lock held by caller. */
+ static void igc_ptp_tx_timeout(struct igc_adapter *adapter)
  {
- 	unsigned long flags;
- 
--	cancel_work_sync(&adapter->ptp_tx_work);
--
- 	spin_lock_irqsave(&adapter->ptp_tx_lock, flags);
- 
+ 	struct igc_hw *hw = &adapter->hw;
+@@ -610,7 +611,6 @@ static void igc_ptp_tx_timeout(struct igc_adapter *adapter)
  	dev_kfree_skb_any(adapter->ptp_tx_skb);
-@@ -724,16 +722,14 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
+ 	adapter->ptp_tx_skb = NULL;
+ 	adapter->tx_hwtstamp_timeouts++;
+-	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
+ 	/* Clear the tx valid bit in TSYNCTXCTL register to enable interrupt. */
+ 	rd32(IGC_TXSTMPH);
+ 	netdev_warn(adapter->netdev, "Tx timestamp timeout\n");
+@@ -618,20 +618,20 @@ static void igc_ptp_tx_timeout(struct igc_adapter *adapter)
+ 
+ void igc_ptp_tx_hang(struct igc_adapter *adapter)
+ {
+-	bool timeout = time_is_before_jiffies(adapter->ptp_tx_start +
+-					      IGC_PTP_TX_TIMEOUT);
+-
+-	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
+-		return;
+-
+-	/* If we haven't received a timestamp within the timeout, it is
+-	 * reasonable to assume that it will never occur, so we can unlock the
+-	 * timestamp bit when this occurs.
+-	 */
+-	if (timeout) {
+-		cancel_work_sync(&adapter->ptp_tx_work);
+-		igc_ptp_tx_timeout(adapter);
+-	}
++	unsigned long flags;
++
++	spin_lock_irqsave(&adapter->ptp_tx_lock, flags);
++
++	if (!adapter->ptp_tx_skb)
++		goto unlock;
++
++	if (time_is_after_jiffies(adapter->ptp_tx_start + IGC_PTP_TX_TIMEOUT))
++		goto unlock;
++
++	igc_ptp_tx_timeout(adapter);
++
++unlock:
++	spin_unlock_irqrestore(&adapter->ptp_tx_lock, flags);
  }
  
  /**
-- * igc_ptp_tx_work
-- * @work: pointer to work struct
-+ * igc_ptp_tx_tstamp_event
-+ * @adapter: board private structure
-  *
-- * This work function checks the TSYNCTXCTL valid bit to determine when
-- * a timestamp has been taken for the current stored skb.
-+ * Called when a TX timestamp interrupt happens to retrieve the
-+ * timestamp and send it up to the socket.
+@@ -641,6 +641,8 @@ void igc_ptp_tx_hang(struct igc_adapter *adapter)
+  * If we were asked to do hardware stamping and such a time stamp is
+  * available, then it must have been for this skb here because we only
+  * allow only one such packet into the queue.
++ *
++ * Context: Expects adapter->ptp_tx_lock to be held by caller.
   */
--static void igc_ptp_tx_work(struct work_struct *work)
-+void igc_ptp_tx_tstamp_event(struct igc_adapter *adapter)
+ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
  {
--	struct igc_adapter *adapter = container_of(work, struct igc_adapter,
--						   ptp_tx_work);
+@@ -676,13 +678,7 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
+ 	shhwtstamps.hwtstamp =
+ 		ktime_add_ns(shhwtstamps.hwtstamp, adjust);
+ 
+-	/* Clear the lock early before calling skb_tstamp_tx so that
+-	 * applications are not woken up before the lock bit is clear. We use
+-	 * a copy of the skb pointer to ensure other threads can't change it
+-	 * while we're notifying the stack.
+-	 */
+ 	adapter->ptp_tx_skb = NULL;
+-	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
+ 
+ 	/* Notify the stack and free the skb after we've unlocked */
+ 	skb_tstamp_tx(skb, &shhwtstamps);
+@@ -693,24 +689,33 @@ static void igc_ptp_tx_hwtstamp(struct igc_adapter *adapter)
+  * igc_ptp_tx_work
+  * @work: pointer to work struct
+  *
+- * This work function polls the TSYNCTXCTL valid bit to determine when a
+- * timestamp has been taken for the current stored skb.
++ * This work function checks the TSYNCTXCTL valid bit to determine when
++ * a timestamp has been taken for the current stored skb.
+  */
+ static void igc_ptp_tx_work(struct work_struct *work)
+ {
+ 	struct igc_adapter *adapter = container_of(work, struct igc_adapter,
+ 						   ptp_tx_work);
  	struct igc_hw *hw = &adapter->hw;
- 	unsigned long flags;
++	unsigned long flags;
  	u32 tsynctxctl;
-@@ -1004,7 +1000,6 @@ void igc_ptp_init(struct igc_adapter *adapter)
  
- 	spin_lock_init(&adapter->ptp_tx_lock);
+-	if (!test_bit(__IGC_PTP_TX_IN_PROGRESS, &adapter->state))
+-		return;
++	spin_lock_irqsave(&adapter->ptp_tx_lock, flags);
++
++	if (!adapter->ptp_tx_skb)
++		goto unlock;
+ 
+ 	tsynctxctl = rd32(IGC_TSYNCTXCTL);
+-	if (WARN_ON_ONCE(!(tsynctxctl & IGC_TSYNCTXCTL_TXTT_0)))
+-		return;
++	tsynctxctl &= IGC_TSYNCTXCTL_TXTT_0;
++	if (!tsynctxctl) {
++		WARN_ONCE(1, "Received a TSTAMP interrupt but no TSTAMP is ready.\n");
++		goto unlock;
++	}
+ 
+ 	igc_ptp_tx_hwtstamp(adapter);
++
++unlock:
++	spin_unlock_irqrestore(&adapter->ptp_tx_lock, flags);
+ }
+ 
+ /**
+@@ -959,6 +964,7 @@ void igc_ptp_init(struct igc_adapter *adapter)
+ 		return;
+ 	}
+ 
++	spin_lock_init(&adapter->ptp_tx_lock);
  	spin_lock_init(&adapter->tmreg_lock);
--	INIT_WORK(&adapter->ptp_tx_work, igc_ptp_tx_work);
+ 	INIT_WORK(&adapter->ptp_tx_work, igc_ptp_tx_work);
  
- 	adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
- 	adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
+@@ -1023,7 +1029,6 @@ void igc_ptp_suspend(struct igc_adapter *adapter)
+ 	cancel_work_sync(&adapter->ptp_tx_work);
+ 	dev_kfree_skb_any(adapter->ptp_tx_skb);
+ 	adapter->ptp_tx_skb = NULL;
+-	clear_bit_unlock(__IGC_PTP_TX_IN_PROGRESS, &adapter->state);
+ 
+ 	if (pci_device_is_present(adapter->pdev)) {
+ 		igc_ptp_time_save(adapter);
 -- 
 2.40.1
 
