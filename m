@@ -4,92 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D71A1C77B7A
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Jun 2023 15:12:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19C39C77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Jun 2023 15:12:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 690CA81CEF;
-	Wed,  7 Jun 2023 15:12:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 690CA81CEF
+	by smtp1.osuosl.org (Postfix) with ESMTP id C067C81E09;
+	Wed,  7 Jun 2023 15:12:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C067C81E09
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686150732;
-	bh=Hjm1AngnPSIUiwvmGkIgGJFJFBI86JLneO9MB7AGJvs=;
+	s=default; t=1686150737;
+	bh=2d4+g6Wggz3cBPiJBEbYwsopwsc8dNzcd4WW6IgKZk8=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=RWUoxBUK3vR5tx0+DDov/kmhUau5+XUYIfyW9QYn/6ova9/lza3OxDsq1RjdwiWj5
-	 naUuFzSIKU+3uGYqXRGtUht7vgjEjy5qPhkwkC71d03yyDF/Zz9xiWZYgPJZjD0n+h
-	 EOzXKIEoprKu5ZE4KD+yKpCYd/Pq1HpBLSGbIUlkx9DLsrPxi6RFs3IO52mcoRHaLv
-	 yxCGsBSonnwAz+ir/4Km9DBi8xWXPviv8OjlGqCI4nLJM0YvG+6AGXuY17vgVv1dJg
-	 2rjgJjCNAO91XkNAtYk1i/lkXfaw9/TWEnc3/1qy3/WhrcT3S0KFFKqqZzPlcw3TjD
-	 4trSdsOzaIKJA==
+	b=lO2CBF2my2URta9mw3tJwFt/XUG+f+f2LAk2yWAbPh2hgbL+VO9g7GM5gjvX2ynfm
+	 bWgn/AAFD89lyIljgL4nFHlL60rx1x2uUjvTRoaEVNdhVNfdkEOaJhIOvyhdvew1KE
+	 asCvW5FqNTm4cREQ8CsEY6Pg07WMgyCMFyWUc4KUpm2UJxhcUH5xuZhCGADmxeRjJv
+	 aJHJsAB+LYb6tlR+psgBcdxodQd4TTEU8q2bp9a9ThflFYpQPINZKYNkw1DftfNkVt
+	 s9wZfIoVZ8/fPK4tZnPVR49vHdL0/xIn975kpDDFTTdiovVND9Hav8LcKuBfVyLj4F
+	 0tA8loh3yjZHA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xOYHzKgajjVx; Wed,  7 Jun 2023 15:12:10 +0000 (UTC)
+	with ESMTP id 5D_at28gwd1Z; Wed,  7 Jun 2023 15:12:15 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A0A3081E09;
-	Wed,  7 Jun 2023 15:12:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A0A3081E09
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id BFD061BF31F
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 07:22:39 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id CCC7181E3D;
+	Wed,  7 Jun 2023 15:12:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CCC7181E3D
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 361401BF3E0
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 08:42:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 976E1403BF
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 07:22:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 976E1403BF
+ by smtp4.osuosl.org (Postfix) with ESMTP id 18FAF41B9B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 08:42:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 18FAF41B9B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id M-wXuRItBgCv for <intel-wired-lan@lists.osuosl.org>;
- Wed,  7 Jun 2023 07:22:38 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id DK1ldeCh5Buo for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  7 Jun 2023 08:42:18 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F6B540332
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 05A8641BC3
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com
  [68.232.153.233])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 2F6B540332
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 07:22:38 +0000 (UTC)
-X-IronPort-AV: E=Sophos;i="6.00,223,1681196400"; d="scan'208";a="228825845"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 05A8641BC3
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 08:42:17 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.00,223,1681196400"; d="scan'208";a="217210128"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
- by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
- 07 Jun 2023 00:22:36 -0700
-Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
+ by esa5.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
+ 07 Jun 2023 01:42:18 -0700
+Received: from chn-vm-ex03.mchp-main.com (10.10.85.151) by
  chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Wed, 7 Jun 2023 00:22:36 -0700
-Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex01.mchp-main.com
- (10.10.85.143) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
- Transport; Wed, 7 Jun 2023 00:22:35 -0700
-Date: Wed, 7 Jun 2023 07:22:34 +0000
+ 15.1.2507.21; Wed, 7 Jun 2023 01:42:16 -0700
+Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex03.mchp-main.com
+ (10.10.85.151) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
+ Transport; Wed, 7 Jun 2023 01:42:15 -0700
+Date: Wed, 7 Jun 2023 08:42:15 +0000
 From: Daniel Machon <daniel.machon@microchip.com>
-To: "Ertman, David M" <david.m.ertman@intel.com>
-Message-ID: <20230607072234.5svu7wo3z5p76kpr@DEN-LT-70577>
+To: Dave Ertman <david.m.ertman@intel.com>
+Message-ID: <20230607084215.km4btmugwew6633t@DEN-LT-70577>
 References: <20230605182258.557933-1-david.m.ertman@intel.com>
- <20230605182258.557933-5-david.m.ertman@intel.com>
- <20230606095648.xy5d7mdzqyhqwqdg@DEN-LT-70577>
- <MW5PR11MB5811B2361A466FAA3094C4D1DD52A@MW5PR11MB5811.namprd11.prod.outlook.com>
+ <20230605182258.557933-7-david.m.ertman@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <MW5PR11MB5811B2361A466FAA3094C4D1DD52A@MW5PR11MB5811.namprd11.prod.outlook.com>
+In-Reply-To: <20230605182258.557933-7-david.m.ertman@intel.com>
 X-Mailman-Approved-At: Wed, 07 Jun 2023 15:12:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
- t=1686122558; x=1717658558;
+ t=1686127339; x=1717663339;
  h=date:from:to:cc:subject:message-id:references:
  mime-version:in-reply-to;
- bh=4S3CoNm+dv9nHHXRJFlqfzFDDu50Pd8nQJe4Gf0uvHw=;
- b=PkmK2qu4j81nUZmdFl7FajbVO82hAIhCq+Z317bbjC9W/fbF4Mdsrpv9
- n1tNWzNMVTAT0QwRULL+4GWrSYrsGqIrUlf3ack2mb9irAq7kCIj/nQek
- aSOLOTeCmhENh2ISI89flwlhrga2DLiKQ974e5z/PxirEYUcRcn+cDDFq
- 8TOUsMHfmCkCDpWE5JNXz1WmcvydbCIjiWz3o637gi3iLFdJHOLJWG0/e
- Jh+LrlxxQiyrkTJyATtAMWVCbtz5kBipctB2iSavEcFwTNnGSKF31Oh+v
- MmnynHQcWHHMExh5x7Y3WXBk2hUtxUX0y/m1hGHx0dGJh7j/0+kEuxGKq
+ bh=qgQks9WfxD1MnpEmt0AMrKemcZwXG49waTSu2SeHhTo=;
+ b=T8hNOSnG2ts10xk1yEpg7i2qwCN3gc1ssL4bLcDrNrGj/dZu5EV/Kv+y
+ IGBNRkNHZmFNCD6LvziktxpREG2q+E5L2MYSXP8lS1YuQy+fQ2Cl1Ru6E
+ e1YmAkGaTwPcf/nfLDjpzo8rMAJMv21JHiedY9O7XImoRsSjo0iqq8cYd
+ Uv57uk3VID3kkmi6LxLSdbIjnLe0NseRgbTC5PYpYi2ZZtbHFuuv2ejhs
+ zPRLDutaTWSEoQ27CzVYG5wroI8YU1t+iNtNc++WouEj5NRA17zVdSg+C
+ tffIiQj0vf4Y0qPrppQm2MS5JdfScIQdOrJ+ldLTM58sqFAZAMB9LsdBe
  A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com
- header.a=rsa-sha256 header.s=mchp header.b=PkmK2qu4
-Subject: Re: [Intel-wired-lan] [PATCH net v2 04/10] ice: implement lag
- netdev event handler
+ header.a=rsa-sha256 header.s=mchp header.b=T8hNOSnG
+Subject: Re: [Intel-wired-lan] [PATCH net v2 06/10] ice: Flesh out
+ implementation of support for SRIOV on bonded interface
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,67 +100,807 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> > > The event handler for LAG will create a work item to place on the ordered
-> > > workqueue to be processed.
-> > >
-> > > Add in defines for training packets and new recipes to be used by the
-> > > switching block of the HW for LAG packet steering.
-> > >
-> > > Update the ice_lag struct to reflect the new processing methodology.
-> > >
-> > > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> > > ---
-> > >  drivers/net/ethernet/intel/ice/ice_lag.c      | 125 ++++++++++++++++--
-> > >  drivers/net/ethernet/intel/ice/ice_lag.h      |  31 ++++-
-> > >  drivers/net/ethernet/intel/ice/ice_virtchnl.c |   2 +
-> > >  3 files changed, 144 insertions(+), 14 deletions(-)
-> 
-> 
-> > > +       lag_work = kzalloc(sizeof(*lag_work), GFP_KERNEL);
-> > > +       if (!lag_work)
-> > > +               return -ENOMEM;
-> > > +
-> > > +       lag_work->event_netdev = netdev;
-> > > +       lag_work->lag = lag;
-> > > +       lag_work->event = event;
-> > > +       if (event == NETDEV_CHANGEUPPER) {
-> > > +               struct netdev_notifier_changeupper_info *info;
-> > > +
-> > > +               info = ptr;
-> > > +               upper_netdev = info->upper_dev;
-> > > +       } else {
-> > > +               upper_netdev = netdev_master_upper_dev_get(netdev);
-> > > +       }
-> > > +
-> > > +       INIT_LIST_HEAD(&lag_work->netdev_list.node);
-> > > +       if (upper_netdev) {
-> > > +               struct ice_lag_netdev_list *nd_list;
-> > > +               struct net_device *tmp_nd;
-> > > +
-> > > +               rcu_read_lock();
-> > > +               for_each_netdev_in_bond_rcu(upper_netdev, tmp_nd) {
-> > > +                       nd_list = kzalloc(sizeof(*nd_list), GFP_KERNEL);
-> > > +                       if (!nd_list)
-> > > +                               break;
-> >
-> > Further up, -ENOMEM is returned in case kzalloc fails. Here the error is
-> > silently ignored - is this correct? :)
-> 
-> The lag_work above is the container struct that needs to be present for any work
-> to be done for the event.  But, as the list of elements of the bond gets built, if a single element is
-> not present, it is still possible for the event to be evaluated.  There could be the issue of
-> complete functionality if the wrong element is missing, but that will be handled in the processing
-> of the specific event.
 
-Ah I see. Thank you for explaining.
+Mostly tiny nits here. But since you are respinning, you might as well
+get that in.
 
+> Add in the function s that will allow a VF created on the primary interface
+
+s/function s/functions/
+
+> of a bond to "fail-over" to another PF interface in the bond and continue
+> to Tx and Rx.
+> 
+> Add in an ordered take-down path for the bonded interface.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_lag.c | 851 ++++++++++++++++++++++-
+>  1 file changed, 848 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+> index 25365d4c72f3..e46234ad836d 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lag.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+> @@ -10,6 +10,11 @@
+>  #define ICE_LAG_RES_SHARED     BIT(14)
+>  #define ICE_LAG_RES_VALID      BIT(15)
+> 
+> +#define LACP_TRAIN_PKT_LEN             16
+> +static const u8 lacp_train_pkt[LACP_TRAIN_PKT_LEN] = { 0, 0, 0, 0, 0, 0,
+> +                                                      0, 0, 0, 0, 0, 0,
+> +                                                      0x88, 0x09, 0, 0 };
+> +
+>  #define ICE_RECIPE_LEN                 64
+>  static const u8 ice_dflt_vsi_rcp[ICE_RECIPE_LEN] = {
+>         0x05, 0, 0, 0, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+> @@ -57,6 +62,39 @@ static void ice_lag_set_backup(struct ice_lag *lag)
+>         lag->role = ICE_LAG_BACKUP;
+>  }
+> 
+ 
+> +/**
+> + * ice_lag_qbuf_recfg - generate a buffer of queues for a reconfigure command
+> + * @hw: HW struct that contains the queue contexts
+> + * @qbuf: pointer to buffer to populate
+> + * @vsi_num: index of the VSI in PF space
+> + * @numq: number of queues to search for
+> + * @tc: traffic class that contains the queues
+> + *
+> + * function returns the numnber of valid queues in buffer
+
+s/numnber/number/
+
+> + */
+> +static u16
+> +ice_lag_qbuf_recfg(struct ice_hw *hw, struct ice_aqc_cfg_txqs_buf *qbuf,
+> +                  u16 vsi_num, u16 numq, u8 tc)
+> +{
+> +       struct ice_q_ctx *q_ctx;
+> +       u16 qid, count = 0;
+> +       struct ice_pf *pf;
+> +       int i;
+> +
+> +       pf = hw->back;
+> +       for (i = 0; i < numq; i++) {
+> +               q_ctx = ice_get_lan_q_ctx(hw, vsi_num, tc, i);
+> +               if (!q_ctx || q_ctx->q_handle == ICE_INVAL_Q_HANDLE) {
+> +                       dev_dbg(ice_hw_to_dev(hw), "%s queue %d %s\n", __func__,
+> +                               i, q_ctx ? "INVAL Q HANDLE" : "NO Q CONTEXT");
+> +                       continue;
+> +               }
+> +
+> +               qid = pf->vsi[vsi_num]->txq_map[q_ctx->q_handle];
+> +               qbuf->queue_info[count].q_handle = cpu_to_le16(qid);
+> +               qbuf->queue_info[count].tc = tc;
+> +               qbuf->queue_info[count].q_teid = cpu_to_le32(q_ctx->q_teid);
+> +               count++;
+> +       }
+> +
+> +       return count;
+> +}
+> +
+>  /**
+>   * ice_lag_move_vf_node_tc - move scheduling nodes for one VF on one TC
+>   * @lag: lag info struct
+> @@ -245,6 +353,167 @@ static void
+>  ice_lag_move_vf_node_tc(struct ice_lag *lag, u8 oldport, u8 newport,
+>                         u16 vsi_num, u8 tc)
+>  {
+> +       struct ice_sched_node *n_prt, *tc_node, *aggnode;
+> +       u16 num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
+
+RXT.
+
+> +       u16 numq, valq, buf_size, num_moved, qbuf_size;
+> +       struct device *dev = ice_pf_to_dev(lag->pf);
+> +       struct ice_aqc_cfg_txqs_buf *qbuf;
+> +       struct ice_aqc_move_elem *buf;
+> +       struct ice_hw *new_hw = NULL;
+> +       struct ice_port_info *pi;
+> +       __le32 teid, parent_teid;
+> +       struct ice_vsi_ctx *ctx;
+> +       u8 aggl, vsil;
+> +       u32 tmp_teid;
+> +       int n;
+> +
+> +       ctx = ice_get_vsi_ctx(&lag->pf->hw, vsi_num);
+> +       if (!ctx) {
+> +               dev_warn(dev, "Unable to locate VSI context for LAG failover\n");
+> +               return;
+> +       }
+> +
+> +       /* check to see if this VF is enabled on this TC */
+> +       if (!ctx->sched.vsi_node[tc])
+> +               return;
+> +
+> +       /* locate HW struct for destination port */
+> +       new_hw = ice_lag_find_hw_by_lport(lag, newport);
+> +       if (!new_hw) {
+> +               dev_warn(dev, "Unable to locate HW struct for LAG node destination\n");
+> +               return;
+> +       }
+> +
+> +       pi = new_hw->port_info;
+> +
+> +       numq = ctx->num_lan_q_entries[tc];
+> +       teid = ctx->sched.vsi_node[tc]->info.node_teid;
+> +       tmp_teid = le32_to_cpu(teid);
+> +       parent_teid = ctx->sched.vsi_node[tc]->info.parent_teid;
+> +       /* if no teid assigned or numq == 0, then this TC is not active */
+> +       if (!tmp_teid || !numq)
+> +               return;
+> +
+> +       /* suspend VSI subtree for Traffic Class "tc" on
+> +        * this VF's VSI
+> +        */
+> +       if (ice_sched_suspend_resume_elems(&lag->pf->hw, 1, &tmp_teid, true))
+> +               dev_dbg(dev, "Problem suspending traffic for LAG node move\n");
+> +
+> +       /* reconfigure all VF's queues on this Traffic Class
+> +        * to new port
+> +        */
+> +       qbuf_size = struct_size(qbuf, queue_info, numq);
+> +       qbuf = kzalloc(qbuf_size, GFP_KERNEL);
+> +       if (!qbuf) {
+> +               dev_warn(dev, "Failure allocating memory for VF queue recfg buffer\n");
+> +               goto resume_traffic;
+> +       }
+> +
+> +       /* add the per queue info for the reconfigure command buffer */
+> +       valq = ice_lag_qbuf_recfg(&lag->pf->hw, qbuf, vsi_num, numq, tc);
+> +       if (!valq) {
+> +               dev_dbg(dev, "No valid queues found for LAG failover\n");
+> +               goto qbuf_none;
+> +       }
+> +
+> +       if (ice_aq_cfg_lan_txq(&lag->pf->hw, qbuf, qbuf_size, valq, oldport,
+> +                              newport, NULL)) {
+> +               dev_warn(dev, "Failure to configure queues for LAG failover\n");
+> +               goto qbuf_err;
+> +       }
+> +
+> +qbuf_none:
+> +       kfree(qbuf);
+> +
+> +       /* find new parent in destination port's tree for VF VSI node on this
+> +        * Traffic Class
+> +        */
+> +       tc_node = ice_sched_get_tc_node(pi, tc);
+> +       if (!tc_node) {
+> +               dev_warn(dev, "Failure to find TC node in failover tree\n");
+> +               goto resume_traffic;
+> +       }
+> +
+> +       aggnode = ice_sched_get_agg_node(pi, tc_node,
+> +                                        ICE_DFLT_AGG_ID);
+> +       if (!aggnode) {
+> +               dev_warn(dev, "Failure to find aggreagte node in failover tree\n");
+> +               goto resume_traffic;
+> +       }
+> +
+> +       aggl = ice_sched_get_agg_layer(new_hw);
+> +       vsil = ice_sched_get_vsi_layer(new_hw);
+> +
+> +       for (n = aggl + 1; n < vsil; n++)
+> +               num_nodes[n] = 1;
+> +
+> +       for (n = 0; n < aggnode->num_children; n++) {
+> +               n_prt = ice_sched_get_free_vsi_parent(new_hw,
+> +                                                     aggnode->children[n],
+> +                                                     num_nodes);
+> +               if (n_prt)
+> +                       break;
+> +       }
+> +
+> +       /* add parent if none were free */
+> +       if (!n_prt) {
+> +               u16 num_nodes_added;
+> +               u32 first_teid;
+> +               int status;
+> +
+> +               n_prt = aggnode;
+> +               for (n = aggl + 1; n < vsil; n++) {
+> +                       status = ice_sched_add_nodes_to_layer(pi, tc_node,
+> +                                                             n_prt, n,
+> +                                                             num_nodes[n],
+> +                                                             &first_teid,
+> +                                                             &num_nodes_added);
+> +                       if (status || num_nodes[n] != num_nodes_added)
+> +                               goto resume_traffic;
+> +
+> +                       if (num_nodes_added)
+> +                               n_prt = ice_sched_find_node_by_teid(tc_node,
+> +                                                                   first_teid);
+> +                       else
+> +                               n_prt = n_prt->children[0];
+> +                       if (!n_prt) {
+> +                               dev_warn(dev, "Failure to add new parent for LAG node\n");
+> +                               goto resume_traffic;
+> +                       }
+> +               }
+> +       }
+> +
+> +       /* Move Vf's VSI node for this TC to newport's scheduler tree */
+> +       buf_size = struct_size(buf, teid, 1);
+> +       buf = kzalloc(buf_size, GFP_KERNEL);
+> +       if (!buf) {
+> +               dev_warn(dev, "Failure to alloc memory for VF node failover\n");
+> +               goto resume_traffic;
+> +       }
+> +
+> +       buf->hdr.src_parent_teid = parent_teid;
+> +       buf->hdr.dest_parent_teid = n_prt->info.node_teid;
+> +       buf->hdr.num_elems = cpu_to_le16(1);
+> +       buf->hdr.mode = ICE_AQC_MOVE_ELEM_MODE_KEEP_OWN;
+> +       buf->teid[0] = teid;
+> +
+> +       if (ice_aq_move_sched_elems(&lag->pf->hw, 1, buf, buf_size, &num_moved,
+> +                                   NULL))
+> +               dev_warn(dev, "Failure to move VF nodes for failover\n");
+> +       else
+> +               ice_sched_update_parent(n_prt, ctx->sched.vsi_node[tc]);
+> +
+> +       kfree(buf);
+> +       goto resume_traffic;
+> +
+> +qbuf_err:
+> +       kfree(qbuf);
+> +
+> +resume_traffic:
+> +       /* restart traffic for VSI node */
+> +       if (ice_sched_suspend_resume_elems(&lag->pf->hw, 1, &tmp_teid, false))
+> +               dev_dbg(dev, "Problem restarting traffic for LAG node move\n");
+>  }
+
+This was a really long function :-)
+ 
+>  /**
+> @@ -362,6 +735,155 @@ static void
+>  ice_lag_reclaim_vf_tc(struct ice_lag *lag, struct ice_hw *src_hw, u16 vsi_num,
+>                       u8 tc)
+>  {
+> +       u16 num_nodes[ICE_AQC_TOPO_MAX_LEVEL_NUM] = { 0 };
+> +       struct ice_sched_node *n_prt, *tc_node, *aggnode;
+> +       u16 numq, valq, buf_size, num_moved, qbuf_size;
+> +       struct device *dev = ice_pf_to_dev(lag->pf);
+> +       struct ice_aqc_cfg_txqs_buf *qbuf;
+> +       struct ice_aqc_move_elem *buf;
+> +       struct ice_port_info *pi;
+> +       __le32 teid, parent_teid;
+> +       struct ice_vsi_ctx *ctx;
+> +       struct ice_hw *hw;
+> +       u8 aggl, vsil;
+> +       u32 tmp_teid;
+> +       int n;
+> +
+> +       hw = &lag->pf->hw;
+> +       ctx = ice_get_vsi_ctx(hw, vsi_num);
+> +       if (!ctx) {
+> +               dev_warn(dev, "Unable to locate VSI context for LAG reclaim\n");
+> +               return;
+> +       }
+> +
+> +       /* check to see if this VF is enabled on this TC */
+> +       if (!ctx->sched.vsi_node[tc])
+> +               return;
+> +
+> +       numq = ctx->num_lan_q_entries[tc];
+> +       teid = ctx->sched.vsi_node[tc]->info.node_teid;
+> +       tmp_teid = le32_to_cpu(teid);
+> +       parent_teid = ctx->sched.vsi_node[tc]->info.parent_teid;
+> +
+> +       /* if !teid or !numq, then this TC is not active */
+> +       if (!tmp_teid || !numq)
+> +               return;
+> +
+> +       /* suspend traffic */
+> +       if (ice_sched_suspend_resume_elems(hw, 1, &tmp_teid, true))
+> +               dev_dbg(dev, "Problem suspending traffic for LAG node move\n");
+> +
+> +       /* reconfig queues for new port */
+> +       qbuf_size = struct_size(qbuf, queue_info, numq);
+> +       qbuf = kzalloc(qbuf_size, GFP_KERNEL);
+> +       if (!qbuf) {
+> +               dev_warn(dev, "Failure allocating memory for VF queue recfg buffer\n");
+> +               goto resume_reclaim;
+> +       }
+> +
+> +       /* add the per queue info for the reconfigure command buffer */
+> +       valq = ice_lag_qbuf_recfg(hw, qbuf, vsi_num, numq, tc);
+> +       if (!valq) {
+> +               dev_dbg(dev, "No valid queues found for LAG reclaim\n");
+> +               goto reclaim_none;
+> +       }
+> +
+> +       if (ice_aq_cfg_lan_txq(hw, qbuf, qbuf_size, numq,
+> +                              src_hw->port_info->lport, hw->port_info->lport,
+> +                              NULL)) {
+> +               dev_warn(dev, "Failure to configure queues for LAG failover\n");
+> +               goto reclaim_qerr;
+> +       }
+> +
+> +reclaim_none:
+> +       kfree(qbuf);
+> +
+> +       /* find parent in primary tree */
+> +       pi = hw->port_info;
+> +       tc_node = ice_sched_get_tc_node(pi, tc);
+> +       if (!tc_node) {
+> +               dev_warn(dev, "Failure to find TC node in failover tree\n");
+> +               goto resume_reclaim;
+> +       }
+> +
+> +       aggnode = ice_sched_get_agg_node(pi, tc_node, ICE_DFLT_AGG_ID);
+> +       if (!aggnode) {
+> +               dev_warn(dev, "Failure to find aggreagte node in failover tree\n");
+
+s/aggreagte/aggregate/
+
+> +               goto resume_reclaim;
+> +       }
+> +
+> +       aggl = ice_sched_get_agg_layer(hw);
+> +       vsil = ice_sched_get_vsi_layer(hw);
+> +
+> +       for (n = aggl + 1; n < vsil; n++)
+> +               num_nodes[n] = 1;
+> +
+> +       for (n = 0; n < aggnode->num_children; n++) {
+> +               n_prt = ice_sched_get_free_vsi_parent(hw, aggnode->children[n],
+> +                                                     num_nodes);
+> +               if (n_prt)
+> +                       break;
+> +       }
+> +
+> +       /* if no free parent found - add one */
+> +       if (!n_prt) {
+> +               u16 num_nodes_added;
+> +               u32 first_teid;
+> +               int status;
+> +
+> +               n_prt = aggnode;
+> +               for (n = aggl + 1; n < vsil; n++) {
+> +                       status = ice_sched_add_nodes_to_layer(pi, tc_node,
+> +                                                             n_prt, n,
+> +                                                             num_nodes[n],
+> +                                                             &first_teid,
+> +                                                             &num_nodes_added);
+> +                       if (status || num_nodes[n] != num_nodes_added)
+> +                               goto resume_reclaim;
+> +
+> +                       if (num_nodes_added)
+> +                               n_prt = ice_sched_find_node_by_teid(tc_node,
+> +                                                                   first_teid);
+> +                       else
+> +                               n_prt = n_prt->children[0];
+> +
+> +                       if (!n_prt) {
+> +                               dev_warn(dev, "Failure to add new parent for LAG node\n");
+> +                               goto resume_reclaim;
+> +                       }
+> +               }
+> +       }
+> +
+> +       /* Move node to new parent */
+> +       buf_size = struct_size(buf, teid, 1);
+> +       buf = kzalloc(buf_size, GFP_KERNEL);
+> +       if (!buf) {
+> +               dev_warn(dev, "Failure to alloc memory for VF node failover\n");
+> +               goto resume_reclaim;
+> +       }
+> +
+> +       buf->hdr.src_parent_teid = parent_teid;
+> +       buf->hdr.dest_parent_teid = n_prt->info.node_teid;
+> +       buf->hdr.num_elems = cpu_to_le16(1);
+> +       buf->hdr.mode = ICE_AQC_MOVE_ELEM_MODE_KEEP_OWN;
+> +       buf->teid[0] = teid;
+> +
+> +       if (ice_aq_move_sched_elems(&lag->pf->hw, 1, buf, buf_size, &num_moved,
+> +                                   NULL))
+> +               dev_warn(dev, "Failure to move VF nodes for LAG reclaim\n");
+> +       else
+> +               ice_sched_update_parent(n_prt, ctx->sched.vsi_node[tc]);
+> +
+> +       kfree(buf);
+> +       goto resume_reclaim;
+> +
+> +reclaim_qerr:
+> +       kfree(qbuf);
+> +
+> +resume_reclaim:
+> +       /* restart traffic */
+> +       if (ice_sched_suspend_resume_elems(hw, 1, &tmp_teid, false))
+> +               dev_warn(dev, "Problem restarting traffic for LAG node reclaim\n");
+>  }
+> 
+>  /**
+> @@ -479,6 +1001,65 @@ static void
+>  ice_lag_set_swid(u16 primary_swid, struct ice_lag *local_lag,
+>                  bool link)
+>  {
+> +       struct ice_aqc_alloc_free_res_elem *buf;
+> +       struct ice_aqc_set_port_params *cmd;
+> +       struct ice_aq_desc desc;
+> +       u16 buf_len, swid;
+> +       int status;
+> +
+> +       buf_len = struct_size(buf, elem, 1);
+> +       buf = kzalloc(buf_len, GFP_KERNEL);
+> +       if (!buf) {
+> +               dev_err(ice_pf_to_dev(local_lag->pf), "-ENONMEM error setting SWID\n");
+
+s/ENONMEM/ENOMEM/
+
+> +               return;
+> +       }
+> +
+> +       buf->num_elems = cpu_to_le16(1);
+> +       buf->res_type = cpu_to_le16(ICE_AQC_RES_TYPE_SWID);
+> +       /* if unlinnking need to free the shared resource */
+> +       if (!link && local_lag->bond_swid) {
+> +               buf->elem[0].e.sw_resp = cpu_to_le16(local_lag->bond_swid);
+> +               status = ice_aq_alloc_free_res(&local_lag->pf->hw, 1, buf,
+> +                                              buf_len, ice_aqc_opc_free_res,
+> +                                              NULL);
+> +               if (status)
+> +                       dev_err(ice_pf_to_dev(local_lag->pf), "Error freeing SWID duing LAG unlink\n");
+
+s/duing/during/
+
+> +               local_lag->bond_swid = 0;
+> +       }
+> +
+> +       if (link) {
+> +               buf->res_type |=  cpu_to_le16(ICE_LAG_RES_SHARED |
+> +                                             ICE_LAG_RES_VALID);
+> +               /* store the primary's SWID in case it leaves bond first */
+> +               local_lag->bond_swid = primary_swid;
+> +               buf->elem[0].e.sw_resp = cpu_to_le16(local_lag->bond_swid);
+> +       } else {
+> +               buf->elem[0].e.sw_resp =
+> +                       cpu_to_le16(local_lag->pf->hw.port_info->sw_id);
+> +       }
+> +
+> +       status = ice_aq_alloc_free_res(&local_lag->pf->hw, 1, buf, buf_len,
+> +                                      ice_aqc_opc_alloc_res, NULL);
+> +       if (status)
+> +               dev_err(ice_pf_to_dev(local_lag->pf), "Error subscribing to SWID 0x%04X\n",
+> +                       local_lag->bond_swid);
+> +
+> +       kfree(buf);
+> +
+> +       /* Configure port param SWID to correct value */
+> +       if (link)
+> +               swid = primary_swid;
+> +       else
+> +               swid = local_lag->pf->hw.port_info->sw_id;
+> +
+> +       cmd = &desc.params.set_port_params;
+> +       ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_port_params);
+> +
+> +       cmd->swid = cpu_to_le16(ICE_AQC_PORT_SWID_VALID | swid);
+> +       status = ice_aq_send_cmd(&local_lag->pf->hw, &desc, NULL, 0, NULL);
+> +       if (status)
+> +               dev_err(ice_pf_to_dev(local_lag->pf), "Error setting SWID in port params %d\n",
+> +                       status);
+>  }
+> 
+>  /**
+> @@ -507,6 +1088,38 @@ static void ice_lag_primary_swid(struct ice_lag *lag, bool link)
+>   */
+>  static void ice_lag_add_prune_list(struct ice_lag *lag, struct ice_pf *event_pf)
+>  {
+> +       u16 num_vsi, rule_buf_sz, vsi_list_id, event_vsi_num, prim_vsi_idx;
+> +       struct ice_sw_rule_vsi_list *s_rule = NULL;
+> +       struct device *dev;
+> +
+> +       num_vsi = 1;
+> +
+> +       dev = ice_pf_to_dev(lag->pf);
+> +       event_vsi_num = event_pf->vsi[0]->vsi_num;
+> +       prim_vsi_idx = lag->pf->vsi[0]->idx;
+> +
+> +       if (!ice_find_vsi_list_entry(&lag->pf->hw, ICE_SW_LKUP_VLAN,
+> +                                    prim_vsi_idx, &vsi_list_id)) {
+> +               dev_warn(dev, "Could not locate prune list when setting up SRIOV LAG\n");
+> +               return;
+> +       }
+> +
+> +       rule_buf_sz = (u16)ICE_SW_RULE_VSI_LIST_SIZE(s_rule, num_vsi);
+> +       s_rule = kzalloc(rule_buf_sz, GFP_KERNEL);
+> +       if (!s_rule) {
+> +               dev_warn(dev, "Error allocating space for prune list when configuring SRIOV LAG\n");
+> +               return;
+> +       }
+> +
+> +       s_rule->hdr.type = cpu_to_le16(ICE_AQC_SW_RULES_T_PRUNE_LIST_SET);
+> +       s_rule->index = cpu_to_le16(vsi_list_id);
+> +       s_rule->number_vsi = cpu_to_le16(num_vsi);
+> +       s_rule->vsi[0] = cpu_to_le16(event_vsi_num);
+> +
+> +       if (ice_aq_sw_rules(&event_pf->hw, s_rule, rule_buf_sz, 1,
+> +                           ice_aqc_opc_update_sw_rules, NULL))
+> +               dev_warn(dev, "Error adding VSI prune list\n");
+> +       kfree(s_rule);
+>  }
+> 
+>  /**
+> @@ -516,6 +1129,39 @@ static void ice_lag_add_prune_list(struct ice_lag *lag, struct ice_pf *event_pf)
+>   */
+>  static void ice_lag_del_prune_list(struct ice_lag *lag, struct ice_pf *event_pf)
+>  {
+> +       u16 num_vsi, vsi_num, vsi_idx, rule_buf_sz, vsi_list_id;
+> +       struct ice_sw_rule_vsi_list *s_rule = NULL;
+> +       struct device *dev;
+> +
+> +       num_vsi = 1;
+> +
+> +       dev = ice_pf_to_dev(lag->pf);
+> +       vsi_num = event_pf->vsi[0]->vsi_num;
+> +       vsi_idx = lag->pf->vsi[0]->idx;
+> +
+> +       if (!ice_find_vsi_list_entry(&lag->pf->hw, ICE_SW_LKUP_VLAN,
+> +                                    vsi_idx, &vsi_list_id)) {
+> +               dev_warn(dev, "Could not locate prune list when unwinding SRIOV LAG\n");
+> +               return;
+> +       }
+> +
+> +       rule_buf_sz = (u16)ICE_SW_RULE_VSI_LIST_SIZE(s_rule, num_vsi);
+> +       s_rule = kzalloc(rule_buf_sz, GFP_KERNEL);
+> +       if (!s_rule) {
+> +               dev_warn(dev, "Error allocating prune list when unwinding SRIOV LAG\n");
+> +               return;
+> +       }
+> +
+> +       s_rule->hdr.type = cpu_to_le16(ICE_AQC_SW_RULES_T_PRUNE_LIST_CLEAR);
+> +       s_rule->index = cpu_to_le16(vsi_list_id);
+> +       s_rule->number_vsi = cpu_to_le16(num_vsi);
+> +       s_rule->vsi[0] = cpu_to_le16(vsi_num);
+> +
+> +       if (ice_aq_sw_rules(&event_pf->hw, (struct ice_aqc_sw_rules *)s_rule,
+> +                           rule_buf_sz, 1, ice_aqc_opc_update_sw_rules, NULL))
+> +               dev_warn(dev, "Error clearing VSI prune list\n");
+> +
+> +       kfree(s_rule);
+>  }
+> 
+>  /**
+> @@ -542,8 +1188,6 @@ static void ice_lag_check_nvm_support(struct ice_pf *pf)
+>   * ice_lag_changeupper_event - handle LAG changeupper event
+>   * @lag: LAG info struct
+>   * @ptr: opaque pointer data
+> - *
+> - * ptr is to be cast into netdev_notifier_changeupper_info
+>   */
+>  static void ice_lag_changeupper_event(struct ice_lag *lag, void *ptr)
+>  {
+> @@ -603,6 +1247,40 @@ static void ice_lag_changeupper_event(struct ice_lag *lag, void *ptr)
+>   */
+>  static void ice_lag_monitor_link(struct ice_lag *lag, void *ptr)
+>  {
+> +       struct netdev_notifier_changeupper_info *info;
+> +       struct ice_hw *prim_hw, *active_hw;
+> +       struct net_device *event_netdev;
+> +       struct ice_pf *pf;
+> +       u8 prim_port;
+> +
+> +       if (!lag->primary)
+> +               return;
+> +
+> +       event_netdev = netdev_notifier_info_to_dev(ptr);
+> +       if (!netif_is_same_ice(lag->pf, event_netdev))
+> +               return;
+> +
+> +       pf = lag->pf;
+> +       prim_hw = &pf->hw;
+> +       prim_port = prim_hw->port_info->lport;
+> +
+> +       info = (struct netdev_notifier_changeupper_info *)ptr;
+> +       if (info->upper_dev != lag->upper_netdev)
+> +               return;
+> +
+> +       if (!info->linking) {
+> +               /* Since there are only two interfaces allowed in SRIOV+LAG, if
+> +                * one port is leaving, then nodes need to be on primary
+> +                * interface.
+> +                */
+> +               if (prim_port != lag->active_port &&
+> +                   lag->active_port != ICE_LAG_INVALID_PORT) {
+> +                       active_hw = ice_lag_find_hw_by_lport(lag,
+> +                                                            lag->active_port);
+> +                       ice_lag_reclaim_vf_nodes(lag, active_hw);
+> +                       lag->active_port = ICE_LAG_INVALID_PORT;
+> +               }
+> +       }
+>  }
+> 
+>  /**
+> @@ -615,6 +1293,67 @@ static void ice_lag_monitor_link(struct ice_lag *lag, void *ptr)
+>   */
+>  static void ice_lag_monitor_active(struct ice_lag *lag, void *ptr)
+>  {
+> +       struct net_device *event_netdev, *event_upper;
+> +       struct netdev_notifier_bonding_info *info;
+> +       struct netdev_bonding_info *bonding_info;
+> +       struct ice_netdev_priv *event_np;
+> +       struct ice_pf *pf, *event_pf;
+> +       u8 prim_port, event_port;
+> +
+> +       if (!lag->primary)
+> +               return;
+> +
+> +       pf = lag->pf;
+> +       if (!pf)
+> +               return;
+> +
+> +       event_netdev = netdev_notifier_info_to_dev(ptr);
+> +       rcu_read_lock();
+> +       event_upper = netdev_master_upper_dev_get_rcu(event_netdev);
+> +       rcu_read_unlock();
+> +       if (!netif_is_ice(event_netdev) || event_upper != lag->upper_netdev)
+> +               return;
+> +
+> +       event_np = netdev_priv(event_netdev);
+> +       event_pf = event_np->vsi->back;
+> +       event_port = event_pf->hw.port_info->lport;
+> +       prim_port = pf->hw.port_info->lport;
+> +
+> +       info = (struct netdev_notifier_bonding_info *)ptr;
+> +       bonding_info = &info->bonding_info;
+> +
+> +       if (!bonding_info->slave.state) {
+> +               /* if no port is currently active, then nodes and filters exist
+> +                * on primary port, check if we need to move them
+> +                */
+> +               if (lag->active_port == ICE_LAG_INVALID_PORT) {
+> +                       if (event_port != prim_port)
+> +                               ice_lag_move_vf_nodes(lag, prim_port,
+> +                                                     event_port);
+> +                       lag->active_port = event_port;
+> +                       return;
+> +               }
+> +
+> +               /* active port is already set and is current event port */
+> +               if (lag->active_port == event_port)
+> +                       return;
+> +               /* new active port */
+> +               ice_lag_move_vf_nodes(lag, lag->active_port, event_port);
+> +               lag->active_port = event_port;
+> +       } else {
+> +               /* port not set as currently active (e.g. new active port
+> +                * has already claimed the nodes and filters
+> +                */
+> +               if (lag->active_port != event_port)
+> +                       return;
+> +               /* This is the case when neither port is active (both link down)
+> +                * Link down on the bond - set active port to invalid and move
+> +                * nodes and filters back to primary if not already there
+> +                */
+> +               if (event_port != prim_port)
+> +                       ice_lag_move_vf_nodes(lag, event_port, prim_port);
+> +               lag->active_port = ICE_LAG_INVALID_PORT;
+> +       }
+>  }
+> 
+>  /**
+> @@ -625,6 +1364,73 @@ static void ice_lag_monitor_active(struct ice_lag *lag, void *ptr)
+>  static bool
+>  ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
+>  {
+> +       struct net_device *event_netdev, *event_upper;
+> +       struct netdev_notifier_bonding_info *info;
+> +       struct netdev_bonding_info *bonding_info;
+> +       struct list_head *tmp;
+> +       int count = 0;
+> +
+> +       if (!lag->primary)
+> +               return true;
+> +
+> +       event_netdev = netdev_notifier_info_to_dev(ptr);
+> +       rcu_read_lock();
+> +       event_upper = netdev_master_upper_dev_get_rcu(event_netdev);
+> +       rcu_read_unlock();
+> +       if (event_upper != lag->upper_netdev)
+> +               return true;
+> +
+> +       info = (struct netdev_notifier_bonding_info *)ptr;
+> +       bonding_info = &info->bonding_info;
+> +       lag->bond_mode = bonding_info->master.bond_mode;
+> +       if (lag->bond_mode != BOND_MODE_ACTIVEBACKUP) {
+> +               netdev_info(lag->netdev, "Bond Mode not ACTIVE-BACKUP\n");
+> +               return false;
+> +       }
+> +
+> +       list_for_each(tmp, lag->netdev_head) {
+> +#if !defined(NO_DCB_SUPPORT) || defined(ADQ_SUPPORT)
+> +               struct ice_dcbx_cfg *dcb_cfg, *peer_dcb_cfg;
+> +#endif /* !NO_DCB_SUPPORT || ADQ_SUPPORT */
+> +               struct ice_lag_netdev_list *entry;
+> +               struct ice_netdev_priv *peer_np;
+> +               struct net_device *peer_netdev;
+> +               struct ice_vsi *vsi, *peer_vsi;
+> +
+> +               entry = list_entry(tmp, struct ice_lag_netdev_list, node);
+> +               peer_netdev = entry->netdev;
+> +               if (!netif_is_ice(peer_netdev)) {
+> +                       netdev_info(lag->netdev, "Found non-ice netdev in LAG\n");
+> +                       return false;
+> +               }
+> +
+> +               count++;
+> +               if (count > 2) {
+> +                       netdev_info(lag->netdev, "Found more than two netdevs in LAG\n");
+> +                       return false;
+> +               }
+> +
+> +               peer_np = netdev_priv(peer_netdev);
+> +               vsi = ice_get_main_vsi(lag->pf);
+> +               peer_vsi = peer_np->vsi;
+> +               if (lag->pf->pdev->bus != peer_vsi->back->pdev->bus ||
+> +                   lag->pf->pdev->slot != peer_vsi->back->pdev->slot) {
+> +                       netdev_info(lag->netdev, "Found netdev on different device in LAG\n");
+> +                       return false;
+> +               }
+> +
+> +#if !defined(NO_DCB_SUPPORT) || defined(ADQ_SUPPORT)
+> +               dcb_cfg = &vsi->port_info->qos_cfg.local_dcbx_cfg;
+> +               peer_dcb_cfg = &peer_vsi->port_info->qos_cfg.local_dcbx_cfg;
+> +               if (memcmp(dcb_cfg, peer_dcb_cfg,
+> +                          sizeof(struct ice_dcbx_cfg))) {
+> +                       netdev_info(lag->netdev, "Found netdev with different DCB config in LAG\n");
+> +                       return false;
+> +               }
+> +
+> +#endif /* !NO_DCB_SUPPORT || ADQ_SUPPORT */
+> +       }
+> +
+>         return true;
+>  }
+> 
+> @@ -843,8 +1649,31 @@ static void ice_unregister_lag_handler(struct ice_lag *lag)
+>  static u16 ice_create_lag_recipe(struct ice_hw *hw, const u8 *base_recipe,
+>                                  u8 prio)
+>  {
+> +       struct ice_aqc_recipe_data_elem *new_rcp;
+>         u16 rid = 0;
+> +       int err;
+> +
+> +       err = ice_alloc_recipe(hw, &rid);
+> +       if (err)
+> +               return 0;
+> +
+> +       new_rcp = kzalloc(ICE_RECIPE_LEN * ICE_MAX_NUM_RECIPES, GFP_KERNEL);
+> +       if (!new_rcp)
+> +               return 0;
+> +
+> +       memcpy(new_rcp, base_recipe, ICE_RECIPE_LEN);
+> +       new_rcp->content.act_ctrl_fwd_priority = prio;
+> +       new_rcp->content.rid = rid | ICE_AQ_RECIPE_ID_IS_ROOT;
+> +       new_rcp->recipe_indx = rid;
+> +       bitmap_zero((unsigned long *)new_rcp->recipe_bitmap,
+> +                   ICE_MAX_NUM_RECIPES);
+> +       set_bit(rid, (unsigned long *)new_rcp->recipe_bitmap);
+> +
+> +       err = ice_aq_add_recipe(hw, new_rcp, 1, NULL);
+> +       if (err)
+> +               rid = 0;
+> 
+> +       kfree(new_rcp);
+>         return rid;
+>  }
+
+You return 0 on error here. In patch #5, rid is checked against zero and
+-EINVAL is returned. Maybe you could make rid a function argument and
+just return the actual error codes here. That way the error is passed down
+the callstack. Just a suggestion - your call.
+ 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
