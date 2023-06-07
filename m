@@ -4,90 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9517C7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Jun 2023 15:12:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D71A1C77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Jun 2023 15:12:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4AB1F81E2E;
-	Wed,  7 Jun 2023 15:12:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4AB1F81E2E
+	by smtp1.osuosl.org (Postfix) with ESMTP id 690CA81CEF;
+	Wed,  7 Jun 2023 15:12:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 690CA81CEF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686150727;
-	bh=iVW5UryQny21RXMuod81/ZTNqBa9laBtHBkAyp3w7Dc=;
-	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=j75dL4t7qhm2U/yLR5qiLDIxIY167FX2N31rrpWwpIj//D69BuYSvUNEC9asMy/Fm
-	 tQ8i4KF5UPwIQBQE6ryaBXnQ1Qcsy0nad+0Y7iBEqnU/k0L/IU2OYFI8I2EqnecCLZ
-	 kO6gudhzxbPY/6q1iyQZuad2r8MhI0ZqXM+UKvzkCLalPYaa9/txLC2tksv6ASJsLU
-	 Irgu11AsUYcFe2oteJLlH9Q8K0owVl0mxD6HaXcuWO9OTXFBrrd7lZWk8fdYUHcwnu
-	 TOc3vKsVlfXyXpfbqEaBXKMDYqNWAhfm58eKkrQaMeBVWJLw6JMKtyf45LL7VIFd+A
-	 e3AMSBmW6nDZg==
+	s=default; t=1686150732;
+	bh=Hjm1AngnPSIUiwvmGkIgGJFJFBI86JLneO9MB7AGJvs=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=RWUoxBUK3vR5tx0+DDov/kmhUau5+XUYIfyW9QYn/6ova9/lza3OxDsq1RjdwiWj5
+	 naUuFzSIKU+3uGYqXRGtUht7vgjEjy5qPhkwkC71d03yyDF/Zz9xiWZYgPJZjD0n+h
+	 EOzXKIEoprKu5ZE4KD+yKpCYd/Pq1HpBLSGbIUlkx9DLsrPxi6RFs3IO52mcoRHaLv
+	 yxCGsBSonnwAz+ir/4Km9DBi8xWXPviv8OjlGqCI4nLJM0YvG+6AGXuY17vgVv1dJg
+	 2rjgJjCNAO91XkNAtYk1i/lkXfaw9/TWEnc3/1qy3/WhrcT3S0KFFKqqZzPlcw3TjD
+	 4trSdsOzaIKJA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fxARNFvu23pz; Wed,  7 Jun 2023 15:12:06 +0000 (UTC)
+	with ESMTP id xOYHzKgajjVx; Wed,  7 Jun 2023 15:12:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6AFAD81CEF;
-	Wed,  7 Jun 2023 15:12:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6AFAD81CEF
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id AB2B51BF2C8
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 01:58:15 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A0A3081E09;
+	Wed,  7 Jun 2023 15:12:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A0A3081E09
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id BFD061BF31F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 07:22:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9181560D4C
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 01:58:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9181560D4C
+ by smtp2.osuosl.org (Postfix) with ESMTP id 976E1403BF
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 07:22:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 976E1403BF
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id aIuhDKE0Yx50 for <intel-wired-lan@lists.osuosl.org>;
- Wed,  7 Jun 2023 01:58:14 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 97A5260B5D
-Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com
- [IPv6:2001:4860:4864:20::35])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 97A5260B5D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 01:58:14 +0000 (UTC)
-Received: by mail-oa1-x35.google.com with SMTP id
- 586e51a60fabf-19f8af9aa34so6974635fac.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 06 Jun 2023 18:58:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1686103093; x=1688695093;
- h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
- :from:to:cc:subject:date:message-id:reply-to;
- bh=NFr6U9nP3qomWy9QkfDgSe4V9fd1Fb2SI8USZ79GIrI=;
- b=gfd2wtwRyt1/uqUk9npjaXBAawiKuY4XYhF8WS+WSDVG0eaoDWZoesFgcguO/3lx69
- 2WZ+W22d+xz2Pvt7Qjw8LP0xaVCoCN7enYqiT60m60yqJH5NrXahgJ6hoaGqXjr+4uax
- iC9RGOqGJRlJ2k0MOfonF1Y5nsYJqzeAcJH/InMebMgHAPZW9JHbpdRojSgtY6gCujJa
- ydWLTLeoXiFYWdy2doS2FLs401R3OUUCfX/wa/fyb1neDqZAgNDn+oZ8PG7GCxj+1swt
- wBdPpGh8bTb9Eyvtyu5CltFaYxdaAXPQk56B2T7w4OEnjoKAjSD4VyN8ZdIO46PiGD7L
- Vxbg==
-X-Gm-Message-State: AC+VfDx5FwgxOGpWv0+Ef+QnjDJKPm6As3si4IZjwCJtU2ub/85FN/+P
- YtI6qw+c3aws0ogQAYgSOVHRJxAmF6oW8EdTpTw=
-X-Google-Smtp-Source: ACHHUZ6nPqdvndSflNl3eLAxhpsN2l34315SfuAw1NcyVZX09ToSNjjT6b70szsBeVq2N7FfDYUWIfDepxWu7pTWW40=
-X-Received: by 2002:a05:6871:220e:b0:1a2:8e53:c418 with SMTP id
- sc14-20020a056871220e00b001a28e53c418mr5886468oab.57.1686103093355; Tue, 06
- Jun 2023 18:58:13 -0700 (PDT)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id M-wXuRItBgCv for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  7 Jun 2023 07:22:38 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2F6B540332
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com
+ [68.232.153.233])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 2F6B540332
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 07:22:38 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.00,223,1681196400"; d="scan'208";a="228825845"
+X-Amp-Result: SKIPPED(no attachment in message)
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+ by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
+ 07 Jun 2023 00:22:36 -0700
+Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
+ chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Wed, 7 Jun 2023 00:22:36 -0700
+Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex01.mchp-main.com
+ (10.10.85.143) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
+ Transport; Wed, 7 Jun 2023 00:22:35 -0700
+Date: Wed, 7 Jun 2023 07:22:34 +0000
+From: Daniel Machon <daniel.machon@microchip.com>
+To: "Ertman, David M" <david.m.ertman@intel.com>
+Message-ID: <20230607072234.5svu7wo3z5p76kpr@DEN-LT-70577>
+References: <20230605182258.557933-1-david.m.ertman@intel.com>
+ <20230605182258.557933-5-david.m.ertman@intel.com>
+ <20230606095648.xy5d7mdzqyhqwqdg@DEN-LT-70577>
+ <MW5PR11MB5811B2361A466FAA3094C4D1DD52A@MW5PR11MB5811.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-From: Matthew Hallacy <poptix@gmail.com>
-Date: Tue, 6 Jun 2023 20:58:02 -0500
-Message-ID: <CACyUPOei8QZHjx=+JnROBmXVjLDgGpEOs4hTVBXOCVHwUeJ6JA@mail.gmail.com>
-To: muhammad.husaini.zulkifli@intel.com
+Content-Disposition: inline
+In-Reply-To: <MW5PR11MB5811B2361A466FAA3094C4D1DD52A@MW5PR11MB5811.namprd11.prod.outlook.com>
 X-Mailman-Approved-At: Wed, 07 Jun 2023 15:12:04 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20221208; t=1686103093; x=1688695093;
- h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
- :date:message-id:reply-to;
- bh=NFr6U9nP3qomWy9QkfDgSe4V9fd1Fb2SI8USZ79GIrI=;
- b=F/vDAIM8obgz4ktI96YgcUG1xtGzTgSpU5+X9/3K7wPN8psAsrmVRx+187bQbN4q9A
- OMG+1220vUT+s6WuNJR0pdG4rA8U6AwsLG6zfd/+It+fm8qLhaB2Alodzd4+orDCCz9b
- SgiC5WUJTsNuSObrLfeykE2vw6L/rzPwvIjKVUvdfk5Q35/+//nnBXiqISHktmDSthEM
- FxYpoml03+tjmK5oukukh3ybdmnaRx3V+0b4tyqmNofuy2306sZJx1+lImCC3fqv0z2H
- xBCtp5fo/p6zZBzqcPCLjPYXFDvsy8ypZOHDz+u2pum+Kh1J0NmnPBgNxicGVIewuvEN
- /c3A==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20221208 header.b=F/vDAIM8
-Subject: Re: [Intel-wired-lan] igc: 5.15.98 Kernel PANIC on igc_downI
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+ t=1686122558; x=1717658558;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=4S3CoNm+dv9nHHXRJFlqfzFDDu50Pd8nQJe4Gf0uvHw=;
+ b=PkmK2qu4j81nUZmdFl7FajbVO82hAIhCq+Z317bbjC9W/fbF4Mdsrpv9
+ n1tNWzNMVTAT0QwRULL+4GWrSYrsGqIrUlf3ack2mb9irAq7kCIj/nQek
+ aSOLOTeCmhENh2ISI89flwlhrga2DLiKQ974e5z/PxirEYUcRcn+cDDFq
+ 8TOUsMHfmCkCDpWE5JNXz1WmcvydbCIjiWz3o637gi3iLFdJHOLJWG0/e
+ Jh+LrlxxQiyrkTJyATtAMWVCbtz5kBipctB2iSavEcFwTNnGSKF31Oh+v
+ MmnynHQcWHHMExh5x7Y3WXBk2hUtxUX0y/m1hGHx0dGJh7j/0+kEuxGKq
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com
+ header.a=rsa-sha256 header.s=mchp header.b=PkmK2qu4
+Subject: Re: [Intel-wired-lan] [PATCH net v2 04/10] ice: implement lag
+ netdev event handler
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,104 +102,68 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: sureshkumar.mp@intel.com, gregkh@linuxfoundation.org,
- jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org, kyle.leet@gmail.com,
- anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, dima.ruinskiy@intel.com,
- torvalds@linux-foundation.org, amir.avivi@intel.com
-Content-Type: multipart/mixed; boundary="===============5352548890319101817=="
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---===============5352548890319101817==
-Content-Type: multipart/alternative; boundary="000000000000ef2a1d05fd8077a3"
+> > > The event handler for LAG will create a work item to place on the ordered
+> > > workqueue to be processed.
+> > >
+> > > Add in defines for training packets and new recipes to be used by the
+> > > switching block of the HW for LAG packet steering.
+> > >
+> > > Update the ice_lag struct to reflect the new processing methodology.
+> > >
+> > > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> > > ---
+> > >  drivers/net/ethernet/intel/ice/ice_lag.c      | 125 ++++++++++++++++--
+> > >  drivers/net/ethernet/intel/ice/ice_lag.h      |  31 ++++-
+> > >  drivers/net/ethernet/intel/ice/ice_virtchnl.c |   2 +
+> > >  3 files changed, 144 insertions(+), 14 deletions(-)
+> 
+> 
+> > > +       lag_work = kzalloc(sizeof(*lag_work), GFP_KERNEL);
+> > > +       if (!lag_work)
+> > > +               return -ENOMEM;
+> > > +
+> > > +       lag_work->event_netdev = netdev;
+> > > +       lag_work->lag = lag;
+> > > +       lag_work->event = event;
+> > > +       if (event == NETDEV_CHANGEUPPER) {
+> > > +               struct netdev_notifier_changeupper_info *info;
+> > > +
+> > > +               info = ptr;
+> > > +               upper_netdev = info->upper_dev;
+> > > +       } else {
+> > > +               upper_netdev = netdev_master_upper_dev_get(netdev);
+> > > +       }
+> > > +
+> > > +       INIT_LIST_HEAD(&lag_work->netdev_list.node);
+> > > +       if (upper_netdev) {
+> > > +               struct ice_lag_netdev_list *nd_list;
+> > > +               struct net_device *tmp_nd;
+> > > +
+> > > +               rcu_read_lock();
+> > > +               for_each_netdev_in_bond_rcu(upper_netdev, tmp_nd) {
+> > > +                       nd_list = kzalloc(sizeof(*nd_list), GFP_KERNEL);
+> > > +                       if (!nd_list)
+> > > +                               break;
+> >
+> > Further up, -ENOMEM is returned in case kzalloc fails. Here the error is
+> > silently ignored - is this correct? :)
+> 
+> The lag_work above is the container struct that needs to be present for any work
+> to be done for the event.  But, as the list of elements of the bond gets built, if a single element is
+> not present, it is still possible for the event to be evaluated.  There could be the issue of
+> complete functionality if the wrong element is missing, but that will be handled in the processing
+> of the specific event.
 
---000000000000ef2a1d05fd8077a3
-Content-Type: text/plain; charset="UTF-8"
-
-Greetings,
-
-> Can you help test with below patch:
-> https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20230410065140.20824-1-muhammad.husaini.zulkifli@intel.com/
->
-> Once you have tested this patch, kindly let me know if you are still experiencing the issue or not.
-
-
-I had the same problems as Kyle on a nearly identical 6-port i226
-embedded system.
-
-Previously I was able to easily reproduce the issue by creating three
-bridges, containing 2 ports each, then looping the bridges together
-with ethernet cables and generating traffic (rapidly bringing the
-traffic up to 2.5Gbit/s). Unplugging a cable would consistently cause
-a kernel panic and dump. Crashes happened on 5.19, 6.0, 6.1, 6.2 and
-6.3
-
-After applying the patch to the 6.2.16 kernel I am unable to reproduce
-this issue.
-
-I do still see adapter resets while unplugging ports but they do not
-appear to be causing any problems.
-
---000000000000ef2a1d05fd8077a3
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Greetings,<div><br></div><div><pre id=3D"gmail-b" style=3D=
-"font-size:13px;background-image:initial;background-position:initial;backgr=
-ound-size:initial;background-repeat:initial;background-origin:initial;backg=
-round-clip:initial;color:rgb(0,0,51);white-space:pre-wrap">&gt; Can you hel=
-p test with below patch:
-&gt; <a href=3D"https://patchwork.ozlabs.org/project/intel-wired-lan/patch/=
-20230410065140.20824-1-muhammad.husaini.zulkifli@intel.com/" style=3D"backg=
-round-image:initial;background-position:initial;background-size:initial;bac=
-kground-repeat:initial;background-origin:initial;background-clip:initial;co=
-lor:rgb(0,0,255);text-decoration-line:none">https://patchwork.ozlabs.org/pr=
-oject/intel-wired-lan/patch/20230410065140.20824-1-muhammad.husaini.zulkifl=
-i@intel.com/</a>
-&gt;=20
-&gt; Once you have tested this patch, kindly let me know if you are still e=
-xperiencing the issue or not.</pre><pre id=3D"gmail-b" style=3D"font-size:1=
-3px;background-image:initial;background-position:initial;background-size:in=
-itial;background-repeat:initial;background-origin:initial;background-clip:i=
-nitial;color:rgb(0,0,51);white-space:pre-wrap"><br></pre><pre id=3D"gmail-b=
-" style=3D"font-size:13px;background-image:initial;background-position:init=
-ial;background-size:initial;background-repeat:initial;background-origin:ini=
-tial;background-clip:initial;color:rgb(0,0,51);white-space:pre-wrap">I had =
-the same problems as Kyle on a nearly identical 6-port i226 embedded system=
-.</pre><pre id=3D"gmail-b" style=3D"font-size:13px;background-image:initial=
-;background-position:initial;background-size:initial;background-repeat:init=
-ial;background-origin:initial;background-clip:initial;color:rgb(0,0,51);whi=
-te-space:pre-wrap">Previously I was able to easily reproduce the issue by c=
-reating three bridges, containing 2 ports each, then looping the bridges to=
-gether with ethernet cables and generating traffic (rapidly bringing the tr=
-affic up to 2.5Gbit/s). Unplugging a cable would consistently cause a kerne=
-l panic and dump. Crashes happened on 5.19, 6.0, 6.1, 6.2 and 6.3</pre><pre=
- id=3D"gmail-b" style=3D"font-size:13px;background-image:initial;background=
--position:initial;background-size:initial;background-repeat:initial;backgro=
-und-origin:initial;background-clip:initial;color:rgb(0,0,51);white-space:pr=
-e-wrap">After applying the patch to the 6.2.16 kernel I am unable to reprod=
-uce this issue. </pre><pre id=3D"gmail-b" style=3D"font-size:13px;backgroun=
-d-image:initial;background-position:initial;background-size:initial;backgro=
-und-repeat:initial;background-origin:initial;background-clip:initial;color:=
-rgb(0,0,51);white-space:pre-wrap">I do still see adapter resets while unplu=
-gging ports but they do not appear to be causing any problems. <br></pre><p=
-re id=3D"gmail-b" style=3D"font-size:13px;background-image:initial;backgrou=
-nd-position:initial;background-size:initial;background-repeat:initial;backg=
-round-origin:initial;background-clip:initial;color:rgb(0,0,51);white-space:=
-pre-wrap"><br></pre></div></div>
-
---000000000000ef2a1d05fd8077a3--
-
---===============5352548890319101817==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Ah I see. Thank you for explaining.
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
---===============5352548890319101817==--
