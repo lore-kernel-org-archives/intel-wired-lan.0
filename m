@@ -4,90 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2537BC7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Jun 2023 15:12:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6092AC7EE2F
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  7 Jun 2023 15:12:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C9F3782E5F;
-	Wed,  7 Jun 2023 15:12:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C9F3782E5F
+	by smtp1.osuosl.org (Postfix) with ESMTP id CCD098210D;
+	Wed,  7 Jun 2023 15:12:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CCD098210D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686150744;
-	bh=3JjskwXGxhrKvggZVWEi6bsohKhx//1973evrxqVjJA=;
+	s=default; t=1686150748;
+	bh=ObYY44xtoyRiyxtNFuCRXBtXGUmkBFMM1Yla1MSxS1s=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=kTF/AjmHHQHqhjet8JDhEriCG99BFpkAzRYAWbKs0FqYF7zygP6cH1HyKBJM9S/7C
-	 k/W//heKJuxCrL893HSqqxB5EWzoqOJojAtMKi6nx57o3Sk2+gzJkrEZZ9ke8sjqOf
-	 pK3MFU5gPAg9Okhd9M6OlL0uleet5e7XuBhigpwBW7SUczIo63H9D/QOD5xhkA84Qz
-	 KMTVjBVdZL06nxCA3F3wGSI+0KK7VWy7r2nIq1YE0qizkq0RCcmstPLXcBagKWWmG4
-	 E+vGuVoXy11FOE0LPuwct9EORXPLShh5VV4boZ/5cSVf7BF6iLL12LXrBgsCeVsLeO
-	 AUGFfP9nVLfvA==
+	b=G9qbEPd8RMhtxE7lvFIh3JPt0F2N+qHy+l05tyj+VVqGMJk89uRSCvF1sqfm+mz7i
+	 9dcQbpC2EirLDV3dewL5S+A6hdnVijEHDSfQ/nBKaJxmMF11TpcxQvMR9tBiz+VieG
+	 jEPEKB7HrWmtFZiXexbqkFnq9eD6D0cWuIxf42YtB798WbTX3U1ADGI1+0RdmHAktK
+	 umlHHJXFz9rIah14+tTRfUR+IPsZpyDVXEatoRnMr/02Q70BWu1MpwvrAFIKhu86qN
+	 N63/75JjJdoI9HtDdMckFJJmNVsBUiTFN89tCooMN+FkU/lESi6Y2hhxCN4tAowWmm
+	 F6fbU3EY7GjSg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 5pqsf71I5XvN; Wed,  7 Jun 2023 15:12:24 +0000 (UTC)
+	with ESMTP id UBGD8MPN7uHs; Wed,  7 Jun 2023 15:12:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CFD8181E2C;
-	Wed,  7 Jun 2023 15:12:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CFD8181E2C
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 3646D1BF3E0
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 08:54:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 020CC82EA1;
+	Wed,  7 Jun 2023 15:12:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 020CC82EA1
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 7D1E41BF3E0
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 09:01:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1AF4340332
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 08:54:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1AF4340332
+ by smtp3.osuosl.org (Postfix) with ESMTP id 5555F60D4C
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 09:01:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5555F60D4C
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CjD3AmnHDu6h for <intel-wired-lan@lists.osuosl.org>;
- Wed,  7 Jun 2023 08:54:08 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 5Bbmy4j5zU8E for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  7 Jun 2023 09:01:52 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5BC4840150
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9ECA860C2C
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com
  [68.232.154.123])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5BC4840150
- for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 08:54:08 +0000 (UTC)
-X-IronPort-AV: E=Sophos;i="6.00,223,1681196400"; d="scan'208";a="219220402"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9ECA860C2C
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  7 Jun 2023 09:01:52 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.00,223,1681196400"; d="scan'208";a="215001366"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
- by esa2.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
- 07 Jun 2023 01:54:05 -0700
-Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ by esa4.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
+ 07 Jun 2023 02:01:50 -0700
+Received: from chn-vm-ex03.mchp-main.com (10.10.85.151) by
+ chn-vm-ex04.mchp-main.com (10.10.85.152) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Wed, 7 Jun 2023 01:54:05 -0700
-Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex02.mchp-main.com
- (10.10.85.144) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
- Transport; Wed, 7 Jun 2023 01:54:04 -0700
-Date: Wed, 7 Jun 2023 08:54:03 +0000
+ 15.1.2507.21; Wed, 7 Jun 2023 02:01:08 -0700
+Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex03.mchp-main.com
+ (10.10.85.151) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
+ Transport; Wed, 7 Jun 2023 02:01:06 -0700
+Date: Wed, 7 Jun 2023 09:01:05 +0000
 From: Daniel Machon <daniel.machon@microchip.com>
 To: Dave Ertman <david.m.ertman@intel.com>
-Message-ID: <20230607085403.vm34kbnw2bajglse@DEN-LT-70577>
+Message-ID: <20230607090105.gje6m2bekytaeeav@DEN-LT-70577>
 References: <20230605182258.557933-1-david.m.ertman@intel.com>
- <20230605182258.557933-9-david.m.ertman@intel.com>
+ <20230605182258.557933-10-david.m.ertman@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20230605182258.557933-9-david.m.ertman@intel.com>
+In-Reply-To: <20230605182258.557933-10-david.m.ertman@intel.com>
 X-Mailman-Approved-At: Wed, 07 Jun 2023 15:12:04 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
- t=1686128048; x=1717664048;
+ t=1686128513; x=1717664513;
  h=date:from:to:cc:subject:message-id:references:
  mime-version:in-reply-to;
- bh=HQz4rwTqsDysvbrLsgRUKg34cXOPwy+EIaHfg0BVeu4=;
- b=WY90BmqxBsdkFrfS1dwgBTKhuI7HEAjwdTWPH3tePcVY6IJ0xxjMVS9a
- YhBx7tRueMb05jIrTbNIrYVISxz84+oxgXkL3ckBUhtHwJ3dmg912V/Oe
- UpDd/H8qSrN9egWZgAaDe8aztDLdP2xVbS0NC0FzrHSeONeNEE0THkp3o
- JdQ5n7gsfFZE/bV9x/VFNG4MANRYhYv9RbgONOMC751j45s5fCGcbVId+
- a3coW5xYO10++wsH0dJsUMQDUw5oOUL2zMHV0U+qrYT1C9A1ZUVCZ8BJB
- AGADFAXPAjHEIvgwPVGkVZeT8vYVcUvNiEdQBQH/laylPlWC7eklUDoWV
+ bh=SEWl3JxeEFCwELHcRYCNeieOLfdoHetTojgx5uBYZXg=;
+ b=vLLlmKask3hQlXdjkd251n9xGrqKEys5FTfY0b3XX/hGC/4m8GtY/Q4q
+ lmWwFvqsXgy6edxC/ROL571QCgQddjerWYy7mzjxQYpFdZoLXKS7qJRDC
+ Uf1EG7N6fWWos+jGysKor2u84LHyi74LVZXPDFk6HlrDZVyC1/aCvGzRJ
+ 5jIACRClK53dGreBjLoxAQMTq55FcfuXh4yej7stvzdlR5D4eiAeyvaF7
+ 8HZfZgUV9GQrQWks+UbCcoTBuRGKiHSfRDmeLEl64GlNgv7klI/HppPz1
+ JaqtFzLvjrCaYrauTLYH9XQNXdMuTsBFSJOvcoHGE8Nw/SeaGP4g5IvOi
  A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com
- header.a=rsa-sha256 header.s=mchp header.b=WY90Bmqx
-Subject: Re: [Intel-wired-lan] [PATCH net v2 08/10] ice: enforce interface
- eligibility and add messaging for SRIOV LAG
+ header.a=rsa-sha256 header.s=mchp header.b=vLLlmKas
+Subject: Re: [Intel-wired-lan] [PATCH net v2 09/10] ice: enforce no DCB
+ config changing when in bond
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,24 +106,15 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> Implement checks on what interfaces are eligible for supporting SRIOV VFs
-> when a member of an aggregate interface.
+> To support SRIOV LAG, the driver cannot allow changes to an interface's DCB
+> configuration when in a bond.  This would break the ability to modify
+> interfaces Tx scheduling for fail-over interfaces.
 > 
-> Implement unwind path for interfaces that become ineligible.
-> 
-> checks for the SRIOV LAG feature bit wrap most of the functional code for
-> manipulating resources that apply to this feature.  Utilize this bit
-> to track compliant aggregates.  Also flag any new entries into the
-> aggregate as not supporting SRIOV LAG for the time they are in the
-> non-compliant aggregate.
-> 
-> Once an aggregate has been flagged as non-compliant, only unpopulating the
-> aggregate and re-populating it will return SRIOV LAG functionality.
+> Block kernel generated DCB config events when in a bond.
 > 
 > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 
 Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
-
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
