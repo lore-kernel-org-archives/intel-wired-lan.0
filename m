@@ -4,174 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2A56C7EE23
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Jun 2023 17:24:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D866C7EE23
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Jun 2023 18:05:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 50BEF61155;
-	Thu,  8 Jun 2023 17:24:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 50BEF61155
+	by smtp3.osuosl.org (Postfix) with ESMTP id BCCDB611B9;
+	Thu,  8 Jun 2023 18:05:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BCCDB611B9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686245092;
-	bh=duVPF+IhsoC50GadVjc0tgvSWTPnJPBrYJrW6mqwvGo=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1686247509;
+	bh=FZdNmlR3JmqaBW6WkU5FkxwpGbvDPaHJqShFkWkMtXY=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=cLXbg812akcqsRNXTJcNHtu+rNjI+RIjjKxcRASALUKRT5ucqH1lYuTWj+wJWrw6o
-	 BhMWHcCLxyo9w/LR2n8DrqV+dQJ+xmKsKfgK7pe5YVRSERMMul5tH9BDrAVgUC6VYG
-	 5qv+LnZ3UFvIUncqz/+X4bZw/IPmgXcJ/VJvczTWXVm18SAYBUguyBgv+Go/kzvaaP
-	 l0g84tjIa6BjyKNom1aDFoF1ORIF/7uACJund9WNAf4a3d7xJkxpXl2hZ13J3p6zHR
-	 /zZWwup5xhlrXNmnFLw6J6v0OtsBfqFT+5hCojV1ee2/COSs9mQ4gWy/uCTooWi47+
-	 7xe0MmxYBAxwg==
+	b=z9ppxNWm4+0dOxR4MZVE+BI+zGN/RDtctMDrGskwY+gcycpeaWFT7V+SK4qpasQFi
+	 0Djv1MsrnV613dDj/Tf4UNwSrbaAiuK5qrBGKqYN2vHrd7iORGOrbcbpkqG8npCvX1
+	 dzQn2sR7nybNgkF8bJz6zT+rgLXrtIDMD15T+JabbdMP41tkZF6IfsEEE9XzmLRZuk
+	 UZiENUJl0j0uRz+X4nmKtgaYITYgN5CBPG1/k0t30xaQxd9hbL0AOmdRWtN+2XQk9/
+	 j5ki///wxawJWJsnanhoMXFLp+WjZhba/EXUzHbaDoRIp4HM9k9Y+1n+xbthxzqS37
+	 hz28wJdXr8LdQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id EZroelu4cVgI; Thu,  8 Jun 2023 17:24:51 +0000 (UTC)
+	with ESMTP id WnH2VwsYJx5C; Thu,  8 Jun 2023 18:05:07 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3F0E261189;
-	Thu,  8 Jun 2023 17:24:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3F0E261189
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 195521BF39C
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 17:24:50 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7E214611C6;
+	Thu,  8 Jun 2023 18:05:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7E214611C6
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id DDD141BF3E1
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E4B5D83AFA
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 17:24:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E4B5D83AFA
+ by smtp4.osuosl.org (Postfix) with ESMTP id B2AB842407
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B2AB842407
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zVy789a_9hRM for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Jun 2023 17:24:49 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id c5PsBr2oS2CR for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Jun 2023 18:05:04 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 150A4839B8
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 150A4839B8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 17:24:49 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="354867341"
-X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="354867341"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jun 2023 10:24:48 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 412B442128
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 412B442128
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:04 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="385738705"
+X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="385738705"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jun 2023 11:04:37 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="660465044"
-X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="660465044"
-Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
- by orsmga003.jf.intel.com with ESMTP; 08 Jun 2023 10:24:47 -0700
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Thu, 8 Jun 2023 10:24:47 -0700
-Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23 via Frontend Transport; Thu, 8 Jun 2023 10:24:47 -0700
-Received: from NAM12-DM6-obe.outbound.protection.outlook.com (104.47.59.176)
- by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.23; Thu, 8 Jun 2023 10:24:47 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=BDPLtesC4dRA6yx1DNCNQfaF9FEagGszHGI84yBxqpH4yDcFbMY/LPO2z1Wh/bG8bg9eGixcvU67Sqo2B/dqD9IhQN0GilUote5m1Djb/o2PUlCzFYhNiZ6H6maCK3uq72ToCICM59Varg96gfYTSW1ZAifig7wy6lyuHHVBzEHAOpSprxPHCUNU5mAaBZWy7IG7C9erDUZH2lu37qja4YfNEnuY8E33VIwLPApzhpUhyhUo9QFNgwcjIB0KHK9HzTUXkCWT6a3+1YqmvNFXcNLyoEX8R9EVbzLsO7hBr5JzKoR7W/x6C7feQm8p3dv4wyvqJnI25AUqVu1H/7n6lQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=xJ6x412JNdfhy0cFQWJcUKFKPm6PjZ+Sk9M+Sngaa7Q=;
- b=lGgX3tijiUFjEizwGnf9KnL+zuxkJR4xERkSkHS/sz6JEfzxQAF1o8OphyaCDniDj86xIitnhxMlrB4uP54nxEluA+Jf1pLJliWZQ+G4NRh3yWtKJ4bK2qqZMmokkF6UptT8kqX9Q+Mdf4iYfqwny4ToQdzZhj55ezakeIM43Hal/nCng7oYE0aDP9QrqZ7uyaWKRSnpozUp+2bhRpwzV3izckshzZ3ZFdsuE3f7WrPJgiGv7GHOWatOz4UH/Fiwt10wcq3XLLuC3Lzmk3T8UZXSs8cY01SN8oI1VPtZ7wSolKr/MovgkRFitAFKYxQnihzWjKWQIc4vNJdt0x5ehQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from MW5PR11MB5811.namprd11.prod.outlook.com (2603:10b6:303:198::18)
- by PH0PR11MB7424.namprd11.prod.outlook.com (2603:10b6:510:287::7)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6455.38; Thu, 8 Jun
- 2023 17:24:45 +0000
-Received: from MW5PR11MB5811.namprd11.prod.outlook.com
- ([fe80::5e37:38f7:33d2:137a]) by MW5PR11MB5811.namprd11.prod.outlook.com
- ([fe80::5e37:38f7:33d2:137a%6]) with mapi id 15.20.6455.030; Thu, 8 Jun 2023
- 17:24:44 +0000
-From: "Ertman, David M" <david.m.ertman@intel.com>
-To: Daniel Machon <daniel.machon@microchip.com>
-Thread-Topic: [PATCH net v2 10/10] ice: update reset path for SRIOV LAG support
-Thread-Index: AQHZmSgS2tsg7REvdkySccpYksxcJa+BKQ2Q
-Date: Thu, 8 Jun 2023 17:24:44 +0000
-Message-ID: <MW5PR11MB5811043A0CFCAC669EAAFF86DD50A@MW5PR11MB5811.namprd11.prod.outlook.com>
-References: <20230605182258.557933-1-david.m.ertman@intel.com>
- <20230605182258.557933-11-david.m.ertman@intel.com>
- <20230607100825.igma5yifszm327nk@DEN-LT-70577>
-In-Reply-To: <20230607100825.igma5yifszm327nk@DEN-LT-70577>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: MW5PR11MB5811:EE_|PH0PR11MB7424:EE_
-x-ms-office365-filtering-correlation-id: 8f18a5f3-227d-472c-0210-08db68454045
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: rBKhlYhzP116/uA8kYhPNMW5+AS7DMKRXgnugKdBP5OWwWFXxxJ1hUTBxMh9ZHlpEm1Kp79xM3qUcd7lPbAqn1y2TxhmgULTMuYbZPSWqHa0OPHBUnk3YoWqIZQBenxQzpgnYG7jV2/BluZB6tqZ5NPAm35cRbc9DX1PwfcEBywqRfLkQYLlsNfD7Fzg4hNjsPk0KLbjmWfoF1f2vZAW8+zxTdCU/46PtvnE4DGK4jW0iyUn3YdML5aq+LiQvEIg6C3PkVcRzGZPQc5vEkC18oEvriUb8ZgSAMVQ9OD+2gZRujO3QpiJo0vpR9UHCshdE3+q/KET1EW2M3Rz/i3yI2TcMc2sDPeEUKsvjPwZEayXXmYkWGwOguHsaDObxlkWShWMCFmEBGkSp6KL4F2yxM9FdZqv3SW4vdVRXEH6eahNLYTC9XC+EPwgSyJUn0W3dUsmT8Pzl4/T4JzNBVB9Bq6clfqfwU8vc3FP3mooqrC4wc35ZlaEjRFy8PGF+0/q3LN2iz98kqzCx9488XrwNiVmLxssRePddoIUDXGm/ghtPe8bKEHkM/iaqkzYokYoD5lZf0YvFflsPg4/ul0HJNB1pV9G6OQXcEYOJrnZOj/uqmsgvjOCjGutqztH0cwG
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MW5PR11MB5811.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(136003)(366004)(346002)(39860400002)(396003)(376002)(451199021)(478600001)(71200400001)(82960400001)(122000001)(76116006)(4326008)(66946007)(66556008)(66476007)(66446008)(64756008)(6916009)(38100700002)(54906003)(8936002)(8676002)(38070700005)(55016003)(86362001)(33656002)(5660300002)(52536014)(2906002)(316002)(15650500001)(41300700001)(83380400001)(26005)(53546011)(6506007)(9686003)(186003)(7696005);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?4tKvs7qKvBeP3H+xeT6/PTqyuU9YwU06EhRI3mLJeug9rk9KYZ4R9zTh7pg6?=
- =?us-ascii?Q?HY2gBvjjB1Lu6vAyw+1tztOZpQkIFpNGrZXPXyM7E/u+X+Yu4NYQoUgSoqGj?=
- =?us-ascii?Q?n08ovGumVKThizSaiaAcXbASlbhGJU/1I6cVzTh4lNs5wUUOiLyLVp/K4Ns2?=
- =?us-ascii?Q?0+PUXhXUvq7ujYjojLbAco0EtN3HUElmnpXzKkrIDhh7HKs/K3UxW/OybHzu?=
- =?us-ascii?Q?kwNeDmjtlTY1z1QGt/+/8+zY1mFAcQXRURamD8yYW6RkjW19TqU2VQ/WrxIS?=
- =?us-ascii?Q?ki7m76D9cflwMVeFku/AfECuI6xQkoogZFvLFJtufJuYB/Bct4zWqErAIJ9J?=
- =?us-ascii?Q?17nGPKn2HCroNT0faewyUX7+yEwMgyqofFdsOONzSNVUg3gv0FdqdXlQgzze?=
- =?us-ascii?Q?aa6NCrFys7DFEQqa1yLN3u/mjsm+nzRrxMjSFJ0GYYy744WPpF5puGOayzv2?=
- =?us-ascii?Q?RKF8aAXTtBg1MhMcV6OxB3ZVrl3RSFIR/7Vm8ol6maw+z3kQKBba6buWMgys?=
- =?us-ascii?Q?RmEHZIdEmR8nBUwWIJxQx4r7Hsr3PyJ9Jtf/fL8cLIm7S0NOHG8PckXjwbA7?=
- =?us-ascii?Q?WMwOs/tXPPiInUaZXLY+6OTXtDTNgMZ6HDnL/71a7O6JoQDXyZdITuhoxS4v?=
- =?us-ascii?Q?/LgtyLyw+Fl1NBOxZXhjtDoZgSxU8b4vlxKc5A1NgN4UH+v4chxdOi2L3IhA?=
- =?us-ascii?Q?6t9+a3CIwpmiGxHRa5sPBeczlmWOokYwWIBLNnO5d1xUVi0zkoil6pBpi24y?=
- =?us-ascii?Q?61m6mWhEZN255vDt613EhnW84SKvVRHmvf+n3TBTTXy8WGMl3OlrKWbO9sUv?=
- =?us-ascii?Q?EdRREnLehY+KS0Fw/BgmqqvscnzdG1rIIrC/bUpqB9SHbXj1kL9CWCoGD5RQ?=
- =?us-ascii?Q?LD8KxXizL+ssjEKpi6eTxCw8IfVNP0KD8yr6TwcqFDT4agePUSKa1DVNU/kB?=
- =?us-ascii?Q?7qP012i2dw6t3hjQ8xjdmLlQD5a1xazGtJqKn0QcN6vJJpf8PE+8Ks34CnwK?=
- =?us-ascii?Q?6+gVjEpbOXfWPRrgX4s5hDE8PJqmIsy4sgMTcCYE9TjLIVxNini3D/+xkv+c?=
- =?us-ascii?Q?de6Yp9i7UTkKqLl7rzSdyHKgV6nEG7w5uS3oTyUYP6EugYjAFW9ESVK/oc1W?=
- =?us-ascii?Q?YCmC/Bbd86e4wdOFEbv7Pp5eiZSo2ZXgJsyJALms185ckd/anbgqSMp7qhVC?=
- =?us-ascii?Q?AWbzTqMMZ2Yga8JKSoKVENfyANyvn+KlJSwSKUPezUJpHvG9uMRbkWzYsCog?=
- =?us-ascii?Q?wIiqYa7ltlBIWgFqnh1dEPrkfVXIYSPmWCFURxGoyfIZNu1RYNN3Qn2+36h5?=
- =?us-ascii?Q?8Ugclbvb03E4vi0RuuxXqR9oNU2P5gpRMLmYSgP9P8EyerGlpdHQgroVMIZY?=
- =?us-ascii?Q?Q1UvVqNnhh9jFm2muqtb3yobFLqgKVBSR1zu0J4k52jx4/tww+ePSQeN9tG9?=
- =?us-ascii?Q?AVoalLFCFa+gdwWX2VwfewLFk0oxx4BLjqHPN8sJpZ9fUWDN+HveBhrlZ/bs?=
- =?us-ascii?Q?+z+sy9eBmpFjSzMZV4ZYFa9UV3Y8a+lbyADrdJq2qrKlMCmlB4fwKaZ4WqvX?=
- =?us-ascii?Q?ekXpCzDW+TC3aWloDDG+5FDa7u+fP2vHKytAedzR?=
+X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="775187922"
+X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="775187922"
+Received: from dmert-dev.jf.intel.com ([10.166.241.14])
+ by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 08 Jun 2023 11:04:37 -0700
+From: Dave Ertman <david.m.ertman@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Thu,  8 Jun 2023 11:06:10 -0700
+Message-Id: <20230608180618.574171-3-david.m.ertman@intel.com>
+X-Mailer: git-send-email 2.40.1
+In-Reply-To: <20230608180618.574171-1-david.m.ertman@intel.com>
+References: <20230608180618.574171-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: MW5PR11MB5811.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8f18a5f3-227d-472c-0210-08db68454045
-X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Jun 2023 17:24:44.3270 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: RDiIOlM+LJZooXvHlAZbYbRs2KBIl+DSUGXDofLrATetG6cjp8geuEFwZo5QNMp5Y6FhXjf2X/IlyAz5Y/Bg2aVwaMjXA5xaLA14BAJObhk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB7424
-X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686245089; x=1717781089;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=EL1+PQf+pFqDNkC4MvmPJTXUgDZC3XIM2sZ3Mj0VVHQ=;
- b=PDl+7YR6Llf8Xhg3I9sGDxOWbxWDSPuepk8WQQH9Bs6NzSzvSrFLDA8J
- vChmHlC5b0ielDXhiyj/sKcgnSDyPRVBG3+yqIg4v/jVNbsNfrBq0NYn6
- 6Do5AO3gv87B+foA8m1zSaCZVahn04FYealWprxOsNYU070VRmNgmTZeu
- swlSJP4cjXxir6HXAsMZsL2zB+QpVmkeSVT0p9pXTrEi2awE9y8XBTPeN
- QW5Ua2SW7YGPr4aaaN7BxRePCS4BeDk+Z7fTF0ujCDMS/X8oj1uzazEPB
- NyC362mZEbIWcOq5+U2toIc2JklC9Ui9dUBdiIN/2cSwf6PUK8FW60JYf
+ t=1686247504; x=1717783504;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=gnP0R/H0jVqtSCTeKb6AGZa0D3Z8AcN5ddc8oljp0SM=;
+ b=LXeFs7Mjxs21pbriL0IHf30xEkHCAgUM+560hAEkzPq4U0TP5GRdx1cM
+ FdD4q9ySMmi9N0z0DzVSrTY0nbQ5IVqHHEMF9Oc6egA/bRedW/nFYqeNt
+ YYE94UxMF8Ic01bszDlII8ynTeQLAJVzUTG+CkXXp9olIcg8HZa9sStQZ
+ zHaXD9tCZp8PcAmFw2x1qihOmFmzydiCCYt0KyV3JMSRsN5RCi1u8V3Qe
+ WCz1ZRuoZwsxrLpXxVP+cF9obAe3wuqC7zzquLNnKfEk6SmxUMcKR6Gx4
+ MAZ/WnIxt063Vr50+Sp9ZS9TZPs0lMzdy3AimBCsaLmolmGA0UVRic+qj
  A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=PDl+7YR6
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net v2 10/10] ice: update reset path
- for SRIOV LAG support
+ header.a=rsa-sha256 header.s=Intel header.b=LXeFs7Mj
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 02/10] ice: Add driver support
+ for firmware changes for LAG
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -184,57 +96,292 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Cc: netdev@vger.kernel.org, daniel.machon@microchip.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> -----Original Message-----
-> From: Daniel Machon <daniel.machon@microchip.com>
-> Sent: Wednesday, June 7, 2023 3:08 AM
-> To: Ertman, David M <david.m.ertman@intel.com>
-> Cc: intel-wired-lan@lists.osuosl.org; netdev@vger.kernel.org
-> Subject: Re: [PATCH net v2 10/10] ice: update reset path for SRIOV LAG
-> support
-> 
-> > Add code to rebuild the LAG resources when rebuilding the state of the
-> > interface after a reset.
-> >
-> > Also added in a function for building per-queue information into the buffer
-> > used to configure VF queues for LAG fail-over.  This improves code reuse.
-> >
-> > Due to differences in timing per interface for recovering from a reset, add
-> > in the ability to retry on non-local dependencies where needed.
-> >
-> > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/ice/ice_lag.c  | 287
-> +++++++++++++++++++++-
-> >  drivers/net/ethernet/intel/ice/ice_lag.h  |   3 +
-> >  drivers/net/ethernet/intel/ice/ice_main.c |  14 +-
-> >  3 files changed, 300 insertions(+), 4 deletions(-)
-> >
+Add the defines, fields, and detection code for FW support of LAG for
+SRIOV.  Also exposes some previously static functions to allow access
+in the lag code.
 
+Clean up code that is unused or not needed for LAG support.  Also add
+an ordered workqueue for processing LAG events.
 
-> > +resume_sync:
-> > +       if (ice_sched_suspend_resume_elems(hw, 1, &tmp_teid, false))
-> > +               dev_warn(dev, "Problem restarting traffic for LAG node reset
-> rebuild\n");
-> > +}
-> 
-> This function looks suspiciously similar to ice_lag_move_vf_node_tc() in
-> patch #6 :-). Maybe theres room for moving some common code into
-> separate functions.
+Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice.h          |  5 ++
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  3 ++
+ drivers/net/ethernet/intel/ice/ice_common.c   |  8 +++
+ drivers/net/ethernet/intel/ice/ice_lag.c      | 53 ++++++++++---------
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  2 +-
+ drivers/net/ethernet/intel/ice/ice_lib.h      |  1 +
+ drivers/net/ethernet/intel/ice/ice_main.c     | 12 +++++
+ drivers/net/ethernet/intel/ice/ice_type.h     |  2 +
+ 8 files changed, 59 insertions(+), 27 deletions(-)
 
-I was able to carve out the parent node location code (a pretty sizable chunk)
-and make it into a sub-function for reuse.  Thanks for the tip - was a very
-good change to make!
+diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
+index 9109006336f0..5ac0ad12f9f1 100644
+--- a/drivers/net/ethernet/intel/ice/ice.h
++++ b/drivers/net/ethernet/intel/ice/ice.h
+@@ -200,6 +200,8 @@ enum ice_feature {
+ 	ICE_F_PTP_EXTTS,
+ 	ICE_F_SMA_CTRL,
+ 	ICE_F_GNSS,
++	ICE_F_ROCE_LAG,
++	ICE_F_SRIOV_LAG,
+ 	ICE_F_MAX
+ };
+ 
+@@ -569,6 +571,7 @@ struct ice_pf {
+ 	struct mutex sw_mutex;		/* lock for protecting VSI alloc flow */
+ 	struct mutex tc_mutex;		/* lock to protect TC changes */
+ 	struct mutex adev_mutex;	/* lock to protect aux device access */
++	struct mutex lag_mutex;		/* protect ice_lag struct in PF */
+ 	u32 msg_enable;
+ 	struct ice_ptp ptp;
+ 	struct gnss_serial *gnss_serial;
+@@ -639,6 +642,8 @@ struct ice_pf {
+ 	struct ice_agg_node vf_agg_node[ICE_MAX_VF_AGG_NODES];
+ };
+ 
++extern struct workqueue_struct *ice_lag_wq;
++
+ struct ice_netdev_priv {
+ 	struct ice_vsi *vsi;
+ 	struct ice_repr *repr;
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 63d3e1dcbba5..1d4227b024d3 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -120,6 +120,9 @@ struct ice_aqc_list_caps_elem {
+ #define ICE_AQC_CAPS_PCIE_RESET_AVOIDANCE		0x0076
+ #define ICE_AQC_CAPS_POST_UPDATE_RESET_RESTRICT		0x0077
+ #define ICE_AQC_CAPS_NVM_MGMT				0x0080
++#define ICE_AQC_CAPS_FW_LAG_SUPPORT			0x0092
++#define ICE_AQC_BIT_ROCEV2_LAG				0x01
++#define ICE_AQC_BIT_SRIOV_LAG				0x02
+ 
+ 	u8 major_ver;
+ 	u8 minor_ver;
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index ebdaf8dc679c..9704e7fa2953 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -2241,6 +2241,14 @@ ice_parse_common_caps(struct ice_hw *hw, struct ice_hw_common_caps *caps,
+ 			  "%s: reset_restrict_support = %d\n", prefix,
+ 			  caps->reset_restrict_support);
+ 		break;
++	case ICE_AQC_CAPS_FW_LAG_SUPPORT:
++		caps->roce_lag = !!(number & ICE_AQC_BIT_ROCEV2_LAG);
++		ice_debug(hw, ICE_DBG_INIT, "%s: roce_lag = %u\n",
++			  prefix, caps->roce_lag);
++		caps->sriov_lag = !!(number & ICE_AQC_BIT_SRIOV_LAG);
++		ice_debug(hw, ICE_DBG_INIT, "%s: sriov_lag = %u\n",
++			  prefix, caps->sriov_lag);
++		break;
+ 	default:
+ 		/* Not one of the recognized common capabilities */
+ 		found = false;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+index 5a7753bda324..73bfc5cd8b37 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.c
++++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+@@ -4,8 +4,12 @@
+ /* Link Aggregation code */
+ 
+ #include "ice.h"
++#include "ice_lib.h"
+ #include "ice_lag.h"
+ 
++#define ICE_LAG_RES_SHARED	BIT(14)
++#define ICE_LAG_RES_VALID	BIT(15)
++
+ /**
+  * ice_lag_set_primary - set PF LAG state as Primary
+  * @lag: LAG info struct
+@@ -225,6 +229,26 @@ static void ice_lag_unregister(struct ice_lag *lag, struct net_device *netdev)
+ 	lag->role = ICE_LAG_NONE;
+ }
+ 
++/**
++ * ice_lag_check_nvm_support - Check for NVM support for LAG
++ * @pf: PF struct
++ */
++static void ice_lag_check_nvm_support(struct ice_pf *pf)
++{
++	struct ice_hw_dev_caps *caps;
++
++	caps = &pf->hw.dev_caps;
++	if (caps->common_cap.roce_lag)
++		ice_set_feature_support(pf, ICE_F_ROCE_LAG);
++	else
++		ice_clear_feature_support(pf, ICE_F_ROCE_LAG);
++
++	if (caps->common_cap.sriov_lag)
++		ice_set_feature_support(pf, ICE_F_SRIOV_LAG);
++	else
++		ice_clear_feature_support(pf, ICE_F_SRIOV_LAG);
++}
++
+ /**
+  * ice_lag_changeupper_event - handle LAG changeupper event
+  * @lag: LAG info struct
+@@ -264,26 +288,6 @@ static void ice_lag_changeupper_event(struct ice_lag *lag, void *ptr)
+ 	ice_display_lag_info(lag);
+ }
+ 
+-/**
+- * ice_lag_changelower_event - handle LAG changelower event
+- * @lag: LAG info struct
+- * @ptr: opaque data pointer
+- *
+- * ptr to be cast to netdev_notifier_changelowerstate_info
+- */
+-static void ice_lag_changelower_event(struct ice_lag *lag, void *ptr)
+-{
+-	struct net_device *netdev = netdev_notifier_info_to_dev(ptr);
+-
+-	if (netdev != lag->netdev)
+-		return;
+-
+-	netdev_dbg(netdev, "bonding info\n");
+-
+-	if (!netif_is_lag_port(netdev))
+-		netdev_dbg(netdev, "CHANGELOWER rcvd, but netdev not in LAG. Bail\n");
+-}
+-
+ /**
+  * ice_lag_event_handler - handle LAG events from netdev
+  * @notif_blk: notifier block registered by this netdev
+@@ -310,9 +314,6 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
+ 	case NETDEV_CHANGEUPPER:
+ 		ice_lag_changeupper_event(lag, ptr);
+ 		break;
+-	case NETDEV_CHANGELOWERSTATE:
+-		ice_lag_changelower_event(lag, ptr);
+-		break;
+ 	case NETDEV_BONDING_INFO:
+ 		ice_lag_info_event(lag, ptr);
+ 		break;
+@@ -379,6 +380,8 @@ int ice_init_lag(struct ice_pf *pf)
+ 	struct ice_vsi *vsi;
+ 	int err;
+ 
++	ice_lag_check_nvm_support(pf);
++
+ 	pf->lag = kzalloc(sizeof(*lag), GFP_KERNEL);
+ 	if (!pf->lag)
+ 		return -ENOMEM;
+@@ -435,9 +438,7 @@ void ice_deinit_lag(struct ice_pf *pf)
+ 	if (lag->pf)
+ 		ice_unregister_lag_handler(lag);
+ 
+-	dev_put(lag->upper_netdev);
+-
+-	dev_put(lag->peer_netdev);
++	flush_workqueue(ice_lag_wq);
+ 
+ 	kfree(lag);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index c3722c68af99..a3d3857ef59b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -3997,7 +3997,7 @@ bool ice_is_feature_supported(struct ice_pf *pf, enum ice_feature f)
+  * @pf: pointer to the struct ice_pf instance
+  * @f: feature enum to set
+  */
+-static void ice_set_feature_support(struct ice_pf *pf, enum ice_feature f)
++void ice_set_feature_support(struct ice_pf *pf, enum ice_feature f)
+ {
+ 	if (f < 0 || f >= ICE_F_MAX)
+ 		return;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 1628385a9672..dd53fe968ad8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -163,6 +163,7 @@ int ice_vsi_del_vlan_zero(struct ice_vsi *vsi);
+ bool ice_vsi_has_non_zero_vlans(struct ice_vsi *vsi);
+ u16 ice_vsi_num_non_zero_vlans(struct ice_vsi *vsi);
+ bool ice_is_feature_supported(struct ice_pf *pf, enum ice_feature f);
++void ice_set_feature_support(struct ice_pf *pf, enum ice_feature f);
+ void ice_clear_feature_support(struct ice_pf *pf, enum ice_feature f);
+ void ice_init_feature_support(struct ice_pf *pf);
+ bool ice_vsi_is_rx_queue_active(struct ice_vsi *vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index f358018337af..e01834d0417e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -64,6 +64,7 @@ struct device *ice_hw_to_dev(struct ice_hw *hw)
+ }
+ 
+ static struct workqueue_struct *ice_wq;
++struct workqueue_struct *ice_lag_wq;
+ static const struct net_device_ops ice_netdev_safe_mode_ops;
+ static const struct net_device_ops ice_netdev_ops;
+ 
+@@ -3795,6 +3796,7 @@ u16 ice_get_avail_rxq_count(struct ice_pf *pf)
+ static void ice_deinit_pf(struct ice_pf *pf)
+ {
+ 	ice_service_task_stop(pf);
++	mutex_destroy(&pf->lag_mutex);
+ 	mutex_destroy(&pf->adev_mutex);
+ 	mutex_destroy(&pf->sw_mutex);
+ 	mutex_destroy(&pf->tc_mutex);
+@@ -3875,6 +3877,7 @@ static int ice_init_pf(struct ice_pf *pf)
+ 	mutex_init(&pf->sw_mutex);
+ 	mutex_init(&pf->tc_mutex);
+ 	mutex_init(&pf->adev_mutex);
++	mutex_init(&pf->lag_mutex);
+ 
+ 	INIT_HLIST_HEAD(&pf->aq_wait_list);
+ 	spin_lock_init(&pf->aq_wait_lock);
+@@ -5576,10 +5579,18 @@ static int __init ice_module_init(void)
+ 		return -ENOMEM;
+ 	}
+ 
++	ice_lag_wq = alloc_ordered_workqueue("ice_lag_wq", 0);
++	if (!ice_lag_wq) {
++		pr_err("Failed to create LAG workqueue\n");
++		destroy_workqueue(ice_wq);
++		return -ENOMEM;
++	}
++
+ 	status = pci_register_driver(&ice_driver);
+ 	if (status) {
+ 		pr_err("failed to register PCI driver, err %d\n", status);
+ 		destroy_workqueue(ice_wq);
++		destroy_workqueue(ice_lag_wq);
+ 	}
+ 
+ 	return status;
+@@ -5596,6 +5607,7 @@ static void __exit ice_module_exit(void)
+ {
+ 	pci_unregister_driver(&ice_driver);
+ 	destroy_workqueue(ice_wq);
++	destroy_workqueue(ice_lag_wq);
+ 	pr_info("module unloaded\n");
+ }
+ module_exit(ice_module_exit);
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index df9171a1a34f..e82f38c2a940 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -277,6 +277,8 @@ struct ice_hw_common_caps {
+ 	u8 dcb;
+ 	u8 ieee_1588;
+ 	u8 rdma;
++	u8 roce_lag;
++	u8 sriov_lag;
+ 
+ 	bool nvm_update_pending_nvm;
+ 	bool nvm_update_pending_orom;
+-- 
+2.40.1
 
-Change to come in v3
-
-DaveE
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
