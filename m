@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79555C7EE2E
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Jun 2023 18:05:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BB6EC7EE29
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Jun 2023 18:05:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 23DA36151F;
-	Thu,  8 Jun 2023 18:05:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 23DA36151F
+	by smtp3.osuosl.org (Postfix) with ESMTP id 149F9611D7;
+	Thu,  8 Jun 2023 18:05:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 149F9611D7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686247531;
-	bh=MeSLhIR+tZdsdykyCa6jlTGbTX4yKvREZ0OHwMNSSpQ=;
+	s=default; t=1686247536;
+	bh=2dU2SYRaoml4CknW4ERdgn+U33+RmtBEupTovO5h7Wg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=FJP11eQpsNqtsT5ZpD7kRIlXoSH99Zw2xvE+QZ3R0c/IFkUHbHOvTKEJ+ytkrJBqC
-	 j++zDqTovrZEzOO1gxKFbnl2oi9JVUOtJVGpWVzGd0+9kbWejnbFVbxAIhO0NhcbLA
-	 IolOvQy8j54jqAROLIC7MmgMY+Zd64atiAg2TwfsolrIFlk0wtrMP9jEpOzK+/gOhl
-	 S5UHnHg3QXH28UsTwvOH4JMd/IDQpOEJIQuHj/TmsjrNJAmfRwWRMh53sHb9VRRQ9d
-	 MQQ6+b97C/EvqAojKwH5SFjkdCw5g8XGuFkcicLxFrDnhHxI1BjLBdylBKnX+zOMBz
-	 culqrSUbvWU8A==
+	b=2ZkeqbjCWRFxCRWOjBMFrmrtKg4SfFl7xWd3saaLVfOKKOzGmISgPiQj+R2MtwJhy
+	 SySqlaf8ieSPj2SY3GVYy5irCjgyr2DuN7CaUVVDcOo6V2SeS+OAv5H9vFaJtkQvw/
+	 hvTewzjShC7vObMXRfKejkaVmS1uDR8xXNHz1hc6/9KkfA/9Dej+YDcIKf0w4GU6yc
+	 ZU3aRQMxnpQY6MzlK6ff41d3NvQdEw44QcEfvjpWfvo/SFuhSS+BpSH2bZnMmBWc+R
+	 7X7ZBOu2MaTKMPCsbt3euVzEVtTr9Qn7DMtftqhkKCNVn9Iig213+GN4RnA9zeDwRy
+	 Kr64D3zgrFmTA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CPjWoPXI9HnE; Thu,  8 Jun 2023 18:05:30 +0000 (UTC)
+	with ESMTP id chMapmWoV63j; Thu,  8 Jun 2023 18:05:35 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A6B856150D;
-	Thu,  8 Jun 2023 18:05:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A6B856150D
+	by smtp3.osuosl.org (Postfix) with ESMTP id EE27361533;
+	Thu,  8 Jun 2023 18:05:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EE27361533
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 274FE1BF3E1
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:08 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 400941BF3E1
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5878B42072
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5878B42072
+ by smtp4.osuosl.org (Postfix) with ESMTP id B684242421
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B684242421
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id QSRUCcAA4hid for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Jun 2023 18:05:03 +0000 (UTC)
+ with ESMTP id bPQHNwWRHYmF for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Jun 2023 18:05:06 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8B81442099
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7300C423E6
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8B81442099
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:03 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="385738702"
-X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="385738702"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7300C423E6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:06 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="385738752"
+X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="385738752"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jun 2023 11:04:37 -0700
+ 08 Jun 2023 11:04:38 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="775187921"
-X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="775187921"
+X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="775187936"
+X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="775187936"
 Received: from dmert-dev.jf.intel.com ([10.166.241.14])
  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jun 2023 11:04:36 -0700
+ 08 Jun 2023 11:04:38 -0700
 From: Dave Ertman <david.m.ertman@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  8 Jun 2023 11:06:09 -0700
-Message-Id: <20230608180618.574171-2-david.m.ertman@intel.com>
+Date: Thu,  8 Jun 2023 11:06:16 -0700
+Message-Id: <20230608180618.574171-9-david.m.ertman@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230608180618.574171-1-david.m.ertman@intel.com>
 References: <20230608180618.574171-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686247503; x=1717783503;
+ t=1686247506; x=1717783506;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=QkmJjuarimT/NDHZpAvvjJcxdjAd8T8HWu3JG/DFuzA=;
- b=kvacf3u2dFvKYwlsgzEjHOCZ1kW4LuESYdw0yMgLZPMD8tHDpK3kVQ0R
- d/m2DLllHqqhv5ACH8+BzY9Gm5t9oDYNGYWSSB/dtbz8GIAiFHMmURvdA
- 2WomPH3e9CQk6zXRlvT2fo+msD5ianfwEOU3KxXnorZ7iGrI52d0KiCeN
- hCfLRQd2zN41KjDhw6cLr/AQhSc3VIf6gCHNYLfqxfa2ntZXpmSApIwGh
- 6rgQVeoUB2FvXo/yJEJtN3A1OZfQJMBdgyw6SuUYxvNBwGYOAjW40kcAy
- sC0VAsLGvw8m/7cg6sRiCoZNlexroaV6gHoALZk5sBH184PwZl/YQB/u2
- w==;
+ bh=5hbF3hL5xyurJ9/mpZHGq0ncbx8fY2frXzIwkO8UY14=;
+ b=Uxs0lUUGGI02wqcmIU3m2BqEFaurVIo/2z/VL8MUG5I8sfJy1i3hkD3a
+ Aexe76j9rpW9tWRt68UYDqBu3V+jXvc1IY7Vb+0zYTQv8fouZcxyaNNER
+ rJt0SrbtI++MMvHEkREtT0MlZ//8+rSoerbQtKUzIgj47swPDR31AOSRz
+ G+RV7Gn0TZ9iWImV8xdfCQat13FKPs0d3pgQBrCqpxyeavKaIvRGUzgrv
+ b2FM6KE4R0MbmPyNC+zjG/YBIajQrJPzid+/lZNiD9eof4g542XcT0K3G
+ oGXI8OxS7gjJs8bj31L26tBMfqS8MFFnf4Lw/3lMC9bnck7e/sTeCumfS
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=kvacf3u2
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 01/10] ice: Correctly
- initialize queue context values
+ header.a=rsa-sha256 header.s=Intel header.b=Uxs0lUUG
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 08/10] ice: enforce interface
+ eligibility and add messaging for SRIOV LAG
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,92 +102,198 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+Implement checks on what interfaces are eligible for supporting SRIOV VFs
+when a member of an aggregate interface.
 
-The ice_alloc_lan_q_ctx function allocates the queue context array for a
-given traffic class. This function uses devm_kcalloc which will
-zero-allocate the structure. Thus, prior to any queue being setup by
-ice_ena_vsi_txq, the q_ctx structure will have a q_handle of 0 and a q_teid
-of 0. These are potentially valid values.
+Implement unwind path for interfaces that become ineligible.
 
-Modify the ice_alloc_lan_q_ctx function to initialize every member of the
-q_ctx array to have invalid values. Modify ice_dis_vsi_txq to ensure that
-it assigns q_teid to an invalid value when it assigns q_handle to the
-invalid value as well.
+checks for the SRIOV LAG feature bit wrap most of the functional code for
+manipulating resources that apply to this feature.  Utilize this bit
+to track compliant aggregates.  Also flag any new entries into the
+aggregate as not supporting SRIOV LAG for the time they are in the
+non-compliant aggregate.
 
-This will allow other code to check whether the queue context is currently
-valid before operating on it.
+Once an aggregate has been flagged as non-compliant, only unpopulating the
+aggregate and re-populating it will return SRIOV LAG functionality.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
 Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c |  1 +
- drivers/net/ethernet/intel/ice/ice_sched.c  | 23 ++++++++++++++++-----
- 2 files changed, 19 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lag.c | 88 ++++++++++++++++++++++--
+ 1 file changed, 83 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 6acb40f3c202..ebdaf8dc679c 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4700,6 +4700,7 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_queues,
- 			break;
- 		ice_free_sched_node(pi, node);
- 		q_ctx->q_handle = ICE_INVAL_Q_HANDLE;
-+		q_ctx->q_teid = ICE_INVAL_TEID;
- 	}
- 	mutex_unlock(&pi->sched_lock);
- 	kfree(qg_list);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index b664d60fd037..79a8972873f1 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -569,18 +569,24 @@ ice_alloc_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 new_numqs)
- {
- 	struct ice_vsi_ctx *vsi_ctx;
- 	struct ice_q_ctx *q_ctx;
-+	u16 idx;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+index bd64f22631d6..6c6e5f4fe12a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.c
++++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+@@ -924,6 +924,7 @@ static void ice_lag_link(struct ice_lag *lag)
  
- 	vsi_ctx = ice_get_vsi_ctx(hw, vsi_handle);
- 	if (!vsi_ctx)
- 		return -EINVAL;
- 	/* allocate LAN queue contexts */
- 	if (!vsi_ctx->lan_q_ctx[tc]) {
--		vsi_ctx->lan_q_ctx[tc] = devm_kcalloc(ice_hw_to_dev(hw),
--						      new_numqs,
--						      sizeof(*q_ctx),
--						      GFP_KERNEL);
--		if (!vsi_ctx->lan_q_ctx[tc])
-+		q_ctx = devm_kcalloc(ice_hw_to_dev(hw), new_numqs,
-+				     sizeof(*q_ctx), GFP_KERNEL);
-+		if (!q_ctx)
- 			return -ENOMEM;
+ 	lag->bonded = true;
+ 	lag->role = ICE_LAG_UNSET;
++	netdev_info(lag->netdev, "Shared SR-IOV resources in bond are active\n");
+ }
+ 
+ /**
+@@ -1369,6 +1370,7 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
+ 	struct netdev_notifier_bonding_info *info;
+ 	struct netdev_bonding_info *bonding_info;
+ 	struct list_head *tmp;
++	struct device *dev;
+ 	int count = 0;
+ 
+ 	if (!lag->primary)
+@@ -1381,11 +1383,21 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
+ 	if (event_upper != lag->upper_netdev)
+ 		return true;
+ 
++	dev = ice_pf_to_dev(lag->pf);
 +
-+		for (idx = 0; idx < new_numqs; idx++) {
-+			q_ctx[idx].q_handle = ICE_INVAL_Q_HANDLE;
-+			q_ctx[idx].q_teid = ICE_INVAL_TEID;
-+		}
++	/* only supporting switchdev mode for SRIOV VF LAG.
++	 * primary interface has to be in switchdev mode
++	 */
++	if (!ice_is_switchdev_running(lag->pf)) {
++		dev_info(dev, "Primary interface not in switchdev mode - VF LAG disabled\n");
++		return false;
++	}
 +
-+		vsi_ctx->lan_q_ctx[tc] = q_ctx;
- 		vsi_ctx->num_lan_q_entries[tc] = new_numqs;
- 		return 0;
+ 	info = (struct netdev_notifier_bonding_info *)ptr;
+ 	bonding_info = &info->bonding_info;
+ 	lag->bond_mode = bonding_info->master.bond_mode;
+ 	if (lag->bond_mode != BOND_MODE_ACTIVEBACKUP) {
+-		netdev_info(lag->netdev, "Bond Mode not ACTIVE-BACKUP\n");
++		dev_info(dev, "Bond Mode not ACTIVE-BACKUP - VF LAG disabled\n");
+ 		return false;
  	}
-@@ -592,9 +598,16 @@ ice_alloc_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 new_numqs)
- 				     sizeof(*q_ctx), GFP_KERNEL);
- 		if (!q_ctx)
- 			return -ENOMEM;
-+
- 		memcpy(q_ctx, vsi_ctx->lan_q_ctx[tc],
- 		       prev_num * sizeof(*q_ctx));
- 		devm_kfree(ice_hw_to_dev(hw), vsi_ctx->lan_q_ctx[tc]);
-+
-+		for (idx = prev_num; idx < new_numqs; idx++) {
-+			q_ctx[idx].q_handle = ICE_INVAL_Q_HANDLE;
-+			q_ctx[idx].q_teid = ICE_INVAL_TEID;
+ 
+@@ -1397,17 +1409,19 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
+ 		struct ice_netdev_priv *peer_np;
+ 		struct net_device *peer_netdev;
+ 		struct ice_vsi *vsi, *peer_vsi;
++		struct ice_pf *peer_pf;
+ 
+ 		entry = list_entry(tmp, struct ice_lag_netdev_list, node);
+ 		peer_netdev = entry->netdev;
+ 		if (!netif_is_ice(peer_netdev)) {
+-			netdev_info(lag->netdev, "Found non-ice netdev in LAG\n");
++			dev_info(dev, "Found %s non-ice netdev in LAG - VF LAG disabled\n",
++				 netdev_name(peer_netdev));
+ 			return false;
+ 		}
+ 
+ 		count++;
+ 		if (count > 2) {
+-			netdev_info(lag->netdev, "Found more than two netdevs in LAG\n");
++			dev_info(dev, "Found more than two netdevs in LAG - VF LAG disabled\n");
+ 			return false;
+ 		}
+ 
+@@ -1416,7 +1430,8 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
+ 		peer_vsi = peer_np->vsi;
+ 		if (lag->pf->pdev->bus != peer_vsi->back->pdev->bus ||
+ 		    lag->pf->pdev->slot != peer_vsi->back->pdev->slot) {
+-			netdev_info(lag->netdev, "Found netdev on different device in LAG\n");
++			dev_info(dev, "Found %s on different device in LAG - VF LAG disabled\n",
++				 netdev_name(peer_netdev));
+ 			return false;
+ 		}
+ 
+@@ -1425,11 +1440,18 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
+ 		peer_dcb_cfg = &peer_vsi->port_info->qos_cfg.local_dcbx_cfg;
+ 		if (memcmp(dcb_cfg, peer_dcb_cfg,
+ 			   sizeof(struct ice_dcbx_cfg))) {
+-			netdev_info(lag->netdev, "Found netdev with different DCB config in LAG\n");
++			dev_info(dev, "Found %s with different DCB in LAG - VF LAG disabled\n",
++				 netdev_name(peer_netdev));
+ 			return false;
+ 		}
+ 
+ #endif /* !NO_DCB_SUPPORT || ADQ_SUPPORT */
++		peer_pf = peer_vsi->back;
++		if (test_bit(ICE_FLAG_FW_LLDP_AGENT, peer_pf->flags)) {
++			dev_warn(dev, "Found %s with FW LLDP agent active - VF LAG disabled\n",
++				 netdev_name(peer_netdev));
++			return false;
 +		}
-+
- 		vsi_ctx->lan_q_ctx[tc] = q_ctx;
- 		vsi_ctx->num_lan_q_entries[tc] = new_numqs;
  	}
+ 
+ 	return true;
+@@ -1477,6 +1499,58 @@ ice_lag_unregister(struct ice_lag *lag, struct net_device *event_netdev)
+ 		ice_lag_set_swid(0, lag, false);
+ }
+ 
++/**
++ * ice_lag_chk_disabled_bond - monitor interfaces entering/leaving disabled bond
++ * @lag: lag info struct
++ * @ptr: opaque data containing event
++ *
++ * as interfaces enter a bond - determine if the bond is currently
++ * SRIOV LAG compliant and flag if not.  As interfaces leave the
++ * bond, reset their compliant status.
++ */
++static void ice_lag_chk_disabled_bond(struct ice_lag *lag, void *ptr)
++{
++	struct net_device *netdev = netdev_notifier_info_to_dev(ptr);
++	struct netdev_notifier_changeupper_info *info = ptr;
++	struct ice_lag *prim_lag;
++
++	if (netdev != lag->netdev)
++		return;
++
++	if (info->linking) {
++		prim_lag = ice_lag_find_primary(lag);
++		if (prim_lag &&
++		    !ice_is_feature_supported(prim_lag->pf, ICE_F_SRIOV_LAG)) {
++			ice_clear_feature_support(lag->pf, ICE_F_SRIOV_LAG);
++			netdev_info(netdev, "Interface added to non-compliant SRIOV LAG aggregate\n");
++		}
++	} else {
++		ice_lag_check_nvm_support(lag->pf);
++	}
++}
++
++/**
++ * ice_lag_disable_sriov_bond - set members of bond as not supporting SRIOV LAG
++ * @lag: primary interfaces lag struct
++ */
++static void ice_lag_disable_sriov_bond(struct ice_lag *lag)
++{
++	struct ice_lag_netdev_list *entry;
++	struct ice_netdev_priv *np;
++	struct net_device *netdev;
++	struct list_head *tmp;
++	struct ice_pf *pf;
++
++	list_for_each(tmp, lag->netdev_head) {
++		entry = list_entry(tmp, struct ice_lag_netdev_list, node);
++		netdev = entry->netdev;
++		np = netdev_priv(netdev);
++		pf = np->vsi->back;
++
++		ice_clear_feature_support(pf, ICE_F_SRIOV_LAG);
++	}
++}
++
+ /**
+  * ice_lag_process_event - process a task assigned to the lag_wq
+  * @work: pointer to work_struct
+@@ -1498,6 +1572,7 @@ static void ice_lag_process_event(struct work_struct *work)
+ 	switch (lag_work->event) {
+ 	case NETDEV_CHANGEUPPER:
+ 		info = &lag_work->info.changeupper_info;
++		ice_lag_chk_disabled_bond(lag_work->lag, info);
+ 		if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
+ 			ice_lag_monitor_link(lag_work->lag, info);
+ 			ice_lag_changeupper_event(lag_work->lag, info);
+@@ -1508,6 +1583,9 @@ static void ice_lag_process_event(struct work_struct *work)
+ 		if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
+ 			if (!ice_lag_chk_comp(lag_work->lag,
+ 					      &lag_work->info.bonding_info)) {
++				netdev = lag_work->info.bonding_info.info.dev;
++				ice_lag_disable_sriov_bond(lag_work->lag);
++				ice_lag_unregister(lag_work->lag, netdev);
+ 				goto lag_cleanup;
+ 			}
+ 			ice_lag_monitor_active(lag_work->lag,
 -- 
 2.40.1
 
