@@ -1,89 +1,100 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB6DBC7EE29
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Jun 2023 18:05:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00A37C7EE25
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  8 Jun 2023 18:45:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5DE976153C;
-	Thu,  8 Jun 2023 18:05:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5DE976153C
+	by smtp1.osuosl.org (Postfix) with ESMTP id 741E383F27;
+	Thu,  8 Jun 2023 18:45:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 741E383F27
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686247554;
-	bh=et22oz8X3QHhIDmQZjoKy0YYRDSAsftdB34JXldWGW0=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1686249903;
+	bh=FR1ILqTfOW8UWA2VGoQ5Y1zKMOvu3Oz17kB9sl10yCE=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=N93deadxirKiCFPVmSmSHg4EjagKw84q5iYuC1clKxmcr9ByNfzJ5rgMOQHPJjdIX
-	 bpIPr+vn9I5d7s7JQb0Oyj7TMZQ7eQ1ZDQWE3xA/hZHUWcg8yNaezKtjUPOYUhSJSt
-	 oDnZvEQ4YNK2GDGkCWafi2z9T4kaEa0DNMsMyreHnIdsKhKdFSIaztVEVTBI0D9qtd
-	 XfgtSblunLvYcReNxOfWYPJNgwE9/3GmIqBdq2EVfwN/SzSOylUymsf3ufAewaoqkH
-	 Jb4mrGKCMiL/26gg8NXTeYIYI/TKsqGy7/YzEvd9dzDl4eGw9X01TiM+h3U8QtuWDi
-	 RntUbavZkHeWQ==
+	b=xgJwq07Gjg4aCBN0LXPoNQMF/447AohqJ+d2pragaqYhANf14b/PKSpOcZjmZq0EH
+	 yTIJ+IUiIw5fhfUMMjJ85Z6iBCUOF+iHTLxRMo/Qzky46/bUiEcs7O5tHHQstFJmby
+	 BHRqdFi0UkCQB3pxVLmZryh4yCHbYt59EpA5e0RlSpsZFY5Yum4OgDfziTbBcHZiFe
+	 2Hgqr+UcsTONgqXhMgVvtP082yCWGHURVqfDdcx73EHGgX28o1we44N0+USVL3XPwb
+	 staee/BCPQiJl2TvVwL1IN8KsD+9qiXhHftWTZCQhiAHuUVsRW9g0XmX4Ux1jhp2ro
+	 /2MqUe4EfW9+Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id vIPRrbBZ-YnH; Thu,  8 Jun 2023 18:05:53 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id mkkNZzzOlX4R; Thu,  8 Jun 2023 18:45:02 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 413E561519;
-	Thu,  8 Jun 2023 18:05:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 413E561519
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6432483F2B;
+	Thu,  8 Jun 2023 18:45:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6432483F2B
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 3AFAD1BF3E1
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:14 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 45BFF1BF3E1
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:45:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id CB8F542128
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CB8F542128
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2938A41F0A
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:45:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2938A41F0A
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Cea4QlrHkHWZ for <intel-wired-lan@lists.osuosl.org>;
- Thu,  8 Jun 2023 18:05:07 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4F0F242407
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4F0F242407
- for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:05:07 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="385738758"
-X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="385738758"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jun 2023 11:04:39 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10735"; a="775187938"
-X-IronPort-AV: E=Sophos;i="6.00,227,1681196400"; d="scan'208";a="775187938"
-Received: from dmert-dev.jf.intel.com ([10.166.241.14])
- by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Jun 2023 11:04:38 -0700
-From: Dave Ertman <david.m.ertman@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  8 Jun 2023 11:06:17 -0700
-Message-Id: <20230608180618.574171-10-david.m.ertman@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230608180618.574171-1-david.m.ertman@intel.com>
-References: <20230608180618.574171-1-david.m.ertman@intel.com>
+ with ESMTP id Zl_19eyhMKCL for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  8 Jun 2023 18:44:59 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DA73541932
+Received: from mail-ot1-x32d.google.com (mail-ot1-x32d.google.com
+ [IPv6:2607:f8b0:4864:20::32d])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DA73541932
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  8 Jun 2023 18:44:58 +0000 (UTC)
+Received: by mail-ot1-x32d.google.com with SMTP id
+ 46e09a7af769-6b2b6910facso15655a34.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 08 Jun 2023 11:44:58 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1686249898; x=1688841898;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=yt12+1+dARtKc3fRLQ7ivDg1sn89g+SY2IZ1KjaiaJs=;
+ b=G/3cKtpe6RxTsGCDvJMw3jGUTvt/fcHMwd70jVs/0FvZ33Mx9wJvTqbLOcP6Hv7cMQ
+ D9koelZ22rkWcsUEfDTT3ZVZ+5Sjcj07CKVQwlQJPvlzL4wK5fgIswq7uX01ADhLlDT5
+ AADxR4ETkt6i5hEEXBU8KNeiQDmvqf9bGtKLb/wTuqHkWLC1ju/ZCEuoPe6ut9Z5hrAL
+ vbvZ/8WghBzlPPNMwSqSAB+3nH9Sc1lfGGsA6gdj/jFf2d/0eaBc88c0TaVoMA9sBkqE
+ xLVcteQpDkgVrrg+fNpxCBS/XnOaTR+B2LaTnz73BIQSAqUPYnsR1ejFLer+uf0e6uha
+ RrWA==
+X-Gm-Message-State: AC+VfDwXsNyanp/RgefFRdTnnQjJJGe3sGhxO7FmgiM5CYEswIExfmeg
+ pkfmF0VcB31m2wdQ2Syn5v5mCoOG1vtNNx9+AZ9PgA==
+X-Google-Smtp-Source: ACHHUZ6qTt2rGt9wmZJ/SPf4KQOMj4ZBEd3BOO3j7B2iz3zwr55Kb1Y6wu4JUoLhK2C91muXfFqoZoIhgmucd8I7ZNU=
+X-Received: by 2002:a05:6359:a9b:b0:129:b9a9:7858 with SMTP id
+ em27-20020a0563590a9b00b00129b9a97858mr3725483rwb.3.1686249897389; Thu, 08
+ Jun 2023 11:44:57 -0700 (PDT)
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686247507; x=1717783507;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=fCymMh11BDM0sIUq78o1Kso+F0PGaNZuR5UarBdn8Jc=;
- b=KFUfrVt0vsgS3VDrMFEZryFlSWPOtaeYP1Pjd/N2VHQtmbhjj5Np5mhV
- 48P72PSBh2CVpJrbZRUMxIvuQAqDJvk6NoTnV0whAKfHP++CD7dT6biVw
- KUw6yEJiWn6m+n1gDSWVlya4lXU+X7+9m+IhEHyR+0UOa5bne8dKWK6b7
- xgiVSk4aS7azKS44gElgmnJY8W1Ay16vpEMS/O3nETwrMHoa02w+bcdX2
- 3XzqFajrP2RQQtH6lKANbQC0MMt5qZf1062/QXawb5QRxf0VcT+3XVtcg
- +AkgbF9CaXjbgW4+SsYOMKGvAZhO8mhvXDLITvNXzLyuBs6ExOg7zvAAm
- A==;
+References: <20230602103750.2290132-1-vladimir.oltean@nxp.com>
+ <20230602103750.2290132-6-vladimir.oltean@nxp.com>
+In-Reply-To: <20230602103750.2290132-6-vladimir.oltean@nxp.com>
+From: Jamal Hadi Salim <jhs@mojatatu.com>
+Date: Thu, 8 Jun 2023 14:44:46 -0400
+Message-ID: <CAM0EoM=P9+wNnNQ=ky96rwCx1z20fR21EWEdx+Na39NCqqG=3A@mail.gmail.com>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mojatatu-com.20221208.gappssmtp.com; s=20221208; t=1686249898; x=1688841898; 
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=yt12+1+dARtKc3fRLQ7ivDg1sn89g+SY2IZ1KjaiaJs=;
+ b=0sPZpYtCx2uIcWQN2SI/AEQ/WWZcXhOA/di7WAeDir9+IxajPlSiVl+Hm2Chzremmo
+ dNc1GyBIQugOsTs0Op4y9GnHpYJA6Lk2SzxfAFqSh7gT18FVPy6ip84ibVOzTAH/UfUA
+ ZvZjqPRxbDJ1qCdiplb3WeEslaA6HHFH8lOx/eE5silGncLGYYiL5xP/SkdO+VG6Dm5D
+ 1eFQ20JbZf12nZYUu92bxsTJf6ot+K12YXjoCdFGJuDefST2cgBxazwwt2XthTgYPA/o
+ sHIPKcuZ2bM83dfwq5rhxfjHleCZJVwihFvLBLGwll/oJeiCqDdp3ptsYVl+seJdxQ30
+ YSqA==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=KFUfrVt0
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 09/10] ice: enforce no DCB
- config changing when in bond
+ dkim=pass (2048-bit key) header.d=mojatatu-com.20221208.gappssmtp.com
+ header.i=@mojatatu-com.20221208.gappssmtp.com header.a=rsa-sha256
+ header.s=20221208 header.b=0sPZpYtC
+Subject: Re: [Intel-wired-lan] [PATCH RESEND net-next 5/5] net/sched:
+ taprio: dump class stats for the actual q->qdiscs[]
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,152 +107,111 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, daniel.machon@microchip.com
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: Jiri Pirko <jiri@resnulli.us>, Pedro Tammela <pctammela@mojatatu.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Peilin Ye <yepeilin.cs@gmail.com>, Eric Dumazet <edumazet@google.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Cong Wang <xiyou.wangcong@gmail.com>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-To support SRIOV LAG, the driver cannot allow changes to an interface's DCB
-configuration when in a bond.  This would break the ability to modify
-interfaces Tx scheduling for fail-over interfaces.
-
-Block kernel generated DCB config events when in a bond.
-
-Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 50 +++++++++++++++++++++
- 1 file changed, 50 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index 3eb01731e496..e1fbc6de452d 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -70,6 +70,11 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
- 	    !(pf->dcbx_cap & DCB_CAP_DCBX_VER_IEEE))
- 		return -EINVAL;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return -EINVAL;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	mutex_lock(&pf->tc_mutex);
-@@ -170,6 +175,11 @@ static u8 ice_dcbnl_setdcbx(struct net_device *netdev, u8 mode)
- 	if (mode == pf->dcbx_cap)
- 		return ICE_DCB_NO_HW_CHG;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return ICE_DCB_NO_HW_CHG;
-+	}
-+
- 	qos_cfg = &pf->hw.port_info->qos_cfg;
- 
- 	/* DSCP configuration is not DCBx negotiated */
-@@ -261,6 +271,11 @@ static int ice_dcbnl_setpfc(struct net_device *netdev, struct ieee_pfc *pfc)
- 	    !(pf->dcbx_cap & DCB_CAP_DCBX_VER_IEEE))
- 		return -EINVAL;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return -EINVAL;
-+	}
-+
- 	mutex_lock(&pf->tc_mutex);
- 
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
-@@ -323,6 +338,11 @@ static void ice_dcbnl_set_pfc_cfg(struct net_device *netdev, int prio, u8 set)
- 	if (prio >= ICE_MAX_USER_PRIORITY)
- 		return;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	new_cfg->pfc.pfccap = pf->hw.func_caps.common_cap.maxtc;
-@@ -379,6 +399,11 @@ static u8 ice_dcbnl_setstate(struct net_device *netdev, u8 state)
- 	    !(pf->dcbx_cap & DCB_CAP_DCBX_VER_CEE))
- 		return ICE_DCB_NO_HW_CHG;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return ICE_DCB_NO_HW_CHG;
-+	}
-+
- 	/* Nothing to do */
- 	if (!!state == test_bit(ICE_FLAG_DCB_ENA, pf->flags))
- 		return ICE_DCB_NO_HW_CHG;
-@@ -451,6 +476,11 @@ ice_dcbnl_set_pg_tc_cfg_tx(struct net_device *netdev, int tc,
- 	if (tc >= ICE_MAX_TRAFFIC_CLASS)
- 		return;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	/* prio_type, bwg_id and bw_pct per UP are not supported */
-@@ -505,6 +535,11 @@ ice_dcbnl_set_pg_bwg_cfg_tx(struct net_device *netdev, int pgid, u8 bw_pct)
- 	if (pgid >= ICE_MAX_TRAFFIC_CLASS)
- 		return;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	new_cfg->etscfg.tcbwtable[pgid] = bw_pct;
-@@ -725,6 +760,11 @@ static int ice_dcbnl_setapp(struct net_device *netdev, struct dcb_app *app)
- 		return -EINVAL;
- 	}
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return -EINVAL;
-+	}
-+
- 	max_tc = pf->hw.func_caps.common_cap.maxtc;
- 	if (app->priority >= max_tc) {
- 		netdev_err(netdev, "TC %d out of range, max TC %d\n",
-@@ -836,6 +876,11 @@ static int ice_dcbnl_delapp(struct net_device *netdev, struct dcb_app *app)
- 		return -EINVAL;
- 	}
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return -EINVAL;
-+	}
-+
- 	mutex_lock(&pf->tc_mutex);
- 	old_cfg = &pf->hw.port_info->qos_cfg.local_dcbx_cfg;
- 
-@@ -937,6 +982,11 @@ static u8 ice_dcbnl_cee_set_all(struct net_device *netdev)
- 	    !(pf->dcbx_cap & DCB_CAP_DCBX_VER_CEE))
- 		return ICE_DCB_NO_HW_CHG;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return ICE_DCB_NO_HW_CHG;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	mutex_lock(&pf->tc_mutex);
--- 
-2.40.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+T24gRnJpLCBKdW4gMiwgMjAyMyBhdCA2OjM44oCvQU0gVmxhZGltaXIgT2x0ZWFuIDx2bGFkaW1p
+ci5vbHRlYW5AbnhwLmNvbT4gd3JvdGU6Cj4KPiBUaGlzIG1ha2VzIGEgZGlmZmVyZW5jZSBmb3Ig
+dGhlIHNvZnR3YXJlIHNjaGVkdWxpbmcgbW9kZSwgd2hlcmUKPiBkZXZfcXVldWUtPnFkaXNjX3Ns
+ZWVwaW5nIGlzIHRoZSBzYW1lIGFzIHRoZSB0YXByaW8gcm9vdCBRZGlzYyBpdHNlbGYsCj4gYnV0
+IHdoZW4gd2UncmUgdGFsa2luZyBhYm91dCB3aGF0IFFkaXNjIGFuZCBzdGF0cyBnZXQgcmVwb3J0
+ZWQgZm9yIGEKPiB0cmFmZmljIGNsYXNzLCB0aGUgcm9vdCB0YXByaW8gaXNuJ3Qgd2hhdCBjb21l
+cyB0byBtaW5kLCBidXQgcS0+cWRpc2NzW10KPiBpcy4KPgo+IFRvIHVuZGVyc3RhbmQgdGhlIGRp
+ZmZlcmVuY2UsIEkndmUgYXR0ZW1wdGVkIHRvIHNlbmQgMTAwIHBhY2tldHMgaW4KPiBzb2Z0d2Fy
+ZSBtb2RlIHRocm91Z2ggdHJhZmZpYyBjbGFzcyAwICh0aGV5IGFyZSBpbiB0aGUgUWRpc2MncyBi
+YWNrbG9nKSwKPiBhbmQgcmVjb3JkZWQgdGhlIHN0YXRzIGJlZm9yZSBhbmQgYWZ0ZXIgdGhlIGNo
+YW5nZS4KPgoKT3RoZXIgdGhhbiB0aGUgcmVmY291bnQgaXNzdWUgaSB0aGluayB0aGUgYXBwcm9h
+Y2ggbG9va3MgcmVhc29uYWJsZSB0bwptZS4gVGhlIHN0YXRzIGJlZm9yZS9hZnRlciB5b3UgYXJl
+IHNob3dpbmcgYmVsb3cgdGhvdWdoIGFyZQppbnRlcmVzdGluZzsgYXJlIHlvdSBzaG93aW5nIGEg
+dHJhbnNpZW50IHBoYXNlIHdoZXJlIHBhY2tldHMgYXJlCnRlbXBvcmFyaWx5IGluIHRoZSBiYWNr
+bG9nLiBUeXBpY2FsbHkgdGhlIGJhY2tsb2cgaXMgYSB0cmFuc2llbnQgcGhhc2UKd2hpY2ggbGFz
+dHMgYSB2ZXJ5IHNob3J0IHBlcmlvZC4gTWF5YmUgaXQgd29ya3MgZGlmZmVyZW50bHkgZm9yCnRh
+cHJpbz8gSSB0b29rIGEgcXVpY2sgbG9vayBhdCB0aGUgY29kZSBhbmQgZG8gc2VlIHRvIGRlY3Jl
+bWVudCB0aGUKYmFja2xvZyBpbiB0aGUgZGVxdWV1ZSwgc28gaWYgaXQgaXMgbm90IHRyYW5zaWVu
+dCB0aGVuIHNvbWUgY29kZSBwYXRoCmlzIG5vdCBiZWluZyBoaXQuCgpBc2lkZTogSSByZWFsaXpl
+IHlvdSBhcmUgYnVzeSAtIGJ1dCBpZiB5b3UgZ2V0IHRpbWUgYW5kIHByb3ZpZGUgc29tZQpzYW1w
+bGUgdGMgY29tbWFuZCBsaW5lcyBmb3IgdGVzdGluZyB3ZSBjb3VsZCBoZWxwIGNyZWF0ZSB0aGUg
+dGVzdHMgZm9yCnlvdSwgYXQgbGVhc3QgdGhlIGZpcnN0IHRpbWUuIFRoZSBhZHZhbnRhZ2Ugb2Yg
+cHV0dGluZyB0aGVzZSB0ZXN0cyBpbgp0b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy90Yy10ZXN0aW5n
+LyBpcyB0aGF0IHRoZXJlIGFyZSB0ZXN0IHRvb2xzIG91dAp0aGVyZSB0aGF0IHJ1biB0aGVzZSB0
+ZXN0cyBhbmQgc28gcmVncmVzc2lvbnMgYXJlIGVhc2llciB0byBjYXRjaApzb29uZXIuCgpjaGVl
+cnMsCmphbWFsCgo+IEhlcmUgaXMgYmVmb3JlOgo+Cj4gJCB0YyAtcyBjbGFzcyBzaG93IGRldiBl
+dGgwCj4gY2xhc3MgdGFwcmlvIDgwMDE6MSByb290IGxlYWYgODAwMToKPiAgU2VudCAwIGJ5dGVz
+IDAgcGt0IChkcm9wcGVkIDAsIG92ZXJsaW1pdHMgMCByZXF1ZXVlcyAwKQo+ICBiYWNrbG9nIDk0
+MDBiIDEwMHAgcmVxdWV1ZXMgMAo+ICBXaW5kb3cgZHJvcHM6IDAKPiBjbGFzcyB0YXByaW8gODAw
+MToyIHJvb3QgbGVhZiA4MDAxOgo+ICBTZW50IDAgYnl0ZXMgMCBwa3QgKGRyb3BwZWQgMCwgb3Zl
+cmxpbWl0cyAwIHJlcXVldWVzIDApCj4gIGJhY2tsb2cgOTQwMGIgMTAwcCByZXF1ZXVlcyAwCj4g
+IFdpbmRvdyBkcm9wczogMAo+IGNsYXNzIHRhcHJpbyA4MDAxOjMgcm9vdCBsZWFmIDgwMDE6Cj4g
+IFNlbnQgMCBieXRlcyAwIHBrdCAoZHJvcHBlZCAwLCBvdmVybGltaXRzIDAgcmVxdWV1ZXMgMCkK
+PiAgYmFja2xvZyA5NDAwYiAxMDBwIHJlcXVldWVzIDAKPiAgV2luZG93IGRyb3BzOiAwCj4gY2xh
+c3MgdGFwcmlvIDgwMDE6NCByb290IGxlYWYgODAwMToKPiAgU2VudCAwIGJ5dGVzIDAgcGt0IChk
+cm9wcGVkIDAsIG92ZXJsaW1pdHMgMCByZXF1ZXVlcyAwKQo+ICBiYWNrbG9nIDk0MDBiIDEwMHAg
+cmVxdWV1ZXMgMAo+ICBXaW5kb3cgZHJvcHM6IDAKPiBjbGFzcyB0YXByaW8gODAwMTo1IHJvb3Qg
+bGVhZiA4MDAxOgo+ICBTZW50IDAgYnl0ZXMgMCBwa3QgKGRyb3BwZWQgMCwgb3ZlcmxpbWl0cyAw
+IHJlcXVldWVzIDApCj4gIGJhY2tsb2cgOTQwMGIgMTAwcCByZXF1ZXVlcyAwCj4gIFdpbmRvdyBk
+cm9wczogMAo+IGNsYXNzIHRhcHJpbyA4MDAxOjYgcm9vdCBsZWFmIDgwMDE6Cj4gIFNlbnQgMCBi
+eXRlcyAwIHBrdCAoZHJvcHBlZCAwLCBvdmVybGltaXRzIDAgcmVxdWV1ZXMgMCkKPiAgYmFja2xv
+ZyA5NDAwYiAxMDBwIHJlcXVldWVzIDAKPiAgV2luZG93IGRyb3BzOiAwCj4gY2xhc3MgdGFwcmlv
+IDgwMDE6NyByb290IGxlYWYgODAwMToKPiAgU2VudCAwIGJ5dGVzIDAgcGt0IChkcm9wcGVkIDAs
+IG92ZXJsaW1pdHMgMCByZXF1ZXVlcyAwKQo+ICBiYWNrbG9nIDk0MDBiIDEwMHAgcmVxdWV1ZXMg
+MAo+ICBXaW5kb3cgZHJvcHM6IDAKPiBjbGFzcyB0YXByaW8gODAwMTo4IHJvb3QgbGVhZiA4MDAx
+Ogo+ICBTZW50IDAgYnl0ZXMgMCBwa3QgKGRyb3BwZWQgMCwgb3ZlcmxpbWl0cyAwIHJlcXVldWVz
+IDApCj4gIGJhY2tsb2cgOTQwMGIgMTAwcCByZXF1ZXVlcyAwCj4gIFdpbmRvdyBkcm9wczogMAo+
+Cj4gYW5kIGhlcmUgaXMgYWZ0ZXI6Cj4KPiBjbGFzcyB0YXByaW8gODAwMToxIHJvb3QKPiAgU2Vu
+dCAwIGJ5dGVzIDAgcGt0IChkcm9wcGVkIDAsIG92ZXJsaW1pdHMgMCByZXF1ZXVlcyAwKQo+ICBi
+YWNrbG9nIDk0MDBiIDEwMHAgcmVxdWV1ZXMgMAo+ICBXaW5kb3cgZHJvcHM6IDAKPiBjbGFzcyB0
+YXByaW8gODAwMToyIHJvb3QKPiAgU2VudCAwIGJ5dGVzIDAgcGt0IChkcm9wcGVkIDAsIG92ZXJs
+aW1pdHMgMCByZXF1ZXVlcyAwKQo+ICBiYWNrbG9nIDBiIDBwIHJlcXVldWVzIDAKPiAgV2luZG93
+IGRyb3BzOiAwCj4gY2xhc3MgdGFwcmlvIDgwMDE6MyByb290Cj4gIFNlbnQgMCBieXRlcyAwIHBr
+dCAoZHJvcHBlZCAwLCBvdmVybGltaXRzIDAgcmVxdWV1ZXMgMCkKPiAgYmFja2xvZyAwYiAwcCBy
+ZXF1ZXVlcyAwCj4gIFdpbmRvdyBkcm9wczogMAo+IGNsYXNzIHRhcHJpbyA4MDAxOjQgcm9vdAo+
+ICBTZW50IDAgYnl0ZXMgMCBwa3QgKGRyb3BwZWQgMCwgb3ZlcmxpbWl0cyAwIHJlcXVldWVzIDAp
+Cj4gIGJhY2tsb2cgMGIgMHAgcmVxdWV1ZXMgMAo+ICBXaW5kb3cgZHJvcHM6IDAKPiBjbGFzcyB0
+YXByaW8gODAwMTo1IHJvb3QKPiAgU2VudCAwIGJ5dGVzIDAgcGt0IChkcm9wcGVkIDAsIG92ZXJs
+aW1pdHMgMCByZXF1ZXVlcyAwKQo+ICBiYWNrbG9nIDBiIDBwIHJlcXVldWVzIDAKPiAgV2luZG93
+IGRyb3BzOiAwCj4gY2xhc3MgdGFwcmlvIDgwMDE6NiByb290Cj4gIFNlbnQgMCBieXRlcyAwIHBr
+dCAoZHJvcHBlZCAwLCBvdmVybGltaXRzIDAgcmVxdWV1ZXMgMCkKPiAgYmFja2xvZyAwYiAwcCBy
+ZXF1ZXVlcyAwCj4gIFdpbmRvdyBkcm9wczogMAo+IGNsYXNzIHRhcHJpbyA4MDAxOjcgcm9vdCBs
+ZWFmIDgwMTA6Cj4gIFNlbnQgMCBieXRlcyAwIHBrdCAoZHJvcHBlZCAwLCBvdmVybGltaXRzIDAg
+cmVxdWV1ZXMgMCkKPiAgYmFja2xvZyAwYiAwcCByZXF1ZXVlcyAwCj4gIFdpbmRvdyBkcm9wczog
+MAo+IGNsYXNzIHRhcHJpbyA4MDAxOjggcm9vdAo+ICBTZW50IDAgYnl0ZXMgMCBwa3QgKGRyb3Bw
+ZWQgMCwgb3ZlcmxpbWl0cyAwIHJlcXVldWVzIDApCj4gIGJhY2tsb2cgMGIgMHAgcmVxdWV1ZXMg
+MAo+ICBXaW5kb3cgZHJvcHM6IDAKPgo+IFRoZSBtb3N0IGdsYXJpbmcgKGFuZCBleHBlY3RlZCkg
+ZGlmZmVyZW5jZSBpcyB0aGF0IGJlZm9yZSwgYWxsIGNsYXNzCj4gc3RhdHMgcmVwb3J0ZWQgdGhl
+IGdsb2JhbCBzdGF0cywgd2hlcmVhcyBub3csIHRoZXkgcmVhbGx5IHJlcG9ydCBqdXN0Cj4gdGhl
+IGNvdW50ZXJzIGZvciB0aGF0IHRyYWZmaWMgY2xhc3MuCj4KPiBTaWduZWQtb2ZmLWJ5OiBWbGFk
+aW1pciBPbHRlYW4gPHZsYWRpbWlyLm9sdGVhbkBueHAuY29tPgo+IC0tLQo+ICBuZXQvc2NoZWQv
+c2NoX3RhcHJpby5jIHwgNyArKystLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAzIGluc2VydGlvbnMo
+KyksIDQgZGVsZXRpb25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvbmV0L3NjaGVkL3NjaF90YXByaW8u
+YyBiL25ldC9zY2hlZC9zY2hfdGFwcmlvLmMKPiBpbmRleCBjYzdmZjk4ZTVlODYuLjIzYjk4YzNh
+ZjhiMiAxMDA2NDQKPiAtLS0gYS9uZXQvc2NoZWQvc2NoX3RhcHJpby5jCj4gKysrIGIvbmV0L3Nj
+aGVkL3NjaF90YXByaW8uYwo+IEBAIC0yNDUyLDExICsyNDUyLDExIEBAIHN0YXRpYyB1bnNpZ25l
+ZCBsb25nIHRhcHJpb19maW5kKHN0cnVjdCBRZGlzYyAqc2NoLCB1MzIgY2xhc3NpZCkKPiAgc3Rh
+dGljIGludCB0YXByaW9fZHVtcF9jbGFzcyhzdHJ1Y3QgUWRpc2MgKnNjaCwgdW5zaWduZWQgbG9u
+ZyBjbCwKPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0cnVjdCBza19idWZmICpza2Is
+IHN0cnVjdCB0Y21zZyAqdGNtKQo+ICB7Cj4gLSAgICAgICBzdHJ1Y3QgbmV0ZGV2X3F1ZXVlICpk
+ZXZfcXVldWUgPSB0YXByaW9fcXVldWVfZ2V0KHNjaCwgY2wpOwo+ICsgICAgICAgc3RydWN0IFFk
+aXNjICpjaGlsZCA9IHRhcHJpb19sZWFmKHNjaCwgY2wpOwo+Cj4gICAgICAgICB0Y20tPnRjbV9w
+YXJlbnQgPSBUQ19IX1JPT1Q7Cj4gICAgICAgICB0Y20tPnRjbV9oYW5kbGUgfD0gVENfSF9NSU4o
+Y2wpOwo+IC0gICAgICAgdGNtLT50Y21faW5mbyA9IGRldl9xdWV1ZS0+cWRpc2Nfc2xlZXBpbmct
+PmhhbmRsZTsKPiArICAgICAgIHRjbS0+dGNtX2luZm8gPSBjaGlsZC0+aGFuZGxlOwo+Cj4gICAg
+ICAgICByZXR1cm4gMDsKPiAgfQo+IEBAIC0yNDY2LDggKzI0NjYsNyBAQCBzdGF0aWMgaW50IHRh
+cHJpb19kdW1wX2NsYXNzX3N0YXRzKHN0cnVjdCBRZGlzYyAqc2NoLCB1bnNpZ25lZCBsb25nIGNs
+LAo+ICAgICAgICAgX19yZWxlYXNlcyhkLT5sb2NrKQo+ICAgICAgICAgX19hY3F1aXJlcyhkLT5s
+b2NrKQo+ICB7Cj4gLSAgICAgICBzdHJ1Y3QgbmV0ZGV2X3F1ZXVlICpkZXZfcXVldWUgPSB0YXBy
+aW9fcXVldWVfZ2V0KHNjaCwgY2wpOwo+IC0gICAgICAgc3RydWN0IFFkaXNjICpjaGlsZCA9IGRl
+dl9xdWV1ZS0+cWRpc2Nfc2xlZXBpbmc7Cj4gKyAgICAgICBzdHJ1Y3QgUWRpc2MgKmNoaWxkID0g
+dGFwcmlvX2xlYWYoc2NoLCBjbCk7Cj4gICAgICAgICBzdHJ1Y3QgdGNfdGFwcmlvX3FvcHRfb2Zm
+bG9hZCBvZmZsb2FkID0gewo+ICAgICAgICAgICAgICAgICAuY21kID0gVEFQUklPX0NNRF9UQ19T
+VEFUUywKPiAgICAgICAgICAgICAgICAgLnRjX3N0YXRzID0gewo+IC0tCj4gMi4zNC4xCj4KX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtd2lyZWQt
+bGFuIG1haWxpbmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczovL2xpc3Rz
+Lm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
