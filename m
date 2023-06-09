@@ -4,85 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AE1DC7EE29
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Jun 2023 15:15:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF0F6C7EE29
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Jun 2023 15:15:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 075C64251B;
-	Fri,  9 Jun 2023 15:15:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 075C64251B
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4A2F04251E;
+	Fri,  9 Jun 2023 15:15:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4A2F04251E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686323751;
-	bh=Pt453PUwROiVScpGT6OA97V17dndqGNL5S6xFX9cjfw=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=SShBLC3ZB+B0Lsemy2Ut/DkomxLTEXTXbFmsUBDr+fU2Hw4cvynSCVvT+VRBNGPAL
-	 oUbRbhTCQ598NJEI4H0tc/tGxDXSyS8Tk+YIoNFvT4S10RCBcudeQCSbBKm3UyLVNV
-	 UHBmLshrtSF72LLgXv1HmV5aElZGs7Rj5DCxtmBjJwKSVZnm5fd3HrE1diy9ddqNte
-	 7zGucCWMRqJg/KTERrO/IXheZb47kfU5ZqQg4T3QDb2tlgk37C/fTLpE/tiIfkk/pP
-	 MNGQ5oJJ63p/6cXV7A9JtPsB4GU+GwTc+GpvA83qIztm/FoWtBuae0kvi5If2Z5qHj
-	 bObDPcY+mXs3g==
+	s=default; t=1686323756;
+	bh=iovMx+IeLg91OhZ23rakRDX6pSkFIYQOMdtu4hFKofM=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=GcRKw400EOoXKOwQEkEtw1waq3lupvjdgAg8yANj1b1NGYakRi4jwGBB5IAQHjBrV
+	 4zrqjW8vV+k6/aK1ySx6Y+l9Bm1ITLHOvzkgWQnmQiZlk++z7LoC88xpXcyhHgH8nU
+	 W0ovtFVjHIXhUKAL2kpUdNTKe2horCv1zNqa1t6WjPgHm5QgtTIXmzKDgKKKRKmVr3
+	 OmVKKefVJoAkk2M6mEoJvi0XImgNt7Ambf5zlm2FUqEOpQSgaviYrRx8edqaypYzm4
+	 y4Aa3LjsY3qSiSxLXXLeAeHRIMT3h23kDNxGYCVw4tZ6WWx727hymnd/Vt3GgLsvM1
+	 G+Vs9LYxBKp/g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0UMdkBEWFK2o; Fri,  9 Jun 2023 15:15:49 +0000 (UTC)
+	with ESMTP id WGXQWQ5QSegJ; Fri,  9 Jun 2023 15:15:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AA7274251C;
-	Fri,  9 Jun 2023 15:15:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AA7274251C
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 59E7D1BF3F2
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 02:55:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 499A44251F;
+	Fri,  9 Jun 2023 15:15:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 499A44251F
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 7D1971BF387
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:01:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3A2DC41FA5
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 02:55:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3A2DC41FA5
+ by smtp2.osuosl.org (Postfix) with ESMTP id 542CA40475
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:01:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 542CA40475
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id s9UpDv_mo8Iy for <intel-wired-lan@lists.osuosl.org>;
- Fri,  9 Jun 2023 02:55:07 +0000 (UTC)
-X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CEFE041F9C
-Received: from mail-177132.yeah.net (mail-177132.yeah.net [123.58.177.132])
- by smtp4.osuosl.org (Postfix) with ESMTP id CEFE041F9C
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 02:55:06 +0000 (UTC)
-Received: from john-VirtualBox (unknown [111.19.92.254])
- by smtp2 (Coremail) with SMTP id C1UQrADHz19tlIJkewakDQ--.14997S2;
- Fri, 09 Jun 2023 10:54:38 +0800 (CST)
-Date: Fri, 9 Jun 2023 10:54:37 +0800
-From: Baozhu Ni <nibaozhu@yeah.net>
-To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "moderated list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
- "open list:NETWORKING DRIVERS" <netdev@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>,
- Outreachy <outreachy@lists.linux.dev>
-Message-ID: <20230609025437.GA5307@john-VirtualBox>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ATfJfJmRIXas for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  9 Jun 2023 10:01:15 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8F5894016F
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com
+ [68.232.154.123])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8F5894016F
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:01:15 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.00,228,1681196400"; d="scan'208";a="215330879"
+X-Amp-Result: SKIPPED(no attachment in message)
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+ by esa4.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
+ 09 Jun 2023 03:01:13 -0700
+Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
+ chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Fri, 9 Jun 2023 03:00:54 -0700
+Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex04.mchp-main.com
+ (10.10.85.152) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
+ Transport; Fri, 9 Jun 2023 03:00:53 -0700
+Date: Fri, 9 Jun 2023 10:00:52 +0000
+From: Daniel Machon <daniel.machon@microchip.com>
+To: Dave Ertman <david.m.ertman@intel.com>
+Message-ID: <20230609100052.a6gmrzpzgayfnkx3@DEN-LT-70577>
+References: <20230608180618.574171-1-david.m.ertman@intel.com>
+ <20230608180618.574171-5-david.m.ertman@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-X-CM-TRANSID: C1UQrADHz19tlIJkewakDQ--.14997S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxury3WFW7ur1xXry5KF1xXwb_yoWrAr1fpF
- Wjvas8ur1fJr47W3ZrJw4xZan8Zws7A345Gr4fu39Yva45Jr95CF13KrZ3Wry0vrZrXry3
- KF15ZrnxCF4qg3JanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
- 9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jSUDJUUUUU=
-X-Originating-IP: [111.19.92.254]
-X-CM-SenderInfo: 5qlet0x2kxq5hhdkh0dhw/1tbiDw+JelnxboRyfwAAs8
+In-Reply-To: <20230608180618.574171-5-david.m.ertman@intel.com>
 X-Mailman-Approved-At: Fri, 09 Jun 2023 15:15:48 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=yeah.net; 
- s=s110527; h=Date:From:Subject:Message-ID:MIME-Version:
- Content-Type; bh=sMCFcoMSm3KIUqoY/BwUkMWGJLEkhAztPDeMF/Kppj8=;
- b=U5zl5YDsa3EGNJuAm00B/L+4kq87sb9rbx7PZvzMiUCSM8mQXlq7mQN22UcC3L
- Bf06bWGPY7Z4JhfxB7QBQTardzpBi7p2i/JnfitaPT6qhFWdgir4I8o0sUqtzP7j
- VRMv82xxAp5j5ZCncPJptwbZZhBp95BuhSauPWciouSYQ=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=yeah.net header.i=@yeah.net
- header.a=rsa-sha256 header.s=s110527 header.b=U5zl5YDs
-Subject: [Intel-wired-lan] [PATCH] e1000e: Remove not useful `else' after a
- break or return
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+ t=1686304876; x=1717840876;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=VZuPhznYQ/ijs6ZosGrvj+8zK30l8RP+0njq51+Z2K4=;
+ b=PSm3nTrM7Yr9PKUdyfAX1BiraBXzKSnOy8TuegwJ5rjmEzTw56DOMUe7
+ Zb/22aigy4K1Zh+cUmX2bEzw6IU21/5BbVsGM3VnLVZwYD/eWEJx5NZav
+ a8nc/ZPrRsfXkBYL8O9jiE3UX4q6333yg2GUs4f7EwGFzJnTdwfMha1cv
+ YTDheOI6MF/HQNoWIM5edUwlnZ3sH95dAqKRnnNCgd5vVWzl0fz4rWizV
+ SeTbmeS+9SK8yFoCzIau50tnSrOW3titKK5d8Zl5YWHYCmZrH7h3PEX7G
+ T1uo7IGpjVZko3nfTxvgCPVHIEj+mcnszsFxzykmjaf/tEaT1Sp1dr0Ns
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com
+ header.a=rsa-sha256 header.s=mchp header.b=PSm3nTrM
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 04/10] ice: implement lag
+ netdev event handler
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,125 +100,295 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-`else' is not generally useful after a break or return
+Hi Dave,
 
-Signed-off-by: Baozhu Ni <nibaozhu@yeah.net>
----
- .../net/ethernet/intel/e1000e/80003es2lan.c   |  5 +-
- drivers/net/ethernet/intel/e1000e/ich8lan.c   | 59 +++++++++----------
- 2 files changed, 31 insertions(+), 33 deletions(-)
+This patch fails to build, as ice_lag_move_new_vf_nodes() is used in 
+ice_vc_cfg_qs_msg(), but first defined in the next patch.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.c b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-index be9c695dde12..f063e2bd48fa 100644
---- a/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-@@ -43,11 +43,10 @@ static s32 e1000_init_phy_params_80003es2lan(struct e1000_hw *hw)
- 	if (hw->phy.media_type != e1000_media_type_copper) {
- 		phy->type = e1000_phy_none;
- 		return 0;
--	} else {
--		phy->ops.power_up = e1000_power_up_phy_copper;
--		phy->ops.power_down = e1000_power_down_phy_copper_80003es2lan;
- 	}
- 
-+	phy->ops.power_up = e1000_power_up_phy_copper;
-+	phy->ops.power_down = e1000_power_down_phy_copper_80003es2lan;
- 	phy->addr = 1;
- 	phy->autoneg_mask = AUTONEG_ADVERTISE_SPEED_DEFAULT;
- 	phy->reset_delay_us = 100;
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 0c7fd10312c8..8ab4e45de5f2 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -3592,9 +3592,8 @@ static s32 e1000_read_flash_byte_ich8lan(struct e1000_hw *hw, u32 offset,
- 	 */
- 	if (hw->mac.type >= e1000_pch_spt)
- 		return -E1000_ERR_NVM;
--	else
--		ret_val = e1000_read_flash_data_ich8lan(hw, offset, 1, &word);
- 
-+	ret_val = e1000_read_flash_data_ich8lan(hw, offset, 1, &word);
- 	if (ret_val)
- 		return ret_val;
- 
-@@ -3659,20 +3658,20 @@ static s32 e1000_read_flash_data_ich8lan(struct e1000_hw *hw, u32 offset,
- 			else if (size == 2)
- 				*data = (u16)(flash_data & 0x0000FFFF);
- 			break;
--		} else {
--			/* If we've gotten here, then things are probably
--			 * completely hosed, but if the error condition is
--			 * detected, it won't hurt to give it another try...
--			 * ICH_FLASH_CYCLE_REPEAT_COUNT times.
--			 */
--			hsfsts.regval = er16flash(ICH_FLASH_HSFSTS);
--			if (hsfsts.hsf_status.flcerr) {
--				/* Repeat for some time before giving up. */
--				continue;
--			} else if (!hsfsts.hsf_status.flcdone) {
--				e_dbg("Timeout error - flash cycle did not complete.\n");
--				break;
--			}
-+		}
-+
-+		/* If we've gotten here, then things are probably
-+		 * completely hosed, but if the error condition is
-+		 * detected, it won't hurt to give it another try...
-+		 * ICH_FLASH_CYCLE_REPEAT_COUNT times.
-+		 */
-+		hsfsts.regval = er16flash(ICH_FLASH_HSFSTS);
-+		if (hsfsts.hsf_status.flcerr) {
-+			/* Repeat for some time before giving up. */
-+			continue;
-+		} else if (!hsfsts.hsf_status.flcdone) {
-+			e_dbg("Timeout error - flash cycle did not complete.\n");
-+			break;
- 		}
- 	} while (count++ < ICH_FLASH_CYCLE_REPEAT_COUNT);
- 
-@@ -3734,20 +3733,20 @@ static s32 e1000_read_flash_data32_ich8lan(struct e1000_hw *hw, u32 offset,
- 		if (!ret_val) {
- 			*data = er32flash(ICH_FLASH_FDATA0);
- 			break;
--		} else {
--			/* If we've gotten here, then things are probably
--			 * completely hosed, but if the error condition is
--			 * detected, it won't hurt to give it another try...
--			 * ICH_FLASH_CYCLE_REPEAT_COUNT times.
--			 */
--			hsfsts.regval = er16flash(ICH_FLASH_HSFSTS);
--			if (hsfsts.hsf_status.flcerr) {
--				/* Repeat for some time before giving up. */
--				continue;
--			} else if (!hsfsts.hsf_status.flcdone) {
--				e_dbg("Timeout error - flash cycle did not complete.\n");
--				break;
--			}
-+		}
-+
-+		/* If we've gotten here, then things are probably
-+		 * completely hosed, but if the error condition is
-+		 * detected, it won't hurt to give it another try...
-+		 * ICH_FLASH_CYCLE_REPEAT_COUNT times.
-+		 */
-+		hsfsts.regval = er16flash(ICH_FLASH_HSFSTS);
-+		if (hsfsts.hsf_status.flcerr) {
-+			/* Repeat for some time before giving up. */
-+			continue;
-+		} else if (!hsfsts.hsf_status.flcdone) {
-+			e_dbg("Timeout error - flash cycle did not complete.\n");
-+			break;
- 		}
- 	} while (count++ < ICH_FLASH_CYCLE_REPEAT_COUNT);
- 
--- 
-2.25.1
-
+> The event handler for LAG will create a work item to place on the ordered
+> workqueue to be processed.
+> 
+> Add in defines for training packets and new recipes to be used by the
+> switching block of the HW for LAG packet steering.
+> 
+> Update the ice_lag struct to reflect the new processing methodology.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_lag.c      | 125 ++++++++++++++++--
+>  drivers/net/ethernet/intel/ice/ice_lag.h      |  31 ++++-
+>  drivers/net/ethernet/intel/ice/ice_virtchnl.c |   2 +
+>  3 files changed, 144 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+> index 73bfc5cd8b37..529abfb904d0 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lag.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+> @@ -56,11 +56,10 @@ static void ice_lag_set_backup(struct ice_lag *lag)
+>   */
+>  static void ice_display_lag_info(struct ice_lag *lag)
+>  {
+> -       const char *name, *peer, *upper, *role, *bonded, *primary;
+> +       const char *name, *upper, *role, *bonded, *primary;
+>         struct device *dev = &lag->pf->pdev->dev;
+> 
+>         name = lag->netdev ? netdev_name(lag->netdev) : "unset";
+> -       peer = lag->peer_netdev ? netdev_name(lag->peer_netdev) : "unset";
+>         upper = lag->upper_netdev ? netdev_name(lag->upper_netdev) : "unset";
+>         primary = lag->primary ? "TRUE" : "FALSE";
+>         bonded = lag->bonded ? "BONDED" : "UNBONDED";
+> @@ -82,8 +81,8 @@ static void ice_display_lag_info(struct ice_lag *lag)
+>                 role = "ERROR";
+>         }
+> 
+> -       dev_dbg(dev, "%s %s, peer:%s, upper:%s, role:%s, primary:%s\n", name,
+> -               bonded, peer, upper, role, primary);
+> +       dev_dbg(dev, "%s %s, upper:%s, role:%s, primary:%s\n", name, bonded,
+> +               upper, role, primary);
+>  }
+> 
+>  /**
+> @@ -198,7 +197,6 @@ ice_lag_unlink(struct ice_lag *lag,
+>                 lag->upper_netdev = NULL;
+>         }
+> 
+> -       lag->peer_netdev = NULL;
+>         ice_set_rdma_cap(pf);
+>         lag->bonded = false;
+>         lag->role = ICE_LAG_NONE;
+> @@ -288,6 +286,60 @@ static void ice_lag_changeupper_event(struct ice_lag *lag, void *ptr)
+>         ice_display_lag_info(lag);
+>  }
+> 
+> +/**
+> + * ice_lag_process_event - process a task assigned to the lag_wq
+> + * @work: pointer to work_struct
+> + */
+> +static void ice_lag_process_event(struct work_struct *work)
+> +{
+> +       struct netdev_notifier_changeupper_info *info;
+> +       struct ice_lag_work *lag_work;
+> +       struct net_device *netdev;
+> +       struct list_head *tmp, *n;
+> +       struct ice_pf *pf;
+> +
+> +       lag_work = container_of(work, struct ice_lag_work, lag_task);
+> +       pf = lag_work->lag->pf;
+> +
+> +       mutex_lock(&pf->lag_mutex);
+> +       lag_work->lag->netdev_head = &lag_work->netdev_list.node;
+> +
+> +       switch (lag_work->event) {
+> +       case NETDEV_CHANGEUPPER:
+> +               info = &lag_work->info.changeupper_info;
+> +               if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG))
+> +                       ice_lag_changeupper_event(lag_work->lag, info);
+> +               break;
+> +       case NETDEV_BONDING_INFO:
+> +               ice_lag_info_event(lag_work->lag, &lag_work->info.bonding_info);
+> +               break;
+> +       case NETDEV_UNREGISTER:
+> +               if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
+> +                       netdev = lag_work->info.bonding_info.info.dev;
+> +                       if ((netdev == lag_work->lag->netdev ||
+> +                            lag_work->lag->primary) && lag_work->lag->bonded)
+> +                               ice_lag_unregister(lag_work->lag, netdev);
+> +               }
+> +               break;
+> +       default:
+> +               break;
+> +       }
+> +
+> +       /* cleanup resources allocated for this work item */
+> +       list_for_each_safe(tmp, n, &lag_work->netdev_list.node) {
+> +               struct ice_lag_netdev_list *entry;
+> +
+> +               entry = list_entry(tmp, struct ice_lag_netdev_list, node);
+> +               list_del(&entry->node);
+> +               kfree(entry);
+> +       }
+> +       lag_work->lag->netdev_head = NULL;
+> +
+> +       mutex_unlock(&pf->lag_mutex);
+> +
+> +       kfree(work);
+> +}
+> +
+>  /**
+>   * ice_lag_event_handler - handle LAG events from netdev
+>   * @notif_blk: notifier block registered by this netdev
+> @@ -299,31 +351,79 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
+>                       void *ptr)
+>  {
+>         struct net_device *netdev = netdev_notifier_info_to_dev(ptr);
+> +       struct net_device *upper_netdev;
+> +       struct ice_lag_work *lag_work;
+>         struct ice_lag *lag;
+> 
+> -       lag = container_of(notif_blk, struct ice_lag, notif_block);
+> +       if (!netif_is_ice(netdev))
+> +               return NOTIFY_DONE;
+> +
+> +       if (event != NETDEV_CHANGEUPPER && event != NETDEV_BONDING_INFO &&
+> +           event != NETDEV_UNREGISTER)
+> +               return NOTIFY_DONE;
+> 
+> +       if (!(netdev->priv_flags & IFF_BONDING))
+> +               return NOTIFY_DONE;
+> +
+> +       lag = container_of(notif_blk, struct ice_lag, notif_block);
+>         if (!lag->netdev)
+>                 return NOTIFY_DONE;
+> 
+> -       /* Check that the netdev is in the working namespace */
+>         if (!net_eq(dev_net(netdev), &init_net))
+>                 return NOTIFY_DONE;
+> 
+> +       /* This memory will be freed at the end of ice_lag_process_event */
+> +       lag_work = kzalloc(sizeof(*lag_work), GFP_KERNEL);
+> +       if (!lag_work)
+> +               return -ENOMEM;
+> +
+> +       lag_work->event_netdev = netdev;
+> +       lag_work->lag = lag;
+> +       lag_work->event = event;
+> +       if (event == NETDEV_CHANGEUPPER) {
+> +               struct netdev_notifier_changeupper_info *info;
+> +
+> +               info = ptr;
+> +               upper_netdev = info->upper_dev;
+> +       } else {
+> +               upper_netdev = netdev_master_upper_dev_get(netdev);
+> +       }
+> +
+> +       INIT_LIST_HEAD(&lag_work->netdev_list.node);
+> +       if (upper_netdev) {
+> +               struct ice_lag_netdev_list *nd_list;
+> +               struct net_device *tmp_nd;
+> +
+> +               rcu_read_lock();
+> +               for_each_netdev_in_bond_rcu(upper_netdev, tmp_nd) {
+> +                       nd_list = kzalloc(sizeof(*nd_list), GFP_KERNEL);
+> +                       if (!nd_list)
+> +                               break;
+> +
+> +                       nd_list->netdev = tmp_nd;
+> +                       list_add(&nd_list->node, &lag_work->netdev_list.node);
+> +               }
+> +               rcu_read_unlock();
+> +       }
+> +
+>         switch (event) {
+>         case NETDEV_CHANGEUPPER:
+> -               ice_lag_changeupper_event(lag, ptr);
+> +               lag_work->info.changeupper_info =
+> +                       *((struct netdev_notifier_changeupper_info *)ptr);
+>                 break;
+>         case NETDEV_BONDING_INFO:
+> -               ice_lag_info_event(lag, ptr);
+> -               break;
+> -       case NETDEV_UNREGISTER:
+> -               ice_lag_unregister(lag, netdev);
+> +               lag_work->info.bonding_info =
+> +                       *((struct netdev_notifier_bonding_info *)ptr);
+>                 break;
+>         default:
+> +               lag_work->info.notifier_info =
+> +                       *((struct netdev_notifier_info *)ptr);
+>                 break;
+>         }
+> 
+> +       INIT_WORK(&lag_work->lag_task, ice_lag_process_event);
+> +       queue_work(ice_lag_wq, &lag_work->lag_task);
+> +
+>         return NOTIFY_DONE;
+>  }
+> 
+> @@ -398,7 +498,6 @@ int ice_init_lag(struct ice_pf *pf)
+>         lag->netdev = vsi->netdev;
+>         lag->role = ICE_LAG_NONE;
+>         lag->bonded = false;
+> -       lag->peer_netdev = NULL;
+>         lag->upper_netdev = NULL;
+>         lag->notif_block.notifier_call = NULL;
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
+> index 2c373676c42f..df4af5184a75 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_lag.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_lag.h
+> @@ -14,20 +14,49 @@ enum ice_lag_role {
+>         ICE_LAG_UNSET
+>  };
+> 
+> +#define ICE_LAG_INVALID_PORT 0xFF
+> +
+>  struct ice_pf;
+> +struct ice_vf;
+> +
+> +struct ice_lag_netdev_list {
+> +       struct list_head node;
+> +       struct net_device *netdev;
+> +};
+> 
+>  /* LAG info struct */
+>  struct ice_lag {
+>         struct ice_pf *pf; /* backlink to PF struct */
+>         struct net_device *netdev; /* this PF's netdev */
+> -       struct net_device *peer_netdev;
+>         struct net_device *upper_netdev; /* upper bonding netdev */
+> +       struct list_head *netdev_head;
+>         struct notifier_block notif_block;
+> +       s32 bond_mode;
+> +       u16 bond_swid; /* swid for primary interface */
+> +       u8 active_port; /* lport value for the current active port */
+>         u8 bonded:1; /* currently bonded */
+>         u8 primary:1; /* this is primary */
+> +       u16 pf_recipe;
+> +       u16 pf_rule_id;
+> +       u16 cp_rule_idx;
+>         u8 role;
+>  };
+> 
+> +/* LAG workqueue struct */
+> +struct ice_lag_work {
+> +       struct work_struct lag_task;
+> +       struct ice_lag_netdev_list netdev_list;
+> +       struct ice_lag *lag;
+> +       unsigned long event;
+> +       struct net_device *event_netdev;
+> +       union {
+> +               struct netdev_notifier_changeupper_info changeupper_info;
+> +               struct netdev_notifier_bonding_info bonding_info;
+> +               struct netdev_notifier_info notifier_info;
+> +       } info;
+> +};
+> +
+> +void ice_lag_move_new_vf_nodes(struct ice_vf *vf);
+>  int ice_init_lag(struct ice_pf *pf);
+>  void ice_deinit_lag(struct ice_pf *pf);
+>  #endif /* _ICE_LAG_H_ */
+> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> index efbc2968a7bf..625da88e7965 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+> @@ -1724,6 +1724,8 @@ static int ice_vc_cfg_qs_msg(struct ice_vf *vf, u8 *msg)
+>                                 vf->vf_id, i);
+>         }
+> 
+> +       ice_lag_move_new_vf_nodes(vf);
+> +
+>         /* send the response to the VF */
+>         return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_VSI_QUEUES,
+>                                      VIRTCHNL_STATUS_ERR_PARAM, NULL, 0);
+> --
+> 2.40.1
+> 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
