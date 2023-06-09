@@ -4,90 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7281EC7EE25
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Jun 2023 15:16:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5771AC7EE29
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Jun 2023 15:16:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CF20E42550;
-	Fri,  9 Jun 2023 15:16:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CF20E42550
+	by smtp4.osuosl.org (Postfix) with ESMTP id ECDD74251F;
+	Fri,  9 Jun 2023 15:16:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ECDD74251F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686323767;
-	bh=MW0KAY0/T2GaKCJMA4z2z09ET8sJp4ewV9+8fEsE9zU=;
+	s=default; t=1686323770;
+	bh=0GIQG3V03Hw7Is/zScolW+od5sx5Xofit/FgOMwZLb0=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=21/5eK8JNxoi904b46l2lRA62Rac/U/63soxabVXNifSxIExc5zm8rpD6W5WgL2xo
-	 kP9RBRKG9uk3uWT3Z4fxOcqaAehNZMY4j/Oef1R/DMiBTxdz1YLIm7FDJMr8R7jbQh
-	 f7emz78T615VwuXjQxcgQ1e+0/tIuFud4DZwY8Kr4r8xrNwIHZM2vW3dYYNom1bf0b
-	 gQMHkYeTzfAWASsFTrcdhSfbDduQR2seRbuDvCoRu4NW3FXcsqeHJP/gcIBANLVKtB
-	 aBGzWP1t4MpSyc9qnnf1BgJH/+gg+k1rfAaeEDDv8SpkLPQFPpcQXk7b5BpgoNFHhn
-	 FnSNHr/etmQJQ==
+	b=HIYR0siqfpggN06daPEkKUjC7PpY9OlsbkdKMmYFsiMXPvo8LNH11qBpEuefdwD+5
+	 el9cJ8/T0qGz36uM+yghFwuZUSGTW1OcXTIytu3SHaUh2xOxwg9fq9K6CYm9+dxms5
+	 EQmshp59Zn+Go6+WoVqe288wXaYOLysUeCLeKC+NpVA4Ey1Mcf7JRLpx70f5XzQtyw
+	 1JvhxgWc6oYzfvs3ZgX0zjUTwXu/rLE5rv0s7M4P3oI0tKSp56TGZSTCTdJjlIhD3v
+	 +VRm0inVyfiRBE4UvF//7FMoVEo6ddtHCx+V+DD/Ywo9okqXkRyxzTe/z6XshHIu5N
+	 f1udXLPAcKH7Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id USlC6NotU1Hq; Fri,  9 Jun 2023 15:16:03 +0000 (UTC)
+	with ESMTP id r3YF9pUTq4bh; Fri,  9 Jun 2023 15:16:09 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9719642527;
-	Fri,  9 Jun 2023 15:16:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9719642527
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 3EE2B1BF384
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:40:59 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C39BA4253E;
+	Fri,  9 Jun 2023 15:16:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C39BA4253E
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 056831BF384
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:42:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 19F0D615A1
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:40:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 19F0D615A1
+ by smtp4.osuosl.org (Postfix) with ESMTP id DCC9E42494
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:42:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DCC9E42494
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ONXkqLHe3X5B for <intel-wired-lan@lists.osuosl.org>;
- Fri,  9 Jun 2023 10:40:57 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 6zeI6XQuhs3y for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  9 Jun 2023 10:42:27 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E4B6B61589
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E7EAD42492
 Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com
- [68.232.153.233])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E4B6B61589
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:40:56 +0000 (UTC)
-X-IronPort-AV: E=Sophos;i="6.00,229,1681196400"; d="scan'208";a="217042063"
+ [68.232.154.123])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id E7EAD42492
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:42:26 +0000 (UTC)
+X-IronPort-AV: E=Sophos;i="6.00,229,1681196400"; d="scan'208";a="219567800"
 X-Amp-Result: SKIPPED(no attachment in message)
 Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
- by esa3.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
- 09 Jun 2023 03:40:55 -0700
+ by esa2.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
+ 09 Jun 2023 03:42:26 -0700
 Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
+ chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Fri, 9 Jun 2023 03:40:54 -0700
+ 15.1.2507.21; Fri, 9 Jun 2023 03:42:25 -0700
 Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex01.mchp-main.com
  (10.10.85.143) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
- Transport; Fri, 9 Jun 2023 03:40:53 -0700
-Date: Fri, 9 Jun 2023 10:40:53 +0000
+ Transport; Fri, 9 Jun 2023 03:42:24 -0700
+Date: Fri, 9 Jun 2023 10:42:23 +0000
 From: Daniel Machon <daniel.machon@microchip.com>
 To: Dave Ertman <david.m.ertman@intel.com>
-Message-ID: <20230609104053.rxedc4grgm6sxecd@DEN-LT-70577>
+Message-ID: <20230609104223.5ok45syo7gfrtwev@DEN-LT-70577>
 References: <20230608180618.574171-1-david.m.ertman@intel.com>
- <20230608180618.574171-7-david.m.ertman@intel.com>
+ <20230608180618.574171-11-david.m.ertman@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20230608180618.574171-7-david.m.ertman@intel.com>
+In-Reply-To: <20230608180618.574171-11-david.m.ertman@intel.com>
 X-Mailman-Approved-At: Fri, 09 Jun 2023 15:15:48 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
- t=1686307256; x=1717843256;
+ t=1686307347; x=1717843347;
  h=date:from:to:cc:subject:message-id:references:
  mime-version:in-reply-to;
- bh=JqaHtGJhKuFLAH1DYpbSeoCEG/jKnRs6acRP1ONua54=;
- b=ufHfsI68saC7MF5eK9UgGDs/Q3JZY2CExBWSxhIrXywv2dJvjeKXnrX/
- Hh+icrd4X6jeojn7gYeRJLnxSqlLTmFb8UkEtLYECdKgncs10y/9/3MMp
- UhnGJdtqtubm5SStmcGAQukzhgTFfdrH+QFjWxltd6s0Y2xyZQxVDM2OE
- U28FW71pJawQf5iXfI0MR/WX+kl71VwgtFYsAi2xkWCLYrig2zWCo8TYq
- MC3z+1UylVwUaZHWUXQMMea41br7tj65lxO1pyFX6XOaHfxQkylXSFOJO
- zGULEVNYrXACIiMvkzpvICra3DENilONoQhKBnbqJHTvL2C21hcSnAIZ0
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=ncc3Frw5jy1newKhE18k3BwtG7xyYraXJTpIpYZ8x/4=;
+ b=S3+6VfUT+aTS3BnDj3DiVYceKkekRAttP41ceWhXYgyxk5hIceR620Ey
+ aMHFsd4vtlI07ibUR0iMelTizAxm8SEZBg0rwU7t1hRXiKboTwQ4XH1yO
+ z9NU4EBo9E4UYAne6U4sufAJvRs91Xht5jTko9MJyZ12NMfPFDX2qzGX5
+ mhrRrI5zkPtzUNpyonp89kHVa0IXutA7fs4aEQRSflzCZW8SgAz1YHqor
+ P6opU59uKxBo03Ba257KeB31sGqNzYKOXV+6LwV22mzgecq47xQZSlTgQ
+ 9u/wddU+BPTdZ97s2Wtgr2Kx+Pxb0IwxISvr8QoGm5RxzfivE1UJz4Lyg
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com
- header.a=rsa-sha256 header.s=mchp header.b=ufHfsI68
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 06/10] ice: Flesh out
- implementation of support for SRIOV on bonded interface
+ header.a=rsa-sha256 header.s=mchp header.b=S3+6VfUT
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 10/10] ice: update reset
+ path for SRIOV LAG support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,19 +106,18 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> Add in the functions that will allow a VF created on the primary interface
-> of a bond to "fail-over" to another PF interface in the bond and continue
-> to Tx and Rx.
+> Add code to rebuild the LAG resources when rebuilding the state of the
+> interface after a reset.
 > 
-> Add in an ordered take-down path for the bonded interface.
+> Also added in a function for building per-queue information into the buffer
+> used to configure VF queues for LAG fail-over.  This improves code reuse.
+> 
+> Due to differences in timing per interface for recovering from a reset, add
+> in the ability to retry on non-local dependencies where needed.
 > 
 > Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 
-If you need to respin anyway: s/aggreagte/aggregate/, s/pinter/pointer/
-Otherwise dont bother.
-
 Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
-
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
