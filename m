@@ -4,90 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5DB9C7EE29
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Jun 2023 15:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D415C7EE29
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  9 Jun 2023 15:16:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 4CC1142521;
-	Fri,  9 Jun 2023 15:16:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4CC1142521
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0D2324252D;
+	Fri,  9 Jun 2023 15:16:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0D2324252D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686323775;
-	bh=I6w/xPQA6aGwFqqtf1xarhdQRYN16KO9N9l8PK7aEUs=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1686323779;
+	bh=pYVBy8ludcWeNkHtR4gPGsPmHOfiQjDTwVvqP3qaIS8=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=plBJxo+nPpRUUZQEcgp1QRLNbVn65outtW8M1o5aXSMz72pWXe3yE4IW+nGvTKe6s
-	 bmp16FXa5C3vacS2Gr2a3DoC9Jij5j3cwLZogP2VQe5FVDODWI1M18ns/DkqNhDXVA
-	 +LY+1E0Me9gEfdzHJFoB0Y1o80dahpeeJlDCleQaiWYYqqu4nqll6SwceCs10wokeR
-	 FJe6PrYmV7Vs0PUePTbzxvZ0PNSVuqrBLC/RBFsDgpD9I8GnWmKdZ6NZxe/za0gZNO
-	 uY12GiXf/KmMn2ffFw2VDiExcGjd0uHzUcxDm9rV1BxYuSndeNcLtQvBrsAkOslgwj
-	 k+IpyXST4tPdw==
+	b=EL6dRdln4ndiIZg2Vpxc/0ayTIto05CYawhW7M6q3p8khk5/Bd4k+wj+80FDE9gs9
+	 8Dbfbddjcb1UZIWaI63nfFySnbHt9LDtMSc6SjLyZMHErig0SpLKVs7ErkmXaiEiVl
+	 vDQjwgehmBPjGrR7AB/P0YdiC/HzTX+G6+VAapQk32W9B3S9yZLUsZWiERA3fP6SK1
+	 b2+Iv05P+Oy3mFsKgtNymM7MHvl7enpBNYLwWtKpc4IdbN4PZAKKIDPyO9WuQ5wNOW
+	 b7SW3mFLFBWnh4DXF6Ze5koSRPWKbiBmfDGHdWLEqCY2AuP1z0cMVf7CiYnIJrD1ii
+	 iMFwjPmxwDYyQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id TbHPznON0bAX; Fri,  9 Jun 2023 15:16:13 +0000 (UTC)
+	with ESMTP id JHMNJjOM7O45; Fri,  9 Jun 2023 15:16:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3DC4C42526;
-	Fri,  9 Jun 2023 15:16:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3DC4C42526
+	by smtp4.osuosl.org (Postfix) with ESMTP id BED9F4251D;
+	Fri,  9 Jun 2023 15:16:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BED9F4251D
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A6C351BF384
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:45:15 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 0A3011BF2FC
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 14:56:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7FCC4841B8
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:45:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7FCC4841B8
+ by smtp1.osuosl.org (Postfix) with ESMTP id D525783C8D
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 14:56:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D525783C8D
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qE3RYnqZsUAc for <intel-wired-lan@lists.osuosl.org>;
- Fri,  9 Jun 2023 10:45:15 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D01128419F
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com
- [68.232.153.233])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D01128419F
- for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 10:45:14 +0000 (UTC)
-X-IronPort-AV: E=Sophos;i="6.00,229,1681196400"; d="scan'208";a="217652859"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
- by esa5.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
- 09 Jun 2023 03:45:14 -0700
-Received: from chn-vm-ex02.mchp-main.com (10.10.85.144) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Fri, 9 Jun 2023 03:45:13 -0700
-Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex02.mchp-main.com
- (10.10.85.144) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
- Transport; Fri, 9 Jun 2023 03:45:12 -0700
-Date: Fri, 9 Jun 2023 10:45:12 +0000
-From: Daniel Machon <daniel.machon@microchip.com>
-To: Dave Ertman <david.m.ertman@intel.com>
-Message-ID: <20230609104512.syus4hoqq6bsdrjc@DEN-LT-70577>
-References: <20230608180618.574171-1-david.m.ertman@intel.com>
- <20230608180618.574171-2-david.m.ertman@intel.com>
+ with ESMTP id aDViQfnd8co9 for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  9 Jun 2023 14:56:41 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4B28C83C83
+Received: from mail-oa1-x35.google.com (mail-oa1-x35.google.com
+ [IPv6:2001:4860:4864:20::35])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4B28C83C83
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  9 Jun 2023 14:56:41 +0000 (UTC)
+Received: by mail-oa1-x35.google.com with SMTP id
+ 586e51a60fabf-1a196784a4cso604002fac.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 09 Jun 2023 07:56:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1686322600; x=1688914600;
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=mNjEF1zb+JpJdY0weZ4OdAOu0yke/I9t8R3uYm6sLTw=;
+ b=So/x96uOuevLoPHwR07zaKwlXdYWOGsj0mlzdJi2rgf0O71KLOK0YFOYzZMusvp2A5
+ UVeYRZ7LuiWX9jbmWhjP1UWlUWuhUSv2bO1CK7bin111ceudcRnq4kk2gFqbPQZ6AHg4
+ 3oYAyXhqUnzOBmF0LGMJN9t2tsqcEDCSU0f/LIo03Tainzyhh/pMyp4cm8enR+xfNExd
+ B9UjWsJEbbqcgOgx6wwVSmml3G9k9v8VzW3E6yKoUSeOTeqCP4Oy5KGWJZUuaXDguMIn
+ sI18xCDwkYZiccbrgwjTRo0k0ROzt/LonK4voO/dJSmzmARexteF56IENv9Wk15WxHtr
+ 41fw==
+X-Gm-Message-State: AC+VfDw7G7YsVywGj8fynbi+vDr2iX+5w8O24T9YshnZXNcUYI7OoF8F
+ LEvJMDqmj7CrNSNDZRz3Flm5bw==
+X-Google-Smtp-Source: ACHHUZ5lyjIg3/k8ishXP5lVr7SzW3xDk6gDIW+APpNABj3FGwxCpQmA/zWxRkbdHKZaShP8U7SZcw==
+X-Received: by 2002:a05:6870:fc84:b0:19f:7c4c:38b4 with SMTP id
+ ly4-20020a056870fc8400b0019f7c4c38b4mr1554940oab.15.1686322600226; 
+ Fri, 09 Jun 2023 07:56:40 -0700 (PDT)
+Received: from ?IPV6:2804:7f1:e2c0:9e83:b7c7:f418:cfcf:f0dd?
+ ([2804:7f1:e2c0:9e83:b7c7:f418:cfcf:f0dd])
+ by smtp.gmail.com with ESMTPSA id
+ a21-20020a056870d19500b001a3093ec23fsm2236633oac.32.2023.06.09.07.56.36
+ (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+ Fri, 09 Jun 2023 07:56:39 -0700 (PDT)
+Message-ID: <facdfceb-fe2e-795b-ea89-1b67478eb533@mojatatu.com>
+Date: Fri, 9 Jun 2023 11:56:35 -0300
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20230608180618.574171-2-david.m.ertman@intel.com>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.11.0
+To: Vladimir Oltean <vladimir.oltean@nxp.com>,
+ Jamal Hadi Salim <jhs@mojatatu.com>
+References: <20230602103750.2290132-1-vladimir.oltean@nxp.com>
+ <20230602103750.2290132-6-vladimir.oltean@nxp.com>
+ <CAM0EoM=P9+wNnNQ=ky96rwCx1z20fR21EWEdx+Na39NCqqG=3A@mail.gmail.com>
+ <20230609121043.ekfvbgjiko7644t7@skbuf>
+Content-Language: en-US
+From: Victor Nogueira <victor@mojatatu.com>
+In-Reply-To: <20230609121043.ekfvbgjiko7644t7@skbuf>
 X-Mailman-Approved-At: Fri, 09 Jun 2023 15:15:48 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
- t=1686307514; x=1717843514;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=c814UuxtwJhYnMbTZs0+0xa7I8Uix8yXpZ8014/KywA=;
- b=2s86fKQUpulcqeWVZgzuYa1UsnN/klJpVZjlRiAjfZ6ZrrgpbTyEhKOT
- 9wEBkNaCF1Rwezc0gOfbpOYAx0GDw5v2fyCTjmAYB2b9xyNAJbUM/VbLl
- qOQXqRNP51ljMqVH3AHMTA+3rutqo4iFgLk/UCHRbUPdrpKih1Vto4ovg
- R82Pp4RG0j0AT9Uxa+vBLV0RSf7tgEpmDVUKTHSJo9Sddh1dj7hcTXZ8V
- xeIUQ41Irb5rteBNbMoHUE7laq4LRU+DXjXhF8MVniCyQnvr3767mWE/k
- ruvW547Zu4Gy/qOxuF3Dhwo6LZUr0mwcq2Jp5sY347QfJn8AnhBFu2524
- Q==;
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=mojatatu-com.20221208.gappssmtp.com; s=20221208; t=1686322600; x=1688914600; 
+ h=content-transfer-encoding:in-reply-to:from:content-language
+ :references:cc:to:subject:user-agent:mime-version:date:message-id
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=mNjEF1zb+JpJdY0weZ4OdAOu0yke/I9t8R3uYm6sLTw=;
+ b=yqu1Gt/I72W8rGCMTbNxP4nxyhxODNNERehop1YFjTuhAXJzp3uvoX/x6Zqn80ZPsP
+ qPNKqE0PRLSNo9svzye/a1X7FjDNhWzOUX+2yPywDUpNtdZd/TITx3Ce2a77ghBWrL9U
+ EmSNrEfZYGTeblSWGgITvKbFQLgD9LROEfaw65vEhd231ogFe7GnM79ShBz8kCsPyZaH
+ cdkBTFk7A522ggTbqdCnOhpuWmX4QnN7G4NRlIwBcPXt41WPTGi7ZtUuiGXlFu6e5sm+
+ Rb3YsG0S3J8oSiUu0dFlFvTTfDMUk5BkxDdgpUI1gDHvHUXH96EzUxGV6KBzx01Lb3Nt
+ SjLw==
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com
- header.a=rsa-sha256 header.s=mchp header.b=2s86fKQU
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 01/10] ice: Correctly
- initialize queue context values
+ dkim=pass (2048-bit key) header.d=mojatatu-com.20221208.gappssmtp.com
+ header.i=@mojatatu-com.20221208.gappssmtp.com header.a=rsa-sha256
+ header.s=20221208 header.b=yqu1Gt/I
+Subject: Re: [Intel-wired-lan] [PATCH RESEND net-next 5/5] net/sched:
+ taprio: dump class stats for the actual q->qdiscs[]
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,31 +120,138 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
-Content-Type: text/plain; charset="us-ascii"
+Cc: Jiri Pirko <jiri@resnulli.us>, Pedro Tammela <pctammela@mojatatu.com>,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Peilin Ye <yepeilin.cs@gmail.com>, Eric Dumazet <edumazet@google.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Cong Wang <xiyou.wangcong@gmail.com>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> The ice_alloc_lan_q_ctx function allocates the queue context array for a
-> given traffic class. This function uses devm_kcalloc which will
-> zero-allocate the structure. Thus, prior to any queue being setup by
-> ice_ena_vsi_txq, the q_ctx structure will have a q_handle of 0 and a q_teid
-> of 0. These are potentially valid values.
+On 09/06/2023 09:10, Vladimir Oltean wrote:
+> On Thu, Jun 08, 2023 at 02:44:46PM -0400, Jamal Hadi Salim wrote:
+>> Other than the refcount issue i think the approach looks reasonable to
+>> me. The stats before/after you are showing below though are
+>> interesting; are you showing a transient phase where packets are
+>> temporarily in the backlog. Typically the backlog is a transient phase
+>> which lasts a very short period. Maybe it works differently for
+>> taprio? I took a quick look at the code and do see to decrement the
+>> backlog in the dequeue, so if it is not transient then some code path
+>> is not being hit.
 > 
-> Modify the ice_alloc_lan_q_ctx function to initialize every member of the
-> q_ctx array to have invalid values. Modify ice_dis_vsi_txq to ensure that
-> it assigns q_teid to an invalid value when it assigns q_handle to the
-> invalid value as well.
+> It's a fair concern. The thing is that I put very aggressive time slots
+> in the schedule that I'm testing with, and my kernel has a lot of
+> debugging stuff which bogs it down (kasan, kmemleak, lockdep, DMA API
+> debug etc). Not to mention that the CPU isn't the fastest to begin with.
 > 
-> This will allow other code to check whether the queue context is currently
-> valid before operating on it.
+> The way taprio works is that there's a hrtimer which fires at the
+> expiration time of the current schedule entry and sets up the gates for
+> the next one. Each schedule entry has a gate for each traffic class
+> which determines what traffic classes are eligible for dequeue() and
+> which ones aren't.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> The dequeue() procedure, though also invoked by the advance_schedule()
+> hrtimer -> __netif_schedule(), is also time-sensitive. By the time
+> taprio_dequeue() runs, taprio_entry_allows_tx() function might return
+> false when the system is so bogged down that it wasn't able to make
+> enough progress to dequeue() an skb in time. When that happens, there is
+> no mechanism, currently, to age out packets that stood too much in the
+> TX queues (what does "too much" mean?).
+> 
+> Whereas enqueue() is technically not time-sensitive, i.e. you can
+> enqueue whenever you want and the Qdisc will dequeue whenever it can.
+> Though in practice, to make this scheduling technique useful, the user
+> space enqueue should also be time-aware (though you can't capture this
+> with ping).
+> 
+> If I increase all my sched-entry intervals by a factor of 100, the
+> backlog issue goes away and the system can make forward progress.
+> 
+> So yeah, sorry, I didn't pay too much attention to the data I was
+> presenting for illustrative purposes.
+> 
+>> Aside: I realize you are busy - but if you get time and provide some
+>> sample tc command lines for testing we could help create the tests for
+>> you, at least the first time. The advantage of putting these tests in
+>> tools/testing/selftests/tc-testing/ is that there are test tools out
+>> there that run these tests and so regressions are easier to catch
+>> sooner.
+> 
+> Yeah, ok. The script posted in a reply on the cover letter is still what
+> I'm working with. The things it intends to capture are:
+> - attaching a custom Qdisc to one of taprio's classes doesn't fail
+> - attaching taprio to one of taprio's classes fails
+> - sending packets through one queue increases the counters (any counters)
+>    of just that queue
+> 
+> All the above, replicated once for the software scheduling case and once
+> for the offload case. Currently netdevsim doesn't attempt to emulate
+> taprio offload.
+> 
+> Is there a way to skip tests? I may look into tdc, but I honestly don't
+> have time for unrelated stuff such as figuring out why my kernel isn't
+> configured for the other tests to pass - and it seems that once one test
+> fails, the others are completely skipped, see below.
 
-Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
+You can tell tdc to run a specific test file by providing the "-f" option.
+For example, if you want to run only taprio tests, you can issue the
+following command:
 
+./tdc.py -f tc-tests/qdiscs/taprio.json
+
+This is also described in tdc's README.
+
+> Also, by which rule are the test IDs created?
+
+When creating a test case in tdc, you must have an ID field.
+What we do to generate the IDs is leave the "id" field as an
+empty string on the test case description, for example:
+
+
+{
+     "id": "",
+     "name": "My dummy test case",
+     ...
+}
+
+and run the following:
+
+./tdc.py -i
+
+This will automatically fill up the "id" field in the JSON
+with an appropriate ID.
+
+> root@debian:~# cd selftests/tc-testing/
+> root@debian:~/selftests/tc-testing# ./tdc.sh
+> considering category qdisc
+>   -- ns/SubPlugin.__init__
+> Test 0582: Create QFQ with default setting
+> Test c9a3: Create QFQ with class weight setting
+> Test d364: Test QFQ with max class weight setting
+> Test 8452: Create QFQ with class maxpkt setting
+> Test 22df: Test QFQ class maxpkt setting lower bound
+> Test 92ee: Test QFQ class maxpkt setting upper bound
+> Test d920: Create QFQ with multiple class setting
+> Test 0548: Delete QFQ with handle
+> Test 5901: Show QFQ class
+> Test 0385: Create DRR with default setting
+> Test 2375: Delete DRR with handle
+> Test 3092: Show DRR class
+> Test 3460: Create CBQ with default setting
+> exit: 2
+> exit: 0
+> Error: Specified qdisc kind is unknown.
+
+As you stated, this likely means you are missing a config option.
+However you can just ask tdc to run a specific test file to avoid this.
+
+> (...)
+
+cheers,
+Victor
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
