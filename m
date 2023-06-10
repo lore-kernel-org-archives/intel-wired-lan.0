@@ -1,151 +1,108 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 248BCC88CB2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jun 2023 14:28:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9F66C7EE2F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jun 2023 15:11:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B13DC405F2;
-	Mon, 12 Jun 2023 14:28:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B13DC405F2
+	by smtp1.osuosl.org (Postfix) with ESMTP id 4472482276;
+	Mon, 12 Jun 2023 15:11:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4472482276
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686580091;
-	bh=GtC/Vmxv1J6GlxuJ8MlhSbo08X0n/F2UBTyksGzWp3A=;
+	s=default; t=1686582678;
+	bh=8fJ3p7AMtNzIslo7kb6q2Z3lu5tNMTpj76ioKjhScyI=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=JNvlmgkCJcRPUo7uDiZvCis71G152r15Qqff0fjNa1ZuGxHvhiCNvnIAQ0DM/3GYi
-	 rWDNUCsVAx+8GwV/j0o8P2uCfn+8ksyPBTNly1V4YAubE8flOhPjrzIwpYnob9A79S
-	 PhaHPBLT8hw+74Dcc6QGw6hLY9byTrK/OcDRj/+RsWFeCW44alXQlHxhtF++1uMNes
-	 JgV2bSFuhkEHv1h0irw/J62TVQdSL3aY4pPvvhRQLct0PY/xVSPc0qfOdHZz+2p2wu
-	 uTT1M/8wh5lVpu5C9oPzOp8I68wwkHTwHRfiO37tfvWsyd4F2ecq+iHWjKa7bCxKi0
-	 wmbYCzVHxoCVg==
+	b=P3kq9hOWEsj6SRFn11DYGF3qF1uXUkCtuD1kEkymnmd/2woJkPPsVLMzU2aZYiaZY
+	 VpI4FcQv1XBmXCFosHXUw8+tOZnePmjPI3LP/o3S3yMpcxhBSwM7tVFA9DRKYwWqzk
+	 T1O08G1NoNRi8NgrlifBfkUdODH55F20HmTkSEHK45lb0oYCG3FTq9zlsgHxflyMXd
+	 3uN5hXQVfLOSsZKqwoxw6aRsLWg9/u+mHLrpLFi8tMFnYOXwY2UoczfxHZljx2UeXT
+	 DwqRh87yZLQC/AlGfDTVR9WF+3xu0ny6AUn3rz2B5YAWjtlLgwAR8DaNXMZTk7/Pb6
+	 SI+ihuLx/q9GQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FA9F9MO_EG_N; Mon, 12 Jun 2023 14:28:11 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id sSO5OWwDp5Iy; Mon, 12 Jun 2023 15:11:16 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B1F7F41173;
-	Mon, 12 Jun 2023 14:28:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B1F7F41173
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 499DF1BF2BE
- for <intel-wired-lan@osuosl.org>; Mon, 12 Jun 2023 14:28:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 24C5E82C3E;
+	Mon, 12 Jun 2023 15:11:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 24C5E82C3E
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 3CB691BF969
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Jun 2023 03:22:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 1422E61307
- for <intel-wired-lan@osuosl.org>; Mon, 12 Jun 2023 14:28:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1422E61307
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1330684302
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Jun 2023 03:22:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1330684302
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ukLRz4RsEkkw for <intel-wired-lan@osuosl.org>;
- Mon, 12 Jun 2023 14:28:08 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id j2rC97pDQsVA for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 10 Jun 2023 03:22:54 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 26990612F0
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on2085.outbound.protection.outlook.com [40.107.13.85])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 26990612F0
- for <intel-wired-lan@osuosl.org>; Mon, 12 Jun 2023 14:28:08 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ZoUPhNTbIisWGEXzOwD/hEQCd7Nr03dfmpefVpZRrfAH5hYzAv+Dpzye1GPgP8xQzGA9BOLifqDqWxs0wv5/8uuU5Dw6Zm0NUX6WJS3+MoO2iQNJOYdiP2gR7r73qaJG8euBjsstqHvc7T0Nf5XJ02pOw3Glw3bfxNMJp6ncMi9QxZA4yoQj4RJXi8zMf9r+ynLUgJdAZZ1VzqEvCbAlgx6xiq7JaBL6fuo8QPUfgh6oPKB4e6Rfs/ju1FtwCl7dTT2FwsUU4cqOFEcXe5RfrQf5jzjKwmaIm5ZVPXg5ThUpDpxYpmn5dWQ85zKT4Z+NCs1zJKMzy5c2irXgyNOiWg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=mB01244eHBlRenhlLKyxrlf/FNsAmoaA4erikXRST+E=;
- b=QnWm+m87ygbS7ubDtv7Lwfn/HATrCOVo2gknVxa6keKSHiCn4DoFeUZt1/OIOLTLQu5n/oSGoY85kjZ95YMKirxiQaK9gFvOD9kVqoS0hfqr1BRf6UtuweRX0poHhokxY4S1WQwJL5iDfPmNJxTWYYN80nl6qqatEkAYweoszB0qP06nQoHo+W+GQ3QbL0shG8NvBmayVsmUyTdjKstIqyzQY27NK/dXnxwDmYtxRdyxi1B3HDb3qpFn6oVdEwoFjKLYVuqNO4k8iGVNwwt1TP3UmS4hhIhe6N6TTZ2A2rRb7JwQ5Dyganu2Sihv7XM12TJocobXz/HIYS2jOz6UlQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-Received: from AM0PR04MB6452.eurprd04.prod.outlook.com (2603:10a6:208:16d::21)
- by AM9PR04MB8340.eurprd04.prod.outlook.com (2603:10a6:20b:3e0::23)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6477.29; Mon, 12 Jun
- 2023 14:28:03 +0000
-Received: from AM0PR04MB6452.eurprd04.prod.outlook.com
- ([fe80::c40e:d76:fd88:f460]) by AM0PR04MB6452.eurprd04.prod.outlook.com
- ([fe80::c40e:d76:fd88:f460%4]) with mapi id 15.20.6455.045; Mon, 12 Jun 2023
- 14:28:03 +0000
-Date: Mon, 12 Jun 2023 17:28:00 +0300
-From: Vladimir Oltean <vladimir.oltean@nxp.com>
-To: "Zulkifli, Muhammad Husaini" <muhammad.husaini.zulkifli@intel.com>
-Message-ID: <20230612142800.76xkh7bshgb6ttwb@skbuf>
-References: <20230601005925.30473-1-muhammad.husaini.zulkifli@intel.com>
- <20230601005925.30473-1-muhammad.husaini.zulkifli@intel.com>
- <20230606140230.dyglrbenr3geu3ha@skbuf>
- <SJ1PR11MB61804C9DEFF8D2843E1B10D1B851A@SJ1PR11MB6180.namprd11.prod.outlook.com>
- <20230609173838.vtki6u5kk6v6gtr5@skbuf>
- <SJ1PR11MB6180B613324BFB5C5395DAF1B854A@SJ1PR11MB6180.namprd11.prod.outlook.com>
-Content-Disposition: inline
-In-Reply-To: <SJ1PR11MB6180B613324BFB5C5395DAF1B854A@SJ1PR11MB6180.namprd11.prod.outlook.com>
-X-ClientProxiedBy: AM0PR08CA0030.eurprd08.prod.outlook.com
- (2603:10a6:208:d2::43) To AM0PR04MB6452.eurprd04.prod.outlook.com
- (2603:10a6:208:16d::21)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 11635842FF
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 11635842FF
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 10 Jun 2023 03:22:53 +0000 (UTC)
+Received: by mail-pl1-x644.google.com with SMTP id
+ d9443c01a7336-1b18474cbb6so11057345ad.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 09 Jun 2023 20:22:53 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1686367373; x=1688959373;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=fe/O9XaMFUdFvBUtTqgAvCCtN3uvLjJISjqVF47ghc8=;
+ b=hqB2TTVW1xBoQlaVIf8YmljTtOYPHosmqfim62NIdcc0cfavfQ/VDrrMktJV+/ZOFz
+ gUdqfUkHexfNF0F5VuudWhjgCemglVt4spk+R7BnPxoiCeyGI3LujuSb/Et0DzhoYo9b
+ IkRNoiiiwp40eGLOhQ4G0vkZzvQWcf56o1BnIA3DZWvn13I6J+69ypBHpGjD3yys9OQ9
+ E/kduyRdyTsagJK0zqeNzJ8ScylUcGLM5bS/hGLm6Xs3I2Mtd9qYBpu/o+eC8dd1kcgW
+ 77xgcjtot/d2z9l0Kd0HORK7EuVHpFIqbZfpVRA36rx7krhvF4ZPrJDEDuHcQ31bvsG0
+ Ilsg==
+X-Gm-Message-State: AC+VfDwVmmdp1c043pWvSYV1Csd1u0iyj6Kxv66fMpDWPmlQCMKg2mj/
+ VYTGCUMF/xPoKBlyv+0FKN0=
+X-Google-Smtp-Source: ACHHUZ7RWxcDUEqnTUOL38m8kHI8JhIOM21NnbB9tCVaO+nNS/WX7+Un8h69AOb8n0GpYq69W9CstA==
+X-Received: by 2002:a17:902:da8c:b0:1ae:4562:14f1 with SMTP id
+ j12-20020a170902da8c00b001ae456214f1mr771615plx.9.1686367372945; 
+ Fri, 09 Jun 2023 20:22:52 -0700 (PDT)
+Received: from debian.me (subs32-116-206-28-58.three.co.id. [116.206.28.58])
+ by smtp.gmail.com with ESMTPSA id
+ a1-20020a1709027d8100b001a95c7742bbsm3660368plm.9.2023.06.09.20.22.51
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 09 Jun 2023 20:22:52 -0700 (PDT)
+Received: by debian.me (Postfix, from userid 1000)
+ id 6F296106A0B; Sat, 10 Jun 2023 10:22:48 +0700 (WIB)
+Date: Sat, 10 Jun 2023 10:22:48 +0700
+From: Bagas Sanjaya <bagasdotme@gmail.com>
+To: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>, kuba@kernel.org,
+ jiri@resnulli.us, vadfed@meta.com, jonathan.lemon@gmail.com,
+ pabeni@redhat.com
+Message-ID: <ZIPsiNrWm0hDIZUV@debian.me>
+References: <20230609121853.3607724-1-arkadiusz.kubalewski@intel.com>
+ <20230609121853.3607724-2-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM0PR04MB6452:EE_|AM9PR04MB8340:EE_
-X-MS-Office365-Filtering-Correlation-Id: ae6136bc-6aaf-4b4f-2ba7-08db6b513b47
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 8jWmEiZdw1lb0PCF0v52/w9DdGGLTP65vyKUZL2ifbjl4PsxOlYlMABZEv7Dwwq0BdloHIchQursMlKm2/hQ6ImyNQERgZ4bHCzM+6l2yLOEy+FX6Z8H12SZA+xAJRowaOG0XSXMCgK61jdvdiYwGbw1YLHp0co6SpNAd0kZpaHDuc8EkaI0xtiLnRogzdJCweCXS95+EzvGvYF6w1RBqprCU8dNq8s26uzVEQ9fHnJy6I5PnodXAq4M+w9N+lGFHRpYtTeur6dskOI4WeGh9MjwHbV4bY5iwBpT6LHW92ZsQheXw1iZOt5HOwXj6wzZkSYfITlHn0wf+H0hiLGsKmwCU4ElUUb4ecWvCEMoRZFgE1xKHBtVTrSi7aDVojKus07WhIQKSuYV2uc2MmbsCzH7x+ElN1ugLWgb7ElQBRG7Uie0SzZR3yg812PDiekus7/nX1L87NqXiNJjDw9TJGhdRZHZCxbDanq+ZRdEHZ94nHRq0+5w2ZQTTHy0GO6nD6jqwIpjXAQMmKRJ3F+5AO5kDOTmKNqob5ZQTj1IOCwJPqJSalWNQf5ZPgnn5QVs
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:AM0PR04MB6452.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(4636009)(7916004)(39860400002)(136003)(396003)(376002)(346002)(366004)(451199021)(6916009)(4326008)(66946007)(66476007)(66556008)(186003)(478600001)(2906002)(54906003)(33716001)(8676002)(316002)(41300700001)(86362001)(6486002)(6506007)(1076003)(9686003)(44832011)(8936002)(5660300002)(26005)(38100700002)(6512007);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?mGNYvHkWxjh5TIH77GiPHP4PRiy4vVT2vsZHA5bkGgukfqJ0UB9pf5ieIuQF?=
- =?us-ascii?Q?7x7kgi/5gxXYwPo4hjQrUhaYzSuWCK88y38w65j9uwNnDEPuDbf9Aw8a1oDb?=
- =?us-ascii?Q?bT2RiRh4xTErKbBTI1v18sRxCGwtVwFZksZg1JjmeKc8qJhpweD7S19AlZfs?=
- =?us-ascii?Q?xjkylrL4UuWMbl7choxmT64df/g94c+AJzvCadhH/QtwD749YwNFGBhVQao6?=
- =?us-ascii?Q?qyIPBdD9+/UxdYxcrt9xJ9fY0imgJMpWjO5WeLKK/RjiPcSAZwTiVNugR4ih?=
- =?us-ascii?Q?tOPbg3ERPYBAbozPDqWOTQgQFMdJEfFHJCUB2n653n/QRCI4KOvKGrCFQLEr?=
- =?us-ascii?Q?cC1fzeTTrvI9QnVRaZhtBOv/dyXfSHOGXG/7lVJvA6i9xP0mjT/Zb58qO9Ow?=
- =?us-ascii?Q?aBvcsRPsZUnkwpBkyzJ1IFq9Ut4AMudP4DZQ0fWsPdSMbBB3O9XwEvOKf17y?=
- =?us-ascii?Q?04TK2Lz43szdLVoobqw5qAyoR57kNhN8oVtUPDjX/RYCOOdbrHcg5omjWR3x?=
- =?us-ascii?Q?V8VzkqpmtzlQVFhAVwFIfzpXDLPNUJrE1k5aHSuXs0MNELZz8bV2RuPsZpTq?=
- =?us-ascii?Q?ihW0C5vQUF9PUdwLxEYkV3edyevMkkE6rJYhXdJjCvXcPwe3bBOzzRylogoR?=
- =?us-ascii?Q?sYMRb3B2dMz/FqnK8s9904GpS317b9zXN2B+61jESRlyGfmRt5yJ6oap6HGG?=
- =?us-ascii?Q?Rd+SDCc6bOj8cYaPQHhEg8zXwH0bL5JYYjwVEK7M3e3Re5ItpS1prH/xFQrd?=
- =?us-ascii?Q?GcSQIm+P49rj6ltybkzpLbwE/FdX/1C4fT/TEo0q3/gTwfYW/wvvazN9CL2n?=
- =?us-ascii?Q?GCdLx3nYw/kaGdQSuA7GufdZBL54ILUPbIRt4qzmM+PQKVoV+Gs2FALxaTHH?=
- =?us-ascii?Q?ObTunrdGiN6pr8pzAougAG32qjaKeU1FylifDSht83GdAOfV1Zy2JPu0xwT/?=
- =?us-ascii?Q?ldMw7Tc5lNVmG2DcJjnL0OWTXJAuU99dGcMb+LNdSZJY88S6OYNA8CqIi2Q+?=
- =?us-ascii?Q?d4qze3cgF5iM/AzP2/QFoKNJpZGs1uXBOS1AR+INcOkCbwzZqFkDNtxzAELA?=
- =?us-ascii?Q?pR7UwI23mAo13zhDRIDXvT+xqZXw2k9z400TmIfok6pBkOv4S0dBh+7TKQAX?=
- =?us-ascii?Q?SFEUqg2XZ8nbTvVW5pLzPJUrlDGxWr8lPC74o8w8Nc0FgxVp7+BhLncsmsYI?=
- =?us-ascii?Q?irJRk/+20JvqEwl3ww2LngA0NnS7X2NVd33H8M99UN+lUePB7IZlldlJSmbZ?=
- =?us-ascii?Q?nNyVXlD2NbM2D90lU72HW4jDUnC67jooN9CwqUhbFd8wlUgO157huLMyHsLG?=
- =?us-ascii?Q?HHLD0SMAw5R3cqo6X+k2pAAZCDB5s34mmasNQi+3pIi/D/ey1wWI1KfVBVvS?=
- =?us-ascii?Q?co3QLjuKaLx2/UysXIHsgVEBCLk9+eOl6YhqTWVCYm+fWhkO+AuxjtF/MmWG?=
- =?us-ascii?Q?OS6cbVCzD4nLURXhzuPt5MZytaJb9nEBcvUn9drEsaM5QJ8qVrkqaDbQ92Qz?=
- =?us-ascii?Q?fkuZo0EpfM5MaKyioV+UFt91hxChB4QWrytm4wgAgAY1N4tookeghrpZzhnS?=
- =?us-ascii?Q?FMIRbMWd8RN118BNJGpKDLk+oepKmJ6SYmQtGDsj6lWGim706rdtZ8ZcZsEK?=
- =?us-ascii?Q?7Q=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ae6136bc-6aaf-4b4f-2ba7-08db6b513b47
-X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6452.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Jun 2023 14:28:03.6929 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: ebCJ2xjdVb9usvO+fGkJT9Xr4wG4+NAdHwG5F4K2acbqr6erqjjup2F0SWgQTletUh/i7Bvrcypqnlp4dZ2TDg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR04MB8340
+In-Reply-To: <20230609121853.3607724-2-arkadiusz.kubalewski@intel.com>
+X-Mailman-Approved-At: Mon, 12 Jun 2023 15:11:14 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=nxp.com; s=selector2; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=mB01244eHBlRenhlLKyxrlf/FNsAmoaA4erikXRST+E=;
- b=jZaBbzIBNpADif9sFmAdU3znTSOX6w5II3YPKfp1BkJUOOBwQDS7pM1+SxI8DoJRen9Uu+lGEzFwMLy8prwjIP5AQnXfv0zKi5W8lxP96y15fgCj7AtD1QBozyG/Bk5nNWdY0UPA8+3mzwx3O0HDTEmSOK0O6L6JJYm4YuQkK38=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
- header.s=selector2 header.b=jZaBbzIB
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v3] igc: Add
- TransmissionOverrun counter
+ d=gmail.com; s=20221208; t=1686367373; x=1688959373;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=fe/O9XaMFUdFvBUtTqgAvCCtN3uvLjJISjqVF47ghc8=;
+ b=GI+zGZBTCRyjYyqeCRVP3oIy3XZRLDBdgM1uSlSSUkj61h5nG0dw+39ScpAx/McL1C
+ d1qjAOjO+VQMf32EnP1fGS8CMtsjsCfZBDu8M+Nn0VClxEBN3tlClw/owehIqsFHRriV
+ vYJmu+oFGyIZDYfq/GZpR/AviEuVc8atkvyMhlVuWrl6/FMqLuTorTkhSl/WQ0ab5j+g
+ q+sEtXsOwk4RS/9mQ+sW+P5IuBmHFaiij+lnzfvJuj3HFLGTei5Xip6yTUjcMytu2sCK
+ 5W7jVYJHD4q/IIpUcTaTPVW78alBWRAs/euFEGJLlVprpfR161h6jlJxU6WaTeiD3YXJ
+ p1Pg==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20221208 header.b=GI+zGZBT
+Subject: Re: [Intel-wired-lan] [RFC PATCH v8 01/10] dpll: documentation on
+ DPLL subsystem interface
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -158,38 +115,800 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "tee.min.tan@linux.intel.com" <tee.min.tan@linux.intel.com>,
- "intel-wired-lan@osuosl.org" <intel-wired-lan@osuosl.org>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: geert+renesas@glider.be, mst@redhat.com, razor@blackwall.org, phil@nwl.cc,
+ javierm@redhat.com, edumazet@google.com, benjamin.tissoires@redhat.com,
+ anthony.l.nguyen@intel.com, linux-clk@vger.kernel.org, lucien.xin@gmail.com,
+ leon@kernel.org, corbet@lwn.net, linux-rdma@vger.kernel.org,
+ masahiroy@kernel.org, linux-doc@vger.kernel.org, jesse.brandeburg@intel.com,
+ intel-wired-lan@lists.osuosl.org, airlied@redhat.com, vadfed@fb.com,
+ ricardo.canuelo@collabora.com, arnd@arndb.de, idosch@nvidia.com,
+ richardcochran@gmail.com, claudiajkang@gmail.com, kuniyu@amazon.com,
+ jacek.lawrynowicz@linux.intel.com, liuhangbin@gmail.com,
+ nicolas.dichtel@6wind.com, linux-arm-kernel@lists.infradead.org,
+ axboe@kernel.dk, sj@kernel.org, vadim.fedorenko@linux.dev, linux@zary.sk,
+ gregkh@linuxfoundation.org, ogabbay@kernel.org, nipun.gupta@amd.com,
+ linux-kernel@vger.kernel.org, andy.ren@getcruise.com, tzimmermann@suse.de,
+ netdev@vger.kernel.org, saeedm@nvidia.com, davem@davemloft.net,
+ milena.olech@intel.com, hkallweit1@gmail.com
+Content-Type: multipart/mixed; boundary="===============9178558909709827459=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Jun 12, 2023 at 03:50:19AM +0000, Zulkifli, Muhammad Husaini wrote:
-> There is no HW statistic count for transmission overrun. 
-> I agreed with you, when this bit is not set, there should be non-zero value. 
-> 
-> When setting TSN mode, we now make the STRICT_END flag mandatory for QBV 
-> operation in the driver code. So that the transmission is only enabled inside the QBV
-> time windows and obeying the STRICT_END parameter of the queue. So we can expect
-> "0" packet overrun when this bit is enabled in our case. 
-(...)
-> 
-> Yeah. Only HW could know for sure if the transmission is overrun out of QBV
-> Window or not.....But HW does not give any HW statistic register value for this.
-(...)
-> 
-> I see what you're saying. However, because I225 HW has this STRIC_END bit option, 
-> we can at least guarantee that HW is handling it where packets from the queue can be 
-> transmitted only if they are expected to be completed before the window of the Queue 
-> is ended.
 
-Are the people doing the certification testing aware of the fact that
-your hardware does not monitor and report transmission overruns, and
-thus, that the counter of "0" that the driver reports may be confidently
-wrong? Are they ok with this?
+--===============9178558909709827459==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="hkgrD8VFvSTSqR82"
+Content-Disposition: inline
+
+
+--hkgrD8VFvSTSqR82
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Jun 09, 2023 at 02:18:44PM +0200, Arkadiusz Kubalewski wrote:
+> diff --git a/Documentation/driver-api/dpll.rst b/Documentation/driver-api=
+/dpll.rst
+> new file mode 100644
+> index 000000000000..8caa4af022ad
+> --- /dev/null
+> +++ b/Documentation/driver-api/dpll.rst
+> @@ -0,0 +1,458 @@
+> +.. SPDX-License-Identifier: GPL-2.0
+> +
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+> +The Linux kernel dpll subsystem
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+> +
+> +The main purpose of dpll subsystem is to provide general interface
+> +to configure devices that use any kind of Digital PLL and could use
+> +different sources of signal to synchronize to as well as different
+> +types of outputs.
+> +The main interface is NETLINK_GENERIC based protocol with an event
+> +monitoring multicast group defined.
+> +
+> +Device object
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Single dpll device object means single Digital PLL circuit and bunch of
+> +connected pins.
+> +It reports the supported modes of operation and current status to the
+> +user in response to the `do` request of netlink command
+> +``DPLL_CMD_DEVICE_GET`` and list of dplls registered in the subsystem
+> +with `dump` netlink request of the same command.
+> +Changing the configuration of dpll device is done with `do` request of
+> +netlink ``DPLL_CMD_DEVICE_SET`` command.
+> +A device handle is ``DPLL_A_ID``, it shall be provided to get or set
+> +configuration of particular device in the system. It can be obtained
+> +with a ``DPLL_CMD_DEVICE_GET`` `dump` request or
+> +a ``DPLL_CMD_DEVICE_ID_GET`` `do` request, where the one must provide
+> +attributes that result in single device match.
+> +
+> +Pin object
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +A pin is amorphic object which represents either input or output, it
+> +could be internal component of the device, as well as externally
+> +connected.
+> +The number of pins per dpll vary, but usually multiple pins shall be
+> +provided for a single dpll device.
+> +Pin's properties, capabilities and status is provided to the user in
+> +response to `do` request of netlink ``DPLL_CMD_PIN_GET`` command.
+> +It is also possible to list all the pins that were registered in the
+> +system with `dump` request of ``DPLL_CMD_PIN_GET`` command.
+> +Configuration of a pin can be changed by `do` request of netlink
+> +``DPLL_CMD_PIN_SET`` command.
+> +Pin handle is a ``DPLL_A_PIN_ID``, it shall be provided to get or set
+> +configuration of particular pin in the system. It can be obtained with
+> +``DPLL_CMD_PIN_GET`` `dump` request or ``DPLL_CMD_PIN_ID_GET`` `do`
+> +request, where user provides attributes that result in single pin match.
+> +
+> +Pin selection
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +In general, selected pin (the one which signal is driving the dpll
+> +device) can be obtained from ``DPLL_A_PIN_STATE`` attribute, and only
+> +one pin shall be in ``DPLL_PIN_STATE_CONNECTED`` state for any dpll
+> +device.
+> +
+> +Pin selection can be done either manually or automatically, depending
+> +on hardware capabilities and active dpll device work mode
+> +(``DPLL_A_MODE`` attribute). The consequence is that there are
+> +differences for each mode in terms of available pin states, as well as
+> +for the states the user can request for a dpll device.
+> +
+> +In manual mode (``DPLL_MODE_MANUAL``) the user can request or receive
+> +one of following pin states:
+> +- ``DPLL_PIN_STATE_CONNECTED`` - the pin is used to drive dpll device
+> +- ``DPLL_PIN_STATE_DISCONNECTED`` - the pin is not used to drive dpll
+> +  device
+> +
+> +In automatic mode (``DPLL_MODE_AUTOMATIC``) the user can request or
+> +receive one of following pin states:
+> +- ``DPLL_PIN_STATE_SELECTABLE`` - the pin shall be considered as valid
+> +  input for automatic selection algorithm
+> +- ``DPLL_PIN_STATE_DISCONNECTED`` - the pin shall be not considered as
+> +  a valid input for automatic selection algorithm
+> +In automatic mode (``DPLL_MODE_AUTOMATIC``) the user can only receive
+> +pin state ``DPLL_PIN_STATE_CONNECTED`` once automatic selection
+> +algorithm locks a dpll device with one of the inputs.
+> +
+> +For other dpll device operating modes there is no pin selection
+> +mechanics.
+> +
+> +Shared pins
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +A single pin object can be attached to multiple dpll devices.
+> +Then there are two groups of configuration knobs:
+> +1) Set on a pin - the configuration affects all dpll devices pin is
+> +   registered to (i.e. ``DPLL_A_PIN_FREQUENCY``),
+> +2) Set on a pin-dpll tuple - the configuration affects only selected
+> +   dpll device (i.e. ``DPLL_A_PIN_PRIO``, ``DPLL_A_PIN_STATE``,
+> +   ``DPLL_A_PIN_DIRECTION``).
+> +
+> +MUX-type pins
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +A pin can be MUX-type, it aggregates child pins and serves as a pin
+> +multiplexer. One or more pins are registered with MUX-type instead of
+> +being directly registered to a dpll device.
+> +Pins registered with a MUX-type provide user with additional nested
+> +attribute ``DPLL_A_PIN_PARENT`` for each parent they were registered
+> +with.
+> +If a pin was registered with multiple parent pins, they behave like a
+> +multiple output multiplexer. In this case output of a
+> +``DPLL_CMD_PIN_GET`` would contain multiple pin-parent nested
+> +attributes with current state related to each parent, like:
+> +
+> +``'pin': [{
+> + {'clock-id': 282574471561216,
+> +  'module-name': 'ice',
+> +  'pin-dpll-caps': 4,
+> +  'pin-id': 13,
+> +  'pin-parent': [{'pin-id': 2, 'pin-state': 'connected'},
+> +                 {'pin-id': 3, 'pin-state': 'disconnected'},
+> +                 {'id': 0, 'pin-direction': 'input'},
+> +                 {'id': 1, 'pin-direction': 'input'}],
+> +  'pin-type': 'synce-eth-port'}
+> +}]``
+> +
+> +Only one child pin can provide its signal to the parent MUX-type pin at
+> +a time, the selection is done by requesting change of a child pin state
+> +on desired parent, with the use of ``DPLL_A_PIN_PARENT`` nested
+> +attribute. Example of netlink `set state on parent pin` message format:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D  =3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_A_PIN_ID``      child pin id
+> +  ``DPLL_A_PIN_PARENT``  nested attribute for requesting configuration
+> +                         related to parent pin
+> +    ``DPLL_A_PIN_ID``    parent pin id
+> +    ``DPLL_A_PIN_STATE`` requested pin state on parent
+> +
+> +Pin priority
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Some devices might offer a capability of automatic pin selection mode
+> +(enum value ``DPLL_MODE_AUTOMATIC`` of ``DPLL_A_MODE`` attribute).
+> +Usually, automatic selection is performed on the hardware level, which
+> +means only pins directly connected to the dpll can be used for automatic
+> +input pin selection.
+> +In automatic selection mode, the user cannot manually select a input
+> +pin for the device, instead the user shall provide all directly
+> +connected pins with a priority ``DPLL_A_PIN_PRIO``, the device would
+> +pick a highest priority valid signal and use it to control the DPLL
+> +device. Example of netlink `set priority on parent pin` message format:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D  =3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_A_PIN_ID``      child pin id
+> +  ``DPLL_A_PIN_PARENT``  nested attribute for requesting configuration
+> +                         related to parent pin
+> +    ``DPLL_A_ID``        parent dpll id
+> +    ``DPLL_A_PIN_PRIO``  requested pin prio on parent dpll
+> +
+> +Child pin of MUX-type is not capable of automatic input pin selection,
+> +in order to configure a input of a MUX-type pin, the user needs to
+> +request desired pin state of the child pin on the parent pin,
+> +as described in the ``MUX-type pins`` chapter.
+> +
+> +Configuration commands group
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D
+> +
+> +Configuration commands are used to get information about registered
+> +dpll devices (and pins), as well as set configuration of device or pins.
+> +As dpll devices must be abstracted and reflect real hardware,
+> +there is no way to add new dpll device via netlink from user space and
+> +each device should be registered by its driver.
+> +
+> +All netlink commands require ``GENL_ADMIN_PERM``. This is to prevent
+> +any spamming/DoS from unauthorized userspace applications.
+> +
+> +List of netlink commands with possible attributes
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +All constants identifying command types use a ``DPLL_CMD_`` prefix and
+> +suffix according to command purpose. All attributes use a ``DPLL_A_``
+> +prefix and suffix according to attribute purpose:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_CMD_DEVICE_ID_GET``           command to get device ID
+> +    ``DPLL_A_MODULE_NAME``             attr module name of registerer
+> +    ``DPLL_A_CLOCK_ID``                attr Unique Clock Identifier
+> +                                       (EUI-64), as defined by the
+> +                                       IEEE 1588 standard
+> +    ``DPLL_A_TYPE``                    attr type of dpll device
+> +  ``DPLL_CMD_DEVICE_GET``              command to get device info or
+> +                                       dump list of available devices
+> +    ``DPLL_A_ID``                      attr unique dpll device ID
+> +    ``DPLL_A_MODULE_NAME``             attr module name of registerer
+> +    ``DPLL_A_CLOCK_ID``                attr Unique Clock Identifier
+> +                                       (EUI-64), as defined by the
+> +                                       IEEE 1588 standard
+> +    ``DPLL_A_MODE``                    attr selection mode
+> +    ``DPLL_A_MODE_SUPPORTED``          attr available selection modes
+> +    ``DPLL_A_LOCK_STATUS``             attr dpll device lock status
+> +    ``DPLL_A_TEMP``                    attr device temperature info
+> +    ``DPLL_A_TYPE``                    attr type of dpll device
+> +  ``DPLL_CMD_DEVICE_SET``              command to set dpll device config
+> +    ``DPLL_A_ID``                      attr internal dpll device index
+> +    ``DPLL_A_MODE``                    attr selection mode to configure
+> +  ``DPLL_CMD_PIN_GET``                 command to get pin ID
+> +    ``DPLL_A_MODULE_NAME``             attr module name of registerer
+> +    ``DPLL_A_CLOCK_ID``                attr Unique Clock Identifier
+> +                                       (EUI-64), as defined by the
+> +                                       IEEE 1588 standard
+> +    ``DPLL_A_PIN_BOARD_LABEL``         attr pin board label provided
+> +                                       by registerer
+> +    ``DPLL_A_PIN_PANEL_LABEL``         attr pin panel label provided
+> +                                       by registerer
+> +    ``DPLL_A_PIN_PACKAGE_LABEL``       attr pin package label provided
+> +                                       by registerer
+> +    ``DPLL_A_PIN_TYPE``                attr type of a pin
+> +  ``DPLL_CMD_PIN_GET``                 command to get pin info or dump
+> +                                       list of available pins
+> +    ``DPLL_A_PIN_ID``                  attr unique a pin ID
+> +    ``DPLL_A_MODULE_NAME``             attr module name of registerer
+> +    ``DPLL_A_CLOCK_ID``                attr Unique Clock Identifier
+> +                                       (EUI-64), as defined by the
+> +                                       IEEE 1588 standard
+> +    ``DPLL_A_PIN_BOARD_LABEL``         attr pin board label provided
+> +                                       by registerer
+> +    ``DPLL_A_PIN_PANEL_LABEL``         attr pin panel label provided
+> +                                       by registerer
+> +    ``DPLL_A_PIN_PACKAGE_LABEL``       attr pin package label provided
+> +                                       by registerer
+> +    ``DPLL_A_PIN_TYPE``                attr type of a pin
+> +    ``DPLL_A_PIN_DIRECTION``           attr direction of a pin
+> +    ``DPLL_A_PIN_FREQUENCY``           attr current frequency of a pin
+> +    ``DPLL_A_PIN_FREQUENCY_SUPPORTED`` nested attr provides supported
+> +                                       frequencies
+> +      ``DPLL_A_PIN_ANY_FREQUENCY_MIN`` attr minimum value of frequency
+> +      ``DPLL_A_PIN_ANY_FREQUENCY_MAX`` attr maximum value of frequency
+> +    ``DPLL_A_PIN_PARENT``              nested attr for each parent the
+> +                                       pin is connected with
+> +      ``DPLL_A_ID``                    attr provided if parent is dpll
+> +                                       device
+> +      ``DPLL_A_PIN_ID``                attr provided if parent is a pin
+> +      ``DPLL_A_PIN_PRIO``              attr priority of pin on the
+> +                                       dpll device
+> +      ``DPLL_A_PIN_STATE``             attr state of pin on the dpll
+> +                                       device or on the parent pin
+> +    ``DPLL_A_PIN_DPLL_CAPS``           attr bitmask of pin-dpll
+> +                                       capabilities
+> +  ``DPLL_CMD_PIN_SET``                 command to set pins configuration
+> +    ``DPLL_A_PIN_ID``                  attr unique a pin ID
+> +    ``DPLL_A_PIN_DIRECTION``           attr requested direction of a pin
+> +    ``DPLL_A_PIN_FREQUENCY``           attr requested frequency of a pin
+> +    ``DPLL_A_PIN_PARENT``              nested attr for each parent
+> +                                       related configuration of a pin
+> +                                       requested
+> +      ``DPLL_A_ID``                    attr provided if parent is dpll
+> +                                       device
+> +      ``DPLL_A_PIN_ID``                attr provided if parent is a pin
+> +      ``DPLL_A_PIN_PRIO``              attr requested priority of pin on
+> +                                       the dpll device
+> +      ``DPLL_A_PIN_STATE``             attr requested state of pin on
+> +                                       the dpll device or on the parent
+> +                                       pin
+> +
+> +Netlink dump requests
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +The ``DPLL_CMD_DEVICE_GET`` and ``DPLL_CMD_PIN_GET`` commands are
+> +capable of dump type netlink requests, in which case the response is in
+> +the same format as for their ``do`` request, but every device or pin
+> +registered in the system is returned.
+> +
+> +SET commands format
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +``DPLL_CMD_DEVICE_SET`` - to target a dpll device, the user provides
+> +``DPLL_A_ID``, which is unique identifier of dpll device in the system,
+> +as well as parameter being configured (``DPLL_A_MODE``).
+> +
+> +``DPLL_CMD_PIN_SET`` - to target a pin user has to provide a
+> +``DPLL_A_PIN_ID``, which is unique identifier of a pin in the system.
+> +Also configured pin parameters must be added.
+> +If ``DPLL_A_PIN_DIRECTION`` or ``DPLL_A_PIN_FREQUENCY`` are configured,
+> +this affects all the dpll device they are connected, that is why those
+> +attributes shall not be enclosed in ``DPLL_A_PIN_PARENT``.
+> +Other attributes:
+> +``DPLL_A_PIN_PRIO`` or ``DPLL_A_PIN_STATE`` must be enclosed in
+> +``DPLL_A_PIN_PARENT`` as their configuration relates to only one
+> +parent dpll or parent pin.
+> +Nested attribute of either ``DPLL_A_ID`` or ``DPLL_A_PIN_ID`` determines
+> +if configuration was requested on a dpll device or on a pin
+> +respectively.
+> +In general, it is possible to configure multiple parameters at once, but
+> +internally each parameter change will be invoked separately, where order
+> +of configuration is not guaranteed by any means.
+> +
+> +Device level configuration pre-defined enums
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Values for ``DPLL_A_LOCK_STATUS`` attribute:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_LOCK_STATUS_UNLOCKED``      dpll device is in freerun, not
+> +                                     locked to any input pin
+> +  ``DPLL_LOCK_STATUS_LOCKED``        dpll device is locked to the input
+> +                                     but no holdover capability yet
+> +                                     acquired
+> +  ``DPLL_LOCK_STATUS_LOCKED_HO_ACQ`` dpll device is locked to the input
+> +                                     pin with holdover capability
+> +                                     acquired
+> +  ``DPLL_LOCK_STATUS_HOLDOVER``      dpll device lost a lock, using its
+> +                                     frequency holdover capabilities
+> +
+> +Values for ``DPLL_A_MODE`` attribute:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_MODE_MANUAL``    input pin is manually selected by setting pin
+> +                          state to ``DPLL_PIN_STATE_CONNECTED`` on a
+> +                          dpll device
+> +  ``DPLL_MODE_AUTOMATIC`` input pin is auto selected according to
+> +                          configured pin priorities and input signal
+> +                          validity
+> +  ``DPLL_MODE_HOLDOVER``  force holdover mode of dpll
+> +  ``DPLL_MODE_FREERUN``   dpll device is driven by supplied system clock
+> +                          without holdover capabilities
+> +
+> +Values for ``DPLL_A_TYPE`` attribute:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_TYPE_PPS`` dpll device used to provide pulse-per-second output
+> +  ``DPLL_TYPE_EEC`` dpll device used to drive ethernet equipment clock
+> +
+> +Pin level configuration pre-defined enums
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +Values for ``DPLL_A_PIN_STATE`` attribute:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_PIN_STATE_CONNECTED``    Pin used as active input for a dpll
+> +                                  device or for a parent pin
+> +  ``DPLL_PIN_STATE_DISCONNECTED`` Pin disconnected from a dpll device or
+> +                                  from a parent pin
+> +  ``DPLL_PIN_STATE_SELECTABLE``   Pin enabled for automatic selection
+> +
+> +Values for ``DPLL_A_PIN_DIRECTION`` attribute:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_PIN_DIRECTION_INPUT``  used to provide its signal to a dpll
+> +                                device
+> +  ``DPLL_PIN_DIRECTION_OUTPUT`` used to output the signal from a dpll
+> +                                device
+> +
+> +Values for ``DPLL_A_PIN_TYPE`` attributes:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_PIN_TYPE_MUX``            MUX type pin, connected pins shall
+> +                                   have their own types
+> +  ``DPLL_PIN_TYPE_EXT``            External pin
+> +  ``DPLL_PIN_TYPE_SYNCE_ETH_PORT`` SyncE on Ethernet port
+> +  ``DPLL_PIN_TYPE_INT_OSCILLATOR`` Internal Oscillator (i.e. Holdover
+> +                                   with Atomic Clock as an input)
+> +  ``DPLL_PIN_TYPE_GNSS``           GNSS 1PPS input
+> +
+> +Values for ``DPLL_A_PIN_DPLL_CAPS`` attributes:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE`` Bit present if direction of
+> +                                         pin can change
+> +  ``DPLL_PIN_CAPS_PRIORITY_CAN_CHANGE``  Bit present if priority of pin
+> +                                         can change
+> +  ``DPLL_PIN_CAPS_STATE_CAN_CHANGE``     Bit present if state of pin can
+> +                                         change
+> +
+> +Notifications
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +dpll device can provide notifications regarding status changes of the
+> +device, i.e. lock status changes, input/output changes or other alarms.
+> +There is one multicast group that is used to notify user-space apps via
+> +netlink socket: ``DPLL_MCGRP_MONITOR``
+> +
+> +Notifications messages:
+> +
+> +  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +  ``DPLL_CMD_DEVICE_CREATE_NTF`` dpll device was created
+> +  ``DPLL_CMD_DEVICE_DELETE_NTF`` dpll device was deleted
+> +  ``DPLL_CMD_DEVICE_CHANGE_NTF`` dpll device has changed
+> +  ``DPLL_CMD_PIN_CREATE_NTF``    dpll pin was created
+> +  ``DPLL_CMD_PIN_DELETE_NTF``    dpll pin was deleted
+> +  ``DPLL_CMD_PIN_CHANGE_NTF``    dpll pin has changed
+> +
+> +Events format is the same as for the corresponding get command.
+> +Format of ``DPLL_CMD_DEVICE_`` events is the same as response of
+> +``DPLL_CMD_DEVICE_GET``.
+> +Format of ``DPLL_CMD_PIN_`` events is same as response of
+> +``DPLL_CMD_PIN_GET``.
+> +
+> +Device driver implementation
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D
+> +
+> +Device is allocated by dpll_device_get() call. Second call with the
+> +same arguments will not create new object but provides pointer to
+> +previously created device for given arguments, it also increases
+> +refcount of that object.
+> +Device is deallocated by dpll_device_put() call, which first
+> +decreases the refcount, once refcount is cleared the object is
+> +destroyed.
+> +
+> +Device should implement set of operations and register device via
+> +dpll_device_register() at which point it becomes available to the
+> +users. Multiple driver instances can obtain reference to it with
+> +dpll_device_get(), as well as register dpll device with their own
+> +ops and priv.
+> +
+> +The pins are allocated separately with dpll_pin_get(), it works
+> +similarly to dpll_device_get(). Function first creates object and then
+> +for each call with the same arguments only the object refcount
+> +increases. Also dpll_pin_put() works similarly to dpll_device_put().
+> +
+> +A pin can be registered with parent dpll device or parent pin, depending
+> +on hardware needs. Each registration requires registerer to provide set
+> +of pin callbacks, and private data pointer for calling them:
+> +- dpll_pin_register() - register pin with a dpll device,
+> +- dpll_pin_on_pin_register() - register pin with another MUX type pin.
+> +
+> +Notifications of adding or removing dpll devices are created within
+> +subsystem itself.
+> +Notifications about registering/deregistering pins are also invoked by
+> +the subsystem.
+> +Notifications about status changes either of dpll device or a pin are
+> +invoked in two ways:
+> +- after successful change was requested on dpll subsystem, the subsystem
+> +  calls corresponding notification,
+> +- requested by device driver with dpll_device_change_ntf() or
+> +  dpll_pin_change_ntf() when driver informs about the status change.
+> +
+> +The device driver using dpll interface is not required to implement all
+> +the callback operation. Neverthelessi, there are few required to be
+> +implemented.
+> +Required dpll device level callback operations:
+> +- ``.mode_get``,
+> +- ``.lock_status_get``.
+> +
+> +Required pin level callback operations:
+> +- ``.state_get`` (pins registered with dpll device),
+> +- ``.state_on_pin_get`` (pins registered with parent pin),
+> +- ``.direction_get``.
+> +
+> +Every other operation handler is checked for existence and
+> +``-ENOTSUPP`` is returned in case of absence of specific handler.
+> +
+> +SyncE enablement
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +For SyncE enablement it is required to allow control over dpll device
+> +for a software application which monitors and configures the inputs of
+> +dpll device in response to current state of a dpll device and its
+> +inputs.
+> +In such scenario, dpll device input signal shall be also configurable
+> +to drive dpll with signal recovered from the PHY netdevice.
+> +This is done by exposing a pin to the netdevice - attaching pin to the
+> +netdevice itself with:
+> +netdev_dpll_pin_set(struct net_device *dev, struct dpll_pin *dpll_pin);
+> +Exposed pin id handle ``DPLL_A_PIN_ID`` is then identifiable by the user
+> +as it is attached to rtnetlink respond to get ``RTM_NEWLINK`` command in
+> +nested attribute ``IFLA_DPLL_PIN``.
+
+There are countless htmldocs warnings, so I have to fix them up:
+
+---- >8 ----
+diff --git a/Documentation/driver-api/dpll.rst b/Documentation/driver-api/d=
+pll.rst
+index 8caa4af022ad82..5b2d3e3b9f8893 100644
+--- a/Documentation/driver-api/dpll.rst
++++ b/Documentation/driver-api/dpll.rst
+@@ -63,16 +63,19 @@ for the states the user can request for a dpll device.
+=20
+ In manual mode (``DPLL_MODE_MANUAL``) the user can request or receive
+ one of following pin states:
++
+ - ``DPLL_PIN_STATE_CONNECTED`` - the pin is used to drive dpll device
+ - ``DPLL_PIN_STATE_DISCONNECTED`` - the pin is not used to drive dpll
+   device
+=20
+ In automatic mode (``DPLL_MODE_AUTOMATIC``) the user can request or
+ receive one of following pin states:
++
+ - ``DPLL_PIN_STATE_SELECTABLE`` - the pin shall be considered as valid
+   input for automatic selection algorithm
+ - ``DPLL_PIN_STATE_DISCONNECTED`` - the pin shall be not considered as
+   a valid input for automatic selection algorithm
++
+ In automatic mode (``DPLL_MODE_AUTOMATIC``) the user can only receive
+ pin state ``DPLL_PIN_STATE_CONNECTED`` once automatic selection
+ algorithm locks a dpll device with one of the inputs.
+@@ -85,6 +88,7 @@ Shared pins
+=20
+ A single pin object can be attached to multiple dpll devices.
+ Then there are two groups of configuration knobs:
++
+ 1) Set on a pin - the configuration affects all dpll devices pin is
+    registered to (i.e. ``DPLL_A_PIN_FREQUENCY``),
+ 2) Set on a pin-dpll tuple - the configuration affects only selected
+@@ -103,31 +107,32 @@ with.
+ If a pin was registered with multiple parent pins, they behave like a
+ multiple output multiplexer. In this case output of a
+ ``DPLL_CMD_PIN_GET`` would contain multiple pin-parent nested
+-attributes with current state related to each parent, like:
++attributes with current state related to each parent, like::
+=20
+-``'pin': [{
+- {'clock-id': 282574471561216,
+-  'module-name': 'ice',
+-  'pin-dpll-caps': 4,
+-  'pin-id': 13,
+-  'pin-parent': [{'pin-id': 2, 'pin-state': 'connected'},
+-                 {'pin-id': 3, 'pin-state': 'disconnected'},
+-                 {'id': 0, 'pin-direction': 'input'},
+-                 {'id': 1, 'pin-direction': 'input'}],
+-  'pin-type': 'synce-eth-port'}
+-}]``
++  'pin': [{
++   {'clock-id': 282574471561216,
++    'module-name': 'ice',
++    'pin-dpll-caps': 4,
++    'pin-id': 13,
++    'pin-parent': [{'pin-id': 2, 'pin-state': 'connected'},
++                   {'pin-id': 3, 'pin-state': 'disconnected'},
++                   {'id': 0, 'pin-direction': 'input'},
++                   {'id': 1, 'pin-direction': 'input'}],
++    'pin-type': 'synce-eth-port'}
++  }]
+=20
+ Only one child pin can provide its signal to the parent MUX-type pin at
+ a time, the selection is done by requesting change of a child pin state
+ on desired parent, with the use of ``DPLL_A_PIN_PARENT`` nested
+ attribute. Example of netlink `set state on parent pin` message format:
+=20
+-  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D  =3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+   ``DPLL_A_PIN_ID``      child pin id
+   ``DPLL_A_PIN_PARENT``  nested attribute for requesting configuration
+                          related to parent pin
+     ``DPLL_A_PIN_ID``    parent pin id
+     ``DPLL_A_PIN_STATE`` requested pin state on parent
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Pin priority
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+@@ -149,6 +154,7 @@ device. Example of netlink `set priority on parent pin`=
+ message format:
+                          related to parent pin
+     ``DPLL_A_ID``        parent dpll id
+     ``DPLL_A_PIN_PRIO``  requested pin prio on parent dpll
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D  =3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Child pin of MUX-type is not capable of automatic input pin selection,
+ in order to configure a input of a MUX-type pin, the user needs to
+@@ -254,6 +260,7 @@ prefix and suffix according to attribute purpose:
+       ``DPLL_A_PIN_STATE``             attr requested state of pin on
+                                        the dpll device or on the parent
+                                        pin
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Netlink dump requests
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+@@ -303,6 +310,7 @@ Values for ``DPLL_A_LOCK_STATUS`` attribute:
+                                      acquired
+   ``DPLL_LOCK_STATUS_HOLDOVER``      dpll device lost a lock, using its
+                                      frequency holdover capabilities
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Values for ``DPLL_A_MODE`` attribute:
+=20
+@@ -316,12 +324,14 @@ Values for ``DPLL_A_MODE`` attribute:
+   ``DPLL_MODE_HOLDOVER``  force holdover mode of dpll
+   ``DPLL_MODE_FREERUN``   dpll device is driven by supplied system clock
+                           without holdover capabilities
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Values for ``DPLL_A_TYPE`` attribute:
+=20
+   =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+   ``DPLL_TYPE_PPS`` dpll device used to provide pulse-per-second output
+   ``DPLL_TYPE_EEC`` dpll device used to drive ethernet equipment clock
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Pin level configuration pre-defined enums
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+@@ -334,6 +344,7 @@ Values for ``DPLL_A_PIN_STATE`` attribute:
+   ``DPLL_PIN_STATE_DISCONNECTED`` Pin disconnected from a dpll device or
+                                   from a parent pin
+   ``DPLL_PIN_STATE_SELECTABLE``   Pin enabled for automatic selection
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Values for ``DPLL_A_PIN_DIRECTION`` attribute:
+=20
+@@ -342,6 +353,7 @@ Values for ``DPLL_A_PIN_DIRECTION`` attribute:
+                                 device
+   ``DPLL_PIN_DIRECTION_OUTPUT`` used to output the signal from a dpll
+                                 device
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Values for ``DPLL_A_PIN_TYPE`` attributes:
+=20
+@@ -353,6 +365,7 @@ Values for ``DPLL_A_PIN_TYPE`` attributes:
+   ``DPLL_PIN_TYPE_INT_OSCILLATOR`` Internal Oscillator (i.e. Holdover
+                                    with Atomic Clock as an input)
+   ``DPLL_PIN_TYPE_GNSS``           GNSS 1PPS input
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Values for ``DPLL_A_PIN_DPLL_CAPS`` attributes:
+=20
+@@ -363,6 +376,7 @@ Values for ``DPLL_A_PIN_DPLL_CAPS`` attributes:
+                                          can change
+   ``DPLL_PIN_CAPS_STATE_CAN_CHANGE``     Bit present if state of pin can
+                                          change
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Notifications
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+@@ -381,6 +395,7 @@ Notifications messages:
+   ``DPLL_CMD_PIN_CREATE_NTF``    dpll pin was created
+   ``DPLL_CMD_PIN_DELETE_NTF``    dpll pin was deleted
+   ``DPLL_CMD_PIN_CHANGE_NTF``    dpll pin has changed
++  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+ Events format is the same as for the corresponding get command.
+ Format of ``DPLL_CMD_DEVICE_`` events is the same as response of
+@@ -413,6 +428,7 @@ increases. Also dpll_pin_put() works similarly to dpll_=
+device_put().
+ A pin can be registered with parent dpll device or parent pin, depending
+ on hardware needs. Each registration requires registerer to provide set
+ of pin callbacks, and private data pointer for calling them:
++
+ - dpll_pin_register() - register pin with a dpll device,
+ - dpll_pin_on_pin_register() - register pin with another MUX type pin.
+=20
+@@ -422,6 +438,7 @@ Notifications about registering/deregistering pins are =
+also invoked by
+ the subsystem.
+ Notifications about status changes either of dpll device or a pin are
+ invoked in two ways:
++
+ - after successful change was requested on dpll subsystem, the subsystem
+   calls corresponding notification,
+ - requested by device driver with dpll_device_change_ntf() or
+@@ -431,10 +448,11 @@ The device driver using dpll interface is not require=
+d to implement all
+ the callback operation. Neverthelessi, there are few required to be
+ implemented.
+ Required dpll device level callback operations:
++
+ - ``.mode_get``,
+ - ``.lock_status_get``.
+=20
+-Required pin level callback operations:
++oRequired pin level callback operations:
+ - ``.state_get`` (pins registered with dpll device),
+ - ``.state_on_pin_get`` (pins registered with parent pin),
+ - ``.direction_get``.
+@@ -451,8 +469,8 @@ inputs.
+ In such scenario, dpll device input signal shall be also configurable
+ to drive dpll with signal recovered from the PHY netdevice.
+ This is done by exposing a pin to the netdevice - attaching pin to the
+-netdevice itself with:
+-netdev_dpll_pin_set(struct net_device *dev, struct dpll_pin *dpll_pin);
++netdevice itself with
++``netdev_dpll_pin_set(struct net_device *dev, struct dpll_pin *dpll_pin)``.
+ Exposed pin id handle ``DPLL_A_PIN_ID`` is then identifiable by the user
+ as it is attached to rtnetlink respond to get ``RTM_NEWLINK`` command in
+ nested attribute ``IFLA_DPLL_PIN``.
+
+(but because the fix diff above is quite large, Co-developed-by: from
+me may qualify).
+
+Thanks.
+
+--=20
+An old man doll... just what I always wanted! - Clara
+
+--hkgrD8VFvSTSqR82
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYKAB0WIQSSYQ6Cy7oyFNCHrUH2uYlJVVFOowUCZIPsfQAKCRD2uYlJVVFO
+oxpFAQCrGppj99DKodnOp3dVnzzMHvTFSi9b+5NqT+85PS7hMAEA8DoYn8bQLZLC
+GC2UJb286at5SJe2ugT8Z1RKDOjiLwc=
+=YT64
+-----END PGP SIGNATURE-----
+
+--hkgrD8VFvSTSqR82--
+
+
+--===============9178558909709827459==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============9178558909709827459==--
+
