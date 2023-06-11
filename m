@@ -4,89 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33854C88CB2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jun 2023 15:11:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0D1BC88CB2
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jun 2023 15:11:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 94A9D835D9;
-	Mon, 12 Jun 2023 15:11:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 94A9D835D9
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6578284087;
+	Mon, 12 Jun 2023 15:11:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6578284087
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686582682;
-	bh=IT6LjfQgfsmo0AUpV1zyy0sIKS0UMFjE/Abq3kNIT1k=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=2o2xy1e58la//DlufzKGUtoeSpwbi/I/xavOjxUEIIrMY9DyTZX8Hl575kfx5FT6A
-	 j9y0nftAfOEzToQ4cWa1jBRY/xC5M+OhL/SJrADDj1s9PkYkm0o1Vi3Hn9/P1Fwa0L
-	 UzF0TlV4Lb6lxS0192+gfUORLeeiQgw+6ciGYMKVT5hS/V73e0oP7o/0EZMH2t3ukQ
-	 /ZySXAA9G/4cZNZqMhLVtd4yEW9QmFhKQKzE+64xH8uc2ispHqSSphvAsMKfarxYeZ
-	 72OCR7Q3r16/c8de4kQkQZpHTvYijrMkF9gU4wbj8L76xOygIEJewRQXy+3gI/ywr0
-	 D6F8z3oGaJiJQ==
+	s=default; t=1686582686;
+	bh=R/jWSTJPUsM03/oBDRXOxzZ4M/+p/spaeLNvfU9z3bY=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=I0icfw1gxzristrXMoWymTTH12vJfGePk9SB4ClBC5JFxJAwjjD4cPHizuffxD9EX
+	 Fdsh5YGWeuwtS2EN5UKeKaCCl/Os/8zOCWZeqkCcZTPsIDHErAylhelkSgqP3OmUQ3
+	 lei+9fnoT54WRRPzNCgLbGkRnIucY7jYkvUrfNIyeWo/5H0w10QVH+0dE52wsE2VsO
+	 WQ7vhvI4YYpexzDRXRcmJ1wtasHdKPMxBbV2rtWSnBVvlHCfQP37Cvrk0it5sYZ/eh
+	 I9r9ipKTFSHSImN1XhJ23k4XhA/DghFkA+hiJ2y/16CYFIKWuxDRXx/13a0nzLP7zE
+	 7SpyptmuGdZig==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id QC9dI7ImIKcr; Mon, 12 Jun 2023 15:11:21 +0000 (UTC)
+	with ESMTP id 0nBM0AzmD7qv; Mon, 12 Jun 2023 15:11:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3301982CDE;
-	Mon, 12 Jun 2023 15:11:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3301982CDE
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6A76E82C3E;
+	Mon, 12 Jun 2023 15:11:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6A76E82C3E
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 3B8221BF27E
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Jun 2023 17:42:05 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 4BDBF1BF33E
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Jun 2023 22:30:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2088382349
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Jun 2023 17:42:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2088382349
+ by smtp1.osuosl.org (Postfix) with ESMTP id 0E01882001
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Jun 2023 22:30:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0E01882001
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wh6j7NhQQBdA for <intel-wired-lan@lists.osuosl.org>;
- Sun, 11 Jun 2023 17:42:03 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4690582348
-Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com
- [68.232.154.123])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4690582348
- for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Jun 2023 17:42:02 +0000 (UTC)
-X-IronPort-AV: E=Sophos;i="6.00,234,1681196400"; d="scan'208";a="156487325"
-X-Amp-Result: SKIPPED(no attachment in message)
-Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
- by esa6.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256;
- 11 Jun 2023 10:42:00 -0700
-Received: from chn-vm-ex01.mchp-main.com (10.10.85.143) by
- chn-vm-ex01.mchp-main.com (10.10.85.143) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Sun, 11 Jun 2023 10:41:53 -0700
-Received: from DEN-LT-70577 (10.10.115.15) by chn-vm-ex01.mchp-main.com
- (10.10.85.143) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
- Transport; Sun, 11 Jun 2023 10:41:51 -0700
-Date: Sun, 11 Jun 2023 17:41:51 +0000
-From: Daniel Machon <daniel.machon@microchip.com>
-To: Dave Ertman <david.m.ertman@intel.com>
-Message-ID: <20230611174151.j4is455hv542igqf@DEN-LT-70577>
-References: <20230609211626.621968-1-david.m.ertman@intel.com>
+ with ESMTP id dHuZ8kRfcbVV for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 11 Jun 2023 22:30:26 +0000 (UTC)
+X-Greylist: delayed 00:08:39 by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8B35F81FFC
+Received: from pb-smtp21.pobox.com (pb-smtp21.pobox.com [173.228.157.53])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 8B35F81FFC
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 11 Jun 2023 22:30:26 +0000 (UTC)
+Received: from pb-smtp21.pobox.com (unknown [127.0.0.1])
+ by pb-smtp21.pobox.com (Postfix) with ESMTP id EB5072C298;
+ Sun, 11 Jun 2023 18:21:44 -0400 (EDT)
+ (envelope-from tdavies@darkphysics.net)
+Received: from pb-smtp21.sea.icgroup.com (unknown [127.0.0.1])
+ by pb-smtp21.pobox.com (Postfix) with ESMTP id E2BB22C297;
+ Sun, 11 Jun 2023 18:21:44 -0400 (EDT)
+ (envelope-from tdavies@darkphysics.net)
+Received: from oatmeal.darkphysics (unknown [76.146.178.2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by pb-smtp21.pobox.com (Postfix) with ESMTPSA id C31E22C295;
+ Sun, 11 Jun 2023 18:21:41 -0400 (EDT)
+ (envelope-from tdavies@darkphysics.net)
+Date: Sun, 11 Jun 2023 15:21:36 -0700
+From: Tree Davies <tdavies@darkphysics.net>
+To: anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com
+Message-ID: <ZIZI5czU2Qv5KrPA@oatmeal.darkphysics>
 MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="luNyGatCr/pDLYsq"
 Content-Disposition: inline
-In-Reply-To: <20230609211626.621968-1-david.m.ertman@intel.com>
+X-Pobox-Relay-ID: 57659C30-08A6-11EE-AE76-B31D44D1D7AA-45285927!pb-smtp21.pobox.com
 X-Mailman-Approved-At: Mon, 12 Jun 2023 15:11:14 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
- t=1686505323; x=1718041323;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=GrxuPrukoPU0phCfmXQzQLYc5IAADVbwsS/X+iSrVVE=;
- b=NqLgPOC2B/6MrSgG31S2FqmQt/fezg7IU3dx0LGw11w1JeaIA7QpsgPV
- NRF2cYFv0cTgBIVDSRv3gzb6Z1oEiF4wU5Ni2LtUJxgOk/DSxxN/05Ar3
- Y1bjEq7frHbwYZtKnr64qe7Jw4DYt3Ynxea4uW48naxay3lm+J95Jp2/9
- 4tksmr/RPub/I1t5V9jwP2M4y80hnof6Am+jLSMd6Pjhd+dqzTKksho11
- mmptCbTMJHQuW8XYTdyWXkGutLd2tDxtyjAOYnp61EnvehtJIEs0uvZdI
- 64e0mjp9ehv3bvE0gZ7mNJ6wXHxOOTuvsDSiZ6Vz4g+i72zX2byIode1R
- A==;
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed; d=pobox.com;
+ h=date:from
+ :to:cc:subject:message-id:mime-version:content-type; s=sasl; bh=
+ z+Ge1TsISNeopxsJaxZvRckLuWJjsX/bscizidOYUHY=; b=heK9KiFHa98/9xb4
+ Syl79BqHipP7Lfncug0ygiCXtGxjxFZzs/LbKGIRTItHGW6Vdst280cqrA2Y8QcF
+ o2xIp1zTreYsYEsmccLEZGou1O+35Kw+cyAxfTaqke52jsj1CSD6UH2i4WYwGc5I
+ dH+3B/SUiLhBYcS15Xtb1X3BkPc=
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed;
+ d=darkphysics.net; 
+ h=date:from:to:cc:subject:message-id:mime-version:content-type;
+ s=2019-09.pbsmtp; bh=z+Ge1TsISNeopxsJaxZvRckLuWJjsX/bscizidOYUHY=;
+ b=PwEIP3kNnqBbKve2G14PXwGOp/iZ8K1Iqj4naiQfNCPFmd9UlHLZFnen7JiGog0ylJYgKQLw04J06/i8b5g60IBYwDnwIPLVWBlXvmOlArRKXX+J3cum56pklDaPkHCrkGmTAuJgQjLIXoEIfxD3lrjROKHKvXx4XpLy4hqCFMg=
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=microchip.com header.i=@microchip.com
- header.a=rsa-sha256 header.s=mchp header.b=NqLgPOC2
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 00/10] Implement support
- for SRIOV + LAG
+ dkim=pass (1024-bit key) header.d=pobox.com header.i=@pobox.com
+ header.a=rsa-sha256 header.s=sasl header.b=heK9KiFH; 
+ dkim=temperror header.d=darkphysics.net header.i=@darkphysics.net
+ header.a=rsa-sha256 header.s=2019-09.pbsmtp header.b=PwEIP3kN
+Subject: [Intel-wired-lan] [PATCH] net/e1000: Fix single statement blocks
+ warning
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,89 +101,63 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: simon.horman@corigine.com, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: tdavies@darkphysics.net, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hmm. v4 series does not apply. Seems like patch #3 is causing some
-trouble.
 
-> Implement support for SRIOV VF's on interfaces that are in an
-> aggregate interface.
-> 
-> The first interface added into the aggregate will be flagged as
-> the primary interface, and this primary interface will be
-> responsible for managing the VF's resources.  VF's created on the
-> primary are the only VFs that will be supported on the aggregate.
-> Only Active-Backup mode will be supported and only aggregates whose
-> primary interface is in switchdev mode will be supported.
-> 
-> Additional restrictions on what interfaces can be added to the aggregate
-> and still support SRIOV VFs are:
-> - interfaces have to all be on the same physical NIC
-> - all interfaces have to have the same QoS settings
-> - interfaces have to have the FW LLDP agent disabled
-> - only the primary interface is to be put into switchdev mode
-> - no more than two interfaces in the aggregate
-> 
-> Changes since v1:
-> Fix typo in commit message
-> Fix typos in warning messages
-> Fix typo in function header
-> Use correct bitwise operator instead of boolean
-> 
-> Changes since v2:
-> Rebase on current next-queue
-> Fix typos in commits
-> Fix typos in function headers
-> use %u for unsigned values in debug message
-> Refactor common code in node moves to subfunction
-> 
-> Changes since v3:
-> Fix typos in warning messages
-> move refactor of common code to earlier patch
-> expand use of refactored code
-> move prototype and func call into patch that defines func
-> 
-> Dave Ertman (9):
->   ice: Add driver support for firmware changes for LAG
->   ice: changes to the interface with the HW and FW for SRIOV_VF+LAG
->   ice: implement lag netdev event handler
->   ice: process events created by lag netdev event handler
->   ice: Flesh out implementation of support for SRIOV on bonded interface
->   ice: support non-standard teardown of bond interface
->   ice: enforce interface eligibility and add messaging for SRIOV LAG
->   ice: enforce no DCB config changing when in bond
->   ice: update reset path for SRIOV LAG support
-> 
-> Jacob Keller (1):
->   ice: Correctly initialize queue context values
-> 
->  drivers/net/ethernet/intel/ice/ice.h          |    5 +
->  .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   53 +-
->  drivers/net/ethernet/intel/ice/ice_common.c   |   56 +
->  drivers/net/ethernet/intel/ice/ice_common.h   |    4 +
->  drivers/net/ethernet/intel/ice/ice_dcb_nl.c   |   50 +
->  drivers/net/ethernet/intel/ice/ice_lag.c      | 1812 ++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_lag.h      |   34 +-
->  drivers/net/ethernet/intel/ice/ice_lib.c      |    2 +-
->  drivers/net/ethernet/intel/ice/ice_lib.h      |    1 +
->  drivers/net/ethernet/intel/ice/ice_main.c     |   26 +-
->  drivers/net/ethernet/intel/ice/ice_sched.c    |   37 +-
->  drivers/net/ethernet/intel/ice/ice_sched.h    |   21 +
->  drivers/net/ethernet/intel/ice/ice_switch.c   |   88 +-
->  drivers/net/ethernet/intel/ice/ice_switch.h   |   29 +
->  drivers/net/ethernet/intel/ice/ice_type.h     |    2 +
->  drivers/net/ethernet/intel/ice/ice_virtchnl.c |    2 +
->  16 files changed, 2092 insertions(+), 130 deletions(-)
-> 
-> --
-> 2.40.1
->
+--luNyGatCr/pDLYsq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+
+--luNyGatCr/pDLYsq
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment;
+	filename="0001-net-e1000-Fix-single-statement-blocks-warning.patch"
+
+From e92897ab5e93b8827d1654a0171bc53ab478ce49 Mon Sep 17 00:00:00 2001
+From: Tree Davies <tdavies@darkphysics.net>
+Date: Sun, 11 Jun 2023 14:41:31 -0700
+Subject: [PATCH] net/e1000: Fix single statement blocks warning
+
+This patch fixes checkpatch.pl warning of type:
+WARNING: braces {} are not necessary for single statement blocks
+
+Signed-off-by: Tree Davies <tdavies@darkphysics.net>
+---
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index da6e303ad99b..accc2bd7c35c 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -259,9 +259,8 @@ static int e1000_request_irq(struct e1000_adapter *adapter)
+ 
+ 	err = request_irq(adapter->pdev->irq, handler, irq_flags, netdev->name,
+ 			  netdev);
+-	if (err) {
++	if (err)
+ 		e_err(probe, "Unable to allocate interrupt Error: %d\n", err);
+-	}
+ 
+ 	return err;
+ }
+-- 
+2.30.2
+
+
+--luNyGatCr/pDLYsq
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--luNyGatCr/pDLYsq--
