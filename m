@@ -4,78 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E378C88CB7
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jun 2023 22:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D1C5C7EE2F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 12 Jun 2023 22:43:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id CA8474053C;
-	Mon, 12 Jun 2023 22:30:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CA8474053C
+	by smtp2.osuosl.org (Postfix) with ESMTP id EEC4C4053C;
+	Mon, 12 Jun 2023 22:43:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EEC4C4053C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686609017;
-	bh=qMvdtbZjIcVPD92hR3wb/VSadDapnKaaL5rhz3olYG4=;
+	s=default; t=1686609817;
+	bh=Ffqr8iF/It5BSuzDZYO5gIx4MceTN1svI8TtXJad06I=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=qELTnh7QDED8tMWnvJWahp8pQKv77EJqV/HFWU2W6FtOMNNCEM0GrDKowCVCQ9hcx
-	 tS023CquRz4djs9kz+Gx4FAhy97IkQGaWb2q3fV0aXP9f615776VxAz+lEKyfqMJND
-	 7un8HNDlyrSSRTHWReH+lZFWdBJan0lckODZqKfAvXl5GlP9sQswZ2kEnJUD8X8T7G
-	 4MeREs/Kxu5E+8fOvpe3i1y2w69bbdjKXSsF4CDcWXgny6OAeu8dcdXvFZJD658y2O
-	 XpYg9bGtEX9DzmwEPDCOCjqGhgn1//5G0bW0qlkJ8y2yhi8OefyxM/en1ekHG3i7tA
-	 dB/NJ7PqPbuRA==
+	b=g0g3akA+DDjgtwB1REI6n+U9Q6IqZW0t4XraCnZEzIMFPpH9jeZtMy84Rokqjuei8
+	 oPf7p7zra0ZOev1jzzODgRlVXD4a94zNQw+2eN5jX1jIRjevXmJyXMxE1oDKDY9Y91
+	 OzAo0Zp3hwX17w3xjoFGyToRgLEcxn1BXs/BW0ghoh1aRq/fx4vS56yGRLdBQ3ZRuf
+	 Hojv6tH3rnRQuuhMZOXzHuAmxhXiap+oETG3FE5UaHTvVC1V4hkzAIyO6Ta8KQzao+
+	 kfaUBV5gVrnKu7NC+zI8ZOP1oFugFA9YNZ/Y8t/RRO8kU/23u+cNwz1O7noAZs29mx
+	 gKYieelYktGSA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Rdg_kjNAcGYQ; Mon, 12 Jun 2023 22:30:17 +0000 (UTC)
+	with ESMTP id blrQErBRf7oc; Mon, 12 Jun 2023 22:43:36 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E313D40577;
-	Mon, 12 Jun 2023 22:30:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E313D40577
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 7375D1BF3C8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jun 2023 22:30:15 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0CB5C405AB;
+	Mon, 12 Jun 2023 22:43:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0CB5C405AB
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 21B2F1BF3C8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jun 2023 22:43:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3AF014099D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jun 2023 22:30:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3AF014099D
+ by smtp1.osuosl.org (Postfix) with ESMTP id ED907813C7
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jun 2023 22:43:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ED907813C7
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ZSjaHqizYUAY for <intel-wired-lan@lists.osuosl.org>;
- Mon, 12 Jun 2023 22:30:14 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Af92XS8cLp89 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 12 Jun 2023 22:43:34 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F246540980
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp4.osuosl.org (Postfix) with ESMTPS id F246540980
- for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jun 2023 22:30:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3EE1C813A8
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3EE1C813A8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 12 Jun 2023 22:43:34 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 269F262BA1;
- Mon, 12 Jun 2023 22:30:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67924C433EF;
- Mon, 12 Jun 2023 22:30:10 +0000 (UTC)
-Date: Mon, 12 Jun 2023 15:30:09 -0700
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 85E1961EA1;
+ Mon, 12 Jun 2023 22:43:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE8A3C433D2;
+ Mon, 12 Jun 2023 22:43:30 +0000 (UTC)
+Date: Mon, 12 Jun 2023 15:43:29 -0700
 From: Jakub Kicinski <kuba@kernel.org>
-To: Jiri Pirko <jiri@resnulli.us>
-Message-ID: <20230612153009.5f0e1b4a@kernel.org>
-In-Reply-To: <ZISkvTWw5k74RO5s@nanopsycho>
+To: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Message-ID: <20230612154329.7bd2d52f@kernel.org>
+In-Reply-To: <20230609121853.3607724-2-arkadiusz.kubalewski@intel.com>
 References: <20230609121853.3607724-1-arkadiusz.kubalewski@intel.com>
  <20230609121853.3607724-2-arkadiusz.kubalewski@intel.com>
- <ZISkvTWw5k74RO5s@nanopsycho>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1686609012;
- bh=HQnlbzZUfjB/XyMKV/Pff7qFeZo/3cJ/CnEb78gnOaI=;
+ d=kernel.org; s=k20201202; t=1686609812;
+ bh=JBnyaSL01ZIaD9BxSHKCygGU9ZOWddzqcQnjN+ViNR8=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=XdqxVWlWiOFaY6qpOuYHwuuvlHM7zcg9rPKu6KiAAbevMNUUwAkWzrcwoYHW+SFkv
- 0RdDRP3wO61kOe0UW2J+/BrtdqG4g2fOeKhNHfBEz/+TCNiefXbP6Zx9j6DYf+zrMr
- dGcLnonh+gR+8dxCzB1uy9tuV1HwRV9fmHWw6/igiKha4+8Aott1Py/0SKOID4euYM
- r+Eg2k9yWFcNhD/dCzWY/qRAFvTnFayS2eiewgFXsACrsgqzEKQ2ar2qs0UT6a+CMr
- VW1KtJupKoofTY0S32gugPFWpcjvMeaRCVZHIVB5BpgsZ/LYbjF2lGBjJSeG+YnXep
- AhXnBtLNjesdQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=Y+dhwf2/ZroIxTkGwW0S2KpBpLyAmhnEDkWq8yrVJBaUmeNTM8chFq3gJGGAI9AJP
+ hgMI//H1pDJ47odAmSs2mBJR2CpDMQqiviylWQF8wWxOJvSni8Y4Mbh8LAXR20OxcU
+ 6Xhm7nJrbOoj0l2hV0O/MUopYZQ1jj1VgkAFYT0F1CwVg2T3QOmJFlDXbUzMR92E5X
+ HVXSZcqxVSq0xilwvIoplXESzJcetA9CXlCXMguI3cKCaAJndPxDEi39UqHgpoH0EV
+ /yv/QVyVJVoJr2TdG4igeCfEZUJjvTah3/P2T8uGRxR2wSkfztSfGPM1HFOARQ6xzL
+ L/1Gs8PyRFmiw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=XdqxVWlW
+ header.a=rsa-sha256 header.s=k20201202 header.b=Y+dhwf2/
 Subject: Re: [Intel-wired-lan] [RFC PATCH v8 01/10] dpll: documentation on
  DPLL subsystem interface
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -97,9 +97,9 @@ Cc: geert+renesas@glider.be, mst@redhat.com, razor@blackwall.org, phil@nwl.cc,
  linux-rdma@vger.kernel.org, masahiroy@kernel.org, linux-doc@vger.kernel.org,
  jesse.brandeburg@intel.com, vadfed@meta.com, intel-wired-lan@lists.osuosl.org,
  airlied@redhat.com, vadfed@fb.com, pabeni@redhat.com,
- ricardo.canuelo@collabora.com, arnd@arndb.de, idosch@nvidia.com,
- richardcochran@gmail.com, claudiajkang@gmail.com, kuniyu@amazon.com,
- jacek.lawrynowicz@linux.intel.com, liuhangbin@gmail.com,
+ ricardo.canuelo@collabora.com, jiri@resnulli.us, arnd@arndb.de,
+ idosch@nvidia.com, richardcochran@gmail.com, claudiajkang@gmail.com,
+ kuniyu@amazon.com, jacek.lawrynowicz@linux.intel.com, liuhangbin@gmail.com,
  nicolas.dichtel@6wind.com, linux-arm-kernel@lists.infradead.org,
  axboe@kernel.dk, sj@kernel.org, vadim.fedorenko@linux.dev, linux@zary.sk,
  gregkh@linuxfoundation.org, ogabbay@kernel.org, nipun.gupta@amd.com,
@@ -111,28 +111,48 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, 10 Jun 2023 18:28:45 +0200 Jiri Pirko wrote:
-> Fri, Jun 09, 2023 at 02:18:44PM CEST, arkadiusz.kubalewski@intel.com wrote:
-> >From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-> >
-> >Add documentation explaining common netlink interface to configure DPLL
-> >devices and monitoring events. Common way to implement DPLL device in
-> >a driver is also covered.
-> >
-> >Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-> >Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-> >---
-> > Documentation/driver-api/dpll.rst  | 458 +++++++++++++++++++++++++++++
-> > Documentation/driver-api/index.rst |   1 +
-> > 2 files changed, 459 insertions(+)
-> > create mode 100644 Documentation/driver-api/dpll.rst  
+On Fri,  9 Jun 2023 14:18:44 +0200 Arkadiusz Kubalewski wrote:
+> From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
 > 
-> Looks fine to me. I just wonder if the info redundancy of this file and
-> the netlink yaml could be somehow reduce. IDK.
+> Add documentation explaining common netlink interface to configure DPLL
+> devices and monitoring events. Common way to implement DPLL device in
+> a driver is also covered.
 
-Certainly possible, I even talked to Peter of the pyroute2 fame about
-this. Should be fairly easy to generate a .rst file, and/or Sphinx
-plugin to go directly from the YAML. Is it on my TODO list? Nope :)
+> +``'pin': [{
+> + {'clock-id': 282574471561216,
+> +  'module-name': 'ice',
+> +  'pin-dpll-caps': 4,
+> +  'pin-id': 13,
+> +  'pin-parent': [{'pin-id': 2, 'pin-state': 'connected'},
+> +                 {'pin-id': 3, 'pin-state': 'disconnected'},
+> +                 {'id': 0, 'pin-direction': 'input'},
+> +                 {'id': 1, 'pin-direction': 'input'}],
+> +  'pin-type': 'synce-eth-port'}
+> +}]``
+
+It seems like pin-parent is overloaded, can we split it into two
+different nests?
+
+> +SET commands format
+> +===================
+> +
+> +``DPLL_CMD_DEVICE_SET`` - to target a dpll device, the user provides
+> +``DPLL_A_ID``, which is unique identifier of dpll device in the system,
+> +as well as parameter being configured (``DPLL_A_MODE``).
+> +
+> +``DPLL_CMD_PIN_SET`` - to target a pin user has to provide a
+> +``DPLL_A_PIN_ID``, which is unique identifier of a pin in the system.
+> +Also configured pin parameters must be added.
+> +If ``DPLL_A_PIN_DIRECTION`` or ``DPLL_A_PIN_FREQUENCY`` are configured,
+> +this affects all the dpll device they are connected, that is why those
+> +attributes shall not be enclosed in ``DPLL_A_PIN_PARENT``.
+> +Other attributes:
+> +``DPLL_A_PIN_PRIO`` or ``DPLL_A_PIN_STATE`` must be enclosed in
+> +``DPLL_A_PIN_PARENT`` as their configuration relates to only one
+> +parent dpll or parent pin.
+
+Also sounds like setting pin attrs and pin-parent attrs should be
+different commands.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
