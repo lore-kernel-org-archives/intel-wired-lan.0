@@ -4,88 +4,180 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 586E8C88CB4
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Jun 2023 10:15:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D38FC77B7A
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Jun 2023 10:15:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 092DD405DF;
-	Tue, 13 Jun 2023 10:15:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 092DD405DF
+	by smtp2.osuosl.org (Postfix) with ESMTP id CFDCC40492;
+	Tue, 13 Jun 2023 10:15:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CFDCC40492
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686651311;
-	bh=9A/uq02QBQXDMBzD+CzLUJl86G8b56uzs5++YQIEz0g=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1686651314;
+	bh=A++qNaikOX5bBGECfhpU8t4Z0rK/FvdVEtbIoo0GszI=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=H/yfWMNQpsMQj3LF18FPWS33WUlFO819I8yp1Hg9zyWUfOwjRcmShwuguRkR+Cusk
-	 8rtmmhOaXClCX/bwpv4ww6g17klVCuizD7gC7Yu1afGB+DXGsUfulkBnP7YrGeyLAX
-	 GjYu64/oAdE/EzuvaNFcKo2YKxAXNGJi1IDQ5cK6D+KA0gZYP30NVVnKOyrb8qg/IL
-	 fBghcSLanoSsSTL9Rjs3CYWs86yKmPFHw2BBjLesSMCtERMtAKar4h5Y0eXL9jX0IX
-	 l/ptvzxLkmWbc9as6B9Nqoey+GQ6HDIhrkGQ8hJKuW7FHzxtn0Te8KvTGPRK8ZzyWq
-	 XR+DLX7NgOd/A==
+	b=dfoKgsPX6aRMRkvecaAEQSxqg/7pXRZQYrl9qvb6AoetXeXKCnDINpZp+fxLY1R3e
+	 zi2UoE95ySEJZsd3M/c/CWy7E+Dr8PDuuev5rAVvXQfILUPIlCRbKYXpK7kXSTysI0
+	 KRirZv3LhHnr72EwOjpa3/c5RSgmbq/quO93CwHY/hQli31hhrV+3/7VRwPDVQ0ByQ
+	 Fv5MsiAbW8bVI6AqXG2Y2+dGMBDBfP5cDLV+fhInW6244KRLiEUC2au9stkS8rO5HR
+	 UYBavLq/h6AWYgfWX4rVdBoSzFX/Yf9nrfoKSn8i+2ZXmi3Dhs3H8kj1i8+TnP5Gqt
+	 GvhthKbucDtzg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id OvBgKvXQwdvZ; Tue, 13 Jun 2023 10:15:09 +0000 (UTC)
+	with ESMTP id EYztDjDX7LpI; Tue, 13 Jun 2023 10:15:14 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2E08E416D5;
-	Tue, 13 Jun 2023 10:15:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2E08E416D5
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 34C0D1BF2C1
+	by smtp2.osuosl.org (Postfix) with ESMTP id 57D1C416D0;
+	Tue, 13 Jun 2023 10:15:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 57D1C416D0
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 678551BF95E
  for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0B72460C12
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0B72460C12
+ by smtp4.osuosl.org (Postfix) with ESMTP id 18307409F3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 18307409F3
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id h2olyt5Vi645 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Jun 2023 10:14:47 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Wvvbsp8vhT80 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Jun 2023 10:14:44 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 996166079D
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9F010410C0
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 996166079D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:47 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="424168087"
-X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="424168087"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9F010410C0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:44 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="424168077"
+X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="424168077"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Jun 2023 03:14:46 -0700
+ 13 Jun 2023 03:14:43 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="885787135"
-X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="885787135"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga005.jf.intel.com with ESMTP; 13 Jun 2023 03:14:42 -0700
-Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 7E49235832;
- Tue, 13 Jun 2023 11:14:41 +0100 (IST)
-From: Wojciech Drewek <wojciech.drewek@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 13 Jun 2023 12:13:24 +0200
-Message-Id: <20230613101330.87734-7-wojciech.drewek@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230613101330.87734-1-wojciech.drewek@intel.com>
-References: <20230613101330.87734-1-wojciech.drewek@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="801407981"
+X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="801407981"
+Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
+ by FMSMGA003.fm.intel.com with ESMTP; 13 Jun 2023 03:14:43 -0700
+Received: from fmsmsx612.amr.corp.intel.com (10.18.126.92) by
+ fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Tue, 13 Jun 2023 03:14:43 -0700
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx612.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Tue, 13 Jun 2023 03:14:42 -0700
+Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23 via Frontend Transport; Tue, 13 Jun 2023 03:14:42 -0700
+Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.168)
+ by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.23; Tue, 13 Jun 2023 03:14:42 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=aWyFPndd75eck3lVNH1Ijhay/DR4xBj0gD28tfbdi/TUy1u3fkshZuKuNiXCH9sqYm7+Rc3QrkNUbOIjiIboJmBg5XuPHCe2jdKoR3OEgpPTjMR4Y7YTvdhalTR8i3qGB4QPd3A6xEC83ZeGxQ7C4VO+5GSHj6Un/1u67IulX+mIIxicDwCtDOossWI4RWwSwo+DMMHBNgT01+oAExR8xwM3YchwpAWjAp0qbqwZfmPJh0O3d0pxYPzXkgrc89M0WHbRW67sUvITuzn7w3SH443fiCksOqAtFgfWUbYPkafmQhZOCkEVa+l/e2GpFc+zUpkCgqmptvVJm5GOv9QNaw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=DAcXtWJ9rddWsUiOxK3kH46Lnij7eQX6eMgZYa3EnqI=;
+ b=doLYKqxOdTXl5OGm465UcYPexgE3TWtDZrCnLtCPZndl+UCJZAeegwsAc/Ldr3SpVK6AK4xEF3nZUgy0lsNahF5fC5NAx0f8U6uBR/EKVNQUq6MsdIxB3N1QZzW5o6OcZNCwl5yCg3/9ZjxXFRSXoSbqy3K/mPstSy6LR1JmlUlnCug08qsJH52D93s1A3wgP0n0xC5Gor/URQ2Ip110j/JmH2IrBieMD0wCmtSDUaAIXG4H6fplEUuKQzTM9T6/TlhxiBc0s5tbvFF/MSmUWsoy9u1jnDrX5DEjCF77A6IWaY4nLeYVfZN/1KQyHK+fF4JcsSMCLB459GHJhisFmg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from PH0PR11MB5013.namprd11.prod.outlook.com (2603:10b6:510:30::21)
+ by BN9PR11MB5465.namprd11.prod.outlook.com (2603:10b6:408:11e::18)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6477.29; Tue, 13 Jun
+ 2023 10:14:40 +0000
+Received: from PH0PR11MB5013.namprd11.prod.outlook.com
+ ([fe80::fcef:c262:ba36:c42f]) by PH0PR11MB5013.namprd11.prod.outlook.com
+ ([fe80::fcef:c262:ba36:c42f%4]) with mapi id 15.20.6455.043; Tue, 13 Jun 2023
+ 10:14:40 +0000
+From: "Buvaneswaran, Sujai" <sujai.buvaneswaran@intel.com>
+To: "Drewek, Wojciech" <wojciech.drewek@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Thread-Topic: [Intel-wired-lan] [PATCH iwl-next v4 02/13] ice: Prohibit rx
+ mode change in switchdev mode
+Thread-Index: AQHZjjqL1byktwjS6ku6SpG5AwQXQK+IoyYA
+Date: Tue, 13 Jun 2023 10:14:40 +0000
+Message-ID: <PH0PR11MB50135D634FB975F5CFB79CF79655A@PH0PR11MB5013.namprd11.prod.outlook.com>
+References: <20230524122121.15012-1-wojciech.drewek@intel.com>
+ <20230524122121.15012-3-wojciech.drewek@intel.com>
+In-Reply-To: <20230524122121.15012-3-wojciech.drewek@intel.com>
+Accept-Language: en-IN, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: PH0PR11MB5013:EE_|BN9PR11MB5465:EE_
+x-ms-office365-filtering-correlation-id: 18bf8354-3279-484a-6caf-08db6bf70009
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: NGv7LA2o3XbEBFkcxzz5iHBXK+91oG22tcLuBFwIB4BqpqzQqHCL0D18iZyJrnv8BadtLBnbKr47ZjQNObONZcZmdKtqErPbsODDDLjymvT4m7dMrVwlPFZK5XZDERetWwJ3HKSA8Z/d9aKAw9OJNAl8twz229yvUfhLRbHnyizzsqdtouU+fDO2Rj7svaxMoLnTAPMJ1QnMEU8GNgTgran2BBXoM4cwuKrz4dVL3WGbG/MpkTDVRiwPQ3osrn/mF1LkVCFVhsPXPIbAGgotNdenzqKmv/eNBoTCaBTHs5wTsV9FMBZsyon379jiBDt0+dBr2oLAUSuFOZ4INhsEF2dzZXNKBP/MZ/b5xJtAfy6WyFTrDZ80veehJT7TDWpzyxlhEwyfNvG9HLi+lSjCueYu9Bx6V3pYNnz4OjwsQMiaco4AwIE4JLiR5jAARoIQhIiaYE51rmrJhA0iQ2wHk+93l4BN9b64yLtofGDEp5s1RnJ6hJ0w0t98UeNMFQ32nihKZG/fJwUh0PecvCJiXJltjGciI6Cib1kMCVA6mtyB8F3mFn32tZUyzhyCuzWVJA0HZw5mKmTZdNAyI0qSK+fwPhnRmAo4ijtvspgLRSk=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:PH0PR11MB5013.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(376002)(346002)(396003)(39860400002)(136003)(366004)(451199021)(7696005)(316002)(41300700001)(9686003)(6506007)(186003)(2906002)(38070700005)(4744005)(26005)(86362001)(53546011)(33656002)(122000001)(82960400001)(55016003)(38100700002)(83380400001)(8676002)(52536014)(5660300002)(8936002)(76116006)(66476007)(66946007)(66556008)(478600001)(54906003)(110136005)(4326008)(71200400001)(66446008)(64756008);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?PIY9zvcgSdNzWhRMaAxb9ejUEFRApGS0HM++Lkl2mqubGOOIVtGMHajo4m+6?=
+ =?us-ascii?Q?WR6I7v1SakRl5G9zenu8hpzvF69PNcIazhThbFNZmlA5ZiKqTNpveUU82038?=
+ =?us-ascii?Q?6NMeFrXlqY2chTLh2SZb2SmnGJDdhDljlW2uI6lVn8RcmZNjku3H1mHNOWUF?=
+ =?us-ascii?Q?qLDp3pAruPk+bwTPC0JXnk7f3P2UIjOT9r0SErbBlvcsftKl4iOXD424yJar?=
+ =?us-ascii?Q?su/vWKDAPNTHx1kzKEDaIk9/oPlitpBwM9kZXkikPtQW/4YuQcZq78KVRJgQ?=
+ =?us-ascii?Q?wEBOKUXoIYRIuH8KjOxjlkUr1800VRhN3144WMqqbpCTo5cR3aTyZn4Rzq5m?=
+ =?us-ascii?Q?kDv1KvJAJ8WB53rHbZ7H7mB/7brOUU8Eg13WiyjvhARmL0IxaQh8vERBPkT3?=
+ =?us-ascii?Q?J+k0mVuW9qKlTZcXbuNR9YXRrhJs8dT9hxJ0e8uLfhVUxJiyUpux5PNIxfG5?=
+ =?us-ascii?Q?EzfjrFPuLkc2mwgorAaTgS+O6TfthZgnG4keTllzKcoZRXsH01Jp16m1jv1k?=
+ =?us-ascii?Q?TGEiDqTQmaAzwnr455TrKuRLVK5zWDIvaf+mvoj8nEerZhFWnDk4d/15jm9z?=
+ =?us-ascii?Q?gObQ/PEYctAqk6X+LfDEm21zj11nlv/shBxNUI5fXriM4TAd9nDMeMtndMdv?=
+ =?us-ascii?Q?pMtIX53bv3tSe6KNYwUj3/c7vCAcIJ2RGmH8uP6dkcHboMSr3hIdmQi2QmdU?=
+ =?us-ascii?Q?KYCvSpgKljt6wEsHVdApbNLyXon9rzqEzDH9npt5pYBavqFAynXypKAMqrPl?=
+ =?us-ascii?Q?dNTJUnw5gSPe/EvQywehga1HszuYrFc5qQirCgbSad8bHLAGmXaxmACBhNib?=
+ =?us-ascii?Q?Vm7IVHPr9jrxQdZwQjS/2OiDZdGfx4QPetQSongD5oIZt5Tm9aKcJ3Uersv/?=
+ =?us-ascii?Q?/q4KF/ergh+1ZIaE/5jxx2NmZ1gvcdGFMHhNQ/5OhYSuRLaTlqk3wdUwa1BN?=
+ =?us-ascii?Q?eznY2V3BsgCJHHyD1LWumTg6MBReotOO7HxUjPc0PdtssSFzrQHkP/AbvSWq?=
+ =?us-ascii?Q?LyYbBmo09gJ3DDEnCxFncptrpHaHr51LMmaOcxAT+blwk8lxv4RuVT2z5Vmi?=
+ =?us-ascii?Q?hUik6cWBL6c5V60Qd8RWqk73xKUGq73FTHwRPfI1Qm4ji4xowk6A3oqgIMj3?=
+ =?us-ascii?Q?eZIT+l2NYJfPRKbigkVtf3m7BK/ZvmpSQYGO2r6mUf7/jL2IxVllGNyjKs8u?=
+ =?us-ascii?Q?t71EmgXWk2PMXH6Va1CkkkxIXyyqOemAzCeKFMTV20E07+TK5fMT0i4yrCTT?=
+ =?us-ascii?Q?6muTj89HgwRBTa+MKZIScrYVzkj2yKTMvxenobm1nHHpFW2tQIs9LzWuoEDQ?=
+ =?us-ascii?Q?Ex1BrOXzSFn+Ujc0qGA1hYS0Rg21fp+cIOAHIq/kvVYRn0Lo4eFtSwSpqdEI?=
+ =?us-ascii?Q?3xmhk1ifl7k33vzgok6uLEWO7aEd0A4lJoQmIUqTZS/Dx7REoBSe46S2gMaO?=
+ =?us-ascii?Q?gX/cnHA/rXHKtpmRuhoP0INOm3Y6hnoigUkKZVAjMf7SACnfDdcBUaxO+Wht?=
+ =?us-ascii?Q?i2yYtc7pJSsIqxE0yaTwcSQ2eo/9rG5RRFj23+noR6YLksrbE4OvQ3bq+fRt?=
+ =?us-ascii?Q?rqWuUIsdqC66U1vSQ1ngyRvo7EAfWDMBIFKn9ys/sncJkaU25BQkOx0r2iyr?=
+ =?us-ascii?Q?9g=3D=3D?=
 MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR11MB5013.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 18bf8354-3279-484a-6caf-08db6bf70009
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jun 2023 10:14:40.4545 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 5xzMyVtcQyGBB2T9dXRug07zniWB2UpsGnnlpgG8qtoEUaiyAE1yqM5mB58dDtt/xDUhhKn2aHUB7Z5ox/jOajh+OnKTtNXRLgunlxT5f0M=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN9PR11MB5465
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686651287; x=1718187287;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=1sdP0r/cXPD+RwKAHyErmFnp9vVx/tw48B7qD8VX7ZE=;
- b=V0B5UKFxeT41VK0X79UGdX5gSiiSJ6x+D4I/N5SDctz8MNwzF2HP9mv5
- RPnKjiYqXSe4kmTiv7QLyb9nc75qnr9Kulu/baDGzCd+nWkpyGJ5ZJWZ2
- bVeoQNP1rdKt22gu2QJdl470lpmiX643qn18gRUwWLA/STEvWC4QtkH7I
- uXVry+KeHs0VCTs0sHFU9WGs+CrNQWkU2FZYDasjko3ppHPcMoMIPr38N
- V69UExtl0PR+mxtqw9PEfqk+sBZxx7tlom16KyU18JT/hJaXJJ4Ly5DUV
- NqtxLceyG/nQR5KlHumKt7r3QytTumqQQ84aE9BJshsAOaVedm8bDqjrM
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1686651284; x=1718187284;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=582Oha4QFrVzowhwzWsPnmx1+/ChXnITKSr16iQCheM=;
+ b=M+H0pQHiPf0WoGztT6gVQzbHQWZk2Cukl6wIcrbBJrBkv7PI0fHjoMjM
+ Ov2uuNQsd+dDHpMc59mUTqvIspSqQDKAXFxm5udY+JvlRySRYkk8/Slaj
+ QZqQgBFxmOsYWlohj8hEiyigYKjNEAj+HMj8KKc8EYUBrTjN8m2uzExfe
+ j4Xm3VapgipEnkMer7qHyl6JnlJ3XbEog9/XZXzym3jDv1j97vpuWTTaD
+ 3Hf4p1epxL6bIRkQVw7nIy/EQe6Wl7yU8pc2RObtj/S685bB1cA/+nzU/
+ eLPEZRQQhCfRgxxUEESlf6AFlqIE8ms9u1tUfzMoEHDyF049mXYSFzOQS
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=V0B5UKFx
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 06/12] ice: Implement basic
- eswitch bridge setup
+ header.a=rsa-sha256 header.s=Intel header.b=M+H0pQHi
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 02/13] ice: Prohibit rx
+ mode change in switchdev mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,655 +190,40 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: pmenzel@molgen.mpg.de, netdev@vger.kernel.org, simon.horman@corigine.com,
- dan.carpenter@linaro.org
+Cc: "simon.horman@corigine.com" <simon.horman@corigine.com>,
+ "pmenzel@molgen.mpg.de" <pmenzel@molgen.mpg.de>,
+ "dan.carpenter@linaro.org" <dan.carpenter@linaro.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-With this patch, ice driver is able to track if the port
-representors or uplink port were added to the linux bridge in
-switchdev mode. Listen for NETDEV_CHANGEUPPER events in order to
-detect this. ice_esw_br data structure reflects the linux bridge
-and stores all the ports of the bridge (ice_esw_br_port) in
-xarray, it's created when the first port is added to the bridge and
-freed once the last port is removed. Note that only one bridge is
-supported per eswitch.
-
-Bridge port (ice_esw_br_port) can be either a VF port representor
-port or uplink port (ice_esw_br_port_type). In both cases bridge port
-holds a reference to the VSI, VF's VSI in case of the PR and uplink
-VSI in case of the uplink. VSI's index is used as an index to the
-xarray in which ports are stored.
-
-Add a check which prevents configuring switchdev mode if uplink is
-already added to any bridge. This is needed because we need to listen
-for NETDEV_CHANGEUPPER events to record if the uplink was added to
-the bridge. Netdevice notifier is registered after eswitch mode
-is changed to switchdev.
-
-Reviewed-by: Simon Horman <simon.horman@corigine.com>
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
----
-v2: fix structure holes, wrapping improvements
-v4: fix potential Null pointer dereference in
-    ice_eswitch_br_port_unlink
-v5: update ice_esw_br_port::vsi on VF reset
----
- drivers/net/ethernet/intel/ice/Makefile       |   2 +-
- drivers/net/ethernet/intel/ice/ice.h          |   4 +-
- drivers/net/ethernet/intel/ice/ice_eswitch.c  |  26 +-
- .../net/ethernet/intel/ice/ice_eswitch_br.c   | 384 ++++++++++++++++++
- .../net/ethernet/intel/ice/ice_eswitch_br.h   |  42 ++
- drivers/net/ethernet/intel/ice/ice_main.c     |   2 +-
- drivers/net/ethernet/intel/ice/ice_repr.c     |   2 +-
- drivers/net/ethernet/intel/ice/ice_repr.h     |   3 +-
- 8 files changed, 456 insertions(+), 9 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch_br.c
- create mode 100644 drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-
-diff --git a/drivers/net/ethernet/intel/ice/Makefile b/drivers/net/ethernet/intel/ice/Makefile
-index 817977e3039d..960277d78e09 100644
---- a/drivers/net/ethernet/intel/ice/Makefile
-+++ b/drivers/net/ethernet/intel/ice/Makefile
-@@ -47,5 +47,5 @@ ice-$(CONFIG_PTP_1588_CLOCK) += ice_ptp.o ice_ptp_hw.o
- ice-$(CONFIG_DCB) += ice_dcb.o ice_dcb_nl.o ice_dcb_lib.o
- ice-$(CONFIG_RFS_ACCEL) += ice_arfs.o
- ice-$(CONFIG_XDP_SOCKETS) += ice_xsk.o
--ice-$(CONFIG_ICE_SWITCHDEV) += ice_eswitch.o
-+ice-$(CONFIG_ICE_SWITCHDEV) += ice_eswitch.o ice_eswitch_br.o
- ice-$(CONFIG_GNSS) += ice_gnss.o
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index b4bca1d964a9..8876ed8ba268 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -511,6 +511,7 @@ enum ice_pf_flags {
- struct ice_switchdev_info {
- 	struct ice_vsi *control_vsi;
- 	struct ice_vsi *uplink_vsi;
-+	struct ice_esw_br_offloads *br_offloads;
- 	bool is_running;
- };
- 
-@@ -619,6 +620,7 @@ struct ice_pf {
- 	struct ice_lag *lag; /* Link Aggregation information */
- 
- 	struct ice_switchdev_info switchdev;
-+	struct ice_esw_br_port *br_port;
- 
- #define ICE_INVALID_AGG_NODE_ID		0
- #define ICE_PF_AGG_NODE_ID_START	1
-@@ -846,7 +848,7 @@ static inline bool ice_is_adq_active(struct ice_pf *pf)
- 	return false;
- }
- 
--bool netif_is_ice(struct net_device *dev);
-+bool netif_is_ice(const struct net_device *dev);
- int ice_vsi_setup_tx_rings(struct ice_vsi *vsi);
- int ice_vsi_setup_rx_rings(struct ice_vsi *vsi);
- int ice_vsi_open_ctrl(struct ice_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index 4fe235da1182..9a53a5e5d73e 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -4,6 +4,7 @@
- #include "ice.h"
- #include "ice_lib.h"
- #include "ice_eswitch.h"
-+#include "ice_eswitch_br.h"
- #include "ice_fltr.h"
- #include "ice_repr.h"
- #include "ice_devlink.h"
-@@ -317,6 +318,9 @@ void ice_eswitch_update_repr(struct ice_vsi *vsi)
- 	repr->src_vsi = vsi;
- 	repr->dst->u.port_info.port_id = vsi->vsi_num;
- 
-+	if (repr->br_port)
-+		repr->br_port->vsi = vsi;
-+
- 	ret = ice_vsi_update_security(vsi, ice_vsi_ctx_clear_antispoof);
- 	if (ret) {
- 		ice_fltr_add_mac_and_broadcast(vsi, vf->hw_lan_addr, ICE_FWD_TO_VSI);
-@@ -474,16 +478,24 @@ static void ice_eswitch_napi_disable(struct ice_pf *pf)
-  */
- static int ice_eswitch_enable_switchdev(struct ice_pf *pf)
- {
--	struct ice_vsi *ctrl_vsi;
-+	struct ice_vsi *ctrl_vsi, *uplink_vsi;
-+
-+	uplink_vsi = ice_get_main_vsi(pf);
-+	if (!uplink_vsi)
-+		return -ENODEV;
-+
-+	if (netif_is_any_bridge_port(uplink_vsi->netdev)) {
-+		dev_err(ice_pf_to_dev(pf),
-+			"Uplink port cannot be a bridge port\n");
-+		return -EINVAL;
-+	}
- 
- 	pf->switchdev.control_vsi = ice_eswitch_vsi_setup(pf, pf->hw.port_info);
- 	if (!pf->switchdev.control_vsi)
- 		return -ENODEV;
- 
- 	ctrl_vsi = pf->switchdev.control_vsi;
--	pf->switchdev.uplink_vsi = ice_get_main_vsi(pf);
--	if (!pf->switchdev.uplink_vsi)
--		goto err_vsi;
-+	pf->switchdev.uplink_vsi = uplink_vsi;
- 
- 	if (ice_eswitch_setup_env(pf))
- 		goto err_vsi;
-@@ -499,10 +511,15 @@ static int ice_eswitch_enable_switchdev(struct ice_pf *pf)
- 	if (ice_vsi_open(ctrl_vsi))
- 		goto err_setup_reprs;
- 
-+	if (ice_eswitch_br_offloads_init(pf))
-+		goto err_br_offloads;
-+
- 	ice_eswitch_napi_enable(pf);
- 
- 	return 0;
- 
-+err_br_offloads:
-+	ice_vsi_close(ctrl_vsi);
- err_setup_reprs:
- 	ice_repr_rem_from_all_vfs(pf);
- err_repr_add:
-@@ -521,6 +538,7 @@ static void ice_eswitch_disable_switchdev(struct ice_pf *pf)
- 	struct ice_vsi *ctrl_vsi = pf->switchdev.control_vsi;
- 
- 	ice_eswitch_napi_disable(pf);
-+	ice_eswitch_br_offloads_deinit(pf);
- 	ice_eswitch_release_env(pf);
- 	ice_eswitch_release_reprs(pf, ctrl_vsi);
- 	ice_vsi_release(ctrl_vsi);
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-new file mode 100644
-index 000000000000..8b9ab68dfd53
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-@@ -0,0 +1,384 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/* Copyright (C) 2023, Intel Corporation. */
-+
-+#include "ice.h"
-+#include "ice_eswitch_br.h"
-+#include "ice_repr.h"
-+
-+static bool ice_eswitch_br_is_dev_valid(const struct net_device *dev)
-+{
-+	/* Accept only PF netdev and PRs */
-+	return ice_is_port_repr_netdev(dev) || netif_is_ice(dev);
-+}
-+
-+static struct ice_esw_br_port *
-+ice_eswitch_br_netdev_to_port(struct net_device *dev)
-+{
-+	if (ice_is_port_repr_netdev(dev)) {
-+		struct ice_repr *repr = ice_netdev_to_repr(dev);
-+
-+		return repr->br_port;
-+	} else if (netif_is_ice(dev)) {
-+		struct ice_pf *pf = ice_netdev_to_pf(dev);
-+
-+		return pf->br_port;
-+	}
-+
-+	return NULL;
-+}
-+
-+static void
-+ice_eswitch_br_port_deinit(struct ice_esw_br *bridge,
-+			   struct ice_esw_br_port *br_port)
-+{
-+	struct ice_vsi *vsi = br_port->vsi;
-+
-+	if (br_port->type == ICE_ESWITCH_BR_UPLINK_PORT && vsi->back)
-+		vsi->back->br_port = NULL;
-+	else if (vsi->vf)
-+		vsi->vf->repr->br_port = NULL;
-+
-+	xa_erase(&bridge->ports, br_port->vsi_idx);
-+	kfree(br_port);
-+}
-+
-+static struct ice_esw_br_port *
-+ice_eswitch_br_port_init(struct ice_esw_br *bridge)
-+{
-+	struct ice_esw_br_port *br_port;
-+
-+	br_port = kzalloc(sizeof(*br_port), GFP_KERNEL);
-+	if (!br_port)
-+		return ERR_PTR(-ENOMEM);
-+
-+	br_port->bridge = bridge;
-+
-+	return br_port;
-+}
-+
-+static int
-+ice_eswitch_br_vf_repr_port_init(struct ice_esw_br *bridge,
-+				 struct ice_repr *repr)
-+{
-+	struct ice_esw_br_port *br_port;
-+	int err;
-+
-+	br_port = ice_eswitch_br_port_init(bridge);
-+	if (IS_ERR(br_port))
-+		return PTR_ERR(br_port);
-+
-+	br_port->vsi = repr->src_vsi;
-+	br_port->vsi_idx = br_port->vsi->idx;
-+	br_port->type = ICE_ESWITCH_BR_VF_REPR_PORT;
-+	repr->br_port = br_port;
-+
-+	err = xa_insert(&bridge->ports, br_port->vsi_idx, br_port, GFP_KERNEL);
-+	if (err) {
-+		ice_eswitch_br_port_deinit(bridge, br_port);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+ice_eswitch_br_uplink_port_init(struct ice_esw_br *bridge, struct ice_pf *pf)
-+{
-+	struct ice_vsi *vsi = pf->switchdev.uplink_vsi;
-+	struct ice_esw_br_port *br_port;
-+	int err;
-+
-+	br_port = ice_eswitch_br_port_init(bridge);
-+	if (IS_ERR(br_port))
-+		return PTR_ERR(br_port);
-+
-+	br_port->vsi = vsi;
-+	br_port->vsi_idx = br_port->vsi->idx;
-+	br_port->type = ICE_ESWITCH_BR_UPLINK_PORT;
-+	pf->br_port = br_port;
-+
-+	err = xa_insert(&bridge->ports, br_port->vsi_idx, br_port, GFP_KERNEL);
-+	if (err) {
-+		ice_eswitch_br_port_deinit(bridge, br_port);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static void
-+ice_eswitch_br_ports_flush(struct ice_esw_br *bridge)
-+{
-+	struct ice_esw_br_port *port;
-+	unsigned long i;
-+
-+	xa_for_each(&bridge->ports, i, port)
-+		ice_eswitch_br_port_deinit(bridge, port);
-+}
-+
-+static void
-+ice_eswitch_br_deinit(struct ice_esw_br_offloads *br_offloads,
-+		      struct ice_esw_br *bridge)
-+{
-+	if (!bridge)
-+		return;
-+
-+	/* Cleanup all the ports that were added asynchronously
-+	 * through NETDEV_CHANGEUPPER event.
-+	 */
-+	ice_eswitch_br_ports_flush(bridge);
-+	WARN_ON(!xa_empty(&bridge->ports));
-+	xa_destroy(&bridge->ports);
-+	br_offloads->bridge = NULL;
-+	kfree(bridge);
-+}
-+
-+static struct ice_esw_br *
-+ice_eswitch_br_init(struct ice_esw_br_offloads *br_offloads, int ifindex)
-+{
-+	struct ice_esw_br *bridge;
-+
-+	bridge = kzalloc(sizeof(*bridge), GFP_KERNEL);
-+	if (!bridge)
-+		return ERR_PTR(-ENOMEM);
-+
-+	bridge->br_offloads = br_offloads;
-+	bridge->ifindex = ifindex;
-+	xa_init(&bridge->ports);
-+	br_offloads->bridge = bridge;
-+
-+	return bridge;
-+}
-+
-+static struct ice_esw_br *
-+ice_eswitch_br_get(struct ice_esw_br_offloads *br_offloads, int ifindex,
-+		   struct netlink_ext_ack *extack)
-+{
-+	struct ice_esw_br *bridge = br_offloads->bridge;
-+
-+	if (bridge) {
-+		if (bridge->ifindex != ifindex) {
-+			NL_SET_ERR_MSG_MOD(extack,
-+					   "Only one bridge is supported per eswitch");
-+			return ERR_PTR(-EOPNOTSUPP);
-+		}
-+		return bridge;
-+	}
-+
-+	/* Create the bridge if it doesn't exist yet */
-+	bridge = ice_eswitch_br_init(br_offloads, ifindex);
-+	if (IS_ERR(bridge))
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to init the bridge");
-+
-+	return bridge;
-+}
-+
-+static void
-+ice_eswitch_br_verify_deinit(struct ice_esw_br_offloads *br_offloads,
-+			     struct ice_esw_br *bridge)
-+{
-+	/* Remove the bridge if it exists and there are no ports left */
-+	if (!bridge || !xa_empty(&bridge->ports))
-+		return;
-+
-+	ice_eswitch_br_deinit(br_offloads, bridge);
-+}
-+
-+static int
-+ice_eswitch_br_port_unlink(struct ice_esw_br_offloads *br_offloads,
-+			   struct net_device *dev, int ifindex,
-+			   struct netlink_ext_ack *extack)
-+{
-+	struct ice_esw_br_port *br_port = ice_eswitch_br_netdev_to_port(dev);
-+	struct ice_esw_br *bridge;
-+
-+	if (!br_port) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Port representor is not attached to any bridge");
-+		return -EINVAL;
-+	}
-+
-+	if (br_port->bridge->ifindex != ifindex) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Port representor is attached to another bridge");
-+		return -EINVAL;
-+	}
-+
-+	bridge = br_port->bridge;
-+
-+	ice_eswitch_br_port_deinit(br_port->bridge, br_port);
-+	ice_eswitch_br_verify_deinit(br_offloads, bridge);
-+
-+	return 0;
-+}
-+
-+static int
-+ice_eswitch_br_port_link(struct ice_esw_br_offloads *br_offloads,
-+			 struct net_device *dev, int ifindex,
-+			 struct netlink_ext_ack *extack)
-+{
-+	struct ice_esw_br *bridge;
-+	int err;
-+
-+	if (ice_eswitch_br_netdev_to_port(dev)) {
-+		NL_SET_ERR_MSG_MOD(extack,
-+				   "Port is already attached to the bridge");
-+		return -EINVAL;
-+	}
-+
-+	bridge = ice_eswitch_br_get(br_offloads, ifindex, extack);
-+	if (IS_ERR(bridge))
-+		return PTR_ERR(bridge);
-+
-+	if (ice_is_port_repr_netdev(dev)) {
-+		struct ice_repr *repr = ice_netdev_to_repr(dev);
-+
-+		err = ice_eswitch_br_vf_repr_port_init(bridge, repr);
-+	} else {
-+		struct ice_pf *pf = ice_netdev_to_pf(dev);
-+
-+		err = ice_eswitch_br_uplink_port_init(bridge, pf);
-+	}
-+	if (err) {
-+		NL_SET_ERR_MSG_MOD(extack, "Failed to init bridge port");
-+		goto err_port_init;
-+	}
-+
-+	return 0;
-+
-+err_port_init:
-+	ice_eswitch_br_verify_deinit(br_offloads, bridge);
-+	return err;
-+}
-+
-+static int
-+ice_eswitch_br_port_changeupper(struct notifier_block *nb, void *ptr)
-+{
-+	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
-+	struct netdev_notifier_changeupper_info *info = ptr;
-+	struct ice_esw_br_offloads *br_offloads;
-+	struct netlink_ext_ack *extack;
-+	struct net_device *upper;
-+
-+	br_offloads = ice_nb_to_br_offloads(nb, netdev_nb);
-+
-+	if (!ice_eswitch_br_is_dev_valid(dev))
-+		return 0;
-+
-+	upper = info->upper_dev;
-+	if (!netif_is_bridge_master(upper))
-+		return 0;
-+
-+	extack = netdev_notifier_info_to_extack(&info->info);
-+
-+	if (info->linking)
-+		return ice_eswitch_br_port_link(br_offloads, dev,
-+						upper->ifindex, extack);
-+	else
-+		return ice_eswitch_br_port_unlink(br_offloads, dev,
-+						  upper->ifindex, extack);
-+}
-+
-+static int
-+ice_eswitch_br_port_event(struct notifier_block *nb,
-+			  unsigned long event, void *ptr)
-+{
-+	int err = 0;
-+
-+	switch (event) {
-+	case NETDEV_CHANGEUPPER:
-+		err = ice_eswitch_br_port_changeupper(nb, ptr);
-+		break;
-+	}
-+
-+	return notifier_from_errno(err);
-+}
-+
-+static void
-+ice_eswitch_br_offloads_dealloc(struct ice_pf *pf)
-+{
-+	struct ice_esw_br_offloads *br_offloads = pf->switchdev.br_offloads;
-+
-+	ASSERT_RTNL();
-+
-+	if (!br_offloads)
-+		return;
-+
-+	ice_eswitch_br_deinit(br_offloads, br_offloads->bridge);
-+
-+	pf->switchdev.br_offloads = NULL;
-+	kfree(br_offloads);
-+}
-+
-+static struct ice_esw_br_offloads *
-+ice_eswitch_br_offloads_alloc(struct ice_pf *pf)
-+{
-+	struct ice_esw_br_offloads *br_offloads;
-+
-+	ASSERT_RTNL();
-+
-+	if (pf->switchdev.br_offloads)
-+		return ERR_PTR(-EEXIST);
-+
-+	br_offloads = kzalloc(sizeof(*br_offloads), GFP_KERNEL);
-+	if (!br_offloads)
-+		return ERR_PTR(-ENOMEM);
-+
-+	pf->switchdev.br_offloads = br_offloads;
-+	br_offloads->pf = pf;
-+
-+	return br_offloads;
-+}
-+
-+void
-+ice_eswitch_br_offloads_deinit(struct ice_pf *pf)
-+{
-+	struct ice_esw_br_offloads *br_offloads;
-+
-+	br_offloads = pf->switchdev.br_offloads;
-+	if (!br_offloads)
-+		return;
-+
-+	unregister_netdevice_notifier(&br_offloads->netdev_nb);
-+	/* Although notifier block is unregistered just before,
-+	 * so we don't get any new events, some events might be
-+	 * already in progress. Hold the rtnl lock and wait for
-+	 * them to finished.
-+	 */
-+	rtnl_lock();
-+	ice_eswitch_br_offloads_dealloc(pf);
-+	rtnl_unlock();
-+}
-+
-+int
-+ice_eswitch_br_offloads_init(struct ice_pf *pf)
-+{
-+	struct ice_esw_br_offloads *br_offloads;
-+	struct device *dev = ice_pf_to_dev(pf);
-+	int err;
-+
-+	rtnl_lock();
-+	br_offloads = ice_eswitch_br_offloads_alloc(pf);
-+	rtnl_unlock();
-+	if (IS_ERR(br_offloads)) {
-+		dev_err(dev, "Failed to init eswitch bridge\n");
-+		return PTR_ERR(br_offloads);
-+	}
-+
-+	br_offloads->netdev_nb.notifier_call = ice_eswitch_br_port_event;
-+	err = register_netdevice_notifier(&br_offloads->netdev_nb);
-+	if (err) {
-+		dev_err(dev,
-+			"Failed to register bridge port event notifier\n");
-+		goto err_reg_netdev_nb;
-+	}
-+
-+	return 0;
-+
-+err_reg_netdev_nb:
-+	rtnl_lock();
-+	ice_eswitch_br_offloads_dealloc(pf);
-+	rtnl_unlock();
-+
-+	return err;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-new file mode 100644
-index 000000000000..3ad28a17298f
---- /dev/null
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-@@ -0,0 +1,42 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/* Copyright (C) 2023, Intel Corporation. */
-+
-+#ifndef _ICE_ESWITCH_BR_H_
-+#define _ICE_ESWITCH_BR_H_
-+
-+enum ice_esw_br_port_type {
-+	ICE_ESWITCH_BR_UPLINK_PORT = 0,
-+	ICE_ESWITCH_BR_VF_REPR_PORT = 1,
-+};
-+
-+struct ice_esw_br_port {
-+	struct ice_esw_br *bridge;
-+	struct ice_vsi *vsi;
-+	enum ice_esw_br_port_type type;
-+	u16 vsi_idx;
-+};
-+
-+struct ice_esw_br {
-+	struct ice_esw_br_offloads *br_offloads;
-+	struct xarray ports;
-+
-+	int ifindex;
-+};
-+
-+struct ice_esw_br_offloads {
-+	struct ice_pf *pf;
-+	struct ice_esw_br *bridge;
-+	struct notifier_block netdev_nb;
-+};
-+
-+#define ice_nb_to_br_offloads(nb, nb_name) \
-+	container_of(nb, \
-+		     struct ice_esw_br_offloads, \
-+		     nb_name)
-+
-+void
-+ice_eswitch_br_offloads_deinit(struct ice_pf *pf);
-+int
-+ice_eswitch_br_offloads_init(struct ice_pf *pf);
-+
-+#endif /* _ICE_ESWITCH_BR_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index d8193de0715a..e940b9009d7a 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -80,7 +80,7 @@ ice_indr_setup_tc_cb(struct net_device *netdev, struct Qdisc *sch,
- 		     void *data,
- 		     void (*cleanup)(struct flow_block_cb *block_cb));
- 
--bool netif_is_ice(struct net_device *dev)
-+bool netif_is_ice(const struct net_device *dev)
- {
- 	return dev && (dev->netdev_ops == &ice_netdev_ops);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index e30e12321abd..c686ac0935eb 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.c
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -254,7 +254,7 @@ static const struct net_device_ops ice_repr_netdev_ops = {
-  * ice_is_port_repr_netdev - Check if a given netdevice is a port representor netdev
-  * @netdev: pointer to netdev
-  */
--bool ice_is_port_repr_netdev(struct net_device *netdev)
-+bool ice_is_port_repr_netdev(const struct net_device *netdev)
- {
- 	return netdev && (netdev->netdev_ops == &ice_repr_netdev_ops);
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.h b/drivers/net/ethernet/intel/ice/ice_repr.h
-index 9c2a6f496b3b..e1ee2d2c1d2d 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.h
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.h
-@@ -12,6 +12,7 @@ struct ice_repr {
- 	struct ice_q_vector *q_vector;
- 	struct net_device *netdev;
- 	struct metadata_dst *dst;
-+	struct ice_esw_br_port *br_port;
- #ifdef CONFIG_ICE_SWITCHDEV
- 	/* info about slow path rule */
- 	struct ice_rule_query_data sp_rule;
-@@ -27,5 +28,5 @@ void ice_repr_stop_tx_queues(struct ice_repr *repr);
- void ice_repr_set_traffic_vsi(struct ice_repr *repr, struct ice_vsi *vsi);
- 
- struct ice_repr *ice_netdev_to_repr(struct net_device *netdev);
--bool ice_is_port_repr_netdev(struct net_device *netdev);
-+bool ice_is_port_repr_netdev(const struct net_device *netdev);
- #endif
--- 
-2.40.1
-
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Wojciech Drewek
+> Sent: Wednesday, May 24, 2023 5:51 PM
+> To: intel-wired-lan@lists.osuosl.org
+> Cc: pmenzel@molgen.mpg.de; netdev@vger.kernel.org;
+> simon.horman@corigine.com; dan.carpenter@linaro.org
+> Subject: [Intel-wired-lan] [PATCH iwl-next v4 02/13] ice: Prohibit rx mode
+> change in switchdev mode
+> 
+> Don't allow to change promisc mode in switchdev mode.
+> When switchdev is configured, PF netdev is set to be a default VSI. This is
+> needed for the slow-path to work correctly.
+> All the unmatched packets will be directed to PF netdev.
+> 
+> It is possible that this setting might be overwritten by ndo_set_rx_mode.
+> Prevent this by checking if switchdev is enabled in ice_set_rx_mode.
+> 
+> Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
+> Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+Tested-by: Sujai Buvaneswaran <sujai.buvaneswaran@intel.com>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
