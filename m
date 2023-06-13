@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F759C7EE2E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Jun 2023 10:15:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1A34C7EE2E
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Jun 2023 10:15:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B240F416CE;
-	Tue, 13 Jun 2023 10:15:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B240F416CE
+	by smtp2.osuosl.org (Postfix) with ESMTP id 89FBF408A7;
+	Tue, 13 Jun 2023 10:15:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 89FBF408A7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686651324;
-	bh=DmGVt7xsXGfv5ejr+W+1xXlnadkL9UmTy0T6K4CAuBs=;
+	s=default; t=1686651328;
+	bh=ulJ50Ym6QcBxF/T8lwTn7quAxX73Boc1Cc/ZsGXRZso=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=yvLODYDbcYRfpYhM63zXMjqJB3AvY4B8/8IcxMFoQrNlRcKv6LGA1kYl7iPy41iO3
-	 K5TAWsblQdow/FXc8kzIWnZvGmUJAkAqpQYCQVD99DP8ELnEolUYh/gkV3K1hxEZ1A
-	 WmuUIw/+GKXsfuU5CGE4CtqTSGuzq1zAo8t5IAG5z2YIvWW/2BITl4J1/7EBJWJjCS
-	 z4Gir4pW8WWG6Et83WN7qv9Wakxk1hdZTXfCfRx8cNPukatM4zt6MgA3WDXNMRn9XJ
-	 TbBQjXBJyBwtfcX0WTDM92DHBRJH0NvGoEbEzbcQd/H8yAOTrBiwsIFYkczW8DwKd+
-	 fHVP33TUJ3nFQ==
+	b=wHxwOP/HMl9QRg413Lopsc8m8uZEumOtDE6Nhi7h6teYUHtp7W0Cf8xTR04ZGPEHW
+	 tX0Du5+2AUQ4cTipasA5/eh1MbPxK8/I73esVhxUKiY59TZAlrZsHXmdXQKZXGyRBw
+	 9gD7f7wLpTkOTjjqWkoIK3VPDLHFsb0HKql4FWoUsUfYtz1TrymnRbELfJvVWwwhfO
+	 Fo2Sc0gnOhGpUGdM24W1SId/L5sSBW9CeIg9M7eL/sJpGHuJCQf4BBbxdgdBP1RhcY
+	 5qybt4/ytv9hEVhuNC4IpVREjOp4DukJbPzIfbmg1JG5E8YXjjprDzujNs3W8ryNK4
+	 70iAmDbAjLHvg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4hROZVbyQ8dn; Tue, 13 Jun 2023 10:15:23 +0000 (UTC)
+	with ESMTP id ROsyxgZ_FSW5; Tue, 13 Jun 2023 10:15:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 34DC6416B8;
-	Tue, 13 Jun 2023 10:15:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 34DC6416B8
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 40A361BF2C1
+	by smtp2.osuosl.org (Postfix) with ESMTP id 43BD9416DE;
+	Tue, 13 Jun 2023 10:15:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 43BD9416DE
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id D8C841BF2C1
  for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B0F1160B3B
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B0F1160B3B
+ by smtp1.osuosl.org (Postfix) with ESMTP id BEE2781EB1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BEE2781EB1
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ROyNXff9C5su for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Jun 2023 10:14:48 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id NtLP7tGEylzE for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Jun 2023 10:14:51 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6D88160BAE
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BA34D81E9B
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6D88160BAE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:48 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="424168098"
-X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="424168098"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id BA34D81E9B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 10:14:50 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="424168110"
+X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="424168110"
 Received: from orsmga005.jf.intel.com ([10.7.209.41])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Jun 2023 03:14:48 -0700
+ 13 Jun 2023 03:14:50 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="885787141"
-X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="885787141"
+X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="885787145"
+X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="885787145"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga005.jf.intel.com with ESMTP; 13 Jun 2023 03:14:45 -0700
+ by orsmga005.jf.intel.com with ESMTP; 13 Jun 2023 03:14:47 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 1905335FCA;
- Tue, 13 Jun 2023 11:14:44 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 9274B3636A;
+ Tue, 13 Jun 2023 11:14:46 +0100 (IST)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 13 Jun 2023 12:13:27 +0200
-Message-Id: <20230613101330.87734-10-wojciech.drewek@intel.com>
+Date: Tue, 13 Jun 2023 12:13:30 +0200
+Message-Id: <20230613101330.87734-13-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230613101330.87734-1-wojciech.drewek@intel.com>
 References: <20230613101330.87734-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686651288; x=1718187288;
+ t=1686651290; x=1718187290;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=zqas6jqbh4qgvL10mRIMq3TXNQAIucramouEk4am8I4=;
- b=Egva1fbz9/2Zl8B9qDZVrfbVsM5kiTjVPgBCH1/eJuN2xsvNpvx3dzsR
- RdJwDZIgKBJtPdonnhDCnTpbGjztTb302ZSa0r3iZJhEyGE1WlSeUmc4P
- 9tPtS0b4n8Db2E1ZQ6GUesAPDrrN4+MZF430K1W7dxl3IfmG17p8JT3hH
- 4c6ALUI2N68yMi8MJtA1Um21n97aKN5a6lRmFODGzuO2otxflH681gHpR
- KmEpUhYVb2WNSacALSVuC/NqkhsCgxiUxEzV3t6veyhqEZtDP2n+32+Vr
- Nz32QYJwqdMfYDSSB8pUK5IlXJtEjnBP1G5PT1ToEQiIvb2aUSXKGRrNp
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=WQunAQWRGpqX1Fj4Wx8WtXURKxTARnIF/uywaw/PJRk=;
+ b=MxeteRpnVFLKnuOS6qUoTsyC19LaGebR2PiZ1daSPXkrTDSJGfbLunRR
+ LRH0F2dwbTmuOV1YnF29YZdkp9sBvV2fs5o4SONyPJemmDQzGOkv0hEzb
+ 86ZfJd4J1zNBLUc1AmtAzZK19hvBSW05kj01ZqII3Pj2wIqWkRmRUp2OC
+ bTSumMzgKFRBKT0xnsVqy808QztAXgvF/97oSL77pDbJCH4scp1sYxcn4
+ MaCx60KTQMNvlt8k2PnBW18WCUBPkdtd3tvHnupYJOE+n4NQl3BChFiEL
+ 3LtShtqYK4XkIXv8rOcmYfuZWfcWp3dPc3aCSXpAao7OKEVhPHuxLJwCX
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Egva1fbz
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 09/12] ice: Add VLAN FDB
- support in switchdev mode
+ header.a=rsa-sha256 header.s=Intel header.b=MxeteRpn
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 12/12] ice: add tracepoints
+ for the switchdev bridge
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,522 +105,197 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Marcin Szycik <marcin.szycik@intel.com>
+From: Pawel Chmielewski <pawel.chmielewski@intel.com>
 
-Add support for matching on VLAN tag in bridge offloads.
-Currently only trunk mode is supported.
+Add tracepoints for the following events:
+- Add FDB entry
+- Delete FDB entry
+- Create bridge VLAN
+- Cleanup bridge VLAN
+- Link port to the bridge
+- Unlink port from the bridge
 
-To enable VLAN filtering (existing FDB entries will be deleted):
-ip link set $BR type bridge vlan_filtering 1
-
-To add VLANs to bridge in trunk mode:
-bridge vlan add dev $PF1 vid 110-111
-bridge vlan add dev $VF1_PR vid 110-111
-
-Signed-off-by: Marcin Szycik <marcin.szycik@intel.com>
+Signed-off-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
-v2: introduce ice_eswitch_is_vid_valid, remove vlan bool arg,
-    introduce better log msg
-v3: move inline function (ice_eswitch_is_vid_valid) to
-    ice_eswitch_br.h
-v5: introduce ice_eswitch_br_get_lkups_cnt and
-    ice_eswitch_br_add_vlan_lkup in order to reduce
-    duplicate code, rename ice_eswitch_is_vid_valid to
-    ice_eswitch_br_is_vid_valid to keep the naming convention
----
- .../net/ethernet/intel/ice/ice_eswitch_br.c   | 296 +++++++++++++++++-
- .../net/ethernet/intel/ice/ice_eswitch_br.h   |  21 ++
- 2 files changed, 309 insertions(+), 8 deletions(-)
+ .../net/ethernet/intel/ice/ice_eswitch_br.c   |  9 ++
+ drivers/net/ethernet/intel/ice/ice_trace.h    | 90 +++++++++++++++++++
+ 2 files changed, 99 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-index 1e57ce7b22d3..805a6b2fd965 100644
+index bf1b7dd278e5..8acfd2299d4d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
 +++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.c
-@@ -70,16 +70,34 @@ ice_eswitch_br_rule_delete(struct ice_hw *hw, struct ice_rule_query_data *rule)
- 	return err;
- }
+@@ -7,6 +7,7 @@
+ #include "ice_switch.h"
+ #include "ice_vlan.h"
+ #include "ice_vf_vsi_vlan_ops.h"
++#include "ice_trace.h"
  
-+static u16
-+ice_eswitch_br_get_lkups_cnt(u16 vid)
-+{
-+	return ice_eswitch_br_is_vid_valid(vid) ? 2 : 1;
-+}
-+
-+static void
-+ice_eswitch_br_add_vlan_lkup(struct ice_adv_lkup_elem *list, u16 vid)
-+{
-+	if (ice_eswitch_br_is_vid_valid(vid)) {
-+		list[1].type = ICE_VLAN_OFOS;
-+		list[1].h_u.vlan_hdr.vlan = cpu_to_be16(vid & VLAN_VID_MASK);
-+		list[1].m_u.vlan_hdr.vlan = cpu_to_be16(0xFFFF);
-+	}
-+}
-+
- static struct ice_rule_query_data *
- ice_eswitch_br_fwd_rule_create(struct ice_hw *hw, int vsi_idx, int port_type,
--			       const unsigned char *mac)
-+			       const unsigned char *mac, u16 vid)
- {
- 	struct ice_adv_rule_info rule_info = { 0 };
- 	struct ice_rule_query_data *rule;
- 	struct ice_adv_lkup_elem *list;
--	u16 lkups_cnt = 1;
-+	u16 lkups_cnt;
- 	int err;
+ #define ICE_ESW_BRIDGE_UPDATE_INTERVAL msecs_to_jiffies(1000)
  
-+	lkups_cnt = ice_eswitch_br_get_lkups_cnt(vid);
-+
- 	rule = kzalloc(sizeof(*rule), GFP_KERNEL);
- 	if (!rule)
- 		return ERR_PTR(-ENOMEM);
-@@ -107,6 +125,8 @@ ice_eswitch_br_fwd_rule_create(struct ice_hw *hw, int vsi_idx, int port_type,
- 	ether_addr_copy(list[0].h_u.eth_hdr.dst_addr, mac);
- 	eth_broadcast_addr(list[0].m_u.eth_hdr.dst_addr);
- 
-+	ice_eswitch_br_add_vlan_lkup(list, vid);
-+
- 	rule_info.need_pass_l2 = true;
- 
- 	rule_info.sw_act.fltr_act = ICE_FWD_TO_VSI;
-@@ -129,13 +149,15 @@ ice_eswitch_br_fwd_rule_create(struct ice_hw *hw, int vsi_idx, int port_type,
- 
- static struct ice_rule_query_data *
- ice_eswitch_br_guard_rule_create(struct ice_hw *hw, u16 vsi_idx,
--				 const unsigned char *mac)
-+				 const unsigned char *mac, u16 vid)
- {
- 	struct ice_adv_rule_info rule_info = { 0 };
- 	struct ice_rule_query_data *rule;
- 	struct ice_adv_lkup_elem *list;
--	const u16 lkups_cnt = 1;
- 	int err = -ENOMEM;
-+	u16 lkups_cnt;
-+
-+	lkups_cnt = ice_eswitch_br_get_lkups_cnt(vid);
- 
- 	rule = kzalloc(sizeof(*rule), GFP_KERNEL);
- 	if (!rule)
-@@ -149,6 +171,8 @@ ice_eswitch_br_guard_rule_create(struct ice_hw *hw, u16 vsi_idx,
- 	ether_addr_copy(list[0].h_u.eth_hdr.src_addr, mac);
- 	eth_broadcast_addr(list[0].m_u.eth_hdr.src_addr);
- 
-+	ice_eswitch_br_add_vlan_lkup(list, vid);
-+
- 	rule_info.allow_pass_l2 = true;
- 	rule_info.sw_act.vsi_handle = vsi_idx;
- 	rule_info.sw_act.fltr_act = ICE_NOP;
-@@ -172,7 +196,7 @@ ice_eswitch_br_guard_rule_create(struct ice_hw *hw, u16 vsi_idx,
- 
- static struct ice_esw_br_flow *
- ice_eswitch_br_flow_create(struct device *dev, struct ice_hw *hw, int vsi_idx,
--			   int port_type, const unsigned char *mac)
-+			   int port_type, const unsigned char *mac, u16 vid)
- {
- 	struct ice_rule_query_data *fwd_rule, *guard_rule;
- 	struct ice_esw_br_flow *flow;
-@@ -182,7 +206,8 @@ ice_eswitch_br_flow_create(struct device *dev, struct ice_hw *hw, int vsi_idx,
- 	if (!flow)
- 		return ERR_PTR(-ENOMEM);
- 
--	fwd_rule = ice_eswitch_br_fwd_rule_create(hw, vsi_idx, port_type, mac);
-+	fwd_rule = ice_eswitch_br_fwd_rule_create(hw, vsi_idx, port_type, mac,
-+						  vid);
- 	err = PTR_ERR_OR_ZERO(fwd_rule);
- 	if (err) {
- 		dev_err(dev, "Failed to create eswitch bridge %sgress forward rule, err: %d\n",
-@@ -191,7 +216,7 @@ ice_eswitch_br_flow_create(struct device *dev, struct ice_hw *hw, int vsi_idx,
- 		goto err_fwd_rule;
- 	}
- 
--	guard_rule = ice_eswitch_br_guard_rule_create(hw, vsi_idx, mac);
-+	guard_rule = ice_eswitch_br_guard_rule_create(hw, vsi_idx, mac, vid);
- 	err = PTR_ERR_OR_ZERO(guard_rule);
- 	if (err) {
- 		dev_err(dev, "Failed to create eswitch bridge %sgress guard rule, err: %d\n",
-@@ -245,6 +270,30 @@ ice_eswitch_br_flow_delete(struct ice_pf *pf, struct ice_esw_br_flow *flow)
- 	kfree(flow);
- }
- 
-+static struct ice_esw_br_vlan *
-+ice_esw_br_port_vlan_lookup(struct ice_esw_br *bridge, u16 vsi_idx, u16 vid)
-+{
-+	struct ice_pf *pf = bridge->br_offloads->pf;
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_esw_br_port *port;
-+	struct ice_esw_br_vlan *vlan;
-+
-+	port = xa_load(&bridge->ports, vsi_idx);
-+	if (!port) {
-+		dev_info(dev, "Bridge port lookup failed (vsi=%u)\n", vsi_idx);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	vlan = xa_load(&port->vlans, vid);
-+	if (!vlan) {
-+		dev_info(dev, "Bridge port vlan metadata lookup failed (vsi=%u)\n",
-+			 vsi_idx);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	return vlan;
-+}
-+
- static void
- ice_eswitch_br_fdb_entry_delete(struct ice_esw_br *bridge,
- 				struct ice_esw_br_fdb_entry *fdb_entry)
-@@ -314,10 +363,25 @@ ice_eswitch_br_fdb_entry_create(struct net_device *netdev,
- 	struct device *dev = ice_pf_to_dev(pf);
- 	struct ice_esw_br_fdb_entry *fdb_entry;
- 	struct ice_esw_br_flow *flow;
-+	struct ice_esw_br_vlan *vlan;
- 	struct ice_hw *hw = &pf->hw;
- 	unsigned long event;
- 	int err;
- 
-+	/* untagged filtering is not yet supported */
-+	if (!(bridge->flags & ICE_ESWITCH_BR_VLAN_FILTERING) && vid)
-+		return;
-+
-+	if ((bridge->flags & ICE_ESWITCH_BR_VLAN_FILTERING)) {
-+		vlan = ice_esw_br_port_vlan_lookup(bridge, br_port->vsi_idx,
-+						   vid);
-+		if (IS_ERR(vlan)) {
-+			dev_err(dev, "Failed to find vlan lookup, err: %ld\n",
-+				PTR_ERR(vlan));
-+			return;
-+		}
-+	}
-+
- 	fdb_entry = ice_eswitch_br_fdb_find(bridge, mac, vid);
- 	if (fdb_entry)
- 		ice_eswitch_br_fdb_entry_notify_and_cleanup(bridge, fdb_entry);
-@@ -329,7 +393,7 @@ ice_eswitch_br_fdb_entry_create(struct net_device *netdev,
- 	}
- 
- 	flow = ice_eswitch_br_flow_create(dev, hw, br_port->vsi_idx,
--					  br_port->type, mac);
-+					  br_port->type, mac, vid);
- 	if (IS_ERR(flow)) {
- 		err = PTR_ERR(flow);
- 		goto err_add_flow;
-@@ -488,6 +552,207 @@ ice_eswitch_br_switchdev_event(struct notifier_block *nb,
- 	return NOTIFY_DONE;
- }
- 
-+static void ice_eswitch_br_fdb_flush(struct ice_esw_br *bridge)
-+{
-+	struct ice_esw_br_fdb_entry *entry, *tmp;
-+
-+	list_for_each_entry_safe(entry, tmp, &bridge->fdb_list, list)
-+		ice_eswitch_br_fdb_entry_notify_and_cleanup(bridge, entry);
-+}
-+
-+static void
-+ice_eswitch_br_vlan_filtering_set(struct ice_esw_br *bridge, bool enable)
-+{
-+	if (enable == !!(bridge->flags & ICE_ESWITCH_BR_VLAN_FILTERING))
-+		return;
-+
-+	ice_eswitch_br_fdb_flush(bridge);
-+	if (enable)
-+		bridge->flags |= ICE_ESWITCH_BR_VLAN_FILTERING;
-+	else
-+		bridge->flags &= ~ICE_ESWITCH_BR_VLAN_FILTERING;
-+}
-+
-+static void
-+ice_eswitch_br_vlan_cleanup(struct ice_esw_br_port *port,
-+			    struct ice_esw_br_vlan *vlan)
-+{
-+	xa_erase(&port->vlans, vlan->vid);
-+	kfree(vlan);
-+}
-+
-+static void ice_eswitch_br_port_vlans_flush(struct ice_esw_br_port *port)
-+{
-+	struct ice_esw_br_vlan *vlan;
-+	unsigned long index;
-+
-+	xa_for_each(&port->vlans, index, vlan)
-+		ice_eswitch_br_vlan_cleanup(port, vlan);
-+}
-+
-+static struct ice_esw_br_vlan *
-+ice_eswitch_br_vlan_create(u16 vid, u16 flags, struct ice_esw_br_port *port)
-+{
-+	struct ice_esw_br_vlan *vlan;
-+	int err;
-+
-+	vlan = kzalloc(sizeof(*vlan), GFP_KERNEL);
-+	if (!vlan)
-+		return ERR_PTR(-ENOMEM);
-+
-+	vlan->vid = vid;
-+	vlan->flags = flags;
-+
-+	err = xa_insert(&port->vlans, vlan->vid, vlan, GFP_KERNEL);
-+	if (err) {
-+		kfree(vlan);
-+		return ERR_PTR(err);
-+	}
-+
-+	return vlan;
-+}
-+
-+static int
-+ice_eswitch_br_port_vlan_add(struct ice_esw_br *bridge, u16 vsi_idx, u16 vid,
-+			     u16 flags, struct netlink_ext_ack *extack)
-+{
-+	struct ice_esw_br_port *port;
-+	struct ice_esw_br_vlan *vlan;
-+
-+	port = xa_load(&bridge->ports, vsi_idx);
-+	if (!port)
-+		return -EINVAL;
-+
-+	vlan = xa_load(&port->vlans, vid);
-+	if (vlan) {
-+		if (vlan->flags == flags)
-+			return 0;
-+
-+		ice_eswitch_br_vlan_cleanup(port, vlan);
-+	}
-+
-+	vlan = ice_eswitch_br_vlan_create(vid, flags, port);
-+	if (IS_ERR(vlan)) {
-+		NL_SET_ERR_MSG_FMT_MOD(extack, "Failed to create VLAN entry, vid: %u, vsi: %u",
-+				       vid, vsi_idx);
-+		return PTR_ERR(vlan);
-+	}
-+
-+	return 0;
-+}
-+
-+static void
-+ice_eswitch_br_port_vlan_del(struct ice_esw_br *bridge, u16 vsi_idx, u16 vid)
-+{
-+	struct ice_esw_br_port *port;
-+	struct ice_esw_br_vlan *vlan;
-+
-+	port = xa_load(&bridge->ports, vsi_idx);
-+	if (!port)
-+		return;
-+
-+	vlan = xa_load(&port->vlans, vid);
-+	if (!vlan)
-+		return;
-+
-+	ice_eswitch_br_vlan_cleanup(port, vlan);
-+}
-+
-+static int
-+ice_eswitch_br_port_obj_add(struct net_device *netdev, const void *ctx,
-+			    const struct switchdev_obj *obj,
-+			    struct netlink_ext_ack *extack)
-+{
-+	struct ice_esw_br_port *br_port = ice_eswitch_br_netdev_to_port(netdev);
-+	struct switchdev_obj_port_vlan *vlan;
-+	int err;
-+
-+	if (!br_port)
-+		return -EINVAL;
-+
-+	switch (obj->id) {
-+	case SWITCHDEV_OBJ_ID_PORT_VLAN:
-+		vlan = SWITCHDEV_OBJ_PORT_VLAN(obj);
-+		err = ice_eswitch_br_port_vlan_add(br_port->bridge,
-+						   br_port->vsi_idx, vlan->vid,
-+						   vlan->flags, extack);
-+		return err;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
-+static int
-+ice_eswitch_br_port_obj_del(struct net_device *netdev, const void *ctx,
-+			    const struct switchdev_obj *obj)
-+{
-+	struct ice_esw_br_port *br_port = ice_eswitch_br_netdev_to_port(netdev);
-+	struct switchdev_obj_port_vlan *vlan;
-+
-+	if (!br_port)
-+		return -EINVAL;
-+
-+	switch (obj->id) {
-+	case SWITCHDEV_OBJ_ID_PORT_VLAN:
-+		vlan = SWITCHDEV_OBJ_PORT_VLAN(obj);
-+		ice_eswitch_br_port_vlan_del(br_port->bridge, br_port->vsi_idx,
-+					     vlan->vid);
-+		return 0;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
-+static int
-+ice_eswitch_br_port_obj_attr_set(struct net_device *netdev, const void *ctx,
-+				 const struct switchdev_attr *attr,
-+				 struct netlink_ext_ack *extack)
-+{
-+	struct ice_esw_br_port *br_port = ice_eswitch_br_netdev_to_port(netdev);
-+
-+	if (!br_port)
-+		return -EINVAL;
-+
-+	switch (attr->id) {
-+	case SWITCHDEV_ATTR_ID_BRIDGE_VLAN_FILTERING:
-+		ice_eswitch_br_vlan_filtering_set(br_port->bridge,
-+						  attr->u.vlan_filtering);
-+		return 0;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
-+static int
-+ice_eswitch_br_event_blocking(struct notifier_block *nb, unsigned long event,
-+			      void *ptr)
-+{
-+	struct net_device *dev = switchdev_notifier_info_to_dev(ptr);
-+	int err;
-+
-+	switch (event) {
-+	case SWITCHDEV_PORT_OBJ_ADD:
-+		err = switchdev_handle_port_obj_add(dev, ptr,
-+						    ice_eswitch_br_is_dev_valid,
-+						    ice_eswitch_br_port_obj_add);
-+		break;
-+	case SWITCHDEV_PORT_OBJ_DEL:
-+		err = switchdev_handle_port_obj_del(dev, ptr,
-+						    ice_eswitch_br_is_dev_valid,
-+						    ice_eswitch_br_port_obj_del);
-+		break;
-+	case SWITCHDEV_PORT_ATTR_SET:
-+		err = switchdev_handle_port_attr_set(dev, ptr,
-+						     ice_eswitch_br_is_dev_valid,
-+						     ice_eswitch_br_port_obj_attr_set);
-+		break;
-+	default:
-+		err = 0;
-+	}
-+
-+	return notifier_from_errno(err);
-+}
-+
- static void
- ice_eswitch_br_port_deinit(struct ice_esw_br *bridge,
- 			   struct ice_esw_br_port *br_port)
-@@ -506,6 +771,7 @@ ice_eswitch_br_port_deinit(struct ice_esw_br *bridge,
- 		vsi->vf->repr->br_port = NULL;
- 
- 	xa_erase(&bridge->ports, br_port->vsi_idx);
-+	ice_eswitch_br_port_vlans_flush(br_port);
- 	kfree(br_port);
- }
- 
-@@ -518,6 +784,8 @@ ice_eswitch_br_port_init(struct ice_esw_br *bridge)
- 	if (!br_port)
- 		return ERR_PTR(-ENOMEM);
- 
-+	xa_init(&br_port->vlans);
-+
- 	br_port->bridge = bridge;
- 
- 	return br_port;
-@@ -817,6 +1085,7 @@ ice_eswitch_br_offloads_deinit(struct ice_pf *pf)
+@@ -353,6 +354,7 @@ ice_eswitch_br_fdb_entry_find_and_delete(struct ice_esw_br *bridge,
  		return;
- 
- 	unregister_netdevice_notifier(&br_offloads->netdev_nb);
-+	unregister_switchdev_blocking_notifier(&br_offloads->switchdev_blk);
- 	unregister_switchdev_notifier(&br_offloads->switchdev_nb);
- 	destroy_workqueue(br_offloads->wq);
- 	/* Although notifier block is unregistered just before,
-@@ -860,6 +1129,15 @@ ice_eswitch_br_offloads_init(struct ice_pf *pf)
- 		goto err_reg_switchdev_nb;
  	}
  
-+	br_offloads->switchdev_blk.notifier_call =
-+		ice_eswitch_br_event_blocking;
-+	err = register_switchdev_blocking_notifier(&br_offloads->switchdev_blk);
-+	if (err) {
-+		dev_err(dev,
-+			"Failed to register bridge blocking switchdev notifier\n");
-+		goto err_reg_switchdev_blk;
-+	}
++	trace_ice_eswitch_br_fdb_entry_find_and_delete(fdb_entry);
+ 	ice_eswitch_br_fdb_entry_notify_and_cleanup(bridge, fdb_entry);
+ }
+ 
+@@ -422,6 +424,7 @@ ice_eswitch_br_fdb_entry_create(struct net_device *netdev,
+ 		goto err_fdb_insert;
+ 
+ 	list_add(&fdb_entry->list, &bridge->fdb_list);
++	trace_ice_eswitch_br_fdb_entry_create(fdb_entry);
+ 
+ 	ice_eswitch_br_fdb_offload_notify(netdev, mac, vid, event);
+ 
+@@ -596,6 +599,7 @@ static void
+ ice_eswitch_br_vlan_cleanup(struct ice_esw_br_port *port,
+ 			    struct ice_esw_br_vlan *vlan)
+ {
++	trace_ice_eswitch_br_vlan_cleanup(vlan);
+ 	xa_erase(&port->vlans, vlan->vid);
+ 	if (port->pvid == vlan->vid)
+ 		ice_eswitch_br_clear_pvid(port);
+@@ -680,6 +684,8 @@ ice_eswitch_br_vlan_create(u16 vid, u16 flags, struct ice_esw_br_port *port)
+ 	if (err)
+ 		goto err_insert;
+ 
++	trace_ice_eswitch_br_vlan_create(vlan);
 +
- 	br_offloads->netdev_nb.notifier_call = ice_eswitch_br_port_event;
- 	err = register_netdevice_notifier(&br_offloads->netdev_nb);
+ 	return vlan;
+ 
+ err_insert:
+@@ -1041,6 +1047,7 @@ ice_eswitch_br_port_unlink(struct ice_esw_br_offloads *br_offloads,
+ 
+ 	bridge = br_port->bridge;
+ 
++	trace_ice_eswitch_br_port_unlink(br_port);
+ 	ice_eswitch_br_port_deinit(br_port->bridge, br_port);
+ 	ice_eswitch_br_verify_deinit(br_offloads, bridge);
+ 
+@@ -1069,10 +1076,12 @@ ice_eswitch_br_port_link(struct ice_esw_br_offloads *br_offloads,
+ 		struct ice_repr *repr = ice_netdev_to_repr(dev);
+ 
+ 		err = ice_eswitch_br_vf_repr_port_init(bridge, repr);
++		trace_ice_eswitch_br_port_link(repr->br_port);
+ 	} else {
+ 		struct ice_pf *pf = ice_netdev_to_pf(dev);
+ 
+ 		err = ice_eswitch_br_uplink_port_init(bridge, pf);
++		trace_ice_eswitch_br_port_link(pf->br_port);
+ 	}
  	if (err) {
-@@ -871,6 +1149,8 @@ ice_eswitch_br_offloads_init(struct ice_pf *pf)
- 	return 0;
+ 		NL_SET_ERR_MSG_MOD(extack, "Failed to init bridge port");
+diff --git a/drivers/net/ethernet/intel/ice/ice_trace.h b/drivers/net/ethernet/intel/ice/ice_trace.h
+index ae98d5a8ff60..b2f5c9fe0149 100644
+--- a/drivers/net/ethernet/intel/ice/ice_trace.h
++++ b/drivers/net/ethernet/intel/ice/ice_trace.h
+@@ -21,6 +21,7 @@
+ #define _ICE_TRACE_H_
  
- err_reg_netdev_nb:
-+	unregister_switchdev_blocking_notifier(&br_offloads->switchdev_blk);
-+err_reg_switchdev_blk:
- 	unregister_switchdev_notifier(&br_offloads->switchdev_nb);
- err_reg_switchdev_nb:
- 	destroy_workqueue(br_offloads->wq);
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-index 7afd00cdea9a..dd49b273451a 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch_br.h
-@@ -42,6 +42,11 @@ struct ice_esw_br_port {
- 	struct ice_vsi *vsi;
- 	enum ice_esw_br_port_type type;
- 	u16 vsi_idx;
-+	struct xarray vlans;
-+};
+ #include <linux/tracepoint.h>
++#include "ice_eswitch_br.h"
+ 
+ /* ice_trace() macro enables shared code to refer to trace points
+  * like:
+@@ -240,6 +241,95 @@ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_fw_req);
+ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_fw_done);
+ DEFINE_TX_TSTAMP_OP_EVENT(ice_tx_tstamp_complete);
+ 
++DECLARE_EVENT_CLASS(ice_esw_br_fdb_template,
++		    TP_PROTO(struct ice_esw_br_fdb_entry *fdb),
++		    TP_ARGS(fdb),
++		    TP_STRUCT__entry(__array(char, dev_name, IFNAMSIZ)
++				     __array(unsigned char, addr, ETH_ALEN)
++				     __field(u16, vid)
++				     __field(int, flags)),
++		    TP_fast_assign(strscpy(__entry->dev_name,
++					   netdev_name(fdb->dev),
++					   IFNAMSIZ);
++				   memcpy(__entry->addr, fdb->data.addr, ETH_ALEN);
++				   __entry->vid = fdb->data.vid;
++				   __entry->flags = fdb->flags;),
++		    TP_printk("net_device=%s addr=%pM vid=%u flags=%x",
++			      __entry->dev_name,
++			      __entry->addr,
++			      __entry->vid,
++			      __entry->flags)
++);
 +
-+enum {
-+	ICE_ESWITCH_BR_VLAN_FILTERING = BIT(0),
- };
- 
- struct ice_esw_br {
-@@ -52,12 +57,14 @@ struct ice_esw_br {
- 	struct list_head fdb_list;
- 
- 	int ifindex;
-+	u32 flags;
- };
- 
- struct ice_esw_br_offloads {
- 	struct ice_pf *pf;
- 	struct ice_esw_br *bridge;
- 	struct notifier_block netdev_nb;
-+	struct notifier_block switchdev_blk;
- 	struct notifier_block switchdev_nb;
- 
- 	struct workqueue_struct *wq;
-@@ -71,6 +78,11 @@ struct ice_esw_br_fdb_work {
- 	unsigned long event;
- };
- 
-+struct ice_esw_br_vlan {
-+	u16 vid;
-+	u16 flags;
-+};
++DEFINE_EVENT(ice_esw_br_fdb_template,
++	     ice_eswitch_br_fdb_entry_create,
++	     TP_PROTO(struct ice_esw_br_fdb_entry *fdb),
++	     TP_ARGS(fdb)
++);
 +
- #define ice_nb_to_br_offloads(nb, nb_name) \
- 	container_of(nb, \
- 		     struct ice_esw_br_offloads, \
-@@ -81,6 +93,15 @@ struct ice_esw_br_fdb_work {
- 		     struct ice_esw_br_fdb_work, \
- 		     work)
- 
-+static inline bool ice_eswitch_br_is_vid_valid(u16 vid)
-+{
-+	/* In trunk VLAN mode, for untagged traffic the bridge sends requests
-+	 * to offload VLAN 1 with pvid and untagged flags set. Since these
-+	 * flags are not supported, add a MAC filter instead.
-+	 */
-+	return vid > 1;
-+}
++DEFINE_EVENT(ice_esw_br_fdb_template,
++	     ice_eswitch_br_fdb_entry_find_and_delete,
++	     TP_PROTO(struct ice_esw_br_fdb_entry *fdb),
++	     TP_ARGS(fdb)
++);
 +
- void
- ice_eswitch_br_offloads_deinit(struct ice_pf *pf);
- int
++DECLARE_EVENT_CLASS(ice_esw_br_vlan_template,
++		    TP_PROTO(struct ice_esw_br_vlan *vlan),
++		    TP_ARGS(vlan),
++		    TP_STRUCT__entry(__field(u16, vid)
++				     __field(u16, flags)),
++		    TP_fast_assign(__entry->vid = vlan->vid;
++				   __entry->flags = vlan->flags;),
++		    TP_printk("vid=%u flags=%x",
++			      __entry->vid,
++			      __entry->flags)
++);
++
++DEFINE_EVENT(ice_esw_br_vlan_template,
++	     ice_eswitch_br_vlan_create,
++	     TP_PROTO(struct ice_esw_br_vlan *vlan),
++	     TP_ARGS(vlan)
++);
++
++DEFINE_EVENT(ice_esw_br_vlan_template,
++	     ice_eswitch_br_vlan_cleanup,
++	     TP_PROTO(struct ice_esw_br_vlan *vlan),
++	     TP_ARGS(vlan)
++);
++
++#define ICE_ESW_BR_PORT_NAME_L 16
++
++DECLARE_EVENT_CLASS(ice_esw_br_port_template,
++		    TP_PROTO(struct ice_esw_br_port *port),
++		    TP_ARGS(port),
++		    TP_STRUCT__entry(__field(u16, vport_num)
++				     __array(char, port_type, ICE_ESW_BR_PORT_NAME_L)),
++		    TP_fast_assign(__entry->vport_num = port->vsi_idx;
++					if (port->type == ICE_ESWITCH_BR_UPLINK_PORT)
++						strscpy(__entry->port_type,
++							"Uplink",
++							ICE_ESW_BR_PORT_NAME_L);
++					else
++						strscpy(__entry->port_type,
++							"VF Representor",
++							ICE_ESW_BR_PORT_NAME_L);),
++		    TP_printk("vport_num=%u port type=%s",
++			      __entry->vport_num,
++			      __entry->port_type)
++);
++
++DEFINE_EVENT(ice_esw_br_port_template,
++	     ice_eswitch_br_port_link,
++	     TP_PROTO(struct ice_esw_br_port *port),
++	     TP_ARGS(port)
++);
++
++DEFINE_EVENT(ice_esw_br_port_template,
++	     ice_eswitch_br_port_unlink,
++	     TP_PROTO(struct ice_esw_br_port *port),
++	     TP_ARGS(port)
++);
++
+ /* End tracepoints */
+ 
+ #endif /* _ICE_TRACE_H_ */
 -- 
 2.40.1
 
