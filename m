@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED97EC7EE2E
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Jun 2023 12:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43127C7EE2E
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 13 Jun 2023 12:24:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B9F29416EC;
-	Tue, 13 Jun 2023 12:24:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B9F29416EC
+	by smtp2.osuosl.org (Postfix) with ESMTP id DBF9E416F6;
+	Tue, 13 Jun 2023 12:24:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DBF9E416F6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686659077;
-	bh=dXIB7kg1MRUR92Ggk+p3AlpwEzeBsHuVuEfWtDtqm4M=;
+	s=default; t=1686659081;
+	bh=oprmLjS+qkQFBzYfAS2HO0Pl0wTsmue70byHBr2xi4k=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=6IqMHgOTK9WGYc5dQWLU3CVcQmHz8v08tk/AexPvg9C4sKxolE309yEJLmq+vKw9K
-	 RB33khZWqfpu92C8YN4y0lmW7Wrn03WMHYpH2sDcOFqX/Xes+U0lNutQFs/aYU/1Ax
-	 9SHqmUYykdDngVh/dlo7cn4SRCWoYIMDvssqnN4uU3qYVRx+OBqZ8e6ban0TpaRLZi
-	 Tah/aZsMVhSezQxieIq7e85Mr8rU3HZHjIyGMwPFhLMdFsQs9/t2mlDiPYqXFSEV4v
-	 /RDdnb5k0nRO9QP5xbifzkPSIQWKV0Ra8Y2A1FJhnSdj5sD4amdQ+4ChZ/tqCbR6Xc
-	 eQKurMQftOKGA==
+	b=bz+0NBTi+BoUxiCNAZGMYCyCieDa0OwDE2udSeQuLFTLRe+5j1jCInHoowEAXE24+
+	 W2ulBO5tfqU+PrLvh8PCt8jrRpaUcWakAh3b6YujPv7gEcsMCysGKV0uAUCihSi0/c
+	 gWnNeR/0D5dffMCkKntmfDKdGWKqnZxs9wep2+Dt55KtE4OX1+CeBE5eCqViHOb5GH
+	 +Diy8IIJaunDTLApFaDY67YGXKpkpXeqVJo1YPYWP7xvNOb0jpbtRh4UcwNRy9/p8i
+	 3SGUJsUK0FVMhId23rryDloBRBAiPhZ1XgZo8tkk1v1ptikHuUiBFP9wtMGtrKahSs
+	 mUsewTVnHicgg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id SaSirspmQqag; Tue, 13 Jun 2023 12:24:37 +0000 (UTC)
+	with ESMTP id aik1-Nvfk8B7; Tue, 13 Jun 2023 12:24:41 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id C534C416F0;
-	Tue, 13 Jun 2023 12:24:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C534C416F0
+	by smtp2.osuosl.org (Postfix) with ESMTP id E732F4158B;
+	Tue, 13 Jun 2023 12:24:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E732F4158B
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id E04AE1BF352
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 12:24:32 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id DD0501BF352
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 12:24:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id C7EBD8231E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 12:24:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C7EBD8231E
+ by smtp1.osuosl.org (Postfix) with ESMTP id B6E8C822C7
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 12:24:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B6E8C822C7
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id YT3iPOPD40s9 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 13 Jun 2023 12:24:32 +0000 (UTC)
+ with ESMTP id 78m8AmgXgtqx for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 13 Jun 2023 12:24:35 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 350CC822C7
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 27B718214C
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 350CC822C7
- for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 12:24:32 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="337951215"
-X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="337951215"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 27B718214C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 13 Jun 2023 12:24:35 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="337951227"
+X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="337951227"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Jun 2023 05:24:31 -0700
+ 13 Jun 2023 05:24:34 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="835871998"
-X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="835871998"
+X-IronPort-AV: E=McAfee;i="6600,9927,10739"; a="835872003"
+X-IronPort-AV: E=Sophos;i="6.00,239,1681196400"; d="scan'208";a="835872003"
 Received: from pgardocx-mobl1.igk.intel.com ([10.237.95.41])
  by orsmga004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Jun 2023 05:24:29 -0700
+ 13 Jun 2023 05:24:32 -0700
 From: Piotr Gardocki <piotrx.gardocki@intel.com>
 To: netdev@vger.kernel.org
-Date: Tue, 13 Jun 2023 14:24:18 +0200
-Message-Id: <20230613122420.855486-2-piotrx.gardocki@intel.com>
+Date: Tue, 13 Jun 2023 14:24:19 +0200
+Message-Id: <20230613122420.855486-3-piotrx.gardocki@intel.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230613122420.855486-1-piotrx.gardocki@intel.com>
 References: <20230613122420.855486-1-piotrx.gardocki@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686659072; x=1718195072;
+ t=1686659075; x=1718195075;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=E5mmwH2fSHfoDdpc2kQEZSS8TlOLkOc7UCmxYue/2Bc=;
- b=Qxdd9G06CYI+6zoO6TDneIbc8Agi8iKmuQCsQHLa6X5OQVi1Bx2uoQpD
- AFRCxgCZqj/wlNqOZ5GcN3gFdhR8Qn0hCechgtnr0oc+eaUGagnKDpQhS
- Du4yj1tk3ps3O2KshevCQmgPrZ4obN3ABErfYrpKJVfdeYKGNo7MALrhL
- CS5tfVHpMAsHwMQrsofKZYMco1SqqnwhBuYg5g8njHkrioVqUUb8tNSZj
- 6+Ie65WcjHXXwyqw3h4Xvx111o0ptFrFgNdvyE+pEkUWXzB+to0QCx3Sw
- v0itR0gQS0WYsQ96jwAFoblRdZqHEe6BERQNUlSMxJOCYRo1NIxFxdQlV
- Q==;
+ bh=m+4uwLRuZN9fn+hK45LCaKkaZvlTk7MrI9TFDI/rJdM=;
+ b=ljaQ+6Yef/0oStIpwxpFhUMc0HlNS8Tq8dfP6Bs5yNrwtMPNdZq1ybwR
+ +skJZEowSBnaui/67r4RbmTZ1jGn2oyk2K93GRT5VadWHyyKYoVd+agq8
+ T4pfd0Biw6+VkulSy2jIBASD0L3HOasI4ggMSwOxyf9uX+Zrtah7RCwKY
+ lsIW75OcHifwN22hObjgAZ/sGfArRXf3LjMleRrAa+oO9iIcISlIg2S6j
+ FdHyIRhlNeJRyExHCrvaOXDlumdv0/P3iwo7Ln20rNoFPqpYBK4SlDkS9
+ 83dvHR0T4xn7ChP9ta8XdkDOusyx1Zzpi6JLzMVRmJ7e9+Umm0N1S5mE7
+ g==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Qxdd9G06
-Subject: [Intel-wired-lan] [PATCH net-next v2 1/3] net: add check for
- current MAC address in dev_set_mac_address
+ header.a=rsa-sha256 header.s=Intel header.b=ljaQ+6Ye
+Subject: [Intel-wired-lan] [PATCH net-next v2 2/3] i40e: remove unnecessary
+ check for old MAC == new MAC
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,37 +104,31 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In some cases it is possible for kernel to come with request
-to change primary MAC address to the address that is already
-set on the given interface.
-
-This patch adds proper check to return fast from the function
-in these cases.
-
-An example of such case is adding an interface to bonding
-channel in balance-alb mode:
-modprobe bonding mode=balance-alb miimon=100 max_bonds=1
-ip link set bond0 up
-ifenslave bond0 <eth>
+The check has been moved to core. The ndo_set_mac_address callback
+is not being called with new MAC address equal to the old one anymore.
 
 Signed-off-by: Piotr Gardocki <piotrx.gardocki@intel.com>
 ---
- net/core/dev.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index c2456b3667fe..8f1c49ab17df 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -8754,6 +8754,8 @@ int dev_set_mac_address(struct net_device *dev, struct sockaddr *sa,
- 		return -EINVAL;
- 	if (!netif_device_present(dev))
- 		return -ENODEV;
-+	if (!memcmp(dev->dev_addr, sa->sa_data, dev->addr_len))
-+		return 0;
- 	err = dev_pre_changeaddr_notify(dev, sa->sa_data, extack);
- 	if (err)
- 		return err;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b847bd105b16..29ad1797adce 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1788,12 +1788,6 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
+ 	if (!is_valid_ether_addr(addr->sa_data))
+ 		return -EADDRNOTAVAIL;
+ 
+-	if (ether_addr_equal(netdev->dev_addr, addr->sa_data)) {
+-		netdev_info(netdev, "already using mac address %pM\n",
+-			    addr->sa_data);
+-		return 0;
+-	}
+-
+ 	if (test_bit(__I40E_DOWN, pf->state) ||
+ 	    test_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
+ 		return -EADDRNOTAVAIL;
 -- 
 2.34.1
 
