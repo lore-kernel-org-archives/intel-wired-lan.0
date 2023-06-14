@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EDEEEB64D8
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 14 Jun 2023 14:07:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74557EB64DB
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 14 Jun 2023 14:07:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E86328386E;
-	Wed, 14 Jun 2023 14:07:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E86328386E
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1C4198376D;
+	Wed, 14 Jun 2023 14:07:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1C4198376D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686751657;
-	bh=U95X6+EVeWmWZxr2/ujgcdz+YsiLZ/JGG/FKjojmC2k=;
+	s=default; t=1686751661;
+	bh=CMysB1qFF1v0KL25OP2Sdyl4LW7ux6P2QkHbw7BFhaE=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=3AEuxCgSlK930IDIB6MXC9Ca+3amaUvV/Zp8Ql75mQTk1TLBhqHXipHYGRu+UYVVK
-	 w4ww2pCknz+GGqi6LLVD3+QXTQMNGsxyM2C2DvGVuhOagrbrvhcsucCzzbyYA29630
-	 CmHbbrxh50cgAh+HYBAOITfK2sYloPu+mv82VeYhpW6Uwec+B/Cod23JwL8S9o39/3
-	 /dWhy8heFV6sgT5qZZ0GJHROuoptPBot6LuxinZQeYapK7LmuuYlS+iIPM5XlI/ZeY
-	 WjhOa1Zn8U/N60vYXAt1JrYb/KR6ryp+QdHTV43GvWCkt7CsK6ZjQAUyJwSmjT7UW5
-	 H5G0gW2tluXsA==
+	b=WoX2RpVyJU7OSKg2FScQe1xue8V2ZMTOhAi8Kx94b4Oy5nruqDgBEdAvVZD5by5nv
+	 LwAhPGP+p80cQm7Ao3fxmqGdbZJQ1Tc1l60bha6nRZaVOmGp02YLjm/crlyhcv6PGy
+	 N3yxllib/0sMJHatukwALUMytH/jB4kL3FztzFowMJNa8LtKw3FGawzhu+XUvgc6hI
+	 xCVTCd88aSILhj5sLkDQjfp8wAfAoJyjVP+mSeGsyiEZJ61B78xMaKCbFUmoc1+7OO
+	 YzGDQvI7BXxNs1nvJd/bH4eJMyqyQhKl0V1U+VDcBYBytyAjsYzp4ivdRw3U/MhWJH
+	 VhurfJD+He1tw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id eFs7ZuHkXsK8; Wed, 14 Jun 2023 14:07:36 +0000 (UTC)
+	with ESMTP id 9BXzjlitFbep; Wed, 14 Jun 2023 14:07:40 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E13538390F;
-	Wed, 14 Jun 2023 14:07:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E13538390F
+	by smtp1.osuosl.org (Postfix) with ESMTP id 168C183906;
+	Wed, 14 Jun 2023 14:07:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 168C183906
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 1B12D1BF2B7
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Jun 2023 14:07:33 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3DEC11BF2B7
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Jun 2023 14:07:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E5AD941D82
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Jun 2023 14:07:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E5AD941D82
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1584341C62
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Jun 2023 14:07:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1584341C62
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pHDHBaOHP3UZ for <intel-wired-lan@lists.osuosl.org>;
- Wed, 14 Jun 2023 14:07:32 +0000 (UTC)
+ with ESMTP id btkBPn7GtFyS for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 14 Jun 2023 14:07:33 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EA37B41C62
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 092D041D88
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
- by smtp4.osuosl.org (Postfix) with ESMTPS id EA37B41C62
- for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Jun 2023 14:07:31 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 092D041D88
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 14 Jun 2023 14:07:32 +0000 (UTC)
 From: Florian Kauer <florian.kauer@linutronix.de>
 To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -57,39 +57,39 @@ To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>,
  Aravindhan Gunasekaran <aravindhan.gunasekaran@intel.com>,
  Malli C <mallikarjuna.chilakala@intel.com>
-Date: Wed, 14 Jun 2023 16:07:09 +0200
-Message-Id: <20230614140714.14443-2-florian.kauer@linutronix.de>
+Date: Wed, 14 Jun 2023 16:07:10 +0200
+Message-Id: <20230614140714.14443-3-florian.kauer@linutronix.de>
 In-Reply-To: <20230614140714.14443-1-florian.kauer@linutronix.de>
 References: <20230614140714.14443-1-florian.kauer@linutronix.de>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020; t=1686751649;
+ d=linutronix.de; s=2020; t=1686751650;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=g0kxT8UuGZDLapzulcDZLbRyKl1FZxwDwVUyDtTqgTM=;
- b=OPdXmQc2iWgpOGq0YWxc+qabH7RHLIUl2krzJQZ/IFJrv+4YJ20rpcADfaL7nS836gEDkx
- u4k0lsUWgNLXxRHbEWEZhhjGjkogxaUAsCkIWEvkhBnKbmvqfgF93pXrlB/J5N6daqZTVC
- tfpiBZ8W2Y84WiR4aYUnAFU6Bzz0bvQmh6OSgpW4ltoSQt0QDek19ddsEzhRwHslcL/K8y
- HDWQUEKdjR5Hgm/nXJ59WnPYocD/Bo2as8F4eLbD7xUoCa+BWl/KOyeCSJcNsbaHfH/vOk
- CaD/Vje7dkrxvmO0n1OLjd/grqfTXBiuSR0wnJIYR7WBuH4xExAi6Zroluz+Ag==
+ bh=E4YEaT+aOUEFj7DigAgxbM4RznI4oXWfWpU3L2Qmto8=;
+ b=rjLACA+DkXLZcQ8DPRtCD+qKMo3cdMoczMFVfOTbljMvVI1NcqDBFtd1CowbR+vc9Lw1nl
+ OQkVYe86r2bM7oUXQD+jXcV2R4KHwEDFHofHRoc8wMTSoia3jYXGYDGItfXxntszkKP2i1
+ Smg0tlGgkA9aIgQrr/BZrDg3UDYZa1Si2zxbqKlJHKFDb6r9vpiqdcaUqZBPeQcvMRbUKm
+ YICM057FYGS7+a/ioswIVImlEwWUL2neuYHYuwVwRd0hqUnjL3UKdJqaVWWN+iQSBDpOhs
+ UikjIFKnD4IVL3sIYWttT4bpp+92PiK7nM5osOMOfpRihV02MAF+c3nk7cYbqQ==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
- d=linutronix.de; s=2020e; t=1686751649;
+ d=linutronix.de; s=2020e; t=1686751650;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=g0kxT8UuGZDLapzulcDZLbRyKl1FZxwDwVUyDtTqgTM=;
- b=fg+FJIuZ8ojp+l7iqa7Xhk+uBKHrS/vn3/BdUvbjOjMeCFYoYcnCe51pBDUV1ILSfW5SCh
- DkHLTPS/Tw0hrhCA==
+ bh=E4YEaT+aOUEFj7DigAgxbM4RznI4oXWfWpU3L2Qmto8=;
+ b=CW5qpZOAMqDU1sPWk664/S4CRHxPNDe9AjuXmorNFQopfnw+ZTuA7G8d5OIaYDMVmiuVo9
+ tpyerRmHrWiRV7CQ==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
- header.a=rsa-sha256 header.s=2020 header.b=OPdXmQc2; 
+ header.a=rsa-sha256 header.s=2020 header.b=rjLACA+D; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=fg+FJIuZ
-Subject: [Intel-wired-lan] [PATCH net-next 1/6] igc: Rename qbv_enable to
- taprio_offload_enable
+ header.a=ed25519-sha256 header.s=2020e header.b=CW5qpZOA
+Subject: [Intel-wired-lan] [PATCH net-next 2/6] igc: Do not enable taprio
+ offload for invalid arguments
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,78 +109,100 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In the current implementation the flags adapter->qbv_enable
-and IGC_FLAG_TSN_QBV_ENABLED have a similar name, but do not
-have the same meaning. The first one is used only to indicate
-taprio offload (i.e. when igc_save_qbv_schedule was called),
-while the second one corresponds to the Qbv mode of the hardware.
-However, the second one is also used to support the TX launchtime
-feature, i.e. ETF qdisc offload. This leads to situations where
-adapter->qbv_enable is false, but the flag IGC_FLAG_TSN_QBV_ENABLED
-is set. This is prone to confusion.
+Only set adapter->taprio_offload_enable after validating the arguments.
+Otherwise, it stays set even if the offload was not enabled.
+Since the subsequent code does not get executed in case of invalid
+arguments, it will not be read at first.
+However, by activating and then deactivating another offload
+(e.g. ETF/TX launchtime offload), taprio_offload_enable is read
+and erroneously keeps the offload feature of the NIC enabled.
 
-The rename should reduce this confusion. Since it is a pure
-rename, it has no impact on functionality.
+This can be reproduced as follows:
+
+    # TAPRIO offload (flags == 0x2) and negative base-time leading to expected -ERANGE
+    sudo tc qdisc replace dev enp1s0 parent root handle 100 stab overhead 24 taprio \
+	    num_tc 1 \
+	    map 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 \
+	    queues 1@0 \
+	    base-time -1000 \
+	    sched-entry S 01 300000 \
+	    flags 0x2
+
+    # IGC_TQAVCTRL is 0x0 as expected (iomem=relaxed for reading register)
+    sudo pcimem /sys/bus/pci/devices/0000:01:00.0/resource0 0x3570 w*1
+
+    # Activate ETF offload
+    sudo tc qdisc replace dev enp1s0 parent root handle 6666 mqprio \
+	    num_tc 3 \
+	    map 2 2 1 0 2 2 2 2 2 2 2 2 2 2 2 2 \
+	    queues 1@0 1@1 2@2 \
+	    hw 0
+    sudo tc qdisc add dev enp1s0 parent 6666:1 etf \
+	    clockid CLOCK_TAI \
+	    delta 500000 \
+	    offload
+
+    # IGC_TQAVCTRL is 0x9 as expected
+    sudo pcimem /sys/bus/pci/devices/0000:01:00.0/resource0 0x3570 w*1
+
+    # Deactivate ETF offload again
+    sudo tc qdisc delete dev enp1s0 parent 6666:1
+
+    # IGC_TQAVCTRL should now be 0x0 again, but is observed as 0x9
+    sudo pcimem /sys/bus/pci/devices/0000:01:00.0/resource0 0x3570 w*1
 
 Fixes: e17090eb2494 ("igc: allow BaseTime 0 enrollment for Qbv")
 Signed-off-by: Florian Kauer <florian.kauer@linutronix.de>
 Reviewed-by: Kurt Kanzenbach <kurt@linutronix.de>
 ---
- drivers/net/ethernet/intel/igc/igc.h      | 2 +-
- drivers/net/ethernet/intel/igc/igc_main.c | 6 +++---
- drivers/net/ethernet/intel/igc/igc_tsn.c  | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_main.c | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
-index 18d4af934d8c..4d22662e8021 100644
---- a/drivers/net/ethernet/intel/igc/igc.h
-+++ b/drivers/net/ethernet/intel/igc/igc.h
-@@ -186,7 +186,7 @@ struct igc_adapter {
- 
- 	ktime_t base_time;
- 	ktime_t cycle_time;
--	bool qbv_enable;
-+	bool taprio_offload_enable;
- 	u32 qbv_config_change_errors;
- 
- 	/* OS defined structs */
 diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 88145c30c919..56117846b8da 100644
+index 56117846b8da..122158b321d5 100644
 --- a/drivers/net/ethernet/intel/igc/igc_main.c
 +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6115,16 +6115,16 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+@@ -6091,6 +6091,7 @@ static int igc_tsn_clear_schedule(struct igc_adapter *adapter)
  
- 	switch (qopt->cmd) {
- 	case TAPRIO_CMD_REPLACE:
--		adapter->qbv_enable = true;
-+		adapter->taprio_offload_enable = true;
- 		break;
- 	case TAPRIO_CMD_DESTROY:
--		adapter->qbv_enable = false;
-+		adapter->taprio_offload_enable = false;
- 		break;
- 	default:
- 		return -EOPNOTSUPP;
- 	}
+ 	adapter->base_time = 0;
+ 	adapter->cycle_time = NSEC_PER_SEC;
++	adapter->taprio_offload_enable = false;
+ 	adapter->qbv_config_change_errors = 0;
  
--	if (!adapter->qbv_enable)
-+	if (!adapter->taprio_offload_enable)
+ 	for (i = 0; i < adapter->num_tx_queues; i++) {
+@@ -6113,20 +6114,12 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 	size_t n;
+ 	int i;
+ 
+-	switch (qopt->cmd) {
+-	case TAPRIO_CMD_REPLACE:
+-		adapter->taprio_offload_enable = true;
+-		break;
+-	case TAPRIO_CMD_DESTROY:
+-		adapter->taprio_offload_enable = false;
+-		break;
+-	default:
+-		return -EOPNOTSUPP;
+-	}
+-
+-	if (!adapter->taprio_offload_enable)
++	if (qopt->cmd == TAPRIO_CMD_DESTROY)
  		return igc_tsn_clear_schedule(adapter);
  
++	if (qopt->cmd != TAPRIO_CMD_REPLACE)
++		return -EOPNOTSUPP;
++
  	if (qopt->base_time < 0)
-diff --git a/drivers/net/ethernet/intel/igc/igc_tsn.c b/drivers/net/ethernet/intel/igc/igc_tsn.c
-index 94a2b0dfb54d..c6636a7264d5 100644
---- a/drivers/net/ethernet/intel/igc/igc_tsn.c
-+++ b/drivers/net/ethernet/intel/igc/igc_tsn.c
-@@ -37,7 +37,7 @@ static unsigned int igc_tsn_new_flags(struct igc_adapter *adapter)
- {
- 	unsigned int new_flags = adapter->flags & ~IGC_FLAG_TSN_ANY_ENABLED;
+ 		return -ERANGE;
  
--	if (adapter->qbv_enable)
-+	if (adapter->taprio_offload_enable)
- 		new_flags |= IGC_FLAG_TSN_QBV_ENABLED;
+@@ -6138,6 +6131,7 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
  
- 	if (is_any_launchtime(adapter))
+ 	adapter->cycle_time = qopt->cycle_time;
+ 	adapter->base_time = qopt->base_time;
++	adapter->taprio_offload_enable = true;
+ 
+ 	for (n = 0; n < qopt->num_entries; n++) {
+ 		struct tc_taprio_sched_entry *e = &qopt->entries[n];
 -- 
 2.39.2
 
