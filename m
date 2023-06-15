@@ -4,178 +4,179 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3848CEB64DA
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Jun 2023 15:45:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CCE2EB64D9
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Jun 2023 15:58:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D8A1E83A47;
-	Thu, 15 Jun 2023 15:45:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D8A1E83A47
+	by smtp1.osuosl.org (Postfix) with ESMTP id 00BE881354;
+	Thu, 15 Jun 2023 15:58:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 00BE881354
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686843953;
-	bh=cnJ2OhktKmNbA5TZJaeYzWzUrpmYmX+AhR6M0895Rxo=;
+	s=default; t=1686844727;
+	bh=HylKCmNOtJimFprKyB+VPPfRXL273iMaT5AxlyGEXaY=;
 	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=SguRAyuc5Tog0CLurPEb6QDaMFtI8wvaivtQzyXSFBc9b/Lyi5L7ZPess6agNgRSE
-	 eUspe0CrHt42U9IfDmPk4YoM2bhluREBvT5BRsv4lYlS9j3CUfP+4ZJ7FnuuNohyxi
-	 Sen0olgAdtUppmHHhNwGbA7SwY9Q0htbat+XEAaL5JBeg0d7GAzcT0FyX/ZzhAp6Qg
-	 +5ItbVpUxGws11y/VnUGuc2DAjh0Ls/+Fu+IkRNgrdYj+5KpOL03ySFrZ4aASLLSC/
-	 XTQ2qFo2ChJ7Uz51C/tKly+LUA8I8j61J2FKXZ5Be7FIoKLSDp9q5uYsrvoB6YneYH
-	 8qH/37Ct6TWKg==
+	b=eU8QIh8BfATtleuHCl3uj3fH2h6X9zEh8UectTuKgT2EHkfVHh43sXRpu7ib8Y5Th
+	 EywOcnHdZ0s2ocvNDpFOYXJCj9RGz/a0xFqhBERWTaQ5TQuwzgEYJa/5CcNv2smZWK
+	 gpVTEi2EOZPgpTNo3cA/4Czrx4gix2L3dCWoxOx+qb2ycsZ4ZOR11xMU1ulcfjS69+
+	 oube4/dJQybG+qLF8/vVmsrmFxuRI7OkJfkfdC9YMjexx3lgV9HWXJ3C8ISeI9ld2/
+	 aanZruLbWxb7IHSK7UwcVO1+EY52vCQvJa+cKlfF1mSDj78VdhoBD3yAXNPbY5cdlT
+	 druNIwMwz5GXg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XZLN1uca3gpb; Thu, 15 Jun 2023 15:45:53 +0000 (UTC)
+	with ESMTP id bW4WJsTB44GX; Thu, 15 Jun 2023 15:58:46 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CF0B083A0C;
-	Thu, 15 Jun 2023 15:45:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CF0B083A0C
+	by smtp1.osuosl.org (Postfix) with ESMTP id C722181344;
+	Thu, 15 Jun 2023 15:58:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C722181344
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id B7EBE1BF969
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 15:45:50 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id DB9A51BF296
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 15:58:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8D36C42029
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 15:45:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8D36C42029
+ by smtp4.osuosl.org (Postfix) with ESMTP id B116C41EBE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 15:58:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B116C41EBE
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Ml_byzVDjJYE for <intel-wired-lan@lists.osuosl.org>;
- Thu, 15 Jun 2023 15:45:49 +0000 (UTC)
+ with ESMTP id g6czAbXsISl7 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 15 Jun 2023 15:58:41 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 390F042026
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 390F042026
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 15:45:49 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="424866307"
-X-IronPort-AV: E=Sophos;i="6.00,245,1681196400"; d="scan'208";a="424866307"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Jun 2023 08:30:18 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 71F87408DE
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 71F87408DE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 15:58:41 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="343685241"
+X-IronPort-AV: E=Sophos;i="6.00,245,1681196400"; d="scan'208";a="343685241"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 15 Jun 2023 08:57:40 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="802438122"
-X-IronPort-AV: E=Sophos;i="6.00,245,1681196400"; d="scan'208";a="802438122"
-Received: from orsmsx602.amr.corp.intel.com ([10.22.229.15])
- by FMSMGA003.fm.intel.com with ESMTP; 15 Jun 2023 08:30:16 -0700
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="706707386"
+X-IronPort-AV: E=Sophos;i="6.00,245,1681196400"; d="scan'208";a="706707386"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+ by orsmga007.jf.intel.com with ESMTP; 15 Jun 2023 08:57:40 -0700
+Received: from orsmsx612.amr.corp.intel.com (10.22.229.25) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Thu, 15 Jun 2023 08:30:13 -0700
+ 15.1.2507.23; Thu, 15 Jun 2023 08:57:39 -0700
+Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
+ ORSMSX612.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Thu, 15 Jun 2023 08:57:39 -0700
 Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
- orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ orsmsx611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23 via Frontend Transport; Thu, 15 Jun 2023 08:30:13 -0700
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (104.47.70.107)
+ 15.1.2507.23 via Frontend Transport; Thu, 15 Jun 2023 08:57:39 -0700
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (104.47.55.176)
  by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.23; Thu, 15 Jun 2023 08:30:13 -0700
+ 15.1.2507.23; Thu, 15 Jun 2023 08:57:38 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Pmg5lFHf0Rc788ALT+gcYl77n3asRMwrCLtC8wAtMk1RDu0qrndZkQUVda3IWKUiZTAEebL/V1UzmrLQo3Po0vUnFap1cH/DAkB3TTs+/be3SI+NFJ4euZR2O9ikCjzPaUzc83A0oOVPu/64CBkyYC7y2mPWla/9zJGjYhezU6BtlPvDSU3bY5N9t5JyCu7fzvXNPGoMWBQdCgvmnfgeIxxee1IH4SgFLwhKs9VkE1xCiAvLlB/buUIbiqw+C8UyEcHNGuKgsHB9Y3Y0UOE19o/QckDmidRdRfpSa4gCLhi6fS5RMgeUQR7OCajvwUvn+1AN8DxJLg6gaL7Ba+yRRg==
+ b=ihBK3AqhQUGvqli4ymIO/CvqFrb3whPOlm9uUo9xNt1o5DPFNsZ8GBoLIibpe8CkmgDPjbls6jsM5+2COtjP2K+aOf1FJuQ7rUhh9/uk1t46bzNPmzn7qAO57cnWgSUx/9Fe4ouO9kffUKOfcWKPPw/83lAFDXx3dSM762+TX7wcEqXTDEopklYy4LLxUw2+0hzGpbOfkFK+qA6TbOhw9+mtFt8VSuKRYJKtRPfrwcW2vibN0EAUPx62lbsbwU0oxoJAEOoJx3atNp7Y/z86Rwoi2J5Jr8c8mUNlzO3KTqM4xl0enYce0/DJs26DzUO3x7FiHl5/xiQelivIVy2FEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GS+tSQY9z1HiL+3QrJBLHuwfAXopJl9n5AuV4g5pyv8=;
- b=ibTKH9wvd4veS14K1BYZreG+yB1lraGR59AyQpBki7pN6vCbZPYNQDt+3xfP/dZ3rBwt155fSbtsKWCu/ic+hfoE9FkG2Kk+dOcpi8NphgdadN7qopaFFmcYh6+RhFlFmR+Ec0ygPfRU/eys39iUI4xvz8G+2KC7WudC1wNGkf98muJ/9O3kg9+7CRMv4A/ZmmbWQw8fj8OWonjOoGDzBNdU0L84getGtoXUmpZrGhsqpNCXAm/vg3JnWfaTXefCek6+MvDjG5rEwWDugkfCdxiXgEB1ordxbMNK4EMwSkVcANChi1l4jq6+RFQyrDyWxmpK6xp8IRBd7apfeKiiPw==
+ bh=uU004fdubldw3vBS2u2+FQfEtWzuq74KBevhnkLOy3o=;
+ b=aemTz+CbhX1KCY6QU658EIWsaWAx68WbX3Rf3zEJ388zaA/5KJ/PetV+x7ED8h2pUIbCePNB1+LKNrPbdzojFl4Df1varmZFZUbfKqabFfVHIuqRZOhrqX7ySMaHtUPxu08dkZ6clB/LxbMZ2FyE5489WunaQLfI7i7Y8gW4/0bxcRf2ZI5VPtLMlNOZYW8BIoOW3wF7TnTd2bZIiBBXBm0uzaxwYqljdTHgnHX2zVOxaZR0cRgyMluCyuN6yjwc5pBs/EA3uKX8e8FeesLlrutz0KzAwm/05JbPuM6LGf5pLKRjVPuBkX6/M+ZPCD1YoFZLDdtMl6SbVb+3KT8wZg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
-Received: from BL0PR11MB3521.namprd11.prod.outlook.com (2603:10b6:208:7b::32)
- by SJ2PR11MB8449.namprd11.prod.outlook.com (2603:10b6:a03:56f::14)
+Received: from CO1PR11MB5089.namprd11.prod.outlook.com (2603:10b6:303:9b::16)
+ by SJ0PR11MB4861.namprd11.prod.outlook.com (2603:10b6:a03:2ac::9)
  with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6477.29; Thu, 15 Jun
- 2023 15:28:46 +0000
-Received: from BL0PR11MB3521.namprd11.prod.outlook.com
- ([fe80::2134:60a2:3968:7298]) by BL0PR11MB3521.namprd11.prod.outlook.com
- ([fe80::2134:60a2:3968:7298%2]) with mapi id 15.20.6477.028; Thu, 15 Jun 2023
- 15:28:46 +0000
-From: "Romanowski, Rafal" <rafal.romanowski@intel.com>
-To: "Palczewski, Mateusz" <mateusz.palczewski@intel.com>,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6477.37; Thu, 15 Jun
+ 2023 15:57:37 +0000
+Received: from CO1PR11MB5089.namprd11.prod.outlook.com
+ ([fe80::4e5a:e4d6:5676:b0ab]) by CO1PR11MB5089.namprd11.prod.outlook.com
+ ([fe80::4e5a:e4d6:5676:b0ab%5]) with mapi id 15.20.6477.037; Thu, 15 Jun 2023
+ 15:57:37 +0000
+From: "Keller, Jacob E" <jacob.e.keller@intel.com>
+To: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
  "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-Thread-Topic: [Intel-wired-lan] [PATCH iwl-net v10 2/5] Revert "iavf: Detach
- device during reset task"
-Thread-Index: AQHZl74v4rLKj1m2iEGJZxKrUpAOvK+MDJZQ
-Date: Thu, 15 Jun 2023 15:28:46 +0000
-Message-ID: <BL0PR11MB35213FC9AABB29B5C52E64CC8F5BA@BL0PR11MB3521.namprd11.prod.outlook.com>
-References: <20230605145226.1222225-1-mateusz.palczewski@intel.com>
- <20230605145226.1222225-3-mateusz.palczewski@intel.com>
-In-Reply-To: <20230605145226.1222225-3-mateusz.palczewski@intel.com>
+Thread-Topic: [PATCH iwl-next v1 4/4] ice: manage VFs MSI-X using resource
+ tracking
+Thread-Index: AQHZn4k/55og50Iaa0aKa6neF989Za+MBLUA
+Date: Thu, 15 Jun 2023 15:57:37 +0000
+Message-ID: <CO1PR11MB5089B50AB69E2EA953E07FEFD65BA@CO1PR11MB5089.namprd11.prod.outlook.com>
+References: <20230615123830.155927-1-michal.swiatkowski@linux.intel.com>
+ <20230615123830.155927-5-michal.swiatkowski@linux.intel.com>
+In-Reply-To: <20230615123830.155927-5-michal.swiatkowski@linux.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BL0PR11MB3521:EE_|SJ2PR11MB8449:EE_
-x-ms-office365-filtering-correlation-id: 3f9284d4-5ba0-4a33-fed0-08db6db535b7
-x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+x-ms-traffictypediagnostic: CO1PR11MB5089:EE_|SJ0PR11MB4861:EE_
+x-ms-office365-filtering-correlation-id: ad390320-bf8d-42bd-f134-08db6db93d8c
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: tk2A81paznsK1XLh3yqkVX1aoqdCt553YpdqFRLXTe2kJrzq/zojpNZ9tHaAt3WULo6VZvH7IEPTPnJk9awAKPDB24r6oOF7bEgliKMg2pNob/Ol5XLLvrKs8xvMxW+IBdL5A8croAMKhkCgCG5w/EMajiqw/eIyMc6puV6wudrbolIodXYh6Bdlk9VMMAvDHdootbv+FqN0iehu9kQkECwt187ev5Rp3wqr9kZMyfooD8wwPfKTBI7NGsF3/dIkwxV0sHkDTYMQ2i/4Hyn0lsXAN4Y5Zk6nTzwH4AbpGBELGWeCH/97l2I68RCVhNdTJBfz2ij4BWwL21WgWwV/HryEk8XOKFgd8wzjggzqF2qb8ArT0DicqBj82g7F+kvktfupaEGwFKyfH8Vet45mv3Mb36BcYDZWBqZLoIWNPZOhn3S7KJAIeOg/npusbndUQsz1uGrla+cADcDWLMgl+mSCOLSMFbKf283Wv56STSw6Zs/j2PH4kclWm8pqfqhR+RU0HYPI679Y5LxwqZPPXkO4lZF7Jriix1D/peRnlvucSOl3ttXfDPHjlvNcYBxdPLZ6TK4QDZLp+SzErWRngo403vgo+8u2yD+94HUYj+Q=
+x-microsoft-antispam-message-info: zyXEhyhX14JCCwNMmukBSGAaNDm6+oYjKZWzLyUfP+ig8jSeqA/BBWmLRk1MW8oV1PI9RoStSlMkqomrWW74Vyl48BnhfQw6iljygI7czG329912bizlzKzrCDs4/3c9lmS5E6lGAnH8dv6bGIfG3j4Rf7ty+WtyVwfQF0huRN6LdwSOQSjDyMHar5fMhR///Yy3cVqnEhyP8WDLd05SBsQWXoaPnzV8oQX6Np7UdhbAZKWxvq7+MbNFvUJWiOcl2Cm3f5hKgQ8VWovdx+1XZU6DMTiJpVTxnrK6NxgNxAlujy2UWeBUEN41mqQrqb/f5IaiPeqPzHjZH0/9EjML3jLkzh5PncMW2lOJV1s8ySUNP/euAdJvi57ASH0OzcIyYHOtXV+8CWsVy/a367xe9Dy9mPMkDtwsNxcww0u6hzyKh7HviKAwGRHEBsaw5fHCzx5KclD21pXTlpaSdoMvz0C8/ulE9OZDa7i/u3X1Xmt5RrNEVXU10Wv+1UESTMHiGAmrgodEH4csZWXmGRY+MLMcrBVzEtKnxCP1GD4ftbLhpEPCOzdJXaAFEFZVqvBfGzB2pHSYn711aCpqH+Xv8oIMD2VfgYF5mr8nJS59KqvEyl4LC2EDYUjXsmaZVerz
 x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:BL0PR11MB3521.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(396003)(39860400002)(346002)(376002)(366004)(136003)(451199021)(38070700005)(33656002)(86362001)(66556008)(66476007)(64756008)(66446008)(4326008)(110136005)(478600001)(76116006)(66946007)(966005)(316002)(7696005)(55016003)(8676002)(5660300002)(52536014)(8936002)(41300700001)(82960400001)(38100700002)(2906002)(122000001)(186003)(26005)(9686003)(53546011)(71200400001)(83380400001)(6506007)(66574015);
+ IPV:NLI; SFV:NSPM; H:CO1PR11MB5089.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(396003)(376002)(39860400002)(136003)(366004)(346002)(451199021)(7696005)(8936002)(9686003)(26005)(8676002)(41300700001)(82960400001)(478600001)(4326008)(71200400001)(66446008)(64756008)(66556008)(38100700002)(86362001)(76116006)(66476007)(66946007)(122000001)(316002)(38070700005)(33656002)(110136005)(54906003)(53546011)(55016003)(6506007)(5660300002)(83380400001)(52536014)(186003)(2906002);
  DIR:OUT; SFP:1102; 
 x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?iso-8859-2?Q?qp3nthPDG3Tz6kubjyS7i3PFvZzgMx2B16k3MPQIv7CtV+XUFTsxBIwGEo?=
- =?iso-8859-2?Q?yq86arOlEhy0Hsq6mKQHqXguB0pgBTBPs5JSckXVCo1fKcISiyxTHKW2wV?=
- =?iso-8859-2?Q?2XiikOkXb+2PgeaN4th1eaUqu3IKLD6nBXLSPeDvkv/w3u28kGuIGSAkKO?=
- =?iso-8859-2?Q?3M/sjwStuiXMBg28xj/3K4DNhYIG/7i7eAtCBMZxmtQMpFDVd62Fx9BtSY?=
- =?iso-8859-2?Q?erhkpmiob2sLuAlpqaW1PBBJkzrMq2XmXY1GhdR3bxzeuLdgeWsPoXAXFp?=
- =?iso-8859-2?Q?NLvq2VdqiNiVuykbmnewPZk6WLCXlBh0b+4aqHs2klAudRWXn8yTNLe/qB?=
- =?iso-8859-2?Q?/AwlJLhpxJws3CM5675fReO53ZrdbbpovM+S4aRRa2DPd9mAGjD+/Lzprg?=
- =?iso-8859-2?Q?dtbEilA/D+DYPdoXGyY1jQ6W3D/dcOfQchkTiSzWeiz8QiDzOpvcpUU5Xv?=
- =?iso-8859-2?Q?eSScIoBzgm5F+oCa9ggQCApV7JviuVXpEETLI2NYcbBP0YqBlfYJb+ZGKu?=
- =?iso-8859-2?Q?5ifGz5OC7PpefOSzdopHpElye4H4lmC4EwXbmU1LdNejBlSgE94KzL1uUf?=
- =?iso-8859-2?Q?22jHZeTD0XdwcALTVcDmfSi5t6e9YhPyC259ri+0JfaRHOwRr2I1sarBnW?=
- =?iso-8859-2?Q?Ou+2AceZsUEQF8QtSptmxWBEVlhoiLCikO1vsSLT/d1Iop/dhcg3Vy4cqC?=
- =?iso-8859-2?Q?aRjnelnyGf2wCHsd4M58ByO8ceH4XOHwV9MUNOVmAxSzxyw54rng2H7FpO?=
- =?iso-8859-2?Q?G0tuoTu2X5C2eqUeynyqrzs2dahNDo94bsoFpN7pKGrHIfnwjO8661N2pC?=
- =?iso-8859-2?Q?xbYTAA2XTVprsXKMz4zp59oooUVSG1el/+7qEE71U9Bmle6aKzS/Gl2Drk?=
- =?iso-8859-2?Q?G+6dNFPMQsRCaPi7zYl7j3o2DqyJjqIVCPSLFdlh5BmllfFxfHAe8dSUfo?=
- =?iso-8859-2?Q?HxbSEH2z0sF3qk03bpHmn4sku6Y8uaJDBADCt4NNyYpTbAmBmB3rhaEQuj?=
- =?iso-8859-2?Q?LLnPWEyTSXJTkQE7YZgQLuUlRDnhKh30dvhOxovQeQIItv18lxVF5ptD/o?=
- =?iso-8859-2?Q?rc6LnJeQCPIEmfhTeLNVwhDa119ICEuS4FhqD6oeSg3H+JGYukADf65Amm?=
- =?iso-8859-2?Q?KNrdkyiXpDGrUX2Sk62Vpnk7LW5Lvc2q5GtSk3RttKHVHyxVEZPTmNHxZK?=
- =?iso-8859-2?Q?Jbm3wcozmjjrmhDRD1vwZWHipSccb+rN/9+3ErqPFPexHYRy8vFZk6msdw?=
- =?iso-8859-2?Q?JvJS9B6rX26/TCzAE1ZE/o2PQNbtfCIUHLHfgbxROVuFARVde3inFefPMt?=
- =?iso-8859-2?Q?T/e0ebYnOA33JfpJ2TEaP7wf4bEJOxijTTPh3rR+FQPVry4pJbC8oMZ4iI?=
- =?iso-8859-2?Q?woG38FcqR1yhEr0OjpTmKbbHZYLeoUt2KKdiqpdkcSI2zniiYPgXQp3BwR?=
- =?iso-8859-2?Q?sMjHtzRVND8GT/11JCfmSp84Z/Qxh4almQNiOuZtrgT8G3rE/jqZvVPqQ6?=
- =?iso-8859-2?Q?zBQiaTGPy9D3cNNInhJgZkPZ/wKABnBhO6BiV1YJ8xGIaxQswxgfrkqztR?=
- =?iso-8859-2?Q?1AYmhk23GGeh1fYgk2/qx7powNCSCJ8N+j2GTl9W6PAPDDB3ZsiuJcI0kt?=
- =?iso-8859-2?Q?fQH4E5GMSlrVHxep18znI5CZ99zKsGOvRdWVq54E2o/kg+DXi0bvP6NQ?=
- =?iso-8859-2?Q?=3D=3D?=
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?BQkUqOh0GumsPicjP9pwXulgU6F88KQye1OmwtUCa4j+QT0Cyn7Wqy6eq6dH?=
+ =?us-ascii?Q?RS05FE4gNxk0+ZJ70Ro8jSa2pQVVVhARVZKYKdm4vXvO632wG/gUDBZ+TlBA?=
+ =?us-ascii?Q?0imbf960J1t+SHGY1BHk/2oWfTtrOfhOVcyDpcyAnW14F6Q3gDxZpfiwVrkp?=
+ =?us-ascii?Q?hcEKTqfSQOAsUrDSGfugmau6bEK1bMk2CHI6bLKVeNTU2II8a5h2BLQHvlt7?=
+ =?us-ascii?Q?6ImuySw2Lizp6k07Axb5Ko7uTRp388Shd8AC344WBl4+tZqgjivg0NfpxIoZ?=
+ =?us-ascii?Q?KyNS8p0/dH3Y/9T4XqBH8TbTkUZAqF/buxTcUKQdZPvMUWNfB6DxbypAum5q?=
+ =?us-ascii?Q?mIAmE7X3m+Nkc1sqRwW3c4BoG1u+EfF1d/WsmClyER2Z6abiAOWBrgbrrhiV?=
+ =?us-ascii?Q?oNDDDPbbOmjFVffn7NRlpY+1pwaFU6IYW+UznPFfKr0t+sEsfGYkAR+tzT0A?=
+ =?us-ascii?Q?5W0h4+wbM+H0/YmL5Yly8FknNQI0I9Fetuj74BUvK6HBNEDLV2OvftD+8Ry0?=
+ =?us-ascii?Q?vooituwa5pD5Au1HjoVi1yYk2X4Y3ebWHJhnWddaDGhKwp/6CIyn6A6UOHsm?=
+ =?us-ascii?Q?2fZo40FeiknY2q/vFuViclWXN13I4fIw1O8bnuYA6XLcFQCaFPTlsMO2phOb?=
+ =?us-ascii?Q?niNuUh7Kn9vr4WIu1tNsNCKV4bshQ+rZNwIL8/r0ztypz0DfOpdBheWHxM0u?=
+ =?us-ascii?Q?Y6OAD2shsndxcQ+nEDFBE/6u3BN9iA+cnT2nCHzVWgKDD7wSgvZB7vhOn/Pf?=
+ =?us-ascii?Q?RhnG257zSDicIaSQ86NU2zaHkjvtdraSZT7Hitb6eO//XH0jB5aBdzgawoPA?=
+ =?us-ascii?Q?1GT5uvGaFhGQzMAQvQikfkd8+ywa1dUD8XtfxLseWtNjNSC3/nu4JHEwfOdb?=
+ =?us-ascii?Q?9xJyDAW4xsDY/GBI111/K7mSoAKC+TWmlSNljWVW/RSRei6XDoQv/1KxvTtd?=
+ =?us-ascii?Q?mQBCOmXJPUSVK7IHNvIv1LCrtEWRiSa7RVEJTEeKJZ7kJW7hqSo5Dye5WIAw?=
+ =?us-ascii?Q?+PF/tUBp/M0OLotZbOhrQh3tJyL5fRswTvqcZNfYOg8UzQ1s0nbQB0+12KFf?=
+ =?us-ascii?Q?vqGfGYt+QcbE5/8om9ewyte/PXxoWkIpwc8yaxhM4P236ZVmWuI2wazwtIz4?=
+ =?us-ascii?Q?dSmPuVhzgWYQZVVdqepRZtR0XPCqfhDREUbNyXaeNly7wEsnl8sYzqi/S3dY?=
+ =?us-ascii?Q?q1Ma+p/Qi3a8VesyAri6asfwtqqRoTP+RfQbvWwy/hAslI52vqpTHAS7tvgj?=
+ =?us-ascii?Q?dM5f7D0oLct8SefBUU6B4VGgfPKINi3D8+HxaWcSnEq3BOxuPcM7yJ6g5fye?=
+ =?us-ascii?Q?E5U0rK7odZNDV5iWmMTQi30h6xR90OcdgAbNzWC+JbTOn33zBzejNObSPEKj?=
+ =?us-ascii?Q?tOIAcsIQMgFRMXzZcroMNboqJGawqWNeTmEJL3Id/f0x3IE45Qcm95O9ak77?=
+ =?us-ascii?Q?uzsnICjso9g8Wb9WiATXjFYcJHea2GazlAC2opUJCwtezo8ug2JZwJH9XGxh?=
+ =?us-ascii?Q?aExn/39IBCsvhYOD2/bpb6pu+bWycEQVywphIC/FpQJo2YaRHmsVYIfqBU+z?=
+ =?us-ascii?Q?Wr/xyGAuf6OgQ8df2BD9qEj4MAz2m9nvdnBDT+Vf?=
 MIME-Version: 1.0
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BL0PR11MB3521.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3f9284d4-5ba0-4a33-fed0-08db6db535b7
-X-MS-Exchange-CrossTenant-originalarrivaltime: 15 Jun 2023 15:28:46.0219 (UTC)
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB5089.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ad390320-bf8d-42bd-f134-08db6db93d8c
+X-MS-Exchange-CrossTenant-originalarrivaltime: 15 Jun 2023 15:57:37.1539 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: C3Fepnd1+xRHVYJunMDp39Vakfc1+MF3vqdktwv0UQWID6OzxJ4hCu/p0wBYIttqw8jkRy++pzJje/zNYxb7nOSluKLjVR9Kq8yau3HJvuc=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR11MB8449
+X-MS-Exchange-CrossTenant-userprincipalname: qGCQ4bz93dluyxmoMGUcu1HgjL3i7k8RW1CqbvW/fJC9OWGTRTX+Q/4fgGxe6QiM2LFB3GRya1A5shSdwxojjiCrALuVsmOiBxd2sz/pTpo=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB4861
 X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686843949; x=1718379949;
+ t=1686844721; x=1718380721;
  h=from:to:cc:subject:date:message-id:references:
  in-reply-to:content-transfer-encoding:mime-version;
- bh=er0+vvxraf1ruOLJa5VO5ZEyP1SczA5xQeCgP6+fYbk=;
- b=fMz68ANg7ey7BGFQpKXMx6eG0xCak7iDvkrZULPRnBDDmTa8QLeXGz8P
- J8lxxcPy83t1CeIflV2X1qPAph9hse9cVQ5AmDQefP7oRW/9Uj5hRA0CT
- x29hVlLE16TPlOlpCIKP5VW9Q8L83e8yD1qoiboAJk6BLZfvgSFHpwvlG
- tnzGdbMcuzuDTrjkQP4uZ16UbRULkPS6QEZCPRd+H8mhWDH8155uslLWq
- VJvuFU7uH4cB17DH5dskC2lWpERF1Z7VlPV6HeL0CNs7q/HJW5uyHHUli
- cwaj/hl7gLXUxBgLnlXXM5Byl4lEKpNtcmjkCtQoXV5fTVizFJC5aHETi
+ bh=gnBEXcSv8f1ursvjXCeZj2zn4VrVW31i8QE9sICXtIY=;
+ b=IOKmEf6SC05BO2LzPiG45G5oO7rfm01PAijNETyIqC+CswsO/CMLo2j7
+ LcbuO6XeJePU8oOFGykESG0PmUxRGvEjTuuTKiDpbJ5E8T4n0Zuo+O3uF
+ j4RoaoHCWZWnoxHDpox3DRvTOjqyPQeVLArDZfr9PyItOM+ZFw6q7nh3F
+ rpjdOhAvXFkJCcIIiKKJoTVpT9X0GnvPOdBrtyJcJWmwBTKHAY+2M1dro
+ ZYcL9qSBk7MX5JTwqFfXvSIg1ANBoxn4VuoaR0zBFBDVQ5fhazHbPgnfd
+ VDMUU7Uo05N9VEUFqdzpNyQKJc28ybqnSNIO2gwdBXmbINSc7/UksF127
  Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=fMz68ANg
+ header.a=rsa-sha256 header.s=Intel header.b=IOKmEf6S
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net v10 2/5] Revert "iavf: Detach
- device during reset task"
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 4/4] ice: manage VFs MSI-X
+ using resource tracking
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -188,139 +189,277 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: ivecera <ivecera@redhat.com>
-Content-Type: text/plain; charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Kitszel,
+ Przemyslaw" <przemyslaw.kitszel@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+
+
 > -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Mateusz Palczewski
-> Sent: poniedzia=B3ek, 5 czerwca 2023 16:52
+> From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> Sent: Thursday, June 15, 2023 5:39 AM
 > To: intel-wired-lan@lists.osuosl.org
-> Cc: ivecera <ivecera@redhat.com>
-> Subject: [Intel-wired-lan] [PATCH iwl-net v10 2/5] Revert "iavf: Detach d=
-evice
-> during reset task"
-> =
-
-> From: Marcin Szycik <marcin.szycik@linux.intel.com>
-> =
-
-> This reverts commit aa626da947e9cd30c4cf727493903e1adbb2c0a0.
-> =
-
-> Detaching device during reset was not fully fixing the rtnl locking issue=
-, as
-> there could be a situation where callback was already in progress before
-> detaching netdev.
-> =
-
-> Furthermore, detaching netdevice causes TX timeouts if traffic is running.
-> To reproduce:
-> =
-
-> ip netns exec ns1 iperf3 -c $PEER_IP -t 600 --logfile /dev/null & while :=
-; do
->         for i in 200 7000 400 5000 300 3000 ; do
-> 		ip netns exec ns1 ip link set $VF1 mtu $i
->                 sleep 2
->         done
->         sleep 10
-> done
-> =
-
-> Currently, callbacks such as iavf_change_mtu() wait for the reset.
-> If the reset fails to acquire the rtnl_lock, they schedule the netdev upd=
-ate
-> for later while continuing the reset flow. Operations like MTU changes are
-> performed under the rtnl_lock. Therefore, when the operation finishes,
-> another callback that uses rtnl_lock can start.
-> =
-
-> Signed-off-by: Dawid Wesierski <dawidx.wesierski@intel.com>
-> Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-> Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> Cc: netdev@vger.kernel.org; Keller, Jacob E <jacob.e.keller@intel.com>; Kitszel,
+> Przemyslaw <przemyslaw.kitszel@intel.com>; Michal Swiatkowski
+> <michal.swiatkowski@linux.intel.com>
+> Subject: [PATCH iwl-next v1 4/4] ice: manage VFs MSI-X using resource tracking
+> 
+> Track MSI-X for VFs using bitmap, by setting and clearing bitmap during
+> allocation and freeing.
+> 
+> Try to linearize irqs usage for VFs, by freeing them and allocating once
+> again. Do it only for VFs that aren't currently running.
+> 
+> Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 > ---
-> v1->v7: no changes
-> v8: changed commit msg
-> v9->v10: no changes
-> ---
->  drivers/net/ethernet/intel/iavf/iavf_main.c | 13 ++-----------
->  1 file changed, 2 insertions(+), 11 deletions(-)
-> =
-
-> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> index c815ef87e27d..6945f462c56e 100644
-> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-> @@ -2991,11 +2991,6 @@ static void iavf_reset_task(struct work_struct
-> *work)
->  	int i =3D 0, err;
->  	bool running;
-> =
-
-> -	/* Detach interface to avoid subsequent NDO callbacks */
-> -	rtnl_lock();
-> -	netif_device_detach(netdev);
-> -	rtnl_unlock();
-> -
->  	/* When device is being removed it doesn't make sense to run the
-> reset
->  	 * task, just return in such a case.
->  	 */
-> @@ -3003,7 +2998,7 @@ static void iavf_reset_task(struct work_struct
-> *work)
->  		if (adapter->state !=3D __IAVF_REMOVE)
->  			queue_work(adapter->wq, &adapter->reset_task);
-> =
-
-> -		goto reset_finish;
-> +		return;
->  	}
-> =
-
->  	while (!mutex_trylock(&adapter->client_lock))
-> @@ -3206,7 +3201,7 @@ static void iavf_reset_task(struct work_struct
-> *work)
->  	mutex_unlock(&adapter->client_lock);
->  	mutex_unlock(&adapter->crit_lock);
-> =
-
-> -	goto reset_finish;
-> +	return;
->  reset_err:
->  	if (running) {
->  		set_bit(__IAVF_VSI_DOWN, adapter->vsi.state); @@ -
-> 3227,10 +3222,6 @@ static void iavf_reset_task(struct work_struct *work)
->  	}
-> =
-
->  	dev_err(&adapter->pdev->dev, "failed to allocate resources during
-> reinit\n");
-> -reset_finish:
-> -	rtnl_lock();
-> -	netif_device_attach(netdev);
-> -	rtnl_unlock();
+>  drivers/net/ethernet/intel/ice/ice_sriov.c | 170 ++++++++++++++++++---
+>  1 file changed, 151 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c
+> b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> index e20ef1924fae..78a41163755b 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> @@ -246,22 +246,6 @@ static struct ice_vsi *ice_vf_vsi_setup(struct ice_vf *vf)
+>  	return vsi;
 >  }
-> =
+> 
+> -/**
+> - * ice_calc_vf_first_vector_idx - Calculate MSIX vector index in the PF space
+> - * @pf: pointer to PF structure
+> - * @vf: pointer to VF that the first MSIX vector index is being calculated for
+> - *
+> - * This returns the first MSIX vector index in PF space that is used by this VF.
+> - * This index is used when accessing PF relative registers such as
+> - * GLINT_VECT2FUNC and GLINT_DYN_CTL.
+> - * This will always be the OICR index in the AVF driver so any functionality
+> - * using vf->first_vector_idx for queue configuration will have to increment by
+> - * 1 to avoid meddling with the OICR index.
+> - */
+> -static int ice_calc_vf_first_vector_idx(struct ice_pf *pf, struct ice_vf *vf)
+> -{
+> -	return pf->sriov_base_vector + vf->vf_id * pf->vfs.num_msix_per;
+> -}
+> 
+>  /**
+>   * ice_ena_vf_msix_mappings - enable VF MSIX mappings in hardware
+> @@ -528,6 +512,52 @@ static int ice_set_per_vf_res(struct ice_pf *pf, u16
+> num_vfs)
+>  	return 0;
+>  }
+> 
+> +/**
+> + * ice_sriov_get_irqs - get irqs for SR-IOV usacase
+> + * @pf: pointer to PF structure
+> + * @needed: number of irqs to get
+> + *
+> + * This returns the first MSI-X vector index in PF space that is used by this
+> + * VF. This index is used when accessing PF relative registers such as
+> + * GLINT_VECT2FUNC and GLINT_DYN_CTL.
+> + * This will always be the OICR index in the AVF driver so any functionality
+> + * using vf->first_vector_idx for queue configuration_id: id of VF which will
+> + * use this irqs
+> + *
+> + * Only SRIOV specific vectors are tracked in sriov_irq_bm. SRIOV vectors are
+> + * allocated from the end of global irq index. First bit in sriov_irq_bm means
+> + * last irq index etc. It simplifies extension of SRIOV vectors.
+> + * They will be always located from sriov_base_vector to the last irq
+> + * index. While increasing/decreasing sriov_base_vector can be moved.
+> + */
+> +static int ice_sriov_get_irqs(struct ice_pf *pf, u16 needed)
+> +{
+> +	int res = bitmap_find_next_zero_area(pf->sriov_irq_bm,
+> +					     pf->sriov_irq_size, 0, needed, 0);
+> +	/* conversion from number in bitmap to global irq index */
+> +	int index = pf->sriov_irq_size - res - needed;
+> +
+> +	if (res >= pf->sriov_irq_size || index < pf->sriov_base_vector)
+> +		return -ENOENT;
+> +
+> +	bitmap_set(pf->sriov_irq_bm, res, needed);
+> +	return index;
 
+Shouldn't it be possible to use the xarray that was recently done for dynamic IRQ allocation for this now? It might take a little more refactor work though, hmm. It feels weird to introduce yet another data structure for a nearly identical purpose...
+
+> +}
+> +
+> +/**
+> + * ice_sriov_free_irqs - free irqs used by the VF
+> + * @pf: pointer to PF structure
+> + * @vf: pointer to VF structure
+> + */
+> +static void ice_sriov_free_irqs(struct ice_pf *pf, struct ice_vf *vf)
+> +{
+> +	/* Move back from first vector index to first index in bitmap */
+> +	int bm_i = pf->sriov_irq_size - vf->first_vector_idx - vf->num_msix;
+> +
+> +	bitmap_clear(pf->sriov_irq_bm, bm_i, vf->num_msix);
+> +	vf->first_vector_idx = 0;
+> +}
+> +
+>  /**
+>   * ice_init_vf_vsi_res - initialize/setup VF VSI resources
+>   * @vf: VF to initialize/setup the VSI for
+> @@ -541,7 +571,9 @@ static int ice_init_vf_vsi_res(struct ice_vf *vf)
+>  	struct ice_vsi *vsi;
+>  	int err;
+> 
+> -	vf->first_vector_idx = ice_calc_vf_first_vector_idx(pf, vf);
+> +	vf->first_vector_idx = ice_sriov_get_irqs(pf, vf->num_msix);
+> +	if (vf->first_vector_idx < 0)
+> +		return -ENOMEM;
+> 
+>  	vsi = ice_vf_vsi_setup(vf);
+>  	if (!vsi)
+> @@ -984,6 +1016,52 @@ u32 ice_sriov_get_vf_total_msix(struct pci_dev *pdev)
+>  	return pf->sriov_irq_size - ice_get_max_used_msix_vector(pf);
+>  }
+> 
+> +static int ice_sriov_move_base_vector(struct ice_pf *pf, int move)
+> +{
+> +	if (pf->sriov_base_vector - move < ice_get_max_used_msix_vector(pf))
+> +		return -ENOMEM;
+> +
+> +	pf->sriov_base_vector -= move;
+> +	return 0;
+> +}
+> +
+> +static void ice_sriov_remap_vectors(struct ice_pf *pf, u16 restricted_id)
+> +{
+> +	u16 vf_ids[ICE_MAX_SRIOV_VFS];
+> +	struct ice_vf *tmp_vf;
+> +	int to_remap = 0, bkt;
+> +
+> +	/* For better irqs usage try to remap irqs of VFs
+> +	 * that aren't running yet
+> +	 */
+> +	ice_for_each_vf(pf, bkt, tmp_vf) {
+> +		/* skip VF which is changing the number of MSI-X */
+> +		if (restricted_id == tmp_vf->vf_id ||
+> +		    test_bit(ICE_VF_STATE_ACTIVE, tmp_vf->vf_states))
+> +			continue;
+> +
+> +		ice_dis_vf_mappings(tmp_vf);
+> +		ice_sriov_free_irqs(pf, tmp_vf);
+> +
+> +		vf_ids[to_remap] = tmp_vf->vf_id;
+> +		to_remap += 1;
+> +	}
+> +
+> +	for (int i = 0; i < to_remap; i++) {
+> +		tmp_vf = ice_get_vf_by_id(pf, vf_ids[i]);
+> +		if (!tmp_vf)
+> +			continue;
+> +
+> +		tmp_vf->first_vector_idx =
+> +			ice_sriov_get_irqs(pf, tmp_vf->num_msix);
+> +		/* there is no need to rebuild VSI as we are only changing the
+> +		 * vector indexes not amount of MSI-X or queues
+> +		 */
+> +		ice_ena_vf_mappings(tmp_vf);
+> +		ice_put_vf(tmp_vf);
+> +	}
+> +}
+> +
+>  /**
+>   * ice_sriov_set_msix_vec_count
+>   * @vf_dev: pointer to pci_dev struct of VF device
+> @@ -1002,8 +1080,9 @@ int ice_sriov_set_msix_vec_count(struct pci_dev
+> *vf_dev, int msix_vec_count)
+>  {
+>  	struct pci_dev *pdev = pci_physfn(vf_dev);
+>  	struct ice_pf *pf = pci_get_drvdata(pdev);
+> +	u16 prev_msix, prev_queues, queues;
+> +	bool needs_rebuild = false;
+>  	struct ice_vf *vf;
+> -	u16 queues;
+>  	int id;
+> 
+>  	if (!ice_get_num_vfs(pf))
+> @@ -1016,6 +1095,13 @@ int ice_sriov_set_msix_vec_count(struct pci_dev
+> *vf_dev, int msix_vec_count)
+>  	/* add 1 MSI-X for OICR */
+>  	msix_vec_count += 1;
+> 
+> +	if (queues > min(ice_get_avail_txq_count(pf),
+> +			 ice_get_avail_rxq_count(pf)))
+> +		return -EINVAL;
+> +
+> +	if (msix_vec_count < ICE_MIN_INTR_PER_VF)
+> +		return -EINVAL;
+> +
+>  	/* Transition of PCI VF function number to function_id */
+>  	for (id = 0; id < pci_num_vf(pdev); id++) {
+>  		if (vf_dev->devfn == pci_iov_virtfn_devfn(pdev, id))
+> @@ -1030,14 +1116,60 @@ int ice_sriov_set_msix_vec_count(struct pci_dev
+> *vf_dev, int msix_vec_count)
+>  	if (!vf)
+>  		return -ENOENT;
+> 
+> +	prev_msix = vf->num_msix;
+> +	prev_queues = vf->num_vf_qs;
+> +
+> +	if (ice_sriov_move_base_vector(pf, msix_vec_count - prev_msix)) {
+> +		ice_put_vf(vf);
+> +		return -ENOSPC;
+> +	}
+> +
+>  	ice_dis_vf_mappings(vf);
+> +	ice_sriov_free_irqs(pf, vf);
+> +
+> +	/* Remap all VFs beside the one is now configured */
+> +	ice_sriov_remap_vectors(pf, vf->vf_id);
+> +
+>  	vf->num_msix = msix_vec_count;
+>  	vf->num_vf_qs = queues;
+> -	ice_vsi_rebuild(ice_get_vf_vsi(vf), ICE_VSI_FLAG_NO_INIT);
+> +	vf->first_vector_idx = ice_sriov_get_irqs(pf, vf->num_msix);
+> +	if (vf->first_vector_idx < 0)
+> +		goto unroll;
+> +
+> +	ice_vf_vsi_release(vf);
+> +	if (vf->vf_ops->create_vsi(vf)) {
+> +		/* Try to rebuild with previous values */
+> +		needs_rebuild = true;
+> +		goto unroll;
+> +	}
+> +
+> +	dev_info(ice_pf_to_dev(pf),
+> +		 "Changing VF %d resources to %d vectors and %d queues\n",
+> +		 vf->vf_id, vf->num_msix, vf->num_vf_qs);
+> +
+>  	ice_ena_vf_mappings(vf);
+>  	ice_put_vf(vf);
+> 
+>  	return 0;
+> +
+> +unroll:
+> +	dev_info(ice_pf_to_dev(pf),
+> +		 "Can't set %d vectors on VF %d, falling back to %d\n",
+> +		 vf->num_msix, vf->vf_id, prev_msix);
+> +
+> +	vf->num_msix = prev_msix;
+> +	vf->num_vf_qs = prev_queues;
+> +	vf->first_vector_idx = ice_sriov_get_irqs(pf, vf->num_msix);
+> +	if (vf->first_vector_idx < 0)
+> +		return -EINVAL;
+> +
+> +	if (needs_rebuild)
+> +		vf->vf_ops->create_vsi(vf);
+> +
+> +	ice_ena_vf_mappings(vf);
+> +	ice_put_vf(vf);
+> +
+> +	return -EINVAL;
+>  }
+> 
 >  /**
 > --
-> 2.31.1
-> =
-
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan@osuosl.org
-> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
-
-Tested-by: Rafal Romanowski <rafal.romanowski@intel.com>
-
-
+> 2.40.1
 
 _______________________________________________
 Intel-wired-lan mailing list
