@@ -4,88 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BAEBEB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Jun 2023 11:05:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3691EEB64DC
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Jun 2023 11:05:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 0AE03403AA;
-	Thu, 15 Jun 2023 11:05:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0AE03403AA
+	by smtp2.osuosl.org (Postfix) with ESMTP id C4B1240465;
+	Thu, 15 Jun 2023 11:05:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C4B1240465
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686827155;
-	bh=55DL/LbEPJPwk0CaVdiGXM0QVc4SfL9H6kYwVisi1QU=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=JUD22xHmY5ejm6YpnPnG9vLLHl+/ZI5+3VlQ9nyB5083rSwGSOoPKr8FVcWUIDzUr
-	 mKef/IRPZia7CcAr1yDYMhXKf3/4agli1+o1gLw/LRzkse+a3pG8i4yXlbe3fuR+s2
-	 gnaDtQ5r9xKCfqlO1cLBArhxyqOZM133NbA2R+Ncmdg4P42CRE5pzXdgPIHvbPLWtu
-	 wEY9C+TrMK39l3pzna3NCxvkoxAlUaV3e+/2udQNKBRB722cVX4hGWfcMbLg/jjJMb
-	 KW1m14LKUhepxldDIOYpEQ9jMLgFTe1xhMTRreJnnJrkzihrdvZIqJG6hk3/owXA+H
-	 hkNps+AjfN9lg==
+	s=default; t=1686827157;
+	bh=OD8cD4dPtQGb+h9Kp0u4geD02iXmufbysvg/VWGOpl4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=srT6JML133bAbCbvTOtaxmJFYLjh4g7pX9ZNDDM7k9hT9dnjOoYdEqob0/XJbvwRC
+	 xPe1A96Wvm+14l+1ufPVzc5a+QkgGxl2s2Fyn29FQ8mzTy/3fLdStHFmaKw60RDu3a
+	 rXtK3lrKu+ZfVpk5ljfMwFK7Y3N0Odjr/oD33wwrfOQrZfxb1UbtKamZxg84kojqhW
+	 NtNZNkuT+VoME+uhwXKWBU5s+108sQjYXEvnD0Si0oilnDhBAhbLQhgMYFn/B6V2OM
+	 ciBslkpg6FZJJc9BG+KoHp5YM2zTLymxkUICH8vh4TKo6SkZPjdJHS/dd+YEypu59D
+	 Nbr000CGatYJg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wa6ulN2-jGOW; Thu, 15 Jun 2023 11:05:52 +0000 (UTC)
+	with ESMTP id ZFtqKTlCXK6u; Thu, 15 Jun 2023 11:05:57 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 568494154F;
-	Thu, 15 Jun 2023 11:05:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 568494154F
+	by smtp2.osuosl.org (Postfix) with ESMTP id 8F3014154F;
+	Thu, 15 Jun 2023 11:05:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8F3014154F
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id BACCB1BF276
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 11:05:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id CB3221BF276
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 11:05:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 83A6B83C63
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9F2C783C6E
  for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 11:05:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 83A6B83C63
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9F2C783C6E
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NZQzrV8y6NpO for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id Mm-o2uExdls7 for <intel-wired-lan@lists.osuosl.org>;
  Thu, 15 Jun 2023 11:05:45 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9156B83C6E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AB61D83C74
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9156B83C6E
+ by smtp1.osuosl.org (Postfix) with ESMTPS id AB61D83C74
  for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 11:05:45 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10741"; a="387329835"
-X-IronPort-AV: E=Sophos;i="6.00,244,1681196400"; d="scan'208";a="387329835"
+X-IronPort-AV: E=McAfee;i="6600,9927,10741"; a="387329814"
+X-IronPort-AV: E=Sophos;i="6.00,244,1681196400"; d="scan'208";a="387329814"
 Received: from fmsmga005.fm.intel.com ([10.253.24.32])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Jun 2023 04:05:35 -0700
+ 15 Jun 2023 04:05:34 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10741"; a="1042624099"
-X-IronPort-AV: E=Sophos;i="6.00,244,1681196400"; d="scan'208";a="1042624099"
+X-IronPort-AV: E=McAfee;i="6600,9927,10741"; a="1042624082"
+X-IronPort-AV: E=Sophos;i="6.00,244,1681196400"; d="scan'208";a="1042624082"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga005.fm.intel.com with ESMTP; 15 Jun 2023 04:05:33 -0700
+ by fmsmga005.fm.intel.com with ESMTP; 15 Jun 2023 04:05:32 -0700
 Received: from pelor.igk.intel.com (pelor.igk.intel.com [10.123.220.13])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 765D233BFB;
- Thu, 15 Jun 2023 12:05:32 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 6287F33BE4;
+ Thu, 15 Jun 2023 12:05:31 +0100 (IST)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 15 Jun 2023 07:03:09 -0400
-Message-Id: <20230615110309.14698-3-przemyslaw.kitszel@intel.com>
+Date: Thu, 15 Jun 2023 07:03:07 -0400
+Message-Id: <20230615110309.14698-1-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230615110309.14698-1-przemyslaw.kitszel@intel.com>
-References: <20230615110309.14698-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1686827145; x=1718363145;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=o5vTQFamtCRdMYbsbp6TGX871InThR3vTdW5/g9sTl4=;
- b=Fb6jlEjpO8EhE0+16N2etPvy3wbboe+YXrlIwx8YWLGdiVfNT4zAEJWU
- uL9GpD0aAUDQuzVHGo0XOv7Avy2iEk1azkULcEqlZ35kHP9IZUgVIFKMn
- tf6CT/DN8upk8B7Dp/Z/cvKfVDmzN6Irb/H9/PrJAHMDqpr7hmrDBLdhN
- Ad+vJ3zDSUe/4eaC7Dj2ufanLeKZBgOEyAmytqODU5EggNZdSV/SZa9sa
- 0Ps5X+DEffSSB9ytYlbqsyGasJGWuFUtD/9HCvdtuyv8bFZxWaRYqB4f2
- vn3lTsnqBu2iGod6bmks7mD2Jpahmtku6jWacg/MYjlgdmBS0NQqj2wKr
- g==;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=TbvtmmlzfMGEx3J7Y1xjQZk0k2tOmu5YA2biTGqy+88=;
+ b=akut8I4SfeZnGsT6A7MRXErFDqyGlNp+itsf48ysRveC179gt7pBX/DB
+ 9Oa38SQJhM4cW7eaBAs4PlwaR6sKgCcRO/DFMJXzJmRJYStKNaEYN8ehq
+ 8KFDW2ODu2KH4KOe+LTNxQlktQ0+gljNycR9kRgRR2yTcl/UXyHNJBJBs
+ 4bwWOqzfIXDjI6of55F0yL6XZgExrWpxmhUdg5yDSawBSphe4Jb9l4+Xu
+ 2NSoeamCrXsXP4U0ZBFwm4clULoDHX97HXFk9aIyNTVK2zDmqR+KyuMj4
+ j3s7sVHTJ/rZ/zkHMR5shULlLqj59lZOKfScrx2HFnJ3KHofIVzsrmpCN
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Fb6jlEjp
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/2] iavf: make functions
- static where possible
+ header.a=rsa-sha256 header.s=Intel header.b=akut8I4S
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/2] iavf: make some functions
+ static
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,219 +103,48 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Make all possible functions static.
+Turn functions that are used in just one translation unit to be static.
+Remove all unused functions (but keep exported ones for now).
 
-Move iavf_force_wb() up to avoid forward declaration.
+This series depends on three patches that are in Tony's queue, see [1],
+[2], [3] - dependencies are just about avoiding trivial git conflicts.
 
-Suggested-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Reviewed-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+[1] https://patchwork.ozlabs.org/project/intel-wired-lan/patch/20230502152908.701880-1-ahmed.zaki@intel.com/
+("iavf: remove mask from iavf_irq_enable_queues()")
 
----
-v2:
- - typo fixed, thanks Paul
----
- drivers/net/ethernet/intel/iavf/iavf.h      | 10 -----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 14 +++----
- drivers/net/ethernet/intel/iavf/iavf_txrx.c | 43 ++++++++++-----------
- drivers/net/ethernet/intel/iavf/iavf_txrx.h |  4 --
- 4 files changed, 28 insertions(+), 43 deletions(-)
+[2] https://lore.kernel.org/intel-wired-lan/20230509111148.4608-3-dinghui@sangfor.com.cn/
+("iavf: Fix out-of-bounds when setting channels on remove")
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 41c246dd413f..a5cab19eb6a8 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -524,9 +524,6 @@ void iavf_schedule_request_stats(struct iavf_adapter *adapter);
- void iavf_reset(struct iavf_adapter *adapter);
- void iavf_set_ethtool_ops(struct net_device *netdev);
- void iavf_update_stats(struct iavf_adapter *adapter);
--void iavf_reset_interrupt_capability(struct iavf_adapter *adapter);
--int iavf_init_interrupt_scheme(struct iavf_adapter *adapter);
--void iavf_irq_enable_queues(struct iavf_adapter *adapter);
- void iavf_free_all_tx_resources(struct iavf_adapter *adapter);
- void iavf_free_all_rx_resources(struct iavf_adapter *adapter);
- 
-@@ -580,12 +577,6 @@ void iavf_enable_vlan_stripping_v2(struct iavf_adapter *adapter, u16 tpid);
- void iavf_disable_vlan_stripping_v2(struct iavf_adapter *adapter, u16 tpid);
- void iavf_enable_vlan_insertion_v2(struct iavf_adapter *adapter, u16 tpid);
- void iavf_disable_vlan_insertion_v2(struct iavf_adapter *adapter, u16 tpid);
--int iavf_replace_primary_mac(struct iavf_adapter *adapter,
--			     const u8 *new_mac);
--void
--iavf_set_vlan_offload_features(struct iavf_adapter *adapter,
--			       netdev_features_t prev_features,
--			       netdev_features_t features);
- void iavf_add_fdir_filter(struct iavf_adapter *adapter);
- void iavf_del_fdir_filter(struct iavf_adapter *adapter);
- void iavf_add_adv_rss_cfg(struct iavf_adapter *adapter);
-@@ -593,5 +584,4 @@ void iavf_del_adv_rss_cfg(struct iavf_adapter *adapter);
- struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
- 					const u8 *macaddr);
- int iavf_wait_for_reset(struct iavf_adapter *adapter);
--int iavf_lock_timeout(struct mutex *lock, unsigned int msecs);
- #endif /* _IAVF_H_ */
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index b997d00bc223..cdc05f720adc 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -284,7 +284,7 @@ void iavf_free_virt_mem(struct iavf_hw *hw, struct iavf_virt_mem *mem)
-  *
-  * Returns 0 on success, negative on failure
-  **/
--int iavf_lock_timeout(struct mutex *lock, unsigned int msecs)
-+static int iavf_lock_timeout(struct mutex *lock, unsigned int msecs)
- {
- 	unsigned int wait, delay = 10;
- 
-@@ -393,7 +393,7 @@ static void iavf_irq_disable(struct iavf_adapter *adapter)
-  * iavf_irq_enable_queues - Enable interrupt for all queues
-  * @adapter: board private structure
-  **/
--void iavf_irq_enable_queues(struct iavf_adapter *adapter)
-+static void iavf_irq_enable_queues(struct iavf_adapter *adapter)
- {
- 	struct iavf_hw *hw = &adapter->hw;
- 	int i;
-@@ -1034,8 +1034,8 @@ struct iavf_mac_filter *iavf_add_filter(struct iavf_adapter *adapter,
-  *
-  * Do not call this with mac_vlan_list_lock!
-  **/
--int iavf_replace_primary_mac(struct iavf_adapter *adapter,
--			     const u8 *new_mac)
-+static int iavf_replace_primary_mac(struct iavf_adapter *adapter,
-+				    const u8 *new_mac)
- {
- 	struct iavf_hw *hw = &adapter->hw;
- 	struct iavf_mac_filter *f;
-@@ -1894,7 +1894,7 @@ static void iavf_free_q_vectors(struct iavf_adapter *adapter)
-  * @adapter: board private structure
-  *
-  **/
--void iavf_reset_interrupt_capability(struct iavf_adapter *adapter)
-+static void iavf_reset_interrupt_capability(struct iavf_adapter *adapter)
- {
- 	if (!adapter->msix_entries)
- 		return;
-@@ -1909,7 +1909,7 @@ void iavf_reset_interrupt_capability(struct iavf_adapter *adapter)
-  * @adapter: board private structure to initialize
-  *
-  **/
--int iavf_init_interrupt_scheme(struct iavf_adapter *adapter)
-+static int iavf_init_interrupt_scheme(struct iavf_adapter *adapter)
- {
- 	int err;
- 
-@@ -2207,7 +2207,7 @@ static int iavf_process_aq_command(struct iavf_adapter *adapter)
-  * the watchdog if any changes are requested to expedite the request via
-  * virtchnl.
-  **/
--void
-+static void
- iavf_set_vlan_offload_features(struct iavf_adapter *adapter,
- 			       netdev_features_t prev_features,
- 			       netdev_features_t features)
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index e989feda133c..8c5f6096b002 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -54,7 +54,7 @@ static void iavf_unmap_and_free_tx_resource(struct iavf_ring *ring,
-  * iavf_clean_tx_ring - Free any empty Tx buffers
-  * @tx_ring: ring to be cleaned
-  **/
--void iavf_clean_tx_ring(struct iavf_ring *tx_ring)
-+static void iavf_clean_tx_ring(struct iavf_ring *tx_ring)
- {
- 	unsigned long bi_size;
- 	u16 i;
-@@ -110,7 +110,7 @@ void iavf_free_tx_resources(struct iavf_ring *tx_ring)
-  * Since there is no access to the ring head register
-  * in XL710, we need to use our local copies
-  **/
--u32 iavf_get_tx_pending(struct iavf_ring *ring, bool in_sw)
-+static u32 iavf_get_tx_pending(struct iavf_ring *ring, bool in_sw)
- {
- 	u32 head, tail;
- 
-@@ -127,6 +127,24 @@ u32 iavf_get_tx_pending(struct iavf_ring *ring, bool in_sw)
- 	return 0;
- }
- 
-+/**
-+ * iavf_force_wb - Issue SW Interrupt so HW does a wb
-+ * @vsi: the VSI we care about
-+ * @q_vector: the vector on which to force writeback
-+ **/
-+static void iavf_force_wb(struct iavf_vsi *vsi, struct iavf_q_vector *q_vector)
-+{
-+	u32 val = IAVF_VFINT_DYN_CTLN1_INTENA_MASK |
-+		  IAVF_VFINT_DYN_CTLN1_ITR_INDX_MASK | /* set noitr */
-+		  IAVF_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
-+		  IAVF_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK
-+		  /* allow 00 to be written to the index */;
-+
-+	wr32(&vsi->back->hw,
-+	     IAVF_VFINT_DYN_CTLN1(q_vector->reg_idx),
-+	     val);
-+}
-+
- /**
-  * iavf_detect_recover_hung - Function to detect and recover hung_queues
-  * @vsi:  pointer to vsi struct with tx queues
-@@ -352,25 +370,6 @@ static void iavf_enable_wb_on_itr(struct iavf_vsi *vsi,
- 	q_vector->arm_wb_state = true;
- }
- 
--/**
-- * iavf_force_wb - Issue SW Interrupt so HW does a wb
-- * @vsi: the VSI we care about
-- * @q_vector: the vector  on which to force writeback
-- *
-- **/
--void iavf_force_wb(struct iavf_vsi *vsi, struct iavf_q_vector *q_vector)
--{
--	u32 val = IAVF_VFINT_DYN_CTLN1_INTENA_MASK |
--		  IAVF_VFINT_DYN_CTLN1_ITR_INDX_MASK | /* set noitr */
--		  IAVF_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
--		  IAVF_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK
--		  /* allow 00 to be written to the index */;
--
--	wr32(&vsi->back->hw,
--	     IAVF_VFINT_DYN_CTLN1(q_vector->reg_idx),
--	     val);
--}
--
- static inline bool iavf_container_is_rx(struct iavf_q_vector *q_vector,
- 					struct iavf_ring_container *rc)
- {
-@@ -687,7 +686,7 @@ int iavf_setup_tx_descriptors(struct iavf_ring *tx_ring)
-  * iavf_clean_rx_ring - Free Rx buffers
-  * @rx_ring: ring to be cleaned
-  **/
--void iavf_clean_rx_ring(struct iavf_ring *rx_ring)
-+static void iavf_clean_rx_ring(struct iavf_ring *rx_ring)
- {
- 	unsigned long bi_size;
- 	u16 i;
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.h b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-index 2624bf6d009e..7e6ee32d19b6 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.h
-@@ -442,15 +442,11 @@ static inline unsigned int iavf_rx_pg_order(struct iavf_ring *ring)
- 
- bool iavf_alloc_rx_buffers(struct iavf_ring *rxr, u16 cleaned_count);
- netdev_tx_t iavf_xmit_frame(struct sk_buff *skb, struct net_device *netdev);
--void iavf_clean_tx_ring(struct iavf_ring *tx_ring);
--void iavf_clean_rx_ring(struct iavf_ring *rx_ring);
- int iavf_setup_tx_descriptors(struct iavf_ring *tx_ring);
- int iavf_setup_rx_descriptors(struct iavf_ring *rx_ring);
- void iavf_free_tx_resources(struct iavf_ring *tx_ring);
- void iavf_free_rx_resources(struct iavf_ring *rx_ring);
- int iavf_napi_poll(struct napi_struct *napi, int budget);
--void iavf_force_wb(struct iavf_vsi *vsi, struct iavf_q_vector *q_vector);
--u32 iavf_get_tx_pending(struct iavf_ring *ring, bool in_sw);
- void iavf_detect_recover_hung(struct iavf_vsi *vsi);
- int __iavf_maybe_stop_tx(struct iavf_ring *tx_ring, int size);
- bool __iavf_chk_linearize(struct sk_buff *skb);
+[3] https://lore.kernel.org/intel-wired-lan/20230605145226.1222225-2-mateusz.palczewski@intel.com/
+("iavf: Wait for reset in callbacks which trigger it")
+
+For third of those patches, I'm suspicious of git-format-patch generating
+"bad" prerequisite-patch-id, it's stable across the runs and rebases,
+but it's different than the one reported by git-patch-id
+(= ea8d85f15350eff7a2aa4fdb0e2653d856b42184).
+I don't know if anybody cares about those anyway.
+
+v2 - typo fixed, links to prereqs for second patch.
+
+Przemek Kitszel (2):
+  iavf: remove some unused functions and pointless wrappers
+  iavf: make functions static where possible
+
+ drivers/net/ethernet/intel/iavf/iavf.h        | 10 -----
+ drivers/net/ethernet/intel/iavf/iavf_alloc.h  |  3 +-
+ drivers/net/ethernet/intel/iavf/iavf_common.c | 45 -------------------
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 34 ++++++--------
+ drivers/net/ethernet/intel/iavf/iavf_osdep.h  |  9 ----
+ .../net/ethernet/intel/iavf/iavf_prototype.h  |  5 ---
+ drivers/net/ethernet/intel/iavf/iavf_txrx.c   | 43 +++++++++---------
+ drivers/net/ethernet/intel/iavf/iavf_txrx.h   |  4 --
+ 8 files changed, 35 insertions(+), 118 deletions(-)
+
+
+base-commit: fa0e21fa44438a0e856d42224bfa24641d37b979
+prerequisite-patch-id: 141de8c9f97d59aa7df2481120f1d666f90420cb
+prerequisite-patch-id: 6eb49686279d9b2046d6fe5c78a882025c87f3ff
+prerequisite-patch-id: 2b1499c46b646b5402867deee8d40b73d752599a
 -- 
 2.40.1
 
