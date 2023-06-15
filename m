@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14EFDEB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Jun 2023 16:28:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A141EB64D9
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 15 Jun 2023 16:28:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A4F0683F84;
-	Thu, 15 Jun 2023 16:28:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A4F0683F84
+	by smtp1.osuosl.org (Postfix) with ESMTP id D41D583C9E;
+	Thu, 15 Jun 2023 16:28:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D41D583C9E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686846482;
-	bh=EuG1qNaG+5r4R22QMX03YOdyTWmNzmw40uMWrfPsMyY=;
+	s=default; t=1686846486;
+	bh=m6aRlf7WE4iodQalH3ak4ouvcKT+6up5d6MDeHPIQH0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=829VtK2EmQPeKOY5RuxZxS6sgAs7SP/XiPW4pCxkdG/a7pAewurQgf5mb8XTGx7Kq
-	 URGoK/oogKHTDfjyNml3Z5Da2gDHF7Ovs2xYZER0j3/UnEnkNogRtOvt8afCOVTHW9
-	 y3JkmPeMM/xXzLSitrevX+1awfR+h5rx7kfglmjR4kADd7VS060ohPIQy1GwaeD3jj
-	 bqV/OI7FLZY4uq/QI7s3WrHvR4jHzFHEOTPG45uu56bKD0xT67lU4LT0pHAGCLQTVe
-	 zVISJTMRYoy/I2cmmlCf4Y6Pu6Q63ZlJ6TykFLNDFCJ8TJyquAZT9nsqA+Ztys5agu
-	 BjBt+LksHFGGg==
+	b=9ui5WuZGNy6KuELZIrN/jpLIH0dpPmhdf7jUdd8uBc+Gz4cB/w1X0ipwlXBem1TGB
+	 xmqJKN272do3uusknR32J2f5NQ8O/NMGLR6dzQ9ufdS6jWJ4ZSRlT8GoRkjYgBaEfu
+	 TSe8Pn5XUKUC+yEJ8nSpT6G8Wn7dME2BwcYvPTTfAJumVmzy9pNQi+N5eXU4Cw8zVO
+	 /v/gJMhER9NH42C4ZbzPPz2fPysK15xIUqJrqw7yCPvYJjPQ+CmqRZVI8ZeIdGy8UZ
+	 IOXEsiuy5IcGfVVLKil/RoXJ8lTNEobkVEchMlb+UKN4aPxWRTZhVk/PXSVaF6Urh4
+	 ShgjVdKNkWExg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1RUpPDLK6cw5; Thu, 15 Jun 2023 16:28:01 +0000 (UTC)
+	with ESMTP id 7YhOf8REvp8A; Thu, 15 Jun 2023 16:28:06 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8EDD583F41;
-	Thu, 15 Jun 2023 16:28:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8EDD583F41
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 582D71BF23B
+	by smtp1.osuosl.org (Postfix) with ESMTP id B258A83F56;
+	Thu, 15 Jun 2023 16:28:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B258A83F56
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 837831BF969
  for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 16:27:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9CBA6400DD
- for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 16:27:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9CBA6400DD
+ by smtp1.osuosl.org (Postfix) with ESMTP id 5675C83F41
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 16:27:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5675C83F41
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id mETzFfW3s7PU for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id w2Sfzn1TDqDn for <intel-wired-lan@lists.osuosl.org>;
  Thu, 15 Jun 2023 16:27:55 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E2E194194E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EFAB083F2B
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E2E194194E
+ by smtp1.osuosl.org (Postfix) with ESMTPS id EFAB083F2B
  for <intel-wired-lan@lists.osuosl.org>; Thu, 15 Jun 2023 16:27:54 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="445336172"
-X-IronPort-AV: E=Sophos;i="6.00,245,1681196400"; d="scan'208";a="445336172"
+X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="445336167"
+X-IronPort-AV: E=Sophos;i="6.00,245,1681196400"; d="scan'208";a="445336167"
 Received: from orsmga002.jf.intel.com ([10.7.209.21])
  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  15 Jun 2023 09:27:53 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="712513712"
-X-IronPort-AV: E=Sophos;i="6.00,245,1681196400"; d="scan'208";a="712513712"
+X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="712513715"
+X-IronPort-AV: E=Sophos;i="6.00,245,1681196400"; d="scan'208";a="712513715"
 Received: from dmert-dev.jf.intel.com ([10.166.241.14])
  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  15 Jun 2023 09:27:52 -0700
 From: Dave Ertman <david.m.ertman@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 15 Jun 2023 09:29:23 -0700
-Message-Id: <20230615162932.762756-2-david.m.ertman@intel.com>
+Date: Thu, 15 Jun 2023 09:29:26 -0700
+Message-Id: <20230615162932.762756-5-david.m.ertman@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230615162932.762756-1-david.m.ertman@intel.com>
 References: <20230615162932.762756-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686846474; x=1718382474;
+ t=1686846475; x=1718382475;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=TbrE/BLnSYljGvOSSpo3ot/g4MKOgNqph8ntzp4MgYw=;
- b=ZFI6IDeVg9+F83q0LMy4Eso1CJxrpSc78n5Tq9kp9Rpa+bQGlxZHiTyZ
- l04zLjM0AfHnPPUGSvsCiKvUoIXiLMgBC1yL3rJLo+l4dt7jY96miIXnF
- ZbXzwsdlSENKuXnpZp0ioJljHkTjYEm/I4FRok9DuvhxGNRiKjzz+O5EH
- DmYVIjHzzyQhAF9h4rdhFlgVv/t7o5oGaw3eEwXvbMTNQrefFmKLCGzf8
- r5w3AKhSLdh5PVZxwvPD/mlKZVqDfVKwzQtnN1xgDLc5mi9+6dZTGYq9M
- bPRqFZlfxSa+/eFpKs+X9eOaRnBorYTMMf6V8QDNNbLIz1cKs7xFzXzcQ
- A==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=Df80PhDC8Hc4FKLMeST6dc9kOq/ZscRjiTgms8+gkuk=;
+ b=DlV7Pa3DAUhcwoiqXWpR3kVnh43azemhAORdLK1HQuZ0TnpyaMGnulGn
+ NWuV0Nx7JX/5Pjdyj0jy3G8JfYDX8RrijfbZGfRcFlHQj4U1mZiWzgW8p
+ fD1MsUPbKfpd3T+zBoErSxfeiFJtYBc3soqN3YKzO7DiW5ObpfWlqyAge
+ FKJrdwd06ilTAHrkfrh0Se/wIuG5g+8cCYxn0rJl0D7W0gM09wfzPYUqz
+ S//FrsG6FCyHoXaiqltO1LbtxOCFS8vzDZW2qBJXgdrhOe95uYHd1Clzj
+ 479ReRlVhGaosOlU1yMzSJYjuc0llBr6GdoWZviDoh6u7eN+sCYRpjlB+
+ w==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ZFI6IDeV
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 01/10] ice: Correctly
- initialize queue context values
+ header.a=rsa-sha256 header.s=Intel header.b=DlV7Pa3D
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 04/10] ice: implement lag
+ netdev event handler
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,94 +103,265 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+The event handler for LAG will create a work item to place on the ordered
+workqueue to be processed.
 
-The ice_alloc_lan_q_ctx function allocates the queue context array for a
-given traffic class. This function uses devm_kcalloc which will
-zero-allocate the structure. Thus, prior to any queue being setup by
-ice_ena_vsi_txq, the q_ctx structure will have a q_handle of 0 and a q_teid
-of 0. These are potentially valid values.
+Add in defines for training packets and new recipes to be used by the
+switching block of the HW for LAG packet steering.
 
-Modify the ice_alloc_lan_q_ctx function to initialize every member of the
-q_ctx array to have invalid values. Modify ice_dis_vsi_txq to ensure that
-it assigns q_teid to an invalid value when it assigns q_handle to the
-invalid value as well.
+Update the ice_lag struct to reflect the new processing methodology.
 
-This will allow other code to check whether the queue context is currently
-valid before operating on it.
-
-Reviewed-by: Simon Horman <simon.horman@corigine.com>
-Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_common.c |  1 +
- drivers/net/ethernet/intel/ice/ice_sched.c  | 23 ++++++++++++++++-----
- 2 files changed, 19 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lag.c | 124 ++++++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_lag.h |  30 +++++-
+ 2 files changed, 140 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index deb55b6d516a..09e2e38d538e 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4673,6 +4673,7 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_queues,
- 			break;
- 		ice_free_sched_node(pi, node);
- 		q_ctx->q_handle = ICE_INVAL_Q_HANDLE;
-+		q_ctx->q_teid = ICE_INVAL_TEID;
- 	}
- 	mutex_unlock(&pi->sched_lock);
- 	kfree(qg_list);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index b664d60fd037..79a8972873f1 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -569,18 +569,24 @@ ice_alloc_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 new_numqs)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+index d018e68f5a6d..5725772cf8f4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.c
++++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+@@ -56,11 +56,10 @@ static void ice_lag_set_backup(struct ice_lag *lag)
+  */
+ static void ice_display_lag_info(struct ice_lag *lag)
  {
- 	struct ice_vsi_ctx *vsi_ctx;
- 	struct ice_q_ctx *q_ctx;
-+	u16 idx;
+-	const char *name, *peer, *upper, *role, *bonded, *primary;
++	const char *name, *upper, *role, *bonded, *primary;
+ 	struct device *dev = &lag->pf->pdev->dev;
  
- 	vsi_ctx = ice_get_vsi_ctx(hw, vsi_handle);
- 	if (!vsi_ctx)
- 		return -EINVAL;
- 	/* allocate LAN queue contexts */
- 	if (!vsi_ctx->lan_q_ctx[tc]) {
--		vsi_ctx->lan_q_ctx[tc] = devm_kcalloc(ice_hw_to_dev(hw),
--						      new_numqs,
--						      sizeof(*q_ctx),
--						      GFP_KERNEL);
--		if (!vsi_ctx->lan_q_ctx[tc])
-+		q_ctx = devm_kcalloc(ice_hw_to_dev(hw), new_numqs,
-+				     sizeof(*q_ctx), GFP_KERNEL);
-+		if (!q_ctx)
- 			return -ENOMEM;
-+
-+		for (idx = 0; idx < new_numqs; idx++) {
-+			q_ctx[idx].q_handle = ICE_INVAL_Q_HANDLE;
-+			q_ctx[idx].q_teid = ICE_INVAL_TEID;
-+		}
-+
-+		vsi_ctx->lan_q_ctx[tc] = q_ctx;
- 		vsi_ctx->num_lan_q_entries[tc] = new_numqs;
- 		return 0;
+ 	name = lag->netdev ? netdev_name(lag->netdev) : "unset";
+-	peer = lag->peer_netdev ? netdev_name(lag->peer_netdev) : "unset";
+ 	upper = lag->upper_netdev ? netdev_name(lag->upper_netdev) : "unset";
+ 	primary = lag->primary ? "TRUE" : "FALSE";
+ 	bonded = lag->bonded ? "BONDED" : "UNBONDED";
+@@ -82,8 +81,8 @@ static void ice_display_lag_info(struct ice_lag *lag)
+ 		role = "ERROR";
  	}
-@@ -592,9 +598,16 @@ ice_alloc_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 new_numqs)
- 				     sizeof(*q_ctx), GFP_KERNEL);
- 		if (!q_ctx)
- 			return -ENOMEM;
-+
- 		memcpy(q_ctx, vsi_ctx->lan_q_ctx[tc],
- 		       prev_num * sizeof(*q_ctx));
- 		devm_kfree(ice_hw_to_dev(hw), vsi_ctx->lan_q_ctx[tc]);
-+
-+		for (idx = prev_num; idx < new_numqs; idx++) {
-+			q_ctx[idx].q_handle = ICE_INVAL_Q_HANDLE;
-+			q_ctx[idx].q_teid = ICE_INVAL_TEID;
-+		}
-+
- 		vsi_ctx->lan_q_ctx[tc] = q_ctx;
- 		vsi_ctx->num_lan_q_entries[tc] = new_numqs;
+ 
+-	dev_dbg(dev, "%s %s, peer:%s, upper:%s, role:%s, primary:%s\n", name,
+-		bonded, peer, upper, role, primary);
++	dev_dbg(dev, "%s %s, upper:%s, role:%s, primary:%s\n", name, bonded,
++		upper, role, primary);
+ }
+ 
+ /**
+@@ -198,7 +197,6 @@ ice_lag_unlink(struct ice_lag *lag,
+ 		lag->upper_netdev = NULL;
  	}
+ 
+-	lag->peer_netdev = NULL;
+ 	ice_set_rdma_cap(pf);
+ 	lag->bonded = false;
+ 	lag->role = ICE_LAG_NONE;
+@@ -288,6 +286,59 @@ static void ice_lag_changeupper_event(struct ice_lag *lag, void *ptr)
+ 	ice_display_lag_info(lag);
+ }
+ 
++/**
++ * ice_lag_process_event - process a task assigned to the lag_wq
++ * @work: pointer to work_struct
++ */
++static void ice_lag_process_event(struct work_struct *work)
++{
++	struct netdev_notifier_changeupper_info *info;
++	struct ice_lag_work *lag_work;
++	struct net_device *netdev;
++	struct list_head *tmp, *n;
++	struct ice_pf *pf;
++
++	lag_work = container_of(work, struct ice_lag_work, lag_task);
++	pf = lag_work->lag->pf;
++
++	mutex_lock(&pf->lag_mutex);
++	lag_work->lag->netdev_head = &lag_work->netdev_list.node;
++
++	switch (lag_work->event) {
++	case NETDEV_CHANGEUPPER:
++		info = &lag_work->info.changeupper_info;
++		ice_lag_changeupper_event(lag_work->lag, info);
++		break;
++	case NETDEV_BONDING_INFO:
++		ice_lag_info_event(lag_work->lag, &lag_work->info.bonding_info);
++		break;
++	case NETDEV_UNREGISTER:
++		if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
++			netdev = lag_work->info.bonding_info.info.dev;
++			if ((netdev == lag_work->lag->netdev ||
++			     lag_work->lag->primary) && lag_work->lag->bonded)
++				ice_lag_unregister(lag_work->lag, netdev);
++		}
++		break;
++	default:
++		break;
++	}
++
++	/* cleanup resources allocated for this work item */
++	list_for_each_safe(tmp, n, &lag_work->netdev_list.node) {
++		struct ice_lag_netdev_list *entry;
++
++		entry = list_entry(tmp, struct ice_lag_netdev_list, node);
++		list_del(&entry->node);
++		kfree(entry);
++	}
++	lag_work->lag->netdev_head = NULL;
++
++	mutex_unlock(&pf->lag_mutex);
++
++	kfree(lag_work);
++}
++
+ /**
+  * ice_lag_event_handler - handle LAG events from netdev
+  * @notif_blk: notifier block registered by this netdev
+@@ -299,31 +350,79 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
+ 		      void *ptr)
+ {
+ 	struct net_device *netdev = netdev_notifier_info_to_dev(ptr);
++	struct net_device *upper_netdev;
++	struct ice_lag_work *lag_work;
+ 	struct ice_lag *lag;
+ 
+-	lag = container_of(notif_blk, struct ice_lag, notif_block);
++	if (!netif_is_ice(netdev))
++		return NOTIFY_DONE;
++
++	if (event != NETDEV_CHANGEUPPER && event != NETDEV_BONDING_INFO &&
++	    event != NETDEV_UNREGISTER)
++		return NOTIFY_DONE;
+ 
++	if (!(netdev->priv_flags & IFF_BONDING))
++		return NOTIFY_DONE;
++
++	lag = container_of(notif_blk, struct ice_lag, notif_block);
+ 	if (!lag->netdev)
+ 		return NOTIFY_DONE;
+ 
+-	/* Check that the netdev is in the working namespace */
+ 	if (!net_eq(dev_net(netdev), &init_net))
+ 		return NOTIFY_DONE;
+ 
++	/* This memory will be freed at the end of ice_lag_process_event */
++	lag_work = kzalloc(sizeof(*lag_work), GFP_KERNEL);
++	if (!lag_work)
++		return -ENOMEM;
++
++	lag_work->event_netdev = netdev;
++	lag_work->lag = lag;
++	lag_work->event = event;
++	if (event == NETDEV_CHANGEUPPER) {
++		struct netdev_notifier_changeupper_info *info;
++
++		info = ptr;
++		upper_netdev = info->upper_dev;
++	} else {
++		upper_netdev = netdev_master_upper_dev_get(netdev);
++	}
++
++	INIT_LIST_HEAD(&lag_work->netdev_list.node);
++	if (upper_netdev) {
++		struct ice_lag_netdev_list *nd_list;
++		struct net_device *tmp_nd;
++
++		rcu_read_lock();
++		for_each_netdev_in_bond_rcu(upper_netdev, tmp_nd) {
++			nd_list = kzalloc(sizeof(*nd_list), GFP_KERNEL);
++			if (!nd_list)
++				break;
++
++			nd_list->netdev = tmp_nd;
++			list_add(&nd_list->node, &lag_work->netdev_list.node);
++		}
++		rcu_read_unlock();
++	}
++
+ 	switch (event) {
+ 	case NETDEV_CHANGEUPPER:
+-		ice_lag_changeupper_event(lag, ptr);
++		lag_work->info.changeupper_info =
++			*((struct netdev_notifier_changeupper_info *)ptr);
+ 		break;
+ 	case NETDEV_BONDING_INFO:
+-		ice_lag_info_event(lag, ptr);
+-		break;
+-	case NETDEV_UNREGISTER:
+-		ice_lag_unregister(lag, netdev);
++		lag_work->info.bonding_info =
++			*((struct netdev_notifier_bonding_info *)ptr);
+ 		break;
+ 	default:
++		lag_work->info.notifier_info =
++			*((struct netdev_notifier_info *)ptr);
+ 		break;
+ 	}
+ 
++	INIT_WORK(&lag_work->lag_task, ice_lag_process_event);
++	queue_work(ice_lag_wq, &lag_work->lag_task);
++
+ 	return NOTIFY_DONE;
+ }
+ 
+@@ -398,7 +497,6 @@ int ice_init_lag(struct ice_pf *pf)
+ 	lag->netdev = vsi->netdev;
+ 	lag->role = ICE_LAG_NONE;
+ 	lag->bonded = false;
+-	lag->peer_netdev = NULL;
+ 	lag->upper_netdev = NULL;
+ 	lag->notif_block.notifier_call = NULL;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
+index 2c373676c42f..a4314a46c82c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.h
++++ b/drivers/net/ethernet/intel/ice/ice_lag.h
+@@ -14,20 +14,48 @@ enum ice_lag_role {
+ 	ICE_LAG_UNSET
+ };
+ 
++#define ICE_LAG_INVALID_PORT 0xFF
++
+ struct ice_pf;
++struct ice_vf;
++
++struct ice_lag_netdev_list {
++	struct list_head node;
++	struct net_device *netdev;
++};
+ 
+ /* LAG info struct */
+ struct ice_lag {
+ 	struct ice_pf *pf; /* backlink to PF struct */
+ 	struct net_device *netdev; /* this PF's netdev */
+-	struct net_device *peer_netdev;
+ 	struct net_device *upper_netdev; /* upper bonding netdev */
++	struct list_head *netdev_head;
+ 	struct notifier_block notif_block;
++	s32 bond_mode;
++	u16 bond_swid; /* swid for primary interface */
++	u8 active_port; /* lport value for the current active port */
+ 	u8 bonded:1; /* currently bonded */
+ 	u8 primary:1; /* this is primary */
++	u16 pf_recipe;
++	u16 pf_rule_id;
++	u16 cp_rule_idx;
+ 	u8 role;
+ };
+ 
++/* LAG workqueue struct */
++struct ice_lag_work {
++	struct work_struct lag_task;
++	struct ice_lag_netdev_list netdev_list;
++	struct ice_lag *lag;
++	unsigned long event;
++	struct net_device *event_netdev;
++	union {
++		struct netdev_notifier_changeupper_info changeupper_info;
++		struct netdev_notifier_bonding_info bonding_info;
++		struct netdev_notifier_info notifier_info;
++	} info;
++};
++
+ int ice_init_lag(struct ice_pf *pf);
+ void ice_deinit_lag(struct ice_pf *pf);
+ #endif /* _ICE_LAG_H_ */
 -- 
 2.40.1
 
