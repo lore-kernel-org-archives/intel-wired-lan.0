@@ -4,82 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 901DBEB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Jun 2023 01:16:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BA7FEB64DA
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Jun 2023 01:16:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 22AF441A2A;
-	Fri, 16 Jun 2023 01:16:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 22AF441A2A
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0E6E041FAE;
+	Fri, 16 Jun 2023 01:16:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0E6E041FAE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686878169;
-	bh=hDQao4PR5p0nY9Seqei3P3p/BtfdS07k8K9j0dHBO4g=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=z53YUzq3hew31Bd3XQyp/458FeJ14oomXjUTXUfZL36V2dGP/SrOJlMivxoUb1J2h
-	 PuL0zvsq+E5Ic42pzLpK82h8eVTrtjjc7ASR7GD7sdwe+Eb8b7VIOrfr/32NQQoH2V
-	 +4wbr+3OfhzutlDT6teu27+54vodGNGBjDDDDgnCZSYCUYVvFLTruU4n980+mSdrf0
-	 GyH8ldEFpWPWTeY9v+H3Ue7dWxz12vpCbHEc9/wHLYhCNK1oZT2QYRxkDLeUcb8mSM
-	 0eFp3XgIXKNbrljxYslZvBRna2AU9BEgnfAEhlX1Cj+/UQNeHiv6JCnwEOK4Rh2+AO
-	 sIybnB63YdBGQ==
+	s=default; t=1686878174;
+	bh=5tYu/Mq7O6vXCG7D+DX0PDaiLN6+GOE5WX9sEr7vvdQ=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=Kxu80mKhOHsccl7lVcgFaNoaOechRAhFAWICLBincsGFphoHptaoyT4eWQJUfUuAA
+	 eJW8EDPBu9GXRgrI6bORy1Qh5WTCcScJyOb8PawW5Hp43OJFHXNJ2Z71z5O5TBgIc0
+	 EMQ5TmLsjm3u1Yyqoe4w6hNWH6YAO6AGOE7scoxcw8AaaNSYsxTNNtGRih2SRKvD/2
+	 SQCtSq6JiplmkNviQdzFHahCAn4oEcuLSGJCu5+4lYzIOZNrvyTx+4q5UwN8SDPPij
+	 zbH9w/6agsIJ6UhzzARcm99W6gIy0E1nKlXmgZm8ZnnU2zA579vkcV2XO5K0xOHYkz
+	 luwldHEmDRKnQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id UKG1y5TwHEzZ; Fri, 16 Jun 2023 01:16:07 +0000 (UTC)
+	with ESMTP id 8FMLuKm07Y6E; Fri, 16 Jun 2023 01:16:12 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8E2C041B69;
-	Fri, 16 Jun 2023 01:16:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8E2C041B69
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5A4CC41B86;
+	Fri, 16 Jun 2023 01:16:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5A4CC41B86
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 026191BF36E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:07 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 224E41BF36E
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id CA0BB60FA1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CA0BB60FA1
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4251060FA1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4251060FA1
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hNboyEEwrEil for <intel-wired-lan@lists.osuosl.org>;
- Fri, 16 Jun 2023 01:16:05 +0000 (UTC)
+ with ESMTP id 3T3GVUwlOGBP for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Jun 2023 01:16:06 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9EA1D605A9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4E50B60F6E
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9EA1D605A9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:05 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="362501647"
-X-IronPort-AV: E=Sophos;i="6.00,246,1681196400"; d="scan'208";a="362501647"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 4E50B60F6E
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:06 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="362501654"
+X-IronPort-AV: E=Sophos;i="6.00,246,1681196400"; d="scan'208";a="362501654"
 Received: from orsmga008.jf.intel.com ([10.7.209.65])
  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Jun 2023 18:16:04 -0700
+ 15 Jun 2023 18:16:05 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="742455403"
-X-IronPort-AV: E=Sophos;i="6.00,246,1681196400"; d="scan'208";a="742455403"
+X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="742455417"
+X-IronPort-AV: E=Sophos;i="6.00,246,1681196400"; d="scan'208";a="742455417"
 Received: from unknown (HELO fedora.jf.intel.com) ([10.166.80.24])
- by orsmga008.jf.intel.com with ESMTP; 15 Jun 2023 18:16:04 -0700
+ by orsmga008.jf.intel.com with ESMTP; 15 Jun 2023 18:16:05 -0700
 From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 15 Jun 2023 18:15:24 -0700
-Message-Id: <20230616011539.85875-1-pavan.kumar.linga@intel.com>
+Date: Thu, 15 Jun 2023 18:15:26 -0700
+Message-Id: <20230616011539.85875-3-pavan.kumar.linga@intel.com>
 X-Mailer: git-send-email 2.37.3
+In-Reply-To: <20230616011539.85875-1-pavan.kumar.linga@intel.com>
+References: <20230616011539.85875-1-pavan.kumar.linga@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686878165; x=1718414165;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=1EBTQNp34XzaKUlXq66EJ7tONtxFtLXHHF9fdiackUw=;
- b=G5vQfxoq0yRqMeM3dIhZrFgfA3CLiPGGb4PWjxN+xXGO70kzj8ax4dua
- XhdNb1AVYAil+4ZMO8SLQDoqzZ0yoamKnmrn555TTq4OQ0FtFDCJWIeVf
- /5lpgXA+8TfefRkT9YQ8sV32ux+FFsjYiz284kQ1PphJTK8uiBm54kIhA
- OFwOAq8fow/ZrnS7hf/92zCkL3xUGxUG7Tr7l7YCgD2Uyo5SC87Z6S38b
- IOK50cXX34x4TOmhSZO6vZLgV6HUnrEgqZ8BJ1nZ1Bh9wdq4ApgWzH+aj
- VOjxHqwVfT+WPlOoaFgO/Vf4/O9JvshESYOqvjcXO9RdSjVPeS600hQPg
- w==;
+ t=1686878166; x=1718414166;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=Dhi6WGCItxNwMN2X4nt34PQrKQF7ExbUEkqWOcrujzc=;
+ b=Bh63hNN/BWUsY7ckDzBxSzVhSRuipg9211SQUe01ylVxHzYyboaCMB6k
+ ypMgCGgjzpLgy0sMv9g+mX6MD+fTbQ785SOWK496Yu2c7DpTfmCoTU7db
+ 7Sn43M2lj+Nh7DE+5ApZaWLk4mXgrecJlsOLSZeRAS5jS3hob5h0zlLQS
+ qQI3hY8aCNGxz6mwmro+FdsLq/fpkjKAj/foESzisFOJugDYV/wj3G2ji
+ dLj6cd2//K0FJkS7OOriCaWHOnzTKuCyaXDQdomq5i+hyRui17XLldUsm
+ rif0vuumQ2HMJk9ifUkyb5cJmyATRsInqtPYX/w4M+7JMoE3aOr+Wd9Yo
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=G5vQfxoq
-Subject: [Intel-wired-lan] [PATCH iwl-next v8 00/15] Introduce Intel IDPF
- driver
+ header.a=rsa-sha256 header.s=Intel header.b=Bh63hNN/
+Subject: [Intel-wired-lan] [PATCH iwl-next v8 02/15] idpf: add module
+ register and probe functionality
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,162 +95,266 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Willem de Bruijn <willemb@google.com>,
+ Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>,
+ Phani Burra <phani.r.burra@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This patch series introduces the Intel(R) Infrastructure Data Path Function
-(IDPF) driver. It is used for both physical and virtual functions. Except
-for some of the device operations the rest of the functionality is the
-same for both PF and VF. IDPF uses virtchnl version2 opcodes and
-structures defined in the virtchnl2 header file which helps the driver
-to learn the capabilities and register offsets from the device
-Control Plane (CP) instead of assuming the default values.
+From: Phani Burra <phani.r.burra@intel.com>
 
-The format of the series follows the driver init flow to interface open.
-To start with, probe gets called and kicks off the driver initialization
-by spawning the 'vc_event_task' work queue which in turn calls the
-'hard reset' function. As part of that, the mailbox is initialized which
-is used to send/receive the virtchnl messages to/from the CP. Once that is
-done, 'core init' kicks in which requests all the required global resources
-from the CP and spawns the 'init_task' work queue to create the vports.
+Add the required support to register IDPF PCI driver, as well as
+probe and remove call backs. Enable the PCI device and request
+the kernel to reserve the memory resources that will be used by the
+driver. Finally map the BAR0 address space.
 
-Based on the capability information received, the driver creates the said
-number of vports (one or many) where each vport is associated to a netdev.
-Also, each vport has its own resources such as queues, vectors etc.
-From there, rest of the netdev_ops and data path are added.
-
-IDPF implements both single queue which is traditional queueing model
-as well as split queue model. In split queue model, it uses separate queue
-for both completion descriptors and buffers which helps to implement
-out-of-order completions. It also helps to implement asymmetric queues,
-for example multiple RX completion queues can be processed by a single
-RX buffer queue and multiple TX buffer queues can be processed by a
-single TX completion queue. In single queue model, same queue is used
-for both descriptor completions as well as buffer completions. It also
-supports features such as generic checksum offload, generic receive
-offload (hardware GRO) etc.
+Signed-off-by: Phani Burra <phani.r.burra@intel.com>
+Co-developed-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+Co-developed-by: Madhu Chittim <madhu.chittim@intel.com>
+Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
+Co-developed-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
+Signed-off-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
+Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Reviewed-by: Willem de Bruijn <willemb@google.com>
+Co-developed-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 ---
-v7 -> v8:
- (patch 5):
- * instead of void, used 'struct virtchnl2_create_vport' type for
-   vport_params_recvd and vport_params_reqd and removed the typecasting
- * used u16/u32 as needed instead of int for variables which cannot be
-   negative and updated in all the places whereever applicable
- (patch 6):
- * changed the commit message to "add ptypes and MAC filter support"
- * used the sender Signed-off-by as the last tag on all the patches
- * removed unnecessary variables 0-init
- * instead of fixing the code in this commit, fixed it in the commit
-   where the change was introduced first
- * moved get_type_info struct on to the stack instead of memory alloc
- * moved mutex_lock and ptype_info memory alloc outside while loop and
-   adjusted the return flow
- * used 'break' instead of 'continue' in ptype id switch case
-
-v6 --> v7:
- (patch 2):
- * added "Intel(R)" to the DRV_SUMMARY and Makefile.
- (patch 4, 5, 6, 15):
- * replaced IDPF_VC_MSG_PENDING flag with mutex 'vc_buf_lock' for the
-   adapter related virtchnl opcodes.
- * get the mutex lock in the virtchnl send thread itself instead of
-   in receive thread.
- (patch 5, 6, 7, 8, 9, 11, 14, 15):
- * replaced IDPF_VPORT_VC_MSG_PENDING flag with mutex 'vc_buf_lock' for
-   the vport related virtchnl opcodes.
- * get the mutex lock in the virtchnl send thread itself instead of
-   in receive thread.
- (patch 6):
- * converted get_ptype_info logic from 1:N to 1:1 message exchange for
-   better handling of mutex lock.
- (patch 15):
- * introduced 'stats_lock' spinlock to avoid concurrent stats update.
-
-iwl-next:
-v7 - https://lore.kernel.org/intel-wired-lan/20230612231021.39409-1-pavan.kumar.linga@intel.com/
-v6 - https://lore.kernel.org/netdev/20230523002252.26124-1-pavan.kumar.linga@intel.com/
-v5 - https://lore.kernel.org/netdev/20230513225710.3898-1-emil.s.tantilov@intel.com/
-v4 - https://lore.kernel.org/netdev/20230508194326.482-1-emil.s.tantilov@intel.com/
-v3 - https://lore.kernel.org/netdev/20230427020917.12029-1-emil.s.tantilov@intel.com/
-v2 - https://lore.kernel.org/netdev/20230411011354.2619359-1-pavan.kumar.linga@intel.com/
-v1 - https://lore.kernel.org/netdev/20230329140404.1647925-1-pavan.kumar.linga@intel.com/
-
-Alan Brady (4):
-  idpf: configure resources for TX queues
-  idpf: configure resources for RX queues
-  idpf: add RX splitq napi poll support
-  idpf: add ethtool callbacks
-
-Joshua Hay (5):
-  idpf: add controlq init and reset checks
-  idpf: add splitq start_xmit
-  idpf: add TX splitq napi poll support
-  idpf: add singleq start_xmit and napi poll
-  idpf: configure SRIOV and add other ndo_ops
-
-Pavan Kumar Linga (5):
-  virtchnl: add virtchnl version 2 ops
-  idpf: add core init and interrupt request
-  idpf: add create vport and netdev configuration
-  idpf: add ptypes and MAC filter support
-  idpf: initialize interrupts and enable vport
-
-Phani Burra (1):
-  idpf: add module register and probe functionality
-
- .../device_drivers/ethernet/index.rst         |    1 +
- .../device_drivers/ethernet/intel/idpf.rst    |  160 +
- drivers/net/ethernet/intel/Kconfig            |   10 +
- drivers/net/ethernet/intel/Makefile           |    1 +
- drivers/net/ethernet/intel/idpf/Makefile      |   18 +
- drivers/net/ethernet/intel/idpf/idpf.h        |  751 +++
- .../net/ethernet/intel/idpf/idpf_controlq.c   |  641 +++
- .../net/ethernet/intel/idpf/idpf_controlq.h   |  131 +
- .../ethernet/intel/idpf/idpf_controlq_api.h   |  169 +
- .../ethernet/intel/idpf/idpf_controlq_setup.c |  175 +
- drivers/net/ethernet/intel/idpf/idpf_dev.c    |  165 +
- drivers/net/ethernet/intel/idpf/idpf_devids.h |   10 +
- .../net/ethernet/intel/idpf/idpf_ethtool.c    | 1331 +++++
- .../ethernet/intel/idpf/idpf_lan_pf_regs.h    |  124 +
- .../net/ethernet/intel/idpf/idpf_lan_txrx.h   |  293 ++
- .../ethernet/intel/idpf/idpf_lan_vf_regs.h    |  128 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c    | 2363 +++++++++
- drivers/net/ethernet/intel/idpf/idpf_main.c   |  271 +
- drivers/net/ethernet/intel/idpf/idpf_mem.h    |   20 +
- .../ethernet/intel/idpf/idpf_singleq_txrx.c   | 1251 +++++
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 4608 +++++++++++++++++
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  852 +++
- drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |  164 +
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 3783 ++++++++++++++
- drivers/net/ethernet/intel/idpf/virtchnl2.h   | 1289 +++++
- .../ethernet/intel/idpf/virtchnl2_lan_desc.h  |  448 ++
- 26 files changed, 19157 insertions(+)
- create mode 100644 Documentation/networking/device_drivers/ethernet/intel/idpf.rst
+ drivers/net/ethernet/intel/idpf/Makefile      |   9 ++
+ drivers/net/ethernet/intel/idpf/idpf.h        |  22 +++
+ .../net/ethernet/intel/idpf/idpf_controlq.h   |  14 ++
+ drivers/net/ethernet/intel/idpf/idpf_devids.h |  10 ++
+ drivers/net/ethernet/intel/idpf/idpf_main.c   | 136 ++++++++++++++++++
+ 5 files changed, 191 insertions(+)
  create mode 100644 drivers/net/ethernet/intel/idpf/Makefile
  create mode 100644 drivers/net/ethernet/intel/idpf/idpf.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.c
  create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq_api.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq_setup.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_dev.c
  create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devids.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_ethtool.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_lan_pf_regs.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_lan_txrx.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_lan_vf_regs.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_lib.c
  create mode 100644 drivers/net/ethernet/intel/idpf/idpf_main.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_mem.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_txrx.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_txrx.h
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
- create mode 100644 drivers/net/ethernet/intel/idpf/virtchnl2.h
- create mode 100644 drivers/net/ethernet/intel/idpf/virtchnl2_lan_desc.h
 
+diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
+new file mode 100644
+index 000000000000..73173bde98b1
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/Makefile
+@@ -0,0 +1,9 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Copyright (C) 2023 Intel Corporation
++
++# Makefile for Intel(R) Infrastructure Data Path Function Linux Driver
++
++obj-$(CONFIG_IDPF) += idpf.o
++
++idpf-y := \
++	idpf_main.o
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+new file mode 100644
+index 000000000000..08be5621140f
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -0,0 +1,22 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2023 Intel Corporation */
++
++#ifndef _IDPF_H_
++#define _IDPF_H_
++
++#include <linux/aer.h>
++#include <linux/etherdevice.h>
++#include <linux/pci.h>
++
++#include "idpf_controlq.h"
++
++/* available message levels */
++#define IDPF_AVAIL_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
++
++struct idpf_adapter {
++	struct pci_dev *pdev;
++	u32 msg_enable;
++	struct idpf_hw hw;
++};
++
++#endif /* !_IDPF_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_controlq.h b/drivers/net/ethernet/intel/idpf/idpf_controlq.h
+new file mode 100644
+index 000000000000..11388834cf64
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_controlq.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2023 Intel Corporation */
++
++#ifndef _IDPF_CONTROLQ_H_
++#define _IDPF_CONTROLQ_H_
++
++struct idpf_hw {
++	void __iomem *hw_addr;
++	resource_size_t hw_addr_len;
++
++	struct idpf_adapter *back;
++};
++
++#endif /* _IDPF_CONTROLQ_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_devids.h b/drivers/net/ethernet/intel/idpf/idpf_devids.h
+new file mode 100644
+index 000000000000..5154a52ae61c
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_devids.h
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2023 Intel Corporation */
++
++#ifndef _IDPF_DEVIDS_H_
++#define _IDPF_DEVIDS_H_
++
++#define IDPF_DEV_ID_PF			0x1452
++#define IDPF_DEV_ID_VF			0x145C
++
++#endif /* _IDPF_DEVIDS_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+new file mode 100644
+index 000000000000..43ae6d8c13b7
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+@@ -0,0 +1,136 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2023 Intel Corporation */
++
++#include "idpf.h"
++#include "idpf_devids.h"
++
++#define DRV_SUMMARY	"Intel(R) Infrastructure Data Path Function Linux Driver"
++
++MODULE_DESCRIPTION(DRV_SUMMARY);
++MODULE_LICENSE("GPL");
++
++/**
++ * idpf_remove - Device removal routine
++ * @pdev: PCI device information struct
++ */
++static void idpf_remove(struct pci_dev *pdev)
++{
++	struct idpf_adapter *adapter = pci_get_drvdata(pdev);
++
++	pci_disable_pcie_error_reporting(pdev);
++	pci_set_drvdata(pdev, NULL);
++	kfree(adapter);
++}
++
++/**
++ * idpf_shutdown - PCI callback for shutting down device
++ * @pdev: PCI device information struct
++ */
++static void idpf_shutdown(struct pci_dev *pdev)
++{
++	idpf_remove(pdev);
++
++	if (system_state == SYSTEM_POWER_OFF)
++		pci_set_power_state(pdev, PCI_D3hot);
++}
++
++/**
++ * idpf_cfg_hw - Initialize HW struct
++ * @adapter: adapter to setup hw struct for
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int idpf_cfg_hw(struct idpf_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	struct idpf_hw *hw = &adapter->hw;
++
++	hw->hw_addr = pcim_iomap_table(pdev)[0];
++	if (!hw->hw_addr) {
++		pci_err(pdev, "failed to allocate PCI iomap table\n");
++
++		return -ENOMEM;
++	}
++
++	hw->back = adapter;
++
++	return 0;
++}
++
++/**
++ * idpf_probe - Device initialization routine
++ * @pdev: PCI device information struct
++ * @ent: entry in idpf_pci_tbl
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
++{
++	struct device *dev = &pdev->dev;
++	struct idpf_adapter *adapter;
++	int err;
++
++	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
++	if (!adapter)
++		return -ENOMEM;
++	adapter->pdev = pdev;
++
++	err = pcim_enable_device(pdev);
++	if (err)
++		goto err_free;
++
++	err = pcim_iomap_regions(pdev, BIT(0), pci_name(pdev));
++	if (err) {
++		pci_err(pdev, "pcim_iomap_regions failed %pe\n", ERR_PTR(err));
++
++		goto err_free;
++	}
++
++	/* set up for high or low dma */
++	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
++	if (err) {
++		pci_err(pdev, "DMA configuration failed: %pe\n", ERR_PTR(err));
++
++		goto err_free;
++	}
++
++	pci_enable_pcie_error_reporting(pdev);
++	pci_set_master(pdev);
++	pci_set_drvdata(pdev, adapter);
++
++	/* setup msglvl */
++	adapter->msg_enable = netif_msg_init(-1, IDPF_AVAIL_NETIF_M);
++
++	err = idpf_cfg_hw(adapter);
++	if (err) {
++		dev_err(dev, "Failed to configure HW structure for adapter: %d\n",
++			err);
++		goto err_cfg_hw;
++	}
++
++	return 0;
++
++err_cfg_hw:
++	pci_disable_pcie_error_reporting(pdev);
++err_free:
++	kfree(adapter);
++	return err;
++}
++
++/* idpf_pci_tbl - PCI Dev idpf ID Table
++ */
++static const struct pci_device_id idpf_pci_tbl[] = {
++	{ PCI_VDEVICE(INTEL, IDPF_DEV_ID_PF)},
++	{ PCI_VDEVICE(INTEL, IDPF_DEV_ID_VF)},
++	{ /* Sentinel */ }
++};
++MODULE_DEVICE_TABLE(pci, idpf_pci_tbl);
++
++static struct pci_driver idpf_driver = {
++	.name			= KBUILD_MODNAME,
++	.id_table		= idpf_pci_tbl,
++	.probe			= idpf_probe,
++	.remove			= idpf_remove,
++	.shutdown		= idpf_shutdown,
++};
++module_pci_driver(idpf_driver);
 -- 
 2.37.3
 
