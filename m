@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B03DCEB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Jun 2023 01:17:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26A02EB64D9
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 16 Jun 2023 01:17:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 55AAB41BAD;
-	Fri, 16 Jun 2023 01:17:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 55AAB41BAD
+	by smtp4.osuosl.org (Postfix) with ESMTP id CABE141F9E;
+	Fri, 16 Jun 2023 01:17:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CABE141F9E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1686878243;
-	bh=Nq22CuXIzHxuAWv1eOFfVEIrzBDMzRw2YCeHpUkvufk=;
+	s=default; t=1686878255;
+	bh=XZFL1wlIH5qP3G2xRzEN9BxxadZ5Obh7DjRmovSxhcg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=AGeNi1LE5upXgw501EcTkO1MpA/CP0oLuCnBUNDo+M49ZoMAcvKDDb04hpDD3Rjlt
-	 1ZG7uKCoweM9cQrC/p6WETtRcfNrp12lRUba51YY/3G3hMBTR7xDmhBLTs7YFWhVJq
-	 A64gGpUjBMWLDGEIn8fk/bu/j+to2x/ObnTnTRONS7aspFq+wd3OLrTeGcaqTTkAAy
-	 pHo7nsoI8VDf0glc9Q2SZ7KAbrIRtd+jqNgkzyeHaiaFMQ6W0Ww/iI+pxmn8FtA/6t
-	 8wlyoM8iBpgdlNk83d1Rc7iptcL4417F/Swtlai5VcjPnX5OGlWPECRRm6A1axxdmW
-	 HkIb6Lym988lA==
+	b=ZEzXrIfVNwJu+x1xvf6QqIbqEwRpsErZIMDVCPB2BlZQOQvgXq/uoQjSK43HhuHKx
+	 q5ICT/Xlhs5Cpre/9FB/ETsTp21fMswFRbxPmqjUdFYNx9CMQ1eLgYbtlXnAdXLhya
+	 EKW75ESJQA5zTn5qLwaRDdPsYHVhv7MGFZH/0zOfyPpdW21Wzlxa/nt2NoUHjtPdQq
+	 0AbMspuqMJiSmkH5NGc3vdvenLf5GKPZ+uBDHUyDXjKO2BWOzDyuLa9IO4T446p4Es
+	 1AS52g1ied2l4Ox65R5TFN+Gtv+CRmuSlQSAs/HWBt0aLm86L9XzPQH/Y/hFEFrEx1
+	 +Wn0XTpKU6lFQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id TIH1GppqgokN; Fri, 16 Jun 2023 01:17:20 +0000 (UTC)
+	with ESMTP id ThwukS4xo7Yi; Fri, 16 Jun 2023 01:17:32 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1DC7D41F96;
-	Fri, 16 Jun 2023 01:17:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1DC7D41F96
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 213161BF36E
+	by smtp4.osuosl.org (Postfix) with ESMTP id 06F3842047;
+	Fri, 16 Jun 2023 01:17:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 06F3842047
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 9A5D51BF36E
  for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id EA83E83EA9
+ by smtp3.osuosl.org (Postfix) with ESMTP id DF15C60C15
  for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EA83E83EA9
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DF15C60C15
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ctOTtIjtGCg8 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 16 Jun 2023 01:16:09 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id dA13sfBj93o2 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 16 Jun 2023 01:16:08 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D3D9B83F1E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9F28060F6E
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D3D9B83F1E
- for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:08 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="362501683"
-X-IronPort-AV: E=Sophos;i="6.00,246,1681196400"; d="scan'208";a="362501683"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9F28060F6E
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 16 Jun 2023 01:16:07 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="362501663"
+X-IronPort-AV: E=Sophos;i="6.00,246,1681196400"; d="scan'208";a="362501663"
 Received: from orsmga008.jf.intel.com ([10.7.209.65])
  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Jun 2023 18:16:07 -0700
+ 15 Jun 2023 18:16:06 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="742455468"
-X-IronPort-AV: E=Sophos;i="6.00,246,1681196400"; d="scan'208";a="742455468"
+X-IronPort-AV: E=McAfee;i="6600,9927,10742"; a="742455435"
+X-IronPort-AV: E=Sophos;i="6.00,246,1681196400"; d="scan'208";a="742455435"
 Received: from unknown (HELO fedora.jf.intel.com) ([10.166.80.24])
- by orsmga008.jf.intel.com with ESMTP; 15 Jun 2023 18:16:07 -0700
+ by orsmga008.jf.intel.com with ESMTP; 15 Jun 2023 18:16:06 -0700
 From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 15 Jun 2023 18:15:37 -0700
-Message-Id: <20230616011539.85875-14-pavan.kumar.linga@intel.com>
+Date: Thu, 15 Jun 2023 18:15:30 -0700
+Message-Id: <20230616011539.85875-7-pavan.kumar.linga@intel.com>
 X-Mailer: git-send-email 2.37.3
 In-Reply-To: <20230616011539.85875-1-pavan.kumar.linga@intel.com>
 References: <20230616011539.85875-1-pavan.kumar.linga@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1686878168; x=1718414168;
+ t=1686878167; x=1718414167;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=hMH6ms/OteFtBdAPBI2IshHg1emNxFOqRsuDnyOjDF8=;
- b=QGzEji1b82Uj8888LvWhZYDAqCzOyfiexD7/0XfUKZmoCPRba6Myzog0
- XtFsXBTPEAuMTVAyRfIf8bYNJgvAbJnvzm7PdPjcg5ElvMezR68sCjKCe
- 0w5BDGB5DgBT8AIjf1v1ikc3aE2AxDCJ5xx+R7Lvvb6LHaOtjezbe1Gyt
- d5LM1PSBe2VRH5QGADgMffputImDkIN/V/6v7CvZTI7xUpQPNtl54ngdj
- B8hNa3QHmTq5EXV8lpVr3RWa7OowvRZAqobzeHKDR7iB/5gyZCpBEIuqC
- YZO2VeysBYxySwexT/+vNTkBjHm+QdhHU1c+Ru/MBGyV534Um7Vor0gfa
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=dl4gL1F15lOavUYzVZH/oV33YumtS6omooFwSCb429w=;
+ b=DTMwPkMuYOlFT4scSd8u14ZgYJd2EJUAgC5BI3MoVRgPY0XoU5zER9qS
+ Cia8FL4ZjGW+OG2j755kAvicu14QzHqtwLoHi/O8dVkDXg1dSiiAHXKfO
+ NwCLa9aeVMsLumJBAL8+e7nY8FgWMzDDJKoKUwLyJ+nGKVHyKrJbRMj0t
+ Cs1AB3uKMCucccHBKezpaRD9Yhl4dRDrPVdm6VlZv3TUCmf2G+vTHlgLk
+ PvgszM9duCq2nELbK1wYruk2iuYVsAR0X6Jw6/Pm5djmTBEphr5DjvtR6
+ VWJ7Ye7LNxSN2JwzmfHAZCR8WLAHElSQcQMFyoyOqbH9s9QaqUe6MEIo1
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QGzEji1b
-Subject: [Intel-wired-lan] [PATCH iwl-next v8 13/15] idpf: add singleq
- start_xmit and napi poll
+ header.a=rsa-sha256 header.s=Intel header.b=DTMwPkMu
+Subject: [Intel-wired-lan] [PATCH iwl-next v8 06/15] idpf: add ptypes and
+ MAC filter support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,1729 +96,1055 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Willem de Bruijn <willemb@google.com>,
+ Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>,
  Phani Burra <phani.r.burra@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Joshua Hay <joshua.a.hay@intel.com>
+Add the virtchnl support to request the packet types. Parse the responses
+received from CP and based on the protocol headers, populate the packet
+type structure with necessary information. Initialize the MAC address
+and add the virtchnl support to add and del MAC address.
 
-Add the start_xmit, TX and RX napi poll support for the single queue
-model. Unlike split queue model, single queue uses same queue to post
-buffer descriptors and completed descriptors.
-
-Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
 Co-developed-by: Alan Brady <alan.brady@intel.com>
 Signed-off-by: Alan Brady <alan.brady@intel.com>
+Co-developed-by: Joshua Hay <joshua.a.hay@intel.com>
+Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
 Co-developed-by: Madhu Chittim <madhu.chittim@intel.com>
 Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
 Co-developed-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Phani Burra <phani.r.burra@intel.com>
+Co-developed-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
+Signed-off-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Reviewed-by: Willem de Bruijn <willemb@google.com>
-Co-developed-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        |    8 +
- .../net/ethernet/intel/idpf/idpf_lan_txrx.h   |   57 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c    |    1 +
- drivers/net/ethernet/intel/idpf/idpf_main.c   |    1 +
- .../ethernet/intel/idpf/idpf_singleq_txrx.c   | 1184 ++++++++++++++++-
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   |   67 +-
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |   74 +-
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   |    2 +
- 8 files changed, 1359 insertions(+), 35 deletions(-)
+ drivers/net/ethernet/intel/idpf/idpf.h        |  37 ++
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    | 178 ++++++-
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h   | 112 ++++
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 485 ++++++++++++++++++
+ 4 files changed, 811 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 31e64f043ee3..3132c7c729f4 100644
+index c07564756a10..57a1c7639a59 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -14,6 +14,7 @@ struct idpf_vport_max_q;
- #include <linux/etherdevice.h>
- #include <linux/pci.h>
- #include <linux/bitfield.h>
-+#include <linux/sctp.h>
- #include <net/gro.h>
- #include <linux/dim.h>
+@@ -22,6 +22,7 @@ struct idpf_vport_max_q;
  
-@@ -239,6 +240,8 @@ struct idpf_vport {
- 	u32 txq_model;
- 	/* Used only in hotpath to get to the right queue very fast */
- 	struct idpf_queue **txqs;
-+	/* Enable CRC insertion offload */
-+	bool crc_enable;
+ /* Default Mailbox settings */
+ #define IDPF_DFLT_MBX_BUF_SIZE		SZ_4K
++#define IDPF_NUM_FILTERS_PER_MSG	20
+ #define IDPF_NUM_DFLT_MBX_Q		2	/* includes both TX and RX */
+ #define IDPF_DFLT_MBX_Q_LEN		64
+ #define IDPF_DFLT_MBX_ID		-1
+@@ -38,6 +39,13 @@ struct idpf_vport_max_q;
+ #define IDPF_VIRTCHNL_VERSION_MAJOR VIRTCHNL2_VERSION_MAJOR_2
+ #define IDPF_VIRTCHNL_VERSION_MINOR VIRTCHNL2_VERSION_MINOR_0
  
- 	/* RX */
- 	u16 num_rxq;
-@@ -423,6 +426,9 @@ struct idpf_adapter {
- 	DECLARE_BITMAP(vc_state, IDPF_VC_NBITS);
- 	char vc_msg[IDPF_DFLT_MBX_BUF_SIZE];
- 	struct idpf_dev_ops dev_ops;
-+	int num_vfs;
-+	/* Enable CRC insertion offload */
-+	bool crc_enable;
++struct idpf_mac_filter {
++	struct list_head list;
++	u8 macaddr[ETH_ALEN];
++	bool remove;		/* filter needs to be removed */
++	bool add;		/* filter needs to be added */
++};
++
+ enum idpf_state {
+ 	__IDPF_STARTUP,
+ 	__IDPF_VER_CHECK,
+@@ -141,6 +149,12 @@ struct idpf_dev_ops {
+ 	STATE(IDPF_VC_ALLOC_VECTORS_ERR)	\
+ 	STATE(IDPF_VC_DEALLOC_VECTORS)		\
+ 	STATE(IDPF_VC_DEALLOC_VECTORS_ERR)	\
++	STATE(IDPF_VC_ADD_MAC_ADDR)		\
++	STATE(IDPF_VC_ADD_MAC_ADDR_ERR)		\
++	STATE(IDPF_VC_DEL_MAC_ADDR)		\
++	STATE(IDPF_VC_DEL_MAC_ADDR_ERR)		\
++	STATE(IDPF_VC_GET_PTYPE_INFO)		\
++	STATE(IDPF_VC_GET_PTYPE_INFO_ERR)	\
+ 	STATE(IDPF_VC_NBITS)
  
- 	struct mutex reset_lock;	/* lock to protect reset flows */
- 	struct mutex sw_mutex;		/* lock to protect vport alloc flow */
-@@ -659,5 +665,7 @@ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
+ #define IDPF_GEN_ENUM(ENUM) ENUM,
+@@ -152,6 +166,19 @@ enum idpf_vport_vc_state {
+ 
+ extern const char * const idpf_vport_vc_state_str[];
+ 
++/**
++ * enum idpf_vport_flags - vport flags
++ * @IDPF_VPORT_ADD_MAC_REQ: Asynchronous add ether address in flight
++ * @IDPF_VPORT_DEL_MAC_REQ: Asynchronous delete ether address in flight
++ * @IDPF_VPORT_FLAGS_NBITS: Must be last
++ */
++enum idpf_vport_flags {
++	/* Asynchronous add/del ether address in flight */
++	IDPF_VPORT_ADD_MAC_REQ,
++	IDPF_VPORT_DEL_MAC_REQ,
++	IDPF_VPORT_FLAGS_NBITS,
++};
++
+ enum idpf_vport_state {
+ 	__IDPF_VPORT_DOWN,
+ 	__IDPF_VPORT_UP,
+@@ -181,13 +208,16 @@ struct idpf_vport {
+ 	u32 bufq_size[IDPF_MAX_BUFQS_PER_RXQ_GRP];
+ 	u16 num_rxq_grp;
+ 	u32 rxq_model;
++	struct idpf_rx_ptype_decoded rx_ptype_lkup[IDPF_RX_MAX_PTYPE];
+ 
+ 	struct idpf_adapter *adapter;
+ 	struct net_device *netdev;
++	DECLARE_BITMAP(flags, IDPF_VPORT_FLAGS_NBITS);
+ 	u16 vport_type;
+ 	u32 vport_id;
+ 	u16 idx;		/* software index in adapter vports struct */
+ 	bool default_vport;
++	bool base_rxd;
+ 
+ 	u16 max_mtu;
+ 	u8 default_mac_addr[ETH_ALEN];
+@@ -204,6 +234,9 @@ struct idpf_vport {
+ 	struct mutex stop_mutex;
+ 	/* lock to protect virtchnl buffer */
+ 	struct mutex vc_buf_lock;
++
++	/* lock to protect mac filters */
++	spinlock_t mac_filter_list_lock;
+ };
+ 
+ /* User defined configuration values for each vport */
+@@ -212,6 +245,7 @@ struct idpf_vport_user_config_data {
+ 	u16 num_req_rx_qs; /* user requested RX queues through ethtool */
+ 	u32 num_req_txq_desc; /* user requested TX queue descriptors through ethtool */
+ 	u32 num_req_rxq_desc; /* user requested RX queue descriptors through ethtool */
++	struct list_head mac_filter_list;
+ };
+ 
+ /**
+@@ -467,6 +501,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter);
+ int idpf_intr_req(struct idpf_adapter *adapter);
+ void idpf_intr_rel(struct idpf_adapter *adapter);
+ int idpf_send_destroy_vport_msg(struct idpf_vport *vport);
++int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport);
+ int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter);
+ int idpf_send_alloc_vectors_msg(struct idpf_adapter *adapter, u16 num_vectors);
+ void idpf_deinit_task(struct idpf_adapter *adapter);
+@@ -481,9 +516,11 @@ int idpf_vport_alloc_max_qs(struct idpf_adapter *adapter,
+ 			    struct idpf_vport_max_q *max_q);
+ void idpf_vport_dealloc_max_qs(struct idpf_adapter *adapter,
  			       struct idpf_vport_max_q *max_q);
- int idpf_check_supported_desc_ids(struct idpf_vport *vport);
- int idpf_send_map_unmap_queue_vector_msg(struct idpf_vport *vport, bool map);
-+int idpf_send_set_sriov_vfs_msg(struct idpf_adapter *adapter, u16 num_vfs);
-+int idpf_sriov_configure(struct pci_dev *pdev, int num_vfs);
++int idpf_add_del_mac_filters(struct idpf_vport *vport, bool add, bool async);
+ void idpf_vport_init(struct idpf_vport *vport, struct idpf_vport_max_q *max_q);
+ u32 idpf_get_vport_id(struct idpf_vport *vport);
+ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
+ 			       struct idpf_vport_max_q *max_q);
++int idpf_check_supported_desc_ids(struct idpf_vport *vport);
  
  #endif /* !_IDPF_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lan_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_lan_txrx.h
-index e072991f77bc..a5752dcab888 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lan_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lan_txrx.h
-@@ -64,6 +64,32 @@ enum idpf_rss_hash {
- #define IDPF_TXD_COMPLQ_QID_S		0
- #define IDPF_TXD_COMPLQ_QID_M		GENMASK_ULL(9, 0)
- 
-+/* For base mode TX descriptors */
-+
-+#define IDPF_TXD_CTX_QW0_TUNN_L4T_CS_S	23
-+#define IDPF_TXD_CTX_QW0_TUNN_L4T_CS_M	BIT_ULL(IDPF_TXD_CTX_QW0_TUNN_L4T_CS_S)
-+#define IDPF_TXD_CTX_QW0_TUNN_DECTTL_S	19
-+#define IDPF_TXD_CTX_QW0_TUNN_DECTTL_M	\
-+	(0xFULL << IDPF_TXD_CTX_QW0_TUNN_DECTTL_S)
-+#define IDPF_TXD_CTX_QW0_TUNN_NATLEN_S	12
-+#define IDPF_TXD_CTX_QW0_TUNN_NATLEN_M	\
-+	(0X7FULL << IDPF_TXD_CTX_QW0_TUNN_NATLEN_S)
-+#define IDPF_TXD_CTX_QW0_TUNN_EIP_NOINC_S	11
-+#define IDPF_TXD_CTX_QW0_TUNN_EIP_NOINC_M    \
-+	BIT_ULL(IDPF_TXD_CTX_QW0_TUNN_EIP_NOINC_S)
-+#define IDPF_TXD_CTX_EIP_NOINC_IPID_CONST	\
-+	IDPF_TXD_CTX_QW0_TUNN_EIP_NOINC_M
-+#define IDPF_TXD_CTX_QW0_TUNN_NATT_S	        9
-+#define IDPF_TXD_CTX_QW0_TUNN_NATT_M	(0x3ULL << IDPF_TXD_CTX_QW0_TUNN_NATT_S)
-+#define IDPF_TXD_CTX_UDP_TUNNELING	BIT_ULL(IDPF_TXD_CTX_QW0_TUNN_NATT_S)
-+#define IDPF_TXD_CTX_GRE_TUNNELING	(0x2ULL << IDPF_TXD_CTX_QW0_TUNN_NATT_S)
-+#define IDPF_TXD_CTX_QW0_TUNN_EXT_IPLEN_S	2
-+#define IDPF_TXD_CTX_QW0_TUNN_EXT_IPLEN_M	\
-+	(0x3FULL << IDPF_TXD_CTX_QW0_TUNN_EXT_IPLEN_S)
-+#define IDPF_TXD_CTX_QW0_TUNN_EXT_IP_S	0
-+#define IDPF_TXD_CTX_QW0_TUNN_EXT_IP_M	\
-+	(0x3ULL << IDPF_TXD_CTX_QW0_TUNN_EXT_IP_S)
-+
- #define IDPF_TXD_CTX_QW1_MSS_S		50
- #define IDPF_TXD_CTX_QW1_MSS_M		GENMASK_ULL(63, 50)
- #define IDPF_TXD_CTX_QW1_TSO_LEN_S	30
-@@ -112,6 +138,27 @@ enum idpf_tx_desc_dtype_value {
- 	IDPF_TX_DESC_DTYPE_DESC_DONE			= 15,
- };
- 
-+enum idpf_tx_ctx_desc_cmd_bits {
-+	IDPF_TX_CTX_DESC_TSO		= 0x01,
-+	IDPF_TX_CTX_DESC_TSYN		= 0x02,
-+	IDPF_TX_CTX_DESC_IL2TAG2	= 0x04,
-+	IDPF_TX_CTX_DESC_RSVD		= 0x08,
-+	IDPF_TX_CTX_DESC_SWTCH_NOTAG	= 0x00,
-+	IDPF_TX_CTX_DESC_SWTCH_UPLINK	= 0x10,
-+	IDPF_TX_CTX_DESC_SWTCH_LOCAL	= 0x20,
-+	IDPF_TX_CTX_DESC_SWTCH_VSI	= 0x30,
-+	IDPF_TX_CTX_DESC_FILT_AU_EN	= 0x40,
-+	IDPF_TX_CTX_DESC_FILT_AU_EVICT	= 0x80,
-+	IDPF_TX_CTX_DESC_RSVD1		= 0xF00
-+};
-+
-+enum idpf_tx_desc_len_fields {
-+	/* Note: These are predefined bit offsets */
-+	IDPF_TX_DESC_LEN_MACLEN_S	= 0, /* 7 BITS */
-+	IDPF_TX_DESC_LEN_IPLEN_S	= 7, /* 7 BITS */
-+	IDPF_TX_DESC_LEN_L4_LEN_S	= 14 /* 4 BITS */
-+};
-+
- enum idpf_tx_base_desc_cmd_bits {
- 	IDPF_TX_DESC_CMD_EOP			= BIT(0),
- 	IDPF_TX_DESC_CMD_RS			= BIT(1),
-@@ -148,6 +195,16 @@ struct idpf_splitq_tx_compl_desc {
- 	u8 rsvd; /* Reserved */
- }; /* writeback used with completion queues */
- 
-+/* Context descriptors */
-+struct idpf_base_tx_ctx_desc {
-+	struct {
-+		__le32 tunneling_params;
-+		__le16 l2tag2;
-+		__le16 rsvd1;
-+	} qw0;
-+	__le64 qw1; /* type_cmd_tlen_mss/rt_hint */
-+};
-+
- /* Common cmd field defines for all desc except Flex Flow Scheduler (0x0C) */
- enum idpf_tx_flex_desc_cmd_bits {
- 	IDPF_TX_FLEX_DESC_CMD_EOP			= BIT(0),
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 17cfc5a927f1..90f31ec3415a 100644
+index 84023d451b30..c168388b2f15 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -1561,4 +1561,5 @@ static const struct net_device_ops idpf_netdev_ops_splitq = {
- static const struct net_device_ops idpf_netdev_ops_singleq = {
- 	.ndo_open = idpf_open,
- 	.ndo_stop = idpf_stop,
-+	.ndo_start_xmit = idpf_tx_singleq_start,
- };
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
-index e66b88c0b67e..a013e8fca132 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_main.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-@@ -134,6 +134,7 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		break;
- 	case IDPF_DEV_ID_VF:
- 		idpf_vf_dev_ops_init(adapter);
-+		adapter->crc_enable = true;
- 		break;
- 	default:
- 		err = -ENODEV;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-index 538429af9f37..5fe5eb37ecb1 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-@@ -3,6 +3,887 @@
- 
- #include "idpf.h"
+@@ -293,6 +293,154 @@ int idpf_intr_req(struct idpf_adapter *adapter)
+ 	return err;
+ }
  
 +/**
-+ * idpf_tx_singleq_csum - Enable tx checksum offloads
-+ * @skb: pointer to skb
-+ * @off: pointer to struct that holds offload parameters
++ * idpf_find_mac_filter - Search filter list for specific mac filter
++ * @vport: main vport structure
++ * @macaddr: the MAC address
 + *
-+ * Returns 0 or error (negative) if checksum offload cannot be executed, 1
-+ * otherwise.
-+ */
-+static int idpf_tx_singleq_csum(struct sk_buff *skb,
-+				struct idpf_tx_offload_params *off)
++ * Returns ptr to the filter object or NULL. Must be called while holding the
++ * mac_filter_list_lock.
++ **/
++static struct idpf_mac_filter *idpf_find_mac_filter(struct idpf_vport *vport,
++						    const u8 *macaddr)
 +{
-+	u32 l4_len, l3_len, l2_len;
-+	union {
-+		struct iphdr *v4;
-+		struct ipv6hdr *v6;
-+		unsigned char *hdr;
-+	} ip;
-+	union {
-+		struct tcphdr *tcp;
-+		unsigned char *hdr;
-+	} l4;
-+	u32 offset, cmd = 0;
-+	u8 l4_proto = 0;
-+	__be16 frag_off;
-+	bool is_tso;
++	struct idpf_vport_user_config_data *config_data;
++	struct idpf_adapter *adapter = vport->adapter;
++	struct idpf_mac_filter *f;
 +
-+	if (skb->ip_summed != CHECKSUM_PARTIAL)
-+		return 0;
++	if (!macaddr)
++		return NULL;
 +
-+	ip.hdr = skb_network_header(skb);
-+	l4.hdr = skb_transport_header(skb);
++	config_data = &adapter->vport_config[vport->idx]->user_config;
 +
-+	/* compute outer L2 header size */
-+	l2_len = ip.hdr - skb->data;
-+	offset = FIELD_PREP(0x3F << IDPF_TX_DESC_LEN_MACLEN_S, l2_len / 2);
-+	is_tso = !!(off->tx_flags & IDPF_TX_FLAGS_TSO);
-+	if (skb->encapsulation) {
-+		u32 tunnel = 0;
-+
-+		/* define outer network header type */
-+		if (off->tx_flags & IDPF_TX_FLAGS_IPV4) {
-+			/* The stack computes the IP header already, the only
-+			 * time we need the hardware to recompute it is in the
-+			 * case of TSO.
-+			 */
-+			tunnel |= is_tso ?
-+				  IDPF_TX_CTX_EXT_IP_IPV4 :
-+				  IDPF_TX_CTX_EXT_IP_IPV4_NO_CSUM;
-+
-+			l4_proto = ip.v4->protocol;
-+		} else if (off->tx_flags & IDPF_TX_FLAGS_IPV6) {
-+			tunnel |= IDPF_TX_CTX_EXT_IP_IPV6;
-+
-+			l4_proto = ip.v6->nexthdr;
-+			if (ipv6_ext_hdr(l4_proto))
-+				ipv6_skip_exthdr(skb, skb_network_offset(skb) +
-+						 sizeof(*ip.v6),
-+						 &l4_proto, &frag_off);
-+		}
-+
-+		/* define outer transport */
-+		switch (l4_proto) {
-+		case IPPROTO_UDP:
-+			tunnel |= IDPF_TXD_CTX_UDP_TUNNELING;
-+			break;
-+		case IPPROTO_GRE:
-+			tunnel |= IDPF_TXD_CTX_GRE_TUNNELING;
-+			break;
-+		case IPPROTO_IPIP:
-+		case IPPROTO_IPV6:
-+			l4.hdr = skb_inner_network_header(skb);
-+			break;
-+		default:
-+			if (is_tso)
-+				return -1;
-+
-+			skb_checksum_help(skb);
-+
-+			return 0;
-+		}
-+		off->tx_flags |= IDPF_TX_FLAGS_TUNNEL;
-+
-+		/* compute outer L3 header size */
-+		tunnel |= FIELD_PREP(IDPF_TXD_CTX_QW0_TUNN_EXT_IPLEN_M,
-+				     (l4.hdr - ip.hdr) / 4);
-+
-+		/* switch IP header pointer from outer to inner header */
-+		ip.hdr = skb_inner_network_header(skb);
-+
-+		/* compute tunnel header size */
-+		tunnel |= FIELD_PREP(IDPF_TXD_CTX_QW0_TUNN_NATLEN_M,
-+				     (ip.hdr - l4.hdr) / 2);
-+
-+		/* indicate if we need to offload outer UDP header */
-+		if (is_tso &&
-+		    !(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
-+		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
-+			tunnel |= IDPF_TXD_CTX_QW0_TUNN_L4T_CS_M;
-+
-+		/* record tunnel offload values */
-+		off->cd_tunneling |= tunnel;
-+
-+		/* switch L4 header pointer from outer to inner */
-+		l4.hdr = skb_inner_transport_header(skb);
-+		l4_proto = 0;
-+
-+		/* reset type as we transition from outer to inner headers */
-+		off->tx_flags &= ~(IDPF_TX_FLAGS_IPV4 | IDPF_TX_FLAGS_IPV6);
-+		if (ip.v4->version == 4)
-+			off->tx_flags |= IDPF_TX_FLAGS_IPV4;
-+		if (ip.v6->version == 6)
-+			off->tx_flags |= IDPF_TX_FLAGS_IPV6;
++	list_for_each_entry(f, &config_data->mac_filter_list, list) {
++		if (ether_addr_equal(macaddr, f->macaddr))
++			return f;
 +	}
 +
-+	/* Enable IP checksum offloads */
-+	if (off->tx_flags & IDPF_TX_FLAGS_IPV4) {
-+		l4_proto = ip.v4->protocol;
-+		/* See comment above regarding need for HW to recompute IP
-+		 * header checksum in the case of TSO.
-+		 */
-+		if (is_tso)
-+			cmd |= IDPF_TX_DESC_CMD_IIPT_IPV4_CSUM;
-+		else
-+			cmd |= IDPF_TX_DESC_CMD_IIPT_IPV4;
++	return NULL;
++}
 +
-+	} else if (off->tx_flags & IDPF_TX_FLAGS_IPV6) {
-+		cmd |= IDPF_TX_DESC_CMD_IIPT_IPV6;
-+		l4_proto = ip.v6->nexthdr;
-+		if (ipv6_ext_hdr(l4_proto))
-+			ipv6_skip_exthdr(skb, skb_network_offset(skb) +
-+					 sizeof(*ip.v6), &l4_proto,
-+					 &frag_off);
-+	} else {
-+		return -1;
-+	}
++/**
++ * __idpf_add_mac_filter - Add mac filter helper function
++ * @vport: main vport struct
++ * @macaddr: address to add
++ *
++ * Takes mac_filter_list_lock spinlock to add new filter to list.
++ */
++static int __idpf_add_mac_filter(struct idpf_vport *vport, const u8 *macaddr)
++{
++	struct idpf_vport_config *vport_config;
++	struct idpf_mac_filter *f;
 +
-+	/* compute inner L3 header size */
-+	l3_len = l4.hdr - ip.hdr;
-+	offset |= (l3_len / 4) << IDPF_TX_DESC_LEN_IPLEN_S;
++	vport_config = vport->adapter->vport_config[vport->idx];
++	spin_lock_bh(&vport->mac_filter_list_lock);
 +
-+	/* Enable L4 checksum offloads */
-+	switch (l4_proto) {
-+	case IPPROTO_TCP:
-+		/* enable checksum offloads */
-+		cmd |= IDPF_TX_DESC_CMD_L4T_EOFT_TCP;
-+		l4_len = l4.tcp->doff;
-+		break;
-+	case IPPROTO_UDP:
-+		/* enable UDP checksum offload */
-+		cmd |= IDPF_TX_DESC_CMD_L4T_EOFT_UDP;
-+		l4_len = sizeof(struct udphdr) >> 2;
-+		break;
-+	case IPPROTO_SCTP:
-+		/* enable SCTP checksum offload */
-+		cmd |= IDPF_TX_DESC_CMD_L4T_EOFT_SCTP;
-+		l4_len = sizeof(struct sctphdr) >> 2;
-+		break;
-+	default:
-+		if (is_tso)
-+			return -1;
-+
-+		skb_checksum_help(skb);
++	f = idpf_find_mac_filter(vport, macaddr);
++	if (f) {
++		f->remove = false;
++		spin_unlock_bh(&vport->mac_filter_list_lock);
 +
 +		return 0;
 +	}
 +
-+	offset |= l4_len << IDPF_TX_DESC_LEN_L4_LEN_S;
-+	off->td_cmd |= cmd;
-+	off->hdr_offsets |= offset;
++	f = kzalloc(sizeof(*f), GFP_ATOMIC);
++	if (!f) {
++		spin_unlock_bh(&vport->mac_filter_list_lock);
 +
-+	return 1;
-+}
-+
-+/**
-+ * idpf_tx_singleq_map - Build the Tx base descriptor
-+ * @tx_q: queue to send buffer on
-+ * @first: first buffer info buffer to use
-+ * @offloads: pointer to struct that holds offload parameters
-+ *
-+ * This function loops over the skb data pointed to by *first
-+ * and gets a physical address for each memory location and programs
-+ * it and the length into the transmit base mode descriptor.
-+ */
-+static void idpf_tx_singleq_map(struct idpf_queue *tx_q,
-+				struct idpf_tx_buf *first,
-+				struct idpf_tx_offload_params *offloads)
-+{
-+	u32 offsets = offloads->hdr_offsets;
-+	struct idpf_tx_buf *tx_buf = first;
-+	struct idpf_base_tx_desc *tx_desc;
-+	struct sk_buff *skb = first->skb;
-+	u64 td_cmd = offloads->td_cmd;
-+	unsigned int data_len, size;
-+	u16 i = tx_q->next_to_use;
-+	struct netdev_queue *nq;
-+	skb_frag_t *frag;
-+	dma_addr_t dma;
-+	u64 td_tag = 0;
-+
-+	data_len = skb->data_len;
-+	size = skb_headlen(skb);
-+
-+	tx_desc = IDPF_BASE_TX_DESC(tx_q, i);
-+
-+	dma = dma_map_single(tx_q->dev, skb->data, size, DMA_TO_DEVICE);
-+
-+	/* write each descriptor with CRC bit */
-+	if (tx_q->vport->crc_enable)
-+		td_cmd |= IDPF_TX_DESC_CMD_ICRC;
-+
-+	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
-+		unsigned int max_data = IDPF_TX_MAX_DESC_DATA_ALIGNED;
-+
-+		if (dma_mapping_error(tx_q->dev, dma))
-+			return idpf_tx_dma_map_error(tx_q, skb, first, i);
-+
-+		/* record length, and DMA address */
-+		dma_unmap_len_set(tx_buf, len, size);
-+		dma_unmap_addr_set(tx_buf, dma, dma);
-+
-+		/* align size to end of page */
-+		max_data += -dma & (IDPF_TX_MAX_READ_REQ_SIZE - 1);
-+		tx_desc->buf_addr = cpu_to_le64(dma);
-+
-+		/* account for data chunks larger than the hardware
-+		 * can handle
-+		 */
-+		while (unlikely(size > IDPF_TX_MAX_DESC_DATA)) {
-+			tx_desc->qw1 = idpf_tx_singleq_build_ctob(td_cmd,
-+								  offsets,
-+								  max_data,
-+								  td_tag);
-+			tx_desc++;
-+			i++;
-+
-+			if (i == tx_q->desc_count) {
-+				tx_desc = IDPF_BASE_TX_DESC(tx_q, 0);
-+				i = 0;
-+			}
-+
-+			dma += max_data;
-+			size -= max_data;
-+
-+			max_data = IDPF_TX_MAX_DESC_DATA_ALIGNED;
-+			tx_desc->buf_addr = cpu_to_le64(dma);
-+		}
-+
-+		if (!data_len)
-+			break;
-+
-+		tx_desc->qw1 = idpf_tx_singleq_build_ctob(td_cmd, offsets,
-+							  size, td_tag);
-+		tx_desc++;
-+		i++;
-+
-+		if (i == tx_q->desc_count) {
-+			tx_desc = IDPF_BASE_TX_DESC(tx_q, 0);
-+			i = 0;
-+		}
-+
-+		size = skb_frag_size(frag);
-+		data_len -= size;
-+
-+		dma = skb_frag_dma_map(tx_q->dev, frag, 0, size,
-+				       DMA_TO_DEVICE);
-+
-+		tx_buf = &tx_q->tx_buf[i];
++		return -ENOMEM;
 +	}
 +
-+	skb_tx_timestamp(first->skb);
++	ether_addr_copy(f->macaddr, macaddr);
++	list_add_tail(&f->list, &vport_config->user_config.mac_filter_list);
++	f->add = true;
 +
-+	/* write last descriptor with RS and EOP bits */
-+	td_cmd |= (u64)(IDPF_TX_DESC_CMD_EOP | IDPF_TX_DESC_CMD_RS);
++	spin_unlock_bh(&vport->mac_filter_list_lock);
 +
-+	tx_desc->qw1 = idpf_tx_singleq_build_ctob(td_cmd, offsets, size, td_tag);
-+
-+	IDPF_SINGLEQ_BUMP_RING_IDX(tx_q, i);
-+
-+	/* set next_to_watch value indicating a packet is present */
-+	first->next_to_watch = tx_desc;
-+
-+	nq = netdev_get_tx_queue(tx_q->vport->netdev, tx_q->idx);
-+	netdev_tx_sent_queue(nq, first->bytecount);
-+
-+	idpf_tx_buf_hw_update(tx_q, i, netdev_xmit_more());
++	return 0;
 +}
 +
 +/**
-+ * idpf_tx_singleq_get_ctx_desc - grab next desc and update buffer ring
-+ * @txq: queue to put context descriptor on
++ * idpf_add_mac_filter - Add a mac filter to the filter list
++ * @vport: main vport structure
++ * @macaddr: the MAC address
++ * @async: Don't wait for return message
 + *
-+ * Since the TX buffer rings mimics the descriptor ring, update the tx buffer
-+ * ring entry to reflect that this index is a context descriptor
-+ */
-+static struct idpf_base_tx_ctx_desc *
-+idpf_tx_singleq_get_ctx_desc(struct idpf_queue *txq)
-+{
-+	struct idpf_base_tx_ctx_desc *ctx_desc;
-+	int ntu = txq->next_to_use;
-+
-+	memset(&txq->tx_buf[ntu], 0, sizeof(struct idpf_tx_buf));
-+	txq->tx_buf[ntu].ctx_entry = true;
-+
-+	ctx_desc = IDPF_BASE_TX_CTX_DESC(txq, ntu);
-+
-+	IDPF_SINGLEQ_BUMP_RING_IDX(txq, ntu);
-+	txq->next_to_use = ntu;
-+
-+	return ctx_desc;
-+}
-+
-+/**
-+ * idpf_tx_singleq_build_ctx_desc - populate context descriptor
-+ * @txq: queue to send buffer on
-+ * @offload: offload parameter structure
++ * Returns 0 on success or error on failure. If interface is up, we'll also
++ * send the virtchnl message to tell hardware about the filter.
 + **/
-+static void idpf_tx_singleq_build_ctx_desc(struct idpf_queue *txq,
-+					   struct idpf_tx_offload_params *offload)
++static int idpf_add_mac_filter(struct idpf_vport *vport,
++			       const u8 *macaddr, bool async)
 +{
-+	struct idpf_base_tx_ctx_desc *desc = idpf_tx_singleq_get_ctx_desc(txq);
-+	u64 qw1 = (u64)IDPF_TX_DESC_DTYPE_CTX;
++	int err;
 +
-+	if (offload->tso_segs) {
-+		qw1 |= IDPF_TX_CTX_DESC_TSO << IDPF_TXD_CTX_QW1_CMD_S;
-+		qw1 |= ((u64)offload->tso_len << IDPF_TXD_CTX_QW1_TSO_LEN_S) &
-+			IDPF_TXD_CTX_QW1_TSO_LEN_M;
-+		qw1 |= ((u64)offload->mss << IDPF_TXD_CTX_QW1_MSS_S) &
-+			IDPF_TXD_CTX_QW1_MSS_M;
++	err = __idpf_add_mac_filter(vport, macaddr);
++	if (err)
++		return err;
 +
-+		u64_stats_update_begin(&txq->stats_sync);
-+		u64_stats_inc(&txq->q_stats.tx.lso_pkts);
-+		u64_stats_update_end(&txq->stats_sync);
-+	}
++	if (vport->state == __IDPF_VPORT_UP)
++		err = idpf_add_del_mac_filters(vport, true, async);
 +
-+	desc->qw0.tunneling_params = cpu_to_le32(offload->cd_tunneling);
-+
-+	desc->qw0.l2tag2 = 0;
-+	desc->qw0.rsvd1 = 0;
-+	desc->qw1 = cpu_to_le64(qw1);
++	return err;
 +}
 +
 +/**
-+ * idpf_tx_singleq_frame - Sends buffer on Tx ring using base descriptors
-+ * @skb: send buffer
-+ * @tx_q: queue to send buffer on
-+ *
-+ * Returns NETDEV_TX_OK if sent, else an error code
++ * idpf_deinit_mac_addr - deinitialize mac address for vport
++ * @vport: main vport structure
 + */
-+static netdev_tx_t idpf_tx_singleq_frame(struct sk_buff *skb,
-+					 struct idpf_queue *tx_q)
++static void idpf_deinit_mac_addr(struct idpf_vport *vport)
 +{
-+	struct idpf_tx_offload_params offload = { };
-+	struct idpf_tx_buf *first;
-+	unsigned int count;
-+	__be16 protocol;
-+	int csum, tso;
++	struct idpf_mac_filter *f;
 +
-+	count = idpf_tx_desc_count_required(tx_q, skb);
-+	if (unlikely(!count))
-+		return idpf_tx_drop_skb(tx_q, skb);
++	spin_lock_bh(&vport->mac_filter_list_lock);
 +
-+	if (idpf_tx_maybe_stop_common(tx_q,
-+				      count + IDPF_TX_DESCS_PER_CACHE_LINE +
-+				      IDPF_TX_DESCS_FOR_CTX)) {
-+		idpf_tx_buf_hw_update(tx_q, tx_q->next_to_use, false);
-+
-+		return NETDEV_TX_BUSY;
++	f = idpf_find_mac_filter(vport, vport->default_mac_addr);
++	if (f) {
++		list_del(&f->list);
++		kfree(f);
 +	}
 +
-+	protocol = vlan_get_protocol(skb);
-+	if (protocol == htons(ETH_P_IP))
-+		offload.tx_flags |= IDPF_TX_FLAGS_IPV4;
-+	else if (protocol == htons(ETH_P_IPV6))
-+		offload.tx_flags |= IDPF_TX_FLAGS_IPV6;
-+
-+	tso = idpf_tso(skb, &offload);
-+	if (tso < 0)
-+		goto out_drop;
-+
-+	csum = idpf_tx_singleq_csum(skb, &offload);
-+	if (csum < 0)
-+		goto out_drop;
-+
-+	if (tso || offload.cd_tunneling)
-+		idpf_tx_singleq_build_ctx_desc(tx_q, &offload);
-+
-+	/* record the location of the first descriptor for this packet */
-+	first = &tx_q->tx_buf[tx_q->next_to_use];
-+	first->skb = skb;
-+
-+	if (tso) {
-+		first->gso_segs = offload.tso_segs;
-+		first->bytecount = skb->len + ((first->gso_segs - 1) * offload.tso_hdr_len);
-+	} else {
-+		first->bytecount = max_t(unsigned int, skb->len, ETH_ZLEN);
-+		first->gso_segs = 1;
-+	}
-+	idpf_tx_singleq_map(tx_q, first, &offload);
-+
-+	return NETDEV_TX_OK;
-+
-+out_drop:
-+	return idpf_tx_drop_skb(tx_q, skb);
++	spin_unlock_bh(&vport->mac_filter_list_lock);
 +}
 +
 +/**
-+ * idpf_tx_singleq_start - Selects the right Tx queue to send buffer
-+ * @skb: send buffer
-+ * @netdev: network interface device structure
-+ *
-+ * Returns NETDEV_TX_OK if sent, else an error code
++ * idpf_init_mac_addr - initialize mac address for vport
++ * @vport: main vport structure
++ * @netdev: pointer to netdev struct associated with this vport
 + */
-+netdev_tx_t idpf_tx_singleq_start(struct sk_buff *skb,
-+				  struct net_device *netdev)
++static int idpf_init_mac_addr(struct idpf_vport *vport,
++			      struct net_device *netdev)
 +{
-+	struct idpf_vport *vport = idpf_netdev_to_vport(netdev);
-+	struct idpf_queue *tx_q;
++	struct idpf_adapter *adapter = vport->adapter;
++	int err;
 +
-+	if (!vport || test_bit(IDPF_HR_RESET_IN_PROG, vport->adapter->flags))
-+		return NETDEV_TX_BUSY;
++	if (is_valid_ether_addr(vport->default_mac_addr)) {
++		eth_hw_addr_set(netdev, vport->default_mac_addr);
++		ether_addr_copy(netdev->perm_addr, vport->default_mac_addr);
 +
-+	tx_q = vport->txqs[skb_get_queue_mapping(skb)];
-+
-+	/* hardware can't handle really short frames, hardware padding works
-+	 * beyond this point
-+	 */
-+	if (skb_put_padto(skb, IDPF_TX_MIN_PKT_LEN)) {
-+		idpf_tx_buf_hw_update(tx_q, tx_q->next_to_use, false);
-+
-+		return NETDEV_TX_OK;
++		return idpf_add_mac_filter(vport, vport->default_mac_addr, false);
 +	}
 +
-+	return idpf_tx_singleq_frame(skb, tx_q);
-+}
++	if (!idpf_is_cap_ena(vport->adapter, IDPF_OTHER_CAPS,
++			     VIRTCHNL2_CAP_MACFILTER)) {
++		dev_err(&adapter->pdev->dev,
++			"MAC address is not provided and capability is not set\n");
 +
-+/**
-+ * idpf_tx_singleq_clean - Reclaim resources from queue
-+ * @tx_q: Tx queue to clean
-+ * @napi_budget: Used to determine if we are in netpoll
-+ * @cleaned: returns number of packets cleaned
-+ *
-+ */
-+static bool idpf_tx_singleq_clean(struct idpf_queue *tx_q, int napi_budget, int *cleaned)
-+{
-+	unsigned int budget = tx_q->vport->compln_clean_budget;
-+	unsigned int total_bytes = 0, total_pkts = 0;
-+	struct idpf_base_tx_desc *tx_desc;
-+	s16 ntc = tx_q->next_to_clean;
-+	struct idpf_tx_buf *tx_buf;
-+	struct idpf_vport *vport;
-+	struct netdev_queue *nq;
-+
-+	tx_desc = IDPF_BASE_TX_DESC(tx_q, ntc);
-+	tx_buf = &tx_q->tx_buf[ntc];
-+	ntc -= tx_q->desc_count;
-+
-+	do {
-+		struct idpf_base_tx_desc *eop_desc;
-+
-+		/* If this entry in the ring was used as a context descriptor,
-+		 * it's corresponding entry in the buffer ring will indicate as
-+		 * such. We can skip this descriptor since there is no buffer
-+		 * to clean.
-+		 */
-+		if (tx_buf->ctx_entry) {
-+			/* Clear this flag here to avoid stale flag values when this
-+			 * buffer is used for actual data in the future. There are
-+			 * cases where the tx_buf struct / the flags field will not
-+			 * be cleared before being reused.
-+			 */
-+			tx_buf->ctx_entry = false;
-+			goto fetch_next_txq_desc;
-+		}
-+
-+		/* if next_to_watch is not set then no work pending */
-+		eop_desc = (struct idpf_base_tx_desc *)tx_buf->next_to_watch;
-+		if (!eop_desc)
-+			break;
-+
-+		/* prevent any other reads prior to eop_desc */
-+		smp_rmb();
-+
-+		/* if the descriptor isn't done, no work yet to do */
-+		if (!(eop_desc->qw1 &
-+		      cpu_to_le64(IDPF_TX_DESC_DTYPE_DESC_DONE)))
-+			break;
-+
-+		/* clear next_to_watch to prevent false hangs */
-+		tx_buf->next_to_watch = NULL;
-+
-+		/* update the statistics for this packet */
-+		total_bytes += tx_buf->bytecount;
-+		total_pkts += tx_buf->gso_segs;
-+
-+		napi_consume_skb(tx_buf->skb, napi_budget);
-+
-+		/* unmap skb header data */
-+		dma_unmap_single(tx_q->dev,
-+				 dma_unmap_addr(tx_buf, dma),
-+				 dma_unmap_len(tx_buf, len),
-+				 DMA_TO_DEVICE);
-+
-+		/* clear tx_buf data */
-+		tx_buf->skb = NULL;
-+		dma_unmap_len_set(tx_buf, len, 0);
-+
-+		/* unmap remaining buffers */
-+		while (tx_desc != eop_desc) {
-+			tx_buf++;
-+			tx_desc++;
-+			ntc++;
-+			if (unlikely(!ntc)) {
-+				ntc -= tx_q->desc_count;
-+				tx_buf = tx_q->tx_buf;
-+				tx_desc = IDPF_BASE_TX_DESC(tx_q, 0);
-+			}
-+
-+			/* unmap any remaining paged data */
-+			if (dma_unmap_len(tx_buf, len)) {
-+				dma_unmap_page(tx_q->dev,
-+					       dma_unmap_addr(tx_buf, dma),
-+					       dma_unmap_len(tx_buf, len),
-+					       DMA_TO_DEVICE);
-+				dma_unmap_len_set(tx_buf, len, 0);
-+			}
-+		}
-+
-+		/* update budget only if we did something */
-+		budget--;
-+
-+fetch_next_txq_desc:
-+		tx_buf++;
-+		tx_desc++;
-+		ntc++;
-+		if (unlikely(!ntc)) {
-+			ntc -= tx_q->desc_count;
-+			tx_buf = tx_q->tx_buf;
-+			tx_desc = IDPF_BASE_TX_DESC(tx_q, 0);
-+		}
-+	} while (likely(budget));
-+
-+	ntc += tx_q->desc_count;
-+	tx_q->next_to_clean = ntc;
-+
-+	*cleaned += total_pkts;
-+
-+	u64_stats_update_begin(&tx_q->stats_sync);
-+	u64_stats_add(&tx_q->q_stats.tx.packets, total_pkts);
-+	u64_stats_add(&tx_q->q_stats.tx.bytes, total_bytes);
-+	u64_stats_update_end(&tx_q->stats_sync);
-+
-+	vport = tx_q->vport;
-+	nq = netdev_get_tx_queue(vport->netdev, tx_q->idx);
-+	netdev_tx_completed_queue(nq, total_pkts, total_bytes);
-+
-+	if (unlikely(total_pkts && netif_carrier_ok(vport->netdev) &&
-+		     IDPF_DESC_UNUSED(tx_q) >= IDPF_TX_WAKE_THRESH)) {
-+		/* Make sure any other threads stopping queue after this see
-+		 * new next_to_clean.
-+		 */
-+		smp_mb();
-+		if (__netif_subqueue_stopped(vport->netdev, tx_q->idx) &&
-+		    vport->state == __IDPF_VPORT_UP)
-+			netif_wake_subqueue(tx_q->vport->netdev, tx_q->idx);
++		return -EINVAL;
 +	}
 +
-+	return !!budget;
-+}
++	eth_hw_addr_random(netdev);
++	err = idpf_add_mac_filter(vport, netdev->dev_addr, false);
++	if (err)
++		return err;
 +
-+/**
-+ * idpf_tx_singleq_clean_all - Clean all Tx queues
-+ * @q_vec: queue vector
-+ * @budget: Used to determine if we are in netpoll
-+ * @cleaned: returns number of packets cleaned
-+ *
-+ * Returns false if clean is not complete else returns true
-+ */
-+static bool idpf_tx_singleq_clean_all(struct idpf_q_vector *q_vec, int budget,
-+				      int *cleaned)
-+{
-+	u16 num_txq = q_vec->num_txq;
-+	bool clean_complete = true;
-+	int i, budget_per_q;
++	dev_info(&adapter->pdev->dev, "Invalid MAC address %pM, using random %pM\n",
++		 vport->default_mac_addr, netdev->dev_addr);
++	ether_addr_copy(vport->default_mac_addr, netdev->dev_addr);
 +
-+	budget_per_q = num_txq ? max(budget / num_txq, 1) : 0;
-+	for (i = 0; i < num_txq; i++) {
-+		struct idpf_queue *q;
-+
-+		q = q_vec->tx[i];
-+		clean_complete &= idpf_tx_singleq_clean(q, budget_per_q, cleaned);
-+	}
-+
-+	return clean_complete;
-+}
-+
-+/**
-+ * idpf_rx_singleq_test_staterr - tests bits in Rx descriptor
-+ * status and error fields
-+ * @rx_desc: pointer to receive descriptor (in le64 format)
-+ * @stat_err_bits: value to mask
-+ *
-+ * This function does some fast chicanery in order to return the
-+ * value of the mask which is really only used for boolean tests.
-+ * The status_error_ptype_len doesn't need to be shifted because it begins
-+ * at offset zero.
-+ */
-+static bool idpf_rx_singleq_test_staterr(const union virtchnl2_rx_desc *rx_desc,
-+					 const u64 stat_err_bits)
-+{
-+	return !!(rx_desc->base_wb.qword1.status_error_ptype_len &
-+		  cpu_to_le64(stat_err_bits));
-+}
-+
-+/**
-+ * idpf_rx_singleq_is_non_eop - process handling of non-EOP buffers
-+ * @rxq: Rx ring being processed
-+ * @rx_desc: Rx descriptor for current buffer
-+ * @skb: Current socket buffer containing buffer in progress
-+ */
-+static bool idpf_rx_singleq_is_non_eop(struct idpf_queue *rxq,
-+				       union virtchnl2_rx_desc *rx_desc,
-+				       struct sk_buff *skb)
-+{
-+	/* if we are the last buffer then there is nothing else to do */
-+	if (likely(idpf_rx_singleq_test_staterr(rx_desc, IDPF_RXD_EOF_SINGLEQ)))
-+		return false;
-+
-+	/* place skb in next buffer to be received */
-+	rxq->rx_buf.buf[rxq->next_to_clean].skb = skb;
-+
-+	return true;
-+}
-+
-+/**
-+ * idpf_rx_singleq_csum - Indicate in skb if checksum is good
-+ * @rxq: Rx ring being processed
-+ * @skb: skb currently being received and modified
-+ * @csum_bits: checksum bits from descriptor
-+ * @ptype: the packet type decoded by hardware
-+ *
-+ * skb->protocol must be set before this function is called
-+ */
-+static void idpf_rx_singleq_csum(struct idpf_queue *rxq, struct sk_buff *skb,
-+				 struct idpf_rx_csum_decoded *csum_bits,
-+				 u16 ptype)
-+{
-+	struct idpf_rx_ptype_decoded decoded;
-+	bool ipv4, ipv6;
-+
-+	/* check if Rx checksum is enabled */
-+	if (unlikely(!(rxq->vport->netdev->features & NETIF_F_RXCSUM)))
-+		return;
-+
-+	/* check if HW has decoded the packet and checksum */
-+	if (unlikely(!(csum_bits->l3l4p)))
-+		return;
-+
-+	decoded = rxq->vport->rx_ptype_lkup[ptype];
-+	if (unlikely(!(decoded.known && decoded.outer_ip)))
-+		return;
-+
-+	ipv4 = IDPF_RX_PTYPE_TO_IPV(&decoded, IDPF_RX_PTYPE_OUTER_IPV4);
-+	ipv6 = IDPF_RX_PTYPE_TO_IPV(&decoded, IDPF_RX_PTYPE_OUTER_IPV6);
-+
-+	/* Check if there were any checksum errors */
-+	if (unlikely(ipv4 && (csum_bits->ipe || csum_bits->eipe)))
-+		goto checksum_fail;
-+
-+	/* Device could not do any checksum offload for certain extension
-+	 * headers as indicated by setting IPV6EXADD bit
-+	 */
-+	if (unlikely(ipv6 && csum_bits->ipv6exadd))
-+		return;
-+
-+	/* check for L4 errors and handle packets that were not able to be
-+	 * checksummed due to arrival speed
-+	 */
-+	if (unlikely(csum_bits->l4e))
-+		goto checksum_fail;
-+
-+	if (unlikely(csum_bits->nat && csum_bits->eudpe))
-+		goto checksum_fail;
-+
-+	/* Handle packets that were not able to be checksummed due to arrival
-+	 * speed, in this case the stack can compute the csum.
-+	 */
-+	if (unlikely(csum_bits->pprs))
-+		return;
-+
-+	/* If there is an outer header present that might contain a checksum
-+	 * we need to bump the checksum level by 1 to reflect the fact that
-+	 * we are indicating we validated the inner checksum.
-+	 */
-+	if (decoded.tunnel_type >= IDPF_RX_PTYPE_TUNNEL_IP_GRENAT)
-+		skb->csum_level = 1;
-+
-+	/* Only report checksum unnecessary for ICMP, TCP, UDP, or SCTP */
-+	switch (decoded.inner_prot) {
-+	case IDPF_RX_PTYPE_INNER_PROT_ICMP:
-+	case IDPF_RX_PTYPE_INNER_PROT_TCP:
-+	case IDPF_RX_PTYPE_INNER_PROT_UDP:
-+	case IDPF_RX_PTYPE_INNER_PROT_SCTP:
-+		skb->ip_summed = CHECKSUM_UNNECESSARY;
-+		return;
-+	default:
-+		return;
-+	}
-+
-+checksum_fail:
-+	u64_stats_update_begin(&rxq->stats_sync);
-+	u64_stats_inc(&rxq->q_stats.rx.hw_csum_err);
-+	u64_stats_update_end(&rxq->stats_sync);
-+}
-+
-+/**
-+ * idpf_rx_singleq_base_csum - Indicate in skb if hw indicated a good cksum
-+ * @rx_q: Rx completion queue
-+ * @skb: skb currently being received and modified
-+ * @rx_desc: the receive descriptor
-+ * @ptype: Rx packet type
-+ *
-+ * This function only operates on the VIRTCHNL2_RXDID_1_32B_BASE_M base 32byte
-+ * descriptor writeback format.
-+ **/
-+static void idpf_rx_singleq_base_csum(struct idpf_queue *rx_q,
-+				      struct sk_buff *skb,
-+				      union virtchnl2_rx_desc *rx_desc,
-+				      u16 ptype)
-+{
-+	struct idpf_rx_csum_decoded csum_bits;
-+	u32 rx_error, rx_status;
-+	u64 qword;
-+
-+	qword = le64_to_cpu(rx_desc->base_wb.qword1.status_error_ptype_len);
-+
-+	rx_status = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_QW1_STATUS_M, qword);
-+	rx_error = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_QW1_ERROR_M, qword);
-+
-+	csum_bits.ipe = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_ERROR_IPE_M, rx_error);
-+	csum_bits.eipe = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_ERROR_EIPE_M,
-+				   rx_error);
-+	csum_bits.l4e = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_ERROR_L4E_M, rx_error);
-+	csum_bits.pprs = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_ERROR_PPRS_M,
-+				   rx_error);
-+	csum_bits.l3l4p = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_STATUS_L3L4P_M,
-+				    rx_status);
-+	csum_bits.ipv6exadd = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_STATUS_IPV6EXADD_M,
-+					rx_status);
-+	csum_bits.nat = 0;
-+	csum_bits.eudpe = 0;
-+
-+	idpf_rx_singleq_csum(rx_q, skb, &csum_bits, ptype);
-+}
-+
-+/**
-+ * idpf_rx_singleq_flex_csum - Indicate in skb if hw indicated a good cksum
-+ * @rx_q: Rx completion queue
-+ * @skb: skb currently being received and modified
-+ * @rx_desc: the receive descriptor
-+ * @ptype: Rx packet type
-+ *
-+ * This function only operates on the VIRTCHNL2_RXDID_2_FLEX_SQ_NIC flexible
-+ * descriptor writeback format.
-+ **/
-+static void idpf_rx_singleq_flex_csum(struct idpf_queue *rx_q,
-+				      struct sk_buff *skb,
-+				      union virtchnl2_rx_desc *rx_desc,
-+				      u16 ptype)
-+{
-+	struct idpf_rx_csum_decoded csum_bits;
-+	u16 rx_status0, rx_status1;
-+
-+	rx_status0 = le16_to_cpu(rx_desc->flex_nic_wb.status_error0);
-+	rx_status1 = le16_to_cpu(rx_desc->flex_nic_wb.status_error1);
-+
-+	csum_bits.ipe = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_STATUS0_XSUM_IPE_M,
-+				  rx_status0);
-+	csum_bits.eipe = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_STATUS0_XSUM_EIPE_M,
-+				   rx_status0);
-+	csum_bits.l4e = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_STATUS0_XSUM_L4E_M,
-+				  rx_status0);
-+	csum_bits.eudpe = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_STATUS0_XSUM_EUDPE_M,
-+				    rx_status0);
-+	csum_bits.l3l4p = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_STATUS0_L3L4P_M,
-+				    rx_status0);
-+	csum_bits.ipv6exadd = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_STATUS0_IPV6EXADD_M,
-+					rx_status0);
-+	csum_bits.nat = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_STATUS1_NAT_M,
-+				  rx_status1);
-+	csum_bits.pprs = 0;
-+
-+	idpf_rx_singleq_csum(rx_q, skb, &csum_bits, ptype);
-+}
-+
-+/**
-+ * idpf_rx_singleq_base_hash - set the hash value in the skb
-+ * @rx_q: Rx completion queue
-+ * @skb: skb currently being received and modified
-+ * @rx_desc: specific descriptor
-+ * @decoded: Decoded Rx packet type related fields
-+ *
-+ * This function only operates on the VIRTCHNL2_RXDID_1_32B_BASE_M base 32byte
-+ * descriptor writeback format.
-+ **/
-+static void idpf_rx_singleq_base_hash(struct idpf_queue *rx_q,
-+				      struct sk_buff *skb,
-+				      union virtchnl2_rx_desc *rx_desc,
-+				      struct idpf_rx_ptype_decoded *decoded)
-+{
-+	u64 mask, qw1;
-+
-+	if (unlikely(!(rx_q->vport->netdev->features & NETIF_F_RXHASH)))
-+		return;
-+
-+	mask = VIRTCHNL2_RX_BASE_DESC_FLTSTAT_RSS_HASH_M;
-+	qw1 = le64_to_cpu(rx_desc->base_wb.qword1.status_error_ptype_len);
-+
-+	if (FIELD_GET(mask, qw1) == mask) {
-+		u32 hash = le32_to_cpu(rx_desc->base_wb.qword0.hi_dword.rss);
-+
-+		skb_set_hash(skb, hash, idpf_ptype_to_htype(decoded));
-+	}
-+}
-+
-+/**
-+ * idpf_rx_singleq_flex_hash - set the hash value in the skb
-+ * @rx_q: Rx completion queue
-+ * @skb: skb currently being received and modified
-+ * @rx_desc: specific descriptor
-+ * @decoded: Decoded Rx packet type related fields
-+ *
-+ * This function only operates on the VIRTCHNL2_RXDID_2_FLEX_SQ_NIC flexible
-+ * descriptor writeback format.
-+ **/
-+static void idpf_rx_singleq_flex_hash(struct idpf_queue *rx_q,
-+				      struct sk_buff *skb,
-+				      union virtchnl2_rx_desc *rx_desc,
-+				      struct idpf_rx_ptype_decoded *decoded)
-+{
-+	if (unlikely(!(rx_q->vport->netdev->features & NETIF_F_RXHASH)))
-+		return;
-+
-+	if (FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_STATUS0_RSS_VALID_M,
-+		      le16_to_cpu(rx_desc->flex_nic_wb.status_error0)))
-+		skb_set_hash(skb, le32_to_cpu(rx_desc->flex_nic_wb.rss_hash),
-+			     idpf_ptype_to_htype(decoded));
-+}
-+
-+/**
-+ * idpf_rx_singleq_process_skb_fields - Populate skb header fields from Rx
-+ * descriptor
-+ * @rx_q: Rx ring being processed
-+ * @skb: pointer to current skb being populated
-+ * @rx_desc: descriptor for skb
-+ * @ptype: packet type
-+ *
-+ * This function checks the ring, descriptor, and packet information in
-+ * order to populate the hash, checksum, VLAN, protocol, and
-+ * other fields within the skb.
-+ */
-+static void idpf_rx_singleq_process_skb_fields(struct idpf_queue *rx_q,
-+					       struct sk_buff *skb,
-+					       union virtchnl2_rx_desc *rx_desc,
-+					       u16 ptype)
-+{
-+	struct idpf_rx_ptype_decoded decoded =
-+					rx_q->vport->rx_ptype_lkup[ptype];
-+
-+	/* modifies the skb - consumes the enet header */
-+	skb->protocol = eth_type_trans(skb, rx_q->vport->netdev);
-+
-+	/* Check if we're using base mode descriptor IDs */
-+	if (rx_q->rxdids == VIRTCHNL2_RXDID_1_32B_BASE_M) {
-+		idpf_rx_singleq_base_hash(rx_q, skb, rx_desc, &decoded);
-+		idpf_rx_singleq_base_csum(rx_q, skb, rx_desc, ptype);
-+	} else {
-+		idpf_rx_singleq_flex_hash(rx_q, skb, rx_desc, &decoded);
-+		idpf_rx_singleq_flex_csum(rx_q, skb, rx_desc, ptype);
-+	}
++	return 0;
 +}
 +
  /**
-  * idpf_rx_singleq_buf_hw_alloc_all - Replace used receive buffers
-  * @rx_q: queue for which the hw buffers are allocated
-@@ -59,6 +940,278 @@ bool idpf_rx_singleq_buf_hw_alloc_all(struct idpf_queue *rx_q,
- 	return !!cleaned_count;
- }
+  * idpf_cfg_netdev - Allocate, configure and register a netdev
+  * @vport: main vport structure
+@@ -308,6 +456,7 @@ static int idpf_cfg_netdev(struct idpf_vport *vport)
+ 	struct idpf_netdev_priv *np;
+ 	struct net_device *netdev;
+ 	u16 idx = vport->idx;
++	int err;
  
-+/**
-+ * idpf_rx_reuse_page - Put recycled buffer back onto ring
-+ * @rxq: Rx descriptor ring to store buffers on
-+ * @old_buf: donor buffer to have page reused
-+ */
-+static void idpf_rx_reuse_page(struct idpf_queue *rxq,
-+			       struct idpf_rx_buf *old_buf)
-+{
-+	struct idpf_rx_buf *new_buf;
-+	u16 ntu = rxq->next_to_use;
-+
-+	new_buf = &rxq->rx_buf.buf[ntu];
-+
-+	/* Transfer page from old buffer to new buffer.  Move each member
-+	 * individually to avoid possible store forwarding stalls and
-+	 * unnecessary copy of skb.
-+	 */
-+	new_buf->page_info[new_buf->page_indx].dma =
-+				old_buf->page_info[old_buf->page_indx].dma;
-+	new_buf->page_info[new_buf->page_indx].page =
-+				old_buf->page_info[old_buf->page_indx].page;
-+	new_buf->page_info[new_buf->page_indx].page_offset =
-+			old_buf->page_info[old_buf->page_indx].page_offset;
-+	new_buf->page_info[new_buf->page_indx].pagecnt_bias =
-+			old_buf->page_info[old_buf->page_indx].pagecnt_bias;
-+
-+	IDPF_SINGLEQ_BUMP_RING_IDX(rxq, ntu);
-+	rxq->next_to_use = ntu;
-+}
-+
-+/**
-+ * idpf_rx_singleq_recycle_buf - Clean up used buffer and either recycle or free
-+ * @rxq: Rx ring being processed
-+ * @rx_buf: Rx buffer to clear and test for recycling
-+ *
-+ * This function will clean up the contents of the rx_buf. It will either
-+ * recycle the buffer or unmap it and free the associated resources.
-+ *
-+ * Returns true if the buffer is reused, false if the buffer is freed.
-+ */
-+static bool idpf_rx_singleq_recycle_buf(struct idpf_queue *rxq,
-+					struct idpf_rx_buf *rx_buf)
-+{
-+	struct idpf_page_info *pinfo =	&rx_buf->page_info[rx_buf->page_indx];
-+	bool recycled = false;
-+
-+	if (idpf_rx_can_reuse_page(rx_buf)) {
-+		/* hand second half of page back to the queue */
-+		idpf_rx_reuse_page(rxq, rx_buf);
-+		recycled = true;
-+	} else {
-+		/* we are not reusing the buffer so unmap it */
-+		dma_unmap_page_attrs(rxq->dev, pinfo->dma, PAGE_SIZE,
-+				     DMA_FROM_DEVICE, IDPF_RX_DMA_ATTR);
-+		__page_frag_cache_drain(pinfo->page, pinfo->pagecnt_bias);
-+	}
-+
-+	/* clear contents of buffer_info */
-+	pinfo->page = NULL;
-+	rx_buf->skb = NULL;
-+
-+	return recycled;
-+}
-+
-+/**
-+ * idpf_rx_singleq_extract_base_fields - Extract fields from the Rx descriptor
-+ * @rx_q: Rx descriptor queue
-+ * @rx_desc: the descriptor to process
-+ * @fields: storage for extracted values
-+ *
-+ * Decode the Rx descriptor and extract relevant information including the
-+ * size and Rx packet type.
-+ *
-+ * This function only operates on the VIRTCHNL2_RXDID_1_32B_BASE_M base 32byte
-+ * descriptor writeback format.
-+ */
-+static void idpf_rx_singleq_extract_base_fields(struct idpf_queue *rx_q,
-+						union virtchnl2_rx_desc *rx_desc,
-+						struct idpf_rx_extracted *fields)
-+{
-+	u64 qword;
-+
-+	qword = le64_to_cpu(rx_desc->base_wb.qword1.status_error_ptype_len);
-+
-+	fields->size = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_QW1_LEN_PBUF_M, qword);
-+	fields->rx_ptype = FIELD_GET(VIRTCHNL2_RX_BASE_DESC_QW1_PTYPE_M, qword);
-+}
-+
-+/**
-+ * idpf_rx_singleq_extract_flex_fields - Extract fields from the Rx descriptor
-+ * @rx_q: Rx descriptor queue
-+ * @rx_desc: the descriptor to process
-+ * @fields: storage for extracted values
-+ *
-+ * Decode the Rx descriptor and extract relevant information including the
-+ * size and Rx packet type.
-+ *
-+ * This function only operates on the VIRTCHNL2_RXDID_2_FLEX_SQ_NIC flexible
-+ * descriptor writeback format.
-+ */
-+static void idpf_rx_singleq_extract_flex_fields(struct idpf_queue *rx_q,
-+						union virtchnl2_rx_desc *rx_desc,
-+						struct idpf_rx_extracted *fields)
-+{
-+	fields->size = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_PKT_LEN_M,
-+				 le16_to_cpu(rx_desc->flex_nic_wb.pkt_len));
-+	fields->rx_ptype = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_PTYPE_M,
-+				     le16_to_cpu(rx_desc->flex_nic_wb.ptype_flex_flags0));
-+}
-+
-+/**
-+ * idpf_rx_singleq_extract_fields - Extract fields from the Rx descriptor
-+ * @rx_q: Rx descriptor queue
-+ * @rx_desc: the descriptor to process
-+ * @fields: storage for extracted values
-+ *
-+ */
-+static void idpf_rx_singleq_extract_fields(struct idpf_queue *rx_q,
-+					   union virtchnl2_rx_desc *rx_desc,
-+					   struct idpf_rx_extracted *fields)
-+{
-+	if (rx_q->rxdids == VIRTCHNL2_RXDID_1_32B_BASE_M)
-+		idpf_rx_singleq_extract_base_fields(rx_q, rx_desc, fields);
-+	else
-+		idpf_rx_singleq_extract_flex_fields(rx_q, rx_desc, fields);
-+}
-+
-+/**
-+ * idpf_rx_singleq_clean - Reclaim resources after receive completes
-+ * @rx_q: rx queue to clean
-+ * @budget: Total limit on number of packets to process
-+ *
-+ * Returns true if there's any budget left (e.g. the clean is finished)
-+ */
-+static int idpf_rx_singleq_clean(struct idpf_queue *rx_q, int budget)
-+{
-+	unsigned int total_rx_bytes = 0, total_rx_pkts = 0;
-+	u16 ntc = rx_q->next_to_clean;
-+	u16 cleaned_count = 0;
-+	bool failure = false;
-+
-+	/* Process Rx packets bounded by budget */
-+	while (likely(total_rx_pkts < (unsigned int)budget)) {
-+		struct idpf_rx_extracted fields = { };
-+		union virtchnl2_rx_desc *rx_desc;
-+		struct sk_buff *skb = NULL;
-+		struct idpf_rx_buf *rx_buf;
-+
-+		/* get the Rx desc from Rx queue based on 'next_to_clean' */
-+		rx_desc = IDPF_RX_DESC(rx_q, ntc);
-+
-+		/* status_error_ptype_len will always be zero for unused
-+		 * descriptors because it's cleared in cleanup, and overlaps
-+		 * with hdr_addr which is always zero because packet split
-+		 * isn't used, if the hardware wrote DD then the length will be
-+		 * non-zero
-+		 */
-+#define IDPF_RXD_DD VIRTCHNL2_RX_BASE_DESC_STATUS_DD_M
-+		if (!idpf_rx_singleq_test_staterr(rx_desc,
-+						  IDPF_RXD_DD))
-+			break;
-+
-+		/* This memory barrier is needed to keep us from reading
-+		 * any other fields out of the rx_desc
-+		 */
-+		dma_rmb();
-+
-+		idpf_rx_singleq_extract_fields(rx_q, rx_desc, &fields);
-+
-+		if (!fields.size)
-+			break;
-+
-+		rx_buf = &rx_q->rx_buf.buf[ntc];
-+		idpf_rx_get_buf_page(rx_q->dev, rx_buf, fields.size);
-+		skb = rx_buf->skb;
-+		if (skb)
-+			idpf_rx_add_frag(rx_buf, skb, fields.size);
-+		else
-+			skb = idpf_rx_construct_skb(rx_q, rx_buf, fields.size);
-+
-+		/* exit if we failed to retrieve a buffer */
-+		if (!skb) {
-+			rx_buf->page_info[rx_buf->page_indx].pagecnt_bias++;
-+			break;
-+		}
-+
-+		idpf_rx_singleq_recycle_buf(rx_q, rx_buf);
-+		IDPF_SINGLEQ_BUMP_RING_IDX(rx_q, ntc);
-+
-+		cleaned_count++;
-+
-+		/* skip if it is non EOP desc */
-+		if (idpf_rx_singleq_is_non_eop(rx_q, rx_desc, skb))
-+			continue;
-+
-+#define IDPF_RXD_ERR_S FIELD_PREP(VIRTCHNL2_RX_BASE_DESC_QW1_ERROR_M, \
-+				  VIRTCHNL2_RX_BASE_DESC_ERROR_RXE_M)
-+		if (unlikely(idpf_rx_singleq_test_staterr(rx_desc,
-+							  IDPF_RXD_ERR_S))) {
-+			dev_kfree_skb_any(skb);
-+			skb = NULL;
-+			continue;
-+		}
-+
-+		/* pad skb if needed (to make valid ethernet frame) */
-+		if (eth_skb_pad(skb)) {
-+			skb = NULL;
-+			continue;
-+		}
-+
-+		/* probably a little skewed due to removing CRC */
-+		total_rx_bytes += skb->len;
-+
-+		/* protocol */
-+		idpf_rx_singleq_process_skb_fields(rx_q, skb,
-+						   rx_desc, fields.rx_ptype);
-+
-+		/* send completed skb up the stack */
-+		napi_gro_receive(&rx_q->q_vector->napi, skb);
-+
-+		/* update budget accounting */
-+		total_rx_pkts++;
-+	}
-+
-+	rx_q->next_to_clean = ntc;
-+
-+	if (cleaned_count)
-+		failure = idpf_rx_singleq_buf_hw_alloc_all(rx_q, cleaned_count);
-+
-+	u64_stats_update_begin(&rx_q->stats_sync);
-+	u64_stats_add(&rx_q->q_stats.rx.packets, total_rx_pkts);
-+	u64_stats_add(&rx_q->q_stats.rx.bytes, total_rx_bytes);
-+	u64_stats_update_end(&rx_q->stats_sync);
-+
-+	/* guarantee a trip back through this routine if there was a failure */
-+	return failure ? budget : (int)total_rx_pkts;
-+}
-+
-+/**
-+ * idpf_rx_singleq_clean_all - Clean all Rx queues
-+ * @q_vec: queue vector
-+ * @budget: Used to determine if we are in netpoll
-+ * @cleaned: returns number of packets cleaned
-+ *
-+ * Returns false if clean is not complete else returns true
-+ */
-+static bool idpf_rx_singleq_clean_all(struct idpf_q_vector *q_vec, int budget,
-+				      int *cleaned)
-+{
-+	u16 num_rxq = q_vec->num_rxq;
-+	bool clean_complete = true;
-+	int budget_per_q, i;
-+
-+	/* We attempt to distribute budget to each Rx queue fairly, but don't
-+	 * allow the budget to go below 1 because that would exit polling early.
-+	 */
-+	budget_per_q = num_rxq ? max(budget / num_rxq, 1) : 0;
-+	for (i = 0; i < num_rxq; i++) {
-+		struct idpf_queue *rxq = q_vec->rx[i];
-+		int pkts_cleaned_per_q;
-+
-+		pkts_cleaned_per_q = idpf_rx_singleq_clean(rxq, budget_per_q);
-+
-+		/* if we clean as many as budgeted, we must not be done */
-+		if (pkts_cleaned_per_q >= budget_per_q)
-+			clean_complete = false;
-+		*cleaned += pkts_cleaned_per_q;
-+	}
-+
-+	return clean_complete;
-+}
-+
- /**
-  * idpf_vport_singleq_napi_poll - NAPI handler
-  * @napi: struct from which you get q_vector
-@@ -66,6 +1219,33 @@ bool idpf_rx_singleq_buf_hw_alloc_all(struct idpf_queue *rx_q,
-  */
- int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
- {
--	/* stub */
--	return 0;
-+	struct idpf_q_vector *q_vector =
-+				container_of(napi, struct idpf_q_vector, napi);
-+	bool clean_complete;
-+	int work_done = 0;
-+
-+	/* Handle case where we are called by netpoll with a budget of 0 */
-+	if (budget <= 0) {
-+		idpf_tx_singleq_clean_all(q_vector, budget, &work_done);
-+
-+		return budget;
-+	}
-+
-+	clean_complete = idpf_rx_singleq_clean_all(q_vector, budget,
-+						   &work_done);
-+	clean_complete &= idpf_tx_singleq_clean_all(q_vector, budget, &work_done);
-+
-+	/* If work not completed, return budget and polling will return */
-+	if (!clean_complete)
-+		return budget;
-+
-+	work_done = min_t(int, work_done, budget - 1);
-+
-+	/* Exit the polling mode, but don't re-enable interrupts if stack might
-+	 * poll us due to busy-polling
-+	 */
-+	if (likely(napi_complete_done(napi, work_done)))
-+		idpf_vport_intr_update_itr_ena_irq(q_vector);
-+
-+	return work_done;
- }
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index c5586dfa7142..1ba773a0eb07 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -2091,7 +2091,7 @@ static int __idpf_tx_maybe_stop_common(struct idpf_queue *tx_q,
-  *
-  * Returns 0 if stop is not needed
-  */
--static int idpf_tx_maybe_stop_common(struct idpf_queue *tx_q, unsigned int size)
-+int idpf_tx_maybe_stop_common(struct idpf_queue *tx_q, unsigned int size)
- {
- 	if (likely(IDPF_DESC_UNUSED(tx_q) >= size))
- 		return 0;
-@@ -2151,8 +2151,8 @@ static int idpf_tx_maybe_stop_splitq(struct idpf_queue *tx_q,
-  * to do a register write to update our queue status. We know this can only
-  * mean tail here as HW should be owning head for TX.
-  */
--static void idpf_tx_buf_hw_update(struct idpf_queue *tx_q, u32 val,
--				  bool xmit_more)
-+void idpf_tx_buf_hw_update(struct idpf_queue *tx_q, u32 val,
-+			   bool xmit_more)
- {
- 	struct netdev_queue *nq;
+ 	vport_config = adapter->vport_config[idx];
  
-@@ -2175,11 +2175,13 @@ static void idpf_tx_buf_hw_update(struct idpf_queue *tx_q, u32 val,
+@@ -320,7 +469,7 @@ static int idpf_cfg_netdev(struct idpf_vport *vport)
+ 		np->vport = vport;
+ 		vport->netdev = netdev;
  
- /**
-  * idpf_tx_desc_count_required - calculate number of Tx descriptors needed
-+ * @txq: queue to send buffer on
-  * @skb: send buffer
-  *
-  * Returns number of data descriptors needed for this skb.
-  */
--static unsigned int idpf_tx_desc_count_required(struct sk_buff *skb)
-+unsigned int idpf_tx_desc_count_required(struct idpf_queue *txq,
-+					 struct sk_buff *skb)
- {
- 	const struct skb_shared_info *shinfo;
- 	unsigned int count = 0, i;
-@@ -2205,6 +2207,16 @@ static unsigned int idpf_tx_desc_count_required(struct sk_buff *skb)
- 			count++;
+-		return 0;
++		return idpf_init_mac_addr(vport, netdev);
  	}
  
-+	if (idpf_chk_linearize(skb, txq->tx_max_bufs, count)) {
-+		if (__skb_linearize(skb))
-+			return 0;
+ 	netdev = alloc_etherdev_mqs(sizeof(struct idpf_netdev_priv),
+@@ -333,6 +482,14 @@ static int idpf_cfg_netdev(struct idpf_vport *vport)
+ 	np = netdev_priv(netdev);
+ 	np->vport = vport;
+ 
++	err = idpf_init_mac_addr(vport, netdev);
++	if (err) {
++		free_netdev(vport->netdev);
++		vport->netdev = NULL;
 +
-+		count = idpf_size_to_txd_count(skb->len);
-+		u64_stats_update_begin(&txq->stats_sync);
-+		u64_stats_inc(&txq->q_stats.tx.linearize);
-+		u64_stats_update_end(&txq->stats_sync);
++		return err;
 +	}
 +
- 	return count;
- }
+ 	/* setup watchdog timeout value to be 5 second */
+ 	netdev->watchdog_timeo = 5 * HZ;
  
-@@ -2215,8 +2227,8 @@ static unsigned int idpf_tx_desc_count_required(struct sk_buff *skb)
-  * @first: original first buffer info buffer for packet
-  * @idx: starting point on ring to unwind
-  */
--static void idpf_tx_dma_map_error(struct idpf_queue *txq, struct sk_buff *skb,
--				  struct idpf_tx_buf *first, u16 idx)
-+void idpf_tx_dma_map_error(struct idpf_queue *txq, struct sk_buff *skb,
-+			   struct idpf_tx_buf *first, u16 idx)
- {
- 	u64_stats_update_begin(&txq->stats_sync);
- 	u64_stats_inc(&txq->q_stats.tx.dma_map_errs);
-@@ -2458,7 +2470,7 @@ static void idpf_tx_splitq_map(struct idpf_queue *tx_q,
-  * Returns error (negative) if TSO was requested but cannot be applied to the given skb,
-  * 0 if TSO does not apply to the given skb, or 1 otherwise.
-  */
--static int idpf_tso(struct sk_buff *skb, struct idpf_tx_offload_params *off)
-+int idpf_tso(struct sk_buff *skb, struct idpf_tx_offload_params *off)
- {
- 	const struct skb_shared_info *shinfo = skb_shinfo(skb);
- 	union {
-@@ -2619,8 +2631,8 @@ static bool __idpf_chk_linearize(struct sk_buff *skb, unsigned int max_bufs)
-  * E.g.: a packet with 7 fragments can require 9 DMA transactions; 1 for TSO
-  * header, 1 for segment payload, and then 7 for the fragments.
-  */
--static bool idpf_chk_linearize(struct sk_buff *skb, unsigned int max_bufs,
--			       unsigned int count)
-+bool idpf_chk_linearize(struct sk_buff *skb, unsigned int max_bufs,
-+			unsigned int count)
- {
- 	if (likely(count < max_bufs))
- 		return false;
-@@ -2658,8 +2670,7 @@ idpf_tx_splitq_get_ctx_desc(struct idpf_queue *txq)
-  * @tx_q: queue to send buffer on
-  * @skb: pointer to skb
-  */
--static netdev_tx_t idpf_tx_drop_skb(struct idpf_queue *tx_q,
--				    struct sk_buff *skb)
-+netdev_tx_t idpf_tx_drop_skb(struct idpf_queue *tx_q, struct sk_buff *skb)
- {
- 	u64_stats_update_begin(&tx_q->stats_sync);
- 	u64_stats_inc(&tx_q->q_stats.tx.skb_drops);
-@@ -2687,16 +2698,9 @@ static netdev_tx_t idpf_tx_splitq_frame(struct sk_buff *skb,
- 	unsigned int count;
- 	int tso;
+@@ -498,6 +655,8 @@ static void idpf_vport_dealloc(struct idpf_vport *vport)
+ 	struct idpf_adapter *adapter = vport->adapter;
+ 	unsigned int i = vport->idx;
  
--	count = idpf_tx_desc_count_required(skb);
--	if (idpf_chk_linearize(skb, tx_q->tx_max_bufs, count)) {
--		if (__skb_linearize(skb))
--			return idpf_tx_drop_skb(tx_q, skb);
--
--		count = idpf_size_to_txd_count(skb->len);
--		u64_stats_update_begin(&tx_q->stats_sync);
--		u64_stats_inc(&tx_q->q_stats.tx.linearize);
--		u64_stats_update_end(&tx_q->stats_sync);
--	}
-+	count = idpf_tx_desc_count_required(tx_q, skb);
-+	if (unlikely(!count))
-+		return idpf_tx_drop_skb(tx_q, skb);
++	idpf_deinit_mac_addr(vport);
++
+ 	if (!test_bit(IDPF_HR_RESET_IN_PROG, adapter->flags))
+ 		idpf_decfg_netdev(vport);
  
- 	tso = idpf_tso(skb, &tx_params.offload);
- 	if (unlikely(tso < 0))
-@@ -2814,8 +2818,7 @@ netdev_tx_t idpf_tx_splitq_start(struct sk_buff *skb,
-  * skb_set_hash based on PTYPE as parsed by HW Rx pipeline and is part of
-  * Rx desc.
+@@ -613,6 +772,7 @@ void idpf_service_task(struct work_struct *work)
   */
--static enum pkt_hash_types
--idpf_ptype_to_htype(const struct idpf_rx_ptype_decoded *decoded)
-+enum pkt_hash_types idpf_ptype_to_htype(const struct idpf_rx_ptype_decoded *decoded)
+ void idpf_init_task(struct work_struct *work)
  {
- 	if (!decoded->known)
- 		return PKT_HASH_TYPE_NONE;
-@@ -3101,7 +3104,7 @@ static void idpf_rx_buf_adjust_pg(struct idpf_rx_buf *rx_buf, unsigned int size)
-  * pointing to; otherwise, the dma mapping needs to be destroyed and
-  * page freed
-  */
--static bool idpf_rx_can_reuse_page(struct idpf_rx_buf *rx_buf)
-+bool idpf_rx_can_reuse_page(struct idpf_rx_buf *rx_buf)
- {
- 	unsigned int last_offset = PAGE_SIZE - rx_buf->buf_size;
- 	struct idpf_page_info *pinfo;
-@@ -3163,8 +3166,8 @@ static unsigned int idpf_rx_frame_truesize(struct idpf_rx_buf *buf,
-  * It will just attach the page as a frag to the skb.
-  * The function will then update the page offset.
-  */
--static void idpf_rx_add_frag(struct idpf_rx_buf *rx_buf, struct sk_buff *skb,
--			     unsigned int size)
-+void idpf_rx_add_frag(struct idpf_rx_buf *rx_buf, struct sk_buff *skb,
-+		      unsigned int size)
- {
- 	unsigned int truesize = idpf_rx_frame_truesize(rx_buf, size);
- 	struct idpf_page_info *pinfo;
-@@ -3185,8 +3188,8 @@ static void idpf_rx_add_frag(struct idpf_rx_buf *rx_buf, struct sk_buff *skb,
-  * This function will pull an Rx buffer page from the ring and synchronize it
-  * for use by the CPU.
-  */
--static void idpf_rx_get_buf_page(struct device *dev, struct idpf_rx_buf *rx_buf,
--				 const unsigned int size)
-+void idpf_rx_get_buf_page(struct device *dev, struct idpf_rx_buf *rx_buf,
-+			  const unsigned int size)
- {
- 	struct idpf_page_info *pinfo;
++	struct idpf_vport_config *vport_config;
+ 	struct idpf_vport_max_q max_q;
+ 	struct idpf_adapter *adapter;
+ 	u16 num_default_vports = 0;
+@@ -657,14 +817,28 @@ void idpf_init_task(struct work_struct *work)
+ 	mutex_unlock(&adapter->sw_mutex);
  
-@@ -3211,9 +3214,9 @@ static void idpf_rx_get_buf_page(struct device *dev, struct idpf_rx_buf *rx_buf,
-  * data from the current receive descriptor, taking care to set up the
-  * skb correctly.
-  */
--static struct sk_buff *idpf_rx_construct_skb(struct idpf_queue *rxq,
--					     struct idpf_rx_buf *rx_buf,
--					     unsigned int size)
-+struct sk_buff *idpf_rx_construct_skb(struct idpf_queue *rxq,
-+				      struct idpf_rx_buf *rx_buf,
-+				      unsigned int size)
- {
- 	unsigned int headlen, truesize;
- 	struct idpf_page_info *pinfo;
-@@ -3908,7 +3911,7 @@ static void idpf_net_dim(struct idpf_q_vector *q_vector)
-  * Update the net_dim() algorithm and re-enable the interrupt associated with
-  * this vector.
-  */
--static void idpf_vport_intr_update_itr_ena_irq(struct idpf_q_vector *q_vector)
-+void idpf_vport_intr_update_itr_ena_irq(struct idpf_q_vector *q_vector)
- {
- 	u32 intval;
+ 	index = vport->idx;
++	vport_config = adapter->vport_config[index];
  
+ 	init_waitqueue_head(&vport->vchnl_wq);
+ 
+ 	mutex_init(&vport->vc_buf_lock);
++	spin_lock_init(&vport->mac_filter_list_lock);
++
++	INIT_LIST_HEAD(&vport_config->user_config.mac_filter_list);
++
++	err = idpf_check_supported_desc_ids(vport);
++	if (err) {
++		dev_err(&pdev->dev, "failed to get required descriptor ids\n");
++		goto cfg_netdev_err;
++	}
+ 
+ 	if (idpf_cfg_netdev(vport))
+ 		goto cfg_netdev_err;
+ 
++	err = idpf_send_get_rx_ptype_msg(vport);
++	if (err)
++		goto handle_err;
++
+ 	mutex_lock(&adapter->sw_mutex);
+ 
+ 	/* Spawn and return 'idpf_init_task' work queue until all the
+@@ -696,6 +870,8 @@ void idpf_init_task(struct work_struct *work)
+ 
+ 	return;
+ 
++handle_err:
++	idpf_decfg_netdev(vport);
+ cfg_netdev_err:
+ 	idpf_vport_rel(vport);
+ 	adapter->vports[index] = NULL;
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 2cf508638e6a..526f72f40f8a 100644
+index 7c962c3c6be5..bfceb765aa41 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -70,6 +70,12 @@ do {								\
- 	}							\
- } while (0)
+@@ -9,6 +9,10 @@
  
-+#define IDPF_SINGLEQ_BUMP_RING_IDX(q, idx)			\
-+do {								\
-+	if (unlikely(++(idx) == (q)->desc_count))		\
-+		idx = 0;					\
-+} while (0)
+ #define IDPF_MIN_TXQ_COMPLQ_DESC		256
+ 
++#define MIN_SUPPORT_TXDID (\
++	VIRTCHNL2_TXDID_FLEX_FLOW_SCHED |\
++	VIRTCHNL2_TXDID_FLEX_TSO_CTX)
 +
- #define IDPF_RX_HDR_SIZE			256
- #define IDPF_RX_BUF_2048			2048
- #define IDPF_RX_BUF_4096			4096
-@@ -91,7 +97,7 @@ do {								\
- #define IDPF_RX_BI_GEN_S		15
- #define IDPF_RX_BI_GEN_M		BIT(IDPF_RX_BI_GEN_S)
- #define IDPF_RXD_EOF_SPLITQ		VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_EOF_M
--#define IDPF_RXD_EOF_SINGLEQ		BIT(VIRTCHNL2_RX_BASE_DESC_STATUS_EOF_S)
-+#define IDPF_RXD_EOF_SINGLEQ		VIRTCHNL2_RX_BASE_DESC_STATUS_EOF_M
+ #define IDPF_DFLT_SINGLEQ_TX_Q_GROUPS		1
+ #define IDPF_DFLT_SINGLEQ_RX_Q_GROUPS		1
+ #define IDPF_DFLT_SINGLEQ_TXQ_PER_GROUP		4
+@@ -51,8 +55,116 @@
+ #define IDPF_PACKET_HDR_PAD	\
+ 	(ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN * 2)
  
- #define IDPF_SINGLEQ_RX_BUF_DESC(rxq, i)	\
- 	(&(((struct virtchnl2_singleq_rx_buf_desc *)((rxq)->desc_ring))[i]))
-@@ -99,6 +105,10 @@ do {								\
- 	(&(((struct virtchnl2_splitq_rx_buf_desc *)((rxq)->desc_ring))[i]))
- #define IDPF_SPLITQ_RX_BI_DESC(rxq, i) ((((rxq)->ring))[i])
- 
-+#define IDPF_BASE_TX_DESC(txq, i)	\
-+	(&(((struct idpf_base_tx_desc *)((txq)->desc_ring))[i]))
-+#define IDPF_BASE_TX_CTX_DESC(txq, i) \
-+	(&(((struct idpf_base_tx_ctx_desc *)((txq)->desc_ring))[i]))
- #define IDPF_SPLITQ_TX_COMPLQ_DESC(txcq, i)	\
- 	(&(((struct idpf_splitq_tx_compl_desc *)((txcq)->desc_ring))[i]))
- 
-@@ -181,8 +191,15 @@ struct idpf_buf_lifo {
- 
- struct idpf_tx_offload_params {
- #define IDPF_TX_FLAGS_TSO			BIT(0)
-+#define IDPF_TX_FLAGS_IPV4			BIT(1)
-+#define IDPF_TX_FLAGS_IPV6			BIT(2)
-+#define IDPF_TX_FLAGS_TUNNEL			BIT(3)
- 	u32 tx_flags;
- 
-+	/* For single queue model offloads */
-+	u32 hdr_offsets;
-+	u32 cd_tunneling;
++#define IDPF_RX_MAX_PTYPE_PROTO_IDS    32
++#define IDPF_RX_MAX_PTYPE_SZ	(sizeof(struct virtchnl2_ptype) + \
++				 (sizeof(u16) * IDPF_RX_MAX_PTYPE_PROTO_IDS))
++#define IDPF_RX_PTYPE_HDR_SZ	sizeof(struct virtchnl2_get_ptype_info)
++#define IDPF_RX_MAX_PTYPES_PER_BUF	\
++	DIV_ROUND_DOWN_ULL((IDPF_DFLT_MBX_BUF_SIZE - IDPF_RX_PTYPE_HDR_SZ), \
++			   IDPF_RX_MAX_PTYPE_SZ)
 +
- 	u32 tso_len;	/* total length of payload to segment */
- 	u16 mss;
- 	u16 tso_segs;	/* Number of segments to be sent */
-@@ -203,6 +220,13 @@ struct idpf_tx_splitq_params {
- 	struct idpf_tx_offload_params offload;
- };
++#define IDPF_GET_PTYPE_SIZE(p) struct_size((p), proto_id, (p)->proto_id_count)
++
++#define IDPF_TUN_IP_GRE (\
++	IDPF_PTYPE_TUNNEL_IP |\
++	IDPF_PTYPE_TUNNEL_IP_GRENAT)
++
++#define IDPF_TUN_IP_GRE_MAC (\
++	IDPF_TUN_IP_GRE |\
++	IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC)
++
++#define IDPF_RX_MAX_PTYPE	1024
++#define IDPF_RX_MAX_BASE_PTYPE	256
++#define IDPF_INVALID_PTYPE_ID	0xFFFF
+ #define IDPF_INT_NAME_STR_LEN   (IFNAMSIZ + 16)
  
-+enum idpf_tx_ctx_desc_eipt_offload {
-+	IDPF_TX_CTX_EXT_IP_NONE         = 0x0,
-+	IDPF_TX_CTX_EXT_IP_IPV6         = 0x1,
-+	IDPF_TX_CTX_EXT_IP_IPV4_NO_CSUM = 0x2,
-+	IDPF_TX_CTX_EXT_IP_IPV4         = 0x3
++/* Packet type non-ip values */
++enum idpf_rx_ptype_l2 {
++	IDPF_RX_PTYPE_L2_RESERVED	= 0,
++	IDPF_RX_PTYPE_L2_MAC_PAY2	= 1,
++	IDPF_RX_PTYPE_L2_TIMESYNC_PAY2	= 2,
++	IDPF_RX_PTYPE_L2_FIP_PAY2	= 3,
++	IDPF_RX_PTYPE_L2_OUI_PAY2	= 4,
++	IDPF_RX_PTYPE_L2_MACCNTRL_PAY2	= 5,
++	IDPF_RX_PTYPE_L2_LLDP_PAY2	= 6,
++	IDPF_RX_PTYPE_L2_ECP_PAY2	= 7,
++	IDPF_RX_PTYPE_L2_EVB_PAY2	= 8,
++	IDPF_RX_PTYPE_L2_QCN_PAY2	= 9,
++	IDPF_RX_PTYPE_L2_EAPOL_PAY2	= 10,
++	IDPF_RX_PTYPE_L2_ARP		= 11,
 +};
 +
- /* Checksum offload bits decoded from the receive descriptor. */
- struct idpf_rx_csum_decoded {
- 	u32 l3l4p : 1;
-@@ -217,6 +241,11 @@ struct idpf_rx_csum_decoded {
- 	u32 raw_csum : 16;
- };
- 
-+struct idpf_rx_extracted {
-+	unsigned int size;
-+	u16 rx_ptype;
++enum idpf_rx_ptype_outer_ip {
++	IDPF_RX_PTYPE_OUTER_L2	= 0,
++	IDPF_RX_PTYPE_OUTER_IP	= 1,
 +};
 +
- #define IDPF_TX_COMPLQ_CLEAN_BUDGET	256
- #define IDPF_TX_MIN_PKT_LEN		17
- #define IDPF_TX_DESCS_FOR_SKB_DATA_PTR	1
-@@ -714,6 +743,25 @@ static inline u32 idpf_size_to_txd_count(unsigned int size)
- 	return DIV_ROUND_UP(size, IDPF_TX_MAX_DESC_DATA_ALIGNED);
++enum idpf_rx_ptype_outer_ip_ver {
++	IDPF_RX_PTYPE_OUTER_NONE	= 0,
++	IDPF_RX_PTYPE_OUTER_IPV4	= 1,
++	IDPF_RX_PTYPE_OUTER_IPV6	= 2,
++};
++
++enum idpf_rx_ptype_outer_fragmented {
++	IDPF_RX_PTYPE_NOT_FRAG	= 0,
++	IDPF_RX_PTYPE_FRAG	= 1,
++};
++
++enum idpf_rx_ptype_tunnel_type {
++	IDPF_RX_PTYPE_TUNNEL_NONE		= 0,
++	IDPF_RX_PTYPE_TUNNEL_IP_IP		= 1,
++	IDPF_RX_PTYPE_TUNNEL_IP_GRENAT		= 2,
++	IDPF_RX_PTYPE_TUNNEL_IP_GRENAT_MAC	= 3,
++	IDPF_RX_PTYPE_TUNNEL_IP_GRENAT_MAC_VLAN	= 4,
++};
++
++enum idpf_rx_ptype_tunnel_end_prot {
++	IDPF_RX_PTYPE_TUNNEL_END_NONE	= 0,
++	IDPF_RX_PTYPE_TUNNEL_END_IPV4	= 1,
++	IDPF_RX_PTYPE_TUNNEL_END_IPV6	= 2,
++};
++
++enum idpf_rx_ptype_inner_prot {
++	IDPF_RX_PTYPE_INNER_PROT_NONE		= 0,
++	IDPF_RX_PTYPE_INNER_PROT_UDP		= 1,
++	IDPF_RX_PTYPE_INNER_PROT_TCP		= 2,
++	IDPF_RX_PTYPE_INNER_PROT_SCTP		= 3,
++	IDPF_RX_PTYPE_INNER_PROT_ICMP		= 4,
++	IDPF_RX_PTYPE_INNER_PROT_TIMESYNC	= 5,
++};
++
++enum idpf_rx_ptype_payload_layer {
++	IDPF_RX_PTYPE_PAYLOAD_LAYER_NONE	= 0,
++	IDPF_RX_PTYPE_PAYLOAD_LAYER_PAY2	= 1,
++	IDPF_RX_PTYPE_PAYLOAD_LAYER_PAY3	= 2,
++	IDPF_RX_PTYPE_PAYLOAD_LAYER_PAY4	= 3,
++};
++
++enum idpf_tunnel_state {
++	IDPF_PTYPE_TUNNEL_IP                    = BIT(0),
++	IDPF_PTYPE_TUNNEL_IP_GRENAT             = BIT(1),
++	IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC         = BIT(2),
++};
++
++struct idpf_ptype_state {
++	bool outer_ip;
++	bool outer_frag;
++	u8 tunnel_state;
++};
++
++struct idpf_rx_ptype_decoded {
++	u32 ptype:10;
++	u32 known:1;
++	u32 outer_ip:1;
++	u32 outer_ip_ver:2;
++	u32 outer_frag:1;
++	u32 tunnel_type:3;
++	u32 tunnel_end_prot:2;
++	u32 tunnel_end_frag:1;
++	u32 inner_prot:4;
++	u32 payload_layer:3;
++};
++
+ struct idpf_intr_reg {
+ 	void __iomem *dyn_ctl;
+ 	u32 dyn_ctl_intena_m;
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+index bb7e56b9bc6f..76c9a77a6513 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
+@@ -161,10 +161,15 @@ static int idpf_find_vport(struct idpf_adapter *adapter,
+ 	case VIRTCHNL2_OP_CREATE_VPORT:
+ 	case VIRTCHNL2_OP_ALLOC_VECTORS:
+ 	case VIRTCHNL2_OP_DEALLOC_VECTORS:
++	case VIRTCHNL2_OP_GET_PTYPE_INFO:
+ 		goto free_vc_msg;
+ 	case VIRTCHNL2_OP_DESTROY_VPORT:
+ 		v_id = le32_to_cpu(((struct virtchnl2_vport *)vc_msg)->vport_id);
+ 		break;
++	case VIRTCHNL2_OP_ADD_MAC_ADDR:
++	case VIRTCHNL2_OP_DEL_MAC_ADDR:
++		v_id = le32_to_cpu(((struct virtchnl2_mac_addr_list *)vc_msg)->vport_id);
++		break;
+ 	default:
+ 		no_op = true;
+ 		break;
+@@ -371,6 +376,51 @@ int idpf_recv_mb_msg(struct idpf_adapter *adapter, u32 op,
+ 					   IDPF_VC_DEALLOC_VECTORS,
+ 					   IDPF_VC_DEALLOC_VECTORS_ERR);
+ 			break;
++		case VIRTCHNL2_OP_GET_PTYPE_INFO:
++			idpf_recv_vchnl_op(adapter, NULL, &ctlq_msg,
++					   IDPF_VC_GET_PTYPE_INFO,
++					   IDPF_VC_GET_PTYPE_INFO_ERR);
++			break;
++		case VIRTCHNL2_OP_ADD_MAC_ADDR:
++			if (test_and_clear_bit(IDPF_VPORT_ADD_MAC_REQ,
++					       vport->flags)) {
++				/* Message was sent asynchronously. We don't
++				 * normally print errors here, instead
++				 * prefer to handle errors in the function
++				 * calling wait_for_event. However, if
++				 * asynchronous, the context in which the
++				 * message was sent is lost. We can't really do
++				 * anything about at it this point, but we
++				 * should at a minimum indicate that it looks
++				 * like something went wrong. Also don't bother
++				 * setting ERR bit or waking vchnl_wq since no
++				 * one will be waiting to read the async
++				 * message.
++				 */
++				if (ctlq_msg.cookie.mbx.chnl_retval)
++					dev_err(&adapter->pdev->dev, "Failed to add MAC address: %d\n",
++						ctlq_msg.cookie.mbx.chnl_retval);
++				break;
++			}
++			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
++					   IDPF_VC_ADD_MAC_ADDR,
++					   IDPF_VC_ADD_MAC_ADDR_ERR);
++			break;
++		case VIRTCHNL2_OP_DEL_MAC_ADDR:
++			if (test_and_clear_bit(IDPF_VPORT_DEL_MAC_REQ,
++					       vport->flags)) {
++				/* Message was sent asynchronously like the
++				 * VIRTCHNL2_OP_ADD_MAC_ADDR
++				 */
++				if (ctlq_msg.cookie.mbx.chnl_retval)
++					dev_err(&adapter->pdev->dev, "Failed to delete MAC address: %d\n",
++						ctlq_msg.cookie.mbx.chnl_retval);
++				break;
++			}
++			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
++					   IDPF_VC_DEL_MAC_ADDR,
++					   IDPF_VC_DEL_MAC_ADDR_ERR);
++			break;
+ 		default:
+ 			dev_warn(&adapter->pdev->dev,
+ 				 "Unhandled virtchnl response %d\n",
+@@ -821,6 +871,44 @@ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
+ 	return err;
  }
  
 +/**
-+ * idpf_tx_singleq_build_ctob - populate command tag offset and size
-+ * @td_cmd: Command to be filled in desc
-+ * @td_offset: Offset to be filled in desc
-+ * @size: Size of the buffer
-+ * @td_tag: td tag to be filled
++ * idpf_check_supported_desc_ids - Verify we have required descriptor support
++ * @vport: virtual port structure
 + *
-+ * Returns the 64 bit value populated with the input parameters
++ * Return 0 on success, error on failure
 + */
-+static inline __le64 idpf_tx_singleq_build_ctob(u64 td_cmd, u64 td_offset,
-+						unsigned int size, u64 td_tag)
++int idpf_check_supported_desc_ids(struct idpf_vport *vport)
 +{
-+	return cpu_to_le64(IDPF_TX_DESC_DTYPE_DATA |
-+			   (td_cmd << IDPF_TXD_QW1_CMD_S) |
-+			   (td_offset << IDPF_TXD_QW1_OFFSET_S) |
-+			   ((u64)size << IDPF_TXD_QW1_TX_BUF_SZ_S) |
-+			   (td_tag << IDPF_TXD_QW1_L2TAG1_S));
++	struct idpf_adapter *adapter = vport->adapter;
++	struct virtchnl2_create_vport *vport_msg;
++	u64 rx_desc_ids, tx_desc_ids;
++
++	vport_msg = adapter->vport_params_recvd[vport->idx];
++
++	rx_desc_ids = le64_to_cpu(vport_msg->rx_desc_ids);
++	tx_desc_ids = le64_to_cpu(vport_msg->tx_desc_ids);
++
++	if (vport->rxq_model == VIRTCHNL2_QUEUE_MODEL_SPLIT) {
++		if (!(rx_desc_ids & VIRTCHNL2_RXDID_2_FLEX_SPLITQ_M)) {
++			dev_info(&adapter->pdev->dev, "Minimum RX descriptor support not provided, using the default\n");
++			vport_msg->rx_desc_ids = cpu_to_le64(VIRTCHNL2_RXDID_2_FLEX_SPLITQ_M);
++		}
++	} else {
++		if (!(rx_desc_ids & VIRTCHNL2_RXDID_2_FLEX_SQ_NIC_M))
++			vport->base_rxd = true;
++	}
++
++	if (vport->txq_model != VIRTCHNL2_QUEUE_MODEL_SPLIT)
++		return 0;
++
++	if ((tx_desc_ids & MIN_SUPPORT_TXDID) != MIN_SUPPORT_TXDID) {
++		dev_info(&adapter->pdev->dev, "Minimum TX descriptor support not provided, using the default\n");
++		vport_msg->tx_desc_ids = cpu_to_le64(MIN_SUPPORT_TXDID);
++	}
++
++	return 0;
 +}
 +
- void idpf_tx_splitq_build_ctb(union idpf_tx_flex_desc *desc,
- 			      struct idpf_tx_splitq_params *params,
- 			      u16 td_cmd, u16 size);
-@@ -749,16 +797,40 @@ int idpf_vport_queues_alloc(struct idpf_vport *vport);
- void idpf_vport_queues_rel(struct idpf_vport *vport);
- void idpf_vport_intr_rel(struct idpf_vport *vport);
- int idpf_vport_intr_alloc(struct idpf_vport *vport);
-+void idpf_vport_intr_update_itr_ena_irq(struct idpf_q_vector *q_vector);
- void idpf_vport_intr_deinit(struct idpf_vport *vport);
- int idpf_vport_intr_init(struct idpf_vport *vport);
-+enum pkt_hash_types idpf_ptype_to_htype(const struct idpf_rx_ptype_decoded *decoded);
- int idpf_config_rss(struct idpf_vport *vport);
- int idpf_init_rss(struct idpf_vport *vport);
- void idpf_deinit_rss(struct idpf_vport *vport);
-+bool idpf_rx_can_reuse_page(struct idpf_rx_buf *rx_buf);
-+void idpf_rx_get_buf_page(struct device *dev, struct idpf_rx_buf *rx_buf,
-+			  const unsigned int size);
-+void idpf_rx_add_frag(struct idpf_rx_buf *rx_buf, struct sk_buff *skb,
-+		      unsigned int size);
-+struct sk_buff *idpf_rx_construct_skb(struct idpf_queue *rxq,
-+				      struct idpf_rx_buf *rx_buf,
-+				      unsigned int size);
- bool idpf_init_rx_buf_hw_alloc(struct idpf_queue *rxq, struct idpf_rx_buf *buf);
- void idpf_rx_buf_hw_update(struct idpf_queue *rxq, u32 val);
-+void idpf_tx_buf_hw_update(struct idpf_queue *tx_q, u32 val,
-+			   bool xmit_more);
-+unsigned int idpf_size_to_txd_count(unsigned int size);
-+netdev_tx_t idpf_tx_drop_skb(struct idpf_queue *tx_q, struct sk_buff *skb);
-+void idpf_tx_dma_map_error(struct idpf_queue *txq, struct sk_buff *skb,
-+			   struct idpf_tx_buf *first, u16 ring_idx);
-+unsigned int idpf_tx_desc_count_required(struct idpf_queue *txq,
-+					 struct sk_buff *skb);
-+bool idpf_chk_linearize(struct sk_buff *skb, unsigned int max_bufs,
-+			unsigned int count);
-+int idpf_tx_maybe_stop_common(struct idpf_queue *tx_q, unsigned int size);
- netdev_tx_t idpf_tx_splitq_start(struct sk_buff *skb,
- 				 struct net_device *netdev);
-+netdev_tx_t idpf_tx_singleq_start(struct sk_buff *skb,
-+				  struct net_device *netdev);
- bool idpf_rx_singleq_buf_hw_alloc_all(struct idpf_queue *rxq,
- 				      u16 cleaned_count);
-+int idpf_tso(struct sk_buff *skb, struct idpf_tx_offload_params *off);
- 
- #endif /* !_IDPF_TXRX_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index a150685b883d..33a76933e61f 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -2894,6 +2894,8 @@ void idpf_vport_init(struct idpf_vport *vport, struct idpf_vport_max_q *max_q)
- 	idpf_vport_calc_num_q_groups(vport);
- 	idpf_vport_alloc_vec_indexes(vport);
- 
-+	vport->crc_enable = adapter->crc_enable;
-+
- 	mutex_init(&vport->stop_mutex);
+ /**
+  * idpf_send_destroy_vport_msg - Send virtchnl destroy vport message
+  * @vport: virtual port data structure
+@@ -945,6 +1033,264 @@ int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter)
+ 	return err;
  }
  
++/**
++ * idpf_fill_ptype_lookup - Fill L3 specific fields in ptype lookup table
++ * @ptype: ptype lookup table
++ * @pstate: state machine for ptype lookup table
++ * @ipv4: ipv4 or ipv6
++ * @frag: fragmentation allowed
++ *
++ */
++static void idpf_fill_ptype_lookup(struct idpf_rx_ptype_decoded *ptype,
++				   struct idpf_ptype_state *pstate,
++				   bool ipv4, bool frag)
++{
++	if (!pstate->outer_ip || !pstate->outer_frag) {
++		ptype->outer_ip = IDPF_RX_PTYPE_OUTER_IP;
++		pstate->outer_ip = true;
++
++		if (ipv4)
++			ptype->outer_ip_ver = IDPF_RX_PTYPE_OUTER_IPV4;
++		else
++			ptype->outer_ip_ver = IDPF_RX_PTYPE_OUTER_IPV6;
++
++		if (frag) {
++			ptype->outer_frag = IDPF_RX_PTYPE_FRAG;
++			pstate->outer_frag = true;
++		}
++	} else {
++		ptype->tunnel_type = IDPF_RX_PTYPE_TUNNEL_IP_IP;
++		pstate->tunnel_state = IDPF_PTYPE_TUNNEL_IP;
++
++		if (ipv4)
++			ptype->tunnel_end_prot =
++					IDPF_RX_PTYPE_TUNNEL_END_IPV4;
++		else
++			ptype->tunnel_end_prot =
++					IDPF_RX_PTYPE_TUNNEL_END_IPV6;
++
++		if (frag)
++			ptype->tunnel_end_frag = IDPF_RX_PTYPE_FRAG;
++	}
++}
++
++/**
++ * idpf_send_get_rx_ptype_msg - Send virtchnl for ptype info
++ * @vport: virtual port data structure
++ *
++ * Returns 0 on success, negative on failure.
++ */
++int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport)
++{
++	struct idpf_rx_ptype_decoded *ptype_lkup = vport->rx_ptype_lkup;
++	struct virtchnl2_get_ptype_info get_ptype_info;
++	int max_ptype, ptypes_recvd = 0, ptype_offset;
++	struct idpf_adapter *adapter = vport->adapter;
++	struct virtchnl2_get_ptype_info *ptype_info;
++	int err = 0, i, j, k = 0;
++	u16 next_ptype_id = 0;
++
++	if (idpf_is_queue_model_split(vport->rxq_model))
++		max_ptype = IDPF_RX_MAX_PTYPE;
++	else
++		max_ptype = IDPF_RX_MAX_BASE_PTYPE;
++
++	memset(vport->rx_ptype_lkup, 0, sizeof(vport->rx_ptype_lkup));
++
++	ptype_info = kzalloc(IDPF_DFLT_MBX_BUF_SIZE, GFP_KERNEL);
++	if (!ptype_info)
++		return -ENOMEM;
++
++	mutex_lock(&adapter->vc_buf_lock);
++
++	while (next_ptype_id < max_ptype) {
++		get_ptype_info.start_ptype_id = cpu_to_le16(next_ptype_id);
++
++		if ((next_ptype_id + IDPF_RX_MAX_PTYPES_PER_BUF) > max_ptype)
++			get_ptype_info.num_ptypes =
++				cpu_to_le16(max_ptype - next_ptype_id);
++		else
++			get_ptype_info.num_ptypes =
++				cpu_to_le16(IDPF_RX_MAX_PTYPES_PER_BUF);
++
++		err = idpf_send_mb_msg(adapter, VIRTCHNL2_OP_GET_PTYPE_INFO,
++				       sizeof(struct virtchnl2_get_ptype_info),
++				       (u8 *)&get_ptype_info);
++		if (err)
++			goto vc_buf_unlock;
++
++		err = idpf_wait_for_event(adapter, NULL, IDPF_VC_GET_PTYPE_INFO,
++					  IDPF_VC_GET_PTYPE_INFO_ERR);
++		if (err)
++			goto vc_buf_unlock;
++
++		memcpy(ptype_info, adapter->vc_msg, IDPF_DFLT_MBX_BUF_SIZE);
++
++		ptypes_recvd += le16_to_cpu(ptype_info->num_ptypes);
++		if (ptypes_recvd > max_ptype) {
++			err = -EINVAL;
++			goto vc_buf_unlock;
++		}
++
++		next_ptype_id = le16_to_cpu(get_ptype_info.start_ptype_id) +
++				le16_to_cpu(get_ptype_info.num_ptypes);
++
++		ptype_offset = IDPF_RX_PTYPE_HDR_SZ;
++
++		for (i = 0; i < le16_to_cpu(ptype_info->num_ptypes); i++) {
++			struct idpf_ptype_state pstate = { };
++			struct virtchnl2_ptype *ptype;
++			u16 id;
++
++			ptype = (struct virtchnl2_ptype *)
++					((u8 *)ptype_info + ptype_offset);
++
++			ptype_offset += IDPF_GET_PTYPE_SIZE(ptype);
++			if (ptype_offset > IDPF_DFLT_MBX_BUF_SIZE) {
++				err = -EINVAL;
++				goto vc_buf_unlock;
++			}
++
++			/* 0xFFFF indicates end of ptypes */
++			if (le16_to_cpu(ptype->ptype_id_10) ==
++							IDPF_INVALID_PTYPE_ID) {
++				err = 0;
++				goto vc_buf_unlock;
++			}
++
++			if (idpf_is_queue_model_split(vport->rxq_model))
++				k = le16_to_cpu(ptype->ptype_id_10);
++			else
++				k = ptype->ptype_id_8;
++
++			if (ptype->proto_id_count)
++				ptype_lkup[k].known = 1;
++
++			for (j = 0; j < ptype->proto_id_count; j++) {
++				id = le16_to_cpu(ptype->proto_id[j]);
++				switch (id) {
++				case VIRTCHNL2_PROTO_HDR_GRE:
++					if (pstate.tunnel_state ==
++							IDPF_PTYPE_TUNNEL_IP) {
++						ptype_lkup[k].tunnel_type =
++						IDPF_RX_PTYPE_TUNNEL_IP_GRENAT;
++						pstate.tunnel_state |=
++						IDPF_PTYPE_TUNNEL_IP_GRENAT;
++					}
++					break;
++				case VIRTCHNL2_PROTO_HDR_MAC:
++					ptype_lkup[k].outer_ip =
++						IDPF_RX_PTYPE_OUTER_L2;
++					if (pstate.tunnel_state ==
++							IDPF_TUN_IP_GRE) {
++						ptype_lkup[k].tunnel_type =
++						IDPF_RX_PTYPE_TUNNEL_IP_GRENAT_MAC;
++						pstate.tunnel_state |=
++						IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC;
++					}
++					break;
++				case VIRTCHNL2_PROTO_HDR_IPV4:
++					idpf_fill_ptype_lookup(&ptype_lkup[k],
++							       &pstate, true,
++							       false);
++					break;
++				case VIRTCHNL2_PROTO_HDR_IPV6:
++					idpf_fill_ptype_lookup(&ptype_lkup[k],
++							       &pstate, false,
++							       false);
++					break;
++				case VIRTCHNL2_PROTO_HDR_IPV4_FRAG:
++					idpf_fill_ptype_lookup(&ptype_lkup[k],
++							       &pstate, true,
++							       true);
++					break;
++				case VIRTCHNL2_PROTO_HDR_IPV6_FRAG:
++					idpf_fill_ptype_lookup(&ptype_lkup[k],
++							       &pstate, false,
++							       true);
++					break;
++				case VIRTCHNL2_PROTO_HDR_UDP:
++					ptype_lkup[k].inner_prot =
++					IDPF_RX_PTYPE_INNER_PROT_UDP;
++					break;
++				case VIRTCHNL2_PROTO_HDR_TCP:
++					ptype_lkup[k].inner_prot =
++					IDPF_RX_PTYPE_INNER_PROT_TCP;
++					break;
++				case VIRTCHNL2_PROTO_HDR_SCTP:
++					ptype_lkup[k].inner_prot =
++					IDPF_RX_PTYPE_INNER_PROT_SCTP;
++					break;
++				case VIRTCHNL2_PROTO_HDR_ICMP:
++					ptype_lkup[k].inner_prot =
++					IDPF_RX_PTYPE_INNER_PROT_ICMP;
++					break;
++				case VIRTCHNL2_PROTO_HDR_PAY:
++					ptype_lkup[k].payload_layer =
++						IDPF_RX_PTYPE_PAYLOAD_LAYER_PAY2;
++					break;
++				case VIRTCHNL2_PROTO_HDR_ICMPV6:
++				case VIRTCHNL2_PROTO_HDR_IPV6_EH:
++				case VIRTCHNL2_PROTO_HDR_PRE_MAC:
++				case VIRTCHNL2_PROTO_HDR_POST_MAC:
++				case VIRTCHNL2_PROTO_HDR_ETHERTYPE:
++				case VIRTCHNL2_PROTO_HDR_SVLAN:
++				case VIRTCHNL2_PROTO_HDR_CVLAN:
++				case VIRTCHNL2_PROTO_HDR_MPLS:
++				case VIRTCHNL2_PROTO_HDR_MMPLS:
++				case VIRTCHNL2_PROTO_HDR_PTP:
++				case VIRTCHNL2_PROTO_HDR_CTRL:
++				case VIRTCHNL2_PROTO_HDR_LLDP:
++				case VIRTCHNL2_PROTO_HDR_ARP:
++				case VIRTCHNL2_PROTO_HDR_ECP:
++				case VIRTCHNL2_PROTO_HDR_EAPOL:
++				case VIRTCHNL2_PROTO_HDR_PPPOD:
++				case VIRTCHNL2_PROTO_HDR_PPPOE:
++				case VIRTCHNL2_PROTO_HDR_IGMP:
++				case VIRTCHNL2_PROTO_HDR_AH:
++				case VIRTCHNL2_PROTO_HDR_ESP:
++				case VIRTCHNL2_PROTO_HDR_IKE:
++				case VIRTCHNL2_PROTO_HDR_NATT_KEEP:
++				case VIRTCHNL2_PROTO_HDR_L2TPV2:
++				case VIRTCHNL2_PROTO_HDR_L2TPV2_CONTROL:
++				case VIRTCHNL2_PROTO_HDR_L2TPV3:
++				case VIRTCHNL2_PROTO_HDR_GTP:
++				case VIRTCHNL2_PROTO_HDR_GTP_EH:
++				case VIRTCHNL2_PROTO_HDR_GTPCV2:
++				case VIRTCHNL2_PROTO_HDR_GTPC_TEID:
++				case VIRTCHNL2_PROTO_HDR_GTPU:
++				case VIRTCHNL2_PROTO_HDR_GTPU_UL:
++				case VIRTCHNL2_PROTO_HDR_GTPU_DL:
++				case VIRTCHNL2_PROTO_HDR_ECPRI:
++				case VIRTCHNL2_PROTO_HDR_VRRP:
++				case VIRTCHNL2_PROTO_HDR_OSPF:
++				case VIRTCHNL2_PROTO_HDR_TUN:
++				case VIRTCHNL2_PROTO_HDR_NVGRE:
++				case VIRTCHNL2_PROTO_HDR_VXLAN:
++				case VIRTCHNL2_PROTO_HDR_VXLAN_GPE:
++				case VIRTCHNL2_PROTO_HDR_GENEVE:
++				case VIRTCHNL2_PROTO_HDR_NSH:
++				case VIRTCHNL2_PROTO_HDR_QUIC:
++				case VIRTCHNL2_PROTO_HDR_PFCP:
++				case VIRTCHNL2_PROTO_HDR_PFCP_NODE:
++				case VIRTCHNL2_PROTO_HDR_PFCP_SESSION:
++				case VIRTCHNL2_PROTO_HDR_RTP:
++				case VIRTCHNL2_PROTO_HDR_NO_PROTO:
++					break;
++				default:
++					break;
++				}
++			}
++		}
++	}
++
++vc_buf_unlock:
++	mutex_unlock(&adapter->vc_buf_lock);
++	kfree(ptype_info);
++
++	return err;
++}
++
+ /**
+  * idpf_find_ctlq - Given a type and id, find ctlq info
+  * @hw: hardware struct
+@@ -1390,3 +1736,142 @@ u32 idpf_get_vport_id(struct idpf_vport *vport)
+ 
+ 	return le32_to_cpu(vport_msg->vport_id);
+ }
++
++/**
++ * idpf_add_del_mac_filters - Add/del mac filters
++ * @vport: virtual port data structure
++ * @add: Add or delete flag
++ * @async: Don't wait for return message
++ *
++ * Returns 0 on success, error on failure.
++ **/
++int idpf_add_del_mac_filters(struct idpf_vport *vport, bool add, bool async)
++{
++	struct idpf_vport_user_config_data *user_config;
++	struct virtchnl2_mac_addr_list *ma_list = NULL;
++	struct idpf_adapter *adapter = vport->adapter;
++	struct pci_dev *pdev = adapter->pdev;
++	enum idpf_vport_vc_state vc, vc_err;
++	struct virtchnl2_mac_addr *mac_addr;
++	struct idpf_mac_filter *f, *tmp;
++	u32 num_msgs, total_filters = 0;
++	enum idpf_vport_flags mac_flag;
++	int i = 0, k, err = 0;
++	u32 vop;
++
++	user_config = &adapter->vport_config[vport->idx]->user_config;
++	spin_lock_bh(&vport->mac_filter_list_lock);
++
++	/* Find the number of newly added filters */
++	list_for_each_entry(f, &user_config->mac_filter_list, list) {
++		if (add && f->add)
++			total_filters++;
++		else if (!add && f->remove)
++			total_filters++;
++	}
++
++	if (!total_filters) {
++		spin_unlock_bh(&vport->mac_filter_list_lock);
++
++		return 0;
++	}
++
++	/* Fill all the new filters into virtchannel message */
++	mac_addr = kcalloc(total_filters, sizeof(struct virtchnl2_mac_addr),
++			   GFP_ATOMIC);
++	if (!mac_addr) {
++		err = -ENOMEM;
++		spin_unlock_bh(&vport->mac_filter_list_lock);
++		goto error;
++	}
++
++	list_for_each_entry_safe(f, tmp, &user_config->mac_filter_list, list) {
++		if (add && f->add) {
++			ether_addr_copy(mac_addr[i].addr, f->macaddr);
++			i++;
++			f->add = false;
++			if (i == total_filters)
++				break;
++		}
++		if (!add && f->remove) {
++			ether_addr_copy(mac_addr[i].addr, f->macaddr);
++			i++;
++			f->remove = false;
++			if (i == total_filters)
++				break;
++		}
++	}
++
++	spin_unlock_bh(&vport->mac_filter_list_lock);
++
++	if (add) {
++		vop = VIRTCHNL2_OP_ADD_MAC_ADDR;
++		vc = IDPF_VC_ADD_MAC_ADDR;
++		vc_err = IDPF_VC_ADD_MAC_ADDR_ERR;
++		mac_flag = IDPF_VPORT_ADD_MAC_REQ;
++	} else {
++		vop = VIRTCHNL2_OP_DEL_MAC_ADDR;
++		vc = IDPF_VC_DEL_MAC_ADDR;
++		vc_err = IDPF_VC_DEL_MAC_ADDR_ERR;
++		mac_flag = IDPF_VPORT_DEL_MAC_REQ;
++	}
++
++	/* Chunk up the filters into multiple messages to avoid
++	 * sending a control queue message buffer that is too large
++	 */
++	num_msgs = DIV_ROUND_UP(total_filters, IDPF_NUM_FILTERS_PER_MSG);
++
++	if (!async)
++		mutex_lock(&vport->vc_buf_lock);
++
++	for (i = 0, k = 0; i < num_msgs; i++) {
++		u32 entries_size, buf_size, num_entries;
++
++		num_entries = min_t(u32, total_filters, IDPF_NUM_FILTERS_PER_MSG);
++		entries_size = sizeof(struct virtchnl2_mac_addr) * num_entries;
++		buf_size = struct_size(ma_list, mac_addr_list, num_entries);
++
++		if (!ma_list || num_entries != IDPF_NUM_FILTERS_PER_MSG) {
++			kfree(ma_list);
++			ma_list = kzalloc(buf_size, GFP_ATOMIC);
++			if (!ma_list) {
++				err = -ENOMEM;
++				goto list_prep_error;
++			}
++		} else {
++			memset(ma_list, 0, buf_size);
++		}
++
++		ma_list->vport_id = cpu_to_le32(vport->vport_id);
++		ma_list->num_mac_addr = cpu_to_le16(num_entries);
++		memcpy(ma_list->mac_addr_list, &mac_addr[k], entries_size);
++
++		if (async)
++			set_bit(mac_flag, vport->flags);
++
++		err = idpf_send_mb_msg(adapter, vop, buf_size, (u8 *)ma_list);
++		if (err)
++			goto mbx_error;
++
++		if (!async) {
++			err = idpf_wait_for_event(adapter, vport, vc, vc_err);
++			if (err)
++				goto mbx_error;
++		}
++
++		k += num_entries;
++		total_filters -= num_entries;
++	}
++
++mbx_error:
++	if (!async)
++		mutex_unlock(&vport->vc_buf_lock);
++	kfree(ma_list);
++list_prep_error:
++	kfree(mac_addr);
++error:
++	if (err)
++		dev_err(&pdev->dev, "Failed to add or del mac filters %d", err);
++
++	return err;
++}
 -- 
 2.37.3
 
