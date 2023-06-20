@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50C6EEB64DB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 22:21:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1C06EB64D7
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 22:22:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 05DAC61390;
-	Tue, 20 Jun 2023 22:21:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 05DAC61390
+	by smtp3.osuosl.org (Postfix) with ESMTP id 6097860AD0;
+	Tue, 20 Jun 2023 22:22:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6097860AD0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687299718;
-	bh=et22oz8X3QHhIDmQZjoKy0YYRDSAsftdB34JXldWGW0=;
+	s=default; t=1687299721;
+	bh=gerezhjIJprk0mhMIj6O3ogu4NSIP5f68uaui7cmufo=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=J2xUEnfu+TttHHQnuozHv5mAR63hS7l3EBwmHWzIJaRpxMAAuDuuMH+FefsMGFniU
-	 81xk1Vx4ODurh3WIns2a8Oysbr9LO9xk910tw0W3o6FDs3v1ZG+NrRAhNSh9Od/oaW
-	 Tjzo0hV5t0LbtQR25Xy4MDBqaynscnLHVcPp0rB4nw5UVjDps4BT5lDrtmNoNQzifK
-	 8wj9sKmyIJdW5aDhMxnJ906kPNeswOdE2mA54BQMTLqgH/eR05Ob5ebV6rvxtmosfu
-	 hP3xf5l6Pkb78U+tHvOWQj57mKJ0c5Wt45jzSujWwmfJz86BbX7zYiLkvXSRO0GRCT
-	 oCYulFUyZJGvA==
+	b=ZMGi40z4mLdBIoe2DlBxPQosrjokxg4221prxTLICOxCx2sGheOA7x9QeUPlE2IBJ
+	 6QqEbRAb5mU2r2HjFP3zjeE9b2jhx3WXDcRrwy5NgiSEbGUeU8ELE62bWED5OgBEjF
+	 zsy75dVl5hRRJeK9yrnrFKAWWaf0Gl1PZx8+4yal1/EM1a0yULv8h11K7sNqJXDbGb
+	 fHD3Br3poFKMeu1OiWy4YXNrQQkcfaFfdSo/w0tcTePmK+63Sul/uXzrNNVjgwhy93
+	 Q/WZHp6VF3qBRVkt6iCJC7892lHqpfcJg433FHGLyxqRs76Tvo9FLxr6XLNHOyG8Rr
+	 8lAvuk6T9U2cA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id SWHDmy5In0-N; Tue, 20 Jun 2023 22:21:56 +0000 (UTC)
+	with ESMTP id RB3F41Sppg-5; Tue, 20 Jun 2023 22:22:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AF0AF61396;
-	Tue, 20 Jun 2023 22:21:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AF0AF61396
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 633E21BF954
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 22:21:29 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CC2B96137D;
+	Tue, 20 Jun 2023 22:21:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CC2B96137D
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 197031BF3D6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 22:21:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8A12041559
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 22:21:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8A12041559
+ by smtp2.osuosl.org (Postfix) with ESMTP id 050B541787
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 22:21:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 050B541787
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id jxzT8Xa2MgQK for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id OZwaKMfhrNkB for <intel-wired-lan@lists.osuosl.org>;
  Tue, 20 Jun 2023 22:21:26 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3389F41DB2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DED6D41790
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 3389F41DB2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 22:21:26 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="358869140"
-X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; d="scan'208";a="358869140"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id DED6D41790
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 22:21:25 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="358869128"
+X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; d="scan'208";a="358869128"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jun 2023 15:17:19 -0700
+ 20 Jun 2023 15:17:18 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="858744958"
-X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; d="scan'208";a="858744958"
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="858744956"
+X-IronPort-AV: E=Sophos;i="6.00,258,1681196400"; d="scan'208";a="858744956"
 Received: from dmert-dev.jf.intel.com ([10.166.241.14])
  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jun 2023 15:17:19 -0700
+ 20 Jun 2023 15:17:18 -0700
 From: Dave Ertman <david.m.ertman@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 20 Jun 2023 15:18:53 -0700
-Message-Id: <20230620221854.848606-10-david.m.ertman@intel.com>
+Date: Tue, 20 Jun 2023 15:18:51 -0700
+Message-Id: <20230620221854.848606-8-david.m.ertman@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230620221854.848606-1-david.m.ertman@intel.com>
 References: <20230620221854.848606-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1687299686; x=1718835686;
+ t=1687299685; x=1718835685;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=fCymMh11BDM0sIUq78o1Kso+F0PGaNZuR5UarBdn8Jc=;
- b=ONp3ai5CDjkjptPAF6ckC+E8z6eT76JXGQ+gxAGMLr64N8Ctzbq9ZhsO
- 7tfmXrb8l04B0pcRtSsRixOEnYjISImvIL2SQqKnTgv6JOPAc0qj6GtGV
- vOX8tP+BMYuSq7hitTVzb+pMKyT1QwZB2zHlwjnKDmW0sslHXHQfFGVPr
- 1o5Bqw0Dgss/8oamwanM1S8osDs5b0ORAwtmWVx/B6xNcT8svNjf1/16R
- Px6ZNmrFYWACvapUDpnvmuze7EenEq84nScH5CtP5kCCZ5hQts76NoSz/
- haj6mExnheaMBrT6LKLnqRhEhALY+YJF7xdu4YOkMm4DeY4FWJQKgKxY4
+ bh=vESeBwLxL0SNWT43u7650+mQELoTMeMd3PVtJS2osKs=;
+ b=L8K+5cD76G/DiAQePju7vStyOUlmWI9PSc41YyS4pmhIB4bzTYpruWGx
+ e1rSKXdStRvQkxfXP4+9iTTrd/9NEqwk0m7vjv7HstE1kqfdhf6H5zKZi
+ D20OtwSXqJO8p7XahfR041sfCvWoVdX1iWScOR8QQsV1B7GNcB2dxbUl5
+ V2ZqR5TquMzq6SvD3a6afJONnK/wV80s3RFGZeNJVeFNOr77bITQJaUfa
+ XFJAwQqwQtEcBCbQ5jOWnt9WbUeH787+aThz5bvTrejN04xAVibJsDXpt
+ 3RxvHNK4NqGxveNP6Q1KJURcZN6SVmReiRIJk8AgHaRFbS9P5N8tsjXaR
  w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ONp3ai5C
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 09/10] ice: enforce no DCB
- config changing when in bond
+ header.a=rsa-sha256 header.s=Intel header.b=L8K+5cD7
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 07/10] ice: support
+ non-standard teardown of bond interface
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,142 +103,92 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-To support SRIOV LAG, the driver cannot allow changes to an interface's DCB
-configuration when in a bond.  This would break the ability to modify
-interfaces Tx scheduling for fail-over interfaces.
-
-Block kernel generated DCB config events when in a bond.
+Code for supporting removal of the PF driver (NETDEV_UNREGISTER) events for
+both when the bond has the primary interface as active and when failed over
+to thew secondary interface.
 
 Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
 Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_dcb_nl.c | 50 +++++++++++++++++++++
- 1 file changed, 50 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_lag.c | 47 ++++++++++++++++++++----
+ 1 file changed, 40 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-index 3eb01731e496..e1fbc6de452d 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_nl.c
-@@ -70,6 +70,11 @@ static int ice_dcbnl_setets(struct net_device *netdev, struct ieee_ets *ets)
- 	    !(pf->dcbx_cap & DCB_CAP_DCBX_VER_IEEE))
- 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+index fa5527aedbe5..ed386c26dbc4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.c
++++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+@@ -1186,15 +1186,16 @@ static void ice_lag_changeupper_event(struct ice_lag *lag, void *ptr)
+ 		if (!primary_lag && lag->primary)
+ 			primary_lag = lag;
  
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return -EINVAL;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	mutex_lock(&pf->tc_mutex);
-@@ -170,6 +175,11 @@ static u8 ice_dcbnl_setdcbx(struct net_device *netdev, u8 mode)
- 	if (mode == pf->dcbx_cap)
- 		return ICE_DCB_NO_HW_CHG;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return ICE_DCB_NO_HW_CHG;
-+	}
-+
- 	qos_cfg = &pf->hw.port_info->qos_cfg;
- 
- 	/* DSCP configuration is not DCBx negotiated */
-@@ -261,6 +271,11 @@ static int ice_dcbnl_setpfc(struct net_device *netdev, struct ieee_pfc *pfc)
- 	    !(pf->dcbx_cap & DCB_CAP_DCBX_VER_IEEE))
- 		return -EINVAL;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return -EINVAL;
-+	}
-+
- 	mutex_lock(&pf->tc_mutex);
- 
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
-@@ -323,6 +338,11 @@ static void ice_dcbnl_set_pfc_cfg(struct net_device *netdev, int prio, u8 set)
- 	if (prio >= ICE_MAX_USER_PRIORITY)
- 		return;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	new_cfg->pfc.pfccap = pf->hw.func_caps.common_cap.maxtc;
-@@ -379,6 +399,11 @@ static u8 ice_dcbnl_setstate(struct net_device *netdev, u8 state)
- 	    !(pf->dcbx_cap & DCB_CAP_DCBX_VER_CEE))
- 		return ICE_DCB_NO_HW_CHG;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return ICE_DCB_NO_HW_CHG;
-+	}
-+
- 	/* Nothing to do */
- 	if (!!state == test_bit(ICE_FLAG_DCB_ENA, pf->flags))
- 		return ICE_DCB_NO_HW_CHG;
-@@ -451,6 +476,11 @@ ice_dcbnl_set_pg_tc_cfg_tx(struct net_device *netdev, int tc,
- 	if (tc >= ICE_MAX_TRAFFIC_CLASS)
- 		return;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	/* prio_type, bwg_id and bw_pct per UP are not supported */
-@@ -505,6 +535,11 @@ ice_dcbnl_set_pg_bwg_cfg_tx(struct net_device *netdev, int pgid, u8 bw_pct)
- 	if (pgid >= ICE_MAX_TRAFFIC_CLASS)
- 		return;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return;
-+	}
-+
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
- 
- 	new_cfg->etscfg.tcbwtable[pgid] = bw_pct;
-@@ -725,6 +760,11 @@ static int ice_dcbnl_setapp(struct net_device *netdev, struct dcb_app *app)
- 		return -EINVAL;
+-		if (primary_lag) {
+-			if (!lag->primary) {
+-				ice_lag_set_swid(0, lag, false);
+-			} else {
++		if (!lag->primary) {
++			ice_lag_set_swid(0, lag, false);
++		} else {
++			if (primary_lag && lag->primary) {
+ 				ice_lag_primary_swid(lag, false);
+ 				ice_lag_del_prune_list(primary_lag, lag->pf);
+ 			}
+-			ice_lag_cfg_cp_fltr(lag, false);
+ 		}
++		/* remove filter for control packets */
++		ice_lag_cfg_cp_fltr(lag, false);
  	}
+ }
  
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return -EINVAL;
+@@ -1397,6 +1398,38 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
+ static void
+ ice_lag_unregister(struct ice_lag *lag, struct net_device *event_netdev)
+ {
++	struct ice_netdev_priv *np;
++	struct ice_pf *event_pf;
++	struct ice_lag *p_lag;
++
++	p_lag = ice_lag_find_primary(lag);
++	np = netdev_priv(event_netdev);
++	event_pf = np->vsi->back;
++
++	if (p_lag) {
++		if (p_lag->active_port != p_lag->pf->hw.port_info->lport &&
++		    p_lag->active_port != ICE_LAG_INVALID_PORT) {
++			struct ice_hw *active_hw;
++
++			active_hw = ice_lag_find_hw_by_lport(lag,
++							     p_lag->active_port);
++			if (active_hw)
++				ice_lag_reclaim_vf_nodes(p_lag, active_hw);
++			lag->active_port = ICE_LAG_INVALID_PORT;
++		}
 +	}
 +
- 	max_tc = pf->hw.func_caps.common_cap.maxtc;
- 	if (app->priority >= max_tc) {
- 		netdev_err(netdev, "TC %d out of range, max TC %d\n",
-@@ -836,6 +876,11 @@ static int ice_dcbnl_delapp(struct net_device *netdev, struct dcb_app *app)
- 		return -EINVAL;
- 	}
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return -EINVAL;
-+	}
++	/* primary processing for primary */
++	if (lag->primary && lag->netdev == event_netdev)
++		ice_lag_primary_swid(lag, false);
 +
- 	mutex_lock(&pf->tc_mutex);
- 	old_cfg = &pf->hw.port_info->qos_cfg.local_dcbx_cfg;
- 
-@@ -937,6 +982,11 @@ static u8 ice_dcbnl_cee_set_all(struct net_device *netdev)
- 	    !(pf->dcbx_cap & DCB_CAP_DCBX_VER_CEE))
- 		return ICE_DCB_NO_HW_CHG;
- 
-+	if (pf->lag && pf->lag->bonded) {
-+		netdev_err(netdev, "DCB changes not allowed when in a bond\n");
-+		return ICE_DCB_NO_HW_CHG;
-+	}
++	/* primary processing for secondary */
++	if (lag->primary && lag->netdev != event_netdev)
++		ice_lag_del_prune_list(lag, event_pf);
 +
- 	new_cfg = &pf->hw.port_info->qos_cfg.desired_dcbx_cfg;
++	/* secondary processing for secondary */
++	if (!lag->primary && lag->netdev == event_netdev)
++		ice_lag_set_swid(0, lag, false);
+ }
  
- 	mutex_lock(&pf->tc_mutex);
+ /**
+@@ -1466,8 +1499,8 @@ static void ice_lag_process_event(struct work_struct *work)
+ 	case NETDEV_UNREGISTER:
+ 		if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
+ 			netdev = lag_work->info.bonding_info.info.dev;
+-			if (netdev == lag_work->lag->netdev &&
+-			    lag_work->lag->bonded)
++			if ((netdev == lag_work->lag->netdev ||
++			     lag_work->lag->primary) && lag_work->lag->bonded)
+ 				ice_lag_unregister(lag_work->lag, netdev);
+ 		}
+ 		break;
 -- 
 2.40.1
 
