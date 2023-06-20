@@ -1,79 +1,69 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD87EEB64DB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 12:37:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FC41EB64D7
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 14:35:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 25C56403AA;
-	Tue, 20 Jun 2023 12:37:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 25C56403AA
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1DFD041B41;
+	Tue, 20 Jun 2023 14:35:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1DFD041B41
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687264656;
-	bh=P60roan9vQroFWa2M3NJX/3eDFiMaA28PgDoZJ0inec=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=lZhcUDQNzeIeM7QZZo3bQ08VsHsCNLyNLibTiX1sUyslI9ySeXoIPUl/c++4D6kx5
-	 2iYSsg4hh1ml+84iPHBC2WU+QS4bBvoOFWNzfDg5NMb8pHcrhj46g3Iu9U8rBWWEZn
-	 uvNb/MsHB7G2vWPfPljXUsJuY0Rdr6RPpmKzKbQ1FAzTPWviOJUg26/gGzHLBDTLLi
-	 CkZoz8jkBn4ATK+gcgA6zHgJdCxrixIlIVLo/ieibQVRjdILvTuDJu3Bs6q9pRkRgv
-	 S0qE4Vh7/GDefWK8/eDr/m++mf9W1VYVN++m2UFjGM0H0SpNZQ0MJMhOpawDoqLPxo
-	 fBCxfu0gsl81w==
+	s=default; t=1687271741;
+	bh=hjhO+w3NlmXzI1Bw5vfLwq61h8LyJ0utqK/VRL/fxoY=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=g2udsq+3m9FjbW0M0lfZ0EKzopMcD+pRRlt84S8PsWKXnHjVdR050SnldRhqmWZIp
+	 hy41NGn6hvy5FT3dPX7DA6UI8Vv35lqIMMxphv5BrLcwSl3D6jfy01fE/C1QyrfrRX
+	 tFCBIvlIOX/LM8aN7U7Alk72jWmqzrlCPbnEbPcDcqM3NpXchYOJzLv2a5k2YQSi+S
+	 QFnq91haDTUXXR380Q7XC9nCdY7ZUubbDN2dMz2yD1T4Qb93yXmxc4a3ObD+i54VVz
+	 +Yj10sPTvNDoo1c7KflH53zBL++H1W5izwke2+nitGXtFQuDCLC/GmJM+UfjmUJR7s
+	 SNeOpS5XAbTZA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id PKDteJ4BL7Wa; Tue, 20 Jun 2023 12:37:34 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id CN5crnYqLy9s; Tue, 20 Jun 2023 14:35:39 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1FC9D416A2;
-	Tue, 20 Jun 2023 12:37:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1FC9D416A2
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6B36E41B5C;
+	Tue, 20 Jun 2023 14:35:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6B36E41B5C
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 951CA1BF4E2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 12:37:32 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 0DA0D1BF405
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 14:35:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6C1E54097D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 12:37:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6C1E54097D
+ by smtp4.osuosl.org (Postfix) with ESMTP id DF18941B5C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 14:35:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DF18941B5C
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id li-yVN43LR1e for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Jun 2023 12:37:30 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 10C324098C
-Received: from smtp-relay-canonical-0.canonical.com
- (smtp-relay-canonical-0.canonical.com [185.125.188.120])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 10C324098C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 12:37:29 +0000 (UTC)
-Received: from localhost.localdomain (unknown [10.101.196.174])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by smtp-relay-canonical-0.canonical.com (Postfix) with ESMTPSA id 4CB9D3F295; 
- Tue, 20 Jun 2023 12:37:21 +0000 (UTC)
-From: Kai-Heng Feng <kai.heng.feng@canonical.com>
-To: jesse.brandeburg@intel.com,
-	anthony.l.nguyen@intel.com
-Date: Tue, 20 Jun 2023 20:36:36 +0800
-Message-Id: <20230620123636.1854690-1-kai.heng.feng@canonical.com>
-X-Mailer: git-send-email 2.34.1
+ with ESMTP id Yuza_AoKrrbg for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Jun 2023 14:35:35 +0000 (UTC)
+X-Greylist: from auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0AC4A41B41
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 0AC4A41B41
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 14:35:34 +0000 (UTC)
+Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 1700B61E5FE06;
+ Tue, 20 Jun 2023 16:34:01 +0200 (CEST)
+Message-ID: <8bfa3000-3391-546d-5c1e-14163de7f782@molgen.mpg.de>
+Date: Tue, 20 Jun 2023 16:34:00 +0200
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=canonical.com; s=20210705; t=1687264646;
- bh=cMuha6GweaG+AAmv5ZFt5Jg08JwMgA7CO4IwqmsXL5g=;
- h=From:To:Cc:Subject:Date:Message-Id:MIME-Version;
- b=MVbfKx92+fDUG7KsEKcN5Sa8H9mIYx8KvGl4CNsfxwGhAWizldEdbjaSjbyxT4hGF
- 4jRWDYVwQLzgA6xy2soVWYICfVQ+SPLXllPk03rGrHdVRL7DnHhEoDX0e8l3FfBXYi
- DCuTujYXhkPjRYqSgcSpEzaRZXv6pmFPzJ35vVHtmmOplWCv4NiTTye5PelYpnaNx6
- 0NJzpkZiPh/7yWaNJ1JQNff4rzhbRuB+Wm7qR3TOJ+iEg3LE312OXe2wUVlVP+32YA
- cCvExDcklEmwtXx8ndytJ1pywXqOrmXXZappbmUTzf43rQBUjkbVyTfRd5WgT99IEf
- DDoPkjW2DQHkw==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=canonical.com header.i=@canonical.com
- header.a=rsa-sha256 header.s=20210705 header.b=MVbfKx92
-Subject: [Intel-wired-lan] [PATCH] igc: Ignore AER reset when device is
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Content-Language: en-US
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+References: <20230620123636.1854690-1-kai.heng.feng@canonical.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20230620123636.1854690-1-kai.heng.feng@canonical.com>
+Subject: Re: [Intel-wired-lan] [PATCH] igc: Ignore AER reset when device is
  suspended
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -88,160 +78,210 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: Tony Luck <tony.luck@intel.com>, Kees Cook <keescook@chromium.org>,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
- Eric Dumazet <edumazet@google.com>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>, intel-wired-lan@lists.osuosl.org,
- linux-hardening@vger.kernel.org, netdev@vger.kernel.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ linux-pci@vger.kernel.org, jesse.brandeburg@intel.com,
+ linux-kernel@vger.kernel.org, "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
+ Eric Dumazet <edumazet@google.com>, anthony.l.nguyen@intel.com,
+ linux-hardening@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
+ netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When a system that connects to a Thunderbolt dock equipped with I225,
-I225 stops working after S3 resume:
-
-[  606.527643] pcieport 0000:00:1d.0: AER: Multiple Corrected error received: 0000:00:1d.0
-[  606.527791] pcieport 0000:00:1d.0: PCIe Bus Error: severity=Corrected, type=Transaction Layer, (Receiver ID)
-[  606.527795] pcieport 0000:00:1d.0:   device [8086:7ab0] error status/mask=00008000/00002000
-[  606.527800] pcieport 0000:00:1d.0:    [15] HeaderOF
-[  606.527806] pcieport 0000:00:1d.0: AER:   Error of this Agent is reported first
-[  606.527853] pcieport 0000:07:04.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
-[  606.527856] pcieport 0000:07:04.0:   device [8086:0b26] error status/mask=00000080/00002000
-[  606.527861] pcieport 0000:07:04.0:    [ 7] BadDLLP
-[  606.527931] pcieport 0000:00:1d.0: AER: Multiple Uncorrected (Non-Fatal) error received: 0000:00:1d.0
-[  606.528064] pcieport 0000:00:1d.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Requester ID)
-[  606.528068] pcieport 0000:00:1d.0:   device [8086:7ab0] error status/mask=00100000/00004000
-[  606.528072] pcieport 0000:00:1d.0:    [20] UnsupReq               (First)
-[  606.528075] pcieport 0000:00:1d.0: AER:   TLP Header: 34000000 0a000052 00000000 00000000
-[  606.528079] pcieport 0000:00:1d.0: AER:   Error of this Agent is reported first
-[  606.528098] pcieport 0000:04:01.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, (Requester ID)
-[  606.528101] pcieport 0000:04:01.0:   device [8086:1136] error status/mask=00300000/00000000
-[  606.528105] pcieport 0000:04:01.0:    [20] UnsupReq               (First)
-[  606.528107] pcieport 0000:04:01.0:    [21] ACSViol
-[  606.528110] pcieport 0000:04:01.0: AER:   TLP Header: 34000000 04000052 00000000 00000000
-[  606.528187] thunderbolt 0000:05:00.0: AER: can't recover (no error_detected callback)
-[  606.558729] ------------[ cut here ]------------
-[  606.558729] igc 0000:38:00.0: disabling already-disabled device
-[  606.558738] WARNING: CPU: 0 PID: 209 at drivers/pci/pci.c:2248 pci_disable_device+0xf6/0x150
-[  606.558743] Modules linked in: rfcomm ccm cmac algif_hash algif_skcipher af_alg usbhid bnep snd_hda_codec_hdmi snd_ctl_led snd_hda_codec_realtek joydev snd_hda_codec_generic ledtrig_audio binfmt_misc snd_sof_pci_intel_tgl snd_sof_intel_hda_common snd_soc_acpi_intel_match snd_soc_acpi snd_soc_hdac_hda snd_sof_pci snd_sof_xtensa_dsp x86_pkg_temp_thermal snd_sof_intel_hda_mlink intel_powerclamp snd_sof_intel_hda snd_sof snd_sof_utils snd_hda_ext_core snd_soc_core snd_compress snd_hda_intel coretemp snd_intel_dspcfg snd_hda_codec snd_hwdep kvm_intel snd_hda_core iwlmvm nls_iso8859_1 i915 snd_pcm kvm mac80211 crct10dif_pclmul crc32_pclmul i2c_algo_bit uvcvideo ghash_clmulni_intel snd_seq mei_pxp drm_buddy videobuf2_vmalloc sch_fq_codel sha512_ssse3 libarc4 aesni_intel mei_hdcp videobuf2_memops btusb uvc crypto_simd drm_display_helper snd_seq_device btrtl videobuf2_v4l2 cryptd snd_timer intel_rapl_msr btbcm drm_kms_helper videodev iwlwifi snd btintel rapl input_leds wmi_bmof hid_sensor_
- rotation btmtk hid_sensor_accel_3d
-[  606.558778]  hid_sensor_gyro_3d hid_sensor_als syscopyarea videobuf2_common intel_cstate serio_raw soundcore bluetooth hid_sensor_trigger thunderbolt sysfillrect cfg80211 mc mei_me industrialio_triggered_buffer sysimgblt processor_thermal_device_pci hid_sensor_iio_common hid_multitouch ecdh_generic processor_thermal_device kfifo_buf cec 8250_dw mei ecc processor_thermal_rfim industrialio rc_core processor_thermal_mbox ucsi_acpi processor_thermal_rapl ttm typec_ucsi intel_rapl_common msr typec video int3403_thermal int340x_thermal_zone int3400_thermal intel_hid wmi acpi_pad acpi_thermal_rel sparse_keymap acpi_tad mac_hid parport_pc ppdev lp parport drm ramoops reed_solomon efi_pstore ip_tables x_tables autofs4 hid_sensor_custom hid_sensor_hub intel_ishtp_hid spi_pxa2xx_platform hid_generic dw_dmac dw_dmac_core rtsx_pci_sdmmc e1000e i2c_i801 igc nvme i2c_smbus intel_lpss_pci rtsx_pci intel_ish_ipc nvme_core intel_lpss xhci_pci i2c_hid_acpi intel_ishtp idma64 xhci_pci_renesas i2c_hid
-  hid pinctrl_alderlake
-[  606.558809] CPU: 0 PID: 209 Comm: irq/124-aerdrv Not tainted 6.4.0-rc7+ #119
-[  606.558811] Hardware name: HP HP ZBook Fury 16 G9 Mobile Workstation PC/89C6, BIOS U96 Ver. 01.07.01 04/06/2023
-[  606.558812] RIP: 0010:pci_disable_device+0xf6/0x150
-[  606.558814] Code: 4d 85 e4 75 07 4c 8b a3 d0 00 00 00 48 8d bb d0 00 00 00 e8 5c f5 1f 00 4c 89 e2 48 c7 c7 f8 e6 37 ae 48 89 c6 e8 9a 3e 86 ff <0f> 0b e9 3c ff ff ff 48 8d 55 e6 be 04 00 00 00 48 89 df e8 62 0b
-[  606.558815] RSP: 0018:ffffa70040a4fca0 EFLAGS: 00010246
-[  606.558816] RAX: 0000000000000000 RBX: ffff8ac8434b2000 RCX: 0000000000000000
-[  606.558817] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-[  606.558818] RBP: ffffa70040a4fcc0 R08: 0000000000000000 R09: 0000000000000000
-[  606.558818] R10: 0000000000000000 R11: 0000000000000000 R12: ffff8ac843435dd0
-[  606.558818] R13: ffff8ac84277c000 R14: 0000000000000001 R15: ffff8ac8434b2150
-[  606.558819] FS:  0000000000000000(0000) GS:ffff8acbd6a00000(0000) knlGS:0000000000000000
-[  606.558820] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[  606.558821] CR2: 00007f9740ba28e8 CR3: 00000001eb43a000 CR4: 0000000000f50ef0
-[  606.558822] PKRU: 55555554
-[  606.558822] Call Trace:
-[  606.558823]  <TASK>
-[  606.558825]  ? show_regs+0x76/0x90
-[  606.558828]  ? pci_disable_device+0xf6/0x150
-[  606.558830]  ? __warn+0x91/0x160
-[  606.558832]  ? pci_disable_device+0xf6/0x150
-[  606.558834]  ? report_bug+0x1bf/0x1d0
-[  606.558838] nvme nvme0: 24/0/0 default/read/poll queues
-[  606.558837]  ? handle_bug+0x46/0x90
-[  606.558841]  ? exc_invalid_op+0x1d/0x90
-[  606.558843]  ? asm_exc_invalid_op+0x1f/0x30
-[  606.558846]  ? pci_disable_device+0xf6/0x150
-[  606.558849]  igc_io_error_detected+0x40/0x70 [igc]
-[  606.558857]  report_error_detected+0xdb/0x1d0
-[  606.558860]  ? __pfx_report_normal_detected+0x10/0x10
-[  606.558862]  report_normal_detected+0x1a/0x30
-[  606.558864]  pci_walk_bus+0x78/0xb0
-[  606.558866]  pcie_do_recovery+0xba/0x340
-[  606.558868]  ? __pfx_aer_root_reset+0x10/0x10
-[  606.558870]  aer_process_err_devices+0x168/0x220
-[  606.558871]  aer_isr+0x1d3/0x1f0
-[  606.558874]  ? __pfx_irq_thread_fn+0x10/0x10
-[  606.558876]  irq_thread_fn+0x29/0x70
-[  606.558877]  irq_thread+0xee/0x1c0
-[  606.558878]  ? __pfx_irq_thread_dtor+0x10/0x10
-[  606.558879]  ? __pfx_irq_thread+0x10/0x10
-[  606.558880]  kthread+0xf8/0x130
-[  606.558882]  ? __pfx_kthread+0x10/0x10
-[  606.558884]  ret_from_fork+0x29/0x50
-[  606.558887]  </TASK>
-[  606.558887] ---[ end trace 0000000000000000 ]---
-[  606.570223] i915 0000:00:02.0: [drm] GT0: HuC: authenticated!
-[  606.570228] i915 0000:00:02.0: [drm] GT0: GUC: submission disabled
-[  606.570231] i915 0000:00:02.0: [drm] GT0: GUC: SLPC disabled
-[  606.663042] xhci_hcd 0000:39:00.0: AER: can't recover (no error_detected callback)
-[  606.663111] pcieport 0000:00:1d.0: AER: device recovery failed
-[  606.721642] iwlwifi 0000:00:14.3: WFPM_UMAC_PD_NOTIFICATION: 0x1f
-[  606.721677] iwlwifi 0000:00:14.3: WFPM_LMAC2_PD_NOTIFICATION: 0x1f
-[  606.721687] iwlwifi 0000:00:14.3: WFPM_AUTH_KEY_0: 0x90
-[  606.721698] iwlwifi 0000:00:14.3: CNVI_SCU_SEQ_DATA_DW9: 0x0
-[  606.842877] usb 1-8: reset high-speed USB device number 3 using xhci_hcd
-[  607.048340] genirq: Flags mismatch irq 164. 00000000 (enp56s0) vs. 00000000 (enp56s0)
-[  607.050313] ------------[ cut here ]------------
-...
-[  609.064160] igc 0000:38:00.0 enp56s0: Register Dump
-[  609.064167] igc 0000:38:00.0 enp56s0: Register Name   Value
-[  609.064181] igc 0000:38:00.0 enp56s0: CTRL            081c0641
-[  609.064188] igc 0000:38:00.0 enp56s0: STATUS          40280401
-[  609.064195] igc 0000:38:00.0 enp56s0: CTRL_EXT        100000c0
-[  609.064202] igc 0000:38:00.0 enp56s0: MDIC            18017949
-[  609.064208] igc 0000:38:00.0 enp56s0: ICR             80000010
-[  609.064214] igc 0000:38:00.0 enp56s0: RCTL            04408022
-[  609.064232] igc 0000:38:00.0 enp56s0: RDLEN[0-3]      00001000 00001000 00001000 00001000
-[  609.064251] igc 0000:38:00.0 enp56s0: RDH[0-3]        00000000 00000000 00000000 00000000
-[  609.064270] igc 0000:38:00.0 enp56s0: RDT[0-3]        000000ff 000000ff 000000ff 000000ff
-[  609.064289] igc 0000:38:00.0 enp56s0: RXDCTL[0-3]     00040808 00040808 00040808 00040808
-[  609.064308] igc 0000:38:00.0 enp56s0: RDBAL[0-3]      ffc62000 fff6b000 fff6c000 fff6d000
-[  609.064326] igc 0000:38:00.0 enp56s0: RDBAH[0-3]      00000000 00000000 00000000 00000000
-[  609.064333] igc 0000:38:00.0 enp56s0: TCTL            a50400fa
-[  609.064351] igc 0000:38:00.0 enp56s0: TDBAL[0-3]      fff6d000 ffcdf000 ffce0000 ffce1000
-[  609.064369] igc 0000:38:00.0 enp56s0: TDBAH[0-3]      00000000 00000000 00000000 00000000
-[  609.064387] igc 0000:38:00.0 enp56s0: TDLEN[0-3]      00001000 00001000 00001000 00001000
-[  609.064405] igc 0000:38:00.0 enp56s0: TDH[0-3]        00000000 00000000 00000000 00000000
-[  609.064423] igc 0000:38:00.0 enp56s0: TDT[0-3]        00000004 00000000 00000000 00000000
-[  609.064441] igc 0000:38:00.0 enp56s0: TXDCTL[0-3]     00100108 00100108 00100108 00100108
-[  609.064445] igc 0000:38:00.0 enp56s0: Reset adapter
-
-The issue is that the PTM requests are sending before driver resumes the
-device. Since the issue can also be observed on Windows, it's quite
-likely a firmware/hardwar limitation.
-
-So avoid resetting the device if it's not resumed. Once the device is
-fully resumed, the device can work normally.
-
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=216850
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
- drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index fa764190f270..6a46f886ff43 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -6962,6 +6962,9 @@ static pci_ers_result_t igc_io_error_detected(struct pci_dev *pdev,
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct igc_adapter *adapter = netdev_priv(netdev);
- 
-+	if (!pci_is_enabled(pdev))
-+		return 0;
-+
- 	netif_device_detach(netdev);
- 
- 	if (state == pci_channel_io_perm_failure)
--- 
-2.34.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RGVhciBLYWktSGVuZywNCg0KDQpUaGFuayB5b3UgZm9yIHRoZSBwYXRjaC4NCg0KDQpBbSAyMC4w
+Ni4yMyB1bSAxNDozNiBzY2hyaWViIEthaS1IZW5nIEZlbmc6DQo+IFdoZW4gYSBzeXN0ZW0gdGhh
+dCBjb25uZWN0cyB0byBhIFRodW5kZXJib2x0IGRvY2sgZXF1aXBwZWQgd2l0aCBJMjI1LA0KPiBJ
+MjI1IHN0b3BzIHdvcmtpbmcgYWZ0ZXIgUzMgcmVzdW1lOg0KPiANCj4gWyAgNjA2LjUyNzY0M10g
+cGNpZXBvcnQgMDAwMDowMDoxZC4wOiBBRVI6IE11bHRpcGxlIENvcnJlY3RlZCBlcnJvciByZWNl
+aXZlZDogMDAwMDowMDoxZC4wDQo+IFsgIDYwNi41Mjc3OTFdIHBjaWVwb3J0IDAwMDA6MDA6MWQu
+MDogUENJZSBCdXMgRXJyb3I6IHNldmVyaXR5PUNvcnJlY3RlZCwgdHlwZT1UcmFuc2FjdGlvbiBM
+YXllciwgKFJlY2VpdmVyIElEKQ0KPiBbICA2MDYuNTI3Nzk1XSBwY2llcG9ydCAwMDAwOjAwOjFk
+LjA6ICAgZGV2aWNlIFs4MDg2OjdhYjBdIGVycm9yIHN0YXR1cy9tYXNrPTAwMDA4MDAwLzAwMDAy
+MDAwDQo+IFsgIDYwNi41Mjc4MDBdIHBjaWVwb3J0IDAwMDA6MDA6MWQuMDogICAgWzE1XSBIZWFk
+ZXJPRg0KPiBbICA2MDYuNTI3ODA2XSBwY2llcG9ydCAwMDAwOjAwOjFkLjA6IEFFUjogICBFcnJv
+ciBvZiB0aGlzIEFnZW50IGlzIHJlcG9ydGVkIGZpcnN0DQo+IFsgIDYwNi41Mjc4NTNdIHBjaWVw
+b3J0IDAwMDA6MDc6MDQuMDogUENJZSBCdXMgRXJyb3I6IHNldmVyaXR5PUNvcnJlY3RlZCwgdHlw
+ZT1EYXRhIExpbmsgTGF5ZXIsIChSZWNlaXZlciBJRCkNCj4gWyAgNjA2LjUyNzg1Nl0gcGNpZXBv
+cnQgMDAwMDowNzowNC4wOiAgIGRldmljZSBbODA4NjowYjI2XSBlcnJvciBzdGF0dXMvbWFzaz0w
+MDAwMDA4MC8wMDAwMjAwMA0KPiBbICA2MDYuNTI3ODYxXSBwY2llcG9ydCAwMDAwOjA3OjA0LjA6
+ICAgIFsgN10gQmFkRExMUA0KPiBbICA2MDYuNTI3OTMxXSBwY2llcG9ydCAwMDAwOjAwOjFkLjA6
+IEFFUjogTXVsdGlwbGUgVW5jb3JyZWN0ZWQgKE5vbi1GYXRhbCkgZXJyb3IgcmVjZWl2ZWQ6IDAw
+MDA6MDA6MWQuMA0KPiBbICA2MDYuNTI4MDY0XSBwY2llcG9ydCAwMDAwOjAwOjFkLjA6IFBDSWUg
+QnVzIEVycm9yOiBzZXZlcml0eT1VbmNvcnJlY3RlZCAoTm9uLUZhdGFsKSwgdHlwZT1UcmFuc2Fj
+dGlvbiBMYXllciwgKFJlcXVlc3RlciBJRCkNCj4gWyAgNjA2LjUyODA2OF0gcGNpZXBvcnQgMDAw
+MDowMDoxZC4wOiAgIGRldmljZSBbODA4Njo3YWIwXSBlcnJvciBzdGF0dXMvbWFzaz0wMDEwMDAw
+MC8wMDAwNDAwMA0KPiBbICA2MDYuNTI4MDcyXSBwY2llcG9ydCAwMDAwOjAwOjFkLjA6ICAgIFsy
+MF0gVW5zdXBSZXEgICAgICAgICAgICAgICAoRmlyc3QpDQo+IFsgIDYwNi41MjgwNzVdIHBjaWVw
+b3J0IDAwMDA6MDA6MWQuMDogQUVSOiAgIFRMUCBIZWFkZXI6IDM0MDAwMDAwIDBhMDAwMDUyIDAw
+MDAwMDAwIDAwMDAwMDAwDQo+IFsgIDYwNi41MjgwNzldIHBjaWVwb3J0IDAwMDA6MDA6MWQuMDog
+QUVSOiAgIEVycm9yIG9mIHRoaXMgQWdlbnQgaXMgcmVwb3J0ZWQgZmlyc3QNCj4gWyAgNjA2LjUy
+ODA5OF0gcGNpZXBvcnQgMDAwMDowNDowMS4wOiBQQ0llIEJ1cyBFcnJvcjogc2V2ZXJpdHk9VW5j
+b3JyZWN0ZWQgKE5vbi1GYXRhbCksIHR5cGU9VHJhbnNhY3Rpb24gTGF5ZXIsIChSZXF1ZXN0ZXIg
+SUQpDQo+IFsgIDYwNi41MjgxMDFdIHBjaWVwb3J0IDAwMDA6MDQ6MDEuMDogICBkZXZpY2UgWzgw
+ODY6MTEzNl0gZXJyb3Igc3RhdHVzL21hc2s9MDAzMDAwMDAvMDAwMDAwMDANCj4gWyAgNjA2LjUy
+ODEwNV0gcGNpZXBvcnQgMDAwMDowNDowMS4wOiAgICBbMjBdIFVuc3VwUmVxICAgICAgICAgICAg
+ICAgKEZpcnN0KQ0KPiBbICA2MDYuNTI4MTA3XSBwY2llcG9ydCAwMDAwOjA0OjAxLjA6ICAgIFsy
+MV0gQUNTVmlvbA0KPiBbICA2MDYuNTI4MTEwXSBwY2llcG9ydCAwMDAwOjA0OjAxLjA6IEFFUjog
+ICBUTFAgSGVhZGVyOiAzNDAwMDAwMCAwNDAwMDA1MiAwMDAwMDAwMCAwMDAwMDAwMA0KPiBbICA2
+MDYuNTI4MTg3XSB0aHVuZGVyYm9sdCAwMDAwOjA1OjAwLjA6IEFFUjogY2FuJ3QgcmVjb3ZlciAo
+bm8gZXJyb3JfZGV0ZWN0ZWQgY2FsbGJhY2spDQo+IFsgIDYwNi41NTg3MjldIC0tLS0tLS0tLS0t
+LVsgY3V0IGhlcmUgXS0tLS0tLS0tLS0tLQ0KPiBbICA2MDYuNTU4NzI5XSBpZ2MgMDAwMDozODow
+MC4wOiBkaXNhYmxpbmcgYWxyZWFkeS1kaXNhYmxlZCBkZXZpY2UNCj4gWyAgNjA2LjU1ODczOF0g
+V0FSTklORzogQ1BVOiAwIFBJRDogMjA5IGF0IGRyaXZlcnMvcGNpL3BjaS5jOjIyNDggcGNpX2Rp
+c2FibGVfZGV2aWNlKzB4ZjYvMHgxNTANCj4gWyAgNjA2LjU1ODc0M10gTW9kdWxlcyBsaW5rZWQg
+aW46IHJmY29tbSBjY20gY21hYyBhbGdpZl9oYXNoIGFsZ2lmX3NrY2lwaGVyIGFmX2FsZyB1c2Jo
+aWQgYm5lcCBzbmRfaGRhX2NvZGVjX2hkbWkgc25kX2N0bF9sZWQgc25kX2hkYV9jb2RlY19yZWFs
+dGVrIGpveWRldiBzbmRfaGRhX2NvZGVjX2dlbmVyaWMgbGVkdHJpZ19hdWRpbyBiaW5mbXRfbWlz
+YyBzbmRfc29mX3BjaV9pbnRlbF90Z2wgc25kX3NvZl9pbnRlbF9oZGFfY29tbW9uIHNuZF9zb2Nf
+YWNwaV9pbnRlbF9tYXRjaCBzbmRfc29jX2FjcGkgc25kX3NvY19oZGFjX2hkYSBzbmRfc29mX3Bj
+aSBzbmRfc29mX3h0ZW5zYV9kc3AgeDg2X3BrZ190ZW1wX3RoZXJtYWwgc25kX3NvZl9pbnRlbF9o
+ZGFfbWxpbmsgaW50ZWxfcG93ZXJjbGFtcCBzbmRfc29mX2ludGVsX2hkYSBzbmRfc29mIHNuZF9z
+b2ZfdXRpbHMgc25kX2hkYV9leHRfY29yZSBzbmRfc29jX2NvcmUgc25kX2NvbXByZXNzIHNuZF9o
+ZGFfaW50ZWwgY29yZXRlbXAgc25kX2ludGVsX2RzcGNmZyBzbmRfaGRhX2NvZGVjIHNuZF9od2Rl
+cCBrdm1faW50ZWwgc25kX2hkYV9jb3JlIGl3bG12bSBubHNfaXNvODg1OV8xIGk5MTUgc25kX3Bj
+bSBrdm0gbWFjODAyMTEgY3JjdDEwZGlmX3BjbG11bCBjcmMzMl9wY2xtdWwgaTJjX2FsZ29fYml0
+IHV2Y3ZpZGVvIGdoYXNoX2NsbXVsbmlfaW50ZWwgc25kX3NlcSBtZWlfcHhwIGRybV9idWRkeSB2
+aWRlb2J1ZjJfdm1hbGxvYyBzY2hfZnFfY29kZWwgc2hhNTEyX3Nzc2UzIGxpYmFyYzQgYWVzbmlf
+aW50ZWwgbWVpX2hkY3AgdmlkZW9idWYyX21lbW9wcyBidHVzYiB1dmMgY3J5cHRvX3NpbWQgZHJt
+X2Rpc3BsYXlfaGVscGVyIHNuZF9zZXFfZGV2aWNlIGJ0cnRsIHZpZGVvYnVmMl92NGwyIGNyeXB0
+ZCBzbmRfdGltZXIgaW50ZWxfcmFwbF9tc3IgYnRiY20gZHJtX2ttc19oZWxwZXIgdmlkZW9kZXYg
+aXdsd2lmaSBzbmQgYnRpbnRlbCByYXBsIGlucHV0X2xlZHMgd21pX2Jtb2YgaGlkX3NlbnNvcl8N
+Cj4gICByb3RhdGlvbiBidG10ayBoaWRfc2Vuc29yX2FjY2VsXzNkDQo+IFsgIDYwNi41NTg3Nzhd
+ICBoaWRfc2Vuc29yX2d5cm9fM2QgaGlkX3NlbnNvcl9hbHMgc3lzY29weWFyZWEgdmlkZW9idWYy
+X2NvbW1vbiBpbnRlbF9jc3RhdGUgc2VyaW9fcmF3IHNvdW5kY29yZSBibHVldG9vdGggaGlkX3Nl
+bnNvcl90cmlnZ2VyIHRodW5kZXJib2x0IHN5c2ZpbGxyZWN0IGNmZzgwMjExIG1jIG1laV9tZSBp
+bmR1c3RyaWFsaW9fdHJpZ2dlcmVkX2J1ZmZlciBzeXNpbWdibHQgcHJvY2Vzc29yX3RoZXJtYWxf
+ZGV2aWNlX3BjaSBoaWRfc2Vuc29yX2lpb19jb21tb24gaGlkX211bHRpdG91Y2ggZWNkaF9nZW5l
+cmljIHByb2Nlc3Nvcl90aGVybWFsX2RldmljZSBrZmlmb19idWYgY2VjIDgyNTBfZHcgbWVpIGVj
+YyBwcm9jZXNzb3JfdGhlcm1hbF9yZmltIGluZHVzdHJpYWxpbyByY19jb3JlIHByb2Nlc3Nvcl90
+aGVybWFsX21ib3ggdWNzaV9hY3BpIHByb2Nlc3Nvcl90aGVybWFsX3JhcGwgdHRtIHR5cGVjX3Vj
+c2kgaW50ZWxfcmFwbF9jb21tb24gbXNyIHR5cGVjIHZpZGVvIGludDM0MDNfdGhlcm1hbCBpbnQz
+NDB4X3RoZXJtYWxfem9uZSBpbnQzNDAwX3RoZXJtYWwgaW50ZWxfaGlkIHdtaSBhY3BpX3BhZCBh
+Y3BpX3RoZXJtYWxfcmVsIHNwYXJzZV9rZXltYXAgYWNwaV90YWQgbWFjX2hpZCBwYXJwb3J0X3Bj
+IHBwZGV2IGxwIHBhcnBvcnQgZHJtIHJhbW9vcHMgcmVlZF9zb2xvbW9uIGVmaV9wc3RvcmUgaXBf
+dGFibGVzIHhfdGFibGVzIGF1dG9mczQgaGlkX3NlbnNvcl9jdXN0b20gaGlkX3NlbnNvcl9odWIg
+aW50ZWxfaXNodHBfaGlkIHNwaV9weGEyeHhfcGxhdGZvcm0gaGlkX2dlbmVyaWMgZHdfZG1hYyBk
+d19kbWFjX2NvcmUgcnRzeF9wY2lfc2RtbWMgZTEwMDBlIGkyY19pODAxIGlnYyBudm1lIGkyY19z
+bWJ1cyBpbnRlbF9scHNzX3BjaSBydHN4X3BjaSBpbnRlbF9pc2hfaXBjIG52bWVfY29yZSBpbnRl
+bF9scHNzIHhoY2lfcGNpIGkyY19oaWRfYWNwaSBpbnRlbF9pc2h0cCBpZG1hNjQgeGhjaV9wY2lf
+cmVuZXNhcyBpMmNfaGlkDQo+ICAgIGhpZCBwaW5jdHJsX2FsZGVybGFrZQ0KPiBbICA2MDYuNTU4
+ODA5XSBDUFU6IDAgUElEOiAyMDkgQ29tbTogaXJxLzEyNC1hZXJkcnYgTm90IHRhaW50ZWQgNi40
+LjAtcmM3KyAjMTE5DQo+IFsgIDYwNi41NTg4MTFdIEhhcmR3YXJlIG5hbWU6IEhQIEhQIFpCb29r
+IEZ1cnkgMTYgRzkgTW9iaWxlIFdvcmtzdGF0aW9uIFBDLzg5QzYsIEJJT1MgVTk2IFZlci4gMDEu
+MDcuMDEgMDQvMDYvMjAyMw0KPiBbICA2MDYuNTU4ODEyXSBSSVA6IDAwMTA6cGNpX2Rpc2FibGVf
+ZGV2aWNlKzB4ZjYvMHgxNTANCj4gWyAgNjA2LjU1ODgxNF0gQ29kZTogNGQgODUgZTQgNzUgMDcg
+NGMgOGIgYTMgZDAgMDAgMDAgMDAgNDggOGQgYmIgZDAgMDAgMDAgMDAgZTggNWMgZjUgMWYgMDAg
+NGMgODkgZTIgNDggYzcgYzcgZjggZTYgMzcgYWUgNDggODkgYzYgZTggOWEgM2UgODYgZmYgPDBm
+PiAwYiBlOSAzYyBmZiBmZiBmZiA0OCA4ZCA1NSBlNiBiZSAwNCAwMCAwMCAwMCA0OCA4OSBkZiBl
+OCA2MiAwYg0KPiBbICA2MDYuNTU4ODE1XSBSU1A6IDAwMTg6ZmZmZmE3MDA0MGE0ZmNhMCBFRkxB
+R1M6IDAwMDEwMjQ2DQo+IFsgIDYwNi41NTg4MTZdIFJBWDogMDAwMDAwMDAwMDAwMDAwMCBSQlg6
+IGZmZmY4YWM4NDM0YjIwMDAgUkNYOiAwMDAwMDAwMDAwMDAwMDAwDQo+IFsgIDYwNi41NTg4MTdd
+IFJEWDogMDAwMDAwMDAwMDAwMDAwMCBSU0k6IDAwMDAwMDAwMDAwMDAwMDAgUkRJOiAwMDAwMDAw
+MDAwMDAwMDAwDQo+IFsgIDYwNi41NTg4MThdIFJCUDogZmZmZmE3MDA0MGE0ZmNjMCBSMDg6IDAw
+MDAwMDAwMDAwMDAwMDAgUjA5OiAwMDAwMDAwMDAwMDAwMDAwDQo+IFsgIDYwNi41NTg4MThdIFIx
+MDogMDAwMDAwMDAwMDAwMDAwMCBSMTE6IDAwMDAwMDAwMDAwMDAwMDAgUjEyOiBmZmZmOGFjODQz
+NDM1ZGQwDQo+IFsgIDYwNi41NTg4MThdIFIxMzogZmZmZjhhYzg0Mjc3YzAwMCBSMTQ6IDAwMDAw
+MDAwMDAwMDAwMDEgUjE1OiBmZmZmOGFjODQzNGIyMTUwDQo+IFsgIDYwNi41NTg4MTldIEZTOiAg
+MDAwMDAwMDAwMDAwMDAwMCgwMDAwKSBHUzpmZmZmOGFjYmQ2YTAwMDAwKDAwMDApIGtubEdTOjAw
+MDAwMDAwMDAwMDAwMDANCj4gWyAgNjA2LjU1ODgyMF0gQ1M6ICAwMDEwIERTOiAwMDAwIEVTOiAw
+MDAwIENSMDogMDAwMDAwMDA4MDA1MDAzMw0KPiBbICA2MDYuNTU4ODIxXSBDUjI6IDAwMDA3Zjk3
+NDBiYTI4ZTggQ1IzOiAwMDAwMDAwMWViNDNhMDAwIENSNDogMDAwMDAwMDAwMGY1MGVmMA0KPiBb
+ICA2MDYuNTU4ODIyXSBQS1JVOiA1NTU1NTU1NA0KPiBbICA2MDYuNTU4ODIyXSBDYWxsIFRyYWNl
+Og0KPiBbICA2MDYuNTU4ODIzXSAgPFRBU0s+DQo+IFsgIDYwNi41NTg4MjVdICA/IHNob3dfcmVn
+cysweDc2LzB4OTANCj4gWyAgNjA2LjU1ODgyOF0gID8gcGNpX2Rpc2FibGVfZGV2aWNlKzB4ZjYv
+MHgxNTANCj4gWyAgNjA2LjU1ODgzMF0gID8gX193YXJuKzB4OTEvMHgxNjANCj4gWyAgNjA2LjU1
+ODgzMl0gID8gcGNpX2Rpc2FibGVfZGV2aWNlKzB4ZjYvMHgxNTANCj4gWyAgNjA2LjU1ODgzNF0g
+ID8gcmVwb3J0X2J1ZysweDFiZi8weDFkMA0KPiBbICA2MDYuNTU4ODM4XSBudm1lIG52bWUwOiAy
+NC8wLzAgZGVmYXVsdC9yZWFkL3BvbGwgcXVldWVzDQo+IFsgIDYwNi41NTg4MzddICA/IGhhbmRs
+ZV9idWcrMHg0Ni8weDkwDQo+IFsgIDYwNi41NTg4NDFdICA/IGV4Y19pbnZhbGlkX29wKzB4MWQv
+MHg5MA0KPiBbICA2MDYuNTU4ODQzXSAgPyBhc21fZXhjX2ludmFsaWRfb3ArMHgxZi8weDMwDQo+
+IFsgIDYwNi41NTg4NDZdICA/IHBjaV9kaXNhYmxlX2RldmljZSsweGY2LzB4MTUwDQo+IFsgIDYw
+Ni41NTg4NDldICBpZ2NfaW9fZXJyb3JfZGV0ZWN0ZWQrMHg0MC8weDcwIFtpZ2NdDQo+IFsgIDYw
+Ni41NTg4NTddICByZXBvcnRfZXJyb3JfZGV0ZWN0ZWQrMHhkYi8weDFkMA0KPiBbICA2MDYuNTU4
+ODYwXSAgPyBfX3BmeF9yZXBvcnRfbm9ybWFsX2RldGVjdGVkKzB4MTAvMHgxMA0KPiBbICA2MDYu
+NTU4ODYyXSAgcmVwb3J0X25vcm1hbF9kZXRlY3RlZCsweDFhLzB4MzANCj4gWyAgNjA2LjU1ODg2
+NF0gIHBjaV93YWxrX2J1cysweDc4LzB4YjANCj4gWyAgNjA2LjU1ODg2Nl0gIHBjaWVfZG9fcmVj
+b3ZlcnkrMHhiYS8weDM0MA0KPiBbICA2MDYuNTU4ODY4XSAgPyBfX3BmeF9hZXJfcm9vdF9yZXNl
+dCsweDEwLzB4MTANCj4gWyAgNjA2LjU1ODg3MF0gIGFlcl9wcm9jZXNzX2Vycl9kZXZpY2VzKzB4
+MTY4LzB4MjIwDQo+IFsgIDYwNi41NTg4NzFdICBhZXJfaXNyKzB4MWQzLzB4MWYwDQo+IFsgIDYw
+Ni41NTg4NzRdICA/IF9fcGZ4X2lycV90aHJlYWRfZm4rMHgxMC8weDEwDQo+IFsgIDYwNi41NTg4
+NzZdICBpcnFfdGhyZWFkX2ZuKzB4MjkvMHg3MA0KPiBbICA2MDYuNTU4ODc3XSAgaXJxX3RocmVh
+ZCsweGVlLzB4MWMwDQo+IFsgIDYwNi41NTg4NzhdICA/IF9fcGZ4X2lycV90aHJlYWRfZHRvcisw
+eDEwLzB4MTANCj4gWyAgNjA2LjU1ODg3OV0gID8gX19wZnhfaXJxX3RocmVhZCsweDEwLzB4MTAN
+Cj4gWyAgNjA2LjU1ODg4MF0gIGt0aHJlYWQrMHhmOC8weDEzMA0KPiBbICA2MDYuNTU4ODgyXSAg
+PyBfX3BmeF9rdGhyZWFkKzB4MTAvMHgxMA0KPiBbICA2MDYuNTU4ODg0XSAgcmV0X2Zyb21fZm9y
+aysweDI5LzB4NTANCj4gWyAgNjA2LjU1ODg4N10gIDwvVEFTSz4NCj4gWyAgNjA2LjU1ODg4N10g
+LS0tWyBlbmQgdHJhY2UgMDAwMDAwMDAwMDAwMDAwMCBdLS0tDQo+IFsgIDYwNi41NzAyMjNdIGk5
+MTUgMDAwMDowMDowMi4wOiBbZHJtXSBHVDA6IEh1QzogYXV0aGVudGljYXRlZCENCj4gWyAgNjA2
+LjU3MDIyOF0gaTkxNSAwMDAwOjAwOjAyLjA6IFtkcm1dIEdUMDogR1VDOiBzdWJtaXNzaW9uIGRp
+c2FibGVkDQo+IFsgIDYwNi41NzAyMzFdIGk5MTUgMDAwMDowMDowMi4wOiBbZHJtXSBHVDA6IEdV
+QzogU0xQQyBkaXNhYmxlZA0KPiBbICA2MDYuNjYzMDQyXSB4aGNpX2hjZCAwMDAwOjM5OjAwLjA6
+IEFFUjogY2FuJ3QgcmVjb3ZlciAobm8gZXJyb3JfZGV0ZWN0ZWQgY2FsbGJhY2spDQo+IFsgIDYw
+Ni42NjMxMTFdIHBjaWVwb3J0IDAwMDA6MDA6MWQuMDogQUVSOiBkZXZpY2UgcmVjb3ZlcnkgZmFp
+bGVkDQo+IFsgIDYwNi43MjE2NDJdIGl3bHdpZmkgMDAwMDowMDoxNC4zOiBXRlBNX1VNQUNfUERf
+Tk9USUZJQ0FUSU9OOiAweDFmDQo+IFsgIDYwNi43MjE2NzddIGl3bHdpZmkgMDAwMDowMDoxNC4z
+OiBXRlBNX0xNQUMyX1BEX05PVElGSUNBVElPTjogMHgxZg0KPiBbICA2MDYuNzIxNjg3XSBpd2x3
+aWZpIDAwMDA6MDA6MTQuMzogV0ZQTV9BVVRIX0tFWV8wOiAweDkwDQo+IFsgIDYwNi43MjE2OThd
+IGl3bHdpZmkgMDAwMDowMDoxNC4zOiBDTlZJX1NDVV9TRVFfREFUQV9EVzk6IDB4MA0KPiBbICA2
+MDYuODQyODc3XSB1c2IgMS04OiByZXNldCBoaWdoLXNwZWVkIFVTQiBkZXZpY2UgbnVtYmVyIDMg
+dXNpbmcgeGhjaV9oY2QNCj4gWyAgNjA3LjA0ODM0MF0gZ2VuaXJxOiBGbGFncyBtaXNtYXRjaCBp
+cnEgMTY0LiAwMDAwMDAwMCAoZW5wNTZzMCkgdnMuIDAwMDAwMDAwIChlbnA1NnMwKQ0KPiBbICA2
+MDcuMDUwMzEzXSAtLS0tLS0tLS0tLS1bIGN1dCBoZXJlIF0tLS0tLS0tLS0tLS0NCj4gLi4uDQo+
+IFsgIDYwOS4wNjQxNjBdIGlnYyAwMDAwOjM4OjAwLjAgZW5wNTZzMDogUmVnaXN0ZXIgRHVtcA0K
+PiBbICA2MDkuMDY0MTY3XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFJlZ2lzdGVyIE5hbWUg
+ICBWYWx1ZQ0KPiBbICA2MDkuMDY0MTgxXSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IENUUkwg
+ICAgICAgICAgICAwODFjMDY0MQ0KPiBbICA2MDkuMDY0MTg4XSBpZ2MgMDAwMDozODowMC4wIGVu
+cDU2czA6IFNUQVRVUyAgICAgICAgICA0MDI4MDQwMQ0KPiBbICA2MDkuMDY0MTk1XSBpZ2MgMDAw
+MDozODowMC4wIGVucDU2czA6IENUUkxfRVhUICAgICAgICAxMDAwMDBjMA0KPiBbICA2MDkuMDY0
+MjAyXSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IE1ESUMgICAgICAgICAgICAxODAxNzk0OQ0K
+PiBbICA2MDkuMDY0MjA4XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IElDUiAgICAgICAgICAg
+ICA4MDAwMDAxMA0KPiBbICA2MDkuMDY0MjE0XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFJD
+VEwgICAgICAgICAgICAwNDQwODAyMg0KPiBbICA2MDkuMDY0MjMyXSBpZ2MgMDAwMDozODowMC4w
+IGVucDU2czA6IFJETEVOWzAtM10gICAgICAwMDAwMTAwMCAwMDAwMTAwMCAwMDAwMTAwMCAwMDAw
+MTAwMA0KPiBbICA2MDkuMDY0MjUxXSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFJESFswLTNd
+ICAgICAgICAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMA0KPiBbICA2MDkuMDY0
+MjcwXSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFJEVFswLTNdICAgICAgICAwMDAwMDBmZiAw
+MDAwMDBmZiAwMDAwMDBmZiAwMDAwMDBmZg0KPiBbICA2MDkuMDY0Mjg5XSBpZ2MgMDAwMDozODow
+MC4wIGVucDU2czA6IFJYRENUTFswLTNdICAgICAwMDA0MDgwOCAwMDA0MDgwOCAwMDA0MDgwOCAw
+MDA0MDgwOA0KPiBbICA2MDkuMDY0MzA4XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFJEQkFM
+WzAtM10gICAgICBmZmM2MjAwMCBmZmY2YjAwMCBmZmY2YzAwMCBmZmY2ZDAwMA0KPiBbICA2MDku
+MDY0MzI2XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFJEQkFIWzAtM10gICAgICAwMDAwMDAw
+MCAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMA0KPiBbICA2MDkuMDY0MzMzXSBpZ2MgMDAwMDoz
+ODowMC4wIGVucDU2czA6IFRDVEwgICAgICAgICAgICBhNTA0MDBmYQ0KPiBbICA2MDkuMDY0MzUx
+XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFREQkFMWzAtM10gICAgICBmZmY2ZDAwMCBmZmNk
+ZjAwMCBmZmNlMDAwMCBmZmNlMTAwMA0KPiBbICA2MDkuMDY0MzY5XSBpZ2MgMDAwMDozODowMC4w
+IGVucDU2czA6IFREQkFIWzAtM10gICAgICAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDAw
+MDAwMA0KPiBbICA2MDkuMDY0Mzg3XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFRETEVOWzAt
+M10gICAgICAwMDAwMTAwMCAwMDAwMTAwMCAwMDAwMTAwMCAwMDAwMTAwMA0KPiBbICA2MDkuMDY0
+NDA1XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFRESFswLTNdICAgICAgICAwMDAwMDAwMCAw
+MDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMA0KPiBbICA2MDkuMDY0NDIzXSBpZ2MgMDAwMDozODow
+MC4wIGVucDU2czA6IFREVFswLTNdICAgICAgICAwMDAwMDAwNCAwMDAwMDAwMCAwMDAwMDAwMCAw
+MDAwMDAwMA0KPiBbICA2MDkuMDY0NDQxXSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFRYRENU
+TFswLTNdICAgICAwMDEwMDEwOCAwMDEwMDEwOCAwMDEwMDEwOCAwMDEwMDEwOA0KPiBbICA2MDku
+MDY0NDQ1XSBpZ2MgMDAwMDozODowMC4wIGVucDU2czA6IFJlc2V0IGFkYXB0ZXINCj4gDQo+IFRo
+ZSBpc3N1ZSBpcyB0aGF0IHRoZSBQVE0gcmVxdWVzdHMgYXJlIHNlbmRpbmcgYmVmb3JlIGRyaXZl
+ciByZXN1bWVzIHRoZQ0KPiBkZXZpY2UuIFNpbmNlIHRoZSBpc3N1ZSBjYW4gYWxzbyBiZSBvYnNl
+cnZlZCBvbiBXaW5kb3dzLCBpdCdzIHF1aXRlDQo+IGxpa2VseSBhIGZpcm13YXJlL2hhcmR3YXIg
+bGltaXRhdGlvbi4NCg0KaGFyZHdhciplKg0KDQo+IFNvIGF2b2lkIHJlc2V0dGluZyB0aGUgZGV2
+aWNlIGlmIGl0J3Mgbm90IHJlc3VtZWQuIE9uY2UgdGhlIGRldmljZSBpcw0KPiBmdWxseSByZXN1
+bWVkLCB0aGUgZGV2aWNlIGNhbiB3b3JrIG5vcm1hbGx5Lg0KDQpJdOKAmWQgYmUgZ3JlYXQgaWYg
+eW91IGRvY3VtZW50ZWQsIHdoYXQgZG9ja2luZyBzdGF0aW9ucyB5b3UgdGVzdGVkIHRoaXMgd2l0
+aC4NCg0KPiBMaW5rOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lk
+PTIxNjg1MA0KPiBTaWduZWQtb2ZmLWJ5OiBLYWktSGVuZyBGZW5nIDxrYWkuaGVuZy5mZW5nQGNh
+bm9uaWNhbC5jb20+DQo+IC0tLQ0KPiAgIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9p
+Z2NfbWFpbi5jIHwgMyArKysNCj4gICAxIGZpbGUgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspDQo+
+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWdjL2lnY19tYWlu
+LmMgYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pZ2MvaWdjX21haW4uYw0KPiBpbmRleCBm
+YTc2NDE5MGYyNzAuLjZhNDZmODg2ZmY0MyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9uZXQvZXRo
+ZXJuZXQvaW50ZWwvaWdjL2lnY19tYWluLmMNCj4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQv
+aW50ZWwvaWdjL2lnY19tYWluLmMNCj4gQEAgLTY5NjIsNiArNjk2Miw5IEBAIHN0YXRpYyBwY2lf
+ZXJzX3Jlc3VsdF90IGlnY19pb19lcnJvcl9kZXRlY3RlZChzdHJ1Y3QgcGNpX2RldiAqcGRldiwN
+Cj4gICAJc3RydWN0IG5ldF9kZXZpY2UgKm5ldGRldiA9IHBjaV9nZXRfZHJ2ZGF0YShwZGV2KTsN
+Cj4gICAJc3RydWN0IGlnY19hZGFwdGVyICphZGFwdGVyID0gbmV0ZGV2X3ByaXYobmV0ZGV2KTsN
+Cj4gICANCj4gKwlpZiAoIXBjaV9pc19lbmFibGVkKHBkZXYpKQ0KPiArCQlyZXR1cm4gMDsNCj4g
+Kw0KPiAgIAluZXRpZl9kZXZpY2VfZGV0YWNoKG5ldGRldik7DQo+ICAgDQo+ICAgCWlmIChzdGF0
+ZSA9PSBwY2lfY2hhbm5lbF9pb19wZXJtX2ZhaWx1cmUpDQoNCg0KS2luZCByZWdhcmRzLA0KDQpQ
+YXVsDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRl
+bC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBz
+Oi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
