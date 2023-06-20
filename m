@@ -1,86 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 160CEEB64DB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 15:07:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FBA8EB64DB
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 15:59:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9B5A240023;
-	Tue, 20 Jun 2023 15:07:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9B5A240023
+	by smtp3.osuosl.org (Postfix) with ESMTP id 017E960888;
+	Tue, 20 Jun 2023 15:59:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 017E960888
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687273644;
-	bh=m7sS7Ln6REjZpEUNftnI2vza9s/v1wM3ii1N+v5rlQ0=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1687276765;
+	bh=oB1KTzj05j3qMIsBC70Z/iPC6tugo4DosTJ29SNi27k=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=uLINap7Shv2FW+T0wXw2Dl2D2m/DCvRRy9bDrgYZMKAftBipzawBt0g+bKRRCcl7k
-	 IGjAyUzxsaydjBb7JHD8XJoR2XvPRTSynBk3OHQZ0YDaPmmZDEIqdil7KPxwiXIpdd
-	 fVt8cFM5/YDn0ArlBQiwb16w42oxzSOlfvnboixYlcNoLy9lkCkGZCKma0T862umKW
-	 0yJJIzQTzVb8YcAlYKWXhyG4XANB8BS3ogGryTMGsey+PLXomv24i1CXlKQBGkGbRU
-	 PyKiu538nYgr3ynmCHFwLkWmALgUPWe3JrkFo597Py992II+CjXnwuJOl7+vp9rNi8
-	 uvxt6gGl0TeeQ==
+	b=44FMQyoaPxJr8plHsII5s8fURbcomZoh5/2qadWrdr/j0sXLZ8hiQEaq0mWA1jm0j
+	 d/YsVBXmdVBlqSLt17NM+mU+pp2VBYdjAff33TrD3ldJbEZaRiFNFhCQw2PncDqO8+
+	 sd0U1FUseYcU4XGMEgKmXZbpbaeF6sNk/Jf1tTqyKa5h7v+b8SwutFXtzu5WNrJIkl
+	 FkSEDNmfNAjFlDxKmm5prmJ60aZNgfCQmp6bkG81/IhlS97Cb3Vj1FfAesLVbH1PDi
+	 f6kQkPVRkwb1sNJzdRcWuvsZ+29dSfwanf6pFXfJJC8XBkFAH94c0q3JD/ulBRnWGO
+	 OUMI9mAYjE65w==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 0u59cJPbWWoS; Tue, 20 Jun 2023 15:59:24 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 14CED60EAB;
+	Tue, 20 Jun 2023 15:59:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 14CED60EAB
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 98E771BF291
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 15:59:22 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 64DC841B81
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 15:59:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 64DC841B81
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Zyo-J8WntVsM; Tue, 20 Jun 2023 15:07:23 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 5134C402AD;
-	Tue, 20 Jun 2023 15:07:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5134C402AD
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 0D4BA1BF3C5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 15:07:10 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E6B43820ED
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 15:07:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E6B43820ED
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ErLwYjLiAoxa for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Jun 2023 15:07:08 +0000 (UTC)
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id LtoIf1THucDu for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Jun 2023 15:59:21 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C159081F6C
-Received: from fanzine2.igalia.com (fanzine2.igalia.com [213.97.179.56])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C159081F6C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 15:07:06 +0000 (UTC)
-Received: from [177.94.78.149] (helo=[192.168.1.60])
- by fanzine2.igalia.com with esmtpsa 
- (Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
- id 1qBcwD-000lqI-AB; Tue, 20 Jun 2023 17:06:33 +0200
-Message-ID: <3d9822ba-e692-e779-3ecb-bb284fa2a733@igalia.com>
-Date: Tue, 20 Jun 2023 12:05:21 -0300
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8383441B80
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8383441B80
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 15:59:21 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id B38C6612F4;
+ Tue, 20 Jun 2023 15:59:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C32D0C433C9;
+ Tue, 20 Jun 2023 15:59:19 +0000 (UTC)
+Date: Tue, 20 Jun 2023 08:59:19 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: Gal Pressman <gal@nvidia.com>
+Message-ID: <20230620085919.497c3a03@kernel.org>
+In-Reply-To: <17cc8e10-3b54-7bb7-6245-eba11d049034@nvidia.com>
+References: <20230613122420.855486-1-piotrx.gardocki@intel.com>
+ <20230613122420.855486-2-piotrx.gardocki@intel.com>
+ <c29c346a-9465-c3cc-1045-272c4eb26c65@nvidia.com>
+ <18b2b4a1-60b8-164f-ea31-5744950e138d@intel.com>
+ <17cc8e10-3b54-7bb7-6245-eba11d049034@nvidia.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.11.0
-Content-Language: en-US
-To: Kai-Heng Feng <kai.heng.feng@canonical.com>, jesse.brandeburg@intel.com,
- anthony.l.nguyen@intel.com
-References: <20230620123636.1854690-1-kai.heng.feng@canonical.com>
-From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-In-Reply-To: <20230620123636.1854690-1-kai.heng.feng@canonical.com>
-X-Mailman-Approved-At: Tue, 20 Jun 2023 15:07:21 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; d=igalia.com; 
- s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
- References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
- List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=TF58PbEnutisgyOb8/ZMr1H0VJK22Rp1e0KXoeR8sbQ=; b=AbGUggnkPexptF8+XjIwEZckzf
- BgsNsc/iE4pv7q/HfY5k4nTJxSvb9YlklOaJcWcLIaKLRVVGa2uWg7X6wy9U53yt3qdzA52ZfY9Cc
- dMFYVWMAlfABEeCeREmsqSUXINQ41FaJb+lk2GphICwho1kL+t5xK1KalKDsQKrZ05cQSp33ipoUi
- hpN0N+0zHVJrT7Jb0/hXoxcgLRO3fkP5IJQ3Yy7BKxK92p0Tw7XmpUvrG1uXv7c4FuLg9atuM8I0w
- GJ/+T0mnzAGQa3tfJ9xrmU89XAoWIH1ORPftYbSIywJzv5EKpSXXksw44QidGGHp/WMBVhwOiUEJn
- 1NUjvvwA==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=igalia.com header.i=@igalia.com
- header.a=rsa-sha256 header.s=20170329 header.b=AbGUggnk
-Subject: Re: [Intel-wired-lan] [PATCH] igc: Ignore AER reset when device is
- suspended
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1687276760;
+ bh=JvRHHCpfUHPT1y5nSv1lOHmoL4oYB3Bie6coQ1YCqpU=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=ndYk6tuBUkmB2QJsWkmzvNPun5kdhr3H5rNYk5bHzBbHPLqM42qe77Ibp1mG8kFBD
+ /oCyNdI2rvv1fMqbvf4L+jHJZmhS/ZXvMwxL86d4YbsNYB4VzETENq538CU9NRm10H
+ +yJpfpHaw2L0RkdPjuKfIR/bR2Yp3cmwnJFb14QwdktFq3toQ69lpJq1zcSAmBFM32
+ PvEV6i/YZ1zMSoW2E1ACZONpekn0VByjNVkoewMyHGqjz1Rsgp4mS8ar6wHh8u8wTX
+ cwXnlJOjBZwutDgk8mcyOWqQxwZBr4x/tZgiqz9vXD2uEFzks9jYnb8bt8vvUUOUO/
+ RRHdpPInU+9Wg==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=ndYk6tuB
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2 1/3] net: add check for
+ current MAC address in dev_set_mac_address
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,51 +93,30 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Tony Luck <tony.luck@intel.com>, Kees Cook <keescook@chromium.org>,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
- linux-hardening@vger.kernel.org, netdev@vger.kernel.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
+Cc: pmenzel@molgen.mpg.de, netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ intel-wired-lan@lists.osuosl.org, przemyslaw.kitszel@intel.com,
+ simon.horman@corigine.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 20/06/2023 14:36, Kai-Heng Feng wrote:
-> [...]
-> So avoid resetting the device if it's not resumed. Once the device is
-> fully resumed, the device can work normally.
+On Tue, 20 Jun 2023 13:42:14 +0300 Gal Pressman wrote:
+> > I checked it, you're right. When the addr_assign_type is PERM or RANDOM
+> > and user or some driver sets the same MAC address the type doesn't change
+> > to NET_ADDR_SET. In my testing I didn't notice issues with that, but I'm
+> > sure there are cases I didn't cover. Did you discover any useful cases
+> > that broke after this patch or did you just notice it in code?  
 > 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=216850
-> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> ---
->  drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> index fa764190f270..6a46f886ff43 100644
-> --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> @@ -6962,6 +6962,9 @@ static pci_ers_result_t igc_io_error_detected(struct pci_dev *pdev,
->  	struct net_device *netdev = pci_get_drvdata(pdev);
->  	struct igc_adapter *adapter = netdev_priv(netdev);
->  
-> +	if (!pci_is_enabled(pdev))
-> +		return 0;
-> +
->  	netif_device_detach(netdev);
->  
->  	if (state == pci_channel_io_perm_failure)
+> This behavior change was caught in our regression tests.
 
-Makes perfect sense to me, based on the days I've worked a lot with PCI
-resets and whatnot heh
+Why was the regression test written this way?
 
-Feel free to add:
-Reviewed-by: Guilherme G. Piccoli <gpiccoli@igalia.com>
+I guess we won't flip it back to PERM if user sets a completely
+different address temporarily and then back to PERM - so for consistency
+going to SET even when the addr doesn't change may be reasonable.
 
-
-Cheers!
+Piotr, you'll need to send a new followup patch on top of net-next.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
