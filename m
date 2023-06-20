@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 523A5EB64D7
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 18:32:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FAE4EB64D8
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 18:32:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E8C34821A9;
-	Tue, 20 Jun 2023 18:32:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E8C34821A9
+	by smtp1.osuosl.org (Postfix) with ESMTP id B67D2820E7;
+	Tue, 20 Jun 2023 18:32:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B67D2820E7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687285973;
-	bh=0OZlc1G+8Nqy40rqXTkoBHF4R3dTI8GrQxfbFg9ObOU=;
+	s=default; t=1687285977;
+	bh=/TdkmhEOOgyPRBMC+GRcQ7glRMIXXGcuew9qxbq8LQ8=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=upIwjrZXQWCvBhm3tTj/+EeYVTd0ticwAZmM3uPC8uS2LQsLa+0EbeA1WJtG/zLpk
-	 xhU1A0tnOrLGfEMJTviHN375XJSCe+q4/+y7lMbtd1ujw6lt5A7tivgkhj/OeMn5iO
-	 krH70DU57a6cBlocC7T2pUTFycQc6wKkWpjerpYehk9QCFcmqhMEZUytUNFtsEWsLZ
-	 Dz/rhqRWI4mIKUDkyK2/k+ZBD5S5i/Q3Q667tHMR8BkGeJWaCz/kgPr4ngwAjDX3Et
-	 jgNrpTRjUUAmoLWr1JcAzfBlh3WM1ElIM0K79dw9TOHbuGbaISIroxFvPFirbKFKJk
-	 tf9teDkbcEFWQ==
+	b=tzLkSNq44yWwyvfaWJS8O2ulSWn5EBBXupy/w9kb30So+LqkfX8VGNxGnqg4hbkLv
+	 migmPfacVuUgqBW7uOvmuJs0KnptnvD9XyFeVkacyEq5KD3BsE7HUIP7Jp5Fts0bfO
+	 Ejo9CsEtYkAUec3hwcWbuEKv3ltopqNt5sGUJUsjDbU7xFbyU+otPKVMIE3yBe+PPa
+	 X7sw1XigAzMyS7NgomzJXIMeJc2EY3Y2gYqD1uCnRWRByU0HHkQO6Tjica43CIAQoi
+	 zmGbEx+yWcei2lAVGp8n+upnNmQ6NBNNTtcuRX3P/NpdnB/rIf5nQWBkRnstB8q0Gl
+	 PM97ETzCORr5A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XIIXNDfG6B3L; Tue, 20 Jun 2023 18:32:51 +0000 (UTC)
+	with ESMTP id 643b8Ekz7q0z; Tue, 20 Jun 2023 18:32:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2627E82217;
-	Tue, 20 Jun 2023 18:32:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2627E82217
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 3788A1BF4E4
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0B19B8230F;
+	Tue, 20 Jun 2023 18:32:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0B19B8230F
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 5780B1BF954
  for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 575D160E80
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 575D160E80
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2F52741B18
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2F52741B18
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fjjE1ii9PjXo for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Jun 2023 18:32:36 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id uD_H6SHOgRG0 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Jun 2023 18:32:37 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B1B0060F4A
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A0CB419D3
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B1B0060F4A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:36 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="425907912"
-X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="425907912"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9A0CB419D3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:37 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="425907951"
+X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="425907951"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jun 2023 11:32:34 -0700
+ 20 Jun 2023 11:32:36 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="784204405"
-X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="784204405"
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="784204423"
+X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="784204423"
 Received: from dmert-dev.jf.intel.com ([10.166.241.14])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jun 2023 11:32:34 -0700
+ 20 Jun 2023 11:32:36 -0700
 From: Dave Ertman <david.m.ertman@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 20 Jun 2023 11:34:07 -0700
-Message-Id: <20230620183414.848016-4-david.m.ertman@intel.com>
+Date: Tue, 20 Jun 2023 11:34:14 -0700
+Message-Id: <20230620183414.848016-11-david.m.ertman@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230620183414.848016-1-david.m.ertman@intel.com>
 References: <20230620183414.848016-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1687285956; x=1718821956;
+ t=1687285957; x=1718821957;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=Qn8ClwPFrp8duYzP3d0W5bPu9L8KiAGsJURSmur3nrA=;
- b=dKaqQNYOgFXymjDbshp0xkuU/tDR5vHCE4+HPBmC0e1F25DLMP/u36Rq
- 7O5AL1gb6TuSNRWDv384kETS5YKX4m4HMACrTkE/dx0qShfDzw0HzD+Ll
- wlJ5T7/OzJQ/GdPmD9G/BNADSRJG7eRB5ycNknSPTCmGkyb/4HGUeLX3n
- yetj9odIkcBZAEgpxpkIlPLvugIfFR3uRNf7w7TAcZCp9ZsU3GGZJNQE1
- /9kAlR7j65HJuYvf1ZkO1UA/WrFiyjnBlXyVBTa4mkkarQbqLjnCeznIz
- 3tWfyzKD0//QT/N1Y7TKVWipktonuaCnNsIG4CqTfx4446KAuW8+fljAi
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=d9ApkASqZngC0NP0iji0Yjbswe4qYvsYqVnnyrWIHns=;
+ b=N1n940YmMrEqjjLnHBXRKUdJUluHmuoWdjYH/zaKmqBkvkGax5Q6Mlmo
+ pZzyRAQP6ppG5bcm8NjyiZAtx+2fF2w1U3CYeRBUwL0ZytNX5R2GOdtw0
+ REQmv6kVpxTLN9NJ9fNuyEuF6KTNOyj0YZGBANOmvOvx7g+kyB6AlH0jz
+ GQ2WWVBf+TpssrIfRJV+cvr5hCT0GglYmNmj0diu2BOH+77drR8jY1pTE
+ 2Rr3gk3jiaBy4Es9bl69umjE0iRarRKC65T2jsNYmhKAvdHkf8yjn5tsr
+ 6/Sl42vR8B2tdmhc+Ni8AOeR0VDmxNQ56N7x0eQG+OLI4GcHYbxWAm4of
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=dKaqQNYO
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 03/10] ice: changes to the
- interface with the HW and FW for SRIOV_VF+LAG
+ header.a=rsa-sha256 header.s=Intel header.b=N1n940Ym
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 10/10] ice: update reset path
+ for SRIOV LAG support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,520 +103,356 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add defines needed for interaction with the FW admin queue interface
-in relation to supporting LAG and SRIOV VFs interacting.
+Add code to rebuild the LAG resources when rebuilding the state of the
+interface after a reset.
 
-Add code, or make non-static previously static functions, to access
-the new and changed admin queue calls for LAG.
+Also added in a function for building per-queue information into the buffer
+used to configure VF queues for LAG fail-over.  This improves code reuse.
+
+Due to differences in timing per interface for recovering from a reset, add
+in the ability to retry on non-local dependencies where needed.
 
 Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
 Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 50 +++++++++++-
- drivers/net/ethernet/intel/ice/ice_common.c   | 47 +++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h   |  4 +
- drivers/net/ethernet/intel/ice/ice_sched.c    | 14 ++--
- drivers/net/ethernet/intel/ice/ice_sched.h    | 21 +++++
- drivers/net/ethernet/intel/ice/ice_switch.c   | 78 ++++++++++++++-----
- drivers/net/ethernet/intel/ice/ice_switch.h   | 26 +++++++
- 7 files changed, 211 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lag.c  | 231 +++++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_lag.h  |   3 +
+ drivers/net/ethernet/intel/ice/ice_main.c |  14 +-
+ 3 files changed, 244 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 6b5ba9a02bad..8c123253ae1c 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -235,6 +235,8 @@ struct ice_aqc_set_port_params {
- #define ICE_AQC_SET_P_PARAMS_DOUBLE_VLAN_ENA	BIT(2)
- 	__le16 bad_frame_vsi;
- 	__le16 swid;
-+#define ICE_AQC_PORT_SWID_VALID			BIT(15)
-+#define ICE_AQC_PORT_SWID_M			0xFF
- 	u8 reserved[10];
- };
- 
-@@ -244,10 +246,12 @@ struct ice_aqc_set_port_params {
-  * Allocate Resources command (indirect 0x0208)
-  * Free Resources command (indirect 0x0209)
-  * Get Allocated Resource Descriptors Command (indirect 0x020A)
-+ * Share Resource command (indirect 0x020B)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
+index 0054d4e1056b..c95651fdec8b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.c
++++ b/drivers/net/ethernet/intel/ice/ice_lag.c
+@@ -957,6 +957,7 @@ static void ice_lag_link_unlink(struct ice_lag *lag, void *ptr)
+  * @link: Is this a linking activity
+  *
+  * If link is false, then primary_swid should be expected to not be valid
++ * This function should never be called in interrupt context.
   */
- #define ICE_AQC_RES_TYPE_VSI_LIST_REP			0x03
- #define ICE_AQC_RES_TYPE_VSI_LIST_PRUNE			0x04
- #define ICE_AQC_RES_TYPE_RECIPE				0x05
-+#define ICE_AQC_RES_TYPE_SWID				0x07
- #define ICE_AQC_RES_TYPE_FDIR_COUNTER_BLOCK		0x21
- #define ICE_AQC_RES_TYPE_FDIR_GUARANTEED_ENTRIES	0x22
- #define ICE_AQC_RES_TYPE_FDIR_SHARED_ENTRIES		0x23
-@@ -267,6 +271,7 @@ struct ice_aqc_set_port_params {
+ static void
+ ice_lag_set_swid(u16 primary_swid, struct ice_lag *local_lag,
+@@ -966,7 +967,7 @@ ice_lag_set_swid(u16 primary_swid, struct ice_lag *local_lag,
+ 	struct ice_aqc_set_port_params *cmd;
+ 	struct ice_aq_desc desc;
+ 	u16 buf_len, swid;
+-	int status;
++	int status, i;
  
- /* Allocate Resources command (indirect 0x0208)
-  * Free Resources command (indirect 0x0209)
-+ * Share Resource command (indirect 0x020B)
-  */
- struct ice_aqc_alloc_free_res_cmd {
- 	__le16 num_entries; /* Number of Resource entries */
-@@ -821,7 +826,11 @@ struct ice_aqc_txsched_move_grp_info_hdr {
- 	__le32 src_parent_teid;
- 	__le32 dest_parent_teid;
- 	__le16 num_elems;
--	__le16 reserved;
-+	u8 mode;
-+#define ICE_AQC_MOVE_ELEM_MODE_SAME_PF		0x0
-+#define ICE_AQC_MOVE_ELEM_MODE_GIVE_OWN		0x1
-+#define ICE_AQC_MOVE_ELEM_MODE_KEEP_OWN		0x2
-+	u8 reserved;
- };
+ 	buf_len = struct_size(buf, elem, 1);
+ 	buf = kzalloc(buf_len, GFP_KERNEL);
+@@ -1017,7 +1018,20 @@ ice_lag_set_swid(u16 primary_swid, struct ice_lag *local_lag,
+ 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_port_params);
  
- struct ice_aqc_move_elem {
-@@ -1923,6 +1932,42 @@ struct ice_aqc_dis_txq_item {
- 	__le16 q_id[];
- } __packed;
- 
-+/* Move/Reconfigure Tx queue (indirect 0x0C32) */
-+struct ice_aqc_cfg_txqs {
-+	u8 cmd_type;
-+#define ICE_AQC_Q_CFG_MOVE_NODE		0x1
-+#define ICE_AQC_Q_CFG_TC_CHNG		0x2
-+#define ICE_AQC_Q_CFG_MOVE_TC_CHNG	0x3
-+#define ICE_AQC_Q_CFG_SUBSEQ_CALL	BIT(2)
-+#define ICE_AQC_Q_CFG_FLUSH		BIT(3)
-+	u8 num_qs;
-+	u8 port_num_chng;
-+#define ICE_AQC_Q_CFG_SRC_PRT_M		0x7
-+#define ICE_AQC_Q_CFG_DST_PRT_S		3
-+#define ICE_AQC_Q_CFG_DST_PRT_M		(0x7 << ICE_AQC_Q_CFG_DST_PRT_S)
-+	u8 time_out;
-+#define ICE_AQC_Q_CFG_TIMEOUT_S		2
-+#define ICE_AQC_Q_CFG_TIMEOUT_M		(0x1F << ICE_AQC_Q_CFG_TIMEOUT_S)
-+	__le32 blocked_cgds;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
+ 	cmd->swid = cpu_to_le16(ICE_AQC_PORT_SWID_VALID | swid);
+-	status = ice_aq_send_cmd(&local_lag->pf->hw, &desc, NULL, 0, NULL);
++	/* If this is happening in reset context, it is possible that the
++	 * primary interface has not finished setting its SWID to SHARED
++	 * yet.  Allow retries to account for this timing issue between
++	 * interfaces.
++	 */
++	for (i = 0; i < ICE_LAG_RESET_RETRIES; i++) {
++		status = ice_aq_send_cmd(&local_lag->pf->hw, &desc, NULL, 0,
++					 NULL);
++		if (!status)
++			break;
 +
-+/* Per Q struct for Move/Reconfigure Tx LAN Queues (indirect 0x0C32) */
-+struct ice_aqc_cfg_txq_perq {
-+	__le16 q_handle;
-+	u8 tc;
-+	u8 rsvd;
-+	__le32 q_teid;
-+};
++		usleep_range(1000, 2000);
++	}
 +
-+/* The buffer for Move/Reconfigure Tx LAN Queues (indirect 0x0C32) */
-+struct ice_aqc_cfg_txqs_buf {
-+	__le32 src_parent_teid;
-+	__le32 dst_parent_teid;
-+	struct ice_aqc_cfg_txq_perq queue_info[];
-+};
-+
- /* Add Tx RDMA Queue Set (indirect 0x0C33) */
- struct ice_aqc_add_rdma_qset {
- 	u8 num_qset_grps;
-@@ -2181,6 +2226,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_neigh_dev_req neigh_dev;
- 		struct ice_aqc_add_txqs add_txqs;
- 		struct ice_aqc_dis_txqs dis_txqs;
-+		struct ice_aqc_cfg_txqs cfg_txqs;
- 		struct ice_aqc_add_rdma_qset add_rdma_qset;
- 		struct ice_aqc_add_get_update_free_vsi vsi_cmd;
- 		struct ice_aqc_add_update_free_vsi_resp add_update_free_vsi_res;
-@@ -2263,6 +2309,7 @@ enum ice_adminq_opc {
- 	/* Alloc/Free/Get Resources */
- 	ice_aqc_opc_alloc_res				= 0x0208,
- 	ice_aqc_opc_free_res				= 0x0209,
-+	ice_aqc_opc_share_res				= 0x020B,
- 	ice_aqc_opc_set_vlan_mode_parameters		= 0x020C,
- 	ice_aqc_opc_get_vlan_mode_parameters		= 0x020D,
+ 	if (status)
+ 		dev_err(ice_pf_to_dev(local_lag->pf), "Error setting SWID in port params %d\n",
+ 			status);
+@@ -1025,7 +1039,7 @@ ice_lag_set_swid(u16 primary_swid, struct ice_lag *local_lag,
  
-@@ -2356,6 +2403,7 @@ enum ice_adminq_opc {
- 	/* Tx queue handling commands/events */
- 	ice_aqc_opc_add_txqs				= 0x0C30,
- 	ice_aqc_opc_dis_txqs				= 0x0C31,
-+	ice_aqc_opc_cfg_txqs				= 0x0C32,
- 	ice_aqc_opc_add_rdma_qset			= 0x0C33,
- 
- 	/* package commands */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 6ddf607d2edf..04c5996f2d6a 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4202,6 +4202,53 @@ ice_aq_dis_lan_txq(struct ice_hw *hw, u8 num_qgrps,
- 	return status;
+ /**
+  * ice_lag_primary_swid - set/clear the SHARED attrib of primary's SWID
+- * @lag: primary interfaces lag struct
++ * @lag: primary interface's lag struct
+  * @link: is this a linking activity
+  *
+  * Implement setting primary SWID as shared using 0x020B
+@@ -1769,6 +1783,135 @@ static int ice_create_lag_recipe(struct ice_hw *hw, u16 *rid,
+ 	return err;
  }
  
 +/**
-+ * ice_aq_cfg_lan_txq
-+ * @hw: pointer to the hardware structure
-+ * @buf: buffer for command
-+ * @buf_size: size of buffer in bytes
-+ * @num_qs: number of queues being configured
-+ * @oldport: origination lport
-+ * @newport: destination lport
-+ * @cd: pointer to command details structure or NULL
-+ *
-+ * Move/Configure LAN Tx queue (0x0C32)
-+ *
-+ * There is a better AQ command to use for moving nodes, so only coding
-+ * this one for configuring the node.
++ * ice_lag_move_vf_nodes_tc_sync - move a VF's nodes for a tc during reset
++ * @lag: primary interfaces lag struct
++ * @dest_hw: HW struct for destination's interface
++ * @vsi_num: VSI index in PF space
++ * @tc: traffic class to move
 + */
-+int
-+ice_aq_cfg_lan_txq(struct ice_hw *hw, struct ice_aqc_cfg_txqs_buf *buf,
-+		   u16 buf_size, u16 num_qs, u8 oldport, u8 newport,
-+		   struct ice_sq_cd *cd)
++static void
++ice_lag_move_vf_nodes_tc_sync(struct ice_lag *lag, struct ice_hw *dest_hw,
++			      u16 vsi_num, u8 tc)
 +{
-+	struct ice_aqc_cfg_txqs *cmd;
-+	struct ice_aq_desc desc;
-+	int status;
++	u16 numq, valq, buf_size, num_moved, qbuf_size;
++	struct device *dev = ice_pf_to_dev(lag->pf);
++	struct ice_aqc_cfg_txqs_buf *qbuf;
++	struct ice_aqc_move_elem *buf;
++	struct ice_sched_node *n_prt;
++	__le32 teid, parent_teid;
++	struct ice_vsi_ctx *ctx;
++	struct ice_hw *hw;
++	u32 tmp_teid;
 +
-+	cmd = &desc.params.cfg_txqs;
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_cfg_txqs);
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
++	hw = &lag->pf->hw;
++	ctx = ice_get_vsi_ctx(hw, vsi_num);
++	if (!ctx) {
++		dev_warn(dev, "LAG rebuild failed after reset due to VSI Context failure\n");
++		return;
++	}
 +
-+	if (!buf)
-+		return -EINVAL;
++	if (!ctx->sched.vsi_node[tc])
++		return;
 +
-+	cmd->cmd_type = ICE_AQC_Q_CFG_TC_CHNG;
-+	cmd->num_qs = num_qs;
-+	cmd->port_num_chng = (oldport & ICE_AQC_Q_CFG_SRC_PRT_M);
-+	cmd->port_num_chng |= (newport << ICE_AQC_Q_CFG_DST_PRT_S) &
-+			      ICE_AQC_Q_CFG_DST_PRT_M;
-+	cmd->time_out = (5 << ICE_AQC_Q_CFG_TIMEOUT_S) &
-+			ICE_AQC_Q_CFG_TIMEOUT_M;
-+	cmd->blocked_cgds = 0;
++	numq = ctx->num_lan_q_entries[tc];
++	teid = ctx->sched.vsi_node[tc]->info.node_teid;
++	tmp_teid = le32_to_cpu(teid);
++	parent_teid = ctx->sched.vsi_node[tc]->info.parent_teid;
 +
-+	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_SCHED, "Failed to reconfigure nodes %d\n",
-+			  hw->adminq.sq_last_status);
-+	return status;
++	if (!tmp_teid || !numq)
++		return;
++
++	if (ice_sched_suspend_resume_elems(hw, 1, &tmp_teid, true))
++		dev_dbg(dev, "Problem suspending traffic during reset rebuild\n");
++
++	/* reconfig queues for new port */
++	qbuf_size = struct_size(qbuf, queue_info, numq);
++	qbuf = kzalloc(qbuf_size, GFP_KERNEL);
++	if (!qbuf) {
++		dev_warn(dev, "Failure allocating VF queue recfg buffer for reset rebuild\n");
++		goto resume_sync;
++	}
++
++	/* add the per queue info for the reconfigure command buffer */
++	valq = ice_lag_qbuf_recfg(hw, qbuf, vsi_num, numq, tc);
++	if (!valq) {
++		dev_warn(dev, "Failure to reconfig queues for LAG reset rebuild\n");
++		goto sync_none;
++	}
++
++	if (ice_aq_cfg_lan_txq(hw, qbuf, qbuf_size, numq, hw->port_info->lport,
++			       dest_hw->port_info->lport, NULL)) {
++		dev_warn(dev, "Failure to configure queues for LAG reset rebuild\n");
++		goto sync_qerr;
++	}
++
++sync_none:
++	kfree(qbuf);
++
++	/* find parent in destination tree */
++	n_prt = ice_lag_get_sched_parent(dest_hw, tc);
++	if (!n_prt)
++		goto resume_sync;
++
++	/* Move node to new parent */
++	buf_size = struct_size(buf, teid, 1);
++	buf = kzalloc(buf_size, GFP_KERNEL);
++	if (!buf) {
++		dev_warn(dev, "Failure to alloc for VF node move in reset rebuild\n");
++		goto resume_sync;
++	}
++
++	buf->hdr.src_parent_teid = parent_teid;
++	buf->hdr.dest_parent_teid = n_prt->info.node_teid;
++	buf->hdr.num_elems = cpu_to_le16(1);
++	buf->hdr.mode = ICE_AQC_MOVE_ELEM_MODE_KEEP_OWN;
++	buf->teid[0] = teid;
++
++	if (ice_aq_move_sched_elems(&lag->pf->hw, 1, buf, buf_size, &num_moved,
++				    NULL))
++		dev_warn(dev, "Failure to move VF nodes for LAG reset rebuild\n");
++	else
++		ice_sched_update_parent(n_prt, ctx->sched.vsi_node[tc]);
++
++	kfree(buf);
++	goto resume_sync;
++
++sync_qerr:
++	kfree(qbuf);
++
++resume_sync:
++	if (ice_sched_suspend_resume_elems(hw, 1, &tmp_teid, false))
++		dev_warn(dev, "Problem restarting traffic for LAG node reset rebuild\n");
++}
++
++/**
++ * ice_lag_move_vf_nodes_sync - move vf nodes to active interface
++ * @lag: primary interfaces lag struct
++ * @dest_hw: lport value for currently active port
++ *
++ * This function is used in a reset context, outside of event handling,
++ * to move the VF nodes to the secondary interface when that interface
++ * is the active interface during a reset rebuild
++ */
++static void
++ice_lag_move_vf_nodes_sync(struct ice_lag *lag, struct ice_hw *dest_hw)
++{
++	struct ice_pf *pf;
++	int i, tc;
++
++	if (!lag->primary || !dest_hw)
++		return;
++
++	pf = lag->pf;
++	ice_for_each_vsi(pf, i)
++		if (pf->vsi[i] && (pf->vsi[i]->type == ICE_VSI_VF ||
++				   pf->vsi[i]->type == ICE_VSI_SWITCHDEV_CTRL))
++			ice_for_each_traffic_class(tc)
++				ice_lag_move_vf_nodes_tc_sync(lag, dest_hw, i,
++							      tc);
 +}
 +
  /**
-  * ice_aq_add_rdma_qsets
-  * @hw: pointer to the hardware structure
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 81961a7d6598..df12a9d8d28c 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -186,6 +186,10 @@ int
- ice_ena_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u16 q_handle,
- 		u8 num_qgrps, struct ice_aqc_add_tx_qgrp *buf, u16 buf_size,
- 		struct ice_sq_cd *cd);
-+int
-+ice_aq_cfg_lan_txq(struct ice_hw *hw, struct ice_aqc_cfg_txqs_buf *buf,
-+		   u16 buf_size, u16 num_qs, u8 oldport, u8 newport,
-+		   struct ice_sq_cd *cd);
- int ice_replay_vsi(struct ice_hw *hw, u16 vsi_handle);
- void ice_replay_post(struct ice_hw *hw);
- void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf);
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 79a8972873f1..f4677704b95e 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -447,7 +447,7 @@ ice_aq_cfg_sched_elems(struct ice_hw *hw, u16 elems_req,
-  *
-  * Move scheduling elements (0x0408)
-  */
--static int
-+int
- ice_aq_move_sched_elems(struct ice_hw *hw, u16 grps_req,
- 			struct ice_aqc_move_elem *buf, u16 buf_size,
- 			u16 *grps_movd, struct ice_sq_cd *cd)
-@@ -526,7 +526,7 @@ ice_aq_query_sched_res(struct ice_hw *hw, u16 buf_size,
-  *
-  * This function suspends or resumes HW nodes
-  */
--static int
-+int
- ice_sched_suspend_resume_elems(struct ice_hw *hw, u8 num_nodes, u32 *node_teids,
- 			       bool suspend)
- {
-@@ -1057,7 +1057,7 @@ ice_sched_add_nodes_to_hw_layer(struct ice_port_info *pi,
-  *
-  * This function add nodes to a given layer.
-  */
--static int
-+int
- ice_sched_add_nodes_to_layer(struct ice_port_info *pi,
- 			     struct ice_sched_node *tc_node,
- 			     struct ice_sched_node *parent, u8 layer,
-@@ -1132,7 +1132,7 @@ static u8 ice_sched_get_qgrp_layer(struct ice_hw *hw)
-  *
-  * This function returns the current VSI layer number
-  */
--static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
-+u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
- {
- 	/* Num Layers       VSI layer
- 	 *     9               6
-@@ -1155,7 +1155,7 @@ static u8 ice_sched_get_vsi_layer(struct ice_hw *hw)
-  *
-  * This function returns the current aggregator layer number
-  */
--static u8 ice_sched_get_agg_layer(struct ice_hw *hw)
-+u8 ice_sched_get_agg_layer(struct ice_hw *hw)
- {
- 	/* Num Layers       aggregator layer
- 	 *     9               4
-@@ -1590,7 +1590,7 @@ ice_sched_get_vsi_node(struct ice_port_info *pi, struct ice_sched_node *tc_node,
-  * This function retrieves an aggregator node for a given aggregator ID from
-  * a given TC branch
-  */
--static struct ice_sched_node *
-+struct ice_sched_node *
- ice_sched_get_agg_node(struct ice_port_info *pi, struct ice_sched_node *tc_node,
- 		       u32 agg_id)
- {
-@@ -2152,7 +2152,7 @@ ice_get_agg_info(struct ice_hw *hw, u32 agg_id)
-  * This function walks through the aggregator subtree to find a free parent
-  * node
-  */
--static struct ice_sched_node *
-+struct ice_sched_node *
- ice_sched_get_free_vsi_parent(struct ice_hw *hw, struct ice_sched_node *node,
- 			      u16 *num_nodes)
- {
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index 9c100747445a..8bd26353d76a 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -146,8 +146,29 @@ ice_sched_set_node_bw_lmt_per_tc(struct ice_port_info *pi, u32 id,
- 				 enum ice_agg_type agg_type, u8 tc,
- 				 enum ice_rl_type rl_type, u32 bw);
- int ice_cfg_rl_burst_size(struct ice_hw *hw, u32 bytes);
-+int
-+ice_sched_suspend_resume_elems(struct ice_hw *hw, u8 num_nodes, u32 *node_teids,
-+			       bool suspend);
-+struct ice_sched_node *
-+ice_sched_get_agg_node(struct ice_port_info *pi, struct ice_sched_node *tc_node,
-+		       u32 agg_id);
-+u8 ice_sched_get_agg_layer(struct ice_hw *hw);
-+u8 ice_sched_get_vsi_layer(struct ice_hw *hw);
-+struct ice_sched_node *
-+ice_sched_get_free_vsi_parent(struct ice_hw *hw, struct ice_sched_node *node,
-+			      u16 *num_nodes);
-+int
-+ice_sched_add_nodes_to_layer(struct ice_port_info *pi,
-+			     struct ice_sched_node *tc_node,
-+			     struct ice_sched_node *parent, u8 layer,
-+			     u16 num_nodes, u32 *first_node_teid,
-+			     u16 *num_nodes_added);
- void ice_sched_replay_agg_vsi_preinit(struct ice_hw *hw);
- void ice_sched_replay_agg(struct ice_hw *hw);
-+int
-+ice_aq_move_sched_elems(struct ice_hw *hw, u16 grps_req,
-+			struct ice_aqc_move_elem *buf, u16 buf_size,
-+			u16 *grps_movd, struct ice_sq_cd *cd);
- int ice_replay_vsi_agg(struct ice_hw *hw, u16 vsi_handle);
- int ice_sched_replay_q_bw(struct ice_port_info *pi, struct ice_q_ctx *q_ctx);
- #endif /* _ICE_SCHED_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index ed33664b481d..e521e4efd2d4 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -20,10 +20,10 @@
-  * byte 0 = 0x2: to identify it as locally administered DA MAC
-  * byte 6 = 0x2: to identify it as locally administered SA MAC
-  * byte 12 = 0x81 & byte 13 = 0x00:
-- *	In case of VLAN filter first two bytes defines ether type (0x8100)
-- *	and remaining two bytes are placeholder for programming a given VLAN ID
-- *	In case of Ether type filter it is treated as header without VLAN tag
-- *	and byte 12 and 13 is used to program a given Ether type instead
-+ *      In case of VLAN filter first two bytes defines ether type (0x8100)
-+ *      and remaining two bytes are placeholder for programming a given VLAN ID
-+ *      In case of Ether type filter it is treated as header without VLAN tag
-+ *      and byte 12 and 13 is used to program a given Ether type instead
-  */
- #define DUMMY_ETH_HDR_LEN		16
- static const u8 dummy_eth_header[DUMMY_ETH_HDR_LEN] = { 0x2, 0, 0, 0, 0, 0,
-@@ -1443,14 +1443,6 @@ static const struct ice_dummy_pkt_profile ice_dummy_pkt_profiles[] = {
- 	ICE_PKT_PROFILE(tcp, 0),
- };
+  * ice_init_lag - initialize support for LAG
+  * @pf: PF struct
+@@ -1870,3 +2013,85 @@ void ice_deinit_lag(struct ice_pf *pf)
  
--#define ICE_SW_RULE_RX_TX_HDR_SIZE(s, l)	struct_size((s), hdr_data, (l))
--#define ICE_SW_RULE_RX_TX_ETH_HDR_SIZE(s)	\
--	ICE_SW_RULE_RX_TX_HDR_SIZE((s), DUMMY_ETH_HDR_LEN)
--#define ICE_SW_RULE_RX_TX_NO_HDR_SIZE(s)	\
--	ICE_SW_RULE_RX_TX_HDR_SIZE((s), 0)
--#define ICE_SW_RULE_LG_ACT_SIZE(s, n)		struct_size((s), act, (n))
--#define ICE_SW_RULE_VSI_LIST_SIZE(s, n)		struct_size((s), vsi, (n))
--
- /* this is a recipe to profile association bitmap */
- static DECLARE_BITMAP(recipe_to_profile[ICE_MAX_NUM_RECIPES],
- 			  ICE_MAX_NUM_PROFILES);
-@@ -1915,8 +1907,13 @@ ice_aq_alloc_free_vsi_list(struct ice_hw *hw, u16 *vsi_list_id,
- 	    lkup_type == ICE_SW_LKUP_DFLT) {
- 		sw_buf->res_type = cpu_to_le16(ICE_AQC_RES_TYPE_VSI_LIST_REP);
- 	} else if (lkup_type == ICE_SW_LKUP_VLAN) {
--		sw_buf->res_type =
--			cpu_to_le16(ICE_AQC_RES_TYPE_VSI_LIST_PRUNE);
-+		if (opc == ice_aqc_opc_alloc_res)
-+			sw_buf->res_type =
-+				cpu_to_le16(ICE_AQC_RES_TYPE_VSI_LIST_PRUNE |
-+					    ICE_AQC_RES_TYPE_FLAG_SHARED);
-+		else
-+			sw_buf->res_type =
-+				cpu_to_le16(ICE_AQC_RES_TYPE_VSI_LIST_PRUNE);
- 	} else {
- 		status = -EINVAL;
- 		goto ice_aq_alloc_free_vsi_list_exit;
-@@ -1984,7 +1981,7 @@ ice_aq_sw_rules(struct ice_hw *hw, void *rule_list, u16 rule_list_sz,
-  *
-  * Add(0x0290)
-  */
--static int
-+int
- ice_aq_add_recipe(struct ice_hw *hw,
- 		  struct ice_aqc_recipe_data_elem *s_recipe_list,
- 		  u16 num_recipes, struct ice_sq_cd *cd)
-@@ -2021,7 +2018,7 @@ ice_aq_add_recipe(struct ice_hw *hw,
-  * The caller must supply enough space in s_recipe_list to hold all possible
-  * recipes and *num_recipes must equal ICE_MAX_NUM_RECIPES.
-  */
--static int
-+int
- ice_aq_get_recipe(struct ice_hw *hw,
- 		  struct ice_aqc_recipe_data_elem *s_recipe_list,
- 		  u16 *num_recipes, u16 recipe_root, struct ice_sq_cd *cd)
-@@ -2114,7 +2111,7 @@ ice_update_recipe_lkup_idx(struct ice_hw *hw,
-  * @cd: pointer to command details structure or NULL
-  * Recipe to profile association (0x0291)
-  */
--static int
-+int
- ice_aq_map_recipe_to_profile(struct ice_hw *hw, u32 profile_id, u8 *r_bitmap,
- 			     struct ice_sq_cd *cd)
- {
-@@ -2140,7 +2137,7 @@ ice_aq_map_recipe_to_profile(struct ice_hw *hw, u32 profile_id, u8 *r_bitmap,
-  * @cd: pointer to command details structure or NULL
-  * Associate profile ID with given recipe (0x0293)
-  */
--static int
-+int
- ice_aq_get_recipe_to_profile(struct ice_hw *hw, u32 profile_id, u8 *r_bitmap,
- 			     struct ice_sq_cd *cd)
- {
-@@ -2164,7 +2161,7 @@ ice_aq_get_recipe_to_profile(struct ice_hw *hw, u32 profile_id, u8 *r_bitmap,
-  * @hw: pointer to the hardware structure
-  * @rid: recipe ID returned as response to AQ call
-  */
--static int ice_alloc_recipe(struct ice_hw *hw, u16 *rid)
-+int ice_alloc_recipe(struct ice_hw *hw, u16 *rid)
- {
- 	struct ice_aqc_alloc_free_res_elem *sw_buf;
- 	u16 buf_len;
-@@ -3196,7 +3193,7 @@ ice_find_rule_entry(struct ice_hw *hw, u8 recp_id, struct ice_fltr_info *f_info)
-  * handle element. This can be extended further to search VSI list with more
-  * than 1 vsi_count. Returns pointer to VSI list entry if found.
-  */
--static struct ice_vsi_list_map_info *
-+struct ice_vsi_list_map_info *
- ice_find_vsi_list_entry(struct ice_hw *hw, u8 recp_id, u16 vsi_handle,
- 			u16 *vsi_list_id)
- {
-@@ -3207,7 +3204,7 @@ ice_find_vsi_list_entry(struct ice_hw *hw, u8 recp_id, u16 vsi_handle,
- 
- 	list_head = &sw->recp_list[recp_id].filt_rules;
- 	list_for_each_entry(list_itr, list_head, list_entry) {
--		if (list_itr->vsi_count == 1 && list_itr->vsi_list_info) {
-+		if (list_itr->vsi_list_info) {
- 			map_info = list_itr->vsi_list_info;
- 			if (test_bit(vsi_handle, map_info->vsi_map)) {
- 				*vsi_list_id = map_info->vsi_list_id;
-@@ -4618,6 +4615,45 @@ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- 	.offs		= {__VA_ARGS__},	\
+ 	pf->lag = NULL;
  }
- 
++
 +/**
-+ * ice_share_res - set a resource as shared or dedicated
-+ * @hw: hw struct of original owner of resource
-+ * @type: resource type
-+ * @shared: is the resource being set to shared
-+ * @res_id: resource id (descriptor)
++ * ice_lag_rebuild - rebuild lag resources after reset
++ * @pf: pointer to local pf struct
++ *
++ * PF resets are promoted to CORER resets when interface in an aggregate.  This
++ * means that we need to rebuild the PF resources for the interface.  Since
++ * this will happen outside the normal event processing, need to acquire the lag
++ * lock.
++ *
++ * This function will also evaluate the VF resources if this is the primary
++ * interface.
 + */
-+int ice_share_res(struct ice_hw *hw, u16 type, u8 shared, u16 res_id)
++void ice_lag_rebuild(struct ice_pf *pf)
 +{
-+	struct ice_aqc_alloc_free_res_elem *buf;
-+	u16 buf_len;
-+	int status;
++	struct ice_lag_netdev_list ndlist;
++	struct ice_lag *lag, *prim_lag;
++	struct list_head *tmp, *n;
++	u8 act_port, loc_port;
 +
-+	buf_len = struct_size(buf, elem, 1);
-+	buf = kzalloc(buf_len, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
++	if (!pf->lag || !pf->lag->bonded)
++		return;
 +
-+	buf->num_elems = cpu_to_le16(1);
-+	if (shared)
-+		buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
-+					     ICE_AQC_RES_TYPE_M) |
-+					    ICE_AQC_RES_TYPE_FLAG_SHARED);
-+	else
-+		buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
-+					     ICE_AQC_RES_TYPE_M) &
-+					    ~ICE_AQC_RES_TYPE_FLAG_SHARED);
++	mutex_lock(&pf->lag_mutex);
 +
-+	buf->elem[0].e.sw_resp = cpu_to_le16(res_id);
-+	status = ice_aq_alloc_free_res(hw, 1, buf, buf_len,
-+				       ice_aqc_opc_share_res, NULL);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_SW, "Could not set resource type %u id %u to %s\n",
-+			  type, res_id, shared ? "SHARED" : "DEDICATED");
++	lag = pf->lag;
++	if (lag->primary) {
++		prim_lag = lag;
++	} else {
++		struct ice_lag_netdev_list *nl;
++		struct net_device *tmp_nd;
 +
-+	kfree(buf);
-+	return status;
++		INIT_LIST_HEAD(&ndlist.node);
++		rcu_read_lock();
++		for_each_netdev_in_bond_rcu(lag->upper_netdev, tmp_nd) {
++			nl = kzalloc(sizeof(*nl), GFP_KERNEL);
++			if (!nl)
++				break;
++
++			nl->netdev = tmp_nd;
++			list_add(&nl->node, &ndlist.node);
++		}
++		rcu_read_unlock();
++		lag->netdev_head = &ndlist.node;
++		prim_lag = ice_lag_find_primary(lag);
++	}
++
++	if (!prim_lag) {
++		dev_dbg(ice_pf_to_dev(pf), "No primary interface in aggregate, can't rebuild\n");
++		goto lag_rebuild_out;
++	}
++
++	act_port = prim_lag->active_port;
++	loc_port = lag->pf->hw.port_info->lport;
++
++	/* configure SWID for this port */
++	if (lag->primary) {
++		ice_lag_primary_swid(lag, true);
++	} else {
++		ice_lag_set_swid(prim_lag->pf->hw.port_info->sw_id, lag, true);
++		ice_lag_add_prune_list(prim_lag, pf);
++		if (act_port == loc_port)
++			ice_lag_move_vf_nodes_sync(prim_lag, &pf->hw);
++	}
++
++	ice_lag_cfg_cp_fltr(lag, true);
++
++	if (lag->pf_rule_id)
++		if (ice_lag_cfg_dflt_fltr(lag, true))
++			dev_err(ice_pf_to_dev(pf), "Error adding default VSI rule in rebuild\n");
++
++	ice_clear_rdma_cap(pf);
++lag_rebuild_out:
++	list_for_each_safe(tmp, n, &ndlist.node) {
++		struct ice_lag_netdev_list *entry;
++
++		entry = list_entry(tmp, struct ice_lag_netdev_list, node);
++		list_del(&entry->node);
++		kfree(entry);
++	}
++	mutex_unlock(&pf->lag_mutex);
 +}
-+
- /* This is mapping table entry that maps every word within a given protocol
-  * structure to the real byte offset as per the specification of that
-  * protocol header.
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index 3ae8429167fd..1c0be64993f8 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -24,6 +24,14 @@
- #define ICE_PROFID_IPV4_PFCP_NODE			79
- #define ICE_PROFID_IPV6_PFCP_SESSION			82
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
+index df4af5184a75..18075b82485a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.h
++++ b/drivers/net/ethernet/intel/ice/ice_lag.h
+@@ -16,6 +16,8 @@ enum ice_lag_role {
  
-+#define ICE_SW_RULE_VSI_LIST_SIZE(s, n)		struct_size((s), vsi, (n))
-+#define ICE_SW_RULE_RX_TX_HDR_SIZE(s, l)	struct_size((s), hdr_data, (l))
-+#define ICE_SW_RULE_RX_TX_ETH_HDR_SIZE(s)	\
-+	ICE_SW_RULE_RX_TX_HDR_SIZE((s), DUMMY_ETH_HDR_LEN)
-+#define ICE_SW_RULE_RX_TX_NO_HDR_SIZE(s)	\
-+	ICE_SW_RULE_RX_TX_HDR_SIZE((s), 0)
-+#define ICE_SW_RULE_LG_ACT_SIZE(s, n)		struct_size((s), act, (n))
-+
- /* VSI context structure for add/get/update/free operations */
- struct ice_vsi_ctx {
- 	u16 vsi_num;
-@@ -347,6 +355,7 @@ ice_alloc_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- int
- ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- 		  u16 counter_id);
-+int ice_share_res(struct ice_hw *hw, u16 type, u8 shared, u16 res_id);
+ #define ICE_LAG_INVALID_PORT 0xFF
  
- /* Switch/bridge related commands */
- void ice_rule_add_tunnel_metadata(struct ice_adv_lkup_elem *lkup);
-@@ -404,4 +413,21 @@ int
- ice_update_recipe_lkup_idx(struct ice_hw *hw,
- 			   struct ice_update_recipe_lkup_idx_params *params);
- void ice_change_proto_id_to_dvm(void);
-+struct ice_vsi_list_map_info *
-+ice_find_vsi_list_entry(struct ice_hw *hw, u8 recp_id, u16 vsi_handle,
-+			u16 *vsi_list_id);
-+int ice_alloc_recipe(struct ice_hw *hw, u16 *rid);
-+int ice_aq_get_recipe(struct ice_hw *hw,
-+		      struct ice_aqc_recipe_data_elem *s_recipe_list,
-+		      u16 *num_recipes, u16 recipe_root, struct ice_sq_cd *cd);
-+int ice_aq_add_recipe(struct ice_hw *hw,
-+		      struct ice_aqc_recipe_data_elem *s_recipe_list,
-+		      u16 num_recipes, struct ice_sq_cd *cd);
-+int
-+ice_aq_get_recipe_to_profile(struct ice_hw *hw, u32 profile_id, u8 *r_bitmap,
-+			     struct ice_sq_cd *cd);
-+int
-+ice_aq_map_recipe_to_profile(struct ice_hw *hw, u32 profile_id, u8 *r_bitmap,
-+			     struct ice_sq_cd *cd);
++#define ICE_LAG_RESET_RETRIES		5
 +
- #endif /* _ICE_SWITCH_H_ */
+ struct ice_pf;
+ struct ice_vf;
+ 
+@@ -59,4 +61,5 @@ struct ice_lag_work {
+ void ice_lag_move_new_vf_nodes(struct ice_vf *vf);
+ int ice_init_lag(struct ice_pf *pf);
+ void ice_deinit_lag(struct ice_pf *pf);
++void ice_lag_rebuild(struct ice_pf *pf);
+ #endif /* _ICE_LAG_H_ */
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 23f5af5c7537..147abc0facbf 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -636,6 +636,11 @@ static void ice_do_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 
+ 	dev_dbg(dev, "reset_type 0x%x requested\n", reset_type);
+ 
++	if (pf->lag && pf->lag->bonded && reset_type == ICE_RESET_PFR) {
++		dev_dbg(dev, "PFR on a bonded interface, promoting to CORER\n");
++		reset_type = ICE_RESET_CORER;
++	}
++
+ 	ice_prepare_for_reset(pf, reset_type);
+ 
+ 	/* trigger the reset */
+@@ -719,8 +724,13 @@ static void ice_reset_subtask(struct ice_pf *pf)
+ 	}
+ 
+ 	/* No pending resets to finish processing. Check for new resets */
+-	if (test_bit(ICE_PFR_REQ, pf->state))
++	if (test_bit(ICE_PFR_REQ, pf->state)) {
+ 		reset_type = ICE_RESET_PFR;
++		if (pf->lag && pf->lag->bonded) {
++			dev_dbg(ice_pf_to_dev(pf), "PFR on a bonded interface, promoting to CORER\n");
++			reset_type = ICE_RESET_CORER;
++		}
++	}
+ 	if (test_bit(ICE_CORER_REQ, pf->state))
+ 		reset_type = ICE_RESET_CORER;
+ 	if (test_bit(ICE_GLOBR_REQ, pf->state))
+@@ -7365,6 +7375,8 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	clear_bit(ICE_RESET_FAILED, pf->state);
+ 
+ 	ice_plug_aux_dev(pf);
++	if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG))
++		ice_lag_rebuild(pf);
+ 	return;
+ 
+ err_vsi_rebuild:
 -- 
 2.40.1
 
