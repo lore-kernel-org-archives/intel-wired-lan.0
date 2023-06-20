@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA434EB64DB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 18:33:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C5B1EB64D7
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 18:33:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 66A8281F77;
-	Tue, 20 Jun 2023 18:33:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 66A8281F77
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5064580BC7;
+	Tue, 20 Jun 2023 18:33:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5064580BC7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687286003;
-	bh=cTY/A/P4tuEfj0j4jK2HruaWilwIig9Qy+6XL9sfKpk=;
+	s=default; t=1687286008;
+	bh=m6aRlf7WE4iodQalH3ak4ouvcKT+6up5d6MDeHPIQH0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=lUrkRKDQilqdiAIZ78i2izBIXlo2mFto4eNPE65lEXgMhgKBTe/L7/oFnuyQwt+GZ
-	 l8HPYgS+jNLco/B7JrQwFR7S3j6cPpvRqJ+faZ3FkIw8mpgGFziaD3ZDvsIRT6qNHi
-	 wW/M5zcRPEmb2XYXbzVkiHwUnehAxnqKE7Q1fbKS0Aa84ezGVpwNDCHsP2HyGdExG3
-	 IbizOFYoDS3EVtSguHZNQG3ZqBrq2I5JBfeMeAmzHLxO6HTyrcLpFb2RfpBVMJGCyp
-	 FV1oVqieryol1lTHIfMdlnWIBUQPOmor2q9ewUoQo8mWJCbPqZyftdO3gDiYWVY/33
-	 mE/ziVrvotjcA==
+	b=mfW5UTGzyw0oiASojukozLUO3rtbj7u0CoBLmn/w7WOartKJdaYJPdkTmZ3CIuYyr
+	 3kKLMahqqLerf58AzXiYofd4boLxv6SvACZe2l5NUUIaX0DcgRsR2XbXMHT1U5Xf5V
+	 vZPEueru1+85ICEbH+q8c1SvuZWJvwa1asK+wP0IcjInzNKOFRB9xPHtUU0BMyRKsv
+	 HBUaZdUVOLsoaBs+SfrrNgfsq+xqJZ0ytpzc7D9895balbg9Bjn4BD+t+ICEA3J2o0
+	 985A3rKcWjA4Fl6omSTvaL9kBFxNKDR2g3lWSQ4yblh+dX9ntfK0XWfCS3iiZroxRf
+	 xNmO7ZRvF22Pg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VBTe_FWddC0f; Tue, 20 Jun 2023 18:33:21 +0000 (UTC)
+	with ESMTP id 1tuA9_Jbl7A3; Tue, 20 Jun 2023 18:33:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 677F6822DC;
-	Tue, 20 Jun 2023 18:33:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 677F6822DC
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9DBC482222;
+	Tue, 20 Jun 2023 18:33:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9DBC482222
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 888D21BF4E4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:44 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 8C9B61BF4E4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id D82F860E62
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D82F860E62
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3B78F60F4A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3B78F60F4A
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 4fo_I4RtjaBI for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Jun 2023 18:32:37 +0000 (UTC)
+ with ESMTP id Tc8c-K7cD68P for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Jun 2023 18:32:36 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7F86160F54
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AE9FF60F44
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7F86160F54
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:37 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="425907942"
-X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="425907942"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id AE9FF60F44
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:36 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="425907920"
+X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="425907920"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jun 2023 11:32:36 -0700
+ 20 Jun 2023 11:32:35 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="784204421"
-X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="784204421"
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="784204416"
+X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="784204416"
 Received: from dmert-dev.jf.intel.com ([10.166.241.14])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jun 2023 11:32:35 -0700
+ 20 Jun 2023 11:32:34 -0700
 From: Dave Ertman <david.m.ertman@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 20 Jun 2023 11:34:12 -0700
-Message-Id: <20230620183414.848016-9-david.m.ertman@intel.com>
+Date: Tue, 20 Jun 2023 11:34:08 -0700
+Message-Id: <20230620183414.848016-5-david.m.ertman@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230620183414.848016-1-david.m.ertman@intel.com>
 References: <20230620183414.848016-1-david.m.ertman@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1687285957; x=1718821957;
+ t=1687285956; x=1718821956;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=gihpf9yH2dldkkeDrGiSbYIBAbtHKVzSl310bV63NFE=;
- b=IpmbEkt8CraHVpqMiNmq3636VLVvdgH7A+4NAa2HB6Us0JlSshyoE4Ar
- 9iSodfzdwnK42fZ00NOLB7xjuqj2RI8xDaWIKWZFo87omY63tbIKRNyGa
- rD3f/AISkoVpZJI/2m2L7GJWxwMPQElvw/yYjinPKAO6AD/A8AI9GjhHH
- ukjXadq2dNhl1j9ya6keiziYR9IjnOiq0w7NutWYD1McPlXZX8i+Cnwi0
- hzujIi6FI7bEJXfUdW9l0CnuUwazNk3EDPxbIvcPT7QmmiVGHuXC2CWQx
- PvZCUsVRwhKdjxTXnV7MmfyN4NfcyoiOdqAxf4e5OGDlWBN0ued7Em5on
+ bh=Df80PhDC8Hc4FKLMeST6dc9kOq/ZscRjiTgms8+gkuk=;
+ b=QmPgZeNaIMADZh0wZdWxBBxQhRriyOD20cEyb/fo/IDfKmO+cdtk9lKO
+ OX+d9b2gXwpCIomI6Ir/ye2GAC2lrBqznYDvYTUVAutN1zYeHBe/uQC00
+ mtolR4iL9NASTqI9L/cXskywkOUWTfwlDF+9hlUvv7tgdb5Ya8q/BwMub
+ SDWF3N5+YE/JEV+mX3XjAYp3OdV9iRWI+Txw2JBJ7qY/Fp0BvUouSa8L8
+ DJHeKHXgzOTHqnZX6M0n86TC0xINTnrw7OT0CfG0q+f5+C01H/pjdShZD
+ +hccgouRi0BT6EIO7BcIpaEwPo7tpSSsRknZFH7lMIYbOVjCYe5sDFBBT
  Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IpmbEkt8
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 08/10] ice: enforce interface
- eligibility and add messaging for SRIOV LAG
+ header.a=rsa-sha256 header.s=Intel header.b=QmPgZeNa
+Subject: [Intel-wired-lan] [PATCH iwl-next v5 04/10] ice: implement lag
+ netdev event handler
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,197 +103,265 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implement checks on what interfaces are eligible for supporting SRIOV VFs
-when a member of an aggregate interface.
+The event handler for LAG will create a work item to place on the ordered
+workqueue to be processed.
 
-Implement unwind path for interfaces that become ineligible.
+Add in defines for training packets and new recipes to be used by the
+switching block of the HW for LAG packet steering.
 
-checks for the SRIOV LAG feature bit wrap most of the functional code for
-manipulating resources that apply to this feature.  Utilize this bit
-to track compliant aggregates.  Also flag any new entries into the
-aggregate as not supporting SRIOV LAG for the time they are in the
-non-compliant aggregate.
+Update the ice_lag struct to reflect the new processing methodology.
 
-Once an aggregate has been flagged as non-compliant, only unpopulating the
-aggregate and re-populating it will return SRIOV LAG functionality.
-
-Reviewed-by: Daniel Machon <daniel.machon@microchip.com>
 Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lag.c | 88 ++++++++++++++++++++++--
- 1 file changed, 83 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_lag.c | 124 ++++++++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_lag.h |  30 +++++-
+ 2 files changed, 140 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
-index 6b77a29a54ef..0054d4e1056b 100644
+index d018e68f5a6d..5725772cf8f4 100644
 --- a/drivers/net/ethernet/intel/ice/ice_lag.c
 +++ b/drivers/net/ethernet/intel/ice/ice_lag.c
-@@ -885,6 +885,7 @@ static void ice_lag_link(struct ice_lag *lag)
+@@ -56,11 +56,10 @@ static void ice_lag_set_backup(struct ice_lag *lag)
+  */
+ static void ice_display_lag_info(struct ice_lag *lag)
+ {
+-	const char *name, *peer, *upper, *role, *bonded, *primary;
++	const char *name, *upper, *role, *bonded, *primary;
+ 	struct device *dev = &lag->pf->pdev->dev;
  
- 	lag->bonded = true;
- 	lag->role = ICE_LAG_UNSET;
-+	netdev_info(lag->netdev, "Shared SR-IOV resources in bond are active\n");
+ 	name = lag->netdev ? netdev_name(lag->netdev) : "unset";
+-	peer = lag->peer_netdev ? netdev_name(lag->peer_netdev) : "unset";
+ 	upper = lag->upper_netdev ? netdev_name(lag->upper_netdev) : "unset";
+ 	primary = lag->primary ? "TRUE" : "FALSE";
+ 	bonded = lag->bonded ? "BONDED" : "UNBONDED";
+@@ -82,8 +81,8 @@ static void ice_display_lag_info(struct ice_lag *lag)
+ 		role = "ERROR";
+ 	}
+ 
+-	dev_dbg(dev, "%s %s, peer:%s, upper:%s, role:%s, primary:%s\n", name,
+-		bonded, peer, upper, role, primary);
++	dev_dbg(dev, "%s %s, upper:%s, role:%s, primary:%s\n", name, bonded,
++		upper, role, primary);
  }
  
  /**
-@@ -1329,6 +1330,7 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
- 	struct netdev_notifier_bonding_info *info;
- 	struct netdev_bonding_info *bonding_info;
- 	struct list_head *tmp;
-+	struct device *dev;
- 	int count = 0;
- 
- 	if (!lag->primary)
-@@ -1341,11 +1343,21 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
- 	if (event_upper != lag->upper_netdev)
- 		return true;
- 
-+	dev = ice_pf_to_dev(lag->pf);
-+
-+	/* only supporting switchdev mode for SRIOV VF LAG.
-+	 * primary interface has to be in switchdev mode
-+	 */
-+	if (!ice_is_switchdev_running(lag->pf)) {
-+		dev_info(dev, "Primary interface not in switchdev mode - VF LAG disabled\n");
-+		return false;
-+	}
-+
- 	info = (struct netdev_notifier_bonding_info *)ptr;
- 	bonding_info = &info->bonding_info;
- 	lag->bond_mode = bonding_info->master.bond_mode;
- 	if (lag->bond_mode != BOND_MODE_ACTIVEBACKUP) {
--		netdev_info(lag->netdev, "Bond Mode not ACTIVE-BACKUP\n");
-+		dev_info(dev, "Bond Mode not ACTIVE-BACKUP - VF LAG disabled\n");
- 		return false;
+@@ -198,7 +197,6 @@ ice_lag_unlink(struct ice_lag *lag,
+ 		lag->upper_netdev = NULL;
  	}
  
-@@ -1355,17 +1367,19 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
- 		struct ice_netdev_priv *peer_np;
- 		struct net_device *peer_netdev;
- 		struct ice_vsi *vsi, *peer_vsi;
-+		struct ice_pf *peer_pf;
- 
- 		entry = list_entry(tmp, struct ice_lag_netdev_list, node);
- 		peer_netdev = entry->netdev;
- 		if (!netif_is_ice(peer_netdev)) {
--			netdev_info(lag->netdev, "Found non-ice netdev in LAG\n");
-+			dev_info(dev, "Found %s non-ice netdev in LAG - VF LAG disabled\n",
-+				 netdev_name(peer_netdev));
- 			return false;
- 		}
- 
- 		count++;
- 		if (count > 2) {
--			netdev_info(lag->netdev, "Found more than two netdevs in LAG\n");
-+			dev_info(dev, "Found more than two netdevs in LAG - VF LAG disabled\n");
- 			return false;
- 		}
- 
-@@ -1374,7 +1388,8 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
- 		peer_vsi = peer_np->vsi;
- 		if (lag->pf->pdev->bus != peer_vsi->back->pdev->bus ||
- 		    lag->pf->pdev->slot != peer_vsi->back->pdev->slot) {
--			netdev_info(lag->netdev, "Found netdev on different device in LAG\n");
-+			dev_info(dev, "Found %s on different device in LAG - VF LAG disabled\n",
-+				 netdev_name(peer_netdev));
- 			return false;
- 		}
- 
-@@ -1382,10 +1397,17 @@ ice_lag_chk_comp(struct ice_lag *lag, void *ptr)
- 		peer_dcb_cfg = &peer_vsi->port_info->qos_cfg.local_dcbx_cfg;
- 		if (memcmp(dcb_cfg, peer_dcb_cfg,
- 			   sizeof(struct ice_dcbx_cfg))) {
--			netdev_info(lag->netdev, "Found netdev with different DCB config in LAG\n");
-+			dev_info(dev, "Found %s with different DCB in LAG - VF LAG disabled\n",
-+				 netdev_name(peer_netdev));
- 			return false;
- 		}
- 
-+		peer_pf = peer_vsi->back;
-+		if (test_bit(ICE_FLAG_FW_LLDP_AGENT, peer_pf->flags)) {
-+			dev_warn(dev, "Found %s with FW LLDP agent active - VF LAG disabled\n",
-+				 netdev_name(peer_netdev));
-+			return false;
-+		}
- 	}
- 
- 	return true;
-@@ -1457,6 +1479,58 @@ ice_lag_monitor_rdma(struct ice_lag *lag, void *ptr)
- 		ice_set_rdma_cap(pf);
+-	lag->peer_netdev = NULL;
+ 	ice_set_rdma_cap(pf);
+ 	lag->bonded = false;
+ 	lag->role = ICE_LAG_NONE;
+@@ -288,6 +286,59 @@ static void ice_lag_changeupper_event(struct ice_lag *lag, void *ptr)
+ 	ice_display_lag_info(lag);
  }
  
 +/**
-+ * ice_lag_chk_disabled_bond - monitor interfaces entering/leaving disabled bond
-+ * @lag: lag info struct
-+ * @ptr: opaque data containing event
-+ *
-+ * as interfaces enter a bond - determine if the bond is currently
-+ * SRIOV LAG compliant and flag if not.  As interfaces leave the
-+ * bond, reset their compliant status.
++ * ice_lag_process_event - process a task assigned to the lag_wq
++ * @work: pointer to work_struct
 + */
-+static void ice_lag_chk_disabled_bond(struct ice_lag *lag, void *ptr)
++static void ice_lag_process_event(struct work_struct *work)
 +{
-+	struct net_device *netdev = netdev_notifier_info_to_dev(ptr);
-+	struct netdev_notifier_changeupper_info *info = ptr;
-+	struct ice_lag *prim_lag;
-+
-+	if (netdev != lag->netdev)
-+		return;
-+
-+	if (info->linking) {
-+		prim_lag = ice_lag_find_primary(lag);
-+		if (prim_lag &&
-+		    !ice_is_feature_supported(prim_lag->pf, ICE_F_SRIOV_LAG)) {
-+			ice_clear_feature_support(lag->pf, ICE_F_SRIOV_LAG);
-+			netdev_info(netdev, "Interface added to non-compliant SRIOV LAG aggregate\n");
-+		}
-+	} else {
-+		ice_lag_init_feature_support_flag(lag->pf);
-+	}
-+}
-+
-+/**
-+ * ice_lag_disable_sriov_bond - set members of bond as not supporting SRIOV LAG
-+ * @lag: primary interfaces lag struct
-+ */
-+static void ice_lag_disable_sriov_bond(struct ice_lag *lag)
-+{
-+	struct ice_lag_netdev_list *entry;
-+	struct ice_netdev_priv *np;
++	struct netdev_notifier_changeupper_info *info;
++	struct ice_lag_work *lag_work;
 +	struct net_device *netdev;
-+	struct list_head *tmp;
++	struct list_head *tmp, *n;
 +	struct ice_pf *pf;
 +
-+	list_for_each(tmp, lag->netdev_head) {
-+		entry = list_entry(tmp, struct ice_lag_netdev_list, node);
-+		netdev = entry->netdev;
-+		np = netdev_priv(netdev);
-+		pf = np->vsi->back;
++	lag_work = container_of(work, struct ice_lag_work, lag_task);
++	pf = lag_work->lag->pf;
 +
-+		ice_clear_feature_support(pf, ICE_F_SRIOV_LAG);
++	mutex_lock(&pf->lag_mutex);
++	lag_work->lag->netdev_head = &lag_work->netdev_list.node;
++
++	switch (lag_work->event) {
++	case NETDEV_CHANGEUPPER:
++		info = &lag_work->info.changeupper_info;
++		ice_lag_changeupper_event(lag_work->lag, info);
++		break;
++	case NETDEV_BONDING_INFO:
++		ice_lag_info_event(lag_work->lag, &lag_work->info.bonding_info);
++		break;
++	case NETDEV_UNREGISTER:
++		if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
++			netdev = lag_work->info.bonding_info.info.dev;
++			if ((netdev == lag_work->lag->netdev ||
++			     lag_work->lag->primary) && lag_work->lag->bonded)
++				ice_lag_unregister(lag_work->lag, netdev);
++		}
++		break;
++	default:
++		break;
 +	}
++
++	/* cleanup resources allocated for this work item */
++	list_for_each_safe(tmp, n, &lag_work->netdev_list.node) {
++		struct ice_lag_netdev_list *entry;
++
++		entry = list_entry(tmp, struct ice_lag_netdev_list, node);
++		list_del(&entry->node);
++		kfree(entry);
++	}
++	lag_work->lag->netdev_head = NULL;
++
++	mutex_unlock(&pf->lag_mutex);
++
++	kfree(lag_work);
 +}
 +
  /**
-  * ice_lag_process_event - process a task assigned to the lag_wq
-  * @work: pointer to work_struct
-@@ -1478,6 +1552,7 @@ static void ice_lag_process_event(struct work_struct *work)
- 	switch (lag_work->event) {
+  * ice_lag_event_handler - handle LAG events from netdev
+  * @notif_blk: notifier block registered by this netdev
+@@ -299,31 +350,79 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
+ 		      void *ptr)
+ {
+ 	struct net_device *netdev = netdev_notifier_info_to_dev(ptr);
++	struct net_device *upper_netdev;
++	struct ice_lag_work *lag_work;
+ 	struct ice_lag *lag;
+ 
+-	lag = container_of(notif_blk, struct ice_lag, notif_block);
++	if (!netif_is_ice(netdev))
++		return NOTIFY_DONE;
++
++	if (event != NETDEV_CHANGEUPPER && event != NETDEV_BONDING_INFO &&
++	    event != NETDEV_UNREGISTER)
++		return NOTIFY_DONE;
+ 
++	if (!(netdev->priv_flags & IFF_BONDING))
++		return NOTIFY_DONE;
++
++	lag = container_of(notif_blk, struct ice_lag, notif_block);
+ 	if (!lag->netdev)
+ 		return NOTIFY_DONE;
+ 
+-	/* Check that the netdev is in the working namespace */
+ 	if (!net_eq(dev_net(netdev), &init_net))
+ 		return NOTIFY_DONE;
+ 
++	/* This memory will be freed at the end of ice_lag_process_event */
++	lag_work = kzalloc(sizeof(*lag_work), GFP_KERNEL);
++	if (!lag_work)
++		return -ENOMEM;
++
++	lag_work->event_netdev = netdev;
++	lag_work->lag = lag;
++	lag_work->event = event;
++	if (event == NETDEV_CHANGEUPPER) {
++		struct netdev_notifier_changeupper_info *info;
++
++		info = ptr;
++		upper_netdev = info->upper_dev;
++	} else {
++		upper_netdev = netdev_master_upper_dev_get(netdev);
++	}
++
++	INIT_LIST_HEAD(&lag_work->netdev_list.node);
++	if (upper_netdev) {
++		struct ice_lag_netdev_list *nd_list;
++		struct net_device *tmp_nd;
++
++		rcu_read_lock();
++		for_each_netdev_in_bond_rcu(upper_netdev, tmp_nd) {
++			nd_list = kzalloc(sizeof(*nd_list), GFP_KERNEL);
++			if (!nd_list)
++				break;
++
++			nd_list->netdev = tmp_nd;
++			list_add(&nd_list->node, &lag_work->netdev_list.node);
++		}
++		rcu_read_unlock();
++	}
++
+ 	switch (event) {
  	case NETDEV_CHANGEUPPER:
- 		info = &lag_work->info.changeupper_info;
-+		ice_lag_chk_disabled_bond(lag_work->lag, info);
- 		if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
- 			ice_lag_monitor_link(lag_work->lag, info);
- 			ice_lag_changeupper_event(lag_work->lag, info);
-@@ -1489,6 +1564,9 @@ static void ice_lag_process_event(struct work_struct *work)
- 		if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
- 			if (!ice_lag_chk_comp(lag_work->lag,
- 					      &lag_work->info.bonding_info)) {
-+				netdev = lag_work->info.bonding_info.info.dev;
-+				ice_lag_disable_sriov_bond(lag_work->lag);
-+				ice_lag_unregister(lag_work->lag, netdev);
- 				goto lag_cleanup;
- 			}
- 			ice_lag_monitor_active(lag_work->lag,
+-		ice_lag_changeupper_event(lag, ptr);
++		lag_work->info.changeupper_info =
++			*((struct netdev_notifier_changeupper_info *)ptr);
+ 		break;
+ 	case NETDEV_BONDING_INFO:
+-		ice_lag_info_event(lag, ptr);
+-		break;
+-	case NETDEV_UNREGISTER:
+-		ice_lag_unregister(lag, netdev);
++		lag_work->info.bonding_info =
++			*((struct netdev_notifier_bonding_info *)ptr);
+ 		break;
+ 	default:
++		lag_work->info.notifier_info =
++			*((struct netdev_notifier_info *)ptr);
+ 		break;
+ 	}
+ 
++	INIT_WORK(&lag_work->lag_task, ice_lag_process_event);
++	queue_work(ice_lag_wq, &lag_work->lag_task);
++
+ 	return NOTIFY_DONE;
+ }
+ 
+@@ -398,7 +497,6 @@ int ice_init_lag(struct ice_pf *pf)
+ 	lag->netdev = vsi->netdev;
+ 	lag->role = ICE_LAG_NONE;
+ 	lag->bonded = false;
+-	lag->peer_netdev = NULL;
+ 	lag->upper_netdev = NULL;
+ 	lag->notif_block.notifier_call = NULL;
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
+index 2c373676c42f..a4314a46c82c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lag.h
++++ b/drivers/net/ethernet/intel/ice/ice_lag.h
+@@ -14,20 +14,48 @@ enum ice_lag_role {
+ 	ICE_LAG_UNSET
+ };
+ 
++#define ICE_LAG_INVALID_PORT 0xFF
++
+ struct ice_pf;
++struct ice_vf;
++
++struct ice_lag_netdev_list {
++	struct list_head node;
++	struct net_device *netdev;
++};
+ 
+ /* LAG info struct */
+ struct ice_lag {
+ 	struct ice_pf *pf; /* backlink to PF struct */
+ 	struct net_device *netdev; /* this PF's netdev */
+-	struct net_device *peer_netdev;
+ 	struct net_device *upper_netdev; /* upper bonding netdev */
++	struct list_head *netdev_head;
+ 	struct notifier_block notif_block;
++	s32 bond_mode;
++	u16 bond_swid; /* swid for primary interface */
++	u8 active_port; /* lport value for the current active port */
+ 	u8 bonded:1; /* currently bonded */
+ 	u8 primary:1; /* this is primary */
++	u16 pf_recipe;
++	u16 pf_rule_id;
++	u16 cp_rule_idx;
+ 	u8 role;
+ };
+ 
++/* LAG workqueue struct */
++struct ice_lag_work {
++	struct work_struct lag_task;
++	struct ice_lag_netdev_list netdev_list;
++	struct ice_lag *lag;
++	unsigned long event;
++	struct net_device *event_netdev;
++	union {
++		struct netdev_notifier_changeupper_info changeupper_info;
++		struct netdev_notifier_bonding_info bonding_info;
++		struct netdev_notifier_info notifier_info;
++	} info;
++};
++
+ int ice_init_lag(struct ice_pf *pf);
+ void ice_deinit_lag(struct ice_pf *pf);
+ #endif /* _ICE_LAG_H_ */
 -- 
 2.40.1
 
