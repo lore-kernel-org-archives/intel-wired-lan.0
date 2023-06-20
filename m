@@ -4,86 +4,175 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C5B1EB64D7
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 18:33:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0849BEB64D8
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 20 Jun 2023 18:37:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5064580BC7;
-	Tue, 20 Jun 2023 18:33:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5064580BC7
+	by smtp1.osuosl.org (Postfix) with ESMTP id A67B280C46;
+	Tue, 20 Jun 2023 18:37:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A67B280C46
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687286008;
-	bh=m6aRlf7WE4iodQalH3ak4ouvcKT+6up5d6MDeHPIQH0=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1687286229;
+	bh=/kPa1ER+5JhTwGKWwljG/3BGUFjsYOyvOAeFMfPmRBI=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=mfW5UTGzyw0oiASojukozLUO3rtbj7u0CoBLmn/w7WOartKJdaYJPdkTmZ3CIuYyr
-	 3kKLMahqqLerf58AzXiYofd4boLxv6SvACZe2l5NUUIaX0DcgRsR2XbXMHT1U5Xf5V
-	 vZPEueru1+85ICEbH+q8c1SvuZWJvwa1asK+wP0IcjInzNKOFRB9xPHtUU0BMyRKsv
-	 HBUaZdUVOLsoaBs+SfrrNgfsq+xqJZ0ytpzc7D9895balbg9Bjn4BD+t+ICEA3J2o0
-	 985A3rKcWjA4Fl6omSTvaL9kBFxNKDR2g3lWSQ4yblh+dX9ntfK0XWfCS3iiZroxRf
-	 xNmO7ZRvF22Pg==
+	b=U5aIyh7GqbnUF6Rw0/YMunXUaOysy96eC79HN307pRYZTat9q6cAYHOy3kAVvSvRn
+	 d86+O8sqrRYa5MdRorKMlydlCVA62dlnn12tJWJZlH2RWguzDYw+R8bsINCBFU53S8
+	 uEwFjYRpWdjsDbaxux7m9Iu2bSYjW5/tpaU2zhpA3rg26aeVQr8j9X7tmgGtNtQrz9
+	 yBGhrl2Tk+nMXSKCkB/ZkycyntCx0STfUNHA1wdTnpei3SjhqYhy2snajqHtXIOqDS
+	 MSzqsmTvkOo7kqcc827Tu5SqMbb/iGqxpGJOxuNI99K+btp7dBX/+6F5TeOW9lZhI9
+	 tKQOnYZzoBNqw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1tuA9_Jbl7A3; Tue, 20 Jun 2023 18:33:25 +0000 (UTC)
+	with ESMTP id tBdQ_plFsmxR; Tue, 20 Jun 2023 18:37:08 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9DBC482222;
-	Tue, 20 Jun 2023 18:33:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9DBC482222
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8C9B61BF4E4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:45 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 96900821FC;
+	Tue, 20 Jun 2023 18:37:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 96900821FC
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 26D1B1BF4E4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:37:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3B78F60F4A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3B78F60F4A
+ by smtp4.osuosl.org (Postfix) with ESMTP id 08F27419D3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:37:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 08F27419D3
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Tc8c-K7cD68P for <intel-wired-lan@lists.osuosl.org>;
- Tue, 20 Jun 2023 18:32:36 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id BYAj8XUUU70M for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 20 Jun 2023 18:37:05 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AE9FF60F44
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id AE9FF60F44
- for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:32:36 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="425907920"
-X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="425907920"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jun 2023 11:32:35 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A906C41991
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id A906C41991
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 20 Jun 2023 18:37:05 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="344696155"
+X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="344696155"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Jun 2023 11:36:53 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="784204416"
-X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="784204416"
-Received: from dmert-dev.jf.intel.com ([10.166.241.14])
- by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jun 2023 11:32:34 -0700
-From: Dave Ertman <david.m.ertman@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 20 Jun 2023 11:34:08 -0700
-Message-Id: <20230620183414.848016-5-david.m.ertman@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230620183414.848016-1-david.m.ertman@intel.com>
-References: <20230620183414.848016-1-david.m.ertman@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10747"; a="708398252"
+X-IronPort-AV: E=Sophos;i="6.00,257,1681196400"; d="scan'208";a="708398252"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+ by orsmga007.jf.intel.com with ESMTP; 20 Jun 2023 11:36:53 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Tue, 20 Jun 2023 11:36:52 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23 via Frontend Transport; Tue, 20 Jun 2023 11:36:52 -0700
+Received: from NAM12-BN8-obe.outbound.protection.outlook.com (104.47.55.176)
+ by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.23; Tue, 20 Jun 2023 11:36:52 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=FO1A/QGHkKFlnZK0DMSBM/iaeYLZD+HwMCNHLRrD5iX4LIIZi8n5OFhtjwVk1TFmkmomez68GQQX2rJryeGEworrRRtsRbKFVewx0/TTjxcH5y8BNKfMzZDXkIVcd8b/qGvKfzUWxiY42zIXeLe43SANFr/S6j6gztzGNY3BGfB5pWDochA53q1GVv64pAeuz4AVTMLy9MqYYeXDXfNfnr9Mmc+xAsBfmh4yZ4qi2MshtJxI6jtMWz9WxX9feVtMPkOvCYwYBaLcIo8353nouaWTkP1K20rDoGgPaf0xtXr017Op1dgegsmpvgxM4zmWgzt+J6y+P6tmY98n8j0WWw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ysvTB/kPEo0ju03MhYIdLyu4Itgnrg44cIzlqO+ed0I=;
+ b=Ln31MDW/s6JyvE/YSYar/uFXwrU7y/c7bDLPphSGai3fxxKHtFcqKxDGFrI7qpUT0G09/L8paL5J4zKi7lbQ9J1ZstCQZp2epOCRE+BegWA8Oe92EjYcTxx8E0dCP7oEaocvQl/Oy2N2ZKA4k+9aLj4oXrx+L261Pcy1FgXUH0ytNKBpmSGpmVLM2cVF8yLgUVc0d34BouH1SposjaBED9xhl6hJ7NrdoSQ8zgwvrgbvdb72jSoRKTRIJMQmsP1gHaaeQOWB4YJOYUxf04KcQu4FDRMa36J4rg3rgvUUFoz5aTtGAVJKULx+YzvJgDMi0J/ojiC3UGggXSwVipa7CQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from SN6PR11MB3229.namprd11.prod.outlook.com (2603:10b6:805:ba::28)
+ by BL1PR11MB5496.namprd11.prod.outlook.com (2603:10b6:208:314::21)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6521.21; Tue, 20 Jun
+ 2023 18:36:50 +0000
+Received: from SN6PR11MB3229.namprd11.prod.outlook.com
+ ([fe80::bdec:3ca4:b5e1:2b84]) by SN6PR11MB3229.namprd11.prod.outlook.com
+ ([fe80::bdec:3ca4:b5e1:2b84%7]) with mapi id 15.20.6500.036; Tue, 20 Jun 2023
+ 18:36:50 +0000
+From: "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>
+To: "Zaborska, Olga" <olga.zaborska@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Thread-Topic: [Intel-wired-lan] [PATCH iwl-net v1] igbvf: Change IGBVF_MIN_TXD
+ and IGBVF_MIN_RXD to allow change of rx/tx value
+Thread-Index: AQHZoGVIDhS/nwSZf0WSvJNjSF0NJa+UCDwQ
+Date: Tue, 20 Jun 2023 18:36:50 +0000
+Message-ID: <SN6PR11MB3229C8E5C13B17847D2F2EBFC65CA@SN6PR11MB3229.namprd11.prod.outlook.com>
+References: <20230616114729.27926-1-olga.zaborska@intel.com>
+In-Reply-To: <20230616114729.27926-1-olga.zaborska@intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SN6PR11MB3229:EE_|BL1PR11MB5496:EE_
+x-ms-office365-filtering-correlation-id: dabb5921-9148-4fb1-2098-08db71bd4fa0
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: pAjKkt6u3LUEPkk8BHcFU07TQNjpEMCH8w3jDEx/RL+unOnoBLfOVSGmDEoPhOd+7XQ5H8/bbmFeR+umOGe9DCb+GtuWFc66ozcVb1EW6xHtTSzZTHbgvsqM9pfo8wEAzghAzSgAC5fVzgKTJwrgqA5jCDirhd7n3QNnod+gv+ugxPcxzCP2FFFwcIOcyC7XDLLLdRcyhcUwy4B3IulDEpraO+NgYPSDHhjC32swLArN4cxcllYHuYbCg7n4tXAUx4mnjknzD7nDagiqLK6/0tDeKlO51gTHbpvHSopUcYLzjp3jhehR/xki0TLqzs0t7e3GfgQaFCUaENdF6cgD4ZIOQSlU9ymWIxoEpcDbTIWLovFpDFox+YzCD6VaLCvRIevksxIfo72Db87UQtgT6G+uOG0A7WaGw4DeUlSheuk2o+EnPjfiBqMSpQBaAOWaAolDlNuuRmhGe0/9Nrf09RJsEVPR0U6Jqzkm4KCMJ7GJdDzpsX630MDUba06MVTky1bp1Y6USE/b63YkSnmEYcY8vRHkauL29PZZgJyQwSt98IDG7VjPC0MdKnnDK+y9eeFqsefFhKmu1Yqk1i5wYP7FG5AsuZtdgBYLhUkktuE=
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:SN6PR11MB3229.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(376002)(39860400002)(366004)(346002)(136003)(396003)(451199021)(53546011)(966005)(107886003)(478600001)(7696005)(71200400001)(110136005)(83380400001)(186003)(26005)(6506007)(2906002)(9686003)(5660300002)(52536014)(33656002)(38100700002)(122000001)(316002)(76116006)(66946007)(55016003)(82960400001)(4326008)(8936002)(8676002)(41300700001)(86362001)(66476007)(66556008)(38070700005)(66446008)(64756008);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?QuiZIaP6w2/fKCyynp/fl0fbSlDhDMR2dtochYIMMMnxqX+FWeMuxbrKz97k?=
+ =?us-ascii?Q?3A6PfhJB5zeTJcYivCPTXgRurxeOhDIZQAHgbwttQJP+FgJkEfXCQ6Fj0Ps1?=
+ =?us-ascii?Q?w258ZnCngBSAnNZMjm7e8eQqhnhrAFPmDe97azgwR7WtH69K7iuyexBBONxx?=
+ =?us-ascii?Q?r8P9mktRYLcQoEHo/dsTjlSbSWUm0GBmJLTvrokbtz+rrJ98qWCXk9yUQmGt?=
+ =?us-ascii?Q?tMmTZaTBytUzKWot8MbYjh1klG+9mCddErnBROEYl/lUtZLeVkOVHYbBY0J1?=
+ =?us-ascii?Q?oqk3yctR/Y81UEkyfTxp9Gd1IL5GNSlKCmX3seXdVYzXyca5FsfRNTjwPIly?=
+ =?us-ascii?Q?5cy3D2WP0TDK4Iff/oO2sthOJF/EIs5r3vJwDoIjtyd7V1qjZzDU+k7oR/DM?=
+ =?us-ascii?Q?+/Dk+xmONjNb7+8I9CfJv2L0bT2dKqJMrgfBMGVMKAWwh/zciS8R45UFv5i0?=
+ =?us-ascii?Q?KwtPZ3YCiEj6NW4rD8Z7FvEYHNjJ7lZ2dGrYQN1i76CNmDCDOY3XUmzRyWKq?=
+ =?us-ascii?Q?DRhDwwiYYvPD39hzuwi3G4MDerxpLHe8ewyKa0P+rNJ0KDoS5KqwaD5E91ia?=
+ =?us-ascii?Q?MsApLLEiSPNAZzmrdno6xBdtqnBAr9uJ8++N8nUpmyDkdP8fxNCc0FkaNcgT?=
+ =?us-ascii?Q?ek5mADOqQH7A3YfBtdvbZlR/Yi4JIfC2pNaz9EU1Q+IZpkY+BQmcdEBdvCSR?=
+ =?us-ascii?Q?Z+9PZgW2IvjfjazUO4HkMSzDnnyKf/2v+o4nUmlX9+9xdWkqhGr0IRyDadRW?=
+ =?us-ascii?Q?OUkgfyR19Lzhhd0T9RDEPHWl4yPVDMbeLVHfgXrgLpum7kdMoRFPJTNm0oTC?=
+ =?us-ascii?Q?r7GkmUZo3WWlvzAmnmojJfAMy4a9CALyctfL4818LEHZzicfk0k81x/zf7mv?=
+ =?us-ascii?Q?GEHvm94oqzjxRiMWszGZWsJZzgrCaWzbkGrmjgLU0xEtBnHQEuk8W0niP5ZZ?=
+ =?us-ascii?Q?S1arrtj7ydzPm0k6IiuXbeedvQgFjwmC+uwv5jFd1TX0OKHNmWmZEoFMIHNL?=
+ =?us-ascii?Q?uWYMRLsQ2FczCSKysV7Uy4fI/W8JExUbbZYFyg8delZ3a7blxZBXcrwgAVSC?=
+ =?us-ascii?Q?uu7LQsNT0KOqMCeah43fchUBV9jbGyhhrRqwxeKJTzSudY3PCGfncU+iq9za?=
+ =?us-ascii?Q?o5atHRSxyATNk16TQ62P498sCLp/4WwkefXnanjWbqwbrLXCPbl4soyXwqRK?=
+ =?us-ascii?Q?ggtl5jjNfePqQSulhBNPPS3/Jrr1duoJMhupv6JOopUSMWrnsYISYcOL+lvi?=
+ =?us-ascii?Q?VJxH4UzD4Oil7O8pRRZR6ySm5gl5Rav5rd6lagB1ry20w8D4GlvMqi2PteUd?=
+ =?us-ascii?Q?Uyy16LmpJWR7+Uj6GgpFcHddxcmZq0fPN0vDVUgF2qEYWF+y9WRXp7wkShRS?=
+ =?us-ascii?Q?ulZi7N5OLGl/C5BuWdXpnrMeuJq38a59jer6gEzW6EevBIDmBAIFwcFx52Y8?=
+ =?us-ascii?Q?YINbaEjnIiTBW/YbKtpS8NVM3nWf2B4jmiv0g8Uoj2bPF6wJWD1X7n68+rfY?=
+ =?us-ascii?Q?9JMPN5fncJCX9k4Vq3mG39NnbvTwU8o7HvX1bAnOUiOyi0WI9IxLpSTOZ5M2?=
+ =?us-ascii?Q?x+HrCM6HhdBecKR1loZsDo/vxM9kU9vGvvfY9DikIhv02SdOcy79YWNLnd9R?=
+ =?us-ascii?Q?IA=3D=3D?=
 MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR11MB3229.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: dabb5921-9148-4fb1-2098-08db71bd4fa0
+X-MS-Exchange-CrossTenant-originalarrivaltime: 20 Jun 2023 18:36:50.1464 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: pMKVkO61dbaG6AkP/yNW3ZzAb7xBLHbEAWjDLU3LPPdAOaCR173Lxsy7O+Ai1i+6l8QMYHCCGRHib8B9lsO5+CxxgFHi+e2ONmHjTLwURkc=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL1PR11MB5496
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1687285956; x=1718821956;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=Df80PhDC8Hc4FKLMeST6dc9kOq/ZscRjiTgms8+gkuk=;
- b=QmPgZeNaIMADZh0wZdWxBBxQhRriyOD20cEyb/fo/IDfKmO+cdtk9lKO
- OX+d9b2gXwpCIomI6Ir/ye2GAC2lrBqznYDvYTUVAutN1zYeHBe/uQC00
- mtolR4iL9NASTqI9L/cXskywkOUWTfwlDF+9hlUvv7tgdb5Ya8q/BwMub
- SDWF3N5+YE/JEV+mX3XjAYp3OdV9iRWI+Txw2JBJ7qY/Fp0BvUouSa8L8
- DJHeKHXgzOTHqnZX6M0n86TC0xINTnrw7OT0CfG0q+f5+C01H/pjdShZD
- +hccgouRi0BT6EIO7BcIpaEwPo7tpSSsRknZFH7lMIYbOVjCYe5sDFBBT
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1687286225; x=1718822225;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=B6rsyR/UfuC9O/wdjWKGeGVjscvjs1HoDBEsfTgkUPk=;
+ b=V2kFr/f1j7UHEIOflyeTO6pz5jz7gjI6Ay3Tri8izf/TrcSQL7lzXJYJ
+ NLPnLbztaIeikls5buDuCU0F9SPeqjhLpQRDcdNYUh6lymJVd5LPlWRYd
+ zCJDK+Khk8FYCDPUu0T3A7wgkI1uU1zc+eQOw1VZO+MfXM6ittjMK1JsF
+ zOcH7GOjPogONis9Teu2dpVGKXlz7U2gi/FuWYcFubFEwoT2o9OnZno0H
+ e1DMHxVDXpcLNhFrVWQRXvaAEKg0TvuyBIsAtTp8BEQkczpZ3tiLuhcMV
+ kaAVYt7boMQdD2lELzbNbYHolr9FCIUea0iIeAcCU3hlyq0vvikEDLjI6
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QmPgZeNa
-Subject: [Intel-wired-lan] [PATCH iwl-next v5 04/10] ice: implement lag
- netdev event handler
+ header.a=rsa-sha256 header.s=Intel header.b=V2kFr/f1
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v1] igbvf: Change
+ IGBVF_MIN_TXD and IGBVF_MIN_RXD to allow change of rx/tx value
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,275 +185,88 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, bcreeley@amd.com, daniel.machon@microchip.com,
- simon.horman@corigine.com
+Cc: "Zaborska, Olga" <olga.zaborska@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The event handler for LAG will create a work item to place on the ordered
-workqueue to be processed.
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
+> Zaborska, Olga
+> Sent: Friday, June 16, 2023 4:47 AM
+> To: intel-wired-lan@lists.osuosl.org
+> Cc: Zaborska, Olga <olga.zaborska@intel.com>
+> Subject: [Intel-wired-lan] [PATCH iwl-net v1] igbvf: Change IGBVF_MIN_TXD
+> and IGBVF_MIN_RXD to allow change of rx/tx value
 
-Add in defines for training packets and new recipes to be used by the
-switching block of the HW for LAG packet steering.
+This title seems a bit misleading as I presume changes are allowed, just limited on the low end.
 
-Update the ice_lag struct to reflect the new processing methodology.
+> From: Olga Zaborska <olga.zaborska@intel.com>
+> 
+> There is currently a bug where when setting the rx/tx value between 64 and
+> 80 it automatically sets to 80, this will be fixed by changing IGBVF_MIN_TXD
+> and IGBVF_MIN_RXD
 
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_lag.c | 124 ++++++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_lag.h |  30 +++++-
- 2 files changed, 140 insertions(+), 14 deletions(-)
+Any insight on why it was 80 before or why 64 is now ok?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
-index d018e68f5a6d..5725772cf8f4 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.c
-@@ -56,11 +56,10 @@ static void ice_lag_set_backup(struct ice_lag *lag)
-  */
- static void ice_display_lag_info(struct ice_lag *lag)
- {
--	const char *name, *peer, *upper, *role, *bonded, *primary;
-+	const char *name, *upper, *role, *bonded, *primary;
- 	struct device *dev = &lag->pf->pdev->dev;
- 
- 	name = lag->netdev ? netdev_name(lag->netdev) : "unset";
--	peer = lag->peer_netdev ? netdev_name(lag->peer_netdev) : "unset";
- 	upper = lag->upper_netdev ? netdev_name(lag->upper_netdev) : "unset";
- 	primary = lag->primary ? "TRUE" : "FALSE";
- 	bonded = lag->bonded ? "BONDED" : "UNBONDED";
-@@ -82,8 +81,8 @@ static void ice_display_lag_info(struct ice_lag *lag)
- 		role = "ERROR";
- 	}
- 
--	dev_dbg(dev, "%s %s, peer:%s, upper:%s, role:%s, primary:%s\n", name,
--		bonded, peer, upper, role, primary);
-+	dev_dbg(dev, "%s %s, upper:%s, role:%s, primary:%s\n", name, bonded,
-+		upper, role, primary);
- }
- 
- /**
-@@ -198,7 +197,6 @@ ice_lag_unlink(struct ice_lag *lag,
- 		lag->upper_netdev = NULL;
- 	}
- 
--	lag->peer_netdev = NULL;
- 	ice_set_rdma_cap(pf);
- 	lag->bonded = false;
- 	lag->role = ICE_LAG_NONE;
-@@ -288,6 +286,59 @@ static void ice_lag_changeupper_event(struct ice_lag *lag, void *ptr)
- 	ice_display_lag_info(lag);
- }
- 
-+/**
-+ * ice_lag_process_event - process a task assigned to the lag_wq
-+ * @work: pointer to work_struct
-+ */
-+static void ice_lag_process_event(struct work_struct *work)
-+{
-+	struct netdev_notifier_changeupper_info *info;
-+	struct ice_lag_work *lag_work;
-+	struct net_device *netdev;
-+	struct list_head *tmp, *n;
-+	struct ice_pf *pf;
-+
-+	lag_work = container_of(work, struct ice_lag_work, lag_task);
-+	pf = lag_work->lag->pf;
-+
-+	mutex_lock(&pf->lag_mutex);
-+	lag_work->lag->netdev_head = &lag_work->netdev_list.node;
-+
-+	switch (lag_work->event) {
-+	case NETDEV_CHANGEUPPER:
-+		info = &lag_work->info.changeupper_info;
-+		ice_lag_changeupper_event(lag_work->lag, info);
-+		break;
-+	case NETDEV_BONDING_INFO:
-+		ice_lag_info_event(lag_work->lag, &lag_work->info.bonding_info);
-+		break;
-+	case NETDEV_UNREGISTER:
-+		if (ice_is_feature_supported(pf, ICE_F_SRIOV_LAG)) {
-+			netdev = lag_work->info.bonding_info.info.dev;
-+			if ((netdev == lag_work->lag->netdev ||
-+			     lag_work->lag->primary) && lag_work->lag->bonded)
-+				ice_lag_unregister(lag_work->lag, netdev);
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	/* cleanup resources allocated for this work item */
-+	list_for_each_safe(tmp, n, &lag_work->netdev_list.node) {
-+		struct ice_lag_netdev_list *entry;
-+
-+		entry = list_entry(tmp, struct ice_lag_netdev_list, node);
-+		list_del(&entry->node);
-+		kfree(entry);
-+	}
-+	lag_work->lag->netdev_head = NULL;
-+
-+	mutex_unlock(&pf->lag_mutex);
-+
-+	kfree(lag_work);
-+}
-+
- /**
-  * ice_lag_event_handler - handle LAG events from netdev
-  * @notif_blk: notifier block registered by this netdev
-@@ -299,31 +350,79 @@ ice_lag_event_handler(struct notifier_block *notif_blk, unsigned long event,
- 		      void *ptr)
- {
- 	struct net_device *netdev = netdev_notifier_info_to_dev(ptr);
-+	struct net_device *upper_netdev;
-+	struct ice_lag_work *lag_work;
- 	struct ice_lag *lag;
- 
--	lag = container_of(notif_blk, struct ice_lag, notif_block);
-+	if (!netif_is_ice(netdev))
-+		return NOTIFY_DONE;
-+
-+	if (event != NETDEV_CHANGEUPPER && event != NETDEV_BONDING_INFO &&
-+	    event != NETDEV_UNREGISTER)
-+		return NOTIFY_DONE;
- 
-+	if (!(netdev->priv_flags & IFF_BONDING))
-+		return NOTIFY_DONE;
-+
-+	lag = container_of(notif_blk, struct ice_lag, notif_block);
- 	if (!lag->netdev)
- 		return NOTIFY_DONE;
- 
--	/* Check that the netdev is in the working namespace */
- 	if (!net_eq(dev_net(netdev), &init_net))
- 		return NOTIFY_DONE;
- 
-+	/* This memory will be freed at the end of ice_lag_process_event */
-+	lag_work = kzalloc(sizeof(*lag_work), GFP_KERNEL);
-+	if (!lag_work)
-+		return -ENOMEM;
-+
-+	lag_work->event_netdev = netdev;
-+	lag_work->lag = lag;
-+	lag_work->event = event;
-+	if (event == NETDEV_CHANGEUPPER) {
-+		struct netdev_notifier_changeupper_info *info;
-+
-+		info = ptr;
-+		upper_netdev = info->upper_dev;
-+	} else {
-+		upper_netdev = netdev_master_upper_dev_get(netdev);
-+	}
-+
-+	INIT_LIST_HEAD(&lag_work->netdev_list.node);
-+	if (upper_netdev) {
-+		struct ice_lag_netdev_list *nd_list;
-+		struct net_device *tmp_nd;
-+
-+		rcu_read_lock();
-+		for_each_netdev_in_bond_rcu(upper_netdev, tmp_nd) {
-+			nd_list = kzalloc(sizeof(*nd_list), GFP_KERNEL);
-+			if (!nd_list)
-+				break;
-+
-+			nd_list->netdev = tmp_nd;
-+			list_add(&nd_list->node, &lag_work->netdev_list.node);
-+		}
-+		rcu_read_unlock();
-+	}
-+
- 	switch (event) {
- 	case NETDEV_CHANGEUPPER:
--		ice_lag_changeupper_event(lag, ptr);
-+		lag_work->info.changeupper_info =
-+			*((struct netdev_notifier_changeupper_info *)ptr);
- 		break;
- 	case NETDEV_BONDING_INFO:
--		ice_lag_info_event(lag, ptr);
--		break;
--	case NETDEV_UNREGISTER:
--		ice_lag_unregister(lag, netdev);
-+		lag_work->info.bonding_info =
-+			*((struct netdev_notifier_bonding_info *)ptr);
- 		break;
- 	default:
-+		lag_work->info.notifier_info =
-+			*((struct netdev_notifier_info *)ptr);
- 		break;
- 	}
- 
-+	INIT_WORK(&lag_work->lag_task, ice_lag_process_event);
-+	queue_work(ice_lag_wq, &lag_work->lag_task);
-+
- 	return NOTIFY_DONE;
- }
- 
-@@ -398,7 +497,6 @@ int ice_init_lag(struct ice_pf *pf)
- 	lag->netdev = vsi->netdev;
- 	lag->role = ICE_LAG_NONE;
- 	lag->bonded = false;
--	lag->peer_netdev = NULL;
- 	lag->upper_netdev = NULL;
- 	lag->notif_block.notifier_call = NULL;
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.h b/drivers/net/ethernet/intel/ice/ice_lag.h
-index 2c373676c42f..a4314a46c82c 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.h
-@@ -14,20 +14,48 @@ enum ice_lag_role {
- 	ICE_LAG_UNSET
- };
- 
-+#define ICE_LAG_INVALID_PORT 0xFF
-+
- struct ice_pf;
-+struct ice_vf;
-+
-+struct ice_lag_netdev_list {
-+	struct list_head node;
-+	struct net_device *netdev;
-+};
- 
- /* LAG info struct */
- struct ice_lag {
- 	struct ice_pf *pf; /* backlink to PF struct */
- 	struct net_device *netdev; /* this PF's netdev */
--	struct net_device *peer_netdev;
- 	struct net_device *upper_netdev; /* upper bonding netdev */
-+	struct list_head *netdev_head;
- 	struct notifier_block notif_block;
-+	s32 bond_mode;
-+	u16 bond_swid; /* swid for primary interface */
-+	u8 active_port; /* lport value for the current active port */
- 	u8 bonded:1; /* currently bonded */
- 	u8 primary:1; /* this is primary */
-+	u16 pf_recipe;
-+	u16 pf_rule_id;
-+	u16 cp_rule_idx;
- 	u8 role;
- };
- 
-+/* LAG workqueue struct */
-+struct ice_lag_work {
-+	struct work_struct lag_task;
-+	struct ice_lag_netdev_list netdev_list;
-+	struct ice_lag *lag;
-+	unsigned long event;
-+	struct net_device *event_netdev;
-+	union {
-+		struct netdev_notifier_changeupper_info changeupper_info;
-+		struct netdev_notifier_bonding_info bonding_info;
-+		struct netdev_notifier_info notifier_info;
-+	} info;
-+};
-+
- int ice_init_lag(struct ice_pf *pf);
- void ice_deinit_lag(struct ice_pf *pf);
- #endif /* _ICE_LAG_H_ */
--- 
-2.40.1
+Is there a side affect other than not being able to set below 80? Since the referenced fixes is from 2009 without anything reported, seems like it'd be more an improvement of allowing smaller sizes than a bug?
 
+> Fixes: d4e0fe01a38a ("igbvf: add new driver to support 82576 virtual
+> functions")
+> Signed-off-by: Olga Zaborska <olga.zaborska@intel.com>
+> Reviewed-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igbvf/igbvf.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igbvf/igbvf.h
+> b/drivers/net/ethernet/intel/igbvf/igbvf.h
+> index 57d39ee00b58..7b83678ba83a 100644
+> --- a/drivers/net/ethernet/intel/igbvf/igbvf.h
+> +++ b/drivers/net/ethernet/intel/igbvf/igbvf.h
+> @@ -39,11 +39,11 @@ enum latency_range {
+>  /* Tx/Rx descriptor defines */
+>  #define IGBVF_DEFAULT_TXD	256
+>  #define IGBVF_MAX_TXD		4096
+> -#define IGBVF_MIN_TXD		80
+> +#define IGBVF_MIN_TXD		64
+> 
+>  #define IGBVF_DEFAULT_RXD	256
+>  #define IGBVF_MAX_RXD		4096
+> -#define IGBVF_MIN_RXD		80
+> +#define IGBVF_MIN_RXD		64
+> 
+>  #define IGBVF_MIN_ITR_USECS	10 /* 100000 irq/sec */
+>  #define IGBVF_MAX_ITR_USECS	10000 /* 100    irq/sec */
+> --
+> 2.31.1
+> 
+> ---------------------------------------------------------------------
+> Intel Technology Poland sp. z o.o.
+> ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII
+> Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-
+> 07-52-316 | Kapital zakladowy 200.000 PLN.
+> Spolka oswiadcza, ze posiada status duzego przedsiebiorcy w rozumieniu
+> ustawy z dnia 8 marca 2013 r. o przeciwdzialaniu nadmiernym opoznieniom w
+> transakcjach handlowych.
+> 
+> Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego
+> adresata i moze zawierac informacje poufne. W razie przypadkowego
+> otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale
+> jej usuniecie; jakiekolwiek przegladanie lub rozpowszechnianie jest
+> zabronione.
+> This e-mail and any attachments may contain confidential material for the
+> sole use of the intended recipient(s). If you are not the intended recipient,
+> please contact the sender and delete all copies; any review or distribution by
+> others is strictly prohibited.
+
+This footer needs to be removed.
+
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan@osuosl.org
+> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
