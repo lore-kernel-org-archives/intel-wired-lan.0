@@ -4,78 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64914C0015E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 22 Jun 2023 13:11:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DE8EEB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 22 Jun 2023 13:38:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E6BB383C61;
-	Thu, 22 Jun 2023 13:11:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E6BB383C61
+	by smtp1.osuosl.org (Postfix) with ESMTP id 187F883C7B;
+	Thu, 22 Jun 2023 13:38:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 187F883C7B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687439490;
-	bh=pFkpSB2Yv6Zm6gG3En3ejAqp2HpTakhIyCVHRaPhqT4=;
-	h=Date:From:To:In-Reply-To:Subject:List-Id:List-Unsubscribe:
-	 List-Archive:List-Post:List-Help:List-Subscribe:Cc:From;
-	b=7Xxg1DYKLFYAsJ6IZsLMRbAO/QcJNr09ASxHQQP6ShY3Tihyj/+4jx8lVFcylpad+
-	 V8WaBInH9+T9bZOX8mlBPJkkfj1uBX002KhO64jRFOdFaDv67DHwIIU//om+3A/RZm
-	 BZanwykS2OD3qKH6PFASAzsWxuejBVRTVI3h3xvwDarXPF5iHindedXF7/Vm7qWAGK
-	 9Bvq/iTOeqDq2CbVqFRJ7qQlB6+byfeB1TqLHzXwegOmwxkBu69RzeUWdFcGUUFzKz
-	 Y11LwrpzDSCcHbQ3qE5uRRaent5spGUXHQ2iSAljPK5vOEjf2flkLd0g1S8SyUtDWL
-	 TVS/SazzFdwvg==
+	s=default; t=1687441080;
+	bh=GoEjTfej/UqdESTACO3yYTrrKMuZ7NP+MCIDzQISiKo=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=OjHWTnKG8XbFsNndJz9Wnk4w6alqyxBQm4VhmnMwLfoHlxklw+tffbX/G5ARBQaqu
+	 ahxOe1q7OrWfh/+a1dU1p2at2sT5tbAcc8bZkHlBj2xYJWiaVrOts1vplumqxI9io0
+	 ma74SsxHM1XGqHON6H+3eO02wyxDktrwCM0racJIqOtOwjiwHJgoTEXl+gfFgKtYJc
+	 rTObMSgdGXC2P46OghG4uNdOwh8+HR6iCslcjxLGiIxheziABlvzGNA9j2F4T4rG2O
+	 EIU2rweBDD9eNesIESqaXw+M+Uulxz9iBJ/Tt4sGB5IoIpfQIWLRkIjTuGNxrahnX1
+	 q553nHDtEY7iQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VI6wip9HDnLR; Thu, 22 Jun 2023 13:11:30 +0000 (UTC)
+	with ESMTP id Ai1mZDMPjZjb; Thu, 22 Jun 2023 13:37:59 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0B46083C5E;
-	Thu, 22 Jun 2023 13:11:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0B46083C5E
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 5CED21BF356
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:11:28 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0F24383C7C;
+	Thu, 22 Jun 2023 13:37:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0F24383C7C
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id D96071BF356
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:37:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3EB3D42128
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:11:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3EB3D42128
+ by smtp1.osuosl.org (Postfix) with ESMTP id B0F8483C78
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:37:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B0F8483C78
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pwxw_k0l8s-T for <intel-wired-lan@lists.osuosl.org>;
- Thu, 22 Jun 2023 13:11:27 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E8EA1420F6
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E8EA1420F6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:11:26 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id BF07C617EE;
- Thu, 22 Jun 2023 13:11:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DD4E6C433C8;
- Thu, 22 Jun 2023 13:11:24 +0000 (UTC)
-Date: Thu, 22 Jun 2023 08:11:23 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: "Neftin, Sasha" <sasha.neftin@intel.com>
-Message-ID: <20230622131123.GA137990@bhelgaas>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id BEKorLGQ5sMJ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 22 Jun 2023 13:37:55 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D379183C7B
+Received: from mail-ej1-x630.google.com (mail-ej1-x630.google.com
+ [IPv6:2a00:1450:4864:20::630])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D379183C7B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:37:54 +0000 (UTC)
+Received: by mail-ej1-x630.google.com with SMTP id
+ a640c23a62f3a-98934f000a5so379187366b.2
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 06:37:54 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1687441073; x=1690033073;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=fRg50miuqVjqdD4FkG2Hv1AXDgRWbP1CoJvjVBr+cDM=;
+ b=R30MR5i2jDaoAtW5XmGXZ1981JQGEW8sIEhaMUTukv7Bf4JlhwaVkMD2zdh/huW9CP
+ nTFfzFAZ0fGK+CYeedyjLwwHPxWzVsiQbXUq0iCu5p2qowe59eYefadyaYQdVpu6qUpM
+ CtyYJASbnWdGKKABA0re5S5iI4z2NsFubpB20dNYvCbmLM/UDTLD/PYh9ENQCvO+F6M8
+ lM7tHGWV3v9RbUi4YzPI5vekNFc3u9d66lyw47nBBtGTMrXd1wOUWt19282pQ4C5tkMJ
+ x4b9BnGThjzy+0b8UAx4iYEPQiDdBusJ1Q/6J7gQv/OWRj/JJ7p9QSOTsxyNyYcPL/4X
+ FYsQ==
+X-Gm-Message-State: AC+VfDyclcMQ0VuOXLe7nK8MYAaQOXSnF3zD1ZCl8wMs+4RGmoLl6ZZM
+ 8cV9gXkV2zoqO1aKb/UTSycL8g==
+X-Google-Smtp-Source: ACHHUZ5KDB5bJM/SVgDEl6LcPqOSWN5RVVQyzWixdBKUCHQHXYkFtqN5jCFzh3LjkP9Aby8SWO1mAw==
+X-Received: by 2002:a17:907:86ac:b0:98c:ed39:3617 with SMTP id
+ qa44-20020a17090786ac00b0098ced393617mr2822177ejc.46.1687441072790; 
+ Thu, 22 Jun 2023 06:37:52 -0700 (PDT)
+Received: from localhost (host-213-179-129-39.customer.m-online.net.
+ [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
+ cb14-20020a170906a44e00b0098d295d5908sm946156ejb.46.2023.06.22.06.37.51
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Thu, 22 Jun 2023 06:37:52 -0700 (PDT)
+Date: Thu, 22 Jun 2023 15:37:50 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+To: Piotr Gardocki <piotrx.gardocki@intel.com>
+Message-ID: <ZJROrq1c4eO7cLUB@nanopsycho>
+References: <20230621132106.991342-1-piotrx.gardocki@intel.com>
+ <ZJQE4ieud5Mf8iGi@nanopsycho>
+ <a5ab1ef6-1bc1-3e98-7f8b-5c5a3678ca8b@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <16bcc313-a4e1-ab50-4487-c99ccf5ecdf9@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1687439485;
- bh=au2zGNMRZ0p6Mkinx6tnYwtEJKZLBcTxo0gn++q2a74=;
- h=Date:From:To:Cc:Subject:In-Reply-To:From;
- b=IKOo+QuyPCVrVRWrMVroUNNmli8B0Wt3YXpe1QZ3uedC3/luxMurbAaq0eLb+o+PG
- vdltEkhR33pKyyihbS25c+DIhJfzHwUoBwN3AtBz7IU5MkEgrDY0IJY/WRQw1IZpdA
- 9oDwFA3pWo7MtcEgNevN1dwxNqHZPLOhDmO7wPsRDnFkQW1qaIUCrAFOP21dpZRXUk
- goPyvoxlkllSpD1g4QAMJmP8imAnEf5cGntoGsR1K70kZ0A6LVDDEorxleqf1VTZ1O
- NDnn236BCfuTdah4A+Olf8kSsYZMb88VSNLQdD9BhBBQrh8l+ptiq18Iw8XLl0w6o/
- hUM1lzKjjuSbg==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=IKOo+Quy
-Subject: Re: [Intel-wired-lan] [PATCH] igc: Ignore AER reset when device is
- suspended
+In-Reply-To: <a5ab1ef6-1bc1-3e98-7f8b-5c5a3678ca8b@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=resnulli-us.20221208.gappssmtp.com; s=20221208; t=1687441073; x=1690033073; 
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=fRg50miuqVjqdD4FkG2Hv1AXDgRWbP1CoJvjVBr+cDM=;
+ b=2FUUfDJpabB+LcdeeugWcASPhmrC4HKr4zPHmmUG9Vf2c39jQsvCddzRTWGZ/G6IQo
+ FHOk38NW9G4lFfODgeV8JhKlbWzxlCDha5XOTFK9GUe3v5kzGKQOj9BnHVpDJsnk34nm
+ C4ZNV3Ubq0qAudjnzw5KOshBuZPg+b3BY7aTLHvDLIjxpbFRLjZk2kg6cxjQ2V/QSPzT
+ /kSxGuFkiaGd19k+gLQ219a6NNZ78WP3BMpbwUH5g7iXZtAAl3CkVKGKmfvtn32bSUIX
+ U4EUWGWdtmcDaMpFeq7nQHJZ+SBAdxCMPekbiQxhslh8MjIqMrpq1LQXONjPPYHqKhJT
+ AGQA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=resnulli-us.20221208.gappssmtp.com
+ header.i=@resnulli-us.20221208.gappssmtp.com header.a=rsa-sha256
+ header.s=20221208 header.b=2FUUfDJp
+Subject: Re: [Intel-wired-lan] [PATCH net-next] net: fix net device address
+ assign type
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,82 +113,31 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Tony Luck <tony.luck@intel.com>, Kees Cook <keescook@chromium.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- linux-pci@vger.kernel.org, "Mushayev, Nikolay" <nikolay.mushayev@intel.com>,
- linux-kernel@vger.kernel.org, jesse.brandeburg@intel.com, "Edri,
- Michael" <michael.edri@intel.com>,
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>,
- Eric Dumazet <edumazet@google.com>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>, anthony.l.nguyen@intel.com,
- linux-hardening@vger.kernel.org, "Ruinskiy, Dima" <dima.ruinskiy@intel.com>,
- Jakub Kicinski <kuba@kernel.org>, "Avivi, Amir" <amir.avivi@intel.com>,
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Cc: pmenzel@molgen.mpg.de, netdev@vger.kernel.org, gal@nvidia.com,
+ anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org, kuba@kernel.org,
+ simon.horman@corigine.com, przemyslaw.kitszel@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Jun 22, 2023 at 08:09:34AM +0300, Neftin, Sasha wrote:
-> On 6/21/2023 23:43, Bjorn Helgaas wrote:
-> > On Tue, Jun 20, 2023 at 08:36:36PM +0800, Kai-Heng Feng wrote:
-> > > When a system that connects to a Thunderbolt dock equipped with I225,
-> > > I225 stops working after S3 resume:
+Thu, Jun 22, 2023 at 02:42:53PM CEST, piotrx.gardocki@intel.com wrote:
+>On 22.06.2023 10:22, Jiri Pirko wrote:
+>> Wed, Jun 21, 2023 at 03:21:06PM CEST, piotrx.gardocki@intel.com wrote:
+>>> Commit ad72c4a06acc introduced optimization to return from function
+>> 
+>> Out of curiosity, what impact does this optimization have? Is it worth
+>> it to have such optimization at all? Wouldn't simple revert of the fixes
+>> commit do the trick? If not, see below.
+>
+>Thanks for review. My main goal originally was to skip call to ndo_set_mac_address.
+>The benefit of this depends on how given driver handles such request. Some drivers
+>notify their hardware about the "change", iavf for example sends a request to PF
+>driver (and awaits for response). i40e and ice already had this check (I removed
+>them in previous patch set) and we wanted to also introduce it in iavf. But it
+>was suggested to move this check to core to have benefit for all drivers.
 
-> > > The issue is that the PTM requests are sending before driver resumes the
-> > > device. Since the issue can also be observed on Windows, it's quite
-> > > likely a firmware/hardwar limitation.
-> > 
-> > I thought c01163dbd1b8 ("PCI/PM: Always disable PTM for all devices
-> > during suspend") would turn off PTM.  Is that not working for this
-> > path, or are we re-enabling PTM incorrectly, or something else?
-> 
-> I think we hit on the HW bug here. On some i225/6 parts, PTM requests are
-> sent before SW takes ownership of the device. This patch could help.
-
-Is there an erratum we can read?  If this is needed to work around a
-hardware defect, there should be a comment in the code to that effect,
-and we should have a better understanding because there may be other
-scenarios (suspend/resume, hotplug, etc) that need similar changes.
-
-(I know this patch is to work around a suspend/resume issue, but the
-change is in the AER error recovery path, so it doesn't quite fit
-together for me yet.)
-
-Are you saying the NIC sends PTM requests when it doesn't have PTM
-Enable set?
-
-What exactly does it mean for "SW to take ownership of the device"?
-What PCIe transaction would tell the device the SW has taken
-ownership?
-
-So far this feels kind of hand-wavey.
-
-> > Checking pci_is_enable() in the .error_detected() callback looks like
-> > a pattern that may need to be replicated in many other drivers, which
-> > makes me think it may not be the best approach.
-> > 
-> > > So avoid resetting the device if it's not resumed. Once the device is
-> > > fully resumed, the device can work normally.
-> > > 
-> > > Link: https://bugzilla.kernel.org/show_bug.cgi?id=216850
-> > > Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> > > ---
-> > >   drivers/net/ethernet/intel/igc/igc_main.c | 3 +++
-> > >   1 file changed, 3 insertions(+)
-> > > 
-> > > diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-> > > index fa764190f270..6a46f886ff43 100644
-> > > --- a/drivers/net/ethernet/intel/igc/igc_main.c
-> > > +++ b/drivers/net/ethernet/intel/igc/igc_main.c
-> > > @@ -6962,6 +6962,9 @@ static pci_ers_result_t igc_io_error_detected(struct pci_dev *pdev,
-> > >   	struct net_device *netdev = pci_get_drvdata(pdev);
-> > >   	struct igc_adapter *adapter = netdev_priv(netdev);
-> > > +	if (!pci_is_enabled(pdev))
-> > > +		return 0;
-> > > +
-> > >   	netif_device_detach(netdev);
-> > >   	if (state == pci_channel_io_perm_failure)
+Okay. Makes sense.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
