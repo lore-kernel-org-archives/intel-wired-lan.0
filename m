@@ -1,90 +1,83 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DAF3EB64DA
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 22 Jun 2023 13:49:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69BD5EB64DA
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 22 Jun 2023 14:16:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1A9FF83BFF;
-	Thu, 22 Jun 2023 13:49:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1A9FF83BFF
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0A2D7418FD;
+	Thu, 22 Jun 2023 14:16:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0A2D7418FD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687441754;
-	bh=oNdT5JBQ04TzZU6m/3y+kcg0qaYFvbZR/ol68QkFgPM=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=O5Tng6eEDECUPeiVIztMzTjZ/E+ybRMTZYunSAWFul7SKs0QIP0LV/BQ2+fUtL4GE
-	 Gh/D2jPiG1wukIQj9hzJzziroOuCjSDXWde82Pi1206OnN5/hg506xsg99bg9gFvB1
-	 /1GIXwP65JJVFDum9P+gdXUM2MR8V0Ap5In8MGz3DAML5VqvnH21bFouVtR97s1wLF
-	 JbGjVOaCwWUosKZwybWyyGV45fN1uCk5cF9sFgM5DESMZoHhqWu4v6zF1/VvS4X2iJ
-	 vibshfQsWv0w/c0tlz0qlXWiwbEcoJXV1XXb3/i9m4U5JIlYwmzpKIrB26eYiReUjp
-	 fQ3pqp7Kj57Ug==
+	s=default; t=1687443417;
+	bh=rTxvqujEZioWorclDtqRSYtM6gh/4y8zSCJRDLAb+R0=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=g51V6gqBxlSK1HlACq6zVtWW8KDfRpgqzQfg3t5r/sZnzP3YJr0j9FwXr3OHliLVT
+	 6fBUZZTjZR3BUm801kbWD/xLrNICMMm1ibtxE2Mbb0qGT5y3Xy3plpepTTCJtYJ5hA
+	 oc5nc/boyq3Y1CEBBiNCShbL9uyVdH7NyCqtMIWP8oG1eodIjA6zOHRk2vBo5FeNQm
+	 7Et6fUCUymCCEnyTva5wOo/B14zIE/J/alxVMl+1aaf+zJi72x3jXKPRw5t0S1qqd6
+	 rgqrsHxVIAvlA/Ic7MVB0tuzq5lCmOQSsW/+GcV79iza5W0tRju9WP2nah1GiOfz9E
+	 Zrszb9I1seVQw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id hq2AVYXEwpO8; Thu, 22 Jun 2023 13:49:13 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id exK8DtW1SuXW; Thu, 22 Jun 2023 14:16:55 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 0417183C09;
-	Thu, 22 Jun 2023 13:49:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0417183C09
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8066D1BF356
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:49:03 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 36B0C4189C;
+	Thu, 22 Jun 2023 14:16:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 36B0C4189C
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id EB47A1BF4E7
+ for <intel-wired-lan@osuosl.org>; Thu, 22 Jun 2023 14:16:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 8D23360BE7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:49:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8D23360BE7
+ by smtp2.osuosl.org (Postfix) with ESMTP id C32264189C
+ for <intel-wired-lan@osuosl.org>; Thu, 22 Jun 2023 14:16:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C32264189C
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fbHP6WwYeSc5 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 22 Jun 2023 13:49:00 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id iaZfETyELLwb for <intel-wired-lan@osuosl.org>;
+ Thu, 22 Jun 2023 14:16:52 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BE2DA60C2C
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by smtp3.osuosl.org (Postfix) with ESMTPS id BE2DA60C2C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 22 Jun 2023 13:49:00 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10748"; a="390234100"
-X-IronPort-AV: E=Sophos;i="6.01,263,1684825200"; d="scan'208";a="390234100"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Jun 2023 06:49:00 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1AA8A400C4
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1AA8A400C4
+ for <intel-wired-lan@osuosl.org>; Thu, 22 Jun 2023 14:16:51 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10749"; a="426463741"
+X-IronPort-AV: E=Sophos;i="6.01,149,1684825200"; d="scan'208";a="426463741"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 22 Jun 2023 06:37:18 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10748"; a="804791813"
-X-IronPort-AV: E=Sophos;i="6.01,263,1684825200"; d="scan'208";a="804791813"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by FMSMGA003.fm.intel.com with ESMTP; 22 Jun 2023 06:48:58 -0700
-Received: from giewont.igk.intel.com (giewont.igk.intel.com [10.211.8.15])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 161293493B;
- Thu, 22 Jun 2023 14:48:58 +0100 (IST)
-From: Marcin Szycik <marcin.szycik@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 22 Jun 2023 15:35:12 +0200
-Message-Id: <20230622133513.28551-2-marcin.szycik@linux.intel.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20230622133513.28551-1-marcin.szycik@linux.intel.com>
-References: <20230622133513.28551-1-marcin.szycik@linux.intel.com>
-MIME-Version: 1.0
+X-IronPort-AV: E=McAfee;i="6600,9927,10748"; a="839057013"
+X-IronPort-AV: E=Sophos;i="6.01,263,1684825200"; d="scan'208";a="839057013"
+Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
+ by orsmga004.jf.intel.com with ESMTP; 22 Jun 2023 06:37:15 -0700
+From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+To: intel-wired-lan@osuosl.org
+Date: Thu, 22 Jun 2023 21:35:44 +0800
+Message-Id: <20230622133544.5531-1-muhammad.husaini.zulkifli@intel.com>
+X-Mailer: git-send-email 2.17.1
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1687441740; x=1718977740;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=KoEbaJaJlFkTKNWuKnd6OPQcY1PNUaTLxJoAu2/HF1U=;
- b=cwJQhmIrkq8II+lFGa+OP3I2bWe2Orc+qZACPLgrUK0/0iZ4yQVA72Fu
- +JB0xZOqD9vroeOh9e8/At5mmhEks6QPvr6irMziARSczA3SsCtQQGcAs
- MzV12AarOC9wfth4h40XCqyDlMLCrSR0k+6V3UMwVZPEvCUp3zWmE2j1z
- NCqoOuVzXS4Wogw3mJUvUiMy4YbJ+yGIyl+s3q/Asq26lqvH4oLh5EAjJ
- cqo8EQheXd0cYk98SujrVtJVsGcfYj2SQGaAhLh1uf7PaANHEKLaDDt+c
- U6iR4AnL63iE/LCI9E/vOeUZ4QLZ/a/ObSqfvv9+BtSJKevAQ1fcWzbF1
+ t=1687443412; x=1718979412;
+ h=from:to:cc:subject:date:message-id;
+ bh=pvUGbYgfNlzB/m/PxfGRBeyRF4j1uOoww+QExRis1dc=;
+ b=LdqoB859JjrNjDNROlwPpb3ZdSMAUiQKalnrYgIbGDrLbwDNow315gvE
+ 7nn/NW/BgMyKiCePIjlJtVFygSxzAOf6fn+MbTzPKA7FB6V3rHMr0UHh7
+ CgV0tm/UakwzX3b4zo4NaQJstbaWYWU5gvOqQ5YELPqyHrcA8Fsy0FZQJ
+ v5wHcrgHLi43Hdxaa4wXW+H/PVkoKz1NY0UcfBVxHDLunV7T6j1JC6uXi
+ 7SKeXZJLho8+EsBfC4rMEMsQN9mJ9NAPupkRc3MH2VKNrtU35zwDHBDSA
+ Fnk7Q05Hy7NTzus5WLv3rWjmMdp/imarKfaidkGRr9bjgeBc7I0pPNp4b
  Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=cwJQhmIr
-Subject: [Intel-wired-lan] [PATCH iwl-next 1/2] ice: Add direction metadata
+ header.a=rsa-sha256 header.s=Intel header.b=LdqoB859
+Subject: [Intel-wired-lan] [PATCH iwl-net v2] igc: Fix Kernel Panic during
+ ndo_tx_timeout callback
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,195 +90,399 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org
+Cc: anthony.l.nguyen@intel.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently it is possible to create a filter which breaks TX traffic, e.g.:
+The Xeon validation group has been carrying out some loaded tests
+with various HW configurations, and they have seen some transmit
+queue time out happening during the test. This will cause the
+reset adapter function to be called by igc_tx_timeout().
+Similar race conditions may arise when the interface is being brought
+down and up in igc_reinit_locked(), an interrupt being generated, and
+igc_clean_tx_irq() being called to complete the TX.
 
-tc filter add dev $PF1 ingress protocol ip prio 1 flower ip_proto udp
-dst_port $PORT action mirred egress redirect dev $VF1_PR
+When the igc_tx_timeout() function is invoked, this patch will turn
+off all TX ring HW queues during igc_down() process. TX ring HW queues
+will be activated again during the igc_configure_tx_ring() process
+when performing the igc_up() procedure later.
 
-This adds a rule which might match both TX and RX traffic, and in TX path
-the PF will actually receive the traffic, which breaks communication.
+This patch also moved existing igc_disable_tx_ring_hw() to avoid using
+forward declaration.
 
-To fix this, add a match on direction metadata flag when adding a tc rule.
+Kernel trace:
+[ 7678.747813] ------------[ cut here ]------------
+[ 7678.757914] NETDEV WATCHDOG: enp1s0 (igc): transmit queue 2 timed out
+[ 7678.770117] WARNING: CPU: 0 PID: 13 at net/sched/sch_generic.c:525 dev_watchdog+0x1ae/0x1f0
+[ 7678.784459] Modules linked in: xt_conntrack nft_chain_nat xt_MASQUERADE xt_addrtype nft_compat
+nf_tables nfnetlink br_netfilter bridge stp llc overlay dm_mod emrcha(PO) emriio(PO) rktpm(PO)
+cegbuf_mod(PO) patch_update(PO) se(PO) sgx_tgts(PO) mktme(PO) keylocker(PO) svtdx(PO) svfs_pci_hotplug(PO)
+vtd_mod(PO) davemem(PO) svmabort(PO) svindexio(PO) usbx2(PO) ehci_sched(PO) svheartbeat(PO) ioapic(PO)
+sv8259(PO) svintr(PO) lt(PO) pcierootport(PO) enginefw_mod(PO) ata(PO) smbus(PO) spiflash_cdf(PO) arden(PO)
+dsa_iax(PO) oobmsm_punit(PO) cpm(PO) svkdb(PO) ebg_pch(PO) pch(PO) sviotargets(PO) svbdf(PO) svmem(PO)
+svbios(PO) dram(PO) svtsc(PO) targets(PO) superio(PO) svkernel(PO) cswitch(PO) mcf(PO) pentiumIII_mod(PO)
+fs_svfs(PO) mdevdefdb(PO) svfs_os_services(O) ixgbe mdio mdio_devres libphy emeraldrapids_svdefs(PO)
+regsupport(O) libnvdimm nls_cp437 snd_hda_codec_realtek snd_hda_codec_generic ledtrig_audio snd_hda_intel
+snd_intel_dspcfg snd_hda_codec snd_hwdep x86_pkg_temp_thermal snd_hda_core snd_pcm snd_timer isst_if_mbox_pci
+[ 7678.784496]  input_leds isst_if_mmio sg snd isst_if_common soundcore wmi button sad9(O) drm fuse backlight
+configfs efivarfs ip_tables x_tables vmd sdhci led_class rtl8150 r8152 hid_generic pegasus mmc_block usbhid
+mmc_core hid megaraid_sas ixgb igb i2c_algo_bit ice i40e hpsa scsi_transport_sas e1000e e1000 e100 ax88179_178a
+usbnet xhci_pci sd_mod xhci_hcd t10_pi crc32c_intel crc64_rocksoft igc crc64 crc_t10dif usbcore
+crct10dif_generic ptp crct10dif_common usb_common pps_core
+[ 7679.141822] CPU: 0 PID: 13 Comm: ksoftirqd/0 Tainted: P S         O
+6.3.0.svos-next-tickless-x86-64 #1
+[ 7679.172570] Hardware name: Intel Corporation ArcherCity/ArcherCity,
+BIOS EGSDCRB1.E9I.0103.D13.2305291029 05/29/2023
+[ 7679.200403] RIP: 0010:dev_watchdog+0x1ae/0x1f0
+[ 7679.210201] Code: 28 e9 53 ff ff ff 4c 89 e7 c6 05 06 42 b9 00 01 e8 17 d1 fb ff 44 89 e9 4c
+89 e6 48 c7 c7 40 ad fb 81 48 89 c2 e8 52 62 82 ff <0f> 0b e9 72 ff ff ff 65 8b 05 80 7d 7c 7e
+89 c0 48 0f a3 05 0a c1
+[ 7679.245438] RSP: 0018:ffa00000001f7d90 EFLAGS: 00010282
+[ 7679.256021] RAX: 0000000000000000 RBX: ff11000109938440 RCX: 0000000000000000
+[ 7679.268710] RDX: ff11000361e26cd8 RSI: ff11000361e1b880 RDI: ff11000361e1b880
+[ 7679.281314] RBP: ffa00000001f7da8 R08: ff1100035f8fffe8 R09: 0000000000027ffb
+[ 7679.293840] R10: 0000000000001f0a R11: ff1100035f840000 R12: ff11000109938000
+[ 7679.306276] R13: 0000000000000002 R14: dead000000000122 R15: ffa00000001f7e18
+[ 7679.318648] FS:  0000000000000000(0000) GS:ff11000361e00000(0000) knlGS:0000000000000000
+[ 7679.332064] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 7679.342757] CR2: 00007ffff7fca168 CR3: 000000013b08a006 CR4: 0000000000471ef8
+[ 7679.354984] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 7679.367207] DR3: 0000000000000000 DR6: 00000000fffe07f0 DR7: 0000000000000400
+[ 7679.379370] PKRU: 55555554
+[ 7679.386446] Call Trace:
+[ 7679.393152]  <TASK>
+[ 7679.399363]  ? __pfx_dev_watchdog+0x10/0x10
+[ 7679.407870]  call_timer_fn+0x31/0x110
+[ 7679.415698]  expire_timers+0xb2/0x120
+[ 7679.423403]  run_timer_softirq+0x179/0x1e0
+[ 7679.431532]  ? __schedule+0x2b1/0x820
+[ 7679.439078]  __do_softirq+0xd1/0x295
+[ 7679.446426]  ? __pfx_smpboot_thread_fn+0x10/0x10
+[ 7679.454867]  run_ksoftirqd+0x22/0x30
+[ 7679.462058]  smpboot_thread_fn+0xb7/0x160
+[ 7679.469670]  kthread+0xcd/0xf0
+[ 7679.476097]  ? __pfx_kthread+0x10/0x10
+[ 7679.483211]  ret_from_fork+0x29/0x50
+[ 7679.490047]  </TASK>
+[ 7679.495204] ---[ end trace 0000000000000000 ]---
+[ 7679.503179] igc 0000:01:00.0 enp1s0: Register Dump
+[ 7679.511230] igc 0000:01:00.0 enp1s0: Register Name   Value
+[ 7679.519892] igc 0000:01:00.0 enp1s0: CTRL            181c0641
+[ 7679.528782] igc 0000:01:00.0 enp1s0: STATUS          40280683
+[ 7679.537551] igc 0000:01:00.0 enp1s0: CTRL_EXT        10000040
+[ 7679.546284] igc 0000:01:00.0 enp1s0: MDIC            180a3800
+[ 7679.554942] igc 0000:01:00.0 enp1s0: ICR             00000081
+[ 7679.563503] igc 0000:01:00.0 enp1s0: RCTL            04408022
+[ 7679.571963] igc 0000:01:00.0 enp1s0: RDLEN[0-3]      00001000 00001000 00001000 00001000
+[ 7679.583075] igc 0000:01:00.0 enp1s0: RDH[0-3]        00000068 000000b6 0000000f 00000031
+[ 7679.594162] igc 0000:01:00.0 enp1s0: RDT[0-3]        00000066 000000b2 0000000e 00000030
+[ 7679.605174] igc 0000:01:00.0 enp1s0: RXDCTL[0-3]     02040808 02040808 02040808 02040808
+[ 7679.616196] igc 0000:01:00.0 enp1s0: RDBAL[0-3]      1bb7c000 1bb7f000 1bb82000 0ef33000
+[ 7679.627242] igc 0000:01:00.0 enp1s0: RDBAH[0-3]      00000001 00000001 00000001 00000001
+[ 7679.638256] igc 0000:01:00.0 enp1s0: TCTL            a503f0fa
+[ 7679.646607] igc 0000:01:00.0 enp1s0: TDBAL[0-3]      2ba4a000 1bb6f000 1bb74000 1bb79000
+[ 7679.657609] igc 0000:01:00.0 enp1s0: TDBAH[0-3]      00000001 00000001 00000001 00000001
+[ 7679.668551] igc 0000:01:00.0 enp1s0: TDLEN[0-3]      00001000 00001000 00001000 00001000
+[ 7679.679470] igc 0000:01:00.0 enp1s0: TDH[0-3]        000000a7 0000002d 000000bf 000000d9
+[ 7679.690406] igc 0000:01:00.0 enp1s0: TDT[0-3]        000000a7 0000002d 000000bf 000000d9
+[ 7679.701264] igc 0000:01:00.0 enp1s0: TXDCTL[0-3]     02100108 02100108 02100108 02100108
+[ 7679.712123] igc 0000:01:00.0 enp1s0: Reset adapter
+[ 7683.085967] igc 0000:01:00.0 enp1s0: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+[ 8086.945561] ------------[ cut here ]------------
+Entering kdb (current=0xffffffff8220b200, pid 0) on processor 0
+Oops: (null) due to oops @ 0xffffffff81573888
+CPU: 0 PID: 0 Comm: swapper/0 Tainted: P S WO 6.3.0.svos-next-tickless-x86-64 #1
+Hardware name: Intel Corporation ArcherCity/ArcherCity, BIOS EGSDCRB1.E9I.0103.D13.2305291029 05/29/2023
+RIP: 0010:dql_completed+0x148/0x160
+Code: c9 00 48 89 57 58 e9 46 ff ff ff 45 85 e4 41 0f 95 c4 41 39 db 0f 95
+c1 41 84 cc 74 05 45 85 ed 78 0a 44 89 c1 e9 27 ff ff ff <0f> 0b 01 f6 44 89
+c1 29 f1 0f 48 ca eb 8c cc cc cc cc cc cc cc cc
+RSP: 0018:ffa0000000003e00 EFLAGS: 00010287
+RAX: 000000000000006c RBX: ffa0000003eb0f78 RCX: ff11000109938000
+RDX: 0000000000000003 RSI: 0000000000000160 RDI: ff110001002e9480
+RBP: ffa0000000003ed8 R08: ff110001002e93c0 R09: ffa0000000003d28
+R10: 0000000000007cc0 R11: 0000000000007c54 R12: 00000000ffffffd9
+R13: ff1100037039cb00 R14: 00000000ffffffd9 R15: ff1100037039c048
+FS:  0000000000000000(0000) GS:ff11000361e00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007ffff7fca168 CR3: 000000013b08a003 CR4: 0000000000471ef8
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000fffe07f0 DR7: 0000000000000400
+PKRU: 55555554
+Call Trace:
+ <IRQ>
+ ? igc_poll+0x1a9/0x14d0 [igc]
+ __napi_poll+0x2e/0x1b0
+ net_rx_action+0x126/0x250
+ __do_softirq+0xd1/0x295
+ irq_exit_rcu+0xc5/0xf0
+ common_interrupt+0x86/0xa0
+ </IRQ>
+ <TASK>
+ asm_common_interrupt+0x27/0x40
+RIP: 0010:cpuidle_enter_state+0xd3/0x3e0
+Code: 73 f1 ff ff 49 89 c6 8b 05 e2 ca a7 00 85 c0 0f 8f b3 02 00 00 31 ff e8 1b
+de 75 ff 80 7d d7 00 0f 85 cd 01 00 00 fb 45 85 ff <0f> 88 fd 00 00 00 49 63 cf
+4c 2b 75 c8 48 8d 04 49 48 89 ca 48 8d
+RSP: 0018:ffffffff82203df0 EFLAGS: 00000202
+RAX: ff11000361e2a200 RBX: 0000000000000002 RCX: 000000000000001f
+RDX: 0000000000000000 RSI: 000000003cf3cf3d RDI: 0000000000000000
+RBP: ffffffff82203e28 R08: 0000075ae38471c8 R09: 0000000000000018
+R10: 000000000000031a R11: ffffffff8238dca0 R12: ffd1ffffff200000
+R13: ffffffff8238dca0 R14: 0000075ae38471c8 R15: 0000000000000002
+ cpuidle_enter+0x2e/0x50
+ call_cpuidle+0x23/0x40
+ do_idle+0x1be/0x220
+ cpu_startup_entry+0x20/0x30
+ rest_init+0xb5/0xc0
+ arch_call_rest_init+0xe/0x30
+ start_kernel+0x448/0x760
+ x86_64_start_kernel+0x109/0x150
+ secondary_startup_64_no_verify+0xe0/0xeb
+ </TASK>
+more>
+[0]kdb>
 
-Because of the way metadata is currently handled, a duplicate lookup word
-would appear if VLAN metadata is also added. The lookup would still work
-correctly, but one word would be wasted. To prevent it, lookup 0 now always
-contains all metadata. When any metadata needs to be added, it is added to
-lookup 0 and lookup count is not incremented. This way, two flags residing
-in the same word will take up one word, instead of two.
+[0]kdb>
+[0]kdb> go
+Catastrophic error detected
+kdb_continue_catastrophic=0, type go a second time if you really want to
+continue
+[0]kdb> go
+Catastrophic error detected
+kdb_continue_catastrophic=0, attempting to continue
+[ 8086.955689] refcount_t: underflow; use-after-free.
+[ 8086.955697] WARNING: CPU: 0 PID: 0 at lib/refcount.c:28 refcount_warn_saturate+0xc2/0x110
+[ 8086.955706] Modules linked in: xt_conntrack nft_chain_nat xt_MASQUERADE xt_addrtype nft_compat
+nf_tables nfnetlink br_netfilter bridge stp llc overlay dm_mod emrcha(PO) emriio(PO) rktpm(PO)
+cegbuf_mod(PO) patch_update(PO) se(PO) sgx_tgts(PO) mktme(PO) keylocker(PO) svtdx(PO)
+svfs_pci_hotplug(PO) vtd_mod(PO) davemem(PO) svmabort(PO) svindexio(PO) usbx2(PO) ehci_sched(PO)
+svheartbeat(PO) ioapic(PO) sv8259(PO) svintr(PO) lt(PO) pcierootport(PO) enginefw_mod(PO) ata(PO)
+smbus(PO) spiflash_cdf(PO) arden(PO) dsa_iax(PO) oobmsm_punit(PO) cpm(PO) svkdb(PO) ebg_pch(PO)
+pch(PO) sviotargets(PO) svbdf(PO) svmem(PO) svbios(PO) dram(PO) svtsc(PO) targets(PO) superio(PO)
+svkernel(PO) cswitch(PO) mcf(PO) pentiumIII_mod(PO) fs_svfs(PO) mdevdefdb(PO) svfs_os_services(O)
+ixgbe mdio mdio_devres libphy emeraldrapids_svdefs(PO) regsupport(O) libnvdimm nls_cp437
+snd_hda_codec_realtek snd_hda_codec_generic ledtrig_audio snd_hda_intel snd_intel_dspcfg
+snd_hda_codec snd_hwdep x86_pkg_temp_thermal snd_hda_core snd_pcm snd_timer isst_if_mbox_pci
+[ 8086.955751]  input_leds isst_if_mmio sg snd isst_if_common soundcore wmi button sad9(O) drm
+fuse backlight configfs efivarfs ip_tables x_tables vmd sdhci led_class rtl8150 r8152 hid_generic
+pegasus mmc_block usbhid mmc_core hid megaraid_sas ixgb igb i2c_algo_bit ice i40e hpsa
+scsi_transport_sas e1000e e1000 e100 ax88179_178a usbnet xhci_pci sd_mod xhci_hcd t10_pi
+crc32c_intel crc64_rocksoft igc crc64 crc_t10dif usbcore crct10dif_generic ptp crct10dif_common
+usb_common pps_core
+[ 8086.955780] CPU: 0 PID: 0 Comm: swapper/0 Tainted: P S W  O 6.3.0.svos-next-tickless-x86-64 #1
+[ 8086.955783] Hardware name: Intel Corporation ArcherCity/ArcherCity, BIOS EGSDCRB1.E9I.0103.D13.2305291029 05/29/2023
+[ 8086.955784] RIP: 0010:refcount_warn_saturate+0xc2/0x110
+[ 8086.955788] Code: 01 e8 82 e7 b4 ff 0f 0b 5d c3 cc cc cc cc 80 3d 68 c6 eb 00 00 75 81
+48 c7 c7 a0 87 f6 81 c6 05 58 c6 eb 00 01 e8 5e e7 b4 ff <0f> 0b 5d c3 cc cc cc cc 80 3d
+42 c6 eb 00 00 0f 85 59 ff ff ff 48
+[ 8086.955790] RSP: 0018:ffa0000000003da0 EFLAGS: 00010286
+[ 8086.955793] RAX: 0000000000000000 RBX: ff1100011da40ee0 RCX: ff11000361e1b888
+[ 8086.955794] RDX: 00000000ffffffd8 RSI: 0000000000000027 RDI: ff11000361e1b880
+[ 8086.955795] RBP: ffa0000000003da0 R08: 80000000ffff9f45 R09: ffa0000000003d28
+[ 8086.955796] R10: ff1100035f840000 R11: 0000000000000028 R12: ff11000319ff8000
+[ 8086.955797] R13: ff1100011bb79d60 R14: 00000000ffffffd6 R15: ff1100037039cb00
+[ 8086.955798] FS:  0000000000000000(0000) GS:ff11000361e00000(0000) knlGS:0000000000000000
+[ 8086.955800] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 8086.955801] CR2: 00007ffff7fca168 CR3: 000000013b08a003 CR4: 0000000000471ef8
+[ 8086.955803] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 8086.955803] DR3: 0000000000000000 DR6: 00000000fffe07f0 DR7: 0000000000000400
+[ 8086.955804] PKRU: 55555554
+[ 8086.955805] Call Trace:
+[ 8086.955806]  <IRQ>
+[ 8086.955808]  tcp_wfree+0x112/0x130
+[ 8086.955814]  skb_release_head_state+0x24/0xa0
+[ 8086.955818]  napi_consume_skb+0x9c/0x160
+[ 8086.955821]  igc_poll+0x5d8/0x14d0 [igc]
+[ 8086.955835]  __napi_poll+0x2e/0x1b0
+[ 8086.955839]  net_rx_action+0x126/0x250
+[ 8086.955843]  __do_softirq+0xd1/0x295
+[ 8086.955846]  irq_exit_rcu+0xc5/0xf0
+[ 8086.955851]  common_interrupt+0x86/0xa0
+[ 8086.955857]  </IRQ>
+[ 8086.955857]  <TASK>
+[ 8086.955858]  asm_common_interrupt+0x27/0x40
+[ 8086.955862] RIP: 0010:cpuidle_enter_state+0xd3/0x3e0
+[ 8086.955866] Code: 73 f1 ff ff 49 89 c6 8b 05 e2 ca a7 00 85 c0 0f 8f b3 02 00 00 31 ff e8
+1b de 75 ff 80 7d d7 00 0f 85 cd 01 00 00 fb 45 85 ff <0f> 88 fd 00 00 00 49 63 cf 4c 2b 75
+c8 48 8d 04 49 48 89 ca 48 8d
+[ 8086.955867] RSP: 0018:ffffffff82203df0 EFLAGS: 00000202
+[ 8086.955869] RAX: ff11000361e2a200 RBX: 0000000000000002 RCX: 000000000000001f
+[ 8086.955870] RDX: 0000000000000000 RSI: 000000003cf3cf3d RDI: 0000000000000000
+[ 8086.955871] RBP: ffffffff82203e28 R08: 0000075ae38471c8 R09: 0000000000000018
+[ 8086.955872] R10: 000000000000031a R11: ffffffff8238dca0 R12: ffd1ffffff200000
+[ 8086.955873] R13: ffffffff8238dca0 R14: 0000075ae38471c8 R15: 0000000000000002
+[ 8086.955875]  cpuidle_enter+0x2e/0x50
+[ 8086.955880]  call_cpuidle+0x23/0x40
+[ 8086.955884]  do_idle+0x1be/0x220
+[ 8086.955887]  cpu_startup_entry+0x20/0x30
+[ 8086.955889]  rest_init+0xb5/0xc0
+[ 8086.955892]  arch_call_rest_init+0xe/0x30
+[ 8086.955895]  start_kernel+0x448/0x760
+[ 8086.955898]  x86_64_start_kernel+0x109/0x150
+[ 8086.955900]  secondary_startup_64_no_verify+0xe0/0xeb
+[ 8086.955904]  </TASK>
+[ 8086.955904] ---[ end trace 0000000000000000 ]---
+[ 8086.955912] ------------[ cut here ]------------
+[ 8086.955913] kernel BUG at lib/dynamic_queue_limits.c:27!
+[ 8086.955918] invalid opcode: 0000 [#1] SMP
+[ 8086.955920] CPU: 0 PID: 0 Comm: swapper/0 Tainted: P S W  O 6.3.0.svos-next-tickless-x86-64 #1
+[ 8086.955921] Hardware name: Intel Corporation ArcherCity/ArcherCity, BIOS EGSDCRB1.E9I.0103.D13.2305291029 05/29/2023
+[ 8086.955922] RIP: 0010:dql_completed+0x148/0x160
+[ 8086.955925] Code: c9 00 48 89 57 58 e9 46 ff ff ff 45 85 e4 41 0f 95 c4 41 39 db
+0f 95 c1 41 84 cc 74 05 45 85 ed 78 0a 44 89 c1 e9 27 ff ff ff <0f> 0b 01 f6 44 89
+c1 29 f1 0f 48 ca eb 8c cc cc cc cc cc cc cc cc
+[ 8086.955927] RSP: 0018:ffa0000000003e00 EFLAGS: 00010287
+[ 8086.955928] RAX: 000000000000006c RBX: ffa0000003eb0f78 RCX: ff11000109938000
+[ 8086.955929] RDX: 0000000000000003 RSI: 0000000000000160 RDI: ff110001002e9480
+[ 8086.955930] RBP: ffa0000000003ed8 R08: ff110001002e93c0 R09: ffa0000000003d28
+[ 8086.955931] R10: 0000000000007cc0 R11: 0000000000007c54 R12: 00000000ffffffd9
+[ 8086.955932] R13: ff1100037039cb00 R14: 00000000ffffffd9 R15: ff1100037039c048
+[ 8086.955933] FS:  0000000000000000(0000) GS:ff11000361e00000(0000) knlGS:0000000000000000
+[ 8086.955934] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 8086.955935] CR2: 00007ffff7fca168 CR3: 000000013b08a003 CR4: 0000000000471ef8
+[ 8086.955936] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 8086.955937] DR3: 0000000000000000 DR6: 00000000fffe07f0 DR7: 0000000000000400
+[ 8086.955938] PKRU: 55555554
+[ 8086.955939] Call Trace:
+[ 8086.955939]  <IRQ>
+[ 8086.955940]  ? igc_poll+0x1a9/0x14d0 [igc]
+[ 8086.955949]  __napi_poll+0x2e/0x1b0
+[ 8086.955952]  net_rx_action+0x126/0x250
+[ 8086.955956]  __do_softirq+0xd1/0x295
+[ 8086.955958]  irq_exit_rcu+0xc5/0xf0
+[ 8086.955961]  common_interrupt+0x86/0xa0
+[ 8086.955964]  </IRQ>
+[ 8086.955965]  <TASK>
+[ 8086.955965]  asm_common_interrupt+0x27/0x40
+[ 8086.955968] RIP: 0010:cpuidle_enter_state+0xd3/0x3e0
+[ 8086.955971] Code: 73 f1 ff ff 49 89 c6 8b 05 e2 ca a7 00 85 c0 0f 8f b3 02 00 00
+31 ff e8 1b de 75 ff 80 7d d7 00 0f 85 cd 01 00 00 fb 45 85 ff <0f> 88 fd 00 00 00
+49 63 cf 4c 2b 75 c8 48 8d 04 49 48 89 ca 48 8d
+[ 8086.955972] RSP: 0018:ffffffff82203df0 EFLAGS: 00000202
+[ 8086.955973] RAX: ff11000361e2a200 RBX: 0000000000000002 RCX: 000000000000001f
+[ 8086.955974] RDX: 0000000000000000 RSI: 000000003cf3cf3d RDI: 0000000000000000
+[ 8086.955974] RBP: ffffffff82203e28 R08: 0000075ae38471c8 R09: 0000000000000018
+[ 8086.955975] R10: 000000000000031a R11: ffffffff8238dca0 R12: ffd1ffffff200000
+[ 8086.955976] R13: ffffffff8238dca0 R14: 0000075ae38471c8 R15: 0000000000000002
+[ 8086.955978]  cpuidle_enter+0x2e/0x50
+[ 8086.955981]  call_cpuidle+0x23/0x40
+[ 8086.955984]  do_idle+0x1be/0x220
+[ 8086.955985]  cpu_startup_entry+0x20/0x30
+[ 8086.955987]  rest_init+0xb5/0xc0
+[ 8086.955990]  arch_call_rest_init+0xe/0x30
+[ 8086.955992]  start_kernel+0x448/0x760
+[ 8086.955994]  x86_64_start_kernel+0x109/0x150
+[ 8086.955996]  secondary_startup_64_no_verify+0xe0/0xeb
+[ 8086.955998]  </TASK>
+[ 8086.955999] Modules linked in: xt_conntrack nft_chain_nat xt_MASQUERADE xt_addrtype
+nft_compat nf_tables nfnetlink br_netfilter bridge stp llc overlay dm_mod emrcha(PO) emriio(PO)
+rktpm(PO) cegbuf_mod(PO) patch_update(PO) se(PO) sgx_tgts(PO) mktme(PO) keylocker(PO) svtdx(PO)
+svfs_pci_hotplug(PO) vtd_mod(PO) davemem(PO) svmabort(PO) svindexio(PO) usbx2(PO) ehci_sched(PO)
+svheartbeat(PO) ioapic(PO) sv8259(PO) svintr(PO) lt(PO) pcierootport(PO) enginefw_mod(PO) ata(PO)
+smbus(PO) spiflash_cdf(PO) arden(PO) dsa_iax(PO) oobmsm_punit(PO) cpm(PO) svkdb(PO) ebg_pch(PO)
+pch(PO) sviotargets(PO) svbdf(PO) svmem(PO) svbios(PO) dram(PO) svtsc(PO) targets(PO) superio(PO)
+svkernel(PO) cswitch(PO) mcf(PO) pentiumIII_mod(PO) fs_svfs(PO) mdevdefdb(PO) svfs_os_services(O)
+ixgbe mdio mdio_devres libphy emeraldrapids_svdefs(PO) regsupport(O) libnvdimm nls_cp437
+snd_hda_codec_realtek snd_hda_codec_generic ledtrig_audio snd_hda_intel snd_intel_dspcfg
+snd_hda_codec snd_hwdep x86_pkg_temp_thermal snd_hda_core snd_pcm snd_timer isst_if_mbox_pci
+[ 8086.956029]  input_leds isst_if_mmio sg snd isst_if_common soundcore wmi button sad9(O) drm
+fuse backlight configfs efivarfs ip_tables x_tables vmd sdhci led_class rtl8150 r8152 hid_generic
+pegasus mmc_block usbhid mmc_core hid megaraid_sas ixgb igb i2c_algo_bit ice i40e hpsa
+scsi_transport_sas e1000e e1000 e100 ax88179_178a usbnet xhci_pci sd_mod xhci_hcd t10_pi
+crc32c_intel crc64_rocksoft igc crc64 crc_t10dif usbcore crct10dif_generic ptp crct10dif_common
+usb_common pps_core
+[16762.543675] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 8675587.593 msecs
+[16762.543678] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 8675587.595 msecs
+[16762.543673] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 8675587.495 msecs
+[16762.543679] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 8675587.599 msecs
+[16762.543678] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 8675587.598 msecs
+[16762.543690] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 8675587.605 msecs
+[16762.543684] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 8675587.599 msecs
+[16762.543693] INFO: NMI handler (kgdb_nmi_handler) took too long to run: 8675587.613 msecs
+[16762.543784] ---[ end trace 0000000000000000 ]---
+[16762.849099] RIP: 0010:dql_completed+0x148/0x160
+PANIC: Fatal exception in interrupt
 
-Note: the drop action is also affected, i.e. it will now only work in one
-direction.
-
-Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+Fixes: 9b275176270e ("igc: Add ndo_tx_timeout support")
+Tested-by: Alejandra Victoria Alcaraz <alejandra.victoria.alcaraz@intel.com>
+Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
 ---
- .../ethernet/intel/ice/ice_protocol_type.h    |  1 +
- drivers/net/ethernet/intel/ice/ice_switch.c   | 11 ++++--
- drivers/net/ethernet/intel/ice/ice_switch.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 34 +++++++++----------
- 4 files changed, 28 insertions(+), 19 deletions(-)
+V1 -> V2 : Removed forward declaration function suggested by Vinicius
+---
+ drivers/net/ethernet/intel/igc/igc_main.c | 40 ++++++++++++++++-------
+ 1 file changed, 28 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-index a1543e995fa1..82491f6af6d0 100644
---- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
-@@ -298,6 +298,7 @@ struct ice_nvgre_hdr {
-  * M = EVLAN (0x8100) - Outer L2 header has EVLAN (ethernet type 0x8100)
-  * N = EVLAN (0x9100) - Outer L2 header has EVLAN (ethernet type 0x9100)
-  */
-+#define ICE_PKT_FROM_NETWORK	BIT(3)
- #define ICE_PKT_VLAN_STAG	BIT(12)
- #define ICE_PKT_VLAN_ITAG	BIT(13)
- #define ICE_PKT_VLAN_EVLAN	(BIT(14) | BIT(15))
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index 87d5ce0c8cb3..28fb175f0fe4 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -6143,14 +6143,21 @@ ice_adv_add_update_vsi_list(struct ice_hw *hw,
- void ice_rule_add_tunnel_metadata(struct ice_adv_lkup_elem *lkup)
- {
- 	lkup->type = ICE_HW_METADATA;
--	lkup->m_u.metadata.flags[ICE_PKT_FLAGS_TUNNEL] =
-+	lkup->m_u.metadata.flags[ICE_PKT_FLAGS_TUNNEL] |=
- 		cpu_to_be16(ICE_PKT_TUNNEL_MASK);
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index 1e6350c44380..40e738b72336 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -316,6 +316,33 @@ static void igc_clean_all_tx_rings(struct igc_adapter *adapter)
+ 			igc_clean_tx_ring(adapter->tx_ring[i]);
  }
  
-+void ice_rule_add_direction_metadata(struct ice_adv_lkup_elem *lkup)
++void igc_disable_tx_ring_hw(struct igc_ring *ring)
 +{
-+	lkup->type = ICE_HW_METADATA;
-+	lkup->m_u.metadata.flags[ICE_PKT_FLAGS_VLAN] |=
-+		cpu_to_be16(ICE_PKT_FROM_NETWORK);
++	struct igc_hw *hw = &ring->q_vector->adapter->hw;
++	u8 idx = ring->reg_idx;
++	u32 txdctl;
++
++	txdctl = rd32(IGC_TXDCTL(idx));
++	txdctl &= ~IGC_TXDCTL_QUEUE_ENABLE;
++	txdctl |= IGC_TXDCTL_SWFLUSH;
++	wr32(IGC_TXDCTL(idx), txdctl);
 +}
 +
- void ice_rule_add_vlan_metadata(struct ice_adv_lkup_elem *lkup)
- {
- 	lkup->type = ICE_HW_METADATA;
--	lkup->m_u.metadata.flags[ICE_PKT_FLAGS_VLAN] =
-+	lkup->m_u.metadata.flags[ICE_PKT_FLAGS_VLAN] |=
- 		cpu_to_be16(ICE_PKT_VLAN_MASK);
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
-index f2ff8fbfe9b6..ee24707071a1 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.h
-@@ -361,6 +361,7 @@ int ice_share_res(struct ice_hw *hw, u16 type, u8 shared, u16 res_id);
- 
- /* Switch/bridge related commands */
- void ice_rule_add_tunnel_metadata(struct ice_adv_lkup_elem *lkup);
-+void ice_rule_add_direction_metadata(struct ice_adv_lkup_elem *lkup);
- void ice_rule_add_vlan_metadata(struct ice_adv_lkup_elem *lkup);
- void ice_rule_add_src_vsi_metadata(struct ice_adv_lkup_elem *lkup);
- int
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index 6bbf99b5e112..c4a14eaacc5c 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -7,6 +7,8 @@
- #include "ice_lib.h"
- #include "ice_protocol_type.h"
- 
-+#define ICE_TC_METADATA_LKUP_IDX 0
++/**
++ * igc_disable_all_tx_rings_hw - Disable all transmit queue operation
++ * @adapter: board private structure
++ */
++static void igc_disable_all_tx_rings_hw(struct igc_adapter *adapter)
++{
++	int i;
++
++	for (i = 0; i < adapter->num_tx_queues; i++) {
++		struct igc_ring *tx_ring = adapter->tx_ring[i];
++
++		igc_disable_tx_ring_hw(tx_ring);
++	}
++}
 +
  /**
-  * ice_tc_count_lkups - determine lookup count for switch filter
-  * @flags: TC-flower flags
-@@ -19,7 +21,13 @@ static int
- ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
- 		   struct ice_tc_flower_fltr *fltr)
- {
--	int lkups_cnt = 0;
-+	int lkups_cnt = 1; /* 0th lookup is metadata */
-+
-+	/* Always add metadata as the 0th lookup. Included elements:
-+	 * - Direction flag (always present)
-+	 * - ICE_TC_FLWR_FIELD_VLAN_TPID (present if specified)
-+	 * - Tunnel flag (present if tunnel)
-+	 */
+  * igc_setup_tx_resources - allocate Tx resources (Descriptors)
+  * @tx_ring: tx descriptor ring (for a specific queue) to setup
+@@ -5014,6 +5041,7 @@ void igc_down(struct igc_adapter *adapter)
+ 	/* clear VLAN promisc flag so VFTA will be updated if necessary */
+ 	adapter->flags &= ~IGC_FLAG_VLAN_PROMISC;
  
- 	if (flags & ICE_TC_FLWR_FIELD_TENANT_ID)
- 		lkups_cnt++;
-@@ -57,10 +65,6 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
- 	if (flags & (ICE_TC_FLWR_FIELD_VLAN | ICE_TC_FLWR_FIELD_VLAN_PRIO))
- 		lkups_cnt++;
- 
--	/* is VLAN TPID specified */
--	if (flags & ICE_TC_FLWR_FIELD_VLAN_TPID)
--		lkups_cnt++;
--
- 	/* is CVLAN specified? */
- 	if (flags & (ICE_TC_FLWR_FIELD_CVLAN | ICE_TC_FLWR_FIELD_CVLAN_PRIO))
- 		lkups_cnt++;
-@@ -87,10 +91,6 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
- 		     ICE_TC_FLWR_FIELD_SRC_L4_PORT))
- 		lkups_cnt++;
- 
--	/* matching for tunneled packets in metadata */
--	if (fltr->tunnel_type != TNL_LAST)
--		lkups_cnt++;
--
- 	return lkups_cnt;
++	igc_disable_all_tx_rings_hw(adapter);
+ 	igc_clean_all_tx_rings(adapter);
+ 	igc_clean_all_rx_rings(adapter);
+ }
+@@ -7187,18 +7215,6 @@ void igc_enable_rx_ring(struct igc_ring *ring)
+ 		igc_alloc_rx_buffers(ring, igc_desc_unused(ring));
  }
  
-@@ -183,10 +183,9 @@ static u16 ice_check_supported_vlan_tpid(u16 vlan_tpid)
- 
- static int
- ice_tc_fill_tunnel_outer(u32 flags, struct ice_tc_flower_fltr *fltr,
--			 struct ice_adv_lkup_elem *list)
-+			 struct ice_adv_lkup_elem *list, int i)
+-static void igc_disable_tx_ring_hw(struct igc_ring *ring)
+-{
+-	struct igc_hw *hw = &ring->q_vector->adapter->hw;
+-	u8 idx = ring->reg_idx;
+-	u32 txdctl;
+-
+-	txdctl = rd32(IGC_TXDCTL(idx));
+-	txdctl &= ~IGC_TXDCTL_QUEUE_ENABLE;
+-	txdctl |= IGC_TXDCTL_SWFLUSH;
+-	wr32(IGC_TXDCTL(idx), txdctl);
+-}
+-
+ void igc_disable_tx_ring(struct igc_ring *ring)
  {
- 	struct ice_tc_flower_lyr_2_4_hdrs *hdr = &fltr->outer_headers;
--	int i = 0;
- 
- 	if (flags & ICE_TC_FLWR_FIELD_TENANT_ID) {
- 		u32 tenant_id;
-@@ -351,8 +350,7 @@ ice_tc_fill_tunnel_outer(u32 flags, struct ice_tc_flower_fltr *fltr,
- 	}
- 
- 	/* always fill matching on tunneled packets in metadata */
--	ice_rule_add_tunnel_metadata(&list[i]);
--	i++;
-+	ice_rule_add_tunnel_metadata(&list[ICE_TC_METADATA_LKUP_IDX]);
- 
- 	return i;
- }
-@@ -380,13 +378,16 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
- 	struct ice_tc_flower_lyr_2_4_hdrs *headers = &tc_fltr->outer_headers;
- 	bool inner = false;
- 	u16 vlan_tpid = 0;
--	int i = 0;
-+	int i = 1; /* 0th lookup is metadata */
- 
- 	rule_info->vlan_type = vlan_tpid;
- 
-+	/* Always add direction metadata */
-+	ice_rule_add_direction_metadata(&list[ICE_TC_METADATA_LKUP_IDX]);
-+
- 	rule_info->tun_type = ice_sw_type_from_tunnel(tc_fltr->tunnel_type);
- 	if (tc_fltr->tunnel_type != TNL_LAST) {
--		i = ice_tc_fill_tunnel_outer(flags, tc_fltr, list);
-+		i = ice_tc_fill_tunnel_outer(flags, tc_fltr, list, i);
- 
- 		/* PFCP is considered non-tunneled - don't swap headers. */
- 		if (tc_fltr->tunnel_type != TNL_PFCP) {
-@@ -456,8 +457,7 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
- 		rule_info->vlan_type =
- 				ice_check_supported_vlan_tpid(vlan_tpid);
- 
--		ice_rule_add_vlan_metadata(&list[i]);
--		i++;
-+		ice_rule_add_vlan_metadata(&list[ICE_TC_METADATA_LKUP_IDX]);
- 	}
- 
- 	if (flags & (ICE_TC_FLWR_FIELD_CVLAN | ICE_TC_FLWR_FIELD_CVLAN_PRIO)) {
+ 	igc_disable_tx_ring_hw(ring);
 -- 
-2.31.1
+2.17.1
 
 _______________________________________________
 Intel-wired-lan mailing list
