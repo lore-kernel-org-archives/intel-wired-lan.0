@@ -4,82 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E71A8EB64DC
-	for <intel-wired-lan@archiver.kernel.org>; Sat, 24 Jun 2023 21:43:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 478B3C001B0
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 25 Jun 2023 06:28:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8AED2403F8;
-	Sat, 24 Jun 2023 21:43:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8AED2403F8
+	by smtp2.osuosl.org (Postfix) with ESMTP id B244F400BA;
+	Sun, 25 Jun 2023 06:28:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B244F400BA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687642997;
-	bh=rzdY8PDq7HepzrEo8cEanCQluU9xTHlsXtlWnmObkrI=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1687674518;
+	bh=PZCw12wxJ6Mtt1UmpInmf9nIL/b6ZTJVCHrbBDMRv4s=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=6ocl17Q+OGXNZozNLLVBfNNHT3J4xHgtqJpweWNFLZ9Tz1dINXL5ObrzwkJUca8e8
-	 e10F21/FeEZg2DzOQOdbX+s+TmByMPcqk6ZjyTymA6N6ag4IdIbMFrcdMwzXTXTXZU
-	 kV9av78gIvDSNQdisAyEkQ0A/2NejW64dEBY80/OuRETn1sbaypjLIjOpdMv1ZU/jk
-	 GQboBrhIfZm3ahXfg2yyPG9H8wUlBRChU+mWOvuXPgEFVLV7OSivTn3RQJQa05hldn
-	 8Gb2Hyq9xfqgkK+h1gfEeMBkoHcRMz8YuHXeBRqxaeLz5evdIERfFjG16//8YerLcs
-	 b3QZETP1xeU4g==
+	b=HoH/qobg1Mpd4tOY0UkgesgtpKARogvEf4E5ZxTHhjBcDucd+a+i7EpKX8SFKlFbu
+	 htJ9PzPc4J/59edV1EVnuWQg9B+B7xtoJ7KLOAqxXTon+6sWBD+4kU4wQEziqKHC+Q
+	 JIaKMM/a4Y5vd0qhigoh4ZBVdoaVGrtQ4lV+cxvEZoPRPsjbqSGsVWHVsUIpCnol0n
+	 c7oCxsOnH1dXEtBZcvh+WPId2emvspUrZdw+CFDJqEMdTgg+ZMsRxSj8J9e1BwKXzc
+	 KEoOJ/l3f4QU/cvCmrkFAVlkcoY9bE89iE0Z9fmkRGTZSOAzmWzYGOhWFwQflp+yC5
+	 Qk6CfiSiomcPw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lty7PWH46UWe; Sat, 24 Jun 2023 21:43:16 +0000 (UTC)
+	with ESMTP id 3I3xOwR8yRX1; Sun, 25 Jun 2023 06:28:38 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 997EA404E0;
-	Sat, 24 Jun 2023 21:43:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 997EA404E0
+	by smtp2.osuosl.org (Postfix) with ESMTP id C354A4015A;
+	Sun, 25 Jun 2023 06:28:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C354A4015A
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id BE7A01BF3FC
- for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Jun 2023 21:43:15 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 79AE41BF3C2
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Jun 2023 06:28:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 765DC4024D
- for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Jun 2023 21:43:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 765DC4024D
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4EFC4410C0
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Jun 2023 06:28:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4EFC4410C0
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id jEzMVAdPYKT6 for <intel-wired-lan@lists.osuosl.org>;
- Sat, 24 Jun 2023 21:43:14 +0000 (UTC)
+ with ESMTP id NvOPYqgkhRvU for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 25 Jun 2023 06:28:35 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7965640249
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7965640249
- for <intel-wired-lan@lists.osuosl.org>; Sat, 24 Jun 2023 21:43:14 +0000 (UTC)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id B6AE7606DC;
- Sat, 24 Jun 2023 21:43:12 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E909C433C0;
- Sat, 24 Jun 2023 21:43:10 +0000 (UTC)
-Date: Sat, 24 Jun 2023 14:43:09 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Jiri Pirko <jiri@resnulli.us>
-Message-ID: <20230624144309.71aa507d@kernel.org>
-In-Reply-To: <ZJa2GEr6frhHQrS0@nanopsycho>
-References: <20230623123820.42850-1-arkadiusz.kubalewski@intel.com>
- <ZJW37ynDxJCwHscN@nanopsycho> <20230623085336.1a486ca3@kernel.org>
- <ZJa2GEr6frhHQrS0@nanopsycho>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5EA3B4010E
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5EA3B4010E
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 25 Jun 2023 06:28:35 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10751"; a="350801507"
+X-IronPort-AV: E=Sophos;i="6.01,156,1684825200"; d="scan'208";a="350801507"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Jun 2023 23:28:34 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10751"; a="1046087683"
+X-IronPort-AV: E=Sophos;i="6.01,156,1684825200"; d="scan'208";a="1046087683"
+Received: from naamamex-mobl.ger.corp.intel.com (HELO [10.214.223.122])
+ ([10.214.223.122])
+ by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Jun 2023 23:28:31 -0700
+Message-ID: <546387b5-9e18-a0df-2aa9-159b19435a51@linux.intel.com>
+Date: Sun, 25 Jun 2023 09:28:28 +0300
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.12.0
+Content-Language: en-US
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>, jesse.brandeburg@intel.com,
+ anthony.l.nguyen@intel.com
+References: <20230601162537.1163270-1-kai.heng.feng@canonical.com>
+From: "naamax.meir" <naamax.meir@linux.intel.com>
+In-Reply-To: <20230601162537.1163270-1-kai.heng.feng@canonical.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1687642992;
- bh=lmOEecdkRp4pBOR9oOVxNztmp5HIMJkVrx6xS1MQx8k=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=AILdp2c5CxOsj6tC0tqBVwvgFwGEWi/HNCqgnUP9ie2N/3J8Q6hT7ivMLWul3XZHr
- K0F527m3/A5wfokBRBq2EoCdMo9FsgZZ4xXrI34JiaXoTZs6r2Tqo0mWGyNuvkT5Hx
- rqBkXq7TJf9KNU0u4uFislfstbrlfbHFz3kgruQ6jVE3iG5BADxR8sM3S+eQaaELaB
- U9QP8K7Retu4ZVuHIWC+4aWzH36dvMxjUeAGjhNXxvzpZGdUy6XFg4nqRO05CBGEs7
- ChgFMA7WUcZdECRkGHISdSMolv/X7dTDd+Jy57O7j1GzG0otI8Oj52RnmkIxn5x8Ut
- UPn4FnOQlZyHg==
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1687674515; x=1719210515;
+ h=message-id:date:mime-version:subject:to:cc:references:
+ from:in-reply-to:content-transfer-encoding;
+ bh=C4MG8G7LRWqQ3aeXbDL7mcsgQWK2qLblMjk7Tb7DukY=;
+ b=L6gragcR2Fs8Fwby1kBPHa12HpbF7dgdPhWTSLlMmJSBlavMMikHjSiU
+ 3vQtOhqVTVDdYizofnj0PmSTSXKx8tvmQsHolQBTCJEruR3405Br6/+V+
+ mWt5ZtYIZJoHpnZHQwWEXW6FYYFp8+Z0sLODxgt9MA/SG7pm3Y3QYx414
+ EAXV/4u7L0PwskDKIlEgFIoVXL40EeSzFndRLLaltCiY4nbozlVOXQ6fn
+ GiXp4QH9fzEcaxrwPn9du3pR/nPS+6oaOoVFNgfYyqKaRlplVpCrd9hPA
+ E2tDTY3n1hjSAAT0OE5RO08w5Zlmq8jxk6vbaFDcCrCtuhfVDg3rMqtT1
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=AILdp2c5
-Subject: Re: [Intel-wired-lan] [RFC PATCH v9 00/10] Create common DPLL
- configuration API
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=L6gragcR
+Subject: Re: [Intel-wired-lan] [PATCH] e1000e: Use PME poll to circumvent
+ unreliable ACPI wake
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,39 +100,36 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: geert+renesas@glider.be, mst@redhat.com, razor@blackwall.org, phil@nwl.cc,
- javierm@redhat.com, edumazet@google.com, benjamin.tissoires@redhat.com,
- anthony.l.nguyen@intel.com, netdev@vger.kernel.org, linux-clk@vger.kernel.org,
- lucien.xin@gmail.com, leon@kernel.org, corbet@lwn.net,
- linux-rdma@vger.kernel.org, masahiroy@kernel.org, linux-doc@vger.kernel.org,
- jesse.brandeburg@intel.com, vadfed@meta.com, intel-wired-lan@lists.osuosl.org,
- airlied@redhat.com, vadfed@fb.com, pabeni@redhat.com,
- ricardo.canuelo@collabora.com, arnd@arndb.de, idosch@nvidia.com,
- richardcochran@gmail.com, claudiajkang@gmail.com, kuniyu@amazon.com,
- jacek.lawrynowicz@linux.intel.com, liuhangbin@gmail.com,
- nicolas.dichtel@6wind.com, linux-arm-kernel@lists.infradead.org,
- axboe@kernel.dk, sj@kernel.org, vadim.fedorenko@linux.dev, linux@zary.sk,
- gregkh@linuxfoundation.org, ogabbay@kernel.org, nipun.gupta@amd.com,
- linux-kernel@vger.kernel.org, andy.ren@getcruise.com, tzimmermann@suse.de,
- jonathan.lemon@gmail.com, saeedm@nvidia.com, davem@davemloft.net,
- milena.olech@intel.com, hkallweit1@gmail.com
-Content-Type: text/plain; charset="us-ascii"
+Cc: linux-pm@vger.kernel.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Sat, 24 Jun 2023 11:23:36 +0200 Jiri Pirko wrote:
-> Well I would like to conclude discussion in one thread before sending
-> the next one. What should I do? Should I start the same discussion
-> pointing out the same issues in this thread again? This can't work.
+On 6/1/2023 19:25, Kai-Heng Feng wrote:
+> On some I219 devices, ethernet cable plugging detection only works once
+> from PCI D3 state. Subsequent cable plugging does set PME bit correctly,
+> but device still doesn't get woken up.
 > 
-> Even concluded items are ignored, like 3)
+> Since I219 connects to the root complex directly, it relies on platform
+> firmware (ACPI) to wake it up. In this case, the GPE from _PRW only
+> works for first cable plugging but fails to notify the driver for
+> subsequent plugging events.
 > 
-> IDK, this is very frustrating for me. I have to double check everything
-> just in case it was not ignored. I don't understand this, there is no
-> justification.
+> The issue was originally found on CNP, but the same issue can be found
+> on ADL too. So workaround the issue by continuing use PME poll after
+> first ACPI wake. As PME poll is always used, the runtime suspend
+> restriction for CNP can also be removed.
+> 
+> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/netdev.c | 4 +++-
+>   1 file changed, 3 insertions(+), 1 deletion(-)
 
-Yes, the open items need to be clearly stated on a new posting.
+Tested-by: Naama Meir <naamax.meir@linux.intel.com>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
