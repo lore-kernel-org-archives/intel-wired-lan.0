@@ -4,94 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDCD6EB64D7
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Jun 2023 15:22:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 816FBEB64D7
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 26 Jun 2023 15:22:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 829BF410C8;
-	Mon, 26 Jun 2023 15:22:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 829BF410C8
+	by smtp4.osuosl.org (Postfix) with ESMTP id 28A32418A3;
+	Mon, 26 Jun 2023 15:22:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 28A32418A3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687792944;
-	bh=IfJVXjOgeCIyX1z1JetIiqJGpvLHWgkIcqOGhjSzo9w=;
+	s=default; t=1687792948;
+	bh=8rQygUwbx5ujAx2fCiRR5JmVLX8nj75p0sg1A8/NwQk=;
 	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=ECFStIMMwOC17aJHIEeqrvluh7OyNt0/WIoZNOshPdLLLz9jl2kxwOl8ozLEsmkeL
-	 FicD28bXdfWuzP12p/RlWaN58SP2K8Tt5StAOtrMzFUtiu56qCBTwlkP0Nu27HCEOJ
-	 EYOkQoBNnu5KOoqo+EFHn177Lw2RACmJq36QKzSNeIENJjTpfVseowqJF/UwCyAPX3
-	 iAnNOi0MIExnocCoOFlVpdVw0R52KJnK5Q3jFThG5VC/TJm3WBn114YruO/yVVr2vI
-	 U3TtCE+nCa3FFKvfTCil4VM2F/+vGAuY1CxIA3Pyb7Cf2FIlndnFbH6mBE8FlL32X/
-	 pUgg91Aq/bNSQ==
+	 Cc:From;
+	b=Pa3zN89pU2ZQ12cMIclgr6Ks0fjFNRSF9Tg9JQs771BCg/W9HoXkssDPMrOqIfTqd
+	 s6AseTHr6pZ9+I4rgJlc2RdYT9OZk77bBA40H2fG61ZomDUWNKYyD/aTN0rGXglRBW
+	 dUG9uH3Sd6vqsiIjQdYRTtjh5118j55fqihd0CUhhD02DgcChLHj3UgHETN0NpAPXu
+	 89m72I/kvxm/zFA62QBZu4LCtYVFlszABIdR+EqssqubAbjBUCAg+a/vlDHftKvBHY
+	 zLaq1CDaC1Z85Q/CwwN4rO3AV8ebnSu5fiz6ip0ohrDiHg88gBq1lMes4ggUkPhngj
+	 psPqQtbyEvfHw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zSWaxubtZzKV; Mon, 26 Jun 2023 15:22:22 +0000 (UTC)
+	with ESMTP id 2Yeuw9XtFAiy; Mon, 26 Jun 2023 15:22:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AE58440E47;
-	Mon, 26 Jun 2023 15:22:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AE58440E47
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 6F95B1BF384
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jun 2023 13:39:53 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 7DB7C40E47;
+	Mon, 26 Jun 2023 15:22:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7DB7C40E47
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 7508B1BF383
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jun 2023 14:25:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4435660BED
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jun 2023 13:39:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4435660BED
+ by smtp2.osuosl.org (Postfix) with ESMTP id 57D2B40CA4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jun 2023 14:25:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 57D2B40CA4
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id KeajAM30VFni for <intel-wired-lan@lists.osuosl.org>;
- Mon, 26 Jun 2023 13:39:51 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id XnvX83lqbxu4 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 26 Jun 2023 14:25:38 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7103960BC7
-Received: from mail-vs1-xe2d.google.com (mail-vs1-xe2d.google.com
- [IPv6:2607:f8b0:4864:20::e2d])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7103960BC7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jun 2023 13:39:51 +0000 (UTC)
-Received: by mail-vs1-xe2d.google.com with SMTP id
- ada2fe7eead31-440b69847bfso775152137.1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jun 2023 06:39:51 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 93E7440C94
+Received: from mail-vs1-xe35.google.com (mail-vs1-xe35.google.com
+ [IPv6:2607:f8b0:4864:20::e35])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 93E7440C94
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jun 2023 14:25:37 +0000 (UTC)
+Received: by mail-vs1-xe35.google.com with SMTP id
+ ada2fe7eead31-440b9d60606so982345137.1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 26 Jun 2023 07:25:37 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1687786790; x=1690378790;
- h=to:subject:message-id:date:from:in-reply-to:references:mime-version
- :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=ubcJPJz42cKVA+ssLDNUkjz0qnIFX61Il3cEDfhHGoI=;
- b=IksluJ20824XrYyRqOrHjK6E47zdKxiFRBy+uMdachMNz90CtIYV5qZ5IgMKW5ezsZ
- lksuQZr0goIfn4pWHRHj3yvljoq549epMQ6v6bGn4RnrvGnk6MsVXhMFpcsiJNxu+Act
- h4I9R14WrxEsZQQQgNrgfhOkWdVblOo9p3w84HpPFT4VbZHG3XaB7Ll/7m65IF+5OFy2
- 07SFBgiwzclZ+pNRbzDZCLq91GyFRWeLNt4p3U7a1KKjAhxZpAp23PKAWY/lV3sCUmwE
- Gp/WUf3nQ9F/9yXMQVXMkvCiOoXPEGl9yEnHHxqUt/SbkTizOxZ0PPOn+wAAZRi4oAKi
- GKTg==
-X-Gm-Message-State: AC+VfDyoVd/5W/CrLkLj9keiey4O1P40XDNrbt5IhanlJNNnwZzgKgGJ
- 4I/bWh594vvQGJKHT7r1AsI51/ZudUWkV7ylTH7O477M
-X-Google-Smtp-Source: ACHHUZ7VSToSXQSKZbH7C0jE0VUCqlvYjLdhxzGQ0Cg5FOvY3m0cSNlW1xFOEIK5IC+xBUMiK3j9nNyy7hLD/E4+bW4=
-X-Received: by 2002:a67:eb12:0:b0:443:70ec:d28b with SMTP id
- a18-20020a67eb12000000b0044370ecd28bmr281484vso.19.1687786789202; Mon, 26 Jun
- 2023 06:39:49 -0700 (PDT)
+ d=1e100.net; s=20221208; t=1687789536; x=1690381536;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=GGaVLufRBXpACpg0TaWlEG2igJ3ek7AXaBMi2HigfMo=;
+ b=EFbN9dDlYniFGoprJhir4dVUKrpsS69yUEwUx0KFt2mraeGnsGtUtqDseVAxHmY3WR
+ a0p1/88RHQrXJX8OeGZlPL0EYeIYXwyIjgIu/cnZX8VR8GghNih7TzNMgdXZC+GKfGXY
+ R3gurZBLN/ntCFoz6H+6gvTdkGbLy5JQ3LlfNdTeD/QnDELtojs2xSxpJJZriA8lFbEO
+ 6gl88pWvkoVVvAOdKh1i8b96esw9A2Rc3f7LxOQGGRJhvv6skfWuRJQItbkUkjJ8nH74
+ 6/wwXdvcDWbpbWKo0DBmBlSuNtO6LfEfv03f/X97gOPvKEcnNRcB5OHSK+b4GuGIvWio
+ OKLQ==
+X-Gm-Message-State: AC+VfDwAWt/gsphCnzz0Qk3UZ3h7/uBJEB85tWr3i9g+GxV9bPyzf5Ir
+ QSFgvvHrOfFg9QPhDYhKED1p4MgYnQViWGvFDxQ=
+X-Google-Smtp-Source: ACHHUZ5RCuypYj05qyXSkxNJNrcJlKWATVqA0fadxVfVAa9WW8J0Q14pWBwRh9gzeShv8sbSa3ir4Jidh0zrDCrV4PE=
+X-Received: by 2002:a67:cd82:0:b0:443:5e57:8c97 with SMTP id
+ r2-20020a67cd82000000b004435e578c97mr1250323vsl.23.1687789535847; Mon, 26 Jun
+ 2023 07:25:35 -0700 (PDT)
 MIME-Version: 1.0
 References: <CAA85sZukiFq4A+b9+en_G85eVDNXMQsnGc4o-4NZ9SfWKqaULA@mail.gmail.com>
  <CAA85sZvm1dL3oGO85k4R+TaqBiJsggUTpZmGpH1+dqdC+U_s1w@mail.gmail.com>
-In-Reply-To: <CAA85sZvm1dL3oGO85k4R+TaqBiJsggUTpZmGpH1+dqdC+U_s1w@mail.gmail.com>
+ <e7e49ed5-09e2-da48-002d-c7eccc9f9451@intel.com>
+In-Reply-To: <e7e49ed5-09e2-da48-002d-c7eccc9f9451@intel.com>
 From: Ian Kumlien <ian.kumlien@gmail.com>
-Date: Mon, 26 Jun 2023 15:39:36 +0200
-Message-ID: <CAA85sZvS0ebebFQ77gDDvOwTiY6oGL3HCWYcdxP_B8kH9NUY3Q@mail.gmail.com>
-To: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-Content-Type: multipart/mixed; boundary="00000000000007054e05ff087c35"
+Date: Mon, 26 Jun 2023 16:25:24 +0200
+Message-ID: <CAA85sZtyM+X_oHcpOBNSgF=kmB6k32bpB8FCJN5cVE14YCba+A@mail.gmail.com>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+Content-Type: multipart/mixed; boundary="000000000000bd8f1c05ff091f2c"
 X-Mailman-Approved-At: Mon, 26 Jun 2023 15:22:14 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20221208; t=1687786790; x=1690378790;
- h=to:subject:message-id:date:from:in-reply-to:references:mime-version
- :from:to:cc:subject:date:message-id:reply-to;
- bh=ubcJPJz42cKVA+ssLDNUkjz0qnIFX61Il3cEDfhHGoI=;
- b=YEIZCo4Ii8P07Gxch40gc6ZfGNmT4RTI+bA8pqlHTp7SQolRrnLDvh0QJgsIyBJ1FN
- YJVF0j77IicwuipGg3CGvJ9JeCB0PW6GAYVEQ88MKGEqOku7sQXHN8AH3xjE6DS6e9cM
- gr68VjMtqutkBUmqEdBX4JuFXn40G19/30vaAE+6NqxsQkI7We4jtJiWihncKJYDaK+w
- +3koTi63TPnnYPzNMGHeHr5WG01D1Gk8Uz2Xjol3Pfh0IrHwllIIJdiIbMBzXEOXR6kP
- 7kRuY6CBMas4JoJrTqU1sIkMcRCKnS8xpIDTMP/7iC0/KNnwDGsKXmf2JgpAZdiJ/NYQ
- PQDg==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=gmail.com; s=20221208; t=1687789536; x=1690381536;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=GGaVLufRBXpACpg0TaWlEG2igJ3ek7AXaBMi2HigfMo=;
+ b=j/9zBGS97/u7sWyd85ZTKZOMiI1gbaq8TVLYlwemhoR5S1aAJhQvout4LOoEBxlEhx
+ fWyvZwistmHYMvmPfv43TlfvlS+THdG3XDL3xL4CzjyF1eTi72gfCDdmOGg/1AkHhj47
+ VxljpYoOZUBdqFa/Owoi/h1Zp74Myb5HKzkJIH/AfaU+JVcxqqvf4r2pWTFJYmFfS2X9
+ sa/vaP4FCwjnfcmkirhpJq7HO2TWMgzovz4znQFZfGEfMgfKYRHvOzXX4zQp1a0qylfG
+ jkH1VBh+ff6aLcXq4ACqeK0MRyJJy3YBvbOPtDBVe9Wp1M5ej4qHRzZYGy8I1DRXFG3g
+ ocLA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20221208 header.b=YEIZCo4I
+ header.a=rsa-sha256 header.s=20221208 header.b=j/9zBGS9
 Subject: Re: [Intel-wired-lan] bug with rx-udp-gro-forwarding offloading?
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -105,106 +107,146 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Jakub Kicinski <kuba@kernel.org>, Eric Dumazet <edumazet@google.com>,
+ intel-wired-lan <intel-wired-lan@lists.osuosl.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---00000000000007054e05ff087c35
+--000000000000bd8f1c05ff091f2c
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-That oops was on 6.3.9 - this one is on 6.4.0 - same issue with rx-gro-list=
-...
-
-I also got an issue with VM:s  and processes triggering OOM when it
-was on, but not when it's off....
-
-On Sun, Jun 25, 2023 at 12:59=E2=80=AFPM Ian Kumlien <ian.kumlien@gmail.com=
-> wrote:
+On Mon, Jun 26, 2023 at 4:18=E2=80=AFPM Alexander Lobakin
+<aleksander.lobakin@intel.com> wrote:
 >
-> It could actually be that it's related to: rx-gro-list but
-> rx-udp-gro-forwarding makes it trigger quicker...  I have yet to
-> trigger it on igb
+> From: Ian Kumlien <ian.kumlien@gmail.com>
+> Date: Sun, 25 Jun 2023 12:59:54 +0200
 >
-> On Sat, Jun 24, 2023 at 10:03=E2=80=AFPM Ian Kumlien <ian.kumlien@gmail.c=
-om> wrote:
-> >
-> > Hi again,
-> >
-> > I suspect that I have rounded this down to the rx-udp-gro-forwarding
-> > option... I know it's not on by default but....
-> >
-> > So, I have a machine with four nics, all using ixgbe, they are all:
-> > 06:00.0 Ethernet controller: Intel Corporation Ethernet Connection
-> > X553 1GbE (rev 11)
-> > 06:00.1 Ethernet controller: Intel Corporation Ethernet Connection
-> > X553 1GbE (rev 11)
-> > 07:00.0 Ethernet controller: Intel Corporation Ethernet Connection
-> > X553 1GbE (rev 11)
-> > 07:00.1 Ethernet controller: Intel Corporation Ethernet Connection
-> > X553 1GbE (rev 11)
-> >
-> > But I have been playing with various... currently i do:
-> > for interface in eno1 eno2 eno3 eno4 ; do
-> >   for offload in ntuple hw-tc-offload rx-gro-list ; do
-> >     ethtool -K $interface $offload on > /dev/null
-> >   done
-> >   ethtool -G $interface rx 8192 tx 8192 > /devYnull
-> > done
-> >
-> > And it all seems to work just fine for my little firewall
-> >
-> > However, enabling rx-udp-gro-forwarding results in the attached oooops
-> > (sorry, can't see more, been recreating by watching shows on HBO
-> > max... )
-> >
-> > The code seems to decode to:
-> > Code: c3 08 66 89 5c 02 04 45 84 e4 0f 85 27 fd ff ff 49 8b 1e 49 8b
-> > ae c8 00 00 00 41 0f b7 86 b8 00 00 00 45 0f b7 a6 b6 00 00 00 <48> 8b
-> > b3 c8 00 00 00 0f b7 8b b6 00 00 00 49 01 ec 48 01 c5 48 8d
-> > All code
-> > =3D=3D=3D=3D=3D=3D=3D=3D
-> >    0: c3                    ret
-> >    1: 08 66 89              or     %ah,-0x77(%rsi)
-> >    4: 5c                    pop    %rsp
-> >    5: 02 04 45 84 e4 0f 85 add    -0x7af01b7c(,%rax,2),%al
-> >    c: 27                    (bad)
-> >    d: fd                    std
-> >    e: ff                    (bad)
-> >    f: ff 49 8b              decl   -0x75(%rcx)
-> >   12: 1e                    (bad)
-> >   13: 49 8b ae c8 00 00 00 mov    0xc8(%r14),%rbp
-> >   1a: 41 0f b7 86 b8 00 00 movzwl 0xb8(%r14),%eax
-> >   21: 00
-> >   22: 45 0f b7 a6 b6 00 00 movzwl 0xb6(%r14),%r12d
-> >   29: 00
-> >   2a:* 48 8b b3 c8 00 00 00 mov    0xc8(%rbx),%rsi <-- trapping instruc=
-tion
-> >   31: 0f b7 8b b6 00 00 00 movzwl 0xb6(%rbx),%ecx
-> >   38: 49 01 ec              add    %rbp,%r12
-> >   3b: 48 01 c5              add    %rax,%rbp
-> >   3e: 48                    rex.W
-> >   3f: 8d                    .byte 0x8d
-> >
-> > Code starting with the faulting instruction
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+> > It could actually be that it's related to: rx-gro-list but
+> > rx-udp-gro-forwarding makes it trigger quicker...  I have yet to
+> > trigger it on igb
+>
+> Hi, the rx-udp-gro-forwarding author here.
+>
+> (good thing this appeared on IWL, which I read time to time, but please
+>  Cc netdev next time)
+> (thus +Cc Jakub, Eric, and netdev)
+
+Well, two things, it seems like rx-udp-gro-forwarding accelerates it
+but the issue is actually in: rx-gro-list
+
+And since i've only been able to trigger it in ixgbe i thought it
+might be a driver issue =3D)
+
+> > On Sat, Jun 24, 2023 at 10:03=E2=80=AFPM Ian Kumlien <ian.kumlien@gmail=
+.com> wrote:
+> >>
+> >> Hi again,
+> >>
+> >> I suspect that I have rounded this down to the rx-udp-gro-forwarding
+> >> option... I know it's not on by default but....
+> >>
+> >> So, I have a machine with four nics, all using ixgbe, they are all:
+> >> 06:00.0 Ethernet controller: Intel Corporation Ethernet Connection
+> >> X553 1GbE (rev 11)
+> >> 06:00.1 Ethernet controller: Intel Corporation Ethernet Connection
+> >> X553 1GbE (rev 11)
+> >> 07:00.0 Ethernet controller: Intel Corporation Ethernet Connection
+> >> X553 1GbE (rev 11)
+> >> 07:00.1 Ethernet controller: Intel Corporation Ethernet Connection
+> >> X553 1GbE (rev 11)
+> >>
+> >> But I have been playing with various... currently i do:
+> >> for interface in eno1 eno2 eno3 eno4 ; do
+> >>   for offload in ntuple hw-tc-offload rx-gro-list ; do
+> >>     ethtool -K $interface $offload on > /dev/null
+> >>   done
+> >>   ethtool -G $interface rx 8192 tx 8192 > /devYnull
+> >> done
+> >>
+> >> And it all seems to work just fine for my little firewall
+> >>
+> >> However, enabling rx-udp-gro-forwarding results in the attached oooops
+> >> (sorry, can't see more, been recreating by watching shows on HBO
+> >> max... )
+>
+> Where's the mentioned oops? Where's the original message?
+
+Held by the mailing list since i can only get a screenshot of it...
+Will attach the latest one to this email
+(I wish that i could easily get a larger backtrace but i haven't
+looked in further atm)
+
+> Can't this be related to [0]?
+
+Don't know, my main test has been running video streams in the
+background - eventually they cause a oops (within 40 minutes or so)
+But i doubt it's counted as tunnel data ;)
+
+> rx-udp-gro-forwarding is here for, uhm... 3 years? And UDP GRO in
+> general is much longer. Is this a non-mainline kernel?
+
+Mainline 6.3.9 and now  6.4.0
+
+> So many questions :D
+>
+> >>
+> >> The code seems to decode to:
+> >> Code: c3 08 66 89 5c 02 04 45 84 e4 0f 85 27 fd ff ff 49 8b 1e 49 8b
+> >> ae c8 00 00 00 41 0f b7 86 b8 00 00 00 45 0f b7 a6 b6 00 00 00 <48> 8b
+> >> b3 c8 00 00 00 0f b7 8b b6 00 00 00 49 01 ec 48 01 c5 48 8d
+> >> All code
+> >> =3D=3D=3D=3D=3D=3D=3D=3D
+> >>    0: c3                    ret
+> >>    1: 08 66 89              or     %ah,-0x77(%rsi)
+> >>    4: 5c                    pop    %rsp
+> >>    5: 02 04 45 84 e4 0f 85 add    -0x7af01b7c(,%rax,2),%al
+> >>    c: 27                    (bad)
+> >>    d: fd                    std
+> >>    e: ff                    (bad)
+> >>    f: ff 49 8b              decl   -0x75(%rcx)
+> >>   12: 1e                    (bad)
+> >>   13: 49 8b ae c8 00 00 00 mov    0xc8(%r14),%rbp
+> >>   1a: 41 0f b7 86 b8 00 00 movzwl 0xb8(%r14),%eax
+> >>   21: 00
+> >>   22: 45 0f b7 a6 b6 00 00 movzwl 0xb6(%r14),%r12d
+> >>   29: 00
+> >>   2a:* 48 8b b3 c8 00 00 00 mov    0xc8(%rbx),%rsi <-- trapping instru=
+ction
+> >>   31: 0f b7 8b b6 00 00 00 movzwl 0xb6(%rbx),%ecx
+> >>   38: 49 01 ec              add    %rbp,%r12
+> >>   3b: 48 01 c5              add    %rax,%rbp
+> >>   3e: 48                    rex.W
+> >>   3f: 8d                    .byte 0x8d
+> >>
+> >> Code starting with the faulting instruction
+> >> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >    0: 48 8b b3 c8 00 00 00 mov    0xc8(%rbx),%rsi
-> >    7: 0f b7 8b b6 00 00 00 movzwl 0xb6(%rbx),%ecx
-> >    e: 49 01 ec              add    %rbp,%r12
-> >   11: 48 01 c5              add    %rax,%rbp
-> >   14: 48                    rex.W
-> >   15: 8d                    .byte 0x8d
-> >
-> > But correlating that with the source is beyond me, it could be generic
-> > but i thought i'd send it you first since it's part of the redhat
-> > guide to speeding up udp traffic
+> >>    0: 48 8b b3 c8 00 00 00 mov    0xc8(%rbx),%rsi
+> >>    7: 0f b7 8b b6 00 00 00 movzwl 0xb6(%rbx),%ecx
+> >>    e: 49 01 ec              add    %rbp,%r12
+> >>   11: 48 01 c5              add    %rax,%rbp
+> >>   14: 48                    rex.W
+> >>   15: 8d                    .byte 0x8d
+> >>
+> >> But correlating that with the source is beyond me, it could be generic
+> >> but i thought i'd send it you first since it's part of the redhat
+> >> guide to speeding up udp traffic
+> [0]
+> https://lore.kernel.org/netdev/f83d79d6-f8d7-a229-941a-7d7427975160@nvidi=
+a.com
+>
+> Thanks,
+> Olek
 
---00000000000007054e05ff087c35
+--000000000000bd8f1c05ff091f2c
 Content-Type: image/jpeg; name="iKVM_capture (1).jpg"
 Content-Disposition: attachment; filename="iKVM_capture (1).jpg"
 Content-Transfer-Encoding: base64
-Content-ID: <f_ljcwo22w0>
-X-Attachment-Id: f_ljcwo22w0
+Content-ID: <f_ljcya20x0>
+X-Attachment-Id: f_ljcya20x0
 
 /9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdC
 IFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAA
@@ -3606,7 +3648,7 @@ FNNS+yK6SllsfgVN4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B
 8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A
 8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A
 8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8A8D/9k=
---00000000000007054e05ff087c35
+--000000000000bd8f1c05ff091f2c
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -3617,4 +3659,4 @@ Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
---00000000000007054e05ff087c35--
+--000000000000bd8f1c05ff091f2c--
