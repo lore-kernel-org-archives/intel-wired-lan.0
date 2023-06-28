@@ -4,78 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 421AFEB64DC
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Jun 2023 11:11:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E933FEB64D7
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 28 Jun 2023 11:15:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C63108229D;
-	Wed, 28 Jun 2023 11:11:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C63108229D
+	by smtp1.osuosl.org (Postfix) with ESMTP id 59CEC82265;
+	Wed, 28 Jun 2023 11:15:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 59CEC82265
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1687950694;
-	bh=OEDkAZqmjdLs7p2Lc9N5O3wEEIblsRygPasTnj2Drwk=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1687950951;
+	bh=EPxW/n5siQxoTA0ej5h79aJtuXt8Myebf0Ivubu5z1Q=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=nTGdjWPiqNa9joAfol2gJKJKipGIo7TrHIGJq2XbBslvghImOT6O5wneKQUZHizIO
-	 ECTo3jEwgVfShlYxbI5RhEMA6dJ8iPFKoWHwUrC7hroEZbwSE5OzFeJxyGaPYGo6Nd
-	 azArXenJ6Ydjt502R9FTxCiCW63w02ULf3YI32RsQmd5J3JR2moU5jugjuxlJ/PMug
-	 MRfBGYA6ru24OsyhYg2Ygn2B2wwk9oyfBKpNrUwaw63KHuW1202+wvyf2V99vZxWCF
-	 82ioSohxzqECSB2bo274V1EsD8HPvDUNGGC4/848dcHBM2GNEn+KWVHc3AestwIVYQ
-	 0i5yvIU5eKpnA==
+	b=YNmOfE/73J+oUPa1T8RJqmw9My5yX1x34shGyv/QSWyZGq4NL9F8nfuo262LPnToU
+	 gO6FO+afAXSvMKgKqR94vOkqaXqMY/lQJm3Yy76t1OdwCnFfg/ejgBGpHMUgoygyFn
+	 1ia6dpuYdpFt4kQ8+eKtqjeOjcnh9PzGCA4FA0GDHcHapad2s9T+5WcOpVJ2HElU79
+	 PKF9AxS6wg+IMqRIb0A8sOnh7Vbr+M9p7rOAJw3Ieg9gu5klbQ//mzzi+cLSIUu9La
+	 LqIVSQ+p85iHj7B3XdiqecG7lFqQHOSWU02P5icqUts4ShGg3Qp7SAnjtOGio2z1m1
+	 0tFEA3NBZ+72Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id OWgeHkoAaU2w; Wed, 28 Jun 2023 11:11:34 +0000 (UTC)
+	with ESMTP id dTPit5k5AphD; Wed, 28 Jun 2023 11:15:50 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C332C8220C;
-	Wed, 28 Jun 2023 11:11:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C332C8220C
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 66F3B1BF2E5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jun 2023 11:11:32 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6380681DE8;
+	Wed, 28 Jun 2023 11:15:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6380681DE8
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 3134A1BF2E5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jun 2023 11:15:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 2C88B60BC6
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jun 2023 11:11:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2C88B60BC6
+ by smtp1.osuosl.org (Postfix) with ESMTP id 15FD381DE8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jun 2023 11:15:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 15FD381DE8
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id mcNQ4Zoa7hEN for <intel-wired-lan@lists.osuosl.org>;
- Wed, 28 Jun 2023 11:11:30 +0000 (UTC)
-X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7584E60B91
-Received: from out-21.mta0.migadu.com (out-21.mta0.migadu.com [91.218.175.21])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7584E60B91
- for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jun 2023 11:11:30 +0000 (UTC)
-Message-ID: <2e9ce197-2732-d061-b11d-4f4513af6abc@linux.dev>
-Date: Wed, 28 Jun 2023 12:11:19 +0100
-MIME-Version: 1.0
-To: "Kubalewski, Arkadiusz" <arkadiusz.kubalewski@intel.com>,
- Jiri Pirko <jiri@resnulli.us>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ZnWMKh7q62Kh for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 28 Jun 2023 11:15:47 +0000 (UTC)
+X-Greylist: whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E2B2181D11
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com
+ [IPv6:2a00:1450:4864:20::429])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id E2B2181D11
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jun 2023 11:15:46 +0000 (UTC)
+Received: by mail-wr1-x429.google.com with SMTP id
+ ffacd0b85a97d-311099fac92so7015505f8f.0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 28 Jun 2023 04:15:46 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1687950944; x=1690542944;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=vYX8/ePECLgfWoMNpv2uZz3s+XofYXzTKNlcug8MZ0c=;
+ b=GPMEF6Ct2rY4FNrIq1/UORMCNUFpK5UI436ZTA4WDfUTO3GBcNDXlMGxHPdXc6be5j
+ HFUVKpHHLuUZBIPbOw6w0yX957U4xUGS/m5oCN70F5ZazRKaxx6KnSrP6V9Ft0UyL1Iq
+ UJoftJ3ICIqcaf+/yhq0TUbryCdnZKo8LnRL960qv2GPhYUD28nQTEUqDPdWLocyoGbS
+ 3EOwi9IiQdUardKmT2xf/Xf7Id/jC5TxlY8yX46xoHRgv5gusG1CWL2GYrYCve6wkEqM
+ OeUgTc5thPx+56iVwis6gkzdfa/SP/DdJMj2GS9IZQ8JoLiaFP9y52GK3838fAqBx+xx
+ 9Igw==
+X-Gm-Message-State: AC+VfDzdSZq6zg2rAhPWbPQdLDcJcMDOsU8Hb+ICO4rihhEZOEYM4XNv
+ WmcDz5J0gAt1H8GmFyktYZvW0w==
+X-Google-Smtp-Source: ACHHUZ45owiPf7elrn+8tOw5ryHFm6Cke05JKdz0dMQUlVmsn5e6N8Sh+GX5X2BWx3ut2u/1kvQkxQ==
+X-Received: by 2002:adf:f70c:0:b0:313:f07a:af3e with SMTP id
+ r12-20020adff70c000000b00313f07aaf3emr7222410wrp.46.1687950943971; 
+ Wed, 28 Jun 2023 04:15:43 -0700 (PDT)
+Received: from localhost (host-213-179-129-39.customer.m-online.net.
+ [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
+ g9-20020a5d5549000000b00307acec258esm13205270wrw.3.2023.06.28.04.15.42
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Wed, 28 Jun 2023 04:15:43 -0700 (PDT)
+Date: Wed, 28 Jun 2023 13:15:41 +0200
+From: Jiri Pirko <jiri@resnulli.us>
+To: "Kubalewski, Arkadiusz" <arkadiusz.kubalewski@intel.com>
+Message-ID: <ZJwWXZmZe4lQ04iK@nanopsycho>
 References: <20230623123820.42850-1-arkadiusz.kubalewski@intel.com>
  <ZJq3a6rl6dnPMV17@nanopsycho>
  <DM6PR11MB4657084DDD7554663F86C1C19B24A@DM6PR11MB4657.namprd11.prod.outlook.com>
- <DM6PR11MB4657A1ACB586AD9B45C7996E9B24A@DM6PR11MB4657.namprd11.prod.outlook.com>
-Content-Language: en-US
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
- include these headers.
-From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-In-Reply-To: <DM6PR11MB4657A1ACB586AD9B45C7996E9B24A@DM6PR11MB4657.namprd11.prod.outlook.com>
-X-Migadu-Flow: FLOW_OUT
+MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <DM6PR11MB4657084DDD7554663F86C1C19B24A@DM6PR11MB4657.namprd11.prod.outlook.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1687950686;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=L1I/ER/w6jNuNeN1IzKuVARZ7DzIC62fE15mQqKlcKA=;
- b=Rdepi0ljPQ2cZvn1YYGKUl4KHpRN6kkf2yTS5VgyROLqP19w683nmg9jAPJUuhyTK9RD+n
- FSSEs43rfghN6NEQu0DbynAEjUXM97SW+nvtSu/fbL7My/4ovr5DZ3UhNU+6rL+OkX6hIT
- Qa7packtPMeaAcIYXpWRq1A4sWVQwyc=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=Rdepi0lj
+ d=resnulli-us.20221208.gappssmtp.com; s=20221208; t=1687950944; x=1690542944; 
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=vYX8/ePECLgfWoMNpv2uZz3s+XofYXzTKNlcug8MZ0c=;
+ b=fqqAWDgaS+bOqIJSzLWZRezOltTA++pw4kHhHgds2mzu/vkKTntgTtpCB6A6nB4cX6
+ hpWgvj+S5sTJWYH0Kr+F1cT48fn2V/s+cwGaHSC58PY3OGaapWhbc+j1oQ6r2ZK9+pDU
+ L44UyEgV5MeVhwUmZF/skaDGm5Bnn4ierQ3cDH9PGgKgd7ZzXFpkdqK1cvdP/P/UGO23
+ 7skNSyQMTluY4nBiLnhNfXUahZMNEBjKCRxR6um4/8HNQIF399N5KWDlvMMABmjfmhMD
+ snPh3SdISJZmZJLu9mq2okO59gqWj1+uL+N5T2cryvuANcfRdh2roIRSES3h8TprrkEd
+ /9tw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=resnulli-us.20221208.gappssmtp.com
+ header.i=@resnulli-us.20221208.gappssmtp.com header.a=rsa-sha256
+ header.s=20221208 header.b=fqqAWDga
 Subject: Re: [Intel-wired-lan] [RFC PATCH v9 00/10] Create common DPLL
  configuration API
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -118,6 +141,7 @@ Cc: "geert+renesas@glider.be" <geert+renesas@glider.be>,
  "nicolas.dichtel@6wind.com" <nicolas.dichtel@6wind.com>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
  "axboe@kernel.dk" <axboe@kernel.dk>, "sj@kernel.org" <sj@kernel.org>,
+ "vadim.fedorenko@linux.dev" <vadim.fedorenko@linux.dev>,
  "linux@zary.sk" <linux@zary.sk>,
  "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
  "ogabbay@kernel.org" <ogabbay@kernel.org>,
@@ -129,60 +153,48 @@ Cc: "geert+renesas@glider.be" <geert+renesas@glider.be>,
  Saeed" <saeedm@nvidia.com>, "davem@davemloft.net" <davem@davemloft.net>,
  "Olech, Milena" <milena.olech@intel.com>,
  "hkallweit1@gmail.com" <hkallweit1@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 28/06/2023 10:27, Kubalewski, Arkadiusz wrote:
->> From: Kubalewski, Arkadiusz
->> Sent: Wednesday, June 28, 2023 11:15 AM
+Wed, Jun 28, 2023 at 11:15:11AM CEST, arkadiusz.kubalewski@intel.com wrote:
+>>From: Jiri Pirko <jiri@resnulli.us>
+>>Sent: Tuesday, June 27, 2023 12:18 PM
 >>
->>> From: Jiri Pirko <jiri@resnulli.us>
->>> Sent: Tuesday, June 27, 2023 12:18 PM
->>>
->>> Fri, Jun 23, 2023 at 02:38:10PM CEST, arkadiusz.kubalewski@intel.com
->> wrote:
->>>
->>>> v8 -> v9:
->>>
->>> Could you please address all the unresolved issues from v8 and send v10?
->>> I'm not reviewing this one.
->>>
->>> Thanks!
+>>Fri, Jun 23, 2023 at 02:38:10PM CEST, arkadiusz.kubalewski@intel.com wrote:
 >>
->> Sure, will do, but first missing to-do/discuss list:
->> 1) remove mode_set as not used by any driver
->> 2) remove "no-added-value" static functions descriptions in
->>    dpll_core/dpll_netlink
->> 3) merge patches [ 03/10, 04/10, 05/10 ] into patches that are compiling
->>    after each patch apply
->> 4) remove function return values descriptions/lists
->> 5) Fix patch [05/10]:
->>    - status Supported
->>    - additional maintainers
->>    - remove callback:
->>      int (*source_pin_idx_get)(...) from `struct dpll_device_ops`
->> 6) Fix patch [08/10]: rethink ice mutex locking scheme
->> 7) Fix patch [09/10]: multiple comments on
->> https://lore.kernel.org/netdev/ZIQu+%2Fo4J0ZBspVg@nanopsycho/#t
->> 8) add PPS DPLL phase offset to the netlink get-device API
+>>>v8 -> v9:
 >>
->> Thank you!
->> Arkadiusz
-> 
-> If someone has any objections please state them now, I will work on
-> all above except 5) and 7).
-> Vadim, could you take care of those 2 points?
-> 
-Yeah, sure, I'll update 5 and 7.
-I'm not sure about 8) - do we really need this info, I believe every 
-supported DPLL device exports PTP device as well. But I'm Ok to add this 
-feature too.
+>>Could you please address all the unresolved issues from v8 and send v10?
+>>I'm not reviewing this one.
+>>
+>>Thanks!
+>
+>Sure, will do, but first missing to-do/discuss list:
+>1) remove mode_set as not used by any driver
+>2) remove "no-added-value" static functions descriptions in
+>   dpll_core/dpll_netlink
+>3) merge patches [ 03/10, 04/10, 05/10 ] into patches that are compiling
+>   after each patch apply
+>4) remove function return values descriptions/lists
+>5) Fix patch [05/10]:
+>   - status Supported
+>   - additional maintainers
+>   - remove callback:
+>     int (*source_pin_idx_get)(...) from `struct dpll_device_ops`
+>6) Fix patch [08/10]: rethink ice mutex locking scheme
+>7) Fix patch [09/10]: multiple comments on
+>https://lore.kernel.org/netdev/ZIQu+%2Fo4J0ZBspVg@nanopsycho/#t
+>8) add PPS DPLL phase offset to the netlink get-device API
+>
 
-> Thank you!
-> Arkadiusz
+You are missing removal of pin->prop.package_label = dev_name(dev); in
+ice.
 
+
+>Thank you!
+>Arkadiusz
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
