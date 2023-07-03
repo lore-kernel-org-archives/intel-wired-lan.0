@@ -4,81 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 805E2EB64DC
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  3 Jul 2023 09:28:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A292EEB64DC
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  3 Jul 2023 09:36:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0C0FD60A6A;
-	Mon,  3 Jul 2023 09:28:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0C0FD60A6A
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3452160E5C;
+	Mon,  3 Jul 2023 09:36:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3452160E5C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1688376492;
-	bh=Tinyok4uEc5UipPD17BTy1ehkFPy0PNOUhpVqosdjsw=;
+	s=default; t=1688376982;
+	bh=L5564O4N6dayL12OCyA0UpsN2Qs0cCtEbdTCORVIz44=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=bLWD3K5r9Q3rGNI59P3BLk/roGZRVO6kONEZlrZ53sEg9jEycu4T3JwX2C/nsRtf7
-	 chegW6xpvjp31e+X9Fp+OGYHR4+RSnW9M/jIy8AQTfsAS1mjzkLHxIBTgkNfleyvKk
-	 jM6SPk1Emm7SGJtMF4T9ZygUSkJ/1jDe5b3P7V4WLtP92NQ0v3SKTyuGgGcJC6h7bY
-	 Pd6uS3x4tEL46PTF+X4EDgH2O83pviVQCpa2Lm44xQaIEMe/zvuJ5IL4hE3xCOuAm1
-	 wt/iwY79J00GXeIfzt8hq4geIivCMYo+QF+wJQdcPkza8xw1Hi42GByAge/y+SraIY
-	 dNJiMwJfiffrQ==
+	b=GvfMB57PdDs1s0w235uzpIwGbQblzigK/K60XIHWw1SSUiLyx0WgsEXhUSSiNi9ot
+	 eeKOhooWm6Di3wVUgXfNXCfZaAiWrZ3NumM6CpL77JT3QRLCV8CkEoruMYcflGED8l
+	 0zI/Wbw0VQbMtu5zuKsN/ZQeRbOxnx/v1aQbpJ2YtdPHqD1N14XNi89ivZSiWHf7z1
+	 qKbdLHdYFhm4HP2CfWyBjcqND+FqaKJbJDpkdpNHdHSw8ZqNeFkuDR03VWWwyqzrwR
+	 xZGZpnfDOpEn0SlrECVlmlzrwmEoYOsAaIeWozdEIMuyl/RvEVZE9Wp+ulioXnDeU3
+	 uAW3R4okr7W+A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lXhPP250tg_o; Mon,  3 Jul 2023 09:28:11 +0000 (UTC)
+	with ESMTP id R9CsiTsWC9td; Mon,  3 Jul 2023 09:36:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 16647607F5;
-	Mon,  3 Jul 2023 09:28:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 16647607F5
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id C437F1BF2F3
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Jul 2023 09:28:08 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4482860E07;
+	Mon,  3 Jul 2023 09:36:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4482860E07
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id B268E1BF2F3
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Jul 2023 09:36:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9A1BB40295
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Jul 2023 09:28:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A1BB40295
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8A7CE40420
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Jul 2023 09:36:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8A7CE40420
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id mzRBNl5AFM3V for <intel-wired-lan@lists.osuosl.org>;
- Mon,  3 Jul 2023 09:28:07 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id yV5GQDy1FE6r for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  3 Jul 2023 09:36:19 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 470F1400D3
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 470F1400D3
- for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Jul 2023 09:28:07 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10759"; a="365406271"
-X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="365406271"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 03 Jul 2023 02:28:06 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B891940198
+Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B891940198
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  3 Jul 2023 09:36:18 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10759"; a="361697746"
+X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="361697746"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Jul 2023 02:35:51 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10759"; a="842598722"
-X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="842598722"
+X-IronPort-AV: E=McAfee;i="6600,9927,10759"; a="748094035"
+X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="748094035"
 Received: from gklab-018-208.igk.intel.com ([10.102.18.208])
- by orsmga004.jf.intel.com with ESMTP; 03 Jul 2023 02:27:58 -0700
+ by orsmga008.jf.intel.com with ESMTP; 03 Jul 2023 02:35:49 -0700
 From: Kamil Maziarz <kamil.maziarz@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  3 Jul 2023 11:27:50 +0200
-Message-Id: <20230703092750.74852-1-kamil.maziarz@intel.com>
+Date: Mon,  3 Jul 2023 11:35:46 +0200
+Message-Id: <20230703093546.74984-1-kamil.maziarz@intel.com>
 X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1688376487; x=1719912487;
+ t=1688376978; x=1719912978;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=6Y4MCcFiniPwgzg9ePYw7oA5EkB3RihZgI4/AiCbI+c=;
- b=NY9PGNzP2jG9ftUXBfUKv62ivipBuANsJgSSNDwD29VhICe1YeODpmPA
- nrNNF2cURyk8Jlw9fGZxxMcXNmGQpvZQHOpWnm5Hs9HhwbALWRcMPg2Wp
- UwDcJsM/SEKvTC3GnMIFzTNYoAKAIzryIxTdQz6b7gKA/NIAaRgBFEYY7
- 2bAGcaxEyY+A8q4eCzaxuK64RjRmQD2R1gE6pVHRsi2SprHAMb9z7kqVO
- 3MyOmsBoCa7C3WcACjjrsndX8CAaulWX3YNYdvjVT8Q2urfsVEHbhOtRS
- pfsXzqlP9CxMSjUMqPNIU5+Vjarm0qC962DG/WbFAEjHMZ2nYCyU2EaHd
- Q==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=yJZyMGUVU0AYcGQHZkYf8KR/YDM/PK7ZdyNNdswlYss=;
+ b=Ap6x6EvU7Z/gvfh/6L3bVMa1LGpxrecVsAFe22Q/uEn85y7y6AED19BE
+ HWjAqrYx7uzN9N3ekvBjvbigSfrDDl4Pbhcfmig+weaC1VCmxYgzAo7v7
+ lAiZNB2kz6NFMN8o5y1b2x6zLIXg2uOSqRGrvuvEfEomsso3P9iUH7gT1
+ WtNlG88p6RV1VMzkWHZqCZU7Rj/Nk8w9aqVTWnQUvNQau5xUuXSM1VwVd
+ BWLuduQ81sEhiVTRw9PjeEwMXLtJlh2RPCrFsqPOjao7MKWuctNDcZ7k6
+ wCrd8k6Lvu0y9oQxZkWfGo6UMTuixOQUWde38hGXili96gjKztrYzCDcC
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NY9PGNzP
-Subject: [Intel-wired-lan] [PATCH iwl-net v3] ice: Fix RDMA VSI removal
+ header.a=rsa-sha256 header.s=Intel header.b=Ap6x6EvU
+Subject: [Intel-wired-lan] [PATCH iwl-net v1] ice: Fix RDMA VSI removal
  during queue rebuild
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -112,9 +112,6 @@ Fixes: 348048e724a0 ("ice: Implement iidc operations")
 Signed-off-by: Rafal Rogalski <rafalx.rogalski@intel.com>
 Signed-off-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
 Signed-off-by: Kamil Maziarz <kamil.maziarz@intel.com>
----
-v2: instead of adding new flag use already implemented check for RDMA
-v3: added adev_mutex and device lock as recommended
 ---
  drivers/net/ethernet/intel/ice/ice_main.c | 18 ++++++++++++++++++
  1 file changed, 18 insertions(+)
