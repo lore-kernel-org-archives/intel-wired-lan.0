@@ -4,145 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BD26EB64DD
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Jul 2023 15:15:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACF48EB64DA
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  5 Jul 2023 15:15:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C7D7761063;
-	Wed,  5 Jul 2023 15:15:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C7D7761063
+	by smtp3.osuosl.org (Postfix) with ESMTP id 68D836103C;
+	Wed,  5 Jul 2023 15:15:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 68D836103C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1688570117;
-	bh=DOwSlCkhs5hqVA6Y7kZUOwHAhltMChc1bFxEuucXXQM=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1688570123;
+	bh=Z9SfPBXEKp7JYvADX2DWzf41swYSY0gUeliJ0axh8ow=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=7J2qmbiG0n9ZVixhZXg2MnQbPLD0bheQUMKjEl/eJY3PwWYuBEn2VM47+d2KKTFx9
-	 9EGiswmlFd/erqcUw7UACmg8y2VxARkfrR8EFHY77ciK50Dg87UBAh38q1kKSS5bEC
-	 TG6L9SJzACXU1a0v35QoR2DkIBR2C0rtinOVurNtBkcfiidRo6ezgBmNWUdzdFCVY6
-	 UJNa4c/4uWilYkqoKW/5UZbLDSvwKgXb2arkw76LetsJey2QwkvkM8hCLGkrd3MeLs
-	 bt0W3SRy0fnRDYGSskfkFynAaj6rZ72fBnrnZsF1Zpg2tlK6ZePEcBPNpDmsI1iMQN
-	 06RAQR1Q4QeKw==
+	b=6e1epS5ZfgglvPa/Q/EemC1COnjGAWzk77NVXgxJNmwRbghhT+UwBJoa6alQ/cpYW
+	 MKgM6UYyVn+7JJVXDn9EoLRCKBQ0cbVdrKIXp3GWe1UNhaFlic0UkoeSa/geQ/7wcc
+	 tOahwa0/Ez3mIbBldK39YMUY7pfHxxFfJDB8lRnwJe/Qr90C8I24sUt1QIT9kN3cSi
+	 D0MI+paIjXGfyRC0W1nXuYVp2zO6Xo1AbeWPFyIr8G2ohAivX5v/9lCHDdLWXxiUd/
+	 dJuLeIJdqs7qHb7OuQ92msTyArfYGHcR6pCrJxT1OZqI4IdtLzB8YhWTlFipIBuM/5
+	 vpG/5Jytdbzxw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Y3NzLR3_-Oc4; Wed,  5 Jul 2023 15:15:17 +0000 (UTC)
+	with ESMTP id fkt-n2ag79SN; Wed,  5 Jul 2023 15:15:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C421561065;
-	Wed,  5 Jul 2023 15:15:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C421561065
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 891421BF23C
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jul 2023 10:04:24 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 29D9A61060;
+	Wed,  5 Jul 2023 15:15:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 29D9A61060
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id D78FD1BF228
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jul 2023 17:59:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5F2876068A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jul 2023 10:04:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5F2876068A
+ by smtp2.osuosl.org (Postfix) with ESMTP id AF5944042B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jul 2023 17:59:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AF5944042B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MvSYakxRLlNi for <intel-wired-lan@lists.osuosl.org>;
- Tue,  4 Jul 2023 10:04:18 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B4EF560D72
-Received: from EUR04-DB3-obe.outbound.protection.outlook.com
- (mail-db3eur04on2136.outbound.protection.outlook.com [40.107.6.136])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B4EF560D72
- for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jul 2023 10:04:18 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=b0/jljdPyQZK4acWFKB2eKv7dhHT8A7wHDydEd5zRKLovVZHgQ3wU/tlI1GVGAxKOKGF2Ljji1MgwACj5enMKxNGOpeHyGYiIpjo9Nqdfr88QY1D+7gr6r33B5LQxZEjCssp9UGhFf7rFd+g2ic2vsGZd9MCJDkf1EKB3SHWpdoocTWWxKu9JNVbfHlezrASZ+zT1uIpXaiKNVAT1qTHm8iqwmvx70+qeIEXs/EDdBwBu2yOs+GRRPu5sfvTRc/pwZahYxvfIj1188rCrfN/8ofp6dL2euJZMgL2J1fwF8j0D5Zh2hrmlFyryQYHHyspIGpDCUj5EvHhsVrsHeU8cw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=hyccUYh2pEpQWEmch0Qj4pn+fn6yEzbnJjPn0aC669Q=;
- b=JcCJL3FUIdsByRdBTuxPdivdIPM6uDjHN8gJCgR/rdqcm7YNCzTxvwYrE9yI24wSgTts3FC0919/nrBpBc5bQ6O7z2GT927iT38MncYOk2b3ynZMq8owfJbocN0ARo3wgoZ7LaRlOxATXugNjvCyyrJsQr68Elyn3jpDXHY5WnxlV7zyge6TEVWaonX5ybXRhTFfyRoGlta15xiLGoTDGLoS3kREMjauxhdGiWdYvobF3ByMeko3SaqTjOCACDB9PG5HNWCpdr5F24sd/gNcm2acUJyKrue+8QyWTwN6S6XoE7o4LbDFjqXVoFt4BEA5rZYgB1puqQty3SHNlLCjUw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=est.tech; dmarc=pass action=none header.from=est.tech;
- dkim=pass header.d=est.tech; arc=none
-Received: from DBBP189MB1433.EURP189.PROD.OUTLOOK.COM (2603:10a6:10:1e7::15)
- by DB3P189MB2624.EURP189.PROD.OUTLOOK.COM (2603:10a6:10:438::18) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6544.24; Tue, 4 Jul
- 2023 10:04:15 +0000
-Received: from DBBP189MB1433.EURP189.PROD.OUTLOOK.COM
- ([fe80::57d:1bb3:9180:73b6]) by DBBP189MB1433.EURP189.PROD.OUTLOOK.COM
- ([fe80::57d:1bb3:9180:73b6%4]) with mapi id 15.20.6544.024; Tue, 4 Jul 2023
- 10:04:14 +0000
-From: Sriram Yagnaraman <sriram.yagnaraman@est.tech>
-To: 
-Date: Tue,  4 Jul 2023 11:59:13 +0200
-Message-Id: <20230704095915.9750-3-sriram.yagnaraman@est.tech>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20230704095915.9750-1-sriram.yagnaraman@est.tech>
-References: <20230704095915.9750-1-sriram.yagnaraman@est.tech>
-X-ClientProxiedBy: GV3PEPF000000D5.SWEP280.PROD.OUTLOOK.COM
- (2603:10a6:144:1:0:2:0:1e) To DBBP189MB1433.EURP189.PROD.OUTLOOK.COM
- (2603:10a6:10:1e7::15)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id P7Tc_rbfG9qk for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  4 Jul 2023 17:59:57 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D576B400D9
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id D576B400D9
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  4 Jul 2023 17:59:56 +0000 (UTC)
+Received: from mail-qt1-f197.google.com (mail-qt1-f197.google.com
+ [209.85.160.197]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-517-5-GxHoC5PPK3OebJgU3lDw-1; Tue, 04 Jul 2023 13:59:52 -0400
+X-MC-Unique: 5-GxHoC5PPK3OebJgU3lDw-1
+Received: by mail-qt1-f197.google.com with SMTP id
+ d75a77b69052e-401df9d2dc4so13911151cf.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 04 Jul 2023 10:59:52 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20221208; t=1688493592; x=1691085592;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=4OJPbC0BqQ+AD3fMLftREevsgU5BDaBo7zNsHHsEvsU=;
+ b=akIMdyoh9sX85sDNCgPLIDiZ281ra/8SL0RlU4NTJuCqHTrgxyejqKgnlbDB9N/4tY
+ eo61JzC+yzOHmWLhKUtQD7QQeFnPQPeGK5azmdcwwTeM2vYModJdHLSKPRS67U9AyYR3
+ k6fTLOfKxP1TrGcDbAqp1GkYwsyxul9yo0UdBtHkzl/SvrOW6lr+91CqpkN069FtB++x
+ W1fldy5G4eBate79fbHpkR4WQQEOfwkFtXGJHVYhway15nYDp2IN2wjGPOnREN86rL1L
+ tTeM4T5YN1eIdGhnp6focVWVdQ79mZtfthb2YWCX+H/6XzvLRjD60nrp3y75SCgrpZNJ
+ JgNQ==
+X-Gm-Message-State: AC+VfDybauHYOE9KzmpV+fQpXPLiGcKuiSxR+gyWfF5yboSeEmir98Zl
+ v1oE0CQSJnWe1Fz013KO0LYn0HITXIj23a6YWYrfhg7EFRUzS3hzXz71AFNAggJ+cmS9amkzrq3
+ 4YEfUrL9ZK1IxQM1cdhdEFuOQbiecOw==
+X-Received: by 2002:a05:622a:1819:b0:400:a9a4:8517 with SMTP id
+ t25-20020a05622a181900b00400a9a48517mr17754258qtc.4.1688493591805; 
+ Tue, 04 Jul 2023 10:59:51 -0700 (PDT)
+X-Google-Smtp-Source: ACHHUZ4/AxzCLZS210yn1AZ2mhjnSxtQMZ/9l2qP39Bp+Wr4byCgdHKG8XtD9eS98B7aBHJpp+NLYw==
+X-Received: by 2002:a05:622a:1819:b0:400:a9a4:8517 with SMTP id
+ t25-20020a05622a181900b00400a9a48517mr17754233qtc.4.1688493591479; 
+ Tue, 04 Jul 2023 10:59:51 -0700 (PDT)
+Received: from x1n (cpe5c7695f3aee0-cm5c7695f3aede.cpe.net.cable.rogers.com.
+ [99.254.144.39]) by smtp.gmail.com with ESMTPSA id
+ q9-20020a0cfa09000000b006364ae68f31sm5595668qvn.97.2023.07.04.10.59.50
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 04 Jul 2023 10:59:51 -0700 (PDT)
+Date: Tue, 4 Jul 2023 13:59:49 -0400
+From: Peter Xu <peterx@redhat.com>
+To: "Tian, Kevin" <kevin.tian@intel.com>
+Message-ID: <ZKReFWNJSVcfhL6y@x1n>
+References: <20230621091112.44945-1-lingyu.liu@intel.com>
+ <20230621091112.44945-11-lingyu.liu@intel.com>
+ <ZJMLHSq9rjGIVS4V@nvidia.com>
+ <DS0PR11MB7529D62973DEE1848BB9146BC324A@DS0PR11MB7529.namprd11.prod.outlook.com>
+ <ZJwp6nam6/gI7Ru1@nvidia.com>
+ <DS0PR11MB75295D41646A3F74BCED4323C329A@DS0PR11MB7529.namprd11.prod.outlook.com>
+ <BN9PR11MB5276AC6CC905A57A370AE48E8C2EA@BN9PR11MB5276.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DBBP189MB1433:EE_|DB3P189MB2624:EE_
-X-MS-Office365-Filtering-Correlation-Id: b768c1ce-32a8-4e80-b3a3-08db7c7605ac
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: UplPeRPknJnru7CfhLc+VJXr2gtqdnANp1XwaaBfI7prWplUuO9YHwwrs27r2rXaKyjPy1Tx62ZvRMh5M6uaMJHi8MWm3wgYb3DCUiyuHf0baX7VAZEl85DqBaDrIuM+/DUo5SqpURXRx8jPXz/uSl6BFkoIwfFDwErQUMfqzAZ9VC8+O2sM6FtV0vxLmTIL5bc6bumPMkFWA4v7EvGi6seN3EErZiFvivSqzKsknWT++se5w3aynm8MJZoxEXdgTbpYjmFExaVVL6rWiJmFvSIiB5V81CIA8btIMK1Aq62lQU1Cp9QZxYIscER6+l5ro4knpjWZbBg3hsomc7P+hVWwJGn0obsJTc9SsYl8fYbIFYTTW35eVRxhBOKOdov2TjuQo3/m2LoIKQRnuV6OgBbAFX2qeCgHZ2R+9RqAnZjHbfd/FHgY6JNcvixHN2piTz1pUNrUgSnp7qMEuSlwpJ8qbeOAXwuxcIpUnlzSNHPKGhX3h6d16Sk85Va41m7HsN3d2mtvk6HINYG7lkGzrR0cEkU/n8WZJ7t2etV/AUHyr4QcY3PBE7kagFDsn1MwJ8qr4iRkqqS3JAJznSFlaJef7PG09pFuI1iDhOxswKsKYo6++998pLe+43A9a2+TZ8MkXW1W0QmyHzqgmXW7wA==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DBBP189MB1433.EURP189.PROD.OUTLOOK.COM; PTR:; CAT:NONE;
- SFS:(13230028)(396003)(39830400003)(346002)(376002)(136003)(109986019)(451199021)(54906003)(6512007)(26005)(44832011)(186003)(86362001)(8676002)(7416002)(2906002)(8936002)(36756003)(6486002)(5660300002)(41300700001)(478600001)(38100700002)(1076003)(6506007)(66556008)(4326008)(66946007)(66476007)(70586007)(2616005)(83380400001)(316002)(266003)(37730700002);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?O5JoL16tYzx7zLNIk9ZuB3fJvr3j3rIT35lYmEfw30eajSztFvRL5MnuHywS?=
- =?us-ascii?Q?l5ghnexPbw37RGkwuu1rRbZxvNAuYaRp1mVQ4sH0al6JM81OuWGW5ywFIcVH?=
- =?us-ascii?Q?Aqvsb7kDEPGibdIQGWyw3dNYGCollHm1aVAvWfM3spaspek02s584VB22fpG?=
- =?us-ascii?Q?Q65smNENY4oBN0/akXFILFqkJWVAPoDuKG43S/G9Zm+DxFaGxjUGT66NnlFF?=
- =?us-ascii?Q?NUe52QrgZaOZ/5NK2yDMp0faX2JsU+6yTHW6R8X+yp6+KBmR+7gNUMZMSZOJ?=
- =?us-ascii?Q?ziAZX3WI/91PM/votCe4opBGNXX0RrzosyMWNXBx2/2QhVdqevkVnHAYGPml?=
- =?us-ascii?Q?7jU/HyWYKYnBXWp/k7fyX9+UJyxRd8NExeeuCsP8Iplw4aaFHsvib5rWcysw?=
- =?us-ascii?Q?GvFVzJAXQk2mhxgKfw0G/39oXpkR8QQYg+67aOhauRAesQGXfrc77zxpd+5C?=
- =?us-ascii?Q?n4eZrMZew/kIUB7/ydJPt0sdQXdEetbk5hquVGJCdf58aISwbKHQiMuUIo9X?=
- =?us-ascii?Q?GP9L6orKr6Ab+lHxotnwmCAeVzVsn/BY+4v/PUJhiaYEq8QTsSrZbGYxY8uM?=
- =?us-ascii?Q?RIqSn712859/2VJYbu2yKtHq7LhtQ4ZNr2FZnoLF+cppmr+YTOo90VjM5HjD?=
- =?us-ascii?Q?lOfJNWXJsNoQ8wbtw308n+BOGc7NZ4KsamOneZPDrEYtVPrRTN846cWpQIb1?=
- =?us-ascii?Q?9PdwpXGtbV1JK6UbY4jPM5kEmdIjJogss8OIXVGJRAQHu9VBxyyhsY14U/mH?=
- =?us-ascii?Q?r3aqGJm7ng0vd7UeGJOwtNOBHSBeBFAVSfbZa5NeGmpndyBLefpj01WxBCdz?=
- =?us-ascii?Q?uZkgxzSJ52DXCcRzb7jNLHiPFy5uUXLy4yjQ1eMbYLpOKtW7ltNIHMxw/Tos?=
- =?us-ascii?Q?IdpMMdxvu6pXJA6Ilqk4ndhglUfuHZXl3sMkwfqwrbcFxQG/80MoyGJrxGON?=
- =?us-ascii?Q?APIdEpt3VHARcuGhrT5XRNvvgAWd2VB9T7sgwLbF3viDPKbES4D1vToXN4jQ?=
- =?us-ascii?Q?J1qmXQFqlONtwymWMOt0FCkSQdPvrW3Z7sXFLUGG9oAawnMeCXpQBNeqtHIH?=
- =?us-ascii?Q?AxOfkhSg7EKYlGudx+bFfds+6QWj4lkNmTYzfnz9xPoOBT648rTKq4fCB1QJ?=
- =?us-ascii?Q?+6Drx/YrXh1X47vY0EluTkrDjadSB5E5/nL4Mx0S+KQoXgZ7F1vGHAHD4qOx?=
- =?us-ascii?Q?8BccXZJGXLud4DGVq5Pa+kYtlFKmylMAKATms/J0hqj7o6zG5fhPOLcPafKr?=
- =?us-ascii?Q?qIdj9xiskIh6MuO4QINhTMzGqBGLi1ElmNX+8wSA6ZlXleD6pPWeNvLuzY0j?=
- =?us-ascii?Q?SEL/vJK8UWaiVLPiDGRBJBTA7jvOpJSmWWputZw8Duum9jL4oAuwqSBPCJLx?=
- =?us-ascii?Q?QZc2QeFvjqf7duAY5huYELQnZJli6YTBtBDtx1NILwJeg0Z23pGYWCE025pr?=
- =?us-ascii?Q?MqLjx8s1vNPiA+rK9GyIre4GQqf1ZYSY5+Usy0K+tOEagXlE0u3CVWePhYfP?=
- =?us-ascii?Q?cKIXaGJtLmtm8cxYRVsPsd+bi3BMUV4w4w4bz7gL7s+cQ035b/Y1E/JgeAvq?=
- =?us-ascii?Q?9nsqHN3cRaaLTzFjfutJaNn/ZSqgD9x4t0I/acD32qxiYGAdSvLnhFBT5jwf?=
- =?us-ascii?Q?uA=3D=3D?=
-X-OriginatorOrg: est.tech
-X-MS-Exchange-CrossTenant-Network-Message-Id: b768c1ce-32a8-4e80-b3a3-08db7c7605ac
-X-MS-Exchange-CrossTenant-AuthSource: DBBP189MB1433.EURP189.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 04 Jul 2023 10:04:14.7479 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: d2585e63-66b9-44b6-a76e-4f4b217d97fd
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: hmUtjT7qPc8KEY3NYztXwNHmqrRANM94z/yyd4aIN43isbjwoCaZBQVChxHjtgdkCN9DU7HJNVYTYc1WGd3b0LsnJdVIqBX6fWFUR5NN4Qs=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB3P189MB2624
+In-Reply-To: <BN9PR11MB5276AC6CC905A57A370AE48E8C2EA@BN9PR11MB5276.namprd11.prod.outlook.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Disposition: inline
 X-Mailman-Approved-At: Wed, 05 Jul 2023 15:14:37 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=estab.onmicrosoft.com; 
- s=selector2-estab-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=hyccUYh2pEpQWEmch0Qj4pn+fn6yEzbnJjPn0aC669Q=;
- b=bjKH72fMcCbUjTPixy8obj7lt+k9xaEDSHrJfasWdYPFwYvC9oV7kzfjdf9l5CHRF/1nlMRufnmk8BZlQYL1xdO+Crc0dyyV4b6jAdH+w/jaQEAQ8lHFke4O9SesS1geH90aVLfwfsc5UqX+7y4wsMswPDkMzKu3lRLsvGRUu8o=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key) header.d=estab.onmicrosoft.com
- header.i=@estab.onmicrosoft.com header.a=rsa-sha256
- header.s=selector2-estab-onmicrosoft-com header.b=bjKH72fM
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=est.tech;
-Subject: [Intel-wired-lan] [PATCH 2/4] igb: Introduce txrx ring
- enable/disable functions
+ d=redhat.com; 
+ s=mimecast20190719; t=1688493595;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ in-reply-to:in-reply-to:references:references;
+ bh=4OJPbC0BqQ+AD3fMLftREevsgU5BDaBo7zNsHHsEvsU=;
+ b=GhKNYshijePubb3vtX/ime1T8WyvVa5drTaqVHMtBvLmWQ7J5fu+XXWHSxX/JSbmvAiliZ
+ Ww2cBsOUUiP9WVbFiFBDKIJpLTDyyb+y/sUI8rc+hlJw8W5GBhWGCXx9az7y7hV0oDVr/f
+ bHUK/CwtG7g3p7SyTStZmVuqx1MnvlM=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=GhKNYshi
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next V2 10/15] ice: save and
+ restore TX queue head
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -155,106 +127,71 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jesper Dangaard Brouer <hawk@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, netdev@vger.kernel.org,
- John Fastabend <john.fastabend@gmail.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Alexei Starovoitov <ast@kernel.org>, Eric Dumazet <edumazet@google.com>,
- Sriram Yagnaraman <sriram.yagnaraman@est.tech>,
- Tony Nguyen <anthony.l.nguyen@intel.com>, Jakub Kicinski <kuba@kernel.org>,
- intel-wired-lan@lists.osuosl.org, bpf@vger.kernel.org,
- Paolo Abeni <pabeni@redhat.com>, "David S . Miller" <davem@davemloft.net>
+Cc: "Burra, Phani R" <phani.r.burra@intel.com>, "Liu,
+ Yi L" <yi.l.liu@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ Jason Gunthorpe <jgg@nvidia.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add enable/disable functions for TX and RX rings, will be used in later
-patches when AF_XDP zero-copy support is added.
+On Tue, Jul 04, 2023 at 07:38:22AM +0000, Tian, Kevin wrote:
+> > From: Liu, Yi L <yi.l.liu@intel.com>
+> > Sent: Monday, July 3, 2023 8:54 PM
+> > 
+> > > From: Jason Gunthorpe <jgg@nvidia.com>
+> > > Sent: Wednesday, June 28, 2023 8:39 PM
+> > >
+> > > On Wed, Jun 28, 2023 at 08:11:07AM +0000, Liu, Yi L wrote:
+> > >
+> > > > > You can't call VFIO functions from a netdev driver. All this code
+> > > > > needs to be moved into the varient driver.
+> > > > >
+> > > > > This design seems pretty wild to me, it doesn't seem too robust
+> > > > > against a hostile VM - eg these DMAs can all fail under guest control,
+> > > > > and then what?
+> > > > >
+> > > > > We also don't have any guarentees defined for the VFIO protocol about
+> > > > > what state the vIOMMU will be in prior to reaching RUNNING.
+> > > >
+> > > > For QEMU, vIOMMU is supposed to be restored prior to devices per
+> > > > the below patch. But indeed, there is no guarantee that all VMMs
+> > > > will do the same as QEMU does.
+> > >
+> > > That doesn't seem consistent with how the kernel interface is defined
+> > > to work, I wonder why it was done?
+> > 
+> > Add Peter.
 
-Signed-off-by: Sriram Yagnaraman <sriram.yagnaraman@est.tech>
----
- drivers/net/ethernet/intel/igb/igb.h      |  5 ++-
- drivers/net/ethernet/intel/igb/igb_main.c | 41 +++++++++++++++++++++++
- 2 files changed, 45 insertions(+), 1 deletion(-)
+Yi - I think I replied to your private email, I'm not 100% sure this is the
+same thing asked?  I hope you received the email.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 94440af6cf4b..5fa011c6ef2f 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -384,7 +384,8 @@ enum e1000_ring_flags_t {
- 	IGB_RING_FLAG_RX_SCTP_CSUM,
- 	IGB_RING_FLAG_RX_LB_VLAN_BSWAP,
- 	IGB_RING_FLAG_TX_CTX_IDX,
--	IGB_RING_FLAG_TX_DETECT_HANG
-+	IGB_RING_FLAG_TX_DETECT_HANG,
-+	IGB_RING_FLAG_TX_DISABLED
- };
- 
- #define ring_uses_large_buffer(ring) \
-@@ -735,6 +736,8 @@ void igb_free_tx_resources(struct igb_ring *);
- void igb_free_rx_resources(struct igb_ring *);
- void igb_configure_tx_ring(struct igb_adapter *, struct igb_ring *);
- void igb_configure_rx_ring(struct igb_adapter *, struct igb_ring *);
-+void igb_txrx_ring_disable(struct igb_adapter *adapter, u16 qid);
-+void igb_txrx_ring_enable(struct igb_adapter *adapter, u16 qid);
- void igb_setup_tctl(struct igb_adapter *);
- void igb_setup_rctl(struct igb_adapter *);
- void igb_setup_srrctl(struct igb_adapter *, struct igb_ring *);
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index dadc3d423cfd..391c0eb136d9 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4856,6 +4856,47 @@ static void igb_configure_rx(struct igb_adapter *adapter)
- 	}
- }
- 
-+void igb_txrx_ring_disable(struct igb_adapter *adapter, u16 qid)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct igb_ring *tx_ring = adapter->tx_ring[qid];
-+	struct igb_ring *rx_ring = adapter->rx_ring[qid];
-+
-+	set_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags);
-+
-+	wr32(E1000_TXDCTL(tx_ring->reg_idx), 0);
-+	wr32(E1000_RXDCTL(rx_ring->reg_idx), 0);
-+
-+	/* Rx/Tx share the same napi context. */
-+	napi_disable(&rx_ring->q_vector->napi);
-+
-+	igb_clean_tx_ring(tx_ring);
-+	igb_clean_rx_ring(rx_ring);
-+
-+	memset(&rx_ring->rx_stats, 0, sizeof(rx_ring->rx_stats));
-+	memset(&tx_ring->tx_stats, 0, sizeof(tx_ring->tx_stats));
-+}
-+
-+void igb_txrx_ring_enable(struct igb_adapter *adapter, u16 qid)
-+{
-+	struct igb_ring *tx_ring = adapter->tx_ring[qid];
-+	struct igb_ring *rx_ring = adapter->rx_ring[qid];
-+
-+	/* Rx/Tx share the same napi context. */
-+	napi_enable(&rx_ring->q_vector->napi);
-+
-+	igb_configure_tx_ring(adapter, tx_ring);
-+	igb_configure_rx_ring(adapter, rx_ring);
-+
-+	/* call igb_desc_unused which always leaves
-+	 * at least 1 descriptor unused to make sure
-+	 * next_to_use != next_to_clean
-+	 */
-+	igb_alloc_rx_buffers(rx_ring, igb_desc_unused(rx_ring));
-+
-+	clear_bit(IGB_RING_FLAG_TX_DISABLED, &tx_ring->flags);
-+}
-+
- /**
-  *  igb_free_tx_resources - Free Tx Resources per Queue
-  *  @tx_ring: Tx descriptor ring for a specific queue
+> > 
+> > >
+> > > Since it is 2017, I suppose it has to do with internal qemu devices?
+> > 
+> > Do you mean the devices emulated by QEMU?
+> > 
+> 
+> This sounds counter-intuitive even for emulated devices. vIOMMU is
+> involved only when the device wants to access guest memory. But
+> by definition the RESUMING path should just restore the device to
+> the point where it is stopped. Why would such restore create a
+> dependency on vIOMMU state?
+
+For why QEMU migrates vIOMMU earlier than PCI generic devices, I can try to
+repeat here: IIRC it's because some device needs dma translations during
+post_load(), I forgot which device and why, but it can make some sense to
+me if recovering states of the pci device may need help from a translation.
+
+If someone wants to know the details, one can just make vIOMMU prio lower
+than pci devices and give it a shot and see what explodes first.
+
+Thanks,
+
 -- 
-2.34.1
+Peter Xu
 
 _______________________________________________
 Intel-wired-lan mailing list
