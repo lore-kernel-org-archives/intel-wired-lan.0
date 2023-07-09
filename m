@@ -4,109 +4,109 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B955EB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Jul 2023 15:22:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87AA7EB64D9
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Jul 2023 15:22:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B12EF60F64;
-	Mon, 10 Jul 2023 15:22:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B12EF60F64
+	by smtp3.osuosl.org (Postfix) with ESMTP id 100FA60F6C;
+	Mon, 10 Jul 2023 15:22:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 100FA60F6C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689002542;
-	bh=MTJWVAWPecYI6yQgIrP01VdymotFk9G9MdvU2D0+sGQ=;
+	s=default; t=1689002547;
+	bh=yDrsvXxGcXQg+gacaRydcVIwvWemhm82XcUAY0FqzJ4=;
 	h=To:References:From:Date:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=LYnEl/mtr8DJlRX3+3anCbP6NA14/lYapsE3waAFhBkcd59OuX2sehQrwp6ACZApU
-	 MZRls8S0TpSFem8+kJbnChjPrn9VrGlOpn1Y9ntWkmKp+QaQkltTDEY3I8DMa1H82G
-	 LbS8vIiTzH1XLRU3oFelobIIy+VFh9xqyPTpuetf+9T5mmRP1eYAIRE/M5eqeK+vg4
-	 b6q+C0F2r0ZRQERMHLtkcssiEhRdkCLZ9wYz/H/l4OnkakfJxg5BL7kHqrGrkn3x6i
-	 NVyE7x19261kL15ImettFNU9Mdz0YQrfsm7FFAtAbD/1LahP5nB/mD4whoWkpwPqSm
-	 CdSDNZkFDtKZw==
+	b=GBwfUcbJ/ixb0vBNzcAcIXOXa8xomd0OkYyNfvlvwtze+IVxDQGXYPlVuzHFl7Ec7
+	 +PfWO75pSzDQIVTdZRSBUY5LiA/ej88njvQ+opgVerlnCAL0xIvbAYRSSfXXTjTwAU
+	 SHGIZn7rZWmwcPt9WV1nDw9n3F2pL9wN65cV/HhIKkk/UIWde4K5UtKa85Lrk77PWH
+	 Ntau6A3XIMd8ocymwUP7vo9RxaVJ/GBRU96lgaMrw0ajxB13Z4ULo7JLzfEYXg/IHk
+	 ATNoL8vH3kwsg6Z12E4CAarcVy1S5N5pR0WzMBrOVBZr0qSDB32CdRZ9uznYvEUH4W
+	 MsNiZ1x6c9cIw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ghGSlUQIg18W; Mon, 10 Jul 2023 15:22:21 +0000 (UTC)
+	with ESMTP id JqCzsP6g99g0; Mon, 10 Jul 2023 15:22:26 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A6B8960F5D;
-	Mon, 10 Jul 2023 15:22:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A6B8960F5D
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 137C91BF32D
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jul 2023 05:16:46 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F1AED60F63;
+	Mon, 10 Jul 2023 15:22:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F1AED60F63
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 5ACB11BF8A8
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jul 2023 05:16:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DDB8041570
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jul 2023 05:16:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DDB8041570
+ by smtp3.osuosl.org (Postfix) with ESMTP id 33F1460BBE
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jul 2023 05:16:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 33F1460BBE
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id q_VLncvg_ZJq for <intel-wired-lan@lists.osuosl.org>;
- Sun,  9 Jul 2023 05:16:45 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Qlab7jjSd0KY for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  9 Jul 2023 05:16:48 +0000 (UTC)
 X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E2C5F4156E
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E2C5F4156E
- for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jul 2023 05:16:44 +0000 (UTC)
-Received: by mail-pf1-x442.google.com with SMTP id
- d2e1a72fcca58-668704a5b5bso2859105b3a.0
- for <intel-wired-lan@lists.osuosl.org>; Sat, 08 Jul 2023 22:16:44 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 79BBA60BA9
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 79BBA60BA9
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  9 Jul 2023 05:16:48 +0000 (UTC)
+Received: by mail-pl1-x642.google.com with SMTP id
+ d9443c01a7336-1b7e66ff65fso24980605ad.0
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 08 Jul 2023 22:16:48 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1688879804; x=1691471804;
+ d=1e100.net; s=20221208; t=1688879808; x=1691471808;
  h=content-transfer-encoding:content-language:in-reply-to:mime-version
  :user-agent:date:message-id:from:references:cc:to:subject
  :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
- bh=Ztnp1qTer1IaWaOObtyfdo8muim3ULQZOmol0cBsgFo=;
- b=Ay4nYgSJW4wHpy8WuKuL/xYIH4udAcMeeJgSfFa6CZjfWApSGmganaTupy92zCAvUK
- oqhQ9i5hZAlXZkOBvv8kumj/l9zwNEDEXl5+iAHbKl+WQGY2LP7N8Tf5/9I2R41k5zmE
- OK/XSrhR5igmMDWQvkjI+d7s3xhqe7gBHc1enjmB1QNBPXIL4j/92GEix4A+8Qq+ivpb
- HDadLmQ4WQXT5PI+w2e0Qlx0dpyKHqSb1zxBGMvv0kUF603gk6enCdckOjsKSdFEtzom
- YsYOpbilcapkE4+Hn9OeHBYltcvwPo+9O5a53uXTzFO1BYydH5OIg7bdu4TWe1XIEFMo
- 5BsA==
-X-Gm-Message-State: ABy/qLaWYD2r+umsImlUp1XHjoMthGxDQ/DVcOSlpJsEcz22cxKPURjx
- 0e65byOTjk8pX4xW7mrGtz4=
-X-Google-Smtp-Source: APBJJlGdQ+mZwEX7hoR7kwbuM2LjVWZ2BiFPsOtvISNt912jjNntEHQo8YA+l89fvmmiQE4Ea48isQ==
-X-Received: by 2002:a05:6a20:3d85:b0:12c:9100:362f with SMTP id
- s5-20020a056a203d8500b0012c9100362fmr12083123pzi.4.1688879804232; 
- Sat, 08 Jul 2023 22:16:44 -0700 (PDT)
+ bh=f5IT/4pg2ojRd4xm57HWhrEgHwR41enNj19n7FJ7HSQ=;
+ b=C2n9Tjtmp13fGmiurq1kczh2g+ZVmsMV1bYEnALC3FeV5rBSRMErLIQFQv2vGn/dPF
+ +WSAsUvqB1b/IqkQhSbtfx/uWTMSYbkb066BQaOuoU2lZRJPM62sZdbJVPbOghBiC9ie
+ nlVZ1WAVlqRXf4sUExQz6ztKr+W2V6mr4k+kV/erbL0ikEnf5jx6rdJ9aa0Fj0iBSi4x
+ Mrd+DWopi9x2tNL/cCoxeAydyAZHBo61yNFUw36u1j2FXHx5Jl6qwra4aeJrHfz6ZbyE
+ ql4x9Tk7bKDWVoib1RJGpJR20TDjfLpIbRqG9Iumxxpnze0JCOeHKuZOzD70TrW6kpHf
+ ohcQ==
+X-Gm-Message-State: ABy/qLZzORmnLeDr1OCgm0STlzWbFCSe4PqY92E20d0yFPWEllwShPTv
+ V81Ex99yf64o7Q2NWXNLjpk=
+X-Google-Smtp-Source: APBJJlEvHN3XmnInifh1UC3s8BpriGfww6vlI8aI3/l8lfEJntt8m/UB1LDbt6hPZDlePX07akcwpQ==
+X-Received: by 2002:a17:902:d507:b0:1b9:d335:2216 with SMTP id
+ b7-20020a170902d50700b001b9d3352216mr4003737plg.20.1688879807819; 
+ Sat, 08 Jul 2023 22:16:47 -0700 (PDT)
 Received: from ?IPv6:2409:8a55:301b:e120:1523:3ecb:e154:8f22?
  ([2409:8a55:301b:e120:1523:3ecb:e154:8f22])
  by smtp.gmail.com with ESMTPSA id
- b18-20020aa78712000000b0066684d8115bsm5134939pfo.178.2023.07.08.22.16.40
+ 21-20020a170902c11500b001ab12ccc2a7sm5669261pli.98.2023.07.08.22.16.44
  (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
- Sat, 08 Jul 2023 22:16:43 -0700 (PDT)
+ Sat, 08 Jul 2023 22:16:47 -0700 (PDT)
 To: Alexander Lobakin <aleksander.lobakin@intel.com>,
  Yunsheng Lin <linyunsheng@huawei.com>
 References: <20230705155551.1317583-1-aleksander.lobakin@intel.com>
- <20230705155551.1317583-6-aleksander.lobakin@intel.com>
- <138b94a7-c186-bdd9-e073-2794760c9454@huawei.com>
- <09a9a9ef-cf77-3b60-2845-94595a42cf3e@intel.com>
+ <20230705155551.1317583-7-aleksander.lobakin@intel.com>
+ <6b8bc66f-8a02-b6b4-92cc-f8aaf067abd8@huawei.com>
+ <bc495d87-3968-495f-c672-bf1bab38524a@intel.com>
 From: Yunsheng Lin <yunshenglin0825@gmail.com>
-Message-ID: <71a8bab4-1a1d-cb1a-d75c-585a14c6fb2e@gmail.com>
-Date: Sun, 9 Jul 2023 13:16:33 +0800
+Message-ID: <4946b9df-66ea-d184-b97c-0ba687e41df8@gmail.com>
+Date: Sun, 9 Jul 2023 13:16:39 +0800
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
  Thunderbird/78.10.2
 MIME-Version: 1.0
-In-Reply-To: <09a9a9ef-cf77-3b60-2845-94595a42cf3e@intel.com>
+In-Reply-To: <bc495d87-3968-495f-c672-bf1bab38524a@intel.com>
 Content-Language: en-GB
 X-Mailman-Approved-At: Mon, 10 Jul 2023 15:22:19 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20221208; t=1688879804; x=1691471804;
+ d=gmail.com; s=20221208; t=1688879808; x=1691471808;
  h=content-transfer-encoding:content-language:in-reply-to:mime-version
  :user-agent:date:message-id:from:references:cc:to:subject:from:to:cc
  :subject:date:message-id:reply-to;
- bh=Ztnp1qTer1IaWaOObtyfdo8muim3ULQZOmol0cBsgFo=;
- b=IsgnDEPrWv2qRNJgNRsVo8hNkyVbhR4y/lQoM5aXev+JVsfWrzOlmuqSFm45QBgJ8R
- 6tkBuQZRIooyMTUjcoEjpg7QgA8qgnth8KEaXac8CIVHISlQqaJHMSE+eUB3cuP/MW6Q
- aDK7U9HJHKaztcZa0wu0XWkyNSR3vEbtAZfH07pzExxQD+2AfL/pNPCQrFZRk+yB2P/K
- k2RSyMaC5n1SIx1fvr9sE9VvPDivv2AfEfA5sZuVwvq5GaJYnIE4I52sNLmVawpLK4iu
- XibGU11vQEo9T1aMS7xj6lou+AeoQMlIfzf1THbJWKm0plNF5GUYez1Wpr51kxLybivP
- MrbQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=f5IT/4pg2ojRd4xm57HWhrEgHwR41enNj19n7FJ7HSQ=;
+ b=M6th2hcmP2yhN28ewtB2KAsywav6oXtLYTfObWDIyUVcRH2JmHoSX1GBNT9Y1MGboT
+ J0N7FaO9RXNehWOtIMbDhoR9TsIa9I8tn5QDTddEiT9xncgyfG8OQYR0NHEyIY5IrydX
+ FcDOJ6+ymOJJyn7Q7pVgednnypGlgfZA1iwTnJVm9yERN1cWUe6+IPg0ujcWZZj41y/z
+ OQpxZVXY8R1sYRGDBaPwe6LS1YUECU73KOYvqvOXOZvFU1lHIMRZuUPBAXv4EwvfZkLE
+ qS884K9+hv8H8TlAWP2plkTb6yGqpj16ear8ie/CXrj7J3+dgvoQtDU4Kml+0YzrRgiY
+ qYhA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20221208 header.b=IsgnDEPr
-Subject: Re: [Intel-wired-lan] [PATCH RFC net-next v4 5/9] libie: add Rx
- buffer management (via Page Pool)
+ header.a=rsa-sha256 header.s=20221208 header.b=M6th2hcm
+Subject: Re: [Intel-wired-lan] [PATCH RFC net-next v4 6/9] iavf: switch to
+ Page Pool
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -133,110 +133,74 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 2023/7/7 0:28, Alexander Lobakin wrote:
-> From: Yunsheng Lin <linyunsheng@huawei.com>
-> Date: Thu, 6 Jul 2023 20:47:28 +0800
-> 
->> On 2023/7/5 23:55, Alexander Lobakin wrote:
->>
->>> +/**
->>> + * libie_rx_page_pool_create - create a PP with the default libie settings
->>> + * @napi: &napi_struct covering this PP (no usage outside its poll loops)
->>> + * @size: size of the PP, usually simply Rx queue len
->>> + *
->>> + * Returns &page_pool on success, casted -errno on failure.
->>> + */
->>> +struct page_pool *libie_rx_page_pool_create(struct napi_struct *napi,
->>> +					    u32 size)
->>> +{
->>> +	struct page_pool_params pp = {
->>> +		.flags		= PP_FLAG_DMA_MAP | PP_FLAG_DMA_SYNC_DEV,
->>> +		.order		= LIBIE_RX_PAGE_ORDER,
->>> +		.pool_size	= size,
->>> +		.nid		= NUMA_NO_NODE,
->>> +		.dev		= napi->dev->dev.parent,
->>> +		.napi		= napi,
->>> +		.dma_dir	= DMA_FROM_DEVICE,
->>> +		.offset		= LIBIE_SKB_HEADROOM,
->>
->> I think it worth mentioning that the '.offset' is not really accurate
->> when the page is split, as we do not really know what is the offset of
->> the frag of a page except for the first frag.
-> 
-> Yeah, this is read as "offset from the start of the page or frag to the
-> actual frame start, i.e. its Ethernet header" or "this is just
-> xdp->data - xdp->data_hard_start".
+On 2023/7/7 0:38, Alexander Lobakin wrote:
 
-So the problem seems to be if most of drivers have a similar reading as
-libie does here, as .offset seems to have a clear semantics which is used
-to skip dma sync operation for buffer range that is not touched by the
-dma operation. Even if it happens to have the same value of "offset from
-the start of the page or frag to the actual frame start", I am not sure
-it is future-proofing to reuse it.
-
-When page frag is added, I didn't really give much thought about that as
-we use it in a cache coherent system.
-It seems we might need to extend or update that semantics if we really want
-to skip dma sync operation for all the buffer ranges that are not touched
-by the dma operation for page split case.
-Or Skipping dma sync operation for all untouched ranges might not be worth
-the effort, because it might need a per frag dma sync operation, which is
-more costly than a batched per page dma sync operation. If it is true, page
-pool already support that currently as my understanding, because the dma
-sync operation is only done when the last frag is released/freed.
-
-> 
+...
+ 
 >>
->>> +	};
->>> +	size_t truesize;
+>>>  /**
+>>> @@ -766,13 +742,19 @@ void iavf_free_rx_resources(struct iavf_ring *rx_ring)
+>>>   **/
+>>>  int iavf_setup_rx_descriptors(struct iavf_ring *rx_ring)
+>>>  {
+>>> -	struct device *dev = rx_ring->dev;
+>>> -	int bi_size;
+>>> +	struct page_pool *pool;
 >>> +
->>> +	pp.max_len = libie_rx_sync_len(napi->dev, pp.offset);
+>>> +	pool = libie_rx_page_pool_create(&rx_ring->q_vector->napi,
+>>> +					 rx_ring->count);
+>>
+>> If a page is able to be spilt between more than one desc, perhaps the
+>> prt_ring size does not need to be as big as rx_ring->count.
+> 
+> But we doesn't know in advance, right? Esp. given that it's hidden in
+> the lib. But anyway, you can only assume that in regular cases if you
+> always allocate frags of the same size, PP will split pages when 2+
+> frags can fit there or return the whole page otherwise, but who knows
+> what might happen.
 
-As mentioned above, if we depend on the last released/freed frag to do the
-dma sync, the pp.max_len might need to cover all the frag.
+It seems intel driver is able to know the size of memory it needs when
+creating the ring/queue/napi/pp, maybe the driver only tell the libie
+how many descs does it use for queue, and libie can adjust it accordingly?
 
+> BTW, with recent recycling optimization, most of recycling is done
+> directly through cache, not ptr_ring. So I'd even say it's safe to start
+> creating smaller ptr_rings in the drivers.
+
+The problem is that we may use more memory than before for certain case
+if we don't limit the size of ptr_ring, unless we can ensure all of
+recycling is done directly through cache, not ptr_ring.
+
+> 
+>>
+>>> +	if (IS_ERR(pool))
+>>> +		return PTR_ERR(pool);
 >>> +
->>> +	/* "Wanted" truesize, passed to page_pool_dev_alloc() */
->>> +	truesize = roundup_pow_of_two(SKB_HEAD_ALIGN(pp.offset + pp.max_len));
->>> +	pp.init_arg = (void *)truesize;
+>>> +	rx_ring->pp = pool;
+> 
+> [...]
+> 
+>>>  	/* build an skb around the page buffer */
+>>> -	skb = napi_build_skb(va - IAVF_SKB_PAD, truesize);
+>>> -	if (unlikely(!skb))
+>>> +	skb = napi_build_skb(va, rx_buffer->truesize);
+>>> +	if (unlikely(!skb)) {
+>>> +		page_pool_put_page(page->pp, page, size, true);
 >>
->> I am not sure if it is correct to use pp.init_arg here, as it is supposed to
->> be used along with init_callback. And if we want to change the implemetation
+>> Isn't it more correct to call page_pool_put_full_page() here?
+>> as we do not know which frag is used for the rx_buffer, and depend
+>> on the last released frag to do the syncing, maybe I should mention
+>> that in Documentation/networking/page_pool.rst.
 > 
-> I know. I abused it to save 1 function argument :p It's safe since I
-> don't use init_callback (not an argument).
-> I was thinking also of having a union in PP params or even a new field
-> like "wanted true size", so that your function could even take values
-> from there in certain cases (e.g. if I pass 0 as parameter).
-> 
->> of init_callback, we may stuck with it as the driver is using it very
->> differently here.
->>
->> Is it possible to pass the 'wanted true size' by adding a parameter for
->> libie_rx_alloc()?
-> 
-> Yes, or I could store it somewhere on the ring, but looks uglier =\ This
-> one does as well to some degree, but at least hidden in the library and
-> doesn't show up in the drivers :D
+> Ooof, maybe. My first try with PP frags. So when we use frags, we always
+> must use _full_page() / p.max_len instead of the actual frame size?
 
-It seems most hw driver know the size of memory it needs when creating
-the ring/queue, setting the frag size and deciding how many is a page
-split into before allocation seems like a possible future optimization.
-
-For now, it would be better to add helper to acess pp.init_arg at least
-instead of acess pp.init_arg directly to make it more obvious and make
-the future optimization more easier.
+Currently, _full_page() / p.max_len must be used to ensure the correct
+dma sync operation.
+But as mentioned in the previous patch, it might be about what is the
+semantics of dma sync operation for page split case.
 
 > 
->>
->>> +
->>> +	return page_pool_create(&pp);
->>> +}
->>> +EXPORT_SYMBOL_NS_GPL(libie_rx_page_pool_create, LIBIE);
-> 
-> Thanks,
-> Olek
-
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
