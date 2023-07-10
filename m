@@ -4,70 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E3D5C001E0
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Jul 2023 15:22:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26E10EB64DA
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Jul 2023 15:22:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2323E60F75;
-	Mon, 10 Jul 2023 15:22:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2323E60F75
+	by smtp3.osuosl.org (Postfix) with ESMTP id CCF1460F60;
+	Mon, 10 Jul 2023 15:22:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CCF1460F60
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689002560;
-	bh=dKPlFye0uRSokerTo+4YGZvF6aOv1HvAvnvUOGZCrwY=;
+	s=default; t=1689002563;
+	bh=GtvK3ul9m8IgKgCkGEOAtVAxogZySZWRSIiTCbVoRE0=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=kVHrKhLm4zoN/WqUNPK5f4Ix8oB14ciVTVWnQs8d2jF6Pv8kBDVwMlo0NdH84s4do
-	 OEKGeF3J+xv5YMMCZBAkNh7w+4FgxHfcHT2CsMX1rVO2KO0TMbY0W+1AsehuDlpND6
-	 XnlGU6J3/T8Crs2Pu5DEMizGF0+ar/tpSwRyk37eFpjBc30LtwvH7GGOST2coLp4j1
-	 ov8YJpE04SUDOiS3kNzPueLjwF02wwgWWQITOviBAsI8Br7MdY/2QSVZm3M/8AfGVb
-	 K/Qv2LEjo6479Y8kcpja77UoDvL2n9qGSlPurxQykU0UFjCxrh6MSPNDcwZD2r/Sd6
-	 YIr3B/3PxwAoQ==
+	b=aX3F66UOfULqvob3i1Ddx+7NkEDVTdbo0jbR+4la9SZohRqog+FW5f6Ysfx/DQoZX
+	 6uyKdBjzFMnH85/+2L6dj4vNIXehEQl2sAuru8v6hGJym0cGmeeQqPR6XVQrGmG06e
+	 shymwkxrqiZowBmNQcTM93kkC1sqns08s1DiUSegzM10a1e6FWxUIQBHt1nMiTilyR
+	 0P8WSCwpXb+w7/prKj0XYU6LLIqcyZHFNyVNxC1dm2qNPTF7w+oR0KGCKMM92bT7gl
+	 c+QMH169CiyQ9KtWWYBOo/QfKshy7Bu1IJfXSWuY2r/ELBl1DiAlL1VI/uij00Ncdv
+	 zGU/yl/iHhHig==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 49RhUK_PhTVI; Mon, 10 Jul 2023 15:22:38 +0000 (UTC)
+	with ESMTP id cOmxKD0Bm4It; Mon, 10 Jul 2023 15:22:43 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 98FCB60F66;
-	Mon, 10 Jul 2023 15:22:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 98FCB60F66
+	by smtp3.osuosl.org (Postfix) with ESMTP id E06F360F7C;
+	Mon, 10 Jul 2023 15:22:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E06F360F7C
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 4A62B1BF424
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:39:14 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3EC581BF424
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:41:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1D717408AE
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:39:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1D717408AE
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1509D408B4
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:41:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1509D408B4
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 726yD2RlD3D5 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 10 Jul 2023 06:39:12 +0000 (UTC)
+ with ESMTP id Ntorst-A_jmn for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 10 Jul 2023 06:41:14 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0CD4A408A5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B6936408AE
 Received: from mail.nfschina.com (unknown [42.101.60.195])
- by smtp4.osuosl.org (Postfix) with SMTP id 0CD4A408A5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:39:11 +0000 (UTC)
+ by smtp4.osuosl.org (Postfix) with SMTP id B6936408AE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:41:10 +0000 (UTC)
 Received: from localhost.localdomain (unknown [180.167.10.98])
- by mail.nfschina.com (Maildata Gateway V2.8.8) with ESMTPA id 95B15602A11D5;
- Mon, 10 Jul 2023 14:38:41 +0800 (CST)
+ by mail.nfschina.com (Maildata Gateway V2.8.8) with ESMTPA id 495CF602A8713;
+ Mon, 10 Jul 2023 14:41:07 +0800 (CST)
 X-MD-Sfrom: suhui@nfschina.com
 X-MD-SrcIP: 180.167.10.98
 From: Su Hui <suhui@nfschina.com>
-To: wg@grandegger.com, mkl@pengutronix.de, davem@davemloft.net,
- edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
- irusskikh@marvell.com, rmody@marvell.com, skalluru@marvell.com,
- GR-Linux-NIC-Dev@marvell.com, yisen.zhuang@huawei.com,
- salil.mehta@huawei.com, jesse.brandeburg@intel.com,
- anthony.l.nguyen@intel.com, steve.glendinning@shawell.net,
- iyappan@os.amperecomputing.com, keyur@os.amperecomputing.com,
- quan@os.amperecomputing.com, andrew@lunn.ch, hkallweit1@gmail.com,
- linux@armlinux.org.uk, mostrows@earthlink.net, xeb@mail.ru,
- qiang.zhao@nxp.com
-Date: Mon, 10 Jul 2023 14:38:28 +0800
-Message-Id: <20230710063828.172593-1-suhui@nfschina.com>
+To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com
+Date: Mon, 10 Jul 2023 14:41:05 +0800
+Message-Id: <20230710064105.173647-1-suhui@nfschina.com>
 X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
 X-Mailman-Approved-At: Mon, 10 Jul 2023 15:22:20 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v2 00/10] Remove unnecessary
+Subject: [Intel-wired-lan] [PATCH net-next v2 06/10] ice: remove unnecessary
  (void*) conversions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -81,10 +74,9 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: uttenthaler@ems-wuensche.com, netdev@vger.kernel.org,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-can@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- wuych <yunchuan@nfschina.com>, linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org,
+ wuych <yunchuan@nfschina.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
@@ -92,41 +84,35 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: wuych <yunchuan@nfschina.com>
 
-Changes in v2:
-	move declarations to be reverse xmas tree.
-	compile it in net and net-next branch.
-	remove some error patches in v1.
+Pointer variables of void * type do not require type cast.
 
-PATCH v1 link:
-https://lore.kernel.org/all/20230628024121.1439149-1-yunchuan@nfschina.com/
+Signed-off-by: wuych <yunchuan@nfschina.com>
+---
+ drivers/net/ethernet/intel/ice/ice_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-wuych (10):
-  net: wan: Remove unnecessary (void*) conversions
-  net: atlantic: Remove unnecessary (void*) conversions
-  net: ppp: Remove unnecessary (void*) conversions
-  net: hns3: remove unnecessary (void*) conversions
-  net: hns: Remove unnecessary (void*) conversions
-  ice: remove unnecessary (void*) conversions
-  ethernet: smsc: remove unnecessary (void*) conversions
-  net: mdio: Remove unnecessary (void*) conversions
-  can: ems_pci: Remove unnecessary (void*) conversions
-  net: bna: Remove unnecessary (void*) conversions
-
- drivers/net/can/sja1000/ems_pci.c             |  6 +++---
- .../aquantia/atlantic/hw_atl2/hw_atl2.c       | 12 ++++++------
- .../atlantic/hw_atl2/hw_atl2_utils_fw.c       |  2 +-
- drivers/net/ethernet/brocade/bna/bnad.c       | 19 +++++++++----------
- .../ethernet/hisilicon/hns3/hns3_ethtool.c    |  2 +-
- drivers/net/ethernet/hisilicon/hns_mdio.c     | 10 +++++-----
- drivers/net/ethernet/intel/ice/ice_main.c     |  4 ++--
- drivers/net/ethernet/smsc/smsc911x.c          |  4 ++--
- drivers/net/ethernet/smsc/smsc9420.c          |  4 ++--
- drivers/net/mdio/mdio-xgene.c                 |  4 ++--
- drivers/net/ppp/pppoe.c                       |  4 ++--
- drivers/net/ppp/pptp.c                        |  4 ++--
- drivers/net/wan/fsl_ucc_hdlc.c                |  6 +++---
- 13 files changed, 40 insertions(+), 41 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 93979ab18bc1..52af3bd80868 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -6242,7 +6242,7 @@ static void ice_tx_dim_work(struct work_struct *work)
+ 	u16 itr;
+ 
+ 	dim = container_of(work, struct dim, work);
+-	rc = (struct ice_ring_container *)dim->priv;
++	rc = dim->priv;
+ 
+ 	WARN_ON(dim->profile_ix >= ARRAY_SIZE(tx_profile));
+ 
+@@ -6262,7 +6262,7 @@ static void ice_rx_dim_work(struct work_struct *work)
+ 	u16 itr;
+ 
+ 	dim = container_of(work, struct dim, work);
+-	rc = (struct ice_ring_container *)dim->priv;
++	rc = dim->priv;
+ 
+ 	WARN_ON(dim->profile_ix >= ARRAY_SIZE(rx_profile));
+ 
 -- 
 2.30.2
 
