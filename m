@@ -4,115 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9AC6DEB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Jul 2023 15:22:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E3D5C001E0
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 10 Jul 2023 15:22:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 523F960F79;
-	Mon, 10 Jul 2023 15:22:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 523F960F79
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2323E60F75;
+	Mon, 10 Jul 2023 15:22:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2323E60F75
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689002555;
-	bh=fUn9Im1y2TVAnUf+KY84CwlnqZxNAkDhA/YSG0Yz/9s=;
+	s=default; t=1689002560;
+	bh=dKPlFye0uRSokerTo+4YGZvF6aOv1HvAvnvUOGZCrwY=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=j7+kTqbC9tTKgs4CA41Jg0at2B6OrjeV/SFPdopBTRRAnIqaEWqLh9bHK0SotIc5+
-	 n/PN2qELbhJZ6fXQU09QQxBPbBESELjUidtUsqA9zp8/CFoVkkguf0NDo8MdtEZl63
-	 t9nK5XL6nOsj4WbMFkGAVPc98bcoaJwn7A9BB4aXP2tbF1c5o1Qw26qywOz9UfFdwE
-	 7XdN+SG18Y3JpPf2z3+Sg6qjCP7A4F7Z9iFbHdzTPV9ie72ASbRncbDkCzHcuDCtH7
-	 rlEEfWR+X9WeImv5kJpummScVVOUbl9iLWLNn7AevcLFpEKjT4chAgwSJmXRagXNiP
-	 oFdqas8Gf1rBw==
+	b=kVHrKhLm4zoN/WqUNPK5f4Ix8oB14ciVTVWnQs8d2jF6Pv8kBDVwMlo0NdH84s4do
+	 OEKGeF3J+xv5YMMCZBAkNh7w+4FgxHfcHT2CsMX1rVO2KO0TMbY0W+1AsehuDlpND6
+	 XnlGU6J3/T8Crs2Pu5DEMizGF0+ar/tpSwRyk37eFpjBc30LtwvH7GGOST2coLp4j1
+	 ov8YJpE04SUDOiS3kNzPueLjwF02wwgWWQITOviBAsI8Br7MdY/2QSVZm3M/8AfGVb
+	 K/Qv2LEjo6479Y8kcpja77UoDvL2n9qGSlPurxQykU0UFjCxrh6MSPNDcwZD2r/Sd6
+	 YIr3B/3PxwAoQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Bg805nlHHaFT; Mon, 10 Jul 2023 15:22:34 +0000 (UTC)
+	with ESMTP id 49RhUK_PhTVI; Mon, 10 Jul 2023 15:22:38 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 537C960F64;
-	Mon, 10 Jul 2023 15:22:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 537C960F64
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id D5D261BF475
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 01:04:48 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 98FCB60F66;
+	Mon, 10 Jul 2023 15:22:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 98FCB60F66
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 4A62B1BF424
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:39:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id AD7DD81764
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 01:04:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AD7DD81764
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1D717408AE
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:39:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1D717408AE
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id I8PWL1zOpc37 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 10 Jul 2023 01:04:48 +0000 (UTC)
-X-Greylist: delayed 00:07:06 by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D717181757
-Received: from mx-lax3-1.ucr.edu (mx-lax3-1.ucr.edu [169.235.156.35])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D717181757
- for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 01:04:47 +0000 (UTC)
-Received: from mail-il1-f197.google.com ([209.85.166.197])
- by smtp-lax3-1.ucr.edu with ESMTP/TLS/ECDHE-RSA-AES128-GCM-SHA256;
- 09 Jul 2023 17:57:41 -0700
-Received: by mail-il1-f197.google.com with SMTP id
- e9e14a558f8ab-345ceee5a68so13104165ab.3
- for <intel-wired-lan@lists.osuosl.org>; Sun, 09 Jul 2023 17:57:40 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1688950660; x=1691542660;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
- :reply-to;
- bh=/wAseA0ncrRwgDlHK9AT72liWPmh1dR/ULxlrBgaw0E=;
- b=T7plpYXAP7340ZueA9ZBA8nsh6B9A0jhVcpIBrPA3+2F+i7FajdTGnIf0LcpEFgGBL
- Woz2xiCaFf4NrHqm+eh9qLpwyol5mnfHjaHEmvDy3DnvdXcjo0cA8McaI1WdN8hb3n/A
- JyjEtjxCUIRseCPKtDDx/GuUKTfqkskbQwjbGtZRnEwWCFMzNYuuajLEqiRy1j1JT45C
- lAIUFG/MbmfAmDYlXyMvDNgIklS0+jxI/ONWlVgDjOX3Mto5Wh6XV1S+myMk0cijfmHp
- mAHAsC9EfZSb/jEZMnEqM/8H0h8SB2TnfGd+010dfhHMzjo0LaqzfJx9o1TBtH/RyUPU
- bOuA==
-X-Gm-Message-State: ABy/qLbwG2E2KuYtvETMbBjTpl+d7Vxf/OBRMeF7KFt2n+/3Xzk8mfpb
- ilduqH2y2AN6gh8GsndfCwXNO4+P694iguAPzbpq9kpcbZ90Gtn2pqZ4YHbOtLF68cEifCk3Mmc
- gVjkHP3Torfupvh3bZlTFB877Us3FROM=
-X-Received: by 2002:a92:cc44:0:b0:346:3554:4d68 with SMTP id
- t4-20020a92cc44000000b0034635544d68mr9878858ilq.17.1688950659903; 
- Sun, 09 Jul 2023 17:57:39 -0700 (PDT)
-X-Google-Smtp-Source: APBJJlFCflDL0AvD7yBlFIGgUph6Hoi9nSjWAOdNgwDcpPpYLlABzmbu4jcmo4yCsnaE5mK6ijEVOw==
-X-Received: by 2002:a92:cc44:0:b0:346:3554:4d68 with SMTP id
- t4-20020a92cc44000000b0034635544d68mr9878849ilq.17.1688950659634; 
- Sun, 09 Jul 2023 17:57:39 -0700 (PDT)
-Received: from yuhao-ms.. ([2600:6c51:4700:3f7c:3e6a:a7ff:fe52:5148])
- by smtp.gmail.com with ESMTPSA id
- d17-20020a92d791000000b0034587c5533fsm3155651iln.51.2023.07.09.17.57.38
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Sun, 09 Jul 2023 17:57:39 -0700 (PDT)
-From: Yu Hao <yhao016@ucr.edu>
-To: 
-Date: Sun,  9 Jul 2023 17:57:35 -0700
-Message-Id: <20230710005736.3273464-1-yhao016@ucr.edu>
-X-Mailer: git-send-email 2.34.1
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 726yD2RlD3D5 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 10 Jul 2023 06:39:12 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0CD4A408A5
+Received: from mail.nfschina.com (unknown [42.101.60.195])
+ by smtp4.osuosl.org (Postfix) with SMTP id 0CD4A408A5
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 10 Jul 2023 06:39:11 +0000 (UTC)
+Received: from localhost.localdomain (unknown [180.167.10.98])
+ by mail.nfschina.com (Maildata Gateway V2.8.8) with ESMTPA id 95B15602A11D5;
+ Mon, 10 Jul 2023 14:38:41 +0800 (CST)
+X-MD-Sfrom: suhui@nfschina.com
+X-MD-SrcIP: 180.167.10.98
+From: Su Hui <suhui@nfschina.com>
+To: wg@grandegger.com, mkl@pengutronix.de, davem@davemloft.net,
+ edumazet@google.com, kuba@kernel.org, pabeni@redhat.com,
+ irusskikh@marvell.com, rmody@marvell.com, skalluru@marvell.com,
+ GR-Linux-NIC-Dev@marvell.com, yisen.zhuang@huawei.com,
+ salil.mehta@huawei.com, jesse.brandeburg@intel.com,
+ anthony.l.nguyen@intel.com, steve.glendinning@shawell.net,
+ iyappan@os.amperecomputing.com, keyur@os.amperecomputing.com,
+ quan@os.amperecomputing.com, andrew@lunn.ch, hkallweit1@gmail.com,
+ linux@armlinux.org.uk, mostrows@earthlink.net, xeb@mail.ru,
+ qiang.zhao@nxp.com
+Date: Mon, 10 Jul 2023 14:38:28 +0800
+Message-Id: <20230710063828.172593-1-suhui@nfschina.com>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
 X-Mailman-Approved-At: Mon, 10 Jul 2023 15:22:20 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
- d=ucr.edu; i=@ucr.edu; q=dns/txt; s=selector3;
- t=1688951088; x=1720487088;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=CfcO7Q8FTml/EPGaN7PkFNGOFbP2iGYa0hUM6yvnJCA=;
- b=nIZhl9AS0MI47gaHTLmgO1nc8Qdrz13raoG1STkXVLRjEdZPhrVTxg8e
- 90bt1kl9gP00cvsqDzRt10H5YJsr0Molbbpkm72kua/UwbznTKmlMd7vZ
- RPPvqoYTHVboqkwHQYG1ux9xmuPHJ9f6HkQqTqt9wlIE2YmxLYbgJfM9P
- DBpaiy7KRb6w459JfE0OE/EysIN6IUWqIVrB8uSsvsola3WMFocVLZ2vn
- N1XYjXcwbvIXB22GY98un2HzXiMULvFS4dlfeLpIUEHWGGwj2RtJBfFsh
- 3uj6vfg8e3cHeq8MEhM6vaekHF7btKCnufI/PVAaQPtmFwobsyub1kC8N
- w==;
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ucr.edu; s=rmail; t=1688950660; x=1691542660;
- h=content-transfer-encoding:mime-version:message-id:date:subject:cc
- :to:from:from:to:cc:subject:date:message-id:reply-to;
- bh=/wAseA0ncrRwgDlHK9AT72liWPmh1dR/ULxlrBgaw0E=;
- b=PCZ7tOhGGzN4Lh+QOYtBmRv4JUg9lSnrPJtC8zPsnQl8lx0mMRkBcvC0YBa8hYyvR9
- hCEhGG5qUvP883GIXfCH+81V3jLlSWdkYpcKJCi07FnCqOwv/bcz+e9No9pBf3dcQiy3
- 3kAo2ooYvVu5S/XQXUNgj7fMzENSl5aPK3Us8=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=ucr.edu header.i=@ucr.edu
- header.a=rsa-sha256 header.s=selector3 header.b=nIZhl9AS; 
- dkim=pass (1024-bit key) header.d=ucr.edu header.i=@ucr.edu
- header.a=rsa-sha256 header.s=rmail header.b=PCZ7tOhG
-Subject: [Intel-wired-lan] [PATCH] ethernet: e1000e: Fix possible uninit bug
+Subject: [Intel-wired-lan] [PATCH net-next v2 00/10] Remove unnecessary
+ (void*) conversions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -125,40 +81,54 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paolo Abeni <pabeni@redhat.com>, intel-wired-lan@lists.osuosl.org,
- Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
- Yu Hao <yhao016@ucr.edu>, "David S. Miller" <davem@davemloft.net>
+Cc: uttenthaler@ems-wuensche.com, netdev@vger.kernel.org,
+ kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-can@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ wuych <yunchuan@nfschina.com>, linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The variable phy_data should be initialized in function e1e_rphy.
-However, there is not return value check, which means there is a
-possible uninit read later for the variable.
+From: wuych <yunchuan@nfschina.com>
 
-Signed-off-by: Yu Hao <yhao016@ucr.edu>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes in v2:
+	move declarations to be reverse xmas tree.
+	compile it in net and net-next branch.
+	remove some error patches in v1.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 771a3c909c45..a807358a8174 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -6909,7 +6909,7 @@ static int __e1000_resume(struct pci_dev *pdev)
- 
- 	/* report the system wakeup cause from S3/S4 */
- 	if (adapter->flags2 & FLAG2_HAS_PHY_WAKEUP) {
--		u16 phy_data;
-+		u16 phy_data = 0;
- 
- 		e1e_rphy(&adapter->hw, BM_WUS, &phy_data);
- 		if (phy_data) {
+PATCH v1 link:
+https://lore.kernel.org/all/20230628024121.1439149-1-yunchuan@nfschina.com/
+
+wuych (10):
+  net: wan: Remove unnecessary (void*) conversions
+  net: atlantic: Remove unnecessary (void*) conversions
+  net: ppp: Remove unnecessary (void*) conversions
+  net: hns3: remove unnecessary (void*) conversions
+  net: hns: Remove unnecessary (void*) conversions
+  ice: remove unnecessary (void*) conversions
+  ethernet: smsc: remove unnecessary (void*) conversions
+  net: mdio: Remove unnecessary (void*) conversions
+  can: ems_pci: Remove unnecessary (void*) conversions
+  net: bna: Remove unnecessary (void*) conversions
+
+ drivers/net/can/sja1000/ems_pci.c             |  6 +++---
+ .../aquantia/atlantic/hw_atl2/hw_atl2.c       | 12 ++++++------
+ .../atlantic/hw_atl2/hw_atl2_utils_fw.c       |  2 +-
+ drivers/net/ethernet/brocade/bna/bnad.c       | 19 +++++++++----------
+ .../ethernet/hisilicon/hns3/hns3_ethtool.c    |  2 +-
+ drivers/net/ethernet/hisilicon/hns_mdio.c     | 10 +++++-----
+ drivers/net/ethernet/intel/ice/ice_main.c     |  4 ++--
+ drivers/net/ethernet/smsc/smsc911x.c          |  4 ++--
+ drivers/net/ethernet/smsc/smsc9420.c          |  4 ++--
+ drivers/net/mdio/mdio-xgene.c                 |  4 ++--
+ drivers/net/ppp/pppoe.c                       |  4 ++--
+ drivers/net/ppp/pptp.c                        |  4 ++--
+ drivers/net/wan/fsl_ucc_hdlc.c                |  6 +++---
+ 13 files changed, 40 insertions(+), 41 deletions(-)
+
 -- 
-2.34.1
+2.30.2
 
 _______________________________________________
 Intel-wired-lan mailing list
