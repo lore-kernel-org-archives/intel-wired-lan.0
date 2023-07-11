@@ -4,84 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C2D3EB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 11 Jul 2023 00:39:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C57E6EB64D9
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 11 Jul 2023 00:39:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 462D961058;
-	Tue, 11 Jul 2023 00:39:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 462D961058
+	by smtp3.osuosl.org (Postfix) with ESMTP id 790FD6106A;
+	Tue, 11 Jul 2023 00:39:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 790FD6106A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689035986;
-	bh=rWfQMTcz8j+310O3/HqdG5QXIaJRWIQQltqDYNXROjM=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=NBLAemsOXtWSkRxCVfDIm7N8A271tOqqAdj4KxHyL10fuBcc8Ox3uNVKI3iFsizpI
-	 mweana4tmbrLjJhfPFITLzVlcUrtfeIAsmOobLE8G4MMJcdf5Zk8/s2r1MPzq8XwKA
-	 dIAVIY2gLrte/j1LYs+q9zQwH/QB4mCTxxcTxitfyyMAuji7NPsFpaAbScNd5vyrYO
-	 SYF2b7jgW0qrqR2yesIWFyHTmCE2VMa9VMHoMX0ThM/atpPnl4WEQ+YlD6X67e9nt6
-	 +AF7i20qSmK/cGrffbYHZkUy2ASxgvQgGdLaKQnzx5jal30m4Q3RzNwczXzmEUkaBq
-	 QCl7XV1aK/pEQ==
+	s=default; t=1689035990;
+	bh=Nn0/RI3cDxfanEI7ev/5sm9W2VB3L1sYZ5JKncUH2Ik=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=iWB9HzsvcqJG5qzyv/UiRmLrUPCwnLG/eTTEh0FaSQl/xD0h6G1yGXZWeTU5ArEAD
+	 7GBJnKSqSKNDSdIZNhmeXvi0oOVDMivDxrqNbpowW3UjTFlUkixbrPiwDIdnHcsoYo
+	 5tJsNdaw//p+aCMD0okYaTPrkq9Siww4+epmVKYDt/2JXKoU1PoNsdx9b43Wlv7b03
+	 6Fnqt06lIC7ZDVMdNZqFj6yJTZJTQx32boh+LO7T4RFtOnEfXbCVcEjNLHMPim0707
+	 CGGaZEV+9MOuyRUi9mh4gQ6vWobhkTzsRrYrrx3Vb0ueF7gJXdDDdpSjlVzFLz6D4o
+	 Iu+6SzaPPxEPA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id omXbW8GXErya; Tue, 11 Jul 2023 00:39:45 +0000 (UTC)
+	with ESMTP id xpZRegQ24tEP; Tue, 11 Jul 2023 00:39:49 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4DF476105A;
-	Tue, 11 Jul 2023 00:39:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4DF476105A
+	by smtp3.osuosl.org (Postfix) with ESMTP id 858B361066;
+	Tue, 11 Jul 2023 00:39:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 858B361066
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id B58881BF955
- for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Jul 2023 00:39:43 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 56C671BF955
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Jul 2023 00:39:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9595441C50
+ by smtp4.osuosl.org (Postfix) with ESMTP id C865741742
  for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Jul 2023 00:39:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9595441C50
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C865741742
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1V1Zms6P_SYs for <intel-wired-lan@lists.osuosl.org>;
- Tue, 11 Jul 2023 00:39:42 +0000 (UTC)
+ with ESMTP id SaygzGqwGlWX for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 11 Jul 2023 00:39:43 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4974541742
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CEE7A41B66
 Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4974541742
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CEE7A41B66
  for <intel-wired-lan@lists.osuosl.org>; Tue, 11 Jul 2023 00:39:42 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10767"; a="344089522"
-X-IronPort-AV: E=Sophos;i="6.01,195,1684825200"; d="scan'208";a="344089522"
+X-IronPort-AV: E=McAfee;i="6600,9927,10767"; a="344089525"
+X-IronPort-AV: E=Sophos;i="6.01,195,1684825200"; d="scan'208";a="344089525"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  10 Jul 2023 17:39:41 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10767"; a="790981051"
-X-IronPort-AV: E=Sophos;i="6.01,195,1684825200"; d="scan'208";a="790981051"
+X-IronPort-AV: E=McAfee;i="6600,9927,10767"; a="790981062"
+X-IronPort-AV: E=Sophos;i="6.01,195,1684825200"; d="scan'208";a="790981062"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  10 Jul 2023 17:39:41 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Mon, 10 Jul 2023 17:39:31 -0700
-Message-ID: <20230711003935.98765-1-jacob.e.keller@intel.com>
+Date: Mon, 10 Jul 2023 17:39:34 -0700
+Message-ID: <20230711003935.98765-4-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
+In-Reply-To: <20230711003935.98765-1-jacob.e.keller@intel.com>
+References: <20230711003935.98765-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1689035982; x=1720571982;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=FKy6svzeedSkGKgqFOrv9ZknTW3cw9jDbISHfXJIpfs=;
- b=hSLIwuP7WhvA8haB/WH6BQWDUayzlB4mUTYaxcRWHZWOaCC+CKXgQAN8
- A3IAOZPtrcKG7i5MJYgIil4qEWWwD9IwG8XOr85148GTdsorRq9E4hbFf
- TMMDxPVz9RPhEmzf0VgukKnwIFucuxCLnF2PAWxfeM65ChdVAWVZkTUZa
- P1bXO1CwH+/aRCsiizAEMRF822s/5egjk12xUUHQYQhb6O0kj19UufRoM
- 4scVK7xbrZdPbj0Y6SWUhe4uo0woa9bpERtTCgZ28rHnRE/BVlpgwRhDV
- ibu+kvV7jzs/9aFqqgEUBrl/MU/Bx8aV+V1blIpdBfoNLnpEb5VRLDTWS
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=9kQ/rY+kNnP/w1dJBaCwGsv6dqcWaKZCba036FxcOvI=;
+ b=K/X1fOG21dAsueDtPXDhHM4UVT0LFtFwZjlfEeW4mriIrod1uNbRQKOb
+ vSLwR7w8xE7pvlsV6mnH4t56INrXmaZTnYysB9IP3TPisAypZk1qiFboJ
+ WhD2XTnL8N/EhqR3sWZs8BiQDoiADm18wTLpd3ktGCBXPdpIzIMaoZlIp
+ OJ218yKo8SLoAuJuNJr2y6tmuS2Z2a3TaSwCfVD/Le49JkX3CStKD+5jU
+ aWXfqld2Vo1iFi+GHhpmI2+0mL/RVUcOeD5PrYzWDZFQ/bw+WfG5PW6ac
+ /beKgT9x09kQcb1l7Vy/HFT/UXe7MW/dTohjukoMwr00bKpotK3hnDSjb
  Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hSLIwuP7
-Subject: [Intel-wired-lan] [PATCH iwl-next 0/4] ice: support cross
- timestamping on E823 devices
+ header.a=rsa-sha256 header.s=Intel header.b=K/X1fOG2
+Subject: [Intel-wired-lan] [PATCH iwl-next 3/4] ice: retry acquiring
+ hardware semaphore during cross-timestamp request
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,31 +104,78 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This series enables cross timestamping on E823 devices similar to how the
-feature works on E822 devices. A few cleanups are done first to allow
-properly programming the MAC timer block on E823 during the cross timestamp.
+From: Karol Kolacinski <karol.kolacinski@intel.com>
 
-With this series, the E823 devices can support cross timestamping for
-obtaining precise comparison between the CLOCK_REALTIME and PTP hardware
-clock via simultaneous capture in hardwareg
+The hardware for performing a cross-timestamp on E822 uses a hardware
+semaphore which we must acquire before initiating the cross-timestamp
+operation.
 
-Jacob Keller (1):
-  ice: Support cross-timestamping for E823 devices
+The current implementation only attempts to acquire the semaphore once, and
+assumes that it will succeed. If the semaphore is busy for any reason, the
+cross-timestamp operation fails with -EFAULT.
 
-Karol Kolacinski (1):
-  ice: retry acquiring hardware semaphore during cross-timestamp request
+Instead of immediately failing, try the acquire the lock a few times with a
+small sleep between attempts. This ensures that most requests will go
+through without issue.
 
-Sergey Temerkhanov (2):
-  ice: prefix clock timer command enumeration values with ICE_PTP
-  ice: Clean the main timer command register after use
+Additionally, return -EBUSY instead of -EFAULT if the operation can't
+continue due to the semaphore being busy.
 
- drivers/net/ethernet/intel/ice/ice_ptp.c    |  51 ++++++---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 108 +++++++++++---------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  12 ++-
- 3 files changed, 103 insertions(+), 68 deletions(-)
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
-
-base-commit: 7a6c68ff6375fe15eae2aea2a21636f7df826a14
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 81d96a40d5a7..e75bb6e7d680 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1976,11 +1976,21 @@ ice_ptp_get_syncdevicetime(ktime_t *device,
+ 	u32 hh_lock, hh_art_ctl;
+ 	int i;
+ 
+-	/* Get the HW lock */
+-	hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
++#define MAX_HH_HW_LOCK_TRIES	5
++#define MAX_HH_CTL_LOCK_TRIES	100
++
++	for (i = 0; i < MAX_HH_HW_LOCK_TRIES; i++) {
++		/* Get the HW lock */
++		hh_lock = rd32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id));
++		if (hh_lock & PFHH_SEM_BUSY_M) {
++			usleep_range(10000, 15000);
++			continue;
++		}
++		break;
++	}
+ 	if (hh_lock & PFHH_SEM_BUSY_M) {
+ 		dev_err(ice_pf_to_dev(pf), "PTP failed to get hh lock\n");
+-		return -EFAULT;
++		return -EBUSY;
+ 	}
+ 
+ 	/* Start the ART and device clock sync sequence */
+@@ -1988,9 +1998,7 @@ ice_ptp_get_syncdevicetime(ktime_t *device,
+ 	hh_art_ctl = hh_art_ctl | GLHH_ART_CTL_ACTIVE_M;
+ 	wr32(hw, GLHH_ART_CTL, hh_art_ctl);
+ 
+-#define MAX_HH_LOCK_TRIES 100
+-
+-	for (i = 0; i < MAX_HH_LOCK_TRIES; i++) {
++	for (i = 0; i < MAX_HH_CTL_LOCK_TRIES; i++) {
+ 		/* Wait for sync to complete */
+ 		hh_art_ctl = rd32(hw, GLHH_ART_CTL);
+ 		if (hh_art_ctl & GLHH_ART_CTL_ACTIVE_M) {
+@@ -2019,7 +2027,7 @@ ice_ptp_get_syncdevicetime(ktime_t *device,
+ 	hh_lock = hh_lock & ~PFHH_SEM_BUSY_M;
+ 	wr32(hw, PFHH_SEM + (PFTSYN_SEM_BYTES * hw->pf_id), hh_lock);
+ 
+-	if (i == MAX_HH_LOCK_TRIES)
++	if (i == MAX_HH_CTL_LOCK_TRIES)
+ 		return -ETIMEDOUT;
+ 
+ 	return 0;
 -- 
 2.41.0.1.g9857a21e0017.dirty
 
