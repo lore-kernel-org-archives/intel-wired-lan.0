@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24B6AEB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Jul 2023 11:05:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44BDBEB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Jul 2023 11:05:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id C35CD40136;
-	Wed, 12 Jul 2023 11:05:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C35CD40136
+	by smtp2.osuosl.org (Postfix) with ESMTP id D22D940514;
+	Wed, 12 Jul 2023 11:05:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D22D940514
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689159918;
-	bh=gYRk8Rd2ny4JKQMyD/wLZ8Zvc/84fieF9uCi6dfPKD0=;
+	s=default; t=1689159921;
+	bh=1Lr6TlCFZ+r1xDOKUu5ils+oP+bi4lTDz9XAuLMCOO0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=56Src19A4z4e7/iLMQqFmgnjlaWOoFuvtsEOez4tzGGqtJ917QLSAY4S+YzN0giCO
-	 N69S5IaKmh8AuI0C0s6/3IeladeLzDOeN5+2XnZi0ZZhzQ9RvncTWcYnGlkdS8G49v
-	 ldkOrtBse2u68SjKOxp4PJT0R/3QI3LbdGx7TtmSMPuyWqGOaAVRKlbojqxa0hhaHW
-	 E11lI3sflRbjXPn1psWyb2sfVWhxxvokDjZrt1Ijgbz6A1HiE6dco4txwySYlcB3cP
-	 RDQremeiiyXLfWqM2d6I8IsXivUp84c6n8eVcCQI/ssvTPmGmGxn9xP9ridBibGbjC
-	 g/xg6ADYA9QzA==
+	b=T+E+zMvCHr9V5ZtnXJbjfAOvfJyvY9lf2rMpeRmpmfsqFAhFMxesAhkIHDvZ1X/RJ
+	 Zhd+fFaP18kf3MAa96J7OslSbOHRQ0Gxr5FAt8Bn1FUMo7rbTURM314k9rf0QaXCd+
+	 SKXFl8vMxHBRyhg6mQ3Ls/LWuFhUWzv9NrQQA6OZEpdY3Z2gh8E1Uhaanw2m9Lp0QW
+	 UKPCnBPtxYJOfLKsXAxhDqcX3mh9yVo9iua9e0aYyMKbEZq8jBBsPXpmjp/T/u5bDw
+	 sYYh/CcXi7W/m67biIFIXEOICvwtml4M771CJqChW7O3Zfis0Jjjj+feEDzs21NDZx
+	 XeCBc0oak1D1w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jWJQmmPok2te; Wed, 12 Jul 2023 11:05:16 +0000 (UTC)
+	with ESMTP id Tu50bIWKUl7r; Wed, 12 Jul 2023 11:05:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 88D1C40518;
-	Wed, 12 Jul 2023 11:05:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 88D1C40518
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id B7FF21BF3C2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:05:10 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id D39BD40516;
+	Wed, 12 Jul 2023 11:05:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D39BD40516
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 3FF091BF3C2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:05:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 913FE81E23
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:05:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 913FE81E23
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2678940514
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:05:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2678940514
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id EUJZjvUa4mHo for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id rNNdxYVe9hGJ for <intel-wired-lan@lists.osuosl.org>;
  Wed, 12 Jul 2023 11:05:10 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D4A4B81E19
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 662F5400DA
 Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D4A4B81E19
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:05:09 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10768"; a="430993767"
-X-IronPort-AV: E=Sophos;i="6.01,199,1684825200"; d="scan'208";a="430993767"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 662F5400DA
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:05:10 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10768"; a="430993785"
+X-IronPort-AV: E=Sophos;i="6.01,199,1684825200"; d="scan'208";a="430993785"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Jul 2023 04:05:00 -0700
+ 12 Jul 2023 04:05:01 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10768"; a="835093739"
-X-IronPort-AV: E=Sophos;i="6.01,199,1684825200"; d="scan'208";a="835093739"
+X-IronPort-AV: E=McAfee;i="6600,9927,10768"; a="835093750"
+X-IronPort-AV: E=Sophos;i="6.01,199,1684825200"; d="scan'208";a="835093750"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga002.fm.intel.com with ESMTP; 12 Jul 2023 04:04:57 -0700
+ by fmsmga002.fm.intel.com with ESMTP; 12 Jul 2023 04:04:58 -0700
 Received: from rozewie.igk.intel.com (rozewie.igk.intel.com [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 496E1369E9;
- Wed, 12 Jul 2023 12:04:56 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id A58C7369EB;
+ Wed, 12 Jul 2023 12:04:57 +0100 (IST)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 12 Jul 2023 13:03:27 +0200
-Message-Id: <20230712110337.8030-3-wojciech.drewek@intel.com>
+Date: Wed, 12 Jul 2023 13:03:29 +0200
+Message-Id: <20230712110337.8030-5-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230712110337.8030-1-wojciech.drewek@intel.com>
 References: <20230712110337.8030-1-wojciech.drewek@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1689159909; x=1720695909;
+ t=1689159910; x=1720695910;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=WRhnTvyOSSOtoNKjl0qnCrmrx3xdXMiDEuAYF5qBEDI=;
- b=FUGlupqvRcqws6dHmpXPrfCNppDqAiWccnM0BMNwEDnpgQFzCanQQJde
- SXGEwxtJE+XPMQKugu2/mZGBNG/Xhx7+VPU0MkMNYfiCueuoJoZGoMyol
- zzFazZgqoDkpZuTAfdn0AETqxc6LtixzOfEmmXCkxTsVZ/8rCW2Y/kPtg
- w+aVoxnxDl4Xjkp9BINL5vqCa9SgVPjBry/oZ9YKYJ7auiQVuty6rMwJy
- /p+zNhAm/mTDHBiQ8lNLOtMcVSROkfVEWQwvFMjLH3MtWRfNASsxP7tFu
- O11jsGWRqUJkWskGnuZ33ieQ09OV+qcSzYl/yPAwherIqbEb88zZusZ8R
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=RQWa67ZyYk8Ke/Gxt8jYkEUx57g51A7w93eJPkyq7PU=;
+ b=YMjZYYudt5ug5GXkE0mtGOkwHGrG2zGjhbZ6ZRVDRQFStqGqMCeNrMEn
+ 8jUyuCFoiYSXtILRa905rlZQNpGtSiGp8xIM6TtZhl1wooZR133S6qXRO
+ CLJZQFqy5pELzt0WvuYVDTIPiYqUD+mAMu+5WkedtkOSfLVD6fXdOH/PQ
+ rQHam6dNoE4PlKy1ARu7zNvJqIbR12/eLVlKKW3+nNZJobkPWUP/RBElO
+ uiuqLHeZQtV4GCXvWmEzGXfIX/fPDDtfHlGTvdVBVylzfn6QOuowmYIdH
+ f1GetZtIkbc2Vwnpabn/hmLNsBTO1QBldO2jFifzBH1sfYnNI0LxouEth
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=FUGlupqv
-Subject: [Intel-wired-lan] [PATCH iwl-next v6 02/12] ice: Prohibit rx mode
- change in switchdev mode
+ header.a=rsa-sha256 header.s=Intel header.b=YMjZYYud
+Subject: [Intel-wired-lan] [PATCH iwl-next v6 04/12] ice: Disable vlan
+ pruning for uplink VSI
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,35 +105,56 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Don't allow to change promisc mode in switchdev mode.
-When switchdev is configured, PF netdev is set to be a
-default VSI. This is needed for the slow-path to work correctly.
-All the unmatched packets will be directed to PF netdev.
-
-It is possible that this setting might be overwritten by
-ndo_set_rx_mode. Prevent this by checking if switchdev is
-enabled in ice_set_rx_mode.
+In switchdev mode, uplink VSI is configured to be default
+VSI which means it will receive all unmatched packets.
+In order to receive vlan packets we need to disable vlan pruning
+as well. This is done by dis_rx_filtering vlan op.
 
 Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 Reviewed-by: Simon Horman <simon.horman@corigine.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_eswitch.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index e3245ee635b2..b45dc9623e63 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5777,7 +5777,7 @@ static void ice_set_rx_mode(struct net_device *netdev)
- 	struct ice_netdev_priv *np = netdev_priv(netdev);
- 	struct ice_vsi *vsi = np->vsi;
+diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+index 15a4c148c28b..bfd003135fc8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
++++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
+@@ -103,6 +103,10 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ 		rule_added = true;
+ 	}
  
--	if (!vsi)
-+	if (!vsi || ice_is_switchdev_running(vsi->back))
- 		return;
++	vlan_ops = ice_get_compat_vsi_vlan_ops(uplink_vsi);
++	if (vlan_ops->dis_rx_filtering(uplink_vsi))
++		goto err_dis_rx;
++
+ 	if (ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_set_allow_override))
+ 		goto err_override_uplink;
  
- 	/* Set the flags to synchronize filters
+@@ -114,6 +118,8 @@ static int ice_eswitch_setup_env(struct ice_pf *pf)
+ err_override_control:
+ 	ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_clear_allow_override);
+ err_override_uplink:
++	vlan_ops->ena_rx_filtering(uplink_vsi);
++err_dis_rx:
+ 	if (rule_added)
+ 		ice_clear_dflt_vsi(uplink_vsi);
+ err_def_rx:
+@@ -381,9 +387,13 @@ static void ice_eswitch_release_env(struct ice_pf *pf)
+ {
+ 	struct ice_vsi *uplink_vsi = pf->switchdev.uplink_vsi;
+ 	struct ice_vsi *ctrl_vsi = pf->switchdev.control_vsi;
++	struct ice_vsi_vlan_ops *vlan_ops;
++
++	vlan_ops = ice_get_compat_vsi_vlan_ops(uplink_vsi);
+ 
+ 	ice_vsi_update_security(ctrl_vsi, ice_vsi_ctx_clear_allow_override);
+ 	ice_vsi_update_security(uplink_vsi, ice_vsi_ctx_clear_allow_override);
++	vlan_ops->ena_rx_filtering(uplink_vsi);
+ 	ice_clear_dflt_vsi(uplink_vsi);
+ 	ice_fltr_add_mac_and_broadcast(uplink_vsi,
+ 				       uplink_vsi->port_info->mac.perm_addr,
 -- 
 2.40.1
 
