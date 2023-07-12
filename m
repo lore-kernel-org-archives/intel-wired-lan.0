@@ -4,90 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE4E7EB64DA
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Jul 2023 16:54:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2878EB64DA
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Jul 2023 18:25:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7847D607E1;
-	Wed, 12 Jul 2023 16:54:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7847D607E1
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5DD2A612D6;
+	Wed, 12 Jul 2023 18:25:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5DD2A612D6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689180870;
-	bh=ssrWx9Hm/ChX2QzxVh8qOjcEG6tl3bzS84o94kk+QGs=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1689186343;
+	bh=Efva04Sf4MO0RHrCDwwIVFkcpEgL9e93da2waBpx4Kk=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=56sNBaNdY53ZutLXWHhWkfkZY5dB6sZMe72y+wg3wfdxNnCGvOD5wWQXyIExlNnpx
-	 GmClA/khNNw9rNmlPSgHXXxDxO/keoO1XqONjEQZhoJN2DCcejw7NhivmpZr9CX5Yj
-	 9ZlKA4TM5EW1k6vEbjkpnuDYGY6r0TwLoO8W/vF6inalR8/12GS8dFHazLHbj8vJBv
-	 4Q9cgANQqGCc8IvwZ16kSJUoXDnMcFrAq4M13R2Z2vE/5SzIxFyYDivhuEkrEN3iIb
-	 fk1aA5WpH9Em8JTb1AE1QHvicbfvWw5q7KROS4G4/+HuUrVeA92/NvbJorMtUAs9nl
-	 ByUFlp9JxZrMQ==
+	b=27cem2wEpeCCnXXmPFm7jD9G0HBxcD+jHOaec9FJKiXEY056b5Am3Bem83hh3+c2Q
+	 yRJDxAZ+V/GIVTLCRI9tNikaMHMwDVvoeusCjSp2lm0/J4rUJnXR4kSZmdFB+DDPjl
+	 OPavHtxvzBvJhDRWcRg/gL3iyle88W1BPSGqO2oRRaUpC5O2uF8JfDbdetyMc/Dnnj
+	 qiWgLTOsYvYwzLLBH1MQaTcxo1ffwTU1vy3lspPfaNwfBTd4N0f+GmtWPR//NuVVVV
+	 KFO1/hZ+5DK6EEtr13oLjoXfrm7Ek/AV76iFxb84JBGzOIxYEa+hXFOkolztsvVO/+
+	 VRc6vAVAqKd7Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VtnFJvjfuHZq; Wed, 12 Jul 2023 16:54:29 +0000 (UTC)
+	with ESMTP id Y0ozswok4QBB; Wed, 12 Jul 2023 18:25:42 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8D63360B98;
-	Wed, 12 Jul 2023 16:54:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8D63360B98
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 0A8C41BF40A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 16:54:28 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 630F7612DC;
+	Wed, 12 Jul 2023 18:25:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 630F7612DC
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 522A01BF3BA
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 18:25:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E24C441753
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 16:54:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E24C441753
+ by smtp3.osuosl.org (Postfix) with ESMTP id 35AA5612DB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 18:25:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 35AA5612DB
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id DmjmTBzu8Kr2 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Jul 2023 16:54:27 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 3wsbcm5XE4yv for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Jul 2023 18:25:40 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D0CF141745
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5337A612D9
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id D0CF141745
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 16:54:26 +0000 (UTC)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 5337A612D9
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 18:25:40 +0000 (UTC)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 61C4A6184B;
- Wed, 12 Jul 2023 16:54:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43BF2C433C7;
- Wed, 12 Jul 2023 16:54:23 +0000 (UTC)
-Date: Wed, 12 Jul 2023 09:54:22 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: "Kubalewski, Arkadiusz" <arkadiusz.kubalewski@intel.com>
-Message-ID: <20230712095422.00acaeaa@kernel.org>
-In-Reply-To: <DM6PR11MB465701C009D1DC2972F900F29B36A@DM6PR11MB4657.namprd11.prod.outlook.com>
-References: <20230623123820.42850-1-arkadiusz.kubalewski@intel.com>
- <ZJq3a6rl6dnPMV17@nanopsycho>
- <DM6PR11MB4657084DDD7554663F86C1C19B24A@DM6PR11MB4657.namprd11.prod.outlook.com>
- <ZJwWXZmZe4lQ04iK@nanopsycho>
- <DM6PR11MB4657751607C36FC711271D639B30A@DM6PR11MB4657.namprd11.prod.outlook.com>
- <ZKv1FRTXWLnLGRRS@nanopsycho>
- <DM6PR11MB46575D14FFE115546FDC9DEB9B31A@DM6PR11MB4657.namprd11.prod.outlook.com>
- <ZK1CizcqjqO1L/RQ@nanopsycho>
- <DM6PR11MB4657067EE043F4DBB9D8B03B9B31A@DM6PR11MB4657.namprd11.prod.outlook.com>
- <20230711131443.2a4af476@kernel.org>
- <DM6PR11MB465701C009D1DC2972F900F29B36A@DM6PR11MB4657.namprd11.prod.outlook.com>
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 86E5861874;
+ Wed, 12 Jul 2023 18:25:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6D6E9C433C8;
+ Wed, 12 Jul 2023 18:25:38 +0000 (UTC)
+Date: Wed, 12 Jul 2023 21:25:34 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Message-ID: <20230712182534.GF41919@unreal>
+References: <20230712130210.33864-1-jedrzej.jagielski@intel.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20230712130210.33864-1-jedrzej.jagielski@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1689180864;
- bh=GUKIjZVgdEMfP7TDM1aNuHteDasdN91zxotPStZohNU=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=oAbNSVNXNIHr6DtuTw/oe0aFSsEtMyVVSR4TG6U7T5lLWYPueKmSeg4WlMWtBySra
- IlvvKmKpHIpVXeXMLRsPzCgrj4ePLxEznwuYSoG71a9NbS9p7CbfoFooV+jlDLFCBo
- 0qJ44bbNZDYeJTtRA0EXhMU0zLv6vvqpxkw/TvH606c1ylZZcFlK35RupigexhX/Ch
- FmfvjTF6JvoucrTi1TDNzw0DzsXobsfGPq6iHnEDwTDhWBa+BKtSI+iB01eAGwudH4
- +IxLG/oc4nCJg7xMhoa5NGrame6QczA00+OGkxe5MEBNuQeZCCjE/ztY4AjtMQurmv
- 8MFbVIxKStt2Q==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=kernel.org; s=k20201202; t=1689186339;
+ bh=ULH/st5gl+19kdRgKh/qaSmVJysjJgl+dLliG1WryAM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=gI4QDnNlekKSj5NnXe62Wcz0lQkvl5FhNFbrNTeuhZpZe0aY+Pyu9YdfrNZejDhfn
+ s58Awk1FbMXcH9ZvLAKqdNzUpKUAjVD48bshA5aO79S/P8j06QbXU3GCOsysQOQ5pQ
+ DJXnGQoSNfi9Z/y1PkO3OY1jiwhBpvoBBG1UQIvkp0JCKUMUVC8CambsBfINY3NkU2
+ Q9xClgHkOWa/vADQFAaZJAPNZT1wqsf4QVGottteyxKAXeZMkFZxT9uQ0cKq6162hZ
+ VN+NXBVGHrFe7JDEQibKVPeSUviXIs9s2H4zvXvZl5M2bdomsZZuDIZWEg4UIU1qmh
+ Erh8Tx1G/42wg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=oAbNSVNX
-Subject: Re: [Intel-wired-lan] [RFC PATCH v9 00/10] Create common DPLL
- configuration API
+ header.a=rsa-sha256 header.s=k20201202 header.b=gI4QDnNl
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v5] ice: Fix memory management
+ in ice_ethtool_fdir.c
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,68 +91,46 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "geert+renesas@glider.be" <geert+renesas@glider.be>,
- "mst@redhat.com" <mst@redhat.com>, "razor@blackwall.org" <razor@blackwall.org>,
- "phil@nwl.cc" <phil@nwl.cc>, "javierm@redhat.com" <javierm@redhat.com>,
- "edumazet@google.com" <edumazet@google.com>,
- "benjamin.tissoires@redhat.com" <benjamin.tissoires@redhat.com>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
- "lucien.xin@gmail.com" <lucien.xin@gmail.com>,
- "leon@kernel.org" <leon@kernel.org>, "corbet@lwn.net" <corbet@lwn.net>,
- "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>,
- "masahiroy@kernel.org" <masahiroy@kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "Brandeburg,
- Jesse" <jesse.brandeburg@intel.com>, "vadfed@meta.com" <vadfed@meta.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "airlied@redhat.com" <airlied@redhat.com>, "vadfed@fb.com" <vadfed@fb.com>,
- "pabeni@redhat.com" <pabeni@redhat.com>,
- "ricardo.canuelo@collabora.com" <ricardo.canuelo@collabora.com>,
- Jiri Pirko <jiri@resnulli.us>, "arnd@arndb.de" <arnd@arndb.de>,
- "idosch@nvidia.com" <idosch@nvidia.com>,
- "richardcochran@gmail.com" <richardcochran@gmail.com>,
- "claudiajkang@gmail.com" <claudiajkang@gmail.com>,
- "kuniyu@amazon.com" <kuniyu@amazon.com>,
- "jacek.lawrynowicz@linux.intel.com" <jacek.lawrynowicz@linux.intel.com>,
- "liuhangbin@gmail.com" <liuhangbin@gmail.com>,
- "nicolas.dichtel@6wind.com" <nicolas.dichtel@6wind.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "axboe@kernel.dk" <axboe@kernel.dk>, "sj@kernel.org" <sj@kernel.org>,
- "vadim.fedorenko@linux.dev" <vadim.fedorenko@linux.dev>,
- "linux@zary.sk" <linux@zary.sk>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "ogabbay@kernel.org" <ogabbay@kernel.org>,
- "nipun.gupta@amd.com" <nipun.gupta@amd.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "andy.ren@getcruise.com" <andy.ren@getcruise.com>,
- "tzimmermann@suse.de" <tzimmermann@suse.de>,
- "jonathan.lemon@gmail.com" <jonathan.lemon@gmail.com>, "M,
- Saeed" <saeedm@nvidia.com>, "davem@davemloft.net" <davem@davemloft.net>,
- "Olech, Milena" <milena.olech@intel.com>,
- "hkallweit1@gmail.com" <hkallweit1@gmail.com>
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ intel-wired-lan@lists.osuosl.org,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, 12 Jul 2023 09:19:53 +0000 Kubalewski, Arkadiusz wrote:
-> >> Don't think it is way to go, and I don't think there is anything good
-> >> with preventing device drivers from labeling their pins the way they
-> >> want.  
-> >
-> >We had a long argument about how label should have a clearly defined
-> >meaning. We're not going to rehash it on every revision. What did I miss :|  
+On Wed, Jul 12, 2023 at 03:02:10PM +0200, Jedrzej Jagielski wrote:
+> Fix ethtool FDIR logic to not use memory after its release.
+> In the ice_ethtool_fdir.c file there are 2 spots where code can
+> refer to pointers which may be missing.
 > 
-> Well, as I understand we are discussing if dpll subsystem shall prevent
-> labeling the SyncE type pins. I have labeled them in ice explicitly with
-> the name of a pci device they belong to.
+> In the ice_cfg_fdir_xtrct_seq() function seg may be freed but
+> even then may be still used by memcpy(&tun_seg[1], seg, sizeof(*seg)).
 > 
-> You haven't miss much, mostly the problem is described in this thread.
+> In the ice_add_fdir_ethtool() function struct ice_fdir_fltr *input
+> may first fail to be added via ice_fdir_update_list_entry() but then
+> may be deleted by ice_fdir_update_list_entry.
+> 
+> Terminate in both cases when the returned value of the previous
+> operation is other than 0, free memory and don't use it anymore.
+> 
+> Reported-by: Michal Schmidt <mschmidt@redhat.com>
+> Link: https://bugzilla.redhat.com/show_bug.cgi?id=2208423
+> Fixes: cac2a27cd9ab ("ice: Support IPv4 Flow Director filters")
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+> ---
+> v2: extend CC list, fix freeing memory before return
+> v3: correct typos in the commit msg
+> v4: restore devm() approach
+> v5: minor changes
+> ---
+>  .../net/ethernet/intel/ice/ice_ethtool_fdir.c | 26 ++++++++++---------
+>  1 file changed, 14 insertions(+), 12 deletions(-)
+> 
 
-Please read this thread:
-
-https://lore.kernel.org/all/20230503191643.12a6e559@kernel.org/
+Thanks,
+Reviewed-by: Leon Romanovsky <leonro@nvidia.com>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
