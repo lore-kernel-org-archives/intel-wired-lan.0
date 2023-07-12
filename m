@@ -4,88 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93A9CEB64D9
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Jul 2023 13:33:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48934EB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 12 Jul 2023 15:20:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3C0D1611BA;
-	Wed, 12 Jul 2023 13:33:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3C0D1611BA
+	by smtp3.osuosl.org (Postfix) with ESMTP id BC46E611E0;
+	Wed, 12 Jul 2023 15:20:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BC46E611E0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689168785;
-	bh=EX8d4BRblG3akNTLkwW867GH61zc09qQpCgZxfJEg8U=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1689175201;
+	bh=ZBVwqjtUhOrf/vzhygcpL5ZwfceaX8YuYAohI667094=;
+	h=To:References:From:Date:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=yCYGE7dv4bny1lHwFlJGugr3IirXBUEtc665yQ4p8A0yu7qxMmWx7rAkYTeWK95Qi
-	 9UGTHTfQ9NbN6TJszoVwFOkDmzPIR5Ps6Ase4jf1Yk1YX0o8Q+9HQlBlBCL0cp8ZOe
-	 RmDVZYvt4KoYHAqnuEFfobT51o8tDLV0uOpuxecrpISQizlL6YGSji5AnZzxGkbW3c
-	 D4Hy3AIOzlyKuc52vs4FNmfF+elBQpMYSgFydNDGpethG7eOFayHzl2MazM1dSYlUN
-	 5jJtQfSCYtEMYN9p2KaEELwEYQoAxkcvRBBTigeAe8+QkSBpEeyYkalE78QzFrkPzh
-	 kwvSamNrwbRBQ==
+	b=vNlFLSea8CVR4WwCAFigd+aBffgft5U68PhzX0uDYIUXjaCkJaDT5q/SATKahra8l
+	 BW5tRKUYRus1WSafHcTsAQcj7XqCx8K+UdlOrP5rC8HJIex8hsegLmBIzgekVcZiIh
+	 df6yM9sITfFPdj0eY634+ESmbt6428uhl8q/29/Ve7Yafqk1m7clc0zNbECJlFNBiY
+	 Wnob1bGo3jpP06e3+rh1VNe30zXU/jxpeQbfMccsJMo4dXYzk/Ywc/s9z0H/JBUIiy
+	 6lL3KKi1MD5hBtVebJ/y9UeK90QCI5KiGC1Rrkz3+K9aKp5s0rtebyRjVtKLq86sBa
+	 n6Rkl8EBrIiog==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jSETt3lqXOPY; Wed, 12 Jul 2023 13:33:04 +0000 (UTC)
+	with ESMTP id k0awSnydIsHI; Wed, 12 Jul 2023 15:20:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2458E611A9;
-	Wed, 12 Jul 2023 13:33:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2458E611A9
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id C7E8A1BF3CB
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 13:33:01 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 727E4611A7;
+	Wed, 12 Jul 2023 15:20:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 727E4611A7
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 67FEA1BF3C2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:13:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id AB6A3403A5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 13:33:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AB6A3403A5
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4D5DA82268
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:13:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4D5DA82268
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id GQv96XPkLnm7 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 12 Jul 2023 13:33:01 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id WEai4afSaK2K for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 12 Jul 2023 11:13:07 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E2707400CC
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E2707400CC
- for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 13:33:00 +0000 (UTC)
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-551-fLVZVRMLMiOdyLSlbe9mpw-1; Wed, 12 Jul 2023 09:32:54 -0400
-X-MC-Unique: fLVZVRMLMiOdyLSlbe9mpw-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com
- [10.11.54.6])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 9A9FD8022EF;
- Wed, 12 Jul 2023 13:32:53 +0000 (UTC)
-Received: from p1.luc.cera.cz.com (unknown [10.45.225.8])
- by smtp.corp.redhat.com (Postfix) with ESMTP id BE8092166B27;
- Wed, 12 Jul 2023 13:32:51 +0000 (UTC)
-From: Ivan Vecera <ivecera@redhat.com>
-To: netdev@vger.kernel.org
-Date: Wed, 12 Jul 2023 15:32:47 +0200
-Message-ID: <20230712133247.588636-2-ivecera@redhat.com>
-In-Reply-To: <20230712133247.588636-1-ivecera@redhat.com>
-References: <20230712133247.588636-1-ivecera@redhat.com>
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 577E782298
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 577E782298
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 12 Jul 2023 11:13:06 +0000 (UTC)
+Received: from dggpemm500005.china.huawei.com (unknown [172.30.72.57])
+ by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4R1FSq5H8yz1JCVD;
+ Wed, 12 Jul 2023 19:12:27 +0800 (CST)
+Received: from [10.69.30.204] (10.69.30.204) by dggpemm500005.china.huawei.com
+ (7.185.36.74) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Wed, 12 Jul
+ 2023 19:13:02 +0800
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+References: <20230705155551.1317583-1-aleksander.lobakin@intel.com>
+ <20230705155551.1317583-6-aleksander.lobakin@intel.com>
+ <138b94a7-c186-bdd9-e073-2794760c9454@huawei.com>
+ <09a9a9ef-cf77-3b60-2845-94595a42cf3e@intel.com>
+ <71a8bab4-1a1d-cb1a-d75c-585a14c6fb2e@gmail.com>
+ <b05d1a35-5bc5-b65d-b57d-5cc1b0f898cb@intel.com>
+ <2ebd75df-51ff-4c62-2a68-d258dbf32b49@huawei.com>
+ <89dc48ab-0800-b12f-7124-cecc709364d7@intel.com>
+From: Yunsheng Lin <linyunsheng@huawei.com>
+Message-ID: <cf7dafbe-decc-623c-6322-d14dd8daee95@huawei.com>
+Date: Wed, 12 Jul 2023 19:13:01 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:52.0) Gecko/20100101
+ Thunderbird/52.2.0
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1689168779;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=0i3InOD4/QpHddyNR5vxwmI9uh0f61TZ6Eu8ertMv3o=;
- b=U8Y+vSc9tE4DMs0c2UdvqAJ9dhST/cFiS1w9zJush61FxiO/12z4IJ5PVumnSh2OmXuPIj
- pZ/Fpyjz3Gjfs7VbfBOJ5j3+6riHSZGkJfV3tPiNJowxc7OuWd4f+NshnnPzVXk2eQ2LBv
- LQw1jt09TJSVAbcoRSOyy+X90NNUjRo=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=U8Y+vSc9
-Subject: [Intel-wired-lan] [PATCH v2 2/2] i40e: Wait for pending VF reset in
- VF set callbacks
+In-Reply-To: <89dc48ab-0800-b12f-7124-cecc709364d7@intel.com>
+Content-Language: en-US
+X-Originating-IP: [10.69.30.204]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggpemm500005.china.huawei.com (7.185.36.74)
+X-CFilter-Loop: Reflected
+X-Mailman-Approved-At: Wed, 12 Jul 2023 15:19:58 +0000
+Subject: Re: [Intel-wired-lan] [PATCH RFC net-next v4 5/9] libie: add Rx
+ buffer management (via Page Pool)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,93 +90,166 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Ma Yuying <yuma@redhat.com>, Leon Romanovsky <leon@kernel.org>,
- Simon Horman <simon.horman@corigine.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- "moderated list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- open list <linux-kernel@vger.kernel.org>
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, Michal Kubiak <michal.kubiak@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Yunsheng Lin <yunshenglin0825@gmail.com>,
+ David Christensen <drc@linux.vnet.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Commit 028daf80117376 ("i40e: Fix attach VF to VM issue") fixed
-a race between i40e_ndo_set_vf_mac() and i40e_reset_vf() during
-an attachment of VF device to VM. This issue is not related to
-setting MAC address only but also VLAN assignment to particular
-VF because the newer libvirt sets configured MAC address as well
-as an optional VLAN. The same behavior is also for i40e's
-.ndo_set_vf_rate and .ndo_set_vf_spoofchk where the callbacks
-just check if the VF was initialized but not wait for the finish
-of pending reset.
+On 2023/7/12 0:37, Alexander Lobakin wrote:
+> From: Yunsheng Lin <linyunsheng@huawei.com>
+> Date: Tue, 11 Jul 2023 19:39:28 +0800
+> 
+>> On 2023/7/10 21:25, Alexander Lobakin wrote:
+>>> From: Yunsheng Lin <yunshenglin0825@gmail.com>
+>>> Date: Sun, 9 Jul 2023 13:16:33 +0800
+>>>
+>>>> On 2023/7/7 0:28, Alexander Lobakin wrote:
+>>>>> From: Yunsheng Lin <linyunsheng@huawei.com>
+>>>>> Date: Thu, 6 Jul 2023 20:47:28 +0800
+>>>>>
+>>>>>> On 2023/7/5 23:55, Alexander Lobakin wrote:
+>>>>>>
+>>>>>>> +/**
+>>>>>>> + * libie_rx_page_pool_create - create a PP with the default libie settings
+>>>>>>> + * @napi: &napi_struct covering this PP (no usage outside its poll loops)
+>>>>>>> + * @size: size of the PP, usually simply Rx queue len
+>>>>>>> + *
+>>>>>>> + * Returns &page_pool on success, casted -errno on failure.
+>>>>>>> + */
+>>>>>>> +struct page_pool *libie_rx_page_pool_create(struct napi_struct *napi,
+>>>>>>> +					    u32 size)
+>>>>>>> +{
+>>>>>>> +	struct page_pool_params pp = {
+>>>>>>> +		.flags		= PP_FLAG_DMA_MAP | PP_FLAG_DMA_SYNC_DEV,
+>>>>>>> +		.order		= LIBIE_RX_PAGE_ORDER,
+>>>>>>> +		.pool_size	= size,
+>>>>>>> +		.nid		= NUMA_NO_NODE,
+>>>>>>> +		.dev		= napi->dev->dev.parent,
+>>>>>>> +		.napi		= napi,
+>>>>>>> +		.dma_dir	= DMA_FROM_DEVICE,
+>>>>>>> +		.offset		= LIBIE_SKB_HEADROOM,
+>>>>>>
+>>>>>> I think it worth mentioning that the '.offset' is not really accurate
+>>>>>> when the page is split, as we do not really know what is the offset of
+>>>>>> the frag of a page except for the first frag.
+>>>>>
+>>>>> Yeah, this is read as "offset from the start of the page or frag to the
+>>>>> actual frame start, i.e. its Ethernet header" or "this is just
+>>>>> xdp->data - xdp->data_hard_start".
+>>>>
+>>>> So the problem seems to be if most of drivers have a similar reading as
+>>>> libie does here, as .offset seems to have a clear semantics which is used
+>>>> to skip dma sync operation for buffer range that is not touched by the
+>>>> dma operation. Even if it happens to have the same value of "offset from
+>>>> the start of the page or frag to the actual frame start", I am not sure
+>>>> it is future-proofing to reuse it.
+>>>
+>>> Not sure I'm following :s
+>>
+>> It would be better to avoid accessing the internal data of the page pool
+>> directly as much as possible, as that may be changed to different meaning
+>> or removed if the implememtation is changed.
+>>
+>> If it is common enough that most drivers are using it the same way, adding
+>> a helper for that would be great.
+> 
+> How comes page_pool_params is internal if it's defined purely by the
+> driver and then exists read-only :D I even got warned in the adjacent
+> thread that the Page Pool core code shouldn't change it anyhow.
 
-Reproducer:
-[root@host ~]# virsh attach-interface guest hostdev --managed 0000:02:02.0 --mac 52:54:00:b4:aa:bb
-error: Failed to attach interface
-error: Cannot set interface MAC/vlanid to 52:54:00:b4:aa:bb/0 for ifname enp2s0f0 vf 0: Resource temporarily unavailable
+Personally I am not one hundred percent convinced that page_pool_params
+will not be changed considering the discussion about improving/replacing
+the page pool to support P2P case.
 
-Fix this issue by using i40e_check_vf_init_timeout() helper to check
-whether a reset of particular VF was finished in i40e's
-.ndo_set_vf_vlan, .ndo_set_vf_rate and .ndo_set_vf_spoofchk callbacks.
+> 
+>>
+>>>
+>>>>
+>>>> When page frag is added, I didn't really give much thought about that as
+>>>> we use it in a cache coherent system.
+>>>> It seems we might need to extend or update that semantics if we really want
+>>>> to skip dma sync operation for all the buffer ranges that are not touched
+>>>> by the dma operation for page split case.
+>>>> Or Skipping dma sync operation for all untouched ranges might not be worth
+>>>> the effort, because it might need a per frag dma sync operation, which is
+>>>> more costly than a batched per page dma sync operation. If it is true, page
+>>>> pool already support that currently as my understanding, because the dma
+>>>> sync operation is only done when the last frag is released/freed.
+>>>>
+>>>>>
+>>>>>>
+>>>>>>> +	};
+>>>>>>> +	size_t truesize;
+>>>>>>> +
+>>>>>>> +	pp.max_len = libie_rx_sync_len(napi->dev, pp.offset);
+>>>>
+>>>> As mentioned above, if we depend on the last released/freed frag to do the
+>>>> dma sync, the pp.max_len might need to cover all the frag.
+>>>
+>>>                                                ^^^^^^^^^^^^
+>>>
+>>> You mean the whole page or...?
+>>
+>> If we don't care about the accurate dma syncing, "cover all the frag" means
+>> the whole page here, as page pool doesn't have enough info to do accurate
+>> dma sync for now.
+>>
+>>> I think it's not the driver's duty to track all this. We always set
+>>> .offset to `data - data_hard_start` and .max_len to the maximum
+>>> HW-writeable length for one frame. We don't know whether PP will give us
+>>> a whole page or just a piece. DMA sync for device is performed in the PP
+>>> core code as well. Driver just creates a PP and don't care about the
+>>> internals.
+>>
+>> There problem is that when page_pool_put_page() is called with a split
+>> page, the page pool does not know which frag is freeing too.
+>>
+>> setting 'maximum HW-writeable length for one frame' only sync the first
+>> frag of a page as below:
+> 
+> Maybe Page Pool should synchronize DMA even when !last_frag then?
+> Setting .max_len to anything bigger than the maximum frame size you're
+> planning to receive is counter-intuitive.
 
-Tested-by: Ma Yuying <yuma@redhat.com>
-Signed-off-by: Ivan Vecera <ivecera@redhat.com>
----
- .../net/ethernet/intel/i40e/i40e_virtchnl_pf.c   | 16 +++++-----------
- 1 file changed, 5 insertions(+), 11 deletions(-)
+This is simplest way to support dma sync for page frag case, the question
+is if the batching of the dma sync for all frag of a page can even out the
+additional cost of dma sync for dma untouched range of a page.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index ad30f9e99db9..87207fc546b7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -4466,13 +4466,11 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 	}
- 
- 	vf = &pf->vf[vf_id];
--	vsi = pf->vsi[vf->lan_vsi_idx];
--	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
--		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
--			vf_id);
-+	if (!i40e_check_vf_init_timeout(vf)) {
- 		ret = -EAGAIN;
- 		goto error_pvid;
- 	}
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 
- 	if (le16_to_cpu(vsi->info.pvid) == vlanprio)
- 		/* duplicate request, so just return success */
-@@ -4616,13 +4614,11 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 	}
- 
- 	vf = &pf->vf[vf_id];
--	vsi = pf->vsi[vf->lan_vsi_idx];
--	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
--		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
--			vf_id);
-+	if (!i40e_check_vf_init_timeout(vf)) {
- 		ret = -EAGAIN;
- 		goto error;
- 	}
-+	vsi = pf->vsi[vf->lan_vsi_idx];
- 
- 	ret = i40e_set_bw_limit(vsi, vsi->seid, max_tx_rate);
- 	if (ret)
-@@ -4789,9 +4785,7 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable)
- 	}
- 
- 	vf = &(pf->vf[vf_id]);
--	if (!test_bit(I40E_VF_STATE_INIT, &vf->vf_states)) {
--		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
--			vf_id);
-+	if (!i40e_check_vf_init_timeout(vf)) {
- 		ret = -EAGAIN;
- 		goto out;
- 	}
--- 
-2.41.0
+> All three xdp_buff, xdp_frame and skb always have all info needed to
+> determine which piece of the page we're recycling, it should be possible
+> to do with no complications. Hypothetical forcing drivers to do DMA
+> syncs on their own when they use frags is counter-intuitive as well,
+> Page Pool should be able to handle this itself.
+> 
+> Alternatively, Page Pool may do as follows:
+> 
+> 1. !last_frag -- do nothing, same as today.
+> 2. last_frag -- sync, but not [offset, offset + max_len), but
+>    [offset, PAGE_SIZE).
+
+When a frag is free, we don't know if it is the last frag or not for
+now yet.
+
+> 
+> This would also cover non-HW-writeable pieces like 2th-nth frame's
+> headroom and each frame's skb_shared_info, but it's the only alternative
+> to syncing each frag separately.
+> Yes, it's almost the same as to set .max_len to %PAGE_SIZE, but as I
+> said, it feels weird to set .max_len to 4k when you allocate 2k frags.
+> You don't know anyway how much of a page will be used.
+
+In that that case, we may need to make it more generic for the case when
+a page is spilt into more than two frags, especially for system with 64K
+page size.
 
 _______________________________________________
 Intel-wired-lan mailing list
