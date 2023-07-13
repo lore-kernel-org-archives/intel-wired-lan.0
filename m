@@ -1,89 +1,187 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD937C0015E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Jul 2023 22:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08C1EC0015E
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 13 Jul 2023 23:38:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 97F284217C;
-	Thu, 13 Jul 2023 22:26:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 97F284217C
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7EA2881E86;
+	Thu, 13 Jul 2023 23:38:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7EA2881E86
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689287214;
-	bh=XuTXgmFFAe51jBEp+1+e3y8CLZiAFL4xgQIK0UvcvpU=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1689291532;
+	bh=MGZetR2kLineYBqPPmTHUPbHwAmVDaDeuKH9a4kYBls=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=09sEDQf6O7ZycqDCE3epbgwnezYGolDnIMSetzv7itvp7NbhT+BrzSz5zjGJSIz/y
-	 A5m0hFauQlWLmlCKmwxJXcFIoBo+8TKyIZdNaSsxRTQC2dMSEwGf+c7hzQBdzrG40t
-	 2sAZ9USx3bHw9aHz6i7UfAvp6fhl25uj/gCqrnZfsJ5uloq/XmuYFUet6ZWPTBpD81
-	 Db67X+JuogQJOsWYnVFaSoiyaL7rbFt9CJOctrzvZdjG2Y2ViT7Z5sZRJsgijfpve+
-	 1d1YpqtAdQ0Zya97OE/zz53uOpPoy44yVGi4IO5R92lyVz0UDucsmgZ+d94HYkUT+O
-	 kiwpsjK8rJVvw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id TSf7qopid9TI; Thu, 13 Jul 2023 22:26:52 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0C8024218C;
-	Thu, 13 Jul 2023 22:26:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0C8024218C
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id CD8381BF37E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Jul 2023 22:26:29 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id AB85E83CDB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Jul 2023 22:26:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AB85E83CDB
+	b=uSnT4xVh/1DrlVM0WF0By84BXpPl+PhyD0s4Gj7txhReH+ayFlrMH+j1sSDWffCYQ
+	 IXojkELst8ISRkHwGTRU/b/typxFOU27VxcJ8lOnKCgUb+9SpY/DUwqQqm5IIOr5GG
+	 V044OzJhkrHZuo6fJzt7QiwBF0pg9IKLr9MvvaK8F1h1gYp6c+zxr2tY7v8RVRSBgZ
+	 LlwVqKwp2J2ytiAHOEPvxa/lhV/4S4B/6lW9549h16ePDa8HYRu8HF1TDM13t1flLN
+	 zXzoTvxsAlDNe/v0s+hhSAmXJWAxErnPThCJ+pc58uxPUTV4WNHnpOORRAo4LgRNwX
+	 k5YARB5/qk1mw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id RpyOPwstUCCR for <intel-wired-lan@lists.osuosl.org>;
- Thu, 13 Jul 2023 22:26:24 +0000 (UTC)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id B1wG_qq2KEU9; Thu, 13 Jul 2023 23:38:51 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8C96981C20;
+	Thu, 13 Jul 2023 23:38:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8C96981C20
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 354511BF37B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Jul 2023 23:38:50 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 0C5994047C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Jul 2023 23:38:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0C5994047C
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Cwqp0AXyk6wD for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 13 Jul 2023 23:38:49 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 221C183CE0
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 221C183CE0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Jul 2023 22:26:24 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10770"; a="355267557"
-X-IronPort-AV: E=Sophos;i="6.01,204,1684825200"; d="scan'208";a="355267557"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Jul 2023 15:26:10 -0700
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E05754016D
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id E05754016D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 13 Jul 2023 23:38:48 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10770"; a="345661007"
+X-IronPort-AV: E=Sophos;i="6.01,204,1684825200"; d="scan'208";a="345661007"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 13 Jul 2023 16:38:37 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10770"; a="835782037"
-X-IronPort-AV: E=Sophos;i="6.01,204,1684825200"; d="scan'208";a="835782037"
-Received: from pmstillw-desk1.amr.corp.intel.com ([10.212.113.99])
- by fmsmga002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Jul 2023 15:26:07 -0700
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 13 Jul 2023 15:25:57 -0700
-Message-Id: <20230713222558.142-5-paul.m.stillwell.jr@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230713222558.142-1-paul.m.stillwell.jr@intel.com>
-References: <20230713222558.142-1-paul.m.stillwell.jr@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10770"; a="699448885"
+X-IronPort-AV: E=Sophos;i="6.01,204,1684825200"; d="scan'208";a="699448885"
+Received: from orsmsx602.amr.corp.intel.com ([10.22.229.15])
+ by orsmga006.jf.intel.com with ESMTP; 13 Jul 2023 16:38:37 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27; Thu, 13 Jul 2023 16:38:36 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.27 via Frontend Transport; Thu, 13 Jul 2023 16:38:36 -0700
+Received: from NAM02-BN1-obe.outbound.protection.outlook.com (104.47.51.47) by
+ edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.27; Thu, 13 Jul 2023 16:38:36 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=XZt1S5oef8UiU26S2wDkb6DMty05j2epC02S6NnWIHu0kbJj7wspZZoczzTEAn2tZxR4AQdDyeHABcJTNjnexPQ4M4ImJUaD+baNs9QIb0Hj3UoJReF9FciCtF+osRuDyedQq09iz/Uzrpt4MEHeswzSwxeqM/o5gJgng4pHjRkQ3Ir7FLo/2AhXaeV0FvMdC+QPfKSkmBGs9ddXe+/oDul/wQyKtmjyCH9qaKdX4vaL9RxuErpAv7EPdnVxsrOl5oEy0v0kxQeIaayJNS8cwy96qhWwuBaCCSAESbgLjkcl0ILEAk6NRxpW/UkJP7F2EpkW4maIHjKM6SXgO3odGA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=bq+OuGiNUS3CnBfTa+x0i6UJrgRUyWbAaQh0UiCa4NI=;
+ b=SVEz60cuQPWmNVS6lR4Kc/DtMdshPIoNCgpOQfC5KeJI5C+/mI46N3DszImZnRS2qXzkNqQ7Wpa617bBzE95UBY6jlbjP2VEN6eHwB9PPOlT65RcF8kgRGKZRBdRJE3OTSs1+zW1aJYpIDBqEXcy+5gAUooFgzePTYssG5q6R5X40OpeVPwmNwMZLOzFAl0eNrcATOeOwXIt/FaDLjUSVGxDWNm5wZiFdZcIKnD0eY1DS9FKAwXM37p40JU0AfRW2Ppje/c6mi1SdqB8qVJ/HIrz58rE3SSh6VYSwr+l1yxdIw1Lc9N2UuQf13XzBPVIXXuk5u1cLHc+P8KaqrtxpA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from CO1PR11MB5028.namprd11.prod.outlook.com (2603:10b6:303:9a::12)
+ by SJ1PR11MB6226.namprd11.prod.outlook.com (2603:10b6:a03:45b::11)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6588.22; Thu, 13 Jul
+ 2023 23:38:33 +0000
+Received: from CO1PR11MB5028.namprd11.prod.outlook.com
+ ([fe80::d166:2444:2f40:e0b6]) by CO1PR11MB5028.namprd11.prod.outlook.com
+ ([fe80::d166:2444:2f40:e0b6%4]) with mapi id 15.20.6565.028; Thu, 13 Jul 2023
+ 23:38:33 +0000
+From: "Mekala, SunithaX D" <sunithax.d.mekala@intel.com>
+To: "Ma, Aaron" <aaron.ma@canonical.com>, "Brandeburg, Jesse"
+ <jesse.brandeburg@intel.com>, "Nguyen, Anthony L"
+ <anthony.l.nguyen@intel.com>, "David S. Miller" <davem@davemloft.net>, "Eric
+ Dumazet" <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni
+ <pabeni@redhat.com>, Jeff Garzik <jgarzik@redhat.com>, Auke Kok
+ <auke-jan.h.kok@intel.com>, "intel-wired-lan@lists.osuosl.org"
+ <intel-wired-lan@lists.osuosl.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Thread-Topic: [Intel-wired-lan] [PATCH net v2] igb: fix hang issue of AER
+ error during resume
+Thread-Index: AQHZmOOokxjOvODuMEq7FIpYqOTT2K+4k6ww
+Date: Thu, 13 Jul 2023 23:38:33 +0000
+Message-ID: <CO1PR11MB5028DD73CD9601FEA281FC0DA037A@CO1PR11MB5028.namprd11.prod.outlook.com>
+References: <20230526163001.67626-1-aaron.ma@canonical.com>
+ <20230607015646.558534-1-aaron.ma@canonical.com>
+In-Reply-To: <20230607015646.558534-1-aaron.ma@canonical.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: CO1PR11MB5028:EE_|SJ1PR11MB6226:EE_
+x-ms-office365-filtering-correlation-id: c094633e-309a-4bbf-aadc-08db83fa45c4
+x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: pavSv80tDw55nvFzuKbeFFa6jPKDc9MD0mqs1h9Im/8tMx6pk78zQc09b/ZFsDknCkNLjf9+CzWxhPHg3vN/0DTM2YpGyDHaMkzmwMsyVH7InfdPMJgHWXbiAMp7qz5+/DzeBiAaKwebmnQBPr3leiL7JthmNbLf8nx0PylXmwjYwtFzpC012AxpSViydjp1nIaKK1SCoc7M7W40kclV3Cqya9nVVDBT10h0sEWdeAIZ53EDyDMIx6taXYoHDaoWdEpcVmwcHP9D4Lp0Vf0pinzsf+FUUDZxuwVx48aoYzzi6vhOhto1SDtQu0Ufe5/S1Sfy7j7Dg+ha5XxpyNBsJGsiWSgL6FRh5TKo8wbo6ClVtZIQQA/DeKtLvaj3v+JQkNfNXSSAR8Uh5sIRgS5+v6ALSoHXbU1WlqEt+9BzE27jVZjzuQbJe9BKIghvcdY7cB2VUwWoyQHURLLPIioOmW+T6XiP9YYb2NY/K7r6a6qWSVKXZasDcYX5Zavqp3c5nOOXKzdaq1x2+1KzhXJV7OtI1ZeGEAC5rPOHmNPQjNZLS1xMZcgUFjouOb66fWfNaAnRzdW5R4xeBCEjyO5DXugNp6CLqjn0Lz74fLrn7yDmhCbljDqmR7tW+TGHctn2
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:CO1PR11MB5028.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(376002)(136003)(396003)(39860400002)(366004)(346002)(451199021)(8676002)(41300700001)(8936002)(55016003)(110136005)(7696005)(2906002)(316002)(52536014)(5660300002)(71200400001)(66476007)(66946007)(66556008)(76116006)(64756008)(66446008)(33656002)(9686003)(82960400001)(966005)(478600001)(86362001)(186003)(38070700005)(122000001)(921005)(38100700002)(83380400001)(53546011)(26005)(6506007);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?mFZP+7SIjqkudHFyPYabC4CYAKQxyNqR4gmXXGNqe8d6numrlWBtTzpCfl8m?=
+ =?us-ascii?Q?9xrFT5C21QXDs8DFClDR5Gggg4Ty1FDMz6F42VGVjQZ9t2gJwfZWQRApKAmh?=
+ =?us-ascii?Q?f3NudDr4MZlwd8BlYh5a5ze8G5cXh9tmC7J37QBcBCGInwxbKiEYQ+K0eaRW?=
+ =?us-ascii?Q?03RzaR4/sMDa3cy4XpqqGn6sg/LmKwAyV1yUMf91y2WqswzENMyZiQsAFhPf?=
+ =?us-ascii?Q?ooPq8Y8RqBnANDotc5nDcGo4vRvMv4D7WLuPU1pSEG19C3UWEePjutbJOCGu?=
+ =?us-ascii?Q?tG3QeuG/oWXmu5bOmxo65ufu/mxSRMuO1WIAM5N7OuNRgY9D2uvOALck4W1Z?=
+ =?us-ascii?Q?5UlFJO279h6OIJYSD5KnkFVjmSVFlOoOui3F0RV7DJ69LfQY0nzV9JRqsiXG?=
+ =?us-ascii?Q?cTnjyIwJjNjJy+z7nnfIGFiyN18VVTRy10I0d17ANRKGwt3kwOluYVJOr+66?=
+ =?us-ascii?Q?bkj2sEHNhMYJW30n+eZxZ5cgeCNeoofjSWi5RFEuC0eqQohmEkChx7sp63P3?=
+ =?us-ascii?Q?a0z6WW0rCm9w5BOEt/3PSmimDhq7X+Wbb8nKKL6YVdMIXgqPGP/r9bGmIthA?=
+ =?us-ascii?Q?dxB2Gg2nuywg2iqP84rMDsR8Zy9zJb9iHHjLv2MoT+mtRkuA6cffvvbRRTNb?=
+ =?us-ascii?Q?KzgGtln2abyh9J978xSK9WbpyOF5mbLq1T1pyzxz3dcHKgfcuK9DhLt+6H7Z?=
+ =?us-ascii?Q?9dyLzHbHpM3uXclmL/PNOzy5wc0D/0xIzx7Kk9qX4x17BcY82m+o4EhqLGhf?=
+ =?us-ascii?Q?Ms02WfpvPOVvej5MQFkIRroCXQuw4jVHnBhMeEgns6abRKRHq01ruCQ4/Bsp?=
+ =?us-ascii?Q?PGDoSTKZXRuW+ev8LBMVV5z3zWHIng29rmu0blmB7U/WELCE66lJBJ/eL/94?=
+ =?us-ascii?Q?Gm7tLdigljHNrEr+XtGKSZqqLMHaDzdT+rYfrG52McAiaFj/Aim8hn0dmvVe?=
+ =?us-ascii?Q?ON/K10/KaLdhuge7hHkLpTzGgO/2n/Cj72I02f6A7FmQVJv9O6UwqLwveFTk?=
+ =?us-ascii?Q?6IxSkz8Rls4GQBqisZX1eR1mIAocEmtRncyUJObc5mG/YonBKUrZVzrpaR3d?=
+ =?us-ascii?Q?ZOQp9PgacUVBJVM7P9Nr2zy/LETDlpnzVUDSqqT9rNKLD714sc2gvxUsLmu7?=
+ =?us-ascii?Q?mw58jD54+K+plCSz6lzcuo5Nie0/nWa0OWQzomRl34HnHvRL+bFf92PXBg8h?=
+ =?us-ascii?Q?0OQ4xCGWixXZYZvEEJ8/IP3VYN3wr7VVT4ALZAEjKtvPjyxjQLtHrCYC00Zb?=
+ =?us-ascii?Q?7DW96loiWHy6DTLJN5frdGv812LLfeVeuYpCdDf5aLElPBAGzeqRDW1POkqM?=
+ =?us-ascii?Q?xfuG9ufQfg8R8p+wheNBAelgVNJKBHGlP/3qTvh1CQQ6CRZhYAJi1VsfEHBM?=
+ =?us-ascii?Q?HN/pFrn6lNXZzjlNx+4mJLjKXhS8F4fIS/bK5h92QFK9cKkdXs/a/eRr2idh?=
+ =?us-ascii?Q?yjVHpf+TggJxVrkvN3n/jaT8utIwIHNSDpwYIbKGHzxg2XHAVI8X7oXBMZnE?=
+ =?us-ascii?Q?QgP/oL0tiaTQrvTtGhGu96fBBwwLa+mNm/2YNhVMJOIH1t0bS3tL3XTLw0kF?=
+ =?us-ascii?Q?FvRcPBeQ2GJVqtDmU/E0CKlJF9wBuUMySrQN5uODwxbiPsRmU0ti0d+XS4Oj?=
+ =?us-ascii?Q?kg=3D=3D?=
 MIME-Version: 1.0
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB5028.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c094633e-309a-4bbf-aadc-08db83fa45c4
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jul 2023 23:38:33.8458 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: ml87HlC/LErCyv1XeWrO9qArbl+SQuJiFzzjw+1ZwC9zv8e5ZEUCgxy/j7Lc2wHT8bBaMKuls0vC8Pi6dWL5Fi1VX+acAaaL5dryUs5zTQw=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ1PR11MB6226
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1689287184; x=1720823184;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=9+O9LP/vjVnfPQvxau5Z50woltNpl/a6W9fW1lHtY2k=;
- b=GF/o9EPbP9r+DiNb7b37Sz15ZKPkGvxhEq9p7KZhwYFrvTuF5BDHBrql
- M93hybhn0DQuhvZwG3nK1wdugqeVCROBpNkcyGzGUrJP5IbQR0BFSI3RW
- gV/PIVsTRiKAJIOporoHZ4CI4MMo9szJf7tPyj1B60vFg6rCGuhgJdGXl
- q36WZw8SVBP+i/s/2+aCBhQYrH7RrqvtvopueufGJgPMKr1F4q4rBBtew
- uSFB+7rGW5CssgT0CuvY059kHGYxxdS25CtZDk6Yio9Xb1cVbigoWkKJy
- q0vgKWa0//nzpxr8mbWDzpem0/9NUoLojlQmF/U8u5LevRnqp0g8Kw1MC
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1689291528; x=1720827528;
+ h=from:to:subject:date:message-id:references:in-reply-to:
+ content-transfer-encoding:mime-version;
+ bh=LPp44NDWEpqZiucKtKHsWJi0KIS3OeymkPkpzDsPPo8=;
+ b=D169Vxz6cFVI6pFrnapQ3LOd6SQJPXD741BrQ5nDJRDs9sGPGiSqjwt9
+ lI05ROqQznp5HiJpw9Sjy0KnDZHoa4n0xwEfEyQBJ92QAzVzZqs43hUWU
+ egw7tiQrMYLTCA2KMRrHGqyVlx9EQquFTgh2Cjhl2FDYyokB4rio0p3Pn
+ Z8IurOXDtZvkNI9sR37+NeUgrIxj6vT3YsnWo0Qiimd8cKZNUqjWgme/A
+ UX3g3hTiOd5zRXrvlggEKZqNxwsHCnqRilvffUcR4ljRCb7iEFeEfDV0W
+ z3NfYhkcCDtqD1JQba6QU/TC+ikxJ1jE51oAwPQtQF9H+G3EGeck8a+Tv
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GF/o9EPb
-Subject: [Intel-wired-lan] [PATCH net-next v14 4/5] ice: add ability to read
- FW log data and configure the number of log buffers
+ header.a=rsa-sha256 header.s=Intel header.b=D169Vxz6
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net v2] igb: fix hang issue of AER
+ error during resume
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,596 +199,52 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Once logging is enabled the user should read the data from the 'data'
-file. The data is in the form of a binary blob that can be sent to Intel
-for decoding. To read the data use a command like:
-
-cat /sys/kernel/debug/ice/0000\:18\:00.0/fwlog/data > log_data.bin
-
-If the user wants to clear the FW log data that has been stored in the
-driver then they can write a 0 to the 'data' file and that will clear
-the data.
-
-In addition to being able to read the data the user can configure how
-many buffers can be used to store the FW logs within the driver. This
-allows the user to increase/decrease the number of buffers used based on
-the users situation. The buffers are used as a ring so if the driver
-runs out of buffers then it will overwrite data. To change the number of
-buffers the user can write to the 'nr_buffs' file like this:
-
-echo 128 > /sys/kernel/debug/ice/0000\:18\:00.0/fwlog/nr_buffs
-
-The value written to the file must be a power of 2 value between 1 (not
-recommended) and 512.
-
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
----
-v13->v14: fixed an issue where 0 was an accepted value to nr_buffs
-v12->v13:
-- moved 'enable' file addition to the correct patch
-- added comment to header file about inclusion of 0xFF33 command
-- added linux/vmalloc.h header file in ice_fwlog.c
-- removed NULL check before freeing ring->data
-v11->v12:
-- added fwlog/data file for reading and clearing data
-- added fwlog/nr_buffs to change the number of data buffers to store log
-  data in
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   2 +
- drivers/net/ethernet/intel/ice/ice_debugfs.c  | 242 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_fwlog.c    | 130 +++++++++-
- drivers/net/ethernet/intel/ice/ice_fwlog.h    |  20 ++
- drivers/net/ethernet/intel/ice/ice_main.c     |  29 +++
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
- 6 files changed, 423 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 09aa63225544..5062c445a27e 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -2122,6 +2122,7 @@ enum ice_aqc_fw_logging_mod {
- /* Set FW Logging configuration (indirect 0xFF30)
-  * Register for FW Logging (indirect 0xFF31)
-  * Query FW Logging (indirect 0xFF32)
-+ * FW Log Event (indirect 0xFF33)
-  */
- struct ice_aqc_fw_log {
- 	u8 cmd_flags;
-@@ -2425,6 +2426,7 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_fw_logs_config			= 0xFF30,
- 	ice_aqc_opc_fw_logs_register			= 0xFF31,
- 	ice_aqc_opc_fw_logs_query			= 0xFF32,
-+	ice_aqc_opc_fw_logs_event			= 0xFF33,
- };
- 
- #endif /* _ICE_ADMINQ_CMD_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_debugfs.c b/drivers/net/ethernet/intel/ice/ice_debugfs.c
-index 097b8f40081e..aa0d8f57762f 100644
---- a/drivers/net/ethernet/intel/ice/ice_debugfs.c
-+++ b/drivers/net/ethernet/intel/ice/ice_debugfs.c
-@@ -509,6 +509,240 @@ static const struct file_operations ice_debugfs_enable_fops = {
- 	.write = ice_debugfs_enable_write,
- };
- 
-+/**
-+ * ice_debugfs_nr_buffs_read - read from 'nr_buffs' file
-+ * @filp: the opened file
-+ * @buffer: where to write the data for the user to read
-+ * @count: the size of the user's buffer
-+ * @ppos: file position offset
-+ */
-+static ssize_t ice_debugfs_nr_buffs_read(struct file *filp,
-+					 char __user *buffer, size_t count,
-+					 loff_t *ppos)
-+{
-+	struct ice_pf *pf = filp->private_data;
-+	struct ice_hw *hw = &pf->hw;
-+	char buff[32] = {};
-+	int status;
-+
-+	/* don't allow commands if the FW doesn't support it */
-+	if (!ice_fwlog_supported(&pf->hw))
-+		return -EOPNOTSUPP;
-+
-+	snprintf(buff, sizeof(buff), "%d\n", hw->fwlog_ring.size);
-+
-+	status = simple_read_from_buffer(buffer, count, ppos, buff,
-+					 strlen(buff));
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_debugfs_nr_buffs_write - write into 'nr_buffs' file
-+ * @filp: the opened file
-+ * @buf: where to find the user's data
-+ * @count: the length of the user's data
-+ * @ppos: file position offset
-+ */
-+static ssize_t
-+ice_debugfs_nr_buffs_write(struct file *filp, const char __user *buf,
-+			   size_t count, loff_t *ppos)
-+{
-+	struct ice_pf *pf = filp->private_data;
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_hw *hw = &pf->hw;
-+	ssize_t ret;
-+	char **argv;
-+	int argc;
-+
-+	/* don't allow commands if the FW doesn't support it */
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	/* don't allow partial writes */
-+	if (*ppos != 0)
-+		return 0;
-+
-+	ret = ice_debugfs_parse_cmd_line(buf, count, &argv, &argc);
-+	if (ret)
-+		goto err_copy_from_user;
-+
-+	if (argc == 1) {
-+		s16 nr_buffs;
-+
-+		ret = kstrtos16(argv[0], 0, &nr_buffs);
-+		if (ret)
-+			goto nr_buffs_write_error;
-+
-+		if (nr_buffs <= 0 || nr_buffs > ICE_FWLOG_RING_SIZE_MAX) {
-+			dev_info(dev, "nr_buffs '%d' is not within bounds. Please use a value between 1 and %d\n",
-+				 nr_buffs, ICE_FWLOG_RING_SIZE_MAX);
-+			ret = -EINVAL;
-+			goto nr_buffs_write_error;
-+		} else if (hweight16(nr_buffs) > 1) {
-+			dev_info(dev, "nr_buffs '%d' is not a power of 2. Please use a value that is a power of 2.\n",
-+				 nr_buffs);
-+			ret = -EINVAL;
-+			goto nr_buffs_write_error;
-+		} else if (hw->fwlog_cfg.options &
-+			   ICE_FWLOG_OPTION_IS_REGISTERED) {
-+			dev_info(dev, "FW logging is currently running. Please disable FW logging to change nr_buffs\n");
-+			ret = -EINVAL;
-+			goto nr_buffs_write_error;
-+		}
-+
-+		/* free all the buffers and the tracking info and resize */
-+		ice_fwlog_realloc_rings(hw, nr_buffs);
-+	} else {
-+		dev_info(dev, "unknown or invalid command '%s'\n", argv[0]);
-+		ret = -EINVAL;
-+		goto nr_buffs_write_error;
-+	}
-+
-+	/* if we get here, nothing went wrong; return bytes copied */
-+	ret = (ssize_t)count;
-+
-+nr_buffs_write_error:
-+	argv_free(argv);
-+err_copy_from_user:
-+	/* This function always consumes all of the written input, or produces
-+	 * an error. Check and enforce this. Otherwise, the write operation
-+	 * won't complete properly.
-+	 */
-+	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
-+		ret = -EIO;
-+
-+	return ret;
-+}
-+
-+static const struct file_operations ice_debugfs_nr_buffs_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = simple_open,
-+	.read = ice_debugfs_nr_buffs_read,
-+	.write = ice_debugfs_nr_buffs_write,
-+};
-+
-+/**
-+ * ice_debugfs_data_read - read from 'data' file
-+ * @filp: the opened file
-+ * @buffer: where to write the data for the user to read
-+ * @count: the size of the user's buffer
-+ * @ppos: file position offset
-+ */
-+static ssize_t ice_debugfs_data_read(struct file *filp, char __user *buffer,
-+				     size_t count, loff_t *ppos)
-+{
-+	struct ice_pf *pf = filp->private_data;
-+	struct ice_hw *hw = &pf->hw;
-+	int data_copied = 0;
-+	bool done = false;
-+
-+	/* don't allow commands if the FW doesn't support it */
-+	if (!ice_fwlog_supported(&pf->hw))
-+		return -EOPNOTSUPP;
-+
-+	if (ice_fwlog_ring_empty(&hw->fwlog_ring))
-+		return 0;
-+
-+	while (!ice_fwlog_ring_empty(&hw->fwlog_ring) && !done) {
-+		struct ice_fwlog_data *log;
-+		u16 cur_buf_len;
-+
-+		log = &hw->fwlog_ring.rings[hw->fwlog_ring.head];
-+		cur_buf_len = log->data_size;
-+
-+		if (cur_buf_len >= count) {
-+			done = true;
-+			continue;
-+		}
-+
-+		if (copy_to_user(buffer, log->data, cur_buf_len)) {
-+			/* if there is an error then bail and return whatever
-+			 * the driver has copied so far
-+			 */
-+			done = true;
-+			continue;
-+		}
-+
-+		data_copied += cur_buf_len;
-+		buffer += cur_buf_len;
-+		count -= cur_buf_len;
-+		*ppos += cur_buf_len;
-+		ice_fwlog_ring_increment(&hw->fwlog_ring.head,
-+					 hw->fwlog_ring.size);
-+	}
-+
-+	return data_copied;
-+}
-+
-+/**
-+ * ice_debugfs_data_write - write into 'data' file
-+ * @filp: the opened file
-+ * @buf: where to find the user's data
-+ * @count: the length of the user's data
-+ * @ppos: file position offset
-+ */
-+static ssize_t
-+ice_debugfs_data_write(struct file *filp, const char __user *buf, size_t count,
-+		       loff_t *ppos)
-+{
-+	struct ice_pf *pf = filp->private_data;
-+	struct device *dev = ice_pf_to_dev(pf);
-+	struct ice_hw *hw = &pf->hw;
-+	ssize_t ret;
-+	char **argv;
-+	int argc;
-+
-+	/* don't allow commands if the FW doesn't support it */
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	/* don't allow partial writes */
-+	if (*ppos != 0)
-+		return 0;
-+
-+	ret = ice_debugfs_parse_cmd_line(buf, count, &argv, &argc);
-+	if (ret)
-+		goto err_copy_from_user;
-+
-+	if (argc == 1) {
-+		if (!(hw->fwlog_cfg.options & ICE_FWLOG_OPTION_IS_REGISTERED)) {
-+			hw->fwlog_ring.head = 0;
-+			hw->fwlog_ring.tail = 0;
-+		} else {
-+			dev_info(dev, "Can't clear FW log data while FW log running\n");
-+			ret = -EINVAL;
-+			goto nr_buffs_write_error;
-+		}
-+	} else {
-+		dev_info(dev, "unknown or invalid command '%s'\n", argv[0]);
-+		ret = -EINVAL;
-+		goto nr_buffs_write_error;
-+	}
-+
-+	/* if we get here, nothing went wrong; return bytes copied */
-+	ret = (ssize_t)count;
-+
-+nr_buffs_write_error:
-+	argv_free(argv);
-+err_copy_from_user:
-+	/* This function always consumes all of the written input, or produces
-+	 * an error. Check and enforce this. Otherwise, the write operation
-+	 * won't complete properly.
-+	 */
-+	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
-+		ret = -EIO;
-+
-+	return ret;
-+}
-+
-+static const struct file_operations ice_debugfs_data_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = simple_open,
-+	.read = ice_debugfs_data_read,
-+	.write = ice_debugfs_data_write,
-+};
-+
- /**
-  * ice_debugfs_fwlog_init - setup the debugfs directory
-  * @pf: the ice that is starting up
-@@ -543,6 +777,14 @@ void ice_debugfs_fwlog_init(struct ice_pf *pf)
- 
- 	debugfs_create_file("enable", 0600, pf->ice_debugfs_pf_fwlog,
- 			    pf, &ice_debugfs_enable_fops);
-+
-+	debugfs_create_file("nr_buffs", 0600, pf->ice_debugfs_pf_fwlog,
-+			    pf, &ice_debugfs_nr_buffs_fops);
-+
-+	debugfs_create_file("data", 0600, pf->ice_debugfs_pf_fwlog,
-+			    pf, &ice_debugfs_data_fops);
-+
-+	return;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.c b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-index e882a13cf13f..977a1e9d9fe4 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-@@ -1,10 +1,111 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright (c) 2022, Intel Corporation. */
- 
-+#include <linux/vmalloc.h>
- #include "ice.h"
- #include "ice_common.h"
- #include "ice_fwlog.h"
- 
-+bool ice_fwlog_ring_full(struct ice_fwlog_ring *rings)
-+{
-+	u16 head, tail;
-+
-+	head = rings->head;
-+	tail = rings->tail;
-+
-+	if (head < tail && (tail - head == (rings->size - 1)))
-+		return true;
-+	else if (head > tail && (tail == (head - 1)))
-+		return true;
-+
-+	return false;
-+}
-+
-+bool ice_fwlog_ring_empty(struct ice_fwlog_ring *rings)
-+{
-+	return rings->head == rings->tail;
-+}
-+
-+void ice_fwlog_ring_increment(u16 *item, u16 size)
-+{
-+	*item = (*item + 1) & (size - 1);
-+}
-+
-+static int ice_fwlog_alloc_ring_buffs(struct ice_fwlog_ring *rings)
-+{
-+	int i, ret = 0;
-+
-+	for (i = 0; i < rings->size; i++) {
-+		struct ice_fwlog_data *ring = &rings->rings[i];
-+
-+		ring->data_size = PAGE_SIZE;
-+		ring->data = vzalloc(ring->data_size);
-+		if (!ring->data) {
-+			ret = -ENOMEM;
-+			break;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+static void ice_fwlog_free_ring_buffs(struct ice_fwlog_ring *rings)
-+{
-+	int i;
-+
-+	for (i = 0; i < rings->size; i++) {
-+		struct ice_fwlog_data *ring = &rings->rings[i];
-+
-+		vfree(ring->data);
-+
-+		ring->data_size = 0;
-+	}
-+}
-+
-+/**
-+ * ice_fwlog_realloc_rings - reallocate the FW log rings
-+ * @hw: pointer to the HW structure
-+ * @ring_size: the new number of rings to allocate
-+ *
-+ */
-+void ice_fwlog_realloc_rings(struct ice_hw *hw, int ring_size)
-+{
-+	struct ice_fwlog_ring ring;
-+	int status;
-+
-+	if (ring_size == hw->fwlog_ring.size)
-+		return;
-+
-+	/* allocate space for the new rings and buffers then release the
-+	 * old rings and buffers. that way if we don't have enough
-+	 * memory then we at least have what we had before
-+	 */
-+	ring.rings = kcalloc(ICE_FWLOG_RING_SIZE_DFLT,
-+			     sizeof(*ring.rings), GFP_KERNEL);
-+	if (!ring.rings) {
-+		dev_warn(ice_hw_to_dev(hw), "Unable to allocate memory for FW log ring\n");
-+		return;
-+	}
-+
-+	ring.size = ring_size;
-+
-+	status = ice_fwlog_alloc_ring_buffs(&ring);
-+	if (status) {
-+		dev_warn(ice_hw_to_dev(hw), "Unable to allocate memory for FW log ring data buffers\n");
-+		ice_fwlog_free_ring_buffs(&ring);
-+		kfree(ring.rings);
-+		return;
-+	}
-+
-+	ice_fwlog_free_ring_buffs(&hw->fwlog_ring);
-+	kfree(hw->fwlog_ring.rings);
-+
-+	hw->fwlog_ring.rings = ring.rings;
-+	hw->fwlog_ring.size = ring.size;
-+	hw->fwlog_ring.head = 0;
-+	hw->fwlog_ring.tail = 0;
-+}
-+
- /**
-  * ice_fwlog_init - Initialize FW logging configuration
-  * @hw: pointer to the HW structure
-@@ -14,16 +115,38 @@
-  */
- int ice_fwlog_init(struct ice_hw *hw)
- {
--	int status;
-+	/* only support fw log commands on PF 0 */
-+	if (hw->bus.func)
-+		return -EINVAL;
- 
- 	ice_fwlog_set_supported(hw);
- 
- 	if (ice_fwlog_supported(hw)) {
-+		int status;
-+
- 		/* read the current config from the FW and store it */
- 		status = ice_fwlog_get(hw, &hw->fwlog_cfg);
- 		if (status)
- 			return status;
- 
-+		hw->fwlog_ring.rings = kcalloc(ICE_FWLOG_RING_SIZE_DFLT,
-+					       sizeof(*hw->fwlog_ring.rings),
-+					       GFP_KERNEL);
-+		if (!hw->fwlog_ring.rings) {
-+			dev_warn(ice_hw_to_dev(hw), "Unable to allocate memory for FW log ring\n");
-+			return -ENOMEM;
-+		}
-+
-+		hw->fwlog_ring.size = ICE_FWLOG_RING_SIZE_DFLT;
-+
-+		status = ice_fwlog_alloc_ring_buffs(&hw->fwlog_ring);
-+		if (status) {
-+			dev_warn(ice_hw_to_dev(hw), "Unable to allocate memory for FW log ring data buffers\n");
-+			ice_fwlog_free_ring_buffs(&hw->fwlog_ring);
-+			kfree(hw->fwlog_ring.rings);
-+			return status;
-+		}
-+
- 		ice_debugfs_fwlog_init(hw->back);
- 	} else {
- 		dev_warn(ice_hw_to_dev(hw), "FW logging is not supported in this NVM image. Please update the NVM to get FW log support\n");
-@@ -58,6 +181,11 @@ void ice_fwlog_deinit(struct ice_hw *hw)
- 	if (status)
- 		dev_warn(ice_hw_to_dev(hw), "Unable to unregister FW logging, status: %d\n",
- 			 status);
-+
-+	if (hw->fwlog_ring.rings) {
-+		ice_fwlog_free_ring_buffs(&hw->fwlog_ring);
-+		kfree(hw->fwlog_ring.rings);
-+	}
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.h b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-index 45865558425d..89969be69970 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-@@ -47,12 +47,32 @@ struct ice_fwlog_cfg {
- 	u16 log_resolution;
- };
- 
-+struct ice_fwlog_data {
-+	u16 data_size;
-+	u8 *data;
-+};
-+
-+struct ice_fwlog_ring {
-+	struct ice_fwlog_data *rings;
-+	u16 size;
-+	u16 head;
-+	u16 tail;
-+};
-+
-+#define ICE_FWLOG_RING_SIZE_DFLT 256
-+#define ICE_FWLOG_RING_SIZE_MAX 512
-+
-+bool ice_fwlog_ring_full(struct ice_fwlog_ring *rings);
-+bool ice_fwlog_ring_empty(struct ice_fwlog_ring *rings);
-+void ice_fwlog_ring_increment(u16 *item, u16 size);
- void ice_fwlog_set_supported(struct ice_hw *hw);
- bool ice_fwlog_supported(struct ice_hw *hw);
- int ice_fwlog_init(struct ice_hw *hw);
- void ice_fwlog_deinit(struct ice_hw *hw);
-+void ice_fwlog_deinit(struct ice_hw *hw);
- int ice_fwlog_set(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
- int ice_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
- int ice_fwlog_register(struct ice_hw *hw);
- int ice_fwlog_unregister(struct ice_hw *hw);
-+void ice_fwlog_realloc_rings(struct ice_hw *hw, int num_rings);
- #endif /* _ICE_FWLOG_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 189bb11693e7..e3245ee635b2 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1250,6 +1250,32 @@ ice_handle_link_event(struct ice_pf *pf, struct ice_rq_event_info *event)
- 	return status;
- }
- 
-+/**
-+ * ice_get_fwlog_data - copy the FW log data from ARQ event
-+ * @pf: PF that the FW log event is associated with
-+ * @event: event structure containing FW log data
-+ */
-+static void
-+ice_get_fwlog_data(struct ice_pf *pf, struct ice_rq_event_info *event)
-+{
-+	struct ice_fwlog_data *fwlog;
-+	struct ice_hw *hw = &pf->hw;
-+
-+	fwlog = &hw->fwlog_ring.rings[hw->fwlog_ring.tail];
-+
-+	memset(fwlog->data, 0, PAGE_SIZE);
-+	fwlog->data_size = le16_to_cpu(event->desc.datalen);
-+
-+	memcpy(fwlog->data, event->msg_buf, fwlog->data_size);
-+	ice_fwlog_ring_increment(&hw->fwlog_ring.tail, hw->fwlog_ring.size);
-+
-+	if (ice_fwlog_ring_full(&hw->fwlog_ring)) {
-+		/* the rings are full so bump the head to create room */
-+		ice_fwlog_ring_increment(&hw->fwlog_ring.head,
-+					 hw->fwlog_ring.size);
-+	}
-+}
-+
- enum ice_aq_task_state {
- 	ICE_AQ_TASK_WAITING = 0,
- 	ICE_AQ_TASK_COMPLETE,
-@@ -1530,6 +1556,9 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
- 
- 			ice_vc_process_vf_msg(pf, &event, &data);
- 			break;
-+		case ice_aqc_opc_fw_logs_event:
-+			ice_get_fwlog_data(pf, &event);
-+			break;
- 		case ice_aqc_opc_lldp_set_mib_change:
- 			ice_dcb_process_lldp_set_mib_change(pf, &event);
- 			break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 540930875598..5f8a09699d25 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -865,6 +865,7 @@ struct ice_hw {
- 
- 	struct ice_fwlog_cfg fwlog_cfg;
- 	bool fwlog_supported; /* does hardware support FW logging? */
-+	struct ice_fwlog_ring fwlog_ring;
- 
- /* Device max aggregate bandwidths corresponding to the GL_PWR_MODE_CTL
-  * register. Used for determining the ITR/INTRL granularity during
--- 
-2.35.1
-
+> -----Original Message-----
+> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of Aaron Ma
+> Sent: Tuesday, June 6, 2023 6:57 PM
+> To: Brandeburg, Jesse <jesse.brandeburg@intel.com>; Nguyen, Anthony L <anthony.l.nguyen@intel.com>; David S. Miller <davem@davemloft.net>; Eric Dumazet <edumazet@google.com>; Jakub Kicinski <kuba@kernel.org>; Paolo Abeni <pabeni@redhat.com>; Jeff Garzik <jgarzik@redhat.com>; Auke Kok <auke-jan.h.kok@intel.com>; intel-wired-lan@lists.osuosl.org; netdev@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH net v2] igb: fix hang issue of AER error during resume
+>
+> PCIe AER error_detected caused a race issue with igb_resume.
+> Protect error_detected when igb is in down state.
+>
+> Error logs:
+> kernel: igb 0000:02:00.0: disabling already-disabled device
+> kernel: WARNING: CPU: 0 PID: 277 at drivers/pci/pci.c:2248 pci_disable_device+0xc4/0xf0
+> kernel: RIP: 0010:pci_disable_device+0xc4/0xf0
+> kernel: Call Trace:
+> kernel:  <TASK>
+> kernel:  igb_io_error_detected+0x3e/0x60
+> kernel:  report_error_detected+0xd6/0x1c0
+> kernel:  ? __pfx_report_normal_detected+0x10/0x10
+> kernel:  report_normal_detected+0x16/0x30
+> kernel:  pci_walk_bus+0x74/0xa0
+> kernel:  pcie_do_recovery+0xb9/0x340
+> kernel:  ? __pfx_aer_root_reset+0x10/0x10
+> kernel:  aer_process_err_devices+0x168/0x220
+> kernel:  aer_isr+0x1b5/0x1e0
+> kernel:  ? __pfx_irq_thread_fn+0x10/0x10
+> kernel:  irq_thread_fn+0x21/0x70
+> kernel:  irq_thread+0xf8/0x1c0
+> kernel:  ? __pfx_irq_thread_dtor+0x10/0x10
+> kernel:  ? __pfx_irq_thread+0x10/0x10
+> kernel:  kthread+0xef/0x120
+> kernel:  ? __pfx_kthread+0x10/0x10
+> kernel:  ret_from_fork+0x29/0x50
+> kernel:  </TASK>
+> kernel: ---[ end trace 0000000000000000 ]---
+>
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=217446
+> Fixes: 9d5c824399de ("igb: PCI-Express 82575 Gigabit Ethernet driver")
+> Signed-off-by: Aaron Ma <aaron.ma@canonical.com>
+> Reviewed-by: Mateusz Palczewski <mateusz.palczewski@intel.com>
+> ---
+> V1->V2: Add target tree tag net and Fixes tag.
+>
+>  drivers/net/ethernet/intel/igb/igb_main.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+>
+Tested-by: Sunitha Mekala <sunithax.d.mekala@intel.com> (A Contingent worker at Intel)
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
