@@ -4,158 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B047EB64DC
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Jul 2023 18:29:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62EB2EB64DC
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Jul 2023 22:17:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 00F3460EA0;
-	Mon, 17 Jul 2023 18:29:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 00F3460EA0
+	by smtp3.osuosl.org (Postfix) with ESMTP id DBD5460F47;
+	Mon, 17 Jul 2023 22:17:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DBD5460F47
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689618589;
-	bh=IMIE6aa6F42FKG79zzx3QKvthyxUl0vO6WusuPwadR8=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=BfQrr7S/4R6Gn3hndkw8Bn384+RwLPF2NLTlIZgsAPeerk7cGoKIUJnoT7r28G5mp
-	 d/DVcAqmeqkm+ZjGX3YQzf6YjdAh2FM4vI22sRlYdJibOi9OGzvACgqfGDnlY5OJU0
-	 xc9feXZpVBTt9a4RL/ArZ9XIRT4B8vxicrvBUffo2xwgBtMiyi+aAg51g8fnx1r4Ao
-	 ZDme1SJS1Z1OwW1IfqkfVoWSxfC1FO8uWdGIi1AjMtHaXc/DbkX0Je2HFEUXZ+RsBa
-	 o9k6kfH7R99LwiqifIpKXoKJ5nJGc2TqxA98m6iQT6w5vw4NluPOhDCM1d6gtv64y8
-	 zSd0119PoDuUw==
+	s=default; t=1689632246;
+	bh=LCH3HVUXNqygpKz8pihglN2lG3kS7wrkq/TV4fd3m4E=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=YsbERDJ8G1t3+AwhaAzFFMeSpg+aJbQD66agkw6oGufqXFiHRIPE8r/uUPH553X1I
+	 HCKjT5zXZRogvrqBoylNUqHTvyaDR7DVy6kckp6tbN0aP8ipUUvJm1UMd2mpXeAOJM
+	 l0v+Q4WWsFOs3tdOS0MnNvnUqEON3oE1rh0PV5T+QlcbfANgvigeQWM1Sm/nEqeXMs
+	 wVW+E0vl/7tKMtzmIAfr5QU56ZF1GSnW8T35Yh0tDB4A+g/wExhayj4q92ufihoP3K
+	 eXSij5bV8uv42T7KLTettGlgufrVkVAnSf292LZ5NOp4zcUuUmJ3DZv0hRrL27eGJe
+	 Q8qY1JoONPazw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id D9HKkt1ntMJQ; Mon, 17 Jul 2023 18:29:47 +0000 (UTC)
+	with ESMTP id OgnOMOXAv1fZ; Mon, 17 Jul 2023 22:17:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DA5DA60E7D;
-	Mon, 17 Jul 2023 18:29:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DA5DA60E7D
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9E09460F3E;
+	Mon, 17 Jul 2023 22:17:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9E09460F3E
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 70C761BF338
- for <intel-wired-lan@osuosl.org>; Mon, 17 Jul 2023 16:51:40 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id C40F71BF388
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 22:17:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 339BF81461
- for <intel-wired-lan@osuosl.org>; Mon, 17 Jul 2023 16:51:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 339BF81461
+ by smtp1.osuosl.org (Postfix) with ESMTP id A942A8199D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 22:17:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A942A8199D
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id F21rD02PxK9J for <intel-wired-lan@osuosl.org>;
- Mon, 17 Jul 2023 16:51:39 +0000 (UTC)
-X-Greylist: whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D17FA81456
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com
- (mail-dm6nam10on2053.outbound.protection.outlook.com [40.107.93.53])
- by smtp1.osuosl.org (Postfix) with ESMTPS id D17FA81456
- for <intel-wired-lan@osuosl.org>; Mon, 17 Jul 2023 16:51:38 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=MFg3VWq8aMtS3hzVnG4eL39oAASGHqQ50qgqctNWa9D9NKO5jcEdIDB4KCFaoneprHoH2W+OVZBCKBv1fICMsrvWpCLNiWIF6INB+ACUVGYTynIPuI0SmeIYK8dcYCRgZyDywUTvTbaF50t2FUxRMQIpqF3faf3KXkYMhb0D8LCw3fHzKebr4eKlEZmzaMKjTN6DTmX6JK/awrf8p4iUXu+WEt2spKqkOSPC/gKVDozq5r+6bVLWYRMWnCAuPmWUtGKobiVNSqt81ldFY1sCYI4QbFP6EaYX5Drmr/YaSoDzjYdLicAyc1g1pEzG41L5lkdqfaFH6fScTHerIfouYg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=lgfErk+9KAkb4ooO7HiJBpbK3jt5ddPbDs7QbnjBJe8=;
- b=Rk4X7VYsV3o41QsE66sbTbLkugEyNmVpXZW1D5U6SBwxgEcEzQuDza3gleP1mwIEOwNHtk90t7CJlbzz4U47xgTQ1ipE/Ox3+l5ngcw7vGT1Y7m+vKiQFSVnNzb/vHdRwFQ5YxNLvwn5PWxkWATIxKuErxE4Yl+IpdIZ6oEBQRlxjAS1FDFs0RiquCXtK/wdFR/q0s9H57ovLMOuy+fz5CMWa/70ffbETpxI0UHAg9eSfcRdvtPKT7+nIiEpqQZGjgJ3SP+csHlz1Y5moR6M4gQZhslEIc4p+An6vBkZ+T5NThrfVPmzVEJmRg4K1ROiRim+Kb5rdi8xQfQ5k4dANg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-Received: from MN0PR12MB6101.namprd12.prod.outlook.com (2603:10b6:208:3cb::10)
- by MW4PR12MB7334.namprd12.prod.outlook.com (2603:10b6:303:219::21)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6588.31; Mon, 17 Jul
- 2023 16:51:36 +0000
-Received: from MN0PR12MB6101.namprd12.prod.outlook.com
- ([fe80::36f9:ffa7:c770:d146]) by MN0PR12MB6101.namprd12.prod.outlook.com
- ([fe80::36f9:ffa7:c770:d146%7]) with mapi id 15.20.6588.031; Mon, 17 Jul 2023
- 16:51:35 +0000
-Message-ID: <dc44cb41-b306-f18a-c9fc-3d956777f722@amd.com>
-Date: Mon, 17 Jul 2023 11:51:32 -0500
-User-Agent: Mozilla Thunderbird
-To: Kai-Heng Feng <kai.heng.feng@canonical.com>,
- Bjorn Helgaas <helgaas@kernel.org>
-References: <20230705200617.GA72825@bhelgaas>
- <9d1095ab-23e5-3df3-58d6-b2974f87ee72@amd.com>
- <CAAd53p7L27dkzwb_Q9vhENhBye-JTcx2AuCG_YXAgb0F6MG-9w@mail.gmail.com>
- <60b2f5fb-8294-d104-16d8-0acfc70426c1@amd.com>
- <CAAd53p42jiTCOsRZwEY0jtBejMDs1FbTOBNEknijnVNk3ENxuA@mail.gmail.com>
-Content-Language: en-US
-From: "Limonciello, Mario" <mario.limonciello@amd.com>
-In-Reply-To: <CAAd53p42jiTCOsRZwEY0jtBejMDs1FbTOBNEknijnVNk3ENxuA@mail.gmail.com>
-X-ClientProxiedBy: SA9PR11CA0013.namprd11.prod.outlook.com
- (2603:10b6:806:6e::18) To MN0PR12MB6101.namprd12.prod.outlook.com
- (2603:10b6:208:3cb::10)
+ with ESMTP id z41BgBdN4cuT for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 17 Jul 2023 22:17:23 +0000 (UTC)
+X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 947A981769
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 947A981769
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 22:17:23 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="396889143"
+X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="396889143"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 Jul 2023 15:17:22 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10774"; a="700659539"
+X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="700659539"
+Received: from jekeller-desk.amr.corp.intel.com (HELO
+ jekeller-desk.jekeller.internal) ([10.166.241.1])
+ by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 17 Jul 2023 15:17:22 -0700
+From: Jacob Keller <jacob.e.keller@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Date: Mon, 17 Jul 2023 15:17:13 -0700
+Message-ID: <20230717221713.2249044-1-jacob.e.keller@intel.com>
+X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN0PR12MB6101:EE_|MW4PR12MB7334:EE_
-X-MS-Office365-Filtering-Correlation-Id: 53026471-7475-4e40-94cc-08db86e6148a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: DB2NZsW6P1iOJ0es5T1n+E8MDWI2XyeR9Z8RjMD3w2axA5l9HIu9PPcSKbXBEyd1ID0JAM3oX8LO/2TobKO0pBnQICltBiQ3lDg3qH+xUT8y0QCXpQ5e5oYday2HyUuMrjCdSOneBbuAUOKLUmILQUN6SiHagyiavgDlR8c7cglpmk9/jOAoeFBP6TeRP6NlUSnINrGs8if/s19ubtvbkl97nwHPkw0w3xPhmWt74z0K4Sa3h9XQ3keD9it7zm/TR2NRYF3sRJYKrdS6f1MZIWMwcZMIF39ob3xKEQPd18a/r+h/mHsfB7cxNoioPBTFI1OCmPmD0C0JhAC8h0Hm8paB/cSgfs4amPQefvVkgRo8wTKNRom1J/Mg9RdCex2wXUIebg9TJe1th995w9UYVJUhO+Nr1YPBa92t1EwbG/OVxxxZ0GQ0MWmIS08xmx0T3uMm4HdFGhBegdWj+ahzqVZNodiGbAz/AFNOjz0vLJVmq0qStfimdSkGVa15b6oj68+b6QjuaNwhhS8VUpXSHTqhHycg2ZtMqnhhfGMhL/TpcH2XQMeXc8CEl9a9sEbIX7u+2gdmjU2lovZ82aDn9POHfQhfYZCsnxOpApYKMa6JWm3dZoLMKzcF6GVCvqCdC7uxW3GvQpz1wE+wTzj+rQ==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:MN0PR12MB6101.namprd12.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(4636009)(376002)(366004)(396003)(39860400002)(346002)(136003)(451199021)(31686004)(478600001)(6486002)(6666004)(45080400002)(110136005)(54906003)(83380400001)(31696002)(86362001)(2906002)(53546011)(186003)(36756003)(6506007)(6512007)(966005)(2616005)(316002)(26005)(66556008)(38100700002)(66476007)(66946007)(41300700001)(4326008)(8676002)(8936002)(5660300002)(7416002)(43740500002)(45980500001);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?MENiVTZNNTY5UDUvUC9Eb3ZoWGJaQVJxbG43SlkxTG4rVzg5d2tGQUQ0djNm?=
- =?utf-8?B?b0F2bXljYlVabHdkSGJNMGNnMENSQXBGU0JpaG9HdkFqZU9DK1gwNDM1UWZI?=
- =?utf-8?B?alQ1L1IwZ0NsTlJ0ditRVlRJNURVYm1PcXFCT2Y5anZ1eGhSS3NYR01WcVYy?=
- =?utf-8?B?MjVCeklIMXkzbG5walVueUQxNXlQRURJS1JuSzRiUkpwMmJCWWZybWpJWmhV?=
- =?utf-8?B?UGExVnVqOC9yNCttNXloMUxNcmlUOWJyUnBUMVBHMlUxcUMvNDFKR1JPOWMz?=
- =?utf-8?B?ek5oa0NpcllUS0N4Y000Rm9sV29HbVFYMFJyN0NWVFZBd3E0bE5mSXVMWksz?=
- =?utf-8?B?eTBUTndnK3M5WFRjZ1ZJVWNpcGZOSVJzZ05tb2tVMFFOZmxkZ1NNS0N6dVhw?=
- =?utf-8?B?eG5CVFJPWmxpS0kyRFI2WUhSbFBHTnJGbXBOMXVNcndkc1ZZMml2WUdsam5Y?=
- =?utf-8?B?eUtRN24zMUJUanhzWmJPdUxMVUJHWWxpRDFsb2dVSk9TdEQwVVFQZzNKbXRk?=
- =?utf-8?B?NHlmcCs1Zmk5SEJRTWVNUklyRWlpMmRlYSs5YkV0ZTVZUXpsYUNtZGZSUHQx?=
- =?utf-8?B?QVFmMHJ4bVNSMWxlM0tBQmt1SVF0Q2RRNEVKNFQrVS9hcmZiU05FUVJFYXd1?=
- =?utf-8?B?bktoeXVaM2dndVVraHozY3J1dkp1ZzlkbkRXMUh4ZDhzREVZZnhQT1VMeDJU?=
- =?utf-8?B?Yk1WVnd6WEZxbFZWanFmUWFtVmk0enorMmJyd1FPckt3aVhPMUFSbWIrQnU2?=
- =?utf-8?B?aDFLOSswcTZ1OGluVjM0Q2ZDd2x0TzgyQ2JtMlhxbkI1aUcxZHJTVXZDVndE?=
- =?utf-8?B?Z25kSTdCQzBzL2FLcGVPdi9GeVNtTUJSZDBwaXpqa1JMSjFNb0lkK0ZMZ3M4?=
- =?utf-8?B?RHB3azZGeW5xcDAydENiL3p3K2V6SGVaSW5ER3BZc09VZGN6cU5CS3IrUXp1?=
- =?utf-8?B?dmxoZkIxRXVqU0dzaVpNbzBMVk9DOG91YllJM3JwdWpVQmNBWXZaYlNueGFo?=
- =?utf-8?B?M0hWZ1dhUDlyd0h1NjdLcGc4a3AxRjlSNUNxZFA3MHZZSUJXc0IxSzdZRmVO?=
- =?utf-8?B?V3ZSMEpiUmhNTWVNNE9PMGhhZjc5MjVYUStlVHRIUXhqMGwvNEV2VTVpMWhW?=
- =?utf-8?B?THM1Nk1YN3JlSzhvRUFDdFNuNWIyNE1BU28raGZ3UlFVaCtDVTViNjl1aW9U?=
- =?utf-8?B?WC81TnN6Q2U4ek9ZUGlGZGtMNWxzYllqRVUya0tuMmZESWVZTmJLQ3NUZWEv?=
- =?utf-8?B?NGVtc2V3ekw1bkFqVWJqT3RMcERqSkVpQndsWVhwTjM3MzFUTk9ySXpwQ3Zn?=
- =?utf-8?B?TVJRem9wRmV3dXBObGt3RFNhUVVaaGtkb1p4aVFUcGhhU1FHRVhwSXljVjNT?=
- =?utf-8?B?d0RNUk8reGFhbEFMKytLdkZXSENDZUNZYUtFVFVsbFlBYm02VVdmbGN1Wndt?=
- =?utf-8?B?THNzamdHbnliWXJtQU5tNDFmTzRtdWJ1ZmRuRCtCOEIzdnZGZ2g4S2ZMOWgw?=
- =?utf-8?B?WSs3MXlJVk16R3FuejgwODRTcUZSYzJOdkVpSEVpUmxtdVE3WXZyOVVueWNh?=
- =?utf-8?B?YUd3R3VRRjE3clY3QTFsOFZZSkNoSGdRY3VnRkxaL1RWcXdVSXFlYUdtV2Jl?=
- =?utf-8?B?NU50V0h4WG1Kb2pZMGM2d241NEIzdGFPUjE5Tk0wWXdVcFZPaHhOeEJ3Y1ky?=
- =?utf-8?B?MnhRcHV3OERER01jNHRsOUIwWlV3bkNZS3ExVzA4Vzk2WENNbzl6SHhUQTVa?=
- =?utf-8?B?Q0xDUG52V0VsM01rNnhlaGowdVVhOGhyamJUK0FqTW9TMnAxSHdPMXdQemJK?=
- =?utf-8?B?QVNrNFVGbGJMY1VCY0puWjlOU3Zvb3VhQVMrVHJ2M1hHUzRXLzZhOXJvSndr?=
- =?utf-8?B?UXlqK2NwQ0FHT085M2JTc25XZERHcFo2YmVsVUFsUmtuWGNwNE9FL09HdUpr?=
- =?utf-8?B?TXphQU9rZnZNSGVBMUpoSUhUNEhpT3V4Y0FJU1dSZTEzMmtaMk56YzQ4c1hp?=
- =?utf-8?B?M0hlSXFlKys0YVJzQ2EvNzVMTmlhL2pJbVVnQXdLaUpxVEZYMWR1VXc4c1VS?=
- =?utf-8?B?dnRXQ0UzRWpLcTZlUGZRUGt5c1BvYi9MNFQzTFo3WENkTzBQV3NqVU1YOGVX?=
- =?utf-8?Q?jttqk0ibLLhd2894nFHeORSw6?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 53026471-7475-4e40-94cc-08db86e6148a
-X-MS-Exchange-CrossTenant-AuthSource: MN0PR12MB6101.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Jul 2023 16:51:35.0896 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: m1ZQkg4PjP+88hbwaoyXLuEk5zOVtFUTAt4jefRTjPrxuDAL9g7S/dEeX/qgJRUqiMuuze8gN81ttQvsVkgCoA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR12MB7334
-X-Mailman-Approved-At: Mon, 17 Jul 2023 18:29:45 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amd.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=lgfErk+9KAkb4ooO7HiJBpbK3jt5ddPbDs7QbnjBJe8=;
- b=fH6MpAhltexfXJaQkxqdv6dtIewEhcdOvgp8GgDGvmp8rYFVNPF3L0HB1tCCV21uHffApSEYb8PR2hSHb+DrBGEm8WBVuVQrxtBW96XCXv80MXjODPEwH99ndI4ej7GNSvIHXH2T6Zh7jFaU/+66GjC9QYi79WrcP4lGaT+HpSg=
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1689632243; x=1721168243;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=K6BH9S4f0Yzmay8ML7JxbdN24kdMDnvf22769bfsdy4=;
+ b=Z/fDyMP/4jRjMPA9M3KqiehHuDQ5M7VJeYGOWChv/X0n/TtgLC1mFTRq
+ WKZEnOrUTa5m4Tz7g5wzRriavp6N2XGYD5z2wDk8F9W122Qtq93kqcEqh
+ YpxeUygWiwSDBHJXtLDjtgSJ7aGwhpF/Mz1z8u526LIYyqdCU7EHd51sG
+ 5fo1qE/mRYP/SiZSExhXwk20S1HKw9I4xD9bt9Uexi8U9dIRkZkjcXZc7
+ xMEDMF8MbHCBzVmPoEAVeP6y+HPkFGZSyDdw4AeAhxtg/hHPi5W9aaD7l
+ I9eyHcKLqiQGFVBHwcHxrCDpHZdWEx4pkyR3q682ddFcwN3SuyPNsMujC
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
- header.s=selector1 header.b=fH6MpAhl
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Subject: Re: [Intel-wired-lan] [PATCH] PCI/ASPM: Enable ASPM on external
- PCIe devices
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=Z/fDyMP/
+Subject: [Intel-wired-lan] [PATCH iwl-next] ice: introduce hw->phy_model for
+ handling PTP PHY differences
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -168,96 +94,352 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
- linux-pci@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- linux-kernel@vger.kernel.org, Vidya Sagar <vidyas@nvidia.com>,
- Michael Bottini <michael.a.bottini@linux.intel.com>,
- intel-wired-lan@osuosl.org, bhelgaas@google.com,
- Mika Westerberg <mika.westerberg@linux.intel.com>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Cc: Anthony Nguyen <anthony.l.nguyen@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-CgpPbiA3LzE2LzIwMjMgMTA6MzQgUE0sIEthaS1IZW5nIEZlbmcgd3JvdGU6Cj4gT24gU2F0LCBK
-dWwgMTUsIDIwMjMgYXQgMTI6MzfigK9BTSBNYXJpbyBMaW1vbmNpZWxsbwo+IDxtYXJpby5saW1v
-bmNpZWxsb0BhbWQuY29tPiB3cm90ZToKPj4KPj4gT24gNy8xNC8yMyAwMzoxNywgS2FpLUhlbmcg
-RmVuZyB3cm90ZToKPj4+IE9uIFRodSwgSnVsIDYsIDIwMjMgYXQgMTI6MDfigK9QTSBNYXJpbyBM
-aW1vbmNpZWxsbwo+Pj4gPG1hcmlvLmxpbW9uY2llbGxvQGFtZC5jb20+IHdyb3RlOgo+Pj4+Cj4+
-Pj4gT24gNy81LzIzIDE1OjA2LCBCam9ybiBIZWxnYWFzIHdyb3RlOgo+Pj4+PiBPbiBXZWQsIEp1
-biAyOCwgMjAyMyBhdCAwMTowOTo0OVBNICswODAwLCBLYWktSGVuZyBGZW5nIHdyb3RlOgo+Pj4+
-Pj4gT24gV2VkLCBKdW4gMjgsIDIwMjMgYXQgNDo1NOKAr0FNIEJqb3JuIEhlbGdhYXMgPGhlbGdh
-YXNAa2VybmVsLm9yZz4gd3JvdGU6Cj4+Pj4+Pj4gT24gVHVlLCBKdW4gMjcsIDIwMjMgYXQgMDQ6
-MzU6MjVQTSArMDgwMCwgS2FpLUhlbmcgRmVuZyB3cm90ZToKPj4+Pj4+Pj4gT24gRnJpLCBKdW4g
-MjMsIDIwMjMgYXQgNzowNuKAr0FNIEJqb3JuIEhlbGdhYXMgPGhlbGdhYXNAa2VybmVsLm9yZz4g
-d3JvdGU6Cj4+Pj4+Pj4+PiBPbiBUdWUsIEp1biAyMCwgMjAyMyBhdCAwMTozNjo1OVBNIC0wNTAw
-LCBMaW1vbmNpZWxsbywgTWFyaW8gd3JvdGU6Cj4+Pj4+Cj4+Pj4+Pj4gSXQncyBwZXJmZWN0bHkg
-ZmluZSBmb3IgdGhlIElQIHRvIHN1cHBvcnQgUENJIGZlYXR1cmVzIHRoYXQgYXJlIG5vdAo+Pj4+
-Pj4+IGFuZCBjYW4gbm90IGJlIGVuYWJsZWQgaW4gYSBzeXN0ZW0gZGVzaWduLiAgQnV0IEkgZXhw
-ZWN0IHRoYXQKPj4+Pj4+PiBzdHJhcHBpbmcgb3IgZmlybXdhcmUgd291bGQgZGlzYWJsZSB0aG9z
-ZSBmZWF0dXJlcyBzbyB0aGV5IGFyZSBub3QKPj4+Pj4+PiBhZHZlcnRpc2VkIGluIGNvbmZpZyBz
-cGFjZS4KPj4+Pj4+Pgo+Pj4+Pj4+IElmIEJJT1MgbGVhdmVzIGZlYXR1cmVzIGRpc2FibGVkIGJl
-Y2F1c2UgdGhleSBjYW5ub3Qgd29yaywgYnV0IGF0IHRoZQo+Pj4+Pj4+IHNhbWUgdGltZSBsZWF2
-ZXMgdGhlbSBhZHZlcnRpc2VkIGluIGNvbmZpZyBzcGFjZSwgSSdkIHNheSB0aGF0J3MgYQo+Pj4+
-Pj4+IEJJT1MgZGVmZWN0LiAgSW4gdGhhdCBjYXNlLCB3ZSBzaG91bGQgaGF2ZSBhIERNSSBxdWly
-ayBvciBzb21ldGhpbmcgdG8KPj4+Pj4+PiB3b3JrIGFyb3VuZCB0aGUgZGVmZWN0Lgo+Pj4+Pj4K
-Pj4+Pj4+IFRoYXQgbWVhbnMgbW9zdCBpZiBub3QgYWxsIEJJT1MgYXJlIGRlZmVjdGVkLgo+Pj4+
-Pj4gQklPUyB2ZW5kb3JzIGFuZCBPRE0gbmV2ZXIgYm90aGVyZWQgKGFuZCBwcm9iYWJseSB3aWxs
-IG5vdCkgdG8gY2hhbmdlCj4+Pj4+PiB0aGUgY2FwYWJpbGl0aWVzIGFkdmVydGlzZWQgYnkgY29u
-ZmlnIHNwYWNlIGJlY2F1c2UgIml0IGFscmVhZHkgd29ya3MKPj4+Pj4+IHVuZGVyIFdpbmRvd3Mi
-Lgo+Pj4+Pgo+Pj4+PiBUaGlzIGlzIHdoYXQgc2VlbXMgc3RyYW5nZSB0byBtZS4gIEFyZSB5b3Ug
-c2F5aW5nIHRoYXQgV2luZG93cyBuZXZlcgo+Pj4+PiBlbmFibGVzIHRoZXNlIHBvd2VyLXNhdmlu
-ZyBmZWF0dXJlcz8gIE9yIHRoYXQgV2luZG93cyBpbmNsdWRlcyBxdWlya3MKPj4+Pj4gZm9yIGFs
-bCB0aGVzZSBicm9rZW4gQklPU2VzPyAgTmVpdGhlciBpZGVhIHNlZW1zIHZlcnkgY29udmluY2lu
-Zy4KPj4+Pj4KPj4+Pgo+Pj4+IEkgc2VlIHlvdXIgcG9pbnQuICBJIHdhcyBsb29raW5nIHRocm91
-Z2ggTWljcm9zb2Z0IGRvY3VtZW50YXRpb24gZm9yCj4+Pj4gaGludHMgYW5kIGNhbWUgYWNyb3Nz
-IHRoaXM6Cj4+Pj4KPj4+PiBodHRwczovL2xlYXJuLm1pY3Jvc29mdC5jb20vZW4tdXMvd2luZG93
-cy1oYXJkd2FyZS9jdXN0b21pemUvcG93ZXItc2V0dGluZ3MvcGNpLWV4cHJlc3Mtc2V0dGluZ3Mt
-bGluay1zdGF0ZS1wb3dlci1tYW5hZ2VtZW50Cj4+Pj4KPj4+PiBUaGV5IGhhdmUgYSBwb2xpY3kg
-a25vYiB0byBnbG9iYWxseSBzZXQgTDAgb3IgTDEgZm9yIFBDSWUgbGlua3MuCj4+Pj4KPj4+PiBU
-aGV5IGRvbid0IGV4cGxpY2l0bHkgc2F5IGl0LCBidXQgc3VyZWx5IGl0J3MgYmFzZWQgb24gd2hh
-dCB0aGUgZGV2aWNlcwo+Pj4+IGFkdmVydGlzZSBpbiB0aGUgY2FwYWJpbGl0aWVzIHJlZ2lzdGVy
-cy4KPj4+Cj4+PiBTbyBlc3NlbnRpYWxseSBpdCBjYW4gYmUgYWNoaWV2ZWQgdmlhIGJvb3QgdGlt
-ZSBrZXJuZWwgcGFyYW1ldGVyCj4+PiBhbmQvb3Igc3lzZnMga25vYi4KPj4+Cj4+PiBUaGUgbWFp
-biBwb2ludCBpcyBPUyBzaG91bGQgc3RpY2sgdG8gdGhlIEJJT1MgZGVmYXVsdCwgd2hpY2ggaXMg
-dGhlCj4+PiBvbmx5IEFTUE0gc2V0dGluZyB0ZXN0ZWQgYmVmb3JlIHB1dHRpbmcgaGFyZHdhcmUg
-dG8gdGhlIG1hcmtldC4KPj4KPj4gVW5mb3J0dW5hdGVseTsgSSBkb24ndCB0aGluayB5b3UgY2Fu
-IGp1bXAgdG8gdGhpcyBjb25jbHVzaW9uLgo+Pgo+PiBBIGJpZyBkaWZmZXJlbmNlIGluIHRoZSBX
-aW5kb3dzIHdvcmxkIHRvIExpbnV4IHdvcmxkIGlzIHRoYXQgT0VNcyBzaGlwCj4+IHdpdGggYSBm
-YWN0b3J5IFdpbmRvd3MgaW1hZ2UgdGhhdCBtYXkgc2V0IHBvbGljaWVzIGxpa2UgdGhpcy4gIE9F
-TQo+PiAicGxhdGZvcm0iIGRyaXZlcnMgY2FuIHNldCByZWdpc3RyeSBrZXlzIHRvby4KPiAKPiBU
-aGFua3MuIFRoaXMgaXMgbmV3IHRvIG1lLgo+IAo+Pgo+PiBJIHRoaW5rIHRoZSBuZXh0IEFTUE0g
-aXNzdWUgdGhhdCBjb21lcyB1cCB3aGF0IHdlIChjb2xsZWN0aXZlbHkpIG5lZWQgdG8KPj4gZG8g
-aXMgY29tcGFyZSBBU1BNIHBvbGljeSBhbmQgUENJIHJlZ2lzdGVycyBmb3I6Cj4+IDEpIEEgImNs
-ZWFuIiBXaW5kb3dzIGluc3RhbGwgZnJvbSBNaWNyb3NvZnQgbWVkaWEgYmVmb3JlIGFsbCB0aGUg
-T0VNCj4+IGRyaXZlcnMgYXJlIGluc3RhbGxlZC4KPj4gMikgQSBXaW5kb3dzIGluc3RhbGwgdGhh
-dCB0aGUgZHJpdmVycyBoYXZlIGJlZW4gaW5zdGFsbGVkLgo+PiAzKSBBIHVwIHRvIGRhdGUgbWFp
-bmxpbmUgTGludXgga2VybmVsLgo+Pgo+PiBBY3R1YWxseSBhcyB0aGlzIHRocmVhZCBzdGFydGVk
-IGZvciBkZXRlcm1pbmluZyBwb2xpY3kgZm9yIGV4dGVybmFsIFBDSWUKPj4gZGV2aWNlcywgbWF5
-YmUgdGhhdCB3b3VsZCBiZSBnb29kIHRvIGNoZWNrIHdpdGggdGhvc2UuCj4gCj4gRGlkIHRoYXQg
-YmVmb3JlIHN1Ym1pdHRpbmcgdGhlIHBhdGNoLgo+ICBGcm9tIHZlcnkgbGltaXRlZCBkZXZpY2Vz
-IEkgdGVzdGVkLCBBU1BNIGlzIGVuYWJsZWQgZm9yIGV4dGVybmFsCj4gY29ubmVjdGVkIFBDSWUg
-ZGV2aWNlIHZpYSBUQlQgcG9ydHMuCj4gCj4gSSB3b25kZXIgaWYgdGhlcmUncyBhbnkgcGFydGlj
-dWxhciBtb2RpZmljYXRpb24gc2hvdWxkIGJlIGltcHJvdmVkIGZvcgo+IHRoaXMgcGF0Y2g/Cj4g
-CgpLbm93aW5nIHRoaXMgaW5mb3JtYXRpb24gSSBwZXJzb25hbGx5IHRoaW5rIHRoZSBvcmlnaW5h
-bCBwYXRjaCB0aGF0IApzdGFydGVkIHRoaXMgdGhyZWFkIG1ha2VzIGEgbG90IG9mIHNlbnNlLgoK
-Qmpvcm4sIHdoYXQgYXJlIHlvdXIgdGhvdWdodHM/Cgo+IEthaS1IZW5nCj4gCj4+Cj4+Pgo+Pj4g
-S2FpLUhlbmcKPj4+Cj4+Pj4KPj4+Pj4+Pj4gU28gdGhlIGxvZ2ljIGlzIHRvIGlnbm9yZSB0aGUg
-Y2FwYWJpbGl0eSBhbmQgdHJ1c3QgdGhlIGRlZmF1bHQgc2V0Cj4+Pj4+Pj4+IGJ5IEJJT1MuCj4+
-Pj4+Pj4KPj4+Pj4+PiBJIHRoaW5rIGxpbWl0aW5nIEFTUE0gc3VwcG9ydCB0byB3aGF0ZXZlciBC
-SU9TIGNvbmZpZ3VyZWQgYXQgYm9vdC10aW1lCj4+Pj4+Pj4gaXMgcHJvYmxlbWF0aWMuICBJIGRv
-bid0IHRoaW5rIHdlIGNhbiBhc3N1bWUgdGhhdCBhbGwgcGxhdGZvcm1zIGhhdmUKPj4+Pj4+PiBm
-aXJtd2FyZSB0aGF0IGNvbmZpZ3VyZXMgQVNQTSBhcyBhZ2dyZXNzaXZlbHkgYXMgcG9zc2libGUs
-IGFuZAo+Pj4+Pj4+IG9idmlvdXNseSBmaXJtd2FyZSB3b24ndCBjb25maWd1cmUgaG90LWFkZGVk
-IGRldmljZXMgYXQgYWxsIChpbgo+Pj4+Pj4+IGdlbmVyYWw7IEkga25vdyBBQ1BJIF9IUFggY2Fu
-IGRvIHNvbWUgb2YgdGhhdCkuCj4+Pj4+Pgo+Pj4+Pj4gVG90YWxseSBhZ3JlZS4gSSB3YXMgbm90
-IHN1Z2dlc3RpbmcgdG8gbGltaXRpbmcgdGhlIHNldHRpbmcgYXQgYWxsLgo+Pj4+Pj4gQSBib290
-LXRpbWUgcGFyYW1ldGVyIHRvIGZsaXAgQVNQTSBzZXR0aW5nIGlzIHZlcnkgdXNlZnVsLiBJZiBu
-b25lIGhhcwo+Pj4+Pj4gYmVlbiBzZXQsIGRlZmF1bHQgdG8gQklPUyBzZXR0aW5nLgo+Pj4+Pgo+
-Pj4+PiBBIGJvb3QtdGltZSBwYXJhbWV0ZXIgZm9yIGRlYnVnZ2luZyBhbmQgd29ya2Fyb3VuZHMg
-aXMgZmluZS4gIElNTywKPj4+Pj4gbmVlZGluZyBhIGJvb3QtdGltZSBwYXJhbWV0ZXIgaW4gdGhl
-IGNvdXJzZSBvZiBub3JtYWwgb3BlcmF0aW9uIGlzCj4+Pj4+IG5vdCBPSy4KPj4+Pj4KPj4+Pj4g
-Qmpvcm4KPj4+Pgo+PgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wu
-b3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVk
-LWxhbgo=
+The ice driver has PTP support which works across a couple of different
+device families. The device families each have different PHY hardware which
+have unique requirements for programming.
+
+Today, there is E810-based hardware, and E822-based hardware. To handle
+this, the driver checks the ice_is_e810() function to separate between the
+two existing families of hardware.
+
+Future development is going to add new hardware designs which have further
+unique requirements. To make this easier, introduce a phy_model field to
+the HW structure. This field represents what PHY model the current device
+has, and is used to allow distinguishing which logic a particular device
+needs.
+
+This will make supporting future upcoming hardware easier, by providing an
+obvious place to initialize the PHY model, and by already using switch/case
+statements instead of the previous if statements.
+
+Astute reviewers may notice that there are a handful of remaining checks
+for ice_is_e810() left in ice_ptp.c  These conflict with some other
+cleanup patches in development, and will be fixed in the near future.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c    |  32 ++++--
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 104 ++++++++++++++++----
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |   2 +
+ drivers/net/ethernet/intel/ice/ice_type.h   |   8 ++
+ 4 files changed, 120 insertions(+), 26 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index db78bf156df4..8ac5afbbf9c2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1366,6 +1366,7 @@ ice_ptp_port_phy_restart(struct ice_ptp_port *ptp_port)
+ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
+ {
+ 	struct ice_ptp_port *ptp_port;
++	struct ice_hw *hw = &pf->hw;
+ 
+ 	if (!test_bit(ICE_FLAG_PTP, pf->flags))
+ 		return;
+@@ -1380,11 +1381,18 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
+ 	/* Update cached link status for this port immediately */
+ 	ptp_port->link_up = linkup;
+ 
+-	/* E810 devices do not need to reconfigure the PHY */
+-	if (ice_is_e810(&pf->hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
++		/* Do not reconfigure E810 PHY */
+ 		return;
++	case ICE_PHY_E822:
+ 
+-	ice_ptp_port_phy_restart(ptp_port);
++		ice_ptp_port_phy_restart(ptp_port);
++
++		return;
++	default:
++		dev_warn(ice_pf_to_dev(pf), "%s: Unknown PHY type\n", __func__);
++	}
+ }
+ 
+ /**
+@@ -2702,14 +2710,22 @@ static int ice_ptp_init_work(struct ice_pf *pf, struct ice_ptp *ptp)
+  */
+ static int ice_ptp_init_port(struct ice_pf *pf, struct ice_ptp_port *ptp_port)
+ {
++	struct ice_hw *hw = &pf->hw;
++
+ 	mutex_init(&ptp_port->ps_lock);
+ 
+-	if (ice_is_e810(&pf->hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		return ice_ptp_init_tx_e810(pf, &ptp_port->tx);
++	case ICE_PHY_E822:
++		kthread_init_delayed_work(&ptp_port->ov_work,
++					  ice_ptp_wait_for_offsets);
+ 
+-	kthread_init_delayed_work(&ptp_port->ov_work,
+-				  ice_ptp_wait_for_offsets);
+-	return ice_ptp_init_tx_e822(pf, &ptp_port->tx, ptp_port->port_num);
++		return ice_ptp_init_tx_e822(pf, &ptp_port->tx,
++					    ptp_port->port_num);
++	default:
++		return -ENODEV;
++	}
+ }
+ 
+ /**
+@@ -2730,6 +2746,8 @@ void ice_ptp_init(struct ice_pf *pf)
+ 	struct ice_hw *hw = &pf->hw;
+ 	int err;
+ 
++	ice_ptp_init_phy_model(hw);
++
+ 	/* If this function owns the clock hardware, it must allocate and
+ 	 * configure the PTP clock device to represent it.
+ 	 */
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index f174bac58aba..8afedd28ff94 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -3138,6 +3138,23 @@ void ice_ptp_unlock(struct ice_hw *hw)
+ 	wr32(hw, PFTSYN_SEM + (PFTSYN_SEM_BYTES * hw->pf_id), 0);
+ }
+ 
++/**
++ * ice_ptp_init_phy_model - Initialize hw->phy_model based on device type
++ * @hw: pointer to the HW structure
++ *
++ * Determine the PHY model for the device, and initialize hw->phy_model
++ * for use by other functions.
++ */
++int ice_ptp_init_phy_model(struct ice_hw *hw)
++{
++	if (ice_is_e810(hw))
++		hw->phy_model = ICE_PHY_E810;
++	else
++		hw->phy_model = ICE_PHY_E822;
++
++	return 0;
++}
++
+ /**
+  * ice_ptp_tmr_cmd - Prepare and trigger a timer sync command
+  * @hw: pointer to HW struct
+@@ -3156,10 +3173,17 @@ static int ice_ptp_tmr_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
+ 	ice_ptp_src_cmd(hw, cmd);
+ 
+ 	/* Next, prepare the ports */
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		err = ice_ptp_port_cmd_e810(hw, cmd);
+-	else
++		break;
++	case ICE_PHY_E822:
+ 		err = ice_ptp_port_cmd_e822(hw, cmd);
++		break;
++	default:
++		err = -EOPNOTSUPP;
++	}
++
+ 	if (err) {
+ 		ice_debug(hw, ICE_DBG_PTP, "Failed to prepare PHY ports for timer command %u, err %d\n",
+ 			  cmd, err);
+@@ -3202,10 +3226,17 @@ int ice_ptp_init_time(struct ice_hw *hw, u64 time)
+ 
+ 	/* PHY timers */
+ 	/* Fill Rx and Tx ports and send msg to PHY */
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		err = ice_ptp_prep_phy_time_e810(hw, time & 0xFFFFFFFF);
+-	else
++		break;
++	case ICE_PHY_E822:
+ 		err = ice_ptp_prep_phy_time_e822(hw, time & 0xFFFFFFFF);
++		break;
++	default:
++		err = -EOPNOTSUPP;
++	}
++
+ 	if (err)
+ 		return err;
+ 
+@@ -3237,10 +3268,17 @@ int ice_ptp_write_incval(struct ice_hw *hw, u64 incval)
+ 	wr32(hw, GLTSYN_SHADJ_L(tmr_idx), lower_32_bits(incval));
+ 	wr32(hw, GLTSYN_SHADJ_H(tmr_idx), upper_32_bits(incval));
+ 
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		err = ice_ptp_prep_phy_incval_e810(hw, incval);
+-	else
++		break;
++	case ICE_PHY_E822:
+ 		err = ice_ptp_prep_phy_incval_e822(hw, incval);
++		break;
++	default:
++		err = -EOPNOTSUPP;
++	}
++
+ 	if (err)
+ 		return err;
+ 
+@@ -3296,10 +3334,17 @@ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj)
+ 	wr32(hw, GLTSYN_SHADJ_L(tmr_idx), 0);
+ 	wr32(hw, GLTSYN_SHADJ_H(tmr_idx), adj);
+ 
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		err = ice_ptp_prep_phy_adj_e810(hw, adj);
+-	else
++		break;
++	case ICE_PHY_E822:
+ 		err = ice_ptp_prep_phy_adj_e822(hw, adj);
++		break;
++	default:
++		err = -EOPNOTSUPP;
++	}
++
+ 	if (err)
+ 		return err;
+ 
+@@ -3319,10 +3364,14 @@ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj)
+  */
+ int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp)
+ {
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		return ice_read_phy_tstamp_e810(hw, block, idx, tstamp);
+-	else
++	case ICE_PHY_E822:
+ 		return ice_read_phy_tstamp_e822(hw, block, idx, tstamp);
++	default:
++		return -EOPNOTSUPP;
++	}
+ }
+ 
+ /**
+@@ -3337,10 +3386,14 @@ int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp)
+  */
+ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx)
+ {
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		return ice_clear_phy_tstamp_e810(hw, block, idx);
+-	else
++	case ICE_PHY_E822:
+ 		return ice_clear_phy_tstamp_e822(hw, block, idx);
++	default:
++		return -EOPNOTSUPP;
++	}
+ }
+ 
+ /**
+@@ -3349,10 +3402,14 @@ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx)
+  */
+ void ice_ptp_reset_ts_memory(struct ice_hw *hw)
+ {
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E822:
++		ice_ptp_reset_ts_memory_e822(hw);
++		break;
++	case ICE_PHY_E810:
++	default:
+ 		return;
+-
+-	ice_ptp_reset_ts_memory_e822(hw);
++	}
+ }
+ 
+ /**
+@@ -3371,10 +3428,14 @@ int ice_ptp_init_phc(struct ice_hw *hw)
+ 	/* Clear event err indications for auxiliary pins */
+ 	(void)rd32(hw, GLTSYN_STAT(src_idx));
+ 
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		return ice_ptp_init_phc_e810(hw);
+-	else
++	case ICE_PHY_E822:
+ 		return ice_ptp_init_phc_e822(hw);
++	default:
++		return -EOPNOTSUPP;
++	}
+ }
+ 
+ /**
+@@ -3390,10 +3451,15 @@ int ice_ptp_init_phc(struct ice_hw *hw)
+  */
+ int ice_get_phy_tx_tstamp_ready(struct ice_hw *hw, u8 block, u64 *tstamp_ready)
+ {
+-	if (ice_is_e810(hw))
++	switch (hw->phy_model) {
++	case ICE_PHY_E810:
+ 		return ice_get_phy_tx_tstamp_ready_e810(hw, block,
+ 							tstamp_ready);
+-	else
++	case ICE_PHY_E822:
+ 		return ice_get_phy_tx_tstamp_ready_e822(hw, block,
+ 							tstamp_ready);
++		break;
++	default:
++		return -EOPNOTSUPP;
++	}
+ }
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index ba4ab96073e0..c17d9dcf96f2 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -203,6 +203,8 @@ int ice_write_sma_ctrl_e810t(struct ice_hw *hw, u8 data);
+ int ice_read_pca9575_reg_e810t(struct ice_hw *hw, u8 offset, u8 *data);
+ bool ice_is_pca9575_present(struct ice_hw *hw);
+ 
++int ice_ptp_init_phy_model(struct ice_hw *hw);
++
+ #define PFTSYN_SEM_BYTES	4
+ 
+ #define ICE_PTP_CLOCK_INDEX_0	0x00
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index f1231a8162af..581b18cd32d0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -805,6 +805,13 @@ struct ice_mbx_data {
+ 	u16 async_watermark_val;
+ };
+ 
++/* PHY model */
++enum ice_phy_model {
++	ICE_PHY_UNSUP = -1,
++	ICE_PHY_E810  = 1,
++	ICE_PHY_E822,
++};
++
+ /* Port hardware description */
+ struct ice_hw {
+ 	u8 __iomem *hw_addr;
+@@ -826,6 +833,7 @@ struct ice_hw {
+ 	u8 revision_id;
+ 
+ 	u8 pf_id;		/* device profile info */
++	enum ice_phy_model phy_model;
+ 
+ 	u16 max_burst_size;	/* driver sets this value */
+ 
+
+base-commit: 3a78e3e1ac7da2f416519fc52260761e563d9509
+-- 
+2.41.0.1.g9857a21e0017.dirty
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
