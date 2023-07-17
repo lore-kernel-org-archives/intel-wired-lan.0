@@ -4,84 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F4F9C001B0
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Jul 2023 10:58:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF347EB64DC
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Jul 2023 11:00:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D1C5F81255;
-	Mon, 17 Jul 2023 10:58:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D1C5F81255
+	by smtp1.osuosl.org (Postfix) with ESMTP id 99EE48126D;
+	Mon, 17 Jul 2023 11:00:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 99EE48126D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689591534;
-	bh=jYp5a3jY59VgON7HldwqCXzIU0MQP7hT9gKhrjlhxkE=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=S8gRR4wIEr7J+Wh78hMqTnl8SCEzg5ZfhUir/ezKBcDPUBJ7AA2gmQD7jH9PJvRma
-	 uquTSz8Nu7fayLCiXq5QMn9M9kcay1BT06G64Ulz/sEdKML0D45RSop+NgKcOJB+3g
-	 RLO6C5RjTw/IWPhDpM6RWKuL3X4COGNE2/3vlt+bHAN7CFt/uVdLhw09JiHu1dOX+o
-	 ZemfhTp4W1SA9GyLp2LMIvxuAxo7xl8Jy0lFgRDWIhUjTOWGeZEchoe1MHppgWAJUO
-	 EVH+RyegPnzANRfQQRBXyUKipXpwwde3a7dgIdvvjmAyx3c4AI+e8dnDJzIq3Ts4ym
-	 EaTadekewKIVw==
+	s=default; t=1689591649;
+	bh=+RZj7H0s2mu/crGsS8Rm+3xsirrOcQAvhgTAeMUYezk=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=6+Za2ZT6T40msj7CA2fYvXFMCQ/sQzt1tIi15edN91dIYpJaX3LEEbUPuzB1uMQhX
+	 x/ESNxX6S/sxoI2hto4TLOHnvODj+2RwRWKD0LlWM2hzZ6Jmn1ojy4chZHBRe9svc6
+	 1YpFxYFqUcPko5xAEooKe50KRQN8BCNnaNv9CLm7HSKCx690866rcOTsssvMToSVrW
+	 ObwsyDhDNrQuvmowZxtH/drDR40k1VpqZQNLtXz5wVrrJdrUrPsdt0pwP9ceiu0pPq
+	 SgmCiq4IlV9tAkazZtBI3uLhBTCxIUsYU9jbfPgFPIAbAk3IrpWpS2O9qhysrZbPsD
+	 L2Y//64EMzv1w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 2FGTpbzEKrKc; Mon, 17 Jul 2023 10:58:54 +0000 (UTC)
+	with ESMTP id 9F-IWOk6l_kw; Mon, 17 Jul 2023 11:00:48 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id EED68812F4;
-	Mon, 17 Jul 2023 10:58:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EED68812F4
+	by smtp1.osuosl.org (Postfix) with ESMTP id ABDC181290;
+	Mon, 17 Jul 2023 11:00:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ABDC181290
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 4B2B41BF38D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:51 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 563A11BF38D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 11:00:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3015B407D7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3015B407D7
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3AA0B4092F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 11:00:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3AA0B4092F
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id D3HUzcsi8Vn2 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 17 Jul 2023 10:58:50 +0000 (UTC)
+ with ESMTP id ML2VS7E0Ihr9 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 17 Jul 2023 11:00:45 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 76CEE404E8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 63D8640882
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 76CEE404E8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:50 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10773"; a="452273466"
-X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="452273466"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 63D8640882
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 11:00:45 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10773"; a="452273721"
+X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="452273721"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Jul 2023 03:58:49 -0700
+ 17 Jul 2023 04:00:44 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10773"; a="700474638"
-X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="700474638"
+X-IronPort-AV: E=McAfee;i="6600,9927,10773"; a="700474867"
+X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="700474867"
 Received: from gk3153-or4-r750-36948.igk.intel.com ([10.102.19.252])
- by orsmga006.jf.intel.com with ESMTP; 17 Jul 2023 03:58:48 -0700
+ by orsmga006.jf.intel.com with ESMTP; 17 Jul 2023 04:00:43 -0700
 From: "Zaborska, Olga" <olga.zaborska@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 17 Jul 2023 12:58:12 +0200
-Message-Id: <20230717105812.298188-4-olga.zaborska@intel.com>
+Date: Mon, 17 Jul 2023 13:00:39 +0200
+Message-Id: <20230717110039.298259-1-olga.zaborska@intel.com>
 X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20230717105812.298188-1-olga.zaborska@intel.com>
-References: <20230717105812.298188-1-olga.zaborska@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1689591530; x=1721127530;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=4+vS2sV0pXKM4Vir0ZntOhEBIIUt1Z7NNM4AAUsGGmQ=;
- b=HnNMvsdPCi9E5wWMQRbu8XBGUCXMq+JKyz554mbXQ4Dlh1KK2CvDQJe3
- f46ZE1EfcAMdgzflWMdrv4l5hzu7jnUAmSOfrJS4FaSYka9BpaqeT6Zk1
- SyLUru38gkXqd/q3s78htxwYKDDCjXlxe5dSV7A2l/+QxmKJDE0EAkEJZ
- ajnx+YRsxvmJWkZP/hPqM1Z7RF3uRQesDoea8OEaJq7ldi4HVk3YTZ8Yo
- qykW1qoSi1olqdh3c3YeU3nYaszQhj9Plnnrzgfr7cP0DbDgJ/3xYyokj
- KF1cpB6rVY5z12LECmayeCE/TgLqkI0pX3yVkyRS2w1cTdsWY0ugdP1wI
+ t=1689591645; x=1721127645;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=98xdvRLdNxWa1QILVAI/MQeF9P0a7o7ZDRYIRiCCH5M=;
+ b=b+mVxfy/j+Uea6pq0pvZ6G7UgKAJZuX+Vccj2p5A99iBTvEMYllu695Z
+ K23gwcCXRlYYOPOaV0TL5tqlMG7xu6CnVBEWFA3j8924PRTNnaQIXNZlH
+ ZyWI3awOO/HfhcipyHmqSPGruo60Sqj9kFnS0/rU8CeVoMDA3LGWNQrKM
+ bJ0XJ7c2SAkWBJLwdVuqhcg0xCTaooWhjCeOz38TcJt4YmuwaU6BxLBCU
+ LzAaJBo7+dDBCnzb7gdPNPxGKgQ/DIOadCnu/jhGrBmbKU7xkdkkyxyqM
+ 9DNCKa4Odoc9FhRA2J/a6ci3xjULBErVLIun8xuqtk7NzTtO8zMY/eXs6
  g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=HnNMvsdP
-Subject: [Intel-wired-lan] [PATCH iwl-net v3 2/3] igbvf: Change IGBVF_MIN to
+ header.a=rsa-sha256 header.s=Intel header.b=b+mVxfy/
+Subject: [Intel-wired-lan] [PATCH iwl-net v3 3/3] igc: Change IGC_MIN to
  allow set rx/tx value between 64 and 80
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -95,51 +92,34 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Olga Zaborska <olga.zaborska@intel.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: "Zaborska, Olga" <olga.zaborska@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Olga Zaborska <olga.zaborska@intel.com>
-
-Change the minimum value of RX/TX descriptors to 64 to enable setting the rx/tx value
-between 64 and 80. All igbvf devices can use as low as 64 descriptors.
-This change will unify igbvf with other drivers.
-Based on commit 7b1be19 ("e1000e: lower ring minimum size to 64")
-
-Fixes: d4e0fe0 ("igbvf: add new driver to support 82576 virtual functions")
-Signed-off-by: Olga Zaborska <olga.zaborska@intel.com>
----
- v1->v2 fixed commit title and message
- v2->v3 fixed commit title and message, added changes for igb and igc
----
- drivers/net/ethernet/intel/igbvf/igbvf.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igbvf/igbvf.h b/drivers/net/ethernet/intel/igbvf/igbvf.h
-index 57d39ee00b58..7b83678ba83a 100644
---- a/drivers/net/ethernet/intel/igbvf/igbvf.h
-+++ b/drivers/net/ethernet/intel/igbvf/igbvf.h
-@@ -39,11 +39,11 @@ enum latency_range {
- /* Tx/Rx descriptor defines */
- #define IGBVF_DEFAULT_TXD	256
- #define IGBVF_MAX_TXD		4096
--#define IGBVF_MIN_TXD		80
-+#define IGBVF_MIN_TXD		64
- 
- #define IGBVF_DEFAULT_RXD	256
- #define IGBVF_MAX_RXD		4096
--#define IGBVF_MIN_RXD		80
-+#define IGBVF_MIN_RXD		64
- 
- #define IGBVF_MIN_ITR_USECS	10 /* 100000 irq/sec */
- #define IGBVF_MAX_ITR_USECS	10000 /* 100    irq/sec */
--- 
-2.31.1
-
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Q2hhbmdlIHRoZSBtaW5pbXVtIHZhbHVlIG9mIFJYL1RYIGRlc2NyaXB0b3JzIHRvIDY0IHRvIGVu
+YWJsZSBzZXR0aW5nIHRoZSByeC90eCB2YWx1ZcKgCmJldHdlZW4gNjQgYW5kIDgwLiBBbGwgaWdj
+IGRldmljZXMgY2FuIHVzZSBhcyBsb3cgYXMgNjQgZGVzY3JpcHRvcnMuClRoaXMgY2hhbmdlIHdp
+bGwgdW5pZnkgaWdjIHdpdGggb3RoZXIgZHJpdmVycy4KQmFzZWQgb24gY29tbWl0IDdiMWJlMTkg
+KCJlMTAwMGU6IGxvd2VyIHJpbmcgbWluaW11bSBzaXplIHRvIDY0IikKCkZpeGVzOiAwNTA3ZWY4
+ICgiaWdjOiBBZGQgdHJhbnNtaXQgYW5kIHJlY2VpdmUgZmFzdHBhdGggYW5kIGludGVycnVwdCBo
+YW5kbGVycyIpClNpZ25lZC1vZmYtYnk6IE9sZ2EgWmFib3Jza2EgPG9sZ2EuemFib3Jza2FAaW50
+ZWwuY29tPgotLS0KIHYxLT52MiBmaXhlZCBjb21taXQgdGl0bGUgYW5kIG1lc3NhZ2UKIHYyLT52
+MyBmaXhlZCBjb21taXQgdGl0bGUgYW5kIG1lc3NhZ2UsIGFkZGVkIGNoYW5nZXMgZm9yIGlnYiBh
+bmQgaWdjCi0tLQogZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWdjL2lnYy5oIHwgNCArKy0t
+CiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAt
+LWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9pZ2MuaCBiL2RyaXZlcnMvbmV0
+L2V0aGVybmV0L2ludGVsL2lnYy9pZ2MuaAppbmRleCAzNGFlYmYwMGE1MTIuLjU1ODc2OGNlZTVi
+OSAxMDA2NDQKLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWdjL2lnYy5oCisrKyBi
+L2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2lnYy9pZ2MuaApAQCAtMzI2LDExICszMjYsMTEg
+QEAgZXh0ZXJuIGNoYXIgaWdjX2RyaXZlcl9uYW1lW107CiAvKiBUWC9SWCBkZXNjcmlwdG9yIGRl
+ZmluZXMgKi8KICNkZWZpbmUgSUdDX0RFRkFVTFRfVFhECQkyNTYKICNkZWZpbmUgSUdDX0RFRkFV
+TFRfVFhfV09SSwkxMjgKLSNkZWZpbmUgSUdDX01JTl9UWEQJCTgwCisjZGVmaW5lIElHQ19NSU5f
+VFhECQk2NAogI2RlZmluZSBJR0NfTUFYX1RYRAkJNDA5NgogCiAjZGVmaW5lIElHQ19ERUZBVUxU
+X1JYRAkJMjU2Ci0jZGVmaW5lIElHQ19NSU5fUlhECQk4MAorI2RlZmluZSBJR0NfTUlOX1JYRAkJ
+NjQKICNkZWZpbmUgSUdDX01BWF9SWEQJCTQwOTYKIAogLyogU3VwcG9ydGVkIFJ4IEJ1ZmZlciBT
+aXplcyAqLwotLSAKMi4zMS4xCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBv
+c3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVs
+LXdpcmVkLWxhbgo=
