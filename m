@@ -4,82 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E522EEB64DC
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Jul 2023 10:58:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92E15EB64DC
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 17 Jul 2023 10:58:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7A09580B6B;
-	Mon, 17 Jul 2023 10:58:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7A09580B6B
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3722380B32;
+	Mon, 17 Jul 2023 10:58:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3722380B32
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689591515;
-	bh=4irgfhYQUR9ZoFfB340R6zWFyFIB0EbnntOGM4ZmxC0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=NogzsFcVgiDX0hJe7yLi2UtMVjXi1IsjwwGhoGHoSpbPaIhsUgYYms7RJhv3AxWwO
-	 +tlywIQEzijjtUuBUyaNNdzksQowh8Ow4nEceUrFYxpzDgyPAk+EhvcmrbP7n92vWA
-	 kDtwepHyGnlJfm9OzEkRMU47wHJ5tZsqCqjQ6dLzrj/56U86TYO6DXZ/4+WRKAkd54
-	 wbLesL8LDCe1u989cgOUOHXFTZLLBTkyAf4U2uVkbl6tETUC7BvWVDmkH8Pj+wdExO
-	 nsHSPMfuncrv1sdsgStDfncgBjC86mNDTn/WXX+3Xx+dXhp34hyRLP46cM2dW4CFP4
-	 SZasyLGo4XUPQ==
+	s=default; t=1689591525;
+	bh=6iuIR87mI34fJMyHDzC2dvJ1BTdOmEIu9UvM1NocLTI=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=RtG0ytLzB6rwHFURnA/7yK/oF2NPGjf8J1cZ+zQl4SRoOHBfixO2ZPY801KIEpoEu
+	 0NuuZ+5PXrju2hDD2HG+9rjbOV07Rj8A1pbkt2AgNYCrZC3tvulVbRatzfuY1V3d4s
+	 8VqlOZp72Gz+Fe3GHZ5L7yp579hygfame/0JjEz+txiLZbA1Wuaqk0hhpEOFRH/9Fq
+	 r8zLQZ7fOS5Wf2WgF+iW+3coQ0nckMS4F42kUMcLd60qRHcl4DLCK1YP+Zq3l7icMt
+	 /ul3ZJrNZf4HyTLhFNeSeZ0L+JYPApVQHQP+AA6A2VVib+pddaA87ow6oD264vWEyf
+	 eNhhZ0VhWsCUQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xAQP3L9aiqBu; Mon, 17 Jul 2023 10:58:34 +0000 (UTC)
+	with ESMTP id DOqWOqvwZooM; Mon, 17 Jul 2023 10:58:44 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8523780B94;
-	Mon, 17 Jul 2023 10:58:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8523780B94
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 401A91BF38D
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:33 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5338981098;
+	Mon, 17 Jul 2023 10:58:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5338981098
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 429691BF38D
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 173D0605D5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 173D0605D5
+ by smtp4.osuosl.org (Postfix) with ESMTP id 280A9407D7
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 280A9407D7
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id usRo9GGd94yR for <intel-wired-lan@lists.osuosl.org>;
- Mon, 17 Jul 2023 10:58:32 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 6Ied6eY5_gFv for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 17 Jul 2023 10:58:42 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 54904605D8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 55F28404E8
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 54904605D8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:32 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10773"; a="452273424"
-X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="452273424"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 55F28404E8
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 17 Jul 2023 10:58:42 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10773"; a="452273448"
+X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="452273448"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Jul 2023 03:58:31 -0700
+ 17 Jul 2023 03:58:41 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10773"; a="700474623"
-X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="700474623"
+X-IronPort-AV: E=McAfee;i="6600,9927,10773"; a="700474628"
+X-IronPort-AV: E=Sophos;i="6.01,211,1684825200"; d="scan'208";a="700474628"
 Received: from gk3153-or4-r750-36948.igk.intel.com ([10.102.19.252])
- by orsmga006.jf.intel.com with ESMTP; 17 Jul 2023 03:58:30 -0700
+ by orsmga006.jf.intel.com with ESMTP; 17 Jul 2023 03:58:40 -0700
 From: "Zaborska, Olga" <olga.zaborska@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 17 Jul 2023 12:58:09 +0200
-Message-Id: <20230717105812.298188-1-olga.zaborska@intel.com>
+Date: Mon, 17 Jul 2023 12:58:10 +0200
+Message-Id: <20230717105812.298188-2-olga.zaborska@intel.com>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20230717105812.298188-1-olga.zaborska@intel.com>
+References: <20230717105812.298188-1-olga.zaborska@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1689591512; x=1721127512;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=HY7CzYSY1awu+DEoUiVdR+SsOmprnmz9Sj2omB6CdEM=;
- b=c1HYFjjon1Fc/FnXOapCkCfs90t6ewM1TqSOVnRc6+cCYEVt9RxQ9fmq
- z2eF/GlQmJ00N2x5/iG0Wl2RFBfJ2ObugoOysOv4WZzMs2U4p6cSyoERy
- FMtzh+3/OA/70+KInrRlKbroMty2B3+FBaSTn5Wuelr1xuc5dBJvvJN0E
- gwYvwqs0Tw9UuPeTdNi40SlJtLSqKtyrbHkiXwxtudmzt20kt7IH8Q3sb
- 4uLzJLkzY8c2TG5QGy2MV/xdKNn0aAPQdwKJKsZWfcxgg5T2Jnv4dft8n
- CaRQpXtL0lRCH8P/15EpX/LIcYIZN+zDcW9iVF8HNcnFai34mtq7v0nD1
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1689591522; x=1721127522;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=OYZtcmWiFSFgwfSA4Y3ZZFgedOtZunvOakkttqx2bMk=;
+ b=V+z9gSuMxFUlcoDBTuLdv1P1UrNaz0zqlY8xKKXOtPEzmD8hDWlYpT7K
+ YfKRxZhi9PjPn+6GOwn5nRDeOT5PVIsAyqO3FxFt3SA9g/fiXHIeFfRGw
+ EkbEpWsaEZyVGgluhhFjsoTnYgUNXacebGyVAdk5vp8nkQ/0TdP60BGJd
+ iZUQcPeTtzXDdY4UD1KjFYsZHhFbtzjBKSzZiNwdvZ/Z8McOf7RCIvVTd
+ 11+FZoWPczaH8DARr64tvcZR4o11TiBVw8LXu7FE2GNEam3REx+e/AmSu
+ wBQwp+cJeqrFJCQqSAiBPZCHwu9NIQ1NLQ5pSICQoXMozJDAwVN748JH3
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=c1HYFjjo
-Subject: [Intel-wired-lan] [PATCH iwl-net v3 0/3] Change MIN_TXD and MIN_RXD
- to allow set rx/tx value between 64 and 80
+ header.a=rsa-sha256 header.s=Intel header.b=V+z9gSuM
+Subject: [Intel-wired-lan] [PATCH iwl-net v3 1/3] igb: Change IGB_MIN to
+ allow set rx/tx value between 64 and 80
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,25 +101,38 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Change the minimum value of RX/TX descriptors to 64 to enabl'e setting the rx/tx value
-between 64 and 80. All igb, igbf and igc devices can use as low as 64 descriptors.
+Change the minimum value of RX/TX descriptors to 64 to
+enable setting the rx/tx value between 64 and 80. All igb devices can use as
+low as 64 descriptors. This change will unify igb with other drivers. Based
+on commit 7b1be19 ("e1000e: lower ring minimum size to 64")
 
-Olga Zaborska (1):
-  igbvf: Change IGBVF_MIN to allow set rx/tx value between 64 and 80
+Fixes: 0507ef8 ("igb: Fix code comments and whitespace")
+Signed-off-by: Olga Zaborska <olga.zaborska@intel.com>
+---
+ v1->v2 fixed commit title and message
+ v2->v3 fixed commit title and message, added changes for igb and igc
+---
+ drivers/net/ethernet/intel/igb/igb.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Zaborska, Olga (2):
-  igb: Change IGB_MIN to allow set rx/tx value between 64 and 80 Change
-    the minimum value of RX/TX descriptors to 64 to enable setting the
-    rx/tx value between 64 and 80. All igb devices can use as low as 64
-    descriptors. This change will unify igb with other drivers. Based on
-    commit 7b1be19 ("e1000e: lower ring minimum size to 64")
-  igc: Change IGC_MIN to allow set rx/tx value between 64 and 80
-
- drivers/net/ethernet/intel/igb/igb.h     | 4 ++--
- drivers/net/ethernet/intel/igbvf/igbvf.h | 4 ++--
- drivers/net/ethernet/intel/igc/igc.h     | 4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+index 015b78144114..a2b759531cb7 100644
+--- a/drivers/net/ethernet/intel/igb/igb.h
++++ b/drivers/net/ethernet/intel/igb/igb.h
+@@ -34,11 +34,11 @@ struct igb_adapter;
+ /* TX/RX descriptor defines */
+ #define IGB_DEFAULT_TXD		256
+ #define IGB_DEFAULT_TX_WORK	128
+-#define IGB_MIN_TXD		80
++#define IGB_MIN_TXD		64
+ #define IGB_MAX_TXD		4096
+ 
+ #define IGB_DEFAULT_RXD		256
+-#define IGB_MIN_RXD		80
++#define IGB_MIN_RXD		64
+ #define IGB_MAX_RXD		4096
+ 
+ #define IGB_DEFAULT_ITR		3 /* dynamic */
 -- 
 2.31.1
 
