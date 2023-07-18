@@ -1,195 +1,82 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 475D4EB64DA
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Jul 2023 13:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEFACEB64DC
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 18 Jul 2023 14:10:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D719041734;
-	Tue, 18 Jul 2023 13:58:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D719041734
+	by smtp3.osuosl.org (Postfix) with ESMTP id 88FE060FBB;
+	Tue, 18 Jul 2023 14:10:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 88FE060FBB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689688723;
-	bh=MWJpesrpVBL/nHDP4I6CxsTAQF7oJWAXNqvCga5pWQY=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=EkdiI8qdH0HPMmA7G/1ASJWTVfvsvRxt85qoHcC6Bh2QWAXitC3jr26MlBRvJg8hA
-	 ZBt1ImkCV0an1GZlDTMn1CzQ29c50GtsAISLgA67uaCRiHrg+OuZRK5cEsLpX/hkhi
-	 x/cW/lB0rN7lBD3T0TVIToQioW32fbMNkSNoagyo3vrjzhn/SRFuE4KsQsCxcMWwDj
-	 LRQKZCeiLCSiWsO1e8koGNhhkrmK+mTyN2UbrUowi3tlVX/ZVcr2ozo9uWy300LaQ2
-	 MNEI1f06h7mSf+N8fZ9IvQVfG4Bk8ynD5qUCJQaIyU945NkK6R9WmI8BnUtCk/t5ff
-	 Ww3+pMVNIt1Pw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IvjR3kwPmrm1; Tue, 18 Jul 2023 13:58:42 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7CBAF41736;
-	Tue, 18 Jul 2023 13:58:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7CBAF41736
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id DE5D21BF30A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Jul 2023 13:58:40 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id B58C860BE4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Jul 2023 13:58:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B58C860BE4
+	s=default; t=1689689414;
+	bh=tK5bcEwVxR9C9/D2afYy8DwMPiInymvhW/kyIZarD3s=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=vJq8YQ884e4FdXr+mfUfuGaSEeYL1k2z+frCAg1tdHpraMPnVd6W5O+ESAEy3s9jA
+	 0d/XmjFwRGzHAPz3l4ue5PQy9uVfBsm5H2ZuxvCR1HBC8PERmB4Z6O/qm20xm01bYH
+	 W9VXLaGmmaIf8IUZgjMYXJotFdTeETnmQzt1unG2paUL/aTuoplTDYmWnHfXBxuNw4
+	 Q1kFSlhZa77DGq48JpTI/DdEohCrZWYomtDo5lg8hza3Eo/ktse9gkglZ0s4VsQwpW
+	 qmZ1Ad1T90xNSncdw0bloMtfv5yLrtiWqU2D+zKNrsfPvLwws6sRaj5BhP6RVwoNFz
+	 7gz6CCk9Jcrnw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id RMi6icwU5JqY for <intel-wired-lan@lists.osuosl.org>;
- Tue, 18 Jul 2023 13:58:40 +0000 (UTC)
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id B0diMNwJv8Re; Tue, 18 Jul 2023 14:10:13 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8894260FBC;
+	Tue, 18 Jul 2023 14:10:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8894260FBC
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 263FB1BF831
+ for <intel-wired-lan@osuosl.org>; Tue, 18 Jul 2023 14:10:12 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp1.osuosl.org (Postfix) with ESMTP id 021BB8138E
+ for <intel-wired-lan@osuosl.org>; Tue, 18 Jul 2023 14:10:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 021BB8138E
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id RIt9oSnkr0by for <intel-wired-lan@osuosl.org>;
+ Tue, 18 Jul 2023 14:10:11 +0000 (UTC)
 X-Greylist: domain auto-whitelisted by SQLgrey-1.8.0
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D6DEC60073
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4963F81382
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp3.osuosl.org (Postfix) with ESMTPS id D6DEC60073
- for <intel-wired-lan@lists.osuosl.org>; Tue, 18 Jul 2023 13:58:39 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10775"; a="365089432"
-X-IronPort-AV: E=Sophos;i="6.01,214,1684825200"; d="scan'208";a="365089432"
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4963F81382
+ for <intel-wired-lan@osuosl.org>; Tue, 18 Jul 2023 14:10:11 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10775"; a="365093014"
+X-IronPort-AV: E=Sophos;i="6.01,214,1684825200"; d="scan'208";a="365093014"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Jul 2023 06:58:38 -0700
+ 18 Jul 2023 07:10:10 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10775"; a="673926142"
-X-IronPort-AV: E=Sophos;i="6.01,214,1684825200"; d="scan'208";a="673926142"
-Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
- by orsmga003.jf.intel.com with ESMTP; 18 Jul 2023 06:58:38 -0700
-Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
- ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Tue, 18 Jul 2023 06:58:37 -0700
-Received: from orsmsx601.amr.corp.intel.com (10.22.229.14) by
- ORSMSX611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Tue, 18 Jul 2023 06:58:36 -0700
-Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
- orsmsx601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27 via Frontend Transport; Tue, 18 Jul 2023 06:58:36 -0700
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.168)
- by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.27; Tue, 18 Jul 2023 06:58:36 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=RV2N8GRZbpZKSaBKlOW8SPoXoxUgasBrhPpyOk3MxmmZjtaCKhGyvhVKD4Vb4GHKiaevV3gnsxoUJEQIACzzZJyI8UeTLX58f77xkGyoJs7YLuxI61k9YKNEiyz8kIgXK9GTXI4ZpRPYdAigRDF+JBfxwEAa0hDpUTprtxzVeXLQLWW5RkLsPAjjL96krJIl1zmZnRIffFFW94e9ak3fMTcP+RYHzEKDOshVq/gwiFQaE0xWpUUxBdQmQRXQKdyK3uxhQSDFTLpy6nmTc42CMi96CB5ESFJk1Sm9grN5CmRJGmgCIz3n0IGn/KKuz/a7RRa8OOKYoh3VOjkd96NXgQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=sAVa3rMgzkAhJYMd9+AuzlSLFmxvMjtmCXraz2aYvcs=;
- b=ab8ry4jYRUhHAhjgseOQpUS+WpJBhRChZUyQtZu+WSJCtT6HhnOC/oHP22/Xo/GuTIqNbBmBQSrVSEfLM64g3Iw4oQs/ItumCc3OegQIqP5FK/8JUvZ025Rlw42eLLtZuV+xFSJSFzXLaJ4dUf7jj7KvGEZh9OrZXAsgHjCkZauIXQ9BczqFWpUOmUh/4a7Mc3cXff4Pl5yXrtvOCU9TOQ3I6Mgba8n56fKxwFHsuyi4ppU+i7uzWrfUGmik3vQc/ZRhdVj48a+GoBROUS7eCoZN5l359j7unxty6LlQNfAEyBv7PgSGgCI7q/n8yUr3Z75zJDjehA29bn5s0SMf7Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from DM6PR11MB3625.namprd11.prod.outlook.com (2603:10b6:5:13a::21)
- by SA2PR11MB4972.namprd11.prod.outlook.com (2603:10b6:806:fb::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6588.31; Tue, 18 Jul
- 2023 13:58:29 +0000
-Received: from DM6PR11MB3625.namprd11.prod.outlook.com
- ([fe80::44ff:6a5:9aa4:124a]) by DM6PR11MB3625.namprd11.prod.outlook.com
- ([fe80::44ff:6a5:9aa4:124a%7]) with mapi id 15.20.6588.031; Tue, 18 Jul 2023
- 13:58:29 +0000
-Message-ID: <9275b613-3a9d-2de3-2f21-407e56c09622@intel.com>
-Date: Tue, 18 Jul 2023 15:56:45 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.12.0
-Content-Language: en-US
-To: Yunsheng Lin <linyunsheng@huawei.com>
-References: <20230705155551.1317583-1-aleksander.lobakin@intel.com>
- <20230705155551.1317583-7-aleksander.lobakin@intel.com>
- <6b8bc66f-8a02-b6b4-92cc-f8aaf067abd8@huawei.com>
- <bc495d87-3968-495f-c672-bf1bab38524a@intel.com>
- <4946b9df-66ea-d184-b97c-0ba687e41df8@gmail.com>
- <95c5ba92-bccd-6a9a-5373-606a482e36a3@intel.com>
- <558849ff-6b68-7547-cf99-36801ff24c25@huawei.com>
-From: Alexander Lobakin <aleksander.lobakin@intel.com>
-In-Reply-To: <558849ff-6b68-7547-cf99-36801ff24c25@huawei.com>
-X-ClientProxiedBy: BE1P281CA0028.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:b10:15::11) To DM6PR11MB3625.namprd11.prod.outlook.com
- (2603:10b6:5:13a::21)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM6PR11MB3625:EE_|SA2PR11MB4972:EE_
-X-MS-Office365-Filtering-Correlation-Id: 34b9fa14-7e2f-4754-4574-08db87971024
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: OCh3gEifIqGbQghZ9OBc/CEPvo5W6j8tx2PrpTE1j90FG8Rm9tb9e6J0P761JAfeTW8NzVZSCX29EYFWh5zJZ39MU5WXtErATLeNKk6qGSaFlmZxBgLpNRPfScsM2etddQzahQc6XmKfwmJhiGYfMgKJdRA20d7S0HHnyWn3NMWczsczuibW+B79AXiVdxIgrcrllmuNcp7Gm+pX5WAtRpjqErmLTmd9qh3611yJDkNIqovqi3h/sS9XNV8LlmMK8QR8X7mwJrMB6p2aCNJbrRYKUaBC2prSsARIk0edA+D8n7dC56ZkgiKomEdAmVXNeg3exkzMiTwH+4xdeSgNV5L7B6EHAaUgKQQFt7E3Bk8EZzy0WbzU/CVB565+aQhe3kABA80GKMLqZxHY7N9+v/42H/tcfagLPskpo5RqihQX/HloCZIfcIHViggweNBA2gA2z/EECC1S7KG4zOhmt0IIW6GAGwjDxMywRY2t23SJoh8qZ5++uYfTnAAjH2haIBTOuyKWhMua58x0flZZ3LNDP40TPjAMRvFOnhuA519mWFHLJvEMPuD85uSlhxWOGRZ8SVsXhvlJPwBwu6WuJZa6Cua53jJm8LdDQfz3ddKtZJbysZdDAsby3vKOvWHPFlcMMIncQTRuH5CRhMF3tA==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DM6PR11MB3625.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(376002)(136003)(366004)(39860400002)(396003)(346002)(451199021)(31686004)(6486002)(54906003)(6666004)(478600001)(2616005)(83380400001)(31696002)(86362001)(2906002)(186003)(6506007)(53546011)(6512007)(26005)(38100700002)(82960400001)(66476007)(66556008)(41300700001)(66946007)(4326008)(316002)(6916009)(8676002)(5660300002)(8936002)(36756003)(7416002)(43740500002)(45980500001);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?eUxOelBXWWhWZG1VYWl0NFdaNysvY1dJRlNLREFyU2tTT0RNd3RwbktuYzNl?=
- =?utf-8?B?V29nNkRnVW9NNHFEd3FKcXpMT3c3VFRES1ZrQ2VCYzd4QWlJZ01yMDBPN1A3?=
- =?utf-8?B?V1ZKRzIzZDZUY1NvbEdKRXRoY1ZRMFBlNjZhMHkwb3RtMG4vMWU1NUg4dkZp?=
- =?utf-8?B?V2NNTUxrOGx3NmJjUjlmTkRpZXFINnFycU10cXJEa2tSOTlRK3YwanRTZjVD?=
- =?utf-8?B?LzZZRXBxMTlXNXU1RXNhbHdkek4xd2xnOSthUWVybXVtU0pqNVlDeXBVQXFx?=
- =?utf-8?B?Zm1YZ3ZBa1NhaWxoZTVQZlRwazlzWlQ1WFNDY2kxNU5CTmZXUmx2anU3Y0lU?=
- =?utf-8?B?bDZTcUk2YVJUUEVNSkZQQjRWcjZSSkszN3IydXVWZlFjVjVxaWxpV01IWW5a?=
- =?utf-8?B?WVBlc3JnVlZCL3Z0SW9XM0YwWWJrWEpON1Zad05HTzB0SEFQeHFBZUlMRXNC?=
- =?utf-8?B?OUwrT3VkNGliZG1CNDM4TTFXbXBPd2pFaGFrYVNlZXJwNDlFTHUvSisyTTJi?=
- =?utf-8?B?cWhlSWFwS2Q1RWYyWUxNWGtNNWNVSFJqdUdWM0Y3SitXblZZZkhLNlQ2QXps?=
- =?utf-8?B?ZG5uUVVnUjZXZWNOK3lsUUxCZ2Z1U2tsVGE2WnpLbHRMVXIwWll0NW9YMXRy?=
- =?utf-8?B?TnBJTWcyaTZ2QWpBNS9JNjMvSmFoL0FJak9aOHRBd3k1TThrNThRUWQvdFRq?=
- =?utf-8?B?bHRQTmtzVU12T200L0lIalZVUkRJcFZvMk9mQUVZdWpFM0VoeDliMWRnUENx?=
- =?utf-8?B?M2E1VTRka3h4Y3RsWEMrejBrZXg1WkEvcjJLU3lvSHoxK1A0NVpGMXVNSW5H?=
- =?utf-8?B?SjEvMElOYVdFazN0VzJPVnFMTlRxckVPOTR1cWxrV0Q0bUpZaFhKNXh0ckd6?=
- =?utf-8?B?WDZPbXk3L2VXdEJzQ2NVNmlBZVdDWGJIYVFGMDBvSzJjR2RHdW4vcW9qUndW?=
- =?utf-8?B?RktUNzU3UEg2K0hsNklMaTJGTDdFd0QrQTQ1RFMzRllVVHJ0NWhTNEc5eGhC?=
- =?utf-8?B?TWlpTkpHMlNMS2dJcWVHdmVuVzhxc2hNRmNsU0J5ejR1dHhYakZTR3dNdnFJ?=
- =?utf-8?B?TkUwNnRWVDhGdFN6dGZHR05RN2xaRzd2MlQ3UTZpVzRXQjJGeDN6K2gvekNE?=
- =?utf-8?B?WnlVZGhaUUZSSzNKVDlJZ3NEK2hTaFlXN1o4NW1hZlJoWTg1WmYzV1ZLWmlG?=
- =?utf-8?B?QXpvenpJdjhlbjkxK1Q1bHlTSm52WHphVkJaMkhqSFRFcGFKUHQ3QlJhM2Zq?=
- =?utf-8?B?KzVsQmJwNFBscGp6VWs0Z0VyTkNXMG9wY2N1Y01aeUpiL1BaOThSWERTRTBh?=
- =?utf-8?B?Nmw0MVhMSUVCc01pSGhtZ1JiTEJMMmJMRWhZYWpkaTRnQzFhTVd4ZEhxdml4?=
- =?utf-8?B?d3YxaktTTmVnWmpiQWh6dHJ2OUlzM1JTZUxDeDdJMW54bEFPYWluWHFPb0JN?=
- =?utf-8?B?ek8vV1JlVGNyVFY1cDVMdWR1WkZiT0VoaGVOSVpiclZGdmUydGc3elBCdXJP?=
- =?utf-8?B?SUpWWUtVVENWMk9zVlRqay91REpCVjZhWXZ6MTNFMnltZUZrRUNzVEt1YUVD?=
- =?utf-8?B?SXQwRmhiTmRrRXlKTzZEUnNOUnpoTGpNeWFkRFZvaVEwRXBMMEx2ckJlUW0z?=
- =?utf-8?B?RVhWK2hhMk05alhxQkVGeHJxQW5YcVBBWnF1UWxHU1RTbU1JU3JJQWc1eFN3?=
- =?utf-8?B?RFROZGt2S0ZIZlEvQzZ1dTIzWDZJa0lGQlpxTHJFYllEbnBWZ2VqNjY4NklU?=
- =?utf-8?B?bHBkazNEME5IdGJFeVlMRS9IUGg1NWhLZ0xLUUhCb3I0RUVTY0hFT0NOZTBM?=
- =?utf-8?B?YzJ6RXlJVitBNUhNSzBtcGtiV2NBd3g2UlptNURWYmlBMk9uRU1DeHMxenNw?=
- =?utf-8?B?ZjJkVUhHYVBtb2YvSG45MVNjdE1abTMrUHdndDIxdyswSkMwK0hWWURkdFk3?=
- =?utf-8?B?QzJadUp5VkN2UHliczFsRW5ycWU3bnlPdysrSjY5cnNXbmZZZVZ3OTlxakg1?=
- =?utf-8?B?QWJBRjZrejkrNGxoTy8zcVlkbmZYcEJNRWJLWmI4aHZiNjdFTDJvVTZTWGdj?=
- =?utf-8?B?UnhORnRLeE5HRFo2U1N4L1NTNWFjRzQwY2c5S0k5T00zc05paE9LT0lKUzNO?=
- =?utf-8?B?Ungvd0pBNCtlc2ViNVNvSlZqNmVCWTFnN25MWW96UzNWRy92NGsrTFFUbXFH?=
- =?utf-8?B?VFE9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 34b9fa14-7e2f-4754-4574-08db87971024
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB3625.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jul 2023 13:58:28.6967 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 7sVuaYZVmm4bmc4HCjx2uWoAwqyI8h5tj/Fi1Xh+i8600npBS+uH305AB76zPAdRnfIwKFJlnzE96oT6Sv5XM5G0pDzoLBUQBXUGTfGXCJ4=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA2PR11MB4972
-X-OriginatorOrg: intel.com
+X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="867086576"
+Received: from zulkifl3-ilbpg0.png.intel.com ([10.88.229.82])
+ by fmsmga001.fm.intel.com with ESMTP; 18 Jul 2023 07:10:09 -0700
+From: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+To: intel-wired-lan@osuosl.org
+Date: Tue, 18 Jul 2023 22:08:44 +0800
+Message-Id: <20230718140844.24379-1-muhammad.husaini.zulkifli@intel.com>
+X-Mailer: git-send-email 2.17.1
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1689688719; x=1721224719;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=lBmMmPzpy3sCBZRZ3qvkDbczZs/L3W9/IfSCZHmrjDA=;
- b=XF35eCN7fYB/eBIkFcwDRCgX/SfddLuFcr/CZlzQQXvM2JjQWz9rRCzB
- 4ORu1FABnC+dHCWLrfzONhmG1+8cw4AgzNgLQsSaCzb2OdJGDtyk3Howz
- e1F2ndd50n7Rasvqx9kxXRScVJYXT6xH97LIWbu+S+oGoxz1w9YnTwZ3S
- FsupRLu9gblLEtBVdBb1U/qiisPKlbpCBkaq0oez6LWqu2xoLhi+e9Qja
- V6lp9O8b63StqA84Zw8BwiMhPNfprjpf9dqpE8ebjVx0Bm0gUE5LgQ+gr
- QKJKG/e3lCdXS2CQ1f369vcWjIrjP6LtlWkCQjRAzYPfJB89fyXyaazxJ
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1689689411; x=1721225411;
+ h=from:to:cc:subject:date:message-id;
+ bh=xwyZpvEXEUqeeu62QUAl+s/YGL2K8VTonjnSbivpHbM=;
+ b=TjrHjTG9/XYE3bN+708DuPHY8Xen/QnGyMqgXBvJ5ljE7AkGyFg55NhT
+ vvtMBTK3gJTLpkuIwK68UP5nd8yg5WRyqZl8cVU4memMMoHNBPHaelKLX
+ HjmfvtjsSvy7JfYsKRIm9VpSxKZ/i9mqn18CsZkADsRaWAuBm2Wj36kq5
+ f6+sUIUb5HWJj8p1um065Por0jkNVJaFqij3gUFuyLHwGUX6Aqd2ilXOx
+ PKIAKbcTSohDK2NW4TG7hIFUuRps4q5+2RwyzGhAbCqVUiPGKFN288lW+
+ L4FbaKcg4stYLsQVaZjorVR0K5Qenyt5rFuFF6mVfpevw0X2c8tPn3nHJ
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=XF35eCN7
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH RFC net-next v4 6/9] iavf: switch to
- Page Pool
+ header.a=rsa-sha256 header.s=Intel header.b=TjrHjTG9
+Subject: [Intel-wired-lan] [PATCH iwl-net v2] igc: Add lock to safeguard
+ global Qbv variables
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -202,96 +89,156 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>, Jesper
- Dangaard Brouer <hawk@kernel.org>, Larysa Zaremba <larysa.zaremba@intel.com>,
- netdev@vger.kernel.org, Alexander Duyck <alexanderduyck@fb.com>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Michal Kubiak <michal.kubiak@intel.com>,
- intel-wired-lan@lists.osuosl.org, Yunsheng Lin <yunshenglin0825@gmail.com>,
- David Christensen <drc@linux.vnet.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: leon@kernel.org, anthony.l.nguyen@intel.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Yunsheng Lin <linyunsheng@huawei.com>
-Date: Tue, 11 Jul 2023 19:47:14 +0800
+Access to shared variables through hrtimer requires locking in order
+to protect the variables because actions to write into these variables
+(oper_gate_closed, admin_gate_closed, and qbv_transition) might potentially
+occur simultaneously. This patch provides a locking mechanisms to avoid
+such scenarios.
 
-> On 2023/7/10 21:34, Alexander Lobakin wrote:
->> From: Yunsheng Lin <yunshenglin0825@gmail.com>
->> Date: Sun, 9 Jul 2023 13:16:39 +0800
->>
->>> On 2023/7/7 0:38, Alexander Lobakin wrote:
->>>
->>> ...
->>>  
->>>>>
->>>>>>  /**
->>>>>> @@ -766,13 +742,19 @@ void iavf_free_rx_resources(struct iavf_ring *rx_ring)
->>>>>>   **/
->>>>>>  int iavf_setup_rx_descriptors(struct iavf_ring *rx_ring)
->>>>>>  {
->>>>>> -	struct device *dev = rx_ring->dev;
->>>>>> -	int bi_size;
->>>>>> +	struct page_pool *pool;
->>>>>> +
->>>>>> +	pool = libie_rx_page_pool_create(&rx_ring->q_vector->napi,
->>>>>> +					 rx_ring->count);
->>>>>
->>>>> If a page is able to be spilt between more than one desc, perhaps the
->>>>> prt_ring size does not need to be as big as rx_ring->count.
->>>>
->>>> But we doesn't know in advance, right? Esp. given that it's hidden in
->>>> the lib. But anyway, you can only assume that in regular cases if you
->>>> always allocate frags of the same size, PP will split pages when 2+
->>>> frags can fit there or return the whole page otherwise, but who knows
->>>> what might happen.
->>>
->>> It seems intel driver is able to know the size of memory it needs when
->>> creating the ring/queue/napi/pp, maybe the driver only tell the libie
->>> how many descs does it use for queue, and libie can adjust it accordingly?
->>
->> But libie can't say for sure how PP will split pages for it, right?
->>
->>>
->>>> BTW, with recent recycling optimization, most of recycling is done
->>>> directly through cache, not ptr_ring. So I'd even say it's safe to start
->>>> creating smaller ptr_rings in the drivers.
->>>
->>> The problem is that we may use more memory than before for certain case
->>> if we don't limit the size of ptr_ring, unless we can ensure all of
->>> recycling is done directly through cache, not ptr_ring.
->> Also not sure I'm following =\
-> 
-> Before adding page pool support, the max memory used in the driver is as
-> below:
-> rx_ring->count * PAGE_SIZE;
-> 
-> After adding page pool support, the max memory used in the driver is as
-> below:
-> 
-> ptr_ring->size * PAGE_SIZE +
-> PP_ALLOC_CACHE_SIZE * PAGE_SIZE +
-> rx_ring->count * PAGE_SIZE / pp.init_arg
+Fixes: 175c241288c0 ("igc: Fix TX Hang issue when QBV Gate is closed")
+Suggested-by: Leon Romanovsky <leon@kernel.org>
+Signed-off-by: Muhammad Husaini Zulkifli <muhammad.husaini.zulkifli@intel.com>
+---
+V1 -> V2: Add locks to location that used the variables as suggested by
+Leon. Improved the readibility of code in igc_tsn_clear_schedule() by
+separating the qbv portion into a different function.
+---
+ drivers/net/ethernet/intel/igc/igc.h      |  4 +++
+ drivers/net/ethernet/intel/igc/igc_main.c | 34 +++++++++++++++++++++--
+ 2 files changed, 36 insertions(+), 2 deletions(-)
 
-I know. I was wondering how your message connects with what I said
-regarding that using direct recycling more aggressively allows us to
-reduce ptr_ring sizes, as e.g. on my setup ptr_ring is not used at all
-(it still will be in other cases, but a lot less often than before).
+diff --git a/drivers/net/ethernet/intel/igc/igc.h b/drivers/net/ethernet/intel/igc/igc.h
+index 9db384f66a8e..38901d2a4680 100644
+--- a/drivers/net/ethernet/intel/igc/igc.h
++++ b/drivers/net/ethernet/intel/igc/igc.h
+@@ -195,6 +195,10 @@ struct igc_adapter {
+ 	u32 qbv_config_change_errors;
+ 	bool qbv_transition;
+ 	unsigned int qbv_count;
++	/* Access to oper_gate_closed, admin_gate_closed and qbv_transition
++	 * are protected by the qbv_tx_lock.
++	 */
++	spinlock_t qbv_tx_lock;
+ 
+ 	/* OS defined structs */
+ 	struct pci_dev *pdev;
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index bdeb36790d77..6f557e843e49 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -4801,6 +4801,7 @@ static int igc_sw_init(struct igc_adapter *adapter)
+ 	adapter->nfc_rule_count = 0;
+ 
+ 	spin_lock_init(&adapter->stats64_lock);
++	spin_lock_init(&adapter->qbv_tx_lock);
+ 	/* Assume MSI-X interrupts, will be checked during IRQ allocation */
+ 	adapter->flags |= IGC_FLAG_HAS_MSIX;
+ 
+@@ -6119,15 +6120,15 @@ static int igc_tsn_enable_launchtime(struct igc_adapter *adapter,
+ 	return igc_tsn_offload_apply(adapter);
+ }
+ 
+-static int igc_tsn_clear_schedule(struct igc_adapter *adapter)
++static int igc_qbv_clear_schedule(struct igc_adapter *adapter)
+ {
++	unsigned long flags;
+ 	int i;
+ 
+ 	adapter->base_time = 0;
+ 	adapter->cycle_time = NSEC_PER_SEC;
+ 	adapter->taprio_offload_enable = false;
+ 	adapter->qbv_config_change_errors = 0;
+-	adapter->qbv_transition = false;
+ 	adapter->qbv_count = 0;
+ 
+ 	for (i = 0; i < adapter->num_tx_queues; i++) {
+@@ -6136,10 +6137,28 @@ static int igc_tsn_clear_schedule(struct igc_adapter *adapter)
+ 		ring->start_time = 0;
+ 		ring->end_time = NSEC_PER_SEC;
+ 		ring->max_sdu = 0;
++	}
++
++	spin_lock_irqsave(&adapter->qbv_tx_lock, flags);
++
++	adapter->qbv_transition = false;
++
++	for (i = 0; i < adapter->num_tx_queues; i++) {
++		struct igc_ring *ring = adapter->tx_ring[i];
++
+ 		ring->oper_gate_closed = false;
+ 		ring->admin_gate_closed = false;
+ 	}
+ 
++	spin_unlock_irqrestore(&adapter->qbv_tx_lock, flags);
++
++	return 0;
++}
++
++static int igc_tsn_clear_schedule(struct igc_adapter *adapter)
++{
++	igc_qbv_clear_schedule(adapter);
++
+ 	return 0;
+ }
+ 
+@@ -6150,6 +6169,7 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 	struct igc_hw *hw = &adapter->hw;
+ 	u32 start_time = 0, end_time = 0;
+ 	struct timespec64 now;
++	unsigned long flags;
+ 	size_t n;
+ 	int i;
+ 
+@@ -6217,6 +6237,8 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 		start_time += e->interval;
+ 	}
+ 
++	spin_lock_irqsave(&adapter->qbv_tx_lock, flags);
++
+ 	/* Check whether a queue gets configured.
+ 	 * If not, set the start and end time to be end time.
+ 	 */
+@@ -6241,6 +6263,8 @@ static int igc_save_qbv_schedule(struct igc_adapter *adapter,
+ 		}
+ 	}
+ 
++	spin_unlock_irqrestore(&adapter->qbv_tx_lock, flags);
++
+ 	for (i = 0; i < adapter->num_tx_queues; i++) {
+ 		struct igc_ring *ring = adapter->tx_ring[i];
+ 		struct net_device *dev = adapter->netdev;
+@@ -6619,8 +6643,11 @@ static enum hrtimer_restart igc_qbv_scheduling_timer(struct hrtimer *timer)
+ {
+ 	struct igc_adapter *adapter = container_of(timer, struct igc_adapter,
+ 						   hrtimer);
++	unsigned long flags;
+ 	unsigned int i;
+ 
++	spin_lock_irqsave(&adapter->qbv_tx_lock, flags);
++
+ 	adapter->qbv_transition = true;
+ 	for (i = 0; i < adapter->num_tx_queues; i++) {
+ 		struct igc_ring *tx_ring = adapter->tx_ring[i];
+@@ -6633,6 +6660,9 @@ static enum hrtimer_restart igc_qbv_scheduling_timer(struct hrtimer *timer)
+ 		}
+ 	}
+ 	adapter->qbv_transition = false;
++
++	spin_unlock_irqrestore(&adapter->qbv_tx_lock, flags);
++
+ 	return HRTIMER_NORESTART;
+ }
+ 
+-- 
+2.17.1
 
-> 
->>
->> [...]
->>
->> Thanks,
->> Olek
->>
->> .
->>
-
-Thanks,
-Olek
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
