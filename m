@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7C0EC0015E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Jul 2023 22:12:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08F3DC0015E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Jul 2023 22:12:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8D4F4405B9;
-	Wed, 19 Jul 2023 22:12:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8D4F4405B9
+	by smtp2.osuosl.org (Postfix) with ESMTP id B73E6415A3;
+	Wed, 19 Jul 2023 22:12:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B73E6415A3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689804771;
-	bh=MFDgRxShILCGWtW3JscDCxyIs/Yi5fkL8hAM8O+AV50=;
+	s=default; t=1689804775;
+	bh=XEIFQj0OPrDXxtvgUmnB9D1BCr9TBJ4s87yHITYSdMw=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=3yFIoyTsqmSqQwR7Kn4XPc02P5tOUiOw7ulnnhVAurSJRFdKb9/GFmsAFcATOwx/J
-	 ON8qkhWwc3DNDj70mOx2yWt9Fl4eM6ls2hmI8dUkzl8K1JSBgTM6Jl11ZF+DmJrcV0
-	 Ef6kggJc3Weu8nR4s6T/x8qQn6oKpUkpEbBJ0mwTWq6zpIJNviAgDIknvFBnWAYAhY
-	 25FqWpjBTL6ee+7BBlL7GBCVFz7H/RYyAk5zHet2buKYHZFHziGTfC0vy9cUhofm97
-	 /a6fjTnC8vjtY9UpzQHI8At06FUW0goUA4JCttmf0VSnI3ryRKWETssyNijAoJB2F4
-	 tNetd1GAlmupg==
+	b=AxPRBXA1tyjITD7VCyfpNG1lhI/0O1GzCzHG7DABrdqVW6Opc8rc1oJqeXLOcCOEe
+	 rAUl7y9znHk9IAA0lPwBexVUzcCqAuYxuwOwWTUvoyQF6pxql1gbPKhxr7uDuj56pX
+	 g1iQBHgG3CrhIZ+/PQYhP2r4A3kJt40Ms2Od1e6V5LtPBRTl2Z+iddtSzXXEbmsGRE
+	 oWszCMdMy0rUnqLdB3xITZbpBigIhjw/iz5yyf+PsSwSwZiSH0PSDpCWBrksJ80h1j
+	 6D5eK4DfYZi94pFnNrvmmyIavVPJj7QVEu2uBYPHKU6wksgXz2E2m+bSI++ISqRhav
+	 O6hxU8FGAtkdA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9ZkclwTs1afY; Wed, 19 Jul 2023 22:12:50 +0000 (UTC)
+	with ESMTP id Rvg9pflF6zYU; Wed, 19 Jul 2023 22:12:55 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 8D447409E6;
-	Wed, 19 Jul 2023 22:12:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8D447409E6
+	by smtp2.osuosl.org (Postfix) with ESMTP id B82EF404AB;
+	Wed, 19 Jul 2023 22:12:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B82EF404AB
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 01CFC1BF276
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:43 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 127A31BF276
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E70078209A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E70078209A
+ by smtp1.osuosl.org (Postfix) with ESMTP id DAFF382035
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DAFF382035
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1t9g1mxSUA8d for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id 2fBSSY6QPk8C for <intel-wired-lan@lists.osuosl.org>;
  Wed, 19 Jul 2023 22:12:40 +0000 (UTC)
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 450C8820B7
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1A9578209B
  for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 450C8820B7
-X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="365460317"
-X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; d="scan'208";a="365460317"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1A9578209B
+X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="365460316"
+X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; d="scan'208";a="365460316"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  19 Jul 2023 15:05:32 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="701411242"
-X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; d="scan'208";a="701411242"
+X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="701411239"
+X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; d="scan'208";a="701411239"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  19 Jul 2023 15:05:32 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 19 Jul 2023 15:05:24 -0700
-Message-ID: <20230719220525.3153469-3-jacob.e.keller@intel.com>
+Date: Wed, 19 Jul 2023 15:05:23 -0700
+Message-ID: <20230719220525.3153469-2-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
 In-Reply-To: <20230719220525.3153469-1-jacob.e.keller@intel.com>
 References: <20230719220525.3153469-1-jacob.e.keller@intel.com>
@@ -71,19 +71,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1689804760; x=1721340760;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=5Mbjus+kYdx2VoWIobnBbLzCfv9VtnYcLZWOCwUYV60=;
- b=neLaOQZGpvpsl5j9YD3Z+t7tcoFSQk7DnwEEpwqVRwwYq66GKFk9OUgo
- Dvy2RhRwoC38/qFcenXzvM5PXlJxjGCaor+WYgDGH4BNcs13wyB2uegNA
- Uzaxal2NBJXL/ql8RrMYBJmm4LuxC1qU375nO9x5KTEBqmqw43z6k8wzC
- I8HAsNNCNDnYo6hzJ5gcTPr/ovKjo4zW121dsmkGIvm9ttv/oLsHQQUJZ
- ZpDO0MveWgN4hi2zRnyJsOibORngdtuBFszMiAe5G/dbg7zgTzgUipU54
- bCQ7lrGjh+IqyojxzegypAKarp1zoTWyTN3mq7aMZDVBKx+KsUR/8CafJ
- w==;
+ bh=SX8tmzCyObl2OtufP9OwOBFfaLksPgihRe/imbI/Yb0=;
+ b=Oex7VBalQlEl2G/YnOVoJ0fbwb/g+zSVy2sHD+zONP1rP4W2LPAD5v6k
+ qs+BAFFnK/LVSRjDTXTxCvkJPxM/R/XYadAzv1wZNCreca2WsYzlaUbWJ
+ UdYj+lbu/4tVmYu5RUnyP2c1YmdRFrAqZK/7tF867HPZOmidB++019eUo
+ vYlBTEyUjkpsdFbCMaMioriXFJ1/kJgNmPc1KryePt4BKzyd7hmfUbY8a
+ y6xPxiDUXcHRdez2EKk2iHhNp3SWh+NchEs1R/kwHikXgEQYvTHRAtAw/
+ HuecOWGTjJX0XNC54iDzOtFyfiDDKijfH53KNLnk8A4eUSF9j1Qhw9RDL
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=neLaOQZG
-Subject: [Intel-wired-lan] [PATCH iwl-next 3/4] ice: PTP: move quad value
- check inside ice_fill_phy_msg_e822
+ header.a=rsa-sha256 header.s=Intel header.b=Oex7VBal
+Subject: [Intel-wired-lan] [PATCH iwl-next 2/4] ice: PTP: Rename macros used
+ for PHY/QUAD port definitions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,73 +105,74 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 
-The callers of ice_fill_phy_msg_e822 check for whether the quad number is
-within the expected range. Move this check inside the ice_fill_phy_msg_e822
-function instead of duplicating it twice.
+The ice_fill_phy_msg_e822 function uses several macros to specify the the
+correct address when sending a sideband message to the PHY block in
+hardware.
+
+The names of these macros are fairly generic and confusing. Future
+development is going to extend the driver to support new hardware families
+which have different relationships between PHY and QUAD. Rename the macros
+for clarity and to indicate that they are E822 specific. This also matches
+closer to the hardware specification in the data sheet.
 
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c |  8 ++++----
+ drivers/net/ethernet/intel/ice/ice_type.h   | 14 +++++++-------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 2f01f12a5391..168e72de06d7 100644
+index 6cab87595690..2f01f12a5391 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -505,11 +505,14 @@ ice_write_64b_phy_reg_e822(struct ice_hw *hw, u8 port, u16 low_addr, u64 val)
-  * Fill a message buffer for accessing a register in a quad shared between
-  * multiple PHYs.
-  */
--static void
-+static int
- ice_fill_quad_msg_e822(struct ice_sbq_msg_input *msg, u8 quad, u16 offset)
+@@ -178,9 +178,9 @@ ice_fill_phy_msg_e822(struct ice_sbq_msg_input *msg, u8 port, u16 offset)
  {
- 	u32 addr;
+ 	int phy_port, phy, quadtype;
  
-+	if (quad >= ICE_MAX_QUAD)
-+		return -EINVAL;
-+
+-	phy_port = port % ICE_PORTS_PER_PHY;
+-	phy = port / ICE_PORTS_PER_PHY;
+-	quadtype = (port / ICE_PORTS_PER_QUAD) % ICE_NUM_QUAD_TYPE;
++	phy_port = port % ICE_PORTS_PER_PHY_E822;
++	phy = port / ICE_PORTS_PER_PHY_E822;
++	quadtype = (port / ICE_PORTS_PER_QUAD) % ICE_QUADS_PER_PHY_E822;
+ 
+ 	if (quadtype == 0) {
+ 		msg->msg_addr_low = P_Q0_L(P_0_BASE + offset, phy_port);
+@@ -512,7 +512,7 @@ ice_fill_quad_msg_e822(struct ice_sbq_msg_input *msg, u8 quad, u16 offset)
+ 
  	msg->dest_dev = rmn_0;
  
- 	if ((quad % ICE_QUADS_PER_PHY_E822) == 0)
-@@ -519,6 +522,8 @@ ice_fill_quad_msg_e822(struct ice_sbq_msg_input *msg, u8 quad, u16 offset)
+-	if ((quad % ICE_NUM_QUAD_TYPE) == 0)
++	if ((quad % ICE_QUADS_PER_PHY_E822) == 0)
+ 		addr = Q_0_BASE + offset;
+ 	else
+ 		addr = Q_1_BASE + offset;
+diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
+index f1231a8162af..6419c83ee077 100644
+--- a/drivers/net/ethernet/intel/ice/ice_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_type.h
+@@ -886,13 +886,13 @@ struct ice_hw {
+ 	/* INTRL granularity in 1 us */
+ 	u8 intrl_gran;
  
- 	msg->msg_addr_low = lower_16_bits(addr);
- 	msg->msg_addr_high = upper_16_bits(addr);
-+
-+	return 0;
- }
+-#define ICE_PHY_PER_NAC		1
+-#define ICE_MAX_QUAD		2
+-#define ICE_NUM_QUAD_TYPE	2
+-#define ICE_PORTS_PER_QUAD	4
+-#define ICE_PHY_0_LAST_QUAD	1
+-#define ICE_PORTS_PER_PHY	8
+-#define ICE_NUM_EXTERNAL_PORTS		ICE_PORTS_PER_PHY
++#define ICE_PHY_PER_NAC_E822		1
++#define ICE_MAX_QUAD			2
++#define ICE_QUADS_PER_PHY_E822		2
++#define ICE_PORTS_PER_PHY_E822		8
++#define ICE_PORTS_PER_QUAD		4
++#define ICE_PORTS_PER_PHY_E810		4
++#define ICE_NUM_EXTERNAL_PORTS		(ICE_MAX_QUAD * ICE_PORTS_PER_QUAD)
  
- /**
-@@ -537,10 +542,10 @@ ice_read_quad_reg_e822(struct ice_hw *hw, u8 quad, u16 offset, u32 *val)
- 	struct ice_sbq_msg_input msg = {0};
- 	int err;
- 
--	if (quad >= ICE_MAX_QUAD)
--		return -EINVAL;
-+	err = ice_fill_quad_msg_e822(&msg, quad, offset);
-+	if (err)
-+		return err;
- 
--	ice_fill_quad_msg_e822(&msg, quad, offset);
- 	msg.opcode = ice_sbq_msg_rd;
- 
- 	err = ice_sbq_rw_reg(hw, &msg);
-@@ -571,10 +576,10 @@ ice_write_quad_reg_e822(struct ice_hw *hw, u8 quad, u16 offset, u32 val)
- 	struct ice_sbq_msg_input msg = {0};
- 	int err;
- 
--	if (quad >= ICE_MAX_QUAD)
--		return -EINVAL;
-+	err = ice_fill_quad_msg_e822(&msg, quad, offset);
-+	if (err)
-+		return err;
- 
--	ice_fill_quad_msg_e822(&msg, quad, offset);
- 	msg.opcode = ice_sbq_msg_wr;
- 	msg.data = val;
- 
+ 	/* Active package version (currently active) */
+ 	struct ice_pkg_ver active_pkg_ver;
 -- 
 2.41.0.1.g9857a21e0017.dirty
 
