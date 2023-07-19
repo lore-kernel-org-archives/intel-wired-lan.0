@@ -4,88 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF92DC001B0
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Jul 2023 22:12:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF9CDC0015E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 19 Jul 2023 22:12:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1B14340391;
-	Wed, 19 Jul 2023 22:12:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1B14340391
+	by smtp2.osuosl.org (Postfix) with ESMTP id 75F97404AB;
+	Wed, 19 Jul 2023 22:12:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 75F97404AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689804763;
-	bh=KDKcSfTGcbgbYOfS3Nc6nfbgQmbh+VeYKlZIn76V1bA=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=GpFlGktJE+UBL0JLqIpE17tu1V9Q5FoPAwM1arLe0F18SoSONDyM9gXwH0HPDU24J
-	 Q29RpCDQG376u/16FVgkJYJYa3vktAk7xr3Sgudd3ihNAlLryiMW5XpBeCNW+rpnZv
-	 KQHU6bdZWq2ne+dP/wzOLDo2wrN0ftSLSQ/HBnIAN3dNA3Pqs+Ard2Ovs44ba7+LmE
-	 /uM/C88CRJPz6FMWw4uoz1Xx2SSRdTiQ1NnV7Cm2SiAKvdLwcxab7IUcYSInMxZf40
-	 Gy02eId8DQfc6R/B2Tp+xdUTc3QK8l0cgQlqRIO5lAbPnP8haPH7fQBJtyqBgxKDZf
-	 EF4RqZ8dLwGsA==
+	s=default; t=1689804767;
+	bh=tr2G2jkkqCD9MhkiF2ZGJI4yYbRGGnQEiRB2qfMn66c=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=iz3lkTv/UF7icxt32PJP2pseXJuCPYbAQ9cfsy9wNoeISQlJS2LEz8eJ32t9Iq2uJ
+	 LknxIO4VdNciQmwERDuYt5FX7A/GWebBwL93U37U1OWajrJ9yFE6ljH+X+5ZLljEM1
+	 zEPawbbfzme1ECHsRPfKc1jUOwdtM2vRtWosseNZaqYcgprVTKO6zqr0+tnvDcHKop
+	 stNEbLylo7xNI7GuFQN55XLoTJTCNKQqRJBQXfEXVK6dFOgrkJmThyr5leN5IYjH51
+	 HSmyBnVIi4VpHP8uWDT5e9DJDEuiZzObpdgTkP3ZB4VwBkZ8LofwnkeIrqytZIkUrt
+	 b9U7j/lkZbK1w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id PnEL9P76buqz; Wed, 19 Jul 2023 22:12:42 +0000 (UTC)
+	with ESMTP id 7r8m2KeZAjD4; Wed, 19 Jul 2023 22:12:46 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 0F356404AB;
-	Wed, 19 Jul 2023 22:12:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0F356404AB
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4EEB44063C;
+	Wed, 19 Jul 2023 22:12:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4EEB44063C
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 83D991BF276
- for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:40 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 0CEEF1BF276
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 592E7820A8
+ by smtp1.osuosl.org (Postfix) with ESMTP id BDE4682035
  for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 592E7820A8
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BDE4682035
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id QFr_HuJIXHLv for <intel-wired-lan@lists.osuosl.org>;
- Wed, 19 Jul 2023 22:12:39 +0000 (UTC)
-X-Greylist: delayed 426 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 19 Jul 2023 22:12:39 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 79D0082035
+ with ESMTP id 12SFaH-90GEf for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 19 Jul 2023 22:12:40 +0000 (UTC)
 Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 79D0082035
+ by smtp1.osuosl.org (Postfix) with ESMTPS id EB1158209A
  for <intel-wired-lan@lists.osuosl.org>; Wed, 19 Jul 2023 22:12:39 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="365460315"
-X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; d="scan'208";a="365460315"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EB1158209A
+X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="365460314"
+X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; d="scan'208";a="365460314"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  19 Jul 2023 15:05:32 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="701411245"
-X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; d="scan'208";a="701411245"
+X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="701411236"
+X-IronPort-AV: E=Sophos;i="6.01,216,1684825200"; d="scan'208";a="701411236"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Jul 2023 15:05:32 -0700
+ 19 Jul 2023 15:05:31 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 19 Jul 2023 15:05:25 -0700
-Message-ID: <20230719220525.3153469-4-jacob.e.keller@intel.com>
+Date: Wed, 19 Jul 2023 15:05:22 -0700
+Message-ID: <20230719220525.3153469-1-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
-In-Reply-To: <20230719220525.3153469-1-jacob.e.keller@intel.com>
-References: <20230719220525.3153469-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1689804759; x=1721340759;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=6RKGZ8IHmKDlqJHKKMPQq0wPSdpyx6ghctHTtvYA1uE=;
- b=i7F8ULBBUfFpAxKHjcZ8PczZYbtqpF+dSyiMqGFJGD5PWIxp3ArwYiFx
- BKz5TCWfX8nMprhMWu3C0CbtKz2DQryHbuo3g9G+HWDrwLY+UqRWsgx3g
- woB2P5RAKcs4z5AJNYKhyOgWJestR8H8XjMMrRm+c1+VxhwZ07n1o0Gki
- WB6bRG5sGrGMkbeiBxv0yTWdzj/mi4ERPUbSBU/g5Jqg6GiVdQiinsoi/
- MO17myKNPVFxnxKpUYfJGjqpmBRdVbRpTx9J/D4islctvCs7qbpHhlFUt
- DPqjwDR9GyDQRQMHHXIeEXtQvJtjJbNLyIwxQC6NTf8gfsyvPJd0Z7zYd
- A==;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=5D7z8foyO0BOu8E1B8qqIdaqgKFFOjSkHJyNxqywxXM=;
+ b=iziP8IWN64unF/Y3hOY5TILY2wB8g4QI685dDZqAj03LDOvS9+tV9m0a
+ tbYWK/n/aLfbzrtmwoOj9pJQ9HvJ1kgOx0wTl1KEWcVGjp8/GSXODa42h
+ 0EHVvMe5OvE1ARyHvw9DW6/BSeJ0RkC2SZ4ttQWf6P7VcZNu66+beFr14
+ s6Ty2zYzXgU1cvzq1Nc2iJ/w68QUyqKhQ3UPCsCuWt10V+TCvVX5psKlV
+ 3qw3h5eURuUL+adRsORwnPoBpJFl36ykPgP9/aFU8Qx14F5jvPFR3dLj3
+ jbRaTzz6RfryQwwXSdaiAYz9Rt5gak71+FsY8bpVV+AbH3ZY+uTMDaFLD
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=i7F8ULBB
-Subject: [Intel-wired-lan] [PATCH iwl-next 4/4] ice: Initialize source timer
- before driving sync for single-PHY commands
+ header.a=rsa-sha256 header.s=Intel header.b=iziP8IWN
+Subject: [Intel-wired-lan] [PATCH iwl-next 1/4] ice: PTP: Cleanup timestamp
+ registers correctly
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,119 +93,155 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Siddaraju DH <siddaraju.dh@intel.com>,
+Cc: Karol Kolacinski <karol.kolacinski@intel.com>,
  Anthony Nguyen <anthony.l.nguyen@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice hardware has a synchronization mechanism used to drive the
-simultaneous application of commands on both PHY ports and the source timer
-in the MAC.
+From: Karol Kolacinski <karol.kolacinski@intel.com>
 
-When issuing a sync via ice_ptp_exec_tmr_cmd(), the hardware will
-simultaneously apply the commands programmed for the main timer and each
-PHY port.
+E822 PHY TS registers should not be written and the only way to cleanup
+them is to reset QUAD memory.
 
-If the driver has previously programmed the main timer, it may still have
-leftover configuration and could accidentally re-apply that command. We do
-use ice_ptp_clean_cmd() to cleanup after executing a timer command.
-However, it is good practice to also initialize the main timer in all cases
-where we are calling ice_ptp_exec_tmr_cmd().
+To ensure that the status bit for the timestamp index is cleared, ensure
+that ice_clear_phy_tstamp implementations first read the timestamp out.
+Implementations which can write the register continue to do so.
 
-In order to avoid any side effects, introduce a new ICE_PTP_NOP command
-which simply leaves the cmd_val bits set to 0, indicating no command is
-requested. This is important because we want to ensure that the timer index
-value is still set ensuring that the full timer command will be executed on
-the proper timer in the hardware. It is not expected to ever need
-ICE_PTP_NOP for PHY port commands. However for completeness, the value is
-checked anyways.
+Add a note to indicate this function should only be called on timestamps
+which have their valid bit set.
 
-Use this new command to initialize the main timer command in
-ice_sync_phy_timer_e822 and ice_start_phy_timer_e822, both functions which
-operate only on a single PHY port at a time.
-
-This makes it clear that these flows do not affect the main timer, and
-ensure that we do not rely on the behavior of previous executions clearing
-the main command via ice_ptp_clean_cmd().
-
-Signed-off-by: Siddaraju DH <siddaraju.dh@intel.com>
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-I chose not to target net here since I don't think this is strictly fixing a
-known issue or report. We already call ice_ptp_clean_cmd() to clear the old
-timer commands so I think there isn't a strict bug being fixed. However I
-think its still good practice to ensure that we initialize the main timer
-anyways.
-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 12 ++++++++++++
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 +
- 2 files changed, 13 insertions(+)
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 66 ++++++++++++---------
+ 1 file changed, 39 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 168e72de06d7..474bb4b2c839 100644
+index f174bac58aba..6cab87595690 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -131,6 +131,8 @@ void ice_ptp_src_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
- 	case ICE_PTP_READ_TIME:
- 		cmd_val |= GLTSYN_CMD_READ_TIME;
- 		break;
-+	case ICE_PTP_NOP:
-+		break;
- 	}
+@@ -633,34 +633,31 @@ ice_read_phy_tstamp_e822(struct ice_hw *hw, u8 quad, u8 idx, u64 *tstamp)
+ }
  
- 	wr32(hw, GLTSYN_CMD, cmd_val);
-@@ -1275,6 +1277,8 @@ ice_ptp_one_port_cmd(struct ice_hw *hw, u8 port, enum ice_ptp_tmr_cmd cmd)
- 	case ICE_PTP_ADJ_TIME_AT_TIME:
- 		cmd_val |= PHY_CMD_ADJ_TIME_AT_TIME;
- 		break;
-+	case ICE_PTP_NOP:
-+		break;
- 	}
+ /**
+- * ice_clear_phy_tstamp_e822 - Clear a timestamp from the quad block
++ * ice_clear_phy_tstamp_e822 - Drop a timestamp from the quad block
+  * @hw: pointer to the HW struct
+  * @quad: the quad to read from
+  * @idx: the timestamp index to reset
+  *
+- * Clear a timestamp, resetting its valid bit, from the PHY quad block that is
+- * shared between the internal PHYs on the E822 devices.
++ * Read the timetamp out of the quad to clear its timestamp status bit from
++ * the PHY quad block that is shared between the internal PHYs of the E822
++ * devices.
++ *
++ * Note that software cannot directly write the quad memory bank registers,
++ * and must use ice_ptp_reset_ts_memory_quad_e822 for that purpose.
++ *
++ * This function should only be called on an idx whose bit is set according to
++ * ice_get_phy_tx_tstamp_ready.
+  */
+ static int
+ ice_clear_phy_tstamp_e822(struct ice_hw *hw, u8 quad, u8 idx)
+ {
+-	u16 lo_addr, hi_addr;
++	u64 unused_tstamp;
+ 	int err;
  
- 	/* Tx case */
-@@ -2267,6 +2271,9 @@ static int ice_sync_phy_timer_e822(struct ice_hw *hw, u8 port)
- 	if (err)
- 		goto err_unlock;
- 
-+	/* Do not perform any action on the main timer */
-+	ice_ptp_src_cmd(hw, ICE_PTP_NOP);
-+
- 	/* Issue the sync to activate the time adjustment */
- 	ice_ptp_exec_tmr_cmd(hw);
- 	ice_ptp_clean_cmd(hw);
-@@ -2389,6 +2396,9 @@ int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port)
- 	if (err)
+-	lo_addr = (u16)TS_L(Q_REG_TX_MEMORY_BANK_START, idx);
+-	hi_addr = (u16)TS_H(Q_REG_TX_MEMORY_BANK_START, idx);
+-
+-	err = ice_write_quad_reg_e822(hw, quad, lo_addr, 0);
++	err = ice_read_phy_tstamp_e822(hw, quad, idx, &unused_tstamp);
+ 	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register, err %d\n",
+-			  err);
+-		return err;
+-	}
+-
+-	err = ice_write_quad_reg_e822(hw, quad, hi_addr, 0);
+-	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to clear high PTP timestamp register, err %d\n",
+-			  err);
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read the timestamp register for quad %u, idx %u, err %d\n",
++			  quad, idx, err);
  		return err;
- 
-+	/* Do not perform any action on the main timer */
-+	ice_ptp_src_cmd(hw, ICE_PTP_NOP);
-+
- 	ice_ptp_exec_tmr_cmd(hw);
- 
- 	err = ice_read_phy_reg_e822(hw, port, P_REG_PS, &val);
-@@ -2875,6 +2885,8 @@ static int ice_ptp_port_cmd_e810(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
- 	case ICE_PTP_ADJ_TIME_AT_TIME:
- 		cmd_val = GLTSYN_CMD_ADJ_INIT_TIME;
- 		break;
-+	case ICE_PTP_NOP:
-+		return 0;
  	}
  
- 	/* Read, modify, write */
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index ba4ab96073e0..28e0afb06d54 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -10,6 +10,7 @@ enum ice_ptp_tmr_cmd {
- 	ICE_PTP_ADJ_TIME,
- 	ICE_PTP_ADJ_TIME_AT_TIME,
- 	ICE_PTP_READ_TIME,
-+	ICE_PTP_NOP,
- };
+@@ -2657,28 +2654,39 @@ ice_read_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx, u64 *tstamp)
+  * @lport: the lport to read from
+  * @idx: the timestamp index to reset
+  *
+- * Clear a timestamp, resetting its valid bit, from the timestamp block of the
+- * external PHY on the E810 device.
++ * Read the timestamp and then forcibly overwrite its value to clear the valid
++ * bit from the timestamp block of the external PHY on the E810 device.
++ *
++ * This function should only be called on an idx whose bit is set according to
++ * ice_get_phy_tx_tstamp_ready.
+  */
+ static int ice_clear_phy_tstamp_e810(struct ice_hw *hw, u8 lport, u8 idx)
+ {
+ 	u32 lo_addr, hi_addr;
++	u64 unused_tstamp;
+ 	int err;
  
- enum ice_ptp_serdes {
++	err = ice_read_phy_tstamp_e810(hw, lport, idx, &unused_tstamp);
++	if (err) {
++		ice_debug(hw, ICE_DBG_PTP, "Failed to read the timestamp register for lport %u, idx %u, err %d\n",
++			  lport, idx, err);
++		return err;
++	}
++
+ 	lo_addr = TS_EXT(LOW_TX_MEMORY_BANK_START, lport, idx);
+ 	hi_addr = TS_EXT(HIGH_TX_MEMORY_BANK_START, lport, idx);
+ 
+ 	err = ice_write_phy_reg_e810(hw, lo_addr, 0);
+ 	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register, err %d\n",
+-			  err);
++		ice_debug(hw, ICE_DBG_PTP, "Failed to clear low PTP timestamp register for lport %u, idx %u, err %d\n",
++			  lport, idx, err);
+ 		return err;
+ 	}
+ 
+ 	err = ice_write_phy_reg_e810(hw, hi_addr, 0);
+ 	if (err) {
+-		ice_debug(hw, ICE_DBG_PTP, "Failed to clear high PTP timestamp register, err %d\n",
+-			  err);
++		ice_debug(hw, ICE_DBG_PTP, "Failed to clear high PTP timestamp register for lport %u, idx %u, err %d\n",
++			  lport, idx, err);
+ 		return err;
+ 	}
+ 
+@@ -3326,14 +3334,18 @@ int ice_read_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx, u64 *tstamp)
+ }
+ 
+ /**
+- * ice_clear_phy_tstamp - Clear a timestamp from the timestamp block
++ * ice_clear_phy_tstamp - Drop a timestamp from the timestamp block
+  * @hw: pointer to the HW struct
+  * @block: the block to read from
+  * @idx: the timestamp index to reset
+  *
+- * Clear a timestamp, resetting its valid bit, from the timestamp block. For
+- * E822 devices, the block is the quad to clear from. For E810 devices, the
+- * block is the logical port to clear from.
++ * Drop a timestamp from the timestamp block by reading it. This will reset
++ * the memory status bit allowing the timestamp index to be reused. For E822
++ * devices, the block is the quad to clear from. For E810 devices, the block
++ * is the logical port to clear from.
++ *
++ * This function should only be called on a timestamp index whose valid bit
++ * is set according to ice_get_phy_tx_tstamp_ready.
+  */
+ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx)
+ {
+
+base-commit: 751b10250f576db6fc2429132bccd453ee2e4a52
 -- 
 2.41.0.1.g9857a21e0017.dirty
 
