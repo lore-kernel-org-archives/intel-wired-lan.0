@@ -4,81 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86349EB64DA
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Jul 2023 12:21:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E7A6EB64DA
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Jul 2023 12:21:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2735480FA6;
-	Thu, 20 Jul 2023 12:21:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2735480FA6
+	by smtp1.osuosl.org (Postfix) with ESMTP id ED4EE8121D;
+	Thu, 20 Jul 2023 12:21:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ED4EE8121D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689855710;
-	bh=AK0bdxjqPVY+wRgQvq8OoBr5Z4Al/2kAVh7r8q2os40=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=6n3lmsZ4IAoyFHLIPgGNHE5w9JzPMW9G221NOt5whxSMe/0O1aOyWB1Aqcoz+mEQC
-	 +icXJX0Pe6GQEq2H6QDroR1gaaphghbWoS1DwMbgGDh7Lw0JW7Hdf4CCy9rm+N0srX
-	 sw0bS3naM3LhmltiEzdYjbV8EXA+7/J7Yn+nj5ESf27tgN8WR55guyDEErYQW8y/QQ
-	 PGo6r2byzKerJNsb3P63mjl7LYvvLb+vhAUUPRN5+05jV8Po3yu9zPLSi3kFSvrbwn
-	 r3B1eTxgkeCfRJq3ysc4PY72XdkK5iz5nyoXdtS4RyhWWoCc+qMJezDFvdxSqvRor8
-	 AXqhUM22T7dAw==
+	s=default; t=1689855715;
+	bh=lzb9xgHW7a1zVVlYJ6SXBfsA6rtZcLiLrgubF56FOec=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=RQowydDqjBb7o0HL7jpRhEfpZbAF6iInIrO/gHlg6JqY8kRKWsCyMDGhKRU4Wc3ug
+	 XwQMeKP8iO9s8Z6BCQRRDCsuSRGC6QF3rxygva7j0gBMRAWdUhI2pLLDjf7GwjZtJW
+	 B9IkOtYdBHSVZHQ6AWCMrcPC2Di6ba861Vkrqecs//GQRWbBxRwii33Zk+5PEwggvZ
+	 itaV2BQc+uXcIAvn04CNhzlERvTjQx//l9gPwN/fVdP5zzavurdZxtdGPRyR93xC9/
+	 Y+RdE+/uVb/5pUgIc9AafIU5eMZ7HCFNgYyzrKt3fuLE2Or/1skWdfjtgHgrmC94pw
+	 WT7pwC8GOZHBQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id whSjg5N5LfIu; Thu, 20 Jul 2023 12:21:49 +0000 (UTC)
+	with ESMTP id vcWWWdlqqei8; Thu, 20 Jul 2023 12:21:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4AA2D80FA7;
-	Thu, 20 Jul 2023 12:21:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4AA2D80FA7
+	by smtp1.osuosl.org (Postfix) with ESMTP id DFB9981F7D;
+	Thu, 20 Jul 2023 12:21:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DFB9981F7D
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 0C9D11BF36E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 12:21:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 059B31BF36E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 12:21:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D0FF941BB1
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 12:21:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D0FF941BB1
+ by smtp4.osuosl.org (Postfix) with ESMTP id 618E6417AF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 12:21:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 618E6417AF
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Pt2ye14S3r1f for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id SFQ8QRZVFq8S for <intel-wired-lan@lists.osuosl.org>;
  Thu, 20 Jul 2023 12:21:46 +0000 (UTC)
-X-Greylist: delayed 428 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 20 Jul 2023 12:21:46 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 045A5417AF
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 045A5417AF
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 12:21:45 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="366742960"
-X-IronPort-AV: E=Sophos;i="6.01,218,1684825200"; d="scan'208";a="366742960"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 7E29D41B98
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 12:21:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7E29D41B98
+X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="366742990"
+X-IronPort-AV: E=Sophos;i="6.01,218,1684825200"; d="scan'208";a="366742990"
 Received: from orsmga007.jf.intel.com ([10.7.209.58])
  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jul 2023 05:14:14 -0700
+ 20 Jul 2023 05:14:21 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="718367994"
-X-IronPort-AV: E=Sophos;i="6.01,218,1684825200"; d="scan'208";a="718367994"
+X-IronPort-AV: E=McAfee;i="6600,9927,10776"; a="718368016"
+X-IronPort-AV: E=Sophos;i="6.01,218,1684825200"; d="scan'208";a="718368016"
 Received: from mmichali-devpc.igk.intel.com ([10.211.235.239])
- by orsmga007.jf.intel.com with ESMTP; 20 Jul 2023 05:14:12 -0700
+ by orsmga007.jf.intel.com with ESMTP; 20 Jul 2023 05:14:20 -0700
 From: Michal Michalik <michal.michalik@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 20 Jul 2023 14:13:54 +0200
-Message-Id: <20230720121357.26739-1-michal.michalik@intel.com>
+Date: Thu, 20 Jul 2023 14:13:56 +0200
+Message-Id: <20230720121357.26739-3-michal.michalik@intel.com>
 X-Mailer: git-send-email 2.9.5
+In-Reply-To: <20230720121357.26739-1-michal.michalik@intel.com>
+References: <20230720121357.26739-1-michal.michalik@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1689855705; x=1721391705;
- h=from:to:cc:subject:date:message-id;
- bh=D1tfyFKc1kVybD7kV4k3OLI0vr5TZSsW9SkOJ++syo8=;
- b=IPb6F6SFoUWKcP8r3yGjstvhES9iDmDqkuGyIPw8a0SjOVtgPP/CWE2K
- GnluIW0n1KhN1xGKpXM3yAAGRkoiAvDQTXfNOH8O3+0LOppLu1A/7bQW2
- pzUd9JAsGwVUYPvKywZKjIRBxs8S+nZEDSGNur8YGohl+E+Gh90HJ+uFu
- BBzuPOQtz3S86N5tNeeknHbUHsRXxL7Xy2atMOPnvHtNGzgwO8aIvVhiG
- ufxVIxucxuznxFsGV8GjVJEU5b8I/19FYuvpnR7ViSgvVQH76CqTpol2K
- mCAnofXB5fOME1E7Tx3QcixAkK+eV9xXTQdwcL7Zd9Z9FdL/cEVNp4Hql
- A==;
+ t=1689855706; x=1721391706;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references;
+ bh=Bvz7a9ISuLKyUY7GHVUMsJVxpxijKWoAn6sAxRT4Z98=;
+ b=YvIYS3oUZQ/4+lPtyu1FC5nmYZFigX/kDDM7HnjimxkZcWUuIP/M6q2J
+ iUizcHPN6V+C0i4wm3htgkaHkb2XMRGAdCdTyyl9/NkfbBdOKP5ps7pxv
+ Ems7nvAL7Abkw7nJ0ZpboKmxXZY24OG6RIqOc3R7d4TEY8Zwe95dUI6A9
+ NBiM4lJJRaCNyFWnocNPkUEqaQDR2i7lOJH48mus5Yx4Vp6TTe15/twfi
+ V98ar8MZCu8OIEoNNi4/BvLcDGMKI4slOLAyjAU+k3rpJOm0vGeX0JpMy
+ 2958d/eSmOdhJ+H9ZaDjFcIo8qJiWitmQpJiysBeo0NUNLBVcuFSfns6l
+ g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=IPb6F6SF
-Subject: [Intel-wired-lan] [PATCH net-next v1 0/3] ice: add PTP auxiliary
- bus support
+ header.a=rsa-sha256 header.s=Intel header.b=YvIYS3oU
+Subject: [Intel-wired-lan] [PATCH net-next v1 2/3] ice: Use PTP auxbus for
+ all PHYs restart in E822
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,23 +101,59 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Auxiliary bus allow exchanging information between PFs, which allows
-both fixing problems and simplifying new features implementation.
-The auxiliary bus is enabled for all devices supported by ice driver.
+The E822 (and other devices based on the same PHY) is having issue while
+setting the PHC timer - the PHY timers are drifting from the PHC. After
+such a set all PHYs need to be restarted and resynchronised - do it
+using auxiliary bus.
 
-Michal Michalik (3):
-  ice: Auxbus devices & driver for E822 TS
-  ice: Use PTP auxbus for all PHYs restart in E822
-  ice: PTP: add clock domain number to auxiliary interface
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
+Signed-off-by: Michal Michalik <michal.michalik@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
 
- drivers/net/ethernet/intel/ice/ice.h            |  14 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c    |   2 +-
- drivers/net/ethernet/intel/ice/ice_hw_autogen.h |   1 +
- drivers/net/ethernet/intel/ice/ice_main.c       |  11 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c        | 586 +++++++++++++++++-------
- drivers/net/ethernet/intel/ice/ice_ptp.h        |  41 +-
- 6 files changed, 493 insertions(+), 162 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 9a2cd038..7fced6e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -1491,6 +1491,24 @@ static void ice_ptp_reset_phy_timestamping(struct ice_pf *pf)
+ }
+ 
+ /**
++ * ice_ptp_restart_all_phy - Restart all PHYs to recalibrate timestamping
++ * @pf: Board private structure
++ */
++static void ice_ptp_restart_all_phy(struct ice_pf *pf)
++{
++	struct list_head *entry;
++
++	list_for_each(entry, &pf->ptp.ports_owner.ports) {
++		struct ice_ptp_port *port = list_entry(entry,
++						       struct ice_ptp_port,
++						       list_member);
++
++		if (port->link_up)
++			ice_ptp_port_phy_restart(port);
++	}
++}
++
++/**
+  * ice_ptp_adjfine - Adjust clock increment rate
+  * @info: the driver's PTP info structure
+  * @scaled_ppm: Parts per million with 16-bit fractional field
+@@ -1927,9 +1945,9 @@ ice_ptp_settime64(struct ptp_clock_info *info, const struct timespec64 *ts)
+ 	/* Reenable periodic outputs */
+ 	ice_ptp_enable_all_clkout(pf);
+ 
+-	/* Recalibrate and re-enable timestamp block */
+-	if (pf->ptp.port.link_up)
+-		ice_ptp_port_phy_restart(&pf->ptp.port);
++	/* Recalibrate and re-enable timestamp blocks for E822/E823 */
++	if (!ice_is_e810(hw))
++		ice_ptp_restart_all_phy(pf);
+ exit:
+ 	if (err) {
+ 		dev_err(ice_pf_to_dev(pf), "PTP failed to set time %d\n", err);
 -- 
 2.9.5
 
