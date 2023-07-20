@@ -1,87 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA20BEB64DD
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Jul 2023 15:39:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2B32EB64DA
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 20 Jul 2023 22:32:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7A8B9416C1;
-	Thu, 20 Jul 2023 15:39:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7A8B9416C1
+	by smtp1.osuosl.org (Postfix) with ESMTP id 53E2981387;
+	Thu, 20 Jul 2023 22:32:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 53E2981387
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689867588;
-	bh=6wHKhPtrHJ3Iswh5uClUl1o/QDpHHkUyA8CzKXlglEw=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=ofalCIUGuzf/4zgphHnd0mux+LUeSWWC8OQuecpjk/hycBmU++4gqlRTfxTVfrmd0
-	 04Z4iT9wBso3o+iuZ6dKN/S5MGrZrRtn8UhrIExLkf2GAnuzTZRK8fBWxZY2LiqItj
-	 P74H+qGH0GdDe9zwosUEvxcgaSQxhvFK6ME+35UetTjc954yNLsimydGq4gW7UQeOW
-	 xK9o1RXe/kNcpxllWJVxFUWWAdKZoUUMwps74/huSzYE/vRvsd2v7IeEYHPXXLNVCx
-	 /J7cgFhVfuAc4Yb3LdlY0iNpiT+QTMXO+H5YtpL2vRVg+yD8rz6eXWfA1a8wsfLs13
-	 1aoHCPq5Juy5Q==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0LJfYe8s0vLP; Thu, 20 Jul 2023 15:39:47 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 4870D416D2;
-	Thu, 20 Jul 2023 15:39:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4870D416D2
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id CB1DE1BF2F3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 14:58:04 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A2A07813C7
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 14:58:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A2A07813C7
+	s=default; t=1689892352;
+	bh=Nm0GDYc6d195VUKCsOs+P1v2yv7Ph7vQOWy7BOMGQNw=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=9Dyb8khN9gp81RWgQBNxztSBJ82aupeyJhf6o1NL9cEhCAmMcgoPxwsTSgyXPj2uz
+	 KIROfhOijAxCvWGhtOr0tXMjrc/Vgq16pFGcPlRjdOZCUdh/EGOiYa70VXKxDICSm8
+	 8x3EsLU97TR+BubPaHEhur0XKyUPwjj5NoWDgFCQom8t4GU4fwqgnU6M5Y6wYe0nvP
+	 KD9NoUPZcKbtvT+LVGEMaTVK38rgXum1wN1hXIXPgy+jDta2r6iqPDVu9x7r5BE9hs
+	 nqmItoRwvPtuX5oATOmhMx+7iSnFr60h1xotzRirbpikfSlAgPf22ffzP1lxmakgYt
+	 SFk7tz0+J8xSw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id UqVUggOOn8NT for <intel-wired-lan@lists.osuosl.org>;
- Thu, 20 Jul 2023 14:58:03 +0000 (UTC)
-X-Greylist: delayed 442 seconds by postgrey-1.37 at util1.osuosl.org;
- Thu, 20 Jul 2023 14:58:03 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 331A8813B6
-Received: from bacon.elettra.eu (bacon.elettra.eu [140.105.206.12])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 331A8813B6
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 14:58:02 +0000 (UTC)
-X-Envelope-From: <alessio.bogani@elettra.eu>
-Received: from zmp.elettra.eu (zmp.elettra.trieste.it [140.105.206.204])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by bacon.elettra.eu (Postfix) with ESMTPS id 892334043B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 16:50:31 +0200 (CEST)
-Received: from zmp.elettra.eu (localhost [127.0.0.1])
- by zmp.elettra.eu (Postfix) with ESMTPS id 7E31C146CE2F;
- Thu, 20 Jul 2023 16:50:31 +0200 (CEST)
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id qLIGXi8SuzpC; Thu, 20 Jul 2023 22:32:30 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 11E018135E;
+	Thu, 20 Jul 2023 22:32:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 11E018135E
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 109931BF859
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 22:32:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by zmp.elettra.eu (Postfix) with ESMTP id 694DF146CE31;
- Thu, 20 Jul 2023 16:50:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at zmp.elettra.eu
-Received: from zmp.elettra.eu ([127.0.0.1])
- by localhost (zmp.elettra.eu [127.0.0.1]) (amavisd-new, port 10026)
- with ESMTP id AmKHNPawTSAR; Thu, 20 Jul 2023 16:50:31 +0200 (CEST)
-Received: from pc-bogani.fcs.elettra.trieste.it (pc-bogani.elettra.trieste.it
- [192.168.205.85])
- by zmp.elettra.eu (Postfix) with ESMTP id 4789D146CE2F;
- Thu, 20 Jul 2023 16:50:31 +0200 (CEST)
-From: Alessio Igor Bogani <alessio.bogani@elettra.eu>
-To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 20 Jul 2023 16:50:29 +0200
-Message-Id: <20230720145029.19674-1-alessio.bogani@elettra.eu>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <26d9aed2-6eba-9f19-3948-8d6fb8c9768b@intel.com>
-References: <26d9aed2-6eba-9f19-3948-8d6fb8c9768b@intel.com>
-X-elettra-Libra-ESVA-Information: Please contact elettra for more information
-X-elettra-Libra-ESVA-ID: 892334043B.AB6C8
-X-elettra-Libra-ESVA: No virus found
-X-elettra-Libra-ESVA-From: alessio.bogani@elettra.eu
-X-elettra-Libra-ESVA-Watermark: 1690469432.10591@E6c6wiVExXINoVR+fdQ7dg
-X-Mailman-Approved-At: Thu, 20 Jul 2023 15:39:46 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Avoid starting unnecessary workqueues
+ by smtp2.osuosl.org (Postfix) with ESMTP id E3FBE40191
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 22:32:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E3FBE40191
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id HEWsXw_boaK3 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 20 Jul 2023 22:32:27 +0000 (UTC)
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 912F24015E
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 22:32:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 912F24015E
+X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="364345834"
+X-IronPort-AV: E=Sophos;i="6.01,219,1684825200"; d="scan'208";a="364345834"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 20 Jul 2023 15:32:26 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="868010265"
+Received: from lkp-server02.sh.intel.com (HELO 36946fcf73d7) ([10.239.97.151])
+ by fmsmga001.fm.intel.com with ESMTP; 20 Jul 2023 15:32:26 -0700
+Received: from kbuild by 36946fcf73d7 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1qMcC8-0006aD-2X
+ for intel-wired-lan@lists.osuosl.org; Thu, 20 Jul 2023 22:32:24 +0000
+Date: Fri, 21 Jul 2023 06:31:38 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202307210637.EtsPDF7T-lkp@intel.com>
+User-Agent: s-nail v14.9.24
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1689892347; x=1721428347;
+ h=date:from:to:subject:message-id;
+ bh=Z9kY6iQvyOLZ1s+J6x20GtFKSYEGHoS6AumokNfhi4o=;
+ b=BYCP5NOCJSO6I6bd3+rJN3pFt3U8BHGFDW3VK2zemCA844DdqZMPoKJF
+ 8fdMaypkO5zMI5E1KqyieV7YC4g06Mb80Cjf8WWG6jcLwEP36t0/AxpnF
+ 9WRHyUcGRiQ543gK8MivjCmqzxNht6Y4sSvESDORpNeJwVWLd3qor9a6A
+ lxy69wV949H9I6Hx+qGsE/J//vIC4oN6Ge7HVT8H2qTO7oKFsmkylA287
+ MiyeK6VWm9Gkh9WovYLOSfSyFCc+JLAMMPD7RShLU7szGJOogWiz6U1ZC
+ /ume7N+rBl/G/M/dn6ULZukbqsywNjUZlkk8KOTNvr/65fdNl594nZUbj
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=BYCP5NOC
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD SUCCESS
+ 14587ba2aab220817c0c5f96e2b5b39d71f41ccf
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,88 +91,121 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Alessio Igor Bogani <alessio.bogani@elettra.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-if ptp_clock_register() fails or CONFIG_PTP isn't enabled avoid starting PTP related workqueues.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 14587ba2aab220817c0c5f96e2b5b39d71f41ccf  ice: introduce hw->phy_model for handling PTP PHY differences
 
-In this way we can fix this:
- BUG: unable to handle page fault for address: ffffc9000440b6f8
- #PF: supervisor read access in kernel mode
- #PF: error_code(0x0000) - not-present page
- PGD 100000067 P4D 100000067 PUD 1001e0067 PMD 107dc5067 PTE 0
- Oops: 0000 [#1] PREEMPT SMP
- [...]
- Workqueue: events igb_ptp_overflow_check
- RIP: 0010:igb_rd32+0x1f/0x60
- [...]
- Call Trace:
-  igb_ptp_read_82580+0x20/0x50
-  timecounter_read+0x15/0x60
-  igb_ptp_overflow_check+0x1a/0x50
-  process_one_work+0x1cb/0x3c0
-  worker_thread+0x53/0x3f0
-  ? rescuer_thread+0x370/0x370
-  kthread+0x142/0x160
-  ? kthread_associate_blkcg+0xc0/0xc0
-  ret_from_fork+0x1f/0x30
+elapsed time: 1441m
 
-Fixes: 1f6e8178d685 ("igb: Prevent dropped Tx timestamps via work items and interrupts.")
-Fixes: d339b1331616 ("igb: add PTP Hardware Clock code")
-Signed-off-by: Alessio Igor Bogani <alessio.bogani@elettra.eu>
----
- drivers/net/ethernet/intel/igb/igb_ptp.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+configs tested: 93
+configs skipped: 2
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 6f471b91f562..8165232052c8 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -1390,18 +1390,6 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 		return;
- 	}
- 
--	spin_lock_init(&adapter->tmreg_lock);
--	INIT_WORK(&adapter->ptp_tx_work, igb_ptp_tx_work);
--
--	if (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK)
--		INIT_DELAYED_WORK(&adapter->ptp_overflow_work,
--				  igb_ptp_overflow_check);
--
--	adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
--	adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
--
--	igb_ptp_reset(adapter);
--
- 	adapter->ptp_clock = ptp_clock_register(&adapter->ptp_caps,
- 						&adapter->pdev->dev);
- 	if (IS_ERR(adapter->ptp_clock)) {
-@@ -1411,6 +1399,18 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 		dev_info(&adapter->pdev->dev, "added PHC on %s\n",
- 			 adapter->netdev->name);
- 		adapter->ptp_flags |= IGB_PTP_ENABLED;
-+
-+		spin_lock_init(&adapter->tmreg_lock);
-+		INIT_WORK(&adapter->ptp_tx_work, igb_ptp_tx_work);
-+
-+		if (adapter->ptp_flags & IGB_PTP_OVERFLOW_CHECK)
-+			INIT_DELAYED_WORK(&adapter->ptp_overflow_work,
-+					  igb_ptp_overflow_check);
-+
-+		adapter->tstamp_config.rx_filter = HWTSTAMP_FILTER_NONE;
-+		adapter->tstamp_config.tx_type = HWTSTAMP_TX_OFF;
-+
-+		igb_ptp_reset(adapter);
- 	}
- }
- 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r003-20230720   gcc  
+alpha                randconfig-r033-20230720   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r043-20230720   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                  randconfig-r005-20230720   clang
+arm                  randconfig-r021-20230720   gcc  
+arm                  randconfig-r022-20230720   gcc  
+arm                  randconfig-r046-20230720   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r001-20230720   gcc  
+csky                 randconfig-r004-20230720   gcc  
+csky                 randconfig-r026-20230720   gcc  
+hexagon              randconfig-r035-20230720   clang
+hexagon              randconfig-r041-20230720   clang
+hexagon              randconfig-r045-20230720   clang
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-r004-20230720   gcc  
+i386         buildonly-randconfig-r005-20230720   gcc  
+i386         buildonly-randconfig-r006-20230720   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                 randconfig-i001-20230720   gcc  
+i386                 randconfig-i002-20230720   gcc  
+i386                 randconfig-i003-20230720   gcc  
+i386                 randconfig-i004-20230720   gcc  
+i386                 randconfig-i005-20230720   gcc  
+i386                 randconfig-i006-20230720   gcc  
+i386                 randconfig-r011-20230720   clang
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch            randconfig-r036-20230720   gcc  
+m68k                             allmodconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                 randconfig-r016-20230720   gcc  
+m68k                 randconfig-r031-20230720   gcc  
+microblaze           randconfig-r032-20230720   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                 randconfig-r013-20230720   gcc  
+nios2                               defconfig   gcc  
+openrisc             randconfig-r014-20230720   gcc  
+openrisc             randconfig-r015-20230720   gcc  
+openrisc             randconfig-r023-20230720   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc               randconfig-r034-20230720   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc              randconfig-r006-20230720   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r002-20230720   gcc  
+riscv                randconfig-r042-20230720   clang
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r044-20230720   clang
+sh                               allmodconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r025-20230720   gcc  
+sparc64              randconfig-r012-20230720   gcc  
+sparc64              randconfig-r024-20230720   gcc  
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-r001-20230720   gcc  
+x86_64       buildonly-randconfig-r002-20230720   gcc  
+x86_64       buildonly-randconfig-r003-20230720   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-x011-20230720   gcc  
+x86_64               randconfig-x012-20230720   gcc  
+x86_64               randconfig-x013-20230720   gcc  
+x86_64               randconfig-x014-20230720   gcc  
+x86_64               randconfig-x015-20230720   gcc  
+x86_64               randconfig-x016-20230720   gcc  
+x86_64                               rhel-8.3   gcc  
+
 -- 
-2.17.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
