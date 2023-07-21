@@ -4,82 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3E2BEB64DC
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Jul 2023 15:20:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64984EB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Jul 2023 15:21:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 7FEE661321;
-	Fri, 21 Jul 2023 15:20:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7FEE661321
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1BB066136A;
+	Fri, 21 Jul 2023 15:21:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1BB066136A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689952852;
-	bh=mGygx5XtCJ1x78sLcm1IIV60RIS8E9RkN9YYthveAfs=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=agikoSAkp2/iR5QnNW0gnKW4g9WkCLTWCXCUy4fTxG0niwqzvIvvn+iUQ4V/cANze
-	 j+39JvMKee92BOBLcKywC6GtUf8KgO64qOqbDsl2McxFYJj2tOczGQc0fF+VESlDnd
-	 UHq7KopIEpl08iCCiOx0n3X1ong4KrtkRz/QjYNAVhkYhJUilyr1pc1iS/ebMSaW7o
-	 lp/Cv4KsLNta5zuTJ7eZRTiqEHDWIuZujv/Yn9hKZMXfX3pLPNOrPGtviGMlby8qGy
-	 /VK6BtI4LgLk8ZC3fmNEpt13/BteWIhDkG9RZIv/2YPOcbfmR4yHRXvZR7iYexZ1as
-	 phtA05NoDtehw==
+	s=default; t=1689952872;
+	bh=KdJGhGLtmq7y9mzwf+sXBnxH/oneuEn3Oz7+SRK+1Zo=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=ftbX4m0CPeJfZAE9B7e03Vvz1za4VpugQ/NHo8GSiGVPLDMHq7zGLeT4l3KvkEIbU
+	 Uvigbi0iP1mFiGcq4pdsCQW3tE38UrZpn+xSaCWug7Tl3dfBgAOMXAB3Blo9cjg9OO
+	 g7DWa41WR2QRw3HYhLKbSKnIhdQNZ4fBsSGwTzXvU+9nMaHM5wbDCl0xrDQvbsMctK
+	 c0c2CP/S1+a3jGdX+RGbg48pAChyla/sbytu3DotKf1cUMgayP8vNOiFYMbz3l1Juv
+	 0PxmbLPLQvhUv/44yeyTRYSaafvGrjljjmz0ZAvH8/vqfP50wX3m3e5X0FzK4N3mDu
+	 6m7A1vMUcJOTA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1bjuyI9xqhb5; Fri, 21 Jul 2023 15:20:51 +0000 (UTC)
+	with ESMTP id 0aymwtUp1QUU; Fri, 21 Jul 2023 15:21:11 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8833F6134B;
-	Fri, 21 Jul 2023 15:20:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8833F6134B
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 6D51A1BF23C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 15:20:49 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id D4FDD6134B;
+	Fri, 21 Jul 2023 15:21:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D4FDD6134B
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id D2BF01BF34B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 00:13:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 44CA1417C5
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 15:20:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 44CA1417C5
+ by smtp4.osuosl.org (Postfix) with ESMTP id A4F8741E5F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 00:13:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A4F8741E5F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id GbFR7IIXItnG for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Jul 2023 15:20:48 +0000 (UTC)
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 05E2240577
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 15:20:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 05E2240577
-X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="357037475"
-X-IronPort-AV: E=Sophos;i="6.01,222,1684825200"; d="scan'208";a="357037475"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Jul 2023 08:20:26 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="971466137"
-X-IronPort-AV: E=Sophos;i="6.01,222,1684825200"; d="scan'208";a="971466137"
-Received: from lkp-server02.sh.intel.com (HELO 36946fcf73d7) ([10.239.97.151])
- by fmsmga006.fm.intel.com with ESMTP; 21 Jul 2023 08:20:25 -0700
-Received: from kbuild by 36946fcf73d7 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1qMrvd-0007Op-07
- for intel-wired-lan@lists.osuosl.org; Fri, 21 Jul 2023 15:20:25 +0000
-Date: Fri, 21 Jul 2023 23:20:01 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202307212300.S7xlC1jT-lkp@intel.com>
-User-Agent: s-nail v14.9.24
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1689952848; x=1721488848;
- h=date:from:to:subject:message-id;
- bh=HtunqO9gRXsO35lN3pYM1c//NCSgRlQidVfbvtiW/AI=;
- b=exPsvtCoOLFIe2EPKu3Wtkz2NZa9nO3nrua6grRK9+7zSPWlpwVK0wxc
- O5CbQrAIz+OK4oO5l9fwSSu9yE8YVkrXcLMWxGyIEEB7nBDupsq7vPlLG
- tIqGuwUdg6rbiin0FskVRiLCpnIQllDksxC5FnlMAM3X2YqeIdzdYsTM0
- nOVpwPoA7rqQH5YWD2EoPzmcPNTtqLPeHmwYQEUYugJjYorqvBhvDTYEI
- hZ4520FjvSSIUzaHYZyuU4p7UgDUdttAXC8vlN0WToq5QE4CB/JZwdvGp
- oIqIFLVrPcAAjmnSXXXysMjHGoGDdtvzvJdG3cwRlL2utdebwfv5OGOd+
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=exPsvtCo
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- d030d481742306ea805bf833bb38a787b4e44bcb
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id wngJi3rPr1_z for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Jul 2023 00:13:28 +0000 (UTC)
+X-Greylist: delayed 337 seconds by postgrey-1.37 at util1.osuosl.org;
+ Fri, 21 Jul 2023 00:13:28 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D1D341E5D
+Received: from smtp.portwell.com (smtp.portwell.com [38.88.18.152])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5D1D341E5D
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 00:13:28 +0000 (UTC)
+Received: from APTEXCH01.APT.local by smtp.portwell.com (MDaemon PRO v13.5.1)
+ with ESMTP id md50002405076.msg
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 17:01:05 -0700
+X-Return-Path: easonl@portwell.com
+X-Envelope-From: easonl@portwell.com
+X-MDaemon-Deliver-To: intel-wired-lan@lists.osuosl.org
+Received: from APTEXCH01.APT.local (192.168.0.243) by APTEXCH01.APT.local
+ (192.168.0.243) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 20 Jul
+ 2023 17:07:27 -0700
+Received: from APTEXCH01.APT.local ([::1]) by APTEXCH01.APT.local ([::1]) with
+ mapi id 15.00.1497.012; Thu, 20 Jul 2023 17:07:27 -0700
+From: "Eason  Lin (3383)" <easonl@portwell.com>
+To: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
+Thread-Topic: Ubuntu Kernel 5.4 to support Intel I225
+Thread-Index: Adm7ZthKb82qg0E7QY6QvI52QapUqQ==
+Date: Fri, 21 Jul 2023 00:07:26 +0000
+Message-ID: <484b485adfa8430bb1436479d915bb81@APTEXCH01.APT.local>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [192.168.96.126]
+MIME-Version: 1.0
+X-Mailman-Approved-At: Fri, 21 Jul 2023 15:21:09 +0000
+Subject: [Intel-wired-lan] Ubuntu Kernel 5.4 to support Intel I225
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,131 +85,137 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>,
+ "jesse.brandeburg@intel.com" <jesse.brandeburg@intel.com>
+Content-Type: multipart/mixed; boundary="===============8031499576399790266=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: d030d481742306ea805bf833bb38a787b4e44bcb  i40e: Fix an NULL vs IS_ERR() bug for debugfs_create_dir()
+--===============8031499576399790266==
+Content-Language: en-US
+Content-Type: multipart/alternative;
+	boundary="_000_484b485adfa8430bb1436479d915bb81APTEXCH01APTlocal_"
 
-elapsed time: 948m
+--_000_484b485adfa8430bb1436479d915bb81APTEXCH01APTlocal_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-configs tested: 102
-configs skipped: 9
+Hi Intel Ethernet Driver team,
+Hope this note finds you well. This is Eason, a Technical Project Manager f=
+rom American Portwell, and here is our website in case you want to refer. h=
+ttps://portwell.com/
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+We know starting from Kernel 5.8 Intel i225 can be supported. However, is i=
+t possible that you can make Kernel 5.4 to support i225 as well? We have su=
+ch request from certain customers, so would like to see any possibility.
 
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                  randconfig-r011-20230720   gcc  
-arc                  randconfig-r043-20230720   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r014-20230720   gcc  
-arm                  randconfig-r046-20230720   gcc  
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r013-20230720   clang
-arm64                randconfig-r023-20230720   clang
-arm64                randconfig-r026-20230720   clang
-arm64                randconfig-r032-20230720   gcc  
-csky                                defconfig   gcc  
-csky                 randconfig-r033-20230720   gcc  
-csky                 randconfig-r035-20230720   gcc  
-hexagon              randconfig-r022-20230720   clang
-hexagon              randconfig-r041-20230720   clang
-hexagon              randconfig-r045-20230720   clang
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-r004-20230720   gcc  
-i386         buildonly-randconfig-r005-20230720   gcc  
-i386         buildonly-randconfig-r006-20230720   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                 randconfig-i001-20230720   gcc  
-i386                 randconfig-i002-20230720   gcc  
-i386                 randconfig-i003-20230720   gcc  
-i386                 randconfig-i004-20230720   gcc  
-i386                 randconfig-i005-20230720   gcc  
-i386                 randconfig-i006-20230720   gcc  
-i386                 randconfig-i011-20230720   clang
-i386                 randconfig-i012-20230720   clang
-i386                 randconfig-i013-20230720   clang
-i386                 randconfig-i014-20230720   clang
-i386                 randconfig-i015-20230720   clang
-i386                 randconfig-i016-20230720   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r034-20230720   gcc  
-m68k                             allmodconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r012-20230720   gcc  
-microblaze           randconfig-r005-20230720   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                 randconfig-r016-20230720   gcc  
-nios2                               defconfig   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r002-20230720   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc              randconfig-r024-20230720   clang
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r042-20230720   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r044-20230720   clang
-sh                               allmodconfig   gcc  
-sh                   randconfig-r001-20230720   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   clang
-um                                  defconfig   gcc  
-um                             i386_defconfig   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64       buildonly-randconfig-r001-20230720   gcc  
-x86_64       buildonly-randconfig-r002-20230720   gcc  
-x86_64       buildonly-randconfig-r003-20230720   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64               randconfig-x001-20230720   clang
-x86_64               randconfig-x002-20230720   clang
-x86_64               randconfig-x003-20230720   clang
-x86_64               randconfig-x004-20230720   clang
-x86_64               randconfig-x005-20230720   clang
-x86_64               randconfig-x006-20230720   clang
-x86_64               randconfig-x011-20230720   gcc  
-x86_64               randconfig-x012-20230720   gcc  
-x86_64               randconfig-x013-20230720   gcc  
-x86_64               randconfig-x014-20230720   gcc  
-x86_64               randconfig-x015-20230720   gcc  
-x86_64               randconfig-x016-20230720   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa               randconfig-r025-20230720   gcc  
+Are you able to consider it? If yes, of course we can discuss about term an=
+d condition, plus any fee incurred. Thank you so much and any of your respo=
+nse will be appreciated!
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+
+Best regards,
+Eason
+
+
+--_000_484b485adfa8430bb1436479d915bb81APTEXCH01APTlocal_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
+>
+<meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:PMingLiU;
+	panose-1:2 1 6 1 0 1 1 1 1 1;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+@font-face
+	{font-family:"\@PMingLiU";
+	panose-1:2 1 6 1 0 1 1 1 1 1;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	font-size:11.0pt;
+	font-family:"Calibri",sans-serif;
+	mso-ligatures:standardcontextual;}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:#0563C1;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri",sans-serif;
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-family:"Calibri",sans-serif;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"#0563C1" vlink=3D"#954F72" style=3D"word-wrap:=
+break-word">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal">Hi Intel Ethernet Driver team,<o:p></o:p></p>
+<p class=3D"MsoNormal">Hope this note finds you well. This is Eason, a Tech=
+nical Project Manager from American Portwell, and here is our website in ca=
+se you want to refer.
+<a href=3D"https://portwell.com/">https://portwell.com/</a><o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">We know starting from <u>Kernel 5.8</u> Intel i225 c=
+an be supported. However, is it possible that you can make
+<u>Kernel 5.4</u> to support i225 as well? We have such request from certai=
+n customers, so would like to see any possibility.
+<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Are you able to consider it? If yes, of course we ca=
+n discuss about term and condition, plus any fee incurred. Thank you so muc=
+h and any of your response will be appreciated!<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><span style=3D"mso-ligatures:none"><o:p>&nbsp;</o:p>=
+</span></p>
+<p class=3D"MsoNormal"><span style=3D"mso-ligatures:none">Best regards,<o:p=
+></o:p></span></p>
+<p class=3D"MsoNormal"><span style=3D"mso-ligatures:none">Eason<o:p></o:p><=
+/span></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+</div>
+</body>
+</html>
+
+--_000_484b485adfa8430bb1436479d915bb81APTEXCH01APTlocal_--
+
+
+--===============8031499576399790266==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============8031499576399790266==--
+
