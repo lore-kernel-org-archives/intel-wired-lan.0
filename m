@@ -4,75 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64984EB64DD
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Jul 2023 15:21:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE27DEB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Jul 2023 15:21:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 1BB066136A;
-	Fri, 21 Jul 2023 15:21:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1BB066136A
+	by smtp3.osuosl.org (Postfix) with ESMTP id 88F966139D;
+	Fri, 21 Jul 2023 15:21:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 88F966139D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689952872;
-	bh=KdJGhGLtmq7y9mzwf+sXBnxH/oneuEn3Oz7+SRK+1Zo=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=ftbX4m0CPeJfZAE9B7e03Vvz1za4VpugQ/NHo8GSiGVPLDMHq7zGLeT4l3KvkEIbU
-	 Uvigbi0iP1mFiGcq4pdsCQW3tE38UrZpn+xSaCWug7Tl3dfBgAOMXAB3Blo9cjg9OO
-	 g7DWa41WR2QRw3HYhLKbSKnIhdQNZ4fBsSGwTzXvU+9nMaHM5wbDCl0xrDQvbsMctK
-	 c0c2CP/S1+a3jGdX+RGbg48pAChyla/sbytu3DotKf1cUMgayP8vNOiFYMbz3l1Juv
-	 0PxmbLPLQvhUv/44yeyTRYSaafvGrjljjmz0ZAvH8/vqfP50wX3m3e5X0FzK4N3mDu
-	 6m7A1vMUcJOTA==
+	s=default; t=1689952881;
+	bh=5dk2TUzFFxX4+OO069u+dgzSmXwLUNFRBWqd2juOaWk=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=aAAmsajRqALutBFvr262vH21KMmqQvqgBdetym9uhTTLonj3MY4fPZ5PXWa2s2HTm
+	 N3mYhjx5SrST4AxUyMCQe8WWf5MVMlbdNMOBZX1Jz+4HfeHW7TjSKST9nkvHMgyt1q
+	 1zHAb3ccbf25ditiF63PFhSpLVmuqeQFbuffqZaVbc1roFuh+2VsXlQwwwA4bY88Nr
+	 nH1T+5H6XOJUVUqorfaXyvsX6D+AHr+XWusp6sec0mG2WgEK7kIfc71CONratOvz2x
+	 w0ozJDoPHVuIMdioTfhyN6UM5PLRQl+pllgIYkCr0hO5L3A5IbwUap0SAmsMJ7x9LZ
+	 2/K+dFyRLCfgg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0aymwtUp1QUU; Fri, 21 Jul 2023 15:21:11 +0000 (UTC)
+	with ESMTP id y-ODSH1Mk2TI; Fri, 21 Jul 2023 15:21:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D4FDD6134B;
-	Fri, 21 Jul 2023 15:21:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D4FDD6134B
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id D2BF01BF34B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 00:13:29 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CA7F761377;
+	Fri, 21 Jul 2023 15:21:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CA7F761377
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id EAEAF1BF287
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 14:29:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id A4F8741E5F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 00:13:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A4F8741E5F
+ by smtp2.osuosl.org (Postfix) with ESMTP id BEFAC4178F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 14:29:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BEFAC4178F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wngJi3rPr1_z for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Jul 2023 00:13:28 +0000 (UTC)
-X-Greylist: delayed 337 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 21 Jul 2023 00:13:28 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D1D341E5D
-Received: from smtp.portwell.com (smtp.portwell.com [38.88.18.152])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5D1D341E5D
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 00:13:28 +0000 (UTC)
-Received: from APTEXCH01.APT.local by smtp.portwell.com (MDaemon PRO v13.5.1)
- with ESMTP id md50002405076.msg
- for <intel-wired-lan@lists.osuosl.org>; Thu, 20 Jul 2023 17:01:05 -0700
-X-Return-Path: easonl@portwell.com
-X-Envelope-From: easonl@portwell.com
-X-MDaemon-Deliver-To: intel-wired-lan@lists.osuosl.org
-Received: from APTEXCH01.APT.local (192.168.0.243) by APTEXCH01.APT.local
- (192.168.0.243) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 20 Jul
- 2023 17:07:27 -0700
-Received: from APTEXCH01.APT.local ([::1]) by APTEXCH01.APT.local ([::1]) with
- mapi id 15.00.1497.012; Thu, 20 Jul 2023 17:07:27 -0700
-From: "Eason  Lin (3383)" <easonl@portwell.com>
-To: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-Thread-Topic: Ubuntu Kernel 5.4 to support Intel I225
-Thread-Index: Adm7ZthKb82qg0E7QY6QvI52QapUqQ==
-Date: Fri, 21 Jul 2023 00:07:26 +0000
-Message-ID: <484b485adfa8430bb1436479d915bb81@APTEXCH01.APT.local>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [192.168.96.126]
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 3g-Ej-Za6eEG for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Jul 2023 14:29:02 +0000 (UTC)
+X-Greylist: delayed 424 seconds by postgrey-1.37 at util1.osuosl.org;
+ Fri, 21 Jul 2023 14:29:02 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0803D41785
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 0803D41785
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 14:29:01 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="346632489"
+X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; d="scan'208";a="346632489"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Jul 2023 07:21:57 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="718837285"
+X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; d="scan'208";a="718837285"
+Received: from smile.fi.intel.com ([10.237.72.54])
+ by orsmga007.jf.intel.com with ESMTP; 21 Jul 2023 07:21:53 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+ (envelope-from <andy@kernel.org>) id 1qMr0x-0085eg-2U;
+ Fri, 21 Jul 2023 17:21:51 +0300
+Date: Fri, 21 Jul 2023 17:21:51 +0300
+From: Andy Shevchenko <andy@kernel.org>
+To: Marcin Szycik <marcin.szycik@linux.intel.com>
+Message-ID: <ZLqUfwKkRH85uPlT@smile.fi.intel.com>
+References: <20230721071532.613888-1-marcin.szycik@linux.intel.com>
+ <20230721071532.613888-2-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20230721071532.613888-2-marcin.szycik@linux.intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-Mailman-Approved-At: Fri, 21 Jul 2023 15:21:09 +0000
-Subject: [Intel-wired-lan] Ubuntu Kernel 5.4 to support Intel I225
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 1/6] ip_tunnel: use a
+ separate struct to store tunnel params in the kernel
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,137 +86,67 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>,
- "jesse.brandeburg@intel.com" <jesse.brandeburg@intel.com>
-Content-Type: multipart/mixed; boundary="===============8031499576399790266=="
+Cc: jiri@resnulli.us, netdev@vger.kernel.org, idosch@nvidia.com,
+ jesse.brandeburg@intel.com, intel-wired-lan@lists.osuosl.org, kuba@kernel.org,
+ simon.horman@corigine.com, pabeni@redhat.com, davem@davemloft.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---===============8031499576399790266==
-Content-Language: en-US
-Content-Type: multipart/alternative;
-	boundary="_000_484b485adfa8430bb1436479d915bb81APTEXCH01APTlocal_"
+On Fri, Jul 21, 2023 at 09:15:27AM +0200, Marcin Szycik wrote:
+> From: Alexander Lobakin <aleksander.lobakin@intel.com>
+> 
+> Unlike IPv6 tunnels which use purely-kernel __ip6_tnl_parm structure
+> to store params inside the kernel, IPv4 tunnel code uses the same
+> ip_tunnel_parm which is being used to talk with the userspace.
+> This makes it difficult to alter or add any fields or use a
+> different format for whatever data.
+> Define struct ip_tunnel_parm_kern, a 1:1 copy of ip_tunnel_parm for
+> now, and use it throughout the code. The two places where the latter
+> is used to interact with the userspace, now do a conversion from one
+> type to another, with manual field-by-field assignments.
+> Must be done at once, since ip_tunnel::parms is being used in most
+> of those places.
 
---_000_484b485adfa8430bb1436479d915bb81APTEXCH01APTlocal_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+...
 
-Hi Intel Ethernet Driver team,
-Hope this note finds you well. This is Eason, a Technical Project Manager f=
-rom American Portwell, and here is our website in case you want to refer. h=
-ttps://portwell.com/
+> +	strscpy(kp.name, p.name, sizeof(kp.name));
+> +	kp.link = p.link;
+> +	kp.i_flags = p.i_flags;
+> +	kp.o_flags = p.o_flags;
+> +	kp.i_key = p.i_key;
+> +	kp.o_key = p.o_key;
+> +	memcpy(&kp.iph, &p.iph, min(sizeof(kp.iph), sizeof(p.iph)));
+> +
+> +	err = dev->netdev_ops->ndo_tunnel_ctl(dev, &kp, cmd);
+> +	if (err)
+> +		return err;
+> +
+> +	strscpy(p.name, kp.name, sizeof(p.name));
+> +	p.link = kp.link;
+> +	p.i_flags = kp.i_flags;
+> +	p.o_flags = kp.o_flags;
+> +	p.i_key = kp.i_key;
+> +	p.o_key = kp.o_key;
+> +	memcpy(&p.iph, &kp.iph, min(sizeof(p.iph), sizeof(kp.iph)));
 
-We know starting from Kernel 5.8 Intel i225 can be supported. However, is i=
-t possible that you can make Kernel 5.4 to support i225 as well? We have su=
-ch request from certain customers, so would like to see any possibility.
+> +		strscpy(kp.name, p.name, sizeof(kp.name));
+> +		kp.link = p.link;
+> +		kp.i_flags = p.i_flags;
+> +		kp.o_flags = p.o_flags;
+> +		kp.i_key = p.i_key;
+> +		kp.o_key = p.o_key;
+> +		memcpy(&kp.iph, &p.iph, min(sizeof(p.iph), sizeof(kp.iph)));
 
-Are you able to consider it? If yes, of course we can discuss about term an=
-d condition, plus any fee incurred. Thank you so much and any of your respo=
-nse will be appreciated!
+Seems to me these two deserves separate helpers to avoid such a duplication(s).
 
+-- 
+With Best Regards,
+Andy Shevchenko
 
-Best regards,
-Eason
-
-
---_000_484b485adfa8430bb1436479d915bb81APTEXCH01APTlocal_
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
-osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
-//www.w3.org/TR/REC-html40">
-<head>
-<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
->
-<meta name=3D"Generator" content=3D"Microsoft Word 15 (filtered medium)">
-<style><!--
-/* Font Definitions */
-@font-face
-	{font-family:PMingLiU;
-	panose-1:2 1 6 1 0 1 1 1 1 1;}
-@font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
-@font-face
-	{font-family:"\@PMingLiU";
-	panose-1:2 1 6 1 0 1 1 1 1 1;}
-/* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	font-size:11.0pt;
-	font-family:"Calibri",sans-serif;
-	mso-ligatures:standardcontextual;}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:#0563C1;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri",sans-serif;
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;
-	font-family:"Calibri",sans-serif;}
-@page WordSection1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.0in 1.0in 1.0in;}
-div.WordSection1
-	{page:WordSection1;}
---></style><!--[if gte mso 9]><xml>
-<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
-<o:shapelayout v:ext=3D"edit">
-<o:idmap v:ext=3D"edit" data=3D"1" />
-</o:shapelayout></xml><![endif]-->
-</head>
-<body lang=3D"EN-US" link=3D"#0563C1" vlink=3D"#954F72" style=3D"word-wrap:=
-break-word">
-<div class=3D"WordSection1">
-<p class=3D"MsoNormal">Hi Intel Ethernet Driver team,<o:p></o:p></p>
-<p class=3D"MsoNormal">Hope this note finds you well. This is Eason, a Tech=
-nical Project Manager from American Portwell, and here is our website in ca=
-se you want to refer.
-<a href=3D"https://portwell.com/">https://portwell.com/</a><o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">We know starting from <u>Kernel 5.8</u> Intel i225 c=
-an be supported. However, is it possible that you can make
-<u>Kernel 5.4</u> to support i225 as well? We have such request from certai=
-n customers, so would like to see any possibility.
-<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal">Are you able to consider it? If yes, of course we ca=
-n discuss about term and condition, plus any fee incurred. Thank you so muc=
-h and any of your response will be appreciated!<o:p></o:p></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-<p class=3D"MsoNormal"><span style=3D"mso-ligatures:none"><o:p>&nbsp;</o:p>=
-</span></p>
-<p class=3D"MsoNormal"><span style=3D"mso-ligatures:none">Best regards,<o:p=
-></o:p></span></p>
-<p class=3D"MsoNormal"><span style=3D"mso-ligatures:none">Eason<o:p></o:p><=
-/span></p>
-<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
-</div>
-</body>
-</html>
-
---_000_484b485adfa8430bb1436479d915bb81APTEXCH01APTlocal_--
-
-
---===============8031499576399790266==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
---===============8031499576399790266==--
-
