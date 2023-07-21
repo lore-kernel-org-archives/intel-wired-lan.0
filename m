@@ -1,85 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF168EB64DD
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Jul 2023 06:34:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76826EB64DC
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 21 Jul 2023 14:22:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7B39182121;
-	Fri, 21 Jul 2023 06:34:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7B39182121
+	by smtp2.osuosl.org (Postfix) with ESMTP id 0CEA840135;
+	Fri, 21 Jul 2023 14:22:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0CEA840135
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1689921296;
-	bh=13KJVjwBIH/utsgFjrBYDDHsGxeOLfccY2wLcqxLf08=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=LPQwy3sicssUdNpMHJTtEpg27EucryJ6DzLiEj7u05VuS+qIPmUje+ldsvF6TphgK
-	 B3KW0vlFOQJsGTqV60XzjsjJXDTBd8qeM+1+dId6nMjn3kXn57hu/lsLaaRZvObvDd
-	 xcxahsAl9Wfeo7UU4XLMsebmVkZgmP1kELtdh+BCU5XgL/Fu2PjGqrwbwjYo1vQjI/
-	 l8s79b7kBhhvF5V6MMi8la3QZLrz9AduutobfrXN6cnVvRkQGpLRk295U5DYWv9WFI
-	 xnqLVq3GyV9nwyqIR4JtC748zK9GNyL/qF/jDq/XVJwclMztsCkvFgFEcQrF/wMr5M
-	 R1jm75mmDRnWg==
+	s=default; t=1689949321;
+	bh=d6tr8lBdJqLgmvwOxFRmGqb+OEUDiuqR3F/pbm4Tqy0=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=h8xv/11O6pbc3OXHANl7i1uH1wpLFL4WEu31Dt6Hh2Tt31rxjK/ZvRWLPrJ5cyToB
+	 jvjOdgyKtnHksEllZXn4TGwakc/8kYbQKa/KrNxYhnUBdwcj4pwlOdr4GjGmyAwzwW
+	 a7bZF3bL1X/DrbhRd6SgX6Nh16iCzB04ZRIcNLH9HLrul3lYHUv6FvH+5vlgpYFJrn
+	 aPU+GLHFlVAWQpEYPRy1KdV7b5m/VDIRS1WuFCQ3+MBxVWjTqrM2RqIyPfUQUIiido
+	 yib5F/r+3n/aMS0JmGx3N5FPSmi68h37KzvWUfL3N4l60+fdDWyjGc7Twc5jLnfEa5
+	 pEJCP1pKOU/1Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IkbGN5_oJTRF; Fri, 21 Jul 2023 06:34:55 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id WKERbKT5jh_o; Fri, 21 Jul 2023 14:22:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 682B982203;
-	Fri, 21 Jul 2023 06:34:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 682B982203
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 81CBE1BF35C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 06:34:53 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 13B774178F;
+	Fri, 21 Jul 2023 14:22:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 13B774178F
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 35F8E1BF287
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 14:21:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 5612C60A70
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 06:34:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5612C60A70
+ by smtp2.osuosl.org (Postfix) with ESMTP id D37C24179A
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 14:21:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D37C24179A
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id M7zBvONpWy9b for <intel-wired-lan@lists.osuosl.org>;
- Fri, 21 Jul 2023 06:34:52 +0000 (UTC)
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 0A701607EC
- for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 06:34:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0A701607EC
-X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="356935475"
-X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; d="scan'208";a="356935475"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Jul 2023 23:34:27 -0700
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ZUvNLJd2-ZKc for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 21 Jul 2023 14:21:56 +0000 (UTC)
+X-Greylist: delayed 428 seconds by postgrey-1.37 at util1.osuosl.org;
+ Fri, 21 Jul 2023 14:21:56 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B2B574178F
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id B2B574178F
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 21 Jul 2023 14:21:56 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10778"; a="433263380"
+X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; d="scan'208";a="433263380"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Jul 2023 07:14:47 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10777"; a="971327557"
-X-IronPort-AV: E=Sophos;i="6.01,220,1684825200"; d="scan'208";a="971327557"
-Received: from lkp-server02.sh.intel.com (HELO 36946fcf73d7) ([10.239.97.151])
- by fmsmga006.fm.intel.com with ESMTP; 20 Jul 2023 23:34:25 -0700
-Received: from kbuild by 36946fcf73d7 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1qMjiK-0006y7-03
- for intel-wired-lan@lists.osuosl.org; Fri, 21 Jul 2023 06:34:10 +0000
-Date: Fri, 21 Jul 2023 14:33:12 +0800
-From: kernel test robot <lkp@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202307211410.Nj6JBASf-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="868256453"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by fmsmga001.fm.intel.com with ESMTP; 21 Jul 2023 07:14:45 -0700
+Received: from mystra-4.igk.intel.com (mystra-4.igk.intel.com [10.123.220.40])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 83581340C0;
+ Fri, 21 Jul 2023 15:14:42 +0100 (IST)
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Fri, 21 Jul 2023 09:15:26 +0200
+Message-ID: <20230721071532.613888-1-marcin.szycik@linux.intel.com>
+X-Mailer: git-send-email 2.41.0
+MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1689921292; x=1721457292;
- h=date:from:to:subject:message-id;
- bh=h7KfdYhNmDqBaqcxHT9otyNqFcVr0a73mu3Kvb7oJkk=;
- b=f++v8F44NKH+Cd+DuslK33r7pdyCG6KT1e0aNghxeMoCy9UVZRqe9p6i
- kr+TLM+//wADhXGGnHklIBWguXYh3u0RJPWMjAh2b9AS4QJSwo/jMtkS7
- 8sdfdY1G4H6X3P4YgVlIjjDzAVOpYPDQ1QOoUuhmA3DV3RDUkvypOCazE
- R+0xA4MVcNqUEsMOMcocGS3alEQOA26VCQ79pMbIv33y/IuG29JLqKQzA
- eioQID00jwij5yV8zQSG6R5L2zP50E67apAgXNJjj93WyVHM/1ek0Urv8
- xgDwTPuTRs1aU/KZruwVWtf5wEfXq3OW7xzYP0scMadxsScbgz00pAxvw
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1689949316; x=1721485316;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=Wn0rnpGWZ+NsWkHHiK1OYU4RJD1mCQb8yrP/hv0Nuqg=;
+ b=I/udtPzZkW6ck4cl+SUiTa6IRyHNAgBhyK5NgCNrQLhx4qxG3MLslgkw
+ 8QFhBzzVxAs7qCNDShd4T76tNabWhWxtbE/Iyz2fx6YPKgEUvG9dzNOeo
+ qg09KgbseAeYaOYckyUPcukxDsYEacmx5pOzW/UHmwq2K8znxYnbHY3wZ
+ BLO3g0fsRJkEF5XBv1niFQfDZ/BGbGhFhHoq7EBTVtpRXhvi649xExgfh
+ /uDW7aw9ubyWDGZmj+34a0eTVRXD9T+8F09xibI+uqfYo7Z9UUj/8W06L
+ vK7ObWACrjBsRnkoTpM0oIGSQbsVcSY44xb7E/pmHNVtaA4B0+Gfwme4K
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=f++v8F44
-Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
- 414f268bc4acb8188c44fdb498ce5b9ac6f90f62
+ header.a=rsa-sha256 header.s=Intel header.b=I/udtPzZ
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/6] ice: Add PFCP filter
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,158 +95,115 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-MIME-Version: 1.0
+Cc: jiri@resnulli.us, andy@kernel.org, netdev@vger.kernel.org,
+ idosch@nvidia.com, jesse.brandeburg@intel.com, simon.horman@corigine.com,
+ kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
-branch HEAD: 414f268bc4acb8188c44fdb498ce5b9ac6f90f62  ice: add tracepoints for the switchdev bridge
+Add support for creating PFCP filters in switchdev mode. Add pfcp module
+that allows to create a PFCP-type netdev. The netdev then can be passed to
+tc when creating a filter to indicate that PFCP filter should be created.
 
-elapsed time: 720m
+To add a PFCP filter, a special netdev must be created and passed to tc
+command:
 
-configs tested: 130
-configs skipped: 7
+ip link add pfcp0 type pfcp
+tc filter add dev eth0 ingress prio 1 flower pfcp_opts \
+1:123/ff:fffffffffffffff0 skip_hw action mirred egress redirect dev pfcp0
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Changes in iproute2 [1] are required to use pfcp_opts in tc.
 
-tested configs:
-alpha                            allyesconfig   gcc  
-alpha                               defconfig   gcc  
-arc                              allyesconfig   gcc  
-arc                                 defconfig   gcc  
-arc                        nsim_700_defconfig   gcc  
-arc                  randconfig-r022-20230720   gcc  
-arc                  randconfig-r024-20230720   gcc  
-arc                  randconfig-r043-20230720   gcc  
-arm                              allmodconfig   gcc  
-arm                              allyesconfig   gcc  
-arm                                 defconfig   gcc  
-arm                  randconfig-r035-20230720   clang
-arm                  randconfig-r046-20230720   gcc  
-arm                         s3c6400_defconfig   gcc  
-arm64                            allyesconfig   gcc  
-arm64                               defconfig   gcc  
-arm64                randconfig-r023-20230720   clang
-arm64                randconfig-r026-20230720   clang
-csky                                defconfig   gcc  
-csky                 randconfig-r005-20230720   gcc  
-hexagon              randconfig-r021-20230720   clang
-hexagon              randconfig-r022-20230720   clang
-hexagon              randconfig-r036-20230720   clang
-hexagon              randconfig-r041-20230720   clang
-hexagon              randconfig-r045-20230720   clang
-i386                             allyesconfig   gcc  
-i386         buildonly-randconfig-r004-20230720   gcc  
-i386         buildonly-randconfig-r005-20230720   gcc  
-i386         buildonly-randconfig-r006-20230720   gcc  
-i386                              debian-10.3   gcc  
-i386                                defconfig   gcc  
-i386                 randconfig-i001-20230720   gcc  
-i386                 randconfig-i002-20230720   gcc  
-i386                 randconfig-i003-20230720   gcc  
-i386                 randconfig-i004-20230720   gcc  
-i386                 randconfig-i005-20230720   gcc  
-i386                 randconfig-i006-20230720   gcc  
-i386                 randconfig-i011-20230720   clang
-i386                 randconfig-i012-20230720   clang
-i386                 randconfig-i013-20230720   clang
-i386                 randconfig-i014-20230720   clang
-i386                 randconfig-i015-20230720   clang
-i386                 randconfig-i016-20230720   clang
-loongarch                        allmodconfig   gcc  
-loongarch                         allnoconfig   gcc  
-loongarch                           defconfig   gcc  
-loongarch            randconfig-r033-20230720   gcc  
-m68k                             allmodconfig   gcc  
-m68k                             allyesconfig   gcc  
-m68k                          amiga_defconfig   gcc  
-m68k                                defconfig   gcc  
-m68k                 randconfig-r004-20230720   gcc  
-m68k                 randconfig-r006-20230720   gcc  
-m68k                 randconfig-r013-20230720   gcc  
-m68k                 randconfig-r014-20230720   gcc  
-microblaze                      mmu_defconfig   gcc  
-mips                             allmodconfig   gcc  
-mips                             allyesconfig   gcc  
-mips                            gpr_defconfig   gcc  
-mips                 randconfig-r001-20230720   clang
-mips                 randconfig-r034-20230720   clang
-nios2                               defconfig   gcc  
-nios2                randconfig-r002-20230720   gcc  
-openrisc             randconfig-r011-20230720   gcc  
-parisc                           allyesconfig   gcc  
-parisc                              defconfig   gcc  
-parisc               randconfig-r004-20230720   gcc  
-parisc               randconfig-r006-20230720   gcc  
-parisc64                            defconfig   gcc  
-powerpc                          allmodconfig   gcc  
-powerpc                           allnoconfig   gcc  
-powerpc                    klondike_defconfig   gcc  
-powerpc                      ppc40x_defconfig   gcc  
-powerpc              randconfig-r002-20230720   gcc  
-powerpc              randconfig-r023-20230720   clang
-powerpc              randconfig-r024-20230720   clang
-powerpc                         wii_defconfig   gcc  
-riscv                            allmodconfig   gcc  
-riscv                             allnoconfig   gcc  
-riscv                            allyesconfig   gcc  
-riscv                               defconfig   gcc  
-riscv                randconfig-r042-20230720   clang
-riscv                          rv32_defconfig   gcc  
-s390                             allmodconfig   gcc  
-s390                             allyesconfig   gcc  
-s390                                defconfig   gcc  
-s390                 randconfig-r003-20230720   gcc  
-s390                 randconfig-r013-20230720   clang
-s390                 randconfig-r015-20230720   clang
-s390                 randconfig-r044-20230720   clang
-sh                               allmodconfig   gcc  
-sh                 kfr2r09-romimage_defconfig   gcc  
-sh                     magicpanelr2_defconfig   gcc  
-sh                   randconfig-r025-20230720   gcc  
-sh                   randconfig-r031-20230720   gcc  
-sh                          rsk7201_defconfig   gcc  
-sparc                            allyesconfig   gcc  
-sparc                               defconfig   gcc  
-sparc                randconfig-r036-20230720   gcc  
-um                               allmodconfig   clang
-um                                allnoconfig   clang
-um                               allyesconfig   clang
-um                                  defconfig   gcc  
-um                             i386_defconfig   gcc  
-um                   randconfig-r003-20230720   clang
-um                   randconfig-r012-20230720   gcc  
-um                           x86_64_defconfig   gcc  
-x86_64                           allyesconfig   gcc  
-x86_64       buildonly-randconfig-r001-20230720   gcc  
-x86_64       buildonly-randconfig-r002-20230720   gcc  
-x86_64       buildonly-randconfig-r003-20230720   gcc  
-x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
-x86_64               randconfig-r011-20230720   clang
-x86_64               randconfig-r016-20230720   clang
-x86_64               randconfig-x001-20230720   clang
-x86_64               randconfig-x002-20230720   clang
-x86_64               randconfig-x003-20230720   clang
-x86_64               randconfig-x004-20230720   clang
-x86_64               randconfig-x005-20230720   clang
-x86_64               randconfig-x006-20230720   clang
-x86_64               randconfig-x011-20230720   gcc  
-x86_64               randconfig-x012-20230720   gcc  
-x86_64               randconfig-x013-20230720   gcc  
-x86_64               randconfig-x014-20230720   gcc  
-x86_64               randconfig-x015-20230720   gcc  
-x86_64               randconfig-x016-20230720   gcc  
-x86_64                          rhel-8.3-rust   clang
-x86_64                               rhel-8.3   gcc  
-xtensa               randconfig-r032-20230720   gcc  
+ICE COMMS package is required as it contains PFCP profiles.
+
+Part of this patchset modifies IP_TUNNEL_*_OPTs, which were previously
+stored in a __be16. All possible values have already been used, making it
+impossible to add new ones.
+
+[1] https://lore.kernel.org/netdev/20230614091758.11180-1-marcin.szycik@linux.intel.com
+
+v2: Fixed minor issues, typos
+v3: Rebase
+
+Alexander Lobakin (2):
+  ip_tunnel: use a separate struct to store tunnel params in the kernel
+  ip_tunnel: convert __be16 tunnel flags to bitmaps
+
+Marcin Szycik (2):
+  ice: refactor ICE_TC_FLWR_FIELD_ENC_OPTS
+  ice: Add support for PFCP hardware offload in switchdev
+
+Michal Swiatkowski (1):
+  pfcp: always set pfcp metadata
+
+Wojciech Drewek (1):
+  pfcp: add PFCP module
+
+ drivers/net/Kconfig                           |  13 +
+ drivers/net/Makefile                          |   1 +
+ drivers/net/bareudp.c                         |  19 +-
+ drivers/net/ethernet/intel/ice/ice_ddp.c      |   9 +
+ .../net/ethernet/intel/ice/ice_flex_type.h    |   4 +-
+ .../ethernet/intel/ice/ice_protocol_type.h    |  12 +
+ drivers/net/ethernet/intel/ice/ice_switch.c   |  85 +++++
+ drivers/net/ethernet/intel/ice/ice_switch.h   |   2 +
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c   |  68 +++-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h   |   7 +-
+ .../ethernet/mellanox/mlx5/core/en/tc_tun.h   |   2 +-
+ .../mellanox/mlx5/core/en/tc_tun_encap.c      |   6 +-
+ .../mellanox/mlx5/core/en/tc_tun_geneve.c     |  12 +-
+ .../mellanox/mlx5/core/en/tc_tun_gre.c        |   9 +-
+ .../mellanox/mlx5/core/en/tc_tun_vxlan.c      |   9 +-
+ .../net/ethernet/mellanox/mlx5/core/en_tc.c   |  15 +-
+ .../ethernet/mellanox/mlxsw/spectrum_ipip.c   |  62 ++--
+ .../ethernet/mellanox/mlxsw/spectrum_ipip.h   |   2 +-
+ .../ethernet/mellanox/mlxsw/spectrum_span.c   |  10 +-
+ .../ethernet/netronome/nfp/flower/action.c    |  12 +-
+ drivers/net/geneve.c                          |  46 ++-
+ drivers/net/pfcp.c                            | 303 ++++++++++++++++++
+ drivers/net/vxlan/vxlan_core.c                |  14 +-
+ include/linux/netdevice.h                     |   7 +-
+ include/net/dst_metadata.h                    |  10 +-
+ include/net/flow_dissector.h                  |   2 +-
+ include/net/gre.h                             |  59 ++--
+ include/net/ip6_tunnel.h                      |   4 +-
+ include/net/ip_tunnels.h                      | 108 ++++++-
+ include/net/pfcp.h                            |  83 +++++
+ include/net/udp_tunnel.h                      |   4 +-
+ include/uapi/linux/if_tunnel.h                |  36 +++
+ include/uapi/linux/pkt_cls.h                  |  14 +
+ net/bridge/br_vlan_tunnel.c                   |   9 +-
+ net/core/filter.c                             |  20 +-
+ net/core/flow_dissector.c                     |  12 +-
+ net/ipv4/fou_bpf.c                            |   2 +-
+ net/ipv4/gre_demux.c                          |   2 +-
+ net/ipv4/ip_gre.c                             | 148 +++++----
+ net/ipv4/ip_tunnel.c                          |  92 ++++--
+ net/ipv4/ip_tunnel_core.c                     |  83 +++--
+ net/ipv4/ip_vti.c                             |  43 ++-
+ net/ipv4/ipip.c                               |  33 +-
+ net/ipv4/ipmr.c                               |   2 +-
+ net/ipv4/udp_tunnel_core.c                    |   5 +-
+ net/ipv6/addrconf.c                           |   3 +-
+ net/ipv6/ip6_gre.c                            |  87 ++---
+ net/ipv6/ip6_tunnel.c                         |  14 +-
+ net/ipv6/sit.c                                |  47 ++-
+ net/netfilter/ipvs/ip_vs_core.c               |   6 +-
+ net/netfilter/ipvs/ip_vs_xmit.c               |  20 +-
+ net/netfilter/nft_tunnel.c                    |  45 +--
+ net/openvswitch/flow_netlink.c                |  55 ++--
+ net/psample/psample.c                         |  26 +-
+ net/sched/act_tunnel_key.c                    |  39 +--
+ net/sched/cls_flower.c                        | 134 +++++++-
+ 56 files changed, 1505 insertions(+), 471 deletions(-)
+ create mode 100644 drivers/net/pfcp.c
+ create mode 100644 include/net/pfcp.h
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.41.0
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
