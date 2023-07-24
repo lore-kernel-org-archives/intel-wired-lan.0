@@ -1,79 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 115B2C001B0
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Jul 2023 15:24:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FA48C001DF
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 24 Jul 2023 17:50:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9188D81FAF;
-	Mon, 24 Jul 2023 15:24:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9188D81FAF
+	by smtp4.osuosl.org (Postfix) with ESMTP id C99AC417FA;
+	Mon, 24 Jul 2023 17:50:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C99AC417FA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690212285;
-	bh=OHk8T47v1FcsWNixi/sY+97BpcDsxzf2Ol/OfIa7bUE=;
+	s=default; t=1690221006;
+	bh=TQoR+o8vJRyp5Dtkku0JSFOqe54QHwGHDhWxOyAQAyE=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=lc6VScKRaIkK5Pk6AQyPG8k8R0LGlwCRp9GHwo0FE5D+zwqLrCJMpkg5TweC6Mb4H
-	 2TBwmHAA/SiWPPbwc5HBxjmVHBT+HhMCO6fT2V0ywdc757oPIISWsII+uwAEO3stYd
-	 DIOpHbQnCpQi3HZLojIgnNZ3Gwl6k+CxtmUiv0Ki+NnyDhc5faR3LP+q2pB5/aFyUw
-	 vQACM1CJ4JbZnuXHIVPIAIBAPpTEzguf8/tPI2a9977WonBMipOk0nw/Lbwatsynij
-	 G91FQDzp+wIyHY+Rbfgz9TMyRCBrLCV6oAFP/eIvDba1k6nQSTp5vFiWx4xs5FRvgm
-	 WbD9o1FjXIZaA==
+	b=ed9qLqo5QVCC1QeTNwdwupTV2X7aOpNtDAUKrYcslYJENJjPH4XfzcgVaPNb3jv6j
+	 TdwGO6DRwLdMKWC/caPHoEptdZT+8ZS8GgvH+eAyrx4rlZLT3N78TX0NjzfKDXMvPB
+	 17ze+Wp0gqLOvfOW37eOTpofAlsewvQx8thycChTdjJQvuQbAtt4BBiV2WNYFktpgx
+	 hvzeH9SVkPCFPSZlQhWy8rIHFhxjv7cv/JwEbpO8GKOjwdaZxSTszMjdLqOt2/IRk5
+	 dQfM2G2eneLbAniWAhr9vG8pLoBMK/3WWWji7HbPg30LcctRfyDhrSV2IVVFCh1OKv
+	 zGb0ujcW5wnwA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Uqn8WOuEkfjZ; Mon, 24 Jul 2023 15:24:43 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id gmvvEJsPMn7U; Mon, 24 Jul 2023 17:50:05 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 74E4581FB4;
-	Mon, 24 Jul 2023 15:24:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 74E4581FB4
+	by smtp4.osuosl.org (Postfix) with ESMTP id 98B76417EF;
+	Mon, 24 Jul 2023 17:50:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 98B76417EF
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id B7FC11BF44A
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jul 2023 14:10:36 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id C27B21BF488
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jul 2023 17:50:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9378D6101E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jul 2023 14:10:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9378D6101E
+ by smtp3.osuosl.org (Postfix) with ESMTP id 99D3860F78
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jul 2023 17:50:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 99D3860F78
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id KdoQSZO7PcBN for <intel-wired-lan@lists.osuosl.org>;
- Mon, 24 Jul 2023 14:10:35 +0000 (UTC)
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 467E060FE9
- for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jul 2023 14:10:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 467E060FE9
-X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="433693151"
-X-IronPort-AV: E=Sophos;i="6.01,228,1684825200"; d="scan'208";a="433693151"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Jul 2023 07:10:17 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="839463026"
-X-IronPort-AV: E=Sophos;i="6.01,228,1684825200"; d="scan'208";a="839463026"
-Received: from smile.fi.intel.com ([10.237.72.54])
- by fmsmga002.fm.intel.com with ESMTP; 24 Jul 2023 07:10:14 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
- (envelope-from <andy@kernel.org>) id 1qNwGK-00GKAo-0P;
- Mon, 24 Jul 2023 17:10:12 +0300
-Date: Mon, 24 Jul 2023 17:10:11 +0300
-From: Andy Shevchenko <andy@kernel.org>
-To: Marcin Szycik <marcin.szycik@linux.intel.com>
-Message-ID: <ZL6GQyy2x56+K9si@smile.fi.intel.com>
-References: <20230721071532.613888-1-marcin.szycik@linux.intel.com>
- <20230721071532.613888-7-marcin.szycik@linux.intel.com>
- <ZLqfJZi/14dyEzhH@smile.fi.intel.com>
- <24784f80-df7b-a666-a56b-9b4c288978a1@linux.intel.com>
+ with ESMTP id emvWsr7kn0eN for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 24 Jul 2023 17:49:58 +0000 (UTC)
+X-Greylist: delayed 314 seconds by postgrey-1.37 at util1.osuosl.org;
+ Mon, 24 Jul 2023 17:49:57 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DE3B460D78
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id DE3B460D78
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 24 Jul 2023 17:49:57 +0000 (UTC)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id E452961351;
+ Mon, 24 Jul 2023 17:44:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57402C433C9;
+ Mon, 24 Jul 2023 17:44:39 +0000 (UTC)
+Date: Mon, 24 Jul 2023 20:44:35 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Lin Ma <linma@zju.edu.cn>
+Message-ID: <20230724174435.GA11388@unreal>
+References: <20230723075042.3709043-1-linma@zju.edu.cn>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <24784f80-df7b-a666-a56b-9b4c288978a1@linux.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-X-Mailman-Approved-At: Mon, 24 Jul 2023 15:24:38 +0000
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 6/6] ice: Add support for
- PFCP hardware offload in switchdev
+In-Reply-To: <20230723075042.3709043-1-linma@zju.edu.cn>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1690220680;
+ bh=ZvCIeXPtML1eefHbxFJM07QYwP5uIy2qwAnyhnutLOY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=sL10NlEUThnOiXXtdsa4sja4xL/YW4tcTmoVDraN0w+OV0WS9J5sv3vsWzCRzP1+q
+ ZFfjPP956rRClQnRaRiylI8DqZSCZ7DrMiPNx5QbZJBZt6ttf1oj8nTqkn2yOu8y0f
+ LH8r9RO3/DmBnCQd8CSuJkWXwLsym63YLl9jtKc2tAuJhgX0gAAIoDW+Um42pf8bkB
+ HcQ+iJ2A/wVx3H+XIEIi1WRka4x7am5XvjmlHIUKEZ9972g9tg9cLu4N4kVP60/8ir
+ Mkj785kfacdOSQKxsw0J9Wy+DxrUqNceE88agG5QZeMu4Y9OcHlCY2iuY6AhMM3w4m
+ SUkFEwL+jddTg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=sL10NlEU
+Subject: Re: [Intel-wired-lan] [PATCH v1] i40e: Add length check for
+ IFLA_AF_SPEC parsing
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,49 +91,59 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: jiri@resnulli.us, netdev@vger.kernel.org, idosch@nvidia.com,
- jesse.brandeburg@intel.com, intel-wired-lan@lists.osuosl.org, kuba@kernel.org,
- simon.horman@corigine.com, pabeni@redhat.com, davem@davemloft.net
+Cc: hawk@kernel.org, daniel@iogearbox.net, intel-wired-lan@lists.osuosl.org,
+ richardcochran@gmail.com, john.fastabend@gmail.com, jesse.brandeburg@intel.com,
+ ast@kernel.org, edumazet@google.com, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Jul 24, 2023 at 03:58:51PM +0200, Marcin Szycik wrote:
-> On 21.07.2023 17:07, Andy Shevchenko wrote:
-> > On Fri, Jul 21, 2023 at 09:15:32AM +0200, Marcin Szycik wrote:
-
-...
-
-> >> [1] https://lore.kernel.org/netdev/20230614091758.11180-1-marcin.szycik@linux.intel.com
-> > 
-> > We have Link: tag for such kind of stuff.
+On Sun, Jul 23, 2023 at 03:50:42PM +0800, Lin Ma wrote:
+> The nla_for_each_nested parsing in function i40e_ndo_bridge_setlink()
+> does not check the length of the attribute. This can lead to an
+> out-of-attribute read and allow a malformed nlattr (e.g., length 0) to
+> be viewed as a 2 byte integer.
 > 
-> Are you sure this is a valid use of Link: tag?
-
-Yes.
-
-> Patch that is linked here is
-> in another tree, and also I want to have [1] inline for context.
-
-You can put it as
-Link: $URI [1]
-
-...
-
-> >>  #define ICE_TC_FLOWER_MASK_32   0xFFFFFFFF
-> > 
-> > ...and (at least) this can utilize GENMASK().
+> This patch adds the check based on nla_len() just as other code does,
+> see how bnxt_bridge_setlink (drivers/net/ethernet/broadcom/bnxt/bnxt.c)
+> parses IFLA_AF_SPEC: type checking plus length checking.
 > 
-> It can, but it's unrelated to this patch.
+> Fixes: 51616018dd1b ("i40e: Add support for getlink, setlink ndo ops")
+> Signed-off-by: Lin Ma <linma@zju.edu.cn>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 29ad1797adce..6363357bdeeb 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -13186,6 +13186,9 @@ static int i40e_ndo_bridge_setlink(struct net_device *dev,
+>  		if (nla_type(attr) != IFLA_BRIDGE_MODE)
+>  			continue;
+>  
+> +		if (nla_len(attr) < sizeof(mode))
+> +			return -EINVAL;
+> +
 
-Right. Just a side note.
+I see that you added this hunk to all users of nla_for_each_nested(), it
+will be great to make that iterator to skip such empty attributes.
 
--- 
-With Best Regards,
-Andy Shevchenko
+However, i don't know nettlink good enough to say if your change is
+valid in first place.
 
+Thanks
 
+>  		mode = nla_get_u16(attr);
+>  		if ((mode != BRIDGE_MODE_VEPA) &&
+>  		    (mode != BRIDGE_MODE_VEB))
+> -- 
+> 2.17.1
+> 
+> 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
