@@ -4,86 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CB65C001DE
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Jul 2023 21:51:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0801EEB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Jul 2023 21:51:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2298E41895;
-	Tue, 25 Jul 2023 21:51:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2298E41895
+	by smtp4.osuosl.org (Postfix) with ESMTP id B5A3241833;
+	Tue, 25 Jul 2023 21:51:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B5A3241833
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690321871;
-	bh=XajI9KcJFgsYM2A7MPv3yZl3WfFpdLSEW39SvTP5aFQ=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1690321893;
+	bh=2UR2oF5ExThHQcRQ0roQvBPzHLPZ6iQtJgdYPi3PfoE=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=fIPfj1zQK+IGpraomULKnbW7swYdSlvn5GJ00fIMB0VeuQ+4Q63+vqhiT5EURVPsn
-	 pMe1JBjaTCP3KZNCyVCKAEVxkLRAjZCtl61GS3M+wde9gTVVYqA95HYI/aCLkDkx/e
-	 TUlpVQbUHhg7ROF9CACWQWEGSamqsDPLhTiWuoPjFraCYz8inKXjOz78XXBUspOapT
-	 3j77SvrB79S3R6zVd+VBUF3CfKPxepzY1eX/3kpufPXKXTf4BDJedcCrkga1rTJ8ua
-	 Bs5fYhTziwxJxi9ucsN4KkvpZeZURWseTaA968nSyI99bJx53p32SU0YR+uT2dIo73
-	 24D6XCTjkMnbg==
+	b=SN8IAPx9xXQoVWXL06rjD0/BAMXPmZYSOLcSViRw2IBnaBadKYjiMwEttuS2KabMS
+	 CHP1Zy+gK5y4Gu7sAFejgO+HsPz3gOOJRNcU9MZlslvVyEkavpPc07/wZ2J6xYeGe5
+	 1pxm2imdIcg/WIuucheNEIWxedgUyJJ+hl0IL/ndS0sA2x9SNDN8T+T5Ibmx/mtf+9
+	 PTIDRC7PVMfrdSbVIZ2TucfIYu6Q5rHyQk7T8agt+CSFV2HlF95uiKXptWlJctNwvY
+	 ob4edTiUyeV4gtnOV9TArtq5PExzVH9+n0Ppr0l4s7q8dvYm0QwslpqEUecAkEk0HG
+	 5aSsADsLE8iZw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zZDOgsWaQjv8; Tue, 25 Jul 2023 21:51:08 +0000 (UTC)
+	with ESMTP id o45E1uOXXzIJ; Tue, 25 Jul 2023 21:51:32 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7198341908;
-	Tue, 25 Jul 2023 21:51:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7198341908
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 1888A1BF47A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 21:50:58 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6A0AD418A0;
+	Tue, 25 Jul 2023 21:51:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6A0AD418A0
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 4867E1BF47A
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 21:51:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 86C7341833
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 21:50:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 86C7341833
+ by smtp3.osuosl.org (Postfix) with ESMTP id 1F8C261124
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 21:51:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1F8C261124
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MGDC3_s8Blq8 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Jul 2023 21:50:56 +0000 (UTC)
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by smtp4.osuosl.org (Postfix) with ESMTPS id E686A41895
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 21:50:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E686A41895
-X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="367879187"
-X-IronPort-AV: E=Sophos;i="6.01,231,1684825200"; d="scan'208";a="367879187"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Jul 2023 14:50:54 -0700
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id yC4NgbYBj5Zh for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 25 Jul 2023 21:51:30 +0000 (UTC)
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 17E9E60C18
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 21:51:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 17E9E60C18
+X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="352753630"
+X-IronPort-AV: E=Sophos;i="6.01,231,1684825200"; d="scan'208";a="352753630"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Jul 2023 14:51:29 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="796290018"
-X-IronPort-AV: E=Sophos;i="6.01,231,1684825200"; d="scan'208";a="796290018"
-Received: from jekeller-desk.amr.corp.intel.com (HELO
- jekeller-desk.jekeller.internal) ([10.166.241.1])
- by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 25 Jul 2023 14:50:54 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Tue, 25 Jul 2023 14:50:46 -0700
-Message-ID: <20230725215048.1311584-2-jacob.e.keller@intel.com>
-X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
-In-Reply-To: <20230725215048.1311584-1-jacob.e.keller@intel.com>
-References: <20230725215048.1311584-1-jacob.e.keller@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="1056933626"
+X-IronPort-AV: E=Sophos;i="6.01,231,1684825200"; d="scan'208";a="1056933626"
+Received: from lkp-server02.sh.intel.com (HELO 953e8cd98f7d) ([10.239.97.151])
+ by fmsmga005.fm.intel.com with ESMTP; 25 Jul 2023 14:51:27 -0700
+Received: from kbuild by 953e8cd98f7d with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1qOPw9-0000Mn-2X;
+ Tue, 25 Jul 2023 21:51:23 +0000
+Date: Wed, 26 Jul 2023 05:50:30 +0800
+From: kernel test robot <lkp@intel.com>
+To: Jacob Keller <jacob.e.keller@intel.com>,
+ Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202307260524.gD96xyN6-lkp@intel.com>
+References: <20230725203125.508243-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20230725203125.508243-1-jacob.e.keller@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1690321855; x=1721857855;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=PuMOHvNTy807l+iJo3L+J4ItQRh+ncGeNbfs+6NyOeg=;
- b=QIFKPoAOPf7EhNOowj3CTwDtzOVH88BvnPUyzcDZWqVh9HMTZUpQ3iHs
- LpCJ6Vti4xoLb/5nu5RmbKJg6CeOXIZU/RtlEjSV1o/xN/qOjVlOARNS2
- 4lsOCc2u7TDsqUknfOalAKJcEMVSLsosHRfftmtJVYegIcHqwN4g1vnfK
- Ij8ZjW/kba2bexiFK2pfBWjg81Mi5IEXRZcb7G1tJjZonLjOTGfpFUmQz
- o7tWAd8zCTvnT5xEMbLnx8UT8UNLlQAOB74uTdv9oJdbxANlqcgtz8cni
- hYeYaTCyNCqmAyIK1RMwWMyPNoqSsJ8R7j+SYMvO3tPYPM+Mix9W/WuZh
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1690321890; x=1721857890;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=4j1REvpsFGcYj8gu5WcqDBuw17M5YBKjzoMA4WaJsJo=;
+ b=QLJeC6BHzcIAkVS1zVcP9AF3oaZ+HSVbXcDrbUBwlEw/kktEMdI+1S3Z
+ QoFSNCEOLPT8N628xGEbE2y8kLlw1BFspu8Yf3zk9Q/PrcIeGesdvSbpa
+ GhPw6g9fjqE41IaFRofjl2hDiCXHTBiP4ERWN3HEuCHQOClzG+QKZMFnu
+ +ZFpKyJirs7LgJI7FNEiaxm9ffzlXH3z1/BEFqDy5PYT2d5yyw2IUqwG7
+ qeym6yef25bkChmfSIvKw3nUb0fXflQhi4QZcN/yMq1aALdFUfTXiUDdk
+ lrcTCy6CoJvpTT++rfEAiI2ZgU5pil7wX8RuRKxyyb2jYprKOd0TCwjnI
+ w==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=QIFKPoAO
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/3] ice: prefix clock timer
- command enumeration values with ICE_PTP
+ header.a=rsa-sha256 header.s=Intel header.b=QLJeC6BH
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] ice: avoid executing commands
+ on other ports when driving sync
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,326 +98,77 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sergey Temerkhanov <sergey.temerkhanov@intel.com>,
- Anthony Nguyen <anthony.l.nguyen@intel.com>
+Cc: siddaraju.dh@intel.com, Anthony Nguyen <anthony.l.nguyen@intel.com>,
+ oe-kbuild-all@lists.linux.dev
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
+Hi Jacob,
 
-The ice driver has an enumeration for the various commands that can be
-programmed to the MAC and PHY for setting up hardware clock operations.
-Prefix these with ICE_PTP so that they are clearly namespaced to the ice
-driver.
+kernel test robot noticed the following build warnings:
 
-Signed-off-by: Sergey Temerkhanov <sergey.temerkhanov@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 90 ++++++++++-----------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 10 +--
- 2 files changed, 50 insertions(+), 50 deletions(-)
+[auto build test WARNING on tnguy-net-queue/dev-queue]
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index de1d83300481..8f86767adfdb 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -116,19 +116,19 @@ static void ice_ptp_src_cmd(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
- 	cmd_val = tmr_idx << SEL_CPK_SRC;
- 
- 	switch (cmd) {
--	case INIT_TIME:
-+	case ICE_PTP_INIT_TIME:
- 		cmd_val |= GLTSYN_CMD_INIT_TIME;
- 		break;
--	case INIT_INCVAL:
-+	case ICE_PTP_INIT_INCVAL:
- 		cmd_val |= GLTSYN_CMD_INIT_INCVAL;
- 		break;
--	case ADJ_TIME:
-+	case ICE_PTP_ADJ_TIME:
- 		cmd_val |= GLTSYN_CMD_ADJ_TIME;
- 		break;
--	case ADJ_TIME_AT_TIME:
-+	case ICE_PTP_ADJ_TIME_AT_TIME:
- 		cmd_val |= GLTSYN_CMD_ADJ_INIT_TIME;
- 		break;
--	case READ_TIME:
-+	case ICE_PTP_READ_TIME:
- 		cmd_val |= GLTSYN_CMD_READ_TIME;
- 		break;
- 	case ICE_PTP_NOP:
-@@ -1025,7 +1025,7 @@ static int ice_ptp_init_phc_e822(struct ice_hw *hw)
-  * @time: Time to initialize the PHY port clocks to
-  *
-  * Program the PHY port registers with a new initial time value. The port
-- * clock will be initialized once the driver issues an INIT_TIME sync
-+ * clock will be initialized once the driver issues an ICE_PTP_INIT_TIME sync
-  * command. The time value is the upper 32 bits of the PHY timer, usually in
-  * units of nominal nanoseconds.
-  */
-@@ -1074,7 +1074,7 @@ ice_ptp_prep_phy_time_e822(struct ice_hw *hw, u32 time)
-  *
-  * Program the port for an atomic adjustment by writing the Tx and Rx timer
-  * registers. The atomic adjustment won't be completed until the driver issues
-- * an ADJ_TIME command.
-+ * an ICE_PTP_ADJ_TIME command.
-  *
-  * Note that time is not in units of nanoseconds. It is in clock time
-  * including the lower sub-nanosecond portion of the port timer.
-@@ -1127,7 +1127,7 @@ ice_ptp_prep_port_adj_e822(struct ice_hw *hw, u8 port, s64 time)
-  *
-  * Prepare the PHY ports for an atomic time adjustment by programming the PHY
-  * Tx and Rx port registers. The actual adjustment is completed by issuing an
-- * ADJ_TIME or ADJ_TIME_AT_TIME sync command.
-+ * ICE_PTP_ADJ_TIME or ICE_PTP_ADJ_TIME_AT_TIME sync command.
-  */
- static int
- ice_ptp_prep_phy_adj_e822(struct ice_hw *hw, s32 adj)
-@@ -1162,7 +1162,7 @@ ice_ptp_prep_phy_adj_e822(struct ice_hw *hw, s32 adj)
-  *
-  * Prepare each of the PHY ports for a new increment value by programming the
-  * port's TIMETUS registers. The new increment value will be updated after
-- * issuing an INIT_INCVAL command.
-+ * issuing an ICE_PTP_INIT_INCVAL command.
-  */
- static int
- ice_ptp_prep_phy_incval_e822(struct ice_hw *hw, u64 incval)
-@@ -1248,19 +1248,19 @@ ice_ptp_write_port_cmd_e822(struct ice_hw *hw, u8 port, enum ice_ptp_tmr_cmd cmd
- 	tmr_idx = ice_get_ptp_src_clock_index(hw);
- 	cmd_val = tmr_idx << SEL_PHY_SRC;
- 	switch (cmd) {
--	case INIT_TIME:
-+	case ICE_PTP_INIT_TIME:
- 		cmd_val |= PHY_CMD_INIT_TIME;
- 		break;
--	case INIT_INCVAL:
-+	case ICE_PTP_INIT_INCVAL:
- 		cmd_val |= PHY_CMD_INIT_INCVAL;
- 		break;
--	case ADJ_TIME:
-+	case ICE_PTP_ADJ_TIME:
- 		cmd_val |= PHY_CMD_ADJ_TIME;
- 		break;
--	case READ_TIME:
-+	case ICE_PTP_READ_TIME:
- 		cmd_val |= PHY_CMD_READ_TIME;
- 		break;
--	case ADJ_TIME_AT_TIME:
-+	case ICE_PTP_ADJ_TIME_AT_TIME:
- 		cmd_val |= PHY_CMD_ADJ_TIME_AT_TIME;
- 		break;
- 	case ICE_PTP_NOP:
-@@ -2196,8 +2196,8 @@ int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port)
-  * @phy_time: on return, the 64bit PHY timer value
-  * @phc_time: on return, the lower 64bits of PHC time
-  *
-- * Issue a READ_TIME timer command to simultaneously capture the PHY and PHC
-- * timer values.
-+ * Issue a ICE_PTP_READ_TIME timer command to simultaneously capture the PHY
-+ * and PHC timer values.
-  */
- static int
- ice_read_phy_and_phc_time_e822(struct ice_hw *hw, u8 port, u64 *phy_time,
-@@ -2210,15 +2210,14 @@ ice_read_phy_and_phc_time_e822(struct ice_hw *hw, u8 port, u64 *phy_time,
- 
- 	tmr_idx = ice_get_ptp_src_clock_index(hw);
- 
--	/* Prepare the PHC timer for a READ_TIME capture command */
--	ice_ptp_src_cmd(hw, READ_TIME);
-+	/* Prepare the PHC timer for a ICE_PTP_READ_TIME capture command */
-+	ice_ptp_src_cmd(hw, ICE_PTP_READ_TIME);
- 
--	/* Prepare the PHY timer for a READ_TIME capture command */
--	err = ice_ptp_one_port_cmd(hw, port, READ_TIME);
-+	/* Prepare the PHY timer for a ICE_PTP_READ_TIME capture command */
-+	err = ice_ptp_one_port_cmd(hw, port, ICE_PTP_READ_TIME);
- 	if (err)
--		return err;
- 
--	/* Issue the sync to start the READ_TIME capture */
-+	/* Issue the sync to start the ICE_PTP_READ_TIME capture */
- 	ice_ptp_exec_tmr_cmd(hw);
- 
- 	/* Read the captured PHC time from the shadow time registers */
-@@ -2252,10 +2251,11 @@ ice_read_phy_and_phc_time_e822(struct ice_hw *hw, u8 port, u64 *phy_time,
-  * @port: the PHY port to synchronize
-  *
-  * Perform an adjustment to ensure that the PHY and PHC timers are in sync.
-- * This is done by issuing a READ_TIME command which triggers a simultaneous
-- * read of the PHY timer and PHC timer. Then we use the difference to
-- * calculate an appropriate 2s complement addition to add to the PHY timer in
-- * order to ensure it reads the same value as the primary PHC timer.
-+ * This is done by issuing a ICE_PTP_READ_TIME command which triggers a
-+ * simultaneous read of the PHY timer and PHC timer. Then we use the
-+ * difference to calculate an appropriate 2s complement addition to add
-+ * to the PHY timer in order to ensure it reads the same value as the
-+ * primary PHC timer.
-  */
- static int ice_sync_phy_timer_e822(struct ice_hw *hw, u8 port)
- {
-@@ -2285,7 +2285,7 @@ static int ice_sync_phy_timer_e822(struct ice_hw *hw, u8 port)
- 	if (err)
- 		goto err_unlock;
- 
--	err = ice_ptp_one_port_cmd(hw, port, ADJ_TIME);
-+	err = ice_ptp_one_port_cmd(hw, port, ICE_PTP_ADJ_TIME);
- 	if (err)
- 		goto err_unlock;
- 
-@@ -2408,7 +2408,7 @@ int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port)
- 	if (err)
- 		return err;
- 
--	err = ice_ptp_one_port_cmd(hw, port, INIT_INCVAL);
-+	err = ice_ptp_one_port_cmd(hw, port, ICE_PTP_INIT_INCVAL);
- 	if (err)
- 		return err;
- 
-@@ -2436,7 +2436,7 @@ int ice_start_phy_timer_e822(struct ice_hw *hw, u8 port)
- 	if (err)
- 		return err;
- 
--	err = ice_ptp_one_port_cmd(hw, port, INIT_INCVAL);
-+	err = ice_ptp_one_port_cmd(hw, port, ICE_PTP_INIT_INCVAL);
- 	if (err)
- 		return err;
- 
-@@ -2757,7 +2757,7 @@ static int ice_ptp_init_phc_e810(struct ice_hw *hw)
-  *
-  * Program the PHY port ETH_GLTSYN_SHTIME registers in preparation setting the
-  * initial clock time. The time will not actually be programmed until the
-- * driver issues an INIT_TIME command.
-+ * driver issues an ICE_PTP_INIT_TIME command.
-  *
-  * The time value is the upper 32 bits of the PHY timer, usually in units of
-  * nominal nanoseconds.
-@@ -2792,7 +2792,7 @@ static int ice_ptp_prep_phy_time_e810(struct ice_hw *hw, u32 time)
-  *
-  * Prepare the PHY port for an atomic adjustment by programming the PHY
-  * ETH_GLTSYN_SHADJ_L and ETH_GLTSYN_SHADJ_H registers. The actual adjustment
-- * is completed by issuing an ADJ_TIME sync command.
-+ * is completed by issuing an ICE_PTP_ADJ_TIME sync command.
-  *
-  * The adjustment value only contains the portion used for the upper 32bits of
-  * the PHY timer, usually in units of nominal nanoseconds. Negative
-@@ -2832,7 +2832,7 @@ static int ice_ptp_prep_phy_adj_e810(struct ice_hw *hw, s32 adj)
-  *
-  * Prepare the PHY port for a new increment value by programming the PHY
-  * ETH_GLTSYN_SHADJ_L and ETH_GLTSYN_SHADJ_H registers. The actual change is
-- * completed by issuing an INIT_INCVAL command.
-+ * completed by issuing an ICE_PTP_INIT_INCVAL command.
-  */
- static int ice_ptp_prep_phy_incval_e810(struct ice_hw *hw, u64 incval)
- {
-@@ -2875,19 +2875,19 @@ static int ice_ptp_port_cmd_e810(struct ice_hw *hw, enum ice_ptp_tmr_cmd cmd)
- 	int err;
- 
- 	switch (cmd) {
--	case INIT_TIME:
-+	case ICE_PTP_INIT_TIME:
- 		cmd_val = GLTSYN_CMD_INIT_TIME;
- 		break;
--	case INIT_INCVAL:
-+	case ICE_PTP_INIT_INCVAL:
- 		cmd_val = GLTSYN_CMD_INIT_INCVAL;
- 		break;
--	case ADJ_TIME:
-+	case ICE_PTP_ADJ_TIME:
- 		cmd_val = GLTSYN_CMD_ADJ_TIME;
- 		break;
--	case READ_TIME:
-+	case ICE_PTP_READ_TIME:
- 		cmd_val = GLTSYN_CMD_READ_TIME;
- 		break;
--	case ADJ_TIME_AT_TIME:
-+	case ICE_PTP_ADJ_TIME_AT_TIME:
- 		cmd_val = GLTSYN_CMD_ADJ_INIT_TIME;
- 		break;
- 	case ICE_PTP_NOP:
-@@ -3040,7 +3040,7 @@ int ice_ptp_init_time(struct ice_hw *hw, u64 time)
- 	if (err)
- 		return err;
- 
--	return ice_ptp_tmr_cmd(hw, INIT_TIME);
-+	return ice_ptp_tmr_cmd(hw, ICE_PTP_INIT_TIME);
- }
- 
- /**
-@@ -3053,8 +3053,8 @@ int ice_ptp_init_time(struct ice_hw *hw, u64 time)
-  *
-  * 1) Write the increment value to the source timer shadow registers
-  * 2) Write the increment value to the PHY timer shadow registers
-- * 3) Issue an INIT_INCVAL timer command to synchronously switch both the
-- *    source and port timers to the new increment value at the next clock
-+ * 3) Issue an ICE_PTP_INIT_INCVAL timer command to synchronously switch both
-+ *    the source and port timers to the new increment value at the next clock
-  *    cycle.
-  */
- int ice_ptp_write_incval(struct ice_hw *hw, u64 incval)
-@@ -3075,7 +3075,7 @@ int ice_ptp_write_incval(struct ice_hw *hw, u64 incval)
- 	if (err)
- 		return err;
- 
--	return ice_ptp_tmr_cmd(hw, INIT_INCVAL);
-+	return ice_ptp_tmr_cmd(hw, ICE_PTP_INIT_INCVAL);
- }
- 
- /**
-@@ -3109,8 +3109,8 @@ int ice_ptp_write_incval_locked(struct ice_hw *hw, u64 incval)
-  *
-  * 1) Write the adjustment to the source timer shadow registers
-  * 2) Write the adjustment to the PHY timer shadow registers
-- * 3) Issue an ADJ_TIME timer command to synchronously apply the adjustment to
-- *    both the source and port timers at the next clock cycle.
-+ * 3) Issue an ICE_PTP_ADJ_TIME timer command to synchronously apply the
-+ *    adjustment to both the source and port timers at the next clock cycle.
-  */
- int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj)
- {
-@@ -3120,7 +3120,7 @@ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj)
- 	tmr_idx = hw->func_caps.ts_func_info.tmr_index_owned;
- 
- 	/* Write the desired clock adjustment into the GLTSYN_SHADJ register.
--	 * For an ADJ_TIME command, this set of registers represents the value
-+	 * For an ICE_PTP_ADJ_TIME command, this set of registers represents the value
- 	 * to add to the clock time. It supports subtraction by interpreting
- 	 * the value as a 2's complement integer.
- 	 */
-@@ -3134,7 +3134,7 @@ int ice_ptp_adj_clock(struct ice_hw *hw, s32 adj)
- 	if (err)
- 		return err;
- 
--	return ice_ptp_tmr_cmd(hw, ADJ_TIME);
-+	return ice_ptp_tmr_cmd(hw, ICE_PTP_ADJ_TIME);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 096685237ca6..63e80c5c77a6 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -5,11 +5,11 @@
- #define _ICE_PTP_HW_H_
- 
- enum ice_ptp_tmr_cmd {
--	INIT_TIME,
--	INIT_INCVAL,
--	ADJ_TIME,
--	ADJ_TIME_AT_TIME,
--	READ_TIME,
-+	ICE_PTP_INIT_TIME,
-+	ICE_PTP_INIT_INCVAL,
-+	ICE_PTP_ADJ_TIME,
-+	ICE_PTP_ADJ_TIME_AT_TIME,
-+	ICE_PTP_READ_TIME,
- 	ICE_PTP_NOP,
- };
- 
+url:    https://github.com/intel-lab-lkp/linux/commits/Jacob-Keller/ice-avoid-executing-commands-on-other-ports-when-driving-sync/20230726-043405
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
+patch link:    https://lore.kernel.org/r/20230725203125.508243-1-jacob.e.keller%40intel.com
+patch subject: [Intel-wired-lan] [PATCH iwl-net] ice: avoid executing commands on other ports when driving sync
+config: loongarch-allyesconfig (https://download.01.org/0day-ci/archive/20230726/202307260524.gD96xyN6-lkp@intel.com/config)
+compiler: loongarch64-linux-gcc (GCC) 12.3.0
+reproduce: (https://download.01.org/0day-ci/archive/20230726/202307260524.gD96xyN6-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202307260524.gD96xyN6-lkp@intel.com/
+
+All warnings (new ones prefixed by >>):
+
+>> drivers/net/ethernet/intel/ice/ice_ptp_hw.c:1326: warning: expecting prototype for ice_ptp_one_port_cmd_e822(). Prototype was for ice_ptp_one_port_cmd() instead
+
+
+vim +1326 drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+
+  1312	
+  1313	/**
+  1314	 * ice_ptp_one_port_cmd_e822 - Prepare one port for a timer command
+  1315	 * @hw: pointer to the HW struct
+  1316	 * @configured_port: the port to configure with configured_cmd
+  1317	 * @configured_cmd: timer command to prepare on the configured_port
+  1318	 *
+  1319	 * Prepare the configured_port for the configured_cmd, and prepare all other
+  1320	 * ports for ICE_PTP_NOP. This causes the configured_port to execute the
+  1321	 * desired command while all other ports perform no operation.
+  1322	 */
+  1323	static int
+  1324	ice_ptp_one_port_cmd(struct ice_hw *hw, u8 configured_port,
+  1325			     enum ice_ptp_tmr_cmd configured_cmd)
+> 1326	{
+  1327		u8 port;
+  1328	
+  1329		for (port = 0; port < ICE_NUM_EXTERNAL_PORTS; port++) {
+  1330			enum ice_ptp_tmr_cmd cmd;
+  1331			int err;
+  1332	
+  1333			if (port == configured_port)
+  1334				cmd = configured_cmd;
+  1335			else
+  1336				cmd = ICE_PTP_NOP;
+  1337	
+  1338			err = ice_ptp_write_port_cmd_e822(hw, port, cmd);
+  1339			if (err)
+  1340				return err;
+  1341		}
+  1342	
+  1343		return 0;
+  1344	}
+  1345	
+
 -- 
-2.41.0.1.g9857a21e0017.dirty
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
