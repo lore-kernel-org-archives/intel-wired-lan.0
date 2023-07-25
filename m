@@ -1,84 +1,83 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0841EB64DD
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Jul 2023 05:40:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31BDEC00528
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 25 Jul 2023 08:11:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8209A60A97;
-	Tue, 25 Jul 2023 05:40:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8209A60A97
+	by smtp2.osuosl.org (Postfix) with ESMTP id B8E3040523;
+	Tue, 25 Jul 2023 08:11:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B8E3040523
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690263657;
-	bh=2km1j446m1tRXdn3jKKc2oavjNhp1dIHA7lx7EJfqjg=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=0v7pz7xk/V96kNrXRcO9jJaCulkU65aABwu8D6flUd82XpNUO22LJvTqy+d3Y6UKM
-	 LM8efx3aQoN7/TCcQCtPbzrw5glvtEtJezWIFaYWmHQ+czX3+DrtwGkFYq4Exzek9/
-	 65L5bWJptRZWhM+HPswq3A9vs5/i0OVDNCKNMuvaQpFNelqs9pVqrfSKUry1jumzZZ
-	 h5iM54rbM1Tj91TFYU5SKUh2GKw2RZIzQKBcXv2AAe/xQwISpcoI5mIWTSP4OOL5lv
-	 izqKbERKXkfMm/14Ez9/h1r/Ctf5Bf04HzpwycIzZpgyeCOiylCj8iYjcCjhpbYSCE
-	 bdGgcMGM81yWQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9K-r8_deAbrv; Tue, 25 Jul 2023 05:40:56 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A1A0960A9C;
-	Tue, 25 Jul 2023 05:40:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A1A0960A9C
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 440DA1BF980
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 05:40:54 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 1DBAF40461
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 05:40:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1DBAF40461
+	s=default; t=1690272675;
+	bh=8Hhqwrw/9iyLdPDxtzttmIXnIn/HvYWn3qBrGKPTahY=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=aQy5+sTxY4ewUiQ+G+4zFuIb/HGkSAsibMTKE0cgo9NE6gGebwXppLvGng0xP162d
+	 DuWE8FqzlcP0RDZATao5mq5PrYPmpKQB/qLq3fZWqnUbSKSs1TrFZtqebhdpbTpXqf
+	 QhCzFmMUkiR7lPi/VHpnnUw/sSbeWQRSOPyuShmwW+/lRMjfa3wIkdeRfYtElMA+CA
+	 IZWLSGNekDAIsWgPy++4g9yF9LWc4a33bTz86WbNfCvoFrEUx3fzcvIlGJZCSpmfk/
+	 rCbKb0XaTWQlU9HQLINk71hhN9E9jkPy2BLUjW2Uz0ik21yM/YbmJLtQqaj317xjqg
+	 qlGjOe/DyItzQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gjjBtHmQ66FP for <intel-wired-lan@lists.osuosl.org>;
- Tue, 25 Jul 2023 05:40:53 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 5D89C4028D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 05:40:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5D89C4028D
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id EFD546153A;
- Tue, 25 Jul 2023 05:40:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A12EEC433C7;
- Tue, 25 Jul 2023 05:40:50 +0000 (UTC)
-Date: Tue, 25 Jul 2023 08:40:46 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Jakub Kicinski <kuba@kernel.org>
-Message-ID: <20230725054046.GK11388@unreal>
-References: <20230723075042.3709043-1-linma@zju.edu.cn>
- <20230724174435.GA11388@unreal>
- <20230724142155.13c83625@kernel.org>
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id d6TGs-tyO3KQ; Tue, 25 Jul 2023 08:11:15 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp2.osuosl.org (Postfix) with ESMTP id C96D5402F6;
+	Tue, 25 Jul 2023 08:11:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C96D5402F6
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 145DC1BF295
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 08:11:13 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id DE5AA41527
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 08:11:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DE5AA41527
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id CWUS7dyo9CtF for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 25 Jul 2023 08:11:11 +0000 (UTC)
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 9FA20409AA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 25 Jul 2023 08:11:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9FA20409AA
+X-IronPort-AV: E=McAfee;i="6600,9927,10781"; a="367675284"
+X-IronPort-AV: E=Sophos;i="6.01,230,1684825200"; d="scan'208";a="367675284"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 25 Jul 2023 01:11:10 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="869378384"
+Received: from gk3153-or4-r750-36948.igk.intel.com ([10.102.19.252])
+ by fmsmga001.fm.intel.com with ESMTP; 25 Jul 2023 01:11:11 -0700
+From: Olga Zaborska <olga.zaborska@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue, 25 Jul 2023 10:10:55 +0200
+Message-Id: <20230725081058.92158-1-olga.zaborska@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20230724142155.13c83625@kernel.org>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1690263651;
- bh=VEjQx7H1H+Mb+AJoPV4BZFXw7TX8zA9RwisdpdkLNwY=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=tFXTRYo1hIredh5OpbIa/0sE9HPeA7+c/oG6J17Iqb7+3ofR0Zj0Mj6PmdnelcXVd
- 4xbcYRK408jG39EjjZQF+NI1oyAQjemYoD8HN9rk9d4R+CB1LdxuclPhx9oJ8k12xb
- HDpOHt1NG/1aRVJieW+CeGukcrf/9rOv6M9d3LJJP0CmvNrrH7TkQDl27SgmEUqZyr
- 4FBNNp6wAJA9VuMpZMysRlqUr3bQ9kGbKvmLVS1om/cD9WOzgxZwjpu1ZxexWyt/zy
- 8mIDWKZq57LQHlaxDZUX7F02niWvQMbDKVnnZ/s9IPRucVshhg5NLF027Tdz7nXIpc
- EwUDUWkAfXT6Q==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=tFXTRYo1
-Subject: Re: [Intel-wired-lan] [PATCH v1] i40e: Add length check for
- IFLA_AF_SPEC parsing
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1690272671; x=1721808671;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=DHBTLSs3z5tZF13kV/u8tC/3dwxEvB51vMJtvDi6Rak=;
+ b=KxzcZ5BNNkGg0iU/JZScpTC9Z1Jc3RkkpDWvlI6Z70JmbuWaC2BY6Ywi
+ hXsB6n5MTtDVAKBAPp8Yb3BixHnhJEO5eYbEQXs60sca/yPQlOjI4J43K
+ oBok6RTMk45f+j4lFBhzxEoAl7xRjekQvr8/PZAUNS6BUFMYhp9lX+VLZ
+ kRBqoNJ3kZk3bdgOO7Sx+dixccpZ/pPaouc+mZ0R6fqDogLj8JTQGqjy7
+ KSKo2rpE0gmCH5rpWjlusv18WORmfVqc0koEUOEWJOOi7TQGwHhSIlkl/
+ dNObPBeoiEhmX3J1xpN5TpbCfU4FeTIWYwrs9PwG7uRE8VILJjSg7S2Vy
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=KxzcZ5BN
+Subject: [Intel-wired-lan] [PATCH iwl-net v4 0/3] Change MIN_TXD and MIN_RXD
+ to allow set rx/tx value between 64 and 80
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,44 +90,32 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: ast@kernel.org, hawk@kernel.org, daniel@iogearbox.net,
- netdev@vger.kernel.org, richardcochran@gmail.com, john.fastabend@gmail.com,
- jesse.brandeburg@intel.com, Lin Ma <linma@zju.edu.cn>, edumazet@google.com,
- anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org,
- pabeni@redhat.com, davem@davemloft.net, linux-kernel@vger.kernel.org
+Cc: Olga Zaborska <olga.zaborska@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Jul 24, 2023 at 02:21:55PM -0700, Jakub Kicinski wrote:
-> On Mon, 24 Jul 2023 20:44:35 +0300 Leon Romanovsky wrote:
-> > > @@ -13186,6 +13186,9 @@ static int i40e_ndo_bridge_setlink(struct net_device *dev,
-> > >  		if (nla_type(attr) != IFLA_BRIDGE_MODE)
-> > >  			continue;
-> > >  
-> > > +		if (nla_len(attr) < sizeof(mode))
-> > > +			return -EINVAL;
-> > > +  
-> > 
-> > I see that you added this hunk to all users of nla_for_each_nested(), it
-> > will be great to make that iterator to skip such empty attributes.
-> > 
-> > However, i don't know nettlink good enough to say if your change is
-> > valid in first place.
-> 
-> Empty attributes are valid, we can't do that.
+Change the minimum value of RX/TX descriptors to 64 to enabl'e setting the rx/tx value
+between 64 and 80. All igb, igbf and igc devices can use as low as 64 descriptors.
 
-Maybe Lin can add special version of nla_for_each_nested() which will
-skip these empty NLAs, for code which don't allow empty attributes.
+Olga Zaborska (3):
+  igc: Change IGC_MIN to allow set rx/tx value between 64 and 80
+  igbvf: Change IGBVF_MIN to allow set rx/tx value between 64 and 80
+  igb: Change IGB_MIN to allow set rx/tx value between 64 and 80 Change
+    the minimum value of RX/TX descriptors to 64 to enable setting the
+    rx/tx value between 64 and 80. All igb devices can use as low as 64
+    descriptors. This change will unify igb with other drivers. Based on
+    commit 7b1be1987c1e ("e1000e: lower ring minimum size to 64")
 
-> 
-> But there's a loop in rtnl_bridge_setlink() which checks the attributes.
-> We can add the check there instead of all users, as Leon points out.
-> (Please just double check that all ndo_bridge_setlink implementation
-> expect this value to be a u16, they should/)
-> -- 
-> pw-bot: cr
+ drivers/net/ethernet/intel/igb/igb.h     | 4 ++--
+ drivers/net/ethernet/intel/igbvf/igbvf.h | 4 ++--
+ drivers/net/ethernet/intel/igc/igc.h     | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+-- 
+2.31.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
