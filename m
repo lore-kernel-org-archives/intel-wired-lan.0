@@ -4,82 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6906DC001DC
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 26 Jul 2023 07:52:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7EAFC001DE
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 26 Jul 2023 07:56:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F153341C53;
-	Wed, 26 Jul 2023 07:52:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F153341C53
+	by smtp2.osuosl.org (Postfix) with ESMTP id 518AA4051A;
+	Wed, 26 Jul 2023 07:56:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 518AA4051A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690357959;
-	bh=89oGqwiy00VcFaneyYkh/xpVK6ZKYSxznrMl7wYHdGE=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=CGQh1hpIctDo+O+onsEWmTMeZTlIDKPX35WsHvgGcWfyUtuxEuwdHAT+k37HzJ7U0
-	 ld1NrtxpNr5QvckR1IcTUx7Ha062ksUuO9kTZ9MFDfWezskGFTZrMtyBirp8KdgR03
-	 OveVmBHjB86A+AwG0rLNknasaCSBK3hEvruzZQGs7VDF0PDTO+tRAvHxqQ7qaP0p7D
-	 F713cuPV2oWRJxkQvEKe47j85EYVr9/NV07puCGFBvBDwGr6zl8THgNj+YbNDFIyon
-	 cb0EbyQrqreGhE9KtpiuNBMg0kGTpfzM8VR346ZfGWwjBZh9qVBMWuXg0PfDHN8wqE
-	 N5ksBOjtLHN6A==
+	s=default; t=1690358193;
+	bh=qXuJt8gLrKcDceSsKiEUT6Ol09akchSk4MgK8fMQ5QU=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 From;
+	b=D8vJ6S95QoJ00Lvj0LNJaHE21AMTwqVsYHu2HZu1wzjfFipziWSojV1gAQhfj7g4T
+	 /YpaToIltLdIBTLn2ZfmBjLZd/uOBQi6pxe1Xco0oW+vFVVO9o8tOU0AMRARET//Sh
+	 qvJtSRRAh54JQ3QKsDGf/MGGfz9RMjdeU1yEelPwnZGbHS3PL8S0BkZDUW0l22/A24
+	 DXCuIqjb2rYkJ1kmy1i1CYZ3x/Hb0Ub51pN9PGFZcVnK2MkuRMdYoLLj/SiC32GAgp
+	 K2m8Avpddmg+9Y5bXT0EPe80FuIJP4/EPM/RYepbxTmxzviJZ2ixR8GAa265Ll2C0K
+	 R/NzdGrhjOxlg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id H8t_E92VLm1P; Wed, 26 Jul 2023 07:52:38 +0000 (UTC)
+	with ESMTP id dSz3Ee6n8cIh; Wed, 26 Jul 2023 07:56:32 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id EC3C041C30;
-	Wed, 26 Jul 2023 07:52:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EC3C041C30
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 769D91BF592
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Jul 2023 07:52:35 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 44CAE4051F;
+	Wed, 26 Jul 2023 07:56:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 44CAE4051F
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 5A6241BF592
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Jul 2023 07:56:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 5971441C3B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Jul 2023 07:52:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5971441C3B
+ by smtp4.osuosl.org (Postfix) with ESMTP id 2D61C41B66
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Jul 2023 07:56:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2D61C41B66
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zAEkyA2asBFL for <intel-wired-lan@lists.osuosl.org>;
- Wed, 26 Jul 2023 07:52:34 +0000 (UTC)
-Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
- by smtp2.osuosl.org (Postfix) with ESMTPS id F416A4051A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Jul 2023 07:52:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F416A4051A
-X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="431747954"
-X-IronPort-AV: E=Sophos;i="6.01,231,1684825200"; d="scan'208";a="431747954"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 26 Jul 2023 00:52:32 -0700
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ZTXgneBtCAte for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 26 Jul 2023 07:56:29 +0000 (UTC)
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id ECC7041B97
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 26 Jul 2023 07:56:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ECC7041B97
+X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="371554998"
+X-IronPort-AV: E=Sophos;i="6.01,231,1684825200"; d="scan'208";a="371554998"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 26 Jul 2023 00:49:24 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="840173363"
-X-IronPort-AV: E=Sophos;i="6.01,231,1684825200"; d="scan'208";a="840173363"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga002.fm.intel.com with ESMTP; 26 Jul 2023 00:52:31 -0700
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Date: Wed, 26 Jul 2023 09:52:30 +0200
-Message-Id: <20230726075230.2848653-1-aleksandr.loktionov@intel.com>
-X-Mailer: git-send-email 2.25.1
+X-IronPort-AV: E=McAfee;i="6600,9927,10782"; a="720364450"
+X-IronPort-AV: E=Sophos;i="6.01,231,1684825200"; d="scan'208";a="720364450"
+Received: from s240.igk.intel.com (HELO DevelopmentVM.nql.local)
+ ([10.102.18.202])
+ by orsmga007.jf.intel.com with ESMTP; 26 Jul 2023 00:49:23 -0700
+From: Jan Sokolowski <jan.sokolowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed, 26 Jul 2023 09:53:14 +0200
+Message-Id: <20230726075314.101816-2-jan.sokolowski@intel.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20230726075314.101816-1-jan.sokolowski@intel.com>
+References: <20230726075314.101816-1-jan.sokolowski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1690357953; x=1721893953;
- h=from:to:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=/DRagek/IuGbcn0tXSTxu+Qcj8U2IxtFYoK9rn2ABUE=;
- b=Sgdiq3U2dLcHU3xsjyFqIk89pWKzj+NH06GwwIs0z26pgl7AZ3VEos7M
- psIHLhg5mYzmQN0nn2fCSj8lFTjLtqukdxmrcBTa1djlzymn3Yyuj199f
- FtVACu/11hB+M77K7Q+Pgt5QNzwQktg4KJGMVX+LIxxI8uzoUr66eVa+d
- OQ3Vy7P8ot4eWcuA4IRMyW+AlcoOMncdQeN5rgqD/o/W9QyJhqPRPTKNs
- pwZh7fHxE6a/jkfLDd1o5gLbrAKrWAnLPbgPdf7agyLbqdebaNYx5PW0e
- H7jziKRV2NGl89rBGjP2wDxpJVHPfxtB6ynv1mkyv+l37gJW2IIevNsK3
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ t=1690358188; x=1721894188;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=8Dz1JaLU4WTsD4oD/JXa2o3zVoHsnYwaYEtKsSMOk9U=;
+ b=Iw1pubzAvM/aeidO0BcmEIehjwNQxTyD8XO4l3gxp6qylSEnPWaD+pGf
+ wGHFF8gtbKQhDmAmv49NStGIqzCTKKhCNC0JLHmyQ8vI7GfGjodxpKd0Z
+ /2Exu3RaPyQbeJmqarMMqcyU88XYu8f+vDrUWISHEYwPT81LxMDJ232+A
+ GseRvLR7iUsj1j1KJu8sj7lJTY+tPPPF6DLHKqwx9/Hww/enQZbBH48/w
+ u4rf5HMQfqTS26qRA1ZquvcXDQR05svb+XEpEzqTXSydOuGmKIDTAJAkL
+ Ghf299Fa0sUEvZsN6WszS1vzi21e9ALRUPHlX6GB9LzjyDPhvkZOqibHb
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Sgdiq3U2
-Subject: [Intel-wired-lan] [PATCH iwl-net v3] i40e: fix livelocks in
- i40e_reset_subtask()
+ header.a=rsa-sha256 header.s=Intel header.b=Iw1pubzA
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 2/2] ice: remove unused methods
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,96 +99,175 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Fix livelocks by acquiring rtnl_lock() before any reset related operations.
-Add rtnl_lock()/rtnl_unlock() at top/bottom of i40e_reset_subtask()
-Add check for __I40E_RESET_INTR_RECEIVED bit.
-Add re-entry guard by fast return in case reset is already in progress.
+Following methods were found to no longer be in use:
+ice_is_pca9575_present
+ice_mac_fltr_exist
+ice_napi_del
 
-Fixes: 373149fc99a0 ("i40e: Decrease the scope of rtnl lock")
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
-v2->v3 fix typo in the commit message
-v1->v2 * apply on https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git
----
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 39 +++++++++++----------
- 1 file changed, 20 insertions(+), 19 deletions(-)
+Remove them.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7c30abd..164f7c6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10011,42 +10011,44 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
- {
- 	u32 reset_flags = 0;
- 
--	if (test_bit(__I40E_REINIT_REQUESTED, pf->state)) {
-+	if (test_and_clear_bit(__I40E_REINIT_REQUESTED, pf->state))
- 		reset_flags |= BIT(__I40E_REINIT_REQUESTED);
--		clear_bit(__I40E_REINIT_REQUESTED, pf->state);
--	}
--	if (test_bit(__I40E_PF_RESET_REQUESTED, pf->state)) {
-+	if (test_and_clear_bit(__I40E_PF_RESET_REQUESTED, pf->state))
- 		reset_flags |= BIT(__I40E_PF_RESET_REQUESTED);
--		clear_bit(__I40E_PF_RESET_REQUESTED, pf->state);
--	}
--	if (test_bit(__I40E_CORE_RESET_REQUESTED, pf->state)) {
-+	if (test_and_clear_bit(__I40E_CORE_RESET_REQUESTED, pf->state))
- 		reset_flags |= BIT(__I40E_CORE_RESET_REQUESTED);
--		clear_bit(__I40E_CORE_RESET_REQUESTED, pf->state);
--	}
--	if (test_bit(__I40E_GLOBAL_RESET_REQUESTED, pf->state)) {
-+	if (test_and_clear_bit(__I40E_GLOBAL_RESET_REQUESTED, pf->state))
- 		reset_flags |= BIT(__I40E_GLOBAL_RESET_REQUESTED);
--		clear_bit(__I40E_GLOBAL_RESET_REQUESTED, pf->state);
--	}
--	if (test_bit(__I40E_DOWN_REQUESTED, pf->state)) {
-+	if (test_and_clear_bit(__I40E_DOWN_REQUESTED, pf->state))
- 		reset_flags |= BIT(__I40E_DOWN_REQUESTED);
--		clear_bit(__I40E_DOWN_REQUESTED, pf->state);
--	}
-+	if (test_and_clear_bit(__I40E_RESET_INTR_RECEIVED, pf->state))
-+		reset_flags |= BIT(__I40E_RESET_INTR_RECEIVED);
-+
-+	if (!(reset_flags & (BIT(__I40E_PF_RESET_REQUESTED)
-+			     | BIT(__I40E_CORE_RESET_REQUESTED)
-+			     | BIT(__I40E_GLOBAL_RESET_REQUESTED)
-+			     | BIT(__I40E_RESET_INTR_RECEIVED))))
-+		return;
-+
-+	rtnl_lock();
- 
- 	/* If there's a recovery already waiting, it takes
- 	 * precedence before starting a new reset sequence.
- 	 */
--	if (test_bit(__I40E_RESET_INTR_RECEIVED, pf->state)) {
-+	if (reset_flags & BIT(__I40E_RESET_INTR_RECEIVED)) {
- 		i40e_prep_for_reset(pf);
- 		i40e_reset(pf);
--		i40e_rebuild(pf, false, false);
-+		i40e_rebuild(pf, false, true);
- 	}
- 
- 	/* If we're already down or resetting, just bail */
- 	if (reset_flags &&
- 	    !test_bit(__I40E_DOWN, pf->state) &&
- 	    !test_bit(__I40E_CONFIG_BUSY, pf->state)) {
--		i40e_do_reset(pf, reset_flags, false);
-+		i40e_do_reset(pf, reset_flags, true);
- 	}
-+
-+	rtnl_unlock();
+Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_lib.c    | 15 -------
+ drivers/net/ethernet/intel/ice/ice_lib.h    |  2 -
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 19 --------
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  1 -
+ drivers/net/ethernet/intel/ice/ice_switch.c | 48 ---------------------
+ drivers/net/ethernet/intel/ice/ice_switch.h |  1 -
+ 6 files changed, 86 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 3ff2f32a2ab0..d3fb2b7535e7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -2943,21 +2943,6 @@ void ice_vsi_dis_irq(struct ice_vsi *vsi)
+ 		synchronize_irq(vsi->q_vectors[i]->irq.virq);
  }
  
+-/**
+- * ice_napi_del - Remove NAPI handler for the VSI
+- * @vsi: VSI for which NAPI handler is to be removed
+- */
+-void ice_napi_del(struct ice_vsi *vsi)
+-{
+-	int v_idx;
+-
+-	if (!vsi->netdev)
+-		return;
+-
+-	ice_for_each_q_vector(vsi, v_idx)
+-		netif_napi_del(&vsi->q_vectors[v_idx]->napi);
+-}
+-
  /**
-@@ -10694,7 +10696,6 @@ static void i40e_prep_for_reset(struct i40e_pf *pf)
- 	int ret = 0;
- 	u32 v;
+  * ice_vsi_release - Delete a VSI and free its resources
+  * @vsi: the VSI being removed
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
+index 9f2a361a4d8c..f24f5d1e6f9c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_lib.h
+@@ -91,8 +91,6 @@ void ice_vsi_cfg_netdev_tc(struct ice_vsi *vsi, u8 ena_tc);
+ struct ice_vsi *
+ ice_vsi_setup(struct ice_pf *pf, struct ice_vsi_cfg_params *params);
  
--	clear_bit(__I40E_RESET_INTR_RECEIVED, pf->state);
- 	if (test_and_set_bit(__I40E_RESET_RECOVERY_PENDING, pf->state))
- 		return;
- 	if (i40e_check_asq_alive(&pf->hw))
+-void ice_napi_del(struct ice_vsi *vsi);
+-
+ int ice_vsi_release(struct ice_vsi *vsi);
+ 
+ void ice_vsi_close(struct ice_vsi *vsi);
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+index 4dab0611137a..6cb332bdee8a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
+@@ -3063,25 +3063,6 @@ int ice_read_pca9575_reg_e810t(struct ice_hw *hw, u8 offset, u8 *data)
+ 	return ice_aq_read_i2c(hw, link_topo, 0, addr, 1, data, NULL);
+ }
+ 
+-/**
+- * ice_is_pca9575_present
+- * @hw: pointer to the hw struct
+- *
+- * Check if the SW IO expander is present in the netlist
+- */
+-bool ice_is_pca9575_present(struct ice_hw *hw)
+-{
+-	u16 handle = 0;
+-	int status;
+-
+-	if (!ice_is_e810t(hw))
+-		return false;
+-
+-	status = ice_get_pca9575_handle(hw, &handle);
+-
+-	return !status && handle;
+-}
+-
+ /* Device agnostic functions
+  *
+  * The following functions implement shared behavior common to both E822 and
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+index 8eab12aa8905..da815d001d28 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
+@@ -197,7 +197,6 @@ int ice_phy_cfg_rx_offset_e822(struct ice_hw *hw, u8 port);
+ int ice_read_sma_ctrl_e810t(struct ice_hw *hw, u8 *data);
+ int ice_write_sma_ctrl_e810t(struct ice_hw *hw, u8 data);
+ int ice_read_pca9575_reg_e810t(struct ice_hw *hw, u8 offset, u8 *data);
+-bool ice_is_pca9575_present(struct ice_hw *hw);
+ 
+ void ice_ptp_init_phy_model(struct ice_hw *hw);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index a7afb612fe32..24c3f481848b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -3408,54 +3408,6 @@ ice_remove_rule_internal(struct ice_hw *hw, u8 recp_id,
+ 	return status;
+ }
+ 
+-/**
+- * ice_mac_fltr_exist - does this MAC filter exist for given VSI
+- * @hw: pointer to the hardware structure
+- * @mac: MAC address to be checked (for MAC filter)
+- * @vsi_handle: check MAC filter for this VSI
+- */
+-bool ice_mac_fltr_exist(struct ice_hw *hw, u8 *mac, u16 vsi_handle)
+-{
+-	struct ice_fltr_mgmt_list_entry *entry;
+-	struct list_head *rule_head;
+-	struct ice_switch_info *sw;
+-	struct mutex *rule_lock; /* Lock to protect filter rule list */
+-	u16 hw_vsi_id;
+-
+-	if (!ice_is_vsi_valid(hw, vsi_handle))
+-		return false;
+-
+-	hw_vsi_id = ice_get_hw_vsi_num(hw, vsi_handle);
+-	sw = hw->switch_info;
+-	rule_head = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rules;
+-	if (!rule_head)
+-		return false;
+-
+-	rule_lock = &sw->recp_list[ICE_SW_LKUP_MAC].filt_rule_lock;
+-	mutex_lock(rule_lock);
+-	list_for_each_entry(entry, rule_head, list_entry) {
+-		struct ice_fltr_info *f_info = &entry->fltr_info;
+-		u8 *mac_addr = &f_info->l_data.mac.mac_addr[0];
+-
+-		if (is_zero_ether_addr(mac_addr))
+-			continue;
+-
+-		if (f_info->flag != ICE_FLTR_TX ||
+-		    f_info->src_id != ICE_SRC_ID_VSI ||
+-		    f_info->lkup_type != ICE_SW_LKUP_MAC ||
+-		    f_info->fltr_act != ICE_FWD_TO_VSI ||
+-		    hw_vsi_id != f_info->fwd_id.hw_vsi_id)
+-			continue;
+-
+-		if (ether_addr_equal(mac, mac_addr)) {
+-			mutex_unlock(rule_lock);
+-			return true;
+-		}
+-	}
+-	mutex_unlock(rule_lock);
+-	return false;
+-}
+-
+ /**
+  * ice_vlan_fltr_exist - does this VLAN filter exist for given VSI
+  * @hw: pointer to the hardware structure
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index 0bd4320e39df..db7e501b7e0a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -371,7 +371,6 @@ int ice_add_vlan(struct ice_hw *hw, struct list_head *m_list);
+ int ice_remove_vlan(struct ice_hw *hw, struct list_head *v_list);
+ int ice_add_mac(struct ice_hw *hw, struct list_head *m_lst);
+ int ice_remove_mac(struct ice_hw *hw, struct list_head *m_lst);
+-bool ice_mac_fltr_exist(struct ice_hw *hw, u8 *mac, u16 vsi_handle);
+ bool ice_vlan_fltr_exist(struct ice_hw *hw, u16 vlan_id, u16 vsi_handle);
+ int ice_add_eth_mac(struct ice_hw *hw, struct list_head *em_list);
+ int ice_remove_eth_mac(struct ice_hw *hw, struct list_head *em_list);
 -- 
 2.31.1
 
