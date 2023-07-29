@@ -4,92 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64688C001E0
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 31 Jul 2023 15:16:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 228ADC001DC
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 31 Jul 2023 15:16:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8DA8C6106F;
-	Mon, 31 Jul 2023 15:16:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8DA8C6106F
+	by smtp3.osuosl.org (Postfix) with ESMTP id BCEA860F02;
+	Mon, 31 Jul 2023 15:16:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BCEA860F02
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690816568;
-	bh=lEQUg7N6/4Tmmxm6+6ICJo+oNLsa54XHXZ9OS/cgQlQ=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=twTEBmce+JJ0fMMIOalkYUUtrN0BVpS4vEy5848j9L1t/EXdpI1dnyWRNdcjZs8bR
-	 6d/whQtz4T3+Ud74KyQBDyICcUdIEhcptWlIQtaLkuzROYcHk+OM9WgByGIbpVV63D
-	 4P9xSwgbkjLYNx5kKnb4MNC+kPJjbvZozDE9CsRm0SUlEH/Nfk6m2/vvDIIJuiJ/W5
-	 kuZkvopJ/lhCmlH58ku+ZVw0GyMwsQUf5e7YlpZB4PFOfv5hv5zVDK8hEqtCm+e8tS
-	 H0q/E104P3UAw/aOXHvgFNwjHW7JpWHVxOVbV4Yp5xuhV01r2nuTaZO3yhx/ZTtatV
-	 f80BfZdUxwlXQ==
+	s=default; t=1690816575;
+	bh=KPBJWKzAIhCqga6EuK2/LHblVN50XCTKO21tKjlewU8=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=U4FpZt6bJwbKxDGsstwBYd0xbTdKnDCuurP3mUc3tqhxlQQRNy1whZ5kSAOce7rwv
+	 8uI6875PZiugb9MpgA7qYGpeH19WCYYR57RmMk2Ye3vGrKWKVLQBny1JuN6nMviWrl
+	 SN92QY6ZuZllJz63uVmaWGIvmv9o2bldvIIXC2tOC2+MFGJ/GtDufd+pmdwuAeIw4d
+	 tbm5Zbo864+l0QQmKqdPEDVgCUGYQo/Tua1W5t/Jz8nlprfcZKrdEt5zJWHiZydNUq
+	 G9MR0YBvc7MyphR7fdxAzbX/YdigrjmH8czXGlF8AobAt3dO0DCW2Nr7p/2cm89vi2
+	 4bBsl8hsM8Xjg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wcrL00dBgXBD; Mon, 31 Jul 2023 15:16:03 +0000 (UTC)
+	with ESMTP id eLKVYc7xnc4f; Mon, 31 Jul 2023 15:16:13 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A8B8360A7D;
-	Mon, 31 Jul 2023 15:16:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A8B8360A7D
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 1A47D1BF31F
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jul 2023 23:50:57 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 120856108D;
+	Mon, 31 Jul 2023 15:16:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 120856108D
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 7B7851BF3C2
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 29 Jul 2023 17:39:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id F2B2640498
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jul 2023 23:50:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F2B2640498
+ by smtp3.osuosl.org (Postfix) with ESMTP id 40AAC60A69
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 29 Jul 2023 17:39:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 40AAC60A69
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Lpgf1VCgJMwH for <intel-wired-lan@lists.osuosl.org>;
- Fri, 28 Jul 2023 23:50:54 +0000 (UTC)
-X-Greylist: delayed 1635 seconds by postgrey-1.37 at util1.osuosl.org;
- Fri, 28 Jul 2023 23:50:54 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3E9264020B
-Received: from mx0b-0016f401.pphosted.com (mx0a-0016f401.pphosted.com
- [67.231.148.174])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3E9264020B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 28 Jul 2023 23:50:54 +0000 (UTC)
-Received: from pps.filterd (m0045849.ppops.net [127.0.0.1])
- by mx0a-0016f401.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id
- 36SLTPLd030218; Fri, 28 Jul 2023 16:22:40 -0700
-Received: from dc5-exch02.marvell.com ([199.233.59.182])
- by mx0a-0016f401.pphosted.com (PPS) with ESMTPS id 3s4bd3jh0r-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-SHA384 bits=256 verify=NOT);
- Fri, 28 Jul 2023 16:22:39 -0700
-Received: from DC5-EXCH01.marvell.com (10.69.176.38) by DC5-EXCH02.marvell.com
- (10.69.176.39) with Microsoft SMTP Server (TLS) id 15.0.1497.48;
- Fri, 28 Jul 2023 16:22:37 -0700
-Received: from maili.marvell.com (10.69.176.80) by DC5-EXCH01.marvell.com
- (10.69.176.38) with Microsoft SMTP Server id 15.0.1497.48 via Frontend
- Transport; Fri, 28 Jul 2023 16:22:37 -0700
-Received: from marvell-OptiPlex-7090.marvell.com (unknown [10.28.36.165])
- by maili.marvell.com (Postfix) with ESMTP id B932C3F7090;
- Fri, 28 Jul 2023 16:22:17 -0700 (PDT)
-From: Ratheesh Kannoth <rkannoth@marvell.com>
-To: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Date: Sat, 29 Jul 2023 04:52:15 +0530
-Message-ID: <20230728232215.2071351-1-rkannoth@marvell.com>
-X-Mailer: git-send-email 2.25.1
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 7EcaYPiAGyiU for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 29 Jul 2023 17:39:50 +0000 (UTC)
+Received: from w1.tutanota.de (w1.tutanota.de [81.3.6.162])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 1AB9160746
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 29 Jul 2023 17:39:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1AB9160746
+Received: from tutadb.w10.tutanota.de (unknown [192.168.1.10])
+ by w1.tutanota.de (Postfix) with ESMTP id 65E92FBF8FC;
+ Sat, 29 Jul 2023 17:39:46 +0000 (UTC)
+Date: Sat, 29 Jul 2023 19:39:46 +0200 (CEST)
+From: kkiot@tuta.io
+To: "Zulkifli, Muhammad Husaini" <muhammad.husaini.zulkifli@intel.com>
+Message-ID: <NaXj1Gm--3-9@tuta.io>
+In-Reply-To: <SJ1PR11MB61809DFD99185423133BC9F8B807A@SJ1PR11MB6180.namprd11.prod.outlook.com>
+References: <NaDlWbh--3-9@tuta.io>
+ <c1f53618-359b-3500-cde5-651fd53b9d99@intel.com>
+ <SJ1PR11MB61809DFD99185423133BC9F8B807A@SJ1PR11MB6180.namprd11.prod.outlook.com>
 MIME-Version: 1.0
-X-Proofpoint-GUID: -dncjGWx2QPgeY2p5yDsFBOtjJZDWviV
-X-Proofpoint-ORIG-GUID: -dncjGWx2QPgeY2p5yDsFBOtjJZDWviV
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.957,Hydra:6.0.591,FMLib:17.11.176.26
- definitions=2023-07-27_10,2023-07-26_01,2023-05-22_02
 X-Mailman-Approved-At: Mon, 31 Jul 2023 15:16:02 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=marvell.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-transfer-encoding :
- content-type; s=pfpt0220; bh=QGtK1Bu72K9353KWb4CtyTdltYEVr3bTU5rSatg9PpA=;
- b=d2fSrdaubewNorOyaMWIwHlB29UfufjPArTIWhFh2EsOI7w2Wu6ChTLnUEs96RzEK+Nl
- C+AwgnF4VpvJnhYR204LV/IVb+85Lv31jwkgcm344xXQxvXcX4Xj1UL6miRB+HTjeaAm
- TQR8BtLQn6EC+YHCpuhAo1UL2RfZYWsWjFLIRt9I06WpTrGr6f8YpfXM9dSHAkUDNV6S
- 0DB3cEtSU7FLj/DkQ1+aN86K6Uk99ocOGF8Di/bt57z1dXLyvMm1yrJ1/TorxD+mkXFe
- o7xbx9fyj0ZVTgqUT42Il3cgQG9BrGxFEp8927EQ4F70onuO7uTVV/fcYUbYPd0K2EDi +Q== 
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=marvell.com header.i=@marvell.com
- header.a=rsa-sha256 header.s=pfpt0220 header.b=d2fSrdau
-Subject: [Intel-wired-lan] [PATCH v3 net-next] net: flow_dissector: Use
- 64bits for used_keys
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
+ c=relaxed/relaxed; t=1690652386; 
+ s=s1; d=tuta.io;
+ h=From:From:To:To:Subject:Subject:Content-Description:Content-ID:Content-Type:Content-Type:Content-Transfer-Encoding:Content-Transfer-Encoding:Cc:Cc:Date:Date:In-Reply-To:In-Reply-To:MIME-Version:MIME-Version:Message-ID:Message-ID:Reply-To:References:References:Sender;
+ bh=o3YmWCV4Bm/uHVP1rli1ZMDtt4dpfdgbkOv6zVUtjII=;
+ b=j+34sXLFNIn/JMoaV7UAdSxqDtYauthdelG6nogdgQIAA9WRWnPIONwPeF38qdEF
+ +Qye6n60w2499MCSwKUAzvcjUi/rH639nHE+Yo7RhMgoOOPMpbpiJima1xpj8yePYox
+ 8pd27G9DkKGKWTrJzhoIDcgO6VbGR8W0zaP97sF/ND+X3PqiFdVtZUQqveBdu8kDSDE
+ qRo5Y4KSyMmt9yO2ElAyk6XVivpjEDBpK9+j1VPcQLxUSiLP6yNlKBtQmyQMXuwSpWg
+ P3tQL7dmieUpvisuzyj0h7uWoPJLB/fvBTpzc4GzqniJyqq1w4Ssy+Qmro40YYVg3zz
+ E1Y6LrpipQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key,
+ unprotected) header.d=tuta.io header.i=@tuta.io header.a=rsa-sha256
+ header.s=s1 header.b=j+34sXLF
+Subject: Re: [Intel-wired-lan] PROBLEM: igc driver - Ethernet NIC speed not
+ changing
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,1509 +88,310 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: taras.chornyi@plvision.eu, andrew@lunn.ch, alexandre.belloni@bootlin.com,
- linux-stm32@st-md-mailman.stormreply.com, vladimir.oltean@nxp.com,
- jdamato@fastly.com, kurt@linutronix.de, alexandre.torgue@foss.st.com,
- edumazet@google.com, anthony.l.nguyen@intel.com, ioana.ciornei@nxp.com,
- gerhard@engleder-embedded.com, UNGLinuxDriver@microchip.com,
- horatiu.vultur@microchip.com, lanhao@huawei.com, louis.peens@corigine.com,
- f.fainelli@gmail.com, leon@kernel.org, linux-net-drivers@amd.com,
- Steen.Hegelund@microchip.com, jesse.brandeburg@intel.com, kadlec@netfilter.org,
- huangguangbin2@huawei.com, joabreu@synopsys.com,
- intel-wired-lan@lists.osuosl.org, linux-arm-kernel@lists.infradead.org,
- simon.horman@corigine.com, kuba@kernel.org, d-tatianin@yandex-team.ru,
- pabeni@redhat.com, yisen.zhuang@huawei.com, pablo@netfilter.org,
- linux-rdma@vger.kernel.org, grygorii.strashko@ti.com, aelior@marvell.com,
- daniel.machon@microchip.com, idosch@nvidia.com, wenjuan.geng@corigine.com,
- claudiu.manoil@nxp.com, Ratheesh
- Kannoth <rkannoth@marvell.com>, coreteam@netfilter.org,
- habetsm.xilinx@gmail.com, hui.zhou@corigine.com, peppe.cavallaro@st.com,
- michael.chan@broadcom.com, linux-omap@vger.kernel.org,
- lars.povlsen@microchip.com, petrm@nvidia.com, zdoychev@maxlinear.com,
- salil.mehta@huawei.com, manishc@marvell.com, wentao.jia@corigine.com,
- fw@strlen.de, oss-drivers@corigine.com, shenjian15@huawei.com,
- ecree.xilinx@gmail.com, netfilter-devel@vger.kernel.org,
- shmulik.ladkani@gmail.com, mcoquelin.stm32@gmail.com, rajur@chelsio.com,
- olteanv@gmail.com, saeedm@nvidia.com, davem@davemloft.net
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: Netdev <netdev@vger.kernel.org>, "Brandeburg,
+ Jesse" <jesse.brandeburg@intel.com>, "Soesan, Ron" <ron.soesan@intel.com>,
+ "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
+ Intel Wired Lan <intel-wired-lan@lists.osuosl.org>, "Ruinskiy,
+ Dima" <dima.ruinskiy@intel.com>, "Avivi, Amir" <amir.avivi@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-As 32bits of dissector->used_keys are exhausted,
-increase the size to 64bits.
-
-This is base change for ESP/AH flow dissector patch.
-Please find patch and discussions at
-https://lore.kernel.org/netdev/ZMDNjD46BvZ5zp5I@corigine.com/T/#t
-
-Signed-off-by: Ratheesh Kannoth <rkannoth@marvell.com>
-Reviewed-by: Petr Machata <petrm@nvidia.com> # for mlxsw
-Tested-by: Petr Machata <petrm@nvidia.com>
-Reviewed-by: Martin Habets <habetsm.xilinx@gmail.com>
-Reviewed-by: Simon Horman <simon.horman@corigine.com>
-
----
-ChangeLog
-
-v2 -> v3: commit message subject line fix as per comment of Petr Machata
-v1 -> v2: Commit message typo fix.
-v0 -> v1: Fix errors reported by kernel test robot
----
- drivers/net/dsa/ocelot/felix_vsc9959.c        |  8 +--
- drivers/net/dsa/sja1105/sja1105_flower.c      |  8 +--
- drivers/net/ethernet/broadcom/bnxt/bnxt_tc.c  |  6 +-
- .../ethernet/chelsio/cxgb4/cxgb4_tc_flower.c  | 18 ++---
- .../freescale/dpaa2/dpaa2-switch-flower.c     | 22 +++---
- .../net/ethernet/freescale/enetc/enetc_qos.c  |  8 +--
- .../hisilicon/hns3/hns3pf/hclge_main.c        | 16 ++---
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 18 ++---
- drivers/net/ethernet/intel/iavf/iavf_main.c   | 18 ++---
- drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 44 ++++++------
- drivers/net/ethernet/intel/igb/igb_main.c     |  8 +--
- .../ethernet/marvell/octeontx2/nic/otx2_tc.c  | 18 ++---
- .../marvell/prestera/prestera_flower.c        | 20 +++---
- .../mellanox/mlx5/core/en/tc/ct_fs_smfs.c     | 25 ++++---
- .../net/ethernet/mellanox/mlx5/core/en_tc.c   | 44 ++++++------
- .../ethernet/mellanox/mlxsw/spectrum_flower.c | 22 +++---
- .../microchip/lan966x/lan966x_tc_flower.c     |  4 +-
- .../microchip/sparx5/sparx5_tc_flower.c       |  4 +-
- drivers/net/ethernet/microchip/vcap/vcap_tc.c | 18 ++---
- drivers/net/ethernet/microchip/vcap/vcap_tc.h |  2 +-
- drivers/net/ethernet/mscc/ocelot_flower.c     | 28 ++++----
- .../ethernet/netronome/nfp/flower/conntrack.c | 43 ++++++------
- .../ethernet/netronome/nfp/flower/offload.c   | 64 +++++++++---------
- .../net/ethernet/qlogic/qede/qede_filter.c    | 12 ++--
- drivers/net/ethernet/sfc/tc.c                 | 67 ++++++++++---------
- .../stmicro/stmmac/stmmac_selftests.c         |  6 +-
- drivers/net/ethernet/ti/am65-cpsw-qos.c       |  6 +-
- drivers/net/ethernet/ti/cpsw_priv.c           |  6 +-
- include/net/flow_dissector.h                  |  5 +-
- net/core/flow_dissector.c                     |  2 +-
- net/ethtool/ioctl.c                           | 16 ++---
- net/netfilter/nf_flow_table_offload.c         | 22 +++---
- net/netfilter/nf_tables_offload.c             | 13 ++--
- net/netfilter/nft_cmp.c                       |  2 +-
- 34 files changed, 317 insertions(+), 306 deletions(-)
-
-diff --git a/drivers/net/dsa/ocelot/felix_vsc9959.c b/drivers/net/dsa/ocelot/felix_vsc9959.c
-index 1c113957fcf4..7e7489321170 100644
---- a/drivers/net/dsa/ocelot/felix_vsc9959.c
-+++ b/drivers/net/dsa/ocelot/felix_vsc9959.c
-@@ -1745,10 +1745,10 @@ static int vsc9959_stream_identify(struct flow_cls_offload *f,
- 	struct flow_dissector *dissector = rule->match.dissector;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS)))
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS)))
- 		return -EOPNOTSUPP;
- 
- 	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
-diff --git a/drivers/net/dsa/sja1105/sja1105_flower.c b/drivers/net/dsa/sja1105/sja1105_flower.c
-index fad5afe3819c..9e8ca182c722 100644
---- a/drivers/net/dsa/sja1105/sja1105_flower.c
-+++ b/drivers/net/dsa/sja1105/sja1105_flower.c
-@@ -205,10 +205,10 @@ static int sja1105_flower_parse_key(struct sja1105_private *priv,
- 	u16 pcp = U16_MAX;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS))) {
- 		NL_SET_ERR_MSG_MOD(extack,
- 				   "Unsupported keys used");
- 		return -EOPNOTSUPP;
-diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt_tc.c b/drivers/net/ethernet/broadcom/bnxt/bnxt_tc.c
-index d8afcf8d6b30..38d89d80b4a9 100644
---- a/drivers/net/ethernet/broadcom/bnxt/bnxt_tc.c
-+++ b/drivers/net/ethernet/broadcom/bnxt/bnxt_tc.c
-@@ -373,9 +373,9 @@ static int bnxt_tc_parse_flow(struct bnxt *bp,
- 	struct flow_dissector *dissector = rule->match.dissector;
- 
- 	/* KEY_CONTROL and KEY_BASIC are needed for forming a meaningful key */
--	if ((dissector->used_keys & BIT(FLOW_DISSECTOR_KEY_CONTROL)) == 0 ||
--	    (dissector->used_keys & BIT(FLOW_DISSECTOR_KEY_BASIC)) == 0) {
--		netdev_info(bp->dev, "cannot form TC key: used_keys = 0x%x\n",
-+	if ((dissector->used_keys & BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL)) == 0 ||
-+	    (dissector->used_keys & BIT_ULL(FLOW_DISSECTOR_KEY_BASIC)) == 0) {
-+		netdev_info(bp->dev, "cannot form TC key: used_keys = 0x%llx\n",
- 			    dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c
-index d3541159487d..72ac4a34424b 100644
---- a/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c
-+++ b/drivers/net/ethernet/chelsio/cxgb4/cxgb4_tc_flower.c
-@@ -313,15 +313,15 @@ static int cxgb4_validate_flow_match(struct net_device *dev,
- 	u16 ethtype_key = 0;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IP))) {
--		netdev_warn(dev, "Unsupported key used: 0x%x\n",
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IP))) {
-+		netdev_warn(dev, "Unsupported key used: 0x%llx\n",
- 			    dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/freescale/dpaa2/dpaa2-switch-flower.c b/drivers/net/ethernet/freescale/dpaa2/dpaa2-switch-flower.c
-index c39b866e2582..4798fb7fe35d 100644
---- a/drivers/net/ethernet/freescale/dpaa2/dpaa2-switch-flower.c
-+++ b/drivers/net/ethernet/freescale/dpaa2/dpaa2-switch-flower.c
-@@ -17,14 +17,14 @@ static int dpaa2_switch_flower_parse_key(struct flow_cls_offload *cls,
- 	struct dpsw_acl_fields *acl_h, *acl_m;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_IP) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS))) {
- 		NL_SET_ERR_MSG_MOD(extack,
- 				   "Unsupported keys used");
- 		return -EOPNOTSUPP;
-@@ -539,9 +539,9 @@ static int dpaa2_switch_flower_parse_mirror_key(struct flow_cls_offload *cls,
- 	int ret = -EOPNOTSUPP;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN))) {
- 		NL_SET_ERR_MSG_MOD(extack,
- 				   "Mirroring is supported only per VLAN");
- 		return -EOPNOTSUPP;
-diff --git a/drivers/net/ethernet/freescale/enetc/enetc_qos.c b/drivers/net/ethernet/freescale/enetc/enetc_qos.c
-index 270cbd5e8684..2513b44056c1 100644
---- a/drivers/net/ethernet/freescale/enetc/enetc_qos.c
-+++ b/drivers/net/ethernet/freescale/enetc/enetc_qos.c
-@@ -483,13 +483,13 @@ struct enetc_psfp {
- static struct actions_fwd enetc_act_fwd[] = {
- 	{
- 		BIT(FLOW_ACTION_GATE),
--		BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS),
-+		BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS),
- 		FILTER_ACTION_TYPE_PSFP
- 	},
- 	{
- 		BIT(FLOW_ACTION_POLICE) |
- 		BIT(FLOW_ACTION_GATE),
--		BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS),
-+		BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS),
- 		FILTER_ACTION_TYPE_PSFP
- 	},
- 	/* example for ACL actions */
-@@ -1069,8 +1069,8 @@ static int enetc_psfp_hw_set(struct enetc_ndev_priv *priv,
- 	return err;
- }
- 
--static struct actions_fwd *enetc_check_flow_actions(u64 acts,
--						    unsigned int inputkeys)
-+static struct actions_fwd *
-+enetc_check_flow_actions(u64 acts, unsigned long long inputkeys)
- {
- 	int i;
- 
-diff --git a/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c b/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c
-index bf675c15fbb9..83ab89f44250 100644
---- a/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c
-+++ b/drivers/net/ethernet/hisilicon/hns3/hns3pf/hclge_main.c
-@@ -7315,14 +7315,14 @@ static int hclge_parse_cls_flower(struct hclge_dev *hdev,
- 	struct flow_dissector *dissector = flow->match.dissector;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS))) {
--		dev_err(&hdev->pdev->dev, "unsupported key set: %#x\n",
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS))) {
-+		dev_err(&hdev->pdev->dev, "unsupported key set: %#llx\n",
- 			dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 982ae70c51e8..3d0d6974c2a7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8525,15 +8525,15 @@ static int i40e_parse_cls_flower(struct i40e_vsi *vsi,
- 	u8 field_flags = 0;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_KEYID))) {
--		dev_err(&pf->pdev->dev, "Unsupported key used: 0x%x\n",
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID))) {
-+		dev_err(&pf->pdev->dev, "Unsupported key used: 0x%llx\n",
- 			dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 3a88d413ddee..09b492472408 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -3743,15 +3743,15 @@ static int iavf_parse_cls_flower(struct iavf_adapter *adapter,
- 	struct virtchnl_filter *vf = &filter->f;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_KEYID))) {
--		dev_err(&adapter->pdev->dev, "Unsupported key used: 0x%x\n",
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID))) {
-+		dev_err(&adapter->pdev->dev, "Unsupported key used: 0x%llx\n",
- 			dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-index 4a34ef5f58d3..38547db1ec4e 100644
---- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-@@ -1343,24 +1343,24 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
- 	dissector = rule->match.dissector;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_CVLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_OPTS) |
--	      BIT(FLOW_DISSECTOR_KEY_IP) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IP) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_PPPOE) |
--	      BIT(FLOW_DISSECTOR_KEY_L2TPV3))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CVLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_OPTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PPPOE) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_L2TPV3))) {
- 		NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported key used");
- 		return -EOPNOTSUPP;
- 	}
-@@ -1382,10 +1382,10 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
- 		 */
- 		headers = &fltr->inner_headers;
- 	} else if (dissector->used_keys &
--		  (BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
--		   BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
--		   BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) |
--		   BIT(FLOW_DISSECTOR_KEY_ENC_PORTS))) {
-+		  (BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
-+		   BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
-+		   BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) |
-+		   BIT_ULL(FLOW_DISSECTOR_KEY_ENC_PORTS))) {
- 		NL_SET_ERR_MSG_MOD(fltr->extack, "Tunnel key used, but device isn't a tunnel");
- 		return -EOPNOTSUPP;
- 	} else {
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 9a2561409b06..9f63a10c6f80 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2615,10 +2615,10 @@ static int igb_parse_cls_flower(struct igb_adapter *adapter,
- 	struct netlink_ext_ack *extack = f->common.extack;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN))) {
- 		NL_SET_ERR_MSG_MOD(extack,
- 				   "Unsupported key used, only BASIC, CONTROL, ETH_ADDRS and VLAN are supported");
- 		return -EOPNOTSUPP;
-diff --git a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_tc.c b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_tc.c
-index 1e6fc23eca4f..71daff86f775 100644
---- a/drivers/net/ethernet/marvell/octeontx2/nic/otx2_tc.c
-+++ b/drivers/net/ethernet/marvell/octeontx2/nic/otx2_tc.c
-@@ -454,15 +454,15 @@ static int otx2_tc_prepare_flow(struct otx2_nic *nic, struct otx2_tc_flow *node,
- 	dissector = rule->match.dissector;
- 
- 	if ((dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_IP))))  {
--		netdev_info(nic->netdev, "unsupported flow used key 0x%x",
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IP))))  {
-+		netdev_info(nic->netdev, "unsupported flow used key 0x%llx",
- 			    dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/marvell/prestera/prestera_flower.c b/drivers/net/ethernet/marvell/prestera/prestera_flower.c
-index 3e20e71b0f81..8b9455d8a4f7 100644
---- a/drivers/net/ethernet/marvell/prestera/prestera_flower.c
-+++ b/drivers/net/ethernet/marvell/prestera/prestera_flower.c
-@@ -202,16 +202,16 @@ static int prestera_flower_parse(struct prestera_flow_block *block,
- 	int err;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_META) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ICMP) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS_RANGE) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_META) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ICMP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS_RANGE) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN))) {
- 		NL_SET_ERR_MSG_MOD(f->common.extack, "Unsupported key");
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en/tc/ct_fs_smfs.c b/drivers/net/ethernet/mellanox/mlx5/core/en/tc/ct_fs_smfs.c
-index 2b80fe73549d..8c531f4ec912 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en/tc/ct_fs_smfs.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en/tc/ct_fs_smfs.c
-@@ -221,16 +221,21 @@ mlx5_ct_fs_smfs_destroy(struct mlx5_ct_fs *fs)
- }
- 
- static inline bool
--mlx5_tc_ct_valid_used_dissector_keys(const u32 used_keys)
-+mlx5_tc_ct_valid_used_dissector_keys(const u64 used_keys)
- {
--#define DISS_BIT(name) BIT(FLOW_DISSECTOR_KEY_ ## name)
--	const u32 basic_keys = DISS_BIT(BASIC) | DISS_BIT(CONTROL) | DISS_BIT(META);
--	const u32 ipv4_tcp = basic_keys | DISS_BIT(IPV4_ADDRS) | DISS_BIT(PORTS) | DISS_BIT(TCP);
--	const u32 ipv6_tcp = basic_keys | DISS_BIT(IPV6_ADDRS) | DISS_BIT(PORTS) | DISS_BIT(TCP);
--	const u32 ipv4_udp = basic_keys | DISS_BIT(IPV4_ADDRS) | DISS_BIT(PORTS);
--	const u32 ipv6_udp = basic_keys | DISS_BIT(IPV6_ADDRS) | DISS_BIT(PORTS);
--	const u32 ipv4_gre = basic_keys | DISS_BIT(IPV4_ADDRS);
--	const u32 ipv6_gre = basic_keys | DISS_BIT(IPV6_ADDRS);
-+#define DISS_BIT(name) BIT_ULL(FLOW_DISSECTOR_KEY_ ## name)
-+	const u64 basic_keys = DISS_BIT(BASIC) | DISS_BIT(CONTROL) |
-+				DISS_BIT(META);
-+	const u64 ipv4_tcp = basic_keys | DISS_BIT(IPV4_ADDRS) |
-+				DISS_BIT(PORTS) | DISS_BIT(TCP);
-+	const u64 ipv6_tcp = basic_keys | DISS_BIT(IPV6_ADDRS) |
-+				DISS_BIT(PORTS) | DISS_BIT(TCP);
-+	const u64 ipv4_udp = basic_keys | DISS_BIT(IPV4_ADDRS) |
-+				DISS_BIT(PORTS);
-+	const u64 ipv6_udp = basic_keys | DISS_BIT(IPV6_ADDRS) |
-+				 DISS_BIT(PORTS);
-+	const u64 ipv4_gre = basic_keys | DISS_BIT(IPV4_ADDRS);
-+	const u64 ipv6_gre = basic_keys | DISS_BIT(IPV6_ADDRS);
- 
- 	return (used_keys == ipv4_tcp || used_keys == ipv4_udp || used_keys == ipv6_tcp ||
- 		used_keys == ipv6_udp || used_keys == ipv4_gre || used_keys == ipv6_gre);
-@@ -247,7 +252,7 @@ mlx5_ct_fs_smfs_ct_validate_flow_rule(struct mlx5_ct_fs *fs, struct flow_rule *f
- 	struct flow_match_tcp tcp;
- 
- 	if (!mlx5_tc_ct_valid_used_dissector_keys(flow_rule->match.dissector->used_keys)) {
--		ct_dbg("rule uses unexpected dissectors (0x%08x)",
-+		ct_dbg("rule uses unexpected dissectors (0x%016llx)",
- 		       flow_rule->match.dissector->used_keys);
- 		return false;
- 	}
-diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_tc.c b/drivers/net/ethernet/mellanox/mlx5/core/en_tc.c
-index 8d0a3f69693e..842952e7b540 100644
---- a/drivers/net/ethernet/mellanox/mlx5/core/en_tc.c
-+++ b/drivers/net/ethernet/mellanox/mlx5/core/en_tc.c
-@@ -2593,29 +2593,29 @@ static int __parse_cls_flower(struct mlx5e_priv *priv,
- 	match_level = outer_match_level;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_META) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_CVLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_PORTS)	|
--	      BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_TCP) |
--	      BIT(FLOW_DISSECTOR_KEY_IP)  |
--	      BIT(FLOW_DISSECTOR_KEY_CT) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IP) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_OPTS) |
--	      BIT(FLOW_DISSECTOR_KEY_ICMP) |
--	      BIT(FLOW_DISSECTOR_KEY_MPLS))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_META) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CVLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_PORTS)	|
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_TCP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IP)  |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CT) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_OPTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ICMP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_MPLS))) {
- 		NL_SET_ERR_MSG_MOD(extack, "Unsupported key");
--		netdev_dbg(priv->netdev, "Unsupported key used: 0x%x\n",
-+		netdev_dbg(priv->netdev, "Unsupported key used: 0x%llx\n",
- 			   dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum_flower.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum_flower.c
-index 8329100479b3..af3f57d017ec 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/spectrum_flower.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum_flower.c
-@@ -558,17 +558,17 @@ static int mlxsw_sp_flower_parse(struct mlxsw_sp *mlxsw_sp,
- 	int err;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_META) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS_RANGE) |
--	      BIT(FLOW_DISSECTOR_KEY_TCP) |
--	      BIT(FLOW_DISSECTOR_KEY_IP) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_META) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS_RANGE) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_TCP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN))) {
- 		dev_err(mlxsw_sp->bus_info->dev, "Unsupported key\n");
- 		NL_SET_ERR_MSG_MOD(f->common.extack, "Unsupported key");
- 		return -EOPNOTSUPP;
-diff --git a/drivers/net/ethernet/microchip/lan966x/lan966x_tc_flower.c b/drivers/net/ethernet/microchip/lan966x/lan966x_tc_flower.c
-index 96b3def6c474..d696cf9dbd19 100644
---- a/drivers/net/ethernet/microchip/lan966x/lan966x_tc_flower.c
-+++ b/drivers/net/ethernet/microchip/lan966x/lan966x_tc_flower.c
-@@ -75,7 +75,7 @@ lan966x_tc_flower_handler_control_usage(struct vcap_tc_flower_parse_usage *st)
- 			goto out;
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_CONTROL);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL);
- 
- 	return err;
- 
-@@ -172,7 +172,7 @@ lan966x_tc_flower_handler_basic_usage(struct vcap_tc_flower_parse_usage *st)
- 		}
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_BASIC);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_BASIC);
- 	return err;
- out:
- 	NL_SET_ERR_MSG_MOD(st->fco->common.extack, "ip_proto parse error");
-diff --git a/drivers/net/ethernet/microchip/sparx5/sparx5_tc_flower.c b/drivers/net/ethernet/microchip/sparx5/sparx5_tc_flower.c
-index 3f87a5285a6d..906299ad8425 100644
---- a/drivers/net/ethernet/microchip/sparx5/sparx5_tc_flower.c
-+++ b/drivers/net/ethernet/microchip/sparx5/sparx5_tc_flower.c
-@@ -126,7 +126,7 @@ sparx5_tc_flower_handler_basic_usage(struct vcap_tc_flower_parse_usage *st)
- 		}
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_BASIC);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_BASIC);
- 
- 	return err;
- 
-@@ -175,7 +175,7 @@ sparx5_tc_flower_handler_control_usage(struct vcap_tc_flower_parse_usage *st)
- 			goto out;
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_CONTROL);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL);
- 
- 	return err;
- 
-diff --git a/drivers/net/ethernet/microchip/vcap/vcap_tc.c b/drivers/net/ethernet/microchip/vcap/vcap_tc.c
-index 09abe7944af6..27e2dffb65e6 100644
---- a/drivers/net/ethernet/microchip/vcap/vcap_tc.c
-+++ b/drivers/net/ethernet/microchip/vcap/vcap_tc.c
-@@ -50,7 +50,7 @@ int vcap_tc_flower_handler_ethaddr_usage(struct vcap_tc_flower_parse_usage *st)
- 			goto out;
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS);
- 
- 	return err;
- 
-@@ -86,7 +86,7 @@ int vcap_tc_flower_handler_ipv4_usage(struct vcap_tc_flower_parse_usage *st)
- 		}
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS);
- 
- 	return err;
- 
-@@ -124,7 +124,7 @@ int vcap_tc_flower_handler_ipv6_usage(struct vcap_tc_flower_parse_usage *st)
- 				goto out;
- 		}
- 	}
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS);
- 	return err;
- out:
- 	NL_SET_ERR_MSG_MOD(st->fco->common.extack, "ipv6_addr parse error");
-@@ -158,7 +158,7 @@ int vcap_tc_flower_handler_portnum_usage(struct vcap_tc_flower_parse_usage *st)
- 			goto out;
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_PORTS);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_PORTS);
- 
- 	return err;
- 
-@@ -201,7 +201,7 @@ int vcap_tc_flower_handler_cvlan_usage(struct vcap_tc_flower_parse_usage *st)
- 			goto out;
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_CVLAN);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_CVLAN);
- 
- 	return 0;
- out:
-@@ -238,7 +238,7 @@ int vcap_tc_flower_handler_vlan_usage(struct vcap_tc_flower_parse_usage *st,
- 	if (mt.mask->vlan_tpid)
- 		st->tpid = be16_to_cpu(mt.key->vlan_tpid);
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_VLAN);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_VLAN);
- 
- 	return 0;
- out:
-@@ -313,7 +313,7 @@ int vcap_tc_flower_handler_tcp_usage(struct vcap_tc_flower_parse_usage *st)
- 			goto out;
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_TCP);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_TCP);
- 
- 	return err;
- 
-@@ -376,7 +376,7 @@ int vcap_tc_flower_handler_arp_usage(struct vcap_tc_flower_parse_usage *st)
- 			goto out;
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_ARP);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_ARP);
- 
- 	return 0;
- 
-@@ -401,7 +401,7 @@ int vcap_tc_flower_handler_ip_usage(struct vcap_tc_flower_parse_usage *st)
- 			goto out;
- 	}
- 
--	st->used_keys |= BIT(FLOW_DISSECTOR_KEY_IP);
-+	st->used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_IP);
- 
- 	return err;
- 
-diff --git a/drivers/net/ethernet/microchip/vcap/vcap_tc.h b/drivers/net/ethernet/microchip/vcap/vcap_tc.h
-index 071f892f9aa4..49b02d032906 100644
---- a/drivers/net/ethernet/microchip/vcap/vcap_tc.h
-+++ b/drivers/net/ethernet/microchip/vcap/vcap_tc.h
-@@ -14,7 +14,7 @@ struct vcap_tc_flower_parse_usage {
- 	u16 l3_proto;
- 	u8 l4_proto;
- 	u16 tpid;
--	unsigned int used_keys;
-+	unsigned long long used_keys;
- };
- 
- int vcap_tc_flower_handler_ethaddr_usage(struct vcap_tc_flower_parse_usage *st);
-diff --git a/drivers/net/ethernet/mscc/ocelot_flower.c b/drivers/net/ethernet/mscc/ocelot_flower.c
-index e0916afcddfb..33b438c6aec5 100644
---- a/drivers/net/ethernet/mscc/ocelot_flower.c
-+++ b/drivers/net/ethernet/mscc/ocelot_flower.c
-@@ -581,14 +581,14 @@ ocelot_flower_parse_key(struct ocelot *ocelot, int port, bool ingress,
- 	int ret;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_META) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_META) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS))) {
- 		return -EOPNOTSUPP;
- 	}
- 
-@@ -641,12 +641,12 @@ ocelot_flower_parse_key(struct ocelot *ocelot, int port, bool ingress,
- 		 * then just bail out
- 		 */
- 		if ((dissector->used_keys &
--		    (BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--		     BIT(FLOW_DISSECTOR_KEY_BASIC) |
--		     BIT(FLOW_DISSECTOR_KEY_CONTROL))) !=
--		    (BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--		     BIT(FLOW_DISSECTOR_KEY_BASIC) |
--		     BIT(FLOW_DISSECTOR_KEY_CONTROL)))
-+		    (BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL))) !=
-+		    (BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL)))
- 			return -EOPNOTSUPP;
- 
- 		flow_rule_match_eth_addrs(rule, &match);
-diff --git a/drivers/net/ethernet/netronome/nfp/flower/conntrack.c b/drivers/net/ethernet/netronome/nfp/flower/conntrack.c
-index 73032173ac4e..2643c4b3ff1f 100644
---- a/drivers/net/ethernet/netronome/nfp/flower/conntrack.c
-+++ b/drivers/net/ethernet/netronome/nfp/flower/conntrack.c
-@@ -61,7 +61,7 @@ bool is_pre_ct_flow(struct flow_cls_offload *flow)
- 	struct flow_match_ct ct;
- 	int i;
- 
--	if (dissector->used_keys & BIT(FLOW_DISSECTOR_KEY_CT)) {
-+	if (dissector->used_keys & BIT_ULL(FLOW_DISSECTOR_KEY_CT)) {
- 		flow_rule_match_ct(rule, &ct);
- 		if (ct.key->ct_state)
- 			return false;
-@@ -94,7 +94,7 @@ bool is_post_ct_flow(struct flow_cls_offload *flow)
- 	struct flow_match_ct ct;
- 	int i;
- 
--	if (dissector->used_keys & BIT(FLOW_DISSECTOR_KEY_CT)) {
-+	if (dissector->used_keys & BIT_ULL(FLOW_DISSECTOR_KEY_CT)) {
- 		flow_rule_match_ct(rule, &ct);
- 		if (ct.key->ct_state & TCA_FLOWER_KEY_CT_FLAGS_ESTABLISHED)
- 			return true;
-@@ -236,10 +236,11 @@ static bool nfp_ct_merge_check_cannot_skip(struct nfp_fl_ct_flow_entry *entry1,
- static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			      struct nfp_fl_ct_flow_entry *entry2)
- {
--	unsigned int ovlp_keys = entry1->rule->match.dissector->used_keys &
--				 entry2->rule->match.dissector->used_keys;
-+	unsigned long long ovlp_keys;
- 	bool out, is_v6 = false;
- 	u8 ip_proto = 0;
-+	ovlp_keys = entry1->rule->match.dissector->used_keys &
-+			entry2->rule->match.dissector->used_keys;
- 	/* Temporary buffer for mangling keys, 64 is enough to cover max
- 	 * struct size of key in various fields that may be mangled.
- 	 * Supported fields to mangle:
-@@ -257,7 +258,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 	/* Check the overlapped fields one by one, the unmasked part
- 	 * should not conflict with each other.
- 	 */
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_CONTROL)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL)) {
- 		struct flow_match_control match1, match2;
- 
- 		flow_rule_match_control(entry1->rule, &match1);
-@@ -267,7 +268,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_BASIC)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_BASIC)) {
- 		struct flow_match_basic match1, match2;
- 
- 		flow_rule_match_basic(entry1->rule, &match1);
-@@ -289,7 +290,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 	 * will be do merge check when do nft and post ct merge,
- 	 * so skip this ip merge check here.
- 	 */
--	if ((ovlp_keys & BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS)) &&
-+	if ((ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS)) &&
- 	    nfp_ct_merge_check_cannot_skip(entry1, entry2)) {
- 		struct flow_match_ipv4_addrs match1, match2;
- 
-@@ -311,7 +312,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 	 * will be do merge check when do nft and post ct merge,
- 	 * so skip this ip merge check here.
- 	 */
--	if ((ovlp_keys & BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS)) &&
-+	if ((ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS)) &&
- 	    nfp_ct_merge_check_cannot_skip(entry1, entry2)) {
- 		struct flow_match_ipv6_addrs match1, match2;
- 
-@@ -333,7 +334,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 	 * will be do merge check when do nft and post ct merge,
- 	 * so skip this tport merge check here.
- 	 */
--	if ((ovlp_keys & BIT(FLOW_DISSECTOR_KEY_PORTS)) &&
-+	if ((ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_PORTS)) &&
- 	    nfp_ct_merge_check_cannot_skip(entry1, entry2)) {
- 		enum flow_action_mangle_base htype = FLOW_ACT_MANGLE_UNSPEC;
- 		struct flow_match_ports match1, match2;
-@@ -355,7 +356,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS)) {
- 		struct flow_match_eth_addrs match1, match2;
- 
- 		flow_rule_match_eth_addrs(entry1->rule, &match1);
-@@ -371,7 +372,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_VLAN)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_VLAN)) {
- 		struct flow_match_vlan match1, match2;
- 
- 		flow_rule_match_vlan(entry1->rule, &match1);
-@@ -381,7 +382,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_MPLS)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_MPLS)) {
- 		struct flow_match_mpls match1, match2;
- 
- 		flow_rule_match_mpls(entry1->rule, &match1);
-@@ -391,7 +392,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_TCP)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_TCP)) {
- 		struct flow_match_tcp match1, match2;
- 
- 		flow_rule_match_tcp(entry1->rule, &match1);
-@@ -401,7 +402,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_IP)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_IP)) {
- 		struct flow_match_ip match1, match2;
- 
- 		flow_rule_match_ip(entry1->rule, &match1);
-@@ -413,7 +414,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_ENC_KEYID)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID)) {
- 		struct flow_match_enc_keyid match1, match2;
- 
- 		flow_rule_match_enc_keyid(entry1->rule, &match1);
-@@ -423,7 +424,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS)) {
- 		struct flow_match_ipv4_addrs match1, match2;
- 
- 		flow_rule_match_enc_ipv4_addrs(entry1->rule, &match1);
-@@ -433,7 +434,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS)) {
- 		struct flow_match_ipv6_addrs match1, match2;
- 
- 		flow_rule_match_enc_ipv6_addrs(entry1->rule, &match1);
-@@ -443,7 +444,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL)) {
- 		struct flow_match_control match1, match2;
- 
- 		flow_rule_match_enc_control(entry1->rule, &match1);
-@@ -453,7 +454,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_ENC_IP)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IP)) {
- 		struct flow_match_ip match1, match2;
- 
- 		flow_rule_match_enc_ip(entry1->rule, &match1);
-@@ -463,7 +464,7 @@ static int nfp_ct_merge_check(struct nfp_fl_ct_flow_entry *entry1,
- 			goto check_failed;
- 	}
- 
--	if (ovlp_keys & BIT(FLOW_DISSECTOR_KEY_ENC_OPTS)) {
-+	if (ovlp_keys & BIT_ULL(FLOW_DISSECTOR_KEY_ENC_OPTS)) {
- 		struct flow_match_enc_opts match1, match2;
- 
- 		flow_rule_match_enc_opts(entry1->rule, &match1);
-@@ -589,7 +590,7 @@ static int nfp_ct_check_meta(struct nfp_fl_ct_flow_entry *post_ct_entry,
- 	int i;
- 
- 	ct_met = get_flow_act(nft_entry->rule, FLOW_ACTION_CT_METADATA);
--	if (ct_met && (dissector->used_keys & BIT(FLOW_DISSECTOR_KEY_CT))) {
-+	if (ct_met && (dissector->used_keys & BIT_ULL(FLOW_DISSECTOR_KEY_CT))) {
- 		u32 *act_lbl;
- 
- 		act_lbl = ct_met->ct_metadata.labels;
-diff --git a/drivers/net/ethernet/netronome/nfp/flower/offload.c b/drivers/net/ethernet/netronome/nfp/flower/offload.c
-index 18328eb7f5c3..c153f0575b92 100644
---- a/drivers/net/ethernet/netronome/nfp/flower/offload.c
-+++ b/drivers/net/ethernet/netronome/nfp/flower/offload.c
-@@ -24,43 +24,43 @@
- 	 FLOW_DIS_FIRST_FRAG)
- 
- #define NFP_FLOWER_WHITELIST_DISSECTOR \
--	(BIT(FLOW_DISSECTOR_KEY_CONTROL) | \
--	 BIT(FLOW_DISSECTOR_KEY_BASIC) | \
--	 BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) | \
--	 BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) | \
--	 BIT(FLOW_DISSECTOR_KEY_TCP) | \
--	 BIT(FLOW_DISSECTOR_KEY_PORTS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) | \
--	 BIT(FLOW_DISSECTOR_KEY_VLAN) | \
--	 BIT(FLOW_DISSECTOR_KEY_CVLAN) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_PORTS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_OPTS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_IP) | \
--	 BIT(FLOW_DISSECTOR_KEY_MPLS) | \
--	 BIT(FLOW_DISSECTOR_KEY_CT) | \
--	 BIT(FLOW_DISSECTOR_KEY_META) | \
--	 BIT(FLOW_DISSECTOR_KEY_IP))
-+	(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_TCP) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_CVLAN) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_PORTS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_OPTS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IP) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_MPLS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_CT) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_META) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_IP))
- 
- #define NFP_FLOWER_WHITELIST_TUN_DISSECTOR \
--	(BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_OPTS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_PORTS) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_IP))
-+	(BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_OPTS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_PORTS) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IP))
- 
- #define NFP_FLOWER_WHITELIST_TUN_DISSECTOR_R \
--	(BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS))
-+	(BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS))
- 
- #define NFP_FLOWER_WHITELIST_TUN_DISSECTOR_V6_R \
--	(BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL) | \
--	 BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS))
-+	(BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL) | \
-+	 BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS))
- 
- #define NFP_FLOWER_MERGE_FIELDS \
- 	(NFP_FLOWER_LAYER_PORT | \
-@@ -1303,7 +1303,7 @@ static bool offload_pre_check(struct flow_cls_offload *flow)
- 	struct flow_dissector *dissector = rule->match.dissector;
- 	struct flow_match_ct ct;
- 
--	if (dissector->used_keys & BIT(FLOW_DISSECTOR_KEY_CT)) {
-+	if (dissector->used_keys & BIT_ULL(FLOW_DISSECTOR_KEY_CT)) {
- 		flow_rule_match_ct(rule, &ct);
- 		/* Allow special case where CT match is all 0 */
- 		if (memchr_inv(ct.key, 0, sizeof(*ct.key)))
-diff --git a/drivers/net/ethernet/qlogic/qede/qede_filter.c b/drivers/net/ethernet/qlogic/qede/qede_filter.c
-index 3010833ddde3..a5ac21a0ee33 100644
---- a/drivers/net/ethernet/qlogic/qede/qede_filter.c
-+++ b/drivers/net/ethernet/qlogic/qede/qede_filter.c
-@@ -1827,12 +1827,12 @@ qede_parse_flow_attr(struct qede_dev *edev, __be16 proto,
- 	memset(tuple, 0, sizeof(*tuple));
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS))) {
--		DP_NOTICE(edev, "Unsupported key set:0x%x\n",
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS))) {
-+		DP_NOTICE(edev, "Unsupported key set:0x%llx\n",
- 			  dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/sfc/tc.c b/drivers/net/ethernet/sfc/tc.c
-index 15ebd3973922..4dc881159246 100644
---- a/drivers/net/ethernet/sfc/tc.c
-+++ b/drivers/net/ethernet/sfc/tc.c
-@@ -201,23 +201,23 @@ static int efx_tc_flower_parse_match(struct efx_nic *efx,
- 		}
- 	}
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_VLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_CVLAN) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_IP) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_PORTS) |
--	      BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_TCP) |
--	      BIT(FLOW_DISSECTOR_KEY_IP))) {
--		NL_SET_ERR_MSG_FMT_MOD(extack, "Unsupported flower keys %#x",
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CVLAN) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_PORTS) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_TCP) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_IP))) {
-+		NL_SET_ERR_MSG_FMT_MOD(extack, "Unsupported flower keys %#llx",
- 				       dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-@@ -228,12 +228,13 @@ static int efx_tc_flower_parse_match(struct efx_nic *efx,
- 	    !(match->value.eth_proto == htons(ETH_P_IP) ||
- 	      match->value.eth_proto == htons(ETH_P_IPV6)))
- 		if (dissector->used_keys &
--		    (BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
--		     BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
--		     BIT(FLOW_DISSECTOR_KEY_PORTS) |
--		     BIT(FLOW_DISSECTOR_KEY_IP) |
--		     BIT(FLOW_DISSECTOR_KEY_TCP))) {
--			NL_SET_ERR_MSG_FMT_MOD(extack, "L3/L4 flower keys %#x require protocol ipv[46]",
-+		    (BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_IP) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_TCP))) {
-+			NL_SET_ERR_MSG_FMT_MOD(extack,
-+					       "L3/L4 flower keys %#llx require protocol ipv[46]",
- 					       dissector->used_keys);
- 			return -EINVAL;
- 		}
-@@ -281,9 +282,10 @@ static int efx_tc_flower_parse_match(struct efx_nic *efx,
- 	if ((match->value.ip_proto != IPPROTO_UDP &&
- 	     match->value.ip_proto != IPPROTO_TCP) || !IS_ALL_ONES(match->mask.ip_proto))
- 		if (dissector->used_keys &
--		    (BIT(FLOW_DISSECTOR_KEY_PORTS) |
--		     BIT(FLOW_DISSECTOR_KEY_TCP))) {
--			NL_SET_ERR_MSG_FMT_MOD(extack, "L4 flower keys %#x require ipproto udp or tcp",
-+		    (BIT_ULL(FLOW_DISSECTOR_KEY_PORTS) |
-+		     BIT_ULL(FLOW_DISSECTOR_KEY_TCP))) {
-+			NL_SET_ERR_MSG_FMT_MOD(extack,
-+					       "L4 flower keys %#llx require ipproto udp or tcp",
- 					       dissector->used_keys);
- 			return -EINVAL;
- 		}
-@@ -344,12 +346,13 @@ static int efx_tc_flower_parse_match(struct efx_nic *efx,
- 		MAP_ENC_KEY_AND_MASK(PORTS, ports, enc_ports, dst, enc_dport);
- 		MAP_ENC_KEY_AND_MASK(KEYID, enc_keyid, enc_keyid, keyid, enc_keyid);
- 	} else if (dissector->used_keys &
--		   (BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) |
--		    BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
--		    BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
--		    BIT(FLOW_DISSECTOR_KEY_ENC_IP) |
--		    BIT(FLOW_DISSECTOR_KEY_ENC_PORTS))) {
--		NL_SET_ERR_MSG_FMT_MOD(extack, "Flower enc keys require enc_control (keys: %#x)",
-+		   (BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) |
-+		    BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
-+		    BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
-+		    BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IP) |
-+		    BIT_ULL(FLOW_DISSECTOR_KEY_ENC_PORTS))) {
-+		NL_SET_ERR_MSG_FMT_MOD(extack,
-+				       "Flower enc keys require enc_control (keys: %#llx)",
- 				       dissector->used_keys);
- 		return -EOPNOTSUPP;
- 	}
-diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_selftests.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_selftests.c
-index 687f43cd466c..f9e43fc32ee8 100644
---- a/drivers/net/ethernet/stmicro/stmmac/stmmac_selftests.c
-+++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_selftests.c
-@@ -1355,7 +1355,7 @@ static int __stmmac_test_l3filt(struct stmmac_priv *priv, u32 dst, u32 src,
- 		goto cleanup_rss;
- 	}
- 
--	dissector->used_keys |= (1 << FLOW_DISSECTOR_KEY_IPV4_ADDRS);
-+	dissector->used_keys |= (1ULL << FLOW_DISSECTOR_KEY_IPV4_ADDRS);
- 	dissector->offset[FLOW_DISSECTOR_KEY_IPV4_ADDRS] = 0;
- 
- 	cls = kzalloc(sizeof(*cls), GFP_KERNEL);
-@@ -1481,8 +1481,8 @@ static int __stmmac_test_l4filt(struct stmmac_priv *priv, u32 dst, u32 src,
- 		goto cleanup_rss;
- 	}
- 
--	dissector->used_keys |= (1 << FLOW_DISSECTOR_KEY_BASIC);
--	dissector->used_keys |= (1 << FLOW_DISSECTOR_KEY_PORTS);
-+	dissector->used_keys |= (1ULL << FLOW_DISSECTOR_KEY_BASIC);
-+	dissector->used_keys |= (1ULL << FLOW_DISSECTOR_KEY_PORTS);
- 	dissector->offset[FLOW_DISSECTOR_KEY_BASIC] = 0;
- 	dissector->offset[FLOW_DISSECTOR_KEY_PORTS] = offsetof(typeof(keys), key);
- 
-diff --git a/drivers/net/ethernet/ti/am65-cpsw-qos.c b/drivers/net/ethernet/ti/am65-cpsw-qos.c
-index eced87fa261c..9ac2ff05d501 100644
---- a/drivers/net/ethernet/ti/am65-cpsw-qos.c
-+++ b/drivers/net/ethernet/ti/am65-cpsw-qos.c
-@@ -624,9 +624,9 @@ static int am65_cpsw_qos_clsflower_add_policer(struct am65_cpsw_port *port,
- 	int ret;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS))) {
- 		NL_SET_ERR_MSG_MOD(extack,
- 				   "Unsupported keys used");
- 		return -EOPNOTSUPP;
-diff --git a/drivers/net/ethernet/ti/cpsw_priv.c b/drivers/net/ethernet/ti/cpsw_priv.c
-index e966dd47e2db..ae52cdbcf8cc 100644
---- a/drivers/net/ethernet/ti/cpsw_priv.c
-+++ b/drivers/net/ethernet/ti/cpsw_priv.c
-@@ -1396,9 +1396,9 @@ static int cpsw_qos_clsflower_add_policer(struct cpsw_priv *priv,
- 	int ret;
- 
- 	if (dissector->used_keys &
--	    ~(BIT(FLOW_DISSECTOR_KEY_BASIC) |
--	      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--	      BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS))) {
-+	    ~(BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+	      BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS))) {
- 		NL_SET_ERR_MSG_MOD(extack,
- 				   "Unsupported keys used");
- 		return -EOPNOTSUPP;
-diff --git a/include/net/flow_dissector.h b/include/net/flow_dissector.h
-index 8664ed4fbbdf..830f06b2f36d 100644
---- a/include/net/flow_dissector.h
-+++ b/include/net/flow_dissector.h
-@@ -370,7 +370,8 @@ struct flow_dissector_key {
- };
- 
- struct flow_dissector {
--	unsigned int used_keys; /* each bit repesents presence of one key id */
-+	unsigned long long  used_keys;
-+		/* each bit represents presence of one key id */
- 	unsigned short int offset[FLOW_DISSECTOR_KEY_MAX];
- };
- 
-@@ -430,7 +431,7 @@ void skb_flow_get_icmp_tci(const struct sk_buff *skb,
- static inline bool dissector_uses_key(const struct flow_dissector *flow_dissector,
- 				      enum flow_dissector_key_id key_id)
- {
--	return flow_dissector->used_keys & (1 << key_id);
-+	return flow_dissector->used_keys & (1ULL << key_id);
- }
- 
- static inline void *skb_flow_dissector_target(struct flow_dissector *flow_dissector,
-diff --git a/net/core/flow_dissector.c b/net/core/flow_dissector.c
-index 85a2d0d9bd39..ed5dfa376024 100644
---- a/net/core/flow_dissector.c
-+++ b/net/core/flow_dissector.c
-@@ -40,7 +40,7 @@
- static void dissector_set_key(struct flow_dissector *flow_dissector,
- 			      enum flow_dissector_key_id key_id)
- {
--	flow_dissector->used_keys |= (1 << key_id);
-+	flow_dissector->used_keys |= (1ULL << key_id);
- }
- 
- void skb_flow_dissector_init(struct flow_dissector *flow_dissector,
-diff --git a/net/ethtool/ioctl.c b/net/ethtool/ioctl.c
-index 4a51e0ec295c..10fa880047ac 100644
---- a/net/ethtool/ioctl.c
-+++ b/net/ethtool/ioctl.c
-@@ -3207,7 +3207,7 @@ ethtool_rx_flow_rule_create(const struct ethtool_rx_flow_spec_input *input)
- 		if (v4_m_spec->ip4src ||
- 		    v4_m_spec->ip4dst) {
- 			match->dissector.used_keys |=
--				BIT(FLOW_DISSECTOR_KEY_IPV4_ADDRS);
-+				BIT_ULL(FLOW_DISSECTOR_KEY_IPV4_ADDRS);
- 			match->dissector.offset[FLOW_DISSECTOR_KEY_IPV4_ADDRS] =
- 				offsetof(struct ethtool_rx_flow_key, ipv4);
- 		}
-@@ -3222,7 +3222,7 @@ ethtool_rx_flow_rule_create(const struct ethtool_rx_flow_spec_input *input)
- 		if (v4_m_spec->psrc ||
- 		    v4_m_spec->pdst) {
- 			match->dissector.used_keys |=
--				BIT(FLOW_DISSECTOR_KEY_PORTS);
-+				BIT_ULL(FLOW_DISSECTOR_KEY_PORTS);
- 			match->dissector.offset[FLOW_DISSECTOR_KEY_PORTS] =
- 				offsetof(struct ethtool_rx_flow_key, tp);
- 		}
-@@ -3259,7 +3259,7 @@ ethtool_rx_flow_rule_create(const struct ethtool_rx_flow_spec_input *input)
- 		if (!ipv6_addr_any((struct in6_addr *)v6_m_spec->ip6src) ||
- 		    !ipv6_addr_any((struct in6_addr *)v6_m_spec->ip6dst)) {
- 			match->dissector.used_keys |=
--				BIT(FLOW_DISSECTOR_KEY_IPV6_ADDRS);
-+				BIT_ULL(FLOW_DISSECTOR_KEY_IPV6_ADDRS);
- 			match->dissector.offset[FLOW_DISSECTOR_KEY_IPV6_ADDRS] =
- 				offsetof(struct ethtool_rx_flow_key, ipv6);
- 		}
-@@ -3274,7 +3274,7 @@ ethtool_rx_flow_rule_create(const struct ethtool_rx_flow_spec_input *input)
- 		if (v6_m_spec->psrc ||
- 		    v6_m_spec->pdst) {
- 			match->dissector.used_keys |=
--				BIT(FLOW_DISSECTOR_KEY_PORTS);
-+				BIT_ULL(FLOW_DISSECTOR_KEY_PORTS);
- 			match->dissector.offset[FLOW_DISSECTOR_KEY_PORTS] =
- 				offsetof(struct ethtool_rx_flow_key, tp);
- 		}
-@@ -3282,7 +3282,7 @@ ethtool_rx_flow_rule_create(const struct ethtool_rx_flow_spec_input *input)
- 			match->key.ip.tos = v6_spec->tclass;
- 			match->mask.ip.tos = v6_m_spec->tclass;
- 			match->dissector.used_keys |=
--				BIT(FLOW_DISSECTOR_KEY_IP);
-+				BIT_ULL(FLOW_DISSECTOR_KEY_IP);
- 			match->dissector.offset[FLOW_DISSECTOR_KEY_IP] =
- 				offsetof(struct ethtool_rx_flow_key, ip);
- 		}
-@@ -3306,7 +3306,7 @@ ethtool_rx_flow_rule_create(const struct ethtool_rx_flow_spec_input *input)
- 		break;
- 	}
- 
--	match->dissector.used_keys |= BIT(FLOW_DISSECTOR_KEY_BASIC);
-+	match->dissector.used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_BASIC);
- 	match->dissector.offset[FLOW_DISSECTOR_KEY_BASIC] =
- 		offsetof(struct ethtool_rx_flow_key, basic);
- 
-@@ -3339,7 +3339,7 @@ ethtool_rx_flow_rule_create(const struct ethtool_rx_flow_spec_input *input)
- 		if (ext_m_spec->vlan_etype ||
- 		    ext_m_spec->vlan_tci) {
- 			match->dissector.used_keys |=
--				BIT(FLOW_DISSECTOR_KEY_VLAN);
-+				BIT_ULL(FLOW_DISSECTOR_KEY_VLAN);
- 			match->dissector.offset[FLOW_DISSECTOR_KEY_VLAN] =
- 				offsetof(struct ethtool_rx_flow_key, vlan);
- 		}
-@@ -3354,7 +3354,7 @@ ethtool_rx_flow_rule_create(const struct ethtool_rx_flow_spec_input *input)
- 		       ETH_ALEN);
- 
- 		match->dissector.used_keys |=
--			BIT(FLOW_DISSECTOR_KEY_ETH_ADDRS);
-+			BIT_ULL(FLOW_DISSECTOR_KEY_ETH_ADDRS);
- 		match->dissector.offset[FLOW_DISSECTOR_KEY_ETH_ADDRS] =
- 			offsetof(struct ethtool_rx_flow_key, eth_addrs);
- 	}
-diff --git a/net/netfilter/nf_flow_table_offload.c b/net/netfilter/nf_flow_table_offload.c
-index 1c26f03fc661..a010b25076ca 100644
---- a/net/netfilter/nf_flow_table_offload.c
-+++ b/net/netfilter/nf_flow_table_offload.c
-@@ -34,7 +34,7 @@ static void nf_flow_rule_lwt_match(struct nf_flow_match *match,
- {
- 	struct nf_flow_key *mask = &match->mask;
- 	struct nf_flow_key *key = &match->key;
--	unsigned int enc_keys;
-+	unsigned long long enc_keys;
- 
- 	if (!tun_info || !(tun_info->mode & IP_TUNNEL_INFO_TX))
- 		return;
-@@ -43,8 +43,8 @@ static void nf_flow_rule_lwt_match(struct nf_flow_match *match,
- 	NF_FLOW_DISSECTOR(match, FLOW_DISSECTOR_KEY_ENC_KEYID, enc_key_id);
- 	key->enc_key_id.keyid = tunnel_id_to_key32(tun_info->key.tun_id);
- 	mask->enc_key_id.keyid = 0xffffffff;
--	enc_keys = BIT(FLOW_DISSECTOR_KEY_ENC_KEYID) |
--		   BIT(FLOW_DISSECTOR_KEY_ENC_CONTROL);
-+	enc_keys = BIT_ULL(FLOW_DISSECTOR_KEY_ENC_KEYID) |
-+		   BIT_ULL(FLOW_DISSECTOR_KEY_ENC_CONTROL);
- 
- 	if (ip_tunnel_info_af(tun_info) == AF_INET) {
- 		NF_FLOW_DISSECTOR(match, FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS,
-@@ -55,7 +55,7 @@ static void nf_flow_rule_lwt_match(struct nf_flow_match *match,
- 			mask->enc_ipv4.src = 0xffffffff;
- 		if (key->enc_ipv4.dst)
- 			mask->enc_ipv4.dst = 0xffffffff;
--		enc_keys |= BIT(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS);
-+		enc_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS);
- 		key->enc_control.addr_type = FLOW_DISSECTOR_KEY_IPV4_ADDRS;
- 	} else {
- 		memcpy(&key->enc_ipv6.src, &tun_info->key.u.ipv6.dst,
-@@ -70,7 +70,7 @@ static void nf_flow_rule_lwt_match(struct nf_flow_match *match,
- 			   sizeof(struct in6_addr)))
- 			memset(&mask->enc_ipv6.dst, 0xff,
- 			       sizeof(struct in6_addr));
--		enc_keys |= BIT(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS);
-+		enc_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS);
- 		key->enc_control.addr_type = FLOW_DISSECTOR_KEY_IPV6_ADDRS;
- 	}
- 
-@@ -163,14 +163,14 @@ static int nf_flow_rule_match(struct nf_flow_match *match,
- 		return -EOPNOTSUPP;
- 	}
- 	mask->control.addr_type = 0xffff;
--	match->dissector.used_keys |= BIT(key->control.addr_type);
-+	match->dissector.used_keys |= BIT_ULL(key->control.addr_type);
- 	mask->basic.n_proto = 0xffff;
- 
- 	switch (tuple->l4proto) {
- 	case IPPROTO_TCP:
- 		key->tcp.flags = 0;
- 		mask->tcp.flags = cpu_to_be16(be32_to_cpu(TCP_FLAG_RST | TCP_FLAG_FIN) >> 16);
--		match->dissector.used_keys |= BIT(FLOW_DISSECTOR_KEY_TCP);
-+		match->dissector.used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_TCP);
- 		break;
- 	case IPPROTO_UDP:
- 	case IPPROTO_GRE:
-@@ -182,9 +182,9 @@ static int nf_flow_rule_match(struct nf_flow_match *match,
- 	key->basic.ip_proto = tuple->l4proto;
- 	mask->basic.ip_proto = 0xff;
- 
--	match->dissector.used_keys |= BIT(FLOW_DISSECTOR_KEY_META) |
--				      BIT(FLOW_DISSECTOR_KEY_CONTROL) |
--				      BIT(FLOW_DISSECTOR_KEY_BASIC);
-+	match->dissector.used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_META) |
-+				      BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL) |
-+				      BIT_ULL(FLOW_DISSECTOR_KEY_BASIC);
- 
- 	switch (tuple->l4proto) {
- 	case IPPROTO_TCP:
-@@ -194,7 +194,7 @@ static int nf_flow_rule_match(struct nf_flow_match *match,
- 		key->tp.dst = tuple->dst_port;
- 		mask->tp.dst = 0xffff;
- 
--		match->dissector.used_keys |= BIT(FLOW_DISSECTOR_KEY_PORTS);
-+		match->dissector.used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_PORTS);
- 		break;
- 	}
- 
-diff --git a/net/netfilter/nf_tables_offload.c b/net/netfilter/nf_tables_offload.c
-index 910ef881c3b8..12ab78fa5d84 100644
---- a/net/netfilter/nf_tables_offload.c
-+++ b/net/netfilter/nf_tables_offload.c
-@@ -35,12 +35,12 @@ void nft_flow_rule_set_addr_type(struct nft_flow_rule *flow,
- 	struct nft_flow_key *mask = &match->mask;
- 	struct nft_flow_key *key = &match->key;
- 
--	if (match->dissector.used_keys & BIT(FLOW_DISSECTOR_KEY_CONTROL))
-+	if (match->dissector.used_keys & BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL))
- 		return;
- 
- 	key->control.addr_type = addr_type;
- 	mask->control.addr_type = 0xffff;
--	match->dissector.used_keys |= BIT(FLOW_DISSECTOR_KEY_CONTROL);
-+	match->dissector.used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_CONTROL);
- 	match->dissector.offset[FLOW_DISSECTOR_KEY_CONTROL] =
- 		offsetof(struct nft_flow_key, control);
- }
-@@ -59,7 +59,7 @@ static void nft_flow_rule_transfer_vlan(struct nft_offload_ctx *ctx,
- 		.mask	= match->mask.basic.n_proto,
- 	};
- 
--	if (match->dissector.used_keys & BIT(FLOW_DISSECTOR_KEY_VLAN) &&
-+	if (match->dissector.used_keys & BIT_ULL(FLOW_DISSECTOR_KEY_VLAN) &&
- 	    (match->key.vlan.vlan_tpid == htons(ETH_P_8021Q) ||
- 	     match->key.vlan.vlan_tpid == htons(ETH_P_8021AD))) {
- 		match->key.basic.n_proto = match->key.cvlan.vlan_tpid;
-@@ -70,8 +70,9 @@ static void nft_flow_rule_transfer_vlan(struct nft_offload_ctx *ctx,
- 		match->mask.vlan.vlan_tpid = ethertype.mask;
- 		match->dissector.offset[FLOW_DISSECTOR_KEY_CVLAN] =
- 			offsetof(struct nft_flow_key, cvlan);
--		match->dissector.used_keys |= BIT(FLOW_DISSECTOR_KEY_CVLAN);
--	} else if (match->dissector.used_keys & BIT(FLOW_DISSECTOR_KEY_BASIC) &&
-+		match->dissector.used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_CVLAN);
-+	} else if (match->dissector.used_keys &
-+		   BIT_ULL(FLOW_DISSECTOR_KEY_BASIC) &&
- 		   (match->key.basic.n_proto == htons(ETH_P_8021Q) ||
- 		    match->key.basic.n_proto == htons(ETH_P_8021AD))) {
- 		match->key.basic.n_proto = match->key.vlan.vlan_tpid;
-@@ -80,7 +81,7 @@ static void nft_flow_rule_transfer_vlan(struct nft_offload_ctx *ctx,
- 		match->mask.vlan.vlan_tpid = ethertype.mask;
- 		match->dissector.offset[FLOW_DISSECTOR_KEY_VLAN] =
- 			offsetof(struct nft_flow_key, vlan);
--		match->dissector.used_keys |= BIT(FLOW_DISSECTOR_KEY_VLAN);
-+		match->dissector.used_keys |= BIT_ULL(FLOW_DISSECTOR_KEY_VLAN);
- 	}
- }
- 
-diff --git a/net/netfilter/nft_cmp.c b/net/netfilter/nft_cmp.c
-index 6eb21a4f5698..cd4652259095 100644
---- a/net/netfilter/nft_cmp.c
-+++ b/net/netfilter/nft_cmp.c
-@@ -162,7 +162,7 @@ static int __nft_cmp_offload(struct nft_offload_ctx *ctx,
- 	memcpy(key + reg->offset, data, reg->len);
- 	memcpy(mask + reg->offset, datamask, reg->len);
- 
--	flow->match.dissector.used_keys |= BIT(reg->key);
-+	flow->match.dissector.used_keys |= BIT_ULL(reg->key);
- 	flow->match.dissector.offset[reg->key] = reg->base_offset;
- 
- 	if (reg->key == FLOW_DISSECTOR_KEY_META &&
--- 
-2.25.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+MjkganVpbC4gMjAyMywgMDg6MDIgZGUgbXVoYW1tYWQuaHVzYWluaS56dWxraWZsaUBpbnRlbC5j
+b206Cgo+IEhlbGxvLAo+Cj4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tCj4+IEZyb206IElu
+dGVsLXdpcmVkLWxhbiA8aW50ZWwtd2lyZWQtbGFuLWJvdW5jZXNAb3N1b3NsLm9yZz4gT24gQmVo
+YWxmIE9mCj4+IE5lZnRpbiwgU2FzaGEKPj4gU2VudDogU2F0dXJkYXksIDI5IEp1bHksIDIwMjMg
+Mzo1MSBQTQo+PiBUbzoga2tpb3RAdHV0YS5pbzsgQnJhbmRlYnVyZywgSmVzc2UgPGplc3NlLmJy
+YW5kZWJ1cmdAaW50ZWwuY29tPjsKPj4gTmd1eWVuLCBBbnRob255IEwgPGFudGhvbnkubC5uZ3V5
+ZW5AaW50ZWwuY29tPjsgUnVpbnNraXksIERpbWEKPj4gPGRpbWEucnVpbnNraXlAaW50ZWwuY29t
+PjsgQXZpdmksIEFtaXIgPGFtaXIuYXZpdmlAaW50ZWwuY29tPjsgU29lc2FuLCBSb24KPj4gPHJv
+bi5zb2VzYW5AaW50ZWwuY29tPgo+PiBDYzogTmV0ZGV2IDxuZXRkZXZAdmdlci5rZXJuZWwub3Jn
+PjsgSW50ZWwgV2lyZWQgTGFuIDxpbnRlbC13aXJlZC0KPj4gbGFuQGxpc3RzLm9zdW9zbC5vcmc+
+Cj4+IFN1YmplY3Q6IFJlOiBbSW50ZWwtd2lyZWQtbGFuXSBQUk9CTEVNOiBpZ2MgZHJpdmVyIC0g
+RXRoZXJuZXQgTklDIHNwZWVkIG5vdAo+PiBjaGFuZ2luZwo+Pgo+PiBPbiA3LzI1LzIwMjMgMjM6
+MzgsIGtraW90QHR1dGEuaW8gd3JvdGU6Cj4+ID4gWzEuXSBPbmUgbGluZSBzdW1tYXJ5IG9mIHRo
+ZSBwcm9ibGVtOiBpZ2MgZHJpdmVyIC0gRXRoZXJuZXQgTklDIHNwZWVkCj4+ID4gbm90IGNoYW5n
+aW5nIFsyLl0gRnVsbCBkZXNjcmlwdGlvbiBvZiB0aGUgcHJvYmxlbS9yZXBvcnQ6Cj4+ID4gVHJ5
+aW5nIHRvIGNoYW5nZSBteSBJMjI1LVYncyBjb25uZWN0aW9uIHNwZWVkIHRvIDEwMDAgTWJwcyBk
+b3duIGZyb20KPj4gPiAyNTAwIE1icHPCoGFzIGEgd29ya2Fyb3VuZMKgdG8gZGlzY29ubmVjdGlv
+biBpc3N1ZXMsIGJ1dCBjaGFuZ2VzIHdvbid0Cj4+ID4gYXBwbHksIHJlZ2FyZGxlc3Mgb2YgdXNp
+bmcgTmV0d29ya01hbmFnZXIgb3IgZXRodG9vbC4KPj4gPgo+PiA+IE5ldHdvcmtNYW5hZ2VyIGRp
+c3BsYXlzIHRoZSBjaGFuZ2VkIHZhbHVlcywgYnV0IHRoZXkgZG9uJ3Qgc2VlbSB0bwo+PiA+IGFj
+dHVhbGx5IGFwcGx5Lgo+PiA+Cj4+ID4gVXNpbmcgZXRodG9vbCB0byBjaGFuZ2UgdGhlIHNwZWVk
+IHRvIDEwMDAgTWJwcyAoYGV0aHRvb2wgLXMgZW5wNnMwCj4+ID4gc3BlZWQKPj4gPiAxMDAwYCkg
+YWxzbyBmYWlscy4KPj4gPiBUaGUgaW50ZXJmYWNlIGdldHMgYnJvdWdodCBkb3duIHRoZW4gdXAg
+d2l0aCB0aGUgc2FtZSAyNTAwIE1icHMgc3BlZWQuCj4+Cj4+IEkgd291bGQgc3VzcGVjdCAibGlu
+ayBzcGVlZCIgaXMgYSBjb25zZXF1ZW50IHByb2JsZW0gaGVyZS4gUGxlYXNlLCBjaGVjawo+PiB5
+b3VyIHNldHVwLiBXaHkgZG9lcyBkaXNjb25uZWN0aW9uIGhhcHBlbiBhZ2FpbiBhbmQgYWdhaW4/
+IEFueSBwcm9ibGVtcwo+PiB3aXRoIHRoZSBQQ0llIGxpbms/IChjYXVzZWQgYnkgcmVzZXQgYWRh
+cHRlcikgSSByZWNvbW1lbmQgeW91IGNvbnRhY3QgdGhlCj4+IHBsYXRmb3JtJ3MgdmVuZG9yIHN1
+cHBvcnQuCj4+ClRoaXMgaXMgYSBrbm93biBwcm9ibGVtIHdpdGggc29tZSBlYXJsaWVyIHZlcnNp
+b25zIG9mIEkyMjUtViBhbmQgaXQgaGFwcGVucyBvdXRzaWRlIG9mIExpbnV4IGFuZCB0aGUgaWdj
+IGRyaXZlci4gSXQgaGFzIGJlZW4gc29sdmVkIGJ5IG5ld2VyIHJldmlzaW9ucyBzbyBJIHRoaW5r
+IHdlIHNob3VsZCBub3Qgc3RyZXNzIG92ZXIgdGhhdC4gVGhlIGJlc3QgSSBjYW4gZG8gaXMgZ2V0
+IGEgcmVwbGFjZW1lbnQuCgo+Cj4gSU1ITywgd2Ugc2hhbGwgdXNlIHRoZSBhZHZlcnRpc2UgY29t
+bWFuZCBpbnN0ZWFkIG9mIHNwZWVkIGNvbW1hbmQKPiBzaW5jZSB3ZSBhcmUgdXNpbmcgbGVnYWN5
+IGFkdmVydGlzZSBzZXR0aW5nLgo+IENvdWxkIHlvdSB0cnkgd2l0aCBiZWxvdyBjb21tYW5kIGFu
+ZCBzZWUgaWYgdGhlIGxpbmsgYWN0aXZpdHkgaGFwcGVuCj4gYWNjb3JkaW5nbHk/Cj4KPiBFeDoK
+Pgo+IGV0aHRvb2wgLXMgPGludGVyZmFjZT4gYWR2ZXJ0aXNlIDx2YWx1ZT4KPgo+IDx2YWx1ZT4g
+LSAgOiAyICAgKDEwTWJwcykKPiAgOiA4ICAgKDEwME1icHMpCj4gIDogMzIgKDEwMDBNYnBzKQo+
+CkhpLApJIHJhbiB0aGUgY29tbWFuZCBgZXRodG9vbCAtcyBlbnA2czAgYWR2ZXJ0aXNlIDB4MDIw
+YCB3aGljaCBjb3JyZXNwb25kcyB0byAiMTAwMGJhc2VUIEZ1bGwiLCBhbmQgaXQgaW5kZWVkIHdv
+cmtzIGp1c3QgZmluZS4gSW50ZXJmYWNlIHF1aWNrbHkgYWRvcHRzIHRoZSAxIEdicHMgc3BlZWQu
+IFRoaXMgc2VlbXMgdG8gYmUgYSBiZXR0ZXIgY29tbWFuZCB0byB1c2UgdGhhbiAiZXRodG9vbCAt
+cyBzcGVlZCIuIFRoYW5rcyEKCgo+PiA+IFszLl0gS2V5d29yZHMgKGkuZS4sIG1vZHVsZXMsIG5l
+dHdvcmtpbmcsIGtlcm5lbCk6IGRyaXZlciwgbmV0d29ya2luZywKPj4gPiBpZ2MsIGludGVsIFs0
+Ll0gS2VybmVsIGluZm9ybWF0aW9uIFs0LjEuXSBLZXJuZWwgdmVyc2lvbiAoZnJvbQo+PiA+IC9w
+cm9jL3ZlcnNpb24pOsKgTGludXggdmVyc2lvbiA2LjQuNi1hcmNoMS0xCj4+ID4gKGxpbnV4QGFy
+Y2hsaW51eCkgKGdjYyAoR0NDKSAxMy4xLjEgMjAyMzA3MTQsIEdOVSBsZCAoR05VIEJpbnV0aWxz
+KQo+PiA+IDIuNDAuMCkgIzEgU01QIFBSRUVNUFRfRFlOQU1JQyBNb24sIDI0IEp1bCAyMDIzIDIw
+OjE5OjM4ICswMDAwIFs0LjIuXQo+PiA+IEtlcm5lbCAuY29uZmlnIGZpbGU6IENhbm5vdCBvYnRh
+aW4gWzUuXSBNb3N0IHJlY2VudCBrZXJuZWwgdmVyc2lvbgo+PiA+IHdoaWNoIGRpZCBub3QgaGF2
+ZSB0aGUgYnVnOiA2LjIuOSBvciBtb3JlIHJlY2VudD8KPj4gPiBbNi5dIE91dHB1dCBvZiBPb3Bz
+Li4gbWVzc2FnZSAoaWYgYXBwbGljYWJsZSkgd2l0aCBzeW1ib2xpYwo+PiA+IGluZm9ybWF0aW9u
+IHJlc29sdmVkIChzZWUgRG9jdW1lbnRhdGlvbi9hZG1pbi1ndWlkZS9idWctaHVudGluZy5yc3Qp
+Cj4+ID4gTi9BIFs3Ll0gQSBzbWFsbCBzaGVsbCBzY3JpcHQgb3IgZXhhbXBsZSBwcm9ncmFtIHdo
+aWNoIHRyaWdnZXJzIHRoZQo+PiA+IHByb2JsZW0gKGlmIHBvc3NpYmxlKSAjIGV0aHRvb2wgLXMg
+W0lOVEVSRkFDRV0gc3BlZWQgMTAwMCBbOC5dCj4+ID4gRW52aXJvbm1lbnQgWzguMS5dIFNvZnR3
+YXJlIChhZGQgdGhlIG91dHB1dCBvZiB0aGUgdmVyX2xpbnV4IHNjcmlwdAo+PiA+IGhlcmUpIENh
+bm5vdCBvYnRhaW4gWzguMi5dIFByb2Nlc3NvciBpbmZvcm1hdGlvbiAoZnJvbSAvcHJvYy9jcHVp
+bmZvKToKPj4gPiBwcm9jZXNzb3IgOiAwCj4+ID4gdmVuZG9yX2lkIDogQXV0aGVudGljQU1ECj4+
+ID4gY3B1IGZhbWlseSA6IDIzCj4+ID4gbW9kZWwgOiAxMTMKPj4gPiBtb2RlbCBuYW1lIDogQU1E
+IFJ5emVuIDUgMzYwMCA2LUNvcmUgUHJvY2Vzc29yIHN0ZXBwaW5nIDogMCBtaWNyb2NvZGUKPj4g
+PiA6IDB4ODcwMTAzMCBjcHUgTUh6IDogMjQ3My4xNTMgY2FjaGUgc2l6ZSA6IDUxMiBLQiBwaHlz
+aWNhbCBpZCA6IDAKPj4gPiBzaWJsaW5ncyA6IDEyIGNvcmUgaWQgOiAwIGNwdSBjb3JlcyA6IDYg
+YXBpY2lkIDogMCBpbml0aWFsIGFwaWNpZCA6IDAKPj4gPiBmcHUgOiB5ZXMgZnB1X2V4Y2VwdGlv
+biA6IHllcyBjcHVpZCBsZXZlbCA6IDE2IHdwIDogeWVzIGZsYWdzIDogZnB1Cj4+ID4gdm1lIGRl
+IHBzZSB0c2MgbXNyIHBhZSBtY2UgY3g4IGFwaWMgc2VwIG10cnIgcGdlIG1jYSBjbW92IHBhdCBw
+c2UzNgo+PiA+IGNsZmx1c2ggbW14IGZ4c3Igc3NlIHNzZTIgaHQgc3lzY2FsbCBueCBtbXhleHQg
+Znhzcl9vcHQgcGRwZTFnYiByZHRzY3AKPj4gPiBsbSBjb25zdGFudF90c2MgcmVwX2dvb2Qgbm9w
+bCBub25zdG9wX3RzYyBjcHVpZCBleHRkX2FwaWNpZCBhcGVyZm1wZXJmCj4+ID4gcmFwbCBwbmkg
+cGNsbXVscWRxIG1vbml0b3Igc3NzZTMgZm1hIGN4MTYgc3NlNF8xCj4+ID4gc3NlNF8yIHgyYXBp
+YyBtb3ZiZSBwb3BjbnQgYWVzIHhzYXZlIGF2eCBmMTZjIHJkcmFuZCBsYWhmX2xtCj4+ID4gY21w
+X2xlZ2FjeSBzdm0gZXh0YXBpYyBjcjhfbGVnYWN5IGFibSBzc2U0YSBtaXNhbGlnbnNzZSAzZG5v
+d3ByZWZldGNoCj4+ID4gb3N2dyBpYnMgc2tpbml0IHdkdCB0Y2UgdG9wb2V4dCBwZXJmY3RyX2Nv
+cmUgcGVyZmN0cl9uYiBicGV4dAo+PiA+IHBlcmZjdHJfbGxjIG13YWl0eCBjcGIgY2F0X2wzIGNk
+cF9sMyBod19wc3RhdGUgc3NiZCBtYmEgaWJwYiBzdGlicAo+PiA+IHZtbWNhbGwgZnNnc2Jhc2Ug
+Ym1pMQo+PiA+IGF2eDIgc21lcCBibWkyIGNxbSByZHRfYSByZHNlZWQgYWR4IHNtYXAgY2xmbHVz
+aG9wdCBjbHdiIHNoYV9uaQo+PiA+IHhzYXZlb3B0IHhzYXZlYyB4Z2V0YnYxIGNxbV9sbGMgY3Ft
+X29jY3VwX2xsYyBjcW1fbWJtX3RvdGFsCj4+ID4gY3FtX21ibV9sb2NhbCBjbHplcm8gaXJwZXJm
+IHhzYXZlZXJwdHIgcmRwcnUgd2Jub2ludmQgYXJhdCBucHQgbGJydgo+PiA+IHN2bV9sb2NrIG5y
+aXBfc2F2ZSB0c2Nfc2NhbGUgdm1jYl9jbGVhbiBmbHVzaGJ5YXNpZCBkZWNvZGVhc3Npc3RzCj4+
+ID4gcGF1c2VmaWx0ZXIgcGZ0aHJlc2hvbGQgYXZpYyB2X3Ztc2F2ZV92bWxvYWQgdmdpZiB2X3Nw
+ZWNfY3RybCByZHBpZAo+PiA+IG92ZXJmbG93X3JlY292IHN1Y2NvciBzbWNhIHNldiBzZXZfZXMg
+YnVncyA6IHN5c3JldF9zc19hdHRycwo+PiA+IHNwZWN0cmVfdjEgc3BlY3RyZV92MiBzcGVjX3N0
+b3JlX2J5cGFzcyByZXRibGVlZCBzbXRfcnNiIGJvZ29taXBzIDoKPj4gPiA3MTg4LjUwIFRMQiBz
+aXplIDogMzA3MiA0SyBwYWdlcyBjbGZsdXNoIHNpemUgOiA2NCBjYWNoZV9hbGlnbm1lbnQgOgo+
+PiA+IDY0IGFkZHJlc3Mgc2l6ZXMgOiA0MyBiaXRzIHBoeXNpY2FsLCA0OCBiaXRzIHZpcnR1YWwg
+cG93ZXIgbWFuYWdlbWVudDoKPj4gPiB0cyB0dHAgdG0gaHdwc3RhdGUgY3BiIGVmZl9mcmVxX3Jv
+IFsxM10gWzE0XQo+PiA+Cj4+ID4gKHJlcGVhdHMgMTJ4OiAxMiB0aHJlYWRzIHByb2Nlc3NvcikK
+Pj4gPiBbOC4zLl0gTW9kdWxlIGluZm9ybWF0aW9uIChmcm9tIC9wcm9jL21vZHVsZXMpOgo+PiA+
+IGlnYyAxODg0MTYgMCAtIExpdmUgMHgwMDAwMDAwMDAwMDAwMDAwIFs4LjQuXSBMb2FkZWQgZHJp
+dmVyIGFuZAo+PiA+IGhhcmR3YXJlIGluZm9ybWF0aW9uICgvcHJvYy9pb3BvcnRzLCAvcHJvYy9p
+b21lbSkgL3Byb2MvaW9wb3J0cwo+PiA+IDAwMDAtMDAwMCA6IFBDSSBCdXMgMDAwMDowMAo+PiA+
+ICDCoCAwMDAwLTAwMDAgOiBkbWExCj4+ID4gIMKgIDAwMDAtMDAwMCA6IHBpYzEKPj4gPiAgwqAg
+MDAwMC0wMDAwIDogdGltZXIwCj4+ID4gIMKgIDAwMDAtMDAwMCA6IHRpbWVyMQo+PiA+ICDCoCAw
+MDAwLTAwMDAgOiBrZXlib2FyZAo+PiA+ICDCoCAwMDAwLTAwMDAgOiBQTlAwODAwOjAwCj4+ID4g
+IMKgIDAwMDAtMDAwMCA6IGtleWJvYXJkCj4+ID4gIMKgIDAwMDAtMDAwMCA6IHJ0YzAKPj4gPiAg
+wqAgMDAwMC0wMDAwIDogZG1hIHBhZ2UgcmVnCj4+ID4gIMKgIDAwMDAtMDAwMCA6IHBpYzIKPj4g
+PiAgwqAgMDAwMC0wMDAwIDogQUNQSSBQTTJfQ05UX0JMSwo+PiA+ICDCoCAwMDAwLTAwMDAgOiBk
+bWEyCj4+ID4gIMKgIDAwMDAtMDAwMCA6IGZwdQo+PiA+ICDCoCAwMDAwLTAwMDAgOiBwbnAgMDA6
+MDMKPj4gPiAgwqAgMDAwMC0wMDAwIDogcG5wIDAwOjAzCj4+ID4gMDAwMC0wMDAwIDogUENJIEJ1
+cyAwMDAwOjAwCj4+ID4gMDAwMC0wMDAwIDogUENJIEJ1cyAwMDAwOjAwCj4+ID4gIMKgIDAwMDAt
+MDAwMCA6IHNlcmlhbAo+PiA+ICDCoCAwMDAwLTAwMDAgOiBwbnAgMDA6MDQKPj4gPiAgwqAgMDAw
+MC0wMDAwIDogcG5wIDAwOjA0Cj4+ID4gIMKgIDAwMDAtMDAwMCA6IHBucCAwMDowNAo+PiA+ICDC
+oCAwMDAwLTAwMDAgOiBwbnAgMDA6MDQKPj4gPiAgwqDCoMKgIDAwMDAtMDAwMCA6IEFDUEkgUE0x
+YV9FVlRfQkxLCj4+ID4gIMKgwqDCoCAwMDAwLTAwMDAgOiBBQ1BJIFBNMWFfQ05UX0JMSwo+PiA+
+ICDCoMKgwqAgMDAwMC0wMDAwIDogQUNQSSBQTV9UTVIKPj4gPiAgwqDCoMKgIDAwMDAtMDAwMCA6
+IEFDUEkgR1BFMF9CTEsKPj4gPiAgwqAgMDAwMC0wMDAwIDogcG5wIDAwOjA0Cj4+ID4gIMKgIDAw
+MDAtMDAwMCA6IHBucCAwMDowNAo+PiA+ICDCoCAwMDAwLTAwMDAgOiBwbnAgMDA6MDQKPj4gPiAg
+wqDCoMKgIDAwMDAtMDAwMCA6IHBpaXg0X3NtYnVzCj4+ID4gIMKgIDAwMDAtMDAwMCA6IHBucCAw
+MDowNAo+PiA+ICDCoMKgwqAgMDAwMC0wMDAwIDogcGlpeDRfc21idXMKPj4gPiAgwqAgMDAwMC0w
+MDAwIDogcG5wIDAwOjA0Cj4+ID4gIMKgIDAwMDAtMDAwMCA6IHBucCAwMDowNAo+PiA+ICDCoCAw
+MDAwLTAwMDAgOiBwbnAgMDA6MDQKPj4gPiAgwqAgMDAwMC0wMDAwIDogcG5wIDAwOjA0Cj4+ID4g
+IMKgIDAwMDAtMDAwMCA6IHBucCAwMDowNAo+PiA+ICDCoCAwMDAwLTAwMDAgOiBwbnAgMDA6MDQK
+Pj4gPiAgwqAgMDAwMC0wMDAwIDogcG5wIDAwOjA0Cj4+ID4gMDAwMC0wMDAwIDogUENJIGNvbmYx
+Cj4+ID4gMDAwMC0wMDAwIDogUENJIEJ1cyAwMDAwOjAwCj4+ID4gIMKgIDAwMDAtMDAwMCA6IFBD
+SSBCdXMgMDAwMDowNwo+PiA+ICDCoMKgwqAgMDAwMC0wMDAwIDogUENJIEJ1cyAwMDAwOjA4Cj4+
+ID4gIMKgwqDCoMKgwqAgMDAwMC0wMDAwIDogUENJIEJ1cyAwMDAwOjA5Cj4+ID4gIMKgwqDCoMKg
+wqDCoMKgIDAwMDAtMDAwMCA6IDAwMDA6MDk6MDAuMAo+PiA+Cj4+ID4gL3Byb2MvaW9tZW0KPj4g
+PiAwMDAwMDAwMC0wMDAwMDAwMCA6IFJlc2VydmVkCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBT
+eXN0ZW0gUkFNCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBSZXNlcnZlZAo+PiA+ICDCoCAwMDAw
+MDAwMC0wMDAwMDAwMCA6IFBDSSBCdXMgMDAwMDowMAo+PiA+ICDCoCAwMDAwMDAwMC0wMDAwMDAw
+MCA6IFN5c3RlbSBST00KPj4gPiAwMDAwMDAwMC0wMDAwMDAwMCA6IFN5c3RlbSBSQU0KPj4gPiAw
+MDAwMDAwMC0wMDAwMDAwMCA6IFJlc2VydmVkCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBTeXN0
+ZW0gUkFNCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBBQ1BJIE5vbi12b2xhdGlsZSBTdG9yYWdl
+Cj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBTeXN0ZW0gUkFNCj4+ID4gMDAwMDAwMDAtMDAwMDAw
+MDAgOiBSZXNlcnZlZAo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogU3lzdGVtIFJBTQo+PiA+IDAw
+MDAwMDAwLTAwMDAwMDAwIDogU3lzdGVtIFJBTQo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogU3lz
+dGVtIFJBTQo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogU3lzdGVtIFJBTQo+PiA+IDAwMDAwMDAw
+LTAwMDAwMDAwIDogU3lzdGVtIFJBTQo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogUmVzZXJ2ZWQK
+Pj4gPiAwMDAwMDAwMC0wMDAwMDAwMCA6IFN5c3RlbSBSQU0KPj4gPiAwMDAwMDAwMC0wMDAwMDAw
+MCA6IFJlc2VydmVkCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBTeXN0ZW0gUkFNCj4+ID4gMDAw
+MDAwMDAtMDAwMDAwMDAgOiBSZXNlcnZlZAo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogU3lzdGVt
+IFJBTQo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogUmVzZXJ2ZWQKPj4gPiAgwqAgMDAwMDAwMDAt
+MDAwMDAwMDAgOiBNU0ZUMDEwMTowMAo+PiA+ICDCoMKgwqAgMDAwMDAwMDAtMDAwMDAwMDAgOiBN
+U0ZUMDEwMTowMAo+PiA+ICDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IE1TRlQwMTAxOjAwCj4+ID4g
+IMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IE1TRlQwMTAxOjAwCj4+ID4gMDAwMDAwMDAtMDAw
+MDAwMDAgOiBBQ1BJIFRhYmxlcwo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogQUNQSSBOb24tdm9s
+YXRpbGUgU3RvcmFnZQo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogUmVzZXJ2ZWQKPj4gPiAwMDAw
+MDAwMC0wMDAwMDAwMCA6IFN5c3RlbSBSQU0KPj4gPiAwMDAwMDAwMC0wMDAwMDAwMCA6IFJlc2Vy
+dmVkCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBQQ0kgQnVzIDAwMDA6MDAKPj4gPiAgwqAgMDAw
+MDAwMDAtMDAwMDAwMDAgOiBQQ0kgTU1DT05GSUcgMDAwMCBbYnVzIDAwLTdmXQo+PiA+ICDCoMKg
+wqAgMDAwMDAwMDAtMDAwMDAwMDAgOiBwbnAgMDA6MDAKPj4gPiAgwqAgMDAwMDAwMDAtMDAwMDAw
+MDAgOiBQQ0kgQnVzIDAwMDA6MGIKPj4gPiAgwqDCoMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogMDAw
+MDowYjowMC4zCj4+ID4gIMKgwqDCoMKgwqAgMDAwMDAwMDAtMDAwMDAwMDAgOiB4aGNpLWhjZAo+
+PiA+ICDCoMKgwqAgMDAwMDAwMDAtMDAwMDAwMDAgOiAwMDAwOjBiOjAwLjEKPj4gPiAgwqDCoMKg
+wqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IGNjcAo+PiA+ICDCoMKgwqAgMDAwMDAwMDAtMDAwMDAw
+MDAgOiAwMDAwOjBiOjAwLjQKPj4gPiAgwqDCoMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IElD
+SCBIRCBhdWRpbwo+PiA+ICDCoMKgwqAgMDAwMDAwMDAtMDAwMDAwMDAgOiAwMDAwOjBiOjAwLjEK
+Pj4gPiAgwqDCoMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IGNjcAo+PiA+ICDCoCAwMDAwMDAw
+MC0wMDAwMDAwMCA6IFBDSSBCdXMgMDAwMDowNwo+PiA+ICDCoMKgwqAgMDAwMDAwMDAtMDAwMDAw
+MDAgOiBQQ0kgQnVzIDAwMDA6MDgKPj4gPiAgwqDCoMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6
+IFBDSSBCdXMgMDAwMDowOQo+PiA+ICDCoMKgwqDCoMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6
+IDAwMDA6MDk6MDAuMAo+PiA+ICDCoMKgwqDCoMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IDAw
+MDA6MDk6MDAuMAo+PiA+ICDCoMKgwqDCoMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IDAwMDA6
+MDk6MDAuMQo+PiA+ICDCoMKgwqDCoMKgwqDCoMKgwqAgMDAwMDAwMDAtMDAwMDAwMDAgOiBJQ0gg
+SEQgYXVkaW8KPj4gPiAgwqDCoMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogMDAwMDowNzowMC4wCj4+
+ID4gIMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogUENJIEJ1cyAwMDAwOjAyCj4+ID4gIMKgwqDCoCAw
+MDAwMDAwMC0wMDAwMDAwMCA6IFBDSSBCdXMgMDAwMDowMwo+PiA+ICDCoMKgwqDCoMKgIDAwMDAw
+MDAwLTAwMDAwMDAwIDogUENJIEJ1cyAwMDAwOjA2Cj4+ID4gIMKgwqDCoMKgwqDCoMKgIDAwMDAw
+MDAwLTAwMDAwMDAwIDogMDAwMDowNjowMC4wCj4+ID4gIMKgwqDCoMKgwqDCoMKgwqDCoCAwMDAw
+MDAwMC0wMDAwMDAwMCA6IGlnYwo+PiA+ICDCoMKgwqDCoMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAw
+MCA6IDAwMDA6MDY6MDAuMAo+PiA+ICDCoMKgwqDCoMKgwqDCoMKgwqAgMDAwMDAwMDAtMDAwMDAw
+MDAgOiBpZ2MKPj4gPiAgwqDCoMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogMDAwMDowMjowMC4xCj4+
+ID4gIMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IDAwMDA6MDI6MDAuMQo+PiA+ICDCoMKgwqDC
+oMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogYWhjaQo+PiA+ICDCoMKgwqAgMDAwMDAwMDAtMDAwMDAw
+MDAgOiAwMDAwOjAyOjAwLjAKPj4gPiAgwqDCoMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IHho
+Y2ktaGNkCj4+ID4gIMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogUENJIEJ1cyAwMDAwOjAxCj4+ID4g
+IMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IDAwMDA6MDE6MDAuMAo+PiA+ICDCoMKgwqDCoMKg
+IDAwMDAwMDAwLTAwMDAwMDAwIDogbnZtZQo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogcG5wIDAw
+OjAxCj4+ID4gIMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogTVNGVDAxMDE6MDAKPj4gPiAwMDAwMDAw
+MC0wMDAwMDAwMCA6IGFtZF9pb21tdQo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogUmVzZXJ2ZWQK
+Pj4gPiAwMDAwMDAwMC0wMDAwMDAwMCA6IElPQVBJQyAwCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAg
+OiBJT0FQSUMgMQo+PiA+IDAwMDAwMDAwLTAwMDAwMDAwIDogUmVzZXJ2ZWQKPj4gPiAgwqAgMDAw
+MDAwMDAtMDAwMDAwMDAgOiBwbnAgMDA6MDQKPj4gPiAwMDAwMDAwMC0wMDAwMDAwMCA6IFJlc2Vy
+dmVkCj4+ID4gIMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogQU1ESUYwMzA6MDAKPj4gPiAgwqDCoMKg
+IDAwMDAwMDAwLTAwMDAwMDAwIDogQU1ESUYwMzA6MDAgQU1ESUYwMzA6MDAKPj4gPiAwMDAwMDAw
+MC0wMDAwMDAwMCA6IFJlc2VydmVkCj4+ID4gIMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogSFBFVCAw
+Cj4+ID4gIMKgwqDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IFBOUDAxMDM6MDAKPj4gPiAwMDAwMDAw
+MC0wMDAwMDAwMCA6IFJlc2VydmVkCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBSZXNlcnZlZAo+
+PiA+ICDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IEFNREkwMDMwOjAwCj4+ID4gIMKgwqDCoCAwMDAw
+MDAwMC0wMDAwMDAwMCA6IEFNREkwMDMwOjAwIEFNREkwMDMwOjAwCj4+ID4gMDAwMDAwMDAtMDAw
+MDAwMDAgOiBwbnAgMDA6MDQKPj4gPiAwMDAwMDAwMC0wMDAwMDAwMCA6IFJlc2VydmVkCj4+ID4g
+IMKgIDAwMDAwMDAwLTAwMDAwMDAwIDogQU1ESTAwMTA6MDMKPj4gPiAgwqDCoMKgIDAwMDAwMDAw
+LTAwMDAwMDAwIDogQU1ESTAwMTA6MDMgQU1ESTAwMTA6MDMKPj4gPiAwMDAwMDAwMC0wMDAwMDAw
+MCA6IFJlc2VydmVkCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBMb2NhbCBBUElDCj4+ID4gIMKg
+IDAwMDAwMDAwLTAwMDAwMDAwIDogcG5wIDAwOjA0Cj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBw
+bnAgMDA6MDQKPj4gPiAwMDAwMDAwMC0wMDAwMDAwMCA6IFN5c3RlbSBSQU0KPj4gPiAgwqAgMDAw
+MDAwMDAtMDAwMDAwMDAgOiBLZXJuZWwgY29kZQo+PiA+ICDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6
+IEtlcm5lbCByb2RhdGEKPj4gPiAgwqAgMDAwMDAwMDAtMDAwMDAwMDAgOiBLZXJuZWwgZGF0YQo+
+PiA+ICDCoCAwMDAwMDAwMC0wMDAwMDAwMCA6IEtlcm5lbCBic3MKPj4gPiAwMDAwMDAwMC0wMDAw
+MDAwMCA6IFJlc2VydmVkCj4+ID4gMDAwMDAwMDAtMDAwMDAwMDAgOiBQQ0kgQnVzIDAwMDA6MDAK
+Pj4gPiAgwqAgMDAwMDAwMDAtMDAwMDAwMDAgOiBQQ0kgQnVzIDAwMDA6MDcKPj4gPiAgwqDCoMKg
+IDAwMDAwMDAwLTAwMDAwMDAwIDogUENJIEJ1cyAwMDAwOjA4Cj4+ID4gIMKgwqDCoMKgwqAgMDAw
+MDAwMDAtMDAwMDAwMDAgOiBQQ0kgQnVzIDAwMDA6MDkKPj4gPiAgwqDCoMKgwqDCoMKgwqAgMDAw
+MDAwMDAtMDAwMDAwMDAgOiAwMDAwOjA5OjAwLjAKPj4gPiAgwqDCoMKgwqDCoMKgwqAgMDAwMDAw
+MDAtMDAwMDAwMDAgOiAwMDAwOjA5OjAwLjAKPj4gPiAwMDAwMDAwMC0wMDAwMDAwMCA6IDAwMDA6
+MDk6MDAuMAo+PiA+IFs4LjUuXSBQQ0kgaW5mb3JtYXRpb24gKCdsc3BjaSAtdnZ2JyBhcyByb290
+KQo+PiA+IDA2OjAwLjAgRXRoZXJuZXQgY29udHJvbGxlcjogSW50ZWwgQ29ycG9yYXRpb24gRXRo
+ZXJuZXQgQ29udHJvbGxlcgo+PiA+IEkyMjUtViAocmV2IDAyKQo+PiA+IFN1YnN5c3RlbTogQVNV
+U1RlSyBDb21wdXRlciBJbmMuIEV0aGVybmV0IENvbnRyb2xsZXIgSTIyNS1WCj4+ID4gQ29udHJv
+bDogSS9PLSBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0KPj4g
+UGFyRXJyLQo+PiA+IFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4Kwo+PiA+IFN0YXR1
+czogQ2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQt
+Cj4+ID4gPFRBYm9ydC0KPj4gPiA8TUFib3J0LSA+U0VSUi0gPFBFUlItIElOVHgtCj4+ID4gTGF0
+ZW5jeTogMCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRlcwo+PiA+IEludGVycnVwdDogcGluIEEg
+cm91dGVkIHRvIElSUSAzNgo+PiA+IElPTU1VIGdyb3VwOiAxNQo+PiA+IFJlZ2lvbiAwOiBNZW1v
+cnkgYXQgZmNjMDAwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9MU1dCj4+ID4g
+UmVnaW9uIDM6IE1lbW9yeSBhdCBmY2QwMDAwMCAoMzItYml0LCBub24tcHJlZmV0Y2hhYmxlKSBb
+c2l6ZT0xNktdCj4+ID4gQ2FwYWJpbGl0aWVzOiBbNDBdIFBvd2VyIE1hbmFnZW1lbnQgdmVyc2lv
+biAzCj4+ID4gRmxhZ3M6IFBNRUNsay0gRFNJKyBEMS0gRDItIEF1eEN1cnJlbnQ9MG1BCj4+ID4g
+UE1FKEQwKyxEMS0sRDItLEQzaG90KyxEM2NvbGQrKQo+PiA+IFN0YXR1czogRDAgTm9Tb2Z0UnN0
+KyBQTUUtRW5hYmxlLSBEU2VsPTAgRFNjYWxlPTEgUE1FLQo+PiA+IENhcGFiaWxpdGllczogWzUw
+XSBNU0k6IEVuYWJsZS0gQ291bnQ9MS8xIE1hc2thYmxlKyA2NGJpdCsKPj4gPiBBZGRyZXNzOiAw
+MDAwMDAwMDAwMDAwMDAwwqAgRGF0YTogMDAwMAo+PiA+IE1hc2tpbmc6IDAwMDAwMDAwwqAgUGVu
+ZGluZzogMDAwMDAwMDAKPj4gPiBDYXBhYmlsaXRpZXM6IFs3MF0gTVNJLVg6IEVuYWJsZSsgQ291
+bnQ9NSBNYXNrZWQtIFZlY3RvciB0YWJsZTogQkFSPTMKPj4gPiBvZmZzZXQ9MDAwMDAwMDAKPj4g
+PiBQQkE6IEJBUj0zIG9mZnNldD0wMDAwMjAwMAo+PiA+IENhcGFiaWxpdGllczogW2EwXSBFeHBy
+ZXNzICh2MikgRW5kcG9pbnQsIE1TSSAwMAo+PiA+IERldkNhcDogTWF4UGF5bG9hZCA1MTIgYnl0
+ZXMsIFBoYW50RnVuYyAwLCBMYXRlbmN5IEwwcyA8NTEybnMsIEwxCj4+ID4gPDY0dXMKPj4gPiBF
+eHRUYWctIEF0dG5CdG4tIEF0dG5JbmQtIFB3ckluZC0gUkJFKyBGTFJlc2V0KyBTbG90UG93ZXJM
+aW1pdCAwVwo+PiA+IERldkN0bDogQ29yckVycisgTm9uRmF0YWxFcnIrIEZhdGFsRXJyKyBVbnN1
+cFJlcSsKPj4gPiBSbHhkT3JkKyBFeHRUYWctIFBoYW50RnVuYy0gQXV4UHdyLSBOb1Nub29wKyBG
+TFJlc2V0LQo+PiA+IE1heFBheWxvYWQgNTEyIGJ5dGVzLCBNYXhSZWFkUmVxIDUxMiBieXRlcwo+
+PiA+IERldlN0YTogQ29yckVyci0gTm9uRmF0YWxFcnItIEZhdGFsRXJyLSBVbnN1cFJlcS0gQXV4
+UHdyKyBUcmFuc1BlbmQtCj4+ID4gTG5rQ2FwOiBQb3J0ICM5LCBTcGVlZCA1R1QvcywgV2lkdGgg
+eDEsIEFTUE0gTDEsIEV4aXQgTGF0ZW5jeSBMMSA8NHVzCj4+ID4gQ2xvY2tQTS0gU3VycHJpc2Ut
+IExMQWN0UmVwLSBCd05vdC0gQVNQTU9wdENvbXArCj4+ID4gTG5rQ3RsOiBBU1BNIERpc2FibGVk
+OyBSQ0IgNjQgYnl0ZXMsIERpc2FibGVkLSBDb21tQ2xrKwo+PiA+IEV4dFN5bmNoLSBDbG9ja1BN
+LSBBdXRXaWREaXMtIEJXSW50LSBBdXRCV0ludC0KPj4gPiBMbmtTdGE6IFNwZWVkIDVHVC9zLCBX
+aWR0aCB4MQo+PiA+IFRyRXJyLSBUcmFpbi0gU2xvdENsaysgRExBY3RpdmUtIEJXTWdtdC0gQUJX
+TWdtdC0KPj4gPiBEZXZDYXAyOiBDb21wbGV0aW9uIFRpbWVvdXQ6IFJhbmdlIEFCQ0QsIFRpbWVv
+dXREaXMrIE5ST1ByUHJQLSBMVFIrCj4+ID4gMTBCaXRUYWdDb21wLSAxMEJpdFRhZ1JlcS0gT0JG
+RiBOb3QgU3VwcG9ydGVkLCBFeHRGbXQtIEVFVExQUHJlZml4LQo+PiA+IEVtZXJnZW5jeVBvd2Vy
+UmVkdWN0aW9uIE5vdCBTdXBwb3J0ZWQsCj4+IEVtZXJnZW5jeVBvd2VyUmVkdWN0aW9uSW5pdC0K
+Pj4gPiBGUlMtIFRQSENvbXAtIEV4dFRQSENvbXAtCj4+ID4gQXRvbWljT3BzQ2FwOiAzMmJpdC0g
+NjRiaXQtIDEyOGJpdENBUy0KPj4gPiBEZXZDdGwyOiBDb21wbGV0aW9uIFRpbWVvdXQ6IDUwdXMg
+dG8gNTBtcywgVGltZW91dERpcy0gTFRSLQo+PiA+IDEwQml0VGFnUmVxLSBPQkZGIERpc2FibGVk
+LAo+PiA+IEF0b21pY09wc0N0bDogUmVxRW4tCj4+ID4gTG5rQ3RsMjogVGFyZ2V0IExpbmsgU3Bl
+ZWQ6IDVHVC9zLCBFbnRlckNvbXBsaWFuY2UtIFNwZWVkRGlzLSBUcmFuc21pdAo+PiA+IE1hcmdp
+bjogTm9ybWFsIE9wZXJhdGluZyBSYW5nZSwgRW50ZXJNb2RpZmllZENvbXBsaWFuY2UtCj4+ID4g
+Q29tcGxpYW5jZVNPUy0KPj4gPiBDb21wbGlhbmNlIFByZXNldC9EZS1lbXBoYXNpczogLTZkQiBk
+ZS1lbXBoYXNpcywgMGRCIHByZXNob290Cj4+ID4gTG5rU3RhMjogQ3VycmVudCBEZS1lbXBoYXNp
+cyBMZXZlbDogLTZkQiwgRXF1YWxpemF0aW9uQ29tcGxldGUtCj4+ID4gRXF1YWxpemF0aW9uUGhh
+c2UxLQo+PiA+IEVxdWFsaXphdGlvblBoYXNlMi0gRXF1YWxpemF0aW9uUGhhc2UzLSBMaW5rRXF1
+YWxpemF0aW9uUmVxdWVzdC0KPj4gPiBSZXRpbWVyLSAyUmV0aW1lcnMtIENyb3NzbGlua1Jlczog
+dW5zdXBwb3J0ZWQKPj4gPiBDYXBhYmlsaXRpZXM6IFsxMDAgdjJdIEFkdmFuY2VkIEVycm9yIFJl
+cG9ydGluZwo+PiA+IFVFU3RhOiBETFAtIFNERVMtIFRMUC0gRkNQLSBDbXBsdFRPLSBDbXBsdEFi
+cnQtIFVueENtcGx0LSBSeE9GLQo+PiA+IE1hbGZUTFAtCj4+ID4gRUNSQy0gVW5zdXBSZXEtIEFD
+U1Zpb2wtCj4+ID4gVUVNc2s6IERMUC0gU0RFUy0gVExQLSBGQ1AtIENtcGx0VE8tIENtcGx0QWJy
+dC0gVW54Q21wbHQtIFJ4T0YtCj4+ID4gTWFsZlRMUC0KPj4gPiBFQ1JDLSBVbnN1cFJlcS0gQUNT
+VmlvbC0KPj4gPiBVRVN2cnQ6IERMUCsgU0RFUysgVExQLSBGQ1ArIENtcGx0VE8tIENtcGx0QWJy
+dC0gVW54Q21wbHQtIFJ4T0YrCj4+ID4gTWFsZlRMUCsgRUNSQy0gVW5zdXBSZXEtIEFDU1Zpb2wt
+Cj4+ID4gQ0VTdGE6IFJ4RXJyLSBCYWRUTFAtIEJhZERMTFAtIFJvbGxvdmVyLSBUaW1lb3V0LSBB
+ZHZOb25GYXRhbEVyci0KPj4gPiBDRU1zazogUnhFcnItIEJhZFRMUC0gQmFkRExMUC0gUm9sbG92
+ZXItIFRpbWVvdXQtIEFkdk5vbkZhdGFsRXJyKwo+PiA+IEFFUkNhcDogRmlyc3QgRXJyb3IgUG9p
+bnRlcjogMDAsIEVDUkNHZW5DYXArIEVDUkNHZW5Fbi0gRUNSQ0Noa0NhcCsKPj4gPiBFQ1JDQ2hr
+RW4tCj4+ID4gTXVsdEhkclJlY0NhcC0gTXVsdEhkclJlY0VuLSBUTFBQZnhQcmVzLSBIZHJMb2dD
+YXAtCj4+ID4gSGVhZGVyTG9nOiAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMAo+
+PiA+IENhcGFiaWxpdGllczogWzE0MCB2MV0gRGV2aWNlIFNlcmlhbCBOdW1iZXIgMjQtNGItZmUt
+ZmYtZmYtNWEtNDAtODYKPj4gPiBDYXBhYmlsaXRpZXM6IFsxYzAgdjFdIExhdGVuY3kgVG9sZXJh
+bmNlIFJlcG9ydGluZyBNYXggc25vb3AgbGF0ZW5jeToKPj4gPiAwbnMgTWF4IG5vIHNub29wIGxh
+dGVuY3k6IDBucwo+PiA+IENhcGFiaWxpdGllczogWzFmMCB2MV0gUHJlY2lzaW9uIFRpbWUgTWVh
+c3VyZW1lbnQKPj4gPiBQVE1DYXA6IFJlcXVlc3RlcjorIFJlc3BvbmRlcjotIFJvb3Q6LQo+PiA+
+IFBUTUNsb2NrR3JhbnVsYXJpdHk6IDRucwo+PiA+IFBUTUNvbnRyb2w6IEVuYWJsZWQ6KyBSb290
+U2VsZWN0ZWQ6LQo+PiA+IFBUTUVmZmVjdGl2ZUdyYW51bGFyaXR5OiBVbmtub3duCj4+ID4gQ2Fw
+YWJpbGl0aWVzOiBbMWUwIHYxXSBMMSBQTSBTdWJzdGF0ZXMKPj4gPiBMMVN1YkNhcDogUENJLVBN
+X0wxLjItIFBDSS1QTV9MMS4xKyBBU1BNX0wxLjItIEFTUE1fTDEuMSsKPj4gPiBMMV9QTV9TdWJz
+dGF0ZXMrCj4+ID4gTDFTdWJDdGwxOiBQQ0ktUE1fTDEuMi0gUENJLVBNX0wxLjEtIEFTUE1fTDEu
+Mi0gQVNQTV9MMS4xLQo+PiA+IEwxU3ViQ3RsMjoKPj4gPiBLZXJuZWwgZHJpdmVyIGluIHVzZTog
+aWdjCj4+ID4gS2VybmVsIG1vZHVsZXM6IGlnYwo+PiA+IFs4LjYuXSBTQ1NJIGluZm9ybWF0aW9u
+IChmcm9tIC9wcm9jL3Njc2kvc2NzaSkgRW1wdHkgWzguNy5dIE90aGVyCj4+ID4gaW5mb3JtYXRp
+b24gdGhhdCBtaWdodCBiZSByZWxldmFudCB0byB0aGUgcHJvYmxlbSAocGxlYXNlIGxvb2sgaW4K
+Pj4gPiAvcHJvYyBhbmQgaW5jbHVkZSBhbGwgaW5mb3JtYXRpb24gdGhhdCB5b3UgdGhpbmsgdG8g
+YmUgcmVsZXZhbnQpOgo+PiA+IFJlbGV2YW50IGxvZ3MgYWZ0ZXIgcnVubmluZyBgZXRodG9vbCAt
+cyBlbnA2czAgc3BlZWQgMTAwMGA6Cj4+ID4KPj4gPiBqdWlsLiAyNSAyMToxNDo1NiBra2lvdGFy
+Y2ggTmV0d29ya01hbmFnZXJbNDU5XTogPGluZm8+Cj4+ID4gWzE2OTAzMTI0OTYuMDk2M10gZGV2
+aWNlIChlbnA2czApOiBjYXJyaWVyOiBsaW5rIGNvbm5lY3RlZCBqdWlsLiAyNQo+PiA+IDIxOjE0
+OjU2IGtraW90YXJjaCBrZXJuZWw6IGlnYyAwMDAwOjA2OjAwLjAgZW5wNnMwOiBOSUMgTGluayBp
+cyBVcAo+PiA+IDI1MDAgTWJwcyBGdWxsIER1cGxleCwgRmxvdyBDb250cm9sOiBSWC9UWAo+PiA+
+Cj4+ID4gW1guXSBPdGhlciBub3RlcywgcGF0Y2hlcywgZml4ZXMsIHdvcmthcm91bmRzOgo+PiA+
+IEFzIGEgdGVtcG9yYXJ5IHNvbHV0aW9uLCBJIGhhdmUgZm9yY2VkIHBvcnQgc3BlZWQgdG8gYmUg
+c2V0IGF0IDEwMDAKPj4gPiBNYnBzIHZpYSBteSByb3V0ZXIuCj4+Cj4+IHJhdGhlciBhdXRvIG5l
+Z290aWF0ZWQgdG8gMUcgKGZvcmNlIHNwZWVkIGlzIG4vYSBmb3IgMUcvMi41RykuIFRoaXMgd29u
+J3QKPj4gcmVzb2x2ZSBkaXNjb25uZXRpb25zLgo+Pgo+PiA+Cj4+ID4gQXBvbG9naWVzIGlmIHRo
+aXMgc2hvdWxkIGhhdmUgc3VibWl0dGVkIHRvIG15IGRpc3RyaWJ1dGlvbidzIGJ1Zwo+PiA+IHJl
+cG9ydCBmaXJzdCAoQXJjaCBMaW51eCk7IG9uIG15IGN1cnJlbnQga2VybmVsIHZlcnNpb24sIHRo
+ZXJlIHNob3VsZAo+PiA+IGJlIG5vIHBhdGNoZXMgYXBwbGllZCBoZXJlIGNvbXBhcmVkIHRvIHVw
+c3RyZWFtLgo+PiA+Cj4+ID4gVGhhbmsgeW91LAo+PiA+IEtLSU9UCj4+ID4KPj4gPiBfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+PiA+IEludGVsLXdpcmVk
+LWxhbiBtYWlsaW5nIGxpc3QKPj4gPiBJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwo+PiA+IGh0
+dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo+
+Pgo+PiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+PiBJ
+bnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0Cj4+IEludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3Jn
+Cj4+IGh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVk
+LWxhbgo+PgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+SW50ZWwtd2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpo
+dHRwczovL2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
