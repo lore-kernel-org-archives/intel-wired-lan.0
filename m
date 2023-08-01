@@ -4,87 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D57F6C001DF
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  1 Aug 2023 11:20:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2857BC0015E
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  1 Aug 2023 11:49:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6D7E640590;
-	Tue,  1 Aug 2023 11:20:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6D7E640590
+	by smtp2.osuosl.org (Postfix) with ESMTP id B109540278;
+	Tue,  1 Aug 2023 11:49:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B109540278
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690888824;
-	bh=SrY2XLwSKono5iN9e7xCG5j8QBe7esle2C6K1f0dj08=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=8FD7ldlvqnjAT5Uab23feomtClH0eIxwjhx0bKHR5rNEcQJWHFVoGQpviPTvONSEa
-	 OPbBz9a2f2eACMbvR9AXbtAQyEHTlWvZN61kyrq5If3bESVPjUh+5Gb9XLmcW47xaR
-	 c3bYhp38VmCCAFvWqLxaiOye+r+1wmNqDl/zn9oge9u5X0TWnEu/lQxMJZVGrKEmqu
-	 QVKIZIzTny9n+r+0rXNftWaZ0gLrnmsRtZgELgMyAArMJIybr+Hk52s/flBK44w2lr
-	 F55fPx75dNDK2gwvY7RroiPh2oqCL71S02NWbG5vSMQpjKq5ugORRiAKgyCThjcqZ1
-	 U6eRWdlAGNqkw==
+	s=default; t=1690890566;
+	bh=Jcl/plLkkUlztM8lQLKq1GzQMtRUnO5HIOKL2IghTNY=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=1M28Nv3fA8quPeV2g+QMm3XY/BSnlbVeSX9g3SblidC3SVm6Iun386Uiyuu5U1rI8
+	 MBL+pPRQDOVNTOlaPbud39PsZNIu+dvKVoFpfdVtCu7JlJ1zazZgW71p6ZdbiQAQDE
+	 CStaAKnwwR7b+/8N6siYAVINaC/w5VpNvmyhcOPeGVMiZalR86BxcnGSLvXvaimL4b
+	 9Nek7Cpy9ySvY+vd8m6qu6xd83vKNVe4UbMucx0Hvk55PbW2+2D2nX67Z3C+64hOkQ
+	 +ZSP5wVZX3Buw4WZUjWsM8zuyXfER1IF7JfEOShbt5KExvfeu1UI1DmUcbc4Do9ZwK
+	 o5vjRyLv6vjkw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id MH5zjmYOvIKZ; Tue,  1 Aug 2023 11:20:23 +0000 (UTC)
+	with ESMTP id vYlSoT1JLKhG; Tue,  1 Aug 2023 11:49:26 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2686640A57;
-	Tue,  1 Aug 2023 11:20:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2686640A57
+	by smtp2.osuosl.org (Postfix) with ESMTP id B79224011A;
+	Tue,  1 Aug 2023 11:49:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B79224011A
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 19A2F1BF290
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 11:20:16 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 4592B1BF290
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 11:49:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0162E4035D
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 11:19:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0162E4035D
+ by smtp2.osuosl.org (Postfix) with ESMTP id 553A54014B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 11:49:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 553A54014B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MYY5OPz9vk6d for <intel-wired-lan@lists.osuosl.org>;
- Tue,  1 Aug 2023 11:19:54 +0000 (UTC)
-Received: from mgamail.intel.com (unknown [192.55.52.43])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 54DE74025D
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 11:19:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 54DE74025D
-X-IronPort-AV: E=McAfee;i="6600,9927,10788"; a="455644615"
-X-IronPort-AV: E=Sophos;i="6.01,246,1684825200"; d="scan'208";a="455644615"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Aug 2023 04:19:54 -0700
+ with ESMTP id k6-vKxVn1T2W for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  1 Aug 2023 11:49:21 +0000 (UTC)
+Received: from mgamail.intel.com (unknown [134.134.136.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A2F6E40194
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 11:49:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A2F6E40194
+X-IronPort-AV: E=McAfee;i="6600,9927,10788"; a="433112508"
+X-IronPort-AV: E=Sophos;i="6.01,246,1684825200"; d="scan'208";a="433112508"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Aug 2023 04:49:20 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10788"; a="852416004"
-X-IronPort-AV: E=Sophos;i="6.01,246,1684825200"; d="scan'208";a="852416004"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga004.jf.intel.com with ESMTP; 01 Aug 2023 04:19:51 -0700
-Received: from pkitszel-desk.tendawifi.com (unknown [10.255.193.236])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 4774B33E8F;
- Tue,  1 Aug 2023 12:19:50 +0100 (IST)
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-To: Kees Cook <keescook@chromium.org>
-Date: Tue,  1 Aug 2023 13:19:23 +0200
-Message-Id: <20230801111923.118268-3-przemyslaw.kitszel@intel.com>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20230801111923.118268-1-przemyslaw.kitszel@intel.com>
-References: <20230801111923.118268-1-przemyslaw.kitszel@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10788"; a="902528637"
+X-IronPort-AV: E=Sophos;i="6.01,247,1684825200"; d="scan'208";a="902528637"
+Received: from s240.igk.intel.com (HELO DevelopmentVM.nql.local)
+ ([10.102.18.202])
+ by orsmga005.jf.intel.com with ESMTP; 01 Aug 2023 04:49:19 -0700
+From: Jan Sokolowski <jan.sokolowski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Tue,  1 Aug 2023 13:53:03 +0200
+Message-Id: <20230801115309.697331-1-jan.sokolowski@intel.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1690888794; x=1722424794;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=p1jYw57KC9hDihhUz9gnl4OCqMqKWft5XvD3oOaXpVA=;
- b=XgqIZy9kLFPaCgQy1OP0/2KpnQGUA1L7h2UKvSKN44JeRtrfUPeuOpvs
- s4ekaXnHCNv8NdRGw/wGuN0sOnC9q+BI35oBKuEiCyWRgJ+vZ7CETqg+d
- AeAB/KNpmwB4rZk4Z3PzWysqYve/o+DTK0kX/5lSHfVEntsY8cwff/o+3
- TGbUqXMZiGlJDvZF8DcNk5scoRYXSkJeKnw5stT2E/9oehlKyHc/VQD0s
- u5q6O7mJsDUx5UC22T++tOHJeoQ0XM1QBG3BNnarNwQOXz4aB2ZYyQBGE
- 2BhhB4UM1cMeyJpoPyRgDK/fgy3v/aR92zKyQtBDCRrPDl6N24VdDm2H5
+ t=1690890561; x=1722426561;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=/AokW+GZNa4KKOXx0Irzlxc2zAL0HmewCyB2z+1xXl4=;
+ b=PTBuJDdNS1jc4++YMP+mSrswf0on/iHnFE01FDTDLo5vlpOSPVo6wRHK
+ FjpJzNE21fNloStxvLOBagxAlHi0Vs4wlsiTiM3SPEkngwz22PGh8CokI
+ 9CjvlG4AYgOu/ylR6Fis4VIH99XQQX8Lxzjb7Ic5yf6MfFJ9X/x7oV7CG
+ u4C0vgwULbMgGM2VWN3G/oC5eSugeYmNuhBo8AR/2s9X/C/MxARNu0s8C
+ stP5DgPUDRlq4bwKH4XZfpLcROmeg28LpSp7kgRwc8BxEPoJ+20kAGJmp
+ Beo2DlrgPnFkzCLmnGTXelW58gjHjq5SauI9KIfQhkgYPezenFQf5Pboe
  w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=XgqIZy9k
-Subject: [Intel-wired-lan] [RFC net-next 2/2] ice: make use of
- DECLARE_FLEX() in ice_switch.c
+ header.a=rsa-sha256 header.s=Intel header.b=PTBuJDdN
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/6] ice: staticization
+ refactor
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,159 +92,42 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Use DECLARE_FLEX() macro for 1-elem flex array members of ice_switch.c
+ice: refactor methods to make them static
 
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_switch.c | 53 +++++----------------
- 1 file changed, 12 insertions(+), 41 deletions(-)
+This series of patches refactor some ice driver files
+in order to make as many methods as possible static.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index a7afb612fe32..41679cb6b548 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -1812,15 +1812,11 @@ ice_aq_alloc_free_vsi_list(struct ice_hw *hw, u16 *vsi_list_id,
- 			   enum ice_sw_lkup_type lkup_type,
- 			   enum ice_adminq_opc opc)
- {
--	struct ice_aqc_alloc_free_res_elem *sw_buf;
-+	DECLARE_FLEX(struct ice_aqc_alloc_free_res_elem *, sw_buf, elem, 1);
-+	u16 buf_len = struct_size(sw_buf, elem, 1);
- 	struct ice_aqc_res_elem *vsi_ele;
--	u16 buf_len;
- 	int status;
- 
--	buf_len = struct_size(sw_buf, elem, 1);
--	sw_buf = devm_kzalloc(ice_hw_to_dev(hw), buf_len, GFP_KERNEL);
--	if (!sw_buf)
--		return -ENOMEM;
- 	sw_buf->num_elems = cpu_to_le16(1);
- 
- 	if (lkup_type == ICE_SW_LKUP_MAC ||
-@@ -1840,8 +1836,7 @@ ice_aq_alloc_free_vsi_list(struct ice_hw *hw, u16 *vsi_list_id,
- 			sw_buf->res_type =
- 				cpu_to_le16(ICE_AQC_RES_TYPE_VSI_LIST_PRUNE);
- 	} else {
--		status = -EINVAL;
--		goto ice_aq_alloc_free_vsi_list_exit;
-+		return -EINVAL;
- 	}
- 
- 	if (opc == ice_aqc_opc_free_res)
-@@ -1849,16 +1844,14 @@ ice_aq_alloc_free_vsi_list(struct ice_hw *hw, u16 *vsi_list_id,
- 
- 	status = ice_aq_alloc_free_res(hw, 1, sw_buf, buf_len, opc, NULL);
- 	if (status)
--		goto ice_aq_alloc_free_vsi_list_exit;
-+		return status;
- 
- 	if (opc == ice_aqc_opc_alloc_res) {
- 		vsi_ele = &sw_buf->elem[0];
- 		*vsi_list_id = le16_to_cpu(vsi_ele->e.sw_resp);
- 	}
- 
--ice_aq_alloc_free_vsi_list_exit:
--	devm_kfree(ice_hw_to_dev(hw), sw_buf);
--	return status;
-+	return 0;
- }
- 
- /**
-@@ -2088,15 +2081,10 @@ ice_aq_get_recipe_to_profile(struct ice_hw *hw, u32 profile_id, u8 *r_bitmap,
-  */
- int ice_alloc_recipe(struct ice_hw *hw, u16 *rid)
- {
--	struct ice_aqc_alloc_free_res_elem *sw_buf;
--	u16 buf_len;
-+	DECLARE_FLEX(struct ice_aqc_alloc_free_res_elem *, sw_buf, elem, 1);
-+	u16 buf_len = struct_size(sw_buf, elem, 1);
- 	int status;
- 
--	buf_len = struct_size(sw_buf, elem, 1);
--	sw_buf = kzalloc(buf_len, GFP_KERNEL);
--	if (!sw_buf)
--		return -ENOMEM;
--
- 	sw_buf->num_elems = cpu_to_le16(1);
- 	sw_buf->res_type = cpu_to_le16((ICE_AQC_RES_TYPE_RECIPE <<
- 					ICE_AQC_RES_TYPE_S) |
-@@ -2105,7 +2093,6 @@ int ice_alloc_recipe(struct ice_hw *hw, u16 *rid)
- 				       ice_aqc_opc_alloc_res, NULL);
- 	if (!status)
- 		*rid = le16_to_cpu(sw_buf->elem[0].e.sw_resp);
--	kfree(sw_buf);
- 
- 	return status;
- }
-@@ -4482,16 +4469,10 @@ int
- ice_alloc_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- 		   u16 *counter_id)
- {
--	struct ice_aqc_alloc_free_res_elem *buf;
--	u16 buf_len;
-+	DECLARE_FLEX(struct ice_aqc_alloc_free_res_elem *, buf, elem, 1);
-+	u16 buf_len = struct_size(buf, elem, 1);
- 	int status;
- 
--	/* Allocate resource */
--	buf_len = struct_size(buf, elem, 1);
--	buf = kzalloc(buf_len, GFP_KERNEL);
--	if (!buf)
--		return -ENOMEM;
--
- 	buf->num_elems = cpu_to_le16(num_items);
- 	buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
- 				      ICE_AQC_RES_TYPE_M) | alloc_shared);
-@@ -4499,12 +4480,9 @@ ice_alloc_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- 	status = ice_aq_alloc_free_res(hw, 1, buf, buf_len,
- 				       ice_aqc_opc_alloc_res, NULL);
- 	if (status)
--		goto exit;
-+		return status;
- 
- 	*counter_id = le16_to_cpu(buf->elem[0].e.sw_resp);
--
--exit:
--	kfree(buf);
- 	return status;
- }
- 
-@@ -4520,16 +4498,10 @@ int
- ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- 		  u16 counter_id)
- {
--	struct ice_aqc_alloc_free_res_elem *buf;
--	u16 buf_len;
-+	DECLARE_FLEX(struct ice_aqc_alloc_free_res_elem *, buf, elem, 1);
-+	u16 buf_len = struct_size(buf, elem, 1);
- 	int status;
- 
--	/* Free resource */
--	buf_len = struct_size(buf, elem, 1);
--	buf = kzalloc(buf_len, GFP_KERNEL);
--	if (!buf)
--		return -ENOMEM;
--
- 	buf->num_elems = cpu_to_le16(num_items);
- 	buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
- 				      ICE_AQC_RES_TYPE_M) | alloc_shared);
-@@ -4540,7 +4512,6 @@ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- 	if (status)
- 		ice_debug(hw, ICE_DBG_SW, "counter resource could not be freed\n");
- 
--	kfree(buf);
- 	return status;
- }
- 
+Also there's a minor cleanup of unused methods.
+
+Jan Sokolowski (6):
+  ice: remove unused methods
+  ice: refactor ice_ddp to make functions static
+  ice: refactor ice_lib to make functions static
+  ice: refactor ice_vf_lib to make functions static
+  ice: refactor ice_sched to make functions static
+  ice: refactor ice_ptp_hw to make functions static
+
+ drivers/net/ethernet/intel/ice/ice_ddp.c      | 117 ++---
+ drivers/net/ethernet/intel/ice/ice_ddp.h      |  10 -
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  85 ++--
+ drivers/net/ethernet/intel/ice/ice_lib.h      |   5 -
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  25 +-
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |   4 -
+ drivers/net/ethernet/intel/ice/ice_sched.c    |   2 +-
+ drivers/net/ethernet/intel/ice/ice_sched.h    |   4 -
+ drivers/net/ethernet/intel/ice/ice_switch.c   |  48 --
+ drivers/net/ethernet/intel/ice/ice_switch.h   |   1 -
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c   | 468 +++++++++---------
+ .../ethernet/intel/ice/ice_vf_lib_private.h   |   2 -
+ 12 files changed, 332 insertions(+), 439 deletions(-)
+
 -- 
-2.38.1
+2.31.1
 
 _______________________________________________
 Intel-wired-lan mailing list
