@@ -1,188 +1,146 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C26AC0015E
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  1 Aug 2023 15:15:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B1A3C00528
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  1 Aug 2023 16:06:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1148981551;
-	Tue,  1 Aug 2023 15:15:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1148981551
+	by smtp3.osuosl.org (Postfix) with ESMTP id BB57F60DED;
+	Tue,  1 Aug 2023 16:06:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BB57F60DED
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690902931;
-	bh=rbDrNnphspvTBBQ/KPsbOXZA6Q6mIaT7iECaC6v2RHs=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1690905973;
+	bh=yqEk+oZjzvZh4Ts0VumhRrsFIfgnOBHzFMyEXdr8Zqw=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=DHUgl/2kD93ejMbsit9hX358QhypSVouJYsCRSWZYwicjnt3o8iHl9jCIrKL2LZ40
-	 AU6XVOpMu2GqvG8QnqRhPf41DkVx/35mAVDuMtrrcaDDzwYma5VMPoYyaFEbvqLAOC
-	 6s5DhY7svnOoBB0SNMjb+qYbA5rwYaJiBGemU7Mjx9sLsZcIkV9q+aFuvu/qohSzXu
-	 zBkKfz5CNDZk97Ql0m5z5Qv8Wn75+1EUnyaHLpAPvxPA/9O3rR29mJPtDPQfc0D5ff
-	 jHYJ2qrRJQehot1CFBDU0D7wBhk5MUXqbkfVZAPHF19sqJGrOyPItssHtn7roxkxKj
-	 mryjLNq7h/1mg==
+	b=1NckS+b/A1e/73jXwjFSx/hhF2TjANRc7MMXpyyFZhA3Y+DFNXOKfod6jDtHFYYSB
+	 BS2UH9U8VdTjZr3zozZh4JhHGtjDwb/CrRWBgdxZFJXE9m2cJiPfuwmWIDWSvrczOf
+	 +WGCTR6k2Asa+NMzTO2M8zKFBt/veBJ44A/J0QIvjiTJ1ZOQOZGFj0inkQK97H44fz
+	 3vriWGnwf3kAY5yU+BitiMkKB51HHRhKdHpXJot1KetPLpwX5nPe4tnN7WQlrkkn2s
+	 lef1ZEXxq8TeGWi3dz4tcwv0D0NtPtn+EqNIzQq2zI/xjjCeN9wE83aO8XukWeJRcC
+	 DnBI955runvmA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 6bj-HBbFgOm9; Tue,  1 Aug 2023 15:15:29 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id xlSyl_lP9U9A; Tue,  1 Aug 2023 16:06:13 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 71ACC8175C;
-	Tue,  1 Aug 2023 15:15:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 71ACC8175C
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 5F5671BF2E5
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 09:30:46 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C93AC60EC4;
+	Tue,  1 Aug 2023 16:06:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C93AC60EC4
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 1DD281BF301
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 16:06:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id BBE8041772
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 09:30:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BBE8041772
+ by smtp3.osuosl.org (Postfix) with ESMTP id F0D9860E70
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 16:06:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F0D9860E70
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 9UDEOCrLBT5A for <intel-wired-lan@lists.osuosl.org>;
- Tue,  1 Aug 2023 09:30:42 +0000 (UTC)
-Received: from mgamail.intel.com (unknown [134.134.136.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id EAFA141758
- for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 09:30:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EAFA141758
-X-IronPort-AV: E=McAfee;i="6600,9927,10788"; a="359297621"
-X-IronPort-AV: E=Sophos;i="6.01,246,1684825200"; d="scan'208";a="359297621"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Aug 2023 02:30:40 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10788"; a="818730255"
-X-IronPort-AV: E=Sophos;i="6.01,246,1684825200"; d="scan'208";a="818730255"
-Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
- by FMSMGA003.fm.intel.com with ESMTP; 01 Aug 2023 02:30:40 -0700
-Received: from fmsmsx602.amr.corp.intel.com (10.18.126.82) by
- fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Tue, 1 Aug 2023 02:30:40 -0700
-Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27 via Frontend Transport; Tue, 1 Aug 2023 02:30:40 -0700
-Received: from NAM04-DM6-obe.outbound.protection.outlook.com (104.47.73.48) by
- edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.27; Tue, 1 Aug 2023 02:30:40 -0700
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id gCHFtL3pj8Z0 for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  1 Aug 2023 16:06:09 +0000 (UTC)
+Received: from EUR02-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur02on2072.outbound.protection.outlook.com [40.107.249.72])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 3748760DED
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  1 Aug 2023 16:06:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3748760DED
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=UO7to841CXCeJf276aHJSmXETYXgCZvrOBlSYhrTqyDp/xHPlYq+ircquaEkScrchuMXEgGzehBRROLLjGrbweq/4/g0YiaY7q5xifpNP8dmXwihSNn3ZIAl//yK0LbbvxOIcs7eo/mHn7uuvpavqReEu83TaMtVHOZ6FM+WmJlq0ziBU4AMKSbyizGGxgXuky+SMTwRYASuKGOPtHUGD4T+lGpUpFCpFco1wJZGhjBH0qtYsU9kxOmf5/Di+/1i2eovzk6o92GrV6imEsFCqKbyrx1+VHrSSc2Ni5z+NdMXuymiSsl2XAiju8XccNvxgx3cS7o+kdl7lgSDFEcwfw==
+ b=D4ibUWoevjz+9/RPs+bzhPw6kGmoYsWIjFOCjgQ+/8kwi4qQH7Yn0ZJ8VfSldPmhHufwU+LwaoDfLwURQOkrAjexCzZZcyYdBxUrLwDK94fVCNhGSZAOr0P+ZtqWAfho9Gr/wQ80JDrTNO+fh/sGEw4+YhXRhPDRrxaU2kSlbJrzjrIqeVU64XWMI3G9ekyHNqj8jFnEZbu677+NrjMnzWSk+n1fmAynF8xUSExlsfZ8ukOPh59N/R/QywhDPplscg97ZgoqkLU70JFfmqbaRUmyAuIC64NLQ1ZAMKrywYFb8WhOOYtPVRzoBaFZvjOyKi80WvcLPuDwEB0b6M7M1g==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=DtODlanjR1rtEe1x94fSE76DfTNsjUoAJ12/URyZ+Io=;
- b=PFvHiRbHg2MD9q1jOAAHADvWSSSAWz86NcOTAkJbF9oKUP9XDZiOEiA+OK44jqSyNwiCs5knIHK6czgSAp0Hmfx9pyLjGP/h7xZTdSDzh/Y7XrU2cW0PNip2f0Ndfa6eujM579I5QfY+KpeN3WyDebKv/45wT8C5f5Wots0xHjICcvQ+74K269053nAlwlr0JhyJX7GWGc3bGDcxhW+NUjUcqrF94jUio/X5j8D+ZxXaD9qtyIG9fjz+P/JvBZljHrpTcDeaWRy/UYgGNpnTm1EvAsDunPPhOU8iH2aWgl2UDHXvqVS+R9LhNFbSPVMlYmcAO5gX2uGDdILl9/HwdQ==
+ bh=LmEyjhaL8WdQggIvGsDlx/Bs9VBS5+uXEwMeM6RQl48=;
+ b=jUrL5YZJu2BtzH1+n1ZkeVfcBiDv21CIWDbwPFZW4H7CRsx6l/YvghZw59O0P4B89SWN2Ohk6nRZ+M/HhqQEe8Aq8+1++qGmRVr05Xr1c9hR9DKOaCasQMQ26801F9hbKbs2ow28qHhPdiz9AgkLJyW0Oms2XuJ+GRcceAYOwWPf8SwXXDP+Ss4ipLJUbMGOU9AnJ1fIa41y7+s+3j3SQaLqPzRxR84bq4ezel+KUMNBR/ejAENHO0ul+fSMdRAPM/q6zDwBrjGMJJz2WdYhE4WUUTR0NCYEsNThnXt9+Yth/tblTqhPn/Oub6yIonNl+l5wH/M/RCWhF1feQCX1uA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from IA0PR11MB7955.namprd11.prod.outlook.com (2603:10b6:208:3dd::6)
- by DS0PR11MB7310.namprd11.prod.outlook.com (2603:10b6:8:11d::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6631.42; Tue, 1 Aug
- 2023 09:30:38 +0000
-Received: from IA0PR11MB7955.namprd11.prod.outlook.com
- ([fe80::9c97:497b:b952:147d]) by IA0PR11MB7955.namprd11.prod.outlook.com
- ([fe80::9c97:497b:b952:147d%6]) with mapi id 15.20.6631.043; Tue, 1 Aug 2023
- 09:30:38 +0000
-From: "Wu, Wenjun1" <wenjun1.wu@intel.com>
-To: "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>
-Thread-Topic: [Intel-wired-lan] [PATCH iwl-next v1 2/5] ice: Support VF queue
- rate limit and quanta size configuration
-Thread-Index: AQHZwC8/P/j68XMuJEi8BHDFOz+QRK/Ues4AgAC4zhA=
-Date: Tue, 1 Aug 2023 09:30:37 +0000
-Message-ID: <IA0PR11MB7955F4164184E2272B691DAEDF0AA@IA0PR11MB7955.namprd11.prod.outlook.com>
-References: <20230727021021.961119-1-wenjun1.wu@intel.com>
- <20230727021021.961119-3-wenjun1.wu@intel.com>
- <c7c74aea-046a-73f8-ab19-1341c66f8b09@intel.com>
-In-Reply-To: <c7c74aea-046a-73f8-ab19-1341c66f8b09@intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: IA0PR11MB7955:EE_|DS0PR11MB7310:EE_
-x-ms-office365-filtering-correlation-id: e27260d7-ff56-42b0-9ecc-08db9271f732
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: 5gFODbv1aLy6AneKkPUrDYOziNS2ER9yPRH7CUsf5SOu+Wikph0OvtLuuY185LOMt4VgiUpj0r8YssvolhNYGeptmv/aufpbiuQFc9aMvbfpFpy/d0KSgyoXnXciyr7H+ByAcKBaC3bq7HYlXaNEEnzUBSwUNgUiNmH/WFFw/vYqAXwC34f1fKRqpU3Q4NtiT+O4FLa2b6+LgP5xxIFuHnCuwGbSArwt+yqd1qmNDljVaAh87anix0LVpD1e28AAHxZt332a9AumW8m3xa4+Pk0aRE8kkSB678plthXAV/NM2NwyqcfiD2YGnMDWflumGOuRMRJeIFXOZU2tiBaTl9TQTq2hBhyNucP+xtb6QanG55bVJ2t4x55Gb43FLRYfkh3ie1UK0E0XUHJu2Gj4jSlSKRQO4kbun1/+w4rd+cfOiqsw2W9a9VOzd6AXANDxx2MtYdWWopajgdNd95OkCiyQWT07y5dD8+b5CMrO18X4eHRiINfpNe35/tndiASX9HQgI0dLN/fjJ/v1BEwtuhKLolAPk+F52EM8VaF2VCXlqVF+wIcYfOYHWmzqswzCGExjw3rMyA10QttKIqbIcgAKhDkhmcYDWOw3yOGRzxYAY1KE0GWWtF/A43YnGoZN
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:IA0PR11MB7955.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(346002)(366004)(39860400002)(376002)(136003)(396003)(451199021)(9686003)(7696005)(55016003)(53546011)(6506007)(26005)(83380400001)(107886003)(186003)(76116006)(33656002)(66946007)(52536014)(66556008)(54906003)(110136005)(122000001)(82960400001)(38070700005)(41300700001)(38100700002)(86362001)(66476007)(316002)(5660300002)(66446008)(4326008)(8676002)(8936002)(64756008)(2906002)(71200400001)(478600001);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?MUhuc0ZhWGpYWDZrRHlFTHBUemR3V2VyRmNRcnlmSzBneTZDbUtRTlZjVzhp?=
- =?utf-8?B?TWd0bDlQN0d4L21JVWdJd1FaS2xKMnZOQXpadmJXL1RoNUVIKzM1djhmUnYy?=
- =?utf-8?B?VW1SaWpBNnBpdVVnTnJoaWs3RHBrM0JGdnlHaUY3dVQ4bW9DckNMZVgxN3B3?=
- =?utf-8?B?aFJLNjhzaGNkR29hTDV6bGRWdmJXbkJ4WVhNZkZlM3FPVnlzSVYvbWpjMGQr?=
- =?utf-8?B?S2t2NkNPU0Z1SjB5UVFPd2pET1UxUmtZb3ZtaTFvR2ZUZ0RveCs0L0xzTGE3?=
- =?utf-8?B?ZjExeXoxRmNYWDdEcCtCMWVlaGhOa1FVanI0WkJvbVVlbWxxMWJHMzZjd0xL?=
- =?utf-8?B?QnVtZ1J6OTdmc1JLelVoNXJhUTRpa2s4NVNLNy9aTlVJTUd1RXFnQUZadExy?=
- =?utf-8?B?eUhKZHdtai93UXF5VjljZkxBMDcvZjc1RFRjQW5TS3Q2VVhGN3VlV29OTkVC?=
- =?utf-8?B?ZkNEZThLdis5RzdxU2RLV2dBUisvY1YwOVladHBxb0lVRlRHc1ZPNEs2SDJE?=
- =?utf-8?B?dldOMW55bUM0L2NhYThKSXJCZ3BOVlA4by9STUtxcFhTNXBhMWtVWXFQQ3dP?=
- =?utf-8?B?WDVxdjFzZXFlQ1h4R29JaXdINUJqM2YyWm5odGhkMjlrMmVvN0IrRVEyMWF4?=
- =?utf-8?B?M0xXNUVBTVRCT0RDbEdyTnB4SFdxeFVYcjN5NE5NQWtPank2dUlVK0Qrd1do?=
- =?utf-8?B?MnlPYk1SNnBWeEdROFhiNzdaNk10d0FLaGlJeHVLazliM0JhWnJVVkpqMUwv?=
- =?utf-8?B?Mmkvc2Z0QkkxRU5BOTljUHdOclFWODVvUldtNWlCbitWUFdwUC80ZW1RaG50?=
- =?utf-8?B?MUU2cGtKWHc3ajA5ZHVnamNmLzVzeWl3N2hpamNWcnBXTllPY0xURkRvNXVp?=
- =?utf-8?B?ZE1SaXYvbUoxQkJ1alptM2VMTlVnODJJL3cxVittbmV4UVIzeGEyWUFvOEJs?=
- =?utf-8?B?Wk1RZGtCdFVsWFdNUWprSkhrM05BOHNRVnk1RVpaRjA2d0NRMy9ocVpkN3ZQ?=
- =?utf-8?B?dGVZOUh0NS9pOVoyUHdCc2R4S1h6cWpjTG1HMGNoZHVSbkVPM0hjQTRTUG4z?=
- =?utf-8?B?aTBnblBYUTN3YVFWd2tUdElhN2ZTNmlPWUFCWU5FaEE3ZDNxRHhWVlBxWWor?=
- =?utf-8?B?RkJ6ckc2R285VGR2bXo2eS9sU21uaDA1Q0ZhQzZtLy9hVmJMN21RWTZWSFVG?=
- =?utf-8?B?SElPOHRIdlBiOXVDM2dHQUtZU1ZYYy85OGtFWForUEwxK29WbUZnbHpRaFpx?=
- =?utf-8?B?MTZJb2dWaWtjQkZ3V0hoM1ozNEF1QnAvVytOWk1pbjJQRXJ4Z0lsU1AxS29W?=
- =?utf-8?B?OVVrSllnc0UyY3QxaDZ2blA4TGRERTRScnBuNUpXV1YxNFpvWm13Y1A2MG5x?=
- =?utf-8?B?ME5hblk5eFFDYkk2WEU5OThEYWZjbGNsVU1yaEtEbE5ZV0QwQXhmRnNGMWZC?=
- =?utf-8?B?QS9xdUMzSE5MZTQrQlc4L1lUMDBzMW16cFZnS2g2VGNtK2ZXYk40di9RNFhz?=
- =?utf-8?B?TUxDbFNYQlRUdDFGVmhWR0w2K0pBMjVRMnJOb0xBdlFWckNWMUNWZlRDQmtx?=
- =?utf-8?B?RG4reW12SlB5WWs1UXFIV1ZTc0JKN0JtSkJZNXEvU2JKZ0RBejVyU3hKUnEv?=
- =?utf-8?B?emh2WnlBc1plb0Y1SWQ2a29RSXl2d2ZIakZreURXT05RaytudUt2bFFuUmVI?=
- =?utf-8?B?b2hscG5jMVMzc3dQMmhONUlLNHRubnVpN3pNMEZ6UkhBZGxBcDlWY3liQmx0?=
- =?utf-8?B?ZzlrcFBDcnhSaUppZTNhVmJUbjl1RFZWZDhGaHk0WkZQT1BBWU50cnR3YTc3?=
- =?utf-8?B?MUR0em85Y0orUEhNdmFSSkxWTXhiNVh3M291UXh3SlRLVDdvdG56cTBrK2pV?=
- =?utf-8?B?QUtFdGM4blRrMDlnYzh4OFF3SHNaU3VmUmJaeGZPVTZ2d1pFRWFuT29vV212?=
- =?utf-8?B?c0kvbkZTbDJHQ2NTbDJ1QlNzU2pXanpJT0h5SWhFMXR6YWw5M3F5YmpYbXdZ?=
- =?utf-8?B?UlhoY2pQUFlFcnl1eWl3V1o5VTZURE90Ymh0aW9XVUhXVlBCa1ViTjc0NHBn?=
- =?utf-8?B?V2NOQVF4LzNpZFNGQXJkZ2J6aW1TS3FUQ2ZvTXlCNEFaM0dGZC9rbHcwQmEz?=
- =?utf-8?Q?BsyOVC3HsCkcy858Z4ZKyPUG3?=
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+Received: from AM0PR04MB6452.eurprd04.prod.outlook.com (2603:10a6:208:16d::21)
+ by AS8PR04MB7605.eurprd04.prod.outlook.com (2603:10a6:20b:292::6)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6631.43; Tue, 1 Aug
+ 2023 16:06:06 +0000
+Received: from AM0PR04MB6452.eurprd04.prod.outlook.com
+ ([fe80::6074:afac:3fae:6194]) by AM0PR04MB6452.eurprd04.prod.outlook.com
+ ([fe80::6074:afac:3fae:6194%4]) with mapi id 15.20.6631.043; Tue, 1 Aug 2023
+ 16:06:06 +0000
+Date: Tue, 1 Aug 2023 19:06:02 +0300
+From: Vladimir Oltean <vladimir.oltean@nxp.com>
+To: Pedro Tammela <pctammela@mojatatu.com>
+Message-ID: <20230801160602.t3wmgc2iisjj3xls@skbuf>
+References: <20230613215440.2465708-1-vladimir.oltean@nxp.com>
+ <3b83fcf6-a5e8-26fb-8c8a-ec34ec4c3342@mojatatu.com>
+Content-Disposition: inline
+In-Reply-To: <3b83fcf6-a5e8-26fb-8c8a-ec34ec4c3342@mojatatu.com>
+X-ClientProxiedBy: AM0PR02CA0034.eurprd02.prod.outlook.com
+ (2603:10a6:208:3e::47) To AM0PR04MB6452.eurprd04.prod.outlook.com
+ (2603:10a6:208:16d::21)
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM0PR04MB6452:EE_|AS8PR04MB7605:EE_
+X-MS-Office365-Filtering-Correlation-Id: 56e603bd-7caf-4918-c007-08db92a93673
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: MhM/bD1l93SbdalIoRTSzDVE2TkhBkeitjuZYCvZLqUO2Uum4BKdKwkWEMqUO7MwBz9n7YfbAvmZA5y8xuq79DMg/7y37gNCB8K4IAYziExz8NP44nXJoRx5Y9UxNza+AE9Vh1MkTnMCPKyV0A/TeM3V6+i7qEg2q2lzeZqvbffIpozsZUrZNxoJobOkv/3K+/jGqGCGMwuHohr63GbXqVsc9SCaMmDw49UsbtVtEtuDlWTQXr6LzvoGSi7Lmu1WszJ8Tf336TQ3EJW6z9sA39t5vCwQh9TO5kNKJWM/qBIpU8inTVGDCZPmkxqqnOZDfSIheo5MPvUiZmWZQ1o7LEzHjfIjSu8yxll+r6O6xr0jWK9Gne/0njP2pD2nu2OiSj8nMiFSPG4LH2YVjnsX3gewnNrRjU+Rpmn5Nvq2QHW2PxaZGnv74TnDRXUL/+0asqj1C6tiVF30gtjLgPCO0vDD0tyf8XlVzkGdtkMV9HvMSKFdBhq/jhmggQGD1johcfvzCue9y5St5FSOYoYMqpU06r524bHkExMrwzqVW1mFMyJsA388OhY8HTeuVPZ7
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:AM0PR04MB6452.eurprd04.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230028)(4636009)(7916004)(39860400002)(366004)(376002)(346002)(396003)(136003)(451199021)(44832011)(9686003)(6512007)(6486002)(53546011)(26005)(1076003)(6506007)(186003)(66946007)(66556008)(7416002)(54906003)(33716001)(41300700001)(86362001)(38100700002)(66476007)(6916009)(4326008)(5660300002)(8676002)(8936002)(316002)(2906002)(6666004)(478600001)(4744005);
+ DIR:OUT; SFP:1101; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?9MKNEfI2z1LgHhjxzZ9L39w3pHZXa4Kwv086qFHIUsT1oYFghBUM0zOavwrP?=
+ =?us-ascii?Q?zzhv8nAX23jUhP2mySXiNpGUBPOXHu7Fxm1en4oGeA/IXYlp3JVfuIlN4BN2?=
+ =?us-ascii?Q?9VLsebpwG3JDkoDuBSfanbjCFhZo1jLcZq3kA9cT3WfFI0jz9yYtgbSqxzzv?=
+ =?us-ascii?Q?nu9izqFNbq86a9hwWEvtmk7UVCs5s1CNp8wUU6tU+ZVbiD23QKklHJzqN6m+?=
+ =?us-ascii?Q?kPBeZRW8rJecSr9Y0dv5CuunzIqT5sHBe8BYuTzndOTQ9ekGyBCTAZGW+aGU?=
+ =?us-ascii?Q?qDiHH0+nvIFvXk4Yp3BDwRY39QHB5AL9jkS94fbcO0RsEez0DoMryTM2PWSd?=
+ =?us-ascii?Q?237QUt4L5ZpB0kmfqWGjLDU/tTuBbd+r9sAP2pqf5viEpmSzCghazeEbK8Vq?=
+ =?us-ascii?Q?lSawUN25ZkVDn0AYJjqsFwvojqZMIbAvgTpXsMZZmQ6il341Vrk2VGbQpqYz?=
+ =?us-ascii?Q?VvcAkiNgZTjZ4O1jlBFh3pTExcdZ5u65Pf5pF6d6oMeRv6sF1ZnBegdC0iqI?=
+ =?us-ascii?Q?uYxTqGRnQTPudv7qE8V1Z6Saen5JNLfBjxm1YUyXd+Jwrg01/zPHeEiHT2Xc?=
+ =?us-ascii?Q?sPK1L1N8yZOzQ0M9khzHD5a8zSKEIJJVIfH5L/rx7IaZ2V5O8HsbGtBv6wL2?=
+ =?us-ascii?Q?3oAVlruE6K6XiueCQFNT/tsHy0do4mb+OBNR5nXhN1ANWEeUJHsVVfRRwK95?=
+ =?us-ascii?Q?9Qp8Ir8BbshZh5PavbQQdARvRKF56TiaaN2+ujkfxINO6pp2efskuLlWWm+4?=
+ =?us-ascii?Q?yDvkCExjEMDXmb1Yp88EORzxLy9kAH2i2RK4S9Qb+KLJiY8s30w2sRh/bQdF?=
+ =?us-ascii?Q?yClhxEVsa+XZi2tAiup+PD691C582rGMkC9d3qjL9EDvkRV7QxqwKSdqEUSn?=
+ =?us-ascii?Q?cnByCZCbY6wxzLv6n0im4YdjlI6V5jOfFxpGRubZf+lmsHDY6fd/UCAbqLVw?=
+ =?us-ascii?Q?euGDYmF2PK9w8ETAQ0gvDoANRes021d+FHDGL/8rwGX7XG2XoooW+Yz0kd3w?=
+ =?us-ascii?Q?mdl5Ez188P1J/0FC/J/vKm7XVvIBXlLpYk6Qf02J27vZbzVW+BALzcWm+zMs?=
+ =?us-ascii?Q?OINHW65FSjd1rAVY+/jmAPpm6xB2xkl+e/R0pjjYREyWYxxQr8Nb4qVdmjo+?=
+ =?us-ascii?Q?laDLrshT2AajHtr+JBuMUpm4Zxk7q+XEDShWH84hsJXTlskG/7POxdZKQp2U?=
+ =?us-ascii?Q?BWfKhLT4HACu9vxfnTioTLOlcpvAdE5+KuczVH1pLR14O2GA4rwIq6vKdTVw?=
+ =?us-ascii?Q?cJJBuhjia2brvluhgiZ+Umz7vld8HyXRinEj5NY32WC6IDvfzfBPSXdc/mbS?=
+ =?us-ascii?Q?nD+lgzKhZ35gi46UAd4syQesSF8ztJHodg5t5AuDiKxSXUk3kXJ+D4+IHVH1?=
+ =?us-ascii?Q?vhHGxPGDU8+3Q3V9xIHOy7Y4a7zXARLnPWzOvztrSF+J6A2IegxR5KSICfbP?=
+ =?us-ascii?Q?fOpLIW2HUn8enJ8rh+VcBtm3d0SvP9vlf1Ri6gjFebnTOVjsWDhEIHL9FMDq?=
+ =?us-ascii?Q?MIQfr7s9lExCSVix07rIkHquNClMYrU5+ddWjsgb2PZDh2/u71EmGOOoyT/i?=
+ =?us-ascii?Q?P9YuTCksh7j5s/7K1XH0I78R4qwFIIR8LXWjfpo7rbV4iVQWJU6rhPGIFP66?=
+ =?us-ascii?Q?qg=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 56e603bd-7caf-4918-c007-08db92a93673
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6452.eurprd04.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: IA0PR11MB7955.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: e27260d7-ff56-42b0-9ecc-08db9271f732
-X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Aug 2023 09:30:37.8873 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: eyEOhNMk7ynqViurihBUPla4YRgPeIGEyOO25MyNsNGZxM5nHis64MjJo6t4Voer3aiSSw8IEMyUohTXhDhVIg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR11MB7310
-X-OriginatorOrg: intel.com
-X-Mailman-Approved-At: Tue, 01 Aug 2023 15:15:23 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1690882241; x=1722418241;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=DtODlanjR1rtEe1x94fSE76DfTNsjUoAJ12/URyZ+Io=;
- b=nTcTAboWyy//j6YPyhb6JIzBkIxm3JbkojB+qjC92qPMuvQYiSaEhZYZ
- l70dgjTJ/si5YIS6UmYaoFdlZmrAjPYnG3OKrpW0X2RnJ4w3omxJ2jbUo
- VeJLaP/GddocVkAbxplB3sfx4RgN1t5BZHguJdwCWWzcZg2YtRyC28pOu
- /PvXYONSKxqDsJvKnimo+gYhM01hfm/ec7o8VPXJU37Tq8NkWit7mfP7B
- YDK5i/06DMKYxa5lw/gnyoHLCgP+7RvWaG69GkUex14zfDx56yS+nxkex
- QLu/7zJKNqDHM2svvX6eGiVyIo7a7coBa1eSyk6L2qb6TtV+xniOUUiY0
- A==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nTcTAboW
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Aug 2023 16:06:06.6463 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: fOsE7d+Bo9tT8KI1LW+dzUPx9t411OeSR7fj1NtnP8HEbB+d0zUaF2+aRMRYFV4+VWy0hjZyZcL3kteGmgaOrg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR04MB7605
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=nxp.com; s=selector2; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LmEyjhaL8WdQggIvGsDlx/Bs9VBS5+uXEwMeM6RQl48=;
+ b=SgBOxq6almSBxvhK4Am3uW4LJbv9M8RlMvIkIDMD/Bp/gOh57zYuhhFCJMgKoohmpzwCb3ym2kV821/+5UkqtEvH7AP2shwoAdlOvWAcbfO5B/i497yGR9J1dI2P+S0nTg1R+/lPbr24boHItE+Nz23+FK0BASknb3mAKLgyg2I=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256
+ header.s=selector2 header.b=SgBOxq6a
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 2/5] ice: Support VF queue
- rate limit and quanta size configuration
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Subject: Re: [Intel-wired-lan] [PATCH v2 net-next 0/9] Improve the taprio
+ qdisc's relationship with its children
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -195,302 +153,31 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "Aggarwal, Mitu" <mitu.aggarwal@intel.com>, "Zhang,
- Qi Z" <qi.z.zhang@intel.com>
+Cc: Jiri Pirko <jiri@resnulli.us>, Maxim Georgiev <glipus@gmail.com>,
+ netdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>,
+ Jamal Hadi Salim <jhs@mojatatu.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
+ Cong Wang <xiyou.wangcong@gmail.com>, Peilin Ye <yepeilin.cs@gmail.com>,
+ Jakub Kicinski <kuba@kernel.org>, Zhengchao Shao <shaozhengchao@huawei.com>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Thanks for the careful review!
+On Wed, Jun 14, 2023 at 01:47:25PM -0300, Pedro Tammela wrote:
+> On 13/06/2023 18:54, Vladimir Oltean wrote:
+> > [...]
+> 
+> Hi Vladimir,
+> Thanks for adding the tdc tests.
+> This series seem to have broken test 8471 in taprio but I don't see it fixed
+> here.
+> Do you plan to fix it in another patch?
+>
 
-> -----Original Message-----
-> From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-> Sent: Tuesday, August 1, 2023 6:23 AM
-> To: Wu, Wenjun1 <wenjun1.wu@intel.com>; intel-wired-
-> lan@lists.osuosl.org
-> Cc: Aggarwal, Mitu <mitu.aggarwal@intel.com>; Zhang, Qi Z
-> <qi.z.zhang@intel.com>
-> Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 2/5] ice: Support VF queue
-> rate limit and quanta size configuration
-> 
-> 
-> 
-> On 7/26/2023 7:10 PM, Wenjun Wu wrote:
-> > Add support to configure VF queue rate limit and quanta size.
-> >
-> > For quanta size configuration, the quanta profiles are divided evenly
-> > by PF numbers. For each port, the first quanta profile is reserved for
-> > default. When VF is asked to set queue quanta size, PF will search for
-> > an available profile, change the fields and assigned this profile to
-> > the queue.
-> >
-> > Signed-off-by: Wenjun Wu <wenjun1.wu@intel.com>
-> > ---
-> >   drivers/net/ethernet/intel/ice/ice.h          |   2 +
-> >   drivers/net/ethernet/intel/ice/ice_base.c     |   2 +
-> >   drivers/net/ethernet/intel/ice/ice_common.c   |  19 ++
-> >   .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 +
-> >   drivers/net/ethernet/intel/ice/ice_txrx.h     |   2 +
-> >   drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
-> >   drivers/net/ethernet/intel/ice/ice_vf_lib.h   |   9 +
-> >   drivers/net/ethernet/intel/ice/ice_virtchnl.c | 317 ++++++++++++++++++
-> >   drivers/net/ethernet/intel/ice/ice_virtchnl.h |  11 +
-> >   .../intel/ice/ice_virtchnl_allowlist.c        |   6 +
-> >   10 files changed, 377 insertions(+)
-> >
-> > diff --git a/drivers/net/ethernet/intel/ice/ice.h
-> > b/drivers/net/ethernet/intel/ice/ice.h
-> > index 125a2e753e29..25267ae6ab62 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice.h
-> > +++ b/drivers/net/ethernet/intel/ice/ice.h
-> > @@ -637,6 +637,8 @@ struct ice_pf {
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-> > b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-> > index 20f40dfeb761..999bd4633d4f 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-> > +++ b/drivers/net/ethernet/intel/ice/ice_hw_autogen.h
-> > @@ -500,5 +500,13 @@
-> >   #define PFPM_WUS_FW_RST_WK_M			BIT(31)
-> >   #define VFINT_DYN_CTLN(_i)			(0x00003800 + ((_i) *
-> 4))
-> >   #define VFINT_DYN_CTLN_CLEARPBA_M		BIT(1)
-> > +#define GLCOMM_QUANTA_PROF(_i)			(0x002D2D68
-> + ((_i) * 4))
-> > +#define GLCOMM_QUANTA_PROF_MAX_INDEX		15
-> > +#define GLCOMM_QUANTA_PROF_QUANTA_SIZE_S	0
-> > +#define GLCOMM_QUANTA_PROF_QUANTA_SIZE_M	ICE_M(0x3FFF,
-> 0)
-> > +#define GLCOMM_QUANTA_PROF_MAX_CMD_S		16
-> > +#define GLCOMM_QUANTA_PROF_MAX_CMD_M		ICE_M(0xFF,
-> 16)
-> > +#define GLCOMM_QUANTA_PROF_MAX_DESC_S		24
-> > +#define GLCOMM_QUANTA_PROF_MAX_DESC_M		ICE_M(0x3F,
-> 24)
-> 
-> These don't look like the right placement within the file. Please check/correct.
-
-Yes, I will fix it.
-
-> 
-> >
-> >   #endif /* _ICE_HW_AUTOGEN_H_ */
-> > +/**
-> > + * ice_vc_get_qos_caps - Get current QoS caps from PF
-> > + * @vf: pointer to the VF info
-> > + *
-> > + * Get VF's QoS capabilities, such as TC number, arbiter and
-> > + * bandwidth from PF.
-> > + */
-> > +static int ice_vc_get_qos_caps(struct ice_vf *vf) {
-> > +	enum virtchnl_status_code v_ret = VIRTCHNL_STATUS_SUCCESS;
-> > +	struct virtchnl_qos_cap_list *cap_list = NULL;
-> > +	u8 tc_prio[ICE_MAX_TRAFFIC_CLASS] = {0};
-> 
-> init with { } is preferred
-
-Perhaps you mean u8 tc_prio[ICE_MAX_TRAFFIC_CLASS] = { 0 };
-I will change it in the next version.
-
-> 
-> > +	struct virtchnl_qos_cap_elem *cfg = NULL;
-> > +	struct ice_vsi_ctx *vsi_ctx;
-> > +	struct ice_pf *pf = vf->pf;
-> > +	struct ice_port_info *pi;
-> > +	struct ice_vsi *vsi;
-> > +	u8 numtc, tc;
-> > +	u16 len = 0;
-> > +	int ret, i;
-> > +
-> > +	if (!test_bit(ICE_VF_STATE_ACTIVE, vf->vf_states)) {
-> > +		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> > +		goto err;
-> > +	}
-> > +
-> > +	vsi = ice_get_vf_vsi(vf);
-> > +	if (!vsi) {
-> > +		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> > +		goto err;
-> > +	}
-> > +
-> > +	pi = pf->hw.port_info;
-> > +	numtc = vsi->tc_cfg.numtc;
-> > +
-> > +	vsi_ctx = ice_get_vsi_ctx(pi->hw, vf->lan_vsi_idx);
-> > +	if (!vsi_ctx) {
-> > +		v_ret = VIRTCHNL_STATUS_ERR_PARAM;
-> > +		goto err;
-> > +	}
-> > +
-> > +	len = sizeof(*cap_list) + sizeof(cap_list->cap[0]) * (numtc - 1);
-> 
-> I believe struct_size helper can be used here
-
-Yes, I agree.
-
-> 
-> > +	cap_list = kzalloc(len, GFP_KERNEL);
-> > +	if (!cap_list) {
-> > +		v_ret = VIRTCHNL_STATUS_ERR_NO_MEMORY;
-> > +		len = 0;
-> > +		goto err;
-> > +	}
-> > +
-> > +	cap_list->vsi_id = vsi->vsi_num;
-> > +	cap_list->num_elem = numtc;
-> > +
-> > +	/* Store the UP2TC configuration from DCB to a user priority bitmap
-> > +	 * of each TC. Each element of prio_of_tc represents one TC. Each
-> > +	 * bitmap indicates the user priorities belong to this TC.
-> > +	 */
-> > +	for (i = 0; i < ICE_MAX_USER_PRIORITY; i++) {
-> > +		tc = pi->qos_cfg.local_dcbx_cfg.etscfg.prio_table[i];
-> > +		tc_prio[tc] |= BIT(i);
-> > +	}
-> > +
-> > +	for (i = 0; i < numtc; i++) {
-> > +		cfg = &cap_list->cap[i];
-> > +		cfg->tc_num = i;
-> > +		cfg->tc_prio = tc_prio[i];
-> > +		cfg->arbiter = pi->qos_cfg.local_dcbx_cfg.etscfg.tsatable[i];
-> > +		cfg->weight = VIRTCHNL_STRICT_WEIGHT;
-> > +		cfg->type = VIRTCHNL_BW_SHAPER;
-> > +		cfg->shaper.committed = vsi_ctx-
-> >sched.bw_t_info[i].cir_bw.bw;
-> > +		cfg->shaper.peak = vsi_ctx->sched.bw_t_info[i].eir_bw.bw;
-> > +	}
-> > +
-> > +err:
-> > +	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_GET_QOS_CAPS,
-> v_ret,
-> > +				    (u8 *)cap_list, len);
-> > +	kfree(cap_list);
-> > +	return ret;
-> > +}
-> > +
-> > +/**
-> > + * ice_vf_cfg_qs_bw - Configure per queue bandwidth
-> > + * @vf: pointer to the VF info
-> > + * @num_queues: number of queues to be configured
-> > + *
-> > + * Configure per queue bandwidth.
-> > + */
-> > +static int ice_vf_cfg_qs_bw(struct ice_vf *vf, u16 num_queues) {
-> > +	struct ice_hw *hw = &vf->pf->hw;
-> > +	struct ice_vsi *vsi;
-> > +	u32 p_rate;
-> > +	int ret;
-> > +	u16 i;
-> > +	u8 tc;
-> > +
-> > +	vsi = ice_get_vf_vsi(vf);
-> > +	if (!vsi)
-> > +		return VIRTCHNL_STATUS_ERR_PARAM;
-> > +
-> > +	for (i = 0; i < num_queues; i++) {
-> > +		p_rate = vf->qs_bw[i].peak;
-> > +		tc = vf->qs_bw[i].tc;
-> > +		if (p_rate) {
-> > +			ret = ice_cfg_q_bw_lmt(hw->port_info, vsi->idx, tc,
-> > +					       vf->qs_bw[i].queue_id,
-> > +					       ICE_MAX_BW, p_rate);
-> > +		} else {
-> > +			ret = ice_cfg_q_bw_dflt_lmt(hw->port_info, vsi->idx,
-> tc,
-> > +						    vf->qs_bw[i].queue_id,
-> > +						    ICE_MAX_BW);
-> 
-> These functions return kernel error codes...
-> 
-> > +		}
-> > +		if (ret)
-> > +			return ret;
-> > +	}
-> > + > +	return VIRTCHNL_STATUS_SUCCESS;
-> 
-> ... this and the error above are returning VIRTCHNL errors. These are not
-> returning consistent types.
-
-I will change it to return 0; to align to the kernel error codes.
-
-> 
-> > +}
-> > +
-> > +/**
-> > + * ice_vf_cfg_q_quanta_profile
-> > + * @vf: pointer to the VF info
-> > + * @quanta_prof_idx: pointer to the quanta profile index
-> > + * @quanta_size: quanta size to be set
-> > + *
-> > + * This function chooses available quanta profile and configures the
-> register.
-> > + * The quanta profile is evenly divided by the number of device
-> > +ports, and then
-> > + * available to the specific PF and VFs. The first profile for each
-> > +PF is a
-> > + * reserved default profile. Only quanta size of the rest unused
-> > +profile can be
-> > + * modified.
-> > + */
-> > +static int ice_vf_cfg_q_quanta_profile(struct ice_vf *vf, u16 quanta_size,
-> > +				       u16 *quanta_prof_idx)
-> > +{
-> > +	const u16 n_desc = calc_quanta_desc(quanta_size);
-> > +	struct ice_hw *hw = &vf->pf->hw;
-> > +	const u16 n_cmd = 2 * n_desc;
-> > +	struct ice_pf *pf = vf->pf;
-> > +	u16 per_pf, begin_id;
-> > +	u8 n_used;
-> > +	u32 reg;
-> > +
-> > +	per_pf = (GLCOMM_QUANTA_PROF_MAX_INDEX + 1) / hw-
-> >dev_caps.num_funcs;
-> > +	begin_id = hw->logical_pf_id * per_pf;
-> > +	n_used = pf->n_quanta_prof_used;
-> > +
-> > +	if (quanta_size == ICE_DFLT_QUANTA) {
-> > +		*quanta_prof_idx = begin_id;
-> > +	} else {
-> > +		if (n_used < per_pf) {
-> > +			*quanta_prof_idx = begin_id + 1 + n_used;
-> > +			pf->n_quanta_prof_used++;
-> > +		} else {
-> > +			return VIRTCHNL_STATUS_ERR_NOT_SUPPORTED;
-> > +		}
-> > +	}
-> > +
-> > +	reg = rd32(hw, GLCOMM_QUANTA_PROF(*quanta_prof_idx));
-> > +	reg &= ~GLCOMM_QUANTA_PROF_QUANTA_SIZE_M;
-> > +	reg |= quanta_size << GLCOMM_QUANTA_PROF_QUANTA_SIZE_S;
-> > +	reg &= ~GLCOMM_QUANTA_PROF_MAX_CMD_M;
-> > +	reg |= n_cmd << GLCOMM_QUANTA_PROF_MAX_CMD_S;
-> > +	reg &= ~GLCOMM_QUANTA_PROF_MAX_DESC_M;
-> > +	reg |= n_desc << GLCOMM_QUANTA_PROF_MAX_DESC_S;
-> > +	wr32(hw, GLCOMM_QUANTA_PROF(*quanta_prof_idx), reg);
-> > +
-> > +	return VIRTCHNL_STATUS_SUCCESS;
-> 
-> Is this really supposed to return VIRTCHNL codes? That's not a standard
-> convention the driver is doing.
-
-It seems better to use kernel error code in this function,
-I will change it in the next version.
-
-> 
-> > +err:
-> > +	/* send the response to the VF */
-> > +	ret = ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_QUANTA,
-> > +				    v_ret, NULL, 0);
-> > +	return ret;
-> 
-> return ice_vc_send_msg_to_vf(vf, VIRTCHNL_OP_CONFIG_QUANTA,
-> 			    v_ret, NULL, 0);
-
-Got it.
-
-> 
-> >
-> >   /**
+Thanks for pointing it out. I'll be unbreaking it in the next version,
+as part of the patch that changes the "tc class show" output.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
