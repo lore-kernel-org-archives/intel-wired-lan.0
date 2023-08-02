@@ -4,84 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C99AC04A94
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 05:05:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1BB5C04A6A
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 05:06:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C657B60E6F;
-	Wed,  2 Aug 2023 05:05:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C657B60E6F
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4FCFC61199;
+	Wed,  2 Aug 2023 05:06:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4FCFC61199
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690952740;
-	bh=0Ougv/JhwV8if9pY2w0uA6h7uLk/io9H/CbJtfsK7mU=;
+	s=default; t=1690952791;
+	bh=9ADo1DvqnamOnP5HIqcnukFrKBseDFxSqlNCVqphDSE=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=J7gOc5NI+OYiWy+BqAFmaMMto2eFycvau0J2SKA4+4jf8/ofUhvPMHmFiGkk5/y2m
-	 K/yIBVQir5mXYtrHP9uyiGHpLrdhhbUNC/3Kf+DsVpfb9RrNuhg4ijgN5BV0bPQbE0
-	 3N4VPH80ihVThAlWCsMaajaNCBirs0hfAx8fTdo6XqFGCs7nqts+gJKSUNuUMVk6cl
-	 LYPfNNzTJjJ5u10pUy+Bez4B4+7SFwaHhf2gfmTCw0nLaGhRe1e7oJol7DaZdrc0eT
-	 3m9BWjmQoVPt6Q/LzxqbA89PIV/sOxQK2rzJiGyjhQwfko8Fm+FtTCjfcXMXfHUXuX
-	 O/NPFphJyhhyg==
+	b=Gzlu2PEyn2nbEqQI29DZEk56HjECu7Nee3pJCxuRjv0QYlNFCfJZ1kL5nlTTSalrZ
+	 ZcI1jdttuiuM1uH1XGEEsr/V+2XcCFb/mVheNhmLGo0r0vqVMJ3LZT68YSOtC+o+R2
+	 TvZHVqLf/MmQXZ2NgtP1WnDtc9jC6Gn306P/xOKyHzxYnec/9/qGdDVEJ/qAW70/Pg
+	 RZj9IhqDGq+Z913DoOzLlmd4svvn06ibBR74/fM9QOhrkT3m9h27vpByigALc94VGa
+	 wH+9bUy1ap5K8FEt8obdzJ/RqXwiFhTt6z3DWX+D99ahnh5RPIQq3dPxR+ZzHEdKAM
+	 UmGVqv539Iocw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lfn63JIHktkH; Wed,  2 Aug 2023 05:05:40 +0000 (UTC)
+	with ESMTP id gtFUigOvxutx; Wed,  2 Aug 2023 05:06:29 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E903960DFA;
-	Wed,  2 Aug 2023 05:05:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E903960DFA
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 38A021BF387
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 05:05:38 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2F81161152;
+	Wed,  2 Aug 2023 05:06:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2F81161152
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 5053D1BF98E
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 05:06:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7974741758
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 05:05:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7974741758
+ by smtp3.osuosl.org (Postfix) with ESMTP id 610A861152
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 05:06:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 610A861152
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id d9AJ_So2m7Ox for <intel-wired-lan@lists.osuosl.org>;
- Wed,  2 Aug 2023 05:05:27 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9644341736
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 05:05:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9644341736
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id imVHAKaaVKHn for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  2 Aug 2023 05:06:03 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A40CF6116B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 05:06:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A40CF6116B
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id CF3FD617D9;
- Wed,  2 Aug 2023 05:05:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 14365C433CA;
- Wed,  2 Aug 2023 05:05:24 +0000 (UTC)
-Date: Tue, 1 Aug 2023 23:06:30 -0600
+ by dfw.source.kernel.org (Postfix) with ESMTPS id E8B03617CA;
+ Wed,  2 Aug 2023 05:06:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39A3CC433C7;
+ Wed,  2 Aug 2023 05:06:01 +0000 (UTC)
+Date: Tue, 1 Aug 2023 23:07:06 -0600
 From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
 To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>,
  "David S. Miller" <davem@davemloft.net>,
  Eric Dumazet <edumazet@google.com>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>
-Message-ID: <ddc1cde5fe6cb6a0865ae96d0d064298e343720d.1690938732.git.gustavoars@kernel.org>
+Message-ID: <8b945fa3afeb26b954c400c5b880c0ae175091ac.1690938732.git.gustavoars@kernel.org>
 References: <cover.1690938732.git.gustavoars@kernel.org>
 MIME-Version: 1.0
 Content-Disposition: inline
 In-Reply-To: <cover.1690938732.git.gustavoars@kernel.org>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1690952726;
- bh=mqqkGVbU/w5XVGL8wNFiKBrpnoFsZ0U7xfNm17f7El4=;
+ d=kernel.org; s=k20201202; t=1690952762;
+ bh=vIsmaLOHNHCmvZTxuykbw4hyJBbUacnWk4VvMmzUK9Y=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=aVODpFlGBTgJf/7xxXR6C30T6BZmJoEN3+kRYa79kTII0nnf6ub3clATPGufXTnTE
- P1eFFL1msnaqiFvcfvjhfbIWovhU1tqPpSdnflkPghhkn2lh+hZ5ZVoaHo2VaQypDj
- xV+96UEjZDU4q2/giYSW3dfh9wWNayYZcKuYJ63+9jB0uKPZfoy3MyJkKN7gxkmCO0
- 55jVCANF0xJbgIXgoULvPYhOrsgUFYs10dSKWJ46Pm6V3nVYy/aB/0YZ8yNl8Isl/v
- AEa+nwN887eWcZeTNlqhP7f9DUeSP+L1HcCFO/w3mQm7W43LY4naJJaRTzU9eZdGCu
- sWK96H0/eRzpQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=TGoDdwO7hOgoCxkDVBaD4hulYPoImelxdjPjcsAzBC2Hck8e6L1owP4Unq/187OVz
+ AaStDAYVHCuEzbXh3yndCl5XABgFRv/5KrYue7+slumcRYB7WQ2g3CME5mdZ+llh66
+ jII4nKJ7g63cth/fX997PJyM8Kry7RBTy31bDAp+MWEwX2BfKZg4uLn9TWVJWWQtP5
+ oKN++/7yTJTf5yp54Xz8LRF10QeLPhaJaOBXF8ivvu+VLabPMa2Nnf3KHILWMn692S
+ Xb3thfwhybIBYbI34Btvu072VaqksAauTVZoOI3ndEnrtNlYosLlTpWYVOr0c8x5TY
+ woBuhwwh0qrpA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=aVODpFlG
-Subject: [Intel-wired-lan] [PATCH 3/4][next] i40e: Replace one-element array
- with flex-array member in struct i40e_section_table
+ header.a=rsa-sha256 header.s=k20201202 header.b=TGoDdwO7
+Subject: [Intel-wired-lan] [PATCH 4/4][next] i40e: Replace one-element array
+ with flex-array member in struct i40e_profile_aq_section
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,8 +102,8 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 One-element and zero-length arrays are deprecated. So, replace
-one-element array in struct i40e_section_table with flexible-array
-member.
+one-element array in struct i40e_profile_aq_section with
+flexible-array member.
 
 This results in no differences in binary output.
 
@@ -115,18 +114,18 @@ Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index f7a984304b65..010261a10f56 100644
+index 010261a10f56..b9d50218344b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -1492,7 +1492,7 @@ struct i40e_profile_segment {
- 
- struct i40e_section_table {
- 	u32 section_count;
--	u32 section_offset[1];
-+	u32 section_offset[];
+@@ -1524,7 +1524,7 @@ struct i40e_profile_aq_section {
+ 	u16 flags;
+ 	u8  param[16];
+ 	u16 datalen;
+-	u8  data[1];
++	u8  data[];
  };
  
- struct i40e_profile_section_header {
+ struct i40e_profile_info {
 -- 
 2.34.1
 
