@@ -1,82 +1,89 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D904EC001E0
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 16:49:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EFFEC001DF
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 21:58:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6F10360E19;
-	Wed,  2 Aug 2023 16:49:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6F10360E19
+	by smtp1.osuosl.org (Postfix) with ESMTP id AFFF780FA7;
+	Wed,  2 Aug 2023 21:58:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AFFF780FA7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690994989;
-	bh=jI3LQ+/obenfE7rrAaGa/+IGDuwGoV9PcjNmdpGAcsw=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1691013516;
+	bh=7Rrb8u4RWb1FbndJGxksJGgSfAdIJqdXEMIa4rpI1jI=;
+	h=From:To:In-Reply-To:References:Date:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=mc5SJzrWi29jjLqJvoyBGE/Cn/yxf8/xCgMR9XK4UwGP0pK9BFS5eRwnL8TUs3wPS
-	 s/H5zGH6T4xmNM4DyxaACQJtDHP8AyQgYVqLhfivli4L+XVDMpSAthGqvdesDASouM
-	 YPaRUVQuFOttpu/w30B1DFKjHbgwKHrI2LNg3YGUxbryOQFuwuVSPI22nTN8TWeaiD
-	 6ift9Db7rcEnP3kJ4Y/hzDEHoib4BCS2CsOV6Op+o1CdAjyj+HL5Zqo6hL/Fx92H8g
-	 A2A4NmxLYP15T6sGpscaBU4jHOAkZKAogZAtamuaskWxbrHj6+iCB/2+JKJ8GLz6t/
-	 tu/KurLWn//4w==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id KJtc82mjnagm; Wed,  2 Aug 2023 16:49:48 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 985D261284;
-	Wed,  2 Aug 2023 16:49:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 985D261284
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 091FF1BF3A0
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 16:49:47 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 32B8980D74
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 16:49:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 32B8980D74
+	b=Fy5DZOyn+9x8/jGihqXL/dwZfAuLrBpDF0iEe8HV2u2Pga52Xra1nVQ3QGjQJu1qS
+	 aqgbUFw+q71SLl3Va9piPNWHG6hlAEshEKFJQ4DqMNFWxtsvV/E7sELzm3arGVFIfU
+	 3Uwn8M7pwnFJqfDgYPF0xEye7OtjXuRHqGledOgGN9ZOVhEu4qtgiNxFhGO/ohwwn1
+	 cIDutVRnVn8L0wxGh9kduoBFrz9mQzoXqeRTO0C78E2Wo6vTITe1EkKUXaN2rCt6uz
+	 YG86JOfaHauGoeB/RNNRKNkV0vMNXYDmRZRB9CiO0LRUQ7cgJm6d8VszPJlFYe0L1+
+	 TFdygdQJbW8gg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3upxZiCP4t1l for <intel-wired-lan@lists.osuosl.org>;
- Wed,  2 Aug 2023 16:49:19 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A56D48141D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 16:49:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A56D48141D
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id E646C61A0D;
- Wed,  2 Aug 2023 16:49:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82EBAC433C9;
- Wed,  2 Aug 2023 16:49:16 +0000 (UTC)
-Date: Wed, 2 Aug 2023 18:49:13 +0200
-From: Simon Horman <horms@kernel.org>
-To: Yang Yingliang <yangyingliang@huawei.com>
-Message-ID: <ZMqJCQC+8vL+HA5a@kernel.org>
-References: <20230802090739.3266122-1-yangyingliang@huawei.com>
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id eEBPDXhqwqyO; Wed,  2 Aug 2023 21:58:35 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6D36C80EAA;
+	Wed,  2 Aug 2023 21:58:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6D36C80EAA
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 5E64D1BF42C
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 21:58:33 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5E349416E3
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 21:58:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5E349416E3
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id bDAOZDNJNejy for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  2 Aug 2023 21:58:27 +0000 (UTC)
+Received: from mgamail.intel.com (unknown [192.55.52.43])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id CDFA0400E9
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 21:58:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CDFA0400E9
+X-IronPort-AV: E=McAfee;i="6600,9927,10790"; a="456083277"
+X-IronPort-AV: E=Sophos;i="6.01,250,1684825200"; d="scan'208";a="456083277"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Aug 2023 14:58:26 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10790"; a="975831045"
+X-IronPort-AV: E=Sophos;i="6.01,250,1684825200"; d="scan'208";a="975831045"
+Received: from rbappers-mobl2.amr.corp.intel.com (HELO vcostago-mobl3)
+ ([10.209.84.112])
+ by fmsmga006-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Aug 2023 14:58:24 -0700
+From: Vinicius Costa Gomes <vinicius.gomes@intel.com>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>, netdev@vger.kernel.org
+In-Reply-To: <20230801182421.1997560-7-vladimir.oltean@nxp.com>
+References: <20230801182421.1997560-1-vladimir.oltean@nxp.com>
+ <20230801182421.1997560-7-vladimir.oltean@nxp.com>
+Date: Wed, 02 Aug 2023 14:58:24 -0700
+Message-ID: <87wmyd14zj.fsf@intel.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20230802090739.3266122-1-yangyingliang@huawei.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1690994958;
- bh=i3NjhRfDljUbrvQ9Gjo9ttGLESER8Q16GU4ZplSPidI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=HDDBlMlJS/8uZokFwLDzwv3dXlf1kvMtWo9a/Oe1kkicO17efe68mOhCqyAIrOEdr
- Qzkea7OTSBb1B9CxbM/PeUnVy4Jkq2FE+kNuOv+wjBytV4+CwjMc4qvzY80WqHgk+W
- Vhvb6ANO1W2q13QgD4+Cjy8zJqrBPDu69sTDOH7zkyh1dW/KrwC6H1jYWJQU5fpl64
- OAB4HdisYQKjsP+7CS4E+gY8vzl5Mc80yBYxnej5gg6b84ofwq8i78x9LaR+QLJQIB
- jab4U+833gPTABK3Sn9PoNk4x/VhtUt6fIVE7hUiQo/FU+V5aPvySxDm5b90cokAK1
- i1km7K/eip/DQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=HDDBlMlJ
-Subject: Re: [Intel-wired-lan] [PATCH net-next] ice: use
- list_for_each_entry() helper
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1691013507; x=1722549507;
+ h=from:to:cc:subject:in-reply-to:references:date:
+ message-id:mime-version;
+ bh=r+m4opMizQ6LAk9BBG6aOX5ScHmf410e3LtrOPinIrM=;
+ b=OUanyhILeet5A3pg7X1RIGnlrY4cu73eJJKJ7/YzJ5RSpwU4Wli2Yj30
+ LsO+lOg+GrlBfO+PpWFkyq6PjiCmxYb84NExYZdjqzCt96CU0dDhYIT6J
+ uFYk78lXn5BtpRgxvtO7cJJ5KPv5EVXTsr46khFyd54t/ANydVBv3OOlw
+ VxoO4NNrdcLReHXnPb8ciqVNXSSvhn/D7tEqNPyCVnPKkBABtpmgK4w8b
+ We0XFiZ346EhxtPzLCZN4jJgENI5frXa0rqTZ0cJ+QjT8lJgt5cyWLC/6
+ RwOexbf9eKC77QaaE9CmmkXktcXagikxy7lWpvu56+Zo5/fijUbYTBwn6
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=OUanyhIL
+Subject: Re: [Intel-wired-lan] [PATCH v3 net-next 06/10] net: ptp: create a
+ mock-up PTP Hardware Clock driver
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,22 +96,347 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, jesse.brandeburg@intel.com, edumazet@google.com,
- anthony.l.nguyen@intel.com, kuba@kernel.org, intel-wired-lan@lists.osuosl.org,
- pabeni@redhat.com, davem@davemloft.net
+Cc: Jiri Pirko <jiri@resnulli.us>, Pedro Tammela <pctammela@mojatatu.com>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Jamal Hadi Salim <jhs@mojatatu.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
+ Maxim Georgiev <glipus@gmail.com>, Cong Wang <xiyou.wangcong@gmail.com>,
+ Peilin Ye <yepeilin.cs@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
+ Zhengchao Shao <shaozhengchao@huawei.com>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Aug 02, 2023 at 05:07:39PM +0800, Yang Yingliang wrote:
-> Convert list_for_each() to list_for_each_entry() where applicable.
-> No functional changed.
-> 
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+Vladimir Oltean <vladimir.oltean@nxp.com> writes:
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+> There are several cases where virtual net devices may benefit from
+> having a PTP clock, and these have to do with testing. I can see at
+> least netdevsim and veth as potential users of a common mock-up PTP
+> hardware clock driver.
+>
+> The proposed idea is to create an object which emulates PTP clock
+> operations on top of the unadjustable CLOCK_MONOTONIC_RAW plus a
+> software-controlled time domain via a timecounter/cyclecounter and then
+> link that PHC to the netdevsim device.
+>
+> The driver is fully functional for its intended purpose, and it
+> successfully passes the PTP selftests.
+>
+> $ cd tools/testing/selftests/ptp/
+> $ ./phc.sh /dev/ptp2
+> TEST: settime                          [ OK ]
+> TEST: adjtime                          [ OK ]
+> TEST: adjfreq                          [ OK ]
+>
+> Signed-off-by: Vladimir Oltean <vladimir.oltean@nxp.com>
+> ---
+> v2->v3:
+> - split off ptp_mock into separate patch
+> - fix ptp_mock compilation as a module
+> - turn phc->lock into a global spinlock
+> - drop bogus support for ptp_clock_register() ever returning NULL
+> - add MAINTAINERS entry
+> v1->v2: patch is new
+>
+>  MAINTAINERS              |   7 ++
+>  drivers/ptp/Kconfig      |  11 +++
+>  drivers/ptp/Makefile     |   1 +
+>  drivers/ptp/ptp_mock.c   | 175 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/ptp_mock.h |  38 +++++++++
+>  5 files changed, 232 insertions(+)
+>  create mode 100644 drivers/ptp/ptp_mock.c
+>  create mode 100644 include/linux/ptp_mock.h
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index c4f95a9d03b9..164b7930f5d0 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -17175,6 +17175,13 @@ F:	drivers/ptp/*
+>  F:	include/linux/ptp_cl*
+>  K:	(?:\b|_)ptp(?:\b|_)
+>  
+> +PTP MOCKUP CLOCK SUPPORT
+> +M:	Vladimir Oltean <vladimir.oltean@nxp.com>
+> +L:	netdev@vger.kernel.org
+> +S:	Maintained
+> +F:	drivers/ptp/ptp_mock.c
+> +F:	include/linux/ptp_mock.h
+> +
+>  PTP VIRTUAL CLOCK SUPPORT
+>  M:	Yangbo Lu <yangbo.lu@nxp.com>
+>  L:	netdev@vger.kernel.org
+> diff --git a/drivers/ptp/Kconfig b/drivers/ptp/Kconfig
+> index 32dff1b4f891..ed9d97a032f1 100644
+> --- a/drivers/ptp/Kconfig
+> +++ b/drivers/ptp/Kconfig
+> @@ -155,6 +155,17 @@ config PTP_1588_CLOCK_IDTCM
+>  	  To compile this driver as a module, choose M here: the module
+>  	  will be called ptp_clockmatrix.
+>  
+> +config PTP_1588_CLOCK_MOCK
+> +	tristate "Mock-up PTP clock"
+> +	depends on PTP_1588_CLOCK
+> +	help
+> +	  This driver offers a set of PTP clock manipulation operations over
+> +	  the system monotonic time. It can be used by virtual network device
+> +	  drivers to emulate PTP capabilities.
+> +
+> +	  To compile this driver as a module, choose M here: the module
+> +	  will be called ptp_mock.
+> +
+>  config PTP_1588_CLOCK_VMW
+>  	tristate "VMware virtual PTP clock"
+>  	depends on ACPI && HYPERVISOR_GUEST && X86
+> diff --git a/drivers/ptp/Makefile b/drivers/ptp/Makefile
+> index 553f18bf3c83..dea0cebd2303 100644
+> --- a/drivers/ptp/Makefile
+> +++ b/drivers/ptp/Makefile
+> @@ -16,6 +16,7 @@ ptp-qoriq-y				+= ptp_qoriq.o
+>  ptp-qoriq-$(CONFIG_DEBUG_FS)		+= ptp_qoriq_debugfs.o
+>  obj-$(CONFIG_PTP_1588_CLOCK_IDTCM)	+= ptp_clockmatrix.o
+>  obj-$(CONFIG_PTP_1588_CLOCK_IDT82P33)	+= ptp_idt82p33.o
+> +obj-$(CONFIG_PTP_1588_CLOCK_MOCK)	+= ptp_mock.o
+>  obj-$(CONFIG_PTP_1588_CLOCK_VMW)	+= ptp_vmw.o
+>  obj-$(CONFIG_PTP_1588_CLOCK_OCP)	+= ptp_ocp.o
+>  obj-$(CONFIG_PTP_DFL_TOD)		+= ptp_dfl_tod.o
+> diff --git a/drivers/ptp/ptp_mock.c b/drivers/ptp/ptp_mock.c
+> new file mode 100644
+> index 000000000000..1525aafca752
+> --- /dev/null
+> +++ b/drivers/ptp/ptp_mock.c
+> @@ -0,0 +1,175 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +/*
+> + * Copyright 2023 NXP
+> + *
+> + * Mock-up PTP Hardware Clock driver for virtual network devices
+> + *
+> + * Create a PTP clock which offers PTP time manipulation operations
+> + * using a timecounter/cyclecounter on top of CLOCK_MONOTONIC_RAW.
+> + */
+> +
+> +#include <linux/ptp_clock_kernel.h>
+> +#include <linux/ptp_mock.h>
+> +#include <linux/timecounter.h>
+> +
+> +/* Clamp scaled_ppm between -2,097,152,000 and 2,097,152,000,
+> + * and thus "adj" between -68,719,476 and 68,719,476
+> + */
+> +#define MOCK_PHC_MAX_ADJ_PPB		32000000
+> +/* Timestamps from ktime_get_raw() have 1 ns resolution, so the scale factor
+> + * (MULT >> SHIFT) needs to be 1. Pick SHIFT as 31 bits, which translates
+> + * MULT(freq 0) into 0x80000000.
+> + */
+> +#define MOCK_PHC_CC_SHIFT		31
+> +#define MOCK_PHC_CC_MULT		(1 << MOCK_PHC_CC_SHIFT)
+> +#define MOCK_PHC_FADJ_SHIFT		9
+> +#define MOCK_PHC_FADJ_DENOMINATOR	15625ULL
+> +
+> +/* The largest cycle_delta that timecounter_read_delta() can handle without a
+> + * 64-bit overflow during the multiplication with cc->mult, given the max "adj"
+> + * we permit, is ~8.3 seconds. Make sure readouts are more frequent than that.
+> + */
+> +#define MOCK_PHC_REFRESH_INTERVAL	(HZ * 5)
+> +
+> +#define info_to_phc(d) container_of((d), struct mock_phc, info)
+> +
+> +static DEFINE_SPINLOCK(mock_phc_lock);
+> +
 
+Not a big deal, but as it is possible to have multiple netdevsim
+instances (is it?), I think it's better to move the lock inside struct
+mock_phc.
+
+> +struct mock_phc {
+> +	struct ptp_clock_info info;
+> +	struct ptp_clock *clock;
+> +	struct timecounter tc;
+> +	struct cyclecounter cc;
+> +};
+> +
+> +static u64 mock_phc_cc_read(const struct cyclecounter *cc)
+> +{
+> +	return ktime_to_ns(ktime_get_raw());
+> +}
+> +
+> +static int mock_phc_adjfine(struct ptp_clock_info *info, long scaled_ppm)
+> +{
+> +	struct mock_phc *phc = info_to_phc(info);
+> +	s64 adj;
+> +
+> +	adj = (s64)scaled_ppm << MOCK_PHC_FADJ_SHIFT;
+> +	adj = div_s64(adj, MOCK_PHC_FADJ_DENOMINATOR);
+> +
+> +	spin_lock_bh(&mock_phc_lock);
+> +	timecounter_read(&phc->tc);
+> +	phc->cc.mult = MOCK_PHC_CC_MULT + adj;
+> +	spin_unlock_bh(&mock_phc_lock);
+> +
+> +	return 0;
+> +}
+> +
+> +static int mock_phc_adjtime(struct ptp_clock_info *info, s64 delta)
+> +{
+> +	struct mock_phc *phc = info_to_phc(info);
+> +
+> +	spin_lock_bh(&mock_phc_lock);
+> +	timecounter_adjtime(&phc->tc, delta);
+> +	spin_unlock_bh(&mock_phc_lock);
+> +
+> +	return 0;
+> +}
+> +
+> +static int mock_phc_settime64(struct ptp_clock_info *info,
+> +			      const struct timespec64 *ts)
+> +{
+> +	struct mock_phc *phc = info_to_phc(info);
+> +	u64 ns = timespec64_to_ns(ts);
+> +
+> +	spin_lock_bh(&mock_phc_lock);
+> +	timecounter_init(&phc->tc, &phc->cc, ns);
+> +	spin_unlock_bh(&mock_phc_lock);
+> +
+> +	return 0;
+> +}
+> +
+> +static int mock_phc_gettime64(struct ptp_clock_info *info, struct timespec64 *ts)
+> +{
+> +	struct mock_phc *phc = info_to_phc(info);
+> +	u64 ns;
+> +
+> +	spin_lock_bh(&mock_phc_lock);
+> +	ns = timecounter_read(&phc->tc);
+> +	spin_unlock_bh(&mock_phc_lock);
+> +
+> +	*ts = ns_to_timespec64(ns);
+> +
+> +	return 0;
+> +}
+> +
+> +static long mock_phc_refresh(struct ptp_clock_info *info)
+> +{
+> +	struct timespec64 ts;
+> +
+> +	mock_phc_gettime64(info, &ts);
+> +
+> +	return MOCK_PHC_REFRESH_INTERVAL;
+> +}
+> +
+> +int mock_phc_index(struct mock_phc *phc)
+> +{
+> +	return ptp_clock_index(phc->clock);
+> +}
+> +EXPORT_SYMBOL_GPL(mock_phc_index);
+> +
+> +struct mock_phc *mock_phc_create(struct device *dev)
+> +{
+> +	struct mock_phc *phc;
+> +	int err;
+> +
+> +	phc = kzalloc(sizeof(*phc), GFP_KERNEL);
+> +	if (!phc) {
+> +		err = -ENOMEM;
+> +		goto out;
+> +	}
+> +
+> +	phc->info = (struct ptp_clock_info) {
+> +		.owner		= THIS_MODULE,
+> +		.name		= "Mock-up PTP clock",
+> +		.max_adj	= MOCK_PHC_MAX_ADJ_PPB,
+> +		.adjfine	= mock_phc_adjfine,
+> +		.adjtime	= mock_phc_adjtime,
+> +		.gettime64	= mock_phc_gettime64,
+> +		.settime64	= mock_phc_settime64,
+> +		.do_aux_work	= mock_phc_refresh,
+> +	};
+> +
+> +	phc->cc = (struct cyclecounter) {
+> +		.read	= mock_phc_cc_read,
+> +		.mask	= CYCLECOUNTER_MASK(64),
+> +		.mult	= MOCK_PHC_CC_MULT,
+> +		.shift	= MOCK_PHC_CC_SHIFT,
+> +	};
+> +
+> +	timecounter_init(&phc->tc, &phc->cc, 0);
+> +
+> +	phc->clock = ptp_clock_register(&phc->info, dev);
+> +	if (IS_ERR(phc->clock)) {
+> +		err = PTR_ERR(phc->clock);
+> +		goto out_free_phc;
+> +	}
+> +
+> +	ptp_schedule_worker(phc->clock, MOCK_PHC_REFRESH_INTERVAL);
+> +
+> +	return phc;
+> +
+> +out_free_phc:
+> +	kfree(phc);
+> +out:
+> +	return ERR_PTR(err);
+> +}
+> +EXPORT_SYMBOL_GPL(mock_phc_create);
+> +
+> +void mock_phc_destroy(struct mock_phc *phc)
+> +{
+> +	ptp_clock_unregister(phc->clock);
+> +	kfree(phc);
+> +}
+> +EXPORT_SYMBOL_GPL(mock_phc_destroy);
+> +
+> +MODULE_DESCRIPTION("Mock-up PTP Hardware Clock driver");
+> +MODULE_LICENSE("GPL");
+> diff --git a/include/linux/ptp_mock.h b/include/linux/ptp_mock.h
+> new file mode 100644
+> index 000000000000..72eb401034d9
+> --- /dev/null
+> +++ b/include/linux/ptp_mock.h
+> @@ -0,0 +1,38 @@
+> +/* SPDX-License-Identifier: GPL-2.0-or-later */
+> +/*
+> + * Mock-up PTP Hardware Clock driver for virtual network devices
+> + *
+> + * Copyright 2023 NXP
+> + */
+> +
+> +#ifndef _PTP_MOCK_H_
+> +#define _PTP_MOCK_H_
+> +
+> +struct device;
+> +struct mock_phc;
+> +
+> +#if IS_ENABLED(CONFIG_PTP_1588_CLOCK_MOCK)
+> +
+> +struct mock_phc *mock_phc_create(struct device *dev);
+> +void mock_phc_destroy(struct mock_phc *phc);
+> +int mock_phc_index(struct mock_phc *phc);
+> +
+> +#else
+> +
+> +static inline struct mock_phc *mock_phc_create(struct device *dev)
+> +{
+> +	return NULL;
+> +}
+> +
+> +static inline void mock_phc_destroy(struct mock_phc *phc)
+> +{
+> +}
+> +
+> +static inline int mock_phc_index(struct mock_phc *phc)
+> +{
+> +	return -1;
+> +}
+> +
+> +#endif
+> +
+> +#endif /* _PTP_MOCK_H_ */
+> -- 
+> 2.34.1
+>
+
+-- 
+Vinicius
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
