@@ -1,85 +1,70 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71314C001DF
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 06:58:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C83DC001DE
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 07:30:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1087840A53;
-	Wed,  2 Aug 2023 06:58:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1087840A53
+	by smtp1.osuosl.org (Postfix) with ESMTP id CEE9380DC3;
+	Wed,  2 Aug 2023 07:30:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CEE9380DC3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690959486;
-	bh=3QRndLGbkdtTpMkrtr15uAiJaR/WyiuX9yF79BpxiqE=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=Q3fIf0N9y39dJKTYa6Xx47Nw0O7XTqU45MGVAYhk3Q2SIexpJyh+vQC4l1ijI9YYJ
-	 7yIXHSYf7NXGZwstfVvcVOzuKO8Ge6Y1jCoGRF53RnzbrYo+Msv0mIONK8rvcfMMXv
-	 eR4CoKSohvMwowLkd9Xh086fVf5oJeCGC++2Ul0vRa4cmu4XUshdCqAmCRaKdwYxxm
-	 4NCQWk9jn8H8Rc1xWqBP7wnKfctwDTRLm7y7K3tzV39+dfnmukwTSxUJX/4CywZ7m/
-	 QQX3z9Mq2SC5jEVXg6oclto6wqwH8KI5Yy3pRjQBAK8i5FwN2lI8QptOukGxuNFQJH
-	 TD5tSzTFbKJ0w==
+	s=default; t=1690961427;
+	bh=GyvndtofQaBLwxdnnzVKq2iegL67IdWGVVU+/SILvkw=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=myb4FRqZc8as+Uo2URSxGTfsV8jxaioH8dAR0sded72ugh2iPTFTaWEdyx6VdbFGG
+	 6Vik1Q+evzKcfzqM9i53bN7Itf6ns6ch7Xw2LSMK0sBZft6OXdIY5DclNXMF8xBRXG
+	 11TyUIn6KPMr142M+guuW3zlAipCuv9nMkKohSyMX91wtcR/RN4EdqfsK2smC2AjjS
+	 M6vQGZqNBloXQcY5w/Su5NG1U837o6ljHoI0MpdaiNZJdnF0i+V7T1x4VKBmM3uE/M
+	 0plN0mjYG6StGxArhZbL0/fTiSGYmi6O5wCbMnGN+5k8KIMLq0b+itGj8Q4Ruy+CoQ
+	 06dN2R5usOYTA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 589l_In0V34u; Wed,  2 Aug 2023 06:58:05 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id kwNJLty5eGFU; Wed,  2 Aug 2023 07:30:26 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 03ABF40C2B;
-	Wed,  2 Aug 2023 06:58:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 03ABF40C2B
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 58C4C1BF387
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 06:58:03 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id C823C81432;
+	Wed,  2 Aug 2023 07:30:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C823C81432
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 33C921BF360
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:30:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id BA69740CA4
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 06:57:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BA69740CA4
+ by smtp1.osuosl.org (Postfix) with ESMTP id E6A3E80DC3
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:30:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E6A3E80DC3
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id W_A97lqW1o4b for <intel-wired-lan@lists.osuosl.org>;
- Wed,  2 Aug 2023 06:57:41 +0000 (UTC)
-Received: from mgamail.intel.com (unknown [192.55.52.136])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E686E40395
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 06:57:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E686E40395
-X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="349099720"
-X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="349099720"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
- by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 01 Aug 2023 23:57:40 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="852773246"
-X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="852773246"
-Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by orsmga004.jf.intel.com with ESMTP; 01 Aug 2023 23:57:37 -0700
-From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
-To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
- aleksandr.loktionov@intel.com
-Date: Wed,  2 Aug 2023 08:57:36 +0200
-Message-Id: <20230802065736.3556651-1-aleksandr.loktionov@intel.com>
-X-Mailer: git-send-email 2.25.1
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id PvbGY8fyx3Kq for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  2 Aug 2023 07:30:05 +0000 (UTC)
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3382C80CE6
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:30:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3382C80CE6
+Received: from [192.168.0.2] (ip5f5ae98d.dynamic.kabel-deutschland.de
+ [95.90.233.141])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 3099F61E5FE01;
+ Wed,  2 Aug 2023 09:29:43 +0200 (CEST)
+Message-ID: <d492b7a6-75a4-2300-2eae-b9f73be59461@molgen.mpg.de>
+Date: Wed, 2 Aug 2023 09:29:42 +0200
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1690959461; x=1722495461;
- h=from:to:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=YFFvrD5iqt+vDtLfLr93NHwceshuQZWhATxO7Hcf6hU=;
- b=BmrhkjGvzgE+ChnugvoIU93WGoSo/bFO5t81ZCH/AeSGQyDZ85ee4pl3
- TiRSVqoIxiS6nKNYMklMpIHqA/45Ycvh2RvfDnUlIL88pas2VhxLpgJdW
- pJLEiSeirKGNvUqC7WWEvs0bkI8txvUDgReExrDElg++iJ/SeA4OL3dBo
- 8QK+pfKn3WbJ3WoUna0wWRR+xIj3X+/tyvGrcGOzPHU8zAAmzSdI4R+E1
- LROUmLSURXe4XwROkbHY90M+acN02MPxgJTGgXNa7sjgFc4Szf0G74p/a
- E/yrUQJqykH2TiZmSDQ4/TJ5c9803xJ+dvIqxf9RHXPAk1ibPhZM/uHNJ
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=BmrhkjGv
-Subject: [Intel-wired-lan] [PATCH iwl-net v1] i40e: fix 32bit FW gtime
- wrapping issue
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.13.1
+Content-Language: en-US
+To: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+References: <20230802065341.3545102-1-aleksandr.loktionov@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20230802065341.3545102-1-aleksandr.loktionov@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1] i40e: add tracepoints for
+ nvmupdate troubleshooting
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,75 +77,31 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Decrease hw_semaphore_timeout size down to 32bits, because FW
-I40E_GLVFGEN_TIMER register is 32bits only anyway, but having
-both variables same u32 size simplifies code.
-Fix FW write semaphore expiration condition, taking into account
-that I40E_GLVFGEN_TIMER wraps, by checking the sign of substraction
-of two 32 bit vaues.
-
-Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_nvm.c  | 8 ++++----
- drivers/net/ethernet/intel/i40e/i40e_type.h | 2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 9da0c87..0fe8fc3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -55,7 +55,7 @@ int i40e_init_nvm(struct i40e_hw *hw)
- int i40e_acquire_nvm(struct i40e_hw *hw,
- 		     enum i40e_aq_resource_access_type access)
- {
--	u64 gtime, timeout;
-+	u32 gtime, timeout;
- 	u64 time_left = 0;
- 	int ret_code = 0;
- 
-@@ -78,7 +78,7 @@ int i40e_acquire_nvm(struct i40e_hw *hw,
- 	if (ret_code && time_left) {
- 		/* Poll until the current NVM owner timeouts */
- 		timeout = I40E_MS_TO_GTIME(I40E_MAX_NVM_TIMEOUT) + gtime;
--		while ((gtime < timeout) && time_left) {
-+		while ((s32)(gtime - timeout) < 0 && time_left) {
- 			usleep_range(10000, 20000);
- 			gtime = rd32(hw, I40E_GLVFGEN_TIMER);
- 			ret_code = i40e_aq_request_resource(hw,
-@@ -1192,9 +1192,9 @@ static int i40e_nvmupd_state_writing(struct i40e_hw *hw,
- 		u32 gtime;
- 
- 		gtime = rd32(hw, I40E_GLVFGEN_TIMER);
--		if (gtime >= hw->nvm.hw_semaphore_timeout) {
-+		if ((s32)(gtime - hw->nvm.hw_semaphore_timeout) >= 0) {
- 			i40e_debug(hw, I40E_DEBUG_ALL,
--				   "NVMUPD: write semaphore expired (%d >= %lld), retrying\n",
-+				   "NVMUPD: write semaphore expired (%d >= %d), retrying\n",
- 				   gtime, hw->nvm.hw_semaphore_timeout);
- 			i40e_release_nvm(hw);
- 			status = i40e_acquire_nvm(hw, I40E_RESOURCE_WRITE);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 388c3d3..efffe27 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -328,7 +328,7 @@ enum i40e_aq_resource_access_type {
- };
- 
- struct i40e_nvm_info {
--	u64 hw_semaphore_timeout; /* usec global time (GTIME resolution) */
-+	u32 hw_semaphore_timeout; /* usec global time (GTIME resolution) */
- 	u32 timeout;              /* [ms] */
- 	u16 sr_size;              /* Shadow RAM size in words */
- 	bool blank_nvm_mode;      /* is NVM empty (no FW present)*/
--- 
-2.25.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RGVhciBBbGVrc2FuZHIsCgoKVGhhbmsgeW91IGZvciB5b3VyIHBhdGNoLgoKQW0gMDIuMDguMjMg
+dW0gMDg6NTMgc2NocmllYiBBbGVrc2FuZHIgTG9rdGlvbm92Ogo+IEltcHJvdmUgbnZtdXBkYXRl
+IHRyb3VibGVzaG9vdGluZyB3aXRoIGJwZnRyYWNlIHV0aWxpdHkuCj4gQWRkICdzdGFibGUnIHN0
+YXRpYyB0cmFjZXBvaW50cyB0byBkZWNvZGUgbnZtdXBkYXRlIGNvbW1hbmRzIGNvbXBhdGlibGUK
+PiBldmVuIGZvciBmdXR1cmUgZHJpdmVyIHZlcnNpb25zLgo+IFJlbW92ZSAnc3RhdGljJyBmcm9t
+IGVlcHJvbSBmdW5jdGlvbnMgZGVjbGFyYXRpb25zLCBtYWtlIHRoZW0gcHVibGljCj4gdG8gZW5h
+YmxlIGR5bmFtaWMga2VybmVsIHRyYWNpbmcgYW5kIHByb2ZpbGluZy4KClNvbWUgcGVyc29uYWwg
+cHJlZmVyZW5jZSwgSeKAmWQgYWRkIGEgYmxhbmsgbGluZSBiZXR3ZWVuIHBhcmFncmFwaHMgb3Ig
+CmF2b2lkIHRoZSBsaW5lIGJyZWFrIGp1c3QgYmVjYXVzZSBhIHNlbnRlbmNlIGVuZHMuCgpBbHNv
+LCBpdOKAmWQgYmUgZ3JlYXQsIGlmIHlvdSBhZGRlZCB0aGUgY29tbWFuZCBob3cgdG8gbGlzdCB0
+aGUgbmV3IAp0cmFjZXBvaW50cyBhbmQgb25lIGV4YW1wbGUgZm9yIHRyYWNpbmcgb25lIG9mIHRo
+ZSBuZXcgdHJhY2Vwb2ludHMuCgo+IFNpZ25lZC1vZmYtYnk6IEFsZWtzYW5kciBMb2t0aW9ub3Yg
+PGFsZWtzYW5kci5sb2t0aW9ub3ZAaW50ZWwuY29tPgo+IC0tLQo+ICAgZHJpdmVycy9uZXQvZXRo
+ZXJuZXQvaW50ZWwvaTQwZS9pNDBlLmggICAgICAgIHwgICA1ICsKPiAgIC4uLi9uZXQvZXRoZXJu
+ZXQvaW50ZWwvaTQwZS9pNDBlX2V0aHRvb2wuYyAgICB8ICAzMCArKy0KPiAgIGRyaXZlcnMvbmV0
+L2V0aGVybmV0L2ludGVsL2k0MGUvaTQwZV9tYWluLmMgICB8ICAyMCArLQo+ICAgZHJpdmVycy9u
+ZXQvZXRoZXJuZXQvaW50ZWwvaTQwZS9pNDBlX3RyYWNlLmggIHwgMjEyICsrKysrKysrKysrKysr
+KysrKwo+ICAgNCBmaWxlcyBjaGFuZ2VkLCAyNTYgaW5zZXJ0aW9ucygrKSwgMTEgZGVsZXRpb25z
+KC0pCgpb4oCmXQoKCktpbmQgcmVnYXJkcywKClBhdWwKX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtd2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRl
+bC13aXJlZC1sYW5Ab3N1b3NsLm9yZwpodHRwczovL2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9s
+aXN0aW5mby9pbnRlbC13aXJlZC1sYW4K
