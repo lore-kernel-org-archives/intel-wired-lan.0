@@ -4,81 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9CEDC001DF
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 07:57:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91839C001DF
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 08:03:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A1E0280C83;
-	Wed,  2 Aug 2023 07:57:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A1E0280C83
+	by smtp1.osuosl.org (Postfix) with ESMTP id 500DD814AB;
+	Wed,  2 Aug 2023 08:03:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 500DD814AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690963033;
-	bh=ctuuj0UbAsdM3Uc+WrkuOCV0CTCK9GBW5GwspmYCbac=;
+	s=default; t=1690963424;
+	bh=34+BrZ2LuW3o/d2V0IJSgtwdgB/t2UH80JZxIm3Ri74=;
 	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=toiBcR3cagEkoK+Ykg+UKs31i0HoiZK6EZ/4vuzQYebF1PrFvsTrpH/7wu8dq4Bea
-	 d8f1RRlGqqNzqTNuzM9ur5DW3Fsf6nC2ycEnZsYYQZjzXLsx0ltMWND2pS1bnXCKaf
-	 TjuJoiYVvtO61R6AmRMlU3IHGjTdYCjUMQ8FxSVZdomUnaY6xPiYP2zSbMC3NyEhrm
-	 OzM6EwDgqSuuz5g15H9/4daS0Cz8SceJYWt7gHktZcAyIhhti109s0bjmP1p0zd7R1
-	 4nU3aKrSUkbuSrqFHJHxQYchdqmwl409P2q1IFibQNrLx4+302X19EMajDfQ5hs7ge
-	 JfsVxsRxtfh5g==
+	b=4OeBCyX+6JrEcIGKcGTia35vDo1XQOKzS2naEIkFCKViB9CxYllJX7OgZjWy0e1/X
+	 xWMrMhOeiUx+KViJdp5R9yQmFMz8T/3WTEcaVLGEkV1iKgj97q3/qv/yfuSht2Kg3a
+	 uYz9Obmrq70bnFknHwiQC2+OdMYnsYVww+WNBLDt76mj9jXJbXVfAmqcUfC+LSdLG7
+	 C6NsXbUtGTgHMqTdJvGcwHTFImsZOuctQHkRRtKQ9mbwHRH3+hA6TryA/UGJy7RGvH
+	 UZ2fnNiVOPqwXDe56Xr68xmgH6mNPMrRvGQxsB4O0WqkoN/zZFXLlYL60Gr4FyYzl1
+	 qZ1QUiLTB+RpQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xdupFG6rTODJ; Wed,  2 Aug 2023 07:57:12 +0000 (UTC)
+	with ESMTP id 3KnLxU-DrgQg; Wed,  2 Aug 2023 08:03:42 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 743AE80B6C;
-	Wed,  2 Aug 2023 07:57:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 743AE80B6C
+	by smtp1.osuosl.org (Postfix) with ESMTP id A2D4080CC8;
+	Wed,  2 Aug 2023 08:03:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A2D4080CC8
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 52EF81BF360
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:57:11 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id F24551BF360
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 08:03:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3072F61139
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:56:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3072F61139
+ by smtp3.osuosl.org (Postfix) with ESMTP id CEE6660BA5
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 08:03:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CEE6660BA5
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id mdaVED7GO_Lv for <intel-wired-lan@lists.osuosl.org>;
- Wed,  2 Aug 2023 07:56:53 +0000 (UTC)
-Received: from mgamail.intel.com (unknown [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2F39260E8F
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:56:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2F39260E8F
-X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="435836252"
-X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="435836252"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Aug 2023 00:56:51 -0700
+ with ESMTP id 43M9gLXrnSRq for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  2 Aug 2023 08:03:35 +0000 (UTC)
+Received: from mgamail.intel.com (unknown [192.55.52.43])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9CA0260B3D
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 08:03:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9CA0260B3D
+X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="455879865"
+X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="455879865"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Aug 2023 00:56:28 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="706088768"
-X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="706088768"
-Received: from fmsmsx603.amr.corp.intel.com ([10.18.126.83])
- by orsmga006.jf.intel.com with ESMTP; 02 Aug 2023 00:56:50 -0700
-Received: from fmsmsx612.amr.corp.intel.com (10.18.126.92) by
- fmsmsx603.amr.corp.intel.com (10.18.126.83) with Microsoft SMTP Server
+X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="758652286"
+X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="758652286"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+ by orsmga008.jf.intel.com with ESMTP; 02 Aug 2023 00:56:27 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Wed, 2 Aug 2023 00:56:50 -0700
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx612.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
+ 15.1.2507.27; Wed, 2 Aug 2023 00:56:25 -0700
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Wed, 2 Aug 2023 00:56:50 -0700
-Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ 15.1.2507.27; Wed, 2 Aug 2023 00:56:25 -0700
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27 via Frontend Transport; Wed, 2 Aug 2023 00:56:50 -0700
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.168)
- by edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
+ 15.1.2507.27 via Frontend Transport; Wed, 2 Aug 2023 00:56:25 -0700
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.177)
+ by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.27; Wed, 2 Aug 2023 00:56:49 -0700
+ 15.1.2507.27; Wed, 2 Aug 2023 00:56:25 -0700
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=f3xTvMpdre8565ueBcN9OmJtkfAu7p8Gbm+xZTAnfbuqjgLgcsMs4ECJWVoYCHZxtV7ksEX4kPAm23wQ0327ImYZsH3Dhi2po7lh2cqSlzQsqU7qze2x7JP7idCvPULD9M+3ZvwAO9oYSX2pHRIVwCGuhvqYCz+WpJ1BLO5+UBHPHWoPolPHwS7HpIG4awRq2noYoP0/+mT/xNvCnDNyMsVw5YhPBiWdurp6V8c8LUQ3O2ZuIjm5W7Brr+MXVSZfvFcIXysluhXeZogXHd0in+OoMGDoskExuP8zgXFYV6gF0Gprb1UF2h2zoBVMoI/NL6Waaw2G5BJBm4MdUEPngA==
+ b=n17Y2tofjjcBkgdDiFG/RtHmabYnIwzH+EJaUDgchMSYAE8s4JJVjjqrzTaTihZXMDuqopON7GKUqzeWRKqhO8XTvsbG9zy+/L/4PZg5jnHhZ3uaW3xJobFMD/i6JVoq2oRGHiC/uQM0W1zFaNAxV9aGzX/dLy/6e8l1XNEZiG83hqiCLqJmNv291mg4aeaCFun3Um7vFxKrLNNc4CQq0A8Kpa22rQCxihV+doruSgdOmHZiyM7bh82d0qvMgheAnYzC5/0NxLzTMmaDAoIrADzeqCeg/dxSmkbHVPO3xUBU7QgBbsRA1GrbINQALnSiJEvWRSQzvKCnp4sbOJuTWQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=HowwAfwzgKNB//7qlVsxdTbPV2epArhOnRDufdjj9+4=;
- b=WXy52nW8Bc3KhqK2jGetP3eyUvseQTkxcAMWKZ/RJu0/qG5nY44i4xvdu3rXnLAH4zooOhSVJsJ4UevRSiJF/eyjzf9JsZ95jujElgkhBns0NCTkaYVIb3wEDOVjyvGd9ArmToZgmRxd1bzRKcw/sAFLhpnzrL5U3l3BKtJmGbgy/mMFi+m8K4p3T66NjJFwqMb2kL9DeoDLzsq9vKlWFm6pUnkERoJ5J7Izf2/n+hQqjNZ5g3Ls6nDIeiSJAJ/BWaitiL/8WHeSQvXD138C1PYarfToKm6r+gk4pr/w6ebRxKYNrv46lri4sBUbKYe2LBoEFr33ZljKKX5fFI9WDg==
+ bh=F8hyGAxcA8ltBqwL+FmjHIsKTgP2QRPwyjmVas+VpDA=;
+ b=Vc55Cc6ostkNlz6DF+26498WlhLFLC5f3wJT9ENSc1jwQk6X1UySwcLSH04nlaNKS8tZi0S4LqgiLGtkc1xKP0xq0WBuySsZtUBEKa+0UrjnGCBB3gDktWZKV30X6qrHX2rSHwEADSnJX51zbZxdXV+4ZfSY5BeKoyq4R6pPyjVFd+pxJDQIiSmHLUMK1dfQIOT6aqq64euDFuidAkFpkcpJWk40znPwd/i6pdU5gEa1aZEtdXMx6sBkr7IcIml0q1ARN+UEb+GJF4GDxqcaVa7xDnrPaLMPy3BWlM0oruk6yb3NhbGbNM1tLIBIVDiGo92dbcvTHAITe4EfZOjrvQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
@@ -86,107 +86,107 @@ Received: from DM6PR11MB3723.namprd11.prod.outlook.com (2603:10b6:5:13f::25)
  by PH0PR11MB5657.namprd11.prod.outlook.com (2603:10b6:510:ee::19) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6631.45; Wed, 2 Aug
- 2023 07:56:47 +0000
+ 2023 07:56:17 +0000
 Received: from DM6PR11MB3723.namprd11.prod.outlook.com
  ([fe80::1e9e:bb95:66b2:e3f1]) by DM6PR11MB3723.namprd11.prod.outlook.com
  ([fe80::1e9e:bb95:66b2:e3f1%4]) with mapi id 15.20.6631.045; Wed, 2 Aug 2023
- 07:56:46 +0000
+ 07:56:17 +0000
 From: "Guo, Junfeng" <junfeng.guo@intel.com>
 To: ivecera <ivecera@redhat.com>, "intel-wired-lan@lists.osuosl.org"
  <intel-wired-lan@lists.osuosl.org>
-Thread-Topic: [Intel-wired-lan] [PATCH iwl-next v2 15/15] ice: add API for
- parser profile initialization
-Thread-Index: AQHZl3FgAFOgALj/xEy5hDXhJlg9Ra/JEduAgA3LQJA=
-Date: Wed, 2 Aug 2023 07:56:46 +0000
-Message-ID: <DM6PR11MB3723D16B907692708C8E1F31E70BA@DM6PR11MB3723.namprd11.prod.outlook.com>
+Thread-Topic: [Intel-wired-lan] [PATCH iwl-next v2 05/15] ice: init boost tcam
+ table for parser
+Thread-Index: AQHZl3FRfc3lSXvXU0WuYLA1J14eTq/JB3uAgA3W/zA=
+Date: Wed, 2 Aug 2023 07:56:17 +0000
+Message-ID: <DM6PR11MB372318F2306CB7198EDA5C80E70BA@DM6PR11MB3723.namprd11.prod.outlook.com>
 References: <20230605054641.2865142-1-junfeng.guo@intel.com>
- <20230605054641.2865142-16-junfeng.guo@intel.com>
- <044eba59-0880-501a-7fb5-75b84fe51b69@redhat.com>
-In-Reply-To: <044eba59-0880-501a-7fb5-75b84fe51b69@redhat.com>
+ <20230605054641.2865142-6-junfeng.guo@intel.com>
+ <8b3f9a2b-a1d0-0e7a-66ac-287483a4897f@redhat.com>
+In-Reply-To: <8b3f9a2b-a1d0-0e7a-66ac-287483a4897f@redhat.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 x-ms-publictraffictype: Email
 x-ms-traffictypediagnostic: DM6PR11MB3723:EE_|PH0PR11MB5657:EE_
-x-ms-office365-filtering-correlation-id: 8e8e5d44-cb5d-42dd-a249-08db932e0538
+x-ms-office365-filtering-correlation-id: 5a204159-17b6-4094-6017-08db932df3e6
 x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
 x-ms-exchange-senderadcheck: 1
 x-ms-exchange-antispam-relay: 0
 x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: VMi0GcX7o5oh6uDWMio5jlEFR7KcbKTroQMUQc2F9EdbYiqc7E/Dmx5/xPMTy2wxA/P13wR4kru5kfpAcjoPwzSYIKp9Lkj5Z2OQPqKhQBG/FVYaMoIX9kS9V7TiY1Mp/QDOxzGPPytr+1aoaUNu+lED0coel8cWKivX/dwinLKEvFUBJiMQH+A3RnqSCskWeRHXrMeoRvGNydHeIcV3Bq7WkUFwJDUrghcSnnFFo+9JuSoM4bThFcfXndU1thXhs+I4LUx/68iKflVfisXUH7A3mW4Hc7H1C1Pubs3FcrVu8wStcNruvOCCNI6HH2Bf7JPgoOaqw3aR/7KFvdOcBfU6enHCARaImNWnBV7qdZnpIgmiYxh0lFBs1DrsvJ3JpK71IavADznxqoJG0mzeWeo1V5fbq+acyLzVJlbeBEzGSlDnlSdz6XmaFcNKS3glPXjyHJGfzfP3YIDKRlCQYuy1oRsxILA2EkZ4wFO54AppRz3mAaj73Is9Ewi9DO9C84XJ9gyqHbV3tsWpCscpFRzC3gI40SNGVSgH2Jpp+P3Hhw+B7bqGexit+f1a1LlsmfKuvL7G8MzTdlyb+gmE5lBebKwDfb/31gndtwmMzNIZYsKJ52zONiJUKW890uwv
+x-microsoft-antispam-message-info: 5LZGWL3/xViTbpxcOQS9IF51F6sPTi2YXvNq7g3Np+7P65yZMV9hU2Eiuu8YgiyM+SXJ0P89eudfWcNSRE2PbY688VrIcpGLfDzZukAl76hkr+Kim3K9fxbdrbmPJVZulcesyahG8MmqxYNVxeE8RXmNjXrLe6TrNEOUggaKDV9aOpl4Q4GQQg3pHGEQ+PWfqGgaJxbAewRsjuUWptbhzDMzzdGHrYbWMPphN72L/LXYAnKmCPMGfKo91wfR4kcKrdywLCiRrMERVhOgS+ayp6ZEEcUteUsHGI0tf0YTzsUejeuvoCoUHLlmmlyj7ZWVnTJPwQsu9TU8xA8cHyowM+zqBNdZ2hejGzkwWBLXHmpWdm+WhT7a7XDoRkIOzDE1Y0exNZpmOF1NTiJTgAR7hlZ9ow0l2LsFtT5z2uFpgmr1rproXv8R3ZwFNXwY9V3XR/9dBmFg5l5Ydzgp/yfcXQYL7k84027qyvSXJj0eUOJkQ4t0hJN7OmBJym6GZwMjU2xkVf+1OBt5ZWhTFbvlpLbSlS6Qt6pePI8feJXa48VKp/yvzHzYtGHjA2fn8ZUjV+SPxCcQgOZ6GTAg4gvhHCtvGR3Ee3oMeBMPV0IJXBQeH21EC3c7UlTzVgp9RSpd
 x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:DM6PR11MB3723.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(39860400002)(376002)(366004)(136003)(396003)(346002)(451199021)(55016003)(186003)(9686003)(316002)(86362001)(478600001)(122000001)(54906003)(110136005)(38100700002)(76116006)(71200400001)(66946007)(66556008)(66476007)(66446008)(33656002)(64756008)(7696005)(4326008)(82960400001)(6506007)(53546011)(41300700001)(26005)(52536014)(8676002)(5660300002)(8936002)(2906002)(38070700005)(83380400001);
+ SFS:(13230028)(39860400002)(376002)(366004)(136003)(396003)(346002)(451199021)(55016003)(186003)(9686003)(316002)(86362001)(478600001)(122000001)(54906003)(110136005)(38100700002)(76116006)(71200400001)(66946007)(66556008)(66476007)(66446008)(33656002)(64756008)(7696005)(4326008)(82960400001)(6506007)(53546011)(41300700001)(26005)(52536014)(8676002)(5660300002)(8936002)(30864003)(2906002)(38070700005)(83380400001)(579004);
  DIR:OUT; SFP:1102; 
 x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?utf-8?B?QWtXeFE2Vy95V3EySm9lYzJDdHFHbEY5K1Y3a1o0K2Y5aDlmT1pndTh4Z1Av?=
- =?utf-8?B?TGZFVFFiT2Z0TWpIVFMzd0hhSm85VkpNWVVpcDR5ekVwcW9pMHkvVGxId0dX?=
- =?utf-8?B?M0YzcTUrdUM0V2NEclBJaUg5eTFvVGwrdHlUaHRWV3BaKzFkOGlMRFlZQWM4?=
- =?utf-8?B?Zk5QWkR6UmR2VTNmeUFSVDRCbFZhZjQ5aXhuYm5MbHdqRk53Ymd5WE93U0xC?=
- =?utf-8?B?aDZlbzNRZ1ZxQ0tLUU5EUnNwY2FtSVlpY3FDVlNmaGsxT0VBR0RFR1pXbTNM?=
- =?utf-8?B?VjBaOExHOWVvaG5scm5mOVMwVU8wSk9KYmlDMTFlZ1FqeTNwZXVZOGxvVXdu?=
- =?utf-8?B?aTdBWGdnRlVEMksrNWFUaE5QYlliRUdmMGNacUtwVjB4Y1ZlS05SUXo4Ylgy?=
- =?utf-8?B?UFYzNjRHTi9haVNFcDVFZ2IvbyttbndCdUxMbVRWV091V0RKREhnSGtqSUJp?=
- =?utf-8?B?dGxUc1BYcEVKczZFcFlOQXl1OUE5UThRdVFTWUxzeDYzSnh1amRQNGNDdXFT?=
- =?utf-8?B?Nkt3RWFjSStzaGFiWXdUWDhvclpscDJoY1BaUkpvWk1ieFo0eUFhRm9IMTBJ?=
- =?utf-8?B?NnFKb0s0cUU2dDM3WmJ4TldCYTYrbFQyRVRwTEQrdXI2SE1nV3hGQTlJYnMz?=
- =?utf-8?B?OUI4Qi9OWkNmZmRWNEJld0htNHQ3ODR5OEFjVnVPT2hwdGd4VkZVNWlkY1pM?=
- =?utf-8?B?ZjM4QWJKOXpRdWFEVjMySXBiMmViZ2ZNbEJXcUl4cjNnWnJUMC93U01lRW1T?=
- =?utf-8?B?aHZjWEFBZGllWUlOZERNbjZHL3hkYys2NkVLQ1BjREx3eEZ6WUw3Y0x1dkgx?=
- =?utf-8?B?NGQrMTVRSG9mRU9zTXF1OGpsYkZyZkptUEpWeFRCeTBQeU5FeFVleHliT09F?=
- =?utf-8?B?ZGVad0ZDeTJUc3krbmx4QUpiNmRXbG8wMWlWS3VvTUJCZXhXbThrZGtjK2tE?=
- =?utf-8?B?MWlaaDJxZEgxWXdPREhYMy9hM2xaQUZ2dFA5RllNTE5vb2pMcHJnOGRyQk95?=
- =?utf-8?B?TG9ZcU9yV2VWYXpXcFRZbGFKZEtUclF6VUNXNGJFcDN6b3BZQnJHdEtoZlNK?=
- =?utf-8?B?WlNpYmJ3THhYaWF0M01nVFdMRy81QWNnSC92WCtFVS9yTmduL2ZYNjQ2Mytp?=
- =?utf-8?B?K0ZuUWFWUEUyYU5LaUI3Wm1SRUVEMWVZSUM4Z0gzZC80bFlnRDFxbGFsWnlX?=
- =?utf-8?B?R25mUTZvTUEybkE4SFQ3RE14U2M3L2QxUzBNVktRZ0xHRnFiZTlrcnlqeXRW?=
- =?utf-8?B?Mkxrdk5yR3Q1ekx4d1JtRkNBSG1zQkV4Z2p4MkwzcFJuUDd3M1FNOFFYZWh3?=
- =?utf-8?B?R3FXMVE5bnpOOWFNS3pUL1hicWlxeFdBTEYvL212Mnlmck5iMks1Z3hkVVo0?=
- =?utf-8?B?QXhBSGZIa3ZsRG1WTkVqMllaaVNMdWZlajRNWlZPVUp4enNpdTY1bExqSzdy?=
- =?utf-8?B?N09ySlRoZWpJTVBVbXBvSEtwcUVKUXRxWVJ5bklyazB4M3ZBekIzNVU5bWV3?=
- =?utf-8?B?cyt4bTJ0V05iS0YrTzREcEs4WlZEYm1GaFo5TXVnZUtzbk5qYnMxcjBGOE1G?=
- =?utf-8?B?cUQ5a2lRWTkxWE1ZQ2hKRGhGSEhJSi9CN0w5akQ4bHhZcVpFNmZyWFdiTmJD?=
- =?utf-8?B?dDY1TzlaVHZLNUtjb0p1blhXaHphSjhUeXkxQnpCWUFadEtYNWpkS0kvSGdy?=
- =?utf-8?B?U0dVVjdKYUgyanhUbGlGRWY1Ui9YODJNOFk5cHRCRm10d0VmaFhRcjRYWEFF?=
- =?utf-8?B?TTk4dzZrWWdwOC9PMEpQSE8rMUJmanZIMTBlNW4rSktTb3ZWR0tFT0RJWW81?=
- =?utf-8?B?MUt5VzlxNmRuSDFyeFFJaWV5WUJnNk95MTAvalJCYmR6MW8raXlGQW5jcEZi?=
- =?utf-8?B?aHR5RmlFeGUxaXRJaTRCTVg4cDZDUmRvb0luNGlod2g1T2VWY1FoeElsd1B6?=
- =?utf-8?B?R3pzMEpzeHYzYnJoeDNCWko5aFBtdHB6U2lwVWFrNm1Qcm5nbWdiQXZkaXo5?=
- =?utf-8?B?Mi9iSGhDR3J4Vi9GUHRWU09PUlVLVGVSdlcxVDVDenZKeTBGUkpLUDlDUWFF?=
- =?utf-8?B?eFJaczhtVDV2V2g5VHpQWHZoNU1yK1NLSmludEg2VFVFaVRqYWFVcCtscHdY?=
- =?utf-8?Q?tVBTYklEXW2AlTrbdKwVhURbm?=
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?QXlzZU1Fb1JxZ3RTdFZzL0hnS0ZpL1NkaXdiaXFUR3c3c0dvbWRFSzFraVFC?=
+ =?utf-8?B?aEo0YUk3RGkvTWV1ODBLWFoxSFVGMVhxUFRBbE93M0ptK0F1eWN0eTFGUnd4?=
+ =?utf-8?B?TEZjbWdod2VoNlI5Y2duMmdXNm9RUS9NOG01Q0ptaDZNTHgxWlo1T21HcktI?=
+ =?utf-8?B?TmpzQndtMk8rbVBFTHhCUHRCYzl0QzZsM2VORFk1b2NBNVVMYWwraEU1Mllu?=
+ =?utf-8?B?anN1dmdiUVRudzcwQ2R2SldzbU04S1ZEM1NJaXJrbUtlSi9IeE5ock9FZDVw?=
+ =?utf-8?B?YUp5eTJDSklBQkhFK1JiWnpoUDBzdk10S3NpU1RMdXl5c1Q5TVRLN3lhMll6?=
+ =?utf-8?B?SGJleHVPdHIvU3JZMzFSYzZ6OEpobkVVQVRqM1FxSno1QTB5UE5rWWxKdFRH?=
+ =?utf-8?B?SEtFdFBGT0cwd3BqOWpiTmpvNGE4UVhQWEJlVnlGNWFCQTNyRC9xaWErWVZU?=
+ =?utf-8?B?UXNjdWNvamFHM1Q0ZmNJekszRkNDREowejNGRmtHODVubWp4WThvZm4zSTU0?=
+ =?utf-8?B?Tmo1Sk9YVDZDODFRTGhpM3RxZzB4UVMzMi9XOGdjVjdRQ0JjUTdtUjlUeXU1?=
+ =?utf-8?B?WG1tWjlUMit1ZGFUWmxpbXd1TCtpUERSdVpBV3JjY1ZMeGw4V0grNWJDVS9G?=
+ =?utf-8?B?dVVuVlZlek9uVHpBbTdLcURIZFpoR2ZHK2J5bFZLNmFHK0dLSnpOK0hNNVl6?=
+ =?utf-8?B?d250SDZoaVF0ckFFbk0za2VHQk9RNDZlcHVRb29JY0pSSVR0RUJBSGlDNWdS?=
+ =?utf-8?B?WHpsYjFNZkpjbXgwZ1hVc01qTkJSTlpQcDFyckV6L3A4aCtBU0Q0Z21zMzIz?=
+ =?utf-8?B?bEdZTVJnMy9QV1drSENYbWwzbk5kRm9kTVBkWnRWVERweGFnOWR1eG5zZEJG?=
+ =?utf-8?B?NDZESUpXOGhheGVnMXpLK0pER1RnU3J4MGRVQjVtWWpYZXdETklaTXg4MURo?=
+ =?utf-8?B?Y0VJTmY2dk0yZkhOU0VVREYzTnl2ckNSLzNaTUxiQVZHcjF1NTIzMXNTb3VD?=
+ =?utf-8?B?WThvdXFVKzlFWWVMMEpVNjBVZzJtS2s1N3JjZVkzb3JEVWF6cjZYcnNtT3NZ?=
+ =?utf-8?B?Q0Qyb2dtcTh3RmdqWjhCdVJYSjZFbzd2KzZubjIxQzlDeDhhODN0QXZSN0tl?=
+ =?utf-8?B?S0p0TjVRZ0xTVFJsOGFYY2hiYUl1NjdraW1vOStabnByMDFHTXEzWlU4SWxR?=
+ =?utf-8?B?bmozL1YzNHdtUGMrZlZLbVBDZlhJTFRUT2R6dDFTeG94MW1YS1NsNDFwcDUy?=
+ =?utf-8?B?WGhTbVlXUUxWNGgzR05YYnhkZ25uN3VZQ1NDeUcxalpCcXExcnJaZEtiWjlq?=
+ =?utf-8?B?TEVoa01WY014cXVjY2R1OHEwNUUvcEZ5ZlNZaVBuUWhQVDdjY2lWOThGVlpp?=
+ =?utf-8?B?MFB0cHBpRENhc1dzYTlkbS82cjI4b0JaNElpNkxqVnNUU1RpZitKenpiTllw?=
+ =?utf-8?B?TTJwNUVtRGxQa0MxTFJMc1ExdldrNlJ2Qlp1RUhPM2QycVpNNzF3TEc2VHNJ?=
+ =?utf-8?B?NkNWMFllWXd0Rk96bXNjQ1BkcnhKUUdNZC81Nzl5OEM0NDZ6Z3F6bUQ1bjky?=
+ =?utf-8?B?ajN3TTRXaTF0SHJIVm1BYTZWZGw1M3ZyNi81NHpGSitpQVJsVkZMMGZPNGR3?=
+ =?utf-8?B?NmRYV1V0K3Z1V25XVGlHdklvVDlocG1XRGY1ZUU5eTVPcWdKYm5oTDdLa2sz?=
+ =?utf-8?B?cTZKUE4wK3hBUmlEZWxHZ1locGQwaHVyQk9ra3R0L3dBUU9WNXYwRXdBMTRB?=
+ =?utf-8?B?UnJ6eWw1dkJKRTR1UzBPSG83RnQ0bUlsSDZsNzhmVTcwdk9GS09LVVpWQUEy?=
+ =?utf-8?B?Ykd3a1lyblJ0QUU2U09Lam53V25sZmZTOVk3TVpmTGVDMVJGQmluVjducno1?=
+ =?utf-8?B?YjVsTUZGa0JqK0I2bUhaTldEUmpyU0FjbUZGRGd1MUR5Qm0xQU14alBrTEFK?=
+ =?utf-8?B?c0J1dkVGR01MZzhsV3RIQTVsQk5sTEJBR1RmN29xcGo0d1Z1RHZlRWlzKzFC?=
+ =?utf-8?B?RUlJSlRra2dsN3kySlRVcnA5RnhQVGs1a2JQOUpKQTdBWU5DQTh3dTJva1VP?=
+ =?utf-8?B?cTl6ZWtwK01SSlY5cTB0RERiR2FhMkN2MFBpWllJRnpDa2pCNG1Za1lTSTho?=
+ =?utf-8?Q?E6yhPpMW9BdijUF5P1VHRAQ//?=
 MIME-Version: 1.0
 X-MS-Exchange-CrossTenant-AuthAs: Internal
 X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB3723.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8e8e5d44-cb5d-42dd-a249-08db932e0538
-X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Aug 2023 07:56:46.8250 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5a204159-17b6-4094-6017-08db932df3e6
+X-MS-Exchange-CrossTenant-originalarrivaltime: 02 Aug 2023 07:56:17.7471 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: rxpWZrgbHjU7Lp9GAO43I1qggW/MF3OQbuf0TLhCmKkGaUKbwVtwAJc7bqrhrgwA+d+pnTglGPzx9wn6ZG16YQ==
+X-MS-Exchange-CrossTenant-userprincipalname: BOKlENsm5O+j6Nb716Hl9NZYqDBMFBRfEMnA4fOOIBMwTNS19jZqs6XVRwEpGWKubvFn0x9u/WMnuJK9RYz4Xg==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB5657
 X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1690963013; x=1722499013;
+ t=1690963415; x=1722499415;
  h=from:to:cc:subject:date:message-id:references:
  in-reply-to:content-transfer-encoding:mime-version;
- bh=HowwAfwzgKNB//7qlVsxdTbPV2epArhOnRDufdjj9+4=;
- b=UEsl5dGyeiE9HTJczUgej6jxAEdhXYj45+eY7h1wc9ZoqwwjCagUtX4k
- NQl80WdJtACC5VuoC7ui2/LsHViV16SfeazGP9zP7Hq5IbtHCdR975GsL
- mIBLwsclZTkEJ5WrHt8J+6dxSQuKuu3yGj+AQchTkjdh30Wyk1qw5cOwZ
- 3M9sj0MRk+vXLKOiydcPgSxp3qyJCIqokq624/JktU+TQN0oNP0pAT6sr
- cmO0GdGZhjKpo+7xMjA4JnDQRcIQwOBPQ3bfCzNN1+vHGoc4v9mhp3mBj
- TAKNvG9DPFWicRAam3RwdXQdxCZKeALVJXZ6HLYjIXkMXJEocBZVtP3LO
- g==;
+ bh=F8hyGAxcA8ltBqwL+FmjHIsKTgP2QRPwyjmVas+VpDA=;
+ b=JGAqLsR78bFqcISf4NOnohPRFRskLX14lRGVpZ4CDwHtZQ1NZGZWwsMe
+ O/IncsN5wScECmrfmknX9ZRN6n8BQnkjJLP6Dd4SjEjsiq0xNfSKl38YT
+ FDGka7CPy+cWxiZXlWArslkZ8khNGdEABUsL4t+uwtLi8qUbkkALv891j
+ 7fntuDkMqJHNm7qtkXX+VfCWEBRpGGFBklu4nZ9BNI2SZe9DcpXsQo+I0
+ FJCemuIOJ84R5uCpWzsumHh7VFiwZz3Hwf0J8+QfkIPTt59L21dGOQRpO
+ xbdCF5nZqYofq0c1Bf/pPwxVD8dHwnDv0DOqu1IgSOdDmXxQA4peeNZkK
+ A==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=UEsl5dGy
+ header.a=rsa-sha256 header.s=Intel header.b=JGAqLsR7
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 15/15] ice: add API for
- parser profile initialization
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 05/15] ice: init boost
+ tcam table for parser
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -209,208 +209,602 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 > -----Original Message-----
 > From: Ivan Vecera <ivecera@redhat.com>
-> Sent: Monday, July 24, 2023 19:17
+> Sent: Monday, July 24, 2023 18:40
 > To: Guo, Junfeng <junfeng.guo@intel.com>; intel-wired-
 > lan@lists.osuosl.org
 > Cc: Zhang, Qi Z <qi.z.zhang@intel.com>; mschmidt
 > <mschmidt@redhat.com>; poros <poros@redhat.com>
-> Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 15/15] ice: add API for
-> parser profile initialization
+> Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 05/15] ice: init boost
+> tcam table for parser
 > 
-> 
+> Like in my previous replies... Do not use hardcoded values for array
+> indices, masks and shifts...
+
+Sure, make sense!
+
+Will go through all the patch set and double check the usage of hardcoded values.
+Thanks for the careful review!
+Will update in the coming version patch set, thanks!
+
 > 
 > On 05. 06. 23 7:46, Junfeng Guo wrote:
-> > Add API ice_parser_profile_init to init a parser profile base on
-> > a parser result and a mask buffer. The ice_parser_profile can feed to
-> > low level FXP engine to create HW profile / field vector directly.
+> > Parse DDP section ICE_SID_RXPARSER_CAM into an array of
+> > ice_bst_tcam_item.
+> > Parse DDP section ICE_SID_LBL_RXPARSER_TMEM into an array of
+> > ice_lbl_item.
 > >
 > > Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
 > > ---
-> >   drivers/net/ethernet/intel/ice/ice_parser.c | 113
-> ++++++++++++++++++++
-> >   drivers/net/ethernet/intel/ice/ice_parser.h |  24 +++++
-> >   2 files changed, 137 insertions(+)
+> >   drivers/net/ethernet/intel/ice/ice_bst_tcam.c | 247
+> ++++++++++++++++++
+> >   drivers/net/ethernet/intel/ice/ice_bst_tcam.h |  27 ++
+> >   drivers/net/ethernet/intel/ice/ice_imem.c     |   2 +-
+> >   drivers/net/ethernet/intel/ice/ice_metainit.c |   2 +-
+> >   drivers/net/ethernet/intel/ice/ice_parser.c   |  47 +++-
+> >   drivers/net/ethernet/intel/ice/ice_parser.h   |   5 +
+> >   .../net/ethernet/intel/ice/ice_parser_util.h  |  12 +-
+> >   drivers/net/ethernet/intel/ice/ice_pg_cam.c   |   8 +-
+> >   8 files changed, 341 insertions(+), 9 deletions(-)
+> >   create mode 100644 drivers/net/ethernet/intel/ice/ice_bst_tcam.c
+> >   create mode 100644 drivers/net/ethernet/intel/ice/ice_bst_tcam.h
 > >
-> > diff --git a/drivers/net/ethernet/intel/ice/ice_parser.c
-> b/drivers/net/ethernet/intel/ice/ice_parser.c
-> > index 1ca0886e6590..ad42dcd31cb3 100644
-> > --- a/drivers/net/ethernet/intel/ice/ice_parser.c
-> > +++ b/drivers/net/ethernet/intel/ice/ice_parser.c
-> > @@ -448,3 +448,116 @@ int ice_parser_ecpri_tunnel_set(struct
-> ice_parser *psr,
-> >   {
-> >   	return _tunnel_port_set(psr, "TNL_UDP_ECPRI", udp_port, on);
-> >   }
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_bst_tcam.c
+> b/drivers/net/ethernet/intel/ice/ice_bst_tcam.c
+> > new file mode 100644
+> > index 000000000000..24e793580637
+> > --- /dev/null
+> > +++ b/drivers/net/ethernet/intel/ice/ice_bst_tcam.c
+> > @@ -0,0 +1,247 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/* Copyright (C) 2018-2023 Intel Corporation */
 > > +
-> > +static bool _nearest_proto_id(struct ice_parser_result *rslt, u16 offset,
-> > +			      u8 *proto_id, u16 *proto_off)
+> > +#include "ice_common.h"
+> > +#include "ice_parser_util.h"
+> > +
+> > +#define ICE_BST_TCAM_TABLE_SIZE 256
+> > +
+> > +static void _bst_np_kb_dump(struct ice_hw *hw, struct
+> ice_np_keybuilder *kb)
 > > +{
-> > +	u16 dist = 0xffff;
-> 
-> Use U16_MAX here...
-
-Sure, make sense! Will update in the coming version. Thanks!
-
-> 
-> > +	u8 p = 0
-> 
-> Also 'proto' instead of 'p' would be better.
-
-Sure, make sense! Will update in the coming version. Thanks!
-
-> 
+> > +	dev_info(ice_hw_to_dev(hw), "next proto key builder:\n");
+> > +	dev_info(ice_hw_to_dev(hw), "\tops = %d\n", kb->ops);
+> > +	dev_info(ice_hw_to_dev(hw), "\tstart_or_reg0 = %d\n",
+> > +		 kb->start_or_reg0);
+> > +	dev_info(ice_hw_to_dev(hw), "\tlen_or_reg1 = %d\n", kb-
+> >len_or_reg1);
+> > +}
+> > +
+> > +static void _bst_pg_kb_dump(struct ice_hw *hw, struct
+> ice_pg_keybuilder *kb)
+> > +{
+> > +	dev_info(ice_hw_to_dev(hw), "parse graph key builder:\n");
+> > +	dev_info(ice_hw_to_dev(hw), "\tflag0_ena = %d\n", kb-
+> >flag0_ena);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflag1_ena = %d\n", kb-
+> >flag1_ena);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflag2_ena = %d\n", kb-
+> >flag2_ena);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflag3_ena = %d\n", kb-
+> >flag3_ena);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflag0_idx = %d\n", kb-
+> >flag0_idx);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflag1_idx = %d\n", kb-
+> >flag1_idx);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflag2_idx = %d\n", kb-
+> >flag2_idx);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflag3_idx = %d\n", kb-
+> >flag3_idx);
+> > +	dev_info(ice_hw_to_dev(hw), "\talu_reg_idx = %d\n", kb-
+> >alu_reg_idx);
+> > +}
+> > +
+> > +static void _bst_alu_dump(struct ice_hw *hw, struct ice_alu *alu, int
+> index)
+> > +{
+> > +	dev_info(ice_hw_to_dev(hw), "alu%d:\n", index);
+> > +	dev_info(ice_hw_to_dev(hw), "\topc = %d\n", alu->opc);
+> > +	dev_info(ice_hw_to_dev(hw), "\tsrc_start = %d\n", alu-
+> >src_start);
+> > +	dev_info(ice_hw_to_dev(hw), "\tsrc_len = %d\n", alu->src_len);
+> > +	dev_info(ice_hw_to_dev(hw), "\tshift_xlate_select = %d\n",
+> > +		 alu->shift_xlate_select);
+> > +	dev_info(ice_hw_to_dev(hw), "\tshift_xlate_key = %d\n",
+> > +		 alu->shift_xlate_key);
+> > +	dev_info(ice_hw_to_dev(hw), "\tsrc_reg_id = %d\n", alu-
+> >src_reg_id);
+> > +	dev_info(ice_hw_to_dev(hw), "\tdst_reg_id = %d\n", alu-
+> >dst_reg_id);
+> > +	dev_info(ice_hw_to_dev(hw), "\tinc0 = %d\n", alu->inc0);
+> > +	dev_info(ice_hw_to_dev(hw), "\tinc1 = %d\n", alu->inc1);
+> > +	dev_info(ice_hw_to_dev(hw), "\tproto_offset_opc = %d\n",
+> > +		 alu->proto_offset_opc);
+> > +	dev_info(ice_hw_to_dev(hw), "\tproto_offset = %d\n",
+> > +		 alu->proto_offset);
+> > +	dev_info(ice_hw_to_dev(hw), "\tbranch_addr = %d\n", alu-
+> >branch_addr);
+> > +	dev_info(ice_hw_to_dev(hw), "\timm = %d\n", alu->imm);
+> > +	dev_info(ice_hw_to_dev(hw), "\tdst_start = %d\n", alu-
+> >dst_start);
+> > +	dev_info(ice_hw_to_dev(hw), "\tdst_len = %d\n", alu->dst_len);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflags_extr_imm = %d\n",
+> > +		 alu->flags_extr_imm);
+> > +	dev_info(ice_hw_to_dev(hw), "\tflags_start_imm= %d\n",
+> > +		 alu->flags_start_imm);
+> > +}
+> > +
+> > +/**
+> > + * ice_bst_tcam_dump - dump a boost tcam info
+> > + * @hw: pointer to the hardware structure
+> > + * @item: boost tcam to dump
+> > + */
+> > +void ice_bst_tcam_dump(struct ice_hw *hw, struct ice_bst_tcam_item
+> *item)
+> > +{
 > > +	int i;
 > > +
-> > +	for (i = 0; i < rslt->po_num; i++) {
-> > +		if (offset < rslt->po[i].offset)
-> > +			continue;
-> > +		if (offset - rslt->po[i].offset < dist) {
-> > +			p = rslt->po[i].proto_id;
-> > +			dist = offset - rslt->po[i].offset;
-> > +		}
-> > +	}
-> > +
-> > +	if (dist % 2)
-> > +		return false;
-> > +
-> > +	*proto_id = p;
-> > +	*proto_off = dist;
-> > +
-> > +	return true;
+> > +	dev_info(ice_hw_to_dev(hw), "address = %d\n", item->address);
+> > +	dev_info(ice_hw_to_dev(hw), "key    :");
+> > +	for (i = 0; i < 20; i++)
+> > +		dev_info(ice_hw_to_dev(hw), "%02x ", item->key[i]);
+> > +	dev_info(ice_hw_to_dev(hw), "\n");
+> > +	dev_info(ice_hw_to_dev(hw), "key_inv:");
+> > +	for (i = 0; i < 20; i++)
+> > +		dev_info(ice_hw_to_dev(hw), "%02x ", item->key_inv[i]);
+> > +	dev_info(ice_hw_to_dev(hw), "\n");
+> > +	dev_info(ice_hw_to_dev(hw), "hit_idx_grp = %d\n", item-
+> >hit_idx_grp);
+> > +	dev_info(ice_hw_to_dev(hw), "pg_pri = %d\n", item->pg_pri);
+> > +	_bst_np_kb_dump(hw, &item->np_kb);
+> > +	_bst_pg_kb_dump(hw, &item->pg_kb);
+> > +	_bst_alu_dump(hw, &item->alu0, 0);
+> > +	_bst_alu_dump(hw, &item->alu1, 1);
+> > +	_bst_alu_dump(hw, &item->alu2, 2);
 > > +}
 > > +
-> > +/** default flag mask to cover GTP_EH_PDU, GTP_EH_PDU_LINK and
-> TUN2
-> > + * In future, the flag masks should learn from DDP
+> > +/** The function parses a 96 bits ALU entry with below format:
+> > + *  BIT 0-5:	Opcode (alu->opc)
+> > + *  BIT 6-13:	Source Start (alu->src_start)
+> > + *  BIT 14-18:	Source Length (alu->src_len)
+> > + *  BIT 19:	Shift/Xlate Select (alu->shift_xlate_select)
+> > + *  BIT 20-23:	Shift/Xlate Key (alu->shift_xlate_key)
+> > + *  BIT 24-30:	Source Register ID (alu->src_reg_id)
+> > + *  BIT 31-37:	Dest. Register ID (alu->dst_reg_id)
+> > + *  BIT 38:	Inc0 (alu->inc0)
+> > + *  BIT 39:	Inc1:(alu->inc1)
+> > + *  BIT 40:41	Protocol Offset Opcode (alu->proto_offset_opc)
+> > + *  BIT 42:49	Protocol Offset (alu->proto_offset)
+> > + *  BIT 50:57	Branch Address (alu->branch_addr)
+> > + *  BIT 58:73	Immediate (alu->imm)
+> > + *  BIT 74	Dedicated Flags Enable (alu->dedicate_flags_ena)
+> > + *  BIT 75:80	Dest. Start (alu->dst_start)
+> > + *  BIT 81:86	Dest. Length (alu->dst_len)
+> > + *  BIT 87	Flags Extract Imm. (alu->flags_extr_imm)
+> > + *  BIT 88:95	Flags Start/Immediate (alu->flags_start_imm)
+> > + *
+> > + *  NOTE: the first 7 bits are skipped as the start bit is not
+> > + *  byte aligned.
 > > + */
-> > +#define ICE_KEYBUILD_FLAG_MASK_DEFAULT_SW	0x4002
-> > +#define ICE_KEYBUILD_FLAG_MASK_DEFAULT_ACL	0x0000
-> > +#define ICE_KEYBUILD_FLAG_MASK_DEFAULT_FD	0x6080
-> > +#define ICE_KEYBUILD_FLAG_MASK_DEFAULT_RSS	0x6010
-> > +
-> > +/**
-> > + * ice_parser_profile_init  - initialize a FXP profile base on parser result
-> > + * @rslt: a instance of a parser result
-> > + * @pkt_buf: packet data buffer
-> > + * @msk_buf: packet mask buffer
-> > + * @buf_len: packet length
-> > + * @blk: FXP pipeline stage
-> > + * @prefix_match: match protocol stack exactly or only prefix
-> > + * @prof: input/output parameter to save the profile
-> > + */
-> > +int ice_parser_profile_init(struct ice_parser_result *rslt,
-> > +			    const u8 *pkt_buf, const u8 *msk_buf,
-> > +			    int buf_len, enum ice_block blk,
-> > +			    bool prefix_match,
-> > +			    struct ice_parser_profile *prof)
+> > +static void _bst_alu_init(struct ice_alu *alu, u8 *data)
 > > +{
-> > +	u8 proto_id = 0xff;
-> > +	u16 proto_off = 0;
-> > +	u16 off;
+> > +	u64 d64 = *(u64 *)data >> 7;
 > > +
-> > +	memset(prof, 0, sizeof(*prof));
-> > +	set_bit(rslt->ptype, prof->ptypes);
-> > +	if (blk == ICE_BLK_SW) {
-> > +		prof->flags = rslt->flags_sw;
-> > +		prof->flags_msk =
-> ICE_KEYBUILD_FLAG_MASK_DEFAULT_SW;
-> > +	} else if (blk == ICE_BLK_ACL) {
-> > +		prof->flags = rslt->flags_acl;
-> > +		prof->flags_msk =
-> ICE_KEYBUILD_FLAG_MASK_DEFAULT_ACL;
-> > +	} else if (blk == ICE_BLK_FD) {
-> > +		prof->flags = rslt->flags_fd;
-> > +		prof->flags_msk =
-> ICE_KEYBUILD_FLAG_MASK_DEFAULT_FD;
-> > +	} else if (blk == ICE_BLK_RSS) {
-> > +		prof->flags = rslt->flags_rss;
-> > +		prof->flags_msk =
-> ICE_KEYBUILD_FLAG_MASK_DEFAULT_RSS;
-> > +	} else {
-> > +		return -EINVAL;
-> > +	}
+> > +	alu->opc = (enum ice_alu_opcode)(d64 & 0x3f);
+> > +	alu->src_start = (u8)((d64 >> 6) & 0xff);
+> > +	alu->src_len = (u8)((d64 >> 14) & 0x1f);
+> > +	alu->shift_xlate_select = ((d64 >> 19) & 0x1) != 0;
+> > +	alu->shift_xlate_key = (u8)((d64 >> 20) & 0xf);
+> > +	alu->src_reg_id = (u8)((d64 >> 24) & 0x7f);
+> > +	alu->dst_reg_id = (u8)((d64 >> 31) & 0x7f);
+> > +	alu->inc0 = ((d64 >> 38) & 0x1) != 0;
+> > +	alu->inc1 = ((d64 >> 39) & 0x1) != 0;
+> > +	alu->proto_offset_opc = (u8)((d64 >> 40) & 0x3);
+> > +	alu->proto_offset = (u8)((d64 >> 42) & 0xff);
 > > +
-> > +	for (off = 0; off < buf_len - 1; off++) {
-> > +		if (msk_buf[off] == 0 && msk_buf[off + 1] == 0)
-> > +			continue;
-> > +		if (!_nearest_proto_id(rslt, off, &proto_id, &proto_off))
-> > +			continue;
-> > +		if (prof->fv_num >= 32)
-> > +			return -EINVAL;
+> > +	d64 = *(u64 *)(&data[6]) >> 9;
 > > +
-> > +		prof->fv[prof->fv_num].proto_id = proto_id;
-> > +		prof->fv[prof->fv_num].offset = proto_off;
-> > +		prof->fv[prof->fv_num].spec = *(const u16
-> *)&pkt_buf[off];
-> > +		prof->fv[prof->fv_num].msk = *(const u16
-> *)&msk_buf[off];
-> > +		prof->fv_num++;
-> > +	}
+> > +	alu->branch_addr = (u8)(d64 & 0xff);
+> > +	alu->imm = (u16)((d64 >> 8) & 0xffff);
+> > +	alu->dedicate_flags_ena = ((d64 >> 24) & 0x1) != 0;
+> > +	alu->dst_start = (u8)((d64 >> 25) & 0x3f);
+> > +	alu->dst_len = (u8)((d64 >> 31) & 0x3f);
+> > +	alu->flags_extr_imm = ((d64 >> 37) & 0x1) != 0;
+> > +	alu->flags_start_imm = (u8)((d64 >> 38) & 0xff);
+> > +}
 > > +
-> > +	return 0;
+> > +/** The function parses a 35 bits Parse Graph Key Build with below
+> format:
+> > + *  BIT 0:	Flag 0 Enable (kb->flag0_ena)
+> > + *  BIT 1-6:	Flag 0 Index (kb->flag0_idx)
+> > + *  BIT 7:	Flag 1 Enable (kb->flag1_ena)
+> > + *  BIT 8-13:	Flag 1 Index (kb->flag1_idx)
+> > + *  BIT 14:	Flag 2 Enable (kb->flag2_ena)
+> > + *  BIT 15-20:	Flag 2 Index (kb->flag2_idx)
+> > + *  BIT 21:	Flag 3 Enable (kb->flag3_ena)
+> > + *  BIT 22-27:	Flag 3 Index (kb->flag3_idx)
+> > + *  BIT 28-34:	ALU Register Index (kb->alu_reg_idx)
+> > + */
+> > +static void _bst_pgkb_init(struct ice_pg_keybuilder *kb, u64 data)
+> > +{
+> > +	kb->flag0_ena = (data & 0x1) != 0;
+> > +	kb->flag0_idx = (u8)((data >> 1) & 0x3f);
+> > +	kb->flag1_ena = ((data >> 7) & 0x1) != 0;
+> > +	kb->flag1_idx = (u8)((data >> 8) & 0x3f);
+> > +	kb->flag2_ena = ((data >> 14) & 0x1) != 0;
+> > +	kb->flag2_idx = (u8)((data >> 15) & 0x3f);
+> > +	kb->flag3_ena = ((data >> 21) & 0x1) != 0;
+> > +	kb->flag3_idx = (u8)((data >> 22) & 0x3f);
+> > +	kb->alu_reg_idx = (u8)((data >> 28) & 0x7f);
+> > +}
+> > +
+> > +/** The function parses a 18 bits Next Protocol Key Build with below
+> format:
+> > + *  BIT 0-1:	Opcode kb->ops
+> > + *  BIT 2-9:	Start / Reg 0 (kb->start_or_reg0)
+> > + *  BIT 10-17:	Length / Reg 1 (kb->len_or_reg1)
+> > + */
+> > +static void _bst_npkb_init(struct ice_np_keybuilder *kb, u32 data)
+> > +{
+> > +	kb->ops = (u8)(data & 0x3);
+> > +	kb->start_or_reg0 = (u8)((data >> 2) & 0xff);
+> > +	kb->len_or_reg1 = (u8)((data >> 10) & 0xff);
+> > +}
+> > +
+> > +/** The function parses a 704 bits Boost TCAM entry with below
+> format:
+> > + *  BIT 0-15:	Address (ti->address)
+> > + *  BIT 16-31:	reserved
+> > + *  BIT 32-191: Key (ti->key)
+> > + *  BIT 192-351:Key Invert (ti->key_inv)
+> > + *  BIT 352-359:Boost Hit Index Group (ti->hit_idx_grp)
+> > + *  BIT 360-361:PG Priority (ti->pg_pri)
+> > + *  BIT 362-379:Next Proto Key Build (ti->np_kb)
+> > + *  BIT 380-414:PG Key Build (ti->pg_kb)
+> > + *  BIT 415-510:ALU 0 (ti->alu0)
+> > + *  BIT 511-606:ALU 1 (ti->alu1)
+> > + *  BIT 607-702:ALU 2 (ti->alu2)
+> > + *  BIT 703:	reserved
+> > + */
+> > +static void _bst_parse_item(struct ice_hw *hw, u16 idx, void *item,
+> > +			    void *data, int size)
+> > +{
+> > +	struct ice_bst_tcam_item *ti = item;
+> > +	u8 *buf = data;
+> > +	int i;
+> > +
+> > +	ti->address = *(u16 *)buf;
+> > +
+> > +	for (i = 0; i < 20; i++)
+> > +		ti->key[i] = buf[4 + i];
+> > +	for (i = 0; i < 20; i++)
+> > +		ti->key_inv[i] = buf[24 + i];
+> > +	ti->hit_idx_grp = buf[44];
+> > +	ti->pg_pri = buf[45] & 0x3;
+> > +	_bst_npkb_init(&ti->np_kb, *(u32 *)&buf[45] >> 2);
+> > +	_bst_pgkb_init(&ti->pg_kb, *(u64 *)&buf[47] >> 4);
+> > +	_bst_alu_init(&ti->alu0, &buf[51]);
+> > +	_bst_alu_init(&ti->alu1, &buf[63]);
+> > +	_bst_alu_init(&ti->alu2, &buf[75]);
+> > +
+> > +	if (hw->debug_mask & ICE_DBG_PARSER)
+> > +		ice_bst_tcam_dump(hw, ti);
 > > +}
 > > +
 > > +/**
-> > + * ice_parser_profile_dump - dump an FXP profile info
+> > + * ice_bst_tcam_table_get - create a boost tcam table
 > > + * @hw: pointer to the hardware structure
-> > + * @prof: profile info to dump
 > > + */
-> > +void ice_parser_profile_dump(struct ice_hw *hw, struct
-> ice_parser_profile *prof)
+> > +struct ice_bst_tcam_item *ice_bst_tcam_table_get(struct ice_hw *hw)
 > > +{
-> > +	u16 i;
-> > +
-> > +	dev_info(ice_hw_to_dev(hw), "ptypes:\n");
-> > +	for (i = 0; i < ICE_FLOW_PTYPE_MAX; i++)
-> > +		if (test_bit(i, prof->ptypes))
-> > +			dev_info(ice_hw_to_dev(hw), "\t%d\n", i);
-> > +
-> > +	for (i = 0; i < prof->fv_num; i++)
-> > +		dev_info(ice_hw_to_dev(hw),
-> > +			 "proto = %d, offset = %d spec = 0x%04x, mask =
-> 0x%04x\n",
-> > +			 prof->fv[i].proto_id, prof->fv[i].offset,
-> > +			 prof->fv[i].spec, prof->fv[i].msk);
-> > +
-> > +	dev_info(ice_hw_to_dev(hw), "flags = 0x%04x\n", prof->flags);
-> > +	dev_info(ice_hw_to_dev(hw), "flags_msk = 0x%04x\n", prof-
-> >flags_msk);
+> > +	return (struct ice_bst_tcam_item *)
+> > +		ice_parser_create_table(hw,
+> ICE_SID_RXPARSER_BOOST_TCAM,
+> > +					sizeof(struct ice_bst_tcam_item),
+> > +					ICE_BST_TCAM_TABLE_SIZE,
+> > +					ice_parser_sect_item_get,
+> > +					_bst_parse_item, true);
 > > +}
+> > +
+> > +static void _parse_lbl_item(struct ice_hw *hw, u16 idx, void *item,
+> > +			    void *data, int size)
+> > +{
+> > +	ice_parse_item_dflt(hw, idx, item, data, size);
+> > +
+> > +	if (hw->debug_mask & ICE_DBG_PARSER)
+> > +		ice_lbl_dump(hw, (struct ice_lbl_item *)item);
+> > +}
+> > +
+> > +/**
+> > + * ice_bst_lbl_table_get - create a boost label table
+> > + * @hw: pointer to the hardware structure
+> > + */
+> > +struct ice_lbl_item *ice_bst_lbl_table_get(struct ice_hw *hw)
+> > +{
+> > +	return (struct ice_lbl_item *)
+> > +		ice_parser_create_table(hw,
+> ICE_SID_LBL_RXPARSER_TMEM,
+> > +					sizeof(struct ice_lbl_item),
+> > +					ICE_BST_TCAM_TABLE_SIZE,
+> > +					ice_parser_sect_item_get,
+> > +					_parse_lbl_item, true);
+> > +}
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_bst_tcam.h
+> b/drivers/net/ethernet/intel/ice/ice_bst_tcam.h
+> > new file mode 100644
+> > index 000000000000..9d78a140bc02
+> > --- /dev/null
+> > +++ b/drivers/net/ethernet/intel/ice/ice_bst_tcam.h
+> > @@ -0,0 +1,27 @@
+> > +/* SPDX-License-Identifier: GPL-2.0 */
+> > +/* Copyright (C) 2018-2023 Intel Corporation */
+> > +
+> > +#ifndef _ICE_BST_TCAM_H_
+> > +#define _ICE_BST_TCAM_H_
+> > +
+> > +#include "ice_imem.h"
+> > +
+> > +struct ice_bst_tcam_item {
+> > +	u16 address;
+> > +	u8 key[20];
+> > +	u8 key_inv[20];
+> > +	u8 hit_idx_grp;
+> > +	u8 pg_pri;
+> > +	struct ice_np_keybuilder np_kb;
+> > +	struct ice_pg_keybuilder pg_kb;
+> > +	struct ice_alu alu0;
+> > +	struct ice_alu alu1;
+> > +	struct ice_alu alu2;
+> > +};
+> > +
+> > +void ice_bst_tcam_dump(struct ice_hw *hw, struct ice_bst_tcam_item
+> *item);
+> > +
+> > +struct ice_bst_tcam_item *ice_bst_tcam_table_get(struct ice_hw
+> *hw);
+> > +
+> > +struct ice_lbl_item *ice_bst_lbl_table_get(struct ice_hw *hw);
+> > +#endif /*_ICE_BST_TCAM_H_ */
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_imem.c
+> b/drivers/net/ethernet/intel/ice/ice_imem.c
+> > index 2bd48f080326..2ce186cbe4fd 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_imem.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_imem.c
+> > @@ -246,5 +246,5 @@ struct ice_imem_item
+> *ice_imem_table_get(struct ice_hw *hw)
+> >   					sizeof(struct ice_imem_item),
+> >   					ICE_IMEM_TABLE_SIZE,
+> >   					ice_parser_sect_item_get,
+> > -					_imem_parse_item);
+> > +					_imem_parse_item, false);
+> >   }
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_metainit.c
+> b/drivers/net/ethernet/intel/ice/ice_metainit.c
+> > index 911099a38087..00fd86ce5fcf 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_metainit.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_metainit.c
+> > @@ -151,5 +151,5 @@ struct ice_metainit_item
+> *ice_metainit_table_get(struct ice_hw *hw)
+> >   					sizeof(struct ice_metainit_item),
+> >   					ICE_METAINIT_TABLE_SIZE,
+> >   					ice_parser_sect_item_get,
+> > -					_metainit_parse_item);
+> > +					_metainit_parse_item, false);
+> >   }
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_parser.c
+> b/drivers/net/ethernet/intel/ice/ice_parser.c
+> > index 22c2382ae9e8..b280245dbdd4 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_parser.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_parser.c
+> > @@ -11,6 +11,22 @@
+> >   #define ICE_SID_RXPARSER_PG_SPILL_ENTRY_SIZE		17
+> >   #define ICE_SID_RXPARSER_NOMATCH_CAM_ENTRY_SIZE
+> 	12
+> >   #define ICE_SID_RXPARSER_NOMATCH_SPILL_ENTRY_SIZE	13
+> > +#define ICE_SID_RXPARSER_BOOST_TCAM_ENTRY_SIZE
+> 	88
+> > +
+> > +#define ICE_SEC_LBL_DATA_OFFSET				2
+> > +#define ICE_SID_LBL_ENTRY_SIZE				66
+> > +
+> > +void ice_lbl_dump(struct ice_hw *hw, struct ice_lbl_item *item)
+> > +{
+> > +	dev_info(ice_hw_to_dev(hw), "index = %d\n", item->idx);
+> > +	dev_info(ice_hw_to_dev(hw), "label = %s\n", item->label);
+> > +}
+> > +
+> > +void ice_parse_item_dflt(struct ice_hw *hw, u16 idx, void *item,
+> > +			 void *data, int size)
+> > +{
+> > +	memcpy(item, data, size);
+> > +}
+> >
+> >   /**
+> >    * ice_parser_sect_item_get - parse a item from a section
+> > @@ -48,6 +64,13 @@ void *ice_parser_sect_item_get(u32 sect_type,
+> void *section,
+> >   	case ICE_SID_RXPARSER_NOMATCH_SPILL:
+> >   		size = ICE_SID_RXPARSER_NOMATCH_SPILL_ENTRY_SIZE;
+> >   		break;
+> > +	case ICE_SID_RXPARSER_BOOST_TCAM:
+> > +		size = ICE_SID_RXPARSER_BOOST_TCAM_ENTRY_SIZE;
+> > +		break;
+> > +	case ICE_SID_LBL_RXPARSER_TMEM:
+> > +		data_off = ICE_SEC_LBL_DATA_OFFSET;
+> > +		size = ICE_SID_LBL_ENTRY_SIZE;
+> > +		break;
+> >   	default:
+> >   		return NULL;
+> >   	}
+> > @@ -69,6 +92,7 @@ void *ice_parser_sect_item_get(u32 sect_type,
+> void *section,
+> >    * @length: number of items in the table to create
+> >    * @item_get: the function will be parsed to ice_pkg_enum_entry
+> >    * @parse_item: the function to parse the item
+> > + * @no_offset: ignore header offset, calculate index from 0
+> >    */
+> >   void *ice_parser_create_table(struct ice_hw *hw, u32 sect_type,
+> >   			      u32 item_size, u32 length,
+> > @@ -76,7 +100,8 @@ void *ice_parser_create_table(struct ice_hw
+> *hw, u32 sect_type,
+> >   						u32 index, u32 *offset),
+> >   			      void (*parse_item)(struct ice_hw *hw, u16 idx,
+> >   						 void *item, void *data,
+> > -						 int size))
+> > +						 int size),
+> > +			      bool no_offset)
+> >   {
+> >   	struct ice_seg *seg = hw->seg;
+> >   	struct ice_pkg_enum state;
+> > @@ -101,7 +126,11 @@ void *ice_parser_create_table(struct ice_hw
+> *hw, u32 sect_type,
+> >   			struct ice_pkg_sect_hdr *hdr =
+> >   				(struct ice_pkg_sect_hdr *)state.sect;
+> >
+> > -			idx = le16_to_cpu(hdr->offset) + state.entry_idx;
+> > +			if (no_offset)
+> > +				idx++;
+> > +			else
+> > +				idx = le16_to_cpu(hdr->offset) +
+> > +							state.entry_idx;
+> >   			parse_item(hw, idx,
+> >   				   (void *)((uintptr_t)table +
+> >   					    ((uintptr_t)idx *
+> > @@ -167,6 +196,18 @@ int ice_parser_create(struct ice_hw *hw,
+> struct ice_parser **psr)
+> >   		goto err;
+> >   	}
+> >
+> > +	p->bst_tcam_table = ice_bst_tcam_table_get(hw);
+> > +	if (!p->bst_tcam_table) {
+> > +		status = -EINVAL;
+> > +		goto err;
+> > +	}
+> > +
+> > +	p->bst_lbl_table = ice_bst_lbl_table_get(hw);
+> > +	if (!p->bst_lbl_table) {
+> > +		status = -EINVAL;
+> > +		goto err;
+> > +	}
+> > +
+> >   	*psr = p;
+> >   	return 0;
+> >   err:
+> > @@ -186,6 +227,8 @@ void ice_parser_destroy(struct ice_parser *psr)
+> >   	devm_kfree(ice_hw_to_dev(psr->hw), psr->pg_sp_cam_table);
+> >   	devm_kfree(ice_hw_to_dev(psr->hw), psr->pg_nm_cam_table);
+> >   	devm_kfree(ice_hw_to_dev(psr->hw), psr-
+> >pg_nm_sp_cam_table);
+> > +	devm_kfree(ice_hw_to_dev(psr->hw), psr->bst_tcam_table);
+> > +	devm_kfree(ice_hw_to_dev(psr->hw), psr->bst_lbl_table);
+> >
+> >   	devm_kfree(ice_hw_to_dev(psr->hw), psr);
+> >   }
 > > diff --git a/drivers/net/ethernet/intel/ice/ice_parser.h
 > b/drivers/net/ethernet/intel/ice/ice_parser.h
-> > index 432d47031298..ecbec5843e9f 100644
+> > index 1f699ef12387..af73b19d09c1 100644
 > > --- a/drivers/net/ethernet/intel/ice/ice_parser.h
 > > +++ b/drivers/net/ethernet/intel/ice/ice_parser.h
-> > @@ -85,4 +85,28 @@ struct ice_parser_result {
-> >   int ice_parser_run(struct ice_parser *psr, const u8 *pkt_buf,
-> >   		   int pkt_len, struct ice_parser_result *rslt);
-> >   void ice_parser_result_dump(struct ice_hw *hw, struct
-> ice_parser_result *rslt);
-> > +
-> > +struct ice_parser_fv {
-> > +	u8 proto_id; /* hardware protocol ID */
-> > +	u16 offset; /* offset from the start of the protocol header */
-> > +	u16 spec; /* 16 bits pattern to match */
-> > +	u16 msk; /* 16 bits pattern mask */
+> > @@ -7,6 +7,7 @@
+> >   #include "ice_metainit.h"
+> >   #include "ice_imem.h"
+> >   #include "ice_pg_cam.h"
+> > +#include "ice_bst_tcam.h"
+> >
+> >   struct ice_parser {
+> >   	struct ice_hw *hw; /* pointer to the hardware structure */
+> > @@ -23,6 +24,10 @@ struct ice_parser {
+> >   	struct ice_pg_nm_cam_item *pg_nm_cam_table;
+> >   	/* load data from section ICE_SID_RXPARSER_NOMATCH_SPILL
+> */
+> >   	struct ice_pg_nm_cam_item *pg_nm_sp_cam_table;
+> > +	/* load data from section ICE_SID_RXPARSER_BOOST_TCAM */
+> > +	struct ice_bst_tcam_item *bst_tcam_table;
+> > +	/* load data from section ICE_SID_LBL_RXPARSER_TMEM */
+> > +	struct ice_lbl_item *bst_lbl_table;
+> >   };
+> >
+> >   int ice_parser_create(struct ice_hw *hw, struct ice_parser **psr);
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_parser_util.h
+> b/drivers/net/ethernet/intel/ice/ice_parser_util.h
+> > index 59c67f1a1951..2f93f93c1e10 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_parser_util.h
+> > +++ b/drivers/net/ethernet/intel/ice/ice_parser_util.h
+> > @@ -7,11 +7,20 @@
+> >   #include "ice_imem.h"
+> >   #include "ice_metainit.h"
+> >
+> > +struct ice_lbl_item {
+> > +	u16 idx;
+> > +	char label[64];
 > > +};
 > > +
-> > +struct ice_parser_profile {
-> > +	struct ice_parser_fv fv[48]; /* field vector arrary */
-> > +	int fv_num; /* field vector number must <= 48 */
-> > +	u16 flags; /* 16 bits key builder flag */
-> > +	u16 flags_msk; /* key builder flag masker */
-> > +	/* 1024 bits PTYPE bitmap */
-> > +	DECLARE_BITMAP(ptypes, ICE_FLOW_PTYPE_MAX);
-> > +};
+> >   struct ice_pkg_sect_hdr {
+> >   	__le16 count;
+> >   	__le16 offset;
+> >   };
+> >
+> > +void ice_lbl_dump(struct ice_hw *hw, struct ice_lbl_item *item);
+> > +void ice_parse_item_dflt(struct ice_hw *hw, u16 idx, void *item,
+> > +			 void *data, int size);
 > > +
-> > +int ice_parser_profile_init(struct ice_parser_result *rslt,
-> > +			    const u8 *pkt_buf, const u8 *msk_buf,
-> > +					int buf_len, enum ice_block blk,
-> > +					bool prefix_match,
-> > +					struct ice_parser_profile *prof);
-> > +void ice_parser_profile_dump(struct ice_hw *hw,
-> > +			     struct ice_parser_profile *prof);
-> >   #endif /* _ICE_PARSER_H_ */
+> >   void *ice_parser_sect_item_get(u32 sect_type, void *section,
+> >   			       u32 index, u32 *offset);
+> >
+> > @@ -21,5 +30,6 @@ void *ice_parser_create_table(struct ice_hw *hw,
+> u32 sect_type,
+> >   					       u32 index, u32 *offset),
+> >   			      void (*parse_item)(struct ice_hw *hw, u16 idx,
+> >   						 void *item, void *data,
+> > -						 int size));
+> > +						 int size),
+> > +			      bool no_offset);
+> >   #endif /* _ICE_PARSER_UTIL_H_ */
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_pg_cam.c
+> b/drivers/net/ethernet/intel/ice/ice_pg_cam.c
+> > index 25b837ba684c..1c9a9e906f3e 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_pg_cam.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_pg_cam.c
+> > @@ -254,7 +254,7 @@ struct ice_pg_cam_item
+> *ice_pg_cam_table_get(struct ice_hw *hw)
+> >   					sizeof(struct ice_pg_cam_item),
+> >   					ICE_PG_CAM_TABLE_SIZE,
+> >   					ice_parser_sect_item_get,
+> > -					_pg_cam_parse_item);
+> > +					_pg_cam_parse_item, false);
+> >   }
+> >
+> >   /**
+> > @@ -268,7 +268,7 @@ struct ice_pg_cam_item
+> *ice_pg_sp_cam_table_get(struct ice_hw *hw)
+> >   					sizeof(struct ice_pg_cam_item),
+> >   					ICE_PG_SP_CAM_TABLE_SIZE,
+> >   					ice_parser_sect_item_get,
+> > -					_pg_sp_cam_parse_item);
+> > +					_pg_sp_cam_parse_item, false);
+> >   }
+> >
+> >   /**
+> > @@ -282,7 +282,7 @@ struct ice_pg_nm_cam_item
+> *ice_pg_nm_cam_table_get(struct ice_hw *hw)
+> >   					sizeof(struct
+> ice_pg_nm_cam_item),
+> >   					ICE_PG_NM_CAM_TABLE_SIZE,
+> >   					ice_parser_sect_item_get,
+> > -					_pg_nm_cam_parse_item);
+> > +					_pg_nm_cam_parse_item, false);
+> >   }
+> >
+> >   /**
+> > @@ -296,5 +296,5 @@ struct ice_pg_nm_cam_item
+> *ice_pg_nm_sp_cam_table_get(struct ice_hw *hw)
+> >   					sizeof(struct
+> ice_pg_nm_cam_item),
+> >
+> 	ICE_PG_NM_SP_CAM_TABLE_SIZE,
+> >   					ice_parser_sect_item_get,
+> > -					_pg_nm_sp_cam_parse_item);
+> > +					_pg_nm_sp_cam_parse_item,
+> false);
+> >   }
 
 _______________________________________________
 Intel-wired-lan mailing list
