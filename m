@@ -4,82 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC4BEC04FDF
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 07:54:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6AADC00528
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  2 Aug 2023 07:56:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 46A3A81F86;
-	Wed,  2 Aug 2023 07:54:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 46A3A81F86
+	by smtp1.osuosl.org (Postfix) with ESMTP id 807FA81F72;
+	Wed,  2 Aug 2023 07:56:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 807FA81F72
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1690962899;
-	bh=9BxOM8X0/PMsIii9eA4Jxx2HSKS2ppGc/Iz6l0+B+JA=;
+	s=default; t=1690962979;
+	bh=4OeD7SF3DlBkcAVOdhOpSbrsZ0njc3sYMBCENAFNNAg=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=QQGP3Y7EMi9xbWv84HgNDMHSOOvUFTu6ThYKSMGVvb16OGHBCbVZNCxKPICOUwTj1
-	 VoQCVmLb84Q82KF34xs2lhudQcqK96FxD7Ob+Dqi6y7WWEb5pazzPXiyKYX1yV12Ol
-	 pTi91zn6D1wCgD31oXVTpaeoPBjuyVRM2tLOcvF6rXEjjgsTN27Pj4XZJoO0gvTba9
-	 VQtI4msLel0DhQ6N6ZiPXf2xR57PPd1CRn1EG4gnDvuGTaukUc4SymjBoX1J9mPITl
-	 TXryY0EMG7p74u3SbROblherFs9BsHijpBbSHuwb0QJe5k4kEUhroJf9NQY6z5fZ2L
-	 By5H9scd7UbaA==
+	b=fNy+g3zn9FZinTf+J6A3QrXr4f5OQAvbEneXau2Pzzq/y21JpwDbM/no/1YNFWwTl
+	 7MLkaNjXlmiwWxOlrtWgon2wlYEn7Ppe/pzqGOdUXP7NQe0yX4BGcjn1PaOV5PZo9/
+	 kGrxujNUgixzzwNrwqCUvMnPnNG+mNsF9IP7ZEUQQckScs3Xaw46wp1Ip3QNtDNPGL
+	 D1GIpvXA/sUbqdaEri9xaV0E/Jw5Y7DLFDO5u+lWLaSQSxFSxhwSijCOrbyRQrzDQJ
+	 WGYXg1OrNVsWf9G19VTG/gMkficDniQuBwAwu2NDGJxEVQwVlHcUMTq8PY40AOPWVC
+	 OTiYg+3fesz0w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id huWU7KiPO8Xc; Wed,  2 Aug 2023 07:54:58 +0000 (UTC)
+	with ESMTP id AygoFIJhyfad; Wed,  2 Aug 2023 07:56:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 48E5D80B6C;
-	Wed,  2 Aug 2023 07:54:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 48E5D80B6C
+	by smtp1.osuosl.org (Postfix) with ESMTP id 993F980C83;
+	Wed,  2 Aug 2023 07:56:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 993F980C83
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 398231BF360
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:54:56 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 9355E1BF360
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:56:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0FDF4402C3
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:54:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0FDF4402C3
+ by smtp2.osuosl.org (Postfix) with ESMTP id 697F840462
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:56:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 697F840462
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ePEupAlSfwJr for <intel-wired-lan@lists.osuosl.org>;
- Wed,  2 Aug 2023 07:54:45 +0000 (UTC)
-X-Greylist: delayed 426 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 02 Aug 2023 07:54:45 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 695E1401A4
-Received: from mgamail.intel.com (unknown [192.55.52.120])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 695E1401A4
- for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:54:45 +0000 (UTC)
-X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="368407495"
-X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="368407495"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 02 Aug 2023 00:47:38 -0700
+ with ESMTP id CUUMCmEdb5Lr for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  2 Aug 2023 07:56:16 +0000 (UTC)
+X-Greylist: delayed 427 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 02 Aug 2023 07:56:16 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 133ED402C3
+Received: from mgamail.intel.com (unknown [134.134.136.31])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 133ED402C3
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  2 Aug 2023 07:56:15 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="433350157"
+X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="433350157"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+ by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 02 Aug 2023 00:48:57 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="872364690"
+X-IronPort-AV: E=McAfee;i="6600,9927,10789"; a="1059733010"
+X-IronPort-AV: E=Sophos;i="6.01,248,1684825200"; d="scan'208";a="1059733010"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga001.fm.intel.com with ESMTP; 02 Aug 2023 00:47:39 -0700
+ by fmsmga005.fm.intel.com with ESMTP; 02 Aug 2023 00:48:56 -0700
 From: Andrii Staikov <andrii.staikov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  2 Aug 2023 09:47:32 +0200
-Message-Id: <20230802074732.3648072-1-andrii.staikov@intel.com>
+Date: Wed,  2 Aug 2023 09:48:54 +0200
+Message-Id: <20230802074854.3650629-1-andrii.staikov@intel.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1690962885; x=1722498885;
+ t=1690962976; x=1722498976;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=irYR3+Iv6lcQI9Xx9HyLJE+7l6Hs7tt3YtyAzTGAUds=;
- b=kiVKg/PtXbMugYhb+QIk9pEM/irjYluVnJySayuJbyxQXa0KesydI9ay
- Ff72SE6xpaIfRIwREMKjrBr310f1eJFGvcuwzZNBCQ+0gD2wUyTJ/CWMn
- y96r/cIOAPl7U6i4cYwPklJNUR09v7WeKq+GuinwgTmP/LWW+vQdUD/KB
- 3x30CCc00BcpIPaVZWRO42eoKCX/lewk+jFa+SYRACu5p5kluq1ko0JPw
- m0AiDDFCCbi7NTfAyUSnajMILohTwdmy8U9KjZb7VDIC/R+e6YIVQIwwU
- PJR2sssKfV0vmmKAS99FdiBHLFMu6OnE1k59Yq51nbAzGc0c5UEALPXi3
- A==;
+ bh=ujXFlU+9VkxsCW5vjxMaLscmVuoj3Xt+zH95Nb74Jbc=;
+ b=Vheh2fuqAYWzPtkE/aYJDWzad9kVUAQXKDvY6mzjW+mv24dcUi2qnrTf
+ LN7Y14VRZFQElo97JjiDgsd5Qg0/FgS2iVI81C0zaIZFmaDXDcrxpODSk
+ 2t+Z9kGk5bq8UaZlNRj45VuUDE0JVBb6/iaBqQRIGlJozNzWVpZie/FAl
+ lcu9/BBpoWGmwSnNWmlSWfcmvguqVSJRYMi4HPje393HVVpouTTaMbgDN
+ MYqcXamo47tBt7DPRRqsi/wBLtQHuT9oGBEAtBlPiPMUIpa5CryAFSpcH
+ n0D+x++qyXUGcoE14Jr0D2NVq0MfF4Pw8my98OpVnZURmvZbjMDwGDgnl
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=kiVKg/Pt
-Subject: [Intel-wired-lan] [PATCH iwl-next v1] i40e: fix misleading debug
- logs
+ header.a=rsa-sha256 header.s=Intel header.b=Vheh2fuq
+Subject: [Intel-wired-lan] [PATCH iwl-net v1] i40e: fix potential memory
+ leaks in i40e_remove()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,59 +100,36 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Change "write" into the actual "read" word.
-Change parameters description.
+Add defencive loop for all vsi-s and force resources cleanup.
 
-Fixes: 7073f46e443e ("i40e: Add AQ commands for NVM Update for X722")
+Fixes: 41c445ff0f48 ("i40e: main driver core")
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Signed-off-by: Andrii Staikov <andrii.staikov@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_nvm.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 9da0c87f0328..f99c1f7fec40 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -210,11 +210,11 @@ static int i40e_read_nvm_word_srctl(struct i40e_hw *hw, u16 offset,
-  * @hw: pointer to the HW structure.
-  * @module_pointer: module pointer location in words from the NVM beginning
-  * @offset: offset in words from module start
-- * @words: number of words to write
-- * @data: buffer with words to write to the Shadow RAM
-+ * @words: number of words to read
-+ * @data: buffer with words to read to the Shadow RAM
-  * @last_command: tells the AdminQ that this is the last command
-  *
-- * Writes a 16 bit words buffer to the Shadow RAM using the admin command.
-+ * Reads a 16 bit words buffer to the Shadow RAM using the admin command.
-  **/
- static int i40e_read_nvm_aq(struct i40e_hw *hw,
- 			    u8 module_pointer, u32 offset,
-@@ -234,18 +234,18 @@ static int i40e_read_nvm_aq(struct i40e_hw *hw,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 29ad1797adce..1c892b14a337 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -16326,8 +16326,14 @@ static void i40e_remove(struct pci_dev *pdev)
+ 	/* Now we can shutdown the PF's VSI, just before we kill
+ 	 * adminq and hmc.
  	 */
- 	if ((offset + words) > hw->nvm.sr_size)
- 		i40e_debug(hw, I40E_DEBUG_NVM,
--			   "NVM write error: offset %d beyond Shadow RAM limit %d\n",
-+			   "NVM read error: offset %d beyond Shadow RAM limit %d\n",
- 			   (offset + words), hw->nvm.sr_size);
- 	else if (words > I40E_SR_SECTOR_SIZE_IN_WORDS)
--		/* We can write only up to 4KB (one sector), in one AQ write */
-+		/* We can read only up to 4KB (one sector), in one AQ write */
- 		i40e_debug(hw, I40E_DEBUG_NVM,
--			   "NVM write fail error: tried to write %d words, limit is %d.\n",
-+			   "NVM read fail error: tried to read %d words, limit is %d.\n",
- 			   words, I40E_SR_SECTOR_SIZE_IN_WORDS);
- 	else if (((offset + (words - 1)) / I40E_SR_SECTOR_SIZE_IN_WORDS)
- 		 != (offset / I40E_SR_SECTOR_SIZE_IN_WORDS))
--		/* A single write cannot spread over two sectors */
-+		/* A single read cannot spread over two sectors */
- 		i40e_debug(hw, I40E_DEBUG_NVM,
--			   "NVM write error: cannot spread over two sectors in a single write offset=%d words=%d\n",
-+			   "NVM read error: cannot spread over two sectors in a single read offset=%d words=%d\n",
- 			   offset, words);
- 	else
- 		ret_code = i40e_aq_read_nvm(hw, module_pointer,
+-	if (pf->vsi[pf->lan_vsi])
+-		i40e_vsi_release(pf->vsi[pf->lan_vsi]);
++	for (i = pf->num_alloc_vsi; i--;)
++		if (pf->vsi[i]) {
++			i40e_vsi_close(pf->vsi[i]);
++			i40e_vsi_free_q_vectors(pf->vsi[i]);
++			i40e_vsi_release(pf->vsi[i]);
++			kfree(pf->vsi[i]);
++			pf->vsi[i] = NULL;
++		}
+ 
+ 	i40e_cloud_filter_exit(pf);
+ 
 -- 
 2.25.1
 
