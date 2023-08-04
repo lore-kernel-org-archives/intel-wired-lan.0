@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68F2DC00528
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 23:20:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FFD1C00528
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 23:20:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 1DB0941E09;
-	Fri,  4 Aug 2023 23:20:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1DB0941E09
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2CEA941E09;
+	Fri,  4 Aug 2023 23:20:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2CEA941E09
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691191250;
-	bh=pO27MqOqkYlqVFgFcWrAOw0K+Xy1rbmeEDLOMBTpz0U=;
+	s=default; t=1691191256;
+	bh=HML1VcjUVAWs7GO2GmOoRO1NmlC4f5Mtfg1GpPenmws=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=WR5CnTJ0SxQj+ESUqSiuSJKlUUqP7Shx1NAVEEuhewP4mpNoAIJPbELWyw3i8D8TX
-	 ldF1bdtL2yfCPNPbqs/ulZ99k5lvyiJBBD+WB/oin4BQilR1pYMNPfrJPu0vsyekgc
-	 WaZzAyXBIH+ahI27srlQz5KTYSWCCTKsEAbV1SZ6/OW5uMY/ZKekHQoqyAzywHqWoD
-	 SVMYiLscgOCOrswNRetqeUfYeEj7t4aHUYEyMfjxXQhe8qZhYKsUXu8SWOvjspkuJ/
-	 YscyyAwJ5LXVZLqeia3hTnG+6nlQ+Mj8qe1jfpF8C6gtXa6vv/Rf+HYyDc8u+9ZBCi
-	 lylFONOl8O8Og==
+	b=JARelZO7rjjXyDCkVQKzDNltzVdCvw7YfHmYvEH1pGp0IgaIgweHPl9NqyIVn8Kw5
+	 hhL+TPDBAvSfSv9urkpLwV8YsWtwYY0bgg/8W+qHZIqw2O6n7fTjrgzrbzELhkGPet
+	 N8F88RWj4D+ROALnsZ2k2Mp9laHvxkmsDI8dYViBbWmO8icvOoB9ctM1F4Hnk1QTbY
+	 B/XSmfYbqKA2jIUl4ucSLX5lR/QAxrOIKbW1mIAi2UtT9V+7/c8lTIYieUnj9zXDbF
+	 WpFXUCpczi2g3q06p8oWbAsNnMVnI8OKoGVPpIppwXChRJUtwM6DMOZHdg2pJIkCx8
+	 y8VUOr/Z8BaYw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bBvgTp2E-EXx; Fri,  4 Aug 2023 23:20:47 +0000 (UTC)
+	with ESMTP id VGZvtf97Ploo; Fri,  4 Aug 2023 23:20:53 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 022E2402E2;
-	Fri,  4 Aug 2023 23:20:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 022E2402E2
+	by smtp4.osuosl.org (Postfix) with ESMTP id ECF3A41EE7;
+	Fri,  4 Aug 2023 23:20:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org ECF3A41EE7
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 4CD221BF327
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:35 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 84DE21BF327
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 59820403AF
+ by smtp2.osuosl.org (Postfix) with ESMTP id F2E5F408E5
  for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 59820403AF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F2E5F408E5
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id TqAPaoCV5lhl for <intel-wired-lan@lists.osuosl.org>;
- Fri,  4 Aug 2023 23:20:26 +0000 (UTC)
+ with ESMTP id q6aYkjBhJdjD for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  4 Aug 2023 23:20:25 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B1EF8408E5
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B1EF8408E5
-X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="401226421"
-X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="401226421"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 22D5E4053D
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 22D5E4053D
+X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="401226409"
+X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="401226409"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  04 Aug 2023 16:20:23 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="853984332"
-X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="853984332"
+X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="853984307"
+X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="853984307"
 Received: from unknown (HELO lo0-100.bstnma-vfttp-361.verizon-gni.com)
  ([10.166.80.24])
- by orsmga004.jf.intel.com with ESMTP; 04 Aug 2023 16:20:23 -0700
+ by orsmga004.jf.intel.com with ESMTP; 04 Aug 2023 16:20:22 -0700
 From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri,  4 Aug 2023 16:19:19 -0700
-Message-Id: <20230804231929.168064-7-pavan.kumar.linga@intel.com>
+Date: Fri,  4 Aug 2023 16:19:14 -0700
+Message-Id: <20230804231929.168064-2-pavan.kumar.linga@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20230804231929.168064-1-pavan.kumar.linga@intel.com>
 References: <20230804231929.168064-1-pavan.kumar.linga@intel.com>
@@ -70,19 +70,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1691191225; x=1722727225;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=op8mZcflyG39qE1fwaTjp07PW5k5qz8YQsJ2Gv/ocTE=;
- b=lXAi++aiQngljRYiMQAmFssteiALKd+Q2A3ElkJ3aBQk4Xx+187EQRDM
- FtHazMwMEsh0/fW1e5a/Un8zopKeZ+WRSdpmCnP/5cmzHFBdOutVc0NJ4
- 39PNpe5avS4LNBZpjofGb7s1q+W+il4i21/Coxl+EH0nBV9jURkhHiGsB
- vHqw7z3FUDQfM2E/3QMknIC9sF+7qD70Sp0jY5ofx07cHSlvluo/jp5Zl
- ZsJpakEVgP7nPjCZO0xQT42CmfjoBhT9KEJj0kN5DQ9LlTjZk8OBHm6c6
- subwIQYhoO3OqvtNBqtTRM60ItSSnfC7KrOHphXztlbrU+T+7EwHsBfGl
- g==;
+ bh=cSJEeBFnAa9BYjgIy2PP6JA41FMCGxFf2oScllGaJKE=;
+ b=OJiCN1oBMqbPBCpQYvPnqFf1U/dlwrPj09fQ9GG8WEClVF6QMEf0PVJU
+ yXKUGMATu/r0cPpHives1VlwmlQXCNGAeWZSQG0X8CRutHJuiLEbPaFwB
+ OoyrTTCLoc878XKl9cL2f1CFVWPX/252dYtMSvNnkj1HUZnnd5Mz0r/nW
+ mhjI2D8AMddsjfsNIN6VhKjbrBzWMTbemeksuydB/KYD2q3tYWKSQq6bc
+ efbXLk9EIIrmu4kmwhki7hZpdyGJ09UTaZzdze4g7l5Zki5+SZv8ZWhBV
+ JXi761rr1uloRaktU9k4n9cXsn04i3/eJk+ao5AF4ExC+ixuqF873zfYV
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lXAi++ai
-Subject: [Intel-wired-lan] [PATCH iwl-next v9 06/15] idpf: add ptypes and
- MAC filter support
+ header.a=rsa-sha256 header.s=Intel header.b=OJiCN1oB
+Subject: [Intel-wired-lan] [PATCH iwl-next v9 01/15] virtchnl: add virtchnl
+ version 2 ops
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,17 +95,26 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: willemb@google.com, Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>,
- Phani Burra <phani.r.burra@intel.com>, decot@google.com
+Cc: willemb@google.com, Phani Burra <phani.r.burra@intel.com>, decot@google.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add the virtchnl support to request the packet types. Parse the responses
-received from CP and based on the protocol headers, populate the packet
-type structure with necessary information. Initialize the MAC address
-and add the virtchnl support to add and del MAC address.
+Virtchnl version 1 is an interface used by the current generation of
+foundational NICs to negotiate the capabilities and configure the
+HW resources such as queues, vectors, RSS LUT, etc between the PF
+and VF drivers. It is not extensible to enable new features supported
+in the next generation of NICs/IPUs and to negotiate descriptor types,
+packet types and register offsets.
+
+To overcome the limitations of the existing interface, introduce
+the virtchnl version 2 and add the necessary opcodes, structures,
+definitions, and descriptor formats. The driver also learns the
+data queue and other register offsets to use instead of hardcoding
+them. The advantage of this approach is that it gives the flexibility
+to modify the register offsets if needed, restrict the use of
+certain descriptor types and negotiate the supported packet types.
 
 Co-developed-by: Alan Brady <alan.brady@intel.com>
 Signed-off-by: Alan Brady <alan.brady@intel.com>
@@ -115,1073 +124,1744 @@ Co-developed-by: Madhu Chittim <madhu.chittim@intel.com>
 Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
 Co-developed-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Phani Burra <phani.r.burra@intel.com>
-Co-developed-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
-Signed-off-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
+Co-developed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Reviewed-by: Willem de Bruijn <willemb@google.com>
 Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        |  47 ++
- drivers/net/ethernet/intel/idpf/idpf_lib.c    | 178 ++++++-
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   | 112 ++++
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 485 ++++++++++++++++++
- 4 files changed, 821 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/idpf/virtchnl2.h   | 1266 +++++++++++++++++
+ .../ethernet/intel/idpf/virtchnl2_lan_desc.h  |  448 ++++++
+ 2 files changed, 1714 insertions(+)
+ create mode 100644 drivers/net/ethernet/intel/idpf/virtchnl2.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/virtchnl2_lan_desc.h
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index 0a51fab85c5a..59336589e41c 100644
---- a/drivers/net/ethernet/intel/idpf/idpf.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -21,6 +21,7 @@ struct idpf_vport_max_q;
- #define IDPF_NO_FREE_SLOT		0xffff
- 
- /* Default Mailbox settings */
-+#define IDPF_NUM_FILTERS_PER_MSG	20
- #define IDPF_NUM_DFLT_MBX_Q		2	/* includes both TX and RX */
- #define IDPF_DFLT_MBX_Q_LEN		64
- #define IDPF_DFLT_MBX_ID		-1
-@@ -37,6 +38,20 @@ struct idpf_vport_max_q;
- #define IDPF_VIRTCHNL_VERSION_MAJOR VIRTCHNL2_VERSION_MAJOR_2
- #define IDPF_VIRTCHNL_VERSION_MINOR VIRTCHNL2_VERSION_MINOR_0
- 
-+/**
-+ * struct idpf_mac_filter
-+ * @list: list member field
-+ * @macaddr: MAC address
-+ * @remove: filter should be removed (virtchnl)
-+ * @add: filter should be added (virtchnl)
-+ */
-+struct idpf_mac_filter {
-+	struct list_head list;
-+	u8 macaddr[ETH_ALEN];
-+	bool remove;
-+	bool add;
-+};
+diff --git a/drivers/net/ethernet/intel/idpf/virtchnl2.h b/drivers/net/ethernet/intel/idpf/virtchnl2.h
+new file mode 100644
+index 000000000000..dbe64da3bf17
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/virtchnl2.h
+@@ -0,0 +1,1266 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2023 Intel Corporation */
 +
- /**
-  * enum idpf_state - State machine to handle bring up
-  * @__IDPF_STARTUP: Start the state machine
-@@ -170,6 +185,12 @@ struct idpf_dev_ops {
- 	STATE(IDPF_VC_ALLOC_VECTORS_ERR)	\
- 	STATE(IDPF_VC_DEALLOC_VECTORS)		\
- 	STATE(IDPF_VC_DEALLOC_VECTORS_ERR)	\
-+	STATE(IDPF_VC_ADD_MAC_ADDR)		\
-+	STATE(IDPF_VC_ADD_MAC_ADDR_ERR)		\
-+	STATE(IDPF_VC_DEL_MAC_ADDR)		\
-+	STATE(IDPF_VC_DEL_MAC_ADDR_ERR)		\
-+	STATE(IDPF_VC_GET_PTYPE_INFO)		\
-+	STATE(IDPF_VC_GET_PTYPE_INFO_ERR)	\
- 	STATE(IDPF_VC_NBITS)
- 
- #define IDPF_GEN_ENUM(ENUM) ENUM,
-@@ -181,6 +202,18 @@ enum idpf_vport_vc_state {
- 
- extern const char * const idpf_vport_vc_state_str[];
- 
-+/**
-+ * enum idpf_vport_flags - Vport flags
-+ * @IDPF_VPORT_ADD_MAC_REQ: Asynchronous add ether address in flight
-+ * @IDPF_VPORT_DEL_MAC_REQ: Asynchronous delete ether address in flight
-+ * @IDPF_VPORT_FLAGS_NBITS: Must be last
-+ */
-+enum idpf_vport_flags {
-+	IDPF_VPORT_ADD_MAC_REQ,
-+	IDPF_VPORT_DEL_MAC_REQ,
-+	IDPF_VPORT_FLAGS_NBITS,
-+};
++#ifndef _VIRTCHNL2_H_
++#define _VIRTCHNL2_H_
 +
- /**
-  * enum idpf_vport_state - Current vport state
-  * @__IDPF_VPORT_DOWN: Vport is down
-@@ -211,13 +244,16 @@ enum idpf_vport_state {
-  * @bufq_size: Size of buffers in ring (e.g. 2K, 4K, etc)
-  * @num_rxq_grp: Number of RX queues in a group
-  * @rxq_model: Splitq queue or single queue queuing model
-+ * @rx_ptype_lkup: Lookup table for ptypes on RX
-  * @adapter: back pointer to associated adapter
-  * @netdev: Associated net_device. Each vport should have one and only one
-  *	    associated netdev.
-+ * @flags: See enum idpf_vport_flags
-  * @vport_type: Default SRIOV, SIOV, etc.
-  * @vport_id: Device given vport identifier
-  * @idx: Software index in adapter vports struct
-  * @default_vport: Use this vport if one isn't specified
-+ * @base_rxd: True if the driver should use base descriptors instead of flex
-  * @max_mtu: device given max possible MTU
-  * @default_mac_addr: device will give a default MAC to use
-  * @vc_msg: Virtchnl message buffer
-@@ -228,6 +264,7 @@ enum idpf_vport_state {
-  *		when the driver is in a namespace in a system that is being
-  *		shutdown.
-  * @vc_buf_lock: Lock to protect virtchnl buffer
-+ * @mac_filter_list_lock: Lock to protect mac filters
-  */
- struct idpf_vport {
- 	u16 num_txq;
-@@ -244,13 +281,16 @@ struct idpf_vport {
- 	u32 bufq_size[IDPF_MAX_BUFQS_PER_RXQ_GRP];
- 	u16 num_rxq_grp;
- 	u32 rxq_model;
-+	struct idpf_rx_ptype_decoded rx_ptype_lkup[IDPF_RX_MAX_PTYPE];
- 
- 	struct idpf_adapter *adapter;
- 	struct net_device *netdev;
-+	DECLARE_BITMAP(flags, IDPF_VPORT_FLAGS_NBITS);
- 	u16 vport_type;
- 	u32 vport_id;
- 	u16 idx;
- 	bool default_vport;
-+	bool base_rxd;
- 
- 	u16 max_mtu;
- 	u8 default_mac_addr[ETH_ALEN];
-@@ -262,6 +302,8 @@ struct idpf_vport {
- 	wait_queue_head_t vchnl_wq;
- 	struct mutex stop_mutex;
- 	struct mutex vc_buf_lock;
-+
-+	spinlock_t mac_filter_list_lock;
- };
- 
- /**
-@@ -271,6 +313,7 @@ struct idpf_vport {
-  * @num_req_rx_qs: Number of user requested RX queues through ethtool
-  * @num_req_txq_desc: Number of user requested TX queue descriptors through ethtool
-  * @num_req_rxq_desc: Number of user requested RX queue descriptors through ethtool
-+ * @mac_filter_list: List of MAC filters
-  *
-  * Used to restore configuration after a reset as the vport will get wiped.
-  */
-@@ -279,6 +322,7 @@ struct idpf_vport_user_config_data {
- 	u16 num_req_rx_qs;
- 	u32 num_req_txq_desc;
- 	u32 num_req_rxq_desc;
-+	struct list_head mac_filter_list;
- };
- 
- /**
-@@ -596,6 +640,7 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter);
- int idpf_intr_req(struct idpf_adapter *adapter);
- void idpf_intr_rel(struct idpf_adapter *adapter);
- int idpf_send_destroy_vport_msg(struct idpf_vport *vport);
-+int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport);
- int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter);
- int idpf_send_alloc_vectors_msg(struct idpf_adapter *adapter, u16 num_vectors);
- void idpf_deinit_task(struct idpf_adapter *adapter);
-@@ -610,9 +655,11 @@ int idpf_vport_alloc_max_qs(struct idpf_adapter *adapter,
- 			    struct idpf_vport_max_q *max_q);
- void idpf_vport_dealloc_max_qs(struct idpf_adapter *adapter,
- 			       struct idpf_vport_max_q *max_q);
-+int idpf_add_del_mac_filters(struct idpf_vport *vport, bool add, bool async);
- void idpf_vport_init(struct idpf_vport *vport, struct idpf_vport_max_q *max_q);
- u32 idpf_get_vport_id(struct idpf_vport *vport);
- int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
- 			       struct idpf_vport_max_q *max_q);
-+int idpf_check_supported_desc_ids(struct idpf_vport *vport);
- 
- #endif /* !_IDPF_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index b8d2293ae912..f0b05f8ac220 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -293,6 +293,154 @@ int idpf_intr_req(struct idpf_adapter *adapter)
- 	return err;
- }
- 
-+/**
-+ * idpf_find_mac_filter - Search filter list for specific mac filter
-+ * @vport: main vport structure
-+ * @macaddr: the MAC address
++/* All opcodes associated with virtchnl2 are prefixed with virtchnl2 or
++ * VIRTCHNL2. Any future opcodes, offloads/capabilities, structures,
++ * and defines must be prefixed with virtchnl2 or VIRTCHNL2 to avoid confusion.
 + *
-+ * Returns ptr to the filter object or NULL. Must be called while holding the
-+ * mac_filter_list_lock.
-+ **/
-+static struct idpf_mac_filter *idpf_find_mac_filter(struct idpf_vport *vport,
-+						    const u8 *macaddr)
-+{
-+	struct idpf_vport_user_config_data *config_data;
-+	struct idpf_adapter *adapter = vport->adapter;
-+	struct idpf_mac_filter *f;
-+
-+	if (!macaddr)
-+		return NULL;
-+
-+	config_data = &adapter->vport_config[vport->idx]->user_config;
-+
-+	list_for_each_entry(f, &config_data->mac_filter_list, list) {
-+		if (ether_addr_equal(macaddr, f->macaddr))
-+			return f;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * __idpf_add_mac_filter - Add mac filter helper function
-+ * @vport: main vport struct
-+ * @macaddr: address to add
++ * PF/VF uses the virtchnl2 interface defined in this header file to communicate
++ * with device Control Plane (CP). Driver and the CP may run on different
++ * platforms with different endianness. To avoid byte order discrepancies,
++ * all the structures in this header follow little-endian format.
 + *
-+ * Takes mac_filter_list_lock spinlock to add new filter to list.
++ * This is an interface definition file where existing enums and their values
++ * must remain unchanged over time, so we specify explicit values for all enums.
 + */
-+static int __idpf_add_mac_filter(struct idpf_vport *vport, const u8 *macaddr)
-+{
-+	struct idpf_vport_config *vport_config;
-+	struct idpf_mac_filter *f;
 +
-+	vport_config = vport->adapter->vport_config[vport->idx];
-+	spin_lock_bh(&vport->mac_filter_list_lock);
++#include "virtchnl2_lan_desc.h"
 +
-+	f = idpf_find_mac_filter(vport, macaddr);
-+	if (f) {
-+		f->remove = false;
-+		spin_unlock_bh(&vport->mac_filter_list_lock);
-+
-+		return 0;
-+	}
-+
-+	f = kzalloc(sizeof(*f), GFP_ATOMIC);
-+	if (!f) {
-+		spin_unlock_bh(&vport->mac_filter_list_lock);
-+
-+		return -ENOMEM;
-+	}
-+
-+	ether_addr_copy(f->macaddr, macaddr);
-+	list_add_tail(&f->list, &vport_config->user_config.mac_filter_list);
-+	f->add = true;
-+
-+	spin_unlock_bh(&vport->mac_filter_list_lock);
-+
-+	return 0;
-+}
-+
-+/**
-+ * idpf_add_mac_filter - Add a mac filter to the filter list
-+ * @vport: main vport structure
-+ * @macaddr: the MAC address
-+ * @async: Don't wait for return message
-+ *
-+ * Returns 0 on success or error on failure. If interface is up, we'll also
-+ * send the virtchnl message to tell hardware about the filter.
-+ **/
-+static int idpf_add_mac_filter(struct idpf_vport *vport,
-+			       const u8 *macaddr, bool async)
-+{
-+	int err;
-+
-+	err = __idpf_add_mac_filter(vport, macaddr);
-+	if (err)
-+		return err;
-+
-+	if (vport->state == __IDPF_VPORT_UP)
-+		err = idpf_add_del_mac_filters(vport, true, async);
-+
-+	return err;
-+}
-+
-+/**
-+ * idpf_deinit_mac_addr - deinitialize mac address for vport
-+ * @vport: main vport structure
++/* This macro is used to generate compilation errors if a structure
++ * is not exactly the correct length.
 + */
-+static void idpf_deinit_mac_addr(struct idpf_vport *vport)
-+{
-+	struct idpf_mac_filter *f;
++#define VIRTCHNL2_CHECK_STRUCT_LEN(n, X)	\
++	static_assert((n) == sizeof(struct X))
 +
-+	spin_lock_bh(&vport->mac_filter_list_lock);
-+
-+	f = idpf_find_mac_filter(vport, vport->default_mac_addr);
-+	if (f) {
-+		list_del(&f->list);
-+		kfree(f);
-+	}
-+
-+	spin_unlock_bh(&vport->mac_filter_list_lock);
-+}
-+
-+/**
-+ * idpf_init_mac_addr - initialize mac address for vport
-+ * @vport: main vport structure
-+ * @netdev: pointer to netdev struct associated with this vport
++/* New major set of opcodes introduced and so leaving room for
++ * old misc opcodes to be added in future. Also these opcodes may only
++ * be used if both the PF and VF have successfully negotiated the
++ * VIRTCHNL version as 2.0 during VIRTCHNL2_OP_VERSION exchange.
 + */
-+static int idpf_init_mac_addr(struct idpf_vport *vport,
-+			      struct net_device *netdev)
-+{
-+	struct idpf_adapter *adapter = vport->adapter;
-+	int err;
-+
-+	if (is_valid_ether_addr(vport->default_mac_addr)) {
-+		eth_hw_addr_set(netdev, vport->default_mac_addr);
-+		ether_addr_copy(netdev->perm_addr, vport->default_mac_addr);
-+
-+		return idpf_add_mac_filter(vport, vport->default_mac_addr, false);
-+	}
-+
-+	if (!idpf_is_cap_ena(vport->adapter, IDPF_OTHER_CAPS,
-+			     VIRTCHNL2_CAP_MACFILTER)) {
-+		dev_err(&adapter->pdev->dev,
-+			"MAC address is not provided and capability is not set\n");
-+
-+		return -EINVAL;
-+	}
-+
-+	eth_hw_addr_random(netdev);
-+	err = idpf_add_mac_filter(vport, netdev->dev_addr, false);
-+	if (err)
-+		return err;
-+
-+	dev_info(&adapter->pdev->dev, "Invalid MAC address %pM, using random %pM\n",
-+		 vport->default_mac_addr, netdev->dev_addr);
-+	ether_addr_copy(vport->default_mac_addr, netdev->dev_addr);
-+
-+	return 0;
-+}
-+
- /**
-  * idpf_cfg_netdev - Allocate, configure and register a netdev
-  * @vport: main vport structure
-@@ -308,6 +456,7 @@ static int idpf_cfg_netdev(struct idpf_vport *vport)
- 	struct idpf_netdev_priv *np;
- 	struct net_device *netdev;
- 	u16 idx = vport->idx;
-+	int err;
- 
- 	vport_config = adapter->vport_config[idx];
- 
-@@ -320,7 +469,7 @@ static int idpf_cfg_netdev(struct idpf_vport *vport)
- 		np->vport = vport;
- 		vport->netdev = netdev;
- 
--		return 0;
-+		return idpf_init_mac_addr(vport, netdev);
- 	}
- 
- 	netdev = alloc_etherdev_mqs(sizeof(struct idpf_netdev_priv),
-@@ -333,6 +482,14 @@ static int idpf_cfg_netdev(struct idpf_vport *vport)
- 	np = netdev_priv(netdev);
- 	np->vport = vport;
- 
-+	err = idpf_init_mac_addr(vport, netdev);
-+	if (err) {
-+		free_netdev(vport->netdev);
-+		vport->netdev = NULL;
-+
-+		return err;
-+	}
-+
- 	/* setup watchdog timeout value to be 5 second */
- 	netdev->watchdog_timeo = 5 * HZ;
- 
-@@ -495,6 +652,8 @@ static void idpf_vport_dealloc(struct idpf_vport *vport)
- 	struct idpf_adapter *adapter = vport->adapter;
- 	unsigned int i = vport->idx;
- 
-+	idpf_deinit_mac_addr(vport);
-+
- 	if (!test_bit(IDPF_HR_RESET_IN_PROG, adapter->flags))
- 		idpf_decfg_netdev(vport);
- 
-@@ -617,6 +776,7 @@ void idpf_service_task(struct work_struct *work)
-  */
- void idpf_init_task(struct work_struct *work)
- {
-+	struct idpf_vport_config *vport_config;
- 	struct idpf_vport_max_q max_q;
- 	struct idpf_adapter *adapter;
- 	struct idpf_vport *vport;
-@@ -661,14 +821,28 @@ void idpf_init_task(struct work_struct *work)
- 	mutex_unlock(&adapter->sw_mutex);
- 
- 	index = vport->idx;
-+	vport_config = adapter->vport_config[index];
- 
- 	init_waitqueue_head(&vport->vchnl_wq);
- 
- 	mutex_init(&vport->vc_buf_lock);
-+	spin_lock_init(&vport->mac_filter_list_lock);
-+
-+	INIT_LIST_HEAD(&vport_config->user_config.mac_filter_list);
-+
-+	err = idpf_check_supported_desc_ids(vport);
-+	if (err) {
-+		dev_err(&pdev->dev, "failed to get required descriptor ids\n");
-+		goto cfg_netdev_err;
-+	}
- 
- 	if (idpf_cfg_netdev(vport))
- 		goto cfg_netdev_err;
- 
-+	err = idpf_send_get_rx_ptype_msg(vport);
-+	if (err)
-+		goto handle_err;
-+
- 	mutex_lock(&adapter->sw_mutex);
- 
- 	/* Spawn and return 'idpf_init_task' work queue until all the
-@@ -700,6 +874,8 @@ void idpf_init_task(struct work_struct *work)
- 
- 	return;
- 
-+handle_err:
-+	idpf_decfg_netdev(vport);
- cfg_netdev_err:
- 	idpf_vport_rel(vport);
- 	adapter->vports[index] = NULL;
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index 7d23a9df2ed9..e50482974ba6 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -9,6 +9,10 @@
- 
- #define IDPF_MIN_TXQ_COMPLQ_DESC		256
- 
-+#define MIN_SUPPORT_TXDID (\
-+	VIRTCHNL2_TXDID_FLEX_FLOW_SCHED |\
-+	VIRTCHNL2_TXDID_FLEX_TSO_CTX)
-+
- #define IDPF_DFLT_SINGLEQ_TX_Q_GROUPS		1
- #define IDPF_DFLT_SINGLEQ_RX_Q_GROUPS		1
- #define IDPF_DFLT_SINGLEQ_TXQ_PER_GROUP		4
-@@ -51,8 +55,116 @@
- #define IDPF_PACKET_HDR_PAD	\
- 	(ETH_HLEN + ETH_FCS_LEN + VLAN_HLEN * 2)
- 
-+#define IDPF_RX_MAX_PTYPE_PROTO_IDS    32
-+#define IDPF_RX_MAX_PTYPE_SZ	(sizeof(struct virtchnl2_ptype) + \
-+				 (sizeof(u16) * IDPF_RX_MAX_PTYPE_PROTO_IDS))
-+#define IDPF_RX_PTYPE_HDR_SZ	sizeof(struct virtchnl2_get_ptype_info)
-+#define IDPF_RX_MAX_PTYPES_PER_BUF	\
-+	DIV_ROUND_DOWN_ULL((IDPF_CTLQ_MAX_BUF_LEN - IDPF_RX_PTYPE_HDR_SZ), \
-+			   IDPF_RX_MAX_PTYPE_SZ)
-+
-+#define IDPF_GET_PTYPE_SIZE(p) struct_size((p), proto_id, (p)->proto_id_count)
-+
-+#define IDPF_TUN_IP_GRE (\
-+	IDPF_PTYPE_TUNNEL_IP |\
-+	IDPF_PTYPE_TUNNEL_IP_GRENAT)
-+
-+#define IDPF_TUN_IP_GRE_MAC (\
-+	IDPF_TUN_IP_GRE |\
-+	IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC)
-+
-+#define IDPF_RX_MAX_PTYPE	1024
-+#define IDPF_RX_MAX_BASE_PTYPE	256
-+#define IDPF_INVALID_PTYPE_ID	0xFFFF
- #define IDPF_INT_NAME_STR_LEN   (IFNAMSIZ + 16)
- 
-+/* Packet type non-ip values */
-+enum idpf_rx_ptype_l2 {
-+	IDPF_RX_PTYPE_L2_RESERVED	= 0,
-+	IDPF_RX_PTYPE_L2_MAC_PAY2	= 1,
-+	IDPF_RX_PTYPE_L2_TIMESYNC_PAY2	= 2,
-+	IDPF_RX_PTYPE_L2_FIP_PAY2	= 3,
-+	IDPF_RX_PTYPE_L2_OUI_PAY2	= 4,
-+	IDPF_RX_PTYPE_L2_MACCNTRL_PAY2	= 5,
-+	IDPF_RX_PTYPE_L2_LLDP_PAY2	= 6,
-+	IDPF_RX_PTYPE_L2_ECP_PAY2	= 7,
-+	IDPF_RX_PTYPE_L2_EVB_PAY2	= 8,
-+	IDPF_RX_PTYPE_L2_QCN_PAY2	= 9,
-+	IDPF_RX_PTYPE_L2_EAPOL_PAY2	= 10,
-+	IDPF_RX_PTYPE_L2_ARP		= 11,
-+};
-+
-+enum idpf_rx_ptype_outer_ip {
-+	IDPF_RX_PTYPE_OUTER_L2	= 0,
-+	IDPF_RX_PTYPE_OUTER_IP	= 1,
-+};
-+
-+enum idpf_rx_ptype_outer_ip_ver {
-+	IDPF_RX_PTYPE_OUTER_NONE	= 0,
-+	IDPF_RX_PTYPE_OUTER_IPV4	= 1,
-+	IDPF_RX_PTYPE_OUTER_IPV6	= 2,
-+};
-+
-+enum idpf_rx_ptype_outer_fragmented {
-+	IDPF_RX_PTYPE_NOT_FRAG	= 0,
-+	IDPF_RX_PTYPE_FRAG	= 1,
-+};
-+
-+enum idpf_rx_ptype_tunnel_type {
-+	IDPF_RX_PTYPE_TUNNEL_NONE		= 0,
-+	IDPF_RX_PTYPE_TUNNEL_IP_IP		= 1,
-+	IDPF_RX_PTYPE_TUNNEL_IP_GRENAT		= 2,
-+	IDPF_RX_PTYPE_TUNNEL_IP_GRENAT_MAC	= 3,
-+	IDPF_RX_PTYPE_TUNNEL_IP_GRENAT_MAC_VLAN	= 4,
-+};
-+
-+enum idpf_rx_ptype_tunnel_end_prot {
-+	IDPF_RX_PTYPE_TUNNEL_END_NONE	= 0,
-+	IDPF_RX_PTYPE_TUNNEL_END_IPV4	= 1,
-+	IDPF_RX_PTYPE_TUNNEL_END_IPV6	= 2,
-+};
-+
-+enum idpf_rx_ptype_inner_prot {
-+	IDPF_RX_PTYPE_INNER_PROT_NONE		= 0,
-+	IDPF_RX_PTYPE_INNER_PROT_UDP		= 1,
-+	IDPF_RX_PTYPE_INNER_PROT_TCP		= 2,
-+	IDPF_RX_PTYPE_INNER_PROT_SCTP		= 3,
-+	IDPF_RX_PTYPE_INNER_PROT_ICMP		= 4,
-+	IDPF_RX_PTYPE_INNER_PROT_TIMESYNC	= 5,
-+};
-+
-+enum idpf_rx_ptype_payload_layer {
-+	IDPF_RX_PTYPE_PAYLOAD_LAYER_NONE	= 0,
-+	IDPF_RX_PTYPE_PAYLOAD_LAYER_PAY2	= 1,
-+	IDPF_RX_PTYPE_PAYLOAD_LAYER_PAY3	= 2,
-+	IDPF_RX_PTYPE_PAYLOAD_LAYER_PAY4	= 3,
-+};
-+
-+enum idpf_tunnel_state {
-+	IDPF_PTYPE_TUNNEL_IP                    = BIT(0),
-+	IDPF_PTYPE_TUNNEL_IP_GRENAT             = BIT(1),
-+	IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC         = BIT(2),
-+};
-+
-+struct idpf_ptype_state {
-+	bool outer_ip;
-+	bool outer_frag;
-+	u8 tunnel_state;
-+};
-+
-+struct idpf_rx_ptype_decoded {
-+	u32 ptype:10;
-+	u32 known:1;
-+	u32 outer_ip:1;
-+	u32 outer_ip_ver:2;
-+	u32 outer_frag:1;
-+	u32 tunnel_type:3;
-+	u32 tunnel_end_prot:2;
-+	u32 tunnel_end_frag:1;
-+	u32 inner_prot:4;
-+	u32 payload_layer:3;
-+};
-+
- /**
-  * struct idpf_intr_reg
-  * @dyn_ctl: Dynamic control interrupt register
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index e097baef2987..f21875cbac60 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -158,10 +158,15 @@ static int idpf_find_vport(struct idpf_adapter *adapter,
- 	case VIRTCHNL2_OP_CREATE_VPORT:
- 	case VIRTCHNL2_OP_ALLOC_VECTORS:
- 	case VIRTCHNL2_OP_DEALLOC_VECTORS:
-+	case VIRTCHNL2_OP_GET_PTYPE_INFO:
- 		goto free_vc_msg;
- 	case VIRTCHNL2_OP_DESTROY_VPORT:
- 		v_id = le32_to_cpu(((struct virtchnl2_vport *)vc_msg)->vport_id);
- 		break;
-+	case VIRTCHNL2_OP_ADD_MAC_ADDR:
-+	case VIRTCHNL2_OP_DEL_MAC_ADDR:
-+		v_id = le32_to_cpu(((struct virtchnl2_mac_addr_list *)vc_msg)->vport_id);
-+		break;
- 	default:
- 		no_op = true;
- 		break;
-@@ -368,6 +373,51 @@ int idpf_recv_mb_msg(struct idpf_adapter *adapter, u32 op,
- 					   IDPF_VC_DEALLOC_VECTORS,
- 					   IDPF_VC_DEALLOC_VECTORS_ERR);
- 			break;
-+		case VIRTCHNL2_OP_GET_PTYPE_INFO:
-+			idpf_recv_vchnl_op(adapter, NULL, &ctlq_msg,
-+					   IDPF_VC_GET_PTYPE_INFO,
-+					   IDPF_VC_GET_PTYPE_INFO_ERR);
-+			break;
-+		case VIRTCHNL2_OP_ADD_MAC_ADDR:
-+			if (test_and_clear_bit(IDPF_VPORT_ADD_MAC_REQ,
-+					       vport->flags)) {
-+				/* Message was sent asynchronously. We don't
-+				 * normally print errors here, instead
-+				 * prefer to handle errors in the function
-+				 * calling wait_for_event. However, if
-+				 * asynchronous, the context in which the
-+				 * message was sent is lost. We can't really do
-+				 * anything about at it this point, but we
-+				 * should at a minimum indicate that it looks
-+				 * like something went wrong. Also don't bother
-+				 * setting ERR bit or waking vchnl_wq since no
-+				 * one will be waiting to read the async
-+				 * message.
-+				 */
-+				if (ctlq_msg.cookie.mbx.chnl_retval)
-+					dev_err(&adapter->pdev->dev, "Failed to add MAC address: %d\n",
-+						ctlq_msg.cookie.mbx.chnl_retval);
-+				break;
-+			}
-+			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
-+					   IDPF_VC_ADD_MAC_ADDR,
-+					   IDPF_VC_ADD_MAC_ADDR_ERR);
-+			break;
-+		case VIRTCHNL2_OP_DEL_MAC_ADDR:
-+			if (test_and_clear_bit(IDPF_VPORT_DEL_MAC_REQ,
-+					       vport->flags)) {
-+				/* Message was sent asynchronously like the
-+				 * VIRTCHNL2_OP_ADD_MAC_ADDR
-+				 */
-+				if (ctlq_msg.cookie.mbx.chnl_retval)
-+					dev_err(&adapter->pdev->dev, "Failed to delete MAC address: %d\n",
-+						ctlq_msg.cookie.mbx.chnl_retval);
-+				break;
-+			}
-+			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
-+					   IDPF_VC_DEL_MAC_ADDR,
-+					   IDPF_VC_DEL_MAC_ADDR_ERR);
-+			break;
- 		default:
- 			dev_warn(&adapter->pdev->dev,
- 				 "Unhandled virtchnl response %d\n",
-@@ -816,6 +866,44 @@ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
- 	return err;
- }
- 
-+/**
-+ * idpf_check_supported_desc_ids - Verify we have required descriptor support
-+ * @vport: virtual port structure
-+ *
-+ * Return 0 on success, error on failure
-+ */
-+int idpf_check_supported_desc_ids(struct idpf_vport *vport)
-+{
-+	struct idpf_adapter *adapter = vport->adapter;
-+	struct virtchnl2_create_vport *vport_msg;
-+	u64 rx_desc_ids, tx_desc_ids;
-+
-+	vport_msg = adapter->vport_params_recvd[vport->idx];
-+
-+	rx_desc_ids = le64_to_cpu(vport_msg->rx_desc_ids);
-+	tx_desc_ids = le64_to_cpu(vport_msg->tx_desc_ids);
-+
-+	if (vport->rxq_model == VIRTCHNL2_QUEUE_MODEL_SPLIT) {
-+		if (!(rx_desc_ids & VIRTCHNL2_RXDID_2_FLEX_SPLITQ_M)) {
-+			dev_info(&adapter->pdev->dev, "Minimum RX descriptor support not provided, using the default\n");
-+			vport_msg->rx_desc_ids = cpu_to_le64(VIRTCHNL2_RXDID_2_FLEX_SPLITQ_M);
-+		}
-+	} else {
-+		if (!(rx_desc_ids & VIRTCHNL2_RXDID_2_FLEX_SQ_NIC_M))
-+			vport->base_rxd = true;
-+	}
-+
-+	if (vport->txq_model != VIRTCHNL2_QUEUE_MODEL_SPLIT)
-+		return 0;
-+
-+	if ((tx_desc_ids & MIN_SUPPORT_TXDID) != MIN_SUPPORT_TXDID) {
-+		dev_info(&adapter->pdev->dev, "Minimum TX descriptor support not provided, using the default\n");
-+		vport_msg->tx_desc_ids = cpu_to_le64(MIN_SUPPORT_TXDID);
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * idpf_send_destroy_vport_msg - Send virtchnl destroy vport message
-  * @vport: virtual port data structure
-@@ -940,6 +1028,264 @@ int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter)
- 	return err;
- }
- 
-+/**
-+ * idpf_fill_ptype_lookup - Fill L3 specific fields in ptype lookup table
-+ * @ptype: ptype lookup table
-+ * @pstate: state machine for ptype lookup table
-+ * @ipv4: ipv4 or ipv6
-+ * @frag: fragmentation allowed
-+ *
-+ */
-+static void idpf_fill_ptype_lookup(struct idpf_rx_ptype_decoded *ptype,
-+				   struct idpf_ptype_state *pstate,
-+				   bool ipv4, bool frag)
-+{
-+	if (!pstate->outer_ip || !pstate->outer_frag) {
-+		ptype->outer_ip = IDPF_RX_PTYPE_OUTER_IP;
-+		pstate->outer_ip = true;
-+
-+		if (ipv4)
-+			ptype->outer_ip_ver = IDPF_RX_PTYPE_OUTER_IPV4;
-+		else
-+			ptype->outer_ip_ver = IDPF_RX_PTYPE_OUTER_IPV6;
-+
-+		if (frag) {
-+			ptype->outer_frag = IDPF_RX_PTYPE_FRAG;
-+			pstate->outer_frag = true;
-+		}
-+	} else {
-+		ptype->tunnel_type = IDPF_RX_PTYPE_TUNNEL_IP_IP;
-+		pstate->tunnel_state = IDPF_PTYPE_TUNNEL_IP;
-+
-+		if (ipv4)
-+			ptype->tunnel_end_prot =
-+					IDPF_RX_PTYPE_TUNNEL_END_IPV4;
-+		else
-+			ptype->tunnel_end_prot =
-+					IDPF_RX_PTYPE_TUNNEL_END_IPV6;
-+
-+		if (frag)
-+			ptype->tunnel_end_frag = IDPF_RX_PTYPE_FRAG;
-+	}
-+}
-+
-+/**
-+ * idpf_send_get_rx_ptype_msg - Send virtchnl for ptype info
-+ * @vport: virtual port data structure
-+ *
-+ * Returns 0 on success, negative on failure.
-+ */
-+int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport)
-+{
-+	struct idpf_rx_ptype_decoded *ptype_lkup = vport->rx_ptype_lkup;
-+	struct virtchnl2_get_ptype_info get_ptype_info;
-+	int max_ptype, ptypes_recvd = 0, ptype_offset;
-+	struct idpf_adapter *adapter = vport->adapter;
-+	struct virtchnl2_get_ptype_info *ptype_info;
-+	u16 next_ptype_id = 0;
-+	int err = 0, i, j, k;
-+
-+	if (idpf_is_queue_model_split(vport->rxq_model))
-+		max_ptype = IDPF_RX_MAX_PTYPE;
-+	else
-+		max_ptype = IDPF_RX_MAX_BASE_PTYPE;
-+
-+	memset(vport->rx_ptype_lkup, 0, sizeof(vport->rx_ptype_lkup));
-+
-+	ptype_info = kzalloc(IDPF_CTLQ_MAX_BUF_LEN, GFP_KERNEL);
-+	if (!ptype_info)
-+		return -ENOMEM;
-+
-+	mutex_lock(&adapter->vc_buf_lock);
-+
-+	while (next_ptype_id < max_ptype) {
-+		get_ptype_info.start_ptype_id = cpu_to_le16(next_ptype_id);
-+
-+		if ((next_ptype_id + IDPF_RX_MAX_PTYPES_PER_BUF) > max_ptype)
-+			get_ptype_info.num_ptypes =
-+				cpu_to_le16(max_ptype - next_ptype_id);
-+		else
-+			get_ptype_info.num_ptypes =
-+				cpu_to_le16(IDPF_RX_MAX_PTYPES_PER_BUF);
-+
-+		err = idpf_send_mb_msg(adapter, VIRTCHNL2_OP_GET_PTYPE_INFO,
-+				       sizeof(struct virtchnl2_get_ptype_info),
-+				       (u8 *)&get_ptype_info);
-+		if (err)
-+			goto vc_buf_unlock;
-+
-+		err = idpf_wait_for_event(adapter, NULL, IDPF_VC_GET_PTYPE_INFO,
-+					  IDPF_VC_GET_PTYPE_INFO_ERR);
-+		if (err)
-+			goto vc_buf_unlock;
-+
-+		memcpy(ptype_info, adapter->vc_msg, IDPF_CTLQ_MAX_BUF_LEN);
-+
-+		ptypes_recvd += le16_to_cpu(ptype_info->num_ptypes);
-+		if (ptypes_recvd > max_ptype) {
-+			err = -EINVAL;
-+			goto vc_buf_unlock;
-+		}
-+
-+		next_ptype_id = le16_to_cpu(get_ptype_info.start_ptype_id) +
-+				le16_to_cpu(get_ptype_info.num_ptypes);
-+
-+		ptype_offset = IDPF_RX_PTYPE_HDR_SZ;
-+
-+		for (i = 0; i < le16_to_cpu(ptype_info->num_ptypes); i++) {
-+			struct idpf_ptype_state pstate = { };
-+			struct virtchnl2_ptype *ptype;
-+			u16 id;
-+
-+			ptype = (struct virtchnl2_ptype *)
-+					((u8 *)ptype_info + ptype_offset);
-+
-+			ptype_offset += IDPF_GET_PTYPE_SIZE(ptype);
-+			if (ptype_offset > IDPF_CTLQ_MAX_BUF_LEN) {
-+				err = -EINVAL;
-+				goto vc_buf_unlock;
-+			}
-+
-+			/* 0xFFFF indicates end of ptypes */
-+			if (le16_to_cpu(ptype->ptype_id_10) ==
-+							IDPF_INVALID_PTYPE_ID) {
-+				err = 0;
-+				goto vc_buf_unlock;
-+			}
-+
-+			if (idpf_is_queue_model_split(vport->rxq_model))
-+				k = le16_to_cpu(ptype->ptype_id_10);
-+			else
-+				k = ptype->ptype_id_8;
-+
-+			if (ptype->proto_id_count)
-+				ptype_lkup[k].known = 1;
-+
-+			for (j = 0; j < ptype->proto_id_count; j++) {
-+				id = le16_to_cpu(ptype->proto_id[j]);
-+				switch (id) {
-+				case VIRTCHNL2_PROTO_HDR_GRE:
-+					if (pstate.tunnel_state ==
-+							IDPF_PTYPE_TUNNEL_IP) {
-+						ptype_lkup[k].tunnel_type =
-+						IDPF_RX_PTYPE_TUNNEL_IP_GRENAT;
-+						pstate.tunnel_state |=
-+						IDPF_PTYPE_TUNNEL_IP_GRENAT;
-+					}
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_MAC:
-+					ptype_lkup[k].outer_ip =
-+						IDPF_RX_PTYPE_OUTER_L2;
-+					if (pstate.tunnel_state ==
-+							IDPF_TUN_IP_GRE) {
-+						ptype_lkup[k].tunnel_type =
-+						IDPF_RX_PTYPE_TUNNEL_IP_GRENAT_MAC;
-+						pstate.tunnel_state |=
-+						IDPF_PTYPE_TUNNEL_IP_GRENAT_MAC;
-+					}
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_IPV4:
-+					idpf_fill_ptype_lookup(&ptype_lkup[k],
-+							       &pstate, true,
-+							       false);
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_IPV6:
-+					idpf_fill_ptype_lookup(&ptype_lkup[k],
-+							       &pstate, false,
-+							       false);
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_IPV4_FRAG:
-+					idpf_fill_ptype_lookup(&ptype_lkup[k],
-+							       &pstate, true,
-+							       true);
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_IPV6_FRAG:
-+					idpf_fill_ptype_lookup(&ptype_lkup[k],
-+							       &pstate, false,
-+							       true);
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_UDP:
-+					ptype_lkup[k].inner_prot =
-+					IDPF_RX_PTYPE_INNER_PROT_UDP;
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_TCP:
-+					ptype_lkup[k].inner_prot =
-+					IDPF_RX_PTYPE_INNER_PROT_TCP;
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_SCTP:
-+					ptype_lkup[k].inner_prot =
-+					IDPF_RX_PTYPE_INNER_PROT_SCTP;
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_ICMP:
-+					ptype_lkup[k].inner_prot =
-+					IDPF_RX_PTYPE_INNER_PROT_ICMP;
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_PAY:
-+					ptype_lkup[k].payload_layer =
-+						IDPF_RX_PTYPE_PAYLOAD_LAYER_PAY2;
-+					break;
-+				case VIRTCHNL2_PROTO_HDR_ICMPV6:
-+				case VIRTCHNL2_PROTO_HDR_IPV6_EH:
-+				case VIRTCHNL2_PROTO_HDR_PRE_MAC:
-+				case VIRTCHNL2_PROTO_HDR_POST_MAC:
-+				case VIRTCHNL2_PROTO_HDR_ETHERTYPE:
-+				case VIRTCHNL2_PROTO_HDR_SVLAN:
-+				case VIRTCHNL2_PROTO_HDR_CVLAN:
-+				case VIRTCHNL2_PROTO_HDR_MPLS:
-+				case VIRTCHNL2_PROTO_HDR_MMPLS:
-+				case VIRTCHNL2_PROTO_HDR_PTP:
-+				case VIRTCHNL2_PROTO_HDR_CTRL:
-+				case VIRTCHNL2_PROTO_HDR_LLDP:
-+				case VIRTCHNL2_PROTO_HDR_ARP:
-+				case VIRTCHNL2_PROTO_HDR_ECP:
-+				case VIRTCHNL2_PROTO_HDR_EAPOL:
-+				case VIRTCHNL2_PROTO_HDR_PPPOD:
-+				case VIRTCHNL2_PROTO_HDR_PPPOE:
-+				case VIRTCHNL2_PROTO_HDR_IGMP:
-+				case VIRTCHNL2_PROTO_HDR_AH:
-+				case VIRTCHNL2_PROTO_HDR_ESP:
-+				case VIRTCHNL2_PROTO_HDR_IKE:
-+				case VIRTCHNL2_PROTO_HDR_NATT_KEEP:
-+				case VIRTCHNL2_PROTO_HDR_L2TPV2:
-+				case VIRTCHNL2_PROTO_HDR_L2TPV2_CONTROL:
-+				case VIRTCHNL2_PROTO_HDR_L2TPV3:
-+				case VIRTCHNL2_PROTO_HDR_GTP:
-+				case VIRTCHNL2_PROTO_HDR_GTP_EH:
-+				case VIRTCHNL2_PROTO_HDR_GTPCV2:
-+				case VIRTCHNL2_PROTO_HDR_GTPC_TEID:
-+				case VIRTCHNL2_PROTO_HDR_GTPU:
-+				case VIRTCHNL2_PROTO_HDR_GTPU_UL:
-+				case VIRTCHNL2_PROTO_HDR_GTPU_DL:
-+				case VIRTCHNL2_PROTO_HDR_ECPRI:
-+				case VIRTCHNL2_PROTO_HDR_VRRP:
-+				case VIRTCHNL2_PROTO_HDR_OSPF:
-+				case VIRTCHNL2_PROTO_HDR_TUN:
-+				case VIRTCHNL2_PROTO_HDR_NVGRE:
-+				case VIRTCHNL2_PROTO_HDR_VXLAN:
-+				case VIRTCHNL2_PROTO_HDR_VXLAN_GPE:
-+				case VIRTCHNL2_PROTO_HDR_GENEVE:
-+				case VIRTCHNL2_PROTO_HDR_NSH:
-+				case VIRTCHNL2_PROTO_HDR_QUIC:
-+				case VIRTCHNL2_PROTO_HDR_PFCP:
-+				case VIRTCHNL2_PROTO_HDR_PFCP_NODE:
-+				case VIRTCHNL2_PROTO_HDR_PFCP_SESSION:
-+				case VIRTCHNL2_PROTO_HDR_RTP:
-+				case VIRTCHNL2_PROTO_HDR_NO_PROTO:
-+					break;
-+				default:
-+					break;
-+				}
-+			}
-+		}
-+	}
-+
-+vc_buf_unlock:
-+	mutex_unlock(&adapter->vc_buf_lock);
-+	kfree(ptype_info);
-+
-+	return err;
-+}
-+
- /**
-  * idpf_find_ctlq - Given a type and id, find ctlq info
-  * @hw: hardware struct
-@@ -1376,3 +1722,142 @@ u32 idpf_get_vport_id(struct idpf_vport *vport)
- 
- 	return le32_to_cpu(vport_msg->vport_id);
- }
-+
-+/**
-+ * idpf_add_del_mac_filters - Add/del mac filters
-+ * @vport: virtual port data structure
-+ * @add: Add or delete flag
-+ * @async: Don't wait for return message
-+ *
-+ * Returns 0 on success, error on failure.
-+ **/
-+int idpf_add_del_mac_filters(struct idpf_vport *vport, bool add, bool async)
-+{
-+	struct idpf_vport_user_config_data *user_config;
-+	struct virtchnl2_mac_addr_list *ma_list = NULL;
-+	struct idpf_adapter *adapter = vport->adapter;
-+	struct pci_dev *pdev = adapter->pdev;
-+	enum idpf_vport_vc_state vc, vc_err;
-+	struct virtchnl2_mac_addr *mac_addr;
-+	struct idpf_mac_filter *f, *tmp;
-+	u32 num_msgs, total_filters = 0;
-+	enum idpf_vport_flags mac_flag;
-+	int i = 0, k, err = 0;
-+	u32 vop;
-+
-+	user_config = &adapter->vport_config[vport->idx]->user_config;
-+	spin_lock_bh(&vport->mac_filter_list_lock);
-+
-+	/* Find the number of newly added filters */
-+	list_for_each_entry(f, &user_config->mac_filter_list, list) {
-+		if (add && f->add)
-+			total_filters++;
-+		else if (!add && f->remove)
-+			total_filters++;
-+	}
-+
-+	if (!total_filters) {
-+		spin_unlock_bh(&vport->mac_filter_list_lock);
-+
-+		return 0;
-+	}
-+
-+	/* Fill all the new filters into virtchannel message */
-+	mac_addr = kcalloc(total_filters, sizeof(struct virtchnl2_mac_addr),
-+			   GFP_ATOMIC);
-+	if (!mac_addr) {
-+		err = -ENOMEM;
-+		spin_unlock_bh(&vport->mac_filter_list_lock);
-+		goto error;
-+	}
-+
-+	list_for_each_entry_safe(f, tmp, &user_config->mac_filter_list, list) {
-+		if (add && f->add) {
-+			ether_addr_copy(mac_addr[i].addr, f->macaddr);
-+			i++;
-+			f->add = false;
-+			if (i == total_filters)
-+				break;
-+		}
-+		if (!add && f->remove) {
-+			ether_addr_copy(mac_addr[i].addr, f->macaddr);
-+			i++;
-+			f->remove = false;
-+			if (i == total_filters)
-+				break;
-+		}
-+	}
-+
-+	spin_unlock_bh(&vport->mac_filter_list_lock);
-+
-+	if (add) {
-+		vop = VIRTCHNL2_OP_ADD_MAC_ADDR;
-+		vc = IDPF_VC_ADD_MAC_ADDR;
-+		vc_err = IDPF_VC_ADD_MAC_ADDR_ERR;
-+		mac_flag = IDPF_VPORT_ADD_MAC_REQ;
-+	} else {
-+		vop = VIRTCHNL2_OP_DEL_MAC_ADDR;
-+		vc = IDPF_VC_DEL_MAC_ADDR;
-+		vc_err = IDPF_VC_DEL_MAC_ADDR_ERR;
-+		mac_flag = IDPF_VPORT_DEL_MAC_REQ;
-+	}
-+
-+	/* Chunk up the filters into multiple messages to avoid
-+	 * sending a control queue message buffer that is too large
++enum virtchnl2_op {
++	VIRTCHNL2_OP_UNKNOWN			= 0,
++	VIRTCHNL2_OP_VERSION			= 1,
++	VIRTCHNL2_OP_GET_CAPS			= 500,
++	VIRTCHNL2_OP_CREATE_VPORT		= 501,
++	VIRTCHNL2_OP_DESTROY_VPORT		= 502,
++	VIRTCHNL2_OP_ENABLE_VPORT		= 503,
++	VIRTCHNL2_OP_DISABLE_VPORT		= 504,
++	VIRTCHNL2_OP_CONFIG_TX_QUEUES		= 505,
++	VIRTCHNL2_OP_CONFIG_RX_QUEUES		= 506,
++	VIRTCHNL2_OP_ENABLE_QUEUES		= 507,
++	VIRTCHNL2_OP_DISABLE_QUEUES		= 508,
++	VIRTCHNL2_OP_ADD_QUEUES			= 509,
++	VIRTCHNL2_OP_DEL_QUEUES			= 510,
++	VIRTCHNL2_OP_MAP_QUEUE_VECTOR		= 511,
++	VIRTCHNL2_OP_UNMAP_QUEUE_VECTOR		= 512,
++	VIRTCHNL2_OP_GET_RSS_KEY		= 513,
++	VIRTCHNL2_OP_SET_RSS_KEY		= 514,
++	VIRTCHNL2_OP_GET_RSS_LUT		= 515,
++	VIRTCHNL2_OP_SET_RSS_LUT		= 516,
++	VIRTCHNL2_OP_GET_RSS_HASH		= 517,
++	VIRTCHNL2_OP_SET_RSS_HASH		= 518,
++	VIRTCHNL2_OP_SET_SRIOV_VFS		= 519,
++	VIRTCHNL2_OP_ALLOC_VECTORS		= 520,
++	VIRTCHNL2_OP_DEALLOC_VECTORS		= 521,
++	VIRTCHNL2_OP_EVENT			= 522,
++	VIRTCHNL2_OP_GET_STATS			= 523,
++	VIRTCHNL2_OP_RESET_VF			= 524,
++	VIRTCHNL2_OP_GET_EDT_CAPS		= 525,
++	VIRTCHNL2_OP_GET_PTYPE_INFO		= 526,
++	/* Opcode 527 and 528 are reserved for VIRTCHNL2_OP_GET_PTYPE_ID and
++	 * VIRTCHNL2_OP_GET_PTYPE_INFO_RAW.
++	 * Opcodes 529, 530, 531, 532 and 533 are reserved.
 +	 */
-+	num_msgs = DIV_ROUND_UP(total_filters, IDPF_NUM_FILTERS_PER_MSG);
++	VIRTCHNL2_OP_LOOPBACK			= 534,
++	VIRTCHNL2_OP_ADD_MAC_ADDR		= 535,
++	VIRTCHNL2_OP_DEL_MAC_ADDR		= 536,
++	VIRTCHNL2_OP_CONFIG_PROMISCUOUS_MODE	= 537,
++};
 +
-+	if (!async)
-+		mutex_lock(&vport->vc_buf_lock);
++/**
++ * enum virtchnl2_vport_type - Type of virtual port.
++ * @VIRTCHNL2_VPORT_TYPE_DEFAULT: Default virtual port type.
++ */
++enum virtchnl2_vport_type {
++	VIRTCHNL2_VPORT_TYPE_DEFAULT		= 0,
++};
 +
-+	for (i = 0, k = 0; i < num_msgs; i++) {
-+		u32 entries_size, buf_size, num_entries;
++/**
++ * enum virtchnl2_queue_model - Type of queue model.
++ * @VIRTCHNL2_QUEUE_MODEL_SINGLE: Single queue model.
++ * @VIRTCHNL2_QUEUE_MODEL_SPLIT: Split queue model.
++ *
++ * In the single queue model, the same transmit descriptor queue is used by
++ * software to post descriptors to hardware and by hardware to post completed
++ * descriptors to software.
++ * Likewise, the same receive descriptor queue is used by hardware to post
++ * completions to software and by software to post buffers to hardware.
++ *
++ * In the split queue model, hardware uses transmit completion queues to post
++ * descriptor/buffer completions to software, while software uses transmit
++ * descriptor queues to post descriptors to hardware.
++ * Likewise, hardware posts descriptor completions to the receive descriptor
++ * queue, while software uses receive buffer queues to post buffers to hardware.
++ */
++enum virtchnl2_queue_model {
++	VIRTCHNL2_QUEUE_MODEL_SINGLE		= 0,
++	VIRTCHNL2_QUEUE_MODEL_SPLIT		= 1,
++};
 +
-+		num_entries = min_t(u32, total_filters, IDPF_NUM_FILTERS_PER_MSG);
-+		entries_size = sizeof(struct virtchnl2_mac_addr) * num_entries;
-+		buf_size = struct_size(ma_list, mac_addr_list, num_entries);
++/* Checksum offload capability flags */
++enum virtchnl2_cap_txrx_csum {
++	VIRTCHNL2_CAP_TX_CSUM_L3_IPV4		= BIT(0),
++	VIRTCHNL2_CAP_TX_CSUM_L4_IPV4_TCP	= BIT(1),
++	VIRTCHNL2_CAP_TX_CSUM_L4_IPV4_UDP	= BIT(2),
++	VIRTCHNL2_CAP_TX_CSUM_L4_IPV4_SCTP	= BIT(3),
++	VIRTCHNL2_CAP_TX_CSUM_L4_IPV6_TCP	= BIT(4),
++	VIRTCHNL2_CAP_TX_CSUM_L4_IPV6_UDP	= BIT(5),
++	VIRTCHNL2_CAP_TX_CSUM_L4_IPV6_SCTP	= BIT(6),
++	VIRTCHNL2_CAP_TX_CSUM_GENERIC		= BIT(7),
++	VIRTCHNL2_CAP_RX_CSUM_L3_IPV4		= BIT(8),
++	VIRTCHNL2_CAP_RX_CSUM_L4_IPV4_TCP	= BIT(9),
++	VIRTCHNL2_CAP_RX_CSUM_L4_IPV4_UDP	= BIT(10),
++	VIRTCHNL2_CAP_RX_CSUM_L4_IPV4_SCTP	= BIT(11),
++	VIRTCHNL2_CAP_RX_CSUM_L4_IPV6_TCP	= BIT(12),
++	VIRTCHNL2_CAP_RX_CSUM_L4_IPV6_UDP	= BIT(13),
++	VIRTCHNL2_CAP_RX_CSUM_L4_IPV6_SCTP	= BIT(14),
++	VIRTCHNL2_CAP_RX_CSUM_GENERIC		= BIT(15),
++	VIRTCHNL2_CAP_TX_CSUM_L3_SINGLE_TUNNEL	= BIT(16),
++	VIRTCHNL2_CAP_TX_CSUM_L3_DOUBLE_TUNNEL	= BIT(17),
++	VIRTCHNL2_CAP_RX_CSUM_L3_SINGLE_TUNNEL	= BIT(18),
++	VIRTCHNL2_CAP_RX_CSUM_L3_DOUBLE_TUNNEL	= BIT(19),
++	VIRTCHNL2_CAP_TX_CSUM_L4_SINGLE_TUNNEL	= BIT(20),
++	VIRTCHNL2_CAP_TX_CSUM_L4_DOUBLE_TUNNEL	= BIT(21),
++	VIRTCHNL2_CAP_RX_CSUM_L4_SINGLE_TUNNEL	= BIT(22),
++	VIRTCHNL2_CAP_RX_CSUM_L4_DOUBLE_TUNNEL	= BIT(23),
++};
 +
-+		if (!ma_list || num_entries != IDPF_NUM_FILTERS_PER_MSG) {
-+			kfree(ma_list);
-+			ma_list = kzalloc(buf_size, GFP_ATOMIC);
-+			if (!ma_list) {
-+				err = -ENOMEM;
-+				goto list_prep_error;
-+			}
-+		} else {
-+			memset(ma_list, 0, buf_size);
-+		}
++/* Segmentation offload capability flags */
++enum virtchnl2_cap_seg {
++	VIRTCHNL2_CAP_SEG_IPV4_TCP		= BIT(0),
++	VIRTCHNL2_CAP_SEG_IPV4_UDP		= BIT(1),
++	VIRTCHNL2_CAP_SEG_IPV4_SCTP		= BIT(2),
++	VIRTCHNL2_CAP_SEG_IPV6_TCP		= BIT(3),
++	VIRTCHNL2_CAP_SEG_IPV6_UDP		= BIT(4),
++	VIRTCHNL2_CAP_SEG_IPV6_SCTP		= BIT(5),
++	VIRTCHNL2_CAP_SEG_GENERIC		= BIT(6),
++	VIRTCHNL2_CAP_SEG_TX_SINGLE_TUNNEL	= BIT(7),
++	VIRTCHNL2_CAP_SEG_TX_DOUBLE_TUNNEL	= BIT(8),
++};
 +
-+		ma_list->vport_id = cpu_to_le32(vport->vport_id);
-+		ma_list->num_mac_addr = cpu_to_le16(num_entries);
-+		memcpy(ma_list->mac_addr_list, &mac_addr[k], entries_size);
++/* Receive Side Scaling Flow type capability flags */
++enum virtchnl2_cap_rss {
++	VIRTCHNL2_CAP_RSS_IPV4_TCP		= BIT(0),
++	VIRTCHNL2_CAP_RSS_IPV4_UDP		= BIT(1),
++	VIRTCHNL2_CAP_RSS_IPV4_SCTP		= BIT(2),
++	VIRTCHNL2_CAP_RSS_IPV4_OTHER		= BIT(3),
++	VIRTCHNL2_CAP_RSS_IPV6_TCP		= BIT(4),
++	VIRTCHNL2_CAP_RSS_IPV6_UDP		= BIT(5),
++	VIRTCHNL2_CAP_RSS_IPV6_SCTP		= BIT(6),
++	VIRTCHNL2_CAP_RSS_IPV6_OTHER		= BIT(7),
++	VIRTCHNL2_CAP_RSS_IPV4_AH		= BIT(8),
++	VIRTCHNL2_CAP_RSS_IPV4_ESP		= BIT(9),
++	VIRTCHNL2_CAP_RSS_IPV4_AH_ESP		= BIT(10),
++	VIRTCHNL2_CAP_RSS_IPV6_AH		= BIT(11),
++	VIRTCHNL2_CAP_RSS_IPV6_ESP		= BIT(12),
++	VIRTCHNL2_CAP_RSS_IPV6_AH_ESP		= BIT(13),
++};
 +
-+		if (async)
-+			set_bit(mac_flag, vport->flags);
++/* Header split capability flags */
++enum virtchnl2_cap_rx_hsplit_at {
++	/* for prepended metadata  */
++	VIRTCHNL2_CAP_RX_HSPLIT_AT_L2		= BIT(0),
++	/* all VLANs go into header buffer */
++	VIRTCHNL2_CAP_RX_HSPLIT_AT_L3		= BIT(1),
++	VIRTCHNL2_CAP_RX_HSPLIT_AT_L4V4		= BIT(2),
++	VIRTCHNL2_CAP_RX_HSPLIT_AT_L4V6		= BIT(3),
++};
 +
-+		err = idpf_send_mb_msg(adapter, vop, buf_size, (u8 *)ma_list);
-+		if (err)
-+			goto mbx_error;
++/* Receive Side Coalescing offload capability flags */
++enum virtchnl2_cap_rsc {
++	VIRTCHNL2_CAP_RSC_IPV4_TCP		= BIT(0),
++	VIRTCHNL2_CAP_RSC_IPV4_SCTP		= BIT(1),
++	VIRTCHNL2_CAP_RSC_IPV6_TCP		= BIT(2),
++	VIRTCHNL2_CAP_RSC_IPV6_SCTP		= BIT(3),
++};
 +
-+		if (!async) {
-+			err = idpf_wait_for_event(adapter, vport, vc, vc_err);
-+			if (err)
-+				goto mbx_error;
-+		}
++/* Other capability flags */
++enum virtchnl2_cap_other {
++	VIRTCHNL2_CAP_RDMA			= BIT_ULL(0),
++	VIRTCHNL2_CAP_SRIOV			= BIT_ULL(1),
++	VIRTCHNL2_CAP_MACFILTER			= BIT_ULL(2),
++	VIRTCHNL2_CAP_FLOW_DIRECTOR		= BIT_ULL(3),
++	/* Queue based scheduling using split queue model */
++	VIRTCHNL2_CAP_SPLITQ_QSCHED		= BIT_ULL(4),
++	VIRTCHNL2_CAP_CRC			= BIT_ULL(5),
++	VIRTCHNL2_CAP_ADQ			= BIT_ULL(6),
++	VIRTCHNL2_CAP_WB_ON_ITR			= BIT_ULL(7),
++	VIRTCHNL2_CAP_PROMISC			= BIT_ULL(8),
++	VIRTCHNL2_CAP_LINK_SPEED		= BIT_ULL(9),
++	VIRTCHNL2_CAP_INLINE_IPSEC		= BIT_ULL(10),
++	VIRTCHNL2_CAP_LARGE_NUM_QUEUES		= BIT_ULL(11),
++	VIRTCHNL2_CAP_VLAN			= BIT_ULL(12),
++	VIRTCHNL2_CAP_PTP			= BIT_ULL(13),
++	/* EDT: Earliest Departure Time capability used for Timing Wheel */
++	VIRTCHNL2_CAP_EDT			= BIT_ULL(14),
++	VIRTCHNL2_CAP_ADV_RSS			= BIT_ULL(15),
++	VIRTCHNL2_CAP_FDIR			= BIT_ULL(16),
++	VIRTCHNL2_CAP_RX_FLEX_DESC		= BIT_ULL(17),
++	VIRTCHNL2_CAP_PTYPE			= BIT_ULL(18),
++	VIRTCHNL2_CAP_LOOPBACK			= BIT_ULL(19),
++	/* Other capability 20 is reserved */
 +
-+		k += num_entries;
-+		total_filters -= num_entries;
-+	}
++	/* this must be the last capability */
++	VIRTCHNL2_CAP_OEM			= BIT_ULL(63),
++};
 +
-+mbx_error:
-+	if (!async)
-+		mutex_unlock(&vport->vc_buf_lock);
-+	kfree(ma_list);
-+list_prep_error:
-+	kfree(mac_addr);
-+error:
-+	if (err)
-+		dev_err(&pdev->dev, "Failed to add or del mac filters %d", err);
++/* underlying device type */
++enum virtchl2_device_type {
++	VIRTCHNL2_MEV_DEVICE			= 0,
++};
 +
-+	return err;
-+}
++/**
++ * enum virtchnl2_txq_sched_mode - Transmit Queue Scheduling Modes.
++ * @VIRTCHNL2_TXQ_SCHED_MODE_QUEUE: Queue mode is the legacy mode i.e. inorder
++ *				    completions where descriptors and buffers
++ *				    are completed at the same time.
++ * @VIRTCHNL2_TXQ_SCHED_MODE_FLOW: Flow scheduling mode allows for out of order
++ *				   packet processing where descriptors are
++ *				   cleaned in order, but buffers can be
++ *				   completed out of order.
++ */
++enum virtchnl2_txq_sched_mode {
++	VIRTCHNL2_TXQ_SCHED_MODE_QUEUE		= 0,
++	VIRTCHNL2_TXQ_SCHED_MODE_FLOW		= 1,
++};
++
++/**
++ * enum virtchnl2_rxq_flags - Receive Queue Feature flags.
++ * @VIRTCHNL2_RXQ_RSC: Rx queue RSC flag.
++ * @VIRTCHNL2_RXQ_HDR_SPLIT: Rx queue header split flag.
++ * @VIRTCHNL2_RXQ_IMMEDIATE_WRITE_BACK: When set, packet descriptors are flushed
++ *					by hardware immediately after processing
++ *					each packet.
++ * @VIRTCHNL2_RX_DESC_SIZE_16BYTE: Rx queue 16 byte descriptor size.
++ * @VIRTCHNL2_RX_DESC_SIZE_32BYTE: Rx queue 32 byte descriptor size.
++ */
++enum virtchnl2_rxq_flags {
++	VIRTCHNL2_RXQ_RSC			= BIT(0),
++	VIRTCHNL2_RXQ_HDR_SPLIT			= BIT(1),
++	VIRTCHNL2_RXQ_IMMEDIATE_WRITE_BACK	= BIT(2),
++	VIRTCHNL2_RX_DESC_SIZE_16BYTE		= BIT(3),
++	VIRTCHNL2_RX_DESC_SIZE_32BYTE		= BIT(4),
++};
++
++/* Type of RSS algorithm */
++enum virtchnl2_rss_alg {
++	VIRTCHNL2_RSS_ALG_TOEPLITZ_ASYMMETRIC	= 0,
++	VIRTCHNL2_RSS_ALG_R_ASYMMETRIC		= 1,
++	VIRTCHNL2_RSS_ALG_TOEPLITZ_SYMMETRIC	= 2,
++	VIRTCHNL2_RSS_ALG_XOR_SYMMETRIC		= 3,
++};
++
++/* Type of event */
++enum virtchnl2_event_codes {
++	VIRTCHNL2_EVENT_UNKNOWN			= 0,
++	VIRTCHNL2_EVENT_LINK_CHANGE		= 1,
++	/* Event type 2, 3 are reserved */
++};
++
++/* Transmit and Receive queue types are valid in legacy as well as split queue
++ * models. With Split Queue model, 2 additional types are introduced -
++ * TX_COMPLETION and RX_BUFFER. In split queue model, receive  corresponds to
++ * the queue where hardware posts completions.
++ */
++enum virtchnl2_queue_type {
++	VIRTCHNL2_QUEUE_TYPE_TX			= 0,
++	VIRTCHNL2_QUEUE_TYPE_RX			= 1,
++	VIRTCHNL2_QUEUE_TYPE_TX_COMPLETION	= 2,
++	VIRTCHNL2_QUEUE_TYPE_RX_BUFFER		= 3,
++	VIRTCHNL2_QUEUE_TYPE_CONFIG_TX		= 4,
++	VIRTCHNL2_QUEUE_TYPE_CONFIG_RX		= 5,
++	/* Queue types 6, 7, 8, 9 are reserved */
++	VIRTCHNL2_QUEUE_TYPE_MBX_TX		= 10,
++	VIRTCHNL2_QUEUE_TYPE_MBX_RX		= 11,
++};
++
++/* Interrupt throttling rate index */
++enum virtchnl2_itr_idx {
++	VIRTCHNL2_ITR_IDX_0			= 0,
++	VIRTCHNL2_ITR_IDX_1			= 1,
++};
++
++/**
++ * enum virtchnl2_mac_addr_type - MAC address types.
++ * @VIRTCHNL2_MAC_ADDR_PRIMARY: PF/VF driver should set this type for the
++ *				primary/device unicast MAC address filter for
++ *				VIRTCHNL2_OP_ADD_MAC_ADDR and VIRTCHNL2_OP_DEL_MAC_ADDR.
++ *				This allows for the underlying control plane
++ *				function to accurately track the MAC address and for
++ *				VM/function reset.
++ *
++ * @VIRTCHNL2_MAC_ADDR_EXTRA: PF/VF driver should set this type for any extra unicast
++ *			      and/or multicast filters that are being added/deleted via
++ *			      VIRTCHNL2_OP_ADD_MAC_ADDR or VIRTCHNL2_OP_DEL_MAC_ADDR.
++ */
++enum virtchnl2_mac_addr_type {
++	VIRTCHNL2_MAC_ADDR_PRIMARY		= 1,
++	VIRTCHNL2_MAC_ADDR_EXTRA		= 2,
++};
++
++/* Flags used for promiscuous mode */
++enum virtchnl2_promisc_flags {
++	VIRTCHNL2_UNICAST_PROMISC		= BIT(0),
++	VIRTCHNL2_MULTICAST_PROMISC		= BIT(1),
++};
++
++/* Protocol header type within a packet segment. A segment consists of one or
++ * more protocol headers that make up a logical group of protocol headers. Each
++ * logical group of protocol headers encapsulates or is encapsulated using/by
++ * tunneling or encapsulation protocols for network virtualization.
++ */
++enum virtchnl2_proto_hdr_type {
++	/* VIRTCHNL2_PROTO_HDR_ANY is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_ANY			= 0,
++	VIRTCHNL2_PROTO_HDR_PRE_MAC		= 1,
++	/* VIRTCHNL2_PROTO_HDR_MAC is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_MAC			= 2,
++	VIRTCHNL2_PROTO_HDR_POST_MAC		= 3,
++	VIRTCHNL2_PROTO_HDR_ETHERTYPE		= 4,
++	VIRTCHNL2_PROTO_HDR_VLAN		= 5,
++	VIRTCHNL2_PROTO_HDR_SVLAN		= 6,
++	VIRTCHNL2_PROTO_HDR_CVLAN		= 7,
++	VIRTCHNL2_PROTO_HDR_MPLS		= 8,
++	VIRTCHNL2_PROTO_HDR_UMPLS		= 9,
++	VIRTCHNL2_PROTO_HDR_MMPLS		= 10,
++	VIRTCHNL2_PROTO_HDR_PTP			= 11,
++	VIRTCHNL2_PROTO_HDR_CTRL		= 12,
++	VIRTCHNL2_PROTO_HDR_LLDP		= 13,
++	VIRTCHNL2_PROTO_HDR_ARP			= 14,
++	VIRTCHNL2_PROTO_HDR_ECP			= 15,
++	VIRTCHNL2_PROTO_HDR_EAPOL		= 16,
++	VIRTCHNL2_PROTO_HDR_PPPOD		= 17,
++	VIRTCHNL2_PROTO_HDR_PPPOE		= 18,
++	/* VIRTCHNL2_PROTO_HDR_IPV4 is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_IPV4		= 19,
++	/* IPv4 and IPv6 Fragment header types are only associated to
++	 * VIRTCHNL2_PROTO_HDR_IPV4 and VIRTCHNL2_PROTO_HDR_IPV6 respectively,
++	 * cannot be used independently.
++	 */
++	/* VIRTCHNL2_PROTO_HDR_IPV4_FRAG is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_IPV4_FRAG		= 20,
++	/* VIRTCHNL2_PROTO_HDR_IPV6 is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_IPV6		= 21,
++	/* VIRTCHNL2_PROTO_HDR_IPV6_FRAG is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_IPV6_FRAG		= 22,
++	VIRTCHNL2_PROTO_HDR_IPV6_EH		= 23,
++	/* VIRTCHNL2_PROTO_HDR_UDP is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_UDP			= 24,
++	/* VIRTCHNL2_PROTO_HDR_TCP is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_TCP			= 25,
++	/* VIRTCHNL2_PROTO_HDR_SCTP is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_SCTP		= 26,
++	/* VIRTCHNL2_PROTO_HDR_ICMP is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_ICMP		= 27,
++	/* VIRTCHNL2_PROTO_HDR_ICMPV6 is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_ICMPV6		= 28,
++	VIRTCHNL2_PROTO_HDR_IGMP		= 29,
++	VIRTCHNL2_PROTO_HDR_AH			= 30,
++	VIRTCHNL2_PROTO_HDR_ESP			= 31,
++	VIRTCHNL2_PROTO_HDR_IKE			= 32,
++	VIRTCHNL2_PROTO_HDR_NATT_KEEP		= 33,
++	/* VIRTCHNL2_PROTO_HDR_PAY is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_PAY			= 34,
++	VIRTCHNL2_PROTO_HDR_L2TPV2		= 35,
++	VIRTCHNL2_PROTO_HDR_L2TPV2_CONTROL	= 36,
++	VIRTCHNL2_PROTO_HDR_L2TPV3		= 37,
++	VIRTCHNL2_PROTO_HDR_GTP			= 38,
++	VIRTCHNL2_PROTO_HDR_GTP_EH		= 39,
++	VIRTCHNL2_PROTO_HDR_GTPCV2		= 40,
++	VIRTCHNL2_PROTO_HDR_GTPC_TEID		= 41,
++	VIRTCHNL2_PROTO_HDR_GTPU		= 42,
++	VIRTCHNL2_PROTO_HDR_GTPU_UL		= 43,
++	VIRTCHNL2_PROTO_HDR_GTPU_DL		= 44,
++	VIRTCHNL2_PROTO_HDR_ECPRI		= 45,
++	VIRTCHNL2_PROTO_HDR_VRRP		= 46,
++	VIRTCHNL2_PROTO_HDR_OSPF		= 47,
++	/* VIRTCHNL2_PROTO_HDR_TUN is a mandatory protocol id */
++	VIRTCHNL2_PROTO_HDR_TUN			= 48,
++	VIRTCHNL2_PROTO_HDR_GRE			= 49,
++	VIRTCHNL2_PROTO_HDR_NVGRE		= 50,
++	VIRTCHNL2_PROTO_HDR_VXLAN		= 51,
++	VIRTCHNL2_PROTO_HDR_VXLAN_GPE		= 52,
++	VIRTCHNL2_PROTO_HDR_GENEVE		= 53,
++	VIRTCHNL2_PROTO_HDR_NSH			= 54,
++	VIRTCHNL2_PROTO_HDR_QUIC		= 55,
++	VIRTCHNL2_PROTO_HDR_PFCP		= 56,
++	VIRTCHNL2_PROTO_HDR_PFCP_NODE		= 57,
++	VIRTCHNL2_PROTO_HDR_PFCP_SESSION	= 58,
++	VIRTCHNL2_PROTO_HDR_RTP			= 59,
++	VIRTCHNL2_PROTO_HDR_ROCE		= 60,
++	VIRTCHNL2_PROTO_HDR_ROCEV1		= 61,
++	VIRTCHNL2_PROTO_HDR_ROCEV2		= 62,
++	/* Protocol ids up to 32767 are reserved.
++	 * 32768 - 65534 are used for user defined protocol ids.
++	 * VIRTCHNL2_PROTO_HDR_NO_PROTO is a mandatory protocol id.
++	 */
++	VIRTCHNL2_PROTO_HDR_NO_PROTO		= 65535,
++};
++
++enum virtchl2_version {
++	VIRTCHNL2_VERSION_MINOR_0		= 0,
++	VIRTCHNL2_VERSION_MAJOR_2		= 2,
++};
++
++/**
++ * struct virtchnl2_edt_caps - Get EDT granularity and time horizon.
++ * @tstamp_granularity_ns: Timestamp granularity in nanoseconds.
++ * @time_horizon_ns: Total time window in nanoseconds.
++ *
++ * Associated with VIRTCHNL2_OP_GET_EDT_CAPS.
++ */
++struct virtchnl2_edt_caps {
++	__le64 tstamp_granularity_ns;
++	__le64 time_horizon_ns;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_edt_caps);
++
++/**
++ * struct virtchnl2_version_info - Version information.
++ * @major: Major version.
++ * @minor: Minor version.
++ *
++ * PF/VF posts its version number to the CP. CP responds with its version number
++ * in the same format, along with a return code.
++ * If there is a major version mismatch, then the PF/VF cannot operate.
++ * If there is a minor version mismatch, then the PF/VF can operate but should
++ * add a warning to the system log.
++ *
++ * This version opcode MUST always be specified as == 1, regardless of other
++ * changes in the API. The CP must always respond to this message without
++ * error regardless of version mismatch.
++ *
++ * Associated with VIRTCHNL2_OP_VERSION.
++ */
++struct virtchnl2_version_info {
++	__le32 major;
++	__le32 minor;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_version_info);
++
++/**
++ * struct virtchnl2_get_capabilities - Capabilities info.
++ * @csum_caps: See enum virtchnl2_cap_txrx_csum.
++ * @seg_caps: See enum virtchnl2_cap_seg.
++ * @hsplit_caps: See enum virtchnl2_cap_rx_hsplit_at.
++ * @rsc_caps: See enum virtchnl2_cap_rsc.
++ * @rss_caps: See enum virtchnl2_cap_rss.
++ * @other_caps: See enum virtchnl2_cap_other.
++ * @mailbox_dyn_ctl: DYN_CTL register offset and vector id for mailbox provided by CP.
++ * @mailbox_vector_id: Mailbox vector id.
++ * @num_allocated_vectors: Maximum number of allocated vectors for the device.
++ * @max_rx_q: Maximum number of supported Rx queues.
++ * @max_tx_q: Maximum number of supported Tx queues.
++ * @max_rx_bufq: Maximum number of supported buffer queues.
++ * @max_tx_complq: Maximum number of supported completion queues.
++ * @max_sriov_vfs: The PF sends the maximum VFs it is requesting. The CP
++ *		   responds with the maximum VFs granted.
++ * @max_vports: Maximum number of vports that can be supported.
++ * @default_num_vports: Default number of vports driver should allocate on load.
++ * @max_tx_hdr_size: Max header length hardware can parse/checksum, in bytes.
++ * @max_sg_bufs_per_tx_pkt: Max number of scatter gather buffers that can be sent
++ *			    per transmit packet without needing to be linearized.
++ * @pad: Padding.
++ * @reserved: Reserved.
++ * @device_type: See enum virtchl2_device_type.
++ * @min_sso_packet_len: Min packet length supported by device for single
++ *			segment offload.
++ * @max_hdr_buf_per_lso: Max number of header buffers that can be used for an LSO.
++ * @pad1: Padding for future extensions.
++ *
++ * Dataplane driver sends this message to CP to negotiate capabilities and
++ * provides a virtchnl2_get_capabilities structure with its desired
++ * capabilities, max_sriov_vfs and num_allocated_vectors.
++ * CP responds with a virtchnl2_get_capabilities structure updated
++ * with allowed capabilities and the other fields as below.
++ * If PF sets max_sriov_vfs as 0, CP will respond with max number of VFs
++ * that can be created by this PF. For any other value 'n', CP responds
++ * with max_sriov_vfs set to min(n, x) where x is the max number of VFs
++ * allowed by CP's policy. max_sriov_vfs is not applicable for VFs.
++ * If dataplane driver sets num_allocated_vectors as 0, CP will respond with 1
++ * which is default vector associated with the default mailbox. For any other
++ * value 'n', CP responds with a value <= n based on the CP's policy of
++ * max number of vectors for a PF.
++ * CP will respond with the vector ID of mailbox allocated to the PF in
++ * mailbox_vector_id and the number of itr index registers in itr_idx_map.
++ * It also responds with default number of vports that the dataplane driver
++ * should comeup with in default_num_vports and maximum number of vports that
++ * can be supported in max_vports.
++ *
++ * Associated with VIRTCHNL2_OP_GET_CAPS.
++ */
++struct virtchnl2_get_capabilities {
++	__le32 csum_caps;
++	__le32 seg_caps;
++	__le32 hsplit_caps;
++	__le32 rsc_caps;
++	__le64 rss_caps;
++	__le64 other_caps;
++	__le32 mailbox_dyn_ctl;
++	__le16 mailbox_vector_id;
++	__le16 num_allocated_vectors;
++	__le16 max_rx_q;
++	__le16 max_tx_q;
++	__le16 max_rx_bufq;
++	__le16 max_tx_complq;
++	__le16 max_sriov_vfs;
++	__le16 max_vports;
++	__le16 default_num_vports;
++	__le16 max_tx_hdr_size;
++	u8 max_sg_bufs_per_tx_pkt;
++	u8 pad[3];
++	u8 reserved[4];
++	__le32 device_type;
++	u8 min_sso_packet_len;
++	u8 max_hdr_buf_per_lso;
++	u8 pad1[10];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(80, virtchnl2_get_capabilities);
++
++/**
++ * struct virtchnl2_queue_reg_chunk - Single queue chunk.
++ * @type: See enum virtchnl2_queue_type.
++ * @start_queue_id: Start Queue ID.
++ * @num_queues: Number of queues in the chunk.
++ * @pad: Padding.
++ * @qtail_reg_start: Queue tail register offset.
++ * @qtail_reg_spacing: Queue tail register spacing.
++ * @pad1: Padding for future extensions.
++ */
++struct virtchnl2_queue_reg_chunk {
++	__le32 type;
++	__le32 start_queue_id;
++	__le32 num_queues;
++	__le32 pad;
++	__le64 qtail_reg_start;
++	__le32 qtail_reg_spacing;
++	u8 pad1[4];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(32, virtchnl2_queue_reg_chunk);
++
++/**
++ *  struct virtchnl2_queue_reg_chunks - Specify several chunks of contiguous queues.
++ *  @num_chunks: Number of chunks.
++ *  @pad: Padding.
++ *  @chunks: Chunks of queue info.
++ */
++struct virtchnl2_queue_reg_chunks {
++	__le16 num_chunks;
++	u8 pad[6];
++	struct virtchnl2_queue_reg_chunk chunks[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_queue_reg_chunks);
++
++/**
++ * struct virtchnl2_create_vport - Create vport config info.
++ * @vport_type: See enum virtchnl2_vport_type.
++ * @txq_model: See virtchnl2_queue_model.
++ * @rxq_model: See virtchnl2_queue_model.
++ * @num_tx_q: Number of Tx queues.
++ * @num_tx_complq: Valid only if txq_model is split queue.
++ * @num_rx_q: Number of Rx queues.
++ * @num_rx_bufq: Valid only if rxq_model is split queue.
++ * @default_rx_q: Relative receive queue index to be used as default.
++ * @vport_index: Used to align PF and CP in case of default multiple vports,
++ *		 it is filled by the PF and CP returns the same value, to
++ *		 enable the driver to support multiple asynchronous parallel
++ *		 CREATE_VPORT requests and associate a response to a specific
++ *		 request.
++ * @max_mtu: Max MTU. CP populates this field on response.
++ * @vport_id: Vport id. CP populates this field on response.
++ * @default_mac_addr: Default MAC address.
++ * @pad: Padding.
++ * @rx_desc_ids: See VIRTCHNL2_RX_DESC_IDS definitions.
++ * @tx_desc_ids: See VIRTCHNL2_TX_DESC_IDS definitions.
++ * @pad1: Padding.
++ * @rss_algorithm: RSS algorithm.
++ * @rss_key_size: RSS key size.
++ * @rss_lut_size: RSS LUT size.
++ * @rx_split_pos: See enum virtchnl2_cap_rx_hsplit_at.
++ * @pad2: Padding.
++ * @chunks: Chunks of contiguous queues.
++ *
++ * PF sends this message to CP to create a vport by filling in required
++ * fields of virtchnl2_create_vport structure.
++ * CP responds with the updated virtchnl2_create_vport structure containing the
++ * necessary fields followed by chunks which in turn will have an array of
++ * num_chunks entries of virtchnl2_queue_chunk structures.
++ *
++ * Associated with VIRTCHNL2_OP_CREATE_VPORT.
++ */
++struct virtchnl2_create_vport {
++	__le16 vport_type;
++	__le16 txq_model;
++	__le16 rxq_model;
++	__le16 num_tx_q;
++	__le16 num_tx_complq;
++	__le16 num_rx_q;
++	__le16 num_rx_bufq;
++	__le16 default_rx_q;
++	__le16 vport_index;
++	/* CP populates the following fields on response */
++	__le16 max_mtu;
++	__le32 vport_id;
++	u8 default_mac_addr[ETH_ALEN];
++	__le16 pad;
++	__le64 rx_desc_ids;
++	__le64 tx_desc_ids;
++	u8 pad1[72];
++	__le32 rss_algorithm;
++	__le16 rss_key_size;
++	__le16 rss_lut_size;
++	__le32 rx_split_pos;
++	u8 pad2[20];
++	struct virtchnl2_queue_reg_chunks chunks;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(160, virtchnl2_create_vport);
++
++/**
++ * struct virtchnl2_vport - Vport ID info.
++ * @vport_id: Vport id.
++ * @pad: Padding for future extensions.
++ *
++ * PF sends this message to CP to destroy, enable or disable a vport by filling
++ * in the vport_id in virtchnl2_vport structure.
++ * CP responds with the status of the requested operation.
++ *
++ * Associated with VIRTCHNL2_OP_DESTROY_VPORT, VIRTCHNL2_OP_ENABLE_VPORT,
++ * VIRTCHNL2_OP_DISABLE_VPORT.
++ */
++struct virtchnl2_vport {
++	__le32 vport_id;
++	u8 pad[4];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_vport);
++
++/**
++ * struct virtchnl2_txq_info - Transmit queue config info
++ * @dma_ring_addr: DMA address.
++ * @type: See enum virtchnl2_queue_type.
++ * @queue_id: Queue ID.
++ * @relative_queue_id: Valid only if queue model is split and type is transmit
++ *		       queue. Used in many to one mapping of transmit queues to
++ *		       completion queue.
++ * @model: See enum virtchnl2_queue_model.
++ * @sched_mode: See enum virtchnl2_txq_sched_mode.
++ * @qflags: TX queue feature flags.
++ * @ring_len: Ring length.
++ * @tx_compl_queue_id: Valid only if queue model is split and type is transmit queue.
++ * @peer_type: Valid only if queue type is VIRTCHNL2_QUEUE_TYPE_MAILBOX_TX
++ * @peer_rx_queue_id: Valid only if queue type is CONFIG_TX and used to deliver
++ *		      messages for the respective CONFIG_TX queue.
++ * @pad: Padding.
++ * @egress_pasid: Egress PASID info.
++ * @egress_hdr_pasid: Egress HDR passid.
++ * @egress_buf_pasid: Egress buf passid.
++ * @pad1: Padding for future extensions.
++ */
++struct virtchnl2_txq_info {
++	__le64 dma_ring_addr;
++	__le32 type;
++	__le32 queue_id;
++	__le16 relative_queue_id;
++	__le16 model;
++	__le16 sched_mode;
++	__le16 qflags;
++	__le16 ring_len;
++	__le16 tx_compl_queue_id;
++	__le16 peer_type;
++	__le16 peer_rx_queue_id;
++	u8 pad[4];
++	__le32 egress_pasid;
++	__le32 egress_hdr_pasid;
++	__le32 egress_buf_pasid;
++	u8 pad1[8];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(56, virtchnl2_txq_info);
++
++/**
++ * struct virtchnl2_config_tx_queues - TX queue config.
++ * @vport_id: Vport id.
++ * @num_qinfo: Number of virtchnl2_txq_info structs.
++ * @pad: Padding.
++ * @qinfo: Tx queues config info.
++ *
++ * PF sends this message to set up parameters for one or more transmit queues.
++ * This message contains an array of num_qinfo instances of virtchnl2_txq_info
++ * structures. CP configures requested queues and returns a status code. If
++ * num_qinfo specified is greater than the number of queues associated with the
++ * vport, an error is returned and no queues are configured.
++ *
++ * Associated with VIRTCHNL2_OP_CONFIG_TX_QUEUES.
++ */
++struct virtchnl2_config_tx_queues {
++	__le32 vport_id;
++	__le16 num_qinfo;
++	u8 pad[10];
++	struct virtchnl2_txq_info qinfo[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_config_tx_queues);
++
++/**
++ * struct virtchnl2_rxq_info - Receive queue config info.
++ * @desc_ids: See VIRTCHNL2_RX_DESC_IDS definitions.
++ * @dma_ring_addr: See VIRTCHNL2_RX_DESC_IDS definitions.
++ * @type: See enum virtchnl2_queue_type.
++ * @queue_id: Queue id.
++ * @model: See enum virtchnl2_queue_model.
++ * @hdr_buffer_size: Header buffer size.
++ * @data_buffer_size: Data buffer size.
++ * @max_pkt_size: Max packet size.
++ * @ring_len: Ring length.
++ * @buffer_notif_stride: Buffer notification stride in units of 32-descriptors.
++ *			 This field must be a power of 2.
++ * @pad: Padding.
++ * @dma_head_wb_addr: Applicable only for receive buffer queues.
++ * @qflags: Applicable only for receive completion queues.
++ *	    See enum virtchnl2_rxq_flags.
++ * @rx_buffer_low_watermark: Rx buffer low watermark.
++ * @rx_bufq1_id: Buffer queue index of the first buffer queue associated with
++ *		 the Rx queue. Valid only in split queue model.
++ * @rx_bufq2_id: Buffer queue index of the second buffer queue associated with
++ *		 the Rx queue. Valid only in split queue model.
++ * @bufq2_ena: It indicates if there is a second buffer, rx_bufq2_id is valid
++ *	       only if this field is set.
++ * @pad1: Padding.
++ * @ingress_pasid: Ingress PASID.
++ * @ingress_hdr_pasid: Ingress PASID header.
++ * @ingress_buf_pasid: Ingress PASID buffer.
++ * @pad2: Padding for future extensions.
++ */
++struct virtchnl2_rxq_info {
++	__le64 desc_ids;
++	__le64 dma_ring_addr;
++	__le32 type;
++	__le32 queue_id;
++	__le16 model;
++	__le16 hdr_buffer_size;
++	__le32 data_buffer_size;
++	__le32 max_pkt_size;
++	__le16 ring_len;
++	u8 buffer_notif_stride;
++	u8 pad;
++	__le64 dma_head_wb_addr;
++	__le16 qflags;
++	__le16 rx_buffer_low_watermark;
++	__le16 rx_bufq1_id;
++	__le16 rx_bufq2_id;
++	u8 bufq2_ena;
++	u8 pad1[3];
++	__le32 ingress_pasid;
++	__le32 ingress_hdr_pasid;
++	__le32 ingress_buf_pasid;
++	u8 pad2[16];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(88, virtchnl2_rxq_info);
++
++/**
++ * struct virtchnl2_config_rx_queues - Rx queues config.
++ * @vport_id: Vport id.
++ * @num_qinfo: Number of instances.
++ * @pad: Padding.
++ * @qinfo: Rx queues config info.
++ *
++ * PF sends this message to set up parameters for one or more receive queues.
++ * This message contains an array of num_qinfo instances of virtchnl2_rxq_info
++ * structures. CP configures requested queues and returns a status code.
++ * If the number of queues specified is greater than the number of queues
++ * associated with the vport, an error is returned and no queues are configured.
++ *
++ * Associated with VIRTCHNL2_OP_CONFIG_RX_QUEUES.
++ */
++struct virtchnl2_config_rx_queues {
++	__le32 vport_id;
++	__le16 num_qinfo;
++	u8 pad[18];
++	struct virtchnl2_rxq_info qinfo[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(24, virtchnl2_config_rx_queues);
++
++/**
++ * struct virtchnl2_add_queues - data for VIRTCHNL2_OP_ADD_QUEUES.
++ * @vport_id: Vport id.
++ * @num_tx_q: Number of Tx qieues.
++ * @num_tx_complq: Number of Tx completion queues.
++ * @num_rx_q:  Number of Rx queues.
++ * @num_rx_bufq:  Number of Rx buffer queues.
++ * @pad: Padding.
++ * @chunks: Chunks of contiguous queues.
++ *
++ * PF sends this message to request additional transmit/receive queues beyond
++ * the ones that were assigned via CREATE_VPORT request. virtchnl2_add_queues
++ * structure is used to specify the number of each type of queues.
++ * CP responds with the same structure with the actual number of queues assigned
++ * followed by num_chunks of virtchnl2_queue_chunk structures.
++ *
++ * Associated with VIRTCHNL2_OP_ADD_QUEUES.
++ */
++struct virtchnl2_add_queues {
++	__le32 vport_id;
++	__le16 num_tx_q;
++	__le16 num_tx_complq;
++	__le16 num_rx_q;
++	__le16 num_rx_bufq;
++	u8 pad[4];
++	struct virtchnl2_queue_reg_chunks chunks;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(24, virtchnl2_add_queues);
++
++/**
++ * struct virtchnl2_vector_chunk - Structure to specify a chunk of contiguous
++ *				   interrupt vectors.
++ * @start_vector_id: Start vector id.
++ * @start_evv_id: Start EVV id.
++ * @num_vectors: Number of vectors.
++ * @pad: Padding.
++ * @dynctl_reg_start: DYN_CTL register offset.
++ * @dynctl_reg_spacing: register spacing between DYN_CTL registers of 2
++ *			consecutive vectors.
++ * @itrn_reg_start: ITRN register offset.
++ * @itrn_reg_spacing: Register spacing between dynctl registers of 2
++ *		      consecutive vectors.
++ * @itrn_index_spacing: Register spacing between itrn registers of the same
++ *			vector where n=0..2.
++ * @pad1: Padding for future extensions.
++ *
++ * Register offsets and spacing provided by CP.
++ * Dynamic control registers are used for enabling/disabling/re-enabling
++ * interrupts and updating interrupt rates in the hotpath. Any changes
++ * to interrupt rates in the dynamic control registers will be reflected
++ * in the interrupt throttling rate registers.
++ * itrn registers are used to update interrupt rates for specific
++ * interrupt indices without modifying the state of the interrupt.
++ */
++struct virtchnl2_vector_chunk {
++	__le16 start_vector_id;
++	__le16 start_evv_id;
++	__le16 num_vectors;
++	__le16 pad;
++	__le32 dynctl_reg_start;
++	__le32 dynctl_reg_spacing;
++	__le32 itrn_reg_start;
++	__le32 itrn_reg_spacing;
++	__le32 itrn_index_spacing;
++	u8 pad1[4];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(32, virtchnl2_vector_chunk);
++
++/**
++ * struct virtchnl2_vector_chunks - chunks of contiguous interrupt vectors.
++ * @num_vchunks: number of vector chunks.
++ * @pad: Padding.
++ * @vchunks: Chunks of contiguous vector info.
++ *
++ * PF sends virtchnl2_vector_chunks struct to specify the vectors it is giving
++ * away. CP performs requested action and returns status.
++ *
++ * Associated with VIRTCHNL2_OP_DEALLOC_VECTORS.
++ */
++struct virtchnl2_vector_chunks {
++	__le16 num_vchunks;
++	u8 pad[14];
++	struct virtchnl2_vector_chunk vchunks[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_vector_chunks);
++
++/**
++ * struct virtchnl2_alloc_vectors - vector allocation info.
++ * @num_vectors: Number of vectors.
++ * @pad: Padding.
++ * @vchunks: Chunks of contiguous vector info.
++ *
++ * PF sends this message to request additional interrupt vectors beyond the
++ * ones that were assigned via GET_CAPS request. virtchnl2_alloc_vectors
++ * structure is used to specify the number of vectors requested. CP responds
++ * with the same structure with the actual number of vectors assigned followed
++ * by virtchnl2_vector_chunks structure identifying the vector ids.
++ *
++ * Associated with VIRTCHNL2_OP_ALLOC_VECTORS.
++ */
++struct virtchnl2_alloc_vectors {
++	__le16 num_vectors;
++	u8 pad[14];
++	struct virtchnl2_vector_chunks vchunks;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(32, virtchnl2_alloc_vectors);
++
++/**
++ * struct virtchnl2_rss_lut - RSS LUT info.
++ * @vport_id: Vport id.
++ * @lut_entries_start: Start of LUT entries.
++ * @lut_entries: Number of LUT entrties.
++ * @pad: Padding.
++ * @lut: RSS lookup table.
++ *
++ * PF sends this message to get or set RSS lookup table. Only supported if
++ * both PF and CP drivers set the VIRTCHNL2_CAP_RSS bit during configuration
++ * negotiation.
++ *
++ * Associated with VIRTCHNL2_OP_GET_RSS_LUT and VIRTCHNL2_OP_SET_RSS_LUT.
++ */
++struct virtchnl2_rss_lut {
++	__le32 vport_id;
++	__le16 lut_entries_start;
++	__le16 lut_entries;
++	u8 pad[4];
++	__le32 lut[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(12, virtchnl2_rss_lut);
++
++/**
++ * struct virtchnl2_rss_hash - RSS hash info.
++ * @ptype_groups: Packet type groups bitmap.
++ * @vport_id: Vport id.
++ * @pad: Padding for future extensions.
++ *
++ * PF sends these messages to get and set the hash filter enable bits for RSS.
++ * By default, the CP sets these to all possible traffic types that the
++ * hardware supports. The PF can query this value if it wants to change the
++ * traffic types that are hashed by the hardware.
++ * Only supported if both PF and CP drivers set the VIRTCHNL2_CAP_RSS bit
++ * during configuration negotiation.
++ *
++ * Associated with VIRTCHNL2_OP_GET_RSS_HASH and VIRTCHNL2_OP_SET_RSS_HASH
++ */
++struct virtchnl2_rss_hash {
++	__le64 ptype_groups;
++	__le32 vport_id;
++	u8 pad[4];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_rss_hash);
++
++/**
++ * struct virtchnl2_sriov_vfs_info - VFs info.
++ * @num_vfs: Number of VFs.
++ * @pad: Padding for future extensions.
++ *
++ * This message is used to set number of SRIOV VFs to be created. The actual
++ * allocation of resources for the VFs in terms of vport, queues and interrupts
++ * is done by CP. When this call completes, the IDPF driver calls
++ * pci_enable_sriov to let the OS instantiate the SRIOV PCIE devices.
++ * The number of VFs set to 0 will destroy all the VFs of this function.
++ *
++ * Associated with VIRTCHNL2_OP_SET_SRIOV_VFS.
++ */
++struct virtchnl2_sriov_vfs_info {
++	__le16 num_vfs;
++	__le16 pad;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(4, virtchnl2_sriov_vfs_info);
++
++/**
++ * struct virtchnl2_ptype - Packet type info.
++ * @ptype_id_10: 10-bit packet type.
++ * @ptype_id_8: 8-bit packet type.
++ * @proto_id_count: Number of protocol ids the packet supports, maximum of 32
++ *		    protocol ids are supported.
++ * @pad: Padding.
++ * @proto_id: proto_id_count decides the allocation of protocol id array.
++ *	      See enum virtchnl2_proto_hdr_type.
++ *
++ * Based on the descriptor type the PF supports, CP fills ptype_id_10 or
++ * ptype_id_8 for flex and base descriptor respectively. If ptype_id_10 value
++ * is set to 0xFFFF, PF should consider this ptype as dummy one and it is the
++ * last ptype.
++ */
++struct virtchnl2_ptype {
++	__le16 ptype_id_10;
++	u8 ptype_id_8;
++	u8 proto_id_count;
++	__le16 pad;
++	__le16 proto_id[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(6, virtchnl2_ptype);
++
++/**
++ * struct virtchnl2_get_ptype_info - Packet type info.
++ * @start_ptype_id: Starting ptype ID.
++ * @num_ptypes: Number of packet types from start_ptype_id.
++ * @pad: Padding for future extensions.
++ *
++ * The total number of supported packet types is based on the descriptor type.
++ * For the flex descriptor, it is 1024 (10-bit ptype), and for the base
++ * descriptor, it is 256 (8-bit ptype). Send this message to the CP by
++ * populating the 'start_ptype_id' and the 'num_ptypes'. CP responds with the
++ * 'start_ptype_id', 'num_ptypes', and the array of ptype (virtchnl2_ptype) that
++ * are added at the end of the 'virtchnl2_get_ptype_info' message (Note: There
++ * is no specific field for the ptypes but are added at the end of the
++ * ptype info message. PF/VF is expected to extract the ptypes accordingly.
++ * Reason for doing this is because compiler doesn't allow nested flexible
++ * array fields).
++ *
++ * If all the ptypes don't fit into one mailbox buffer, CP splits the
++ * ptype info into multiple messages, where each message will have its own
++ * 'start_ptype_id', 'num_ptypes', and the ptype array itself. When CP is done
++ * updating all the ptype information extracted from the package (the number of
++ * ptypes extracted might be less than what PF/VF expects), it will append a
++ * dummy ptype (which has 'ptype_id_10' of 'struct virtchnl2_ptype' as 0xFFFF)
++ * to the ptype array.
++ *
++ * PF/VF is expected to receive multiple VIRTCHNL2_OP_GET_PTYPE_INFO messages.
++ *
++ * Associated with VIRTCHNL2_OP_GET_PTYPE_INFO.
++ */
++struct virtchnl2_get_ptype_info {
++	__le16 start_ptype_id;
++	__le16 num_ptypes;
++	__le32 pad;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_get_ptype_info);
++
++/**
++ * struct virtchnl2_vport_stats - Vport statistics.
++ * @vport_id: Vport id.
++ * @pad: Padding.
++ * @rx_bytes: Received bytes.
++ * @rx_unicast: Received unicast packets.
++ * @rx_multicast: Received multicast packets.
++ * @rx_broadcast: Received broadcast packets.
++ * @rx_discards: Discarded packets on receive.
++ * @rx_errors: Receive errors.
++ * @rx_unknown_protocol: Unlnown protocol.
++ * @tx_bytes: Transmitted bytes.
++ * @tx_unicast: Transmitted unicast packets.
++ * @tx_multicast: Transmitted multicast packets.
++ * @tx_broadcast: Transmitted broadcast packets.
++ * @tx_discards: Discarded packets on transmit.
++ * @tx_errors: Transmit errors.
++ * @rx_invalid_frame_length: Packets with invalid frame length.
++ * @rx_overflow_drop: Packets dropped on buffer overflow.
++ *
++ * PF/VF sends this message to CP to get the update stats by specifying the
++ * vport_id. CP responds with stats in struct virtchnl2_vport_stats.
++ *
++ * Associated with VIRTCHNL2_OP_GET_STATS.
++ */
++struct virtchnl2_vport_stats {
++	__le32 vport_id;
++	u8 pad[4];
++	__le64 rx_bytes;
++	__le64 rx_unicast;
++	__le64 rx_multicast;
++	__le64 rx_broadcast;
++	__le64 rx_discards;
++	__le64 rx_errors;
++	__le64 rx_unknown_protocol;
++	__le64 tx_bytes;
++	__le64 tx_unicast;
++	__le64 tx_multicast;
++	__le64 tx_broadcast;
++	__le64 tx_discards;
++	__le64 tx_errors;
++	__le64 rx_invalid_frame_length;
++	__le64 rx_overflow_drop;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(128, virtchnl2_vport_stats);
++
++/**
++ * struct virtchnl2_event - Event info.
++ * @event: Event opcode. See enum virtchnl2_event_codes.
++ * @link_speed: Link_speed provided in Mbps.
++ * @vport_id: Vport ID.
++ * @link_status: Link status.
++ * @pad: Padding.
++ * @reserved: Reserved.
++ *
++ * CP sends this message to inform the PF/VF driver of events that may affect
++ * it. No direct response is expected from the driver, though it may generate
++ * other messages in response to this one.
++ *
++ * Associated with VIRTCHNL2_OP_EVENT.
++ */
++struct virtchnl2_event {
++	__le32 event;
++	__le32 link_speed;
++	__le32 vport_id;
++	u8 link_status;
++	u8 pad;
++	__le16 reserved;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_event);
++
++/**
++ * struct virtchnl2_rss_key - RSS key info.
++ * @vport_id: Vport id.
++ * @key_len: Length of RSS key.
++ * @pad: Padding.
++ * @key_flex: RSS hash key, packed bytes.
++ * PF/VF sends this message to get or set RSS key. Only supported if both
++ * PF/VF and CP drivers set the VIRTCHNL2_CAP_RSS bit during configuration
++ * negotiation.
++ *
++ * Associated with VIRTCHNL2_OP_GET_RSS_KEY and VIRTCHNL2_OP_SET_RSS_KEY.
++ */
++struct virtchnl2_rss_key {
++	__le32 vport_id;
++	__le16 key_len;
++	u8 pad;
++	__DECLARE_FLEX_ARRAY(u8, key_flex);
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_rss_key);
++
++/**
++ * struct virtchnl2_queue_chunk - chunk of contiguous queues
++ * @type: See enum virtchnl2_queue_type.
++ * @start_queue_id: Starting queue id.
++ * @num_queues: Number of queues.
++ * @pad: Padding for future extensions.
++ */
++struct virtchnl2_queue_chunk {
++	__le32 type;
++	__le32 start_queue_id;
++	__le32 num_queues;
++	u8 pad[4];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_queue_chunk);
++
++/* struct virtchnl2_queue_chunks - chunks of contiguous queues
++ * @num_chunks: Number of chunks.
++ * @pad: Padding.
++ * @chunks: Chunks of contiguous queues info.
++ */
++struct virtchnl2_queue_chunks {
++	__le16 num_chunks;
++	u8 pad[6];
++	struct virtchnl2_queue_chunk chunks[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_queue_chunks);
++
++/**
++ * struct virtchnl2_del_ena_dis_queues - Enable/disable queues info.
++ * @vport_id: Vport id.
++ * @pad: Padding.
++ * @chunks: Chunks of contiguous queues info.
++ *
++ * PF sends these messages to enable, disable or delete queues specified in
++ * chunks. PF sends virtchnl2_del_ena_dis_queues struct to specify the queues
++ * to be enabled/disabled/deleted. Also applicable to single queue receive or
++ * transmit. CP performs requested action and returns status.
++ *
++ * Associated with VIRTCHNL2_OP_ENABLE_QUEUES, VIRTCHNL2_OP_DISABLE_QUEUES and
++ * VIRTCHNL2_OP_DISABLE_QUEUES.
++ */
++struct virtchnl2_del_ena_dis_queues {
++	__le32 vport_id;
++	u8 pad[4];
++	struct virtchnl2_queue_chunks chunks;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_del_ena_dis_queues);
++
++/**
++ * struct virtchnl2_queue_vector - Queue to vector mapping.
++ * @queue_id: Queue id.
++ * @vector_id: Vector id.
++ * @pad: Padding.
++ * @itr_idx: See enum virtchnl2_itr_idx.
++ * @queue_type: See enum virtchnl2_queue_type.
++ * @pad1: Padding for future extensions.
++ */
++struct virtchnl2_queue_vector {
++	__le32 queue_id;
++	__le16 vector_id;
++	u8 pad[2];
++	__le32 itr_idx;
++	__le32 queue_type;
++	u8 pad1[8];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(24, virtchnl2_queue_vector);
++
++/**
++ * struct virtchnl2_queue_vector_maps - Map/unmap queues info.
++ * @vport_id: Vport id.
++ * @num_qv_maps: Number of queue vector maps.
++ * @pad: Padding.
++ * @qv_maps: Queue to vector maps.
++ *
++ * PF sends this message to map or unmap queues to vectors and interrupt
++ * throttling rate index registers. External data buffer contains
++ * virtchnl2_queue_vector_maps structure that contains num_qv_maps of
++ * virtchnl2_queue_vector structures. CP maps the requested queue vector maps
++ * after validating the queue and vector ids and returns a status code.
++ *
++ * Associated with VIRTCHNL2_OP_MAP_QUEUE_VECTOR and VIRTCHNL2_OP_UNMAP_QUEUE_VECTOR.
++ */
++struct virtchnl2_queue_vector_maps {
++	__le32 vport_id;
++	__le16 num_qv_maps;
++	u8 pad[10];
++	struct virtchnl2_queue_vector qv_maps[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(16, virtchnl2_queue_vector_maps);
++
++/**
++ * struct virtchnl2_loopback - Loopback info.
++ * @vport_id: Vport id.
++ * @enable: Enable/disable.
++ * @pad: Padding for future extensions.
++ *
++ * PF/VF sends this message to transition to/from the loopback state. Setting
++ * the 'enable' to 1 enables the loopback state and setting 'enable' to 0
++ * disables it. CP configures the state to loopback and returns status.
++ *
++ * Associated with VIRTCHNL2_OP_LOOPBACK.
++ */
++struct virtchnl2_loopback {
++	__le32 vport_id;
++	u8 enable;
++	u8 pad[3];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_loopback);
++
++/* struct virtchnl2_mac_addr - MAC address info.
++ * @addr: MAC address.
++ * @type: MAC type. See enum virtchnl2_mac_addr_type.
++ * @pad: Padding for future extensions.
++ */
++struct virtchnl2_mac_addr {
++	u8 addr[ETH_ALEN];
++	u8 type;
++	u8 pad;
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_mac_addr);
++
++/**
++ * struct virtchnl2_mac_addr_list - List of MAC addresses.
++ * @vport_id: Vport id.
++ * @num_mac_addr: Number of MAC addresses.
++ * @pad: Padding.
++ * @mac_addr_list: List with MAC address info.
++ *
++ * PF/VF driver uses this structure to send list of MAC addresses to be
++ * added/deleted to the CP where as CP performs the action and returns the
++ * status.
++ *
++ * Associated with VIRTCHNL2_OP_ADD_MAC_ADDR and VIRTCHNL2_OP_DEL_MAC_ADDR.
++ */
++struct virtchnl2_mac_addr_list {
++	__le32 vport_id;
++	__le16 num_mac_addr;
++	u8 pad[2];
++	struct virtchnl2_mac_addr mac_addr_list[];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_mac_addr_list);
++
++/**
++ * struct virtchnl2_promisc_info - Promisc type info.
++ * @vport_id: Vport id.
++ * @flags: See enum virtchnl2_promisc_flags.
++ * @pad: Padding for future extensions.
++ *
++ * PF/VF sends vport id and flags to the CP where as CP performs the action
++ * and returns the status.
++ *
++ * Associated with VIRTCHNL2_OP_CONFIG_PROMISCUOUS_MODE.
++ */
++struct virtchnl2_promisc_info {
++	__le32 vport_id;
++	/* See VIRTCHNL2_PROMISC_FLAGS definitions */
++	__le16 flags;
++	u8 pad[2];
++};
++VIRTCHNL2_CHECK_STRUCT_LEN(8, virtchnl2_promisc_info);
++
++#endif /* _VIRTCHNL_2_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/virtchnl2_lan_desc.h b/drivers/net/ethernet/intel/idpf/virtchnl2_lan_desc.h
+new file mode 100644
+index 000000000000..e2a95e6053a9
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/virtchnl2_lan_desc.h
+@@ -0,0 +1,448 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2023 Intel Corporation */
++
++#ifndef _VIRTCHNL2_LAN_DESC_H_
++#define _VIRTCHNL2_LAN_DESC_H_
++
++#include <linux/bits.h>
++
++/* This is an interface definition file where existing enums and their values
++ * must remain unchanged over time, so we specify explicit values for all enums.
++ */
++
++/* Transmit descriptor ID flags
++ */
++enum virtchnl2_tx_desc_ids {
++	VIRTCHNL2_TXDID_DATA				= BIT(0),
++	VIRTCHNL2_TXDID_CTX				= BIT(1),
++	/* TXDID bit 2 is reserved
++	 * TXDID bit 3 is free for future use
++	 * TXDID bit 4 is reserved
++	 */
++	VIRTCHNL2_TXDID_FLEX_TSO_CTX			= BIT(5),
++	/* TXDID bit 6 is reserved */
++	VIRTCHNL2_TXDID_FLEX_L2TAG1_L2TAG2		= BIT(7),
++	/* TXDID bits 8 and 9 are free for future use
++	 * TXDID bit 10 is reserved
++	 * TXDID bit 11 is free for future use
++	 */
++	VIRTCHNL2_TXDID_FLEX_FLOW_SCHED			= BIT(12),
++	/* TXDID bits 13 and 14 are free for future use */
++	VIRTCHNL2_TXDID_DESC_DONE			= BIT(15),
++};
++
++/* Receive descriptor IDs */
++enum virtchnl2_rx_desc_ids {
++	VIRTCHNL2_RXDID_1_32B_BASE			= 1,
++	/* FLEX_SQ_NIC and FLEX_SPLITQ share desc ids because they can be
++	 * differentiated based on queue model; e.g. single queue model can
++	 * only use FLEX_SQ_NIC and split queue model can only use FLEX_SPLITQ
++	 * for DID 2.
++	 */
++	VIRTCHNL2_RXDID_2_FLEX_SPLITQ			= 2,
++	VIRTCHNL2_RXDID_2_FLEX_SQ_NIC			= VIRTCHNL2_RXDID_2_FLEX_SPLITQ,
++	/* 3 through 6 are reserved */
++	VIRTCHNL2_RXDID_7_HW_RSVD			= 7,
++	/* 8 through 15 are free */
++};
++
++/* Receive descriptor ID bitmasks */
++#define VIRTCHNL2_RXDID_M(bit)			BIT_ULL(VIRTCHNL2_RXDID_##bit)
++
++enum virtchnl2_rx_desc_id_bitmasks {
++	VIRTCHNL2_RXDID_1_32B_BASE_M			= VIRTCHNL2_RXDID_M(1_32B_BASE),
++	VIRTCHNL2_RXDID_2_FLEX_SPLITQ_M			= VIRTCHNL2_RXDID_M(2_FLEX_SPLITQ),
++	VIRTCHNL2_RXDID_2_FLEX_SQ_NIC_M			= VIRTCHNL2_RXDID_M(2_FLEX_SQ_NIC),
++	VIRTCHNL2_RXDID_7_HW_RSVD_M			= VIRTCHNL2_RXDID_M(7_HW_RSVD),
++};
++
++/* For splitq virtchnl2_rx_flex_desc_adv_nic_3 desc members */
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_RXDID_M		GENMASK(3, 0)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_UMBCAST_M		GENMASK(7, 6)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_PTYPE_M		GENMASK(9, 0)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_RAW_CSUM_INV_S	12
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_RAW_CSUM_INV_M	\
++	BIT_ULL(VIRTCHNL2_RX_FLEX_DESC_ADV_RAW_CSUM_INV_S)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_FF0_M		GENMASK(15, 13)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_LEN_PBUF_M		GENMASK(13, 0)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_GEN_S		14
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_GEN_M		\
++	BIT_ULL(VIRTCHNL2_RX_FLEX_DESC_ADV_GEN_S)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_BUFQ_ID_S		15
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_BUFQ_ID_M		\
++	BIT_ULL(VIRTCHNL2_RX_FLEX_DESC_ADV_BUFQ_ID_S)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_LEN_HDR_M		GENMASK(9, 0)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_RSC_S		10
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_RSC_M		\
++	BIT_ULL(VIRTCHNL2_RX_FLEX_DESC_ADV_RSC_S)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_SPH_S		11
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_SPH_M		\
++	BIT_ULL(VIRTCHNL2_RX_FLEX_DESC_ADV_SPH_S)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_FF1_S		12
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_FF1_M		GENMASK(14, 12)
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_MISS_S		15
++#define VIRTCHNL2_RX_FLEX_DESC_ADV_MISS_M		\
++	BIT_ULL(VIRTCHNL2_RX_FLEX_DESC_ADV_MISS_S)
++
++/* Bitmasks for splitq virtchnl2_rx_flex_desc_adv_nic_3 */
++enum virtchl2_rx_flex_desc_adv_status_error_0_qw1_bits {
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_DD_M			= BIT(0),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_EOF_M		= BIT(1),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_HBO_M		= BIT(2),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_L3L4P_M		= BIT(3),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_XSUM_IPE_M		= BIT(4),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_XSUM_L4E_M		= BIT(5),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_XSUM_EIPE_M		= BIT(6),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_XSUM_EUDPE_M		= BIT(7),
++};
++
++/* Bitmasks for splitq virtchnl2_rx_flex_desc_adv_nic_3 */
++enum virtchnl2_rx_flex_desc_adv_status_error_0_qw0_bits {
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_LPBK_M		= BIT(0),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_IPV6EXADD_M		= BIT(1),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_RXE_M		= BIT(2),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_CRCP_M		= BIT(3),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_RSS_VALID_M		= BIT(4),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_L2TAG1P_M		= BIT(5),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_XTRMD0_VALID_M	= BIT(6),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_XTRMD1_VALID_M	= BIT(7),
++};
++
++/* Bitmasks for splitq virtchnl2_rx_flex_desc_adv_nic_3 */
++enum virtchnl2_rx_flex_desc_adv_status_error_1_bits {
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS1_RSVD_M		= GENMASK(1, 0),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS1_ATRAEFAIL_M		= BIT(2),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS1_L2TAG2P_M		= BIT(3),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS1_XTRMD2_VALID_M	= BIT(4),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS1_XTRMD3_VALID_M	= BIT(5),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS1_XTRMD4_VALID_M	= BIT(6),
++	VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS1_XTRMD5_VALID_M	= BIT(7),
++};
++
++/* For singleq (flex) virtchnl2_rx_flex_desc fields
++ * For virtchnl2_rx_flex_desc.ptype_flex_flags0 member
++ */
++#define VIRTCHNL2_RX_FLEX_DESC_PTYPE_M				GENMASK(9, 0)
++
++/* For virtchnl2_rx_flex_desc.pkt_len member */
++#define VIRTCHNL2_RX_FLEX_DESC_PKT_LEN_M			GENMASK(13, 0)
++
++/* Bitmasks for singleq (flex) virtchnl2_rx_flex_desc */
++enum virtchnl2_rx_flex_desc_status_error_0_bits {
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_DD_M			= BIT(0),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_EOF_M			= BIT(1),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_HBO_M			= BIT(2),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_L3L4P_M			= BIT(3),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_XSUM_IPE_M		= BIT(4),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_XSUM_L4E_M		= BIT(5),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_XSUM_EIPE_M		= BIT(6),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_XSUM_EUDPE_M		= BIT(7),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_LPBK_M			= BIT(8),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_IPV6EXADD_M		= BIT(9),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_RXE_M			= BIT(10),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_CRCP_M			= BIT(11),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_RSS_VALID_M		= BIT(12),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_L2TAG1P_M		= BIT(13),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_XTRMD0_VALID_M		= BIT(14),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS0_XTRMD1_VALID_M		= BIT(15),
++};
++
++/* Bitmasks for singleq (flex) virtchnl2_rx_flex_desc */
++enum virtchnl2_rx_flex_desc_status_error_1_bits {
++	VIRTCHNL2_RX_FLEX_DESC_STATUS1_CPM_M			= GENMASK(3, 0),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS1_NAT_M			= BIT(4),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS1_CRYPTO_M			= BIT(5),
++	/* [10:6] reserved */
++	VIRTCHNL2_RX_FLEX_DESC_STATUS1_L2TAG2P_M		= BIT(11),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS1_XTRMD2_VALID_M		= BIT(12),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS1_XTRMD3_VALID_M		= BIT(13),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS1_XTRMD4_VALID_M		= BIT(14),
++	VIRTCHNL2_RX_FLEX_DESC_STATUS1_XTRMD5_VALID_M		= BIT(15),
++};
++
++/* For virtchnl2_rx_flex_desc.ts_low member */
++#define VIRTCHNL2_RX_FLEX_TSTAMP_VALID				BIT(0)
++
++/* For singleq (non flex) virtchnl2_singleq_base_rx_desc legacy desc members */
++#define VIRTCHNL2_RX_BASE_DESC_QW1_LEN_PBUF_M		GENMASK_ULL(51, 38)
++#define VIRTCHNL2_RX_BASE_DESC_QW1_PTYPE_M		GENMASK_ULL(37, 30)
++#define VIRTCHNL2_RX_BASE_DESC_QW1_ERROR_M		GENMASK_ULL(26, 19)
++#define VIRTCHNL2_RX_BASE_DESC_QW1_STATUS_M		GENMASK_ULL(18, 0)
++
++/* Bitmasks for singleq (base) virtchnl2_rx_base_desc */
++enum virtchnl2_rx_base_desc_status_bits {
++	VIRTCHNL2_RX_BASE_DESC_STATUS_DD_M		= BIT(0),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_EOF_M		= BIT(1),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_L2TAG1P_M		= BIT(2),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_L3L4P_M		= BIT(3),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_CRCP_M		= BIT(4),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_RSVD_M		= GENMASK(7, 5),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_EXT_UDP_0_M	= BIT(8),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_UMBCAST_M		= GENMASK(10, 9),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_FLM_M		= BIT(11),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_FLTSTAT_M		= GENMASK(13, 12),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_LPBK_M		= BIT(14),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_IPV6EXADD_M	= BIT(15),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_RSVD1_M		= GENMASK(17, 16),
++	VIRTCHNL2_RX_BASE_DESC_STATUS_INT_UDP_0_M	= BIT(18),
++};
++
++/* Bitmasks for singleq (base) virtchnl2_rx_base_desc */
++enum virtchnl2_rx_base_desc_error_bits {
++	VIRTCHNL2_RX_BASE_DESC_ERROR_RXE_M		= BIT(0),
++	VIRTCHNL2_RX_BASE_DESC_ERROR_ATRAEFAIL_M	= BIT(1),
++	VIRTCHNL2_RX_BASE_DESC_ERROR_HBO_M		= BIT(2),
++	VIRTCHNL2_RX_BASE_DESC_ERROR_L3L4E_M		= GENMASK(5, 3),
++	VIRTCHNL2_RX_BASE_DESC_ERROR_IPE_M		= BIT(3),
++	VIRTCHNL2_RX_BASE_DESC_ERROR_L4E_M		= BIT(4),
++	VIRTCHNL2_RX_BASE_DESC_ERROR_EIPE_M		= BIT(5),
++	VIRTCHNL2_RX_BASE_DESC_ERROR_OVERSIZE_M		= BIT(6),
++	VIRTCHNL2_RX_BASE_DESC_ERROR_PPRS_M		= BIT(7),
++};
++
++/* Bitmasks for singleq (base) virtchnl2_rx_base_desc */
++#define VIRTCHNL2_RX_BASE_DESC_FLTSTAT_RSS_HASH_M	GENMASK(13, 12)
++
++/**
++ * struct virtchnl2_splitq_rx_buf_desc - SplitQ RX buffer descriptor format
++ * @qword0: RX buffer struct.
++ * @qword0.buf_id: Buffer identifier.
++ * @qword0.rsvd0: Reserved.
++ * @qword0.rsvd1: Reserved.
++ * @pkt_addr: Packet buffer address.
++ * @hdr_addr: Header buffer address.
++ * @rsvd2: Rerserved.
++ *
++ * Receive Descriptors
++ * SplitQ buffer
++ * |                                       16|                   0|
++ * ----------------------------------------------------------------
++ * | RSV                                     | Buffer ID          |
++ * ----------------------------------------------------------------
++ * | Rx packet buffer address                                     |
++ * ----------------------------------------------------------------
++ * | Rx header buffer address                                     |
++ * ----------------------------------------------------------------
++ * | RSV                                                          |
++ * ----------------------------------------------------------------
++ * |                                                             0|
++ */
++struct virtchnl2_splitq_rx_buf_desc {
++	struct {
++		__le16  buf_id;
++		__le16  rsvd0;
++		__le32  rsvd1;
++	} qword0;
++	__le64  pkt_addr;
++	__le64  hdr_addr;
++	__le64  rsvd2;
++};
++
++/**
++ * struct virtchnl2_singleq_rx_buf_desc - SingleQ RX buffer descriptor format.
++ * @pkt_addr: Packet buffer address.
++ * @hdr_addr: Header buffer address.
++ * @rsvd1: Reserved.
++ * @rsvd2: Reserved.
++ *
++ * SingleQ buffer
++ * |                                                             0|
++ * ----------------------------------------------------------------
++ * | Rx packet buffer address                                     |
++ * ----------------------------------------------------------------
++ * | Rx header buffer address                                     |
++ * ----------------------------------------------------------------
++ * | RSV                                                          |
++ * ----------------------------------------------------------------
++ * | RSV                                                          |
++ * ----------------------------------------------------------------
++ * |                                                             0|
++ */
++struct virtchnl2_singleq_rx_buf_desc {
++	__le64  pkt_addr;
++	__le64  hdr_addr;
++	__le64  rsvd1;
++	__le64  rsvd2;
++};
++
++/**
++ * struct virtchnl2_singleq_base_rx_desc - RX descriptor writeback format.
++ * @qword0: First quad word struct.
++ * @qword0.lo_dword: Lower dual word struct.
++ * @qword0.lo_dword.mirroring_status: Mirrored packet status.
++ * @qword0.lo_dword.l2tag1: Stripped L2 tag from the received packet.
++ * @qword0.hi_dword: High dual word union.
++ * @qword0.hi_dword.rss: RSS hash.
++ * @qword0.hi_dword.fd_id: Flow director filter id.
++ * @qword1: Second quad word struct.
++ * @qword1.status_error_ptype_len: Status/error/PTYPE/length.
++ * @qword2: Third quad word struct.
++ * @qword2.ext_status: Extended status.
++ * @qword2.rsvd: Reserved.
++ * @qword2.l2tag2_1: Extracted L2 tag 2 from the packet.
++ * @qword2.l2tag2_2: Reserved.
++ * @qword3: Fourth quad word struct.
++ * @qword3.reserved: Reserved.
++ * @qword3.fd_id: Flow director filter id.
++ *
++ * Profile ID 0x1, SingleQ, base writeback format
++ */
++struct virtchnl2_singleq_base_rx_desc {
++	struct {
++		struct {
++			__le16 mirroring_status;
++			__le16 l2tag1;
++		} lo_dword;
++		union {
++			__le32 rss;
++			__le32 fd_id;
++		} hi_dword;
++	} qword0;
++	struct {
++		__le64 status_error_ptype_len;
++	} qword1;
++	struct {
++		__le16 ext_status;
++		__le16 rsvd;
++		__le16 l2tag2_1;
++		__le16 l2tag2_2;
++	} qword2;
++	struct {
++		__le32 reserved;
++		__le32 fd_id;
++	} qword3;
++};
++
++/**
++ * struct virtchnl2_rx_flex_desc_nic - RX descriptor writeback format.
++ *
++ * @rxdid: Descriptor builder profile id.
++ * @mir_id_umb_cast: umb_cast=[7:6], mirror=[5:0]
++ * @ptype_flex_flags0: ff0=[15:10], ptype=[9:0]
++ * @pkt_len: Packet length, [15:14] are reserved.
++ * @hdr_len_sph_flex_flags1: ff1/ext=[15:12], sph=[11], header=[10:0].
++ * @status_error0: Status/Error section 0.
++ * @l2tag1: Stripped L2 tag from the received packet
++ * @rss_hash: RSS hash.
++ * @status_error1: Status/Error section 1.
++ * @flexi_flags2: Flexible flags section 2.
++ * @ts_low: Lower word of timestamp value.
++ * @l2tag2_1st: First L2TAG2.
++ * @l2tag2_2nd: Second L2TAG2.
++ * @flow_id: Flow id.
++ * @flex_ts: Timestamp and flexible flow id union.
++ * @flex_ts.ts_high: Timestamp higher word of the timestamp value.
++ * @flex_ts.flex.rsvd: Reserved.
++ * @flex_ts.flex.flow_id_ipv6: IPv6 flow id.
++ *
++ * Profile ID 0x2, SingleQ, flex writeback format
++ */
++struct virtchnl2_rx_flex_desc_nic {
++	/* Qword 0 */
++	u8 rxdid;
++	u8 mir_id_umb_cast;
++	__le16 ptype_flex_flags0;
++	__le16 pkt_len;
++	__le16 hdr_len_sph_flex_flags1;
++	/* Qword 1 */
++	__le16 status_error0;
++	__le16 l2tag1;
++	__le32 rss_hash;
++	/* Qword 2 */
++	__le16 status_error1;
++	u8 flexi_flags2;
++	u8 ts_low;
++	__le16 l2tag2_1st;
++	__le16 l2tag2_2nd;
++	/* Qword 3 */
++	__le32 flow_id;
++	union {
++		struct {
++			__le16 rsvd;
++			__le16 flow_id_ipv6;
++		} flex;
++		__le32 ts_high;
++	} flex_ts;
++};
++
++/**
++ * struct virtchnl2_rx_flex_desc_adv_nic_3 - RX descriptor writeback format.
++ * @rxdid_ucast: ucast=[7:6], rsvd=[5:4], profile_id=[3:0].
++ * @status_err0_qw0: Status/Error section 0 in quad word 0.
++ * @ptype_err_fflags0: ff0=[15:12], udp_len_err=[11], ip_hdr_err=[10], ptype=[9:0].
++ * @pktlen_gen_bufq_id: bufq_id=[15] only in splitq, gen=[14] only in splitq, plen=[13:0].
++ * @hdrlen_flags: miss_prepend=[15], trunc_mirr=[14], int_udp_0=[13], ext_udp0=[12],
++ *		  sph=[11] only in splitq, rsc=[10] only in splitq, header=[9:0].
++ * @status_err0_qw1: Status/Error section 0 in quad word 1.
++ * @status_err1: Status/Error section 1.
++ * @fflags1: Flexible flags section 1.
++ * @ts_low: Lower word of timestamp value.
++ * @buf_id: Buffer identifier. Only in splitq mode.
++ * @misc: Union.
++ * @misc.raw_cs: Raw checksum.
++ * @misc.l2tag1: Stripped L2 tag from the received packet
++ * @misc.rscseglen:
++ * @hash1: Lower bits of Rx hash value.
++ * @ff2_mirrid_hash2: Union.
++ * @ff2_mirrid_hash2.fflags2: Flexible flags section 2.
++ * @ff2_mirrid_hash2.mirrorid: Mirror id.
++ * @ff2_mirrid_hash2.rscseglen: RSC segment length.
++ * @hash3: Upper bits of Rx hash value.
++ * @l2tag2: Extracted L2 tag 2 from the packet.
++ * @fmd4: Flexible metadata container 4.
++ * @l2tag1: Stripped L2 tag from the received packet
++ * @fmd6: Flexible metadata container 6.
++ * @ts_high: Timestamp higher word of the timestamp value.
++ *
++ * Profile ID 0x2, SplitQ, flex writeback format
++ *
++ * Flex-field 0: BufferID
++ * Flex-field 1: Raw checksum/L2TAG1/RSC Seg Len (determined by HW)
++ * Flex-field 2: Hash[15:0]
++ * Flex-flags 2: Hash[23:16]
++ * Flex-field 3: L2TAG2
++ * Flex-field 5: L2TAG1
++ * Flex-field 7: Timestamp (upper 32 bits)
++ */
++struct virtchnl2_rx_flex_desc_adv_nic_3 {
++	/* Qword 0 */
++	u8 rxdid_ucast;
++	u8 status_err0_qw0;
++	__le16 ptype_err_fflags0;
++	__le16 pktlen_gen_bufq_id;
++	__le16 hdrlen_flags;
++	/* Qword 1 */
++	u8 status_err0_qw1;
++	u8 status_err1;
++	u8 fflags1;
++	u8 ts_low;
++	__le16 buf_id;
++	union {
++		__le16 raw_cs;
++		__le16 l2tag1;
++		__le16 rscseglen;
++	} misc;
++	/* Qword 2 */
++	__le16 hash1;
++	union {
++		u8 fflags2;
++		u8 mirrorid;
++		u8 hash2;
++	} ff2_mirrid_hash2;
++	u8 hash3;
++	__le16 l2tag2;
++	__le16 fmd4;
++	/* Qword 3 */
++	__le16 l2tag1;
++	__le16 fmd6;
++	__le32 ts_high;
++};
++
++/* Common union for accessing descriptor format structs */
++union virtchnl2_rx_desc {
++	struct virtchnl2_singleq_base_rx_desc		base_wb;
++	struct virtchnl2_rx_flex_desc_nic		flex_nic_wb;
++	struct virtchnl2_rx_flex_desc_adv_nic_3		flex_adv_nic_3_wb;
++};
++
++#endif /* _VIRTCHNL_LAN_DESC_H_ */
 -- 
 2.38.1
 
