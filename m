@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECFA0C001DB
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 15:22:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C565C001DB
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 15:22:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A7BB14059D;
-	Fri,  4 Aug 2023 15:22:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A7BB14059D
+	by smtp2.osuosl.org (Postfix) with ESMTP id CD8C0405EF;
+	Fri,  4 Aug 2023 15:22:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CD8C0405EF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691162523;
-	bh=cAC412K8zLO6nmwaHKmhpkypyXIIzArzbASTfy8o/6o=;
+	s=default; t=1691162527;
+	bh=8NkZJ8yp5ANfGrrqau/MinwsMryTZog8zfJmcgj2moc=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=3hZD0X23IklOs80bTxf+RykFKnJslpGIIhU/Zd/qFpY6gn7P3gkTrWurouNJEczik
-	 rJCS/WCgiBQJjLqlO8jS8RzNrZrzcsbExt/TFtsp67Ean/+F2RF1EjzGMFjy5kvZHq
-	 yRb9ZHwf/TBaTsdLCVetcFkIO/LCOydPp5ptdggb/Sv2veLM1tFG3Lq6ciCpomsXt2
-	 Fq7022Mi9mE9mi0YmdyCl4yKRXLhha7MMqbsqC5Av71Ms3vMig2BYfmhkjOFUqZjGM
-	 qga8CeeSwlQ/qhkOr+dVbhXZykmJ0jFBzYWPvkfdoGPSm8UzlehuLZGpB4T12tes9Z
-	 /5fVOGvve5t9w==
+	b=mtMjBO2PNm4Ly8v86KZeSW1ROc3sI4fJvsw5VKxhA1V6Us95uVH+Job1iIB68cnOX
+	 58/5oFxDpoPCI1BJsqbnPJY9Z8EcEgW6RmTooMjTKO543rf/AhPhC1+Ck3zHPtUr6x
+	 SQFUY5hJ1I6hMEYX81ZZhnymoLVbAaxVFOJKGfn+8gpmH0Vv0i+YENJG472WpFekkA
+	 TwyzwHapKkC8KpfW8IWMjBu3HMzmmaRRfVxbN9lW4p07J7tPLGFAbNF1TxahIRDX+d
+	 7ej10VMwPsgow6QhBC13/Tmrdgid7YhZWderBOUTbtvCdSmQkNQTAL39zm+1HFAZCR
+	 QYA3wbNT1zJ0A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fUtEXmcUO2ex; Fri,  4 Aug 2023 15:22:03 +0000 (UTC)
+	with ESMTP id i0NNhEMnEO8J; Fri,  4 Aug 2023 15:22:07 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B9F9C405E9;
-	Fri,  4 Aug 2023 15:22:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B9F9C405E9
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 10A021BF2A3
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:27 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id ECD0F405FD;
+	Fri,  4 Aug 2023 15:22:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org ECD0F405FD
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 695811BF2A3
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D2E9940519
+ by smtp3.osuosl.org (Postfix) with ESMTP id C09C860F7A
  for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D2E9940519
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C09C860F7A
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id A2LgvN9qE_0B for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ctmJvhIqjAY4 for <intel-wired-lan@lists.osuosl.org>;
  Fri,  4 Aug 2023 04:11:18 +0000 (UTC)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 17B994015F
+ by smtp3.osuosl.org (Postfix) with ESMTPS id C80C360F15
  for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 17B994015F
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.53])
- by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RHBb820qSzNmlS;
- Fri,  4 Aug 2023 11:51:16 +0800 (CST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C80C360F15
+Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.57])
+ by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4RHBb94gk1zNmj2;
+ Fri,  4 Aug 2023 11:51:17 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemi500008.china.huawei.com
  (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Fri, 4 Aug
- 2023 11:54:41 +0800
+ 2023 11:54:43 +0800
 From: Ruan Jinjie <ruanjinjie@huawei.com>
 To: <sgoutham@marvell.com>, <davem@davemloft.net>, <edumazet@google.com>,
  <kuba@kernel.org>, <pabeni@redhat.com>, <jesse.brandeburg@intel.com>,
@@ -66,8 +66,8 @@ To: <sgoutham@marvell.com>, <davem@davemloft.net>, <edumazet@google.com>,
  <intel-wired-lan@lists.osuosl.org>, <linux-rdma@vger.kernel.org>,
  <linux-renesas-soc@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
  <brcm80211-dev-list.pdl@broadcom.com>, <SHA-cyfmac-dev-list@infineon.com>
-Date: Fri, 4 Aug 2023 11:53:44 +0800
-Message-ID: <20230804035346.2879318-5-ruanjinjie@huawei.com>
+Date: Fri, 4 Aug 2023 11:53:45 +0800
+Message-ID: <20230804035346.2879318-6-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230804035346.2879318-1-ruanjinjie@huawei.com>
 References: <20230804035346.2879318-1-ruanjinjie@huawei.com>
@@ -77,8 +77,8 @@ X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
  kwepemi500008.china.huawei.com (7.221.188.139)
 X-CFilter-Loop: Reflected
 X-Mailman-Approved-At: Fri, 04 Aug 2023 15:21:40 +0000
-Subject: [Intel-wired-lan] [PATCH -next 4/6] net: ethernet: renesas:
- rswitch: Remove an unnecessary ternary operator
+Subject: [Intel-wired-lan] [PATCH -next 5/6] net: fjes: Remove an
+ unnecessary ternary operator
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,27 +96,27 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-There is a ternary operator, the true or false judgement
-of which is unnecessary in C language semantics.
+There is a ternary operator, the true or false judgement of which
+is unnecessary in C language semantics.
 
 Signed-off-by: Ruan Jinjie <ruanjinjie@huawei.com>
 ---
- drivers/net/ethernet/renesas/rcar_gen4_ptp.c | 2 +-
+ drivers/net/fjes/fjes_main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/renesas/rcar_gen4_ptp.c b/drivers/net/ethernet/renesas/rcar_gen4_ptp.c
-index c007e33c47e1..37f7359678e5 100644
---- a/drivers/net/ethernet/renesas/rcar_gen4_ptp.c
-+++ b/drivers/net/ethernet/renesas/rcar_gen4_ptp.c
-@@ -29,7 +29,7 @@ static const struct rcar_gen4_ptp_reg_offset s4_offs = {
- static int rcar_gen4_ptp_adjfine(struct ptp_clock_info *ptp, long scaled_ppm)
- {
- 	struct rcar_gen4_ptp_private *ptp_priv = ptp_to_priv(ptp);
--	bool neg_adj = scaled_ppm < 0 ? true : false;
-+	bool neg_adj = scaled_ppm < 0;
- 	s64 addend = ptp_priv->default_addend;
- 	s64 diff;
+diff --git a/drivers/net/fjes/fjes_main.c b/drivers/net/fjes/fjes_main.c
+index 2513be6d4e11..a0d915d1dbed 100644
+--- a/drivers/net/fjes/fjes_main.c
++++ b/drivers/net/fjes/fjes_main.c
+@@ -612,7 +612,7 @@ fjes_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 	eth = (struct ethhdr *)skb->data;
+ 	my_epid = hw->my_epid;
  
+-	vlan = (vlan_get_tag(skb, &vlan_id) == 0) ? true : false;
++	vlan = vlan_get_tag(skb, &vlan_id) == 0;
+ 
+ 	data = skb->data;
+ 	len = skb->len;
 -- 
 2.34.1
 
