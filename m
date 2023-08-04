@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2BD7C00528
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 23:21:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24738C04A6A
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 23:21:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A496740304;
-	Fri,  4 Aug 2023 23:21:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A496740304
+	by smtp4.osuosl.org (Postfix) with ESMTP id D1A804006C;
+	Fri,  4 Aug 2023 23:21:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D1A804006C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691191295;
-	bh=ZF+XQQ8y12b1pWi64+tdn2Jukyh7tjoqFuthvi1HD5s=;
+	s=default; t=1691191300;
+	bh=z1RWrOJBTHKMpHqp4o6rbYoHYh71lbRxwLlSIHT+dxo=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ZxUQRxtgid9bZHTQj6xZAw6wT3r7CPhT7JkwYTaWUbobh8ikr8TM53MxwBrD4LDqM
-	 jKpCC5uuK3dkJEr7sRrySLO/a4qbqYwn9xWXtf30Gnm5WTY7sfhoopkX+DVjEerF3C
-	 ztrw0k2HyMqmTvrL1XvteYs03kou3mpZqm3nCfdx3XM6zk44866K/jvfyURe0Q/mv5
-	 D9e+MCOrVLdKjTWRDZSgwWVagrcW9RBquw9YVa/9moheS4UOVQsogd8q0V5NwV/a/Y
-	 Vx2WJdaedC5RDaTouClBmw37pE5B4mlpjj+xMWzD9cQzNs0GE3ywLbdKvDW4G2xFkk
-	 9PTAwXegttLYQ==
+	b=N5AFFgKjrXLyEP6OLay9K8k6qSKOCGts13MBjYq234Ih86Boe/LfiMqMAVsJI2rb9
+	 zR1brgOFSZnSMg4Y5Ys03SA5hOBZvU5wAWN8NN7v5CuN9nV93ko4ApdujSgg/MIhB/
+	 rRnTqAc+KPyIzTVXv/mjeo+Za8xzouvSEcivc4UJDAB5zKDuangqmhYCGfue8fSCcy
+	 gFXIXaOn6BfsexWCJCodLYHkkHmSw/s4BYSLm80fhAHAcMbwPBXNj7uenLRWAl3U6c
+	 RVOdANfBIRleDHcIZIjfBkBo1+TCQRe8zGm86Q2D4aeEJBVHNEXr9HNYSclAaMdfEm
+	 zc0v2xg85xwwg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id yWZPyIm6XCGA; Fri,  4 Aug 2023 23:21:32 +0000 (UTC)
+	with ESMTP id 479-GQqepa3Y; Fri,  4 Aug 2023 23:21:38 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CEC48416D6;
-	Fri,  4 Aug 2023 23:21:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CEC48416D6
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8E66441EAA;
+	Fri,  4 Aug 2023 23:21:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8E66441EAA
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2CF841BF97F
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:45 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3BD1E1BF327
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 34FFE4023D
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 34FFE4023D
+ by smtp2.osuosl.org (Postfix) with ESMTP id B8236404EC
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B8236404EC
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oQDasbXtJbN2 for <intel-wired-lan@lists.osuosl.org>;
- Fri,  4 Aug 2023 23:20:25 +0000 (UTC)
+ with ESMTP id z_C3lz1tqFfG for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  4 Aug 2023 23:20:26 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 647AD40600
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EBFE240900
  for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 647AD40600
-X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="401226415"
-X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="401226415"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EBFE240900
+X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="401226428"
+X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="401226428"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Aug 2023 16:20:23 -0700
+ 04 Aug 2023 16:20:24 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="853984320"
-X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="853984320"
+X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="853984349"
+X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="853984349"
 Received: from unknown (HELO lo0-100.bstnma-vfttp-361.verizon-gni.com)
  ([10.166.80.24])
- by orsmga004.jf.intel.com with ESMTP; 04 Aug 2023 16:20:23 -0700
+ by orsmga004.jf.intel.com with ESMTP; 04 Aug 2023 16:20:24 -0700
 From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri,  4 Aug 2023 16:19:17 -0700
-Message-Id: <20230804231929.168064-5-pavan.kumar.linga@intel.com>
+Date: Fri,  4 Aug 2023 16:19:22 -0700
+Message-Id: <20230804231929.168064-10-pavan.kumar.linga@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20230804231929.168064-1-pavan.kumar.linga@intel.com>
 References: <20230804231929.168064-1-pavan.kumar.linga@intel.com>
@@ -70,19 +70,20 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1691191225; x=1722727225;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=dBTzJfEaL1zPthyH8CPFCd+gw2wb9reoMd9+u2OYul0=;
- b=nL2B088pBm7m/Pol/69Mj4bap0WWH+yD69ctHW6XocQ5IJddfV4HOvXt
- 5WHsD/dRu8dl6JzHKfW8W9xBnXTREk4NjYB32HrGEQEhJoloQ8jRm8lOB
- CTpLgpgg4Rxg78qCcXFbfva2yP/4V9DniwTZ/dmGDy2esA01/bElvNpYb
- 1vn4cAtLSAbZ/+LoEf3bPWYBx20r2rI8tADOMrKq5joKR0juW0DehdD9K
- Y1q5StNG3nHWR6v7IiTUpjng2MYn2fh5PBiGvradiXna0KFxtJ5hY0JhL
- 9DLL+4jnAdP5pQ7/x/sxtAXX6vO7tV8ASehkSW7hlZcrTEt0BPLV2+ssJ
- Q==;
+ bh=0z2McBI4zK7OSS57xPiEsWtUo8ivZwkgtFLRhXlGmeY=;
+ b=eHuXRBAblJ6ppRZ57mYPVwZFLHu4bMsdc7oS1RnNjYxSXSPj5dM0a5Di
+ gphhxaRRrrNB0gTOHnGPzUQw8e76NAICxt13E1Mlz6esF2ZUwhLK0gMn3
+ 2u70BDB6wE17X2oSg7TN0NoONY9DEyfamSSgtDeYLB/VtXvE6905x+ShF
+ eSxZvgh5PUC7UG+PiUhpPL+Mv0Hgt8J2+Y1ASVOHQDrviTkdQx3AOizJs
+ TiwKfGrffcbr47HTlbUPmR0/aMbVWuphFjz6+22e4AsknWlXKPP01URl5
+ iX7yuGpQS06ZBXvP/i/J1TPGAMShoPk0Mpwu+4XY2O641QZidcQSBHiAW
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nL2B088p
-Subject: [Intel-wired-lan] [PATCH iwl-next v9 04/15] idpf: add core init and
- interrupt request
+ dkim=pass (2048-bit key,
+ unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256
+ header.s=Intel header.b=eHuXRBAb
+Subject: [Intel-wired-lan] [PATCH iwl-next v9 09/15] idpf: initialize
+ interrupts and enable vport
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,1784 +96,1917 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: willemb@google.com, Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>,
- Phani Burra <phani.r.burra@intel.com>, decot@google.com
+Cc: willemb@google.com, Phani Burra <phani.r.burra@intel.com>, decot@google.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-As the mailbox is setup, add the necessary send and receive
-mailbox message framework to support the virtchnl communication
-between the driver and device Control Plane (CP).
+To further continue 'vport open', initialize all the resources
+required for the interrupts. To start with, initialize the
+queue vector indices with the ones received from the device
+Control Plane. Now that all the TX and RX queues are initialized,
+map the RX descriptor and buffer queues as well as TX completion
+queues to the allocated vectors. Initialize and enable the napi
+handler for the napi polling. Finally, request the IRQs for the
+interrupt vectors from the stack and setup the interrupt handler.
 
-Add the core initialization. To start with, driver confirms the
-virtchnl version with the CP. Once that is done, it requests
-and gets the required capabilities and resources needed such as
-max vectors, queues etc.
-
-Based on the vector information received in 'VIRTCHNL2_OP_GET_CAPS',
-request the stack to allocate the required vectors. Finally add
-the interrupt handling mechanism for the mailbox queue and enable
-the interrupt.
-
-Note: Checkpatch issues a warning about IDPF_FOREACH_VPORT_VC_STATE and
-IDPF_GEN_STRING being complex macros and should be enclosed in parentheses
-but it's not the case. They are never used as a statement and instead only
-used to define the enum and array.
+Once the interrupt init is done, send 'map queue vector', 'enable
+queues' and 'enable vport' virtchnl messages to the CP to complete
+the 'vport open' flow.
 
 Co-developed-by: Alan Brady <alan.brady@intel.com>
 Signed-off-by: Alan Brady <alan.brady@intel.com>
-Co-developed-by: Emil Tantilov <emil.s.tantilov@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 Co-developed-by: Joshua Hay <joshua.a.hay@intel.com>
 Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
 Co-developed-by: Madhu Chittim <madhu.chittim@intel.com>
 Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
 Co-developed-by: Phani Burra <phani.r.burra@intel.com>
 Signed-off-by: Phani Burra <phani.r.burra@intel.com>
-Co-developed-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
-Signed-off-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
 Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 Reviewed-by: Willem de Bruijn <willemb@google.com>
 Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
 ---
- drivers/net/ethernet/intel/idpf/idpf.h        | 163 ++++
- drivers/net/ethernet/intel/idpf/idpf_dev.c    |  17 +
- .../ethernet/intel/idpf/idpf_lan_pf_regs.h    |  43 +
- .../ethernet/intel/idpf/idpf_lan_vf_regs.h    |  38 +
- drivers/net/ethernet/intel/idpf/idpf_lib.c    | 352 +++++++-
- drivers/net/ethernet/intel/idpf/idpf_main.c   |  33 +
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  40 +
- drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |  22 +-
- .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 765 ++++++++++++++++++
- 9 files changed, 1471 insertions(+), 2 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/idpf/idpf_txrx.h
+ drivers/net/ethernet/intel/idpf/idpf.h        |  45 ++
+ drivers/net/ethernet/intel/idpf/idpf_dev.c    |  58 ++
+ .../ethernet/intel/idpf/idpf_lan_pf_regs.h    |  11 +
+ .../ethernet/intel/idpf/idpf_lan_vf_regs.h    |  25 +
+ drivers/net/ethernet/intel/idpf/idpf_lib.c    | 295 +++++++++-
+ .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  11 +
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 361 +++++++++++-
+ drivers/net/ethernet/intel/idpf/idpf_txrx.h   |  33 ++
+ drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |  57 ++
+ .../net/ethernet/intel/idpf/idpf_virtchnl.c   | 527 ++++++++++++++++++
+ 10 files changed, 1420 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
-index b70e9aa5baeb..a2d295e7bc39 100644
+index ae0dc602d2c7..6bb4bd8abf0b 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf.h
-@@ -11,23 +11,40 @@ struct idpf_adapter;
- #include <linux/etherdevice.h>
- #include <linux/pci.h>
- 
-+#include "virtchnl2.h"
-+#include "idpf_txrx.h"
- #include "idpf_controlq.h"
- 
- /* Default Mailbox settings */
- #define IDPF_NUM_DFLT_MBX_Q		2	/* includes both TX and RX */
- #define IDPF_DFLT_MBX_Q_LEN		64
- #define IDPF_DFLT_MBX_ID		-1
-+/* maximum number of times to try before resetting mailbox */
-+#define IDPF_MB_MAX_ERR			20
-+#define IDPF_WAIT_FOR_EVENT_TIMEO_MIN	2000
-+#define IDPF_WAIT_FOR_EVENT_TIMEO	60000
-+
-+#define IDPF_MAX_WAIT			500
- 
- /* available message levels */
- #define IDPF_AVAIL_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
- 
-+#define IDPF_VIRTCHNL_VERSION_MAJOR VIRTCHNL2_VERSION_MAJOR_2
-+#define IDPF_VIRTCHNL_VERSION_MINOR VIRTCHNL2_VERSION_MINOR_0
-+
- /**
-  * enum idpf_state - State machine to handle bring up
-  * @__IDPF_STARTUP: Start the state machine
-+ * @__IDPF_VER_CHECK: Negotiate virtchnl version
-+ * @__IDPF_GET_CAPS: Negotiate capabilities
-+ * @__IDPF_INIT_SW: Init based on given capabilities
-  * @__IDPF_STATE_LAST: Must be last, used to determine size
-  */
- enum idpf_state {
- 	__IDPF_STARTUP,
-+	__IDPF_VER_CHECK,
-+	__IDPF_GET_CAPS,
-+	__IDPF_INIT_SW,
- 	__IDPF_STATE_LAST,
- };
- 
-@@ -37,6 +54,7 @@ enum idpf_state {
-  * @IDPF_HR_DRV_LOAD: Set on driver load for a clean HW
-  * @IDPF_HR_RESET_IN_PROG: Reset in progress
-  * @IDPF_REMOVE_IN_PROG: Driver remove in progress
-+ * @IDPF_MB_INTR_MODE: Mailbox in interrupt mode
-  * @IDPF_FLAGS_NBITS: Must be last
-  */
- enum idpf_flags {
-@@ -44,6 +62,7 @@ enum idpf_flags {
- 	IDPF_HR_DRV_LOAD,
- 	IDPF_HR_RESET_IN_PROG,
- 	IDPF_REMOVE_IN_PROG,
-+	IDPF_MB_INTR_MODE,
- 	IDPF_FLAGS_NBITS,
- };
- 
-@@ -60,11 +79,13 @@ struct idpf_reset_reg {
+@@ -156,12 +156,14 @@ struct idpf_vport_max_q {
  /**
   * struct idpf_reg_ops - Device specific register operation function pointers
   * @ctlq_reg_init: Mailbox control queue register initialization
-+ * @mb_intr_reg_init: Mailbox interrupt register initialization
++ * @intr_reg_init: Traffic interrupt register initialization
+  * @mb_intr_reg_init: Mailbox interrupt register initialization
   * @reset_reg_init: Reset register initialization
   * @trigger_reset: Trigger a reset to occur
   */
  struct idpf_reg_ops {
  	void (*ctlq_reg_init)(struct idpf_ctlq_create_info *cq);
-+	void (*mb_intr_reg_init)(struct idpf_adapter *adapter);
++	int (*intr_reg_init)(struct idpf_vport *vport);
+ 	void (*mb_intr_reg_init)(struct idpf_adapter *adapter);
  	void (*reset_reg_init)(struct idpf_adapter *adapter);
  	void (*trigger_reset)(struct idpf_adapter *adapter,
- 			      enum idpf_flags trig_cause);
-@@ -78,35 +99,149 @@ struct idpf_dev_ops {
- 	struct idpf_reg_ops reg_ops;
- };
+@@ -184,12 +186,24 @@ struct idpf_dev_ops {
+ #define IDPF_FOREACH_VPORT_VC_STATE(STATE)	\
+ 	STATE(IDPF_VC_CREATE_VPORT)		\
+ 	STATE(IDPF_VC_CREATE_VPORT_ERR)		\
++	STATE(IDPF_VC_ENA_VPORT)		\
++	STATE(IDPF_VC_ENA_VPORT_ERR)		\
++	STATE(IDPF_VC_DIS_VPORT)		\
++	STATE(IDPF_VC_DIS_VPORT_ERR)		\
+ 	STATE(IDPF_VC_DESTROY_VPORT)		\
+ 	STATE(IDPF_VC_DESTROY_VPORT_ERR)	\
+ 	STATE(IDPF_VC_CONFIG_TXQ)		\
+ 	STATE(IDPF_VC_CONFIG_TXQ_ERR)		\
+ 	STATE(IDPF_VC_CONFIG_RXQ)		\
+ 	STATE(IDPF_VC_CONFIG_RXQ_ERR)		\
++	STATE(IDPF_VC_ENA_QUEUES)		\
++	STATE(IDPF_VC_ENA_QUEUES_ERR)		\
++	STATE(IDPF_VC_DIS_QUEUES)		\
++	STATE(IDPF_VC_DIS_QUEUES_ERR)		\
++	STATE(IDPF_VC_MAP_IRQ)			\
++	STATE(IDPF_VC_MAP_IRQ_ERR)		\
++	STATE(IDPF_VC_UNMAP_IRQ)		\
++	STATE(IDPF_VC_UNMAP_IRQ_ERR)		\
+ 	STATE(IDPF_VC_ALLOC_VECTORS)		\
+ 	STATE(IDPF_VC_ALLOC_VECTORS_ERR)	\
+ 	STATE(IDPF_VC_DEALLOC_VECTORS)		\
+@@ -277,8 +291,10 @@ enum idpf_vport_state {
+  * @base_rxd: True if the driver should use base descriptors instead of flex
+  * @num_q_vectors: Number of IRQ vectors allocated
+  * @q_vectors: Array of queue vectors
++ * @q_vector_idxs: Starting index of queue vectors
+  * @max_mtu: device given max possible MTU
+  * @default_mac_addr: device will give a default MAC to use
++ * @link_up: True if link is up
+  * @vc_msg: Virtchnl message buffer
+  * @vc_state: Virtchnl message state
+  * @state: See enum idpf_vport_state
+@@ -321,9 +337,12 @@ struct idpf_vport {
  
-+/* These macros allow us to generate an enum and a matching char * array of
-+ * stringified enums that are always in sync. Checkpatch issues a bogus warning
-+ * about this being a complex macro; but it's wrong, these are never used as a
-+ * statement and instead only used to define the enum and array.
-+ */
-+#define IDPF_FOREACH_VPORT_VC_STATE(STATE)	\
-+	STATE(IDPF_VC_ALLOC_VECTORS)		\
-+	STATE(IDPF_VC_ALLOC_VECTORS_ERR)	\
-+	STATE(IDPF_VC_DEALLOC_VECTORS)		\
-+	STATE(IDPF_VC_DEALLOC_VECTORS_ERR)	\
-+	STATE(IDPF_VC_NBITS)
-+
-+#define IDPF_GEN_ENUM(ENUM) ENUM,
-+#define IDPF_GEN_STRING(STRING) #STRING,
-+
-+enum idpf_vport_vc_state {
-+	IDPF_FOREACH_VPORT_VC_STATE(IDPF_GEN_ENUM)
-+};
-+
-+extern const char * const idpf_vport_vc_state_str[];
-+
-+/**
-+ * struct idpf_vport - Handle for netdevices and queue resources
-+ * @vport_id: Device given vport identifier
-+ */
-+struct idpf_vport {
-+	u32 vport_id;
-+};
-+
-+/**
-+ * struct idpf_vector_lifo - Stack to maintain vector indexes used for vector
-+ *			     distribution algorithm
-+ * @top: Points to stack top i.e. next available vector index
-+ * @base: Always points to start of the free pool
-+ * @size: Total size of the vector stack
-+ * @vec_idx: Array to store all the vector indexes
-+ *
-+ * Vector stack maintains all the relative vector indexes at the *adapter*
-+ * level. This stack is divided into 2 parts, first one is called as 'default
-+ * pool' and other one is called 'free pool'.  Vector distribution algorithm
-+ * gives priority to default vports in a way that at least IDPF_MIN_Q_VEC
-+ * vectors are allocated per default vport and the relative vector indexes for
-+ * those are maintained in default pool. Free pool contains all the unallocated
-+ * vector indexes which can be allocated on-demand basis. Mailbox vector index
-+ * is maintained in the default pool of the stack.
-+ */
-+struct idpf_vector_lifo {
-+	u16 top;
-+	u16 base;
-+	u16 size;
-+	u16 *vec_idx;
-+};
-+
- /**
-  * struct idpf_adapter - Device data struct generated on probe
-  * @pdev: PCI device struct given on probe
-+ * @virt_ver_maj: Virtchnl version major
-+ * @virt_ver_min: Virtchnl version minor
-  * @msg_enable: Debug message level enabled
-+ * @mb_wait_count: Number of times mailbox was attempted initialization
-  * @state: Init state machine
-  * @flags: See enum idpf_flags
-  * @reset_reg: See struct idpf_reset_reg
-  * @hw: Device access data
-+ * @num_req_msix: Requested number of MSIX vectors
-+ * @num_avail_msix: Available number of MSIX vectors
-+ * @num_msix_entries: Number of entries in MSIX table
-+ * @msix_entries: MSIX table
-+ * @req_vec_chunks: Requested vector chunk data
-+ * @mb_vector: Mailbox vector data
-+ * @vector_stack: Stack to store the msix vector indexes
-+ * @irq_mb_handler: Handler for hard interrupt for mailbox
-+ * @serv_task: Periodically recurring maintenance task
-+ * @serv_wq: Workqueue for service task
-+ * @mbx_task: Task to handle mailbox interrupts
-+ * @mbx_wq: Workqueue for mailbox responses
-  * @vc_event_task: Task to handle out of band virtchnl event notifications
-  * @vc_event_wq: Workqueue for virtchnl events
-+ * @caps: Negotiated capabilities with device
-+ * @vchnl_wq: Wait queue for virtchnl messages
-+ * @vc_state: Virtchnl message state
-+ * @vc_msg: Virtchnl message buffer
-  * @dev_ops: See idpf_dev_ops
-  * @reset_lock: Lock to protect reset flows
-+ * @vector_lock: Lock to protect vector distribution
-+ * @vc_buf_lock: Lock to protect virtchnl buffer
-  */
- struct idpf_adapter {
- 	struct pci_dev *pdev;
-+	u32 virt_ver_maj;
-+	u32 virt_ver_min;
-+
- 	u32 msg_enable;
-+	u32 mb_wait_count;
- 	enum idpf_state state;
- 	DECLARE_BITMAP(flags, IDPF_FLAGS_NBITS);
- 	struct idpf_reset_reg reset_reg;
- 	struct idpf_hw hw;
-+	u16 num_req_msix;
-+	u16 num_avail_msix;
-+	u16 num_msix_entries;
-+	struct msix_entry *msix_entries;
-+	struct virtchnl2_alloc_vectors *req_vec_chunks;
-+	struct idpf_q_vector mb_vector;
-+	struct idpf_vector_lifo vector_stack;
-+	irqreturn_t (*irq_mb_handler)(int irq, void *data);
+ 	u16 num_q_vectors;
+ 	struct idpf_q_vector *q_vectors;
++	u16 *q_vector_idxs;
+ 	u16 max_mtu;
+ 	u8 default_mac_addr[ETH_ALEN];
  
-+	struct delayed_work serv_task;
-+	struct workqueue_struct *serv_wq;
-+	struct delayed_work mbx_task;
-+	struct workqueue_struct *mbx_wq;
- 	struct delayed_work vc_event_task;
- 	struct workqueue_struct *vc_event_wq;
-+	struct virtchnl2_get_capabilities caps;
++	bool link_up;
++
+ 	char vc_msg[IDPF_CTLQ_MAX_BUF_LEN];
+ 	DECLARE_BITMAP(vc_state, IDPF_VC_NBITS);
  
-+	wait_queue_head_t vchnl_wq;
-+	DECLARE_BITMAP(vc_state, IDPF_VC_NBITS);
-+	char vc_msg[IDPF_CTLQ_MAX_BUF_LEN];
- 	struct idpf_dev_ops dev_ops;
- 
- 	struct mutex reset_lock;
-+	struct mutex vector_lock;
-+	struct mutex vc_buf_lock;
+@@ -400,6 +419,22 @@ struct idpf_avail_queue_info {
+ 	u16 avail_complq;
  };
  
 +/**
-+ * idpf_get_reserved_vecs - Get reserved vectors
-+ * @adapter: private data struct
++ * struct idpf_vector_info - Utility structure to pass function arguments as a
++ *			     structure
++ * @num_req_vecs: Vectors required based on the number of queues updated by the
++ *		  user via ethtool
++ * @num_curr_vecs: Current number of vectors, must be >= @num_req_vecs
++ * @index: Relative starting index for vectors
++ * @default_vport: Vectors are for default vport
 + */
-+static inline u16 idpf_get_reserved_vecs(struct idpf_adapter *adapter)
-+{
-+	return le16_to_cpu(adapter->caps.num_allocated_vectors);
-+}
-+
-+/**
-+ * idpf_get_default_vports - Get default number of vports
-+ * @adapter: private data struct
-+ */
-+static inline u16 idpf_get_default_vports(struct idpf_adapter *adapter)
-+{
-+	return le16_to_cpu(adapter->caps.default_num_vports);
-+}
++struct idpf_vector_info {
++	u16 num_req_vecs;
++	u16 num_curr_vecs;
++	u16 index;
++	bool default_vport;
++};
 +
  /**
-  * idpf_get_reg_addr - Get BAR0 register address
-  * @adapter: private data struct
-@@ -135,10 +270,38 @@ static inline bool idpf_is_reset_detected(struct idpf_adapter *adapter)
- 		 adapter->hw.arq->reg.len_mask);
- }
- 
-+/**
-+ * idpf_is_reset_in_prog - check if reset is in progress
-+ * @adapter: driver specific private structure
-+ *
-+ * Returns true if hard reset is in progress, false otherwise
-+ */
-+static inline bool idpf_is_reset_in_prog(struct idpf_adapter *adapter)
-+{
-+	return (test_bit(IDPF_HR_RESET_IN_PROG, adapter->flags) ||
-+		test_bit(IDPF_HR_FUNC_RESET, adapter->flags) ||
-+		test_bit(IDPF_HR_DRV_LOAD, adapter->flags));
-+}
-+
-+void idpf_service_task(struct work_struct *work);
-+void idpf_mbx_task(struct work_struct *work);
- void idpf_vc_event_task(struct work_struct *work);
- void idpf_dev_ops_init(struct idpf_adapter *adapter);
- void idpf_vf_dev_ops_init(struct idpf_adapter *adapter);
- int idpf_init_dflt_mbx(struct idpf_adapter *adapter);
- void idpf_deinit_dflt_mbx(struct idpf_adapter *adapter);
-+int idpf_vc_core_init(struct idpf_adapter *adapter);
-+void idpf_vc_core_deinit(struct idpf_adapter *adapter);
-+int idpf_intr_req(struct idpf_adapter *adapter);
-+void idpf_intr_rel(struct idpf_adapter *adapter);
-+int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter);
-+int idpf_send_alloc_vectors_msg(struct idpf_adapter *adapter, u16 num_vectors);
-+int idpf_get_vec_ids(struct idpf_adapter *adapter,
-+		     u16 *vecids, int num_vecids,
-+		     struct virtchnl2_vector_chunks *chunks);
-+int idpf_recv_mb_msg(struct idpf_adapter *adapter, u32 op,
-+		     void *msg, int msg_size);
-+int idpf_send_mb_msg(struct idpf_adapter *adapter, u32 op,
-+		     u16 msg_size, u8 *msg);
+  * struct idpf_vector_lifo - Stack to maintain vector indexes used for vector
+  *			     distribution algorithm
+@@ -735,6 +770,10 @@ int idpf_vc_core_init(struct idpf_adapter *adapter);
+ void idpf_vc_core_deinit(struct idpf_adapter *adapter);
+ int idpf_intr_req(struct idpf_adapter *adapter);
+ void idpf_intr_rel(struct idpf_adapter *adapter);
++int idpf_get_reg_intr_vecs(struct idpf_vport *vport,
++			   struct idpf_vec_regs *reg_vals);
++int idpf_send_enable_vport_msg(struct idpf_vport *vport);
++int idpf_send_disable_vport_msg(struct idpf_vport *vport);
+ int idpf_send_destroy_vport_msg(struct idpf_vport *vport);
+ int idpf_send_get_rx_ptype_msg(struct idpf_vport *vport);
+ int idpf_send_get_set_rss_key_msg(struct idpf_vport *vport, bool get);
+@@ -742,6 +781,9 @@ int idpf_send_get_set_rss_lut_msg(struct idpf_vport *vport, bool get);
+ int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter);
+ int idpf_send_alloc_vectors_msg(struct idpf_adapter *adapter, u16 num_vectors);
+ void idpf_deinit_task(struct idpf_adapter *adapter);
++int idpf_req_rel_vector_indexes(struct idpf_adapter *adapter,
++				u16 *q_vector_idxs,
++				struct idpf_vector_info *vec_info);
+ int idpf_get_vec_ids(struct idpf_adapter *adapter,
+ 		     u16 *vecids, int num_vecids,
+ 		     struct virtchnl2_vector_chunks *chunks);
+@@ -754,13 +796,16 @@ int idpf_vport_alloc_max_qs(struct idpf_adapter *adapter,
+ void idpf_vport_dealloc_max_qs(struct idpf_adapter *adapter,
+ 			       struct idpf_vport_max_q *max_q);
+ int idpf_add_del_mac_filters(struct idpf_vport *vport, bool add, bool async);
++int idpf_send_disable_queues_msg(struct idpf_vport *vport);
+ void idpf_vport_init(struct idpf_vport *vport, struct idpf_vport_max_q *max_q);
+ u32 idpf_get_vport_id(struct idpf_vport *vport);
+ int idpf_vport_queue_ids_init(struct idpf_vport *vport);
+ int idpf_queue_reg_init(struct idpf_vport *vport);
+ int idpf_send_config_queues_msg(struct idpf_vport *vport);
++int idpf_send_enable_queues_msg(struct idpf_vport *vport);
+ int idpf_send_create_vport_msg(struct idpf_adapter *adapter,
+ 			       struct idpf_vport_max_q *max_q);
+ int idpf_check_supported_desc_ids(struct idpf_vport *vport);
++int idpf_send_map_unmap_queue_vector_msg(struct idpf_vport *vport, bool map);
  
  #endif /* !_IDPF_H_ */
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-index 7c0c8a14aba9..11cc33eb0b44 100644
+index 11cc33eb0b44..4e3a554abf02 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_dev.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-@@ -44,6 +44,22 @@ static void idpf_ctlq_reg_init(struct idpf_ctlq_create_info *cq)
- 	}
+@@ -4,6 +4,8 @@
+ #include "idpf.h"
+ #include "idpf_lan_pf_regs.h"
+ 
++#define IDPF_PF_ITR_IDX_SPACING		0x4
++
+ /**
+  * idpf_ctlq_reg_init - initialize default mailbox registers
+  * @cq: pointer to the array of create control queues
+@@ -60,6 +62,61 @@ static void idpf_mb_intr_reg_init(struct idpf_adapter *adapter)
+ 	intr->icr_ena_ctlq_m = PF_INT_DIR_OICR_ENA_M;
  }
  
 +/**
-+ * idpf_mb_intr_reg_init - Initialize mailbox interrupt register
-+ * @adapter: adapter structure
++ * idpf_intr_reg_init - Initialize interrupt registers
++ * @vport: virtual port structure
 + */
-+static void idpf_mb_intr_reg_init(struct idpf_adapter *adapter)
++static int idpf_intr_reg_init(struct idpf_vport *vport)
 +{
-+	struct idpf_intr_reg *intr = &adapter->mb_vector.intr_reg;
-+	u32 dyn_ctl = le32_to_cpu(adapter->caps.mailbox_dyn_ctl);
++	struct idpf_adapter *adapter = vport->adapter;
++	int num_vecs = vport->num_q_vectors;
++	struct idpf_vec_regs *reg_vals;
++	int num_regs, i, err = 0;
++	u32 rx_itr, tx_itr;
++	u16 total_vecs;
 +
-+	intr->dyn_ctl = idpf_get_reg_addr(adapter, dyn_ctl);
-+	intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
-+	intr->dyn_ctl_itridx_m = PF_GLINT_DYN_CTL_ITR_INDX_M;
-+	intr->icr_ena = idpf_get_reg_addr(adapter, PF_INT_DIR_OICR_ENA);
-+	intr->icr_ena_ctlq_m = PF_INT_DIR_OICR_ENA_M;
++	total_vecs = idpf_get_reserved_vecs(vport->adapter);
++	reg_vals = kcalloc(total_vecs, sizeof(struct idpf_vec_regs),
++			   GFP_KERNEL);
++	if (!reg_vals)
++		return -ENOMEM;
++
++	num_regs = idpf_get_reg_intr_vecs(vport, reg_vals);
++	if (num_regs < num_vecs) {
++		err = -EINVAL;
++		goto free_reg_vals;
++	}
++
++	for (i = 0; i < num_vecs; i++) {
++		struct idpf_q_vector *q_vector = &vport->q_vectors[i];
++		u16 vec_id = vport->q_vector_idxs[i] - IDPF_MBX_Q_VEC;
++		struct idpf_intr_reg *intr = &q_vector->intr_reg;
++		u32 spacing;
++
++		intr->dyn_ctl = idpf_get_reg_addr(adapter,
++						  reg_vals[vec_id].dyn_ctl_reg);
++		intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
++		intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
++		intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
++
++		spacing = IDPF_ITR_IDX_SPACING(reg_vals[vec_id].itrn_index_spacing,
++					       IDPF_PF_ITR_IDX_SPACING);
++		rx_itr = PF_GLINT_ITR_ADDR(VIRTCHNL2_ITR_IDX_0,
++					   reg_vals[vec_id].itrn_reg,
++					   spacing);
++		tx_itr = PF_GLINT_ITR_ADDR(VIRTCHNL2_ITR_IDX_1,
++					   reg_vals[vec_id].itrn_reg,
++					   spacing);
++		intr->rx_itr = idpf_get_reg_addr(adapter, rx_itr);
++		intr->tx_itr = idpf_get_reg_addr(adapter, tx_itr);
++	}
++
++free_reg_vals:
++	kfree(reg_vals);
++
++	return err;
 +}
 +
  /**
   * idpf_reset_reg_init - Initialize reset registers
   * @adapter: Driver specific private structure
-@@ -75,6 +91,7 @@ static void idpf_trigger_reset(struct idpf_adapter *adapter,
+@@ -91,6 +148,7 @@ static void idpf_trigger_reset(struct idpf_adapter *adapter,
  static void idpf_reg_ops_init(struct idpf_adapter *adapter)
  {
  	adapter->dev_ops.reg_ops.ctlq_reg_init = idpf_ctlq_reg_init;
-+	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_mb_intr_reg_init;
++	adapter->dev_ops.reg_ops.intr_reg_init = idpf_intr_reg_init;
+ 	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_mb_intr_reg_init;
  	adapter->dev_ops.reg_ops.reset_reg_init = idpf_reset_reg_init;
  	adapter->dev_ops.reg_ops.trigger_reset = idpf_trigger_reset;
- }
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_lan_pf_regs.h b/drivers/net/ethernet/intel/idpf/idpf_lan_pf_regs.h
-index 9cc9610990b4..a832319f535c 100644
+index a832319f535c..24edb8a6ec2e 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_lan_pf_regs.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_lan_pf_regs.h
-@@ -53,6 +53,49 @@
- #define PF_FW_ATQH_ATQH_M		GENMASK(9, 0)
- #define PF_FW_ATQT			(PF_FW_BASE + 0x24)
+@@ -74,6 +74,17 @@
+ #define PF_GLINT_DYN_CTL_WB_ON_ITR_M	BIT(PF_GLINT_DYN_CTL_WB_ON_ITR_S)
+ #define PF_GLINT_DYN_CTL_INTENA_MSK_S	31
+ #define PF_GLINT_DYN_CTL_INTENA_MSK_M	BIT(PF_GLINT_DYN_CTL_INTENA_MSK_S)
++/* _ITR is ITR index, _INT is interrupt index, _itrn_indx_spacing is
++ * spacing b/w itrn registers of the same vector.
++ */
++#define PF_GLINT_ITR_ADDR(_ITR, _reg_start, _itrn_indx_spacing)	\
++	((_reg_start) + ((_ITR) * (_itrn_indx_spacing)))
++/* For PF, itrn_indx_spacing is 4 and itrn_reg_spacing is 0x1000 */
++#define PF_GLINT_ITR(_ITR, _INT)	\
++	(PF_GLINT_BASE + (((_ITR) + 1) * 4) + ((_INT) * 0x1000))
++#define PF_GLINT_ITR_MAX_INDEX		2
++#define PF_GLINT_ITR_INTERVAL_S		0
++#define PF_GLINT_ITR_INTERVAL_M		GENMASK(11, 0)
  
-+/* Interrupts */
-+#define PF_GLINT_BASE			0x08900000
-+#define PF_GLINT_DYN_CTL(_INT)		(PF_GLINT_BASE + ((_INT) * 0x1000))
-+#define PF_GLINT_DYN_CTL_INTENA_S	0
-+#define PF_GLINT_DYN_CTL_INTENA_M	BIT(PF_GLINT_DYN_CTL_INTENA_S)
-+#define PF_GLINT_DYN_CTL_CLEARPBA_S	1
-+#define PF_GLINT_DYN_CTL_CLEARPBA_M	BIT(PF_GLINT_DYN_CTL_CLEARPBA_S)
-+#define PF_GLINT_DYN_CTL_SWINT_TRIG_S	2
-+#define PF_GLINT_DYN_CTL_SWINT_TRIG_M	BIT(PF_GLINT_DYN_CTL_SWINT_TRIG_S)
-+#define PF_GLINT_DYN_CTL_ITR_INDX_S	3
-+#define PF_GLINT_DYN_CTL_ITR_INDX_M	GENMASK(4, 3)
-+#define PF_GLINT_DYN_CTL_INTERVAL_S	5
-+#define PF_GLINT_DYN_CTL_INTERVAL_M	BIT(PF_GLINT_DYN_CTL_INTERVAL_S)
-+#define PF_GLINT_DYN_CTL_SW_ITR_INDX_ENA_S	24
-+#define PF_GLINT_DYN_CTL_SW_ITR_INDX_ENA_M BIT(PF_GLINT_DYN_CTL_SW_ITR_INDX_ENA_S)
-+#define PF_GLINT_DYN_CTL_SW_ITR_INDX_S	25
-+#define PF_GLINT_DYN_CTL_SW_ITR_INDX_M	BIT(PF_GLINT_DYN_CTL_SW_ITR_INDX_S)
-+#define PF_GLINT_DYN_CTL_WB_ON_ITR_S	30
-+#define PF_GLINT_DYN_CTL_WB_ON_ITR_M	BIT(PF_GLINT_DYN_CTL_WB_ON_ITR_S)
-+#define PF_GLINT_DYN_CTL_INTENA_MSK_S	31
-+#define PF_GLINT_DYN_CTL_INTENA_MSK_M	BIT(PF_GLINT_DYN_CTL_INTENA_MSK_S)
-+
-+/* Generic registers */
-+#define PF_INT_DIR_OICR_ENA		0x08406000
-+#define PF_INT_DIR_OICR_ENA_S		0
-+#define PF_INT_DIR_OICR_ENA_M		GENMASK(31, 0)
-+#define PF_INT_DIR_OICR			0x08406004
-+#define PF_INT_DIR_OICR_TSYN_EVNT	0
-+#define PF_INT_DIR_OICR_PHY_TS_0	BIT(1)
-+#define PF_INT_DIR_OICR_PHY_TS_1	BIT(2)
-+#define PF_INT_DIR_OICR_CAUSE		0x08406008
-+#define PF_INT_DIR_OICR_CAUSE_CAUSE_S	0
-+#define PF_INT_DIR_OICR_CAUSE_CAUSE_M	GENMASK(31, 0)
-+#define PF_INT_PBA_CLEAR		0x0840600C
-+
-+#define PF_FUNC_RID			0x08406010
-+#define PF_FUNC_RID_FUNCTION_NUMBER_S	0
-+#define PF_FUNC_RID_FUNCTION_NUMBER_M	GENMASK(2, 0)
-+#define PF_FUNC_RID_DEVICE_NUMBER_S	3
-+#define PF_FUNC_RID_DEVICE_NUMBER_M	GENMASK(7, 3)
-+#define PF_FUNC_RID_BUS_NUMBER_S	8
-+#define PF_FUNC_RID_BUS_NUMBER_M	GENMASK(15, 8)
-+
- /* Reset registers */
- #define PFGEN_RTRIG			0x08407000
- #define PFGEN_RTRIG_CORER_S		0
+ /* Generic registers */
+ #define PF_INT_DIR_OICR_ENA		0x08406000
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_lan_vf_regs.h b/drivers/net/ethernet/intel/idpf/idpf_lan_vf_regs.h
-index 8040bedea2fd..d1bff18e2a7d 100644
+index d1bff18e2a7d..3d73b6c76863 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_lan_vf_regs.h
 +++ b/drivers/net/ethernet/intel/idpf/idpf_lan_vf_regs.h
-@@ -62,4 +62,42 @@
- #define VF_QRXB_TAIL_BASE		0x00060000
- #define VF_QRXB_TAIL(_QRX)		(VF_QRXB_TAIL_BASE + ((_QRX) * 4))
+@@ -88,6 +88,31 @@
+ #define VF_INT_DYN_CTLN_WB_ON_ITR_M	BIT(VF_INT_DYN_CTLN_WB_ON_ITR_S)
+ #define VF_INT_DYN_CTLN_INTENA_MSK_S	31
+ #define VF_INT_DYN_CTLN_INTENA_MSK_M	BIT(VF_INT_DYN_CTLN_INTENA_MSK_S)
++/* _ITR is ITR index, _INT is interrupt index, _itrn_indx_spacing is spacing
++ * b/w itrn registers of the same vector
++ */
++#define VF_INT_ITR0(_ITR)		(0x00004C00 + ((_ITR) * 4))
++#define VF_INT_ITRN_ADDR(_ITR, _reg_start, _itrn_indx_spacing)	\
++	((_reg_start) + ((_ITR) * (_itrn_indx_spacing)))
++/* For VF with 16 vector support, itrn_reg_spacing is 0x4, itrn_indx_spacing
++ * is 0x40 and base register offset is 0x00002800
++ */
++#define VF_INT_ITRN(_INT, _ITR)		\
++	(0x00002800 + ((_INT) * 4) + ((_ITR) * 0x40))
++/* For VF with 64 vector support, itrn_reg_spacing is 0x4, itrn_indx_spacing
++ * is 0x100 and base register offset is 0x00002C00
++ */
++#define VF_INT_ITRN_64(_INT, _ITR)	\
++	(0x00002C00 + ((_INT) * 4) + ((_ITR) * 0x100))
++/* For VF with 2k vector support, itrn_reg_spacing is 0x4, itrn_indx_spacing
++ * is 0x2000 and base register offset is 0x00072000
++ */
++#define VF_INT_ITRN_2K(_INT, _ITR)	\
++	(0x00072000 + ((_INT) * 4) + ((_ITR) * 0x2000))
++#define VF_INT_ITRN_MAX_INDEX		2
++#define VF_INT_ITRN_INTERVAL_S		0
++#define VF_INT_ITRN_INTERVAL_M		GENMASK(11, 0)
++#define VF_INT_PBA_CLEAR		0x00008900
  
-+/* Interrupts */
-+#define VF_INT_DYN_CTL0			0x00005C00
-+#define VF_INT_DYN_CTL0_INTENA_S	0
-+#define VF_INT_DYN_CTL0_INTENA_M	BIT(VF_INT_DYN_CTL0_INTENA_S)
-+#define VF_INT_DYN_CTL0_ITR_INDX_S	3
-+#define VF_INT_DYN_CTL0_ITR_INDX_M	GENMASK(4, 3)
-+#define VF_INT_DYN_CTLN(_INT)		(0x00003800 + ((_INT) * 4))
-+#define VF_INT_DYN_CTLN_EXT(_INT)	(0x00070000 + ((_INT) * 4))
-+#define VF_INT_DYN_CTLN_INTENA_S	0
-+#define VF_INT_DYN_CTLN_INTENA_M	BIT(VF_INT_DYN_CTLN_INTENA_S)
-+#define VF_INT_DYN_CTLN_CLEARPBA_S	1
-+#define VF_INT_DYN_CTLN_CLEARPBA_M	BIT(VF_INT_DYN_CTLN_CLEARPBA_S)
-+#define VF_INT_DYN_CTLN_SWINT_TRIG_S	2
-+#define VF_INT_DYN_CTLN_SWINT_TRIG_M	BIT(VF_INT_DYN_CTLN_SWINT_TRIG_S)
-+#define VF_INT_DYN_CTLN_ITR_INDX_S	3
-+#define VF_INT_DYN_CTLN_ITR_INDX_M	GENMASK(4, 3)
-+#define VF_INT_DYN_CTLN_INTERVAL_S	5
-+#define VF_INT_DYN_CTLN_INTERVAL_M	BIT(VF_INT_DYN_CTLN_INTERVAL_S)
-+#define VF_INT_DYN_CTLN_SW_ITR_INDX_ENA_S 24
-+#define VF_INT_DYN_CTLN_SW_ITR_INDX_ENA_M BIT(VF_INT_DYN_CTLN_SW_ITR_INDX_ENA_S)
-+#define VF_INT_DYN_CTLN_SW_ITR_INDX_S	25
-+#define VF_INT_DYN_CTLN_SW_ITR_INDX_M	BIT(VF_INT_DYN_CTLN_SW_ITR_INDX_S)
-+#define VF_INT_DYN_CTLN_WB_ON_ITR_S	30
-+#define VF_INT_DYN_CTLN_WB_ON_ITR_M	BIT(VF_INT_DYN_CTLN_WB_ON_ITR_S)
-+#define VF_INT_DYN_CTLN_INTENA_MSK_S	31
-+#define VF_INT_DYN_CTLN_INTENA_MSK_M	BIT(VF_INT_DYN_CTLN_INTENA_MSK_S)
-+
-+#define VF_INT_ICR0_ENA1		0x00005000
-+#define VF_INT_ICR0_ENA1_ADMINQ_S	30
-+#define VF_INT_ICR0_ENA1_ADMINQ_M	BIT(VF_INT_ICR0_ENA1_ADMINQ_S)
-+#define VF_INT_ICR0_ENA1_RSVD_S		31
-+#define VF_INT_ICR01			0x00004800
-+#define VF_QF_HENA(_i)			(0x0000C400 + ((_i) * 4))
-+#define VF_QF_HENA_MAX_INDX		1
-+#define VF_QF_HKEY(_i)			(0x0000CC00 + ((_i) * 4))
-+#define VF_QF_HKEY_MAX_INDX		12
-+#define VF_QF_HLUT(_i)			(0x0000D000 + ((_i) * 4))
-+#define VF_QF_HLUT_MAX_INDX		15
- #endif
+ #define VF_INT_ICR0_ENA1		0x00005000
+ #define VF_INT_ICR0_ENA1_ADMINQ_S	30
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_lib.c b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-index 2c22a5869c58..5853c4476961 100644
+index 7ab1f589dd69..82628d8a67b1 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_lib.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_lib.c
-@@ -3,6 +3,340 @@
+@@ -183,6 +183,140 @@ static int idpf_mb_intr_init(struct idpf_adapter *adapter)
+ 	return idpf_mb_intr_req_irq(adapter);
+ }
  
- #include "idpf.h"
- 
-+const char * const idpf_vport_vc_state_str[] = {
-+	IDPF_FOREACH_VPORT_VC_STATE(IDPF_GEN_STRING)
-+};
-+
 +/**
-+ * idpf_init_vector_stack - Fill the MSIX vector stack with vector index
++ * idpf_vector_lifo_push - push MSIX vector index onto stack
 + * @adapter: private data struct
-+ *
-+ * Return 0 on success, error on failure
++ * @vec_idx: vector index to store
 + */
-+static int idpf_init_vector_stack(struct idpf_adapter *adapter)
++static int idpf_vector_lifo_push(struct idpf_adapter *adapter, u16 vec_idx)
 +{
-+	struct idpf_vector_lifo *stack;
-+	u16 min_vec;
-+	u32 i;
++	struct idpf_vector_lifo *stack = &adapter->vector_stack;
 +
-+	mutex_lock(&adapter->vector_lock);
-+	min_vec = adapter->num_msix_entries - adapter->num_avail_msix;
-+	stack = &adapter->vector_stack;
-+	stack->size = adapter->num_msix_entries;
-+	/* set the base and top to point at start of the 'free pool' to
-+	 * distribute the unused vectors on-demand basis
-+	 */
-+	stack->base = min_vec;
-+	stack->top = min_vec;
++	lockdep_assert_held(&adapter->vector_lock);
 +
-+	stack->vec_idx = kcalloc(stack->size, sizeof(u16), GFP_KERNEL);
-+	if (!stack->vec_idx) {
-+		mutex_unlock(&adapter->vector_lock);
-+
-+		return -ENOMEM;
++	if (stack->top == stack->base) {
++		dev_err(&adapter->pdev->dev, "Exceeded the vector stack limit: %d\n",
++			stack->top);
++		return -EINVAL;
 +	}
 +
-+	for (i = 0; i < stack->size; i++)
-+		stack->vec_idx[i] = i;
-+
-+	mutex_unlock(&adapter->vector_lock);
++	stack->vec_idx[--stack->top] = vec_idx;
 +
 +	return 0;
 +}
 +
 +/**
-+ * idpf_deinit_vector_stack - zero out the MSIX vector stack
++ * idpf_vector_lifo_pop - pop MSIX vector index from stack
 + * @adapter: private data struct
 + */
-+static void idpf_deinit_vector_stack(struct idpf_adapter *adapter)
++static int idpf_vector_lifo_pop(struct idpf_adapter *adapter)
 +{
-+	struct idpf_vector_lifo *stack;
++	struct idpf_vector_lifo *stack = &adapter->vector_stack;
 +
-+	mutex_lock(&adapter->vector_lock);
-+	stack = &adapter->vector_stack;
-+	kfree(stack->vec_idx);
-+	stack->vec_idx = NULL;
-+	mutex_unlock(&adapter->vector_lock);
++	lockdep_assert_held(&adapter->vector_lock);
++
++	if (stack->top == stack->size) {
++		dev_err(&adapter->pdev->dev, "No interrupt vectors are available to distribute!\n");
++
++		return -EINVAL;
++	}
++
++	return stack->vec_idx[stack->top++];
 +}
 +
 +/**
-+ * idpf_mb_intr_rel_irq - Free the IRQ association with the OS
-+ * @adapter: adapter structure
++ * idpf_vector_stash - Store the vector indexes onto the stack
++ * @adapter: private data struct
++ * @q_vector_idxs: vector index array
++ * @vec_info: info related to the number of vectors
 + *
-+ * This will also disable interrupt mode and queue up mailbox task. Mailbox
-+ * task will reschedule itself if not in interrupt mode.
++ * This function is a no-op if there are no vectors indexes to be stashed
 + */
-+static void idpf_mb_intr_rel_irq(struct idpf_adapter *adapter)
++static void idpf_vector_stash(struct idpf_adapter *adapter, u16 *q_vector_idxs,
++			      struct idpf_vector_info *vec_info)
 +{
-+	clear_bit(IDPF_MB_INTR_MODE, adapter->flags);
-+	free_irq(adapter->msix_entries[0].vector, adapter);
-+	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
-+}
++	int i, base = 0;
++	u16 vec_idx;
 +
-+/**
-+ * idpf_intr_rel - Release interrupt capabilities and free memory
-+ * @adapter: adapter to disable interrupts on
-+ */
-+void idpf_intr_rel(struct idpf_adapter *adapter)
-+{
-+	int err;
++	lockdep_assert_held(&adapter->vector_lock);
 +
-+	if (!adapter->msix_entries)
++	if (!vec_info->num_curr_vecs)
 +		return;
 +
-+	idpf_mb_intr_rel_irq(adapter);
-+	pci_free_irq_vectors(adapter->pdev);
-+
-+	err = idpf_send_dealloc_vectors_msg(adapter);
-+	if (err)
-+		dev_err(&adapter->pdev->dev,
-+			"Failed to deallocate vectors: %d\n", err);
-+
-+	idpf_deinit_vector_stack(adapter);
-+	kfree(adapter->msix_entries);
-+	adapter->msix_entries = NULL;
-+}
-+
-+/**
-+ * idpf_mb_intr_clean - Interrupt handler for the mailbox
-+ * @irq: interrupt number
-+ * @data: pointer to the adapter structure
-+ */
-+static irqreturn_t idpf_mb_intr_clean(int __always_unused irq, void *data)
-+{
-+	struct idpf_adapter *adapter = (struct idpf_adapter *)data;
-+
-+	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/**
-+ * idpf_mb_irq_enable - Enable MSIX interrupt for the mailbox
-+ * @adapter: adapter to get the hardware address for register write
-+ */
-+static void idpf_mb_irq_enable(struct idpf_adapter *adapter)
-+{
-+	struct idpf_intr_reg *intr = &adapter->mb_vector.intr_reg;
-+	u32 val;
-+
-+	val = intr->dyn_ctl_intena_m | intr->dyn_ctl_itridx_m;
-+	writel(val, intr->dyn_ctl);
-+	writel(intr->icr_ena_ctlq_m, intr->icr_ena);
-+}
-+
-+/**
-+ * idpf_mb_intr_req_irq - Request irq for the mailbox interrupt
-+ * @adapter: adapter structure to pass to the mailbox irq handler
-+ */
-+static int idpf_mb_intr_req_irq(struct idpf_adapter *adapter)
-+{
-+	struct idpf_q_vector *mb_vector = &adapter->mb_vector;
-+	int irq_num, mb_vidx = 0, err;
-+
-+	irq_num = adapter->msix_entries[mb_vidx].vector;
-+	snprintf(mb_vector->name, sizeof(mb_vector->name) - 1,
-+		 "%s-%s-%d", dev_driver_string(&adapter->pdev->dev),
-+		 "Mailbox", mb_vidx);
-+	err = request_irq(irq_num, adapter->irq_mb_handler, 0,
-+			  mb_vector->name, adapter);
-+	if (err) {
-+		dev_err(&adapter->pdev->dev,
-+			"IRQ request for mailbox failed, error: %d\n", err);
-+
-+		return err;
-+	}
-+
-+	set_bit(IDPF_MB_INTR_MODE, adapter->flags);
-+
-+	return 0;
-+}
-+
-+/**
-+ * idpf_set_mb_vec_id - Set vector index for mailbox
-+ * @adapter: adapter structure to access the vector chunks
-+ *
-+ * The first vector id in the requested vector chunks from the CP is for
-+ * the mailbox
-+ */
-+static void idpf_set_mb_vec_id(struct idpf_adapter *adapter)
-+{
-+	if (adapter->req_vec_chunks)
-+		adapter->mb_vector.v_idx =
-+			le16_to_cpu(adapter->caps.mailbox_vector_id);
-+	else
-+		adapter->mb_vector.v_idx = 0;
-+}
-+
-+/**
-+ * idpf_mb_intr_init - Initialize the mailbox interrupt
-+ * @adapter: adapter structure to store the mailbox vector
-+ */
-+static int idpf_mb_intr_init(struct idpf_adapter *adapter)
-+{
-+	adapter->dev_ops.reg_ops.mb_intr_reg_init(adapter);
-+	adapter->irq_mb_handler = idpf_mb_intr_clean;
-+
-+	return idpf_mb_intr_req_irq(adapter);
-+}
-+
-+/**
-+ * idpf_intr_req - Request interrupt capabilities
-+ * @adapter: adapter to enable interrupts on
-+ *
-+ * Returns 0 on success, negative on failure
-+ */
-+int idpf_intr_req(struct idpf_adapter *adapter)
-+{
-+	u16 default_vports = idpf_get_default_vports(adapter);
-+	int num_q_vecs, total_vecs, num_vec_ids;
-+	int min_vectors, v_actual, err;
-+	unsigned int vector;
-+	u16 *vecids;
-+
-+	total_vecs = idpf_get_reserved_vecs(adapter);
-+	num_q_vecs = total_vecs - IDPF_MBX_Q_VEC;
-+
-+	err = idpf_send_alloc_vectors_msg(adapter, num_q_vecs);
-+	if (err) {
-+		dev_err(&adapter->pdev->dev,
-+			"Failed to allocate %d vectors: %d\n", num_q_vecs, err);
-+
-+		return -EAGAIN;
-+	}
-+
-+	min_vectors = IDPF_MBX_Q_VEC + IDPF_MIN_Q_VEC * default_vports;
-+	v_actual = pci_alloc_irq_vectors(adapter->pdev, min_vectors,
-+					 total_vecs, PCI_IRQ_MSIX);
-+	if (v_actual < min_vectors) {
-+		dev_err(&adapter->pdev->dev, "Failed to allocate MSIX vectors: %d\n",
-+			v_actual);
-+		err = -EAGAIN;
-+		goto send_dealloc_vecs;
-+	}
-+
-+	adapter->msix_entries = kcalloc(v_actual, sizeof(struct msix_entry),
-+					GFP_KERNEL);
-+
-+	if (!adapter->msix_entries) {
-+		err = -ENOMEM;
-+		goto free_irq;
-+	}
-+
-+	idpf_set_mb_vec_id(adapter);
-+
-+	vecids = kcalloc(total_vecs, sizeof(u16), GFP_KERNEL);
-+	if (!vecids) {
-+		err = -ENOMEM;
-+		goto free_msix;
-+	}
-+
-+	if (adapter->req_vec_chunks) {
-+		struct virtchnl2_vector_chunks *vchunks;
-+		struct virtchnl2_alloc_vectors *ac;
-+
-+		ac = adapter->req_vec_chunks;
-+		vchunks = &ac->vchunks;
-+
-+		num_vec_ids = idpf_get_vec_ids(adapter, vecids, total_vecs,
-+					       vchunks);
-+		if (num_vec_ids < v_actual) {
-+			err = -EINVAL;
-+			goto free_vecids;
-+		}
-+	} else {
-+		int i;
-+
-+		for (i = 0; i < v_actual; i++)
-+			vecids[i] = i;
-+	}
-+
-+	for (vector = 0; vector < v_actual; vector++) {
-+		adapter->msix_entries[vector].entry = vecids[vector];
-+		adapter->msix_entries[vector].vector =
-+			pci_irq_vector(adapter->pdev, vector);
-+	}
-+
-+	adapter->num_req_msix = total_vecs;
-+	adapter->num_msix_entries = v_actual;
-+	/* 'num_avail_msix' is used to distribute excess vectors to the vports
-+	 * after considering the minimum vectors required per each default
-+	 * vport
++	/* For default vports, no need to stash vector allocated from the
++	 * default pool onto the stack
 +	 */
-+	adapter->num_avail_msix = v_actual - min_vectors;
++	if (vec_info->default_vport)
++		base = IDPF_MIN_Q_VEC;
 +
-+	/* Fill MSIX vector lifo stack with vector indexes */
-+	err = idpf_init_vector_stack(adapter);
++	for (i = vec_info->num_curr_vecs - 1; i >= base ; i--) {
++		vec_idx = q_vector_idxs[i];
++		idpf_vector_lifo_push(adapter, vec_idx);
++		adapter->num_avail_msix++;
++	}
++}
++
++/**
++ * idpf_req_rel_vector_indexes - Request or release MSIX vector indexes
++ * @adapter: driver specific private structure
++ * @q_vector_idxs: vector index array
++ * @vec_info: info related to the number of vectors
++ *
++ * This is the core function to distribute the MSIX vectors acquired from the
++ * OS. It expects the caller to pass the number of vectors required and
++ * also previously allocated. First, it stashes previously allocated vector
++ * indexes on to the stack and then figures out if it can allocate requested
++ * vectors. It can wait on acquiring the mutex lock. If the caller passes 0 as
++ * requested vectors, then this function just stashes the already allocated
++ * vectors and returns 0.
++ *
++ * Returns actual number of vectors allocated on success, error value on failure
++ * If 0 is returned, implies the stack has no vectors to allocate which is also
++ * a failure case for the caller
++ */
++int idpf_req_rel_vector_indexes(struct idpf_adapter *adapter, u16 *q_vector_idxs,
++				struct idpf_vector_info *vec_info)
++{
++	u16 num_req_vecs, num_alloc_vecs = 0, max_vecs;
++	struct idpf_vector_lifo *stack;
++	int i, j, vecid;
++
++	mutex_lock(&adapter->vector_lock);
++	stack = &adapter->vector_stack;
++	num_req_vecs = vec_info->num_req_vecs;
++
++	/* Stash interrupt vector indexes onto the stack if required */
++	idpf_vector_stash(adapter, q_vector_idxs, vec_info);
++
++	if (!num_req_vecs)
++		goto rel_lock;
++
++	if (vec_info->default_vport) {
++		/* As IDPF_MIN_Q_VEC per default vport is put aside in the
++		 * default pool of the stack, use them for default vports
++		 */
++		j = vec_info->index * IDPF_MIN_Q_VEC + IDPF_MBX_Q_VEC;
++		for (i = 0; i < IDPF_MIN_Q_VEC; i++) {
++			q_vector_idxs[num_alloc_vecs++] = stack->vec_idx[j++];
++			num_req_vecs--;
++		}
++	}
++
++	/* Find if stack has enough vector to allocate */
++	max_vecs = min(adapter->num_avail_msix, num_req_vecs);
++
++	for (j = 0; j < max_vecs; j++) {
++		vecid = idpf_vector_lifo_pop(adapter);
++		q_vector_idxs[num_alloc_vecs++] = vecid;
++	}
++	adapter->num_avail_msix -= max_vecs;
++
++rel_lock:
++	mutex_unlock(&adapter->vector_lock);
++
++	return num_alloc_vecs;
++}
++
+ /**
+  * idpf_intr_req - Request interrupt capabilities
+  * @adapter: adapter to enable interrupts on
+@@ -602,7 +736,14 @@ static void idpf_vport_stop(struct idpf_vport *vport)
+ 	mutex_lock(&vport->stop_mutex);
+ 
+ 	netif_carrier_off(vport->netdev);
++	netif_tx_disable(vport->netdev);
+ 
++	idpf_send_disable_vport_msg(vport);
++	idpf_send_disable_queues_msg(vport);
++	idpf_send_map_unmap_queue_vector_msg(vport, false);
++
++	vport->link_up = false;
++	idpf_vport_intr_deinit(vport);
+ 	idpf_vport_intr_rel(vport);
+ 	idpf_vport_queues_rel(vport);
+ 	vport->state = __IDPF_VPORT_DOWN;
+@@ -655,6 +796,7 @@ static void idpf_vport_rel(struct idpf_vport *vport)
+ {
+ 	struct idpf_adapter *adapter = vport->adapter;
+ 	struct idpf_vport_config *vport_config;
++	struct idpf_vector_info vec_info;
+ 	struct idpf_rss_data *rss_data;
+ 	struct idpf_vport_max_q max_q;
+ 	u16 idx = vport->idx;
+@@ -690,6 +832,16 @@ static void idpf_vport_rel(struct idpf_vport *vport)
+ 	max_q.max_complq = vport_config->max_q.max_complq;
+ 	idpf_vport_dealloc_max_qs(adapter, &max_q);
+ 
++	/* Release all the allocated vectors on the stack */
++	vec_info.num_req_vecs = 0;
++	vec_info.num_curr_vecs = vport->num_q_vectors;
++	vec_info.default_vport = vport->default_vport;
++
++	idpf_req_rel_vector_indexes(adapter, vport->q_vector_idxs, &vec_info);
++
++	kfree(vport->q_vector_idxs);
++	vport->q_vector_idxs = NULL;
++
+ 	kfree(adapter->vport_params_recvd[idx]);
+ 	adapter->vport_params_recvd[idx] = NULL;
+ 	kfree(adapter->vport_params_reqd[idx]);
+@@ -710,6 +862,7 @@ static void idpf_vport_dealloc(struct idpf_vport *vport)
+ 	unsigned int i = vport->idx;
+ 
+ 	idpf_deinit_mac_addr(vport);
++	idpf_vport_stop(vport);
+ 
+ 	if (!test_bit(IDPF_HR_RESET_IN_PROG, adapter->flags))
+ 		idpf_decfg_netdev(vport);
+@@ -739,6 +892,7 @@ static struct idpf_vport *idpf_vport_alloc(struct idpf_adapter *adapter,
+ 	struct idpf_rss_data *rss_data;
+ 	u16 idx = adapter->next_vport;
+ 	struct idpf_vport *vport;
++	u16 num_max_q;
+ 
+ 	if (idx == IDPF_NO_FREE_SLOT)
+ 		return NULL;
+@@ -765,6 +919,13 @@ static struct idpf_vport *idpf_vport_alloc(struct idpf_adapter *adapter,
+ 	vport->default_vport = adapter->num_alloc_vports <
+ 			       idpf_get_default_vports(adapter);
+ 
++	num_max_q = max(max_q->max_txq, max_q->max_rxq);
++	vport->q_vector_idxs = kcalloc(num_max_q, sizeof(u16), GFP_KERNEL);
++	if (!vport->q_vector_idxs) {
++		kfree(vport);
++
++		return NULL;
++	}
+ 	idpf_vport_init(vport, max_q);
+ 
+ 	/* This alloc is done separate from the LUT because it's not strictly
+@@ -837,6 +998,88 @@ void idpf_service_task(struct work_struct *work)
+ 			   msecs_to_jiffies(300));
+ }
+ 
++/**
++ * idpf_set_real_num_queues - set number of queues for netdev
++ * @vport: virtual port structure
++ *
++ * Returns 0 on success, negative on failure.
++ */
++static int idpf_set_real_num_queues(struct idpf_vport *vport)
++{
++	bool reset = test_bit(IDPF_HR_RESET_IN_PROG, vport->adapter->flags);
++	int err;
++
++	/* If we're in normal up path, the stack already takes the rtnl_lock
++	 * for us, however, if we're doing up as a part of a hard reset, we'll
++	 * need to take the lock ourself before touching the netdev.
++	 */
++	if (reset)
++		rtnl_lock();
++	err = netif_set_real_num_rx_queues(vport->netdev, vport->num_rxq);
 +	if (err)
-+		goto free_vecids;
++		goto error;
++	err = netif_set_real_num_tx_queues(vport->netdev, vport->num_txq);
 +
-+	err = idpf_mb_intr_init(adapter);
-+	if (err)
-+		goto deinit_vec_stack;
-+	idpf_mb_irq_enable(adapter);
-+	kfree(vecids);
-+
-+	return 0;
-+
-+deinit_vec_stack:
-+	idpf_deinit_vector_stack(adapter);
-+free_vecids:
-+	kfree(vecids);
-+free_msix:
-+	kfree(adapter->msix_entries);
-+	adapter->msix_entries = NULL;
-+free_irq:
-+	pci_free_irq_vectors(adapter->pdev);
-+send_dealloc_vecs:
-+	idpf_send_dealloc_vectors_msg(adapter);
++error:
++	if (reset)
++		rtnl_unlock();
 +
 +	return err;
 +}
 +
 +/**
-+ * idpf_mbx_task - Delayed task to handle mailbox responses
-+ * @work: work_struct handle
++ * idpf_up_complete - Complete interface up sequence
++ * @vport: virtual port structure
++ *
++ * Returns 0 on success, negative on failure.
 + */
-+void idpf_mbx_task(struct work_struct *work)
++static int idpf_up_complete(struct idpf_vport *vport)
 +{
-+	struct idpf_adapter *adapter;
++	int err;
 +
-+	adapter = container_of(work, struct idpf_adapter, mbx_task.work);
++	err = idpf_set_real_num_queues(vport);
++	if (err)
++		return err;
 +
-+	if (test_bit(IDPF_MB_INTR_MODE, adapter->flags))
-+		idpf_mb_irq_enable(adapter);
-+	else
-+		queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task,
-+				   msecs_to_jiffies(300));
++	if (vport->link_up && !netif_carrier_ok(vport->netdev)) {
++		netif_carrier_on(vport->netdev);
++		netif_tx_start_all_queues(vport->netdev);
++	}
 +
-+	idpf_recv_mb_msg(adapter, VIRTCHNL2_OP_UNKNOWN, NULL, 0);
++	vport->state = __IDPF_VPORT_UP;
++
++	return 0;
 +}
 +
 +/**
-+ * idpf_service_task - Delayed task for handling mailbox responses
-+ * @work: work_struct handle to our data
-+ *
++ * idpf_rx_init_buf_tail - Write initial buffer ring tail value
++ * @vport: virtual port struct
 + */
-+void idpf_service_task(struct work_struct *work)
++static void idpf_rx_init_buf_tail(struct idpf_vport *vport)
 +{
-+	struct idpf_adapter *adapter;
++	int i, j;
 +
-+	adapter = container_of(work, struct idpf_adapter, serv_task.work);
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct idpf_rxq_group *grp = &vport->rxq_grps[i];
 +
-+	if (idpf_is_reset_detected(adapter) &&
-+	    !idpf_is_reset_in_prog(adapter) &&
-+	    !test_bit(IDPF_REMOVE_IN_PROG, adapter->flags)) {
-+		dev_info(&adapter->pdev->dev, "HW reset detected\n");
-+		set_bit(IDPF_HR_FUNC_RESET, adapter->flags);
-+		queue_delayed_work(adapter->vc_event_wq,
-+				   &adapter->vc_event_task,
-+				   msecs_to_jiffies(10));
++		if (idpf_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < vport->num_bufqs_per_qgrp; j++) {
++				struct idpf_queue *q =
++					&grp->splitq.bufq_sets[j].bufq;
++
++				writel(q->next_to_alloc, q->tail);
++			}
++		} else {
++			for (j = 0; j < grp->singleq.num_rxq; j++) {
++				struct idpf_queue *q =
++					grp->singleq.rxqs[j];
++
++				writel(q->next_to_alloc, q->tail);
++			}
++		}
 +	}
-+
-+	queue_delayed_work(adapter->serv_wq, &adapter->serv_task,
-+			   msecs_to_jiffies(300));
 +}
 +
  /**
-  * idpf_check_reset_complete - check that reset is complete
-  * @hw: pointer to hw struct
-@@ -61,6 +395,7 @@ static int idpf_init_hard_reset(struct idpf_adapter *adapter)
- 	} else if (test_and_clear_bit(IDPF_HR_FUNC_RESET, adapter->flags)) {
- 		bool is_reset = idpf_is_reset_detected(adapter);
+  * idpf_vport_open - Bring up a vport
+  * @vport: vport to bring up
+@@ -874,6 +1117,13 @@ static int idpf_vport_open(struct idpf_vport *vport, bool alloc_res)
+ 		goto intr_rel;
+ 	}
  
-+		idpf_vc_core_deinit(adapter);
- 		if (!is_reset)
- 			reg_ops->trigger_reset(adapter, IDPF_HR_FUNC_RESET);
- 		idpf_deinit_dflt_mbx(adapter);
-@@ -80,9 +415,24 @@ static int idpf_init_hard_reset(struct idpf_adapter *adapter)
- 
- 	/* Reset is complete and so start building the driver resources again */
- 	err = idpf_init_dflt_mbx(adapter);
--	if (err)
++	err = idpf_vport_intr_init(vport);
 +	if (err) {
- 		dev_err(dev, "Failed to initialize default mailbox: %d\n", err);
-+		goto handle_err;
++		dev_err(&adapter->pdev->dev, "Failed to initialize interrupts for vport %u: %d\n",
++			vport->vport_id, err);
++		goto intr_rel;
 +	}
 +
-+	/* Initialize the state machine, also allocate memory and request
-+	 * resources
-+	 */
-+	err = idpf_vc_core_init(adapter);
-+	if (err)
-+		goto init_err;
+ 	err = idpf_rx_bufs_init_all(vport);
+ 	if (err) {
+ 		dev_err(&adapter->pdev->dev, "Failed to initialize RX buffers for vport %u: %d\n",
+@@ -888,11 +1138,35 @@ static int idpf_vport_open(struct idpf_vport *vport, bool alloc_res)
+ 		goto intr_rel;
+ 	}
+ 
++	idpf_rx_init_buf_tail(vport);
 +
-+	mutex_unlock(&adapter->reset_lock);
+ 	err = idpf_send_config_queues_msg(vport);
+ 	if (err) {
+ 		dev_err(&adapter->pdev->dev, "Failed to configure queues for vport %u, %d\n",
+ 			vport->vport_id, err);
+-		goto intr_rel;
++		goto intr_deinit;
++	}
 +
++	err = idpf_send_map_unmap_queue_vector_msg(vport, true);
++	if (err) {
++		dev_err(&adapter->pdev->dev, "Failed to map queue vectors for vport %u: %d\n",
++			vport->vport_id, err);
++		goto intr_deinit;
++	}
++
++	err = idpf_send_enable_queues_msg(vport);
++	if (err) {
++		dev_err(&adapter->pdev->dev, "Failed to enable queues for vport %u: %d\n",
++			vport->vport_id, err);
++		goto unmap_queue_vectors;
++	}
++
++	err = idpf_send_enable_vport_msg(vport);
++	if (err) {
++		dev_err(&adapter->pdev->dev, "Failed to enable vport %u: %d\n",
++			vport->vport_id, err);
++		err = -EAGAIN;
++		goto disable_queues;
+ 	}
+ 
+ 	vport_config = adapter->vport_config[vport->idx];
+@@ -903,11 +1177,28 @@ static int idpf_vport_open(struct idpf_vport *vport, bool alloc_res)
+ 	if (err) {
+ 		dev_err(&adapter->pdev->dev, "Failed to initialize RSS for vport %u: %d\n",
+ 			vport->vport_id, err);
+-		goto intr_rel;
++		goto disable_vport;
++	}
++
++	err = idpf_up_complete(vport);
++	if (err) {
++		dev_err(&adapter->pdev->dev, "Failed to complete interface up for vport %u: %d\n",
++			vport->vport_id, err);
++		goto deinit_rss;
+ 	}
+ 
+ 	return 0;
+ 
++deinit_rss:
++	idpf_deinit_rss(vport);
++disable_vport:
++	idpf_send_disable_vport_msg(vport);
++disable_queues:
++	idpf_send_disable_queues_msg(vport);
++unmap_queue_vectors:
++	idpf_send_map_unmap_queue_vector_msg(vport, false);
++intr_deinit:
++	idpf_vport_intr_deinit(vport);
+ intr_rel:
+ 	idpf_vport_intr_rel(vport);
+ queues_rel:
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+index 138ceb31f556..7f30ee604b40 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+@@ -55,3 +55,14 @@ bool idpf_rx_singleq_buf_hw_alloc_all(struct idpf_queue *rx_q,
+ 
+ 	return !!cleaned_count;
+ }
++
++/**
++ * idpf_vport_singleq_napi_poll - NAPI handler
++ * @napi: struct from which you get q_vector
++ * @budget: budget provided by stack
++ */
++int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
++{
++	/* stub */
 +	return 0;
- 
-+init_err:
-+	idpf_deinit_dflt_mbx(adapter);
- handle_err:
- 	mutex_unlock(&adapter->reset_lock);
- 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
-index dab536bc42a1..2981376b4645 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_main.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
-@@ -25,12 +25,17 @@ static void idpf_remove(struct pci_dev *pdev)
- 	 * end up in bad state.
- 	 */
- 	cancel_delayed_work_sync(&adapter->vc_event_task);
-+	idpf_vc_core_deinit(adapter);
- 	/* Be a good citizen and leave the device clean on exit */
- 	adapter->dev_ops.reg_ops.trigger_reset(adapter, IDPF_HR_FUNC_RESET);
- 	idpf_deinit_dflt_mbx(adapter);
- 
-+	destroy_workqueue(adapter->serv_wq);
-+	destroy_workqueue(adapter->mbx_wq);
- 	destroy_workqueue(adapter->vc_event_wq);
- 	mutex_destroy(&adapter->reset_lock);
-+	mutex_destroy(&adapter->vector_lock);
-+	mutex_destroy(&adapter->vc_buf_lock);
- 
- 	pci_disable_pcie_error_reporting(pdev);
- 	pci_set_drvdata(pdev, NULL);
-@@ -127,6 +132,24 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	pci_set_master(pdev);
- 	pci_set_drvdata(pdev, adapter);
- 
-+	adapter->serv_wq = alloc_workqueue("%s-%s-service", 0, 0,
-+					   dev_driver_string(dev),
-+					   dev_name(dev));
-+	if (!adapter->serv_wq) {
-+		dev_err(dev, "Failed to allocate service workqueue\n");
-+		err = -ENOMEM;
-+		goto err_serv_wq_alloc;
-+	}
-+
-+	adapter->mbx_wq = alloc_workqueue("%s-%s-mbx", 0, 0,
-+					  dev_driver_string(dev),
-+					  dev_name(dev));
-+	if (!adapter->mbx_wq) {
-+		dev_err(dev, "Failed to allocate mailbox workqueue\n");
-+		err = -ENOMEM;
-+		goto err_mbx_wq_alloc;
-+	}
-+
- 	adapter->vc_event_wq = alloc_workqueue("%s-%s-vc_event", 0, 0,
- 					       dev_driver_string(dev),
- 					       dev_name(dev));
-@@ -147,7 +170,13 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	}
- 
- 	mutex_init(&adapter->reset_lock);
-+	mutex_init(&adapter->vector_lock);
-+	mutex_init(&adapter->vc_buf_lock);
-+
-+	init_waitqueue_head(&adapter->vchnl_wq);
- 
-+	INIT_DELAYED_WORK(&adapter->serv_task, idpf_service_task);
-+	INIT_DELAYED_WORK(&adapter->mbx_task, idpf_mbx_task);
- 	INIT_DELAYED_WORK(&adapter->vc_event_task, idpf_vc_event_task);
- 
- 	adapter->dev_ops.reg_ops.reset_reg_init(adapter);
-@@ -160,6 +189,10 @@ static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- err_cfg_hw:
- 	destroy_workqueue(adapter->vc_event_wq);
- err_vc_event_wq_alloc:
-+	destroy_workqueue(adapter->mbx_wq);
-+err_mbx_wq_alloc:
-+	destroy_workqueue(adapter->serv_wq);
-+err_serv_wq_alloc:
- 	pci_disable_pcie_error_reporting(pdev);
- err_free:
- 	kfree(adapter);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-new file mode 100644
-index 000000000000..8ae23131102d
---- /dev/null
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -0,0 +1,40 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/* Copyright (C) 2023 Intel Corporation */
-+
-+#ifndef _IDPF_TXRX_H_
-+#define _IDPF_TXRX_H_
-+
-+/* Default vector sharing */
-+#define IDPF_MBX_Q_VEC		1
-+#define IDPF_MIN_Q_VEC		1
-+
-+#define IDPF_INT_NAME_STR_LEN   (IFNAMSIZ + 16)
-+
-+/**
-+ * struct idpf_intr_reg
-+ * @dyn_ctl: Dynamic control interrupt register
-+ * @dyn_ctl_intena_m: Mask for dyn_ctl interrupt enable
-+ * @dyn_ctl_itridx_m: Mask for ITR index
-+ * @icr_ena: Interrupt cause register offset
-+ * @icr_ena_ctlq_m: Mask for ICR
-+ */
-+struct idpf_intr_reg {
-+	void __iomem *dyn_ctl;
-+	u32 dyn_ctl_intena_m;
-+	u32 dyn_ctl_itridx_m;
-+	void __iomem *icr_ena;
-+	u32 icr_ena_ctlq_m;
-+};
-+
-+/**
-+ * struct idpf_q_vector
-+ * @v_idx: Vector index
-+ * @intr_reg: See struct idpf_intr_reg
-+ * @name: Queue vector name
-+ */
-+struct idpf_q_vector {
-+	u16 v_idx;
-+	struct idpf_intr_reg intr_reg;
-+	char name[IDPF_INT_NAME_STR_LEN];
-+};
-+#endif /* !_IDPF_TXRX_H_ */
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-index facf525e8e44..cfaddeff5742 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-@@ -44,6 +44,22 @@ static void idpf_vf_ctlq_reg_init(struct idpf_ctlq_create_info *cq)
- 	}
++}
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+index f2a333af39ed..e0ae2a5cef98 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+@@ -1345,6 +1345,44 @@ int idpf_vport_queues_alloc(struct idpf_vport *vport)
+ 	return err;
  }
  
 +/**
-+ * idpf_vf_mb_intr_reg_init - Initialize the mailbox register
-+ * @adapter: adapter structure
++ * idpf_vport_intr_clean_queues - MSIX mode Interrupt Handler
++ * @irq: interrupt number
++ * @data: pointer to a q_vector
++ *
 + */
-+static void idpf_vf_mb_intr_reg_init(struct idpf_adapter *adapter)
++static irqreturn_t idpf_vport_intr_clean_queues(int __always_unused irq,
++						void *data)
 +{
-+	struct idpf_intr_reg *intr = &adapter->mb_vector.intr_reg;
-+	u32 dyn_ctl = le32_to_cpu(adapter->caps.mailbox_dyn_ctl);
++	/* stub */
++	return IRQ_HANDLED;
++}
 +
-+	intr->dyn_ctl = idpf_get_reg_addr(adapter, dyn_ctl);
-+	intr->dyn_ctl_intena_m = VF_INT_DYN_CTL0_INTENA_M;
-+	intr->dyn_ctl_itridx_m = VF_INT_DYN_CTL0_ITR_INDX_M;
-+	intr->icr_ena = idpf_get_reg_addr(adapter, VF_INT_ICR0_ENA1);
-+	intr->icr_ena_ctlq_m = VF_INT_ICR0_ENA1_ADMINQ_M;
++/**
++ * idpf_vport_intr_napi_del_all - Unregister napi for all q_vectors in vport
++ * @vport: virtual port structure
++ *
++ */
++static void idpf_vport_intr_napi_del_all(struct idpf_vport *vport)
++{
++	u16 v_idx;
++
++	for (v_idx = 0; v_idx < vport->num_q_vectors; v_idx++)
++		netif_napi_del(&vport->q_vectors[v_idx].napi);
++}
++
++/**
++ * idpf_vport_intr_napi_dis_all - Disable NAPI for all q_vectors in the vport
++ * @vport: main vport structure
++ */
++static void idpf_vport_intr_napi_dis_all(struct idpf_vport *vport)
++{
++	int v_idx;
++
++	for (v_idx = 0; v_idx < vport->num_q_vectors; v_idx++)
++		napi_disable(&vport->q_vectors[v_idx].napi);
++}
++
+ /**
+  * idpf_vport_intr_rel - Free memory allocated for interrupt vectors
+  * @vport: virtual port
+@@ -1353,7 +1391,7 @@ int idpf_vport_queues_alloc(struct idpf_vport *vport)
+  */
+ void idpf_vport_intr_rel(struct idpf_vport *vport)
+ {
+-	int v_idx;
++	int i, j, v_idx;
+ 
+ 	for (v_idx = 0; v_idx < vport->num_q_vectors; v_idx++) {
+ 		struct idpf_q_vector *q_vector = &vport->q_vectors[v_idx];
+@@ -1366,10 +1404,291 @@ void idpf_vport_intr_rel(struct idpf_vport *vport)
+ 		q_vector->rx = NULL;
+ 	}
+ 
++	/* Clean up the mapping of queues to vectors */
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct idpf_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++
++		if (idpf_is_queue_model_split(vport->rxq_model))
++			for (j = 0; j < rx_qgrp->splitq.num_rxq_sets; j++)
++				rx_qgrp->splitq.rxq_sets[j]->rxq.q_vector = NULL;
++		else
++			for (j = 0; j < rx_qgrp->singleq.num_rxq; j++)
++				rx_qgrp->singleq.rxqs[j]->q_vector = NULL;
++	}
++
++	if (idpf_is_queue_model_split(vport->txq_model))
++		for (i = 0; i < vport->num_txq_grp; i++)
++			vport->txq_grps[i].complq->q_vector = NULL;
++	else
++		for (i = 0; i < vport->num_txq_grp; i++)
++			for (j = 0; j < vport->txq_grps[i].num_txq; j++)
++				vport->txq_grps[i].txqs[j]->q_vector = NULL;
++
+ 	kfree(vport->q_vectors);
+ 	vport->q_vectors = NULL;
+ }
+ 
++/**
++ * idpf_vport_intr_rel_irq - Free the IRQ association with the OS
++ * @vport: main vport structure
++ */
++static void idpf_vport_intr_rel_irq(struct idpf_vport *vport)
++{
++	struct idpf_adapter *adapter = vport->adapter;
++	int vector;
++
++	for (vector = 0; vector < vport->num_q_vectors; vector++) {
++		struct idpf_q_vector *q_vector = &vport->q_vectors[vector];
++		int irq_num, vidx;
++
++		/* free only the irqs that were actually requested */
++		if (!q_vector)
++			continue;
++
++		vidx = vport->q_vector_idxs[vector];
++		irq_num = adapter->msix_entries[vidx].vector;
++
++		/* clear the affinity_mask in the IRQ descriptor */
++		irq_set_affinity_hint(irq_num, NULL);
++		free_irq(irq_num, q_vector);
++	}
++}
++
++/**
++ * idpf_vport_intr_req_irq - get MSI-X vectors from the OS for the vport
++ * @vport: main vport structure
++ * @basename: name for the vector
++ */
++static int idpf_vport_intr_req_irq(struct idpf_vport *vport, char *basename)
++{
++	struct idpf_adapter *adapter = vport->adapter;
++	int vector, err, irq_num, vidx;
++	const char *vec_name;
++
++	for (vector = 0; vector < vport->num_q_vectors; vector++) {
++		struct idpf_q_vector *q_vector = &vport->q_vectors[vector];
++
++		vidx = vport->q_vector_idxs[vector];
++		irq_num = adapter->msix_entries[vidx].vector;
++
++		if (q_vector->num_rxq && q_vector->num_txq)
++			vec_name = "TxRx";
++		else if (q_vector->num_rxq)
++			vec_name = "Rx";
++		else if (q_vector->num_txq)
++			vec_name = "Tx";
++		else
++			continue;
++
++		snprintf(q_vector->name, sizeof(q_vector->name) - 1,
++			 "%s-%s-%d", basename, vec_name, vidx);
++
++		err = request_irq(irq_num, idpf_vport_intr_clean_queues, 0,
++				  q_vector->name, q_vector);
++		if (err) {
++			netdev_err(vport->netdev,
++				   "Request_irq failed, error: %d\n", err);
++			goto free_q_irqs;
++		}
++		/* assign the mask for this irq */
++		irq_set_affinity_hint(irq_num, &q_vector->affinity_mask);
++	}
++
++	return 0;
++
++free_q_irqs:
++	while (--vector >= 0) {
++		vidx = vport->q_vector_idxs[vector];
++		irq_num = adapter->msix_entries[vidx].vector;
++		free_irq(irq_num, &vport->q_vectors[vector]);
++	}
++
++	return err;
++}
++
++/**
++ * idpf_vport_intr_deinit - Release all vector associations for the vport
++ * @vport: main vport structure
++ */
++void idpf_vport_intr_deinit(struct idpf_vport *vport)
++{
++	idpf_vport_intr_napi_dis_all(vport);
++	idpf_vport_intr_napi_del_all(vport);
++	idpf_vport_intr_rel_irq(vport);
++}
++
++/**
++ * idpf_vport_intr_napi_ena_all - Enable NAPI for all q_vectors in the vport
++ * @vport: main vport structure
++ */
++static void idpf_vport_intr_napi_ena_all(struct idpf_vport *vport)
++{
++	int q_idx;
++
++	for (q_idx = 0; q_idx < vport->num_q_vectors; q_idx++) {
++		struct idpf_q_vector *q_vector = &vport->q_vectors[q_idx];
++
++		napi_enable(&q_vector->napi);
++	}
++}
++
++/**
++ * idpf_vport_splitq_napi_poll - NAPI handler
++ * @napi: struct from which you get q_vector
++ * @budget: budget provided by stack
++ */
++static int idpf_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
++{
++	/* stub */
++	return 0;
++}
++
++/**
++ * idpf_vport_intr_map_vector_to_qs - Map vectors to queues
++ * @vport: virtual port
++ *
++ * Mapping for vectors to queues
++ */
++static void idpf_vport_intr_map_vector_to_qs(struct idpf_vport *vport)
++{
++	u16 num_txq_grp = vport->num_txq_grp;
++	int i, j, qv_idx, bufq_vidx = 0;
++	struct idpf_rxq_group *rx_qgrp;
++	struct idpf_txq_group *tx_qgrp;
++	struct idpf_queue *q, *bufq;
++	u16 q_index;
++
++	for (i = 0, qv_idx = 0; i < vport->num_rxq_grp; i++) {
++		u16 num_rxq;
++
++		rx_qgrp = &vport->rxq_grps[i];
++		if (idpf_is_queue_model_split(vport->rxq_model))
++			num_rxq = rx_qgrp->splitq.num_rxq_sets;
++		else
++			num_rxq = rx_qgrp->singleq.num_rxq;
++
++		for (j = 0; j < num_rxq; j++) {
++			if (qv_idx >= vport->num_q_vectors)
++				qv_idx = 0;
++
++			if (idpf_is_queue_model_split(vport->rxq_model))
++				q = &rx_qgrp->splitq.rxq_sets[j]->rxq;
++			else
++				q = rx_qgrp->singleq.rxqs[j];
++			q->q_vector = &vport->q_vectors[qv_idx];
++			q_index = q->q_vector->num_rxq;
++			q->q_vector->rx[q_index] = q;
++			q->q_vector->num_rxq++;
++			qv_idx++;
++		}
++
++		if (idpf_is_queue_model_split(vport->rxq_model)) {
++			for (j = 0; j < vport->num_bufqs_per_qgrp; j++) {
++				bufq = &rx_qgrp->splitq.bufq_sets[j].bufq;
++				bufq->q_vector = &vport->q_vectors[bufq_vidx];
++				q_index = bufq->q_vector->num_bufq;
++				bufq->q_vector->bufq[q_index] = bufq;
++				bufq->q_vector->num_bufq++;
++			}
++			if (++bufq_vidx >= vport->num_q_vectors)
++				bufq_vidx = 0;
++		}
++	}
++
++	for (i = 0, qv_idx = 0; i < num_txq_grp; i++) {
++		u16 num_txq;
++
++		tx_qgrp = &vport->txq_grps[i];
++		num_txq = tx_qgrp->num_txq;
++
++		if (idpf_is_queue_model_split(vport->txq_model)) {
++			if (qv_idx >= vport->num_q_vectors)
++				qv_idx = 0;
++
++			q = tx_qgrp->complq;
++			q->q_vector = &vport->q_vectors[qv_idx];
++			q_index = q->q_vector->num_txq;
++			q->q_vector->tx[q_index] = q;
++			q->q_vector->num_txq++;
++			qv_idx++;
++		} else {
++			for (j = 0; j < num_txq; j++) {
++				if (qv_idx >= vport->num_q_vectors)
++					qv_idx = 0;
++
++				q = tx_qgrp->txqs[j];
++				q->q_vector = &vport->q_vectors[qv_idx];
++				q_index = q->q_vector->num_txq;
++				q->q_vector->tx[q_index] = q;
++				q->q_vector->num_txq++;
++
++				qv_idx++;
++			}
++		}
++	}
++}
++
++/**
++ * idpf_vport_intr_init_vec_idx - Initialize the vector indexes
++ * @vport: virtual port
++ *
++ * Initialize vector indexes with values returened over mailbox
++ */
++static int idpf_vport_intr_init_vec_idx(struct idpf_vport *vport)
++{
++	struct idpf_adapter *adapter = vport->adapter;
++	struct virtchnl2_alloc_vectors *ac;
++	u16 *vecids, total_vecs;
++	int i;
++
++	ac = adapter->req_vec_chunks;
++	if (!ac) {
++		for (i = 0; i < vport->num_q_vectors; i++)
++			vport->q_vectors[i].v_idx = vport->q_vector_idxs[i];
++
++		return 0;
++	}
++
++	total_vecs = idpf_get_reserved_vecs(adapter);
++	vecids = kcalloc(total_vecs, sizeof(u16), GFP_KERNEL);
++	if (!vecids)
++		return -ENOMEM;
++
++	idpf_get_vec_ids(adapter, vecids, total_vecs, &ac->vchunks);
++
++	for (i = 0; i < vport->num_q_vectors; i++)
++		vport->q_vectors[i].v_idx = vecids[vport->q_vector_idxs[i]];
++
++	kfree(vecids);
++
++	return 0;
++}
++
++/**
++ * idpf_vport_intr_napi_add_all- Register napi handler for all qvectors
++ * @vport: virtual port structure
++ */
++static void idpf_vport_intr_napi_add_all(struct idpf_vport *vport)
++{
++	int (*napi_poll)(struct napi_struct *napi, int budget);
++	u16 v_idx;
++
++	if (idpf_is_queue_model_split(vport->txq_model))
++		napi_poll = idpf_vport_splitq_napi_poll;
++	else
++		napi_poll = idpf_vport_singleq_napi_poll;
++
++	for (v_idx = 0; v_idx < vport->num_q_vectors; v_idx++) {
++		struct idpf_q_vector *q_vector = &vport->q_vectors[v_idx];
++
++		netif_napi_add(vport->netdev, &q_vector->napi, napi_poll);
++
++		/* only set affinity_mask if the CPU is online */
++		if (cpu_online(v_idx))
++			cpumask_set_cpu(v_idx, &q_vector->affinity_mask);
++	}
++}
++
+ /**
+  * idpf_vport_intr_alloc - Allocate memory for interrupt vectors
+  * @vport: virtual port
+@@ -1441,6 +1760,46 @@ int idpf_vport_intr_alloc(struct idpf_vport *vport)
+ 	return err;
+ }
+ 
++/**
++ * idpf_vport_intr_init - Setup all vectors for the given vport
++ * @vport: virtual port
++ *
++ * Returns 0 on success or negative on failure
++ */
++int idpf_vport_intr_init(struct idpf_vport *vport)
++{
++	char int_name[IDPF_INT_NAME_STR_LEN];
++	int err;
++
++	err = idpf_vport_intr_init_vec_idx(vport);
++	if (err)
++		return err;
++
++	idpf_vport_intr_map_vector_to_qs(vport);
++	idpf_vport_intr_napi_add_all(vport);
++	idpf_vport_intr_napi_ena_all(vport);
++
++	err = vport->adapter->dev_ops.reg_ops.intr_reg_init(vport);
++	if (err)
++		goto unroll_vectors_alloc;
++
++	snprintf(int_name, sizeof(int_name) - 1, "%s-%s",
++		 dev_driver_string(&vport->adapter->pdev->dev),
++		 vport->netdev->name);
++
++	err = idpf_vport_intr_req_irq(vport, int_name);
++	if (err)
++		goto unroll_vectors_alloc;
++
++	return 0;
++
++unroll_vectors_alloc:
++	idpf_vport_intr_napi_dis_all(vport);
++	idpf_vport_intr_napi_del_all(vport);
++
++	return err;
++}
++
+ /**
+  * idpf_config_rss - Send virtchnl messages to configure RSS
+  * @vport: virtual port
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+index fab8c0a1ca49..7e3d5cdfb39f 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+@@ -24,6 +24,7 @@
+ #define IDPF_SINGLE_BUFQ_PER_RXQ_GRP		1
+ #define IDPF_MAX_BUFQS_PER_RXQ_GRP		2
+ #define IDPF_BUFQ2_ENA				1
++#define IDPF_NUMQ_PER_CHUNK			1
+ 
+ #define IDPF_DFLT_SPLITQ_TXQ_PER_GROUP		1
+ #define IDPF_DFLT_SPLITQ_RXQ_PER_GROUP		1
+@@ -260,18 +261,38 @@ enum idpf_queue_flags_t {
+ 	__IDPF_Q_FLAGS_NBITS,
+ };
+ 
++/**
++ * struct idpf_vec_regs
++ * @dyn_ctl_reg: Dynamic control interrupt register offset
++ * @itrn_reg: Interrupt Throttling Rate register offset
++ * @itrn_index_spacing: Register spacing between ITR registers of the same vector
++ */
++struct idpf_vec_regs {
++	u32 dyn_ctl_reg;
++	u32 itrn_reg;
++	u32 itrn_index_spacing;
++};
++
+ /**
+  * struct idpf_intr_reg
+  * @dyn_ctl: Dynamic control interrupt register
+  * @dyn_ctl_intena_m: Mask for dyn_ctl interrupt enable
++ * @dyn_ctl_itridx_s: Register bit offset for ITR index
+  * @dyn_ctl_itridx_m: Mask for ITR index
++ * @dyn_ctl_intrvl_s: Register bit offset for ITR interval
++ * @rx_itr: RX ITR register
++ * @tx_itr: TX ITR register
+  * @icr_ena: Interrupt cause register offset
+  * @icr_ena_ctlq_m: Mask for ICR
+  */
+ struct idpf_intr_reg {
+ 	void __iomem *dyn_ctl;
+ 	u32 dyn_ctl_intena_m;
++	u32 dyn_ctl_itridx_s;
+ 	u32 dyn_ctl_itridx_m;
++	u32 dyn_ctl_intrvl_s;
++	void __iomem *rx_itr;
++	void __iomem *tx_itr;
+ 	void __iomem *icr_ena;
+ 	u32 icr_ena_ctlq_m;
+ };
+@@ -279,36 +300,44 @@ struct idpf_intr_reg {
+ /**
+  * struct idpf_q_vector
+  * @vport: Vport back pointer
++ * @affinity_mask: CPU affinity mask
+  * @napi: napi handler
+  * @v_idx: Vector index
+  * @intr_reg: See struct idpf_intr_reg
++ * @num_txq: Number of TX queues
+  * @tx: Array of TX queues to service
+  * @tx_itr_value: TX interrupt throttling rate
+  * @tx_intr_mode: Dynamic ITR or not
+  * @tx_itr_idx: TX ITR index
++ * @num_rxq: Number of RX queues
+  * @rx: Array of RX queues to service
+  * @rx_itr_value: RX interrupt throttling rate
+  * @rx_intr_mode: Dynamic ITR or not
+  * @rx_itr_idx: RX ITR index
++ * @num_bufq: Number of buffer queues
+  * @bufq: Array of buffer queues to service
+  * @name: Queue vector name
+  */
+ struct idpf_q_vector {
+ 	struct idpf_vport *vport;
++	cpumask_t affinity_mask;
+ 	struct napi_struct napi;
+ 	u16 v_idx;
+ 	struct idpf_intr_reg intr_reg;
+ 
++	u16 num_txq;
+ 	struct idpf_queue **tx;
+ 	u16 tx_itr_value;
+ 	bool tx_intr_mode;
+ 	u32 tx_itr_idx;
+ 
++	u16 num_rxq;
+ 	struct idpf_queue **rx;
+ 	u16 rx_itr_value;
+ 	bool rx_intr_mode;
+ 	u32 rx_itr_idx;
+ 
++	u16 num_bufq;
+ 	struct idpf_queue **bufq;
+ 
+ 	char name[IDPF_INT_NAME_STR_LEN];
+@@ -318,6 +347,7 @@ struct idpf_q_vector {
+ #define IDPF_ITR_20K		0x0032
+ #define IDPF_ITR_TX_DEF		IDPF_ITR_20K
+ #define IDPF_ITR_RX_DEF		IDPF_ITR_20K
++#define IDPF_ITR_IDX_SPACING(spacing, dflt)	(spacing ? spacing : dflt)
+ 
+ /**
+  * struct idpf_queue
+@@ -588,6 +618,7 @@ static inline dma_addr_t idpf_alloc_page(struct page_pool *pool,
+ 	       pool->p.offset;
+ }
+ 
++int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget);
+ void idpf_vport_init_num_qs(struct idpf_vport *vport,
+ 			    struct virtchnl2_create_vport *vport_msg);
+ void idpf_vport_calc_num_q_desc(struct idpf_vport *vport);
+@@ -599,6 +630,8 @@ int idpf_vport_queues_alloc(struct idpf_vport *vport);
+ void idpf_vport_queues_rel(struct idpf_vport *vport);
+ void idpf_vport_intr_rel(struct idpf_vport *vport);
+ int idpf_vport_intr_alloc(struct idpf_vport *vport);
++void idpf_vport_intr_deinit(struct idpf_vport *vport);
++int idpf_vport_intr_init(struct idpf_vport *vport);
+ int idpf_config_rss(struct idpf_vport *vport);
+ int idpf_init_rss(struct idpf_vport *vport);
+ void idpf_deinit_rss(struct idpf_vport *vport);
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
+index cfaddeff5742..8ade4e3a9fe1 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
+@@ -4,6 +4,8 @@
+ #include "idpf.h"
+ #include "idpf_lan_vf_regs.h"
+ 
++#define IDPF_VF_ITR_IDX_SPACING		0x40
++
+ /**
+  * idpf_vf_ctlq_reg_init - initialize default mailbox registers
+  * @cq: pointer to the array of create control queues
+@@ -60,6 +62,60 @@ static void idpf_vf_mb_intr_reg_init(struct idpf_adapter *adapter)
+ 	intr->icr_ena_ctlq_m = VF_INT_ICR0_ENA1_ADMINQ_M;
+ }
+ 
++/**
++ * idpf_vf_intr_reg_init - Initialize interrupt registers
++ * @vport: virtual port structure
++ */
++static int idpf_vf_intr_reg_init(struct idpf_vport *vport)
++{
++	struct idpf_adapter *adapter = vport->adapter;
++	int num_vecs = vport->num_q_vectors;
++	struct idpf_vec_regs *reg_vals;
++	int num_regs, i, err = 0;
++	u32 rx_itr, tx_itr;
++	u16 total_vecs;
++
++	total_vecs = idpf_get_reserved_vecs(vport->adapter);
++	reg_vals = kcalloc(total_vecs, sizeof(struct idpf_vec_regs),
++			   GFP_KERNEL);
++	if (!reg_vals)
++		return -ENOMEM;
++
++	num_regs = idpf_get_reg_intr_vecs(vport, reg_vals);
++	if (num_regs < num_vecs) {
++		err = -EINVAL;
++		goto free_reg_vals;
++	}
++
++	for (i = 0; i < num_vecs; i++) {
++		struct idpf_q_vector *q_vector = &vport->q_vectors[i];
++		u16 vec_id = vport->q_vector_idxs[i] - IDPF_MBX_Q_VEC;
++		struct idpf_intr_reg *intr = &q_vector->intr_reg;
++		u32 spacing;
++
++		intr->dyn_ctl = idpf_get_reg_addr(adapter,
++						  reg_vals[vec_id].dyn_ctl_reg);
++		intr->dyn_ctl_intena_m = VF_INT_DYN_CTLN_INTENA_M;
++		intr->dyn_ctl_itridx_s = VF_INT_DYN_CTLN_ITR_INDX_S;
++
++		spacing = IDPF_ITR_IDX_SPACING(reg_vals[vec_id].itrn_index_spacing,
++					       IDPF_VF_ITR_IDX_SPACING);
++		rx_itr = VF_INT_ITRN_ADDR(VIRTCHNL2_ITR_IDX_0,
++					  reg_vals[vec_id].itrn_reg,
++					  spacing);
++		tx_itr = VF_INT_ITRN_ADDR(VIRTCHNL2_ITR_IDX_1,
++					  reg_vals[vec_id].itrn_reg,
++					  spacing);
++		intr->rx_itr = idpf_get_reg_addr(adapter, rx_itr);
++		intr->tx_itr = idpf_get_reg_addr(adapter, tx_itr);
++	}
++
++free_reg_vals:
++	kfree(reg_vals);
++
++	return err;
 +}
 +
  /**
   * idpf_vf_reset_reg_init - Initialize reset registers
   * @adapter: Driver specific private structure
-@@ -62,7 +78,10 @@ static void idpf_vf_reset_reg_init(struct idpf_adapter *adapter)
- static void idpf_vf_trigger_reset(struct idpf_adapter *adapter,
- 				  enum idpf_flags trig_cause)
- {
--	/* stub */
-+	/* Do not send VIRTCHNL2_OP_RESET_VF message on driver unload */
-+	if (trig_cause == IDPF_HR_FUNC_RESET &&
-+	    !test_bit(IDPF_REMOVE_IN_PROG, adapter->flags))
-+		idpf_send_mb_msg(adapter, VIRTCHNL2_OP_RESET_VF, 0, NULL);
- }
- 
- /**
-@@ -72,6 +91,7 @@ static void idpf_vf_trigger_reset(struct idpf_adapter *adapter,
+@@ -91,6 +147,7 @@ static void idpf_vf_trigger_reset(struct idpf_adapter *adapter,
  static void idpf_vf_reg_ops_init(struct idpf_adapter *adapter)
  {
  	adapter->dev_ops.reg_ops.ctlq_reg_init = idpf_vf_ctlq_reg_init;
-+	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_vf_mb_intr_reg_init;
++	adapter->dev_ops.reg_ops.intr_reg_init = idpf_vf_intr_reg_init;
+ 	adapter->dev_ops.reg_ops.mb_intr_reg_init = idpf_vf_mb_intr_reg_init;
  	adapter->dev_ops.reg_ops.reset_reg_init = idpf_vf_reset_reg_init;
  	adapter->dev_ops.reg_ops.trigger_reset = idpf_vf_trigger_reset;
- }
 diff --git a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-index d4374dc1c58c..2a44b7e45131 100644
+index 018061a86a71..414ec279e2e9 100644
 --- a/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/idpf/idpf_virtchnl.c
-@@ -43,6 +43,599 @@ static int idpf_mb_clean(struct idpf_adapter *adapter)
+@@ -160,6 +160,8 @@ static int idpf_find_vport(struct idpf_adapter *adapter,
+ 	case VIRTCHNL2_OP_DEALLOC_VECTORS:
+ 	case VIRTCHNL2_OP_GET_PTYPE_INFO:
+ 		goto free_vc_msg;
++	case VIRTCHNL2_OP_ENABLE_VPORT:
++	case VIRTCHNL2_OP_DISABLE_VPORT:
+ 	case VIRTCHNL2_OP_DESTROY_VPORT:
+ 		v_id = le32_to_cpu(((struct virtchnl2_vport *)vc_msg)->vport_id);
+ 		break;
+@@ -169,6 +171,14 @@ static int idpf_find_vport(struct idpf_adapter *adapter,
+ 	case VIRTCHNL2_OP_CONFIG_RX_QUEUES:
+ 		v_id = le32_to_cpu(((struct virtchnl2_config_rx_queues *)vc_msg)->vport_id);
+ 		break;
++	case VIRTCHNL2_OP_ENABLE_QUEUES:
++	case VIRTCHNL2_OP_DISABLE_QUEUES:
++		v_id = le32_to_cpu(((struct virtchnl2_del_ena_dis_queues *)vc_msg)->vport_id);
++		break;
++	case VIRTCHNL2_OP_MAP_QUEUE_VECTOR:
++	case VIRTCHNL2_OP_UNMAP_QUEUE_VECTOR:
++		v_id = le32_to_cpu(((struct virtchnl2_queue_vector_maps *)vc_msg)->vport_id);
++		break;
+ 	case VIRTCHNL2_OP_GET_RSS_LUT:
+ 	case VIRTCHNL2_OP_SET_RSS_LUT:
+ 		v_id = le32_to_cpu(((struct virtchnl2_rss_lut *)vc_msg)->vport_id);
+@@ -372,6 +382,16 @@ int idpf_recv_mb_msg(struct idpf_adapter *adapter, u32 op,
+ 					   IDPF_VC_CREATE_VPORT,
+ 					   IDPF_VC_CREATE_VPORT_ERR);
+ 			break;
++		case VIRTCHNL2_OP_ENABLE_VPORT:
++			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
++					   IDPF_VC_ENA_VPORT,
++					   IDPF_VC_ENA_VPORT_ERR);
++			break;
++		case VIRTCHNL2_OP_DISABLE_VPORT:
++			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
++					   IDPF_VC_DIS_VPORT,
++					   IDPF_VC_DIS_VPORT_ERR);
++			break;
+ 		case VIRTCHNL2_OP_DESTROY_VPORT:
+ 			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
+ 					   IDPF_VC_DESTROY_VPORT,
+@@ -387,6 +407,26 @@ int idpf_recv_mb_msg(struct idpf_adapter *adapter, u32 op,
+ 					   IDPF_VC_CONFIG_RXQ,
+ 					   IDPF_VC_CONFIG_RXQ_ERR);
+ 			break;
++		case VIRTCHNL2_OP_ENABLE_QUEUES:
++			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
++					   IDPF_VC_ENA_QUEUES,
++					   IDPF_VC_ENA_QUEUES_ERR);
++			break;
++		case VIRTCHNL2_OP_DISABLE_QUEUES:
++			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
++					   IDPF_VC_DIS_QUEUES,
++					   IDPF_VC_DIS_QUEUES_ERR);
++			break;
++		case VIRTCHNL2_OP_MAP_QUEUE_VECTOR:
++			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
++					   IDPF_VC_MAP_IRQ,
++					   IDPF_VC_MAP_IRQ_ERR);
++			break;
++		case VIRTCHNL2_OP_UNMAP_QUEUE_VECTOR:
++			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
++					   IDPF_VC_UNMAP_IRQ,
++					   IDPF_VC_UNMAP_IRQ_ERR);
++			break;
+ 		case VIRTCHNL2_OP_GET_RSS_LUT:
+ 			idpf_recv_vchnl_op(adapter, vport, &ctlq_msg,
+ 					   IDPF_VC_GET_RSS_LUT,
+@@ -832,6 +872,53 @@ static void idpf_init_avail_queues(struct idpf_adapter *adapter)
+ 	avail_queues->avail_complq = le16_to_cpu(caps->max_tx_complq);
+ }
+ 
++/**
++ * idpf_get_reg_intr_vecs - Get vector queue register offset
++ * @vport: virtual port structure
++ * @reg_vals: Register offsets to store in
++ *
++ * Returns number of registers that got populated
++ */
++int idpf_get_reg_intr_vecs(struct idpf_vport *vport,
++			   struct idpf_vec_regs *reg_vals)
++{
++	struct virtchnl2_vector_chunks *chunks;
++	struct idpf_vec_regs reg_val;
++	u16 num_vchunks, num_vec;
++	int num_regs = 0, i, j;
++
++	chunks = &vport->adapter->req_vec_chunks->vchunks;
++	num_vchunks = le16_to_cpu(chunks->num_vchunks);
++
++	for (j = 0; j < num_vchunks; j++) {
++		struct virtchnl2_vector_chunk *chunk;
++		u32 dynctl_reg_spacing;
++		u32 itrn_reg_spacing;
++
++		chunk = &chunks->vchunks[j];
++		num_vec = le16_to_cpu(chunk->num_vectors);
++		reg_val.dyn_ctl_reg = le32_to_cpu(chunk->dynctl_reg_start);
++		reg_val.itrn_reg = le32_to_cpu(chunk->itrn_reg_start);
++		reg_val.itrn_index_spacing = le32_to_cpu(chunk->itrn_index_spacing);
++
++		dynctl_reg_spacing = le32_to_cpu(chunk->dynctl_reg_spacing);
++		itrn_reg_spacing = le32_to_cpu(chunk->itrn_reg_spacing);
++
++		for (i = 0; i < num_vec; i++) {
++			reg_vals[num_regs].dyn_ctl_reg = reg_val.dyn_ctl_reg;
++			reg_vals[num_regs].itrn_reg = reg_val.itrn_reg;
++			reg_vals[num_regs].itrn_index_spacing =
++						reg_val.itrn_index_spacing;
++
++			reg_val.dyn_ctl_reg += dynctl_reg_spacing;
++			reg_val.itrn_reg += itrn_reg_spacing;
++			num_regs++;
++		}
++	}
++
++	return num_regs;
++}
++
+ /**
+  * idpf_vport_get_q_reg - Get the queue registers for the vport
+  * @reg_vals: register values needing to be set
+@@ -1161,6 +1248,68 @@ int idpf_send_destroy_vport_msg(struct idpf_vport *vport)
  	return err;
  }
  
 +/**
-+ * idpf_send_mb_msg - Send message over mailbox
-+ * @adapter: Driver specific private structure
-+ * @op: virtchnl opcode
-+ * @msg_size: size of the payload
-+ * @msg: pointer to buffer holding the payload
++ * idpf_send_enable_vport_msg - Send virtchnl enable vport message
++ * @vport: virtual port data structure
 + *
-+ * Will prepare the control queue message and initiates the send api
-+ *
-+ * Returns 0 on success, negative on failure
-+ */
-+int idpf_send_mb_msg(struct idpf_adapter *adapter, u32 op,
-+		     u16 msg_size, u8 *msg)
-+{
-+	struct idpf_ctlq_msg *ctlq_msg;
-+	struct idpf_dma_mem *dma_mem;
-+	int err;
-+
-+	/* If we are here and a reset is detected nothing much can be
-+	 * done. This thread should silently abort and expected to
-+	 * be corrected with a new run either by user or driver
-+	 * flows after reset
-+	 */
-+	if (idpf_is_reset_detected(adapter))
-+		return 0;
-+
-+	err = idpf_mb_clean(adapter);
-+	if (err)
-+		return err;
-+
-+	ctlq_msg = kzalloc(sizeof(*ctlq_msg), GFP_ATOMIC);
-+	if (!ctlq_msg)
-+		return -ENOMEM;
-+
-+	dma_mem = kzalloc(sizeof(*dma_mem), GFP_ATOMIC);
-+	if (!dma_mem) {
-+		err = -ENOMEM;
-+		goto dma_mem_error;
-+	}
-+
-+	ctlq_msg->opcode = idpf_mbq_opc_send_msg_to_cp;
-+	ctlq_msg->func_id = 0;
-+	ctlq_msg->data_len = msg_size;
-+	ctlq_msg->cookie.mbx.chnl_opcode = op;
-+	ctlq_msg->cookie.mbx.chnl_retval = 0;
-+	dma_mem->size = IDPF_CTLQ_MAX_BUF_LEN;
-+	dma_mem->va = dma_alloc_coherent(&adapter->pdev->dev, dma_mem->size,
-+					 &dma_mem->pa, GFP_ATOMIC);
-+	if (!dma_mem->va) {
-+		err = -ENOMEM;
-+		goto dma_alloc_error;
-+	}
-+	memcpy(dma_mem->va, msg, msg_size);
-+	ctlq_msg->ctx.indirect.payload = dma_mem;
-+
-+	err = idpf_ctlq_send(&adapter->hw, adapter->hw.asq, 1, ctlq_msg);
-+	if (err)
-+		goto send_error;
-+
-+	return 0;
-+
-+send_error:
-+	dma_free_coherent(&adapter->pdev->dev, dma_mem->size, dma_mem->va,
-+			  dma_mem->pa);
-+dma_alloc_error:
-+	kfree(dma_mem);
-+dma_mem_error:
-+	kfree(ctlq_msg);
-+
-+	return err;
-+}
-+
-+/**
-+ * idpf_copy_data_to_vc_buf - Copy the virtchnl response data into the buffer.
-+ * @adapter: driver specific private structure
-+ * @vport: virtual port structure
-+ * @ctlq_msg: msg to copy from
-+ * @err_enum: err bit to set on error
-+ *
-+ * Copies the payload from ctlq_msg into virtchnl buffer. Returns 0 on success,
-+ * negative on failure.
-+ */
-+static int idpf_copy_data_to_vc_buf(struct idpf_adapter *adapter,
-+				    struct idpf_vport *vport,
-+				    struct idpf_ctlq_msg *ctlq_msg,
-+				    enum idpf_vport_vc_state err_enum)
-+{
-+	if (ctlq_msg->cookie.mbx.chnl_retval) {
-+		set_bit(err_enum, adapter->vc_state);
-+
-+		return -EINVAL;
-+	}
-+
-+	memcpy(adapter->vc_msg, ctlq_msg->ctx.indirect.payload->va,
-+	       min_t(int, ctlq_msg->ctx.indirect.payload->size,
-+		     IDPF_CTLQ_MAX_BUF_LEN));
-+
-+	return 0;
-+}
-+
-+/**
-+ * idpf_recv_vchnl_op - helper function with common logic when handling the
-+ * reception of VIRTCHNL OPs.
-+ * @adapter: driver specific private structure
-+ * @vport: virtual port structure
-+ * @ctlq_msg: msg to copy from
-+ * @state: state bit used on timeout check
-+ * @err_state: err bit to set on error
-+ */
-+static void idpf_recv_vchnl_op(struct idpf_adapter *adapter,
-+			       struct idpf_vport *vport,
-+			       struct idpf_ctlq_msg *ctlq_msg,
-+			       enum idpf_vport_vc_state state,
-+			       enum idpf_vport_vc_state err_state)
-+{
-+	wait_queue_head_t *vchnl_wq = &adapter->vchnl_wq;
-+	int err;
-+
-+	err = idpf_copy_data_to_vc_buf(adapter, vport, ctlq_msg, err_state);
-+	if (wq_has_sleeper(vchnl_wq)) {
-+		set_bit(state, adapter->vc_state);
-+
-+		wake_up(vchnl_wq);
-+	} else {
-+		if (!err)
-+			dev_warn(&adapter->pdev->dev, "opcode %d received without waiting thread\n",
-+				 ctlq_msg->cookie.mbx.chnl_opcode);
-+		else
-+			/* Clear the errors since there is no sleeper to pass them on */
-+			clear_bit(err_state, adapter->vc_state);
-+	}
-+}
-+
-+/**
-+ * idpf_recv_mb_msg - Receive message over mailbox
-+ * @adapter: Driver specific private structure
-+ * @op: virtchannel operation code
-+ * @msg: Received message holding buffer
-+ * @msg_size: message size
-+ *
-+ * Will receive control queue message and posts the receive buffer. Returns 0
-+ * on success and negative on failure.
-+ */
-+int idpf_recv_mb_msg(struct idpf_adapter *adapter, u32 op,
-+		     void *msg, int msg_size)
-+{
-+	struct idpf_ctlq_msg ctlq_msg;
-+	struct idpf_dma_mem *dma_mem;
-+	bool work_done = false;
-+	int num_retry = 2000;
-+	u16 num_q_msg;
-+	int err;
-+
-+	while (1) {
-+		int payload_size = 0;
-+
-+		/* Try to get one message */
-+		num_q_msg = 1;
-+		dma_mem = NULL;
-+		err = idpf_ctlq_recv(adapter->hw.arq, &num_q_msg, &ctlq_msg);
-+		/* If no message then decide if we have to retry based on
-+		 * opcode
-+		 */
-+		if (err || !num_q_msg) {
-+			/* Increasing num_retry to consider the delayed
-+			 * responses because of large number of VF's mailbox
-+			 * messages. If the mailbox message is received from
-+			 * the other side, we come out of the sleep cycle
-+			 * immediately else we wait for more time.
-+			 */
-+			if (!op || !num_retry--)
-+				break;
-+			if (test_bit(IDPF_REMOVE_IN_PROG, adapter->flags)) {
-+				err = -EIO;
-+				break;
-+			}
-+			msleep(20);
-+			continue;
-+		}
-+
-+		/* If we are here a message is received. Check if we are looking
-+		 * for a specific message based on opcode. If it is different
-+		 * ignore and post buffers
-+		 */
-+		if (op && ctlq_msg.cookie.mbx.chnl_opcode != op)
-+			goto post_buffs;
-+
-+		if (ctlq_msg.data_len)
-+			payload_size = ctlq_msg.ctx.indirect.payload->size;
-+
-+		/* All conditions are met. Either a message requested is
-+		 * received or we received a message to be processed
-+		 */
-+		switch (ctlq_msg.cookie.mbx.chnl_opcode) {
-+		case VIRTCHNL2_OP_VERSION:
-+		case VIRTCHNL2_OP_GET_CAPS:
-+			if (ctlq_msg.cookie.mbx.chnl_retval) {
-+				dev_err(&adapter->pdev->dev, "Failure initializing, vc op: %u retval: %u\n",
-+					ctlq_msg.cookie.mbx.chnl_opcode,
-+					ctlq_msg.cookie.mbx.chnl_retval);
-+				err = -EBADMSG;
-+			} else if (msg) {
-+				memcpy(msg, ctlq_msg.ctx.indirect.payload->va,
-+				       min_t(int, payload_size, msg_size));
-+			}
-+			work_done = true;
-+			break;
-+		case VIRTCHNL2_OP_ALLOC_VECTORS:
-+			idpf_recv_vchnl_op(adapter, NULL, &ctlq_msg,
-+					   IDPF_VC_ALLOC_VECTORS,
-+					   IDPF_VC_ALLOC_VECTORS_ERR);
-+			break;
-+		case VIRTCHNL2_OP_DEALLOC_VECTORS:
-+			idpf_recv_vchnl_op(adapter, NULL, &ctlq_msg,
-+					   IDPF_VC_DEALLOC_VECTORS,
-+					   IDPF_VC_DEALLOC_VECTORS_ERR);
-+			break;
-+		default:
-+			dev_warn(&adapter->pdev->dev,
-+				 "Unhandled virtchnl response %d\n",
-+				 ctlq_msg.cookie.mbx.chnl_opcode);
-+			break;
-+		}
-+
-+post_buffs:
-+		if (ctlq_msg.data_len)
-+			dma_mem = ctlq_msg.ctx.indirect.payload;
-+		else
-+			num_q_msg = 0;
-+
-+		err = idpf_ctlq_post_rx_buffs(&adapter->hw, adapter->hw.arq,
-+					      &num_q_msg, &dma_mem);
-+		/* If post failed clear the only buffer we supplied */
-+		if (err && dma_mem)
-+			dma_free_coherent(&adapter->pdev->dev, dma_mem->size,
-+					  dma_mem->va, dma_mem->pa);
-+
-+		/* Applies only if we are looking for a specific opcode */
-+		if (work_done)
-+			break;
-+	}
-+
-+	return err;
-+}
-+
-+/**
-+ * __idpf_wait_for_event - wrapper function for wait on virtchannel response
-+ * @adapter: Driver private data structure
-+ * @vport: virtual port structure
-+ * @state: check on state upon timeout
-+ * @err_check: check if this specific error bit is set
-+ * @timeout: Max time to wait
-+ *
-+ * Checks if state is set upon expiry of timeout.  Returns 0 on success,
-+ * negative on failure.
-+ */
-+static int __idpf_wait_for_event(struct idpf_adapter *adapter,
-+				 struct idpf_vport *vport,
-+				 enum idpf_vport_vc_state state,
-+				 enum idpf_vport_vc_state err_check,
-+				 int timeout)
-+{
-+	int time_to_wait, num_waits;
-+	wait_queue_head_t *vchnl_wq;
-+	unsigned long *vc_state;
-+
-+	time_to_wait = ((timeout <= IDPF_MAX_WAIT) ? timeout : IDPF_MAX_WAIT);
-+	num_waits = ((timeout <= IDPF_MAX_WAIT) ? 1 : timeout / IDPF_MAX_WAIT);
-+
-+	vchnl_wq = &adapter->vchnl_wq;
-+	vc_state = adapter->vc_state;
-+
-+	while (num_waits) {
-+		int event;
-+
-+		/* If we are here and a reset is detected do not wait but
-+		 * return. Reset timing is out of drivers control. So
-+		 * while we are cleaning resources as part of reset if the
-+		 * underlying HW mailbox is gone, wait on mailbox messages
-+		 * is not meaningful
-+		 */
-+		if (idpf_is_reset_detected(adapter))
-+			return 0;
-+
-+		event = wait_event_timeout(*vchnl_wq,
-+					   test_and_clear_bit(state, vc_state),
-+					   msecs_to_jiffies(time_to_wait));
-+		if (event) {
-+			if (test_and_clear_bit(err_check, vc_state)) {
-+				dev_err(&adapter->pdev->dev, "VC response error %s\n",
-+					idpf_vport_vc_state_str[err_check]);
-+
-+				return -EINVAL;
-+			}
-+
-+			return 0;
-+		}
-+		num_waits--;
-+	}
-+
-+	/* Timeout occurred */
-+	dev_err(&adapter->pdev->dev, "VC timeout, state = %s\n",
-+		idpf_vport_vc_state_str[state]);
-+
-+	return -ETIMEDOUT;
-+}
-+
-+/**
-+ * idpf_min_wait_for_event - wait for virtchannel response
-+ * @adapter: Driver private data structure
-+ * @vport: virtual port structure
-+ * @state: check on state upon timeout
-+ * @err_check: check if this specific error bit is set
-+ *
-+ * Returns 0 on success, negative on failure.
-+ */
-+static int idpf_min_wait_for_event(struct idpf_adapter *adapter,
-+				   struct idpf_vport *vport,
-+				   enum idpf_vport_vc_state state,
-+				   enum idpf_vport_vc_state err_check)
-+{
-+	return __idpf_wait_for_event(adapter, vport, state, err_check,
-+				     IDPF_WAIT_FOR_EVENT_TIMEO_MIN);
-+}
-+
-+/**
-+ * idpf_wait_for_event - wait for virtchannel response
-+ * @adapter: Driver private data structure
-+ * @vport: virtual port structure
-+ * @state: check on state upon timeout after 500ms
-+ * @err_check: check if this specific error bit is set
-+ *
-+ * Returns 0 on success, negative on failure.
-+ */
-+static int idpf_wait_for_event(struct idpf_adapter *adapter,
-+			       struct idpf_vport *vport,
-+			       enum idpf_vport_vc_state state,
-+			       enum idpf_vport_vc_state err_check)
-+{
-+	/* Increasing the timeout in __IDPF_INIT_SW flow to consider large
-+	 * number of VF's mailbox message responses. When a message is received
-+	 * on mailbox, this thread is woken up by the idpf_recv_mb_msg before the
-+	 * timeout expires. Only in the error case i.e. if no message is
-+	 * received on mailbox, we wait for the complete timeout which is
-+	 * less likely to happen.
-+	 */
-+	return __idpf_wait_for_event(adapter, vport, state, err_check,
-+				     IDPF_WAIT_FOR_EVENT_TIMEO);
-+}
-+
-+/**
-+ * idpf_send_ver_msg - send virtchnl version message
-+ * @adapter: Driver specific private structure
-+ *
-+ * Send virtchnl version message.  Returns 0 on success, negative on failure.
-+ */
-+static int idpf_send_ver_msg(struct idpf_adapter *adapter)
-+{
-+	struct virtchnl2_version_info vvi;
-+
-+	if (adapter->virt_ver_maj) {
-+		vvi.major = cpu_to_le32(adapter->virt_ver_maj);
-+		vvi.minor = cpu_to_le32(adapter->virt_ver_min);
-+	} else {
-+		vvi.major = cpu_to_le32(IDPF_VIRTCHNL_VERSION_MAJOR);
-+		vvi.minor = cpu_to_le32(IDPF_VIRTCHNL_VERSION_MINOR);
-+	}
-+
-+	return idpf_send_mb_msg(adapter, VIRTCHNL2_OP_VERSION, sizeof(vvi),
-+				(u8 *)&vvi);
-+}
-+
-+/**
-+ * idpf_recv_ver_msg - Receive virtchnl version message
-+ * @adapter: Driver specific private structure
-+ *
-+ * Receive virtchnl version message. Returns 0 on success, -EAGAIN if we need
-+ * to send version message again, otherwise negative on failure.
-+ */
-+static int idpf_recv_ver_msg(struct idpf_adapter *adapter)
-+{
-+	struct virtchnl2_version_info vvi;
-+	u32 major, minor;
-+	int err;
-+
-+	err = idpf_recv_mb_msg(adapter, VIRTCHNL2_OP_VERSION, &vvi, sizeof(vvi));
-+	if (err)
-+		return err;
-+
-+	major = le32_to_cpu(vvi.major);
-+	minor = le32_to_cpu(vvi.minor);
-+
-+	if (major > IDPF_VIRTCHNL_VERSION_MAJOR) {
-+		dev_warn(&adapter->pdev->dev,
-+			 "Virtchnl major version (%d) greater than supported\n", major);
-+
-+		return -EINVAL;
-+	}
-+
-+	if (major == IDPF_VIRTCHNL_VERSION_MAJOR &&
-+	    minor > IDPF_VIRTCHNL_VERSION_MINOR)
-+		dev_warn(&adapter->pdev->dev, "Virtchnl minor version (%d) didn't match\n", minor);
-+
-+	/* If we have a mismatch, resend version to update receiver on what
-+	 * version we will use.
-+	 */
-+	if (!adapter->virt_ver_maj &&
-+	    major != IDPF_VIRTCHNL_VERSION_MAJOR &&
-+	    minor != IDPF_VIRTCHNL_VERSION_MINOR)
-+		err = -EAGAIN;
-+
-+	adapter->virt_ver_maj = major;
-+	adapter->virt_ver_min = minor;
-+
-+	return err;
-+}
-+
-+/**
-+ * idpf_send_get_caps_msg - Send virtchnl get capabilities message
-+ * @adapter: Driver specific private structure
-+ *
-+ * Send virtchl get capabilities message. Returns 0 on success, negative on
++ * Send enable vport virtchnl message.  Returns 0 on success, negative on
 + * failure.
 + */
-+static int idpf_send_get_caps_msg(struct idpf_adapter *adapter)
++int idpf_send_enable_vport_msg(struct idpf_vport *vport)
 +{
-+	struct virtchnl2_get_capabilities caps = { };
++	struct idpf_adapter *adapter = vport->adapter;
++	struct virtchnl2_vport v_id;
++	int err;
 +
-+	caps.csum_caps =
-+		cpu_to_le32(VIRTCHNL2_CAP_TX_CSUM_L3_IPV4	|
-+			    VIRTCHNL2_CAP_TX_CSUM_L4_IPV4_TCP	|
-+			    VIRTCHNL2_CAP_TX_CSUM_L4_IPV4_UDP	|
-+			    VIRTCHNL2_CAP_TX_CSUM_L4_IPV4_SCTP	|
-+			    VIRTCHNL2_CAP_TX_CSUM_L4_IPV6_TCP	|
-+			    VIRTCHNL2_CAP_TX_CSUM_L4_IPV6_UDP	|
-+			    VIRTCHNL2_CAP_TX_CSUM_L4_IPV6_SCTP	|
-+			    VIRTCHNL2_CAP_RX_CSUM_L3_IPV4	|
-+			    VIRTCHNL2_CAP_RX_CSUM_L4_IPV4_TCP	|
-+			    VIRTCHNL2_CAP_RX_CSUM_L4_IPV4_UDP	|
-+			    VIRTCHNL2_CAP_RX_CSUM_L4_IPV4_SCTP	|
-+			    VIRTCHNL2_CAP_RX_CSUM_L4_IPV6_TCP	|
-+			    VIRTCHNL2_CAP_RX_CSUM_L4_IPV6_UDP	|
-+			    VIRTCHNL2_CAP_RX_CSUM_L4_IPV6_SCTP	|
-+			    VIRTCHNL2_CAP_TX_CSUM_L3_SINGLE_TUNNEL |
-+			    VIRTCHNL2_CAP_RX_CSUM_L3_SINGLE_TUNNEL |
-+			    VIRTCHNL2_CAP_TX_CSUM_L4_SINGLE_TUNNEL |
-+			    VIRTCHNL2_CAP_RX_CSUM_L4_SINGLE_TUNNEL |
-+			    VIRTCHNL2_CAP_RX_CSUM_GENERIC);
++	v_id.vport_id = cpu_to_le32(vport->vport_id);
 +
-+	caps.seg_caps =
-+		cpu_to_le32(VIRTCHNL2_CAP_SEG_IPV4_TCP		|
-+			    VIRTCHNL2_CAP_SEG_IPV4_UDP		|
-+			    VIRTCHNL2_CAP_SEG_IPV4_SCTP		|
-+			    VIRTCHNL2_CAP_SEG_IPV6_TCP		|
-+			    VIRTCHNL2_CAP_SEG_IPV6_UDP		|
-+			    VIRTCHNL2_CAP_SEG_IPV6_SCTP		|
-+			    VIRTCHNL2_CAP_SEG_TX_SINGLE_TUNNEL);
++	mutex_lock(&vport->vc_buf_lock);
 +
-+	caps.rss_caps =
-+		cpu_to_le64(VIRTCHNL2_CAP_RSS_IPV4_TCP		|
-+			    VIRTCHNL2_CAP_RSS_IPV4_UDP		|
-+			    VIRTCHNL2_CAP_RSS_IPV4_SCTP		|
-+			    VIRTCHNL2_CAP_RSS_IPV4_OTHER	|
-+			    VIRTCHNL2_CAP_RSS_IPV6_TCP		|
-+			    VIRTCHNL2_CAP_RSS_IPV6_UDP		|
-+			    VIRTCHNL2_CAP_RSS_IPV6_SCTP		|
-+			    VIRTCHNL2_CAP_RSS_IPV6_OTHER);
-+
-+	caps.hsplit_caps =
-+		cpu_to_le32(VIRTCHNL2_CAP_RX_HSPLIT_AT_L4V4	|
-+			    VIRTCHNL2_CAP_RX_HSPLIT_AT_L4V6);
-+
-+	caps.rsc_caps =
-+		cpu_to_le32(VIRTCHNL2_CAP_RSC_IPV4_TCP		|
-+			    VIRTCHNL2_CAP_RSC_IPV6_TCP);
-+
-+	caps.other_caps =
-+		cpu_to_le64(VIRTCHNL2_CAP_SRIOV			|
-+			    VIRTCHNL2_CAP_MACFILTER		|
-+			    VIRTCHNL2_CAP_SPLITQ_QSCHED		|
-+			    VIRTCHNL2_CAP_PROMISC		|
-+			    VIRTCHNL2_CAP_LOOPBACK);
-+
-+	return idpf_send_mb_msg(adapter, VIRTCHNL2_OP_GET_CAPS, sizeof(caps),
-+				(u8 *)&caps);
-+}
-+
-+/**
-+ * idpf_recv_get_caps_msg - Receive virtchnl get capabilities message
-+ * @adapter: Driver specific private structure
-+ *
-+ * Receive virtchnl get capabilities message. Returns 0 on success, negative on
-+ * failure.
-+ */
-+static int idpf_recv_get_caps_msg(struct idpf_adapter *adapter)
-+{
-+	return idpf_recv_mb_msg(adapter, VIRTCHNL2_OP_GET_CAPS, &adapter->caps,
-+				sizeof(struct virtchnl2_get_capabilities));
-+}
-+
-+/**
-+ * idpf_send_alloc_vectors_msg - Send virtchnl alloc vectors message
-+ * @adapter: Driver specific private structure
-+ * @num_vectors: number of vectors to be allocated
-+ *
-+ * Returns 0 on success, negative on failure.
-+ */
-+int idpf_send_alloc_vectors_msg(struct idpf_adapter *adapter, u16 num_vectors)
-+{
-+	struct virtchnl2_alloc_vectors *alloc_vec, *rcvd_vec;
-+	struct virtchnl2_alloc_vectors ac = { };
-+	u16 num_vchunks;
-+	int size, err;
-+
-+	ac.num_vectors = cpu_to_le16(num_vectors);
-+
-+	mutex_lock(&adapter->vc_buf_lock);
-+
-+	err = idpf_send_mb_msg(adapter, VIRTCHNL2_OP_ALLOC_VECTORS,
-+			       sizeof(ac), (u8 *)&ac);
++	err = idpf_send_mb_msg(adapter, VIRTCHNL2_OP_ENABLE_VPORT,
++			       sizeof(v_id), (u8 *)&v_id);
 +	if (err)
-+		goto error;
++		goto rel_lock;
 +
-+	err = idpf_wait_for_event(adapter, NULL, IDPF_VC_ALLOC_VECTORS,
-+				  IDPF_VC_ALLOC_VECTORS_ERR);
-+	if (err)
-+		goto error;
++	err = idpf_wait_for_event(adapter, vport, IDPF_VC_ENA_VPORT,
++				  IDPF_VC_ENA_VPORT_ERR);
 +
-+	rcvd_vec = (struct virtchnl2_alloc_vectors *)adapter->vc_msg;
-+	num_vchunks = le16_to_cpu(rcvd_vec->vchunks.num_vchunks);
-+
-+	size = struct_size(rcvd_vec, vchunks.vchunks, num_vchunks);
-+	if (size > sizeof(adapter->vc_msg)) {
-+		err = -EINVAL;
-+		goto error;
-+	}
-+
-+	kfree(adapter->req_vec_chunks);
-+	adapter->req_vec_chunks = NULL;
-+	adapter->req_vec_chunks = kmemdup(adapter->vc_msg, size, GFP_KERNEL);
-+	if (!adapter->req_vec_chunks) {
-+		err = -ENOMEM;
-+		goto error;
-+	}
-+
-+	alloc_vec = adapter->req_vec_chunks;
-+	if (le16_to_cpu(alloc_vec->num_vectors) < num_vectors) {
-+		kfree(adapter->req_vec_chunks);
-+		adapter->req_vec_chunks = NULL;
-+		err = -EINVAL;
-+	}
-+
-+error:
-+	mutex_unlock(&adapter->vc_buf_lock);
++rel_lock:
++	mutex_unlock(&vport->vc_buf_lock);
 +
 +	return err;
 +}
 +
 +/**
-+ * idpf_send_dealloc_vectors_msg - Send virtchnl de allocate vectors message
-+ * @adapter: Driver specific private structure
++ * idpf_send_disable_vport_msg - Send virtchnl disable vport message
++ * @vport: virtual port data structure
 + *
-+ * Returns 0 on success, negative on failure.
++ * Send disable vport virtchnl message.  Returns 0 on success, negative on
++ * failure.
 + */
-+int idpf_send_dealloc_vectors_msg(struct idpf_adapter *adapter)
++int idpf_send_disable_vport_msg(struct idpf_vport *vport)
 +{
-+	struct virtchnl2_alloc_vectors *ac = adapter->req_vec_chunks;
-+	struct virtchnl2_vector_chunks *vcs = &ac->vchunks;
-+	int buf_size, err;
++	struct idpf_adapter *adapter = vport->adapter;
++	struct virtchnl2_vport v_id;
++	int err;
 +
-+	buf_size = struct_size(vcs, vchunks, le16_to_cpu(vcs->num_vchunks));
++	v_id.vport_id = cpu_to_le32(vport->vport_id);
 +
-+	mutex_lock(&adapter->vc_buf_lock);
++	mutex_lock(&vport->vc_buf_lock);
 +
-+	err = idpf_send_mb_msg(adapter, VIRTCHNL2_OP_DEALLOC_VECTORS, buf_size,
-+			       (u8 *)vcs);
++	err = idpf_send_mb_msg(adapter, VIRTCHNL2_OP_DISABLE_VPORT,
++			       sizeof(v_id), (u8 *)&v_id);
 +	if (err)
-+		goto error;
++		goto rel_lock;
 +
-+	err = idpf_min_wait_for_event(adapter, NULL, IDPF_VC_DEALLOC_VECTORS,
-+				      IDPF_VC_DEALLOC_VECTORS_ERR);
-+	if (err)
-+		goto error;
++	err = idpf_min_wait_for_event(adapter, vport, IDPF_VC_DIS_VPORT,
++				      IDPF_VC_DIS_VPORT_ERR);
 +
-+	kfree(adapter->req_vec_chunks);
-+	adapter->req_vec_chunks = NULL;
-+
-+error:
-+	mutex_unlock(&adapter->vc_buf_lock);
++rel_lock:
++	mutex_unlock(&vport->vc_buf_lock);
 +
 +	return err;
 +}
 +
  /**
-  * idpf_find_ctlq - Given a type and id, find ctlq info
-  * @hw: hardware struct
-@@ -123,3 +716,175 @@ void idpf_deinit_dflt_mbx(struct idpf_adapter *adapter)
- 	adapter->hw.arq = NULL;
- 	adapter->hw.asq = NULL;
+  * idpf_send_config_tx_queues_msg - Send virtchnl config tx queues message
+  * @vport: virtual port data structure
+@@ -1437,6 +1586,349 @@ static int idpf_send_config_rx_queues_msg(struct idpf_vport *vport)
+ 	return err;
  }
-+
+ 
 +/**
-+ * idpf_vc_core_init - Initialize state machine and get driver specific
-+ * resources
-+ * @adapter: Driver specific private structure
++ * idpf_send_ena_dis_queues_msg - Send virtchnl enable or disable
++ * queues message
++ * @vport: virtual port data structure
++ * @vc_op: virtchnl op code to send
 + *
-+ * This function will initialize the state machine and request all necessary
-+ * resources required by the device driver. Once the state machine is
-+ * initialized, allocate memory to store vport specific information and also
-+ * requests required interrupts.
-+ *
-+ * Returns 0 on success, -EAGAIN function will get called again,
-+ * otherwise negative on failure.
++ * Send enable or disable queues virtchnl message. Returns 0 on success,
++ * negative on failure.
 + */
-+int idpf_vc_core_init(struct idpf_adapter *adapter)
++static int idpf_send_ena_dis_queues_msg(struct idpf_vport *vport, u32 vc_op)
 +{
-+	int task_delay = 30;
-+	int err = 0;
++	u32 num_msgs, num_chunks, num_txq, num_rxq, num_q;
++	struct idpf_adapter *adapter = vport->adapter;
++	struct virtchnl2_del_ena_dis_queues *eq;
++	struct virtchnl2_queue_chunks *qcs;
++	struct virtchnl2_queue_chunk *qc;
++	u32 config_sz, chunk_sz, buf_sz;
++	int i, j, k = 0, err = 0;
 +
-+	while (adapter->state != __IDPF_INIT_SW) {
-+		switch (adapter->state) {
-+		case __IDPF_STARTUP:
-+			if (idpf_send_ver_msg(adapter))
-+				goto init_failed;
-+			adapter->state = __IDPF_VER_CHECK;
-+			goto restart;
-+		case __IDPF_VER_CHECK:
-+			err = idpf_recv_ver_msg(adapter);
-+			if (err == -EIO) {
-+				return err;
-+			} else if (err == -EAGAIN) {
-+				adapter->state = __IDPF_STARTUP;
-+				goto restart;
-+			} else if (err) {
-+				goto init_failed;
-+			}
-+			if (idpf_send_get_caps_msg(adapter))
-+				goto init_failed;
-+			adapter->state = __IDPF_GET_CAPS;
-+			goto restart;
-+		case __IDPF_GET_CAPS:
-+			if (idpf_recv_get_caps_msg(adapter))
-+				goto init_failed;
-+			adapter->state = __IDPF_INIT_SW;
-+			break;
-+		default:
-+			dev_err(&adapter->pdev->dev, "Device is in bad state: %d\n",
-+				adapter->state);
-+			goto init_failed;
-+		}
++	/* validate virtchnl op */
++	switch (vc_op) {
++	case VIRTCHNL2_OP_ENABLE_QUEUES:
++	case VIRTCHNL2_OP_DISABLE_QUEUES:
 +		break;
-+restart:
-+		/* Give enough time before proceeding further with
-+		 * state machine
-+		 */
-+		msleep(task_delay);
++	default:
++		return -EINVAL;
 +	}
 +
-+	/* Start the mailbox task before requesting vectors. This will ensure
-+	 * vector information response from mailbox is handled
-+	 */
-+	queue_delayed_work(adapter->mbx_wq, &adapter->mbx_task, 0);
++	num_txq = vport->num_txq + vport->num_complq;
++	num_rxq = vport->num_rxq + vport->num_bufq;
++	num_q = num_txq + num_rxq;
++	buf_sz = sizeof(struct virtchnl2_queue_chunk) * num_q;
++	qc = kzalloc(buf_sz, GFP_KERNEL);
++	if (!qc)
++		return -ENOMEM;
 +
-+	queue_delayed_work(adapter->serv_wq, &adapter->serv_task,
-+			   msecs_to_jiffies(5 * (adapter->pdev->devfn & 0x07)));
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		struct idpf_txq_group *tx_qgrp = &vport->txq_grps[i];
 +
-+	err = idpf_intr_req(adapter);
-+	if (err) {
-+		dev_err(&adapter->pdev->dev, "failed to enable interrupt vectors: %d\n",
-+			err);
-+		goto err_intr_req;
++		for (j = 0; j < tx_qgrp->num_txq; j++, k++) {
++			qc[k].type = cpu_to_le32(tx_qgrp->txqs[j]->q_type);
++			qc[k].start_queue_id = cpu_to_le32(tx_qgrp->txqs[j]->q_id);
++			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
++		}
++	}
++	if (vport->num_txq != k) {
++		err = -EINVAL;
++		goto error;
 +	}
 +
-+	goto no_err;
++	if (!idpf_is_queue_model_split(vport->txq_model))
++		goto setup_rx;
 +
-+err_intr_req:
-+	cancel_delayed_work_sync(&adapter->serv_task);
-+no_err:
-+	return err;
++	for (i = 0; i < vport->num_txq_grp; i++, k++) {
++		struct idpf_txq_group *tx_qgrp = &vport->txq_grps[i];
 +
-+init_failed:
-+	/* Don't retry if we're trying to go down, just bail. */
-+	if (test_bit(IDPF_REMOVE_IN_PROG, adapter->flags))
-+		return err;
-+
-+	if (++adapter->mb_wait_count > IDPF_MB_MAX_ERR) {
-+		dev_err(&adapter->pdev->dev, "Failed to establish mailbox communications with hardware\n");
-+
-+		return -EFAULT;
++		qc[k].type = cpu_to_le32(tx_qgrp->complq->q_type);
++		qc[k].start_queue_id = cpu_to_le32(tx_qgrp->complq->q_id);
++		qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
 +	}
-+	/* If it reached here, it is possible that mailbox queue initialization
-+	 * register writes might not have taken effect. Retry to initialize
-+	 * the mailbox again
-+	 */
-+	adapter->state = __IDPF_STARTUP;
-+	idpf_deinit_dflt_mbx(adapter);
-+	set_bit(IDPF_HR_DRV_LOAD, adapter->flags);
-+	queue_delayed_work(adapter->vc_event_wq, &adapter->vc_event_task,
-+			   msecs_to_jiffies(task_delay));
++	if (vport->num_complq != (k - vport->num_txq)) {
++		err = -EINVAL;
++		goto error;
++	}
 +
-+	return -EAGAIN;
-+}
++setup_rx:
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct idpf_rxq_group *rx_qgrp = &vport->rxq_grps[i];
 +
-+/**
-+ * idpf_vc_core_deinit - Device deinit routine
-+ * @adapter: Driver specific private structure
-+ *
-+ */
-+void idpf_vc_core_deinit(struct idpf_adapter *adapter)
-+{
-+	int i;
++		if (idpf_is_queue_model_split(vport->rxq_model))
++			num_rxq = rx_qgrp->splitq.num_rxq_sets;
++		else
++			num_rxq = rx_qgrp->singleq.num_rxq;
 +
-+	idpf_intr_rel(adapter);
-+	/* Set all bits as we dont know on which vc_state the vhnl_wq is
-+	 * waiting on and wakeup the virtchnl workqueue even if it is waiting
-+	 * for the response as we are going down
-+	 */
-+	for (i = 0; i < IDPF_VC_NBITS; i++)
-+		set_bit(i, adapter->vc_state);
-+	wake_up(&adapter->vchnl_wq);
-+
-+	cancel_delayed_work_sync(&adapter->serv_task);
-+	cancel_delayed_work_sync(&adapter->mbx_task);
-+	/* Clear all the bits */
-+	for (i = 0; i < IDPF_VC_NBITS; i++)
-+		clear_bit(i, adapter->vc_state);
-+}
-+
-+/**
-+ * idpf_get_vec_ids - Initialize vector id from Mailbox parameters
-+ * @adapter: adapter structure to get the mailbox vector id
-+ * @vecids: Array of vector ids
-+ * @num_vecids: number of vector ids
-+ * @chunks: vector ids received over mailbox
-+ *
-+ * Will initialize the mailbox vector id which is received from the
-+ * get capabilities and data queue vector ids with ids received as
-+ * mailbox parameters.
-+ * Returns number of ids filled
-+ */
-+int idpf_get_vec_ids(struct idpf_adapter *adapter,
-+		     u16 *vecids, int num_vecids,
-+		     struct virtchnl2_vector_chunks *chunks)
-+{
-+	u16 num_chunks = le16_to_cpu(chunks->num_vchunks);
-+	int num_vecid_filled = 0;
-+	int i, j;
-+
-+	vecids[num_vecid_filled] = adapter->mb_vector.v_idx;
-+	num_vecid_filled++;
-+
-+	for (j = 0; j < num_chunks; j++) {
-+		struct virtchnl2_vector_chunk *chunk;
-+		u16 start_vecid, num_vec;
-+
-+		chunk = &chunks->vchunks[j];
-+		num_vec = le16_to_cpu(chunk->num_vectors);
-+		start_vecid = le16_to_cpu(chunk->start_vector_id);
-+
-+		for (i = 0; i < num_vec; i++) {
-+			if ((num_vecid_filled + i) < num_vecids) {
-+				vecids[num_vecid_filled + i] = start_vecid;
-+				start_vecid++;
++		for (j = 0; j < num_rxq; j++, k++) {
++			if (idpf_is_queue_model_split(vport->rxq_model)) {
++				qc[k].start_queue_id =
++				cpu_to_le32(rx_qgrp->splitq.rxq_sets[j]->rxq.q_id);
++				qc[k].type =
++				cpu_to_le32(rx_qgrp->splitq.rxq_sets[j]->rxq.q_type);
 +			} else {
-+				break;
++				qc[k].start_queue_id =
++				cpu_to_le32(rx_qgrp->singleq.rxqs[j]->q_id);
++				qc[k].type =
++				cpu_to_le32(rx_qgrp->singleq.rxqs[j]->q_type);
++			}
++			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
++		}
++	}
++	if (vport->num_rxq != k - (vport->num_txq + vport->num_complq)) {
++		err = -EINVAL;
++		goto error;
++	}
++
++	if (!idpf_is_queue_model_split(vport->rxq_model))
++		goto send_msg;
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct idpf_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++
++		for (j = 0; j < vport->num_bufqs_per_qgrp; j++, k++) {
++			struct idpf_queue *q;
++
++			q = &rx_qgrp->splitq.bufq_sets[j].bufq;
++			qc[k].type = cpu_to_le32(q->q_type);
++			qc[k].start_queue_id = cpu_to_le32(q->q_id);
++			qc[k].num_queues = cpu_to_le32(IDPF_NUMQ_PER_CHUNK);
++		}
++	}
++	if (vport->num_bufq != k - (vport->num_txq +
++				    vport->num_complq +
++				    vport->num_rxq)) {
++		err = -EINVAL;
++		goto error;
++	}
++
++send_msg:
++	/* Chunk up the queue info into multiple messages */
++	config_sz = sizeof(struct virtchnl2_del_ena_dis_queues);
++	chunk_sz = sizeof(struct virtchnl2_queue_chunk);
++
++	num_chunks = min_t(u32, IDPF_NUM_CHUNKS_PER_MSG(config_sz, chunk_sz),
++			   num_q);
++	num_msgs = DIV_ROUND_UP(num_q, num_chunks);
++
++	buf_sz = struct_size(eq, chunks.chunks, num_chunks);
++	eq = kzalloc(buf_sz, GFP_KERNEL);
++	if (!eq) {
++		err = -ENOMEM;
++		goto error;
++	}
++
++	mutex_lock(&vport->vc_buf_lock);
++
++	for (i = 0, k = 0; i < num_msgs; i++) {
++		memset(eq, 0, buf_sz);
++		eq->vport_id = cpu_to_le32(vport->vport_id);
++		eq->chunks.num_chunks = cpu_to_le16(num_chunks);
++		qcs = &eq->chunks;
++		memcpy(qcs->chunks, &qc[k], chunk_sz * num_chunks);
++
++		err = idpf_send_mb_msg(adapter, vc_op, buf_sz, (u8 *)eq);
++		if (err)
++			goto mbx_error;
++
++		if (vc_op == VIRTCHNL2_OP_ENABLE_QUEUES)
++			err = idpf_wait_for_event(adapter, vport,
++						  IDPF_VC_ENA_QUEUES,
++						  IDPF_VC_ENA_QUEUES_ERR);
++		else
++			err = idpf_min_wait_for_event(adapter, vport,
++						      IDPF_VC_DIS_QUEUES,
++						      IDPF_VC_DIS_QUEUES_ERR);
++		if (err)
++			goto mbx_error;
++
++		k += num_chunks;
++		num_q -= num_chunks;
++		num_chunks = min(num_chunks, num_q);
++		/* Recalculate buffer size */
++		buf_sz = struct_size(eq, chunks.chunks, num_chunks);
++	}
++
++mbx_error:
++	mutex_unlock(&vport->vc_buf_lock);
++	kfree(eq);
++error:
++	kfree(qc);
++
++	return err;
++}
++
++/**
++ * idpf_send_map_unmap_queue_vector_msg - Send virtchnl map or unmap queue
++ * vector message
++ * @vport: virtual port data structure
++ * @map: true for map and false for unmap
++ *
++ * Send map or unmap queue vector virtchnl message.  Returns 0 on success,
++ * negative on failure.
++ */
++int idpf_send_map_unmap_queue_vector_msg(struct idpf_vport *vport, bool map)
++{
++	struct idpf_adapter *adapter = vport->adapter;
++	struct virtchnl2_queue_vector_maps *vqvm;
++	struct virtchnl2_queue_vector *vqv;
++	u32 config_sz, chunk_sz, buf_sz;
++	u32 num_msgs, num_chunks, num_q;
++	int i, j, k = 0, err = 0;
++
++	num_q = vport->num_txq + vport->num_rxq;
++
++	buf_sz = sizeof(struct virtchnl2_queue_vector) * num_q;
++	vqv = kzalloc(buf_sz, GFP_KERNEL);
++	if (!vqv)
++		return -ENOMEM;
++
++	for (i = 0; i < vport->num_txq_grp; i++) {
++		struct idpf_txq_group *tx_qgrp = &vport->txq_grps[i];
++
++		for (j = 0; j < tx_qgrp->num_txq; j++, k++) {
++			vqv[k].queue_type = cpu_to_le32(tx_qgrp->txqs[j]->q_type);
++			vqv[k].queue_id = cpu_to_le32(tx_qgrp->txqs[j]->q_id);
++
++			if (idpf_is_queue_model_split(vport->txq_model)) {
++				vqv[k].vector_id =
++				cpu_to_le16(tx_qgrp->complq->q_vector->v_idx);
++				vqv[k].itr_idx =
++				cpu_to_le32(tx_qgrp->complq->q_vector->tx_itr_idx);
++			} else {
++				vqv[k].vector_id =
++				cpu_to_le16(tx_qgrp->txqs[j]->q_vector->v_idx);
++				vqv[k].itr_idx =
++				cpu_to_le32(tx_qgrp->txqs[j]->q_vector->tx_itr_idx);
 +			}
 +		}
-+		num_vecid_filled = num_vecid_filled + i;
 +	}
 +
-+	return num_vecid_filled;
++	if (vport->num_txq != k) {
++		err = -EINVAL;
++		goto error;
++	}
++
++	for (i = 0; i < vport->num_rxq_grp; i++) {
++		struct idpf_rxq_group *rx_qgrp = &vport->rxq_grps[i];
++		u16 num_rxq;
++
++		if (idpf_is_queue_model_split(vport->rxq_model))
++			num_rxq = rx_qgrp->splitq.num_rxq_sets;
++		else
++			num_rxq = rx_qgrp->singleq.num_rxq;
++
++		for (j = 0; j < num_rxq; j++, k++) {
++			struct idpf_queue *rxq;
++
++			if (idpf_is_queue_model_split(vport->rxq_model))
++				rxq = &rx_qgrp->splitq.rxq_sets[j]->rxq;
++			else
++				rxq = rx_qgrp->singleq.rxqs[j];
++
++			vqv[k].queue_type = cpu_to_le32(rxq->q_type);
++			vqv[k].queue_id = cpu_to_le32(rxq->q_id);
++			vqv[k].vector_id = cpu_to_le16(rxq->q_vector->v_idx);
++			vqv[k].itr_idx = cpu_to_le32(rxq->q_vector->rx_itr_idx);
++		}
++	}
++
++	if (idpf_is_queue_model_split(vport->txq_model)) {
++		if (vport->num_rxq != k - vport->num_complq) {
++			err = -EINVAL;
++			goto error;
++		}
++	} else {
++		if (vport->num_rxq != k - vport->num_txq) {
++			err = -EINVAL;
++			goto error;
++		}
++	}
++
++	/* Chunk up the vector info into multiple messages */
++	config_sz = sizeof(struct virtchnl2_queue_vector_maps);
++	chunk_sz = sizeof(struct virtchnl2_queue_vector);
++
++	num_chunks = min_t(u32, IDPF_NUM_CHUNKS_PER_MSG(config_sz, chunk_sz),
++			   num_q);
++	num_msgs = DIV_ROUND_UP(num_q, num_chunks);
++
++	buf_sz = struct_size(vqvm, qv_maps, num_chunks);
++	vqvm = kzalloc(buf_sz, GFP_KERNEL);
++	if (!vqvm) {
++		err = -ENOMEM;
++		goto error;
++	}
++
++	mutex_lock(&vport->vc_buf_lock);
++
++	for (i = 0, k = 0; i < num_msgs; i++) {
++		memset(vqvm, 0, buf_sz);
++		vqvm->vport_id = cpu_to_le32(vport->vport_id);
++		vqvm->num_qv_maps = cpu_to_le16(num_chunks);
++		memcpy(vqvm->qv_maps, &vqv[k], chunk_sz * num_chunks);
++
++		if (map) {
++			err = idpf_send_mb_msg(adapter,
++					       VIRTCHNL2_OP_MAP_QUEUE_VECTOR,
++					       buf_sz, (u8 *)vqvm);
++			if (!err)
++				err = idpf_wait_for_event(adapter, vport,
++							  IDPF_VC_MAP_IRQ,
++							  IDPF_VC_MAP_IRQ_ERR);
++		} else {
++			err = idpf_send_mb_msg(adapter,
++					       VIRTCHNL2_OP_UNMAP_QUEUE_VECTOR,
++					       buf_sz, (u8 *)vqvm);
++			if (!err)
++				err =
++				idpf_min_wait_for_event(adapter, vport,
++							IDPF_VC_UNMAP_IRQ,
++							IDPF_VC_UNMAP_IRQ_ERR);
++		}
++		if (err)
++			goto mbx_error;
++
++		k += num_chunks;
++		num_q -= num_chunks;
++		num_chunks = min(num_chunks, num_q);
++		/* Recalculate buffer size */
++		buf_sz = struct_size(vqvm, qv_maps, num_chunks);
++	}
++
++mbx_error:
++	mutex_unlock(&vport->vc_buf_lock);
++	kfree(vqvm);
++error:
++	kfree(vqv);
++
++	return err;
 +}
++
++/**
++ * idpf_send_enable_queues_msg - send enable queues virtchnl message
++ * @vport: Virtual port private data structure
++ *
++ * Will send enable queues virtchnl message.  Returns 0 on success, negative on
++ * failure.
++ */
++int idpf_send_enable_queues_msg(struct idpf_vport *vport)
++{
++	return idpf_send_ena_dis_queues_msg(vport, VIRTCHNL2_OP_ENABLE_QUEUES);
++}
++
++/**
++ * idpf_send_disable_queues_msg - send disable queues virtchnl message
++ * @vport: Virtual port private data structure
++ *
++ * Will send disable queues virtchnl message.  Returns 0 on success, negative
++ * on failure.
++ */
++int idpf_send_disable_queues_msg(struct idpf_vport *vport)
++{
++	return idpf_send_ena_dis_queues_msg(vport, VIRTCHNL2_OP_DISABLE_QUEUES);
++}
++
+ /**
+  * idpf_send_config_queues_msg - Send config queues virtchnl message
+  * @vport: Virtual port private data structure
+@@ -2265,6 +2757,40 @@ void idpf_vc_core_deinit(struct idpf_adapter *adapter)
+ 	adapter->vports = NULL;
+ }
+ 
++/**
++ * idpf_vport_alloc_vec_indexes - Get relative vector indexes
++ * @vport: virtual port data struct
++ *
++ * This function requests the vector information required for the vport and
++ * stores the vector indexes received from the 'global vector distribution'
++ * in the vport's queue vectors array.
++ *
++ * Return 0 on success, error on failure
++ */
++static int idpf_vport_alloc_vec_indexes(struct idpf_vport *vport)
++{
++	struct idpf_vector_info vec_info;
++	int num_alloc_vecs;
++
++	vec_info.num_curr_vecs = vport->num_q_vectors;
++	vec_info.num_req_vecs = max(vport->num_txq, vport->num_rxq);
++	vec_info.default_vport = vport->default_vport;
++	vec_info.index = vport->idx;
++
++	num_alloc_vecs = idpf_req_rel_vector_indexes(vport->adapter,
++						     vport->q_vector_idxs,
++						     &vec_info);
++	if (num_alloc_vecs <= 0) {
++		dev_err(&vport->adapter->pdev->dev, "Vector distribution failed: %d\n",
++			num_alloc_vecs);
++		return -EINVAL;
++	}
++
++	vport->num_q_vectors = num_alloc_vecs;
++
++	return 0;
++}
++
+ /**
+  * idpf_vport_init - Initialize virtual port
+  * @vport: virtual port to be initialized
+@@ -2304,6 +2830,7 @@ void idpf_vport_init(struct idpf_vport *vport, struct idpf_vport_max_q *max_q)
+ 	idpf_vport_init_num_qs(vport, vport_msg);
+ 	idpf_vport_calc_num_q_desc(vport);
+ 	idpf_vport_calc_num_q_groups(vport);
++	idpf_vport_alloc_vec_indexes(vport);
+ 
+ 	mutex_init(&vport->stop_mutex);
+ }
 -- 
 2.38.1
 
