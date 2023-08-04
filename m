@@ -4,97 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 337E8C001DF
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 08:27:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 245C1C001DB
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 08:29:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C855141FDF;
-	Fri,  4 Aug 2023 08:27:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C855141FDF
+	by smtp4.osuosl.org (Postfix) with ESMTP id C925D4099D;
+	Fri,  4 Aug 2023 08:29:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C925D4099D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691137631;
-	bh=n98prNs3J68ulHVjt4MHZwpDh+t1KfxLHWsz1pDtR58=;
+	s=default; t=1691137762;
+	bh=2XqJu+J+UZeTjd8DCSfCSZw1uYjDHbQlnlgPsoKEArs=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=lcdo4gM6HX2oq7QExduH08Sm8RpA/knIhHQ9sGDtAl3wDRfVMzKPVCrOZIAsoqIvC
-	 l2RuLd0tVCJJAl0UxW2aS70Z7zanA6tCQiV7gsfOD+gvo02HGV/LY31TNo2YH8MyBu
-	 Fk2AaUUSd1We+ehSgSEMW1mKSFoyNmhvz+MMme6zr0VoY3xHYeIHJM5wGvBaCnGHJf
-	 m4MuyHm8wj6Gg2SHylEBTm5OkBgFC9MN3VuKzLl8LdKfyhD/mb2GX17MZafc5aqQzU
-	 BT3eN7hyCBDDsYk/wmMAt8fa3CST16/5Z4dOxt44CpchufwDl+1B/qhYdS5l9dqe2R
-	 4We6cW3tg6irg==
+	b=ejEmMbrt0e8wh/ZvK/Ghr4j2K+Rvb584zKUCeeOB46sVIKbOGKykh50D4qXW11ipC
+	 +xPOhYGVLJacmYUfZUW+JEAWXaWr69zYR3uVuKT9pZeWMAIAXf02WIqhwFn3VE09Rv
+	 ZWx6r+3JwF7E/EaLBK0kTEyRpdmmEQ/ZZV/W544AAIvM0M8B0aQPNjaHYIIYvi8Gwl
+	 XL2wZj9/zawiUar/5PfYguKqiUOMMOuB5WO1t7FEB5Z9+K0SQ+WQf315raqklhnJiZ
+	 S77/f3M2XcOiZweuaSCaBTPMqveCjGI5t9dpZ5PaBPy6VVyHAxmZQ3hYg+kjU82JB7
+	 F1uYSqZHW5XDQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id mtwblmXeQezd; Fri,  4 Aug 2023 08:27:10 +0000 (UTC)
+	with ESMTP id dlnqt6OiAXHn; Fri,  4 Aug 2023 08:29:22 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D2CDB41EB9;
-	Fri,  4 Aug 2023 08:27:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D2CDB41EB9
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 2C7DB1BF315
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 08:27:06 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 815D64086D;
+	Fri,  4 Aug 2023 08:29:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 815D64086D
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 159A51BF341
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 08:29:20 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B15BE83BC9
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 08:27:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B15BE83BC9
+ by smtp2.osuosl.org (Postfix) with ESMTP id CA367400FE
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 08:29:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CA367400FE
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id V2JQRrn5Aa1W for <intel-wired-lan@lists.osuosl.org>;
- Fri,  4 Aug 2023 08:27:03 +0000 (UTC)
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com
- [IPv6:2607:f8b0:4864:20::429])
- by smtp1.osuosl.org (Postfix) with ESMTPS id CE70D83F7D
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 08:27:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CE70D83F7D
-Received: by mail-pf1-x429.google.com with SMTP id
- d2e1a72fcca58-6873a30d02eso1309808b3a.3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 04 Aug 2023 01:27:03 -0700 (PDT)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id SgtBpMTl5Gpa for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  4 Aug 2023 08:29:03 +0000 (UTC)
+Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com
+ [IPv6:2607:f8b0:4864:20::42c])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 3260B40538
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 08:29:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3260B40538
+Received: by mail-pf1-x42c.google.com with SMTP id
+ d2e1a72fcca58-68336d06620so1662583b3a.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 04 Aug 2023 01:29:03 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1691137623; x=1691742423;
+ d=1e100.net; s=20221208; t=1691137742; x=1691742542;
  h=in-reply-to:content-disposition:mime-version:references:message-id
  :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
  :message-id:reply-to;
- bh=PUS4uE91dvG7NiA03WNNZdSwC3Poo9mFt4/nET0m0dg=;
- b=OxwBY9B526Z1TpJ5wwHs6PPZawiweMls+7RaNg86genCEAAdhy+Gx0Ok9CmLiMI//U
- QbDK7nGk1LQOXqpowEeFQAPpYfrCgSJU4avgpenGeI79iNAcSgSghzWPh4QmjnrZSuaO
- pGKt/YSszqKyraDubGSr9sGLrtY1teTwKTDW8U2euXuppB84HyJB6Qz+YFws41N4DFm7
- BoCxIbv4qxcRfsqYbUW8LDxgFiNVIm6rT+XR2iWJYyXmCeDnZ5QwaEhdzJawglKIvxci
- GERkHjpPf6/v7EU7ZTlpq3KHJ1abm5Mg7ZMxCEyd+86BKRy98Vkj5d6pSwaXN26RcZ6R
- RpeQ==
-X-Gm-Message-State: AOJu0YzimnVMRoKZPz86tF38X9IfrzqK3kqp8d8vh2IHOGTCfdMbfWcS
- wGlOqqpQv6S13tqaPE84Vyt5SA==
-X-Google-Smtp-Source: AGHT+IEMVAqP/UVb3WrkT6mDnbU4Pw1rjYqa7tcZY9aFwv2xDvN5rJf3YMidsLXa7DBayiqLPkiTZQ==
-X-Received: by 2002:a05:6a20:8f02:b0:13f:8855:d5a0 with SMTP id
- b2-20020a056a208f0200b0013f8855d5a0mr1071535pzk.50.1691137623268; 
- Fri, 04 Aug 2023 01:27:03 -0700 (PDT)
+ bh=7Lzp3ZkP17GT5v8YT6Q8PsfBgtBwszbchO+h+FYy3w4=;
+ b=AjStkuJiAF04HWDpoyqFS5VY9/7Gd0tKDNp/ec5R+o5AtMPOQY9ndNdqF6Ku+4nRB3
+ 64DDFQxOZ5hYbT5A8Z1SxcqnFkY2+mktwT+66TKnK4VBjdX//5XRFzhUMkljusVM1OVa
+ aFqyogRUgIJifSp7LtAQbff0WfQ35MkVSYu+v0quztZVdBuB+YHJQdKil3gnByDQ2ckY
+ MYMHPfJoOl3s8k2eKHXhUmhpaCi0Gd+ZqRnTjLUV6lQ7RkhX+NQvn8DxAWHrguS/kp83
+ bGp587kZ61AKwGzKrY2XU12IF9128+0u48v30GcVr5ByOGxvAoG1hgP3d5EqwpjNb2Vf
+ irOg==
+X-Gm-Message-State: AOJu0Yx3FbIIzFQ/AomxC6gTAwAvDveyCvHiyLFkIn8YcgKBA4rzx/+1
+ ZdUKHcvfd0D+PEOHEVIFnpqTRQ==
+X-Google-Smtp-Source: AGHT+IEb8NJZukwkOLv+8X4gGyv5xuEMYnojzUqQ9CiQkM6If6hOvgmAM+Cd3GLl5BacdLQgN3RxVw==
+X-Received: by 2002:a05:6a20:244f:b0:138:64d4:b040 with SMTP id
+ t15-20020a056a20244f00b0013864d4b040mr1274551pzc.54.1691137742585; 
+ Fri, 04 Aug 2023 01:29:02 -0700 (PDT)
 Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net.
  [198.0.35.241]) by smtp.gmail.com with ESMTPSA id
- t14-20020a1709028c8e00b0019ee045a2b3sm1138162plo.308.2023.08.04.01.27.02
+ v19-20020a62a513000000b006870721fcc5sm1101722pfm.175.2023.08.04.01.29.02
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 04 Aug 2023 01:27:02 -0700 (PDT)
-Date: Fri, 4 Aug 2023 01:27:02 -0700
+ Fri, 04 Aug 2023 01:29:02 -0700 (PDT)
+Date: Fri, 4 Aug 2023 01:29:01 -0700
 From: Kees Cook <keescook@chromium.org>
 To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <202308040126.ADDA993@keescook>
+Message-ID: <202308040128.667940394B@keescook>
 References: <20230728155207.10042-1-aleksander.lobakin@intel.com>
- <20230728155207.10042-2-aleksander.lobakin@intel.com>
+ <20230728155207.10042-3-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20230728155207.10042-2-aleksander.lobakin@intel.com>
+In-Reply-To: <20230728155207.10042-3-aleksander.lobakin@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=chromium.org; s=google; t=1691137623; x=1691742423;
+ d=chromium.org; s=google; t=1691137742; x=1691742542;
  h=in-reply-to:content-disposition:mime-version:references:message-id
  :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=PUS4uE91dvG7NiA03WNNZdSwC3Poo9mFt4/nET0m0dg=;
- b=S89d4M3DnOXOCpVn6+SsXsaln+b1CDkwN+Wc8iZfQIJp/5Mg31YkipDnIpZFJ8WT22
- 6KDDkE6N/Q9+Z1OSckAI2AGnB0jNWeeiAnARi+3bxQCjA0MVKMlkSTzRdpiegjDdjzs9
- alwHeWzqeeo6oSaTxIIaxPIaZMlivjqD7xdio=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=7Lzp3ZkP17GT5v8YT6Q8PsfBgtBwszbchO+h+FYy3w4=;
+ b=gz/zjWqM3uu/9WJf25raD3sRvhSeY7TJLSIXkLtJ5Q9CbU2Fg9UlZPPg31KTkF5Say
+ h+zm8lyW0sWyiNhFbYjYNzovIj483N3sguC+1cDwqAfMGZm5likBeIBTtFQiZx7wjjw/
+ 6I+iYb810hAMUm38IIs4yM3G1df4qSUj79J1Q=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
- header.a=rsa-sha256 header.s=google header.b=S89d4M3D
-Subject: Re: [Intel-wired-lan] [PATCH net-next 1/3] virtchnl: fix fake
- 1-elem arrays in structs allocated as `nents + 1` - 1
+ header.a=rsa-sha256 header.s=google header.b=gz/zjWqM
+Subject: Re: [Intel-wired-lan] [PATCH net-next 2/3] virtchnl: fix fake
+ 1-elem arrays in structures allocated as `nents + 1`
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -118,29 +118,23 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Jul 28, 2023 at 05:52:05PM +0200, Alexander Lobakin wrote:
-> The two most problematic virtchnl structures are virtchnl_rss_key and
-> virtchnl_rss_lut. Their "flex" arrays have the type of u8, thus, when
-> allocating / checking, the actual size is calculated as `sizeof +
-> nents - 1 byte`. But their sizeof() is not 1 byte larger than the size
-> of such structure with proper flex array, it's two bytes larger due to
-> the padding. That said, their size is always 1 byte larger unless
-> there are no tail elements -- then it's +2 bytes.
-> Add virtchnl_struct_size() macro which will handle this case (and later
-> other cases as well). Make its calling conv the same as we call
-> struct_size() to allow it to be drop-in, even though it's unlikely to
-> become possible to switch to generic API. The macro will calculate a
-> proper size of a structure with a flex array at the end, so that it
-> becomes transparent for the compilers, but add the difference from the
-> old values, so that the real size of sorta-ABI-messages doesn't change.
-> Use it on the allocation side in IAVF and the receiving side (defined
-> as static inline in virtchnl.h) for the mentioned two structures.
+On Fri, Jul 28, 2023 at 05:52:06PM +0200, Alexander Lobakin wrote:
+> There are five virtchnl structures, which are allocated and checked in
+> the code as `nents + 1`, meaning that they always have memory for one
+> excessive element regardless of their actual number. This comes from
+> that their sizeof() includes space for 1 element and then they get
+> allocated via struct_size() or its open-coded equivalents, passing
+> the actual number of elements.
+> Expand virtchnl_struct_size() to handle such structures and replace
+> those 1-elem arrays with proper flex ones. Also fix several places
+> which open-code %IAVF_VIRTCHNL_VF_RESOURCE_SIZE. Finally, let the
+> virtchnl_ether_addr_list size be computed automatically when there's
+> no enough space for the whole list, otherwise we have to open-code
+> reverse struct_size() logics.
 > 
 > Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
 
-This is a novel approach to solving the ABI issues for a 1-elem
-conversion, but I have been convinced it's a workable approach here. :)
-Thanks for doing this conversion!
+I remain a fan of _Generic uses. :)
 
 Reviewed-by: Kees Cook <keescook@chromium.org>
 
