@@ -1,102 +1,88 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 450EFC001DB
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 22:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 860F8C00528
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 23:20:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B49526134D;
-	Fri,  4 Aug 2023 22:40:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B49526134D
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0A91B402E2;
+	Fri,  4 Aug 2023 23:20:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0A91B402E2
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691188823;
-	bh=3HMEZlRY/lZSuIx1requ0COH3aOPXhwhTkLtOI1jUs0=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1691191233;
+	bh=uKlMB4ZQTmq1d+PE3XHeId2QcTD7ujRjYJsCl5QEFAg=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=TCcCKM9X/44auo/O7vRSlFI1s0lXMQ1XbTbr1mPMCayL3m6N01+40/NVVnOPm+LeK
-	 cTQMPcs8QrOQkh+N250ovoVnaCq0qstU2qOt2stqOJXIbAHKJ0hJBfFLm7kZZrEKqM
-	 lbiYNl82uv/PVMqvg3UPFB7OKcvSB3d7ySJ1c18zG/p+c5U6nz6lyNWuyRJ7VOKXG8
-	 os3V+aHLYVZplQpConj5d93mR3bIprxWRoAZ2zCX2dmJz9FtEQE0+IYyEr9chluBKf
-	 lz4ojQmkjOr/ZXVp8e7CG3zrmiejRMTPgXMrMHs2l3b5zPeERyJnuot9vDJ1G1+EcP
-	 GEM489JSTaBBQ==
+	b=Y9UBKaYVRGct/lSTeg3S5G6Vf/+BdmtbVjZQvYJUxJ/mpgo7LCDKinAYAJGRm2BbP
+	 kD1RC5advzQ9pKa9FEJh9gGtVmMW2JjscsB0C3YYIcX1gEyUJ2J35E5mwRwac/okFb
+	 NIarq8PkjZ9IyUGsQ6Q3NG2O0bZ6FZRLHJ1PaIOB6XCoXQryVAMAQlHqxGM3UN9kKe
+	 TYEC6V0wgak1SLwS/7A33IIG11Gvcfd5DVMba6XanA2m6YMJHPfiHEePx80/6ChZIC
+	 G/GI12Wb2P1gQXlGa6qoDoYysPdd+VlHCJ2vAghj755OP7DDoxYgFwy0OprqarPBD7
+	 8eFrBVbDzOBgQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id TQgdhX7_nwsm; Fri,  4 Aug 2023 22:40:23 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id jYCfi36N_Coy; Fri,  4 Aug 2023 23:20:31 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BED986135F;
-	Fri,  4 Aug 2023 22:40:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BED986135F
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id C5BBE1BF2A2
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 22:40:20 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 75A4A4035A;
+	Fri,  4 Aug 2023 23:20:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 75A4A4035A
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 91E981BF327
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 5547883B61
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 22:39:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5547883B61
+ by smtp2.osuosl.org (Postfix) with ESMTP id 24F1B40A44
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 24F1B40A44
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 4IVXHFaFkW7H for <intel-wired-lan@lists.osuosl.org>;
- Fri,  4 Aug 2023 22:39:55 +0000 (UTC)
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com
- [IPv6:2607:f8b0:4864:20::62f])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 36814820C0
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 22:39:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 36814820C0
-Received: by mail-pl1-x62f.google.com with SMTP id
- d9443c01a7336-1bba54f7eefso24846875ad.1
- for <intel-wired-lan@lists.osuosl.org>; Fri, 04 Aug 2023 15:39:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1691188794; x=1691793594;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=wPee1J6TpdjMsw6ipZy9FBWL3pUhaM/U7Pcka80w5kY=;
- b=KsCDoAKbkTkfr/w3xZU7M2g7MdKFfOJO2hfcfri+WB5ozdWRPYy9yg8+UH4oKc+vja
- qfuWaZ3cUA2X0lfKjL2UNws6sqHdoglZXE/e39u3BgjdxlKTkivMVgY27xRK1Mu/gLDi
- nzj1oPZTzEAIzHShYLSJ1bTegA4adhyXjHEMZk5SjrvfqvErZ9rEXJyc9+ZgW0FM7Nze
- +QmD1bayFl5Hh5M7BG52QZ95Jvs1ZTt5kTR6vY/xBDjw5jE6oz8hxdsQVmaLnQKS5nmE
- hLdMfFcw04RvgVFhUV17wJWMfet7kUpLUlTXIv/Kj6AK6TEgQBNRX3PJA/B2AXs6AOdc
- dj/A==
-X-Gm-Message-State: AOJu0Yz/6Jco5cFcOs4qi/S7uOAsr0VcPM5XF6DTZOHk73saVuFpvO+w
- EwQ16GUIEvXbJinHlG36d0Gjyg==
-X-Google-Smtp-Source: AGHT+IE9GkA47jrZXTpxd4BjO6ZlWM4VsVLbDWn4hEr0gD9DC20BTj1V4ibSytY8ZYpCblhIwgYfrA==
-X-Received: by 2002:a17:902:dac1:b0:1ba:fe6a:3845 with SMTP id
- q1-20020a170902dac100b001bafe6a3845mr1311380plx.11.1691188794640; 
- Fri, 04 Aug 2023 15:39:54 -0700 (PDT)
-Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net.
- [198.0.35.241]) by smtp.gmail.com with ESMTPSA id
- a13-20020a170902b58d00b001bb04755212sm2218960pls.228.2023.08.04.15.39.54
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Fri, 04 Aug 2023 15:39:54 -0700 (PDT)
-Date: Fri, 4 Aug 2023 15:39:53 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Message-ID: <202308041539.888828AC3@keescook>
-References: <20230801111923.118268-1-przemyslaw.kitszel@intel.com>
- <20230801111923.118268-2-przemyslaw.kitszel@intel.com>
- <202308011403.E0A8D25CE@keescook>
- <e0cb5bf2-2278-b83f-c45c-0556927787a6@intel.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id HIFwJ2MCxzyl for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  4 Aug 2023 23:20:25 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id EA478404EC
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 23:20:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EA478404EC
+X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="401226411"
+X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="401226411"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Aug 2023 16:20:23 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10792"; a="853984311"
+X-IronPort-AV: E=Sophos;i="6.01,256,1684825200"; d="scan'208";a="853984311"
+Received: from unknown (HELO lo0-100.bstnma-vfttp-361.verizon-gni.com)
+ ([10.166.80.24])
+ by orsmga004.jf.intel.com with ESMTP; 04 Aug 2023 16:20:22 -0700
+From: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Fri,  4 Aug 2023 16:19:15 -0700
+Message-Id: <20230804231929.168064-3-pavan.kumar.linga@intel.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20230804231929.168064-1-pavan.kumar.linga@intel.com>
+References: <20230804231929.168064-1-pavan.kumar.linga@intel.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <e0cb5bf2-2278-b83f-c45c-0556927787a6@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=chromium.org; s=google; t=1691188794; x=1691793594;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=wPee1J6TpdjMsw6ipZy9FBWL3pUhaM/U7Pcka80w5kY=;
- b=kU1NJ699RieHvnZynhRR1tZDgaq8FOa9KWHMnWwOMc6nsQdpABZmSV8OBW2SdDqaf+
- YtUFXleebjAbPK9esqDMYQxYaFCfRwdRtUfqRTDxT62sI/0MUhOv6P43eURVaAtSBeR5
- Om+xtqnyhNlvLUsSwU3Xj/u9zNP9L00Cur0cE=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
- header.a=rsa-sha256 header.s=google header.b=kU1NJ699
-Subject: Re: [Intel-wired-lan] [RFC net-next 1/2] overflow: add
- DECLARE_FLEX() for on-stack allocs
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1691191224; x=1722727224;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=oHQm1J1OvEJf6wZPf94Pu7a+VX2zZQsJG6kCNL7G1sM=;
+ b=WXA5WQ3J591YwYB+GU7fOTSWW6ETwrDJdgsYwAgvfDcL4d1xtxB4f3qY
+ BseIi702gwJJcApP4cAK59zNX/pIYzp6f72oDP4XoBCOQM/5QHiYv06sW
+ F6Qw70YFJa6rCQLiqE566BoeQ/yepdaJ7pcnQ9tIyJEEe0/KCmqHkerWa
+ 4fWvfL5lV9SQHaHEIfYuJ+LY2IAXXqlIt/qjyAMut39KE7GJnAi4DiPVs
+ fwC+NMv9u1RL/HS309lisvDmxyix8WMMamgvEIBREuyaYEzp/pBl10usK
+ WWKtFKxjp25QVoHmE0cH9FENp5y+mDE5T+CQDV6UKywVi74Mv68FNuneG
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=WXA5WQ3J
+Subject: [Intel-wired-lan] [PATCH iwl-next v9 02/15] idpf: add module
+ register and probe functionality
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,51 +95,274 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Cc: willemb@google.com, Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>,
+ Phani Burra <phani.r.burra@intel.com>, decot@google.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Aug 04, 2023 at 03:47:48PM +0200, Przemek Kitszel wrote:
-> On 8/2/23 00:31, Kees Cook wrote:
-> 
-> [...]
-> 
-> > Initially I was struggling to make __counted_by work, but it seems we can
-> > use an initializer for that member, as long as we don't touch the flexible
-> > array member in the initializer. So we just need to add the counted-by
-> > member to the macro, and use a union to do the initialization. And if
-> > we take the address of the union (and not the struct within it), the
-> > compiler will see the correct object size with __builtin_object_size:
-> > 
-> > #define DEFINE_FLEX(type, name, flex, counter, count) \
-> >      union { \
-> >          u8   bytes[struct_size_t(type, flex, count)]; \
-> >          type obj; \
-> >      } name##_u __aligned(_Alignof(type)) = { .obj.counter = count }; \
-> >      /* take address of whole union to get the correct __builtin_object_size */ \
-> >      type *name = (type *)&name##_u
-> > 
-> > i.e. __builtin_object_size(name, 1) (as used by FORTIFY_SOURCE, etc)
-> > works correctly here, but breaks (sees a zero-sized flex array member)
-> > if this macro ends with:
-> > 
-> >      type *name = &name##_u.obj
-> 
-> __builtin_object_size(name, 0) works fine for both versions (with and
-> without .obj at the end)
+From: Phani Burra <phani.r.burra@intel.com>
 
-Mode 0 will be unchanged, but mode 1 is what most of FORTIFY uses for
-keep the scope narrow.
+Add the required support to register IDPF PCI driver, as well as
+probe and remove call backs. Enable the PCI device and request
+the kernel to reserve the memory resources that will be used by the
+driver. Finally map the BAR0 address space.
 
-> however it does not work for builds without -O2 switch, so struct_size_t()
-> is rather a way to go :/
+Signed-off-by: Phani Burra <phani.r.burra@intel.com>
+Co-developed-by: Alan Brady <alan.brady@intel.com>
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+Co-developed-by: Madhu Chittim <madhu.chittim@intel.com>
+Signed-off-by: Madhu Chittim <madhu.chittim@intel.com>
+Co-developed-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
+Signed-off-by: Shailendra Bhatnagar <shailendra.bhatnagar@intel.com>
+Reviewed-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Reviewed-by: Willem de Bruijn <willemb@google.com>
+Co-developed-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+Signed-off-by: Pavan Kumar Linga <pavan.kumar.linga@intel.com>
+---
+ drivers/net/ethernet/intel/idpf/Makefile      |   9 ++
+ drivers/net/ethernet/intel/idpf/idpf.h        |  28 ++++
+ .../net/ethernet/intel/idpf/idpf_controlq.h   |  14 ++
+ drivers/net/ethernet/intel/idpf/idpf_devids.h |  10 ++
+ drivers/net/ethernet/intel/idpf/idpf_main.c   | 136 ++++++++++++++++++
+ 5 files changed, 197 insertions(+)
+ create mode 100644 drivers/net/ethernet/intel/idpf/Makefile
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_controlq.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_devids.h
+ create mode 100644 drivers/net/ethernet/intel/idpf/idpf_main.c
 
-FORTIFY depends on -O2, so no worries. :)
-
+diff --git a/drivers/net/ethernet/intel/idpf/Makefile b/drivers/net/ethernet/intel/idpf/Makefile
+new file mode 100644
+index 000000000000..73173bde98b1
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/Makefile
+@@ -0,0 +1,9 @@
++# SPDX-License-Identifier: GPL-2.0-only
++# Copyright (C) 2023 Intel Corporation
++
++# Makefile for Intel(R) Infrastructure Data Path Function Linux Driver
++
++obj-$(CONFIG_IDPF) += idpf.o
++
++idpf-y := \
++	idpf_main.o
+diff --git a/drivers/net/ethernet/intel/idpf/idpf.h b/drivers/net/ethernet/intel/idpf/idpf.h
+new file mode 100644
+index 000000000000..0f494396d68f
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf.h
+@@ -0,0 +1,28 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2023 Intel Corporation */
++
++#ifndef _IDPF_H_
++#define _IDPF_H_
++
++#include <linux/aer.h>
++#include <linux/etherdevice.h>
++#include <linux/pci.h>
++
++#include "idpf_controlq.h"
++
++/* available message levels */
++#define IDPF_AVAIL_NETIF_M (NETIF_MSG_DRV | NETIF_MSG_PROBE | NETIF_MSG_LINK)
++
++/**
++ * struct idpf_adapter - Device data struct generated on probe
++ * @pdev: PCI device struct given on probe
++ * @msg_enable: Debug message level enabled
++ * @hw: Device access data
++ */
++struct idpf_adapter {
++	struct pci_dev *pdev;
++	u32 msg_enable;
++	struct idpf_hw hw;
++};
++
++#endif /* !_IDPF_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_controlq.h b/drivers/net/ethernet/intel/idpf/idpf_controlq.h
+new file mode 100644
+index 000000000000..11388834cf64
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_controlq.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2023 Intel Corporation */
++
++#ifndef _IDPF_CONTROLQ_H_
++#define _IDPF_CONTROLQ_H_
++
++struct idpf_hw {
++	void __iomem *hw_addr;
++	resource_size_t hw_addr_len;
++
++	struct idpf_adapter *back;
++};
++
++#endif /* _IDPF_CONTROLQ_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_devids.h b/drivers/net/ethernet/intel/idpf/idpf_devids.h
+new file mode 100644
+index 000000000000..5154a52ae61c
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_devids.h
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/* Copyright (C) 2023 Intel Corporation */
++
++#ifndef _IDPF_DEVIDS_H_
++#define _IDPF_DEVIDS_H_
++
++#define IDPF_DEV_ID_PF			0x1452
++#define IDPF_DEV_ID_VF			0x145C
++
++#endif /* _IDPF_DEVIDS_H_ */
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_main.c b/drivers/net/ethernet/intel/idpf/idpf_main.c
+new file mode 100644
+index 000000000000..43ae6d8c13b7
+--- /dev/null
++++ b/drivers/net/ethernet/intel/idpf/idpf_main.c
+@@ -0,0 +1,136 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* Copyright (C) 2023 Intel Corporation */
++
++#include "idpf.h"
++#include "idpf_devids.h"
++
++#define DRV_SUMMARY	"Intel(R) Infrastructure Data Path Function Linux Driver"
++
++MODULE_DESCRIPTION(DRV_SUMMARY);
++MODULE_LICENSE("GPL");
++
++/**
++ * idpf_remove - Device removal routine
++ * @pdev: PCI device information struct
++ */
++static void idpf_remove(struct pci_dev *pdev)
++{
++	struct idpf_adapter *adapter = pci_get_drvdata(pdev);
++
++	pci_disable_pcie_error_reporting(pdev);
++	pci_set_drvdata(pdev, NULL);
++	kfree(adapter);
++}
++
++/**
++ * idpf_shutdown - PCI callback for shutting down device
++ * @pdev: PCI device information struct
++ */
++static void idpf_shutdown(struct pci_dev *pdev)
++{
++	idpf_remove(pdev);
++
++	if (system_state == SYSTEM_POWER_OFF)
++		pci_set_power_state(pdev, PCI_D3hot);
++}
++
++/**
++ * idpf_cfg_hw - Initialize HW struct
++ * @adapter: adapter to setup hw struct for
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int idpf_cfg_hw(struct idpf_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	struct idpf_hw *hw = &adapter->hw;
++
++	hw->hw_addr = pcim_iomap_table(pdev)[0];
++	if (!hw->hw_addr) {
++		pci_err(pdev, "failed to allocate PCI iomap table\n");
++
++		return -ENOMEM;
++	}
++
++	hw->back = adapter;
++
++	return 0;
++}
++
++/**
++ * idpf_probe - Device initialization routine
++ * @pdev: PCI device information struct
++ * @ent: entry in idpf_pci_tbl
++ *
++ * Returns 0 on success, negative on failure
++ */
++static int idpf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
++{
++	struct device *dev = &pdev->dev;
++	struct idpf_adapter *adapter;
++	int err;
++
++	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
++	if (!adapter)
++		return -ENOMEM;
++	adapter->pdev = pdev;
++
++	err = pcim_enable_device(pdev);
++	if (err)
++		goto err_free;
++
++	err = pcim_iomap_regions(pdev, BIT(0), pci_name(pdev));
++	if (err) {
++		pci_err(pdev, "pcim_iomap_regions failed %pe\n", ERR_PTR(err));
++
++		goto err_free;
++	}
++
++	/* set up for high or low dma */
++	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
++	if (err) {
++		pci_err(pdev, "DMA configuration failed: %pe\n", ERR_PTR(err));
++
++		goto err_free;
++	}
++
++	pci_enable_pcie_error_reporting(pdev);
++	pci_set_master(pdev);
++	pci_set_drvdata(pdev, adapter);
++
++	/* setup msglvl */
++	adapter->msg_enable = netif_msg_init(-1, IDPF_AVAIL_NETIF_M);
++
++	err = idpf_cfg_hw(adapter);
++	if (err) {
++		dev_err(dev, "Failed to configure HW structure for adapter: %d\n",
++			err);
++		goto err_cfg_hw;
++	}
++
++	return 0;
++
++err_cfg_hw:
++	pci_disable_pcie_error_reporting(pdev);
++err_free:
++	kfree(adapter);
++	return err;
++}
++
++/* idpf_pci_tbl - PCI Dev idpf ID Table
++ */
++static const struct pci_device_id idpf_pci_tbl[] = {
++	{ PCI_VDEVICE(INTEL, IDPF_DEV_ID_PF)},
++	{ PCI_VDEVICE(INTEL, IDPF_DEV_ID_VF)},
++	{ /* Sentinel */ }
++};
++MODULE_DEVICE_TABLE(pci, idpf_pci_tbl);
++
++static struct pci_driver idpf_driver = {
++	.name			= KBUILD_MODNAME,
++	.id_table		= idpf_pci_tbl,
++	.probe			= idpf_probe,
++	.remove			= idpf_remove,
++	.shutdown		= idpf_shutdown,
++};
++module_pci_driver(idpf_driver);
 -- 
-Kees Cook
+2.38.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
