@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 806E2C001DB
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 15:21:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F0EAC001DB
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  4 Aug 2023 15:21:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 26BA940503;
-	Fri,  4 Aug 2023 15:21:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 26BA940503
+	by smtp2.osuosl.org (Postfix) with ESMTP id 58CBE4054B;
+	Fri,  4 Aug 2023 15:21:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 58CBE4054B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691162511;
-	bh=tjKBZEyJEzQ7KTvGN83hkQczH2k7XaoK3a17pF3qn0M=;
+	s=default; t=1691162515;
+	bh=Z/WCRpvGhS/FNfkoTsdjD4RdOo03tP9v2900R3XD9ZQ=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=cyMAmNkjTTLdjrDyv2ACFC/Pi5i+bD25/ONxlnI5aE/sWr/w9Xir49l5L7XajQl4U
-	 mNrDCsrgklYaFoODPEUql3wHxce5P/dGkP3lVQLHsy4QyKKAQK1eavsnDbzDXEByAo
-	 n+FR+7KzLHwsoz5oLGHmoP9plNnbAyuXG8tK3CMiC1rQO+ZF9bbRWbQn25pFz+0BIH
-	 hkiNtKFCTbBrq77svT1ijmfmzMjsQ0Pb/zRAfuzPTzvltChxOg24Be3Lwieinv8ZlD
-	 5YB5WzNo9KbzdbxOry/XvFHHfKMt6m9xZJaguP9bY3pPcs781i3s0Gt0oLtsXm60nb
-	 IZR2rZOVxNzSw==
+	b=ELlM3emYAj0ZaMMmp1ta9h7OBQP9qUUaZOR2Lf52sGrdtEliv2lK4+FnU9O/Dz2/+
+	 Kn18n5y/0Vtvqp4pdRo15z7BxF5rvvRj/Klso9MnDPaniCJA9OsQ6DIVoSYLRwOeqx
+	 V9ieFFA/GEAXH9GL/W+fFlSM36TprLfxgQ3CBlWA0F0fkhSrdObR5DusyXD6qKJpPd
+	 Gz/fItPs3TMDPmb7eTW3ApTUIdYZCojP9R2EF5iIRVzKZHHnxxELXr/y5yP9DzcpYH
+	 pyklodC8b+AV0To+crWInBHB82nXhALV95Q2ShOR6cQdP/8j6av8U7KgNV3XQsHw1q
+	 yxyFNejUXNxzw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dp143SRbL856; Fri,  4 Aug 2023 15:21:50 +0000 (UTC)
+	with ESMTP id PaLEhl-8ZuSO; Fri,  4 Aug 2023 15:21:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 08641405B5;
-	Fri,  4 Aug 2023 15:21:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 08641405B5
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 5B0151BF2A3
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:16 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 5ED36405BE;
+	Fri,  4 Aug 2023 15:21:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5ED36405BE
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 5F8091BF2A3
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id CDE10401A3
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CDE10401A3
+ by smtp3.osuosl.org (Postfix) with ESMTP id C214760BBD
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C214760BBD
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id MM_0kLFv3QYa for <intel-wired-lan@lists.osuosl.org>;
- Fri,  4 Aug 2023 04:11:11 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id cTLTX44BKruM for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  4 Aug 2023 04:11:12 +0000 (UTC)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 065184014E
- for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 065184014E
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.55])
- by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RHBdr2xFszrS75;
- Fri,  4 Aug 2023 11:53:36 +0800 (CST)
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0860A60F3D
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  4 Aug 2023 04:11:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0860A60F3D
+Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.53])
+ by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4RHBdp61jnzrS6X;
+ Fri,  4 Aug 2023 11:53:34 +0800 (CST)
 Received: from huawei.com (10.90.53.73) by kwepemi500008.china.huawei.com
  (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.27; Fri, 4 Aug
- 2023 11:54:40 +0800
+ 2023 11:54:38 +0800
 From: Ruan Jinjie <ruanjinjie@huawei.com>
 To: <sgoutham@marvell.com>, <davem@davemloft.net>, <edumazet@google.com>,
  <kuba@kernel.org>, <pabeni@redhat.com>, <jesse.brandeburg@intel.com>,
@@ -66,8 +66,8 @@ To: <sgoutham@marvell.com>, <davem@davemloft.net>, <edumazet@google.com>,
  <intel-wired-lan@lists.osuosl.org>, <linux-rdma@vger.kernel.org>,
  <linux-renesas-soc@vger.kernel.org>, <linux-wireless@vger.kernel.org>,
  <brcm80211-dev-list.pdl@broadcom.com>, <SHA-cyfmac-dev-list@infineon.com>
-Date: Fri, 4 Aug 2023 11:53:43 +0800
-Message-ID: <20230804035346.2879318-4-ruanjinjie@huawei.com>
+Date: Fri, 4 Aug 2023 11:53:42 +0800
+Message-ID: <20230804035346.2879318-3-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230804035346.2879318-1-ruanjinjie@huawei.com>
 References: <20230804035346.2879318-1-ruanjinjie@huawei.com>
@@ -77,8 +77,8 @@ X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
  kwepemi500008.china.huawei.com (7.221.188.139)
 X-CFilter-Loop: Reflected
 X-Mailman-Approved-At: Fri, 04 Aug 2023 15:21:40 +0000
-Subject: [Intel-wired-lan] [PATCH -next 3/6] net/mlx4: Remove an unnecessary
- ternary operator
+Subject: [Intel-wired-lan] [PATCH -next 2/6] ethernet/intel: Remove
+ unnecessary ternary operators
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,27 +96,41 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-There is a ternary operator, the true or false judgement
+Ther are a little ternary operators, the true or false judgement
 of which is unnecessary in C language semantics.
 
 Signed-off-by: Ruan Jinjie <ruanjinjie@huawei.com>
 ---
- drivers/net/ethernet/mellanox/mlx4/port.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/e1000_phy.c | 2 +-
+ drivers/net/ethernet/intel/igc/igc_phy.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/port.c b/drivers/net/ethernet/mellanox/mlx4/port.c
-index 256a06b3c096..1c289488d050 100644
---- a/drivers/net/ethernet/mellanox/mlx4/port.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/port.c
-@@ -176,7 +176,7 @@ static bool mlx4_need_mf_bond(struct mlx4_dev *dev)
- 	mlx4_foreach_port(i, dev, MLX4_PORT_TYPE_ETH)
- 		++num_eth_ports;
+diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+index a018000f7db9..c123c9dd6a49 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_phy.c
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+@@ -1652,7 +1652,7 @@ s32 igb_phy_has_link(struct e1000_hw *hw, u32 iterations,
+ 			udelay(usec_interval);
+ 	}
  
--	return (num_eth_ports ==  2) ? true : false;
-+	return num_eth_ports ==  2;
+-	*success = (i < iterations) ? true : false;
++	*success = i < iterations;
+ 
+ 	return ret_val;
  }
+diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
+index 53b77c969c85..a553e9d719e7 100644
+--- a/drivers/net/ethernet/intel/igc/igc_phy.c
++++ b/drivers/net/ethernet/intel/igc/igc_phy.c
+@@ -93,7 +93,7 @@ s32 igc_phy_has_link(struct igc_hw *hw, u32 iterations,
+ 			udelay(usec_interval);
+ 	}
  
- int __mlx4_register_mac(struct mlx4_dev *dev, u8 port, u64 mac)
+-	*success = (i < iterations) ? true : false;
++	*success = i < iterations;
+ 
+ 	return ret_val;
+ }
 -- 
 2.34.1
 
