@@ -4,97 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF07AC001B0
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Aug 2023 15:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC69DC04A6A
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Aug 2023 15:27:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6B72640B08;
-	Mon,  7 Aug 2023 15:27:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6B72640B08
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9483140B9E;
+	Mon,  7 Aug 2023 15:27:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9483140B9E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691422069;
-	bh=2ZoXzYvFiiYZXgGxlYbAtxBEc9yMo7plGq5k22BX2xU=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1691422073;
+	bh=ON0/j/otEDwli3BzPCBLP3pzJcEZeJBnrhhtrdW48WE=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=s9n3dF+LqJrxre7W/OzpZQeDXCozlXUP4PaseQaa8G3znS2AVTzlc7FQKcxNbXn9L
-	 TR9kB7ef0FY2VYnxRZO8HusZfcue55nbdvipGxenPHX4c7RZNCVlx389nupXsCtqOh
-	 AJ+HcHsOqz4EeAKT7SECDl6wNvVMDPhEdbDoPjfjyo8crGnppvUoGEKPHvyVFYEEQe
-	 y5EmKClwOGVXu0vSY1JvANwk1FW1EoTNaRk2f2piEsh9oGabaSCR8qZwJmKFaS9Yzc
-	 GEI9yckfhaRubVy3+rLl2eJ+dNXMPiT9tqZbO2F0IklrG7gm0W3FCxBD0u3fh9uJA7
-	 M2O91HITJn6CQ==
+	 Cc:From;
+	b=PoffNnv5mXeCyKNi8Pqv9Fqh3p1VmOrM6JeN9IRjyCTHxzatrZ4j9gPTix9zmFgd2
+	 SgN7KpdotUXYf6TKarqXz3+lUBHOhQ1+itK1nL1TM8Jx/gFSezbryJ/8aoTu1bogRO
+	 2nJZSaBnAIe7+4b5XlG4UadnlE4GYTGCCe6de4OhDMALTBM8OU4OHqpWCItzBMTsfj
+	 wX/GTDA+ga43ZSXZrZj9gl+U9BKjoGwdqt6DLB3rjRVm3SBTaejQhpDcwLKfM8iE6f
+	 A2erndw5bK4PWXQase5OmCIcX1ecYeJA1X7NucVFsegT0Uind/XKUTXSvGB17D6Iab
+	 ka8SP+Nqk6a/Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id LyIUp_tt2Iz8; Mon,  7 Aug 2023 15:27:48 +0000 (UTC)
+	with ESMTP id AO3qjKoN27Nn; Mon,  7 Aug 2023 15:27:52 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2D93040B69;
-	Mon,  7 Aug 2023 15:27:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2D93040B69
+	by smtp2.osuosl.org (Postfix) with ESMTP id 8713040B67;
+	Mon,  7 Aug 2023 15:27:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8713040B67
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 02A921BF909
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 05:00:49 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 272601BF280
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 14:48:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 176C08140D
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 05:00:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 176C08140D
+ by smtp1.osuosl.org (Postfix) with ESMTP id E9A9281DEA
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 14:47:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E9A9281DEA
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id C12pNSkQPjVi for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Aug 2023 05:00:43 +0000 (UTC)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 0025C80966
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 05:00:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0025C80966
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.55])
- by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4RK3wY0dzpz1Z1Y9;
- Mon,  7 Aug 2023 12:57:49 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- kwepemi500008.china.huawei.com (7.221.188.139) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Mon, 7 Aug 2023 13:00:35 +0800
-Message-ID: <e4d0e004-e436-6a43-17d2-96c0fe4dd551@huawei.com>
-Date: Mon, 7 Aug 2023 13:00:35 +0800
+ with ESMTP id 1PzDZfytKGb1 for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Aug 2023 14:47:52 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 46E1881A6D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 14:47:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 46E1881A6D
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 21BD261D52;
+ Mon,  7 Aug 2023 14:47:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6F951C433C8;
+ Mon,  7 Aug 2023 14:47:50 +0000 (UTC)
+Date: Mon, 07 Aug 2023 07:47:47 -0700
+From: Kees Cook <kees@kernel.org>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>
+User-Agent: K-9 Mail for Android
+In-Reply-To: <9f817d7a-8f85-9217-620f-dd2f62c2c050@intel.com>
+References: <20230801111923.118268-1-przemyslaw.kitszel@intel.com>
+ <20230801111923.118268-2-przemyslaw.kitszel@intel.com>
+ <202308011403.E0A8D25CE@keescook>
+ <e0cb5bf2-2278-b83f-c45c-0556927787a6@intel.com>
+ <572fb95a-7806-0ed1-00e3-6a7796273946@intel.com>
+ <9f817d7a-8f85-9217-620f-dd2f62c2c050@intel.com>
+Message-ID: <6C572B68-2913-4F5B-8295-C001A98CA7A2@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.0
-Content-Language: en-US
-To: Ping-Ke Shih <pkshih@realtek.com>, "sgoutham@marvell.com"
- <sgoutham@marvell.com>, "davem@davemloft.net" <davem@davemloft.net>,
- "edumazet@google.com" <edumazet@google.com>, "kuba@kernel.org"
- <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
- "jesse.brandeburg@intel.com" <jesse.brandeburg@intel.com>,
- "anthony.l.nguyen@intel.com" <anthony.l.nguyen@intel.com>,
- "tariqt@nvidia.com" <tariqt@nvidia.com>, "s.shtylyov@omp.ru"
- <s.shtylyov@omp.ru>, "aspriel@gmail.com" <aspriel@gmail.com>,
- "franky.lin@broadcom.com" <franky.lin@broadcom.com>,
- "hante.meuleman@broadcom.com" <hante.meuleman@broadcom.com>,
- "kvalo@kernel.org" <kvalo@kernel.org>, "richardcochran@gmail.com"
- <richardcochran@gmail.com>, "yoshihiro.shimoda.uh@renesas.com"
- <yoshihiro.shimoda.uh@renesas.com>, "u.kleine-koenig@pengutronix.de"
- <u.kleine-koenig@pengutronix.de>, "mkl@pengutronix.de" <mkl@pengutronix.de>,
- "lee@kernel.org" <lee@kernel.org>, "set_pte_at@outlook.com"
- <set_pte_at@outlook.com>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "intel-wired-lan@lists.osuosl.org"
- <intel-wired-lan@lists.osuosl.org>, "linux-rdma@vger.kernel.org"
- <linux-rdma@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org"
- <linux-renesas-soc@vger.kernel.org>, "linux-wireless@vger.kernel.org"
- <linux-wireless@vger.kernel.org>, "brcm80211-dev-list.pdl@broadcom.com"
- <brcm80211-dev-list.pdl@broadcom.com>, "SHA-cyfmac-dev-list@infineon.com"
- <SHA-cyfmac-dev-list@infineon.com>
-References: <20230804035346.2879318-1-ruanjinjie@huawei.com>
- <20230804035346.2879318-7-ruanjinjie@huawei.com>
- <f72991b36d6a449ea5cf476d438bcd1d@realtek.com>
-From: Ruan Jinjie <ruanjinjie@huawei.com>
-In-Reply-To: <f72991b36d6a449ea5cf476d438bcd1d@realtek.com>
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- kwepemi500008.china.huawei.com (7.221.188.139)
-X-CFilter-Loop: Reflected
 X-Mailman-Approved-At: Mon, 07 Aug 2023 15:27:25 +0000
-Subject: Re: [Intel-wired-lan] [PATCH -next 6/6] brcm80211: Remove an
- unnecessary ternary operator
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1691419670;
+ bh=bpPHccARP+nSofUhaL1UTNcFQ9beOi9t6SJoSE+64CU=;
+ h=Date:From:To:CC:Subject:In-Reply-To:References:From;
+ b=DVCe7XhX+w1CcVE9sMRbu4kaoE22D7T378pKolQU/NZkUYIovAC2clzWcvxvhvRYx
+ PrC6uO0Qv0Tbh4NmYEvmCdt2GKSJdMzbJ3rB71PbVkaUKuPfah3HwUL1pSyHVNgbuJ
+ he84dzDxmHUA2axwG0pD3mzpNxZUl+dSYIvnyVGOqgSmYZt/aQSI8rh/9PZGUtTsFv
+ 7E3xr8V5a3feekKKFD/CUnEjkS8yfFKW3fgpbIfke32KYpl2qwWk603RF4Q9tRbrRu
+ HB9tYJUECFjU9Mv0SPoUpnM0R4t9basYDKo7AxVMYbSxcFAuqtzUAkK/9GAcQuzZiE
+ 94om0YYaPitPQ==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=DVCe7XhX
+Subject: Re: [Intel-wired-lan] [RFC net-next 1/2] overflow: add
+ DECLARE_FLEX() for on-stack allocs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,66 +96,53 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Kees Cook <keescook@chromium.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-
-
-On 2023/8/7 9:42, Ping-Ke Shih wrote:
-> 
-> 
->> -----Original Message-----
->> From: Ruan Jinjie <ruanjinjie@huawei.com>
->> Sent: Friday, August 4, 2023 11:54 AM
->> To: sgoutham@marvell.com; davem@davemloft.net; edumazet@google.com; kuba@kernel.org; pabeni@redhat.com;
->> jesse.brandeburg@intel.com; anthony.l.nguyen@intel.com; tariqt@nvidia.com; s.shtylyov@omp.ru;
->> aspriel@gmail.com; franky.lin@broadcom.com; hante.meuleman@broadcom.com; kvalo@kernel.org;
->> richardcochran@gmail.com; yoshihiro.shimoda.uh@renesas.com; ruanjinjie@huawei.com;
->> u.kleine-koenig@pengutronix.de; mkl@pengutronix.de; lee@kernel.org; set_pte_at@outlook.com;
->> linux-arm-kernel@lists.infradead.org; netdev@vger.kernel.org; intel-wired-lan@lists.osuosl.org;
->> linux-rdma@vger.kernel.org; linux-renesas-soc@vger.kernel.org; linux-wireless@vger.kernel.org;
->> brcm80211-dev-list.pdl@broadcom.com; SHA-cyfmac-dev-list@infineon.com
->> Subject: [PATCH -next 6/6] brcm80211: Remove an unnecessary ternary operator
->>
->> There is a ternary operator, the true or false judgement of which
->> is unnecessary in C language semantics.
->>
->> Signed-off-by: Ruan Jinjie <ruanjinjie@huawei.com>
->> ---
->>  drivers/net/wireless/broadcom/brcm80211/brcmsmac/phy/phy_n.c | 3 +--
->>  1 file changed, 1 insertion(+), 2 deletions(-)
->>
->> diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmsmac/phy/phy_n.c
->> b/drivers/net/wireless/broadcom/brcm80211/brcmsmac/phy/phy_n.c
->> index 8580a2754789..8328b22829c5 100644
->> --- a/drivers/net/wireless/broadcom/brcm80211/brcmsmac/phy/phy_n.c
->> +++ b/drivers/net/wireless/broadcom/brcm80211/brcmsmac/phy/phy_n.c
->> @@ -27351,8 +27351,7 @@ static int wlc_phy_cal_rxiq_nphy_rev3(struct brcms_phy *pi,
->>
->>         for (rx_core = 0; rx_core < pi->pubpi.phy_corenum; rx_core++) {
->>
->> -               skip_rxiqcal =
->> -                       ((rxcore_state & (1 << rx_core)) == 0) ? true : false;
->> +               skip_rxiqcal = (rxcore_state & (1 << rx_core)) == 0;
-> 
-> skip_rxiqcal = !(rxcore_state & (1 << rx_core));
-
-
-Thank you! I'll improve it sooner.
-
-> 
->>
->>                 wlc_phy_rxcal_physetup_nphy(pi, rx_core);
->>
->> --
->> 2.34.1
->>
->>
->> ------Please consider the environment before printing this e-mail.
-> 
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+T24gQXVndXN0IDcsIDIwMjMgNTo0MjozMSBBTSBQRFQsIFByemVtZWsgS2l0c3plbCA8cHJ6ZW15
+c2xhdy5raXRzemVsQGludGVsLmNvbT4gd3JvdGU6Cj5PbiA4LzQvMjMgMTc6NDQsIEFsZXhhbmRl
+ciBMb2Jha2luIHdyb3RlOgo+PiBGcm9tOiBQcnplbWVrIEtpdHN6ZWwgPHByemVteXNsYXcua2l0
+c3plbEBpbnRlbC5jb20+Cj4+IERhdGU6IEZyaSwgNCBBdWcgMjAyMyAxNTo0Nzo0OCArMDIwMAo+
+PiAKPj4+IE9uIDgvMi8yMyAwMDozMSwgS2VlcyBDb29rIHdyb3RlOgo+Pj4gCj4+PiBbLi4uXQo+
+Pj4gCj4+Pj4gSW5pdGlhbGx5IEkgd2FzIHN0cnVnZ2xpbmcgdG8gbWFrZSBfX2NvdW50ZWRfYnkg
+d29yaywgYnV0IGl0IHNlZW1zIHdlIGNhbgo+Pj4+IHVzZSBhbiBpbml0aWFsaXplciBmb3IgdGhh
+dCBtZW1iZXIsIGFzIGxvbmcgYXMgd2UgZG9uJ3QgdG91Y2ggdGhlCj4+Pj4gZmxleGlibGUKPj4+
+PiBhcnJheSBtZW1iZXIgaW4gdGhlIGluaXRpYWxpemVyLiBTbyB3ZSBqdXN0IG5lZWQgdG8gYWRk
+IHRoZSBjb3VudGVkLWJ5Cj4+Pj4gbWVtYmVyIHRvIHRoZSBtYWNybywgYW5kIHVzZSBhIHVuaW9u
+IHRvIGRvIHRoZSBpbml0aWFsaXphdGlvbi4gQW5kIGlmCj4+Pj4gd2UgdGFrZSB0aGUgYWRkcmVz
+cyBvZiB0aGUgdW5pb24gKGFuZCBub3QgdGhlIHN0cnVjdCB3aXRoaW4gaXQpLCB0aGUKPj4+PiBj
+b21waWxlciB3aWxsIHNlZSB0aGUgY29ycmVjdCBvYmplY3Qgc2l6ZSB3aXRoIF9fYnVpbHRpbl9v
+YmplY3Rfc2l6ZToKPj4+PiAKPj4+PiAjZGVmaW5lIERFRklORV9GTEVYKHR5cGUsIG5hbWUsIGZs
+ZXgsIGNvdW50ZXIsIGNvdW50KSBcCj4+Pj4gIMKgwqDCoMKgIHVuaW9uIHsgXAo+Pj4+ICDCoMKg
+wqDCoMKgwqDCoMKgIHU4wqDCoCBieXRlc1tzdHJ1Y3Rfc2l6ZV90KHR5cGUsIGZsZXgsIGNvdW50
+KV07IFwKPj4+PiAgwqDCoMKgwqDCoMKgwqDCoCB0eXBlIG9iajsgXAo+Pj4+ICDCoMKgwqDCoCB9
+IG5hbWUjI191IF9fYWxpZ25lZChfQWxpZ25vZih0eXBlKSkgPSB7IC5vYmouY291bnRlciA9IGNv
+dW50IH07IFwKPj4+PiAgwqDCoMKgwqAgLyogdGFrZSBhZGRyZXNzIG9mIHdob2xlIHVuaW9uIHRv
+IGdldCB0aGUgY29ycmVjdAo+Pj4+IF9fYnVpbHRpbl9vYmplY3Rfc2l6ZSAqLyBcCj4+Pj4gIMKg
+wqDCoMKgIHR5cGUgKm5hbWUgPSAodHlwZSAqKSZuYW1lIyNfdQo+Pj4+IAo+Pj4+IGkuZS4gX19i
+dWlsdGluX29iamVjdF9zaXplKG5hbWUsIDEpIChhcyB1c2VkIGJ5IEZPUlRJRllfU09VUkNFLCBl
+dGMpCj4+Pj4gd29ya3MgY29ycmVjdGx5IGhlcmUsIGJ1dCBicmVha3MgKHNlZXMgYSB6ZXJvLXNp
+emVkIGZsZXggYXJyYXkgbWVtYmVyKQo+Pj4+IGlmIHRoaXMgbWFjcm8gZW5kcyB3aXRoOgo+Pj4+
+IAo+Pj4+ICDCoMKgwqDCoCB0eXBlICpuYW1lID0gJm5hbWUjI191Lm9iago+Pj4gCj4+PiBfX2J1
+aWx0aW5fb2JqZWN0X3NpemUobmFtZSwgMCkgd29ya3MgZmluZSBmb3IgYm90aCB2ZXJzaW9ucyAo
+d2l0aCBhbmQKPj4+IHdpdGhvdXQgLm9iaiBhdCB0aGUgZW5kKQo+Pj4gCj4+PiBob3dldmVyIGl0
+IGRvZXMgbm90IHdvcmsgZm9yIGJ1aWxkcyB3aXRob3V0IC1PMiBzd2l0Y2gsIHNvCj4+PiBzdHJ1
+Y3Rfc2l6ZV90KCkgaXMgcmF0aGVyIGEgd2F5IHRvIGdvIDovCj4+IAo+PiBZb3Ugb25seSBuZWVk
+IHRvIGNhcmUgYWJvdXQgLU8yIGFuZCAtT3MsIHNpbmNlIG9ubHkgdGhvc2UgMiBhcmUKPj4gb2Zm
+aWNpYWxseSBzdXBwb3J0ZWQgYnkgS2J1aWxkLiBEaWQgeW91IG1lYW4gaXQgZG9lc24ndCB3b3Jr
+IG9uIC1PcyBhcyB3ZWxsPwo+Cj5Cb3RoIC1PcyBhbmQgLU8yIGFyZSBmaW5lIGhlcmUuCj4KPk9u
+ZSB0aGluZyBpcyB0aGF0IHBlcmhhcHMgYSAidXNlciBmcmllbmRseSIgZGVmaW5lIGZvciAiX19i
+dWlsdGluX29iamVjdF9zaXplKG5hbWUsIDEpIiB3b3VsZCBhdm9pZCBhbnkgcG90ZW50aWFsIGZv
+ciBtaXNsZWFkaW5nICIxIiB3aXRoIGFueSAiY291bnRlciIgdmFyaWFibGUsIHdpbGwgc2VlLgoK
+SSBtZWFudCB0aGF0IEZPUlRJRllfU09VUkNFIHdpbGwgd29yayBjb3JyZWN0bHkgaW4gdGhlIGV4
+YW1wbGUgSSBnYXZlLiAoX19idWlsdGluX29iamVjdF9zaXplKCkgaXMgdXNlZCB0aGVyZS4pIEFs
+c28gbm90ZSB0aGF0ICJtYXggc2l6ZSIgKG1vZGUgMCkgaXMgdW5jaGFuZ2VkIGluIGVpdGhlciBj
+YXNlLCBidXQgbW9kZSAxIG5lZWRzIHRvIHNlZSB0aGUgb3V0ZXIgb2JqZWN0IHRvIGdldCB0aGUg
+bWluIHNpemUgY29ycmVjdC4KCi1LZWVzCgoKLS0gCktlZXMgQ29vawpfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBs
+aXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
