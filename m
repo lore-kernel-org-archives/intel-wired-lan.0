@@ -4,61 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD5D3EB64DD
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Aug 2023 10:37:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DC41EB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  7 Aug 2023 10:37:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 86BF360DDF;
-	Mon,  7 Aug 2023 10:37:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 86BF360DDF
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1E0F660E53;
+	Mon,  7 Aug 2023 10:37:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1E0F660E53
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691404650;
-	bh=w70PrEgkjNJOzWbzLwXTc6+wxmvQlGL9k2Esq3gmPh0=;
+	s=default; t=1691404656;
+	bh=3XzEoobvyPRikIv0kH/ubtgH5Bpl6wsg5E93qHl/j9c=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=NY8zQCrrYtNOtCEwsawyFJbX9eN+LLsFIVE5R+IkO9OLfAqDvpORkLzHak3qIz6Hi
-	 c26tECx5yBfMwmVWTpEWm4eY8in2PVHh6I6wUx+bTNIIKDx0MuefXni0Cpyw4SDbam
-	 wmGh3yjdjZOTFyblOU/CWe/9wdl/TJOj5U6lhtoJgSPIUYNL2FJwmNUNiyzvnPH3fz
-	 RjjSag27eP4zHEe06JLHQ045yAtDMIt8HvN0G2oBZ/mqZwVpSS0BwLscksw6P5ytog
-	 oAzCzMsr4m9FHTjWxT+s0DqAJIukUxmmRe5g3ACc/pBKIYno+ENymsTxkYtEk4l89N
-	 GOolEFDT9pniQ==
+	b=kbIt8RpqDUcGrgKq+nCinn0VLciaNdAPmRokAkiaP/RrygQ5z47o9OX1ZQcEe3c3K
+	 ga+9qCzGjG6m1y07EwWJmMYWSTXem2hiey3CcoQo+BW5/UNrKUGXnGH02Dg1/ErFmE
+	 w3pV3/2uNxl4RX5mq8dRHmOQUwit8jbp9zg3IXyRzLQdoS5/laqSgx/z8yz2soKFaQ
+	 udcE12FGQvx5m+w+qjsd2ODIDPXOdcqDlS0v/J0idqWAC9x3OCrrO9K+Nz8NpxAJgz
+	 lHYcnCap5kMpcnAvvt+44hAYTGSvsKY9fTCKh4OtwJSb3pCrxRu39rT9fb8cWzCIOM
+	 vxbyrAk+znJ/A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id LlRBoRQ_-RAf; Mon,  7 Aug 2023 10:37:29 +0000 (UTC)
+	with ESMTP id GUdn14zYCQuY; Mon,  7 Aug 2023 10:37:34 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 6FB5260E72;
-	Mon,  7 Aug 2023 10:37:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6FB5260E72
+	by smtp3.osuosl.org (Postfix) with ESMTP id 232B760C2D;
+	Mon,  7 Aug 2023 10:37:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 232B760C2D
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 58B0F1BF3FB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 10:37:25 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 5E5071BF3FB
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 10:37:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2130F401E8
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 10:36:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2130F401E8
+ by smtp4.osuosl.org (Postfix) with ESMTP id F280F40939
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 10:36:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F280F40939
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id vQHjmvfjwPGX for <intel-wired-lan@lists.osuosl.org>;
- Mon,  7 Aug 2023 10:36:30 +0000 (UTC)
+ with ESMTP id Lpa9iBVAKcul for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  7 Aug 2023 10:36:33 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 56BD24097D
- for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 10:36:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 56BD24097D
-X-IronPort-AV: E=McAfee;i="6600,9927,10794"; a="401482293"
-X-IronPort-AV: E=Sophos;i="6.01,261,1684825200"; d="scan'208";a="401482293"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id EE0B84097D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  7 Aug 2023 10:36:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EE0B84097D
+X-IronPort-AV: E=McAfee;i="6600,9927,10794"; a="401482302"
+X-IronPort-AV: E=Sophos;i="6.01,261,1684825200"; d="scan'208";a="401482302"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Aug 2023 03:36:29 -0700
+ 07 Aug 2023 03:36:32 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="874262824"
+X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="874262833"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by fmsmga001.fm.intel.com with ESMTP; 07 Aug 2023 03:36:31 -0700
+ by fmsmga001.fm.intel.com with ESMTP; 07 Aug 2023 03:36:34 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  7 Aug 2023 12:36:16 +0200
-Message-Id: <20230807103624.468230-2-karol.kolacinski@intel.com>
+Date: Mon,  7 Aug 2023 12:36:18 +0200
+Message-Id: <20230807103624.468230-4-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230807103624.468230-1-karol.kolacinski@intel.com>
 References: <20230807103624.468230-1-karol.kolacinski@intel.com>
@@ -67,22 +67,22 @@ Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173,
  80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1691404590; x=1722940590;
+ t=1691404592; x=1722940592;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=+N/NYyKLaBrqdFtZrod8v3vp1Q2w7ffUiAfuIQTLYVs=;
- b=hXpmLuTNyozj9H++6aupDW2sRHNrpZe+x/TYsME87sxEyyz8yt2nuqsd
- SXC0kpKIjfv7vNWkswNBz0oP+0MWnz0svES9pRD1U17n2JuCPDiyXBibO
- +v23hB/ys0Xqly4vtkiPOk7KKqHCAcH9WcvS3jN/MFAlpRbsweT9FXx+p
- /ZP1xlv+uKU7gwtxcIlob83NGwpQyiDw8vQ7T/nzy6SKqFbU44FxWSZ6w
- i/oq/p1VZYm3P2XrVc873y4Okv6C/W2nQxRE8VaZ8sz+IyTFKtHXfhQ+j
- 0hK43lpZhwe/1PGuHsQdqDEQzFfCfVhwMTSdAQmrH+g8uWaV4yz4v4Hsg
+ bh=GR0NfqnFV72yTB8k9tpvAM9ivJ5Bqq5ClfsByUf+Gmg=;
+ b=mr84ObcMl4VgpIZ6tFSkwpxBwvqEmJiPPWYZ1ErI54hsemZyjXPuQp+u
+ HKow3VC3H+13CGpvLhqJNp2SLzlVt7VpSdRFaVk421E4C1nwhukJ5lwRY
+ v70jAoX++BkXIJvG22GJSSCAU2rb/TKDwxZ5C7x9QPmI10P4u6E6iFfNy
+ KTmdNoIK/sFu2dSoJ9MkOlxK6y0UVLry8GsEqZ+SYbDVBNP5X2v59+rjU
+ z63HtL+XtF4wH1oLtWleOJdABEa9DGKGBCXYXidKFy2MMeflIWTJi5VRx
+ 3w5538wf5vp82lpwSQfmmic9iVs1y+taChrN7bMfWKfaCN6PzkXLHkLdd
  A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hXpmLuTN
-Subject: [Intel-wired-lan] [PATCH 1/9] ice: use ice_pf_src_tmr_owned where
- available
+ header.a=rsa-sha256 header.s=Intel header.b=mr84ObcM
+Subject: [Intel-wired-lan] [PATCH 3/9] ice: pass reset type to PTP reset
+ functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,45 +101,152 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_pf_src_tmr_owned() macro exists to check the function capability
-bit indicating if the current function owns the PTP hardware clock.
+The ice_ptp_prepare_for_reset() and ice_ptp_reset() functions currently
+check the pf->flags ICE_FLAG_PFR_REQ bit to determine if the current
+reset is a PF reset or not.
 
-This is slightly shorter than the more verbose access via
-hw.func_caps.ts_func_info.src_tmr_owned. Be consistent and use this
-where possible rather than open coding its equivalent.
+This is problematic, because it is possible that a PF reset and a higher
+level reset (CORE reset, GLOBAL reset, EMP reset) are requested
+simultaneously. In that case, the driver performs the highest level
+reset requested. However, the ICE_FLAG_PFR_REQ flag will still be set.
+
+The main driver reset functions take an enum ice_reset_req indicating
+which reset is actually being performed. Pass this data into the PTP
+functions and rely on this instead of relying on the driver flags.
+
+This ensures that the PTP code performs the proper level of reset that
+the driver is actually undergoing.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c  | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c |  4 ++--
+ drivers/net/ethernet/intel/ice/ice_ptp.c  | 17 ++++++++---------
+ drivers/net/ethernet/intel/ice/ice_ptp.h  | 16 ++++++++++++----
+ 3 files changed, 22 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index a73895483e6c..1ac37a3f8de5 100644
+index 1ac37a3f8de5..47e598e1bc4d 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -3158,7 +3158,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+@@ -611,7 +611,7 @@ ice_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	ice_pf_dis_all_vsi(pf, false);
  
- 		ena_mask &= ~PFINT_OICR_TSYN_EVNT_M;
+ 	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+-		ice_ptp_prepare_for_reset(pf);
++		ice_ptp_prepare_for_reset(pf, reset_type);
  
--		if (hw->func_caps.ts_func_info.src_tmr_owned) {
-+		if (ice_pf_src_tmr_owned(pf)) {
- 			/* Save EVENTs from GLTSYN register */
- 			pf->ptp.ext_ts_irq |= gltsyn_stat &
- 					      (GLTSYN_STAT_EVENT0_M |
+ 	if (ice_is_feature_supported(pf, ICE_F_GNSS))
+ 		ice_gnss_exit(pf);
+@@ -7355,7 +7355,7 @@ static void ice_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	 * fail.
+ 	 */
+ 	if (test_bit(ICE_FLAG_PTP_SUPPORTED, pf->flags))
+-		ice_ptp_reset(pf);
++		ice_ptp_reset(pf, reset_type);
+ 
+ 	if (ice_is_feature_supported(pf, ICE_F_GNSS))
+ 		ice_gnss_init(pf);
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 97b8581ae931..0669ca905c46 100644
+index a6ea90b9461e..0ee971f8c2e2 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -2447,7 +2447,7 @@ void ice_ptp_reset(struct ice_pf *pf)
- 	if (test_bit(ICE_PFR_REQ, pf->state))
+@@ -2460,8 +2460,10 @@ static void ice_ptp_periodic_work(struct kthread_work *work)
+ /**
+  * ice_ptp_prepare_for_reset - Prepare PTP for reset
+  * @pf: Board private structure
++ * @reset_type: the reset type being performed
+  */
+-void ice_ptp_prepare_for_reset(struct ice_pf *pf)
++void
++ice_ptp_prepare_for_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ {
+ 	struct ice_ptp *ptp = &pf->ptp;
+ 	u8 src_tmr;
+@@ -2476,7 +2478,7 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf)
+ 
+ 	kthread_cancel_delayed_work_sync(&ptp->work);
+ 
+-	if (test_bit(ICE_PFR_REQ, pf->state))
++	if (reset_type == ICE_RESET_PFR)
+ 		return;
+ 
+ 	ice_ptp_release_tx_tracker(pf, &pf->ptp.port.tx);
+@@ -2496,8 +2498,9 @@ void ice_ptp_prepare_for_reset(struct ice_pf *pf)
+ /**
+  * ice_ptp_reset - Initialize PTP hardware clock support after reset
+  * @pf: Board private structure
++ * @reset_type: the reset type being performed
+  */
+-void ice_ptp_reset(struct ice_pf *pf)
++void ice_ptp_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ {
+ 	struct ice_ptp *ptp = &pf->ptp;
+ 	struct ice_hw *hw = &pf->hw;
+@@ -2507,7 +2510,7 @@ void ice_ptp_reset(struct ice_pf *pf)
+ 
+ 	if (ptp->state != ICE_PTP_RESETTING) {
+ 		if (ptp->state == ICE_PTP_READY) {
+-			ice_ptp_prepare_for_reset(pf);
++			ice_ptp_prepare_for_reset(pf, reset_type);
+ 		} else {
+ 			err = -EINVAL;
+ 			dev_err(ice_pf_to_dev(pf), "PTP was not initialized\n");
+@@ -2515,12 +2518,9 @@ void ice_ptp_reset(struct ice_pf *pf)
+ 		}
+ 	}
+ 
+-	if (test_bit(ICE_PFR_REQ, pf->state))
++	if (reset_type == ICE_RESET_PFR || !ice_pf_src_tmr_owned(pf))
  		goto pfr;
  
--	if (!hw->func_caps.ts_func_info.src_tmr_owned)
-+	if (!ice_pf_src_tmr_owned(pf))
- 		goto reset_ts;
- 
+-	if (!ice_pf_src_tmr_owned(pf))
+-		goto reset_ts;
+-
  	err = ice_ptp_init_phc(hw);
+ 	if (err)
+ 		goto err;
+@@ -2564,7 +2564,6 @@ void ice_ptp_reset(struct ice_pf *pf)
+ 			goto err;
+ 	}
+ 
+-reset_ts:
+ 	/* Restart the PHY timestamping block */
+ 	ice_ptp_reset_phy_timestamping(pf);
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.h b/drivers/net/ethernet/intel/ice/ice_ptp.h
+index 674a0abe3cdd..48c0d56c0568 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.h
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.h
+@@ -311,8 +311,9 @@ enum ice_tx_tstamp_work ice_ptp_process_ts(struct ice_pf *pf);
+ void
+ ice_ptp_rx_hwtstamp(struct ice_rx_ring *rx_ring,
+ 		    union ice_32b_rx_flex_desc *rx_desc, struct sk_buff *skb);
+-void ice_ptp_reset(struct ice_pf *pf);
+-void ice_ptp_prepare_for_reset(struct ice_pf *pf);
++void ice_ptp_reset(struct ice_pf *pf, enum ice_reset_req reset_type);
++void ice_ptp_prepare_for_reset(struct ice_pf *pf,
++			       enum ice_reset_req reset_type);
+ void ice_ptp_init(struct ice_pf *pf);
+ void ice_ptp_release(struct ice_pf *pf);
+ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup);
+@@ -343,8 +344,15 @@ static inline bool ice_ptp_process_ts(struct ice_pf *pf)
+ static inline void
+ ice_ptp_rx_hwtstamp(struct ice_rx_ring *rx_ring,
+ 		    union ice_32b_rx_flex_desc *rx_desc, struct sk_buff *skb) { }
+-static inline void ice_ptp_reset(struct ice_pf *pf) { }
+-static inline void ice_ptp_prepare_for_reset(struct ice_pf *pf) { }
++static inline void ice_ptp_reset(struct ice_pf *pf,
++				 enum ice_reset_req reset_type)
++{
++}
++
++static inline void ice_ptp_prepare_for_reset(struct ice_pf *pf,
++					     enum ice_reset_req reset_type)
++{
++}
+ static inline void ice_ptp_init(struct ice_pf *pf) { }
+ static inline void ice_ptp_release(struct ice_pf *pf) { }
+ static inline void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
 -- 
 2.39.2
 
