@@ -4,87 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 083CCC001DB
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Aug 2023 21:57:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8FFBC001DB
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Aug 2023 22:00:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B67BB8213A;
-	Tue,  8 Aug 2023 21:57:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B67BB8213A
+	by smtp1.osuosl.org (Postfix) with ESMTP id A144C8179D;
+	Tue,  8 Aug 2023 22:00:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A144C8179D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691531848;
-	bh=w1JBFHQiieP/Sa+ScC1lzBbetNVQ7zAVHHLD09vJA0A=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1691532028;
+	bh=yKHzEz5W79dIQW67r0Dw4EYVXBRYTKCvVJs/y8XyPig=;
+	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=V5ODRF6PMmY5lkmoR27AR4Sbw628OHV4v4cYD7tQacUkoipprwKOyIDPTxkQN6846
-	 NdSYTFsk8f9FUGt+So+AzQD0CXYJbErii+w75d6lKNY5CqHChMWEaCoB4CyhrTVjjB
-	 dzYOy75tvkQ2ZoFweaTOgHLvrHccZQ1/VP8rD66v4cXtjHi5OYIN9SeucBvut5LZyN
-	 I9OfKkp9BEYbINuVpS4k/DnuXkFQNhNgg+v+JtG8KEI+oAVSJckKOAznWcZBMLDFS2
-	 eiMaIc1EAB4aQn9klyjVMK4/TjBHq/jJmenkvI2zDMO5UDDfkCnYM2LxCW05oR9Uf5
-	 Xx3yE18/ZENxw==
+	b=C8ES22s+jNnuhbmCkgbjurYAm/WIuTJb5zjr3zAJ/hcNuU1+saBnq+7TSCFoabLBH
+	 D5tGI7q0m57OQ2hLZZp4PULVxuG2Ve0BAIGkLP2TwUQQqctEC56fY8QIIbcpDAq+YL
+	 aQsHzup26t0rRaJwIxxUTW+6VAImsUH4k975pAgOzSOqP320xeAs+7Q4OGbXQ6JMq6
+	 b2xXKHqB9jiHz9ouYGHT0Y8d1f7Ox6hDMxnaimC2KUCiFqYDCMwxBb7utkWcRosEdJ
+	 Kf8GyZjjh96vbFyJaCuNk9QlAnYDiTSbZ7lfImGZ+sfrzexacOKmFAiVe4uXOuyTAF
+	 hZIp6O0UWEbkg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 6lnpyK29Fyti; Tue,  8 Aug 2023 21:57:27 +0000 (UTC)
+	with ESMTP id ww8Q9RxtRWen; Tue,  8 Aug 2023 22:00:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 6750A8210D;
-	Tue,  8 Aug 2023 21:57:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6750A8210D
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 414B71BF82D
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 21:57:20 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id A574981ABB;
+	Tue,  8 Aug 2023 22:00:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A574981ABB
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 804411BF82D
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 22:00:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1AC0282071
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 21:57:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1AC0282071
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5634D4176C
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 22:00:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5634D4176C
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id KIV0VVlLSfmK for <intel-wired-lan@lists.osuosl.org>;
- Tue,  8 Aug 2023 21:57:19 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.93])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 19CE682152
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 21:57:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 19CE682152
-X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="368420329"
-X-IronPort-AV: E=Sophos;i="6.01,157,1684825200"; d="scan'208";a="368420329"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 08 Aug 2023 14:57:18 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="821569688"
-X-IronPort-AV: E=Sophos;i="6.01,157,1684825200"; d="scan'208";a="821569688"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by FMSMGA003.fm.intel.com with ESMTP; 08 Aug 2023 14:57:15 -0700
-Received: from pelor.igk.intel.com (pelor.igk.intel.com [10.123.220.13])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 884B133BC9;
- Tue,  8 Aug 2023 22:57:14 +0100 (IST)
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  8 Aug 2023 17:54:17 -0400
-Message-Id: <20230808215417.117910-4-przemyslaw.kitszel@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230808215417.117910-1-przemyslaw.kitszel@intel.com>
-References: <20230808215417.117910-1-przemyslaw.kitszel@intel.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Y1789irndJTL for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  8 Aug 2023 22:00:24 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 57F5C41745
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 22:00:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 57F5C41745
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 3BE4262DA7;
+ Tue,  8 Aug 2023 22:00:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 9E0A3C433D9;
+ Tue,  8 Aug 2023 22:00:22 +0000 (UTC)
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+ by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
+ 86C30C64459; Tue,  8 Aug 2023 22:00:22 +0000 (UTC)
 MIME-Version: 1.0
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <169153202254.6931.1809745921138635353.git-patchwork-notify@kernel.org>
+Date: Tue, 08 Aug 2023 22:00:22 +0000
+References: <20230804125203.30924-1-yuehaibing@huawei.com>
+In-Reply-To: <20230804125203.30924-1-yuehaibing@huawei.com>
+To: Yue Haibing <yuehaibing@huawei.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1691531839; x=1723067839;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=cRHNJn65eDHmYFzdYXkjypozXpmLNgwKamLMhDh3sH4=;
- b=Da29R9QjNyBklkF3FFMpQX9R8N71GDGedNSO5tkDMJkoj1SJjlrRiIl8
- ZOBRHswbKTkdDgnvOTlBxL02xvjst18EqwWGzQ1JrJ0uRpOvja8HPkYk0
- xjbPwsWO+5mpkv4mDoOlQGkYnqj/lb3z2UJueXrfThvak7B+/UapKOcqT
- WvWL3hzrLpsaol9tcB9C/OQeffHTqQ0HcQUZ/0Rq5ucdo88vqLezRRNOb
- grH2JnM2ZodYTDH1EEqVlEcd+sUfnjbIQOm6Cq8VMYMm4q4joihosMqrX
- kSAEpOd5pE7eqBj6TcMc/BdUwnJMIbRxtA3EjDrs3oeExC0MuGkAwZ05e
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Da29R9Qj
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 3/3] ice: split
- ice_aq_wait_for_event() func into two
+ d=kernel.org; s=k20201202; t=1691532022;
+ bh=8YuuElbFwVlpduRXxYXvgNc6H3UQeAUu2HC/SZZwh4s=;
+ h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+ b=XbaSIomfIhRup/KQc8pMzNMimKjUbow5eH+febLDSdUuXimO2o5qLrh9jDvYE/9gK
+ KUL/zJ1OVqYFlNy5jmGjkdYQp5blb45psNtfw10/IqhJ77Y8/6nla6O2dbWQ7kHq+e
+ 0TIVAB5tHoh8BPgWBtYjVaGh+brja29z32i7oWNlZhZg7ZqBnE4CkOm+Co5MyBYGfh
+ 8AlxCosNYDvAIHnNLkqvVNYL8xWe/xNMjZOUyKu7P9Cc7cN8S1SkyLjrO7U82y4Y0k
+ 4rWVsBGsjKcSaQnrysEvxK1dKy53u10yw0u53ltbiUXuwzJ7fJ0KwkvmURsny7Wrc5
+ Ac+3f3SolTn8Q==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=XbaSIomf
+Subject: Re: [Intel-wired-lan] [PATCH net-next] ixgbe: Remove unused
+ function declarations
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,236 +92,39 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Simon Horman <horms@kernel.org>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: intel-wired-lan@lists.osuosl.org, daniel@veobot.com,
+ jesse.brandeburg@intel.com, edumazet@google.com, anthony.l.nguyen@intel.com,
+ netdev@vger.kernel.org, kuba@kernel.org, pabeni@redhat.com,
+ davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Mitigate race between registering on wait list and receiving
-AQ Response from FW.
+Hello:
 
-ice_aq_prep_for_event() should be called before sending AQ command,
-ice_aq_wait_for_event() should be called after sending AQ command,
-to wait for AQ Response.
+This patch was applied to netdev/net-next.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
 
-Please note, that this was found by reading the code,
-an actual race has not yet materialized.
+On Fri, 4 Aug 2023 20:52:03 +0800 you wrote:
+> Commit dc166e22ede5 ("ixgbe: DCB remove ixgbe_fcoe_getapp routine")
+> leave ixgbe_fcoe_getapp() unused.
+> Commit ffed21bcee7a ("ixgbe: Don't bother clearing buffer memory for descriptor rings")
+> leave ixgbe_unmap_and_free_tx_resource() declaration unused.
+> And commit 3b3bf3b92b31 ("ixgbe: remove unused fcoe.tc field and fcoe_setapp()")
+> removed the ixgbe_fcoe_setapp() implementation.
+> 
+> [...]
 
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Here is the summary with links:
+  - [net-next] ixgbe: Remove unused function declarations
+    https://git.kernel.org/netdev/net-next/c/ac0955f0ccb0
 
----
-add/remove: 2/0 grow/shrink: 1/3 up/down: 131/-61 (70)
----
- drivers/net/ethernet/intel/ice/ice.h          |  5 +-
- .../net/ethernet/intel/ice/ice_fw_update.c    | 13 ++--
- drivers/net/ethernet/intel/ice/ice_main.c     | 67 ++++++++++++-------
- 3 files changed, 57 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index bcd56ba908a7..3ac645afbc8d 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -933,6 +933,7 @@ void ice_fdir_replay_fltrs(struct ice_pf *pf);
- int ice_fdir_create_dflt_rules(struct ice_pf *pf);
- 
- enum ice_aq_task_state {
-+	ICE_AQ_TASK_NOT_PREPARED,
- 	ICE_AQ_TASK_WAITING,
- 	ICE_AQ_TASK_COMPLETE,
- 	ICE_AQ_TASK_CANCELED,
-@@ -945,8 +946,10 @@ struct ice_aq_task {
- 	u16 opcode;
- };
- 
-+void ice_aq_prep_for_event(struct ice_pf *pf, struct ice_aq_task *task,
-+			   u16 opcode);
- int ice_aq_wait_for_event(struct ice_pf *pf, struct ice_aq_task *task,
--			  u16 opcode, unsigned long timeout);
-+			  unsigned long timeout);
- int ice_open(struct net_device *netdev);
- int ice_open_internal(struct net_device *netdev);
- int ice_stop(struct net_device *netdev);
-diff --git a/drivers/net/ethernet/intel/ice/ice_fw_update.c b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-index 819b70823e9c..319a2d6fe26c 100644
---- a/drivers/net/ethernet/intel/ice/ice_fw_update.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fw_update.c
-@@ -302,6 +302,8 @@ ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
- 	dev_dbg(dev, "Writing block of %u bytes for module 0x%02x at offset %u\n",
- 		block_size, module, offset);
- 
-+	ice_aq_prep_for_event(pf, &task, ice_aqc_opc_nvm_write);
-+
- 	err = ice_aq_update_nvm(hw, module, offset, block_size, block,
- 				last_cmd, 0, NULL);
- 	if (err) {
-@@ -318,7 +320,7 @@ ice_write_one_nvm_block(struct ice_pf *pf, u16 module, u32 offset,
- 	 * is conservative and is intended to prevent failure to update when
- 	 * firmware is slow to respond.
- 	 */
--	err = ice_aq_wait_for_event(pf, &task, ice_aqc_opc_nvm_write, 15 * HZ);
-+	err = ice_aq_wait_for_event(pf, &task, 15 * HZ);
- 	if (err) {
- 		dev_err(dev, "Timed out while trying to flash module 0x%02x with block of size %u at offset %u, err %d\n",
- 			module, block_size, offset, err);
-@@ -491,6 +493,8 @@ ice_erase_nvm_module(struct ice_pf *pf, u16 module, const char *component,
- 
- 	devlink_flash_update_timeout_notify(devlink, "Erasing", component, ICE_FW_ERASE_TIMEOUT);
- 
-+	ice_aq_prep_for_event(pf, &task, ice_aqc_opc_nvm_erase);
-+
- 	err = ice_aq_erase_nvm(hw, module, NULL);
- 	if (err) {
- 		dev_err(dev, "Failed to erase %s (module 0x%02x), err %d aq_err %s\n",
-@@ -501,7 +505,7 @@ ice_erase_nvm_module(struct ice_pf *pf, u16 module, const char *component,
- 		goto out_notify_devlink;
- 	}
- 
--	err = ice_aq_wait_for_event(pf, &task, ice_aqc_opc_nvm_erase, ICE_FW_ERASE_TIMEOUT * HZ);
-+	err = ice_aq_wait_for_event(pf, &task, ICE_FW_ERASE_TIMEOUT * HZ);
- 	if (err) {
- 		dev_err(dev, "Timed out waiting for firmware to respond with erase completion for %s (module 0x%02x), err %d\n",
- 			component, module, err);
-@@ -566,6 +570,8 @@ ice_switch_flash_banks(struct ice_pf *pf, u8 activate_flags,
- 	u8 response_flags;
- 	int err;
- 
-+	ice_aq_prep_for_event(pf, &task, ice_aqc_opc_nvm_write_activate);
-+
- 	err = ice_nvm_write_activate(hw, activate_flags, &response_flags);
- 	if (err) {
- 		dev_err(dev, "Failed to switch active flash banks, err %d aq_err %s\n",
-@@ -590,8 +596,7 @@ ice_switch_flash_banks(struct ice_pf *pf, u8 activate_flags,
- 		}
- 	}
- 
--	err = ice_aq_wait_for_event(pf, &task, ice_aqc_opc_nvm_write_activate,
--				    30 * HZ);
-+	err = ice_aq_wait_for_event(pf, &task, 30 * HZ);
- 	if (err) {
- 		dev_err(dev, "Timed out waiting for firmware to switch active flash banks, err %d\n",
- 			err);
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 190be3d7cc6b..0baa44fa2baa 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1251,43 +1251,62 @@ ice_handle_link_event(struct ice_pf *pf, struct ice_rq_event_info *event)
- }
- 
- /**
-- * ice_aq_wait_for_event - Wait for an AdminQ event from firmware
-+ * ice_aq_prep_for_event - Prepare to wait for an AdminQ event from firmware
-  * @pf: pointer to the PF private structure
-- * @task: ptr to task structure
-+ * @task: intermediate helper storage and identifier for waiting
-  * @opcode: the opcode to wait for
-- * @timeout: how long to wait, in jiffies
-  *
-- * Waits for a specific AdminQ completion event on the ARQ for a given PF. The
-- * current thread will be put to sleep until the specified event occurs or
-- * until the given timeout is reached.
-+ * Prepares to wait for a specific AdminQ completion event on the ARQ for
-+ * a given PF. Actual wait would be done by a call to ice_aq_wait_for_event().
-  *
-- * To obtain only the descriptor contents, pass an event without an allocated
-- * msg_buf. If the complete data buffer is desired, allocate the
-- * event->msg_buf with enough space ahead of time.
-+ * Calls are separated to allow caller registering for event before sending
-+ * the command, which mitigates a race between registering and FW responding.
-  *
-- * Returns: zero on success, or a negative error code on failure.
-+ * To obtain only the descriptor contents, pass an task->event with null
-+ * msg_buf. If the complete data buffer is desired, allocate the
-+ * task->event.msg_buf with enough space ahead of time.
-  */
--int ice_aq_wait_for_event(struct ice_pf *pf, struct ice_aq_task *task,
--			  u16 opcode, unsigned long timeout)
-+void ice_aq_prep_for_event(struct ice_pf *pf, struct ice_aq_task *task,
-+			   u16 opcode)
- {
--	struct device *dev = ice_pf_to_dev(pf);
--	unsigned long start;
--	long ret;
--	int err;
--
- 	INIT_HLIST_NODE(&task->entry);
- 	task->opcode = opcode;
- 	task->state = ICE_AQ_TASK_WAITING;
- 
- 	spin_lock_bh(&pf->aq_wait_lock);
- 	hlist_add_head(&task->entry, &pf->aq_wait_list);
- 	spin_unlock_bh(&pf->aq_wait_lock);
-+}
- 
--	start = jiffies;
-+/**
-+ * ice_aq_wait_for_event - Wait for an AdminQ event from firmware
-+ * @pf: pointer to the PF private structure
-+ * @task: ptr prepared by ice_aq_prep_for_event()
-+ * @timeout: how long to wait, in jiffies
-+ *
-+ * Waits for a specific AdminQ completion event on the ARQ for a given PF. The
-+ * current thread will be put to sleep until the specified event occurs or
-+ * until the given timeout is reached.
-+ *
-+ * Returns: zero on success, or a negative error code on failure.
-+ */
-+int ice_aq_wait_for_event(struct ice_pf *pf, struct ice_aq_task *task,
-+			  unsigned long timeout)
-+{
-+	enum ice_aq_task_state *state = &task->state;
-+	struct device *dev = ice_pf_to_dev(pf);
-+	unsigned long start = jiffies;
-+	long ret;
-+	int err;
- 
--	ret = wait_event_interruptible_timeout(pf->aq_wait_queue, task->state,
-+	ret = wait_event_interruptible_timeout(pf->aq_wait_queue,
-+					       *state != ICE_AQ_TASK_WAITING,
- 					       timeout);
--	switch (task->state) {
-+	switch (*state) {
-+	case ICE_AQ_TASK_NOT_PREPARED:
-+		WARN(1, "call to %s without ice_aq_prep_for_event()", __func__);
-+		err = -EINVAL;
-+		break;
- 	case ICE_AQ_TASK_WAITING:
- 		err = ret < 0 ? ret : -ETIMEDOUT;
- 		break;
-@@ -1298,15 +1317,15 @@ int ice_aq_wait_for_event(struct ice_pf *pf, struct ice_aq_task *task,
- 		err = ret < 0 ? ret : 0;
- 		break;
- 	default:
--		WARN(1, "Unexpected AdminQ wait task state %u", task->state);
-+		WARN(1, "Unexpected AdminQ wait task state %u", *state);
- 		err = -EINVAL;
- 		break;
- 	}
- 
- 	dev_dbg(dev, "Waited %u msecs (max %u msecs) for firmware response to op 0x%04x\n",
- 		jiffies_to_msecs(jiffies - start),
- 		jiffies_to_msecs(timeout),
--		opcode);
-+		task->opcode);
- 
- 	spin_lock_bh(&pf->aq_wait_lock);
- 	hlist_del(&task->entry);
-@@ -1342,7 +1361,9 @@ static void ice_aq_check_events(struct ice_pf *pf, u16 opcode,
- 
- 	spin_lock_bh(&pf->aq_wait_lock);
- 	hlist_for_each_entry(task, &pf->aq_wait_list, entry) {
--		if (task->state || task->opcode != opcode)
-+		if (task->state != ICE_AQ_TASK_WAITING)
-+			continue;
-+		if (task->opcode != opcode)
- 			continue;
- 
- 		task_ev = &task->event;
+You are awesome, thank you!
 -- 
-2.40.1
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
 _______________________________________________
 Intel-wired-lan mailing list
