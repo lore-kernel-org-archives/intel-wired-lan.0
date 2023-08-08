@@ -4,83 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ED36C001B0
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Aug 2023 20:06:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5855C001DB
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  8 Aug 2023 20:49:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BC25441745;
-	Tue,  8 Aug 2023 20:06:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BC25441745
+	by smtp4.osuosl.org (Postfix) with ESMTP id 662664174F;
+	Tue,  8 Aug 2023 20:49:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 662664174F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691525183;
-	bh=hNef1/mQxDE8QL/0Ja1tv5SZW3CuuIynXpWdRAQKiMw=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1691527787;
+	bh=1geq9VUsggow4ILXrH4+fLKeCRAv5D62mQAoV1Zs2f4=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=SPTUkgME/FQQjUQzWUUcTLxCjTGN9j42vQm7i49z/BXKHUaCHy2oTJhhcL63K0aQK
-	 jiWf81wOhHib2QzFDmN8zMFvHT20Aqx9FrZfvpRrJbFwtBGPknCxH9EDmvFaIgyXc0
-	 9V4pNYlDMCAE9ptjEMvw6NvvAPKS1YdSNl2AOe9YBX4xUU/1nicsNaV3NStCeE1aGZ
-	 K7Uq7vieR1pzCO7U6vTVLetPwl3C0CKepvrSTCLZvOxHaMg+PEuurDNb1hBCUQCIw4
-	 AAPgyzqt7yiqE6+oDN1p1cj4Q8vuLKoF2e/ivUplCGVqgT2DAlg9PcdUSpL+lyffuw
-	 6/SpF3hazXGcQ==
+	b=QRnRatTUp4JXwL0oIiM98YxgotJULh++ObYlEOG/3E4gGG2cMzjldQDXSusxcNhf8
+	 qW7Ykq2A3haG0iLoyESTsr+dyuj0i51EbKQkdP7Iy03IslmAxtyuTsdX7Kmw4VA3xN
+	 AI0D1JvndlMA6uwykfm13u6j8Mi/+By6kIL9TrcE/4zhLs/y/wfzp2hQSnqUw6EA2Z
+	 HpcdcDLhqpsSTxMpTXGSipV47odaX8n0uYMcW3W86dGSQwK6tGNeeuxNVEPjkAvQnl
+	 2qezVdM+LCPaDcyoaQmh/3UT1ucE7j/gpVH5730wmRN86eR0/YicxnoiEmrtBAlGw2
+	 bsJWD6Tutwgbg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id sH5jp9e9S7Qj; Tue,  8 Aug 2023 20:06:23 +0000 (UTC)
+	with ESMTP id CeExWbYCAR8Z; Tue,  8 Aug 2023 20:49:46 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BCCFE4174B;
-	Tue,  8 Aug 2023 20:06:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BCCFE4174B
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 55E521BF966
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 20:06:21 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3C820415C0;
+	Tue,  8 Aug 2023 20:49:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3C820415C0
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 4657B1BF5E0
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 20:49:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 3A90660B58
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 20:06:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3A90660B58
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1D8DF4038E
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 20:49:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1D8DF4038E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 8Ge9a6mmozVs for <intel-wired-lan@lists.osuosl.org>;
- Tue,  8 Aug 2023 20:06:20 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id CP4BuVPuO3lU for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  8 Aug 2023 20:49:43 +0000 (UTC)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id EBBB860C25
- for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 20:06:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EBBB860C25
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 75355401AD
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  8 Aug 2023 20:49:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 75355401AD
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 24F0462C15;
- Tue,  8 Aug 2023 20:06:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12AD2C433C7;
- Tue,  8 Aug 2023 20:06:18 +0000 (UTC)
-Date: Tue, 8 Aug 2023 13:06:17 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-Message-ID: <20230808130617.5ad74486@kernel.org>
-In-Reply-To: <20230808130327.5638d15b@kernel.org>
-References: <20230804190454.394062-1-vadim.fedorenko@linux.dev>
- <20230804190454.394062-3-vadim.fedorenko@linux.dev>
- <ZNCjwfn8MBnx4k6a@nanopsycho>
- <a7e2f7e1-e36a-2c79-46c3-874550d24575@linux.dev>
- <20230808130327.5638d15b@kernel.org>
+ by dfw.source.kernel.org (Postfix) with ESMTPS id AD6FC62C51;
+ Tue,  8 Aug 2023 20:49:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A83BDC433C7;
+ Tue,  8 Aug 2023 20:49:40 +0000 (UTC)
+Date: Tue, 8 Aug 2023 22:49:38 +0200
+From: Simon Horman <horms@kernel.org>
+To: Wenjun Wu <wenjun1.wu@intel.com>
+Message-ID: <ZNKqYlC86siUsRzd@vergenet.net>
+References: <20230727021021.961119-1-wenjun1.wu@intel.com>
+ <20230808015734.1060525-1-wenjun1.wu@intel.com>
+ <20230808015734.1060525-5-wenjun1.wu@intel.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20230808015734.1060525-5-wenjun1.wu@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1691525178;
- bh=EXXgYeO8+2thyLJnvnLv8j6A+askNI7McKgPFzgsrAI=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=XuZ9+hENrre4giva7n00N0bFg27pLNhnPyPqDyGlMhYcKysZHD7s+wB5GQ9gKWMhr
- xLEBZEtxy4Ijq280LlshZ0OQtc5bdOBJaYsmdcRVVjYgwBmCDKYBR3TcdMZV9c8G8L
- IvwUuNxIeLXI3+ekfhqB1C/LmZKr6JOPykHbiaQvHxJ8f/hfZgIXJ3/W73BAC6hI/X
- Xg+8ejZndgpq9pr3s9d/dV4IDGbuok/uNo2SrySkFxU60DkqseTlu+lEE0WQusCotG
- 4NUeCjA6QmY4IlkytAP5Gja51o1bFOHrk2BMskSBjBMwWkcdvEcpmhPs0YTxVf8+gn
- pDR0jFGaIeuUQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=kernel.org; s=k20201202; t=1691527782;
+ bh=JYHRhEx/YWaT7o/axmRTijT6ZjSVmkc8XuhZg3PcQ8w=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=HfjUR/oebhUhEd+UQfCAKdc3H9NQbZe1xja3nMcQStE1m++9lgjIRY+eZoEmqcSrX
+ 3cka0Z/YKxef3cHOw35HdxFPxPx6kolAGF5PNorYDNVHUwEx7zOl9JDU7IczPsgJDy
+ ir/MR2qVArG/O0eo2cDfzFyHyePKYqo6OyJzP0CVScZ1hoHZhzWuIC9bUEqsXbxHR1
+ r4R3pE8DmVgLffZ3gAL7iENBKUFz6xVdc+sEND0xAEXmDnPYoq1npWIsaBrhg91elY
+ vYDcYuQPlOKSHShwMfAJORMaVSaJdQ5Zv5Seum/SCsJzTm0yr8Ni+0NGh5lO/IdgG4
+ aKyoaSPDtAJvg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=XuZ9+hEN
-Subject: Re: [Intel-wired-lan] [PATCH net-next v2 2/9] dpll: spec: Add
- Netlink spec in YAML
+ header.a=rsa-sha256 header.s=k20201202 header.b=HfjUR/oe
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 4/5] iavf: Add devlink
+ port function rate API support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,31 +92,74 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jiri Pirko <jiri@resnulli.us>, Bart Van Assche <bvanassche@acm.org>,
- netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
- linux-arm-kernel@lists.infradead.org,
- Jonathan Lemon <jonathan.lemon@gmail.com>,
- Simon Horman <simon.horman@corigine.com>, Paolo Abeni <pabeni@redhat.com>,
- linux-clk@vger.kernel.org, Milena Olech <milena.olech@intel.com>
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com, qi.z.zhang@intel.com,
+ intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 8 Aug 2023 13:03:27 -0700 Jakub Kicinski wrote:
-> >   const struct nla_policy dpll_pin_parent_pin_nl_policy[DPLL_A_PIN_STATE 
-> > + 1] = {
-> >          [DPLL_A_PIN_STATE] = NLA_POLICY_RANGE(NLA_U8, 1, 3),
-> >          [DPLL_A_PIN_ID] = { .type = NLA_U32, },
-> > 
-> > 
-> > The "/* private: */" comment was added to the generator after Simon's
-> > comment. But I'll include this part into the next version.  
+On Tue, Aug 08, 2023 at 09:57:33AM +0800, Wenjun Wu wrote:
+> From: Jun Zhang <xuejun.zhang@intel.com>
 > 
-> We only added private for enum masks, I'll send a patch for nlattrs.
+> To allow user to configure queue based parameters, devlink port function
+> rate api functions are added for setting node tx_max and tx_share
+> parameters.
+> 
+> iavf rate tree with root node and  queue nodes is created and registered
+> with devlink rate when iavf adapter is configured.
+> 
+> Signed-off-by: Jun Zhang <xuejun.zhang@intel.com>
 
-On closer look these have no kdoc, so the priv markings are not
-necessary, dropping them sounds right.
+...
+
+> +/**
+> + * iavf_update_queue_tx_max - sets tx max parameter
+> + * @adapter: iavf adapter struct instance
+> + * @node: iavf rate node struct instance
+> + * @bw: bandwidth in bytes per second
+> + * @extack: extended netdev ack structure
+> + *
+> + * This function sets max BW limit.
+> + */
+> +static int iavf_update_queue_tx_max(struct iavf_adapter *adapter,
+> +				    struct iavf_dev_rate_node *node,
+> +				    u64 bw, struct netlink_ext_ack *extack)
+> +{
+> +	/* Keep in kbps */
+> +	node->tx_max_temp = div_u64(bw, IAVF_RATE_DIV_FACTOR);
+> +	if (ADV_LINK_SUPPORT(adapter)) {
+> +		if (node->tx_max_temp / 1000 > adapter->link_speed_mbps)
+> +			return -EINVAL;
+> +	}
+> +
+> +	node->tx_update_flag |= IAVF_FLAG_TX_MAX_UPDATED;
+> +
+> +	return iavf_check_update_config(adapter, node);
+> +}
+> +
+> +/**
+> + * iavf_devlink_rate_node_tx_max_set - devlink_rate API for setting tx max
+> + * @rate_node: devlink rate struct instance
+
+Hi Jun Zhang,
+
+Please describe all the parameters of iavf_devlink_rate_node_tx_max_set
+in it's kernel doc.
+
+./scripts/kernel-doc -none is your friend here.
+
+> + *
+> + * This function implements rate_node_tx_max_set function of devlink_ops
+> + */
+> +static int iavf_devlink_rate_node_tx_max_set(struct devlink_rate *rate_node,
+> +					     void *priv, u64 tx_max,
+> +					     struct netlink_ext_ack *extack)
+
+...
+
+-- 
+pw-bot: changes-requested
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
