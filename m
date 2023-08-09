@@ -4,186 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6E7AC001B0
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Aug 2023 18:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A795C001E0
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Aug 2023 21:49:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8BA6D4191C;
-	Wed,  9 Aug 2023 18:44:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8BA6D4191C
+	by smtp4.osuosl.org (Postfix) with ESMTP id CBAD0418C4;
+	Wed,  9 Aug 2023 21:49:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CBAD0418C4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691606668;
-	bh=ndgQgspxfu7Vb5eAbl2Xn1pnvOvxgc+AD0213RF109I=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1691617761;
+	bh=y+jBEkc3uUzH5z2XZyu95dtt6yjXgddU5RM+/gpA/Yg=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=FOk1a/VQV+gCR91Y5+l9MwfGrR9yHzN2/IV/2DL+ahzi+WjA/emCSrBxQedB/CHo3
-	 XVOq610GlCa9H1InLgJ0vKJLwv4AsH0I/aM3mgfq7IAfXsBhyXH6PjbCMk59AvdbcK
-	 +ovKnrFb2ENrTRSszt0BEb294zGvrQ/f1G3jiCmjdSVTHlwYjSsSY7M13Rx3MRJ2lv
-	 htKZ2++NQTZDg/SqFBuxbRz1FfhvVSdFRtVe48lVh+FCMaw/N0zvbzeERNj8YPMMiz
-	 ej6bUfksDc55UNS6GGfDKBuQ2QiAWfCIoLSMBstkb0UcbQqCwYKoKmhhjgkfEP0xDa
-	 aZBGqxSujz+Mw==
+	b=8pHFwPxE4rpY08lRk96UjzaVrfoNbrUJVQczZ9yxp6nLV2gc9rMrjhM3/5Gogtggh
+	 ToEPHQxGTAv8/nqf1LLzNRTXSNqEbeTE4Ufd4y/qXM/kfqPw7Pwow0iLD/MhlSeSag
+	 WAagWsWz32J6/1kKm13wbt+ghqO2nOopVPRAJmI6yqL7Q9g2dCSCsk5BnSY68oGvro
+	 HEnSHOJMyzuMXlkYhj+GpOGKatIjd4DGQ/3G25tg3bsoXOflhAU0bv1I9lFw9bLWDR
+	 cof8cHpMTpMxel/vBF1iFBSRzJ74oYaTBWXV+ycehDJuyZlNm0P6E69eBfmCD6h3OG
+	 YUebIU5CrwiPg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ENzaQyqBYOVI; Wed,  9 Aug 2023 18:44:27 +0000 (UTC)
+	with ESMTP id 1s_B6Grd822z; Wed,  9 Aug 2023 21:49:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6116B41909;
-	Wed,  9 Aug 2023 18:44:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6116B41909
+	by smtp4.osuosl.org (Postfix) with ESMTP id 49B86418B7;
+	Wed,  9 Aug 2023 21:49:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 49B86418B7
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8DF841BF331
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 18:44:26 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 36B0E1BF28A
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 21:49:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7174260C04
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 18:44:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7174260C04
+ by smtp3.osuosl.org (Postfix) with ESMTP id 0B7E760E80
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 21:49:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0B7E760E80
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id F-kVTh8YSNVw for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Aug 2023 18:44:25 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
- by smtp3.osuosl.org (Postfix) with ESMTPS id B4D2360BC2
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 18:44:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B4D2360BC2
-X-IronPort-AV: E=McAfee;i="6600,9927,10797"; a="361334913"
-X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; d="scan'208";a="361334913"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Aug 2023 11:44:25 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="875390827"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
- by fmsmga001.fm.intel.com with ESMTP; 09 Aug 2023 11:44:27 -0700
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Wed, 9 Aug 2023 11:44:24 -0700
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Wed, 9 Aug 2023 11:44:24 -0700
-Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
- orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27 via Frontend Transport; Wed, 9 Aug 2023 11:44:24 -0700
-Received: from NAM12-MW2-obe.outbound.protection.outlook.com (104.47.66.44) by
- edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.27; Wed, 9 Aug 2023 11:44:23 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=ipXi5TwvPM+aXG/1KepZx2HX3t294+T4asrL+9uL3UeZsjvETniF1QejSp9SdYVZ5sILZJlbhxdc7g+sSS+gVrqH9ll7ZlBZYwrTS2S2uVkgnFTEzZccsg0rHN2pa9Al73ZnelAADnI+jFZlgDPSh0PXv9+go2cVsZAb6YLskz0lSnksRFY4/c4/3uyzqnN2xCOK4f/IU+8/xf7sbCXRytLV5EOIrTN55D2z8n/F5vAs1CfkM5cIIx2Cc+loh3IZVDSoBcmWCsEMRtko2/yjYSEe8R6h8Uby2/spjZaW4P3V9k9ORRZ0NNNoIvVaIOb85/X8k+eMa6w8xMQfh3enSA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/gtHHypZdrOOpQ8YWo/igNqN8cxP7dszvj+PZmVinsc=;
- b=dd6iNdLmRII3OAabmOgTSTNiBhpRuXAOWMs/zpSwkp1/bSPJ4WSOqEhmodhjqw+/Tx5uBKDGMdqixHy16hbcZLKvhR8FJy/6+vuQFsQIAJYh7IqnmfgONFWxaFc3NVEqsJkcTcGQDbutTpmrkIvCQsw957ynqnRZL9edPjFAg70xUO9HsmMcehAJQynzpYakg4SqiZc97yY59cwFd3fp8qVhM04+AT2RY/5WKsa+EZoD6s3syNwvgpMTbwESYsFPDopixS1xExeuARfW3ysTzmyrzeV8lDkRV5noVkzoPUNUZO0ndncNllaGzIVK5j9QfNpgOE4ZFP3QfiH25AX/oA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from BYAPR11MB3175.namprd11.prod.outlook.com (2603:10b6:a03:7c::23)
- by PH7PR11MB6930.namprd11.prod.outlook.com (2603:10b6:510:205::15)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6631.47; Wed, 9 Aug
- 2023 18:44:21 +0000
-Received: from BYAPR11MB3175.namprd11.prod.outlook.com
- ([fe80::f212:bf09:e307:9b9c]) by BYAPR11MB3175.namprd11.prod.outlook.com
- ([fe80::f212:bf09:e307:9b9c%4]) with mapi id 15.20.6652.026; Wed, 9 Aug 2023
- 18:44:21 +0000
-Message-ID: <f62fc232-8bbf-253b-5eb2-3131d767d6df@intel.com>
-Date: Wed, 9 Aug 2023 11:44:19 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Firefox/102.0 Thunderbird/102.14.0
-Content-Language: en-US
-To: Simon Horman <horms@kernel.org>, Wenjun Wu <wenjun1.wu@intel.com>
-References: <20230727021021.961119-1-wenjun1.wu@intel.com>
- <20230808015734.1060525-1-wenjun1.wu@intel.com>
- <20230808015734.1060525-6-wenjun1.wu@intel.com>
- <ZNKrc6xchj8Jkct+@vergenet.net>
-From: "Zhang, Xuejun" <xuejun.zhang@intel.com>
-In-Reply-To: <ZNKrc6xchj8Jkct+@vergenet.net>
-X-ClientProxiedBy: BYAPR06CA0033.namprd06.prod.outlook.com
- (2603:10b6:a03:d4::46) To BYAPR11MB3175.namprd11.prod.outlook.com
- (2603:10b6:a03:7c::23)
+ with ESMTP id 1cSHQbxCTas2 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Aug 2023 21:49:17 +0000 (UTC)
+Received: from out-66.mta1.migadu.com (out-66.mta1.migadu.com [95.215.58.66])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 512BE60B74
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 21:49:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 512BE60B74
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+To: Jakub Kicinski <kuba@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Jonathan Lemon <jonathan.lemon@gmail.com>, Paolo Abeni <pabeni@redhat.com>
+Date: Wed,  9 Aug 2023 22:40:23 +0100
+Message-Id: <20230809214027.556192-6-vadim.fedorenko@linux.dev>
+In-Reply-To: <20230809214027.556192-1-vadim.fedorenko@linux.dev>
+References: <20230809214027.556192-1-vadim.fedorenko@linux.dev>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR11MB3175:EE_|PH7PR11MB6930:EE_
-X-MS-Office365-Filtering-Correlation-Id: 821e3d0b-c4fd-4af1-eac9-08db9908a564
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: pgNiOwi6GVnviFr9iPhGxcQ+96aDzTL6g/HJhgMCqWhRQfpPAjm+DksHH4ZEYPQS86mhml4xYUjLaAJexUlONYta0L2rW+s3w0KpSx7wKs4zVEaMBeL+s6agXpWUEmm/veaUsuXtnAswzkmhg9k0BxUjsBlOjDEb56JZ+pkhlpjXXpFYmE8yQoyUzx0WomKCb/XijOpNv99k3ylYYju8Pw5vwHmq0Jy58bzWomCAJAIyF2Az6sH9DgzGHsk0NWVy9tYf1NDbrMX+WlVjXxVPhmXXq0dKVVgKhwvzY0IOyofKyLPFX8yMx3JO/NXKT95fNsMEMQRzjhX5T6OcdvSZ8xH71XWB2H/hJ0iuiKh/ifKah1IdqH9WVkVOr4ZhKY591Ivl0s/6SrFniQuklZTXL7z+QtbHW7N0bPp+WVUZi4aPFGj+pFCClhfkJBrS/QIvaTaBU2nYbpe+IgelTlMz4jk0oC1qpbRiUY+qS4BV4d11iZwE8KqPW5miYfCMMdhCfrg9X1cNt4yBj00ZjdcQ7kFRAH2UFA9Js+8jEZZTKjfsDc0onjlBX31221VJcr+XzyEAtyoOF6Wz1hRujzJ7NiL1zlS9RY28dbB1LVh8QHl1wT9hMtkdMw4F+z72BL9XGzniMMh8e1EGQc4xLlbAuA==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:BYAPR11MB3175.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230028)(376002)(366004)(39860400002)(346002)(136003)(396003)(1800799006)(186006)(451199021)(66556008)(316002)(66476007)(41300700001)(66946007)(6636002)(4326008)(478600001)(110136005)(6506007)(53546011)(2906002)(31686004)(107886003)(26005)(8676002)(8936002)(5660300002)(6512007)(6486002)(2616005)(83380400001)(36756003)(31696002)(86362001)(38100700002)(82960400001)(45980500001)(43740500002);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?RWlKdTFiZ01GUzZlLzAyOFcvUzY2b0hJTnJzaW9rS1dCcnFTRG50a3V5TG0w?=
- =?utf-8?B?VVlvdm15dWFxRUxiVVZScXNNUmxBZU9lWTJNYnEvNGVKMEdhcGZORFBFUjBN?=
- =?utf-8?B?a2czek5qQ0QvNm9tRExWUFlKMldGaUV1bXc4VkpYTHpaS1c1bnM5RnVlOXF4?=
- =?utf-8?B?R1QrTTRISEpkU24vdjZxTE5EVWh3TGduc3FKdnBDVGM2SjhDNHp3REczaW0y?=
- =?utf-8?B?N2E0cFh3dnFBV3ZrSytaQjlxcnJSM2ordENYb2VGNmNzTGZZTGQyVDRYZ2J4?=
- =?utf-8?B?em9IK2RESFJ0cjI4VnZTb3FRQjZhOEFOR0lWaW9xZWJDODhvSDRsbW9LRGF3?=
- =?utf-8?B?aGJKZm55UVF5VmQ0VVV5SDdLMStxUzMrQ3lVNHh5cld4MlR0Z2h6cW1VNzd4?=
- =?utf-8?B?Sm55L0FxZGlqQjNXWjQzVGJwSWhBdlFBT21tL2hRcTlKNlFUVDY3Rk5Vd3Uv?=
- =?utf-8?B?K05Ea2FqdnkvSG0zRnpEaE8rUTViaU44YUt3a3lxZkVYK2Y0UFNrc3I2TkJ0?=
- =?utf-8?B?bS9wbE0rcDRFUjUzNk9TYUR6WHdOWUl3cllnczR0YXRsemhnNUt3MW9oeFBl?=
- =?utf-8?B?Y25lVGFXODQzQjdQRHhRbkwrYmRaRFlPL1lTb25Ec0pObEF4bGJwVzVYWGNH?=
- =?utf-8?B?SStLVnhDeVFpK3htZElUc1B6V29xT0dnUUVHVFF5YS9mT2JlbDU3N05lOGpV?=
- =?utf-8?B?bjZ4amZCYUw2cFVzRzBsMlpIWjJybWZlT2g1SzNSYW5rT0ZvQmJMVEs3U1Rs?=
- =?utf-8?B?T2RVWFhieUVmYlVNckcyemJPemt5akNnMUdLdWEzMW80dGM5bk5QRC83MTMz?=
- =?utf-8?B?K2svK0Y2Z1grbDcyVXJyWjByUVlHZS9zOWZsVjBrMy93aXc0STlFaFoxWVcz?=
- =?utf-8?B?K09GSCsrVm9hUDdoTlZXTFR6Wjc2WFNTMDJwNkJJeWVQZ2Jtb1VtUEVPRm9Z?=
- =?utf-8?B?YndEZ1AvNmQ1UytXTUs3WUcxWEcwQmhpbURIWVlKdlRveFJtZ2lCdTFJdktQ?=
- =?utf-8?B?WWJCcjkwRHE1N3NjZGRJSG8ydFdqYWFQb1ZyeVZ1NTZhdXVSMEV3QUNvWjFq?=
- =?utf-8?B?bCsvbkZaVi9sc3g3bDg3b3JaS2N4akR1cUI0dWtRVlFnUExsV1ZZaUhLaW1Q?=
- =?utf-8?B?SzFPeHlZVmxBWFMxcGdrdTR1dTIrUUZUdEVNaVF3UWR6ZGlLMXRiY0FDWGtJ?=
- =?utf-8?B?QjEwMXFmR2NiSVB3R1NoaG9LSzA5citiMWR1S2tDdmVnYUEydFdSaUtldVRy?=
- =?utf-8?B?S3B0MmZhMkxrNjlIZW5yeGdlYk95MGV1VTRPTG5nQjB4LzQ5RUY1cHVIVzRL?=
- =?utf-8?B?Q2dUZWdsbFh1VXQ0VzRHaGdDMUJONXMvZ2xXSXlVbHFqOElLMkZaVllDVHYv?=
- =?utf-8?B?aEI2QjhjMVB6LzQ1NVl0Z2tqSWNRZFV2N0J0SmFNNDl2UUVtY1dGTXVxcDYx?=
- =?utf-8?B?Q0xHZjhDcFcrQ0MyTnJvRFpFTTAyaGhWTTRPQ2tPalhkYjk5VzFGVFl0UXZM?=
- =?utf-8?B?aFB4SHdMdmlhLys3ZEdEZTQ2eXFneXFZMGF2RWpKeHdLMlFzZXBCWVNyTGtY?=
- =?utf-8?B?dWhnSkFyRmlpdjVzaE5wMG5laWhTaWExejhEM0ZvNUp1aTd0amlCcHM3VzNz?=
- =?utf-8?B?ZG8ydVY4VlNSbnI0UldZc2x6aUttc2NmdDdLbnc1eEFFbE9RVTYwak9pR004?=
- =?utf-8?B?TnBqSnQ0N3FmeDNSUll0Q2ZrUHpjZXRibEk1U2RHTC9KdWVqbzlweU8za0VI?=
- =?utf-8?B?V04vckJQRjlDYjhpUnh3cTNZc0ZhSUcrL2xQTmc2cXEyN3FxbWhlREgxaHc2?=
- =?utf-8?B?aG5kcnRxVnRLYzlzcnliT3lxa0NKb2lWa20zZ3dHdkV1cHBFcFhoazY1Z1l5?=
- =?utf-8?B?cGw2ZkljQ1JyeGVkNUFZU1JUb09NNDJsOVZEZ01GMU0xbi9ySDJuRnJlc0cr?=
- =?utf-8?B?ZkFvRWZYc3UyMGgwUVplMGtYRnVqbVpLMEdFZDNMRjBqVnQzTU1qTForVFFm?=
- =?utf-8?B?eURDUWNsbWYyZkhvN2VFMXRiYTJZblVJR0t6UVlQb0RPbFJvVWx3RWU2ZnpF?=
- =?utf-8?B?WGdRQndsR1FLTGt2KzZmQkhsSWJHRE9lQ0hObXJ1cUdCeGF0b1AybjRCSCs2?=
- =?utf-8?Q?xoW0j/r9EtP+epvErqqgJkCrh?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 821e3d0b-c4fd-4af1-eac9-08db9908a564
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB3175.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Aug 2023 18:44:21.7808 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: NbNwh3D/HPx8RGCwXw0iTMEPHcH6/KSG0OrjWcGJrOMTZXapr0lzPmvVvOBEjEUehCjNYH0n1H2ud6ggiK9EMQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB6930
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1691606665; x=1723142665;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=PmVhURsf5bqfBP/nB8jw+6wtfiwB9IS2ikVqcGZeFfA=;
- b=WD8fm5hVi62ucQh5sDDp+UCfdKcLkRA9tnn8WOGMFm1vkG752jM+lsks
- aMLEzsXDSr4RoCD5VFRfs3teDpsM5xeIi7ejlX16goliYuK6cQIc3yCql
- OzufgwZ3vtc1aw/0SbjM2PJFOAmOVmuhgwdRwQbq7oLRbgEKFelTbZHQs
- BZ6A06wonnw6V0isj2+FwAuPI9FgjfnACa8VKDze/mOvWAt3D05I9/xRF
- aHunf/wuhtzfEpZOjOStF7tcCwaCiT8xbi50D4p8/wC/Na7rZJVhDt+C5
- YNycCyP5JQZWAuLK9IP758qLYZkR/8/hTi7bMrmIBRt3wJqNtY+d8LhFj
- A==;
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1691617243;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=6gxlhYaZuYNo2avSaDhmAM9N4g1ibb4mIlU4cPjUnBg=;
+ b=Wrq3POqOK5YlTV5gryFKSDAQxL2Imk3yZHLsUg6Jp3d8BbBpJNz3W9+f9ZlxRe7fsM855j
+ Y8xsl4X/lz6O1zU5AQae61DXtQPwbatgN7uOi68nHupgVUhI2Y0Emw5qibt5KcNKiIpCyq
+ o1Vz3Wqynn+7Z6mY2BWj+J2qGxTYwmQ=
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=WD8fm5hV
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 5/5] iavf: Add VIRTCHNL
- Opcodes Support for Queue bw Setting
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=Wrq3POqO
+Subject: [Intel-wired-lan] [PATCH net-next v3 5/9] netdev: expose DPLL pin
+ handle for netdevice
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -196,54 +86,310 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
- intel-wired-lan@lists.osuosl.org, qi.z.zhang@intel.com
+Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Bart Van Assche <bvanassche@acm.org>, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, Milena Olech <milena.olech@intel.com>,
+ Jiri Pirko <jiri@nvidia.com>, linux-clk@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+From: Jiri Pirko <jiri@nvidia.com>
 
-On 8/8/2023 1:54 PM, Simon Horman wrote:
-> On Tue, Aug 08, 2023 at 09:57:34AM +0800, Wenjun Wu wrote:
->> From: Jun Zhang <xuejun.zhang@intel.com>
-> ...
->
->> @@ -2471,6 +2687,16 @@ void iavf_virtchnl_completion(struct iavf_adapter *adapter,
->>   		if (!v_retval)
->>   			iavf_netdev_features_vlan_strip_set(netdev, false);
->>   		break;
->> +	case VIRTCHNL_OP_GET_QOS_CAPS:
->> +		u16 len = struct_size(adapter->qos_caps, cap,
->> +				      IAVF_MAX_QOS_TC_NUM);
-> Hi Jun Zhang and Wenju Wu,
->
-> clang-16 complains about this quite a lot.
-> I think it is because it wants the declaration of len - and thus
-> the rest of this case - inside a block ({}).
->
->   .../iavf_virtchnl.c:2691:3: error: expected expression
->                   u16 len = struct_size(adapter->qos_caps, cap,
->                   ^
->   .../iavf_virtchnl.c:2693:46: error: use of undeclared identifier 'len'
->                   memcpy(adapter->qos_caps, msg, min(msglen, len));
->                                                              ^
->   .../iavf_virtchnl.c:2693:46: error: use of undeclared identifier 'len'
-Thanks for the solution.
->> +		memcpy(adapter->qos_caps, msg, min(msglen, len));
->> +		break;
->> +	case VIRTCHNL_OP_CONFIG_QUANTA:
->> +		iavf_notify_queue_config_complete(adapter);
->> +		break;
->> +	case VIRTCHNL_OP_CONFIG_QUEUE_BW:
->> +		break;
->>   	default:
->>   		if (adapter->current_op && (v_opcode != adapter->current_op))
->>   			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
->> -- 
->> 2.34.1
->>
->>
+In case netdevice represents a SyncE port, the user needs to understand
+the connection between netdevice and associated DPLL pin. There might me
+multiple netdevices pointing to the same pin, in case of VF/SF
+implementation.
+
+Add a IFLA Netlink attribute to nest the DPLL pin handle, similar to
+how it is implemented for devlink port. Add a struct dpll_pin pointer
+to netdev and protect access to it by RTNL. Expose netdev_dpll_pin_set()
+and netdev_dpll_pin_clear() helpers to the drivers so they can set/clear
+the DPLL pin relationship to netdev.
+
+Note that during the lifetime of struct dpll_pin the pin handle does not
+change. Therefore it is save to access it lockless. It is drivers
+responsibility to call netdev_dpll_pin_clear() before dpll_pin_put().
+
+Signed-off-by: Jiri Pirko <jiri@nvidia.com>
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+---
+v2->v3:
+- no functional changes
+v1->v2:
+- fix checkpatch errors
+
+ drivers/dpll/dpll_netlink.c  | 22 +++++++++++++++++-----
+ include/linux/dpll.h         | 20 ++++++++++++++++++++
+ include/linux/netdevice.h    | 20 ++++++++++++++++++++
+ include/uapi/linux/if_link.h |  2 ++
+ net/core/dev.c               | 22 ++++++++++++++++++++++
+ net/core/rtnetlink.c         | 35 +++++++++++++++++++++++++++++++++++
+ 6 files changed, 116 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/dpll/dpll_netlink.c b/drivers/dpll/dpll_netlink.c
+index 9724935eef8b..24ae660370b9 100644
+--- a/drivers/dpll/dpll_netlink.c
++++ b/drivers/dpll/dpll_netlink.c
+@@ -38,6 +38,18 @@ dpll_msg_add_dev_handle(struct sk_buff *msg, struct dpll_device *dpll)
+ 	return 0;
+ }
+ 
++/**
++ * dpll_msg_pin_handle_size - get size of pin handle attribute for given pin
++ * @pin: pin pointer
++ *
++ * Return: byte size of pin handle attribute for given pin.
++ */
++size_t dpll_msg_pin_handle_size(struct dpll_pin *pin)
++{
++	return pin ? nla_total_size(4) : 0; /* DPLL_A_PIN_ID */
++}
++EXPORT_SYMBOL_GPL(dpll_msg_pin_handle_size);
++
+ /**
+  * dpll_msg_add_pin_handle - attach pin handle attribute to a given message
+  * @msg: pointer to sk_buff message to attach a pin handle
+@@ -47,8 +59,7 @@ dpll_msg_add_dev_handle(struct sk_buff *msg, struct dpll_device *dpll)
+  * * 0 - success
+  * * -EMSGSIZE - no space in message to attach pin handle
+  */
+-static int
+-dpll_msg_add_pin_handle(struct sk_buff *msg, struct dpll_pin *pin)
++int dpll_msg_add_pin_handle(struct sk_buff *msg, struct dpll_pin *pin)
+ {
+ 	if (!pin)
+ 		return 0;
+@@ -56,6 +67,7 @@ dpll_msg_add_pin_handle(struct sk_buff *msg, struct dpll_pin *pin)
+ 		return -EMSGSIZE;
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(dpll_msg_add_pin_handle);
+ 
+ static int
+ dpll_msg_add_mode(struct sk_buff *msg, struct dpll_device *dpll,
+@@ -268,10 +280,9 @@ dpll_msg_add_pin_parents(struct sk_buff *msg, struct dpll_pin *pin,
+ 		nest = nla_nest_start(msg, DPLL_A_PIN_PARENT_PIN);
+ 		if (!nest)
+ 			return -EMSGSIZE;
+-		if (nla_put_u32(msg, DPLL_A_PIN_ID, ppin->id)) {
+-			ret = -EMSGSIZE;
++		ret = dpll_msg_add_pin_handle(msg, ppin);
++		if (ret)
+ 			goto nest_cancel;
+-		}
+ 		if (nla_put_u8(msg, DPLL_A_PIN_STATE, state)) {
+ 			ret = -EMSGSIZE;
+ 			goto nest_cancel;
+@@ -331,6 +342,7 @@ dpll_cmd_pin_get_one(struct sk_buff *msg, struct dpll_pin *pin,
+ 
+ 	ref = dpll_xa_ref_dpll_first(&pin->dpll_refs);
+ 	ASSERT_NOT_NULL(ref);
++
+ 	ret = dpll_msg_add_pin_handle(msg, pin);
+ 	if (ret)
+ 		return ret;
+diff --git a/include/linux/dpll.h b/include/linux/dpll.h
+index 3b9b70254a37..8e8b681fb57f 100644
+--- a/include/linux/dpll.h
++++ b/include/linux/dpll.h
+@@ -101,6 +101,26 @@ struct dpll_pin_properties {
+ 	struct dpll_pin_frequency *freq_supported;
+ };
+ 
++#if IS_ENABLED(CONFIG_DPLL)
++
++size_t dpll_msg_pin_handle_size(struct dpll_pin *pin);
++
++int dpll_msg_add_pin_handle(struct sk_buff *msg, struct dpll_pin *pin);
++
++#else
++
++static inline size_t dpll_msg_pin_handle_size(struct dpll_pin *pin)
++{
++	return 0;
++}
++
++static inline int dpll_msg_add_pin_handle(struct sk_buff *msg, struct dpll_pin *pin)
++{
++	return 0;
++}
++
++#endif
++
+ struct dpll_device
+ *dpll_device_get(u64 clock_id, u32 dev_driver_id, struct module *module);
+ 
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 0896aaa91dd7..36a872774173 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -34,6 +34,7 @@
+ #include <linux/rculist.h>
+ #include <linux/workqueue.h>
+ #include <linux/dynamic_queue_limits.h>
++#include <linux/dpll.h>
+ 
+ #include <net/net_namespace.h>
+ #ifdef CONFIG_DCB
+@@ -2049,6 +2050,9 @@ enum netdev_ml_priv_type {
+  *			SET_NETDEV_DEVLINK_PORT macro. This pointer is static
+  *			during the time netdevice is registered.
+  *
++ *	@dpll_pin: Pointer to the SyncE source pin of a DPLL subsystem,
++ *		   where the clock is recovered.
++ *
+  *	FIXME: cleanup struct net_device such that network protocol info
+  *	moves out.
+  */
+@@ -2405,6 +2409,10 @@ struct net_device {
+ 	struct rtnl_hw_stats64	*offload_xstats_l3;
+ 
+ 	struct devlink_port	*devlink_port;
++
++#if IS_ENABLED(CONFIG_DPLL)
++	struct dpll_pin		*dpll_pin;
++#endif
+ };
+ #define to_net_dev(d) container_of(d, struct net_device, dev)
+ 
+@@ -3940,6 +3948,18 @@ int dev_get_mac_address(struct sockaddr *sa, struct net *net, char *dev_name);
+ int dev_get_port_parent_id(struct net_device *dev,
+ 			   struct netdev_phys_item_id *ppid, bool recurse);
+ bool netdev_port_same_parent_id(struct net_device *a, struct net_device *b);
++void netdev_dpll_pin_set(struct net_device *dev, struct dpll_pin *dpll_pin);
++void netdev_dpll_pin_clear(struct net_device *dev);
++
++static inline struct dpll_pin *netdev_dpll_pin(const struct net_device *dev)
++{
++#if IS_ENABLED(CONFIG_DPLL)
++	return dev->dpll_pin;
++#else
++	return NULL;
++#endif
++}
++
+ struct sk_buff *validate_xmit_skb_list(struct sk_buff *skb, struct net_device *dev, bool *again);
+ struct sk_buff *dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev,
+ 				    struct netdev_queue *txq, int *ret);
+diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
+index ce3117df9cec..2e7df321f345 100644
+--- a/include/uapi/linux/if_link.h
++++ b/include/uapi/linux/if_link.h
+@@ -377,6 +377,8 @@ enum {
+ 	IFLA_GSO_IPV4_MAX_SIZE,
+ 	IFLA_GRO_IPV4_MAX_SIZE,
+ 
++	IFLA_DPLL_PIN,
++
+ 	__IFLA_MAX
+ };
+ 
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 636b41f0b32d..1da88522eb17 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -9020,6 +9020,28 @@ bool netdev_port_same_parent_id(struct net_device *a, struct net_device *b)
+ }
+ EXPORT_SYMBOL(netdev_port_same_parent_id);
+ 
++static void netdev_dpll_pin_assign(struct net_device *dev, struct dpll_pin *dpll_pin)
++{
++#if IS_ENABLED(CONFIG_DPLL)
++	rtnl_lock();
++	dev->dpll_pin = dpll_pin;
++	rtnl_unlock();
++#endif
++}
++
++void netdev_dpll_pin_set(struct net_device *dev, struct dpll_pin *dpll_pin)
++{
++	WARN_ON(!dpll_pin);
++	netdev_dpll_pin_assign(dev, dpll_pin);
++}
++EXPORT_SYMBOL(netdev_dpll_pin_set);
++
++void netdev_dpll_pin_clear(struct net_device *dev)
++{
++	netdev_dpll_pin_assign(dev, NULL);
++}
++EXPORT_SYMBOL(netdev_dpll_pin_clear);
++
+ /**
+  *	dev_change_proto_down - set carrier according to proto_down.
+  *
+diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
+index 6d2180b8edb3..ace8d23e5ee7 100644
+--- a/net/core/rtnetlink.c
++++ b/net/core/rtnetlink.c
+@@ -1055,6 +1055,15 @@ static size_t rtnl_devlink_port_size(const struct net_device *dev)
+ 	return size;
+ }
+ 
++static size_t rtnl_dpll_pin_size(const struct net_device *dev)
++{
++	size_t size = nla_total_size(0); /* nest IFLA_DPLL_PIN */
++
++	size += dpll_msg_pin_handle_size(netdev_dpll_pin(dev));
++
++	return size;
++}
++
+ static noinline size_t if_nlmsg_size(const struct net_device *dev,
+ 				     u32 ext_filter_mask)
+ {
+@@ -1111,6 +1120,7 @@ static noinline size_t if_nlmsg_size(const struct net_device *dev,
+ 	       + rtnl_prop_list_size(dev)
+ 	       + nla_total_size(MAX_ADDR_LEN) /* IFLA_PERM_ADDRESS */
+ 	       + rtnl_devlink_port_size(dev)
++	       + rtnl_dpll_pin_size(dev)
+ 	       + 0;
+ }
+ 
+@@ -1774,6 +1784,28 @@ static int rtnl_fill_devlink_port(struct sk_buff *skb,
+ 	return ret;
+ }
+ 
++static int rtnl_fill_dpll_pin(struct sk_buff *skb,
++			      const struct net_device *dev)
++{
++	struct nlattr *dpll_pin_nest;
++	int ret;
++
++	dpll_pin_nest = nla_nest_start(skb, IFLA_DPLL_PIN);
++	if (!dpll_pin_nest)
++		return -EMSGSIZE;
++
++	ret = dpll_msg_add_pin_handle(skb, netdev_dpll_pin(dev));
++	if (ret < 0)
++		goto nest_cancel;
++
++	nla_nest_end(skb, dpll_pin_nest);
++	return 0;
++
++nest_cancel:
++	nla_nest_cancel(skb, dpll_pin_nest);
++	return ret;
++}
++
+ static int rtnl_fill_ifinfo(struct sk_buff *skb,
+ 			    struct net_device *dev, struct net *src_net,
+ 			    int type, u32 pid, u32 seq, u32 change,
+@@ -1916,6 +1948,9 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb,
+ 	if (rtnl_fill_devlink_port(skb, dev))
+ 		goto nla_put_failure;
+ 
++	if (rtnl_fill_dpll_pin(skb, dev))
++		goto nla_put_failure;
++
+ 	nlmsg_end(skb, nlh);
+ 	return 0;
+ 
+-- 
+2.27.0
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
