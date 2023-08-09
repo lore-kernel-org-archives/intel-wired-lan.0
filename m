@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6FB5C0015E
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Aug 2023 13:35:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D593FEB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Aug 2023 13:36:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9127A403A4;
-	Wed,  9 Aug 2023 13:35:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9127A403A4
+	by smtp2.osuosl.org (Postfix) with ESMTP id 8C1CE414C4;
+	Wed,  9 Aug 2023 13:36:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8C1CE414C4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691588157;
-	bh=RpQcWCsnYsYi1s5KTTLDDWmFjg+0VGtfSrDvNoVH6+k=;
+	s=default; t=1691588161;
+	bh=A3/fVdd6/PYcqk1Hl45fWzrP+4Hrkl69T9P+nx2slMA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 From;
-	b=vxfd8QvYhmPcxzuhCgEBLec2RrxS0fQzyKTF+pN3skun2u28lc2kfaTWdz8Ku0wX/
-	 XPh/fSt2yU+JtfQxYYciSTgTh0IqLOvA/zS9zZCxaTwv1q92eNdU64b3PncqHaDY2o
-	 8Hek1e2s67pQdAELZP7ysjJ7wPJSXr1/dZM3xaillOIP3WeuGB4vhm6fj1m5Ofa1D9
-	 rVwhAi0eY48g8coVpEUD/+MsxLAgSXCp040ZIN1Nt3rMOSMyLtFtHk7p124/b9DxfQ
-	 J77embvR5zF2PsBS3v3kt0bpgXbgsCHhQ47mrLGMWqINYI3aPuIDDVTgKYelWU0SJl
-	 VKwP7E+4Jy7Wg==
+	b=a9UG+SL5+9W503Ayva2w/vNrr7SmrgdUFNYa68L+YK1zzPNldH6D14p8mlOKSOtYD
+	 7Az44xF+2AGMZFendebkfEKDBWfGoBcbzQOcW1KzaQtNBaxnyYOJ/mJ8bBpdUGW1nJ
+	 8xar/WGSatEy9ZXpIRVk6KCkM8thrpxsbGzQN1iwc8WTbpJccYAcpPnJ0e09crWlYY
+	 4fnsHHu5+9ImglPHSF6arkZg3JGyYsuE2LeR0ALRMCPIXzhBjXoq3pPkTDK6zW9iJD
+	 dWJSyXvXzWsFF41O/A9hVTTKlsyB/8BA+b7XbeXCCw2aPlokJ7uSSvJ09fzIAPUl9+
+	 53jfMorkvlw9A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id keuh6Vw2tc2y; Wed,  9 Aug 2023 13:35:56 +0000 (UTC)
+	with ESMTP id NYw3qfkpYr8w; Wed,  9 Aug 2023 13:36:00 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 5573E40E44;
-	Wed,  9 Aug 2023 13:35:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5573E40E44
+	by smtp2.osuosl.org (Postfix) with ESMTP id 91B2241452;
+	Wed,  9 Aug 2023 13:36:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 91B2241452
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 52B861BF97F
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 13:35:47 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 736981BF842
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 13:35:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 2AA3960EFF
+ by smtp3.osuosl.org (Postfix) with ESMTP id DB4BE611B8
  for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 13:35:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2AA3960EFF
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DB4BE611B8
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ZEuVO2w7DeHT for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Aug 2023 13:35:46 +0000 (UTC)
+ with ESMTP id mhR2nBrnVTHO for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Aug 2023 13:35:47 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6C38460E96
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 13:35:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6C38460E96
-X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="402086863"
-X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; d="scan'208";a="402086863"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 577FB60E96
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 13:35:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 577FB60E96
+X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="402086870"
+X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; d="scan'208";a="402086870"
 Received: from orsmga007.jf.intel.com ([10.7.209.58])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Aug 2023 06:35:26 -0700
+ 09 Aug 2023 06:35:28 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="725401511"
-X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; d="scan'208";a="725401511"
+X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="725401521"
+X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; d="scan'208";a="725401521"
 Received: from s240.igk.intel.com (HELO DevelopmentVM.nql.local)
  ([10.102.18.202])
- by orsmga007.jf.intel.com with ESMTP; 09 Aug 2023 06:35:25 -0700
+ by orsmga007.jf.intel.com with ESMTP; 09 Aug 2023 06:35:28 -0700
 From: Jan Sokolowski <jan.sokolowski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  9 Aug 2023 15:39:09 +0200
-Message-Id: <20230809133913.2652736-4-jan.sokolowski@intel.com>
+Date: Wed,  9 Aug 2023 15:39:11 +0200
+Message-Id: <20230809133913.2652736-6-jan.sokolowski@intel.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20230809133913.2652736-1-jan.sokolowski@intel.com>
 References: <20230809133913.2652736-1-jan.sokolowski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1691588146; x=1723124146;
+ t=1691588147; x=1723124147;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=k44sRD0DzLvdzcOuVX8qotrxs4xtMfmcUgGNibKbtwA=;
- b=NnTete7fVBv5LCgPRszkowitC+7WLUgmigZELkxn2MRoMAAE0nyOeu2U
- PH7p8Ka6RWpX7KkF5Utq+G7KTR53X7VD3xVVw8e+JBVmiDHCEh3a26X7t
- EdcuVvQoiirhRpILh5ugc+MGhVPjCyVbgVOEGckREBV9MJQ0c03d+F0Uq
- tX9JXMcA+ROL9JdI2jmRhqtptc4gzRh2pVwjUt74QJIDwoJaENfe1wPnt
- RC7WqnvaPQmiQHupg6sVmnNs6odizP9LMLmlRTR6Kh8XOgkH6oRMGm+Hu
- pt4YwbjX3h31JvvXxKfyt824BjnCQ0w41wMnHn1ji17NZZemYL28ZzkJG
- A==;
+ bh=Kwyslcyn/m76CFVIYkGaSw6224xsFf7ss/Y/7SLO5Rc=;
+ b=Ju6Qm94don9MoikQO6lJMcKbRSfbc57+/q3jGSdisAE6nOCvHpgxAOTT
+ tW+RvAe7cuxl19ap0yqFeOyVuZ5BqEqUpCYSGgVGTdTZp8VrsYR63zoq0
+ XGUm/6bDYBvwiyouilR6xh82CFfUmIGTXaxpTOIwpoJiRAMBF20sXhk5B
+ /sLo4k6o6FxcLV9xqPjC0vwwh46g64iptFYNQbT2uEMfOAEMa9OJcTzM8
+ lginhKyASOFgRDNN9AGkdSlEiU+PrhoNrGzAkdAW+n6kJ9U+DBdC6wAwY
+ 8j/vqSb6MllNR8aITMjUKlBCdsA7gQH8qjviFRmK2/QULBLYhyWB/uAvl
+ g==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=NnTete7f
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 3/7] ice: refactor ice_lib to
- make functions static
+ header.a=rsa-sha256 header.s=Intel header.b=Ju6Qm94d
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 5/7] ice: refactor ice_sched
+ to make functions static
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,140 +100,43 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-As following methods are not used outside of ice_lib,
-they can be made static:
-ice_vsi_is_vlan_pruning_ena
-ice_vsi_cfg_frame_size
+As ice_sched_set_node_bw_lmt_per_tc is not used
+outside of ice_sched, it can be made static.
 
 Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 70 ++++++++++++------------
- drivers/net/ethernet/intel/ice/ice_lib.h |  3 -
- 2 files changed, 35 insertions(+), 38 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_sched.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_sched.h | 4 ----
+ 2 files changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 54aa01d2a474..d3fb2b7535e7 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1227,6 +1227,20 @@ ice_chnl_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 	ctxt->info.q_mapping[1] = cpu_to_le16(qcount);
- }
- 
-+/**
-+ * ice_vsi_is_vlan_pruning_ena - check if VLAN pruning is enabled or not
-+ * @vsi: VSI to check whether or not VLAN pruning is enabled.
-+ *
-+ * returns true if Rx VLAN pruning is enabled and false otherwise.
-+ */
-+static bool ice_vsi_is_vlan_pruning_ena(struct ice_vsi *vsi)
-+{
-+	if (!vsi)
-+		return false;
-+
-+	return (vsi->info.sw_flags2 & ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA);
-+}
-+
- /**
-  * ice_vsi_init - Create and initialize a VSI
-  * @vsi: the VSI being configured
-@@ -1684,6 +1698,27 @@ static void ice_vsi_set_rss_flow_fld(struct ice_vsi *vsi)
- 			vsi_num, status);
- }
- 
-+/**
-+ * ice_vsi_cfg_frame_size - setup max frame size and Rx buffer length
-+ * @vsi: VSI
-+ */
-+static void ice_vsi_cfg_frame_size(struct ice_vsi *vsi)
-+{
-+	if (!vsi->netdev || test_bit(ICE_FLAG_LEGACY_RX, vsi->back->flags)) {
-+		vsi->max_frame = ICE_MAX_FRAME_LEGACY_RX;
-+		vsi->rx_buf_len = ICE_RXBUF_1664;
-+#if (PAGE_SIZE < 8192)
-+	} else if (!ICE_2K_TOO_SMALL_WITH_PADDING &&
-+		   (vsi->netdev->mtu <= ETH_DATA_LEN)) {
-+		vsi->max_frame = ICE_RXBUF_1536 - NET_IP_ALIGN;
-+		vsi->rx_buf_len = ICE_RXBUF_1536 - NET_IP_ALIGN;
-+#endif
-+	} else {
-+		vsi->max_frame = ICE_AQ_SET_MAC_FRAME_SIZE_MAX;
-+		vsi->rx_buf_len = ICE_RXBUF_3072;
-+	}
-+}
-+
- /**
-  * ice_pf_state_is_nominal - checks the PF for nominal state
-  * @pf: pointer to PF to check
-@@ -1758,27 +1793,6 @@ void ice_update_eth_stats(struct ice_vsi *vsi)
- 	vsi->stat_offsets_loaded = true;
- }
- 
--/**
-- * ice_vsi_cfg_frame_size - setup max frame size and Rx buffer length
-- * @vsi: VSI
-- */
--void ice_vsi_cfg_frame_size(struct ice_vsi *vsi)
--{
--	if (!vsi->netdev || test_bit(ICE_FLAG_LEGACY_RX, vsi->back->flags)) {
--		vsi->max_frame = ICE_MAX_FRAME_LEGACY_RX;
--		vsi->rx_buf_len = ICE_RXBUF_1664;
--#if (PAGE_SIZE < 8192)
--	} else if (!ICE_2K_TOO_SMALL_WITH_PADDING &&
--		   (vsi->netdev->mtu <= ETH_DATA_LEN)) {
--		vsi->max_frame = ICE_RXBUF_1536 - NET_IP_ALIGN;
--		vsi->rx_buf_len = ICE_RXBUF_1536 - NET_IP_ALIGN;
--#endif
--	} else {
--		vsi->max_frame = ICE_AQ_SET_MAC_FRAME_SIZE_MAX;
--		vsi->rx_buf_len = ICE_RXBUF_3072;
--	}
--}
--
- /**
-  * ice_write_qrxflxp_cntxt - write/configure QRXFLXP_CNTXT register
-  * @hw: HW pointer
-@@ -2185,20 +2199,6 @@ bool ice_vsi_is_rx_queue_active(struct ice_vsi *vsi)
- 	return false;
- }
- 
--/**
-- * ice_vsi_is_vlan_pruning_ena - check if VLAN pruning is enabled or not
-- * @vsi: VSI to check whether or not VLAN pruning is enabled.
-- *
-- * returns true if Rx VLAN pruning is enabled and false otherwise.
-- */
--bool ice_vsi_is_vlan_pruning_ena(struct ice_vsi *vsi)
--{
--	if (!vsi)
--		return false;
--
--	return (vsi->info.sw_flags2 & ICE_AQ_VSI_SW_FLAG_RX_VLAN_PRUNE_ENA);
--}
--
- static void ice_vsi_set_tc_cfg(struct ice_vsi *vsi)
- {
- 	if (!test_bit(ICE_FLAG_DCB_ENA, vsi->back->flags)) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.h b/drivers/net/ethernet/intel/ice/ice_lib.h
-index cb6599cb8be6..f24f5d1e6f9c 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.h
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.h
-@@ -76,8 +76,6 @@ int ice_vsi_cfg_xdp_txqs(struct ice_vsi *vsi);
- 
- int ice_vsi_stop_xdp_tx_rings(struct ice_vsi *vsi);
- 
--bool ice_vsi_is_vlan_pruning_ena(struct ice_vsi *vsi);
--
- void ice_cfg_sw_lldp(struct ice_vsi *vsi, bool tx, bool create);
- 
- int ice_set_link(struct ice_vsi *vsi, bool ena);
-@@ -128,7 +126,6 @@ void ice_update_tx_ring_stats(struct ice_tx_ring *ring, u64 pkts, u64 bytes);
- 
- void ice_update_rx_ring_stats(struct ice_rx_ring *ring, u64 pkts, u64 bytes);
- 
--void ice_vsi_cfg_frame_size(struct ice_vsi *vsi);
- void ice_write_intrl(struct ice_q_vector *q_vector, u8 intrl);
- void ice_write_itr(struct ice_ring_container *rc, u16 itr);
- void ice_set_q_vector_intrl(struct ice_q_vector *q_vector);
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
+index f4677704b95e..c0533d7b66b9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.c
++++ b/drivers/net/ethernet/intel/ice/ice_sched.c
+@@ -3971,7 +3971,7 @@ ice_sched_get_node_by_id_type(struct ice_port_info *pi, u32 id,
+  * This function sets BW limit of VSI or Aggregator scheduling node
+  * based on TC information from passed in argument BW.
+  */
+-int
++static int
+ ice_sched_set_node_bw_lmt_per_tc(struct ice_port_info *pi, u32 id,
+ 				 enum ice_agg_type agg_type, u8 tc,
+ 				 enum ice_rl_type rl_type, u32 bw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
+index 8bd26353d76a..0055d9330c07 100644
+--- a/drivers/net/ethernet/intel/ice/ice_sched.h
++++ b/drivers/net/ethernet/intel/ice/ice_sched.h
+@@ -141,10 +141,6 @@ ice_cfg_vsi_bw_lmt_per_tc(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ int
+ ice_cfg_vsi_bw_dflt_lmt_per_tc(struct ice_port_info *pi, u16 vsi_handle, u8 tc,
+ 			       enum ice_rl_type rl_type);
+-int
+-ice_sched_set_node_bw_lmt_per_tc(struct ice_port_info *pi, u32 id,
+-				 enum ice_agg_type agg_type, u8 tc,
+-				 enum ice_rl_type rl_type, u32 bw);
+ int ice_cfg_rl_burst_size(struct ice_hw *hw, u32 bytes);
+ int
+ ice_sched_suspend_resume_elems(struct ice_hw *hw, u8 num_nodes, u32 *node_teids,
 -- 
 2.31.1
 
