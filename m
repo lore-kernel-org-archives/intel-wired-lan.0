@@ -1,83 +1,83 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9FBBC0015E
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Aug 2023 11:55:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3438CEB64DD
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Aug 2023 12:17:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3A5BB60F3E;
-	Wed,  9 Aug 2023 11:55:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3A5BB60F3E
+	by smtp2.osuosl.org (Postfix) with ESMTP id D0797405CA;
+	Wed,  9 Aug 2023 12:17:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D0797405CA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691582145;
-	bh=kNs79/qyXDXBTbsvTGJPxuJzgbO10uxszjAIabQr56E=;
+	s=default; t=1691583428;
+	bh=ByjVcFBIa7T8NUGi7yXlHt3kOgKeGjQZLbE+9WmNXoA=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=gI65f8zp+EooN2A2IRQ4tJgsptdMx/kd8zFeHToQDeTkD4N6N9IKaBjzxf77r1Kdz
-	 sXJ3nsiw99F+K44u07hrd3LXLXRPSWeu66ijKGiasyYA810gPHQ3hlsk2lgFz5Z/Wi
-	 TLAEjqFUuRm3zBvL2xC30lsxCqKm9f2diKY+vxoVa6pIFXph3z87bu8sH9oquxB/j7
-	 U1c45U89N7gGo9eRQ/mCtQ8G99hwQaRR9Y5Z1z1r3qZ0iGiFQ3zwFkN5RuBuymEUXL
-	 7CMy7X9WAn0QYJnH5hm2HErbiocFDyrs/j8dx0ccFkw/EgQ4a8GJpJc3sFOOJqvKEC
-	 eqoc3RoeiNzcA==
+	b=KgvplxPMF5O78Fyktt/hGKI+lBS5TGl+v9qakaFINWH6Q69mwZJI3UHbErENIp6fC
+	 sY3Q00H7l+b6NUxBF8xuz58fMaB5M3JTweiEi5aod2yL5+BaZ03sZXA6XzKLJOc5tU
+	 V/SXY1EViWwL1elmDlh5Yz+WSQCO1Gfh08QKCyu42Fv1WVkLzsoym42q+QLq3TmBK4
+	 wIHlkFSqnu5SUTFbO96JFQb2vvsJmPIEOGhs9L1EjlvvlGfxPyPtVFfa+d4p9NEb8N
+	 KlnsL1LaFGcGKRvUBXlMShEUxknJFzTt7qleivlCE2zMrsclvnd1cWRoDhLhARp7dI
+	 DOT8nNKsJ4T6w==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id tvC9mqiCuPM3; Wed,  9 Aug 2023 11:55:44 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id FqxlM70BpPNx; Wed,  9 Aug 2023 12:17:08 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4F31160FBC;
-	Wed,  9 Aug 2023 11:55:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4F31160FBC
+	by smtp2.osuosl.org (Postfix) with ESMTP id E982940BF7;
+	Wed,  9 Aug 2023 12:17:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E982940BF7
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 489B21BF589
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 11:55:43 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id ED56F1BF316
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 12:17:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 29CA24023F
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 11:55:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 29CA24023F
+ by smtp2.osuosl.org (Postfix) with ESMTP id C536F41489
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 12:17:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C536F41489
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id JXm_v7VChaYT for <intel-wired-lan@lists.osuosl.org>;
- Wed,  9 Aug 2023 11:55:42 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.126])
- by smtp2.osuosl.org (Postfix) with ESMTPS id C0EE74010D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 11:55:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C0EE74010D
-X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="356067587"
-X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; d="scan'208";a="356067587"
+ with ESMTP id 30SF3qZB6hCY for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  9 Aug 2023 12:17:06 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 01D73405CA
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 12:17:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 01D73405CA
+X-IronPort-AV: E=McAfee;i="6600,9927,10795"; a="370008615"
+X-IronPort-AV: E=Sophos;i="6.01,159,1684825200"; d="scan'208";a="370008615"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Aug 2023 04:55:40 -0700
+ by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 09 Aug 2023 05:17:04 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="875217706"
+X-IronPort-AV: E=Sophos;i="6.01,202,1684825200"; d="scan'208";a="875226044"
 Received: from amlin-019-225.igk.intel.com ([10.102.19.225])
- by fmsmga001.fm.intel.com with ESMTP; 09 Aug 2023 04:55:42 -0700
+ by fmsmga001.fm.intel.com with ESMTP; 09 Aug 2023 05:17:07 -0700
 From: Andrii Staikov <andrii.staikov@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed,  9 Aug 2023 13:55:37 +0200
-Message-Id: <20230809115537.1071857-1-andrii.staikov@intel.com>
+Date: Wed,  9 Aug 2023 14:17:01 +0200
+Message-Id: <20230809121701.1109782-1-andrii.staikov@intel.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1691582141; x=1723118141;
+ t=1691583426; x=1723119426;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=KDpjm89YBqEPnvmEjVjpPpJfu+Gg7aXyofCxJDa9MIU=;
- b=lAk1Efj5JnEfRIkgOi03mVt9sQY/u326+jMglc/Hh6RMeYq2LrvvEvbm
- dp/WLVxHHf6QBnbICVQuebFS/j3a9ttmQIa7wi64Cz1p49DTO6CYX25mH
- zc9t/lle2mZ7FCVLKOmYzGHaBEBiBQMuv9+Q/T2LZO6DRKwkaWaRH2NgX
- vTVqYvvbmay29XPsbcpovYeM1ZzDMNbliFcRi3NPJE7XR+dJu/0E4sWKj
- A1nvF+YfKJ/G1mpJSb5QjKHCqbV7e4+InmuuHlnBuLxd2BU1AhVE/EOid
- cIjCkJiZB6cQ3O8ozR2+q2mXZNa/VTI7tvEzRkTq7v7l9o3UEL6o8Xy0v
- Q==;
+ bh=UOgWiNsWY7VToNpWjxq1dPEcRpPz2gnEx7tpAwOh9rI=;
+ b=ny6XSgjFD+NkeyEJmAoyCss8Ey8VqTO5NV3dFKsI0EGeI/GOZbjtA07Y
+ hVUhXMbNvlnHRioOwUkWvyzxMtN138+84pGcqqzvW+Hj78GlycV0vRYTq
+ hBVoqoxxDXOYqQCuSQJxAO6necpWijYxXSDaGLDJvSIXGOzDku1e8U82i
+ q9KV9ZMw4smvKPk/RSRzE9Y0Q/L8TGtccVraKXSd/HzehVFx8IwX8trsz
+ kTgVy+oAm5cA4cDfprTH5UbzYo2AVPxII/qs+PkOSTEw1rdYKslYVuDIm
+ zTekauk8D287N/oNMKIW6uZgFFvU7NnPiaGdiYR/ObVWTo4jBlXvTdiyo
+ A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lAk1Efj5
-Subject: [Intel-wired-lan] [PATCH iwl-net v2] i40e: fix potential memory
- leaks in i40e_remove()
+ header.a=rsa-sha256 header.s=Intel header.b=ny6XSgjF
+Subject: [Intel-wired-lan] [PATCH iwl-net v2] i40e: fix potential NULL
+ pointer dereferencing of pf->vf i40e_sync_vsi_filters()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,41 +97,43 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Instead of freeing memory of a single VSI, make sure
-the memory for all VSIs is cleared before releasing VSIs.
-Add releasing of their resources in a loop with the iteration
-mumber equal to the number of allocated VSIs.
+Add  check for pf->vf not being NULL before dereferencing
+pf->vf[vsi->vf_id] in updating VSI filter sync.
+Add a similar check before dereferencing !pf->vf[vsi->vf_id].trusted
+in the condition for clearing promis mode bit.
 
-Fixes: 41c445ff0f48 ("i40e: main driver core")
+Fixes: c87c938f62d8 ("i40e: Add VF VLAN pruning")
 Signed-off-by: Andrii Staikov <andrii.staikov@intel.com>
 Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
-v1 -> v2: Changed commit message.
+v1 -> v2: Changed title and commit message.
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 29ad1797adce..1c892b14a337 100644
+index 29ad1797adce..a86bfa3bba74 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -16326,8 +16326,14 @@ static void i40e_remove(struct pci_dev *pdev)
- 	/* Now we can shutdown the PF's VSI, just before we kill
- 	 * adminq and hmc.
- 	 */
--	if (pf->vsi[pf->lan_vsi])
--		i40e_vsi_release(pf->vsi[pf->lan_vsi]);
-+	for (i = pf->num_alloc_vsi; i--;)
-+		if (pf->vsi[i]) {
-+			i40e_vsi_close(pf->vsi[i]);
-+			i40e_vsi_free_q_vectors(pf->vsi[i]);
-+			i40e_vsi_release(pf->vsi[i]);
-+			kfree(pf->vsi[i]);
-+			pf->vsi[i] = NULL;
-+		}
+@@ -2609,7 +2609,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 			retval = i40e_correct_mac_vlan_filters
+ 				(vsi, &tmp_add_list, &tmp_del_list,
+ 				 vlan_filters);
+-		else
++		else if (pf->vf)
+ 			retval = i40e_correct_vf_mac_vlan_filters
+ 				(vsi, &tmp_add_list, &tmp_del_list,
+ 				 vlan_filters, pf->vf[vsi->vf_id].trusted);
+@@ -2782,7 +2782,8 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 	}
  
- 	i40e_cloud_filter_exit(pf);
- 
+ 	/* if the VF is not trusted do not do promisc */
+-	if ((vsi->type == I40E_VSI_SRIOV) && !pf->vf[vsi->vf_id].trusted) {
++	if (vsi->type == I40E_VSI_SRIOV && pf->vf &&
++	    !pf->vf[vsi->vf_id].trusted) {
+ 		clear_bit(__I40E_VSI_OVERFLOW_PROMISC, vsi->state);
+ 		goto out;
+ 	}
 -- 
 2.25.1
 
