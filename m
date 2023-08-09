@@ -4,76 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62ECAC0015E
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Aug 2023 21:49:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81F90C0015E
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  9 Aug 2023 21:49:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 19645418BB;
-	Wed,  9 Aug 2023 21:49:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 19645418BB
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3AC354189B;
+	Wed,  9 Aug 2023 21:49:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3AC354189B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691617772;
-	bh=YmfFC193sEVoQmnlds1ogahoLueuJDQyxU+VZ7UILcU=;
+	s=default; t=1691617778;
+	bh=oOHlPl6juzs2QNdwLb1TAL8eQNThdtLteQ4DhDFCuws=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=PjG4/4ccBwxjn4Pj8YY505cpmgYieG3VX0tzfsvn1jaFX1PUPaeaCyhyzeGIECM78
-	 EOjZqMkiR6NrQFAJhyugzqkqf4r/FK3+zO8PsblbPbXj4McF7iMXw7BSIgbHg9Oon1
-	 6TPkrNsoNtLgnPN248ImDyoePpugA6iekXVE+0NjqI+5OZUTrc11UNz9X7Blr66aLv
-	 0qSGQh/ThT/vs2j8CM9Oe/SDoyu2fF1xGctjZAjAgLUVPfKIZst5eZccoJaEByXjcn
-	 p92umIKDLLyTcsaHV2/fkqW4fmQxkFXHntoHDB3NRJDwJcjrIQXo/mEKFqUv5wocAT
-	 hJh+BLw7rf5WA==
+	b=X3alPqE8S3NSkkIp3dHLGqbPsr59x4qFwZAQwQtD8m0j00yemMUIA4ZxJEeIOTz/3
+	 D3CHwnLkskrbfoZMHWhIJ5+CgxDZy74uhaBR+ebCaqZBycaFq1PGQ1Wo+XVJcQNfVv
+	 i9w9yXLZ34xk2P2OuD81fbtrtwquPCUMZZK8s7OT7LIFSJesDjPli2epZjMsFwjnf5
+	 +XUqEpmUlCl4MvUlT3MGMe4hj5lYO/n/zFbfBRTXcZIXJhyQJZK6RyCHhcTVTESZO/
+	 aM0E0aFXVJcGJ+5kJ4hezD8guVGMwo+kAm1XncrT4I3lqtVNWnoawS/8CJ+iGpAQPX
+	 +7lYdqv9pADbQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bd34gHROqW1O; Wed,  9 Aug 2023 21:49:30 +0000 (UTC)
+	with ESMTP id Y9Suqbbn9StM; Wed,  9 Aug 2023 21:49:35 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3B8E44189B;
-	Wed,  9 Aug 2023 21:49:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3B8E44189B
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id AE5F31BF97F
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4F9DA418BA;
+	Wed,  9 Aug 2023 21:49:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4F9DA418BA
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id DD1341BF982
  for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 21:49:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 93392821F5
+ by smtp2.osuosl.org (Postfix) with ESMTP id B596C40993
  for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 21:49:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 93392821F5
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B596C40993
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id RfLeBvQOllTr for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id sWSbafzD_tEG for <intel-wired-lan@lists.osuosl.org>;
  Wed,  9 Aug 2023 21:49:17 +0000 (UTC)
-Received: from out-67.mta1.migadu.com (out-67.mta1.migadu.com [95.215.58.67])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 51F1881ECA
- for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 21:49:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 51F1881ECA
+X-Greylist: delayed 515 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 09 Aug 2023 21:49:16 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org CBAB7408C0
+Received: from out-69.mta1.migadu.com (out-69.mta1.migadu.com
+ [IPv6:2001:41d0:203:375::45])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id CBAB7408C0
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  9 Aug 2023 21:49:16 +0000 (UTC)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
  include these headers.
 From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
 To: Jakub Kicinski <kuba@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
  Jonathan Lemon <jonathan.lemon@gmail.com>, Paolo Abeni <pabeni@redhat.com>
-Date: Wed,  9 Aug 2023 22:40:26 +0100
-Message-Id: <20230809214027.556192-9-vadim.fedorenko@linux.dev>
+Date: Wed,  9 Aug 2023 22:40:21 +0100
+Message-Id: <20230809214027.556192-4-vadim.fedorenko@linux.dev>
 In-Reply-To: <20230809214027.556192-1-vadim.fedorenko@linux.dev>
 References: <20230809214027.556192-1-vadim.fedorenko@linux.dev>
 MIME-Version: 1.0
 X-Migadu-Flow: FLOW_OUT
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1691617246;
+ d=linux.dev; s=key1; t=1691617241;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=QGRuQgSjJOgszr3NxfLH51PldVd1psHvjUoip0/y8Ag=;
- b=uMN2pReehGPKIKe4tAMXCuxYZzYU1YDZPs9mZqXqqzYSqL7FtrsJDHbshSayG7ycoKAbe/
- hQJhiNvGfouPNqQv3bIe0iyDnwezxX0jW4z4Cxl7H5hLD0CeGeN765p5lK0bQxuPSqRUS7
- Ntl0LluVnNhAU/iSm9WM2Q8ud66iFk8=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=bkSKvE+Neo7MSfUItY6V6KCy4vWRLiy2cmsm3OYbVr4=;
+ b=ar4z6gDHtJdRhXltBEPllPAmxbxBuRIEXBCkl5mVX5YkyVg8MkvWzJ+frVwNo1xx4KQunY
+ Gua4MQFQ+myg1D1akD4F9H0KSYRvGtcqLFwl/qPQQmQ1p2CiiuipD48SsRqbONQ6eP3lf8
+ NW4KbPA+bpOWTPEMzgPVAf+vKw08Eg4=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=uMN2pRee
-Subject: [Intel-wired-lan] [PATCH net-next v3 8/9] ptp_ocp: implement DPLL
- ops
+ header.s=key1 header.b=ar4z6gDH
+Subject: [Intel-wired-lan] [PATCH net-next v3 3/9] dpll: core: Add DPLL
+ framework base functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,649 +99,1144 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Implement basic DPLL operations in ptp_ocp driver as the
-simplest example of using new subsystem.
+DPLL framework is used to represent and configure DPLL devices
+in systems. Each device that has DPLL and can configure inputs
+and outputs can use this framework.
 
+Implement core framework functions for further interactions
+with device drivers implementing dpll subsystem, as well as for
+interactions of DPLL netlink framework part with the subsystem
+itself.
+
+Co-developed-by: Milena Olech <milena.olech@intel.com>
+Signed-off-by: Milena Olech <milena.olech@intel.com>
+Co-developed-by: Michal Michalik <michal.michalik@intel.com>
+Signed-off-by: Michal Michalik <michal.michalik@intel.com>
 Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+Co-developed-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 Signed-off-by: Jiri Pirko <jiri@nvidia.com>
 ---
-RFCv9->RFCv10:
-- implement monitoring thread and netlink notification
+v2->v3:
+- no functional changes
+v1->v2:
+- fix checkpatch errors
+- remove mentions of netlink notifications introduced in the
+  next patch
 
- drivers/ptp/Kconfig   |   1 +
- drivers/ptp/ptp_ocp.c | 369 +++++++++++++++++++++++++++++++++++-------
- 2 files changed, 310 insertions(+), 60 deletions(-)
+ MAINTAINERS              |  11 +
+ drivers/Kconfig          |   2 +
+ drivers/Makefile         |   1 +
+ drivers/dpll/Kconfig     |   7 +
+ drivers/dpll/Makefile    |   9 +
+ drivers/dpll/dpll_core.c | 787 +++++++++++++++++++++++++++++++++++++++
+ drivers/dpll/dpll_core.h |  90 +++++
+ include/linux/dpll.h     | 133 +++++++
+ 8 files changed, 1040 insertions(+)
+ create mode 100644 drivers/dpll/Kconfig
+ create mode 100644 drivers/dpll/Makefile
+ create mode 100644 drivers/dpll/dpll_core.c
+ create mode 100644 drivers/dpll/dpll_core.h
+ create mode 100644 include/linux/dpll.h
 
-diff --git a/drivers/ptp/Kconfig b/drivers/ptp/Kconfig
-index 32dff1b4f891..e4da62ac9a9f 100644
---- a/drivers/ptp/Kconfig
-+++ b/drivers/ptp/Kconfig
-@@ -177,6 +177,7 @@ config PTP_1588_CLOCK_OCP
- 	depends on COMMON_CLK
- 	select NET_DEVLINK
- 	select CRC16
-+	select DPLL
- 	help
- 	  This driver adds support for an OpenCompute time card.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6efcd8713682..7e2dfe3f26e6 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6315,6 +6315,17 @@ F:	Documentation/networking/device_drivers/ethernet/freescale/dpaa2/switch-drive
+ F:	drivers/net/ethernet/freescale/dpaa2/dpaa2-switch*
+ F:	drivers/net/ethernet/freescale/dpaa2/dpsw*
  
-diff --git a/drivers/ptp/ptp_ocp.c b/drivers/ptp/ptp_ocp.c
-index 20a974ced8d6..220ced898eec 100644
---- a/drivers/ptp/ptp_ocp.c
-+++ b/drivers/ptp/ptp_ocp.c
-@@ -23,6 +23,7 @@
- #include <linux/mtd/mtd.h>
- #include <linux/nvmem-consumer.h>
- #include <linux/crc16.h>
-+#include <linux/dpll.h>
++DPLL SUBSYSTEM
++M:	Vadim Fedorenko <vadim.fedorenko@linux.dev>
++M:	Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
++M:	Jiri Pirko <jiri@resnulli.us>
++L:	netdev@vger.kernel.org
++S:	Supported
++F:	Documentation/driver-api/dpll.rst
++F:	drivers/dpll/*
++F:	include/net/dpll.h
++F:	include/uapi/linux/dpll.h
++
+ DRBD DRIVER
+ M:	Philipp Reisner <philipp.reisner@linbit.com>
+ M:	Lars Ellenberg <lars.ellenberg@linbit.com>
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 514ae6b24cb2..ce5f63918eba 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -243,4 +243,6 @@ source "drivers/hte/Kconfig"
  
- #define PCI_VENDOR_ID_FACEBOOK			0x1d9b
- #define PCI_DEVICE_ID_FACEBOOK_TIMECARD		0x0400
-@@ -260,12 +261,21 @@ enum ptp_ocp_sma_mode {
- 	SMA_MODE_OUT,
- };
+ source "drivers/cdx/Kconfig"
  
-+static struct dpll_pin_frequency ptp_ocp_sma_freq[] = {
-+	DPLL_PIN_FREQUENCY_1PPS,
-+	DPLL_PIN_FREQUENCY_10MHZ,
-+	DPLL_PIN_FREQUENCY_IRIG_B,
-+	DPLL_PIN_FREQUENCY_DCF77,
++source "drivers/dpll/Kconfig"
++
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 7241d80a7b29..6fea42a6dd05 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -195,3 +195,4 @@ obj-$(CONFIG_PECI)		+= peci/
+ obj-$(CONFIG_HTE)		+= hte/
+ obj-$(CONFIG_DRM_ACCEL)		+= accel/
+ obj-$(CONFIG_CDX_BUS)		+= cdx/
++obj-$(CONFIG_DPLL)		+= dpll/
+diff --git a/drivers/dpll/Kconfig b/drivers/dpll/Kconfig
+new file mode 100644
+index 000000000000..a4cae73f20d3
+--- /dev/null
++++ b/drivers/dpll/Kconfig
+@@ -0,0 +1,7 @@
++# SPDX-License-Identifier: GPL-2.0-only
++#
++# Generic DPLL drivers configuration
++#
++
++config DPLL
++  bool
+diff --git a/drivers/dpll/Makefile b/drivers/dpll/Makefile
+new file mode 100644
+index 000000000000..2e5b27850110
+--- /dev/null
++++ b/drivers/dpll/Makefile
+@@ -0,0 +1,9 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++# Makefile for DPLL drivers.
++#
++
++obj-$(CONFIG_DPLL)      += dpll.o
++dpll-y                  += dpll_core.o
++dpll-y                  += dpll_netlink.o
++dpll-y                  += dpll_nl.o
+diff --git a/drivers/dpll/dpll_core.c b/drivers/dpll/dpll_core.c
+new file mode 100644
+index 000000000000..2398acb92b43
+--- /dev/null
++++ b/drivers/dpll/dpll_core.c
+@@ -0,0 +1,787 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ *  dpll_core.c - DPLL subsystem kernel-space interface implementation.
++ *
++ *  Copyright (c) 2023 Meta Platforms, Inc. and affiliates
++ *  Copyright (c) 2023 Intel Corporation.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++
++#include "dpll_core.h"
++
++/* Mutex lock to protect DPLL subsystem devices and pins */
++DEFINE_MUTEX(dpll_lock);
++
++DEFINE_XARRAY_FLAGS(dpll_device_xa, XA_FLAGS_ALLOC);
++DEFINE_XARRAY_FLAGS(dpll_pin_xa, XA_FLAGS_ALLOC);
++
++#define ASSERT_DPLL_REGISTERED(d)	\
++	WARN_ON_ONCE(!xa_get_mark(&dpll_device_xa, (d)->id, DPLL_REGISTERED))
++#define ASSERT_DPLL_NOT_REGISTERED(d)	\
++	WARN_ON_ONCE(xa_get_mark(&dpll_device_xa, (d)->id, DPLL_REGISTERED))
++#define ASSERT_PIN_REGISTERED(p)	\
++	WARN_ON_ONCE(!xa_get_mark(&dpll_pin_xa, (p)->id, DPLL_REGISTERED))
++
++struct dpll_device_registration {
++	struct list_head list;
++	const struct dpll_device_ops *ops;
++	void *priv;
 +};
 +
- struct ptp_ocp_sma_connector {
- 	enum	ptp_ocp_sma_mode mode;
- 	bool	fixed_fcn;
- 	bool	fixed_dir;
- 	bool	disabled;
- 	u8	default_fcn;
-+	struct dpll_pin		   *dpll_pin;
-+	struct dpll_pin_properties dpll_prop;
- };
- 
- struct ocp_attr_group {
-@@ -294,6 +304,7 @@ struct ptp_ocp_serial_port {
- 
- #define OCP_BOARD_ID_LEN		13
- #define OCP_SERIAL_LEN			6
-+#define OCP_SMA_NUM			4
- 
- struct ptp_ocp {
- 	struct pci_dev		*pdev;
-@@ -331,7 +342,9 @@ struct ptp_ocp {
- 	const struct attribute_group **attr_group;
- 	const struct ptp_ocp_eeprom_map *eeprom_map;
- 	struct dentry		*debug_root;
-+	bool			sync;
- 	time64_t		gnss_lost;
-+	struct delayed_work	sync_work;
- 	int			id;
- 	int			n_irqs;
- 	struct ptp_ocp_serial_port	gnss_port;
-@@ -350,8 +363,9 @@ struct ptp_ocp {
- 	u32			ts_window_adjust;
- 	u64			fw_cap;
- 	struct ptp_ocp_signal	signal[4];
--	struct ptp_ocp_sma_connector sma[4];
-+	struct ptp_ocp_sma_connector sma[OCP_SMA_NUM];
- 	const struct ocp_sma_op *sma_op;
-+	struct dpll_device *dpll;
- };
- 
- #define OCP_REQ_TIMESTAMP	BIT(0)
-@@ -835,6 +849,7 @@ static DEFINE_IDR(ptp_ocp_idr);
- struct ocp_selector {
- 	const char *name;
- 	int value;
-+	u64 frequency;
- };
- 
- static const struct ocp_selector ptp_ocp_clock[] = {
-@@ -855,31 +870,31 @@ static const struct ocp_selector ptp_ocp_clock[] = {
- #define SMA_SELECT_MASK		GENMASK(14, 0)
- 
- static const struct ocp_selector ptp_ocp_sma_in[] = {
--	{ .name = "10Mhz",	.value = 0x0000 },
--	{ .name = "PPS1",	.value = 0x0001 },
--	{ .name = "PPS2",	.value = 0x0002 },
--	{ .name = "TS1",	.value = 0x0004 },
--	{ .name = "TS2",	.value = 0x0008 },
--	{ .name = "IRIG",	.value = 0x0010 },
--	{ .name = "DCF",	.value = 0x0020 },
--	{ .name = "TS3",	.value = 0x0040 },
--	{ .name = "TS4",	.value = 0x0080 },
--	{ .name = "FREQ1",	.value = 0x0100 },
--	{ .name = "FREQ2",	.value = 0x0200 },
--	{ .name = "FREQ3",	.value = 0x0400 },
--	{ .name = "FREQ4",	.value = 0x0800 },
--	{ .name = "None",	.value = SMA_DISABLE },
-+	{ .name = "10Mhz",  .value = 0x0000,      .frequency = 10000000 },
-+	{ .name = "PPS1",   .value = 0x0001,      .frequency = 1 },
-+	{ .name = "PPS2",   .value = 0x0002,      .frequency = 1 },
-+	{ .name = "TS1",    .value = 0x0004,      .frequency = 0 },
-+	{ .name = "TS2",    .value = 0x0008,      .frequency = 0 },
-+	{ .name = "IRIG",   .value = 0x0010,      .frequency = 10000 },
-+	{ .name = "DCF",    .value = 0x0020,      .frequency = 77500 },
-+	{ .name = "TS3",    .value = 0x0040,      .frequency = 0 },
-+	{ .name = "TS4",    .value = 0x0080,      .frequency = 0 },
-+	{ .name = "FREQ1",  .value = 0x0100,      .frequency = 0 },
-+	{ .name = "FREQ2",  .value = 0x0200,      .frequency = 0 },
-+	{ .name = "FREQ3",  .value = 0x0400,      .frequency = 0 },
-+	{ .name = "FREQ4",  .value = 0x0800,      .frequency = 0 },
-+	{ .name = "None",   .value = SMA_DISABLE, .frequency = 0 },
- 	{ }
- };
- 
- static const struct ocp_selector ptp_ocp_sma_out[] = {
--	{ .name = "10Mhz",	.value = 0x0000 },
--	{ .name = "PHC",	.value = 0x0001 },
--	{ .name = "MAC",	.value = 0x0002 },
--	{ .name = "GNSS1",	.value = 0x0004 },
--	{ .name = "GNSS2",	.value = 0x0008 },
--	{ .name = "IRIG",	.value = 0x0010 },
--	{ .name = "DCF",	.value = 0x0020 },
-+	{ .name = "10Mhz",	.value = 0x0000,  .frequency = 10000000 },
-+	{ .name = "PHC",	.value = 0x0001,  .frequency = 1 },
-+	{ .name = "MAC",	.value = 0x0002,  .frequency = 1 },
-+	{ .name = "GNSS1",	.value = 0x0004,  .frequency = 1 },
-+	{ .name = "GNSS2",	.value = 0x0008,  .frequency = 1 },
-+	{ .name = "IRIG",	.value = 0x0010,  .frequency = 10000 },
-+	{ .name = "DCF",	.value = 0x0020,  .frequency = 77000 },
- 	{ .name = "GEN1",	.value = 0x0040 },
- 	{ .name = "GEN2",	.value = 0x0080 },
- 	{ .name = "GEN3",	.value = 0x0100 },
-@@ -890,15 +905,15 @@ static const struct ocp_selector ptp_ocp_sma_out[] = {
- };
- 
- static const struct ocp_selector ptp_ocp_art_sma_in[] = {
--	{ .name = "PPS1",	.value = 0x0001 },
--	{ .name = "10Mhz",	.value = 0x0008 },
-+	{ .name = "PPS1",	.value = 0x0001,  .frequency = 1 },
-+	{ .name = "10Mhz",	.value = 0x0008,  .frequency = 1000000 },
- 	{ }
- };
- 
- static const struct ocp_selector ptp_ocp_art_sma_out[] = {
--	{ .name = "PHC",	.value = 0x0002 },
--	{ .name = "GNSS",	.value = 0x0004 },
--	{ .name = "10Mhz",	.value = 0x0010 },
-+	{ .name = "PHC",	.value = 0x0002,  .frequency = 1 },
-+	{ .name = "GNSS",	.value = 0x0004,  .frequency = 1 },
-+	{ .name = "10Mhz",	.value = 0x0010,  .frequency = 10000000 },
- 	{ }
- };
- 
-@@ -1351,7 +1366,6 @@ static int
- ptp_ocp_init_clock(struct ptp_ocp *bp)
- {
- 	struct timespec64 ts;
--	bool sync;
- 	u32 ctrl;
- 
- 	ctrl = OCP_CTRL_ENABLE;
-@@ -1375,8 +1389,8 @@ ptp_ocp_init_clock(struct ptp_ocp *bp)
- 
- 	ptp_ocp_estimate_pci_timing(bp);
- 
--	sync = ioread32(&bp->reg->status) & OCP_STATUS_IN_SYNC;
--	if (!sync) {
-+	bp->sync = ioread32(&bp->reg->status) & OCP_STATUS_IN_SYNC;
-+	if (!bp->sync) {
- 		ktime_get_clocktai_ts64(&ts);
- 		ptp_ocp_settime(&bp->ptp_info, &ts);
- 	}
-@@ -2289,22 +2303,35 @@ ptp_ocp_sma_fb_set_inputs(struct ptp_ocp *bp, int sma_nr, u32 val)
- static void
- ptp_ocp_sma_fb_init(struct ptp_ocp *bp)
- {
-+	struct dpll_pin_properties prop = {
-+		.board_label = NULL,
-+		.type = DPLL_PIN_TYPE_EXT,
-+		.capabilities = DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE,
-+		.freq_supported_num = ARRAY_SIZE(ptp_ocp_sma_freq),
-+		.freq_supported = ptp_ocp_sma_freq,
++struct dpll_pin_registration {
++	struct list_head list;
++	const struct dpll_pin_ops *ops;
++	void *priv;
++};
 +
-+	};
- 	u32 reg;
- 	int i;
- 
- 	/* defaults */
-+	for (i = 0; i < OCP_SMA_NUM; i++) {
-+		bp->sma[i].default_fcn = i & 1;
-+		bp->sma[i].dpll_prop = prop;
-+		bp->sma[i].dpll_prop.board_label =
-+			bp->ptp_info.pin_config[i].name;
++struct dpll_device *dpll_device_get_by_id(int id)
++{
++	if (xa_get_mark(&dpll_device_xa, id, DPLL_REGISTERED))
++		return xa_load(&dpll_device_xa, id);
++
++	return NULL;
++}
++
++static struct dpll_pin_registration *
++dpll_pin_registration_find(struct dpll_pin_ref *ref,
++			   const struct dpll_pin_ops *ops, void *priv)
++{
++	struct dpll_pin_registration *reg;
++
++	list_for_each_entry(reg, &ref->registration_list, list) {
++		if (reg->ops == ops && reg->priv == priv)
++			return reg;
 +	}
- 	bp->sma[0].mode = SMA_MODE_IN;
- 	bp->sma[1].mode = SMA_MODE_IN;
- 	bp->sma[2].mode = SMA_MODE_OUT;
- 	bp->sma[3].mode = SMA_MODE_OUT;
--	for (i = 0; i < 4; i++)
--		bp->sma[i].default_fcn = i & 1;
--
- 	/* If no SMA1 map, the pin functions and directions are fixed. */
- 	if (!bp->sma_map1) {
--		for (i = 0; i < 4; i++) {
-+		for (i = 0; i < OCP_SMA_NUM; i++) {
- 			bp->sma[i].fixed_fcn = true;
- 			bp->sma[i].fixed_dir = true;
-+			bp->sma[1].dpll_prop.capabilities &=
-+				~DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE;
- 		}
- 		return;
- 	}
-@@ -2314,7 +2341,7 @@ ptp_ocp_sma_fb_init(struct ptp_ocp *bp)
- 	 */
- 	reg = ioread32(&bp->sma_map2->gpio2);
- 	if (reg == 0xffffffff) {
--		for (i = 0; i < 4; i++)
-+		for (i = 0; i < OCP_SMA_NUM; i++)
- 			bp->sma[i].fixed_dir = true;
- 	} else {
- 		reg = ioread32(&bp->sma_map1->gpio1);
-@@ -2336,7 +2363,7 @@ static const struct ocp_sma_op ocp_fb_sma_op = {
- };
- 
- static int
--ptp_ocp_fb_set_pins(struct ptp_ocp *bp)
-+ptp_ocp_set_pins(struct ptp_ocp *bp)
- {
- 	struct ptp_pin_desc *config;
- 	int i;
-@@ -2403,16 +2430,16 @@ ptp_ocp_fb_board_init(struct ptp_ocp *bp, struct ocp_resource *r)
- 
- 	ptp_ocp_tod_init(bp);
- 	ptp_ocp_nmea_out_init(bp);
--	ptp_ocp_sma_init(bp);
- 	ptp_ocp_signal_init(bp);
- 
- 	err = ptp_ocp_attr_group_add(bp, fb_timecard_groups);
- 	if (err)
- 		return err;
- 
--	err = ptp_ocp_fb_set_pins(bp);
-+	err = ptp_ocp_set_pins(bp);
- 	if (err)
- 		return err;
-+	ptp_ocp_sma_init(bp);
- 
- 	return ptp_ocp_init_clock(bp);
- }
-@@ -2452,6 +2479,14 @@ ptp_ocp_register_resources(struct ptp_ocp *bp, kernel_ulong_t driver_data)
- static void
- ptp_ocp_art_sma_init(struct ptp_ocp *bp)
- {
-+	struct dpll_pin_properties prop = {
-+		.board_label = NULL,
-+		.type = DPLL_PIN_TYPE_EXT,
-+		.capabilities = 0,
-+		.freq_supported_num = ARRAY_SIZE(ptp_ocp_sma_freq),
-+		.freq_supported = ptp_ocp_sma_freq,
++	return NULL;
++}
 +
-+	};
- 	u32 reg;
- 	int i;
- 
-@@ -2466,16 +2501,16 @@ ptp_ocp_art_sma_init(struct ptp_ocp *bp)
- 	bp->sma[2].default_fcn = 0x10;	/* OUT: 10Mhz */
- 	bp->sma[3].default_fcn = 0x02;	/* OUT: PHC */
- 
--	/* If no SMA map, the pin functions and directions are fixed. */
--	if (!bp->art_sma) {
--		for (i = 0; i < 4; i++) {
-+	for (i = 0; i < OCP_SMA_NUM; i++) {
-+		/* If no SMA map, the pin functions and directions are fixed. */
-+		bp->sma[i].dpll_prop = prop;
-+		bp->sma[i].dpll_prop.board_label =
-+			bp->ptp_info.pin_config[i].name;
-+		if (!bp->art_sma) {
- 			bp->sma[i].fixed_fcn = true;
- 			bp->sma[i].fixed_dir = true;
-+			continue;
- 		}
--		return;
--	}
--
--	for (i = 0; i < 4; i++) {
- 		reg = ioread32(&bp->art_sma->map[i].gpio);
- 
- 		switch (reg & 0xff) {
-@@ -2486,9 +2521,13 @@ ptp_ocp_art_sma_init(struct ptp_ocp *bp)
- 		case 1:
- 		case 8:
- 			bp->sma[i].mode = SMA_MODE_IN;
-+			bp->sma[i].dpll_prop.capabilities =
-+				DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE;
- 			break;
- 		default:
- 			bp->sma[i].mode = SMA_MODE_OUT;
-+			bp->sma[i].dpll_prop.capabilities =
-+				DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE;
- 			break;
- 		}
- 	}
-@@ -2555,6 +2594,9 @@ ptp_ocp_art_board_init(struct ptp_ocp *bp, struct ocp_resource *r)
- 	/* Enable MAC serial port during initialisation */
- 	iowrite32(1, &bp->board_config->mro50_serial_activate);
- 
-+	err = ptp_ocp_set_pins(bp);
-+	if (err)
-+		return err;
- 	ptp_ocp_sma_init(bp);
- 
- 	err = ptp_ocp_attr_group_add(bp, art_timecard_groups);
-@@ -2696,16 +2738,9 @@ sma4_show(struct device *dev, struct device_attribute *attr, char *buf)
- }
- 
- static int
--ptp_ocp_sma_store(struct ptp_ocp *bp, const char *buf, int sma_nr)
-+ptp_ocp_sma_store_val(struct ptp_ocp *bp, int val, enum ptp_ocp_sma_mode mode, int sma_nr)
- {
- 	struct ptp_ocp_sma_connector *sma = &bp->sma[sma_nr - 1];
--	enum ptp_ocp_sma_mode mode;
--	int val;
--
--	mode = sma->mode;
--	val = sma_parse_inputs(bp->sma_op->tbl, buf, &mode);
--	if (val < 0)
--		return val;
- 
- 	if (sma->fixed_dir && (mode != sma->mode || val & SMA_DISABLE))
- 		return -EOPNOTSUPP;
-@@ -2740,6 +2775,20 @@ ptp_ocp_sma_store(struct ptp_ocp *bp, const char *buf, int sma_nr)
- 	return val;
- }
- 
 +static int
-+ptp_ocp_sma_store(struct ptp_ocp *bp, const char *buf, int sma_nr)
++dpll_xa_ref_pin_add(struct xarray *xa_pins, struct dpll_pin *pin,
++		    const struct dpll_pin_ops *ops, void *priv)
 +{
-+	struct ptp_ocp_sma_connector *sma = &bp->sma[sma_nr - 1];
-+	enum ptp_ocp_sma_mode mode;
-+	int val;
++	struct dpll_pin_registration *reg;
++	struct dpll_pin_ref *ref;
++	bool ref_exists = false;
++	unsigned long i;
++	int ret;
 +
-+	mode = sma->mode;
-+	val = sma_parse_inputs(bp->sma_op->tbl, buf, &mode);
-+	if (val < 0)
-+		return val;
-+	return ptp_ocp_sma_store_val(bp, val, mode, sma_nr);
-+}
-+
- static ssize_t
- sma1_store(struct device *dev, struct device_attribute *attr,
- 	   const char *buf, size_t count)
-@@ -3834,9 +3883,8 @@ ptp_ocp_summary_show(struct seq_file *s, void *data)
- 		strcpy(buf, "unknown");
- 		break;
- 	}
--	val = ioread32(&bp->reg->status);
- 	seq_printf(s, "%7s: %s, state: %s\n", "PHC src", buf,
--		   val & OCP_STATUS_IN_SYNC ? "sync" : "unsynced");
-+		   bp->sync ? "sync" : "unsynced");
- 
- 	if (!ptp_ocp_gettimex(&bp->ptp_info, &ts, &sts)) {
- 		struct timespec64 sys_ts;
-@@ -4068,7 +4116,6 @@ ptp_ocp_phc_info(struct ptp_ocp *bp)
- {
- 	struct timespec64 ts;
- 	u32 version, select;
--	bool sync;
- 
- 	version = ioread32(&bp->reg->version);
- 	select = ioread32(&bp->reg->select);
-@@ -4077,11 +4124,10 @@ ptp_ocp_phc_info(struct ptp_ocp *bp)
- 		 ptp_ocp_select_name_from_val(ptp_ocp_clock, select >> 16),
- 		 ptp_clock_index(bp->ptp));
- 
--	sync = ioread32(&bp->reg->status) & OCP_STATUS_IN_SYNC;
- 	if (!ptp_ocp_gettimex(&bp->ptp_info, &ts, NULL))
- 		dev_info(&bp->pdev->dev, "Time: %lld.%ld, %s\n",
- 			 ts.tv_sec, ts.tv_nsec,
--			 sync ? "in-sync" : "UNSYNCED");
-+			 bp->sync ? "in-sync" : "UNSYNCED");
- }
- 
- static void
-@@ -4178,12 +4224,168 @@ ptp_ocp_detach(struct ptp_ocp *bp)
- 	device_unregister(&bp->dev);
- }
- 
-+static int ptp_ocp_dpll_lock_status_get(const struct dpll_device *dpll,
-+					void *priv,
-+					enum dpll_lock_status *status,
-+					struct netlink_ext_ack *extack)
-+{
-+	struct ptp_ocp *bp = priv;
-+
-+	*status = bp->sync ? DPLL_LOCK_STATUS_LOCKED : DPLL_LOCK_STATUS_UNLOCKED;
-+
-+	return 0;
-+}
-+
-+static int ptp_ocp_dpll_state_get(const struct dpll_pin *pin, void *pin_priv,
-+				  const struct dpll_device *dpll, void *priv,
-+				  enum dpll_pin_state *state,
-+				  struct netlink_ext_ack *extack)
-+{
-+	struct ptp_ocp *bp = priv;
-+	int idx;
-+
-+	if (bp->pps_select) {
-+		idx = ioread32(&bp->pps_select->gpio1);
-+		*state = (&bp->sma[idx] == pin_priv) ? DPLL_PIN_STATE_CONNECTED :
-+						      DPLL_PIN_STATE_SELECTABLE;
-+		return 0;
-+	}
-+	NL_SET_ERR_MSG(extack, "pin selection is not supported on current HW");
-+	return -EINVAL;
-+}
-+
-+static int ptp_ocp_dpll_mode_get(const struct dpll_device *dpll, void *priv,
-+				 u32 *mode, struct netlink_ext_ack *extack)
-+{
-+	*mode = DPLL_MODE_AUTOMATIC;
-+	return 0;
-+}
-+
-+static bool ptp_ocp_dpll_mode_supported(const struct dpll_device *dpll,
-+					void *priv, const enum dpll_mode mode,
-+					struct netlink_ext_ack *extack)
-+{
-+	return mode == DPLL_MODE_AUTOMATIC;
-+}
-+
-+static int ptp_ocp_dpll_direction_get(const struct dpll_pin *pin,
-+				      void *pin_priv,
-+				      const struct dpll_device *dpll,
-+				      void *priv,
-+				      enum dpll_pin_direction *direction,
-+				      struct netlink_ext_ack *extack)
-+{
-+	struct ptp_ocp_sma_connector *sma = pin_priv;
-+
-+	*direction = sma->mode == SMA_MODE_IN ?
-+				  DPLL_PIN_DIRECTION_INPUT :
-+				  DPLL_PIN_DIRECTION_OUTPUT;
-+	return 0;
-+}
-+
-+static int ptp_ocp_dpll_direction_set(const struct dpll_pin *pin,
-+				      void *pin_priv,
-+				      const struct dpll_device *dpll,
-+				      void *dpll_priv,
-+				      enum dpll_pin_direction direction,
-+				      struct netlink_ext_ack *extack)
-+{
-+	struct ptp_ocp_sma_connector *sma = pin_priv;
-+	struct ptp_ocp *bp = dpll_priv;
-+	enum ptp_ocp_sma_mode mode;
-+	int sma_nr = (sma - bp->sma);
-+
-+	if (sma->fixed_dir)
-+		return -EOPNOTSUPP;
-+	mode = direction == DPLL_PIN_DIRECTION_INPUT ?
-+			    SMA_MODE_IN : SMA_MODE_OUT;
-+	return ptp_ocp_sma_store_val(bp, 0, mode, sma_nr);
-+}
-+
-+static int ptp_ocp_dpll_frequency_set(const struct dpll_pin *pin,
-+				      void *pin_priv,
-+				      const struct dpll_device *dpll,
-+				      void *dpll_priv, u64 frequency,
-+				      struct netlink_ext_ack *extack)
-+{
-+	struct ptp_ocp_sma_connector *sma = pin_priv;
-+	struct ptp_ocp *bp = dpll_priv;
-+	const struct ocp_selector *tbl;
-+	int sma_nr = (sma - bp->sma);
-+	int i;
-+
-+	if (sma->fixed_fcn)
-+		return -EOPNOTSUPP;
-+
-+	tbl = bp->sma_op->tbl[sma->mode];
-+	for (i = 0; tbl[i].name; i++)
-+		if (tbl[i].frequency == frequency)
-+			return ptp_ocp_sma_store_val(bp, i, sma->mode, sma_nr);
-+	return -EINVAL;
-+}
-+
-+static int ptp_ocp_dpll_frequency_get(const struct dpll_pin *pin,
-+				      void *pin_priv,
-+				      const struct dpll_device *dpll,
-+				      void *dpll_priv, u64 *frequency,
-+				      struct netlink_ext_ack *extack)
-+{
-+	struct ptp_ocp_sma_connector *sma = pin_priv;
-+	struct ptp_ocp *bp = dpll_priv;
-+	const struct ocp_selector *tbl;
-+	int sma_nr = (sma - bp->sma);
-+	u32 val;
-+	int i;
-+
-+	val = bp->sma_op->get(bp, sma_nr);
-+	tbl = bp->sma_op->tbl[sma->mode];
-+	for (i = 0; tbl[i].name; i++)
-+		if (val == tbl[i].value) {
-+			*frequency = tbl[i].frequency;
++	xa_for_each(xa_pins, i, ref) {
++		if (ref->pin != pin)
++			continue;
++		reg = dpll_pin_registration_find(ref, ops, priv);
++		if (reg) {
++			refcount_inc(&ref->refcount);
 +			return 0;
 +		}
++		ref_exists = true;
++		break;
++	}
++
++	if (!ref_exists) {
++		ref = kzalloc(sizeof(*ref), GFP_KERNEL);
++		if (!ref)
++			return -ENOMEM;
++		ref->pin = pin;
++		INIT_LIST_HEAD(&ref->registration_list);
++		ret = xa_insert(xa_pins, pin->pin_idx, ref, GFP_KERNEL);
++		if (ret) {
++			kfree(ref);
++			return ret;
++		}
++		refcount_set(&ref->refcount, 1);
++	}
++
++	reg = kzalloc(sizeof(*reg), GFP_KERNEL);
++	if (!reg) {
++		if (!ref_exists) {
++			xa_erase(xa_pins, pin->pin_idx);
++			kfree(ref);
++		}
++		return -ENOMEM;
++	}
++	reg->ops = ops;
++	reg->priv = priv;
++	if (ref_exists)
++		refcount_inc(&ref->refcount);
++	list_add_tail(&reg->list, &ref->registration_list);
++
++	return 0;
++}
++
++static int dpll_xa_ref_pin_del(struct xarray *xa_pins, struct dpll_pin *pin,
++			       const struct dpll_pin_ops *ops, void *priv)
++{
++	struct dpll_pin_registration *reg;
++	struct dpll_pin_ref *ref;
++	unsigned long i;
++
++	xa_for_each(xa_pins, i, ref) {
++		if (ref->pin != pin)
++			continue;
++		reg = dpll_pin_registration_find(ref, ops, priv);
++		if (WARN_ON(!reg))
++			return -EINVAL;
++		if (refcount_dec_and_test(&ref->refcount)) {
++			list_del(&reg->list);
++			kfree(reg);
++			xa_erase(xa_pins, i);
++			WARN_ON(!list_empty(&ref->registration_list));
++			kfree(ref);
++		}
++		return 0;
++	}
 +
 +	return -EINVAL;
 +}
 +
-+static const struct dpll_device_ops dpll_ops = {
-+	.lock_status_get = ptp_ocp_dpll_lock_status_get,
-+	.mode_get = ptp_ocp_dpll_mode_get,
-+	.mode_supported = ptp_ocp_dpll_mode_supported,
-+};
-+
-+static const struct dpll_pin_ops dpll_pins_ops = {
-+	.frequency_get = ptp_ocp_dpll_frequency_get,
-+	.frequency_set = ptp_ocp_dpll_frequency_set,
-+	.direction_get = ptp_ocp_dpll_direction_get,
-+	.direction_set = ptp_ocp_dpll_direction_set,
-+	.state_on_dpll_get = ptp_ocp_dpll_state_get,
-+};
-+
-+static void
-+ptp_ocp_sync_work(struct work_struct *work)
++static int
++dpll_xa_ref_dpll_add(struct xarray *xa_dplls, struct dpll_device *dpll,
++		     const struct dpll_pin_ops *ops, void *priv)
 +{
-+	struct ptp_ocp *bp;
-+	bool sync;
++	struct dpll_pin_registration *reg;
++	struct dpll_pin_ref *ref;
++	bool ref_exists = false;
++	unsigned long i;
++	int ret;
 +
-+	bp = container_of(work, struct ptp_ocp, sync_work.work);
-+	sync = !!(ioread32(&bp->reg->status) & OCP_STATUS_IN_SYNC);
-+
-+	if (bp->sync != sync)
-+		dpll_device_change_ntf(bp->dpll);
-+
-+	bp->sync = sync;
-+
-+	queue_delayed_work(system_power_efficient_wq, &bp->sync_work, HZ);
-+}
-+
- static int
- ptp_ocp_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- {
- 	struct devlink *devlink;
- 	struct ptp_ocp *bp;
--	int err;
-+	int err, i;
-+	u64 clkid;
- 
- 	devlink = devlink_alloc(&ptp_ocp_devlink_ops, sizeof(*bp), &pdev->dev);
- 	if (!devlink) {
-@@ -4202,6 +4404,8 @@ ptp_ocp_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 	if (err)
- 		goto out_disable;
- 
-+	INIT_DELAYED_WORK(&bp->sync_work, ptp_ocp_sync_work);
-+
- 	/* compat mode.
- 	 * Older FPGA firmware only returns 2 irq's.
- 	 * allow this - if not all of the IRQ's are returned, skip the
-@@ -4233,8 +4437,43 @@ ptp_ocp_probe(struct pci_dev *pdev, const struct pci_device_id *id)
- 
- 	ptp_ocp_info(bp);
- 	devlink_register(devlink);
--	return 0;
- 
-+	clkid = pci_get_dsn(pdev);
-+	bp->dpll = dpll_device_get(clkid, 0, THIS_MODULE);
-+	if (IS_ERR(bp->dpll)) {
-+		err = PTR_ERR(bp->dpll);
-+		dev_err(&pdev->dev, "dpll_device_alloc failed\n");
-+		goto out;
++	xa_for_each(xa_dplls, i, ref) {
++		if (ref->dpll != dpll)
++			continue;
++		reg = dpll_pin_registration_find(ref, ops, priv);
++		if (reg) {
++			refcount_inc(&ref->refcount);
++			return 0;
++		}
++		ref_exists = true;
++		break;
 +	}
 +
-+	err = dpll_device_register(bp->dpll, DPLL_TYPE_PPS, &dpll_ops, bp);
-+	if (err)
-+		goto out;
-+
-+	for (i = 0; i < OCP_SMA_NUM; i++) {
-+		bp->sma[i].dpll_pin = dpll_pin_get(clkid, i, THIS_MODULE, &bp->sma[i].dpll_prop);
-+		if (IS_ERR(bp->sma[i].dpll_pin)) {
-+			err = PTR_ERR(bp->dpll);
-+			goto out_dpll;
++	if (!ref_exists) {
++		ref = kzalloc(sizeof(*ref), GFP_KERNEL);
++		if (!ref)
++			return -ENOMEM;
++		ref->dpll = dpll;
++		INIT_LIST_HEAD(&ref->registration_list);
++		ret = xa_insert(xa_dplls, dpll->device_idx, ref, GFP_KERNEL);
++		if (ret) {
++			kfree(ref);
++			return ret;
 +		}
-+
-+		err = dpll_pin_register(bp->dpll, bp->sma[i].dpll_pin, &dpll_pins_ops,
-+					&bp->sma[i]);
-+		if (err) {
-+			dpll_pin_put(bp->sma[i].dpll_pin);
-+			goto out_dpll;
-+		}
++		refcount_set(&ref->refcount, 1);
 +	}
-+	queue_delayed_work(system_power_efficient_wq, &bp->sync_work, HZ);
++
++	reg = kzalloc(sizeof(*reg), GFP_KERNEL);
++	if (!reg) {
++		if (!ref_exists) {
++			xa_erase(xa_dplls, dpll->device_idx);
++			kfree(ref);
++		}
++		return -ENOMEM;
++	}
++	reg->ops = ops;
++	reg->priv = priv;
++	if (ref_exists)
++		refcount_inc(&ref->refcount);
++	list_add_tail(&reg->list, &ref->registration_list);
 +
 +	return 0;
-+out_dpll:
-+	while (i) {
-+		--i;
-+		dpll_pin_unregister(bp->dpll, bp->sma[i].dpll_pin, &dpll_pins_ops, &bp->sma[i]);
-+		dpll_pin_put(bp->sma[i].dpll_pin);
++}
++
++static void
++dpll_xa_ref_dpll_del(struct xarray *xa_dplls, struct dpll_device *dpll,
++		     const struct dpll_pin_ops *ops, void *priv)
++{
++	struct dpll_pin_registration *reg;
++	struct dpll_pin_ref *ref;
++	unsigned long i;
++
++	xa_for_each(xa_dplls, i, ref) {
++		if (ref->dpll != dpll)
++			continue;
++		reg = dpll_pin_registration_find(ref, ops, priv);
++		if (WARN_ON(!reg))
++			return;
++		if (refcount_dec_and_test(&ref->refcount)) {
++			list_del(&reg->list);
++			kfree(reg);
++			xa_erase(xa_dplls, i);
++			WARN_ON(!list_empty(&ref->registration_list));
++			kfree(ref);
++		}
++		return;
 +	}
-+	dpll_device_put(bp->dpll);
- out:
- 	ptp_ocp_detach(bp);
- out_disable:
-@@ -4249,7 +4488,17 @@ ptp_ocp_remove(struct pci_dev *pdev)
- {
- 	struct ptp_ocp *bp = pci_get_drvdata(pdev);
- 	struct devlink *devlink = priv_to_devlink(bp);
-+	int i;
- 
-+	cancel_delayed_work_sync(&bp->sync_work);
-+	for (i = 0; i < OCP_SMA_NUM; i++) {
-+		if (bp->sma[i].dpll_pin) {
-+			dpll_pin_unregister(bp->dpll, bp->sma[i].dpll_pin, &dpll_pins_ops, bp);
-+			dpll_pin_put(bp->sma[i].dpll_pin);
++}
++
++struct dpll_pin_ref *dpll_xa_ref_dpll_first(struct xarray *xa_refs)
++{
++	struct dpll_pin_ref *ref;
++	unsigned long i = 0;
++
++	ref = xa_find(xa_refs, &i, ULONG_MAX, XA_PRESENT);
++	WARN_ON(!ref);
++	return ref;
++}
++
++static struct dpll_device *
++dpll_device_alloc(const u64 clock_id, u32 device_idx, struct module *module)
++{
++	struct dpll_device *dpll;
++	int ret;
++
++	dpll = kzalloc(sizeof(*dpll), GFP_KERNEL);
++	if (!dpll)
++		return ERR_PTR(-ENOMEM);
++	refcount_set(&dpll->refcount, 1);
++	INIT_LIST_HEAD(&dpll->registration_list);
++	dpll->device_idx = device_idx;
++	dpll->clock_id = clock_id;
++	dpll->module = module;
++	ret = xa_alloc(&dpll_device_xa, &dpll->id, dpll, xa_limit_16b,
++		       GFP_KERNEL);
++	if (ret) {
++		kfree(dpll);
++		return ERR_PTR(ret);
++	}
++	xa_init_flags(&dpll->pin_refs, XA_FLAGS_ALLOC);
++
++	return dpll;
++}
++
++/**
++ * dpll_device_get - find existing or create new dpll device
++ * @clock_id: clock_id of creator
++ * @device_idx: idx given by device driver
++ * @module: reference to registering module
++ *
++ * Get existing object of a dpll device, unique for given arguments.
++ * Create new if doesn't exist yet.
++ *
++ * Context: Acquires a lock (dpll_lock)
++ * Return:
++ * * valid dpll_device struct pointer if succeeded
++ * * ERR_PTR(X) - error
++ */
++struct dpll_device *
++dpll_device_get(u64 clock_id, u32 device_idx, struct module *module)
++{
++	struct dpll_device *dpll, *ret = NULL;
++	unsigned long index;
++
++	mutex_lock(&dpll_lock);
++	xa_for_each(&dpll_device_xa, index, dpll) {
++		if (dpll->clock_id == clock_id &&
++		    dpll->device_idx == device_idx &&
++		    dpll->module == module) {
++			ret = dpll;
++			refcount_inc(&ret->refcount);
++			break;
 +		}
 +	}
-+	dpll_device_unregister(bp->dpll, &dpll_ops, bp);
-+	dpll_device_put(bp->dpll);
- 	devlink_unregister(devlink);
- 	ptp_ocp_detach(bp);
- 	pci_disable_device(pdev);
++	if (!ret)
++		ret = dpll_device_alloc(clock_id, device_idx, module);
++	mutex_unlock(&dpll_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dpll_device_get);
++
++/**
++ * dpll_device_put - decrease the refcount and free memory if possible
++ * @dpll: dpll_device struct pointer
++ *
++ * Context: Acquires a lock (dpll_lock)
++ * Drop reference for a dpll device, if all references are gone, delete
++ * dpll device object.
++ */
++void dpll_device_put(struct dpll_device *dpll)
++{
++	mutex_lock(&dpll_lock);
++	if (refcount_dec_and_test(&dpll->refcount)) {
++		ASSERT_DPLL_NOT_REGISTERED(dpll);
++		WARN_ON_ONCE(!xa_empty(&dpll->pin_refs));
++		xa_destroy(&dpll->pin_refs);
++		xa_erase(&dpll_device_xa, dpll->id);
++		WARN_ON(!list_empty(&dpll->registration_list));
++		kfree(dpll);
++	}
++	mutex_unlock(&dpll_lock);
++}
++EXPORT_SYMBOL_GPL(dpll_device_put);
++
++static struct dpll_device_registration *
++dpll_device_registration_find(struct dpll_device *dpll,
++			      const struct dpll_device_ops *ops, void *priv)
++{
++	struct dpll_device_registration *reg;
++
++	list_for_each_entry(reg, &dpll->registration_list, list) {
++		if (reg->ops == ops && reg->priv == priv)
++			return reg;
++	}
++	return NULL;
++}
++
++/**
++ * dpll_device_register - register the dpll device in the subsystem
++ * @dpll: pointer to a dpll
++ * @type: type of a dpll
++ * @ops: ops for a dpll device
++ * @priv: pointer to private information of owner
++ *
++ * Make dpll device available for user space.
++ *
++ * Context: Acquires a lock (dpll_lock)
++ * Return:
++ * * 0 on success
++ * * negative - error value
++ */
++int dpll_device_register(struct dpll_device *dpll, enum dpll_type type,
++			 const struct dpll_device_ops *ops, void *priv)
++{
++	struct dpll_device_registration *reg;
++	bool first_registration = false;
++
++	if (WARN_ON(!ops))
++		return -EINVAL;
++	if (WARN_ON(!ops->mode_get))
++		return -EINVAL;
++	if (WARN_ON(!ops->lock_status_get))
++		return -EINVAL;
++	if (WARN_ON(type < DPLL_TYPE_PPS || type > DPLL_TYPE_MAX))
++		return -EINVAL;
++
++	mutex_lock(&dpll_lock);
++	reg = dpll_device_registration_find(dpll, ops, priv);
++	if (reg) {
++		mutex_unlock(&dpll_lock);
++		return -EEXIST;
++	}
++
++	reg = kzalloc(sizeof(*reg), GFP_KERNEL);
++	if (!reg) {
++		mutex_unlock(&dpll_lock);
++		return -ENOMEM;
++	}
++	reg->ops = ops;
++	reg->priv = priv;
++	dpll->type = type;
++	first_registration = list_empty(&dpll->registration_list);
++	list_add_tail(&reg->list, &dpll->registration_list);
++	if (!first_registration) {
++		mutex_unlock(&dpll_lock);
++		return 0;
++	}
++
++	xa_set_mark(&dpll_device_xa, dpll->id, DPLL_REGISTERED);
++	mutex_unlock(&dpll_lock);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(dpll_device_register);
++
++/**
++ * dpll_device_unregister - unregister dpll device
++ * @dpll: registered dpll pointer
++ * @ops: ops for a dpll device
++ * @priv: pointer to private information of owner
++ *
++ * Unregister device, make it unavailable for userspace.
++ * Note: It does not free the memory
++ * Context: Acquires a lock (dpll_lock)
++ */
++void dpll_device_unregister(struct dpll_device *dpll,
++			    const struct dpll_device_ops *ops, void *priv)
++{
++	struct dpll_device_registration *reg;
++
++	mutex_lock(&dpll_lock);
++	ASSERT_DPLL_REGISTERED(dpll);
++	reg = dpll_device_registration_find(dpll, ops, priv);
++	if (WARN_ON(!reg)) {
++		mutex_unlock(&dpll_lock);
++		return;
++	}
++	list_del(&reg->list);
++	kfree(reg);
++
++	if (!list_empty(&dpll->registration_list)) {
++		mutex_unlock(&dpll_lock);
++		return;
++	}
++	xa_clear_mark(&dpll_device_xa, dpll->id, DPLL_REGISTERED);
++	mutex_unlock(&dpll_lock);
++}
++EXPORT_SYMBOL_GPL(dpll_device_unregister);
++
++static struct dpll_pin *
++dpll_pin_alloc(u64 clock_id, u32 pin_idx, struct module *module,
++	       const struct dpll_pin_properties *prop)
++{
++	struct dpll_pin *pin;
++	int ret;
++
++	pin = kzalloc(sizeof(*pin), GFP_KERNEL);
++	if (!pin)
++		return ERR_PTR(-ENOMEM);
++	pin->pin_idx = pin_idx;
++	pin->clock_id = clock_id;
++	pin->module = module;
++	if (WARN_ON(prop->type < DPLL_PIN_TYPE_MUX ||
++		    prop->type > DPLL_PIN_TYPE_MAX)) {
++		ret = -EINVAL;
++		goto err;
++	}
++	pin->prop = prop;
++	refcount_set(&pin->refcount, 1);
++	xa_init_flags(&pin->dpll_refs, XA_FLAGS_ALLOC);
++	xa_init_flags(&pin->parent_refs, XA_FLAGS_ALLOC);
++	ret = xa_alloc(&dpll_pin_xa, &pin->id, pin, xa_limit_16b, GFP_KERNEL);
++	if (ret)
++		goto err;
++	return pin;
++err:
++	xa_destroy(&pin->dpll_refs);
++	xa_destroy(&pin->parent_refs);
++	kfree(pin);
++	return ERR_PTR(ret);
++}
++
++/**
++ * dpll_pin_get - find existing or create new dpll pin
++ * @clock_id: clock_id of creator
++ * @pin_idx: idx given by dev driver
++ * @module: reference to registering module
++ * @prop: dpll pin properties
++ *
++ * Get existing object of a pin (unique for given arguments) or create new
++ * if doesn't exist yet.
++ *
++ * Context: Acquires a lock (dpll_lock)
++ * Return:
++ * * valid allocated dpll_pin struct pointer if succeeded
++ * * ERR_PTR(X) - error
++ */
++struct dpll_pin *
++dpll_pin_get(u64 clock_id, u32 pin_idx, struct module *module,
++	     const struct dpll_pin_properties *prop)
++{
++	struct dpll_pin *pos, *ret = NULL;
++	unsigned long i;
++
++	mutex_lock(&dpll_lock);
++	xa_for_each(&dpll_pin_xa, i, pos) {
++		if (pos->clock_id == clock_id &&
++		    pos->pin_idx == pin_idx &&
++		    pos->module == module) {
++			ret = pos;
++			refcount_inc(&ret->refcount);
++			break;
++		}
++	}
++	if (!ret)
++		ret = dpll_pin_alloc(clock_id, pin_idx, module, prop);
++	mutex_unlock(&dpll_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dpll_pin_get);
++
++/**
++ * dpll_pin_put - decrease the refcount and free memory if possible
++ * @pin: pointer to a pin to be put
++ *
++ * Drop reference for a pin, if all references are gone, delete pin object.
++ *
++ * Context: Acquires a lock (dpll_lock)
++ */
++void dpll_pin_put(struct dpll_pin *pin)
++{
++	mutex_lock(&dpll_lock);
++	if (refcount_dec_and_test(&pin->refcount)) {
++		xa_destroy(&pin->dpll_refs);
++		xa_destroy(&pin->parent_refs);
++		xa_erase(&dpll_pin_xa, pin->id);
++		kfree(pin);
++	}
++	mutex_unlock(&dpll_lock);
++}
++EXPORT_SYMBOL_GPL(dpll_pin_put);
++
++static int
++__dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
++		    const struct dpll_pin_ops *ops, void *priv)
++{
++	int ret;
++
++	ret = dpll_xa_ref_pin_add(&dpll->pin_refs, pin, ops, priv);
++	if (ret)
++		return ret;
++	ret = dpll_xa_ref_dpll_add(&pin->dpll_refs, dpll, ops, priv);
++	if (ret)
++		goto ref_pin_del;
++	xa_set_mark(&dpll_pin_xa, pin->id, DPLL_REGISTERED);
++
++	return ret;
++
++ref_pin_del:
++	dpll_xa_ref_pin_del(&dpll->pin_refs, pin, ops, priv);
++	return ret;
++}
++
++/**
++ * dpll_pin_register - register the dpll pin in the subsystem
++ * @dpll: pointer to a dpll
++ * @pin: pointer to a dpll pin
++ * @ops: ops for a dpll pin ops
++ * @priv: pointer to private information of owner
++ *
++ * Context: Acquires a lock (dpll_lock)
++ * Return:
++ * * 0 on success
++ * * negative - error value
++ */
++int
++dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
++		  const struct dpll_pin_ops *ops, void *priv)
++{
++	int ret;
++
++	if (WARN_ON(!ops) ||
++	    WARN_ON(!ops->state_on_dpll_get) ||
++	    WARN_ON(!ops->direction_get))
++		return -EINVAL;
++	if (ASSERT_DPLL_REGISTERED(dpll))
++		return -EINVAL;
++
++	mutex_lock(&dpll_lock);
++	if (WARN_ON(!(dpll->module == pin->module &&
++		      dpll->clock_id == pin->clock_id)))
++		ret = -EINVAL;
++	else
++		ret = __dpll_pin_register(dpll, pin, ops, priv);
++	mutex_unlock(&dpll_lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dpll_pin_register);
++
++static void
++__dpll_pin_unregister(struct dpll_device *dpll, struct dpll_pin *pin,
++		      const struct dpll_pin_ops *ops, void *priv)
++{
++	dpll_xa_ref_pin_del(&dpll->pin_refs, pin, ops, priv);
++	dpll_xa_ref_dpll_del(&pin->dpll_refs, dpll, ops, priv);
++	if (xa_empty(&pin->dpll_refs))
++		xa_clear_mark(&dpll_pin_xa, pin->id, DPLL_REGISTERED);
++}
++
++/**
++ * dpll_pin_unregister - unregister dpll pin from dpll device
++ * @dpll: registered dpll pointer
++ * @pin: pointer to a pin
++ * @ops: ops for a dpll pin
++ * @priv: pointer to private information of owner
++ *
++ * Note: It does not free the memory
++ * Context: Acquires a lock (dpll_lock)
++ */
++void dpll_pin_unregister(struct dpll_device *dpll, struct dpll_pin *pin,
++			 const struct dpll_pin_ops *ops, void *priv)
++{
++	if (WARN_ON(xa_empty(&dpll->pin_refs)))
++		return;
++	if (WARN_ON(!xa_empty(&pin->parent_refs)))
++		return;
++
++	mutex_lock(&dpll_lock);
++	__dpll_pin_unregister(dpll, pin, ops, priv);
++	mutex_unlock(&dpll_lock);
++}
++EXPORT_SYMBOL_GPL(dpll_pin_unregister);
++
++/**
++ * dpll_pin_on_pin_register - register a pin with a parent pin
++ * @parent: pointer to a parent pin
++ * @pin: pointer to a pin
++ * @ops: ops for a dpll pin
++ * @priv: pointer to private information of owner
++ *
++ * Register a pin with a parent pin, create references between them and
++ * between newly registered pin and dplls connected with a parent pin.
++ *
++ * Context: Acquires a lock (dpll_lock)
++ * Return:
++ * * 0 on success
++ * * negative - error value
++ */
++int dpll_pin_on_pin_register(struct dpll_pin *parent, struct dpll_pin *pin,
++			     const struct dpll_pin_ops *ops, void *priv)
++{
++	struct dpll_pin_ref *ref;
++	unsigned long i, stop;
++	int ret;
++
++	if (WARN_ON(parent->prop->type != DPLL_PIN_TYPE_MUX))
++		return -EINVAL;
++
++	if (WARN_ON(!ops) ||
++	    WARN_ON(!ops->state_on_pin_get) ||
++	    WARN_ON(!ops->direction_get))
++		return -EINVAL;
++	if (ASSERT_PIN_REGISTERED(parent))
++		return -EINVAL;
++
++	mutex_lock(&dpll_lock);
++	ret = dpll_xa_ref_pin_add(&pin->parent_refs, parent, ops, priv);
++	if (ret)
++		goto unlock;
++	refcount_inc(&pin->refcount);
++	xa_for_each(&parent->dpll_refs, i, ref) {
++		ret = __dpll_pin_register(ref->dpll, pin, ops, priv);
++		if (ret) {
++			stop = i;
++			goto dpll_unregister;
++		}
++	}
++	mutex_unlock(&dpll_lock);
++
++	return ret;
++
++dpll_unregister:
++	xa_for_each(&parent->dpll_refs, i, ref)
++		if (i < stop)
++			__dpll_pin_unregister(ref->dpll, pin, ops, priv);
++	refcount_dec(&pin->refcount);
++	dpll_xa_ref_pin_del(&pin->parent_refs, parent, ops, priv);
++unlock:
++	mutex_unlock(&dpll_lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dpll_pin_on_pin_register);
++
++/**
++ * dpll_pin_on_pin_unregister - unregister dpll pin from a parent pin
++ * @parent: pointer to a parent pin
++ * @pin: pointer to a pin
++ * @ops: ops for a dpll pin
++ * @priv: pointer to private information of owner
++ *
++ * Context: Acquires a lock (dpll_lock)
++ * Note: It does not free the memory
++ */
++void dpll_pin_on_pin_unregister(struct dpll_pin *parent, struct dpll_pin *pin,
++				const struct dpll_pin_ops *ops, void *priv)
++{
++	struct dpll_pin_ref *ref;
++	unsigned long i;
++
++	mutex_lock(&dpll_lock);
++	dpll_xa_ref_pin_del(&pin->parent_refs, parent, ops, priv);
++	refcount_dec(&pin->refcount);
++	xa_for_each(&pin->dpll_refs, i, ref)
++		__dpll_pin_unregister(ref->dpll, pin, ops, priv);
++	mutex_unlock(&dpll_lock);
++}
++EXPORT_SYMBOL_GPL(dpll_pin_on_pin_unregister);
++
++static struct dpll_device_registration *
++dpll_device_registration_first(struct dpll_device *dpll)
++{
++	struct dpll_device_registration *reg;
++
++	reg = list_first_entry_or_null((struct list_head *)&dpll->registration_list,
++				       struct dpll_device_registration, list);
++	WARN_ON(!reg);
++	return reg;
++}
++
++void *dpll_priv(struct dpll_device *dpll)
++{
++	struct dpll_device_registration *reg;
++
++	reg = dpll_device_registration_first(dpll);
++	return reg->priv;
++}
++
++const struct dpll_device_ops *dpll_device_ops(struct dpll_device *dpll)
++{
++	struct dpll_device_registration *reg;
++
++	reg = dpll_device_registration_first(dpll);
++	return reg->ops;
++}
++
++static struct dpll_pin_registration *
++dpll_pin_registration_first(struct dpll_pin_ref *ref)
++{
++	struct dpll_pin_registration *reg;
++
++	reg = list_first_entry_or_null(&ref->registration_list,
++				       struct dpll_pin_registration, list);
++	WARN_ON(!reg);
++	return reg;
++}
++
++void *dpll_pin_on_dpll_priv(struct dpll_device *dpll,
++			    struct dpll_pin *pin)
++{
++	struct dpll_pin_registration *reg;
++	struct dpll_pin_ref *ref;
++
++	ref = xa_load(&dpll->pin_refs, pin->pin_idx);
++	if (!ref)
++		return NULL;
++	reg = dpll_pin_registration_first(ref);
++	return reg->priv;
++}
++
++void *dpll_pin_on_pin_priv(struct dpll_pin *parent,
++			   struct dpll_pin *pin)
++{
++	struct dpll_pin_registration *reg;
++	struct dpll_pin_ref *ref;
++
++	ref = xa_load(&pin->parent_refs, parent->pin_idx);
++	if (!ref)
++		return NULL;
++	reg = dpll_pin_registration_first(ref);
++	return reg->priv;
++}
++
++const struct dpll_pin_ops *dpll_pin_ops(struct dpll_pin_ref *ref)
++{
++	struct dpll_pin_registration *reg;
++
++	reg = dpll_pin_registration_first(ref);
++	return reg->ops;
++}
++
++static int __init dpll_init(void)
++{
++	int ret;
++
++	ret = genl_register_family(&dpll_nl_family);
++	if (ret)
++		goto error;
++
++	return 0;
++
++error:
++	mutex_destroy(&dpll_lock);
++	return ret;
++}
++
++static void __exit dpll_exit(void)
++{
++	genl_unregister_family(&dpll_nl_family);
++	mutex_destroy(&dpll_lock);
++}
++
++subsys_initcall(dpll_init);
++module_exit(dpll_exit);
+diff --git a/drivers/dpll/dpll_core.h b/drivers/dpll/dpll_core.h
+new file mode 100644
+index 000000000000..fdee185cc579
+--- /dev/null
++++ b/drivers/dpll/dpll_core.h
+@@ -0,0 +1,90 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ *  Copyright (c) 2023 Meta Platforms, Inc. and affiliates
++ *  Copyright (c) 2023 Intel and affiliates
++ */
++
++#ifndef __DPLL_CORE_H__
++#define __DPLL_CORE_H__
++
++#include <linux/dpll.h>
++#include <linux/list.h>
++#include <linux/refcount.h>
++#include "dpll_nl.h"
++
++#define DPLL_REGISTERED		XA_MARK_1
++
++/**
++ * struct dpll_device - stores DPLL device internal data
++ * @id:			unique id number for device given by dpll subsystem
++ * @device_idx:		id given by dev driver
++ * @clock_id:		unique identifier (clock_id) of a dpll
++ * @module:		module of creator
++ * @type:		type of a dpll
++ * @pin_refs:		stores pins registered within a dpll
++ * @refcount:		refcount
++ * @registration_list:	list of registered ops and priv data of dpll owners
++ **/
++struct dpll_device {
++	u32 id;
++	u32 device_idx;
++	u64 clock_id;
++	struct module *module;
++	enum dpll_type type;
++	struct xarray pin_refs;
++	refcount_t refcount;
++	struct list_head registration_list;
++};
++
++/**
++ * struct dpll_pin - structure for a dpll pin
++ * @id:			unique id number for pin given by dpll subsystem
++ * @pin_idx:		index of a pin given by dev driver
++ * @clock_id:		clock_id of creator
++ * @module:		module of creator
++ * @dpll_refs:		hold referencees to dplls pin was registered with
++ * @parent_refs:	hold references to parent pins pin was registered with
++ * @prop:		pointer to pin properties given by registerer
++ * @rclk_dev_name:	holds name of device when pin can recover clock from it
++ * @refcount:		refcount
++ **/
++struct dpll_pin {
++	u32 id;
++	u32 pin_idx;
++	u64 clock_id;
++	struct module *module;
++	struct xarray dpll_refs;
++	struct xarray parent_refs;
++	const struct dpll_pin_properties *prop;
++	char *rclk_dev_name;
++	refcount_t refcount;
++};
++
++/**
++ * struct dpll_pin_ref - structure for referencing either dpll or pins
++ * @dpll:		pointer to a dpll
++ * @pin:		pointer to a pin
++ * @registration_list:	list of ops and priv data registered with the ref
++ * @refcount:		refcount
++ **/
++struct dpll_pin_ref {
++	union {
++		struct dpll_device *dpll;
++		struct dpll_pin *pin;
++	};
++	struct list_head registration_list;
++	refcount_t refcount;
++};
++
++void *dpll_priv(struct dpll_device *dpll);
++void *dpll_pin_on_dpll_priv(struct dpll_device *dpll, struct dpll_pin *pin);
++void *dpll_pin_on_pin_priv(struct dpll_pin *parent, struct dpll_pin *pin);
++
++const struct dpll_device_ops *dpll_device_ops(struct dpll_device *dpll);
++struct dpll_device *dpll_device_get_by_id(int id);
++const struct dpll_pin_ops *dpll_pin_ops(struct dpll_pin_ref *ref);
++struct dpll_pin_ref *dpll_xa_ref_dpll_first(struct xarray *xa_refs);
++extern struct xarray dpll_device_xa;
++extern struct xarray dpll_pin_xa;
++extern struct mutex dpll_lock;
++#endif
+diff --git a/include/linux/dpll.h b/include/linux/dpll.h
+new file mode 100644
+index 000000000000..a1ecb0af19e9
+--- /dev/null
++++ b/include/linux/dpll.h
+@@ -0,0 +1,133 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ *  Copyright (c) 2023 Meta Platforms, Inc. and affiliates
++ *  Copyright (c) 2023 Intel and affiliates
++ */
++
++#ifndef __DPLL_H__
++#define __DPLL_H__
++
++#include <uapi/linux/dpll.h>
++#include <linux/device.h>
++#include <linux/netlink.h>
++
++struct dpll_device;
++struct dpll_pin;
++
++struct dpll_device_ops {
++	int (*mode_get)(const struct dpll_device *dpll, void *dpll_priv,
++			enum dpll_mode *mode, struct netlink_ext_ack *extack);
++	bool (*mode_supported)(const struct dpll_device *dpll, void *dpll_priv,
++			       const enum dpll_mode mode,
++			       struct netlink_ext_ack *extack);
++	int (*lock_status_get)(const struct dpll_device *dpll, void *dpll_priv,
++			       enum dpll_lock_status *status,
++			       struct netlink_ext_ack *extack);
++	int (*temp_get)(const struct dpll_device *dpll, void *dpll_priv,
++			s32 *temp, struct netlink_ext_ack *extack);
++};
++
++struct dpll_pin_ops {
++	int (*frequency_set)(const struct dpll_pin *pin, void *pin_priv,
++			     const struct dpll_device *dpll, void *dpll_priv,
++			     const u64 frequency,
++			     struct netlink_ext_ack *extack);
++	int (*frequency_get)(const struct dpll_pin *pin, void *pin_priv,
++			     const struct dpll_device *dpll, void *dpll_priv,
++			     u64 *frequency, struct netlink_ext_ack *extack);
++	int (*direction_set)(const struct dpll_pin *pin, void *pin_priv,
++			     const struct dpll_device *dpll, void *dpll_priv,
++			     const enum dpll_pin_direction direction,
++			     struct netlink_ext_ack *extack);
++	int (*direction_get)(const struct dpll_pin *pin, void *pin_priv,
++			     const struct dpll_device *dpll, void *dpll_priv,
++			     enum dpll_pin_direction *direction,
++			     struct netlink_ext_ack *extack);
++	int (*state_on_pin_get)(const struct dpll_pin *pin, void *pin_priv,
++				const struct dpll_pin *parent_pin,
++				void *parent_pin_priv,
++				enum dpll_pin_state *state,
++				struct netlink_ext_ack *extack);
++	int (*state_on_dpll_get)(const struct dpll_pin *pin, void *pin_priv,
++				 const struct dpll_device *dpll,
++				 void *dpll_priv, enum dpll_pin_state *state,
++				 struct netlink_ext_ack *extack);
++	int (*state_on_pin_set)(const struct dpll_pin *pin, void *pin_priv,
++				const struct dpll_pin *parent_pin,
++				void *parent_pin_priv,
++				const enum dpll_pin_state state,
++				struct netlink_ext_ack *extack);
++	int (*state_on_dpll_set)(const struct dpll_pin *pin, void *pin_priv,
++				 const struct dpll_device *dpll,
++				 void *dpll_priv,
++				 const enum dpll_pin_state state,
++				 struct netlink_ext_ack *extack);
++	int (*prio_get)(const struct dpll_pin *pin,  void *pin_priv,
++			const struct dpll_device *dpll,  void *dpll_priv,
++			u32 *prio, struct netlink_ext_ack *extack);
++	int (*prio_set)(const struct dpll_pin *pin, void *pin_priv,
++			const struct dpll_device *dpll, void *dpll_priv,
++			const u32 prio, struct netlink_ext_ack *extack);
++};
++
++struct dpll_pin_frequency {
++	u64 min;
++	u64 max;
++};
++
++#define DPLL_PIN_FREQUENCY_RANGE(_min, _max)	\
++	{					\
++		.min = _min,			\
++		.max = _max,			\
++	}
++
++#define DPLL_PIN_FREQUENCY(_val) DPLL_PIN_FREQUENCY_RANGE(_val, _val)
++#define DPLL_PIN_FREQUENCY_1PPS \
++	DPLL_PIN_FREQUENCY(DPLL_PIN_FREQUENCY_1_HZ)
++#define DPLL_PIN_FREQUENCY_10MHZ \
++	DPLL_PIN_FREQUENCY(DPLL_PIN_FREQUENCY_10_MHZ)
++#define DPLL_PIN_FREQUENCY_IRIG_B \
++	DPLL_PIN_FREQUENCY(DPLL_PIN_FREQUENCY_10_KHZ)
++#define DPLL_PIN_FREQUENCY_DCF77 \
++	DPLL_PIN_FREQUENCY(DPLL_PIN_FREQUENCY_77_5_KHZ)
++
++struct dpll_pin_properties {
++	const char *board_label;
++	const char *panel_label;
++	const char *package_label;
++	enum dpll_pin_type type;
++	unsigned long capabilities;
++	u32 freq_supported_num;
++	struct dpll_pin_frequency *freq_supported;
++};
++
++struct dpll_device
++*dpll_device_get(u64 clock_id, u32 dev_driver_id, struct module *module);
++
++void dpll_device_put(struct dpll_device *dpll);
++
++int dpll_device_register(struct dpll_device *dpll, enum dpll_type type,
++			 const struct dpll_device_ops *ops, void *priv);
++
++void dpll_device_unregister(struct dpll_device *dpll,
++			    const struct dpll_device_ops *ops, void *priv);
++
++struct dpll_pin
++*dpll_pin_get(u64 clock_id, u32 dev_driver_id, struct module *module,
++	      const struct dpll_pin_properties *prop);
++
++int dpll_pin_register(struct dpll_device *dpll, struct dpll_pin *pin,
++		      const struct dpll_pin_ops *ops, void *priv);
++
++void dpll_pin_unregister(struct dpll_device *dpll, struct dpll_pin *pin,
++			 const struct dpll_pin_ops *ops, void *priv);
++
++void dpll_pin_put(struct dpll_pin *pin);
++
++int dpll_pin_on_pin_register(struct dpll_pin *parent, struct dpll_pin *pin,
++			     const struct dpll_pin_ops *ops, void *priv);
++
++void dpll_pin_on_pin_unregister(struct dpll_pin *parent, struct dpll_pin *pin,
++				const struct dpll_pin_ops *ops, void *priv);
++
++#endif
 -- 
 2.27.0
 
