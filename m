@@ -4,88 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DA37C04A94
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Aug 2023 10:39:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67309C001B0
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 10 Aug 2023 11:01:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4D0A281411;
-	Thu, 10 Aug 2023 10:39:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4D0A281411
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0E96883F00;
+	Thu, 10 Aug 2023 11:01:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0E96883F00
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1691663959;
-	bh=zCgozd4bbD/TSArZp+WrhBgKnWvJHXgOil6PnY+vVmI=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=sAZFxLucUO2YlplyHjoub7t5NoNOvTVYEw0j2DSz7McCtOtbIiXX1qq6wFzu2420F
-	 rXCHx1VT3yrsmFcV0duhAzHQPmMhfFhyIzF/jrqBYa341zCPniP8euau9cQSGzVQjj
-	 xkynK07p97JrfHe1UOe7++CwJm4m22hV6FPurvgFB2dcVUcQ0z9wsjM1oC398BuyW8
-	 5J0U/IQb/hBlnowUSTW5oySb+2eQlIMynZvrHdKKhFvBD8+3R1lTOUfGZ0iAAqNvow
-	 1vwu5HoTInZB3y4CpkyA4xpQ6VeGXp+/NZY0cJs4OdX2DWUYa8t+MviZ3QeTDyv5O+
-	 mU35ZVlZ+9zug==
+	s=default; t=1691665310;
+	bh=u92acyuxO4Wp7dKqlnTsglqrVK0xrNDgGueirR7uIM8=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=UIcHo0mTAN0lg/gqsqXSmD3vgAb3WueOv3H8Ecmt1YHk7YSFE4kKrjTayxXZwhw7f
+	 SRKXGUcF3CLQiU9Eq5FpFDYnAJA0DMtJ4WMZN5sP6eyysH+nKictWSypLEM3ILa+gY
+	 jBm/t6a9LtHNFi8C6gQU1zPUGpqwaq2onZczBHCqtIwNrCmFSGIl3DnBUWtqfZHUle
+	 X36l8Fuw32T5AypFaooc1LxSTGEnc0jEferNPsM7b8K/JI1te4IA1bEZWMSNhe8rSd
+	 DAnJ8Cyqdzt7x846DWcgL5qHZk+zXjdc4Pk1nqhhsGbJ0Yf1kDNZ8Vhp4PCcz1YuGi
+	 8XFetecMF2i6A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id KHx4s5XTBMDQ; Thu, 10 Aug 2023 10:39:16 +0000 (UTC)
+	with ESMTP id eO8oCr5pVi0O; Thu, 10 Aug 2023 11:01:49 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9F98D83C12;
-	Thu, 10 Aug 2023 10:39:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9F98D83C12
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 310831BF34D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Aug 2023 10:38:51 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F2D7D83F02;
+	Thu, 10 Aug 2023 11:01:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F2D7D83F02
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 036E41BF34D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Aug 2023 11:01:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id E641141735
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Aug 2023 10:38:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E641141735
+ by smtp3.osuosl.org (Postfix) with ESMTP id CB80360C22
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Aug 2023 11:01:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CB80360C22
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id JuYw8t0m-vNK for <intel-wired-lan@lists.osuosl.org>;
- Thu, 10 Aug 2023 10:38:46 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
- by smtp2.osuosl.org (Postfix) with ESMTPS id E88AA400D1
- for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Aug 2023 10:38:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E88AA400D1
-X-IronPort-AV: E=McAfee;i="6600,9927,10797"; a="370260815"
-X-IronPort-AV: E=Sophos;i="6.01,162,1684825200"; d="scan'208";a="370260815"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Aug 2023 03:38:44 -0700
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id uysvbvihF5WX for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 10 Aug 2023 11:01:44 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B5AE360B0D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 10 Aug 2023 11:01:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B5AE360B0D
+X-IronPort-AV: E=McAfee;i="6600,9927,10797"; a="350951764"
+X-IronPort-AV: E=Sophos;i="6.01,162,1684825200"; d="scan'208";a="350951764"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 10 Aug 2023 04:01:09 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10797"; a="767237173"
-X-IronPort-AV: E=Sophos;i="6.01,162,1684825200"; d="scan'208";a="767237173"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga001.jf.intel.com with ESMTP; 10 Aug 2023 03:38:42 -0700
-Received: from pelor.igk.intel.com (pelor.igk.intel.com [10.123.220.13])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 5D8FA333CD;
- Thu, 10 Aug 2023 11:38:41 +0100 (IST)
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-To: Kees Cook <keescook@chromium.org>,
-	netdev@vger.kernel.org
-Date: Thu, 10 Aug 2023 06:35:05 -0400
-Message-Id: <20230810103509.163225-4-przemyslaw.kitszel@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230810103509.163225-1-przemyslaw.kitszel@intel.com>
-References: <20230810103509.163225-1-przemyslaw.kitszel@intel.com>
-MIME-Version: 1.0
+X-IronPort-AV: E=McAfee;i="6600,9927,10797"; a="978758216"
+X-IronPort-AV: E=Sophos;i="6.01,162,1684825200"; d="scan'208";a="978758216"
+Received: from lkp-server01.sh.intel.com (HELO d1ccc7e87e8f) ([10.239.97.150])
+ by fmsmga006.fm.intel.com with ESMTP; 10 Aug 2023 04:01:08 -0700
+Received: from kbuild by d1ccc7e87e8f with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1qU3Pf-0006xG-34
+ for intel-wired-lan@lists.osuosl.org; Thu, 10 Aug 2023 11:01:07 +0000
+Date: Thu, 10 Aug 2023 19:00:47 +0800
+From: kernel test robot <lkp@intel.com>
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Message-ID: <202308101945.Xm1ZVGO3-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1691663925; x=1723199925;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=u0Ir2ezi0Y7qZJJInoG5MrM3MApUurrsNbjZu/T1cVQ=;
- b=jN3CEMb1awMR8gRUDTWJZXAALKnuUyq7tvB5Lh/xYXDV3SII5sBuiq/E
- vnQRj1guo22wTfl0k/z+9jtkT0QyEsLmTLzVwT0D04LcDj7P8eD0HdL4X
- UmPJi4x9NyzBzd3xMaVZiAn8LNO18ZzSt1ucxkuXIlNBLKBqg11cOH4/f
- do8AJJv5ryStjXnXaTBv4wSqzS0iDWJg7TCsxOSRUkTjZVg80c7RRHhuM
- KlDkaeN03X/C64u4Px/2ZDa0+XTK2M2utFm1crJnHVI8L+mHuplxgRW1C
- tOq8CmKyaMFBZX3/CBCHNc7WsAUDacdfVvWFP3C4OLPOxSHOhIRu/EPvR
+ t=1691665304; x=1723201304;
+ h=date:from:to:subject:message-id;
+ bh=YCak/yKkUmPq0gD1MFG05r/aax2SWB1jdh285BRLO8Q=;
+ b=Ch4UvzDdaT/fx2rUDSJqgyJXC9EMkx1xsKRO4N4GnkNQkrgr/UJCR+WP
+ QRSoAt457zJXgeb7IztpL/z5tm2v3s8gAamqW9uKOwMISid+Zfui1Buej
+ Mk2jGjP+dX2kENq0ljKKEd7r/hEcVbTvOu/TOUgxmYLMJ9fiyB9bxsvi3
+ OQtv7VcAGXAgZQYHh2ophfJNlZkOm4beVKQcDFcXwacSbQWTozzUPbA1C
+ HKJnHsPyEvmY3yuoLuLhvQC0eI0cyoH1aPOFnXtuYQ698KeEz/FQt32zP
+ Q+ttutwZg3uJ8I0HWF0S8kN3OWG1EUpXzGieMlwZo9hnIlnI2AXcR5Rv2
  Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=jN3CEMb1
-Subject: [Intel-wired-lan] [PATCH net-next v1 3/7] ice: drop two params of
- ice_aq_move_sched_elems()
+ header.a=rsa-sha256 header.s=Intel header.b=Ch4UvzDd
+Subject: [Intel-wired-lan] [tnguy-next-queue:100GbE] BUILD SUCCESS
+ dbe7cf5639a6a462323ff6fc41bca779dfaf4587
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,266 +92,134 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Steven Zou <steven.zou@intel.com>, intel-wired-lan@lists.osuosl.org,
- linux-hardening@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Remove two arguments of ice_aq_move_sched_elems().
-Last of them was always NULL, and @grps_req was always 1.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git 100GbE
+branch HEAD: dbe7cf5639a6a462323ff6fc41bca779dfaf4587  ice: add documentation for FW logging
 
-Assuming @grps_req to be one, allows us to use DEFINE_FLEX() macro,
-what removes some need for heap allocations.
+elapsed time: 725m
 
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
----
-add/remove: 0/0 grow/shrink: 1/6 up/down: 46/-261 (-215)
----
- drivers/net/ethernet/intel/ice/ice_lag.c   | 48 ++++++----------------
- drivers/net/ethernet/intel/ice/ice_sched.c | 30 ++++----------
- drivers/net/ethernet/intel/ice/ice_sched.h |  6 +--
- 3 files changed, 23 insertions(+), 61 deletions(-)
+configs tested: 106
+configs skipped: 5
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
-index 36b7044717e8..84bfa49f1bf8 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.c
-@@ -432,10 +432,11 @@ static void
- ice_lag_move_vf_node_tc(struct ice_lag *lag, u8 oldport, u8 newport,
- 			u16 vsi_num, u8 tc)
- {
--	u16 numq, valq, buf_size, num_moved, qbuf_size;
-+	DEFINE_FLEX(struct ice_aqc_move_elem, buf, teid, 1);
- 	struct device *dev = ice_pf_to_dev(lag->pf);
-+	u16 numq, valq, num_moved, qbuf_size;
-+	u16 buf_size = const_flex_size(buf);
- 	struct ice_aqc_cfg_txqs_buf *qbuf;
--	struct ice_aqc_move_elem *buf;
- 	struct ice_sched_node *n_prt;
- 	struct ice_hw *new_hw = NULL;
- 	__le32 teid, parent_teid;
-@@ -507,26 +508,17 @@ ice_lag_move_vf_node_tc(struct ice_lag *lag, u8 oldport, u8 newport,
- 		goto resume_traffic;
- 
- 	/* Move Vf's VSI node for this TC to newport's scheduler tree */
--	buf_size = struct_size(buf, teid, 1);
--	buf = kzalloc(buf_size, GFP_KERNEL);
--	if (!buf) {
--		dev_warn(dev, "Failure to alloc memory for VF node failover\n");
--		goto resume_traffic;
--	}
--
- 	buf->hdr.src_parent_teid = parent_teid;
- 	buf->hdr.dest_parent_teid = n_prt->info.node_teid;
- 	buf->hdr.num_elems = cpu_to_le16(1);
- 	buf->hdr.mode = ICE_AQC_MOVE_ELEM_MODE_KEEP_OWN;
- 	buf->teid[0] = teid;
- 
--	if (ice_aq_move_sched_elems(&lag->pf->hw, 1, buf, buf_size, &num_moved,
--				    NULL))
-+	if (ice_aq_move_sched_elems(&lag->pf->hw, buf, buf_size, &num_moved))
- 		dev_warn(dev, "Failure to move VF nodes for failover\n");
- 	else
- 		ice_sched_update_parent(n_prt, ctx->sched.vsi_node[tc]);
- 
--	kfree(buf);
- 	goto resume_traffic;
- 
- qbuf_err:
-@@ -757,10 +749,11 @@ static void
- ice_lag_reclaim_vf_tc(struct ice_lag *lag, struct ice_hw *src_hw, u16 vsi_num,
- 		      u8 tc)
- {
--	u16 numq, valq, buf_size, num_moved, qbuf_size;
-+	DEFINE_FLEX(struct ice_aqc_move_elem, buf, teid, 1);
- 	struct device *dev = ice_pf_to_dev(lag->pf);
-+	u16 numq, valq, num_moved, qbuf_size;
-+	u16 buf_size = const_flex_size(buf);
- 	struct ice_aqc_cfg_txqs_buf *qbuf;
--	struct ice_aqc_move_elem *buf;
- 	struct ice_sched_node *n_prt;
- 	__le32 teid, parent_teid;
- 	struct ice_vsi_ctx *ctx;
-@@ -822,26 +815,17 @@ ice_lag_reclaim_vf_tc(struct ice_lag *lag, struct ice_hw *src_hw, u16 vsi_num,
- 		goto resume_reclaim;
- 
- 	/* Move node to new parent */
--	buf_size = struct_size(buf, teid, 1);
--	buf = kzalloc(buf_size, GFP_KERNEL);
--	if (!buf) {
--		dev_warn(dev, "Failure to alloc memory for VF node failover\n");
--		goto resume_reclaim;
--	}
--
- 	buf->hdr.src_parent_teid = parent_teid;
- 	buf->hdr.dest_parent_teid = n_prt->info.node_teid;
- 	buf->hdr.num_elems = cpu_to_le16(1);
- 	buf->hdr.mode = ICE_AQC_MOVE_ELEM_MODE_KEEP_OWN;
- 	buf->teid[0] = teid;
- 
--	if (ice_aq_move_sched_elems(&lag->pf->hw, 1, buf, buf_size, &num_moved,
--				    NULL))
-+	if (ice_aq_move_sched_elems(&lag->pf->hw, buf, buf_size, &num_moved))
- 		dev_warn(dev, "Failure to move VF nodes for LAG reclaim\n");
- 	else
- 		ice_sched_update_parent(n_prt, ctx->sched.vsi_node[tc]);
- 
--	kfree(buf);
- 	goto resume_reclaim;
- 
- reclaim_qerr:
-@@ -1797,10 +1781,11 @@ static void
- ice_lag_move_vf_nodes_tc_sync(struct ice_lag *lag, struct ice_hw *dest_hw,
- 			      u16 vsi_num, u8 tc)
- {
--	u16 numq, valq, buf_size, num_moved, qbuf_size;
-+	DEFINE_FLEX(struct ice_aqc_move_elem, buf, teid, 1);
- 	struct device *dev = ice_pf_to_dev(lag->pf);
-+	u16 numq, valq, num_moved, qbuf_size;
-+	u16 buf_size = const_flex_size(buf);
- 	struct ice_aqc_cfg_txqs_buf *qbuf;
--	struct ice_aqc_move_elem *buf;
- 	struct ice_sched_node *n_prt;
- 	__le32 teid, parent_teid;
- 	struct ice_vsi_ctx *ctx;
-@@ -1858,26 +1843,17 @@ ice_lag_move_vf_nodes_tc_sync(struct ice_lag *lag, struct ice_hw *dest_hw,
- 		goto resume_sync;
- 
- 	/* Move node to new parent */
--	buf_size = struct_size(buf, teid, 1);
--	buf = kzalloc(buf_size, GFP_KERNEL);
--	if (!buf) {
--		dev_warn(dev, "Failure to alloc for VF node move in reset rebuild\n");
--		goto resume_sync;
--	}
--
- 	buf->hdr.src_parent_teid = parent_teid;
- 	buf->hdr.dest_parent_teid = n_prt->info.node_teid;
- 	buf->hdr.num_elems = cpu_to_le16(1);
- 	buf->hdr.mode = ICE_AQC_MOVE_ELEM_MODE_KEEP_OWN;
- 	buf->teid[0] = teid;
- 
--	if (ice_aq_move_sched_elems(&lag->pf->hw, 1, buf, buf_size, &num_moved,
--				    NULL))
-+	if (ice_aq_move_sched_elems(&lag->pf->hw, buf, buf_size, &num_moved))
- 		dev_warn(dev, "Failure to move VF nodes for LAG reset rebuild\n");
- 	else
- 		ice_sched_update_parent(n_prt, ctx->sched.vsi_node[tc]);
- 
--	kfree(buf);
- 	goto resume_sync;
- 
- sync_qerr:
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.c b/drivers/net/ethernet/intel/ice/ice_sched.c
-index 02b3a34b7698..e48db9da1c7e 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.c
-@@ -429,24 +429,20 @@ ice_aq_cfg_sched_elems(struct ice_hw *hw, u16 elems_req,
- }
- 
- /**
-- * ice_aq_move_sched_elems - move scheduler elements
-+ * ice_aq_move_sched_elems - move scheduler element (just 1 group)
-  * @hw: pointer to the HW struct
-- * @grps_req: number of groups to move
-  * @buf: pointer to buffer
-  * @buf_size: buffer size in bytes
-  * @grps_movd: returns total number of groups moved
-- * @cd: pointer to command details structure or NULL
-  *
-  * Move scheduling elements (0x0408)
-  */
- int
--ice_aq_move_sched_elems(struct ice_hw *hw, u16 grps_req,
--			struct ice_aqc_move_elem *buf, u16 buf_size,
--			u16 *grps_movd, struct ice_sq_cd *cd)
-+ice_aq_move_sched_elems(struct ice_hw *hw, struct ice_aqc_move_elem *buf,
-+			u16 buf_size, u16 *grps_movd)
- {
- 	return ice_aqc_send_sched_elem_cmd(hw, ice_aqc_opc_move_sched_elems,
--					   grps_req, (void *)buf, buf_size,
--					   grps_movd, cd);
-+					   1, buf, buf_size, grps_movd, NULL);
- }
- 
- /**
-@@ -2224,12 +2220,12 @@ int
- ice_sched_move_nodes(struct ice_port_info *pi, struct ice_sched_node *parent,
- 		     u16 num_items, u32 *list)
- {
--	struct ice_aqc_move_elem *buf;
-+	DEFINE_FLEX(struct ice_aqc_move_elem, buf, teid, 1);
-+	u16 buf_len = const_flex_size(buf);
- 	struct ice_sched_node *node;
- 	u16 i, grps_movd = 0;
- 	struct ice_hw *hw;
- 	int status = 0;
--	u16 buf_len;
- 
- 	hw = pi->hw;
- 
-@@ -2241,35 +2237,27 @@ ice_sched_move_nodes(struct ice_port_info *pi, struct ice_sched_node *parent,
- 	    hw->max_children[parent->tx_sched_layer])
- 		return -ENOSPC;
- 
--	buf_len = struct_size(buf, teid, 1);
--	buf = kzalloc(buf_len, GFP_KERNEL);
--	if (!buf)
--		return -ENOMEM;
--
- 	for (i = 0; i < num_items; i++) {
- 		node = ice_sched_find_node_by_teid(pi->root, list[i]);
- 		if (!node) {
- 			status = -EINVAL;
--			goto move_err_exit;
-+			break;
- 		}
- 
- 		buf->hdr.src_parent_teid = node->info.parent_teid;
- 		buf->hdr.dest_parent_teid = parent->info.node_teid;
- 		buf->teid[0] = node->info.node_teid;
- 		buf->hdr.num_elems = cpu_to_le16(1);
--		status = ice_aq_move_sched_elems(hw, 1, buf, buf_len,
--						 &grps_movd, NULL);
-+		status = ice_aq_move_sched_elems(hw, buf, buf_len, &grps_movd);
- 		if (status && grps_movd != 1) {
- 			status = -EIO;
--			goto move_err_exit;
-+			break;
- 		}
- 
- 		/* update the SW DB */
- 		ice_sched_update_parent(parent, node);
- 	}
- 
--move_err_exit:
--	kfree(buf);
- 	return status;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index 8bd26353d76a..dc24bf55ff05 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -165,10 +165,8 @@ ice_sched_add_nodes_to_layer(struct ice_port_info *pi,
- 			     u16 *num_nodes_added);
- void ice_sched_replay_agg_vsi_preinit(struct ice_hw *hw);
- void ice_sched_replay_agg(struct ice_hw *hw);
--int
--ice_aq_move_sched_elems(struct ice_hw *hw, u16 grps_req,
--			struct ice_aqc_move_elem *buf, u16 buf_size,
--			u16 *grps_movd, struct ice_sq_cd *cd);
-+int ice_aq_move_sched_elems(struct ice_hw *hw, struct ice_aqc_move_elem *buf,
-+			    u16 buf_size, u16 *grps_movd);
- int ice_replay_vsi_agg(struct ice_hw *hw, u16 vsi_handle);
- int ice_sched_replay_q_bw(struct ice_port_info *pi, struct ice_q_ctx *q_ctx);
- #endif /* _ICE_SCHED_H_ */
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r001-20230809   gcc  
+alpha                randconfig-r025-20230809   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r043-20230809   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                  randconfig-r046-20230809   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r022-20230809   gcc  
+hexagon              randconfig-r033-20230809   clang
+hexagon              randconfig-r041-20230809   clang
+hexagon              randconfig-r045-20230809   clang
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-r004-20230809   gcc  
+i386         buildonly-randconfig-r005-20230809   gcc  
+i386         buildonly-randconfig-r006-20230809   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                 randconfig-i001-20230809   gcc  
+i386                 randconfig-i002-20230809   gcc  
+i386                 randconfig-i003-20230809   gcc  
+i386                 randconfig-i004-20230809   gcc  
+i386                 randconfig-i005-20230809   gcc  
+i386                 randconfig-i006-20230809   gcc  
+i386                 randconfig-i011-20230809   clang
+i386                 randconfig-i012-20230809   clang
+i386                 randconfig-i013-20230809   clang
+i386                 randconfig-i014-20230809   clang
+i386                 randconfig-i015-20230809   clang
+i386                 randconfig-i016-20230809   clang
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch            randconfig-r026-20230809   gcc  
+m68k                             allmodconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+m68k                 randconfig-r011-20230809   gcc  
+m68k                 randconfig-r016-20230809   gcc  
+m68k                 randconfig-r034-20230809   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+nios2                               defconfig   gcc  
+nios2                randconfig-r035-20230809   gcc  
+openrisc             randconfig-r014-20230809   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc               randconfig-r004-20230809   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r042-20230809   clang
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r044-20230809   clang
+sh                               allmodconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r003-20230809   gcc  
+sparc                randconfig-r006-20230809   gcc  
+sparc                randconfig-r036-20230809   gcc  
+sparc64              randconfig-r005-20230809   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-r001-20230809   gcc  
+x86_64       buildonly-randconfig-r002-20230809   gcc  
+x86_64       buildonly-randconfig-r003-20230809   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-r012-20230809   clang
+x86_64               randconfig-r023-20230809   clang
+x86_64               randconfig-x001-20230809   clang
+x86_64               randconfig-x002-20230809   clang
+x86_64               randconfig-x003-20230809   clang
+x86_64               randconfig-x004-20230809   clang
+x86_64               randconfig-x005-20230809   clang
+x86_64               randconfig-x006-20230809   clang
+x86_64               randconfig-x011-20230809   gcc  
+x86_64               randconfig-x012-20230809   gcc  
+x86_64               randconfig-x013-20230809   gcc  
+x86_64               randconfig-x014-20230809   gcc  
+x86_64               randconfig-x015-20230809   gcc  
+x86_64               randconfig-x016-20230809   gcc  
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
+xtensa               randconfig-r002-20230809   gcc  
+xtensa               randconfig-r013-20230809   gcc  
+xtensa               randconfig-r015-20230809   gcc  
+xtensa               randconfig-r021-20230809   gcc  
+
 -- 
-2.40.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
