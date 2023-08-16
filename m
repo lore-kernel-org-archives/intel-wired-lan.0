@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41A92C2FC0E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Aug 2023 00:12:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79708C2FC06
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Aug 2023 00:12:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F15684177D;
-	Thu, 17 Aug 2023 00:12:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F15684177D
+	by smtp2.osuosl.org (Postfix) with ESMTP id 350BE4177F;
+	Thu, 17 Aug 2023 00:12:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 350BE4177F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692231159;
-	bh=MZQba8s0DHkfWZ7Ys92Z2RG2zl9PIbEJcyS4g3VktPA=;
+	s=default; t=1692231163;
+	bh=l9AwiDmQfxb0NOUwHHOOd2LpQnTpElD48i2MyfFM6PY=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=V8nxCQq93IA8zJD5AsYjipQDbAsNI9O7aF0/yfb9fTRwAoja/XjINDT7zk+N1XPtU
-	 r4ncADDmL4wNwTHTR7JohjcLJrmHM3bKnoa7WzOSA/J9tnUrJONHx+6+wOZl0h7waZ
-	 mseyfOu0dBo+93sUg2VyRw49IiIQxjL4hnNuHwmV5zgRKN/pzCruPfa3k3xNH+xZg2
-	 PRlxlKq7H2/rZP391K3RSB7sZT6cCk/krRlrXzmhMsMCWscjhpe8guh0S2vHTr72C4
-	 jGa4tNmuBf1Svqd4rwlW+baCescl9Ws9EteFgqcbtZBTkxzwjA0+p6/vRA7ZcgUy+F
-	 YZmuE6gqUW3cA==
+	b=IqqRYn3Q/Az1XEsh86ZFKQp1yCDg6HO50lMtBQccUQhQKKpxoFissT3bGWw9YfIDn
+	 a75W5fGKcLmfbabk3BGQowDszzOQeCzLlwcAnyJhk5wN9oah7axj9HWAD2D2CqhYCV
+	 v6pgWvxjIsn5t6IIGekM8A3vANjatYD+OuoV7i1mneMO4LifpDQGzq93SHJGkeDi1w
+	 BqHUhcoa94oQbHIH50IphTjvvJSSpxCj2D99SZSKb1YWL+eds9+pGq2waPHe9or/Q8
+	 T7fK9rwnb//A97WOr5ZQXS187xLZtM88cu+xJqyNj2ebLnXP1Naum3EVr2e6VCPeMZ
+	 mzKpGluUBiQNg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id O3HGZTVmntaS; Thu, 17 Aug 2023 00:12:38 +0000 (UTC)
+	with ESMTP id WZeHA1mDDyUi; Thu, 17 Aug 2023 00:12:42 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B5CA441795;
-	Thu, 17 Aug 2023 00:12:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B5CA441795
+	by smtp2.osuosl.org (Postfix) with ESMTP id 1534D41788;
+	Thu, 17 Aug 2023 00:12:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1534D41788
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 386881BF390
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:12:25 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 402E11BF390
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:12:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 028574177E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:12:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 028574177E
+ by smtp2.osuosl.org (Postfix) with ESMTP id 12A3F41788
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:12:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 12A3F41788
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NeJ4TwkVWR8r for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id qeNdKJ7Z5Jqd for <intel-wired-lan@lists.osuosl.org>;
  Thu, 17 Aug 2023 00:12:23 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 269C941779
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:12:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 269C941779
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="371570649"
-X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="371570649"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id F35F24177D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:12:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F35F24177D
+X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="371570655"
+X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="371570655"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Aug 2023 17:04:52 -0700
+ 16 Aug 2023 17:04:53 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="824422130"
-X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="824422130"
+X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="824422135"
+X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="824422135"
 Received: from unknown (HELO localhost.jf.intel.com) ([10.166.244.168])
- by FMSMGA003.fm.intel.com with ESMTP; 16 Aug 2023 17:04:50 -0700
+ by FMSMGA003.fm.intel.com with ESMTP; 16 Aug 2023 17:04:51 -0700
 From: Paul Greenwalt <paul.greenwalt@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 16 Aug 2023 16:57:14 -0700
-Message-Id: <20230816235719.1120726-3-paul.greenwalt@intel.com>
+Date: Wed, 16 Aug 2023 16:57:15 -0700
+Message-Id: <20230816235719.1120726-4-paul.greenwalt@intel.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230816235719.1120726-1-paul.greenwalt@intel.com>
 References: <20230816235719.1120726-1-paul.greenwalt@intel.com>
@@ -69,19 +69,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1692231143; x=1723767143;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=Hem3nop3hb+XM0SehIZtCUmO/AkFR1Py/BGUtfeAWto=;
- b=R6TRgZyESJ3DWGcoHeNLEDxkMszS30Cvj2zaYAyGrih6Pfr4uYjh2P2V
- yd324uEjHdoVscv9ueFZHkqXvMlG3d30F9A2PNWtGaP+a0p2l6as6MapR
- 855pRN56MHWBTfLX20eLJ9TKMNLlVhpwsC1dPcKP9WqZJW0+CXvHEFhmu
- uczAvMnP3EX4iDG5t6oVykT43xLcHd/rM/T2TIXdNUFlTFBMXzKqOXh65
- 8UHSEBTr/yfas+5G0C1PTPOed3KIyX23Y9PTAeo7N2OS06H8gC9ztrQwU
- 4hg8Mh9N8Ot0VD6POmBhYieQKm62aXePGOO11lpws+ynV7ev7XY+R6of5
+ bh=8UWDMSET60yRUlq9+3LE6ATf4kCHTJiKH91xV9MfxoM=;
+ b=Kns1nHLRspFVy06jqSOGC/57vaUXdSfb88EF4AMdblTesmfgiioBQMIl
+ CcCeEBGsG9JQ7wRQOtpeeaAqclm0eefD+IwUWHah17m/C7mOlAPNyfZJJ
+ Ysvgep8Ommqwtczbd2xInHuaia3Is8zJ2RhGK+/JXbg5j/mRMSdtGh/KN
+ dBCYF9sMSGHtQDDuwbUcQcqSKjNJ2M9Ps4mj5NnFjKIa9gmfObHoIBREC
+ 1hUI6sZzXUSkC1cs7NWRtPf5x4ZvJ3P55sbJ2OCjZaek8A+A8bAGJErPy
+ N0MJ4cCRzTZQsqHU8iIhL9Hl2Lo26OR/EZryW44rvrEvq2xjPHcjS8WBh
  Q==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=R6TRgZyE
-Subject: [Intel-wired-lan] [PATCH iwl-next 2/7] ice: Refactor finding
- advertised link speed
+ header.a=rsa-sha256 header.s=Intel header.b=Kns1nHLR
+Subject: [Intel-wired-lan] [PATCH iwl-next 3/7] ice: Add 200G speed/phy type
+ use
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,240 +94,154 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Pawel Chmielewski <pawel.chmielewski@intel.com>
+From: Alice Michael <alice.michael@intel.com>
 
-Refactor ice_get_link_ksettings by using lightweight static link mode
-maps, populated at module init. This is an efficient solution introduced
-in commit 1d4e4ecccb11 ("qede: populate supported link modes maps on
-module init") for qede driver
+Add the support for 200G phy speeds and the mapping for their
+advertisement in link. Add the new PHY type bits for AQ command, as
+needed for 200G E830 controllers.
 
-Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Suggested-by : Alexander Lobakin <aleksander.lobakin@intel.com>
+Signed-off-by: Alice Michael <alice.michael@intel.com>
+Co-developed-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
 Signed-off-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
 Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice.h         |   1 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 166 +++++++++++--------
- drivers/net/ethernet/intel/ice/ice_main.c    |   2 +
- 3 files changed, 104 insertions(+), 65 deletions(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   | 11 +++++++-
+ drivers/net/ethernet/intel/ice/ice_common.c   |  1 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  | 26 +++++++++++++++++--
+ drivers/net/ethernet/intel/ice/ice_ethtool.h  |  8 ++++++
+ 4 files changed, 43 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 5d307bacf7c6..1030a4d1d94e 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -974,6 +974,7 @@ int ice_stop(struct net_device *netdev);
- void ice_service_task_schedule(struct ice_pf *pf);
- int ice_load(struct ice_pf *pf);
- void ice_unload(struct ice_pf *pf);
-+void ice_adv_lnk_speed_maps_init(void);
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 90616750e779..d28c610b004d 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -1099,7 +1099,15 @@ struct ice_aqc_get_phy_caps {
+ #define ICE_PHY_TYPE_HIGH_100G_CAUI2		BIT_ULL(2)
+ #define ICE_PHY_TYPE_HIGH_100G_AUI2_AOC_ACC	BIT_ULL(3)
+ #define ICE_PHY_TYPE_HIGH_100G_AUI2		BIT_ULL(4)
+-#define ICE_PHY_TYPE_HIGH_MAX_INDEX		4
++#define ICE_PHY_TYPE_HIGH_200G_CR4_PAM4		BIT_ULL(5)
++#define ICE_PHY_TYPE_HIGH_200G_SR4		BIT_ULL(6)
++#define ICE_PHY_TYPE_HIGH_200G_FR4		BIT_ULL(7)
++#define ICE_PHY_TYPE_HIGH_200G_LR4		BIT_ULL(8)
++#define ICE_PHY_TYPE_HIGH_200G_DR4		BIT_ULL(9)
++#define ICE_PHY_TYPE_HIGH_200G_KR4_PAM4		BIT_ULL(10)
++#define ICE_PHY_TYPE_HIGH_200G_AUI4_AOC_ACC	BIT_ULL(11)
++#define ICE_PHY_TYPE_HIGH_200G_AUI4		BIT_ULL(12)
++#define ICE_PHY_TYPE_HIGH_MAX_INDEX		12
+ 
+ struct ice_aqc_get_phy_caps_data {
+ 	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
+@@ -1319,6 +1327,7 @@ struct ice_aqc_get_link_status_data {
+ #define ICE_AQ_LINK_SPEED_40GB		BIT(8)
+ #define ICE_AQ_LINK_SPEED_50GB		BIT(9)
+ #define ICE_AQ_LINK_SPEED_100GB		BIT(10)
++#define ICE_AQ_LINK_SPEED_200GB		BIT(11)
+ #define ICE_AQ_LINK_SPEED_UNKNOWN	BIT(15)
+ 	__le32 reserved3; /* Aligns next field to 8-byte boundary */
+ 	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index a6c99ba31dc9..7992eaab94fe 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -5379,6 +5379,7 @@ static const u32 ice_aq_to_link_speed[] = {
+ 	SPEED_40000,
+ 	SPEED_50000,
+ 	SPEED_100000,	/* BIT(10) */
++	SPEED_200000,
+ };
  
  /**
-  * ice_set_rdma_cap - enable RDMA support
 diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index d3cb08e66dcb..9a858d8ae26e 100644
+index 9a858d8ae26e..a1a64237cf19 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -345,6 +345,100 @@ static const struct ice_priv_flag ice_gstrings_priv_flags[] = {
+@@ -400,6 +400,14 @@ static const u32 ice_adv_lnk_speed_100000[] __initconst = {
+ 	ETHTOOL_LINK_MODE_100000baseKR2_Full_BIT,
+ };
  
- #define ICE_PRIV_FLAG_ARRAY_SIZE	ARRAY_SIZE(ice_gstrings_priv_flags)
++static const u32 ice_adv_lnk_speed_200000[] __initconst = {
++	ETHTOOL_LINK_MODE_200000baseKR4_Full_BIT,
++	ETHTOOL_LINK_MODE_200000baseSR4_Full_BIT,
++	ETHTOOL_LINK_MODE_200000baseLR4_ER4_FR4_Full_BIT,
++	ETHTOOL_LINK_MODE_200000baseDR4_Full_BIT,
++	ETHTOOL_LINK_MODE_200000baseCR4_Full_BIT,
++};
++
+ struct ice_adv_lnk_speed_map {
+ 	__ETHTOOL_DECLARE_LINK_MODE_MASK(caps);
+ 	const u32	*cap_arr;
+@@ -424,6 +432,7 @@ static struct ice_adv_lnk_speed_map ice_adv_lnk_speed_maps[] __ro_after_init = {
+ 	ICE_ADV_LNK_SPEED_MAP(40000, 40GB),
+ 	ICE_ADV_LNK_SPEED_MAP(50000, 50GB),
+ 	ICE_ADV_LNK_SPEED_MAP(100000, 100GB),
++	ICE_ADV_LNK_SPEED_MAP(200000, 200GB),
+ };
  
-+static const u32 ice_adv_lnk_speed_100[] __initconst = {
-+	ETHTOOL_LINK_MODE_100baseT_Full_BIT,
-+};
+ void __init ice_adv_lnk_speed_maps_init(void)
+@@ -1732,6 +1741,15 @@ ice_get_ethtool_stats(struct net_device *netdev,
+ 					 ICE_PHY_TYPE_HIGH_100G_AUI2_AOC_ACC | \
+ 					 ICE_PHY_TYPE_HIGH_100G_AUI2)
+ 
++#define ICE_PHY_TYPE_HIGH_MASK_200G	(ICE_PHY_TYPE_HIGH_200G_CR4_PAM4 | \
++					 ICE_PHY_TYPE_HIGH_200G_SR4 | \
++					 ICE_PHY_TYPE_HIGH_200G_FR4 | \
++					 ICE_PHY_TYPE_HIGH_200G_LR4 | \
++					 ICE_PHY_TYPE_HIGH_200G_DR4 | \
++					 ICE_PHY_TYPE_HIGH_200G_KR4_PAM4 | \
++					 ICE_PHY_TYPE_HIGH_200G_AUI4_AOC_ACC | \
++					 ICE_PHY_TYPE_HIGH_200G_AUI4)
 +
-+static const u32 ice_adv_lnk_speed_1000[] __initconst = {
-+	ETHTOOL_LINK_MODE_1000baseX_Full_BIT,
-+	ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
-+	ETHTOOL_LINK_MODE_1000baseKX_Full_BIT,
-+};
-+
-+static const u32 ice_adv_lnk_speed_2500[] __initconst = {
-+	ETHTOOL_LINK_MODE_2500baseT_Full_BIT,
-+	ETHTOOL_LINK_MODE_2500baseX_Full_BIT,
-+};
-+
-+static const u32 ice_adv_lnk_speed_5000[] __initconst = {
-+	ETHTOOL_LINK_MODE_5000baseT_Full_BIT,
-+};
-+
-+static const u32 ice_adv_lnk_speed_10000[] __initconst = {
-+	ETHTOOL_LINK_MODE_10000baseT_Full_BIT,
-+	ETHTOOL_LINK_MODE_10000baseKR_Full_BIT,
-+	ETHTOOL_LINK_MODE_10000baseSR_Full_BIT,
-+	ETHTOOL_LINK_MODE_10000baseLR_Full_BIT,
-+};
-+
-+static const u32 ice_adv_lnk_speed_25000[] __initconst = {
-+	ETHTOOL_LINK_MODE_25000baseCR_Full_BIT,
-+	ETHTOOL_LINK_MODE_25000baseSR_Full_BIT,
-+	ETHTOOL_LINK_MODE_25000baseKR_Full_BIT,
-+};
-+
-+static const u32 ice_adv_lnk_speed_40000[] __initconst = {
-+	ETHTOOL_LINK_MODE_40000baseCR4_Full_BIT,
-+	ETHTOOL_LINK_MODE_40000baseSR4_Full_BIT,
-+	ETHTOOL_LINK_MODE_40000baseLR4_Full_BIT,
-+	ETHTOOL_LINK_MODE_40000baseKR4_Full_BIT,
-+};
-+
-+static const u32 ice_adv_lnk_speed_50000[] __initconst = {
-+	ETHTOOL_LINK_MODE_50000baseCR2_Full_BIT,
-+	ETHTOOL_LINK_MODE_50000baseKR2_Full_BIT,
-+	ETHTOOL_LINK_MODE_50000baseSR2_Full_BIT,
-+};
-+
-+static const u32 ice_adv_lnk_speed_100000[] __initconst = {
-+	ETHTOOL_LINK_MODE_100000baseCR4_Full_BIT,
-+	ETHTOOL_LINK_MODE_100000baseSR4_Full_BIT,
-+	ETHTOOL_LINK_MODE_100000baseLR4_ER4_Full_BIT,
-+	ETHTOOL_LINK_MODE_100000baseKR4_Full_BIT,
-+	ETHTOOL_LINK_MODE_100000baseCR2_Full_BIT,
-+	ETHTOOL_LINK_MODE_100000baseSR2_Full_BIT,
-+	ETHTOOL_LINK_MODE_100000baseKR2_Full_BIT,
-+};
-+
-+struct ice_adv_lnk_speed_map {
-+	__ETHTOOL_DECLARE_LINK_MODE_MASK(caps);
-+	const u32	*cap_arr;
-+	u16		arr_size;
-+	u16		aqc_link_speed;
-+};
-+
-+#define ICE_ADV_LNK_SPEED_MAP(value, aqc_value)			\
-+{								\
-+	.cap_arr	= ice_adv_lnk_speed_##value,		\
-+	.arr_size	= ARRAY_SIZE(ice_adv_lnk_speed_##value),\
-+	.aqc_link_speed	= ICE_AQ_LINK_SPEED_##aqc_value,	\
-+}
-+
-+static struct ice_adv_lnk_speed_map ice_adv_lnk_speed_maps[] __ro_after_init = {
-+	ICE_ADV_LNK_SPEED_MAP(100, 100MB),
-+	ICE_ADV_LNK_SPEED_MAP(1000, 1000MB),
-+	ICE_ADV_LNK_SPEED_MAP(2500, 2500MB),
-+	ICE_ADV_LNK_SPEED_MAP(5000, 5GB),
-+	ICE_ADV_LNK_SPEED_MAP(10000, 10GB),
-+	ICE_ADV_LNK_SPEED_MAP(25000, 25GB),
-+	ICE_ADV_LNK_SPEED_MAP(40000, 40GB),
-+	ICE_ADV_LNK_SPEED_MAP(50000, 50GB),
-+	ICE_ADV_LNK_SPEED_MAP(100000, 100GB),
-+};
-+
-+void __init ice_adv_lnk_speed_maps_init(void)
-+{
-+	u32 i;
-+
-+	for (i = 0; i < ARRAY_SIZE(ice_adv_lnk_speed_maps); i++) {
-+		struct ice_adv_lnk_speed_map *map = &ice_adv_lnk_speed_maps[i];
-+
-+		linkmode_set_bit_array(map->cap_arr, map->arr_size, map->caps);
-+		map->cap_arr = NULL;
-+		map->arr_size = 0;
-+	}
-+}
-+
- static void
- __ice_get_drvinfo(struct net_device *netdev, struct ethtool_drvinfo *drvinfo,
- 		  struct ice_vsi *vsi)
-@@ -2014,73 +2108,15 @@ ice_get_link_ksettings(struct net_device *netdev,
- static u16
- ice_ksettings_find_adv_link_speed(const struct ethtool_link_ksettings *ks)
+ /**
+  * ice_mask_min_supported_speeds
+  * @hw: pointer to the HW structure
+@@ -1746,8 +1764,9 @@ ice_mask_min_supported_speeds(struct ice_hw *hw,
+ 			      u64 phy_types_high, u64 *phy_types_low)
  {
-+	const struct ice_adv_lnk_speed_map *map;
- 	u16 adv_link_speed = 0;
-+	u32 i;
+ 	/* if QSFP connection with 100G speed, minimum supported speed is 25G */
+-	if (*phy_types_low & ICE_PHY_TYPE_LOW_MASK_100G ||
+-	    phy_types_high & ICE_PHY_TYPE_HIGH_MASK_100G)
++	if ((*phy_types_low & ICE_PHY_TYPE_LOW_MASK_100G) ||
++	    (phy_types_high & ICE_PHY_TYPE_HIGH_MASK_100G) ||
++	    (phy_types_high & ICE_PHY_TYPE_HIGH_MASK_200G))
+ 		*phy_types_low &= ~ICE_PHY_TYPE_LOW_MASK_MIN_25G;
+ 	else if (!ice_is_100m_speed_supported(hw))
+ 		*phy_types_low &= ~ICE_PHY_TYPE_LOW_MASK_MIN_1G;
+@@ -1890,6 +1909,9 @@ ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
+ 	ice_phy_type_to_ethtool(netdev, ks);
  
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  100baseT_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_100MB;
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  1000baseX_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  1000baseT_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  1000baseKX_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_1000MB;
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  2500baseT_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  2500baseX_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_2500MB;
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  5000baseT_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_5GB;
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  10000baseT_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  10000baseKR_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  10000baseSR_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  10000baseLR_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_10GB;
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  25000baseCR_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  25000baseSR_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  25000baseKR_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_25GB;
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  40000baseCR4_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  40000baseSR4_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  40000baseLR4_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  40000baseKR4_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_40GB;
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  50000baseCR2_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  50000baseKR2_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  50000baseSR2_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_50GB;
--	if (ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  100000baseCR4_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  100000baseSR4_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  100000baseLR4_ER4_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  100000baseKR4_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  100000baseCR2_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  100000baseSR2_Full) ||
--	    ethtool_link_ksettings_test_link_mode(ks, advertising,
--						  100000baseKR2_Full))
--		adv_link_speed |= ICE_AQ_LINK_SPEED_100GB;
-+	for (i = 0; i < ARRAY_SIZE(ice_adv_lnk_speed_maps); i++) {
-+		map = ice_adv_lnk_speed_maps + i;
-+		if (linkmode_intersects(ks->link_modes.advertising, map->caps))
-+			adv_link_speed |= map->aqc_link_speed;
-+	}
+ 	switch (link_info->link_speed) {
++	case ICE_AQ_LINK_SPEED_200GB:
++		ks->base.speed = SPEED_200000;
++		break;
+ 	case ICE_AQ_LINK_SPEED_100GB:
+ 		ks->base.speed = SPEED_100000;
+ 		break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.h b/drivers/net/ethernet/intel/ice/ice_ethtool.h
+index b403ee79cd5e..b88e3da06f13 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.h
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.h
+@@ -100,6 +100,14 @@ phy_type_high_lkup[] = {
+ 	[2] = ICE_PHY_TYPE(100GB, 100000baseCR2_Full),
+ 	[3] = ICE_PHY_TYPE(100GB, 100000baseSR2_Full),
+ 	[4] = ICE_PHY_TYPE(100GB, 100000baseCR2_Full),
++	[5] = ICE_PHY_TYPE(200GB, 200000baseCR4_Full),
++	[6] = ICE_PHY_TYPE(200GB, 200000baseSR4_Full),
++	[7] = ICE_PHY_TYPE(200GB, 200000baseLR4_ER4_FR4_Full),
++	[8] = ICE_PHY_TYPE(200GB, 200000baseLR4_ER4_FR4_Full),
++	[9] = ICE_PHY_TYPE(200GB, 200000baseDR4_Full),
++	[10] = ICE_PHY_TYPE(200GB, 200000baseKR4_Full),
++	[11] = ICE_PHY_TYPE(200GB, 200000baseSR4_Full),
++	[12] = ICE_PHY_TYPE(200GB, 200000baseCR4_Full),
+ };
  
- 	return adv_link_speed;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 356bf8884a63..ffed5543a5aa 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -5672,6 +5672,8 @@ static int __init ice_module_init(void)
- 	pr_info("%s\n", ice_driver_string);
- 	pr_info("%s\n", ice_copyright);
- 
-+	ice_adv_lnk_speed_maps_init();
-+
- 	ice_wq = alloc_workqueue("%s", 0, 0, KBUILD_MODNAME);
- 	if (!ice_wq) {
- 		pr_err("Failed to create workqueue\n");
+ #endif /* !_ICE_ETHTOOL_H_ */
 -- 
 2.39.2
 
