@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DE55C001E0
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Aug 2023 14:09:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB9BCC04A6A
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Aug 2023 14:09:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AE14441E4E;
-	Wed, 16 Aug 2023 14:09:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AE14441E4E
+	by smtp4.osuosl.org (Postfix) with ESMTP id 55BCD41B83;
+	Wed, 16 Aug 2023 14:09:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 55BCD41B83
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692194992;
-	bh=uu6eoQvq4OiAwIYcguJWaIV0CEzV375t5z4REqV8440=;
+	s=default; t=1692194997;
+	bh=IbsbMmCCIb0fpweNz3qo2Y3cl6dMH8xUUVgySFA+/+E=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Fc9Y9gUCfxWEP4G4mzhZarGtFF3alfVsE9R69cYmc67Zk3kTJQfoeOhdfGtvYzIx+
-	 b+s2IVQliD+sEGoHcntvm3KXG2h6aWyS4eZ/PQmYyZ3pruIgY4HrifOwWujgXmVsO3
-	 DqqfiuQcuG4vXwla1/DHmHEvcVLFlx9xJify2gdpK23D5LwbulxGzmje3TXQFa7Zb0
-	 PvQmH9meN/rkxLRNxz9l9olkqW1usUvrjYvDyJZnDumtJyxAfbFCdj3KWa9ej2Kix6
-	 0KhpyUOQ992nBDE8ZQlABL+9p/qG2IAPZhElcbLjvbAqJ9r0wKaexRQx+E67aAKeWS
-	 bYx5AAIjDb3zg==
+	b=J/xPFUi+zX2Ub8eKNNoH8fr21zV6T0021al30VPIdxZo2v0glCXznxLcTB6uffMRO
+	 cS52r4iXpmnSzNhomOavr50h4NqLMDsw9tZyXY8pF9KIwxOW+9htdzInNrrAmA18L+
+	 MDVAj8MMOzE4bMR6g02ppwKYaBJUHX6/iEuqyykEd272ZCj/72xkENXa76nflEoXT9
+	 Nutdwjc+9xExiJ1U7XEKPP4JMJBJyczgAtKKvih1fCYDLxvkbi+qIQNKJ69bFh75OG
+	 +EIK8mPPEb1y1DPW7ACiHqkTZ6dTiW6zzCOC4BcH6yAeHCFExpIzctfIyUSnnbhzp/
+	 imKl9Yg/3dxEA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IuY1kqRWLkEb; Wed, 16 Aug 2023 14:09:51 +0000 (UTC)
+	with ESMTP id 26WaCD_yrZH7; Wed, 16 Aug 2023 14:09:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8B6ED41B66;
-	Wed, 16 Aug 2023 14:09:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8B6ED41B66
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2885741DA4;
+	Wed, 16 Aug 2023 14:09:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2885741DA4
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 0913B1BF41B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:09:33 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1ACC41BF41B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:09:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8C9FE81EE0
+ by smtp1.osuosl.org (Postfix) with ESMTP id E2F6A8212E
  for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:09:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8C9FE81EE0
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E2F6A8212E
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id eBgoEBtentkw for <intel-wired-lan@lists.osuosl.org>;
- Wed, 16 Aug 2023 14:09:27 +0000 (UTC)
+ with ESMTP id hyFNKNfPjF4t for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 16 Aug 2023 14:09:28 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C056A8212E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:09:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C056A8212E
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="375312787"
-X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="375312787"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 0E88C82F4F
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:09:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0E88C82F4F
+X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="375312798"
+X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="375312798"
 Received: from fmsmga006.fm.intel.com ([10.253.24.20])
  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Aug 2023 07:09:27 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="980753075"
-X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="980753075"
+X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="980753078"
+X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="980753078"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga006.fm.intel.com with ESMTP; 16 Aug 2023 07:09:24 -0700
+ by fmsmga006.fm.intel.com with ESMTP; 16 Aug 2023 07:09:25 -0700
 Received: from pelor.igk.intel.com (pelor.igk.intel.com [10.123.220.13])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 71DFD34EF3;
- Wed, 16 Aug 2023 15:09:23 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 81AFF3542A;
+ Wed, 16 Aug 2023 15:09:24 +0100 (IST)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: Kees Cook <keescook@chromium.org>,
 	netdev@vger.kernel.org
-Date: Wed, 16 Aug 2023 10:06:21 -0400
-Message-Id: <20230816140623.452869-6-przemyslaw.kitszel@intel.com>
+Date: Wed, 16 Aug 2023 10:06:23 -0400
+Message-Id: <20230816140623.452869-8-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230816140623.452869-1-przemyslaw.kitszel@intel.com>
 References: <20230816140623.452869-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1692194967; x=1723730967;
+ t=1692194968; x=1723730968;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=4GBf2EESOi7onKw3vz0dKPSBTjhZKbd/0pu82xSmftQ=;
- b=Z4WeOrCsXJgtNV5BwOVyPQ9b9yr0v83BvFNTOlAlsQTXprEtStlWRDSz
- Tce+6sEil3RfSMZdwVk0or4c2ydYXAag6wEBS6borq87woAEj/O+F204l
- 4jU8qiPWQ7ypiACgNAHrhEWROSABzcon1mcIx2iXn9WkEEV6zBZSNA0g9
- 5OCIUmQMfUXFHmj2VcPexc7maWfN22U4QjWLr7LUwhoB03O+4zFF0wrxU
- kMT0dnOeWBy5sUt/mXhsYq1Xu1SKMgJNkBeSYIHlPbWs/83XNAez5XktF
- L8hNfZ6xtmi+XX0/DgGydPi1XlRA660vzQtUVdo5/4Q6ILgwjHZmHQgLC
- A==;
+ bh=TRp69XY4FgD35Ke7p9oOxP9n/vDaawa0zdcnhmIGV1M=;
+ b=hk0ZZmfJyBTyYyZd23Kyh2E15wG6VyWw9JDwv8wR2j8S0KmwHftcmfXN
+ RIyb+xzRfeZ+wCx1odMMkh5NixZifMjpSMZygJ5uB6tMRXYNf04kUpLIy
+ V7N4MaiFVRdagt+mcpcGukvaeB4nvWhYf8DcgASOQiTSpqEKwSbwYospS
+ XyXraLbFwGyfuxMow66q8pdpv6E7X/EK8Tt49kPv/H5XjLKSLNhHWSO37
+ f900ndpzwTwxMX/pSTRnQHhJ7X3G+rVeQG9eCAEOhGo1Uws8UIEbVQpfJ
+ 9+oUO08OAU9gcrGgzgJKE7Y1bqHgOsmHUVeZPmBdzUlFUHBxArJARe9/q
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Z4WeOrCs
-Subject: [Intel-wired-lan] [PATCH net-next v3 5/7] ice: make use of
- DEFINE_FLEX() for struct ice_aqc_add_tx_qgrp
+ header.a=rsa-sha256 header.s=Intel header.b=hk0ZZmfJ
+Subject: [Intel-wired-lan] [PATCH net-next v3 7/7] ice: make use of
+ DEFINE_FLEX() in ice_switch.c
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,147 +106,179 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Use DEFINE_FLEX() macro for 1-elem flex array use case
-of struct ice_aqc_add_tx_qgrp.
+Use DEFINE_FLEX() macro for 1-elem flex array members of ice_switch.c
 
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
-add/remove: 0/2 grow/shrink: 2/2 up/down: 220/-255 (-35)
+add/remove: 2/2 grow/shrink: 3/6 up/down: 489/-470 (19)
 ---
- drivers/net/ethernet/intel/ice/ice_lib.c | 23 +++++------------------
- drivers/net/ethernet/intel/ice/ice_xsk.c | 22 ++++++++--------------
- 2 files changed, 13 insertions(+), 32 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_switch.c | 63 +++++----------------
+ 1 file changed, 14 insertions(+), 49 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 927518fcad51..c005ee1006f1 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -1821,21 +1821,14 @@ int ice_vsi_cfg_single_rxq(struct ice_vsi *vsi, u16 q_idx)
- 
- int ice_vsi_cfg_single_txq(struct ice_vsi *vsi, struct ice_tx_ring **tx_rings, u16 q_idx)
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index a7afb612fe32..b5a1445ed256 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -1812,15 +1812,11 @@ ice_aq_alloc_free_vsi_list(struct ice_hw *hw, u16 *vsi_list_id,
+ 			   enum ice_sw_lkup_type lkup_type,
+ 			   enum ice_adminq_opc opc)
  {
--	struct ice_aqc_add_tx_qgrp *qg_buf;
--	int err;
-+	DEFINE_FLEX(struct ice_aqc_add_tx_qgrp, qg_buf, txqs, 1);
+-	struct ice_aqc_alloc_free_res_elem *sw_buf;
++	DEFINE_FLEX(struct ice_aqc_alloc_free_res_elem, sw_buf, elem, 1);
++	u16 buf_len = __struct_size(sw_buf);
+ 	struct ice_aqc_res_elem *vsi_ele;
+-	u16 buf_len;
+ 	int status;
  
- 	if (q_idx >= vsi->alloc_txq || !tx_rings || !tx_rings[q_idx])
- 		return -EINVAL;
- 
--	qg_buf = kzalloc(struct_size(qg_buf, txqs, 1), GFP_KERNEL);
--	if (!qg_buf)
+-	buf_len = struct_size(sw_buf, elem, 1);
+-	sw_buf = devm_kzalloc(ice_hw_to_dev(hw), buf_len, GFP_KERNEL);
+-	if (!sw_buf)
 -		return -ENOMEM;
--
- 	qg_buf->num_txqs = 1;
+ 	sw_buf->num_elems = cpu_to_le16(1);
  
--	err = ice_vsi_cfg_txq(vsi, tx_rings[q_idx], qg_buf);
--	kfree(qg_buf);
--	return err;
-+	return ice_vsi_cfg_txq(vsi, tx_rings[q_idx], qg_buf);
- }
- 
- /**
-@@ -1877,24 +1870,18 @@ int ice_vsi_cfg_rxqs(struct ice_vsi *vsi)
- static int
- ice_vsi_cfg_txqs(struct ice_vsi *vsi, struct ice_tx_ring **rings, u16 count)
- {
--	struct ice_aqc_add_tx_qgrp *qg_buf;
--	u16 q_idx = 0;
-+	DEFINE_FLEX(struct ice_aqc_add_tx_qgrp, qg_buf, txqs, 1);
- 	int err = 0;
--
--	qg_buf = kzalloc(struct_size(qg_buf, txqs, 1), GFP_KERNEL);
--	if (!qg_buf)
--		return -ENOMEM;
-+	u16 q_idx;
- 
- 	qg_buf->num_txqs = 1;
- 
- 	for (q_idx = 0; q_idx < count; q_idx++) {
- 		err = ice_vsi_cfg_txq(vsi, rings[q_idx], qg_buf);
- 		if (err)
--			goto err_cfg_txqs;
-+			break;
+ 	if (lkup_type == ICE_SW_LKUP_MAC ||
+@@ -1840,25 +1836,22 @@ ice_aq_alloc_free_vsi_list(struct ice_hw *hw, u16 *vsi_list_id,
+ 			sw_buf->res_type =
+ 				cpu_to_le16(ICE_AQC_RES_TYPE_VSI_LIST_PRUNE);
+ 	} else {
+-		status = -EINVAL;
+-		goto ice_aq_alloc_free_vsi_list_exit;
++		return -EINVAL;
  	}
  
--err_cfg_txqs:
--	kfree(qg_buf);
- 	return err;
- }
+ 	if (opc == ice_aqc_opc_free_res)
+ 		sw_buf->elem[0].e.sw_resp = cpu_to_le16(*vsi_list_id);
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_xsk.c b/drivers/net/ethernet/intel/ice/ice_xsk.c
-index 2a3f0834e139..99954508184f 100644
---- a/drivers/net/ethernet/intel/ice/ice_xsk.c
-+++ b/drivers/net/ethernet/intel/ice/ice_xsk.c
-@@ -217,61 +217,55 @@ static int ice_qp_dis(struct ice_vsi *vsi, u16 q_idx)
-  */
- static int ice_qp_ena(struct ice_vsi *vsi, u16 q_idx)
- {
--	struct ice_aqc_add_tx_qgrp *qg_buf;
-+	DEFINE_FLEX(struct ice_aqc_add_tx_qgrp, qg_buf, txqs, 1);
-+	u16 size = __struct_size(qg_buf);
- 	struct ice_q_vector *q_vector;
- 	struct ice_tx_ring *tx_ring;
- 	struct ice_rx_ring *rx_ring;
--	u16 size;
- 	int err;
+ 	status = ice_aq_alloc_free_res(hw, 1, sw_buf, buf_len, opc, NULL);
+ 	if (status)
+-		goto ice_aq_alloc_free_vsi_list_exit;
++		return status;
  
- 	if (q_idx >= vsi->num_rxq || q_idx >= vsi->num_txq)
- 		return -EINVAL;
- 
--	size = struct_size(qg_buf, txqs, 1);
--	qg_buf = kzalloc(size, GFP_KERNEL);
--	if (!qg_buf)
--		return -ENOMEM;
--
- 	qg_buf->num_txqs = 1;
- 
- 	tx_ring = vsi->tx_rings[q_idx];
- 	rx_ring = vsi->rx_rings[q_idx];
- 	q_vector = rx_ring->q_vector;
- 
- 	err = ice_vsi_cfg_txq(vsi, tx_ring, qg_buf);
- 	if (err)
--		goto free_buf;
-+		return err;
- 
- 	if (ice_is_xdp_ena_vsi(vsi)) {
- 		struct ice_tx_ring *xdp_ring = vsi->xdp_rings[q_idx];
- 
- 		memset(qg_buf, 0, size);
- 		qg_buf->num_txqs = 1;
- 		err = ice_vsi_cfg_txq(vsi, xdp_ring, qg_buf);
- 		if (err)
--			goto free_buf;
-+			return err;
- 		ice_set_ring_xdp(xdp_ring);
- 		ice_tx_xsk_pool(vsi, q_idx);
+ 	if (opc == ice_aqc_opc_alloc_res) {
+ 		vsi_ele = &sw_buf->elem[0];
+ 		*vsi_list_id = le16_to_cpu(vsi_ele->e.sw_resp);
  	}
  
- 	err = ice_vsi_cfg_rxq(rx_ring);
- 	if (err)
--		goto free_buf;
-+		return err;
- 
- 	ice_qvec_cfg_msix(vsi, q_vector);
- 
- 	err = ice_vsi_ctrl_one_rx_ring(vsi, true, q_idx, true);
- 	if (err)
--		goto free_buf;
-+		return err;
- 
- 	clear_bit(ICE_CFG_BUSY, vsi->state);
- 	ice_qvec_toggle_napi(vsi, q_vector, true);
- 	ice_qvec_ena_irq(vsi, q_vector);
- 
- 	netif_tx_start_queue(netdev_get_tx_queue(vsi->netdev, q_idx));
--free_buf:
--	kfree(qg_buf);
--	return err;
-+
+-ice_aq_alloc_free_vsi_list_exit:
+-	devm_kfree(ice_hw_to_dev(hw), sw_buf);
+-	return status;
 +	return 0;
  }
  
  /**
+@@ -2088,24 +2081,18 @@ ice_aq_get_recipe_to_profile(struct ice_hw *hw, u32 profile_id, u8 *r_bitmap,
+  */
+ int ice_alloc_recipe(struct ice_hw *hw, u16 *rid)
+ {
+-	struct ice_aqc_alloc_free_res_elem *sw_buf;
+-	u16 buf_len;
++	DEFINE_FLEX(struct ice_aqc_alloc_free_res_elem, sw_buf, elem, 1);
++	u16 buf_len = __struct_size(sw_buf);
+ 	int status;
+ 
+-	buf_len = struct_size(sw_buf, elem, 1);
+-	sw_buf = kzalloc(buf_len, GFP_KERNEL);
+-	if (!sw_buf)
+-		return -ENOMEM;
+-
+ 	sw_buf->num_elems = cpu_to_le16(1);
+ 	sw_buf->res_type = cpu_to_le16((ICE_AQC_RES_TYPE_RECIPE <<
+ 					ICE_AQC_RES_TYPE_S) |
+ 					ICE_AQC_RES_TYPE_FLAG_SHARED);
+ 	status = ice_aq_alloc_free_res(hw, 1, sw_buf, buf_len,
+ 				       ice_aqc_opc_alloc_res, NULL);
+ 	if (!status)
+ 		*rid = le16_to_cpu(sw_buf->elem[0].e.sw_resp);
+-	kfree(sw_buf);
+ 
+ 	return status;
+ }
+@@ -4482,29 +4469,20 @@ int
+ ice_alloc_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
+ 		   u16 *counter_id)
+ {
+-	struct ice_aqc_alloc_free_res_elem *buf;
+-	u16 buf_len;
++	DEFINE_FLEX(struct ice_aqc_alloc_free_res_elem, buf, elem, 1);
++	u16 buf_len = __struct_size(buf);
+ 	int status;
+ 
+-	/* Allocate resource */
+-	buf_len = struct_size(buf, elem, 1);
+-	buf = kzalloc(buf_len, GFP_KERNEL);
+-	if (!buf)
+-		return -ENOMEM;
+-
+ 	buf->num_elems = cpu_to_le16(num_items);
+ 	buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
+ 				      ICE_AQC_RES_TYPE_M) | alloc_shared);
+ 
+ 	status = ice_aq_alloc_free_res(hw, 1, buf, buf_len,
+ 				       ice_aqc_opc_alloc_res, NULL);
+ 	if (status)
+-		goto exit;
++		return status;
+ 
+ 	*counter_id = le16_to_cpu(buf->elem[0].e.sw_resp);
+-
+-exit:
+-	kfree(buf);
+ 	return status;
+ }
+ 
+@@ -4520,16 +4498,10 @@ int
+ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
+ 		  u16 counter_id)
+ {
+-	struct ice_aqc_alloc_free_res_elem *buf;
+-	u16 buf_len;
++	DEFINE_FLEX(struct ice_aqc_alloc_free_res_elem, buf, elem, 1);
++	u16 buf_len = __struct_size(buf);
+ 	int status;
+ 
+-	/* Free resource */
+-	buf_len = struct_size(buf, elem, 1);
+-	buf = kzalloc(buf_len, GFP_KERNEL);
+-	if (!buf)
+-		return -ENOMEM;
+-
+ 	buf->num_elems = cpu_to_le16(num_items);
+ 	buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
+ 				      ICE_AQC_RES_TYPE_M) | alloc_shared);
+@@ -4540,7 +4512,6 @@ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
+ 	if (status)
+ 		ice_debug(hw, ICE_DBG_SW, "counter resource could not be freed\n");
+ 
+-	kfree(buf);
+ 	return status;
+ }
+ 
+@@ -4558,15 +4529,10 @@ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
+  */
+ int ice_share_res(struct ice_hw *hw, u16 type, u8 shared, u16 res_id)
+ {
+-	struct ice_aqc_alloc_free_res_elem *buf;
+-	u16 buf_len;
++	DEFINE_FLEX(struct ice_aqc_alloc_free_res_elem, buf, elem, 1);
++	u16 buf_len = __struct_size(buf);
+ 	int status;
+ 
+-	buf_len = struct_size(buf, elem, 1);
+-	buf = kzalloc(buf_len, GFP_KERNEL);
+-	if (!buf)
+-		return -ENOMEM;
+-
+ 	buf->num_elems = cpu_to_le16(1);
+ 	if (shared)
+ 		buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
+@@ -4584,7 +4550,6 @@ int ice_share_res(struct ice_hw *hw, u16 type, u8 shared, u16 res_id)
+ 		ice_debug(hw, ICE_DBG_SW, "Could not set resource type %u id %u to %s\n",
+ 			  type, res_id, shared ? "SHARED" : "DEDICATED");
+ 
+-	kfree(buf);
+ 	return status;
+ }
+ 
 -- 
 2.40.1
 
