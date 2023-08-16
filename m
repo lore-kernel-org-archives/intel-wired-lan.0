@@ -4,88 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 145C0C001E0
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Aug 2023 14:10:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 903ACC04A6A
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Aug 2023 14:31:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BA16F41DB1;
-	Wed, 16 Aug 2023 14:10:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BA16F41DB1
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1A95941E5B;
+	Wed, 16 Aug 2023 14:31:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1A95941E5B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692195002;
-	bh=5wREQqg0KCtDyHeoySCd982083TV5KV20Cf4jvgoKAk=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1692196319;
+	bh=+HAATAhRQvgBwVa7IxBn5iODhCXtGgK88mk6bhD5Ezw=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=VjTmH6ODldsp1pYpSUsxFSbdYT6VrddAfCwcvsRjT1ABA8K53BGAF3993GV97E62M
-	 MGQCDgGh7sO9EcGjhhekQX7zMnotFE6IpBu1ei7EdkK8RU9+cIYASQDIFMMvs5GkTi
-	 pS3RFaK6DWxxFbtdM4VGTM6WNIG2YtfOf/9NT/wt4Ef5A13365dJvRjh9ecudZH6Jw
-	 l9id8JVB0eKR67RkOHQNx/RqBpCwlHDkSyd6b1KfvX/6xb2+IxeMIeV93R50ebC++u
-	 tu/7EV7XPY2iU0GfVkGGR0d0SK1BDJmRaUXeLlAJDTMQtIqsn8dMncy17hnAvDjHjT
-	 S3VwU6AKIDVtw==
+	b=ngGRu3sPkVsJcFUVmeRmC4AhffTMtG+BKz5J6OmSsMjjlzEey0colPxTpkeoID59C
+	 p12Yo7QI3SWtPFpPb7V6YbSrV65CXXZbG3/rEhw/hu65lSmjhi+VaSiSGuAlGkKTFy
+	 +P+GuLJZ7geyqNBGpcP/QDI15PIlSoU2udhxu7PPJwbChEg1ClkHA7tXXJpxgBFrAx
+	 t3uv1zUnc3ZfSQffNBCVY/F987+ISA+6g98WW65z02OUC7wMgTJY9RRuPCTrC56Eh9
+	 JSYa0x714uRzU58bEff8k1tGEJBi3/FmG3a7E0MG1HU8Xh0KsFT8cM847QFRT6Hq6e
+	 plx0XqNfPeWlA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id OmDQEWFHPY_D; Wed, 16 Aug 2023 14:10:01 +0000 (UTC)
+	with ESMTP id Qqsuus_nXJw9; Wed, 16 Aug 2023 14:31:57 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 7CCC341E53;
-	Wed, 16 Aug 2023 14:10:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7CCC341E53
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 2B7F11BF41B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:09:35 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9353741E54;
+	Wed, 16 Aug 2023 14:31:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9353741E54
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id A65B21BF41B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:31:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id F278182115
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:09:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F278182115
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7E62061367
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:31:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7E62061367
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 6VPmDAXRopaG for <intel-wired-lan@lists.osuosl.org>;
- Wed, 16 Aug 2023 14:09:26 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
- by smtp1.osuosl.org (Postfix) with ESMTPS id CD71E82B1A
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:09:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CD71E82B1A
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="375312774"
-X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="375312774"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 16 Aug 2023 07:09:25 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="980753068"
-X-IronPort-AV: E=Sophos;i="6.01,177,1684825200"; d="scan'208";a="980753068"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga006.fm.intel.com with ESMTP; 16 Aug 2023 07:09:23 -0700
-Received: from pelor.igk.intel.com (pelor.igk.intel.com [10.123.220.13])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id D42CB34EF0;
- Wed, 16 Aug 2023 15:09:22 +0100 (IST)
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-To: Kees Cook <keescook@chromium.org>,
-	netdev@vger.kernel.org
-Date: Wed, 16 Aug 2023 10:06:20 -0400
-Message-Id: <20230816140623.452869-5-przemyslaw.kitszel@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20230816140623.452869-1-przemyslaw.kitszel@intel.com>
-References: <20230816140623.452869-1-przemyslaw.kitszel@intel.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id aZ9IS3k376TX for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 16 Aug 2023 14:31:54 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9D9EC61366
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 14:31:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9D9EC61366
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ (No client certificate requested)
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 7429C62023;
+ Wed, 16 Aug 2023 14:31:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5B2E2C433C8;
+ Wed, 16 Aug 2023 14:31:52 +0000 (UTC)
+Date: Wed, 16 Aug 2023 17:31:48 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Message-ID: <20230816143148.GX22185@unreal>
+References: <20230816085454.235440-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20230816085454.235440-1-przemyslaw.kitszel@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1692194966; x=1723730966;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=5ICqtGaIKb34c4cygMFH/ekn4DHFgMuzIFwY2H+IcbU=;
- b=D3YSUHqI/RlntGHqVK2ybS97FP/wSOKF3IkwM+FPfigePwapiEZp+FfV
- XrYPtFQ+2xRNQOkmZJ/RMDeg2QN68HG0ClX8iMuyl4U0YIUjgkZxy7A/n
- tCsNmVtgUBdQzot47d1Rv13k7uvL6jRFBrmP3qpOY1wxquZ3T/dS74DTQ
- tTRTSdne8tzLHiNq6QyBUxjKwGbltgfGqjqH1zawljexTCqSyFADfRUb+
- RmhxgKPIMacni6nznUfORa10RxMcQzsdCZQ7KSUuvkdW6zO4G9Jl1Y/FT
- neBnspBwdOZmZP9ZIJDRhVQt90ySvaCA5hI7SFPCJpFvDAZtTVCzR2grd
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=D3YSUHqI
-Subject: [Intel-wired-lan] [PATCH net-next v3 4/7] ice: make use of
- DEFINE_FLEX() in ice_ddp.c
+ d=kernel.org; s=k20201202; t=1692196312;
+ bh=IalgyWP00nls9iz5H4Epnnl80SzME+5KTptIjGJfRBU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=dVfXwWrY1/A/bkqoYzwraEN4tUVmKsOqyiu/gfr0w/wSVEpueWIXKPh20G/jEZgLk
+ P5Wmm5jygyeM1j5HEuK2XME3dN1kKo5Jxo75zK29ZgeyEK2Jqc5j714ucYN3+tPrlG
+ ao4bbc5mh7tm4NIWk85/CR1Rot8pBRI0RPItzvRt+ZGjgy//u3iJfo/+Ait/eo4Fc2
+ YI2JcucF/KN8Nug0SDV/S5mXzL3rS3SlTVvxxHg1etP8KObUlV6orw7MDarL9BKFQZ
+ m6pCjKOVh0mLXgqMSAb1T7lYFr1g+M2IG+wojoCt+1z3t1K4yCoaioWC8PK83aGlWe
+ sIta6Ju8HzfIg==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=dVfXwWrY
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: store VF's pci_dev ptr
+ in ice_vf
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,110 +89,171 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
- Steven Zou <steven.zou@intel.com>, intel-wired-lan@lists.osuosl.org,
- linux-hardening@vger.kernel.org
+Cc: netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
+ intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Use DEFINE_FLEX() macro for constant-num-of-elems (4)
-flex array members of ice_ddp.c
+On Wed, Aug 16, 2023 at 04:54:54AM -0400, Przemek Kitszel wrote:
+> Extend struct ice_vf by vfdev.
+> Calculation of vfdev falls more nicely into ice_create_vf_entries().
+> 
+> Caching of vfdev enables simplification of ice_restore_all_vfs_msi_state().
 
-Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
----
-add/remove: 4/0 grow/shrink: 0/1 up/down: 1195/-878 (317)
----
- drivers/net/ethernet/intel/ice/ice_ddp.c | 39 +++++++-----------------
- 1 file changed, 11 insertions(+), 28 deletions(-)
+I see that old code had access to pci_dev * of VF without any locking
+from concurrent PCI core access. How is it protected? How do you make
+sure that vfdev is valid?
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index d71ed210f9c4..0e64ecd6f7c5 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -1558,21 +1558,14 @@ static enum ice_ddp_state ice_init_pkg_info(struct ice_hw *hw,
-  */
- static enum ice_ddp_state ice_get_pkg_info(struct ice_hw *hw)
- {
--	enum ice_ddp_state state = ICE_DDP_PKG_SUCCESS;
--	struct ice_aqc_get_pkg_info_resp *pkg_info;
--	u16 size;
-+	DEFINE_FLEX(struct ice_aqc_get_pkg_info_resp, pkg_info, pkg_info,
-+		    ICE_PKG_CNT);
-+	u16 size = __struct_size(pkg_info);
- 	u32 i;
- 
--	size = struct_size(pkg_info, pkg_info, ICE_PKG_CNT);
--	pkg_info = kzalloc(size, GFP_KERNEL);
--	if (!pkg_info)
-+	if (ice_aq_get_pkg_info_list(hw, pkg_info, size, NULL))
- 		return ICE_DDP_PKG_ERR;
- 
--	if (ice_aq_get_pkg_info_list(hw, pkg_info, size, NULL)) {
--		state = ICE_DDP_PKG_ERR;
--		goto init_pkg_free_alloc;
--	}
--
- 	for (i = 0; i < le32_to_cpu(pkg_info->count); i++) {
- #define ICE_PKG_FLAG_COUNT 4
- 		char flags[ICE_PKG_FLAG_COUNT + 1] = { 0 };
-@@ -1602,10 +1595,7 @@ static enum ice_ddp_state ice_get_pkg_info(struct ice_hw *hw)
- 			  pkg_info->pkg_info[i].name, flags);
- 	}
- 
--init_pkg_free_alloc:
--	kfree(pkg_info);
--
--	return state;
-+	return ICE_DDP_PKG_SUCCESS;
- }
- 
- /**
-@@ -1620,9 +1610,10 @@ static enum ice_ddp_state ice_chk_pkg_compat(struct ice_hw *hw,
- 					     struct ice_pkg_hdr *ospkg,
- 					     struct ice_seg **seg)
- {
--	struct ice_aqc_get_pkg_info_resp *pkg;
-+	DEFINE_FLEX(struct ice_aqc_get_pkg_info_resp, pkg, pkg_info,
-+		    ICE_PKG_CNT);
-+	u16 size = __struct_size(pkg);
- 	enum ice_ddp_state state;
--	u16 size;
- 	u32 i;
- 
- 	/* Check package version compatibility */
-@@ -1641,15 +1632,8 @@ static enum ice_ddp_state ice_chk_pkg_compat(struct ice_hw *hw,
- 	}
- 
- 	/* Check if FW is compatible with the OS package */
--	size = struct_size(pkg, pkg_info, ICE_PKG_CNT);
--	pkg = kzalloc(size, GFP_KERNEL);
--	if (!pkg)
--		return ICE_DDP_PKG_ERR;
--
--	if (ice_aq_get_pkg_info_list(hw, pkg, size, NULL)) {
--		state = ICE_DDP_PKG_LOAD_ERROR;
--		goto fw_ddp_compat_free_alloc;
--	}
-+	if (ice_aq_get_pkg_info_list(hw, pkg, size, NULL))
-+		return ICE_DDP_PKG_LOAD_ERROR;
- 
- 	for (i = 0; i < le32_to_cpu(pkg->count); i++) {
- 		/* loop till we find the NVM package */
-@@ -1666,8 +1650,7 @@ static enum ice_ddp_state ice_chk_pkg_compat(struct ice_hw *hw,
- 		/* done processing NVM package so break */
- 		break;
- 	}
--fw_ddp_compat_free_alloc:
--	kfree(pkg);
-+
- 	return state;
- }
- 
--- 
-2.40.1
+Generally speaking, it is rarely good idea to cache VF pci_dev pointers
+inside driver.
 
+Thanks
+
+> 
+> Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> ---
+> add/remove: 0/0 grow/shrink: 2/1 up/down: 157/-130 (27)
+> Function                                     old     new   delta
+> ice_sriov_configure                         1712    1866    +154
+> ice_pci_err_resume                           168     171      +3
+> ice_restore_all_vfs_msi_state                200      70    -130
+> ---
+>  drivers/net/ethernet/intel/ice/ice_main.c   |  2 +-
+>  drivers/net/ethernet/intel/ice/ice_sriov.c  | 40 +++++++++------------
+>  drivers/net/ethernet/intel/ice/ice_sriov.h  |  4 +--
+>  drivers/net/ethernet/intel/ice/ice_vf_lib.h |  2 +-
+>  4 files changed, 21 insertions(+), 27 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+> index a6dd336d2500..d04498c2fd6d 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_main.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_main.c
+> @@ -5561,7 +5561,7 @@ static void ice_pci_err_resume(struct pci_dev *pdev)
+>  		return;
+>  	}
+>  
+> -	ice_restore_all_vfs_msi_state(pdev);
+> +	ice_restore_all_vfs_msi_state(pf);
+>  
+>  	ice_do_reset(pf, ICE_RESET_PFR);
+>  	ice_service_task_restart(pf);
+> diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> index 31314e7540f8..48bc8ea55265 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_sriov.c
+> +++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
+> @@ -789,14 +789,19 @@ static const struct ice_vf_ops ice_sriov_vf_ops = {
+>   */
+>  static int ice_create_vf_entries(struct ice_pf *pf, u16 num_vfs)
+>  {
+> +	struct pci_dev *pdev = pf->pdev;
+>  	struct ice_vfs *vfs = &pf->vfs;
+> +	struct pci_dev *vfdev = NULL;
+>  	struct ice_vf *vf;
+> -	u16 vf_id;
+> -	int err;
+> +	u16 vf_pdev_id;
+> +	int err, pos;
+>  
+>  	lockdep_assert_held(&vfs->table_lock);
+>  
+> -	for (vf_id = 0; vf_id < num_vfs; vf_id++) {
+> +	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
+> +	pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_pdev_id);
+> +
+> +	for (u16 vf_id = 0; vf_id < num_vfs; vf_id++) {
+>  		vf = kzalloc(sizeof(*vf), GFP_KERNEL);
+>  		if (!vf) {
+>  			err = -ENOMEM;
+> @@ -812,6 +817,10 @@ static int ice_create_vf_entries(struct ice_pf *pf, u16 num_vfs)
+>  
+>  		ice_initialize_vf_entry(vf);
+>  
+> +		do {
+> +			vfdev = pci_get_device(pdev->vendor, vf_pdev_id, vfdev);
+> +		} while (vfdev && vfdev->physfn != pdev);
+> +		vf->vfdev = vfdev;
+>  		vf->vf_sw_id = pf->first_sw;
+>  
+>  		hash_add_rcu(vfs->table, &vf->entry, vf_id);
+> @@ -1714,26 +1723,11 @@ void ice_print_vfs_mdd_events(struct ice_pf *pf)
+>   * Called when recovering from a PF FLR to restore interrupt capability to
+>   * the VFs.
+>   */
+> -void ice_restore_all_vfs_msi_state(struct pci_dev *pdev)
+> +void ice_restore_all_vfs_msi_state(struct ice_pf *pf)
+>  {
+> -	u16 vf_id;
+> -	int pos;
+> -
+> -	if (!pci_num_vf(pdev))
+> -		return;
+> +	struct ice_vf *vf;
+> +	u32 bkt;
+>  
+> -	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
+> -	if (pos) {
+> -		struct pci_dev *vfdev;
+> -
+> -		pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID,
+> -				     &vf_id);
+> -		vfdev = pci_get_device(pdev->vendor, vf_id, NULL);
+> -		while (vfdev) {
+> -			if (vfdev->is_virtfn && vfdev->physfn == pdev)
+> -				pci_restore_msi_state(vfdev);
+> -			vfdev = pci_get_device(pdev->vendor, vf_id,
+> -					       vfdev);
+> -		}
+> -	}
+> +	ice_for_each_vf(pf, bkt, vf)
+> +		pci_restore_msi_state(vf->vfdev);
+>  }
+> diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.h b/drivers/net/ethernet/intel/ice/ice_sriov.h
+> index 346cb2666f3a..06829443d540 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_sriov.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_sriov.h
+> @@ -33,7 +33,7 @@ int
+>  ice_get_vf_cfg(struct net_device *netdev, int vf_id, struct ifla_vf_info *ivi);
+>  
+>  void ice_free_vfs(struct ice_pf *pf);
+> -void ice_restore_all_vfs_msi_state(struct pci_dev *pdev);
+> +void ice_restore_all_vfs_msi_state(struct ice_pf *pf);
+>  
+>  int
+>  ice_set_vf_port_vlan(struct net_device *netdev, int vf_id, u16 vlan_id, u8 qos,
+> @@ -67,7 +67,7 @@ static inline
+>  void ice_vf_lan_overflow_event(struct ice_pf *pf, struct ice_rq_event_info *event) { }
+>  static inline void ice_print_vfs_mdd_events(struct ice_pf *pf) { }
+>  static inline void ice_print_vf_rx_mdd_event(struct ice_vf *vf) { }
+> -static inline void ice_restore_all_vfs_msi_state(struct pci_dev *pdev) { }
+> +static inline void ice_restore_all_vfs_msi_state(struct ice_pf *pf) { }
+>  
+>  static inline int
+>  ice_sriov_configure(struct pci_dev __always_unused *pdev,
+> diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+> index 48fea6fa0362..57c36e4ccf91 100644
+> --- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+> +++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
+> @@ -82,7 +82,7 @@ struct ice_vf {
+>  	struct rcu_head rcu;
+>  	struct kref refcnt;
+>  	struct ice_pf *pf;
+> -
+> +	struct pci_dev *vfdev;
+>  	/* Used during virtchnl message handling and NDO ops against the VF
+>  	 * that will trigger a VFR
+>  	 */
+> 
+> base-commit: 0ad204c4acb8ba1ed99564b001609e62547bc79d
+> -- 
+> 2.40.1
+> 
+> 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
