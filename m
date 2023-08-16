@@ -4,78 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50E1BC0015E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Aug 2023 02:06:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A355C001DE
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 16 Aug 2023 02:10:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E0C8661206;
-	Wed, 16 Aug 2023 02:06:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E0C8661206
+	by smtp3.osuosl.org (Postfix) with ESMTP id BC2616120E;
+	Wed, 16 Aug 2023 02:10:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BC2616120E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692151609;
-	bh=Lvh0foQOJudQ2FwIAJC0e3rdJNgaxaCaazn2Gc3Xhgc=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1692151827;
+	bh=gA20VjzP/oKwq/ba9vbBsnYxMJsCw5GXlrRwwon2VCA=;
+	h=From:Date:References:In-Reply-To:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=xZJ0jcSKoLxwqgzu4gOxkB3EJdWzjesxlheYcK7llqw94OIXjMKvVUFovJqLaI3bW
-	 W8SAzbT6IFIvYWZ6OGbon/QTlEo7wOrsnBThB6OkL/35j/M3cV5HCBuvRd5/ggbTMp
-	 OHkQuznSFPoh4S0iboT7bhlDI6ZYav4cb68kVjGCyjsFWJBthHHtNF89fDhqpplSwB
-	 vdyYf+smGGfQc7syYz+QJKyMBZkZrbMo07ZcMjIvsArvWPljCZxTRkAKXFA6cLkfqA
-	 O34LlT0s+pigwJYVXcM+9+REsDyStk/Dj8P8tZJxjvnsq7aKCSQ6Knf1cIWyWiafIQ
-	 /jnKiP1s3ax0w==
+	b=x6BoITgq8DS9mWaytIq0M0qWDFBAi3g5vxnspaS9eR0AgAsdZAvlydeA/NaeULS/S
+	 XNVh+SiTJ6WRKYto3X39l9uJ1UwQ5+sLNd+lVJyd4AimGLcwQ9KwRdSXkhtO5HE7bb
+	 TDFAQtKFZv3+oujgC6kCd3B3v73cArcJGYE3BflrFd/7/0HVvyZTHKUjDcXLGp3HQa
+	 McZmd1GB9z9sKE2Nc7YhAMIT1c/1NQz8B7lI6sfH6xVGSon37cDSY+ohpnkeipnq8n
+	 tnH4st7fr9AO9lmWZSMC4yhhTlWsRFU0cCBBKNhWNlbhnnu1xXeCJPL2jAHTOoMBSu
+	 USgu9YxIQw5Lw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id pVRCTD08ZTxz; Wed, 16 Aug 2023 02:06:49 +0000 (UTC)
+	with ESMTP id vKPduTv7651d; Wed, 16 Aug 2023 02:10:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EB8DE61209;
-	Wed, 16 Aug 2023 02:06:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EB8DE61209
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 16B171BF427
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 02:06:48 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id E321261212;
+	Wed, 16 Aug 2023 02:10:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E321261212
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 127221BF427
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 02:10:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DD01A41BB0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 02:06:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DD01A41BB0
+ by smtp2.osuosl.org (Postfix) with ESMTP id DDE0A414DB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 02:10:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DDE0A414DB
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NSWG82llms6m for <intel-wired-lan@lists.osuosl.org>;
- Wed, 16 Aug 2023 02:06:45 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id NNV7i4OVzb3D for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 16 Aug 2023 02:10:24 +0000 (UTC)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org
  [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C150141BAA
- for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 02:06:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C150141BAA
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 13C4F40352
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 16 Aug 2023 02:10:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 13C4F40352
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id AAB7B61730;
- Wed, 16 Aug 2023 02:06:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C94CBC433C8;
- Wed, 16 Aug 2023 02:06:43 +0000 (UTC)
-Date: Tue, 15 Aug 2023 19:06:42 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Tony Nguyen <anthony.l.nguyen@intel.com>
-Message-ID: <20230815190642.315fa2af@kernel.org>
-In-Reply-To: <2ef66ad0-d8d2-ae28-9624-04a3fbe94de4@intel.com>
-References: <20230814135821.4808-1-yuehaibing@huawei.com>
- <2ef66ad0-d8d2-ae28-9624-04a3fbe94de4@intel.com>
+ by dfw.source.kernel.org (Postfix) with ESMTPS id 52EDA649D3;
+ Wed, 16 Aug 2023 02:10:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id A4E38C433CA;
+ Wed, 16 Aug 2023 02:10:22 +0000 (UTC)
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org
+ (localhost.localdomain [127.0.0.1])
+ by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id
+ 8753DC691E1; Wed, 16 Aug 2023 02:10:22 +0000 (UTC)
 MIME-Version: 1.0
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id: <169215182255.21752.11821443988284205958.git-patchwork-notify@kernel.org>
+Date: Wed, 16 Aug 2023 02:10:22 +0000
+References: <20230814135821.4808-1-yuehaibing@huawei.com>
+In-Reply-To: <20230814135821.4808-1-yuehaibing@huawei.com>
+To: Yue Haibing <yuehaibing@huawei.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1692151604;
- bh=CGNr34szINxLhBzT8NdUd8WHz2+azRMk174GL2+Z4hE=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=e9Ntgg0olOvNh+a5uKYokd8H7stTFDGNz/3BiOmxBZLfGP1z8fOCYBQoUocGIhiqh
- n4Y14Qujq4xkSJs3aBQAQD9g1rj2O5IBL6KIHgD/UuKMY26fLuaCGIaoLAxRJ1qrWV
- DMiQdxuvV86nTaenT5hVNE89q1pWsRqt5D+CNRsHDNwsrv2mhbUSpeXp8wS+hr4XBt
- YMfwFthRPru5Z2tfNOh11eFN2GjLy13PyUZgzOCWL+MJexHUO3ZGmv0bs1jlAaDXJ1
- 24GWtneX/VSEnvCyaEBBkmdGZ3E1xvsJEokwQq5EzKKd6f9p00VEoYv/zUJlj+jQms
- 5qv0LL5BWo9sQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ d=kernel.org; s=k20201202; t=1692151822;
+ bh=TvIcGdfs/e4rVml4DBfZeSRdAvc8xZa3p4ubeI6k6Zw=;
+ h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+ b=RqlYx5H82mJJTuVHRJqQyRpvpzD67Chg7cjNxu7B59I7ymNWVpQvkXYUyDgpB5xQC
+ MkARVpIgBu2BUTwXN9kmkpBNFylxhzjBkfX2h+6wLBcMSqx4Y0e3bi5egrW58Z/a+0
+ aqn9aRSUap9/f10MyUH5mpCTpjSvCzYOmTdow1XKnizfSbSOQntHaf/GoWXCkac/qV
+ p8HT/pvXr7UqyG8IzxwgNe1nbgTJHCnhkwPcPHtKfjy2BSQ/DFQl8SU3on/Rtw45Hu
+ LnLfhp/YXduUXSmE3brfDZ4VH0ZMXHbigVj78CEtMd5AtgCvT69L04L198nKzOYdEB
+ c38362cfKzmcg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=e9Ntgg0o
+ header.a=rsa-sha256 header.s=k20201202 header.b=RqlYx5H8
 Subject: Re: [Intel-wired-lan] [PATCH net-next] net: e1000e: Remove unused
  declarations
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -90,28 +93,38 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Yue Haibing <yuehaibing@huawei.com>,
- jesse.brandeburg@intel.com, edumazet@google.com,
- intel-wired-lan@lists.osuosl.org, pabeni@redhat.com, davem@davemloft.net
+Cc: intel-wired-lan@lists.osuosl.org, jesse.brandeburg@intel.com,
+ edumazet@google.com, anthony.l.nguyen@intel.com, netdev@vger.kernel.org,
+ kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, 14 Aug 2023 15:19:10 -0700 Tony Nguyen wrote:
-> On 8/14/2023 6:58 AM, Yue Haibing wrote:
-> > Commit bdfe2da6aefd ("e1000e: cosmetic move of function prototypes to the new mac.h")
-> > declared but never implemented them.
-> > 
-> > Signed-off-by: Yue Haibing <yuehaibing@huawei.com>  
-> 
-> I believe netdev has been taking all these unused declaration patches 
-> directly so...
-> 
-> Reviewed-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Hello:
 
-Thanks! We do have a bit of a mixed record either applying these 
-or deferring to maintainers...
+This patch was applied to netdev/net-next.git (main)
+by Jakub Kicinski <kuba@kernel.org>:
+
+On Mon, 14 Aug 2023 21:58:21 +0800 you wrote:
+> Commit bdfe2da6aefd ("e1000e: cosmetic move of function prototypes to the new mac.h")
+> declared but never implemented them.
+> 
+> Signed-off-by: Yue Haibing <yuehaibing@huawei.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/mac.h | 2 --
+>  1 file changed, 2 deletions(-)
+
+Here is the summary with links:
+  - [net-next] net: e1000e: Remove unused declarations
+    https://git.kernel.org/netdev/net-next/c/3bfdcc324a04
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
