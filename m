@@ -4,86 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81C31C2FC0E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Aug 2023 00:01:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23A71C2FC05
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Aug 2023 00:01:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3C5D841776;
-	Thu, 17 Aug 2023 00:01:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3C5D841776
+	by smtp2.osuosl.org (Postfix) with ESMTP id C830141785;
+	Thu, 17 Aug 2023 00:01:20 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C830141785
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692230477;
-	bh=VvDmwDYnAJJ2fFPKnibE9/jcPijIYL/JgpHmQrkk/gM=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=akPkQRICrmsg3fH85aMk+9u5hyhyNcBQq6UaIciSygSW9dXwUF9Rmraevh9Fh2vRl
-	 QKZKeSCZvT7vqcxH3OFQqhNyiOKvl7faEELZyj8kjnhwKoW6BOtB15hfh7ktv9kGLw
-	 EnfiQfCe4n8H16ovkQjF2pohX7kr2RHGH4SyU0A6rhgoPJFJz4mRUhygnSWa36n4gg
-	 ubLxUtwMvrjOGs2nqbilAxi9K4KDCc4Dc1bw9wTt2J4fZcWfbacBGbVzKsgjdqwKgf
-	 tcSoClEZT+URI5FTAOsFexbavE//EK791c4AhjJxAwFW0uHKim9vFN4/FrP4t+cJ0R
-	 yV+I2hv7xEnBA==
+	s=default; t=1692230480;
+	bh=fbxxNWgshbJMriynTyZpcOCxYDKk/ohB2sjYteoadOs=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=ME/+gMAM5cJ4eD4tnbM45frWu4v09E3oVYOitzaBeDz4yspBHqJ0s98mi0qMWJLEf
+	 G8BirQdobf7ILNANXHFr3jCrAidTM/jimNAYJ6xjBMVYAaFlD6pn/EcVCphobYOhSE
+	 NeyMOgbsWuS9MyTjEmcSRLuVy3MuZXpmV4SGCxr3wzKRdRU8w1n7A0U4iYK1ZHTb/n
+	 4BXyW8oaTs3dS1rTpazLPgh2ogvN4tx47NLs9sQ0O3RMp3Kkg338wjAmwtCr1XHT0D
+	 QX5PXQ2GkSx1wKPJhOFUx08Dgq/rIzROwNEUvawML9BkwhuJfkSzTp4mQ3Sc7nXedK
+	 MjllaY9bk+v8Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id pgNGbfDsyjVp; Thu, 17 Aug 2023 00:01:16 +0000 (UTC)
+	with ESMTP id wMhKMHAjwq6N; Thu, 17 Aug 2023 00:01:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id BC35E41779;
-	Thu, 17 Aug 2023 00:01:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BC35E41779
+	by smtp2.osuosl.org (Postfix) with ESMTP id D6DCB41779;
+	Thu, 17 Aug 2023 00:01:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D6DCB41779
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A2FDB1BF97F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:09 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 9CD011BF2AF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7A7B483B77
+ by smtp1.osuosl.org (Postfix) with ESMTP id D95BE83B72
  for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7A7B483B77
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D95BE83B72
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id mwJONlI9LS87 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Aug 2023 00:01:06 +0000 (UTC)
+ with ESMTP id 7ci00D7H-LF1 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Aug 2023 00:01:05 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 0223F83B72
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 99E8B83B5E
  for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0223F83B72
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="403649709"
-X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="403649709"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 99E8B83B5E
+X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="403649705"
+X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="403649705"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Aug 2023 17:01:04 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="799805038"
-X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="799805038"
+X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="799805035"
+X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="799805035"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Aug 2023 17:01:03 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 16 Aug 2023 17:00:54 -0700
-Message-ID: <20230817000058.2433236-2-jacob.e.keller@intel.com>
+Date: Wed, 16 Aug 2023 17:00:53 -0700
+Message-ID: <20230817000058.2433236-1-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
-In-Reply-To: <20230817000058.2433236-1-jacob.e.keller@intel.com>
-References: <20230817000058.2433236-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1692230465; x=1723766465;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=sn5mwvGg+ydf0YbK/S070S2hFHqCsOYElUp4swa+lbE=;
- b=jkHhrvc9KgxrdtWAWmE7NQQGIYfjOY/ZwdaFS2QYGogBr382UetCI8D3
- 2zPUZtNPrWIE9RQtBvFutFdm+rV4iFrMceKV0syKH6YYoNtxwFxmSVQlW
- i1wlN5p/UwFmv21mGH/X71qnP8KBeGW49X3Gkj9UqKa0y7DQNsPnj6Oxc
- 4ra4Ugq3jUQZAec4rs6206lps0bTLOZDEZWMBFnLISB+caJ+BiqcbtuSB
- +Q+KVsfFHl10Q4Xk78B7p+W2SY75ldAslyCJ3AJOMZHi7akKWz0qI5cVO
- lb8I2QuB0Az0mUH+UhXBdS3eVnq5Z1HGwPxkUJUDxKBoboy22SApdY+RB
- w==;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=suQi24uNIhmmHw0o+gRm/nHEAIDt4+f4vYX3FXHaANI=;
+ b=hC2pIYtaP1bOa0d5VWNxV3Bq44nDytN10eAUwdYB07J2zGscS9sDKp16
+ jJ+J5GOFk825lc5fZ1IdH6nMTUNHLvecjoIJmzAOi/jNNe6psNs8y7oLl
+ QO+OzguYr/RO7iS4VIm8MBnSYi8zLY6GHv55kP5mnzcADXlK5cf2L5F/N
+ NwfH9d/P+tIeey/y8ejZ0b815LpMsLAWyzTbO7pZBzosYry/CqCRPQ9PY
+ G3VMp4y2+KctHtTY+Cmj51G+h9+tGhAW+MMmoQ4C6p7qZs1RuCCk+82o+
+ b1652D+hATq3J4o8TB3vNvXi5RPAVV18rzIv3Zff1FQ00nX0FvWDt/81P
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=jkHhrvc9
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/5] ice: remove
- ICE_F_PTP_EXTTS feature flag
+ header.a=rsa-sha256 header.s=Intel header.b=hC2pIYta
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/5] ice: refactor PTP feature
+ flags
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,63 +101,50 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ICE_F_PTP_EXTTS feature flag is ostensibly intended to support checking
-whether the device supports external timestamp pins. It is only checked in
-E810-specific code flows, and is enabled for all E810-based devices. E822
-and E823 flows unconditionally enable external timestamp support.
+This series refactors and extends the feature flag detection for a couple of
+PTP feature flags. This includes ICE_F_GNSS and ICE_F_SMA_CTRL. Instead of
+blindly assuming the feature is enabled on all E810-T devices, check the
+netlist to confirm that the feature is supported on that device and
+platform.
 
-This makes the feature flag meaningless, as it is always enabled. Just
-unconditionally enable support for external timestamp pins and remove this
-unnecessary flag.
+For SMA control, this allows the driver to fallback to the fixed pin
+configuration that is supported by default E810 configurations when the SMA
+control is not accessible.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
-No changes since v1.
+For GNSS, this ensures that we do not attempt to read the GNSS portion of
+the device if its not present, avoiding some unnecessary warning messages.
 
- drivers/net/ethernet/intel/ice/ice.h     | 1 -
- drivers/net/ethernet/intel/ice/ice_lib.c | 1 -
- drivers/net/ethernet/intel/ice/ice_ptp.c | 4 +---
- 3 files changed, 1 insertion(+), 5 deletions(-)
+For ICE_F_SMA_CTRL this could be seen as a fix, but given the scope of the
+code I decided that its next material. I think of it more as extending the
+feature capability to support pins on more platforms.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 5d307bacf7c6..013ea8970fbc 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -199,7 +199,6 @@
- 
- enum ice_feature {
- 	ICE_F_DSCP,
--	ICE_F_PTP_EXTTS,
- 	ICE_F_SMA_CTRL,
- 	ICE_F_GNSS,
- 	ICE_F_ROCE_LAG,
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 201570cd2e0b..5dfcb824f817 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3986,7 +3986,6 @@ void ice_init_feature_support(struct ice_pf *pf)
- 	case ICE_DEV_ID_E810C_QSFP:
- 	case ICE_DEV_ID_E810C_SFP:
- 		ice_set_feature_support(pf, ICE_F_DSCP);
--		ice_set_feature_support(pf, ICE_F_PTP_EXTTS);
- 		if (ice_is_e810t(&pf->hw)) {
- 			ice_set_feature_support(pf, ICE_F_SMA_CTRL);
- 			if (ice_gnss_is_gps_present(&pf->hw))
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 97b8581ae931..9524fcea9ae9 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -2205,9 +2205,7 @@ static void
- ice_ptp_setup_pins_e810(struct ice_pf *pf, struct ptp_clock_info *info)
- {
- 	info->n_per_out = N_PER_OUT_E810;
--
--	if (ice_is_feature_supported(pf, ICE_F_PTP_EXTTS))
--		info->n_ext_ts = N_EXT_TS_E810;
-+	info->n_ext_ts = N_EXT_TS_E810;
- 
- 	if (ice_is_feature_supported(pf, ICE_F_SMA_CTRL)) {
- 		info->n_ext_ts = N_EXT_TS_E810;
+Changes since v1:
+* add a patch to fix E810-T pin counts when SMA is disabled
+* use FIELD_PREP in ice_find_netlist_node
+* reduce scope of variables in ice_find_netlist_node
+* remove unnecessary local variable in ice_find_netlist_node
+* rename "present" functions to use "in_netlist" terminology, and move
+  them into ice_common.c
+* call ice_is_gps_in_netlist_e810t() from ice_gnss_is_gps_present()
+
+Jacob Keller (5):
+  ice: remove ICE_F_PTP_EXTTS feature flag
+  ice: fix pin assignment for E810-T without SMA control
+  ice: don't enable PTP related capabilities on non-owner PFs
+  ice: check the netlist before enabling ICE_F_SMA_CTRL
+  ice: check netlist before enabling ICE_F_GNSS
+
+ drivers/net/ethernet/intel/ice/ice.h          |  1 -
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  8 +-
+ drivers/net/ethernet/intel/ice/ice_common.c   | 77 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_common.h   |  2 +
+ drivers/net/ethernet/intel/ice/ice_gnss.c     |  3 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      | 11 +--
+ drivers/net/ethernet/intel/ice/ice_ptp.c      | 12 +--
+ 7 files changed, 101 insertions(+), 13 deletions(-)
+
+
+base-commit: 361b86237e1afbf2c3be7cb604b6aac6f8b8c38c
 -- 
 2.41.0.1.g9857a21e0017.dirty
 
