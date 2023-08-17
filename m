@@ -4,86 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA0D9C2FC05
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Aug 2023 00:01:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABF0BC2FC0E
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 17 Aug 2023 00:01:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 466F54177E;
-	Thu, 17 Aug 2023 00:01:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 466F54177E
+	by smtp2.osuosl.org (Postfix) with ESMTP id 6504641774;
+	Thu, 17 Aug 2023 00:01:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6504641774
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692230485;
-	bh=U1qtvef/x+QKDZtczf/zAiyHz4ElPTs8PYgiCAd6j9k=;
+	s=default; t=1692230489;
+	bh=xQeY4TLNAP/eT5/O+h4jRAOt8SwsxZfuyt3jSVJoZMA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=B0QXD7f3FxqIpU//k6NeAPYXber3I3mNHUue4ct6koXp14G/zWN4UWZrhdR//HTGt
-	 wfO7PmJw2YCALw/owjyTIHIpDbe1XKyTBiK/k/lydmAo9/W8C5teDF5ouUAuHorJKe
-	 njTn8EBRDmohLvtKwkb2Njqd4Q4MZdgukLQNhKGY3Na0CCkBNxHvGH63n8Xm536Xlm
-	 Gq9XFm9ydwgEhoFc1zGE365DHQcps4/f+naZlJHWqUqGERTXhE9tzucTcXJ76T39hq
-	 4aD2zTOmX1f6kbQ95Zdn0oxBWX0bdnqKJ7WGKUl6zmiEzm3GjZjjBwiiHkeM3crZnh
-	 AOG/PHEi+hm8Q==
+	b=5I4Nrs00eHwgMcUtWkmEiqudrnFas2ymA4lFTTsZJ8sy3P1jj62F8dV8fcF3Lq38C
+	 GIByXQPIKTNrN67lDRGWCG5kRPLWLm335ucpm7IjJFuor+bEfcIYG7ezNmCZSigeyf
+	 BIxoi6sH/7PQoEFdTXBbjglD4aagwIQ/9wE85MLZH+hC8lOQ5m+Q/EoAC9AESUO2KU
+	 w6ntbzYhNfWcE0TNfhKrPfOb58ptAPTcu7iAbiswDaRUVS5+m52rh9uGiyphmr91Dy
+	 Lx0J7I/3OvjUK5nbuhMRsFydG+lS18KOk1JmzOU9T1Qzjko3a0FAbkKRdR1jqUJP95
+	 xLrmHWToAzDkA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CnF0B2w_epP0; Thu, 17 Aug 2023 00:01:24 +0000 (UTC)
+	with ESMTP id bHlUj--FAlyM; Thu, 17 Aug 2023 00:01:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 118F141786;
-	Thu, 17 Aug 2023 00:01:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 118F141786
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id A58D41BF97F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:10 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 384904177D;
+	Thu, 17 Aug 2023 00:01:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 384904177D
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 1763C1BF2AF
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 7A04861318
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8E06183B77
  for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7A04861318
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8E06183B77
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lEBjYZI2fD7w for <intel-wired-lan@lists.osuosl.org>;
- Thu, 17 Aug 2023 00:01:06 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id zWP-FcHWwzwB for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 17 Aug 2023 00:01:05 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 6B3936139A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6B3936139A
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="403649713"
-X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="403649713"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id D0FAE83B70
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 17 Aug 2023 00:01:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D0FAE83B70
+X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="403649710"
+X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="403649710"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Aug 2023 17:01:04 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="799805049"
-X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="799805049"
+X-IronPort-AV: E=McAfee;i="6600,9927,10803"; a="799805043"
+X-IronPort-AV: E=Sophos;i="6.01,178,1684825200"; d="scan'208";a="799805043"
 Received: from jekeller-desk.amr.corp.intel.com (HELO
  jekeller-desk.jekeller.internal) ([10.166.241.1])
  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  16 Aug 2023 17:01:04 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Wed, 16 Aug 2023 17:00:57 -0700
-Message-ID: <20230817000058.2433236-5-jacob.e.keller@intel.com>
+Date: Wed, 16 Aug 2023 17:00:55 -0700
+Message-ID: <20230817000058.2433236-3-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
 In-Reply-To: <20230817000058.2433236-1-jacob.e.keller@intel.com>
 References: <20230817000058.2433236-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1692230466; x=1723766466;
+ t=1692230465; x=1723766465;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=7Dof2eRlUQzxkmXtqMr+BzvEoI3dlku3BM50SZMTE2Q=;
- b=EL7d3m7Yk9RJ3HNn91/0QetMs+uI5jS27iK2m0hXj0eezcDk81R/giPA
- K/Rq2BQ9wYO9b/Gb17JrL6g+39ftyjanKJwwE+b3+kuBJc76gqcW3+Vaf
- EvOBsgmmkCX6waCxJwcJSKJI5eXtmIM3kHE983jwV36EuPPaJ00R4c4XN
- NHrfTl8vbSPCCQqcXHry2TCTMtA8TC6NqXu4STWkN7Xs1FhEGvj/oLI7u
- KP2F1GWCoDuUcefxBSinYqusiaFeUN4ykowhzW1JNt4ZEi2FWbZmq2+Wd
- 7rFhBlwZyaKEHTojVidwUluvfZ7IRFqus1MvRgqjr9ottoK4I/kReQIji
+ bh=nEyxsBLxjQmrOu+XLV6ayZ4DP+2Uby2edqdO0qQF72g=;
+ b=aqi2rZ/QAi4kc/9xb4FqFKvOZlNU+E+3x7HiwKBeArf628WZaBSijkZA
+ ue6aA6dmDJ/nYXxzTUdBFXVcWbe2hUDA4jtI2TODMeVMlLRQjGGsaf69C
+ x//lSmTATlKtwoX4vHLMoAH9WusF0ciX98IA5G/53DVNVOxY+lR5uv4Mq
+ Y66GA05CDRlqVT1TmpLf2i5k9n9sDQFF9PsZbqB3HD4ZcCk6u400iTHjy
+ VDprzAv71uKgAtUgnzMFRFB/7Goz4x8pxg1CITiyRLGOjJafjm5rrs39o
+ r0yvH6XyvweXhXf43+VadteVe1KosfEkSh9WRs3gPe8RK5NOK3usayDDU
  g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=EL7d3m7Y
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 4/5] ice: check the netlist
- before enabling ICE_F_SMA_CTRL
+ header.a=rsa-sha256 header.s=Intel header.b=aqi2rZ/Q
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 2/5] ice: fix pin assignment
+ for E810-T without SMA control
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,167 +104,71 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently, the ice driver unconditionally enables ICE_F_SMA_CTRL for all
-E810-T based devices. In some cases, the SMA control access is not
-available in the netlist firmware component. In such a case, the driver
-will fail to setup the SMA pins. When this happens, the driver prints
-"Failed to configure E810-T SMA pin control" and forcibly disables all PTP
-pin configuration support.
+Since commit 43c4958a3ddb ("ice: Merge pin initialization of E810 and E810T
+adapters"), the ice_ptp_setup_pins_e810() function has been used for both
+E810 and E810-T devices. The new implementation only distinguishes between
+whether the device has SMA control or not. It was assumed this is always
+true for E810-T devices. In addition, it does not set the n_per_out value
+appropriately when SMA control is enabled.
 
-This results in failure to use even the fixed pin capabilities of standard
-E810 devices, resulting in reduced functionality.
+In some cases, the E810-T device may not have access to SMA control. In
+that case, the E810-T device actually has access to fewer pins than a
+standard E810 device.
 
-To avoid this, check the netlist for the SMA control module before enabling
-the ICE_F_SMA_CTRL feature. If the netlist lacks this module, then the
-feature will not be enabled. In this case, the driver flow for enabling
-periodic outputs and external timestamps will fall back to the standard
-fixed pin configuration.
+Fix the implementation to correctly assign the appropriate pin counts for
+E810-T devices both with and without SMA control. The mentioned commit
+already includes the appropriate macro values for these pin counts but they
+were unused.
 
-This allows supporting the software defined pins on a wider array of
-platforms.
+Instead of assigning the default E810 values and then overwriting them,
+handle the cases separately in order of E810-T with SMA, E810-T without
+SMA, and then standard E810. This flow makes following the logic easier.
 
+Fixes: 43c4958a3ddb ("ice: Merge pin initialization of E810 and E810T adapters")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-Changes since v1:
-* rename ice_is_clock_mux_present_e810t() to
-  ice_is_clock_mux_in_netlist_e810t() and move it into ice_common.c
-* make ice_find_netlist_node() static
-* reduce the scope of some variables in ice_find_netlist_node()
-* use FIELD_PREP to set the node_type_ctx field
-* remove rec_node_handle
-* update function comment to indicate that node_handle contents should be
-  ignored on error
+New patch in v2.
 
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  6 +-
- drivers/net/ethernet/intel/ice/ice_common.c   | 62 +++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_common.h   |  1 +
- drivers/net/ethernet/intel/ice/ice_lib.c      |  3 +-
- 4 files changed, 69 insertions(+), 3 deletions(-)
+This is not sent as a fix to net because it is effectively meaningless
+without the following change to conditionally enable or disable the
+ICE_F_SMA_CTRL flag. Currently for E810-T devices the driver always enables
+ICE_F_SMA_CTRL. On failure to setup SMA pins, the driver clears all pin
+functionality. Thus, this change does in some sense fix the mentioned
+commit, but is not sufficient to meaningfully change behavior on its own as
+it depends on the change to only enable SMA control when the device has
+access according to the netlist.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 90616750e779..82c4daf0a825 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1367,6 +1367,7 @@ struct ice_aqc_link_topo_params {
- #define ICE_AQC_LINK_TOPO_NODE_TYPE_CAGE	6
- #define ICE_AQC_LINK_TOPO_NODE_TYPE_MEZZ	7
- #define ICE_AQC_LINK_TOPO_NODE_TYPE_ID_EEPROM	8
-+#define ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_MUX	10
- #define ICE_AQC_LINK_TOPO_NODE_CTX_S		4
- #define ICE_AQC_LINK_TOPO_NODE_CTX_M		\
- 				(0xF << ICE_AQC_LINK_TOPO_NODE_CTX_S)
-@@ -1403,8 +1404,9 @@ struct ice_aqc_link_topo_addr {
- struct ice_aqc_get_link_topo {
- 	struct ice_aqc_link_topo_addr addr;
- 	u8 node_part_num;
--#define ICE_AQC_GET_LINK_TOPO_NODE_NR_PCA9575	0x21
--#define ICE_AQC_GET_LINK_TOPO_NODE_NR_C827	0x31
-+#define ICE_AQC_GET_LINK_TOPO_NODE_NR_PCA9575			0x21
-+#define ICE_AQC_GET_LINK_TOPO_NODE_NR_C827			0x31
-+#define ICE_ACQ_GET_LINK_TOPO_NODE_NR_GEN_CLK_MUX		0x47
- 	u8 rsvd[9];
- };
+ drivers/net/ethernet/intel/ice/ice_ptp.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index 9524fcea9ae9..ca40ca220cc9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2204,16 +2204,20 @@ ice_ptp_setup_sma_pins_e810t(struct ice_pf *pf, struct ptp_clock_info *info)
+ static void
+ ice_ptp_setup_pins_e810(struct ice_pf *pf, struct ptp_clock_info *info)
+ {
+-	info->n_per_out = N_PER_OUT_E810;
+-	info->n_ext_ts = N_EXT_TS_E810;
+-
+ 	if (ice_is_feature_supported(pf, ICE_F_SMA_CTRL)) {
+ 		info->n_ext_ts = N_EXT_TS_E810;
++		info->n_per_out = N_PER_OUT_E810T;
+ 		info->n_pins = NUM_PTP_PINS_E810T;
+ 		info->verify = ice_verify_pin_e810t;
  
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 2652e4f5c4a2..3d1b87151dc6 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -2503,6 +2503,68 @@ bool ice_is_pf_c827(struct ice_hw *hw)
- 	return false;
+ 		/* Complete setup of the SMA pins */
+ 		ice_ptp_setup_sma_pins_e810t(pf, info);
++	} else if (ice_is_e810t(&pf->hw)) {
++		info->n_ext_ts = N_EXT_TS_NO_SMA_E810T;
++		info->n_per_out = N_PER_OUT_NO_SMA_E810T;
++	} else {
++		info->n_per_out = N_PER_OUT_E810;
++		info->n_ext_ts = N_EXT_TS_E810;
+ 	}
  }
  
-+#define MAX_NETLIST_SIZE 10
-+/**
-+ * ice_find_netlist_node
-+ * @hw: pointer to the hw struct
-+ * @node_type_ctx: type of netlist node to look for
-+ * @node_part_number: node part number to look for
-+ * @node_handle: output parameter if node found - optional
-+ *
-+ * Scan the netlist for a node handle of the given node type and part number.
-+ *
-+ * If node_handle is non-NULL it will be modified on function exit. It is only
-+ * valid if the function returns zero, and should be ignored on any non-zero
-+ * return value.
-+ *
-+ * Returns: 0 if the node is found, -ENOENT if no handle was found, and
-+ * a negative error code on failure to access the AQ.
-+ */
-+static int
-+ice_find_netlist_node(struct ice_hw *hw, u8 node_type_ctx, u8 node_part_number,
-+		      u16 *node_handle)
-+{
-+	u8 idx;
-+
-+	for (idx = 0; idx < MAX_NETLIST_SIZE; idx++) {
-+		struct ice_aqc_get_link_topo cmd = {};
-+		u8 rec_node_part_number;
-+		int status;
-+
-+		cmd.addr.topo_params.node_type_ctx =
-+			FIELD_PREP(ICE_AQC_LINK_TOPO_NODE_TYPE_M,
-+				   node_type_ctx);
-+		cmd.addr.topo_params.index = idx;
-+
-+		status = ice_aq_get_netlist_node(hw, &cmd,
-+						 &rec_node_part_number,
-+						 node_handle);
-+		if (status)
-+			return status;
-+
-+		if (rec_node_part_number == node_part_number)
-+			return 0;
-+	}
-+
-+	return -ENOENT;
-+}
-+
-+/**
-+ * ice_is_clock_mux_in_netlist_e810t
-+ * @hw: pointer to the hw struct
-+ *
-+ * Check if the Clock Multiplexer device is present in the netlist
-+ */
-+bool ice_is_clock_mux_in_netlist_e810t(struct ice_hw *hw)
-+{
-+	if (ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_MUX,
-+				  ICE_ACQ_GET_LINK_TOPO_NODE_NR_GEN_CLK_MUX,
-+				  NULL))
-+		return false;
-+
-+	return true;
-+}
-+
- /**
-  * ice_aq_list_caps - query function/device capabilities
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 2250a9c5f61e..a7a55c536150 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -93,6 +93,7 @@ ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
- 		    struct ice_aqc_get_phy_caps_data *caps,
- 		    struct ice_sq_cd *cd);
- bool ice_is_pf_c827(struct ice_hw *hw);
-+bool ice_is_clock_mux_in_netlist_e810t(struct ice_hw *hw);
- int
- ice_aq_list_caps(struct ice_hw *hw, void *buf, u16 buf_size, u32 *cap_count,
- 		 enum ice_adminq_opc opc, struct ice_sq_cd *cd);
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index f29ff54383b5..fe4bf5967d32 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3989,8 +3989,9 @@ void ice_init_feature_support(struct ice_pf *pf)
- 		/* If we don't own the timer - don't enable other caps */
- 		if (!ice_pf_src_tmr_owned(pf))
- 			break;
--		if (ice_is_e810t(&pf->hw)) {
-+		if (ice_is_clock_mux_in_netlist_e810t(&pf->hw))
- 			ice_set_feature_support(pf, ICE_F_SMA_CTRL);
-+		if (ice_is_e810t(&pf->hw)) {
- 			if (ice_gnss_is_gps_present(&pf->hw))
- 				ice_set_feature_support(pf, ICE_F_GNSS);
- 		}
 -- 
 2.41.0.1.g9857a21e0017.dirty
 
