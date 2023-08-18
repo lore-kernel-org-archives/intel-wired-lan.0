@@ -4,84 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27322C001DE
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Aug 2023 06:47:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23B5EC001DE
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 18 Aug 2023 06:47:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 976D640490;
-	Fri, 18 Aug 2023 06:47:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 976D640490
+	by smtp2.osuosl.org (Postfix) with ESMTP id D0CEA402C3;
+	Fri, 18 Aug 2023 06:47:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D0CEA402C3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692341234;
-	bh=h8bkTmjPMYRNwvTNRH6z4lSz019KDAf7KPyagt3RIMQ=;
+	s=default; t=1692341238;
+	bh=ieiG8CgkXbEPlPq4iSWkllkR7AyafafOvoP4ajrFXgk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=uQrju+QHVGstBBht673ljtE0AwOqsWkQj8YGv1FYOzCljov7PCHy3hMZPqz0fo12J
-	 7b6fL+0oAaHXBKvGhnruj9zhwFCf/7UWSt9r+Vy374Ux70BTakTLMRG0Q6cDhT0wjt
-	 2+twbJ2Erz3SSk81lgcOLoMXo2P9zLye6hKdc144Pjc6V2ZjtXBxCA6NaCe79mCa7i
-	 tekC3/xjoacB2hXCOBwjOOxCl8QCrNBAVFHeHsYrO+DGlsucCJip7UoogYzMymdwWp
-	 WXm43UOwvJslb07dJwRfWLwgiraa3S6PZDG84w2hWPH9wqZobayK8ObivviK2mcLzG
-	 VAOLt/dLU1zEg==
+	b=bJmFUSOtrkBm/JtOsa9R+rifTucrmoP1Rlg1E/Vq1RkL9P4iz+aZKZ94lcmeT8mcF
+	 XXG8Z3j2nBnWHqiRtUpSKVZBRyF38ZYKYY2jN7ocwF4ltdeJdVqvci2wtDfJca2y1f
+	 0TY0LXkRmbn8UhXzGOZVXodRFFQObELPIJOZ2fJbJxYCa0HnOmLqNrU5oQj7KBpccz
+	 nc1FSY6kEOhlJmt9X2Rf0by1BJE1a/p4cypqGHvp0Jvje822k0mz1ScNDc36bi6GCW
+	 e6166wCwI9iw1aY3A913EGjqS/JVUJE7HB8BdSUk6d3Pk680rqOWMSK8t5BpLEZpzL
+	 VHIInh31MOFKA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id quNrJsW7OLFb; Fri, 18 Aug 2023 06:47:13 +0000 (UTC)
+	with ESMTP id kxz17bsQIjOe; Fri, 18 Aug 2023 06:47:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B32B1402C3;
-	Fri, 18 Aug 2023 06:47:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B32B1402C3
+	by smtp2.osuosl.org (Postfix) with ESMTP id C89C6404E9;
+	Fri, 18 Aug 2023 06:47:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C89C6404E9
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id CAF621BF2B4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Aug 2023 06:47:11 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 1EC531BF2B4
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Aug 2023 06:47:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9D58840490
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Aug 2023 06:47:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9D58840490
+ by smtp2.osuosl.org (Postfix) with ESMTP id EB51E40490
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Aug 2023 06:47:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EB51E40490
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hOGatRwztz2G for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id Di0jN0A6sHrR for <intel-wired-lan@lists.osuosl.org>;
  Fri, 18 Aug 2023 06:47:10 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1F8D6402C3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Aug 2023 06:47:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1F8D6402C3
-X-IronPort-AV: E=McAfee;i="6600,9927,10805"; a="439408345"
-X-IronPort-AV: E=Sophos;i="6.01,182,1684825200"; d="scan'208";a="439408345"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A1250404C4
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 18 Aug 2023 06:47:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A1250404C4
+X-IronPort-AV: E=McAfee;i="6600,9927,10805"; a="439408354"
+X-IronPort-AV: E=Sophos;i="6.01,182,1684825200"; d="scan'208";a="439408354"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 17 Aug 2023 23:47:09 -0700
+ 17 Aug 2023 23:47:10 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10805"; a="824997387"
-X-IronPort-AV: E=Sophos;i="6.01,182,1684825200"; d="scan'208";a="824997387"
+X-IronPort-AV: E=McAfee;i="6600,9927,10805"; a="824997406"
+X-IronPort-AV: E=Sophos;i="6.01,182,1684825200"; d="scan'208";a="824997406"
 Received: from dpdk-jf-ntb-v2.sh.intel.com ([10.67.119.19])
- by FMSMGA003.fm.intel.com with ESMTP; 17 Aug 2023 23:47:07 -0700
+ by FMSMGA003.fm.intel.com with ESMTP; 17 Aug 2023 23:47:08 -0700
 From: Junfeng Guo <junfeng.guo@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 18 Aug 2023 14:47:00 +0800
-Message-Id: <20230818064703.154183-1-junfeng.guo@intel.com>
+Date: Fri, 18 Aug 2023 14:47:01 +0800
+Message-Id: <20230818064703.154183-2-junfeng.guo@intel.com>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20230605024453.2378898-1-junfeng.guo@intel.com>
+In-Reply-To: <20230818064703.154183-1-junfeng.guo@intel.com>
 References: <20230605024453.2378898-1-junfeng.guo@intel.com>
+ <20230818064703.154183-1-junfeng.guo@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1692341230; x=1723877230;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=NEa1gYjFAzfWB2EjJ4eSC2R6sLBuBlUWr5iejdHTtZ0=;
- b=VMdhX3pb1kte3sParYhb8AZXer8XjCFuHpR6NoOfITRldGX9YwY7rHmi
- O7Df30hXmtFCPcdkrwj6oyDHyv3hT7cSgz6HBfrIx1D+OfQwYgBqqkUbe
- Wd60mPGTTwiiHXmfj7/KBLxnsnEaTQA8GfBQwXlABQiAZte9HeH8sWLlI
- kzuPy0DjWUPX9CQkTKY+5Ykp+CHLF06FvQo4sp2wSbHAIbVe9VliMj5Kj
- vDAxYry0isomx9rvNPiFjuOFpvonXH2+1U3IIa0w8pv3UaRvw1r6t/QBE
- y8nFu56b5qXya2HJywG+zCLpgknU8xecRtowg0kB+ieMg/ORkxdaXV4P5
+ bh=CVcekTVmTmI5+D9u4aKWL7S1xVXiU39E/HhDXDt4PjM=;
+ b=OEwxJKxlJD9hfpef2b3x7CEhP0I4mHVj216j80GeCyyGUuBfRjlQvdU+
+ eCFEZzM5Lx5GxudMcTR+uhwQCoOyDkLdU/6ufhMeEEF/1sSjBQa3XZUdS
+ CKhFczATwd4fPcmpF96m7TM2v+shtbhmf6vZbCnMTwfrlb3cyVLTDFQQZ
+ n+rFycqZFnsfmhc7zUWI6s+hEbnB+hil8lKwKH6ehWJYJFKqGfw/yXFXq
+ +PFNzRcSkdPNufuaHlM2H2ZbOjL/0tSF2fJIhfW/W1FM/NbKMX2a+kFCD
+ 09avgsR74rENsITSb2EtsGncc5Ego4M+zxDsx8c3lDsARxj6TZGujZbJt
  w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=VMdhX3pb
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 0/3] Enable the raw flow
- filtering for FDIR
+ header.a=rsa-sha256 header.s=Intel header.b=OEwxJKxl
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/3] virtchnl: support raw
+ packet in protocol header
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,35 +101,55 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This patch set provides a method for applications to send down
-training packets & masks (in binary) to the driver to do Flow
-Director (FDIR) filtering. Based on the Parser Library, these
-binary data would be used by the driver to figure out the infomations
-that are needed to create/destroy the FDIR rule in the FDIR stage.
+The patch extends existing virtchnl_proto_hdrs structure to allow VF
+to pass a pair of buffers as packet data and mask that describe
+a match pattern of a filter rule. Then the kernel PF driver is requested
+to parse the pair of buffer and figure out low level hardware metadata
+(ptype, profile, field vector.. ) to program the expected FDIR or RSS
+rules.
 
-With this patch set, the raw flow filtering for FDIR could be enabled
-to allow new flow offloading features to be supported without any
-driver changes (only need to update the Dynamic Device
-Personalization package).
+Signed-off-by: Qi Zhang <qi.z.zhang@intel.com>
+Signed-off-by: Junfeng Guo <junfeng.guo@intel.com>
+---
+ include/linux/avf/virtchnl.h | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-v2:
-- Replace magic hardcoded values with macros.
-- Init DVM mode for parser before running.
-
-Junfeng Guo (3):
-  virtchnl: support raw packet in protocol header
-  ice: add method to disable FDIR SWAP option
-  ice: enable Protocol Agnostic Flow Offloading FDIR
-
- .../net/ethernet/intel/ice/ice_flex_pipe.c    |  99 +++-
- .../net/ethernet/intel/ice/ice_flex_pipe.h    |   7 +-
- drivers/net/ethernet/intel/ice/ice_flow.c     | 114 ++++-
- drivers/net/ethernet/intel/ice/ice_flow.h     |   5 +
- drivers/net/ethernet/intel/ice/ice_vf_lib.h   |   8 +
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    | 460 +++++++++++++++++-
- include/linux/avf/virtchnl.h                  |  12 +-
- 7 files changed, 698 insertions(+), 7 deletions(-)
-
+diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
+index c15221dcb75e..33b4c6db0c10 100644
+--- a/include/linux/avf/virtchnl.h
++++ b/include/linux/avf/virtchnl.h
+@@ -1083,6 +1083,7 @@ enum virtchnl_rss_algorithm {
+ };
+ 
+ #define VIRTCHNL_MAX_NUM_PROTO_HDRS	32
++#define VIRTCHNL_MAX_SIZE_RAW_PACKET	1024
+ #define PROTO_HDR_SHIFT			5
+ #define PROTO_HDR_FIELD_START(proto_hdr_type) ((proto_hdr_type) << PROTO_HDR_SHIFT)
+ #define PROTO_HDR_FIELD_MASK ((1UL << PROTO_HDR_SHIFT) - 1)
+@@ -1228,13 +1229,22 @@ struct virtchnl_proto_hdrs {
+ 	u8 pad[3];
+ 	/**
+ 	 * specify where protocol header start from.
++	 * must be 0 when sending a raw packet request.
+ 	 * 0 - from the outer layer
+ 	 * 1 - from the first inner layer
+ 	 * 2 - from the second inner layer
+ 	 * ....
+ 	 **/
+ 	int count; /* the proto layers must < VIRTCHNL_MAX_NUM_PROTO_HDRS */
+-	struct virtchnl_proto_hdr proto_hdr[VIRTCHNL_MAX_NUM_PROTO_HDRS];
++	union {
++		struct virtchnl_proto_hdr
++			proto_hdr[VIRTCHNL_MAX_NUM_PROTO_HDRS];
++		struct {
++			u16 pkt_len;
++			u8 spec[VIRTCHNL_MAX_SIZE_RAW_PACKET];
++			u8 mask[VIRTCHNL_MAX_SIZE_RAW_PACKET];
++		} raw;
++	};
+ };
+ 
+ VIRTCHNL_CHECK_STRUCT_LEN(2312, virtchnl_proto_hdrs);
 -- 
 2.25.1
 
