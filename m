@@ -4,181 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72F44EE49A6
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 21 Aug 2023 13:01:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB2D7EE49A6
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 21 Aug 2023 13:04:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 06F314032D;
-	Mon, 21 Aug 2023 13:01:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 06F314032D
+	by smtp4.osuosl.org (Postfix) with ESMTP id 46278408AB;
+	Mon, 21 Aug 2023 13:04:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 46278408AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692622886;
-	bh=BeATvpFN+NXdd9Xv3o3M3akdph1JMs8uesixJ5nduOM=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1692623067;
+	bh=lz1aBBTkHNGRRcFemsa42JN0ZJinqA4JUIARAiCE0F4=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=5U9CqqlRs4nzACjhPOOmtIthCanGdh2K7MAkA6UH/OqHBv/XQ0dZm/PVtBOZ5uSkP
-	 0AUbKhrNxK9AkKAQmZtj3or0O8r7qsMLOg+nfpVTnTUzKHjclTtf/hPIj7+RNccJ+J
-	 phSFzVYctrD1eav4Pmh+d0oxyrFQn7rv+3P1O7BvOCrnjPJT8/Tj1D85VIJoBNt0sz
-	 7tgDBkEQ21CwwD/AQ9286DXUZLkXJl21/vMGjJQ750fkgpnyRmBqvt4A/OSw/K75Qp
-	 qpg8F7YaCe9NZo470O5794ST0vCtCnXuwGvfcUFeyWhHSOEPS/VvqxfFYaxagfzzmk
-	 tUgr6X6dOJleQ==
+	b=JgmWuvMpQzztbk5CWnDIHCMvlXbzZZsU1n0Ithyr0A9TpePxFiRuXylv4Z50mym7Q
+	 D/iNX3Va1wBmLRcEM6FNwaJCXLlqO3ZXvhk9D3AI9mPwsGC/VELNmiEqzuz94fZYJ0
+	 xnk1DuLgv49Tu6MYXprsSx4qV0Dl8fildI3UMagDW5K56LFeK1ZRVfd+fgZkJjg34s
+	 EYnG9zkZ8LT90V0bc1Be6Lg06iQikWP7uaWuK2V/SLrxZfEZRGHwLNr3/+VHf1ZRE0
+	 y70Gpcybj0aK0x2tlieunzQ3QSyxh6ypbWiDEujR6cOfD0dC//pauW5dyzvE7KSYK6
+	 6XpSd1xSZqU9Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id UblBpW3nkxcJ; Mon, 21 Aug 2023 13:01:24 +0000 (UTC)
+	with ESMTP id sLpCzyBZ5CzU; Mon, 21 Aug 2023 13:04:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8897C4024D;
-	Mon, 21 Aug 2023 13:01:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8897C4024D
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id AE5D91BF388
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Aug 2023 13:01:23 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6FABB4094B;
+	Mon, 21 Aug 2023 13:04:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6FABB4094B
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 141A91BF2F2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Aug 2023 13:04:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 8162E610B3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Aug 2023 13:01:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8162E610B3
+ by smtp4.osuosl.org (Postfix) with ESMTP id 75B5140545
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Aug 2023 13:04:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 75B5140545
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 2t_PaGKP5SzL for <intel-wired-lan@lists.osuosl.org>;
- Mon, 21 Aug 2023 13:01:22 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 97E606059B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Aug 2023 13:01:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 97E606059B
-X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="439955406"
-X-IronPort-AV: E=Sophos;i="6.01,190,1684825200"; d="scan'208";a="439955406"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 21 Aug 2023 06:01:21 -0700
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id k_-OM-1GJo81 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 21 Aug 2023 13:04:22 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.151])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1864340980
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 21 Aug 2023 13:04:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1864340980
+X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="353898838"
+X-IronPort-AV: E=Sophos;i="6.01,190,1684825200"; d="scan'208";a="353898838"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Aug 2023 06:04:21 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="850168152"
-X-IronPort-AV: E=Sophos;i="6.01,190,1684825200"; d="scan'208";a="850168152"
-Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
- by fmsmga002.fm.intel.com with ESMTP; 21 Aug 2023 06:01:20 -0700
-Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Mon, 21 Aug 2023 06:01:19 -0700
-Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
- fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27 via Frontend Transport; Mon, 21 Aug 2023 06:01:19 -0700
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.170)
- by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.27; Mon, 21 Aug 2023 06:01:19 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=dGn3LBTskFUkLDYl/sG7kz7uGH39u+r9MYZ0y1DFaelHfHG5vSy84FWVlNoPjuoz33Ntqgf7YJAslWecx/rr0f7OvDkXhd7Oq8k5ZSaAEQBcROZ2YuuwOT82wVRMrr8qLHZcOz4n9cNDmyM1FAfM/8M12KonxNHlBOczLdw68IBKz4FLH8CFU4Pebb90espROc1xaF9BZ/G5MGCQlMvnU6vkctsuM/dWeA+E51yOxhbmDl4t70grOkN9DS4CozsbOrLeShzuuKEcdnuZ9g8dP0gnjpEfjJRhLxTb09yHidg+RLm1D1Ip60OkQB/X7Ry36OYi+jIfgLl/6cl1eaH9Jg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=mAvHjfF0Vt0twLqezf4UmBXWIN+qQve4bi3kp0KdQhA=;
- b=J2eYMnFNrw6Th6kjQIwx5JdbfFIphEmU39n1F9/rio+8kWIazklKOmJOjaCB09x7H0MNpSPIsU7c4AM7ESFdfjJyENBPbunTkBoMoRP4ZS1FdzA6M55b6m041im3QzkyQ9fYkFJnOIQD3k9XfdlZunRWtVqXRD8aJURDq8/vvkQVr/VxsisqGcfHNf75GIj/TDZM9DsUwsjgZs7czC3qpos6ajNs2vC+xKdSmzuSf1aRsmU5AVzvMEc/5E0CP0NtF+hiAzsAxQr631KN+vcBDOMKq7Ph+6wqSSHVepwOCZ2TpeMJUS767O+krSEU54ZQiaXQBHdL18NHMNzZrPnt9Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from DM6PR11MB3625.namprd11.prod.outlook.com (2603:10b6:5:13a::21)
- by PH7PR11MB6721.namprd11.prod.outlook.com (2603:10b6:510:1ad::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.24; Mon, 21 Aug
- 2023 13:01:17 +0000
-Received: from DM6PR11MB3625.namprd11.prod.outlook.com
- ([fe80::44ff:6a5:9aa4:124a]) by DM6PR11MB3625.namprd11.prod.outlook.com
- ([fe80::44ff:6a5:9aa4:124a%7]) with mapi id 15.20.6678.031; Mon, 21 Aug 2023
- 13:01:17 +0000
-Message-ID: <0ac644c4-e14e-8f41-3e7c-472ec7f7e4a7@intel.com>
-Date: Mon, 21 Aug 2023 15:00:08 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.13.0
-Content-Language: en-US
-To: Paul Greenwalt <paul.greenwalt@intel.com>
-References: <20230819093941.15163-1-paul.greenwalt@intel.com>
-From: Alexander Lobakin <aleksander.lobakin@intel.com>
-In-Reply-To: <20230819093941.15163-1-paul.greenwalt@intel.com>
-X-ClientProxiedBy: DB9PR06CA0018.eurprd06.prod.outlook.com
- (2603:10a6:10:1db::23) To DM6PR11MB3625.namprd11.prod.outlook.com
- (2603:10b6:5:13a::21)
+X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="765361641"
+X-IronPort-AV: E=Sophos;i="6.01,190,1684825200"; d="scan'208";a="765361641"
+Received: from lkp-server02.sh.intel.com (HELO 6809aa828f2a) ([10.239.97.151])
+ by orsmga008.jf.intel.com with ESMTP; 21 Aug 2023 06:04:18 -0700
+Received: from kbuild by 6809aa828f2a with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1qY4Zt-0000VE-2q;
+ Mon, 21 Aug 2023 13:04:17 +0000
+Date: Mon, 21 Aug 2023 21:03:50 +0800
+From: kernel test robot <lkp@intel.com>
+To: Paul Greenwalt <paul.greenwalt@intel.com>, intel-wired-lan@lists.osuosl.org
+Message-ID: <202308212014.a1qQx4Wp-lkp@intel.com>
+References: <20230819094025.15196-1-paul.greenwalt@intel.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM6PR11MB3625:EE_|PH7PR11MB6721:EE_
-X-MS-Office365-Filtering-Correlation-Id: 25fc35c8-357b-432a-07b4-08dba246b4ea
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: dSGNCbYkbDthhXxYgnwwwqdUJqwbdX8vxAv6X+pzXtGqgCd1pZ5r9einVxSsYWIGynt8oZViGuPrDwjp+LvrM4HMbghQQ/7D/3sB4sYyWp6CuYxw3sy1rB6FwelG0tIRLa4Rn3VI9b3XSj25mvb7fPb9Qm/9S1ssC5csl41ji04cGKDEvZLMK6L3oYcZg5I8Ki5YdT82tDDeM49YG6jXeqURhpHNAAQ1/x9i19qQ6qp4hjig43lUKHht2hkoGJKvwRX5fYGqopnVLjZLdP/pVGlS99AjUD/RGltbjhxUdKzYgsg3kbA0zIg+nKhtY+Mot5Usq3J/gjb8JNHqHicZOU3f5FdgmUlFiZWfo5qqN8H8svsvGlvRSvjSnILnpOr+z9nWzeB/vfN3qbhVSneHMwdesfquw1/ibkmdcMx1iDFrZmJcsBFrrh6OaeHvIfy4mCiSAjiFZc1xSGzeoX+0Z9OTQFp2E/LiBQA9kNgwbL9/0/jNNocFA0NS0Z+y4pSzlUUJWR6zLBIj8I+HUM2DFK3eF3q5XdReUzVuWWwn/5mclvgOgNjFfGiRUgW7F/CdEJQSeepAB34UDXfd/pkgYQbQe/TyA2rWrfWWvvCq5qowsVM887lUmEU/gPvHT3qxEJ0spfbSU3EM75GO7HcB6w==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:DM6PR11MB3625.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(346002)(366004)(39860400002)(376002)(136003)(396003)(451199024)(186009)(1800799009)(2906002)(38100700002)(6506007)(6486002)(83380400001)(5660300002)(26005)(86362001)(31686004)(31696002)(8676002)(2616005)(8936002)(6862004)(4326008)(316002)(66946007)(6512007)(6636002)(66556008)(66476007)(37006003)(82960400001)(478600001)(6666004)(36756003)(41300700001)(45980500001)(43740500002);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?d1IvTmxIK2o4ZjE2cVdUMGthV3dNMkdsZGlVQTBra3pEYy9WZmN6WDhnYzU4?=
- =?utf-8?B?eGM4R1ppRjdwMjNhOWxkT2xicnlvT0M3bzJEcTFtekhkakJ0clY2Wm5jMlJy?=
- =?utf-8?B?WXZZbmpUS3dmOFYvZnBnUlIrNkY2WkhWdWlCS2NDTGNXYUxxbGRPd3FwejFI?=
- =?utf-8?B?TitpQm5mL2VadTRFTy9qNlBVVnpNVytDUGhaVDNid1U4NjJiZGEyT2lPNmwv?=
- =?utf-8?B?R2hiZ0dmWjJrT0M3OEtVblNFamcvMVFjVkJBZEFWcHdnZFl5dHNqNExpNTQ4?=
- =?utf-8?B?azdEZEJFR2hzNFlvdVFPbjQ2ZE1OWEJ0NUZsdmRUSHVPTnM2RTNaN3lhblE5?=
- =?utf-8?B?blVwNjUzd25TaDF1eXhqZFlWUGhjRlZhcE9KeEN2WXFwWFgvNTBBTWhqSWp6?=
- =?utf-8?B?a2pxY3VEVnV4OUxZcExKMU9iV2JaZFNkTHJJWEJHZUtQRG93SW1weUZjT1Fa?=
- =?utf-8?B?RWZLaW8xcDNzT3pSUkM2cG1NZHdjcUJuUkppTi9Fc2pOcTNOSk1QQVlZVHVk?=
- =?utf-8?B?UzhIZ0ZRUlVZL2R4Y2hYUUpQQWxmV3dNUDkwdXp6SGs2a205TlhtcG9aaWYy?=
- =?utf-8?B?WDFlZEZKKzNqZjVtNXpEL3g3dGZob000V1h2eGZ0S2JQdCs3dGNJQnh0WDNv?=
- =?utf-8?B?akIvWURZU2xQeFZsYWdxYW00ankwS3pwMGNHNGxSSGlvcTdKN1FrbUZUWnky?=
- =?utf-8?B?dVp6R3VxUG9BTVFNdGR4Q2ozNTlZNDdzMks4Yksvai9jaVF2UHRQWklhV0Vp?=
- =?utf-8?B?dG4wbmE5NVk3NDFMM1ptZ3ZBa0NUaDdRRjN1NlpmNXd1YmdMdGpIOEo3T21W?=
- =?utf-8?B?Z09nUkk3VUVVR291WXVNd2dKWDBhenFZbG4wS3pjZHREd2hDbkI3bGIzZUpU?=
- =?utf-8?B?dHdPeU43WWVMemVKT3MrZUxTK1JXSnRuNXhuSFRYYjRLb25ZZHUycWJEbXF1?=
- =?utf-8?B?NnFxWmlSVHFzT2FYN2FQdTZGTS8zdElmaVFCUkI1UnVCdENBSGJTWmxLdUR3?=
- =?utf-8?B?a0pmTWVzVEhqelZGZFdnakI0UzgvL3pTaVBDR0NJNjR5R2hCd2pPUUtWbUQ3?=
- =?utf-8?B?b0gzb1NBWmN0S2plOW5SYXovOGhHbmlVSTVoTUNjUUhwTWtZWXpHUkY4NFFq?=
- =?utf-8?B?NVpTbU1JU0VTZWo3dHpmcmdycTFhS2NYQ1BmdmkyRytvYTBLd215QWdycHNP?=
- =?utf-8?B?T0lHeThGMlJZZTR6QU5mU2R4OExOQzFsRkdsTHRLWHBubjlYQXN6SjF4aFgr?=
- =?utf-8?B?ZmMwZy82MHE4YmVycFN5T3JYZ1dRUFJabDYyZndVMi9YNUZqL1lhTzhocWUv?=
- =?utf-8?B?S1Z6eVZPNk9aRTl0S25MSzY5dHcyZkxSS2hqdldiUHVMbkNTSldONmNLT2Uz?=
- =?utf-8?B?Mm1qaDhaSGsyZllTMll4ZUtNajRvKzdUNUhuNDBxTVdESnEwNXo2dklvWUdR?=
- =?utf-8?B?NlY2NzV5djdWZE5QWUhuSG5KZkFKTUgxbUF2TXhYMm1PWG03aDVPRnBCNHNs?=
- =?utf-8?B?WVVmbE5wbXB2UHk3TTZzNHpXQmczeVRYOVpsUVRQQXRBalJJZFFiQzVXMnll?=
- =?utf-8?B?Mm1JNk9KVWlmWkoxYk0wQUM3dk42Mlpsb0hnSU0rZjkzaTh1M1hKaFhBejdr?=
- =?utf-8?B?YVJNY0NVb2o0QXU5OXlVVG8xeTRrSGdnbVhmVVlnT2VoUzY0akRPZjlWRVA2?=
- =?utf-8?B?cUlleDFJakUrY3RvZzI5bUY4ekFMajFLZDZDdXpaVCtiWjBWdmxLTDNjNTVv?=
- =?utf-8?B?Vit3cm9iUXRqTS9XeWJMek8xNGJuNEo4ZzM3cys4SDQvaGZEQzlYSHp2OUZz?=
- =?utf-8?B?eFEzbGYyR0VoNGExeitjbkxJSWZEa04zdWdOdWtjSE15Y0hBWVJSOVIyVlA1?=
- =?utf-8?B?OVA3ZFVXMXdNdGdUb0grOThOeFhlUmJiYWw0bzk3YUNvMldlUjIxcW15UHZ1?=
- =?utf-8?B?emxkQjRDSmZOU2k2S3U2TFZtdHZNaVF6UUtDQy82UkloYVd0OEpvRVZTZWZO?=
- =?utf-8?B?OHQ3SEhzcmhJalZwa1RXVlRPNHJwSGltNGg5ODAvK09YNXh6UUdnY3B6MFNn?=
- =?utf-8?B?bTdFZ042b1c0VnJEL2tLWFpsTWdkemdtMGNMbEZGQitpdzFWZDVvc014dStC?=
- =?utf-8?B?TGxQVzNqNXNvSFRidVNMNlMzMjFzUnFzbjg4MzhkZDR3TUtDaFFyOXErVHJ1?=
- =?utf-8?B?RUE9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 25fc35c8-357b-432a-07b4-08dba246b4ea
-X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB3625.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Aug 2023 13:01:17.2122 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: /dN9CjPOXQR5nCXW+tP7j1UWcCahyiQlmFxbZnlVl2BQ+5VHm/k4C4wfKZRHSnbYyZRB2Xqb8uhQaMK+DRH0ApPRwFFU9sM9aCesGqEclAM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB6721
-X-OriginatorOrg: intel.com
+Content-Disposition: inline
+In-Reply-To: <20230819094025.15196-1-paul.greenwalt@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1692622882; x=1724158882;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=RHBPGgDJmzIYSt3hqKJIVPwUDaCPXOTvOTBPqfM8y4I=;
- b=BOiuOx+1JdtMEGXy28y64EUCqpQnnfIEEzXqCIBYw9modT3h3uRyfF1g
- L/KHs8QuUadrAgHNrcqFcU/vTYR7TS4En7dXgxIjBdX2FysgtY6IbGD8X
- OvFKK0gaDsZCpu3V9e0YHtZQTwxNgu7y7CmP6hZHQurtQM+pUkXWXCfTI
- PeRwY3Xq+4iei30ZA053qExjpiWfNbRMINZZ9eBaeoXpxY7Q5LqRMA2qg
- SR+Zflm0hIsfRZtVbZGKE2OgDxmpfI5GUKYZH6LxjSwakJ6KyQRqVF2L9
- emCXKecm6SSePAoStylnOTLLrROXoo9WmNswSpNxggfuTL4oc7L4CRrtl
- Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ t=1692623062; x=1724159062;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=Owv1ANrpuvOaA6Tr8TM4kOysFxfycb+EDrnRaLZQHaw=;
+ b=NV946gBFt+7QlhYQMVmnWxjsAd8c0HhPRycPGsa8JmmGfjjjoYrbwe92
+ HgqxWI/ujX7HoccMdOgEG4ZFaDbiVOPTGpk+nl+w9YZtd1+kTUAUbYKty
+ W56lZAvWDQYvMK+CbwwyKDAnWWsqXXkVjoqP+N6ey/7dHB22JPyjalX8w
+ 92wgIlv4tV5kDSJ3SdORUg0dav5vNAe/gvE4n7QlAP8O45yQ27v3X99nJ
+ 5ZywdxuNM+L5DnfmELML2N1sjT2sOnhUOr04GhjQ7O8c42yeFrTiMMHeq
+ aTb6qMZqyQv9xI4gMLAXm2iWXh7bromD/VUudgl90HJqZUGUAXnShBnwN
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=BOiuOx+1
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 2/9] ethtool: Add forced
- speed to supported link modes maps
+ header.a=rsa-sha256 header.s=Intel header.b=NV946gBF
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 3/9] ethtool: Add missing
+ ETHTOOL_LINK_MODE_ to forced speed map
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -191,176 +97,224 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: aelior@marvell.com, andrew@lunn.ch, intel-wired-lan@lists.osuosl.org,
- manishc@marvell.com, netdev@vger.kernel.org
+Cc: andrew@lunn.ch, netdev@vger.kernel.org, aelior@marvell.com,
+ manishc@marvell.com, oe-kbuild-all@lists.linux.dev
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Paul Greenwalt <paul.greenwalt@intel.com>
-Date: Sat, 19 Aug 2023 02:39:41 -0700
+Hi Paul,
 
-> The need to map Ethtool forced speeds to  Ethtool supported link modes is
-> common among drivers. To support this move the supported link modes maps
-> implementation from the qede driver. This is an efficient solution
-> introduced in commit 1d4e4ecccb11 ("qede: populate supported link modes
-> maps on module init") for qede driver.
+kernel test robot noticed the following build warnings:
 
-[...]
+[auto build test WARNING on net-next/main]
+[also build test WARNING on next-20230821]
+[cannot apply to tnguy-next-queue/dev-queue tnguy-net-queue/dev-queue net/main linus/master horms-ipvs/master v6.5-rc7]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-> diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
-> index 62b61527bcc4..245fd4a8d85b 100644
-> --- a/include/linux/ethtool.h
-> +++ b/include/linux/ethtool.h
-> @@ -1052,4 +1052,78 @@ static inline int ethtool_mm_frag_size_min_to_add(u32 val_min, u32 *val_add,
->   * next string.
->   */
->  extern __printf(2, 3) void ethtool_sprintf(u8 **data, const char *fmt, ...);
-> +
-> +/* Link mode to forced speed capabilities maps */
-> +struct ethtool_forced_speed_map {
-> +	u32		speed;
-> +	__ETHTOOL_DECLARE_LINK_MODE_MASK(caps);
-> +
-> +	const u32	*cap_arr;
-> +	u32		arr_size;
+url:    https://github.com/intel-lab-lkp/linux/commits/Paul-Greenwalt/ice-Add-E830-device-IDs-MAC-type-and-registers/20230821-095200
+base:   net-next/main
+patch link:    https://lore.kernel.org/r/20230819094025.15196-1-paul.greenwalt%40intel.com
+patch subject: [Intel-wired-lan] [PATCH iwl-next v2 3/9] ethtool: Add missing ETHTOOL_LINK_MODE_ to forced speed map
+config: sparc64-randconfig-r015-20230821 (https://download.01.org/0day-ci/archive/20230821/202308212014.a1qQx4Wp-lkp@intel.com/config)
+compiler: sparc64-linux-gcc (GCC) 12.3.0
+reproduce: (https://download.01.org/0day-ci/archive/20230821/202308212014.a1qQx4Wp-lkp@intel.com/reproduce)
 
-Please re-layout this as follows:
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202308212014.a1qQx4Wp-lkp@intel.com/
 
-1. caps;
-2. cap_arr;
-3. arr_size;
-4. speed.
+All warnings (new ones prefixed by >>):
 
-Or in any other way that wouldn't provoke holes on 64-bit systems.
-I wasn't really familiar with that when initially adding these
-definitions :D
+   In file included from include/linux/linkmode.h:5,
+                    from include/linux/mii.h:13,
+                    from include/uapi/linux/mdio.h:15,
+                    from drivers/vfio/platform/reset/vfio_platform_amdxgbe.c:14:
+>> include/linux/ethtool.h:1190:18: warning: 'ethtool_forced_speed_800000' defined but not used [-Wunused-const-variable=]
+    1190 | static const u32 ethtool_forced_speed_800000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/ethtool.h:1177:18: warning: 'ethtool_forced_speed_400000' defined but not used [-Wunused-const-variable=]
+    1177 | static const u32 ethtool_forced_speed_400000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/ethtool.h:1164:18: warning: 'ethtool_forced_speed_200000' defined but not used [-Wunused-const-variable=]
+    1164 | static const u32 ethtool_forced_speed_200000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/ethtool.h:1147:18: warning: 'ethtool_forced_speed_100000' defined but not used [-Wunused-const-variable=]
+    1147 | static const u32 ethtool_forced_speed_100000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/ethtool.h:1140:18: warning: 'ethtool_forced_speed_56000' defined but not used [-Wunused-const-variable=]
+    1140 | static const u32 ethtool_forced_speed_56000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/ethtool.h:1129:18: warning: 'ethtool_forced_speed_50000' defined but not used [-Wunused-const-variable=]
+    1129 | static const u32 ethtool_forced_speed_50000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/ethtool.h:1122:18: warning: 'ethtool_forced_speed_40000' defined but not used [-Wunused-const-variable=]
+    1122 | static const u32 ethtool_forced_speed_40000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/ethtool.h:1116:18: warning: 'ethtool_forced_speed_25000' defined but not used [-Wunused-const-variable=]
+    1116 | static const u32 ethtool_forced_speed_25000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/ethtool.h:1111:18: warning: 'ethtool_forced_speed_20000' defined but not used [-Wunused-const-variable=]
+    1111 | static const u32 ethtool_forced_speed_20000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/ethtool.h:1099:18: warning: 'ethtool_forced_speed_10000' defined but not used [-Wunused-const-variable=]
+    1099 | static const u32 ethtool_forced_speed_10000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/ethtool.h:1095:18: warning: 'ethtool_forced_speed_5000' defined but not used [-Wunused-const-variable=]
+    1095 | static const u32 ethtool_forced_speed_5000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/ethtool.h:1090:18: warning: 'ethtool_forced_speed_2500' defined but not used [-Wunused-const-variable=]
+    1090 | static const u32 ethtool_forced_speed_2500[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~
+   include/linux/ethtool.h:1084:18: warning: 'ethtool_forced_speed_1000' defined but not used [-Wunused-const-variable=]
+    1084 | static const u32 ethtool_forced_speed_1000[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/ethtool.h:1078:18: warning: 'ethtool_forced_speed_100' defined but not used [-Wunused-const-variable=]
+    1078 | static const u32 ethtool_forced_speed_100[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~~
+>> include/linux/ethtool.h:1072:18: warning: 'ethtool_forced_speed_10' defined but not used [-Wunused-const-variable=]
+    1072 | static const u32 ethtool_forced_speed_10[] __initconst = {
+         |                  ^~~~~~~~~~~~~~~~~~~~~~~
 
-> +};
-> +
-> +#define ETHTOOL_FORCED_SPEED_MAP(value)					\
-> +{									\
-> +	.speed		= SPEED_##value,				\
-> +	.cap_arr	= ethtool_forced_speed_##value,			\
-> +	.arr_size	= ARRAY_SIZE(ethtool_forced_speed_##value),	\
-> +}
-> +
-> +static const u32 ethtool_forced_speed_1000[] __initconst = {
 
-2 reasons I don't like this:
+vim +/ethtool_forced_speed_800000 +1190 include/linux/ethtool.h
 
-1. static const in a header file.
-   This implies code duplication -- every object file will have its own
-   copy. If we want to reuse them, they should be declared global in one
-   place (somewhere in net/ethtool), without __initconst unfortunately.
-2. __initconst in a header file.
-   I can refer to that declaration somewhere not in the initialization
-   code and catch modpost or section reference issues. If we want to
-   make those global and accessible from the drivers, it should not have
-   any non-standard section placement.
+  1071	
+> 1072	static const u32 ethtool_forced_speed_10[] __initconst = {
+  1073		ETHTOOL_LINK_MODE_10baseT_Full_BIT,
+  1074		ETHTOOL_LINK_MODE_10baseT1L_Full_BIT,
+  1075		ETHTOOL_LINK_MODE_10baseT1S_Full_BIT,
+  1076	};
+  1077	
+> 1078	static const u32 ethtool_forced_speed_100[] __initconst = {
+  1079		ETHTOOL_LINK_MODE_100baseT_Full_BIT,
+  1080		ETHTOOL_LINK_MODE_100baseFX_Half_BIT,
+  1081		ETHTOOL_LINK_MODE_100baseFX_Full_BIT,
+  1082	};
+  1083	
+  1084	static const u32 ethtool_forced_speed_1000[] __initconst = {
+  1085		ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+  1086		ETHTOOL_LINK_MODE_1000baseKX_Full_BIT,
+  1087		ETHTOOL_LINK_MODE_1000baseX_Full_BIT,
+  1088	};
+  1089	
+> 1090	static const u32 ethtool_forced_speed_2500[] __initconst = {
+  1091		ETHTOOL_LINK_MODE_2500baseT_Full_BIT,
+  1092		ETHTOOL_LINK_MODE_2500baseX_Full_BIT,
+  1093	};
+  1094	
+> 1095	static const u32 ethtool_forced_speed_5000[] __initconst = {
+  1096		ETHTOOL_LINK_MODE_5000baseT_Full_BIT,
+  1097	};
+  1098	
+  1099	static const u32 ethtool_forced_speed_10000[] __initconst = {
+  1100		ETHTOOL_LINK_MODE_10000baseT_Full_BIT,
+  1101		ETHTOOL_LINK_MODE_10000baseKR_Full_BIT,
+  1102		ETHTOOL_LINK_MODE_10000baseKX4_Full_BIT,
+  1103		ETHTOOL_LINK_MODE_10000baseR_FEC_BIT,
+  1104		ETHTOOL_LINK_MODE_10000baseCR_Full_BIT,
+  1105		ETHTOOL_LINK_MODE_10000baseSR_Full_BIT,
+  1106		ETHTOOL_LINK_MODE_10000baseLR_Full_BIT,
+  1107		ETHTOOL_LINK_MODE_10000baseLRM_Full_BIT,
+  1108		ETHTOOL_LINK_MODE_10000baseER_Full_BIT,
+  1109	};
+  1110	
+  1111	static const u32 ethtool_forced_speed_20000[] __initconst = {
+  1112		ETHTOOL_LINK_MODE_20000baseKR2_Full_BIT,
+  1113		ETHTOOL_LINK_MODE_20000baseMLD2_Full_BIT,
+  1114	};
+  1115	
+  1116	static const u32 ethtool_forced_speed_25000[] __initconst = {
+  1117		ETHTOOL_LINK_MODE_25000baseKR_Full_BIT,
+  1118		ETHTOOL_LINK_MODE_25000baseCR_Full_BIT,
+  1119		ETHTOOL_LINK_MODE_25000baseSR_Full_BIT,
+  1120	};
+  1121	
+  1122	static const u32 ethtool_forced_speed_40000[] __initconst = {
+  1123		ETHTOOL_LINK_MODE_40000baseLR4_Full_BIT,
+  1124		ETHTOOL_LINK_MODE_40000baseKR4_Full_BIT,
+  1125		ETHTOOL_LINK_MODE_40000baseCR4_Full_BIT,
+  1126		ETHTOOL_LINK_MODE_40000baseSR4_Full_BIT,
+  1127	};
+  1128	
+  1129	static const u32 ethtool_forced_speed_50000[] __initconst = {
+  1130		ETHTOOL_LINK_MODE_50000baseKR2_Full_BIT,
+  1131		ETHTOOL_LINK_MODE_50000baseCR2_Full_BIT,
+  1132		ETHTOOL_LINK_MODE_50000baseSR2_Full_BIT,
+  1133		ETHTOOL_LINK_MODE_50000baseKR_Full_BIT,
+  1134		ETHTOOL_LINK_MODE_50000baseKR_Full_BIT,
+  1135		ETHTOOL_LINK_MODE_50000baseCR_Full_BIT,
+  1136		ETHTOOL_LINK_MODE_50000baseLR_ER_FR_Full_BIT,
+  1137		ETHTOOL_LINK_MODE_50000baseDR_Full_BIT,
+  1138	};
+  1139	
+> 1140	static const u32 ethtool_forced_speed_56000[] __initconst = {
+  1141		ETHTOOL_LINK_MODE_56000baseKR4_Full_BIT,
+  1142		ETHTOOL_LINK_MODE_56000baseCR4_Full_BIT,
+  1143		ETHTOOL_LINK_MODE_56000baseSR4_Full_BIT,
+  1144		ETHTOOL_LINK_MODE_56000baseLR4_Full_BIT,
+  1145	};
+  1146	
+  1147	static const u32 ethtool_forced_speed_100000[] __initconst = {
+  1148		ETHTOOL_LINK_MODE_100000baseKR4_Full_BIT,
+  1149		ETHTOOL_LINK_MODE_100000baseSR4_Full_BIT,
+  1150		ETHTOOL_LINK_MODE_100000baseCR4_Full_BIT,
+  1151		ETHTOOL_LINK_MODE_100000baseLR4_ER4_Full_BIT,
+  1152		ETHTOOL_LINK_MODE_100000baseCR2_Full_BIT,
+  1153		ETHTOOL_LINK_MODE_100000baseSR2_Full_BIT,
+  1154		ETHTOOL_LINK_MODE_100000baseKR2_Full_BIT,
+  1155		ETHTOOL_LINK_MODE_100000baseLR2_ER2_FR2_Full_BIT,
+  1156		ETHTOOL_LINK_MODE_100000baseDR2_Full_BIT,
+  1157		ETHTOOL_LINK_MODE_100000baseKR_Full_BIT,
+  1158		ETHTOOL_LINK_MODE_100000baseSR_Full_BIT,
+  1159		ETHTOOL_LINK_MODE_100000baseLR_ER_FR_Full_BIT,
+  1160		ETHTOOL_LINK_MODE_100000baseCR_Full_BIT,
+  1161		ETHTOOL_LINK_MODE_100000baseDR_Full_BIT,
+  1162	};
+  1163	
+> 1164	static const u32 ethtool_forced_speed_200000[] __initconst = {
+  1165		ETHTOOL_LINK_MODE_200000baseKR4_Full_BIT,
+  1166		ETHTOOL_LINK_MODE_200000baseSR4_Full_BIT,
+  1167		ETHTOOL_LINK_MODE_200000baseLR4_ER4_FR4_Full_BIT,
+  1168		ETHTOOL_LINK_MODE_200000baseDR4_Full_BIT,
+  1169		ETHTOOL_LINK_MODE_200000baseCR4_Full_BIT,
+  1170		ETHTOOL_LINK_MODE_200000baseKR2_Full_BIT,
+  1171		ETHTOOL_LINK_MODE_200000baseSR2_Full_BIT,
+  1172		ETHTOOL_LINK_MODE_200000baseLR2_ER2_FR2_Full_BIT,
+  1173		ETHTOOL_LINK_MODE_200000baseDR2_Full_BIT,
+  1174		ETHTOOL_LINK_MODE_200000baseCR2_Full_BIT,
+  1175	};
+  1176	
+> 1177	static const u32 ethtool_forced_speed_400000[] __initconst = {
+  1178		ETHTOOL_LINK_MODE_400000baseKR8_Full_BIT,
+  1179		ETHTOOL_LINK_MODE_400000baseSR8_Full_BIT,
+  1180		ETHTOOL_LINK_MODE_400000baseLR8_ER8_FR8_Full_BIT,
+  1181		ETHTOOL_LINK_MODE_400000baseDR8_Full_BIT,
+  1182		ETHTOOL_LINK_MODE_400000baseCR8_Full_BIT,
+  1183		ETHTOOL_LINK_MODE_400000baseKR4_Full_BIT,
+  1184		ETHTOOL_LINK_MODE_400000baseSR4_Full_BIT,
+  1185		ETHTOOL_LINK_MODE_400000baseLR4_ER4_FR4_Full_BIT,
+  1186		ETHTOOL_LINK_MODE_400000baseDR4_Full_BIT,
+  1187		ETHTOOL_LINK_MODE_400000baseCR4_Full_BIT,
+  1188	};
+  1189	
+> 1190	static const u32 ethtool_forced_speed_800000[] __initconst = {
+  1191		ETHTOOL_LINK_MODE_800000baseCR8_Full_BIT,
+  1192		ETHTOOL_LINK_MODE_800000baseKR8_Full_BIT,
+  1193		ETHTOOL_LINK_MODE_800000baseDR8_Full_BIT,
+  1194		ETHTOOL_LINK_MODE_800000baseDR8_2_Full_BIT,
+  1195		ETHTOOL_LINK_MODE_800000baseSR8_Full_BIT,
+  1196		ETHTOOL_LINK_MODE_800000baseVR8_Full_BIT,
+  1197	};
+  1198	
 
-> +	ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
-> +	ETHTOOL_LINK_MODE_1000baseKX_Full_BIT,
-> +	ETHTOOL_LINK_MODE_1000baseX_Full_BIT,
-
-BTW, can't we share the target bitmaps instead? I mean, why not
-initialize those somewhere in net/ethtool and export them, instead of
-exporting the source of initialization?
-
-> +};
-> +
-> +static const u32 ethtool_forced_speed_10000[] __initconst = {
-> +	ETHTOOL_LINK_MODE_10000baseT_Full_BIT,
-> +	ETHTOOL_LINK_MODE_10000baseKR_Full_BIT,
-> +	ETHTOOL_LINK_MODE_10000baseKX4_Full_BIT,
-> +	ETHTOOL_LINK_MODE_10000baseR_FEC_BIT,
-> +	ETHTOOL_LINK_MODE_10000baseCR_Full_BIT,
-> +	ETHTOOL_LINK_MODE_10000baseSR_Full_BIT,
-> +	ETHTOOL_LINK_MODE_10000baseLR_Full_BIT,
-> +	ETHTOOL_LINK_MODE_10000baseLRM_Full_BIT,
-> +};
-> +
-> +static const u32 ethtool_forced_speed_20000[] __initconst = {
-> +	ETHTOOL_LINK_MODE_20000baseKR2_Full_BIT,
-> +};
-> +
-> +static const u32 ethtool_forced_speed_25000[] __initconst = {
-> +	ETHTOOL_LINK_MODE_25000baseKR_Full_BIT,
-> +	ETHTOOL_LINK_MODE_25000baseCR_Full_BIT,
-> +	ETHTOOL_LINK_MODE_25000baseSR_Full_BIT,
-> +};
-> +
-> +static const u32 ethtool_forced_speed_40000[] __initconst = {
-> +	ETHTOOL_LINK_MODE_40000baseLR4_Full_BIT,
-> +	ETHTOOL_LINK_MODE_40000baseKR4_Full_BIT,
-> +	ETHTOOL_LINK_MODE_40000baseCR4_Full_BIT,
-> +	ETHTOOL_LINK_MODE_40000baseSR4_Full_BIT,
-> +};
-> +
-> +static const u32 ethtool_forced_speed_50000[] __initconst = {
-> +	ETHTOOL_LINK_MODE_50000baseKR2_Full_BIT,
-> +	ETHTOOL_LINK_MODE_50000baseCR2_Full_BIT,
-> +	ETHTOOL_LINK_MODE_50000baseSR2_Full_BIT,
-> +};
-> +
-> +static const u32 ethtool_forced_speed_100000[] __initconst = {
-> +	ETHTOOL_LINK_MODE_100000baseKR4_Full_BIT,
-> +	ETHTOOL_LINK_MODE_100000baseSR4_Full_BIT,
-> +	ETHTOOL_LINK_MODE_100000baseCR4_Full_BIT,
-> +	ETHTOOL_LINK_MODE_100000baseLR4_ER4_Full_BIT,
-> +};
-> +
-> +/**
-> + * ethtool_forced_speed_maps_init
-> + * @maps: Pointer to an array of Ethtool forced speed map
-> + * @size: Array size
-> + *
-> + * Initialize an array of Ethtool forced speed map to Ethtool link modes. This
-> + * should be called during driver module init.
-> + */
-> +void ethtool_forced_speed_maps_init(struct ethtool_forced_speed_map *maps,
-> +				    u32 size);
->  #endif /* _LINUX_ETHTOOL_H */
-> diff --git a/net/ethtool/ioctl.c b/net/ethtool/ioctl.c
-> index 0b0ce4f81c01..ac1fdd636bc1 100644
-> --- a/net/ethtool/ioctl.c
-> +++ b/net/ethtool/ioctl.c
-> @@ -3388,3 +3388,18 @@ void ethtool_rx_flow_rule_destroy(struct ethtool_rx_flow_rule *flow)
->  	kfree(flow);
->  }
->  EXPORT_SYMBOL(ethtool_rx_flow_rule_destroy);
-> +
-> +void ethtool_forced_speed_maps_init(struct ethtool_forced_speed_map *maps,
-> +				    u32 size)
-
-Alternatively, to avoid passing size here, you can just terminate @maps
-array with zeroed element and treat it as the array end.
-
-> +{
-> +	u32 i;
-> +
-> +	for (i = 0; i < size; i++) {
-
-	for (u32 i = 0 ...
-
-> +		struct ethtool_forced_speed_map *map = &maps[i];
-> +
-> +		linkmode_set_bit_array(map->cap_arr, map->arr_size, map->caps);
-> +		map->cap_arr = NULL;
-> +		map->arr_size = 0;
-
-These two are needed only if your @map really refer to
-__initdata/__initconst variables.
-
-> +	}
-> +}
-> +EXPORT_SYMBOL(ethtool_forced_speed_maps_init);
-
-Not sure ioctl.c in the best place for that.
-
-Thanks,
-Olek
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
