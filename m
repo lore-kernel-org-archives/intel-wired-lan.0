@@ -1,180 +1,79 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30F7CEE49A5
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Aug 2023 20:46:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17C26EE49B2
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Aug 2023 23:00:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C9429414D1;
-	Tue, 22 Aug 2023 20:46:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C9429414D1
+	by smtp3.osuosl.org (Postfix) with ESMTP id 93CD860C18;
+	Tue, 22 Aug 2023 23:00:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 93CD860C18
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692737214;
-	bh=ljHrJjkY/uMCXkb9EpYK32JQVptkorkWFYwxU/zXXV0=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1692745253;
+	bh=lhrq12TbNiclrNW+lGZ9tXEpVsPxRqQunYDAPoJi6Y0=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=3QIN7FkIMj54WAOpxarQZCVXgmun7uJYbZf1GsZoE7tQ7pTZv+rHDFruygaeb/l3u
-	 55zcapTf7zTmcoBguItTRL/xYuRzeYULRvEa9/EOs/wWehzMicHbXA6Lq+oVnOz0XT
-	 piKdAB8UOC+alu0Ej89+LV8buYLXOPgWLWXlk3xb5b4cvlyUWen6G14vAnCkfDu9JD
-	 e4Vym9sEeRSU8EvgUj8LkKvpXMY5PsL9bC8Ehw1wIuT7t8HcxpGRpeUsxcA3iFQp2M
-	 vuvjCE3teNXCWgmzUz59eG0IlCdMm9+DOAp87sYYrrmyZ9gPUNXDGoJsP+NenmYeRo
-	 RNRX24TlhtZsw==
+	b=u3pklJjbyS/2gtukWSl6iF4AuiZLA410VqFmmYzIrq5aOnxX6YvVtrGx+SHWiHsjD
+	 BV1QfOHKy9vXpchRAvVYxUXFnSeu4r+bw0iR5fj9eCPpZVQrJD6X9/OHaYVF/BwnP9
+	 u0Lawc/5EMAf8j7HIsYr05aR0RRCowsOg9HCfCi3g1VS5w4EJDfH2hbMcDlsIrkhgu
+	 IGDcqzDhQLqYPNKM6Al76Qnpv3YYk082utjXCEwC3HfP+HH9/KW+YHcI7Un8m5ORPg
+	 1tnUbLbgBEEyScYL996iqcd9rgA7kolOHyuxs24LCrFD+QGMlwaFUC9zdi/WelldDn
+	 lUeTyMekaFIAw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id G0Nq4bbv00C1; Tue, 22 Aug 2023 20:46:53 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id W7oerRXcXQYw; Tue, 22 Aug 2023 23:00:52 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 8024440908;
-	Tue, 22 Aug 2023 20:46:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8024440908
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 06F4A1BF33D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 20:46:52 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C9DFE60C07;
+	Tue, 22 Aug 2023 23:00:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C9DFE60C07
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id B3D471BF2F1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 23:00:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DA70640908
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 20:46:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DA70640908
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9831081FFA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 23:00:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9831081FFA
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Nu-zcqaKeUPS for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Aug 2023 20:46:50 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.126])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 8470840564
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 20:46:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8470840564
-X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="358979980"
-X-IronPort-AV: E=Sophos;i="6.01,194,1684825200"; d="scan'208";a="358979980"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
- by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Aug 2023 13:46:49 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="801818861"
-X-IronPort-AV: E=Sophos;i="6.01,194,1684825200"; d="scan'208";a="801818861"
-Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
- by fmsmga008.fm.intel.com with ESMTP; 22 Aug 2023 13:46:49 -0700
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27; Tue, 22 Aug 2023 13:46:48 -0700
-Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.27 via Frontend Transport; Tue, 22 Aug 2023 13:46:48 -0700
-Received: from NAM02-DM3-obe.outbound.protection.outlook.com (104.47.56.41) by
- edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.27; Tue, 22 Aug 2023 13:46:48 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=I9+G11Fsna6gUFjfNZdrVZZ2cvHJMxBzhUucwILSKf3DTv6jsZFGwa39pdm/FlYVEgvJmWSvAWftG3QxwdTkrKmhqeDsyOBAzI2bWUxD41aV7zQfKS48IkkiLaZpEwKd8k8hggd6ST0CrwHW5dHWrYoPvZsdaJ5goskb+5cQEsGuMHP2o/zKpr86Hm9gD6MEJV90J6NFT4ZxwD15aVEg1dse8pmv+PkW46n7AjbGNnJNDA2LpV5JwrV3ujwT4KXju8wMOefqOzMXwN1Ac2263UflqAHDhc84bG6Zg1woiKdGFtZykdW84MLVWM7zUKO2ZdTrKTjzEIpjJWhOLd9tSA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=t8aIqzI1ZZmad+IV4TnM2UKZWEgNRFpZxX8Y6yIkooE=;
- b=W7r9gKul0k8EZGtgUNbk/Zl4G/bmLn5kS4Us+sdNX1Xy4sasKhXkHuCbvAbLp+st73XyHO/5Ob43ZeZ6O7gZPbrPsS2zrZawheXG4kckxNRvNpI3wSh823a5oaQ6jkYZbP/i1y0J5lN7lbwArFqy+VAnOURV3C7sDps5Od4qCgrKN9HBzuszg83i9Fw47pSvlz8PUs1ACnLyYsOHMemFhBDxLmXGHF0/CtfZY/cA+uC/W4JDBajnuiukROwGt+q9eXOGVRlN0mnLqGs8eUtnNPMUrBzygJMsyc+3XKkYAgqgNXD4MkW+RSh2tPI7YGKRTwmfqD0ychB5IBMYnerLRA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from CO1PR11MB5089.namprd11.prod.outlook.com (2603:10b6:303:9b::16)
- by SJ0PR11MB5632.namprd11.prod.outlook.com (2603:10b6:a03:3bc::12)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6699.24; Tue, 22 Aug
- 2023 20:46:47 +0000
-Received: from CO1PR11MB5089.namprd11.prod.outlook.com
- ([fe80::6a23:786d:65f7:ef0b]) by CO1PR11MB5089.namprd11.prod.outlook.com
- ([fe80::6a23:786d:65f7:ef0b%6]) with mapi id 15.20.6699.022; Tue, 22 Aug 2023
- 20:46:46 +0000
-From: "Keller, Jacob E" <jacob.e.keller@intel.com>
-To: Leon Romanovsky <leon@kernel.org>, "Kitszel, Przemyslaw"
- <przemyslaw.kitszel@intel.com>
-Thread-Topic: [PATCH iwl-next] ice: store VF's pci_dev ptr in ice_vf
-Thread-Index: AQHZ0B/Kr0m+SbZOXUG1BfUHaYFdEq/s/IcAgAMAE4CAAGSfgIAEOJ4AgAADqQCAAjWm0A==
-Date: Tue, 22 Aug 2023 20:46:46 +0000
-Message-ID: <CO1PR11MB5089F6E24C2570F710191DE7D61FA@CO1PR11MB5089.namprd11.prod.outlook.com>
-References: <20230816085454.235440-1-przemyslaw.kitszel@intel.com>
- <20230816143148.GX22185@unreal>
- <c1f65aa1-3e20-9e21-1994-1190bf0086b7@intel.com>
- <20230818182059.GZ22185@unreal>
- <12025d38-a5e2-5ddd-721f-c1c083785d22@intel.com>
- <20230821110146.GA6583@unreal>
-In-Reply-To: <20230821110146.GA6583@unreal>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: CO1PR11MB5089:EE_|SJ0PR11MB5632:EE_
-x-ms-office365-filtering-correlation-id: 25e174b1-717f-450d-67ff-08dba350e6d8
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: bLWoDo/55ayrKC5KKlWlepSYlkyhj5sYtDOcBo61cDDvN5NVRqNQkgokNJ0M2D8eWMMAJaT8w04jZ8MIcnkB6yJeL7k7IbgPKjxdwRHNsbeRTzQ8nLfvf5pMiuOnms6AKZ3+zI494TR8GbjUsGFDZcLJxBaN6hSBC+U1/Unqmcv9UckJgNT0zX6uc52tFT2tC4gywOc0dU7X40eTUaTnhJPBzMz4oynnp2Q4ZTHiXdhdiqwfjT0Z5GUwtTN3aDl3h+MgyfULcX8qvcOpSTiCi/OJP28NBXMa2HDbFJ1dAqoXETts9WCMKt8/ZCAL3KCg33JRzrwfLrJW3gJmRWgm5aKWqu8DQvS3RTaZII14NxzLUGLv+76mnocu1PkejdbWsH0mTH1jZ1L0zWd78l/1UKn+g4D79DBgGm8OQTMPjKh6d/cCM+cl/WOuVEEdqhW6qtQTiLzJBTVIuZSA4bup3iqy8J7fwfkS/OkMFmzgbX0GZBfwouNZ4bD4ka3OEJCvE2BTR5hK45mH9tbckbqyxqpOOrqkDnCDcQMTElraGXivx3qdpqXBvMqzg/nJ0I39nIOCC2zLLkaC3CImoop/Ogzd5huAALnJzAAWtvx7Pv39X322ohQOu7WDUFoH9AmY
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:CO1PR11MB5089.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(39860400002)(136003)(346002)(366004)(396003)(376002)(1800799009)(451199024)(186009)(55016003)(107886003)(122000001)(41300700001)(7696005)(64756008)(66946007)(54906003)(66446008)(6636002)(6506007)(110136005)(66476007)(76116006)(316002)(66556008)(53546011)(4326008)(82960400001)(38100700002)(2906002)(26005)(8936002)(8676002)(52536014)(38070700005)(5660300002)(9686003)(83380400001)(33656002)(86362001)(71200400001)(478600001);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?A6c99s3bpVW7dWeuVFrh/Fx3iAiY6VPrMvIzZnoWcdstBi9Bf09SyovNUxlQ?=
- =?us-ascii?Q?kjEKVYX9dpdA9t8HTLKm+FNHpTIkkzX1Yi3/+7HkhaY0flSJMuq1SdMTx4W1?=
- =?us-ascii?Q?Xradt7uv11wQy/JVlpnmKYtBrVPi9Yx3Gluf6bup4ctKxaIgpvVh5vRIfAFS?=
- =?us-ascii?Q?kIV40LUswpM7U7y5SH6MLJiiUSBSxbMzrKH8rdiN91BTKJ6t9zc0JwKFSdcM?=
- =?us-ascii?Q?pKRGJ+8PlLwPK4PohHOloq+tYw3eBktlLmj3wmWbaVcfA8F5t+fUdsKi9+S2?=
- =?us-ascii?Q?G9u39SzQVp8cUiLmRwjvfLztOPIHJPkeWjr0sqTtebKl2MiIJSyRoEErp7fK?=
- =?us-ascii?Q?xj+W+PIFzzBQlghf6rg4qkvCp+lTjPvP8nUUNbEgtbCwp74UAoRbSGyebQd6?=
- =?us-ascii?Q?zvoS5tfSwIgHjKKIAMQrHenGrzq+UfedSfpaTOTJaNMTtzRyE+SfYZcGOdkr?=
- =?us-ascii?Q?wnkm7BvgBKM0aaB67ZhGYf6KHphpK7YBqB2vjvcEDbCc3WE9wqUeKh2iHQSw?=
- =?us-ascii?Q?TjSG5XGcOTE7qIhzpRIqZAksPz1IPgmy9s5tj4PDxDCfJK7X/3I+7TRQa24F?=
- =?us-ascii?Q?jmT2Yyie4CW39L6FoCpDV2THUTpAdT3YXTrC6kHJg9lHLdQrpbEbNixeSGbv?=
- =?us-ascii?Q?43cLVPznekgEjIiHIyC2HVYSanisjM2cJYzRv3tiSj3AlNlzE5ifkooeFKB2?=
- =?us-ascii?Q?l1FU5xmPEslcrQQv8a8Rk5NPbuvz9H9fNa9ElWpFBSwGsyd0wBHXPVBqOgbQ?=
- =?us-ascii?Q?zhNe8yvwQFOA8u8mNYJ5clyRpRg2ahNcaPWWGd5BOQo62Z8rpytCygGBlWB7?=
- =?us-ascii?Q?4BSEI4RPnuwyHBvds5XWmZyHfLoDaL8PM1c5kwv8XLXPSem5O//QH3ZJIW9H?=
- =?us-ascii?Q?UasTJMWKd0feD5EQRjLhNe9kVt+m5GTuitv7+cmYBtRQF4ttUUssPIvDazWY?=
- =?us-ascii?Q?alU25ci0Vz0epCf46LNJFb7YyUn7vK1Kqp35DIcgwi7CDcgoLR49sl4MDnLm?=
- =?us-ascii?Q?wdgtSPOARp3ziusmwQ1k9a5ixweWsjNMv34KH4fYDBaneoo4OxunxfkowCF6?=
- =?us-ascii?Q?RMJTlBm9Cxh2AqZDknvEgl9OPtFBhfof2lHXWTfGLY/credrgiQvA20ISvoS?=
- =?us-ascii?Q?qI7wxZaPytFvncSMFfx5eafYmKEjz1ehHIH7ciWeE/oE4ybe6Fm2Zmwz+tAO?=
- =?us-ascii?Q?EvaDrNE6nqJmgl4i2IFaqv5Bw8hZeTbetHmLrqtBXFxHaGJd+lsC4UouylfP?=
- =?us-ascii?Q?t884aRs2uuTykR9dJXSAAOs0AOkxc83MnI7Njj643hcnRAR1WQjnvzu0hfW5?=
- =?us-ascii?Q?tHCZtLTi+CcQClXbI5uXNGKWYOI5PpTi6EDauWYnFRd6VYsg/m8Xw61wxvNv?=
- =?us-ascii?Q?ykaZoR39tuBcfrTsjHn3E3lRpCp4Id/cNWuuSQeizeg27qFKGMczu8XZpqkL?=
- =?us-ascii?Q?U3jKRk7orQ90xExe0C5Zy1oCqvwLSC/duOa/M3bdytdReh9bvw+omwvzvrHk?=
- =?us-ascii?Q?3P6fQCH1HXsIprRIcYpxboxla2iIP6PwlFaoyJkKBnCrSOU6GQRtcxXg9sdb?=
- =?us-ascii?Q?oGUoYg2P0p/YqZYVvtc4VZwW9LR3yyAGgmjTK5yP?=
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id P23gUZ0U_PzG for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Aug 2023 23:00:49 +0000 (UTC)
+Received: from out-26.mta1.migadu.com (out-26.mta1.migadu.com [95.215.58.26])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B59CA81FF4
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 23:00:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B59CA81FF4
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+To: Jakub Kicinski <kuba@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
+ Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
+ Jonathan Lemon <jonathan.lemon@gmail.com>, Paolo Abeni <pabeni@redhat.com>
+Date: Wed, 23 Aug 2023 00:00:30 +0100
+Message-Id: <20230822230037.809114-3-vadim.fedorenko@linux.dev>
+In-Reply-To: <20230822230037.809114-1-vadim.fedorenko@linux.dev>
+References: <20230822230037.809114-1-vadim.fedorenko@linux.dev>
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB5089.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 25e174b1-717f-450d-67ff-08dba350e6d8
-X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Aug 2023 20:46:46.8645 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: laV0oNRsVBr90ve91fPN5u8qu/PyRz64Y6W+px9WkMQ4fGCLrOVP6/tIQi7g9/SNMTqVoUTzR66sod5GGCvuq4Tb1Di3rDRt8xoaVEMVoNk=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR11MB5632
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1692737210; x=1724273210;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=t8aIqzI1ZZmad+IV4TnM2UKZWEgNRFpZxX8Y6yIkooE=;
- b=Cv7uzuxMhwa0PQv2Vhwa0yGuTjuMC/Vd7VbQVhaSCDsq8SjZ3vUyMyIq
- QjpETFiyroxWmSQ2zFVwnSOj10zzsFE4nONaYP0Kwj8k0ld0Rfjf0GDJb
- jsaWV5ssp+k++DU7l2uSSYlphQsZBikFyC+eVHv2tUxtwy+OCyxWHlLkn
- 4QG8eFXX5t6222w8BSlBGUtEqwsBukoyQcC9t68VJeQEqGxZDCsEkPlVg
- +mdnT3537cW6NSOllGZ0oFv3cn4kCpDHXmKRNEqnYW+pp1OTeY5OCfEiP
- v54bEhH2dhJad7pRpelR35HooJLlHy4PdiFxBlrnHmxEYJP7Zahk+ShSK
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Cv7uzuxM
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: store VF's pci_dev ptr
- in ice_vf
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux.dev; s=key1; t=1692745246;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=pxxYN+1WHhCTGjnRQK9fFp13ziXEuP6wZJewoVdg+54=;
+ b=Fl9KhFdeesVV4efUnhNffSsfJGHoqvLBQrwGbyFaZzHbp1IHIYSOSZ1iT3vs0JZI2zM0ce
+ dJa3DyUaV/BWwJjCS6bX/KpwVUcG0ZZQP8AZeYNbXTbGl9yVfvmSgrr8LM68s+IYnYcWmM
+ QGKZ6nRifzyCaL9IqhJJikt9d2r3SSI=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=Fl9KhFde
+Subject: [Intel-wired-lan] [PATCH net-next v5 2/9] dpll: spec: Add Netlink
+ spec in YAML
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -187,75 +86,974 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "Polchlopek, Mateusz" <mateusz.polchlopek@intel.com>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>, "Brandeburg,
- Jesse" <jesse.brandeburg@intel.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
+ Bart Van Assche <bvanassche@acm.org>, netdev@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, Milena Olech <milena.olech@intel.com>,
+ Jiri Pirko <jiri@nvidia.com>, linux-clk@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+Add a protocol spec for DPLL.
+Add code generated from the spec.
 
+Signed-off-by: Jakub Kicinski <kuba@kernel.org>
+Signed-off-by: Michal Michalik <michal.michalik@intel.com>
+Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+Signed-off-by: Jiri Pirko <jiri@nvidia.com>
+---
+v4->v5:
+- split pin into separated attribute space
+v3->v4:
+- rebase on top of net-next
+v2->v3:
+- re-generated on top of the latest net-next
+- tag from Jiri Pirko
+v1->v2:
+- rename FREERUN to DETACHED
+- remove module-name from expected input attributes on device-get command
 
-> -----Original Message-----
-> From: Leon Romanovsky <leon@kernel.org>
-> Sent: Monday, August 21, 2023 4:02 AM
-> To: Kitszel, Przemyslaw <przemyslaw.kitszel@intel.com>
-> Cc: Nguyen, Anthony L <anthony.l.nguyen@intel.com>; Brandeburg, Jesse
-> <jesse.brandeburg@intel.com>; intel-wired-lan@lists.osuosl.org;
-> netdev@vger.kernel.org; Polchlopek, Mateusz <mateusz.polchlopek@intel.com>;
-> Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: Re: [PATCH iwl-next] ice: store VF's pci_dev ptr in ice_vf
-> 
-> On Mon, Aug 21, 2023 at 12:48:40PM +0200, Przemek Kitszel wrote:
-> > On 8/18/23 20:20, Leon Romanovsky wrote:
-> > > On Fri, Aug 18, 2023 at 02:20:51PM +0200, Przemek Kitszel wrote:
-> > > > On 8/16/23 16:31, Leon Romanovsky wrote:
-> > > > > On Wed, Aug 16, 2023 at 04:54:54AM -0400, Przemek Kitszel wrote:
-> > > > > > Extend struct ice_vf by vfdev.
-> > > > > > Calculation of vfdev falls more nicely into ice_create_vf_entries().
-> > > > > >
-> > > > > > Caching of vfdev enables simplification of
-> ice_restore_all_vfs_msi_state().
-> > > > >
-> > > > > I see that old code had access to pci_dev * of VF without any locking
-> > > > > from concurrent PCI core access. How is it protected? How do you make
-> > > > > sure that vfdev is valid?
-> > > > >
-> > > > > Generally speaking, it is rarely good idea to cache VF pci_dev pointers
-> > > > > inside driver.
-> > > > >
-> > > > > Thanks
-> > > >
-> > > > Overall, I do agree that ice driver, as a whole, has room for improvement in
-> > > > terms of synchronization, objects lifetime, and similar.
-> > > >
-> > > > In this particular case, I don't see any reason of PCI reconfiguration
-> > > > during VF lifetime, but likely I'm missing something?
-> > >
-> > > You are caching VF pointer in PF,
-> >
-> > that's correct that the driver is PF/ice
-> >
-> > > and you are subjected to PF lifetime
-> > > and not VF lifetime.
-> >
-> > this belongs to struct ice_vf, which should have VF lifetime,
-> > otherwise it's already at risk
-> 
-> I'm not so sure about it. ICE used to use devm_* API and not explicit
-> kalloc/kfree calls, it is not clear anymore the lifetime scope of VF
-> structure.
-> 
-> Thanks
-> 
+ Documentation/netlink/specs/dpll.yaml | 488 ++++++++++++++++++++++++++
+ drivers/dpll/dpll_nl.c                | 162 +++++++++
+ drivers/dpll/dpll_nl.h                |  51 +++
+ include/uapi/linux/dpll.h             | 201 +++++++++++
+ 4 files changed, 902 insertions(+)
+ create mode 100644 Documentation/netlink/specs/dpll.yaml
+ create mode 100644 drivers/dpll/dpll_nl.c
+ create mode 100644 drivers/dpll/dpll_nl.h
+ create mode 100644 include/uapi/linux/dpll.h
 
-The ice_vf structure is now reference counted with a kref, and is created when VFs are added, and removed when the VF is removed.
-
-Thanks,
-Jake
+diff --git a/Documentation/netlink/specs/dpll.yaml b/Documentation/netlink/specs/dpll.yaml
+new file mode 100644
+index 000000000000..d98dea42fc80
+--- /dev/null
++++ b/Documentation/netlink/specs/dpll.yaml
+@@ -0,0 +1,488 @@
++# SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause)
++
++name: dpll
++
++doc: DPLL subsystem.
++
++definitions:
++  -
++    type: enum
++    name: mode
++    doc: |
++      working modes a dpll can support, differentiates if and how dpll selects
++      one of its inputs to syntonize with it, valid values for DPLL_A_MODE
++      attribute
++    entries:
++      -
++        name: manual
++        doc: input can be only selected by sending a request to dpll
++        value: 1
++      -
++        name: automatic
++        doc: highest prio input pin auto selected by dpll
++    render-max: true
++  -
++    type: enum
++    name: lock-status
++    doc: |
++      provides information of dpll device lock status, valid values for
++      DPLL_A_LOCK_STATUS attribute
++    entries:
++      -
++        name: unlocked
++        doc: |
++          dpll was not yet locked to any valid input (or forced by setting
++          DPLL_A_MODE to DPLL_MODE_DETACHED)
++        value: 1
++      -
++        name: locked
++        doc: |
++          dpll is locked to a valid signal, but no holdover available
++      -
++        name: locked-ho-acq
++        doc: |
++          dpll is locked and holdover acquired
++      -
++        name: holdover
++        doc: |
++          dpll is in holdover state - lost a valid lock or was forced
++          by disconnecting all the pins (latter possible only
++          when dpll lock-state was already DPLL_LOCK_STATUS_LOCKED_HO_ACQ,
++          if dpll lock-state was not DPLL_LOCK_STATUS_LOCKED_HO_ACQ, the
++          dpll's lock-state shall remain DPLL_LOCK_STATUS_UNLOCKED)
++    render-max: true
++  -
++    type: const
++    name: temp-divider
++    value: 1000
++    doc: |
++      temperature divider allowing userspace to calculate the
++      temperature as float with three digit decimal precision.
++      Value of (DPLL_A_TEMP / DPLL_TEMP_DIVIDER) is integer part of
++      temperature value.
++      Value of (DPLL_A_TEMP % DPLL_TEMP_DIVIDER) is fractional part of
++      temperature value.
++  -
++    type: enum
++    name: type
++    doc: type of dpll, valid values for DPLL_A_TYPE attribute
++    entries:
++      -
++        name: pps
++        doc: dpll produces Pulse-Per-Second signal
++        value: 1
++      -
++        name: eec
++        doc: dpll drives the Ethernet Equipment Clock
++    render-max: true
++  -
++    type: enum
++    name: pin-type
++    doc: |
++      defines possible types of a pin, valid values for DPLL_A_PIN_TYPE
++      attribute
++    entries:
++      -
++        name: mux
++        doc: aggregates another layer of selectable pins
++        value: 1
++      -
++        name: ext
++        doc: external input
++      -
++        name: synce-eth-port
++        doc: ethernet port PHY's recovered clock
++      -
++        name: int-oscillator
++        doc: device internal oscillator
++      -
++        name: gnss
++        doc: GNSS recovered clock
++    render-max: true
++  -
++    type: enum
++    name: pin-direction
++    doc: |
++      defines possible direction of a pin, valid values for
++      DPLL_A_PIN_DIRECTION attribute
++    entries:
++      -
++        name: input
++        doc: pin used as a input of a signal
++        value: 1
++      -
++        name: output
++        doc: pin used to output the signal
++    render-max: true
++  -
++    type: const
++    name: pin-frequency-1-hz
++    value: 1
++  -
++    type: const
++    name: pin-frequency-10-khz
++    value: 10000
++  -
++    type: const
++    name: pin-frequency-77_5-khz
++    value: 77500
++  -
++    type: const
++    name: pin-frequency-10-mhz
++    value: 10000000
++  -
++    type: enum
++    name: pin-state
++    doc: |
++      defines possible states of a pin, valid values for
++      DPLL_A_PIN_STATE attribute
++    entries:
++      -
++        name: connected
++        doc: pin connected, active input of phase locked loop
++        value: 1
++      -
++        name: disconnected
++        doc: pin disconnected, not considered as a valid input
++      -
++        name: selectable
++        doc: pin enabled for automatic input selection
++    render-max: true
++  -
++    type: flags
++    name: pin-caps
++    doc: |
++      defines possible capabilities of a pin, valid flags on
++      DPLL_A_PIN_CAPS attribute
++    entries:
++      -
++        name: direction-can-change
++        doc: pin direction can be changed
++      -
++        name: priority-can-change
++        doc: pin priority can be changed
++      -
++        name: state-can-change
++        doc: pin state can be changed
++
++attribute-sets:
++  -
++    name: dpll
++    enum-name: dpll_a
++    attributes:
++      -
++        name: id
++        type: u32
++      -
++        name: module-name
++        type: string
++      -
++        name: pad
++        type: pad
++      -
++        name: clock-id
++        type: u64
++      -
++        name: mode
++        type: u32
++        enum: mode
++      -
++        name: mode-supported
++        type: u32
++        enum: mode
++        multi-attr: true
++      -
++        name: lock-status
++        type: u32
++        enum: lock-status
++      -
++        name: temp
++        type: s32
++      -
++        name: type
++        type: u32
++        enum: type
++  -
++    name: pin
++    enum-name: dpll_a_pin
++    attributes:
++      -
++        name: id
++        type: u32
++      -
++        name: parent-id
++        type: u32
++      -
++        name: module-name
++        type: string
++      -
++        name: pad
++        type: pad
++      -
++        name: clock-id
++        type: u64
++      -
++        name: board-label
++        type: string
++      -
++        name: panel-label
++        type: string
++      -
++        name: package-label
++        type: string
++      -
++        name: type
++        type: u32
++        enum: pin-type
++      -
++        name: direction
++        type: u32
++        enum: pin-direction
++      -
++        name: frequency
++        type: u64
++      -
++        name: frequency-supported
++        type: nest
++        multi-attr: true
++        nested-attributes: frequency-range
++      -
++        name: frequency-min
++        type: u64
++      -
++        name: frequency-max
++        type: u64
++      -
++        name: prio
++        type: u32
++      -
++        name: state
++        type: u32
++        enum: pin-state
++      -
++        name: dpll-caps
++        type: u32
++      -
++        name: parent-device
++        type: nest
++        multi-attr: true
++        nested-attributes: pin-parent-device
++      -
++        name: parent-pin
++        type: nest
++        multi-attr: true
++        nested-attributes: pin-parent-pin
++  -
++    name: pin-parent-device
++    subset-of: pin
++    attributes:
++      -
++        name: parent-id
++        type: u32
++      -
++        name: direction
++        type: u32
++      -
++        name: prio
++        type: u32
++      -
++        name: state
++        type: u32
++  -
++    name: pin-parent-pin
++    subset-of: pin
++    attributes:
++      -
++        name: parent-id
++        type: u32
++      -
++        name: state
++        type: u32
++  -
++    name: frequency-range
++    subset-of: pin
++    attributes:
++      -
++        name: frequency-min
++        type: u64
++      -
++        name: frequency-max
++        type: u64
++
++operations:
++  enum-name: dpll_cmd
++  list:
++    -
++      name: device-id-get
++      doc: |
++        Get id of dpll device that matches given attributes
++      attribute-set: dpll
++      flags: [ admin-perm ]
++
++      do:
++        pre: dpll-lock-doit
++        post: dpll-unlock-doit
++        request:
++          attributes:
++            - module-name
++            - clock-id
++            - type
++        reply:
++          attributes:
++            - id
++
++    -
++      name: device-get
++      doc: |
++        Get list of DPLL devices (dump) or attributes of a single dpll device
++      attribute-set: dpll
++      flags: [ admin-perm ]
++
++      do:
++        pre: dpll-pre-doit
++        post: dpll-post-doit
++        request:
++          attributes:
++            - id
++        reply: &dev-attrs
++          attributes:
++            - id
++            - module-name
++            - mode
++            - mode-supported
++            - lock-status
++            - temp
++            - clock-id
++            - type
++
++      dump:
++        pre: dpll-lock-dumpit
++        post: dpll-unlock-dumpit
++        reply: *dev-attrs
++
++    -
++      name: device-set
++      doc: Set attributes for a DPLL device
++      attribute-set: dpll
++      flags: [ admin-perm ]
++
++      do:
++        pre: dpll-pre-doit
++        post: dpll-post-doit
++        request:
++          attributes:
++            - id
++    -
++      name: device-create-ntf
++      doc: Notification about device appearing
++      notify: device-get
++      mcgrp: monitor
++    -
++      name: device-delete-ntf
++      doc: Notification about device disappearing
++      notify: device-get
++      mcgrp: monitor
++    -
++      name: device-change-ntf
++      doc: Notification about device configuration being changed
++      notify: device-get
++      mcgrp: monitor
++    -
++      name: pin-id-get
++      doc: |
++        Get id of a pin that matches given attributes
++      attribute-set: pin
++      flags: [ admin-perm ]
++
++      do:
++        pre: dpll-lock-doit
++        post: dpll-unlock-doit
++        request:
++          attributes:
++            - module-name
++            - clock-id
++            - board-label
++            - panel-label
++            - package-label
++            - type
++        reply:
++          attributes:
++            - id
++
++    -
++      name: pin-get
++      doc: |
++        Get list of pins and its attributes.
++        - dump request without any attributes given - list all the pins in the
++          system
++        - dump request with target dpll - list all the pins registered with
++          a given dpll device
++        - do request with target dpll and target pin - single pin attributes
++      attribute-set: pin
++      flags: [ admin-perm ]
++
++      do:
++        pre: dpll-pin-pre-doit
++        post: dpll-pin-post-doit
++        request:
++          attributes:
++            - id
++        reply: &pin-attrs
++          attributes:
++            - id
++            - board-label
++            - panel-label
++            - package-label
++            - type
++            - frequency
++            - frequency-supported
++            - dpll-caps
++            - parent-device
++            - parent-pin
++
++      dump:
++        pre: dpll-lock-dumpit
++        post: dpll-unlock-dumpit
++        request:
++          attributes:
++            - id
++        reply: *pin-attrs
++
++    -
++      name: pin-set
++      doc: Set attributes of a target pin
++      attribute-set: pin
++      flags: [ admin-perm ]
++
++      do:
++        pre: dpll-pin-pre-doit
++        post: dpll-pin-post-doit
++        request:
++          attributes:
++            - id
++            - frequency
++            - direction
++            - prio
++            - state
++            - parent-device
++            - parent-pin
++    -
++      name: pin-create-ntf
++      doc: Notification about pin appearing
++      notify: pin-get
++      mcgrp: monitor
++    -
++      name: pin-delete-ntf
++      doc: Notification about pin disappearing
++      notify: pin-get
++      mcgrp: monitor
++    -
++      name: pin-change-ntf
++      doc: Notification about pin configuration being changed
++      notify: pin-get
++      mcgrp: monitor
++
++mcast-groups:
++  list:
++    -
++      name: monitor
+diff --git a/drivers/dpll/dpll_nl.c b/drivers/dpll/dpll_nl.c
+new file mode 100644
+index 000000000000..14064c8c783b
+--- /dev/null
++++ b/drivers/dpll/dpll_nl.c
+@@ -0,0 +1,162 @@
++// SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause)
++/* Do not edit directly, auto-generated from: */
++/*	Documentation/netlink/specs/dpll.yaml */
++/* YNL-GEN kernel source */
++
++#include <net/netlink.h>
++#include <net/genetlink.h>
++
++#include "dpll_nl.h"
++
++#include <uapi/linux/dpll.h>
++
++/* Common nested types */
++const struct nla_policy dpll_pin_parent_device_nl_policy[DPLL_A_PIN_STATE + 1] = {
++	[DPLL_A_PIN_PARENT_ID] = { .type = NLA_U32, },
++	[DPLL_A_PIN_DIRECTION] = NLA_POLICY_RANGE(NLA_U32, 1, 2),
++	[DPLL_A_PIN_PRIO] = { .type = NLA_U32, },
++	[DPLL_A_PIN_STATE] = NLA_POLICY_RANGE(NLA_U32, 1, 3),
++};
++
++const struct nla_policy dpll_pin_parent_pin_nl_policy[DPLL_A_PIN_STATE + 1] = {
++	[DPLL_A_PIN_PARENT_ID] = { .type = NLA_U32, },
++	[DPLL_A_PIN_STATE] = NLA_POLICY_RANGE(NLA_U32, 1, 3),
++};
++
++/* DPLL_CMD_DEVICE_ID_GET - do */
++static const struct nla_policy dpll_device_id_get_nl_policy[DPLL_A_TYPE + 1] = {
++	[DPLL_A_MODULE_NAME] = { .type = NLA_NUL_STRING, },
++	[DPLL_A_CLOCK_ID] = { .type = NLA_U64, },
++	[DPLL_A_TYPE] = NLA_POLICY_RANGE(NLA_U32, 1, 2),
++};
++
++/* DPLL_CMD_DEVICE_GET - do */
++static const struct nla_policy dpll_device_get_nl_policy[DPLL_A_ID + 1] = {
++	[DPLL_A_ID] = { .type = NLA_U32, },
++};
++
++/* DPLL_CMD_DEVICE_SET - do */
++static const struct nla_policy dpll_device_set_nl_policy[DPLL_A_ID + 1] = {
++	[DPLL_A_ID] = { .type = NLA_U32, },
++};
++
++/* DPLL_CMD_PIN_ID_GET - do */
++static const struct nla_policy dpll_pin_id_get_nl_policy[DPLL_A_PIN_TYPE + 1] = {
++	[DPLL_A_PIN_MODULE_NAME] = { .type = NLA_NUL_STRING, },
++	[DPLL_A_PIN_CLOCK_ID] = { .type = NLA_U64, },
++	[DPLL_A_PIN_BOARD_LABEL] = { .type = NLA_NUL_STRING, },
++	[DPLL_A_PIN_PANEL_LABEL] = { .type = NLA_NUL_STRING, },
++	[DPLL_A_PIN_PACKAGE_LABEL] = { .type = NLA_NUL_STRING, },
++	[DPLL_A_PIN_TYPE] = NLA_POLICY_RANGE(NLA_U32, 1, 5),
++};
++
++/* DPLL_CMD_PIN_GET - do */
++static const struct nla_policy dpll_pin_get_do_nl_policy[DPLL_A_PIN_ID + 1] = {
++	[DPLL_A_PIN_ID] = { .type = NLA_U32, },
++};
++
++/* DPLL_CMD_PIN_GET - dump */
++static const struct nla_policy dpll_pin_get_dump_nl_policy[DPLL_A_PIN_ID + 1] = {
++	[DPLL_A_PIN_ID] = { .type = NLA_U32, },
++};
++
++/* DPLL_CMD_PIN_SET - do */
++static const struct nla_policy dpll_pin_set_nl_policy[DPLL_A_PIN_PARENT_PIN + 1] = {
++	[DPLL_A_PIN_ID] = { .type = NLA_U32, },
++	[DPLL_A_PIN_FREQUENCY] = { .type = NLA_U64, },
++	[DPLL_A_PIN_DIRECTION] = NLA_POLICY_RANGE(NLA_U32, 1, 2),
++	[DPLL_A_PIN_PRIO] = { .type = NLA_U32, },
++	[DPLL_A_PIN_STATE] = NLA_POLICY_RANGE(NLA_U32, 1, 3),
++	[DPLL_A_PIN_PARENT_DEVICE] = NLA_POLICY_NESTED(dpll_pin_parent_device_nl_policy),
++	[DPLL_A_PIN_PARENT_PIN] = NLA_POLICY_NESTED(dpll_pin_parent_pin_nl_policy),
++};
++
++/* Ops table for dpll */
++static const struct genl_split_ops dpll_nl_ops[] = {
++	{
++		.cmd		= DPLL_CMD_DEVICE_ID_GET,
++		.pre_doit	= dpll_lock_doit,
++		.doit		= dpll_nl_device_id_get_doit,
++		.post_doit	= dpll_unlock_doit,
++		.policy		= dpll_device_id_get_nl_policy,
++		.maxattr	= DPLL_A_TYPE,
++		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
++	},
++	{
++		.cmd		= DPLL_CMD_DEVICE_GET,
++		.pre_doit	= dpll_pre_doit,
++		.doit		= dpll_nl_device_get_doit,
++		.post_doit	= dpll_post_doit,
++		.policy		= dpll_device_get_nl_policy,
++		.maxattr	= DPLL_A_ID,
++		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
++	},
++	{
++		.cmd	= DPLL_CMD_DEVICE_GET,
++		.start	= dpll_lock_dumpit,
++		.dumpit	= dpll_nl_device_get_dumpit,
++		.done	= dpll_unlock_dumpit,
++		.flags	= GENL_ADMIN_PERM | GENL_CMD_CAP_DUMP,
++	},
++	{
++		.cmd		= DPLL_CMD_DEVICE_SET,
++		.pre_doit	= dpll_pre_doit,
++		.doit		= dpll_nl_device_set_doit,
++		.post_doit	= dpll_post_doit,
++		.policy		= dpll_device_set_nl_policy,
++		.maxattr	= DPLL_A_ID,
++		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
++	},
++	{
++		.cmd		= DPLL_CMD_PIN_ID_GET,
++		.pre_doit	= dpll_lock_doit,
++		.doit		= dpll_nl_pin_id_get_doit,
++		.post_doit	= dpll_unlock_doit,
++		.policy		= dpll_pin_id_get_nl_policy,
++		.maxattr	= DPLL_A_PIN_TYPE,
++		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
++	},
++	{
++		.cmd		= DPLL_CMD_PIN_GET,
++		.pre_doit	= dpll_pin_pre_doit,
++		.doit		= dpll_nl_pin_get_doit,
++		.post_doit	= dpll_pin_post_doit,
++		.policy		= dpll_pin_get_do_nl_policy,
++		.maxattr	= DPLL_A_PIN_ID,
++		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
++	},
++	{
++		.cmd		= DPLL_CMD_PIN_GET,
++		.start		= dpll_lock_dumpit,
++		.dumpit		= dpll_nl_pin_get_dumpit,
++		.done		= dpll_unlock_dumpit,
++		.policy		= dpll_pin_get_dump_nl_policy,
++		.maxattr	= DPLL_A_PIN_ID,
++		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DUMP,
++	},
++	{
++		.cmd		= DPLL_CMD_PIN_SET,
++		.pre_doit	= dpll_pin_pre_doit,
++		.doit		= dpll_nl_pin_set_doit,
++		.post_doit	= dpll_pin_post_doit,
++		.policy		= dpll_pin_set_nl_policy,
++		.maxattr	= DPLL_A_PIN_PARENT_PIN,
++		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
++	},
++};
++
++static const struct genl_multicast_group dpll_nl_mcgrps[] = {
++	[DPLL_NLGRP_MONITOR] = { "monitor", },
++};
++
++struct genl_family dpll_nl_family __ro_after_init = {
++	.name		= DPLL_FAMILY_NAME,
++	.version	= DPLL_FAMILY_VERSION,
++	.netnsok	= true,
++	.parallel_ops	= true,
++	.module		= THIS_MODULE,
++	.split_ops	= dpll_nl_ops,
++	.n_split_ops	= ARRAY_SIZE(dpll_nl_ops),
++	.mcgrps		= dpll_nl_mcgrps,
++	.n_mcgrps	= ARRAY_SIZE(dpll_nl_mcgrps),
++};
+diff --git a/drivers/dpll/dpll_nl.h b/drivers/dpll/dpll_nl.h
+new file mode 100644
+index 000000000000..1f67aaed4742
+--- /dev/null
++++ b/drivers/dpll/dpll_nl.h
+@@ -0,0 +1,51 @@
++/* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause) */
++/* Do not edit directly, auto-generated from: */
++/*	Documentation/netlink/specs/dpll.yaml */
++/* YNL-GEN kernel header */
++
++#ifndef _LINUX_DPLL_GEN_H
++#define _LINUX_DPLL_GEN_H
++
++#include <net/netlink.h>
++#include <net/genetlink.h>
++
++#include <uapi/linux/dpll.h>
++
++/* Common nested types */
++extern const struct nla_policy dpll_pin_parent_device_nl_policy[DPLL_A_PIN_STATE + 1];
++extern const struct nla_policy dpll_pin_parent_pin_nl_policy[DPLL_A_PIN_STATE + 1];
++
++int dpll_lock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
++		   struct genl_info *info);
++int dpll_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
++		  struct genl_info *info);
++int dpll_pin_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
++		      struct genl_info *info);
++void
++dpll_unlock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
++		 struct genl_info *info);
++void
++dpll_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
++	       struct genl_info *info);
++void
++dpll_pin_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
++		   struct genl_info *info);
++int dpll_lock_dumpit(struct netlink_callback *cb);
++int dpll_unlock_dumpit(struct netlink_callback *cb);
++
++int dpll_nl_device_id_get_doit(struct sk_buff *skb, struct genl_info *info);
++int dpll_nl_device_get_doit(struct sk_buff *skb, struct genl_info *info);
++int dpll_nl_device_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb);
++int dpll_nl_device_set_doit(struct sk_buff *skb, struct genl_info *info);
++int dpll_nl_pin_id_get_doit(struct sk_buff *skb, struct genl_info *info);
++int dpll_nl_pin_get_doit(struct sk_buff *skb, struct genl_info *info);
++int dpll_nl_pin_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb);
++int dpll_nl_pin_set_doit(struct sk_buff *skb, struct genl_info *info);
++
++enum {
++	DPLL_NLGRP_MONITOR,
++};
++
++extern struct genl_family dpll_nl_family;
++
++#endif /* _LINUX_DPLL_GEN_H */
+diff --git a/include/uapi/linux/dpll.h b/include/uapi/linux/dpll.h
+new file mode 100644
+index 000000000000..af01a3feb2ac
+--- /dev/null
++++ b/include/uapi/linux/dpll.h
+@@ -0,0 +1,201 @@
++/* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause) */
++/* Do not edit directly, auto-generated from: */
++/*	Documentation/netlink/specs/dpll.yaml */
++/* YNL-GEN uapi header */
++
++#ifndef _UAPI_LINUX_DPLL_H
++#define _UAPI_LINUX_DPLL_H
++
++#define DPLL_FAMILY_NAME	"dpll"
++#define DPLL_FAMILY_VERSION	1
++
++/**
++ * enum dpll_mode - working modes a dpll can support, differentiates if and how
++ *   dpll selects one of its inputs to syntonize with it, valid values for
++ *   DPLL_A_MODE attribute
++ * @DPLL_MODE_MANUAL: input can be only selected by sending a request to dpll
++ * @DPLL_MODE_AUTOMATIC: highest prio input pin auto selected by dpll
++ */
++enum dpll_mode {
++	DPLL_MODE_MANUAL = 1,
++	DPLL_MODE_AUTOMATIC,
++
++	/* private: */
++	__DPLL_MODE_MAX,
++	DPLL_MODE_MAX = (__DPLL_MODE_MAX - 1)
++};
++
++/**
++ * enum dpll_lock_status - provides information of dpll device lock status,
++ *   valid values for DPLL_A_LOCK_STATUS attribute
++ * @DPLL_LOCK_STATUS_UNLOCKED: dpll was not yet locked to any valid input (or
++ *   forced by setting DPLL_A_MODE to DPLL_MODE_DETACHED)
++ * @DPLL_LOCK_STATUS_LOCKED: dpll is locked to a valid signal, but no holdover
++ *   available
++ * @DPLL_LOCK_STATUS_LOCKED_HO_ACQ: dpll is locked and holdover acquired
++ * @DPLL_LOCK_STATUS_HOLDOVER: dpll is in holdover state - lost a valid lock or
++ *   was forced by disconnecting all the pins (latter possible only when dpll
++ *   lock-state was already DPLL_LOCK_STATUS_LOCKED_HO_ACQ, if dpll lock-state
++ *   was not DPLL_LOCK_STATUS_LOCKED_HO_ACQ, the dpll's lock-state shall remain
++ *   DPLL_LOCK_STATUS_UNLOCKED)
++ */
++enum dpll_lock_status {
++	DPLL_LOCK_STATUS_UNLOCKED = 1,
++	DPLL_LOCK_STATUS_LOCKED,
++	DPLL_LOCK_STATUS_LOCKED_HO_ACQ,
++	DPLL_LOCK_STATUS_HOLDOVER,
++
++	/* private: */
++	__DPLL_LOCK_STATUS_MAX,
++	DPLL_LOCK_STATUS_MAX = (__DPLL_LOCK_STATUS_MAX - 1)
++};
++
++#define DPLL_TEMP_DIVIDER	1000
++
++/**
++ * enum dpll_type - type of dpll, valid values for DPLL_A_TYPE attribute
++ * @DPLL_TYPE_PPS: dpll produces Pulse-Per-Second signal
++ * @DPLL_TYPE_EEC: dpll drives the Ethernet Equipment Clock
++ */
++enum dpll_type {
++	DPLL_TYPE_PPS = 1,
++	DPLL_TYPE_EEC,
++
++	/* private: */
++	__DPLL_TYPE_MAX,
++	DPLL_TYPE_MAX = (__DPLL_TYPE_MAX - 1)
++};
++
++/**
++ * enum dpll_pin_type - defines possible types of a pin, valid values for
++ *   DPLL_A_PIN_TYPE attribute
++ * @DPLL_PIN_TYPE_MUX: aggregates another layer of selectable pins
++ * @DPLL_PIN_TYPE_EXT: external input
++ * @DPLL_PIN_TYPE_SYNCE_ETH_PORT: ethernet port PHY's recovered clock
++ * @DPLL_PIN_TYPE_INT_OSCILLATOR: device internal oscillator
++ * @DPLL_PIN_TYPE_GNSS: GNSS recovered clock
++ */
++enum dpll_pin_type {
++	DPLL_PIN_TYPE_MUX = 1,
++	DPLL_PIN_TYPE_EXT,
++	DPLL_PIN_TYPE_SYNCE_ETH_PORT,
++	DPLL_PIN_TYPE_INT_OSCILLATOR,
++	DPLL_PIN_TYPE_GNSS,
++
++	/* private: */
++	__DPLL_PIN_TYPE_MAX,
++	DPLL_PIN_TYPE_MAX = (__DPLL_PIN_TYPE_MAX - 1)
++};
++
++/**
++ * enum dpll_pin_direction - defines possible direction of a pin, valid values
++ *   for DPLL_A_PIN_DIRECTION attribute
++ * @DPLL_PIN_DIRECTION_INPUT: pin used as a input of a signal
++ * @DPLL_PIN_DIRECTION_OUTPUT: pin used to output the signal
++ */
++enum dpll_pin_direction {
++	DPLL_PIN_DIRECTION_INPUT = 1,
++	DPLL_PIN_DIRECTION_OUTPUT,
++
++	/* private: */
++	__DPLL_PIN_DIRECTION_MAX,
++	DPLL_PIN_DIRECTION_MAX = (__DPLL_PIN_DIRECTION_MAX - 1)
++};
++
++#define DPLL_PIN_FREQUENCY_1_HZ		1
++#define DPLL_PIN_FREQUENCY_10_KHZ	10000
++#define DPLL_PIN_FREQUENCY_77_5_KHZ	77500
++#define DPLL_PIN_FREQUENCY_10_MHZ	10000000
++
++/**
++ * enum dpll_pin_state - defines possible states of a pin, valid values for
++ *   DPLL_A_PIN_STATE attribute
++ * @DPLL_PIN_STATE_CONNECTED: pin connected, active input of phase locked loop
++ * @DPLL_PIN_STATE_DISCONNECTED: pin disconnected, not considered as a valid
++ *   input
++ * @DPLL_PIN_STATE_SELECTABLE: pin enabled for automatic input selection
++ */
++enum dpll_pin_state {
++	DPLL_PIN_STATE_CONNECTED = 1,
++	DPLL_PIN_STATE_DISCONNECTED,
++	DPLL_PIN_STATE_SELECTABLE,
++
++	/* private: */
++	__DPLL_PIN_STATE_MAX,
++	DPLL_PIN_STATE_MAX = (__DPLL_PIN_STATE_MAX - 1)
++};
++
++/**
++ * enum dpll_pin_caps - defines possible capabilities of a pin, valid flags on
++ *   DPLL_A_PIN_CAPS attribute
++ * @DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE: pin direction can be changed
++ * @DPLL_PIN_CAPS_PRIORITY_CAN_CHANGE: pin priority can be changed
++ * @DPLL_PIN_CAPS_STATE_CAN_CHANGE: pin state can be changed
++ */
++enum dpll_pin_caps {
++	DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE = 1,
++	DPLL_PIN_CAPS_PRIORITY_CAN_CHANGE = 2,
++	DPLL_PIN_CAPS_STATE_CAN_CHANGE = 4,
++};
++
++enum dpll_a {
++	DPLL_A_ID = 1,
++	DPLL_A_MODULE_NAME,
++	DPLL_A_PAD,
++	DPLL_A_CLOCK_ID,
++	DPLL_A_MODE,
++	DPLL_A_MODE_SUPPORTED,
++	DPLL_A_LOCK_STATUS,
++	DPLL_A_TEMP,
++	DPLL_A_TYPE,
++
++	__DPLL_A_MAX,
++	DPLL_A_MAX = (__DPLL_A_MAX - 1)
++};
++
++enum dpll_a_pin {
++	DPLL_A_PIN_ID = 1,
++	DPLL_A_PIN_PARENT_ID,
++	DPLL_A_PIN_MODULE_NAME,
++	DPLL_A_PIN_PAD,
++	DPLL_A_PIN_CLOCK_ID,
++	DPLL_A_PIN_BOARD_LABEL,
++	DPLL_A_PIN_PANEL_LABEL,
++	DPLL_A_PIN_PACKAGE_LABEL,
++	DPLL_A_PIN_TYPE,
++	DPLL_A_PIN_DIRECTION,
++	DPLL_A_PIN_FREQUENCY,
++	DPLL_A_PIN_FREQUENCY_SUPPORTED,
++	DPLL_A_PIN_FREQUENCY_MIN,
++	DPLL_A_PIN_FREQUENCY_MAX,
++	DPLL_A_PIN_PRIO,
++	DPLL_A_PIN_STATE,
++	DPLL_A_PIN_DPLL_CAPS,
++	DPLL_A_PIN_PARENT_DEVICE,
++	DPLL_A_PIN_PARENT_PIN,
++
++	__DPLL_A_PIN_MAX,
++	DPLL_A_PIN_MAX = (__DPLL_A_PIN_MAX - 1)
++};
++
++enum dpll_cmd {
++	DPLL_CMD_DEVICE_ID_GET = 1,
++	DPLL_CMD_DEVICE_GET,
++	DPLL_CMD_DEVICE_SET,
++	DPLL_CMD_DEVICE_CREATE_NTF,
++	DPLL_CMD_DEVICE_DELETE_NTF,
++	DPLL_CMD_DEVICE_CHANGE_NTF,
++	DPLL_CMD_PIN_ID_GET,
++	DPLL_CMD_PIN_GET,
++	DPLL_CMD_PIN_SET,
++	DPLL_CMD_PIN_CREATE_NTF,
++	DPLL_CMD_PIN_DELETE_NTF,
++	DPLL_CMD_PIN_CHANGE_NTF,
++
++	__DPLL_CMD_MAX,
++	DPLL_CMD_MAX = (__DPLL_CMD_MAX - 1)
++};
++
++#define DPLL_MCGRP_MONITOR	"monitor"
++
++#endif /* _UAPI_LINUX_DPLL_H */
+-- 
+2.27.0
 
 _______________________________________________
 Intel-wired-lan mailing list
