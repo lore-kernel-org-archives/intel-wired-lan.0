@@ -4,83 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61F90EE4996
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Aug 2023 12:41:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4989EE49A4
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Aug 2023 12:41:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BDB2A605EC;
-	Tue, 22 Aug 2023 12:41:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BDB2A605EC
+	by smtp3.osuosl.org (Postfix) with ESMTP id 453DF6066D;
+	Tue, 22 Aug 2023 12:41:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 453DF6066D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692708062;
-	bh=rmFVTfQ/PAeSsrJNHpGpPiiWYFKTMTdjcnsJk4ic2lE=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=9vBLFfRw1fJSv+FaTZ/zlz61ERu5gqE6hrY8NvTsSqvEGZlQoW2JttS0bmA6DSH++
-	 ixnKzYu+ZTYQTURw0ewy/oCDuFR5EQUsjLZEQPhkDoYOouvwYhK7AgbXroQ7GSVe4E
-	 IPU67u2hsQY8fxt0wgNcKBtY3h1w7PM1WMWcrM0J5k3V3f1wF3whH4cUG1dqwi1YdC
-	 nDVpL4s9osGK8L/aILxErHrHFX+9MK3Mu0+wP9qQ6rLW1wiEv5pkXBBkQWUpqalrlC
-	 kZ6zluCnPwkdQPhszgFXGxOnk/fmbfkb/B4bTlEglm7b2WRKVayv46rP9D0TwJWZmT
-	 1E3m8KAHNOPpA==
+	s=default; t=1692708066;
+	bh=rmuNoHvA/Byt3Vus8EKmt3Q/Rb6j1dR7mmWBfgJDrJ4=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=syn0S2I63K7x5HjzCQ6ztcJHgrd04fBPawhwDh8vRBh8ZD8tQfxGvSWav+e6xLPIF
+	 bq3rxYyCh7UfIfLrIs1nkpeZJMQGkZXD4PpQuJfvFhvm8bVnaDmij0Wwppg7rXS6k6
+	 PrtjOFDo5GQjtIYIJiwktj212UEmIQZ0hIVWPtEbjJkqOgCuMvFzh4jOXjhR5743oz
+	 Bm3aX4Y7YRyHdk12tvwu7l/Uw7sw3S51zFj3BYTmtfY4vhMLFwgCBIaO8DYUkPtYky
+	 v/2iA9oJ+10nfmUTugz8ynjtPVzZ3ZVNKNIq++MDd+qh1O3jZb1QQsJctMgIlW1Ftr
+	 TeE8KcY10D9Eg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Y1ECp8X-llhO; Tue, 22 Aug 2023 12:41:01 +0000 (UTC)
+	with ESMTP id Ccmn50yaYXSC; Tue, 22 Aug 2023 12:41:05 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 201026066D;
-	Tue, 22 Aug 2023 12:41:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 201026066D
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3547B611A1;
+	Tue, 22 Aug 2023 12:41:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3547B611A1
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id CB6081BF296
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 12:40:59 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 934621BF296
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 12:41:03 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id AFAD96066D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 12:40:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AFAD96066D
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6C6A96066D
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 12:41:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6C6A96066D
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id W_FSkkfm4Cak for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Aug 2023 12:40:58 +0000 (UTC)
+ with ESMTP id g64mLzn5FF0u for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Aug 2023 12:41:01 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 57A27605EC
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 12:40:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 57A27605EC
-X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="376604590"
-X-IronPort-AV: E=Sophos;i="6.01,193,1684825200"; d="scan'208";a="376604590"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 52AB5607B0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 12:41:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 52AB5607B0
+X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="376604600"
+X-IronPort-AV: E=Sophos;i="6.01,193,1684825200"; d="scan'208";a="376604600"
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 22 Aug 2023 05:40:57 -0700
+ 22 Aug 2023 05:41:01 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="771342886"
-X-IronPort-AV: E=Sophos;i="6.01,193,1684825200"; d="scan'208";a="771342886"
+X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="771342890"
+X-IronPort-AV: E=Sophos;i="6.01,193,1684825200"; d="scan'208";a="771342890"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by orsmga001.jf.intel.com with ESMTP; 22 Aug 2023 05:40:55 -0700
+ by orsmga001.jf.intel.com with ESMTP; 22 Aug 2023 05:40:57 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 22 Aug 2023 14:40:35 +0200
-Message-Id: <20230822124044.301654-1-karol.kolacinski@intel.com>
+Date: Tue, 22 Aug 2023 14:40:36 +0200
+Message-Id: <20230822124044.301654-2-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230822124044.301654-1-karol.kolacinski@intel.com>
+References: <20230822124044.301654-1-karol.kolacinski@intel.com>
 MIME-Version: 1.0
 Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173,
  80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1692708058; x=1724244058;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=yIUii6ab9AA+U3EikxNmFYGZ16eFCjLg9BahbV1nVjE=;
- b=RLKudnw1anDcpKnDIgXPco4HMCMIqup5gkx+Ea1JzejUYU+IUn27PxZ4
- MkDjjrcXcR5gvr9eOo9KDM25nYVSANf6u2yOCD8XliCJlsWNovYuidK6W
- TrYvOTUSC0im57LBelugHnrXnGdPInLiXS4FJ1EZ7WMqMLPhB0LE6LWSk
- o4MTqyrIb/r4i16mW7cqwr/zZLFut7CRpatF4yGJRiPRxcYzwoYQPw99Q
- jzcUjJejFq0PKpQWYhQ16mtcjJSlGgjsQ/mN2emtOuuV2N5DP64hD/Tz9
- qIfe5vVmopoLS6KiqBuS5L+4Ux2AFbmcmJt84J8HbhNXmrSHJ900DAP9a
- g==;
+ t=1692708061; x=1724244061;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=1Ufi43P3zynjx+wDKj2BMVqEurv8P54xkkFZtVzZheQ=;
+ b=UfVx0axwCglka3rYZUhFwrH5bsLUisycjAyqy50fSRB0VDwyZC7BCtJT
+ g72t5T9Nz6MTYHyrbWe1O4F2FbSeHejEndzh0iUkjpKrMpKMrcIk6txBf
+ C/qNB7fMgzRHTbx9raiIPTiVFIkFDndVw5R/MTeHm8ILPvy/I2iAGcW/b
+ Xb0jxqB6rtI+jBZ0xK6B58x9UxxsnF6QdFun81XMHrbFo309gFoSZcHH/
+ F8r3g6kUu/7xUgM2QbLU1jbiEbOiX6x3vbjckAi9b42MaesvqohetaY3p
+ STJ1EgkwDEfw3oZT0r3KPJP0KrqLg62nkBABQnI/oP4l+cGqy3tKqitOd
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=RLKudnw1
-Subject: [Intel-wired-lan] [PATCH v3 iwl-next 0/9] ice: fix timestamping in
- reset process
+ header.a=rsa-sha256 header.s=Intel header.b=UfVx0axw
+Subject: [Intel-wired-lan] [PATCH v3 iwl-next 1/9] ice: use
+ ice_pf_src_tmr_owned where available
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,40 +103,48 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-PTP reset process has multiple places where timestamping can end up in
-an incorrect state.
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-This series introduces a proper state machine for PTP and refactors
-a large part of the code to ensure that timestamping does not break.
+The ice_pf_src_tmr_owned() macro exists to check the function capability
+bit indicating if the current function owns the PTP hardware clock.
 
-Jacob Keller (8):
-  ice: use ice_pf_src_tmr_owned where available
-  ice: pass reset type to PTP reset functions
-  ice: rename PTP functions and fields
-  ice: factor out ice_ptp_rebuild_owner()
-  ice: remove ptp_tx ring parameter flag
-  ice: modify tstamp_config only during TS mode set
-  ice: restore timestamp configuration after reset
-  ice: stop destroying and reinitalizing Tx tracker during reset
+This is slightly shorter than the more verbose access via
+hw.func_caps.ts_func_info.src_tmr_owned. Be consistent and use this
+where possible rather than open coding its equivalent.
 
-Karol Kolacinski (1):
-  ice: introduce PTP state machine
-
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
 ---
-V2 -> V3: Adjusted commit authors and added base commit
-V1 -> V2: Adjusted commit S-o-bs and messages
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 +-
+ drivers/net/ethernet/intel/ice/ice_ptp.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
- drivers/net/ethernet/intel/ice/ice.h         |   1 -
- drivers/net/ethernet/intel/ice/ice_ethtool.c |   2 +-
- drivers/net/ethernet/intel/ice/ice_main.c    |  16 +-
- drivers/net/ethernet/intel/ice/ice_ptp.c     | 331 ++++++++++++-------
- drivers/net/ethernet/intel/ice/ice_ptp.h     |  36 +-
- drivers/net/ethernet/intel/ice/ice_txrx.c    |   3 -
- drivers/net/ethernet/intel/ice/ice_txrx.h    |   1 -
- 7 files changed, 247 insertions(+), 143 deletions(-)
-
-
-base-commit: c924ca3252117385328b3aa1b2b507b5c93c4c47
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index cc1f65781913..0d369e5e7441 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -3159,7 +3159,7 @@ static irqreturn_t ice_misc_intr(int __always_unused irq, void *data)
+ 
+ 		ena_mask &= ~PFINT_OICR_TSYN_EVNT_M;
+ 
+-		if (hw->func_caps.ts_func_info.src_tmr_owned) {
++		if (ice_pf_src_tmr_owned(pf)) {
+ 			/* Save EVENTs from GLTSYN register */
+ 			pf->ptp.ext_ts_irq |= gltsyn_stat &
+ 					      (GLTSYN_STAT_EVENT0_M |
+diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
+index ca40ca220cc9..2e3f0aaacddd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ptp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
+@@ -2449,7 +2449,7 @@ void ice_ptp_reset(struct ice_pf *pf)
+ 	if (test_bit(ICE_PFR_REQ, pf->state))
+ 		goto pfr;
+ 
+-	if (!hw->func_caps.ts_func_info.src_tmr_owned)
++	if (!ice_pf_src_tmr_owned(pf))
+ 		goto reset_ts;
+ 
+ 	err = ice_ptp_init_phc(hw);
 -- 
 2.39.2
 
