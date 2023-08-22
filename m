@@ -4,76 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17C26EE49B2
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Aug 2023 23:00:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91779EE49B1
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Aug 2023 23:00:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 93CD860C18;
-	Tue, 22 Aug 2023 23:00:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 93CD860C18
+	by smtp3.osuosl.org (Postfix) with ESMTP id 24F1F60D71;
+	Tue, 22 Aug 2023 23:00:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 24F1F60D71
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692745253;
-	bh=lhrq12TbNiclrNW+lGZ9tXEpVsPxRqQunYDAPoJi6Y0=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=u3pklJjbyS/2gtukWSl6iF4AuiZLA410VqFmmYzIrq5aOnxX6YvVtrGx+SHWiHsjD
-	 BV1QfOHKy9vXpchRAvVYxUXFnSeu4r+bw0iR5fj9eCPpZVQrJD6X9/OHaYVF/BwnP9
-	 u0Lawc/5EMAf8j7HIsYr05aR0RRCowsOg9HCfCi3g1VS5w4EJDfH2hbMcDlsIrkhgu
-	 IGDcqzDhQLqYPNKM6Al76Qnpv3YYk082utjXCEwC3HfP+HH9/KW+YHcI7Un8m5ORPg
-	 1tnUbLbgBEEyScYL996iqcd9rgA7kolOHyuxs24LCrFD+QGMlwaFUC9zdi/WelldDn
-	 lUeTyMekaFIAw==
+	s=default; t=1692745258;
+	bh=w8AKeQ/c9mA0CFta5Ga5xBD4/fl/wELgSpKCugLtXLI=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=0vSjTcZf6Q9cIf+RFyCAXk+CZKFNpN4GWIa1WvcckJq4L22xDn0DGbCEiNdjWtrUy
+	 GdSGSsdHrFJ3Cl0hSGPR0E10AhyR3WzzKxjzHiqat4FGOuz27hBhUWWavYyAr9FcEN
+	 70uZbztazIo2DusyTUVwBkdaE1a9C7g877COz6Di0WOVIZL3dZWfiVi4mmVBGVNka+
+	 6UdVWr2VNjoQu1yJeukuaKzcYb4f4rpR0baA1vnhh6egrlr5HAoAij6TeGb2GPYPi8
+	 5+7Ubd35KHoyTsOpJoHnlrk66db3RrCXzbsA7kpt4M3UnPDt/JAR0pnhopDQL132BD
+	 M19EFmV5InuXg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id W7oerRXcXQYw; Tue, 22 Aug 2023 23:00:52 +0000 (UTC)
+	with ESMTP id t7y8bp6qRis2; Tue, 22 Aug 2023 23:00:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C9DFE60C07;
-	Tue, 22 Aug 2023 23:00:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C9DFE60C07
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id B3D471BF2F1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 23:00:50 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 537B660BED;
+	Tue, 22 Aug 2023 23:00:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 537B660BED
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 473521BF2F1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 23:00:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9831081FFA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 23:00:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9831081FFA
+ by smtp4.osuosl.org (Postfix) with ESMTP id 1DBD0408A6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 23:00:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1DBD0408A6
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id P23gUZ0U_PzG for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Aug 2023 23:00:49 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 3R6Lfp6gm47G for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Aug 2023 23:00:47 +0000 (UTC)
 Received: from out-26.mta1.migadu.com (out-26.mta1.migadu.com [95.215.58.26])
- by smtp1.osuosl.org (Postfix) with ESMTPS id B59CA81FF4
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 262334089B
  for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 23:00:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B59CA81FF4
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 262334089B
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
  include these headers.
 From: Vadim Fedorenko <vadim.fedorenko@linux.dev>
 To: Jakub Kicinski <kuba@kernel.org>, Jiri Pirko <jiri@resnulli.us>,
  Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>,
  Jonathan Lemon <jonathan.lemon@gmail.com>, Paolo Abeni <pabeni@redhat.com>
-Date: Wed, 23 Aug 2023 00:00:30 +0100
-Message-Id: <20230822230037.809114-3-vadim.fedorenko@linux.dev>
-In-Reply-To: <20230822230037.809114-1-vadim.fedorenko@linux.dev>
-References: <20230822230037.809114-1-vadim.fedorenko@linux.dev>
+Date: Wed, 23 Aug 2023 00:00:28 +0100
+Message-Id: <20230822230037.809114-1-vadim.fedorenko@linux.dev>
 MIME-Version: 1.0
 X-Migadu-Flow: FLOW_OUT
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux.dev; s=key1; t=1692745246;
+ d=linux.dev; s=key1; t=1692745243;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=pxxYN+1WHhCTGjnRQK9fFp13ziXEuP6wZJewoVdg+54=;
- b=Fl9KhFdeesVV4efUnhNffSsfJGHoqvLBQrwGbyFaZzHbp1IHIYSOSZ1iT3vs0JZI2zM0ce
- dJa3DyUaV/BWwJjCS6bX/KpwVUcG0ZZQP8AZeYNbXTbGl9yVfvmSgrr8LM68s+IYnYcWmM
- QGKZ6nRifzyCaL9IqhJJikt9d2r3SSI=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ content-transfer-encoding:content-transfer-encoding;
+ bh=9Gj4gIuKWFmJms20Vs29lIsEZxQMb7Y+sECgh7ml1ls=;
+ b=JO3WyuJBL7JLlrBbQCBz75WrPQPayz9W+32cIXyoRJeRjzTc1P58q8jZqFse4jBD54SCD3
+ jTJyQZLA/eNsWF0K/sCpZ3VQvZvPGACziSj2pvZElZ0H7YHrYgE2YmUZABLo780BIBXH7M
+ VEv1lJlqOLOZ3827ZrCFSR8GoyLTHw4=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
- header.s=key1 header.b=Fl9KhFde
-Subject: [Intel-wired-lan] [PATCH net-next v5 2/9] dpll: spec: Add Netlink
- spec in YAML
+ header.s=key1 header.b=JO3WyuJB
+Subject: [Intel-wired-lan] [PATCH net-next v5 0/9] Create common DPLL
+ configuration API
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,972 +85,497 @@ List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
 Cc: Vadim Fedorenko <vadim.fedorenko@linux.dev>,
  Bart Van Assche <bvanassche@acm.org>, netdev@vger.kernel.org,
  intel-wired-lan@lists.osuosl.org, Milena Olech <milena.olech@intel.com>,
- Jiri Pirko <jiri@nvidia.com>, linux-clk@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+ linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add a protocol spec for DPLL.
-Add code generated from the spec.
+Implement common API for DPLL configuration and status reporting.
+The API utilises netlink interface as transport for commands and event
+notifications. This API aims to extend current pin configuration 
+provided by PTP subsystem and make it flexible and easy to cover
+complex configurations.
 
-Signed-off-by: Jakub Kicinski <kuba@kernel.org>
-Signed-off-by: Michal Michalik <michal.michalik@intel.com>
-Signed-off-by: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Signed-off-by: Jiri Pirko <jiri@nvidia.com>
----
-v4->v5:
-- split pin into separated attribute space
-v3->v4:
+Netlink interface is based on ynl spec, it allows use of in-kernel
+tools/net/ynl/cli.py application to control the interface with properly
+formated command and json attribute strings. Here are few command
+examples of how it works with `ice` driver on supported NIC:
+
+- dump dpll devices
+sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
+--dump device-get
+[{'clock-id': 4658613174691613800,
+  'id': 0,
+  'lock-status': 'locked-ho-acq',
+  'mode': 'automatic',
+  'mode-supported': ['automatic'],
+  'module-name': 'ice',
+  'type': 'eec'},
+ {'clock-id': 4658613174691613800,
+  'id': 1,
+  'lock-status': 'locked-ho-acq',
+  'mode': 'automatic',
+  'mode-supported': ['automatic'],
+  'module-name': 'ice',
+  'type': 'pps'}]
+
+- get single pin info:
+$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
+--do pin-get --json '{"id":2}'
+{'board-label': 'C827_0-RCLKA',
+ 'clock-id': 4658613174691613800,
+ 'dpll-caps': 6,
+ 'frequency': 1953125,
+ 'id': 2,
+ 'module-name': 'ice',
+ 'parent-device': [{'direction': 'input',
+                    'parent-id': 0,
+                    'prio': 9,
+                    'state': 'disconnected'},
+                   {'direction': 'input',
+                    'parent-id': 1,
+                    'prio': 9,
+                    'state': 'disconnected'}],
+ 'type': 'mux'}
+
+- set pin's state on dpll:
+$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
+--do pin-set --json '{"id":2, "parent-device":{"parent-id":1, "state":2}}'
+
+
+- set pin's prio on dpll:
+$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
+--do pin-set --json '{"id":2, "parent-device":{"parent-id":1, "prio":4}}'
+
+- set pin's state on parent pin:
+$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
+--do pin-set --json '{"id":13, "parent-pin":{"parent-id":2, "state":1}}'
+
+
+v4 -> v5:
+- separate namespace for pin attributes
+- small fixes, more details in the patches
+
+v3 -> v4:
 - rebase on top of net-next
-v2->v3:
-- re-generated on top of the latest net-next
-- tag from Jiri Pirko
-v1->v2:
-- rename FREERUN to DETACHED
-- remove module-name from expected input attributes on device-get command
+- fix flag usage in ice
 
- Documentation/netlink/specs/dpll.yaml | 488 ++++++++++++++++++++++++++
- drivers/dpll/dpll_nl.c                | 162 +++++++++
- drivers/dpll/dpll_nl.h                |  51 +++
- include/uapi/linux/dpll.h             | 201 +++++++++++
- 4 files changed, 902 insertions(+)
+v2 -> v3:
+- more style and warning fixes
+- details in per-patch logs
+
+v1 -> v2:
+- remove FREERUN/DETACHED mode
+- reorder functions in commits not to depend on files introduced in
+  future commits
+- style and warning fixes
+
+v9 RFC -> v1:
+- Merge header patch into the patches where the actual functions are
+  implemented
+- Address comments from previous reviews
+- Per patch change log contains more details
+
+RFC versions:
+v8 -> v9:
+[00/10] Create common DPLL configuration API
+- update examples to reflect new pin-parent nest split
+
+[01/10] dpll: documentation on DPLL subsystem interface
+- fix docs build warnings
+- separate netlink command/attribute list
+- replace enum description with uapi header
+- add brief explanation what is a DPLL
+- fix EOPNOTSUPP typo
+- fix typo .state_get -> .state_on_dpll_get
+
+[02/10] dpll: spec: Add Netlink spec in YAML
+- regenerate policy max values
+- add missing enum descriptions
+- split pin-parent nest:
+  - pin-parent-device - for configuration of pin-device tuple
+  - pin-parent-pin - for configuration od pin-pin tuple
+- fix typos:
+  - s/working-modes/working modes/
+  - s/differentiate/differentiates/
+  - s/valid input, auto selected by dpll/input pin auto selected by dpll/
+- remove FREERUN and HOLDOVER modes
+
+[03/10] dpll: core: Add DPLL framework base functions
+- fix description in spdx header.
+- remove refcount check if refcount was already set
+- do not validate dpll ptr in dpll_device_put(..)
+- fix return -ENOMEM on failed memory alloc
+- do not validate pin ptr in dpll_pin_put(..)
+- return -EINVAL in case of module/clock_id mismatch
+- do not {} around one-line xa_for_each() macro
+- move dpll_<x>_registration structs to dpll_core.c
+- rephrase doc comment on device and pin id struct members
+- remove ref in case of memory allocation fail
+- check for required ops on pin/device registration
+- mark pin with DPLL_REGISTERED once pin is registered with dpll
+
+[04/10] dpll: netlink: Add DPLL framework base functions
+- fix pin-id-get/device-id-get behavior
+- reshuffle order of functions
+- avoid forward declarations
+- functions for adding pin/device handle next to each other
+- pass ops callback return values to the user
+- remove dpll_cmd_pin_fill_details(..) function, merge the code into
+  __dpll_cmd_pin_dump_one(..)
+- rename __dpll_cmd_pin_dump_one() to dpll_cmd_pin_get_one()
+- use WARN_ON macro when dpll ref is missing
+- remove redundant pin's dpll list not empty check
+- remove double spaces inside if statement
+- add extack message when set command is not possible
+- do not return error when callback is not required
+- WARN_ON missing ops moved to dpll_core.c
+- use DPLL_REGISTERED if pin was registered with dpll
+- fix pin-id-get return and add extack errors
+- fix device-id-get return and add extack errors
+- drop pointless init of variables
+- add macro for iterating over marked pins/devices
+- move dpll_set_from_nlattr() for consistent order
+- use GENL_REQ_ATTR_CHECK() for checking attibute presence
+- fill extack if pin/device was not found
+- drop pointless init of variables
+- WARN_ON if dpll not registered on send event
+- rename goto labels to indicate error path
+- fix docs
+- drop pointless init of variables
+- verify pin in notify with a mark
+- prevent ops->mode_set call if missing callback
+- move static dpll_msg_add_pin_handle() from pin<->netdev patch
+- split pin-parent nest:
+  - pin-parent-device - for configuration of pin-device tuple
+  - pin-parent-pin - for configuration od pin-pin tuple
+
+[06/10] netdev: expose DPLL pin handle for netdevice
+- net_device->dpll_pin is only valid if IS_ENABLED(CONFIG_DPLL) fix the
+  code in net/core/rtnetlink.c to respect that.
+- move dpll_msg_add_pin_handle to "dpll: netlink" patch + export the
+  function with this patch
+
+[07/10] ice: add admin commands to access cgu configuration
+- rename MAX_NETLIST_SIZE -> ICE_MAX_NETLIST_SIZE
+- simplify function: s64 convert_s48_to_s64(s64 signed_48)
+- do not assign 0 to field that is already 0
+
+[08/10] ice: implement dpll interface to control cgu
+- drop pointless 0 assignement
+- ice_dpll_init(..) returns void instead of int
+- fix context description of the functions
+- fix ice_dpll_init(..) traces
+- fix use package_label instead pf board_label for rclk pin
+- be consistent on cgu presence naming
+- remove indent in ice_dpll_deinit(..)
+- remove unused struct field lock_err_num
+- fix kworker resched behavior
+- remove debug log from ice_dpll_deinit_worker(..)
+- reorder ice internal functions
+- release resources directly on error path
+- remove redundant NULL checks when releasing resources
+- do not assign NULL to pointers after releasing resources
+- simplify variable assignement
+- fix 'int ret;' declarations across the ice_dpll.c
+- remove leftover ice_dpll_find(..)
+- get pf pointer from dpll_priv without type cast
+- improve error reporting
+- fix documentation
+- fix ice_dpll_update_state(..) flow
+- fix return in case out of range prio set
+
+
+v7 -> v8:
+[0/10] Create common DPLL configuration API
+- reorder the patches in patch series
+- split patch "[RFC PATCH v7 2/8] dpll: Add DPLL framework base functions"
+  into 3 smaller patches for easier review:
+  - [03/10] dpll: core: Add DPLL framework base functions
+  - [04/10] dpll: netlink: Add DPLL framework base functions
+  - [05/10] dpll: api header: Add DPLL framework base
+- add cli.py usage examples in commit message
+
+[01/10] dpll: documentation on DPLL subsystem interface
+- fix DPLL_MODE_MANUAL documentation
+- remove DPLL_MODE_NCO
+- remove DPLL_LOCK_STATUS_CALIBRATING
+- add grepability Use full names of commands, attributes and values of
+  dpll subsystem in the documentation
+- align documentation with changes introduced in v8
+- fix typos
+- fix phrases to better show the intentions
+- move dpll.rst to Documentation/driver-api/
+
+[02/10] dpll: spec: Add Netlink spec in YAML
+- remove unspec attribute values
+- add 10 KHZ and 77,5 KHZ frequency defines
+- fix documentation
+- remove assigned values from subset attributes
+- reorder dpll attributes
+- fix `device` nested attribute usage, device get is not used on pin-get
+- temperature with 3 digit float precision
+- remove enum from subset definitions
+- move pin-direction to pin-dpll tuple/subset
+- remove DPLL_MODE_NCO
+- remove DPLL_LOCK_STATUS_CALIBRATING
+- fix naming scheme od notification interface functions
+- separate notifications for pins
+- rename attribute enum name: dplla -> dpll_a
+- rename pin-idx to pin-id
+- remove attributes: pin-parent-idx, device
+- replace bus-name and dev-name attributes with module-name
+- replace pin-label with 3 new attributes: pin-board-label,
+  pin-panel-label, pin-package-label
+- add device-id-get and pin-id-get commands
+- remove rclk-dev-name atribute
+- rename DPLL_PIN_DIRECTION_SOURCE -> DPLL_PIN_DIRECTION_INPUT
+
+[03/10] dpll: core: Add DPLL framework base functions
+[04/10] dpll: netlink: Add DPLL framework base functions
+[05/10] dpll: api header: Add DPLL framework base
+- remove unspec attributes after removing from dpll netlink spec
+- move pin-direction to pin-dpll tuple
+- pass parent_priv on state_on_pin_<get/set>
+- align with new notification definitions from netlink spec
+- use separated notifications for dpll pins and devices
+- format notification messages as corresponding get netlink commands
+- rename pin-idx to pin-id
+- remove attributes pin-parent-idx, device
+- use DPLL_A_PIN_PARENT to hold information on parent pin or dpll device
+- refactor lookup for pins and dplls for dpll subsystem
+- replace bus-name, dev-name with module-name
+- replace pin-label with 3 new attributes: pin-board-label,
+  pin-panel-label, pin-package-label
+- add device-id-get and pin-id-get commands
+- rename dpll_xa_lock to dpll_lock
+- improve doxygen in dpll_core.c
+- remove unused parent and dev fields from dpll_device struct
+- use u32 for pin_idx in dpll_pin_alloc
+- use driver provided pin properties struct
+- verify pin/dpll owner on registering pin
+- remove const arg modifier for helper _priv functions
+- remove function declaration _get_by_name()
+- update SPDX headers
+- parse netlink set attributes with nlattr array
+- remove rclk-dev-name attribute
+- remove device pointer from dpll_pin_register/dpll_device_register
+- remove redundant doxygen from dpll header
+- use module_name() to get name of module
+- add missing/remove outdated kdocs
+- fix call frequency_set only if available
+- fix call direction_set only for pin-dpll tuple
+
+[06/10] netdev: expose DPLL pin handle for netdevice
+- rebased on top of v8 changes
+  - use dpll_msg_add_pin_handle() in dpll_pin_find_from_nlattr()
+    and dpll_msg_add_pin_parents()
+  - fixed handle to use DPLL_A_PIN_ID and removed temporary comments
+- added documentation record for dpll_pin pointer
+- fixed compilation of net/core/dev.c when CONFIG_DPLL is not enabled
+- adjusted patch description a bit
+
+[07/10] ice: add admin commands to access cgu configuration
+- Remove unspec attributes after removing from dpll netlink spec.
+
+[08/10] ice: implement dpll interface to control cgu
+- remove unspec attributes
+- do not store pin flags received in set commands
+- use pin state field to provide pin state to the caller
+- remove include of uapi header
+- remove redundant check against null arguments
+- propagate lock function return value to the caller
+- use switch case instead of if statements
+- fix dev_dbg to dev_err for error cases
+- fix dpll/pin lookup on dpll subsytem callbacks
+- fix extack of dpll subsystem callbacks
+- remove double negation and variable cast
+- simplify ice_dpll_pin_state_set function
+- pass parent_priv on state_on_pin_<get/set>
+- remove parent hw_idx lookup
+- fix use const qualifier for dpll/dpll_pin ops
+- fix IS_ERR macros usage in ice_dpll
+- add notify previous source state change
+- fix mutex locking on releasing pins
+- use '|=' instead of '+=' when modifing capabilities field
+- rename ice_dpll_register_pins function
+- clock_id function to return clock ID on the stack instead of using
+  an output variable
+- DPLL_LOCK_STATUS_CALIBRATING was removed, return:
+  DPLL_LOCK_STATUS_LOCKED - if dpll was locked
+  DPLL_LOCK_STATUS_LOCKED_HO_ACQ - if dpll was locked and holdover is
+  acquired
+- propagate and use dpll_priv to obtain pf pointer in corresponding
+  functions.
+- remove null check for pf pointer
+- adapt to `dpll: core: fix notification scheme`
+- expose pf related pin to corresponding netdevice
+- fix dpll init error path
+- fix dpll pins naming scheme `source` -> `input`
+- replace pin-label with pin-board-label
+- dpll remove parent and dev fields from dpll_device
+- remove device pointer from dpll_pin_register/dpll_device_register
+- rename DPLL_PIN_DIRECTION_SOURCE -> DPLL_PIN_DIRECTION_INPUT
+
+[09/10] ptp_ocp: implement DPLL ops
+- replace pin-label with pin-board-label
+- dpll remove parent and dev fields from dpll_device
+- remove device pointer from dpll_pin_register/dpll_device_register
+- rename DPLL_PIN_DIRECTION_SOURCE -> DPLL_PIN_DIRECTION_INPUT
+
+[10/10] mlx5: Implement SyncE support using DPLL infrastructure
+- rebased on top of v8 changes:
+  - changed notification scheme
+  - no need to fill pin label
+  - implemented locked_ho_acq status
+  - rename DPLL_PIN_DIRECTION_SOURCE -> DPLL_PIN_DIRECTION_INPUT
+  - remove device pointer from dpll_pin_register/dpll_device_register
+- fixed MSEES register writes
+- adjusted pin state and lock state values reported
+- fixed a white space issue
+
+v6 -> v7:
+ * YAML spec:
+   - remove nested 'pin' attribute
+   - clean up definitions on top of the latest changes
+ * pin object:
+   - pin xarray uses id provided by the driver
+   - remove usage of PIN_IDX_INVALID in set function
+   - source_pin_get() returns object instead of idx
+   - fixes in frequency support API
+ * device and pin operations are const now
+ * small fixes in naming in Makefile and in the functions
+ * single mutex for the subsystem to avoid possible ABBA locks
+ * no special *_priv() helpers anymore, private data is passed as void*
+ * no netlink filters by name anymore, only index is supported
+ * update ptp_ocp and ice drivers to follow new API version
+ * add mlx5e driver as a new customer of the subsystem
+v5 -> v6:
+ * rework pin part to better fit shared pins use cases
+ * add YAML spec to easy generate user-space apps
+ * simple implementation in ptp_ocp is back again
+v4 -> v5:
+ * fix code issues found during last reviews:
+   - replace cookie with clock id
+   - follow one naming schema in dpll subsys
+   - move function comments to dpll_core.c, fix exports
+   - remove single-use helper functions
+   - merge device register with alloc
+   - lock and unlock mutex on dpll device release
+   - move dpll_type to uapi header
+   - rename DPLLA_DUMP_FILTER to DPLLA_FILTER
+   - rename dpll_pin_state to dpll_pin_mode
+   - rename DPLL_MODE_FORCED to DPLL_MODE_MANUAL
+   - remove DPLL_CHANGE_PIN_TYPE enum value
+ * rewrite framework once again (Arkadiusz)
+   - add clock class:
+     Provide userspace with clock class value of DPLL with dpll device
+     dump netlink request. Clock class is assigned by driver allocating
+     a dpll device. Clock class values are defined as specified in:
+     ITU-T G.8273.2/Y.1368.2 recommendation.
+   - dpll device naming schema use new pattern:
+     "dpll_%s_%d_%d", where:
+       - %s - dev_name(parent) of parent device,
+       - %d (1) - enum value of dpll type,
+       - %d (2) - device index provided by parent device.
+   - new muxed/shared pin registration:
+     Let the kernel module to register a shared or muxed pin without
+     finding it or its parent. Instead use a parent/shared pin
+     description to find correct pin internally in dpll_core, simplifing
+     a dpll API
+ * Implement complex DPLL design in ice driver (Arkadiusz)
+ * Remove ptp_ocp driver from the series for now
+v3 -> v4:
+ * redesign framework to make pins dynamically allocated (Arkadiusz)
+ * implement shared pins (Arkadiusz)
+v2 -> v3:
+ * implement source select mode (Arkadiusz)
+ * add documentation
+ * implementation improvements (Jakub)
+v1 -> v2:
+ * implement returning supported input/output types
+ * ptp_ocp: follow suggestions from Jonathan
+ * add linux-clk mailing list
+v0 -> v1:
+ * fix code style and errors
+ * add linux-arm mailing list
+
+Arkadiusz Kubalewski (2):
+  ice: add admin commands to access cgu configuration
+  ice: implement dpll interface to control cgu
+
+Jiri Pirko (2):
+  netdev: expose DPLL pin handle for netdevice
+  mlx5: Implement SyncE support using DPLL infrastructure
+
+Vadim Fedorenko (5):
+  dpll: documentation on DPLL subsystem interface
+  dpll: spec: Add Netlink spec in YAML
+  dpll: core: Add DPLL framework base functions
+  dpll: netlink: Add DPLL framework base functions
+  ptp_ocp: implement DPLL ops
+
+ Documentation/driver-api/dpll.rst             |  498 +++++
+ Documentation/driver-api/index.rst            |    1 +
+ Documentation/netlink/specs/dpll.yaml         |  488 +++++
+ MAINTAINERS                                   |   11 +
+ drivers/Kconfig                               |    2 +
+ drivers/Makefile                              |    1 +
+ drivers/dpll/Kconfig                          |    7 +
+ drivers/dpll/Makefile                         |    9 +
+ drivers/dpll/dpll_core.c                      |  798 +++++++
+ drivers/dpll/dpll_core.h                      |   89 +
+ drivers/dpll/dpll_netlink.c                   | 1247 +++++++++++
+ drivers/dpll/dpll_netlink.h                   |   13 +
+ drivers/dpll/dpll_nl.c                        |  162 ++
+ drivers/dpll/dpll_nl.h                        |   51 +
+ drivers/net/ethernet/intel/Kconfig            |    1 +
+ drivers/net/ethernet/intel/ice/Makefile       |    3 +-
+ drivers/net/ethernet/intel/ice/ice.h          |    5 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  246 ++-
+ drivers/net/ethernet/intel/ice/ice_common.c   |  492 ++++-
+ drivers/net/ethernet/intel/ice/ice_common.h   |   44 +
+ drivers/net/ethernet/intel/ice/ice_dpll.c     | 1903 +++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_dpll.h     |  104 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      |   17 +-
+ drivers/net/ethernet/intel/ice/ice_main.c     |    6 +
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.c   |  530 +++++
+ drivers/net/ethernet/intel/ice/ice_ptp_hw.h   |   86 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |    1 +
+ .../net/ethernet/mellanox/mlx5/core/Kconfig   |    8 +
+ .../net/ethernet/mellanox/mlx5/core/Makefile  |    3 +
+ drivers/net/ethernet/mellanox/mlx5/core/dev.c |   17 +
+ .../net/ethernet/mellanox/mlx5/core/dpll.c    |  432 ++++
+ drivers/ptp/Kconfig                           |    1 +
+ drivers/ptp/ptp_ocp.c                         |  369 +++-
+ include/linux/dpll.h                          |  157 ++
+ include/linux/mlx5/driver.h                   |    2 +
+ include/linux/mlx5/mlx5_ifc.h                 |   59 +-
+ include/linux/netdevice.h                     |   20 +
+ include/uapi/linux/dpll.h                     |  201 ++
+ include/uapi/linux/if_link.h                  |    2 +
+ net/core/dev.c                                |   22 +
+ net/core/rtnetlink.c                          |   35 +
+ 41 files changed, 8048 insertions(+), 95 deletions(-)
+ create mode 100644 Documentation/driver-api/dpll.rst
  create mode 100644 Documentation/netlink/specs/dpll.yaml
+ create mode 100644 drivers/dpll/Kconfig
+ create mode 100644 drivers/dpll/Makefile
+ create mode 100644 drivers/dpll/dpll_core.c
+ create mode 100644 drivers/dpll/dpll_core.h
+ create mode 100644 drivers/dpll/dpll_netlink.c
+ create mode 100644 drivers/dpll/dpll_netlink.h
  create mode 100644 drivers/dpll/dpll_nl.c
  create mode 100644 drivers/dpll/dpll_nl.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dpll.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_dpll.h
+ create mode 100644 drivers/net/ethernet/mellanox/mlx5/core/dpll.c
+ create mode 100644 include/linux/dpll.h
  create mode 100644 include/uapi/linux/dpll.h
 
-diff --git a/Documentation/netlink/specs/dpll.yaml b/Documentation/netlink/specs/dpll.yaml
-new file mode 100644
-index 000000000000..d98dea42fc80
---- /dev/null
-+++ b/Documentation/netlink/specs/dpll.yaml
-@@ -0,0 +1,488 @@
-+# SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause)
-+
-+name: dpll
-+
-+doc: DPLL subsystem.
-+
-+definitions:
-+  -
-+    type: enum
-+    name: mode
-+    doc: |
-+      working modes a dpll can support, differentiates if and how dpll selects
-+      one of its inputs to syntonize with it, valid values for DPLL_A_MODE
-+      attribute
-+    entries:
-+      -
-+        name: manual
-+        doc: input can be only selected by sending a request to dpll
-+        value: 1
-+      -
-+        name: automatic
-+        doc: highest prio input pin auto selected by dpll
-+    render-max: true
-+  -
-+    type: enum
-+    name: lock-status
-+    doc: |
-+      provides information of dpll device lock status, valid values for
-+      DPLL_A_LOCK_STATUS attribute
-+    entries:
-+      -
-+        name: unlocked
-+        doc: |
-+          dpll was not yet locked to any valid input (or forced by setting
-+          DPLL_A_MODE to DPLL_MODE_DETACHED)
-+        value: 1
-+      -
-+        name: locked
-+        doc: |
-+          dpll is locked to a valid signal, but no holdover available
-+      -
-+        name: locked-ho-acq
-+        doc: |
-+          dpll is locked and holdover acquired
-+      -
-+        name: holdover
-+        doc: |
-+          dpll is in holdover state - lost a valid lock or was forced
-+          by disconnecting all the pins (latter possible only
-+          when dpll lock-state was already DPLL_LOCK_STATUS_LOCKED_HO_ACQ,
-+          if dpll lock-state was not DPLL_LOCK_STATUS_LOCKED_HO_ACQ, the
-+          dpll's lock-state shall remain DPLL_LOCK_STATUS_UNLOCKED)
-+    render-max: true
-+  -
-+    type: const
-+    name: temp-divider
-+    value: 1000
-+    doc: |
-+      temperature divider allowing userspace to calculate the
-+      temperature as float with three digit decimal precision.
-+      Value of (DPLL_A_TEMP / DPLL_TEMP_DIVIDER) is integer part of
-+      temperature value.
-+      Value of (DPLL_A_TEMP % DPLL_TEMP_DIVIDER) is fractional part of
-+      temperature value.
-+  -
-+    type: enum
-+    name: type
-+    doc: type of dpll, valid values for DPLL_A_TYPE attribute
-+    entries:
-+      -
-+        name: pps
-+        doc: dpll produces Pulse-Per-Second signal
-+        value: 1
-+      -
-+        name: eec
-+        doc: dpll drives the Ethernet Equipment Clock
-+    render-max: true
-+  -
-+    type: enum
-+    name: pin-type
-+    doc: |
-+      defines possible types of a pin, valid values for DPLL_A_PIN_TYPE
-+      attribute
-+    entries:
-+      -
-+        name: mux
-+        doc: aggregates another layer of selectable pins
-+        value: 1
-+      -
-+        name: ext
-+        doc: external input
-+      -
-+        name: synce-eth-port
-+        doc: ethernet port PHY's recovered clock
-+      -
-+        name: int-oscillator
-+        doc: device internal oscillator
-+      -
-+        name: gnss
-+        doc: GNSS recovered clock
-+    render-max: true
-+  -
-+    type: enum
-+    name: pin-direction
-+    doc: |
-+      defines possible direction of a pin, valid values for
-+      DPLL_A_PIN_DIRECTION attribute
-+    entries:
-+      -
-+        name: input
-+        doc: pin used as a input of a signal
-+        value: 1
-+      -
-+        name: output
-+        doc: pin used to output the signal
-+    render-max: true
-+  -
-+    type: const
-+    name: pin-frequency-1-hz
-+    value: 1
-+  -
-+    type: const
-+    name: pin-frequency-10-khz
-+    value: 10000
-+  -
-+    type: const
-+    name: pin-frequency-77_5-khz
-+    value: 77500
-+  -
-+    type: const
-+    name: pin-frequency-10-mhz
-+    value: 10000000
-+  -
-+    type: enum
-+    name: pin-state
-+    doc: |
-+      defines possible states of a pin, valid values for
-+      DPLL_A_PIN_STATE attribute
-+    entries:
-+      -
-+        name: connected
-+        doc: pin connected, active input of phase locked loop
-+        value: 1
-+      -
-+        name: disconnected
-+        doc: pin disconnected, not considered as a valid input
-+      -
-+        name: selectable
-+        doc: pin enabled for automatic input selection
-+    render-max: true
-+  -
-+    type: flags
-+    name: pin-caps
-+    doc: |
-+      defines possible capabilities of a pin, valid flags on
-+      DPLL_A_PIN_CAPS attribute
-+    entries:
-+      -
-+        name: direction-can-change
-+        doc: pin direction can be changed
-+      -
-+        name: priority-can-change
-+        doc: pin priority can be changed
-+      -
-+        name: state-can-change
-+        doc: pin state can be changed
-+
-+attribute-sets:
-+  -
-+    name: dpll
-+    enum-name: dpll_a
-+    attributes:
-+      -
-+        name: id
-+        type: u32
-+      -
-+        name: module-name
-+        type: string
-+      -
-+        name: pad
-+        type: pad
-+      -
-+        name: clock-id
-+        type: u64
-+      -
-+        name: mode
-+        type: u32
-+        enum: mode
-+      -
-+        name: mode-supported
-+        type: u32
-+        enum: mode
-+        multi-attr: true
-+      -
-+        name: lock-status
-+        type: u32
-+        enum: lock-status
-+      -
-+        name: temp
-+        type: s32
-+      -
-+        name: type
-+        type: u32
-+        enum: type
-+  -
-+    name: pin
-+    enum-name: dpll_a_pin
-+    attributes:
-+      -
-+        name: id
-+        type: u32
-+      -
-+        name: parent-id
-+        type: u32
-+      -
-+        name: module-name
-+        type: string
-+      -
-+        name: pad
-+        type: pad
-+      -
-+        name: clock-id
-+        type: u64
-+      -
-+        name: board-label
-+        type: string
-+      -
-+        name: panel-label
-+        type: string
-+      -
-+        name: package-label
-+        type: string
-+      -
-+        name: type
-+        type: u32
-+        enum: pin-type
-+      -
-+        name: direction
-+        type: u32
-+        enum: pin-direction
-+      -
-+        name: frequency
-+        type: u64
-+      -
-+        name: frequency-supported
-+        type: nest
-+        multi-attr: true
-+        nested-attributes: frequency-range
-+      -
-+        name: frequency-min
-+        type: u64
-+      -
-+        name: frequency-max
-+        type: u64
-+      -
-+        name: prio
-+        type: u32
-+      -
-+        name: state
-+        type: u32
-+        enum: pin-state
-+      -
-+        name: dpll-caps
-+        type: u32
-+      -
-+        name: parent-device
-+        type: nest
-+        multi-attr: true
-+        nested-attributes: pin-parent-device
-+      -
-+        name: parent-pin
-+        type: nest
-+        multi-attr: true
-+        nested-attributes: pin-parent-pin
-+  -
-+    name: pin-parent-device
-+    subset-of: pin
-+    attributes:
-+      -
-+        name: parent-id
-+        type: u32
-+      -
-+        name: direction
-+        type: u32
-+      -
-+        name: prio
-+        type: u32
-+      -
-+        name: state
-+        type: u32
-+  -
-+    name: pin-parent-pin
-+    subset-of: pin
-+    attributes:
-+      -
-+        name: parent-id
-+        type: u32
-+      -
-+        name: state
-+        type: u32
-+  -
-+    name: frequency-range
-+    subset-of: pin
-+    attributes:
-+      -
-+        name: frequency-min
-+        type: u64
-+      -
-+        name: frequency-max
-+        type: u64
-+
-+operations:
-+  enum-name: dpll_cmd
-+  list:
-+    -
-+      name: device-id-get
-+      doc: |
-+        Get id of dpll device that matches given attributes
-+      attribute-set: dpll
-+      flags: [ admin-perm ]
-+
-+      do:
-+        pre: dpll-lock-doit
-+        post: dpll-unlock-doit
-+        request:
-+          attributes:
-+            - module-name
-+            - clock-id
-+            - type
-+        reply:
-+          attributes:
-+            - id
-+
-+    -
-+      name: device-get
-+      doc: |
-+        Get list of DPLL devices (dump) or attributes of a single dpll device
-+      attribute-set: dpll
-+      flags: [ admin-perm ]
-+
-+      do:
-+        pre: dpll-pre-doit
-+        post: dpll-post-doit
-+        request:
-+          attributes:
-+            - id
-+        reply: &dev-attrs
-+          attributes:
-+            - id
-+            - module-name
-+            - mode
-+            - mode-supported
-+            - lock-status
-+            - temp
-+            - clock-id
-+            - type
-+
-+      dump:
-+        pre: dpll-lock-dumpit
-+        post: dpll-unlock-dumpit
-+        reply: *dev-attrs
-+
-+    -
-+      name: device-set
-+      doc: Set attributes for a DPLL device
-+      attribute-set: dpll
-+      flags: [ admin-perm ]
-+
-+      do:
-+        pre: dpll-pre-doit
-+        post: dpll-post-doit
-+        request:
-+          attributes:
-+            - id
-+    -
-+      name: device-create-ntf
-+      doc: Notification about device appearing
-+      notify: device-get
-+      mcgrp: monitor
-+    -
-+      name: device-delete-ntf
-+      doc: Notification about device disappearing
-+      notify: device-get
-+      mcgrp: monitor
-+    -
-+      name: device-change-ntf
-+      doc: Notification about device configuration being changed
-+      notify: device-get
-+      mcgrp: monitor
-+    -
-+      name: pin-id-get
-+      doc: |
-+        Get id of a pin that matches given attributes
-+      attribute-set: pin
-+      flags: [ admin-perm ]
-+
-+      do:
-+        pre: dpll-lock-doit
-+        post: dpll-unlock-doit
-+        request:
-+          attributes:
-+            - module-name
-+            - clock-id
-+            - board-label
-+            - panel-label
-+            - package-label
-+            - type
-+        reply:
-+          attributes:
-+            - id
-+
-+    -
-+      name: pin-get
-+      doc: |
-+        Get list of pins and its attributes.
-+        - dump request without any attributes given - list all the pins in the
-+          system
-+        - dump request with target dpll - list all the pins registered with
-+          a given dpll device
-+        - do request with target dpll and target pin - single pin attributes
-+      attribute-set: pin
-+      flags: [ admin-perm ]
-+
-+      do:
-+        pre: dpll-pin-pre-doit
-+        post: dpll-pin-post-doit
-+        request:
-+          attributes:
-+            - id
-+        reply: &pin-attrs
-+          attributes:
-+            - id
-+            - board-label
-+            - panel-label
-+            - package-label
-+            - type
-+            - frequency
-+            - frequency-supported
-+            - dpll-caps
-+            - parent-device
-+            - parent-pin
-+
-+      dump:
-+        pre: dpll-lock-dumpit
-+        post: dpll-unlock-dumpit
-+        request:
-+          attributes:
-+            - id
-+        reply: *pin-attrs
-+
-+    -
-+      name: pin-set
-+      doc: Set attributes of a target pin
-+      attribute-set: pin
-+      flags: [ admin-perm ]
-+
-+      do:
-+        pre: dpll-pin-pre-doit
-+        post: dpll-pin-post-doit
-+        request:
-+          attributes:
-+            - id
-+            - frequency
-+            - direction
-+            - prio
-+            - state
-+            - parent-device
-+            - parent-pin
-+    -
-+      name: pin-create-ntf
-+      doc: Notification about pin appearing
-+      notify: pin-get
-+      mcgrp: monitor
-+    -
-+      name: pin-delete-ntf
-+      doc: Notification about pin disappearing
-+      notify: pin-get
-+      mcgrp: monitor
-+    -
-+      name: pin-change-ntf
-+      doc: Notification about pin configuration being changed
-+      notify: pin-get
-+      mcgrp: monitor
-+
-+mcast-groups:
-+  list:
-+    -
-+      name: monitor
-diff --git a/drivers/dpll/dpll_nl.c b/drivers/dpll/dpll_nl.c
-new file mode 100644
-index 000000000000..14064c8c783b
---- /dev/null
-+++ b/drivers/dpll/dpll_nl.c
-@@ -0,0 +1,162 @@
-+// SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause)
-+/* Do not edit directly, auto-generated from: */
-+/*	Documentation/netlink/specs/dpll.yaml */
-+/* YNL-GEN kernel source */
-+
-+#include <net/netlink.h>
-+#include <net/genetlink.h>
-+
-+#include "dpll_nl.h"
-+
-+#include <uapi/linux/dpll.h>
-+
-+/* Common nested types */
-+const struct nla_policy dpll_pin_parent_device_nl_policy[DPLL_A_PIN_STATE + 1] = {
-+	[DPLL_A_PIN_PARENT_ID] = { .type = NLA_U32, },
-+	[DPLL_A_PIN_DIRECTION] = NLA_POLICY_RANGE(NLA_U32, 1, 2),
-+	[DPLL_A_PIN_PRIO] = { .type = NLA_U32, },
-+	[DPLL_A_PIN_STATE] = NLA_POLICY_RANGE(NLA_U32, 1, 3),
-+};
-+
-+const struct nla_policy dpll_pin_parent_pin_nl_policy[DPLL_A_PIN_STATE + 1] = {
-+	[DPLL_A_PIN_PARENT_ID] = { .type = NLA_U32, },
-+	[DPLL_A_PIN_STATE] = NLA_POLICY_RANGE(NLA_U32, 1, 3),
-+};
-+
-+/* DPLL_CMD_DEVICE_ID_GET - do */
-+static const struct nla_policy dpll_device_id_get_nl_policy[DPLL_A_TYPE + 1] = {
-+	[DPLL_A_MODULE_NAME] = { .type = NLA_NUL_STRING, },
-+	[DPLL_A_CLOCK_ID] = { .type = NLA_U64, },
-+	[DPLL_A_TYPE] = NLA_POLICY_RANGE(NLA_U32, 1, 2),
-+};
-+
-+/* DPLL_CMD_DEVICE_GET - do */
-+static const struct nla_policy dpll_device_get_nl_policy[DPLL_A_ID + 1] = {
-+	[DPLL_A_ID] = { .type = NLA_U32, },
-+};
-+
-+/* DPLL_CMD_DEVICE_SET - do */
-+static const struct nla_policy dpll_device_set_nl_policy[DPLL_A_ID + 1] = {
-+	[DPLL_A_ID] = { .type = NLA_U32, },
-+};
-+
-+/* DPLL_CMD_PIN_ID_GET - do */
-+static const struct nla_policy dpll_pin_id_get_nl_policy[DPLL_A_PIN_TYPE + 1] = {
-+	[DPLL_A_PIN_MODULE_NAME] = { .type = NLA_NUL_STRING, },
-+	[DPLL_A_PIN_CLOCK_ID] = { .type = NLA_U64, },
-+	[DPLL_A_PIN_BOARD_LABEL] = { .type = NLA_NUL_STRING, },
-+	[DPLL_A_PIN_PANEL_LABEL] = { .type = NLA_NUL_STRING, },
-+	[DPLL_A_PIN_PACKAGE_LABEL] = { .type = NLA_NUL_STRING, },
-+	[DPLL_A_PIN_TYPE] = NLA_POLICY_RANGE(NLA_U32, 1, 5),
-+};
-+
-+/* DPLL_CMD_PIN_GET - do */
-+static const struct nla_policy dpll_pin_get_do_nl_policy[DPLL_A_PIN_ID + 1] = {
-+	[DPLL_A_PIN_ID] = { .type = NLA_U32, },
-+};
-+
-+/* DPLL_CMD_PIN_GET - dump */
-+static const struct nla_policy dpll_pin_get_dump_nl_policy[DPLL_A_PIN_ID + 1] = {
-+	[DPLL_A_PIN_ID] = { .type = NLA_U32, },
-+};
-+
-+/* DPLL_CMD_PIN_SET - do */
-+static const struct nla_policy dpll_pin_set_nl_policy[DPLL_A_PIN_PARENT_PIN + 1] = {
-+	[DPLL_A_PIN_ID] = { .type = NLA_U32, },
-+	[DPLL_A_PIN_FREQUENCY] = { .type = NLA_U64, },
-+	[DPLL_A_PIN_DIRECTION] = NLA_POLICY_RANGE(NLA_U32, 1, 2),
-+	[DPLL_A_PIN_PRIO] = { .type = NLA_U32, },
-+	[DPLL_A_PIN_STATE] = NLA_POLICY_RANGE(NLA_U32, 1, 3),
-+	[DPLL_A_PIN_PARENT_DEVICE] = NLA_POLICY_NESTED(dpll_pin_parent_device_nl_policy),
-+	[DPLL_A_PIN_PARENT_PIN] = NLA_POLICY_NESTED(dpll_pin_parent_pin_nl_policy),
-+};
-+
-+/* Ops table for dpll */
-+static const struct genl_split_ops dpll_nl_ops[] = {
-+	{
-+		.cmd		= DPLL_CMD_DEVICE_ID_GET,
-+		.pre_doit	= dpll_lock_doit,
-+		.doit		= dpll_nl_device_id_get_doit,
-+		.post_doit	= dpll_unlock_doit,
-+		.policy		= dpll_device_id_get_nl_policy,
-+		.maxattr	= DPLL_A_TYPE,
-+		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
-+	},
-+	{
-+		.cmd		= DPLL_CMD_DEVICE_GET,
-+		.pre_doit	= dpll_pre_doit,
-+		.doit		= dpll_nl_device_get_doit,
-+		.post_doit	= dpll_post_doit,
-+		.policy		= dpll_device_get_nl_policy,
-+		.maxattr	= DPLL_A_ID,
-+		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
-+	},
-+	{
-+		.cmd	= DPLL_CMD_DEVICE_GET,
-+		.start	= dpll_lock_dumpit,
-+		.dumpit	= dpll_nl_device_get_dumpit,
-+		.done	= dpll_unlock_dumpit,
-+		.flags	= GENL_ADMIN_PERM | GENL_CMD_CAP_DUMP,
-+	},
-+	{
-+		.cmd		= DPLL_CMD_DEVICE_SET,
-+		.pre_doit	= dpll_pre_doit,
-+		.doit		= dpll_nl_device_set_doit,
-+		.post_doit	= dpll_post_doit,
-+		.policy		= dpll_device_set_nl_policy,
-+		.maxattr	= DPLL_A_ID,
-+		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
-+	},
-+	{
-+		.cmd		= DPLL_CMD_PIN_ID_GET,
-+		.pre_doit	= dpll_lock_doit,
-+		.doit		= dpll_nl_pin_id_get_doit,
-+		.post_doit	= dpll_unlock_doit,
-+		.policy		= dpll_pin_id_get_nl_policy,
-+		.maxattr	= DPLL_A_PIN_TYPE,
-+		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
-+	},
-+	{
-+		.cmd		= DPLL_CMD_PIN_GET,
-+		.pre_doit	= dpll_pin_pre_doit,
-+		.doit		= dpll_nl_pin_get_doit,
-+		.post_doit	= dpll_pin_post_doit,
-+		.policy		= dpll_pin_get_do_nl_policy,
-+		.maxattr	= DPLL_A_PIN_ID,
-+		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
-+	},
-+	{
-+		.cmd		= DPLL_CMD_PIN_GET,
-+		.start		= dpll_lock_dumpit,
-+		.dumpit		= dpll_nl_pin_get_dumpit,
-+		.done		= dpll_unlock_dumpit,
-+		.policy		= dpll_pin_get_dump_nl_policy,
-+		.maxattr	= DPLL_A_PIN_ID,
-+		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DUMP,
-+	},
-+	{
-+		.cmd		= DPLL_CMD_PIN_SET,
-+		.pre_doit	= dpll_pin_pre_doit,
-+		.doit		= dpll_nl_pin_set_doit,
-+		.post_doit	= dpll_pin_post_doit,
-+		.policy		= dpll_pin_set_nl_policy,
-+		.maxattr	= DPLL_A_PIN_PARENT_PIN,
-+		.flags		= GENL_ADMIN_PERM | GENL_CMD_CAP_DO,
-+	},
-+};
-+
-+static const struct genl_multicast_group dpll_nl_mcgrps[] = {
-+	[DPLL_NLGRP_MONITOR] = { "monitor", },
-+};
-+
-+struct genl_family dpll_nl_family __ro_after_init = {
-+	.name		= DPLL_FAMILY_NAME,
-+	.version	= DPLL_FAMILY_VERSION,
-+	.netnsok	= true,
-+	.parallel_ops	= true,
-+	.module		= THIS_MODULE,
-+	.split_ops	= dpll_nl_ops,
-+	.n_split_ops	= ARRAY_SIZE(dpll_nl_ops),
-+	.mcgrps		= dpll_nl_mcgrps,
-+	.n_mcgrps	= ARRAY_SIZE(dpll_nl_mcgrps),
-+};
-diff --git a/drivers/dpll/dpll_nl.h b/drivers/dpll/dpll_nl.h
-new file mode 100644
-index 000000000000..1f67aaed4742
---- /dev/null
-+++ b/drivers/dpll/dpll_nl.h
-@@ -0,0 +1,51 @@
-+/* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause) */
-+/* Do not edit directly, auto-generated from: */
-+/*	Documentation/netlink/specs/dpll.yaml */
-+/* YNL-GEN kernel header */
-+
-+#ifndef _LINUX_DPLL_GEN_H
-+#define _LINUX_DPLL_GEN_H
-+
-+#include <net/netlink.h>
-+#include <net/genetlink.h>
-+
-+#include <uapi/linux/dpll.h>
-+
-+/* Common nested types */
-+extern const struct nla_policy dpll_pin_parent_device_nl_policy[DPLL_A_PIN_STATE + 1];
-+extern const struct nla_policy dpll_pin_parent_pin_nl_policy[DPLL_A_PIN_STATE + 1];
-+
-+int dpll_lock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-+		   struct genl_info *info);
-+int dpll_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-+		  struct genl_info *info);
-+int dpll_pin_pre_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-+		      struct genl_info *info);
-+void
-+dpll_unlock_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-+		 struct genl_info *info);
-+void
-+dpll_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-+	       struct genl_info *info);
-+void
-+dpll_pin_post_doit(const struct genl_split_ops *ops, struct sk_buff *skb,
-+		   struct genl_info *info);
-+int dpll_lock_dumpit(struct netlink_callback *cb);
-+int dpll_unlock_dumpit(struct netlink_callback *cb);
-+
-+int dpll_nl_device_id_get_doit(struct sk_buff *skb, struct genl_info *info);
-+int dpll_nl_device_get_doit(struct sk_buff *skb, struct genl_info *info);
-+int dpll_nl_device_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb);
-+int dpll_nl_device_set_doit(struct sk_buff *skb, struct genl_info *info);
-+int dpll_nl_pin_id_get_doit(struct sk_buff *skb, struct genl_info *info);
-+int dpll_nl_pin_get_doit(struct sk_buff *skb, struct genl_info *info);
-+int dpll_nl_pin_get_dumpit(struct sk_buff *skb, struct netlink_callback *cb);
-+int dpll_nl_pin_set_doit(struct sk_buff *skb, struct genl_info *info);
-+
-+enum {
-+	DPLL_NLGRP_MONITOR,
-+};
-+
-+extern struct genl_family dpll_nl_family;
-+
-+#endif /* _LINUX_DPLL_GEN_H */
-diff --git a/include/uapi/linux/dpll.h b/include/uapi/linux/dpll.h
-new file mode 100644
-index 000000000000..af01a3feb2ac
---- /dev/null
-+++ b/include/uapi/linux/dpll.h
-@@ -0,0 +1,201 @@
-+/* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause) */
-+/* Do not edit directly, auto-generated from: */
-+/*	Documentation/netlink/specs/dpll.yaml */
-+/* YNL-GEN uapi header */
-+
-+#ifndef _UAPI_LINUX_DPLL_H
-+#define _UAPI_LINUX_DPLL_H
-+
-+#define DPLL_FAMILY_NAME	"dpll"
-+#define DPLL_FAMILY_VERSION	1
-+
-+/**
-+ * enum dpll_mode - working modes a dpll can support, differentiates if and how
-+ *   dpll selects one of its inputs to syntonize with it, valid values for
-+ *   DPLL_A_MODE attribute
-+ * @DPLL_MODE_MANUAL: input can be only selected by sending a request to dpll
-+ * @DPLL_MODE_AUTOMATIC: highest prio input pin auto selected by dpll
-+ */
-+enum dpll_mode {
-+	DPLL_MODE_MANUAL = 1,
-+	DPLL_MODE_AUTOMATIC,
-+
-+	/* private: */
-+	__DPLL_MODE_MAX,
-+	DPLL_MODE_MAX = (__DPLL_MODE_MAX - 1)
-+};
-+
-+/**
-+ * enum dpll_lock_status - provides information of dpll device lock status,
-+ *   valid values for DPLL_A_LOCK_STATUS attribute
-+ * @DPLL_LOCK_STATUS_UNLOCKED: dpll was not yet locked to any valid input (or
-+ *   forced by setting DPLL_A_MODE to DPLL_MODE_DETACHED)
-+ * @DPLL_LOCK_STATUS_LOCKED: dpll is locked to a valid signal, but no holdover
-+ *   available
-+ * @DPLL_LOCK_STATUS_LOCKED_HO_ACQ: dpll is locked and holdover acquired
-+ * @DPLL_LOCK_STATUS_HOLDOVER: dpll is in holdover state - lost a valid lock or
-+ *   was forced by disconnecting all the pins (latter possible only when dpll
-+ *   lock-state was already DPLL_LOCK_STATUS_LOCKED_HO_ACQ, if dpll lock-state
-+ *   was not DPLL_LOCK_STATUS_LOCKED_HO_ACQ, the dpll's lock-state shall remain
-+ *   DPLL_LOCK_STATUS_UNLOCKED)
-+ */
-+enum dpll_lock_status {
-+	DPLL_LOCK_STATUS_UNLOCKED = 1,
-+	DPLL_LOCK_STATUS_LOCKED,
-+	DPLL_LOCK_STATUS_LOCKED_HO_ACQ,
-+	DPLL_LOCK_STATUS_HOLDOVER,
-+
-+	/* private: */
-+	__DPLL_LOCK_STATUS_MAX,
-+	DPLL_LOCK_STATUS_MAX = (__DPLL_LOCK_STATUS_MAX - 1)
-+};
-+
-+#define DPLL_TEMP_DIVIDER	1000
-+
-+/**
-+ * enum dpll_type - type of dpll, valid values for DPLL_A_TYPE attribute
-+ * @DPLL_TYPE_PPS: dpll produces Pulse-Per-Second signal
-+ * @DPLL_TYPE_EEC: dpll drives the Ethernet Equipment Clock
-+ */
-+enum dpll_type {
-+	DPLL_TYPE_PPS = 1,
-+	DPLL_TYPE_EEC,
-+
-+	/* private: */
-+	__DPLL_TYPE_MAX,
-+	DPLL_TYPE_MAX = (__DPLL_TYPE_MAX - 1)
-+};
-+
-+/**
-+ * enum dpll_pin_type - defines possible types of a pin, valid values for
-+ *   DPLL_A_PIN_TYPE attribute
-+ * @DPLL_PIN_TYPE_MUX: aggregates another layer of selectable pins
-+ * @DPLL_PIN_TYPE_EXT: external input
-+ * @DPLL_PIN_TYPE_SYNCE_ETH_PORT: ethernet port PHY's recovered clock
-+ * @DPLL_PIN_TYPE_INT_OSCILLATOR: device internal oscillator
-+ * @DPLL_PIN_TYPE_GNSS: GNSS recovered clock
-+ */
-+enum dpll_pin_type {
-+	DPLL_PIN_TYPE_MUX = 1,
-+	DPLL_PIN_TYPE_EXT,
-+	DPLL_PIN_TYPE_SYNCE_ETH_PORT,
-+	DPLL_PIN_TYPE_INT_OSCILLATOR,
-+	DPLL_PIN_TYPE_GNSS,
-+
-+	/* private: */
-+	__DPLL_PIN_TYPE_MAX,
-+	DPLL_PIN_TYPE_MAX = (__DPLL_PIN_TYPE_MAX - 1)
-+};
-+
-+/**
-+ * enum dpll_pin_direction - defines possible direction of a pin, valid values
-+ *   for DPLL_A_PIN_DIRECTION attribute
-+ * @DPLL_PIN_DIRECTION_INPUT: pin used as a input of a signal
-+ * @DPLL_PIN_DIRECTION_OUTPUT: pin used to output the signal
-+ */
-+enum dpll_pin_direction {
-+	DPLL_PIN_DIRECTION_INPUT = 1,
-+	DPLL_PIN_DIRECTION_OUTPUT,
-+
-+	/* private: */
-+	__DPLL_PIN_DIRECTION_MAX,
-+	DPLL_PIN_DIRECTION_MAX = (__DPLL_PIN_DIRECTION_MAX - 1)
-+};
-+
-+#define DPLL_PIN_FREQUENCY_1_HZ		1
-+#define DPLL_PIN_FREQUENCY_10_KHZ	10000
-+#define DPLL_PIN_FREQUENCY_77_5_KHZ	77500
-+#define DPLL_PIN_FREQUENCY_10_MHZ	10000000
-+
-+/**
-+ * enum dpll_pin_state - defines possible states of a pin, valid values for
-+ *   DPLL_A_PIN_STATE attribute
-+ * @DPLL_PIN_STATE_CONNECTED: pin connected, active input of phase locked loop
-+ * @DPLL_PIN_STATE_DISCONNECTED: pin disconnected, not considered as a valid
-+ *   input
-+ * @DPLL_PIN_STATE_SELECTABLE: pin enabled for automatic input selection
-+ */
-+enum dpll_pin_state {
-+	DPLL_PIN_STATE_CONNECTED = 1,
-+	DPLL_PIN_STATE_DISCONNECTED,
-+	DPLL_PIN_STATE_SELECTABLE,
-+
-+	/* private: */
-+	__DPLL_PIN_STATE_MAX,
-+	DPLL_PIN_STATE_MAX = (__DPLL_PIN_STATE_MAX - 1)
-+};
-+
-+/**
-+ * enum dpll_pin_caps - defines possible capabilities of a pin, valid flags on
-+ *   DPLL_A_PIN_CAPS attribute
-+ * @DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE: pin direction can be changed
-+ * @DPLL_PIN_CAPS_PRIORITY_CAN_CHANGE: pin priority can be changed
-+ * @DPLL_PIN_CAPS_STATE_CAN_CHANGE: pin state can be changed
-+ */
-+enum dpll_pin_caps {
-+	DPLL_PIN_CAPS_DIRECTION_CAN_CHANGE = 1,
-+	DPLL_PIN_CAPS_PRIORITY_CAN_CHANGE = 2,
-+	DPLL_PIN_CAPS_STATE_CAN_CHANGE = 4,
-+};
-+
-+enum dpll_a {
-+	DPLL_A_ID = 1,
-+	DPLL_A_MODULE_NAME,
-+	DPLL_A_PAD,
-+	DPLL_A_CLOCK_ID,
-+	DPLL_A_MODE,
-+	DPLL_A_MODE_SUPPORTED,
-+	DPLL_A_LOCK_STATUS,
-+	DPLL_A_TEMP,
-+	DPLL_A_TYPE,
-+
-+	__DPLL_A_MAX,
-+	DPLL_A_MAX = (__DPLL_A_MAX - 1)
-+};
-+
-+enum dpll_a_pin {
-+	DPLL_A_PIN_ID = 1,
-+	DPLL_A_PIN_PARENT_ID,
-+	DPLL_A_PIN_MODULE_NAME,
-+	DPLL_A_PIN_PAD,
-+	DPLL_A_PIN_CLOCK_ID,
-+	DPLL_A_PIN_BOARD_LABEL,
-+	DPLL_A_PIN_PANEL_LABEL,
-+	DPLL_A_PIN_PACKAGE_LABEL,
-+	DPLL_A_PIN_TYPE,
-+	DPLL_A_PIN_DIRECTION,
-+	DPLL_A_PIN_FREQUENCY,
-+	DPLL_A_PIN_FREQUENCY_SUPPORTED,
-+	DPLL_A_PIN_FREQUENCY_MIN,
-+	DPLL_A_PIN_FREQUENCY_MAX,
-+	DPLL_A_PIN_PRIO,
-+	DPLL_A_PIN_STATE,
-+	DPLL_A_PIN_DPLL_CAPS,
-+	DPLL_A_PIN_PARENT_DEVICE,
-+	DPLL_A_PIN_PARENT_PIN,
-+
-+	__DPLL_A_PIN_MAX,
-+	DPLL_A_PIN_MAX = (__DPLL_A_PIN_MAX - 1)
-+};
-+
-+enum dpll_cmd {
-+	DPLL_CMD_DEVICE_ID_GET = 1,
-+	DPLL_CMD_DEVICE_GET,
-+	DPLL_CMD_DEVICE_SET,
-+	DPLL_CMD_DEVICE_CREATE_NTF,
-+	DPLL_CMD_DEVICE_DELETE_NTF,
-+	DPLL_CMD_DEVICE_CHANGE_NTF,
-+	DPLL_CMD_PIN_ID_GET,
-+	DPLL_CMD_PIN_GET,
-+	DPLL_CMD_PIN_SET,
-+	DPLL_CMD_PIN_CREATE_NTF,
-+	DPLL_CMD_PIN_DELETE_NTF,
-+	DPLL_CMD_PIN_CHANGE_NTF,
-+
-+	__DPLL_CMD_MAX,
-+	DPLL_CMD_MAX = (__DPLL_CMD_MAX - 1)
-+};
-+
-+#define DPLL_MCGRP_MONITOR	"monitor"
-+
-+#endif /* _UAPI_LINUX_DPLL_H */
 -- 
 2.27.0
-
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
