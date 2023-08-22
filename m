@@ -4,85 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E423EE4993
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Aug 2023 15:48:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7E8CEE4993
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 22 Aug 2023 15:49:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E1B534012F;
-	Tue, 22 Aug 2023 15:48:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E1B534012F
+	by smtp2.osuosl.org (Postfix) with ESMTP id 76D7740591;
+	Tue, 22 Aug 2023 15:49:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 76D7740591
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692719300;
-	bh=ZJfduAw4Jo1+f/2hg2gep7PsXpFlBQjrRs2W1gu4FrI=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1692719382;
+	bh=ctBSNCRsylKa93wi5HSQjtgt5kimINp4QJEiWewp5iA=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=PigeOCQ734Lbt+FV37EK/TazV5mQilNRdWAICUQiucmoOXSVQ6hNzFn6K+X9xZEDo
-	 elIILrA16QH0wS5TtcoW2+i9LdTV2oR609eTB2/zJAq1sZIsCn73Nz/78Q/cP74MYq
-	 a8FivsKRlWFeUka6mEJJcFH2QN9ASUZ4OwYMh+XBObifgZMNPIuhVoOkDTjy2jyrTn
-	 FXWG6UGeDOwbI7BsqlkhY3151oOP4biKxwdYWT9NyuDJ3Pp9clqNdR9LnyHEFeHeNS
-	 w50tH2t7oiYsossPAQ0LaUNVAEm39B+Dp+pGlqLxyv4vK6vhnwMslfrq8U6e07n4o8
-	 EtSnFRTJSrwjw==
+	b=vA8tF10mkqFyFzyzgeiocB0F9QVzcp3l00iMDbH+WkQMMoZEahOnpPZ36035jXLtj
+	 AeR4WLLZDHydE2e81lhqxpgWQGReGyuvRIWyC+8Db+FsNWmKrv0E50okcS5DpZuCCW
+	 9LFuB/uREbs6rdfdboiiXcx0RUkm+sfLXC0ZIjag2oHdGQyQo13xJ74aLxQvF7ow21
+	 jOT9TGvozqoJ3iNk6ktUXOMcn2tAQqQaR8Q22rLtswhwwTCm7jCuB18SExDYzZUlfb
+	 HcJv5cATbO96oB5xavKwVJCchGCwtYCnYeg45bacwBg5LVMVrIqj5FsFxv/+gGINlk
+	 jPZ6y1ZVI1AEg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id t9UjWr1zxdDp; Tue, 22 Aug 2023 15:48:20 +0000 (UTC)
+	with ESMTP id bzz5oYOpArnM; Tue, 22 Aug 2023 15:49:41 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F26914014D;
-	Tue, 22 Aug 2023 15:48:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F26914014D
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 910801BF31C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 15:48:18 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 571704014D;
+	Tue, 22 Aug 2023 15:49:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 571704014D
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 28DE71BF344
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 03:35:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 6A3374014D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 15:48:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6A3374014D
+ by smtp3.osuosl.org (Postfix) with ESMTP id 005BB60E4F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 03:35:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 005BB60E4F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dEbqHHZhKBaf for <intel-wired-lan@lists.osuosl.org>;
- Tue, 22 Aug 2023 15:48:17 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 2105C4012F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 15:48:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2105C4012F
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 0669765A88;
- Tue, 22 Aug 2023 15:48:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5DBDC433C7;
- Tue, 22 Aug 2023 15:48:14 +0000 (UTC)
-Date: Tue, 22 Aug 2023 18:48:10 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Message-ID: <20230822154810.GM6029@unreal>
-References: <20230817141746.18726-1-karol.kolacinski@intel.com>
- <20230817141746.18726-2-karol.kolacinski@intel.com>
- <20230819115249.GP22185@unreal>
- <20230822070211.GH2711035@kernel.org>
- <20230822141348.GH6029@unreal>
- <f497dc97-76bb-7526-7d19-d6886a3f3a65@intel.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id bM2vjm6fF3Vm for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 22 Aug 2023 03:35:28 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.115])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 638F960B71
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 22 Aug 2023 03:35:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 638F960B71
+X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="373738203"
+X-IronPort-AV: E=Sophos;i="6.01,191,1684825200"; d="scan'208";a="373738203"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 21 Aug 2023 20:35:27 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10809"; a="739149337"
+X-IronPort-AV: E=Sophos;i="6.01,191,1684825200"; d="scan'208";a="739149337"
+Received: from dpdk-wuwenjun-icelake-ii.sh.intel.com ([10.67.110.152])
+ by fmsmga007.fm.intel.com with ESMTP; 21 Aug 2023 20:35:24 -0700
+From: Wenjun Wu <wenjun1.wu@intel.com>
+To: intel-wired-lan@lists.osuosl.org,
+	netdev@vger.kernel.org
+Date: Tue, 22 Aug 2023 11:39:58 +0800
+Message-Id: <20230822034003.31628-1-wenjun1.wu@intel.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230727021021.961119-1-wenjun1.wu@intel.com>
+References: <20230727021021.961119-1-wenjun1.wu@intel.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <f497dc97-76bb-7526-7d19-d6886a3f3a65@intel.com>
+X-Mailman-Approved-At: Tue, 22 Aug 2023 15:49:38 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1692719295;
- bh=NDGFu/pTIVIyyOPIqvM18RTysR3Zdf/N4m4xwaHNrcE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=gLeBG9DXntKZLOvO19QvIy+1SRFhAT2sP7naVNH7joTxG6R8hV1xQQMamH9EkW/H2
- 8wAL8mYz7QNELpHfBRxZ29NhhwB/rjUo2nl1/EFYOSa+AClsRh6qnhA9K7WP6l5rcq
- Mkx42oIY39moynpRjwsVaO6KAZ15Zhf4KKZASHwdid0TdDL/rapY3sGYpt4SQCgqEn
- EPmDfurWUSt7rXcdfj6zzgmf34epT48g4qQHP6B8x2t7EIFDcZvNTACahQOwaImQpn
- MK0uL+q1ALtoywraGn1emwGLH99/VYk3JjZ/P6/8PJZJe9xFqYpjkDySYndd3ablpe
- XnRwGQ+mnPqug==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=gLeBG9DX
-Subject: Re: [Intel-wired-lan] [PATCH v2 iwl-next 1/9] ice: use
- ice_pf_src_tmr_owned where available
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1692675328; x=1724211328;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=IDjHvJCkgR9BZBy8I0QPXQ6ytxuhXb3xADP+6B5/38E=;
+ b=VTWhsP1NHtBolpSFSMDgROCB0vY436NoDBtDGeiWt3jDnkBAEJ0KuNKE
+ ZHwNPSBdmpIAbmRSfybVQx6YXWcLIf6gomcKGgRXkG6P0HK/GZcSJhyeL
+ k1Zg7K7I2NOL3mGt+zX+h4hh+zno0gczS175eXSBU6ZCsNJaL9Y02qpVW
+ 6tFswN8x2ziAGFHZMVQwkNH8/pNNBNEX+6AQi0VbKmvvEIIxyA8xL6XTz
+ e3QzScm9/KhHhyWQzEPrRp/+pMvTfDldOciF+ELO4YPmHDUwW05lh91iS
+ v8ZmQ3GUBT6OuioQeQq+ZYYyycuioDr0c2huJe0OBtwIC0NlJ4DksDqc2
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=VTWhsP1N
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 0/5] iavf: Add devlink and
+ devlink rate support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,55 +96,152 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, jesse.brandeburg@intel.com,
- Karol Kolacinski <karol.kolacinski@intel.com>,
- intel-wired-lan@lists.osuosl.org, Simon Horman <horms@kernel.org>,
- anthony.l.nguyen@intel.com
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: anthony.l.nguyen@intel.com, Wenjun Wu <wenjun1.wu@intel.com>,
+ qi.z.zhang@intel.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-T24gVHVlLCBBdWcgMjIsIDIwMjMgYXQgMDQ6NDQ6MjlQTSArMDIwMCwgUHJ6ZW1layBLaXRzemVs
-IHdyb3RlOgo+IE9uIDgvMjIvMjMgMTY6MTMsIExlb24gUm9tYW5vdnNreSB3cm90ZToKPiA+IE9u
-IFR1ZSwgQXVnIDIyLCAyMDIzIGF0IDA5OjAyOjExQU0gKzAyMDAsIFNpbW9uIEhvcm1hbiB3cm90
-ZToKPiA+ID4gT24gU2F0LCBBdWcgMTksIDIwMjMgYXQgMDI6NTI6NDlQTSArMDMwMCwgTGVvbiBS
-b21hbm92c2t5IHdyb3RlOgo+ID4gPiA+IE9uIFRodSwgQXVnIDE3LCAyMDIzIGF0IDA0OjE3OjM4
-UE0gKzAyMDAsIEthcm9sIEtvbGFjaW5za2kgd3JvdGU6Cj4gPiA+ID4gPiBUaGUgaWNlX3BmX3Ny
-Y190bXJfb3duZWQoKSBtYWNybyBleGlzdHMgdG8gY2hlY2sgdGhlIGZ1bmN0aW9uIGNhcGFiaWxp
-dHkKPiA+ID4gPiA+IGJpdCBpbmRpY2F0aW5nIGlmIHRoZSBjdXJyZW50IGZ1bmN0aW9uIG93bnMg
-dGhlIFBUUCBoYXJkd2FyZSBjbG9jay4KPiA+ID4gPiAKPiA+ID4gPiBUaGlzIGlzIGZpcnN0IHBh
-dGNoIGluIHRoZSBzZXJpZXMsIGJ1dCBJIGNhbid0IGZpbmQgbWVudGlvbmVkIG1hY3JvLgo+ID4g
-PiA+IE15IG5ldC1uZXh0IGlzIGJhc2VkIG9uIDViMGExNDE0ZTBiMCAoIk1lcmdlIGJyYW5jaCAn
-c21jLWZlYXR1cmVzJyIpCj4gPiA+ID4g4p6cICBrZXJuZWwgZ2l0OihuZXQtbmV4dCkgZ2l0IGdy
-ZXAgaWNlX3BmX3NyY190bXJfb3duZWQKPiA+ID4gPiBzaG93cyBub3RoaW5nLgo+ID4gPiA+IAo+
-ID4gPiA+IE9uIHdoaWNoIGJyYW5jaCBpcyBpdCBiYXNlZD8KPiA+ID4gCj4gPiA+IEhpIExlb24s
-Cj4gPiA+IAo+ID4gPiBNeSBhc3N1bXB0aW9uIGlzIHRoYXQgaXQgaXMgYmFzZWQgb24gdGhlIGRl
-di1xdWV1ZSBicmFuY2ggb2YKPiA+ID4gaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xp
-bnV4L2tlcm5lbC9naXQvdG5ndXkvbmV4dC1xdWV1ZS5naXQKPiA+IAo+ID4gU28gc2hvdWxkIG5l
-dGRldiByZWFkZXJzIHJldmlldyBpdCBvciB3YWl0IHRpbGwgSW50ZWwgZm9sa3MgcGVyZm9ybQo+
-ID4gZmlyc3QgcGFzcyBvbiBpdD8KPiAKPiBNb3N0IG9mIHRoZSB0aW1lIEludGVsIGZvbGtzIHdv
-dWxkIGJlIGZpcnN0IHRvIHJldmlldywgaWYgb25seSBiZWNhdXNlIG9mCj4gb3VyIHByZS1JV0wg
-cHJvY2Vzc2VzIG9yIHB1cmUgZmFtaWxpYXJpdHkvaW50ZXJlc3QgaW4gZ2l2ZW4gcGllY2UuCj4g
-Cj4gRm9yIHRoaXMgcGFydGljdWxhciBzZXJpZXMsIGl0IGlzIGFib3V0IHJpZ2h0ICJjb2Rld2lz
-ZSIgc2luY2UgdjEsIHNvIHlvdQo+IGFyZSB3ZWxjb21lIGZvciBhbiBpbnNpZ2h0ZnVsIGxvb2sg
-YXQgdjMKPiAoSSBkaWRuJ3QgcHJvdmlkZWQgbXkgUkJzIHNvIGZhciBiZWNhdXNlIG9mICJtZXRh
-ZGF0YSIgaXNzdWVzIDopLAo+IHdpbGwgdGFrZSBhIGZyZXNoIGxvb2ssIGJ1dCB5b3UgZG9uJ3Qg
-bmVlZCB0byB3YWl0KS4KPiAKPiAKPiBHZW5lcmFsIGlkZWEgZm9yIENDJ2luZyBuZXRkZXYgZm9y
-IElXTC10YXJnZXRlZCBwYXRjaGVzIGlzIHRvIGhhdmUgb3Blbgo+IGRldmVsb21wZW50IHByb2Nl
-c3MuCj4gUXVhbGl0eSBzaG91bGQgYmUgYWxyZWFkeSBhcyBmb3IgbmV0ZGV2IHBvc3RpbmcuCj4g
-T3VyIFZBTCBwaWNrcyB1cCBwYXRjaGVzIGZvciB0ZXN0aW5nIGZyb20gaGVyZSB3aGVuIFRvbnkg
-bWFya3MgdGhlbSBzby4KPiAKPiBUaGF0J3Mgd2hhdCBJIGNvdWxkIHNheSBmb3IgcmV2aWV3IHBy
-b2Nlc3MuCj4gCj4gIk1haW50YWluZXJzIHN0dWZmIiwgSSAqZ3Vlc3MqLCBpczoKPiBhZnRlciBy
-ZXZpZXcmdGVzdCBUb255IFJlcXVlc3RzIG5ldGRldiBNYWludGFpbmVycyB0byBQdWxsCj4gKGFu
-ZCB0aHJvdHRsZXMgb3V0Z29pbmcgc3R1ZmYgYnkgZG9pbmcgc28gdG8gcGFjZSBhZ3JlZWQgdXBv
-bikuCj4gQXQgdGhhdCBzdGFnZSBpcyBhIGxhc3QgbW9tZW50IGZvciAobGF0ZT8pIHJldmlldywg
-d2VsY29tZWQgYXMgYWx3YXlzLgoKSXQgbWVhbnMgdGhhdCB3ZSAobmV0ZGV2QC4uLiApIHdpbGwg
-c2VlICJzYW1lIiBwYXRjaGVzIHR3aWNlLCBhbSBJIHJpZ2h0PwoKVGhhbmtzCgo+IAo+IAo+IAo+
-ID4gCj4gPiBUaGFua3MKPiA+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCj4gPiBJbnRlbC13aXJlZC1sYW4gbWFpbGluZyBsaXN0Cj4gPiBJbnRlbC13aXJl
-ZC1sYW5Ab3N1b3NsLm9yZwo+ID4gaHR0cHM6Ly9saXN0cy5vc3Vvc2wub3JnL21haWxtYW4vbGlz
-dGluZm8vaW50ZWwtd2lyZWQtbGFuCj4gCj4gCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCkludGVsLXdpcmVkLWxhbiBtYWlsaW5nIGxpc3QKSW50ZWwtd2ly
-ZWQtbGFuQG9zdW9zbC5vcmcKaHR0cHM6Ly9saXN0cy5vc3Vvc2wub3JnL21haWxtYW4vbGlzdGlu
-Zm8vaW50ZWwtd2lyZWQtbGFuCg==
+To allow user to configure queue bandwidth, devlink port support
+is added to support devlink port rate API. [1]
+
+Add devlink framework registration/unregistration on iavf driver
+initialization and remove, and devlink port of DEVLINK_PORT_FLAVOUR_VIRTUAL
+is created to be associated iavf netdevice.
+
+iavf rate tree with root node, queue nodes, and leaf node is created
+and registered with devlink rate when iavf adapter is configured, and
+if PF indicates support of VIRTCHNL_VF_OFFLOAD_QOS through VF Resource /
+Capability Exchange.
+
+[root@localhost ~]# devlink port function rate show
+pci/0000:af:01.0/txq_15: type node parent iavf_root
+pci/0000:af:01.0/txq_14: type node parent iavf_root
+pci/0000:af:01.0/txq_13: type node parent iavf_root
+pci/0000:af:01.0/txq_12: type node parent iavf_root
+pci/0000:af:01.0/txq_11: type node parent iavf_root
+pci/0000:af:01.0/txq_10: type node parent iavf_root
+pci/0000:af:01.0/txq_9: type node parent iavf_root
+pci/0000:af:01.0/txq_8: type node parent iavf_root
+pci/0000:af:01.0/txq_7: type node parent iavf_root
+pci/0000:af:01.0/txq_6: type node parent iavf_root
+pci/0000:af:01.0/txq_5: type node parent iavf_root
+pci/0000:af:01.0/txq_4: type node parent iavf_root
+pci/0000:af:01.0/txq_3: type node parent iavf_root
+pci/0000:af:01.0/txq_2: type node parent iavf_root
+pci/0000:af:01.0/txq_1: type node parent iavf_root
+pci/0000:af:01.0/txq_0: type node parent iavf_root
+pci/0000:af:01.0/iavf_root: type node
+
+
+                         +---------+
+                         |   root  |
+                         +----+----+
+                              |
+            |-----------------|-----------------|
+       +----v----+       +----v----+       +----v----+
+       |  txq_0  |       |  txq_1  |       |  txq_x  |
+       +----+----+       +----+----+       +----+----+
+
+User can configure the tx_max and tx_share of each queue. Once any one of the
+queues are fully configured, VIRTCHNL opcodes of VIRTCHNL_OP_CONFIG_QUEUE_BW
+and VIRTCHNL_OP_CONFIG_QUANTA will be sent to PF to configure queues allocated
+to VF
+
+Example:
+
+1.To Set the queue tx_share:
+devlink port function rate set pci/0000:af:01.0 txq_0 tx_share 100 MBps
+
+2.To Set the queue tx_max:
+devlink port function rate set pci/0000:af:01.0 txq_0 tx_max 200 MBps
+
+3.To Show Current devlink port rate info:
+devlink port function rate function show
+[root@localhost ~]# devlink port function rate show
+pci/0000:af:01.0/txq_15: type node parent iavf_root
+pci/0000:af:01.0/txq_14: type node parent iavf_root
+pci/0000:af:01.0/txq_13: type node parent iavf_root
+pci/0000:af:01.0/txq_12: type node parent iavf_root
+pci/0000:af:01.0/txq_11: type node parent iavf_root
+pci/0000:af:01.0/txq_10: type node parent iavf_root
+pci/0000:af:01.0/txq_9: type node parent iavf_root
+pci/0000:af:01.0/txq_8: type node parent iavf_root
+pci/0000:af:01.0/txq_7: type node parent iavf_root
+pci/0000:af:01.0/txq_6: type node parent iavf_root
+pci/0000:af:01.0/txq_5: type node parent iavf_root
+pci/0000:af:01.0/txq_4: type node parent iavf_root
+pci/0000:af:01.0/txq_3: type node parent iavf_root
+pci/0000:af:01.0/txq_2: type node parent iavf_root
+pci/0000:af:01.0/txq_1: type node parent iavf_root
+pci/0000:af:01.0/txq_0: type node tx_share 800Mbit tx_max 1600Mbit parent iavf_root
+pci/0000:af:01.0/iavf_root: type node
+
+
+[1]https://lore.kernel.org/netdev/20221115104825.172668-1-michal.wilczynski@intel.com/
+
+Change log:
+
+v4:
+- Rearrange the ice_vf_qs_bw structure, put the largest number first
+- Minimize the scope of values
+- Remove the unnecessary brackets
+- Remove the unnecessary memory allocation.
+- Added Error Code and moved devlink registration before aq lock initialization
+- Changed devlink registration for error handling in case of allocation failure
+- Used kcalloc for object array memory allocation and initialization
+- Changed functions & comments for readability
+
+v3:
+- Rebase the code
+- Changed rate node max/share set function description
+- Put variable in local scope
+
+v2:
+- Change static array to flex array
+- Use struct_size helper
+- Align all the error code types in the function
+- Move the register field definitions to the right place in the file
+- Fix coding style
+- Adapted to queue bw cfg and qos cap list virtchnl message with flex array fields
+---
+
+Jun Zhang (3):
+  iavf: Add devlink and devlink port support
+  iavf: Add devlink port function rate API support
+  iavf: Add VIRTCHNL Opcodes Support for Queue bw Setting
+
+Wenjun Wu (2):
+  virtchnl: support queue rate limit and quanta size configuration
+  ice: Support VF queue rate limit and quanta size configuration
+
+ drivers/net/ethernet/intel/Kconfig            |   1 +
+ drivers/net/ethernet/intel/iavf/Makefile      |   2 +-
+ drivers/net/ethernet/intel/iavf/iavf.h        |  19 +
+ .../net/ethernet/intel/iavf/iavf_devlink.c    | 377 ++++++++++++++++++
+ .../net/ethernet/intel/iavf/iavf_devlink.h    |  38 ++
+ drivers/net/ethernet/intel/iavf/iavf_main.c   |  64 ++-
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   | 231 ++++++++++-
+ drivers/net/ethernet/intel/ice/ice.h          |   2 +
+ drivers/net/ethernet/intel/ice/ice_base.c     |   2 +
+ drivers/net/ethernet/intel/ice/ice_common.c   |  19 +
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |   8 +
+ drivers/net/ethernet/intel/ice/ice_txrx.h     |   2 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h   |   9 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 310 ++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_virtchnl.h |  11 +
+ .../intel/ice/ice_virtchnl_allowlist.c        |   6 +
+ include/linux/avf/virtchnl.h                  | 119 ++++++
+ 18 files changed, 1218 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/iavf/iavf_devlink.c
+ create mode 100644 drivers/net/ethernet/intel/iavf/iavf_devlink.h
+
+-- 
+2.34.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
