@@ -1,86 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06574C3DA6F
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Aug 2023 12:23:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B793CC6FA8F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Aug 2023 12:50:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8137E80EAA;
-	Thu, 24 Aug 2023 12:23:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8137E80EAA
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3780141503;
+	Thu, 24 Aug 2023 12:50:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3780141503
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692879831;
-	bh=h5Gx1LWXja1l+375BbVwSXHupcIzTHRZznk9rX95MIM=;
+	s=default; t=1692881440;
+	bh=RA8MGqSnLqvSpT46WhjkJN0cx5XssPMAHs9JC6WF+0U=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=Av+7FT5sz+HApSBwyyfKxGS0m72REZkvrbRyvGMnhyNqQvPSVwu4bmtjFhayd8Pzs
-	 iGoUCxrSZbACKtnRvn7JuOSmqpb+uzHVU/5wP4WNCS5F0XZRG+K3CNSaNjFiKHR0ge
-	 d77eAMVh4fmvUUiic6PsSrGAdA4R7mjiewz11hiiYE8t+1948OVKSmTrXNywn0vJG7
-	 SZRaEq/mwQ0/65rGgWeIXXQ/o+bWKRH9SbLYU/HBxMgQAJh+YHbpvjLTRjIArazZ00
-	 U+T768d/4lOWjg1G35KKoznGg4ek3ySJdRAXIprIqHZ8gI+AgiSaB6VNvZ4FH7olmW
-	 Whzzsd8ZOtUjg==
+	b=5soARFI+Gm5y0vmYgF/Eh0oIFr5cD4GmFq9n0e3auv10K0cuqiyEJxjioCZErxu4V
+	 k5WDifEwd4eODtfXjaf6rRpSCE/cVSau4Y2Z068/slHPqa5ZXpstmwCzzBiNNrXXLC
+	 TPCbG0DnJMKsdpv+GQe1MVwM4psP/CYFNY9szgHCyJ421mdWJskszbqyQTBTIjQfVK
+	 TGsIxiLd54+gHlntCFvgdYuM0VwWfrRsz6NuP25IAmNc3vZ0uz1RqiZNEpyAzSiTUA
+	 XgdSp4ayF5hhgP48QpQLJjbEJ3U+jinSxd5gcVDetICq0FnsAWUDPWZVbM4YidE1Hs
+	 WKNAcYrKggEow==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id EZACE40EbHOK; Thu, 24 Aug 2023 12:23:50 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id az-gakeChIUd; Thu, 24 Aug 2023 12:50:39 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 62EA880EAC;
-	Thu, 24 Aug 2023 12:23:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 62EA880EAC
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 4C03E1BF20D
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 12:23:49 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 55AF04150B;
+	Thu, 24 Aug 2023 12:50:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 55AF04150B
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 1CA021BF340
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 12:50:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 22A704192F
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 12:23:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 22A704192F
+ by smtp3.osuosl.org (Postfix) with ESMTP id E47706133F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 12:50:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E47706133F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id JRe3H0PDHFbY for <intel-wired-lan@lists.osuosl.org>;
- Thu, 24 Aug 2023 12:23:48 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id B15D7405A2
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 12:23:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B15D7405A2
-X-IronPort-AV: E=McAfee;i="6600,9927,10811"; a="438357212"
-X-IronPort-AV: E=Sophos;i="6.02,195,1688454000"; d="scan'208";a="438357212"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2023 05:23:47 -0700
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id DNE2Fv1hK7nD for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 24 Aug 2023 12:50:37 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id CBF7860D80
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 12:50:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CBF7860D80
+X-IronPort-AV: E=McAfee;i="6600,9927,10812"; a="378183383"
+X-IronPort-AV: E=Sophos;i="6.02,195,1688454000"; d="scan'208";a="378183383"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Aug 2023 05:50:35 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10811"; a="737028456"
-X-IronPort-AV: E=Sophos;i="6.02,195,1688454000"; d="scan'208";a="737028456"
+X-IronPort-AV: E=McAfee;i="6600,9927,10812"; a="802528392"
+X-IronPort-AV: E=Sophos;i="6.02,195,1688454000"; d="scan'208";a="802528392"
 Received: from isergee-mobl3.ger.corp.intel.com (HELO azaki-desk1.intel.com)
  ([10.252.45.83])
- by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Aug 2023 05:23:45 -0700
+ by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Aug 2023 05:50:33 -0700
 From: Ahmed Zaki <ahmed.zaki@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu, 24 Aug 2023 06:23:37 -0600
-Message-Id: <20230824122337.3300895-1-ahmed.zaki@intel.com>
+Date: Thu, 24 Aug 2023 06:50:19 -0600
+Message-Id: <20230824125023.3302949-1-ahmed.zaki@intel.com>
 X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1692879827; x=1724415827;
+ t=1692881436; x=1724417436;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=3Mmn8JlityqKdQzmvmS75At49n/YpqpDl+gPUnIVcH4=;
- b=Dzoy5A9lVOWVCDUBSKv6L2xA8hDIYP6XRgCiiW2ft+nzZjMEqYqjq0jy
- tybGc8COWzfpLJ5IN//zkl9BoL8RcEsUwaTCRQQz+uabAdIE+aE6iQMKp
- QqhS2uDf/bjx+mrrbS4KeKJZOgHl0gnt2DJ5hyjPNUZCQVqo7Ui+Ob5yc
- l7+/zRUCAbEVpFKVVjX5DawIT118fpWFr4qdCZZimSl2g+u/6+wC9yAIO
- FlRCeq2yc2jQabgKoKFU/orGRVmoY2MuSsYbloGYZi5CHYfUvxl83dwxn
- EHpkjaFfTKq+J3y10V2ikiL58wMByjDJG/x1zPiLQhHNZF9MnJXxRbJ5K
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=VF6XpMPTGuC2sZ4NB6g4gdtOai90OjOqLOUjmdQqPOE=;
+ b=dJmsPlfwq6KQ6ym2WgHLBaJAJJAdMQGLHJftl2q6dUASsAS/zV/6fMRJ
+ ZtaXo7LzGUbDcJ8EWokvlYqoT1Ofrra1auzhuJZOimQINBUvYXbBM189x
+ de4mXAQ5NbWB0ekL29HEt2z1UoTy4EkpTbeIh92B76nhQkQs5DzfdArvX
+ 2l28uTIPVMUKj47aLNZtrfAAv68baikTXdqNMOvvSUi0gNMHqHAZbYqS8
+ D9HPNx2wKPiA+4fWeNft3D+qNeUzbimf7gsZY0TzcDYU9qnC3hHy3Dh6r
+ dZhj9TTDfylgPBYLyCYTK2jvxdru9CQd0iNVaPtMm3jdpyyHWgK+3FTe+
+ Q==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Dzoy5A9l
-Subject: [Intel-wired-lan] [PATCH iwl-next] iavf: remove "inline" functions
- from iavf_txrx.c
+ header.a=rsa-sha256 header.s=Intel header.b=dJmsPlfw
+Subject: [Intel-wired-lan] [PATCH iwl-next 0/4] Support rx-fcs on/off for VFs
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,140 +97,32 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+Allow the user to turn on/off the CRC/FCS stripping through ethtool. We
+first add the CRC offload capability in the virtchannel, then the feature
+is enabled in ice and iavf drivers.
 
-The iAVF txrx hotpath code has several functions that are marked as
-"static inline" in the iavf_txrx.c file. This use of inline is frowned
-upon in the netdev community and explicitly marked as something to avoid
-in the Linux coding-style document (section 15).
+We make sure that the netdev features are fixed such that CRC stripping
+cannot be disabled if VLAN rx offload (VLAN strip) is enabled. Also, VLAN
+stripping cannot be enabled unless CRC stripping is ON.
 
-Even though these functions are only used once, it is expected that GCC
-is smart enough to decide when to perform function inlining where
-appropriate without the "hint".
+Haiyue Wang (2):
+  ice: Support FCS/CRC strip disable for VF
+  ice: Fix VLAN and CRC strip co-existence
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
----
- drivers/net/ethernet/intel/iavf/iavf_txrx.c | 43 ++++++++++-----------
- 1 file changed, 20 insertions(+), 23 deletions(-)
+Norbert Zulinski (1):
+  iavf: Add ability to turn off CRC stripping for VF
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index 8c5f6096b002..562dafb89f1d 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -7,8 +7,7 @@
- #include "iavf_trace.h"
- #include "iavf_prototype.h"
- 
--static inline __le64 build_ctob(u32 td_cmd, u32 td_offset, unsigned int size,
--				u32 td_tag)
-+static __le64 build_ctob(u32 td_cmd, u32 td_offset, unsigned int size, u32 td_tag)
- {
- 	return cpu_to_le64(IAVF_TX_DESC_DTYPE_DATA |
- 			   ((u64)td_cmd  << IAVF_TXD_QW1_CMD_SHIFT) |
-@@ -370,8 +369,7 @@ static void iavf_enable_wb_on_itr(struct iavf_vsi *vsi,
- 	q_vector->arm_wb_state = true;
- }
- 
--static inline bool iavf_container_is_rx(struct iavf_q_vector *q_vector,
--					struct iavf_ring_container *rc)
-+static bool iavf_container_is_rx(struct iavf_q_vector *q_vector, struct iavf_ring_container *rc)
- {
- 	return &q_vector->rx == rc;
- }
-@@ -806,7 +804,7 @@ int iavf_setup_rx_descriptors(struct iavf_ring *rx_ring)
-  * @rx_ring: ring to bump
-  * @val: new head index
-  **/
--static inline void iavf_release_rx_desc(struct iavf_ring *rx_ring, u32 val)
-+static void iavf_release_rx_desc(struct iavf_ring *rx_ring, u32 val)
- {
- 	rx_ring->next_to_use = val;
- 
-@@ -828,7 +826,7 @@ static inline void iavf_release_rx_desc(struct iavf_ring *rx_ring, u32 val)
-  *
-  * Returns the offset value for ring into the data buffer.
-  */
--static inline unsigned int iavf_rx_offset(struct iavf_ring *rx_ring)
-+static unsigned int iavf_rx_offset(struct iavf_ring *rx_ring)
- {
- 	return ring_uses_build_skb(rx_ring) ? IAVF_SKB_PAD : 0;
- }
-@@ -977,9 +975,9 @@ bool iavf_alloc_rx_buffers(struct iavf_ring *rx_ring, u16 cleaned_count)
-  * @skb: skb currently being received and modified
-  * @rx_desc: the receive descriptor
-  **/
--static inline void iavf_rx_checksum(struct iavf_vsi *vsi,
--				    struct sk_buff *skb,
--				    union iavf_rx_desc *rx_desc)
-+static void iavf_rx_checksum(struct iavf_vsi *vsi,
-+			     struct sk_buff *skb,
-+			     union iavf_rx_desc *rx_desc)
- {
- 	struct iavf_rx_ptype_decoded decoded;
- 	u32 rx_error, rx_status;
-@@ -1061,7 +1059,7 @@ static inline void iavf_rx_checksum(struct iavf_vsi *vsi,
-  *
-  * Returns a hash type to be used by skb_set_hash
-  **/
--static inline int iavf_ptype_to_htype(u8 ptype)
-+static int iavf_ptype_to_htype(u8 ptype)
- {
- 	struct iavf_rx_ptype_decoded decoded = decode_rx_desc_ptype(ptype);
- 
-@@ -1085,10 +1083,10 @@ static inline int iavf_ptype_to_htype(u8 ptype)
-  * @skb: skb currently being received and modified
-  * @rx_ptype: Rx packet type
-  **/
--static inline void iavf_rx_hash(struct iavf_ring *ring,
--				union iavf_rx_desc *rx_desc,
--				struct sk_buff *skb,
--				u8 rx_ptype)
-+static void iavf_rx_hash(struct iavf_ring *ring,
-+			 union iavf_rx_desc *rx_desc,
-+			 struct sk_buff *skb,
-+			 u8 rx_ptype)
- {
- 	u32 hash;
- 	const __le64 rss_mask =
-@@ -1115,10 +1113,10 @@ static inline void iavf_rx_hash(struct iavf_ring *ring,
-  * order to populate the hash, checksum, VLAN, protocol, and
-  * other fields within the skb.
-  **/
--static inline
--void iavf_process_skb_fields(struct iavf_ring *rx_ring,
--			     union iavf_rx_desc *rx_desc, struct sk_buff *skb,
--			     u8 rx_ptype)
-+static void
-+iavf_process_skb_fields(struct iavf_ring *rx_ring,
-+			union iavf_rx_desc *rx_desc, struct sk_buff *skb,
-+			u8 rx_ptype)
- {
- 	iavf_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
- 
-@@ -1662,8 +1660,7 @@ static inline u32 iavf_buildreg_itr(const int type, u16 itr)
-  * @q_vector: q_vector for which itr is being updated and interrupt enabled
-  *
-  **/
--static inline void iavf_update_enable_itr(struct iavf_vsi *vsi,
--					  struct iavf_q_vector *q_vector)
-+static void iavf_update_enable_itr(struct iavf_vsi *vsi, struct iavf_q_vector *q_vector)
- {
- 	struct iavf_hw *hw = &vsi->back->hw;
- 	u32 intval;
-@@ -2275,9 +2272,9 @@ int __iavf_maybe_stop_tx(struct iavf_ring *tx_ring, int size)
-  * @td_cmd:   the command field in the descriptor
-  * @td_offset: offset for checksum or crc
-  **/
--static inline void iavf_tx_map(struct iavf_ring *tx_ring, struct sk_buff *skb,
--			       struct iavf_tx_buffer *first, u32 tx_flags,
--			       const u8 hdr_len, u32 td_cmd, u32 td_offset)
-+static void iavf_tx_map(struct iavf_ring *tx_ring, struct sk_buff *skb,
-+			struct iavf_tx_buffer *first, u32 tx_flags,
-+			const u8 hdr_len, u32 td_cmd, u32 td_offset)
- {
- 	unsigned int data_len = skb->data_len;
- 	unsigned int size = skb_headlen(skb);
+Paul M Stillwell Jr (1):
+  virtchnl: Add CRC stripping capability
+
+ drivers/net/ethernet/intel/iavf/iavf.h        |  2 +
+ drivers/net/ethernet/intel/iavf/iavf_main.c   | 59 +++++++++++++++-
+ .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  4 ++
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h   |  3 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c | 69 +++++++++++++++++--
+ include/linux/avf/virtchnl.h                  | 11 ++-
+ 6 files changed, 141 insertions(+), 7 deletions(-)
+
 -- 
 2.34.1
 
