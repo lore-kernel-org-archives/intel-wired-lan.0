@@ -4,99 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 238EDC27C40
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Aug 2023 06:59:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7552CC3DA6F
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 24 Aug 2023 07:04:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 93160418E8;
-	Thu, 24 Aug 2023 06:59:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 93160418E8
+	by smtp4.osuosl.org (Postfix) with ESMTP id 141E24182B;
+	Thu, 24 Aug 2023 07:04:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 141E24182B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1692860391;
-	bh=7F3T8Slr6oZOIEG7ICAc+UdLDspKlI4ibRugXtjNqd4=;
+	s=default; t=1692860698;
+	bh=D5NUm70MH0gQN1B3HF3HqJPURMDomBX4XMTSBZhwbeM=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=GjFdMkFiL9v2W3i8cZAhQU/F9FPd3Tuwp5wR6//7FgPB8ZNrek+7O6pZnVsEFPs7T
-	 VmSsal3uimNxVFtCm4bZwpP4KErq6pFyiF2+7kwHsAsOVUcHoT33Fcd8dbXAHfnZnJ
-	 ENCUrDm7UtF2kPI5NHkqCsb2fIV3V8krlTu/5pOUwGHSRjG8KfajQy7/qqD4RZbPv3
-	 ZRSPUWcazyluvC1ujuS7o1d8luT3QhwTAIbPbUMbEkDgD1Sbl8BgLjzMUYqfzewfm2
-	 AbrW9jQbhg0jsNWr7GeZQFbxqjeIUsDMx42TLOU5z27M9TzknjdmcptjvcGlbt4J3T
-	 XCVmyCAkPxK4Q==
+	b=JZQ5kvBpPdN7Nga6FCThsCI+u8qtAPJiT6R7k2nO12SkBF25fAI9XobAr9nVO3vhR
+	 D0rC3QGHdgpd7jBzrS1EHhQTadPJsbb1hF7UzdTnwbvG59aqMdeFca8stAb1xLo0Wm
+	 7z1373WSI1VsRve0NqzHj87yILuB2iXtjhjrCsroadtmxqfTsBxB362WEko2dkEm36
+	 z3T6Oo2ND545zWJcdKZqZj5I695h6Bedz1efRU3TnOGRPZCD0QU93CNAZTJ1Bs6eKK
+	 Q6V4SGz31vIw4vvscS85Chst60ZUML9GeA8Gp6SgvqHUf0/Nn4i7kZ3kkqkl4XKVmA
+	 cEVJclPLZ0uDg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BXgorXnYRDWG; Thu, 24 Aug 2023 06:59:50 +0000 (UTC)
+	with ESMTP id eLGE2DLFMSEy; Thu, 24 Aug 2023 07:04:57 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 45E1A40874;
-	Thu, 24 Aug 2023 06:59:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 45E1A40874
+	by smtp4.osuosl.org (Postfix) with ESMTP id 120494182C;
+	Thu, 24 Aug 2023 07:04:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 120494182C
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id D1E7A1BF20B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 06:59:48 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id E0A981BF32A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 07:04:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B1ECC4118A
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 06:59:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B1ECC4118A
+ by smtp2.osuosl.org (Postfix) with ESMTP id C688C4119B
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 07:04:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C688C4119B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Sezr1qaBzq02 for <intel-wired-lan@lists.osuosl.org>;
- Thu, 24 Aug 2023 06:59:47 +0000 (UTC)
-Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com
- [IPv6:2a00:1450:4864:20::332])
- by smtp2.osuosl.org (Postfix) with ESMTPS id BEDE641172
- for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 06:59:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BEDE641172
-Received: by mail-wm1-x332.google.com with SMTP id
- 5b1f17b1804b1-400a087b0bfso8556755e9.2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 23 Aug 2023 23:59:45 -0700 (PDT)
+ with ESMTP id nlt1_YeUzjcT for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 24 Aug 2023 07:04:55 +0000 (UTC)
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com
+ [IPv6:2a00:1450:4864:20::42b])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 06D984118A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 07:04:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 06D984118A
+Received: by mail-wr1-x42b.google.com with SMTP id
+ ffacd0b85a97d-31aec0a1a8bso338724f8f.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 24 Aug 2023 00:04:54 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1692860384; x=1693465184;
+ d=1e100.net; s=20221208; t=1692860692; x=1693465492;
  h=in-reply-to:content-disposition:mime-version:references:message-id
  :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
  :message-id:reply-to;
- bh=+xVvlCGex8MTTZYxV9+n6jIh21hrXPC9JzY4cLwH6KA=;
- b=dwNuRfmfYIJ7lMYV0l9KidVBH14JJZUq70O1U7VSh3qeShX5RYNJMfpkcZ1xfiw12D
- Au+TRZPSAmDMJpVAjCE8hFv0JahNFpLnoIk3IpKv8IdAPf6gewqrt0vbh9MpKHwmpxHh
- irdyPiTLfiptdfV00hajiyebUo5O8KhOynSiWVFXJMNxv2DhWPTLh+BKVtAq3g0m8BZ4
- +B2OFYvz4hYXade4AQHiIuAW+pY7TGTF0EXjyydOF5p0uZPaluNeAuZadEnvq/L/8ekW
- rnADZWBop5QW2vIUM7CmHbJGcFuMlcpul1fpj87L0T6qfBQNJc/hCL67hwAWU8yLjN5c
- 87fg==
-X-Gm-Message-State: AOJu0YwRw0QrYIvpTb15Sur9zsAAnZkzYQG1bFtY7Uyh90NNJZeMigFg
- KodB4GzIVGMMrperzhzceOVuuw==
-X-Google-Smtp-Source: AGHT+IHV5h/gWiGqWISIXTEBzuyi+BE2xkRY/zgFh1SxLekzv+sqKnQhfmfoEMGVAG+tjnX0+xWpsg==
-X-Received: by 2002:adf:edca:0:b0:31a:d7fc:28f with SMTP id
- v10-20020adfedca000000b0031ad7fc028fmr12034332wro.19.1692860384103; 
- Wed, 23 Aug 2023 23:59:44 -0700 (PDT)
+ bh=wRx019sADz7VrVAreOpz8rm5QxkCuZQY4e51+r3JkRk=;
+ b=YWObqscCOj/UcLkLpWf84u+TcaArj5kV6MdPwRZoILUQHyBDPwIJIvGTJDbd3GGFLa
+ pspYtO8GkpZ0eHm3orgi4oCLAOdbipNXHAi3PKxAZzKaLwCQUAY6NNqEJsAo0CQoc+kI
+ R4sb0C/Wpjv17b8R/a69DhTmjK0Mroo/qeEq6ULUvp4fsUKJkK8Ugho8ALYVOEe59UEj
+ 0AqOW1h0qPYIPdxj1Jtlb6o4Emu5GoXheSL47XzNUeTyNAnKvGz5L2zmcu95Zyrbhp+y
+ 1EdQF/376cl7+gKwEx4g+ZKjT/geGO3Bp4v3z7IbzXYOofFRajkdW3rm32+MA7zboNeW
+ dRLA==
+X-Gm-Message-State: AOJu0YxwrLPGeyUDlaau9AjXhOXW/QrcPwzU2gpkmfzUk4A0VsGvhzBh
+ P03fKYCXlPZMnMm2arzRBGZp3w==
+X-Google-Smtp-Source: AGHT+IFF7Be7qvROB9L70bjLXpNnOgB18klQfnMIlbAvECf66L417p5FccYryK4pwK44TfpU+4NugQ==
+X-Received: by 2002:adf:ffc4:0:b0:319:8161:bfed with SMTP id
+ x4-20020adfffc4000000b003198161bfedmr10994255wrs.33.1692860692514; 
+ Thu, 24 Aug 2023 00:04:52 -0700 (PDT)
 Received: from localhost ([212.23.236.67]) by smtp.gmail.com with ESMTPSA id
- y17-20020adfe6d1000000b003176eab8868sm21246718wrm.82.2023.08.23.23.59.43
+ d17-20020adfef91000000b0031ad5fb5a0fsm21453629wro.58.2023.08.24.00.04.51
  (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 23 Aug 2023 23:59:43 -0700 (PDT)
-Date: Thu, 24 Aug 2023 08:59:42 +0200
+ Thu, 24 Aug 2023 00:04:51 -0700 (PDT)
+Date: Thu, 24 Aug 2023 09:04:50 +0200
 From: Jiri Pirko <jiri@resnulli.us>
-To: Vadim Fedorenko <vadim.fedorenko@linux.dev>
-Message-ID: <ZOb/3qbGKS4+6Slu@nanopsycho>
-References: <20230823225242.817957-1-vadim.fedorenko@linux.dev>
+To: "Zhang, Xuejun" <xuejun.zhang@intel.com>
+Message-ID: <ZOcBEt59zHW9qHhT@nanopsycho>
+References: <20230727021021.961119-1-wenjun1.wu@intel.com>
+ <20230822034003.31628-1-wenjun1.wu@intel.com>
+ <ZORRzEBcUDEjMniz@nanopsycho> <20230822081255.7a36fa4d@kernel.org>
+ <ZOTVkXWCLY88YfjV@nanopsycho>
+ <0893327b-1c84-7c25-d10c-1cc93595825a@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20230823225242.817957-1-vadim.fedorenko@linux.dev>
+In-Reply-To: <0893327b-1c84-7c25-d10c-1cc93595825a@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=resnulli-us.20221208.gappssmtp.com; s=20221208; t=1692860384; x=1693465184; 
+ d=resnulli-us.20221208.gappssmtp.com; s=20221208; t=1692860692; x=1693465492; 
  h=in-reply-to:content-disposition:mime-version:references:message-id
  :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=+xVvlCGex8MTTZYxV9+n6jIh21hrXPC9JzY4cLwH6KA=;
- b=JA/SlRiSGXLmyf4uxdL8Ezug//3djjbWkWBwFLDDwMEZb8sfx3E/tGZNzckZiddzdY
- vzZdao/SmZppv1Jwr8TYyz+1EEMuiXtaqhPJ7UsLHabhBVyNQllseyx+wcxHnck5PYfx
- 3hjWgKX243esYSmP+UJ9iPL8O54M2Y1okgV06RTexXMWQJin22ja0auiPFgIJxZxJuaI
- 0qIi2d3hAdKgKRPFYf5Kr6t0K2llnb2ccWk78c7jf4OX2MR20VO/5sXnz2HOzK16yds/
- PV7MZCBC2Ro5kwyuyRG7lb7ghiiAWapS+FketmqQpxWVxUlSyzuqj3dxhlKM2K9It+vQ
- 2oRQ==
+ bh=wRx019sADz7VrVAreOpz8rm5QxkCuZQY4e51+r3JkRk=;
+ b=n7CR6BAIKD4TFgNebeZTFxDwEsVeuvdI0zZ/xNGKhti2LdQ/GsdwIwOdb98IqryNrH
+ 37ML2bkBR1C91bkNgHYjiJ6txR9WZqTKgRKst9xtMu76NxJuvgip2LwINFKQgQMB8Dy7
+ b/TpcepHMSV8ArhN0k8THPdPKte0dfMaNKm5H6ukfi18CS7le+tCvmlkjeZAy81eSSId
+ WAieSnxC/mDQ6M7INCVzY9qxjqAiNKMu4byF4n3E8yLnkBu09qH9kr7cX82rNYNfYMmN
+ 54cn3CP+g+63dPhcsXW7g4e2T0sB/9opumFDoOQf5KMcIh4Sv+pE97mXAduX8HHxTfOp
+ S5cA==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=resnulli-us.20221208.gappssmtp.com
  header.i=@resnulli-us.20221208.gappssmtp.com header.a=rsa-sha256
- header.s=20221208 header.b=JA/SlRiS
-Subject: Re: [Intel-wired-lan] [PATCH net-next v6 0/9] Create common DPLL
- configuration API
+ header.s=20221208 header.b=n7CR6BAI
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 0/5] iavf: Add devlink and
+ devlink rate support'
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,87 +113,40 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Bart Van Assche <bvanassche@acm.org>, netdev@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, linux-arm-kernel@lists.infradead.org,
- Jonathan Lemon <jonathan.lemon@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, linux-clk@vger.kernel.org,
- Milena Olech <milena.olech@intel.com>
+Cc: netdev@vger.kernel.org, anthony.l.nguyen@intel.com,
+ intel-wired-lan@lists.osuosl.org, qi.z.zhang@intel.com,
+ Jakub Kicinski <kuba@kernel.org>, Wenjun Wu <wenjun1.wu@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Thu, Aug 24, 2023 at 12:52:33AM CEST, vadim.fedorenko@linux.dev wrote:
->Implement common API for DPLL configuration and status reporting.
->The API utilises netlink interface as transport for commands and event
->notifications. This API aims to extend current pin configuration 
->provided by PTP subsystem and make it flexible and easy to cover
->complex configurations.
+Wed, Aug 23, 2023 at 09:13:34PM CEST, xuejun.zhang@intel.com wrote:
 >
->Netlink interface is based on ynl spec, it allows use of in-kernel
->tools/net/ynl/cli.py application to control the interface with properly
->formated command and json attribute strings. Here are few command
->examples of how it works with `ice` driver on supported NIC:
+>On 8/22/2023 8:34 AM, Jiri Pirko wrote:
+>> Tue, Aug 22, 2023 at 05:12:55PM CEST,kuba@kernel.org  wrote:
+>> > On Tue, 22 Aug 2023 08:12:28 +0200 Jiri Pirko wrote:
+>> > > NACK! Port function is there to configure the VF/SF from the eswitch
+>> > > side. Yet you use it for the configureation of the actual VF, which is
+>> > > clear misuse. Please don't
+>> > Stating where they are supposed to configure the rate would be helpful.
+>> TC?
 >
->- dump dpll devices:
->$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
->--dump device-get
->[{'clock-id': 4658613174691613800,
->  'id': 0,
->  'lock-status': 'locked-ho-acq',
->  'mode': 'automatic',
->  'mode-supported': ['automatic'],
->  'module-name': 'ice',
->  'type': 'eec'},
-> {'clock-id': 4658613174691613800,
->  'id': 1,
->  'lock-status': 'locked-ho-acq',
->  'mode': 'automatic',
->  'mode-supported': ['automatic'],
->  'module-name': 'ice',
->  'type': 'pps'}]
+>Our implementation is an extension to this commit 42c2eb6b1f43 ice: Implement
+>devlink-rate API).
 >
->- get single pin info:
->$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
->--do pin-get --json '{"id":2}'
->{'board-label': 'C827_0-RCLKA',
-> 'clock-id': 4658613174691613800,
-> 'capabilities': 6,
-> 'frequency': 1953125,
-> 'id': 2,
-> 'module-name': 'ice',
-> 'parent-device': [{'direction': 'input',
->                    'parent-id': 0,
->                    'prio': 9,
->                    'state': 'disconnected'},
->                   {'direction': 'input',
->                    'parent-id': 1,
->                    'prio': 9,
->                    'state': 'disconnected'}],
-> 'type': 'mux'}
+>We are setting the Tx max & share rates of individual queues in a VF using
+>the devlink rate API.
 >
->- set pin's state on dpll:
->$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
->--do pin-set --json '{"id":2, "parent-device":{"parent-id":1, "state":2}}'
->
->- set pin's prio on dpll:
->$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
->--do pin-set --json '{"id":2, "parent-device":{"parent-id":1, "prio":4}}'
->
->- set pin's state on parent pin:
->$ sudo ./tools/net/ynl/cli.py --spec Documentation/netlink/specs/dpll.yaml \
->--do pin-set --json '{"id":13, "parent-pin":{"parent-id":2, "state":1}}'
->
->
->Changelog:
->
->v5 -> v6:
->- change dpll-caps to pin capabilities and adjust enum accordingly
->- remove dpll.h from netdevice.h
+>Here we are using DEVLINK_PORT_FLAVOUR_VIRTUAL as the attribute for the port
+>to distinguish it from being eswitch.
 
-For the record, I'm fine with this version and my signed-offs stand.
-
-Thanks!
+I understand, that is a wrong object. So again, you should use
+"function" subobject of devlink port to configure "the other side of the
+wire", that means the function related to a eswitch port. Here, you are
+doing it for the VF directly, which is wrong. If you need some rate
+limiting to be configured on an actual VF, use what you use for any
+other nic. Offload TC.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
