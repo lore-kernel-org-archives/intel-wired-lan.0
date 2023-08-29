@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 849C7C83F14
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Aug 2023 10:41:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBBA2C83F14
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 29 Aug 2023 10:41:24 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 41ACF60C0E;
-	Tue, 29 Aug 2023 10:41:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 41ACF60C0E
+	by smtp3.osuosl.org (Postfix) with ESMTP id A2AEB60F21;
+	Tue, 29 Aug 2023 10:41:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A2AEB60F21
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1693305681;
-	bh=bMyX65SDZ07PSGQdos3ewqLkxSLSQrPkThekrxNO+U0=;
+	s=default; t=1693305684;
+	bh=4GjDzJCRsXlMMiJfG7d1+N6kVyH5Rl77KivxFfiLzk0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=0JFhS0ozkVgCEzn1kuT1se+L6vksgzVl1A3Kyskk9nvaNpK6LWebsOJWzQ8xQN8hK
-	 OUwJSJmzwQzVGe3Jc9P5HDUt38CoX+0FF3HuVWCHnFGFDX4sOZ+AtFimz/gNd+ZTc1
-	 AncC/aXZHSumQD+1KfUutt/b+BLBnspFTVk5wkWEPIjaTkC9xWoTel2SPxXs/0nTgs
-	 goFtkSvhodQfYtuwM2DhQEuansLFXzy4qr5igS8HWSkyzRD9+TZNhDlnqyRcb1E+fG
-	 qMM6XWc5JjFlzhvOF+Kiiyv1HnEqPFeMJdr/73IEszO96HrY8sIM+MKyvp16UtVHu2
-	 cmnO1EVKRTY0w==
+	b=V2atcUc5GNTsHUUoclsIrC8spWLE3HICbQlu/YaCNUpka9kobEBvWSPi5xtEn6D1z
+	 XYvVcoOd9rG9L68vBZHjiSu3Bk8LRN93nU5XzP9uqmgDXj+HPFSvcDiqf5YoKn/CPs
+	 rHQoUDB++Mzdt+o9C0B/Vd9pyAi6VnPDjEWPfyPCBYggNA8qvCOs8x9LZspR80DNpv
+	 9s50VK5quUtWXKbkv84yND9RY+pzbomjAuUaQo03bjLglIlJ2qrOvR6hhSbSdKzVtT
+	 Cl8XO/UCrzf+dxwSyMH6lESPL7+XrAIrwQs4rPim9ptHBmJmhtb8hR6YLGWmcRUNpg
+	 qzV7K7Jg8bXHQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id S3KwvjV8xBgW; Tue, 29 Aug 2023 10:41:19 +0000 (UTC)
+	with ESMTP id 60N4XTWeYKff; Tue, 29 Aug 2023 10:41:23 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 690D460ED5;
-	Tue, 29 Aug 2023 10:41:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 690D460ED5
+	by smtp3.osuosl.org (Postfix) with ESMTP id 8C33760E44;
+	Tue, 29 Aug 2023 10:41:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8C33760E44
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 14C241BF2CF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Aug 2023 10:41:04 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 10C2D1BF2CF
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Aug 2023 10:41:06 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id E23C981501
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Aug 2023 10:41:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E23C981501
+ by smtp1.osuosl.org (Postfix) with ESMTP id DDFCC81501
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Aug 2023 10:41:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DDFCC81501
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id xmDwf-Qg-hbL for <intel-wired-lan@lists.osuosl.org>;
- Tue, 29 Aug 2023 10:41:03 +0000 (UTC)
+ with ESMTP id YzPp-QYJ7YBG for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 29 Aug 2023 10:41:05 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.43])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4293281419
- for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Aug 2023 10:41:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4293281419
-X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="461696891"
-X-IronPort-AV: E=Sophos;i="6.02,210,1688454000"; d="scan'208";a="461696891"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 3597B81419
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 29 Aug 2023 10:41:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3597B81419
+X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="461696897"
+X-IronPort-AV: E=Sophos;i="6.02,210,1688454000"; d="scan'208";a="461696897"
 Received: from fmsmga002.fm.intel.com ([10.253.24.26])
  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 29 Aug 2023 03:41:03 -0700
+ 29 Aug 2023 03:41:04 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="853229790"
-X-IronPort-AV: E=Sophos;i="6.02,210,1688454000"; d="scan'208";a="853229790"
+X-IronPort-AV: E=McAfee;i="6600,9927,10816"; a="853229796"
+X-IronPort-AV: E=Sophos;i="6.02,210,1688454000"; d="scan'208";a="853229796"
 Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by fmsmga002.fm.intel.com with ESMTP; 29 Aug 2023 03:41:01 -0700
+ by fmsmga002.fm.intel.com with ESMTP; 29 Aug 2023 03:41:03 -0700
 From: Karol Kolacinski <karol.kolacinski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 29 Aug 2023 12:40:35 +0200
-Message-Id: <20230829104041.64131-6-karol.kolacinski@intel.com>
+Date: Tue, 29 Aug 2023 12:40:36 +0200
+Message-Id: <20230829104041.64131-7-karol.kolacinski@intel.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230829104041.64131-1-karol.kolacinski@intel.com>
 References: <20230829104041.64131-1-karol.kolacinski@intel.com>
@@ -68,22 +68,22 @@ Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173,
  80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1693305663; x=1724841663;
+ t=1693305665; x=1724841665;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=dvIQlIyW5/EHR6V294K7rz0uzdjKGiqNypRDnnMdsLI=;
- b=TrLKGRNsYcXA/puDKdljyM1q30qrtZNkSjF8pJ5o40iZ7kG4VGx0Flve
- WQO0hvGaFcho0JiZrPLPnsP3orvZs7gSs5D22X+CBDa/IYXh9EW/OCyQA
- s9M4qtyqw37GZBVF0J6VlSf2NLG5WH9uqWhgXWxpVak+kOKv+lfNwOLeK
- u9YuNssUrugD80L+bKznBhCmyklLkVzf30ozjRvN8f/XGdfLljqmZXal1
- vlETgrdutdzVb9gpDhfsJ4Bu2R65pa0Svt07/3C4qJmn49oSt7CYE4uOb
- SuTQPwIiVEtHUSqEUpCXHbFZSe3f7WKf3GVlumiFGPXikYXVcMUWzZbYS
+ bh=VowrIuVp1hKfrPff5NmWrNfOIdMkrXiyQkMPqwuQs1U=;
+ b=DQ47IfsJ02lSE0FFANFqJ0IfCWA15tE3GOKnjrsqc0MyOP1zq0v9PL4a
+ DxKj9qtQ5hUU7t8j/LL3o/bAo+fLh4JEQTBnslk7/luqgLbtGsCtGFAQT
+ WcZrAFSNqdCiwUZTZdX4vX/65MIVK6a8z4EbyqaHUTDpwN/X83anL8h8q
+ L0lKNojHredTczOvtk352HdX3SaN/DFjl6dnNLFxBzhuDhZ63Yic85Yh2
+ 1Ss84EfZRnrNStEiRoegWhObqNKmT/AfnCZrxOuC/7z44wBxEwgGgvPHx
+ hkG6rTW/KQsceqowpVh2G2Qdnn8QSWH1m3Tkrs2Se3bPvqX0gmmdm3e0m
  w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=TrLKGRNs
-Subject: [Intel-wired-lan] [PATCH v4 iwl-next 05/11] ice: rename
- ice_ptp_configure_tx_tstamp
+ header.a=rsa-sha256 header.s=Intel header.b=DQ47IfsJ
+Subject: [Intel-wired-lan] [PATCH v4 iwl-next 06/11] ice: rename
+ ice_ptp_tx_cfg_intr
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,13 +105,14 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-The ice_ptp_configure_tx_tstamp function writes to PFINT_OICR_ENA to
-configure it with the PFINT_OICR_TX_TSYN_M bit. The name of this
-function is confusing because there are multiple other functions with
-almost identical names.
+The ice_ptp_tx_cfg_intr() function sends a control queue message to
+configure the PHY timestamp interrupt block. This is a very similar name
+to a function which is used to configure the MAC Other Interrupt Cause
+Enable register.
 
-Rename it to ice_ptp_cfg_tx_interrupt in order to make it more obvious
-to the reader what action it performs.
+Rename this function to ice_ptp_cfg_phy_interrupt in order to make it
+more obvious to the reader what action it performs, and distinguish it
+from other similarly named functions.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
@@ -120,51 +121,63 @@ Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
  1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index f513bbbba9f8..2899fc7f8deb 100644
+index 2899fc7f8deb..16491c2d036f 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ptp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -281,11 +281,11 @@ static const char *ice_ptp_state_str(enum ice_ptp_state state)
+@@ -1341,14 +1341,14 @@ void ice_ptp_link_change(struct ice_pf *pf, u8 port, bool linkup)
  }
  
  /**
-- * ice_ptp_configure_tx_tstamp - Enable or disable Tx timestamp interrupt
-- * @pf: The PF pointer to search in
-+ * ice_ptp_cfg_tx_interrupt - Configure Tx timestamp interrupt for the device
-+ * @pf: Board private structure
-  * @on: bool value for whether timestamp interrupt is enabled or disabled
+- * ice_ptp_tx_ena_intr - Enable or disable the Tx timestamp interrupt
++ * ice_ptp_cfg_phy_interrupt - Configure PHY interrupt settings
+  * @pf: PF private structure
+  * @ena: bool value to enable or disable interrupt
+  * @threshold: Minimum number of packets at which intr is triggered
+  *
+  * Utility function to enable or disable Tx timestamp interrupt and threshold
   */
--static void ice_ptp_configure_tx_tstamp(struct ice_pf *pf, bool on)
-+static void ice_ptp_cfg_tx_interrupt(struct ice_pf *pf, bool on)
+-static int ice_ptp_tx_ena_intr(struct ice_pf *pf, bool ena, u32 threshold)
++static int ice_ptp_cfg_phy_interrupt(struct ice_pf *pf, bool ena, u32 threshold)
  {
- 	u32 val;
+ 	struct ice_hw *hw = &pf->hw;
+ 	int err = 0;
+@@ -2510,8 +2510,8 @@ void ice_ptp_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 	struct ice_ptp *ptp = &pf->ptp;
+ 	struct ice_hw *hw = &pf->hw;
+ 	struct timespec64 ts;
+-	int err, itr = 1;
+ 	u64 time_diff;
++	int err;
  
-@@ -320,7 +320,7 @@ static void ice_set_tx_tstamp(struct ice_pf *pf, bool on)
+ 	if (ptp->state != ICE_PTP_RESETTING) {
+ 		if (ptp->state == ICE_PTP_READY) {
+@@ -2564,7 +2564,7 @@ void ice_ptp_reset(struct ice_pf *pf, enum ice_reset_req reset_type)
+ 
+ 	if (!ice_is_e810(hw)) {
+ 		/* Enable quad interrupts */
+-		err = ice_ptp_tx_ena_intr(pf, true, itr);
++		err = ice_ptp_cfg_phy_interrupt(pf, true, 1);
+ 		if (err)
+ 			goto err;
  	}
+@@ -2813,7 +2813,7 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
+ {
+ 	struct ice_hw *hw = &pf->hw;
+ 	struct timespec64 ts;
+-	int err, itr = 1;
++	int err;
  
- 	if (pf->ptp.tx_interrupt_mode == ICE_PTP_TX_INTERRUPT_SELF)
--		ice_ptp_configure_tx_tstamp(pf, on);
-+		ice_ptp_cfg_tx_interrupt(pf, on);
- 
- 	pf->ptp.tstamp_config.tx_type = on ? HWTSTAMP_TX_ON : HWTSTAMP_TX_OFF;
- }
-@@ -2850,7 +2850,7 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
- 		/* The clock owner for this device type handles the timestamp
- 		 * interrupt for all ports.
- 		 */
--		ice_ptp_configure_tx_tstamp(pf, true);
-+		ice_ptp_cfg_tx_interrupt(pf, true);
- 
- 		/* React on all quads interrupts for E82x */
+ 	err = ice_ptp_init_phc(hw);
+ 	if (err) {
+@@ -2856,7 +2856,7 @@ static int ice_ptp_init_owner(struct ice_pf *pf)
  		wr32(hw, PFINT_TSYN_MSK + (0x4 * hw->pf_id), (u32)0x1f);
-@@ -2928,7 +2928,7 @@ static int ice_ptp_init_port(struct ice_pf *pf, struct ice_ptp_port *ptp_port)
- 		 * neither on own quad nor on others
- 		 */
- 		if (!ice_ptp_pf_handles_tx_interrupt(pf)) {
--			ice_ptp_configure_tx_tstamp(pf, false);
-+			ice_ptp_cfg_tx_interrupt(pf, false);
- 			wr32(hw, PFINT_TSYN_MSK + (0x4 * hw->pf_id), (u32)0x0);
- 		}
- 		kthread_init_delayed_work(&ptp_port->ov_work,
+ 
+ 		/* Enable quad interrupts */
+-		err = ice_ptp_tx_ena_intr(pf, true, itr);
++		err = ice_ptp_cfg_phy_interrupt(pf, true, 1);
+ 		if (err)
+ 			goto err_exit;
+ 	}
 -- 
 2.39.2
 
