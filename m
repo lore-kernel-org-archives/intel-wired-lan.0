@@ -4,94 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 429D8C83F01
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 31 Aug 2023 12:19:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1744C83F01
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 31 Aug 2023 12:19:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 9EA8181FB1;
-	Thu, 31 Aug 2023 12:19:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9EA8181FB1
+	by smtp1.osuosl.org (Postfix) with ESMTP id 6487782FCE;
+	Thu, 31 Aug 2023 12:19:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6487782FCE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1693484362;
-	bh=An4wrVPRE7s35kl30kENnEq+JpBGC+XF4nUhRzYkSak=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=L07BYXnhwrh6Syw6+2tekXXsECH000bJm1lz19JOTtGdPxgpExFgLeT8MQkthNaS1
-	 qJGbz5OeRWXq3aymumSO0OmGjAmzlp0tjIiuQhg/lWe15o/Ad9+NQ8Fg3Yqf4UUMZO
-	 GMNNAvoU7uzS/TSV9woTmCP8Qgh0GJBNwEKJvFMSSvDAQRoPn7CIDagooERZK56Y6A
-	 hi8Id2vn0yoIGJrPTrGooIxrLQImNRl6NFo6i60leSICB6bIQ9BPWRMlYgCIZGuQGc
-	 PUJvoiwp0DZ3DYZenoC+Ronp8aA2JsG6P8vrsAhgUNT9Xz3wu+UpsWLBsqB+4ShYoP
-	 xiuUP5CdKoHzw==
+	s=default; t=1693484367;
+	bh=uDZV4yz/+Sder6DnOVe4/3LoOakIvIGIsJD6e3XWmjQ=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=ODmF3ee6QlvoVbo5rGXSGgUFxsZw0moEO3yO+3bJc6tSBW93GGy8DFU/JSLNaOiz2
+	 dxo15H3mUmqxDSm5WlL2JpR5grRP4QyfcHsvFZjyIDec8BiZdIuUiNRmipHNGxaa/g
+	 ozoEkYxbwQ+ZBoeyt2xJC+lfJ4Efw5qTp/j4PZXr0SEkADJ5rxKOvpcTawzkeFlXaD
+	 C1ahz9xFLlJ6D91LNVclK5HjxKpvYUiDixcz/ZYCNgfoefBLJHEiY3AyT69DBXdfik
+	 7QY5w4I4FEi9m2KhZbzStw9KJh/Zh6Zeb/NLmzE8UcCIIX3/WvycKNLu0bF+C1N2LB
+	 EhqYclI4TQyoA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id bcLuhexSg33A; Thu, 31 Aug 2023 12:19:21 +0000 (UTC)
+	with ESMTP id fQhd8LjcClAa; Thu, 31 Aug 2023 12:19:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 253A78226E;
-	Thu, 31 Aug 2023 12:19:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 253A78226E
+	by smtp1.osuosl.org (Postfix) with ESMTP id AD38883148;
+	Thu, 31 Aug 2023 12:19:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AD38883148
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 5012A1BF3D1
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:19 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 40DE51BF3D1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 278D6612CE
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 278D6612CE
+ by smtp3.osuosl.org (Postfix) with ESMTP id 27297612CE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 27297612CE
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HS7QFgzyFsCJ for <intel-wired-lan@lists.osuosl.org>;
- Thu, 31 Aug 2023 12:19:18 +0000 (UTC)
+ with ESMTP id 5Q0FSyTcsevi for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 31 Aug 2023 12:19:22 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 5A85E60BE9
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5A85E60BE9
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-495-Bj2w-xHqPXCqCoMoAT5uXw-1; Thu, 31 Aug 2023 08:19:10 -0400
-X-MC-Unique: Bj2w-xHqPXCqCoMoAT5uXw-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com
- [10.11.54.6])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 719EC60BE9
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 719EC60BE9
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-695-_RgXO7JhPNGXqn6p9FfHzw-1; Thu, 31 Aug 2023 08:19:15 -0400
+X-MC-Unique: _RgXO7JhPNGXqn6p9FfHzw-1
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.5])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 0EC3E1C07590;
- Thu, 31 Aug 2023 12:19:10 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 2FAA08022E4;
+ Thu, 31 Aug 2023 12:19:15 +0000 (UTC)
 Received: from calimero.vinschen.de (unknown [10.39.192.15])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id CD95D2166B25;
- Thu, 31 Aug 2023 12:19:09 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 0DCA69A;
+ Thu, 31 Aug 2023 12:19:15 +0000 (UTC)
 Received: by calimero.vinschen.de (Postfix, from userid 500)
- id 798BBA81EA3; Thu, 31 Aug 2023 14:19:08 +0200 (CEST)
-Date: Thu, 31 Aug 2023 14:19:08 +0200
+ id 06F3DA81EA3; Thu, 31 Aug 2023 14:19:14 +0200 (CEST)
 From: Corinna Vinschen <vinschen@redhat.com>
-To: Paolo Abeni <pabeni@redhat.com>
-Message-ID: <ZPCFPBOPchpKUEyl@calimero.vinschen.de>
-Mail-Followup-To: Paolo Abeni <pabeni@redhat.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- jesse.brandeburg@intel.com, intel-wired-lan@lists.osuosl.org,
- netdev@vger.kernel.org
-References: <20230831080916.588043-1-vinschen@redhat.com>
- <b2dcff0db691a9b358c4f89cf7a5b65a5a7dc4c5.camel@redhat.com>
+To: Tony Nguyen <anthony.l.nguyen@intel.com>, jesse.brandeburg@intel.com,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
+Date: Thu, 31 Aug 2023 14:19:13 +0200
+Message-ID: <20230831121914.660875-1-vinschen@redhat.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <b2dcff0db691a9b358c4f89cf7a5b65a5a7dc4c5.camel@redhat.com>
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1693484357;
+ s=mimecast20190719; t=1693484361;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- in-reply-to:in-reply-to:references:references;
- bh=r44FJHyZKkNNi8TCBVOpCbHH7Y9gKQJrc4FVZ3OS63U=;
- b=ORPRpbg05ECgvAnyruYkv1nMuI9+exJ8ERbXUlLzgOoW59sP5yMNWh1+tDKcDAqpsrSkhI
- rDajf2NCPxZpKGslOO7Lq5deRdyH2cWfa8fSBCOLfQPsW16e2xPZe8O7gBd+W0yx1DLUkA
- ERuONIMKffTmg3aNJT4PY4YnHmhgnkE=
+ to:to:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=oET/UC3oZ/ERnpqoK6/p2ncmcfVMZqsG2bSEB3AWRgs=;
+ b=d0q7inBiJ+fB8rnS82CvDIsgLxqVbnLovWSkJnrMaSOI3UsSxxOTj3zwO2wRlGaG5100aZ
+ aU+i5Td+7+gOCKaKK2/jVBbr2tF9bHEgYLYFTxbmvD3tMGpufH4ySkFQVWaVhkPWj0WWl6
+ sOY2Z+2/mlsEJIxy4BXvJ4uModJWVOA=
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=ORPRpbg0
-Subject: Re: [Intel-wired-lan] [PATCH] igb: disable virtualization features
- on 82580
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=d0q7inBi
+Subject: [Intel-wired-lan] [PATCH v2 net] igb: disable virtualization
+ features on 82580
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,40 +96,38 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
- jesse.brandeburg@intel.com, netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi Paolo,
+Disable virtualization features on 82580 just as on i210/i211.
+This avoids that virt functions are acidentally called on 82850.
 
-On Aug 31 13:41, Paolo Abeni wrote:
-> On Thu, 2023-08-31 at 10:09 +0200, Corinna Vinschen wrote:
-> > Disable virtualization features on 82580 just as on i210/i211.
-> > This avoids that virt functions are acidentally called on 82850.
-> > 
-> > Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
-> 
-> This looks like a fix to me?!? if so a suitable 'Fixes' tag should be
-> included.
+Fixes: 55cac248caa4 ("igb: Add full support for 82580 devices")
+Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-I tried, but failed to come up with one.  When 82580 was introduced, the
-conditional in question didn't exist at all and the igb_probe_vfs
-function looked pretty different.  When i210 was introduced, the
-conditional was created the first time.  So I was a bit puzzled if this
-fixes the patch introducing 82580, or if it fixes the introduction of
-the conditional, or if it's just kind of "new functionality".
-
-Your mail got me thinking again, and I'm going to send a v2, blaming the
-patch introducing 52580. It failed to guard igb_probe_vfs correctly.
-When i210 was introduced, a matching conditional should have already
-existed.
-
-
-Thanks,
-Corinna
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 1ab787ed254d..13ba9c74bd84 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3933,8 +3933,9 @@ static void igb_probe_vfs(struct igb_adapter *adapter)
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct e1000_hw *hw = &adapter->hw;
+ 
+-	/* Virtualization features not supported on i210 family. */
+-	if ((hw->mac.type == e1000_i210) || (hw->mac.type == e1000_i211))
++	/* Virtualization features not supported on i210 and 82580 family. */
++	if ((hw->mac.type == e1000_i210) || (hw->mac.type == e1000_i211) ||
++	    (hw->mac.type == e1000_82580))
+ 		return;
+ 
+ 	/* Of the below we really only want the effect of getting
+-- 
+2.31.1
 
 _______________________________________________
 Intel-wired-lan mailing list
