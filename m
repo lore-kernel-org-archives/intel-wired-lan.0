@@ -4,110 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79D60C83F10
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 31 Aug 2023 11:41:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 429D8C83F01
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 31 Aug 2023 12:19:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 09AB982154;
-	Thu, 31 Aug 2023 11:41:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 09AB982154
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9EA8181FB1;
+	Thu, 31 Aug 2023 12:19:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9EA8181FB1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1693482081;
-	bh=HvOSJ6uvCVI/LooKyd6+twsI9sVjpvv9ZNHg/23ah0o=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1693484362;
+	bh=An4wrVPRE7s35kl30kENnEq+JpBGC+XF4nUhRzYkSak=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 From;
-	b=UbXycciXrk+iQZvzgUnkB7Zd9TVqJqXLPgsJYR+yLTX7VtI9Ov9kLErRO4HjhxnBF
-	 K8ndSeRESYje8QrMjR6yIa/bL7rusXUlzmOaf4HiK6lLvMy4aHMKOEdiMGAZI69/ET
-	 EuIFuJGNvjYLJfuOxcIdLReQhW+qLOVcjmHs5hTxGRUL35gVFsrk8AsxVzCFpTzuXY
-	 h2+X0GoICQjyJQ+TiQ8B6WI9RFTmGPCQuKYbKJlSylEDzIeHLfr7Zgq+4nF788RY29
-	 wMF6X21hvXegMSxhOnGj3PI7spvT6artwQzWuIEPZazD3MHValXHJu4CeMii7+Cv6Y
-	 sA744+OUnxsOw==
+	 Cc:From;
+	b=L07BYXnhwrh6Syw6+2tekXXsECH000bJm1lz19JOTtGdPxgpExFgLeT8MQkthNaS1
+	 qJGbz5OeRWXq3aymumSO0OmGjAmzlp0tjIiuQhg/lWe15o/Ad9+NQ8Fg3Yqf4UUMZO
+	 GMNNAvoU7uzS/TSV9woTmCP8Qgh0GJBNwEKJvFMSSvDAQRoPn7CIDagooERZK56Y6A
+	 hi8Id2vn0yoIGJrPTrGooIxrLQImNRl6NFo6i60leSICB6bIQ9BPWRMlYgCIZGuQGc
+	 PUJvoiwp0DZ3DYZenoC+Ronp8aA2JsG6P8vrsAhgUNT9Xz3wu+UpsWLBsqB+4ShYoP
+	 xiuUP5CdKoHzw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id In9cEV3JLUhI; Thu, 31 Aug 2023 11:41:20 +0000 (UTC)
+	with ESMTP id bcLuhexSg33A; Thu, 31 Aug 2023 12:19:21 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1430182BC3;
-	Thu, 31 Aug 2023 11:41:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1430182BC3
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id E028C1BF3AE
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 11:41:17 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 253A78226E;
+	Thu, 31 Aug 2023 12:19:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 253A78226E
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 5012A1BF3D1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:19 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id B737A401ED
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 11:41:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B737A401ED
+ by smtp3.osuosl.org (Postfix) with ESMTP id 278D6612CE
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 278D6612CE
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3792ZccjP8dv for <intel-wired-lan@lists.osuosl.org>;
- Thu, 31 Aug 2023 11:41:16 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id HS7QFgzyFsCJ for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 31 Aug 2023 12:19:18 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 3B8DA40125
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 11:41:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3B8DA40125
-Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
- [209.85.218.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-614-ZWRh9LEiM8yewOlT9VHnbw-1; Thu, 31 Aug 2023 07:41:13 -0400
-X-MC-Unique: ZWRh9LEiM8yewOlT9VHnbw-1
-Received: by mail-ej1-f71.google.com with SMTP id
- a640c23a62f3a-9a5c5f0364dso9475466b.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 04:41:13 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20221208; t=1693482072; x=1694086872;
- h=mime-version:user-agent:content-transfer-encoding:references
- :in-reply-to:date:to:from:subject:message-id:x-gm-message-state:from
- :to:cc:subject:date:message-id:reply-to;
- bh=YnuQHzAIFGo0WZruZWqfRWGANCb/aDF+514/VQ3/nGA=;
- b=JydUo0M+eCZmi+Dp/sXm0LgUe1wpD1+ikIcjrHOoWLJG3bCUt1bxepKfiN7p1+0AVT
- rVfHzOs9tCWvDQQvaMHz4LS2nUN/o4A1D3F+bgqpH+R0hLq94RbT064a7WALL+Yqijaa
- JZ6LcwMxuZQdseSkLKFP6pbAZPO+eNQQSWTJssd86FxAYvvUu9Hdbqwb1eftXrVgxxFs
- KVYdkAeIvCcLf0jqf1ilOaFYMiOxszea6pP37NzYSrfKDBTVV8K5e1/zwaSQaRExr1cV
- ANPIsBv3w770VojGC0+LOyOPjQJxonAQV7Hxc1O/880DsDj9JQPjQ6w568+PxNPzj6nf
- KkOA==
-X-Gm-Message-State: AOJu0YyDZ0IrPd7Y3B+tJopSUqikiPSKM+jBUYG2r8l0+MeO1kFpCe+A
- QUGBRzq+7Y8eIgfAevnAOtjdc59aHknJ1rkjB3iCBIZT9ptXkNvl4FuzPoT3DuC3VXMVdfCT83e
- 0OMppJiEV+2bbhjSVskJJSPXm5xyi3Q==
-X-Received: by 2002:a17:906:10dc:b0:9a5:9038:b1e1 with SMTP id
- v28-20020a17090610dc00b009a59038b1e1mr3985436ejv.2.1693482072714; 
- Thu, 31 Aug 2023 04:41:12 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IG5VY1nG5gFbZ/71OW0mNruZkepMA+ngQpuZnkU3OIgnWU2Inj+E0lnl6YIKRYaw2Zy6nAtwA==
-X-Received: by 2002:a17:906:10dc:b0:9a5:9038:b1e1 with SMTP id
- v28-20020a17090610dc00b009a59038b1e1mr3985424ejv.2.1693482072370; 
- Thu, 31 Aug 2023 04:41:12 -0700 (PDT)
-Received: from gerbillo.redhat.com (146-241-255-219.dyn.eolo.it.
- [146.241.255.219]) by smtp.gmail.com with ESMTPSA id
- p19-20020a17090635d300b0099c971ba285sm665123ejb.5.2023.08.31.04.41.11
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 31 Aug 2023 04:41:11 -0700 (PDT)
-Message-ID: <b2dcff0db691a9b358c4f89cf7a5b65a5a7dc4c5.camel@redhat.com>
-From: Paolo Abeni <pabeni@redhat.com>
-To: Corinna Vinschen <vinschen@redhat.com>, Tony Nguyen
- <anthony.l.nguyen@intel.com>, jesse.brandeburg@intel.com, 
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org
-Date: Thu, 31 Aug 2023 13:41:10 +0200
-In-Reply-To: <20230831080916.588043-1-vinschen@redhat.com>
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 5A85E60BE9
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 31 Aug 2023 12:19:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5A85E60BE9
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-495-Bj2w-xHqPXCqCoMoAT5uXw-1; Thu, 31 Aug 2023 08:19:10 -0400
+X-MC-Unique: Bj2w-xHqPXCqCoMoAT5uXw-1
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.6])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 0EC3E1C07590;
+ Thu, 31 Aug 2023 12:19:10 +0000 (UTC)
+Received: from calimero.vinschen.de (unknown [10.39.192.15])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id CD95D2166B25;
+ Thu, 31 Aug 2023 12:19:09 +0000 (UTC)
+Received: by calimero.vinschen.de (Postfix, from userid 500)
+ id 798BBA81EA3; Thu, 31 Aug 2023 14:19:08 +0200 (CEST)
+Date: Thu, 31 Aug 2023 14:19:08 +0200
+From: Corinna Vinschen <vinschen@redhat.com>
+To: Paolo Abeni <pabeni@redhat.com>
+Message-ID: <ZPCFPBOPchpKUEyl@calimero.vinschen.de>
+Mail-Followup-To: Paolo Abeni <pabeni@redhat.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ jesse.brandeburg@intel.com, intel-wired-lan@lists.osuosl.org,
+ netdev@vger.kernel.org
 References: <20230831080916.588043-1-vinschen@redhat.com>
-User-Agent: Evolution 3.46.4 (3.46.4-1.fc37)
+ <b2dcff0db691a9b358c4f89cf7a5b65a5a7dc4c5.camel@redhat.com>
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
+Content-Disposition: inline
+In-Reply-To: <b2dcff0db691a9b358c4f89cf7a5b65a5a7dc4c5.camel@redhat.com>
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1693482075;
+ s=mimecast20190719; t=1693484357;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  in-reply-to:in-reply-to:references:references;
- bh=YnuQHzAIFGo0WZruZWqfRWGANCb/aDF+514/VQ3/nGA=;
- b=X4O12gA9KSzdfT57lRjxtwfNRlZl+z0UhMjcOZ4Gm8eUhK/yDJ37y5G7imjB3shafUBedk
- LmI7VAq1q5eZRPXQQkEkWLk6tysFal0tbZDwXngpVo44a6xU0QW2MtG4RbvU3spMDJ+Z/F
- v4bhEYzwGP/5y4lgHkrYw0T5DCi+q0U=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=r44FJHyZKkNNi8TCBVOpCbHH7Y9gKQJrc4FVZ3OS63U=;
+ b=ORPRpbg05ECgvAnyruYkv1nMuI9+exJ8ERbXUlLzgOoW59sP5yMNWh1+tDKcDAqpsrSkhI
+ rDajf2NCPxZpKGslOO7Lq5deRdyH2cWfa8fSBCOLfQPsW16e2xPZe8O7gBd+W0yx1DLUkA
+ ERuONIMKffTmg3aNJT4PY4YnHmhgnkE=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=X4O12gA9
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=ORPRpbg0
 Subject: Re: [Intel-wired-lan] [PATCH] igb: disable virtualization features
  on 82580
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -122,23 +104,40 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ jesse.brandeburg@intel.com, netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 2023-08-31 at 10:09 +0200, Corinna Vinschen wrote:
-> Disable virtualization features on 82580 just as on i210/i211.
-> This avoids that virt functions are acidentally called on 82850.
+Hi Paolo,
+
+On Aug 31 13:41, Paolo Abeni wrote:
+> On Thu, 2023-08-31 at 10:09 +0200, Corinna Vinschen wrote:
+> > Disable virtualization features on 82580 just as on i210/i211.
+> > This avoids that virt functions are acidentally called on 82850.
+> > 
+> > Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
 > 
-> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+> This looks like a fix to me?!? if so a suitable 'Fixes' tag should be
+> included.
 
-This looks like a fix to me?!? if so a suitable 'Fixes' tag should be
-included.
+I tried, but failed to come up with one.  When 82580 was introduced, the
+conditional in question didn't exist at all and the igb_probe_vfs
+function looked pretty different.  When i210 was introduced, the
+conditional was created the first time.  So I was a bit puzzled if this
+fixes the patch introducing 82580, or if it fixes the introduction of
+the conditional, or if it's just kind of "new functionality".
 
-Thanks!
+Your mail got me thinking again, and I'm going to send a v2, blaming the
+patch introducing 52580. It failed to guard igb_probe_vfs correctly.
+When i210 was introduced, a matching conditional should have already
+existed.
 
-Paolo
+
+Thanks,
+Corinna
 
 _______________________________________________
 Intel-wired-lan mailing list
