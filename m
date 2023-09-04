@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C359C83F2C
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 Sep 2023 12:34:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91BE0C83F2C
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 Sep 2023 12:34:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D498B4030C;
-	Mon,  4 Sep 2023 12:34:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D498B4030C
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4B5B440942;
+	Mon,  4 Sep 2023 12:34:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4B5B440942
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1693830886;
-	bh=U/92WttNK5SEvs8qwJ9qprP+ENg6/c2BG8g9LBcyUFo=;
+	s=default; t=1693830891;
+	bh=PgFhJojR0U/Y3hn8bCy3kV6oL7YWi47dxF5i5qGW+wk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=dbYpaPCgSBadsCAtmUdjJio4A8S7Q15cc3U5lQxZrG8v/I4G1Viawq3ufbBtr6A5V
-	 BvEiF3CJ6Ky42+5OiAlCkCe+q+Jf48dlDLM/nR12twa6qVp2aIdixx10IG+yAt0gcO
-	 hdax0JwYyCoP3w2HqGVA66ac3oZTCcBLMWDThLiNsIIGqZHNjePmVtz0Vkte5pbsSz
-	 JlOX1lYkD6GC6D3vEviMZU8l8Cqcg04dTDsTdrXYDh7kSv8xzrRbJ5HQcd+CDMpLnd
-	 8oavkvCJPgAZHUJGztaClOaU2rorXiOzqHoI1xw7WGtsU94Gj4AqSEVqbx72bXZ/fw
-	 gGNV1huKERdQA==
+	b=IkeYAkA0zCPgc1kG5IAbRtBdyjUwDvKaZIFvoJ3Ad5X1aN5QdklTeLDqmH/tAdtgB
+	 WtYWnZRKayDnqRSZW/lElOdSVkrrsRB7VW8yXYcwq7uouMyShXwg+zZqGHFoDy9smk
+	 nKK7vglSaiOJv46Q8NQyVSmgFWC9pHFWTU6OXWp7Ri4EfsR26iGkW9KO/wIAXCECZK
+	 C0pq5k2NmO2XZwwI05UUEP/uhqRt6zQSxU5WR8hZpELvUKUvcGoNuXSH4/M12Fod1M
+	 lMDq0FYlBqperb8FEs5BlrNA8UVy4GXoHLGWra3yJb8tg0hUIRyOgwB06pkrPwC758
+	 /XlZqf8tuXYIA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XUSzyjYvX995; Mon,  4 Sep 2023 12:34:45 +0000 (UTC)
+	with ESMTP id pJm4oiF61dck; Mon,  4 Sep 2023 12:34:50 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A991840942;
-	Mon,  4 Sep 2023 12:34:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A991840942
+	by smtp4.osuosl.org (Postfix) with ESMTP id 173CC40971;
+	Mon,  4 Sep 2023 12:34:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 173CC40971
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id C11C11BF2B4
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 12:34:25 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B440C1BF2B4
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 12:34:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 944548179A
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 12:34:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 944548179A
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3B2F481746
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 12:34:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3B2F481746
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id GNRaBSAQ6OXH for <intel-wired-lan@lists.osuosl.org>;
- Mon,  4 Sep 2023 12:34:22 +0000 (UTC)
+ with ESMTP id vVSF3Q26kAnU for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  4 Sep 2023 12:34:23 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.93])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 58C9F8177A
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 12:34:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 58C9F8177A
-X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="373977156"
-X-IronPort-AV: E=Sophos;i="6.02,226,1688454000"; d="scan'208";a="373977156"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 7FDBA817A3
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 12:34:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7FDBA817A3
+X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="373977178"
+X-IronPort-AV: E=Sophos;i="6.02,226,1688454000"; d="scan'208";a="373977178"
 Received: from orsmga002.jf.intel.com ([10.7.209.21])
  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 04 Sep 2023 05:34:21 -0700
+ 04 Sep 2023 05:34:23 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="740749771"
-X-IronPort-AV: E=Sophos;i="6.02,226,1688454000"; d="scan'208";a="740749771"
+X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="740749792"
+X-IronPort-AV: E=Sophos;i="6.02,226,1688454000"; d="scan'208";a="740749792"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga002.jf.intel.com with ESMTP; 04 Sep 2023 05:34:18 -0700
+ by orsmga002.jf.intel.com with ESMTP; 04 Sep 2023 05:34:19 -0700
 Received: from pelor.igk.intel.com (pelor.igk.intel.com [10.123.220.13])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 1266735430;
- Mon,  4 Sep 2023 13:34:17 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 8F3D135437;
+ Mon,  4 Sep 2023 13:34:18 +0100 (IST)
 From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 To: netdev@vger.kernel.org
-Date: Mon,  4 Sep 2023 08:31:04 -0400
-Message-Id: <20230904123107.116381-5-przemyslaw.kitszel@intel.com>
+Date: Mon,  4 Sep 2023 08:31:06 -0400
+Message-Id: <20230904123107.116381-7-przemyslaw.kitszel@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20230904123107.116381-1-przemyslaw.kitszel@intel.com>
 References: <20230904123107.116381-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1693830862; x=1725366862;
+ t=1693830863; x=1725366863;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=SeLgtUYbrOh0aByBaO5uFLDhHv+A3oGVhKqUMUqlyHQ=;
- b=To9XzaMQw8Bi9N7OVX+bZEI0nr74WQ0qdwMr1hXzMHGm9FH1AXnSgpy6
- WxzntQx9Gp8mrEb+D7hAVs2eVZJOXNBh9NVVhmItVRqZDfI6/UT+XKnbw
- xtwC/bd2jFNyU6RkXBw7s3NWhcvdrzfSVME5Y9L5cF56XAMQlIaMZx3Ex
- F9Gac0ruMFXPDIC/W2bINpYCeUJrDtAu43DGova2H6tFK5pQDGdqCrYFp
- m2OcD0rPVOVtnDh2XTML7STv/W/I8epFMUatj5y/jmOhJV9FP6yXCZrcD
- O3IvF3BHZmqE5eXaJmPpNkXAByHnfb6h8YpI7Gn3bI4aHU8K0VzYM8LYz
- Q==;
+ bh=PCXzH8JJDaRgoFGvNdNnXQNwSzVXB7b6+V2gb/zaWHE=;
+ b=TderfXqcRRf6LLZ852B9FacZYzO7awt5as4hn9MzeYftVydNb+UCNQnd
+ I/6cTWq25dRk3cavJZUndcfXbOGajdqhWwOHlMleL6f8rly6zmZftAcCf
+ kIZbTxvVuZcaqKZNQL7Rch+VCF0gZ8ujxarkY5V9anPEdrJV1keuBpCml
+ +Q136VM9ncOBS6Hl8EElX5zT+QayDWL0Kgb5u/5HzEXR8j+9AJyN9SWzm
+ CdW8nE921hEdSygsYMOjwvUhc7krtwbJPsjTqm5ueAmTYrt2xEU5vJDMF
+ QAiJpWatj+kISH8HQj+/ghW4ch+um8F6RRcrhTrnDIMR5wk/IsYcdbnFR
+ w==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=To9XzaMQ
-Subject: [Intel-wired-lan] [RFC net-next v4 4/7] ice: make use of
- DEFINE_FLEX() in ice_ddp.c
+ header.a=rsa-sha256 header.s=Intel header.b=TderfXqc
+Subject: [Intel-wired-lan] [RFC net-next v4 6/7] ice: make use of
+ DEFINE_FLEX() for struct ice_aqc_dis_txq_item
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,97 +107,85 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Use DEFINE_FLEX() macro for constant-num-of-elems (4)
-flex array members of ice_ddp.c
+Use DEFINE_FLEX() macro for 1-elem flex array use case
+of struct ice_aqc_dis_txq_item.
 
 Signed-off-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 ---
-add/remove: 4/0 grow/shrink: 0/1 up/down: 1195/-878 (317)
+add/remove: 0/0 grow/shrink: 1/1 up/down: 9/-18 (-9)
 ---
- drivers/net/ethernet/intel/ice/ice_ddp.c | 39 +++++++-----------------
- 1 file changed, 11 insertions(+), 28 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 20 ++++----------------
+ 1 file changed, 4 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index b27ec93638b6..78ed909745fe 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -1560,21 +1560,14 @@ static enum ice_ddp_state ice_init_pkg_info(struct ice_hw *hw,
-  */
- static enum ice_ddp_state ice_get_pkg_info(struct ice_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 80deca45ab59..068079ab5e23 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -4726,11 +4726,11 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_queues,
+ 		enum ice_disq_rst_src rst_src, u16 vmvf_num,
+ 		struct ice_sq_cd *cd)
  {
--	enum ice_ddp_state state = ICE_DDP_PKG_SUCCESS;
--	struct ice_aqc_get_pkg_info_resp *pkg_info;
--	u16 size;
-+	DEFINE_FLEX(struct ice_aqc_get_pkg_info_resp, pkg_info, pkg_info,
-+		    ICE_PKG_CNT);
-+	u16 size = __struct_size(pkg_info);
- 	u32 i;
+-	struct ice_aqc_dis_txq_item *qg_list;
++	DEFINE_FLEX(struct ice_aqc_dis_txq_item, qg_list, q_id, 1);
++	u16 i, buf_size = __struct_size(qg_list);
+ 	struct ice_q_ctx *q_ctx;
+ 	int status = -ENOENT;
+ 	struct ice_hw *hw;
+-	u16 i, buf_size;
  
--	size = struct_size(pkg_info, pkg_info, ICE_PKG_CNT);
--	pkg_info = kzalloc(size, GFP_KERNEL);
--	if (!pkg_info)
-+	if (ice_aq_get_pkg_info_list(hw, pkg_info, size, NULL))
- 		return ICE_DDP_PKG_ERR;
- 
--	if (ice_aq_get_pkg_info_list(hw, pkg_info, size, NULL)) {
--		state = ICE_DDP_PKG_ERR;
--		goto init_pkg_free_alloc;
--	}
--
- 	for (i = 0; i < le32_to_cpu(pkg_info->count); i++) {
- #define ICE_PKG_FLAG_COUNT 4
- 		char flags[ICE_PKG_FLAG_COUNT + 1] = { 0 };
-@@ -1604,10 +1597,7 @@ static enum ice_ddp_state ice_get_pkg_info(struct ice_hw *hw)
- 			  pkg_info->pkg_info[i].name, flags);
+ 	if (!pi || pi->port_state != ICE_SCHED_PORT_STATE_READY)
+ 		return -EIO;
+@@ -4748,11 +4748,6 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_queues,
+ 		return -EIO;
  	}
  
--init_pkg_free_alloc:
--	kfree(pkg_info);
+-	buf_size = struct_size(qg_list, q_id, 1);
+-	qg_list = kzalloc(buf_size, GFP_KERNEL);
+-	if (!qg_list)
+-		return -ENOMEM;
 -
--	return state;
-+	return ICE_DDP_PKG_SUCCESS;
+ 	mutex_lock(&pi->sched_lock);
+ 
+ 	for (i = 0; i < num_queues; i++) {
+@@ -4785,7 +4780,6 @@ ice_dis_vsi_txq(struct ice_port_info *pi, u16 vsi_handle, u8 tc, u8 num_queues,
+ 		q_ctx->q_teid = ICE_INVAL_TEID;
+ 	}
+ 	mutex_unlock(&pi->sched_lock);
+-	kfree(qg_list);
+ 	return status;
  }
  
- /**
-@@ -1622,9 +1612,10 @@ static enum ice_ddp_state ice_chk_pkg_compat(struct ice_hw *hw,
- 					     struct ice_pkg_hdr *ospkg,
- 					     struct ice_seg **seg)
+@@ -4954,22 +4948,17 @@ int
+ ice_dis_vsi_rdma_qset(struct ice_port_info *pi, u16 count, u32 *qset_teid,
+ 		      u16 *q_id)
  {
--	struct ice_aqc_get_pkg_info_resp *pkg;
-+	DEFINE_FLEX(struct ice_aqc_get_pkg_info_resp, pkg, pkg_info,
-+		    ICE_PKG_CNT);
-+	u16 size = __struct_size(pkg);
- 	enum ice_ddp_state state;
--	u16 size;
- 	u32 i;
+-	struct ice_aqc_dis_txq_item *qg_list;
++	DEFINE_FLEX(struct ice_aqc_dis_txq_item, qg_list, q_id, 1);
++	u16 qg_size = __struct_size(qg_list);
+ 	struct ice_hw *hw;
+ 	int status = 0;
+-	u16 qg_size;
+ 	int i;
  
- 	/* Check package version compatibility */
-@@ -1643,15 +1634,8 @@ static enum ice_ddp_state ice_chk_pkg_compat(struct ice_hw *hw,
- 	}
+ 	if (!pi || pi->port_state != ICE_SCHED_PORT_STATE_READY)
+ 		return -EIO;
  
- 	/* Check if FW is compatible with the OS package */
--	size = struct_size(pkg, pkg_info, ICE_PKG_CNT);
--	pkg = kzalloc(size, GFP_KERNEL);
--	if (!pkg)
--		return ICE_DDP_PKG_ERR;
+ 	hw = pi->hw;
+ 
+-	qg_size = struct_size(qg_list, q_id, 1);
+-	qg_list = kzalloc(qg_size, GFP_KERNEL);
+-	if (!qg_list)
+-		return -ENOMEM;
 -
--	if (ice_aq_get_pkg_info_list(hw, pkg, size, NULL)) {
--		state = ICE_DDP_PKG_LOAD_ERROR;
--		goto fw_ddp_compat_free_alloc;
--	}
-+	if (ice_aq_get_pkg_info_list(hw, pkg, size, NULL))
-+		return ICE_DDP_PKG_LOAD_ERROR;
+ 	mutex_lock(&pi->sched_lock);
  
- 	for (i = 0; i < le32_to_cpu(pkg->count); i++) {
- 		/* loop till we find the NVM package */
-@@ -1668,8 +1652,7 @@ static enum ice_ddp_state ice_chk_pkg_compat(struct ice_hw *hw,
- 		/* done processing NVM package so break */
- 		break;
+ 	for (i = 0; i < count; i++) {
+@@ -4994,7 +4983,6 @@ ice_dis_vsi_rdma_qset(struct ice_port_info *pi, u16 count, u32 *qset_teid,
  	}
--fw_ddp_compat_free_alloc:
--	kfree(pkg);
-+
- 	return state;
+ 
+ 	mutex_unlock(&pi->sched_lock);
+-	kfree(qg_list);
+ 	return status;
  }
  
 -- 
