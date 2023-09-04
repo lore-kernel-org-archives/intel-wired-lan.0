@@ -1,83 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CEDBC83F2D
-	for <intel-wired-lan@archiver.kernel.org>; Sun,  3 Sep 2023 17:58:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B729C83F2D
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 Sep 2023 02:15:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 77546607B4;
-	Sun,  3 Sep 2023 17:58:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 77546607B4
+	by smtp1.osuosl.org (Postfix) with ESMTP id AF2D481E17;
+	Mon,  4 Sep 2023 02:15:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AF2D481E17
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1693763924;
-	bh=pvXXXUE3SLK2jcqdt+QvIylbF20hwZNI3JG326UfQxk=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=aBdiYGA7FHfhOa8MwWe9p90wKt63J+6e0OVsUTLjSotn1UVP8pIbpb9YP+JPG6eKX
-	 1PBcEvVqESr00DDnHOk4/QAjXxFlHXvr9/MCPA4HaDcl13aMPhOmse1nUbe+K67dqm
-	 q1kP4s44ZQtkgN05nn4a0ZvXqXdJihGVBC7urAJYZaTzEEp1h320KhXvgBjGLGKaGd
-	 AKoQrF8n4Kfu7fCr4ig0eep6RS4TbqSjPJwWRmt3jSSxKKrLLhAPHKAAv/3NMSh7ym
-	 hBuZQHlc1kZhLFgP7HJ235QqO1Yh382GPnWBnRsnJhqe+O3Pfh9sun6nDqahe8dM0G
-	 UgynH2i+Nt4GQ==
+	s=default; t=1693793712;
+	bh=8Ufuvmg36LNYV1VEYXdP2Dfr2g2f75jcR3i6mAj/fY4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=XYClIxUIXMYPSgJT1e5nld5bW0LxCjtL8pAKuBOi2Meef+He4rM+TPCQfL6+aw0Vd
+	 Oca4Eb7+Vu7TZQWkJsU9JAQLRpkM9C8XH7tzRK1SmqikfQ8vyF1JeWNgYMWBouaq1t
+	 BWwiAvuQ2fqL7tst/tHImDpclY2CU1VkdVV7cCrZgpOSAEpVJbKu6XDQTLVVwEk9Pl
+	 WvDVUC0B/wq1LZgo3FR02uU0uYnrjWP+z0EgMSVnTgo7bp0eAcYaAmWc4z9gwUGvqU
+	 MW4YC9UUj4/ftKif5Wt3oNqk7ORv1IeyMgxe8kBPiriC1sgvqH8Tybb0NxZbX/TkNz
+	 4UZtl3oUcVVBg==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id HfPCWwqF0NzY; Sun,  3 Sep 2023 17:58:43 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Wt4nrQ5c3VtU; Mon,  4 Sep 2023 02:15:11 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 24D5C60B05;
-	Sun,  3 Sep 2023 17:58:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 24D5C60B05
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id ADE531BF3EF
- for <intel-wired-lan@lists.osuosl.org>; Sun,  3 Sep 2023 17:58:41 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 74CCC81E1F;
+	Mon,  4 Sep 2023 02:15:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 74CCC81E1F
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id E61C01BF360
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 02:15:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 7B1C0408FC
- for <intel-wired-lan@lists.osuosl.org>; Sun,  3 Sep 2023 17:58:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7B1C0408FC
+ by smtp1.osuosl.org (Postfix) with ESMTP id BE8F681E1F
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 02:15:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BE8F681E1F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ECWRntO0mzzi for <intel-wired-lan@lists.osuosl.org>;
- Sun,  3 Sep 2023 17:58:38 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org
- [IPv6:2604:1380:4641:c500::1])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1F744408EC
- for <intel-wired-lan@lists.osuosl.org>; Sun,  3 Sep 2023 17:58:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1F744408EC
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by dfw.source.kernel.org (Postfix) with ESMTPS id 915BC60E05;
- Sun,  3 Sep 2023 17:58:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8F2FC433C7;
- Sun,  3 Sep 2023 17:58:33 +0000 (UTC)
-From: James Hogan <jhogan@kernel.org>
-To: Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Sun, 03 Sep 2023 18:57:46 +0100
-Message-ID: <2158798.irdbgypaU6@saruman>
-In-Reply-To: <87zg2alict.fsf@intel.com>
-References: <20220811151342.19059-1-vinicius.gomes@intel.com>
- <5962826.lOV4Wx5bFT@saruman> <87zg2alict.fsf@intel.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id GSmjRenFeFtZ for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  4 Sep 2023 02:15:07 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 78F4B81E17
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Sep 2023 02:15:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 78F4B81E17
+X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="379215059"
+X-IronPort-AV: E=Sophos;i="6.02,225,1688454000"; d="scan'208";a="379215059"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 03 Sep 2023 19:15:05 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10822"; a="769826628"
+X-IronPort-AV: E=Sophos;i="6.02,225,1688454000"; d="scan'208";a="769826628"
+Received: from dpdk-jf-ntb-v2.sh.intel.com ([10.67.119.19])
+ by orsmga008.jf.intel.com with ESMTP; 03 Sep 2023 19:15:01 -0700
+From: Junfeng Guo <junfeng.guo@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Mon,  4 Sep 2023 10:14:40 +0800
+Message-Id: <20230904021455.3944605-1-junfeng.guo@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1693763915;
- bh=HHN7TtKjh8/irZevGxQsYwPgVQottw+Irb2rc4Pquos=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=D0+CCUE4MWxM5MoC50KEbunQ3SXgwUzmAT89Di6mVbn6xGvE7TUDb+utwBS5brGAZ
- VLFYcyISHFNOluCKrDjvvUIM8jJapymwAB1zWhCPh4sCg6gbCyvVDMGkqkEMDwDxPm
- fixLEf+vrt4IHlc/Lcc73H5XPes7eyVIbBpoyeMZSSVWTZCSGFyeqi8nFE5EnYfvhQ
- vnbr6CPv+vQKG59Gs0wqgOtFS7BOV+pS2LIXDCxLnmq38s/TyWjc1zNSh7xae+Lz87
- UAHquydIaoCmvzho40EJIWzR2ZFUJC8Ae9+zYTRryTmxiNdG7dTkIdmfWWcewUZrau
- DsqfDmsRhcm5A==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=D0+CCUE4
-Subject: Re: [Intel-wired-lan] [WIP v2] igc: fix deadlock caused by taking
- RTNL in RPM resume path
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1693793707; x=1725329707;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=ogy0os4JaGZDL8iy4sMUtslIybt3Q8OaOOoeK0X7QX4=;
+ b=OFEJsLnbmYGkBtenwYNkYtjaD7FUY29W0GR5qN+3k3j1QuNM7+7nFtij
+ ne+PaqMjjvwLXLeGDQu14XBUS34wbWl7JcjY1t8K3CMUEQkRZrKP1QAzl
+ 91SvpKpY4Ebgdj99hpnrbFjqvXtVym+KJf6oZ0B2wmwN5vWRk0zAxwxje
+ ek/NxKKhZsncF2Axj+iuj53lHByp0gFpYZ0+qj2UodmXBXQWyi8YzZFGJ
+ JsFUSQQ5c0pKAT9P2Yf2avmMY9T0XV5j4kRUKhaUSRk9ZC89PHIaOsLo5
+ ykE/5cvTPJvc068NENlZs6v7XlIRLlklVSPYmPQxc2hdbbNjaAnSohryY
+ A==;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=OFEJsLnb
+Subject: [Intel-wired-lan] [PATCH iwl-next v9 00/15] Introduce the Parser
+ Library
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,92 +91,163 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>, netdev@vger.kernel.org,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>
+Cc: ivecera@redhat.com, netdev@vger.kernel.org, qi.z.zhang@intel.com,
+ jesse.brandeburg@intel.com, edumazet@google.com, anthony.l.nguyen@intel.com,
+ horms@kernel.org, kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tuesday, 29 August 2023 02:58:42 BST Vinicius Costa Gomes wrote:
-> James Hogan <jhogan@kernel.org> writes:
-> > On Sunday, 2 October 2022 11:56:28 BST James Hogan wrote:
-> >> On Monday, 29 August 2022 09:16:33 BST James Hogan wrote:
-> >> > I'd be great to have this longstanding issue properly fixed rather than
-> >> > having to carry a patch locally that may not be lock safe.
-> >> > 
-> >> > Also, any tips for diagnosing the issue of the network link not coming
-> >> > back
-> >> > up after resume? I sometimes have to unload and reload the driver
-> >> > module
-> >> > to
-> >> > get it back again.
-> >> 
-> >> Any thoughts on this from anybody?
-> > 
-> > Ping... I've been carrying this patch locally on archlinux for almost a
-> > year now. Every time I update my kernel and forget to rebuild with the
-> > patch it catches me out with deadlocks after resume, and even with the
-> > patch I frequently have to reload the igc module after resume to get the
-> > network to come up (which is preferable to deadlocks but still really
-> > sucks). I'd really appreciate if it could get some attention.
-> 
-> I am setting up my test systems to reproduce the deadlocks, then let's
-> see what ideas happen about removing the need for those locks.
-> 
-> About the link failures, are there any error messages in the kernel
-> logs? (also, if you could share those logs, can be off-list, it would
-> help) I am trying to think what could be happening, and how to further
-> debug this.
+Current software architecture for flow filtering offloading limited
+the capability of Intel Ethernet 800 Series Dynamic Device
+Personalization (DDP) Package. The flow filtering offloading in the
+driver is enabled based on the naming parsers, each flow pattern is
+represented by a protocol header stack. And there are multiple layers
+(e.g., virtchnl) to maintain their own enum/macro/structure
+to represent a protocol header (IP, TCP, UDP ...), thus the extra
+parsers to verify if a pattern is supported by hardware or not as
+well as the extra converters that to translate represents between
+different layers. Every time a new protocol/field is requested to be
+supported, the corresponding logic for the parsers and the converters
+needs to be modified accordingly. Thus, huge & redundant efforts are
+required to support the increasing flow filtering offloading features,
+especially for the tunnel types flow filtering.
 
-Looking through the resume log, the only network/igc related items are these:
+This patch set provides a way for applications to send down training
+packets & masks (in binary) to the driver. Then these binary data
+would be used by the driver to generate certain data that are needed
+to create a filter rule in the filtering stage of switch/RSS/FDIR.
 
-Sep 03 18:28:17 saruman kernel: igc 0000:06:00.0 enp6s0: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
-Sep 03 18:28:17 saruman NetworkManager[1016]: <info>  [1693762097.7180] manager: sleep: wake requested (sleeping: yes  enabled: yes)
-Sep 03 18:28:17 saruman NetworkManager[1016]: <info>  [1693762097.7181] device (enp6s0): state change: activated -> unmanaged (reason 'sleeping', sys-iface-state: 'managed')
-Sep 03 18:28:17 saruman avahi-daemon[989]: Withdrawing address record for 192.168.1.239 on enp6s0.
-Sep 03 18:28:17 saruman avahi-daemon[989]: Leaving mDNS multicast group on interface enp6s0.IPv4 with address 192.168.1.239.
-Sep 03 18:28:17 saruman avahi-daemon[989]: Interface enp6s0.IPv4 no longer relevant for mDNS.
-Sep 03 18:28:17 saruman NetworkManager[1016]: <info>  [1693762097.8202] manager: NetworkManager state is now CONNECTED_GLOBAL
-Sep 03 18:28:17 saruman NetworkManager[1016]: <info>  [1693762097.8657] manager: NetworkManager state is now DISCONNECTED
-Sep 03 18:28:17 saruman NetworkManager[1016]: <info>  [1693762097.8660] device (enp6s0): state change: unmanaged -> unavailable (reason 'managed', sys-iface-state: 'external')
-Sep 03 18:28:17 saruman systemd[1]: Starting Network Manager Script Dispatcher Service...
-Sep 03 18:28:17 saruman systemd[1]: Started Network Manager Script Dispatcher Service.
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3075] device (enp6s0): carrier: link connected
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3076] device (enp6s0): state change: unavailable -> disconnected (reason 'carrier-changed', sys-iface-state: 'managed')
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3080] policy: auto-activating connection 'Wired connection 1' (f6634f16-77ca-34f7-846a-8c41e15a8ad1)
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3082] device (enp6s0): Activation: starting connection 'Wired connection 1' (f6634f16-77ca-34f7-846a-8c41e15a8ad1)
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3082] device (enp6s0): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'managed')
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3083] manager: NetworkManager state is now CONNECTING
-Sep 03 18:28:21 saruman kernel: igc 0000:06:00.0 enp6s0: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX
-Sep 03 18:28:21 saruman kernel: IPv6: ADDRCONF(NETDEV_CHANGE): enp6s0: link becomes ready
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3506] device (enp6s0): state change: prepare -> config (reason 'none', sys-iface-state: 'managed')
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3512] device (enp6s0): state change: config -> ip-config (reason 'none', sys-iface-state: 'managed')
-Sep 03 18:28:21 saruman NetworkManager[1016]: <info>  [1693762101.3515] policy: set 'Wired connection 1' (enp6s0) as default for IPv4 routing and DNS
-Sep 03 18:28:21 saruman avahi-daemon[989]: Joining mDNS multicast group on interface enp6s0.IPv4 with address 192.168.1.239.
-Sep 03 18:28:21 saruman avahi-daemon[989]: New relevant interface enp6s0.IPv4 for mDNS.
-Sep 03 18:28:21 saruman avahi-daemon[989]: Registering new address record for 192.168.1.239 on enp6s0.IPv4.
-Sep 03 18:28:22 saruman systemd[1]: systemd-rfkill.service: Deactivated successfully.
-Sep 03 18:28:23 saruman NetworkManager[1016]: <info>  [1693762103.3544] device (enp6s0): state change: ip-config -> ip-check (reason 'none', sys-iface-state: 'managed')
-Sep 03 18:28:23 saruman NetworkManager[1016]: <info>  [1693762103.3553] device (enp6s0): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'managed')
-Sep 03 18:28:23 saruman NetworkManager[1016]: <info>  [1693762103.3554] device (enp6s0): state change: secondaries -> activated (reason 'none', sys-iface-state: 'managed')
-Sep 03 18:28:23 saruman NetworkManager[1016]: <info>  [1693762103.3555] manager: NetworkManager state is now CONNECTED_SITE
-Sep 03 18:28:23 saruman NetworkManager[1016]: <info>  [1693762103.3556] device (enp6s0): Activation: successful, device activated.
-Sep 03 18:28:27 saruman NetworkManager[1016]: <info>  [1693762107.3532] device (enp6s0): state change: activated -> unavailable (reason 'carrier-changed', sys-iface-state: 'managed')
-Sep 03 18:28:27 saruman avahi-daemon[989]: Withdrawing address record for 192.168.1.239 on enp6s0.
-Sep 03 18:28:27 saruman avahi-daemon[989]: Leaving mDNS multicast group on interface enp6s0.IPv4 with address 192.168.1.239.
-Sep 03 18:28:27 saruman avahi-daemon[989]: Interface enp6s0.IPv4 no longer relevant for mDNS.
-Sep 03 18:28:27 saruman NetworkManager[1016]: <info>  [1693762107.5266] manager: NetworkManager state is now CONNECTED_LOCAL
-Sep 03 18:28:27 saruman NetworkManager[1016]: <info>  [1693762107.5267] manager: NetworkManager state is now DISCONNECTED
-Sep 03 18:28:27 saruman systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+Note that the impact of a malicious rule in the raw packet filter is
+limited to performance rather than functionality. It may affect the
+performance of the workload, similar to other limitations in FDIR/RSS
+on AVF. For example, there is no resource boundary for VF FDIR/RSS
+rules, so one malicious VF could potentially make other VFs
+inefficient in offloading.
 
-As mentioned previously, CONFIG_PROVE_LOCKING=y and I'm seeing splats during boot, notably RTNL assertion failed at net/core/dev.c (2877) and suspicious RCU usage.
+The parser library is expected to include boundary checks to prevent
+critical errors such as infinite loops or segmentation faults.
+However, only implementing and validating the parser emulator in a
+sandbox environment (like ebpf) presents a challenge.
 
-Cheers
-James
+The idea is to make the driver be able to learn from the DDP package
+directly to understand how the hardware parser works (i.e., the
+Parser Library), so that it can process on the raw training packet
+(in binary) directly and create the filter rule accordingly.
 
+Based on this Parser Library, the raw flow filtering of
+switch/RSS/FDIR could be enabled to allow new flow filtering
+offloading features to be supported without any driver changes (only
+need to update the DDP package).
+
+v9:
+- Remove 'inline' of function in c file.
+- Refactor bitfield process with FIELD_GET().
+- Fix element access overrun of array key[].
+
+v8: https://lore.kernel.org/netdev/20230824075500.1735790-1-junfeng.guo@intel.com/
+- Refactor bits revert functions with existing bitrev8()/bitrev8x4().
+
+v7: https://lore.kernel.org/netdev/20230823093158.782802-1-junfeng.guo@intel.com/
+- Move/Add below marco to the first appeared commit:
+ICE_PARSER_FLG_NUM and ICE_ERR_NOT_IMPL.
+
+v6: https://lore.kernel.org/netdev/20230821081438.2937934-1-junfeng.guo@intel.com/
+- Move `rt` field setting to the correct commit (first introduced).
+
+v5: https://lore.kernel.org/netdev/20230821023833.2700902-1-junfeng.guo@intel.com/
+- Update copyrights of new files to be 2023 only.
+- Update patch set series prefix.
+- Fix typo on patch 2 commit message.
+
+v4: https://lore.kernel.org/intel-wired-lan/20230817094240.2584745-1-junfeng.guo@intel.com/
+- Update cover letter series title.
+
+v3: https://lore.kernel.org/intel-wired-lan/20230817093442.2576997-1-junfeng.guo@intel.com/
+- Replace magic hardcoded values with macros.
+- Use size_t to avoid superfluous type cast to uintptr_t in function
+  ice_parser_sect_item_get.
+- Prefix for static local function names to avoid namespace pollution.
+- Use strstarts() function instead of self implementation.
+
+v2: https://lore.kernel.org/intel-wired-lan/20230605054641.2865142-1-junfeng.guo@intel.com/
+- Fix build warnings.
+
+Junfeng Guo (15):
+  ice: add parser create and destroy skeleton
+  ice: init imem table for parser
+  ice: init metainit table for parser
+  ice: init parse graph cam tables for parser
+  ice: init boost tcam and label tables for parser
+  ice: init ptype marker tcam table for parser
+  ice: init marker and protocol group tables for parser
+  ice: init flag redirect table for parser
+  ice: init XLT key builder for parser
+  ice: add parser runtime skeleton
+  ice: add internal help functions
+  ice: add parser execution main loop
+  ice: support double vlan mode configure for parser
+  ice: add tunnel port support for parser
+  ice: add API for parser profile initialization
+
+ drivers/net/ethernet/intel/ice/Makefile       |  11 +
+ drivers/net/ethernet/intel/ice/ice_bst_tcam.c | 353 ++++++++
+ drivers/net/ethernet/intel/ice/ice_bst_tcam.h |  40 +
+ drivers/net/ethernet/intel/ice/ice_common.h   |   3 +
+ drivers/net/ethernet/intel/ice/ice_ddp.c      |  10 +-
+ drivers/net/ethernet/intel/ice/ice_ddp.h      |  14 +
+ drivers/net/ethernet/intel/ice/ice_flg_rd.c   |  77 ++
+ drivers/net/ethernet/intel/ice/ice_flg_rd.h   |  19 +
+ drivers/net/ethernet/intel/ice/ice_imem.c     | 324 +++++++
+ drivers/net/ethernet/intel/ice/ice_imem.h     | 132 +++
+ drivers/net/ethernet/intel/ice/ice_metainit.c | 193 ++++
+ drivers/net/ethernet/intel/ice/ice_metainit.h |  47 +
+ drivers/net/ethernet/intel/ice/ice_mk_grp.c   |  51 ++
+ drivers/net/ethernet/intel/ice/ice_mk_grp.h   |  17 +
+ drivers/net/ethernet/intel/ice/ice_parser.c   | 562 ++++++++++++
+ drivers/net/ethernet/intel/ice/ice_parser.h   | 140 +++
+ .../net/ethernet/intel/ice/ice_parser_rt.c    | 841 ++++++++++++++++++
+ .../net/ethernet/intel/ice/ice_parser_rt.h    |  73 ++
+ .../net/ethernet/intel/ice/ice_parser_util.h  |  37 +
+ drivers/net/ethernet/intel/ice/ice_pg_cam.c   | 444 +++++++++
+ drivers/net/ethernet/intel/ice/ice_pg_cam.h   |  73 ++
+ .../net/ethernet/intel/ice/ice_proto_grp.c    |  94 ++
+ .../net/ethernet/intel/ice/ice_proto_grp.h    |  24 +
+ drivers/net/ethernet/intel/ice/ice_ptype_mk.c |  73 ++
+ drivers/net/ethernet/intel/ice/ice_ptype_mk.h |  23 +
+ drivers/net/ethernet/intel/ice/ice_tmatch.h   |  40 +
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ drivers/net/ethernet/intel/ice/ice_xlt_kb.c   | 259 ++++++
+ drivers/net/ethernet/intel/ice/ice_xlt_kb.h   |  34 +
+ 29 files changed, 4004 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_bst_tcam.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_bst_tcam.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_flg_rd.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_flg_rd.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_imem.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_imem.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_metainit.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_metainit.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_mk_grp.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_mk_grp.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_parser.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_parser.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_parser_rt.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_parser_rt.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_parser_util.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_pg_cam.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_pg_cam.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_proto_grp.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_proto_grp.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_ptype_mk.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_ptype_mk.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_tmatch.h
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_xlt_kb.c
+ create mode 100644 drivers/net/ethernet/intel/ice/ice_xlt_kb.h
+
+-- 
+2.25.1
 
 _______________________________________________
 Intel-wired-lan mailing list
