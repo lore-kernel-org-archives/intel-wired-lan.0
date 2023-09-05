@@ -4,82 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E3E0CCF9EA
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Sep 2023 23:28:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BC8CCCF9EC
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Sep 2023 23:29:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0F35B405C7;
-	Tue,  5 Sep 2023 23:28:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0F35B405C7
+	by smtp4.osuosl.org (Postfix) with ESMTP id A806F40629;
+	Tue,  5 Sep 2023 23:29:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A806F40629
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1693956536;
-	bh=haMcJMnwl7TwkPg1ac4FjL7q5wMJ/qBvaLPKjDgyzxc=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=WG0J45OWR8YJkWZ3sF1oudtq2DNK+8JGSL6dkwzcSLnwTc3ep2TvTseJySIpd8sQV
-	 NQcCjyIXbEiI+IdaLYNUH3SbNRYYbDch2gp6IQ0br5iax/iR2G7x+Y/g3sRZmpHC6D
-	 XxfvfAxUTz6GwtTxTSp8OuFL2miaXasNtUgj09Ptvu9IlxTlS7/PBBNh7aEUoblNCy
-	 RwJ8sd5qgsJj+CuagO83Gi3pNddR3VcOQPioIPYvm/1KmPG0dwLjo7cSflNErlZoyu
-	 B/VZwmFwKoSqKTKdKS7Tz6a6lNT+uSncjBJp2RG7yl1ez2u4lwoJCt/HI1pFwEhhK7
-	 tiRnlIWFXwO0A==
+	s=default; t=1693956540;
+	bh=d7vGKKHe6PYwb9rL2jH79nI1jdgde0v+nL8CdVwxIts=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=1FL6BzZX6l1/gPcXmBDhIreSHxxXAHMRQ6Ghxg8FXm9j53t6duT/Vay9+TJvPrREL
+	 Uh4/Fo3Naqn4L/wOjOqC0BcABpSQakOtK0wAxx9aLLV1ICYd7XHjCBTD4hRKQD6oEP
+	 y3cTQtsQ5WHKmvrfV26i7tt2Yj8nMUOLLJeNaTMBrMpWEv2cqcK6kV/A8WBENhFE7k
+	 GkNfaFvqzzGX1STce0Se4iVm4eGjhE3WE2W2prEFvzTUN4utruXIT5rQsPFVz7hQ63
+	 fplyu541exHpbIkhMIBIND2vnuLU0w/xUKirtclEgAi15dT5ne4cRJpeDDzgGXPGYT
+	 vPB7MhFqTkCQw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0BXy_LZQoqOC; Tue,  5 Sep 2023 23:28:55 +0000 (UTC)
+	with ESMTP id ILNVMm8HEVip; Tue,  5 Sep 2023 23:28:59 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C0667405E7;
-	Tue,  5 Sep 2023 23:28:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C0667405E7
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1478B40650;
+	Tue,  5 Sep 2023 23:28:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1478B40650
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 042CB1BF25F
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Sep 2023 23:28:53 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 7C2851BF25F
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Sep 2023 23:28:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id CF91C81228
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Sep 2023 23:28:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CF91C81228
+ by smtp1.osuosl.org (Postfix) with ESMTP id 54F0C81228
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Sep 2023 23:28:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 54F0C81228
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id aMqDcAa5CVw6 for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 Sep 2023 23:28:51 +0000 (UTC)
+ with ESMTP id e_8Blt4mwhCG for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Sep 2023 23:28:53 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
- by smtp1.osuosl.org (Postfix) with ESMTPS id BB7548121A
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Sep 2023 23:28:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BB7548121A
-X-IronPort-AV: E=McAfee;i="6600,9927,10824"; a="379643891"
-X-IronPort-AV: E=Sophos;i="6.02,230,1688454000"; d="scan'208";a="379643891"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 897DD8121A
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Sep 2023 23:28:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 897DD8121A
+X-IronPort-AV: E=McAfee;i="6600,9927,10824"; a="379643906"
+X-IronPort-AV: E=Sophos;i="6.02,230,1688454000"; d="scan'208";a="379643906"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Sep 2023 16:28:50 -0700
+ 05 Sep 2023 16:28:53 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10824"; a="744448396"
-X-IronPort-AV: E=Sophos;i="6.02,230,1688454000"; d="scan'208";a="744448396"
+X-IronPort-AV: E=McAfee;i="6600,9927,10824"; a="744448402"
+X-IronPort-AV: E=Sophos;i="6.02,230,1688454000"; d="scan'208";a="744448402"
 Received: from amlin-018-114.igk.intel.com ([10.102.18.114])
- by fmsmga007.fm.intel.com with ESMTP; 05 Sep 2023 16:28:47 -0700
+ by fmsmga007.fm.intel.com with ESMTP; 05 Sep 2023 16:28:50 -0700
 From: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
 To: kuba@kernel.org, jiri@resnulli.us, jonathan.lemon@gmail.com,
  pabeni@redhat.com, vadim.fedorenko@linux.dev
-Date: Wed,  6 Sep 2023 01:26:06 +0200
-Message-Id: <20230905232610.1403647-1-arkadiusz.kubalewski@intel.com>
+Date: Wed,  6 Sep 2023 01:26:07 +0200
+Message-Id: <20230905232610.1403647-2-arkadiusz.kubalewski@intel.com>
 X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20230905232610.1403647-1-arkadiusz.kubalewski@intel.com>
+References: <20230905232610.1403647-1-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1693956531; x=1725492531;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=0wpZ4uEiyvX8GLZIB6P9f6saFvhcvQ+D5/9/Acf/xw4=;
- b=Cg0zXQqBfsHkub+HcCoJ7GPREZyB0V0udhlIct9NxaFSp/REwtOi8yk7
- vvg2jP2smuTdcUzdFBZlGdco2/6iRjJyIXzGzp2R6KW7/F//so/2OCZVN
- sMEM91qaKOWWsNyv2t5oSU78HZHFyRY4hs/TzZdWPDnX+GJroXeAWAmu3
- vyh9DUXiubzMFKByA/7zGP8Rnk/hmQInW8nr1khfUhGWHUUJUZXXLgL6O
- hLXJHyaJ78wVpBJSDE7hdReI0Cuk+Eu6Eo7etOvK/WMLmLJwDDLT535Yp
- 0nEtmxVJ0kI3CfTqHGtI27++1/VTn9JJovGXt5xo5Ud/x3IElFGjl8uHp
- g==;
+ t=1693956533; x=1725492533;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=F2CQJwTeN0GzfUnZLBPf8lFc7IkGO9Ewx87bLeroNy4=;
+ b=Ltzwv8dQf7NScRtw+KGFww88CwqZ+zvwguLYeoXwGxOHKTm293M2fpTV
+ /wLHU6BUNi98itSQs6HxknEaMPQR/cYGgGt1BJS942R8JX8PssOukVVeA
+ n81jo0ewh6YdnB48Kjh545UKodYPm0mByo2SMQuJMj4EhuEKFPMTyY9Z3
+ SD/hecwRg7gcevolpbl5hQ4H46SsxX4OBcOdcEhDz3h0YS3nhQCfFb6Fm
+ Gc3LnwFLn9tQdcTGzM6b1soO6ORA3p8fOJvF6GYL7n4uniNiznDzNT9zQ
+ PTje6HX7mZaRVhpZgWNgfI3soC6hZSfP2kY3Gqa9yWlU5GYRhC8C/2uWd
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Cg0zXQqB
-Subject: [Intel-wired-lan] [PATCH net-next 0/4] dpll: add phase offset and
- phase adjust
+ header.a=rsa-sha256 header.s=Intel header.b=Ltzwv8dQ
+Subject: [Intel-wired-lan] [PATCH net-next 1/4] dpll: docs: add support for
+ pin signal phase offset/adjust
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,34 +103,101 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This RFC is to start discussion over extending dpll interface
-with possibility to:
-- read a phase offset between signals on pin and dpll,
-- adjust a phase of pin's signal.
+Add documentation on:
+- measurment of phase of signal between pin and dpll
+- adjustment of pin signal phase
 
-The RFC is based on latest version of dpll interface submitted for
-net-next [1].
+Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+---
+ Documentation/driver-api/dpll.rst | 53 ++++++++++++++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 1 deletion(-)
 
-[1] https://lore.kernel.org/netdev/20230824213132.827338-1-vadim.fedorenko@linux.dev/
-
-Arkadiusz Kubalewski (4):
-  dpll: docs: add support for pin signal phase offset/adjust
-  dpll: spec: add support for pin-dpll signal phase offset/adjust
-  dpll: netlink/core: add support for pin-dpll signal phase
-    offset/adjust
-  ice: dpll: implement phase related callbacks
-
- Documentation/driver-api/dpll.rst         |  53 ++++-
- Documentation/netlink/specs/dpll.yaml     |  33 +++-
- drivers/dpll/dpll_netlink.c               |  99 +++++++++-
- drivers/dpll/dpll_nl.c                    |   8 +-
- drivers/dpll/dpll_nl.h                    |   2 +-
- drivers/net/ethernet/intel/ice/ice_dpll.c | 224 +++++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_dpll.h |  10 +-
- include/linux/dpll.h                      |  18 ++
- include/uapi/linux/dpll.h                 |   8 +-
- 9 files changed, 443 insertions(+), 12 deletions(-)
-
+diff --git a/Documentation/driver-api/dpll.rst b/Documentation/driver-api/dpll.rst
+index bb52f1b8c0be..59634a3513bd 100644
+--- a/Documentation/driver-api/dpll.rst
++++ b/Documentation/driver-api/dpll.rst
+@@ -173,6 +173,47 @@ in order to configure active input of a MUX-type pin, the user needs to
+ request desired pin state of the child pin on the parent pin,
+ as described in the ``MUX-type pins`` chapter.
+ 
++Phase offset measurement and adjustment
++========================================
++
++Device may provide ability to measure a phase difference between signals
++on a pin and its parent dpll device. If pin-dpll phase offset measurement
++is supported, it shall be provided with ``DPLL_A_PIN_PHASE_OFFSET``
++attribute for each parent dpll device.
++
++Device may also provide ability to adjust a signal phase on a pin.
++If pin phase adjustment is supported, minimal and maximal values that pin
++handle shall be provide to the user on ``DPLL_CMD_PIN_GET`` respond
++with ``DPLL_A_PIN_PHASE_ADJUST_MIN`` and ``DPLL_A_PIN_PHASE_ADJUST_MAX``
++attributes. Configured phase adjust value is provided with
++``DPLL_A_PIN_PHASE_ADJUST`` attribute of a pin, and value change can be
++requested with the same attribute with ``DPLL_CMD_PIN_SET`` command.
++
++  =============================== ======================================
++  ``DPLL_A_PIN_ID``               configured pin id
++  ``DPLL_A_PIN_PHASE_ADJUST_MIN`` attr minimum value of phase adjustment
++  ``DPLL_A_PIN_PHASE_ADJUST_MAX`` attr maximum value of phase adjustment
++  ``DPLL_A_PIN_PHASE_ADJUST``     attr configured value of phase
++                                  adjustment on parent dpll device
++  ``DPLL_A_PIN_PARENT_DEVICE``    nested attribute for requesting
++                                  configuration on given parent dpll
++                                  device
++    ``DPLL_A_PIN_PARENT_ID``      parent dpll device id
++    ``DPLL_A_PIN_PHASE_OFFSET``   attr measured phase difference
++                                  between a pin and parent dpll device
++  =============================== ======================================
++
++All phase related values are provided in pico seconds, which represents
++time differnece between signals phase. The negative value means that
++phase of signal on pin is earlier in time than dpll's signal. Positive
++value means that phase of signal on pin is later in time than signal of
++a dpll.
++
++Phase adjust (also min and max) values are integers, but measured phase
++offset values are fractional with 3-digit decimal places and shell be
++divided with ``DPLL_PIN_PHASE_OFFSET_DIVIDER`` to get integer part and
++modulo divided to get fractional part.
++
+ Configuration commands group
+ ============================
+ 
+@@ -263,6 +304,12 @@ according to attribute purpose.
+                                        frequencies
+       ``DPLL_A_PIN_ANY_FREQUENCY_MIN`` attr minimum value of frequency
+       ``DPLL_A_PIN_ANY_FREQUENCY_MAX`` attr maximum value of frequency
++    ``DPLL_A_PIN_PHASE_ADJUST_MIN``    attr minimum value of phase
++                                       adjustment
++    ``DPLL_A_PIN_PHASE_ADJUST_MAX``    attr maximum value of phase
++                                       adjustment
++    ``DPLL_A_PIN_PHASE_ADJUST``        attr configured value of phase
++                                       adjustment on parent device
+     ``DPLL_A_PIN_PARENT_DEVICE``       nested attr for each parent device
+                                        the pin is connected with
+       ``DPLL_A_PIN_PARENT_ID``         attr parent dpll device id
+@@ -270,8 +317,10 @@ according to attribute purpose.
+                                        dpll device
+       ``DPLL_A_PIN_STATE``             attr state of pin on the parent
+                                        dpll device
+-     ``DPLL_A_PIN_DIRECTION``          attr direction of a pin on the
++      ``DPLL_A_PIN_DIRECTION``         attr direction of a pin on the
+                                        parent dpll device
++      ``DPLL_A_PIN_PHASE_OFFSET``      attr measured phase difference
++                                       between a pin and parent dpll
+     ``DPLL_A_PIN_PARENT_PIN``          nested attr for each parent pin
+                                        the pin is connected with
+       ``DPLL_A_PIN_PARENT_ID``         attr parent pin id
+@@ -284,6 +333,8 @@ according to attribute purpose.
+   ``DPLL_CMD_PIN_SET``                 command to set pins configuration
+     ``DPLL_A_PIN_ID``                  attr unique a pin ID
+     ``DPLL_A_PIN_FREQUENCY``           attr requested frequency of a pin
++    ``DPLL_A_PIN_PHASE_ADJUST``        attr requested value of phase
++                                       adjustment on parent device
+     ``DPLL_A_PIN_PARENT_DEVICE``       nested attr for each parent dpll
+                                        device configuration request
+       ``DPLL_A_PIN_PARENT_ID``         attr parent dpll device id
 -- 
 2.38.1
 
