@@ -4,66 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C554EB8FAF
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Sep 2023 04:00:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 546FDEB8FAF
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Sep 2023 04:01:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9C284401A1;
-	Wed,  6 Sep 2023 04:00:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9C284401A1
+	by smtp2.osuosl.org (Postfix) with ESMTP id 019E440189;
+	Wed,  6 Sep 2023 04:01:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 019E440189
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1693972802;
-	bh=LeHHt5M/th8CFfVTVZlg8b4j3cGEwKDMPxCFxD/ARzY=;
+	s=default; t=1693972893;
+	bh=TAzZy77anfw+NRVKcY9qfXbShMylbh/uznkryNug4FA=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=iM79OdZZj2LyAQAm8tKZAakiG3RXX7XieR16DLrZSx+FNDOgksDmIBKSZkf21yzMg
-	 zYbuj9XPJslWwmzFfDM4yXE5bGrLWWLilWxpLLjCL/qf/Tzqi4tAOzlHsIIOQOCpJJ
-	 SKmGrdmBpALSASzNYAS4x48+RjmdrrW0ulNxdRFAIiDnIa16Z738pxzqzqLGb1JFIk
-	 SKNNs899NwaRGc5pxMMJZXf3Fwx+a0JMsyeebZIYqhtlC7fZ/tojQM310Zlc1wtPXm
-	 lrqbRlIX+mGgQhbUFbKDXSc6hcLICu6RKsW3lCVmf3xX82XpyBraSJkaq9EQfPUhsD
-	 iqJfGr3tHftpw==
+	b=ReWkL551bfDmz116fnJFx1UHv2qUPz20ZAxJT6ZbUKinh7UfqTizun4t61HUB9+Bw
+	 7pw2yfAtP0kcdZZlGsAUBLcSpnXCYEuZuCdDjoVaGgFSHDq7uGkO8jLDKVOBBP1GRL
+	 AXYM5zdpOl6WmT0cxLuhghz/7keLOAJqKVKas5gT/Xa3VwryVEIi+AwNfEVZCn5+r7
+	 ofNC53zdvmb34ti7CEiKddsQHGQhvAy0awXQZAMW9VEub4MPElcXtD/fHibXQjStIR
+	 e5B4XT14iz9rOmUVAmvW2OFUBcL5YhCHUY8NkegpzwV5J1nR2TSZwRGQf5H6tfojWg
+	 HDTEpHD90sXEw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id KzfcGeRg8hzf; Wed,  6 Sep 2023 04:00:01 +0000 (UTC)
+	with ESMTP id GqRgx65Z_Xn1; Wed,  6 Sep 2023 04:01:32 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A2026402F3;
-	Wed,  6 Sep 2023 04:00:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A2026402F3
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 8BF0E1BF215
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 03:59:59 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id EC1F8401A1;
+	Wed,  6 Sep 2023 04:01:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EC1F8401A1
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id C25511BF292
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 04:01:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 651B4402F3
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 03:59:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 651B4402F3
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9B16681FB0
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 04:01:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9B16681FB0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hXzraio4Tvlz for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Sep 2023 03:59:58 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id pLQ9U9_9wqE7 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Sep 2023 04:01:28 +0000 (UTC)
 Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 14A4E401A1
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 03:59:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 14A4E401A1
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 1965181FA7
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 04:01:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1965181FA7
 Received: from [192.168.0.185] (ip5f5aeeca.dynamic.kabel-deutschland.de
  [95.90.238.202])
  (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 229C861E5FE01;
- Wed,  6 Sep 2023 05:59:48 +0200 (CEST)
-Message-ID: <5a18abd6-8f36-41e5-a4cd-67ad910cb489@molgen.mpg.de>
-Date: Wed, 6 Sep 2023 05:59:47 +0200
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 1D3D861E5FE01;
+ Wed,  6 Sep 2023 06:01:13 +0200 (CEST)
+Message-ID: <f84356d8-1eae-4299-beee-cda7fb3e29ce@molgen.mpg.de>
+Date: Wed, 6 Sep 2023 06:01:13 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Content-Language: en-US
-To: Ahmed Zaki <ahmed.zaki@intel.com>
+To: Ahmed Zaki <ahmed.zaki@intel.com>,
+ Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 References: <20230905185020.3613223-1-ahmed.zaki@intel.com>
+ <20230905185020.3613223-2-ahmed.zaki@intel.com>
 From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20230905185020.3613223-1-ahmed.zaki@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v6 0/4] Support rx-fcs on/off
- for VFs
+In-Reply-To: <20230905185020.3613223-2-ahmed.zaki@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v6 1/4] virtchnl: Add CRC
+ stripping capability
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,61 +78,56 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Cc: intel-wired-lan@lists.osuosl.org,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Ahmed,
-
-
-Thank you for submitting this work.
-
-Am 05.09.23 um 20:50 schrieb Ahmed Zaki:
-> Allow the user to turn on/off the CRC/FCS stripping through ethtool. We
-> first add the CRC offload capability in the virtchannel, then the feature
-> is enabled in ice and iavf drivers.
-> 
-> We make sure that the netdev features are fixed such that CRC stripping
-> cannot be disabled if VLAN rx offload (VLAN strip) is enabled. Also, VLAN
-> stripping cannot be enabled unless CRC stripping is ON.
-
-Please add a paragraph, how you tested this.
-
-
-Kind regards,
-
-Paul
-
-
-> ---
-> v6: Some code was mistakenly included in v5 (4/4), sorry for spamming.
-> v5: Remove extra space in ice_for_each_alloc_rxq()  (3/4)
-> v4: Use ice_for_each_alloc_rxq in ice_vsi_is_rxq_crc_strip_dis()  (3/4)
-> v3: Fix Tony's comments in ice_vf_init_vlan_stripping() (3/4)
-> v2: Move patch "ice: Fix VLAN and CRC strip co-existence" from 4/4 to 3/4
->      Other minor fixes from Tony for the same patch
-> 
-> Haiyue Wang (2):
->    ice: Support FCS/CRC strip disable for VF
->    ice: Fix VLAN and CRC strip co-existence
-> 
-> Norbert Zulinski (1):
->    iavf: Add ability to turn off CRC stripping for VF
-> 
-> Paul M Stillwell Jr (1):
->    virtchnl: Add CRC stripping capability
-> 
->   drivers/net/ethernet/intel/iavf/iavf.h        |  2 +
->   drivers/net/ethernet/intel/iavf/iavf_main.c   | 59 +++++++++++++++-
->   .../net/ethernet/intel/iavf/iavf_virtchnl.c   |  4 ++
->   drivers/net/ethernet/intel/ice/ice_vf_lib.h   |  3 +
->   drivers/net/ethernet/intel/ice/ice_virtchnl.c | 69 +++++++++++++++++--
->   include/linux/avf/virtchnl.h                  | 11 ++-
->   6 files changed, 141 insertions(+), 7 deletions(-)
-> 
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RGVhciBBaG1lZCwgZGVhciBQYXVsLAoKClRoYW5rIHlvdSBmb3IgdGhlIHBhdGNoLgoKQW0gMDUu
+MDkuMjMgdW0gMjA6NTAgc2NocmllYiBBaG1lZCBaYWtpOgo+IEZyb206IFBhdWwgTSBTdGlsbHdl
+bGwgSnIgPHBhdWwubS5zdGlsbHdlbGwuanJAaW50ZWwuY29tPgo+IAo+IFNvbWUgVkZzIG1heSB3
+YW50IHRvIGRpc2FibGUgQ1JDIHN0cmlwcGluZyBvbiBpbmNvbWluZyBwYWNrZXRzIHNvIGNyZWF0
+ZQo+IGFuIG9mZmxvYWQgZm9yIHRoYXQuIFRoZSBWRiBhbHJlYWR5IHNlbmRzIGluZm9ybWF0aW9u
+IGFib3V0IGNvbmZpZ3VyaW5nCj4gaXQncyBSWCBxdWV1ZXMgc28gdXNlIHRoYXQgc3RydWN0dXJl
+IHRvIGluZGljYXRlIHRoYXQgdGhlIENSQyBzdHJpcHBpbmcKCnMvaXTigJlzL2l0cy8KCj4gc2hv
+dWxkIGJlIGVuYWJsZWQgb3Igbm90Lgo+IAo+IFNpZ25lZC1vZmYtYnk6IFBhdWwgTSBTdGlsbHdl
+bGwgSnIgPHBhdWwubS5zdGlsbHdlbGwuanJAaW50ZWwuY29tPgo+IFJldmlld2VkLWJ5OiBKZXNz
+ZSBCcmFuZGVidXJnIDxqZXNzZS5icmFuZGVidXJnQGludGVsLmNvbT4KPiBTaWduZWQtb2ZmLWJ5
+OiBBaG1lZCBaYWtpIDxhaG1lZC56YWtpQGludGVsLmNvbT4KPiAtLS0KPiAgIGluY2x1ZGUvbGlu
+dXgvYXZmL3ZpcnRjaG5sLmggfCAxMSArKysrKysrKystLQo+ICAgMSBmaWxlIGNoYW5nZWQsIDkg
+aW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9s
+aW51eC9hdmYvdmlydGNobmwuaCBiL2luY2x1ZGUvbGludXgvYXZmL3ZpcnRjaG5sLmgKPiBpbmRl
+eCBkMDgwN2FkNDNmOTMuLmRkNzFkMzAwOTc3MSAxMDA2NDQKPiAtLS0gYS9pbmNsdWRlL2xpbnV4
+L2F2Zi92aXJ0Y2hubC5oCj4gKysrIGIvaW5jbHVkZS9saW51eC9hdmYvdmlydGNobmwuaAo+IEBA
+IC0yNDAsNiArMjQwLDcgQEAgVklSVENITkxfQ0hFQ0tfU1RSVUNUX0xFTigxNiwgdmlydGNobmxf
+dnNpX3Jlc291cmNlKTsKPiAgICNkZWZpbmUgVklSVENITkxfVkZfT0ZGTE9BRF9SRVFfUVVFVUVT
+CQlCSVQoNikKPiAgIC8qIHVzZWQgdG8gbmVnb3RpYXRlIGNvbW11bmljYXRpbmcgbGluayBzcGVl
+ZHMgaW4gTWJwcyAqLwo+ICAgI2RlZmluZSBWSVJUQ0hOTF9WRl9DQVBfQURWX0xJTktfU1BFRUQJ
+CUJJVCg3KQo+ICsjZGVmaW5lICBWSVJUQ0hOTF9WRl9PRkZMT0FEX0NSQwkJQklUKDEwKQo+ICAg
+I2RlZmluZSBWSVJUQ0hOTF9WRl9PRkZMT0FEX1ZMQU5fVjIJCUJJVCgxNSkKPiAgICNkZWZpbmUg
+VklSVENITkxfVkZfT0ZGTE9BRF9WTEFOCQlCSVQoMTYpCj4gICAjZGVmaW5lIFZJUlRDSE5MX1ZG
+X09GRkxPQURfUlhfUE9MTElORwkJQklUKDE3KQo+IEBAIC0yOTUsNyArMjk2LDEzIEBAIFZJUlRD
+SE5MX0NIRUNLX1NUUlVDVF9MRU4oMjQsIHZpcnRjaG5sX3R4cV9pbmZvKTsKPiAgIC8qIFZJUlRD
+SE5MX09QX0NPTkZJR19SWF9RVUVVRQo+ICAgICogVkYgc2VuZHMgdGhpcyBtZXNzYWdlIHRvIHNl
+dCB1cCBwYXJhbWV0ZXJzIGZvciBvbmUgUlggcXVldWUuCj4gICAgKiBFeHRlcm5hbCBkYXRhIGJ1
+ZmZlciBjb250YWlucyBvbmUgaW5zdGFuY2Ugb2YgdmlydGNobmxfcnhxX2luZm8uCj4gLSAqIFBG
+IGNvbmZpZ3VyZXMgcmVxdWVzdGVkIHF1ZXVlIGFuZCByZXR1cm5zIGEgc3RhdHVzIGNvZGUuCj4g
+KyAqIFBGIGNvbmZpZ3VyZXMgcmVxdWVzdGVkIHF1ZXVlIGFuZCByZXR1cm5zIGEgc3RhdHVzIGNv
+ZGUuIFRoZQo+ICsgKiBjcmNfZGlzYWJsZSBmbGFnIGRpc2FibGVzIENSQyBzdHJpcHBpbmcgb24g
+dGhlIFZGLiBTZXR0aW5nCj4gKyAqIHRoZSBjcmNfZGlzYWJsZSBmbGFnIHRvIDEgd2lsbCBkaXNh
+YmxlIENSQyBzdHJpcHBpbmcgZm9yIGVhY2gKPiArICogcXVldWUgaW4gdGhlIFZGIHdoZXJlIHRo
+ZSBmbGFnIGlzIHNldC4gVGhlIFZJUlRDSE5MX1ZGX09GRkxPQURfQ1JDCj4gKyAqIG9mZmxvYWQg
+bXVzdCBoYXZlIGJlZW4gc2V0IHByaW9yIHRvIHNlbmRpbmcgdGhpcyBpbmZvIG9yIHRoZSBQRgo+
+ICsgKiB3aWxsIGlnbm9yZSB0aGUgcmVxdWVzdC4gVGhpcyBmbGFnIHNob3VsZCBiZSBzZXQgdGhl
+IHNhbWUgZm9yCj4gKyAqIGFsbCBvZiB0aGUgcXVldWVzIGZvciBhIFZGLgo+ICAgICovCj4gICAK
+PiAgIC8qIFJ4IHF1ZXVlIGNvbmZpZyBpbmZvICovCj4gQEAgLTMwNyw3ICszMTQsNyBAQCBzdHJ1
+Y3QgdmlydGNobmxfcnhxX2luZm8gewo+ICAgCXUxNiBzcGxpdGhkcl9lbmFibGVkOyAvKiBkZXBy
+ZWNhdGVkIHdpdGggQVZGIDEuMCAqLwo+ICAgCXUzMiBkYXRhYnVmZmVyX3NpemU7Cj4gICAJdTMy
+IG1heF9wa3Rfc2l6ZTsKPiAtCXU4IHBhZDA7Cj4gKwl1OCBjcmNfZGlzYWJsZTsKPiAgIAl1OCBy
+eGRpZDsKPiAgIAl1OCBwYWQxWzJdOwo+ICAgCXU2NCBkbWFfcmluZ19hZGRyOwoKUmV2aWV3ZWQt
+Ynk6IFBhdWwgTWVuemVsIDxwbWVuemVsQG1vbGdlbi5tcGcuZGU+CgoKS2luZCByZWdhcmRzLAoK
+UGF1bApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRl
+bC13aXJlZC1sYW4gbWFpbGluZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBz
+Oi8vbGlzdHMub3N1b3NsLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
