@@ -1,90 +1,78 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D1E5EB8FD5
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Sep 2023 14:14:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 539B9EE14A5
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Sep 2023 15:07:05 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id F0DE660AC2;
-	Wed,  6 Sep 2023 14:14:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F0DE660AC2
+	by smtp4.osuosl.org (Postfix) with ESMTP id C7DE641B5A;
+	Wed,  6 Sep 2023 15:07:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C7DE641B5A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1694009667;
-	bh=m222mQGaxiZhnq6gV68ma2KGyWhOAiJSSefKyzvU+fw=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=LT0WpIYMOZjQpEw0u60B5D88vQuDNmoW1qTrS9gSkkyux/e1I0bTD+T1zf50d+hCN
-	 NrT4QarMm5drPTil88Zy3WrJDPSqMwQkll4fo/otNuHiLD05UMcTtxVpux8jjvoImQ
-	 DCAQR7pN1/YKHxcbyWLNGldjqF4pcJmFJvtN8KffhSfHhr1qTf7PIUzGAWOGEtb1m1
-	 ZIy35GPWclNgPQBGuA9UiTicWz3gAGiueiuxZzJEelr1EPXSprGRjsjUOcqLAVUfpi
-	 uhAKrPACtjWwCjACF/qq/4tVgyPYSgddwtSm8jWTrLWTtRF1q+btm8z8K4xfyxXmSU
-	 usO9PvQRDzy9g==
+	s=default; t=1694012824;
+	bh=fQcgZLWXKLcgUMytQ82bVod03UiT0MBM7iBxKB5bQBs=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=nbITKKYly9D3iXO4JBjHaEg9h/Wzi/NYP80sPGSD2O5UbAzsjdiF68QU8eurxvxqp
+	 fbT+Tvnn9EHSkBUEeG6CnCXRpbsY/+HCQ+NHVrFbCUuC9TGRnUyXgB/pHCL5j8UB3i
+	 s5Z0odYjfyZWZVJ8E09LooC2nserGv7DMJf/OCUWzQzLltEdUyBv/e5KGWO/Qsys4x
+	 DJM92hwTJk47/uBXjsQH1zKBMblScNTdxA9Bmn9q03t4rXbveRz8ETn7ghGkvJFdTG
+	 vrjaQS3PYzS6uVjXZ+Mvyd0uau1nX3teRUe6ihIonDFPhwrAlqVrSMm7eZHwEOOqKI
+	 HXoIz4YnTR+aw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9t-NNTwDDNAk; Wed,  6 Sep 2023 14:14:26 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lLUlyH3KRm2M; Wed,  6 Sep 2023 15:07:03 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 161E560E4F;
-	Wed,  6 Sep 2023 14:14:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 161E560E4F
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id EAC1E1BF37E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 14:14:21 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 5F6744032E;
+	Wed,  6 Sep 2023 15:07:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5F6744032E
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id CFD861BF32B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 07:35:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C3B6460AE3
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 14:14:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C3B6460AE3
+ by smtp4.osuosl.org (Postfix) with ESMTP id B2AE8408CE
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 07:35:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B2AE8408CE
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ijo3_iFbLZDc for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Sep 2023 14:14:21 +0000 (UTC)
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id F3AEA60AC2
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 14:14:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F3AEA60AC2
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-621-yLMos6wtPQm2-6xQGW1xUQ-1; Wed, 06 Sep 2023 10:14:16 -0400
-X-MC-Unique: yLMos6wtPQm2-6xQGW1xUQ-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com
- [10.11.54.3])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 63BB11C07550;
- Wed,  6 Sep 2023 14:14:15 +0000 (UTC)
-Received: from swamp.redhat.com (unknown [10.45.225.164])
- by smtp.corp.redhat.com (Postfix) with ESMTP id DB34D1121314;
- Wed,  6 Sep 2023 14:14:13 +0000 (UTC)
-From: Petr Oros <poros@redhat.com>
-To: netdev@vger.kernel.org
-Date: Wed,  6 Sep 2023 16:14:11 +0200
-Message-ID: <20230906141411.121142-2-poros@redhat.com>
-In-Reply-To: <20230906141411.121142-1-poros@redhat.com>
-References: <20230906141411.121142-1-poros@redhat.com>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id dqgbYSU30kJX for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Sep 2023 07:35:32 +0000 (UTC)
+X-Greylist: delayed 434 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 06 Sep 2023 07:35:31 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org F23D04086F
+Received: from out-215.mta1.migadu.com (out-215.mta1.migadu.com
+ [95.215.58.215])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id F23D04086F
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Sep 2023 07:35:31 +0000 (UTC)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and
+ include these headers.
+From: Yajun Deng <yajun.deng@linux.dev>
+To: anthony.l.nguyen@intel.com, davem@davemloft.net, edumazet@google.com,
+ kuba@kernel.org, pabeni@redhat.com
+Date: Wed,  6 Sep 2023 15:27:57 +0800
+Message-Id: <20230906072757.3929754-1-yajun.deng@linux.dev>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.3
+X-Migadu-Flow: FLOW_OUT
+X-Mailman-Approved-At: Wed, 06 Sep 2023 15:07:01 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1694009659;
+ d=linux.dev; s=key1; t=1693985294;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=DOOoWT2kY2wb/QpswVRpo14Z/GIJ+wzCXioOsVk9PeA=;
- b=eH2D0+wytpPFD38bSJ8qOBOONKYnIJNFjEyQv7+ZD6FwrHAbjrnL02pRT5yT4P/K+yFkuw
- 8IkPJgVbf/0fbfCSkBlTnXyltGEHU1KuLtGqTSvJOd6lOnZpqHTFZM3VGDnRRUA4UqfBJQ
- ND5ENtWPkwrktsY6GatswGglFOg77IQ=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=eH2D0+wy
-Subject: [Intel-wired-lan] [PATCH net 2/2] iavf: schedule a request
- immediately after add/delete vlan
+ content-transfer-encoding:content-transfer-encoding;
+ bh=938feFunuVXrcQFgTRaCo4N0Cd13MIgXYg/3Qnd6T7g=;
+ b=OlHVPoQNIIWLajc/u/NPrn8F8+xDKk2SY0BWtBkfBz3Xn51WktNbj5XpWZ2IR0/aWW+Bdy
+ jy/sSX7uz3wVfm18fYS6eGuqhqgA1fboaTlV1sFtW1IjCQBUyLBdLhiRI0OpGpWtWlxn8p
+ Jqn11zt98CKVXa7uQBPeG2D5JWZMnSQ=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (1024-bit key,
+ unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256
+ header.s=key1 header.b=OlHVPoQN
+Subject: [Intel-wired-lan] [PATCH] i40e: Add rx_missed_errors for buffer
+ exhaustion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,61 +85,119 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: ivecera@redhat.com, intel-wired-lan@lists.osuosl.org,
- jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org, edumazet@google.com,
- anthony.l.nguyen@intel.com, kuba@kernel.org, pabeni@redhat.com,
- davem@davemloft.net
+Cc: netdev@vger.kernel.org, Yajun Deng <yajun.deng@linux.dev>,
+ intel-wired-lan@lists.osuosl.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-When the iavf driver wants to reconfigure the VLAN filters
-(iavf_add_vlan, iavf_del_vlan), it sets a flag in
-aq_required:
-  adapter->aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
-or:
-  adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
+As the comment in struct rtnl_link_stats64, rx_dropped should not
+include packets dropped by the device due to buffer exhaustion.
+They are counted in rx_missed_errors, procfs folds those two counters
+together.
 
-This is later processed by the watchdog_task, but it runs periodically
-every 2 seconds, so it can be a long time before it processes the request.
+Add rx_missed_errors for buffer exhaustion, rx_missed_errors corresponds
+to rx_discards, rx_dropped corresponds to rx_discards_other.
 
-In the worst case, the interface is unable to receive traffic for more
-than 2 seconds for no objective reason.
-
-Signed-off-by: Petr Oros <poros@redhat.com>
-Co-developed-by: Michal Schmidt <mschmidt@redhat.com>
-Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
-Co-developed-by: Ivan Vecera <ivecera@redhat.com>
-Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+Signed-off-by: Yajun Deng <yajun.deng@linux.dev>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  3 ++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 18 +++++++-----------
+ .../net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  2 +-
+ 3 files changed, 10 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 86d472dfdbc10c..d9f8ac1d57fd62 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -821,7 +821,7 @@ iavf_vlan_filter *iavf_add_vlan(struct iavf_adapter *adapter,
- 		list_add_tail(&f->list, &adapter->vlan_filter_list);
- 		f->state = IAVF_VLAN_ADD;
- 		adapter->num_vlan_filters++;
--		adapter->aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
-+		iavf_schedule_aq_request(adapter, IAVF_FLAG_AQ_ADD_VLAN_FILTER);
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index bd1321bf7e26..77e4ac103866 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -245,6 +245,7 @@ static const struct i40e_stats i40e_gstrings_net_stats[] = {
+ 	I40E_NETDEV_STAT(rx_errors),
+ 	I40E_NETDEV_STAT(tx_errors),
+ 	I40E_NETDEV_STAT(rx_dropped),
++	I40E_NETDEV_STAT(rx_missed_errors),
+ 	I40E_NETDEV_STAT(tx_dropped),
+ 	I40E_NETDEV_STAT(collisions),
+ 	I40E_NETDEV_STAT(rx_length_errors),
+@@ -321,7 +322,7 @@ static const struct i40e_stats i40e_gstrings_stats[] = {
+ 	I40E_PF_STAT("port.rx_broadcast", stats.eth.rx_broadcast),
+ 	I40E_PF_STAT("port.tx_broadcast", stats.eth.tx_broadcast),
+ 	I40E_PF_STAT("port.tx_errors", stats.eth.tx_errors),
+-	I40E_PF_STAT("port.rx_dropped", stats.eth.rx_discards),
++	I40E_PF_STAT("port.rx_discards", stats.eth.rx_discards),
+ 	I40E_PF_STAT("port.tx_dropped_link_down", stats.tx_dropped_link_down),
+ 	I40E_PF_STAT("port.rx_crc_errors", stats.crc_errors),
+ 	I40E_PF_STAT("port.illegal_bytes", stats.illegal_bytes),
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index de7fd43dc11c..290c011168c2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -489,6 +489,7 @@ static void i40e_get_netdev_stats_struct(struct net_device *netdev,
+ 	stats->tx_dropped	= vsi_stats->tx_dropped;
+ 	stats->rx_errors	= vsi_stats->rx_errors;
+ 	stats->rx_dropped	= vsi_stats->rx_dropped;
++	stats->rx_missed_errors	= vsi_stats->rx_missed_errors;
+ 	stats->rx_crc_errors	= vsi_stats->rx_crc_errors;
+ 	stats->rx_length_errors	= vsi_stats->rx_length_errors;
+ }
+@@ -680,17 +681,13 @@ i40e_stats_update_rx_discards(struct i40e_vsi *vsi, struct i40e_hw *hw,
+ 			      struct i40e_eth_stats *stat_offset,
+ 			      struct i40e_eth_stats *stat)
+ {
+-	u64 rx_rdpc, rx_rxerr;
+-
+ 	i40e_stat_update32(hw, I40E_GLV_RDPC(stat_idx), offset_loaded,
+-			   &stat_offset->rx_discards, &rx_rdpc);
++			   &stat_offset->rx_discards, &stat->rx_discards);
+ 	i40e_stat_update64(hw,
+ 			   I40E_GL_RXERR1H(i40e_compute_pci_to_hw_id(vsi, hw)),
+ 			   I40E_GL_RXERR1L(i40e_compute_pci_to_hw_id(vsi, hw)),
+ 			   offset_loaded, &stat_offset->rx_discards_other,
+-			   &rx_rxerr);
+-
+-	stat->rx_discards = rx_rdpc + rx_rxerr;
++			   &stat->rx_discards_other);
+ }
  
- clearout:
-@@ -843,7 +843,7 @@ static void iavf_del_vlan(struct iavf_adapter *adapter, struct iavf_vlan vlan)
- 	f = iavf_find_vlan(adapter, vlan);
- 	if (f) {
- 		f->state = IAVF_VLAN_REMOVE;
--		adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
-+		iavf_schedule_aq_request(adapter, IAVF_FLAG_AQ_DEL_VLAN_FILTER);
- 	}
+ /**
+@@ -712,9 +709,6 @@ void i40e_update_eth_stats(struct i40e_vsi *vsi)
+ 	i40e_stat_update32(hw, I40E_GLV_TEPC(stat_idx),
+ 			   vsi->stat_offsets_loaded,
+ 			   &oes->tx_errors, &es->tx_errors);
+-	i40e_stat_update32(hw, I40E_GLV_RDPC(stat_idx),
+-			   vsi->stat_offsets_loaded,
+-			   &oes->rx_discards, &es->rx_discards);
+ 	i40e_stat_update32(hw, I40E_GLV_RUPP(stat_idx),
+ 			   vsi->stat_offsets_loaded,
+ 			   &oes->rx_unknown_protocol, &es->rx_unknown_protocol);
+@@ -971,8 +965,10 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
+ 	ns->tx_errors = es->tx_errors;
+ 	ons->multicast = oes->rx_multicast;
+ 	ns->multicast = es->rx_multicast;
+-	ons->rx_dropped = oes->rx_discards;
+-	ns->rx_dropped = es->rx_discards;
++	ons->rx_dropped = oes->rx_discards_other;
++	ns->rx_dropped = es->rx_discards_other;
++	ons->rx_missed_errors = oes->rx_discards;
++	ns->rx_missed_errors = es->rx_discards;
+ 	ons->tx_dropped = oes->tx_discards;
+ 	ns->tx_dropped = es->tx_discards;
  
- 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 8ea1a238dcef..3b514abfaa1e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -4914,7 +4914,7 @@ int i40e_get_vf_stats(struct net_device *netdev, int vf_id,
+ 	vf_stats->tx_bytes   = stats->tx_bytes;
+ 	vf_stats->broadcast  = stats->rx_broadcast;
+ 	vf_stats->multicast  = stats->rx_multicast;
+-	vf_stats->rx_dropped = stats->rx_discards;
++	vf_stats->rx_dropped = stats->rx_discards + stats->rx_discards_other;
+ 	vf_stats->tx_dropped = stats->tx_discards;
+ 
+ 	return 0;
 -- 
-2.42.0
+2.25.1
 
 _______________________________________________
 Intel-wired-lan mailing list
