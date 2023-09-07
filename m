@@ -4,83 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 362E1EC8740
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Sep 2023 15:46:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EE02EC873E
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Sep 2023 15:46:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id DA44683F53;
-	Thu,  7 Sep 2023 15:46:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DA44683F53
+	by smtp1.osuosl.org (Postfix) with ESMTP id F112383EA9;
+	Thu,  7 Sep 2023 15:46:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F112383EA9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1694101589;
-	bh=L3tcgyMu1G/VvSpc1duJY34kPgWGsO72SKNqlOxWSX0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=4egBHAiHbN8W+0ytUGd2MT8DIZYeeHMqDjcxVUhGi0o5xh+2dFjtFmBygbKZk9xv0
-	 utfxM9Z6OkvFSB85E9plqe1PaVz99ea/nw6ags9Lef05G+lfgPd/WXI51KMYPon5JO
-	 HGsSt8+Cixa6OwnetJ3OI35PJ1gYDAwKkqadgm2l3v+1XOWcgJNGSbaOg065NUy3Up
-	 sBFersdZIgD4Hxl05k/EfYoLUmsmPsN7vbO1LEnd5dtSxHGdZETSzSiM4RRIxkatqp
-	 /F8eKDxTsfc2zV/O4GM8BqCmBXxuCWtRU+cpLjh0wv1+eELkIz/T5tq3Ip/Lev+yfv
-	 pcyOmVPmc3UCQ==
+	s=default; t=1694101594;
+	bh=dIfOA3MP/jxXwctxAZpypMpD2Qd9pDBqi8xc3xLGjro=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=BGgmvsBN6fcpGz9XKaD+CIY/I5lpr7sUM5g0uGwBSyqriSo7M/ulVkO2CxYNSfl9A
+	 XwJRwCNhV2p8ddKds3/zl+V99uvLb5i30zhq2fVACmYfbNdSHLBocy1bFAcT7wPmR8
+	 WNoSeKgLuFuxTs4PVuDv/ZMUwqvpLj3AE1XqMP5k9FWfm1EsWSt/gjWtxvG9RFf+h2
+	 1enAcK7kYV602rVSEMDXhlKC26MkgS5UnBl1bXWy/V7mcaXf0s6nNEr6eQJVMV+my6
+	 GNlhkFgH9wYihA7wmfAcXzcviq125C0sY3fH6HVKDnyqrtOWQw07S7V/NP6lTSrHBK
+	 0GXMNnfCx4/+Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id YQSI-KECWABS; Thu,  7 Sep 2023 15:46:29 +0000 (UTC)
+	with ESMTP id GdFjCY5z8eJt; Thu,  7 Sep 2023 15:46:33 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 5F0F983F49;
-	Thu,  7 Sep 2023 15:46:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5F0F983F49
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0158783925;
+	Thu,  7 Sep 2023 15:46:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0158783925
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id EC8F41BF308
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Sep 2023 15:05:18 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 15AF71BF308
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Sep 2023 15:05:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id C5AF240469
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Sep 2023 15:05:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C5AF240469
+ by smtp2.osuosl.org (Postfix) with ESMTP id F0EAF4027F
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Sep 2023 15:05:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F0EAF4027F
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 2UhZEuFDlAjg for <intel-wired-lan@lists.osuosl.org>;
- Thu,  7 Sep 2023 15:05:18 +0000 (UTC)
+ with ESMTP id 35b5hGG5gjw7 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  7 Sep 2023 15:05:27 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1135D4027F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Sep 2023 15:05:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1135D4027F
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id A703E401E1
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Sep 2023 15:05:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A703E401E1
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-264-nXPTVc1lMa6f_E6D82BHYw-1; Thu, 07 Sep 2023 11:05:14 -0400
-X-MC-Unique: nXPTVc1lMa6f_E6D82BHYw-1
+ us-mta-589-wmTAwmDAMhqIRDWar89JEQ-1; Thu, 07 Sep 2023 11:05:22 -0400
+X-MC-Unique: wmTAwmDAMhqIRDWar89JEQ-1
 Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com
  [10.11.54.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 8735393F408;
- Thu,  7 Sep 2023 15:02:53 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 7DF6E93F421;
+ Thu,  7 Sep 2023 15:02:55 +0000 (UTC)
 Received: from swamp.redhat.com (unknown [10.45.225.164])
- by smtp.corp.redhat.com (Postfix) with ESMTP id B614463F6C;
- Thu,  7 Sep 2023 15:02:51 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id BBDDF6B595;
+ Thu,  7 Sep 2023 15:02:53 +0000 (UTC)
 From: Petr Oros <poros@redhat.com>
 To: netdev@vger.kernel.org
-Date: Thu,  7 Sep 2023 17:02:50 +0200
-Message-ID: <20230907150251.224931-1-poros@redhat.com>
+Date: Thu,  7 Sep 2023 17:02:51 +0200
+Message-ID: <20230907150251.224931-2-poros@redhat.com>
+In-Reply-To: <20230907150251.224931-1-poros@redhat.com>
+References: <20230907150251.224931-1-poros@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.5
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1694099116;
+ s=mimecast20190719; t=1694099126;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=9rvVTHxHPu3jCEmZFnxNYmQ4533N1br4tWGmYhjmcAM=;
- b=NelSWWkT39vvocsI9qBnWfaEWTBKuhHd6prUTprATjPYKsPOdKDM4SVeEBZIrsz3WX0MuR
- zlYeElBq5zPuUE5Px7tKmIkGJwiZWkjtL7TikN3GAc1o310uc4IGlFeRsn3xl8YxPWereW
- co8cVc+3AQ4UmaOuBp/p3Ai43NyR+xE=
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=jWCCEttxvodDZdaM3WlXXA7tEL4YbcEdc+RVAa5fFGI=;
+ b=L57XJpU1M1vuECeOV78nPz8V2quc8lYv2TBNBhESaQ7Ke9Sxt48q1vzLowXqVZxopTocW+
+ sbEdZ0/2DbCsDnOf9y6wlUCOJ7Rj31BtHsJwvXhW3CP6a43/Pjp3+6ufzt78NYa+Vqk2HE
+ hDspl3Ch15zvRPT2Y4Bcgc0KmyQfdTY=
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=NelSWWkT
-Subject: [Intel-wired-lan] [PATCH net v2 1/2] iavf: add
- iavf_schedule_aq_request() helper
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=L57XJpU1
+Subject: [Intel-wired-lan] [PATCH net v2 2/2] iavf: schedule a request
+ immediately after add/delete vlan
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,71 +106,51 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Add helper for set iavf aq request AVF_FLAG_AQ_* and immediately
-schedule watchdog_task. Helper will be used in cases where it is
-necessary to run aq requests asap
+When the iavf driver wants to reconfigure the VLAN filters
+(iavf_add_vlan, iavf_del_vlan), it sets a flag in
+aq_required:
+  adapter->aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
+or:
+  adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
+
+This is later processed by the watchdog_task, but it runs periodically
+every 2 seconds, so it can be a long time before it processes the request.
+
+In the worst case, the interface is unable to receive traffic for more
+than 2 seconds for no objective reason.
 
 Signed-off-by: Petr Oros <poros@redhat.com>
 Co-developed-by: Michal Schmidt <mschmidt@redhat.com>
 Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 Co-developed-by: Ivan Vecera <ivecera@redhat.com>
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+Reviewed-by: Ahmed Zaki <ahmed.zaki@intel.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf.h         |  2 +-
- drivers/net/ethernet/intel/iavf/iavf_ethtool.c |  2 +-
- drivers/net/ethernet/intel/iavf/iavf_main.c    | 10 ++++------
- 3 files changed, 6 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf.h b/drivers/net/ethernet/intel/iavf/iavf.h
-index 85fba85fbb232b..e110ba3461857b 100644
---- a/drivers/net/ethernet/intel/iavf/iavf.h
-+++ b/drivers/net/ethernet/intel/iavf/iavf.h
-@@ -521,7 +521,7 @@ void iavf_down(struct iavf_adapter *adapter);
- int iavf_process_config(struct iavf_adapter *adapter);
- int iavf_parse_vf_resource_msg(struct iavf_adapter *adapter);
- void iavf_schedule_reset(struct iavf_adapter *adapter, u64 flags);
--void iavf_schedule_request_stats(struct iavf_adapter *adapter);
-+void iavf_schedule_aq_request(struct iavf_adapter *adapter, u64 flags);
- void iavf_schedule_finish_config(struct iavf_adapter *adapter);
- void iavf_reset(struct iavf_adapter *adapter);
- void iavf_set_ethtool_ops(struct net_device *netdev);
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index a34303ad057d00..90397293525f71 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -362,7 +362,7 @@ static void iavf_get_ethtool_stats(struct net_device *netdev,
- 	unsigned int i;
- 
- 	/* Explicitly request stats refresh */
--	iavf_schedule_request_stats(adapter);
-+	iavf_schedule_aq_request(adapter, IAVF_FLAG_AQ_REQUEST_STATS);
- 
- 	iavf_add_ethtool_stats(&data, adapter, iavf_gstrings_stats);
- 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 7b300c86ceda73..86d472dfdbc10c 100644
+index 86d472dfdbc10c..d9f8ac1d57fd62 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -314,15 +314,13 @@ void iavf_schedule_reset(struct iavf_adapter *adapter, u64 flags)
- }
+@@ -821,7 +821,7 @@ iavf_vlan_filter *iavf_add_vlan(struct iavf_adapter *adapter,
+ 		list_add_tail(&f->list, &adapter->vlan_filter_list);
+ 		f->state = IAVF_VLAN_ADD;
+ 		adapter->num_vlan_filters++;
+-		adapter->aq_required |= IAVF_FLAG_AQ_ADD_VLAN_FILTER;
++		iavf_schedule_aq_request(adapter, IAVF_FLAG_AQ_ADD_VLAN_FILTER);
+ 	}
  
- /**
-- * iavf_schedule_request_stats - Set the flags and schedule statistics request
-+ * iavf_schedule_aq_request - Set the flags and schedule aq request
-  * @adapter: board private structure
-- *
-- * Sets IAVF_FLAG_AQ_REQUEST_STATS flag so iavf_watchdog_task() will explicitly
-- * request and refresh ethtool stats
-+ * @flags: requested aq flags
-  **/
--void iavf_schedule_request_stats(struct iavf_adapter *adapter)
-+void iavf_schedule_aq_request(struct iavf_adapter *adapter, u64 flags)
- {
--	adapter->aq_required |= IAVF_FLAG_AQ_REQUEST_STATS;
-+	adapter->aq_required |= flags;
- 	mod_delayed_work(adapter->wq, &adapter->watchdog_task, 0);
- }
+ clearout:
+@@ -843,7 +843,7 @@ static void iavf_del_vlan(struct iavf_adapter *adapter, struct iavf_vlan vlan)
+ 	f = iavf_find_vlan(adapter, vlan);
+ 	if (f) {
+ 		f->state = IAVF_VLAN_REMOVE;
+-		adapter->aq_required |= IAVF_FLAG_AQ_DEL_VLAN_FILTER;
++		iavf_schedule_aq_request(adapter, IAVF_FLAG_AQ_DEL_VLAN_FILTER);
+ 	}
  
+ 	spin_unlock_bh(&adapter->mac_vlan_list_lock);
 -- 
 2.42.0
 
