@@ -4,183 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DF18EE7FF4
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Sep 2023 08:02:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8F7DEE57DF
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Sep 2023 14:03:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 9CD384096A;
-	Mon, 11 Sep 2023 08:02:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9CD384096A
+	by smtp4.osuosl.org (Postfix) with ESMTP id 60F9740895;
+	Mon, 11 Sep 2023 14:03:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 60F9740895
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1694419360;
-	bh=fOSpBdC+XuOwaNJIeOyGOYjPLB0JUlR0aRSh2t2+P1Y=;
-	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1694441022;
+	bh=Ld7JdpxvdhjKgiPuoTTcxNuI1LGTmsayxOdPLjo8nlw=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=YKMXfD1CLQxe9ItMZhFMB1B75OH8DsUC79xwEdkAgze+XJsBOUpadjX6w4QDsx+Lq
-	 NbU1uO9guqBDzMMpFUg8RkPr072M1sj+GSVCJhTL6AMH57qLC7OS1db71CO6ytJCWi
-	 alDClfluT+H2G3kQL19YAN8kRkAe69Dz1wyiL9t3ldOD0HbvJWs1ilb4ROnqPtTHNC
-	 OF0SjUhby8yShZjOpEdm3Dp+TODwqoYbGE2N3p8O5iIZ5xuEYvMLR66q4w7Nfat9Vw
-	 P1wNnv0wHeFH1dW9iIkRYWqQ31hqTcICmhyIqTLcIdwfS6mzH6YZg3sT5FjiDMXmMz
-	 Ai6mLgipcxFmw==
+	 Reply-To:Cc:From;
+	b=HiMXv3leLEd607HwhtJrYwhelNqR0s+rFakxy2JftxU624henGqFgpF+QA7xNTVei
+	 8AIk8CAyocXISyEvHOPxsWd39Ieeye7IZsWrOpKC/cqbjodzH0wRJM+DBVa78RQHWP
+	 e7kVT4vVnxOth1RPxCRw5jyOT7PUJnEajiKDpTFB6kJ3FLLcoBB92IXIo/J7H/A6PI
+	 7jKc7eb3xwZhd0Oc9Lk1skNpO7UbILzEP3niUeda92AfCCulOPaR35Q8ngWsvmsqBJ
+	 MNVExDHk/qsjauFME73Wa14g80+xg1LYpI+OTl+CYVKfUFWZnyDZucldlEP0JL3pR+
+	 6gFn4pYJ/9GHg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id tsNrtd1kkJsL; Mon, 11 Sep 2023 08:02:39 +0000 (UTC)
+	with ESMTP id KNNLoogBVfIf; Mon, 11 Sep 2023 14:03:41 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 690134095B;
-	Mon, 11 Sep 2023 08:02:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 690134095B
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 0C2B81BF3FB
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Sep 2023 08:02:38 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id E2A9A40888;
+	Mon, 11 Sep 2023 14:03:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E2A9A40888
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id EC4881BF30F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Sep 2023 14:03:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D79CC403A4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Sep 2023 08:02:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D79CC403A4
+ by smtp1.osuosl.org (Postfix) with ESMTP id C4A1080B96
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Sep 2023 14:03:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C4A1080B96
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id wEifeZUmavP1 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 Sep 2023 08:02:37 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
- by smtp2.osuosl.org (Postfix) with ESMTPS id F1D2D4037E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Sep 2023 08:02:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F1D2D4037E
-X-IronPort-AV: E=McAfee;i="6600,9927,10829"; a="380720926"
-X-IronPort-AV: E=Sophos;i="6.02,243,1688454000"; d="scan'208";a="380720926"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Sep 2023 01:02:14 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10829"; a="743250305"
-X-IronPort-AV: E=Sophos;i="6.02,243,1688454000"; d="scan'208";a="743250305"
-Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
- by orsmga002.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 11 Sep 2023 01:02:13 -0700
-Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
- fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32; Mon, 11 Sep 2023 01:02:13 -0700
-Received: from fmsmsx612.amr.corp.intel.com (10.18.126.92) by
- fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32; Mon, 11 Sep 2023 01:02:13 -0700
-Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
- fmsmsx612.amr.corp.intel.com (10.18.126.92) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32 via Frontend Transport; Mon, 11 Sep 2023 01:02:13 -0700
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.171)
- by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.32; Mon, 11 Sep 2023 01:02:12 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=dB1E2n+raOYie8+RokPyoXlZ1d8LVXCwlfxbpnsrFP98Hum4LO8rHB6ULzrAxgArkDySYkaVmYp5Q6Zw0wWhz2BqavPJT9fnKOO5DKgd0nsyZr22ZT+9+i/zT5vLQ16QbVelXXMX8OH590rnuCoIhXF+1nHsD70lMSgUxXPqr5wW/1g1fklMPGMSagkNG6J02obHmMSx6fLFTAU9XdAMfvl4u4DhIIuM3ScsQcmVdvEjd9OnBbY8I70zDIkNr2eJvEpS8qkdPh3DMLivWR5pUWMsuyAgm4sDfSMUyfXWlJUXl0RU/TEa9mVFx4CCaUxxBV/dahe6cF4GVS+N1xBGCQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=PZLHWbNRE0FJj1ywi0+mWr3mJyfBDprMsGuMD0eN32Y=;
- b=jJAfYg/GCHk8vVcO0qMUxPBNWVAY+cLPCN5+iMEL7i/LYmku38EPEN/QSfUmmx3z+D+OPJTfdWqszBD+ran/7dqMpm8yEFABI5ZkC9s0WK+pUfAhJM5r0gZ9rKIYOzpuHc22q4xhw230LRvR9cTqLCFeDaMirX60f6YCiyuThkCRpgfQJq+i/+ue2seOx05+xRB+xmMarNgICO67QbRDWwGQUYBw1WDPdv7PX4dFWTnTmGMaPtjMD5LxMpgTMoS88fbtRQAI3G5nm27y6iDbisoJI9U9g089E/P3e8p3ME0U2S2FvZDyvZd4xsgqNuQDsCMO5GtRH4xog8FFfa/YlQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from BYAPR11MB3528.namprd11.prod.outlook.com (2603:10b6:a03:87::26)
- by CH3PR11MB7346.namprd11.prod.outlook.com (2603:10b6:610:152::12)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6768.30; Mon, 11 Sep
- 2023 08:02:10 +0000
-Received: from BYAPR11MB3528.namprd11.prod.outlook.com
- ([fe80::3bfb:d758:2458:62a6]) by BYAPR11MB3528.namprd11.prod.outlook.com
- ([fe80::3bfb:d758:2458:62a6%5]) with mapi id 15.20.6745.035; Mon, 11 Sep 2023
- 08:02:10 +0000
-From: "Romanowski, Rafal" <rafal.romanowski@intel.com>
-To: "Vinschen, Corinna" <vinschen@redhat.com>, "Nguyen, Anthony L"
- <anthony.l.nguyen@intel.com>
-Thread-Topic: [Intel-wired-lan] [PATCH net] igb: clean up in all error paths
- when enabling SR-IOV
-Thread-Index: AQHZ1mu3PZ/oalv7bESHY0Q/pbqz66/5avSAgAiD6ACAAilsgIARR0bw
-Date: Mon, 11 Sep 2023 08:02:10 +0000
-Message-ID: <BYAPR11MB352816052C64937D7201247E8FF2A@BYAPR11MB3528.namprd11.prod.outlook.com>
-References: <20230824091603.3188249-1-vinschen@redhat.com>
- <ZOdWAdHNJzDs5ss7@calimero.vinschen.de>
- <c9bc7c2a-622f-5d82-69e8-2d24ba3875fa@intel.com>
- <ZPBK46hxIJCmuKtr@calimero.vinschen.de>
-In-Reply-To: <ZPBK46hxIJCmuKtr@calimero.vinschen.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: BYAPR11MB3528:EE_|CH3PR11MB7346:EE_
-x-ms-office365-filtering-correlation-id: 6f502f3b-1865-447e-be32-08dbb29d66c6
-x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: 8qQH7smfVeisnF23TAnUzRMfIzIBBJWlhJM8Ng1/pZ0FalzfqJiWTr+y1f+c+rZkoy4Yc7MHDxkUcGKmiClTgOtiHqjsbaN62OdRXfJ+84xK2aYq4KA5SX8s27wWtLA4EXs8RhA0WWGNq3ox55aWVSlm3An8BbtVtwmStUqm56ecOl/L9bF2Pb6zS60geoIW/enyB4ePvC/qbmy/LnnqG9b6wn0t+I235A8wCxMEYYzlfhCQrA1oXDPjBysRRZd/MlWUzy+jodi8Ma98+6gPgsViEogpVMk0OrczF0AOL6dEETRPcoIT2QXTLxAAbxEKvoeIhTCEp1cYnWD0nxRg5h0kW8asR+jc3LY+/5ol/2Dnp6eEet8HgYlYPsUWKqidTfLV2U7SiuDXTLrU89u2JgiXyy69CeMHzGRQNzeHxZs6SQo944xRbnZgNkV3jWSVo8NATUaHvT78oxs49Dh//7P3qOU/dnaXKcNemp9PkQMwlFArt42jkSeY+Uta8IzUPvifY+lMHFyMZT2F3S3y2kINFOPQT+Aioz81kexoK1dCfM03YfRjwJLibfLniwEB3Bypq6CfV0fDOTfs8l+3aSpPN0zk6NH/MewaRyEW0yXuIOSadKPJOkkbZqew1Mxz
-x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:BYAPR11MB3528.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(39860400002)(396003)(376002)(346002)(366004)(136003)(1800799009)(451199024)(186009)(122000001)(71200400001)(6506007)(7696005)(53546011)(82960400001)(9686003)(38070700005)(107886003)(55016003)(33656002)(38100700002)(86362001)(4326008)(52536014)(83380400001)(478600001)(41300700001)(316002)(8676002)(110136005)(5660300002)(26005)(66946007)(76116006)(6636002)(8936002)(2906002)(66476007)(54906003)(66446008)(66556008)(64756008);
- DIR:OUT; SFP:1102; 
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?1B6RU1ccCjTu+q2gOSobHOXFLIgyeq3D3iqN0dCDlLKNoICOK1RsKlO8JHUe?=
- =?us-ascii?Q?/isEsPVknt2yZdB6ie3nPOjQPzOjspf59o+4oRqT59ElSX7QBWgP4jHqGPe9?=
- =?us-ascii?Q?l3AYiVDJZdml/d2DB41eufGl6jRKgAbgnKybblueeLVaCZERC2112+yWZ1NS?=
- =?us-ascii?Q?PluSQdYNSewCBEdTci1l1rZOex6zlylfTKZwmy2ubwr0n8hs//ILGr6Rl4rs?=
- =?us-ascii?Q?EnO0xZdx1L23/0UCbUL5b42b8jefF1BqTj+3dfu734rdv+HtjruuQx/BSKIJ?=
- =?us-ascii?Q?aWv3CnYmGE2sJDkANdl+ARviA5p++B5/reEKtd2xgTO5UZCxHiPowQOJHV3S?=
- =?us-ascii?Q?TbGlIn6OGe4a6nPLicEzU2NIsT7bmlPu9JGdjc1rP+BnnBuSvQ1RWG7GHJhw?=
- =?us-ascii?Q?QQsbSXyCOWsn7VQUCiTQ65cI6l1IP0FEZVQxqfYbM6sqEZ+sDgWqSVga/p54?=
- =?us-ascii?Q?mj+6bHGKXgPTUDNj+NrFFdHeuWUuPyz5Mxg5WSiF5/fs96Mn/zB6OB5bM4Sk?=
- =?us-ascii?Q?iXRoW+rlarn30uPBQCzRv6X57Y/jTwiDs6T+aHUmNhi9W8okrl8CcdvFhsyJ?=
- =?us-ascii?Q?VHfRdYbNNfZ+Qn3VhlrNVvDkosIlJtpsrjrRlNuhjnw8F2QC4QanOeVFur78?=
- =?us-ascii?Q?A3lAucZes9hq+cFt6HK71bJPHr5mbX/3qxSUX48gmM0imuwLWTusZwWyW3hk?=
- =?us-ascii?Q?WWnVOa5Vk/91aW8rBUhKJxAwekzkgaz7VWzb9yqQtnKinM4AXcEqukqUlpaA?=
- =?us-ascii?Q?SKIKE3tKVro8xSb2PjsF/zoKm2nQR6Qaf85dwlYNynlzy8tJd79eXiLOBkGo?=
- =?us-ascii?Q?cEhQOOHyci5OgRfKA3fgsI8A6JaZQe76vb+U8g0hNbgSYwahOpICTeeYL1Mk?=
- =?us-ascii?Q?W+LlX8CgRi/o3bFElX1ONS9sF3oFXKmGcIHMiqE3bvn3lmhOKQP705e1QnVa?=
- =?us-ascii?Q?IMXCB+ceY3LsKuswApFoPIlohEVcypx+ghu6IlM/vFNi9GFSHmBxhgAiGxCo?=
- =?us-ascii?Q?GDWdHk1epYWHDObCsCOxFNVK5kjRIIUQQzIBcLcWCNTh/XKbS3uiEDaaYq7p?=
- =?us-ascii?Q?V4FWE0jyRyH8IC+yw3YlhhmBhbTAN4DN2DRgV5lz9xOBz14f3uUg2aLOl3ni?=
- =?us-ascii?Q?eXmcNGRbKevuns3IZY2jTueXXIXkMNqAth6KAPfDR5NxHTlusOpNJUecM6cx?=
- =?us-ascii?Q?zUDrh0/LEBc3LGhj7ezWzIt/09z5ZankKMcG4beUCAAvMV0jyI0LmFrbVsCU?=
- =?us-ascii?Q?ijQFeimWb7KxacYkn+89e9I9qPldIDmO48wWvUS/rDc28+jrJzWZ1fGkfjC2?=
- =?us-ascii?Q?X8c4sqe0AZqQVllXfPVw670Pe2noY2HpCEUzVuqsnJyfTUSIyT31ZL8qJzZ/?=
- =?us-ascii?Q?5DxQLQLrk4zxRrCD7yD6OqD5/jCEUSHgWV/26dshilsFLQai0xvYqRDkft6b?=
- =?us-ascii?Q?CBsClghMr0c5q0mjU9WrmEtP0ejYRHHqMw/vC2f1dvV5rcUjVP4JiHc/yRGM?=
- =?us-ascii?Q?9LAlvj3ePV3fXbev78w+NiwS6T85kCqAJT7bCTWbvN0tVZ98UW6iXKn0L0BQ?=
- =?us-ascii?Q?FQvy9UFf/wfYiSv+uxgr5An9L3WuV5nYBPoBT5Odu+IfrIoI4fuq5GlVeRTN?=
- =?us-ascii?Q?sw=3D=3D?=
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id EDKs4T6U2XWK for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 Sep 2023 14:03:37 +0000 (UTC)
+Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de
+ [80.237.130.52])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 62AD180C05
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Sep 2023 14:03:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 62AD180C05
+Received: from [2a02:8108:8980:2478:8cde:aa2c:f324:937e]; authenticated
+ by wp530.webpack.hosteurope.de running ExIM with esmtpsa
+ (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
+ id 1qfhVk-0001JK-HG; Mon, 11 Sep 2023 16:03:32 +0200
+Message-ID: <96bcfe54-fcee-4c14-9772-b8191ee10c03@leemhuis.info>
+Date: Mon, 11 Sep 2023 16:03:31 +0200
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB3528.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6f502f3b-1865-447e-be32-08dbb29d66c6
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Sep 2023 08:02:10.6740 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 4nc4np6AEU5QoBgVBeLET5TsCVJWlLebQeIuaBVG6JVJTF4JrcSpzLqejPaIhr1zT9oqDKmNaPRDuEjJqoXVo8xXzilQLGLLLnYcC5FMXkc=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR11MB7346
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1694419357; x=1725955357;
- h=from:to:cc:subject:date:message-id:references:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=HMOc+6T5f0298mN0Lx2NO2+oc40KxxtYcSzst9WBKtM=;
- b=GDHrcXGNx2Qd+3u13lUEIomgzRwOAS4FpfeVhEeOAWh9pQdJyW92SWJX
- FQew9r4x93joRtZaolUhaFxB77vcUq2gkCptIkbWZpnhX3wLWoW+YdKCY
- FdkRqjY6s2x9/k3rMBtiFXRqIuCK5rcKfFzpxoiyRUUUiRPMk71JTr6+N
- pQ5yoF99g3HzajcqiouFasdBQP0phAgCyP4bSv3R12qLnn5b1DxAud5D1
- fCVvHIxMvkiEhcfLUbnSQeY1m8kFXZKrqsyqWQTa0FSrjTeOtkprHhhXO
- z1k3Ga9sjKrGiElhHNL59rbaGLl3Vp5hoc8Ae/E+KGoFUzNVYWcCMusJX
- g==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GDHrcXGN
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH net] igb: clean up in all error paths
- when enabling SR-IOV
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US, de-DE
+From: Thorsten Leemhuis <regressions@leemhuis.info>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Tirthendu Sarkar <tirthendu.sarkar@intel.com>
+References: <e79edb0f-de89-5041-186f-987d30e0187c@gmail.com>
+ <e9644f38-57be-5d26-0c08-08a74eee7cb1@leemhuis.info>
+In-Reply-To: <e9644f38-57be-5d26-0c08-08a74eee7cb1@leemhuis.info>
+X-bounce-key: webpack.hosteurope.de; regressions@leemhuis.info; 1694441017;
+ 1b9d727a; 
+X-HE-SMSGID: 1qfhVk-0001JK-HG
+Subject: Re: [Intel-wired-lan] Fwd: Unexplainable packet drop starting at
+ v6.4
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -193,72 +80,109 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Reply-To: Linux regressions mailing list <regressions@lists.linux.dev>
+Cc: Linux Networking <netdev@vger.kernel.org>,
+ Linux Intel Ethernet Drivers <intel-wired-lan@lists.osuosl.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Bagas Sanjaya <bagasdotme@gmail.com>,
+ Linux Regressions <regressions@lists.linux.dev>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan <intel-wired-lan-bounces@osuosl.org> On Behalf Of
-> Corinna Vinschen
-> Sent: Thursday, August 31, 2023 10:10 AM
-> To: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-> Cc: intel-wired-lan@lists.osuosl.org; Brandeburg, Jesse
-> <jesse.brandeburg@intel.com>
-> Subject: Re: [Intel-wired-lan] [PATCH net] igb: clean up in all error paths when
-> enabling SR-IOV
+On 30.08.23 12:07, Linux regression tracking (Thorsten Leemhuis) wrote:
+> [replying with a heavily adjust set of recipients]
 > 
-> On Aug 29 16:09, Tony Nguyen wrote:
-> > On 8/24/2023 6:07 AM, Corinna Vinschen wrote:
-> > > Question to the Intel folks:
-> > >
-> > > On Aug 24 11:16, Corinna Vinschen wrote:
-> > > > After commit 50f303496d92 ("igb: Enable SR-IOV after reinit"),
-> > > > removing the igb module could hang or crash (depending on the
-> > > > machine) when the module has been loaded with the max_vfs parameter
-> set to some value != 0.
-> > > >
-> > > > In case of one test machine with a dual port 82580, this hang occured:
-> > > > [...]
-> > > > The reproducer was a simple script:
-> > > >
-> > > >    #!/bin/sh
-> > > >    for i in `seq 1 5`; do
-> > > >      modprobe -rv igb
-> > > >      modprobe -v igb max_vfs=1
-> > > >      sleep 1
-> > > >      modprobe -rv igb
-> > > >    done
-> > > >
-> > > > It turned out that this could only be reproduce on 82580 (quad and
-> > > > dual-port), but not on 82576, i350 and i210.  Further debugging
-> > > > showed that igb_enable_sriov()'s call to pci_enable_sriov() is
-> > > > failing, because
-> > > > dev->is_physfn is 0 on 82580.
-> > >
-> > > Along these lines, isn't the first and foremost bug that
-> > > igb_enable_sriov() has been called for this NIC at all?  In terms of
-> > > patches, shouldn't the guard expression in igb_probe_vfs()
-> > >
-> > >          /* Virtualization features not supported on i210 family. */
-> > > 	if ((hw->mac.type == e1000_i210) || (hw->mac.type == e1000_i211))
-> > > 		return;
-> > >
-> > > get changed to:
-> > >
-> > >          /* Virtualization features not supported on i210 and 82580 family. */
-> > > 	if ((hw->mac.type == e1000_i210) || (hw->mac.type == e1000_i211)
-> ||
-> > > 	    (hw->mac.type == e1000_82580))
-> > > 		return;
-> >
+> On 18.07.23 02:51, Bagas Sanjaya wrote:
+>>
+>> I notice a regression report on Bugzilla [1]. Quoting from it:
+> 
+> Tirthendu Sarkar, turned out this regressions reported in
+> https://bugzilla.kernel.org/show_bug.cgi?id=217678 is caused by your
+> change e9031f2da1a ("i40e: introduce next_to_process to i40e_ring")
+> [v6.4-rc1] that Tony applied in March.
+> 
+> Could you (or someone else) please take a look? The bugzilla ticket has
+> details and a comment from a second person that seems to be affected by
+> the same problem. And 6.5 seems to still show the problem.
 
+Hey i40e developers, did you see that message reg this regression in
+your driver I sent one and a half week ago? It would be good to get at
+least some progress here, as this report is around for quite some time
+already, as it was misdirected first. :-/ Two people are apparently
+affected by this, one re-confirmed today that this is still happening.
 
-Tested-by: Rafal Romanowski <rafal.romanowski@intel.com>
+Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
+--
+Everything you wanna know about Linux kernel regression tracking:
+https://linux-regtracking.leemhuis.info/about/#tldr
+If I did something stupid, please tell me, as explained on that page.
 
+#regzbot poke
 
+>>> Hi,
+>>>
+>>> After I updated to 6.4 through Archlinux kernel update, suddenly I noticed random packet losses on my routers like nodes. I have these networking relevant config on my nodes
+>>>
+>>> 1. Using archlinux
+>>> 2. Network config through systemd-networkd
+>>> 3. Using bird2 for BGP routing, but not relevant to this bug.
+>>> 4. Using nftables for traffic control, but seems not relevant to this bug. 
+>>> 5. Not using fail2ban like dymanic filtering tools, at least at L3/L4 level
+>>>
+>>> After I ruled out systemd-networkd, nftables related issues. I tracked down issues to kernel.
+>>>
+>>> Here's the tcpdump I'm seeing on one side of my node ""
+>>>
+>>> ```
+>>> sudo tcpdump -i fios_wan port 38851
+>>> tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+>>> listening on fios_wan, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+>>> 10:33:06.073236 IP [BOS1_NODE].38851 > [REDACTED_PUBLIC_IPv4_1].38851: UDP, length 148
+>>> 10:33:11.406607 IP [BOS1_NODE].38851 > [REDACTED_PUBLIC_IPv4_1].38851: UDP, length 148
+>>> 10:33:16.739969 IP [BOS1_NODE].38851 > [REDACTED_PUBLIC_IPv4_1].38851: UDP, length 148
+>>> 10:33:21.859856 IP [BOS1_NODE].38851 > [REDACTED_PUBLIC_IPv4_1].38851: UDP, length 148
+>>> 10:33:27.193176 IP [BOS1_NODE].38851 > [REDACTED_PUBLIC_IPv4_1].38851: UDP, length 148
+>>> 5 packets captured
+>>> 5 packets received by filter
+>>> 0 packets dropped by kernel
+>>> ```
+>>>
+>>> But on the other side "[REDACTED_PUBLIC_IPv4_1]", tcpdump is replying packets in this wireguard stream. So packet is lost somewhere in the link.
+>>>
+>>> From the otherside, I can do "mtr" to "[BOS1_NODE]"'s public IP and found the moment the link got lost is right at "[BOS1_NODE]", that means "[BOS1_NODE]"'s networking stack completely drop the inbound packets from specific ip addresses.
+>>>
+>>> Some more digging
+>>>
+>>> 1. This situation began after booting in different delays. Sometimes can trigger after 30 seconds after booting, and sometimes will be after 18 hours or more.
+>>> 2. It can envolve into worse case that when I do "ip neigh show", the ipv4 ARP table and ipv6 neighbor discovery start to appear as "invalid", meaning the internet is completely loss.
+>>> 3. When this happened to wan facing interface, it seems OK with lan facing interfaces. WAN interface was using Intel X710-T4L using i40e and lan side was using virtio
+>>> 4. I tried to bisect in between 6.3 and 6.4, and the first bad commit it reports was "a3efabee5878b8d7b1863debb78cb7129d07a346". But this is not relevant to networking at all, maybe it's the wrong commit to look at. At the meantime, because I haven't found a reproducible way of 100% trigger the issue, it may be the case during bisect some "good" commits are actually bad. 
+>>> 5. I also tried to look at "dmesg", nothing interesting pop up. But I'll make it available upon request.
+>>>
+>>> This is my first bug reports. Sorry for any confusion it may lead to and thanks for reading.
+>>
+>> See Bugzilla for the full thread.
+>>
+>> Thorsten: The reporter had a bad bisect (some bad commits were marked as good
+>> instead), hence SoB chain for culprit (unrelated) ipvu commit is in To:
+>> list. I also asked the reporter (also in To:) to provide dmesg and request
+>> rerunning bisection, but he doesn't currently have a reliable reproducer.
+>> Is it the best I can do?
+>>
+>> Anyway, I'm adding this regression to be tracked in regzbot:
+>>
+>> #regzbot introduced: a3efabee5878b8 https://bugzilla.kernel.org/show_bug.cgi?id=217678
+>> #regzbot title: packet drop on Intel X710-T4L due to ipvu boot fix
+>>
+>> Thanks.
+>>
+>> [1]: https://bugzilla.kernel.org/show_bug.cgi?id=217678
+>>
+> 
+> #regzbot introduced: e9031f2da1a
+> #regzbot poke
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
