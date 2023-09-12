@@ -1,92 +1,99 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20BC6CA0EEB
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Sep 2023 15:08:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D2E2CA0EF1
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Sep 2023 16:16:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A93DA415AE;
-	Tue, 12 Sep 2023 15:08:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A93DA415AE
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0384082001;
+	Tue, 12 Sep 2023 16:16:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0384082001
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1694531286;
-	bh=dclXRxUrod1nRmrAX/96iiFxUhxHrt16dDpHs34y3rQ=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1694535415;
+	bh=98t0ja4c2Ykj4t+5DFS2T1Mv7w/Y3PsK5VEfuwfFrtg=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=rLum3QpUMHTXLDFPJpYpg3oDznVbCIqcJEUxTCs2uHmeTZhz2ZhVbSGQzttSQ2A/2
-	 GQyTmBLYf9FiOI8wRLLh3gOg50wHUsHNauureG2Prg5RUv+XggxFa8RbJjqLUmKLtv
-	 7ZTQxWa/0FQbe9LZhsFbarGSzZz15pkR6/heXlzTGiP7Dia38hSsUN01mQzMUwAJ61
-	 ndf3Ix4a6n8BHFsqYRpdm/YmeOfjnOfCsy4KSzReT+2k7uy5LPyGYDfNsyLA3XYqwi
-	 jLk4YlvjUBWqydAQAghL1p6AMAAbQCPMrwjIEiwZaXVIHE5r7zC1N+0Jb3sGUAYy9E
-	 JSN75L8m7KGqQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 2AwgbDN4oCWq; Tue, 12 Sep 2023 15:08:05 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A5B9840432;
-	Tue, 12 Sep 2023 15:08:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A5B9840432
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 4B24E1BF841
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 12:11:36 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 1FC64820D5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 12:11:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1FC64820D5
+	b=kLwi/PuWzi51j67Sf/T9wBnXyusUkjBxdqSDfbNbEd1nH8VI3v7k8t/nfyYl4xit4
+	 ISc0qU3NyO+dC2rkKSpXOFd8wYdwsYzDA09I+4yACaUrGJrdF2lDPXeapw/D2wWVBn
+	 9U8KUUVyPiwlv/tFJ15jds5jKRD91AMYpykbnbgJF3nKCjE5epuBhhh+eHAwk47MuI
+	 5UrH5AjPXjeq07s40K06PiWbC6Mehj9e8YB2W9jsMScnMECzU6ulHT1MHn4xf30SVB
+	 tOT4Bmme0zAfLN6vyNwwPrrY5YljMfnp6KG/z5CNjwcn4/I0s9xx1xR3I2c32gg6AB
+	 4wS9vwIDdO2Dw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id por3jCwtG-vT for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Sep 2023 12:11:35 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.115])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 342B5820BB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 12:11:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 342B5820BB
-X-IronPort-AV: E=McAfee;i="6600,9927,10830"; a="378267954"
-X-IronPort-AV: E=Sophos;i="6.02,139,1688454000"; d="scan'208";a="378267954"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Sep 2023 05:11:34 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10830"; a="833886306"
-X-IronPort-AV: E=Sophos;i="6.02,139,1688454000"; d="scan'208";a="833886306"
-Received: from npejicx-mobl.ger.corp.intel.com ([10.251.217.90])
- by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Sep 2023 05:11:30 -0700
-Date: Tue, 12 Sep 2023 15:11:28 +0300 (EEST)
-From: =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
-To: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-In-Reply-To: <20230912113403.00006c39@Huawei.com>
-Message-ID: <942077c8-a44a-5831-55b-afceb4412c2@linux.intel.com>
-References: <20230911121501.21910-1-ilpo.jarvinen@linux.intel.com>
- <20230911121501.21910-4-ilpo.jarvinen@linux.intel.com>
- <20230912113403.00006c39@Huawei.com>
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id IzUDOXCulppm; Tue, 12 Sep 2023 16:16:54 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 07D2781F47;
+	Tue, 12 Sep 2023 16:16:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 07D2781F47
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id C3ACB1BF5AE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 16:16:52 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9CD304027F
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 16:16:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9CD304027F
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id bkSWRvf1vH74 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Sep 2023 16:16:51 +0000 (UTC)
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com
+ [IPv6:2607:f8b0:4864:20::632])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 42C83400CB
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 16:16:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 42C83400CB
+Received: by mail-pl1-x632.google.com with SMTP id
+ d9443c01a7336-1c1e3a4a06fso42268385ad.3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 09:16:51 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1694535410; x=1695140210;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=3MwTmVCnTEtep42XfZ4TFNmY2WBZrbi61crWobHgN3g=;
+ b=Q/zycgcnDVmuLsYxTuXzRps+4cBmD3eKtTc//KzewT2zLSWyGoTrR8BW9ePowkFYXJ
+ O5ffdhw7/Efaf7LIqN51V//lakU17s8UptHYLcm/3heg7/tq13Buq8Hzjcc/vEE6HZ41
+ TxYW5/NVaQ7uWrqgyKcWD5QoDXUgUWIGrNsLJzc9K1UaXnIvtLx3jnXgLkivvqkcQCze
+ 3/5EY/ekwRd4LbkqEHjOu+l8eiAAFnH8FYTj2cIkUYI1NgTatgtL+/Shq5drsi717tuG
+ /53VIgZUsvbQkDgdsU3h5rl7UxuLv3e14vCmldt/mHHefUinw/ceHkE8D5/qDUNHHtiB
+ PFyA==
+X-Gm-Message-State: AOJu0YxijvvktcZ81LnYH07bJXbkuFhj5H7YiIkcXp+uVFN7v4DVh0yK
+ 88SHCa4tF91K+YwFKhgvnxn/P7TcnTBlBsX3OyM=
+X-Google-Smtp-Source: AGHT+IEl/c3bl7m/pr2Ark1A+7Rka01Cb400iuEhzUjlRm3MNTOq7Gn0sjiWvD3rr/lJGDYA1zlGiQ==
+X-Received: by 2002:a17:902:ab15:b0:1c1:de3a:d3d7 with SMTP id
+ ik21-20020a170902ab1500b001c1de3ad3d7mr186339plb.68.1694535410652; 
+ Tue, 12 Sep 2023 09:16:50 -0700 (PDT)
+Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net.
+ [198.0.35.241]) by smtp.gmail.com with ESMTPSA id
+ 5-20020a170902e9c500b001bb04755212sm8608895plk.228.2023.09.12.09.16.49
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 12 Sep 2023 09:16:50 -0700 (PDT)
+Date: Tue, 12 Sep 2023 09:16:49 -0700
+From: Kees Cook <keescook@chromium.org>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Message-ID: <202309120916.5313AE37C5@keescook>
+References: <20230912115937.1645707-1-przemyslaw.kitszel@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323329-525986759-1694519782=:2125"
-Content-ID: <70baab3-03e-d377-677-c25fa8176a57@linux.intel.com>
-X-Mailman-Approved-At: Tue, 12 Sep 2023 15:08:04 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1694520695; x=1726056695;
- h=date:from:to:cc:subject:in-reply-to:message-id:
- references:mime-version:content-id;
- bh=s4B/T6itIbA12r0ps1vdM+hwzQ3jFlRsKTz0S71M4xM=;
- b=Rsxe00xEZXSYbpwGcbZ6UXj6ZB0CoAdL4yll0eywLjxaX55DiQiEUN/w
- l6ljzCvnpz8uTtYRA3CmdaVaToLsiciDwl1gjtrODwojCNkUPMOOyN5mF
- Msvn0vaZjwv+M5D/eLBA5w14n0i/rvruMlZn+BUS7m/A6Ns9QMcfVCuQS
- VUrWfw8Uvkvqy66mwavNZxi6HOrpHILlTCjDIfFYUULwPIdJPn1QM2Cf5
- vPq1XuPqQBQB9RZ63LPUjJy+rwp5usBpW1ko5b3f0Pm6KE9MfEEP4XnRC
- /rkf1E8KXfw6M56oOzoyLAzvfUOl0YtfVsUWgPxPZacDeWc8f3klR0vut
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Rsxe00xE
-Subject: Re: [Intel-wired-lan] [PATCH 3/8] igb: Use FIELD_GET() to extract
- Link Width
+Content-Disposition: inline
+In-Reply-To: <20230912115937.1645707-1-przemyslaw.kitszel@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=chromium.org; s=google; t=1694535410; x=1695140210; darn=lists.osuosl.org;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=3MwTmVCnTEtep42XfZ4TFNmY2WBZrbi61crWobHgN3g=;
+ b=Rjn9L6qSxu6oQQwR4VdtC/hSGh0CpFVr37MWFUV8YvxjMHhIjZ0tLT8aKAs6bQTLoJ
+ SkOVjkviQr9qkpy9Gl6yT0cO3fFxaeIIu/6EKuF+AvDewyOe2yT43P/AQCEAy6gTJUfR
+ XsQA7Qgm5VMjkSwG0e7yU2mpHWu/MF3IRzBD0=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
+ header.a=rsa-sha256 header.s=google header.b=Rjn9L6qS
+Subject: Re: [Intel-wired-lan] [PATCH net-next v5 0/7] introduce
+ DEFINE_FLEX() macro
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,117 +106,53 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
- LKML <linux-kernel@vger.kernel.org>, Eric Dumazet <edumazet@google.com>,
- Netdev <netdev@vger.kernel.org>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Jakub Kicinski <kuba@kernel.org>, Bjorn Helgaas <helgaas@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- intel-wired-lan@lists.osuosl.org
+Cc: Anthony Nguyen <anthony.l.nguyen@intel.com>, netdev@vger.kernel.org,
+ Steven Zou <steven.zou@intel.com>, edumazet@google.com,
+ David Laight <David.Laight@aculab.com>, intel-wired-lan@lists.osuosl.org,
+ linux-hardening@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
+ pabeni@redhat.com, davem@davemloft.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323329-525986759-1694519782=:2125
-Content-Type: text/plain; CHARSET=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Content-ID: <e51e5bf7-e092-ac4f-59c9-117fbfcad42f@linux.intel.com>
-
-On Tue, 12 Sep 2023, Jonathan Cameron wrote:
-
-> On Mon, 11 Sep 2023 15:14:56 +0300
-> Ilpo Järvinen <ilpo.jarvinen@linux.intel.com> wrote:
+On Tue, Sep 12, 2023 at 07:59:30AM -0400, Przemek Kitszel wrote:
+> Add DEFINE_FLEX() macro, that helps on-stack allocation of structures
+> with trailing flex array member.
+> Expose __struct_size() macro which reads size of data allocated
+> by DEFINE_FLEX().
 > 
-> > Use FIELD_GET() to extract PCIe Negotiated Link Width field instead of
-> > custom masking and shifting.
-> > 
-> > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/igb/e1000_mac.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/net/ethernet/intel/igb/e1000_mac.c b/drivers/net/ethernet/intel/igb/e1000_mac.c
-> > index caf91c6f52b4..5a23b9cfec6c 100644
-> > --- a/drivers/net/ethernet/intel/igb/e1000_mac.c
-> > +++ b/drivers/net/ethernet/intel/igb/e1000_mac.c
-> > @@ -1,6 +1,7 @@
-> >  // SPDX-License-Identifier: GPL-2.0
-> >  /* Copyright(c) 2007 - 2018 Intel Corporation. */
-> >  
-> > +#include <linux/bitfield.h>
-> >  #include <linux/if_ether.h>
-> >  #include <linux/delay.h>
-> >  #include <linux/pci.h>
-> > @@ -50,9 +51,8 @@ s32 igb_get_bus_info_pcie(struct e1000_hw *hw)
-> >  			break;
-> >  		}
-> >  
-> > -		bus->width = (enum e1000_bus_width)((pcie_link_status &
-> > -						     PCI_EXP_LNKSTA_NLW) >>
-> > -						     PCI_EXP_LNKSTA_NLW_SHIFT);
-> > +		bus->width = (enum e1000_bus_width)FIELD_GET(PCI_EXP_LNKSTA_NLW,
-> > +							     pcie_link_status);
+> Accompany new macros introduction with actual usage,
+> in the ice driver - hence targeting for netdev tree.
 > 
-> This cast is a bit ugly given it takes the values 0, 1, 2, 3 and
-> we extra a field that the spec says contains 1, 2, 4, 8 etc
-> Hence it only works because only 1 and 2 are used I think...  Not nice.
-
-Not perfect but I guess the enum definition could use 
-PCI_EXP_LNKSTA_NLW_X* to ensure at least the PCIe ones match.
-
-> Also, whilst looking at this I note that e1000e has it's own defines
-> for PCIE_LINK_WIDTH_MASK and PCIE_LINK_WIDTH_SHIFT 
+> Obvious benefits include simpler resulting code, less heap usage,
+> less error checking. Less obvious is the fact that compiler has
+> more room to optimize, and as a whole, even with more stuff on the stack,
+> we end up with overall better (smaller) report from bloat-o-meter:
+> add/remove: 8/6 grow/shrink: 7/18 up/down: 2211/-2270 (-59)
+> (individual results in each patch).
 > 
-> Looks like those should be changed to use the standard defines.
+> v5: same as v4, just not RFC
+> v4: _Static_assert() to ensure compiletime const count param
+> v3: tidy up 1st patch
+> v2: Kees: reusing __struct_size() instead of doubling it as a new macro
+> 
+> Przemek Kitszel (7):
+>   overflow: add DEFINE_FLEX() for on-stack allocs
+>   ice: ice_sched_remove_elems: replace 1 elem array param by u32
+>   ice: drop two params of ice_aq_move_sched_elems()
+>   ice: make use of DEFINE_FLEX() in ice_ddp.c
+>   ice: make use of DEFINE_FLEX() for struct ice_aqc_add_tx_qgrp
+>   ice: make use of DEFINE_FLEX() for struct ice_aqc_dis_txq_item
+>   ice: make use of DEFINE_FLEX() in ice_switch.c
 
-Yes, thanks. I added a patch to address those duplicated defines and 
-I also noticed it had a duplicated copy for PCI_EXP_LNKSTA which I also 
-converted.
+Looks good to me! Feel free to pick up via netdev.
 
-I'll send v2 which has most of your suggestions taken into account once 
-the build bot has done its thing.
-
-> For extra giggles there are two e1000_bus_width enum definitions in different
-> headers.
-
-No, there are actually 3 if one looks carefully, and many more if the 
-ones named according to the driver are also counted all following this 
-same "not nice" pattern. ;-)
-
-That's 3 different drivers though which just happen to be similarly named 
-so it's not entirely fair as it would be same as saying drivers x, y, and 
-z have something with the same name. It's pretty obviously those come from 
-copy paste though which usually means some common code might have been 
-handy.
-
-> Actual patch is good - just 'interesting' stuff noticed whilst looking 
-> at it :) 
-
-Yeah, I've plenty of 'interesting' stuff I've noticed while looking around 
-on my todo list. I even thought I had that general PCI_EXP_* FIELD_GET() 
-cleanup on it as I recall eyeing what it would take to find all of them 
-but it seems I never added that there (now it is).
-
-But then I was taking a look at these Link Width ones and there was just 
-so much low-hanging fruit (some of which are like you put it, an 
-excellent example of good cleanup) so I went to do that right away 
-without considering all the other fields.
-
-Thanks a lot for taking a look.
-
+-Kees
 
 -- 
- i.
---8323329-525986759-1694519782=:2125
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
+Kees Cook
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
---8323329-525986759-1694519782=:2125--
