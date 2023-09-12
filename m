@@ -4,81 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B342CA0ECA
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Sep 2023 09:37:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC3E0CA0EC3
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Sep 2023 09:56:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A61156113B;
-	Tue, 12 Sep 2023 09:37:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A61156113B
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7622A6112E;
+	Tue, 12 Sep 2023 09:56:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7622A6112E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1694511434;
-	bh=v8sHc8euunt0twb02QbjOfXaK5tfTDVkDtWsnxq9Ycc=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=lBVi1WqKS0qHgmbR0dc0PCFNkWd6I8hu3IMGzwPEn9UwoDn26JEgzcqdhmq1g/HWG
-	 MHlHKaK+in5H5ydM2ngVV/u7RdhKVa0/hYWPRd4rz9BBp5NO8HZYk2bB+8wjdmWPiD
-	 u6gA+KSfvcHgEGojzWagkw0A5NGC1XQaK9bLNaIC3Ljbk3AQ53U/1CSJEP0cM3XG4G
-	 roDWayCNx3gVXbmLEeSHz4itKmuE4T192uI0IEde5vH63q9aVW8pPPrs9TPpwpQhU4
-	 0tOTffluUq0KqMK6JWq0qbpCcu2Ohdsx9co5opktsxEK8SSHdEwnYAcE7sus11WnYP
-	 zUQ7tO66g9dTg==
+	s=default; t=1694512585;
+	bh=CmwqzFa2ZveIK6lNc/jCplC3bhFkHMpmGX0HUd8DMUk=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=xv0E9UkvAeS1G7YXHSL3eRYj74VwjcWoBJAlM0dk0CWuJ6McNf+4/6/6iGlMVov5J
+	 c2JIpzyp1SkrhhN9G/O4q4fUx1+qYLV8Ee6r2Aa4xaJijOr/NczQT2tEQ9nJbk/Z2H
+	 zBCSe4n/C+hYHetKHz1BN787eXF7ZNa0N9naciRXTBxSljtpjGvHrdikcSlAFjZAXU
+	 iIramghZSV0X6Y/6MAS2Civjy6dw/jhWZCCdh34fgJ8403otF4FNcz0axTA04nScBX
+	 GItU672j5Z3ij1fKCFeYwOD8sSZUOunt/FhIB4uZec7+/aZTUwmYuyTF1/gYcgxTOV
+	 Rq97R/81eHEOw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZaT5_Lg8r3eH; Tue, 12 Sep 2023 09:37:13 +0000 (UTC)
+	with ESMTP id dPPB4gK1RWBW; Tue, 12 Sep 2023 09:56:24 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 950E261145;
-	Tue, 12 Sep 2023 09:37:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 950E261145
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id BC7721BF357
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 09:37:11 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5ECFA61135;
+	Tue, 12 Sep 2023 09:56:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5ECFA61135
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 540531BF3BE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 09:56:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9D34841929
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 09:37:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9D34841929
+ by smtp2.osuosl.org (Postfix) with ESMTP id 2BD934038B
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 09:56:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2BD934038B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id iNV25e9SkbI4 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Sep 2023 09:37:10 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 3351541950
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 09:37:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3351541950
-X-IronPort-AV: E=McAfee;i="6600,9927,10830"; a="444761527"
-X-IronPort-AV: E=Sophos;i="6.02,245,1688454000"; d="scan'208";a="444761527"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Sep 2023 02:37:09 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10830"; a="833845251"
-X-IronPort-AV: E=Sophos;i="6.02,245,1688454000"; d="scan'208";a="833845251"
-Received: from os-delivery.igk.intel.com ([10.102.18.218])
- by FMSMGA003.fm.intel.com with ESMTP; 12 Sep 2023 02:37:08 -0700
-From: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 12 Sep 2023 11:29:36 +0200
-Message-Id: <20230912092936.21875-1-jedrzej.jagielski@intel.com>
-X-Mailer: git-send-email 2.31.1
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ugYn3q_JZuXn for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Sep 2023 09:56:21 +0000 (UTC)
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 611F5401CA
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 09:56:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 611F5401CA
+Received: from mail-ed1-f72.google.com (mail-ed1-f72.google.com
+ [209.85.208.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-191-bYaZUqB8NwKeh_RMwC8Oxw-1; Tue, 12 Sep 2023 05:56:18 -0400
+X-MC-Unique: bYaZUqB8NwKeh_RMwC8Oxw-1
+Received: by mail-ed1-f72.google.com with SMTP id
+ 4fb4d7f45d1cf-52a59eb87fcso1062300a12.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Sep 2023 02:56:18 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1694512577; x=1695117377;
+ h=mime-version:user-agent:content-transfer-encoding:references
+ :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
+ :from:to:cc:subject:date:message-id:reply-to;
+ bh=qwbY5T4S7HVWeFjupYj7Meyn2zny3d5w0hwW7I2C90g=;
+ b=d9ntuGXFuTttuQDXf64Z3qNA17fhAi3oaIZ4CeA2K0NeL+iN+Jz9CDcPtwdQFgz84K
+ dyEwyLighNPDlyzPIe92c5C9DRT7DWtL34z4LK0D45OC1g9IfDBy2GAVM68+oFBvRIYT
+ c5arBoArlkXPB8Xd9Ypknf/vCkm8HOv8tBb+9dnvGZwF3k6DbiGrHHUP+t+uswdT3WRb
+ v6cNH+ptCJNkWPS4Ky89BeSR5mkf+CSKhWTUVC8zJY3SUnmlhZiDVPxg7zP0m29JPh6a
+ 6+07P4hvWPM6TKuAl1s5qPpRfAVJ6/Zdo25YuO5KO4J4Jqvwe9/KxP6B12n1eqYt1rp1
+ EQhg==
+X-Gm-Message-State: AOJu0YwWHzYutm+viVGfHWaE0grRAgVUTzsisokrABi5r9LUzha4iYte
+ Pn4dmfGubTYSz15qZiD3nh4Q3pf9pFvcP8zXPd4Cj4dxjPFPVj4XEtUmXszwI3YNf+BfkWt4xXU
+ h8gQpqqZcfnNE0Nz/QekfQEnjcptX8g==
+X-Received: by 2002:a05:6402:26cc:b0:514:ab8b:ee78 with SMTP id
+ x12-20020a05640226cc00b00514ab8bee78mr10100852edd.3.1694512577547; 
+ Tue, 12 Sep 2023 02:56:17 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHL6yEqSITkrMXY37tjjUVT9sr6X+90RRvmipG1uMwsARpI1raoLpntc8EIwiFYT+PS/8a0Qw==
+X-Received: by 2002:a05:6402:26cc:b0:514:ab8b:ee78 with SMTP id
+ x12-20020a05640226cc00b00514ab8bee78mr10100843edd.3.1694512577268; 
+ Tue, 12 Sep 2023 02:56:17 -0700 (PDT)
+Received: from gerbillo.redhat.com (146-241-249-231.dyn.eolo.it.
+ [146.241.249.231]) by smtp.gmail.com with ESMTPSA id
+ l9-20020aa7c309000000b0052a19a75372sm5664844edq.90.2023.09.12.02.56.16
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Tue, 12 Sep 2023 02:56:16 -0700 (PDT)
+Message-ID: <0168a988486f4bff08bd186d5aea1cfe4900a2c3.camel@redhat.com>
+From: Paolo Abeni <pabeni@redhat.com>
+To: Andrii Staikov <andrii.staikov@intel.com>, 
+ intel-wired-lan@lists.osuosl.org
+Date: Tue, 12 Sep 2023 11:56:15 +0200
+In-Reply-To: <20230912092952.2814966-1-andrii.staikov@intel.com>
+References: <20230912092952.2814966-1-andrii.staikov@intel.com>
+User-Agent: Evolution 3.46.4 (3.46.4-1.fc37)
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1694511430; x=1726047430;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=Q0XvWGuv+Rb2JpY7zOgqvgfqYsBDl3nyJxfX3/aKmQg=;
- b=AxiB2k63nwsTSuKIIrK0tt/xZqP6odLs78zy3gdxOyrrhHNiGQZmuzet
- A8nUxIb1bm9iPuXHHl841Qs+tMIl3yLVrlmyWP5rnAEmGrIBX1jVWZ3AW
- wGBl6h3OASmI6DxUHG3uaLb06Kzw/TFqoMTaiBLJ6enidb2wnkWS4C9XZ
- D/8Dgnr+OSRhNON0bIXVRJp8jPdmU52j4OXEmncLTq2lwR+JVXCaY6vMe
- ggGqcl3VAEfTe16Wz9wnuTiHZWRiBdRtI0eOzU3XwCpDUfSTK5OT0FyFw
- R8HK5QASoTfBDPItK+Kl09OX9V/diaU9H8ZUOA8+HS0cchtxsV52hnIQQ
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=AxiB2k63
-Subject: [Intel-wired-lan] [PATCH iwl-next v1] ixgbe: Extend rx_errors
- calculation
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=redhat.com; 
+ s=mimecast20190719; t=1694512580;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=qwbY5T4S7HVWeFjupYj7Meyn2zny3d5w0hwW7I2C90g=;
+ b=bp3+SpM58/VXRXQY+ESGkZ6KCTAIVGA7fKYRZY4dLFFWhOOK7PE1dOKwwS0OJPBVUJBZut
+ WjD/etp51BLYQAobFKHszCDdbvG06gKRhQUJmw/Pt0HR4RU9lEY0EgOH+kOw+O2Unj96Oo
+ PpppFL3WET2AdiigNTiW0xyHhUSKR5o=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=bp3+SpM5
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2] ice: Add support for
+ packet mirroring using hardware in switchdev mode
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,60 +121,44 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: anthony.l.nguyen@intel.com, Jedrzej Jagielski <jedrzej.jagielski@intel.com>
+Cc: netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently we are only including crcerrs (CRC Error Count) and
-rlec (Receive Length Error Count) in the PF netdev's rx_error counter.
-There are also other causes of Rx errors that the device supports and
-reports via Ethtool. Accumulate all Rx errors in the PF netdev's
-rx_error counter.
+Hi all,
 
-Error counters added for:
-Illegal Byte Error, Checksum Bad, Receive [Over/Under]size,
-Receive Fragment and Receive Jabber.
+On Tue, 2023-09-12 at 11:29 +0200, Andrii Staikov wrote:
+> Switchdev mode allows to add mirroring rules to mirror
+> incoming and outgoing packets to the interface's port
+> representor. Previously, this was available only using
+> software functionality. Add possibility to offload this
+> functionality to the NIC hardware.
+> 
+> Introduce ICE_MIRROR_PACKET filter action to the
+> ice_sw_fwd_act_type enum to identify the desired action
+> and pass it to the hardware as well as the VSI to mirror.
+> 
+> Example of tc mirror command using hardware:
+> tc filter add dev ens1f0np0 ingress protocol ip prio 1 flower
+> src_mac b4:96:91:a5:c7:a7 skip_sw action mirred egress mirror dev eth1
+> 
+> ens1f0np0 - PF
+> b4:96:91:a5:c7:a7 - source MAC address
+> eth1 - PR of a VF to mirror to
+> 
+> Signed-off-by: Andrii Staikov <andrii.staikov@intel.com>
 
-The above were added in order to align statistics with other products.
+The amount of patches that IMHO should land only into intel-specific
+MLs and instead reaches also netdev, recently increased.
 
-Signed-off-by: Jedrzej Jagielski <jedrzej.jagielski@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+Please try harder to apply proper constraints to your traffic, netdev
+is already busy enough!
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index dd03b017dfc5..0dd91cf1d89b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7160,6 +7160,7 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 	netdev->stats.tx_packets = packets;
- 
- 	hwstats->crcerrs += IXGBE_READ_REG(hw, IXGBE_CRCERRS);
-+	hwstats->illerrc += IXGBE_READ_REG(hw, IXGBE_ILLERRC);
- 
- 	/* 8 register reads */
- 	for (i = 0; i < 8; i++) {
-@@ -7313,7 +7314,15 @@ void ixgbe_update_stats(struct ixgbe_adapter *adapter)
- 	netdev->stats.multicast = hwstats->mprc;
- 
- 	/* Rx Errors */
--	netdev->stats.rx_errors = hwstats->crcerrs + hwstats->rlec;
-+	netdev->stats.rx_errors = hwstats->crcerrs +
-+				  hwstats->illerrc +
-+				  adapter->hw_csum_rx_error +
-+				  hwstats->rlec +
-+				  hwstats->ruc +
-+				  hwstats->rfc +
-+				  hwstats->roc +
-+				  hwstats->rjc;
-+
- 	netdev->stats.rx_dropped = 0;
- 	netdev->stats.rx_length_errors = hwstats->rlec;
- 	netdev->stats.rx_crc_errors = hwstats->crcerrs;
--- 
-2.31.1
+Thanks,
+
+Paolo
 
 _______________________________________________
 Intel-wired-lan mailing list
