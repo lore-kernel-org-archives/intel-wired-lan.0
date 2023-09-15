@@ -1,85 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 304A9EE645C
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Sep 2023 13:58:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2119AEED600
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Sep 2023 14:58:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E0AAE6136B;
-	Fri, 15 Sep 2023 13:58:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E0AAE6136B
+	by smtp2.osuosl.org (Postfix) with ESMTP id 9D2AC40207;
+	Fri, 15 Sep 2023 14:58:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9D2AC40207
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1694786331;
-	bh=wbxY9u52uUJFuQy3la86q4uV+PkJXFq9H5Evs+hzWgQ=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=8Dvat5gWPXC2y27G3+8U5LhZo3suu+bf9wUerDE9KZbbmSkHS7whW5ARKzigTNzAa
-	 1RhVXpOVCCJgsLI6sQjLE3B8xAEmiu2zZCz8etvQaHJO2D90tpQTTyISbgW469Mw5G
-	 Zc8tMJd7elwqD8r8XdhqSGF4gHHVYjUllVPkgyLmKztEnG4N75TuOc2MMo8lBPpgJW
-	 2qNncyW6XoWcEWVTK/gBiz2QdmeY5iW98mNmxy/z4kBinoZmnSVX7qCTXmVCJGzDCV
-	 Y/qlnwLEGLTtxn+dfxAmyI762iwNB7g6Srny8Q8yROg4j14uh24ACvZhVBsNwHOJEs
-	 AwP5MT66x40OA==
+	s=default; t=1694789891;
+	bh=1db4ak7ELPwQU22pgBCd4N+f6QFkO7FZWNg9FLa6l3I=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=hGcZWr2pkPCurtTsQGkqM25Ol6YUZoCUD9d+NY2nrbHgWvWXO6alUGyRGd+5EMBZ0
+	 Ap6q981lY6e6eLv9IEHBHeCs877pv0KC5VyCDXEseG8UVdPh7kt2AR02XaQBgzTjY9
+	 7yaMKd/Ooyu5i+iQJvsU98rag+QimtOkb244XipYONQ8mgmcLtzWeM/JLU4fOLXiyN
+	 WcLZMuOYHLTxreQfSjzAHpEnddkQj4hHFIpGUNeiqRhuTv2cQh4Aqj6ipynXd4YJn6
+	 r44cx4KrzersUX0gzLbl/Z2VEca/HFB89cKaKmTX6AyXgHZSDGR5QhuLWcC0ww7GhI
+	 bRJ8DQvUX0IBQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id gXr4yelCCjx3; Fri, 15 Sep 2023 13:58:51 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id z3Wu1YuhgU6r; Fri, 15 Sep 2023 14:58:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 052266135B;
-	Fri, 15 Sep 2023 13:58:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 052266135B
+	by smtp2.osuosl.org (Postfix) with ESMTP id 85611404FF;
+	Fri, 15 Sep 2023 14:58:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 85611404FF
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id BE6AF1BF3DD
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 13:58:49 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 6779E1BF20B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 14:58:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id A434E402F4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 13:58:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A434E402F4
+ by smtp2.osuosl.org (Postfix) with ESMTP id 3F6CB40207
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 14:58:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3F6CB40207
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id TPgGls-yv9un for <intel-wired-lan@lists.osuosl.org>;
- Fri, 15 Sep 2023 13:58:49 +0000 (UTC)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 0522D40164
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 13:58:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0522D40164
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
- (envelope-from <andrew@lunn.ch>)
- id 1qh9LK-006Y3M-A3; Fri, 15 Sep 2023 15:58:46 +0200
-Date: Fri, 15 Sep 2023 15:58:46 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <145ec8c7-ae64-42a2-ab7f-b77b1b0d23bf@lunn.ch>
-References: <20230819093941.15163-1-paul.greenwalt@intel.com>
- <e6e508a7-3cbc-4568-a1f5-c13b5377f77e@lunn.ch>
- <e676df0e-b736-069c-77c4-ae58ad1e24f8@intel.com>
- <ZOZISCYNWEKqBotb@baltimore>
- <a9fee3a7-8c31-e048-32eb-ed82b8233aee@intel.com>
- <51ee86d8-5baa-4419-9419-bcf737229868@lunn.ch>
- <ZPCQ5DNU8k8mfAct@baltimore>
- <87ea2635-c0b3-4de4-bc65-cbc33a0d5814@lunn.ch>
- <ZQMYUM3F/9v9cTQM@baltimore>
- <3713a4ff-c977-c62e-aa56-9293cf2cfd1f@intel.com>
+ with ESMTP id yXBiWJ_F-_tW for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 15 Sep 2023 14:58:05 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.100])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7BB04404FF
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 14:58:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7BB04404FF
+X-IronPort-AV: E=McAfee;i="6600,9927,10834"; a="445723947"
+X-IronPort-AV: E=Sophos;i="6.02,149,1688454000"; d="scan'208";a="445723947"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 15 Sep 2023 07:58:02 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10834"; a="810548649"
+X-IronPort-AV: E=Sophos;i="6.02,149,1688454000"; d="scan'208";a="810548649"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by fmsmga008.fm.intel.com with ESMTP; 15 Sep 2023 07:58:00 -0700
+Received: from baltimore.igk.intel.com (baltimore.igk.intel.com [10.102.21.1])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 8980B333F9;
+ Fri, 15 Sep 2023 15:57:59 +0100 (IST)
+From: Pawel Chmielewski <pawel.chmielewski@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Fri, 15 Sep 2023 16:55:20 +0200
+Message-Id: <20230915145522.586365-1-pawel.chmielewski@intel.com>
+X-Mailer: git-send-email 2.37.3
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <3713a4ff-c977-c62e-aa56-9293cf2cfd1f@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; d=lunn.ch; 
- s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
- Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
- bh=QvVRYtWOCyMDuzncQnkYEAfoirjzGGs2skJ72Y0JYro=; b=uQxf4rz0Q6q4sgnHDKl2jtTbnK
- hsYKYXGtz72u7tWy0W2KhSxEy+2Ihuek0I8ATLf1MwVULLqxcZ51PEv98sh5AbQdxHUpB2D0IA+Xs
- 1wt4el7lJEfsrYkA2Vz0xWwU/l2PCOidRyyGqaGKhW5icXC67W5PLJBd/lp8cRSG4a4I=;
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1694789885; x=1726325885;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=IFoeJfee1c5/WFl5XI80VGzxax2tOzfaCmPP7RDjNMo=;
+ b=lO6QouaiYjDrbHqlPlyjcQgzu1Bj7sItn5vnY1BbGhwvSBGyCPtyMjCg
+ m5lGLRUQUTicB4n10wcYPsSNL8VUUYSvZ0Dh4jN/ToBjovH9KvaAun/+p
+ AikS79PRYOh515qFec6NFnZ/PbdsT3MibCa7sATTu05pJdNquDyBpgZY0
+ j8QZpBNIwfSXz+jNVgYA9INh2Dkek2DkDBhFZ5Wgjpy7d78WG4/UjhYqI
+ OiRQBzcikHZsGcu0nfo78I2A5Qzk3NKMQzsUVB+mI2Th5Yi5MTAo4CX/z
+ 1SixVJvOR0Ci9nhW8WcpweXbN0nObbro93ht8/60zgzaTXiXvbh4Wa6DK
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch
- header.a=rsa-sha256 header.s=20171124 header.b=uQxf4rz0
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 2/9] ethtool: Add forced
- speed to supported link modes maps
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=lO6Qouai
+Subject: [Intel-wired-lan] [PATCH iwl-next 0/2] ethtool: Add link mode maps
+ for forced speeds
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,27 +94,40 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: aelior@marvell.com, manishc@marvell.com, netdev@vger.kernel.org,
- Pawel Chmielewski <pawel.chmielewski@intel.com>,
- intel-wired-lan@lists.osuosl.org, "Greenwalt, Paul" <paul.greenwalt@intel.com>
+Cc: Pawel Chmielewski <pawel.chmielewski@intel.com>, netdev@vger.kernel.org,
+ aelior@marvell.com, manishc@marvell.com, andrew@lunn.ch
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> Here I'd like to add that we're planning to try to use Phylink in ice
-> soon. It may take a while and will most likely require core code
-> expansion, since Phylink was originally developed for embedded HW and
-> DeviceTree and doesn't fully support PCI devices.
+The following patch set was initially a part of [1]. As the purpose of
+the original series was to add the support of the new hardware to the
+intel ice driver, the refactoring of advertised link modes mapping was
+extracted to a new set.
+The patch set adds a common mechanism for mapping Ethtool forced speeds
+with Ethtool supported link modes, which can be used in drivers code.
 
-Cool.
+[1] https://lore.kernel.org/netdev/20230823180633.2450617-1-pawel.chmielewski@intel.com
 
-And yes, not having device tree will require some changes, but i don't
-think it will require changes to the core of phylink, just the edges
-where you instantiate phylink, using a different configuration
-mechanism.
 
-	Andrew
+Paul Greenwalt (1):
+  ethtool: Add forced speed to supported link modes maps
+
+Pawel Chmielewski (1):
+  ice: Refactor finding advertised link speed
+
+ drivers/net/ethernet/intel/ice/ice.h          |   1 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  | 201 ++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_main.c     |   2 +
+ .../net/ethernet/qlogic/qede/qede_ethtool.c   |  24 +--
+ include/linux/ethtool.h                       |  20 ++
+ net/ethtool/ioctl.c                           |  15 ++
+ 6 files changed, 178 insertions(+), 85 deletions(-)
+
+-- 
+2.37.3
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
