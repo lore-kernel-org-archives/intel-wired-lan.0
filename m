@@ -4,87 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6629EED600
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Sep 2023 15:12:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D1BCEED600
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Sep 2023 15:12:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 47D3B403A5;
-	Fri, 15 Sep 2023 15:12:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 47D3B403A5
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4B4934193F;
+	Fri, 15 Sep 2023 15:12:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4B4934193F
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1694790756;
-	bh=e+ZkWqqymBKWkSSkQ0x6Q2X0wHuGlJh6QhH3LLCp4Wg=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=eDxL/GG0pUQ+o0sxBMvMHznVrrXH4OAQwvYNRU2gum2zCKUqUlcd8Iq1ekXikvSUj
-	 LgR8aYa5eCoAAaCOaCFdGbpvOwNbBl7UXSra+S28FsP9fOZdeFmT/e9Wv0AaKW4ke2
-	 WgnBcxqEI2zrCmYF83N+ixDlPprYLZ91LICj4z4pIRZCFGgvTQqIzYIxnvRnnyiWau
-	 ZzyzVPIfiqfzd+/7QJu0DA7xc7/Klq4QZ5kmJ1e7btPwscaK/Z0+kPBGQqvZEz+hK6
-	 lGuCD62NGeQ8bXELhmwoBIQVQPHwDnltwmMmVYknJ5pByk/J3E6fJfU/QfMxFHJ89M
-	 vuLWmjmGlANIw==
+	s=default; t=1694790760;
+	bh=GulTDOm8HAK8ZKl8JlDwYfv9xOJEZmPYS9ngl3BV4Xo=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=tZz7ECG4Z4phGzUjRsGRvaZ2sWdptXZlhktD6tspjWA8bUH1Tc3kNHBxBZlHoNMmy
+	 gCQWDfMp4CIIT4ubidcGWj4Pyi3Uk1cV+dcJL7akkkpHTuwLP06ukkJceGQ3kLhIyh
+	 Ky8mpuoJ4zqjANwe/BcD3aVOCYqdJ/xsrpjontlzBhpao6EZf/01j8eQWMKIT9F0qN
+	 edTO1PJ5iohEQ9AUbqgfZujC2KXawxRSQX+TfgjK+/INfOCMk/9cEcKyAtenq7iAxB
+	 Xz94E3LN4up4SAJUax/2xBy6LNWI3pDboOry619+FGzLt8r9G7s3H9yl+zLueeMEl+
+	 c0RlQp3EXTnzA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id imczRhFPr20p; Fri, 15 Sep 2023 15:12:35 +0000 (UTC)
+	with ESMTP id Sqce0a0S_oHd; Fri, 15 Sep 2023 15:12:39 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 354CD404FF;
-	Fri, 15 Sep 2023 15:12:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 354CD404FF
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3412141952;
+	Fri, 15 Sep 2023 15:12:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3412141952
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 56BAF1BF3D2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 15:12:34 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 741BB1BF3D2
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 15:12:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 2B2A783C01
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8CA4283B87
  for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 15:12:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2B2A783C01
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8CA4283B87
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id JqitWYZ0wgA8 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 15 Sep 2023 15:12:32 +0000 (UTC)
+ with ESMTP id tAPLXAhsGLu9 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 15 Sep 2023 15:12:30 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8094883B87
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 15:12:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8094883B87
-X-IronPort-AV: E=McAfee;i="6600,9927,10834"; a="410209409"
-X-IronPort-AV: E=Sophos;i="6.02,149,1688454000"; d="scan'208";a="410209409"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 714C783B86
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Sep 2023 15:12:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 714C783B86
+X-IronPort-AV: E=McAfee;i="6600,9927,10834"; a="410209399"
+X-IronPort-AV: E=Sophos;i="6.02,149,1688454000"; d="scan'208";a="410209399"
 Received: from orsmga004.jf.intel.com ([10.7.209.38])
  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Sep 2023 08:12:32 -0700
+ 15 Sep 2023 08:12:29 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10834"; a="868741761"
-X-IronPort-AV: E=Sophos;i="6.02,149,1688454000"; d="scan'208";a="868741761"
+X-IronPort-AV: E=McAfee;i="6600,9927,10834"; a="868741732"
+X-IronPort-AV: E=Sophos;i="6.02,149,1688454000"; d="scan'208";a="868741732"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by orsmga004.jf.intel.com with ESMTP; 15 Sep 2023 08:12:29 -0700
+ by orsmga004.jf.intel.com with ESMTP; 15 Sep 2023 08:12:27 -0700
 Received: from baltimore.igk.intel.com (baltimore.igk.intel.com [10.102.21.1])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id E3DB42FC61;
- Fri, 15 Sep 2023 16:12:28 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 227692FC61;
+ Fri, 15 Sep 2023 16:12:26 +0100 (IST)
 From: Pawel Chmielewski <pawel.chmielewski@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 15 Sep 2023 17:09:54 +0200
-Message-Id: <20230915150958.592564-3-pawel.chmielewski@intel.com>
+Date: Fri, 15 Sep 2023 17:09:52 +0200
+Message-Id: <20230915150958.592564-1-pawel.chmielewski@intel.com>
 X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20230915150958.592564-1-pawel.chmielewski@intel.com>
-References: <20230915150958.592564-1-pawel.chmielewski@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1694790752; x=1726326752;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=Ck5OAaGLMA89QFpm2dLib/qCneuqIOms4N0jGvrcWYk=;
- b=ewSpOJieOsJm4cm9zuN1N67m2R5FjNmtmyHUOw7q+afnuidWc8W5/OQk
- kqxmOf3GztuguZmVHyvxYATXdgmxqt9hVf21cZlKQf4qcR3k5oWBgMDRx
- FhyOO0JaJLr8HQtQfvCMJATYRtBDAchB2J3OSF46i0qPyNv/UAY6HI8fu
- QU9w+sEZu2yeK8LeO+Fadm19c3wLUeUIQdeG5bR330qw7eiJrh1UChN4t
- 352tDG5e/5CHSqOZxiImA2Eo3rj8P2UuM2L5Dzhbre7nKzBXcxznC5+Pa
- teOGuwCzv2ACfgXPyvRYcgelHKqbCMFppR3JpPWPsGoJVOFSPETQUdn6m
- g==;
+ t=1694790750; x=1726326750;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=ALwqO15zdrum/IQpPuwvwWfpBilsz8rYBf9BhL59poA=;
+ b=baWLjRDWJwD7UxPR4DgsEcguy2kM/6HVy3GXtUGAM7pljttNu5KxN8Gj
+ OJBsQVXaic916FtuViYg2LhduQ2qMdno5Scay7FvoeMYkyokVSWlMPGnF
+ eOSYK9fsC0sGRM+54Fv7jLomAOd1fNav5h3CN79RLxtOpP2KlgYDwrLV5
+ hLKkNOaMt6YcpwqZFe/5DWZFOVEq7yT1XE1DrtKvrNj+4a73ULpPZM7P2
+ J4MPwGqJguA8VtbRSbsC0PgJ5l+Dhjgdn+DpiOjp1Hi/VZMV8uE7z37h5
+ +C4Zk54mjgRerFak9sFNqnNNMtPlM2EKBzHE3CwDQPftUKq7JdNnG+5La
+ A==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ewSpOJie
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 2/6] ice: Add 200G speed/phy
- type use
+ header.a=rsa-sha256 header.s=Intel header.b=baWLjRDW
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 0/6] ice: Add basic E830
+ support
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,124 +101,47 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Alice Michael <alice.michael@intel.com>
-
-Add the support for 200G phy speeds and the mapping for their
-advertisement in link. Add the new PHY type bits for AQ command, as
-needed for 200G E830 controllers.
-
-Signed-off-by: Alice Michael <alice.michael@intel.com>
-Co-developed-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
-Signed-off-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
+This is an initial patchset adding the basic support for E830. E830 is
+the 200G ethernet controller family that is a follow on to the E810 100G
+family. The series adds new devices IDs, a new MAC type, several registers
+and a support for new link speeds. As the new devices use another version
+of ice_aqc_get_link_status_data admin command, the driver should use
+different buffer length for this AQ command when loaded on E830.
 ---
- drivers/net/ethernet/intel/ice/ice_adminq_cmd.h | 11 ++++++++++-
- drivers/net/ethernet/intel/ice/ice_common.c     |  1 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c    | 17 +++++++++++++++--
- drivers/net/ethernet/intel/ice/ice_ethtool.h    |  8 ++++++++
- 4 files changed, 34 insertions(+), 3 deletions(-)
+Resending the original series, but with two patches moved to another
+set [1], which the following series depends on.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 29f7a9852aec..c38e189ea8f7 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -1099,7 +1099,15 @@ struct ice_aqc_get_phy_caps {
- #define ICE_PHY_TYPE_HIGH_100G_CAUI2		BIT_ULL(2)
- #define ICE_PHY_TYPE_HIGH_100G_AUI2_AOC_ACC	BIT_ULL(3)
- #define ICE_PHY_TYPE_HIGH_100G_AUI2		BIT_ULL(4)
--#define ICE_PHY_TYPE_HIGH_MAX_INDEX		4
-+#define ICE_PHY_TYPE_HIGH_200G_CR4_PAM4		BIT_ULL(5)
-+#define ICE_PHY_TYPE_HIGH_200G_SR4		BIT_ULL(6)
-+#define ICE_PHY_TYPE_HIGH_200G_FR4		BIT_ULL(7)
-+#define ICE_PHY_TYPE_HIGH_200G_LR4		BIT_ULL(8)
-+#define ICE_PHY_TYPE_HIGH_200G_DR4		BIT_ULL(9)
-+#define ICE_PHY_TYPE_HIGH_200G_KR4_PAM4		BIT_ULL(10)
-+#define ICE_PHY_TYPE_HIGH_200G_AUI4_AOC_ACC	BIT_ULL(11)
-+#define ICE_PHY_TYPE_HIGH_200G_AUI4		BIT_ULL(12)
-+#define ICE_PHY_TYPE_HIGH_MAX_INDEX		12
- 
- struct ice_aqc_get_phy_caps_data {
- 	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
-@@ -1319,6 +1327,7 @@ struct ice_aqc_get_link_status_data {
- #define ICE_AQ_LINK_SPEED_40GB		BIT(8)
- #define ICE_AQ_LINK_SPEED_50GB		BIT(9)
- #define ICE_AQ_LINK_SPEED_100GB		BIT(10)
-+#define ICE_AQ_LINK_SPEED_200GB		BIT(11)
- #define ICE_AQ_LINK_SPEED_UNKNOWN	BIT(15)
- 	__le32 reserved3; /* Aligns next field to 8-byte boundary */
- 	__le64 phy_type_low; /* Use values from ICE_PHY_TYPE_LOW_* */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 983332cbace2..e8225b275f70 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -5666,6 +5666,7 @@ static const u32 ice_aq_to_link_speed[] = {
- 	SPEED_40000,
- 	SPEED_50000,
- 	SPEED_100000,	/* BIT(10) */
-+	SPEED_200000,
- };
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index d7e7e1ba2234..68690e89b4e7 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -1718,6 +1718,15 @@ ice_get_ethtool_stats(struct net_device *netdev,
- 					 ICE_PHY_TYPE_HIGH_100G_AUI2_AOC_ACC | \
- 					 ICE_PHY_TYPE_HIGH_100G_AUI2)
- 
-+#define ICE_PHY_TYPE_HIGH_MASK_200G	(ICE_PHY_TYPE_HIGH_200G_CR4_PAM4 | \
-+					 ICE_PHY_TYPE_HIGH_200G_SR4 | \
-+					 ICE_PHY_TYPE_HIGH_200G_FR4 | \
-+					 ICE_PHY_TYPE_HIGH_200G_LR4 | \
-+					 ICE_PHY_TYPE_HIGH_200G_DR4 | \
-+					 ICE_PHY_TYPE_HIGH_200G_KR4_PAM4 | \
-+					 ICE_PHY_TYPE_HIGH_200G_AUI4_AOC_ACC | \
-+					 ICE_PHY_TYPE_HIGH_200G_AUI4)
-+
- /**
-  * ice_mask_min_supported_speeds
-  * @hw: pointer to the HW structure
-@@ -1732,8 +1741,9 @@ ice_mask_min_supported_speeds(struct ice_hw *hw,
- 			      u64 phy_types_high, u64 *phy_types_low)
- {
- 	/* if QSFP connection with 100G speed, minimum supported speed is 25G */
--	if (*phy_types_low & ICE_PHY_TYPE_LOW_MASK_100G ||
--	    phy_types_high & ICE_PHY_TYPE_HIGH_MASK_100G)
-+	if ((*phy_types_low & ICE_PHY_TYPE_LOW_MASK_100G) ||
-+	    (phy_types_high & ICE_PHY_TYPE_HIGH_MASK_100G) ||
-+	    (phy_types_high & ICE_PHY_TYPE_HIGH_MASK_200G))
- 		*phy_types_low &= ~ICE_PHY_TYPE_LOW_MASK_MIN_25G;
- 	else if (!ice_is_100m_speed_supported(hw))
- 		*phy_types_low &= ~ICE_PHY_TYPE_LOW_MASK_MIN_1G;
-@@ -1876,6 +1886,9 @@ ice_get_settings_link_up(struct ethtool_link_ksettings *ks,
- 	ice_phy_type_to_ethtool(netdev, ks);
- 
- 	switch (link_info->link_speed) {
-+	case ICE_AQ_LINK_SPEED_200GB:
-+		ks->base.speed = SPEED_200000;
-+		break;
- 	case ICE_AQ_LINK_SPEED_100GB:
- 		ks->base.speed = SPEED_100000;
- 		break;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.h b/drivers/net/ethernet/intel/ice/ice_ethtool.h
-index b403ee79cd5e..b88e3da06f13 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.h
-@@ -100,6 +100,14 @@ phy_type_high_lkup[] = {
- 	[2] = ICE_PHY_TYPE(100GB, 100000baseCR2_Full),
- 	[3] = ICE_PHY_TYPE(100GB, 100000baseSR2_Full),
- 	[4] = ICE_PHY_TYPE(100GB, 100000baseCR2_Full),
-+	[5] = ICE_PHY_TYPE(200GB, 200000baseCR4_Full),
-+	[6] = ICE_PHY_TYPE(200GB, 200000baseSR4_Full),
-+	[7] = ICE_PHY_TYPE(200GB, 200000baseLR4_ER4_FR4_Full),
-+	[8] = ICE_PHY_TYPE(200GB, 200000baseLR4_ER4_FR4_Full),
-+	[9] = ICE_PHY_TYPE(200GB, 200000baseDR4_Full),
-+	[10] = ICE_PHY_TYPE(200GB, 200000baseKR4_Full),
-+	[11] = ICE_PHY_TYPE(200GB, 200000baseSR4_Full),
-+	[12] = ICE_PHY_TYPE(200GB, 200000baseCR4_Full),
- };
- 
- #endif /* !_ICE_ETHTOOL_H_ */
+[1] https://lore.kernel.org/netdev/20230915145522.586365-1-pawel.chmielewski@intel.com/
+---
+
+Alice Michael (1):
+  ice: Add 200G speed/phy type use
+
+Dan Nowlin (1):
+  ice: Add support for E830 DDP package segment
+
+Paul Greenwalt (2):
+  ice: Add E830 device IDs, MAC type and registers
+  ice: Add ice_get_link_status_datalen
+
+Pawel Chmielewski (2):
+  ice: Remove redundant zeroing of the fields.
+  ice: Hook up 4 E830 devices by adding their IDs
+
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  48 +-
+ drivers/net/ethernet/intel/ice/ice_common.c   |  94 ++--
+ drivers/net/ethernet/intel/ice/ice_ddp.c      | 426 +++++++++++++++---
+ drivers/net/ethernet/intel/ice/ice_ddp.h      |  27 +-
+ drivers/net/ethernet/intel/ice/ice_devids.h   |  10 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  17 +-
+ drivers/net/ethernet/intel/ice/ice_ethtool.h  |   8 +
+ .../net/ethernet/intel/ice/ice_ethtool_fdir.c |  24 +-
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |  52 ++-
+ drivers/net/ethernet/intel/ice/ice_main.c     |  71 +--
+ drivers/net/ethernet/intel/ice/ice_type.h     |   6 +-
+ .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  29 +-
+ 12 files changed, 641 insertions(+), 171 deletions(-)
+
 -- 
 2.37.3
 
