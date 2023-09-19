@@ -4,82 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10768CD54AE
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 Sep 2023 09:40:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDD36CD54A9
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 Sep 2023 09:40:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8D6F981388;
-	Tue, 19 Sep 2023 09:40:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8D6F981388
+	by smtp1.osuosl.org (Postfix) with ESMTP id 862B982201;
+	Tue, 19 Sep 2023 09:40:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 862B982201
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1695116411;
-	bh=vRFu1LA+CjnJVhfleyvAYAObZH67gTxWTQZ/L6Js4HI=;
+	s=default; t=1695116430;
+	bh=EBRv0AEub9AUvuVtYBgk6OLXOYcyiSIi/LOXselMj8U=;
 	h=From:To:References:Date:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=5fplNew5fFm3N5XUcDlNgX4tPPFj6Pa07BIomX2KD9Xo79Z1x3oyx95jkEx/5adco
-	 JQuyjw/vmb94M6nAglwFOB+7mOhLcCoscobdFWjR/vEDbz2jRrAXjSmnIfCu05hot6
-	 lCgkzXvaopQSoesCvc16TYTzjiK0jKKckA15X0QLAkUpPDMiVH0vOU5Ct9pvDxBZ0i
-	 T6qbLgQMGy+F14/6QOsb7NLKc9L2CIAbPQ1onAFn+8SJg4K4AEt2RyldVvPkoEFKSJ
-	 OBxeSRRdt1n6q5tXAfElPX9gSMs2+PGyBEsHrwN/5bcnv4TH/ae7YNoSbwoxw1xcVl
-	 CSUZ7oln70ZhA==
+	b=xdFdUDwk33ZQR+iuHOBPhBL49CBmHqKarrKVDaVDaS9MpCpGvfK4YErzR/q0jZsdi
+	 d+bQ8fXeRvrsX5hle32xuUSOddA5qMXqpP7Ls1ikbIHmhyETH4ttyLiHhZG2mkEeoE
+	 ZYgWzGdZjHvQyGSuhEW5U31Eo9SQSlQnEGDp6DWPLncPHh1huzB837lv8PraqakR8r
+	 Bu/3s9uOOpdBPxAwqZ7AkrjAlkDzopNce6A/LoiAMaLQWyWa4gYm0m00LHfEEEo8em
+	 wT8mStebwODyLn8bZ6vJWuiHAcbs9ITAXw9jvVYoOuU3E+bn9GJeu8LnJ7gCf31TP/
+	 r6VFVK4GKBFMg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Z7UT1Wi-BRVm; Tue, 19 Sep 2023 09:40:10 +0000 (UTC)
+	with ESMTP id gZMK4A9Y8drH; Tue, 19 Sep 2023 09:40:29 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id A2A47817A7;
-	Tue, 19 Sep 2023 09:40:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A2A47817A7
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 2393C1BF294
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 09:40:09 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 993A682343;
+	Tue, 19 Sep 2023 09:40:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 993A682343
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 3E98D1BF294
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 09:40:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 085D4416D4
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 09:40:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 085D4416D4
+ by smtp4.osuosl.org (Postfix) with ESMTP id 12B1B41B97
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 09:40:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 12B1B41B97
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id EdtgxBc2ro7E for <intel-wired-lan@lists.osuosl.org>;
- Tue, 19 Sep 2023 09:40:07 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id dOxcYAN16SA7 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 19 Sep 2023 09:40:26 +0000 (UTC)
 Received: from sin.source.kernel.org (sin.source.kernel.org
  [IPv6:2604:1380:40e1:4800::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 95A0E405CF
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 09:40:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 95A0E405CF
+ by smtp4.osuosl.org (Postfix) with ESMTPS id D90AD409C9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 09:40:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D90AD409C9
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by sin.source.kernel.org (Postfix) with ESMTPS id 27C2BCE12B1;
- Tue, 19 Sep 2023 09:40:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDD7CC433C7;
- Tue, 19 Sep 2023 09:39:56 +0000 (UTC)
+ by sin.source.kernel.org (Postfix) with ESMTPS id B1D61CE126A;
+ Tue, 19 Sep 2023 09:40:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A781C433C8;
+ Tue, 19 Sep 2023 09:40:17 +0000 (UTC)
 From: Kalle Valo <kvalo@kernel.org>
 To: Ilpo =?utf-8?Q?J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 References: <20230918131103.24119-1-ilpo.jarvinen@linux.intel.com>
- <20230918131103.24119-10-ilpo.jarvinen@linux.intel.com>
-Date: Tue, 19 Sep 2023 12:39:54 +0300
-In-Reply-To: <20230918131103.24119-10-ilpo.jarvinen@linux.intel.com> ("Ilpo
- =?utf-8?Q?J=C3=A4rvinen=22's?= message of "Mon, 18 Sep 2023 16:10:59
+ <20230918131103.24119-11-ilpo.jarvinen@linux.intel.com>
+Date: Tue, 19 Sep 2023 12:40:15 +0300
+In-Reply-To: <20230918131103.24119-11-ilpo.jarvinen@linux.intel.com> ("Ilpo
+ =?utf-8?Q?J=C3=A4rvinen=22's?= message of "Mon, 18 Sep 2023 16:11:00
  +0300")
-Message-ID: <87msxibixh.fsf@kernel.org>
+Message-ID: <87il86biww.fsf@kernel.org>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.2 (gnu/linux)
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1695116401;
- bh=xUSE25r0oJ3f4NH79rN7650LsxSaeIDs03u0Ela0NkA=;
+ d=kernel.org; s=k20201202; t=1695116422;
+ bh=1W+RHNKneW2lSWYUJv9c0K/rO7LlJrAh0C1ermQDmPM=;
  h=From:To:Cc:Subject:References:Date:In-Reply-To:From;
- b=B+8j6J653S7hN/P0sDXLfkZCrkXWcs/201tlLesCMKYeS27mE3L8IG2qk7AAKg+2e
- BUNS5NZm5JBAjTmq3GDLC5ye8CNJyMrm7azjWAk6bw0E2F+XLRY4x0wrGB2V5MhQGZ
- Ki0ZQJyaFcYSLGRFN9mojUPq91NN2dkqHVrCNogaFKSg+IjPuz9iWRlTBiZhZra0L8
- 2tygmWZJ+rUn+kQ9Qe2QrFu6h8s1oXtGd3sVDtGq9oQHu1k/JNmlsa4Ct7tWxiDVH+
- e2yjQ23XCx79G/cwJvFmU478618R+x80XBRSqQcOjr+y9gCP5/il85H44EBc/vWHwF
- CBum4FD6nQBdg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=dYfspwzi29ZpE8TGLJJHwniJ0FECLJuib/RKR7Hy666KEaxriDEmslxjOEAfCnaxI
+ zSYA1GYxhamjWYym4bPvYUC0Q0AZo6m+HoSLT1vcJjZcDW9mztF0XmpOJr0ar/TGGH
+ skHEsbWaGdLXm2gwctjZTyLoOgoEw3OhJeFZUzUki9nbOk0NtDtswAy1g5dQUW3QY0
+ 2+0yN5bMzBMWMB3PI326g1n40jKV6fIHlDperqFcYLJok93eqXMNMp6qVEZTvF5TcW
+ fVAHGI3usWzY5c+WiaPLfbomx7S8Rb0WLMGN7I+YIJv+FDRW0oRn1JRaxRSakGuBrR
+ 8QyCyIZvKiVnQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=B+8j6J65
-Subject: Re: [Intel-wired-lan] [PATCH v2 09/13] wifi: ath10k: Use
+ header.a=rsa-sha256 header.s=k20201202 header.b=dYfspwzi
+Subject: Re: [Intel-wired-lan] [PATCH v2 10/13] wifi: ath11k: Use
  pci_disable/enable_link_state()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -111,7 +111,7 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 SWxwbyBKw6RydmluZW4gPGlscG8uamFydmluZW5AbGludXguaW50ZWwuY29tPiB3cml0ZXM6Cgo+
-IGF0aDEwayBkcml2ZXIgYWRqdXN0cyBBU1BNIHN0YXRlIGl0c2VsZiB3aGljaCBsZWF2ZXMgQVNQ
+IGF0aDExayBkcml2ZXIgYWRqdXN0cyBBU1BNIHN0YXRlIGl0c2VsZiB3aGljaCBsZWF2ZXMgQVNQ
 TSBzZXJ2aWNlCj4gZHJpdmVyIGluIFBDSSBjb3JlIHVuYXdhcmUgb2YgdGhlIGxpbmsgc3RhdGUg
 Y2hhbmdlcyB0aGUgZHJpdmVyCj4gaW1wbGVtZW50ZWQuCj4KPiBDYWxsIHBjaV9kaXNhYmxlX2xp
 bmtfc3RhdGUoKSBhbmQgcGNpX2VuYWJsZV9saW5rX3N0YXRlKCkgaW5zdGVhZCBvZgo+IGFkanVz
