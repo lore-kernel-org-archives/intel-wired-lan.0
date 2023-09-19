@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2ED08CE79A9
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 Sep 2023 23:35:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39E58CE79A9
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 Sep 2023 23:35:23 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D7B3040191;
-	Tue, 19 Sep 2023 23:35:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D7B3040191
+	by smtp2.osuosl.org (Postfix) with ESMTP id EC442417CE;
+	Tue, 19 Sep 2023 23:35:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EC442417CE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1695166518;
-	bh=0GGySOzZB4vSb+Y25BkanT+OLkbznWDJNyX1Q2xFiuU=;
+	s=default; t=1695166523;
+	bh=g1qYrSy7XKUvf8j0n6NpRyM8OEo2Gx5ZkntIxIACYDA=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=NvxxaSOK39dmmF/UVjloABN96+hRot6CPK36D4ri+PP+VRvBDsFmgyG4PGvfLwZ5o
-	 wPJObom6xYdCsqJzfc3HqNvbk6ZYDbcsob+MrAP5PfI+HlQXipp277Ml4LIGEcm2lC
-	 xfYq+dipXllmAozXVPINhpx+qfsIxhqfvA/QPpJKYOfA+43owcn8Ao+aVkbK2ftIpW
-	 KWvm78HNZBNnOaHu4/Y3MMXXoCV+Rsrts35AosQkoZja8/vnt8XlZajAlheLQ9ysI3
-	 SA/BqHA1wAXrusb7eo1svglaT/7fmf7XcgNsxVzgfvkd+NiLq0NOF0SXaM3kJnN5Z1
-	 MKrd1n+Gg2luw==
+	b=vTnrYiRvMd0xT6T0HSclLOibXsbVwYowhvWcWwVbrKbPu5+1i4Bd3NYryXnQ68saP
+	 Fc7Rx7m+zymMzAPjMOUOXeZJ3KMf5Vrqex1XQ/IQ5IZlA0OLyH9sllR0UjA251nw39
+	 +cFWkSYb047LYOvSm9nFAlCSkAkEqOM8lpGdPkWhOH7FSxdw5Vi7cL2ZEqYYKkboGL
+	 ZLX7LgcJaepYHaTjq6nAn8rhy+U1YTrv41b8ofC0cWzQicUj8pPi/9v8q8yK+tDnlf
+	 nND9O8v/3hhUk4ApGFaTFpxMOSAa9oCnOXLSXW7BNJQrDelodlti366epLr8RxhXha
+	 We5K9jRba4rnA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 8f-jSi6w3noP; Tue, 19 Sep 2023 23:35:18 +0000 (UTC)
+	with ESMTP id zBd3AXyGoLYf; Tue, 19 Sep 2023 23:35:22 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id D4A7C417BD;
-	Tue, 19 Sep 2023 23:35:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D4A7C417BD
+	by smtp2.osuosl.org (Postfix) with ESMTP id E8B3C417B5;
+	Tue, 19 Sep 2023 23:35:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E8B3C417B5
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 5BAA91BF407
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 23:35:10 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id E97291BF407
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 23:35:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6786141BEC
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8E29141E41
  for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 23:35:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6786141BEC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8E29141E41
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lxMOts26VnHh for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id dRrchxVwIsnv for <intel-wired-lan@lists.osuosl.org>;
  Tue, 19 Sep 2023 23:35:07 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 73E3641E41
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 3B5BD41E3D
  for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 23:35:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 73E3641E41
-X-IronPort-AV: E=McAfee;i="6600,9927,10838"; a="444172128"
-X-IronPort-AV: E=Sophos;i="6.02,160,1688454000"; d="scan'208";a="444172128"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3B5BD41E3D
+X-IronPort-AV: E=McAfee;i="6600,9927,10838"; a="444172129"
+X-IronPort-AV: E=Sophos;i="6.02,160,1688454000"; d="scan'208";a="444172129"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  19 Sep 2023 16:34:50 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10838"; a="749668106"
-X-IronPort-AV: E=Sophos;i="6.02,160,1688454000"; d="scan'208";a="749668106"
+X-IronPort-AV: E=McAfee;i="6600,9927,10838"; a="749668109"
+X-IronPort-AV: E=Sophos;i="6.02,160,1688454000"; d="scan'208";a="749668109"
 Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.1])
  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  19 Sep 2023 16:34:50 -0700
 From: Jacob Keller <jacob.e.keller@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Tue, 19 Sep 2023 16:34:34 -0700
-Message-ID: <20230919233435.518620-4-jacob.e.keller@intel.com>
+Date: Tue, 19 Sep 2023 16:34:35 -0700
+Message-ID: <20230919233435.518620-5-jacob.e.keller@intel.com>
 X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
 In-Reply-To: <20230919233435.518620-1-jacob.e.keller@intel.com>
 References: <20230919233435.518620-1-jacob.e.keller@intel.com>
@@ -70,19 +70,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1695166507; x=1726702507;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=3P1aL1El3c+MVu82DVtYZvXNKOHxbpvRIsseTK+EBNE=;
- b=DRXthYCP+S+7wQayrRjk7epEx1umsowtGC0FJrosDmwSkQX+tph6AZGR
- Ji7B4oZsb9/OTySeBJq+T3E7kl6ydJJTaub/9Smmj29OdDH09+wJX64Dd
- XTFurcDL+hb/YaEUoNjk36d4DvSRsZ26xtvjhLdPEGINAPkD+FahneHtL
- vQEO6Iin5YnUdw46aN2DenW9qtL63oODReCmgeuzcNjAZfSX4NSvOk9bX
- zpoXLGxwDOsuiTT11N4OKM8AbQK2EJ3mvA/z6cOMrnxN6wgD1V67y87H4
- vg2jiQjqNISti+leub8RzDc3axtJNJJ0wfuM3Imk3ZcftY4m9V9+TM/c4
- w==;
+ bh=EFMz6veJ9D+gC/S6rZwPQjM26t/fhHOzhx0qGpUDEPo=;
+ b=WZHt/clMAlPrxrnUD7OpK9Gfwp/A5Q5tRnu13x0zKME8rNcP5QZvpLdD
+ qM/EARWZKZBPX1GWeii/dasPQ7t535nIfzDAla/YyqHsLYhbm4hMdr1Wv
+ wdO3JbYZsWWWUjx1T+vwLe5MMa5c5ZtCIyNmP+U5vb9554YIi/WemUVnt
+ iyfQXZUtaxbyuBlpe0iKnNn7xviJv9ySsWi0kN19+xc8MEiAElpFuJ94b
+ +STlVzfnjgWRwDvpztp64u0h465ep8MNYGoGxTvgn5sox8FDvA8TZB1w6
+ TykeAgAYFBuluRsgzxguAMV7wlE4y/uJdGOr9FO1phnRchB/gWyElcK3P
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=DRXthYCP
-Subject: [Intel-wired-lan] [PATCH iwl-next 3/4] ice: make
- ice_get_pf_c827_idx static
+ header.a=rsa-sha256 header.s=Intel header.b=WZHt/clM
+Subject: [Intel-wired-lan] [PATCH iwl-next 4/4] ice: cleanup
+ ice_find_netlist_node
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,41 +102,99 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_get_pf_c827_idx function is only called inside of ice_ptp_hw.c, so
-there is no reason to export it. Mark it static and remove the declaration
-from ice_ptp_hw.h
+The ice_find_netlist_node function was introduced in commit 8a3a565ff210
+("ice: add admin commands to access cgu configuration"). Variations of this
+function were reviewed concurrently on both intel-wired-lan[1][2], and
+netdev [3][4]
+
+[1]: https://lore.kernel.org/intel-wired-lan/20230913204943.1051233-7-vadim.fedorenko@linux.dev/
+[2]: https://lore.kernel.org/intel-wired-lan/20230817000058.2433236-5-jacob.e.keller@intel.com/
+[3]: https://lore.kernel.org/netdev/20230918212814.435688-1-anthony.l.nguyen@intel.com/
+[4]: https://lore.kernel.org/netdev/20230913204943.1051233-7-vadim.fedorenko@linux.dev/
+
+The variant I posted had a few changes due to review feedback which were
+never incorporated into the DPLL series:
+
+* Replace the references to ancient and long removed ICE_SUCCESS and
+  ICE_ERR_DOES_NOT_EXIST status codes in the function comment.
+
+* Return -ENOENT instead of -ENOTBLK, as a more common way to indicate that
+  an entry doesn't exist.
+
+* Avoid the use of memset() and use simple static initialization for the
+  cmd variable.
+
+* Use FIELD_PREP to assign the node_type_ctx.
+
+* Remove an unnecessary local variable to keep track of rec_node_handle,
+  just pass the node_handle pointer directly into ice_aq_get_netlist_node.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 2 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h | 1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_common.c | 30 ++++++++++-----------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 882dfdad0021..0167e0577a55 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -3564,7 +3564,7 @@ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx)
-  * * 0 - success
-  * * negative - failure
+diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
+index 12c09374c2be..d4e259b816b9 100644
+--- a/drivers/net/ethernet/intel/ice/ice_common.c
++++ b/drivers/net/ethernet/intel/ice/ice_common.c
+@@ -473,41 +473,41 @@ ice_aq_get_netlist_node(struct ice_hw *hw, struct ice_aqc_get_link_topo *cmd,
+  * @node_part_number: node part number to look for
+  * @node_handle: output parameter if node found - optional
+  *
+- * Find and return the node handle for a given node type and part number in the
+- * netlist. When found ICE_SUCCESS is returned, ICE_ERR_DOES_NOT_EXIST
+- * otherwise. If node_handle provided, it would be set to found node handle.
++ * Scan the netlist for a node handle of the given node type and part number.
++ *
++ * If node_handle is non-NULL it will be modified on function exit. It is only
++ * valid if the function returns zero, and should be ignored on any non-zero
++ * return value.
++ *
++ * Returns: 0 if the node is found, -ENOENT if no handle was found, and
++ * a negative error code on failure to access the AQ.
   */
--int ice_get_pf_c827_idx(struct ice_hw *hw, u8 *idx)
-+static int ice_get_pf_c827_idx(struct ice_hw *hw, u8 *idx)
+ static int ice_find_netlist_node(struct ice_hw *hw, u8 node_type_ctx,
+ 				 u8 node_part_number, u16 *node_handle)
  {
- 	struct ice_aqc_get_link_topo cmd;
- 	u8 node_part_number;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 18a993134826..36aeeef99ec0 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -271,7 +271,6 @@ int ice_read_sma_ctrl_e810t(struct ice_hw *hw, u8 *data);
- int ice_write_sma_ctrl_e810t(struct ice_hw *hw, u8 data);
- int ice_read_pca9575_reg_e810t(struct ice_hw *hw, u8 offset, u8 *data);
- bool ice_is_pca9575_present(struct ice_hw *hw);
--int ice_get_pf_c827_idx(struct ice_hw *hw, u8 *idx);
- enum dpll_pin_type ice_cgu_get_pin_type(struct ice_hw *hw, u8 pin, bool input);
- struct dpll_pin_frequency *
- ice_cgu_get_pin_freq_supp(struct ice_hw *hw, u8 pin, bool input, u8 *num);
+-	struct ice_aqc_get_link_topo cmd;
+-	u8 rec_node_part_number;
+-	u16 rec_node_handle;
+ 	u8 idx;
+ 
+ 	for (idx = 0; idx < ICE_MAX_NETLIST_SIZE; idx++) {
++		struct ice_aqc_get_link_topo cmd = {};
++		u8 rec_node_part_number;
+ 		int status;
+ 
+-		memset(&cmd, 0, sizeof(cmd));
+-
+ 		cmd.addr.topo_params.node_type_ctx =
+-			(node_type_ctx << ICE_AQC_LINK_TOPO_NODE_TYPE_S);
++			FIELD_PREP(ICE_AQC_LINK_TOPO_NODE_TYPE_M,
++				   node_type_ctx);
+ 		cmd.addr.topo_params.index = idx;
+ 
+ 		status = ice_aq_get_netlist_node(hw, &cmd,
+ 						 &rec_node_part_number,
+-						 &rec_node_handle);
++						 node_handle);
+ 		if (status)
+ 			return status;
+ 
+-		if (rec_node_part_number == node_part_number) {
+-			if (node_handle)
+-				*node_handle = rec_node_handle;
++		if (rec_node_part_number == node_part_number)
+ 			return 0;
+-		}
+ 	}
+ 
+-	return -ENOTBLK;
++	return -ENOENT;
+ }
+ 
+ /**
 -- 
 2.41.0.1.g9857a21e0017.dirty
 
