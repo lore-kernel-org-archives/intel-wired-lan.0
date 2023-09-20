@@ -4,85 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BECAACE79A9
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 19 Sep 2023 23:35:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F350CE79AD
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 20 Sep 2023 04:54:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 6B536417C4;
-	Tue, 19 Sep 2023 23:35:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6B536417C4
+	by smtp2.osuosl.org (Postfix) with ESMTP id D40F740135;
+	Wed, 20 Sep 2023 04:54:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D40F740135
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1695166527;
-	bh=NYvOZSdLaNtkpLa9FWb47d2sTAAA+T1/N8bQZfjaimY=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=tlF7wHFX3Y1jMNGgxARmHz9r2Z/aKNI0aY73a7vQRs7HNyqsUk6lAIPDINFl375GG
-	 ZFZnh5lWlVwexLbbkoT5wuK4I6fyYLAFdoZSIZpS0d0ZqAv6iohxNAMX51mapUEXZS
-	 +SiY9j0DYbZTTQwvEBh7L+dLg+Vnb4RHHxB3X4nnvQwav+N2uWAODKjjvw4BOWsJnf
-	 m5HJJJT3bY9gqxDzCwKi+5JwdI6qUWNaFcNd5hHM8uvJMho5oOtHcrvN58O4YkswN9
-	 8eVwTHBUdToy2qqNE/cNp6kJ4C23gErywIO/sv5lyajE0tyeit8gp0lpRaYRZuW/qC
-	 SR2pgzlgLOP5w==
+	s=default; t=1695185650;
+	bh=gm/XfPj+uNLgkiLvZw1v5Vp1sifkwXK13TdsP3NOunk=;
+	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:From;
+	b=2Kgke/Bk786cCUoyFUZfB25ct1XSI9Mj0lZbP7Et7YjO2fKQvKX/0FxR431X9y8H2
+	 p87S5hgTjHwbcv5mMcs66qiH7kUA1+7LIdSS/wRmyKmtKHRdeYPMgVUjuYMjiXwbvU
+	 QC43qwG8C587ReszxX11srbCufx0tBHKS85A9UI+E2NnenxD5yVK3EfctktVzayxrO
+	 tqjt38m1bw4Wodw6EYxqIxAyRSy6YMD6T3eCWKjzDyhNnNxnGgGohbhIx92M1LMPp8
+	 RrB9N5a02O38w1ktxrMhMq4eYELBst+6rTCgH1GfHeryVYveRSqUB/5R5d/ijbibMn
+	 wBn5C4LiKlrPQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XnpoYPAmEXtW; Tue, 19 Sep 2023 23:35:26 +0000 (UTC)
+	with ESMTP id Jj1DcCHfvppa; Wed, 20 Sep 2023 04:54:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 04B64417C3;
-	Tue, 19 Sep 2023 23:35:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 04B64417C3
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 071AD1BF407
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 23:35:13 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id E0BA74013D;
+	Wed, 20 Sep 2023 04:54:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E0BA74013D
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id B3E171BF419
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 20 Sep 2023 04:54:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 222FF41E3D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 23:35:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 222FF41E3D
+ by smtp2.osuosl.org (Postfix) with ESMTP id 892714013D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 20 Sep 2023 04:54:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 892714013D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 9Rw3UOVUR9Rm for <intel-wired-lan@lists.osuosl.org>;
- Tue, 19 Sep 2023 23:35:06 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.31])
- by smtp4.osuosl.org (Postfix) with ESMTPS id C88DB41D86
- for <intel-wired-lan@lists.osuosl.org>; Tue, 19 Sep 2023 23:35:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C88DB41D86
-X-IronPort-AV: E=McAfee;i="6600,9927,10838"; a="444172127"
-X-IronPort-AV: E=Sophos;i="6.02,160,1688454000"; d="scan'208";a="444172127"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
- by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Sep 2023 16:34:50 -0700
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id wAyZGlE5QPbl for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 20 Sep 2023 04:54:05 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 606BA40135
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 20 Sep 2023 04:54:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 606BA40135
+X-IronPort-AV: E=McAfee;i="6600,9927,10838"; a="383968827"
+X-IronPort-AV: E=Sophos;i="6.02,161,1688454000"; d="scan'208";a="383968827"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 19 Sep 2023 21:54:03 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10838"; a="749668103"
-X-IronPort-AV: E=Sophos;i="6.02,160,1688454000"; d="scan'208";a="749668103"
-Received: from jekeller-desk.amr.corp.intel.com ([10.166.241.1])
- by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 19 Sep 2023 16:34:50 -0700
-From: Jacob Keller <jacob.e.keller@intel.com>
+X-IronPort-AV: E=McAfee;i="6600,9927,10838"; a="816731824"
+X-IronPort-AV: E=Sophos;i="6.02,161,1688454000"; d="scan'208";a="816731824"
+Received: from lkp-server02.sh.intel.com (HELO 9ef86b2655e5) ([10.239.97.151])
+ by fmsmga004.fm.intel.com with ESMTP; 19 Sep 2023 21:54:03 -0700
+Received: from kbuild by 9ef86b2655e5 with local (Exim 4.96)
+ (envelope-from <lkp@intel.com>) id 1qipDs-0008Iz-3B
+ for intel-wired-lan@lists.osuosl.org; Wed, 20 Sep 2023 04:54:00 +0000
+Date: Wed, 20 Sep 2023 12:53:51 +0800
+From: kernel test robot <lkp@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Date: Tue, 19 Sep 2023 16:34:33 -0700
-Message-ID: <20230919233435.518620-3-jacob.e.keller@intel.com>
-X-Mailer: git-send-email 2.41.0.1.g9857a21e0017.dirty
-In-Reply-To: <20230919233435.518620-1-jacob.e.keller@intel.com>
-References: <20230919233435.518620-1-jacob.e.keller@intel.com>
-MIME-Version: 1.0
+Message-ID: <202309201249.dznIUUBn-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1695166506; x=1726702506;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=kgY6Y0OvAcaNtevWc5N5c6CsqK0ZEtQLAWlhFUhDucQ=;
- b=Hxp5DGqQ4NHFZ7/1oecVf8LFBn0aHNkdn2njEl/0fSY5Xo4Ue1NUvDYF
- /yV1sc5cSVodtBVrvIHqFR/KEkWGLAy5OxykxyDhY21pd9BGv5Iok+IqK
- h0dTdON0pTlnl9i6V8bEi3+wusR5qgYCwCIPus/CIlM3JspbaX54wnXWN
- sWyy3qmB0e1Xj+gr0ZfcamyaolNmYeWslxvUIWcda1uDiL61RTtM1T7IL
- wnB7KICyfCb0fxM/aB/KZRdUKgCzIEe1KbejfCTcpDvh5fggwMhId0oXC
- KqCltpxEi6uJuL+WwY3Xfm7eJu6AEfoHtH6OpqG+yolfmkaPdvzHPmitM
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ t=1695185645; x=1726721645;
+ h=date:from:to:subject:message-id;
+ bh=VwThX7eyay1tD18xH7kzBNFwT3gvVu37nLif35Aj7qI=;
+ b=M6AgSb+Yv0D5hGyyPwCuI/fOvA9lPpsZPnnY9rJ7aJuPypNfK6thYylG
+ taT025EyeSEKdTpWwqNFwvfiBxnLNxQLDkRKueWNv0TKSAhOLjokePxzA
+ mAbYI+Rx/qeiNPBZIiuAuOmFNNdLEtengh0+B3V8R7NXGnSYpbJV/Dx5M
+ wNAK6AsA6Hi8TYgw7mvpYdnFUcSsAUO88nv+rXghysSpsPe934nxHORns
+ 3KSyq1FEtjrGUYMQkNO0I6aJNDNc42pVyxHBm2JwS6naBwmoXLur1+Qlf
+ 6DQzadxo0csu7GgRuKFta8w2n3FoQPJ1ITPF9PQM6S0z4wVFjvZOAqIwI
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Hxp5DGqQ
-Subject: [Intel-wired-lan] [PATCH iwl-next 2/4] ice: move netlist check
- functions to ice_common.c
+ header.a=rsa-sha256 header.s=Intel header.b=M6AgSb+Y
+Subject: [Intel-wired-lan] [tnguy-net-queue:main] BUILD SUCCESS
+ 492032760127251e5540a5716a70996bacf2a3fd
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,277 +92,121 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jacob Keller <jacob.e.keller@intel.com>,
- Anthony Nguyen <anthony.l.nguyen@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The ice_ptp_hw.c file has a few functions which check for whether the
-device netlist has a node indicating hardware support for certain features.
-These checks don't really make sense to be in ice_ptp_hw.c. In addition,
-their names could be confusing as they just say "is_present" but really are
-checking the netlist.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git main
+branch HEAD: 492032760127251e5540a5716a70996bacf2a3fd  team: fix null-ptr-deref when team device type is changed
 
-Additionally, these functions are only compiled into the ice module if
-CONFIG_PTP_1588_CLOCK is enabled. They are used in ice_lib.c which is
-unconditionally compiled, so this can result in build errors if the PTP
-support is disabled:
+elapsed time: 732m
 
-ld: vmlinux.o: in function `ice_init_feature_support':
-(.text+0x8702b8): undefined reference to `ice_is_phy_rclk_present'
-ld: (.text+0x8702cd): undefined reference to `ice_is_cgu_present'
-ld: (.text+0x8702d9): undefined reference to `ice_is_clock_mux_present_e810t'
+configs tested: 93
+configs skipped: 2
 
-To fix this, we need to define these functions outside of ice_ptp.c or
-ice_ptp_hw.c.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-The ice_common.c already hace ice_is_gps_in_netlist. Move the similar
-functions in ice_ptp_hw.c into ice_common.c, renaming them to use the
-postfix "_in_netlist" to match the GPS check. Where appropriate, also drop
-the _e810t postfix as well.
+tested configs:
+alpha                             allnoconfig   gcc  
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+arc                              allmodconfig   gcc  
+arc                               allnoconfig   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arm                              allmodconfig   gcc  
+arm                               allnoconfig   gcc  
+arm                              allyesconfig   gcc  
+arm                                 defconfig   gcc  
+arm                   randconfig-001-20230920   gcc  
+arm64                            allmodconfig   gcc  
+arm64                             allnoconfig   gcc  
+arm64                            allyesconfig   gcc  
+arm64                               defconfig   gcc  
+csky                             allmodconfig   gcc  
+csky                              allnoconfig   gcc  
+csky                             allyesconfig   gcc  
+csky                                defconfig   gcc  
+i386                             allmodconfig   gcc  
+i386                              allnoconfig   gcc  
+i386                             allyesconfig   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch                        allyesconfig   gcc  
+loongarch                           defconfig   gcc  
+loongarch             randconfig-001-20230920   gcc  
+m68k                             allmodconfig   gcc  
+m68k                              allnoconfig   gcc  
+m68k                             allyesconfig   gcc  
+m68k                                defconfig   gcc  
+microblaze                       allmodconfig   gcc  
+microblaze                        allnoconfig   gcc  
+microblaze                       allyesconfig   gcc  
+microblaze                          defconfig   gcc  
+mips                             allmodconfig   gcc  
+mips                              allnoconfig   gcc  
+mips                             allyesconfig   gcc  
+nios2                            allmodconfig   gcc  
+nios2                             allnoconfig   gcc  
+nios2                            allyesconfig   gcc  
+nios2                               defconfig   gcc  
+openrisc                         allmodconfig   gcc  
+openrisc                          allnoconfig   gcc  
+openrisc                         allyesconfig   gcc  
+openrisc                            defconfig   gcc  
+parisc                           allmodconfig   gcc  
+parisc                            allnoconfig   gcc  
+parisc                           allyesconfig   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                          allyesconfig   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv                            allyesconfig   gcc  
+riscv                               defconfig   gcc  
+riscv                 randconfig-001-20230920   gcc  
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                              allnoconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                  randconfig-001-20230920   gcc  
+sh                               allmodconfig   gcc  
+sh                                allnoconfig   gcc  
+sh                               allyesconfig   gcc  
+sh                                  defconfig   gcc  
+sparc                            allmodconfig   gcc  
+sparc                             allnoconfig   gcc  
+sparc                            allyesconfig   gcc  
+sparc                               defconfig   gcc  
+sparc                 randconfig-001-20230920   gcc  
+sparc64                          allmodconfig   gcc  
+sparc64                          allyesconfig   gcc  
+sparc64                             defconfig   gcc  
+um                               allmodconfig   clang
+um                                allnoconfig   clang
+um                               allyesconfig   clang
+um                                  defconfig   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64                              defconfig   gcc  
+x86_64                          rhel-8.3-rust   clang
+x86_64                               rhel-8.3   gcc  
+xtensa                            allnoconfig   gcc  
+xtensa                           allyesconfig   gcc  
 
-This also makes the ice_find_netlist_node only called from within
-ice_common.c, so its safe to mark it static and stop declaring it in the
-ice_common.h header.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_common.c | 66 ++++++++++++++++++++-
- drivers/net/ethernet/intel/ice/ice_common.h |  6 +-
- drivers/net/ethernet/intel/ice/ice_lib.c    |  6 +-
- drivers/net/ethernet/intel/ice/ice_ptp_hw.c | 66 ---------------------
- drivers/net/ethernet/intel/ice/ice_ptp_hw.h |  3 -
- 5 files changed, 69 insertions(+), 78 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index bcf7d9c56248..12c09374c2be 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -477,9 +477,8 @@ ice_aq_get_netlist_node(struct ice_hw *hw, struct ice_aqc_get_link_topo *cmd,
-  * netlist. When found ICE_SUCCESS is returned, ICE_ERR_DOES_NOT_EXIST
-  * otherwise. If node_handle provided, it would be set to found node handle.
-  */
--int
--ice_find_netlist_node(struct ice_hw *hw, u8 node_type_ctx, u8 node_part_number,
--		      u16 *node_handle)
-+static int ice_find_netlist_node(struct ice_hw *hw, u8 node_type_ctx,
-+				 u8 node_part_number, u16 *node_handle)
- {
- 	struct ice_aqc_get_link_topo cmd;
- 	u8 rec_node_part_number;
-@@ -2552,6 +2551,67 @@ bool ice_is_pf_c827(struct ice_hw *hw)
- 	return false;
- }
- 
-+/**
-+ * ice_is_phy_rclk_in_netlist
-+ * @hw: pointer to the hw struct
-+ *
-+ * Check if the PHY Recovered Clock device is present in the netlist
-+ */
-+bool ice_is_phy_rclk_in_netlist(struct ice_hw *hw)
-+{
-+	if (ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
-+				  ICE_AQC_GET_LINK_TOPO_NODE_NR_C827, NULL) &&
-+	    ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
-+				  ICE_AQC_GET_LINK_TOPO_NODE_NR_E822_PHY, NULL))
-+		return false;
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_is_clock_mux_in_netlist
-+ * @hw: pointer to the hw struct
-+ *
-+ * Check if the Clock Multiplexer device is present in the netlist
-+ */
-+bool ice_is_clock_mux_in_netlist(struct ice_hw *hw)
-+{
-+	if (ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_MUX,
-+				  ICE_AQC_GET_LINK_TOPO_NODE_NR_GEN_CLK_MUX,
-+				  NULL))
-+		return false;
-+
-+	return true;
-+}
-+
-+/**
-+ * ice_is_cgu_in_netlist - check for CGU presence
-+ * @hw: pointer to the hw struct
-+ *
-+ * Check if the Clock Generation Unit (CGU) device is present in the netlist.
-+ * Save the CGU part number in the hw structure for later use.
-+ * Return:
-+ * * true - cgu is present
-+ * * false - cgu is not present
-+ */
-+bool ice_is_cgu_in_netlist(struct ice_hw *hw)
-+{
-+	if (!ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
-+				   ICE_AQC_GET_LINK_TOPO_NODE_NR_ZL30632_80032,
-+				   NULL)) {
-+		hw->cgu_part_number = ICE_AQC_GET_LINK_TOPO_NODE_NR_ZL30632_80032;
-+		return true;
-+	} else if (!ice_find_netlist_node(hw,
-+					  ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
-+					  ICE_AQC_GET_LINK_TOPO_NODE_NR_SI5383_5384,
-+					  NULL)) {
-+		hw->cgu_part_number = ICE_AQC_GET_LINK_TOPO_NODE_NR_SI5383_5384;
-+		return true;
-+	}
-+
-+	return false;
-+}
-+
- /**
-  * ice_is_gps_in_netlist
-  * @hw: pointer to the hw struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 59969f702dae..4a75c0c89301 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -93,11 +93,11 @@ ice_aq_get_phy_caps(struct ice_port_info *pi, bool qual_mods, u8 report_mode,
- 		    struct ice_aqc_get_phy_caps_data *caps,
- 		    struct ice_sq_cd *cd);
- bool ice_is_pf_c827(struct ice_hw *hw);
-+bool ice_is_phy_rclk_in_netlist(struct ice_hw *hw);
-+bool ice_is_clock_mux_in_netlist(struct ice_hw *hw);
-+bool ice_is_cgu_in_netlist(struct ice_hw *hw);
- bool ice_is_gps_in_netlist(struct ice_hw *hw);
- int
--ice_find_netlist_node(struct ice_hw *hw, u8 node_type_ctx, u8 node_part_number,
--		      u16 *node_handle);
--int
- ice_aq_get_netlist_node(struct ice_hw *hw, struct ice_aqc_get_link_topo *cmd,
- 			u8 *node_part_number, u16 *node_handle);
- int
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index b96fbf76ca6d..6e70d678f323 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -3995,14 +3995,14 @@ void ice_init_feature_support(struct ice_pf *pf)
- 	case ICE_DEV_ID_E810_XXV_QSFP:
- 	case ICE_DEV_ID_E810_XXV_SFP:
- 		ice_set_feature_support(pf, ICE_F_DSCP);
--		if (ice_is_phy_rclk_present(&pf->hw))
-+		if (ice_is_phy_rclk_in_netlist(&pf->hw))
- 			ice_set_feature_support(pf, ICE_F_PHY_RCLK);
- 		/* If we don't own the timer - don't enable other caps */
- 		if (!ice_pf_src_tmr_owned(pf))
- 			break;
--		if (ice_is_cgu_present(&pf->hw))
-+		if (ice_is_cgu_in_netlist(&pf->hw))
- 			ice_set_feature_support(pf, ICE_F_CGU);
--		if (ice_is_clock_mux_present_e810t(&pf->hw))
-+		if (ice_is_clock_mux_in_netlist(&pf->hw))
- 			ice_set_feature_support(pf, ICE_F_SMA_CTRL);
- 		if (ice_gnss_is_gps_present(&pf->hw))
- 			ice_set_feature_support(pf, ICE_F_GNSS);
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-index 5619644d5da7..882dfdad0021 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.c
-@@ -3556,45 +3556,6 @@ int ice_clear_phy_tstamp(struct ice_hw *hw, u8 block, u8 idx)
- 	}
- }
- 
--/**
-- * ice_is_phy_rclk_present - check recovered clk presence
-- * @hw: pointer to the hw struct
-- *
-- * Check if the PHY Recovered Clock device is present in the netlist
-- * Return:
-- * * true - device found in netlist
-- * * false - device not found
-- */
--bool ice_is_phy_rclk_present(struct ice_hw *hw)
--{
--	if (ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
--				  ICE_AQC_GET_LINK_TOPO_NODE_NR_C827, NULL) &&
--	    ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
--				  ICE_AQC_GET_LINK_TOPO_NODE_NR_E822_PHY, NULL))
--		return false;
--
--	return true;
--}
--
--/**
-- * ice_is_clock_mux_present_e810t
-- * @hw: pointer to the hw struct
-- *
-- * Check if the Clock Multiplexer device is present in the netlist
-- * Return:
-- * * true - device found in netlist
-- * * false - device not found
-- */
--bool ice_is_clock_mux_present_e810t(struct ice_hw *hw)
--{
--	if (ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_MUX,
--				  ICE_AQC_GET_LINK_TOPO_NODE_NR_GEN_CLK_MUX,
--				  NULL))
--		return false;
--
--	return true;
--}
--
- /**
-  * ice_get_pf_c827_idx - find and return the C827 index for the current pf
-  * @hw: pointer to the hw struct
-@@ -3708,33 +3669,6 @@ int ice_get_phy_tx_tstamp_ready(struct ice_hw *hw, u8 block, u64 *tstamp_ready)
- 	}
- }
- 
--/**
-- * ice_is_cgu_present - check for CGU presence
-- * @hw: pointer to the hw struct
-- *
-- * Check if the Clock Generation Unit (CGU) device is present in the netlist
-- * Return:
-- * * true - cgu is present
-- * * false - cgu is not present
-- */
--bool ice_is_cgu_present(struct ice_hw *hw)
--{
--	if (!ice_find_netlist_node(hw, ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
--				   ICE_AQC_GET_LINK_TOPO_NODE_NR_ZL30632_80032,
--				   NULL)) {
--		hw->cgu_part_number = ICE_AQC_GET_LINK_TOPO_NODE_NR_ZL30632_80032;
--		return true;
--	} else if (!ice_find_netlist_node(hw,
--					  ICE_AQC_LINK_TOPO_NODE_TYPE_CLK_CTRL,
--					  ICE_AQC_GET_LINK_TOPO_NODE_NR_SI5383_5384,
--					  NULL)) {
--		hw->cgu_part_number = ICE_AQC_GET_LINK_TOPO_NODE_NR_SI5383_5384;
--		return true;
--	}
--
--	return false;
--}
--
- /**
-  * ice_cgu_get_pin_desc_e823 - get pin description array
-  * @hw: pointer to the hw struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-index 6f277e7b06b9..18a993134826 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp_hw.h
-@@ -271,10 +271,7 @@ int ice_read_sma_ctrl_e810t(struct ice_hw *hw, u8 *data);
- int ice_write_sma_ctrl_e810t(struct ice_hw *hw, u8 data);
- int ice_read_pca9575_reg_e810t(struct ice_hw *hw, u8 offset, u8 *data);
- bool ice_is_pca9575_present(struct ice_hw *hw);
--bool ice_is_phy_rclk_present(struct ice_hw *hw);
--bool ice_is_clock_mux_present_e810t(struct ice_hw *hw);
- int ice_get_pf_c827_idx(struct ice_hw *hw, u8 *idx);
--bool ice_is_cgu_present(struct ice_hw *hw);
- enum dpll_pin_type ice_cgu_get_pin_type(struct ice_hw *hw, u8 pin, bool input);
- struct dpll_pin_frequency *
- ice_cgu_get_pin_freq_supp(struct ice_hw *hw, u8 pin, bool input, u8 *num);
 -- 
-2.41.0.1.g9857a21e0017.dirty
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
