@@ -1,106 +1,84 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BF11CD4847
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 22 Sep 2023 17:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97A40CE7A89
+	for <intel-wired-lan@archiver.kernel.org>; Sat, 23 Sep 2023 12:24:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 02D2F40B56;
-	Fri, 22 Sep 2023 17:24:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 02D2F40B56
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1A98F60AA6;
+	Sat, 23 Sep 2023 12:24:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1A98F60AA6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1695403496;
-	bh=VOSwa4PUv4QK6q0o+9K8y5xYFucn87yBFvQxyCz6E0k=;
-	h=Date:To:From:Subject:List-Id:List-Unsubscribe:List-Archive:
+	s=default; t=1695471888;
+	bh=tUdeN8hgR9khZW031BBY8Ejk0NPl2n0n4NznWc4MjrI=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=wKd3rdcPmU3jNimRPdA0NYRqhmbh6982hRavitYR88OjKk71epw6n2udEIx+/IOcK
-	 LvD+xngAzfGgjusfziqGvew0+BmCznYC0cmunysQZvBXuQDeUVV0V2CcmYZJH2tYkg
-	 yGcwgUR1lNORVPj+pfOk4Pmnj+HJkVETWzfFxOsE7aUj8Rpm1eiMdtAU9IE6s4/94B
-	 X2zQTRvxOZfQ8brG/mHXo0yJumdJJr5KyB66nJM7XutPPBYsqUo8vbWVGwCRbUAetC
-	 ajm/VsObjP7vWXLduEPza/FCQ1OhzLwan5FSendcj9k6Of4GzcRimEG1rjlnlxrBoN
-	 4hHpzM+xY8q5Q==
+	b=d0godyjWOTBwhnEl0wuFFu1cVPfkB8Uwijss4oQhtF+qGq+vcLgNtNKK6V9vSg+M5
+	 y4TeJVwWrtCAJ4xgInFtd6ybCdm9JaBV2v3tt2iUSeXyxfcSp3wiR87g6HRMNJRJks
+	 8SQ7j/9rzwJgRaF4/NJHfEPb4WOA2CE+Ctxn0oy7r29qFEPlZCzh0h8wnqA+0WipxU
+	 7MZGSTLbRJOngklQzJtbxlT75QZCHRsb0F5noGKfyepG2Q4lboDxmF4iRcav86q7Ew
+	 La7uU70Us/joBZGwpNf6+1XjxGmbFpwo/Sa5m4pHvqpCA4gqZa4LZwDjs4lNY3mP3q
+	 oFS6FOtk9EDGA==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zENlHyb_aSKK; Fri, 22 Sep 2023 17:24:54 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id BXhhJ88eq_Fk; Sat, 23 Sep 2023 12:24:46 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 300214149C;
-	Fri, 22 Sep 2023 17:24:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 300214149C
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A00C61BF2B9
- for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Sep 2023 16:38:09 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id C8A0C60B6E;
+	Sat, 23 Sep 2023 12:24:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C8A0C60B6E
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 53A801BF389
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Sep 2023 12:24:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7814083A0A
- for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Sep 2023 16:38:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7814083A0A
+ by smtp3.osuosl.org (Postfix) with ESMTP id 28EBC60B6E
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Sep 2023 12:24:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 28EBC60B6E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id nkLNtneWW9N4 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 22 Sep 2023 16:38:06 +0000 (UTC)
-Received: from mail-vs1-xe64.google.com (mail-vs1-xe64.google.com
- [IPv6:2607:f8b0:4864:20::e64])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9EF34838B6
- for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Sep 2023 16:38:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9EF34838B6
-Received: by mail-vs1-xe64.google.com with SMTP id
- ada2fe7eead31-45269fe9d6bso1154871137.2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 22 Sep 2023 09:38:06 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1695400685; x=1696005485;
- h=from:message-id:content-transfer-encoding:user-agent:cc:subject:to
- :date:dkim-signature:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=pD16L7bzKZHGImef/xBf1dFAV1vQpWiuIcQ1e7o+p+U=;
- b=wTz/7vhT/YvBUr3X7pGTdnZpwzoiV9GWYnknG2DWoAmL3MzhnS4Lr1IyhlBJjPShr4
- cyMIPA72FxsakRDWfVoCfvnnDSLYCfeIQNqdnQhP6b3jKL/okwedSSvdvU96qDVPzAch
- ZqHUKrRT9dub2Fad0xB8UAjfq9OG2+SUMl6wx6oDcAGvWnQcRyevmyYgqQIgl9d4jeO+
- OnwYH2o2hI7C1RN8MOCSszO9gfdukRNSWkSVq7ViukW68d0ZRrDJug5XbF6L8AbxGGTk
- SrkW9K9x/4vrKXYgFoq4x/eLaujl0qomxonbZ1N3mXFd2QecMjY8z67psy/AflfXptjq
- 8JjA==
-X-Gm-Message-State: AOJu0YyQMqNP9X1uQTZUm2OIuHn0xETtWDjHalydZCr5iNrMhKog/bRh
- pEBvslSc+IB/sCtqAYqnNkC7ZkldHzEmNBo9K745HYhG4ojT
-X-Google-Smtp-Source: AGHT+IHFZ12Ok0odf7n7xvLFvliRtfNcU0J6F/mX6xY8/rd40WkKYnJp3VobEZFPd3IRcjUakvZUYy7rTgEo
-X-Received: by 2002:a67:fb18:0:b0:44e:8ef9:3371 with SMTP id
- d24-20020a67fb18000000b0044e8ef93371mr129528vsr.8.1695400685509; 
- Fri, 22 Sep 2023 09:38:05 -0700 (PDT)
-Received: from smtp.aristanetworks.com (mx.aristanetworks.com.
- [162.210.129.12]) by smtp-relay.gmail.com with ESMTPS id
- w20-20020ab055d4000000b0079de0a4af6fsm222139uaa.11.2023.09.22.09.38.05
- (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 22 Sep 2023 09:38:05 -0700 (PDT)
-X-Relaying-Domain: arista.com
-Received: from us122.sjc.aristanetworks.com (us122.sjc.aristanetworks.com
- [10.242.248.9])
- by smtp.aristanetworks.com (Postfix) with ESMTP id 8E29B40188E;
- Fri, 22 Sep 2023 09:38:04 -0700 (PDT)
-Received: by us122.sjc.aristanetworks.com (Postfix, from userid 10181)
- id 7DDBA2440449; Fri, 22 Sep 2023 09:38:04 -0700 (PDT)
-Date: Fri, 22 Sep 2023 09:38:04 -0700
-To: intel-wired-lan@lists.osuosl.org
-User-Agent: Heirloom mailx 12.5 7/5/10
-Message-Id: <20230922163804.7DDBA2440449@us122.sjc.aristanetworks.com>
-From: prasad@arista.com (Prasad Koya)
-X-Mailman-Approved-At: Fri, 22 Sep 2023 17:24:52 +0000
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 1yIqGy3ZQjRn for <intel-wired-lan@lists.osuosl.org>;
+ Sat, 23 Sep 2023 12:24:43 +0000 (UTC)
+X-Greylist: delayed 451 seconds by postgrey-1.37 at util1.osuosl.org;
+ Sat, 23 Sep 2023 12:24:43 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 44AB160AA6
+Received: from smtp.smtpout.orange.fr (smtp-24.smtpout.orange.fr
+ [80.12.242.24])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 44AB160AA6
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 23 Sep 2023 12:24:42 +0000 (UTC)
+Received: from pop-os.home ([86.243.2.178]) by smtp.orange.fr with ESMTPA
+ id k1ZLq0FE4ttXNk1ZLq9cSW; Sat, 23 Sep 2023 14:17:10 +0200
+X-ME-Helo: pop-os.home
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Sat, 23 Sep 2023 14:17:10 +0200
+X-ME-IP: 86.243.2.178
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>
+Date: Sat, 23 Sep 2023 14:17:05 +0200
+Message-Id: <966968bda15a7128a381b589329184dfea3e0548.1695471387.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=arista.com; s=Arista-A; t=1695400684;
- bh=pD16L7bzKZHGImef/xBf1dFAV1vQpWiuIcQ1e7o+p+U=;
- h=Date:To:Subject:Cc:From:From;
- b=w0JOCtsUqRr9L2yiSMUUh4U0gHzYGhfZiLxPm16WujaERSVmv7pPKtqDh2jHjHqaI
- yMe+FMU9FsWBedV75VKZ/hneECmmr1MCAQHeUndMXB4oI1tykIoock00DIaHvHP7u7
- 0mTDwP3Vjnt8Ii2CYYB/paPpC6s/E34c4yh/bfQ3ZdeYeAvGUhxL4ksutaqAuAtznL
- 00R1px9OPe0u0S4cxwh7bzpNd/p5VuNzsTE9/xjIViOGBON7jeD+JIkIjN4FekwvOA
- Lizga9KIhIZ1AQmzxlbSngTiLUUuccaYoN0eGWFGemOAEElyku8vldYpqcS6xjyBRb
- 3ureBhcvVd4LA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key,
- unprotected) header.d=arista.com header.i=@arista.com header.a=rsa-sha256
- header.s=Arista-A header.b=w0JOCtsU
-Subject: [Intel-wired-lan] [PATCH] [iwl-net] Revert "igc: set TP bit in
- 'supported' and 'advertising' fields of ethtool_link_ksettings"
+ d=wanadoo.fr; s=t20230301; t=1695471430;
+ bh=MZ+x3+dMxPzCGceJF8/93Shpse4vUvBYF6v0b3D2kfE=;
+ h=From:To:Cc:Subject:Date;
+ b=pWrkqoYWrs+z0eZtol7HHfGiyoEXhV/dOMobQxnDEhy6fd6vb/VVWl+xgiAj4FXnz
+ 4PvjXGd+S2o3TMbt4Ut7bO62rSgDkrpmxKcfbTt9ZBgTg+WQ1X+cRAIwr8ZPvxx+TL
+ unF0hAolnIG5mmLcu0WkE4eqgFOYmtiwp+867RTzbgveloEchATdFmfzfB359NaQHC
+ y2nJVmMr/0cV50aDKXwfsgFzViVX8Rul99nI4gR5DjZMggg/qrfGY34L7oFPnBMrvX
+ SvRULTOQBPjgKYToaahMrfT2APagS9YohRwfVWOAZ9IrPna8uYXnvjEX6NrQaznMMa
+ +RLYynY5dib/w==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=wanadoo.fr header.i=@wanadoo.fr
+ header.a=rsa-sha256 header.s=t20230301 header.b=pWrkqoYW
+Subject: [Intel-wired-lan] [PATCH net-next] iavf: Avoid a memory allocation
+ in iavf_print_link_message()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,47 +91,61 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: dumazet@google.com, sasha.neftin@intel.com, netdev@vger.kernel.org,
- jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com, kuba@kernel.org,
- pabeni@redhat.com, davem@davemloft.net, prasad@arista.com
-MIME-Version: 1.0
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ intel-wired-lan@lists.osuosl.org, kernel-janitors@vger.kernel.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-This reverts commit 9ac3fc2f42e5ffa1e927dcbffb71b15fa81459e2.
+IAVF_MAX_SPEED_STRLEN is only 13 and 'speed' is allocated and freed within
+iavf_print_link_message().
 
-After the command "ethtool -s enps0 speed 100 duplex full autoneg on",
-i.e., advertise only 100Mbps speed to the peer, "ethtool enps0" shows
-advertised speeds as 100Mbps and 2500Mbps. Same behavior is seen
-when changing the speed to 10Mbps or 1000Mbps.
+'speed' is only used with some snprintf() and netdev_info() calls.
 
-This applies to I225/226 parts, which only supports copper mode.
-Reverting to original till the ambiguity is resolved.
+So there is no real use to kzalloc()/free() it. Use the stack instead.
+This saves a memory allocation.
 
-Fixes: 9ac3fc2f42e5 ("igc: set TP bit in 'supported' and 
-'advertising' fields of ethtool_link_ksettings")
-Signed-off-by: Prasad Koya <prasad@arista.com>
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 93bce729be76..0e2cb00622d1 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -1708,8 +1708,6 @@ static int igc_ethtool_get_link_ksettings(struct net_device *netdev,
- 	/* twisted pair */
- 	cmd->base.port = PORT_TP;
- 	cmd->base.phy_address = hw->phy.addr;
--	ethtool_link_ksettings_add_link_mode(cmd, supported, TP);
--	ethtool_link_ksettings_add_link_mode(cmd, advertising, TP);
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 8ce6389b5815..980dc69d7fbe 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1389,18 +1389,14 @@ void iavf_disable_vlan_insertion_v2(struct iavf_adapter *adapter, u16 tpid)
+ static void iavf_print_link_message(struct iavf_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
++	char speed[IAVF_MAX_SPEED_STRLEN];
+ 	int link_speed_mbps;
+-	char *speed;
  
- 	/* advertising link modes */
- 	if (hw->phy.autoneg_advertised & ADVERTISE_10_HALF)
+ 	if (!adapter->link_up) {
+ 		netdev_info(netdev, "NIC Link is Down\n");
+ 		return;
+ 	}
+ 
+-	speed = kzalloc(IAVF_MAX_SPEED_STRLEN, GFP_KERNEL);
+-	if (!speed)
+-		return;
+-
+ 	if (ADV_LINK_SUPPORT(adapter)) {
+ 		link_speed_mbps = adapter->link_speed_mbps;
+ 		goto print_link_msg;
+@@ -1452,7 +1448,6 @@ static void iavf_print_link_message(struct iavf_adapter *adapter)
+ 	}
+ 
+ 	netdev_info(netdev, "NIC Link is Up Speed is %s Full Duplex\n", speed);
+-	kfree(speed);
+ }
+ 
+ /**
 -- 
-2.41.0
+2.34.1
 
 _______________________________________________
 Intel-wired-lan mailing list
