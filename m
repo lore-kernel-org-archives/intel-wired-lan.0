@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44399E7E65A
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Sep 2023 18:27:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFBCBE7E657
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Sep 2023 18:27:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id EAEAE60E34;
-	Tue, 26 Sep 2023 18:27:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EAEAE60E34
+	by smtp3.osuosl.org (Postfix) with ESMTP id 709C9613BF;
+	Tue, 26 Sep 2023 18:27:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 709C9613BF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1695752861;
-	bh=wuvBcMHUbo5sA38yUkAdqHG5JedFObxWQ6R1wm1IC2A=;
+	s=default; t=1695752865;
+	bh=KYUdPAao13WOckIAdBAk5qwmSAFB8axQ9uSSWSiJkdg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=E8IacQdquzCS3zJa1rVx3t46Xq5e9dJ8JS/+jtmeiatvKNiZhCdvzNCIA8yJJeRp6
-	 Ydn0JYl19Fq1rar0jIrW2fs9PxV0NcnBLS+cpKXWWKpJE40C6gkHu8FclP1cUJ1kkE
-	 a753JTvfdyfK5s0mGOT+jK8uVBzXQ0RWPcE04oOCOAVmOoL/1FgZrnpXKtrUBqk5G5
-	 yDoTI/wlsicORNyd8aYWlT/JzlDjiyzHjpqf5q0zbTI/SX3KvCNY0bnQVJUHhhnSRR
-	 7/KuU26s1DUp392ex9Rb5zNY9gkoTQeQiCg/j0aeozaPw12ZCX2GwDKBWcMsxo3Ant
-	 o++GKmw+SI2iA==
+	b=bChzCEHdnqK2fkSkLNQoNKnneUMduJsHDCwJGBmUEiHHxRWGjCOVMjZdrilJkSX/v
+	 uFVDrSVcvqm2sI/7zvnu56egSsxxJwIvduISvNZNliSA6fw24l6y75TE3pcyXxznlg
+	 YATNwULEVDN1CERGTHdG3e0ZPhlckf9/+bDLQVOeYQ1Hp041x68r3ADkdthrfMR6eQ
+	 f9uxfk72GDzgNrv+sQIDj4NIvNJCi2UujYc0hBWVptOoQuw9PJYNkVdIZBg7HAfCp4
+	 AFtuOxcXGahFHSmp7QL2pD5rA3YvzPx6M7NBufGHwgfsS95bUbScHpDNOwrs14VM03
+	 L3fQB7Ug8yfKQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 8Cgud8orgmYg; Tue, 26 Sep 2023 18:27:40 +0000 (UTC)
+	with ESMTP id SoAXQfCn-uDJ; Tue, 26 Sep 2023 18:27:44 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E68BF60FF8;
-	Tue, 26 Sep 2023 18:27:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E68BF60FF8
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id AB71A1BF279
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:26 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 70A7860DC6;
+	Tue, 26 Sep 2023 18:27:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 70A7860DC6
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id B43301BF279
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9163F8136D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9163F8136D
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9A9B541AA3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9A9B541AA3
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id fJlwH29DIKcc for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Sep 2023 18:27:26 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id TQNSAcX4VumJ for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Sep 2023 18:27:30 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id F116F812A5
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F116F812A5
+ by smtp2.osuosl.org (Postfix) with ESMTPS id DA9BB40481
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DA9BB40481
 Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
  by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-678-bO5eBIJTOfio9puFw5u8pA-1; Tue, 26 Sep 2023 14:27:21 -0400
-X-MC-Unique: bO5eBIJTOfio9puFw5u8pA-1
+ us-mta-520-N-AoYjMbNj-3ZZHNw8iVLw-1; Tue, 26 Sep 2023 14:27:25 -0400
+X-MC-Unique: N-AoYjMbNj-3ZZHNw8iVLw-1
 Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com
  [10.11.54.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 095852815E2A;
- Tue, 26 Sep 2023 18:27:21 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C52E02815E28;
+ Tue, 26 Sep 2023 18:27:24 +0000 (UTC)
 Received: from p1.luc.cera.cz (unknown [10.45.225.119])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 54D5740C6EA8;
- Tue, 26 Sep 2023 18:27:19 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 2CEC640C6EA8;
+ Tue, 26 Sep 2023 18:27:23 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
-Date: Tue, 26 Sep 2023 20:27:05 +0200
-Message-ID: <20230926182710.2517901-5-ivecera@redhat.com>
+Date: Tue, 26 Sep 2023 20:27:07 +0200
+Message-ID: <20230926182710.2517901-7-ivecera@redhat.com>
 In-Reply-To: <20230926182710.2517901-1-ivecera@redhat.com>
 References: <20230926182710.2517901-1-ivecera@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1695752844;
+ s=mimecast20190719; t=1695752848;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=T7aIMO5UwZ/UfgDo/+bLg5FMzWKeKrf87yyew+23Pgw=;
- b=MSrf8A8Mn4WO4uOLtjULzB6LM4S4cVrpwsky9VW/S4AZtjw6assxyS6HY2e/JI72lUApUY
- l+NWHw6iNfxoygrcOe5HYrc5NsPZ/4i6m5ftoAVJaSB8NIKD2lYZA7ybb0mAowm5qsyZDf
- WzXUTXdV5SYyZPTr6f3nmvyCKZ7F/m8=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=XU4m14ETA7DHbszSVZCELLKzCLd5sXcG4CFt5VJeRXw=;
+ b=Nz3CTkiUlT7ZQa2vRWdLxsaiWK+072jKoavdlxHSrqnr+sBJYOFFk7I/3sGH/lsm3UiAIR
+ 8r1vBOVoeCNLi54lVqg08Xv9tx6skHA/1qXK74uRot0ztUvyM2MSGwcI9ubgE7/VAzzQTq
+ LiDj3b974MGfPmyYXgxfQG2TpEpkDtI=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=MSrf8A8M
-Subject: [Intel-wired-lan] [PATCH net-next 4/9] virtchnl: Add header
- dependencies
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=Nz3CTkiU
+Subject: [Intel-wired-lan] [PATCH net-next 6/9] i40e: Move DDP specific
+ macros and structures to i40e_ddp.c
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,30 +106,121 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The <linux/avf/virtchnl.h> uses BIT, struct_size and ETH_ALEN macros
-but does not include appropriate header files that defines them.
-Add these dependencies so this header file can be included anywhere.
+Move several DDP related macros and structures from i40e.h header
+to i40e_ddp.c where are privately used. Make static i40e_ddp_load()
+function that is also used only in i40e_ddp and move declaration of
+i40e_ddp_flash() used by i40e_ethtool.c to i40e_prototype.h
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- include/linux/avf/virtchnl.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e.h        | 24 -------------------
+ drivers/net/ethernet/intel/i40e/i40e_ddp.c    | 22 +++++++++++++++--
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |  5 ++++
+ 3 files changed, 25 insertions(+), 26 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index dd71d3009771..6b3acf15be5c 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -4,6 +4,10 @@
- #ifndef _VIRTCHNL_H_
- #define _VIRTCHNL_H_
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 049ca9f589c7..911a34e0e562 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -4,7 +4,6 @@
+ #ifndef _I40E_H_
+ #define _I40E_H_
  
-+#include <linux/bitops.h>
-+#include <linux/overflow.h>
-+#include <uapi/linux/if_ether.h>
+-#include <linux/ethtool.h>
+ #include <linux/pci.h>
+ #include <linux/ptp_clock_kernel.h>
+ #include <linux/types.h>
+@@ -295,29 +294,6 @@ struct i40e_udp_port_config {
+ 	u8 filter_index;
+ };
+ 
+-#define I40_DDP_FLASH_REGION 100
+-#define I40E_PROFILE_INFO_SIZE 48
+-#define I40E_MAX_PROFILE_NUM 16
+-#define I40E_PROFILE_LIST_SIZE \
+-	(I40E_PROFILE_INFO_SIZE * I40E_MAX_PROFILE_NUM + 4)
+-#define I40E_DDP_PROFILE_PATH "intel/i40e/ddp/"
+-#define I40E_DDP_PROFILE_NAME_MAX 64
+-
+-int i40e_ddp_load(struct net_device *netdev, const u8 *data, size_t size,
+-		  bool is_add);
+-int i40e_ddp_flash(struct net_device *netdev, struct ethtool_flash *flash);
+-
+-struct i40e_ddp_profile_list {
+-	u32 p_count;
+-	struct i40e_profile_info p_info[];
+-};
+-
+-struct i40e_ddp_old_profile_list {
+-	struct list_head list;
+-	size_t old_ddp_size;
+-	u8 old_ddp_buf[];
+-};
+-
+ /* macros related to FLX_PIT */
+ #define I40E_FLEX_SET_FSIZE(fsize) (((fsize) << \
+ 				    I40E_PRTQF_FLX_PIT_FSIZE_SHIFT) & \
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ddp.c b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+index 21b3518c4096..6b68b6575a1d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ddp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+@@ -4,6 +4,24 @@
+ #include <linux/firmware.h>
+ #include "i40e.h"
+ 
++#define I40_DDP_FLASH_REGION		100
++#define I40E_PROFILE_INFO_SIZE		48
++#define I40E_MAX_PROFILE_NUM		16
++#define I40E_PROFILE_LIST_SIZE		\
++	(I40E_PROFILE_INFO_SIZE * I40E_MAX_PROFILE_NUM + 4)
++#define I40E_DDP_PROFILE_PATH		"intel/i40e/ddp/"
++#define I40E_DDP_PROFILE_NAME_MAX	64
 +
- /* Description:
-  * This header file describes the Virtual Function (VF) - Physical Function
-  * (PF) communication protocol used by the drivers for all devices starting
++struct i40e_ddp_profile_list {
++	u32 p_count;
++	struct i40e_profile_info p_info[];
++};
++
++struct i40e_ddp_old_profile_list {
++	struct list_head list;
++	size_t old_ddp_size;
++	u8 old_ddp_buf[];
++};
+ 
+ /**
+  * i40e_ddp_profiles_eq - checks if DDP profiles are the equivalent
+@@ -261,8 +279,8 @@ static bool i40e_ddp_is_pkg_hdr_valid(struct net_device *netdev,
+  * Checks correctness and loads DDP profile to the NIC. The function is
+  * also used for rolling back previously loaded profile.
+  **/
+-int i40e_ddp_load(struct net_device *netdev, const u8 *data, size_t size,
+-		  bool is_add)
++static int i40e_ddp_load(struct net_device *netdev, const u8 *data, size_t size,
++			 bool is_add)
+ {
+ 	u8 profile_info_sec[sizeof(struct i40e_profile_section_header) +
+ 			    sizeof(struct i40e_profile_info)];
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index f8cb4c511831..fbef0ad1af45 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -4,6 +4,7 @@
+ #ifndef _I40E_PROTOTYPE_H_
+ #define _I40E_PROTOTYPE_H_
+ 
++#include <linux/ethtool.h>
+ #include <linux/avf/virtchnl.h>
+ #include "i40e_type.h"
+ 
+@@ -496,4 +497,8 @@ int
+ i40e_add_pinfo_to_list(struct i40e_hw *hw,
+ 		       struct i40e_profile_segment *profile,
+ 		       u8 *profile_info_sec, u32 track_id);
++
++/* i40e_ddp */
++int i40e_ddp_flash(struct net_device *netdev, struct ethtool_flash *flash);
++
+ #endif /* _I40E_PROTOTYPE_H_ */
 -- 
 2.41.0
 
