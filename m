@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09F08E7E657
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Sep 2023 18:27:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02173E7E654
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 26 Sep 2023 18:28:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id BAAB360758;
-	Tue, 26 Sep 2023 18:27:58 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BAAB360758
+	by smtp3.osuosl.org (Postfix) with ESMTP id B328A60FF8;
+	Tue, 26 Sep 2023 18:28:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B328A60FF8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1695752878;
-	bh=GTig6eNU7KvOuAiZ5GM/hAC1cBa3lnIym4fv32xoKso=;
+	s=default; t=1695752882;
+	bh=Jompg8RXJDEs1ZwHm/RYR78ktp7PZ2YRT3IXJ1aHdas=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Ke2hcHNoutM/ShfSHqkM6Tslr/hiCe3KgQCVCtr4zHhNhkaV6+n+MoWGU8h8FBTfE
-	 L4hfLrseCyCyhY+/NfoRf5uBcIF9BamtbwmtaLi8E4IcSn4aAiWJYP0CHkWC5xVROR
-	 7i2U7v3hxaJio4NYHSmFVNgeSiiVlx4yrVSAt1bSrbtVoosY429v+96a5WtHSPsAuW
-	 ZoGL79ZFKSIzxMNaMdg04wMmsq45VP/5pBAYv35sQlNS7FEVdKRfcpl/rCgNPgcD5t
-	 QhBrr8bskjYUmCNf5KhnEpcSie73jmKVwb0uqgdhdfUGYiw4o/Nkc7wdNA1sbq7AGq
-	 W6A3/iHNaNchg==
+	b=okJpA80sbp7EYiPxHIri/Wr7Vnbuj3fgzHy+pPBgVpd01h7X5dMwXhXvQkb6hQUP5
+	 wgMQEtdbvrlsfNYIj3qLUOfM4vwTIHvQLNR8msjKuWHZp09WN4IuDZezZjDD2xn5fD
+	 GMJBvkzYAYYVhdSRecY36ifQvfBwxxg20sQkshtAOwBKi4tYkUT5+68VEk+a6HSWJC
+	 UYblVf7H9MAU7eya7TPY/10qHsI5k0+71enj1h45x1GRMJNz6BEv0zlpJyGbdVl38e
+	 6v2UfG6t7UO/W3aI8U93KgPU4YC45AEWv6mcby6lFSmgXvo+DCU6HqLYN26AuqKIej
+	 JNEsDcBWuEQrA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0svGhKCQAv3t; Tue, 26 Sep 2023 18:27:57 +0000 (UTC)
+	with ESMTP id sjGVthN26ECl; Tue, 26 Sep 2023 18:28:01 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5F30A613BF;
-	Tue, 26 Sep 2023 18:27:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5F30A613BF
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id A39E81BF95D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:34 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 64052610F9;
+	Tue, 26 Sep 2023 18:28:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 64052610F9
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id A6EF41BF279
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 88A2781E74
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 88A2781E74
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7EC7541F3C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7EC7541F3C
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Ypfm_4QL8phQ for <intel-wired-lan@lists.osuosl.org>;
- Tue, 26 Sep 2023 18:27:33 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id YlsdSX_vqXaP for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 26 Sep 2023 18:27:37 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id A212481E6F
- for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A212481E6F
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-130-vC1P8WReNnGWUQA6P-2Qwg-1; Tue, 26 Sep 2023 14:27:27 -0400
-X-MC-Unique: vC1P8WReNnGWUQA6P-2Qwg-1
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4EE99417F6
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 26 Sep 2023 18:27:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4EE99417F6
+Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
+ by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-616-9zMOJriVMwOk-VgmfNev4g-1; Tue, 26 Sep 2023 14:27:30 -0400
+X-MC-Unique: 9zMOJriVMwOk-VgmfNev4g-1
 Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com
  [10.11.54.2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 9A6C08007A4;
- Tue, 26 Sep 2023 18:27:26 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 578751C068CE;
+ Tue, 26 Sep 2023 18:27:30 +0000 (UTC)
 Received: from p1.luc.cera.cz (unknown [10.45.225.119])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 065B740C6EA8;
- Tue, 26 Sep 2023 18:27:24 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id A7EBB40C6EA8;
+ Tue, 26 Sep 2023 18:27:28 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
-Date: Tue, 26 Sep 2023 20:27:08 +0200
-Message-ID: <20230926182710.2517901-8-ivecera@redhat.com>
+Date: Tue, 26 Sep 2023 20:27:10 +0200
+Message-ID: <20230926182710.2517901-10-ivecera@redhat.com>
 In-Reply-To: <20230926182710.2517901-1-ivecera@redhat.com>
 References: <20230926182710.2517901-1-ivecera@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1695752852;
+ s=mimecast20190719; t=1695752856;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=YugJO58QiEhXf81Efgja2EtjA+zTSsmC76yLkbmUhCk=;
- b=K01zoEBeW1putzCU1fFqCkPzAziLmEc4HhtfIRZCBNFFKw0FnvT/vJwN3/Z06z7Qgnf5QZ
- +3KdnaNGQqiPjC58Oz55xk1slDjoJ9xLRIgmMGVYuTu02MjPQL8/BtnOJF8JkzMSFPxQiM
- 4hr+3LCVvuqwlE2aVSfJI977WoWYeVs=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=BuNC2fA/P0lbBI/RsO509Rqj2fam/lzzu0PxsMRFye4=;
+ b=BbsBjx3B9W6N1DkFdNfIxk/5uFIpprQeF27JZeI2Ja1YXEPAtKffXshrf6QVZuzRZ6wnPY
+ wvbvGlElXs/xR5TKIbz2hfrNvRB2CquPW4z8HKDUQ9ONOeH8x4+UhWSy0QPaumPFLPsZ2z
+ gGqosDvPmwyyrbXOEYshxbRSBgjqCk0=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=K01zoEBe
-Subject: [Intel-wired-lan] [PATCH net-next 7/9] i40e: Move memory allocation
- structures to i40e_alloc.h
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=BbsBjx3B
+Subject: [Intel-wired-lan] [PATCH net-next 9/9] i40e: Simplify memory
+ allocation functions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,208 +106,204 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Structures i40e_dma_mem & i40e_virt_mem are defined i40e_osdep.h while
-memory allocation functions that use them are declared in i40e_alloc.h
-Move them to i40e_alloc.h and remove this header file dependency on
-i40e_osdep.h header.
-
-Due to removal of this dependency we have to include i40e_osdep.h in files
-that requires it.
+Enum i40e_memory_type enum is unused in i40e_allocate_dma_mem() thus
+can be safely removed. Useless macros in i40e_alloc.h can be removed
+as well.
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c |  1 +
- drivers/net/ethernet/intel/i40e/i40e_adminq.h |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_alloc.h  | 21 ++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_common.c |  1 +
- drivers/net/ethernet/intel/i40e/i40e_dcb.c    |  1 +
- drivers/net/ethernet/intel/i40e/i40e_diag.c   |  1 +
- drivers/net/ethernet/intel/i40e/i40e_hmc.c    |  1 +
- drivers/net/ethernet/intel/i40e/i40e_hmc.h    |  2 +-
- .../net/ethernet/intel/i40e/i40e_lan_hmc.c    |  1 +
- drivers/net/ethernet/intel/i40e/i40e_nvm.c    |  1 +
- drivers/net/ethernet/intel/i40e/i40e_osdep.h  | 19 -----------------
- 11 files changed, 29 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c |  4 ----
+ drivers/net/ethernet/intel/i40e/i40e_alloc.h  | 21 -------------------
+ drivers/net/ethernet/intel/i40e/i40e_hmc.c    | 12 ++++-------
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 20 +++++++++---------
+ 4 files changed, 14 insertions(+), 43 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 088ef4696818..bf4de913435e 100644
+index 0803402d8e87..c3f165552638 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -3,6 +3,7 @@
+@@ -52,7 +52,6 @@ static int i40e_alloc_adminq_asq_ring(struct i40e_hw *hw)
+ 	int ret_code;
  
- #include <linux/delay.h>
- #include "i40e_alloc.h"
-+#include "i40e_osdep.h"
- #include "i40e_register.h"
- #include "i40e_prototype.h"
+ 	ret_code = i40e_allocate_dma_mem(hw, &hw->aq.asq.desc_buf,
+-					 i40e_mem_atq_ring,
+ 					 (hw->aq.num_asq_entries *
+ 					 sizeof(struct i40e_aq_desc)),
+ 					 I40E_ADMINQ_DESC_ALIGNMENT);
+@@ -79,7 +78,6 @@ static int i40e_alloc_adminq_arq_ring(struct i40e_hw *hw)
+ 	int ret_code;
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-index 95c902700f63..2c0341469122 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-@@ -6,7 +6,7 @@
- 
- #include <linux/mutex.h>
- #include "i40e_adminq_cmd.h"
--#include "i40e_osdep.h"
-+#include "i40e_alloc.h"
- 
- #define I40E_ADMINQ_DESC(R, i)   \
- 	(&(((struct i40e_aq_desc *)((R).desc_buf.va))[i]))
+ 	ret_code = i40e_allocate_dma_mem(hw, &hw->aq.arq.desc_buf,
+-					 i40e_mem_arq_ring,
+ 					 (hw->aq.num_arq_entries *
+ 					 sizeof(struct i40e_aq_desc)),
+ 					 I40E_ADMINQ_DESC_ALIGNMENT);
+@@ -137,7 +135,6 @@ static int i40e_alloc_arq_bufs(struct i40e_hw *hw)
+ 	for (i = 0; i < hw->aq.num_arq_entries; i++) {
+ 		bi = &hw->aq.arq.r.arq_bi[i];
+ 		ret_code = i40e_allocate_dma_mem(hw, bi,
+-						 i40e_mem_arq_buf,
+ 						 hw->aq.arq_buf_size,
+ 						 I40E_ADMINQ_DESC_ALIGNMENT);
+ 		if (ret_code)
+@@ -199,7 +196,6 @@ static int i40e_alloc_asq_bufs(struct i40e_hw *hw)
+ 	for (i = 0; i < hw->aq.num_asq_entries; i++) {
+ 		bi = &hw->aq.asq.r.asq_bi[i];
+ 		ret_code = i40e_allocate_dma_mem(hw, bi,
+-						 i40e_mem_asq_buf,
+ 						 hw->aq.asq_buf_size,
+ 						 I40E_ADMINQ_DESC_ALIGNMENT);
+ 		if (ret_code)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_alloc.h b/drivers/net/ethernet/intel/i40e/i40e_alloc.h
-index 5d9a0b56133e..e0186495ef02 100644
+index e0186495ef02..e0dde326255d 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_alloc.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_alloc.h
-@@ -4,7 +4,7 @@
- #ifndef _I40E_ALLOC_H_
- #define _I40E_ALLOC_H_
- 
--#include "i40e_osdep.h"
-+#include <linux/types.h>
+@@ -8,19 +8,6 @@
  
  struct i40e_hw;
  
-@@ -21,6 +21,25 @@ enum i40e_memory_type {
- 	i40e_mem_reserved
- };
- 
-+/* memory allocation tracking */
-+struct i40e_dma_mem {
-+	void *va;
-+	dma_addr_t pa;
-+	u32 size;
-+};
-+
-+struct i40e_virt_mem {
-+	void *va;
-+	u32 size;
-+};
-+
-+#define i40e_allocate_dma_mem(h, m, unused, s, a) \
-+			i40e_allocate_dma_mem_d(h, m, s, a)
-+#define i40e_free_dma_mem(h, m) i40e_free_dma_mem_d(h, m)
-+
-+#define i40e_allocate_virt_mem(h, m, s) i40e_allocate_virt_mem_d(h, m, s)
-+#define i40e_free_virt_mem(h, m) i40e_free_virt_mem_d(h, m)
-+
- /* prototype for functions used for dynamic memory allocation */
- int i40e_allocate_dma_mem(struct i40e_hw *hw,
- 			  struct i40e_dma_mem *mem,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 6d1042ca0317..8fb8f9e5c5d7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -7,6 +7,7 @@
- #include <linux/pci.h>
- #include "i40e_adminq_cmd.h"
- #include "i40e_devids.h"
-+#include "i40e_osdep.h"
- #include "i40e_prototype.h"
- #include "i40e_register.h"
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-index 68602fc375f6..7d51e58d94bd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-@@ -3,6 +3,7 @@
- 
- #include "i40e_alloc.h"
- #include "i40e_dcb.h"
-+#include "i40e_osdep.h"
- #include "i40e_prototype.h"
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_diag.c b/drivers/net/ethernet/intel/i40e/i40e_diag.c
-index b1ad7c4259b9..824f97931f57 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_diag.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_diag.c
-@@ -2,6 +2,7 @@
- /* Copyright(c) 2013 - 2018 Intel Corporation. */
- 
- #include "i40e_diag.h"
-+#include "i40e_osdep.h"
- #include "i40e_prototype.h"
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-index 0bc398757283..74b3a5b0bc4a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-@@ -3,6 +3,7 @@
- 
- #include "i40e_alloc.h"
- #include "i40e_hmc.h"
-+#include "i40e_osdep.h"
- #include "i40e_type.h"
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.h b/drivers/net/ethernet/intel/i40e/i40e_hmc.h
-index 76610455cb90..78e6e9144331 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_hmc.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.h
-@@ -4,7 +4,7 @@
- #ifndef _I40E_HMC_H_
- #define _I40E_HMC_H_
- 
--#include "i40e_osdep.h"
-+#include "i40e_alloc.h"
- #include "i40e_register.h"
- 
- #define I40E_HMC_MAX_BP_COUNT 512
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
-index 6f40c640e310..08f0c90acd9a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
-@@ -4,6 +4,7 @@
- #include "i40e_alloc.h"
- #include "i40e_type.h"
- #include "i40e_lan_hmc.h"
-+#include "i40e_osdep.h"
- 
- /* lan specific interface functions */
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 77cdbfc19d47..2e8d2dd4b920 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -3,6 +3,7 @@
- 
- #include <linux/delay.h>
- #include "i40e_alloc.h"
-+#include "i40e_osdep.h"
- #include "i40e_prototype.h"
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_osdep.h b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-index 23be11a45761..f4f02dd722ba 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
-@@ -28,25 +28,6 @@ do {										\
- #define rd64(a, reg)		readq((a)->hw_addr + (reg))
- #define i40e_flush(a)		readl((a)->hw_addr + I40E_GLGEN_STAT)
- 
--/* memory allocation tracking */
--struct i40e_dma_mem {
--	void *va;
--	dma_addr_t pa;
--	u32 size;
+-/* Memory allocation types */
+-enum i40e_memory_type {
+-	i40e_mem_arq_buf = 0,		/* ARQ indirect command buffer */
+-	i40e_mem_asq_buf = 1,
+-	i40e_mem_atq_buf = 2,		/* ATQ indirect command buffer */
+-	i40e_mem_arq_ring = 3,		/* ARQ descriptor ring */
+-	i40e_mem_atq_ring = 4,		/* ATQ descriptor ring */
+-	i40e_mem_pd = 5,		/* Page Descriptor */
+-	i40e_mem_bp = 6,		/* Backing Page - 4KB */
+-	i40e_mem_bp_jumbo = 7,		/* Backing Page - > 4KB */
+-	i40e_mem_reserved
 -};
 -
+ /* memory allocation tracking */
+ struct i40e_dma_mem {
+ 	void *va;
+@@ -33,17 +20,9 @@ struct i40e_virt_mem {
+ 	u32 size;
+ };
+ 
 -#define i40e_allocate_dma_mem(h, m, unused, s, a) \
 -			i40e_allocate_dma_mem_d(h, m, s, a)
 -#define i40e_free_dma_mem(h, m) i40e_free_dma_mem_d(h, m)
 -
--struct i40e_virt_mem {
--	void *va;
--	u32 size;
--};
--
 -#define i40e_allocate_virt_mem(h, m, s) i40e_allocate_virt_mem_d(h, m, s)
 -#define i40e_free_virt_mem(h, m) i40e_free_virt_mem_d(h, m)
 -
- #define i40e_debug(h, m, s, ...)				\
- do {								\
- 	if (((m) & (h)->debug_mask))				\
+ /* prototype for functions used for dynamic memory allocation */
+ int i40e_allocate_dma_mem(struct i40e_hw *hw,
+ 			  struct i40e_dma_mem *mem,
+-			  enum i40e_memory_type type,
+ 			  u64 size, u32 alignment);
+ int i40e_free_dma_mem(struct i40e_hw *hw,
+ 		      struct i40e_dma_mem *mem);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
+index 57b716a8ae43..a9ccc0029e99 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
+@@ -20,7 +20,6 @@ int i40e_add_sd_table_entry(struct i40e_hw *hw,
+ 			    enum i40e_sd_entry_type type,
+ 			    u64 direct_mode_sz)
+ {
+-	enum i40e_memory_type mem_type __attribute__((unused));
+ 	struct i40e_hmc_sd_entry *sd_entry;
+ 	bool dma_mem_alloc_done = false;
+ 	struct i40e_dma_mem mem;
+@@ -41,16 +40,13 @@ int i40e_add_sd_table_entry(struct i40e_hw *hw,
+ 
+ 	sd_entry = &hmc_info->sd_table.sd_entry[sd_index];
+ 	if (!sd_entry->valid) {
+-		if (I40E_SD_TYPE_PAGED == type) {
+-			mem_type = i40e_mem_pd;
++		if (I40E_SD_TYPE_PAGED == type)
+ 			alloc_len = I40E_HMC_PAGED_BP_SIZE;
+-		} else {
+-			mem_type = i40e_mem_bp_jumbo;
++		else
+ 			alloc_len = direct_mode_sz;
+-		}
+ 
+ 		/* allocate a 4K pd page or 2M backing page */
+-		ret_code = i40e_allocate_dma_mem(hw, &mem, mem_type, alloc_len,
++		ret_code = i40e_allocate_dma_mem(hw, &mem, alloc_len,
+ 						 I40E_HMC_PD_BP_BUF_ALIGNMENT);
+ 		if (ret_code)
+ 			goto exit;
+@@ -138,7 +134,7 @@ int i40e_add_pd_table_entry(struct i40e_hw *hw,
+ 			page = rsrc_pg;
+ 		} else {
+ 			/* allocate a 4K backing page */
+-			ret_code = i40e_allocate_dma_mem(hw, page, i40e_mem_bp,
++			ret_code = i40e_allocate_dma_mem(hw, page,
+ 						I40E_HMC_PAGED_BP_SIZE,
+ 						I40E_HMC_PD_BP_BUF_ALIGNMENT);
+ 			if (ret_code)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 488ea5e8ded9..69606db341eb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -134,14 +134,14 @@ struct device *i40e_hw_to_dev(struct i40e_hw *hw)
+ }
+ 
+ /**
+- * i40e_allocate_dma_mem_d - OS specific memory alloc for shared code
++ * i40e_allocate_dma_mem - OS specific memory alloc for shared code
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to fill out
+  * @size: size of memory requested
+  * @alignment: what to align the allocation to
+  **/
+-int i40e_allocate_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem,
+-			    u64 size, u32 alignment)
++int i40e_allocate_dma_mem(struct i40e_hw *hw, struct i40e_dma_mem *mem,
++			  u64 size, u32 alignment)
+ {
+ 	struct i40e_pf *pf = i40e_hw_to_pf(hw);
+ 
+@@ -155,11 +155,11 @@ int i40e_allocate_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem,
+ }
+ 
+ /**
+- * i40e_free_dma_mem_d - OS specific memory free for shared code
++ * i40e_free_dma_mem - OS specific memory free for shared code
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to free
+  **/
+-int i40e_free_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem)
++int i40e_free_dma_mem(struct i40e_hw *hw, struct i40e_dma_mem *mem)
+ {
+ 	struct i40e_pf *pf = i40e_hw_to_pf(hw);
+ 
+@@ -172,13 +172,13 @@ int i40e_free_dma_mem_d(struct i40e_hw *hw, struct i40e_dma_mem *mem)
+ }
+ 
+ /**
+- * i40e_allocate_virt_mem_d - OS specific memory alloc for shared code
++ * i40e_allocate_virt_mem - OS specific memory alloc for shared code
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to fill out
+  * @size: size of memory requested
+  **/
+-int i40e_allocate_virt_mem_d(struct i40e_hw *hw, struct i40e_virt_mem *mem,
+-			     u32 size)
++int i40e_allocate_virt_mem(struct i40e_hw *hw, struct i40e_virt_mem *mem,
++			   u32 size)
+ {
+ 	mem->size = size;
+ 	mem->va = kzalloc(size, GFP_KERNEL);
+@@ -190,11 +190,11 @@ int i40e_allocate_virt_mem_d(struct i40e_hw *hw, struct i40e_virt_mem *mem,
+ }
+ 
+ /**
+- * i40e_free_virt_mem_d - OS specific memory free for shared code
++ * i40e_free_virt_mem - OS specific memory free for shared code
+  * @hw:   pointer to the HW structure
+  * @mem:  ptr to mem struct to free
+  **/
+-int i40e_free_virt_mem_d(struct i40e_hw *hw, struct i40e_virt_mem *mem)
++int i40e_free_virt_mem(struct i40e_hw *hw, struct i40e_virt_mem *mem)
+ {
+ 	/* it's ok to kfree a NULL pointer */
+ 	kfree(mem->va);
 -- 
 2.41.0
 
