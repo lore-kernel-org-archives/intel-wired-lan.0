@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B99F2E810A2
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Sep 2023 08:32:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B83AE810A4
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 27 Sep 2023 08:32:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 747AE41FB4;
-	Wed, 27 Sep 2023 08:32:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 747AE41FB4
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0D6ED4209B;
+	Wed, 27 Sep 2023 08:32:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0D6ED4209B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1695803530;
-	bh=wuvBcMHUbo5sA38yUkAdqHG5JedFObxWQ6R1wm1IC2A=;
+	s=default; t=1695803535;
+	bh=Z93miTEQ6w5LkTtk3JK/CyDXM++xsUnIRfSweDpkabY=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ZhQG2cz+c/I3+aFUAyzDWsYanWAba24me2KagsVnXu7qUy1+mDphnJwoJL7Y43Ea2
-	 YxgBszgR4/7dwbWiXAcNeDfcthZvRwihDzUgD5wC3PrTAQpQ3BVi+f+Kcr644NtWVe
-	 2hYsPaH7rssv7o6Hzk3VKnFUzcBbyk8Mv6gGrqV7KeMh3dbrLWyeIwZL+EZAiRCeeY
-	 SfaFrQlbtzyfNXIwp8OqdoSf0sOLftuWZfLLiLNkWHltaujOGmfoLE4LwJc4UwFNKz
-	 ZM7tuQEftM4kimMaTFnlJjlJZDxpoMZuW/8QGohHgUyp8HhxmQgQ3vP7296F4TWK1t
-	 ai6Qqkfl468pQ==
+	b=zGfkbeW01UhOBYSV6qWqVIt3hwW1xef9FQy6qpe+aa32qwr6/H7CnE+63ipzILN9w
+	 0gRzuEog4EFC/uia7g8P+iHn1PV8ZwSjJR++xmuSQE6SmYsTSsjl13m57J51maTwIL
+	 VDERC7yZX2PtbCLEAUylB0OwOUIf9TpgC2mOds9FOpcLSkWrwWfEYpdfoe8PgafCbf
+	 pXbLG1XB6cx6j7sqamMJYr2KX7UsIXaOp6g6aagB/BpRheLsxkAM3RtQPuO0KMHr+o
+	 iEAaMg2OI3t81aecIKLEISpjIupnPiAF9tDcBLEtbVIl+9OtKUqfSwQiHwtpMhhfpm
+	 HJauoQH7pNRJA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id D4m2A-_n1po4; Wed, 27 Sep 2023 08:32:09 +0000 (UTC)
+	with ESMTP id KIjhJbufepQR; Wed, 27 Sep 2023 08:32:14 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6317A4209B;
-	Wed, 27 Sep 2023 08:32:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6317A4209B
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 6D9491BF909
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Sep 2023 08:31:52 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 8E09C420A0;
+	Wed, 27 Sep 2023 08:32:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8E09C420A0
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 3FBB41BF5DE
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Sep 2023 08:31:54 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B638841F5C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Sep 2023 08:31:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B638841F5C
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1930582B34
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Sep 2023 08:31:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1930582B34
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0XqvrMPTOdae for <intel-wired-lan@lists.osuosl.org>;
- Wed, 27 Sep 2023 08:31:51 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id OulL--jNZ1OC for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 27 Sep 2023 08:31:53 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DAC9041FBA
- for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Sep 2023 08:31:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DAC9041FBA
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 5925182B1E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 27 Sep 2023 08:31:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5925182B1E
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-686-P5qYI-otMkKihJinav5C3w-1; Wed, 27 Sep 2023 04:31:46 -0400
-X-MC-Unique: P5qYI-otMkKihJinav5C3w-1
+ us-mta-297-OAH35cB6OoKOLhD-csj3-g-1; Wed, 27 Sep 2023 04:31:50 -0400
+X-MC-Unique: OAH35cB6OoKOLhD-csj3-g-1
 Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com
  [10.11.54.6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 29C6885A5BD;
- Wed, 27 Sep 2023 08:31:46 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 104E8185A790;
+ Wed, 27 Sep 2023 08:31:50 +0000 (UTC)
 Received: from p1.luc.cera.cz (unknown [10.45.225.119])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 664D42156702;
- Wed, 27 Sep 2023 08:31:44 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 512CA2156702;
+ Wed, 27 Sep 2023 08:31:48 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
-Date: Wed, 27 Sep 2023 10:31:30 +0200
-Message-ID: <20230927083135.3237206-5-ivecera@redhat.com>
+Date: Wed, 27 Sep 2023 10:31:32 +0200
+Message-ID: <20230927083135.3237206-7-ivecera@redhat.com>
 In-Reply-To: <20230927083135.3237206-1-ivecera@redhat.com>
 References: <20230927083135.3237206-1-ivecera@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1695803509;
+ s=mimecast20190719; t=1695803512;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=T7aIMO5UwZ/UfgDo/+bLg5FMzWKeKrf87yyew+23Pgw=;
- b=NaC7z6FsiwYvqfmwfkUojM2B/VRlkGL+YS2VyHu5AC6dO1lOLUfuHEbK8+2kQtfWAJDNQi
- I0X4ELC6UQTXhhbTv89HfMfvc7ZrE4CvN1veX6V8+oKEG6S81rSPLkUwSnkpj102fJhyYV
- 4Ch69A5aKEPI3NLB7bxOpWTH1pgfU4Y=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=tBPzqP7mvSaTje2m9Bq5UEE3uForpA2ubHE/HpdjFVQ=;
+ b=TqVSweWOpAOfLPWjZbKdpDbo84rg0NUE6UgVhBuKEQh2AmDoDPcH8OsNTLS3bHQzGcuJjS
+ rZsGmar39nAH65tEpmDygZeuDgatVjJZgEr/ijmZi/uWaBg+lnZPy+hsfRymQuekAW+XA6
+ 8mwraUtsC2gBcTU3AitsvRtN8QeiJ9w=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=NaC7z6Fs
-Subject: [Intel-wired-lan] [PATCH net-next v2 4/9] virtchnl: Add header
- dependencies
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=TqVSweWO
+Subject: [Intel-wired-lan] [PATCH net-next v2 6/9] i40e: Move memory
+ allocation structures to i40e_alloc.h
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,30 +106,79 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The <linux/avf/virtchnl.h> uses BIT, struct_size and ETH_ALEN macros
-but does not include appropriate header files that defines them.
-Add these dependencies so this header file can be included anywhere.
+Structures i40e_dma_mem & i40e_virt_mem are defined i40e_osdep.h while
+memory allocation functions that use them are declared in i40e_alloc.h
+Move them there.
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- include/linux/avf/virtchnl.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_alloc.h  | 14 ++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_osdep.h  | 12 ------------
+ 3 files changed, 15 insertions(+), 12 deletions(-)
 
-diff --git a/include/linux/avf/virtchnl.h b/include/linux/avf/virtchnl.h
-index dd71d3009771..6b3acf15be5c 100644
---- a/include/linux/avf/virtchnl.h
-+++ b/include/linux/avf/virtchnl.h
-@@ -4,6 +4,10 @@
- #ifndef _VIRTCHNL_H_
- #define _VIRTCHNL_H_
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+index 267f2e0a21ce..1c3d2bc5c3f7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+@@ -4,6 +4,7 @@
+ #ifndef _I40E_ADMINQ_H_
+ #define _I40E_ADMINQ_H_
  
-+#include <linux/bitops.h>
-+#include <linux/overflow.h>
-+#include <uapi/linux/if_ether.h>
++#include "i40e_alloc.h"
+ #include "i40e_osdep.h"
+ #include "i40e_adminq_cmd.h"
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_alloc.h b/drivers/net/ethernet/intel/i40e/i40e_alloc.h
+index 4b2d8da048c6..e0dde326255d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_alloc.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_alloc.h
+@@ -4,8 +4,22 @@
+ #ifndef _I40E_ALLOC_H_
+ #define _I40E_ALLOC_H_
+ 
++#include <linux/types.h>
 +
- /* Description:
-  * This header file describes the Virtual Function (VF) - Physical Function
-  * (PF) communication protocol used by the drivers for all devices starting
+ struct i40e_hw;
+ 
++/* memory allocation tracking */
++struct i40e_dma_mem {
++	void *va;
++	dma_addr_t pa;
++	u32 size;
++};
++
++struct i40e_virt_mem {
++	void *va;
++	u32 size;
++};
++
+ /* prototype for functions used for dynamic memory allocation */
+ int i40e_allocate_dma_mem(struct i40e_hw *hw,
+ 			  struct i40e_dma_mem *mem,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_osdep.h b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
+index 70cac3bb31ec..fd18895cfb56 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_osdep.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_osdep.h
+@@ -29,18 +29,6 @@ struct device *i40e_hw_to_dev(struct i40e_hw *hw);
+ #define rd64(a, reg)		readq((a)->hw_addr + (reg))
+ #define i40e_flush(a)		readl((a)->hw_addr + I40E_GLGEN_STAT)
+ 
+-/* memory allocation tracking */
+-struct i40e_dma_mem {
+-	void *va;
+-	dma_addr_t pa;
+-	u32 size;
+-};
+-
+-struct i40e_virt_mem {
+-	void *va;
+-	u32 size;
+-};
+-
+ #define i40e_debug(h, m, s, ...)				\
+ do {								\
+ 	if (((m) & (h)->debug_mask))				\
 -- 
 2.41.0
 
