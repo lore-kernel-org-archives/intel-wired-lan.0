@@ -4,83 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A72FAE92FC0
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Oct 2023 21:46:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8350E92FC8
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  5 Oct 2023 21:46:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2138B610BE;
-	Thu,  5 Oct 2023 21:46:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2138B610BE
+	by smtp3.osuosl.org (Postfix) with ESMTP id 560E861041;
+	Thu,  5 Oct 2023 21:46:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 560E861041
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1696542398;
-	bh=+YjjIJ7yY5g3voePcj4vQ8E60tV9GzE/lp3pGL5u/SA=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=4AIxhQgbt5BjngqK34Qo01J4APtnhcFrxQwwY82MGVg2dbz1yMD3n3cASXqB/ySeO
-	 L2cf5WVcMPGAfTK5pjgk+gqLxtbbCM6EPGKu94JNl2GkViPKLxueGuhm5cNq0WvkVw
-	 uW1F76yGFWxDKcDLQwZdKXQ82i/A5YDPRwcamehfCJoWRxoxMQ3mNEETMDdAIXIW6B
-	 tBZUH6136PKp9Aq++73z+2pkxInjL4wisBjRFGoU2e9xtT7m3Cn3kbPMWOEGZBggcT
-	 0Nu7+4kyYGXXHkMghlFSVtlKYdLC4dY6sQrdhsiymEoksKGLOugcMsDYVBvo7dPYcY
-	 8/J/C2qGD1i1g==
+	s=default; t=1696542401;
+	bh=UfTo3eWhJq3NipUeVZXBmQFm6afT51ONKW3HjF+RdT0=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=eKdSZJrvKW9xkbAEHTZVDAgaxJdXwZDklndjEaJXa/dBhSIlE64N71moX+JMAID+a
+	 ZagZtrhh4fq8Coi1agbHqAyr2JPn/N+iO/cOgvLt1WjnLHn073CvcAKzwGg+npSv6F
+	 ELlQeJg8SbwQ/+NNdtmi0wAu+w/Rtd0atGhfr/cKBxnLavOwQVRmEDUJN+RQNVJRt1
+	 1QippPN+5pritDmW49gl2A7yKrY6D5zYHBjWbTnAtcuWUCa1jqDQTpQrw2014CyfFC
+	 n8x13AznF0xEevCLOIj+px3FFdCVgTxf4TxtXfvz9Iap2zvi0fHjeID2PcM3imE0zF
+	 eOv6qvku2kMSg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id UkCWlfpY_XDA; Thu,  5 Oct 2023 21:46:36 +0000 (UTC)
+	with ESMTP id TruXkqoipkFm; Thu,  5 Oct 2023 21:46:40 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E8A7B611D2;
-	Thu,  5 Oct 2023 21:46:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E8A7B611D2
+	by smtp3.osuosl.org (Postfix) with ESMTP id 2A9F7611DD;
+	Thu,  5 Oct 2023 21:46:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2A9F7611DD
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 534131BF5A8
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Oct 2023 21:46:34 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 8BA0C1BF5A8
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Oct 2023 21:46:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2687242C21
+ by smtp4.osuosl.org (Postfix) with ESMTP id 66AF441DE9
  for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Oct 2023 21:46:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2687242C21
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 66AF441DE9
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 4oxuAGf0fUiu for <intel-wired-lan@lists.osuosl.org>;
- Thu,  5 Oct 2023 21:46:32 +0000 (UTC)
+ with ESMTP id R-ARSDTQJTp4 for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  5 Oct 2023 21:46:33 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6E4E341DE9
- for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Oct 2023 21:46:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6E4E341DE9
-X-IronPort-AV: E=McAfee;i="6600,9927,10854"; a="373977679"
-X-IronPort-AV: E=Sophos;i="6.03,203,1694761200"; d="scan'208";a="373977679"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4141741E58
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  5 Oct 2023 21:46:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4141741E58
+X-IronPort-AV: E=McAfee;i="6600,9927,10854"; a="373977693"
+X-IronPort-AV: E=Sophos;i="6.03,203,1694761200"; d="scan'208";a="373977693"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Oct 2023 14:46:22 -0700
+ 05 Oct 2023 14:46:26 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10854"; a="822271019"
-X-IronPort-AV: E=Sophos;i="6.03,203,1694761200"; d="scan'208";a="822271019"
+X-IronPort-AV: E=McAfee;i="6600,9927,10854"; a="822271044"
+X-IronPort-AV: E=Sophos;i="6.03,203,1694761200"; d="scan'208";a="822271044"
 Received: from tsicinsk-mobl.ger.corp.intel.com (HELO azaki-desk1.intel.com)
  ([10.249.35.190])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Oct 2023 14:46:21 -0700
+ 05 Oct 2023 14:46:24 -0700
 From: Ahmed Zaki <ahmed.zaki@intel.com>
 To: netdev@vger.kernel.org
-Date: Thu,  5 Oct 2023 15:46:01 -0600
-Message-Id: <20231005214607.3178614-1-ahmed.zaki@intel.com>
+Date: Thu,  5 Oct 2023 15:46:03 -0600
+Message-Id: <20231005214607.3178614-3-ahmed.zaki@intel.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20231005214607.3178614-1-ahmed.zaki@intel.com>
+References: <20231005214607.3178614-1-ahmed.zaki@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1696542392; x=1728078392;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=O9gVJq8pRjhkuugdq7kz+kmA4VDD5HLqbMMbl0uWA80=;
- b=M/HSj38+vqVZAa7CFQf7tEj4YmcvfarbS8XQV+Ol9vFceNhfKGmuTI7W
- WZCxwiecRT8VVYONlew3tHY5oEVC2CVCaZsp34rmioBchVDgiSBMpW8xg
- Im0ETyxWcpgvDN0Uc4hsXKaryOiE7j0JKD4FqW9kqtinT9deVLpEii5Wt
- 4oHMcgrtaB1Q1Wuumodr5M8Yl+iTKdyJ1tSEMNuBDeqqqEwKNaTeGzi23
- Jie9PL45+tdK/GEhpt2qyEVRDoUtS1OCp6pXo+IthWsrk20Px6j9sZW6U
- +XEob0e6uZi3GFgznmNrtGpHVMNZN0L4tBtVeww+p1huqwd/ddHZ454Q6
- A==;
+ h=from:to:cc:subject:date:message-id:in-reply-to:
+ references:mime-version:content-transfer-encoding;
+ bh=T0tFM89MXze/XJ/CKzJ8rl/DFnrWZbz90xeIrqLyemE=;
+ b=DcixSr7zbaqlkIyr/cxUdkzt0C3oEsifTkboVhMLYqO/5FiI7OwvmlrB
+ Wko7i27JHrA1kv7quo366VHhiMTzCNSvrl3/2tS7FeseIETqFcFu9momX
+ lCNY+f3KatLCWEoPWgk/rysXmQHJJsJ1GsnkHHm4YAqJFdQTV2Tt+kwJo
+ PqMYFrZWiF4DgThUM6An9lm7QzzlmH092IueezJj6NDZooW4e+C2IF0dZ
+ VOYnhsmMtlTKBFjt6uNZ3XeBqvnDJRy2k8voxKBjGXeamAPZY1s7NX4uD
+ 3WjQQHGaMpqDLpfbgR79udmW7jiqFdqCpbVWXgtFUnV4NpnB8RVYgtVbu
+ w==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=M/HSj38+
-Subject: [Intel-wired-lan] [PATCH net-next 0/6] Support symmetric RSS
- (Toeplitz) hash
+ header.a=rsa-sha256 header.s=Intel header.b=DcixSr7z
+Subject: [Intel-wired-lan] [PATCH net-next 2/6] ice: fix
+ ICE_AQ_VSI_Q_OPT_RSS_* register values
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,69 +96,101 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org, Ahmed Zaki <ahmed.zaki@intel.com>
+Cc: Wojciech Drewek <wojciech.drewek@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Ahmed Zaki <ahmed.zaki@intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Patch 1 adds the support at the Kernel level, allowing the user to set a
-symmetric RSS hash for any flow type via:
+Fix the values of the ICE_AQ_VSI_Q_OPT_RSS_* registers. Shifting is
+already done when the values are used, no need to double shift. Bug was
+not discovered earlier since only ICE_AQ_VSI_Q_OPT_RSS_TPLZ (Zero) is
+currently used.
 
-    # ethtool -N|-U eth0 rx-flow-hash <flow_type> s|d|f|n symmetric
+Also, rename ICE_AQ_VSI_Q_OPT_RSS_XXX to ICE_AQ_VSI_Q_OPT_RSS_HASH_XXX
+for consistency.
 
-Support for the new "symmetric" flag will be later sent to the "ethtool" 
-user-space tool.
+Fixes: 7bd527aa174f ("ice: Adjust naming for inner VLAN operations")
+Co-developed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Signed-off-by: Ahmed Zaki <ahmed.zaki@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_adminq_cmd.h |  8 ++++----
+ drivers/net/ethernet/intel/ice/ice_lib.c        |  4 ++--
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c   | 12 +++++-------
+ 3 files changed, 11 insertions(+), 13 deletions(-)
 
-Patch 2 fixes a long standing bug with the register values. The bug has
-been benign for now since only symmetric Toeplitz hash (Zero) has been
-used.
-
-Patches 3 and 4 lay some groundwork refactoring. While the first is
-mainly cosmetic, the second is needed since there is no more room in the
-previous 64-bit RSS profile ID for the symmetric attribute introduced in 
-the next patch.
-
-Finally, patches 5 and 6 add the symmetric Toeplitz support for the ice 
-(E800 PFs) and the iAVF drivers.
-
-Ahmed Zaki (4):
-  net: ethtool: allow symmetric RSS hash for any flow type
-  ice: fix ICE_AQ_VSI_Q_OPT_RSS_* register values
-  ice: refactor the FD and RSS flow ID generation
-  iavf: enable symmetric RSS Toeplitz hash
-
-Jeff Guo (1):
-  ice: enable symmetric RSS Toeplitz hash for any flow type
-
-Qi Zhang (1):
-  ice: refactor RSS configuration
-
- Documentation/networking/scaling.rst          |   6 +
- .../net/ethernet/intel/iavf/iavf_adv_rss.c    |   8 +-
- .../net/ethernet/intel/iavf/iavf_adv_rss.h    |   3 +-
- .../net/ethernet/intel/iavf/iavf_ethtool.c    |  22 +-
- drivers/net/ethernet/intel/ice/ice.h          |   2 +
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   8 +-
- drivers/net/ethernet/intel/ice/ice_common.h   |   1 +
- drivers/net/ethernet/intel/ice/ice_ethtool.c  |  14 +-
- .../net/ethernet/intel/ice/ice_ethtool_fdir.c |  35 +-
- .../net/ethernet/intel/ice/ice_flex_pipe.c    |  43 +-
- .../net/ethernet/intel/ice/ice_flex_pipe.h    |   4 +-
- .../net/ethernet/intel/ice/ice_flex_type.h    |   7 +
- drivers/net/ethernet/intel/ice/ice_flow.c     | 439 +++++++++++++-----
- drivers/net/ethernet/intel/ice/ice_flow.h     |  46 +-
- .../net/ethernet/intel/ice/ice_hw_autogen.h   |   4 +
- drivers/net/ethernet/intel/ice/ice_lib.c      | 117 ++---
- drivers/net/ethernet/intel/ice/ice_main.c     |  49 +-
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |  55 ++-
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  35 +-
- include/linux/avf/virtchnl.h                  |  16 +-
- include/uapi/linux/ethtool.h                  |   1 +
- net/ethtool/ioctl.c                           |  11 +
- 23 files changed, 629 insertions(+), 298 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+index 51281b58ad72..56ec1897f4d8 100644
+--- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
+@@ -491,10 +491,10 @@ struct ice_aqc_vsi_props {
+ #define ICE_AQ_VSI_Q_OPT_RSS_GBL_LUT_M		(0xF << ICE_AQ_VSI_Q_OPT_RSS_GBL_LUT_S)
+ #define ICE_AQ_VSI_Q_OPT_RSS_HASH_S		6
+ #define ICE_AQ_VSI_Q_OPT_RSS_HASH_M		(0x3 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
+-#define ICE_AQ_VSI_Q_OPT_RSS_TPLZ		(0x0 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
+-#define ICE_AQ_VSI_Q_OPT_RSS_SYM_TPLZ		(0x1 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
+-#define ICE_AQ_VSI_Q_OPT_RSS_XOR		(0x2 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
+-#define ICE_AQ_VSI_Q_OPT_RSS_JHASH		(0x3 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
++#define ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ		0x0U
++#define ICE_AQ_VSI_Q_OPT_RSS_HASH_SYM_TPLZ	0x1U
++#define ICE_AQ_VSI_Q_OPT_RSS_HASH_XOR		0x2U
++#define ICE_AQ_VSI_Q_OPT_RSS_HASH_JHASH		0x3U
+ 	u8 q_opt_tc;
+ #define ICE_AQ_VSI_Q_OPT_TC_OVR_S		0
+ #define ICE_AQ_VSI_Q_OPT_TC_OVR_M		(0x1F << ICE_AQ_VSI_Q_OPT_TC_OVR_S)
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index acc3ffc940e7..1adf65d88ef0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1186,12 +1186,12 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
+ 	case ICE_VSI_PF:
+ 		/* PF VSI will inherit RSS instance of PF */
+ 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_PF;
+-		hash_type = ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
++		hash_type = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
+ 		break;
+ 	case ICE_VSI_VF:
+ 		/* VF VSI will gets a small RSS table which is a VSI LUT type */
+ 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_VSI;
+-		hash_type = ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
++		hash_type = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
+ 		break;
+ 	default:
+ 		dev_dbg(dev, "Unsupported VSI type %s\n",
+diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+index cad237dd8894..3d1eeff2d09f 100644
+--- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
++++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
+@@ -823,8 +823,8 @@ static int ice_vc_handle_rss_cfg(struct ice_vf *vf, u8 *msg, bool add)
+ 		int status;
+ 
+ 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_VSI;
+-		hash_type = add ? ICE_AQ_VSI_Q_OPT_RSS_XOR :
+-				ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
++		hash_type = add ? ICE_AQ_VSI_Q_OPT_RSS_HASH_XOR :
++				ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
+ 
+ 		ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+ 		if (!ctx) {
+@@ -832,11 +832,9 @@ static int ice_vc_handle_rss_cfg(struct ice_vf *vf, u8 *msg, bool add)
+ 			goto error_param;
+ 		}
+ 
+-		ctx->info.q_opt_rss = ((lut_type <<
+-					ICE_AQ_VSI_Q_OPT_RSS_LUT_S) &
+-				       ICE_AQ_VSI_Q_OPT_RSS_LUT_M) |
+-				       (hash_type &
+-					ICE_AQ_VSI_Q_OPT_RSS_HASH_M);
++		ctx->info.q_opt_rss =
++			FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_LUT_M, lut_type) |
++			FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_HASH_M, hash_type);
+ 
+ 		/* Preserve existing queueing option setting */
+ 		ctx->info.q_opt_rss |= (vsi->info.q_opt_rss &
 -- 
 2.34.1
 
