@@ -4,78 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E740E81DED
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  6 Oct 2023 12:33:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37E0FE81DE9
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  6 Oct 2023 12:35:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3483261224;
-	Fri,  6 Oct 2023 12:33:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3483261224
+	by smtp3.osuosl.org (Postfix) with ESMTP id D8352611EA;
+	Fri,  6 Oct 2023 12:35:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D8352611EA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1696595627;
-	bh=0lst5d7trgOHeLfSEeubZLKXu68S8dpczbCqJjGGbeo=;
+	s=default; t=1696595736;
+	bh=z6MzDCcUc8uSByYOfMj1Jnxo2+iMAK/gH/Oh/su/Vxo=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=g+RkyEUzjjWlccSnxmG0CgxGftowLrIfS58Gzou+tLRvcy2k89ApfqLQqDdGl8/+W
-	 XIIBAl00c4HIuK0dPAc1lQkAL5pU7z5WxzdP7k4H8oMmz8VbAlYSBILiTGBAnm5FhC
-	 RQTFvo/CRE52RTr7pKxkDqQmWLHtTksdeBi8/lGHuTLBhQ4SJZEMow0+GKk58Wipm4
-	 +Pdg2SOqFIgiOZ5TZlFlm5CM3UsSwEXdRZUjBQ9fwwexzl+AKKmNilmLtJktGV3wlZ
-	 w4ef3ue0xNqpj1ekvG2ouKobA6tAm973813NkrK3cNaK2IH9TxaiZsA00TG31YA0wn
-	 jOIIWLbdA/fow==
+	b=6DFpVM2o4nq+rNvQ261ksWxncr7dRRnbPJZWxCR0fkHQbVRpJEaBIB23/vLOxtNav
+	 RXoxvcAYom3xsA25+o1R/DrtP8mXi/N/3zD6kyNYr/dQhL/7JFuACOVWgCMS0S6Efw
+	 ckk4lOW7nqajYg2njl4B7iLgej0bZmz4g1Z9sReUV81o7f49yUoI6qtrCPBu6+Vkg+
+	 R64u7PVmughb45yFar3T/To6t1beIuUZwsno4cm5WhBIg0qqkzoGxpVbyztBqtNOGe
+	 Bsq1/gW2oEgNlpxnW5jkbbjxxy5OTAE9psZlrQC2ho0+s6oZU5sRJlJuComwnem9/r
+	 64LRae7Mv4sFA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Aa8FH98ZoWMv; Fri,  6 Oct 2023 12:33:46 +0000 (UTC)
+	with ESMTP id yxPGFTiNK4Fa; Fri,  6 Oct 2023 12:35:35 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 24599611D6;
-	Fri,  6 Oct 2023 12:33:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 24599611D6
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 13F9F1BF2FF
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Oct 2023 12:33:45 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4B8DD61221;
+	Fri,  6 Oct 2023 12:35:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4B8DD61221
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 8F9351BF2FF
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Oct 2023 12:35:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id DFCCE611D6
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Oct 2023 12:33:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DFCCE611D6
+ by smtp4.osuosl.org (Postfix) with ESMTP id 71ABD41753
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Oct 2023 12:35:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 71ABD41753
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id kjurnZEaTb-t for <intel-wired-lan@lists.osuosl.org>;
- Fri,  6 Oct 2023 12:33:43 +0000 (UTC)
-Received: from sin.source.kernel.org (sin.source.kernel.org
- [IPv6:2604:1380:40e1:4800::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 63980611B1
- for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Oct 2023 12:33:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 63980611B1
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id 7CF82CE27D2;
- Fri,  6 Oct 2023 12:33:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 79B3EC433C7;
- Fri,  6 Oct 2023 12:33:36 +0000 (UTC)
-Date: Fri, 6 Oct 2023 14:33:34 +0200
-From: Simon Horman <horms@kernel.org>
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 1aA4WcE_XM0I for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  6 Oct 2023 12:35:32 +0000 (UTC)
+Received: from mail-ej1-x62f.google.com (mail-ej1-x62f.google.com
+ [IPv6:2a00:1450:4864:20::62f])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4A55B41752
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  6 Oct 2023 12:35:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4A55B41752
+Received: by mail-ej1-x62f.google.com with SMTP id
+ a640c23a62f3a-99c3c8adb27so359835666b.1
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 06 Oct 2023 05:35:31 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1696595730; x=1697200530;
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=OPJcT5r5NqW3rXXeioqjT7vInGqN3ma7GJ/PMepM5+s=;
+ b=g8LIUw3vRvdtQeiouFgCVxyFxtbdCDbhDOX5QTaawo59P0Q9sOdNdsljBjkIkvryMC
+ Rlqa8oH4cDYd8RkQkMsyN15aUtJ1CA5JliBjfZc/iYSpoaqC1bTuWerGu083ne02jakn
+ +EIdbScQZcOn9YO7ZnGonMMRdsDw+Ggq+zFibr+t5Wpxt1MOCxWsiwt1YsOM4c12QmKQ
+ 1VyjcbJBIuybURNfmTeJ6tWxyJJXk2J3foExZpZRJTMhpmXUiOAJHG5mbyJGHGGSdXcg
+ c5yJ7pnfEKcDH/aLNnbtprW5DsBHvrQ7k+ChXM+59adboSYqlJXK1SP2rzX4NpH+9f/9
+ nuFg==
+X-Gm-Message-State: AOJu0Yw3keu0OS0FWL68F/ZSJCAphZ99T7StdL2s2rkyn+qG5BBEbMh1
+ 8f+BKHzSPfaCRsPbf4gW7obrhw==
+X-Google-Smtp-Source: AGHT+IFXPSHOjrPnY2a/T+VhRBRqsxhIpMZ12KyvGwoTWS50mT/cmbXVGJWeZ/RIv5+kUbCFiUcCWw==
+X-Received: by 2002:a17:906:1ba1:b0:9ae:5fdc:aee8 with SMTP id
+ r1-20020a1709061ba100b009ae5fdcaee8mr7472326ejg.53.1696595729858; 
+ Fri, 06 Oct 2023 05:35:29 -0700 (PDT)
+Received: from localhost (host-213-179-129-39.customer.m-online.net.
+ [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
+ qb40-20020a1709077ea800b009b9af27d98csm1391700ejc.132.2023.10.06.05.35.27
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Fri, 06 Oct 2023 05:35:28 -0700 (PDT)
+Date: Fri, 6 Oct 2023 14:35:25 +0200
+From: Jiri Pirko <jiri@resnulli.us>
 To: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Message-ID: <ZR/+noRCdnsy6QJo@kernel.org>
+Message-ID: <ZR//DY6xMPi1AQ5i@nanopsycho>
 References: <20231006114101.1608796-1-arkadiusz.kubalewski@intel.com>
- <20231006114101.1608796-5-arkadiusz.kubalewski@intel.com>
+ <20231006114101.1608796-6-arkadiusz.kubalewski@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20231006114101.1608796-5-arkadiusz.kubalewski@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1696595618;
- bh=C0l7PeGE1vtEgo9DM9OGtxhUx5rYGAf3MThJoKdVq7U=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Ny9UHmuNzt0oHqRHoVuzX6mix3ZySYkhx3RVjnK+s1jzfIoQhCC2KKfXRiyneWF6/
- S6KS4GGL1wCrNhYmxwc55p9xyTCTjQrZzEbUUiHSgaXeqY6UgWtBsggqbI4IA9qSBq
- ay2XMiEe1UlsI1HkZ15xNeIbHukbaDfIen9EcQEdQ80Bcq6tsuXBHNXgRi5gWru8z7
- YC0zrUGwSDI6+BjTAIb+aHYpo1n0eaMjN5LtgmF/tJdAhrvvJY//ZdL2wUlOQbl/g1
- vzOYJookGLQzCEeo0RNGUjjUrLzJ7SYcaq/DK28xFJkqtr4nFVVuInynNjyvB/T5F5
- ctK6dyBdcTYAQ==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=Ny9UHmuN
-Subject: Re: [Intel-wired-lan] [PATCH net-next v3 4/5] ice: dpll: implement
- phase related callbacks
+In-Reply-To: <20231006114101.1608796-6-arkadiusz.kubalewski@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1696595730; x=1697200530;
+ darn=lists.osuosl.org; 
+ h=in-reply-to:content-disposition:mime-version:references:message-id
+ :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+ bh=OPJcT5r5NqW3rXXeioqjT7vInGqN3ma7GJ/PMepM5+s=;
+ b=MkD7rsjAGTLDS0hEApYocRAwXvjU4UpGDQrtp2rO47itQ6WxxMDIT7iabOhQbJCy0c
+ sclnz6HfvbmEji0moZgaFelJF8lIpRoz9JsAEeetdvNtaWIUDXHKHQ2T79aMP+RnZdkK
+ wBYMxfqsIrsMjXgbHzKTo8vPZx8hJYG3Z4dkvUR0l6G5gLpMmYhu1EhdhFsoblpn9ABC
+ N8feQqFb5DYL9m3assQIaCR/8PbzOJK4PxeOK58pfFHBW5Zq5aQxmChuufapmArNIUZK
+ HLa4XloilsugukQ9/vgCF33gnwk+BiQDC71Y2ApW5Tg8G7H7q6xOp6tJvw3pSIkTvFkw
+ WH7g==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=resnulli-us.20230601.gappssmtp.com
+ header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
+ header.s=20230601 header.b=MkD7rsjA
+Subject: Re: [Intel-wired-lan] [PATCH net-next v3 5/5] dpll: netlink/core:
+ change pin frequency set behavior
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,104 +112,123 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: jiri@resnulli.us, corbet@lwn.net, netdev@vger.kernel.org,
+Cc: vadim.fedorenko@linux.dev, corbet@lwn.net, netdev@vger.kernel.org,
  linux-doc@vger.kernel.org, jesse.brandeburg@intel.com,
- anthony.l.nguyen@intel.com, kuba@kernel.org, vadim.fedorenko@linux.dev,
- pabeni@redhat.com, davem@davemloft.net, intel-wired-lan@lists.osuosl.org
+ anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org, kuba@kernel.org,
+ pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Oct 06, 2023 at 01:41:00PM +0200, Arkadiusz Kubalewski wrote:
-> Implement new callback ops related to measurment and adjustment of
-> signal phase for pin-dpll in ice driver.
+Fri, Oct 06, 2023 at 01:41:01PM CEST, arkadiusz.kubalewski@intel.com wrote:
+>Align the aproach of pin frequency set behavior with the approach
+>introduced with pin phase adjust set.
+>Fail the request if any of devices did not registered the callback ops.
+>If callback op on any pin's registered device fails, return error and
+>rollback the value to previous one.
+>
+>Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+>---
+> drivers/dpll/dpll_netlink.c | 50 +++++++++++++++++++++++++++++--------
+> 1 file changed, 40 insertions(+), 10 deletions(-)
+>
+>diff --git a/drivers/dpll/dpll_netlink.c b/drivers/dpll/dpll_netlink.c
+>index 97319a9e4667..8e5fea74aec1 100644
+>--- a/drivers/dpll/dpll_netlink.c
+>+++ b/drivers/dpll/dpll_netlink.c
+>@@ -615,30 +615,60 @@ static int
+> dpll_pin_freq_set(struct dpll_pin *pin, struct nlattr *a,
+> 		  struct netlink_ext_ack *extack)
+> {
+>-	u64 freq = nla_get_u64(a);
+>-	struct dpll_pin_ref *ref;
+>+	u64 freq = nla_get_u64(a), old_freq;
+>+	struct dpll_pin_ref *ref, *failed;
+>+	const struct dpll_pin_ops *ops;
+>+	struct dpll_device *dpll;
+> 	unsigned long i;
+> 	int ret;
 > 
-> Signed-off-by: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
+> 	if (!dpll_pin_is_freq_supported(pin, freq)) {
+>-		NL_SET_ERR_MSG_ATTR(extack, a, "frequency is not supported by the device");
+>+		NL_SET_ERR_MSG_ATTR(extack, a,
+>+				    "frequency is not supported by the device");
 
-Hi Arkadiusz,
+No need for this wrapping. Seems unrelated to the rest of the patch
+anyway.
 
-some minor feedback from my side.
 
-If you do end up re-spinning the series, please consider
-running checkpatch.pl --codespell.
+> 		return -EINVAL;
+> 	}
+>-
 
-> ---
->  drivers/net/ethernet/intel/ice/ice_dpll.c | 224 +++++++++++++++++++++-
->  drivers/net/ethernet/intel/ice/ice_dpll.h |  10 +-
->  2 files changed, 230 insertions(+), 4 deletions(-)
+No need for this too.
+
+
+
+> 	xa_for_each(&pin->dpll_refs, i, ref) {
+>-		const struct dpll_pin_ops *ops = dpll_pin_ops(ref);
+>-		struct dpll_device *dpll = ref->dpll;
+>-
+>-		if (!ops->frequency_set)
+>+		ops = dpll_pin_ops(ref);
+>+		if (!ops->frequency_set || !ops->frequency_get)
+> 			return -EOPNOTSUPP;
+
+Add an extack msg while you are at it - could be a separate patch.
+
+
+>+	}
+>+	ref = dpll_xa_ref_dpll_first(&pin->dpll_refs);
+>+	ops = dpll_pin_ops(ref);
+>+	dpll = ref->dpll;
+>+	ret = ops->frequency_get(pin, dpll_pin_on_dpll_priv(dpll, pin), dpll,
+>+				 dpll_priv(dpll), &old_freq, extack);
+>+	if (ret) {
+>+		NL_SET_ERR_MSG(extack, "unable to get old frequency value");
+>+		return ret;
+>+	}
+>+	if (freq == old_freq)
+>+		return 0;
+>+
+>+	xa_for_each(&pin->dpll_refs, i, ref) {
+>+		ops = dpll_pin_ops(ref);
+>+		dpll = ref->dpll;
+> 		ret = ops->frequency_set(pin, dpll_pin_on_dpll_priv(dpll, pin),
+> 					 dpll, dpll_priv(dpll), freq, extack);
+>-		if (ret)
+>-			return ret;
+>+		if (ret) {
+>+			failed = ref;
+
+Extack msg.
+
+
+>+			goto rollback;
+>+		}
+> 	}
+> 	__dpll_pin_change_ntf(pin);
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_dpll.c b/drivers/net/ethernet/intel/ice/ice_dpll.c
-
-...
-
-> +/**
-> + * ice_dpll_phase_offset_get - callback for get dpll phase shift value
-> + * @pin: pointer to a pin
-> + * @pin_priv: private data pointer passed on pin registration
-> + * @dpll: registered dpll pointer
-> + * @dpll_priv: private data pointer passed on dpll registration
-> + * @phase_adjust: on success holds pin phase_adjust value
-
-nit: The parameter is called phase_offset, not phase_adjust in the code below
-
-> + * @extack: error reporting
-> + *
-> + * Dpll subsystem callback. Handler for getting phase shift value between
-> + * dpll's input and output.
-> + *
-> + * Context: Acquires pf->dplls.lock
-> + * Return:
-> + * * 0 - success
-> + * * negative - error
-> + */
-> +static int
-> +ice_dpll_phase_offset_get(const struct dpll_pin *pin, void *pin_priv,
-> +			  const struct dpll_device *dpll, void *dpll_priv,
-> +			  s64 *phase_offset, struct netlink_ext_ack *extack)
-> +{
-> +	struct ice_dpll *d = dpll_priv;
-> +	struct ice_pf *pf = d->pf;
-> +
-> +	mutex_lock(&pf->dplls.lock);
-> +	if (d->active_input == pin)
-> +		*phase_offset = d->phase_offset * ICE_DPLL_PHASE_OFFSET_FACTOR;
-> +	else
-> +		*phase_offset = 0;
-> +	mutex_unlock(&pf->dplls.lock);
-> +
-> +	return 0;
-> +}
-> +
->  /**
->   * ice_dpll_rclk_state_on_pin_set - set a state on rclk pin
->   * @pin: pointer to a pin
-
-...
-
-> @@ -1656,6 +1867,15 @@ ice_dpll_init_info_direct_pins(struct ice_pf *pf,
->  				return ret;
->  			pins[i].prop.capabilities |=
->  				DPLL_PIN_CAPABILITIES_PRIORITY_CAN_CHANGE;
-> +			pins[i].prop.phase_range.min =
-> +				pf->dplls.input_phase_adj_max;
-> +			pins[i].prop.phase_range.max =
-> +				-pf->dplls.input_phase_adj_max;
-> +		} else {
-> +			pins[i].prop.phase_range.min =
-> +				pf->dplls.output_phase_adj_max,
-
-nit: It probably doesn't make any difference, but perhaps ',' should be ';'.
-
-As flagged by clang-16 with -Wcomma
-
-> +			pins[i].prop.phase_range.max =
-> +				-pf->dplls.output_phase_adj_max;
->  		}
->  		pins[i].prop.capabilities |=
->  			DPLL_PIN_CAPABILITIES_STATE_CAN_CHANGE;
-
-...
+> 	return 0;
+>+
+>+rollback:
+>+	xa_for_each(&pin->dpll_refs, i, ref) {
+>+		if (ref == failed)
+>+			break;
+>+		ops = dpll_pin_ops(ref);
+>+		dpll = ref->dpll;
+>+		if (ops->frequency_set(pin, dpll_pin_on_dpll_priv(dpll, pin),
+>+				       dpll, dpll_priv(dpll), old_freq, extack))
+>+			NL_SET_ERR_MSG(extack, "set frequency rollback failed");
+>+	}
+>+	return ret;
+> }
+> 
+> static int
+>-- 
+>2.38.1
+>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
