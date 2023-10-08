@@ -4,183 +4,101 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEF7ECDB46E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Oct 2023 18:56:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E918CDB46E
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 12 Oct 2023 19:06:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 49C9D60C2C;
-	Thu, 12 Oct 2023 18:56:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 49C9D60C2C
+	by smtp3.osuosl.org (Postfix) with ESMTP id 01F8A60BAD;
+	Thu, 12 Oct 2023 19:06:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 01F8A60BAD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1697136977;
-	bh=3arnI7LS7YuBNSro63C4hAI9YFX0KesgQtiQq/Gym4Q=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=zjMvWlZvzZuWudSc00nCtJeOlYnDi8o4yzm9l/JFt0i13g5lObtPbCh6mGVrXY0p1
-	 ntDfRIf7OaZrzmMLjjJFvG6toksB1J6AMT1mf9JZoIaisdfSE5YrX0sjPX9XlKSal0
-	 yX+UYLijbLdnh8Gv/4HIDE5GnSTc0a9vo6drzrHMQiIn2JvMXuJqkjkPqPLaPsbQNr
-	 Kn3SPQcdWgA4/WgsbzD/DmkdyWRrKKMfLVUJkoINcspbL3isdAC7VNKZzVsVvJN1ee
-	 EXTGwK/61clz63OmEZgriGbyY2ZXPVG6REgIKLeLgqS4Kjr/TnFNFNdb96GqYL9iNV
-	 w6pyYcqL2fIgA==
+	s=default; t=1697137603;
+	bh=LI3mAHFEqdzj7ucFyei/4HUQXmL8DHIw1/XWE3Z6zbE=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=7E7iJ3LYTQW/sYzJowAMu93tKqOKZBbktmyps+IPdRahiDcy8AS5dMXg/YJMRfhRm
+	 nhNpL8bvuSwm1rmfnFX1/APJDTaS2/ztVoh/M5rB2ySH+2aMwBGh1MrihGO2NCR3jg
+	 TAjwdevqmetCRjA3Tbye7VGdkdCfZObGG64Ns2RHWyffaiF31fKo+0N2MosPNsokjM
+	 rwfCExVjCClzJF84+IQQ27fhG8ISO9W7seX/PG+oUbJ3SErNmJiZhPEes4TFP9RBBh
+	 2qDRpzTsVkg6bi9yzdHJoRmFTZUHYmbxtXz9/tZhLwQ5GSN+6vlvWCN11t+AaEn1fH
+	 j6ICFk/ROnMAg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 5c3LKYgw2l4Y; Thu, 12 Oct 2023 18:56:14 +0000 (UTC)
+	with ESMTP id zun1aBIFq8Fu; Thu, 12 Oct 2023 19:06:41 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B882160FF3;
-	Thu, 12 Oct 2023 18:56:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B882160FF3
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id F10BA1BF38C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Oct 2023 18:56:12 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A479B60D70;
+	Thu, 12 Oct 2023 19:06:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A479B60D70
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 162341BF3DC
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Oct 2023 06:36:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C97C760C2C
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Oct 2023 18:56:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C97C760C2C
+ by smtp4.osuosl.org (Postfix) with ESMTP id CF0164189E
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Oct 2023 06:36:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CF0164189E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 744-2i39nttt for <intel-wired-lan@lists.osuosl.org>;
- Thu, 12 Oct 2023 18:56:10 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 9439260C24
- for <intel-wired-lan@lists.osuosl.org>; Thu, 12 Oct 2023 18:56:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9439260C24
-X-IronPort-AV: E=McAfee;i="6600,9927,10861"; a="388880592"
-X-IronPort-AV: E=Sophos;i="6.03,219,1694761200"; d="scan'208";a="388880592"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Oct 2023 11:56:08 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10861"; a="870711916"
-X-IronPort-AV: E=Sophos;i="6.03,219,1694761200"; d="scan'208";a="870711916"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
- by fmsmga002.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 12 Oct 2023 11:56:07 -0700
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32; Thu, 12 Oct 2023 11:56:07 -0700
-Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
- orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.32 via Frontend Transport; Thu, 12 Oct 2023 11:56:07 -0700
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.169)
- by edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.32; Thu, 12 Oct 2023 11:56:06 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=LIJFzssKd6og5fr0CQAIt1v6kIuvnKTBpM6wHSo5C3yfItsOvCGQ0T1jLEYSHmwJhHppnubORwY/Cb3nsv1hlwtbRkBQxlkl6LCxwX6m9+zpy5ZPkC30/o/Q6o/pFgKZw1e760bGK4zorP5V9S/M/qpqHQHjVtBWZ8r6VSDFFi+0WTJm3xdsweN9juUlx9hMU0ndinyix2tLHVT7qDuX5evIePx2xK+5LEEZYXYgIQ/uNhzG+er3ibhkOBgSJWvfbBgs0g7s7mFuB4y3KsruBAMzdc2rgIIOb7K8kZT9lfKB452PC0aK26vcQfbON9yrC/CHwXCuEns2/r8BN70cbQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Qb60E0/rA7ofT94fxGlO8//RAH3xBtk3NPkmHq4updc=;
- b=KTJIfKJRXUQ9ARXmQw2sOgh8YgvV5wO9E5SswV9eBNUOGJYGJxkWajz2hgS8eTnqsT/Y9EJng0iTJbOX0lHGfV0hrsccBL3v0W3hM8ApGTOeFIGm7/6jIAVwhvijuEi7CIO9UsUWqq4CnKH/39IIrfnIOWnGSHrI0UoY4B/uUgPcL6tcH220BxhF0TeTGb/EXNPXVZLyySKMOEJPgfnMRWqD9mKQ2lnzSxY9nCW0B48a/9Y0HChKgehnU4OWLKvCCduVMjkFI6LSZzvhx5SGmnG5n+QcRBjVO6l++6FW6kwIMYWxnbVpg09ml9r058ds6s2Rz7vU3XYHzTssfefDfg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from CO1PR11MB5089.namprd11.prod.outlook.com (2603:10b6:303:9b::16)
- by CO6PR11MB5620.namprd11.prod.outlook.com (2603:10b6:303:13e::17)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6863.43; Thu, 12 Oct
- 2023 18:56:04 +0000
-Received: from CO1PR11MB5089.namprd11.prod.outlook.com
- ([fe80::9654:610d:227a:104f]) by CO1PR11MB5089.namprd11.prod.outlook.com
- ([fe80::9654:610d:227a:104f%5]) with mapi id 15.20.6863.043; Thu, 12 Oct 2023
- 18:56:04 +0000
-Message-ID: <9080a6ca-0fbe-44b4-bbd0-43c572378532@intel.com>
-Date: Thu, 12 Oct 2023 11:56:01 -0700
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-To: Guenter Roeck <linux@roeck-us.net>, Konrad Knitter
- <konrad.knitter@intel.com>
-References: <20231012071358.1101438-1-konrad.knitter@intel.com>
- <df0e5774-3db7-4f0f-a9e8-c4369c2e6083@roeck-us.net>
-From: Jacob Keller <jacob.e.keller@intel.com>
-In-Reply-To: <df0e5774-3db7-4f0f-a9e8-c4369c2e6083@roeck-us.net>
-X-ClientProxiedBy: MW4P221CA0017.NAMP221.PROD.OUTLOOK.COM
- (2603:10b6:303:8b::22) To CO1PR11MB5089.namprd11.prod.outlook.com
- (2603:10b6:303:9b::16)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id TLDcFNlKaYRR for <intel-wired-lan@lists.osuosl.org>;
+ Sun,  8 Oct 2023 06:36:10 +0000 (UTC)
+Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com
+ [IPv6:2607:f8b0:4864:20::112e])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6ECD341740
+ for <intel-wired-lan@lists.osuosl.org>; Sun,  8 Oct 2023 06:36:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6ECD341740
+Received: by mail-yw1-x112e.google.com with SMTP id
+ 00721157ae682-59f6041395dso43622867b3.1
+ for <intel-wired-lan@lists.osuosl.org>; Sat, 07 Oct 2023 23:36:10 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1696746969; x=1697351769;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=2ZcY7LYYHgfRnAS6/MqMsfJ+TF7feUNbMBV189+9vhw=;
+ b=iPchS9HNxOfTXOBaXXx0nbayNpX6AoXaZIiLKiUu2u5YwNp9rTyU0u0OlIeibnDyVH
+ 56vfpUWQwWZ0IF+CVAap1N9J2To08DkZkzD1gFM9Gy9WOdeymkLpT7/1m8d0CxHhkMY4
+ eGLRd+l0Z19fwtrvB5Ms7wVwZN5T1eeW0ifKM7Hyv/QcYb2U+YuyvjIAEMFRTzHLgqfT
+ FOfeq0J2xgAEipA7/w6f2sEB9R9urQ4GkqzSR6dt8PFInjy9EehD/ga6cDfGqeKsBAPS
+ na1u56sJ6ECjR423/KRjadoNuuu08R94Iacim0Gbl3szD0b8r0FtytidshAwxcDr8PC5
+ HpQQ==
+X-Gm-Message-State: AOJu0Yx7I9V8oKcAm5hyks1/8sNbzVUJkDqTGTkl/PxZNx/Sb0B+U0Gd
+ ZqVGWZSD+1b5jaRN2BUABWk=
+X-Google-Smtp-Source: AGHT+IE+oXMPVuBZmST15ZL+Vl9YSp/yrk8QAaLaSC7UDJUPbeoCczAYRb5b2LLP6zEEAQ+7h2W7zw==
+X-Received: by 2002:a81:7cd6:0:b0:59b:6c4:b822 with SMTP id
+ x205-20020a817cd6000000b0059b06c4b822mr13517377ywc.36.1696746968956; 
+ Sat, 07 Oct 2023 23:36:08 -0700 (PDT)
+Received: from ocxma-dut.. ([153.126.233.61]) by smtp.gmail.com with ESMTPSA id
+ y76-20020a0dd64f000000b0058c668e46cbsm2661460ywd.46.2023.10.07.23.36.06
+ (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+ Sat, 07 Oct 2023 23:36:08 -0700 (PDT)
+From: Takeru Hayasaka <hayatake396@gmail.com>
+X-Google-Original-From: Takeru Hayasaka <t-hayasaka@bbsakura.net>
+To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>
+Date: Sun,  8 Oct 2023 06:36:01 +0000
+Message-Id: <20231008063601.61674-1-t-hayasaka@bbsakura.net>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CO1PR11MB5089:EE_|CO6PR11MB5620:EE_
-X-MS-Office365-Filtering-Correlation-Id: ab02107a-4ec7-4006-957f-08dbcb54e262
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: Ret1NidL0dZtJbCaHjK6geyTP7KUfkTbvGyC800f1Fx2CmyOV7yHkZhGM3PHr6b80so9orpUEH78ydLDEuM5NAF+QzC1gNdhIYGgZxnlkeLNxImheIj9YFXHKHz73zwmxS4fxNIRPatHXKnH0k581lxnCh0WvsasGYYhYZGKxc57+DwBKcEVnaHLuyi6iHAVS8cFavUGnsAAgY4aUL6xCg9zAisWDR5SXvooRPPqllPiccf8hZLUaX13XkjDkMjG3zH5/ViZ74qLQKF0c4+2+tmzhX4eJ0GHaDLI/C1UsoryKH1X8+sjUjkbykON6X0LUQQZf8k5Kmv+jFjz+jv/CjOMbF3Php54jwyIPourX2jpuqs1/bT6VqCkftmrFTJOVNK7VDzMFyvN5uwMLcqMV7b0ILL9l9qNCwMmAWLr+lX/z8LalYVQCFHiHYuiqeCSrC0+MHGKyOSjWbCQM4oVcpynISVQADCVn8vwzJgUCwe1LCHJdBDT8pLOKkXhLwRz19zIp07GEIG0DorIn47fyq67UaTGXzgNTlju08YsiWnjK8GiyfDSreFx3/HhtdkuTb6Rx1jWV6hrxrQFFD6x89Q/NFGegw5uywi8trsJX8H3ENWgcWtOQIB+proRafn3GL7SvX9rzTIm5COCDzWSAQ==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:CO1PR11MB5089.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(366004)(39860400002)(396003)(376002)(346002)(136003)(230922051799003)(186009)(1800799009)(64100799003)(451199024)(31686004)(110136005)(66556008)(66946007)(66476007)(54906003)(316002)(6636002)(4326008)(8936002)(8676002)(41300700001)(82960400001)(38100700002)(5660300002)(30864003)(2906002)(6512007)(2616005)(6486002)(26005)(478600001)(6666004)(36756003)(53546011)(86362001)(31696002)(6506007)(83380400001)(45980500001)(43740500002);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?SmZDeXFEL3R3QXdxbUtDaFhxZEo0eFBXdHRGcG1WZ1h6cU1BbXJuRlBOUXhQ?=
- =?utf-8?B?NEZ1VkU0c21UVHpVYXR5ck1aem9KRDhTMGtEd29tbndDV1EwMHJOd1RVMzdy?=
- =?utf-8?B?SDhzRXBNa21Sa3YydlRvc2dRc1FIaFkzQllWbHQxU3ZDWmVhVE9vb2ptMUt6?=
- =?utf-8?B?VTc4ZVVuQ3pzY0svdlVFUDViN1pMOXY5N21XdUN6aSsrNllXaVdlZ25RM2pH?=
- =?utf-8?B?NVhQdmN3NWtJcVpHZTZVdmV3UzVWdmJma3JIa3U5NnVvQWxlUVdTZnREcjVD?=
- =?utf-8?B?VitaZ3ZOY3pTa2JZZlVicU16STJRTHBlekdqRVJyaG4rMG0zVDA1Y3FZaEt2?=
- =?utf-8?B?RGlZMENZd2FnbGRyekhVc1UyMUVoM1RXemh4S0tVRzlkeEwyVWt4MnhaWDhX?=
- =?utf-8?B?bThLQllCWXVxd0sxK2VoR2JHYnpxN0p3MEgrK0dNeW96a3dKQ1ZwekpTWnJY?=
- =?utf-8?B?cU40dFdOTlRuOW1TQ0cvMlJFaElkcExhZzlKK2l5NjM5Q0YremJ5N0Q5VVRR?=
- =?utf-8?B?ZjNYVEdzY2U4dFBVTGx4YnlRZXpUUytjVU5NeXpqWHFXOFBwWjRCWTJ1emlp?=
- =?utf-8?B?cGx0YkFCTTZjRDNsWGl6WVEyVmVJNTVNNllwUnlyQUVYNG9Pa1M3N2FwcHpV?=
- =?utf-8?B?OXhhNC9CTGpkdEo5ZG1vbXU1M21YNi93bzJSY3pnTzVjb1F0Ym9TVlJLYXFD?=
- =?utf-8?B?ZG9mbEkySkN5QzlMVytwMmxzaWtXQm9SVjRrKzM2UkdZZUZ6ZUNrWG11aHNL?=
- =?utf-8?B?aXRpZkNBMWZGcnNlSDhET0RzdTZOanhiZzRGM2gwQ0F3ZjJRakxvV3FvR0cr?=
- =?utf-8?B?enc0WnN5a08rT2FPTzRHaUcweHpBcng2WE9QRElOY011VFhJS25SWUg2TTg0?=
- =?utf-8?B?alF0UCt3dXJ6SDRhenlqZGVpVEVMdTBjNkNEWkZPZittODVMT0RxZDdVSFNV?=
- =?utf-8?B?elM3YmhlUGxma2liOXJ1cWc1S1cvYThpSkhKL0VFNW5VUjlmTmlualdWWWxo?=
- =?utf-8?B?OGpIVmp3anBxOG1HU0J0QXdaTEdid2x1UjlBSUlLeXUybTdTSElwNkswbk1R?=
- =?utf-8?B?VHdIOWRoalQ5UkFzZ0dYbTU5Sk1RU1BWT3hta0ZMRThCeGNUVEE4MEk0VmpC?=
- =?utf-8?B?MXZpNXZOeDZnYnBCRXlOVWhUVGFSNElkSmlvYmc3dXp3TTRVUERxTmpHZC91?=
- =?utf-8?B?YjdDOU9zdGZYYnY4Q2hFcEhWVGVnTndxaGJCRXRRSzFOQ2NiOTQvWUZ0UXo1?=
- =?utf-8?B?YlF2VG9CMmNrQkFPOUxsM2xBMy9FS3QzMmtQOUpCZzM1Y2ErbzdEb0wwTWow?=
- =?utf-8?B?UVVvSXlHMUppSnZjb002K1FQdy9xQlgyRlltamoxcUk4SWVLbk9OSmIwK3Zy?=
- =?utf-8?B?eWtlelRoRmRqdkdrcC9lNVBoaG41bEFOZjVkQzNIN0w5alVwMXUyZDBNMjUw?=
- =?utf-8?B?aWVzUUhBdXluQXR1aHJtRzFPU2IzK3NCZkc4bmlHYmZhbHVobkxDUXJkYnZa?=
- =?utf-8?B?aGxwVU1hLy8xVjRIazBKcXVDeVNmUTBKYUtzZWNydS90SFFVbzdSWHdpTEU5?=
- =?utf-8?B?LzNVdjM4VHhsSDFVMS96VDBiNlNCQVNFVEVPVFdjUE5raDdGckxCV3QrZm43?=
- =?utf-8?B?NXVaY2loSFlrbU1OVGRmOHhtMG1pV2RtQnhxQ0hjMXNrcUZCTGloa21LWnBi?=
- =?utf-8?B?SlRURWZGSDZCYmVrRkdzSnVJcjVTWkJVZy83WjYzaGpOVURwTGhSWFVUdVlR?=
- =?utf-8?B?eEt2dG1JUWJIZWR6T0FuVHh2V1I1dkVRRDFXVGlON1RBWmRiVTFTQWU2dUgy?=
- =?utf-8?B?NUI3VWhOVmorRlVsVnNsYll2d2RCZ01VblM5OGVWTiszOURKd29BUUF3WWlW?=
- =?utf-8?B?clBsdFpMTU1UVVg0Q2pLMzJXY3FXcUlJZ09CN3VCV3NEampPR0FMY0hSWVFD?=
- =?utf-8?B?TVlIOHNLOHhlODZrbjJNQm81SVdUKy9UdHY1bC9HWDBWejRtNVpDSXhobTM5?=
- =?utf-8?B?cndrR0dZTDVlcUM5d2ZTQW5VWHNqKzRtTDFQVmQwVUp4dWxBUllLOTZqQkxF?=
- =?utf-8?B?RGVhVmhvWktOK2lYdml5QVYxZnd5OFVlWFBYNGs2QUhVWlFLSk1kVnRkUzB4?=
- =?utf-8?B?d2htUEFqZjhIUVExMXRUYUxkNURMM3RwYW1iYnZJR05QL3JqL25KUi9sNElM?=
- =?utf-8?B?SHc9PQ==?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: ab02107a-4ec7-4006-957f-08dbcb54e262
-X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB5089.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Oct 2023 18:56:03.9886 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 6Y5JOmsl7jOp+yw7ViZd3JdxH6pYfgV3rkc6jDSXa8R499rud6FXYRH21aZBM1gpM4/pDSa1TRSTxHb+Do84fYu95Smh3b9S1OffLJErwKM=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CO6PR11MB5620
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1697136970; x=1728672970;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=IMz9z3mHttrLYr2SONtxnIi7WIecaESaVbqU/siTYps=;
- b=I4WyLxPlF5AlIo6dEBHeJ6F9xJXc0/RpQNh8uMBJVxmZsKUh/lEJHZDI
- 1TqPjU7xJJrR91rUeS5DTKLKheURXreiaFYfrLRXzKL+CQ3lxrD5Bi/3b
- pwsLzV2zvxx6Mai5uGZy7nK9cZ1EAJJEvjpWfAc0IRexCY+AwummP8Qlh
- IU1szWcxiaCGTeVu+8oARHRGUNzpvvF6z9wrj6MMjSwqPpI4X4C8BNZAD
- bEt0cpEYt1GaVtyo1ak+P1bCTKqEYgp3zs5QeZ84WkkAw2QDTHmRON0v9
- kB9HM2TXzmTIHI+Y447ayfpaCpUfg3sH9jjSeR24eJWwg+uq5sc36Zl6p
- w==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=I4WyLxPl
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3] ice: read internal
- temperature sensor
+X-Mailman-Approved-At: Thu, 12 Oct 2023 19:06:38 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20230601; t=1696746969; x=1697351769; darn=lists.osuosl.org;
+ h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+ :to:from:from:to:cc:subject:date:message-id:reply-to;
+ bh=2ZcY7LYYHgfRnAS6/MqMsfJ+TF7feUNbMBV189+9vhw=;
+ b=IDWsdEs7ZhbACZKPwh6vWC/oDTwwAzy76FQ27p60DpnpaWSOFG224BqpNJ5et7oDwp
+ oOaXBpDuLe6jaco4e7HnMqmKMVKBDTpIGpKYcylk0uBaTEkcild7NmOwDMN0O62APPsm
+ iEIjMSh1KK0lr7A9w/5+XsznsfqpCLEc28etVeVRKcIFjk2flwSntP6KVxVmP0yDZxEu
+ cgD2y82g3iYfEv96t9/Znc7Ul4U4BUOqRvFfRJJEVg7J3EJgE2zXrZUw/oFwp9dbohKt
+ S3g35SC3ZJnoqsqhsooxfanw71M+hnxUzbrqjfArPKT+2RdUweyv+8RrlRbUKQn6RzJY
+ JASQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=IDWsdEs7
+Subject: [Intel-wired-lan] [PATCH net-next] ethtool: ice: Support for RSS
+ settings to GTP from ethtool
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -193,214 +111,344 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: jdelvare@suse.com, netdev@vger.kernel.org, Eric
- Joyner <eric.joyner@intel.com>, Marcin Szycik <marcin.szycik@linux.intel.com>,
- intel-wired-lan@lists.osuosl.org, Marcin Domagala <marcinx.domagala@intel.com>,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ linux-kernel@vger.kernel.org, Takeru Hayasaka <hayatake396@gmail.com>,
+ Takeru Hayasaka <t-hayasaka@bbsakura.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-CgpPbiAxMC8xMi8yMDIzIDEwOjI5IEFNLCBHdWVudGVyIFJvZWNrIHdyb3RlOgo+IE9uIFRodSwg
-T2N0IDEyLCAyMDIzIGF0IDA5OjEzOjU5QU0gKzAyMDAsIEtvbnJhZCBLbml0dGVyIHdyb3RlOgo+
-PiBTaW5jZSA0LjMwIGZpcm13YXJlIGV4cG9zZXMgaW50ZXJuYWwgdGhlcm1hbCBzZW5zb3IgcmVh
-ZGluZyB2aWEgYWRtaW4KPj4gcXVldWUgY29tbWFuZHMuIEV4cG9zZSB0aG9zZSByZWFkb3V0cyB2
-aWEgaHdtb24gQVBJIHdoZW4gc3VwcG9ydGVkLgo+Pgo+PiBEcml2ZXIgcHJvdmlkZXMgY3VycmVu
-dCByZWFkaW5nIGZyb20gSFcgYXMgd2VsbCBhcyBkZXZpY2Ugc3BlY2lmaWMKPj4gdGhyZXNob2xk
-cyBmb3IgdGhlcm1hbCBhbGFybSAoV2FybmluZywgQ3JpdGljYWwsIEZhdGFsKSBldmVudHMuCj4+
-Cj4+ICQgc2Vuc29ycwo+Pgo+PiBPdXRwdXQKPj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Cj4+IGljZS1wY2ktYjEwMAo+PiBBZGFwdGVy
-OiBQQ0kgYWRhcHRlcgo+PiB0ZW1wMTogICAgICAgICs2Mi4wwrBDICAoaGlnaCA9ICs5NS4wwrBD
-LCBjcml0ID0gKzEwNS4wwrBDKQo+PiAgICAgICAgICAgICAgICAgICAgICAgIChlbWVyZyA9ICsx
-MTUuMMKwQykKPj4KPj4gQ28tZGV2ZWxvcGVkLWJ5OiBNYXJjaW4gRG9tYWdhbGEgPG1hcmNpbngu
-ZG9tYWdhbGFAaW50ZWwuY29tPgo+PiBTaWduZWQtb2ZmLWJ5OiBNYXJjaW4gRG9tYWdhbGEgPG1h
-cmNpbnguZG9tYWdhbGFAaW50ZWwuY29tPgo+PiBDby1kZXZlbG9wZWQtYnk6IEVyaWMgSm95bmVy
-IDxlcmljLmpveW5lckBpbnRlbC5jb20+Cj4+IFNpZ25lZC1vZmYtYnk6IEVyaWMgSm95bmVyIDxl
-cmljLmpveW5lckBpbnRlbC5jb20+Cj4+IFJldmlld2VkLWJ5OiBNYXJjaW4gU3p5Y2lrIDxtYXJj
-aW4uc3p5Y2lrQGxpbnV4LmludGVsLmNvbT4KPj4gUmV2aWV3ZWQtYnk6IFByemVtZWsgS2l0c3pl
-bCA8cHJ6ZW15c2xhdy5raXRzemVsQGludGVsLmNvbT4KPj4gU2lnbmVkLW9mZi1ieTogS29ucmFk
-IEtuaXR0ZXIgPGtvbnJhZC5rbml0dGVyQGludGVsLmNvbT4KPj4gLS0tCj4+IHYzOiBhZGQgU1BE
-WCBpZGVudGlmaWNhdGlvbiB0byBpY2VfaHdtb24gZmlsZXMKPj4gdjI6IGZpeCBmb3JtbWF0aW5n
-IGlzc3VlcywgYWRkZWQgaHdtb24gbWFpbnRhaW5lcnMgdG8gQ2MKPj4gLS0tCj4+ICBkcml2ZXJz
-L25ldC9ldGhlcm5ldC9pbnRlbC9pY2UvTWFrZWZpbGUgICAgICAgfCAgIDEgKwo+IAo+IFRoZSBj
-b2RlIHNlZW1zIHRvIGJlIHVuY29uZGl0aW9uYWwsIGJ1dCBJIHNlZSBubyBhZGRlZAo+IGRlcGVu
-ZGVuY3kgb24gQ09ORklHX0hXTU9OLiBEb2VzIHRoaXMgY29tcGlsZSBpZgo+IEhXTU9OPW0gYW5k
-IHRoaXMgY29kZSBpcyBidWlsdCBpbnRvIHRoZSBrZXJuZWwsIG9yIGlmIEhXTU9OPW4gPwo+IAoK
-aWNlX2h3bW9uLmggZmlsZSBuZWVkcyB0byBjaGVjayBDT05GSUdfSFdNT04gYW5kIHByb3ZpZGUg
-bm8tb3Agc3R1YnMsIGFuZC4uLgoKPj4gIGRyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9p
-Y2UuaCAgICAgICAgICB8ICAgMSArCj4+ICAuLi4vbmV0L2V0aGVybmV0L2ludGVsL2ljZS9pY2Vf
-YWRtaW5xX2NtZC5oICAgfCAgMjggKysrKwo+PiAgZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwv
-aWNlL2ljZV9jb21tb24uYyAgIHwgIDU3ICsrKysrKystCj4+ICBkcml2ZXJzL25ldC9ldGhlcm5l
-dC9pbnRlbC9pY2UvaWNlX2NvbW1vbi5oICAgfCAgIDIgKwo+PiAgZHJpdmVycy9uZXQvZXRoZXJu
-ZXQvaW50ZWwvaWNlL2ljZV9od21vbi5jICAgIHwgMTMwICsrKysrKysrKysrKysrKysrKwo+PiAg
-ZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV9od21vbi5oICAgIHwgIDEwICsrCj4+
-ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2UvaWNlX21haW4uYyAgICAgfCAgIDUgKwo+
-PiAgZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV90eXBlLmggICAgIHwgICA0ICsK
-Pj4gIDkgZmlsZXMgY2hhbmdlZCwgMjM3IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPj4g
-IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2UvaWNlX2h3
-bW9uLmMKPj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9p
-Y2UvaWNlX2h3bW9uLmgKPj4KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2lu
-dGVsL2ljZS9NYWtlZmlsZSBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9NYWtlZmls
-ZQo+PiBpbmRleCA4NzU3YmVjMjNmYjMuLmI0YzhmNTMwM2U1NyAxMDA2NDQKPj4gLS0tIGEvZHJp
-dmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL01ha2VmaWxlCj4+ICsrKyBiL2RyaXZlcnMvbmV0
-L2V0aGVybmV0L2ludGVsL2ljZS9NYWtlZmlsZQo+PiBAQCAtMzYsNiArMzYsNyBAQCBpY2UteSA6
-PSBpY2VfbWFpbi5vCVwKPj4gIAkgaWNlX3JlcHIubwlcCj4+ICAJIGljZV90Y19saWIubwlcCj4+
-ICAJIGljZV9md2xvZy5vCVwKPj4gKwkgaWNlX2h3bW9uLm8JXAoKVGhpcyBzaG91bGQgYmUgaWNl
-LSQoQ09ORklHX0hXTU9OKSArPSBpY2VfaHdtb24ubwoKPj4gIAkgaWNlX2RlYnVnZnMubwo+PiAg
-aWNlLSQoQ09ORklHX1BDSV9JT1YpICs9CVwKPj4gIAlpY2Vfc3Jpb3YubwkJXAo+PiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZS5oIGIvZHJpdmVycy9uZXQv
-ZXRoZXJuZXQvaW50ZWwvaWNlL2ljZS5oCj4+IGluZGV4IGFkNTYxNGQ0NDQ5Yy4uNjFkMjZiZTUw
-MmIyIDEwMDY0NAo+PiAtLS0gYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2UvaWNlLmgK
-Pj4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZS5oCj4+IEBAIC02NTAs
-NiArNjUwLDcgQEAgc3RydWN0IGljZV9wZiB7Cj4+ICAjZGVmaW5lIElDRV9NQVhfVkZfQUdHX05P
-REVTCQkzMgo+PiAgCXN0cnVjdCBpY2VfYWdnX25vZGUgdmZfYWdnX25vZGVbSUNFX01BWF9WRl9B
-R0dfTk9ERVNdOwo+PiAgCXN0cnVjdCBpY2VfZHBsbHMgZHBsbHM7Cj4+ICsJc3RydWN0IGRldmlj
-ZSAqaHdtb25fZGV2Owo+PiAgfTsKPj4gIAo+PiAgZXh0ZXJuIHN0cnVjdCB3b3JrcXVldWVfc3Ry
-dWN0ICppY2VfbGFnX3dxOwo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50
-ZWwvaWNlL2ljZV9hZG1pbnFfY21kLmggYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2Uv
-aWNlX2FkbWlucV9jbWQuaAo+PiBpbmRleCAxMjAyYWJmYjllYjMuLjNjNDI5NWY4ZTRiYSAxMDA2
-NDQKPj4gLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV9hZG1pbnFfY21k
-LmgKPj4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV9hZG1pbnFfY21k
-LmgKPj4gQEAgLTExNyw2ICsxMTcsNyBAQCBzdHJ1Y3QgaWNlX2FxY19saXN0X2NhcHNfZWxlbSB7
-Cj4+ICAjZGVmaW5lIElDRV9BUUNfQ0FQU19ORVRfVkVSCQkJCTB4MDA0Qwo+PiAgI2RlZmluZSBJ
-Q0VfQVFDX0NBUFNfUEVORElOR19ORVRfVkVSCQkJMHgwMDRECj4+ICAjZGVmaW5lIElDRV9BUUNf
-Q0FQU19SRE1BCQkJCTB4MDA1MQo+PiArI2RlZmluZSBJQ0VfQVFDX0NBUFNfU0VOU09SX1JFQURJ
-TkcJCQkweDAwNjcKPj4gICNkZWZpbmUgSUNFX0FRQ19DQVBTX1BDSUVfUkVTRVRfQVZPSURBTkNF
-CQkweDAwNzYKPj4gICNkZWZpbmUgSUNFX0FRQ19DQVBTX1BPU1RfVVBEQVRFX1JFU0VUX1JFU1RS
-SUNUCQkweDAwNzcKPj4gICNkZWZpbmUgSUNFX0FRQ19DQVBTX05WTV9NR01UCQkJCTB4MDA4MAo+
-PiBAQCAtMTM5Myw2ICsxMzk0LDMwIEBAIHN0cnVjdCBpY2VfYXFjX2dldF9waHlfcmVjX2Nsa19v
-dXQgewo+PiAgCV9fbGUxNiBub2RlX2hhbmRsZTsKPj4gIH07Cj4+ICAKPj4gKy8qIEdldCBzZW5z
-b3IgcmVhZGluZyAoZGlyZWN0IDB4MDYzMikgKi8KPj4gK3N0cnVjdCBpY2VfYXFjX2dldF9zZW5z
-b3JfcmVhZGluZyB7Cj4+ICsJdTggc2Vuc29yOwo+PiArCXU4IGZvcm1hdDsKPj4gKwl1OCByZXNl
-cnZlZFs2XTsKPj4gKwlfX2xlMzIgYWRkcl9oaWdoOwo+PiArCV9fbGUzMiBhZGRyX2xvdzsKPj4g
-K307Cj4+ICsKPj4gKy8qIEdldCBzZW5zb3IgcmVhZGluZyByZXNwb25zZSAoZGlyZWN0IDB4MDYz
-MikgKi8KPj4gK3N0cnVjdCBpY2VfYXFjX2dldF9zZW5zb3JfcmVhZGluZ19yZXNwIHsKPj4gKwl1
-bmlvbiB7Cj4+ICsJCXU4IHJhd1s4XTsKPj4gKwkJLyogT3V0cHV0IGRhdGEgZm9yIHNlbnNvciAw
-eDAwLCBmb3JtYXQgMHgwMCAqLwo+PiArCQlzdHJ1Y3Qgewo+PiArCQkJczggdGVtcDsKPj4gKwkJ
-CXU4IHRlbXBfd2FybmluZ190aHJlc2hvbGQ7Cj4+ICsJCQl1OCB0ZW1wX2NyaXRpY2FsX3RocmVz
-aG9sZDsKPj4gKwkJCXU4IHRlbXBfZmF0YWxfdGhyZXNob2xkOwo+PiArCQkJdTggcmVzZXJ2ZWRb
-NF07Cj4+ICsJCX0gczBmMDsKPj4gKwl9IGRhdGE7Cj4+ICt9Owo+IAo+IEtpbmQgb2Ygc3VycHJp
-c2luZyB0aGF0IHRoaXMgZG9lc24ndCBuZWVkIHBhY2tlZCBhdHRyaWJ1dGVzLgo+IAoKVGhlIGxh
-eW91dCBpcyBhbGwgdThzIHdoaWNoIHBhY2sgY29ycmVjdGx5IHdpdGhvdXQgdXNpbmcgbmVlZGlu
-ZyBwYWNrLiBJCnRoaW5rIGluIHByaW5jaXBsZSBpdCBwcm9iYWJseSBjb3VsZCB1c2UgX19wYWNr
-ZWQgdG8gY2xhcmlmeSB0aGUgaW50ZW50LApidXQgSSB0aGluayB0aGUgbGF5b3V0IGlzIHRoZSBz
-YW1lIHJlZ2FyZGxlc3MgaW4gdGhpcyBjYXNlLgoKPj4gKwo+PiAgc3RydWN0IGljZV9hcWNfbGlu
-a190b3BvX3BhcmFtcyB7Cj4+ICAJdTggbHBvcnRfbnVtOwo+PiAgCXU4IGxwb3J0X251bV92YWxp
-ZDsKPj4gQEAgLTI0MzgsNiArMjQ2Myw4IEBAIHN0cnVjdCBpY2VfYXFfZGVzYyB7Cj4+ICAJCXN0
-cnVjdCBpY2VfYXFjX3Jlc3RhcnRfYW4gcmVzdGFydF9hbjsKPj4gIAkJc3RydWN0IGljZV9hcWNf
-c2V0X3BoeV9yZWNfY2xrX291dCBzZXRfcGh5X3JlY19jbGtfb3V0Owo+PiAgCQlzdHJ1Y3QgaWNl
-X2FxY19nZXRfcGh5X3JlY19jbGtfb3V0IGdldF9waHlfcmVjX2Nsa19vdXQ7Cj4+ICsJCXN0cnVj
-dCBpY2VfYXFjX2dldF9zZW5zb3JfcmVhZGluZyBnZXRfc2Vuc29yX3JlYWRpbmc7Cj4+ICsJCXN0
-cnVjdCBpY2VfYXFjX2dldF9zZW5zb3JfcmVhZGluZ19yZXNwIGdldF9zZW5zb3JfcmVhZGluZ19y
-ZXNwOwo+PiAgCQlzdHJ1Y3QgaWNlX2FxY19ncGlvIHJlYWRfd3JpdGVfZ3BpbzsKPj4gIAkJc3Ry
-dWN0IGljZV9hcWNfc2ZmX2VlcHJvbSByZWFkX3dyaXRlX3NmZl9wYXJhbTsKPj4gIAkJc3RydWN0
-IGljZV9hcWNfc2V0X3BvcnRfaWRfbGVkIHNldF9wb3J0X2lkX2xlZDsKPj4gQEAgLTI2MTcsNiAr
-MjY0NCw3IEBAIGVudW0gaWNlX2FkbWlucV9vcGMgewo+PiAgCWljZV9hcWNfb3BjX3NldF9tYWNf
-bGIJCQkJPSAweDA2MjAsCj4+ICAJaWNlX2FxY19vcGNfc2V0X3BoeV9yZWNfY2xrX291dAkJCT0g
-MHgwNjMwLAo+PiAgCWljZV9hcWNfb3BjX2dldF9waHlfcmVjX2Nsa19vdXQJCQk9IDB4MDYzMSwK
-Pj4gKwlpY2VfYXFjX29wY19nZXRfc2Vuc29yX3JlYWRpbmcJCQk9IDB4MDYzMiwKPj4gIAlpY2Vf
-YXFjX29wY19nZXRfbGlua190b3BvCQkJPSAweDA2RTAsCj4+ICAJaWNlX2FxY19vcGNfcmVhZF9p
-MmMJCQkJPSAweDA2RTIsCj4+ICAJaWNlX2FxY19vcGNfd3JpdGVfaTJjCQkJCT0gMHgwNkUzLAo+
-PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV9jb21tb24u
-YyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9pY2VfY29tbW9uLmMKPj4gaW5kZXgg
-MjgzNDkyMzE0MjE1Li5lNTY2NDg1YTAxYjIgMTAwNjQ0Cj4+IC0tLSBhL2RyaXZlcnMvbmV0L2V0
-aGVybmV0L2ludGVsL2ljZS9pY2VfY29tbW9uLmMKPj4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJu
-ZXQvaW50ZWwvaWNlL2ljZV9jb21tb24uYwo+PiBAQCAtMjQ2Miw2ICsyNDYyLDI2IEBAIGljZV9w
-YXJzZV9mZGlyX2Rldl9jYXBzKHN0cnVjdCBpY2VfaHcgKmh3LCBzdHJ1Y3QgaWNlX2h3X2Rldl9j
-YXBzICpkZXZfcCwKPj4gIAkJICBkZXZfcC0+bnVtX2Zsb3dfZGlyZWN0b3JfZmx0cik7Cj4+ICB9
-Cj4+ICAKPj4gKy8qKgo+PiArICogaWNlX3BhcnNlX3NlbnNvcl9yZWFkaW5nX2NhcCAtIFBhcnNl
-IElDRV9BUUNfQ0FQU19TRU5TT1JfUkVBRElORyBjYXAKPj4gKyAqIEBodzogcG9pbnRlciB0byB0
-aGUgSFcgc3RydWN0Cj4+ICsgKiBAZGV2X3A6IHBvaW50ZXIgdG8gZGV2aWNlIGNhcGFiaWxpdGll
-cyBzdHJ1Y3R1cmUKPj4gKyAqIEBjYXA6IGNhcGFiaWxpdHkgZWxlbWVudCB0byBwYXJzZQo+PiAr
-ICoKPj4gKyAqIFBhcnNlIElDRV9BUUNfQ0FQU19TRU5TT1JfUkVBRElORyBmb3IgZGV2aWNlIGNh
-cGFiaWxpdHkgZm9yIHJlYWRpbmcKPj4gKyAqIGVuYWJsZWQgc2Vuc29ycy4KPj4gKyAqLwo+PiAr
-c3RhdGljIHZvaWQKPj4gK2ljZV9wYXJzZV9zZW5zb3JfcmVhZGluZ19jYXAoc3RydWN0IGljZV9o
-dyAqaHcsIHN0cnVjdCBpY2VfaHdfZGV2X2NhcHMgKmRldl9wLAo+PiArCQkJICAgICBzdHJ1Y3Qg
-aWNlX2FxY19saXN0X2NhcHNfZWxlbSAqY2FwKQo+PiArewo+PiArCWRldl9wLT5zdXBwb3J0ZWRf
-c2Vuc29ycyA9IGxlMzJfdG9fY3B1KGNhcC0+bnVtYmVyKTsKPj4gKwo+PiArCWljZV9kZWJ1Zyho
-dywgSUNFX0RCR19JTklULAo+PiArCQkgICJkZXYgY2Fwczogc3VwcG9ydGVkIHNlbnNvcnMgKGJp
-dG1hcCkgPSAweCV4XG4iLAo+PiArCQkgIGRldl9wLT5zdXBwb3J0ZWRfc2Vuc29ycyk7Cj4+ICt9
-Cj4+ICsKPj4gIC8qKgo+PiAgICogaWNlX3BhcnNlX2Rldl9jYXBzIC0gUGFyc2UgZGV2aWNlIGNh
-cGFiaWxpdGllcwo+PiAgICogQGh3OiBwb2ludGVyIHRvIHRoZSBIVyBzdHJ1Y3QKPj4gQEAgLTI1
-MDcsOSArMjUyNywxMiBAQCBpY2VfcGFyc2VfZGV2X2NhcHMoc3RydWN0IGljZV9odyAqaHcsIHN0
-cnVjdCBpY2VfaHdfZGV2X2NhcHMgKmRldl9wLAo+PiAgCQljYXNlIElDRV9BUUNfQ0FQU18xNTg4
-Ogo+PiAgCQkJaWNlX3BhcnNlXzE1ODhfZGV2X2NhcHMoaHcsIGRldl9wLCAmY2FwX3Jlc3BbaV0p
-Owo+PiAgCQkJYnJlYWs7Cj4+IC0JCWNhc2UgIElDRV9BUUNfQ0FQU19GRDoKPj4gKwkJY2FzZSBJ
-Q0VfQVFDX0NBUFNfRkQ6Cj4+ICAJCQlpY2VfcGFyc2VfZmRpcl9kZXZfY2FwcyhodywgZGV2X3As
-ICZjYXBfcmVzcFtpXSk7Cj4+ICAJCQlicmVhazsKPj4gKwkJY2FzZSBJQ0VfQVFDX0NBUFNfU0VO
-U09SX1JFQURJTkc6Cj4+ICsJCQlpY2VfcGFyc2Vfc2Vuc29yX3JlYWRpbmdfY2FwKGh3LCBkZXZf
-cCwgJmNhcF9yZXNwW2ldKTsKPj4gKwkJCWJyZWFrOwo+PiAgCQlkZWZhdWx0Ogo+PiAgCQkJLyog
-RG9uJ3QgbGlzdCBjb21tb24gY2FwYWJpbGl0aWVzIGFzIHVua25vd24gKi8KPj4gIAkJCWlmICgh
-Zm91bmQpCj4+IEBAIC01MjkyLDYgKzUzMTUsMzggQEAgaWNlX2FxX2dldF9waHlfcmVjX2Nsa19v
-dXQoc3RydWN0IGljZV9odyAqaHcsIHU4ICpwaHlfb3V0cHV0LCB1OCAqcG9ydF9udW0sCj4+ICAJ
-cmV0dXJuIHN0YXR1czsKPj4gIH0KPj4gIAo+PiArLyoqCj4+ICsgKiBpY2VfYXFfZ2V0X3NlbnNv
-cl9yZWFkaW5nCj4+ICsgKiBAaHc6IHBvaW50ZXIgdG8gdGhlIEhXIHN0cnVjdAo+PiArICogQHNl
-bnNvcjogc2Vuc29yIHR5cGUKPj4gKyAqIEBmb3JtYXQ6IHJlcXVlc3RlZCByZXNwb25zZSBmb3Jt
-YXQKPj4gKyAqIEBkYXRhOiBwb2ludGVyIHRvIGRhdGEgdG8gYmUgcmVhZCBmcm9tIHRoZSBzZW5z
-b3IKPj4gKyAqCj4+ICsgKiBHZXQgc2Vuc29yIHJlYWRpbmcgKDB4MDYzMikKPj4gKyAqLwo+PiAr
-aW50IGljZV9hcV9nZXRfc2Vuc29yX3JlYWRpbmcoc3RydWN0IGljZV9odyAqaHcsIHU4IHNlbnNv
-ciwgdTggZm9ybWF0LAo+PiArCQkJICAgICAgc3RydWN0IGljZV9hcWNfZ2V0X3NlbnNvcl9yZWFk
-aW5nX3Jlc3AgKmRhdGEpCj4gCj4gQXJlICJzZW5zb3IiIGFuZCAiZm9ybWF0IiBldmVyIGdvaW5n
-IHRvIGJlICE9IDAgPyBJZiBub3QsCj4gdGhvc2UgcGFyYW1ldGVycyBhcmUganVzdCBub2lzZS4K
-PiAKPj4gK3sKPj4gKwlzdHJ1Y3QgaWNlX2FxY19nZXRfc2Vuc29yX3JlYWRpbmcgKmNtZDsKPj4g
-KwlzdHJ1Y3QgaWNlX2FxX2Rlc2MgZGVzYzsKPj4gKwlpbnQgc3RhdHVzOwo+PiArCj4+ICsJaWYg
-KCFkYXRhKQo+PiArCQlyZXR1cm4gLUVJTlZBTDsKPiAKPiBUaGlzIGlzIG5ldmVyIGNhbGxlZCB3
-aXRoIGEgTlVMTCBwb2ludGVyLiBUaGUgY2hlY2sgaXMgcG9pbnRsZXNzLgo+IAo+PiArCj4+ICsJ
-aWNlX2ZpbGxfZGZsdF9kaXJlY3RfY21kX2Rlc2MoJmRlc2MsIGljZV9hcWNfb3BjX2dldF9zZW5z
-b3JfcmVhZGluZyk7Cj4+ICsJY21kID0gJmRlc2MucGFyYW1zLmdldF9zZW5zb3JfcmVhZGluZzsK
-Pj4gKwljbWQtPnNlbnNvciA9IHNlbnNvcjsKPj4gKwljbWQtPmZvcm1hdCA9IGZvcm1hdDsKPj4g
-Kwo+PiArCXN0YXR1cyA9IGljZV9hcV9zZW5kX2NtZChodywgJmRlc2MsIE5VTEwsIDAsIE5VTEwp
-Owo+PiArCWlmICghc3RhdHVzKQo+PiArCQltZW1jcHkoZGF0YSwgJmRlc2MucGFyYW1zLmdldF9z
-ZW5zb3JfcmVhZGluZ19yZXNwLAo+PiArCQkgICAgICAgc2l6ZW9mKCpkYXRhKSk7Cj4+ICsKPj4g
-KwlyZXR1cm4gc3RhdHVzOwo+PiArfQo+PiArCj4+ICAvKioKPj4gICAqIGljZV9yZXBsYXlfcHJl
-X2luaXQgLSByZXBsYXkgcHJlIGluaXRpYWxpemF0aW9uCj4+ICAgKiBAaHc6IHBvaW50ZXIgdG8g
-dGhlIEhXIHN0cnVjdAo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwv
-aWNlL2ljZV9jb21tb24uaCBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9pY2VfY29t
-bW9uLmgKPj4gaW5kZXggNGE3NWMwYzg5MzAxLi5lMjM3ODdjMTc1MDUgMTAwNjQ0Cj4+IC0tLSBh
-L2RyaXZlcnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9pY2VfY29tbW9uLmgKPj4gKysrIGIvZHJp
-dmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV9jb21tb24uaAo+PiBAQCAtMjQwLDYgKzI0
-MCw4IEBAIGljZV9hcV9zZXRfcGh5X3JlY19jbGtfb3V0KHN0cnVjdCBpY2VfaHcgKmh3LCB1OCBw
-aHlfb3V0cHV0LCBib29sIGVuYWJsZSwKPj4gIGludAo+PiAgaWNlX2FxX2dldF9waHlfcmVjX2Ns
-a19vdXQoc3RydWN0IGljZV9odyAqaHcsIHU4ICpwaHlfb3V0cHV0LCB1OCAqcG9ydF9udW0sCj4+
-ICAJCQkgICB1OCAqZmxhZ3MsIHUxNiAqbm9kZV9oYW5kbGUpOwo+PiAraW50IGljZV9hcV9nZXRf
-c2Vuc29yX3JlYWRpbmcoc3RydWN0IGljZV9odyAqaHcsIHU4IHNlbnNvciwgdTggZm9ybWF0LAo+
-PiArCQkJICAgICAgc3RydWN0IGljZV9hcWNfZ2V0X3NlbnNvcl9yZWFkaW5nX3Jlc3AgKmRhdGEp
-Owo+PiAgdm9pZAo+PiAgaWNlX3N0YXRfdXBkYXRlNDAoc3RydWN0IGljZV9odyAqaHcsIHUzMiBy
-ZWcsIGJvb2wgcHJldl9zdGF0X2xvYWRlZCwKPj4gIAkJICB1NjQgKnByZXZfc3RhdCwgdTY0ICpj
-dXJfc3RhdCk7Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2Uv
-aWNlX2h3bW9uLmMgYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2UvaWNlX2h3bW9uLmMK
-Pj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQKPj4gaW5kZXggMDAwMDAwMDAwMDAwLi42YjIzYWUyNzE2
-OWMKPj4gLS0tIC9kZXYvbnVsbAo+PiArKysgYi9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9p
-Y2UvaWNlX2h3bW9uLmMKPj4gQEAgLTAsMCArMSwxMzAgQEAKPj4gKy8vIFNQRFgtTGljZW5zZS1J
-ZGVudGlmaWVyOiBHUEwtMi4wCj4+ICsvKiBDb3B5cmlnaHQgKEMpIDIwMjIsIEludGVsIENvcnBv
-cmF0aW9uLiAqLwo+PiArCj4+ICsjaW5jbHVkZSAiaWNlLmgiCj4+ICsjaW5jbHVkZSAiaWNlX2h3
-bW9uLmgiCj4+ICsjaW5jbHVkZSAiaWNlX2FkbWlucV9jbWQuaCIKPj4gKwo+PiArI2luY2x1ZGUg
-PGxpbnV4L2h3bW9uLmg+Cj4+ICsKPj4gKyNkZWZpbmUgSUNFX0lOVEVSTkFMX1RFTVBfU0VOU09S
-IDAKPj4gKyNkZWZpbmUgSUNFX0lOVEVSTkFMX1RFTVBfU0VOU09SX0ZPUk1BVCAwCj4+ICsKPiAK
-PiBQZXJzb25hbGx5IEkgdmVyeSBtdWNoIHByZWZlcgo+IAo+ICNkZWZpbmU8c3BhY2U+TkFNRTx0
-YWI+dmFsdWUKPiAKPiBidXQgb2J2aW91c2x5IHRoYXQgaXMgYSBtYWludGFpbmVyIGRlY2lzaW9u
-IHRvIG1ha2UuCgpJIHRoaW5rIHdlIHR5cGljYWxseSBkbyBhbGlnbiB3aXRoIGVpdGhlciBzcGFj
-ZXMgb3IgdGFicyB3aGVuIHVzaW5nCm11bHRpcGxlIGRlZmluaXRpb25zLgoKPiAKPj4gKyNkZWZp
-bmUgVEVNUF9GUk9NX1JFRyhyZWcpICgocmVnKSAqIDEwMDApCj4+ICsKPj4gK3N0YXRpYyBjb25z
-dCBzdHJ1Y3QgaHdtb25fY2hhbm5lbF9pbmZvICppY2VfaHdtb25faW5mb1tdID0gewo+PiArCUhX
-TU9OX0NIQU5ORUxfSU5GTyh0ZW1wLAo+PiArCQkJICAgSFdNT05fVF9JTlBVVCB8IEhXTU9OX1Rf
-TUFYIHwKPj4gKwkJCSAgIEhXTU9OX1RfQ1JJVCB8IEhXTU9OX1RfRU1FUkdFTkNZKSwKPj4gKwlO
-VUxMCj4+ICt9Owo+PiArCj4+ICtzdGF0aWMgaW50IGljZV9od21vbl9yZWFkKHN0cnVjdCBkZXZp
-Y2UgKmRldiwgZW51bSBod21vbl9zZW5zb3JfdHlwZXMgdHlwZSwKPj4gKwkJCSAgdTMyIGF0dHIs
-IGludCBjaGFubmVsLCBsb25nICp2YWwpCj4+ICt7Cj4+ICsJc3RydWN0IGljZV9hcWNfZ2V0X3Nl
-bnNvcl9yZWFkaW5nX3Jlc3AgcmVzcDsKPj4gKwlzdHJ1Y3QgaWNlX3BmICpwZiA9IGRldl9nZXRf
-ZHJ2ZGF0YShkZXYpOwo+PiArCWludCByZXQ7Cj4+ICsKPj4gKwlpZiAodHlwZSAhPSBod21vbl90
-ZW1wKQo+PiArCQlyZXR1cm4gLUVPUE5PVFNVUFA7Cj4+ICsKPj4gKwlyZXQgPSBpY2VfYXFfZ2V0
-X3NlbnNvcl9yZWFkaW5nKCZwZi0+aHcsCj4+ICsJCQkJCUlDRV9JTlRFUk5BTF9URU1QX1NFTlNP
-UiwKPj4gKwkJCQkJSUNFX0lOVEVSTkFMX1RFTVBfU0VOU09SX0ZPUk1BVCwKPj4gKwkJCQkJJnJl
-c3ApOwo+PiArCWlmIChyZXQpIHsKPj4gKwkJZGV2X3dhcm4oZGV2LCAiJXMgSFcgcmVhZCBmYWls
-dXJlICglZClcbiIsIF9fZnVuY19fLCByZXQpOwo+IAo+IFVwIHRvIG1haW50YWluZXJzIHRvIGRl
-Y2lkZSwgYnV0IEkgZG8gbm90IHN1cHBvcnQgZXJyb3IgbWVzc2FnZXMKPiBhcyByZXN1bHQgb2Yg
-bm9ybWFsIG9wZXJhdGlvbiBiZWNhdXNlIGl0IG1heSBlbmQgdXAgY2xvZ2dpbmcKPiB0aGUgbG9n
-IGlmIHRoZSB1bmRlcmx5aW5nIEhXIGhhcyBhIHByb2JsZW0uCgpEZXBlbmRpbmcgb24gaG93IHVu
-ZXhwZWN0ZWQgdGhpcyBpcyBhbmQgaG93IGNvbW1vbiBpdHMgcHJpbnRlZCwgSSB3b3VsZAptYWtl
-IGl0IGVpdGhlciBkZXZfd2Fybl9yYXRlbGltaXRlZCBvciBkZXZfZGJnLgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGlu
-ZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
+From: Takeru Hayasaka <hayatake396@gmail.com>
+
+This is a patch that enables RSS functionality for GTP packets using
+ethtool.
+A user can include her TEID and make RSS work for GTP-U over IPv4 by
+doing the following:
+`ethtool -N ens3 rx-flow-hash gtpu4 sd`
+In addition to gtpu(4|6), we now support gtpc(4|6), gtpu(4|6)e,
+gtpu(4|6)u, and gtpu(4|6)d.
+
+Signed-off-by: Takeru Hayasaka <t-hayasaka@bbsakura.net>
+---
+Hi mentainers.
+
+I wrote a patch to enable RSS for GTP-U/C (+Exthdr) using ethtool.
+This is an advantage for users who use Linux on mobile networks.
+
+Here is the ethtool patch
+cf. https://lore.kernel.org/netdev/20231008063041.61709-1-t-hayasaka@bbsakura.net/T/#u
+
+Thank you.
+
+ drivers/net/ethernet/intel/ice/ice_ethtool.c | 98 +++++++++++++++++++-
+ drivers/net/ethernet/intel/ice/ice_flow.h    | 15 +++
+ drivers/net/ethernet/intel/ice/ice_lib.c     | 70 ++++++++++++++
+ include/uapi/linux/ethtool.h                 | 10 ++
+ 4 files changed, 191 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index ad4d4702129f..a5ee6638bc60 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -2404,6 +2404,21 @@ static u32 ice_parse_hdrs(struct ethtool_rxnfc *nfc)
+ 	case SCTP_V4_FLOW:
+ 		hdrs |= ICE_FLOW_SEG_HDR_SCTP | ICE_FLOW_SEG_HDR_IPV4;
+ 		break;
++	case GTPU_V4_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPU_IP | ICE_FLOW_SEG_HDR_IPV4;
++		break;
++	case GTPC_V4_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPC_TEID | ICE_FLOW_SEG_HDR_IPV4;
++		break;
++	case GTPU_EH_V4_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPU_EH | ICE_FLOW_SEG_HDR_IPV4;
++		break;
++	case GTPU_UL_V4_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPU_UP | ICE_FLOW_SEG_HDR_IPV4;
++		break;
++	case GTPU_DL_V4_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPU_DWN | ICE_FLOW_SEG_HDR_IPV4;
++		break;
+ 	case TCP_V6_FLOW:
+ 		hdrs |= ICE_FLOW_SEG_HDR_TCP | ICE_FLOW_SEG_HDR_IPV6;
+ 		break;
+@@ -2413,9 +2428,25 @@ static u32 ice_parse_hdrs(struct ethtool_rxnfc *nfc)
+ 	case SCTP_V6_FLOW:
+ 		hdrs |= ICE_FLOW_SEG_HDR_SCTP | ICE_FLOW_SEG_HDR_IPV6;
+ 		break;
++	case GTPU_V6_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPU_IP | ICE_FLOW_SEG_HDR_IPV6;
++		break;
++	case GTPC_V6_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPC_TEID | ICE_FLOW_SEG_HDR_IPV6;
++		break;
++	case GTPU_EH_V6_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPU_EH | ICE_FLOW_SEG_HDR_IPV6;
++		break;
++	case GTPU_UL_V6_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPU_UP | ICE_FLOW_SEG_HDR_IPV6;
++		break;
++	case GTPU_DL_V6_FLOW:
++		hdrs |= ICE_FLOW_SEG_HDR_GTPU_DWN | ICE_FLOW_SEG_HDR_IPV6;
++		break;
+ 	default:
+ 		break;
+ 	}
++
+ 	return hdrs;
+ }
+ 
+@@ -2431,6 +2462,12 @@ static u32 ice_parse_hdrs(struct ethtool_rxnfc *nfc)
+ 	BIT_ULL(ICE_FLOW_FIELD_IDX_SCTP_SRC_PORT)
+ #define ICE_FLOW_HASH_FLD_SCTP_DST_PORT	\
+ 	BIT_ULL(ICE_FLOW_FIELD_IDX_SCTP_DST_PORT)
++#define ICE_FLOW_HASH_FLD_GTPC_TEID	BIT_ULL(ICE_FLOW_FIELD_IDX_GTPC_TEID)
++#define ICE_FLOW_HASH_FLD_GTPU_IP_TEID BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_IP_TEID)
++#define ICE_FLOW_HASH_FLD_GTPU_EH_TEID BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_EH_TEID)
++#define ICE_FLOW_HASH_FLD_GTPU_EH_QFI BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_EH_QFI)
++#define ICE_FLOW_HASH_FLD_GTPU_UP_TEID BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_UP_TEID)
++#define ICE_FLOW_HASH_FLD_GTPU_DWN_TEID BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_DWN_TEID)
+ 
+ /**
+  * ice_parse_hash_flds - parses hash fields from RSS hash input
+@@ -2448,6 +2485,11 @@ static u64 ice_parse_hash_flds(struct ethtool_rxnfc *nfc)
+ 		case TCP_V4_FLOW:
+ 		case UDP_V4_FLOW:
+ 		case SCTP_V4_FLOW:
++		case GTPU_V4_FLOW:
++		case GTPC_V4_FLOW:
++		case GTPU_EH_V4_FLOW:
++		case GTPU_UL_V4_FLOW:
++		case GTPU_DL_V4_FLOW:
+ 			if (nfc->data & RXH_IP_SRC)
+ 				hfld |= ICE_FLOW_HASH_FLD_IPV4_SA;
+ 			if (nfc->data & RXH_IP_DST)
+@@ -2456,6 +2498,11 @@ static u64 ice_parse_hash_flds(struct ethtool_rxnfc *nfc)
+ 		case TCP_V6_FLOW:
+ 		case UDP_V6_FLOW:
+ 		case SCTP_V6_FLOW:
++		case GTPU_V6_FLOW:
++		case GTPC_V6_FLOW:
++		case GTPU_EH_V6_FLOW:
++		case GTPU_UL_V6_FLOW:
++		case GTPU_DL_V6_FLOW:
+ 			if (nfc->data & RXH_IP_SRC)
+ 				hfld |= ICE_FLOW_HASH_FLD_IPV6_SA;
+ 			if (nfc->data & RXH_IP_DST)
+@@ -2489,11 +2536,50 @@ static u64 ice_parse_hash_flds(struct ethtool_rxnfc *nfc)
+ 			if (nfc->data & RXH_L4_B_2_3)
+ 				hfld |= ICE_FLOW_HASH_FLD_SCTP_DST_PORT;
+ 			break;
++		case GTPU_V4_FLOW:
++		case GTPU_V6_FLOW:
++		case GTPU_EH_V4_FLOW:
++		case GTPU_EH_V6_FLOW:
++		case GTPU_UL_V4_FLOW:
++		case GTPU_UL_V6_FLOW:
++		case GTPU_DL_V4_FLOW:
++		case GTPU_DL_V6_FLOW:
++			if (nfc->data & RXH_L4_B_0_1)
++				hfld |= ICE_FLOW_HASH_FLD_TCP_SRC_PORT |
++						ICE_FLOW_HASH_FLD_UDP_SRC_PORT;
++			if (nfc->data & RXH_L4_B_2_3)
++				hfld |= ICE_FLOW_HASH_FLD_TCP_DST_PORT |
++						ICE_FLOW_HASH_FLD_UDP_DST_PORT;
++			break;
+ 		default:
+ 			break;
+ 		}
+ 	}
+ 
++	switch (nfc->flow_type) {
++	case GTPC_V4_FLOW:
++	case GTPC_V6_FLOW:
++		hfld |= ICE_FLOW_HASH_FLD_GTPC_TEID;
++		break;
++	case GTPU_V4_FLOW:
++	case GTPU_V6_FLOW:
++		hfld |= ICE_FLOW_HASH_FLD_GTPU_IP_TEID;
++		break;
++	case GTPU_EH_V4_FLOW:
++	case GTPU_EH_V6_FLOW:
++		hfld |= ICE_FLOW_HASH_FLD_GTPU_EH_TEID;
++		break;
++	case GTPU_UL_V4_FLOW:
++	case GTPU_UL_V6_FLOW:
++		hfld |= ICE_FLOW_HASH_FLD_GTPU_UP_TEID;
++		break;
++	case GTPU_DL_V4_FLOW:
++	case GTPU_DL_V6_FLOW:
++		hfld |= ICE_FLOW_HASH_FLD_GTPU_DWN_TEID;
++		break;
++	default:
++		break;
++	}
+ 	return hfld;
+ }
+ 
+@@ -2590,12 +2676,20 @@ ice_get_rss_hash_opt(struct ice_vsi *vsi, struct ethtool_rxnfc *nfc)
+ 
+ 	if (hash_flds & ICE_FLOW_HASH_FLD_TCP_SRC_PORT ||
+ 	    hash_flds & ICE_FLOW_HASH_FLD_UDP_SRC_PORT ||
+-	    hash_flds & ICE_FLOW_HASH_FLD_SCTP_SRC_PORT)
++	    hash_flds & ICE_FLOW_HASH_FLD_SCTP_SRC_PORT ||
++		hash_flds & ICE_FLOW_HASH_FLD_GTPU_IP_TEID ||
++		hash_flds & ICE_FLOW_HASH_FLD_GTPU_EH_TEID ||
++		hash_flds & ICE_FLOW_HASH_FLD_GTPU_UP_TEID ||
++		hash_flds & ICE_FLOW_HASH_FLD_GTPU_DWN_TEID)
+ 		nfc->data |= (u64)RXH_L4_B_0_1;
+ 
+ 	if (hash_flds & ICE_FLOW_HASH_FLD_TCP_DST_PORT ||
+ 	    hash_flds & ICE_FLOW_HASH_FLD_UDP_DST_PORT ||
+-	    hash_flds & ICE_FLOW_HASH_FLD_SCTP_DST_PORT)
++	    hash_flds & ICE_FLOW_HASH_FLD_SCTP_DST_PORT ||
++		hash_flds & ICE_FLOW_HASH_FLD_GTPU_IP_TEID ||
++		hash_flds & ICE_FLOW_HASH_FLD_GTPU_EH_TEID ||
++		hash_flds & ICE_FLOW_HASH_FLD_GTPU_UP_TEID ||
++		hash_flds & ICE_FLOW_HASH_FLD_GTPU_DWN_TEID)
+ 		nfc->data |= (u64)RXH_L4_B_2_3;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_flow.h b/drivers/net/ethernet/intel/ice/ice_flow.h
+index b465d27d9b80..7ddf6ce994e7 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flow.h
++++ b/drivers/net/ethernet/intel/ice/ice_flow.h
+@@ -64,6 +64,21 @@
+ 	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_GTP_U_EH_TEID | \
+ 	 ICE_FLOW_HASH_GTP_U_EH_QFI)
+ 
++#define ICE_FLOW_HASH_GTP_U_UP_TEID \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_UP_TEID))
++#define ICE_FLOW_HASH_GTP_U_DWN_TEID \
++	(BIT_ULL(ICE_FLOW_FIELD_IDX_GTPU_DWN_TEID))
++
++#define ICE_FLOW_HASH_GTP_U_IPV4_UP \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_GTP_U_UP_TEID)
++#define ICE_FLOW_HASH_GTP_U_IPV6_UP \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_GTP_U_UP_TEID)
++
++#define ICE_FLOW_HASH_GTP_U_IPV4_DWN \
++	(ICE_FLOW_HASH_IPV4 | ICE_FLOW_HASH_GTP_U_DWN_TEID)
++#define ICE_FLOW_HASH_GTP_U_IPV6_DWN \
++	(ICE_FLOW_HASH_IPV6 | ICE_FLOW_HASH_GTP_U_DWN_TEID)
++
+ #define ICE_FLOW_HASH_PPPOE_SESS_ID \
+ 	(BIT_ULL(ICE_FLOW_FIELD_IDX_PPPOE_SESS_ID))
+ 
+diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
+index 201570cd2e0b..a9664b48eddb 100644
+--- a/drivers/net/ethernet/intel/ice/ice_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_lib.c
+@@ -1667,6 +1667,41 @@ static void ice_vsi_set_rss_flow_fld(struct ice_vsi *vsi)
+ 		dev_dbg(dev, "ice_add_rss_cfg failed for sctp4 flow, vsi = %d, error = %d\n",
+ 			vsi_num, status);
+ 
++	/* configure RSS for gtpc4 with input set IPv4 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_IPV4_TEID,
++				 ICE_FLOW_SEG_HDR_GTPC_TEID | ICE_FLOW_SEG_HDR_IPV4);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpc4 flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
++	/* configure RSS for gtpu4 with input set IPv4 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_U_IPV4_TEID,
++				 ICE_FLOW_SEG_HDR_GTPU_IP | ICE_FLOW_SEG_HDR_IPV4);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpu4 flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
++	/* configure RSS for gtpu4e with input set IPv4 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_U_IPV4_EH,
++				 ICE_FLOW_SEG_HDR_GTPU_EH | ICE_FLOW_SEG_HDR_IPV4);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpu4e flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
++	/* configure RSS for gtpu4u with input set IPv4 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_U_IPV4_UP,
++				 ICE_FLOW_SEG_HDR_GTPU_UP | ICE_FLOW_SEG_HDR_IPV4);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpu4u flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
++	/* configure RSS for gtpu4d with input set IPv4 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_U_IPV4_DWN,
++				 ICE_FLOW_SEG_HDR_GTPU_DWN | ICE_FLOW_SEG_HDR_IPV4);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpu4d flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
+ 	/* configure RSS for tcp6 with input set IPv6 src/dst, TCP src/dst */
+ 	status = ice_add_rss_cfg(hw, vsi_handle, ICE_HASH_TCP_IPV6,
+ 				 ICE_FLOW_SEG_HDR_TCP | ICE_FLOW_SEG_HDR_IPV6);
+@@ -1688,6 +1723,41 @@ static void ice_vsi_set_rss_flow_fld(struct ice_vsi *vsi)
+ 		dev_dbg(dev, "ice_add_rss_cfg failed for sctp6 flow, vsi = %d, error = %d\n",
+ 			vsi_num, status);
+ 
++	/* configure RSS for gtpc6 with input set IPv6 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_IPV6_TEID,
++				 ICE_FLOW_SEG_HDR_GTPC_TEID | ICE_FLOW_SEG_HDR_IPV6);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpc6 flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
++	/* configure RSS for gtpu6 with input set IPv6 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_U_IPV6_TEID,
++				 ICE_FLOW_SEG_HDR_GTPU_IP | ICE_FLOW_SEG_HDR_IPV6);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpu4 flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
++	/* configure RSS for gtpu6e with input set IPv6 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_U_IPV6_EH,
++				 ICE_FLOW_SEG_HDR_GTPU_EH | ICE_FLOW_SEG_HDR_IPV6);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpu6e flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
++	/* configure RSS for gtpu6u with input set IPv6 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_U_IPV6_UP,
++				 ICE_FLOW_SEG_HDR_GTPU_UP | ICE_FLOW_SEG_HDR_IPV6);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpu6u flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
++	/* configure RSS for gtpu6d with input set IPv6 src/dst */
++	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_GTP_U_IPV6_DWN,
++				 ICE_FLOW_SEG_HDR_GTPU_DWN | ICE_FLOW_SEG_HDR_IPV6);
++	if (status)
++		dev_dbg(dev, "ice_add_rss_cfg failed for gtpu4d flow, vsi = %d, error = %d\n",
++			vsi_num, status);
++
+ 	status = ice_add_rss_cfg(hw, vsi_handle, ICE_FLOW_HASH_ESP_SPI,
+ 				 ICE_FLOW_SEG_HDR_ESP);
+ 	if (status)
+diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
+index f7fba0dc87e5..f3af2a78f7dd 100644
+--- a/include/uapi/linux/ethtool.h
++++ b/include/uapi/linux/ethtool.h
+@@ -2011,6 +2011,16 @@ static inline int ethtool_validate_duplex(__u8 duplex)
+ #define	IPV4_FLOW	0x10	/* hash only */
+ #define	IPV6_FLOW	0x11	/* hash only */
+ #define	ETHER_FLOW	0x12	/* spec only (ether_spec) */
++#define GTPU_V4_FLOW 0x13	/* hash only */
++#define GTPU_V6_FLOW 0x14	/* hash only */
++#define GTPC_V4_FLOW 0x15	/* hash only */
++#define GTPC_V6_FLOW 0x16	/* hash only */
++#define GTPU_EH_V4_FLOW 0x17	/* hash only */
++#define GTPU_EH_V6_FLOW 0x18	/* hash only */
++#define GTPU_UL_V4_FLOW 0x19	/* hash only */
++#define GTPU_UL_V6_FLOW 0x20	/* hash only */
++#define GTPU_DL_V4_FLOW 0x21	/* hash only */
++#define GTPU_DL_V6_FLOW 0x22	/* hash only */
+ /* Flag to enable additional fields in struct ethtool_rx_flow_spec */
+ #define	FLOW_EXT	0x80000000
+ #define	FLOW_MAC_EXT	0x40000000
+-- 
+2.34.1
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@osuosl.org
+https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
