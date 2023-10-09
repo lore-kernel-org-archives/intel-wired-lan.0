@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7352E95A91
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Oct 2023 09:10:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84D4DE95A8E
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Oct 2023 09:10:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 7D05982039;
-	Mon,  9 Oct 2023 09:10:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7D05982039
+	by smtp1.osuosl.org (Postfix) with ESMTP id F26AD81F5D;
+	Mon,  9 Oct 2023 09:10:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F26AD81F5D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1696842652;
-	bh=162j4nrLJfcRHDZbECbpo4dwtyMQTJsCRKQZTSyjG9w=;
+	s=default; t=1696842656;
+	bh=kdKy3+L4BCWfh42Eof7CIiAeGn8pZEqRczVPidaKuM8=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ufHA5j75+msfnSAl7U4UgnAq14ochEWmu5KdZ2S93MWLA9NxUU6xavbu8CxAZBI8g
-	 vmt7vJefQIYSfk0OX0/RctuQclbZ5jukClNvZGGVk7HacnzP4pVQX+hAoelYyvaSuv
-	 yoe1sqVohfmD4pDA986VGenUyK6ssPbnHey+qymRQEaEPIbhDth+y7Pw918iWjkyHg
-	 GQkXqUGWe8N9a0jU0YvfY/gxBl69L6vEM5b5zfhDfpd3qPTCdu142F1QlxlLv51BHb
-	 jzFUbJBcJ8Y+TZStyIXFzSRHOl/DwYWqiXXJe4uH4htI2e6cPzgVny2x1mbwQdZhD7
-	 f3BuzRvAQJ5sg==
+	b=UGVLzfQ31oYMtLaSikp7LHoJ3ofmuK+Qs6b1f4Koi+g1TqMrsSw9yjIUka20X1miX
+	 o4mzCIhENvrWcQjMY4+kI2FPMrCySPT3e9dLQeckeydpJEcKVMWlN7JlhIxR6tTOjj
+	 A3sxCOfzLw+0C4ueVjM/pnug+YPRn0yEJ8F/SqwQ+eSLT3NWMX7xAz7smfIcgP9OuM
+	 I3I8/NVQZLQUeNmeLsHBpJIffmpa/y2860uGQFyxmPyyDw+bZCLwUyPMjv9GsiM5T/
+	 1mnTAyTVux+xYaLh6q5CybybRGalh4QAh7wZhMEuW9Pa9pAHpf9HY7LFQ6n25+7wPS
+	 8/BiprVsmAD4g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xlrOmWug70O9; Mon,  9 Oct 2023 09:10:49 +0000 (UTC)
+	with ESMTP id fbczy1DHejiN; Mon,  9 Oct 2023 09:10:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 15A618203B;
-	Mon,  9 Oct 2023 09:10:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 15A618203B
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id BDF191BF2B3
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:43 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id F06598207C;
+	Mon,  9 Oct 2023 09:10:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F06598207C
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 987DC1BF2B3
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 96B2760D6C
+ by smtp2.osuosl.org (Postfix) with ESMTP id 8400C40190
  for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 96B2760D6C
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8400C40190
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gNEfM2qy_V5T for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id yLv6WVKtTm3w for <intel-wired-lan@lists.osuosl.org>;
  Mon,  9 Oct 2023 09:10:42 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 629C760C13
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7FC76409DB
  for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 629C760C13
-X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="382978405"
-X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; d="scan'208";a="382978405"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7FC76409DB
+X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="382978409"
+X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; d="scan'208";a="382978409"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  09 Oct 2023 02:10:41 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="843635714"
-X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; d="scan'208";a="843635714"
+X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="843635719"
+X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; d="scan'208";a="843635719"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by FMSMGA003.fm.intel.com with ESMTP; 09 Oct 2023 02:10:36 -0700
+ by FMSMGA003.fm.intel.com with ESMTP; 09 Oct 2023 02:10:39 -0700
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id C2FBA3636F;
- Mon,  9 Oct 2023 10:10:35 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id D0A5536372;
+ Mon,  9 Oct 2023 10:10:38 +0100 (IST)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  9 Oct 2023 05:07:07 -0400
-Message-Id: <20231009090711.136777-2-mateusz.polchlopek@intel.com>
+Date: Mon,  9 Oct 2023 05:07:09 -0400
+Message-Id: <20231009090711.136777-4-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20231009090711.136777-1-mateusz.polchlopek@intel.com>
 References: <20231009090711.136777-1-mateusz.polchlopek@intel.com>
@@ -72,19 +72,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1696842642; x=1728378642;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=PhC5i0WPq26xuaRCDFJA407gh4koR2a2+1sV0lTgnVU=;
- b=AK7UIMSezcehLys6Tt4HJSthDaxnwAN0wAuuRhzB/gejfU1ZJi50QMjl
- F//exVLcvc4hRSE3u0krozs0Kemk2+E9Y2wXou0gxv+BjscmX9kxSqe2p
- tawtcu3KdU5I0xw7mZfHZb/BzHTo3KilTkUyAXv2B5Q1SABrWuY5eJ1a6
- /UKjaWvWOrVTxelHIwWvxvm35JQ1WSSv3WcUpW4SA9ZWhJAmxT1ynyRyM
- Ry9XxOrh4ku9vuHcqJpGq/NNyoSK8brrExinTXVhpKjQA5ITbkbp7w1Pt
- BPe+T8pAsxo1NO+ifXLsil8QRlgYFmiroZSothFcTKRnesD3sxHiv8+/B
+ bh=kNrEmOh5WmMmAaFdoGUjMhORFctkIYyOww9zGbLkdFI=;
+ b=TzySlZxl0JGAv1Odu+iqd01FeSF+HfR565YiW6lQeF1f73w9JfaOowlL
+ IMFi/zogg/VVOlNJWnXCqjs0rPvVaK+d12O/XcXv1u1DksphshrEVEYg/
+ J2xGc9R6G4apINevgvx1L4w+5xGL3A/FtyDTe1puxmOlnasYsIOHOspy0
+ QAsJBXoFvDZItKC++U79U8CtMhZtz4Hjh4is7I7Xux00bTHKiTI0AGc7G
+ On4bpsA26J2qu3xpU9iXrBBKGEfaJFSIsbhQXxZzGXshzXxs7C+wXGKpn
+ 3/9AJxp+nOPQWQ/gnIlvNt4qNXZtyRf0ddmI6LTDPp7ql6vLVufPhws7F
  Q==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=AK7UIMSe
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 1/5] ice: Support 5 layer
- topology
+ header.a=rsa-sha256 header.s=Intel header.b=TzySlZxl
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 3/5] ice: Enable switching
+ default Tx scheduler topology
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,417 +97,197 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>, netdev@vger.kernel.org,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
- Raj Victor <victor.raj@intel.com>,
- Michal Wilczynski <michal.wilczynski@intel.com>
+Cc: netdev@vger.kernel.org, Mateusz Polchlopek <mateusz.polchlopek@intel.com>,
+ Michal Wilczynski <michal.wilczynski@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Raj Victor <victor.raj@intel.com>
+From: Michal Wilczynski <michal.wilczynski@intel.com>
 
-There is a performance issue when the number of VSIs are not multiple
-of 8. This is caused due to the max children limitation per node(8) in
-9 layer topology. The BW credits are shared evenly among the children
-by default. Assume one node has 8 children and the other has 1.
-The parent of these nodes share the BW credit equally among them.
-Apparently this causes a problem for the first node which has 8 children.
-The 9th VM get more BW credits than the first 8 VMs.
+Introduce support for Tx scheduler topology change, based on user
+selection, from default 9-layer to 5-layer.
+Change requires NVM (version 3.20 or newer) and DDP package (OS Package
+1.3.30 or newer - available for over a year in linux-firmware, since
+commit aed71f296637 in linux-firmware ("ice: Update package to 1.3.30.0"))
+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/commit/?id=aed71f296637
 
-Example:
+Enable 5-layer topology switch in init path of the driver. To accomplish
+that upload of the DDP package needs to be delayed, until change in Tx
+topology is finished. To trigger the Tx change user selection should be
+changed in NVM using devlink. Then the platform should be rebooted.
 
-1) With 8 VM's:
-for x in 0 1 2 3 4 5 6 7;
-do taskset -c ${x} netperf -P0 -H 172.68.169.125 &  sleep .1 ; done
-
-tx_queue_0_packets: 23283027
-tx_queue_1_packets: 23292289
-tx_queue_2_packets: 23276136
-tx_queue_3_packets: 23279828
-tx_queue_4_packets: 23279828
-tx_queue_5_packets: 23279333
-tx_queue_6_packets: 23277745
-tx_queue_7_packets: 23279950
-tx_queue_8_packets: 0
-
-2) With 9 VM's:
-for x in 0 1 2 3 4 5 6 7 8;
-do taskset -c ${x} netperf -P0 -H 172.68.169.125 &  sleep .1 ; done
-
-tx_queue_0_packets: 24163396
-tx_queue_1_packets: 24164623
-tx_queue_2_packets: 24163188
-tx_queue_3_packets: 24163701
-tx_queue_4_packets: 24163683
-tx_queue_5_packets: 24164668
-tx_queue_6_packets: 23327200
-tx_queue_7_packets: 24163853
-tx_queue_8_packets: 91101417
-
-So on average queue 8 statistics show that 3.7 times more packets were
-send there than to the other queues.
-
-The FW starting with version 3.20, has increased the max number of
-children per node by reducing the number of layers from 9 to 5. Reflect
-this on driver side.
-
-Signed-off-by: Raj Victor <victor.raj@intel.com>
-Co-developed-by: Michal Wilczynski <michal.wilczynski@intel.com>
 Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  23 ++
- drivers/net/ethernet/intel/ice/ice_common.c   |   5 +
- drivers/net/ethernet/intel/ice/ice_ddp.c      | 199 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_ddp.h      |   7 +-
- drivers/net/ethernet/intel/ice/ice_sched.h    |   3 +
- drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
- 6 files changed, 236 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ddp.c  |  2 +-
+ drivers/net/ethernet/intel/ice/ice_ddp.h  |  2 +-
+ drivers/net/ethernet/intel/ice/ice_main.c | 97 ++++++++++++++++++-----
+ 3 files changed, 80 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index eb4c13b754a4..cea1f6f7053f 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -120,6 +120,7 @@ struct ice_aqc_list_caps_elem {
- #define ICE_AQC_CAPS_PCIE_RESET_AVOIDANCE		0x0076
- #define ICE_AQC_CAPS_POST_UPDATE_RESET_RESTRICT		0x0077
- #define ICE_AQC_CAPS_NVM_MGMT				0x0080
-+#define ICE_AQC_CAPS_TX_SCHED_TOPO_COMP_MODE		0x0085
- #define ICE_AQC_CAPS_FW_LAG_SUPPORT			0x0092
- #define ICE_AQC_BIT_ROCEV2_LAG				0x01
- #define ICE_AQC_BIT_SRIOV_LAG				0x02
-@@ -806,6 +807,23 @@ struct ice_aqc_get_topo {
- 	__le32 addr_low;
- };
- 
-+/* Get/Set Tx Topology (indirect 0x0418/0x0417) */
-+struct ice_aqc_get_set_tx_topo {
-+	u8 set_flags;
-+#define ICE_AQC_TX_TOPO_FLAGS_CORRER		BIT(0)
-+#define ICE_AQC_TX_TOPO_FLAGS_SRC_RAM		BIT(1)
-+#define ICE_AQC_TX_TOPO_FLAGS_LOAD_NEW		BIT(4)
-+#define ICE_AQC_TX_TOPO_FLAGS_ISSUED		BIT(5)
-+
-+	u8 get_flags;
-+#define ICE_AQC_TX_TOPO_GET_RAM		2
-+
-+	__le16 reserved1;
-+	__le32 reserved2;
-+	__le32 addr_high;
-+	__le32 addr_low;
-+};
-+
- /* Update TSE (indirect 0x0403)
-  * Get TSE (indirect 0x0404)
-  * Add TSE (indirect 0x0401)
-@@ -2469,6 +2487,7 @@ struct ice_aq_desc {
- 		struct ice_aqc_get_link_topo get_link_topo;
- 		struct ice_aqc_i2c read_write_i2c;
- 		struct ice_aqc_read_i2c_resp read_i2c_resp;
-+		struct ice_aqc_get_set_tx_topo get_set_tx_topo;
- 	} params;
- };
- 
-@@ -2575,6 +2594,10 @@ enum ice_adminq_opc {
- 	ice_aqc_opc_query_sched_res			= 0x0412,
- 	ice_aqc_opc_remove_rl_profiles			= 0x0415,
- 
-+	/* tx topology commands */
-+	ice_aqc_opc_set_tx_topo				= 0x0417,
-+	ice_aqc_opc_get_tx_topo				= 0x0418,
-+
- 	/* PHY commands */
- 	ice_aqc_opc_get_phy_caps			= 0x0600,
- 	ice_aqc_opc_set_phy_cfg				= 0x0601,
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index d4e259b816b9..b4afdbc3e596 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -1549,6 +1549,8 @@ ice_aq_send_cmd(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf,
- 	case ice_aqc_opc_set_port_params:
- 	case ice_aqc_opc_get_vlan_mode_parameters:
- 	case ice_aqc_opc_set_vlan_mode_parameters:
-+	case ice_aqc_opc_set_tx_topo:
-+	case ice_aqc_opc_get_tx_topo:
- 	case ice_aqc_opc_add_recipe:
- 	case ice_aqc_opc_recipe_to_profile:
- 	case ice_aqc_opc_get_recipe:
-@@ -2105,6 +2107,9 @@ ice_parse_common_caps(struct ice_hw *hw, struct ice_hw_common_caps *caps,
- 		ice_debug(hw, ICE_DBG_INIT, "%s: sriov_lag = %u\n",
- 			  prefix, caps->sriov_lag);
- 		break;
-+	case ICE_AQC_CAPS_TX_SCHED_TOPO_COMP_MODE:
-+		caps->tx_sched_topo_comp_mode_en = (number == 1);
-+		break;
- 	default:
- 		/* Not one of the recognized common capabilities */
- 		found = false;
 diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index b27ec93638b6..95c7712b56b8 100644
+index 95c7712b56b8..44591bcdb537 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ddp.c
 +++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -4,6 +4,7 @@
- #include "ice_common.h"
- #include "ice.h"
- #include "ice_ddp.h"
-+#include "ice_sched.h"
- 
- /* For supporting double VLAN mode, it is necessary to enable or disable certain
-  * boost tcam entries. The metadata labels names that match the following
-@@ -1897,3 +1898,201 @@ enum ice_ddp_state ice_copy_and_init_pkg(struct ice_hw *hw, const u8 *buf,
- 
- 	return state;
- }
-+
-+/**
-+ * ice_get_set_tx_topo - get or set Tx topology
-+ * @hw: pointer to the HW struct
-+ * @buf: pointer to Tx topology buffer
-+ * @buf_size: buffer size
-+ * @cd: pointer to command details structure or NULL
-+ * @flags: pointer to descriptor flags
-+ * @set: 0-get, 1-set topology
-+ *
-+ * The function will get or set Tx topology
-+ */
-+static int
-+ice_get_set_tx_topo(struct ice_hw *hw, u8 *buf, u16 buf_size,
-+		    struct ice_sq_cd *cd, u8 *flags, bool set)
-+{
-+	struct ice_aqc_get_set_tx_topo *cmd;
-+	struct ice_aq_desc desc;
-+	int status;
-+
-+	cmd = &desc.params.get_set_tx_topo;
-+	if (set) {
-+		ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_set_tx_topo);
-+		cmd->set_flags = ICE_AQC_TX_TOPO_FLAGS_ISSUED;
-+		/* requested to update a new topology, not a default topology */
-+		if (buf)
-+			cmd->set_flags |= ICE_AQC_TX_TOPO_FLAGS_SRC_RAM |
-+					  ICE_AQC_TX_TOPO_FLAGS_LOAD_NEW;
-+	} else {
-+		ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_get_tx_topo);
-+		cmd->get_flags = ICE_AQC_TX_TOPO_GET_RAM;
-+	}
-+	desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
-+	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
-+	if (status)
-+		return status;
-+	/* read the return flag values (first byte) for get operation */
-+	if (!set && flags)
-+		*flags = desc.params.get_set_tx_topo.set_flags;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_cfg_tx_topo - Initialize new Tx topology if available
-+ * @hw: pointer to the HW struct
-+ * @buf: pointer to Tx topology buffer
-+ * @len: buffer size
-+ *
-+ * The function will apply the new Tx topology from the package buffer
-+ * if available.
-+ */
-+int ice_cfg_tx_topo(struct ice_hw *hw, u8 *buf, u32 len)
-+{
-+	u8 *current_topo, *new_topo = NULL;
-+	struct ice_run_time_cfg_seg *seg;
-+	struct ice_buf_hdr *section;
-+	struct ice_pkg_hdr *pkg_hdr;
-+	enum ice_ddp_state state;
-+	u16 offset, size = 0;
-+	u32 reg = 0;
-+	int status;
-+	u8 flags;
-+
-+	if (!buf || !len)
-+		return -EINVAL;
-+
-+	/* Does FW support new Tx topology mode ? */
-+	if (!hw->func_caps.common_cap.tx_sched_topo_comp_mode_en) {
-+		ice_debug(hw, ICE_DBG_INIT, "FW doesn't support compatibility mode\n");
-+		return -EOPNOTSUPP;
-+	}
-+
-+	current_topo = kzalloc(ICE_AQ_MAX_BUF_LEN, GFP_KERNEL);
-+	if (!current_topo)
-+		return -ENOMEM;
-+
-+	/* Get the current Tx topology */
-+	status = ice_get_set_tx_topo(hw, current_topo, ICE_AQ_MAX_BUF_LEN, NULL,
-+				     &flags, false);
-+
-+	kfree(current_topo);
-+
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Get current topology is failed\n");
-+		return status;
-+	}
-+
-+	/* Is default topology already applied ? */
-+	if (!(flags & ICE_AQC_TX_TOPO_FLAGS_LOAD_NEW) &&
-+	    hw->num_tx_sched_layers == ICE_SCHED_9_LAYERS) {
-+		ice_debug(hw, ICE_DBG_INIT, "Default topology already applied\n");
-+		return -EEXIST;
-+	}
-+
-+	/* Is new topology already applied ? */
-+	if ((flags & ICE_AQC_TX_TOPO_FLAGS_LOAD_NEW) &&
-+	    hw->num_tx_sched_layers == ICE_SCHED_5_LAYERS) {
-+		ice_debug(hw, ICE_DBG_INIT, "New topology already applied\n");
-+		return -EEXIST;
-+	}
-+
-+	/* Setting topology already issued? */
-+	if (flags & ICE_AQC_TX_TOPO_FLAGS_ISSUED) {
-+		ice_debug(hw, ICE_DBG_INIT, "Update Tx topology was done by another PF\n");
-+		/* Add a small delay before exiting */
-+		msleep(2000);
-+		return -EEXIST;
-+	}
-+
-+	/* Change the topology from new to default (5 to 9) */
-+	if (!(flags & ICE_AQC_TX_TOPO_FLAGS_LOAD_NEW) &&
-+	    hw->num_tx_sched_layers == ICE_SCHED_5_LAYERS) {
-+		ice_debug(hw, ICE_DBG_INIT, "Change topology from 5 to 9 layers\n");
-+		goto update_topo;
-+	}
-+
-+	pkg_hdr = (struct ice_pkg_hdr *)buf;
-+	state = ice_verify_pkg(pkg_hdr, len);
-+	if (state) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to verify pkg (err: %d)\n",
-+			  state);
-+		return -EIO;
-+	}
-+
-+	/* Find runtime configuration segment */
-+	seg = (struct ice_run_time_cfg_seg *)
-+	      ice_find_seg_in_pkg(hw, SEGMENT_TYPE_ICE_RUN_TIME_CFG, pkg_hdr);
-+	if (!seg) {
-+		ice_debug(hw, ICE_DBG_INIT, "5 layer topology segment is missing\n");
-+		return -EIO;
-+	}
-+
-+	if (le32_to_cpu(seg->buf_table.buf_count) < ICE_MIN_S_COUNT) {
-+		ice_debug(hw, ICE_DBG_INIT, "5 layer topology segment count(%d) is wrong\n",
-+			  seg->buf_table.buf_count);
-+		return -EIO;
-+	}
-+
-+	section = ice_pkg_val_buf(seg->buf_table.buf_array);
-+	if (!section || le32_to_cpu(section->section_entry[0].type) !=
-+		ICE_SID_TX_5_LAYER_TOPO) {
-+		ice_debug(hw, ICE_DBG_INIT, "5 layer topology section type is wrong\n");
-+		return -EIO;
-+	}
-+
-+	size = le16_to_cpu(section->section_entry[0].size);
-+	offset = le16_to_cpu(section->section_entry[0].offset);
-+	if (size < ICE_MIN_S_SZ || size > ICE_MAX_S_SZ) {
-+		ice_debug(hw, ICE_DBG_INIT, "5 layer topology section size is wrong\n");
-+		return -EIO;
-+	}
-+
-+	/* Make sure the section fits in the buffer */
-+	if (offset + size > ICE_PKG_BUF_SIZE) {
-+		ice_debug(hw, ICE_DBG_INIT, "5 layer topology buffer > 4K\n");
-+		return -EIO;
-+	}
-+
-+	/* Get the new topology buffer */
-+	new_topo = ((u8 *)section) + offset;
-+
-+update_topo:
-+	/* Acquire global lock to make sure that set topology issued
-+	 * by one PF.
-+	 */
-+	status = ice_acquire_res(hw, ICE_GLOBAL_CFG_LOCK_RES_ID, ICE_RES_WRITE,
-+				 ICE_GLOBAL_CFG_LOCK_TIMEOUT);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed to acquire global lock\n");
-+		return status;
-+	}
-+
-+	/* Check if reset was triggered already. */
-+	reg = rd32(hw, GLGEN_RSTAT);
-+	if (reg & GLGEN_RSTAT_DEVSTATE_M) {
-+		/* Reset is in progress, re-init the HW again */
-+		ice_debug(hw, ICE_DBG_INIT, "Reset is in progress. Layer topology might be applied already\n");
-+		ice_check_reset(hw);
-+		return 0;
-+	}
-+
-+	/* Set new topology */
-+	status = ice_get_set_tx_topo(hw, new_topo, size, NULL, NULL, true);
-+	if (status) {
-+		ice_debug(hw, ICE_DBG_INIT, "Failed setting Tx topology\n");
-+		return status;
-+	}
-+
-+	/* New topology is updated, delay 1 second before issuing the CORER */
-+	msleep(1000);
-+	ice_reset(hw, ICE_RESET_CORER);
-+	/* CORER will clear the global lock, so no explicit call
-+	 * required for release.
-+	 */
-+
-+	return 0;
-+}
+@@ -1950,7 +1950,7 @@ ice_get_set_tx_topo(struct ice_hw *hw, u8 *buf, u16 buf_size,
+  * The function will apply the new Tx topology from the package buffer
+  * if available.
+  */
+-int ice_cfg_tx_topo(struct ice_hw *hw, u8 *buf, u32 len)
++int ice_cfg_tx_topo(struct ice_hw *hw, const u8 *buf, u32 len)
+ {
+ 	u8 *current_topo, *new_topo = NULL;
+ 	struct ice_run_time_cfg_seg *seg;
 diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.h b/drivers/net/ethernet/intel/ice/ice_ddp.h
-index abb5f32f2ef4..c00203df35da 100644
+index c00203df35da..b6f126e11dea 100644
 --- a/drivers/net/ethernet/intel/ice/ice_ddp.h
 +++ b/drivers/net/ethernet/intel/ice/ice_ddp.h
-@@ -100,8 +100,9 @@ struct ice_pkg_hdr {
- 
- /* generic segment */
- struct ice_generic_seg_hdr {
--#define SEGMENT_TYPE_METADATA 0x00000001
--#define SEGMENT_TYPE_ICE 0x00000010
-+#define SEGMENT_TYPE_METADATA		0x00000001
-+#define SEGMENT_TYPE_ICE		0x00000010
-+#define SEGMENT_TYPE_ICE_RUN_TIME_CFG	0x00000020
- 	__le32 seg_type;
- 	struct ice_pkg_ver seg_format_ver;
- 	__le32 seg_size;
-@@ -431,4 +432,6 @@ u16 ice_pkg_buf_get_active_sections(struct ice_buf_build *bld);
+@@ -432,6 +432,6 @@ u16 ice_pkg_buf_get_active_sections(struct ice_buf_build *bld);
  void *ice_pkg_enum_section(struct ice_seg *ice_seg, struct ice_pkg_enum *state,
  			   u32 sect_type);
  
-+int ice_cfg_tx_topo(struct ice_hw *hw, u8 *buf, u32 len);
-+
+-int ice_cfg_tx_topo(struct ice_hw *hw, u8 *buf, u32 len);
++int ice_cfg_tx_topo(struct ice_hw *hw, const u8 *buf, u32 len);
+ 
  #endif
-diff --git a/drivers/net/ethernet/intel/ice/ice_sched.h b/drivers/net/ethernet/intel/ice/ice_sched.h
-index 0055d9330c07..9307b9067f63 100644
---- a/drivers/net/ethernet/intel/ice/ice_sched.h
-+++ b/drivers/net/ethernet/intel/ice/ice_sched.h
-@@ -6,6 +6,9 @@
+diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
+index 3363c69d49da..ad3a1572a635 100644
+--- a/drivers/net/ethernet/intel/ice/ice_main.c
++++ b/drivers/net/ethernet/intel/ice/ice_main.c
+@@ -4319,11 +4319,11 @@ static char *ice_get_opt_fw_name(struct ice_pf *pf)
+ /**
+  * ice_request_fw - Device initialization routine
+  * @pf: pointer to the PF instance
++ * @firmware: double pointer to firmware struct
+  */
+-static void ice_request_fw(struct ice_pf *pf)
++static int ice_request_fw(struct ice_pf *pf, const struct firmware **firmware)
+ {
+ 	char *opt_fw_filename = ice_get_opt_fw_name(pf);
+-	const struct firmware *firmware = NULL;
+ 	struct device *dev = ice_pf_to_dev(pf);
+ 	int err = 0;
  
- #include "ice_common.h"
- 
-+#define ICE_SCHED_5_LAYERS	5
-+#define ICE_SCHED_9_LAYERS	9
+@@ -4332,29 +4332,86 @@ static void ice_request_fw(struct ice_pf *pf)
+ 	 * and warning messages for other errors.
+ 	 */
+ 	if (opt_fw_filename) {
+-		err = firmware_request_nowarn(&firmware, opt_fw_filename, dev);
+-		if (err) {
+-			kfree(opt_fw_filename);
+-			goto dflt_pkg_load;
+-		}
+-
+-		/* request for firmware was successful. Download to device */
+-		ice_load_pkg(firmware, pf);
++		err = firmware_request_nowarn(firmware, opt_fw_filename, dev);
+ 		kfree(opt_fw_filename);
+-		release_firmware(firmware);
+-		return;
++		if (!err)
++			return err;
+ 	}
++	err = request_firmware(firmware, ICE_DDP_PKG_FILE, dev);
++	if (err)
++		dev_err(dev, "The DDP package file was not found or could not be read. Entering Safe Mode\n");
 +
- #define SCHED_NODE_NAME_MAX_LEN 32
++	return err;
++}
++
++/**
++ * ice_init_tx_topology - performs Tx topology initialization
++ * @hw: pointer to the hardware structure
++ * @firmware: pointer to firmware structure
++ */
++static int
++ice_init_tx_topology(struct ice_hw *hw, const struct firmware *firmware)
++{
++	u8 num_tx_sched_layers = hw->num_tx_sched_layers;
++	struct ice_pf *pf = hw->back;
++	struct device *dev;
++	int err;
++
++	dev = ice_pf_to_dev(pf);
  
- #define ICE_QGRP_LAYER_OFFSET	2
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index e68425bd0713..957540c27eb1 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -293,6 +293,7 @@ struct ice_hw_common_caps {
- 	bool pcie_reset_avoidance;
- 	/* Post update reset restriction */
- 	bool reset_restrict_support;
-+	bool tx_sched_topo_comp_mode_en;
- };
+-dflt_pkg_load:
+-	err = request_firmware(&firmware, ICE_DDP_PKG_FILE, dev);
++	err = ice_cfg_tx_topo(hw, firmware->data, firmware->size);
++	if (!err) {
++		if (hw->num_tx_sched_layers > num_tx_sched_layers)
++			dev_info(dev, "Tx scheduling layers switching feature disabled\n");
++		else
++			dev_info(dev, "Tx scheduling layers switching feature enabled\n");
++		/* if there was a change in topology ice_cfg_tx_topo triggered
++		 * a CORER and we need to re-init hw
++		 */
++		ice_deinit_hw(hw);
++		err = ice_init_hw(hw);
++
++		return err;
++	} else if (err == -EIO) {
++		dev_info(dev, "DDP package does not support Tx scheduling layers switching feature - please update to the latest DDP package and try again\n");
++	}
++
++	return 0;
++}
++
++/**
++ * ice_init_ddp_config - DDP related configuration
++ * @hw: pointer to the hardware structure
++ * @pf: pointer to pf structure
++ *
++ * This function loads DDP file from the disk, then initializes Tx
++ * topology. At the end DDP package is loaded on the card.
++ */
++static int ice_init_ddp_config(struct ice_hw *hw, struct ice_pf *pf)
++{
++	struct device *dev = ice_pf_to_dev(pf);
++	const struct firmware *firmware = NULL;
++	int err;
++
++	err = ice_request_fw(pf, &firmware);
+ 	if (err) {
+-		dev_err(dev, "The DDP package file was not found or could not be read. Entering Safe Mode\n");
+-		return;
++		dev_err(dev, "Fail during requesting FW: %d\n", err);
++		return err;
+ 	}
  
- /* IEEE 1588 TIME_SYNC specific info */
+-	/* request for firmware was successful. Download to device */
++	err = ice_init_tx_topology(hw, firmware);
++	if (err) {
++		dev_err(dev, "Fail during initialization of Tx topology: %d\n",
++			err);
++		release_firmware(firmware);
++		return err;
++	}
++
++	/* Download firmware to device */
+ 	ice_load_pkg(firmware, pf);
+ 	release_firmware(firmware);
++
++	return 0;
+ }
+ 
+ /**
+@@ -4614,9 +4671,11 @@ static int ice_init_dev(struct ice_pf *pf)
+ 
+ 	ice_init_feature_support(pf);
+ 
+-	ice_request_fw(pf);
++	err = ice_init_ddp_config(hw, pf);
++	if (err)
++		return err;
+ 
+-	/* if ice_request_fw fails, ICE_FLAG_ADV_FEATURES bit won't be
++	/* if ice_init_ddp_config fails, ICE_FLAG_ADV_FEATURES bit won't be
+ 	 * set in pf->state, which will cause ice_is_safe_mode to return
+ 	 * true
+ 	 */
 -- 
 2.38.1
 
