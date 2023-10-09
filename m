@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84D4DE95A8E
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Oct 2023 09:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95AB5E95A8E
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  9 Oct 2023 09:10:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F26AD81F5D;
-	Mon,  9 Oct 2023 09:10:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F26AD81F5D
+	by smtp1.osuosl.org (Postfix) with ESMTP id 455D782038;
+	Mon,  9 Oct 2023 09:10:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 455D782038
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1696842656;
-	bh=kdKy3+L4BCWfh42Eof7CIiAeGn8pZEqRczVPidaKuM8=;
+	s=default; t=1696842659;
+	bh=HozWLjuOSHSiS+AHb+LGnl6QGlqiIfJl741tNbJam80=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=UGVLzfQ31oYMtLaSikp7LHoJ3ofmuK+Qs6b1f4Koi+g1TqMrsSw9yjIUka20X1miX
-	 o4mzCIhENvrWcQjMY4+kI2FPMrCySPT3e9dLQeckeydpJEcKVMWlN7JlhIxR6tTOjj
-	 A3sxCOfzLw+0C4ueVjM/pnug+YPRn0yEJ8F/SqwQ+eSLT3NWMX7xAz7smfIcgP9OuM
-	 I3I8/NVQZLQUeNmeLsHBpJIffmpa/y2860uGQFyxmPyyDw+bZCLwUyPMjv9GsiM5T/
-	 1mnTAyTVux+xYaLh6q5CybybRGalh4QAh7wZhMEuW9Pa9pAHpf9HY7LFQ6n25+7wPS
-	 8/BiprVsmAD4g==
+	b=66CopkEpJ83TVSAfzlUmCquIORt5CcMtUkoDbrXnw9pWzkNbFmPzVLjBcSXj0DxLJ
+	 wI51bigWhF7piNyWSR6kX/kQCH7zw3DnVY40ZdPM+8e5gCi+wmlFAuZZxsq1SXkh5t
+	 MahBvdIwZ7Rh/16Q/0dhW9wirDSA1XK8tmViiZcKxfx90iN8r/eZbOxjv1xh1iVBsY
+	 EZUV0yl16FShBBiqGXPhd/11yYmWFvyezz12sYuXnlCFtOn6oCroUue5pTFGrrwHp0
+	 t1e3SI2AUEi9aX2wswXYa/2r/Pd/RpkJKDZxFlVbB6loIlkPvU0+ap7BIil4ovLXLy
+	 FNRW4DMBPhRLQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fbczy1DHejiN; Mon,  9 Oct 2023 09:10:54 +0000 (UTC)
+	with ESMTP id GiCYiRfKOTUi; Mon,  9 Oct 2023 09:10:58 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id F06598207C;
-	Mon,  9 Oct 2023 09:10:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F06598207C
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 987DC1BF2B3
+	by smtp1.osuosl.org (Postfix) with ESMTP id 2CAFF8204B;
+	Mon,  9 Oct 2023 09:10:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2CAFF8204B
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id F046B1BF2B3
  for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8400C40190
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8400C40190
+ by smtp3.osuosl.org (Postfix) with ESMTP id C8CC260D77
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C8CC260D77
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id yLv6WVKtTm3w for <intel-wired-lan@lists.osuosl.org>;
- Mon,  9 Oct 2023 09:10:42 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Zmntlntb6joq for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  9 Oct 2023 09:10:44 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7FC76409DB
- for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7FC76409DB
-X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="382978409"
-X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; d="scan'208";a="382978409"
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 08E8A60D6C
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  9 Oct 2023 09:10:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 08E8A60D6C
+X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="382978419"
+X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; d="scan'208";a="382978419"
 Received: from fmsmga003.fm.intel.com ([10.253.24.29])
  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 09 Oct 2023 02:10:41 -0700
+ 09 Oct 2023 02:10:43 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="843635719"
-X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; d="scan'208";a="843635719"
+X-IronPort-AV: E=McAfee;i="6600,9927,10857"; a="843635726"
+X-IronPort-AV: E=Sophos;i="6.03,210,1694761200"; d="scan'208";a="843635726"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by FMSMGA003.fm.intel.com with ESMTP; 09 Oct 2023 02:10:39 -0700
+ by FMSMGA003.fm.intel.com with ESMTP; 09 Oct 2023 02:10:42 -0700
 Received: from fedora.igk.intel.com (Metan_eth.igk.intel.com [10.123.220.124])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id D0A5536372;
- Mon,  9 Oct 2023 10:10:38 +0100 (IST)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 78A99365AF;
+ Mon,  9 Oct 2023 10:10:41 +0100 (IST)
 From: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Mon,  9 Oct 2023 05:07:09 -0400
-Message-Id: <20231009090711.136777-4-mateusz.polchlopek@intel.com>
+Date: Mon,  9 Oct 2023 05:07:11 -0400
+Message-Id: <20231009090711.136777-6-mateusz.polchlopek@intel.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20231009090711.136777-1-mateusz.polchlopek@intel.com>
 References: <20231009090711.136777-1-mateusz.polchlopek@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1696842642; x=1728378642;
+ t=1696842644; x=1728378644;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=kNrEmOh5WmMmAaFdoGUjMhORFctkIYyOww9zGbLkdFI=;
- b=TzySlZxl0JGAv1Odu+iqd01FeSF+HfR565YiW6lQeF1f73w9JfaOowlL
- IMFi/zogg/VVOlNJWnXCqjs0rPvVaK+d12O/XcXv1u1DksphshrEVEYg/
- J2xGc9R6G4apINevgvx1L4w+5xGL3A/FtyDTe1puxmOlnasYsIOHOspy0
- QAsJBXoFvDZItKC++U79U8CtMhZtz4Hjh4is7I7Xux00bTHKiTI0AGc7G
- On4bpsA26J2qu3xpU9iXrBBKGEfaJFSIsbhQXxZzGXshzXxs7C+wXGKpn
- 3/9AJxp+nOPQWQ/gnIlvNt4qNXZtyRf0ddmI6LTDPp7ql6vLVufPhws7F
- Q==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ bh=MIzLj7diT5phwSZEZVebNUI1yGDI70THPkUVrj2bkxA=;
+ b=dKzLqPg6T9UjLT7VHGKEHhVTUIGs1ry0coqcdXtQl5pOzsZ076p9F3tk
+ DPzwltdQll4Rd4nqTaSYSq2Cr68jx7QIkexq/w42lBbW2pITuqKGiTDUf
+ 2NsWfmlFGgohnmIbXvvKDGvjR9MdcEaYEbYrEADgvatXhryx4OfndWcEz
+ mW2BHa6eW16xyKYs9nkG81vSU4klb+XuftNuSXkRijtiPCsXi+z0Y/+nO
+ xL4sXDq4NjHgtuvbGnlP5twcfK9fzyeKuMVxZtXmD1tIMz4qMYMtMoClE
+ 7g2lxwxK9gNfN+VwqmH1DXI2+nESU2qi98s9Ja5VBuK/zjZ8lZhHg7Kye
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=TzySlZxl
-Subject: [Intel-wired-lan] [PATCH iwl-next v3 3/5] ice: Enable switching
- default Tx scheduler topology
+ header.a=rsa-sha256 header.s=Intel header.b=dKzLqPg6
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 5/5] ice: Document
+ tx_scheduling_layers parameter
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,187 +107,78 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 From: Michal Wilczynski <michal.wilczynski@intel.com>
 
-Introduce support for Tx scheduler topology change, based on user
-selection, from default 9-layer to 5-layer.
-Change requires NVM (version 3.20 or newer) and DDP package (OS Package
-1.3.30 or newer - available for over a year in linux-firmware, since
-commit aed71f296637 in linux-firmware ("ice: Update package to 1.3.30.0"))
-https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/commit/?id=aed71f296637
-
-Enable 5-layer topology switch in init path of the driver. To accomplish
-that upload of the DDP package needs to be delayed, until change in Tx
-topology is finished. To trigger the Tx change user selection should be
-changed in NVM using devlink. Then the platform should be rebooted.
+New driver specific parameter 'tx_scheduling_layers' was introduced.
+Describe parameter in the documentation.
 
 Signed-off-by: Michal Wilczynski <michal.wilczynski@intel.com>
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Co-developed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 Signed-off-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_ddp.c  |  2 +-
- drivers/net/ethernet/intel/ice/ice_ddp.h  |  2 +-
- drivers/net/ethernet/intel/ice/ice_main.c | 97 ++++++++++++++++++-----
- 3 files changed, 80 insertions(+), 21 deletions(-)
+ Documentation/networking/devlink/ice.rst | 50 ++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
-index 95c7712b56b8..44591bcdb537 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
-@@ -1950,7 +1950,7 @@ ice_get_set_tx_topo(struct ice_hw *hw, u8 *buf, u16 buf_size,
-  * The function will apply the new Tx topology from the package buffer
-  * if available.
-  */
--int ice_cfg_tx_topo(struct ice_hw *hw, u8 *buf, u32 len)
-+int ice_cfg_tx_topo(struct ice_hw *hw, const u8 *buf, u32 len)
- {
- 	u8 *current_topo, *new_topo = NULL;
- 	struct ice_run_time_cfg_seg *seg;
-diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.h b/drivers/net/ethernet/intel/ice/ice_ddp.h
-index c00203df35da..b6f126e11dea 100644
---- a/drivers/net/ethernet/intel/ice/ice_ddp.h
-+++ b/drivers/net/ethernet/intel/ice/ice_ddp.h
-@@ -432,6 +432,6 @@ u16 ice_pkg_buf_get_active_sections(struct ice_buf_build *bld);
- void *ice_pkg_enum_section(struct ice_seg *ice_seg, struct ice_pkg_enum *state,
- 			   u32 sect_type);
+diff --git a/Documentation/networking/devlink/ice.rst b/Documentation/networking/devlink/ice.rst
+index 2f60e34ab926..dde765313b82 100644
+--- a/Documentation/networking/devlink/ice.rst
++++ b/Documentation/networking/devlink/ice.rst
+@@ -22,6 +22,56 @@ Parameters
+      - runtime
+      - mutually exclusive with ``enable_roce``
  
--int ice_cfg_tx_topo(struct ice_hw *hw, u8 *buf, u32 len);
-+int ice_cfg_tx_topo(struct ice_hw *hw, const u8 *buf, u32 len);
++.. list-table:: Driver-specific parameters implemented
++   :widths: 5 5 5 85
++
++   * - Name
++     - Type
++     - Mode
++     - Description
++   * - ``tx_scheduling_layers``
++     - u8
++     - permanent
++     - The ice hardware uses hierarchical scheduling for Tx with a fixed
++       number of layers in the scheduling tree. Root node is representing a
++       port, while all the leaves represents the queues. This way of
++       configuring Tx scheduler allows features like DCB or devlink-rate
++       (documented below) for fine-grained configuration how much BW is given
++       to any given queue or group of queues, as scheduling parameters can be
++       configured at any given layer of the tree. By default 9-layer tree
++       topology was deemed best for most workloads, as it gives optimal
++       performance to configurability ratio. However for some specific cases,
++       this might not be the case. A great example would be sending traffic to
++       queues that is not a multiple of 8. Since in 9-layer topology maximum
++       number of children is limited to 8, the 9th queue has a different parent
++       than the rest, and it's given more BW credits. This causes a problem
++       when the system is sending traffic to 9 queues:
++
++       | tx_queue_0_packets: 24163396
++       | tx_queue_1_packets: 24164623
++       | tx_queue_2_packets: 24163188
++       | tx_queue_3_packets: 24163701
++       | tx_queue_4_packets: 24163683
++       | tx_queue_5_packets: 24164668
++       | tx_queue_6_packets: 23327200
++       | tx_queue_7_packets: 24163853
++       | tx_queue_8_packets: 91101417 < Too much traffic is sent to 9th
++
++       Sometimes this might be a big concern, so the idea is to empower the
++       user to switch to 5-layer topology, enabling performance gains but
++       sacrificing configurability for features like DCB and devlink-rate.
++
++       This parameter gives user flexibility to choose the 5-layer transmit
++       scheduler topology. After switching parameter reboot is required for
++       the feature to start working.
++
++       User could choose 9 (the default) or 5 as a value of parameter, e.g.:
++       $ devlink dev param set pci/0000:16:00.0 name tx_scheduling_layers
++       value 5 cmode permanent
++
++       And verify that value has been set:
++       $ devlink dev param show pci/0000:16:00.0 name tx_scheduling_layers
++
+ Info versions
+ =============
  
- #endif
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 3363c69d49da..ad3a1572a635 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -4319,11 +4319,11 @@ static char *ice_get_opt_fw_name(struct ice_pf *pf)
- /**
-  * ice_request_fw - Device initialization routine
-  * @pf: pointer to the PF instance
-+ * @firmware: double pointer to firmware struct
-  */
--static void ice_request_fw(struct ice_pf *pf)
-+static int ice_request_fw(struct ice_pf *pf, const struct firmware **firmware)
- {
- 	char *opt_fw_filename = ice_get_opt_fw_name(pf);
--	const struct firmware *firmware = NULL;
- 	struct device *dev = ice_pf_to_dev(pf);
- 	int err = 0;
- 
-@@ -4332,29 +4332,86 @@ static void ice_request_fw(struct ice_pf *pf)
- 	 * and warning messages for other errors.
- 	 */
- 	if (opt_fw_filename) {
--		err = firmware_request_nowarn(&firmware, opt_fw_filename, dev);
--		if (err) {
--			kfree(opt_fw_filename);
--			goto dflt_pkg_load;
--		}
--
--		/* request for firmware was successful. Download to device */
--		ice_load_pkg(firmware, pf);
-+		err = firmware_request_nowarn(firmware, opt_fw_filename, dev);
- 		kfree(opt_fw_filename);
--		release_firmware(firmware);
--		return;
-+		if (!err)
-+			return err;
- 	}
-+	err = request_firmware(firmware, ICE_DDP_PKG_FILE, dev);
-+	if (err)
-+		dev_err(dev, "The DDP package file was not found or could not be read. Entering Safe Mode\n");
-+
-+	return err;
-+}
-+
-+/**
-+ * ice_init_tx_topology - performs Tx topology initialization
-+ * @hw: pointer to the hardware structure
-+ * @firmware: pointer to firmware structure
-+ */
-+static int
-+ice_init_tx_topology(struct ice_hw *hw, const struct firmware *firmware)
-+{
-+	u8 num_tx_sched_layers = hw->num_tx_sched_layers;
-+	struct ice_pf *pf = hw->back;
-+	struct device *dev;
-+	int err;
-+
-+	dev = ice_pf_to_dev(pf);
- 
--dflt_pkg_load:
--	err = request_firmware(&firmware, ICE_DDP_PKG_FILE, dev);
-+	err = ice_cfg_tx_topo(hw, firmware->data, firmware->size);
-+	if (!err) {
-+		if (hw->num_tx_sched_layers > num_tx_sched_layers)
-+			dev_info(dev, "Tx scheduling layers switching feature disabled\n");
-+		else
-+			dev_info(dev, "Tx scheduling layers switching feature enabled\n");
-+		/* if there was a change in topology ice_cfg_tx_topo triggered
-+		 * a CORER and we need to re-init hw
-+		 */
-+		ice_deinit_hw(hw);
-+		err = ice_init_hw(hw);
-+
-+		return err;
-+	} else if (err == -EIO) {
-+		dev_info(dev, "DDP package does not support Tx scheduling layers switching feature - please update to the latest DDP package and try again\n");
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * ice_init_ddp_config - DDP related configuration
-+ * @hw: pointer to the hardware structure
-+ * @pf: pointer to pf structure
-+ *
-+ * This function loads DDP file from the disk, then initializes Tx
-+ * topology. At the end DDP package is loaded on the card.
-+ */
-+static int ice_init_ddp_config(struct ice_hw *hw, struct ice_pf *pf)
-+{
-+	struct device *dev = ice_pf_to_dev(pf);
-+	const struct firmware *firmware = NULL;
-+	int err;
-+
-+	err = ice_request_fw(pf, &firmware);
- 	if (err) {
--		dev_err(dev, "The DDP package file was not found or could not be read. Entering Safe Mode\n");
--		return;
-+		dev_err(dev, "Fail during requesting FW: %d\n", err);
-+		return err;
- 	}
- 
--	/* request for firmware was successful. Download to device */
-+	err = ice_init_tx_topology(hw, firmware);
-+	if (err) {
-+		dev_err(dev, "Fail during initialization of Tx topology: %d\n",
-+			err);
-+		release_firmware(firmware);
-+		return err;
-+	}
-+
-+	/* Download firmware to device */
- 	ice_load_pkg(firmware, pf);
- 	release_firmware(firmware);
-+
-+	return 0;
- }
- 
- /**
-@@ -4614,9 +4671,11 @@ static int ice_init_dev(struct ice_pf *pf)
- 
- 	ice_init_feature_support(pf);
- 
--	ice_request_fw(pf);
-+	err = ice_init_ddp_config(hw, pf);
-+	if (err)
-+		return err;
- 
--	/* if ice_request_fw fails, ICE_FLAG_ADV_FEATURES bit won't be
-+	/* if ice_init_ddp_config fails, ICE_FLAG_ADV_FEATURES bit won't be
- 	 * set in pf->state, which will cause ice_is_safe_mode to return
- 	 * true
- 	 */
 -- 
 2.38.1
 
