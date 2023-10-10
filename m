@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34341CD68E0
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Oct 2023 00:25:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A57FCD68E1
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Oct 2023 00:25:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D020A41713;
-	Tue, 10 Oct 2023 00:25:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D020A41713
+	by smtp4.osuosl.org (Postfix) with ESMTP id D535B417CC;
+	Tue, 10 Oct 2023 00:25:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D535B417CC
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1696897534;
-	bh=kGztWSK+O7pqBwlJIvcf/yUpXIWX1YMAUZQ5hJeI0BQ=;
+	s=default; t=1696897538;
+	bh=kfMIaNswgfDGMhvm5sNBgxNxqGLUhJjOBGJA2NR6mAI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=IAnLxEBOmKbep+Sw396g7rdg8dHwUbJc4u6bMvjI5zZmhXjI5bwdtl3GuttAugwea
-	 7+AGv1k/jHhyF1yYeNJbdtSWk3LPxedQhWRjECE9tljyxPZiHYIqAVhdDfpuXEntGK
-	 y7bJdRS++2C/jHl6plhbgWmHWENRVlpnDz1PVYrauwuM0onoE6++YvbAly3Gcdns+x
-	 RmFcbt01Z8JIkQFnO2/NuEbV4MtmifdRRXqsbyfB49hb5Ll9mCqaOe6jMaPm61bkZ4
-	 PRAhkp22yuzSdTKxkMSeskfGjXp975Yb0QBIiukWWoIZjHjpFtjhbl+rXpTnKpPiBM
-	 ZUPJeXgt3jXSA==
+	b=juydLBcSwM6OtO7l0xwUMBTi/a6mws/pPzxiZm6Mdfl7AKpKcbkl/97Dv0ST6ts4x
+	 VX5HHCkQd24CHvmE6gQ/h5YXxetsng0idXGOS1+YQPBVfCvZS+Cfsabe+/EiIqkcDq
+	 NW9vUBGcshpA5urA1Mgdbrti/S6plNxgRgUxDBuIQml57P3rtNSH9P9NKO9Nhyhcei
+	 ZghvlNxL2M3ReWMXQ5eOJ6ioFFNv5q4AVuyDhFvVBnpQRysm0y+uKbkAvj2PeBHXVW
+	 KhO7a/Kwqcg550BdiC4bk1iA8jjee2pUIbnOAmLiYpJttwRhyoEaO9lbJRc/Ip7i/U
+	 3AmiqWbk00HcQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3nLYx_pT11dp; Tue, 10 Oct 2023 00:25:33 +0000 (UTC)
+	with ESMTP id IOtroI_h7s-j; Tue, 10 Oct 2023 00:25:36 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A9A0941553;
-	Tue, 10 Oct 2023 00:25:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A9A0941553
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id A15331BF969
+	by smtp4.osuosl.org (Postfix) with ESMTP id 22337416D2;
+	Tue, 10 Oct 2023 00:25:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 22337416D2
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id B482C1BF97D
  for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 79F3360888
+ by smtp1.osuosl.org (Postfix) with ESMTP id 9B10781EC0
  for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 79F3360888
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9B10781EC0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id g2WUbP5rE91q for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Oct 2023 00:25:19 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id gAd4IParR8DM for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Oct 2023 00:25:21 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 762C960803
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 762C960803
+ (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 586C381EBE
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 586C381EBE
 Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
  by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-311-aEnB2nL0MLqXcUxPJEGQkw-1; Mon, 09 Oct 2023 20:25:13 -0400
-X-MC-Unique: aEnB2nL0MLqXcUxPJEGQkw-1
+ us-mta-688-7LLVh40ePV6RJUm18uI8NA-1; Mon, 09 Oct 2023 20:25:17 -0400
+X-MC-Unique: 7LLVh40ePV6RJUm18uI8NA-1
 Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
  [10.11.54.7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id D01193800BA9;
- Tue, 10 Oct 2023 00:25:12 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 881FC3800BB4;
+ Tue, 10 Oct 2023 00:25:17 +0000 (UTC)
 Received: from localhost.localdomain (unknown [10.45.226.226])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 746F91C060AE;
- Tue, 10 Oct 2023 00:25:11 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 51B601C060B0;
+ Tue, 10 Oct 2023 00:25:16 +0000 (UTC)
 From: Michal Schmidt <mschmidt@redhat.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 10 Oct 2023 02:24:40 +0200
-Message-ID: <20231010002444.43507-2-mschmidt@redhat.com>
+Date: Tue, 10 Oct 2023 02:24:43 +0200
+Message-ID: <20231010002444.43507-5-mschmidt@redhat.com>
 In-Reply-To: <20231010002444.43507-1-mschmidt@redhat.com>
 References: <20231010002444.43507-1-mschmidt@redhat.com>
 MIME-Version: 1.0
@@ -73,20 +73,20 @@ X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1696897518;
+ s=mimecast20190719; t=1696897520;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=GjPE/BZ+D2DclOwpjOM+vS1FaEKwI/7Zra7kOQz7Kks=;
- b=iqSCXfbUSA1C2+kgcYTKBcsg1ZRr0kjkxI2icsSd9wANQ/LKXtUjJykNW/AIc0P1+sGxyu
- uNLcVrivIflH/WOHbJsVTwhVORzaI6036fc+vA9MJpSqTy1BavuN4LnPsgl+4745ydXSMl
- 7Fyvqtd5sTO7nO3P2N5rlRZsIdrEh4g=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=pbOFWsdbKeCJ713QUwE/Lp1fsiVbfpLA1Of4SdIHCCY=;
+ b=GtHh/przg0r2Reu8Qc974sSkYZnyiO5l4DmJY/Ss+VchbuA09yc7dI5+h+adgGVIgw9xMZ
+ DgQX8jo+6q/oZIVyLcBPYatpQr2SiGUGTC+SA/kvQvU+5yH29HgO42lp/cNU4EDU8UHE9i
+ LX71zlNNTRlGht4tPCud2+t9OGxn+V0=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=iqSCXfbU
-Subject: [Intel-wired-lan] [PATCH net-next 1/5] iavf: fix comments about old
- bit locks
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=GtHh/prz
+Subject: [Intel-wired-lan] [PATCH net-next 4/5] iavf: in iavf_down,
+ disable queues when removing the driver
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,37 +107,36 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Bit lock __IAVF_IN_CRITICAL_TASK does not exist anymore since commit
-5ac49f3c2702 ("iavf: use mutexes for locking of critical sections").
-Adjust the comments accordingly.
+In iavf_down, we're skipping the scheduling of certain operations if
+the driver is being removed. However, the IAVF_FLAG_AQ_DISABLE_QUEUES
+request must not be skipped in this case, because iavf_close waits
+for the transition to the __IAVF_DOWN state, which happens in
+iavf_virtchnl_completion after the queues are released.
 
+Without this fix, "rmmod iavf" takes half a second per interface that's
+up and prints the "Device resources not yet released" warning.
+
+Fixes: c8de44b577eb ("iavf: do not process adminq tasks when __IAVF_IN_REMOVE_TASK is set")
 Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 ---
- drivers/net/ethernet/intel/iavf/iavf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 43c47c633162..98ecf5d5a2f2 100644
+index 0b808fa34801..2ab08b015b85 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1276,7 +1276,7 @@ static void iavf_configure(struct iavf_adapter *adapter)
-  * iavf_up_complete - Finish the last steps of bringing up a connection
-  * @adapter: board private structure
-  *
-- * Expects to be called while holding the __IAVF_IN_CRITICAL_TASK bit lock.
-+ * Expects to be called while holding crit_lock.
-  **/
- static void iavf_up_complete(struct iavf_adapter *adapter)
- {
-@@ -1400,7 +1400,7 @@ static void iavf_clear_adv_rss_conf(struct iavf_adapter *adapter)
-  * iavf_down - Shutdown the connection processing
-  * @adapter: board private structure
-  *
-- * Expects to be called while holding the __IAVF_IN_CRITICAL_TASK bit lock.
-+ * Expects to be called while holding crit_lock.
-  **/
- void iavf_down(struct iavf_adapter *adapter)
- {
+@@ -1440,9 +1440,9 @@ void iavf_down(struct iavf_adapter *adapter)
+ 			adapter->aq_required |= IAVF_FLAG_AQ_DEL_FDIR_FILTER;
+ 		if (!list_empty(&adapter->adv_rss_list_head))
+ 			adapter->aq_required |= IAVF_FLAG_AQ_DEL_ADV_RSS_CFG;
+-		adapter->aq_required |= IAVF_FLAG_AQ_DISABLE_QUEUES;
+ 	}
+ 
++	adapter->aq_required |= IAVF_FLAG_AQ_DISABLE_QUEUES;
+ 	mod_delayed_work(adapter->wq, &adapter->watchdog_task, 0);
+ }
+ 
 -- 
 2.41.0
 
