@@ -4,67 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A57FCD68E1
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Oct 2023 00:25:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C91ACD68E1
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Oct 2023 00:25:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D535B417CC;
-	Tue, 10 Oct 2023 00:25:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D535B417CC
+	by smtp4.osuosl.org (Postfix) with ESMTP id E7AFA4159D;
+	Tue, 10 Oct 2023 00:25:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E7AFA4159D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1696897538;
-	bh=kfMIaNswgfDGMhvm5sNBgxNxqGLUhJjOBGJA2NR6mAI=;
+	s=default; t=1696897542;
+	bh=GfplIxttgrJYgjkaXucWtOrfbKHMQ/xM768MHX1beuI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=juydLBcSwM6OtO7l0xwUMBTi/a6mws/pPzxiZm6Mdfl7AKpKcbkl/97Dv0ST6ts4x
-	 VX5HHCkQd24CHvmE6gQ/h5YXxetsng0idXGOS1+YQPBVfCvZS+Cfsabe+/EiIqkcDq
-	 NW9vUBGcshpA5urA1Mgdbrti/S6plNxgRgUxDBuIQml57P3rtNSH9P9NKO9Nhyhcei
-	 ZghvlNxL2M3ReWMXQ5eOJ6ioFFNv5q4AVuyDhFvVBnpQRysm0y+uKbkAvj2PeBHXVW
-	 KhO7a/Kwqcg550BdiC4bk1iA8jjee2pUIbnOAmLiYpJttwRhyoEaO9lbJRc/Ip7i/U
-	 3AmiqWbk00HcQ==
+	b=buFSpgZVMXEspw2+0SfqeqXmXMeTlVW3l4inxvc5lXKdVcu0j05ygIExjRa7Re2pZ
+	 NulP9Cp2pt6vd741GJRO3RMFEqDxIKElm2tjtVML5gRMEuNEIExgzVf31DRxLE23ZI
+	 3UlcZAHNKNpYc9A6FW7cpwn7nULHKfZiqR7ZMOsFmwRH0Yt7epdqkQ/G4kiitwgz6I
+	 L9GxVeO5EIdhp85f18eF0pZC4v40/H+kqxS1DsZuW5iyhloWnRcdxn0qrkum/OvDFO
+	 IUieo1a+OTvC1CsmLq1x4Oz58V5CABiOmuZUQNaJiEiVeC8+DvNWCOTjy5/ExzfQpj
+	 LHeBdSq0+WG+w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IOtroI_h7s-j; Tue, 10 Oct 2023 00:25:36 +0000 (UTC)
+	with ESMTP id bRuHTIl8RVeT; Tue, 10 Oct 2023 00:25:41 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 22337416D2;
-	Tue, 10 Oct 2023 00:25:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 22337416D2
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id B482C1BF97D
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:22 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id A90A0416B5;
+	Tue, 10 Oct 2023 00:25:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A90A0416B5
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id B51871BF969
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:26 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9B10781EC0
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9B10781EC0
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8D43E40AB9
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8D43E40AB9
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gAd4IParR8DM for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Oct 2023 00:25:21 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 9wFW6whMsgpB for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 10 Oct 2023 00:25:24 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 586C381EBE
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 586C381EBE
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-688-7LLVh40ePV6RJUm18uI8NA-1; Mon, 09 Oct 2023 20:25:17 -0400
-X-MC-Unique: 7LLVh40ePV6RJUm18uI8NA-1
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 6789540857
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 00:25:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6789540857
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-213-rhGN1PrNM4yeRUtLMmFgfg-1; Mon, 09 Oct 2023 20:25:20 -0400
+X-MC-Unique: rhGN1PrNM4yeRUtLMmFgfg-1
 Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
  [10.11.54.7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 881FC3800BB4;
- Tue, 10 Oct 2023 00:25:17 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 61405101AA68;
+ Tue, 10 Oct 2023 00:25:19 +0000 (UTC)
 Received: from localhost.localdomain (unknown [10.45.226.226])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 51B601C060B0;
- Tue, 10 Oct 2023 00:25:16 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 0C11C1C060AE;
+ Tue, 10 Oct 2023 00:25:17 +0000 (UTC)
 From: Michal Schmidt <mschmidt@redhat.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 10 Oct 2023 02:24:43 +0200
-Message-ID: <20231010002444.43507-5-mschmidt@redhat.com>
+Date: Tue, 10 Oct 2023 02:24:44 +0200
+Message-ID: <20231010002444.43507-6-mschmidt@redhat.com>
 In-Reply-To: <20231010002444.43507-1-mschmidt@redhat.com>
 References: <20231010002444.43507-1-mschmidt@redhat.com>
 MIME-Version: 1.0
@@ -73,20 +73,20 @@ X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1696897520;
+ s=mimecast20190719; t=1696897522;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:content-type:content-type:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=pbOFWsdbKeCJ713QUwE/Lp1fsiVbfpLA1Of4SdIHCCY=;
- b=GtHh/przg0r2Reu8Qc974sSkYZnyiO5l4DmJY/Ss+VchbuA09yc7dI5+h+adgGVIgw9xMZ
- DgQX8jo+6q/oZIVyLcBPYatpQr2SiGUGTC+SA/kvQvU+5yH29HgO42lp/cNU4EDU8UHE9i
- LX71zlNNTRlGht4tPCud2+t9OGxn+V0=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=nWuMeAnZHtcodzxZJSgkchrAPsxYSKSRbVv/xoVnbnA=;
+ b=HAS7bxqgl4y9PJiXMq74oCHDzqShg9d59OnuAZrI8TYggsz4HLCq4eYFPTWkZJqneaie0O
+ cnCTwBcetD5vEfsHTPgu1sJLr68g0UDInkd+tYOLrIAnuDszOnadfRj4Jt3h0CvU8rDCcC
+ oxp8eDFesxRgv40xE3sGD+B3/rwTnj4=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=GtHh/prz
-Subject: [Intel-wired-lan] [PATCH net-next 4/5] iavf: in iavf_down,
- disable queues when removing the driver
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=HAS7bxqg
+Subject: [Intel-wired-lan] [PATCH net-next 5/5] iavf: fix the waiting time
+ for initial reset
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,36 +107,41 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-In iavf_down, we're skipping the scheduling of certain operations if
-the driver is being removed. However, the IAVF_FLAG_AQ_DISABLE_QUEUES
-request must not be skipped in this case, because iavf_close waits
-for the transition to the __IAVF_DOWN state, which happens in
-iavf_virtchnl_completion after the queues are released.
+Every time I create VFs on ice, I receive at least one "Device is still
+in reset (-16), retrying" message per VF. It recovers fine, but typical
+usecases should not trigger scary-looking messages.
 
-Without this fix, "rmmod iavf" takes half a second per interface that's
-up and prints the "Device resources not yet released" warning.
+The waiting for reset is too short. It makes no sense to check every 10
+microseconds. Typical reset waiting times are at least tens of
+milliseconds and can be several seconds. I suspect the polling interval
+was meant to be 10 milliseconds all along.
 
-Fixes: c8de44b577eb ("iavf: do not process adminq tasks when __IAVF_IN_REMOVE_TASK is set")
+IAVF_RESET_WAIT_COMPLETE_COUNT is defined as 2000, so the total waiting
+time could be over 20 seconds. I have seen resets take 5 seconds (with
+128 VFs on ice).
+
+The added benefit of not triggering the "Device is still in reset" path
+is that we avoid going through the __IAVF_INIT_FAILED state, which would
+take a full second before retrying.
+
 Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 ---
  drivers/net/ethernet/intel/iavf/iavf_main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 0b808fa34801..2ab08b015b85 100644
+index 2ab08b015b85..f35d74566faa 100644
 --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
 +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -1440,9 +1440,9 @@ void iavf_down(struct iavf_adapter *adapter)
- 			adapter->aq_required |= IAVF_FLAG_AQ_DEL_FDIR_FILTER;
- 		if (!list_empty(&adapter->adv_rss_list_head))
- 			adapter->aq_required |= IAVF_FLAG_AQ_DEL_ADV_RSS_CFG;
--		adapter->aq_required |= IAVF_FLAG_AQ_DISABLE_QUEUES;
+@@ -4791,7 +4791,7 @@ static int iavf_check_reset_complete(struct iavf_hw *hw)
+ 		if ((rstat == VIRTCHNL_VFR_VFACTIVE) ||
+ 		    (rstat == VIRTCHNL_VFR_COMPLETED))
+ 			return 0;
+-		usleep_range(10, 20);
++		msleep(IAVF_RESET_WAIT_MS);
  	}
- 
-+	adapter->aq_required |= IAVF_FLAG_AQ_DISABLE_QUEUES;
- 	mod_delayed_work(adapter->wq, &adapter->watchdog_task, 0);
+ 	return -EBUSY;
  }
- 
 -- 
 2.41.0
 
