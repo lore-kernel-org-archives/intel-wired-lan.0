@@ -1,99 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 150C4CD98C0
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 10 Oct 2023 23:31:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 096F0CD98D9
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Oct 2023 00:47:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AEF87408C6;
-	Tue, 10 Oct 2023 23:31:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AEF87408C6
+	by smtp2.osuosl.org (Postfix) with ESMTP id 776934012E;
+	Wed, 11 Oct 2023 00:47:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 776934012E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1696980698;
-	bh=NNTvuU7mR9kfCRIZ26pWYXxlXdMBiglPNGvXmP5PbZc=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1696985262;
+	bh=C6Y7PxgoSylaCvk1r+b1UrUXNPJxsdZNkCucxEhTOMY=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=f+m6F2IX2t2HDJquwCGY+W1D94olnoPP+tQfbYIs58k1kmP/IxRa7RNUMY0yvlnkf
-	 dBG9llXOjaFnMwNh2VNKJhtjuUUaRiuzvQJNEHcMxIxKuU7LcTRA8t/H8JQvDjNYvX
-	 X/YXB0EnYSSmPhB75TPqeVRYtQqvt3yVo54kE8+omr6BuLOYl8oyXFaRXDQ4qVWBxa
-	 PuylwJbAZXptyXan24cPqQxNMezH8gYaEPVY9q07rve7id13heYrU4T1RuF7z9bZ1L
-	 s92+dmz9yL/Lyds4Bf3R6cSlMHP/oyUM4yODd+XcN2KM5j9fLnpCJBOcUrpSvqUPEb
-	 MSMwI4NUFM8AQ==
+	b=TWq/37FNMNEM6wy7eJpSrnfZ4bTtrXLSCzH01gcg6HNk+oZkNppAl5mUGfNqPg9O/
+	 dVpkRly6vNxJlX6qqY/5TuahQJYQXFlvaE7xMTboNVZNlpRfRmCSjixy7RLR7W3+c4
+	 01+nNc0WxUAQfz1HDVO1bnrOePJzndcbDjvcciz6rg8MovXzh0Qe7N5mrmlDVLLck6
+	 Vbnfndw+WmBym78EsI++GlxTphR+xmgIwQFEnIne6YRkOJKtSGSR3askgHyph4YYrk
+	 fMfFrduclp7fIvsURokv45c4QJ/ngw5Ma0vM/WUoe97XZkgN7zmnpOoCy3sydVTgyw
+	 PBPD3iXoWgIIw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id q4k15kJt5jRi; Tue, 10 Oct 2023 23:31:37 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id LaoJVObID2fE; Wed, 11 Oct 2023 00:47:40 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 75760408F1;
-	Tue, 10 Oct 2023 23:31:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 75760408F1
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 8F3571BF83C
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 23:31:36 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id B4ECD4158B;
+	Wed, 11 Oct 2023 00:47:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B4ECD4158B
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 40EA91BF97E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:47:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 666CA81E29
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 23:31:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 666CA81E29
+ by smtp2.osuosl.org (Postfix) with ESMTP id 182014158B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:47:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 182014158B
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id BduMxmowRs2x for <intel-wired-lan@lists.osuosl.org>;
- Tue, 10 Oct 2023 23:31:35 +0000 (UTC)
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com
- [IPv6:2607:f8b0:4864:20::431])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8E30C81E27
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 23:31:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8E30C81E27
-Received: by mail-pf1-x431.google.com with SMTP id
- d2e1a72fcca58-69af8a42066so3770792b3a.1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 10 Oct 2023 16:31:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1696980695; x=1697585495;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=FUjyOBhd765L6DdntubpjwFEWCc0T7iDXxMPZLU1JCY=;
- b=ZXXA6OanRV7CsZFnA80D5ejPydDfX0NCZewamc06fNM/QVtFlGv3JJ8oIxTNblHrGL
- yCaLMR60ODAl7NWL6nqvc0AmWMpe5sv9e1Ptz1p+LMce4EeRY0t6+oN70pUD2n0bEF6t
- LonL7b/cMTjMpES3+aTV7CsmFSZS7viv0bqTprE0MALy6nZYw/t1sCa9PH/UwLZPJD+4
- Hghk1JEF4exrZLxhvs0on2rYbGHtJhPxxK5/a34oLefza3ln32aPg6y96Vnk3Z5lUxt/
- 8g6Z2m21hdwPZ0cXeP44WemYsH+U2UHzlqkUOWIhn5Qi/ItzeEJWwfP3+UHVB+iZE98y
- B+9A==
-X-Gm-Message-State: AOJu0YxB2aCRO9HxiI+5wqtBjA9ISbf7Y9WCT9Wqz0PPPb5M/BKaoTSY
- /m3NoogNXRFyNbtBkXFq5n5Rbw==
-X-Google-Smtp-Source: AGHT+IGadnp4YcxPOL/WJ85GFmKVZw/8m1cJ8MXKeIjm+wQceLO6xqiz7GHgTMTUka9eEN3b6icCIw==
-X-Received: by 2002:a05:6a00:18a3:b0:690:ca4e:662f with SMTP id
- x35-20020a056a0018a300b00690ca4e662fmr19894283pfh.5.1696980694989; 
- Tue, 10 Oct 2023 16:31:34 -0700 (PDT)
-Received: from www.outflux.net (198-0-35-241-static.hfc.comcastbusiness.net.
- [198.0.35.241]) by smtp.gmail.com with ESMTPSA id
- fn6-20020a056a002fc600b0069302c3c054sm8810670pfb.207.2023.10.10.16.31.34
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Tue, 10 Oct 2023 16:31:34 -0700 (PDT)
-Date: Tue, 10 Oct 2023 16:31:32 -0700
-From: Kees Cook <keescook@chromium.org>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 0AjF3CGRiSoD for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Oct 2023 00:47:38 +0000 (UTC)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 57DC64012E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:47:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 57DC64012E
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sin.source.kernel.org (Postfix) with ESMTP id 211EBCE21BB;
+ Wed, 11 Oct 2023 00:47:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4AC9C433C7;
+ Wed, 11 Oct 2023 00:47:32 +0000 (UTC)
+Date: Tue, 10 Oct 2023 17:47:31 -0700
+From: Jakub Kicinski <kuba@kernel.org>
 To: Justin Stitt <justinstitt@google.com>
-Message-ID: <202310101630.AB35100@keescook>
-References: <20231010-netdev-replace-strncpy-resend-as-series-v1-0-caf9f0f2f021@google.com>
+Message-ID: <20231010174731.3a1d454e@kernel.org>
+In-Reply-To: <CAFhGd8ppobxMnvrMT4HrRkf0LvHE1P-utErp8Tk22Fb9OO=8Rw@mail.gmail.com>
+References: <20231010-strncpy-drivers-net-ethernet-intel-igbvf-netdev-c-v1-1-69ccfb2c2aa5@google.com>
+ <5dc78e2f-62c1-083a-387f-9afabac02007@intel.com>
+ <CAFhGd8ppobxMnvrMT4HrRkf0LvHE1P-utErp8Tk22Fb9OO=8Rw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20231010-netdev-replace-strncpy-resend-as-series-v1-0-caf9f0f2f021@google.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=chromium.org; s=google; t=1696980695; x=1697585495; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=FUjyOBhd765L6DdntubpjwFEWCc0T7iDXxMPZLU1JCY=;
- b=ZeQAx8M7nxsX3F0RsF/TmaDZ6NtQLZbuHD94pY9Lfo8DmxyLnW/Lk7PyhpL3dY+/oR
- igkWtr2BEaj+2LBaBp733+KTdHtcJrVl/aL7sFXTCnruOmZBuROz4iEraunFR5Ik8/Uz
- rlStyByCn4Rq9RlHTn1+XI2q+5WBECIBSfcTA=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org
- header.a=rsa-sha256 header.s=google header.b=ZeQAx8M7
-Subject: Re: [Intel-wired-lan] [PATCH net-next 0/7] net: intel: replace
- deprecated strncpy uses
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1696985253;
+ bh=GML/tjgAq13M4+96lhLvoGtPl4yhrUdZshloPeDdWqM=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=ryjEudkJcuUfG9yZePCjX40V0FqAFEM5mudN5TtbVVdwCNZM7Zb3feRbDMR9cUeK2
+ j3JWZN1mGsjcmDty1myc9gr/NchebGTRsncb1SHyXdCF55oSmZsux8VETkAEb+SvXK
+ bp8UmQI/amPTbQ6zfWyumJgv7PQiW+a1CI1Iy7ClAflXAC5SX7duC1fErtPQnB9/bQ
+ m8yOoVyNO8dTv36WGZ+ECuHhJTAqaJ8B3I2OSFIuRNgTUoG51sIIzUn6gNBZ8xojjr
+ bWBJqQ1raQpgyxM311FIJfki/PYhBtcrLJB2AfSzd+OmcaduwanDfvLFhVefPdjUmS
+ cUFPvdMhA5oAg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=ryjEudkJ
+Subject: Re: [Intel-wired-lan] [PATCH] igbvf: replace deprecated strncpy
+ with strscpy
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,70 +87,31 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: intel-wired-lan@lists.osuosl.org,
+Cc: Kees Cook <keescook@chromium.org>, netdev@vger.kernel.org,
  Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- linux-hardening@vger.kernel.org, netdev@vger.kernel.org,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
+ Eric Dumazet <edumazet@google.com>, intel-wired-lan@lists.osuosl.org,
+ linux-hardening@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Oct 10, 2023 at 10:26:53PM +0000, Justin Stitt wrote:
-> Hi,
+On Tue, 10 Oct 2023 14:41:10 -0700 Justin Stitt wrote:
+> > Thanks Justin for these patches, please make sure you mark the subject
+> > line as per the netdev rules:
+> > [PATCH net-next v1] etc etc  
 > 
-> This series aims to eliminate uses of strncpy() as it is a deprecated
-> interface [1] with many viable replacements available.
-> 
-> Predominantly, strscpy() is the go-to replacement as it guarantees
-> NUL-termination on the destination buffer (which strncpy does not). With
-> that being said, I did not identify any buffer overread problems as the
-> size arguments were carefully measured to leave room for trailing
-> NUL-bytes. Nonetheless, we should favor more robust and less ambiguous
-> interfaces.
-> 
-> Previously, each of these patches was sent individually at:
-> 1) https://lore.kernel.org/all/20231009-strncpy-drivers-net-ethernet-intel-e100-c-v1-1-ca0ff96868a3@google.com/
-> 2) https://lore.kernel.org/all/20231010-strncpy-drivers-net-ethernet-intel-e1000-e1000_main-c-v1-1-b1d64581f983@google.com/
-> 3) https://lore.kernel.org/all/20231010-strncpy-drivers-net-ethernet-intel-fm10k-fm10k_ethtool-c-v1-1-dbdc4570c5a6@google.com/
-> 4) https://lore.kernel.org/all/20231010-strncpy-drivers-net-ethernet-intel-i40e-i40e_ddp-c-v1-1-f01a23394eab@google.com/
-> 5) https://lore.kernel.org/all/20231010-strncpy-drivers-net-ethernet-intel-igb-igb_main-c-v1-1-d796234a8abf@google.com/
-> 6) https://lore.kernel.org/all/20231010-strncpy-drivers-net-ethernet-intel-igbvf-netdev-c-v1-1-69ccfb2c2aa5@google.com/
-> 7) https://lore.kernel.org/all/20231010-strncpy-drivers-net-ethernet-intel-igc-igc_main-c-v1-1-f1f507ecc476@google.com/
-> 
-> Consider these dead as this series is their new home :)
-> 
-> I found all these instances with: $ rg "strncpy\("
-> 
-> This series may collide in a not-so-nice way with [3]. This series can
-> go in after that one with a rebase. I'll send a v2 if necessary.
-> 
-> [3]: https://lore.kernel.org/netdev/20231003183603.3887546-1-jesse.brandeburg@intel.com/
-> 
-> Link: https://www.kernel.org/doc/html/latest/process/deprecated.html#strncpy-on-nul-terminated-strings [1]
-> Link: https://manpages.debian.org/testing/linux-manual-4.8/strscpy.9.en.html [2]
-> Link: https://github.com/KSPP/linux/issues/90
-> Signed-off-by: Justin Stitt <justinstitt@google.com>
-> ---
-> Justin Stitt (7):
->       e100: replace deprecated strncpy with strscpy
->       e1000: replace deprecated strncpy with strscpy
->       fm10k: replace deprecated strncpy with strscpy
->       i40e: use scnprintf over strncpy+strncat
->       igb: replace deprecated strncpy with strscpy
->       igbvf: replace deprecated strncpy with strscpy
->       igc: replace deprecated strncpy with strscpy
+> Sure, I'll resend!
 
-These all look good to me. Thanks for the careful analysis!
+Please do read the netdev rules Jesse pointed you at.
+Maybe it's the combined flow of strncpy and __counted_by patches
+but managing the state of the "hardening" patches is getting 
+a bit tedious :(
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
-
--Kees
-
--- 
-Kees Cook
+Please group them into reasonable series. Do not repost withing 24h.
+Do not have more than 15 patches for networking pending at any given
+time. That's basically the gist of our "good citizen" rules.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
