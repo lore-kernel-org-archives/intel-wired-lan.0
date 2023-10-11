@@ -1,104 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F1F3CD6E5C
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Oct 2023 11:11:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6FA2CD6E64
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Oct 2023 13:15:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B0C9D40880;
-	Wed, 11 Oct 2023 11:11:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B0C9D40880
+	by smtp1.osuosl.org (Postfix) with ESMTP id 481F8819B8;
+	Wed, 11 Oct 2023 13:15:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 481F8819B8
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1697022683;
-	bh=S8GvBXhZgqU/MW+/mWrLGbypw5+LU3ROpNNB0rts6CI=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=TFY3Ng32Yfyb3UbTaPpf3CzEUiIJIlVscKAlDGPq8PmUUBkeGUWnHKvyla+AtuzXE
-	 UMYJYjrU/UljiTgKWg+5mPzKFZ0A0Bg1OpMg4yb/qDYwARR1kWp00fkRiz/DX5HVoQ
-	 GucUl2BOeZ6y4+foIEVKCsBRvqJV5hSMWxyqsGG/vX9lDIe//vuA1mjsRFoEX+ksPn
-	 rR8e8Jt9eNfYw+ZV0zklg0cDEdUn6CFssXtwVy7aO7zkKd97JKWNd0iGajVymShaDu
-	 IIMRPENXtaGsRkWUtA/Xnl30umg6Zpmsuw1x+lBWp4BvBUrReqlhnt1uG2/myxNd2u
-	 pOyFM8UjeykGQ==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 5Q05yV7HpW0e; Wed, 11 Oct 2023 11:11:22 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id E8889408F8;
-	Wed, 11 Oct 2023 11:11:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E8889408F8
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 8DCBD1BF84C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 11:11:20 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6588081831
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 11:11:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6588081831
+	s=default; t=1697030102;
+	bh=y8On37l/aCn8Gup0VWkdn9sK716IpTmTY4sJUi41oqI=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=obUmAPJgr90rif2xA2T2ZNa/0qKouTx3P4kYr5CvsCmpgC1D17Mmk+SKD205ZDyU6
+	 XjGNLq3XMrlPBNxkziAslGE5tCWOv4JYumIjGsDa3L46b/vRSk/m3YZBgz/BOmVEgP
+	 dfuIUdIxprAudabwca3UGNCOkSxexEQCRpjzwB8RB688e7dd25K7gVgOKOD0gSN+Z0
+	 6fQK5Xbt6x5GveeFSUvrhp48a9XwR7TxJj3HlC0sOeBFWxB9RCiMXfdIUKCFhAI1+W
+	 s43LCkL5MciuClRDHbQ42a1f6moG5zvO3Any+w/mt0yThZ4CmUGxC7WI8D3UbCdDtg
+	 oAx60iw7lGlPQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lZUvD0F9PgDg for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Oct 2023 11:11:18 +0000 (UTC)
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com
- [IPv6:2a00:1450:4864:20::329])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5724F80EC9
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 11:11:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5724F80EC9
-Received: by mail-wm1-x329.google.com with SMTP id
- 5b1f17b1804b1-406402933edso62901165e9.2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 04:11:17 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1697022675; x=1697627475;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=S5GNKoDzJaHuzKJxlYhSGC/WySAPDC162s7razYkn5c=;
- b=QeQyD6yEGCX8t8SSlKuFZ1fXT68d4uoelhh9BtWEhxxU1KLXeG8bdyeozrIWWowSB9
- ec46Vk7Uvw76CyDJ2uoyN+Wxh3UFI/M1AqCaq/0o0G92IIJuUeUpVrm7g6qINZ32CS8H
- q3tv5u7Fy5rhLSKjNCM0x4BsYStluNcXGscpodofSE6dZEcn57bvOcRLvAMbcBCq45RH
- 6/W4VZeDFqid/04xM/16f+S7LXMbkuR5faDBPSJURW97MMi+9DKPIWPMgoVZaubVqqtD
- D4jvIp2UqJV4lJDOMGHZTjV+kyTdrtKWNBRb6oZXyuOFYNzSzuCDtUrGsc34y6ISFWqq
- ka+Q==
-X-Gm-Message-State: AOJu0YzfStqQH8Um9bRSdDkoX3YiH1l+wSOnbwtuxlG5k/buVl4RoXB6
- AiFUB07ZsMsSZSM4qTxHOY7iWw==
-X-Google-Smtp-Source: AGHT+IFMWdRjvrgTbr57qIWQAFPotfX/2bryYCgBf8xJCd9HLat6ps/im4EniVGCVudDPL3jp6V+BQ==
-X-Received: by 2002:adf:a152:0:b0:32d:8942:9ff5 with SMTP id
- r18-20020adfa152000000b0032d89429ff5mr720660wrr.14.1697022674877; 
- Wed, 11 Oct 2023 04:11:14 -0700 (PDT)
-Received: from localhost (host-213-179-129-39.customer.m-online.net.
- [213.179.129.39]) by smtp.gmail.com with ESMTPSA id
- g10-20020a5d698a000000b00327297abe31sm15135858wru.68.2023.10.11.04.11.13
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 11 Oct 2023 04:11:14 -0700 (PDT)
-Date: Wed, 11 Oct 2023 13:11:13 +0200
-From: Jiri Pirko <jiri@resnulli.us>
-To: Arkadiusz Kubalewski <arkadiusz.kubalewski@intel.com>
-Message-ID: <ZSaC0Qg0UwHveMcz@nanopsycho>
-References: <20231011101236.23160-1-arkadiusz.kubalewski@intel.com>
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id iOHC5koMc47n; Wed, 11 Oct 2023 13:15:00 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8D04A81514;
+	Wed, 11 Oct 2023 13:15:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8D04A81514
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id E83631BF363
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 13:14:58 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id B861060ABF
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 13:14:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B861060ABF
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id SGQgosA0bW0E for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Oct 2023 13:14:56 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A9CBE605B5
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 13:14:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A9CBE605B5
+X-IronPort-AV: E=McAfee;i="6600,9927,10860"; a="364021502"
+X-IronPort-AV: E=Sophos;i="6.03,216,1694761200"; d="scan'208";a="364021502"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 11 Oct 2023 06:14:47 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10860"; a="703733879"
+X-IronPort-AV: E=Sophos;i="6.03,216,1694761200"; d="scan'208";a="703733879"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orsmga003.jf.intel.com with ESMTP; 11 Oct 2023 06:14:43 -0700
+Received: from baltimore.igk.intel.com (baltimore.igk.intel.com [10.102.21.1])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 2F1533497A;
+ Wed, 11 Oct 2023 14:14:42 +0100 (IST)
+From: Pawel Chmielewski <pawel.chmielewski@intel.com>
+To: netdev@vger.kernel.org
+Date: Wed, 11 Oct 2023 15:13:46 +0200
+Message-Id: <20231011131348.435353-1-pawel.chmielewski@intel.com>
+X-Mailer: git-send-email 2.37.3
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20231011101236.23160-1-arkadiusz.kubalewski@intel.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=resnulli-us.20230601.gappssmtp.com; s=20230601; t=1697022675; x=1697627475;
- darn=lists.osuosl.org; 
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=S5GNKoDzJaHuzKJxlYhSGC/WySAPDC162s7razYkn5c=;
- b=ZHlTA4JhpOjTexdv3ySne6Bke82rvHDvAjw+ypTIql1PEyUa2s6ttnrizxN8jnTrro
- 8ADFuvM2548UA9FJWlMbHy+/+3TsYEyZ/5m2tcCatY8v5dkRvgPP+1ErvEH3DqBZETgW
- F3Pfx9bo3x28ywnPDafte14dJcbiq84Vywej6nGm1FU8tGNWJzpdPON9VaqMCePTaBnu
- 5RkfkMUUdEJR2AIswm1MsxBQ+CADQtnfWNbSG5SikkUIcbMyaApybji8Aese8MfdspgP
- Acmgzr7yoA0zf8THyQmvFY3ZqczDv4N19e/d+otuRYc6YwmlhI361hCiyf7wVrPxxp4l
- KwSA==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=resnulli-us.20230601.gappssmtp.com
- header.i=@resnulli-us.20230601.gappssmtp.com header.a=rsa-sha256
- header.s=20230601 header.b=ZHlTA4Jh
-Subject: Re: [Intel-wired-lan] [PATCH net-next v5 0/5] dpll: add
- phase-offset and phase-adjust
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1697030096; x=1728566096;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=cOOcPKe0SjI006MvdpjWkc0xtpRtNoCUue6a2fyTCos=;
+ b=EfzOGW+NWm6t+PJBe+azBUbkRX1gkNiqyJURqI1MfDAMnnXwKVGT5l0W
+ Ydz4cFntAlnt6GIXhB4kZ6QzW1CnmmSPmRvNRd0arW1tHo/5E8MCAYw4Z
+ YLDAMT/lK7M0qXUw8TT+eaAFK9C390CsJYkbYmsm/P+AC6M4WL/p2twN2
+ BdeKGQdZPZxPmR08xzunbKbWlzB/DhhJ3KN4Ywk8HLSAPWHb/HK9IiBCO
+ Ljuq5Xv+aBITVc8HjlItnjFm7STStk6YIs2svoT/pBr1nRT/eZxa5jxXI
+ cdA7xwijqp1k29pS7ZjDLzMwYwHVeKbq2FO1DZ6va6zmA4UE9sm3YQ43C
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=EfzOGW+N
+Subject: [Intel-wired-lan] [PATCH net-next v4 0/2] ethtool: Add link mode
+ maps for forced speeds
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -111,46 +94,52 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: vadim.fedorenko@linux.dev, corbet@lwn.net, netdev@vger.kernel.org,
- linux-doc@vger.kernel.org, jesse.brandeburg@intel.com,
- anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org, kuba@kernel.org,
- pabeni@redhat.com, davem@davemloft.net
+Cc: andrew@lunn.ch, aelior@marvell.com, manishc@marvell.com,
+ vladimir.oltean@nxp.com, jdamato@fastly.com,
+ Pawel Chmielewski <pawel.chmielewski@intel.com>, edumazet@google.com,
+ intel-wired-lan@lists.osuosl.org, horms@kernel.org, kuba@kernel.org,
+ d-tatianin@yandex-team.ru, pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Wed, Oct 11, 2023 at 12:12:31PM CEST, arkadiusz.kubalewski@intel.com wrote:
->Improve monitoring and control over dpll devices.
->Allow user to receive measurement of phase difference between signals
->on pin and dpll (phase-offset).
->Allow user to receive and control adjustable value of pin's signal
->phase (phase-adjust).
->
->v4->v5:
->- rebase series on top of net-next/main, fix conflict - remove redundant
->  attribute type definition in subset definition
->
->v3->v4:
->- do not increase do version of uAPI header as it is not needed (v3 did
->  not have this change)
->- fix spelling around commit messages, argument descriptions and docs
->- add missing extack errors on failure set callbacks for pin phase
->  adjust and frequency
->- remove ice check if value is already set, now redundant as checked in
->  the dpll subsystem
->
->v2->v3:
->- do not increase do version of uAPI header as it is not needed
->
->v1->v2:
->- improve handling for error case of requesting the phase adjust set
->- align handling for error case of frequency set request with the
->approach introduced for phase adjust
+The following patch set was initially a part of [1]. As the purpose of
+the original series was to add the support of the new hardware to the
+intel ice driver, the refactoring of advertised link modes mapping was
+extracted to a new set.
+The patch set adds a common mechanism for mapping Ethtool forced speeds
+with Ethtool supported link modes, which can be used in drivers code.
 
-Again,
-set-
-Reviewed-by: Jiri Pirko <jiri@nvidia.com>
+[1] https://lore.kernel.org/netdev/20230823180633.2450617-1-pawel.chmielewski@intel.com
+
+Changelog:
+v3->v4:
+Moved the macro for setting fields into the common header file
+
+v2->v3:
+Fixed whitespaces, added missing line at end of file
+
+v1->v2:
+Fixed formatting, typo, moved declaration of iterator to loop line.
+
+Paul Greenwalt (1):
+  ethtool: Add forced speed to supported link modes maps
+
+Pawel Chmielewski (1):
+  ice: Refactor finding advertised link speed
+
+ drivers/net/ethernet/intel/ice/ice.h          |   1 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  | 193 ++++++++++++------
+ drivers/net/ethernet/intel/ice/ice_main.c     |   2 +
+ .../net/ethernet/qlogic/qede/qede_ethtool.c   |  46 ++---
+ include/linux/ethtool.h                       |  27 +++
+ net/ethtool/ioctl.c                           |  13 ++
+ 6 files changed, 183 insertions(+), 99 deletions(-)
+
+-- 
+2.37.3
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
