@@ -4,75 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 096F0CD98D9
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Oct 2023 00:47:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2E1FCD98D9
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 11 Oct 2023 00:54:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 776934012E;
-	Wed, 11 Oct 2023 00:47:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 776934012E
+	by smtp2.osuosl.org (Postfix) with ESMTP id 712B84012E;
+	Wed, 11 Oct 2023 00:54:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 712B84012E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1696985262;
-	bh=C6Y7PxgoSylaCvk1r+b1UrUXNPJxsdZNkCucxEhTOMY=;
+	s=default; t=1696985690;
+	bh=bZHJxpTRJV72nXGUDCbCyLzH5D1r0lgko4v+N4RUS8U=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=TWq/37FNMNEM6wy7eJpSrnfZ4bTtrXLSCzH01gcg6HNk+oZkNppAl5mUGfNqPg9O/
-	 dVpkRly6vNxJlX6qqY/5TuahQJYQXFlvaE7xMTboNVZNlpRfRmCSjixy7RLR7W3+c4
-	 01+nNc0WxUAQfz1HDVO1bnrOePJzndcbDjvcciz6rg8MovXzh0Qe7N5mrmlDVLLck6
-	 Vbnfndw+WmBym78EsI++GlxTphR+xmgIwQFEnIne6YRkOJKtSGSR3askgHyph4YYrk
-	 fMfFrduclp7fIvsURokv45c4QJ/ngw5Ma0vM/WUoe97XZkgN7zmnpOoCy3sydVTgyw
-	 PBPD3iXoWgIIw==
+	b=OCBoX99wpYusNTWui7xVmaJY3VowIIGC162zMVorIfLa1xRteDIcLBEefAPm3vV3A
+	 VeMvh35G1Kv8H2RzsSKL89uKsvOd04gfJV9sawOF1SusgmkQ2PSJDpUfULqcT6kVip
+	 xYV9Aje4NUbdQybAbBlQ9cOpU2fKD1nYNRl9C0SVq9FLEIu27EoVAxNttTm55DVOvi
+	 WzxaXqL7jgDiCrPJ0HgghUyuUW41mdXyg0XP/IxmkrwSomiPl/GC4BKIY5NMjoYND7
+	 Tuu08mBmPP/lPuusQaa4aKs/aPm4/rgg1Ow872Ja66k/wpO9Ob/HiIvLkt1BhhW8hR
+	 hZcCb0oKXwaBg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id LaoJVObID2fE; Wed, 11 Oct 2023 00:47:40 +0000 (UTC)
+	with ESMTP id zQEUf6RtAanT; Wed, 11 Oct 2023 00:54:49 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B4ECD4158B;
-	Wed, 11 Oct 2023 00:47:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B4ECD4158B
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 40EA91BF97E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:47:39 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id BE31F4158B;
+	Wed, 11 Oct 2023 00:54:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BE31F4158B
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 783241BF97E
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:54:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 182014158B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:47:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 182014158B
+ by smtp1.osuosl.org (Postfix) with ESMTP id 501A680CE6
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:54:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 501A680CE6
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0AjF3CGRiSoD for <intel-wired-lan@lists.osuosl.org>;
- Wed, 11 Oct 2023 00:47:38 +0000 (UTC)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 57DC64012E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:47:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 57DC64012E
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id dHSG43AH549v for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 11 Oct 2023 00:54:45 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 11D4B80BCB
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 11 Oct 2023 00:54:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 11D4B80BCB
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id 211EBCE21BB;
- Wed, 11 Oct 2023 00:47:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4AC9C433C7;
- Wed, 11 Oct 2023 00:47:32 +0000 (UTC)
-Date: Tue, 10 Oct 2023 17:47:31 -0700
+ by dfw.source.kernel.org (Postfix) with ESMTP id D5A2F60C11;
+ Wed, 11 Oct 2023 00:54:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 058DCC433C8;
+ Wed, 11 Oct 2023 00:54:42 +0000 (UTC)
+Date: Tue, 10 Oct 2023 17:54:41 -0700
 From: Jakub Kicinski <kuba@kernel.org>
 To: Justin Stitt <justinstitt@google.com>
-Message-ID: <20231010174731.3a1d454e@kernel.org>
-In-Reply-To: <CAFhGd8ppobxMnvrMT4HrRkf0LvHE1P-utErp8Tk22Fb9OO=8Rw@mail.gmail.com>
+Message-ID: <20231010175441.755cb82a@kernel.org>
+In-Reply-To: <20231010174731.3a1d454e@kernel.org>
 References: <20231010-strncpy-drivers-net-ethernet-intel-igbvf-netdev-c-v1-1-69ccfb2c2aa5@google.com>
  <5dc78e2f-62c1-083a-387f-9afabac02007@intel.com>
  <CAFhGd8ppobxMnvrMT4HrRkf0LvHE1P-utErp8Tk22Fb9OO=8Rw@mail.gmail.com>
+ <20231010174731.3a1d454e@kernel.org>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1696985253;
- bh=GML/tjgAq13M4+96lhLvoGtPl4yhrUdZshloPeDdWqM=;
+ d=kernel.org; s=k20201202; t=1696985683;
+ bh=0H4iRVCJQWGz61Tmn2yBFyuOebfIUuGff1Pt5wvl8yQ=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=ryjEudkJcuUfG9yZePCjX40V0FqAFEM5mudN5TtbVVdwCNZM7Zb3feRbDMR9cUeK2
- j3JWZN1mGsjcmDty1myc9gr/NchebGTRsncb1SHyXdCF55oSmZsux8VETkAEb+SvXK
- bp8UmQI/amPTbQ6zfWyumJgv7PQiW+a1CI1Iy7ClAflXAC5SX7duC1fErtPQnB9/bQ
- m8yOoVyNO8dTv36WGZ+ECuHhJTAqaJ8B3I2OSFIuRNgTUoG51sIIzUn6gNBZ8xojjr
- bWBJqQ1raQpgyxM311FIJfki/PYhBtcrLJB2AfSzd+OmcaduwanDfvLFhVefPdjUmS
- cUFPvdMhA5oAg==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=cvUFTAbx2/KN98oDPIvh9DGkRgRIbMXADOBHzGo+2U3qjgAozV7EpZSxuBtsc5jZ7
+ cSqIONfcgAzTs85Ws4XS7bchxVLjz704w0sCbiqMoMSGrlb7Q16kRN2xnWWL3F28a9
+ fAUwCILxx/NfB0JaudWnkpxCyVITNWn+o2RuBHb9rfc6pqcIGl3LhcFsbUjswN2t+z
+ eiIIGp1pD6KLueDKpP1iOUT1XMKMHb2sdJN6kd/jWlDCojSfA8ev/KatXJJw4Bkl2S
+ +iZeldSxJSaIDdZXw1izRBoYF3t4mcoZuy4pMXjAidbrQ3+6sN1Pi563lNPNIV1qNy
+ jc3OCKhj1svaQ==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=ryjEudkJ
+ header.a=rsa-sha256 header.s=k20201202 header.b=cvUFTAbx
 Subject: Re: [Intel-wired-lan] [PATCH] igbvf: replace deprecated strncpy
  with strscpy
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -97,21 +98,20 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 10 Oct 2023 14:41:10 -0700 Justin Stitt wrote:
-> > Thanks Justin for these patches, please make sure you mark the subject
-> > line as per the netdev rules:
-> > [PATCH net-next v1] etc etc  
+On Tue, 10 Oct 2023 17:47:31 -0700 Jakub Kicinski wrote:
+> Please do read the netdev rules Jesse pointed you at.
+> Maybe it's the combined flow of strncpy and __counted_by patches
+> but managing the state of the "hardening" patches is getting 
+> a bit tedious :(
 > 
-> Sure, I'll resend!
+> Please group them into reasonable series. Do not repost withing 24h.
+> Do not have more than 15 patches for networking pending at any given
+> time. That's basically the gist of our "good citizen" rules.
 
-Please do read the netdev rules Jesse pointed you at.
-Maybe it's the combined flow of strncpy and __counted_by patches
-but managing the state of the "hardening" patches is getting 
-a bit tedious :(
+FWIW you can see how many pending patches you have pending in netdev
+using this here link:
 
-Please group them into reasonable series. Do not repost withing 24h.
-Do not have more than 15 patches for networking pending at any given
-time. That's basically the gist of our "good citizen" rules.
+https://patchwork.kernel.org/project/netdevbpf/list/?submitter=206354
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
