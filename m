@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61304CDB47E
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Oct 2023 17:08:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8290ECDB47E
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Oct 2023 17:08:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 090124188F;
-	Fri, 13 Oct 2023 17:08:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 090124188F
+	by smtp4.osuosl.org (Postfix) with ESMTP id 25CFA41B33;
+	Fri, 13 Oct 2023 17:08:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 25CFA41B33
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1697216897;
-	bh=93wC/Lb4WJPIAeoCpoF3Xg6+XqJ5b0e9gx6Ey7KKE58=;
+	s=default; t=1697216901;
+	bh=vz5Cyo66jt8bC7VaNjxX1FUxTHEmo8sBbtjsyiG0QhE=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=er1pnUBcDge05Gj6l90t5rNb3VjaKKbYKg1tHBPiK38aUTLD4sWQRzg8b2NYBJ6kv
-	 YurM7Eju4vWpi8KBWU238gSNso5hxhzFwzwi3dVZ1OwfGYbhShVTwFjnnfXSih5ePP
-	 Tvi/BGEm7vtxSmmHLGcZRj36ixVFhM7y02mdf6P/Zq/aSVV4Ybt8VgC9bcj9ZJ7Vgf
-	 zbJ5f9HbZzWkFkttTNRgmdHG8vSL5WEFdmNl4wZA9wNSR7TKOAiSTveRx9paP6Dat+
-	 wVo2ZX2I5r+whvbgBq0NrM2deHSLVeE00JUAim2qNKMRhB6HjnYuZdTqqJTfEosLds
-	 wk3FPrELUAAsQ==
+	b=C3V4uu0KL93ODMz73Fj/Zl0USmNHU2WqxRyVirnJta9LMB9ltaF3/SIz1TDeVwgi9
+	 kMbk9SG3boXQ3RTdX3UwWtpKQ68GOvepDsbWHlDYRweCidW71otZVimugHLK/5Y3/j
+	 i7NV863Wh6F3EzwVUZFRdU0m5VsCxIzvJw1LFP8cKpZiq2hszVQdnAsxxDkRGW9HxL
+	 vbta4mjwNdyWMJ6S/LxuYxmsszI9W82GDj4Z+4YSe42aJySB3w6HODOY7Z9r7F77Ad
+	 ruM3vwW25y6tQWqFQrP4JBbgedDxHGet0+fM0IcF42qQY7cvOtN/QrqPlca1t55HfZ
+	 vB2WUTnzxcWHQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Qa2B2V_uYGBG; Fri, 13 Oct 2023 17:08:15 +0000 (UTC)
+	with ESMTP id KiOVkmDrTDQB; Fri, 13 Oct 2023 17:08:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BEE1641B52;
-	Fri, 13 Oct 2023 17:08:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BEE1641B52
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id C11BA1BF425
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 17:08:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id C71FF41FE4;
+	Fri, 13 Oct 2023 17:08:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C71FF41FE4
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id DB21B1BF425
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 17:08:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 9A31181E5B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 17:08:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9A31181E5B
+ by smtp4.osuosl.org (Postfix) with ESMTP id B3CDC41B52
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 17:08:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B3CDC41B52
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id AZnqM3tYHkov for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Oct 2023 17:08:09 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id aqwtrZqUyLCs for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Oct 2023 17:08:11 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 8AE7081E43
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 17:08:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8AE7081E43
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C027541FCE
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 17:08:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C027541FCE
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-34-mOnxf32-N0SiogJ9B7HHaA-1; Fri, 13 Oct 2023 13:08:02 -0400
-X-MC-Unique: mOnxf32-N0SiogJ9B7HHaA-1
+ us-mta-382-EUY90PmROs2ihxClZCmmyQ-1; Fri, 13 Oct 2023 13:08:05 -0400
+X-MC-Unique: EUY90PmROs2ihxClZCmmyQ-1
 Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.rdu2.redhat.com
  [10.11.54.7])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 86B7581D9E1;
- Fri, 13 Oct 2023 17:08:01 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id CAEFB10334A1;
+ Fri, 13 Oct 2023 17:08:04 +0000 (UTC)
 Received: from p1.luc.cera.cz (unknown [10.45.225.161])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 20B4D1C060DF;
- Fri, 13 Oct 2023 17:08:00 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 65D101C060DF;
+ Fri, 13 Oct 2023 17:08:03 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
-Date: Fri, 13 Oct 2023 19:07:52 +0200
-Message-ID: <20231013170755.2367410-3-ivecera@redhat.com>
+Date: Fri, 13 Oct 2023 19:07:54 +0200
+Message-ID: <20231013170755.2367410-5-ivecera@redhat.com>
 In-Reply-To: <20231013170755.2367410-1-ivecera@redhat.com>
 References: <20231013170755.2367410-1-ivecera@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.7
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1697216888;
+ s=mimecast20190719; t=1697216890;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=DzYU8tZrQoBUqhyJIMs+CkJlNvAKzLmyrsJLGqvx8lA=;
- b=atsFVI4L/lDTeJFSgHxd9npvgFa31dzv1xQ0bXpsApPHCkmAOgamXsg3HkO7sUjha0ZOyD
- BZSJWb0AAv7g9uPua7/6WsTNCdjSzgXmtDiobpQleIZ1QZOjaBq0Y5AJypTxZQAWkmwCP0
- mfCTbfI6nmSIynymnxZ86wTVB79Pc9k=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=B2a+7HBBo+582GPdtrQ3K8cFFftObpBTIilV4TBRH2M=;
+ b=UP9n+qp/mldeXqR1FP8UMaWdkUe2NuHGeUF/21+lykixnbVGR78doeP1zsYR1xn6As4kHv
+ y1VE077YlZMP0w495r+W0ulWva9zfhF8Mgc9qsdLu3mX6vhaw3LJDSBX/3BYRRRmwdZAjs
+ 9KsYJEOoJiRX7t2vAANuzHRPD+r662g=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=atsFVI4L
-Subject: [Intel-wired-lan] [PATCH net-next 2/5] i40e: Split and refactor
- i40e_nvm_version_str()
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=UP9n+qp/
+Subject: [Intel-wired-lan] [PATCH net-next 4/5] i40e: Refactor and rename
+ i40e_read_pba_string()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,251 +107,175 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The function formats NVM version string according adapter's
-EETrackID value. If this value OEM specific (0xffffffff) then
-the reported version is with format:
-"<gen>.<snap>.<release>"
-and in other case
-"<nvm_maj>.<nvm_min> <eetrackid> <cvid_maj>.<cvid_bld>.<cvid_min>"
+Function i40e_read_pba_string() is currently unused but will be used
+by subsequent patch to provide board ID via devlink device info.
 
-These versions are reported in the subsequent patch in this series
-that implements devlink .info_get but separately.
+The function reads PBA block from NVM so it cannot be called during
+adapter reset and as we would like to provide PBA ID via devlink
+info it is better to read the PBA ID during i40e_probe() and cache
+it in i40e_hw structure to avoid a waiting for potential adapter
+reset in devlink info callback.
 
-So split the function into separate ones, refactor it to use them
-and remove ugly static string buffer.
-Additionally convert NVM/OEM version mask macros to use GENMASK and
-use FIELD_GET/FIELD_PREP for them in i40e_nvm_version_str() and
-i40e_get_oem_version(). This makes code more readable and allows
-us to remove related shift macros.
+So...
+- Remove pba_num and pba_num_size arguments from the function,
+  allocate resource managed buffer to store PBA ID string and
+  save resulting pointer to i40e_hw->pba_id field
+- Make the function void as the PBA ID can be missing and in this
+  case (or in case of NVM reading failure) the i40e_hw->pba_id
+  will be NULL
+- Rename the function to i40e_get_pba_string() to align with other
+  functions like i40e_get_oem_version() i40e_get_port_mac_addr()...
+- Call this function on init during i40e_probe()
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h        | 133 +++++++++++++-----
- .../net/ethernet/intel/i40e/i40e_ethtool.c    |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  12 +-
- 3 files changed, 105 insertions(+), 44 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 58 +++++++++++--------
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  1 +
+ .../net/ethernet/intel/i40e/i40e_prototype.h  |  3 +-
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |  3 +
+ 4 files changed, 39 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index b7e20cea19c2..c4cd54aa4dd5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -49,23 +49,19 @@
- #define I40E_QUEUE_WAIT_RETRY_LIMIT	10
- #define I40E_INT_NAME_STR_LEN		(IFNAMSIZ + 16)
- 
--#define I40E_NVM_VERSION_LO_SHIFT	0
--#define I40E_NVM_VERSION_LO_MASK	(0xff << I40E_NVM_VERSION_LO_SHIFT)
--#define I40E_NVM_VERSION_HI_SHIFT	12
--#define I40E_NVM_VERSION_HI_MASK	(0xf << I40E_NVM_VERSION_HI_SHIFT)
--#define I40E_OEM_VER_BUILD_MASK		0xffff
--#define I40E_OEM_VER_PATCH_MASK		0xff
--#define I40E_OEM_VER_BUILD_SHIFT	8
--#define I40E_OEM_VER_SHIFT		24
- #define I40E_PHY_DEBUG_ALL \
- 	(I40E_AQ_PHY_DEBUG_DISABLE_LINK_FW | \
- 	I40E_AQ_PHY_DEBUG_DISABLE_ALL_LINK_FW)
- 
- #define I40E_OEM_EETRACK_ID		0xffffffff
--#define I40E_OEM_GEN_SHIFT		24
--#define I40E_OEM_SNAP_MASK		0x00ff0000
--#define I40E_OEM_SNAP_SHIFT		16
--#define I40E_OEM_RELEASE_MASK		0x0000ffff
-+#define I40E_NVM_VERSION_LO_MASK	GENMASK(7, 0)
-+#define I40E_NVM_VERSION_HI_MASK	GENMASK(15, 12)
-+#define I40E_OEM_VER_BUILD_MASK		GENMASK(23, 8)
-+#define I40E_OEM_VER_PATCH_MASK		GENMASK(7, 0)
-+#define I40E_OEM_VER_MASK		GENMASK(31, 24)
-+#define I40E_OEM_GEN_MASK		GENMASK(31, 24)
-+#define I40E_OEM_SNAP_MASK		GENMASK(23, 16)
-+#define I40E_OEM_RELEASE_MASK		GENMASK(15, 0)
- 
- #define I40E_RX_DESC(R, i)	\
- 	(&(((union i40e_rx_desc *)((R)->desc))[i]))
-@@ -954,43 +950,104 @@ struct i40e_device {
- };
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 6d1042ca0317..04db9cdc7d94 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -821,62 +821,72 @@ void i40e_pre_tx_queue_cfg(struct i40e_hw *hw, u32 queue, bool enable)
+ }
  
  /**
-- * i40e_nvm_version_str - format the NVM version strings
-+ * i40e_info_nvm_ver - format the NVM version string
-  * @hw: ptr to the hardware info
-+ * @buf: string buffer to store
-+ * @len: buffer size
-+ *
-+ * Formats NVM version string as:
-+ * <gen>.<snap>.<release> when eetrackid == I40E_OEM_EETRACK_ID
-+ * <nvm_major>.<nvm_minor> otherwise
+- *  i40e_read_pba_string - Reads part number string from EEPROM
++ *  i40e_get_pba_string - Reads part number string from EEPROM
+  *  @hw: pointer to hardware structure
+- *  @pba_num: stores the part number string from the EEPROM
+- *  @pba_num_size: part number string buffer length
+  *
+- *  Reads the part number string from the EEPROM.
++ *  Reads the part number string from the EEPROM and stores it
++ *  into newly allocated buffer and saves resulting pointer
++ *  to i40e_hw->pba_id field.
   **/
--static inline char *i40e_nvm_version_str(struct i40e_hw *hw)
-+static inline void i40e_info_nvm_ver(struct i40e_hw *hw, char *buf, size_t len)
+-int i40e_read_pba_string(struct i40e_hw *hw, u8 *pba_num,
+-			 u32 pba_num_size)
++void i40e_get_pba_string(struct i40e_hw *hw)
  {
--	static char buf[32];
--	u32 full_ver;
-+	struct i40e_nvm_info *nvm = &hw->nvm;
++#define I40E_NVM_PBA_FLAGS_BLK_PRESENT	0xFAFA
+ 	u16 pba_word = 0;
+ 	u16 pba_size = 0;
+ 	u16 pba_ptr = 0;
+-	int status = 0;
+-	u16 i = 0;
++	int status;
++	char *ptr;
++	u16 i;
  
--	full_ver = hw->nvm.oem_ver;
--
--	if (hw->nvm.eetrack == I40E_OEM_EETRACK_ID) {
-+	if (nvm->eetrack == I40E_OEM_EETRACK_ID) {
-+		u32 full_ver = nvm->oem_ver;
- 		u8 gen, snap;
- 		u16 release;
- 
--		gen = (u8)(full_ver >> I40E_OEM_GEN_SHIFT);
--		snap = (u8)((full_ver & I40E_OEM_SNAP_MASK) >>
--			I40E_OEM_SNAP_SHIFT);
--		release = (u16)(full_ver & I40E_OEM_RELEASE_MASK);
--
--		snprintf(buf, sizeof(buf), "%x.%x.%x", gen, snap, release);
-+		gen = FIELD_GET(I40E_OEM_GEN_MASK, full_ver);
-+		snap = FIELD_GET(I40E_OEM_SNAP_MASK, full_ver);
-+		release = FIELD_GET(I40E_OEM_RELEASE_MASK, full_ver);
-+		snprintf(buf, len, "%x.%x.%x", gen, snap, release);
- 	} else {
--		u8 ver, patch;
-+		u8 major, minor;
-+
-+		major = FIELD_GET(I40E_NVM_VERSION_HI_MASK, nvm->version);
-+		minor = FIELD_GET(I40E_NVM_VERSION_LO_MASK, nvm->version);
-+		snprintf(buf, len, "%x.%02x", major, minor);
+ 	status = i40e_read_nvm_word(hw, I40E_SR_PBA_FLAGS, &pba_word);
+-	if (status || (pba_word != 0xFAFA)) {
+-		hw_dbg(hw, "Failed to read PBA flags or flag is invalid.\n");
+-		return status;
++	if (status) {
++		hw_dbg(hw, "Failed to read PBA flags.\n");
++		return;
 +	}
-+}
-+
-+/**
-+ * i40e_info_eetrack - format the EETrackID string
-+ * @hw: ptr to the hardware info
-+ * @buf: string buffer to store
-+ * @len: buffer size
-+ *
-+ * Returns hexadecimally formated EETrackID if it is
-+ * different from I40E_OEM_EETRACK_ID or empty string.
-+ **/
-+static inline void i40e_info_eetrack(struct i40e_hw *hw, char *buf, size_t len)
-+{
-+	struct i40e_nvm_info *nvm = &hw->nvm;
-+
-+	buf[0] = '\0';
-+	if (nvm->eetrack != I40E_OEM_EETRACK_ID)
-+		snprintf(buf, len, "0x%08x", nvm->eetrack);
-+}
-+
-+/**
-+ * i40e_info_civd_ver - format the NVM version strings
-+ * @hw: ptr to the hardware info
-+ * @buf: string buffer to store
-+ * @len: buffer size
-+ *
-+ * Returns formated combo image version if adapter's EETrackID is
-+ * different from I40E_OEM_EETRACK_ID or empty string.
-+ **/
-+static inline void i40e_info_civd_ver(struct i40e_hw *hw, char *buf, size_t len)
-+{
-+	struct i40e_nvm_info *nvm = &hw->nvm;
-+
-+	buf[0] = '\0';
-+	if (nvm->eetrack != I40E_OEM_EETRACK_ID) {
-+		u32 full_ver = nvm->oem_ver;
-+		u8 major, minor;
- 		u16 build;
- 
--		ver = (u8)(full_ver >> I40E_OEM_VER_SHIFT);
--		build = (u16)((full_ver >> I40E_OEM_VER_BUILD_SHIFT) &
--			 I40E_OEM_VER_BUILD_MASK);
--		patch = (u8)(full_ver & I40E_OEM_VER_PATCH_MASK);
--
--		snprintf(buf, sizeof(buf),
--			 "%x.%02x 0x%x %d.%d.%d",
--			 (hw->nvm.version & I40E_NVM_VERSION_HI_MASK) >>
--				I40E_NVM_VERSION_HI_SHIFT,
--			 (hw->nvm.version & I40E_NVM_VERSION_LO_MASK) >>
--				I40E_NVM_VERSION_LO_SHIFT,
--			 hw->nvm.eetrack, ver, build, patch);
-+		major = FIELD_GET(I40E_OEM_VER_MASK, full_ver);
-+		build = FIELD_GET(I40E_OEM_VER_BUILD_MASK, full_ver);
-+		minor = FIELD_GET(I40E_OEM_VER_PATCH_MASK, full_ver);
-+		snprintf(buf, len, "%d.%d.%d", major, build, minor);
++	if (pba_word != I40E_NVM_PBA_FLAGS_BLK_PRESENT) {
++		hw_dbg(hw, "PBA block is not present.\n");
++		return;
  	}
-+}
-+
-+/**
-+ * i40e_nvm_version_str - format the NVM version strings
-+ * @hw: ptr to the hardware info
-+ * @buf: string buffer to store
-+ * @len: buffer size
-+ **/
-+static inline char *i40e_nvm_version_str(struct i40e_hw *hw, char *buf,
-+					 size_t len)
-+{
-+	char ver[16] = " ";
-+
-+	/* Get NVM version */
-+	i40e_info_nvm_ver(hw, buf, len);
-+
-+	/* Append EETrackID if provided */
-+	i40e_info_eetrack(hw, &ver[1], sizeof(ver) - 1);
-+	if (strlen(ver) > 1)
-+		strlcat(buf, ver, len);
-+
-+	/* Append combo image version if provided */
-+	i40e_info_civd_ver(hw, &ver[1], sizeof(ver) - 1);
-+	if (strlen(ver) > 1)
-+		strlcat(buf, ver, len);
  
- 	return buf;
+ 	status = i40e_read_nvm_word(hw, I40E_SR_PBA_BLOCK_PTR, &pba_ptr);
+ 	if (status) {
+ 		hw_dbg(hw, "Failed to read PBA Block pointer.\n");
+-		return status;
++		return;
+ 	}
+ 
+ 	status = i40e_read_nvm_word(hw, pba_ptr, &pba_size);
+ 	if (status) {
+ 		hw_dbg(hw, "Failed to read PBA Block size.\n");
+-		return status;
++		return;
+ 	}
+ 
+ 	/* Subtract one to get PBA word count (PBA Size word is included in
+-	 * total size)
++	 * total size) and advance pointer to first PBA word.
+ 	 */
+ 	pba_size--;
+-	if (pba_num_size < (((u32)pba_size * 2) + 1)) {
+-		hw_dbg(hw, "Buffer too small for PBA data.\n");
+-		return -EINVAL;
++	pba_ptr++;
++	if (!pba_size) {
++		hw_dbg(hw, "PBA ID is empty.\n");
++		return;
+ 	}
+ 
++	ptr = devm_kzalloc(i40e_hw_to_dev(hw), pba_size * 2 + 1, GFP_KERNEL);
++	if (!ptr)
++		return;
++	hw->pba_id = ptr;
++
+ 	for (i = 0; i < pba_size; i++) {
+-		status = i40e_read_nvm_word(hw, (pba_ptr + 1) + i, &pba_word);
++		status = i40e_read_nvm_word(hw, pba_ptr + i, &pba_word);
+ 		if (status) {
+ 			hw_dbg(hw, "Failed to read PBA Block word %d.\n", i);
+-			return status;
++			devm_kfree(i40e_hw_to_dev(hw), hw->pba_id);
++			hw->pba_id = NULL;
++			return;
+ 		}
+ 
+-		pba_num[(i * 2)] = (pba_word >> 8) & 0xFF;
+-		pba_num[(i * 2) + 1] = pba_word & 0xFF;
++		*ptr++ = (pba_word >> 8) & 0xFF;
++		*ptr++ = pba_word & 0xFF;
+ 	}
+-	pba_num[(pba_size * 2)] = '\0';
+-
+-	return status;
  }
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index a89f7ca510fd..ebf36f76c0d7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2006,8 +2006,8 @@ static void i40e_get_drvinfo(struct net_device *netdev,
- 	struct i40e_pf *pf = vsi->back;
  
- 	strscpy(drvinfo->driver, i40e_driver_name, sizeof(drvinfo->driver));
--	strscpy(drvinfo->fw_version, i40e_nvm_version_str(&pf->hw),
--		sizeof(drvinfo->fw_version));
-+	i40e_nvm_version_str(&pf->hw, drvinfo->fw_version,
-+			     sizeof(drvinfo->fw_version));
- 	strscpy(drvinfo->bus_info, pci_name(pf->pdev),
- 		sizeof(drvinfo->bus_info));
- 	drvinfo->n_priv_flags = I40E_PRIV_FLAGS_STR_LEN;
+ /**
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f0e563a7f7b3..ba8fb0556216 100644
+index ba8fb0556216..3157d14d9b12 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10798,7 +10798,9 @@ static void i40e_get_oem_version(struct i40e_hw *hw)
- 			   &gen_snap);
- 	i40e_read_nvm_word(hw, block_offset + I40E_NVM_OEM_RELEASE_OFFSET,
- 			   &release);
--	hw->nvm.oem_ver = (gen_snap << I40E_OEM_SNAP_SHIFT) | release;
-+	hw->nvm.oem_ver =
-+		FIELD_PREP(I40E_OEM_GEN_MASK | I40E_OEM_SNAP_MASK, gen_snap) |
-+		FIELD_PREP(I40E_OEM_RELEASE_MASK, release);
- 	hw->nvm.eetrack = I40E_OEM_EETRACK_ID;
- }
- 
-@@ -15674,6 +15676,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct i40e_hw *hw;
- 	static u16 pfs_found;
- 	u16 wol_nvm_bits;
-+	char nvm_ver[32];
- 	u16 link_status;
- #ifdef CONFIG_I40E_DCB
- 	int status;
-@@ -15845,11 +15848,12 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -15846,6 +15846,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		goto err_pf_reset;
+ 	}
  	i40e_get_oem_version(hw);
++	i40e_get_pba_string(hw);
  
  	/* provide nvm, fw, api versions, vendor:device id, subsys vendor:device id */
-+	i40e_nvm_version_str(hw, nvm_ver, sizeof(nvm_ver));
- 	dev_info(&pdev->dev, "fw %d.%d.%05d api %d.%d nvm %s [%04x:%04x] [%04x:%04x]\n",
- 		 hw->aq.fw_maj_ver, hw->aq.fw_min_ver, hw->aq.fw_build,
--		 hw->aq.api_maj_ver, hw->aq.api_min_ver,
--		 i40e_nvm_version_str(hw), hw->vendor_id, hw->device_id,
--		 hw->subsystem_vendor_id, hw->subsystem_device_id);
-+		 hw->aq.api_maj_ver, hw->aq.api_min_ver, nvm_ver,
-+		 hw->vendor_id, hw->device_id, hw->subsystem_vendor_id,
-+		 hw->subsystem_device_id);
+ 	i40e_nvm_version_str(hw, nvm_ver, sizeof(nvm_ver));
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index 46b9a05ceb91..001162042050 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -341,8 +341,7 @@ i40e_aq_configure_partition_bw(struct i40e_hw *hw,
+ 			       struct i40e_aqc_configure_partition_bw_data *bw_data,
+ 			       struct i40e_asq_cmd_details *cmd_details);
+ int i40e_get_port_mac_addr(struct i40e_hw *hw, u8 *mac_addr);
+-int i40e_read_pba_string(struct i40e_hw *hw, u8 *pba_num,
+-			 u32 pba_num_size);
++void i40e_get_pba_string(struct i40e_hw *hw);
+ void i40e_pre_tx_queue_cfg(struct i40e_hw *hw, u32 queue, bool enable);
+ /* prototype for functions used for NVM access */
+ int i40e_init_nvm(struct i40e_hw *hw);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index dc7cd16ad8fb..aff6dc6afbe2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -493,6 +493,9 @@ struct i40e_hw {
+ 	struct i40e_nvm_info nvm;
+ 	struct i40e_fc_info fc;
  
- 	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
- 	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
++	/* PBA ID */
++	const char *pba_id;
++
+ 	/* pci info */
+ 	u16 device_id;
+ 	u16 vendor_id;
 -- 
 2.41.0
 
