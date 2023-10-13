@@ -4,81 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 755C0CDB482
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Oct 2023 10:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D528ACDB47E
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 13 Oct 2023 10:19:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 0F8DF61512;
-	Fri, 13 Oct 2023 10:17:56 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0F8DF61512
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7E4B561504;
+	Fri, 13 Oct 2023 10:19:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7E4B561504
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1697192276;
-	bh=e1IjDHtX8ELTn6yAs8V2ExXIVVh7bZSivT6fxNgWy6w=;
+	s=default; t=1697192379;
+	bh=1I5CJLOK6025Rl+CGuE1TDcf8zfUBSD+1O9sTnCQamE=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=fDDxIRRmBIhIY15UHJj/yeu3g8Q++cz2L3ItFML5w5+TpiqStEZbYvTRQZ5+v8niR
-	 ByiBkdKwudP8BYZ5KSO6YvmsaHXE9oszGyjOfm5geDVW6r1rkp/S5mY5J9qpOnBtmD
-	 svWXANkdz9O2eaU5GqdqgPO4+mv74z3ki5G3RIlbXeDXIYjyCme4IZ6YcLcAN8QjBF
-	 urXxBkD3aLNzPJnURsVoHwIajlEccp3J9IwwwPCtOUJo+cWls5tHV8TRLL8ZGxDErr
-	 cOFhRIdQVGM02XjZodSU0GinBYBAMa0iKucXGRxLoQgkC+oLTh/4kkRNrunE2KKcZU
-	 SlQP1VYzuk9wQ==
+	b=4b0g/iR8tLpJfAN113+Ih9Q60Ba5xMLxM2/Hezchq71Of5XV+cCnk85g56sCp1Ku+
+	 hClZRvUTmHLrNz7Uvzl+q+2hQEVCyGyx8z8qNNqC+fkCPKHhdXl2W12cvvXh2gjvh5
+	 aW6z2f+GtG/u7QcHCknUHI2s5wW+XfKoLeDyP8aq7ykr8e/BnhiTz7Ies+bdQ+hYNw
+	 uk+Wwy1bYu0x2ij3ODiFmcb0Gb9NLt6PpaWG63DI6AgNr4Igb+hhYlgKn+17fbi6Gm
+	 uxwarynBb1Ntsj03NSJCJaslb4R7TdbnLsQObZ17awWY9HfKlc1Ofg/cWkiz0Pltzn
+	 VZALbufEUym3g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9OLQqJQzsasi; Fri, 13 Oct 2023 10:17:55 +0000 (UTC)
+	with ESMTP id OZjyHrTeXNdo; Fri, 13 Oct 2023 10:19:38 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 075D7614FF;
-	Fri, 13 Oct 2023 10:17:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 075D7614FF
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 3928B1BF995
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 10:17:53 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 58BFA60E35;
+	Fri, 13 Oct 2023 10:19:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 58BFA60E35
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 7A3FF1BF349
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 10:19:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0AED182324
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 10:17:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0AED182324
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5DEBD40292
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 10:19:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5DEBD40292
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id CFnV1dtu2rTn for <intel-wired-lan@lists.osuosl.org>;
- Fri, 13 Oct 2023 10:17:51 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id djogZS1JlL5Z for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 13 Oct 2023 10:19:35 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
- by smtp1.osuosl.org (Postfix) with ESMTPS id CAB56822B3
- for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 10:17:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CAB56822B3
-X-IronPort-AV: E=McAfee;i="6600,9927,10861"; a="364513532"
-X-IronPort-AV: E=Sophos;i="6.03,221,1694761200"; d="scan'208";a="364513532"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1BEFC400CB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 13 Oct 2023 10:19:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1BEFC400CB
+X-IronPort-AV: E=McAfee;i="6600,9927,10861"; a="364513724"
+X-IronPort-AV: E=Sophos;i="6.03,221,1694761200"; d="scan'208";a="364513724"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 13 Oct 2023 03:17:45 -0700
+ 13 Oct 2023 03:19:33 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10861"; a="758451246"
-X-IronPort-AV: E=Sophos;i="6.03,221,1694761200"; d="scan'208";a="758451246"
+X-IronPort-AV: E=McAfee;i="6600,9927,10861"; a="898505429"
+X-IronPort-AV: E=Sophos;i="6.03,221,1694761200"; d="scan'208";a="898505429"
 Received: from unknown (HELO amlin-019-225.igk.intel.com) ([10.102.19.225])
- by fmsmga007.fm.intel.com with ESMTP; 13 Oct 2023 03:17:44 -0700
+ by fmsmga001.fm.intel.com with ESMTP; 13 Oct 2023 03:17:42 -0700
 From: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 To: intel-wired-lan@lists.osuosl.org, anthony.l.nguyen@intel.com,
  aleksandr.loktionov@intel.com, jedrzej.jagielski@intel.com
-Date: Fri, 13 Oct 2023 12:17:43 +0200
-Message-Id: <20231013101743.1322277-1-aleksandr.loktionov@intel.com>
+Date: Fri, 13 Oct 2023 12:19:31 +0200
+Message-Id: <20231013101931.1326412-1-aleksandr.loktionov@intel.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1697192271; x=1728728271;
+ t=1697192375; x=1728728375;
  h=from:to:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=N9XZdf1lsEvLzvfu6H62LK0J7LQ/VuQISxTID3pZou4=;
- b=nzEiUyBLcPkAfV2HWG/08z5VChZu2ceC86wgJtYDSg4pmIZCQ8GMo9+V
- 3rzQTtCKkX/452zaJxDwEJ6SmGm2gYZMGR0GFZY1U9vc3fuBeaZm1Gu/Y
- FfOsAJR9nSnlutOty5r684+1WWNEPKZB/s/77pF+wOAcZ5GCywWbHx++a
- qGerw8Hxa7Cmlzw8LfNtjr/5ZnXIJG8h8stdiG3M9IoF2ynCJv5u5YKnh
- b/qRSuVRjZ3KX2nA5tf9goOH0xkMSiyRsySM6EjpcZ6ovf+0Xi4o6LIZf
- pxe3DyPgAOzzeH3dyYMb5thQKalpDa6UURQHNPf2NXXhqd9Q4SF8HxBT7
- Q==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=k+syo+kKSkeL7WxD587qiNMVcXwPo3vOWRFewPpsBsI=;
+ b=HHX9SeS3SaPDhDs1b/I01O1ZynfbWPFGYYGnfZOr2ST2zVZtKsPattlc
+ 1AQF5I9KCsWalo4kvfNRYZaUxVvf73A6vEDpLUkZur8SrS2ao4QT4dd+L
+ SyhulnQNMAiPst3RS/PZQ089jnn5zsFHRt1EPfdfFQVMwrThCZFc8H+Jx
+ OXRykf8FfwjhgQLAR07HAvORiJAHVM5+elPR4SRsfxlPhfB5Hu6/SYmt/
+ xUhatvKwlIJEIp4IJT+ajtEv8E/+dS1E1xliPYIERokQERxN9C8RHsw/v
+ x6Z6SrWRV6H++WUernmZ6l15UHN+1fIj3cb89wk7CAp/c+8O1XtEavhT8
+ g==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nzEiUyBL
-Subject: [Intel-wired-lan] [PATCH iwl-next v3] i40e: add restore default
+ header.a=rsa-sha256 header.s=Intel header.b=HHX9SeS3
+Subject: [Intel-wired-lan] [PATCH iwl-next v4] i40e: add restore default
  speed when changed PHY doesn't support it
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -98,7 +98,7 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 Currently, there was no link after plugging a different type of PHY
-module if user forced previous PHY specific link type/speed for  before.
+module if user forced previous PHY specific link type/speed before.
 
 Add reset link speed settings to the default values for PHY module,
 if different PHY module is inserted and currently defined user-specified
@@ -111,6 +111,7 @@ Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 ---
 v1->v2 fixed Reviewed-by tags
 v2->v3 fixed commit messages and tags
+v3->v4 fixed commit message typo
 ---
 ---
  drivers/net/ethernet/intel/i40e/i40e_main.c | 65 +++++++++++++++++++--
