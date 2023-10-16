@@ -4,76 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F20E1CDB482
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Oct 2023 08:56:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D10DC41513
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 16 Oct 2023 09:27:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 8F5FA6FA34;
-	Mon, 16 Oct 2023 08:56:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8F5FA6FA34
+	by smtp3.osuosl.org (Postfix) with ESMTP id E499261387;
+	Mon, 16 Oct 2023 09:27:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E499261387
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1697446584;
-	bh=R9FP25TCr79YyNnUllKUfiU6WXzk5bmhqRCEbNR1qwg=;
+	s=default; t=1697448430;
+	bh=j6J+VBSWTDxlhMPT6HpAqXkDUFhjAPnUyVU/qHuioPw=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=04j2eQSOZNukG19dS5qajWjFGDEGV42VipUbiJogO8fpu+TH+e9haWCVnPp5B0RZd
-	 Sl+ocMfBuStYpu87zZCQX2c7OJbcHTcLXN4rSwZQnUi7tQshppJCDk6p4Do4AqFcJA
-	 r0LCMSASmz13HfZNoeiJqODCydjOUw9W+n0+0/yPS64xZtQ45WD9RyN/tVdm+E9f4X
-	 c5mqJo82OF/f34oR36kqJsTboJAyTG4dq8m5qrarGSstifDEiwzlcBdOZU+xEuZ41X
-	 1IP5C4+LFLfbwwXPXZhETC3macTMbXrlgT0WrBJBtjAKnymfppqUgwSvZdnZpBXzdS
-	 121sAHe7yyrKg==
+	b=xV22+8rid0+yZ/EWnXqndoFJtKRugclHt6bfxfHCOfvqV6M9C4hTl8XlvIeiTQiEl
+	 h62b3xVxKXa3c42SqI4EURaX+gVhkyoh3vzh0/ckfE3OoKDZ6UZFgOO/h/xXhZ6uvw
+	 KCyfKO47th3CtjQs+ps9aZ1BdpyhCeCMPatQBFU8IJae6m8VzWZmot1aC8fwy4Qq2u
+	 VejkmlaM9ss8GBopYBpeWcBMIRYxwvkTCLDxz5AJsw4w9A8P/3q0hpwzPDUjJ0U20D
+	 itYcNp/A2Z9cWqpKlUEPaam2YMhyPI1mrsOMP0E1kAZ+kLU/FaI7KEwYE3Vkkk1lT4
+	 gmM9cJg8jICLg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xSptl58HOT5n; Mon, 16 Oct 2023 08:56:23 +0000 (UTC)
+	with ESMTP id EyEg19JOPQ5Y; Mon, 16 Oct 2023 09:27:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 983FE6FA37;
-	Mon, 16 Oct 2023 08:56:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 983FE6FA37
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 9A0311BF286
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Oct 2023 08:56:22 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id EE1E461388;
+	Mon, 16 Oct 2023 09:27:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EE1E461388
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 8BC1F1BF82F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Oct 2023 09:27:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 76D7C415C3
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Oct 2023 08:56:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 76D7C415C3
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6258981F16
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Oct 2023 09:27:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6258981F16
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id RkF2gAm3Ihiy for <intel-wired-lan@lists.osuosl.org>;
- Mon, 16 Oct 2023 08:56:21 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id nlq08UcffE2H for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 16 Oct 2023 09:27:07 +0000 (UTC)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 1BA66415C8
- for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Oct 2023 08:56:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1BA66415C8
+ by smtp1.osuosl.org (Postfix) with ESMTPS id C09F281F84
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 16 Oct 2023 09:27:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C09F281F84
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id D79B260DE9;
- Mon, 16 Oct 2023 08:56:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C39D6C433C7;
- Mon, 16 Oct 2023 08:56:18 +0000 (UTC)
-Date: Mon, 16 Oct 2023 10:56:16 +0200
+ by dfw.source.kernel.org (Postfix) with ESMTP id A46D560CA4;
+ Mon, 16 Oct 2023 09:27:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 485C2C433C8;
+ Mon, 16 Oct 2023 09:27:04 +0000 (UTC)
+Date: Mon, 16 Oct 2023 11:27:00 +0200
 From: Simon Horman <horms@kernel.org>
-To: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-Message-ID: <20231016085616.GF1501712@kernel.org>
-References: <20231009090711.136777-1-mateusz.polchlopek@intel.com>
+To: Takeru Hayasaka <hayatake396@gmail.com>
+Message-ID: <20231016092700.GH1501712@kernel.org>
+References: <20231012060115.107183-1-hayatake396@gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20231009090711.136777-1-mateusz.polchlopek@intel.com>
+In-Reply-To: <20231012060115.107183-1-hayatake396@gmail.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1697446579;
- bh=1AHKkjopLy9MQ2QaX0CMu3exjv0u7VlsqlSyKEPL17I=;
+ d=kernel.org; s=k20201202; t=1697448426;
+ bh=K6N7taMNzX8fRSK+a4h5bAnL1ClZhYOHgnAw8kLuxgg=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=fTVwj73mH4w8wkLtKxMBFbXppul9fJhr+aXijweVOwj/yAN+p6H+DVcthn0x4ZxrH
- WNWEVkbFlxG3zbRPgjplrcrzxbN/oIs4zJQNqGL93wenT/OfI3QIv0T4b5z6S2PRuz
- OTKz9XQ4qccllse9iUSs5S9NQsSzY0LOBZ4VxN6LkxejfolOUT1VcWVU3CEMRNOsta
- Fjo2Bb124+cbUWwQqzhbHw6vXHr04N4bYEn8sbI9/vPLIzRFP6FHovH5dMvEn1tCmI
- uNEaWIxvTuPV6cokexqMWvx8jdi0NSOAh/eLVrmPpAouDQY893Zn62mKS1XvdY93yh
- eTvWTlL0OLnLQ==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=IVQMhtgQmEmd5OAjsfBAeqca4uAcYytlr0LvgAArGWkEeBIyQxupcpKwvSJ5y+cD2
+ gcAuDvyWNvjEoem4fP/PwlSsFromuX6NrjHd8I1xAQNtM6rPv+cDYd/p+Hk4SGqxSu
+ G+6odt9u2IAzgz0QHx69p64eosCwuLnxiE/kQaioCB6Vy2/JHJGuuvb0nZb88l8kv/
+ tek7Vr48wkbVNblS63Ts09cNXP3A4fxI3K/Rq9IXnxnJHKOW3M25HZkQxfxSUlomoM
+ Pb7E23H35Z0rRA+yG7YMedxdyt2HLBghpMX9Ozy3RiYqlCLlXG3CNHxhZXxyK35pio
+ DgR1J89bC++tw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=fTVwj73m
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 0/5] ice: Support 5 layer
- Tx scheduler topology
+ header.a=rsa-sha256 header.s=k20201202 header.b=IVQMhtgQ
+Subject: Re: [Intel-wired-lan] [PATCH net-next v2] ethtool: ice: Support for
+ RSS settings to GTP from ethtool
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,55 +86,48 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org
+Cc: intel-wired-lan@lists.osuosl.org,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Mon, Oct 09, 2023 at 05:07:06AM -0400, Mateusz Polchlopek wrote:
-> For performance reasons there is a need to have support for selectable
-> Tx scheduler topology. Currently firmware supports only the default
-> 9-layer and 5-layer topology. This patch series enables switch from
-> default to 5-layer topology, if user decides to opt-in.
+On Thu, Oct 12, 2023 at 06:01:15AM +0000, Takeru Hayasaka wrote:
+> This is a patch that enables RSS functionality for GTP packets using
+> ethtool.
+> A user can include her TEID and make RSS work for GTP-U over IPv4 by
+> doing the following:
+> `ethtool -N ens3 rx-flow-hash gtpu4 sde`
+> In addition to gtpu(4|6), we now support gtpc(4|6),gtpc(4|6)t,gtpu(4|6)e,
+> gtpu(4|6)u, and gtpu(4|6)d.
 > 
+> GTP generates a flow that includes an ID called TEID to identify the
+> tunnel. This tunnel is created for each UE (User Equipment).
+> By performing RSS based on this flow, it is possible to apply RSS for
+> each communication unit from the UE.
+> Without this, RSS would only be effective within the range of IP
+> addresses.
+> For instance, the PGW can only perform RSS within the IP range of the
+> SGW.
+> problematic from a load distribution perspective, especially if there's
+> a bias in the terminals connected to a particular base station.
+> This case can be solved by using this patch
+> 
+> Signed-off-by: Takeru Hayasaka <hayatake396@gmail.com>
 > ---
-> v3:
-> - fixed documentation warnings
-> 
-> v2:
-> - updated documentation
-> - reorder of variables list (default-init first)
-> - comments changed to be more descriptive
-> - added elseif's instead of few if's
-> - returned error when ice_request_fw fails
-> - ice_cfg_tx_topo() changed to take const u8 as parameter (get rid of copy
->   buffer)
-> - renamed all "balance" occurences to the new one
-> - prevent fail of ice_aq_read_nvm() function
-> - unified variables names (int err instead of int status in few
->   functions)
-> - some smaller fixes, typo fixes
-> https://lore.kernel.org/netdev/20231006110212.96305-1-mateusz.polchlopek@intel.com/
-> 
-> v1: https://lore.kernel.org/netdev/20230523174008.3585300-1-anthony.l.nguyen@intel.com/
-> ---
-> 
-> Lukasz Czapnik (1):
->   ice: Add tx_scheduling_layers devlink param
-> 
-> Michal Wilczynski (2):
->   ice: Enable switching default Tx scheduler topology
->   ice: Document tx_scheduling_layers parameter
-> 
-> Raj Victor (2):
->   ice: Support 5 layer topology
->   ice: Adjust the VSI/Aggregator layers
+> Added commit messages and options based on reviews
 
-For series,
+Thanks Hayasaka-san,
+
+Overall this looks good to me. And I see that the review of v1
+has been addressed - by adding information about the need for
+this to the commit message.
 
 Reviewed-by: Simon Horman <horms@kernel.org>
-
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
