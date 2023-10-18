@@ -4,68 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2653CDB484
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Oct 2023 08:15:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BE65CDB482
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Oct 2023 08:26:35 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 776174036E;
-	Wed, 18 Oct 2023 08:15:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 776174036E
+	by smtp2.osuosl.org (Postfix) with ESMTP id C9A1D404D4;
+	Wed, 18 Oct 2023 08:26:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C9A1D404D4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1697616917;
-	bh=03fQjPHgInwdjf6p8dN674Gw8bX9L3SyOPJ8Ivx4RKo=;
+	s=default; t=1697617594;
+	bh=2gWjySmuKTXdRKw9Kp3fe2WZ3AKTHlyPK0rd4VIe8LM=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=F4Gqx1nIEz1PilUXB9nd4TAJWXOjFBjrQrrOjnhcpyWNpOFZ2WaAzNqfJZCBMxKM2
-	 7Uy4T+gtqym1bnLUk++FO4zOEIZqK+zCu6ftZy9BEz9X/7B5EL8talyQ8FTSR3zhWv
-	 OG6c2BvudTYyHwB5cd/hXAoMhUKsj9siAmj7pVCR10iPn8oajxRcseCv+H64s/mbXj
-	 1v4zvf9JyQO3nFpruaq62YEDVIDJrj+rUjDdOHEJ76WR7/8ybCI3YHziPaZWqHZEhp
-	 rLNEnCQ0l4DawQJPbySbw5O1ia+dnmcOJUpMRg6oFAA6D5ADr8C/v2YnqIHqsWnj2I
-	 MEfcG26jrByTw==
+	b=9k180Cp77BCvhbRrpAKJV2T+NNwrn8s3NT1tBe7XP0XGrDGRFRgnuUM5YGSHXiP7q
+	 L1zssyInDIRYT8FWkln1SNDmGBop2ZDunicTt6XBBurG50NkFgfVqcogUAedXHq5A4
+	 b+5vfW7whIsrhHD9siBRlCib207NuPSDgVpFjDvCHReOKssxHLVme4+0gy/eDfL4Bv
+	 3MXnMq1S1ENz8DWbPWO8bisdZcBhPx9mZJrzEipv9KBqXW8WWteNprplQm1MqvqJBe
+	 BOUCK4GZnqDdRFefPHpaVO+qdz6hgljiVbDz8KFwWYe3NbCdHzvtByZVKRqMewH3DC
+	 JEou2pjKupLng==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BzRneaitHLHz; Wed, 18 Oct 2023 08:15:16 +0000 (UTC)
+	with ESMTP id QqNYRn9MLe1p; Wed, 18 Oct 2023 08:26:33 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 1BCB7404D3;
-	Wed, 18 Oct 2023 08:15:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1BCB7404D3
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 18A2A1BF285
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 08:15:15 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 958E3404F4;
+	Wed, 18 Oct 2023 08:26:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 958E3404F4
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id D20F91BF285
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 08:26:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E452B60E03
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 08:15:14 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E452B60E03
+ by smtp2.osuosl.org (Postfix) with ESMTP id B50C6404F4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 08:26:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B50C6404F4
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ged80BpkEzYC for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Oct 2023 08:15:14 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ICregRT3Qn2M for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Oct 2023 08:26:30 +0000 (UTC)
 Received: from ganesha.gnumonks.org (ganesha.gnumonks.org
  [IPv6:2001:780:45:1d:225:90ff:fe52:c662])
- by smtp3.osuosl.org (Postfix) with ESMTPS id C66C560B29
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 08:15:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C66C560B29
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 29202404D4
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 08:26:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 29202404D4
 Received: from uucp by ganesha.gnumonks.org with local-bsmtp (Exim 4.94.2)
  (envelope-from <laforge@gnumonks.org>)
- id 1qt1hq-00BbbJ-Ah; Wed, 18 Oct 2023 10:15:06 +0200
+ id 1qt1sl-00Bhme-QA; Wed, 18 Oct 2023 10:26:23 +0200
 Received: from laforge by nataraja with local (Exim 4.97-RC2)
- (envelope-from <laforge@gnumonks.org>) id 1qt1fY-00000002Ylo-3fKj;
- Wed, 18 Oct 2023 10:12:44 +0200
-Date: Wed, 18 Oct 2023 10:12:44 +0200
+ (envelope-from <laforge@gnumonks.org>) id 1qt1sD-00000002YxM-3yh4;
+ Wed, 18 Oct 2023 10:25:49 +0200
+Date: Wed, 18 Oct 2023 10:25:49 +0200
 From: Harald Welte <laforge@gnumonks.org>
 To: takeru hayasaka <hayatake396@gmail.com>
-Message-ID: <ZS-TfMKAxHLEiXBl@nataraja>
+Message-ID: <ZS-WjVVaoBXqdZgB@nataraja>
 References: <20231012060115.107183-1-hayatake396@gmail.com>
  <20231016152343.1fc7c7be@kernel.org>
  <CADFiAcKOKiTXFXs-e=WotnQwhLB2ycbBovqS2YCk9hvK_RH2uQ@mail.gmail.com>
  <CADFiAcLiAcyqaOTsRZHex8g-wSBQjCzt_0SBtBaW3CJHz9afug@mail.gmail.com>
- <20231017164915.23757eed@kernel.org>
- <CADFiAc+OnpyNTXntZBkDAf+UfueRotqqWKg+BrApWcL=x_8vjQ@mail.gmail.com>
+ <CADFiAcLvrpm+HGotr=UWiqyLGG-Bp1vf1E7bwKH_-MTCc84Jjw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <CADFiAc+OnpyNTXntZBkDAf+UfueRotqqWKg+BrApWcL=x_8vjQ@mail.gmail.com>
+In-Reply-To: <CADFiAcLvrpm+HGotr=UWiqyLGG-Bp1vf1E7bwKH_-MTCc84Jjw@mail.gmail.com>
 Subject: Re: [Intel-wired-lan] [PATCH net-next v2] ethtool: ice: Support for
  RSS settings to GTP from ethtool
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -92,60 +91,31 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Takeru, Jakub and list,
+Hi Takeru,
 
-On Wed, Oct 18, 2023 at 10:53:02AM +0900, takeru hayasaka wrote:
-> > Let's forget about capabilities of Intel NICs for now - can you as a
-> > user think of practical use cases where we'd want to turn on hashing
-> > based on TEID for, e.g. gtpu6 and not gtpc6?
-> 
-> of course!
-> There are clearly cases where we would want to use gtpu4|6 instead of gtpc4|6.
-> 
-> For instance, there are PGWs that have the capability to separate the
-> termination of communication of 4G LTE users into Control and User
-> planes (C/U).
+On Wed, Oct 18, 2023 at 01:49:08AM +0900, takeru hayasaka wrote:
+> I'm not very proficient in English, so I'm worried whether I can
+> explain it well.
 
-I would argue it is the standard case in any PGW (or SMF+UPF) to process
-GTP-C differently than GTP-U.  That's what the entire CUPS (control/user plane
-split) architecture is meant for.
+Don't worry, you were very clear in this e-mail.
 
-Now the question is how does one implement that? As the related signaling protocols
-all allow to specify different IP addresses for GTPv1/v2-C (v1 for 2G/3G
-and v2 for 4G) and GTPv1-U (v1 used everywhere) it is always possible to
-use separate IP addresses for control and user plane.  It's even normal
-that a single GTP-C instance (on one IP) manages multiple GTP-U
-instances on other IP-addresses.  Those IPs are then handled by
-completely different physical servers/systems/VMs/...
+> Therefore, I will try to briefly explain the flow and what kind of
+> cases these are in a straightforward manner.
 
-So only in case the user intentionally configures their network to use
-the same IP address for GTP-C and GTP-U traffic one will need to start
-distinguishing GTP-C and GTP-U on one host/NIC with the RSS mechanism:
-Steer the GTP-C traffic to the control plane instance on one CPU and
-spread the GTP-U traffic via hash function to multiple other
-queues/CPUs.  I personally think it's short-sighted to use identical IPs
-for control and user plane, as it means you can never scale out to
-multiple machines without introducing some kind of dedicated load
-balancer in front.  But assuming some people still want to do it that
-way: Yes, then you need the feature to split GTP-C form GTP-U via RSS to
-scale well.
+Thanks for taking the time.  As stated, I think it would be best to have
+these or some other some brief comments about the different flow types
+in the source code (and especially the documentation) of ethtool.
 
-What I'm somehwat more wondering about is the usability to load-balance
-GTP-C traffic over multiple queues/cores.  As stated earlier, that's
-just signaling.
+Based on your explanation, I agree that indeed those are all different
+flow types that occur in real-life on PGW/UPF and other 3GPP network
+elements/functions.  I can also very well imagine that there are use
+cases to steer all of those separately, including the EH and UL/DL types
+you mentioned.
 
-> If we were to propose again, setting aside considerations specific to
-> Intel, I believe, considering the users of ethtool, the smallest units
-> should be gtpu4|6 and gtpc4|6.
+So I'm supporing your patch with all its many different flow types for RSS.
 
-agreed.  Though I'm not entirely sure one would usually want to treat v4
-different from v6.  I'd assume they would usually both follow the same
-RSS scheme?
-
-> Regarding Extension Headers and such, I think it would be more
-> straightforward to handle them implicitly.
-
-I would also agree to that.
+Thanks,
+	Harald
 -- 
 - Harald Welte <laforge@gnumonks.org>          https://laforge.gnumonks.org/
 ============================================================================
