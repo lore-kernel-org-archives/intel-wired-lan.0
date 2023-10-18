@@ -1,83 +1,86 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5692CDB47E
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Oct 2023 16:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31798CDB482
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 18 Oct 2023 17:06:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7B08F41917;
-	Wed, 18 Oct 2023 16:39:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7B08F41917
+	by smtp4.osuosl.org (Postfix) with ESMTP id A7BFC4217A;
+	Wed, 18 Oct 2023 17:06:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A7BFC4217A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1697647166;
-	bh=w8XU/0nMLm0eeMNwx1h1uGsVRabJB8y2246CCVQ/gcg=;
+	s=default; t=1697648817;
+	bh=48zfvdihG+xcBErHXLzkIsgbJPHyJ48LUuy+YSISeXo=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=KlpANPF1XOU7aRXa59VakJITIdFcDHtCJqXaEdeUvkkSNHesXWX19atNIDs2Hlg3q
-	 0xLMHRhQAT6vB7MiX1oVnI5g0Dz+62Jg4FnOI4YK/St3oD2jDfGXU4mxUVVJWTY6aL
-	 7QhJatecDd1wGhvc/XPnHhDfIIJ+XtLsYT9liyqDQOSxHI/z+TPumueCrEWjc5vMDH
-	 6FyLPsOl6yMmuPy1cZDKJ2FZyGuBIIj4fVMleWYOYQyjE0hxTwK+ZxsXsb16xZOH+i
-	 CNLTOPS4t+ki5ECxBptSHGhCwKOlr5L9bo+ekmgsPm4Ct0xqM2aZXn/KH8yLpOV30I
-	 daMGFl0uYS4dA==
+	b=Lw0idi+e9jAC0KNs4QuIHuSlnE+CkAJ7eD5cPwtr/5jI8fEJ/KzhyC14YvrJoLd/j
+	 vY+nRAe/6FmS++CfS0NTiSO3ngxkBiHPfP/3z2CUs0VJn4qHJP2LyseHPhRSOFiGZo
+	 U6Si7wR+My2G+jNPYhZ76FDOKgzeWhmsr9bngx5i/dbUiG6cAzcEIOX09lnl/D91uB
+	 8NfAv37Ng+1pObZa/c0AofzBNnwv3GpUs9y0owgRT4qG98FK5/yoW62rHBxToRgu47
+	 DVfaPk0PfGPvYY8dT8fWceiG70B8Mf3n6sFmuVorB/4gFqWMUi/H4zb/8EMTSUsBHW
+	 Fmkxqr0Ajmd1g==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id tMFUgiamwP5j; Wed, 18 Oct 2023 16:39:25 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lQFI0dCt0IN4; Wed, 18 Oct 2023 17:06:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F0A8940597;
-	Wed, 18 Oct 2023 16:39:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F0A8940597
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8061B1BF267
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 16:39:23 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9E37A42184;
+	Wed, 18 Oct 2023 17:06:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9E37A42184
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 085881BF27A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 17:06:55 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 57F8D61687
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 16:39:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 57F8D61687
+ by smtp4.osuosl.org (Postfix) with ESMTP id D2D794217A
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 17:06:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D2D794217A
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id nxwVQFBt6FcX for <intel-wired-lan@lists.osuosl.org>;
- Wed, 18 Oct 2023 16:39:22 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.93])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 715716167F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 16:39:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 715716167F
-X-IronPort-AV: E=McAfee;i="6600,9927,10867"; a="383276991"
-X-IronPort-AV: E=Sophos;i="6.03,235,1694761200"; d="scan'208";a="383276991"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
- by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 18 Oct 2023 09:39:18 -0700
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 3U4tPYVvfeX5 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 18 Oct 2023 17:06:54 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id DF42842184
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 18 Oct 2023 17:06:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DF42842184
+X-IronPort-AV: E=McAfee;i="6600,9927,10867"; a="388924761"
+X-IronPort-AV: E=Sophos;i="6.03,235,1694761200"; d="scan'208";a="388924761"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Oct 2023 10:06:50 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10867"; a="785991296"
-X-IronPort-AV: E=Sophos;i="6.03,235,1694761200"; d="scan'208";a="785991296"
-Received: from boxer.igk.intel.com ([10.102.20.173])
- by orsmga008.jf.intel.com with ESMTP; 18 Oct 2023 09:39:17 -0700
-From: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Wed, 18 Oct 2023 18:39:08 +0200
-Message-Id: <20231018163908.40841-1-maciej.fijalkowski@intel.com>
-X-Mailer: git-send-email 2.35.3
+X-IronPort-AV: E=McAfee;i="6600,9927,10867"; a="822494033"
+X-IronPort-AV: E=Sophos;i="6.03,235,1694761200"; d="scan'208";a="822494033"
+Received: from nirmoyda-mobl.ger.corp.intel.com (HELO azaki-desk1.intel.com)
+ ([10.249.38.47])
+ by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 18 Oct 2023 10:06:43 -0700
+From: Ahmed Zaki <ahmed.zaki@intel.com>
+To: netdev@vger.kernel.org
+Date: Wed, 18 Oct 2023 11:06:29 -0600
+Message-Id: <20231018170635.65409-1-ahmed.zaki@intel.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1697647160; x=1729183160;
+ t=1697648813; x=1729184813;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=5O/5Qut56p5kx3ifgiN+cnPcgcX/d49y7uyznNjPtc0=;
- b=nnOutzYGdQIsRa5Cs7mm+PK7kS0frOj88aIhDzL3b72vbmL/cmuHFSnx
- wCaNg3+8kxw5JIMz2CYsamdXQjlflmXL45ltwKReq/jATXaaF34nfQCTf
- bxHDKg7fI4hpuPSFB0M8ZzQON8YHZ16jgOy0byCx/dxP0QhCeo6p7Ql4m
- s9KLSxKb5Mmhb3zx7/RVmXLa0TxsriNxMnvB6FSpXml7UgNvwqS3ewSdh
- XAHywOjNuX+byyIYPrPwsc0DqztcchchFtzvKOltjggmf9Q33npig/sIf
- lp3LQbJEvxFbtsg2/4ZPcNxyECHBhmA26avd7ckNiibgDkf35A1wPAYUu
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ bh=/AH7FG5H24zeN3zHGTfVvmBBV3l6sDBNWvaVvqh4yB8=;
+ b=ajmx5XQ/PNv2IQ/VqqJcTyNLw2TGNDu0nlUKpNr/BIQKgLIl96W3QHVF
+ OHV9Nq14dDOrgJMhv0ndLCUpDj5dyUJhOfvrVP1rbnYjA5PZU58FlmnjV
+ HZeZjAPonkpd7U7GY0wuh0ujirFoUQLGpJITa0pWhs+eri1XfzgBFSagk
+ qIMzDNQ2bED3Wp27W1mWA4gMglBtZqt43R/SPsbxFaPEi5WoL8tknCqb+
+ 8USzyROTh3+lBMkxIqvOMANOcjuE9hm2AsjaKyaychzC/Evj265rwRfkK
+ 9TMUgksqaG7Hd3pGp3OL0urCw1ZZ+wjwWRSQ9AqdnXP+MjDYT1aMHWcTk
+ w==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=nnOutzYG
-Subject: [Intel-wired-lan] [PATCH net] i40e: xsk: remove count_mask
+ header.a=rsa-sha256 header.s=Intel header.b=ajmx5XQ/
+Subject: [Intel-wired-lan] [PATCH net-next v5 0/6] Support symmetric RSS
+ (Toeplitz) hash
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,155 +93,80 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Maciej Fijalkowski <maciej.fijalkowski@intel.com>, netdev@vger.kernel.org,
- Tushar Vyavahare <tushar.vyavahare@intel.com>, anthony.l.nguyen@intel.com,
- jacob.e.keller@intel.com, magnus.karlsson@intel.com
+Cc: mkubecek@suse.cz, andrew@lunn.ch, willemdebruijn.kernel@gmail.com,
+ corbet@lwn.net, vladimir.oltean@nxp.com, linux-doc@vger.kernel.org,
+ jesse.brandeburg@intel.com, Ahmed Zaki <ahmed.zaki@intel.com>,
+ edumazet@google.com, anthony.l.nguyen@intel.com, horms@kernel.org,
+ kuba@kernel.org, intel-wired-lan@lists.osuosl.org, pabeni@redhat.com,
+ davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Cited commit introduced a neat way of updating next_to_clean that does
-not require boundary checks on each increment. This was done by masking
-the new value with (ring length - 1) mask. Problem is that this is
-applicable only for power of 2 ring sizes, for every other size this
-assumption can not be made. In turn, it leads to cleaning descriptors
-out of order as well as splats:
+Patch 1 adds the support at the Kernel level, allowing the user to set a
+symmetric RSS hash for any flow type via:
 
-[ 1388.411915] Workqueue: events xp_release_deferred
-[ 1388.411919] RIP: 0010:xp_free+0x1a/0x50
-[ 1388.411921] Code: 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 f3 0f 1e fa 0f 1f 44 00 00 55 48 8b 57 70 48 8d 47 70 48 89 e5 48 39 d0 74 06 <5d> c3 cc cc cc cc 48 8b 57 60 83 82 b8 00 00 00 01 48 8b 57 60 48
-[ 1388.411922] RSP: 0018:ffa0000000a83cb0 EFLAGS: 00000206
-[ 1388.411923] RAX: ff11000119aa5030 RBX: 000000000000001d RCX: ff110001129b6e50
-[ 1388.411924] RDX: ff11000119aa4fa0 RSI: 0000000055555554 RDI: ff11000119aa4fc0
-[ 1388.411925] RBP: ffa0000000a83cb0 R08: 0000000000000000 R09: 0000000000000000
-[ 1388.411926] R10: 0000000000000001 R11: 0000000000000000 R12: ff11000115829b80
-[ 1388.411927] R13: 000000000000005f R14: 0000000000000000 R15: ff11000119aa4fc0
-[ 1388.411928] FS:  0000000000000000(0000) GS:ff11000277e00000(0000) knlGS:0000000000000000
-[ 1388.411929] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[ 1388.411930] CR2: 00007f1f564e6c14 CR3: 000000000783c005 CR4: 0000000000771ef0
-[ 1388.411931] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[ 1388.411931] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-[ 1388.411932] PKRU: 55555554
-[ 1388.411933] Call Trace:
-[ 1388.411934]  <IRQ>
-[ 1388.411935]  ? show_regs+0x6e/0x80
-[ 1388.411937]  ? watchdog_timer_fn+0x1d2/0x240
-[ 1388.411939]  ? __pfx_watchdog_timer_fn+0x10/0x10
-[ 1388.411941]  ? __hrtimer_run_queues+0x10e/0x290
-[ 1388.411945]  ? clockevents_program_event+0xae/0x130
-[ 1388.411947]  ? hrtimer_interrupt+0x105/0x240
-[ 1388.411949]  ? __sysvec_apic_timer_interrupt+0x54/0x150
-[ 1388.411952]  ? sysvec_apic_timer_interrupt+0x7f/0x90
-[ 1388.411955]  </IRQ>
-[ 1388.411955]  <TASK>
-[ 1388.411956]  ? asm_sysvec_apic_timer_interrupt+0x1f/0x30
-[ 1388.411958]  ? xp_free+0x1a/0x50
-[ 1388.411960]  i40e_xsk_clean_rx_ring+0x5d/0x100 [i40e]
-[ 1388.411968]  i40e_clean_rx_ring+0x14c/0x170 [i40e]
-[ 1388.411977]  i40e_queue_pair_disable+0xda/0x260 [i40e]
-[ 1388.411986]  i40e_xsk_pool_setup+0x192/0x1d0 [i40e]
-[ 1388.411993]  i40e_reconfig_rss_queues+0x1f0/0x1450 [i40e]
-[ 1388.412002]  xp_disable_drv_zc+0x73/0xf0
-[ 1388.412004]  ? mutex_lock+0x17/0x50
-[ 1388.412007]  xp_release_deferred+0x2b/0xc0
-[ 1388.412010]  process_one_work+0x178/0x350
-[ 1388.412011]  ? __pfx_worker_thread+0x10/0x10
-[ 1388.412012]  worker_thread+0x2f7/0x420
-[ 1388.412014]  ? __pfx_worker_thread+0x10/0x10
-[ 1388.412015]  kthread+0xf8/0x130
-[ 1388.412017]  ? __pfx_kthread+0x10/0x10
-[ 1388.412019]  ret_from_fork+0x3d/0x60
-[ 1388.412021]  ? __pfx_kthread+0x10/0x10
-[ 1388.412023]  ret_from_fork_asm+0x1b/0x30
-[ 1388.412026]  </TASK>
+    # ethtool -N|-U eth0 rx-flow-hash <flow_type> s|d|f|n symmetric-xor
 
-It comes from picking wrong ring entries when cleaning xsk buffers
-during pool detach.
+Support for the new "symmetric-xor" flag will be later sent to the
+"ethtool" user-space tool.
 
-Remove the count_mask logic and use they boundary check when updating
-next_to_process (which used to be a next_to_clean).
+Patch 2 fixes a long standing bug with the register values. The bug has
+been benign for now since only (asymmetric) Toeplitz hash (Zero) has been
+used.
 
-Fixes: c8a8ca3408dc ("i40e: remove unnecessary memory writes of the next to clean pointer")
-Reported-by: Tushar Vyavahare <tushar.vyavahare@intel.com>
-Tested-by: Tushar Vyavahare <tushar.vyavahare@intel.com>
-Signed-off-by: Maciej Fijalkowski <maciej.fijalkowski@intel.com>
+Patches 3 and 4 lay some groundwork refactoring. While the first is
+mainly cosmetic, the second is needed since there is no more room in the
+previous 64-bit RSS profile ID for the symmetric attribute introduced in 
+the next patch.
+
+Finally, patches 5 and 6 add the symmetric Toeplitz support for the ice 
+(E800 PFs) and the iAVF drivers.
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_xsk.c | 22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
+v5: move sanity checks from ethtool/ioctl.c to ice's and iavf's rxfnc
+    drivers entries (patches 5 and 6).
+v4: add a comment to "#define RXH_SYMMETRIC_XOR" (in uapi/linux/ethtool.h)
+v3: rename "symmetric" to "symmetric-xor" and drop "Fixes" tag in patch 2.
+v2: fixed a "Reviewed by" to "Reviewed-by", also need to cc maintainers.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-index 37f41c8a682f..7d991e4d9b89 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
-@@ -437,12 +437,12 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
- 	u16 next_to_process = rx_ring->next_to_process;
- 	u16 next_to_clean = rx_ring->next_to_clean;
--	u16 count_mask = rx_ring->count - 1;
- 	unsigned int xdp_res, xdp_xmit = 0;
- 	struct xdp_buff *first = NULL;
-+	u32 count = rx_ring->count;
- 	struct bpf_prog *xdp_prog;
-+	u32 entries_to_alloc;
- 	bool failure = false;
--	u16 cleaned_count;
- 
- 	if (next_to_process != next_to_clean)
- 		first = *i40e_rx_bi(rx_ring, next_to_clean);
-@@ -475,7 +475,8 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
- 						      qword);
- 			bi = *i40e_rx_bi(rx_ring, next_to_process);
- 			xsk_buff_free(bi);
--			next_to_process = (next_to_process + 1) & count_mask;
-+			if (++next_to_process == count)
-+				next_to_process = 0;
- 			continue;
- 		}
- 
-@@ -493,7 +494,8 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
- 		else if (i40e_add_xsk_frag(rx_ring, first, bi, size))
- 			break;
- 
--		next_to_process = (next_to_process + 1) & count_mask;
-+		if (++next_to_process == count)
-+			next_to_process = 0;
- 
- 		if (i40e_is_non_eop(rx_ring, rx_desc))
- 			continue;
-@@ -513,10 +515,10 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
- 
- 	rx_ring->next_to_clean = next_to_clean;
- 	rx_ring->next_to_process = next_to_process;
--	cleaned_count = (next_to_clean - rx_ring->next_to_use - 1) & count_mask;
- 
--	if (cleaned_count >= I40E_RX_BUFFER_WRITE)
--		failure |= !i40e_alloc_rx_buffers_zc(rx_ring, cleaned_count);
-+	entries_to_alloc = I40E_DESC_UNUSED(rx_ring);
-+	if (entries_to_alloc >= I40E_RX_BUFFER_WRITE)
-+		failure |= !i40e_alloc_rx_buffers_zc(rx_ring, entries_to_alloc);
- 
- 	i40e_finalize_xdp_rx(rx_ring, xdp_xmit);
- 	i40e_update_rx_stats(rx_ring, total_rx_bytes, total_rx_packets);
-@@ -752,14 +754,16 @@ int i40e_xsk_wakeup(struct net_device *dev, u32 queue_id, u32 flags)
- 
- void i40e_xsk_clean_rx_ring(struct i40e_ring *rx_ring)
- {
--	u16 count_mask = rx_ring->count - 1;
- 	u16 ntc = rx_ring->next_to_clean;
- 	u16 ntu = rx_ring->next_to_use;
- 
--	for ( ; ntc != ntu; ntc = (ntc + 1)  & count_mask) {
-+	while (ntc != ntu) {
- 		struct xdp_buff *rx_bi = *i40e_rx_bi(rx_ring, ntc);
- 
- 		xsk_buff_free(rx_bi);
-+		ntc++;
-+		if (ntc >= rx_ring->count)
-+			ntc = 0;
- 	}
- }
- 
+Ahmed Zaki (4):
+  net: ethtool: allow symmetric-xor RSS hash for any flow type
+  ice: fix ICE_AQ_VSI_Q_OPT_RSS_* register values
+  ice: refactor the FD and RSS flow ID generation
+  iavf: enable symmetric RSS Toeplitz hash
+
+Jeff Guo (1):
+  ice: enable symmetric RSS Toeplitz hash for any flow type
+
+Qi Zhang (1):
+  ice: refactor RSS configuration
+
+ Documentation/networking/scaling.rst          |   6 +
+ .../net/ethernet/intel/iavf/iavf_adv_rss.c    |   8 +-
+ .../net/ethernet/intel/iavf/iavf_adv_rss.h    |   3 +-
+ .../net/ethernet/intel/iavf/iavf_ethtool.c    |  33 +-
+ drivers/net/ethernet/intel/ice/ice.h          |   2 +
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   8 +-
+ drivers/net/ethernet/intel/ice/ice_common.h   |   1 +
+ drivers/net/ethernet/intel/ice/ice_ethtool.c  |  25 +-
+ .../net/ethernet/intel/ice/ice_ethtool_fdir.c |  35 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.c    |  43 +-
+ .../net/ethernet/intel/ice/ice_flex_pipe.h    |   4 +-
+ .../net/ethernet/intel/ice/ice_flex_type.h    |   7 +
+ drivers/net/ethernet/intel/ice/ice_flow.c     | 439 +++++++++++++-----
+ drivers/net/ethernet/intel/ice/ice_flow.h     |  46 +-
+ .../net/ethernet/intel/ice/ice_hw_autogen.h   |   4 +
+ drivers/net/ethernet/intel/ice/ice_lib.c      | 117 ++---
+ drivers/net/ethernet/intel/ice/ice_main.c     |  49 +-
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ drivers/net/ethernet/intel/ice/ice_virtchnl.c |  55 ++-
+ .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  35 +-
+ include/linux/avf/virtchnl.h                  |  16 +-
+ include/uapi/linux/ethtool.h                  |  21 +-
+ 22 files changed, 652 insertions(+), 306 deletions(-)
+
 -- 
 2.34.1
 
