@@ -1,86 +1,68 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C436FCDB465
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Oct 2023 07:14:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79A69CDB465
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 19 Oct 2023 08:15:21 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3656C424A6;
-	Thu, 19 Oct 2023 07:14:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3656C424A6
+	by smtp3.osuosl.org (Postfix) with ESMTP id 08EA160B8C;
+	Thu, 19 Oct 2023 08:15:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 08EA160B8C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1697699651;
-	bh=ZYBhum23LRAfGhurLsdwCK5n7LWUx2jVH+aeFeA/lNI=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=1rYSyRM39qjmLgOaNovsosdL9j64xbYcwMgzxEL/ISA4SUHzMm/XvJwJ+WNJWZh6X
-	 DKkY2yXRdDOXnv8mbVYVAO/mC0TdqEBtsrteTxMCbnlcYT8Cf0gTJHwwNhvt9qsZAa
-	 Atl+WBHbIFSK1N/wrozlva3hA5DmG+ZUCLwwetG9hjqDLtAfvp3zjrjLiqA5z+6xx2
-	 VOcTQnqSTxd6cvxXO7iS++dAszwbNgVk/elp3/AITEsu5DQ7jARicawqF8R8rU7mq4
-	 j4AiNPBdKnrlbXW2jWmqWJHzfrs5nQ4WxnlZEXJBRR0LJIIq0W2vCeM8hNDVIyCzT+
-	 ssFot/qeDsC3A==
+	s=default; t=1697703321;
+	bh=Jw1DkMAyMzg1QntlemvI3CZGfiaLit1hUygZsFnxKCE=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=UYBOi1mQ2PdY7R8leKrnv+NIwd5I/1WmgswLNF8vZcNpvFhsj0Gog/t8rOBeDMBfN
+	 KMbCDlfDCQFHQt6z3g9JIP/v7jSPybwuw2A498IdMmBfC8rptIp7zQEXhlIFQr5tiw
+	 8cq9XbX7GwvTBDekYuTeTWjLtiDr+IBf0d5EE+eRuhfN9osTWaiqalx7H5+tVWNCOE
+	 IiKxT+aTpVMbaC1u6C4VqpDk+enRaQNqufvRLUlDYMHBEc6AfGUErSK1OLVOwPGtdc
+	 zw8PCGPFXrVSICK9wuhJIM4+AOi9/9LwE6K+zi41DDLciXnL6Ib9ZKWmHxb+zbUXsV
+	 PW85YnKr07Z8g==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9WtHmnSKDe_R; Thu, 19 Oct 2023 07:14:10 +0000 (UTC)
+Received: from smtp3.osuosl.org ([127.0.0.1])
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id HTuJU1r5yBz0; Thu, 19 Oct 2023 08:15:20 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id F16754249E;
-	Thu, 19 Oct 2023 07:14:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F16754249E
+	by smtp3.osuosl.org (Postfix) with ESMTP id F1A226FB01;
+	Thu, 19 Oct 2023 08:15:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F1A226FB01
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 578A41BF5EA
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Oct 2023 07:14:08 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 76CAB1BF45A
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Oct 2023 08:15:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 2FAC46FA2E
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Oct 2023 07:14:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2FAC46FA2E
+ by smtp3.osuosl.org (Postfix) with ESMTP id 4E42A6FB01
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Oct 2023 08:15:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4E42A6FB01
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gktXqZkzAHqm for <intel-wired-lan@lists.osuosl.org>;
- Thu, 19 Oct 2023 07:14:07 +0000 (UTC)
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 71BE5614A3
- for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Oct 2023 07:14:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 71BE5614A3
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-546-Skt814XLNyCLZgiVPIz0Pw-1; Thu, 19 Oct 2023 03:14:00 -0400
-X-MC-Unique: Skt814XLNyCLZgiVPIz0Pw-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com
- [10.11.54.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id A95E510201E0;
- Thu, 19 Oct 2023 07:13:58 +0000 (UTC)
-Received: from toolbox.redhat.com (unknown [10.45.224.114])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 08ABF503B;
- Thu, 19 Oct 2023 07:13:56 +0000 (UTC)
-From: Michal Schmidt <mschmidt@redhat.com>
-To: netdev@vger.kernel.org
-Date: Thu, 19 Oct 2023 09:13:46 +0200
-Message-ID: <20231019071346.55949-1-mschmidt@redhat.com>
+ with ESMTP id JU7o-ZTydOKf for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 19 Oct 2023 08:15:16 +0000 (UTC)
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 8C90360B8C
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 19 Oct 2023 08:15:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 8C90360B8C
+Received: from [10.0.101.84] (unknown [62.214.191.67])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id CD71A61E5FE01;
+ Thu, 19 Oct 2023 10:14:52 +0200 (CEST)
+Message-ID: <5fe36894-5554-4861-8119-e013b80583b9@molgen.mpg.de>
+Date: Thu, 19 Oct 2023 10:14:50 +0200
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.5
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1697699646;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding;
- bh=j/E58SfVgh2tMBXaLp4Ka5VvQ2Ys2tWX2mDdsAUOQAo=;
- b=L31+V1f9vbKU1dcata84EuG9c5BN29gacg9FJzF9YH8Pa4lL7hrth4iaMGIWwWrwzFYD2H
- 14KkBHDhHZP+cuEa/Tbps2Cot7qfVNpZGqqaUcGy1+JJdZII3HiyAZhj0ozvh26wxYHY0m
- 6wllgkOYY9PNLpWztQXjaeKUy9eVSh4=
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=L31+V1f9
-Subject: [Intel-wired-lan] [PATCH net] iavf: initialize waitqueues before
- starting watchdog_task
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Michal Schmidt <mschmidt@redhat.com>
+References: <20231019071346.55949-1-mschmidt@redhat.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20231019071346.55949-1-mschmidt@redhat.com>
+Subject: Re: [Intel-wired-lan] [PATCH net] iavf: initialize waitqueues
+ before starting watchdog_task
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,57 +75,65 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>,
- intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>
-Content-Type: text/plain; charset="us-ascii"
+Cc: netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Sudheer Mogilappagari <sudheer.mogilappagari@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jeff Kirsher <jeffrey.t.kirsher@intel.com>, intel-wired-lan@lists.osuosl.org
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-It is not safe to initialize the waitqueues after queueing the
-watchdog_task. It will be using them.
+Dear Michal,
 
-The chance of this causing a real problem is very small, because
-there will be some sleeping before any of the waitqueues get used.
-I got a crash only after inserting an artificial sleep in iavf_probe.
 
-Queue the watchdog_task as the last step in iavf_probe. Add a comment to
-prevent repeating the mistake.
+Am 19.10.23 um 09:13 schrieb Michal Schmidt:
+> It is not safe to initialize the waitqueues after queueing the
+> watchdog_task. It will be using them.
+> 
+> The chance of this causing a real problem is very small, because
+> there will be some sleeping before any of the waitqueues get used.
+> I got a crash only after inserting an artificial sleep in iavf_probe.
+> 
+> Queue the watchdog_task as the last step in iavf_probe. Add a comment to
+> prevent repeating the mistake.
+> 
+> Fixes: fe2647ab0c99 ("i40evf: prevent VF close returning before state transitions to DOWN")
+> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+> ---
+>   drivers/net/ethernet/intel/iavf/iavf_main.c | 5 +++--
+>   1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> index 6a2e6d64bc3a..5b5c0525aa13 100644
+> --- a/drivers/net/ethernet/intel/iavf/iavf_main.c
+> +++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
+> @@ -4982,8 +4982,6 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>   	INIT_WORK(&adapter->finish_config, iavf_finish_config);
+>   	INIT_DELAYED_WORK(&adapter->watchdog_task, iavf_watchdog_task);
+>   	INIT_DELAYED_WORK(&adapter->client_task, iavf_client_task);
+> -	queue_delayed_work(adapter->wq, &adapter->watchdog_task,
+> -			   msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
+>   
+>   	/* Setup the wait queue for indicating transition to down status */
+>   	init_waitqueue_head(&adapter->down_waitqueue);
+> @@ -4994,6 +4992,9 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>   	/* Setup the wait queue for indicating virtchannel events */
+>   	init_waitqueue_head(&adapter->vc_waitqueue);
+>   
+> +	queue_delayed_work(adapter->wq, &adapter->watchdog_task,
+> +			   msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
+> +	/* Initialization goes on in the work. Do not add more of it below. */
+>   	return 0;
+>   
+>   err_ioremap:
 
-Fixes: fe2647ab0c99 ("i40evf: prevent VF close returning before state transitions to DOWN")
-Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
----
- drivers/net/ethernet/intel/iavf/iavf_main.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Reviewed-by: Paul Menzel <pmenzel@molgen.mpg.de>
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_main.c b/drivers/net/ethernet/intel/iavf/iavf_main.c
-index 6a2e6d64bc3a..5b5c0525aa13 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_main.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_main.c
-@@ -4982,8 +4982,6 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	INIT_WORK(&adapter->finish_config, iavf_finish_config);
- 	INIT_DELAYED_WORK(&adapter->watchdog_task, iavf_watchdog_task);
- 	INIT_DELAYED_WORK(&adapter->client_task, iavf_client_task);
--	queue_delayed_work(adapter->wq, &adapter->watchdog_task,
--			   msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
- 
- 	/* Setup the wait queue for indicating transition to down status */
- 	init_waitqueue_head(&adapter->down_waitqueue);
-@@ -4994,6 +4992,9 @@ static int iavf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	/* Setup the wait queue for indicating virtchannel events */
- 	init_waitqueue_head(&adapter->vc_waitqueue);
- 
-+	queue_delayed_work(adapter->wq, &adapter->watchdog_task,
-+			   msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
-+	/* Initialization goes on in the work. Do not add more of it below. */
- 	return 0;
- 
- err_ioremap:
--- 
-2.41.0
 
+Kind regards,
+
+Paul
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
