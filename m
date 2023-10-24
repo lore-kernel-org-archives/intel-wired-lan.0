@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 647D0C07545
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Oct 2023 08:12:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5017C07545
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Oct 2023 08:12:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 20C2C8443B;
-	Tue, 24 Oct 2023 08:12:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 20C2C8443B
+	by smtp1.osuosl.org (Postfix) with ESMTP id A0DC784434;
+	Tue, 24 Oct 2023 08:12:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A0DC784434
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698135152;
-	bh=zX5bFKM96JjvE7fcfAGbjUkterUoYp9GuSu7UaPPzU8=;
+	s=default; t=1698135161;
+	bh=fAuxOovHicu044i4PELeoAJNtaBfv+Hb3CGtooSGwNI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=yupZDvj4pBLjpOMxHwdkuoE4NQ/wOta70td6QHISzaW5/LioMvWRtDR+ufoXKLwoL
-	 mX3tcNpDsSuyC2DPy6SJ43YcUG+2oSOiKIMhUUzVfpQEWEkmVU71VC4TRzoyM3Nm5r
-	 9B4V5dMgmdfCHPlOkQRyyj7hA5YDrKRpmb54rXCKzQO6hfrJgPcYTZZR7KCuL+7WGG
-	 XIKCAP3JTAaFe2+rW/kXR2LdWoZBv29iLofGICzoRZN1BG0wkeE8+QcrehnNrWSMYa
-	 XYyJ8VF8FUwnGpJzWS6pjrLWoBkWSz/s3x3tDwwN5Br9MR7tBLYZtZhXtCobUHLhkj
-	 eVNLN3WYWS1rg==
+	b=qjsPzdcrsqZF1xbMMU3/1GCSTo+MuHyDyAOdXlvfi5eEOKTYCj1pNx9/tT+hp+xon
+	 68mpV77tPQbSwfWEJKnYV/LruBUlL160OfZOD82ttV8lqgtbPbywfaExVcC63Gqqpl
+	 iiZN/Fg8+oQy+HNIZclqksYfUMLDnnPyqXqmAiYoBQJJsTARpcp//4/xN1p+Iy35dS
+	 VFJeBypj1BT9tgfnCwDZElEifjWh1zkpqgNsLLfd0E3bq+JImWjppG0FSC+f7VTo5A
+	 9CFKD0MepHE0BkxCtED6H/rilF8KkhV1H9/jUOuIQPBax0PJWjcBo8A2hKrIJaI6pn
+	 8zC8tOMkio3qQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XvL9Gb6SwfvN; Tue, 24 Oct 2023 08:12:31 +0000 (UTC)
+	with ESMTP id 6zeZIyj9EHHt; Tue, 24 Oct 2023 08:12:40 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 2D6D48443F;
-	Tue, 24 Oct 2023 08:12:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2D6D48443F
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 7C6161BF338
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 08:12:29 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 53AF88443A;
+	Tue, 24 Oct 2023 08:12:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 53AF88443A
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id EC35A1BF338
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 08:12:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6176384441
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 08:12:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6176384441
+ by smtp2.osuosl.org (Postfix) with ESMTP id C22A4424A8
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 08:12:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C22A4424A8
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id xq90-QPG0CW0 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Oct 2023 08:12:28 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id oY8uM2R3ekya for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Oct 2023 08:12:37 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 5B5C18443A
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 08:12:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5B5C18443A
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-134--7Al3Y6IOwihqhgNwl0IrA-1; Tue,
- 24 Oct 2023 04:12:18 -0400
-X-MC-Unique: -7Al3Y6IOwihqhgNwl0IrA-1
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 1E7E54249E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 08:12:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1E7E54249E
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-509-ob0twX0ZNJ-hzizh2n60Ig-1; Tue, 24 Oct 2023 04:12:22 -0400
+X-MC-Unique: ob0twX0ZNJ-hzizh2n60Ig-1
 Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com
  [10.11.54.10])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id E2C312808FCE;
- Tue, 24 Oct 2023 08:12:17 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 0D3FA1019C86;
+ Tue, 24 Oct 2023 08:12:22 +0000 (UTC)
 Received: from p1.luc.com (unknown [10.43.2.183])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 16D71492BFB;
- Tue, 24 Oct 2023 08:12:15 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 34D18492BFB;
+ Tue, 24 Oct 2023 08:12:20 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
-Date: Tue, 24 Oct 2023 10:12:09 +0200
-Message-ID: <20231024081211.677502-2-ivecera@redhat.com>
+Date: Tue, 24 Oct 2023 10:12:11 +0200
+Message-ID: <20231024081211.677502-4-ivecera@redhat.com>
 In-Reply-To: <20231024081211.677502-1-ivecera@redhat.com>
 References: <20231024081211.677502-1-ivecera@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.10
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1698135147;
+ s=mimecast20190719; t=1698135156;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=eYX4ieLYLS9vnBYSPGWi+1qAffL00yE5OYVTrAGUBLU=;
- b=iTchUPngzLNaVixgAW4932ODfD4zYKHLGergT57++Uh+dsSPaco0rYeMmPchxYtWkfQSey
- dIf0ZdS/sFcZUZHOURLTpmGfRQi5u0huTvGC6Ov/ZNesBLI4s6zm5iMkKulAFQ3UIe1gYY
- 9xDwe6WQTqlMrpXXxokWnrKgrZVpXNM=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=YUluDUpmuG9amo4am/A+EO++P8JxhoPDs9Zkr6J3kQM=;
+ b=fM4UbgyuL6WpeFezKlGg0F67QsolhCb6hd4tuREoYFU7/emljY3NV5lVCbuUAIhaWAsq2/
+ j2PkBo2+bZm9+VEMgnykbuIqUuYWd34lnNbQkzE5c0HaW+0NhDVVfCmLuhgqDStR4vDmM1
+ XM2HIycCrHInEdScVCj67OahhcGgpic=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=iTchUPng
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 1/3] i40e: Move
- i40e_is_aq_api_ver_ge helper
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=fM4Ubgyu
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 3/3] i40e: Use helpers to
+ check running FW and AQ API versions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,100 +109,245 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Move i40e_is_aq_api_ver_ge helper function (used to check if AdminQ
-API version is recent enough) to header so it can be used from
-other .c files.
+Use new helpers to check versions of running FW and provided
+AQ API to make the code more readable.
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 23 ++++---------------
- drivers/net/ethernet/intel/i40e/i40e_type.h   | 14 +++++++++++
- 2 files changed, 18 insertions(+), 19 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c | 56 +++++++------------
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 25 ++++-----
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c    |  7 +--
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  6 +-
+ 4 files changed, 36 insertions(+), 58 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index 86591140f748..29fc46abf690 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -508,42 +508,35 @@ static int i40e_shutdown_arq(struct i40e_hw *hw)
+  **/
+ static void i40e_set_hw_caps(struct i40e_hw *hw)
+ {
+-	struct i40e_adminq_info *aq = &hw->aq;
+-
+ 	bitmap_zero(hw->caps, I40E_HW_CAPS_NBITS);
+ 
+ 	switch (hw->mac.type) {
+ 	case I40E_MAC_XL710:
+-		if (aq->api_maj_ver > 1 ||
+-		    (aq->api_maj_ver == 1 &&
+-		     aq->api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710)) {
++		if (i40e_is_aq_api_ver_ge(hw, 1,
++					  I40E_MINOR_VER_GET_LINK_INFO_XL710)) {
+ 			set_bit(I40E_HW_CAP_AQ_PHY_ACCESS, hw->caps);
+ 			set_bit(I40E_HW_CAP_FW_LLDP_STOPPABLE, hw->caps);
+ 			/* The ability to RX (not drop) 802.1ad frames */
+ 			set_bit(I40E_HW_CAP_802_1AD, hw->caps);
+ 		}
+-		if ((aq->api_maj_ver == 1 && aq->api_min_ver > 4) ||
+-		    aq->api_maj_ver > 1) {
++		if (i40e_is_aq_api_ver_ge(hw, 1, 5)) {
+ 			/* Supported in FW API version higher than 1.4 */
+ 			set_bit(I40E_HW_CAP_GENEVE_OFFLOAD, hw->caps);
+ 		}
+-		if ((aq->fw_maj_ver == 4 && aq->fw_min_ver < 33) ||
+-		    aq->fw_maj_ver < 4) {
++		if (i40e_is_fw_ver_lt(hw, 4, 33)) {
+ 			set_bit(I40E_HW_CAP_RESTART_AUTONEG, hw->caps);
+ 			/* No DCB support  for FW < v4.33 */
+ 			set_bit(I40E_HW_CAP_NO_DCB_SUPPORT, hw->caps);
+ 		}
+-		if ((aq->fw_maj_ver == 4 && aq->fw_min_ver < 3) ||
+-		    aq->fw_maj_ver < 4) {
++		if (i40e_is_fw_ver_lt(hw, 4, 3)) {
+ 			/* Disable FW LLDP if FW < v4.3 */
+ 			set_bit(I40E_HW_CAP_STOP_FW_LLDP, hw->caps);
+ 		}
+-		if ((aq->fw_maj_ver == 4 && aq->fw_min_ver >= 40) ||
+-		    aq->fw_maj_ver >= 5) {
+-			/* Use the FW Set LLDP MIB API if FW > v4.40 */
++		if (i40e_is_fw_ver_ge(hw, 4, 40)) {
++			/* Use the FW Set LLDP MIB API if FW >= v4.40 */
+ 			set_bit(I40E_HW_CAP_USE_SET_LLDP_MIB, hw->caps);
+ 		}
+-		if (aq->fw_maj_ver >= 6) {
++		if (i40e_is_fw_ver_ge(hw, 6, 0)) {
+ 			/* Enable PTP L4 if FW > v6.0 */
+ 			set_bit(I40E_HW_CAP_PTP_L4, hw->caps);
+ 		}
+@@ -569,19 +562,16 @@ static void i40e_set_hw_caps(struct i40e_hw *hw)
+ 			clear_bit(I40E_HW_CAP_ATR_EVICT, hw->caps);
+ 		}
+ 
+-		if (aq->api_maj_ver > 1 ||
+-		    (aq->api_maj_ver == 1 &&
+-		     aq->api_min_ver >= I40E_MINOR_VER_FW_LLDP_STOPPABLE_X722))
++		if (i40e_is_aq_api_ver_ge(hw, 1,
++					  I40E_MINOR_VER_FW_LLDP_STOPPABLE_X722))
+ 			set_bit(I40E_HW_CAP_FW_LLDP_STOPPABLE, hw->caps);
+ 
+-		if (aq->api_maj_ver > 1 ||
+-		    (aq->api_maj_ver == 1 &&
+-		     aq->api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_X722))
++		if (i40e_is_aq_api_ver_ge(hw, 1,
++					  I40E_MINOR_VER_GET_LINK_INFO_X722))
+ 			set_bit(I40E_HW_CAP_AQ_PHY_ACCESS, hw->caps);
+ 
+-		if (aq->api_maj_ver > 1 ||
+-		    (aq->api_maj_ver == 1 &&
+-		     aq->api_min_ver >= I40E_MINOR_VER_FW_REQUEST_FEC_X722))
++		if (i40e_is_aq_api_ver_ge(hw, 1,
++					  I40E_MINOR_VER_FW_REQUEST_FEC_X722))
+ 			set_bit(I40E_HW_CAP_X722_FEC_REQUEST, hw->caps);
+ 
+ 		fallthrough;
+@@ -590,25 +580,17 @@ static void i40e_set_hw_caps(struct i40e_hw *hw)
+ 	}
+ 
+ 	/* Newer versions of firmware require lock when reading the NVM */
+-	if (aq->api_maj_ver > 1 ||
+-	    (aq->api_maj_ver == 1 &&
+-	     aq->api_min_ver >= 5))
++	if (i40e_is_aq_api_ver_ge(hw, 1, 5))
+ 		set_bit(I40E_HW_CAP_NVM_READ_REQUIRES_LOCK, hw->caps);
+ 
+ 	/* The ability to RX (not drop) 802.1ad frames was added in API 1.7 */
+-	if (aq->api_maj_ver > 1 ||
+-	    (aq->api_maj_ver == 1 &&
+-	     aq->api_min_ver >= 7))
++	if (i40e_is_aq_api_ver_ge(hw, 1, 7))
+ 		set_bit(I40E_HW_CAP_802_1AD, hw->caps);
+ 
+-	if (aq->api_maj_ver > 1 ||
+-	    (aq->api_maj_ver == 1 &&
+-	     aq->api_min_ver >= 8))
++	if (i40e_is_aq_api_ver_ge(hw, 1, 8))
+ 		set_bit(I40E_HW_CAP_FW_LLDP_PERSISTENT, hw->caps);
+ 
+-	if (aq->api_maj_ver > 1 ||
+-	    (aq->api_maj_ver == 1 &&
+-	     aq->api_min_ver >= 9))
++	if (i40e_is_aq_api_ver_ge(hw, 1, 9))
+ 		set_bit(I40E_HW_CAP_AQ_PHY_ACCESS_EXTENDED, hw->caps);
+ }
+ 
+@@ -694,7 +676,7 @@ int i40e_init_adminq(struct i40e_hw *hw)
+ 			   &oem_lo);
+ 	hw->nvm.oem_ver = ((u32)oem_hi << 16) | oem_lo;
+ 
+-	if (hw->aq.api_maj_ver > I40E_FW_API_VERSION_MAJOR) {
++	if (i40e_is_aq_api_ver_ge(hw, I40E_FW_API_VERSION_MAJOR + 1, 0)) {
+ 		ret_code = -EIO;
+ 		goto init_adminq_free_arq;
+ 	}
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 7fce881abc93..df7ba349030d 100644
+index df7ba349030d..e171f4814e21 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_common.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1749,21 +1749,6 @@ int i40e_aq_set_phy_debug(struct i40e_hw *hw, u8 cmd_flags,
- 	return status;
- }
+@@ -1374,8 +1374,8 @@ i40e_aq_get_phy_capabilities(struct i40e_hw *hw,
  
--/**
-- * i40e_is_aq_api_ver_ge
-- * @aq: pointer to AdminQ info containing HW API version to compare
-- * @maj: API major value
-- * @min: API minor value
-- *
-- * Assert whether current HW API version is greater/equal than provided.
-- **/
--static bool i40e_is_aq_api_ver_ge(struct i40e_adminq_info *aq, u16 maj,
--				  u16 min)
--{
--	return (aq->api_maj_ver > maj ||
--		(aq->api_maj_ver == maj && aq->api_min_ver >= min));
--}
--
- /**
-  * i40e_aq_add_vsi
-  * @hw: pointer to the hw struct
-@@ -1890,14 +1875,14 @@ int i40e_aq_set_vsi_unicast_promiscuous(struct i40e_hw *hw,
+ 	if (report_init) {
+ 		if (hw->mac.type ==  I40E_MAC_XL710 &&
+-		    hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+-		    hw->aq.api_min_ver >= I40E_MINOR_VER_GET_LINK_INFO_XL710) {
++		    i40e_is_aq_api_ver_ge(hw, I40E_FW_API_VERSION_MAJOR,
++					  I40E_MINOR_VER_GET_LINK_INFO_XL710)) {
+ 			status = i40e_aq_get_link_info(hw, true, NULL, NULL);
+ 		} else {
+ 			hw->phy.phy_types = le32_to_cpu(abilities->phy_type);
+@@ -1645,9 +1645,8 @@ int i40e_aq_get_link_info(struct i40e_hw *hw,
+ 	else
+ 		hw_link_info->lse_enable = false;
  
- 	if (set) {
- 		flags |= I40E_AQC_SET_VSI_PROMISC_UNICAST;
--		if (rx_only_promisc && i40e_is_aq_api_ver_ge(&hw->aq, 1, 5))
-+		if (rx_only_promisc && i40e_is_aq_api_ver_ge(hw, 1, 5))
- 			flags |= I40E_AQC_SET_VSI_PROMISC_RX_ONLY;
- 	}
+-	if ((hw->mac.type == I40E_MAC_XL710) &&
+-	    (hw->aq.fw_maj_ver < 4 || (hw->aq.fw_maj_ver == 4 &&
+-	     hw->aq.fw_min_ver < 40)) && hw_link_info->phy_type == 0xE)
++	if (hw->mac.type == I40E_MAC_XL710 && i40e_is_fw_ver_lt(hw, 4, 40) &&
++	    hw_link_info->phy_type == 0xE)
+ 		hw_link_info->phy_type = I40E_PHY_TYPE_10GBASE_SFPP_CU;
  
- 	cmd->promiscuous_flags = cpu_to_le16(flags);
+ 	if (test_bit(I40E_HW_CAP_AQ_PHY_ACCESS, hw->caps) &&
+@@ -5223,14 +5222,14 @@ int i40e_aq_rx_ctl_read_register(struct i40e_hw *hw,
+  **/
+ u32 i40e_read_rx_ctl(struct i40e_hw *hw, u32 reg_addr)
+ {
+-	bool use_register;
++	bool use_register = false;
+ 	int status = 0;
+ 	int retry = 5;
+ 	u32 val = 0;
  
- 	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_UNICAST);
--	if (i40e_is_aq_api_ver_ge(&hw->aq, 1, 5))
-+	if (i40e_is_aq_api_ver_ge(hw, 1, 5))
- 		cmd->valid_flags |=
- 			cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_RX_ONLY);
- 
-@@ -2000,13 +1985,13 @@ int i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
- 
- 	if (enable) {
- 		flags |= I40E_AQC_SET_VSI_PROMISC_UNICAST;
--		if (i40e_is_aq_api_ver_ge(&hw->aq, 1, 5))
-+		if (i40e_is_aq_api_ver_ge(hw, 1, 5))
- 			flags |= I40E_AQC_SET_VSI_PROMISC_RX_ONLY;
- 	}
- 
- 	cmd->promiscuous_flags = cpu_to_le16(flags);
- 	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_UNICAST);
--	if (i40e_is_aq_api_ver_ge(&hw->aq, 1, 5))
-+	if (i40e_is_aq_api_ver_ge(hw, 1, 5))
- 		cmd->valid_flags |=
- 			cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_RX_ONLY);
- 	cmd->seid = cpu_to_le16(seid);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 22150368ba64..a21cc607c844 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -594,6 +594,20 @@ static inline bool i40e_is_vf(struct i40e_hw *hw)
- 		hw->mac.type == I40E_MAC_X722_VF);
- }
- 
-+/**
-+ * i40e_is_aq_api_ver_ge
-+ * @hw: pointer to i40e_hw structure
-+ * @maj: API major value to compare
-+ * @min: API minor value to compare
-+ *
-+ * Assert whether current HW API version is greater/equal than provided.
-+ **/
-+static inline bool i40e_is_aq_api_ver_ge(struct i40e_hw *hw, u16 maj, u16 min)
-+{
-+	return (hw->aq.api_maj_ver > maj ||
-+		(hw->aq.api_maj_ver == maj && hw->aq.api_min_ver >= min));
-+}
+-	use_register = (((hw->aq.api_maj_ver == 1) &&
+-			(hw->aq.api_min_ver < 5)) ||
+-			(hw->mac.type == I40E_MAC_X722));
++	if (i40e_is_aq_api_ver_lt(hw, 1, 5) || hw->mac.type == I40E_MAC_X722)
++		use_register = true;
 +
- struct i40e_driver_version {
- 	u8 major_version;
- 	u8 minor_version;
+ 	if (!use_register) {
+ do_retry:
+ 		status = i40e_aq_rx_ctl_read_register(hw, reg_addr, &val, NULL);
+@@ -5285,13 +5284,13 @@ int i40e_aq_rx_ctl_write_register(struct i40e_hw *hw,
+  **/
+ void i40e_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val)
+ {
+-	bool use_register;
++	bool use_register = false;
+ 	int status = 0;
+ 	int retry = 5;
+ 
+-	use_register = (((hw->aq.api_maj_ver == 1) &&
+-			(hw->aq.api_min_ver < 5)) ||
+-			(hw->mac.type == I40E_MAC_X722));
++	if (i40e_is_aq_api_ver_lt(hw, 1, 5) || hw->mac.type == I40E_MAC_X722)
++		use_register = true;
++
+ 	if (!use_register) {
+ do_retry:
+ 		status = i40e_aq_rx_ctl_write_register(hw, reg_addr,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+index 39e44a2e0677..498728e16a37 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+@@ -804,14 +804,11 @@ int i40e_get_dcb_config(struct i40e_hw *hw)
+ 	int ret = 0;
+ 
+ 	/* If Firmware version < v4.33 on X710/XL710, IEEE only */
+-	if ((hw->mac.type == I40E_MAC_XL710) &&
+-	    (((hw->aq.fw_maj_ver == 4) && (hw->aq.fw_min_ver < 33)) ||
+-	      (hw->aq.fw_maj_ver < 4)))
++	if (hw->mac.type == I40E_MAC_XL710 && i40e_is_fw_ver_lt(hw, 4, 33))
+ 		return i40e_get_ieee_dcb_config(hw);
+ 
+ 	/* If Firmware version == v4.33 on X710/XL710, use old CEE struct */
+-	if ((hw->mac.type == I40E_MAC_XL710) &&
+-	    ((hw->aq.fw_maj_ver == 4) && (hw->aq.fw_min_ver == 33))) {
++	if (hw->mac.type == I40E_MAC_XL710 && i40e_is_fw_ver_eq(hw, 4, 33)) {
+ 		ret = i40e_aq_get_cee_dcb_config(hw, &cee_v1_cfg,
+ 						 sizeof(cee_v1_cfg), NULL);
+ 		if (!ret) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 7001fe2870c4..df058540d277 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -15830,15 +15830,15 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		 hw->vendor_id, hw->device_id, hw->subsystem_vendor_id,
+ 		 hw->subsystem_device_id);
+ 
+-	if (hw->aq.api_maj_ver == I40E_FW_API_VERSION_MAJOR &&
+-	    hw->aq.api_min_ver > I40E_FW_MINOR_VERSION(hw))
++	if (i40e_is_aq_api_ver_ge(hw, I40E_FW_API_VERSION_MAJOR,
++				  I40E_FW_MINOR_VERSION(hw) + 1))
+ 		dev_dbg(&pdev->dev,
+ 			"The driver for the device detected a newer version of the NVM image v%u.%u than v%u.%u.\n",
+ 			 hw->aq.api_maj_ver,
+ 			 hw->aq.api_min_ver,
+ 			 I40E_FW_API_VERSION_MAJOR,
+ 			 I40E_FW_MINOR_VERSION(hw));
+-	else if (hw->aq.api_maj_ver == 1 && hw->aq.api_min_ver < 4)
++	else if (i40e_is_aq_api_ver_lt(hw, 1, 4))
+ 		dev_info(&pdev->dev,
+ 			 "The driver for the device detected an older version of the NVM image v%u.%u than expected v%u.%u. Please update the NVM image.\n",
+ 			 hw->aq.api_maj_ver,
 -- 
 2.41.0
 
