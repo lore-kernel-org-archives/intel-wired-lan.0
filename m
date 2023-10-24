@@ -4,85 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 557B1C07545
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Oct 2023 11:35:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B41EC07545
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Oct 2023 11:42:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 116624ED3F;
-	Tue, 24 Oct 2023 11:35:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 116624ED3F
+	by smtp4.osuosl.org (Postfix) with ESMTP id 349934ED02;
+	Tue, 24 Oct 2023 11:42:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 349934ED02
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698147355;
-	bh=sFXURwnJL2zXZaWA7rq75x6zLVLC0FLsCYS6ni2FZ+Y=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1698147754;
+	bh=Ujxm+cEEs5ko09d2H1XxvLIykzVd6yEjzOcPXG0inxU=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=nG0AafVU2/QzZur6/NAamK/4DOdP7jniRbXhYda/Rnxha4vRN2hHxX7vZOcGXvrMM
-	 nC+H9Wq+dmezTwp+Xu3a1iW+jWorWI2QPYvmzkCGNzhlpijcDtaOL3AjED98CwXDVd
-	 dRA4JD1hZEkcJ8HCjX+BQthRbhn2TV8pM0C8+X17rgj8Nk8TjWSyBFkoq4WKml7saj
-	 nsVS4T1k+RFU7WkoetDn7uf5hvVMth772Xv5hZVyGPLqsviDzK7AaE6LKjbB1WEfMC
-	 6YvR9n7ImGxtjheXCOt/7lPNwT6JxsM5y1ya9Nm3MsWt0BAqZdZ22+X/6lTcDhuMQy
-	 q3KHJ9I1DJgaQ==
+	b=j7fzNq1YKsm59TixBY76qr0+KPHcQARBEupPip5Tzu0TrWwn8L39iIfmg7JAULsJ8
+	 MpNuPfONJCirAkbwPW+rwzhHrUf/pfLtC5EPUhE9PQSNEJGV9mHvU1t8ffXA0MAWwb
+	 SlaYRfc2Q4djS/7MWpdigdKhRQo9WM0dum8/N39uvCUH7+GRRIU3czwzgKM+6dG6wG
+	 aYPfmc8VDVz5A343fqUisOl6rdwu1tJ1hFdjU7cp4Z9pYZw5ZfFST7Ir1WPP6qZIzG
+	 9ShjIv1HKeYSDcRYU7Z5RhWOJJ/MOoyWsj9gpEbIg3SOz3mJlGQ5w8V+MbDSbj/gY5
+	 HvUH8FKKI4mQQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jPXZjMrYBZJs; Tue, 24 Oct 2023 11:35:54 +0000 (UTC)
+	with ESMTP id l5T_9BE1g6zZ; Tue, 24 Oct 2023 11:42:33 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id CA29F4ED40;
-	Tue, 24 Oct 2023 11:35:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org CA29F4ED40
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id BB1301BF311
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:35:17 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1DF054ED1D;
+	Tue, 24 Oct 2023 11:42:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1DF054ED1D
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 2EFA21BF311
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:42:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 90CF843122
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:35:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 90CF843122
+ by smtp1.osuosl.org (Postfix) with ESMTP id EBE788483E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:42:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EBE788483E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id PN3O63pN3027 for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Oct 2023 11:35:16 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7933542ECD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:35:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7933542ECD
-X-IronPort-AV: E=McAfee;i="6600,9927,10872"; a="5660580"
-X-IronPort-AV: E=Sophos;i="6.03,247,1694761200"; 
-   d="scan'208";a="5660580"
-Received: from orviesa001.jf.intel.com ([10.64.159.141])
- by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Oct 2023 04:35:16 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.03,247,1694761200"; 
-   d="scan'208";a="6146314"
-Received: from wasp.igk.intel.com ([10.102.20.192])
- by orviesa001.jf.intel.com with ESMTP; 24 Oct 2023 04:33:56 -0700
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 24 Oct 2023 13:09:29 +0200
-Message-ID: <20231024110929.19423-16-michal.swiatkowski@linux.intel.com>
-X-Mailer: git-send-email 2.41.0
-In-Reply-To: <20231024110929.19423-1-michal.swiatkowski@linux.intel.com>
-References: <20231024110929.19423-1-michal.swiatkowski@linux.intel.com>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id fU6d6eWPIi-i for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Oct 2023 11:42:30 +0000 (UTC)
+Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 2A4BF8483C
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:42:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 2A4BF8483C
+Received: from [141.14.220.45] (g45.guest.molgen.mpg.de [141.14.220.45])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested) (Authenticated sender: pmenzel)
+ by mx.molgen.mpg.de (Postfix) with ESMTPSA id 386F261E5FE03;
+ Tue, 24 Oct 2023 13:41:55 +0200 (CEST)
+Message-ID: <71c02ebc-77f0-4b7d-9a1c-b2ed638f2757@molgen.mpg.de>
+Date: Tue, 24 Oct 2023 13:41:53 +0200
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1698147316; x=1729683316;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=EAMD0jNiRaewglGSb4G3nZUn8vvQClD5emTa18/MaeY=;
- b=Pjas57GEFbSocOwdx9b17fgSWUB8Biuzsyg4Bcd7DYwNviNR2ZqJu6WV
- Anye1t795FfyC/HNKY379Qg/RdIQv1Bn2C9Cgae9b3GrebTBkT3PAlLpw
- C4bi7TqQGfdzQGyH+HqEptEenVe9akkeA6Yw4eMzqRlzD9lqvRZpZ/o9e
- Lv9oE8y72LkD28/ycgnP+rY216bnwWz+wzdmHPtshr6WC8VxYaH1ZLi3w
- r/6sEVPdpXxuWdl1nQzWne6DpSkTsvX5tC9AIZnWhciolr3WvHkXdrI/t
- fhceBm+8qNOn6z43xQ5aGydPRLWVdpc5CGE8/J0N6ly0RXUWarPbyslMO
- w==;
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Pjas57GE
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 15/15] ice: reserve number of
- CP queues
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Pawel Chmielewski <pawel.chmielewski@intel.com>,
+ Liang-min Wang <liang-min.wang@intel.com>
+References: <20231024112912.1811594-1-pawel.chmielewski@intel.com>
+From: Paul Menzel <pmenzel@molgen.mpg.de>
+In-Reply-To: <20231024112912.1811594-1-pawel.chmielewski@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: Reset VF on Tx MDD event
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,196 +75,59 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: wojciech.drewek@intel.com, marcin.szycik@intel.com, netdev@vger.kernel.org,
- jesse.brandeburg@intel.com, przemyslaw.kitszel@intel.com,
- jacob.e.keller@intel.com,
- Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- piotr.raczynski@intel.com
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
+ lukasz.czapnik@intel.com, intel-wired-lan@lists.osuosl.org
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Rebuilding CP VSI each time the PR is created drastically increase the
-time of maximum VFs creation. Add function to reserve number of CP
-queues to deal with this problem.
-
-Use the same function to decrease number of queues in case of removing
-VFs. Assume that caller of ice_eswitch_reserve_cp_queues() will also
-call ice_eswitch_attach/detach() correct number of times.
-
-Still one by one PR adding is handy for VF resetting routine.
-
-Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice.h         |  6 +++
- drivers/net/ethernet/intel/ice/ice_eswitch.c | 52 +++++++++++++++++---
- drivers/net/ethernet/intel/ice/ice_eswitch.h |  4 ++
- drivers/net/ethernet/intel/ice/ice_sriov.c   |  3 ++
- 4 files changed, 58 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice.h b/drivers/net/ethernet/intel/ice/ice.h
-index 597bdb6945c6..cd7dcd0fa7f2 100644
---- a/drivers/net/ethernet/intel/ice/ice.h
-+++ b/drivers/net/ethernet/intel/ice/ice.h
-@@ -528,6 +528,12 @@ struct ice_eswitch {
- 	struct ice_esw_br_offloads *br_offloads;
- 	struct xarray reprs;
- 	bool is_running;
-+	/* struct to allow cp queues management optimization */
-+	struct {
-+		int to_reach;
-+		int value;
-+		bool is_reaching;
-+	} qs;
- };
- 
- struct ice_agg_node {
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index 9ff4fe4fb133..3f80e2081e5d 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -176,7 +176,7 @@ static void ice_eswitch_remap_rings_to_vectors(struct ice_eswitch *eswitch)
- 
- 		repr = xa_find(&eswitch->reprs, &repr_id, U32_MAX,
- 			       XA_PRESENT);
--		if (WARN_ON(!repr))
-+		if (!repr)
- 			break;
- 
- 		repr_id += 1;
-@@ -455,6 +455,8 @@ static int ice_eswitch_enable_switchdev(struct ice_pf *pf)
- 		return -ENODEV;
- 
- 	ctrl_vsi = pf->eswitch.control_vsi;
-+	/* cp VSI is createad with 1 queue as default */
-+	pf->eswitch.qs.value = 1;
- 	pf->eswitch.uplink_vsi = uplink_vsi;
- 
- 	if (ice_eswitch_setup_env(pf))
-@@ -487,6 +489,7 @@ static void ice_eswitch_disable_switchdev(struct ice_pf *pf)
- 	ice_vsi_release(ctrl_vsi);
- 
- 	pf->eswitch.is_running = false;
-+	pf->eswitch.qs.is_reaching = false;
- }
- 
- /**
-@@ -615,15 +618,33 @@ static void
- ice_eswitch_cp_change_queues(struct ice_eswitch *eswitch, int change)
- {
- 	struct ice_vsi *cp = eswitch->control_vsi;
-+	int queues = 0;
-+
-+	if (eswitch->qs.is_reaching) {
-+		if (eswitch->qs.to_reach >= eswitch->qs.value + change) {
-+			queues = eswitch->qs.to_reach;
-+			eswitch->qs.is_reaching = false;
-+		} else {
-+			queues = 0;
-+		}
-+	} else if ((change > 0 && cp->alloc_txq <= eswitch->qs.value) ||
-+		   change < 0) {
-+		queues = cp->alloc_txq + change;
-+	}
- 
--	ice_vsi_close(cp);
-+	if (queues) {
-+		cp->req_txq = queues;
-+		cp->req_rxq = queues;
-+		ice_vsi_close(cp);
-+		ice_vsi_rebuild(cp, ICE_VSI_FLAG_NO_INIT);
-+		ice_vsi_open(cp);
-+	} else if (!change) {
-+		/* change == 0 means that VSI wasn't open, open it here */
-+		ice_vsi_open(cp);
-+	}
- 
--	cp->req_txq = cp->alloc_txq + change;
--	cp->req_rxq = cp->alloc_rxq + change;
--	ice_vsi_rebuild(cp, ICE_VSI_FLAG_NO_INIT);
-+	eswitch->qs.value += change;
- 	ice_eswitch_remap_rings_to_vectors(eswitch);
--
--	ice_vsi_open(cp);
- }
- 
- int
-@@ -641,6 +662,7 @@ ice_eswitch_attach(struct ice_pf *pf, struct ice_vf *vf)
- 		if (err)
- 			return err;
- 		/* Control plane VSI is created with 1 queue as default */
-+		pf->eswitch.qs.to_reach -= 1;
- 		change = 0;
- 	}
- 
-@@ -732,3 +754,19 @@ int ice_eswitch_rebuild(struct ice_pf *pf)
- 
- 	return 0;
- }
-+
-+/**
-+ * ice_eswitch_reserve_cp_queues - reserve control plane VSI queues
-+ * @pf: pointer to PF structure
-+ * @change: how many more (or less) queues is needed
-+ *
-+ * Remember to call ice_eswitch_attach/detach() the "change" times.
-+ */
-+void ice_eswitch_reserve_cp_queues(struct ice_pf *pf, int change)
-+{
-+	if (pf->eswitch.qs.value + change < 0)
-+		return;
-+
-+	pf->eswitch.qs.to_reach = pf->eswitch.qs.value + change;
-+	pf->eswitch.qs.is_reaching = true;
-+}
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.h b/drivers/net/ethernet/intel/ice/ice_eswitch.h
-index 59d51c0d14e5..1a288a03a79a 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.h
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.h
-@@ -26,6 +26,7 @@ void ice_eswitch_set_target_vsi(struct sk_buff *skb,
- 				struct ice_tx_offload_params *off);
- netdev_tx_t
- ice_eswitch_port_start_xmit(struct sk_buff *skb, struct net_device *netdev);
-+void ice_eswitch_reserve_cp_queues(struct ice_pf *pf, int change);
- #else /* CONFIG_ICE_SWITCHDEV */
- static inline void ice_eswitch_detach(struct ice_pf *pf, struct ice_vf *vf) { }
- 
-@@ -76,5 +77,8 @@ ice_eswitch_port_start_xmit(struct sk_buff *skb, struct net_device *netdev)
- {
- 	return NETDEV_TX_BUSY;
- }
-+
-+static inline void
-+ice_eswitch_reserve_cp_queues(struct ice_pf *pf, int change) { }
- #endif /* CONFIG_ICE_SWITCHDEV */
- #endif /* _ICE_ESWITCH_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 51f5f420d632..5a45bd5ce6ad 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -172,6 +172,8 @@ void ice_free_vfs(struct ice_pf *pf)
- 	else
- 		dev_warn(dev, "VFs are assigned - not disabling SR-IOV\n");
- 
-+	ice_eswitch_reserve_cp_queues(pf, -ice_get_num_vfs(pf));
-+
- 	mutex_lock(&vfs->table_lock);
- 
- 	ice_for_each_vf(pf, bkt, vf) {
-@@ -930,6 +932,7 @@ static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
- 		goto err_unroll_sriov;
- 	}
- 
-+	ice_eswitch_reserve_cp_queues(pf, num_vfs);
- 	ret = ice_start_vfs(pf);
- 	if (ret) {
- 		dev_err(dev, "Failed to start %d VFs, err %d\n", num_vfs, ret);
--- 
-2.41.0
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+RGVhciBQYXdlbCwgZGVhciBMaWFuZy1taW4sCgoKQW0gMjQuMTAuMjMgdW0gMTM6Mjkgc2Nocmll
+YiBQYXdlbCBDaG1pZWxld3NraToKPiBGcm9tOiBMaWFuZy1taW4gV2FuZyA8bGlhbmctbWluLndh
+bmdAaW50ZWwuY29tPgoKU2hvdWxkIG1pbiBzdGFydCB3aXRoIGEgY2FwaXRhbCBsZXR0ZXIgTGlh
+bmctTWluPwoKPiBJbiBjYXNlcyB3aGVuIFZGIHNlbmRzIG1hbGZvcm1lZCBwYWNrZXRzIHRoYXQg
+YXJlIGNsYXNzaWZpZWQgYXMgbWFsaWNpb3VzLAo+IHNvbWV0aW1lcyBpdCBjYXVzZXMgVHggcXVl
+dWUgdG8gZnJlZXplLiBUaGlzIGZyb3plbiBxdWV1ZSBjYW4gYmUgc3R1Y2sKPiBmb3Igc2V2ZXJh
+bCBtaW51dGVzIGJlaW5nIHVudXNhYmxlLgoKRGlkIHlvdSBhbmFseXplIHRoZSBjYXVzZSBmb3Ig
+dGhpcy4gV2h5IGRvZXMgaXQgZnJlZXplIG9ubHkgc29tZXRpbWVzPyAKQXJlIHlvdSBhYmxlIHRv
+IHJlcHJvZHVjZSBpdD8KCj4gV2hlbiBNREQgZXZlbnQgb2NjdXJzLCBwZXJmb3JtIGdyYWNlZnVs
+IFZGIHJlc2V0IHRvIHF1aWNrbHkgYnJpbmcgVkYKPiBiYWNrIHRvIG9wZXJhdGlvbmFsIHN0YXRl
+LgoKSeKAmWQgc3BlbGwgb3V0IE1hbGljaW91cyBEcml2ZXIgRGV0ZWN0aW9uLgoKUGxlYXNlIG1l
+bnRpb24sIHRoYXQgYSBuZXcgbG9nIG1lc3NhZ2UgaXMgYWRkZWQuCgo+IFNpZ25lZC1vZmYtYnk6
+IExpYW5nLW1pbiBXYW5nIDxsaWFuZy1taW4ud2FuZ0BpbnRlbC5jb20+Cj4gU2lnbmVkLW9mZi1i
+eTogUGF3ZWwgQ2htaWVsZXdza2kgPHBhd2VsLmNobWllbGV3c2tpQGludGVsLmNvbT4KPiBSZXZp
+ZXdlZC1ieTogTWljaGFsIFN3aWF0a293c2tpIDxtaWNoYWwuc3dpYXRrb3dza2lAbGludXguaW50
+ZWwuY29tPgo+IC0tLQo+ICAgZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2ljZV9tYWlu
+LmMgfCAxNCArKysrKysrKysrKystLQo+ICAgMSBmaWxlIGNoYW5nZWQsIDEyIGluc2VydGlvbnMo
+KyksIDIgZGVsZXRpb25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0aGVybmV0
+L2ludGVsL2ljZS9pY2VfbWFpbi5jIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaWNlL2lj
+ZV9tYWluLmMKPiBpbmRleCA2NjA5NWU5YjA5NGUuLmNmOWZkMWYxNjhmNyAxMDA2NDQKPiAtLS0g
+YS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pY2UvaWNlX21haW4uYwo+ICsrKyBiL2RyaXZl
+cnMvbmV0L2V0aGVybmV0L2ludGVsL2ljZS9pY2VfbWFpbi5jCj4gQEAgLTE4MzYsOCArMTgzNiwx
+MyBAQCBzdGF0aWMgdm9pZCBpY2VfaGFuZGxlX21kZF9ldmVudChzdHJ1Y3QgaWNlX3BmICpwZikK
+PiAgIAkJCXZmLT5tZGRfdHhfZXZlbnRzLmNvdW50Kys7Cj4gICAJCQlzZXRfYml0KElDRV9NRERf
+VkZfUFJJTlRfUEVORElORywgcGYtPnN0YXRlKTsKPiAgIAkJCWlmIChuZXRpZl9tc2dfdHhfZXJy
+KHBmKSkKPiAtCQkJCWRldl9pbmZvKGRldiwgIk1hbGljaW91cyBEcml2ZXIgRGV0ZWN0aW9uIGV2
+ZW50IFRYX1RDTEFOIGRldGVjdGVkIG9uIFZGICVkXG4iLAo+ICsJCQkJZGV2X2luZm8oZGV2LAo+
+ICsJCQkJCSAiTWFsaWNpb3VzIERyaXZlciBEZXRlY3Rpb24gZXZlbnQgVFhfVENMQU4gZGV0ZWN0
+ZWQgb24gVkYgJWRcbiIsCj4gICAJCQkJCSB2Zi0+dmZfaWQpOwoKSeKAmWQgcmVmcmFpbiBmcm9t
+IGZvcm1hdHRpbmcgY2hhbmdlcy4KCj4gKwkJCWRldl9pbmZvKGRldiwKPiArCQkJCSAiUEYtdG8t
+VkYgcmVzZXQgb24gVkYgJWQgZHVlIHRvIFR4IE1ERCBUWF9UQ0xBTiBldmVudFxuIiwKPiArCQkJ
+CSB2Zi0+dmZfaWQpOwo+ICsJCQlpY2VfcmVzZXRfdmYodmYsIElDRV9WRl9SRVNFVF9OT1RJRlkp
+Owo+ICAgCQl9Cj4gICAKPiAgIAkJcmVnID0gcmQzMihodywgVlBfTURFVF9UWF9URFBVKHZmLT52
+Zl9pZCkpOwo+IEBAIC0xODQ2LDggKzE4NTEsMTMgQEAgc3RhdGljIHZvaWQgaWNlX2hhbmRsZV9t
+ZGRfZXZlbnQoc3RydWN0IGljZV9wZiAqcGYpCj4gICAJCQl2Zi0+bWRkX3R4X2V2ZW50cy5jb3Vu
+dCsrOwo+ICAgCQkJc2V0X2JpdChJQ0VfTUREX1ZGX1BSSU5UX1BFTkRJTkcsIHBmLT5zdGF0ZSk7
+Cj4gICAJCQlpZiAobmV0aWZfbXNnX3R4X2VycihwZikpCj4gLQkJCQlkZXZfaW5mbyhkZXYsICJN
+YWxpY2lvdXMgRHJpdmVyIERldGVjdGlvbiBldmVudCBUWF9URFBVIGRldGVjdGVkIG9uIFZGICVk
+XG4iLAo+ICsJCQkJZGV2X2luZm8oZGV2LAo+ICsJCQkJCSAiTWFsaWNpb3VzIERyaXZlciBEZXRl
+Y3Rpb24gZXZlbnQgVFhfVERQVSBkZXRlY3RlZCBvbiBWRiAlZFxuIiwKPiAgIAkJCQkJIHZmLT52
+Zl9pZCk7Cj4gKwkJCWRldl9pbmZvKGRldiwKPiArCQkJCSAiUEYtdG8tVkYgcmVzZXQgb24gVkYg
+JWQgZHVlIHRvIFR4IE1ERCBUWF9UQ0xBTiBldmVudFxuIiwKPiArCQkJCSB2Zi0+dmZfaWQpOwo+
+ICsJCQlpY2VfcmVzZXRfdmYodmYsIElDRV9WRl9SRVNFVF9OT1RJRlkpOwo+ICAgCQl9Cj4gICAK
+PiAgIAkJcmVnID0gcmQzMihodywgVlBfTURFVF9SWCh2Zi0+dmZfaWQpKTsKCkl0IGxvb2sgbGlr
+ZSwgYSBwYXRjaCBjb3VsZCBiZSBhZGRlZCBhaGVhZCB0byBmYWN0b3IgdGhlc2UgcGFydHMgaW4g
+YSAKc2VwYXJhdGUgZnVuY3Rpb24uCgoKS2luZCByZWdhcmRzLAoKUGF1bApfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC13aXJlZC1sYW4gbWFpbGlu
+ZyBsaXN0CkludGVsLXdpcmVkLWxhbkBvc3Vvc2wub3JnCmh0dHBzOi8vbGlzdHMub3N1b3NsLm9y
+Zy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLXdpcmVkLWxhbgo=
