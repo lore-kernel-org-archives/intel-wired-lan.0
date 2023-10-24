@@ -4,83 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50969C07545
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Oct 2023 11:32:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3C87C07545
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Oct 2023 11:34:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C48B44ED13;
-	Tue, 24 Oct 2023 11:32:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C48B44ED13
+	by smtp4.osuosl.org (Postfix) with ESMTP id 792314ED16;
+	Tue, 24 Oct 2023 11:34:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 792314ED16
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698147121;
-	bh=V8+6DyuelYFQQJVDEQAvnpjkyYGqYc5ntGR818AWRDs=;
+	s=default; t=1698147284;
+	bh=xUACtUbodKUmGfpRzE2BGGNURoKTXDJAMttSxhkICsw=;
 	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=3abB5Alp/aQlVtpj9cQ+YYtkmwr9Rkiont+hYRKUMgsojs6LIboLxx2TnoPmfZzCV
-	 kU1yYd/2czVsvESsIuEw64UgtpfG4I6GdAes9UoC2AAd+QzHXHbvY2UMSa0Fpmwl9m
-	 74i45t3xJe6GH7IyL5/w8n5C6Hqsg6TahE3e8Vmt0yEjufsCO8R/2nA3f95p8EwsTj
-	 +rSquNqgqRL3hi0ndnQAT5yQoROa6N+iEbKcMu3ramvcWvjhTBDunxVv59jG9QCiQs
-	 quGd40uoSEZWTTfw/EmrynxguxArLavSNo4p4nPwKVpVb16EuWKW2C+tbMqYIAWscJ
-	 MJcdX24VDw6+Q==
+	b=0OaISoOfsM5hjpCjgSWI4sSHTOOqaeWAF0SWamhjKt9ih2+HI+EeHkpBd35CpaZgK
+	 JWBgnSaQAyfMFVOa+EwHDtBZ0U64rCAJdEe3d6Fk63HIN8kFhPWDUOuWLwRRZP6nLm
+	 r7eKen7Qbn6ZeFagwnEzoOifGm7E+ITJXE/Wondjga57RmW4MXQHwR/gmqI9KldYiF
+	 99M/VJbbHCFHOIHbBJfc+tUnmEq7OVfIHnFLIHy+qjv35+Dps2iJvXGVQGqixT7vKr
+	 p52FzowXxQqIzbNrwoCOt9NFz7eo4eM5pq1Tp8RVkZEG3EO5O4gxejqFIQIESm7dM7
+	 lxaEhtvGQ+EZA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id x9Fh5NXfbenH; Tue, 24 Oct 2023 11:32:01 +0000 (UTC)
+	with ESMTP id 75er9Flwc9H4; Tue, 24 Oct 2023 11:34:43 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D0E494ED0D;
-	Tue, 24 Oct 2023 11:32:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D0E494ED0D
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6F1AC4ED17;
+	Tue, 24 Oct 2023 11:34:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6F1AC4ED17
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 38DAE1BF311
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:31:59 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id E6E001BF311
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:41 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 0A3E94310E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:31:59 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0A3E94310E
+ by smtp2.osuosl.org (Postfix) with ESMTP id C69FA42ECD
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C69FA42ECD
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dmE6oPMH5NzR for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Oct 2023 11:31:58 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
- by smtp2.osuosl.org (Postfix) with ESMTPS id EBE034054E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:31:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EBE034054E
-X-IronPort-AV: E=McAfee;i="6600,9927,10872"; a="390911471"
-X-IronPort-AV: E=Sophos;i="6.03,247,1694761200"; d="scan'208";a="390911471"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Oct 2023 04:31:56 -0700
+ with ESMTP id FORD13S-reew for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Oct 2023 11:34:40 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 5DEBA4054E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5DEBA4054E
+X-IronPort-AV: E=McAfee;i="6600,9927,10872"; a="5660513"
+X-IronPort-AV: E=Sophos;i="6.03,247,1694761200"; 
+   d="scan'208";a="5660513"
+Received: from orviesa001.jf.intel.com ([10.64.159.141])
+ by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 24 Oct 2023 04:34:40 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10872"; a="849101728"
-X-IronPort-AV: E=Sophos;i="6.03,247,1694761200"; d="scan'208";a="849101728"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by FMSMGA003.fm.intel.com with ESMTP; 24 Oct 2023 04:31:53 -0700
-Received: from baltimore.igk.intel.com (baltimore.igk.intel.com [10.102.21.1])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id C978E332A9;
- Tue, 24 Oct 2023 12:31:52 +0100 (IST)
-From: Pawel Chmielewski <pawel.chmielewski@intel.com>
+X-IronPort-AV: E=Sophos;i="6.03,247,1694761200"; 
+   d="scan'208";a="6145938"
+Received: from wasp.igk.intel.com ([10.102.20.192])
+ by orviesa001.jf.intel.com with ESMTP; 24 Oct 2023 04:33:20 -0700
+From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 24 Oct 2023 13:29:12 +0200
-Message-Id: <20231024112912.1811594-1-pawel.chmielewski@intel.com>
-X-Mailer: git-send-email 2.37.3
+Date: Tue, 24 Oct 2023 13:09:14 +0200
+Message-ID: <20231024110929.19423-1-michal.swiatkowski@linux.intel.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1698147117; x=1729683117;
+ t=1698147280; x=1729683280;
  h=from:to:cc:subject:date:message-id:mime-version:
  content-transfer-encoding;
- bh=VbXnsmHFbnLTke+oU1WE8hgV4d/8F8er/Gvdu6OjtK4=;
- b=T5GXY2h0SJ/b9VoG1afHJZsfD1ej6lWaJN+G0lunVhj4UIrWLesDW9+L
- nGJfxLjbC8iLleA/LMXLG5EW26D2S2AFq+3yOjDWTNvg+BCVScQO9rrVq
- 3QZicn53YlvhsTxIani0jLqM0oHixo0e9TEIyUxCs99UnD0tyt5904PEt
- AUgRCfzrccTMOZQ+OeHv1FiAQ/ROzhIOwZDwUCpvf3ZpWXhiiuXb0liO8
- 2q467TMNdiULQWkOFxojYTOeIw2RYROMJ1KxyJK6mK4CwJQN2aBklpi2T
- a2aUFPDKyuScQVdOUXmATPRsF9hVhC139J3SLWaWCvCeG5ez5wJ8utd5z
- Q==;
+ bh=CKvAcJ0UICqy+gXSIAnwDmufo4fKFX/tjp+tbbgzTG4=;
+ b=CtLs9bhmMmbuC6yxjHJXbaxomyxPN8CWz5/4Nb+sHXaxOhksGv7fZa+y
+ h3iGz96wbPUpxSLihoNsiWgPOKOITZeznBMpu49gSwBhnO893YNAPElOf
+ PLpohhNUm/wEQ3kSuhWyZMxx2rCPgKydLNbFKUVfkRoSEarYDPtR9hc7C
+ U8r7LQpkWPAQQ8au7CR868JKjqK4cLSAGpsiuAKVnvVpl/yI0pCo9gH+J
+ MEzmK/GcAA87K9nnpJzCbbwI6mRaLFdtnBppekAjskDVge60HOZS7k8HX
+ t5cJSXkfODv67+dEEyKWWD0r7Wh35S+oc3LijlqJzDrNHUDe3tM9h3QP/
+ g==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=T5GXY2h0
-Subject: [Intel-wired-lan] [PATCH iwl-next] ice: Reset VF on Tx MDD event
+ header.a=rsa-sha256 header.s=Intel header.b=CtLs9bhm
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 00/15] one by one port
+ representors creation
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,66 +92,69 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Pawel Chmielewski <pawel.chmielewski@intel.com>,
+Cc: wojciech.drewek@intel.com, marcin.szycik@intel.com, netdev@vger.kernel.org,
+ jesse.brandeburg@intel.com, przemyslaw.kitszel@intel.com,
+ jacob.e.keller@intel.com,
  Michal Swiatkowski <michal.swiatkowski@linux.intel.com>,
- lukasz.czapnik@intel.com, Liang-min Wang <liang-min.wang@intel.com>
+ piotr.raczynski@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Liang-min Wang <liang-min.wang@intel.com>
+Hi,
 
-In cases when VF sends malformed packets that are classified as malicious,
-sometimes it causes Tx queue to freeze. This frozen queue can be stuck
-for several minutes being unusable.
+Currently ice supports creating port representors only for VFs. For that
+use case they can be created and removed in one step.
 
-When MDD event occurs, perform graceful VF reset to quickly bring VF
-back to operational state.
+This patchset is refactoring current flow to support port representor
+creation also for subfunctions and SIOV. In this case port representors
+need to be createad and removed one by one. Also, they can be added and
+removed while other port representors are running.
 
-Signed-off-by: Liang-min Wang <liang-min.wang@intel.com>
-Signed-off-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
----
- drivers/net/ethernet/intel/ice/ice_main.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+To achieve that we need to change the switchdev configuration flow.
+Three first patches are only cosmetic (renaming, removing not used code).
+Next few ones are preparation for new flow. The most important one
+is "add VF representor one by one". It fully implements new flow.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 66095e9b094e..cf9fd1f168f7 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1836,8 +1836,13 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 			vf->mdd_tx_events.count++;
- 			set_bit(ICE_MDD_VF_PRINT_PENDING, pf->state);
- 			if (netif_msg_tx_err(pf))
--				dev_info(dev, "Malicious Driver Detection event TX_TCLAN detected on VF %d\n",
-+				dev_info(dev,
-+					 "Malicious Driver Detection event TX_TCLAN detected on VF %d\n",
- 					 vf->vf_id);
-+			dev_info(dev,
-+				 "PF-to-VF reset on VF %d due to Tx MDD TX_TCLAN event\n",
-+				 vf->vf_id);
-+			ice_reset_vf(vf, ICE_VF_RESET_NOTIFY);
- 		}
- 
- 		reg = rd32(hw, VP_MDET_TX_TDPU(vf->vf_id));
-@@ -1846,8 +1851,13 @@ static void ice_handle_mdd_event(struct ice_pf *pf)
- 			vf->mdd_tx_events.count++;
- 			set_bit(ICE_MDD_VF_PRINT_PENDING, pf->state);
- 			if (netif_msg_tx_err(pf))
--				dev_info(dev, "Malicious Driver Detection event TX_TDPU detected on VF %d\n",
-+				dev_info(dev,
-+					 "Malicious Driver Detection event TX_TDPU detected on VF %d\n",
- 					 vf->vf_id);
-+			dev_info(dev,
-+				 "PF-to-VF reset on VF %d due to Tx MDD TX_TCLAN event\n",
-+				 vf->vf_id);
-+			ice_reset_vf(vf, ICE_VF_RESET_NOTIFY);
- 		}
- 
- 		reg = rd32(hw, VP_MDET_RX(vf->vf_id));
+New type of port representor (for subfunction) will be introduced in
+follow up patchset.
+
+Michal Swiatkowski (15):
+  ice: rename switchdev to eswitch
+  ice: remove redundant max_vsi_num variable
+  ice: remove unused control VSI parameter
+  ice: track q_id in representor
+  ice: use repr instead of vf->repr
+  ice: track port representors in xarray
+  ice: remove VF pointer reference in eswitch code
+  ice: make representor code generic
+  ice: return pointer to representor
+  ice: allow changing SWITCHDEV_CTRL VSI queues
+  ice: set Tx topology every time new repr is added
+  ice: realloc VSI stats arrays
+  ice: add VF representors one by one
+  ice: adjust switchdev rebuild path
+  ice: reserve number of CP queues
+
+ drivers/net/ethernet/intel/ice/ice.h          |  13 +-
+ drivers/net/ethernet/intel/ice/ice_devlink.c  |  29 +
+ drivers/net/ethernet/intel/ice/ice_devlink.h  |   1 +
+ drivers/net/ethernet/intel/ice/ice_eswitch.c  | 562 ++++++++++--------
+ drivers/net/ethernet/intel/ice/ice_eswitch.h  |  22 +-
+ .../net/ethernet/intel/ice/ice_eswitch_br.c   |  22 +-
+ drivers/net/ethernet/intel/ice/ice_lib.c      |  81 ++-
+ drivers/net/ethernet/intel/ice/ice_main.c     |   6 +-
+ drivers/net/ethernet/intel/ice/ice_repr.c     | 195 +++---
+ drivers/net/ethernet/intel/ice/ice_repr.h     |   9 +-
+ drivers/net/ethernet/intel/ice/ice_sriov.c    |  20 +-
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c   |   4 +-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.c   |   9 +-
+ drivers/net/ethernet/intel/ice/ice_vf_lib.h   |   2 +-
+ 14 files changed, 553 insertions(+), 422 deletions(-)
+
 -- 
-2.37.3
+2.41.0
 
 _______________________________________________
 Intel-wired-lan mailing list
