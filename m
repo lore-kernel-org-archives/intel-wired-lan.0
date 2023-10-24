@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1554AC07545
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Oct 2023 11:35:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75045C07545
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 24 Oct 2023 11:35:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C3F12401D3;
-	Tue, 24 Oct 2023 11:35:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C3F12401D3
+	by smtp4.osuosl.org (Postfix) with ESMTP id 29EBC417A4;
+	Tue, 24 Oct 2023 11:35:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 29EBC417A4
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698147302;
-	bh=WbZtMK01R3wMPUjQ1cwZokpNTmR+bKh/zIn3aM1A4Fs=;
+	s=default; t=1698147307;
+	bh=DhS2rzyLn/tMM/B9I1laWOuYkRzcaSDwggIcazYuaNI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=8Cwl8JmVSgJ13RNaZPqCRwzJqu4hDStmy5nP4E0XIUbew/2DXl8K9OBKPIzuHAoet
-	 Yjm3/fWoKD41ItvLMbDcaqp6O+/woXDLTThUUYNLYa96/oUGUSEWQ4XMvAO4YPJISD
-	 95R3Nkvsy2+EUrD8K0yp6mhMaK0l9Y0gruxLZL9yYQu1n+DcKv2gIY3xY6efZ3jRAO
-	 73jp40wIwLQGKQsn1PLzV5Jty5UCj0sGFWJqexMwdjeUHrdLKSYdwaoL9ULOrDTU4n
-	 /fp+8IJ6jOABxuoiwx8O5IGYrl1RbrBhi+zoXDcnlu2jfpXRbcMe/fRM4eoQhEU25o
-	 wohwiBrUtXSzw==
+	b=HeVdNyb7EBUqZGgnH6P25YPLmrfhdQ2Eli8yHaVfzRkBmcG9eJ66ExcyHDFLhBzwx
+	 0XH5iFju/m1kXynczIHta0KclJ6tM/YUMvs/SJWSFmVORNH7e8SwaDpP0Mcpc396bW
+	 b/ZGaSZgaFt4Jbqi91GOAS3dSh8G7oCEJuFpcMptozQtaOjM2I8XkkQ6XUxIXsLM/x
+	 sakU8hAOr6wBB1Nt1+0qvZ/9fDMS74sRUgsUWJDEd+ARqJAvtwVNGICILAfuH6q8ku
+	 AM6UtPE/D3ElUUc3Eaqb42KaCGnMBbt3HOYsWDndyn2EgDhaySG4PA9Yv4gUYJo4lw
+	 Zd7N/2SamXo3g==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id YmVFPfhS57Yf; Tue, 24 Oct 2023 11:35:02 +0000 (UTC)
+	with ESMTP id 4oLXfCKmTn3f; Tue, 24 Oct 2023 11:35:06 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B97F3417A4;
-	Tue, 24 Oct 2023 11:35:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B97F3417A4
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1698741841;
+	Tue, 24 Oct 2023 11:35:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1698741841
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 7BB621BF311
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:50 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 7CDDC1BF311
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 51F4D42ECD
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 51F4D42ECD
+ by smtp2.osuosl.org (Postfix) with ESMTP id 543E743122
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 543E743122
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id WDPPTqKap-tD for <intel-wired-lan@lists.osuosl.org>;
- Tue, 24 Oct 2023 11:34:49 +0000 (UTC)
+ with ESMTP id Fk9yoFIpA6Ch for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 24 Oct 2023 11:34:51 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 50D114054E
- for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 50D114054E
-X-IronPort-AV: E=McAfee;i="6600,9927,10872"; a="5660536"
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 7F55C4054E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 24 Oct 2023 11:34:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7F55C4054E
+X-IronPort-AV: E=McAfee;i="6600,9927,10872"; a="5660542"
 X-IronPort-AV: E=Sophos;i="6.03,247,1694761200"; 
-   d="scan'208";a="5660536"
+   d="scan'208";a="5660542"
 Received: from orviesa001.jf.intel.com ([10.64.159.141])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 24 Oct 2023 04:34:49 -0700
+ 24 Oct 2023 04:34:51 -0700
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.03,247,1694761200"; 
-   d="scan'208";a="6146004"
+   d="scan'208";a="6146037"
 Received: from wasp.igk.intel.com ([10.102.20.192])
- by orviesa001.jf.intel.com with ESMTP; 24 Oct 2023 04:33:29 -0700
+ by orviesa001.jf.intel.com with ESMTP; 24 Oct 2023 04:33:32 -0700
 From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 24 Oct 2023 13:09:18 +0200
-Message-ID: <20231024110929.19423-5-michal.swiatkowski@linux.intel.com>
+Date: Tue, 24 Oct 2023 13:09:19 +0200
+Message-ID: <20231024110929.19423-6-michal.swiatkowski@linux.intel.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20231024110929.19423-1-michal.swiatkowski@linux.intel.com>
 References: <20231024110929.19423-1-michal.swiatkowski@linux.intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1698147289; x=1729683289;
+ t=1698147291; x=1729683291;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=JQWkstSUlgGY3Gc/QGH2k/VG3fCYrtBoeCE/haNRHMo=;
- b=SzvM+1pXWcLSSuUpZ1itOnp2Y2ZkcVy15vk5PF3DF5FaiSFYJdGn5rBJ
- FpPXSxNKB4Lj8xZu9UMCkvqvLRMRf1XzZnPN8nLRWEKMjTYwnPESZeQwY
- v95Uo02kJkIPGehhQelSTZRTGviAwmWNb9AvU/qUz3WApPgQIV70dqWvy
- t4Wg2N8B3McEY4133Usxayp1oSOBAwROdpW6jiYILLPEGMQLDm3tO9gaf
- vpIeduz0R5kkWy8Nh2UlItYNxnMkgvevac97qJNrW8iS98ZPQIiT+S3kX
- z8qqorl0PXhBqdqUxtwFm6vXVM+onEq4XQ+OdD8cUD1rbfWPLao72DgRB
- A==;
+ bh=pOP4TaA1QFKZPS4/quiy5ENIcIphfAumHFGGIkT2f5k=;
+ b=KJxqTNWD1iIc2HqEjCPFyMbt7BH0GjV6rtvwM4PhlLYglC4kPFxl5V8/
+ CzXHd0OnhZtw50nsoxDNJwPQmDLYNlWYr3sayu6+kLzJfL1E/Zzl1GrXx
+ IlTB7t17+z8A+84KmJKN+OxIow+VREfN/e6GUkcXU5sOy5HyWrFo5z2S5
+ /JpG1JgRAc5+eMf1Oyr1mQptspv3Et1T4/jglpkjOSFXWnkzmrLjihXJP
+ 1GgzffX6IR1LU8nkXq0+D2yx8tCt982hgISx1LG+zUccCZHYCPBcHlyvA
+ ewZwON3QktTwXhqYUL8InBsjoKF1uZPbiOmk+cckeb8Ey/YySAX250LP8
+ w==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=SzvM+1pX
-Subject: [Intel-wired-lan] [PATCH iwl-next v1 04/15] ice: track q_id in
- representor
+ header.a=rsa-sha256 header.s=Intel header.b=KJxqTNWD
+Subject: [Intel-wired-lan] [PATCH iwl-next v1 05/15] ice: use repr instead
+ of vf->repr
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,58 +105,47 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Previously queue index of control plane VSI used by port representor was
-always id of VF. If we want to allow adding port representors for
-different devices we have to track queue index in the port representor
-structure.
+Extract repr from vf->repr as it is often use in the ice_repr_rem().
 
+Remove meaningless clearing of q_vector and netdev pointers as kfree is
+called on repr pointer.
+
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-Reviewed-by: Piotr Raczynski <piotr.raczynski@intel.com>
 Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
 Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_eswitch.c | 2 +-
- drivers/net/ethernet/intel/ice/ice_repr.c    | 1 +
- drivers/net/ethernet/intel/ice/ice_repr.h    | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ice/ice_repr.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index a862681c0f64..119185564450 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -38,7 +38,7 @@ ice_eswitch_add_vf_sp_rule(struct ice_pf *pf, struct ice_vf *vf)
- 	rule_info.sw_act.vsi_handle = ctrl_vsi->idx;
- 	rule_info.sw_act.fltr_act = ICE_FWD_TO_Q;
- 	rule_info.sw_act.fwd_id.q_id = hw->func_caps.common_cap.rxq_first_id +
--				       ctrl_vsi->rxq_map[vf->vf_id];
-+				       ctrl_vsi->rxq_map[vf->repr->q_id];
- 	rule_info.flags_info.act |= ICE_SINGLE_ACT_LB_ENABLE;
- 	rule_info.flags_info.act_valid = true;
- 	rule_info.tun_type = ICE_SW_TUN_AND_NON_TUN;
 diff --git a/drivers/net/ethernet/intel/ice/ice_repr.c b/drivers/net/ethernet/intel/ice/ice_repr.c
-index c686ac0935eb..a2dc216c964f 100644
+index a2dc216c964f..903a3385eacb 100644
 --- a/drivers/net/ethernet/intel/ice/ice_repr.c
 +++ b/drivers/net/ethernet/intel/ice/ice_repr.c
-@@ -306,6 +306,7 @@ static int ice_repr_add(struct ice_vf *vf)
+@@ -355,16 +355,16 @@ static int ice_repr_add(struct ice_vf *vf)
+  */
+ static void ice_repr_rem(struct ice_vf *vf)
+ {
+-	if (!vf->repr)
++	struct ice_repr *repr = vf->repr;
++
++	if (!repr)
+ 		return;
  
- 	repr->src_vsi = vsi;
- 	repr->vf = vf;
-+	repr->q_id = vf->vf_id;
- 	vf->repr = repr;
- 	np = netdev_priv(repr->netdev);
- 	np->repr = repr;
-diff --git a/drivers/net/ethernet/intel/ice/ice_repr.h b/drivers/net/ethernet/intel/ice/ice_repr.h
-index e1ee2d2c1d2d..f350273b8874 100644
---- a/drivers/net/ethernet/intel/ice/ice_repr.h
-+++ b/drivers/net/ethernet/intel/ice/ice_repr.h
-@@ -13,6 +13,7 @@ struct ice_repr {
- 	struct net_device *netdev;
- 	struct metadata_dst *dst;
- 	struct ice_esw_br_port *br_port;
-+	int q_id;
- #ifdef CONFIG_ICE_SWITCHDEV
- 	/* info about slow path rule */
- 	struct ice_rule_query_data sp_rule;
+-	kfree(vf->repr->q_vector);
+-	vf->repr->q_vector = NULL;
+-	unregister_netdev(vf->repr->netdev);
++	kfree(repr->q_vector);
++	unregister_netdev(repr->netdev);
+ 	ice_devlink_destroy_vf_port(vf);
+-	free_netdev(vf->repr->netdev);
+-	vf->repr->netdev = NULL;
+-	kfree(vf->repr);
++	free_netdev(repr->netdev);
++	kfree(repr);
+ 	vf->repr = NULL;
+ 
+ 	ice_virtchnl_set_dflt_ops(vf);
 -- 
 2.41.0
 
