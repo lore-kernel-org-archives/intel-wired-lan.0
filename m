@@ -4,88 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 669C6C25B47
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Oct 2023 10:33:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 448C2C25B6B
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Oct 2023 10:33:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 1FBBE84F66;
-	Wed, 25 Oct 2023 10:33:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1FBBE84F66
+	by smtp1.osuosl.org (Postfix) with ESMTP id D755884FC1;
+	Wed, 25 Oct 2023 10:33:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D755884FC1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698230013;
-	bh=aydqhl2/O1t6JC6AG8wg2tTkaEJau0yQGtUdXQ1zsB4=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=6rPoSEOH+QuZrgCXpuQi3INynLY3+sANg4qRaQpax5s9oC4d7yjHm2rW6J+g5FA1Y
-	 uDjIz2PI8STX5Os3nHOh2JYNzlEG7kTZHSDuhmvR0DCTAXwHGtMC/oY7c7z3xaIJJH
-	 EFpg/FcQyYu6qpc1KjScLbS4TobjgmvttY4fCCBkFBN7pnBX2LoEsjRphy1Q/gDaHk
-	 6LNm0TS7nH0NBWqUCwMwwDtnRF9w/4NPcGR6xmaZpdRsO+IkRLOx9qHYe5PPTEl1xM
-	 KJnoUdHxoFKzaJzRAs2Iu991WVbsjghJc84DMP3sEwF0I3ImFEuTSsfdAPBmU8kNKM
-	 MWf2WM+SCfEsA==
+	s=default; t=1698230017;
+	bh=1JzsMtJ3rDJuLoZ13QN+xdsvRVtDMiG8crZXcNaPV60=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=jFST4k1y7gH4i4TOcxpw3wJ3FfrQKcAaeHfRORWYKBFXqfnAdgFukwRr+DrdMGnMs
+	 a5G9z2Mjt4cmhALaV62GcNr6a9XqeabQs9T6koz7B+NjSf0Lq113Ur8pSP8L/E5tiy
+	 b+8I+ZJuhhu/f5VdTXBGFRVQ3dEc2YF38YsnyKd4V2sn70YP1CAz+XgImExVpJl9bl
+	 4DhFzgIyJuTZuHzt0DIYt+KWK7jsU0dXGvC9R0IfD1vNhicFw9W1iU5ZaLR9weWXXE
+	 lQpalYHaiXB31YJiMDH2nknePM4eeH0eOvEG602Bhclcm5VLyxYesSapdfQ6OF5E4b
+	 bK8L/190TCb2w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4s82HCGWmb7j; Wed, 25 Oct 2023 10:33:32 +0000 (UTC)
+	with ESMTP id kU4PWnA5UAPV; Wed, 25 Oct 2023 10:33:37 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id ED69D84FBD;
-	Wed, 25 Oct 2023 10:33:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org ED69D84FBD
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 0D9F91BF48B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 10:33:27 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id D60D685058;
+	Wed, 25 Oct 2023 10:33:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D60D685058
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 475F21BF48B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 10:33:32 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id D92C4432A5
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 10:33:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D92C4432A5
+ by smtp1.osuosl.org (Postfix) with ESMTP id 1F7C184FC1
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 10:33:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1F7C184FC1
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id gru3znuwQd3L for <intel-wired-lan@lists.osuosl.org>;
- Wed, 25 Oct 2023 10:33:25 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id txMLib9pf7W4 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 25 Oct 2023 10:33:31 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp2.osuosl.org (Postfix) with ESMTPS id 7B4DD4328E
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 10:33:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7B4DD4328E
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 68A9984FB8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 10:33:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 68A9984FB8
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-681-n_Cdgp-6NaaVB16wf-rkEg-1; Wed, 25 Oct 2023 06:33:21 -0400
-X-MC-Unique: n_Cdgp-6NaaVB16wf-rkEg-1
+ us-mta-689-M_ahc-PIPiGpIOmS0EWofg-1; Wed, 25 Oct 2023 06:33:17 -0400
+X-MC-Unique: M_ahc-PIPiGpIOmS0EWofg-1
 Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.rdu2.redhat.com
  [10.11.54.3])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id C958F811E8E;
- Wed, 25 Oct 2023 10:33:20 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 4DF36891F28;
+ Wed, 25 Oct 2023 10:33:17 +0000 (UTC)
 Received: from p1.luc.cera.cz (unknown [10.45.225.62])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 381391121319;
- Wed, 25 Oct 2023 10:33:19 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id B1F971121320;
+ Wed, 25 Oct 2023 10:33:15 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
-Date: Wed, 25 Oct 2023 12:33:15 +0200
-Message-ID: <20231025103315.1149589-3-ivecera@redhat.com>
-In-Reply-To: <20231025103315.1149589-1-ivecera@redhat.com>
-References: <20231025103315.1149589-1-ivecera@redhat.com>
+Date: Wed, 25 Oct 2023 12:33:13 +0200
+Message-ID: <20231025103315.1149589-1-ivecera@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.3
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1698230004;
+ s=mimecast20190719; t=1698230010;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=fDDPhLjS2qjyz2nQKfaq0QCWJpoL7NQX+WbUg4S1eIc=;
- b=TKk0KjJ6z+r4RPF3zWwwNbthkBM1ANwkR6EXyAZRIqshPGu8KugHFjN9Gt2EiSGKOY11MM
- hDK1HcfGtvY40sSSveWUqgGPVvmlpcHq9RU7SoF39zgr076ph+9eQiyC2MMPKwhV9bb70i
- krpE5AUHci5VoCL8hT3q3HnE6YJvkxM=
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ content-transfer-encoding:content-transfer-encoding;
+ bh=sLw+xTXfry5r3/ti5ulvPxarMfCsTLFS8WTKCXQP2us=;
+ b=YxDX/UmRGVUDt0vtix2wkvtG2e4KCtrJIKEQQ4ext7KYi+HAj0jNDmn5Lss5T92c4zyXBV
+ 9jiyk7xFz+NCPxscl2v/3qGXN7nd754ydgBxyvZh3UKS1PVl+RIyqmhBTK0LdvDHzsAfIe
+ aMzpDzjDYx/urTLN+8D7g9mvPqPKFVE=
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=TKk0KjJ6
-Subject: [Intel-wired-lan] [PATCH iwl-next 2/2] i40e: Move inline helpers to
- i40e_prototype.h
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=YxDX/UmR
+Subject: [Intel-wired-lan] [PATCH iwl-next 0/2] Remove VF MAC types and move
+ helpers from i40e_type.h
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,8 +94,7 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Wojciech Drewek <wojciech.drewek@intel.com>,
- intel-wired-lan@lists.osuosl.org,
+Cc: intel-wired-lan@lists.osuosl.org,
  Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
  Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
  Jacob Keller <jacob.e.keller@intel.com>, Jakub Kicinski <kuba@kernel.org>,
@@ -109,177 +104,18 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Move version check helper functions from i40e_type.h to
-i40e_prototype.h as per discussion [1].
+The series removes MAC types for VF functions and moves inline helper
+functions from i40e_type.h to i40e_prototype.h
 
-[1] https://lore.kernel.org/all/cdcd6b97-1138-4cd7-854f-b3faa1f475f8@intel.com/#t
+Ivan Vecera (2):
+  i40e: Remove VF MAC types
+  i40e: Move inline helpers to i40e_prototype.h
 
-Cc: Wojciech Drewek <wojciech.drewek@intel.com>
-Cc: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Ivan Vecera <ivecera@redhat.com>
----
- .../net/ethernet/intel/i40e/i40e_prototype.h  | 70 +++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_type.h   | 68 ------------------
- 2 files changed, 70 insertions(+), 68 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c | 33 +++-----
+ .../net/ethernet/intel/i40e/i40e_prototype.h  | 70 +++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_type.h   | 76 -------------------
+ 3 files changed, 80 insertions(+), 99 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 001162042050..af4269330581 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -501,4 +501,74 @@ i40e_add_pinfo_to_list(struct i40e_hw *hw,
- /* i40e_ddp */
- int i40e_ddp_flash(struct net_device *netdev, struct ethtool_flash *flash);
- 
-+/* Firmware and AdminQ version check helpers */
-+
-+/**
-+ * i40e_is_aq_api_ver_ge
-+ * @hw: pointer to i40e_hw structure
-+ * @maj: API major value to compare
-+ * @min: API minor value to compare
-+ *
-+ * Assert whether current HW API version is greater/equal than provided.
-+ **/
-+static inline bool i40e_is_aq_api_ver_ge(struct i40e_hw *hw, u16 maj, u16 min)
-+{
-+	return (hw->aq.api_maj_ver > maj ||
-+		(hw->aq.api_maj_ver == maj && hw->aq.api_min_ver >= min));
-+}
-+
-+/**
-+ * i40e_is_aq_api_ver_lt
-+ * @hw: pointer to i40e_hw structure
-+ * @maj: API major value to compare
-+ * @min: API minor value to compare
-+ *
-+ * Assert whether current HW API version is less than provided.
-+ **/
-+static inline bool i40e_is_aq_api_ver_lt(struct i40e_hw *hw, u16 maj, u16 min)
-+{
-+	return !i40e_is_aq_api_ver_ge(hw, maj, min);
-+}
-+
-+/**
-+ * i40e_is_fw_ver_ge
-+ * @hw: pointer to i40e_hw structure
-+ * @maj: API major value to compare
-+ * @min: API minor value to compare
-+ *
-+ * Assert whether current firmware version is greater/equal than provided.
-+ **/
-+static inline bool i40e_is_fw_ver_ge(struct i40e_hw *hw, u16 maj, u16 min)
-+{
-+	return (hw->aq.fw_maj_ver > maj ||
-+		(hw->aq.fw_maj_ver == maj && hw->aq.fw_min_ver >= min));
-+}
-+
-+/**
-+ * i40e_is_fw_ver_lt
-+ * @hw: pointer to i40e_hw structure
-+ * @maj: API major value to compare
-+ * @min: API minor value to compare
-+ *
-+ * Assert whether current firmware version is less than provided.
-+ **/
-+static inline bool i40e_is_fw_ver_lt(struct i40e_hw *hw, u16 maj, u16 min)
-+{
-+	return !i40e_is_fw_ver_ge(hw, maj, min);
-+}
-+
-+/**
-+ * i40e_is_fw_ver_eq
-+ * @hw: pointer to i40e_hw structure
-+ * @maj: API major value to compare
-+ * @min: API minor value to compare
-+ *
-+ * Assert whether current firmware version is equal to provided.
-+ **/
-+static inline bool i40e_is_fw_ver_eq(struct i40e_hw *hw, u16 maj, u16 min)
-+{
-+	return (hw->aq.fw_maj_ver > maj ||
-+		(hw->aq.fw_maj_ver == maj && hw->aq.fw_min_ver == min));
-+}
-+
- #endif /* _I40E_PROTOTYPE_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 7eaf8b013125..e3d40630f689 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -586,74 +586,6 @@ struct i40e_hw {
- 	char err_str[16];
- };
- 
--/**
-- * i40e_is_aq_api_ver_ge
-- * @hw: pointer to i40e_hw structure
-- * @maj: API major value to compare
-- * @min: API minor value to compare
-- *
-- * Assert whether current HW API version is greater/equal than provided.
-- **/
--static inline bool i40e_is_aq_api_ver_ge(struct i40e_hw *hw, u16 maj, u16 min)
--{
--	return (hw->aq.api_maj_ver > maj ||
--		(hw->aq.api_maj_ver == maj && hw->aq.api_min_ver >= min));
--}
--
--/**
-- * i40e_is_aq_api_ver_lt
-- * @hw: pointer to i40e_hw structure
-- * @maj: API major value to compare
-- * @min: API minor value to compare
-- *
-- * Assert whether current HW API version is less than provided.
-- **/
--static inline bool i40e_is_aq_api_ver_lt(struct i40e_hw *hw, u16 maj, u16 min)
--{
--	return !i40e_is_aq_api_ver_ge(hw, maj, min);
--}
--
--/**
-- * i40e_is_fw_ver_ge
-- * @hw: pointer to i40e_hw structure
-- * @maj: API major value to compare
-- * @min: API minor value to compare
-- *
-- * Assert whether current firmware version is greater/equal than provided.
-- **/
--static inline bool i40e_is_fw_ver_ge(struct i40e_hw *hw, u16 maj, u16 min)
--{
--	return (hw->aq.fw_maj_ver > maj ||
--		(hw->aq.fw_maj_ver == maj && hw->aq.fw_min_ver >= min));
--}
--
--/**
-- * i40e_is_fw_ver_lt
-- * @hw: pointer to i40e_hw structure
-- * @maj: API major value to compare
-- * @min: API minor value to compare
-- *
-- * Assert whether current firmware version is less than provided.
-- **/
--static inline bool i40e_is_fw_ver_lt(struct i40e_hw *hw, u16 maj, u16 min)
--{
--	return !i40e_is_fw_ver_ge(hw, maj, min);
--}
--
--/**
-- * i40e_is_fw_ver_eq
-- * @hw: pointer to i40e_hw structure
-- * @maj: API major value to compare
-- * @min: API minor value to compare
-- *
-- * Assert whether current firmware version is equal to provided.
-- **/
--static inline bool i40e_is_fw_ver_eq(struct i40e_hw *hw, u16 maj, u16 min)
--{
--	return (hw->aq.fw_maj_ver > maj ||
--		(hw->aq.fw_maj_ver == maj && hw->aq.fw_min_ver == min));
--}
--
- struct i40e_driver_version {
- 	u8 major_version;
- 	u8 minor_version;
 -- 
 2.41.0
 
