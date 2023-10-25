@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B572FC001B0
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Oct 2023 15:35:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F7C8C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 30 Oct 2023 15:35:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 52A8E70979;
-	Mon, 30 Oct 2023 15:35:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 52A8E70979
+	by smtp3.osuosl.org (Postfix) with ESMTP id 159A070972;
+	Mon, 30 Oct 2023 15:35:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 159A070972
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698680113;
-	bh=SGKVnBl6VZ8hgEKNDM+hT1KjxhGUH3182+GCxO89yS8=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=JjCxWB6o/ZEx7+onUxn+6hweBEEowbrrHHzfRi0eK5DDUGrlK6N2o2SBDyWfY3y0p
-	 gcnS3+g6e8MGhtaDQPQJMuQ/Sel1X1j/6BEliu/KrlXyNXNZjDdhvTLZ/MKRd3nm61
-	 ykk1LOpBEH4/sx3Y6wQ6bIO9uSaXnWaTJMRVMr7kKqqPxQAYTMPS0hcvQttYFeIxFA
-	 NEVp52iOJUR9h7kroOevpIo0Ubp8JWHoA9u0jVhYF0V00Qqy7XyV7m8zITM32hEXrD
-	 Ga10WfKj4vqjTjGOhzPg/bw8EFohOtwlpmsyME71CCvCRoDp/ZE6H5ctkM98g047me
-	 26wwUNl6WL+0A==
+	s=default; t=1698680118;
+	bh=trxk7ds1ZbTFq35ZfKEOkTAXMc4hhc7+gEL5g62Sux8=;
+	h=Date:In-Reply-To:References:From:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=4gpKo7YHhQJwokRPi63O+bkfXRCStpjGWNZcaaUexuvXG883L/dgxP8u9stuKDsw2
+	 LxHOXnn/1XGyzcN+xfMthC9S5diCUmjrR/O1O1Q08pCM4fdC2Hpkm0CnyaG+KwJfoE
+	 obOYKBNzb0vT9V0bxH3ndPi/DTd/VCcwNjuRR2acCha2rTMRh2+ajUcn9i1vKY5W/J
+	 ZRZg4mRcGMeA/N9fh/0/HyRLTh1DrAatcs6rfV4IrroiEpibQy7Iu/yCiuSMxmLZ7x
+	 T9bNlzHivbcPt700vU/LYwpc1SxCd2kwytoWtmWX9kIH3GkdJ4TVoZW4YfZdU4viHP
+	 Gr8++2ZmRW0nw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4VW7jBLROncZ; Mon, 30 Oct 2023 15:35:12 +0000 (UTC)
+	with ESMTP id HIXH4plBR1G7; Mon, 30 Oct 2023 15:35:15 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 23BAF7097E;
-	Mon, 30 Oct 2023 15:35:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 23BAF7097E
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 360061BF977
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:40:40 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id BC0F3709D3;
+	Mon, 30 Oct 2023 15:35:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BC0F3709D3
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 400911BF3CE
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:40:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0F3E581EF0
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:40:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0F3E581EF0
+ by smtp2.osuosl.org (Postfix) with ESMTP id 16C5F40960
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:40:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 16C5F40960
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dwLUI_AEyEKm for <intel-wired-lan@lists.osuosl.org>;
- Wed, 25 Oct 2023 23:40:35 +0000 (UTC)
-Received: from mail-oi1-x24a.google.com (mail-oi1-x24a.google.com
- [IPv6:2607:f8b0:4864:20::24a])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 936F581EEF
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:40:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 936F581EEF
-Received: by mail-oi1-x24a.google.com with SMTP id
- 5614622812f47-3b2ef9e4c25so370294b6e.1
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 16:40:35 -0700 (PDT)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 4OtUCHCc6hh0 for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 25 Oct 2023 23:40:39 +0000 (UTC)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com
+ [IPv6:2607:f8b0:4864:20::b49])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4CAE64012D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:40:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4CAE64012D
+Received: by mail-yb1-xb49.google.com with SMTP id
+ 3f1490d57ef6-da05c625cb9so217734276.2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 16:40:39 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1698277234; x=1698882034;
- h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
- :from:to:cc:subject:date:message-id:reply-to;
- bh=Ax/nU1ZFqft8oVl1VFeTyrFHvNYL9G6jLEqvbbsuZrc=;
- b=i62YVkD+OeZlYLQqzlC9XYqVXrKK2zh2DLiCA7AYyk8eY1q6+MFt0qqYA7XIMze21E
- AM0ZHsors721UuhxGe9mSST5NAmqhUpGXCweiWHUf77nGTVcFzIp9LcSu++4PEs4ExyI
- oH2fcicsiZm8ioXPoAPYke7sPht/SO1LXpn/e/phsyYPArgMyD1AG7hwl9Kem6bZRcpF
- Iy75qzNKj48MIYm9VvI1T5ai1vKICQjAk4bY2URrzPAq10SQbclXQAEKDf0IBpVqI6gR
- utyMvJ2Dpo5Ap58jOyJqmSiPuNBKMxqiumvCUyNLYlHzpr74LOaaMnhn40/Gm0spMSil
- d3lA==
-X-Gm-Message-State: AOJu0YzMG3pA8oDB/OvKAN7prdqfgcS8h55JmZK6+kaM/bsUo2J9/ZmN
- rwjj8DFK19gbOdqag7GvdkbubvXbq1ARZG87gg==
-X-Google-Smtp-Source: AGHT+IHw/k5Q9J8vO1CuX5M/j0RoZQarFU1nkp8HN+n7tSv4SkiAOjOO7FMq1mjjWL8SudfGtRgbLzDKikkpHA3p+w==
+ d=1e100.net; s=20230601; t=1698277238; x=1698882038;
+ h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+ :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=z2yHYpXdKX/Z1PdTHNHNNkO8SEsjgfSsadT9YDZgRP0=;
+ b=s+kwORnkWHm+UsfoIkDFy7N85hI352EAqESskbTRZPihASYzGZ3ZEkumwpoYgC3rMb
+ 37cHJ5YIWSXUrIvirNR2QIK+m5ytcihvnsLmpCIxp1Emm1M0/Yke4t7WX/ktTI5JOmKI
+ UYICtUIcbIaOlGdb8SkRU69Vv08zFsCh3m1wNXNJosN8aG3pVrcQORFaEUD1KUNrkW/k
+ k/AOIGYsZS66s5KmcUpWIELPSGAhxK7/Gcyv/G/knImfBiiJrN+9HFWKtP3OxaNEPf27
+ gLB/N7BfOQgWbtzomdlgWqQvR9iFSwPAQzorm2LfWmrvGM0hvMeAmgsoUEzrp6AGn57u
+ GDOw==
+X-Gm-Message-State: AOJu0YzvpeO8jzlnVXYnM3FTq7gYA0uQgy+ccDLp6lbuo+G5xT2DXrPQ
+ X0JhCljLXIa/xjqXDlm2RcZJUaurBuR4j0ERMA==
+X-Google-Smtp-Source: AGHT+IEPHaIkN8H3iGQWkKfJ5NpCYcT3yYMmFh0PPi0IcMzsA3hF9JA14tymNgt30lyJsEwk/WiGn6lEwEr2E4Dzgg==
 X-Received: from jstitt-linux1.c.googlers.com
  ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
- (user=justinstitt job=sendgmr) by 2002:aca:211a:0:b0:3a7:45f6:4b3f with SMTP
- id 26-20020aca211a000000b003a745f64b3fmr5446803oiz.3.1698277233982; Wed, 25
- Oct 2023 16:40:33 -0700 (PDT)
-Date: Wed, 25 Oct 2023 23:40:31 +0000
+ (user=justinstitt job=sendgmr) by 2002:a25:bccc:0:b0:d9a:c218:8177 with SMTP
+ id l12-20020a25bccc000000b00d9ac2188177mr365329ybm.8.1698277238101; Wed, 25
+ Oct 2023 16:40:38 -0700 (PDT)
+Date: Wed, 25 Oct 2023 23:40:34 +0000
+In-Reply-To: <20231025-ethtool_puts_impl-v1-0-6a53a93d3b72@google.com>
 Mime-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAG+nOWUC/x3MQQqAIBBA0avErBPUiqirREjZWAOVohZBePek5
- Vv8/0JATxigL17weFMge2aIsgC9TeeKjJZskFxWgsuGYdyitbtyVwyKDrezSdRtZ8ysW+SQO+f
- R0PM/hzGlD3eMzaxjAAAA
+References: <20231025-ethtool_puts_impl-v1-0-6a53a93d3b72@google.com>
 X-Developer-Key: i=justinstitt@google.com; a=ed25519;
  pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1698277232; l=3351;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1698277232; l=1707;
  i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
- bh=UeXhj1yUBRkd9WratOksK7CyAy5xMK0mPYfyx10bxZQ=;
- b=0w8LuFAfNlkvjcs5D4bU1gmw4mc0Z8LGR5Gx0Qu+E7eSP/aJ0ejYYmvSor7LgEkb5foJS31Xr
- L/Z9/AOw7F9DSBIfksjjQWnDSVIKPwwS5pRG348fL+1FujQZ1dqzFFE
+ bh=n1veWIcKxGb7fuzlMSTmPKoEQaWG96C9Cgb9YzocQ5U=;
+ b=W+dlkHRgIJMungJ97d0DNn75PwsHcGQp6OJdyQzjetsUzkUF+C5MUA4sHBdGuuzJqLmwBu8XE
+ 4b6P70t8H6LCSr0S2uDYGUmJBTSTiZLZFgaH2y2gkECIo+QpVCuuHfV
 X-Mailer: b4 0.12.3
-Message-ID: <20231025-ethtool_puts_impl-v1-0-6a53a93d3b72@google.com>
+Message-ID: <20231025-ethtool_puts_impl-v1-3-6a53a93d3b72@google.com>
 From: Justin Stitt <justinstitt@google.com>
 To: "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
@@ -107,20 +107,20 @@ To: "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
  Lukas Bulwahn <lukas.bulwahn@gmail.com>
 X-Mailman-Approved-At: Mon, 30 Oct 2023 15:34:59 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20230601; t=1698277234; x=1698882034; darn=lists.osuosl.org;
- h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
- :date:message-id:reply-to;
- bh=Ax/nU1ZFqft8oVl1VFeTyrFHvNYL9G6jLEqvbbsuZrc=;
- b=NxjQg390gH3iyvd3w/yRHmbDVDhjWPf1l05tLIKpyzvTlYIMvw31Y65pn1bvlEruJQ
- P6DhMT0GBXGy6jViNC9CvCnawpOTx+sGr/ZGUwnNz3J6Iu5Q/Ejj2A+EXaI19ZvbFAr8
- 2rJVzeUKHoCvkRdDvd8aybPJFqbOBhuEQxby6BUS0UR3BrYbiSB2vhh4TUuvpD+AdxjO
- MjfsXFQQXT6P2fComEd1XIanTVC4J5iL+ENEgg5xtWeLc3E3Hl9m7pydgx3cs7dFsrDy
- tX1sSKyMgA+JiQElOZJSAkvvBqmDq5MixLBX0Mz6bx4OHUp1pxhBNNH44N5RQ+xNGpwn
- NCBQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=google.com; s=20230601; t=1698277238; x=1698882038; darn=lists.osuosl.org;
+ h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+ :date:from:to:cc:subject:date:message-id:reply-to;
+ bh=z2yHYpXdKX/Z1PdTHNHNNkO8SEsjgfSsadT9YDZgRP0=;
+ b=3syZtyjddWRBtHTzvLStKkH+W5uc562WEkhHbATkJAKXvv2ZUnokXIquP6AFvEEK6d
+ 0Oi2bF2Ih5w/F42jfOedH+ILFzcmXYDUhXGWdOa8FsAUTNh3wjAlh37jQnjXhJvVxkHm
+ nKrI9vrcsEtNK8JOxvZ5OC6/o+/+OsyFysQtjtifftfki0giJ5Iv6KWtxmHgCuSUpG3d
+ 1+UsYNJuAQSS1mm4B3r3ass9QS39Ar/6Za9Y3kRxIRa5HTN9+V/Bdxt/+RSmsXPWJkXy
+ 4VZGCi1TEHZ/JsDeOZkKuCsC6RmzUk/WZJ3hJeuakuvkPB/A4FHyFfh4gQ6Vvgnm4sfK
+ sUAg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20230601 header.b=NxjQg390
-Subject: [Intel-wired-lan] [PATCH 0/3] ethtool: Add ethtool_puts()
+ header.a=rsa-sha256 header.s=20230601 header.b=3syZtyjd
+Subject: [Intel-wired-lan] [PATCH 3/3] checkpatch: add ethtool_sprintf rules
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -143,90 +143,52 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi,
+Add some warnings for using ethtool_sprintf() where a simple
+ethtool_puts() would suffice.
 
-This series aims to implement ethtool_puts() and send out a wave 1 of
-conversions from ethtool_sprintf(). There's also a checkpatch patch
-included to check for the cases listed below.
+The two cases are:
 
-This was sparked from recent discussion here [1]
+1) Use ethtool_sprintf() with just two arguments:
+|       ethtool_sprintf(&data, driver[i].name);
+or
+2) Use ethtool_sprintf() with a standalone "%s" fmt string:
+|       ethtool_sprintf(&data, "%s", driver[i].name);
 
-The conversions are used in cases where ethtool_sprintf() was being used
-with just two arguments:
-|       ethtool_sprintf(&data, buffer[i].name);
-or when it's used with format string: "%s"
-|       ethtool_sprintf(&data, "%s", buffer[i].name);
-which both now become:
-|       ethtool_puts(&data, buffer[i].name);
-
-The first case commonly triggers a -Wformat-security warning with Clang
-due to potential problems with format flags present in the strings [3].
-
-The second is just a bit weird with a plain-ol' "%s".
-
-Note that I have some outstanding patches [2] (some picked up) that use
-the second case of ethtool_sprintf(). I went with this approach to clean
-up some strncpy() uses and avoid -Wformat-security warnings before
-discussion about implementing ...puts() arose. I will probably let the
-ones that have been picked up land but send new versions for others.
-
-Wave 1 changes found with Cocci [4] and grep [5].
-
-[1]: https://lore.kernel.org/all/202310141935.B326C9E@keescook/
-[2]: https://lore.kernel.org/all/?q=dfb%3Aethtool_sprintf+AND+f%3Ajustinstitt
-[3]: https://lore.kernel.org/all/202310101528.9496539BE@keescook/
-[4]: (script authored by Kees)
-@replace_2_args@
-identifier BUF;
-expression VAR;
-@@
-
--       ethtool_sprintf
-+       ethtool_puts
-        (&BUF, VAR)
-
-@replace_3_args@
-identifier BUF;
-expression VAR;
-@@
-
--       ethtool_sprintf(&BUF, "%s", VAR)
-+       ethtool_puts(&BUF, VAR)
-[5]: $ rg "ethtool_sprintf\(\s*[^,)]+\s*,\s*[^,)]+\s*\)"
+The former may cause -Wformat-security warnings while the latter is just
+not preferred. Both are safely in the category of warnings, not errors.
 
 Signed-off-by: Justin Stitt <justinstitt@google.com>
 ---
-Justin Stitt (3):
-      ethtool: Implement ethtool_puts()
-      treewide: Convert some ethtool_sprintf() to ethtool_puts()
-      checkpatch: add ethtool_sprintf rules
+ scripts/checkpatch.pl | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
- drivers/net/ethernet/amazon/ena/ena_ethtool.c      |  4 +-
- drivers/net/ethernet/brocade/bna/bnad_ethtool.c    |  2 +-
- .../net/ethernet/fungible/funeth/funeth_ethtool.c  |  8 +--
- drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c |  2 +-
- .../net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c    |  2 +-
- drivers/net/ethernet/hisilicon/hns/hns_ethtool.c   | 66 +++++++++++-----------
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  4 +-
- drivers/net/ethernet/intel/ice/ice_ethtool.c       | 10 ++--
- drivers/net/ethernet/intel/igb/igb_ethtool.c       |  6 +-
- drivers/net/ethernet/intel/igc/igc_ethtool.c       |  6 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c   |  5 +-
- .../net/ethernet/netronome/nfp/nfp_net_ethtool.c   | 44 +++++++--------
- drivers/net/ethernet/pensando/ionic/ionic_stats.c  |  4 +-
- drivers/net/hyperv/netvsc_drv.c                    |  4 +-
- drivers/net/vmxnet3/vmxnet3_ethtool.c              | 10 ++--
- include/linux/ethtool.h                            | 13 +++++
- net/ethtool/ioctl.c                                |  7 +++
- scripts/checkpatch.pl                              | 13 +++++
- 18 files changed, 120 insertions(+), 90 deletions(-)
----
-base-commit: d88520ad73b79e71e3ddf08de335b8520ae41c5c
-change-id: 20231025-ethtool_puts_impl-a1479ffbc7e0
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 7d16f863edf1..1ba9ce778746 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -7020,6 +7020,19 @@ sub process {
+ 			     "Prefer strscpy, strscpy_pad, or __nonstring over strncpy - see: https://github.com/KSPP/linux/issues/90\n" . $herecurr);
+ 		}
+ 
++# ethtool_sprintf uses that should likely be ethtool_puts
++		if (   $line =~ /\bethtool_sprintf\s*\(\s*$FuncArg\s*,\s*$FuncArg\s*\)/   ) {
++			WARN("ETHTOOL_SPRINTF",
++			     "Prefer ethtool_puts over ethtool_sprintf with only two arguments" . $herecurr);
++		}
++
++		# use $rawline because $line loses %s via sanitization and thus we can't match against it.
++		if (   $rawline =~ /\bethtool_sprintf\s*\(\s*$FuncArg\s*,\s*\"\%s\"\s*,\s*$FuncArg\s*\)/   ) {
++			WARN("ETHTOOL_SPRINTF2",
++			     "Prefer ethtool_puts over ethtool_sprintf with standalone \"%s\" specifier" . $herecurr);
++		}
++
++
+ # typecasts on min/max could be min_t/max_t
+ 		if ($perl_version_ok &&
+ 		    defined $stat &&
 
-Best regards,
---
-Justin Stitt <justinstitt@google.com>
+-- 
+2.42.0.758.gaed0368e0e-goog
 
 _______________________________________________
 Intel-wired-lan mailing list
