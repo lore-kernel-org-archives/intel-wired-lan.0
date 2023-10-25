@@ -4,58 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BAABC25B47
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Oct 2023 23:59:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52552C0032E
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 25 Oct 2023 23:59:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id DBDF140573;
-	Wed, 25 Oct 2023 23:59:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DBDF140573
+	by smtp2.osuosl.org (Postfix) with ESMTP id DAEDD40573;
+	Wed, 25 Oct 2023 23:59:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org DAEDD40573
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698278344;
-	bh=0gONc3uNQTSleKBwuD/Jt6IJGccCBxHGEbp5XQiHHcY=;
+	s=default; t=1698278376;
+	bh=JcybMX8c4Re2FxnekhoH8x6GeQo5qpHBk/Tyc3AfoHg=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=vEbOUiYkJ34O8UXHReWsqi/4j6d/+Ikqc9pLBrKFCeVEaz05ljvzr9lB2qa96Wk7s
-	 s8zerPTHpL37yQxIFDZOVZzx2ED8mKqkyyJQNaQoQhL98RnMaDYmv0QZkXc5/MhIIU
-	 CFBr93eRb2htO8Q3qRtA+FGPISMYW+SDRxAimJMUB8RaFeGE7chyV7JIhfQxdOc+op
-	 htdy7EGhprnkqQN509GLfIrFhNnE/OdRYKZ3rn4ro3bS5Bwm7RehOfPDINADYMRM5X
-	 zBQHcAIy3ZJouw2NYqmlXsx5wMIrSZF/P/dFoCo9suWjH3pZprqai19BW85G1q24CL
-	 cHNZj9/c+SF9w==
+	b=xLZ4yxhNJLchMqbpx4Dxqe/K0fvLD+Degzlv8zgN/ngTQHMFcSgOGFQTYteMQmKun
+	 Wk6hxo0iSukUjhtni4IcFcng0YhiOzAF9m7HK9dcf8aFT1KvBl+yoNwz89iR/kNal6
+	 bzA0TtyYbtTLQjlviIpU/lWXc3tPuqUSMFprKUDaU2i3O77Cyt7fPRuig2dTRXvhPk
+	 yVdqhZmZQWC87G06S48kyboPf76lleTgd7vOkTWTBFdFTMoKlcdmhvpXeWdmkzViHS
+	 ljWVbLVa4LmWpYL8h2xJVdxzKZO8m9Kl9YEp46YebGFwBC0s368u4aiVLR9eSsAqQq
+	 29lSSTvND60YQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id AzOkw_g5To5S; Wed, 25 Oct 2023 23:59:04 +0000 (UTC)
+	with ESMTP id njaq-ZCFuCjg; Wed, 25 Oct 2023 23:59:36 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B411340960;
-	Wed, 25 Oct 2023 23:59:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B411340960
+	by smtp2.osuosl.org (Postfix) with ESMTP id B29A940960;
+	Wed, 25 Oct 2023 23:59:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B29A940960
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 6B5D81BF2FE
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:59:01 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 7D8CF1BF2FE
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:59:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 432A960E1B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:59:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 432A960E1B
+ by smtp3.osuosl.org (Postfix) with ESMTP id 566C760E1B
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:59:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 566C760E1B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 3ehUEBs8iBzr for <intel-wired-lan@lists.osuosl.org>;
- Wed, 25 Oct 2023 23:59:00 +0000 (UTC)
-X-Greylist: delayed 426 seconds by postgrey-1.37 at util1.osuosl.org;
- Wed, 25 Oct 2023 23:58:59 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E0F1460BE2
-Received: from relay.hostedemail.com (smtprelay0015.hostedemail.com
- [216.40.44.15])
- by smtp3.osuosl.org (Postfix) with ESMTPS id E0F1460BE2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:58:59 +0000 (UTC)
-Received: from omf06.hostedemail.com (a10.router.float.18 [10.200.18.1])
- by unirelay08.hostedemail.com (Postfix) with ESMTP id 73084140753;
- Wed, 25 Oct 2023 23:53:10 +0000 (UTC)
+ with ESMTP id uzHvg1yIGJld for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 25 Oct 2023 23:59:32 +0000 (UTC)
+Received: from relay.hostedemail.com (smtprelay0013.hostedemail.com
+ [216.40.44.13])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id BBB9960BE2
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 25 Oct 2023 23:59:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BBB9960BE2
+Received: from omf02.hostedemail.com (a10.router.float.18 [10.200.18.1])
+ by unirelay10.hostedemail.com (Postfix) with ESMTP id 1F6B1C0B3C;
+ Wed, 25 Oct 2023 23:51:48 +0000 (UTC)
 Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by
- omf06.hostedemail.com (Postfix) with ESMTPA id EB8562000F; 
- Wed, 25 Oct 2023 23:52:58 +0000 (UTC)
-Message-ID: <c7e45f79e04cf28b69300cc12cf47267fb216955.camel@perches.com>
+ omf02.hostedemail.com (Postfix) with ESMTPA id 449128000E; 
+ Wed, 25 Oct 2023 23:51:37 +0000 (UTC)
+Message-ID: <10a072f549e187bc2fdc735c0161c09c90fc1392.camel@perches.com>
 From: Joe Perches <joe@perches.com>
 To: Justin Stitt <justinstitt@google.com>, "David S. Miller"
  <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
@@ -75,21 +73,21 @@ To: Justin Stitt <justinstitt@google.com>, "David S. Miller"
  Reviewers <pv-drivers@vmware.com>, Andy Whitcroft <apw@canonical.com>,
  Dwaipayan Ray <dwaipayanray1@gmail.com>, Lukas Bulwahn
  <lukas.bulwahn@gmail.com>
-Date: Wed, 25 Oct 2023 16:52:58 -0700
-In-Reply-To: <20231025-ethtool_puts_impl-v1-3-6a53a93d3b72@google.com>
+Date: Wed, 25 Oct 2023 16:51:36 -0700
+In-Reply-To: <20231025-ethtool_puts_impl-v1-2-6a53a93d3b72@google.com>
 References: <20231025-ethtool_puts_impl-v1-0-6a53a93d3b72@google.com>
- <20231025-ethtool_puts_impl-v1-3-6a53a93d3b72@google.com>
+ <20231025-ethtool_puts_impl-v1-2-6a53a93d3b72@google.com>
 User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
 MIME-Version: 1.0
-X-Stat-Signature: ewynon9iqkxk4ba7ojpnwtcnyur8eded
+X-Stat-Signature: 5zoexpcbspxzknxxpim471w8h6ypycid
 X-Rspamd-Server: rspamout07
-X-Rspamd-Queue-Id: EB8562000F
+X-Rspamd-Queue-Id: 449128000E
 X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-Session-ID: U2FsdGVkX19HM4U+AZp5TxLK9aKEhza6ficBJMSjAYo=
-X-HE-Tag: 1698277978-811897
-X-HE-Meta: U2FsdGVkX1+p9+z8yCq32YY8S2DSMu0GtmU5Y2BLTOHLbVa47GMVGnlUfueykHLbFBJzUqiIuNUoLTjPNpuPmPmdObkyQyyYuvVzxDUXUYBXVjgtSZL2VLZt0M+ihq91yI+KJMnhw13lDleMsbRbUz2084V9BtLz3jRVgcLorLaY772BDVcKhBSdvFtDf2GPoSWp62x76n++3gowAjGE0QzGeGP1a3j/o4yx5i3/j7G9kDn6arjCylGwRoNsTERruOxHd2GpijuQvv1XVYKqXSIlXskZ2U42iC6tNJZVsKH071QZzpcUdpEeBh6ZYV0q
-Subject: Re: [Intel-wired-lan] [PATCH 3/3] checkpatch: add ethtool_sprintf
- rules
+X-Session-ID: U2FsdGVkX1+N9jPJtzOomgZCQ3uE45mqLpiTL9MLOGI=
+X-HE-Tag: 1698277897-822398
+X-HE-Meta: U2FsdGVkX1/piP9epU3PVb8AwxfPnu298LT8+2Ear/QjzRdkg6TlU4ZFVqJStDqO3n+3XE7b+rXjNdVvUiGSpVDrBgNJwbvjRqVhbJYzw3bBx3/mHpMMWU2QA6eLuXuJG9IesNuAClmh2oGyXSTOr5SuM/vS8dt120/ZwdRa0ftJlSyabPiL2I71rQT5u8Z6hamposOtxW8UWys/hMh2ropByFvBIg65AsshQHUvJDmlsWp9lU1T5sJTLuf08ixeHbrY1HQRccfAMy3fhqmlo/ZjQQIgre7Fj+1RAgShAxn1lnKnuxLHp6zSrJJsQib8
+Subject: Re: [Intel-wired-lan] [PATCH 2/3] treewide: Convert some
+ ethtool_sprintf() to ethtool_puts()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,22 +110,22 @@ Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 On Wed, 2023-10-25 at 23:40 +0000, Justin Stitt wrote:
-> Add some warnings for using ethtool_sprintf() where a simple
-> ethtool_puts() would suffice.
+> This patch converts some basic cases of ethtool_sprintf() to
+> ethtool_puts().
 > 
-> The two cases are:
-> 
-> 1) Use ethtool_sprintf() with just two arguments:
-> >       ethtool_sprintf(&data, driver[i].name);
+> The conversions are used in cases where ethtool_sprintf() was being used
+> with just two arguments:
+> >       ethtool_sprintf(&data, buffer[i].name);
 
 OK.
 
-> or
-> 2) Use ethtool_sprintf() with a standalone "%s" fmt string:
-> >       ethtool_sprintf(&data, "%s", driver[i].name);
+> or when it's used with format string: "%s"
+> >       ethtool_sprintf(&data, "%s", buffer[i].name);
+> > which both now become:
+> >       ethtool_puts(&data, buffer[i].name);
 
-I'm rather doubt this is really desired or appropriate.
-
+Why do you want this conversion?
+Is it not possible for .name to contain a formatting field?
 
 _______________________________________________
 Intel-wired-lan mailing list
