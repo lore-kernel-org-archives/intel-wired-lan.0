@@ -4,76 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71C23C25B67
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Oct 2023 14:24:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF7F2C25B48
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Oct 2023 14:53:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 134DD83E0C;
-	Thu, 26 Oct 2023 14:24:33 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 134DD83E0C
+	by smtp1.osuosl.org (Postfix) with ESMTP id 7A4B483E39;
+	Thu, 26 Oct 2023 14:53:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7A4B483E39
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698330273;
-	bh=fIDEFS5mUCeJD/++BPQFbGeriN7Ov9TIVJtIoeW65rM=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1698331993;
+	bh=5PCWobkcOHR7A8CF2i8xP5VCAJ8+xjR6io7JHrKvDpM=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=PTkG6nAgI50RrFQWwFHzCJYMHcebuALeXUik9dE6oZsND8lvCbGZ35PcmuR4hhFjo
-	 vOJKrfZ7nOyhgqR99/6pgQZEnCJ1Sq7eJ33VxMFKdh2sROQg4s1xJIRe2gs7Ir6McX
-	 SxdCxdjGmVanUJsxXUfS+95VeR6YgSp7ol7ZiAAo/MZ6SS8fTz+ugQrOeCZb0mnCSV
-	 jX1MuEawi0gA31KIv9GYWB2yoHxUP1rYqY8xiRsZ+g3G2hKyiGFvqdBAqGJ3TtZbd9
-	 Av8op+0hPIuujTI7Ey5DXRViwcVdNSJMxWglhp2XcBfG7Y7Gve4hKRVuVL3f17ffHt
-	 jJmU7KLBuvJng==
+	b=ahg3prQAsXiGgZ+udK5+DOcmlXriLtK8kGBgFK/ZwqgtYNAAHjR9HFitZoWvrPT6U
+	 I9jUjdCZOl2JwuP/JcyzK2HBMKW/fOeHqtNkUyko0Xn6W3iMFeN1ZRLoblxG5Lzyb0
+	 /PyDCcg8WBb3WNXKhsUeEA9H8XBfz9N3cfCKUFLS0c/570oeHaerqTVxhweolRiMzc
+	 s/FRvQPXx2ICmIDU/j5NwE6qmGqpNJzppYNMxMe+hKwXb/xmCr8ExUz5I2Ywa9pG74
+	 YoTAQZF/rbBmqKmGHuINZkZfAZnbllzBcakcxyQge4mV5TC2nLAxvNTTTGfBeRoCcx
+	 FBnJzJgYcghwA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id BobYI9KWLDnW; Thu, 26 Oct 2023 14:24:32 +0000 (UTC)
+	with ESMTP id kk7pcHO_hKLo; Thu, 26 Oct 2023 14:53:12 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3703483E08;
-	Thu, 26 Oct 2023 14:24:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3703483E08
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 269761BF955
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 14:24:31 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 774A883E3C;
+	Thu, 26 Oct 2023 14:53:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 774A883E3C
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 210901BF414
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 14:53:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 0C8DF6F638
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 14:24:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0C8DF6F638
+ by smtp2.osuosl.org (Postfix) with ESMTP id EBBE841A00
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 14:53:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EBBE841A00
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 01gi9-Jf7cCn for <intel-wired-lan@lists.osuosl.org>;
- Thu, 26 Oct 2023 14:24:29 +0000 (UTC)
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 88DCC616E4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 14:24:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 88DCC616E4
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by ams.source.kernel.org (Postfix) with ESMTP id 6E35DB8369A;
- Thu, 26 Oct 2023 14:24:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 182A7C433C9;
- Thu, 26 Oct 2023 14:24:24 +0000 (UTC)
-Date: Thu, 26 Oct 2023 07:24:23 -0700
-From: Jakub Kicinski <kuba@kernel.org>
-To: Justin Stitt <justinstitt@google.com>
-Message-ID: <20231026072423.2ebd4619@kernel.org>
-In-Reply-To: <f4b69b9d-2294-e0bf-a12a-9622eb70bd99@intel.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id np-21Kju1yuo for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 26 Oct 2023 14:53:10 +0000 (UTC)
+Received: from relay.hostedemail.com (smtprelay0016.hostedemail.com
+ [216.40.44.16])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 00BF140A01
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 14:53:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 00BF140A01
+Received: from omf04.hostedemail.com (a10.router.float.18 [10.200.18.1])
+ by unirelay05.hostedemail.com (Postfix) with ESMTP id 4391440158;
+ Thu, 26 Oct 2023 14:53:05 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by
+ omf04.hostedemail.com (Postfix) with ESMTPA id 983F820027; 
+ Thu, 26 Oct 2023 14:52:52 +0000 (UTC)
+Message-ID: <a196427632d824ee0f39ef8da3188a0405bb2893.camel@perches.com>
+From: Joe Perches <joe@perches.com>
+To: Louis Peens <louis.peens@corigine.com>, Justin Stitt
+ <justinstitt@google.com>
+Date: Thu, 26 Oct 2023 07:52:51 -0700
+In-Reply-To: <ZTp8VgdC5yVkrFeA@LouisNoVo>
 References: <20231025-ethtool_puts_impl-v1-0-6a53a93d3b72@google.com>
  <20231025-ethtool_puts_impl-v1-2-6a53a93d3b72@google.com>
- <f4b69b9d-2294-e0bf-a12a-9622eb70bd99@intel.com>
+ <ZTp8VgdC5yVkrFeA@LouisNoVo>
+User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1698330265;
- bh=JvktxjVfkL+L338qM5yYJHIrOtY6B+d/w/XgfHIyqJ8=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=T1+gpBbuxN3eqF4QCYpT83BIEg0rFmZapScZQJ7whB+Hy4Y/GiypWgWapxytG+HJC
- L7rExCB0EvByr/Vt+KvKSm76qzkqsOkFDfe/wAMJIdo6IL1dtgF+73RmWPjkdgyJ9x
- VpBFQsqP5eZGpg2gIfQb3IgEFrlXXaIt2mSR29CCMBO2qAOr8IWz0OVqsuOiLiiYNf
- ngP7MiDMktJlqG64ShxT7abpgW2RH1nBTjet9kL9keKfzE2EQfxKhCHyzSeB87Xo7k
- 7LHSK8Vmz4IyxE7sGkdZx2bmn14F3rM646El/iJmEqiHCVYgP3zttjDHjxIlY/pBcM
- wkbdWdLe9uXQw==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=T1+gpBbu
+X-Rspamd-Server: rspamout03
+X-Rspamd-Queue-Id: 983F820027
+X-Stat-Signature: f6rwzr5tdz6au99az5suny8a7mijkrbc
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-Session-ID: U2FsdGVkX1/Qdw/iYiftXcMZ8GOytXsi0vlklpywPbo=
+X-HE-Tag: 1698331972-527693
+X-HE-Meta: U2FsdGVkX1/1MIUVFb/Hgk2tNLjvKG+o6wsUTD1CdlUY3VOZyRBIATzUA9gR2f5zcRVjVw1mMT9BLUbdoKmRYvl1eUmaGLar8G99TydWQIQ3OljsmfFN4SqHRuQkRuOopphBbmW35d4zz2g2nnw9Z3NFEmutjwzMW4q3jNinJ5fRf8RwuSFJQhLcp7vLNPyMu7XW0l2SM83ttIlF4a/KXvtx2SAxqeTuejRFixLDJ5Ib2HqkMtyoPCgGfZtBapq75g7b2MlQXv3+j9NxTxVBCgZLU2L54BktcVcEEOFF0qnQfdR2RXb4BzFr6UmcB8s5r7V2B2RppmkIa9qglYe7WHfAC0kwp27f+MdiWaFxlAWenFcL6+2MYQnkwudNJ/7K
 Subject: Re: [Intel-wired-lan] [PATCH 2/3] treewide: Convert some
  ethtool_sprintf() to ethtool_puts()
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -93,15 +90,14 @@ Cc: linux-hyperv@vger.kernel.org, Brett Creeley <brett.creeley@amd.com>,
  VMware PV-Drivers Reviewers <pv-drivers@vmware.com>,
  Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org,
  Tony Nguyen <anthony.l.nguyen@intel.com>,
- Arthur Kiyanovski <akiyano@amazon.com>, Louis Peens <louis.peens@corigine.com>,
- Wei Liu <wei.liu@kernel.org>, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Arthur Kiyanovski <akiyano@amazon.com>, Wei Liu <wei.liu@kernel.org>,
  Dexuan Cui <decui@microsoft.com>,
  Jesse Brandeburg <jesse.brandeburg@intel.com>, Noam Dagan <ndagan@amazon.com>,
- intel-wired-lan@lists.osuosl.org, Lukas Bulwahn <lukas.bulwahn@gmail.com>,
+ intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, Yisen Zhuang <yisen.zhuang@huawei.com>,
  Shay Agroskin <shayagr@amazon.com>, Kees Cook <keescook@chromium.org>,
  Haiyang Zhang <haiyangz@microsoft.com>, Nathan Chancellor <nathan@kernel.org>,
- Joe Perches <joe@perches.com>, Andy Whitcroft <apw@canonical.com>,
+ Lukas Bulwahn <lukas.bulwahn@gmail.com>, Andy Whitcroft <apw@canonical.com>,
  drivers@pensando.io, Salil Mehta <salil.mehta@huawei.com>,
  GR-Linux-NIC-Dev@marvell.com, Rasesh Mody <rmody@marvell.com>,
  David Arinzon <darinzon@amazon.com>, oss-drivers@corigine.com,
@@ -116,12 +112,19 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, 26 Oct 2023 11:23:37 +0200 Przemek Kitszel wrote:
-> this would now fit into one line
-> (perhaps it's the same in other cases, I just checked this one manually)
+On Thu, 2023-10-26 at 16:48 +0200, Louis Peens wrote:
+> On Wed, Oct 25, 2023 at 11:40:33PM +0000, Justin Stitt wrote:
+> > This patch converts some basic cases of ethtool_sprintf() to
+> > ethtool_puts().
 
-I think cocci would fold lines automatically? Could be worth trying
-spatch to do the conversion for that reason, if you aren't already.
+[30k of quoted content]
+
+> Thanks Justin. From my perspective the series looks good, though I've
+> not spent very long on it. For the nfp parts:
+> 
+> Acked-by: Louis Peens <louis.peens@corigine.com
+
+Do please remember to trim your replies.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
