@@ -4,99 +4,105 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BECEC25B6E
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Oct 2023 22:33:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94AC4C25B6E
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 26 Oct 2023 22:39:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id C335F4CA27;
-	Thu, 26 Oct 2023 22:33:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C335F4CA27
+	by smtp4.osuosl.org (Postfix) with ESMTP id 33A424D15B;
+	Thu, 26 Oct 2023 22:39:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 33A424D15B
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698359593;
-	bh=O9mMQpfWjXYYtORkqzFWm/oBM9qFMNaSCnc3IxT4qqk=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1698359958;
+	bh=plLpmoQjvLGicpZTQmoLXx2szdt5fMbcu35SBKEspkQ=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=88JbmG8pL9Tg/v72dZQtdXInrVjk+mDtyT69ZJHduNVtgF+b45DUs6+PEr280oghu
-	 MrkFi5Xpn/KGFr9CUVTUQGjoelhbp9vuqjHNBfH4a3hXEsnHxEtBx5gVseLlCq3es9
-	 5isLa2neqqFkxt4Sj0TbQXSJLFLgORuUd1Lm3SnbcX4HWPpBA7jDKYlw6qzqacYUMB
-	 nRPr/x62yxalTxOx9hZAWaXGVBt27sVr2Y783vFUmgK/D3nwbaQNr1EvWxPoJmEGnk
-	 SDJHK4bXIBNcpsiYkesg+H/iuiJxCkUENdzpcvtotymlIGEkpeqL6JsSux9PsuBAQO
-	 h/5w/VN4cB5tQ==
+	b=sy5/dpK0zxCG0+4UFyyL+GNM4LdCZcHJbIAPm78/6l5sYukQVd8tcgKZQ0YuvEVIZ
+	 ix8FHXiVhoQaiRxbhsA1y+kSbYmJRs67BDFW6MFbnuVW+iR7en2EEEAiPiiKECVr3T
+	 V2kVDTF68v6jJvoUEBvyIN7hMKZP6gZYy1zC2le8dErJ1T1xYl3Ryf1Ob1n1uEOi5k
+	 8HrHyLO2SCGknZbHyChVauVPcrbtUWgHXY5Om8BLMnE2uAXwVrOQ6sDQdBvAm0pyVu
+	 EpJFt3hEWAcmf6FLHMH86peFDvItA+QUYaJ6CoK6/7RQDoJmNtCZRKdcV6OJjHzRKA
+	 74UKzVw602BfA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 0LsGnSMrhzoP; Thu, 26 Oct 2023 22:33:13 +0000 (UTC)
+	with ESMTP id CE6FlynElrFl; Thu, 26 Oct 2023 22:39:17 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B7A5A4CA63;
-	Thu, 26 Oct 2023 22:33:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B7A5A4CA63
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 7FB121BF378
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 22:33:10 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id 27AA44D27C;
+	Thu, 26 Oct 2023 22:39:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 27AA44D27C
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 91E201BF33F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 22:39:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 56896613AB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 22:33:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 56896613AB
+ by smtp1.osuosl.org (Postfix) with ESMTP id 658228484F
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 22:39:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 658228484F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id NpunrbK1hS-c for <intel-wired-lan@lists.osuosl.org>;
- Thu, 26 Oct 2023 22:33:09 +0000 (UTC)
-Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com
- [IPv6:2a00:1450:4864:20::22b])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 2B8F96134B
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 22:33:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2B8F96134B
-Received: by mail-lj1-x22b.google.com with SMTP id
- 38308e7fff4ca-2c5087d19a6so20144921fa.0
- for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 15:33:09 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1698359587; x=1698964387;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=4SxxJeIJ67UJRuWmX2lMM5UOUmBZb18yNZTZPQByIAc=;
- b=YxkCFF5xMikbYG3vAeLGlJ5GTZOIw9P4sFIUBINNKC84w0cxqH3k22yUr5BFv+O6Q/
- FM7g5+sgo6VcTLJlj4zpkysc+FsFsGT4CquAC78R8L0pt/vFUAG3oBHzHaQ0GR8BuKEQ
- 5A5VXJvfyPW/dr3z2JfK336Xb5mhMBTQfVxhe1PQqPmGRijJORhnAvZ5yrZIAJJfjz7S
- tKqb57Fy75lpRqMiUlZxNYGX6AjhbJwx+TIuwGYDSQrhgZSjRhc4lC4JhMPWetHqNeGR
- cRZALRp6D/adgkqxb17bvtUkdzwo75OKQKWc//KsSE/pdG8b650EDacBQt6UNBvVVBmH
- yPEA==
-X-Gm-Message-State: AOJu0YykdMIl0FnoXKqJG7hGTbl4zCY9VXSLi5PmIsPEU0xGbQbVtjCo
- g0knVAB8+WSY3P9sIde9ErE=
-X-Google-Smtp-Source: AGHT+IHiJGPvEvNoYxUZFXdVNhDBLZImmPXHiZgnA1Uzd3w0qnIN0A97ELhuaXAvDjdWP1gQ5bRUUw==
-X-Received: by 2002:ac2:4a64:0:b0:4ff:7004:545e with SMTP id
- q4-20020ac24a64000000b004ff7004545emr494644lfp.4.1698359586744; 
- Thu, 26 Oct 2023 15:33:06 -0700 (PDT)
-Received: from skbuf ([188.26.57.160]) by smtp.gmail.com with ESMTPSA id
- f24-20020a1c6a18000000b004063977eccesm3534864wmc.42.2023.10.26.15.33.04
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Thu, 26 Oct 2023 15:33:05 -0700 (PDT)
-Date: Fri, 27 Oct 2023 01:33:02 +0300
-From: Vladimir Oltean <olteanv@gmail.com>
-To: Justin Stitt <justinstitt@google.com>
-Message-ID: <20231026223302.4gjjeh7inn3a3llq@skbuf>
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id VV5QCafc5EBU for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 26 Oct 2023 22:39:14 +0000 (UTC)
+Received: from relay.hostedemail.com (smtprelay0014.hostedemail.com
+ [216.40.44.14])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 6896B8484D
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 26 Oct 2023 22:39:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6896B8484D
+Received: from omf03.hostedemail.com (a10.router.float.18 [10.200.18.1])
+ by unirelay03.hostedemail.com (Postfix) with ESMTP id E0508A06DD;
+ Thu, 26 Oct 2023 22:39:08 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: joe@perches.com) by
+ omf03.hostedemail.com (Postfix) with ESMTPA id 229B46000C; 
+ Thu, 26 Oct 2023 22:38:40 +0000 (UTC)
+Message-ID: <8521c712250bcffce5c71e8d2b2574de786d4572.camel@perches.com>
+From: Joe Perches <joe@perches.com>
+To: Justin Stitt <justinstitt@google.com>, "David S. Miller"
+ <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
+ <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Shay Agroskin
+ <shayagr@amazon.com>, Arthur Kiyanovski <akiyano@amazon.com>, David Arinzon
+ <darinzon@amazon.com>, Noam Dagan <ndagan@amazon.com>, Saeed Bishara
+ <saeedb@amazon.com>, Rasesh Mody <rmody@marvell.com>, Sudarsana Kalluru
+ <skalluru@marvell.com>, GR-Linux-NIC-Dev@marvell.com, Dimitris Michailidis
+ <dmichail@fungible.com>, Yisen Zhuang <yisen.zhuang@huawei.com>, Salil
+ Mehta <salil.mehta@huawei.com>, Jesse Brandeburg
+ <jesse.brandeburg@intel.com>,  Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Louis Peens <louis.peens@corigine.com>, Shannon Nelson
+ <shannon.nelson@amd.com>, Brett Creeley <brett.creeley@amd.com>, 
+ drivers@pensando.io, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang
+ <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>, Dexuan Cui
+ <decui@microsoft.com>, Ronak Doshi <doshir@vmware.com>, VMware PV-Drivers
+ Reviewers <pv-drivers@vmware.com>, Andy Whitcroft <apw@canonical.com>,
+ Dwaipayan Ray <dwaipayanray1@gmail.com>, Lukas Bulwahn
+ <lukas.bulwahn@gmail.com>, Hauke Mehrtens <hauke@hauke-m.de>, Andrew Lunn
+ <andrew@lunn.ch>, Florian Fainelli <f.fainelli@gmail.com>,  Vladimir Oltean
+ <olteanv@gmail.com>, =?UTF-8?Q?Ar=C4=B1n=C3=A7_=C3=9CNAL?=
+ <arinc.unal@arinc9.com>, Daniel Golle <daniel@makrotopia.org>, Landen Chao
+ <Landen.Chao@mediatek.com>, DENG Qingfang <dqfext@gmail.com>, Sean Wang
+ <sean.wang@mediatek.com>, Matthias Brugger <matthias.bgg@gmail.com>,
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Linus
+ Walleij <linus.walleij@linaro.org>, Alvin =?UTF-8?Q?=C5=A0ipraga?=
+ <alsi@bang-olufsen.dk>, Wei Fang <wei.fang@nxp.com>, Shenwei Wang
+ <shenwei.wang@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>, NXP Linux Team
+ <linux-imx@nxp.com>, Lars Povlsen <lars.povlsen@microchip.com>, Steen
+ Hegelund <Steen.Hegelund@microchip.com>, Daniel Machon
+ <daniel.machon@microchip.com>,  UNGLinuxDriver@microchip.com, Jiawen Wu
+ <jiawenwu@trustnetic.com>, Mengyuan Lou <mengyuanlou@net-swift.com>, Heiner
+ Kallweit <hkallweit1@gmail.com>, Russell King <linux@armlinux.org.uk>,
+ Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann
+ <daniel@iogearbox.net>, Jesper Dangaard Brouer <hawk@kernel.org>, John
+ Fastabend <john.fastabend@gmail.com>
+Date: Thu, 26 Oct 2023 15:38:39 -0700
+In-Reply-To: <20231026-ethtool_puts_impl-v2-2-0d67cbdd0538@google.com>
 References: <20231026-ethtool_puts_impl-v2-0-0d67cbdd0538@google.com>
  <20231026-ethtool_puts_impl-v2-2-0d67cbdd0538@google.com>
- <20231026221206.52oge3a5w4uxkkd5@skbuf>
- <CAFhGd8r-u193pBk2+WWF+sHWEo5ixxEiT=fcSYiuy5W+aWDsbg@mail.gmail.com>
+User-Agent: Evolution 3.48.4 (3.48.4-1.fc38) 
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <CAFhGd8r-u193pBk2+WWF+sHWEo5ixxEiT=fcSYiuy5W+aWDsbg@mail.gmail.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1698359587; x=1698964387; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=4SxxJeIJ67UJRuWmX2lMM5UOUmBZb18yNZTZPQByIAc=;
- b=COOboUR/rqkYXyOlY3xrB7l6Iyblx3kfWCLG0xzy+N9Rl1EBQ7Kjrqx/jUXADAaISy
- YXQM7uiYEVD2eCGbnLlSSQP7MoBMaAlM7PYNba67tWixEg9KNdf00PDFNJIAEmS7ZdPg
- 96Iugmj2ftie9+EWdNcwNMO3QBa+ZrP4Vh7p6WJYlxyuN9tU+kcfX20tjxc1aKi7jfYz
- A0n8TnafYc5uXQ5bMezjWuoFUIaroyhnZpUr3204OlDjmXLS86KpJ7gCz3UyeiT600Ds
- Xh5xXE61YKeHYzZW10qkmaaO2L8R6qslS1cQ7z+g2x9TNK10XNkQO/akFI6u4ZjkLSpx
- ETYA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=COOboUR/
+X-Rspamd-Queue-Id: 229B46000C
+X-Stat-Signature: mtojnbfkhmj945izba58at9t64m9az5b
+X-Rspamd-Server: rspamout08
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-Session-ID: U2FsdGVkX1/UB5xXHbX1I6Iwr1/WX9S8fJXYcv2DOVQ=
+X-HE-Tag: 1698359919-976100
+X-HE-Meta: U2FsdGVkX1/Amx6RsPXMmp/lJzH0XSfOupRJb1kmsjddDIYEwUvtXmlXvcoG0HQxgfJeu/bgjCSmBW9XNko/mFTeWhpzlQGj+sHcroC4+SQucDoul9/mW561AqHS3bN32ZhIbH4y4PO56Z7gmbgk+jEv1lNmijdnNQn2GDoTkX/tD06ZkKPHkXJTWWOiblBjoSzVelzS2tuc0jq7rbU2KN7wKu2c9SCdLcBX7eDcPHw0DYjtwdWRO7eI8BixY9+TH41p+q5lsfSnzBidMm8GWcRCTJkLQdvf6jjmqEDt8BcNB67WbPmIoEo21hk8mGqMRn8qjdO5KQuIvo+QRzi9TNWL/Qwj5lvUYAvGAivJpjz++odpOBd6Ml2HgJTXQ35CUCCg8zvynD3R6R7WDpQwYoliPG09jddatznky2vFjJO9MiTzTC/t5iwPcMcldvPAUeGRgklQ6A1GlziHr19N0w==
 Subject: Re: [Intel-wired-lan] [PATCH next v2 2/3] checkpatch: add
  ethtool_sprintf rules
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -111,30 +117,70 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, GR-Linux-NIC-Dev@marvell.com,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- UNGLinuxDriver@microchip.com, oss-drivers@corigine.com,
- intel-wired-lan@lists.osuosl.org, linux-mediatek@lists.infradead.org,
- bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-hyperv@vger.kernel.org, Kees Cook <keescook@chromium.org>,
+ netdev@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>,
+ linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>,
+ oss-drivers@corigine.com, intel-wired-lan@lists.osuosl.org,
+ linux-mediatek@lists.infradead.org, bpf@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu, Oct 26, 2023 at 03:24:54PM -0700, Justin Stitt wrote:
-> There was some discussion here [1] but AFAICT I need to use EMACS
-> or configure my vim in a very particular way to get the same formatting
-> 
-> But yeah, look around line 7000 -- lots of this pattern matching code is
-> pretty hard to read. Not sure there's much to be done as far as readability
-> is concerned.
-> 
-> [1]: https://lore.kernel.org/all/137a309b313cc8a295f3affc704f0da049f233aa.camel@perches.com/
+On Thu, 2023-10-26 at 21:56 +0000, Justin Stitt wrote:
+> Add some warnings for using ethtool_sprintf() where a simple
+> ethtool_puts() would suffice.
+[]
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+[]
+> @@ -7011,6 +7011,25 @@ sub process {
+>  			     "Prefer strscpy, strscpy_pad, or __nonstring over strncpy - see: https://github.com/KSPP/linux/issues/90\n" . $herecurr);
+>  		}
+>  
+> +# ethtool_sprintf uses that should likely be ethtool_puts
+> +		if ($line =~ /\bethtool_sprintf\s*\(\s*$FuncArg\s*,\s*$FuncArg\s*\)/) {
+> +			if(WARN("ETHTOOL_SPRINTF",
+> +			   "Prefer ethtool_puts over ethtool_sprintf with only two arguments\n" . $herecurr) &&
+> +         $fix) {
+> +         $fixed[$fixlinenr] =~ s/ethtool_sprintf\s*\(/ethtool_puts\(/;
+> +       }
+> +		}
+> +
+> +		# use $rawline because $line loses %s via sanitization and thus we can't match against it.
+> +		if ($rawline =~ /\bethtool_sprintf\s*\(\s*$FuncArg\s*,\s*\"\%s\"\s*,\s*$FuncArg\s*\)/) {
+> +			if(WARN("ETHTOOL_SPRINTF",
+> +			   "Prefer ethtool_puts over ethtool_sprintf with standalone \"%s\" specifier\n" . $herecurr) &&
+> +         $fix) {
+> +         $fixed[$fixlinenr] =~ s/ethtool_sprintf\s*\(\s*(.*?),.*?,(.*?)\)/ethtool_puts\($1,$2)/;
 
-Hard to read because of pattern matching is one thing, but your
-indentation is unlike anything else in this file. There are inner curly
-brackets which are less indented than the outer curly brackets. I cannot
-read/review this, sorry, I hope somebody else can.
+Thanks, but:
+
+This fix wouldn't work if the first argument was itself a function
+with multiple arguments.
+
+And this is whitespace formatted incorrectly.
+
+It:
+
+o needs a space after if
+o needs a space after the comma in the fix
+o needs to use the appropriate amount and tabs for indentation
+o needs alignment to open parentheses
+o the backslashes are not required in the fix block
+
+Do you want me to push what I wrote in the link below?
+https://lore.kernel.org/lkml/7eec92d9e72d28e7b5202f41b02a383eb28ddd26.camel@perches.com/
+
+> +       }
+> +		}
+> +
+> +
+>  # typecasts on min/max could be min_t/max_t
+>  		if ($perl_version_ok &&
+>  		    defined $stat &&
+> 
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
