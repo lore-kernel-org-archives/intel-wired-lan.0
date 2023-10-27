@@ -4,74 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5327C27C47
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Oct 2023 23:41:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F16C4C27C47
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 27 Oct 2023 23:44:02 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3EC9C605EA;
-	Fri, 27 Oct 2023 23:41:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3EC9C605EA
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9CE7860648;
+	Fri, 27 Oct 2023 23:44:02 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9CE7860648
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698450087;
-	bh=Pi8GLDwf9ZuP38zLdSo/EROuK2rlA/Iadhbt9aJEei8=;
+	s=default; t=1698450242;
+	bh=knWOvpvyq0xPIyx99dXbxw8vuEnkjY/e8g61mNB85gc=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=BLjZ0AUU0ekvKoewGPO74uRQyGDYsH3dBNLC419U7Pj4iK6jYCuzS1+MFU4vvQ9jP
-	 fr1Jj/M9AY02Dc9Z3OI+IYNGR942xrp5nLSADitRwJZ+Fhq0SuKoODHUN+pIvDVxhV
-	 eedmPPK0Os0fuU96edThHRuKvI6FSyGS1CXLBGbPJ7RyB4VodVRLxTu/oRWMQx5y13
-	 QLzgM9QoOYhPpCBfRE7b9VjXwvRmZg7Jsl8494h9JZWUmLk8StaZJYxf9aEb3DHMec
-	 vYCNwbkftOvvDZ5SekaUkJMK+bQVsILvEopIagl3nOk7ghmwTBb46+ZUp5Qd4voyaa
-	 BcR8wRr1cGtdw==
+	b=AnONYB2mYIcURjsTC/hOtjebTEnInxOMTVSAtZyzx4JE97DTikuxrCM9sB7xDE+fS
+	 v25X/1MkFe0nQr8LQGfKgvOofk8QM8vWa2rV++beqiTSzpH9gpctK/lZJ8eVxxLnMz
+	 +6t1EkPDf4rJZwZ+rV1icO3CgVifufdL0rNP0LTRETzlJKc0VneBVijN/pP3RZbZh0
+	 dipYw4uBmyEpQCpZmjbaRZVmxaLXRJpbvfPXhTaW9sStHL+kNpnAIhhrETxDk+fO33
+	 UkqGKjnwt3wCSuMhvoBes7OCrVyyuajwhBYDD06RNGDuAmheC31BmH2cnEyo/dRvVZ
+	 GGXyKsK+l2UnA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id KSynVY6qigyo; Fri, 27 Oct 2023 23:41:26 +0000 (UTC)
+	with ESMTP id eM_ZeWY9PpNQ; Fri, 27 Oct 2023 23:44:01 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 293BC605E0;
-	Fri, 27 Oct 2023 23:41:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 293BC605E0
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 5EFAF1BF301
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Oct 2023 23:41:25 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id A8BF760655;
+	Fri, 27 Oct 2023 23:44:01 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A8BF760655
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 3095E1BF4E7
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Oct 2023 23:44:00 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 3700E81447
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Oct 2023 23:41:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3700E81447
+ by smtp2.osuosl.org (Postfix) with ESMTP id 068BD400EC
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Oct 2023 23:44:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 068BD400EC
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 5-Z8g9hdceAC for <intel-wired-lan@lists.osuosl.org>;
- Fri, 27 Oct 2023 23:41:24 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id EmsDzm4eFR_Q for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 27 Oct 2023 23:43:59 +0000 (UTC)
 Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 6D5DC81443
- for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Oct 2023 23:41:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6D5DC81443
+ by smtp2.osuosl.org (Postfix) with ESMTPS id AD323400EA
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 27 Oct 2023 23:43:58 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AD323400EA
 Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
  (envelope-from <andrew@lunn.ch>)
- id 1qwWRA-000Nnw-Px; Sat, 28 Oct 2023 01:40:20 +0200
-Date: Sat, 28 Oct 2023 01:40:20 +0200
+ id 1qwWTx-000NpJ-BL; Sat, 28 Oct 2023 01:43:13 +0200
+Date: Sat, 28 Oct 2023 01:43:13 +0200
 From: Andrew Lunn <andrew@lunn.ch>
 To: Justin Stitt <justinstitt@google.com>
-Message-ID: <8f0e55ea-1c24-4d6b-9398-0cbc2bb58907@lunn.ch>
+Message-ID: <8ca4ba13-1bcf-4c7b-91b6-8c77fbe55b30@lunn.ch>
 References: <20231027-ethtool_puts_impl-v3-0-3466ac679304@google.com>
- <20231027-ethtool_puts_impl-v3-3-3466ac679304@google.com>
+ <20231027-ethtool_puts_impl-v3-1-3466ac679304@google.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20231027-ethtool_puts_impl-v3-3-3466ac679304@google.com>
+In-Reply-To: <20231027-ethtool_puts_impl-v3-1-3466ac679304@google.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; d=lunn.ch; 
  s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
  References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
  Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
  Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
- bh=09k1FMNrHa5VTgFlKbdaRb+SPhW1H9zw7ovrSs4UjdY=; b=ZWWyy5xd7cYU1YZ3Y63aEvxcCe
- XQojUHYnvygF02KsdPuzUdj1VFkZLk423VqEViU6D6EUA8zRI1RlDd9z9zEMQlcl3eakNA+l8SUu/
- KY2ZYQOI4FngifBT+l6rvBDcfWaH1qI4+eb0e3aX0Q5nFF4Q55qVR0t8cxpOmlH7ruCg=;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=nON0cFSztiE7XcY8cFP+C7pm31K+bA5yGWUP5QJ9lns=; b=r3RDh8iDMr/m9xE7BTG70h/G40
+ /0aDL9NP5016KyWfQbW3QCU45vcREym2fT3cY9k9P+t2ZoutQYyqPvPiWlKZSWoKLFvRL+dJrH27X
+ nGxyvU9tY146Xp5aUDuzQVvN+Eeo2IZuvxWZ681zhAkGOwBUZCtXSaUlL381DnomFDiA=;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch
- header.a=rsa-sha256 header.s=20171124 header.b=ZWWyy5xd
-Subject: Re: [Intel-wired-lan] [PATCH net-next v3 3/3] net: Convert some
- ethtool_sprintf() to ethtool_puts()
+ header.a=rsa-sha256 header.s=20171124 header.b=r3RDh8iD
+Subject: Re: [Intel-wired-lan] [PATCH net-next v3 1/3] ethtool: Implement
+ ethtool_puts()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -132,23 +132,16 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Oct 27, 2023 at 10:05:35PM +0000, Justin Stitt wrote:
-> This patch converts some basic cases of ethtool_sprintf() to
-> ethtool_puts().
-> 
-> The conversions are used in cases where ethtool_sprintf() was being used
-> with just two arguments:
-> |       ethtool_sprintf(&data, buffer[i].name);
-> or when it's used with format string: "%s"
-> |       ethtool_sprintf(&data, "%s", buffer[i].name);
-> which both now become:
-> |       ethtool_puts(&data, buffer[i].name);
-> 
-> Signed-off-by: Justin Stitt <justinstitt@google.com>
+> +/**
+> + * ethtool_puts - Write string to ethtool string data
+> + * @data: Pointer to start of string to update
 
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+Isn't it actually a pointer to a pointer to the start of string to
+update?
 
-    Andrew
+> +extern void ethtool_puts(u8 **data, const char *str);
+
+	Andrew
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
