@@ -4,85 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9AE3C4167B
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Nov 2023 20:21:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76AF9C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Nov 2023 20:21:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 70AE670756;
-	Thu,  2 Nov 2023 20:21:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 70AE670756
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3033870783;
+	Thu,  2 Nov 2023 20:21:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3033870783
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698956486;
-	bh=9gMO1VrI1wQKQZVTiikrt6FuElDXNZ2+8uMpPLII/pg=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=XozwSKcRpfShb25nghGcDq0j//YdIzQJscEkbA9wBrqCCSd8XQJHDtrlXCyqBoqF+
-	 8ol1XY8y+g2SGpM3qyH/gZx8/6CifQessbHN47m8j6Sa5sYUV3wuU6HOXZttKbJYlt
-	 9zT60FTlugKT6MFlarnKzxb9+cKbjtQPh5/zJksBUKwobLYvewuOYCc7nHRi1k3YpX
-	 jzbHBQn0YIEsVMwVy0T3QS7o4lL4nX6X7H947TMq8pqWzCktEr+/GmnKYD7YWoIlVx
-	 /tuVPVYFGXM+LA3A8AR5H9FCkJmUeDtHTiRjkkfURXzpPT4a+Iasptyqd12RI3eNJq
-	 4I3c+7UQq/ynA==
+	s=default; t=1698956488;
+	bh=nKWKrmc9Hrinla0MthD2mNgsNFw+u70feKrL/RFKj6o=;
+	h=Date:In-Reply-To:References:From:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=m5I0HACiB0kG3KVJBBRHOY6dkbA/T7+Ct/vVhoCLF6KUzro+dR0VLPrMhxvlvH+kq
+	 L06Ashl4HN4YKQSe5rgN+fhc7SNLeUT6QQ6Y8jRabFmV9IXKN4NMREzz6gTpvTwk/S
+	 iGzgY/v+gSC9jebtlOKdFJI4YWOng8O0cpeH1LzmS+GqeA/BkokpuGhWyv/ANNq2DD
+	 KBpDFN2SJrfabt5hBR7/Z5jTWHqPTVcZ5FimzI4OXusQUy8M367G4zATbtUYqZKBbQ
+	 rBPn+W3W8Qk4j9xITcBXKfE2La9Y7d0ZjOWSiTS9KX6D4yuXYyJ9EewaaxFDSHQkYX
+	 JNPRcJGKc+iwg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id v-UT7x9SsBRp; Thu,  2 Nov 2023 20:21:22 +0000 (UTC)
+	with ESMTP id wvUcn-Smh4MF; Thu,  2 Nov 2023 20:21:26 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E5FEC70780;
-	Thu,  2 Nov 2023 20:21:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E5FEC70780
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id B1B951BF287
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:54 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 4877B7077C;
+	Thu,  2 Nov 2023 20:21:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4877B7077C
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 414631BF287
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 97BFE81FEF
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 97BFE81FEF
+ by smtp2.osuosl.org (Postfix) with ESMTP id 25FDA43558
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 25FDA43558
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Eh4IviljPLfE for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Nov 2023 18:55:50 +0000 (UTC)
-Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com
- [IPv6:2607:f8b0:4864:20::1149])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4175C80E88
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4175C80E88
-Received: by mail-yw1-x1149.google.com with SMTP id
- 00721157ae682-5acac8b6575so19021267b3.1
- for <intel-wired-lan@lists.osuosl.org>; Thu, 02 Nov 2023 11:55:49 -0700 (PDT)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ciIoQi85EsQA for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Nov 2023 18:55:54 +0000 (UTC)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com
+ [IPv6:2607:f8b0:4864:20::b49])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C1B6843549
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C1B6843549
+Received: by mail-yb1-xb49.google.com with SMTP id
+ 3f1490d57ef6-d9cb4de3bf0so1612175276.0
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 02 Nov 2023 11:55:53 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1698951349; x=1699556149;
- h=cc:to:from:subject:message-id:mime-version:date:x-gm-message-state
- :from:to:cc:subject:date:message-id:reply-to;
- bh=GwZROZlK9UfWkKR+Oep5UTLdUA8cSVn3j1Qp9AwudVw=;
- b=ReNchEeSS6O468asabjzVXdKXquRoDtbrA0ncGWITVqaZvcDkLxrTPPGazYA0LTkc2
- tZlJbXc2/mtdqkccZ44m+NF9L3cz+6GwZn4/4UCcYlos43FGhm9cAhw9Lf6mm+kgElzV
- neVoIl78ezStUrvieyNfWAUSGVAbKIMWDmk9KHuJO3tvwayL6W0jAhdhp6+ie6E7xx7q
- bsJyDO/ZNPtsPluCbcgv3WG+fx6jeRLMNOIV+gz9fB+xE488KhtMKHJETaWqade2B8Ph
- NlpOkku0PXQAy28FCuZmn+An+GfIz4SV9Wh+CIfD4tUhVLmQQR3wdoGEn8I1NUGlp+ck
- o9sg==
-X-Gm-Message-State: AOJu0Yz4XZvSvEPKeEC1fXFRYCPtBtp/5hoOLUQd4s5ms+GerrKSM5oi
- sPmedXyo3tIPZtPYmhCvNJpNKoqLE+Naop2Hig==
-X-Google-Smtp-Source: AGHT+IHU+DjdhGyfLwL6+kKjSdSmxJWkpryViec8cwwDoWtQDNOiyfbquBqPfJ/wOCFKMWI8x2MjGy7G4ggPBzP5Kg==
+ d=1e100.net; s=20230601; t=1698951352; x=1699556152;
+ h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+ :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=BA/LRhj803dhHvGHhl7OKyr4+J3mUuLaEe8kfFcb6XM=;
+ b=IbEf39gy0aXHaBsEjLIXQ6hABnCoYJGb+9NbhjWyqmel/Gv8yhgp/qV68A6UqCn/11
+ IgZKtsVpLke0SeI87HrFIyt1ofI4vft7ueAAlV9b3Nm1hxEVxnniKj6Vi2iOaBZHCz5/
+ k081KFzjlOz+5EbIHzMHnAaHpVV4j9hJrTUSR2RI98Dwd8y2C0k5EddwsZHg+XBGRwGX
+ Jf7LQC1/CiYUoCNF0PpJWU2xG/YEoiSJ4fo6C9wt2zWMwHvqzYQS84dizZvdKAB6cvq9
+ DhL30oNvRvQcXP9F7pf3dYFUTb4rsRNNCNiETzhd8Zu7mH9az4KX4EbO+AVhA2wUjIub
+ TCvQ==
+X-Gm-Message-State: AOJu0YzU76x4qF/3e5oo6mXHRlkkKUMRQKTCo1nc/Fqq3pERjOjvqWpy
+ ifdsqhEABJkR8rCR/sDzWyi4wkOJIKGyEWZyIg==
+X-Google-Smtp-Source: AGHT+IEsxHxgojmrt+Mh3a+b9NOgTz7T5EQoqzceuYmjw3BfY4N143O8ScpEcwdJOoTPqn41ytaHsbPKBHprV94/XQ==
 X-Received: from jstitt-linux1.c.googlers.com
  ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
- (user=justinstitt job=sendgmr) by 2002:a05:6902:45:b0:d9b:59c3:6eef with SMTP
- id m5-20020a056902004500b00d9b59c36eefmr8657ybh.0.1698951348803; Thu, 02 Nov
- 2023 11:55:48 -0700 (PDT)
-Date: Thu, 02 Nov 2023 18:55:41 +0000
+ (user=justinstitt job=sendgmr) by 2002:a25:c789:0:b0:d9a:c218:8177 with SMTP
+ id w131-20020a25c789000000b00d9ac2188177mr348612ybe.8.1698951352583; Thu, 02
+ Nov 2023 11:55:52 -0700 (PDT)
+Date: Thu, 02 Nov 2023 18:55:44 +0000
+In-Reply-To: <20231102-ethtool_puts_impl-v4-0-14e1e9278496@google.com>
 Mime-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAK3wQ2UC/33NQQqDMBQE0KuUrJsS8zWpXfUepUhMvhpQIyYVi
- 3j3BleWSpfDMG8W4nG06MnttJARJ+ut62NIzyeiG9XXSK2JmXDGIWE8oxia4FxbDK/gC9sNLVV
- JKvOqKrVERuJuGLGy82Y+SI+B9jgH8oxNY31w43s7m5Kt/+NOCWVUqAxUDgZKye+1c3WLF+26j
- Zv4nhBHBI8EM0Lq0hiWwfWHgD0hjwiIBKRCKC1kDiz9ItZ1/QDJe1zHQwEAAA==
+References: <20231102-ethtool_puts_impl-v4-0-14e1e9278496@google.com>
 X-Developer-Key: i=justinstitt@google.com; a=ed25519;
  pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1698951347; l=4723;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1698951347; l=28894;
  i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
- bh=jFTdO8kx/UlazPhR0MRqYdFyWA/L3tuMaQQIucen34M=;
- b=v2F1dfbbHaeo64cGZOjBP3/iolmGrFIsPfCBQHud2JK2GSSDr5CUsMsWVAeI/q16gcG+J6OW+
- QYzrftVSbVSBn7OqwukQ4KtKDMdJQi+bVfKV5GmEwqA8bEfbAtqp47F
+ bh=GU9tYu7W/NZcwcp2LpJ+QUBjSJCw6GgL8WPwykdub3s=;
+ b=hj6lqW7W+7SnwaX1RwhKNUH9qeTDVdpgMYRPFfVWbEnPIipPc7QFx5BDdM3dh4QyE+Mqfoezi
+ z5uOSBnbWtRD2EVWjBFpSWyDnzHnUTmOMuYdjClaItwBci0I9ikjI4Q
 X-Mailer: b4 0.12.3
-Message-ID: <20231102-ethtool_puts_impl-v4-0-14e1e9278496@google.com>
+Message-ID: <20231102-ethtool_puts_impl-v4-3-14e1e9278496@google.com>
 From: Justin Stitt <justinstitt@google.com>
 To: "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
@@ -129,21 +128,21 @@ To: "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
  John Fastabend <john.fastabend@gmail.com>
 X-Mailman-Approved-At: Thu, 02 Nov 2023 20:21:17 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=google.com; s=20230601; t=1698951349; x=1699556149; darn=lists.osuosl.org;
- h=cc:to:from:subject:message-id:mime-version:date:from:to:cc:subject
- :date:message-id:reply-to;
- bh=GwZROZlK9UfWkKR+Oep5UTLdUA8cSVn3j1Qp9AwudVw=;
- b=O+VYxoiYRHfYS7Iiv0KRuMDAybAm0lea9wDyWjnnH0KvR5hxEXd5a7yBaCxdZIeSIl
- AqhHG3/TX30eZipVT1H+5WRrB0Ap4fbHkmVhXnGEBSniYad24emujpHyv4fL0xLE4Alx
- aylBQiatyjuHZpEqLkPWZhupP22aB2R2JtnD34rtxK95WAjtE14ohaPb33YwCOYmiYnP
- N36D7OAEkwVA2sW0GcJnPQ6sAcsbByjtIQ1G9dzTybdCR/0mvPC5U5mg2FoZLbl923bs
- 8JWCfy2+3cy5kniyA7q4mXsut/vynntFBBoMP4Rx0V8w23Svxw4JK5zFDAu+PBp1nCwX
- StwQ==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=google.com; s=20230601; t=1698951352; x=1699556152; darn=lists.osuosl.org;
+ h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+ :date:from:to:cc:subject:date:message-id:reply-to;
+ bh=BA/LRhj803dhHvGHhl7OKyr4+J3mUuLaEe8kfFcb6XM=;
+ b=pq9FgDsV6ZzexppeBOY+DLnusGncIJ1LUsW3rxOoJkHOkQTv8pZ8rvr2OAPPhipqjJ
+ k6JP2vxMuwwHIYs1w6/vkutrWbPpU+bc9Mv/DmzzbpIZ4AMPW3VNPAWugbTRZYJmtqhQ
+ vzhx7gY5UhwlGsnOcmpMgMnb0OlX257rLALDi4S5Hwfp4TwsLs2E/4Lxftc1F8LP41ed
+ hItoCDeWFJkWn/Mb9lYikfOCfowktRDXK9OV91ao4+crDtb2o3pDig4ULzcWniEkIYlW
+ 0sI4xNKA0NOM5uVyPcSbQoDXK1+El6sIdJX9/IKCYacwWT1OcQlTg5H37rWldhH7du1E
+ 3pSQ==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
- header.a=rsa-sha256 header.s=20230601 header.b=O+VYxoiY
-Subject: [Intel-wired-lan] [PATCH net-next v4 0/3] ethtool: Add
- ethtool_puts()
+ header.a=rsa-sha256 header.s=20230601 header.b=pq9FgDsV
+Subject: [Intel-wired-lan] [PATCH net-next v4 3/3] net: Convert some
+ ethtool_sprintf() to ethtool_puts()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -167,13 +166,8 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi,
-
-This series aims to implement ethtool_puts() and send out a wave 1 of
-conversions from ethtool_sprintf(). There's also a checkpatch patch
-included to check for the cases listed below.
-
-This was sparked from recent discussion here [1]
+This patch converts some basic cases of ethtool_sprintf() to
+ethtool_puts().
 
 The conversions are used in cases where ethtool_sprintf() was being used
 with just two arguments:
@@ -183,66 +177,8 @@ or when it's used with format string: "%s"
 which both now become:
 |       ethtool_puts(&data, buffer[i].name);
 
-The first case commonly triggers a -Wformat-security warning with Clang
-due to potential problems with format flags present in the strings [3].
-
-The second is just a bit weird with a plain-ol' "%s".
-
-Changes found with Cocci [4] and grep [5].
-
-[1]: https://lore.kernel.org/all/202310141935.B326C9E@keescook/
-[2]: https://lore.kernel.org/all/?q=dfb%3Aethtool_sprintf+AND+f%3Ajustinstitt
-[3]: https://lore.kernel.org/all/202310101528.9496539BE@keescook/
-[4]: (script authored by Kees w/ modifications from Joe)
-@replace_2_args@
-expression BUF;
-expression VAR;
-@@
-
--       ethtool_sprintf(BUF, VAR)
-+       ethtool_puts(BUF, VAR)
-
-@replace_3_args@
-expression BUF;
-expression VAR;
-@@
-
--       ethtool_sprintf(BUF, "%s", VAR)
-+       ethtool_puts(BUF, VAR)
-
--       ethtool_sprintf(&BUF, "%s", VAR)
-+       ethtool_puts(&BUF, VAR)
-
-[5]: $ rg "ethtool_sprintf\(\s*[^,)]+\s*,\s*[^,)]+\s*\)"
-
 Signed-off-by: Justin Stitt <justinstitt@google.com>
 ---
-Changes in v4:
-- update documentation to match:
-  https://lore.kernel.org/all/20231028192511.100001-1-andrew@lunn.ch/
-
-- Link to v3: https://lore.kernel.org/r/20231027-ethtool_puts_impl-v3-0-3466ac679304@google.com
-
-Changes in v3:
-- fix force_speed_maps merge conflict + formatting (thanks Vladimir)
-- rebase onto net-next (thanks Andrew, Vladimir)
-- change subject (thanks Vladimir)
-- fix checkpatch formatting + implementation (thanks Joe)
-- Link to v2: https://lore.kernel.org/r/20231026-ethtool_puts_impl-v2-0-0d67cbdd0538@google.com
-
-Changes in v2:
-- wrap lines better in replacement (thanks Joe, Kees)
-- add --fix to checkpatch (thanks Joe)
-- clean up checkpatch formatting (thanks Joe, et al.)
-- rebase against next
-- Link to v1: https://lore.kernel.org/r/20231025-ethtool_puts_impl-v1-0-6a53a93d3b72@google.com
-
----
-Justin Stitt (3):
-      ethtool: Implement ethtool_puts()
-      checkpatch: add ethtool_sprintf rules
-      net: Convert some ethtool_sprintf() to ethtool_puts()
-
  drivers/net/dsa/lantiq_gswip.c                     |  2 +-
  drivers/net/dsa/mt7530.c                           |  2 +-
  drivers/net/dsa/qca/qca8k-common.c                 |  2 +-
@@ -271,17 +207,623 @@ Justin Stitt (3):
  drivers/net/phy/nxp-tja11xx.c                      |  2 +-
  drivers/net/phy/smsc.c                             |  2 +-
  drivers/net/vmxnet3/vmxnet3_ethtool.c              | 10 ++--
- include/linux/ethtool.h                            | 13 +++++
- net/ethtool/ioctl.c                                |  7 +++
- scripts/checkpatch.pl                              | 19 +++++++
- 31 files changed, 139 insertions(+), 112 deletions(-)
----
-base-commit: 3a04927f8d4b7a4f008f04af41e31173002eb1ea
-change-id: 20231025-ethtool_puts_impl-a1479ffbc7e0
+ 28 files changed, 100 insertions(+), 112 deletions(-)
 
-Best regards,
---
-Justin Stitt <justinstitt@google.com>
+diff --git a/drivers/net/dsa/lantiq_gswip.c b/drivers/net/dsa/lantiq_gswip.c
+index 9c185c9f0963..05a017c9ef3d 100644
+--- a/drivers/net/dsa/lantiq_gswip.c
++++ b/drivers/net/dsa/lantiq_gswip.c
+@@ -1759,7 +1759,7 @@ static void gswip_get_strings(struct dsa_switch *ds, int port, u32 stringset,
+ 		return;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(gswip_rmon_cnt); i++)
+-		ethtool_sprintf(&data, "%s", gswip_rmon_cnt[i].name);
++		ethtool_puts(&data, gswip_rmon_cnt[i].name);
+ }
+ 
+ static u32 gswip_bcm_ram_entry_read(struct gswip_priv *priv, u32 table,
+diff --git a/drivers/net/dsa/mt7530.c b/drivers/net/dsa/mt7530.c
+index d27c6b70a2f6..391c4dbdff42 100644
+--- a/drivers/net/dsa/mt7530.c
++++ b/drivers/net/dsa/mt7530.c
+@@ -836,7 +836,7 @@ mt7530_get_strings(struct dsa_switch *ds, int port, u32 stringset,
+ 		return;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(mt7530_mib); i++)
+-		ethtool_sprintf(&data, "%s", mt7530_mib[i].name);
++		ethtool_puts(&data, mt7530_mib[i].name);
+ }
+ 
+ static void
+diff --git a/drivers/net/dsa/qca/qca8k-common.c b/drivers/net/dsa/qca/qca8k-common.c
+index 9243eff8918d..2358cd399c7e 100644
+--- a/drivers/net/dsa/qca/qca8k-common.c
++++ b/drivers/net/dsa/qca/qca8k-common.c
+@@ -487,7 +487,7 @@ void qca8k_get_strings(struct dsa_switch *ds, int port, u32 stringset,
+ 		return;
+ 
+ 	for (i = 0; i < priv->info->mib_count; i++)
+-		ethtool_sprintf(&data, "%s", ar8327_mib[i].name);
++		ethtool_puts(&data, ar8327_mib[i].name);
+ }
+ 
+ void qca8k_get_ethtool_stats(struct dsa_switch *ds, int port,
+diff --git a/drivers/net/dsa/realtek/rtl8365mb.c b/drivers/net/dsa/realtek/rtl8365mb.c
+index 0875e4fc9f57..b072045eb154 100644
+--- a/drivers/net/dsa/realtek/rtl8365mb.c
++++ b/drivers/net/dsa/realtek/rtl8365mb.c
+@@ -1303,7 +1303,7 @@ static void rtl8365mb_get_strings(struct dsa_switch *ds, int port, u32 stringset
+ 
+ 	for (i = 0; i < RTL8365MB_MIB_END; i++) {
+ 		struct rtl8365mb_mib_counter *mib = &rtl8365mb_mib_counters[i];
+-		ethtool_sprintf(&data, "%s", mib->name);
++		ethtool_puts(&data, mib->name);
+ 	}
+ }
+ 
+diff --git a/drivers/net/dsa/realtek/rtl8366-core.c b/drivers/net/dsa/realtek/rtl8366-core.c
+index 82e267b8fddb..59f98d2c8769 100644
+--- a/drivers/net/dsa/realtek/rtl8366-core.c
++++ b/drivers/net/dsa/realtek/rtl8366-core.c
+@@ -401,7 +401,7 @@ void rtl8366_get_strings(struct dsa_switch *ds, int port, u32 stringset,
+ 		return;
+ 
+ 	for (i = 0; i < priv->num_mib_counters; i++)
+-		ethtool_sprintf(&data, "%s", priv->mib_counters[i].name);
++		ethtool_puts(&data, priv->mib_counters[i].name);
+ }
+ EXPORT_SYMBOL_GPL(rtl8366_get_strings);
+ 
+diff --git a/drivers/net/dsa/vitesse-vsc73xx-core.c b/drivers/net/dsa/vitesse-vsc73xx-core.c
+index e6f29e4e508c..dd50502e2122 100644
+--- a/drivers/net/dsa/vitesse-vsc73xx-core.c
++++ b/drivers/net/dsa/vitesse-vsc73xx-core.c
+@@ -949,7 +949,7 @@ static void vsc73xx_get_strings(struct dsa_switch *ds, int port, u32 stringset,
+ 	indices[5] = ((val >> 26) & 0x1f); /* TX counter 2 */
+ 
+ 	/* The first counters is the RX octets */
+-	ethtool_sprintf(&buf, "RxEtherStatsOctets");
++	ethtool_puts(&buf, "RxEtherStatsOctets");
+ 
+ 	/* Each port supports recording 3 RX counters and 3 TX counters,
+ 	 * figure out what counters we use in this set-up and return the
+@@ -959,15 +959,15 @@ static void vsc73xx_get_strings(struct dsa_switch *ds, int port, u32 stringset,
+ 	 */
+ 	for (i = 0; i < 3; i++) {
+ 		cnt = vsc73xx_find_counter(vsc, indices[i], false);
+-		ethtool_sprintf(&buf, "%s", cnt ? cnt->name : "");
++		ethtool_puts(&buf, cnt ? cnt->name : "");
+ 	}
+ 
+ 	/* TX stats begins with the number of TX octets */
+-	ethtool_sprintf(&buf, "TxEtherStatsOctets");
++	ethtool_puts(&buf, "TxEtherStatsOctets");
+ 
+ 	for (i = 3; i < 6; i++) {
+ 		cnt = vsc73xx_find_counter(vsc, indices[i], true);
+-		ethtool_sprintf(&buf, "%s", cnt ? cnt->name : "");
++		ethtool_puts(&buf, cnt ? cnt->name : "");
+ 
+ 	}
+ }
+diff --git a/drivers/net/ethernet/amazon/ena/ena_ethtool.c b/drivers/net/ethernet/amazon/ena/ena_ethtool.c
+index d671df4b76bc..e3ef081aa42b 100644
+--- a/drivers/net/ethernet/amazon/ena/ena_ethtool.c
++++ b/drivers/net/ethernet/amazon/ena/ena_ethtool.c
+@@ -299,13 +299,13 @@ static void ena_get_strings(struct ena_adapter *adapter,
+ 
+ 	for (i = 0; i < ENA_STATS_ARRAY_GLOBAL; i++) {
+ 		ena_stats = &ena_stats_global_strings[i];
+-		ethtool_sprintf(&data, ena_stats->name);
++		ethtool_puts(&data, ena_stats->name);
+ 	}
+ 
+ 	if (eni_stats_needed) {
+ 		for (i = 0; i < ENA_STATS_ARRAY_ENI(adapter); i++) {
+ 			ena_stats = &ena_stats_eni_strings[i];
+-			ethtool_sprintf(&data, ena_stats->name);
++			ethtool_puts(&data, ena_stats->name);
+ 		}
+ 	}
+ 
+diff --git a/drivers/net/ethernet/brocade/bna/bnad_ethtool.c b/drivers/net/ethernet/brocade/bna/bnad_ethtool.c
+index df10edff5603..d1ad6c9f8140 100644
+--- a/drivers/net/ethernet/brocade/bna/bnad_ethtool.c
++++ b/drivers/net/ethernet/brocade/bna/bnad_ethtool.c
+@@ -608,7 +608,7 @@ bnad_get_strings(struct net_device *netdev, u32 stringset, u8 *string)
+ 
+ 	for (i = 0; i < BNAD_ETHTOOL_STATS_NUM; i++) {
+ 		BUG_ON(!(strlen(bnad_net_stats_strings[i]) < ETH_GSTRING_LEN));
+-		ethtool_sprintf(&string, bnad_net_stats_strings[i]);
++		ethtool_puts(&string, bnad_net_stats_strings[i]);
+ 	}
+ 
+ 	bmap = bna_tx_rid_mask(&bnad->bna);
+diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
+index 032c15b541ff..b53554225945 100644
+--- a/drivers/net/ethernet/freescale/fec_main.c
++++ b/drivers/net/ethernet/freescale/fec_main.c
+@@ -2864,10 +2864,10 @@ static void fec_enet_get_strings(struct net_device *netdev,
+ 	switch (stringset) {
+ 	case ETH_SS_STATS:
+ 		for (i = 0; i < ARRAY_SIZE(fec_stats); i++) {
+-			ethtool_sprintf(&data, "%s", fec_stats[i].name);
++			ethtool_puts(&data, fec_stats[i].name);
+ 		}
+ 		for (i = 0; i < ARRAY_SIZE(fec_xdp_stat_strs); i++) {
+-			ethtool_sprintf(&data, "%s", fec_xdp_stat_strs[i]);
++			ethtool_puts(&data, fec_xdp_stat_strs[i]);
+ 		}
+ 		page_pool_ethtool_stats_get_strings(data);
+ 
+diff --git a/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c b/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
+index 31aa185f4d17..091c93bd7587 100644
+--- a/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
++++ b/drivers/net/ethernet/fungible/funeth/funeth_ethtool.c
+@@ -655,7 +655,7 @@ static void fun_get_strings(struct net_device *netdev, u32 sset, u8 *data)
+ 						i);
+ 		}
+ 		for (j = 0; j < ARRAY_SIZE(txq_stat_names); j++)
+-			ethtool_sprintf(&p, txq_stat_names[j]);
++			ethtool_puts(&p, txq_stat_names[j]);
+ 
+ 		for (i = 0; i < fp->num_xdpqs; i++) {
+ 			for (j = 0; j < ARRAY_SIZE(xdpq_stat_names); j++)
+@@ -663,7 +663,7 @@ static void fun_get_strings(struct net_device *netdev, u32 sset, u8 *data)
+ 						xdpq_stat_names[j], i);
+ 		}
+ 		for (j = 0; j < ARRAY_SIZE(xdpq_stat_names); j++)
+-			ethtool_sprintf(&p, xdpq_stat_names[j]);
++			ethtool_puts(&p, xdpq_stat_names[j]);
+ 
+ 		for (i = 0; i < netdev->real_num_rx_queues; i++) {
+ 			for (j = 0; j < ARRAY_SIZE(rxq_stat_names); j++)
+@@ -671,10 +671,10 @@ static void fun_get_strings(struct net_device *netdev, u32 sset, u8 *data)
+ 						i);
+ 		}
+ 		for (j = 0; j < ARRAY_SIZE(rxq_stat_names); j++)
+-			ethtool_sprintf(&p, rxq_stat_names[j]);
++			ethtool_puts(&p, rxq_stat_names[j]);
+ 
+ 		for (j = 0; j < ARRAY_SIZE(tls_stat_names); j++)
+-			ethtool_sprintf(&p, tls_stat_names[j]);
++			ethtool_puts(&p, tls_stat_names[j]);
+ 		break;
+ 	default:
+ 		break;
+diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
+index 8f391e2adcc0..bdb7afaabdd0 100644
+--- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
++++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_gmac.c
+@@ -678,7 +678,7 @@ static void hns_gmac_get_strings(u32 stringset, u8 *data)
+ 		return;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(g_gmac_stats_string); i++)
+-		ethtool_sprintf(&buff, g_gmac_stats_string[i].desc);
++		ethtool_puts(&buff, g_gmac_stats_string[i].desc);
+ }
+ 
+ static int hns_gmac_get_sset_count(int stringset)
+diff --git a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
+index fc26ffaae620..c58833eb4830 100644
+--- a/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
++++ b/drivers/net/ethernet/hisilicon/hns/hns_dsaf_xgmac.c
+@@ -752,7 +752,7 @@ static void hns_xgmac_get_strings(u32 stringset, u8 *data)
+ 		return;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(g_xgmac_stats_string); i++)
+-		ethtool_sprintf(&buff, g_xgmac_stats_string[i].desc);
++		ethtool_puts(&buff, g_xgmac_stats_string[i].desc);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c b/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
+index b54f3706fb97..fe40cceb0f79 100644
+--- a/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
++++ b/drivers/net/ethernet/hisilicon/hns/hns_ethtool.c
+@@ -912,42 +912,41 @@ static void hns_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ 
+ 	if (stringset == ETH_SS_TEST) {
+ 		if (priv->ae_handle->phy_if != PHY_INTERFACE_MODE_XGMII)
+-			ethtool_sprintf(&buff,
+-					hns_nic_test_strs[MAC_INTERNALLOOP_MAC]);
+-		ethtool_sprintf(&buff,
+-				hns_nic_test_strs[MAC_INTERNALLOOP_SERDES]);
++			ethtool_puts(&buff,
++				     hns_nic_test_strs[MAC_INTERNALLOOP_MAC]);
++		ethtool_puts(&buff, hns_nic_test_strs[MAC_INTERNALLOOP_SERDES]);
+ 		if ((netdev->phydev) && (!netdev->phydev->is_c45))
+-			ethtool_sprintf(&buff,
+-					hns_nic_test_strs[MAC_INTERNALLOOP_PHY]);
++			ethtool_puts(&buff,
++				     hns_nic_test_strs[MAC_INTERNALLOOP_PHY]);
+ 
+ 	} else {
+-		ethtool_sprintf(&buff, "rx_packets");
+-		ethtool_sprintf(&buff, "tx_packets");
+-		ethtool_sprintf(&buff, "rx_bytes");
+-		ethtool_sprintf(&buff, "tx_bytes");
+-		ethtool_sprintf(&buff, "rx_errors");
+-		ethtool_sprintf(&buff, "tx_errors");
+-		ethtool_sprintf(&buff, "rx_dropped");
+-		ethtool_sprintf(&buff, "tx_dropped");
+-		ethtool_sprintf(&buff, "multicast");
+-		ethtool_sprintf(&buff, "collisions");
+-		ethtool_sprintf(&buff, "rx_over_errors");
+-		ethtool_sprintf(&buff, "rx_crc_errors");
+-		ethtool_sprintf(&buff, "rx_frame_errors");
+-		ethtool_sprintf(&buff, "rx_fifo_errors");
+-		ethtool_sprintf(&buff, "rx_missed_errors");
+-		ethtool_sprintf(&buff, "tx_aborted_errors");
+-		ethtool_sprintf(&buff, "tx_carrier_errors");
+-		ethtool_sprintf(&buff, "tx_fifo_errors");
+-		ethtool_sprintf(&buff, "tx_heartbeat_errors");
+-		ethtool_sprintf(&buff, "rx_length_errors");
+-		ethtool_sprintf(&buff, "tx_window_errors");
+-		ethtool_sprintf(&buff, "rx_compressed");
+-		ethtool_sprintf(&buff, "tx_compressed");
+-		ethtool_sprintf(&buff, "netdev_rx_dropped");
+-		ethtool_sprintf(&buff, "netdev_tx_dropped");
+-
+-		ethtool_sprintf(&buff, "netdev_tx_timeout");
++		ethtool_puts(&buff, "rx_packets");
++		ethtool_puts(&buff, "tx_packets");
++		ethtool_puts(&buff, "rx_bytes");
++		ethtool_puts(&buff, "tx_bytes");
++		ethtool_puts(&buff, "rx_errors");
++		ethtool_puts(&buff, "tx_errors");
++		ethtool_puts(&buff, "rx_dropped");
++		ethtool_puts(&buff, "tx_dropped");
++		ethtool_puts(&buff, "multicast");
++		ethtool_puts(&buff, "collisions");
++		ethtool_puts(&buff, "rx_over_errors");
++		ethtool_puts(&buff, "rx_crc_errors");
++		ethtool_puts(&buff, "rx_frame_errors");
++		ethtool_puts(&buff, "rx_fifo_errors");
++		ethtool_puts(&buff, "rx_missed_errors");
++		ethtool_puts(&buff, "tx_aborted_errors");
++		ethtool_puts(&buff, "tx_carrier_errors");
++		ethtool_puts(&buff, "tx_fifo_errors");
++		ethtool_puts(&buff, "tx_heartbeat_errors");
++		ethtool_puts(&buff, "rx_length_errors");
++		ethtool_puts(&buff, "tx_window_errors");
++		ethtool_puts(&buff, "rx_compressed");
++		ethtool_puts(&buff, "tx_compressed");
++		ethtool_puts(&buff, "netdev_rx_dropped");
++		ethtool_puts(&buff, "netdev_tx_dropped");
++
++		ethtool_puts(&buff, "netdev_tx_timeout");
+ 
+ 		h->dev->ops->get_strings(h, stringset, buff);
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index fd7163128c4d..79c3e7968a85 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2514,13 +2514,11 @@ static void i40e_get_priv_flag_strings(struct net_device *netdev, u8 *data)
+ 	u8 *p = data;
+ 
+ 	for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++)
+-		ethtool_sprintf(&p, "%s",
+-				i40e_gstrings_priv_flags[i].flag_string);
++		ethtool_puts(&p, i40e_gstrings_priv_flags[i].flag_string);
+ 	if (pf->hw.pf_id != 0)
+ 		return;
+ 	for (i = 0; i < I40E_GL_PRIV_FLAGS_STR_LEN; i++)
+-		ethtool_sprintf(&p, "%s",
+-				i40e_gl_gstrings_priv_flags[i].flag_string);
++		ethtool_puts(&p, i40e_gl_gstrings_priv_flags[i].flag_string);
+ }
+ 
+ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+index 6f236d1a6444..75d433dc1974 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
+@@ -396,8 +396,7 @@ static void iavf_get_priv_flag_strings(struct net_device *netdev, u8 *data)
+ 	unsigned int i;
+ 
+ 	for (i = 0; i < IAVF_PRIV_FLAGS_STR_LEN; i++)
+-		ethtool_sprintf(&data, "%s",
+-				iavf_gstrings_priv_flags[i].flag_string);
++		ethtool_puts(&data, iavf_gstrings_priv_flags[i].flag_string);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+index a34083567e6f..98c9317581e0 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
++++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+@@ -1142,8 +1142,7 @@ __ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data,
+ 	switch (stringset) {
+ 	case ETH_SS_STATS:
+ 		for (i = 0; i < ICE_VSI_STATS_LEN; i++)
+-			ethtool_sprintf(&p, "%s",
+-					ice_gstrings_vsi_stats[i].stat_string);
++			ethtool_puts(&p, ice_gstrings_vsi_stats[i].stat_string);
+ 
+ 		if (ice_is_port_repr_netdev(netdev))
+ 			return;
+@@ -1162,8 +1161,7 @@ __ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data,
+ 			return;
+ 
+ 		for (i = 0; i < ICE_PF_STATS_LEN; i++)
+-			ethtool_sprintf(&p, "%s",
+-					ice_gstrings_pf_stats[i].stat_string);
++			ethtool_puts(&p, ice_gstrings_pf_stats[i].stat_string);
+ 
+ 		for (i = 0; i < ICE_MAX_USER_PRIORITY; i++) {
+ 			ethtool_sprintf(&p, "tx_priority_%u_xon.nic", i);
+@@ -1179,8 +1177,7 @@ __ice_get_strings(struct net_device *netdev, u32 stringset, u8 *data,
+ 		break;
+ 	case ETH_SS_PRIV_FLAGS:
+ 		for (i = 0; i < ICE_PRIV_FLAG_ARRAY_SIZE; i++)
+-			ethtool_sprintf(&p, "%s",
+-					ice_gstrings_priv_flags[i].name);
++			ethtool_puts(&p, ice_gstrings_priv_flags[i].name);
+ 		break;
+ 	default:
+ 		break;
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+index 52ea38669f85..bf58989a573e 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_ethtool.c
+@@ -532,7 +532,7 @@ static void idpf_add_stat_strings(u8 **p, const struct idpf_stats *stats,
+ 	unsigned int i;
+ 
+ 	for (i = 0; i < size; i++)
+-		ethtool_sprintf(p, "%s", stats[i].stat_string);
++		ethtool_puts(p, stats[i].stat_string);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 16d2a55d5e17..89dac7b215e5 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -2356,11 +2356,9 @@ static void igb_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ 		break;
+ 	case ETH_SS_STATS:
+ 		for (i = 0; i < IGB_GLOBAL_STATS_LEN; i++)
+-			ethtool_sprintf(&p, "%s",
+-					igb_gstrings_stats[i].stat_string);
++			ethtool_puts(&p, igb_gstrings_stats[i].stat_string);
+ 		for (i = 0; i < IGB_NETDEV_STATS_LEN; i++)
+-			ethtool_sprintf(&p, "%s",
+-					igb_gstrings_net_stats[i].stat_string);
++			ethtool_puts(&p, igb_gstrings_net_stats[i].stat_string);
+ 		for (i = 0; i < adapter->num_tx_queues; i++) {
+ 			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
+ 			ethtool_sprintf(&p, "tx_queue_%u_bytes", i);
+diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+index 785eaa8e0ba8..2ed92bf34059 100644
+--- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
++++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
+@@ -773,11 +773,9 @@ static void igc_ethtool_get_strings(struct net_device *netdev, u32 stringset,
+ 		break;
+ 	case ETH_SS_STATS:
+ 		for (i = 0; i < IGC_GLOBAL_STATS_LEN; i++)
+-			ethtool_sprintf(&p, "%s",
+-					igc_gstrings_stats[i].stat_string);
++			ethtool_puts(&p, igc_gstrings_stats[i].stat_string);
+ 		for (i = 0; i < IGC_NETDEV_STATS_LEN; i++)
+-			ethtool_sprintf(&p, "%s",
+-					igc_gstrings_net_stats[i].stat_string);
++			ethtool_puts(&p, igc_gstrings_net_stats[i].stat_string);
+ 		for (i = 0; i < adapter->num_tx_queues; i++) {
+ 			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
+ 			ethtool_sprintf(&p, "tx_queue_%u_bytes", i);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 4dd897806fa5..dd722b0381e0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -1413,12 +1413,11 @@ static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+ 	switch (stringset) {
+ 	case ETH_SS_TEST:
+ 		for (i = 0; i < IXGBE_TEST_LEN; i++)
+-			ethtool_sprintf(&p, "%s", ixgbe_gstrings_test[i]);
++			ethtool_puts(&p, ixgbe_gstrings_test[i]);
+ 		break;
+ 	case ETH_SS_STATS:
+ 		for (i = 0; i < IXGBE_GLOBAL_STATS_LEN; i++)
+-			ethtool_sprintf(&p, "%s",
+-					ixgbe_gstrings_stats[i].stat_string);
++			ethtool_puts(&p, ixgbe_gstrings_stats[i].stat_string);
+ 		for (i = 0; i < netdev->num_tx_queues; i++) {
+ 			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
+ 			ethtool_sprintf(&p, "tx_queue_%u_bytes", i);
+diff --git a/drivers/net/ethernet/microchip/sparx5/sparx5_ethtool.c b/drivers/net/ethernet/microchip/sparx5/sparx5_ethtool.c
+index 37d2584b48a7..a06dc5a9b355 100644
+--- a/drivers/net/ethernet/microchip/sparx5/sparx5_ethtool.c
++++ b/drivers/net/ethernet/microchip/sparx5/sparx5_ethtool.c
+@@ -1012,7 +1012,7 @@ static void sparx5_get_sset_strings(struct net_device *ndev, u32 sset, u8 *data)
+ 		return;
+ 
+ 	for (idx = 0; idx < sparx5->num_ethtool_stats; idx++)
+-		ethtool_sprintf(&data, "%s", sparx5->stats_layout[idx]);
++		ethtool_puts(&data, sparx5->stats_layout[idx]);
+ }
+ 
+ static void sparx5_get_sset_data(struct net_device *ndev,
+diff --git a/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c b/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
+index e75cbb287625..1636ce61a3c0 100644
+--- a/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
++++ b/drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c
+@@ -800,7 +800,7 @@ static void nfp_get_self_test_strings(struct net_device *netdev, u8 *data)
+ 
+ 	for (i = 0; i < NFP_TEST_TOTAL_NUM; i++)
+ 		if (nfp_self_test[i].is_supported(netdev))
+-			ethtool_sprintf(&data, nfp_self_test[i].name);
++			ethtool_puts(&data, nfp_self_test[i].name);
+ }
+ 
+ static int nfp_get_self_test_count(struct net_device *netdev)
+@@ -852,24 +852,24 @@ static u8 *nfp_vnic_get_sw_stats_strings(struct net_device *netdev, u8 *data)
+ 		ethtool_sprintf(&data, "rvec_%u_tx_busy", i);
+ 	}
+ 
+-	ethtool_sprintf(&data, "hw_rx_csum_ok");
+-	ethtool_sprintf(&data, "hw_rx_csum_inner_ok");
+-	ethtool_sprintf(&data, "hw_rx_csum_complete");
+-	ethtool_sprintf(&data, "hw_rx_csum_err");
+-	ethtool_sprintf(&data, "rx_replace_buf_alloc_fail");
+-	ethtool_sprintf(&data, "rx_tls_decrypted_packets");
+-	ethtool_sprintf(&data, "hw_tx_csum");
+-	ethtool_sprintf(&data, "hw_tx_inner_csum");
+-	ethtool_sprintf(&data, "tx_gather");
+-	ethtool_sprintf(&data, "tx_lso");
+-	ethtool_sprintf(&data, "tx_tls_encrypted_packets");
+-	ethtool_sprintf(&data, "tx_tls_ooo");
+-	ethtool_sprintf(&data, "tx_tls_drop_no_sync_data");
+-
+-	ethtool_sprintf(&data, "hw_tls_no_space");
+-	ethtool_sprintf(&data, "rx_tls_resync_req_ok");
+-	ethtool_sprintf(&data, "rx_tls_resync_req_ign");
+-	ethtool_sprintf(&data, "rx_tls_resync_sent");
++	ethtool_puts(&data, "hw_rx_csum_ok");
++	ethtool_puts(&data, "hw_rx_csum_inner_ok");
++	ethtool_puts(&data, "hw_rx_csum_complete");
++	ethtool_puts(&data, "hw_rx_csum_err");
++	ethtool_puts(&data, "rx_replace_buf_alloc_fail");
++	ethtool_puts(&data, "rx_tls_decrypted_packets");
++	ethtool_puts(&data, "hw_tx_csum");
++	ethtool_puts(&data, "hw_tx_inner_csum");
++	ethtool_puts(&data, "tx_gather");
++	ethtool_puts(&data, "tx_lso");
++	ethtool_puts(&data, "tx_tls_encrypted_packets");
++	ethtool_puts(&data, "tx_tls_ooo");
++	ethtool_puts(&data, "tx_tls_drop_no_sync_data");
++
++	ethtool_puts(&data, "hw_tls_no_space");
++	ethtool_puts(&data, "rx_tls_resync_req_ok");
++	ethtool_puts(&data, "rx_tls_resync_req_ign");
++	ethtool_puts(&data, "rx_tls_resync_sent");
+ 
+ 	return data;
+ }
+@@ -943,13 +943,13 @@ nfp_vnic_get_hw_stats_strings(u8 *data, unsigned int num_vecs, bool repr)
+ 	swap_off = repr * NN_ET_SWITCH_STATS_LEN;
+ 
+ 	for (i = 0; i < NN_ET_SWITCH_STATS_LEN; i++)
+-		ethtool_sprintf(&data, nfp_net_et_stats[i + swap_off].name);
++		ethtool_puts(&data, nfp_net_et_stats[i + swap_off].name);
+ 
+ 	for (i = NN_ET_SWITCH_STATS_LEN; i < NN_ET_SWITCH_STATS_LEN * 2; i++)
+-		ethtool_sprintf(&data, nfp_net_et_stats[i - swap_off].name);
++		ethtool_puts(&data, nfp_net_et_stats[i - swap_off].name);
+ 
+ 	for (i = NN_ET_SWITCH_STATS_LEN * 2; i < NN_ET_GLOBAL_STATS_LEN; i++)
+-		ethtool_sprintf(&data, nfp_net_et_stats[i].name);
++		ethtool_puts(&data, nfp_net_et_stats[i].name);
+ 
+ 	for (i = 0; i < num_vecs; i++) {
+ 		ethtool_sprintf(&data, "rxq_%u_pkts", i);
+diff --git a/drivers/net/ethernet/pensando/ionic/ionic_stats.c b/drivers/net/ethernet/pensando/ionic/ionic_stats.c
+index 9859a4432985..1f6022fb7679 100644
+--- a/drivers/net/ethernet/pensando/ionic/ionic_stats.c
++++ b/drivers/net/ethernet/pensando/ionic/ionic_stats.c
+@@ -258,10 +258,10 @@ static void ionic_sw_stats_get_strings(struct ionic_lif *lif, u8 **buf)
+ 	int i, q_num;
+ 
+ 	for (i = 0; i < IONIC_NUM_LIF_STATS; i++)
+-		ethtool_sprintf(buf, ionic_lif_stats_desc[i].name);
++		ethtool_puts(buf, ionic_lif_stats_desc[i].name);
+ 
+ 	for (i = 0; i < IONIC_NUM_PORT_STATS; i++)
+-		ethtool_sprintf(buf, ionic_port_stats_desc[i].name);
++		ethtool_puts(buf, ionic_port_stats_desc[i].name);
+ 
+ 	for (q_num = 0; q_num < MAX_Q(lif); q_num++)
+ 		ionic_sw_stats_get_tx_strings(lif, buf, q_num);
+diff --git a/drivers/net/ethernet/wangxun/libwx/wx_ethtool.c b/drivers/net/ethernet/wangxun/libwx/wx_ethtool.c
+index ddc5f6d20b9c..6e9e5f01c152 100644
+--- a/drivers/net/ethernet/wangxun/libwx/wx_ethtool.c
++++ b/drivers/net/ethernet/wangxun/libwx/wx_ethtool.c
+@@ -75,7 +75,7 @@ void wx_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+ 	switch (stringset) {
+ 	case ETH_SS_STATS:
+ 		for (i = 0; i < WX_GLOBAL_STATS_LEN; i++)
+-			ethtool_sprintf(&p, wx_gstrings_stats[i].stat_string);
++			ethtool_puts(&p, wx_gstrings_stats[i].stat_string);
+ 		for (i = 0; i < netdev->num_tx_queues; i++) {
+ 			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
+ 			ethtool_sprintf(&p, "tx_queue_%u_bytes", i);
+diff --git a/drivers/net/hyperv/netvsc_drv.c b/drivers/net/hyperv/netvsc_drv.c
+index 3ba3c8fb28a5..cbd9405fc2f3 100644
+--- a/drivers/net/hyperv/netvsc_drv.c
++++ b/drivers/net/hyperv/netvsc_drv.c
+@@ -1582,10 +1582,10 @@ static void netvsc_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+ 	switch (stringset) {
+ 	case ETH_SS_STATS:
+ 		for (i = 0; i < ARRAY_SIZE(netvsc_stats); i++)
+-			ethtool_sprintf(&p, netvsc_stats[i].name);
++			ethtool_puts(&p, netvsc_stats[i].name);
+ 
+ 		for (i = 0; i < ARRAY_SIZE(vf_stats); i++)
+-			ethtool_sprintf(&p, vf_stats[i].name);
++			ethtool_puts(&p, vf_stats[i].name);
+ 
+ 		for (i = 0; i < nvdev->num_chn; i++) {
+ 			ethtool_sprintf(&p, "tx_queue_%u_packets", i);
+diff --git a/drivers/net/phy/nxp-tja11xx.c b/drivers/net/phy/nxp-tja11xx.c
+index a71399965142..2c263ae44b4f 100644
+--- a/drivers/net/phy/nxp-tja11xx.c
++++ b/drivers/net/phy/nxp-tja11xx.c
+@@ -415,7 +415,7 @@ static void tja11xx_get_strings(struct phy_device *phydev, u8 *data)
+ 	int i;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(tja11xx_hw_stats); i++)
+-		ethtool_sprintf(&data, "%s", tja11xx_hw_stats[i].string);
++		ethtool_puts(&data, tja11xx_hw_stats[i].string);
+ }
+ 
+ static void tja11xx_get_stats(struct phy_device *phydev,
+diff --git a/drivers/net/phy/smsc.c b/drivers/net/phy/smsc.c
+index 1c7306a1af13..150aea7c9c36 100644
+--- a/drivers/net/phy/smsc.c
++++ b/drivers/net/phy/smsc.c
+@@ -508,7 +508,7 @@ static void smsc_get_strings(struct phy_device *phydev, u8 *data)
+ 	int i;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(smsc_hw_stats); i++)
+-		ethtool_sprintf(&data, "%s", smsc_hw_stats[i].string);
++		ethtool_puts(&data, smsc_hw_stats[i].string);
+ }
+ 
+ static u64 smsc_get_stat(struct phy_device *phydev, int i)
+diff --git a/drivers/net/vmxnet3/vmxnet3_ethtool.c b/drivers/net/vmxnet3/vmxnet3_ethtool.c
+index 98c22d7d87a2..8f5f202cde39 100644
+--- a/drivers/net/vmxnet3/vmxnet3_ethtool.c
++++ b/drivers/net/vmxnet3/vmxnet3_ethtool.c
+@@ -245,20 +245,20 @@ vmxnet3_get_strings(struct net_device *netdev, u32 stringset, u8 *buf)
+ 
+ 	for (j = 0; j < adapter->num_tx_queues; j++) {
+ 		for (i = 0; i < ARRAY_SIZE(vmxnet3_tq_dev_stats); i++)
+-			ethtool_sprintf(&buf, vmxnet3_tq_dev_stats[i].desc);
++			ethtool_puts(&buf, vmxnet3_tq_dev_stats[i].desc);
+ 		for (i = 0; i < ARRAY_SIZE(vmxnet3_tq_driver_stats); i++)
+-			ethtool_sprintf(&buf, vmxnet3_tq_driver_stats[i].desc);
++			ethtool_puts(&buf, vmxnet3_tq_driver_stats[i].desc);
+ 	}
+ 
+ 	for (j = 0; j < adapter->num_rx_queues; j++) {
+ 		for (i = 0; i < ARRAY_SIZE(vmxnet3_rq_dev_stats); i++)
+-			ethtool_sprintf(&buf, vmxnet3_rq_dev_stats[i].desc);
++			ethtool_puts(&buf, vmxnet3_rq_dev_stats[i].desc);
+ 		for (i = 0; i < ARRAY_SIZE(vmxnet3_rq_driver_stats); i++)
+-			ethtool_sprintf(&buf, vmxnet3_rq_driver_stats[i].desc);
++			ethtool_puts(&buf, vmxnet3_rq_driver_stats[i].desc);
+ 	}
+ 
+ 	for (i = 0; i < ARRAY_SIZE(vmxnet3_global_stats); i++)
+-		ethtool_sprintf(&buf, vmxnet3_global_stats[i].desc);
++		ethtool_puts(&buf, vmxnet3_global_stats[i].desc);
+ }
+ 
+ netdev_features_t vmxnet3_fix_features(struct net_device *netdev,
+
+-- 
+2.42.0.869.gea05f2083d-goog
 
 _______________________________________________
 Intel-wired-lan mailing list
