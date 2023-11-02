@@ -4,75 +4,145 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8ACBAC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Nov 2023 19:56:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52711C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  2 Nov 2023 20:21:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 03996705A6;
-	Thu,  2 Nov 2023 19:56:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 03996705A6
+	by smtp3.osuosl.org (Postfix) with ESMTP id DA7F570775;
+	Thu,  2 Nov 2023 20:21:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DA7F570775
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1698955017;
-	bh=XY6h+R7rufVe9Qf7qYg+el5trFNEDmO3isCOd1ot94I=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1698956481;
+	bh=CLi0S75GTaIhlB4v2MXDB1ogsVOYPX22lP/2GL1nQOk=;
+	h=Date:In-Reply-To:References:From:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=IISFgtY0oBkbj9CSpWRQ0S+D16E0mnKv/mI7m0PLo3E7DiPDd961/h+J00I9eDM12
-	 H9L8TPq6mpdFalG0pcOQctsGlHXOU+fsWpTACu6zzu/KfZpDui5onN8gRH0QNPA6JZ
-	 3Q2aybsYkQeYk8JaumRhWVq0LkuD9Pkw6gP3Ik0IbQ37gPhxylX/3Qp4AKUE7xW6zk
-	 yA3filddHSxW+/nO7poKkHkPOXU9oakPVIM3KGRgNhAdoxaGYDytgU2XgbdebseaN9
-	 b9UNAQNtBgyySeyFMdK5Mfi3ADjw9DfpPEGnokdK/ozKcJ0hi/psT/tWmdB3CcFZUz
-	 9lNsCpbpV/SQQ==
+	b=DUgKKt87W2f80kIhltZsI+gb8RjbJjvqqLWmsbPxMOxy9sDvojdvaree6JN95GK+8
+	 UUKfSJjq8B2MvYGKd6ws589oeDGN2eF73KB+roL/duOcLev2w5Fw5bJ0Nro7/qz+Fn
+	 1NYDCo+vtJPlVjibraDvms91Tt18y8S0/zMZh+6OSk2I6aveFhjHaesxy2gDiDwztT
+	 ePPozmK7jh8iux/3lVij1/UdeV+cWfHzOT/61Hd5sb0DV8iysRXURg71I0UopI/d72
+	 y6fq93CJ9JYS05GYsILyAsDlS6HxmtbFhuaQC1K9NVnP3pLYF76EfhR69OaTA+9/+v
+	 oClPkuoIl+GIQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3QiTpugzYyUZ; Thu,  2 Nov 2023 19:56:53 +0000 (UTC)
+	with ESMTP id zigs9mANQZX3; Thu,  2 Nov 2023 20:21:18 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D96FB705D7;
-	Thu,  2 Nov 2023 19:56:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D96FB705D7
+	by smtp3.osuosl.org (Postfix) with ESMTP id B1DDA70761;
+	Thu,  2 Nov 2023 20:21:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B1DDA70761
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id C67CC1BF29C
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 19:56:50 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id BFEFE1BF287
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id AACDC4EEEA
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 19:56:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AACDC4EEEA
+ by smtp4.osuosl.org (Postfix) with ESMTP id 96B894F239
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 96B894F239
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dx7M6Vk5sagA for <intel-wired-lan@lists.osuosl.org>;
- Thu,  2 Nov 2023 19:56:46 +0000 (UTC)
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 6B5804EEBC
- for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 19:56:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6B5804EEBC
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
- (envelope-from <andrew@lunn.ch>)
- id 1qydn8-000mGi-5t; Thu, 02 Nov 2023 20:55:46 +0100
-Date: Thu, 2 Nov 2023 20:55:46 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: "Kiyanovski, Arthur" <akiyano@amazon.com>
-Message-ID: <0df2daf8-9707-4859-b4c2-5c3c2ef2f8cd@lunn.ch>
+ with ESMTP id VEH8p7Q36IuZ for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  2 Nov 2023 18:55:51 +0000 (UTC)
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com
+ [IPv6:2607:f8b0:4864:20::b49])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 4116C4F033
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  2 Nov 2023 18:55:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4116C4F033
+Received: by mail-yb1-xb49.google.com with SMTP id
+ 3f1490d57ef6-d99ec34829aso1516729276.1
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 02 Nov 2023 11:55:51 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1698951350; x=1699556150;
+ h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+ :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+ bh=K1MFejYfcIlhp5L6UBckhhQYL5s7bmRsL3b92h+ON2U=;
+ b=IQC58SCJMQ5pVe2C2aK7agG3jjpd5nRa88/oy5K7ANR4+5X0bOrBPzFhKRe5elsOx5
+ t5sOyIq/kCPbY+Gg7dP475Roeo1gXwZTLzIzFVm4CYfN8C850g6YVAFDKd/Pk/AugzTq
+ Ljp6qWGS0/pcdiLw7hetguNab3C4nt9Nx8GQxf/ggxB0hJjEhA3niBACJDCuUc1MYIv8
+ IAeDBHLB8sT9T2oVGxct7peL6Rdj9cz23l7qJyzm4Brbc7HGm5t3QwsaOhD4g++8bohz
+ zxQzD/zcYnKHryM5JkslTKtikYvqHY1zb5sxvLGKEKuQ3kuQ17CXILpU6Zps3dU9lRqD
+ jMlQ==
+X-Gm-Message-State: AOJu0YyUHuwONwrLXzlv6sVwXVX7dRRgwWesce9WLXP/AYyOnTuWhKJW
+ nFjWxrDP7Q1SudQqbeIf+JBw4e2ArTffDmKvJw==
+X-Google-Smtp-Source: AGHT+IGur+9ubZUYTGwViJK/0T6WuAETQMOPNATCoodiS/vweDFcw/ci9wvenAIu4f9YZlxzEAf34fot3JrUlSjZ+w==
+X-Received: from jstitt-linux1.c.googlers.com
+ ([fda3:e722:ac3:cc00:2b:ff92:c0a8:23b5])
+ (user=justinstitt job=sendgmr) by 2002:a25:e7d5:0:b0:da1:aff2:bfbc with SMTP
+ id e204-20020a25e7d5000000b00da1aff2bfbcmr316486ybh.2.1698951350112; Thu, 02
+ Nov 2023 11:55:50 -0700 (PDT)
+Date: Thu, 02 Nov 2023 18:55:42 +0000
+In-Reply-To: <20231102-ethtool_puts_impl-v4-0-14e1e9278496@google.com>
+Mime-Version: 1.0
 References: <20231102-ethtool_puts_impl-v4-0-14e1e9278496@google.com>
- <20231102-ethtool_puts_impl-v4-3-14e1e9278496@google.com>
- <75bf36b5eef9487794c11a45cb25f155@amazon.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <75bf36b5eef9487794c11a45cb25f155@amazon.com>
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; d=lunn.ch; 
- s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
- Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
- Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
- bh=AW0JKODqEk596T2QEg4UZ2eLMTRAd63PvmKSuulbUwQ=; b=ibpfBYhILmLn39D7AlH28340n3
- XLifNeoA3ngYepC9tqOP+n25UgJ1gaMVEaLMugYVPXmyavS2HYTe/AHVSWTa01L5LFC1qPjw1Htk/
- 2KXsfghHYH4qrb5QS8256r06TCsUgebHwiX4EfUC7HcUBDNGaBmBPJBfX0AHR3/ikaTQ=;
+X-Developer-Key: i=justinstitt@google.com; a=ed25519;
+ pk=tC3hNkJQTpNX/gLKxTNQKDmiQl6QjBNCGKJINqAdJsE=
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1698951347; l=1809;
+ i=justinstitt@google.com; s=20230717; h=from:subject:message-id;
+ bh=CSBVoPDv8bUcjz46YxS9QitvpQ3NGLvmBs8lKX6nt0Y=;
+ b=ahqS7od7MuaYQgDwf1xLYrlZa/EPl4vCGCgO9aqOLDD54X4Mk82mLZTadznG6MV4/eOfOwtgq
+ gVYFH7WrWL5BPoocw4PUQQAzqFcybf4biUS6+am4p7pCOnSg+h+I6qg
+X-Mailer: b4 0.12.3
+Message-ID: <20231102-ethtool_puts_impl-v4-1-14e1e9278496@google.com>
+From: Justin Stitt <justinstitt@google.com>
+To: "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Shay Agroskin <shayagr@amazon.com>, 
+ Arthur Kiyanovski <akiyano@amazon.com>, David Arinzon <darinzon@amazon.com>,
+ Noam Dagan <ndagan@amazon.com>, 
+ Saeed Bishara <saeedb@amazon.com>, Rasesh Mody <rmody@marvell.com>, 
+ Sudarsana Kalluru <skalluru@marvell.com>, GR-Linux-NIC-Dev@marvell.com, 
+ Dimitris Michailidis <dmichail@fungible.com>,
+ Yisen Zhuang <yisen.zhuang@huawei.com>, 
+ Salil Mehta <salil.mehta@huawei.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, 
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Louis Peens <louis.peens@corigine.com>, 
+ Shannon Nelson <shannon.nelson@amd.com>, Brett Creeley <brett.creeley@amd.com>,
+ drivers@pensando.io, 
+ "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
+ Wei Liu <wei.liu@kernel.org>, 
+ Dexuan Cui <decui@microsoft.com>, Ronak Doshi <doshir@vmware.com>, 
+ VMware PV-Drivers Reviewers <pv-drivers@vmware.com>,
+ Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>, 
+ Dwaipayan Ray <dwaipayanray1@gmail.com>,
+ Lukas Bulwahn <lukas.bulwahn@gmail.com>, 
+ Hauke Mehrtens <hauke@hauke-m.de>, Andrew Lunn <andrew@lunn.ch>, 
+ Florian Fainelli <f.fainelli@gmail.com>, Vladimir Oltean <olteanv@gmail.com>, 
+ "=?utf-8?q?Ar=C4=B1n=C3=A7_=C3=9CNAL?=" <arinc.unal@arinc9.com>,
+ Daniel Golle <daniel@makrotopia.org>, 
+ Landen Chao <Landen.Chao@mediatek.com>, DENG Qingfang <dqfext@gmail.com>, 
+ Sean Wang <sean.wang@mediatek.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+ AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, 
+ Linus Walleij <linus.walleij@linaro.org>, 
+ "=?utf-8?q?Alvin_=C5=A0ipraga?=" <alsi@bang-olufsen.dk>,
+ Wei Fang <wei.fang@nxp.com>, 
+ Shenwei Wang <shenwei.wang@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>, 
+ NXP Linux Team <linux-imx@nxp.com>, Lars Povlsen <lars.povlsen@microchip.com>, 
+ Steen Hegelund <Steen.Hegelund@microchip.com>,
+ Daniel Machon <daniel.machon@microchip.com>, 
+ UNGLinuxDriver@microchip.com, Jiawen Wu <jiawenwu@trustnetic.com>, 
+ Mengyuan Lou <mengyuanlou@net-swift.com>,
+ Heiner Kallweit <hkallweit1@gmail.com>, 
+ Russell King <linux@armlinux.org.uk>, Alexei Starovoitov <ast@kernel.org>, 
+ Daniel Borkmann <daniel@iogearbox.net>,
+ Jesper Dangaard Brouer <hawk@kernel.org>, 
+ John Fastabend <john.fastabend@gmail.com>
+X-Mailman-Approved-At: Thu, 02 Nov 2023 20:21:17 +0000
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=google.com; s=20230601; t=1698951350; x=1699556150; darn=lists.osuosl.org;
+ h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+ :date:from:to:cc:subject:date:message-id:reply-to;
+ bh=K1MFejYfcIlhp5L6UBckhhQYL5s7bmRsL3b92h+ON2U=;
+ b=pdOx47f373DFZgQZ4A3LM38Wk95YZfs/AxGic/QazisH185aCg+LUgR2o3UL2AcQ1s
+ Vq0vN5Hf2CSuIc/pp7UtzeDMmTsrFJm0loU9dbkuN+MDhy49uWWjW+B0Pl21eSQupwds
+ NvNzLzG36/BIXeGejzR9Q4VbCAUWqumuiJhYBGznTTeiYCWCGwKESJhOPLCrXnSWxrck
+ 5RpP8VaotmoBKMI1tgaNOCPibS5otY/l2VL7RUdODuRms817PSBlwwmhRZUi/Ht0gMZV
+ 5ErmTxdUFbTGiAs/lM/B2F0Zpdy7ZksfINwhUzVS+ironP70L2YT1ECJa4vWWRvW6bdC
+ 4Uzg==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=lunn.ch header.i=@lunn.ch
- header.a=rsa-sha256 header.s=20171124 header.b=ibpfBYhI
-Subject: Re: [Intel-wired-lan] [PATCH net-next v4 3/3] net: Convert some
- ethtool_sprintf() to ethtool_puts()
+ dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.a=rsa-sha256 header.s=20230601 header.b=pdOx47f3
+Subject: [Intel-wired-lan] [PATCH net-next v4 1/3] ethtool: Implement
+ ethtool_puts()
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,86 +155,74 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>,
- Brett Creeley <brett.creeley@amd.com>, Ronak Doshi <doshir@vmware.com>,
- VMware PV-Drivers Reviewers <pv-drivers@vmware.com>,
- John Fastabend <john.fastabend@gmail.com>,
- Linus Walleij <linus.walleij@linaro.org>, Alexei Starovoitov <ast@kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Matthias Brugger <matthias.bgg@gmail.com>, Eric Dumazet <edumazet@google.com>,
- Vladimir Oltean <olteanv@gmail.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Mengyuan Lou <mengyuanlou@net-swift.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Dagan,
- Noam" <ndagan@amazon.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- Louis Peens <louis.peens@corigine.com>, Wei Liu <wei.liu@kernel.org>,
- Florian Fainelli <f.fainelli@gmail.com>,
- Daniel Borkmann <daniel@iogearbox.net>,
- Dwaipayan Ray <dwaipayanray1@gmail.com>,
- Steen Hegelund <Steen.Hegelund@microchip.com>,
- Dexuan Cui <decui@microsoft.com>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- "UNGLinuxDriver@microchip.com" <UNGLinuxDriver@microchip.com>,
- Heiner Kallweit <hkallweit1@gmail.com>, Shenwei Wang <shenwei.wang@nxp.com>,
- Clark Wang <xiaoning.wang@nxp.com>, NXP Linux Team <linux-imx@nxp.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Yisen Zhuang <yisen.zhuang@huawei.com>, Landen Chao <Landen.Chao@mediatek.com>,
- "Agroskin, Shay" <shayagr@amazon.com>,
- Daniel Machon <daniel.machon@microchip.com>,
- Alvin =?utf-8?Q?=C5=A0ipraga?= <alsi@bang-olufsen.dk>,
- Hauke Mehrtens <hauke@hauke-m.de>, Haiyang Zhang <haiyangz@microsoft.com>,
- Sean Wang <sean.wang@mediatek.com>, Nathan Chancellor <nathan@kernel.org>,
- Joe Perches <joe@perches.com>, Jiawen Wu <jiawenwu@trustnetic.com>,
- Wei Fang <wei.fang@nxp.com>, Lukas Bulwahn <lukas.bulwahn@gmail.com>,
- Andy Whitcroft <apw@canonical.com>,
- "drivers@pensando.io" <drivers@pensando.io>,
- "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
- Lars Povlsen <lars.povlsen@microchip.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Salil Mehta <salil.mehta@huawei.com>,
- "GR-Linux-NIC-Dev@marvell.com" <GR-Linux-NIC-Dev@marvell.com>,
- DENG Qingfang <dqfext@gmail.com>, Kees Cook <keescook@chromium.org>,
- =?utf-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>,
- Rasesh Mody <rmody@marvell.com>, "Arinzon, David" <darinzon@amazon.com>,
- "oss-drivers@corigine.com" <oss-drivers@corigine.com>,
- Nick Desaulniers <ndesaulniers@google.com>,
- Daniel Golle <daniel@makrotopia.org>, "David S. Miller" <davem@davemloft.net>,
- Justin Stitt <justinstitt@google.com>, "Bshara, Saeed" <saeedb@amazon.com>,
- "linux-mediatek@lists.infradead.org" <linux-mediatek@lists.infradead.org>,
- "bpf@vger.kernel.org" <bpf@vger.kernel.org>,
- Dimitris Michailidis <dmichail@fungible.com>,
- Sudarsana Kalluru <skalluru@marvell.com>,
- Shannon Nelson <shannon.nelson@amd.com>
+Cc: linux-hyperv@vger.kernel.org, Kees Cook <keescook@chromium.org>,
+ netdev@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>,
+ linux-kernel@vger.kernel.org, Nathan Chancellor <nathan@kernel.org>,
+ oss-drivers@corigine.com, intel-wired-lan@lists.osuosl.org,
+ Justin Stitt <justinstitt@google.com>, linux-mediatek@lists.infradead.org,
+ bpf@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-> > + vmxnet3_rq_driver_stats[i].desc);
-> >         }
-> > 
-> >         for (i = 0; i < ARRAY_SIZE(vmxnet3_global_stats); i++)
-> > -               ethtool_sprintf(&buf, vmxnet3_global_stats[i].desc);
-> > +               ethtool_puts(&buf, vmxnet3_global_stats[i].desc);
-> >  }
-> > 
-> >  netdev_features_t vmxnet3_fix_features(struct net_device *netdev,
-> > 
-> > --
-> > 2.42.0.869.gea05f2083d-goog
-> 
-> Thanks for submitting this.
-> For ENA driver
-> 
-> Acked-by: Arthur Kiyanovski <akiyano@amazon.com> 
+Use strscpy() to implement ethtool_puts().
 
-Hi Arthur
+Functionally the same as ethtool_sprintf() when it's used with two
+arguments or with just "%s" format specifier.
 
-Please trim emails when replying.
+Signed-off-by: Justin Stitt <justinstitt@google.com>
+---
+ include/linux/ethtool.h | 13 +++++++++++++
+ net/ethtool/ioctl.c     |  7 +++++++
+ 2 files changed, 20 insertions(+)
 
-       Andrew
+diff --git a/include/linux/ethtool.h b/include/linux/ethtool.h
+index 226a36ed5aa1..7fc0826d443f 100644
+--- a/include/linux/ethtool.h
++++ b/include/linux/ethtool.h
+@@ -1053,6 +1053,19 @@ static inline int ethtool_mm_frag_size_min_to_add(u32 val_min, u32 *val_add,
+  */
+ extern __printf(2, 3) void ethtool_sprintf(u8 **data, const char *fmt, ...);
+ 
++/**
++ * ethtool_puts - Write string to ethtool string data
++ * @data: Pointer to a pointer to the start of string to update
++ * @str: String to write
++ *
++ * Write string to *data. Update *data to point at start of
++ * next string.
++ *
++ * Prefer this function to ethtool_sprintf() when given only
++ * two arguments or if @fmt is just "%s".
++ */
++extern void ethtool_puts(u8 **data, const char *str);
++
+ /* Link mode to forced speed capabilities maps */
+ struct ethtool_forced_speed_map {
+ 	u32		speed;
+diff --git a/net/ethtool/ioctl.c b/net/ethtool/ioctl.c
+index 0b0ce4f81c01..abdf05edf804 100644
+--- a/net/ethtool/ioctl.c
++++ b/net/ethtool/ioctl.c
+@@ -1991,6 +1991,13 @@ __printf(2, 3) void ethtool_sprintf(u8 **data, const char *fmt, ...)
+ }
+ EXPORT_SYMBOL(ethtool_sprintf);
+ 
++void ethtool_puts(u8 **data, const char *str)
++{
++	strscpy(*data, str, ETH_GSTRING_LEN);
++	*data += ETH_GSTRING_LEN;
++}
++EXPORT_SYMBOL(ethtool_puts);
++
+ static int ethtool_phys_id(struct net_device *dev, void __user *useraddr)
+ {
+ 	struct ethtool_value id;
+
+-- 
+2.42.0.869.gea05f2083d-goog
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
