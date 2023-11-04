@@ -1,80 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E171C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  4 Nov 2023 15:36:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0F96C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  4 Nov 2023 18:37:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 0DDFB41DB1;
-	Sat,  4 Nov 2023 15:36:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0DDFB41DB1
+	by smtp2.osuosl.org (Postfix) with ESMTP id D3E384036A;
+	Sat,  4 Nov 2023 18:37:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D3E384036A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1699112205;
-	bh=6WYyugLAZ0psjwwjXkqfFKg2Po/3Vay71EEPHkFyijA=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=nSsakmbRnPxg2ZCFugvYSjuVLuYYwziTvDkPTyhs+t5kcj0wA/sodbGHa70abrrJW
-	 xuyUZFIxCcwKmGZhu9GBXglFrTAwY/hF5OMs4vyeF2zZFyQ3prhzEPHgy0MtQCUKBA
-	 k84FKOIy+GQ0nHC9cxVwwEcm70efFFKcL/vsN2oPXxHtjFWPNXDbQP1KjqDelYfJxj
-	 YuR4yXXMcp5A98B3iDU21XNmtKSrIyk1ngoz8s0Vv4Htd00Y4pbSoM+FLvkR+3ZYop
-	 aWEiBBVbdkTQIto+BxXzVjd9HTqn0+l6Zj+GMjKlnBuxll2g7UB5rd1lXmH5XAwYwH
-	 5ZsVWhEouEyXw==
+	s=default; t=1699123046;
+	bh=ut0LdBDl2lTEtbL1jMxUWefHK0UWduVoQRDzPtQEyBQ=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=upgXHidljhS8s7OVxcy/AoMsbBMe3h59ntyublxFKu4uSGmBboD3vOvZRNwJGj51E
+	 D8jugqtn1U1Ddn87fYSmtInydAF+8ZAtGMzu63mMLhHorYTXVYij6j7l8kfQUw06hS
+	 i1GLMF6EPCP6VggiVPNMHTpBXqIG3ta0Bo31gjX1NCxKDJpPh9iQpimdqwDywjL0br
+	 mcYyOF1OtpQgD43D4xDaFEnrX1zFdmg2j9E8XmKJVDAg6QeUqVI0UhOiad13Ttcx+y
+	 WcaSTwBYUgN/Y4bKXYo4JKZyhW+4R73N+Ev1Kk+Cw1lgzXw02ABSplBAJH6KIvmqMR
+	 h5uajoUOV+ZeQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id a3shs6gzYRR0; Sat,  4 Nov 2023 15:36:43 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id l18ISD_-8Woe; Sat,  4 Nov 2023 18:37:25 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6107241DD1;
-	Sat,  4 Nov 2023 15:36:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6107241DD1
+	by smtp2.osuosl.org (Postfix) with ESMTP id 7D7DE402E0;
+	Sat,  4 Nov 2023 18:37:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7D7DE402E0
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 17C051BF2AB
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:36:41 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id B7D311BF5AE
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 18:37:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id E332360F47
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:36:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E332360F47
+ by smtp3.osuosl.org (Postfix) with ESMTP id 97ECE60F1F
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 18:37:18 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 97ECE60F1F
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Ewn7igxCK_S0 for <intel-wired-lan@lists.osuosl.org>;
- Sat,  4 Nov 2023 15:36:40 +0000 (UTC)
-Received: from sin.source.kernel.org (sin.source.kernel.org
- [IPv6:2604:1380:40e1:4800::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id F308B60F44
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:36:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F308B60F44
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id 13C39CE01BA;
- Sat,  4 Nov 2023 15:36:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ABEE9C433C8;
- Sat,  4 Nov 2023 15:36:28 +0000 (UTC)
-Date: Sat, 4 Nov 2023 11:36:17 -0400
-From: Simon Horman <horms@kernel.org>
-To: Karol Kolacinski <karol.kolacinski@intel.com>
-Message-ID: <20231104153617.GK891380@kernel.org>
-References: <20231103162943.485467-1-karol.kolacinski@intel.com>
+ with ESMTP id RlEOsJTt3-UV for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  4 Nov 2023 18:37:17 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 9536660EC6
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 18:37:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9536660EC6
+X-IronPort-AV: E=McAfee;i="6600,9927,10884"; a="392992924"
+X-IronPort-AV: E=Sophos;i="6.03,277,1694761200"; d="scan'208";a="392992924"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+ by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 04 Nov 2023 11:37:15 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10884"; a="765569065"
+X-IronPort-AV: E=Sophos;i="6.03,277,1694761200"; d="scan'208";a="765569065"
+Received: from unknown (HELO fedora.jf.intel.com) ([10.166.244.154])
+ by fmsmga007.fm.intel.com with ESMTP; 04 Nov 2023 11:37:15 -0700
+From: Paul Greenwalt <paul.greenwalt@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Sat,  4 Nov 2023 14:29:08 -0400
+Message-ID: <20231104182908.15389-1-paul.greenwalt@intel.com>
+X-Mailer: git-send-email 2.41.0
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20231103162943.485467-1-karol.kolacinski@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1699112197;
- bh=vafSQTQ5kXKyz/SHRy5gVLc2MmSNeUAQAiolRcAYYaI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=hOIwzmZMSGkTaLl4Ih31a2Q3XsXTeyKtQqcxLwKL4lNDs+oRYQRkuwYp0Nc9MYrOq
- gi2iiKNn3yhlrZN+IMKdk2V3OtTWXIa0iwN81TNNlAu2+tsVZ60sORX0EbyUjtn+3P
- COycA5cNkMAKB3scLRBbiZZ7mdT4FrxRxmeN+N75rK/SykBE6DVBKurNNh0dOHPo28
- jFQ9SqE2qs2VZMTFU6KZkmiUmZuRtsTm5NUkVBxuHEBt1kkuiX90P9yl0VbRv/Ys5Z
- SM75E2yxn7JMDQu9vsCPLXqTvi1DhvA5zfqVy1ORwulBzjJTPQz/fZ7vlVddt54SOB
- I9++h5DTc5hCw==
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1699123037; x=1730659037;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=W4m8E+y9MlhAPzpQa6M9nO2ByifvaTN9aiodRx/iHQI=;
+ b=XupD/TvVYEvYRVIwexf+cm6+8waXXuj1zWoQTED0uQ/UX5wtcWsDWvVI
+ AiDIvwVH8irUQFhUSOirGvJjjEyfCAufRNFtA7iREjSR7guYFpXR5+vjA
+ UWUKOCUEpFIluXiBUEE1uS832T4rgnawoNAH3dNanhoqHHAGT9C+XL9ka
+ Mv2ROiz1M5Ock6+8FqWm7mE8V8TtjghE1m1w1hSz2EudSufyyBxG1uN+2
+ zNDsukfy3nH0I+gDtE7yflzxlPwl+x+ntKcsYFUQwmtXNy/2BF8vF5NoK
+ 2zCLh/QXktvVRnyLBaTMRUWfj53AkYqPlIt89LIjz6CJfMded0oUKYSRm
+ w==;
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=hOIwzmZM
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: periodically kick Tx
- timestamp interrupt
+ dkim=fail reason="signature verification failed" (2048-bit key)
+ header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel
+ header.b=XupD/TvV
+Subject: [Intel-wired-lan] [PATCH iwl-net] ice: fix DDP package download for
+ packages without signature segment
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,54 +92,175 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, jesse.brandeburg@intel.com,
- Andrii Staikov <andrii.staikov@intel.com>, anthony.l.nguyen@intel.com,
- Jacob Keller <jacob.e.keller@intel.com>, intel-wired-lan@lists.osuosl.org
+Cc: Dan Nowlin <dan.nowlin@intel.com>, Maciej <maciej.fijalkowski@intel.com>,
+ netdev@vger.kernel.org, jesse.brandeburg@intel.com, Fijalkowski@osuosl.org,
+ anthony.l.nguyen@intel.com, Paul Greenwalt <paul.greenwalt@intel.com>,
+ horms@kernel.org, kuba@kernel.org, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Nov 03, 2023 at 05:29:43PM +0100, Karol Kolacinski wrote:
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> The E822 hardware for Tx timestamping keeps track of how many
-> outstanding timestamps are still in the PHY memory block. It will not
-> generate a new interrupt to the MAC until all of the timestamps in the
-> region have been read.
-> 
-> If somehow all the available data is not read, but the driver has exited
-> its interrupt routine already, the PHY will not generate a new interrupt
-> even if new timestamp data is captured. Because no interrupt is
-> generated, the driver never processes the timestamp data. This state
-> results in a permanent failure for all future Tx timestamps.
-> 
-> It is not clear how the driver and hardware could enter this state.
-> However, if it does, there is currently no recovery mechanism.
-> 
-> Add a recovery mechanism via the periodic PTP work thread which invokes
-> ice_ptp_periodic_work(). Introduce a new check,
-> ice_ptp_maybe_trigger_tx_interrupt() which checks the PHY timestamp
-> ready bitmask. If any bits are set, trigger a software interrupt by
-> writing to PFINT_OICR.
-> 
-> Once triggered, the main timestamp processing thread will read through
-> the PHY data and clear the outstanding timestamp data. Once cleared, new
-> data should trigger interrupts as expected.
-> 
-> This should allow recovery from such a state rather than leaving the
-> device in a state where we cannot process Tx timestamps.
-> 
-> It is possible that this function checks for timestamp data
-> simultaneously with the interrupt, and it might trigger additional
-> unnecessary interrupts. This will cause a small amount of additional
-> processing.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
-> Reviewed-by: Andrii Staikov <andrii.staikov@intel.com>
+From: Dan Nowlin <dan.nowlin@intel.com>
 
-Reviewed-by: Simon Horman <horms@kernel.org>
+Commit 3cbdb0343022 ("ice: Add support for E830 DDP package segment")
+incorrectly removed support for package download for packages without a
+signature segment. These packages include the signature buffer inline
+in the configurations buffers, and do not in a signature segment.
+
+Fix package download by providing download support for both packages
+with (ice_download_pkg_with_sig_seg()) and without signature segment
+(ice_download_pkg_without_sig_seg()).
+
+Fixes: 3cbdb0343022 ("ice: Add support for E830 DDP package segment")
+Reported-by: Fijalkowski, Maciej <maciej.fijalkowski@intel.com>
+Signed-off-by: Dan Nowlin <dan.nowlin@intel.com>
+Signed-off-by: Paul Greenwalt <paul.greenwalt@intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_ddp.c | 106 ++++++++++++++++++++++-
+ 1 file changed, 103 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
+index cfb1580f5850..3f1a11d0252c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ddp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
+@@ -1479,14 +1479,14 @@ ice_post_dwnld_pkg_actions(struct ice_hw *hw)
+ }
+ 
+ /**
+- * ice_download_pkg
++ * ice_download_pkg_with_sig_seg
+  * @hw: pointer to the hardware structure
+  * @pkg_hdr: pointer to package header
+  *
+  * Handles the download of a complete package.
+  */
+ static enum ice_ddp_state
+-ice_download_pkg(struct ice_hw *hw, struct ice_pkg_hdr *pkg_hdr)
++ice_download_pkg_with_sig_seg(struct ice_hw *hw, struct ice_pkg_hdr *pkg_hdr)
+ {
+ 	enum ice_aq_err aq_err = hw->adminq.sq_last_status;
+ 	enum ice_ddp_state state = ICE_DDP_PKG_ERR;
+@@ -1519,6 +1519,106 @@ ice_download_pkg(struct ice_hw *hw, struct ice_pkg_hdr *pkg_hdr)
+ 		state = ice_post_dwnld_pkg_actions(hw);
+ 
+ 	ice_release_global_cfg_lock(hw);
++
++	return state;
++}
++
++/**
++ * ice_dwnld_cfg_bufs
++ * @hw: pointer to the hardware structure
++ * @bufs: pointer to an array of buffers
++ * @count: the number of buffers in the array
++ *
++ * Obtains global config lock and downloads the package configuration buffers
++ * to the firmware.
++ */
++static enum ice_ddp_state
++ice_dwnld_cfg_bufs(struct ice_hw *hw, struct ice_buf *bufs, u32 count)
++{
++	enum ice_ddp_state state = ICE_DDP_PKG_SUCCESS;
++	struct ice_buf_hdr *bh;
++	int status;
++
++	if (!bufs || !count)
++		return ICE_DDP_PKG_ERR;
++
++	/* If the first buffer's first section has its metadata bit set
++	 * then there are no buffers to be downloaded, and the operation is
++	 * considered a success.
++	 */
++	bh = (struct ice_buf_hdr *)bufs;
++	if (le32_to_cpu(bh->section_entry[0].type) & ICE_METADATA_BUF)
++		return ICE_DDP_PKG_SUCCESS;
++
++	status = ice_acquire_global_cfg_lock(hw, ICE_RES_WRITE);
++	if (status) {
++		if (status == -EALREADY)
++			return ICE_DDP_PKG_ALREADY_LOADED;
++		return ice_map_aq_err_to_ddp_state(hw->adminq.sq_last_status);
++	}
++
++	state = ice_dwnld_cfg_bufs_no_lock(hw, bufs, 0, count, true);
++	if (!state)
++		state = ice_post_dwnld_pkg_actions(hw);
++
++	ice_release_global_cfg_lock(hw);
++
++	return state;
++}
++
++/**
++ * ice_download_pkg_without_sig_seg
++ * @hw: pointer to the hardware structure
++ * @ice_seg: pointer to the segment of the package to be downloaded
++ *
++ * Handles the download of a complete package without signature segment.
++ */
++static enum ice_ddp_state
++ice_download_pkg_without_sig_seg(struct ice_hw *hw, struct ice_seg *ice_seg)
++{
++	struct ice_buf_table *ice_buf_tbl;
++	enum ice_ddp_state state;
++
++	ice_debug(hw, ICE_DBG_PKG, "Segment format version: %d.%d.%d.%d\n",
++		  ice_seg->hdr.seg_format_ver.major,
++		  ice_seg->hdr.seg_format_ver.minor,
++		  ice_seg->hdr.seg_format_ver.update,
++		  ice_seg->hdr.seg_format_ver.draft);
++
++	ice_debug(hw, ICE_DBG_PKG, "Seg: type 0x%X, size %d, name %s\n",
++		  le32_to_cpu(ice_seg->hdr.seg_type),
++		  le32_to_cpu(ice_seg->hdr.seg_size), ice_seg->hdr.seg_id);
++
++	ice_buf_tbl = ice_find_buf_table(ice_seg);
++
++	ice_debug(hw, ICE_DBG_PKG, "Seg buf count: %d\n",
++		  le32_to_cpu(ice_buf_tbl->buf_count));
++
++	state = ice_dwnld_cfg_bufs(hw, ice_buf_tbl->buf_array,
++				   le32_to_cpu(ice_buf_tbl->buf_count));
++
++	return state;
++}
++
++/**
++ * ice_download_pkg
++ * @hw: pointer to the hardware structure
++ * @pkg_hdr: pointer to package header
++ * @ice_seg: pointer to the segment of the package to be downloaded
++ *
++ * Handles the download of a complete package.
++ */
++static enum ice_ddp_state
++ice_download_pkg(struct ice_hw *hw, struct ice_pkg_hdr *pkg_hdr,
++		 struct ice_seg *ice_seg)
++{
++	enum ice_ddp_state state;
++
++	if (hw->pkg_has_signing_seg)
++		state = ice_download_pkg_with_sig_seg(hw, pkg_hdr);
++	else
++		state = ice_download_pkg_without_sig_seg(hw, ice_seg);
++
+ 	ice_post_pkg_dwnld_vlan_mode_cfg(hw);
+ 
+ 	return state;
+@@ -2083,7 +2183,7 @@ enum ice_ddp_state ice_init_pkg(struct ice_hw *hw, u8 *buf, u32 len)
+ 
+ 	/* initialize package hints and then download package */
+ 	ice_init_pkg_hints(hw, seg);
+-	state = ice_download_pkg(hw, pkg);
++	state = ice_download_pkg(hw, pkg, seg);
+ 	if (state == ICE_DDP_PKG_ALREADY_LOADED) {
+ 		ice_debug(hw, ICE_DBG_INIT,
+ 			  "package previously loaded - no work.\n");
+
+base-commit: 016b9332a3346e97a6cacffea0f9dc10e1235a75
+-- 
+2.41.0
 
 _______________________________________________
 Intel-wired-lan mailing list
