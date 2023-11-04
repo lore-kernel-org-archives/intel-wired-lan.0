@@ -4,77 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34DDAC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  4 Nov 2023 15:24:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2096C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  4 Nov 2023 15:24:37 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7802B40A54;
-	Sat,  4 Nov 2023 15:24:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7802B40A54
+	by smtp2.osuosl.org (Postfix) with ESMTP id 57E6240144;
+	Sat,  4 Nov 2023 15:24:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 57E6240144
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1699111444;
-	bh=WQ96Lo4oOZio9Oxj5UcxKU4wnZtzknuKHJuNhEUoWig=;
+	s=default; t=1699111477;
+	bh=wJhHqcIEc6rcKT0BqXHIQC+1gx2CnODXf2eew4bCzrw=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=ZbHl/mVRG9bXJsh+kHlwwshCOpSQlExNH0qxHW2dnVvjM6MUQthisT4CJpzSG7umL
-	 vQLAyD0Wk7hK5w0eFcAJW14IxWcKgt1XPAdjIsQXbjMPYZ3zmRlOvVYaB9YHJtYdG9
-	 bHleTnxgvJffdrkpBbE+OtonHKHGN84zsICVeMrdtsZDQUDLEYxSPPoyqpnHB2E6up
-	 T1H58ENADhONBDZVCv7DDgWt/hL99e+TaN0B8TgGot9tSjbsRrArhDGIczCe+3YyhY
-	 SiWzMcAar2ZZoJ8aXlG/2hvBvAbZ76zLv668ms5zFdTTC43Lfm9263/7/Rz/fXZi+/
-	 C+NrxAWrqxQEg==
+	b=1/6+5ST+nzhrS1Zc3j3kqzzmUs2KYb987XxcZSFbNLrY+l5OSviagq+Yc4PMgwn/h
+	 S530+InjziXw6ADveA868+XKNPb5c1M3ZX4WY4NQC+xAUNv2nj4v0HV/589WH87Icr
+	 bJR16YPSRVwKw+FBHhwC21uIREIQbeRX8faaP4ZE3N9kIU6j4J+7yvF+znZehvGw2x
+	 JOikxiFN4n9+yNYj60ie6EvFhfnLmBiBYCCR1aXLgtoWhlvMNz+wl7Q3G4fJiidb7B
+	 droJLikO57fiphVvqIvilup3R86fvAIb0yOQQ/ORJXxyuzMe8iZgXVcKjIBM6kgB73
+	 //csD0bYrfomg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9Jdmx8WlBHJb; Sat,  4 Nov 2023 15:24:03 +0000 (UTC)
+	with ESMTP id 3gMgkpu5nfv9; Sat,  4 Nov 2023 15:24:36 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2A432409C8;
-	Sat,  4 Nov 2023 15:24:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2A432409C8
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id BDCD61BF584
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:24:01 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id AFF13409C8;
+	Sat,  4 Nov 2023 15:24:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org AFF13409C8
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 548151BF584
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:24:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 9534041E78
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:24:01 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9534041E78
+ by smtp3.osuosl.org (Postfix) with ESMTP id 3A13060EA7
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:24:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3A13060EA7
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ra2_D1NHGC2r for <intel-wired-lan@lists.osuosl.org>;
- Sat,  4 Nov 2023 15:24:00 +0000 (UTC)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 4B0BB41E6A
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:24:00 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4B0BB41E6A
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id FI2lFta_CYU6 for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  4 Nov 2023 15:24:33 +0000 (UTC)
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 7A7BC60B03
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 15:24:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7A7BC60B03
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by ams.source.kernel.org (Postfix) with ESMTP id 3273EB80A39;
- Sat,  4 Nov 2023 15:23:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E70AC433C8;
- Sat,  4 Nov 2023 15:23:50 +0000 (UTC)
-Date: Sat, 4 Nov 2023 11:23:41 -0400
+ by sin.source.kernel.org (Postfix) with ESMTP id 6AA23CE0229;
+ Sat,  4 Nov 2023 15:24:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 42E07C433C8;
+ Sat,  4 Nov 2023 15:24:22 +0000 (UTC)
+Date: Sat, 4 Nov 2023 11:24:15 -0400
 From: Simon Horman <horms@kernel.org>
 To: Jacob Keller <jacob.e.keller@intel.com>
-Message-ID: <20231104152341.GG891380@kernel.org>
+Message-ID: <20231104152415.GH891380@kernel.org>
 References: <20231103234658.511859-1-jacob.e.keller@intel.com>
- <20231103234658.511859-2-jacob.e.keller@intel.com>
+ <20231103234658.511859-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20231103234658.511859-2-jacob.e.keller@intel.com>
+In-Reply-To: <20231103234658.511859-3-jacob.e.keller@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1699111436;
- bh=DkV5ol6LRvxR/zbp5+534rklJBjVe5TEcuyE8neuqcQ=;
+ d=kernel.org; s=k20201202; t=1699111468;
+ bh=WhRpo2xxmwK6pr+DM4yXtfrXne2vymGmCiN2nZ3RV4E=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=GMH+AFjqP8byr8zB/Dv7oDlyMhPwMC/JIXz24p3r9rvIVq+7I2fGQq3DfXXSJNdp9
- m6lgF2Sp0q3h3aOuzmH4NJPCyoiZORb9htvsBFZFSG+kQYjZUjo1mTBxhzKvFMjsDo
- YVdoDRXBU7yMQfV2RGSES6VxU61Iqr33edIetHAvKKZwOzQwlTd4s/pCm3lA4E26Tj
- sKimBe5o51EvBs3e1FnplEDXtBO6Jw6a3jDQWxT9WkhzeVgy9wyAXwT8Lfjwd2LVbi
- DPjCJBr/qpFzboWv8YrAS9IRoKxJ1ihii0mSQZnvvfr9Qo2+QRxjiDu+bJdC8U0Y3l
- Y7ph8B99rlcrQ==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=UyuiPhyb1ogmVyBIYcMojgnzUw58fOF6eqDDrbR89yhuuv7TtKR4SoRTEZ5UAe+HR
+ Kw3JL46hOZJLahs6RZsGf3jr/xIRhOi+CRjytFBc5pAbiyEawFmUTRWu7HwNFvmLx0
+ m0CnufiE94fMcTcLHlEbFnDMaMTgDgGkLKgA7EmSkbxhOFCKuXhC0VEBsknoyI3pzO
+ K2Y/Q6qhwutQ3qH0lA6CcXiv5mU7cgcGqtPqIzAfErMfgLC/hjPH0RqUs2UVmRsCnO
+ +dxH54CKE/1kNKNuW0bKyOth00//RS6Yb1RVvd3beV5uOjdOemZ1WA7p7Sdx5l+Xfk
+ VRZaunFLRzWvw==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=GMH+AFjq
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net 1/3] ice: remove ptp_tx ring
- parameter flag
+ header.a=rsa-sha256 header.s=k20201202 header.b=UyuiPhyb
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net 2/3] ice: unify logic for
+ programming PFINT_TSYN_MSK
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,31 +96,39 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Fri, Nov 03, 2023 at 04:46:56PM -0700, Jacob Keller wrote:
-> Before performing a Tx timestamp in ice_stamp(), the driver checks a ptp_tx
-> ring variable to see if timestamping is enabled on that ring. This value is
-> set for all rings whenever userspace configures Tx timestamping.
+On Fri, Nov 03, 2023 at 04:46:57PM -0700, Jacob Keller wrote:
+> Commit d938a8cca88a ("ice: Auxbus devices & driver for E822 TS") modified
+> how Tx timestamps are handled for E822 devices. On these devices, only the
+> clock owner handles reading the Tx timestamp data from firmware. To do
+> this, the PFINT_TSYN_MSK register is modified from the default value to one
+> which enables reacting to a Tx timestamp on all PHY ports.
 > 
-> Ostensibly this was done to avoid wasting cycles checking other fields when
-> timestamping has not been enabled. However, for Tx timestamps we already
-> get an individual per-SKB flag indicating whether userspace wants to
-> request a timestamp on that packet. We do not gain much by also having
-> a separate flag to check for whether timestamping was enabled.
+> The driver currently programs PFINT_TSYN_MSK in different places depending
+> on whether the port is the clock owner or not. For the clock owner, the
+> PFINT_TSYN_MSK value is programmed during ice_ptp_init_owner just before
+> calling ice_ptp_tx_ena_intr to program the PHY ports.
 > 
-> In fact, the driver currently fails to restore the field after a PF reset.
-> Because of this, if a PF reset occurs, timestamps will be disabled.
+> For the non-clock owner ports, the PFINT_TSYN_MSK is programmed during
+> ice_ptp_init_port.
 > 
-> Since this flag doesn't add value in the hotpath, remove it and always
-> provide a timestamp if the SKB flag has been set.
+> If a large enough device reset occurs, the PFINT_TSYN_MSK register will be
+> reset to the default value in which only the PHY associated directly with
+> the PF will cause the Tx timestamp interrupt to trigger.
 > 
-> A following change will fix the reset path to properly restore user
-> timestamping configuration completely.
+> The driver lacks logic to reprogram the PFINT_TSYN_MSK register after a
+> device reset. For the E822 device, this results in the PF no longer
+> responding to interrupts for other ports. This results in failure to
+> deliver Tx timestamps to user space applications.
 > 
-> This went unnoticed for some time because one of the most common
-> applications using Tx timestamps, ptp4l, will reconfigure the socket as
-> part of its fault recovery logic.
+> Rename ice_ptp_configure_tx_tstamp to ice_ptp_cfg_tx_interrupt, and unify
+> the logic for programming PFINT_TSYN_MSK and PFINT_OICR_ENA into one place.
+> This function will program both registers according to the combination of
+> user configuration and device requirements.
 > 
-> Fixes: ea9b847cda64 ("ice: enable transmit timestamps for E810 devices")
+> This ensures that PFINT_TSYN_MSK is always restored when we configure the
+> Tx timestamp interrupt.
+> 
+> Fixes: d938a8cca88a ("ice: Auxbus devices & driver for E822 TS")
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > Reviewed-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
