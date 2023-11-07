@@ -4,89 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FBD2C0018A
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  6 Nov 2023 15:59:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8449C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  7 Nov 2023 13:52:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A7F7740B29;
-	Mon,  6 Nov 2023 15:59:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A7F7740B29
+	by smtp2.osuosl.org (Postfix) with ESMTP id 3A31540C1C;
+	Tue,  7 Nov 2023 13:52:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3A31540C1C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1699286389;
-	bh=fQwW+tyqxPgvwjFmETNpi/7koZObKh1GGQF2hpUngf0=;
-	h=From:Date:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=fH9rCvKjD6e02JKB2C0j1pG+dTOAsogxqy8m+2kTk5Coj8rIU0XGbZMZUQESZ+0zv
-	 UQS93Mdlj+Opr5GJ+7IZLSG0rGyrXw98HX5uIux+5zdh10KyVk7a9rCGp5gyTtNnIQ
-	 s3W8+tkkeskbhLl9P2tiJihxH0YfyucuhkO/isY9NqSlmr04ApVUeH1vZuryjABisU
-	 C0A1uyTeUDln5kdtizq5bJ2I3w+9Sv/VJoxU7ngN5ea2ZJoDvFECUbMjQubo1DQjCv
-	 wjBDQVRRzdlyyD79rK2eCFFzdPsx8p05XPkLQ996fCqLfhy6kAG4g6inaBuVJcJECk
-	 kDaYBIvB0tPtA==
+	s=default; t=1699365169;
+	bh=5l7nOw+M4psFnelIbV/InA9LumIJlFmYzREeEW1CMWY=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=BcKD37kI+lh7xV1PXvd3wZz0p98nIe7mAH527F1ctf62qW1NHkLvcOXIMGqVr7+Tk
+	 z+JB9/0gk65L01rIL5Jod1E4+fnvtzVU0ZZR8PMiM1glvJNoiCzZDo7BxqRytIuo6O
+	 LOYcCs7OQghaDCK8iRVm6RVwnLYCuXLO8ChurYRfwXUB6fwgJgqlrXmKy2+juP/nmA
+	 DPvl0uFfnpy3P0RNOFF7aCVsIDSADVIDGSWWogcHH2i3JQbNB002a97m/6swbwmzvt
+	 TfCioOM9qXw0y7SUY4Ag4lVsqVzo+bktzs04sZ/feaL7ZH+oYheXjbI1grZTvO3GaI
+	 XwsdUH3CTRVww==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 65pNjVbl0ebB; Mon,  6 Nov 2023 15:59:48 +0000 (UTC)
+	with ESMTP id 9AslO4TRV3i7; Tue,  7 Nov 2023 13:52:48 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 5D43A4149C;
-	Mon,  6 Nov 2023 15:59:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5D43A4149C
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 0DAE11BF21A
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 17:48:24 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id EAB1C41468;
+	Tue,  7 Nov 2023 13:52:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EAB1C41468
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 4FA451BF319
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Nov 2023 13:52:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id D947282277
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 17:48:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D947282277
+ by smtp2.osuosl.org (Postfix) with ESMTP id 22DB941468
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Nov 2023 13:52:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 22DB941468
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id lK3fp2PDFazY for <intel-wired-lan@lists.osuosl.org>;
- Sat,  4 Nov 2023 17:48:23 +0000 (UTC)
-Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com
- [IPv6:2a00:1450:4864:20::52b])
- by smtp1.osuosl.org (Postfix) with ESMTPS id F05BF82275
- for <intel-wired-lan@lists.osuosl.org>; Sat,  4 Nov 2023 17:48:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org F05BF82275
-Received: by mail-ed1-x52b.google.com with SMTP id
- 4fb4d7f45d1cf-5406c099cebso5057065a12.2
- for <intel-wired-lan@lists.osuosl.org>; Sat, 04 Nov 2023 10:48:22 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1699120101; x=1699724901;
- h=to:subject:message-id:date:from:mime-version:x-gm-message-state
- :from:to:cc:subject:date:message-id:reply-to;
- bh=Pa7eeV9AcNNxuywWOrtbmSMVpU6x4fPaTeJzl1/5UYQ=;
- b=UoUFz+CqKY/jNi/dUsurS1BSMnD28npOw0TJd1YCATGk2cltw73zAD9spF9hs0nNdO
- SoL8UL9Wo/BkDo1lHXhWrChMFFrOqZRhQ6lSOcrUyo1uF3XAxNdtq8HyD4RxM6LLJqLa
- 5m4lFOtizjGjeOn3CBvDk+mgfG5k4Vw5I87Zw/96ThClZl9QVHUpaezRH1MrGNMRhE/g
- AndsZgOay3JUsiGLcEPcUI2qsA80mP2pJhyLtuNGN6pxBNFrjjnaGeqRek/85qlyWNpP
- xfP4ggrDy3fXNtAeDsvnd006lc57uNM21OWQxvUsLH94VAFZu0S2R7H5BXf7Xp6Cqc4i
- cl/w==
-X-Gm-Message-State: AOJu0YwqAyBupt3d1+EgrEV5U8YaZ7589J41wjNliRj3t1iju1cgly67
- lvIL7Zwkf/5XEip2wuY8pnDaR+cyrUmy03sow/eW2JSKelBLjg==
-X-Google-Smtp-Source: AGHT+IHzjO050UB5ArxfdglVeEQY6p3ipQmIHSFP4KFs2rcWs9N0fGqpeAL+nhpGdqUVS7LsHa/3aYYO2gU7X33BO6E=
-X-Received: by 2002:a50:9e24:0:b0:53f:a017:7526 with SMTP id
- z33-20020a509e24000000b0053fa0177526mr18063385ede.40.1699120100700; Sat, 04
- Nov 2023 10:48:20 -0700 (PDT)
-MIME-Version: 1.0
-From: Manuel Lauss <manuel.lauss@gmail.com>
-Date: Sat, 4 Nov 2023 18:47:44 +0100
-Message-ID: <CAOLZvyGSi9jorwKfcpWrnv0=oYf-vTxY_K-mUecQTir3HNyNHw@mail.gmail.com>
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id EY7bxR79E_Fn for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  7 Nov 2023 13:52:45 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 191B240C1C
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  7 Nov 2023 13:52:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 191B240C1C
+X-IronPort-AV: E=McAfee;i="6600,9927,10886"; a="8160086"
+X-IronPort-AV: E=Sophos;i="6.03,283,1694761200"; 
+   d="scan'208";a="8160086"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+ by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Nov 2023 05:52:44 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10886"; a="712570090"
+X-IronPort-AV: E=Sophos;i="6.03,283,1694761200"; d="scan'208";a="712570090"
+Received: from irvmail002.ir.intel.com ([10.43.11.120])
+ by orsmga003.jf.intel.com with ESMTP; 07 Nov 2023 05:52:42 -0800
+Received: from giewont.igk.intel.com (giewont.igk.intel.com [10.211.8.15])
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 385921258E;
+ Tue,  7 Nov 2023 13:52:39 +0000 (GMT)
+From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-X-Mailman-Approved-At: Mon, 06 Nov 2023 15:59:46 +0000
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1699120101; x=1699724901; darn=lists.osuosl.org;
- h=to:subject:message-id:date:from:mime-version:from:to:cc:subject
- :date:message-id:reply-to;
- bh=Pa7eeV9AcNNxuywWOrtbmSMVpU6x4fPaTeJzl1/5UYQ=;
- b=V/oHWRoXnPU0pU6Q3E81TfqnUwXOTlc/m+rUwzdGYHqJLGeJ2CST4ZlivLmwh2vWjd
- 5cvMqnIn7gUAXfYYmGnO/olsJhbGigm87+rhFUobDuV+SGbMWLOonJxTK9goEevde10g
- wwyLmCEF8NHWWleBANUXvhaM5st6deBP5sNHBYx7O6R/ynQZ8QOxWcXraCXoPmsdSAp7
- m5q0xDz9C2laJ8PnBj+04uwHB4j9ngYOpBTAXoH/2GXqYQQ0b1jDnvmAGQyu9u91pjkE
- If1dRIHnHiYyfDiqGtYk4FG/u5pg/FelacSv1FSEyetR4QLw8HOFdnUB3YLs5QaZqiJU
- 9uMg==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=V/oHWRoX
-Subject: [Intel-wired-lan] linux-6.5.8: i40e (X710) randomly stops working
+Date: Tue,  7 Nov 2023 14:51:38 +0100
+Message-Id: <20231107135138.10692-1-marcin.szycik@linux.intel.com>
+X-Mailer: git-send-email 2.31.1
+MIME-Version: 1.0
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1699365165; x=1730901165;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=O7mugTy0WMD+sPBXu0JncizMt0uI+MNJ0XrfSzj4VFg=;
+ b=X40FUekzGaO1l/N2VOJaMIURG/1vRg1oAH/hKg0YXCk/w6fM1r3CG/Tj
+ dTEiz5zJ6Z3lMl88XQ0cE72FZ83Kk0aBaD/4w3f7wQY52Bi31PnYOfzrX
+ KU5PxLrJEeqSDYtZv5chzDIHCwZg+XgVA9p6pb0b2J5lEsTqAW0XvJL4s
+ eWJEYMAZXzpSQNYe2Q+PQDr51kdTl2qyUooV5j5F+BW7AMDSIOQ4DYKm8
+ +uKlugIYzmzw4KUQJWvixkq3Mb+ue2CmbqauJZKth5vtejpBNGK8X1tez
+ /b425yEvCteCC89lGL/+D0D4jQb+X5rMBBczgBklg23o0DX4t262UBi2Q
+ w==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=X40FUekz
+Subject: [Intel-wired-lan] [PATCH iwl-net] ice: Restore fix disabling RX
+ VLAN filtering
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,67 +95,75 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: netdev@vger.kernel.org, Marcin Szycik <marcin.szycik@linux.intel.com>,
+ Wojciech Drewek <wojciech.drewek@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hello,
+Fix setting dis_rx_filtering depending on whether port vlan is being
+turned on or off. This was originally fixed in commit c793f8ea15e3 ("ice:
+Fix disabling Rx VLAN filtering with port VLAN enabled"), but while
+refactoring ice_vf_vsi_init_vlan_ops(), the fix has been lost. Restore the
+fix along with the original comment from that change.
 
-Linux-6.5.8. X710 Network card, attached via 1meter DAC cable to an
-Ubiquiti Aggregation switch (10Gbe).
-Networking is fine, throughput as expected,  but the X710 stops
-forwarding packets after ~20 hours.
-I have to "ifconfig enp1s0f1 down ; sleep 1; ifconfig enp1s0f1 up" to
-get it working again;
-pulling and reinserting the DAC cable does not help.
+Also delete duplicate lines in ice_port_vlan_on().
 
-Interface is part of a linux ethernet bridge device (br0), the X710 is
-used purely as a dumb fast
-ethernet device, no advances features enabled.
+Fixes: 2946204b3fa8 ("ice: implement bridge port vlan")
+Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
+---
+ drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-Any ideas what could be wrong?
+diff --git a/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c b/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
+index d7b10dc67f03..80dc4bcdd3a4 100644
+--- a/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
++++ b/drivers/net/ethernet/intel/ice/ice_vf_vsi_vlan_ops.c
+@@ -32,7 +32,6 @@ static void ice_port_vlan_on(struct ice_vsi *vsi)
+ 		/* setup outer VLAN ops */
+ 		vlan_ops->set_port_vlan = ice_vsi_set_outer_port_vlan;
+ 		vlan_ops->clear_port_vlan = ice_vsi_clear_outer_port_vlan;
+-		vlan_ops->clear_port_vlan = ice_vsi_clear_outer_port_vlan;
+ 
+ 		/* setup inner VLAN ops */
+ 		vlan_ops = &vsi->inner_vlan_ops;
+@@ -47,8 +46,13 @@ static void ice_port_vlan_on(struct ice_vsi *vsi)
+ 
+ 		vlan_ops->set_port_vlan = ice_vsi_set_inner_port_vlan;
+ 		vlan_ops->clear_port_vlan = ice_vsi_clear_inner_port_vlan;
+-		vlan_ops->clear_port_vlan = ice_vsi_clear_inner_port_vlan;
+ 	}
++
++	/* all Rx traffic should be in the domain of the assigned port VLAN,
++	 * so prevent disabling Rx VLAN filtering
++	 */
++	vlan_ops->dis_rx_filtering = noop_vlan;
++
+ 	vlan_ops->ena_rx_filtering = ice_vsi_ena_rx_vlan_filtering;
+ }
+ 
+@@ -77,6 +81,8 @@ static void ice_port_vlan_off(struct ice_vsi *vsi)
+ 		vlan_ops->del_vlan = ice_vsi_del_vlan;
+ 	}
+ 
++	vlan_ops->dis_rx_filtering = ice_vsi_dis_rx_vlan_filtering;
++
+ 	if (!test_bit(ICE_FLAG_VF_VLAN_PRUNING, pf->flags))
+ 		vlan_ops->ena_rx_filtering = noop_vlan;
+ 	else
+@@ -141,7 +147,6 @@ void ice_vf_vsi_init_vlan_ops(struct ice_vsi *vsi)
+ 		&vsi->outer_vlan_ops : &vsi->inner_vlan_ops;
+ 
+ 	vlan_ops->add_vlan = ice_vsi_add_vlan;
+-	vlan_ops->dis_rx_filtering = ice_vsi_dis_rx_vlan_filtering;
+ 	vlan_ops->ena_tx_filtering = ice_vsi_ena_tx_vlan_filtering;
+ 	vlan_ops->dis_tx_filtering = ice_vsi_dis_tx_vlan_filtering;
+ }
+-- 
+2.31.1
 
-Thanks!
-     Manuel
-
-[    1.327924] i40e: Intel(R) Ethernet Connection XL710 Network Driver
-[    1.327925] i40e: Copyright (c) 2013 - 2019 Intel Corporation.
-[    1.341521] i40e 0000:01:00.0: fw 6.0.48442 api 1.7 nvm 6.01
-0x800035cf 1.1747.0 [8086:1572] [8086:0007]
-[    1.405557] i40e 0000:01:00.0: MAC address: 40:a6:b7:b9:d6:28
-[    1.414463] i40e 0000:01:00.0 eth0: NIC Link is Up, 10 Gbps Full
-Duplex, Flow Control: RX/TX
-[    1.414634] i40e 0000:01:00.0: PCI-Express: Speed 8.0GT/s Width x8
-[    1.423363] i40e 0000:01:00.0: Features: PF-id[0] VSIs: 66 QP: 8
-RSS FD_ATR FD_SB NTUPLE VxLAN Geneve VEPA
-[    1.435506] i40e 0000:01:00.1: fw 6.0.48442 api 1.7 nvm 6.01
-0x800035cf 1.1747.0 [8086:1572] [8086:0007]
-[    1.499379] i40e 0000:01:00.1: MAC address: 40:a6:b7:b9:d6:29
-[    1.503350] i40e 0000:01:00.1: PCI-Express: Speed 8.0GT/s Width x8
-[    1.503796] i40e 0000:01:00.1: Features: PF-id[1] VSIs: 66 QP: 8
-RSS FD_ATR FD_SB NTUPLE VxLAN Geneve VEPA
-[    3.405496] i40e 0000:01:00.1 enp1s0f1: renamed from eth1
-[    3.414522] i40e 0000:01:00.0 enp1s0f0: renamed from eth0
-[    3.447993] i40e 0000:01:00.1 enp1s0f1: entered allmulticast mode
-[    3.453846] i40e 0000:01:00.1 enp1s0f1: entered promiscuous mode
-[    3.455960] i40e 0000:01:00.1: entering allmulti mode.
-[    3.457363] i40e 0000:01:00.0 enp1s0f0: entered allmulticast mode
-[    3.457396] i40e 0000:01:00.0 enp1s0f0: entered promiscuous mode
-[    3.458964] i40e 0000:01:00.0: entering allmulti mode.
-
-[284945.387974] i40e 0000:01:00.0: VSI seid 390 Rx ring 1 disable timeout
-[284945.388260] i40e 0000:01:00.0: VSI seid 390 Rx ring 2 disable timeout
-[284945.388538] i40e 0000:01:00.0: VSI seid 390 Rx ring 3 disable timeout
-[284948.609618] i40e 0000:01:00.0: entering allmulti mode.
-[344837.196104] i40e 0000:01:00.0: VSI seid 390 Rx ring 1 disable timeout
-[344837.196399] i40e 0000:01:00.0: VSI seid 390 Rx ring 2 disable timeout
-[344837.196683] i40e 0000:01:00.0: VSI seid 390 Rx ring 3 disable timeout
-[344842.966942] i40e 0000:01:00.0: entering allmulti mode.
-[451897.400889] i40e 0000:01:00.0: VSI seid 390 Rx ring 1 disable timeout
-[451897.401176] i40e 0000:01:00.0: VSI seid 390 Rx ring 2 disable timeout
-[451897.401456] i40e 0000:01:00.0: VSI seid 390 Rx ring 3 disable timeout
-[451901.231805] i40e 0000:01:00.0: entering allmulti mode.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
