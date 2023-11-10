@@ -4,82 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1508C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 10 Nov 2023 20:54:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BE0DC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 10 Nov 2023 20:54:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 50A6842567;
-	Fri, 10 Nov 2023 20:54:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 50A6842567
+	by smtp4.osuosl.org (Postfix) with ESMTP id 00340426F6;
+	Fri, 10 Nov 2023 20:54:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 00340426F6
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1699649681;
-	bh=3h8KvGT2Q94FXnzVUTLgN0dVkgOdAmEZCDrOWloaH9w=;
+	s=default; t=1699649686;
+	bh=aIILcArJZ/Qc4Wt5C9C/KjwPkYH+hKjH/IsKUx1NaS4=;
 	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
 	 List-Post:List-Help:List-Subscribe:From;
-	b=o23B81B2h4JR6FdVWZNdLH6k2kh1u/mWFPh5O8jbwp/8OD2L+gx6uVVH5XGUcHb4x
-	 Y9+GWrQM4lCNig6yQcgl+Jq/hfVsXrMDZxASnxsLBAPETRopQvUqSwq5iXvLixrNIv
-	 ULlHvigCd6SxEs2ajCiwvVttP80Df4PApd36kAEHrlP5BSpH79ocHMbZB3Dn0TNKPr
-	 7gsbOyxaFXihxal12jEPWxHpne2QXmXSF+q5JBdt6fTppYquP0kJtNt2Qfuo7bPla8
-	 EnbPq7OxL+dzXIgBaxVT+G5eD/MXshH4XKdhEfj2hqXirue4w2oIcAAfWOlKKvGXQT
-	 kgeXiqSARMO+Q==
+	b=A4EZhrb2wDjcEEVJG5r4JslmPhH227EEmvYtcBzx26+EXvX9tEthvY+Ay3UjfUT4B
+	 J+/OpQwPqkOWYB2N5GOckzeT5TOT04UpZ7BYkkKbJ0PB+511k2dR93wybyjqaCkI4P
+	 lmHA2LkjGQTmX2mwrUbtMYEWyYxgoL1X3lcZCGTJRwGl/9QeMorwxaykfZB5Ju6qix
+	 uhmPnex00WJUbYKp0BqqHw4OmSRo604VcJZZ1E3gnnCb3EseP88bUVs+mUbOHH5GHA
+	 iWXDs75yqE1SCZlFS2JnykuvzHuJo0tqVgyYNskn61JeKQcpI2t9+FVx/j2m8C8urn
+	 D07/5SBdp9sqQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id So24nPljCxBL; Fri, 10 Nov 2023 20:54:40 +0000 (UTC)
+	with ESMTP id 7uFytfTUH5qe; Fri, 10 Nov 2023 20:54:44 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 2E6A74257B;
-	Fri, 10 Nov 2023 20:54:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2E6A74257B
+	by smtp4.osuosl.org (Postfix) with ESMTP id 9212D42702;
+	Fri, 10 Nov 2023 20:54:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9212D42702
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 5E6C01BF2C4
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Nov 2023 20:54:38 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 791541BF2C4
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Nov 2023 20:54:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 2A629426F6
+ by smtp4.osuosl.org (Postfix) with ESMTP id 4CAD34257B
  for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Nov 2023 20:54:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2A629426F6
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4CAD34257B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Wc68aE9h-vr0 for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id 9Cj16hSSlupE for <intel-wired-lan@lists.osuosl.org>;
  Fri, 10 Nov 2023 20:54:36 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.65])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 9A67D4257B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Nov 2023 20:54:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 9A67D4257B
-X-IronPort-AV: E=McAfee;i="6600,9927,10890"; a="394137163"
-X-IronPort-AV: E=Sophos;i="6.03,293,1694761200"; d="scan'208";a="394137163"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 21B9142567
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 10 Nov 2023 20:54:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 21B9142567
+X-IronPort-AV: E=McAfee;i="6600,9927,10890"; a="394137162"
+X-IronPort-AV: E=Sophos;i="6.03,293,1694761200"; d="scan'208";a="394137162"
 Received: from orsmga005.jf.intel.com ([10.7.209.41])
  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 10 Nov 2023 12:54:35 -0800
+ 10 Nov 2023 12:54:34 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10890"; a="937253467"
-X-IronPort-AV: E=Sophos;i="6.03,293,1694761200"; d="scan'208";a="937253467"
+X-IronPort-AV: E=McAfee;i="6600,9927,10890"; a="937253466"
+X-IronPort-AV: E=Sophos;i="6.03,293,1694761200"; d="scan'208";a="937253466"
 Received: from lkp-server01.sh.intel.com (HELO 17d9e85e5079) ([10.239.97.150])
  by orsmga005.jf.intel.com with ESMTP; 10 Nov 2023 12:54:33 -0800
 Received: from kbuild by 17d9e85e5079 with local (Exim 4.96)
- (envelope-from <lkp@intel.com>) id 1r1YWN-0009tY-2k
+ (envelope-from <lkp@intel.com>) id 1r1YWN-0009tV-0w
  for intel-wired-lan@lists.osuosl.org; Fri, 10 Nov 2023 20:54:31 +0000
-Date: Sat, 11 Nov 2023 04:53:35 +0800
+Date: Sat, 11 Nov 2023 04:53:24 +0800
 From: kernel test robot <lkp@intel.com>
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Message-ID: <202311110433.ewgHfEAz-lkp@intel.com>
+Message-ID: <202311110422.eokSQqEf-lkp@intel.com>
 User-Agent: s-nail v14.9.24
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
  t=1699649676; x=1731185676;
  h=date:from:to:subject:message-id;
- bh=TvY3Ps9EklzfbYd2t9fN5G1uUVnEbKHoWMJLsFC2auI=;
- b=Fpbm2LFOD15QzvHV79y15iPtlcMbdh11vLr/w8KdoDPPbFm/rwCvDsvM
- cnEoaW5GFdqVktaeMfiNA/F/p5FnYqOSyE/M+6K3WfmdDAKo34+obzV4L
- wMfobiRiRtRiUDSvXZeJA3yfxaHzw7wCXXGZ6+Ul7+Em4IjWUQIlHZ57S
- benLl/dWxhqbgzwpCue59NeScpjlr6BIg689Ve7zKmEcWbysNTo8Uj8Lb
- NmwT+UC0paAYV4s8ogvaq1mHqzA+M/uvUYvQo9Da1/8SE1IWl9PTYVzC1
- tOGB/Wn5XaWiXjLXN0Yx3oxnS515eLAfN/xJbffukdxeqzWowI9rk3PtF
+ bh=VBkhvKsLimbnqH6Xiutjl/dszhmSudqM6SBluPs46xg=;
+ b=FXVXH7+2aHsIUTftwEvjEgR8Wb+b1HO+dHuj4VECCPM+zfLujiuVdgzp
+ vJNC3jZ2KTiDycWsC5n2Fqd6pjcXS0J/G9rQF9Q0DlJ0juHRVkB2FcpOf
+ K4XIm8Ev6bjAU1KLYWtz5SiQ1dZ7a1r4mChVuph6MKY8svqZQWIVKZczI
+ o2RD43CwMEiwX3plWMRvnV4Zrzu+bLu+IC+Eked++N9kjhcLbC9CLCWSB
+ cydeEqB+eJlmHjzmPOts6GjmAqyJ7GoYK298Rpuc7vjfyIr1kB+YIgA3n
+ 0ksMxALOE8D5yNZkQDdN3mHoTU17Ln4AwOgLFmRU4mZgPG0vfLjC34eqI
  g==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Fpbm2LFO
-Subject: [Intel-wired-lan] [tnguy-net-queue:dev-queue] BUILD SUCCESS
- 60cbbf6578e6ef3806f72b3ecec389ad2701d1ff
+ header.a=rsa-sha256 header.s=Intel header.b=FXVXH7+2
+Subject: [Intel-wired-lan] [tnguy-next-queue:dev-queue] BUILD REGRESSION
+ 90c4fba6434d6a91c009f2604664052dc37c952c
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,19 +98,67 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/net-queue.git dev-queue
-branch HEAD: 60cbbf6578e6ef3806f72b3ecec389ad2701d1ff  iavf: validate tx_coalesce_usecs even if rx_coalesce_usecs is zero
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/tnguy/next-queue.git dev-queue
+branch HEAD: 90c4fba6434d6a91c009f2604664052dc37c952c  iavf: validate tx_coalesce_usecs even if rx_coalesce_usecs is zero
 
-elapsed time: 1458m
+Error/Warning ids grouped by kconfigs:
 
-configs tested: 199
+gcc_recent_errors
+|-- i386-buildonly-randconfig-005-20231110
+|   |-- kernel-bpf-task_iter.c:error:CSS_TASK_ITER_THREADED-undeclared-(first-use-in-this-function)
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_end
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_next
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_start
+|   `-- kernel-bpf-task_iter.c:error:invalid-application-of-sizeof-to-incomplete-type-struct-css_task_iter
+|-- m68k-defconfig
+|   |-- kernel-bpf-task_iter.c:error:CSS_TASK_ITER_THREADED-undeclared-(first-use-in-this-function)
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_end
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_next
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_start
+|   `-- kernel-bpf-task_iter.c:error:invalid-application-of-sizeof-to-incomplete-type-struct-css_task_iter
+|-- nios2-randconfig-001-20231110
+|   |-- kernel-bpf-task_iter.c:error:CSS_TASK_ITER_THREADED-undeclared-(first-use-in-this-function)
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_end
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_next
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_start
+|   `-- kernel-bpf-task_iter.c:error:invalid-application-of-sizeof-to-incomplete-type-struct-css_task_iter
+|-- parisc-randconfig-001-20231110
+|   |-- kernel-bpf-task_iter.c:error:CSS_TASK_ITER_THREADED-undeclared-(first-use-in-this-function)
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_end
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_next
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_start
+|   `-- kernel-bpf-task_iter.c:error:invalid-application-of-sizeof-to-incomplete-type-struct-css_task_iter
+|-- powerpc64-randconfig-002-20231110
+|   |-- kernel-bpf-task_iter.c:error:CSS_TASK_ITER_THREADED-undeclared-(first-use-in-this-function)
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_end
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_next
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_start
+|   `-- kernel-bpf-task_iter.c:error:invalid-application-of-sizeof-to-incomplete-type-struct-css_task_iter
+|-- sparc64-randconfig-001-20231110
+|   |-- kernel-bpf-task_iter.c:error:CSS_TASK_ITER_THREADED-undeclared-(first-use-in-this-function)
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_end
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_next
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_start
+|   `-- kernel-bpf-task_iter.c:error:invalid-application-of-sizeof-to-incomplete-type-struct-css_task_iter
+|-- x86_64-buildonly-randconfig-003-20231110
+|   |-- kernel-bpf-task_iter.c:error:CSS_TASK_ITER_THREADED-undeclared-(first-use-in-this-function)
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_end
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_next
+|   |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_start
+|   `-- kernel-bpf-task_iter.c:error:invalid-application-of-sizeof-to-incomplete-type-struct-css_task_iter
+`-- xtensa-randconfig-002-20231110
+    |-- kernel-bpf-task_iter.c:error:CSS_TASK_ITER_THREADED-undeclared-(first-use-in-this-function)
+    |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_end
+    |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_next
+    |-- kernel-bpf-task_iter.c:error:implicit-declaration-of-function-css_task_iter_start
+    `-- kernel-bpf-task_iter.c:error:invalid-application-of-sizeof-to-incomplete-type-struct-css_task_iter
+
+elapsed time: 1457m
+
+configs tested: 169
 configs skipped: 2
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
 tested configs:
-alpha                            alldefconfig   gcc  
 alpha                             allnoconfig   gcc  
 alpha                            allyesconfig   gcc  
 alpha                               defconfig   gcc  
@@ -124,7 +172,6 @@ arm                              allmodconfig   gcc
 arm                               allnoconfig   gcc  
 arm                              allyesconfig   gcc  
 arm                                 defconfig   gcc  
-arm                         lpc32xx_defconfig   clang
 arm                   randconfig-001-20231110   gcc  
 arm                   randconfig-002-20231110   gcc  
 arm                   randconfig-003-20231110   gcc  
@@ -154,17 +201,11 @@ i386         buildonly-randconfig-005-20231110   gcc
 i386         buildonly-randconfig-006-20231110   gcc  
 i386                                defconfig   gcc  
 i386                  randconfig-001-20231110   gcc  
-i386                  randconfig-001-20231111   gcc  
 i386                  randconfig-002-20231110   gcc  
-i386                  randconfig-002-20231111   gcc  
 i386                  randconfig-003-20231110   gcc  
-i386                  randconfig-003-20231111   gcc  
 i386                  randconfig-004-20231110   gcc  
-i386                  randconfig-004-20231111   gcc  
 i386                  randconfig-005-20231110   gcc  
-i386                  randconfig-005-20231111   gcc  
 i386                  randconfig-006-20231110   gcc  
-i386                  randconfig-006-20231111   gcc  
 i386                  randconfig-011-20231110   gcc  
 i386                  randconfig-012-20231110   gcc  
 i386                  randconfig-013-20231110   gcc  
@@ -188,13 +229,8 @@ microblaze                          defconfig   gcc
 mips                             allmodconfig   gcc  
 mips                              allnoconfig   gcc  
 mips                             allyesconfig   gcc  
-mips                         cobalt_defconfig   gcc  
-mips                     cu1830-neo_defconfig   clang
-mips                           gcw0_defconfig   gcc  
-mips                           jazz_defconfig   gcc  
-mips                           mtx1_defconfig   clang
+mips                         bigsur_defconfig   gcc  
 mips                        qi_lb60_defconfig   clang
-nios2                         10m50_defconfig   gcc  
 nios2                            allmodconfig   gcc  
 nios2                             allnoconfig   gcc  
 nios2                            allyesconfig   gcc  
@@ -215,17 +251,9 @@ parisc64                            defconfig   gcc
 powerpc                          allmodconfig   gcc  
 powerpc                           allnoconfig   gcc  
 powerpc                          allyesconfig   gcc  
-powerpc                    klondike_defconfig   gcc  
-powerpc                   lite5200b_defconfig   clang
-powerpc                 mpc8315_rdb_defconfig   clang
-powerpc                  mpc866_ads_defconfig   clang
-powerpc                  mpc885_ads_defconfig   clang
-powerpc                      pcm030_defconfig   gcc  
-powerpc                     powernv_defconfig   clang
 powerpc               randconfig-001-20231110   gcc  
 powerpc               randconfig-002-20231110   gcc  
 powerpc               randconfig-003-20231110   gcc  
-powerpc                    sam440ep_defconfig   gcc  
 powerpc64             randconfig-001-20231110   gcc  
 powerpc64             randconfig-002-20231110   gcc  
 powerpc64             randconfig-003-20231110   gcc  
@@ -245,17 +273,16 @@ s390                  randconfig-002-20231110   gcc
 sh                               allmodconfig   gcc  
 sh                                allnoconfig   gcc  
 sh                               allyesconfig   gcc  
-sh                         ap325rxa_defconfig   gcc  
 sh                                  defconfig   gcc  
 sh                    randconfig-001-20231110   gcc  
 sh                    randconfig-002-20231110   gcc  
+sh                   rts7751r2dplus_defconfig   gcc  
 sparc                            allmodconfig   gcc  
 sparc                             allnoconfig   gcc  
 sparc                            allyesconfig   gcc  
 sparc                               defconfig   gcc  
 sparc                 randconfig-001-20231110   gcc  
 sparc                 randconfig-002-20231110   gcc  
-sparc64                          alldefconfig   gcc  
 sparc64                          allmodconfig   gcc  
 sparc64                          allyesconfig   gcc  
 sparc64                             defconfig   gcc  
@@ -275,10 +302,8 @@ x86_64       buildonly-randconfig-001-20231110   gcc
 x86_64       buildonly-randconfig-002-20231110   gcc  
 x86_64       buildonly-randconfig-003-20231110   gcc  
 x86_64       buildonly-randconfig-004-20231110   gcc  
-x86_64       buildonly-randconfig-005-20231110   gcc  
 x86_64       buildonly-randconfig-006-20231110   gcc  
 x86_64                              defconfig   gcc  
-x86_64                                  kexec   gcc  
 x86_64                randconfig-001-20231110   gcc  
 x86_64                randconfig-002-20231110   gcc  
 x86_64                randconfig-003-20231110   gcc  
@@ -297,16 +322,10 @@ x86_64                randconfig-073-20231110   gcc
 x86_64                randconfig-074-20231110   gcc  
 x86_64                randconfig-075-20231110   gcc  
 x86_64                randconfig-076-20231110   gcc  
-x86_64                           rhel-8.3-bpf   gcc  
-x86_64                          rhel-8.3-func   gcc  
-x86_64                    rhel-8.3-kselftests   gcc  
-x86_64                         rhel-8.3-kunit   gcc  
-x86_64                           rhel-8.3-ltp   gcc  
 x86_64                          rhel-8.3-rust   clang
 x86_64                               rhel-8.3   gcc  
-xtensa                            allnoconfig   gcc  
-xtensa                           allyesconfig   gcc  
 xtensa                              defconfig   gcc  
+xtensa                  nommu_kc705_defconfig   gcc  
 xtensa                randconfig-001-20231110   gcc  
 xtensa                randconfig-002-20231110   gcc  
 
