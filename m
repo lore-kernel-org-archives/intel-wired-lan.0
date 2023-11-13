@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9B58C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Nov 2023 12:59:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38749C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 13 Nov 2023 12:59:18 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8173382116;
-	Mon, 13 Nov 2023 12:59:13 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8173382116
+	by smtp1.osuosl.org (Postfix) with ESMTP id EA48081C6E;
+	Mon, 13 Nov 2023 12:59:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org EA48081C6E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1699880353;
-	bh=85MCNSEhMq++vlQTxKFquRugTEhf2cTMB+x78JIlmME=;
+	s=default; t=1699880358;
+	bh=CoikNPtRAlvSrvOUuiYfN6WHD6DIhSvoA5m9h7i3PY0=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=z5l2j5zL6rhTmHIA6N6/Btp4e5xjAvMwqmBA2APu92XXbqpIZPEKJ9YRb71vQVtWv
-	 mvO835fUfD6nRe76+or65rxrFZ4u2f+oqEO8NP3n10+L22R/3CDim/f3AHAuspZY1D
-	 nRjVEReKq80WhCo/woUL5jibPhokrdZpbWeR0bfAnIgVK41s+sW/g0/LtT30EKedn/
-	 MWHE2LHD0ENugqA3rPwKiTgzQFMt+0BgZTKVVZEXaUc7wqUBkz9h5EIq+P2xQWs2Cw
-	 oJllkE6GEkBbZVY3nibceNERNbUIad0POSbTY+V2+T9X1HgMnxHVIfBEylxN2eWw9v
-	 Jz9jwTZvTw6OA==
+	b=EwhmdsdhcSUh7F7imhzcQ7g7vgnkNYu9hGv3P0BOz4B+qAmHDJRbyk66NXFoYeMKN
+	 aZtbmQhPbE8ghPVr8ppaCat467xFppuExXNysvNIgKPzMexoHlO5MPMkfFEZTZAh1F
+	 H9iDI2j2KFMfvGviqEkEamZGPwclCUWzDq41foiq9UnzNkEQDu03kTGuJlwA2w7wcb
+	 uQ3BfobqyFvP+vDdKSVdv98qvgR43LDmzcsPNNmwpXNxqbx5LBGU4klmFYxA9GvvkG
+	 QHGtlmk1N44fzmjTHKVVEFsK49w9bv8WI9qIzZCvzChaXCHfzHrUeve08yKiQIizMD
+	 QN59Ojz39WfPw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Pl7ZaLDY3o1N; Mon, 13 Nov 2023 12:59:12 +0000 (UTC)
+	with ESMTP id XcQVpxj0IHDi; Mon, 13 Nov 2023 12:59:16 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 759FA81F09;
-	Mon, 13 Nov 2023 12:59:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 759FA81F09
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 2E2701BF3BF
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Nov 2023 12:59:07 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 9D8BD81E6B;
+	Mon, 13 Nov 2023 12:59:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9D8BD81E6B
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id A3A6B1BF3BF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Nov 2023 12:59:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 0588081E05
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Nov 2023 12:59:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0588081E05
+ by smtp4.osuosl.org (Postfix) with ESMTP id 792E3418B0
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Nov 2023 12:59:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 792E3418B0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 9k_LepkIG2fL for <intel-wired-lan@lists.osuosl.org>;
- Mon, 13 Nov 2023 12:59:06 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id yZeGnJtmsTSD for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 13 Nov 2023 12:59:10 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 390E281C6E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Nov 2023 12:59:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 390E281C6E
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 56751418AF
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 13 Nov 2023 12:59:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 56751418AF
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-413-qFwntDouPq-_dXZsz23hbA-1; Mon, 13 Nov 2023 07:59:02 -0500
-X-MC-Unique: qFwntDouPq-_dXZsz23hbA-1
+ us-mta-199-T1faoh_-NSGALDIJbhz7oQ-1; Mon, 13 Nov 2023 07:59:06 -0500
+X-MC-Unique: T1faoh_-NSGALDIJbhz7oQ-1
 Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com
  [10.11.54.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5A3078007B3;
- Mon, 13 Nov 2023 12:59:01 +0000 (UTC)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 92B5085CBE3;
+ Mon, 13 Nov 2023 12:59:05 +0000 (UTC)
 Received: from p1.luc.cera.cz (unknown [10.45.224.49])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 84407370;
- Mon, 13 Nov 2023 12:58:59 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id BA97C370;
+ Mon, 13 Nov 2023 12:59:03 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: netdev@vger.kernel.org
-Date: Mon, 13 Nov 2023 13:58:52 +0100
-Message-ID: <20231113125856.346047-2-ivecera@redhat.com>
+Date: Mon, 13 Nov 2023 13:58:54 +0100
+Message-ID: <20231113125856.346047-4-ivecera@redhat.com>
 In-Reply-To: <20231113125856.346047-1-ivecera@redhat.com>
 References: <20231113125856.346047-1-ivecera@redhat.com>
 MIME-Version: 1.0
 X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.1
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1699880345;
+ s=mimecast20190719; t=1699880349;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
  content-transfer-encoding:content-transfer-encoding:
  in-reply-to:in-reply-to:references:references;
- bh=t2n6Jd9cJZiwfOrraes5mYcb5r/O/LRHhuTYwSStRcs=;
- b=MCsu70tbBhMB0R3dFM8ovS2xv8Bx+1ec9buWGXdbk+zZ2Enx/8z+PbIi5lNck6PiEFHa+u
- BYLnblrN9MHBtXDorgRa39H63DY1EXQ3sLzpP0CW03L90lQoXCaOVLTo1TceBXjPDF1LQv
- PSPCiD2zmfYoS+cz3AoGRSSk7sTJDbY=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=REEluR5Vp+Kdot5GA8mFtxi8JTXT2fZc95UChq+/xTE=;
+ b=IqlTbl3feQ+LUkcg5m0Ch67YMVATJ/fh6EYYM6UKT84nPIff/ok2oPV6w2mqhRKqbv6EpW
+ /SAQwFtj7Xzq+K8CsxJmOylZMV0kCsJPYlQnX1zYPFy59oHPv9UDFM75QA6wkZnA0KuOjR
+ OqM4btW2LAv3xwVx23tkkqVtgZGUDiw=
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=MCsu70tb
-Subject: [Intel-wired-lan] [PATCH iwl-next 1/5] i40e: Use existing helper to
- find flow director VSI
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=IqlTbl3f
+Subject: [Intel-wired-lan] [PATCH iwl-next 3/5] i40e: Add helpers to find
+ VSI and VEB by SEID and use them
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,50 +110,295 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Use existing i40e_find_vsi_by_type() to find a VSI
-associated with flow director.
+Add two helpers i40e_(veb|vsi)_get_by_seid() to find corresponding
+VEB or VSI by their SEID value and use these helpers to replace
+existing open-coded loops.
 
 Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h        | 34 +++++++++
+ .../net/ethernet/intel/i40e/i40e_debugfs.c    | 38 ++--------
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 76 ++++++-------------
+ 3 files changed, 64 insertions(+), 84 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 1e9266de270b..220b5ce31519 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -1360,4 +1360,38 @@ static inline struct i40e_pf *i40e_hw_to_pf(struct i40e_hw *hw)
+ 
+ struct device *i40e_hw_to_dev(struct i40e_hw *hw);
+ 
++/**
++ * i40e_vsi_get_by_seid - find VSI by SEID
++ * @pf: pointer to a PF
++ **/
++static inline struct i40e_vsi *
++i40e_vsi_get_by_seid(struct i40e_pf *pf, u16 seid)
++{
++	struct i40e_vsi *vsi;
++	int i;
++
++	i40e_pf_for_each_vsi(pf, i, vsi)
++		if (vsi->seid == seid)
++			return vsi;
++
++	return NULL;
++}
++
++/**
++ * i40e_veb_get_by_seid - find VEB by SEID
++ * @pf: pointer to a PF
++ **/
++static inline struct i40e_veb *
++i40e_veb_get_by_seid(struct i40e_pf *pf, u16 seid)
++{
++	struct i40e_veb *veb;
++	int i;
++
++	i40e_pf_for_each_veb(pf, i, veb)
++		if (veb->seid == seid)
++			return veb;
++
++	return NULL;
++}
++
+ #endif /* _I40E_H_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index b236b0f93202..d26348db125f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -24,37 +24,13 @@ enum ring_type {
+  **/
+ static struct i40e_vsi *i40e_dbg_find_vsi(struct i40e_pf *pf, int seid)
+ {
+-	struct i40e_vsi *vsi;
+-	int i;
+-
+ 	if (seid < 0) {
+ 		dev_info(&pf->pdev->dev, "%d: bad seid\n", seid);
+ 
+ 		return NULL;
+ 	}
+ 
+-	i40e_pf_for_each_vsi(pf, i, vsi)
+-		if (vsi->seid == seid)
+-			return vsi;
+-
+-	return NULL;
+-}
+-
+-/**
+- * i40e_dbg_find_veb - searches for the veb with the given seid
+- * @pf: the PF structure to search for the veb
+- * @seid: seid of the veb it is searching for
+- **/
+-static struct i40e_veb *i40e_dbg_find_veb(struct i40e_pf *pf, int seid)
+-{
+-	struct i40e_veb *veb;
+-	int i;
+-
+-	i40e_pf_for_each_veb(pf, i, veb)
+-		if (veb->seid == seid)
+-			return veb;
+-
+-	return NULL;
++	return i40e_vsi_get_by_seid(pf, seid);
+ }
+ 
+ /**************************************************************
+@@ -701,7 +677,7 @@ static void i40e_dbg_dump_veb_seid(struct i40e_pf *pf, int seid)
+ {
+ 	struct i40e_veb *veb;
+ 
+-	veb = i40e_dbg_find_veb(pf, seid);
++	veb = i40e_veb_get_by_seid(pf, seid);
+ 	if (!veb) {
+ 		dev_info(&pf->pdev->dev, "can't find veb %d\n", seid);
+ 		return;
+@@ -853,7 +829,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 
+ 	} else if (strncmp(cmd_buf, "add relay", 9) == 0) {
+ 		struct i40e_veb *veb;
+-		int uplink_seid, i;
++		int uplink_seid;
+ 
+ 		cnt = sscanf(&cmd_buf[9], "%i %i", &uplink_seid, &vsi_seid);
+ 		if (cnt != 2) {
+@@ -875,12 +851,8 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 			goto command_write_done;
+ 		}
+ 
+-		i40e_pf_for_each_veb(pf, i, veb)
+-			if (veb->seid == uplink_seid)
+-				break;
+-
+-		if (i >= I40E_MAX_VEB && uplink_seid != 0 &&
+-		    uplink_seid != pf->mac_seid) {
++		veb = i40e_veb_get_by_seid(pf, uplink_seid);
++		if (!veb && uplink_seid != 0 && uplink_seid != pf->mac_seid) {
+ 			dev_info(&pf->pdev->dev,
+ 				 "add relay: relay uplink %d not found\n",
+ 				 uplink_seid);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 51ee870ffa36..90966878333c 100644
+index c410fc31a051..e7be145f298a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -15645,6 +15645,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- #ifdef CONFIG_I40E_DCB
- 	enum i40e_get_fw_lldp_status_resp lldp_status;
- #endif /* CONFIG_I40E_DCB */
-+	struct i40e_vsi *vsi;
- 	struct i40e_pf *pf;
- 	struct i40e_hw *hw;
- 	u16 wol_nvm_bits;
-@@ -15655,7 +15656,6 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- #endif /* CONFIG_I40E_DCB */
- 	int err;
- 	u32 val;
--	u32 i;
+@@ -13120,18 +13120,14 @@ static int i40e_ndo_bridge_setlink(struct net_device *dev,
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct nlattr *attr, *br_spec;
+ 	struct i40e_veb *veb;
+-	int i, rem;
++	int rem;
  
- 	err = pci_enable_device_mem(pdev);
- 	if (err)
-@@ -16005,12 +16005,9 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	INIT_LIST_HEAD(&pf->vsi[pf->lan_vsi]->ch_list);
+ 	/* Only for PF VSI for now */
+ 	if (vsi->seid != pf->vsi[pf->lan_vsi]->seid)
+ 		return -EOPNOTSUPP;
  
- 	/* if FDIR VSI was set up, start it now */
--	for (i = 0; i < pf->num_alloc_vsi; i++) {
--		if (pf->vsi[i] && pf->vsi[i]->type == I40E_VSI_FDIR) {
--			i40e_vsi_open(pf->vsi[i]);
+ 	/* Find the HW bridge for PF VSI */
+-	i40e_pf_for_each_veb(pf, i, veb)
+-		if (veb->seid == vsi->uplink_seid)
 -			break;
--		}
--	}
-+	vsi = i40e_find_vsi_by_type(pf, I40E_VSI_FDIR);
-+	if (vsi)
-+		i40e_vsi_open(vsi);
+-	if (i == I40E_MAX_VEB)
+-		veb = NULL; /* No VEB found */
++	veb = i40e_veb_get_by_seid(pf, vsi->uplink_seid);
  
- 	/* The driver only wants link up/down and module qualification
- 	 * reports from firmware.  Note the negative logic.
+ 	br_spec = nlmsg_find_attr(nlh, sizeof(struct ifinfomsg), IFLA_AF_SPEC);
+ 	if (!br_spec)
+@@ -13197,17 +13193,14 @@ static int i40e_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_veb *veb = NULL;
+-	int i;
+ 
+ 	/* Only for PF VSI for now */
+ 	if (vsi->seid != pf->vsi[pf->lan_vsi]->seid)
+ 		return -EOPNOTSUPP;
+ 
+ 	/* Find the HW bridge for the PF VSI */
+-	i40e_pf_for_each_veb(pf, i, veb)
+-		if (veb->seid == vsi->uplink_seid)
+-			break;
+-	if (i == I40E_MAX_VEB)
++	veb = i40e_veb_get_by_seid(pf, vsi->uplink_seid);
++	if (!vsi)
+ 		return 0;
+ 
+ 	return ndo_dflt_bridge_getlink(skb, pid, seq, dev, veb->bridge_mode,
+@@ -14382,8 +14375,8 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+ 	struct i40e_vsi *vsi = NULL;
+ 	struct i40e_veb *veb = NULL;
+ 	u16 alloc_queue_pairs;
+-	int ret, i;
+ 	int v_idx;
++	int ret;
+ 
+ 	/* The requested uplink_seid must be either
+ 	 *     - the PF's port seid
+@@ -14398,18 +14391,10 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+ 	 *
+ 	 * Find which uplink_seid we were given and create a new VEB if needed
+ 	 */
+-	i40e_pf_for_each_veb(pf, i, veb)
+-		if (veb->seid == uplink_seid)
+-			break;
+-	if (i == I40E_MAX_VEB)
+-		veb = NULL;
+-
++	veb = i40e_veb_get_by_seid(pf, uplink_seid);
+ 	if (!veb && uplink_seid != pf->mac_seid) {
+-		i40e_pf_for_each_vsi(pf, i, vsi)
+-			if (vsi->seid == uplink_seid)
+-				break;
+-
+-		if (i == pf->num_alloc_vsi) {
++		vsi = i40e_vsi_get_by_seid(pf, uplink_seid);
++		if (!vsi) {
+ 			dev_info(&pf->pdev->dev, "no such uplink_seid %d\n",
+ 				 uplink_seid);
+ 			return NULL;
+@@ -14437,10 +14422,8 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+ 			}
+ 			i40e_config_bridge_mode(veb);
+ 		}
+-		i40e_pf_for_each_veb(pf, i, veb)
+-			if (veb->seid == vsi->uplink_seid)
+-				break;
+-		if (i == I40E_MAX_VEB) {
++		veb = i40e_veb_get_by_seid(pf, vsi->uplink_seid);
++		if (!veb) {
+ 			dev_info(&pf->pdev->dev, "couldn't add VEB\n");
+ 			return NULL;
+ 		}
+@@ -14835,7 +14818,7 @@ struct i40e_veb *i40e_veb_setup(struct i40e_pf *pf, u16 flags,
+ {
+ 	struct i40e_veb *veb, *uplink_veb = NULL;
+ 	struct i40e_vsi *vsi;
+-	int vsi_idx, veb_idx;
++	int veb_idx;
+ 	int ret;
+ 
+ 	/* if one seid is 0, the other must be 0 to create a floating relay */
+@@ -14848,23 +14831,16 @@ struct i40e_veb *i40e_veb_setup(struct i40e_pf *pf, u16 flags,
+ 	}
+ 
+ 	/* make sure there is such a vsi and uplink */
+-	i40e_pf_for_each_vsi(pf, vsi_idx, vsi)
+-		if (vsi->seid == vsi_seid)
+-			break;
+-
+-	if (vsi_idx == pf->num_alloc_vsi && vsi_seid != 0) {
+-		dev_info(&pf->pdev->dev, "vsi seid %d not found\n",
+-			 vsi_seid);
+-		return NULL;
++	if (vsi_seid) {
++		vsi = i40e_vsi_get_by_seid(pf, vsi_seid);
++		if (!vsi) {
++			dev_err(&pf->pdev->dev, "vsi seid %d not found\n",
++				vsi_seid);
++			return NULL;
++		}
+ 	}
+-
+ 	if (uplink_seid && uplink_seid != pf->mac_seid) {
+-		i40e_pf_for_each_veb(pf, veb_idx, veb) {
+-			if (veb->seid == uplink_seid) {
+-				uplink_veb = veb;
+-				break;
+-			}
+-		}
++		uplink_veb = i40e_veb_get_by_seid(pf, uplink_seid);
+ 		if (!uplink_veb) {
+ 			dev_info(&pf->pdev->dev,
+ 				 "uplink seid %d not found\n", uplink_seid);
+@@ -14886,7 +14862,8 @@ struct i40e_veb *i40e_veb_setup(struct i40e_pf *pf, u16 flags,
+ 	ret = i40e_add_veb(veb, vsi);
+ 	if (ret)
+ 		goto err_veb;
+-	if (vsi_idx == pf->lan_vsi)
++
++	if (vsi && vsi->idx == pf->lan_vsi)
+ 		pf->lan_veb = veb->idx;
+ 
+ 	return veb;
+@@ -14933,13 +14910,10 @@ static void i40e_setup_pf_switch_element(struct i40e_pf *pf,
+ 			int v;
+ 
+ 			/* find existing or else empty VEB */
+-			i40e_pf_for_each_veb(pf, v, veb)
+-				if (veb->seid == seid) {
+-					pf->lan_veb = v;
+-					break;
+-				}
+-
+-			if (pf->lan_veb >= I40E_MAX_VEB) {
++			veb = i40e_veb_get_by_seid(pf, seid);
++			if (veb) {
++				pf->lan_veb = veb->idx;
++			} else {
+ 				v = i40e_veb_mem_alloc(pf);
+ 				if (v < 0)
+ 					break;
 -- 
 2.41.0
 
