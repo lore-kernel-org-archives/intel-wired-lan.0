@@ -1,107 +1,95 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 770B1C2BB3F
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 Nov 2023 16:20:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6155DC2BB3F
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 Nov 2023 17:01:58 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3120342247;
-	Wed, 15 Nov 2023 16:20:28 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3120342247
+	by smtp1.osuosl.org (Postfix) with ESMTP id DE0CE824C1;
+	Wed, 15 Nov 2023 17:01:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org DE0CE824C1
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1700065228;
-	bh=Tv0cqO1AnUndSLt7WXmSPVvo2kccQsmwAoGf1kYLP50=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	s=default; t=1700067717;
+	bh=nWjGpKypM0kM5UGcLBPcb8jFNkCKLr7FsgYBRc4TcZA=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=7Jus6C2Cg78iY95Gq3xCDm3Xd9fye120xFWwmgwvNtdK2rugghRndfu7a8bsy9+ta
-	 fASfvDrORd04XC0sUlfZ5TIr1ZJA0NlvNfa0s6up0jGr0KgzW4tNa1x3feAgQ+eJXF
-	 kYYTzxgRb34BTPM7iR4P52PMYon0vu3/w7CFNBMjeGBS4KmGcXmR8ZXRYX7HzsOMSi
-	 lTFqBNh0azsGpmlmo0oZKFBlzWMNxMPr/ZPbI9vF5hfOXN8GiehTIsI3aaR5z/yaAn
-	 ei4Kmsj06EEXqBbba09I6YUZALiR+ZIYStfA4/vkvYeyPif23LQsWFm9GLuddEM7/x
-	 LFjCxbfBMCGUw==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
-	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dyTz0bF0FIk1; Wed, 15 Nov 2023 16:20:27 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 3D4394221C;
-	Wed, 15 Nov 2023 16:20:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3D4394221C
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 7434E1BF363
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 13:11:09 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4CBAC81FDE
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 13:11:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4CBAC81FDE
+	b=5xRbkdCZW49uXyk+xr2YCtgNhLdqRK7XGyXgvSmoLMLhjZUzpBDJ1FOGEwL54dYBl
+	 rEbjXlzEK9yHngxsIMFDvlgI43By+AC1r6lhdugXGH7oBZdifmXuhZTgdi2JYLVzkC
+	 crWRSYTqLi/nycE7VnRaxqe4NPxhGChqSCBk5HVh0PskEniau+zLpvk75DUov31EQU
+	 2HYdyjLiq5G1OZmhI7aKCk21vcvnDYXd5E3WymUBqITxJyE5SJxrknInlR07uEEfka
+	 kwykCFWR8EpuNeB1IzJ3KL7IlgWVC0fjSCCf9sA/4jRpVxE/5gJiR1b9rBQfXkPBKn
+	 ++oCAsZ09x1Wg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 70kDA-tISgUh for <intel-wired-lan@lists.osuosl.org>;
- Wed, 15 Nov 2023 13:11:08 +0000 (UTC)
-Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com
- [IPv6:2607:f8b0:4864:20::102d])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9FB0F81F5B
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 13:11:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9FB0F81F5B
-Received: by mail-pj1-x102d.google.com with SMTP id
- 98e67ed59e1d1-2801d7f46f9so410951a91.3
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 05:11:08 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1700053868; x=1700658668;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
- :message-id:reply-to;
- bh=EhfVaGER9sTAd2B+qVaDfxqJSQ9hYyt4DuktjBuV3bs=;
- b=ULCcZZ2UkKmQpH99iYo1oQ76d2Syp1xXIBCZj+90YnReOSLCjhHt0XVLt53E6EWHdi
- MjjVkHqW343QsCfeDcxlioMZhoFhWvpzgalCPAUDN5aEwGPiUPDRq4R6ydHHya3YhN2t
- LN0VjmvFkuw/JINt/6ObWeAI7s8N53KmM20Z2UXOPPiaKXEYNgACvZGj9aId3UuygRer
- 7TpbVh97imRQ9QaPLEU4NwvBS7BbybJ5K+1ymfpnuRxaq8HnL+8NXagtOOs6WZLsVUSs
- hGiLa5Jh6/78DZf+MspNWD+QNohXX245AD6hrNZ9Lqdmap+9zJVgvamtgdG7+T2y7VpO
- UI3g==
-X-Gm-Message-State: AOJu0YwMmNlVcsAPDo/762aLQBIDqphbrFqKqyViqU4KHauYcw4aUgLN
- zEgdNmglDlXfi6uFSHIw2tY=
-X-Google-Smtp-Source: AGHT+IF+Tp/0plK9/VgBp5NpeKL0shngz+o/5+5GbHwpQgFqtAF/n2vwDB9t8Qvx+i5meirX7aUHMw==
-X-Received: by 2002:a17:90b:3149:b0:27d:4901:b0b7 with SMTP id
- ip9-20020a17090b314900b0027d4901b0b7mr11047462pjb.30.1700053867647; 
- Wed, 15 Nov 2023 05:11:07 -0800 (PST)
-Received: from archie.me ([103.131.18.64]) by smtp.gmail.com with ESMTPSA id
- f6-20020a17090a8e8600b0027df6ff00eesm6757051pjo.19.2023.11.15.05.11.06
- (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
- Wed, 15 Nov 2023 05:11:07 -0800 (PST)
-Received: by archie.me (Postfix, from userid 1000)
- id CA40910D2CF4C; Wed, 15 Nov 2023 20:11:04 +0700 (WIB)
-Date: Wed, 15 Nov 2023 20:11:04 +0700
-From: Bagas Sanjaya <bagasdotme@gmail.com>
-To: Anil Choudhary <anilchabba@gmail.com>,
- Linux Regressions <regressions@lists.linux.dev>
-Message-ID: <ZVTDaJOtjxEOPbNq@archie.me>
-References: <986716ed-f898-4a02-a8f6-94f85b355a05@gmail.com>
- <32716.1700009673@famine>
- <0f97acf9-012d-4bb2-a766-0c2737e32b2c@leemhuis.info>
- <CC024511-980A-4508-8ABF-659A04367C2B@gmail.com>
+	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id FByc_h1qOYbM; Wed, 15 Nov 2023 17:01:57 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp1.osuosl.org (Postfix) with ESMTP id E59E4824E3;
+	Wed, 15 Nov 2023 17:01:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E59E4824E3
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 29BBE1BF375
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 17:01:55 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 00F5460AF8
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 17:01:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 00F5460AF8
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id WbUkQ1wqk_-D for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 15 Nov 2023 17:01:53 +0000 (UTC)
+Received: from us-smtp-delivery-124.mimecast.com
+ (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id D96CB60F85
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 17:01:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D96CB60F85
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-369-PYBy6ho4NKS4WAf1KUKUZw-1; Wed, 15 Nov 2023 12:01:48 -0500
+X-MC-Unique: PYBy6ho4NKS4WAf1KUKUZw-1
+Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.10])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1CDFD810FCA;
+ Wed, 15 Nov 2023 17:01:47 +0000 (UTC)
+Received: from [10.45.225.144] (unknown [10.45.225.144])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 4EBFC492BFD;
+ Wed, 15 Nov 2023 17:01:45 +0000 (UTC)
+Message-ID: <36889885-71c7-46f7-8c21-e5791986ad5a@redhat.com>
+Date: Wed, 15 Nov 2023 18:01:44 +0100
 MIME-Version: 1.0
-In-Reply-To: <CC024511-980A-4508-8ABF-659A04367C2B@gmail.com>
-X-Mailman-Approved-At: Wed, 15 Nov 2023 16:19:59 +0000
+User-Agent: Mozilla Thunderbird
+To: Wojciech Drewek <wojciech.drewek@intel.com>, netdev@vger.kernel.org
+References: <20231113125856.346047-1-ivecera@redhat.com>
+ <20231113125856.346047-4-ivecera@redhat.com>
+ <3c640be7-8f1e-4f9e-8556-3aac92644dec@intel.com>
+Content-Language: en-US
+From: Ivan Vecera <ivecera@redhat.com>
+In-Reply-To: <3c640be7-8f1e-4f9e-8556-3aac92644dec@intel.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.10
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=gmail.com; s=20230601; t=1700053868; x=1700658668; darn=lists.osuosl.org;
- h=in-reply-to:content-disposition:mime-version:references:message-id
- :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
- bh=EhfVaGER9sTAd2B+qVaDfxqJSQ9hYyt4DuktjBuV3bs=;
- b=d4OrDRfozxTzclrXpCMfzjAx4nWCJQX04qQG0/Wi1hzTmnBQDfXKpvPu694BB80K4r
- 9mCuQYz37FceXUXhU8iM3aG592+0OG4uDGvQIbGohPtZPmq54G7oL7t6ciiHkm7JbA6L
- IGE2EC/eTfy4k+9765Q1wn6cQ/dQthi2yX8/MYdN5bvPs5NyufGjRmhNyIPXP/RsYcTQ
- XQ+rdojIJyjIWVcRwaDQrL6cagRQqi/6qkThGRCFTGlR1nAMFsaPTfDFTmVydkP6YTzl
- 4vdD+R7lduhJRUQ+PTHfMNUKjcgyIAoY6+BcWgBpHKzltIRE0EIz24RZUZjZA4Rz9P0g
- Dn4w==
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
- header.a=rsa-sha256 header.s=20230601 header.b=d4OrDRfo
-Subject: Re: [Intel-wired-lan] sr-iov related bonding regression (two
- regressions in one report)
+ d=redhat.com; 
+ s=mimecast20190719; t=1700067711;
+ h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+ to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+ content-transfer-encoding:content-transfer-encoding:
+ in-reply-to:in-reply-to:references:references;
+ bh=L79P9mU6uMtA5BVIKvZRb2x0oslwt8sbrqaeDExdV6s=;
+ b=JnbrQfY3LQDc3jS6RXRRxNTXqO/pDLYDUACz1i6ZiWcHWrVaiESiBCSEzYzBZg/Mgd8LB1
+ N2MH8mGnKieSbMbIgJ+CKBm77YFOarg2Hr7DzCMmRaUmCcld55JJzi6Re0UhZaBBAvapZ+
+ qsoOVJH6k1Q717FePwvh060g/s51xS4=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=JnbrQfY3
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next 3/5] i40e: Add helpers to
+ find VSI and VEB by SEID and use them
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,68 +102,85 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Eric Dumazet <edumazet@google.com>,
- Linux Networking <netdev@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Linux Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
- Jakub Kicinski <kuba@kernel.org>, Andy Gospodarek <andy@greyhouse.net>
-Content-Type: multipart/mixed; boundary="===============8026562185676773857=="
+Cc: intel-wired-lan@lists.osuosl.org,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Simon Horman <horms@kernel.org>, Jacob Keller <jacob.e.keller@intel.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
---===============8026562185676773857==
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="5OAjmnZvSGI+Kva2"
-Content-Disposition: inline
+On 13. 11. 23 14:27, Wojciech Drewek wrote:
+> 
+> On 13.11.2023 13:58, Ivan Vecera wrote:
+>> Add two helpers i40e_(veb|vsi)_get_by_seid() to find corresponding
+>> VEB or VSI by their SEID value and use these helpers to replace
+>> existing open-coded loops.
+>>
+>> Signed-off-by: Ivan Vecera<ivecera@redhat.com>
+>> ---
+> Only one nit
+> Reviewed-by: Wojciech Drewek<wojciech.drewek@intel.com>
+> 
+>>   drivers/net/ethernet/intel/i40e/i40e.h        | 34 +++++++++
+>>   .../net/ethernet/intel/i40e/i40e_debugfs.c    | 38 ++--------
+>>   drivers/net/ethernet/intel/i40e/i40e_main.c   | 76 ++++++-------------
+>>   3 files changed, 64 insertions(+), 84 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+>> index 1e9266de270b..220b5ce31519 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+>> @@ -1360,4 +1360,38 @@ static inline struct i40e_pf *i40e_hw_to_pf(struct i40e_hw *hw)
+>>   
+>>   struct device *i40e_hw_to_dev(struct i40e_hw *hw);
+>>   
+>> +/**
+>> + * i40e_vsi_get_by_seid - find VSI by SEID
+>> + * @pf: pointer to a PF
+>> + **/
+>> +static inline struct i40e_vsi *
+>> +i40e_vsi_get_by_seid(struct i40e_pf *pf, u16 seid)
+>> +{
+>> +	struct i40e_vsi *vsi;
+>> +	int i;
+>> +
+>> +	i40e_pf_for_each_vsi(pf, i, vsi)
+>> +		if (vsi->seid == seid)
+>> +			return vsi;
+>> +
+>> +	return NULL;
+>> +}
+>> +
+>> +/**
+>> + * i40e_veb_get_by_seid - find VEB by SEID
+>> + * @pf: pointer to a PF
+>> + **/
+>> +static inline struct i40e_veb *
+>> +i40e_veb_get_by_seid(struct i40e_pf *pf, u16 seid)
+>> +{
+>> +	struct i40e_veb *veb;
+>> +	int i;
+>> +
+>> +	i40e_pf_for_each_veb(pf, i, veb)
+>> +		if (veb->seid == seid)
+>> +			return veb;
+>> +
+>> +	return NULL;
+>> +}
+> I would prefer i40e_get_{veb|vsi}_by_seid but it's my opinion.
 
+I'd rather use i40e_pf_ prefix...
 
---5OAjmnZvSGI+Kva2
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+What about i40e_pf_get_vsi_by_seid() and i40e_pf_get_veb_by_seid() ?
 
-On Tue, Nov 14, 2023 at 10:19:25PM -0800, Anil Choudhary wrote:
-
->=20
->=20
->=20
-> Following error error scribing to said is also new
->=20
-
-Please don't top-post; reply inline with appropriate context instead.
-
-What error? Can you reply with logs pasted (with error you mentioned)?
-
-Confused...
-
---=20
-An old man doll... just what I always wanted! - Clara
-
---5OAjmnZvSGI+Kva2
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYKAB0WIQSSYQ6Cy7oyFNCHrUH2uYlJVVFOowUCZVTDaAAKCRD2uYlJVVFO
-o+HWAQCGEf3FzxnS66Tm5OsffefCiiLmkMPkFzFUGydECWnqQgEAuTWunm1ReBNR
-PWiCRjKLt7pQpv6KX8OQt1zipha9ngI=
-=PeMO
------END PGP SIGNATURE-----
-
---5OAjmnZvSGI+Kva2--
-
---===============8026562185676773857==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Ivan
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
---===============8026562185676773857==--
