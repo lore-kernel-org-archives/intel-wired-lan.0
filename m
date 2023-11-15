@@ -4,81 +4,103 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F329FC54FB9
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 Nov 2023 16:20:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46C6AC072A2
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 15 Nov 2023 16:20:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 98DA64158F;
-	Wed, 15 Nov 2023 16:20:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 98DA64158F
+	by smtp4.osuosl.org (Postfix) with ESMTP id 02C9640324;
+	Wed, 15 Nov 2023 16:20:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 02C9640324
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1700065206;
-	bh=MRD5zLYs+2BfmkiXJJ0osG9vr8h6UqFMK7gwCHSiH+M=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1700065212;
+	bh=noVpk3GakOvhD94SfNtiuEI02IQ7ju0DNSQl6eh34hs=;
+	h=From:In-Reply-To:Date:References:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=wqlr/CnubqAZHppl2hNZPJvRzaGm7MjgqyiXAh03kATLH6Xz+qSmXFf10w5pZ/pFY
-	 IJDrSTmpsD3LJP5Q5w6mqh1eQ781hJ16M64/JF6rtrl6OAsRrqOHNU73sB9Po8xY/p
-	 bbcS7OTtR7Z51JHTKpBQ4LqHVSVfXCI86pinyR6+vvSgE8m8luxAnIlYgrsDA5m992
-	 NYnjKEp5/D/UR+prE2aQ2LfpnDCYcxphCFpfdLUxKAHJolqRTt7aXHbhzXUqR/avS9
-	 AEU8il7478AQ2h3fMiNkpF3BIaq4jlpMF2YVFIxgYPgYhWpsJoKD6vxnKkhfdaAix/
-	 R1F+o5htdxIcg==
+	b=eEQ8vGHZ0x07auHnnnLABi91yNS/I++cPVVUGFPfhNNfqrfTTcLp1wMO+vjG18qw0
+	 yGZqeBjcZrVhMUc0blL0eRpMSCDxxKvJBed0rc0C5pJy7n+o0mURhMDQw/B9woHxjN
+	 eW9TjjUQmupccXKFjwFhwazqzCeizadikrgMrhjwCvVUiJ8FktFhoI204ha+UkHMRU
+	 L0U6A/yxWKglii/1s9BklRoi9L0BfE0Ur95VOeIt3XnuhKI037K7hKCo88Bqu35cMb
+	 zOTG+GPjAR+/3PFz4bbuBgttYFXD7e6ED/nX4EM/fP16aiP61v+khuJZ5V+FA6mF8W
+	 kEFe1C+EQg49A==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id hySbZIWeibHh; Wed, 15 Nov 2023 16:20:05 +0000 (UTC)
+	with ESMTP id tT7WfYgGtoyE; Wed, 15 Nov 2023 16:20:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A360741ED7;
-	Wed, 15 Nov 2023 16:20:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A360741ED7
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id BDDA91BF295
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 03:15:08 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id D55D9421FC;
+	Wed, 15 Nov 2023 16:20:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D55D9421FC
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 9FCED1BF2B0
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 06:13:34 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 954104148F
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 03:15:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 954104148F
+ by smtp2.osuosl.org (Postfix) with ESMTP id 739144011D
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 06:13:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 739144011D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id ha9xabTZRq47 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 15 Nov 2023 03:15:08 +0000 (UTC)
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 52340414A2
- for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 03:15:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 52340414A2
-X-UUID: ed5a0a20a55e490aa9171fb72141b083-20231115
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.32, REQID:2cfcccbc-ff1f-499a-af7d-84216c47cfff, IP:15,
- URL:0,TC:0,Content:-5,EDM:25,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,AC
- TION:release,TS:20
-X-CID-INFO: VERSION:1.1.32, REQID:2cfcccbc-ff1f-499a-af7d-84216c47cfff, IP:15,
- UR
- L:0,TC:0,Content:-5,EDM:25,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTI
- ON:release,TS:20
-X-CID-META: VersionHash:5f78ec9, CLOUDID:98c3a972-1bd3-4f48-b671-ada88705968c,
- B
- ulkID:2311151114581JDKGIG5,BulkQuantity:0,Recheck:0,SF:19|44|66|24|17|102,
- TC:nil,Content:0,EDM:5,IP:-2,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,
- OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 0,NGT
-X-CID-BAS: 0,NGT,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI
-X-UUID: ed5a0a20a55e490aa9171fb72141b083-20231115
-X-User: chentao@kylinos.cn
-Received: from vt.. [(116.128.244.169)] by mailgw
- (envelope-from <chentao@kylinos.cn>)
- (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
- with ESMTP id 1282692015; Wed, 15 Nov 2023 11:14:55 +0800
-From: Kunwu Chan <chentao@kylinos.cn>
-To: horms@kernel.org
-Date: Wed, 15 Nov 2023 11:14:44 +0800
-Message-Id: <20231115031444.33381-1-chentao@kylinos.cn>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20231113093112.GL705326@kernel.org>
-References: <20231113093112.GL705326@kernel.org>
-MIME-Version: 1.0
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id GXj8QB3NOO4i for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 15 Nov 2023 06:13:33 +0000 (UTC)
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com
+ [IPv6:2607:f8b0:4864:20::52a])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4078D40018
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 15 Nov 2023 06:13:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4078D40018
+Received: by mail-pg1-x52a.google.com with SMTP id
+ 41be03b00d2f7-5c1acc1fa98so429704a12.0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 14 Nov 2023 22:13:33 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1700028812; x=1700633612;
+ h=to:references:message-id:content-transfer-encoding:cc:date
+ :in-reply-to:from:subject:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=aIPV+gDq2yOCjdPc3jrCxYdVWVXe1Hxr5GLMCAXMCvI=;
+ b=OsZv30mvpNZNC9vkDhZowBtxs8pK0UKo2EV0bFzXjf1a1mP0/8AZx8K02inHYjSwxh
+ NmNyGdYve6qlnpO3eFkF5rTy3fwxGrRLEshvYkz/+J+nH/07NYcN9dc/W982rZ5eB3vM
+ XcI0rdX36aRmrC4SHAvZP7gdumlBgi+DFQUJdj2bdxRDu7Y/aHtqLcGjpRnUetJUPKjl
+ h8YB98CvP+Zrz3G9adFLREthk9P0UQVh/X6rxoO1i9xUkSIq2ibIoQh4Dpx51nLhgzWS
+ YYeVe9jltYEzZF4hNOAz3xgyREFE57ZPfmSvuKaUBdlgtNlx8gxMcu5m4RnAzPb2fHio
+ CuWg==
+X-Gm-Message-State: AOJu0Ywb5cgnK58I0EzK00E/QEHpsA6qR0SNUsuk1tSI3YHbxSwLg/J/
+ apH0L5/V1W7RBF5OekBfCR0=
+X-Google-Smtp-Source: AGHT+IHNRxh6ip9wuilteMswJq0OHDd/alKbzQRFE5QrXCJMqgoditaW9gS47pvvjb9JP1aiDp/2OQ==
+X-Received: by 2002:a17:90b:38c7:b0:27d:433e:e69c with SMTP id
+ nn7-20020a17090b38c700b0027d433ee69cmr6648625pjb.18.1700028812378; 
+ Tue, 14 Nov 2023 22:13:32 -0800 (PST)
+Received: from smtpclient.apple ([2601:600:967f:6b00:1ce2:9961:5f20:7dc5])
+ by smtp.gmail.com with ESMTPSA id
+ 2-20020a17090a0d4200b002801ca4fad2sm8983020pju.10.2023.11.14.22.13.31
+ (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 14 Nov 2023 22:13:32 -0800 (PST)
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.700.6\))
+From: Anil Choudhary <anilchabba@gmail.com>
+In-Reply-To: <0f97acf9-012d-4bb2-a766-0c2737e32b2c@leemhuis.info>
+Date: Tue, 14 Nov 2023 22:13:20 -0800
+Message-Id: <EFC5ADF4-1EE4-4900-B250-AC35656DC68B@gmail.com>
+References: <986716ed-f898-4a02-a8f6-94f85b355a05@gmail.com>
+ <32716.1700009673@famine>
+ <0f97acf9-012d-4bb2-a766-0c2737e32b2c@leemhuis.info>
+To: Linux regressions mailing list <regressions@lists.linux.dev>
+X-Mailer: Apple Mail (2.3731.700.6)
 X-Mailman-Approved-At: Wed, 15 Nov 2023 16:19:59 +0000
-Subject: [Intel-wired-lan] [PATCH iwl-next] i40e: Use correct buffer size
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=gmail.com; s=20230601; t=1700028812; x=1700633612; darn=lists.osuosl.org;
+ h=to:references:message-id:content-transfer-encoding:cc:date
+ :in-reply-to:from:subject:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=aIPV+gDq2yOCjdPc3jrCxYdVWVXe1Hxr5GLMCAXMCvI=;
+ b=UeWQUJFpIjFglqZOnEg9ZP8W8rynUNatkl9W1UN3ZD7a3Qvn4XDZ1X6I0aqSo0i0dQ
+ Fuak0moZsX6AkaJr5PeH6YnQAstd3IJY8fiDvNhmz8NMjzAEu95BU7/TxxUTte+guRuy
+ 7ygNFYPap0sPZPI67f1LHSBPg5WMkhhpY0TCaS5d4XOrmud4BwEb3TTGn8Sc91GhpnV+
+ TnYWSbsLoeSKu8wfxPulXOBgEIASXVsIyr169AUq3OmPYEGbCGsNNAcq8x0q8Qm6E8Tk
+ 8XU1SIAetlM8cAQU2WkAUc2OCpAV5MCGCIN4ZGZ3JmEuxGuCI+JpsqDTajDv2Zfxu8hM
+ iFxg==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com
+ header.a=rsa-sha256 header.s=20230601 header.b=UeWQUJFp
+Subject: Re: [Intel-wired-lan] sr-iov related bonding regression (two
+ regressions in one report)
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,41 +113,78 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: chentao@kylinos.cn, kunwu.chan@hotmail.com, netdev@vger.kernel.org,
- jesse.brandeburg@intel.com, linux-kernel@vger.kernel.org, edumazet@google.com,
- intel-wired-lan@lists.osuosl.org, jeffrey.t.kirsher@intel.com, kuba@kernel.org,
- anthony.l.nguyen@intel.com, pabeni@redhat.com, davem@davemloft.net,
- shannon.nelson@amd.com
+Cc: Eric Dumazet <edumazet@google.com>,
+ Linux Networking <netdev@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Linux Intel Wired LAN <intel-wired-lan@lists.osuosl.org>,
+ Bagas Sanjaya <bagasdotme@gmail.com>, Jakub Kicinski <kuba@kernel.org>,
+ Andy Gospodarek <andy@greyhouse.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The size of "i40e_dbg_command_buf" is 256, the size of "name"
-depends on "IFNAMSIZ", plus a null character and format size,
-the total size is more than 256, fix it.
+Its not hardware issue when I do rmmod iavf ping started working .
+So issue is certainly in this kernel and with sriov only
+Iavf id Nic driver for VF(sriovnic)
 
-Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
-Suggested-by: Simon Horman <horms@kernel.org>
----
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 999c9708def5..e3b939c67cfe 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -72,7 +72,7 @@ static ssize_t i40e_dbg_command_read(struct file *filp, char __user *buffer,
- {
- 	struct i40e_pf *pf = filp->private_data;
- 	int bytes_not_copied;
--	int buf_size = 256;
-+	int buf_size = IFNAMSIZ + sizeof(i40e_dbg_command_buf) + 4;
- 	char *buf;
- 	int len;
- 
--- 
-2.34.1
+Thanks,
+Anil
+
+> On Nov 14, 2023, at 9:50 PM, Linux regression tracking (Thorsten Leemhuis) <regressions@leemhuis.info> wrote:
+> 
+> On 15.11.23 01:54, Jay Vosburgh wrote:
+>> Bagas Sanjaya <bagasdotme@gmail.com> wrote:
+>> 
+>>> I come across LACP bonding regression on Bugzilla [1].
+> 
+> Side note: Stephen forwards some (all?) network regressions to the right
+> people:
+> https://lore.kernel.org/all/20231113083746.5e02f8b0@hermes.local/
+> 
+> Would be best to check for that, no need to forward things twice, that
+> just results in a mess.
+> 
+>>> The reporter
+>>> (Cc'ed) has two regressions. The first is actual LACP bonding
+>>> regression (but terse):
+>>> 
+>>>> Till linkx kernel 6.5.7 it is working fine, but after upgrading to 6.6.1 ping stop working with LACP bonding.
+>>>> When we disable SR-IOV from bios , everything working fine
+> 
+> Makes me wonder if things have been working with or without the OOT
+> module on 6.5.7, as strictly speaking it's only considered a kernel
+> regression if thing worked with a vanilla kernel (e.g. without OOT
+> modules) beforehand and broke when switching to a newer vanilla kernel.
+> If that's the case it would be okay to add to regzbot.
+> 
+>>> And the second is out-of-tree module FTBFS:
+>> [... skip OOT stuff ...]
+>> 
+>>> Should I add the first regression to regzbot (since the second one
+>>> is obviously out-of-tree problem), or should I asked detailed regression
+>>> info to the reporter?
+>> 
+>> 	My vote is to get additional information.  Given the nature of
+>> the workaround ("When we disable SR-IOV from bios , everything working
+>> fine"), it's plausible that the underlying cause is something
+>> platform-specific.
+> 
+> Maybe, but when it comes to the "no regressions" rule that likely makes
+> no difference from Linus perspective.
+> 
+> But I guess unless the intel folks or someone else has an idea what
+> might be wrong here we likely need a bisection (with vanilla kernels of
+> course) to get anywhere.
+> 
+> Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
+> --
+> Everything you wanna know about Linux kernel regression tracking:
+> https://linux-regtracking.leemhuis.info/about/#tldr
+> If I did something stupid, please tell me, as explained on that page.
 
 _______________________________________________
 Intel-wired-lan mailing list
