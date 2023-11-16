@@ -1,93 +1,87 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8ABBC197A0
-	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Nov 2023 15:02:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 795EBC5ACB3
+	for <intel-wired-lan@archiver.kernel.org>; Thu, 16 Nov 2023 15:21:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 7D995402F3;
-	Thu, 16 Nov 2023 15:02:12 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7D995402F3
+	by smtp4.osuosl.org (Postfix) with ESMTP id 0462642850;
+	Thu, 16 Nov 2023 15:21:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0462642850
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1700146932;
-	bh=ru1gH93rQ8jbog7ZXWxxrEM1qTTB/aMPyCjs5jCJOkA=;
-	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=bVOVSXdrulcPohpaPFknpthZIum6SXV4iXeriXO7GnCjTdNDJ4+4ryt68jzXCaIOA
-	 zMavUw0w93IPl9c4TlrrwkFn8w5hT3Z+4Zogi+ke/Vh/MXZKXVPRJLxf/B8Pfb8UOA
-	 SFFkAzQOsu0Ed/H38BEw7aWe+fWfSQEiLZ9oJGqdd66fAarvL4d1la3mMSXtT/TNM2
-	 s/2p3y1LI0CkrxoEyxJtnKesWQ0GF6IBgmm/csb/z6gBEBq1ePjw0gDaPfpcPQT5Px
-	 zLsLKzrMTg2m5C7bsnIc3kMpFcEp9P8itKFLREOjfQ3OUQpIQcfmw7Sk3spEbu5EKC
-	 rHFVdHC11J2JQ==
+	s=default; t=1700148087;
+	bh=+HFV5FU9Z9UOaucAZAsnkk+ql87o8aFYtt5gn0sKFA4=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=RqGzOT/IO+0pYVXNoLfTZ40HvsFs/1DInmPPWLvHa61V6/Uj841Byk8zq+ZSLTDNG
+	 PV3dQBBzdnGWYlkGw20ZIuZqsI08egs6dFOqcm6y+cnBdj1W26AQfsEOlaMM/4sCLo
+	 0cy2FGFkdqtomVXAYnJEgrFo9Kn8W5ngjEyrUFTe6umbOT86Zbvn7ltJniw3CMLfd1
+	 hqJNjoXMoLt8XAV3l1SQRlFD7URzgV5m8R+1PvWnq99AgyYaZR9xpHNmOwlvrmaF3t
+	 dL3z+23G+8VN+gNjwfQC+VpS4rIRvXmLQNxr2MToR853QdIz+ar01q4Q+ocGH1qYUJ
+	 9DOYZewPNpzVA==
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id p6MxaUQMADxM; Thu, 16 Nov 2023 15:21:26 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id 1AEEA4285B;
+	Thu, 16 Nov 2023 15:21:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1AEEA4285B
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id C45CE1BF3C5
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Nov 2023 15:21:24 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 9935941A14
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Nov 2023 15:21:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9935941A14
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
-	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id b263TPz7ymMD; Thu, 16 Nov 2023 15:02:11 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 3FC9E41A38;
-	Thu, 16 Nov 2023 15:02:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 3FC9E41A38
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 6B02C1BF363
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Nov 2023 15:02:09 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 4203D81EAB
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Nov 2023 15:02:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4203D81EAB
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id oirfHDDpEKAg for <intel-wired-lan@lists.osuosl.org>;
- Thu, 16 Nov 2023 15:02:08 +0000 (UTC)
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id XXjsUnogHLi3 for <intel-wired-lan@lists.osuosl.org>;
+ Thu, 16 Nov 2023 15:21:23 +0000 (UTC)
 Received: from us-smtp-delivery-124.mimecast.com
  (us-smtp-delivery-124.mimecast.com [170.10.133.124])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 702F581EA4
- for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Nov 2023 15:02:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 702F581EA4
-Received: from mimecast-mx02.redhat.com (mx-ext.redhat.com [66.187.233.73])
- by relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
- cipher=TLS_AES_256_GCM_SHA384) id us-mta-478-3hkXgPN0PXqpqicqpF-54g-1; Thu,
- 16 Nov 2023 10:02:01 -0500
-X-MC-Unique: 3hkXgPN0PXqpqicqpF-54g-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com
- [10.11.54.5])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 9663E400E7
+ for <intel-wired-lan@lists.osuosl.org>; Thu, 16 Nov 2023 15:21:23 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9663E400E7
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-86-vXhr4sYiNEWe0sMGxZlHsg-1; Thu, 16 Nov 2023 10:21:18 -0500
+X-MC-Unique: vXhr4sYiNEWe0sMGxZlHsg-1
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com
+ [10.11.54.2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 737161C0651B;
- Thu, 16 Nov 2023 15:01:56 +0000 (UTC)
-Received: from [10.45.225.144] (unknown [10.45.225.144])
- by smtp.corp.redhat.com (Postfix) with ESMTP id C14265028;
- Thu, 16 Nov 2023 15:01:54 +0000 (UTC)
-Message-ID: <c14fc17e-95a7-47be-86c5-e1c889ea627e@redhat.com>
-Date: Thu, 16 Nov 2023 16:01:54 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
+ by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 46F6388D184;
+ Thu, 16 Nov 2023 15:21:17 +0000 (UTC)
+Received: from p1.luc.cera.cz (unknown [10.45.225.144])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 65F8640C6EB9;
+ Thu, 16 Nov 2023 15:21:15 +0000 (UTC)
 From: Ivan Vecera <ivecera@redhat.com>
 To: intel-wired-lan@lists.osuosl.org
-References: <20231116144119.78769-1-ivecera@redhat.com>
-In-Reply-To: <20231116144119.78769-1-ivecera@redhat.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.5
+Date: Thu, 16 Nov 2023 16:21:09 +0100
+Message-ID: <20231116152114.88515-1-ivecera@redhat.com>
+MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.2
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=redhat.com; 
- s=mimecast20190719; t=1700146927;
+ s=mimecast20190719; t=1700148082;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=V6L7tI+K8yZDrsftYj6Ia4FnBkfs6t8tIYhpG29gA3U=;
- b=cGTx3eyIPvh9Ze8zxRW+NlcKuVbRYBhOBMMZhXA/ksI2Nx4ZOq2ebAnAbH06UVfnqpxPCU
- Fphfe7fp0RgCr8+D+D4KtSsC28Nx8HmsXf6W5szR8ZSJ95/FLA/EOAGFrBniAekpAGFVCU
- M+TnQOiviSgqAEgSChKjDRR/kjwSEZo=
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ to:to:cc:cc:mime-version:mime-version:
+ content-transfer-encoding:content-transfer-encoding;
+ bh=DV6T2aL0JMAo25GbZDKP1OmNls93+HQ+M7fhmNoylb4=;
+ b=OlO+ndeE6lRnqptAKIwoW786lEhWX51DaovwZdb1+Xj97fryM2ebZPNepK+rcUSoeydwmw
+ W0fLmN047NBECPA/byKg9gp6SGV1+MEl+Nn0653zkQEvFz7yaI93+JbVSkKFTWW5fB827/
+ ayAl6TJH/06HF/UCcVMEh1xM0mrIjTc=
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=cGTx3eyI
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v2 0/5] i40e: Simplify VSI
- and VEB handling
+ header.a=rsa-sha256 header.s=mimecast20190719 header.b=OlO+ndeE
+Subject: [Intel-wired-lan] [PATCH iwl-next v3 0/5] i40e: Simplify VSI and
+ VEB handling
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,46 +100,43 @@ Cc: Wojciech Drewek <wojciech.drewek@intel.com>, netdev@vger.kernel.org,
  Simon Horman <horms@kernel.org>, Jacob Keller <jacob.e.keller@intel.com>,
  Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
  "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 16. 11. 23 15:41, Ivan Vecera wrote:
-> The series simplifies handling of VSIs and VEBs by introducing for-each
-> iterating macros, 'find' helper functions. Also removes the VEB
-> recursion because the VEBs cannot have sub-VEBs according datasheet and
-> fixes the support for floating VEBs.
-> 
-> The series content:
-> Patch 1 - Uses existing helper function for find FDIR VSI instead of loop
-> Patch 2 - Adds and uses macros to iterate VSI and VEB arrays
-> Patch 3 - Adds 2 helper functions to find VSIs and VEBs by their SEID
-> Patch 4 - Fixes broken support for floating VEBs
-> Patch 5 - Removes VEB recursion and simplifies VEB handling
-> 
-> Changelog:
-> v1->v2 - small correction in patch 4 description
->         - changed helper names in patch 3
-> 
-> Ivan Vecera (5):
->    i40e: Use existing helper to find flow director VSI
->    i40e: Introduce and use macros for iterating VSIs and VEBs
->    i40e: Add helpers to find VSI and VEB by SEID and use them
->    i40e: Fix broken support for floating VEBs
->    i40e: Remove VEB recursion
-> 
->   drivers/net/ethernet/intel/i40e/i40e.h        |  91 ++-
->   drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c |  10 +-
->   .../net/ethernet/intel/i40e/i40e_debugfs.c    |  97 ++-
->   drivers/net/ethernet/intel/i40e/i40e_main.c   | 563 ++++++++----------
->   4 files changed, 371 insertions(+), 390 deletions(-)
-> 
+The series simplifies handling of VSIs and VEBs by introducing for-each
+iterating macros, 'find' helper functions. Also removes the VEB
+recursion because the VEBs cannot have sub-VEBs according datasheet and
+fixes the support for floating VEBs.
 
-Oops, wrong files submitted... Apologies, please forget about this (v2) 
-series.
+The series content:
+Patch 1 - Uses existing helper function for find FDIR VSI instead of loop
+Patch 2 - Adds and uses macros to iterate VSI and VEB arrays
+Patch 3 - Adds 2 helper functions to find VSIs and VEBs by their SEID
+Patch 4 - Fixes broken support for floating VEBs
+Patch 5 - Removes VEB recursion and simplifies VEB handling
 
-Ivan
+Changelog:
+v1->v2 - small correction in patch 4 description
+       - changed helper names in patch 3
+v2->v3 - correct patch files (v2 was broken)
+
+Ivan Vecera (5):
+  i40e: Use existing helper to find flow director VSI
+  i40e: Introduce and use macros for iterating VSIs and VEBs
+  i40e: Add helpers to find VSI and VEB by SEID and use them
+  i40e: Fix broken support for floating VEBs
+  i40e: Remove VEB recursion
+
+ drivers/net/ethernet/intel/i40e/i40e.h        |  91 ++-
+ drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c |  10 +-
+ .../net/ethernet/intel/i40e/i40e_debugfs.c    |  97 ++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 563 ++++++++----------
+ 4 files changed, 371 insertions(+), 390 deletions(-)
+
+-- 
+2.41.0
 
 _______________________________________________
 Intel-wired-lan mailing list
