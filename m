@@ -4,84 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD1E3C54E76
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Nov 2023 11:23:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E8DFC54FB9
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Nov 2023 11:42:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3FD6F6073F;
-	Mon, 20 Nov 2023 11:23:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3FD6F6073F
+	by smtp3.osuosl.org (Postfix) with ESMTP id A149C60681;
+	Mon, 20 Nov 2023 11:42:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A149C60681
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1700479407;
-	bh=6F4V6zQgWhFAAf3q2KsPDE/fo6hsLGW/+2FOCDmvuMk=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=WPfXsV6rVo3TypIN4trLwzw7sC/ZwM+Eq9sNU9GqxnDLWuBTxLiX3de0ZRJJ5NZw3
-	 uaK/IXvgMIkW2Mb2/JPSXxFtj9N8xdtr93bUNe/wJpiNoFNzu0DyzfHggrttKVwQAb
-	 6OyQdJnoUlQWzl0I+4eehio5wWYafBOCNNN5WhyuwvrmJ7/mM98teHYHMRIQxrSAnS
-	 YAFXnH9tSmh3MjUrnl90VZUcwtePHq6nOnMJaUV8uTFe2II01wpRqm4qgax9lEyGS9
-	 XRbn5e32M3m4GBr1bIdjJtCxHmsEDElpJbT8E5QAjzHMPMwT+HHf8dfS+B37zhfzU8
-	 FegKMlZeBl4DQ==
+	s=default; t=1700480555;
+	bh=9fzjrdr26hezCxWNUUIuMjfSTQVps9QAiam4rSUA0/Y=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=FwMxjF2tMvK7hYkYuCYZWnMJxJivU0XE+gfXWSDIsr7u4MEjpZmEFu7z4ftpe9bh4
+	 IJmwTSssiBBadWslIiQvrDtz0oKys6Ny40OmBDfm2nVjaAyZskfQxpyuJllJXPG/z8
+	 PoDglV2Ojn9XxFzYBEGEsaL6DAVmcoNgZ32jUFYPbYKtr7/Yq++1vIXXNgB2voGMwv
+	 o18N56d1DQAFv428EcFRJ/33HpFK3Q3mdQoQgH84eB3l6mer0nrLouS1bcrX0dr9/r
+	 pY1x3LCmc+fFH3vLZyPy2cc8WAA0JtZycnqG5t2g/O+IRp4PDQ3shxTIbhfnCtaDq2
+	 zyKIQ7kNGQeRg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id cR8TJXpATFCc; Mon, 20 Nov 2023 11:23:26 +0000 (UTC)
+	with ESMTP id ZFB2mD1Q2vrd; Mon, 20 Nov 2023 11:42:34 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 36991608A5;
-	Mon, 20 Nov 2023 11:23:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 36991608A5
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id DD76A1BF380
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 11:23:24 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id AA16460757;
+	Mon, 20 Nov 2023 11:42:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AA16460757
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 6E5551BF380
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 11:42:33 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C291D608A5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 11:23:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C291D608A5
+ by smtp1.osuosl.org (Postfix) with ESMTP id 463028148A
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 11:42:33 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 463028148A
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 1AdvfpO-F-H2 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 20 Nov 2023 11:23:23 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.24])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 74B9A6073F
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 11:23:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 74B9A6073F
-X-IronPort-AV: E=McAfee;i="6600,9927,10899"; a="394448373"
-X-IronPort-AV: E=Sophos;i="6.04,213,1695711600"; d="scan'208";a="394448373"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 20 Nov 2023 03:23:21 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10899"; a="1013560275"
-X-IronPort-AV: E=Sophos;i="6.04,213,1695711600"; d="scan'208";a="1013560275"
-Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga006.fm.intel.com with ESMTP; 20 Nov 2023 03:23:19 -0800
-Received: from DevelopmentVM.nql.local (s240.igk.intel.com [10.102.18.202])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 38E1A3741B;
- Mon, 20 Nov 2023 11:23:19 +0000 (GMT)
-From: Jan Sokolowski <jan.sokolowski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 20 Nov 2023 12:27:26 +0100
-Message-Id: <20231120112726.149409-1-jan.sokolowski@intel.com>
-X-Mailer: git-send-email 2.31.1
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id LzO4ZCFjItIZ for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 20 Nov 2023 11:42:32 +0000 (UTC)
+Received: from ams.source.kernel.org (ams.source.kernel.org
+ [IPv6:2604:1380:4601:e00::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 4982C8137B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 11:42:32 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4982C8137B
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by ams.source.kernel.org (Postfix) with ESMTP id 29E59B8166D;
+ Mon, 20 Nov 2023 11:42:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DC9EC433C7;
+ Mon, 20 Nov 2023 11:42:26 +0000 (UTC)
+Date: Mon, 20 Nov 2023 11:42:24 +0000
+From: Simon Horman <horms@kernel.org>
+To: Ivan Vecera <ivecera@redhat.com>
+Message-ID: <20231120114224.GB223713@kernel.org>
+References: <20231116152114.88515-1-ivecera@redhat.com>
+ <20231116152114.88515-4-ivecera@redhat.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20231116152114.88515-4-ivecera@redhat.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1700479403; x=1732015403;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=7vtqokKwxJJbWKFfT8pyxE0rTuSw9x7wJNXTLZU2trk=;
- b=O9XpDniROuvdn+2XMsyyQAfIc0uIhIxruyxIzzdQk//VlYqpGszJCC/W
- 0sy4ZjMhHjEyaO2MNrRhPSx/HO0LpOz64lF2SUM67yuXwrKGC8Z2CJBCT
- P2R9oKKj/kg915NFBB0/saaczwo6bYIKh00wezu2/1ekfdbmqc0F3gHXz
- jxNUdaiambx1Upc2aNlxkEsvqA8I7C3ut6s9VPdKkFRvsWoHjUHEX7LFW
- fs6L/84s8QdeuVOMNNYewkYrQlHYu7LE2NzqEWUFSQEg6ayQv04kb0k2r
- 6Xn4uFokPr/P7ogO7Ws/ycNFyXmDOg7RN6MHNj6Ou827N9kYss7o85mSo
- g==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=O9XpDniR
-Subject: [Intel-wired-lan] [PATCH iwl-next v1] ice: remove rx_len_errors
- statistic
+ d=kernel.org; s=k20201202; t=1700480549;
+ bh=9EOytdIzHSPX1UrWq2Vnd6Lm8YR0exOx45k9xVk7W/M=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=A2Jis3QlXaU0cN9/u0hilLwYwMejoIaYlL1422LpRB1gppQuRCQSadg4tMnMW3mBm
+ EXxUq//f+RhHfJuMXTrwYCuQZzlQtG8pMNeGukYCNc0PbUVqS8BETv4rs/2dAA8c0V
+ ibm1HQ+ghZPnuoyqE8ovTOGASaG4hLvmEYIyj2FlbA5QDubZXNmr+1BK5z4V8C/92C
+ LX7Elxvn5BXeL2mp6fQ83mNgpi3/F3dm9Wt/i08XwkKmIJYx+zOWfWZvICzfr2vB1+
+ rFMobNVRWxhnoL5sNjEdKzhS87SnW11hrkiYQ9vArvvPuj4S/WLT+HZtnstdXG89Wy
+ MznAYlNk004Pw==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=A2Jis3Ql
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v3 3/5] i40e: Add helpers to
+ find VSI and VEB by SEID and use them
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,79 +88,129 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jan Sokolowski <jan.sokolowski@intel.com>
+Cc: Wojciech Drewek <wojciech.drewek@intel.com>, netdev@vger.kernel.org,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>, linux-kernel@vger.kernel.org,
+ Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jakub Kicinski <kuba@kernel.org>, Jacob Keller <jacob.e.keller@intel.com>,
+ intel-wired-lan@lists.osuosl.org, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-It was found that this statistic is incorrectly reported
-by HW and thus, useless.
+On Thu, Nov 16, 2023 at 04:21:12PM +0100, Ivan Vecera wrote:
+> Add two helpers i40e_(veb|vsi)_get_by_seid() to find corresponding
+> VEB or VSI by their SEID value and use these helpers to replace
+> existing open-coded loops.
+> 
+> Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+> Signed-off-by: Ivan Vecera <ivecera@redhat.com>
 
-Remove it.
+Hi Ivan,
 
-Signed-off-by: Jan Sokolowski <jan.sokolowski@intel.com>
----
- drivers/net/ethernet/intel/ice/ice_ethtool.c | 1 -
- drivers/net/ethernet/intel/ice/ice_main.c    | 5 -----
- drivers/net/ethernet/intel/ice/ice_type.h    | 1 -
- 3 files changed, 7 deletions(-)
+some minor feedback from my side.
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-index a34083567e6f..cda98e185254 100644
---- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-@@ -129,7 +129,6 @@ static const struct ice_stats ice_gstrings_pf_stats[] = {
- 	ICE_PF_STAT("rx_oversize.nic", stats.rx_oversize),
- 	ICE_PF_STAT("rx_jabber.nic", stats.rx_jabber),
- 	ICE_PF_STAT("rx_csum_bad.nic", hw_csum_rx_error),
--	ICE_PF_STAT("rx_length_errors.nic", stats.rx_len_errors),
- 	ICE_PF_STAT("rx_dropped.nic", stats.eth.rx_discards),
- 	ICE_PF_STAT("rx_crc_errors.nic", stats.crc_errors),
- 	ICE_PF_STAT("illegal_bytes.nic", stats.illegal_bytes),
-diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index 81044cc10931..ddeb43059126 100644
---- a/drivers/net/ethernet/intel/ice/ice_main.c
-+++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -6732,13 +6732,11 @@ void ice_update_vsi_stats(struct ice_vsi *vsi)
- 		cur_ns->rx_crc_errors = pf->stats.crc_errors;
- 		cur_ns->rx_errors = pf->stats.crc_errors +
- 				    pf->stats.illegal_bytes +
--				    pf->stats.rx_len_errors +
- 				    pf->stats.rx_undersize +
- 				    pf->hw_csum_rx_error +
- 				    pf->stats.rx_jabber +
- 				    pf->stats.rx_fragments +
- 				    pf->stats.rx_oversize;
--		cur_ns->rx_length_errors = pf->stats.rx_len_errors;
- 		/* record drops from the port level */
- 		cur_ns->rx_missed_errors = pf->stats.eth.rx_discards;
- 	}
-@@ -6878,9 +6876,6 @@ void ice_update_pf_stats(struct ice_pf *pf)
- 			  &prev_ps->mac_remote_faults,
- 			  &cur_ps->mac_remote_faults);
- 
--	ice_stat_update32(hw, GLPRT_RLEC(port), pf->stat_prev_loaded,
--			  &prev_ps->rx_len_errors, &cur_ps->rx_len_errors);
--
- 	ice_stat_update32(hw, GLPRT_RUC(port), pf->stat_prev_loaded,
- 			  &prev_ps->rx_undersize, &cur_ps->rx_undersize);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index 16615e322382..306d0141ea8e 100644
---- a/drivers/net/ethernet/intel/ice/ice_type.h
-+++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -1001,7 +1001,6 @@ struct ice_hw_port_stats {
- 	u64 error_bytes;		/* errbc */
- 	u64 mac_local_faults;		/* mlfc */
- 	u64 mac_remote_faults;		/* mrfc */
--	u64 rx_len_errors;		/* rlec */
- 	u64 link_xon_rx;		/* lxonrxc */
- 	u64 link_xoff_rx;		/* lxoffrxc */
- 	u64 link_xon_tx;		/* lxontxc */
--- 
-2.31.1
+...
 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+> index 1e9266de270b..ca8997d29c02 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+> @@ -1360,4 +1360,38 @@ static inline struct i40e_pf *i40e_hw_to_pf(struct i40e_hw *hw)
+>  
+>  struct device *i40e_hw_to_dev(struct i40e_hw *hw);
+>  
+> +/**
+> + * i40e_pf_get_vsi_by_seid - find VSI by SEID
+> + * @pf: pointer to a PF
+
+nit: @seid is missing here
+
+> + **/
+> +static inline struct i40e_vsi *
+> +i40e_pf_get_vsi_by_seid(struct i40e_pf *pf, u16 seid)
+> +{
+> +	struct i40e_vsi *vsi;
+> +	int i;
+> +
+> +	i40e_pf_for_each_vsi(pf, i, vsi)
+> +		if (vsi->seid == seid)
+> +			return vsi;
+> +
+> +	return NULL;
+> +}
+> +
+> +/**
+> + * i40e_pf_get_veb_by_seid - find VEB by SEID
+> + * @pf: pointer to a PF
+
+Ditto
+
+...
+
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+
+...
+
+> @@ -14848,23 +14831,16 @@ struct i40e_veb *i40e_veb_setup(struct i40e_pf *pf, u16 flags,
+>  	}
+>  
+>  	/* make sure there is such a vsi and uplink */
+> -	i40e_pf_for_each_vsi(pf, vsi_idx, vsi)
+> -		if (vsi->seid == vsi_seid)
+> -			break;
+> -
+> -	if (vsi_idx == pf->num_alloc_vsi && vsi_seid != 0) {
+> -		dev_info(&pf->pdev->dev, "vsi seid %d not found\n",
+> -			 vsi_seid);
+> -		return NULL;
+> +	if (vsi_seid) {
+> +		vsi = i40e_pf_get_vsi_by_seid(pf, vsi_seid);
+> +		if (!vsi) {
+> +			dev_err(&pf->pdev->dev, "vsi seid %d not found\n",
+> +				vsi_seid);
+> +			return NULL;
+> +		}
+>  	}
+> -
+>  	if (uplink_seid && uplink_seid != pf->mac_seid) {
+> -		i40e_pf_for_each_veb(pf, veb_idx, veb) {
+> -			if (veb->seid == uplink_seid) {
+> -				uplink_veb = veb;
+> -				break;
+> -			}
+> -		}
+> +		uplink_veb = i40e_pf_get_veb_by_seid(pf, uplink_seid);
+>  		if (!uplink_veb) {
+>  			dev_info(&pf->pdev->dev,
+>  				 "uplink seid %d not found\n", uplink_seid);
+
+The next part of this function looks like this:
+
+		if (!uplink_veb) {
+			dev_info(&pf->pdev->dev,
+				 "uplink seid %d not found\n", uplink_seid);
+			return NULL;
+		}
+	}
+	/* get veb sw struct */
+	veb_idx = i40e_veb_mem_alloc(pf);
+	if (veb_idx < 0)
+		goto err_alloc;
+	veb = pf->veb[veb_idx];
+	veb->flags = flags;
+	veb->uplink_seid = uplink_seid;
+	veb->veb_idx = (uplink_veb ? uplink_veb->idx : I40E_NO_VEB);
+	veb->enabled_tc = (enabled_tc ? enabled_tc : 0x1);
+
+	/* create the VEB in the switch */
+	ret = i40e_add_veb(veb, vsi);
+
+Smatch complains that vsi may be used uninitialised here.
+Which does seem possible to me if vsi_seid is 0.
+
+...
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
