@@ -4,76 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BB38C61DF4
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 Nov 2023 11:02:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C01AC61DF7
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 Nov 2023 11:03:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id DBA5C6150C;
-	Fri, 24 Nov 2023 11:02:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DBA5C6150C
+	by smtp3.osuosl.org (Postfix) with ESMTP id 47ACC614FF;
+	Fri, 24 Nov 2023 11:03:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 47ACC614FF
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1700823759;
-	bh=TCCSqShAfRdj/xEb1jLj4lIcX/O2QotTTII8q7QbCNY=;
+	s=default; t=1700823826;
+	bh=RDN/Vb2i0U4Dy+nLRx92t7g16X6Gvw7yNL3vGwLTglw=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=nZDY6B8WqwCZAD5TNuKbYbaOph7BYNHv91xc5FslwbFEOO2w+wVCvuFORNdBqYiOE
-	 +xs6aDv7sA6aIJyE6HxH3ouszHGi3Pkeio0JMCmSSRMxtWWqI+yZhgx07UFPsYS+vW
-	 qhSqEL97nlEGtvGYyvmDjTEhowSjzqmX+vuIOtZgywDdKF3u2Tp4vbJ3F90FarEcaB
-	 +36Ylw1AY3UhGl4WXt249QwO/EHkPJOXnPRS/ckpTk6vNkteuz6l5ZCDEUy+4kTV5i
-	 Mn/+KNbe6WweF9E3IOq238B0XXwkEghFeE8vSqpAOHFKxtbgLnIs2PGBDpwHPO9fV9
-	 tkh2eRay725Xg==
+	b=9Pn0fkq6wjUt0UvUIC3J3AL5WhlN91j35lSWK7EveUzsPDTRFaUx5y/mAYC8e7uha
+	 k2lJ5Y+elojDLDQAKikOg+aPRvCQhDfLLc8rPmbsnLsOnF0DvPDYlAczyCaQwvXaXT
+	 qphrjI4+kRKwbYi4+Mq80jo88jDEvYhupZpQKtlhVXWYf8M0odVgZnobH54M1FwdCU
+	 iVlw+dtByjNUSvdgrcIXdBIVPuMVgu/bJ5APE2cATBfOGatuUJCXTHx7f15tvDbwqM
+	 7oqswkACqmvXJEblLviGtkugRs9QFR5S3vNwHI+NHG77PDyFKV6nTaBAP3FyU8dtz3
+	 OIdzPVZZbHTUg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id eqwlWmTf1CFE; Fri, 24 Nov 2023 11:02:39 +0000 (UTC)
+	with ESMTP id zO45R9EQwCjD; Fri, 24 Nov 2023 11:03:45 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E974561512;
-	Fri, 24 Nov 2023 11:02:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E974561512
-Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id B08511BF997
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:02:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 5172561502;
+	Fri, 24 Nov 2023 11:03:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5172561502
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 6A6F51BF83C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:03:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 9531541A13
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:02:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9531541A13
+ by smtp1.osuosl.org (Postfix) with ESMTP id 3F4EC821F4
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:03:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3F4EC821F4
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp2.osuosl.org ([127.0.0.1])
- by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id mcqWG4uZksnL for <intel-wired-lan@lists.osuosl.org>;
- Fri, 24 Nov 2023 11:02:36 +0000 (UTC)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
- by smtp2.osuosl.org (Postfix) with ESMTPS id B1B9E401D2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:02:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B1B9E401D2
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id dMHjDgRgHYwX for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 24 Nov 2023 11:03:42 +0000 (UTC)
+Received: from sin.source.kernel.org (sin.source.kernel.org
+ [IPv6:2604:1380:40e1:4800::1])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 71D09821EB
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:03:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 71D09821EB
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by dfw.source.kernel.org (Postfix) with ESMTP id 0A18E62154;
- Fri, 24 Nov 2023 11:02:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 892BEC433C8;
- Fri, 24 Nov 2023 11:02:34 +0000 (UTC)
-Date: Fri, 24 Nov 2023 11:02:32 +0000
+ by sin.source.kernel.org (Postfix) with ESMTP id 0B34CCE28E5;
+ Fri, 24 Nov 2023 11:03:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CBADEC433C8;
+ Fri, 24 Nov 2023 11:03:37 +0000 (UTC)
+Date: Fri, 24 Nov 2023 11:03:35 +0000
 From: Simon Horman <horms@kernel.org>
 To: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Message-ID: <20231124110232.GL50352@kernel.org>
+Message-ID: <20231124110335.GM50352@kernel.org>
 References: <20231121211921.19834-1-jesse.brandeburg@intel.com>
- <20231121211921.19834-13-jesse.brandeburg@intel.com>
+ <20231121211921.19834-14-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20231121211921.19834-13-jesse.brandeburg@intel.com>
+In-Reply-To: <20231121211921.19834-14-jesse.brandeburg@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1700823755;
- bh=zyIkAtGTekyXjo1U/UaQ4AO1lJnChKX2oIfxsqjAqVQ=;
+ d=kernel.org; s=k20201202; t=1700823819;
+ bh=mQnh9+CbaX7F9yvVd/BdQa/ypVpUL6I1gEjexTa91Hw=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=JKRoHLs2zVpaB7cDoNeAK5wIOuEW1RbiWZRFpEvYrlsot7VYb2ysxLhUqelKOyHtq
- vG90+iowEjiqHV38YY34KAvmwFF42Pg0R8swSntfnmlnRmOuVKiuBZPOKwL5m8E0rv
- 7yA+9dd5a2S6xDnNi4l9frLtBv4jQ6wzaGXlElw/J6gXav79Zkyw81YpiuwwbrRiw/
- XSVMauruz922Inyxr8Nspp495mpOuPebLg6irVkINkPvsmtBtzlLTg0Rkbd7B7FSe8
- P7U+Nm0Jxw7CKDMlueRh01QMW4mOCgtTw2pVeMBh4l5D1usVAPpCbTF3eJAbtwdJ8j
- B5nfmMbtfuWgA==
-X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ b=YbClAnKEMtvAztNhxmFQq3k67SAx1o0kdt3yPcvK/HRRx5V+ur4D7TAw17CpEMzaI
+ at+423+KSrxELwUGkgm52qFF2cNEluupE5cup12enSgSEuTLXRdOiK3oYU6aTmzjPi
+ tcmc04EdOo6sC59ErrHKtzgXzB0oEStC48SZzHKI/wlziY4Pq2X9vi8ikOXjptRtIv
+ tqp8gFp2bNngI+Fl8mNSizJ91vCEFUlfx9p7Q3RlpVgXFPoUXW/gG/RDqN1nvIUx+B
+ 7jjuwJU9ju/Rkx9wKQ880CfZg9fRaaMlfPEaUlCYwBYX6CVkF2+MArtXe/0owwd7uF
+ 3GtLwxnxRqt9A==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=JKRoHLs2
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 12/13] iavf: field get
+ header.a=rsa-sha256 header.s=k20201202 header.b=YbClAnKE
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 13/13] ice: field get
  conversion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -95,18 +96,19 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Nov 21, 2023 at 01:19:20PM -0800, Jesse Brandeburg wrote:
-> Refactor the iavf driver to use FIELD_GET() for mask and shift reads,
+On Tue, Nov 21, 2023 at 01:19:21PM -0800, Jesse Brandeburg wrote:
+> Refactor the ice driver to use FIELD_GET() for mask and shift reads,
 > which reduces lines of code and adds clarity of intent.
 > 
 > This code was generated by the following coccinelle/spatch script and
-> then manually repaired in a later patch.
+> then manually repaired.
 > 
 > @get@
 > constant shift,mask;
+> type T;
 > expression a;
 > @@
-> -((a & mask) >> shift)
+> -(((T)(a) & mask) >> shift)
 > +FIELD_GET(mask, a)
 > 
 > and applied via:
