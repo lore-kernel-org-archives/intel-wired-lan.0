@@ -4,78 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51ADDC61D97
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 Nov 2023 11:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 158EAC61DF4
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 24 Nov 2023 11:01:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 112D860B0B;
-	Fri, 24 Nov 2023 11:00:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 112D860B0B
+	by smtp3.osuosl.org (Postfix) with ESMTP id BF15961513;
+	Fri, 24 Nov 2023 11:01:06 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BF15961513
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1700823652;
-	bh=4j7dIonebJtV5L72uHnruBlxjjebnNQO+ISQHQ2Dpuc=;
+	s=default; t=1700823666;
+	bh=Mvze1YFcud1H+a3rERy7JkxAvgENsRp1NX0e7+4iUs4=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=emnw8XN7MTG3fpQG4DjRyq/iZ9WhsTOPP5Adz4WBf0B+wWnd06YxrJegxn1i2ZJI5
-	 +I7/Hv9llclgd+QRKsI5mjhaTD2FqI9NQ4h3NHUt5fxT/7YcVuBWGT00GSCvvruXi+
-	 IeKYXtUFOx8tyOy4ARKbjJuomj7349fCjUkXFS+7r2oZ8zmqA4Ldr1+7/xlBo4sKLH
-	 Fx4Qo37PBVltLly+D7FE8xHDD74P+Ze/mbEc93vmN5uJGNSvFoSO59ko97wtQMe+RJ
-	 zZgwQr0lQ7Bk/JncBcVh0KM5dJuF378rXodlrCRgHDLLCDATS8a+qvOY2rxS4Ny2ye
-	 KH2sxwVQCUq5A==
+	b=hRz3tpQakW7V3xuriNDMcs1zne4LwQq6t4R4A1lRedKrh425BPGCjQp3/ar6ELxxW
+	 FvJX9FouUkBDATRq8rnh53GklyplZIGBEOc+nPeciLA96yEJ8WQ3jZqh2ufpEmkdgp
+	 vzCef56Hx6atkDlx+vhKVzbI8y23MMw1K/PVWgcw5RgT8CIhPrhcMN5KYpUME2P1nP
+	 5+sXarRoC15N4h2Y37sUKflthapxgDIQHXbZOavOZ00FEhGkQ7KxSmG9KNom97eCSa
+	 ug9gKH0wljyPlyhiQKR3BR9f0orhL6VZXQnQqrdC4t1Vw/Nm+FIvjLHHNMI809syEx
+	 2JJaV2VfP+APg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id T8c2Dv_mdnU7; Fri, 24 Nov 2023 11:00:51 +0000 (UTC)
+	with ESMTP id IrKqWmlcsdtR; Fri, 24 Nov 2023 11:01:06 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 3AC2A614FF;
-	Fri, 24 Nov 2023 11:00:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3AC2A614FF
+	by smtp3.osuosl.org (Postfix) with ESMTP id CB20C6150C;
+	Fri, 24 Nov 2023 11:01:05 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CB20C6150C
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id 20E2B1BF83C
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:00:50 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 5DD7B1BF83C
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:01:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 8EE3840132
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:00:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8EE3840132
+ by smtp2.osuosl.org (Postfix) with ESMTP id 31FBC41A13
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:01:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 31FBC41A13
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id R5rXU1oz1gj7 for <intel-wired-lan@lists.osuosl.org>;
- Fri, 24 Nov 2023 11:00:48 +0000 (UTC)
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- by smtp2.osuosl.org (Postfix) with ESMTPS id A9835401D2
- for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:00:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A9835401D2
+ with ESMTP id lxAfG317LTmJ for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 24 Nov 2023 11:01:03 +0000 (UTC)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 4B1E941A21
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 24 Nov 2023 11:01:03 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4B1E941A21
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by ams.source.kernel.org (Postfix) with ESMTP id 00094B8164A;
- Fri, 24 Nov 2023 11:00:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3656DC433C8;
- Fri, 24 Nov 2023 11:00:45 +0000 (UTC)
-Date: Fri, 24 Nov 2023 11:00:42 +0000
+ by ams.source.kernel.org (Postfix) with ESMTP id 7DB1AB8164A;
+ Fri, 24 Nov 2023 11:01:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9086C433C7;
+ Fri, 24 Nov 2023 11:00:59 +0000 (UTC)
+Date: Fri, 24 Nov 2023 11:00:57 +0000
 From: Simon Horman <horms@kernel.org>
 To: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Message-ID: <20231124110042.GF50352@kernel.org>
+Message-ID: <20231124110057.GG50352@kernel.org>
 References: <20231121211921.19834-1-jesse.brandeburg@intel.com>
- <20231121211921.19834-7-jesse.brandeburg@intel.com>
+ <20231121211921.19834-8-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20231121211921.19834-7-jesse.brandeburg@intel.com>
+In-Reply-To: <20231121211921.19834-8-jesse.brandeburg@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1700823646;
- bh=fZnitmSPXZKwgPdo66YLsPoA9dTxzgOfY2rIV7jtyjQ=;
+ d=kernel.org; s=k20201202; t=1700823660;
+ bh=2ci1UjH+nU/w+5yINTyYaGPvh7WQcxnpCviXZwMQHIM=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=rMirdcIwo+Xq2KpE8xH6kwLW/X9NWRIjhkC2dJV8cwJB1J4Lztd7CSrXvpzv5qpys
- bp/OYnOrEqCJ4SL5yBaKwcyRf8G4nQgfqNt7EzrkzRAXi/COtYu/3VlWqOUN7t+Bxs
- 27HGO2iqVAKLXJ9a+2lALzz0REjoaCd1TdscCXklVd5DBw26NFoyu6gDCRa3q3RlXT
- 1IE0UjLWsIubjperZxEZOvfBZRnW1ZH/MzIuvNnW6GFfCNrw9M1poKeCmhw1+6QbR0
- DhB3tU9HmI5EkLQxmwxDCH62YcRzfSNrgaJxQQy5EWddgpwsDEQaeJCPFKB2siV1NM
- 4YhLsLDBWTUcg==
+ b=iPZ4m1FzUoYigpCpPegE/Fwwcdy4qhyplp5aEpjVq1B4mluAENpIJ5+QbQppcbvYG
+ QwCsiEwBXr9bOAAwV1sh/vBS9CXqqzrmGXBljfSr6QmavL82K8neu7JeHkv8o5OYJa
+ WNgvOaB/jEUF8WKOFoLt5WPfoOq0VXv4Jz0DoULf4IhSxx1P/iSRcRgnTY5yvVAflX
+ zEKN43hGvoMvIFeuYcyA3JD5xVfEpvMUp9Vsmi7uMdqocv/JJTdp4wztAwZs6D6uwL
+ 7DfaIZSK0sTAN1bz3I/j1jfOBwBbKiUR8VppVkw0wHji/njzqORJry/Vtak4CH/h3L
+ R1lLzBFKHEomw==
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=rMirdcIw
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 06/13] ice: field prep
- conversion
+ header.a=rsa-sha256 header.s=k20201202 header.b=iPZ4m1Fz
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1 07/13] ice: fix
+ pre-shifted bit usage
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,38 +87,27 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Julia Lawall <Julia.Lawall@inria.fr>, netdev@vger.kernel.org,
- Marcin Szycik <marcin.szycik@linux.intel.com>,
+Cc: netdev@vger.kernel.org, Marcin Szycik <marcin.szycik@linux.intel.com>,
  intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, Nov 21, 2023 at 01:19:14PM -0800, Jesse Brandeburg wrote:
-> Refactor ice driver to use FIELD_PREP(), which reduces lines of code
-> and adds clarity of intent.
+On Tue, Nov 21, 2023 at 01:19:15PM -0800, Jesse Brandeburg wrote:
+> While converting to FIELD_PREP() and FIELD_GET(), it was noticed that
+> some of the RSS defines had *included* the shift in their definitions.
+> This is completely outside of normal, such that a developer could easily
+> make a mistake and shift at the usage site (like when using
+> FIELD_PREP()).
 > 
-> This code was generated by the following coccinelle/spatch script and
-> then manually repaired.
+> Rename the defines and set them to the "pre-shifted values" so they
+> match the template the driver normally uses for masks and the member
+> bits of the mask, which also allows the driver to use FIELD_PREP
+> correctly with these values. Use GENMASK() for this changed MASK value.
 > 
-> Several places I changed to OR into a single variable with |= instead of
-> using a multi-line statement with trailing OR operators, as it
-> (subjectively) makes the code clearer.
+> Do the same for the VLAN EMODE defines as well.
 > 
-> A local variable vmvf_and_timeout was created and used to avoid multiple
-> logical ORs being __le16 converted, which shortened some lines and makes
-> the code cleaner.
-> 
-> @prep@
-> constant shift,mask;
-> type T;
-> expression a;
-> @@
-> -(((T)(a) << shift) & mask)
-> +FIELD_PREP(mask, a)
-> 
-> Cc: Julia Lawall <Julia.Lawall@inria.fr>
 > Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
