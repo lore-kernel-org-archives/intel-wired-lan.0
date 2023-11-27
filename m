@@ -4,73 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C5B8C2BB3F
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 20 Nov 2023 17:16:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E923C07D5A
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 27 Nov 2023 18:17:30 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id AEEF3818D7;
-	Mon, 20 Nov 2023 17:16:19 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org AEEF3818D7
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0054E81773;
+	Mon, 27 Nov 2023 18:17:30 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0054E81773
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1700500579;
-	bh=7HEB4qN9ttNiGgtX9xqPZOQhYjahHp0XN1mQJMaB4MY=;
-	h=Date:From:To:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:From;
-	b=qlj+rSALvKW92+ih+RT21X/KbVS9x3z+LzBZLHvKeK0tW8+yquGMU4r/z2lJaUiy4
-	 KlXmR5qK2j8SDBTIQBJKaJzFKBPUii2h6h2xhErtCBatmGATTLzGRtB2RnAzidFNKd
-	 2aHUF/+8jj+qKBvcE9dtee6OXJBfxohCVl4HYUi69xYtofQSSUX3t2UMyReV9cEnmL
-	 FwIVEX59cqC5oWRYI5nXk0H7XvOFljl7Pd6s5rxTDhpclmdK+LSOPN10fpGkDdqidP
-	 5GUkp0QpWJOYSkulhGY8kAPjZFPVtpPbHH+ytU8933ofXkqJTfyyBAV/oLs+gTcaou
-	 vXcfrrY3NZZcQ==
+	s=default; t=1701109050;
+	bh=Hz2uVTaK+Jg8E+2yAmv8tmPVv7Vg1zS5EM6Ae79nnYQ=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=ThGGiegNWXwnAZhNzdzuOMfKYxSd//lAhkdoqQFSkPOzt/MqerIuaPHg75Gwz4aOX
+	 4zPpZqeb9D1lsxzsRll/sxuKgXjvTuSApYNAAMj6DoN3YOKU8Z6oh50xdVYvQuQPPN
+	 LVAgE/Gd9UgPC6sXqLC77fEmqCkACjCzpNEUhPzRctAWA6W2ggL1nh3V9kf8kZc3JY
+	 ZiW1FqHIwGAmR23eheHeEGcojbkVNExlqVtVIpliz3WEf4MB6ZSPig9FgN0LISiMTF
+	 OSyLvy9+NfLDdsJbsVmLxkBo/sL6WdHBWOY/ctyCfpwHBGAn7DaxHZ3Wv8QjsMFn53
+	 pozXLJ4PPNmpQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id gA4ks7Y8Cd7N; Mon, 20 Nov 2023 17:16:19 +0000 (UTC)
+	with ESMTP id C_2cFdpYvwxr; Mon, 27 Nov 2023 18:17:29 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id CA201818E6;
-	Mon, 20 Nov 2023 17:16:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CA201818E6
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id E480F1BF3E1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 16:28:11 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 1F9748177A;
+	Mon, 27 Nov 2023 18:17:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 1F9748177A
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 877B11BF348
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Nov 2023 18:17:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id C9603608A5
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 16:28:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C9603608A5
+ by smtp2.osuosl.org (Postfix) with ESMTP id 5CBCE4064E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Nov 2023 18:17:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 5CBCE4064E
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id AZcjYHptQjV6 for <intel-wired-lan@lists.osuosl.org>;
- Mon, 20 Nov 2023 16:28:10 +0000 (UTC)
-Received: from ams.source.kernel.org (ams.source.kernel.org
- [IPv6:2604:1380:4601:e00::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 7C7D2607E1
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 16:28:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7C7D2607E1
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id DNrna6I0a0_9 for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 27 Nov 2023 18:17:25 +0000 (UTC)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 0C0384063B
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 27 Nov 2023 18:17:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 0C0384063B
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by ams.source.kernel.org (Postfix) with ESMTP id 6B7DFB81914
- for <intel-wired-lan@lists.osuosl.org>; Mon, 20 Nov 2023 16:28:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 90994C433C7;
- Mon, 20 Nov 2023 16:28:06 +0000 (UTC)
-Date: Mon, 20 Nov 2023 08:28:05 -0800
+ by ams.source.kernel.org (Postfix) with ESMTP id 0B669B834FB;
+ Mon, 27 Nov 2023 18:17:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C6F6DC433C7;
+ Mon, 27 Nov 2023 18:17:20 +0000 (UTC)
+Date: Mon, 27 Nov 2023 10:17:20 -0800
 From: Jakub Kicinski <kuba@kernel.org>
-To: netdev@vger.kernel.org, netdev-driver-reviewers@vger.kernel.org
-Message-ID: <20231120082805.35527339@kernel.org>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+Message-ID: <20231127101720.282862f6@kernel.org>
+In-Reply-To: <a1a0c27f-f367-40e7-9dc2-9421b4b6379a@intel.com>
+References: <20231124154732.1623518-1-aleksander.lobakin@intel.com>
+ <20231124154732.1623518-4-aleksander.lobakin@intel.com>
+ <6bd14aa9-fa65-e4f6-579c-3a1064b2a382@huawei.com>
+ <a1a0c27f-f367-40e7-9dc2-9421b4b6379a@intel.com>
 MIME-Version: 1.0
-X-Mailman-Approved-At: Mon, 20 Nov 2023 17:16:17 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1700497686;
- bh=9JBfn1ONMcmxNC9o8jdLY4A6lh+CyQcaLZ1ppSfApx4=;
- h=Date:From:To:Subject:From;
- b=P5FiXsDz4o4RPxK5F7XgWz7QTFzCmL384ea3DAuxusgEAIQKdXUc/34R0kZIb6JVN
- XBmkqT+uT8euF9oelcVl7KGQfixANtc5QDH/oy5sUFTDC71lD7CKGXddsQ/tNUGeFO
- zwQORAiKlAxcTPEfU/RIMpe55B9f9XW/KES2XyrxxRdyvBkZjWGmMKb3EK06JTFnN4
- FkMDDI1jg0jHMx/nPdtleG/Jwc+sU60yihXR+AElsUSKTqZpgw3n1wWW+ASXZXnyTC
- 8FqX4dttxEc1tY99jaXE0tdlF7qepmqXm/M2lc5Ag/XVLFoB9661d6jjoOK2Ei4Zpd
- 0hus3+DQJA59w==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ d=kernel.org; s=k20201202; t=1701109041;
+ bh=Kq8G4186oIvvG0OGelsVcM8Ma8D3c+DoqPy0UYxMLWY=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=QG6ONPukVchwWErAMLaSIt1BRLdfpyvDFYvlAneifGBLLwxrgc9YT9DQUv+jORVZl
+ Wv2eJmxqdYpysNKvq88faMBlo509G9gLB4g5hMFATiV5ip1MamKARiU7ZI0QrcJzby
+ iBOmDkhn7cftAcy9e+M8XNePHSRWBpEgAucP8J5IOYslJywc08DLve2OOYLOKSUH9D
+ dXV4vYiNlS555n5f3WzGRnn8Lj7S9VnIkJT3TNd8k8d8Wd2AEfeoacY5qE0wwD7bxj
+ 3zEqW/QBr4UsSEFa3hQSNHvf5Db9My2Ez9GHfnaqmQhtAynL/Th6EhJQ2Mwo2LLnyA
+ KeVCUsFW2DZRA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=P5FiXsDz
-Subject: [Intel-wired-lan] [ANN] netdev call - Nov 21st
+ header.a=rsa-sha256 header.s=k20201202 header.b=QG6ONPuk
+Subject: Re: [Intel-wired-lan] [PATCH net-next v5 03/14] page_pool: avoid
+ calling no-op externals when possible
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,21 +88,35 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>, Eric Dumazet <edumazet@google.com>,
+ Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>, Ilias
+ Apalodimas <ilias.apalodimas@linaro.org>, linux-kernel@vger.kernel.org, "David
+ S. Miller" <davem@davemloft.net>, Yunsheng Lin <linyunsheng@huawei.com>,
+ Michal Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org,
+ David Christensen <drc@linux.vnet.ibm.com>, Paolo Abeni <pabeni@redhat.com>,
+ Christoph Hellwig <hch@lst.de>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Hi,
+On Mon, 27 Nov 2023 15:32:19 +0100 Alexander Lobakin wrote:
+> > Sorry for not remembering the suggestion:(  
+> 
+> In the previous versions of this change I used a global flag per whole
+> page_pool, just like XSk does for the whole XSk buff pool, then you
+> proposed to use the lowest bit of ::dma_addr and store it per page, so
+> that it would be more granular/precise. I tested it and it doesn't
+> perform worse than global, but in some cases may be beneficial.
 
-The bi-weekly netdev call at https://bbb.lwn.net/b/jak-wkr-seg-hjn
-is scheduled tomorrow at 8:30 am (PT) / 5:30 pm (~EU).
-
-So far the only agenda item is a minor update on CI,
-please send other topics!
-
-
-In terms of the review rotation - this week's reviewer is Intel.
+FWIW I'd vote to stick to per-page pool. You seem to handle the
+sizeof(dma_addr_t) > sizeof(long) case correctly but the code is
+growing in complexity, providing no known/measurable benefit.
+We can always do this later but for now it seems like a premature
+optimization to me.
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
