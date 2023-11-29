@@ -4,77 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 218FCC07CB1
-	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Nov 2023 14:29:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 113BBC4167B
+	for <intel-wired-lan@archiver.kernel.org>; Wed, 29 Nov 2023 14:31:29 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id AC7A460AAD;
-	Wed, 29 Nov 2023 14:29:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AC7A460AAD
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9F00560AAD;
+	Wed, 29 Nov 2023 14:31:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9F00560AAD
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701268167;
-	bh=Vyh/gLq0BEvC2hyMS2gIg+blnQq90/sk1NqeMAmB/tU=;
-	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=BTJXPzWBVzW+B9P05i/2f8SQ1JtnOoEgo1mzGEfNQMTjhRVaqsFzFb7YsiUUKtCBb
-	 HZ4wnpXD3XRLvnWogaVkcLQIl1f61+lA8EFzAxVxrXj6q3ckj4SgZrH0N1gh8rDJfZ
-	 1SAaTwMLUe3uFkLjG//FSAdplkbLksJ7zdiGu3dnLOXiRfU55S89qrfmBqtP/jAKXk
-	 xG6+Q+8J1z+FFwWJTWyAG8EEZORq/uqS8LRlRFv57UujtU/vH42XUTytjyK3HBsymQ
-	 vwd4xB9weXVZ23H/xyEu9mmyEmwMlRvxnvpbW0nPsBnL980UbHo+w4zhpoVb3aNboZ
-	 OhjmkkwbY4p/w==
+	s=default; t=1701268289;
+	bh=ooAwli3DRt0wkephuljAIu1BZOjb1OYr0TxMFRQyaQw=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=wJztTsYRxlWcRydoaz9a2aclvflmF8GDnA8OyeA+dqmA5SJWz+LVafScUacytKnQh
+	 4ccilGTX3AYkMmhXb/jj84SuIHBZJhTh2shLmQEs1aU85MwNfyflRCV8t7H8FQfsqt
+	 oW4JQclSUW9mWp5fG3shor1sxusrWBukI4PkE3e6OwCMQIhMbAZLBFqIhlqHlh9XZQ
+	 X/C92343wTkEZ0EJLW5sPuv8k1JcErgM6ie2GZErrn+mvHZy7cUroxIdwGsOMi9cZ9
+	 4XvzELO2yn4D3SSS8zucVDBTC2OckMDXVn66Q5DZhsPVZukJTwqqIM7w9ddmje4Wck
+	 /F8k2/YyAHXag==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id aRo99bATY2su; Wed, 29 Nov 2023 14:29:27 +0000 (UTC)
+	with ESMTP id GMLSt4mz6SBO; Wed, 29 Nov 2023 14:31:28 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id C3ADF60ADC;
-	Wed, 29 Nov 2023 14:29:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org C3ADF60ADC
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 09C6A1BF283
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Nov 2023 14:29:25 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 7C94560ADC;
+	Wed, 29 Nov 2023 14:31:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7C94560ADC
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 150AA1BF283
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Nov 2023 14:31:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id D53A5418A8
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Nov 2023 14:29:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D53A5418A8
+ by smtp3.osuosl.org (Postfix) with ESMTP id E08A560ADC
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Nov 2023 14:31:26 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E08A560ADC
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id LinfOuOg_wa5 for <intel-wired-lan@lists.osuosl.org>;
- Wed, 29 Nov 2023 14:29:23 +0000 (UTC)
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7B9054030C
- for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Nov 2023 14:29:23 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7B9054030C
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by sin.source.kernel.org (Postfix) with ESMTP id C8289CE1F13;
- Wed, 29 Nov 2023 14:29:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 382C7C433C9;
- Wed, 29 Nov 2023 14:29:15 +0000 (UTC)
-Date: Wed, 29 Nov 2023 06:29:14 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <20231129062914.0f895d1c@kernel.org>
-In-Reply-To: <e43fc483-3d9c-4ca0-a976-f89226266112@intel.com>
-References: <20231124154732.1623518-1-aleksander.lobakin@intel.com>
- <20231124154732.1623518-14-aleksander.lobakin@intel.com>
- <e43fc483-3d9c-4ca0-a976-f89226266112@intel.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 1wuJpAYt7cBu for <intel-wired-lan@lists.osuosl.org>;
+ Wed, 29 Nov 2023 14:31:26 +0000 (UTC)
+X-Greylist: delayed 428 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 29 Nov 2023 14:31:26 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 156F060AAD
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 156F060AAD
+ for <intel-wired-lan@lists.osuosl.org>; Wed, 29 Nov 2023 14:31:25 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10909"; a="159251"
+X-IronPort-AV: E=Sophos;i="6.04,235,1695711600"; 
+   d="scan'208";a="159251"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 29 Nov 2023 06:24:16 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10909"; a="859836741"
+X-IronPort-AV: E=Sophos;i="6.04,235,1695711600"; d="scan'208";a="859836741"
+Received: from unknown (HELO amlin-019-225.igk.intel.com) ([10.102.19.225])
+ by FMSMGA003.fm.intel.com with ESMTP; 29 Nov 2023 06:24:14 -0800
+From: Andrii Staikov <andrii.staikov@intel.com>
+To: intel-wired-lan@lists.osuosl.org
+Date: Wed, 29 Nov 2023 15:24:12 +0100
+Message-Id: <20231129142412.3214380-1-andrii.staikov@intel.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1701268155;
- bh=TeXzHb7rxKXQGXucrw/Ty/eqYEy5dqm0uu/JKO7RDCs=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=i3O7voHEX9nwvQnJXx+x/l0uWqkVQvdAG5q4p3bznL6GqphqcrWs3xFHrQ8QI/oPi
- lNmWjgwa9JSdXyIuoBuXqerZJuECGpkCKl+ZH+M4+4WdrDS6HtsTg176EV4ShNUCW5
- 74vO/32ri773Hg8T1+F7X62xkD1hHHTvOHaVEMEz+B5Pu2Lc94AamDXFejMn5DgGVK
- 74kTTH2DyszHJFugM9TQ9/a5NIFzY+8wnrbrtwAXkgCspTtViqeF+Mf1HxL2Bs4rzi
- K1XKEAxa6HRKtIqP31DRapZ0z0qUqTCdIRHAVe/eJoY6N8ZxHzb/zX810zld/zkWC3
- feN0/SCLMbyRw==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=i3O7voHE
-Subject: Re: [Intel-wired-lan] [PATCH net-next v5 13/14] libie: add
- per-queue Page Pool stats
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1701268286; x=1732804286;
+ h=from:to:cc:subject:date:message-id:mime-version:
+ content-transfer-encoding;
+ bh=l6Zcph1R4D9opkEhnOa1HUNgrJhvVdFzL4PxE15f33g=;
+ b=edPW0HopkeuDsz0pzNuThveeD6sBKZ94IA/bh6hsHQfHFp8SFA0lO7n/
+ D/JVcvjmTF5SFbKhQLOXAYnl6jBbbNJ+CN4qFzp26xozOZi8L4+c9cv0a
+ BWNa7YISy0jC804lGOhgjIECyLPLWwNn6+7bd3Ry+EJij86ttKhD9NLRz
+ 0W9oW3c1rLIM1xFtZKhkRSrrhTFgsQvkUo2MtBU2/14wUYvu5lla5d+hG
+ OjMax05OjkDUFR544QPeHN4sFLK6aNkgz7/bk12zk301eTsvh1s2tJJp6
+ RMEcmtcHL/461JnP6eTZXz04jZ8OCzqNUv9GYIZcUU4EmhCSz4qWWBzQX
+ A==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=edPW0Hop
+Subject: [Intel-wired-lan] [PATCH iwl-next v1] i40e: Fix VF disable behavior
+ to block all traffic
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,38 +94,124 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
- Alexander Duyck <alexanderduyck@fb.com>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>,
- Yunsheng Lin <linyunsheng@huawei.com>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Michal Kubiak <michal.kubiak@intel.com>,
- intel-wired-lan@lists.osuosl.org, David
- Christensen <drc@linux.vnet.ibm.com>, Paolo Abeni <pabeni@redhat.com>,
- "David S. Miller" <davem@davemloft.net>
+Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Jan Sokolowski <jan.sokolowski@intel.com>,
+ Wojciech Drewek <wojciech.drewek@intel.com>,
+ Andrii Staikov <andrii.staikov@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, 29 Nov 2023 14:40:33 +0100 Alexander Lobakin wrote:
-> > Expand the libie generic per-queue stats with the generic Page Pool
-> > stats provided by the API itself, when CONFIG_PAGE_POOL_STATS is
-> > enabled. When it's not, there'll be no such fields in the stats
-> > structure, so no space wasted.  
-> 
-> Do I get it correctly that after Page Pool Netlink introspection was
-> merged, this commit makes no sense and we shouln't add PP stats to the
-> drivers private ones?
+Currently, if a VF is disabled using the
+'ip link set dev $ETHX vf $VF_NUM state disable' command, the VF is still
+able to receive traffic.
 
-Yes, 100%.
+Fix the behavior of the 'ip link set dev $ETHX vf $VF_NUM state disable'
+to completely shutdown the VF's queues making it entirely disabled and
+not able to receive or send any traffic.
 
-FWIW I am aware that better tooling would be good so non-developers
-could access to the PP Netlink :(  I'm thinking we should clean up 
-YNL lib packaging a little and try to convince iproute2 maintainers 
-to accept simple CLI built on top of it.
+Modify the behavior of the 'ip link set $ETHX vf $VF_NUM state enable'
+command to make a VF do reinitialization bringing the queues back up.
+
+Co-developed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Signed-off-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
+Reviewed-by: Jan Sokolowski <jan.sokolowski@intel.com>
+Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Signed-off-by: Andrii Staikov <andrii.staikov@intel.com>
+---
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    | 32 +++++++++++++++++++
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.h    |  1 +
+ 2 files changed, 33 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 37cca484abb8..ced9f5170ce5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2581,6 +2581,14 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg)
+ 	int aq_ret = 0;
+ 	int i;
+ 
++	if (vf->is_disabled_from_host) {
++		aq_ret = -EPERM;
++		dev_info(&pf->pdev->dev,
++			 "Admin has disabled VF %d, will not enable queues\n",
++			 vf->vf_id);
++		goto error_param;
++	}
++
+ 	if (!test_bit(I40E_VF_STATE_ACTIVE, &vf->vf_states)) {
+ 		aq_ret = -EINVAL;
+ 		goto error_param;
+@@ -4708,9 +4716,12 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+ 	struct i40e_link_status *ls = &pf->hw.phy.link_info;
+ 	struct virtchnl_pf_event pfe;
+ 	struct i40e_hw *hw = &pf->hw;
++	struct i40e_vsi *vsi;
++	unsigned long q_map;
+ 	struct i40e_vf *vf;
+ 	int abs_vf_id;
+ 	int ret = 0;
++	int tmp;
+ 
+ 	if (test_and_set_bit(__I40E_VIRTCHNL_OP_PENDING, pf->state)) {
+ 		dev_warn(&pf->pdev->dev, "Unable to configure VFs, other operation is pending.\n");
+@@ -4733,17 +4744,38 @@ int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link)
+ 	switch (link) {
+ 	case IFLA_VF_LINK_STATE_AUTO:
+ 		vf->link_forced = false;
++		vf->is_disabled_from_host = false;
++		/* reset needed to reinit VF resources */
++		i40e_vc_reset_vf(vf, true);
+ 		i40e_set_vf_link_state(vf, &pfe, ls);
+ 		break;
+ 	case IFLA_VF_LINK_STATE_ENABLE:
+ 		vf->link_forced = true;
+ 		vf->link_up = true;
++		vf->is_disabled_from_host = false;
++		/* reset needed to reinit VF resources */
++		i40e_vc_reset_vf(vf, true);
+ 		i40e_set_vf_link_state(vf, &pfe, ls);
+ 		break;
+ 	case IFLA_VF_LINK_STATE_DISABLE:
+ 		vf->link_forced = true;
+ 		vf->link_up = false;
+ 		i40e_set_vf_link_state(vf, &pfe, ls);
++
++		vsi = pf->vsi[vf->lan_vsi_idx];
++		q_map = BIT(vsi->num_queue_pairs) - 1;
++
++		vf->is_disabled_from_host = true;
++
++		/* Try to stop both Tx&Rx rings even if one of the calls fails
++		 * to ensure we stop the rings even in case of errors.
++		 * If any of them returns with an error then the first
++		 * error that occurred will be returned.
++		 */
++		tmp = i40e_ctrl_vf_tx_rings(vsi, q_map, false);
++		ret = i40e_ctrl_vf_rx_rings(vsi, q_map, false);
++
++		ret = tmp ? tmp : ret;
+ 		break;
+ 	default:
+ 		ret = -EINVAL;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index 2ee0f8a23248..c36580b7b2c1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -100,6 +100,7 @@ struct i40e_vf {
+ 	bool link_forced;
+ 	bool link_up;		/* only valid if VF link is forced */
+ 	bool spoofchk;
++	bool is_disabled_from_host; /* PF ctrl of VF enable/disable */
+ 	u16 num_vlan;
+ 
+ 	/* ADq related variables */
+-- 
+2.25.1
+
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
