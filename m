@@ -4,86 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88CADC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Dec 2023 07:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AD19C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Dec 2023 07:51:14 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 393024207C;
-	Fri,  1 Dec 2023 07:51:09 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 393024207C
+	by smtp4.osuosl.org (Postfix) with ESMTP id D8F114208A;
+	Fri,  1 Dec 2023 07:51:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D8F114208A
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701417069;
-	bh=faHvGki/seOB9SoLTyRFbwozXw9wf92KN8ML0Dgxz9M=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=mtheNIXBQVa0QtdmEU+yFzCyyzS8VO/2HxUFLb6p2lb/f7r63j9abLaW3iua6KOVJ
-	 RlW2VUEZTemAf8ZTFbrRbIbM+7PIqWYO2kQ4Jzi1QXV7yiToVxhHQsFnuOs+GADKrI
-	 eZI9FqaXWF6oRt8PRHLkNewBsH7AhCOTrnFIfue1LYxQ6M32N5PIWTlr99s44Z9VaU
-	 bo5BIoz1W9Rhga7ugI8TmMH2+nZJ7Hz3M3HOV4dgIJ4cfiiQxVKlwP85htQwdjfriD
-	 PD4k2zHYpYBhnVxU7/DQUtuYd9BIUiPTWiPzSw0fwqPfS+xbbusjppMOvYObRIY4Cv
-	 0MVFBDwo/AVnA==
+	s=default; t=1701417073;
+	bh=ullrcc5Mr17F0akYkuDWKBYsPi9Xo6h4mCvS+fQbVEk=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=9BvkHli8i0cNHf07MNSc26guN0vLvHDvgrzT8EO5AeUj7CmjWQtRH0G27aA7UzGqh
+	 hpTs2Wu6OknDMM0hl7f5KyDzRiEFwxZ74qVnDjyWwj8C8NRbFrsZeX0pfP85aYcuym
+	 MNTOUlIW24swTR+iF28++wxBATCIByAcgfR++DWIMK1oibQkw+Hp/UfID2kT6Z6rzJ
+	 gdCoUrvN51ngBPJBtDzg/mRzHo60/LRzfR1q18Pdq4NqzSp0dDEp+8nbZlc1pD/O4K
+	 zdr0MYGplGMCfezurEqUlfULh3XwYsxvocWjwRlK/wFGDN/xrSLk53UA5//Gih6EKZ
+	 JFKjROfEdfYHQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id VPYReMRZDZLw; Fri,  1 Dec 2023 07:51:08 +0000 (UTC)
+	with ESMTP id Gdd7tMT85Tp0; Fri,  1 Dec 2023 07:51:13 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 33C694207F;
-	Fri,  1 Dec 2023 07:51:08 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 33C694207F
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 74FF11BF98D
+	by smtp4.osuosl.org (Postfix) with ESMTP id D6D3842088;
+	Fri,  1 Dec 2023 07:51:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D6D3842088
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id B55601BF98D
  for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 07:51:07 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4D57960B68
+ by smtp4.osuosl.org (Postfix) with ESMTP id 8EA2C4207F
  for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 07:51:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4D57960B68
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8EA2C4207F
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zU38N8gi5hV6 for <intel-wired-lan@lists.osuosl.org>;
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id F9df5IXTE9DS for <intel-wired-lan@lists.osuosl.org>;
  Fri,  1 Dec 2023 07:51:02 +0000 (UTC)
 Received: from galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a0a:51c0:0:12e:550::1])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 1BE6A60AC2
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 292554207C
  for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 07:51:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1BE6A60AC2
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 292554207C
 From: Kurt Kanzenbach <kurt@linutronix.de>
 To: Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Tony Nguyen <anthony.l.nguyen@intel.com>,
  Vinicius Costa Gomes <vinicius.gomes@intel.com>
-Date: Fri,  1 Dec 2023 08:50:42 +0100
-Message-Id: <20231201075043.7822-2-kurt@linutronix.de>
-In-Reply-To: <20231201075043.7822-1-kurt@linutronix.de>
-References: <20231201075043.7822-1-kurt@linutronix.de>
+Date: Fri,  1 Dec 2023 08:50:41 +0100
+Message-Id: <20231201075043.7822-1-kurt@linutronix.de>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=linutronix.de; s=2020; t=1701417059;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=QYAOLm8RpL58iZCqFdlXXxx0BUikZ5aYxjk4LwEetvE=;
- b=HozR945gQVbiW9ou5ZdJI9HZ810ok5CAThgaiRz2zKRcFWcD1maGgsSg32OygE0rQspCNj
- Syi+YKw7hGtoLud6w/9jfRSQQ+fybJ1ihlIpGF30wDVvEUR/4rDbq0ccVzWwvxfVAEF0TC
- bl+5RtZotR51i6ChrKVMstxy0GAlXBWc0AqeCAog15uZZq3TT2yR6p9N1FZIYgHliVP/cU
- 22JLnniiGokoY12gg8mRLERqlOkxjOrV5cml+jDhqFDMeDgt5D9aTi4lZkGEXCxRh+6pwz
- yM1r7dFiM1idW5kdMmvamJYuC78ye4FHveIaUh9W4ANGdXj1id4WXHlKPZ/QmQ==
+ content-transfer-encoding:content-transfer-encoding;
+ bh=EqwBLovC5ct849IeQWIt3omI4kJ6O9qsyWxt4uWuYCc=;
+ b=SssFFLM/u5i1R8h3UodZcrGSPlEXNIbgBJLBiIrnipg1dXAz/v6fLYLMdezGgB86mILedE
+ F0mjHhyf8DHgF34gTGN0fZANdcKsnsstUBFgOWq2uYayzd5DH/LCb4TlkI4Uy9EX5dQavk
+ 5vg01L085IvcAqgA3W8woVyakkMM7Fl5XFQGvK9XyTk+dS3CwZRiP6Lo4kjz/sIGkaljKb
+ fR31m/pRyHf0ygYt9TEdp9H1Qvb9H94uQ7SaR0SZXgrgNO7Eo5oAsGyCcaq6MJxiPWeurH
+ W6cj67vKxaYxpa/wN5o9n3ld93dXHntlRSKt24UzZk7t4lrY/oTLVO60ENcRtA==
 X-Mailman-Original-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
  d=linutronix.de; s=2020e; t=1701417059;
  h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
  to:to:cc:cc:mime-version:mime-version:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=QYAOLm8RpL58iZCqFdlXXxx0BUikZ5aYxjk4LwEetvE=;
- b=dVJmEkkHoScG42GIeZemOHW4R7aQNuntE5gVNPBbYlcL184jkUhnnxUEgISFdiVIdYZAu+
- heejQNQa20aOgCBA==
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ content-transfer-encoding:content-transfer-encoding;
+ bh=EqwBLovC5ct849IeQWIt3omI4kJ6O9qsyWxt4uWuYCc=;
+ b=LRDUF9T+tuvT0Y2WWu751P6bOu42eJSknaAjZ2rlQNtU07K44tGHqzymNBpX0kGftMu5SQ
+ uL66Dy6lpTzQLPAQ==
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de
- header.a=rsa-sha256 header.s=2020 header.b=HozR945g; 
+ header.a=rsa-sha256 header.s=2020 header.b=SssFFLM/; 
  dkim=pass header.d=linutronix.de header.i=@linutronix.de
- header.a=ed25519-sha256 header.s=2020e header.b=dVJmEkkH
-Subject: [Intel-wired-lan] [PATCH iwl-net v2 1/2] igc: Report VLAN EtherType
- matching back to user
+ header.a=ed25519-sha256 header.s=2020e header.b=LRDUF9T+
+Subject: [Intel-wired-lan] [PATCH iwl-net v2 0/2] igc: ethtool: Check VLAN
+ TCI mask
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,65 +100,35 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Currently the driver allows to configure matching by VLAN EtherType.
-However, the retrieval function does not report it back to the user. Add
-it.
+Hi,
 
-Before:
-|root@host:~# ethtool -N enp3s0 flow-type ether vlan-etype 0x8100 action 0
-|Added rule with ID 63
-|root@host:~# ethtool --show-ntuple enp3s0
-|4 RX rings available
-|Total 1 rules
-|
-|Filter: 63
-|        Flow Type: Raw Ethernet
-|        Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-|        Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-|        Ethertype: 0x0 mask: 0xFFFF
-|        Action: Direct to queue 0
+currently it is possible to configure receive queue assignment using the VLAN
+TCI field with arbitrary masks. However, the hardware only supports steering
+either by full TCI or the priority (PCP) field. In case a wrong mask is given by
+the user the driver will silently convert it into a PCP filter which is not
+desired. Therefore, add a check for it.
 
-After:
-|root@host:~# ethtool -N enp3s0 flow-type ether vlan-etype 0x8100 action 0
-|Added rule with ID 63
-|root@host:~# ethtool --show-ntuple enp3s0
-|4 RX rings available
-|Total 1 rules
-|
-|Filter: 63
-|        Flow Type: Raw Ethernet
-|        Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-|        Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-|        Ethertype: 0x0 mask: 0xFFFF
-|        VLAN EtherType: 0x8100 mask: 0x0
-|        VLAN: 0x0 mask: 0xffff
-|        User-defined: 0x0 mask: 0xffffffffffffffff
-|        Action: Direct to queue 0
+Patch #1 is a minor thing found along the way.
 
-Fixes: 2b477d057e33 ("igc: Integrate flex filter into ethtool ops")
-Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
-Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
----
- drivers/net/ethernet/intel/igc/igc_ethtool.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+Changes since v1:
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_ethtool.c b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-index 785eaa8e0ba8..69b2fd006293 100644
---- a/drivers/net/ethernet/intel/igc/igc_ethtool.c
-+++ b/drivers/net/ethernet/intel/igc/igc_ethtool.c
-@@ -980,6 +980,12 @@ static int igc_ethtool_get_nfc_rule(struct igc_adapter *adapter,
- 		fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
- 	}
- 
-+	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_ETYPE) {
-+		fsp->flow_type |= FLOW_EXT;
-+		fsp->h_ext.vlan_etype = rule->filter.vlan_etype;
-+		fsp->m_ext.vlan_etype = ETHER_TYPE_FULL_MASK;
-+	}
-+
- 	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
- 		fsp->flow_type |= FLOW_EXT;
- 		fsp->h_ext.vlan_tci = htons(rule->filter.vlan_tci);
+ - Split patches 4 and 5 for -net
+ - Rebase to -net
+ - Wrap commit message at 75 chars
+ - Add Ack from Vinicius
+
+Previous versions:
+
+ - https://lore.kernel.org/netdev/20231128074849.16863-1-kurt@linutronix.de/
+
+Kurt Kanzenbach (2):
+  igc: Report VLAN EtherType matching back to user
+  igc: Check VLAN TCI mask
+
+ drivers/net/ethernet/intel/igc/igc.h         |  1 +
+ drivers/net/ethernet/intel/igc/igc_ethtool.c | 34 ++++++++++++++++++--
+ 2 files changed, 32 insertions(+), 3 deletions(-)
+
 -- 
 2.39.2
 
