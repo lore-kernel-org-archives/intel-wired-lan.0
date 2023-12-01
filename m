@@ -4,93 +4,189 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F16A7C4167B
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Dec 2023 13:46:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0B0EC4167B
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  1 Dec 2023 14:38:53 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8E5DF84852;
-	Fri,  1 Dec 2023 13:46:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8E5DF84852
+	by smtp1.osuosl.org (Postfix) with ESMTP id 44D57848A9;
+	Fri,  1 Dec 2023 14:38:53 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 44D57848A9
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701438410;
-	bh=vqxW3DMYS2S/fdi/VZfzzHtAdv33+lkQOCQfZCPoJEo=;
+	s=default; t=1701441533;
+	bh=QBq3doEA6sMctKifAxoToNkKsxovqJAmEn4onNTNNx8=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Cn2QvA+PBF54g+RA+xZEc2u2piZLzs56M+pUm+JKJ5lEPLcZR4jup9Ubo3Gy9gWqG
-	 RFW79sPXUyy8/1Ang77hg86jkYicfBy5T4640hKFy/aupv3iqVOXcgpw4b3+YUk2un
-	 lpSYbh19TUid5Y9XdiWBNx3YZhrJIJqgnRDOu42VvtCDIAKvQubSm4Gy6vlFwdKEIS
-	 k+5/MB3aM2/ZOGz27S6GirdrHXC5aRzWHAzvvK6774/NP7IF7w/4Zo08e4gXP+pFhg
-	 uSo/8HUagy8a7Un3kl677VO4TpboemwCJCepnO4WF0qL9mAkrv6H8BvRh1U2DVwjGu
-	 EH/xF6cs8w2jA==
+	b=TAH6du++V3k2AWfbAFWFrSLnbROPNtYFKiLS+j2OVaHISu+eL3QGkY2RBtI8Vn+ZT
+	 a77HHji3lWyHklKsKJi5yI8H8tPO9UgjludmcZo1voKZzIjlDAnBuUw62qQElR7Aan
+	 K1xsVC7oP7pzM829QxybVA28PmTqzhpd59UlxccUMwvY2awRZlaXx7DhkVmjsgtbHH
+	 JZRDrUCdkEBoW9uB5f5IRyLWQcwjmO6JfMfV7NqLL7OztwV7GNaMjNbCUI3xQMCRhI
+	 WFBvHJ/FQz9dXMSX9ArqxlzZg8V3FpBgFQiXIbqpvRnFc7vq83xPPr4dzxoOxV0pDw
+	 9lQvsN3Ymi78w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id mq-QW34s3KN5; Fri,  1 Dec 2023 13:46:49 +0000 (UTC)
+	with ESMTP id A_1VquFvK7JD; Fri,  1 Dec 2023 14:38:52 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3A6D28484F;
-	Fri,  1 Dec 2023 13:46:49 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3A6D28484F
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 8BEC21BF5E9
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 13:46:47 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 19EF58489C;
+	Fri,  1 Dec 2023 14:38:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 19EF58489C
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id B4E241BF3AD
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 14:38:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 5FE704214B
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 13:46:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5FE704214B
+ by smtp3.osuosl.org (Postfix) with ESMTP id 812996FAB4
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 14:38:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 812996FAB4
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id D92t8bo2QuVW for <intel-wired-lan@lists.osuosl.org>;
- Fri,  1 Dec 2023 13:46:45 +0000 (UTC)
-Received: from us-smtp-delivery-124.mimecast.com
- (us-smtp-delivery-124.mimecast.com [170.10.129.124])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7FDD842142
- for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 13:46:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7FDD842142
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-295-JxDopkrqPtS-12mHFloEHw-1; Fri, 01 Dec 2023 08:46:40 -0500
-X-MC-Unique: JxDopkrqPtS-12mHFloEHw-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com
- [10.11.54.6])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by mimecast-mx02.redhat.com (Postfix) with ESMTPS id B8D7C811E7B;
- Fri,  1 Dec 2023 13:46:39 +0000 (UTC)
-Received: from [10.45.225.216] (unknown [10.45.225.216])
- by smtp.corp.redhat.com (Postfix) with ESMTP id AA6F12166B26;
- Fri,  1 Dec 2023 13:46:37 +0000 (UTC)
-Message-ID: <27946430-66d0-4a09-b275-ead122a082ce@redhat.com>
-Date: Fri, 1 Dec 2023 14:46:37 +0100
-MIME-Version: 1.0
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id UmzN7_Z4A2uT for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  1 Dec 2023 14:38:49 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.88])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 7D4F360597
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  1 Dec 2023 14:38:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7D4F360597
+X-IronPort-AV: E=McAfee;i="6600,9927,10911"; a="424661741"
+X-IronPort-AV: E=Sophos;i="6.04,241,1695711600"; d="scan'208";a="424661741"
+Received: from fmsmga003.fm.intel.com ([10.253.24.29])
+ by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 01 Dec 2023 06:38:48 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10911"; a="860575279"
+X-IronPort-AV: E=Sophos;i="6.04,241,1695711600"; d="scan'208";a="860575279"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+ by FMSMGA003.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 01 Dec 2023 06:38:48 -0800
+Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.34; Fri, 1 Dec 2023 06:38:47 -0800
+Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
+ orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.34 via Frontend Transport; Fri, 1 Dec 2023 06:38:47 -0800
+Received: from NAM10-DM6-obe.outbound.protection.outlook.com (104.47.58.101)
+ by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.34; Fri, 1 Dec 2023 06:38:47 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=FhKZG1NR6sdchN3dwtOM7LzTEwh5tjmqTS+OZQNhahUUqcdVKq6xXQMJNRuqHjKZ5YgOI3aFZwM1Q/wCXFOFfOPAKNzuV6WHPBb8Rz/HFoDFkY/kWavn/rUjrxHdIN8qk8SiUd71sZ27usKRigF0t8S0qZwzntfR1Pd8PeA3zTNR2CUcR4tRoio3TWC3qe5EPDHEHAUKanOTlK3u+dbkXRMpReC7FCUvvOlXFKMhVItwnozXY0EiXyXAL6duCR9Zokvw/fMh5kZ6BioDzMlCV0maVbh7Sl2ZKcjnacj7bOeLRRdmQbbR5b8MDTqLDvw5VYOKqrHeB5FMK/jpkR+zCA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=xPd1fvafhxJHe0UMPc/QDa4EDBn4YC1nuDhbeZ++HVc=;
+ b=gNk1eHwEdQLU2NJPY4hAfFEWpi3zJ8Vb7ljFO3ZgNLsJH5ImX4pmk2jTlLLb6Pl2nFJ3CKOpNMZweGHU+L8u2Kyntoudjh3dOE/l7qBIryT+G4KiOWiHg0+IlNG2LNTDXMk2QW68c0/XlBbeNmIZRwohTdfCIg7hlhcthHV4u5igE3BB4i4l+l6ep0hHT6Y1t3oO6PyTRwHx6H7cmlz2uDvoGqzwa5Mu81AhRIPakwgJbRHJxM0GqYrPuYKJ+OyLOPTY3aSFCOU0/+RcZVj1YmVSLaxX3iJw9JLBfowSnZO9MgSo2n8CykGl1pKSUZE9v+tETtQxFN793mlSHCm+/w==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from DM6PR11MB3625.namprd11.prod.outlook.com (2603:10b6:5:13a::21)
+ by LV3PR11MB8696.namprd11.prod.outlook.com (2603:10b6:408:216::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7046.27; Fri, 1 Dec
+ 2023 14:38:45 +0000
+Received: from DM6PR11MB3625.namprd11.prod.outlook.com
+ ([fe80::36be:aaee:c5fe:2b80]) by DM6PR11MB3625.namprd11.prod.outlook.com
+ ([fe80::36be:aaee:c5fe:2b80%7]) with mapi id 15.20.7046.024; Fri, 1 Dec 2023
+ 14:38:45 +0000
+Message-ID: <c0a4b430-291b-4de8-a655-2f768e95fe5e@intel.com>
+Date: Fri, 1 Dec 2023 15:37:43 +0100
 User-Agent: Mozilla Thunderbird
 Content-Language: en-US
-To: "Brelinski, Tony" <tony.brelinski@intel.com>,
- Simon Horman <horms@kernel.org>
-References: <20231124164233.86691-1-ivecera@redhat.com>
- <20231129163618.GD43811@kernel.org>
- <DM6PR11MB4218C83B7A07BB833D298D388282A@DM6PR11MB4218.namprd11.prod.outlook.com>
-From: Ivan Vecera <ivecera@redhat.com>
-In-Reply-To: <DM6PR11MB4218C83B7A07BB833D298D388282A@DM6PR11MB4218.namprd11.prod.outlook.com>
-X-Scanned-By: MIMEDefang 3.4.1 on 10.11.54.6
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=redhat.com; 
- s=mimecast20190719; t=1701438404;
- h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
- to:to:cc:cc:mime-version:mime-version:content-type:content-type:
- content-transfer-encoding:content-transfer-encoding:
- in-reply-to:in-reply-to:references:references;
- bh=CZOsoVNTrlsyDIj04ZnPkYY4FYY9jzgQ1kRjegPcrJ4=;
- b=Sa3WRT3JBZLz14Sbr05jHknYxInAhAc4ooc2hlXeXXFfIxFCJOlolyYy8/h4YAthBSjrKt
- xU8LBmapDFApZ4jjJxatNOHE7yHeKelSIAMXh+vU9mlU8OXJdLj2nCEbWx5T8nZwI+5nei
- rDXDHgBzRCXk2m6PuHlFC9ZVxotkzfk=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com
- header.a=rsa-sha256 header.s=mimecast20190719 header.b=Sa3WRT3J
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] i40e: Fix kernel crash during
- macvlan offloading setup
+To: Yunsheng Lin <linyunsheng@huawei.com>
+References: <20231124154732.1623518-1-aleksander.lobakin@intel.com>
+ <20231124154732.1623518-4-aleksander.lobakin@intel.com>
+ <6bd14aa9-fa65-e4f6-579c-3a1064b2a382@huawei.com>
+ <a1a0c27f-f367-40e7-9dc2-9421b4b6379a@intel.com>
+ <534e7752-38a9-3e7e-cb04-65789712fb66@huawei.com>
+ <8c6d09be-78d0-436e-a5a6-b94fb094b0b3@intel.com>
+ <4814a337-454b-d476-dabe-5035dd6dc51f@huawei.com>
+ <d8631d76-4bb3-41a4-a2b2-86725867d2a9@intel.com>
+ <6c234df1-d20a-812e-3c58-7e3941d8309b@huawei.com>
+From: Alexander Lobakin <aleksander.lobakin@intel.com>
+In-Reply-To: <6c234df1-d20a-812e-3c58-7e3941d8309b@huawei.com>
+X-ClientProxiedBy: WA0P291CA0019.POLP291.PROD.OUTLOOK.COM
+ (2603:10a6:1d0:1::21) To DM6PR11MB3625.namprd11.prod.outlook.com
+ (2603:10b6:5:13a::21)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DM6PR11MB3625:EE_|LV3PR11MB8696:EE_
+X-MS-Office365-Filtering-Correlation-Id: fe02a8ab-d344-4570-df31-08dbf27b38d9
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: t8S3ligm3pe9lXvDobGxIFzBsiTidNzbHmYhqUlqAp2HWKyH1qpXUQFPVlY1jE09n7wYg4Gj7PUqtniSFHDUKS/TpJKtwxEipsuzV7LeTyaUc/e1cvnS4W0kpuZEH9RqvC2ZqX/Pi07Pj1eG5wqUwfnOMVUEVEhqThPwj+KS7yRfx768o858Sv6XAn+3Rz3PwfLxPFCH1YnoO90bL8jzR7FrOo3uR/RfNmmFeHmOjrJCW1moVsAUawlzUltHjoWTl7Gqit2nBWeGiC2AyonK9bdjlIM9IZb5ChbC9MgB/erE04cVm+38PbFr+de2LV8CUTiLAwz/wF5ka49jNloFme1sXMiqce/N1p0Stn74Q1UhYobRZ6+9kRr+yAhyAvUxaTn2Vi/vBdriiADSfnAUS4clIAQVGWuCZFTgGfTJuxUgjOLJkJyu4O5y+fwsfKPl0fpwA5UpvpiZpoNBIMKnYd37Lal1GvvyqDYWBwDVDrz6yHC6P1+ILu7e+op5nCF5ziJSq0WVLKyv0/MPruBnJuPd/u0Nm6YNkUcoNTNfmxDwB0WRSqIDrZsQrvqag2vImtILfwWVs/DIa/6tnGUnJ7NetwoVUFPVg3Wsuj3x3g12NocTpLHo9zpGeB1I3k3OlRlQ+Cn10KPQkzNqb6cwiA==
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:DM6PR11MB3625.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230031)(366004)(376002)(396003)(136003)(39860400002)(346002)(230922051799003)(186009)(451199024)(1800799012)(64100799003)(7416002)(5660300002)(2906002)(8676002)(4326008)(6916009)(54906003)(66476007)(316002)(66556008)(8936002)(66946007)(26005)(41300700001)(6506007)(966005)(6486002)(478600001)(6512007)(53546011)(31686004)(2616005)(83380400001)(38100700002)(82960400001)(36756003)(31696002)(86362001)(45980500001)(43740500002);
+ DIR:OUT; SFP:1102; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?Z05IRlhvQUZHK0RCamM3NkRmODlJNFp3SVNvUDhOQmhQRUNucjAwellLVWFl?=
+ =?utf-8?B?SFlaMWUxYTEvM3ZMUVFYbXRsdUE0dnc2S25SYjltSnFpbEJONDRmR3ZjSDd4?=
+ =?utf-8?B?UGwvaGp5RmVLYmR0b2ZBd3czdnNES2wzdXBxOFI5Tmx0eVo1RXlDRFRKaysz?=
+ =?utf-8?B?TWE4K3h4Z1JUb3pINjdYSjVGbXIwR3hGdHZDdktVNGwvcWNjNHFKVVpZbi9M?=
+ =?utf-8?B?TlhlZzhBRFlNV3RGbGFlOVVzeWZVUEZraHk1Tiswb2pYeFFXcXZBNUd5WERR?=
+ =?utf-8?B?VktsbE5OR0VCbkZYNk9lbUNUSU9MMTErVFVqUTBpUG5QdEdZME5jOExIanFw?=
+ =?utf-8?B?aER5Z0tLeHZZbnVXcEVicXF0WlE2UjNUdHJyV1FnRjByNUdDWWlXc3BFZlNu?=
+ =?utf-8?B?dEdLZXo1NDV6TWZQV2tUeWZFbDFoWGQzeExlMlNjeSs2OENsbytLSjY4NFEy?=
+ =?utf-8?B?OGhYenhlTit3b3VIZEFNUStxRzRaRjZyTjlMUVAwSzJGWEVPNnhWcC9iRldS?=
+ =?utf-8?B?dE1xQ29SNzFHR1JEeWxMNEhBc1dUWk84TE9sdzliVGp5MStTYzB3M1ZuWEFB?=
+ =?utf-8?B?OWluZzJDVzFZekM0LzJHSzBSTDkvUW9qNG1RamZKTzlMTG1IdVR0UUtTT1Jt?=
+ =?utf-8?B?bjFOejc3YUU1NlhMSTNrSEhEbmJsVG16MnFuZDBEamN4TkFnOE4ySEdyYW4r?=
+ =?utf-8?B?UEFHWmx3SXhTS1dyL3AzOVpaaVl4VURNMFBCcmFNNzRvN3BoMFl4TDVzZ0lH?=
+ =?utf-8?B?cTRkL1NrUE5tREZhbGFHeEMwM1hlMEYyYlp0aGxqNjh4Q0ZMQy8zYmhrWkVp?=
+ =?utf-8?B?bk1NL05KcWRrT3lrcFUyT2lGc0dhQXVSTUhuOVVlOXpnVURjMzMrNFpHN2k3?=
+ =?utf-8?B?eW5LUWZKS2dKOXY4UEJYcXhpdEN2aGp6YTNja2w4dGNmYktCODhzYVRBVm5T?=
+ =?utf-8?B?TEFqa3VpaXFSc0N2WUhVZVdFZEVYLzhKYW1IUUgzOUIzajlpdDB2OStHMUk5?=
+ =?utf-8?B?WUFib2djTTBCdWREMU9iSHp0WktwdUlVaUE2MmUrRW53Z01SOERkaElaTkhH?=
+ =?utf-8?B?L3UxcWliZUEvbWF2a09MR0xBeVJzUHViQmY1RXFNNVdJZE5hS04xaldUS1Vl?=
+ =?utf-8?B?V0E1RkoxVTJKWDhJU0YySEVzMGlpT3RudzdERVU0eXdLa09OOG5WRk41OTc3?=
+ =?utf-8?B?ei9OdzZTc0FjSkxZV05sRi82d045N29SVU5lTUhuRWdpaS9LcW9ZcHZiWktL?=
+ =?utf-8?B?UERRVXlSamtKRFkzcmdFSlJBbXZkY1paRTJTcWszL1JIODJHOFdLaTBLRERW?=
+ =?utf-8?B?VDI2VE1GTlVQdWUrT2IrTEFnbmczL3BZcGZoWU9mQUVmN1RFYXJCVlMrUlps?=
+ =?utf-8?B?RnRBVlNsL3k4WDAzMEVJamhBRWttb0d2ZTVteHZpdGFDRkF5TktxdS9QM015?=
+ =?utf-8?B?NkUzbFdiZE1zMnU5TVVkcERKcVhOYThjKzAzMHM0VWlPck9CYkc2UGRLUEI1?=
+ =?utf-8?B?Mm1NYlYrQXlKOGFDYUtQWlkzV1VzWVBXK0daNUNYL2txNXk1ampPQXBtckRn?=
+ =?utf-8?B?SGUvNzNtVVpBUEszdTVnM1BROFNUeWpMZjU3UGc2elhKVWp1aTN4Zk4vNkxQ?=
+ =?utf-8?B?OUgrSUxyeWcyai9Kd0I4Rm9JbXMzTndHMkN4MVpxTXdtaGdDS3hQRnV4MmF6?=
+ =?utf-8?B?T2FEQlBFaWZ6dnk4eE0vNUx5SWFLcDh0dFp5NE5oMTEzeVV3ZUJhNThvZElk?=
+ =?utf-8?B?M2MzYWlybHY5d0lOVlRTd1RBUUZNRUUxVXpQSDhWZU9WK1ovWTVOZTRrOTNH?=
+ =?utf-8?B?WVdFTnh5Z1VqZ010cGcrTFl1RENSdDdBNG5HdWJac0U1OW5lUFBOOGFTRmU1?=
+ =?utf-8?B?YTZPV0lyNUE3WTVLbXRXajNRaE1BSzRQTDBVd2dBeWVhVEZiNENGVys0RFor?=
+ =?utf-8?B?ODQxNjM3SUs1b2lidWhWcXZGT0tudXh4dkFEN2Z5a0VCVlE5VDZGSDU4SGdM?=
+ =?utf-8?B?a2tpM3dTYUc2SGhYdDJzSWhOREVGTlNIUTRvUmlBdXhqQnF0dGNlQUhmdmNF?=
+ =?utf-8?B?dlJDbHpMejNLWGpON28xeWloZXF5K04zSDdHd0xtMWZNQnRETWpwYWNQa3M5?=
+ =?utf-8?B?WmRsSmQ3b3hCZmhtc3oya2lrdVBIbGxkSWQ3eXlVS2JsakhUYlFZN2p5cGVt?=
+ =?utf-8?B?OWc9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: fe02a8ab-d344-4570-df31-08dbf27b38d9
+X-MS-Exchange-CrossTenant-AuthSource: DM6PR11MB3625.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Dec 2023 14:38:45.4569 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: eATsXZCludrwVVFmcB9ZLDHQciyMCw40A71CI7EtVmBBmdq3zZrrBXrPab0lO4gFZSjmpgjLwxKQIDmTRzS4UzCgLuq59kY+iBA9McY9BmM=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV3PR11MB8696
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1701441529; x=1732977529;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=+D9ZXJt9dFTu0cHaH1GpikKy6GcMVOfN8rEMQQ3+vuo=;
+ b=ZbuceuAAbHxCozcXxg+uuvxHNhLciYS6XGEPy2+Jv+y814yE0RK/gHAR
+ YtIZkQdrsPfvoajKUBt9X99/Ra4wQY5oS5kP+/ZYTI/Mw3EPTc/WrLMBZ
+ yw0ICpwhTt9DEr2ybDkfK74FBygeuB3LaHHt5b9+8vOsU77t3tGOhGjq7
+ rxgDZkOfI+2cOqytk3Bo2PC3ADJzoMXt4MrA5LB1zR8Yd4eC3T9mKRkPQ
+ Xe/ZC8CzDWCOnKY+jJ0SCaGk33iQzVYgbrm1ZacFa6vYx4FnJSY3kFwYU
+ BZv0GErZysB1cayeR9oOSIrdm4DYKrpJ9YpiO54tidMVcnThnh+srDg89
+ g==;
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=ZbuceuAA
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH net-next v5 03/14] page_pool: avoid
+ calling no-op externals when possible
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,156 +199,70 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paolo Abeni <pabeni@redhat.com>, "Drewek,
- Wojciech" <wojciech.drewek@intel.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Brandeburg,
- Jesse" <jesse.brandeburg@intel.com>, open list <linux-kernel@vger.kernel.org>,
- Eric Dumazet <edumazet@google.com>, "Nguyen,
- Anthony L" <anthony.l.nguyen@intel.com>,
- Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Jakub Kicinski <kuba@kernel.org>,
- "Keller, Jacob E" <jacob.e.keller@intel.com>,
- "moderated list:INTEL ETHERNET DRIVERS" <intel-wired-lan@lists.osuosl.org>,
- Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>,
- "David S. Miller" <davem@davemloft.net>
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>, Ilias
+ Apalodimas <ilias.apalodimas@linaro.org>, linux-kernel@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ Michal Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org,
+ David Christensen <drc@linux.vnet.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+From: Yunsheng Lin <linyunsheng@huawei.com>
+Date: Thu, 30 Nov 2023 20:20:44 +0800
 
-
-On 30. 11. 23 20:24, Brelinski, Tony wrote:
->> -----Original Message-----
->> From: Intel-wired-lan<intel-wired-lan-bounces@osuosl.org>  On Behalf Of
->> Simon Horman
->> Sent: Wednesday, November 29, 2023 8:36 AM
->> To: ivecera<ivecera@redhat.com>
->> Cc: Harshitha Ramamurthy<harshitha.ramamurthy@intel.com>; Drewek,
->> Wojciech<wojciech.drewek@intel.com>;netdev@vger.kernel.org;
->> Brandeburg, Jesse<jesse.brandeburg@intel.com>; open list <linux-
->> kernel@vger.kernel.org>; Eric Dumazet <edumazet@google.com>; Nguyen,
->> Anthony L<anthony.l.nguyen@intel.com>; Jeff Kirsher
->> <jeffrey.t.kirsher@intel.com>; moderated list:INTEL ETHERNET DRIVERS <intel-
->> wired-lan@lists.osuosl.org>; Keller, Jacob E <jacob.e.keller@intel.com>; Jakub
->> Kicinski<kuba@kernel.org>; Paolo Abeni<pabeni@redhat.com>; David S.
->> Miller<davem@davemloft.net>
->> Subject: Re: [Intel-wired-lan] [PATCH iwl-net] i40e: Fix kernel crash during
->> macvlan offloading setup
+> On 2023/11/30 19:58, Alexander Lobakin wrote:
+>> From: Yunsheng Lin <linyunsheng@huawei.com>
+>> Date: Thu, 30 Nov 2023 16:46:11 +0800
 >>
->> On Fri, Nov 24, 2023 at 05:42:33PM +0100, Ivan Vecera wrote:
->>> Function i40e_fwd_add() computes num of created channels and num of
->>> queues per channel according value of pf->num_lan_msix.
+>>> On 2023/11/29 21:17, Alexander Lobakin wrote:
+>>>> From: Yunsheng Lin <linyunsheng@huawei.com>
+>>>> Date: Wed, 29 Nov 2023 11:17:50 +0800
+>>>>
+>>>>> On 2023/11/27 22:32, Alexander Lobakin wrote:
+>>>>>>
+>>>>>> Chris, any thoughts on a global flag for skipping DMA syncs ladder?
+>>>>>
+>>>>> It seems there was one already in the past:
+>>>>>
+>>>>> https://lore.kernel.org/netdev/7c55a4d7-b4aa-25d4-1917-f6f355bd722e@arm.com/T/
+>>>>
+>>>> It addresses a different problem, meaningless indirect calls, while this
+>>>> one addresses meaningless direct calls :>
+>>>> When the above gets merged, we could combine these two into one global,
+>>>> but Eric wasn't active with his patch and I remember there were some
+>>>> problems, so I wouldn't count on that it will arrive soon.
 >>>
->>> This is wrong because the channels are used for subordinated net
->>> devices that reuse existing queues from parent net device and number
->>> of existing queue pairs (pf->num_queue_pairs) should be used instead.
->>>
->>> E.g.:
->>> Let's have (pf->num_lan_msix == 32)... Then we reduce number of
->>> combined queues by ethtool to 8 (so pf->num_queue_pairs == 8).
->>> i40e_fwd_add() called by macvlan then computes number of macvlans
->>> channels to be 16 and queues per channel 1 and calls
->>> i40e_setup_macvlans(). This computes new number of queue pairs for PF
->>> as:
->>>
->>> num_qps = vsi->num_queue_pairs - (macvlan_cnt * qcnt);
->>>
->>> This is evaluated in this case as:
->>> num_qps = (8 - 16 * 1) = (u16)-8 = 0xFFF8
->>>
->>> ...and this number is stored vsi->next_base_queue that is used during
->>> channel creation. This leads to kernel crash.
->>>
->>> Fix this bug by computing the number of offloaded macvlan devices and
->>> no. their queues according the current number of queues instead of
->>> maximal one.
->>>
->>> Reproducer:
->>> 1) Enable l2-fwd-offload
->>> 2) Reduce number of queues
->>> 3) Create macvlan device
->>> 4) Make it up
->>>
->>> Result:
->>> [root@cnb-03 ~]# ethtool -K enp2s0f0np0 l2-fwd-offload on
->>> [root@cnb-03 ~]# ethtool -l enp2s0f0np0 | grep Combined
->>> Combined:       32
->>> Combined:       32
->>> [root@cnb-03 ~]# ethtool -L enp2s0f0np0 combined 8
->>> [root@cnb-03 ~]# ip link add link enp2s0f0np0 mac0 type macvlan mode
->>> bridge
->>> [root@cnb-03 ~]# ip link set mac0 up
->>> ...
->>> [ 1225.686698] i40e 0000:02:00.0: User requested queue count/HW max
->>> RSS count:  8/32 [ 1242.399103] BUG: kernel NULL pointer dereference,
->>> address: 0000000000000118 [ 1242.406064] #PF: supervisor write access
->>> in kernel mode [ 1242.411288] #PF: error_code(0x0002) - not-present
->>> page [ 1242.416417] PGD 0 P4D 0 [ 1242.418950] Oops: 0002 [#1]
->> PREEMPT
->>> SMP NOPTI [ 1242.423308] CPU: 26 PID: 2253 Comm: ip Kdump: loaded
->> Not
->>> tainted 6.7.0-rc1+ #20 [ 1242.430607] Hardware name: Abacus electric,
->>> s.r.o. -servis@abacus.cz  Super Server/H12SSW-iN, BIOS 2.4 04/13/2022
->>> [ 1242.440850] RIP:
->>> 0010:i40e_channel_config_tx_ring.constprop.0+0xd9/0x180 [i40e] [
->>> 1242.448165] Code: 48 89 b3 80 00 00 00 48 89 bb 88 00 00 00 74 3c 31
->>> c9 0f b7 53 16 49 8b b4 24 f0 0c 00 00 01 ca 83 c1 01 0f b7 d2 48 8b
->>> 34 d6 <48> 89 9e 18 01 00 00 49 8b b4 24 e8 0c 00 00 48 8b 14 d6 48 89
->>> 9a [ 1242.466902] RSP: 0018:ffffa4d52cd2f610 EFLAGS: 00010202 [
->>> 1242.472121] RAX: 0000000000000000 RBX: ffff9390a4ba2e40 RCX:
->>> 0000000000000001 [ 1242.479244] RDX: 000000000000fff8 RSI:
->>> 0000000000000000 RDI: ffffffffffffffff [ 1242.486370] RBP:
->>> ffffa4d52cd2f650 R08: 0000000000000020 R09: 0000000000000000 [
->>> 1242.493494] R10: 0000000000000000 R11: 0000000100000001 R12:
->>> ffff9390b861a000 [ 1242.500626] R13: 00000000000000a0 R14:
->>> 0000000000000010 R15: ffff9390b861a000 [ 1242.507751] FS:
->> 00007efda536b740(0000) GS:ffff939f4ec80000(0000)
->> knlGS:0000000000000000 [ 1242.515826] CS:  0010 DS: 0000 ES: 0000
->> CR0: 0000000080050033 [ 1242.521564] CR2: 0000000000000118 CR3:
->> 000000010bd48002 CR4: 0000000000770ef0 [ 1242.528699] PKRU:
->> 55555554 [ 1242.531400] Call Trace:
->>> [ 1242.533846]  <TASK>
->>> [ 1242.535943]  ? __die+0x20/0x70
->>> [ 1242.539004]  ? page_fault_oops+0x76/0x170 [ 1242.543018]  ?
->>> exc_page_fault+0x65/0x150 [ 1242.546942]  ?
->>> asm_exc_page_fault+0x22/0x30 [ 1242.551131]  ?
->>> i40e_channel_config_tx_ring.constprop.0+0xd9/0x180 [i40e] [
->>> 1242.557847]  i40e_setup_channel.part.0+0x5f/0x130 [i40e] [
->>> 1242.563167]  i40e_setup_macvlans.constprop.0+0x256/0x420 [i40e] [
->>> 1242.569099]  i40e_fwd_add+0xbf/0x270 [i40e] [ 1242.573300]
->>> macvlan_open+0x16f/0x200 [macvlan] [ 1242.577831]
->>> __dev_open+0xe7/0x1b0 [ 1242.581236]
->> __dev_change_flags+0x1db/0x250
->>> ...
->>>
->>> Fixes: 1d8d80b4e4ff ("i40e: Add macvlan support on i40e")
->>> Signed-off-by: Ivan Vecera<ivecera@redhat.com>
->> Thanks Ivan,
+>>> I went through the above patch, It seems to me that there was no
+>>> fundamental problem that stopping us from implementing it in the dma
+>>> layer basing on Eric' patch if Eric is no longer interested in working
+>>> on a newer version?
 >>
->> I agree with the analysis and that the problem was introduced by the cited
->> patch.
+>> I'm somewhat interested in continuing working on Eric's patch, but not
+>> now. Have some urgent projects to work on, I could take this in January
+>> I guess...
+>> This PP-specific shortcut was done earlier and gives good boosts. It
+>> would be trivial to remove it together with the XSk shortcut once a
+>> generic both indirect and direct call DMA shortcut lands.
+>> Does this sounds good / justified enough? Or you and other
+>> reviewers/maintainers would prefer to wait for the generic one without
+>> taking this patch?
 >>
->> Reviewed-by: Simon Horman<horms@kernel.org>
->>
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan@osuosl.org
->> https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> The issue this patch is supposed to fix is resolved by this patch, but now there is a new crash seen with this patch.  Crash output below:
 > 
-> Crash logs:
-> 
-> [  315.844666] i40e 0000:86:00.0: Query for DCB configuration failed, err -EIO aq_err I40E_AQ_RC_EINVAL
-> [  315.844678] i40e 0000:86:00.0: DCB init failed -5, disabled
-> [  315.873394] i40e 0000:86:00.0: User requested queue count/HW max RSS count:  1/64
-> [  315.900682] i40e 0000:86:00.0 eth4: Not enough queues to support macvlans
+> I would prefer we could wait for the generic one as there is only about one
+> month between now and january:)
 
-I'm able to reproduce now... I have found that the macvlan offloading is 
-broken in several ways. I'm working to address theses issues.
+Ok, let's do it this way. I'll try to revive Eric's idea soon and get it
+taken if he doesn't mind :>
 
 Thanks,
-Ivan
-
+Olek
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
