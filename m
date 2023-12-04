@@ -4,78 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F159C10DC1
-	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 Dec 2023 21:07:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B7B4C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Mon,  4 Dec 2023 21:08:01 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2546D4011A;
-	Mon,  4 Dec 2023 21:07:57 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2546D4011A
+	by smtp2.osuosl.org (Postfix) with ESMTP id C7F3741765;
+	Mon,  4 Dec 2023 21:08:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C7F3741765
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701724077;
-	bh=o+mRAUJDiW+sdseoPuMMvc3fhWxKInM4WvsAwMhuUlk=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=GCPjjchk7ZTugURDCuR7t3cXOr8E1DyjeTKVVTAfLc9BZ68nomWWCAeqB/8Usvc1x
-	 BZ8cSW0gmLzV0f6ZSy2HNK95gFANPCjTuUVMJVKX2KUh49UVTYwBsszgab0VGeqhDm
-	 OPSr2n6fxXlxQp/njtSqhDWKe/uKnKfUL/Ts8AxRYgwxacXNiFQi/Hcg7zbtvdIsuD
-	 fSrg1pPLrfnPytTZ/CRNoFrNqI676O411d4ImXySD11K8iW0amHAjabZE2HUlG+xCO
-	 q0+8aKWQNspZm6OlRbsWGXN4S7O0RECqborbaeTU0z5ossRoTlZaRCbUeor/n65zSP
-	 kwLz8ghsx8vBg==
+	s=default; t=1701724080;
+	bh=ZM7UTj6ZHSo9rPo9tMP6vsyFD+01jUtDF2RmJdqR10M=;
+	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=K8emJcMHTCPJuI/BNBZHYufdG4ND8x+5tgn93yxsB7goyCaGz+2bn9r15r92rommp
+	 elYCSWO2t50BE+EOs/BfT8CRCDEIa+l4oOE7GlEsUVI+Jn7BPaCKt4Kspi1Jr4mnKd
+	 f6YJvsFTAu/25FPs1CbwQ+67G/SrMMxUliV9ggfJRJxG3nB59yfvqCNdKQGhW6c7Pc
+	 SoUCUnft+IjkgEZbMbFaIaZ6DcFY/9d9drz0zKR1gvvDHAER+ckYMFERqDf5gvc3/9
+	 PJKMFHcw8mU3uRMo/CSCd6FcTASuLnldsjVd7JQO2EFDnIA1ySt5QCO118orP5KFSk
+	 go/L5qK4dw5Zw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 94qq5ss7YsUt; Mon,  4 Dec 2023 21:07:55 +0000 (UTC)
+	with ESMTP id qsKAEPIofkUr; Mon,  4 Dec 2023 21:07:59 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id B985340201;
-	Mon,  4 Dec 2023 21:07:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org B985340201
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 92A941BF3EF
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Dec 2023 19:40:18 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id 89C404174F;
+	Mon,  4 Dec 2023 21:07:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 89C404174F
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 419E51BF31D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Dec 2023 20:40:17 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 7744382159
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Dec 2023 19:40:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7744382159
+ by smtp2.osuosl.org (Postfix) with ESMTP id 127274174D
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Dec 2023 20:40:17 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 127274174D
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 7-XghkEQZoIr for <intel-wired-lan@lists.osuosl.org>;
- Mon,  4 Dec 2023 19:40:16 +0000 (UTC)
-X-Greylist: delayed 1972 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 04 Dec 2023 19:40:15 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CEA2A8214C
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id B7neWFOQQR4N for <intel-wired-lan@lists.osuosl.org>;
+ Mon,  4 Dec 2023 20:40:15 +0000 (UTC)
 Received: from sipsolutions.net (s3.sipsolutions.net
  [IPv6:2a01:4f8:242:246e::2])
- by smtp1.osuosl.org (Postfix) with ESMTPS id CEA2A8214C
- for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Dec 2023 19:40:15 +0000 (UTC)
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 428AD4032C
+ for <intel-wired-lan@lists.osuosl.org>; Mon,  4 Dec 2023 20:40:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 428AD4032C
 Received: by sipsolutions.net with esmtpsa
  (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
  (Exim 4.97) (envelope-from <johannes@sipsolutions.net>)
- id 1rAEHm-0000000FCfw-1pgw; Mon, 04 Dec 2023 20:07:18 +0100
+ id 1rAFjd-0000000FFW4-2RPw; Mon, 04 Dec 2023 21:40:10 +0100
+Message-ID: <24577c9b8b4d398fe34bd756354c33b80cf67720.camel@sipsolutions.net>
 From: Johannes Berg <johannes@sipsolutions.net>
-To: netdev@vger.kernel.org
-Date: Mon,  4 Dec 2023 20:07:06 +0100
-Message-ID: <20231204200710.40c291e60cea.I2deb5804ef1739a2af307283d320ef7d82456494@changeid>
-X-Mailer: git-send-email 2.43.0
+To: Marc MERLIN <marc@merlins.org>
+Date: Mon, 04 Dec 2023 21:40:08 +0100
+In-Reply-To: <20231204203622.GB9330@merlins.org>
+References: <20231204200710.40c291e60cea.I2deb5804ef1739a2af307283d320ef7d82456494@changeid>
+ <20231204200038.GA9330@merlins.org>
+ <a6ac887f7ce8af0235558752d0c781b817f1795a.camel@sipsolutions.net>
+ <20231204203622.GB9330@merlins.org>
+User-Agent: Evolution 3.50.1 (3.50.1-1.fc39) 
 MIME-Version: 1.0
+X-malware-bazaar: not-scanned
 X-Mailman-Approved-At: Mon, 04 Dec 2023 21:07:53 +0000
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
  c=relaxed/relaxed; 
- d=sipsolutions.net; s=mail; h=Content-Transfer-Encoding:MIME-Version:
- Message-ID:Date:Subject:Cc:To:From:Content-Type:Sender:Reply-To:Content-ID:
- Content-Description:Resent-Date:Resent-From:Resent-To:Resent-Cc:
- Resent-Message-ID:In-Reply-To:References;
- bh=uBTJj1Qtxq9SLgn//Jw6JgydynLqSMP/yWLsZ9yFqRk=; t=1701718815; x=1702928415; 
- b=nDzm/XtbyVFlr6/5Od4AQZNjyHDBdyQhInG3rMS5qt/E40ML0YofTMm0zeCse8saX8zekgVhg8/
- FUvTVstBxKUhNErzmhJDLMMVB4+4WkpGUHt1bjWvcOcimE3Fci2m79K5ngE0TWHG6xeJhIZZGjgzx
- w99/+D+aluJX4Z7z6mZfOvL0kk3vVrVh7WRAE5Sbg+QqWzQf1U7Oe1CP7aMFC0TQHdedqOAoa4UQA
- xzkl5CTcO9iOLgKxayWroY7FrKkL9Cy1RVqtqAZdqSIuClWwqHF/h2bMrloEfQ8P5i327fGscEii0
- Yy9Zv7sraedPaaFb+Z/mCYyXzGW8WEIr+DNw==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ d=sipsolutions.net; s=mail; h=MIME-Version:Content-Transfer-Encoding:
+ Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
+ Resent-Cc:Resent-Message-ID; bh=zFFrdwdMxDeLDOu1EEArT/I/Iqq/BUGLwkci9F/B7pM=; 
+ t=1701722415; x=1702932015; b=vcJlRby9PUBS+G6Ewag/s34/rQx2nPCnwzC4YiGX3B8KKOU
+ 4cJ2tGDhkxNUtIy/bm/DiVD3Fm248Q94AtUYpdqyH89YfpnMIJoIxcKBwaah0nh8ksczKaKIjpo/J
+ YAXTcAvysn6cQG2WzXyStGvvBWnXMCdFEDNGsvTMHVbbl+QKwdWtuG71bP2KQqH44tyLpOWtMdUS1
+ h7VzhJPofHuoEjEZAWiDmJrKkSy1sB/2vvc4BUDyzgbfjOnUF95oxBe4IZ6ONVXJdLCDGiTSptAWC
+ YzAkFtdwm93PsJyiLsd+tymB0Oh/ZuKyRQ77TMT0KiXVl/yC8mnZInV5xwz9DwkQ==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=sipsolutions.net header.i=@sipsolutions.net
- header.a=rsa-sha256 header.s=mail header.b=nDzm/Xtb
-Subject: [Intel-wired-lan] [RFC PATCH] net: ethtool: do runtime PM outside
- RTNL
+ header.a=rsa-sha256 header.s=mail header.b=vcJlRby9
+Subject: Re: [Intel-wired-lan] [RFC PATCH] net: ethtool: do runtime PM
+ outside RTNL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,250 +92,108 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Johannes Berg <johannes.berg@intel.com>, Marc MERLIN <marc@merlins.org>,
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
  Jesse Brandeburg <jesse.brandeburg@intel.com>,
- intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
  Heiner Kallweit <hkallweit1@gmail.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Johannes Berg <johannes.berg@intel.com>
+On Mon, 2023-12-04 at 12:36 -0800, Marc MERLIN wrote:
+> 
+> So, ipc is not a module for me
+> sauron:/usr/src/linux-6.6.4-amd64-preempt-sysrq-20231203# lsmod | grep ipc
 
-As reported by Marc MERLIN in [1], at least one driver (igc)
-wants/needs to acquire the RTNL inside suspend/resume ops,
-which can be called from here in ethtool if runtime PM is
-enabled.
+I think the driver is "igc", not "ipc".
 
-[1] https://lore.kernel.org/r/20231202221402.GA11155@merlins.org
+> sauron:/usr/src/linux-6.6.4-amd64-preempt-sysrq-20231203# 
+> 
+> Is that a build config option I can reaonably turn off without breaking
+> networking altogether?
+> 
+> Previous boot, before your patch that I just compiled and will test now, 
+> it ended with this. I also see ethtool lower down, maybe run randomly by network manager
+> but isn't the hang happening before in these loglines, or the order of the logs is not
+> the actual sequence order of the problem?
 
-Allow this by doing runtime PM transitions without the RTNL
-held. For the ioctl to have the same operations order, this
-required reworking the code to separately check validity and
-do the operation. For the netlink code, this now has to do
-the runtime_pm_put a bit later.
+The order of this doesn't tell us much, I believe.
 
-Signed-off-by: Johannes Berg <johannes.berg@intel.com>
----
- net/ethtool/ioctl.c   | 71 ++++++++++++++++++++++++++-----------------
- net/ethtool/netlink.c | 32 ++++++++-----------
- 2 files changed, 56 insertions(+), 47 deletions(-)
+> [ 4230.596282] INFO: task kworker/0:2:132 blocked for more than 120 seconds.
+> [ 4230.596288]       Tainted: G     U             6.6.4-amd64-preempt-sysrq-20231203 #5
+> [ 4230.596289] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> [ 4230.596291] task:kworker/0:2     state:D stack:0     pid:132   ppid:2      flags:0x00004000
+> [ 4230.596294] Workqueue: ipv6_addrconf addrconf_verify_work
+> [ 4230.596305] Call Trace:
+> [ 4230.596310]  <TASK>
+> [ 4230.596317]  __schedule+0x6c3/0x727
+> [ 4230.596330]  ? update_load_avg+0x43/0x3ba
+> [ 4230.596340]  schedule+0x8b/0xbc
+> [ 4230.596349]  schedule_preempt_disabled+0x11/0x1d
+> [ 4230.596359]  __mutex_lock.constprop.0+0x18b/0x291
+> [ 4230.596367]  addrconf_verify_work+0xe/0x20
 
-diff --git a/net/ethtool/ioctl.c b/net/ethtool/ioctl.c
-index 0b0ce4f81c01..ae7e165dc471 100644
---- a/net/ethtool/ioctl.c
-+++ b/net/ethtool/ioctl.c
-@@ -2765,26 +2765,18 @@ static int ethtool_set_fecparam(struct net_device *dev, void __user *useraddr)
- /* The main entry point in this file.  Called from net/core/dev_ioctl.c */
- 
- static int
--__dev_ethtool(struct net *net, struct ifreq *ifr, void __user *useraddr,
--	      u32 ethcmd, struct ethtool_devlink_compat *devlink_state)
-+__dev_ethtool_check(struct net_device *dev, void __user *useraddr,
-+		    u32 ethcmd, u32 *sub_cmd)
- {
--	struct net_device *dev;
--	u32 sub_cmd;
--	int rc;
--	netdev_features_t old_features;
--
--	dev = __dev_get_by_name(net, ifr->ifr_name);
--	if (!dev)
--		return -ENODEV;
--
- 	if (ethcmd == ETHTOOL_PERQUEUE) {
--		if (copy_from_user(&sub_cmd, useraddr + sizeof(ethcmd), sizeof(sub_cmd)))
-+		if (copy_from_user(sub_cmd, useraddr + sizeof(ethcmd), sizeof(*sub_cmd)))
- 			return -EFAULT;
- 	} else {
--		sub_cmd = ethcmd;
-+		*sub_cmd = ethcmd;
- 	}
-+
- 	/* Allow some commands to be done by anyone */
--	switch (sub_cmd) {
-+	switch (*sub_cmd) {
- 	case ETHTOOL_GSET:
- 	case ETHTOOL_GDRVINFO:
- 	case ETHTOOL_GMSGLVL:
-@@ -2823,22 +2815,28 @@ __dev_ethtool(struct net *net, struct ifreq *ifr, void __user *useraddr,
- 	case ETHTOOL_GFECPARAM:
- 		break;
- 	default:
--		if (!ns_capable(net->user_ns, CAP_NET_ADMIN))
-+		if (!ns_capable(dev_net(dev)->user_ns, CAP_NET_ADMIN))
- 			return -EPERM;
- 	}
- 
--	if (dev->dev.parent)
--		pm_runtime_get_sync(dev->dev.parent);
-+	return 0;
-+}
- 
--	if (!netif_device_present(dev)) {
--		rc = -ENODEV;
--		goto out;
--	}
-+static int
-+__dev_ethtool_do(struct net_device *dev, struct ifreq *ifr,
-+		 void __user *useraddr, u32 ethcmd, u32 sub_cmd,
-+		 struct ethtool_devlink_compat *devlink_state)
-+{
-+	netdev_features_t old_features;
-+	int rc;
-+
-+	if (!netif_device_present(dev))
-+		return -ENODEV;
- 
- 	if (dev->ethtool_ops->begin) {
- 		rc = dev->ethtool_ops->begin(dev);
- 		if (rc < 0)
--			goto out;
-+			return rc;
- 	}
- 	old_features = dev->features;
- 
-@@ -3049,7 +3047,7 @@ __dev_ethtool(struct net *net, struct ifreq *ifr, void __user *useraddr,
- 		rc = ethtool_set_fecparam(dev, useraddr);
- 		break;
- 	default:
--		rc = -EOPNOTSUPP;
-+		return -EOPNOTSUPP;
- 	}
- 
- 	if (dev->ethtool_ops->complete)
-@@ -3057,9 +3055,6 @@ __dev_ethtool(struct net *net, struct ifreq *ifr, void __user *useraddr,
- 
- 	if (old_features != dev->features)
- 		netdev_features_change(dev);
--out:
--	if (dev->dev.parent)
--		pm_runtime_put(dev->dev.parent);
- 
- 	return rc;
- }
-@@ -3067,7 +3062,8 @@ __dev_ethtool(struct net *net, struct ifreq *ifr, void __user *useraddr,
- int dev_ethtool(struct net *net, struct ifreq *ifr, void __user *useraddr)
- {
- 	struct ethtool_devlink_compat *state;
--	u32 ethcmd;
-+	struct net_device *dev = NULL;
-+	u32 ethcmd, subcmd;
- 	int rc;
- 
- 	if (copy_from_user(&ethcmd, useraddr, sizeof(ethcmd)))
-@@ -3087,9 +3083,26 @@ int dev_ethtool(struct net *net, struct ifreq *ifr, void __user *useraddr)
- 		break;
- 	}
- 
-+	dev = dev_get_by_name(net, ifr->ifr_name);
-+	if (!dev) {
-+		rc = -ENODEV;
-+		goto exit_free;
-+	}
-+
-+	rc = __dev_ethtool_check(dev, useraddr, ethcmd, &subcmd);
-+	if (rc)
-+		goto exit_free;
-+
-+	if (dev->dev.parent)
-+		pm_runtime_get_sync(dev->dev.parent);
-+
- 	rtnl_lock();
--	rc = __dev_ethtool(net, ifr, useraddr, ethcmd, state);
-+	rc = __dev_ethtool_do(dev, ifr, useraddr, ethcmd, subcmd, state);
- 	rtnl_unlock();
-+
-+	if (dev->dev.parent)
-+		pm_runtime_put(dev->dev.parent);
-+
- 	if (rc)
- 		goto exit_free;
- 
-@@ -3112,6 +3125,8 @@ int dev_ethtool(struct net *net, struct ifreq *ifr, void __user *useraddr)
- 	}
- 
- exit_free:
-+	if (dev)
-+		dev_put(dev);
- 	if (state->devlink)
- 		devlink_put(state->devlink);
- 	kfree(state);
-diff --git a/net/ethtool/netlink.c b/net/ethtool/netlink.c
-index fe3553f60bf3..ee9ccf64688d 100644
---- a/net/ethtool/netlink.c
-+++ b/net/ethtool/netlink.c
-@@ -34,39 +34,23 @@ int ethnl_ops_begin(struct net_device *dev)
- {
- 	int ret;
- 
--	if (!dev)
--		return -ENODEV;
--
--	if (dev->dev.parent)
--		pm_runtime_get_sync(dev->dev.parent);
--
- 	if (!netif_device_present(dev) ||
--	    dev->reg_state == NETREG_UNREGISTERING) {
--		ret = -ENODEV;
--		goto err;
--	}
-+	    dev->reg_state == NETREG_UNREGISTERING)
-+	    	return -ENODEV;
- 
- 	if (dev->ethtool_ops->begin) {
- 		ret = dev->ethtool_ops->begin(dev);
- 		if (ret)
--			goto err;
-+			return ret;
- 	}
- 
- 	return 0;
--err:
--	if (dev->dev.parent)
--		pm_runtime_put(dev->dev.parent);
--
--	return ret;
- }
- 
- void ethnl_ops_complete(struct net_device *dev)
- {
- 	if (dev->ethtool_ops->complete)
- 		dev->ethtool_ops->complete(dev);
--
--	if (dev->dev.parent)
--		pm_runtime_put(dev->dev.parent);
- }
- 
- /**
-@@ -602,6 +586,14 @@ static int ethnl_default_set_doit(struct sk_buff *skb, struct genl_info *info)
- 			goto out_dev;
- 	}
- 
-+	if (!req_info.dev) {
-+		ret = -ENODEV;
-+		goto out_dev;
-+	}
-+
-+	if (req_info.dev->dev.parent)
-+		pm_runtime_get_sync(req_info.dev->dev.parent);
-+
- 	rtnl_lock();
- 	ret = ethnl_ops_begin(req_info.dev);
- 	if (ret < 0)
-@@ -617,6 +609,8 @@ static int ethnl_default_set_doit(struct sk_buff *skb, struct genl_info *info)
- 	ethnl_ops_complete(req_info.dev);
- out_rtnl:
- 	rtnl_unlock();
-+	if (req_info.dev->dev.parent)
-+		pm_runtime_put(req_info.dev->dev.parent);
- out_dev:
- 	ethnl_parse_header_dev_put(&req_info);
- 	return ret;
--- 
-2.43.0
+This is just a worker trying to acquire RTNL.
 
+> [ 4230.596506] INFO: task NetworkManager:3153 blocked for more than 120 seconds.
+> [ 4230.596507]       Tainted: G     U             6.6.4-amd64-preempt-sysrq-20231203 #5
+> [ 4230.596508] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> [ 4230.596509] task:NetworkManager  state:D stack:0     pid:3153  ppid:1      flags:0x00000002
+> [ 4230.596511] Call Trace:
+> [ 4230.596512]  <TASK>
+> [ 4230.596513]  __schedule+0x6c3/0x727
+> [ 4230.596515]  schedule+0x8b/0xbc
+> [ 4230.596517]  schedule_preempt_disabled+0x11/0x1d
+> [ 4230.596519]  __mutex_lock.constprop.0+0x18b/0x291
+> [ 4230.596521]  nl80211_prepare_wdev_dump+0x8b/0x19f [cfg80211 7e4322db9148b7482d4806580d3e58073444690f]
+
+This is just wireless trying to acquire the RTNL on behalf of NM.
+
+> [ 4230.596743] INFO: task ThreadPoolForeg:9425 blocked for more than 120 seconds.
+> [ 4230.596745]       Tainted: G     U             6.6.4-amd64-preempt-sysrq-20231203 #5
+> [ 4230.596745] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> [ 4230.596746] task:ThreadPoolForeg state:D stack:0     pid:9425  ppid:9416   flags:0x00000002
+> [ 4230.596748] Call Trace:
+> [ 4230.596749]  <TASK>
+> [ 4230.596750]  __schedule+0x6c3/0x727
+> [ 4230.596752]  schedule+0x8b/0xbc
+> [ 4230.596754]  schedule_preempt_disabled+0x11/0x1d
+> [ 4230.596756]  __mutex_lock.constprop.0+0x18b/0x291
+> [ 4230.596758]  ? __pfx_ioctl_standard_call+0x40/0x40
+> [ 4230.596760]  ? __pfx_ioctl_private_call+0x40/0x40
+> [ 4230.596762]  wext_ioctl_dispatch+0x4b/0x1a7
+
+I don't know why something should be using wireless extensions, but same
+thing. Also wext is going away for WiFi7 devices. ;)
+
+> [ 4230.596890] INFO: task ethtool:20272 blocked for more than 120 seconds.
+> [ 4230.596891]       Tainted: G     U             6.6.4-amd64-preempt-sysrq-20231203 #5
+> [ 4230.596892] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> [ 4230.596893] task:ethtool         state:D stack:0     pid:20272 ppid:1      flags:0x00004006
+> [ 4230.596894] Call Trace:
+> [ 4230.596895]  <TASK>
+> [ 4230.596896]  __schedule+0x6c3/0x727
+> [ 4230.596899]  schedule+0x8b/0xbc
+> [ 4230.596900]  schedule_preempt_disabled+0x11/0x1d
+> [ 4230.596902]  __mutex_lock.constprop.0+0x18b/0x291
+> [ 4230.596904]  ? __pfx_pci_pm_runtime_resume+0x40/0x40
+> [ 4230.596908]  igc_resume+0x18b/0x1ca [igc 33cdaa7f35d000f01945bed5e87cab1e358c8327]
+> [ 4230.596916]  __rpm_callback+0x7a/0xe7
+> [ 4230.596919]  rpm_callback+0x35/0x64
+> [ 4230.596921]  ? __pfx_pci_pm_runtime_resume+0x40/0x40
+> [ 4230.596922]  rpm_resume+0x342/0x44a
+> [ 4230.596924]  ? dev_get_by_name_rcu+0x25/0x41
+> [ 4230.596926]  ? dev_get_by_name+0x3c/0x4a
+> [ 4230.596928]  __pm_runtime_resume+0x5a/0x7a
+> [ 4230.596930]  ethnl_ops_begin+0x2c/0x8d
+
+This one's still the problem, so I guess my 2-line hack didn't do
+anything.
+
+[snip rest, they're all just waiting for RTNL]
+
+johannes
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
