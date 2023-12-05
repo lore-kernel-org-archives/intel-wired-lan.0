@@ -4,187 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CADEC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Dec 2023 16:10:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE876C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Dec 2023 16:18:25 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id E91E94352A;
-	Tue,  5 Dec 2023 16:10:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org E91E94352A
+	by smtp2.osuosl.org (Postfix) with ESMTP id 4631D4357E;
+	Tue,  5 Dec 2023 16:18:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 4631D4357E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701792606;
-	bh=GJsgXkClNAwhFjl+fNObg8Ro5TdXCI65EctRu+hThYE=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1701793105;
+	bh=dSR52hpnTH/0I74TB7TZAMYKL2/+pfcpCM73zTOeIww=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=r1+qkEOAGVK5u2ohf9rltrtE7L29WkaaFiazEJ6y1NTuJcFroUgexbXBfHvnQxnTs
-	 VRpjnZe6oVlzNZxjI5EFZgIUjFjs6k0CZ0kpPM/iIJrz5NmCWBHfhJha3GLGBaJmuz
-	 qYm5eLi0uYgp3YLxNJkKgKjxafwVXrVoGIvCd8OTYzQPyb2HCuul7QNZXHC0u0ASYw
-	 MAFScc9JiyHY7MXSL7eYAoA6S1sn1Qu0W7ZWtKyvdRIP4zKtGIWSpmBiEaOZKB8ZUD
-	 aRegHe/NRVVkpBSZ7ed3oHn66gBoOR8yvoMOYSuldhdRi1wk3BJZqhSe5g/e3EZQeH
-	 2ior+ahFwpUsw==
+	b=JMBSJvhpFQEQM7QzM54+9byk0ajXerVxkQzqtg3lRF8B0Xri998DeYQQOHvHTsBPX
+	 uaiQkuqGyaXIeetaoBzOtRz8jK2wDGuchgLHPTHM+5lSOn7KUC+cZJP4M96PRECRMK
+	 dcOeqVHNjWiNp4MxFGgjWj3b9kw9xALaqWfOdnw/woAwaZRXOl1JlP4N8DkxurgiyG
+	 4j3tQQ0NXwz0Sz43sr5IGI+MkUwJ/7Uy2Nsc7fWnYe5GIQrhNStLtcwyLjpb1PsPji
+	 VR8FmvRidz4RfvKYQFH4/fLXyY2FxMIxd5b/k5IdilV+qPQUSnhVkTSwjUps7RXQcn
+	 8NtnbFKklHDDA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id EJK7Dcw-PFMv; Tue,  5 Dec 2023 16:10:04 +0000 (UTC)
+	with ESMTP id WTFISnoAPnYH; Tue,  5 Dec 2023 16:18:22 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id A431E43569;
-	Tue,  5 Dec 2023 16:10:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org A431E43569
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 786291BF279
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 16:10:03 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id F17A34356B;
+	Tue,  5 Dec 2023 16:18:21 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F17A34356B
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id EF79C1BF2F7
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 02:47:04 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 4E293613A2
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 16:10:03 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4E293613A2
+ by smtp1.osuosl.org (Postfix) with ESMTP id B7C5782241
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 02:47:04 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B7C5782241
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 9oMibc6felIc for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 Dec 2023 16:10:02 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 4A5E5611FC
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 16:10:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4A5E5611FC
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="392780236"
-X-IronPort-AV: E=Sophos;i="6.04,252,1695711600"; d="scan'208";a="392780236"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 08:10:01 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="888992792"
-X-IronPort-AV: E=Sophos;i="6.04,252,1695711600"; d="scan'208";a="888992792"
-Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
- by fmsmga002.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
- 05 Dec 2023 08:10:01 -0800
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Tue, 5 Dec 2023 08:10:01 -0800
-Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35; Tue, 5 Dec 2023 08:10:00 -0800
-Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
- fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.35 via Frontend Transport; Tue, 5 Dec 2023 08:10:00 -0800
-Received: from NAM02-DM3-obe.outbound.protection.outlook.com (104.47.56.40) by
- edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.34; Tue, 5 Dec 2023 08:09:57 -0800
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=UPko4fT5Gp+VGl2+ks9sEj1wQVHm0Yrj8ql/4PO2tlBcdscgXNhP+2tsyyylTuuiAebaBAb0d8GMgiEipbf8MOwwIkLA4NzqeV2vI5O0KhxwIc6rBnjIqOHVOTALF/qCFQyFHDQGYMTgvgyJpMUf8O5kDAfjhF85JOAtDNcf5m0bX9ZMQx/2WujIVBR0GcuONLsJ0xc+vQnslR57qZu+s3XHzYHE1N2+NjJrQHpoOrLaFgr2ELXeQ9Noikug/w8uB/6ImlDjvWV2I8LnsxNHcEeVhrlNe9m6RLVsvfldv+UYWMJ6TaQLPxyuk+9QJdZdJSSnU4OpfATS3ud0sIxnvA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=8BvyqlErlpRNH+sXPi2e5T3qmLMD291kVkkmKfiizy4=;
- b=fnfDzORqJNWsEZPggC/aiBvG10XpNHpC3vealsv6vnE9T3zn5JOpVVOk9mxGH7vkK4Km6noqXapLu99Cbuy6I6VtD/OsT3hUkB0yQ/ssgDydyJrda6uqyvmaVeZUKzwkpW47CbbSfehZJr0Vf4ImEIeIsMv/1c45rqmdX+mqwhdf1ZNa2l4lli7l55U0SXMwz8SUJSuxSpByITIO/EPBQKFyNuwOqXrzblSxy6ZHD7KAX3i+nN3ufsZrfjV3kaWWoZ9sWNpnSYddkoSgzq8z9HuHT9Mdei5f0yYILwF/+JkpvxzUZErdDzOzH4QfOjf9sifzY5694jeRpqyT2NAtKg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Received: from BYAPR11MB3672.namprd11.prod.outlook.com (2603:10b6:a03:fa::30)
- by SN7PR11MB7665.namprd11.prod.outlook.com (2603:10b6:806:340::8)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7046.33; Tue, 5 Dec
- 2023 16:09:56 +0000
-Received: from BYAPR11MB3672.namprd11.prod.outlook.com
- ([fe80::5112:5e76:3f72:38f7]) by BYAPR11MB3672.namprd11.prod.outlook.com
- ([fe80::5112:5e76:3f72:38f7%5]) with mapi id 15.20.7046.034; Tue, 5 Dec 2023
- 16:09:56 +0000
-Message-ID: <8eca364e-8796-d01f-ead3-2a419a9f7658@intel.com>
-Date: Tue, 5 Dec 2023 17:09:48 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.3.1
-Content-Language: en-US
-To: Pawel Chmielewski <pawel.chmielewski@intel.com>,
- <intel-wired-lan@lists.osuosl.org>
-References: <20231205152620.568183-1-pawel.chmielewski@intel.com>
-From: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-In-Reply-To: <20231205152620.568183-1-pawel.chmielewski@intel.com>
-X-ClientProxiedBy: FR2P281CA0184.DEUP281.PROD.OUTLOOK.COM
- (2603:10a6:d10:9f::16) To BYAPR11MB3672.namprd11.prod.outlook.com
- (2603:10b6:a03:fa::30)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id VTJRtshFGOto for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Dec 2023 02:47:01 +0000 (UTC)
+Received: from mail1.merlins.org (magic.merlins.org [209.81.13.136])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B564B8141B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 02:47:00 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B564B8141B
+Received: from c-76-132-34-178.hsd1.ca.comcast.net ([76.132.34.178]:35894
+ helo=sauron.svh.merlins.org) by mail1.merlins.org with esmtpsa 
+ (Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim
+ 4.94.2 #2)
+ id 1rALSX-0004fN-AP by authid <merlins.org> with srv_auth_plain;
+ Mon, 04 Dec 2023 18:46:53 -0800
+Received: from merlin by sauron.svh.merlins.org with local (Exim 4.92)
+ (envelope-from <marc@merlins.org>)
+ id 1rALSW-0006YL-TJ; Mon, 04 Dec 2023 18:46:52 -0800
+Date: Mon, 4 Dec 2023 18:46:52 -0800
+From: Marc MERLIN <marc@merlins.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Message-ID: <20231205024652.GA12805@merlins.org>
+References: <20231204200710.40c291e60cea.I2deb5804ef1739a2af307283d320ef7d82456494@changeid>
+ <20231204200038.GA9330@merlins.org>
+ <a6ac887f7ce8af0235558752d0c781b817f1795a.camel@sipsolutions.net>
+ <20231204203622.GB9330@merlins.org>
+ <24577c9b8b4d398fe34bd756354c33b80cf67720.camel@sipsolutions.net>
+ <20231204205439.GA32680@merlins.org>
+ <20231204212849.GA25864@merlins.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR11MB3672:EE_|SN7PR11MB7665:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7a149d36-9209-4fff-51fc-08dbf5ac9f56
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: qMbWqLM6qs6Ew4nCMfXSmguF93jAV2Zk0xF6KNIZ/haCLm7ySbu5Y+rERhBEVs3vktmk4gXJne1jbxye6DtHNZ57pgZIXx2jPmGZi+NkK+LB84t0YAqGdn5ta9l74v0qKJvbukNWGf4zG8ea8tm5eAERlb4qIanOCE1P1JLgFr0cLRxYnXW2rJ2SAGh+mh2vvm5ZbdMWHVaCXepti7BquKHiJ/OBBQ3kKKBUDArUkN7f8NN2HDpsMuAJ9l7DMdjoMmpOa4Z2Dfv9Bnjr/pbNUe4UxK+EiZ0y4UCLi7FWd6fvMuOkbDeSdgDwDkXo5aYF7sf/OA7npWusjDaG/IIJcxy5pvi0tHz7N2B6OZWpZBVG49qfsEfDN5Ol/7u9l63Ix8LngUQIxJGNLoXj3Mm+AsRV4MVpXKHgS2dH0UgJSaefxI/OjCsglLLXXIvcFjZoa0lMwdhVjpj2lw34oHmmOQA4J7ka8QKbXMgm8+SWis0cs7k5eAp7QiMyZz+ZAg470jnyMb2Se46MagJBnf1Pwtx2Dopr+LmBAOrdScarGqQ87xHnHPrcP4eGUCbpYSjIDnxfNn1uvL42iLxf1nsa1YI/V9ne3G011/aOssKZJcNas+CV2ol/yZc+GEdKzji1OW7TWNswcG4j378HO9Z86Q==
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:BYAPR11MB3672.namprd11.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(376002)(346002)(366004)(396003)(136003)(39860400002)(230922051799003)(1800799012)(64100799003)(451199024)(186009)(26005)(478600001)(6486002)(6666004)(6512007)(6506007)(53546011)(82960400001)(36756003)(2616005)(107886003)(316002)(66556008)(66476007)(66946007)(54906003)(31686004)(38100700002)(5660300002)(86362001)(4326008)(8936002)(8676002)(2906002)(31696002)(41300700001)(43740500002)(45980500001);
- DIR:OUT; SFP:1102; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?bGRZUERxSFN5elljdVVnbExnUE5CdmJFN3lFTmVzaEM0N3NRWGJ6ZEJhOGpZ?=
- =?utf-8?B?MTBTd1podFFTN1hCMEIvNnZ1RGc2N1BUZzhyNUhjOU5uTnRMTGdNYmJkUk5S?=
- =?utf-8?B?RVRDdGFPQ21HSk5TMVo5ekVGbjZJK2YwVmhVOUg2endCbWtuZjBFTkVwanJE?=
- =?utf-8?B?YnpuZ3ROWWdJa3luRUZRNU50SkFRWUlpNnlLRnYyVzBTVng2Q2F4aEpvTU9Z?=
- =?utf-8?B?N1ltSDRQekZ5VWpFb0NneHEzL0FuZS9vK1dDVHJqektOS1hOTHA3ME1uWTlV?=
- =?utf-8?B?M2I4QTFNN2pjb0lqSVpLUHhuNnJJTVF2T0VOMk5BS0ZuM3FQaklEc1lwaklr?=
- =?utf-8?B?b2U2MXJWdXJ1cndlRmFXRFIvU0RRZVRCWnNaZFBPbmZKVnlQVFYzMjJVQ2hO?=
- =?utf-8?B?ZE9HdjZvNkZjOWNVa3BCajQ2bG5DdmliTGtpQm9tQWFTaHN0a09XUUJtNllj?=
- =?utf-8?B?ZUJ4bjc5YVdsMlJlVXRCeSs0N1dTNDFJbFpQazBPRHJQL2pWT05yQXJvZG44?=
- =?utf-8?B?TkdLcEVhNHprRGRBV2p4eU9odHVTTmZMZzYrZ2JmMjdQMVFycERtbEFPTW9E?=
- =?utf-8?B?STZNdDNGaFA3d1N1Q2pLOWMxaHlMdWhQMkx5cVlIdWJXYTRlTFhDT0dJWTdr?=
- =?utf-8?B?TE5nTGovMmc1UjdlWXF0d3dXSEpTdmk1d0UzbmhKSmxIYXNUN3ZYSHZYaWly?=
- =?utf-8?B?OEdEa09HVU1pemE1NG5aVEJLZGJlTlFzQUhHSU9qUHpZc2ZsUE01OTdVdWha?=
- =?utf-8?B?S2l3Wk05ZlgxMHZSdTQwS1pMdy9jSlR0RSszcHhyeHExL0x5ZWVVcWp4VGlh?=
- =?utf-8?B?UkkyT3I5RDFuZEJIR2pRZzR2T0lhaUJYbU9aQzVLM0FsVEtMcXJKQUVzN3NC?=
- =?utf-8?B?MGhFNmwwWWFCdzJGQXZ6QWVKd3Y0ZVR4bVMvVzgrYWhqK0ZLUnd6MWNBUHhr?=
- =?utf-8?B?N3hNMWFGNjBHejRzcHBOWWRTdmNGSXluM1hBK3hlNFVkaG5qdlV1R2JhM3VI?=
- =?utf-8?B?ZFpyYU85Qng5R0xtT0RuZmEzSmg0L0VHeWlJaVZVYVV5R3pPcU5FU3RhSmFl?=
- =?utf-8?B?aWE1WGtrRG9CMk9iRFZRVmRwRzJHQmRnd1AvckRGZUc4WFBxWU5ZNUt0eHpH?=
- =?utf-8?B?ZnRIOS9zZjBBNG9zcURFbWNrWEdUL1ZxTWh6WjdUWUVWZ2pmRmxIekdsM2F1?=
- =?utf-8?B?OUxiS1BqWWYxRkJ2UmFxaHZMT0w4UnFRanFqRVFXQzNBeEsrUWVQelpQbVNH?=
- =?utf-8?B?aStGZm5LaWtPbFI3WnB5OGwzdk5lU1Z6amg1cGJ5Z2d0RXJNcC8wZElIb0V3?=
- =?utf-8?B?eUxDVGlOeG5sYjQrMk8weXI2Vml0NG5HdGdHSHVYaWtCcjFtdzl1bzUvWVlQ?=
- =?utf-8?B?Vy9GaytPbWFtM0pJQTBBcVI5cHpVOTNFUHUrZ2NVRnNBeitvZGxCeGllaEF1?=
- =?utf-8?B?eG5wM0h4eVYwemliK2lybTRsMElENlZyM2JtSDFkNDZDd3FuUHA1dzZ5U0F0?=
- =?utf-8?B?TGtNL2I3dHZPald4UnN2dHp2NHRqRDFoOWdWL3k4OElYdFNMb0JqWDZDbDJW?=
- =?utf-8?B?RTJiaWNEQTlnYlpRb2dKdTBnejQ4ZmtDeFJZVzg5eXFBa254U2NWQmNEa2dt?=
- =?utf-8?B?M3BRZmZJODQ3eXc4UnZLVDRDaDJsc1drQ2QxSUptL29GbEpaZy9zSXY1b1gy?=
- =?utf-8?B?YUU3V05VTEFSdlpoSGx2Q0dUdThTVTZzanpyTExnQ3NybXdpTmI5UEZEVWF6?=
- =?utf-8?B?UHNxUS8ranlBYSs5NFc4QmYzRUYxMzNqUEVvUzgvc3AzeC9ZNnBMcmxPK2tQ?=
- =?utf-8?B?ZXpVeWhNcFlZZEtaNmFCRElSYXVLb1VDQzF2dUMxdStWU2Uyby9uWkZtVGE3?=
- =?utf-8?B?bTBZbTBwdXlOdU9DWWQ4QURkUlFUbVZLT296Ui90MldjcTczS05jTXdpM0d2?=
- =?utf-8?B?ak9BY0JqbUZ2aFVRa0o4UWRTU1dOTmlGMUFsUjl4UFlyeDBHTGFxYktuK0gr?=
- =?utf-8?B?UXRYbEdQSmJIZHdIWnZ1Mnp4YVgvaERJUHRYUnZMZVkwczBtSTQwOTRaMGtq?=
- =?utf-8?B?V1BBcElJWElSQ2gxdXUzNk5STXFMcTIyMDl4TXVCNm12Szc5VU0vKzBTbkFO?=
- =?utf-8?B?TUlSOW1VRWwxdEluSGNGaEpSZVZnUjRaMUVteXdlVzJhd29HQlFxN052alMv?=
- =?utf-8?Q?Zo7JjXRHch3A5M5vIbytSBw=3D?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7a149d36-9209-4fff-51fc-08dbf5ac9f56
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB3672.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Dec 2023 16:09:56.1832 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: QU4uZZGlDUoz0ENB5qXtnpK3JGE3uipiW4axid8hgq8Eid2og2GghIKFclLMIuEtNW7aegoKDtWfFzNcj3+Zj4t2V+RtaaxCmLRHJpc1ULU=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN7PR11MB7665
-X-OriginatorOrg: intel.com
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1701792602; x=1733328602;
- h=message-id:date:subject:to:cc:references:from:
- in-reply-to:content-transfer-encoding:mime-version;
- bh=C/oHXb4JfloEcj9RUEqYmf3NTcPJpcC7thkzrpT0SMQ=;
- b=CQv0vuNsdEzv+DGcvapYy+2jG2h0NUTELXqsmupRhOdlNpEUp2UrW117
- tAg6CHAhXcNvWWNnRCztywGZSaPP2/LJbitJqdiSc10udD5xD3TGtd3sW
- Z9NuYbqe00Gh7pXMjw6k10glsjya85ZvD0cgH8OjUgykcI+rjnCNV2BmL
- EzZVDOKpIztDfgkTBIeVND8FZ/hNQ6+fCsSq18rXBe3zKaY/j0WZm8Rkp
- WxfhsavxW0V9W/nIP9Bc437l5lJR/wXkhNpNvBxveWh6VZ5Tg9v+d6zvq
- kHimhf9+a/sn3u74zHkVGATJanBhWuasxlRLYoLSsbbiuLiN0KseIbPJR
- A==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=CQv0vuNs
-X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next] ice: Do not get coalesce
- settings while in reset
+Content-Disposition: inline
+In-Reply-To: <20231204212849.GA25864@merlins.org>
+X-Sysadmin: BOFH
+X-URL: http://marc.merlins.org/
+X-SA-Exim-Connect-IP: 76.132.34.178
+X-SA-Exim-Mail-From: marc@merlins.org
+X-Mailman-Approved-At: Tue, 05 Dec 2023 16:18:20 +0000
+Subject: Re: [Intel-wired-lan] [RFC PATCH] net: ethtool: do runtime PM
+ outside RTNL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -197,44 +88,384 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>, netdev@vger.kernel.org,
- Mateusz Polchlopek <mateusz.polchlopek@intel.com>
+Cc: netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Heiner Kallweit <hkallweit1@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On 12/5/23 16:26, Pawel Chmielewski wrote:
-> From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+On Mon, Dec 04, 2023 at 01:28:49PM -0800, Marc MERLIN wrote:
+> sauron:~# iwconfig wlp9s0
+> wlp9s0    IEEE 802.11  ESSID:"magicnet"  
+>           Mode:Managed  Frequency:5.2 GHz  Access Point: E0:63:DA:28:03:67   
+>           Bit Rate=866.7 Mb/s   Tx-Power=22 dBm   
+>           Retry short limit:7   RTS thr:off   Fragment thr:off
+>           Encryption key:off
+>           Power Management:off
+>           Link Quality=70/70  Signal level=-40 dBm  
+>           Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+>           Tx excessive retries:0  Invalid misc:992   Missed beacon:0
 > 
-> Getting coalesce settings while reset is in progress can cause NULL
-> pointer deference bug.
-> If under reset, abort get coalesce for ethtool.
-> 
-> Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
-> Reviewed-by: Mateusz Polchlopek <mateusz.polchlopek@intel.com>
-> Signed-off-by: Pawel Chmielewski <pawel.chmielewski@intel.com>
-> ---
->   drivers/net/ethernet/intel/ice/ice_ethtool.c | 3 +++
->   1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> index bde9bc74f928..2d565cc484a0 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
-> @@ -3747,6 +3747,9 @@ __ice_get_coalesce(struct net_device *netdev, struct ethtool_coalesce *ec,
->   	struct ice_netdev_priv *np = netdev_priv(netdev);
->   	struct ice_vsi *vsi = np->vsi;
->   
-> +	if (ice_is_reset_in_progress(vsi->back->state))
-> +		return -EBUSY;
-> +
->   	if (q_num < 0)
->   		q_num = 0;
->   
+> sauron:~# lspci | grep -i net
+> 09:00.0 Network controller: Intel Corporation Wi-Fi 6 AX210/AX211/AX411 160MHz (rev 1a)
+> 0b:00.0 Ethernet controller: Intel Corporation Ethernet Controller I225-LM (rev 03)
 
-Sorry for a late review,
-This asks for a Fixes: tag, and targeting at iwl-net instead :)
+Probably not related and probably ok, but getting these bug workaround
+messages:
+[ 2448.505576] iwlwifi 0000:09:00.0: Detected RF GF, rfid=0x10d000
+[ 2448.578917] iwlwifi 0000:09:00.0: base HW address: f4:4e:e3:fb:7f:93
+[ 2448.601421] iwlwifi 0000:09:00.0 wlp9s0: renamed from wlan0
+[ 2448.695483] iwlwifi 0000:09:00.0: WRT: Invalid buffer destination
+[ 2448.863729] iwlwifi 0000:09:00.0: WFPM_UMAC_PD_NOTIFICATION: 0x20
+[ 2448.863785] iwlwifi 0000:09:00.0: WFPM_LMAC2_PD_NOTIFICATION: 0x1f
+[ 2448.863812] iwlwifi 0000:09:00.0: WFPM_AUTH_KEY_0: 0x90
+[ 2448.863837] iwlwifi 0000:09:00.0: CNVI_SCU_SEQ_DATA_DW9: 0x0
+[ 2448.971242] iwlwifi 0000:09:00.0: Registered PHC clock: iwlwifi-PTP, with index: 1
+[ 2449.063668] iwlwifi 0000:09:00.0: WRT: Invalid buffer destination
+[ 2449.232085] iwlwifi 0000:09:00.0: WFPM_UMAC_PD_NOTIFICATION: 0x20
+[ 2449.232143] iwlwifi 0000:09:00.0: WFPM_LMAC2_PD_NOTIFICATION: 0x1f
+[ 2449.232169] iwlwifi 0000:09:00.0: WFPM_AUTH_KEY_0: 0x90
+[ 2449.232188] iwlwifi 0000:09:00.0: CNVI_SCU_SEQ_DATA_DW9: 0x0
+[13323.572484] iwlwifi 0000:09:00.0: TB bug workaround: copied 152 bytes from 0xffffff68 to 0xfd080000
+[13328.000825] iwlwifi 0000:09:00.0: TB bug workaround: copied 1272 bytes from 0xfffffb08 to 0xff42c000
+[13367.278564] iwlwifi 0000:09:00.0: TB bug workaround: copied 1328 bytes from 0xfffffad0 to 0xfec41000
+[13389.737971] iwlwifi 0000:09:00.0: TB bug workaround: copied 572 bytes from 0xfffffdc4 to 0xff091000
+[13389.860480] iwlwifi 0000:09:00.0: TB bug workaround: copied 148 bytes from 0xffffff6c to 0xfe412000
+[13393.435354] iwlwifi 0000:09:00.0: TB bug workaround: copied 360 bytes from 0xfffffe98 to 0xfedcd000
+[13409.827199] iwlwifi 0000:09:00.0: TB bug workaround: copied 1348 bytes from 0xfffffabc to 0xfd057000
+
+The other good news is that it now shuts down ok, which is
+understandable with the deadlock fixed.
+
+The only thing I'm still seeing is this, I'm not too sure how avad it
+is, or whether it's ok-ish.
+I understand it's likely totally unrelated, although there are some
+iwlwifi lines below if that's helpful
+Otherwise, laptop is still working ok so far.
+
+[ 1879.679720] pcieport 0000:00:07.1: power state changed by ACPI to D0
+[ 1879.679727] pcieport 0000:00:07.1: ACPI _REG connect evaluation failed (5)
+[ 1879.691616] pcieport 0000:00:07.1: restore config 0x2c: 0x00000064 -> 0x00000064
+[ 1879.691624] pcieport 0000:00:07.1: restore config 0x28: 0x00000064 -> 0x00000064
+[ 1879.691627] pcieport 0000:00:07.1: restore config 0x24: 0x4bf13001 -> 0x4bf13001
+[ 1879.691959] pcieport 0000:00:07.1: PME# disabled
+[ 1879.691967] pcieport 0000:00:07.1: pciehp: pciehp_check_link_active: lnk_status = 1001
+[ 1879.803706] pcieport 0000:00:07.0: power state changed by ACPI to D0
+[ 1879.803714] pcieport 0000:00:07.0: ACPI _REG connect evaluation failed (5)
+[ 1879.815840] pcieport 0000:00:07.1: save config 0x00: 0x9a2d8086
+[ 1879.815847] pcieport 0000:00:07.1: save config 0x04: 0x00100407
+[ 1879.815849] pcieport 0000:00:07.1: save config 0x08: 0x06040005
+[ 1879.815851] pcieport 0000:00:07.1: save config 0x0c: 0x00810000
+[ 1879.815852] pcieport 0000:00:07.1: save config 0x10: 0x00000000
+[ 1879.815854] pcieport 0000:00:07.1: save config 0x14: 0x00000000
+[ 1879.815856] pcieport 0000:00:07.1: save config 0x18: 0x00795000
+[ 1879.815858] pcieport 0000:00:07.1: save config 0x1c: 0x00006060
+[ 1879.815859] pcieport 0000:00:07.1: save config 0x20: 0x9e109200
+[ 1879.815861] pcieport 0000:00:07.1: save config 0x24: 0x4bf13001
+[ 1879.815863] pcieport 0000:00:07.1: save config 0x28: 0x00000064
+[ 1879.815864] pcieport 0000:00:07.1: save config 0x2c: 0x00000064
+[ 1879.815866] pcieport 0000:00:07.1: save config 0x30: 0x00000000
+[ 1879.815868] pcieport 0000:00:07.1: save config 0x34: 0x00000040
+[ 1879.815869] pcieport 0000:00:07.1: save config 0x38: 0x00000000
+[ 1879.815871] pcieport 0000:00:07.1: save config 0x3c: 0x000202ff
+[ 1879.815954] pcieport 0000:00:07.1: PME# enabled
+[ 1879.816250] pcieport 0000:00:07.0: restore config 0x2c: 0x00000064 -> 0x00000064
+[ 1879.816253] pcieport 0000:00:07.0: restore config 0x28: 0x00000064 -> 0x00000064
+[ 1879.816256] pcieport 0000:00:07.0: restore config 0x24: 0x2bf11001 -> 0x2bf11001
+[ 1879.816540] pcieport 0000:00:07.0: PME# disabled
+[ 1879.816546] pcieport 0000:00:07.0: pciehp: pciehp_check_link_active: lnk_status = 1001
+[ 1879.827631] pcieport 0000:00:07.1: ACPI _REG disconnect evaluation failed (5)
+[ 1879.827765] pcieport 0000:00:07.1: power state changed by ACPI to D3cold
+[ 1879.939979] pcieport 0000:00:07.0: save config 0x00: 0x9a2b8086
+[ 1879.939986] pcieport 0000:00:07.0: save config 0x04: 0x00100407
+[ 1879.939988] pcieport 0000:00:07.0: save config 0x08: 0x06040005
+[ 1879.939989] pcieport 0000:00:07.0: save config 0x0c: 0x00810000
+[ 1879.939991] pcieport 0000:00:07.0: save config 0x10: 0x00000000
+[ 1879.939993] pcieport 0000:00:07.0: save config 0x14: 0x00000000
+[ 1879.939995] pcieport 0000:00:07.0: save config 0x18: 0x00492000
+[ 1879.939996] pcieport 0000:00:07.0: save config 0x1c: 0x00005050
+[ 1879.939998] pcieport 0000:00:07.0: save config 0x20: 0xac10a000
+[ 1879.940000] pcieport 0000:00:07.0: save config 0x24: 0x2bf11001
+[ 1879.940001] pcieport 0000:00:07.0: save config 0x28: 0x00000064
+[ 1879.940003] pcieport 0000:00:07.0: save config 0x2c: 0x00000064
+[ 1879.940005] pcieport 0000:00:07.0: save config 0x30: 0x00000000
+[ 1879.940007] pcieport 0000:00:07.0: save config 0x34: 0x00000040
+[ 1879.940008] pcieport 0000:00:07.0: save config 0x38: 0x00000000
+[ 1879.940010] pcieport 0000:00:07.0: save config 0x3c: 0x000201ff
+[ 1879.940093] pcieport 0000:00:07.0: PME# enabled
+[ 1879.951532] pcieport 0000:00:07.0: ACPI _REG disconnect evaluation failed (5)
+[ 1879.951665] pcieport 0000:00:07.0: power state changed by ACPI to D3cold
+[ 2085.430089] pci 0000:00:00.0: save config 0x00: 0x9a268086
+[ 2085.430118] pci 0000:00:00.0: save config 0x04: 0x00900106
+[ 2085.430131] pci 0000:00:00.0: save config 0x08: 0x06000005
+[ 2085.430144] pci 0000:00:00.0: save config 0x0c: 0x00000000
+[ 2085.430156] pci 0000:00:00.0: save config 0x10: 0x00000000
+[ 2085.430167] pci 0000:00:00.0: save config 0x14: 0x00000000
+[ 2085.430178] pci 0000:00:00.0: save config 0x18: 0x00000000
+[ 2085.430189] pci 0000:00:00.0: save config 0x1c: 0x20000000
+[ 2085.430200] pci 0000:00:00.0: save config 0x20: 0x00000000
+[ 2085.430211] pci 0000:00:00.0: save config 0x24: 0x00000000
+[ 2085.430222] pci 0000:00:00.0: save config 0x28: 0x00000000
+[ 2085.430233] pci 0000:00:00.0: save config 0x2c: 0x22de17aa
+[ 2085.430244] pci 0000:00:00.0: save config 0x30: 0x00000000
+[ 2085.430255] pci 0000:00:00.0: save config 0x34: 0x00000000
+[ 2085.430265] pci 0000:00:00.0: save config 0x38: 0x00000000
+[ 2085.430276] pci 0000:00:00.0: save config 0x3c: 0x00000000
+[ 2085.465583] xhci_hcd 0000:00:0d.0: save config 0x00: 0x9a178086
+[ 2085.465609] xhci_hcd 0000:00:0d.0: save config 0x04: 0x02900402
+[ 2085.465622] xhci_hcd 0000:00:0d.0: save config 0x08: 0x0c033005
+[ 2085.465631] xhci_hcd 0000:00:0d.0: save config 0x0c: 0x00800000
+[ 2085.465642] xhci_hcd 0000:00:0d.0: save config 0x10: 0x4d170004
+[ 2085.465652] xhci_hcd 0000:00:0d.0: save config 0x14: 0x00000064
+[ 2085.465663] xhci_hcd 0000:00:0d.0: save config 0x18: 0x00000000
+[ 2085.465673] xhci_hcd 0000:00:0d.0: save config 0x1c: 0x00000000
+[ 2085.465683] xhci_hcd 0000:00:0d.0: save config 0x20: 0x00000000
+[ 2085.465693] xhci_hcd 0000:00:0d.0: save config 0x24: 0x00000000
+[ 2085.465703] xhci_hcd 0000:00:0d.0: save config 0x28: 0x00000000
+[ 2085.465712] xhci_hcd 0000:00:0d.0: save config 0x2c: 0x22de17aa
+[ 2085.465722] xhci_hcd 0000:00:0d.0: save config 0x30: 0x00000000
+[ 2085.465732] xhci_hcd 0000:00:0d.0: save config 0x34: 0x00000070
+[ 2085.465742] xhci_hcd 0000:00:0d.0: save config 0x38: 0x00000000
+[ 2085.465752] xhci_hcd 0000:00:0d.0: save config 0x3c: 0x000000ff
+[ 2085.465920] xhci_hcd 0000:00:0d.0: PME# enabled
+[ 2085.477664] thunderbolt 0000:00:0d.2: save config 0x00: 0x9a1f8086
+[ 2085.477685] thunderbolt 0000:00:0d.2: save config 0x04: 0x00100407
+[ 2085.477694] thunderbolt 0000:00:0d.2: save config 0x08: 0x0c034005
+[ 2085.477701] thunderbolt 0000:00:0d.2: save config 0x0c: 0x00000000
+[ 2085.477709] thunderbolt 0000:00:0d.2: save config 0x10: 0x4d100004
+[ 2085.477717] thunderbolt 0000:00:0d.2: save config 0x14: 0x00000064
+[ 2085.477725] thunderbolt 0000:00:0d.2: save config 0x18: 0x4d18b004
+[ 2085.477732] thunderbolt 0000:00:0d.2: save config 0x1c: 0x00000064
+[ 2085.477739] thunderbolt 0000:00:0d.2: save config 0x20: 0x00000000
+[ 2085.477746] thunderbolt 0000:00:0d.2: save config 0x24: 0x00000000
+[ 2085.477753] thunderbolt 0000:00:0d.2: save config 0x28: 0x00000000
+[ 2085.477760] thunderbolt 0000:00:0d.2: save config 0x2c: 0x22de17aa
+[ 2085.477767] thunderbolt 0000:00:0d.2: save config 0x30: 0x00000000
+[ 2085.477774] thunderbolt 0000:00:0d.2: save config 0x34: 0x00000080
+[ 2085.477781] thunderbolt 0000:00:0d.2: save config 0x38: 0x00000000
+[ 2085.477789] thunderbolt 0000:00:0d.2: save config 0x3c: 0x000001ff
+[ 2085.478239] thunderbolt 0000:00:0d.2: PME# enabled
+[ 2085.478864] xhci_hcd 0000:00:0d.0: ACPI _REG disconnect evaluation failed (5)
+[ 2085.479107] xhci_hcd 0000:00:0d.0: power state changed by ACPI to D3cold
+[ 2085.486600] pci 0000:00:14.2: save config 0x00: 0x43ef8086
+[ 2085.486624] pci 0000:00:14.2: save config 0x04: 0x00100000
+[ 2085.486634] pci 0000:00:14.2: save config 0x08: 0x05000011
+[ 2085.486642] pci 0000:00:14.2: save config 0x0c: 0x00000000
+[ 2085.486651] pci 0000:00:14.2: save config 0x10: 0x4d184004
+[ 2085.486659] pci 0000:00:14.2: save config 0x14: 0x00000064
+[ 2085.486668] pci 0000:00:14.2: save config 0x18: 0x4d18a004
+[ 2085.486675] pci 0000:00:14.2: save config 0x1c: 0x00000064
+[ 2085.486683] pci 0000:00:14.2: save config 0x20: 0x00000000
+[ 2085.486691] pci 0000:00:14.2: save config 0x24: 0x00000000
+[ 2085.486699] pci 0000:00:14.2: save config 0x28: 0x00000000
+[ 2085.486706] pci 0000:00:14.2: save config 0x2c: 0x22de17aa
+[ 2085.486714] pci 0000:00:14.2: save config 0x30: 0x00000000
+[ 2085.486722] pci 0000:00:14.2: save config 0x34: 0x00000080
+[ 2085.486730] pci 0000:00:14.2: save config 0x38: 0x00000000
+[ 2085.486738] pci 0000:00:14.2: save config 0x3c: 0x000000ff
+[ 2085.490056] thunderbolt 0000:00:0d.2: ACPI _REG disconnect evaluation failed (5)
+[ 2085.518094] pci 0000:00:1f.0: save config 0x00: 0x43898086
+[ 2085.518119] pci 0000:00:1f.0: save config 0x04: 0x00000407
+[ 2085.518129] pci 0000:00:1f.0: save config 0x08: 0x06010011
+[ 2085.518137] pci 0000:00:1f.0: save config 0x0c: 0x00800000
+[ 2085.518145] pci 0000:00:1f.0: save config 0x10: 0x00000000
+[ 2085.518154] pci 0000:00:1f.0: save config 0x14: 0x00000000
+[ 2085.518162] pci 0000:00:1f.0: save config 0x18: 0x00000000
+[ 2085.518169] pci 0000:00:1f.0: save config 0x1c: 0x00000000
+[ 2085.518177] pci 0000:00:1f.0: save config 0x20: 0x00000000
+[ 2085.518184] pci 0000:00:1f.0: save config 0x24: 0x00000000
+[ 2085.518192] pci 0000:00:1f.0: save config 0x28: 0x00000000
+[ 2085.518200] pci 0000:00:1f.0: save config 0x2c: 0x22de17aa
+[ 2085.518208] pci 0000:00:1f.0: save config 0x30: 0x00000000
+[ 2085.518215] pci 0000:00:1f.0: save config 0x34: 0x00000000
+[ 2085.518223] pci 0000:00:1f.0: save config 0x38: 0x00000000
+[ 2085.518230] pci 0000:00:1f.0: save config 0x3c: 0x00000000
+[ 2085.524402] thunderbolt 0000:00:0d.2: power state changed by ACPI to D3cold
+[ 2085.533410] i801_smbus 0000:00:1f.4: save config 0x00: 0x43a38086
+[ 2085.533435] i801_smbus 0000:00:1f.4: save config 0x04: 0x02800003
+[ 2085.533448] i801_smbus 0000:00:1f.4: save config 0x08: 0x0c050011
+[ 2085.533458] i801_smbus 0000:00:1f.4: save config 0x0c: 0x00000000
+[ 2085.533469] i801_smbus 0000:00:1f.4: save config 0x10: 0x4d188004
+[ 2085.533479] i801_smbus 0000:00:1f.4: save config 0x14: 0x00000064
+[ 2085.533490] i801_smbus 0000:00:1f.4: save config 0x18: 0x00000000
+[ 2085.533500] i801_smbus 0000:00:1f.4: save config 0x1c: 0x00000000
+[ 2085.533509] i801_smbus 0000:00:1f.4: save config 0x20: 0x0000efa1
+[ 2085.533520] i801_smbus 0000:00:1f.4: save config 0x24: 0x00000000
+[ 2085.533529] i801_smbus 0000:00:1f.4: save config 0x28: 0x00000000
+[ 2085.533539] i801_smbus 0000:00:1f.4: save config 0x2c: 0x22de17aa
+[ 2085.533549] i801_smbus 0000:00:1f.4: save config 0x30: 0x00000000
+[ 2085.533559] i801_smbus 0000:00:1f.4: save config 0x34: 0x00000000
+[ 2085.533568] i801_smbus 0000:00:1f.4: save config 0x38: 0x00000000
+[ 2085.533578] i801_smbus 0000:00:1f.4: save config 0x3c: 0x000001ff
+[ 2085.540270] pci 0000:00:1f.5: save config 0x00: 0x43a48086
+[ 2085.540292] pci 0000:00:1f.5: save config 0x04: 0x00000402
+[ 2085.540302] pci 0000:00:1f.5: save config 0x08: 0x0c800011
+[ 2085.540311] pci 0000:00:1f.5: save config 0x0c: 0x00000000
+[ 2085.540320] pci 0000:00:1f.5: save config 0x10: 0x90800000
+[ 2085.540329] pci 0000:00:1f.5: save config 0x14: 0x00000000
+[ 2085.540337] pci 0000:00:1f.5: save config 0x18: 0x00000000
+[ 2085.540345] pci 0000:00:1f.5: save config 0x1c: 0x00000000
+[ 2085.540352] pci 0000:00:1f.5: save config 0x20: 0x00000000
+[ 2085.540360] pci 0000:00:1f.5: save config 0x24: 0x00000000
+[ 2085.540367] pci 0000:00:1f.5: save config 0x28: 0x00000000
+[ 2085.540375] pci 0000:00:1f.5: save config 0x2c: 0x22de17aa
+[ 2085.540383] pci 0000:00:1f.5: save config 0x30: 0x00000000
+[ 2085.540391] pci 0000:00:1f.5: save config 0x34: 0x00000000
+[ 2085.540398] pci 0000:00:1f.5: save config 0x38: 0x00000000
+[ 2085.540406] pci 0000:00:1f.5: save config 0x3c: 0x00000000
+[ 2085.555233] snd_hda_intel 0000:01:00.1: save config 0x00: 0x228b10de
+[ 2085.555260] snd_hda_intel 0000:01:00.1: save config 0x04: 0x00100006
+[ 2085.555276] snd_hda_intel 0000:01:00.1: save config 0x08: 0x040300a1
+[ 2085.555289] snd_hda_intel 0000:01:00.1: save config 0x0c: 0x00800000
+[ 2085.555301] snd_hda_intel 0000:01:00.1: save config 0x10: 0xae000000
+[ 2085.555315] snd_hda_intel 0000:01:00.1: save config 0x14: 0x00000000
+[ 2085.555328] snd_hda_intel 0000:01:00.1: save config 0x18: 0x00000000
+[ 2085.555341] snd_hda_intel 0000:01:00.1: save config 0x1c: 0x00000000
+[ 2085.555353] snd_hda_intel 0000:01:00.1: save config 0x20: 0x00000000
+[ 2085.555365] snd_hda_intel 0000:01:00.1: save config 0x24: 0x00000000
+[ 2085.555377] snd_hda_intel 0000:01:00.1: save config 0x28: 0x00000000
+[ 2085.555389] snd_hda_intel 0000:01:00.1: save config 0x2c: 0x22de17aa
+[ 2085.555401] snd_hda_intel 0000:01:00.1: save config 0x30: 0x00000000
+[ 2085.555412] snd_hda_intel 0000:01:00.1: save config 0x34: 0x00000060
+[ 2085.555425] snd_hda_intel 0000:01:00.1: save config 0x38: 0x00000000
+[ 2085.555437] snd_hda_intel 0000:01:00.1: save config 0x3c: 0x000002ff
+[ 2085.578054] pci 0000:01:00.0: save config 0x00: 0x24b610de
+[ 2085.578079] pci 0000:01:00.0: save config 0x04: 0x00100003
+[ 2085.578093] pci 0000:01:00.0: save config 0x08: 0x030000a1
+[ 2085.578106] pci 0000:01:00.0: save config 0x0c: 0x00800000
+[ 2085.578119] pci 0000:01:00.0: save config 0x10: 0xad000000
+[ 2085.578131] pci 0000:01:00.0: save config 0x14: 0x0000000c
+[ 2085.578144] pci 0000:01:00.0: save config 0x18: 0x00000060
+[ 2085.578157] pci 0000:01:00.0: save config 0x1c: 0x0000000c
+[ 2085.578170] pci 0000:01:00.0: save config 0x20: 0x00000064
+[ 2085.578181] pci 0000:01:00.0: save config 0x24: 0x00003001
+[ 2085.578193] pci 0000:01:00.0: save config 0x28: 0x00000000
+[ 2085.578205] pci 0000:01:00.0: save config 0x2c: 0x22de17aa
+[ 2085.578217] pci 0000:01:00.0: save config 0x30: 0xfff80000
+[ 2085.578228] pci 0000:01:00.0: save config 0x34: 0x00000060
+[ 2085.578240] pci 0000:01:00.0: save config 0x38: 0x00000000
+[ 2085.578252] pci 0000:01:00.0: save config 0x3c: 0x000001ff
+[ 2085.578322] pcieport 0000:00:01.0: save config 0x00: 0x9a018086
+[ 2085.578337] pcieport 0000:00:01.0: save config 0x04: 0x00100507
+[ 2085.578350] pcieport 0000:00:01.0: save config 0x08: 0x06040005
+[ 2085.578362] pcieport 0000:00:01.0: save config 0x0c: 0x00810000
+[ 2085.578374] pcieport 0000:00:01.0: save config 0x10: 0x00000000
+[ 2085.578386] pcieport 0000:00:01.0: save config 0x14: 0x00000000
+[ 2085.578398] pcieport 0000:00:01.0: save config 0x18: 0x00010100
+[ 2085.578411] pcieport 0000:00:01.0: save config 0x1c: 0x20003030
+[ 2085.578423] pcieport 0000:00:01.0: save config 0x20: 0xae00ad00
+[ 2085.578434] pcieport 0000:00:01.0: save config 0x24: 0x01f10001
+[ 2085.578446] pcieport 0000:00:01.0: save config 0x28: 0x00000060
+[ 2085.578458] pcieport 0000:00:01.0: save config 0x2c: 0x00000064
+[ 2085.578470] pcieport 0000:00:01.0: save config 0x30: 0x00000000
+[ 2085.578482] pcieport 0000:00:01.0: save config 0x34: 0x00000040
+[ 2085.578494] pcieport 0000:00:01.0: save config 0x38: 0x00000000
+[ 2085.578506] pcieport 0000:00:01.0: save config 0x3c: 0x000201ff
+[ 2085.578650] pcieport 0000:00:01.0: PME# enabled
+[ 2085.590082] pcieport 0000:00:01.0: ACPI _REG disconnect evaluation failed (5)
+[ 2085.826081] pcieport 0000:00:01.0: power state changed by ACPI to D3cold
+(...)
+[ 2153.122300] igc 0000:0b:00.0: enabling bus mastering
+[ 2158.299859] igc 0000:0b:00.0: save config 0x00: 0x15f28086
+[ 2158.300357] igc 0000:0b:00.0: save config 0x04: 0x00100002
+[ 2158.300859] igc 0000:0b:00.0: save config 0x08: 0x02000003
+[ 2158.301362] igc 0000:0b:00.0: save config 0x0c: 0x00000020
+[ 2158.301874] igc 0000:0b:00.0: save config 0x10: 0xae400000
+[ 2158.302361] igc 0000:0b:00.0: save config 0x14: 0x00000000
+[ 2158.302445] igc 0000:0b:00.0: save config 0x18: 0x00000000
+[ 2158.302453] igc 0000:0b:00.0: save config 0x1c: 0xae500000
+[ 2158.302462] igc 0000:0b:00.0: save config 0x20: 0x00000000
+[ 2158.302470] igc 0000:0b:00.0: save config 0x24: 0x00000000
+[ 2158.302478] igc 0000:0b:00.0: save config 0x28: 0x00000000
+[ 2158.302486] igc 0000:0b:00.0: save config 0x2c: 0x22d817aa
+[ 2158.302494] igc 0000:0b:00.0: save config 0x30: 0x00000000
+[ 2158.302502] igc 0000:0b:00.0: save config 0x34: 0x00000040
+[ 2158.302510] igc 0000:0b:00.0: save config 0x38: 0x00000000
+[ 2158.302518] igc 0000:0b:00.0: save config 0x3c: 0x000001ff
+[ 2158.302596] igc 0000:0b:00.0: PME# enabled
+[ 2158.313996] pcieport 0000:00:1c.4: save config 0x00: 0x43bc8086
+[ 2158.314045] pcieport 0000:00:1c.4: save config 0x04: 0x00100407
+[ 2158.314080] pcieport 0000:00:1c.4: save config 0x08: 0x06040011
+[ 2158.314113] pcieport 0000:00:1c.4: save config 0x0c: 0x00810000
+[ 2158.314121] pcieport 0000:00:1c.4: save config 0x10: 0x00000000
+[ 2158.314154] pcieport 0000:00:1c.4: save config 0x14: 0x00000000
+[ 2158.314187] pcieport 0000:00:1c.4: save config 0x18: 0x000b0b00
+[ 2158.314219] pcieport 0000:00:1c.4: save config 0x1c: 0x200000f0
+[ 2158.314252] pcieport 0000:00:1c.4: save config 0x20: 0xae50ae40
+[ 2158.314284] pcieport 0000:00:1c.4: save config 0x24: 0x0001fff1
+[ 2158.314292] pcieport 0000:00:1c.4: save config 0x28: 0x00000000
+[ 2158.314324] pcieport 0000:00:1c.4: save config 0x2c: 0x00000000
+[ 2158.314357] pcieport 0000:00:1c.4: save config 0x30: 0x00000000
+[ 2158.314389] pcieport 0000:00:1c.4: save config 0x34: 0x00000040
+[ 2158.314416] pcieport 0000:00:1c.4: save config 0x38: 0x00000000
+[ 2158.314448] pcieport 0000:00:1c.4: save config 0x3c: 0x000201ff
+[ 2158.314541] pcieport 0000:00:1c.4: PME# enabled
+[ 2167.722083] wlp9s0: deauthenticating from e0:63:da:28:03:67 by local choice (Reason: 3=DEAUTH_LEAVI
+[ 2167.997820] iwlwifi 0000:09:00.0: Unregistering PHC clock: iwlwifi-PTP, with index: 1
+[ 2168.045860] iwlwifi 0000:09:00.0: vgaarb: pci_notify
+[ 2168.414051] iwlwifi 0000:09:00.0: save config 0x00: 0x27258086
+[ 2168.414255] iwlwifi 0000:09:00.0: save config 0x04: 0x00100406
+[ 2168.414462] iwlwifi 0000:09:00.0: save config 0x08: 0x0280001a
+[ 2168.414670] iwlwifi 0000:09:00.0: save config 0x0c: 0x00000000
+[ 2168.414791] iwlwifi 0000:09:00.0: save config 0x10: 0xae300004
+[ 2168.414929] iwlwifi 0000:09:00.0: save config 0x14: 0x00000000
+[ 2168.415119] iwlwifi 0000:09:00.0: save config 0x18: 0x00000000
+[ 2168.415257] iwlwifi 0000:09:00.0: save config 0x1c: 0x00000000
+[ 2168.415448] iwlwifi 0000:09:00.0: save config 0x20: 0x00000000
+[ 2168.415569] iwlwifi 0000:09:00.0: save config 0x24: 0x00000000
+[ 2168.415689] iwlwifi 0000:09:00.0: save config 0x28: 0x00000000
+[ 2168.415828] iwlwifi 0000:09:00.0: save config 0x2c: 0x00208086
+[ 2168.416018] iwlwifi 0000:09:00.0: save config 0x30: 0x00000000
+[ 2168.416139] iwlwifi 0000:09:00.0: save config 0x34: 0x000000c8
+[ 2168.416260] iwlwifi 0000:09:00.0: save config 0x38: 0x00000000
+[ 2168.416380] iwlwifi 0000:09:00.0: save config 0x3c: 0x000001ff
+[ 2168.417051] pcieport 0000:00:1c.5: save config 0x00: 0x43bd8086
+[ 2168.417089] pcieport 0000:00:1c.5: save config 0x04: 0x00100407
+[ 2168.417126] pcieport 0000:00:1c.5: save config 0x08: 0x06040011
+[ 2168.417162] pcieport 0000:00:1c.5: save config 0x0c: 0x00810000
+[ 2168.417197] pcieport 0000:00:1c.5: save config 0x10: 0x00000000
+[ 2168.417233] pcieport 0000:00:1c.5: save config 0x14: 0x00000000
+[ 2168.417269] pcieport 0000:00:1c.5: save config 0x18: 0x00090900
+[ 2168.417304] pcieport 0000:00:1c.5: save config 0x1c: 0x200000f0
+[ 2168.417340] pcieport 0000:00:1c.5: save config 0x20: 0xae30ae30
+[ 2168.417376] pcieport 0000:00:1c.5: save config 0x24: 0x0001fff1
+[ 2168.417412] pcieport 0000:00:1c.5: save config 0x28: 0x00000000
+[ 2168.417447] pcieport 0000:00:1c.5: save config 0x2c: 0x00000000
+[ 2168.417483] pcieport 0000:00:1c.5: save config 0x30: 0x00000000
+[ 2168.417517] pcieport 0000:00:1c.5: save config 0x34: 0x00000040
+[ 2168.417553] pcieport 0000:00:1c.5: save config 0x38: 0x00000000
+[ 2168.417626] pcieport 0000:00:1c.5: save config 0x3c: 0x000202ff
+[ 2168.417876] pcieport 0000:00:1c.5: PME# enabled
+[ 2168.421126] pci 0000:09:00.0: vgaarb: pci_notify
+[ 2173.389773] pcieport 0000:00:1c.4: restore config 0x2c: 0x00000000 -> 0x00000000
+[ 2173.389829] pcieport 0000:00:1c.4: restore config 0x28: 0x00000000 -> 0x00000000
+[ 2173.389869] pcieport 0000:00:1c.4: restore config 0x24: 0x0001fff1 -> 0x0001fff1
+[ 2173.390080] pcieport 0000:00:1c.4: PME# disabled
+[ 2173.402003] igc 0000:0b:00.0: PME# disabled
+[ 2173.402110] igc 0000:0b:00.0: save config 0x00: 0x15f28086
+[ 2173.402133] igc 0000:0b:00.0: save config 0x04: 0x00100002
+[ 2173.402142] igc 0000:0b:00.0: save config 0x08: 0x02000003
+[ 2173.402151] igc 0000:0b:00.0: save config 0x0c: 0x00000020
+[ 2173.402159] igc 0000:0b:00.0: save config 0x10: 0xae400000
+[ 2173.402168] igc 0000:0b:00.0: save config 0x14: 0x00000000
+[ 2173.402176] igc 0000:0b:00.0: save config 0x18: 0x00000000
+[ 2173.402184] igc 0000:0b:00.0: save config 0x1c: 0xae500000
+[ 2173.402192] igc 0000:0b:00.0: save config 0x20: 0x00000000
+[ 2173.402200] igc 0000:0b:00.0: save config 0x24: 0x00000000
+[ 2173.402207] igc 0000:0b:00.0: save config 0x28: 0x00000000
+[ 2173.402215] igc 0000:0b:00.0: save config 0x2c: 0x22d817aa
+[ 2173.402223] igc 0000:0b:00.0: save config 0x30: 0x00000000
+
+
+
+Marc
+-- 
+"A mouse is a device used to point at the xterm you want to type in" - A.S.R.
+ 
+Home page: http://marc.merlins.org/  
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
