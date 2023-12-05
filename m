@@ -1,82 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D2E9C10F05
-	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Dec 2023 19:48:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87D1CC4167B
+	for <intel-wired-lan@archiver.kernel.org>; Tue,  5 Dec 2023 20:46:43 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id C452182890;
-	Tue,  5 Dec 2023 19:48:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C452182890
+	by smtp3.osuosl.org (Postfix) with ESMTP id EFD23613E7;
+	Tue,  5 Dec 2023 20:46:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EFD23613E7
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701805710;
-	bh=C2oMlRVBJVH2pAbt4p2g74eNVS6zsJLuuPcCZagb61c=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1701809203;
+	bh=gfYz/xTsOWuc9o1u78hImotKvZ765R8geXQPtatNgsE=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=DC4EH2JNrF7qIYQWv9t35P2JSbm9r9Tn4E5tS3P8vGTuIYFYgGhJg6Rc2EhVPM3fI
-	 7IOh79dQ/NLcHc7mwlYYlEtB+PhnKlCg2pxAR5IFUNx4chdRlDqnOND9AzwsRvyzyN
-	 JKfHHWKKT4RrQy8PX4fijonaC0cxAeEU3cqo+ykGZ5T2e9wxWnGFXr1bI7iFM1T2CG
-	 jMzspWp1xIFbj1fecEiTJSMAnpOwPZsUooy1CMz42JfvQ+l9EHbWwnFDfwhsEUaXJU
-	 gAOmB9cKUT4j17uS+KvoNscMZ0xCHl2vUge9HKg4/TYUMQfrhY8P0zTxQcM/CY14vO
-	 QKTkh8iIOqhew==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id baIQ47_YS3rh; Tue,  5 Dec 2023 19:48:30 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id B39D1828F2;
-	Tue,  5 Dec 2023 19:48:29 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B39D1828F2
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id EE6131BF363
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 19:48:27 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id BC09E605E3
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 19:48:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BC09E605E3
+	b=h+/LGKLQMW2P2YC1VxVnLjMxo+/olc77c6Vke5xliBKuyINYhI+q7Aon4L3VRBJv5
+	 njd5ivJguOFFRfybtBkegkikXuAoy1JCQ+uaL4DiBYpuiSXR/NPLredkFJGE0x2Kxy
+	 TQQiN8lfbei0qcUD+c4MY1ULpw7nhjjPFvw0NvvKzC4RjmPR19ZouvRFjUnSNFqboK
+	 HVLu2i9TOPDn1mttcPxu9dcAH7qwmdKtzDTDgTF0ygyXhqtvSwmwpq18yCRPEE5Mo0
+	 B5dAsnGvRSACD9B7ykQKRRmSbeDG+bjfh0vPJrOlm+6uecli2wFacn3vwH1nXN0pS7
+	 LXyY9qkXXtYHg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
- by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Ehos3DbYYTMU for <intel-wired-lan@lists.osuosl.org>;
- Tue,  5 Dec 2023 19:48:26 +0000 (UTC)
-Received: from sipsolutions.net (s3.sipsolutions.net
- [IPv6:2a01:4f8:242:246e::2])
- by smtp3.osuosl.org (Postfix) with ESMTPS id AD6D7600BB
- for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 19:48:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AD6D7600BB
-Received: by sipsolutions.net with esmtpsa
- (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
- (Exim 4.97) (envelope-from <johannes@sipsolutions.net>)
- id 1rAbP2-0000000GWku-2LDb; Tue, 05 Dec 2023 20:48:20 +0100
-Message-ID: <709eff7500f2da223df9905ce49c026a881cb0e0.camel@sipsolutions.net>
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Przemek Kitszel <przemyslaw.kitszel@intel.com>, netdev@vger.kernel.org
-Date: Tue, 05 Dec 2023 20:48:19 +0100
-In-Reply-To: <d0fc7d04-e3c9-47c0-487e-666cb2a4e3bc@intel.com>
-References: <20231204200710.40c291e60cea.I2deb5804ef1739a2af307283d320ef7d82456494@changeid>
- <d0fc7d04-e3c9-47c0-487e-666cb2a4e3bc@intel.com>
-User-Agent: Evolution 3.50.1 (3.50.1-1.fc39) 
+	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 8T_k5p7uCRMI; Tue,  5 Dec 2023 20:46:40 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp3.osuosl.org (Postfix) with ESMTP id 38F6460EED;
+	Tue,  5 Dec 2023 20:46:40 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 38F6460EED
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 4828B1BF593
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 20:46:39 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp2.osuosl.org (Postfix) with ESMTP id 1DF80435AB
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 20:46:39 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 1DF80435AB
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id qSowdVHTG3yc for <intel-wired-lan@lists.osuosl.org>;
+ Tue,  5 Dec 2023 20:46:37 +0000 (UTC)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 8875D4016B
+ for <intel-wired-lan@lists.osuosl.org>; Tue,  5 Dec 2023 20:46:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 8875D4016B
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by sin.source.kernel.org (Postfix) with ESMTP id 5B8B7CE185A;
+ Tue,  5 Dec 2023 20:46:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0DA5C433C8;
+ Tue,  5 Dec 2023 20:46:30 +0000 (UTC)
+Date: Tue, 5 Dec 2023 20:46:28 +0000
+From: Simon Horman <horms@kernel.org>
+To: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Message-ID: <20231205204628.GX50400@kernel.org>
+References: <20231130165806.135668-1-mschmidt@redhat.com>
+ <f78a8937-0811-03e8-464d-47f404a3718b@intel.com>
 MIME-Version: 1.0
-X-malware-bazaar: not-scanned
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt;
- c=relaxed/relaxed; 
- d=sipsolutions.net; s=mail; h=MIME-Version:Content-Transfer-Encoding:
- Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
- :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
- Resent-Cc:Resent-Message-ID; bh=soPdmCRcIztlx9Qn+p7ZQyp8LgTp6+uQ1GZoBpjgHvA=; 
- t=1701805706; x=1703015306; b=KUgpWwdFUnt6SjEzDa8dyL0WP93N3vLpC94ecb5rnwYAByO
- lQASwdg9pGF6xxdEpmPlJ9h44YxxPhrKibhfJQvTPkMm1xC4+QTN4n5bLd409bOMrHVz6yn5vwC19
- cvLuKF3WVVJPcfAmirTBHnvwGbdTHAP6uZzkn8QKy9xtmDuP1ZZUwOL14/nlXZKOJ19OXn1zOUIXy
- r177kzy0j0MNbq5f9jq5qPiT8F3aY06LS4vytbWF4HrtufwqARw9UX/5QgdIxUmJ1e4zG+RCQOzRs
- w+Y8uU9cWwJEKmfiuS0hkzLVAo0bmgNTXYKOf1f5o5L4h9elsg3yLLyJxBRX2+zQ==;
-X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
- dkim=pass (2048-bit key) header.d=sipsolutions.net header.i=@sipsolutions.net
- header.a=rsa-sha256 header.s=mail header.b=KUgpWwdF
-Subject: Re: [Intel-wired-lan] [RFC PATCH] net: ethtool: do runtime PM
- outside RTNL
+Content-Disposition: inline
+In-Reply-To: <f78a8937-0811-03e8-464d-47f404a3718b@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=kernel.org; s=k20201202; t=1701809192;
+ bh=EcxrluR7rHeirw8m6JBZ9mBIrJoWhLdESfw1gflpKTM=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=iZpQK+Jm3hMwnnABUGccgKc27HvKxV5HlQpiX/Y5Prx2ANrbVk7G8l0fQo/ogL848
+ y/dwAy19hoJAVfdXFlKzNkHnqgQyyUFFajTt6ai8H0TXqhEthLsrZwG4fv7rMLC4PN
+ 6/+rFsUYzSGuHX/xFr+KdRX14cisAdJvSGvEI7SFTtd4cXFLCg1JyR4rZRzfXv+XnV
+ RUJmD9vCAuN81nfFRzbb59OJJeGhJj+QpR/Qr7c9ps9EG3pKfCmUQdzrpF9TXP1Wk1
+ n7JYlorlxx0OKRWILXc+D4J2jwr03Uvz+F3yUIMi/6oyUGItzjrAK4THiFcXQlqGNm
+ FQeEtlPeA5TxA==
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=iZpQK+Jm
+Subject: Re: [Intel-wired-lan] [PATCH net] ice: fix theoretical
+ out-of-bounds access in ethtool link modes
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,66 +87,60 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Marc MERLIN <marc@merlins.org>,
+Cc: Paul Greenwalt <paul.greenwalt@intel.com>, netdev@vger.kernel.org,
  Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
- intel-wired-lan@lists.osuosl.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
- Heiner Kallweit <hkallweit1@gmail.com>
+ Tony Nguyen <anthony.l.nguyen@intel.com>, intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Tue, 2023-12-05 at 06:19 +0100, Przemek Kitszel wrote:
-> On 12/4/23 20:07, Johannes Berg wrote:
-> > From: Johannes Berg <johannes.berg@intel.com>
+On Fri, Dec 01, 2023 at 08:33:36AM +0100, Przemek Kitszel wrote:
+> On 11/30/23 17:58, Michal Schmidt wrote:
+> > To map phy types reported by the hardware to ethtool link mode bits,
+> > ice uses two lookup tables (phy_type_low_lkup, phy_type_high_lkup).
+> > The "low" table has 64 elements to cover every possible bit the hardware
+> > may report, but the "high" table has only 13. If the hardware reports a
+> > higher bit in phy_types_high, the driver would access memory beyond the
+> > lookup table's end.
 > > 
-> > As reported by Marc MERLIN in [1], at least one driver (igc)
-> 
-> perhaps Reported-by tag? (I know this is RFC as of now)
-
-I guess.
-
-> > wants/needs to acquire the RTNL inside suspend/resume ops,
-> > which can be called from here in ethtool if runtime PM is
-> > enabled.
+> > Instead of iterating through all 64 bits of phy_types_{low,high}, use
+> > the sizes of the respective lookup tables.
 > > 
-> > [1] https://lore.kernel.org/r/20231202221402.GA11155@merlins.org
-> > 
-> > Allow this by doing runtime PM transitions without the RTNL
-> > held. For the ioctl to have the same operations order, this
-> > required reworking the code to separately check validity and
-> > do the operation. For the netlink code, this now has to do
-> > the runtime_pm_put a bit later.
-> > 
-> > Signed-off-by: Johannes Berg <johannes.berg@intel.com>
+> > Fixes: 9136e1f1e5c3 ("ice: refactor PHY type to ethtool link mode")
+> > Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
 > > ---
-> >   net/ethtool/ioctl.c   | 71 ++++++++++++++++++++++++++-----------------
-> >   net/ethtool/netlink.c | 32 ++++++++-----------
-> >   2 files changed, 56 insertions(+), 47 deletions(-)
+> >   drivers/net/ethernet/intel/ice/ice_ethtool.c | 4 ++--
+> >   1 file changed, 2 insertions(+), 2 deletions(-)
 > > 
-> Thank you for the patch,
+> > diff --git a/drivers/net/ethernet/intel/ice/ice_ethtool.c b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > index a34083567e6f..bde9bc74f928 100644
+> > --- a/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > +++ b/drivers/net/ethernet/intel/ice/ice_ethtool.c
+> > @@ -1850,14 +1850,14 @@ ice_phy_type_to_ethtool(struct net_device *netdev,
+> >   	linkmode_zero(ks->link_modes.supported);
+> >   	linkmode_zero(ks->link_modes.advertising);
+> > -	for (i = 0; i < BITS_PER_TYPE(u64); i++) {
+> > +	for (i = 0; i < ARRAY_SIZE(phy_type_low_lkup); i++) {
+> >   		if (phy_types_low & BIT_ULL(i))
+> >   			ice_linkmode_set_bit(&phy_type_low_lkup[i], ks,
+> >   					     req_speeds, advert_phy_type_lo,
+> >   					     i);
+> >   	}
+> > -	for (i = 0; i < BITS_PER_TYPE(u64); i++) {
+> > +	for (i = 0; i < ARRAY_SIZE(phy_type_high_lkup); i++) {
+> >   		if (phy_types_high & BIT_ULL(i))
+> >   			ice_linkmode_set_bit(&phy_type_high_lkup[i], ks,
+> >   					     req_speeds, advert_phy_type_hi,
 > 
-> I like the idea of split into validate + do for dev_ethtool(),
-> what minimizes unneeded PM touching. Moving pm_runtime_get_sync() out of 
-> RTNL is also a great improvement per se. Also from the pure coding 
-> perspective I see no obvious flaws in the patch. I think that igc code
-> was just accidental to the issue, in a way that it was not deliberate to
-> hold RTNL for extended periods.
-
-Well Jakub was arguing igc shouldn't be taking rtnl in suspend/resume,
-maybe, but dunno.
-
-> With your patch fixing the bug, there is
-> no point with waiting IMO, so
+> I guess that that "HW reported" number really goes through the FW in
+> some way, so one could indeed spoil that in some way,
+> what makes sense to target it at -net.
 > 
 > Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 
-Well, according to the checks, the patch really should use
-netdev_get_by_name() and netdev_put()? But I don't know how to do that
-on short-term stack thing ... maybe it doesn't have to?
+Reviewed-by: Simon Horman <horms@kernel.org>
 
-johannes
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
