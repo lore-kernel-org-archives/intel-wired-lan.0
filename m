@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 206D2C4167B
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34C6BC4167B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:12 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D2335610E0;
-	Wed,  6 Dec 2023 01:02:07 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D2335610E0
+	by smtp3.osuosl.org (Postfix) with ESMTP id E73D261400;
+	Wed,  6 Dec 2023 01:02:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E73D261400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701824527;
-	bh=hvxujWb2vkyNBH3zVLvHqJ9JNaXWVGuBmduUkiVKwDw=;
+	s=default; t=1701824532;
+	bh=5sAvka7dn9aBmyUBo91I2PcwrplhvQx1jTSekMhSECU=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=jvgA/pGtgiv5GPYLkrSvl6S+TJNKxX1D5VeBpxx9k1+EBxVMe5RTksgX1G6fdoZUG
-	 6/Y7UIyZiUvsAxrS6aTVSuXgcpYP7vKIQ7I5m4wOlgrf7FwZFd+Cejy8kLTyT1ivGS
-	 VunN79edruHK9HPHsawP857/FNjb/b8T/LkjVQGxbxXGCzgogyjJu/lcWvxJHoVW43
-	 tkQxu/knX3tUgcZT/hRPRc/Qvok6bU00mq1MfESqq/fcFVCUpXi1bwDIjE3iirGnvk
-	 0M0mDsxZl3/ObpxwiDBaBNpyWyprMGTsB6n3XE7BkhIGWKnU8apNlEvRusryY4tsVX
-	 R2XNc8KYBGGhg==
+	b=68shHgxtNKhLOWmSvym9iOPh/tb4WnddteWyd0iEv4yPKvDLRL05rrXoe4xi1Do90
+	 +BecsCeEerjvOqIHNpvAd/kHA6mkbCLL0n9M93jmpAAh/KfAjvcq1AnjbZsKZd7vBf
+	 sRHgFihrEd54gMtPksna+/PTvY9PaJyFgUj0mg3poi76scaJyNc0NIv1ogP/AIWwzO
+	 1ofyhqUfsHg2B6rdUrKJC/7vmcMSnR9OPycKm8z6/3808NDuQJ7WcplNE+Kr0urykX
+	 SRFeSau++jHSSsQKdLtkYqzehrHNNVZWkwOxy4LBQT7ARraGD6P1XKhupgY0GIOo9Q
+	 GUb6lLhvR9Azw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zlcRmtNF44zU; Wed,  6 Dec 2023 01:02:06 +0000 (UTC)
+	with ESMTP id akxA9PX09xRH; Wed,  6 Dec 2023 01:02:11 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 29CFE61423;
-	Wed,  6 Dec 2023 01:02:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 29CFE61423
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 9221D1BF97D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:37 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id CCAEE61412;
+	Wed,  6 Dec 2023 01:02:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CCAEE61412
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 689171BF97D
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 8AB25417E9
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8AB25417E9
+ by smtp1.osuosl.org (Postfix) with ESMTP id 8E35E82C35
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8E35E82C35
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Xf5x9uD7LqKb for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Dec 2023 01:01:34 +0000 (UTC)
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id l2gER35YYvcw for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 946AB41721
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 946AB41721
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700300"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700300"
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 9500182C5E
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9500182C5E
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700312"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700312"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:34 -0800
+ 05 Dec 2023 17:01:35 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655258"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655258"
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655270"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655270"
 Received: from jbrandeb-spr1.jf.intel.com ([10.166.28.233])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:33 -0800
+ 05 Dec 2023 17:01:34 -0800
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Dec 2023 17:01:06 -0800
-Message-Id: <20231206010114.2259388-8-jesse.brandeburg@intel.com>
+Date: Tue,  5 Dec 2023 17:01:09 -0800
+Message-Id: <20231206010114.2259388-11-jesse.brandeburg@intel.com>
 X-Mailer: git-send-email 2.39.3
 In-Reply-To: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 References: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1701824495; x=1733360495;
+ t=1701824496; x=1733360496;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=e+QFVfyXGcOfgMRqYt0Z+hr05kpCo5q2ht81uNlADsI=;
- b=hlxLElSKq60AK0qQQ1Xj0m1/CLREx0GNO29B4u1j8nszC76cCCOcnaDF
- RDoD6NVzKBuieiVEUtAVEyRemRPV7Qb4lpjrsURvJXyy+Mfji/sxOGjL1
- LOl0tl+H3zenc0swqpDFK8xSPQyUe0/QUTKxwTaWt/THeRY4TtfSSfG00
- 9Eg5pnKXF9yYi5/U1gaRzxtt3SHgLynM+KIq+v07QI4fw9t+Z6rzsshtw
- IVcmerXujHBzMqphc+ngG50FonUkTpJunIzRvBQJD6NcFfkmuYhVXoice
- sPa6sXyu+oO1itxFmaZ/uagbzTUjWg5/0n19kpCoC2ayFJuN8QqqzLHLf
+ bh=gaxU5pnC2jcs9AjhNbkSjjHHEQSQMSvr3xD2J9iABgE=;
+ b=hAOfP2Jm7klSBJuwyTLHzDw0iqY3QH9+osMxr2ZqFkb34cByuLH7yB/0
+ Q7H4yimzuUqdTwBb/IXjGhmkCHGCnCLszxzU+sJCcffYPCrSggTubdwNh
+ 3T6qrQ4wxwi33lD2Qzfb5JLEvJOEqEJt6g3oMb8TY/pkI7CNHj9RVg3lm
+ V4M8vA5jW9YjKv8tbDBw4CIY3eZIbkwUc3i9XT3UuIVxzQAzwmkgMnXQP
+ BQUfyICCCsFJMbtzutuNfNQ6ZZfd3uKZtTKKOP0h6tBr3zqbSaQ/Qqbs2
+ vGpuZLV4GXPyzn9Vncm6e4ETnVUXzcVITsaecqGBBw77/qS72M/tP1kQy
  w==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hlxLElSK
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 07/15] ice: fix pre-shifted
- bit usage
+ header.a=rsa-sha256 header.s=Intel header.b=hAOfP2Jm
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 10/15] igc: field get
+ conversion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,173 +96,128 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: przemyslaw.kitszel@intel.com, Jesse Brandeburg <jesse.brandeburg@intel.com>,
- aleksander.lobakin@intel.com, marcin.szycik@linux.intel.com, horms@kernel.org,
- netdev@vger.kernel.org
+ Julia Lawall <Julia.Lawall@inria.fr>, aleksander.lobakin@intel.com,
+ marcin.szycik@linux.intel.com, horms@kernel.org, netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-While converting to FIELD_PREP() and FIELD_GET(), it was noticed that
-some of the RSS defines had *included* the shift in their definitions.
-This is completely outside of normal, such that a developer could easily
-make a mistake and shift at the usage site (like when using
-FIELD_PREP()).
+Refactor the igc driver to use FIELD_GET() for mask and shift reads,
+which reduces lines of code and adds clarity of intent.
 
-Rename the defines and set them to the "pre-shifted values" so they
-match the template the driver normally uses for masks and the member
-bits of the mask, which also allows the driver to use FIELD_PREP
-correctly with these values. Use GENMASK() for this changed MASK value.
+This code was generated by the following coccinelle/spatch script and
+then manually repaired in a later patch.
 
-Do the same for the VLAN EMODE defines as well.
+@get@
+constant shift,mask;
+type T;
+expression a;
+@@
+-((T)((a) & mask) >> shift)
++FIELD_GET(mask, a)
 
+and applied via:
+spatch --sp-file field_prep.cocci --in-place --dir \
+ drivers/net/ethernet/intel/
+
+Cc: Julia Lawall <Julia.Lawall@inria.fr>
 Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
-v2: no change
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h    | 18 +++++++++---------
- drivers/net/ethernet/intel/ice/ice_lib.c       |  7 ++++---
- drivers/net/ethernet/intel/ice/ice_virtchnl.c  | 10 +++++-----
- .../net/ethernet/intel/ice/ice_vsi_vlan_lib.c  | 16 +++++++++++-----
- 4 files changed, 29 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/igc/igc_base.c | 6 ++----
+ drivers/net/ethernet/intel/igc/igc_i225.c | 5 ++---
+ drivers/net/ethernet/intel/igc/igc_main.c | 6 ++----
+ drivers/net/ethernet/intel/igc/igc_phy.c  | 4 ++--
+ 4 files changed, 8 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index f77a3c70f262..51c241ab6b8e 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -422,10 +422,10 @@ struct ice_aqc_vsi_props {
- #define ICE_AQ_VSI_INNER_VLAN_INSERT_PVID	BIT(2)
- #define ICE_AQ_VSI_INNER_VLAN_EMODE_S		3
- #define ICE_AQ_VSI_INNER_VLAN_EMODE_M		(0x3 << ICE_AQ_VSI_INNER_VLAN_EMODE_S)
--#define ICE_AQ_VSI_INNER_VLAN_EMODE_STR_BOTH	(0x0 << ICE_AQ_VSI_INNER_VLAN_EMODE_S)
--#define ICE_AQ_VSI_INNER_VLAN_EMODE_STR_UP	(0x1 << ICE_AQ_VSI_INNER_VLAN_EMODE_S)
--#define ICE_AQ_VSI_INNER_VLAN_EMODE_STR		(0x2 << ICE_AQ_VSI_INNER_VLAN_EMODE_S)
--#define ICE_AQ_VSI_INNER_VLAN_EMODE_NOTHING	(0x3 << ICE_AQ_VSI_INNER_VLAN_EMODE_S)
-+#define ICE_AQ_VSI_INNER_VLAN_EMODE_STR_BOTH	0x0U
-+#define ICE_AQ_VSI_INNER_VLAN_EMODE_STR_UP	0x1U
-+#define ICE_AQ_VSI_INNER_VLAN_EMODE_STR		0x2U
-+#define ICE_AQ_VSI_INNER_VLAN_EMODE_NOTHING	0x3U
- 	u8 inner_vlan_reserved2[3];
- 	/* ingress egress up sections */
- 	__le32 ingress_table; /* bitmap, 3 bits per up */
-@@ -491,11 +491,11 @@ struct ice_aqc_vsi_props {
- #define ICE_AQ_VSI_Q_OPT_RSS_GBL_LUT_S		2
- #define ICE_AQ_VSI_Q_OPT_RSS_GBL_LUT_M		(0xF << ICE_AQ_VSI_Q_OPT_RSS_GBL_LUT_S)
- #define ICE_AQ_VSI_Q_OPT_RSS_HASH_S		6
--#define ICE_AQ_VSI_Q_OPT_RSS_HASH_M		(0x3 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
--#define ICE_AQ_VSI_Q_OPT_RSS_TPLZ		(0x0 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
--#define ICE_AQ_VSI_Q_OPT_RSS_SYM_TPLZ		(0x1 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
--#define ICE_AQ_VSI_Q_OPT_RSS_XOR		(0x2 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
--#define ICE_AQ_VSI_Q_OPT_RSS_JHASH		(0x3 << ICE_AQ_VSI_Q_OPT_RSS_HASH_S)
-+#define ICE_AQ_VSI_Q_OPT_RSS_HASH_M		GENMASK(7, 6)
-+#define ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ		0x0U
-+#define ICE_AQ_VSI_Q_OPT_RSS_HASH_SYM_TPLZ	0x1U
-+#define ICE_AQ_VSI_Q_OPT_RSS_HASH_XOR		0x2U
-+#define ICE_AQ_VSI_Q_OPT_RSS_HASH_JHASH		0x3U
- 	u8 q_opt_tc;
- #define ICE_AQ_VSI_Q_OPT_TC_OVR_S		0
- #define ICE_AQ_VSI_Q_OPT_TC_OVR_M		(0x1F << ICE_AQ_VSI_Q_OPT_TC_OVR_S)
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index 394f915290f6..453eba59abb2 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -984,7 +984,8 @@ static void ice_set_dflt_vsi_ctx(struct ice_hw *hw, struct ice_vsi_ctx *ctxt)
- 	 */
- 	if (ice_is_dvm_ena(hw)) {
- 		ctxt->info.inner_vlan_flags |=
--			ICE_AQ_VSI_INNER_VLAN_EMODE_NOTHING;
-+			FIELD_PREP(ICE_AQ_VSI_INNER_VLAN_EMODE_M,
-+				   ICE_AQ_VSI_INNER_VLAN_EMODE_NOTHING);
- 		ctxt->info.outer_vlan_flags =
- 			FIELD_PREP(ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M,
- 				   ICE_AQ_VSI_OUTER_VLAN_TX_MODE_ALL);
-@@ -1183,12 +1184,12 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- 	case ICE_VSI_PF:
- 		/* PF VSI will inherit RSS instance of PF */
- 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_PF;
--		hash_type = ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
-+		hash_type = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
- 		break;
- 	case ICE_VSI_VF:
- 		/* VF VSI will gets a small RSS table which is a VSI LUT type */
- 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_VSI;
--		hash_type = ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
-+		hash_type = ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
- 		break;
- 	default:
- 		dev_dbg(dev, "Unsupported VSI type %s\n",
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 8bec83965e50..727aebe24b92 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -823,8 +823,8 @@ static int ice_vc_handle_rss_cfg(struct ice_vf *vf, u8 *msg, bool add)
- 		int status;
+diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
+index a1d815af507d..9fae8bdec2a7 100644
+--- a/drivers/net/ethernet/intel/igc/igc_base.c
++++ b/drivers/net/ethernet/intel/igc/igc_base.c
+@@ -68,8 +68,7 @@ static s32 igc_init_nvm_params_base(struct igc_hw *hw)
+ 	u32 eecd = rd32(IGC_EECD);
+ 	u16 size;
  
- 		lut_type = ICE_AQ_VSI_Q_OPT_RSS_LUT_VSI;
--		hash_type = add ? ICE_AQ_VSI_Q_OPT_RSS_XOR :
--				ICE_AQ_VSI_Q_OPT_RSS_TPLZ;
-+		hash_type = add ? ICE_AQ_VSI_Q_OPT_RSS_HASH_XOR :
-+				ICE_AQ_VSI_Q_OPT_RSS_HASH_TPLZ;
+-	size = (u16)((eecd & IGC_EECD_SIZE_EX_MASK) >>
+-		     IGC_EECD_SIZE_EX_SHIFT);
++	size = FIELD_GET(IGC_EECD_SIZE_EX_MASK, eecd);
  
- 		ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
- 		if (!ctx) {
-@@ -832,9 +832,9 @@ static int ice_vc_handle_rss_cfg(struct ice_vf *vf, u8 *msg, bool add)
- 			goto error_param;
- 		}
+ 	/* Added to a constant, "size" becomes the left-shift value
+ 	 * for setting word_size.
+@@ -162,8 +161,7 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
+ 	phy->reset_delay_us	= 100;
  
--		ctx->info.q_opt_rss = FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_LUT_M,
--						 lut_type) |
--				      (hash_type & ICE_AQ_VSI_Q_OPT_RSS_HASH_M);
-+		ctx->info.q_opt_rss =
-+			FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_LUT_M, lut_type) |
-+			FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_HASH_M, hash_type);
+ 	/* set lan id */
+-	hw->bus.func = (rd32(IGC_STATUS) & IGC_STATUS_FUNC_MASK) >>
+-			IGC_STATUS_FUNC_SHIFT;
++	hw->bus.func = FIELD_GET(IGC_STATUS_FUNC_MASK, rd32(IGC_STATUS));
  
- 		/* Preserve existing queueing option setting */
- 		ctx->info.q_opt_rss |= (vsi->info.q_opt_rss &
-diff --git a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-index 699bcb1e2f3a..2e9ad27cb9d1 100644
---- a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-@@ -131,6 +131,7 @@ static int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
+ 	/* Make sure the PHY is in a good state. Several people have reported
+ 	 * firmware leaving the PHY's page select register set to something
+diff --git a/drivers/net/ethernet/intel/igc/igc_i225.c b/drivers/net/ethernet/intel/igc/igc_i225.c
+index d2562c8e8015..0dd61719f1ed 100644
+--- a/drivers/net/ethernet/intel/igc/igc_i225.c
++++ b/drivers/net/ethernet/intel/igc/igc_i225.c
+@@ -579,9 +579,8 @@ s32 igc_set_ltr_i225(struct igc_hw *hw, bool link)
+ 
+ 			/* Calculate tw_system (nsec). */
+ 			if (speed == SPEED_100) {
+-				tw_system = ((rd32(IGC_EEE_SU) &
+-					     IGC_TW_SYSTEM_100_MASK) >>
+-					     IGC_TW_SYSTEM_100_SHIFT) * 500;
++				tw_system = FIELD_GET(IGC_TW_SYSTEM_100_MASK,
++						      rd32(IGC_EEE_SU)) * 500;
+ 			} else {
+ 				tw_system = (rd32(IGC_EEE_SU) &
+ 					     IGC_TW_SYSTEM_1000_MASK) * 500;
+diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
+index d949289a3ddb..ba8d3fe186ae 100644
+--- a/drivers/net/ethernet/intel/igc/igc_main.c
++++ b/drivers/net/ethernet/intel/igc/igc_main.c
+@@ -3712,8 +3712,7 @@ static int igc_enable_nfc_rule(struct igc_adapter *adapter,
+ 	}
+ 
+ 	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
+-		int prio = (rule->filter.vlan_tci & VLAN_PRIO_MASK) >>
+-			   VLAN_PRIO_SHIFT;
++		int prio = FIELD_GET(VLAN_PRIO_MASK, rule->filter.vlan_tci);
+ 
+ 		err = igc_add_vlan_prio_filter(adapter, prio, rule->action);
+ 		if (err)
+@@ -3735,8 +3734,7 @@ static void igc_disable_nfc_rule(struct igc_adapter *adapter,
+ 		igc_del_etype_filter(adapter, rule->filter.etype);
+ 
+ 	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
+-		int prio = (rule->filter.vlan_tci & VLAN_PRIO_MASK) >>
+-			   VLAN_PRIO_SHIFT;
++		int prio = FIELD_GET(VLAN_PRIO_MASK, rule->filter.vlan_tci);
+ 
+ 		igc_del_vlan_prio_filter(adapter, prio);
+ 	}
+diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
+index d0d9e7170154..7cd8716d2ffa 100644
+--- a/drivers/net/ethernet/intel/igc/igc_phy.c
++++ b/drivers/net/ethernet/intel/igc/igc_phy.c
+@@ -727,7 +727,7 @@ static s32 igc_write_xmdio_reg(struct igc_hw *hw, u16 addr,
+  */
+ s32 igc_write_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 data)
  {
- 	struct ice_hw *hw = &vsi->back->hw;
- 	struct ice_vsi_ctx *ctxt;
-+	u8 *ivf;
- 	int err;
+-	u8 dev_addr = (offset & GPY_MMD_MASK) >> GPY_MMD_SHIFT;
++	u8 dev_addr = FIELD_GET(GPY_MMD_MASK, offset);
+ 	s32 ret_val;
  
- 	/* do not allow modifying VLAN stripping when a port VLAN is configured
-@@ -143,19 +144,24 @@ static int ice_vsi_manage_vlan_stripping(struct ice_vsi *vsi, bool ena)
- 	if (!ctxt)
- 		return -ENOMEM;
+ 	offset = offset & GPY_REG_MASK;
+@@ -758,7 +758,7 @@ s32 igc_write_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 data)
+  */
+ s32 igc_read_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 *data)
+ {
+-	u8 dev_addr = (offset & GPY_MMD_MASK) >> GPY_MMD_SHIFT;
++	u8 dev_addr = FIELD_GET(GPY_MMD_MASK, offset);
+ 	s32 ret_val;
  
-+	ivf = &ctxt->info.inner_vlan_flags;
-+
- 	/* Here we are configuring what the VSI should do with the VLAN tag in
- 	 * the Rx packet. We can either leave the tag in the packet or put it in
- 	 * the Rx descriptor.
- 	 */
--	if (ena)
-+	if (ena) {
- 		/* Strip VLAN tag from Rx packet and put it in the desc */
--		ctxt->info.inner_vlan_flags = ICE_AQ_VSI_INNER_VLAN_EMODE_STR_BOTH;
--	else
-+		*ivf = FIELD_PREP(ICE_AQ_VSI_INNER_VLAN_EMODE_M,
-+				  ICE_AQ_VSI_INNER_VLAN_EMODE_STR_BOTH);
-+	} else {
- 		/* Disable stripping. Leave tag in packet */
--		ctxt->info.inner_vlan_flags = ICE_AQ_VSI_INNER_VLAN_EMODE_NOTHING;
-+		*ivf = FIELD_PREP(ICE_AQ_VSI_INNER_VLAN_EMODE_M,
-+				  ICE_AQ_VSI_INNER_VLAN_EMODE_NOTHING);
-+	}
- 
- 	/* Allow all packets untagged/tagged */
--	ctxt->info.inner_vlan_flags |= ICE_AQ_VSI_INNER_VLAN_TX_MODE_ALL;
-+	*ivf |= ICE_AQ_VSI_INNER_VLAN_TX_MODE_ALL;
- 
- 	ctxt->info.valid_sections = cpu_to_le16(ICE_AQ_VSI_PROP_VLAN_VALID);
- 
+ 	offset = offset & GPY_REG_MASK;
 -- 
 2.39.3
 
