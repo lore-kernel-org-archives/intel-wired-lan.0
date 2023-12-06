@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34C6BC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A28A5C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id E73D261400;
-	Wed,  6 Dec 2023 01:02:11 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org E73D261400
+	by smtp3.osuosl.org (Postfix) with ESMTP id 621C56143E;
+	Wed,  6 Dec 2023 01:02:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 621C56143E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701824532;
-	bh=5sAvka7dn9aBmyUBo91I2PcwrplhvQx1jTSekMhSECU=;
+	s=default; t=1701824536;
+	bh=Od+CARu8VA2J8oqYFTJZHHbX5QlKzUigRAR00cQ3c18=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=68shHgxtNKhLOWmSvym9iOPh/tb4WnddteWyd0iEv4yPKvDLRL05rrXoe4xi1Do90
-	 +BecsCeEerjvOqIHNpvAd/kHA6mkbCLL0n9M93jmpAAh/KfAjvcq1AnjbZsKZd7vBf
-	 sRHgFihrEd54gMtPksna+/PTvY9PaJyFgUj0mg3poi76scaJyNc0NIv1ogP/AIWwzO
-	 1ofyhqUfsHg2B6rdUrKJC/7vmcMSnR9OPycKm8z6/3808NDuQJ7WcplNE+Kr0urykX
-	 SRFeSau++jHSSsQKdLtkYqzehrHNNVZWkwOxy4LBQT7ARraGD6P1XKhupgY0GIOo9Q
-	 GUb6lLhvR9Azw==
+	b=4Hww191nwaWpluismVKw7aHZGYpYi78gP6fg56RRxN8tnxvZUg+/vAcGesFSfmBJb
+	 r34ehPRyUBVfTbE6duB/61eEYzpI6pFlZxpJdG4YA4lsAdqxLv/L1LveUh/gZMndYw
+	 HU/FOikECV9uYL/1RBHTp73anpBiyg+/Co8jZgOP4jY2OyD3MC2IqVeSyhN2yHz6iy
+	 RNeUJyDvwIh80hXLz07XkNZaEeMwDLwwMrd4hlXyzRGyjGSouVH4A1NOzXtrKIQyFb
+	 ha3Lixbbi5hPoubgIOBJQLkHVEgzMoV1LAzUDeJlMSptVikozNA+saK3O0SVMvlCfM
+	 VfMuqiEb994NA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id akxA9PX09xRH; Wed,  6 Dec 2023 01:02:11 +0000 (UTC)
+	with ESMTP id D4hjZnnKd6G4; Wed,  6 Dec 2023 01:02:15 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id CCAEE61412;
-	Wed,  6 Dec 2023 01:02:10 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CCAEE61412
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 689171BF97D
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3E82561431;
+	Wed,  6 Dec 2023 01:02:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3E82561431
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 815911BF980
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 8E35E82C35
+ by smtp4.osuosl.org (Postfix) with ESMTP id 74D7741721
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8E35E82C35
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 74D7741721
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id l2gER35YYvcw for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id CnhojG6TKHs6 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Dec 2023 01:01:34 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 9500182C5E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 9500182C5E
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700312"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700312"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 5D94041926
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:34 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5D94041926
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700290"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700290"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:35 -0800
+ 05 Dec 2023 17:01:34 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655270"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655270"
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655248"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655248"
 Received: from jbrandeb-spr1.jf.intel.com ([10.166.28.233])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:34 -0800
+ 05 Dec 2023 17:01:32 -0800
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Dec 2023 17:01:09 -0800
-Message-Id: <20231206010114.2259388-11-jesse.brandeburg@intel.com>
+Date: Tue,  5 Dec 2023 17:01:04 -0800
+Message-Id: <20231206010114.2259388-6-jesse.brandeburg@intel.com>
 X-Mailer: git-send-email 2.39.3
 In-Reply-To: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 References: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1701824496; x=1733360496;
+ t=1701824495; x=1733360495;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=gaxU5pnC2jcs9AjhNbkSjjHHEQSQMSvr3xD2J9iABgE=;
- b=hAOfP2Jm7klSBJuwyTLHzDw0iqY3QH9+osMxr2ZqFkb34cByuLH7yB/0
- Q7H4yimzuUqdTwBb/IXjGhmkCHGCnCLszxzU+sJCcffYPCrSggTubdwNh
- 3T6qrQ4wxwi33lD2Qzfb5JLEvJOEqEJt6g3oMb8TY/pkI7CNHj9RVg3lm
- V4M8vA5jW9YjKv8tbDBw4CIY3eZIbkwUc3i9XT3UuIVxzQAzwmkgMnXQP
- BQUfyICCCsFJMbtzutuNfNQ6ZZfd3uKZtTKKOP0h6tBr3zqbSaQ/Qqbs2
- vGpuZLV4GXPyzn9Vncm6e4ETnVUXzcVITsaecqGBBw77/qS72M/tP1kQy
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=EXpQwc8v10if+MqhxX2w/xCKwjG7qVilqA6UyrO1aNQ=;
+ b=GHf3s6zLVIZ2DBZXwlt/RjZyUnrRci/kRTVd7+uNQ3ChRp6BFBU50f3Q
+ 8RSR1910dEb71xzG8ufsr76/Zx+W4RfqneiHdn7hlvHNPWJdFEUflpykD
+ hjvq6f89pr/cK8S3k9LRlAdWvjJCU5/Wp1YpjoOHSCacuGyD+Ts8DYgli
+ QR6MIrZuIvXydTfVha55MJBqGy+e6BMmFZhSfdHFKs8JrigR/ivQ11SLu
+ cBttSpGe8PiA8b1YauSLsaMK+3RlezwDyf7UCBAH8eMQnX9kyigNSns7y
+ 0czlNryMgl003+RHCXEsTWLZ7col8wm5X94Oq8BiUinleKlqMPSS9EN0f
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=hAOfP2Jm
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 10/15] igc: field get
+ header.a=rsa-sha256 header.s=Intel header.b=GHf3s6zL
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 05/15] iavf: field prep
  conversion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
@@ -96,128 +96,128 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: przemyslaw.kitszel@intel.com, Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Julia Lawall <Julia.Lawall@inria.fr>, aleksander.lobakin@intel.com,
- marcin.szycik@linux.intel.com, horms@kernel.org, netdev@vger.kernel.org
+ Ahmed Zaki <ahmed.zaki@intel.com>, Julia Lawall <Julia.Lawall@inria.fr>,
+ aleksander.lobakin@intel.com, marcin.szycik@linux.intel.com, horms@kernel.org,
+ netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Refactor the igc driver to use FIELD_GET() for mask and shift reads,
-which reduces lines of code and adds clarity of intent.
+Refactor iavf driver to use FIELD_PREP(), which reduces lines of code
+and adds clarity of intent.
 
 This code was generated by the following coccinelle/spatch script and
-then manually repaired in a later patch.
+then manually repaired.
 
-@get@
+Clean up a couple spots in the code that had repetitive
+y = cpu_to_*((blah << blah_blah) & blat)
+y |= cpu_to_*((blahs << blahs_blahs) & blats)
+to
+x = FIELD_PREP(blat blah)
+x |= FIELD_PREP(blats, blahs)
+y = cpu_to_*(x);
+
+@prep2@
 constant shift,mask;
 type T;
 expression a;
 @@
--((T)((a) & mask) >> shift)
-+FIELD_GET(mask, a)
+-(((T)(a) << shift) & mask)
++FIELD_PREP(mask, a)
 
-and applied via:
-spatch --sp-file field_prep.cocci --in-place --dir \
- drivers/net/ethernet/intel/
+@prep@
+constant shift,mask;
+type T;
+expression a;
+@@
+-((T)((a) << shift) & mask)
++FIELD_PREP(mask, a)
 
 Cc: Julia Lawall <Julia.Lawall@inria.fr>
+Cc: Ahmed Zaki <ahmed.zaki@intel.com>
 Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- drivers/net/ethernet/intel/igc/igc_base.c | 6 ++----
- drivers/net/ethernet/intel/igc/igc_i225.c | 5 ++---
- drivers/net/ethernet/intel/igc/igc_main.c | 6 ++----
- drivers/net/ethernet/intel/igc/igc_phy.c  | 4 ++--
- 4 files changed, 8 insertions(+), 13 deletions(-)
+v2: updated commit message
+---
+ drivers/net/ethernet/intel/iavf/iavf_common.c | 31 ++++++++-----------
+ drivers/net/ethernet/intel/iavf/iavf_fdir.c   |  2 +-
+ 2 files changed, 14 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_base.c b/drivers/net/ethernet/intel/igc/igc_base.c
-index a1d815af507d..9fae8bdec2a7 100644
---- a/drivers/net/ethernet/intel/igc/igc_base.c
-+++ b/drivers/net/ethernet/intel/igc/igc_base.c
-@@ -68,8 +68,7 @@ static s32 igc_init_nvm_params_base(struct igc_hw *hw)
- 	u32 eecd = rd32(IGC_EECD);
- 	u16 size;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_common.c b/drivers/net/ethernet/intel/iavf/iavf_common.c
+index af5cc69f26e3..5a25233a89d5 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_common.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_common.c
+@@ -331,6 +331,7 @@ static enum iavf_status iavf_aq_get_set_rss_lut(struct iavf_hw *hw,
+ 	struct iavf_aq_desc desc;
+ 	struct iavf_aqc_get_set_rss_lut *cmd_resp =
+ 		   (struct iavf_aqc_get_set_rss_lut *)&desc.params.raw;
++	u16 flags;
  
--	size = (u16)((eecd & IGC_EECD_SIZE_EX_MASK) >>
--		     IGC_EECD_SIZE_EX_SHIFT);
-+	size = FIELD_GET(IGC_EECD_SIZE_EX_MASK, eecd);
+ 	if (set)
+ 		iavf_fill_default_direct_cmd_desc(&desc,
+@@ -343,22 +344,18 @@ static enum iavf_status iavf_aq_get_set_rss_lut(struct iavf_hw *hw,
+ 	desc.flags |= cpu_to_le16((u16)IAVF_AQ_FLAG_BUF);
+ 	desc.flags |= cpu_to_le16((u16)IAVF_AQ_FLAG_RD);
  
- 	/* Added to a constant, "size" becomes the left-shift value
- 	 * for setting word_size.
-@@ -162,8 +161,7 @@ static s32 igc_init_phy_params_base(struct igc_hw *hw)
- 	phy->reset_delay_us	= 100;
+-	cmd_resp->vsi_id =
+-			cpu_to_le16((u16)((vsi_id <<
+-					  IAVF_AQC_SET_RSS_LUT_VSI_ID_SHIFT) &
+-					  IAVF_AQC_SET_RSS_LUT_VSI_ID_MASK));
+-	cmd_resp->vsi_id |= cpu_to_le16((u16)IAVF_AQC_SET_RSS_LUT_VSI_VALID);
++	vsi_id = FIELD_PREP(IAVF_AQC_SET_RSS_LUT_VSI_ID_MASK, vsi_id) |
++		 FIELD_PREP(IAVF_AQC_SET_RSS_LUT_VSI_VALID, 1);
++	cmd_resp->vsi_id = cpu_to_le16(vsi_id);
  
- 	/* set lan id */
--	hw->bus.func = (rd32(IGC_STATUS) & IGC_STATUS_FUNC_MASK) >>
--			IGC_STATUS_FUNC_SHIFT;
-+	hw->bus.func = FIELD_GET(IGC_STATUS_FUNC_MASK, rd32(IGC_STATUS));
+ 	if (pf_lut)
+-		cmd_resp->flags |= cpu_to_le16((u16)
+-					((IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_PF <<
+-					IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
+-					IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
++		flags = FIELD_PREP(IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_MASK,
++				   IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_PF);
+ 	else
+-		cmd_resp->flags |= cpu_to_le16((u16)
+-					((IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_VSI <<
+-					IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
+-					IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
++		flags = FIELD_PREP(IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_MASK,
++				   IAVF_AQC_SET_RSS_LUT_TABLE_TYPE_VSI);
++
++	cmd_resp->flags = cpu_to_le16(flags);
  
- 	/* Make sure the PHY is in a good state. Several people have reported
- 	 * firmware leaving the PHY's page select register set to something
-diff --git a/drivers/net/ethernet/intel/igc/igc_i225.c b/drivers/net/ethernet/intel/igc/igc_i225.c
-index d2562c8e8015..0dd61719f1ed 100644
---- a/drivers/net/ethernet/intel/igc/igc_i225.c
-+++ b/drivers/net/ethernet/intel/igc/igc_i225.c
-@@ -579,9 +579,8 @@ s32 igc_set_ltr_i225(struct igc_hw *hw, bool link)
+ 	status = iavf_asq_send_command(hw, &desc, lut, lut_size, NULL);
  
- 			/* Calculate tw_system (nsec). */
- 			if (speed == SPEED_100) {
--				tw_system = ((rd32(IGC_EEE_SU) &
--					     IGC_TW_SYSTEM_100_MASK) >>
--					     IGC_TW_SYSTEM_100_SHIFT) * 500;
-+				tw_system = FIELD_GET(IGC_TW_SYSTEM_100_MASK,
-+						      rd32(IGC_EEE_SU)) * 500;
- 			} else {
- 				tw_system = (rd32(IGC_EEE_SU) &
- 					     IGC_TW_SYSTEM_1000_MASK) * 500;
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index d949289a3ddb..ba8d3fe186ae 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3712,8 +3712,7 @@ static int igc_enable_nfc_rule(struct igc_adapter *adapter,
+@@ -412,11 +409,9 @@ iavf_status iavf_aq_get_set_rss_key(struct iavf_hw *hw, u16 vsi_id,
+ 	desc.flags |= cpu_to_le16((u16)IAVF_AQ_FLAG_BUF);
+ 	desc.flags |= cpu_to_le16((u16)IAVF_AQ_FLAG_RD);
+ 
+-	cmd_resp->vsi_id =
+-			cpu_to_le16((u16)((vsi_id <<
+-					  IAVF_AQC_SET_RSS_KEY_VSI_ID_SHIFT) &
+-					  IAVF_AQC_SET_RSS_KEY_VSI_ID_MASK));
+-	cmd_resp->vsi_id |= cpu_to_le16((u16)IAVF_AQC_SET_RSS_KEY_VSI_VALID);
++	vsi_id = FIELD_PREP(IAVF_AQC_SET_RSS_KEY_VSI_ID_MASK, vsi_id) |
++		 FIELD_PREP(IAVF_AQC_SET_RSS_KEY_VSI_VALID, 1);
++	cmd_resp->vsi_id = cpu_to_le16(vsi_id);
+ 
+ 	status = iavf_asq_send_command(hw, &desc, key, key_size, NULL);
+ 
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_fdir.c b/drivers/net/ethernet/intel/iavf/iavf_fdir.c
+index 65ddcd81c993..2d47b0b4640e 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_fdir.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_fdir.c
+@@ -358,7 +358,7 @@ iavf_fill_fdir_ip6_hdr(struct iavf_fdir_fltr *fltr,
+ 
+ 	if (fltr->ip_mask.tclass == U8_MAX) {
+ 		iph->priority = (fltr->ip_data.tclass >> 4) & 0xF;
+-		iph->flow_lbl[0] = (fltr->ip_data.tclass << 4) & 0xF0;
++		iph->flow_lbl[0] = FIELD_PREP(0xF0, fltr->ip_data.tclass);
+ 		VIRTCHNL_ADD_PROTO_HDR_FIELD_BIT(hdr, IPV6, TC);
  	}
  
- 	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
--		int prio = (rule->filter.vlan_tci & VLAN_PRIO_MASK) >>
--			   VLAN_PRIO_SHIFT;
-+		int prio = FIELD_GET(VLAN_PRIO_MASK, rule->filter.vlan_tci);
- 
- 		err = igc_add_vlan_prio_filter(adapter, prio, rule->action);
- 		if (err)
-@@ -3735,8 +3734,7 @@ static void igc_disable_nfc_rule(struct igc_adapter *adapter,
- 		igc_del_etype_filter(adapter, rule->filter.etype);
- 
- 	if (rule->filter.match_flags & IGC_FILTER_FLAG_VLAN_TCI) {
--		int prio = (rule->filter.vlan_tci & VLAN_PRIO_MASK) >>
--			   VLAN_PRIO_SHIFT;
-+		int prio = FIELD_GET(VLAN_PRIO_MASK, rule->filter.vlan_tci);
- 
- 		igc_del_vlan_prio_filter(adapter, prio);
- 	}
-diff --git a/drivers/net/ethernet/intel/igc/igc_phy.c b/drivers/net/ethernet/intel/igc/igc_phy.c
-index d0d9e7170154..7cd8716d2ffa 100644
---- a/drivers/net/ethernet/intel/igc/igc_phy.c
-+++ b/drivers/net/ethernet/intel/igc/igc_phy.c
-@@ -727,7 +727,7 @@ static s32 igc_write_xmdio_reg(struct igc_hw *hw, u16 addr,
-  */
- s32 igc_write_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 data)
- {
--	u8 dev_addr = (offset & GPY_MMD_MASK) >> GPY_MMD_SHIFT;
-+	u8 dev_addr = FIELD_GET(GPY_MMD_MASK, offset);
- 	s32 ret_val;
- 
- 	offset = offset & GPY_REG_MASK;
-@@ -758,7 +758,7 @@ s32 igc_write_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 data)
-  */
- s32 igc_read_phy_reg_gpy(struct igc_hw *hw, u32 offset, u16 *data)
- {
--	u8 dev_addr = (offset & GPY_MMD_MASK) >> GPY_MMD_SHIFT;
-+	u8 dev_addr = FIELD_GET(GPY_MMD_MASK, offset);
- 	s32 ret_val;
- 
- 	offset = offset & GPY_REG_MASK;
 -- 
 2.39.3
 
