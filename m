@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79797C4167B
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64464C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:47 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 391FA610E0;
-	Wed,  6 Dec 2023 01:02:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 391FA610E0
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1A3966141D;
+	Wed,  6 Dec 2023 01:02:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1A3966141D
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701824561;
-	bh=ze/iDftRV5NFGHH+vGBpW/RM6YZFMtYzZ4Vk+mP4fOA=;
+	s=default; t=1701824567;
+	bh=CsqNYWg9Pr2scLMAA+RRXVBbAGTD285pG3aqAdRCfQQ=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=l54xB12bkQBlspFxHupaetiEq5/HspiZJ+mxX+H7kqc/JfEtRMWZ801Q0msWDUDnS
-	 S8Em47SlKA33QNkfI8D2glV4k6NWS1Tro3W5gNk/PM4Wan2Gc7upZ5FLd1kkOExWZe
-	 Ag9ojmDeNUtUs+L6/hIh4Zqf2iwxedZRqmDUzQtNwRoabKYvTEuCfxFfp06XIVtRwx
-	 52fofVTKX/Spk9DvHK3jewnEBmm+0LthDhLxuN76NDMJjqcQ/v5wpZXgktRnw4Qe7H
-	 j0LI+o5iM2FpCrkpzd3/hL8THNuAVmjNm8Vz3sBt1fWi0R97O1dGEMBA5HhiqMWHcZ
-	 Jpy2HPoqu2nlg==
+	b=LMmwKSReJeAMmmcw6qFM3KEJAp7/0AtVpOyl2qkZPz/CyuiRZdPm4SqvBDaDQ8jTO
+	 5kPgzS6AjQRhcsjkIj07DjizxfuM7nudQquFp92hCokh1CyB+3OhX6HLXv5/G0ao7b
+	 rYWSYhyNnMFRc9m72OnCAHPrXUFBxy9n2w7r93rbpd7bAdLHcSGzPSQtiZfTNSIogP
+	 GRN1o0aVERXg2pWik5ZXFhg1yLMkGyX6HqsIz+XGNm3Dij3ObMSxk1dc3IwFqPNU9F
+	 i8wXyfhblqCRC5rwE8HIFzXYPjeg6jOeRVKDeaZqeTCJKySp3I0aybWsulVSZpA3Rg
+	 zx+uegRD712hg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id hiOcrb5lXBhZ; Wed,  6 Dec 2023 01:02:38 +0000 (UTC)
+	with ESMTP id 1IhIjFnwusLL; Wed,  6 Dec 2023 01:02:44 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id A295761439;
-	Wed,  6 Dec 2023 01:02:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A295761439
+	by smtp3.osuosl.org (Postfix) with ESMTP id EA88F6142B;
+	Wed,  6 Dec 2023 01:02:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EA88F6142B
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 9AD3A1BF97D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:41 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 9FED91BF97D
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id BB94682C61
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org BB94682C61
+ by smtp1.osuosl.org (Postfix) with ESMTP id 41DBB82272
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 41DBB82272
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dX0vdQrug0xr for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
+ with ESMTP id 8XL3V0S-3g_1 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Dec 2023 01:01:36 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 7558882272
+ by smtp1.osuosl.org (Postfix) with ESMTPS id CDFCF82C18
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 7558882272
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700308"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700308"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org CDFCF82C18
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700318"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700318"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:35 -0800
+ 05 Dec 2023 17:01:36 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655267"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655267"
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655277"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655277"
 Received: from jbrandeb-spr1.jf.intel.com ([10.166.28.233])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
  05 Dec 2023 17:01:34 -0800
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Dec 2023 17:01:08 -0800
-Message-Id: <20231206010114.2259388-10-jesse.brandeburg@intel.com>
+Date: Tue,  5 Dec 2023 17:01:10 -0800
+Message-Id: <20231206010114.2259388-12-jesse.brandeburg@intel.com>
 X-Mailer: git-send-email 2.39.3
 In-Reply-To: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 References: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
@@ -70,19 +70,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1701824496; x=1733360496;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=EUWVs5YbcU2J+hxjuoI50OPulMgDUrnl+4TE9uCkv1g=;
- b=GS97WRVh9plUvCAkmdwNv3tLDlBZvKESLmWNx1tGVdfVBnjTUfxt4bRA
- ny8jUpYojkSYur+UhUM+oaYwLGAitZazIxjOBAWPVls2dx+eqOxnz2cjT
- MfwFEwd5wK/i2njnoFgPc3ZYbiWjQQqqH3j1cd69coVh5KJHo0N3rKctk
- doUJraVQMQ/TVFcj7gJItLV4s9jgvNvmH4fRnKavbFq3u2bChsSm9aKch
- 0HgPvlVHNToEW4ognCYL3QESQUd/hXnFdb641Gy2KGkEmUgMxxcdu0MS5
- wxGd4323BqmGhEB/TFAvefkCUXkLSXJwO6hZaELSXgmFJFG7zcolBU3my
- w==;
+ bh=QubS/fUhTIVkJsI2NhvpcMqPA7621vgbrJ9Id7T9mnU=;
+ b=kfJ3jsQ2TteBvNnnGsMnlX2Fs1vAr0lw942+EbRpuYQzXN3uXWneqZBx
+ b8ZRSqLOLUMx0MVebiLgkQzvgZA7NScfLLnaIFbrWnnefou686S2NZbZG
+ UrWKjS5rFV9I5O27RrG4Vaqjx8qMMNxpb3qXxTXuw4gsE5plsCYMNx+vw
+ icnDksi2uHHcbeA6qxXdnKLf+Bk8pGOoIY1KpikGZluHUgRPVtb8t4tgz
+ +hm/EjRyAqjuu7CxQhqeAwP2EWV4d7VI3PTJW2c5dMNzB3ZYLzO2guETb
+ dhO2CF8ZOwssPLtAybyIwUliBVUOySTbHqDWdXdzabNKuu6FzoimGoh1u
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GS97WRVh
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 09/15] intel: legacy: field
- get conversion
+ header.a=rsa-sha256 header.s=Intel header.b=kfJ3jsQ2
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 11/15] i40e: field get
+ conversion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,7 +95,8 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: przemyslaw.kitszel@intel.com, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+Cc: Aleksandr Loktionov <aleksandr.loktionov@intel.com>,
+ przemyslaw.kitszel@intel.com, Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Julia Lawall <Julia.Lawall@inria.fr>, aleksander.lobakin@intel.com,
  marcin.szycik@linux.intel.com, horms@kernel.org, netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
@@ -103,19 +104,26 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Refactor several older Intel drivers to use FIELD_GET(), which reduces
-lines of code and adds clarity of intent.
+Refactor the i40e driver to use FIELD_GET() for mask and shift reads,
+which reduces lines of code and adds clarity of intent.
 
 This code was generated by the following coccinelle/spatch script and
 then manually repaired.
 
+While making one of the conversions, an if() check was inverted to
+return early and avoid un-necessary indentation of the remainder of the
+function. In some other cases a stack variable was moved inside the
+block where it was used while doing cleanups/review.
+
+A couple places were changed to use le16_get_bits() instead of FIELD_GET
+with a le16_to_cpu combination.
+
 @get@
 constant shift,mask;
-type T;
+metavariable type T;
 expression a;
 @@
-(
--((T)((a) & mask) >> shift)
+-(((T)(a) & mask) >> shift)
 +FIELD_GET(mask, a)
 
 and applied via:
@@ -123,979 +131,943 @@ spatch --sp-file field_prep.cocci --in-place --dir \
  drivers/net/ethernet/intel/
 
 Cc: Julia Lawall <Julia.Lawall@inria.fr>
-CC: Alexander Lobakin <aleksander.lobakin@intel.com>
+Reviewed-by: Aleksandr Loktionov <aleksandr.loktionov@intel.com>
 Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
-v2: update to le16_encode_bits in one spot
+v2: add a couple get_bits
 ---
- drivers/net/ethernet/intel/e1000/e1000_hw.c   | 45 ++++++++-----------
- .../net/ethernet/intel/e1000e/80003es2lan.c   |  3 +-
- drivers/net/ethernet/intel/e1000e/82571.c     |  3 +-
- drivers/net/ethernet/intel/e1000e/ethtool.c   |  7 ++-
- drivers/net/ethernet/intel/e1000e/ich8lan.c   | 18 +++-----
- drivers/net/ethernet/intel/e1000e/mac.c       |  8 ++--
- drivers/net/ethernet/intel/e1000e/netdev.c    | 11 ++---
- drivers/net/ethernet/intel/e1000e/phy.c       | 17 +++----
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c   |  3 +-
- drivers/net/ethernet/intel/fm10k/fm10k_vf.c   |  9 ++--
- drivers/net/ethernet/intel/igb/e1000_82575.c  | 29 +++++-------
- drivers/net/ethernet/intel/igb/e1000_i210.c   | 15 ++++---
- drivers/net/ethernet/intel/igb/e1000_mac.c    |  7 ++-
- drivers/net/ethernet/intel/igb/e1000_nvm.c    | 14 +++---
- drivers/net/ethernet/intel/igb/e1000_phy.c    |  9 ++--
- drivers/net/ethernet/intel/igb/igb_ethtool.c  |  8 ++--
- drivers/net/ethernet/intel/igb/igb_main.c     |  4 +-
- drivers/net/ethernet/intel/igbvf/mbx.c        |  1 +
- drivers/net/ethernet/intel/igbvf/netdev.c     |  5 +--
- .../net/ethernet/intel/ixgbe/ixgbe_common.c   | 30 ++++++-------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  8 ++--
- .../net/ethernet/intel/ixgbe/ixgbe_sriov.c    |  8 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c |  8 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 19 ++++----
- 25 files changed, 123 insertions(+), 168 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c |  56 +++----
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c    | 158 +++++++-----------
+ drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c |   3 +-
+ drivers/net/ethernet/intel/i40e/i40e_ddp.c    |   4 +-
+ .../net/ethernet/intel/i40e/i40e_ethtool.c    |   7 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  73 ++++----
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c    |  13 +-
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c    |   4 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  29 ++--
+ .../ethernet/intel/i40e/i40e_virtchnl_pf.c    |  21 ++-
+ drivers/net/ethernet/intel/i40e/i40e_xsk.c    |   3 +-
+ 11 files changed, 145 insertions(+), 226 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
-index 4576511c99f5..f9328f2e669f 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
-@@ -3261,8 +3261,7 @@ static s32 e1000_phy_igp_get_info(struct e1000_hw *hw,
- 		return ret_val;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 4ec4ab2c7d48..de6ca6295742 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -664,11 +664,11 @@ int i40e_init_shared_code(struct i40e_hw *hw)
+ 	hw->phy.get_link_info = true;
  
- 	phy_info->mdix_mode =
--	    (e1000_auto_x_mode) ((phy_data & IGP01E1000_PSSR_MDIX) >>
--				 IGP01E1000_PSSR_MDIX_SHIFT);
-+	    (e1000_auto_x_mode)FIELD_GET(IGP01E1000_PSSR_MDIX, phy_data);
- 
- 	if ((phy_data & IGP01E1000_PSSR_SPEED_MASK) ==
- 	    IGP01E1000_PSSR_SPEED_1000MBPS) {
-@@ -3273,11 +3272,11 @@ static s32 e1000_phy_igp_get_info(struct e1000_hw *hw,
- 		if (ret_val)
- 			return ret_val;
- 
--		phy_info->local_rx = ((phy_data & SR_1000T_LOCAL_RX_STATUS) >>
--				      SR_1000T_LOCAL_RX_STATUS_SHIFT) ?
-+		phy_info->local_rx = FIELD_GET(SR_1000T_LOCAL_RX_STATUS,
-+					       phy_data) ?
- 		    e1000_1000t_rx_status_ok : e1000_1000t_rx_status_not_ok;
--		phy_info->remote_rx = ((phy_data & SR_1000T_REMOTE_RX_STATUS) >>
--				       SR_1000T_REMOTE_RX_STATUS_SHIFT) ?
-+		phy_info->remote_rx = FIELD_GET(SR_1000T_REMOTE_RX_STATUS,
-+						phy_data) ?
- 		    e1000_1000t_rx_status_ok : e1000_1000t_rx_status_not_ok;
- 
- 		/* Get cable length */
-@@ -3327,14 +3326,12 @@ static s32 e1000_phy_m88_get_info(struct e1000_hw *hw,
- 		return ret_val;
- 
- 	phy_info->extended_10bt_distance =
--	    ((phy_data & M88E1000_PSCR_10BT_EXT_DIST_ENABLE) >>
--	     M88E1000_PSCR_10BT_EXT_DIST_ENABLE_SHIFT) ?
-+	    FIELD_GET(M88E1000_PSCR_10BT_EXT_DIST_ENABLE, phy_data) ?
- 	    e1000_10bt_ext_dist_enable_lower :
- 	    e1000_10bt_ext_dist_enable_normal;
- 
- 	phy_info->polarity_correction =
--	    ((phy_data & M88E1000_PSCR_POLARITY_REVERSAL) >>
--	     M88E1000_PSCR_POLARITY_REVERSAL_SHIFT) ?
-+	    FIELD_GET(M88E1000_PSCR_POLARITY_REVERSAL, phy_data) ?
- 	    e1000_polarity_reversal_disabled : e1000_polarity_reversal_enabled;
- 
- 	/* Check polarity status */
-@@ -3348,27 +3345,25 @@ static s32 e1000_phy_m88_get_info(struct e1000_hw *hw,
- 		return ret_val;
- 
- 	phy_info->mdix_mode =
--	    (e1000_auto_x_mode) ((phy_data & M88E1000_PSSR_MDIX) >>
--				 M88E1000_PSSR_MDIX_SHIFT);
-+	    (e1000_auto_x_mode)FIELD_GET(M88E1000_PSSR_MDIX, phy_data);
- 
- 	if ((phy_data & M88E1000_PSSR_SPEED) == M88E1000_PSSR_1000MBS) {
- 		/* Cable Length Estimation and Local/Remote Receiver Information
- 		 * are only valid at 1000 Mbps.
- 		 */
- 		phy_info->cable_length =
--		    (e1000_cable_length) ((phy_data &
--					   M88E1000_PSSR_CABLE_LENGTH) >>
--					  M88E1000_PSSR_CABLE_LENGTH_SHIFT);
-+		    (e1000_cable_length)FIELD_GET(M88E1000_PSSR_CABLE_LENGTH,
-+						  phy_data);
- 
- 		ret_val = e1000_read_phy_reg(hw, PHY_1000T_STATUS, &phy_data);
- 		if (ret_val)
- 			return ret_val;
- 
--		phy_info->local_rx = ((phy_data & SR_1000T_LOCAL_RX_STATUS) >>
--				      SR_1000T_LOCAL_RX_STATUS_SHIFT) ?
-+		phy_info->local_rx = FIELD_GET(SR_1000T_LOCAL_RX_STATUS,
-+					       phy_data) ?
- 		    e1000_1000t_rx_status_ok : e1000_1000t_rx_status_not_ok;
--		phy_info->remote_rx = ((phy_data & SR_1000T_REMOTE_RX_STATUS) >>
--				       SR_1000T_REMOTE_RX_STATUS_SHIFT) ?
-+		phy_info->remote_rx = FIELD_GET(SR_1000T_REMOTE_RX_STATUS,
-+						phy_data) ?
- 		    e1000_1000t_rx_status_ok : e1000_1000t_rx_status_not_ok;
- 	}
- 
-@@ -3516,7 +3511,7 @@ s32 e1000_init_eeprom_params(struct e1000_hw *hw)
- 		if (ret_val)
- 			return ret_val;
- 		eeprom_size =
--		    (eeprom_size & EEPROM_SIZE_MASK) >> EEPROM_SIZE_SHIFT;
-+		    FIELD_GET(EEPROM_SIZE_MASK, eeprom_size);
- 		/* 256B eeprom size was not supported in earlier hardware, so we
- 		 * bump eeprom_size up one to ensure that "1" (which maps to
- 		 * 256B) is never the result used in the shifting logic below.
-@@ -4892,8 +4887,7 @@ static s32 e1000_get_cable_length(struct e1000_hw *hw, u16 *min_length,
- 					     &phy_data);
- 		if (ret_val)
- 			return ret_val;
--		cable_length = (phy_data & M88E1000_PSSR_CABLE_LENGTH) >>
--		    M88E1000_PSSR_CABLE_LENGTH_SHIFT;
-+		cable_length = FIELD_GET(M88E1000_PSSR_CABLE_LENGTH, phy_data);
- 
- 		/* Convert the enum value to ranged values */
- 		switch (cable_length) {
-@@ -5002,8 +4996,7 @@ static s32 e1000_check_polarity(struct e1000_hw *hw,
- 					     &phy_data);
- 		if (ret_val)
- 			return ret_val;
--		*polarity = ((phy_data & M88E1000_PSSR_REV_POLARITY) >>
--			     M88E1000_PSSR_REV_POLARITY_SHIFT) ?
-+		*polarity = FIELD_GET(M88E1000_PSSR_REV_POLARITY, phy_data) ?
- 		    e1000_rev_polarity_reversed : e1000_rev_polarity_normal;
- 
- 	} else if (hw->phy_type == e1000_phy_igp) {
-@@ -5073,8 +5066,8 @@ static s32 e1000_check_downshift(struct e1000_hw *hw)
- 		if (ret_val)
- 			return ret_val;
- 
--		hw->speed_downgraded = (phy_data & M88E1000_PSSR_DOWNSHIFT) >>
--		    M88E1000_PSSR_DOWNSHIFT_SHIFT;
-+		hw->speed_downgraded = FIELD_GET(M88E1000_PSSR_DOWNSHIFT,
-+						 phy_data);
- 	}
- 
- 	return E1000_SUCCESS;
-diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.c b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-index 31fce3e4e8af..4eb1ceaf865a 100644
---- a/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-@@ -92,8 +92,7 @@ static s32 e1000_init_nvm_params_80003es2lan(struct e1000_hw *hw)
- 
- 	nvm->type = e1000_nvm_eeprom_spi;
- 
--	size = (u16)((eecd & E1000_EECD_SIZE_EX_MASK) >>
--		     E1000_EECD_SIZE_EX_SHIFT);
-+	size = (u16)FIELD_GET(E1000_EECD_SIZE_EX_MASK, eecd);
- 
- 	/* Added to a constant, "size" becomes the left-shift value
- 	 * for setting word_size.
-diff --git a/drivers/net/ethernet/intel/e1000e/82571.c b/drivers/net/ethernet/intel/e1000e/82571.c
-index 0b1e890dd583..969f855a79ee 100644
---- a/drivers/net/ethernet/intel/e1000e/82571.c
-+++ b/drivers/net/ethernet/intel/e1000e/82571.c
-@@ -157,8 +157,7 @@ static s32 e1000_init_nvm_params_82571(struct e1000_hw *hw)
- 		fallthrough;
- 	default:
- 		nvm->type = e1000_nvm_eeprom_spi;
--		size = (u16)((eecd & E1000_EECD_SIZE_EX_MASK) >>
--			     E1000_EECD_SIZE_EX_SHIFT);
-+		size = (u16)FIELD_GET(E1000_EECD_SIZE_EX_MASK, eecd);
- 		/* Added to a constant, "size" becomes the left-shift value
- 		 * for setting word_size.
- 		 */
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 9835e6a90d56..fc0f98ea6133 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -654,8 +654,8 @@ static void e1000_get_drvinfo(struct net_device *netdev,
+ 	/* Determine port number and PF number*/
+-	port = (rd32(hw, I40E_PFGEN_PORTNUM) & I40E_PFGEN_PORTNUM_PORT_NUM_MASK)
+-					   >> I40E_PFGEN_PORTNUM_PORT_NUM_SHIFT;
++	port = FIELD_GET(I40E_PFGEN_PORTNUM_PORT_NUM_MASK,
++			 rd32(hw, I40E_PFGEN_PORTNUM));
+ 	hw->port = (u8)port;
+-	ari = (rd32(hw, I40E_GLPCI_CAPSUP) & I40E_GLPCI_CAPSUP_ARI_EN_MASK) >>
+-						 I40E_GLPCI_CAPSUP_ARI_EN_SHIFT;
++	ari = FIELD_GET(I40E_GLPCI_CAPSUP_ARI_EN_MASK,
++			rd32(hw, I40E_GLPCI_CAPSUP));
+ 	func_rid = rd32(hw, I40E_PF_FUNC_RID);
+ 	if (ari)
+ 		hw->pf_id = (u8)(func_rid & 0xff);
+@@ -986,9 +986,8 @@ int i40e_pf_reset(struct i40e_hw *hw)
+ 	 * The grst delay value is in 100ms units, and we'll wait a
+ 	 * couple counts longer to be sure we don't just miss the end.
  	 */
- 	snprintf(drvinfo->fw_version, sizeof(drvinfo->fw_version),
- 		 "%d.%d-%d",
--		 (adapter->eeprom_vers & 0xF000) >> 12,
--		 (adapter->eeprom_vers & 0x0FF0) >> 4,
-+		 FIELD_GET(0xF000, adapter->eeprom_vers),
-+		 FIELD_GET(0x0FF0, adapter->eeprom_vers),
- 		 (adapter->eeprom_vers & 0x000F));
+-	grst_del = (rd32(hw, I40E_GLGEN_RSTCTL) &
+-		    I40E_GLGEN_RSTCTL_GRSTDEL_MASK) >>
+-		    I40E_GLGEN_RSTCTL_GRSTDEL_SHIFT;
++	grst_del = FIELD_GET(I40E_GLGEN_RSTCTL_GRSTDEL_MASK,
++			     rd32(hw, I40E_GLGEN_RSTCTL));
  
- 	strscpy(drvinfo->bus_info, pci_name(adapter->pdev),
-@@ -925,8 +925,7 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
- 	}
+ 	/* It can take upto 15 secs for GRST steady state.
+ 	 * Bump it to 16 secs max to be safe.
+@@ -1080,26 +1079,20 @@ void i40e_clear_hw(struct i40e_hw *hw)
  
- 	if (mac->type >= e1000_pch_lpt)
--		wlock_mac = (er32(FWSM) & E1000_FWSM_WLOCK_MAC_MASK) >>
--		    E1000_FWSM_WLOCK_MAC_SHIFT;
-+		wlock_mac = FIELD_GET(E1000_FWSM_WLOCK_MAC_MASK, er32(FWSM));
+ 	/* get number of interrupts, queues, and VFs */
+ 	val = rd32(hw, I40E_GLPCI_CNF2);
+-	num_pf_int = (val & I40E_GLPCI_CNF2_MSI_X_PF_N_MASK) >>
+-		     I40E_GLPCI_CNF2_MSI_X_PF_N_SHIFT;
+-	num_vf_int = (val & I40E_GLPCI_CNF2_MSI_X_VF_N_MASK) >>
+-		     I40E_GLPCI_CNF2_MSI_X_VF_N_SHIFT;
++	num_pf_int = FIELD_GET(I40E_GLPCI_CNF2_MSI_X_PF_N_MASK, val);
++	num_vf_int = FIELD_GET(I40E_GLPCI_CNF2_MSI_X_VF_N_MASK, val);
  
- 	for (i = 0; i < mac->rar_entry_count; i++) {
- 		if (mac->type >= e1000_pch_lpt) {
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 39e9fc601bf5..a2788fd5f8bb 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1072,13 +1072,11 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
- 
- 		lat_enc_d = (lat_enc & E1000_LTRV_VALUE_MASK) *
- 			     (1U << (E1000_LTRV_SCALE_FACTOR *
--			     ((lat_enc & E1000_LTRV_SCALE_MASK)
--			     >> E1000_LTRV_SCALE_SHIFT)));
-+			     FIELD_GET(E1000_LTRV_SCALE_MASK, lat_enc)));
- 
- 		max_ltr_enc_d = (max_ltr_enc & E1000_LTRV_VALUE_MASK) *
--				 (1U << (E1000_LTRV_SCALE_FACTOR *
--				 ((max_ltr_enc & E1000_LTRV_SCALE_MASK)
--				 >> E1000_LTRV_SCALE_SHIFT)));
-+			(1U << (E1000_LTRV_SCALE_FACTOR *
-+				FIELD_GET(E1000_LTRV_SCALE_MASK, max_ltr_enc)));
- 
- 		if (lat_enc_d > max_ltr_enc_d)
- 			lat_enc = max_ltr_enc;
-@@ -2075,8 +2073,7 @@ static s32 e1000_write_smbus_addr(struct e1000_hw *hw)
- {
- 	u16 phy_data;
- 	u32 strap = er32(STRAP);
--	u32 freq = (strap & E1000_STRAP_SMT_FREQ_MASK) >>
--	    E1000_STRAP_SMT_FREQ_SHIFT;
-+	u32 freq = FIELD_GET(E1000_STRAP_SMT_FREQ_MASK, strap);
- 	s32 ret_val;
- 
- 	strap &= E1000_STRAP_SMBUS_ADDRESS_MASK;
-@@ -2562,8 +2559,7 @@ void e1000_copy_rx_addrs_to_phy_ich8lan(struct e1000_hw *hw)
- 		hw->phy.ops.write_reg_page(hw, BM_RAR_H(i),
- 					   (u16)(mac_reg & 0xFFFF));
- 		hw->phy.ops.write_reg_page(hw, BM_RAR_CTRL(i),
--					   (u16)((mac_reg & E1000_RAH_AV)
--						 >> 16));
-+					   FIELD_GET(E1000_RAH_AV, mac_reg));
- 	}
- 
- 	e1000_disable_phy_wakeup_reg_access_bm(hw, &phy_reg);
-@@ -3205,7 +3201,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
- 							 &nvm_dword);
- 		if (ret_val)
- 			return ret_val;
--		sig_byte = (u8)((nvm_dword & 0xFF00) >> 8);
-+		sig_byte = FIELD_GET(0xFF00, nvm_dword);
- 		if ((sig_byte & E1000_ICH_NVM_VALID_SIG_MASK) ==
- 		    E1000_ICH_NVM_SIG_VALUE) {
- 			*bank = 0;
-@@ -3218,7 +3214,7 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
- 							 &nvm_dword);
- 		if (ret_val)
- 			return ret_val;
--		sig_byte = (u8)((nvm_dword & 0xFF00) >> 8);
-+		sig_byte = FIELD_GET(0xFF00, nvm_dword);
- 		if ((sig_byte & E1000_ICH_NVM_VALID_SIG_MASK) ==
- 		    E1000_ICH_NVM_SIG_VALUE) {
- 			*bank = 1;
-diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
-index 5df7ad93f3d7..5abf063236a8 100644
---- a/drivers/net/ethernet/intel/e1000e/mac.c
-+++ b/drivers/net/ethernet/intel/e1000e/mac.c
-@@ -25,9 +25,9 @@ s32 e1000e_get_bus_info_pcie(struct e1000_hw *hw)
- 		pci_read_config_word(adapter->pdev,
- 				     cap_offset + PCIE_LINK_STATUS,
- 				     &pcie_link_status);
--		bus->width = (enum e1000_bus_width)((pcie_link_status &
--						     PCIE_LINK_WIDTH_MASK) >>
--						    PCIE_LINK_WIDTH_SHIFT);
-+		bus->width =
-+			(enum e1000_bus_width)FIELD_GET(PCIE_LINK_WIDTH_MASK,
-+							pcie_link_status);
- 	}
- 
- 	mac->ops.set_lan_id(hw);
-@@ -52,7 +52,7 @@ void e1000_set_lan_id_multi_port_pcie(struct e1000_hw *hw)
- 	 * for the device regardless of function swap state.
- 	 */
- 	reg = er32(STATUS);
--	bus->func = (reg & E1000_STATUS_FUNC_MASK) >> E1000_STATUS_FUNC_SHIFT;
-+	bus->func = FIELD_GET(E1000_STATUS_FUNC_MASK, reg);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index f536c856727c..af5d9d97a0d6 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1788,8 +1788,7 @@ static irqreturn_t e1000_intr_msi(int __always_unused irq, void *data)
- 		adapter->corr_errors +=
- 		    pbeccsts & E1000_PBECCSTS_CORR_ERR_CNT_MASK;
- 		adapter->uncorr_errors +=
--		    (pbeccsts & E1000_PBECCSTS_UNCORR_ERR_CNT_MASK) >>
--		    E1000_PBECCSTS_UNCORR_ERR_CNT_SHIFT;
-+		    FIELD_GET(E1000_PBECCSTS_UNCORR_ERR_CNT_MASK, pbeccsts);
- 
- 		/* Do the reset outside of interrupt context */
- 		schedule_work(&adapter->reset_task);
-@@ -1868,8 +1867,7 @@ static irqreturn_t e1000_intr(int __always_unused irq, void *data)
- 		adapter->corr_errors +=
- 		    pbeccsts & E1000_PBECCSTS_CORR_ERR_CNT_MASK;
- 		adapter->uncorr_errors +=
--		    (pbeccsts & E1000_PBECCSTS_UNCORR_ERR_CNT_MASK) >>
--		    E1000_PBECCSTS_UNCORR_ERR_CNT_SHIFT;
-+		    FIELD_GET(E1000_PBECCSTS_UNCORR_ERR_CNT_MASK, pbeccsts);
- 
- 		/* Do the reset outside of interrupt context */
- 		schedule_work(&adapter->reset_task);
-@@ -5031,8 +5029,7 @@ static void e1000e_update_stats(struct e1000_adapter *adapter)
- 		adapter->corr_errors +=
- 		    pbeccsts & E1000_PBECCSTS_CORR_ERR_CNT_MASK;
- 		adapter->uncorr_errors +=
--		    (pbeccsts & E1000_PBECCSTS_UNCORR_ERR_CNT_MASK) >>
--		    E1000_PBECCSTS_UNCORR_ERR_CNT_SHIFT;
-+		    FIELD_GET(E1000_PBECCSTS_UNCORR_ERR_CNT_MASK, pbeccsts);
- 	}
- }
- 
-@@ -6249,7 +6246,7 @@ static int e1000_init_phy_wakeup(struct e1000_adapter *adapter, u32 wufc)
- 		phy_reg |= BM_RCTL_MPE;
- 	phy_reg &= ~(BM_RCTL_MO_MASK);
- 	if (mac_reg & E1000_RCTL_MO_3)
--		phy_reg |= (((mac_reg & E1000_RCTL_MO_3) >> E1000_RCTL_MO_SHIFT)
-+		phy_reg |= (FIELD_GET(E1000_RCTL_MO_3, mac_reg)
- 			    << BM_RCTL_MO_SHIFT);
- 	if (mac_reg & E1000_RCTL_BAM)
- 		phy_reg |= BM_RCTL_BAM;
-diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
-index 2498f021eb02..5e329156d1ba 100644
---- a/drivers/net/ethernet/intel/e1000e/phy.c
-+++ b/drivers/net/ethernet/intel/e1000e/phy.c
-@@ -154,10 +154,9 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
- 		e_dbg("MDI Read PHY Reg Address %d Error\n", offset);
- 		return -E1000_ERR_PHY;
- 	}
--	if (((mdic & E1000_MDIC_REG_MASK) >> E1000_MDIC_REG_SHIFT) != offset) {
-+	if (FIELD_GET(E1000_MDIC_REG_MASK, mdic) != offset) {
- 		e_dbg("MDI Read offset error - requested %d, returned %d\n",
--		      offset,
--		      (mdic & E1000_MDIC_REG_MASK) >> E1000_MDIC_REG_SHIFT);
-+		      offset, FIELD_GET(E1000_MDIC_REG_MASK, mdic));
- 		return -E1000_ERR_PHY;
- 	}
- 	*data = (u16)mdic;
-@@ -167,7 +166,6 @@ s32 e1000e_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
- 	 */
- 	if (hw->mac.type == e1000_pch2lan)
- 		udelay(100);
--
- 	return 0;
- }
- 
-@@ -218,10 +216,9 @@ s32 e1000e_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
- 		e_dbg("MDI Write PHY Red Address %d Error\n", offset);
- 		return -E1000_ERR_PHY;
- 	}
--	if (((mdic & E1000_MDIC_REG_MASK) >> E1000_MDIC_REG_SHIFT) != offset) {
-+	if (FIELD_GET(E1000_MDIC_REG_MASK, mdic) != offset) {
- 		e_dbg("MDI Write offset error - requested %d, returned %d\n",
--		      offset,
--		      (mdic & E1000_MDIC_REG_MASK) >> E1000_MDIC_REG_SHIFT);
-+		      offset, FIELD_GET(E1000_MDIC_REG_MASK, mdic));
- 		return -E1000_ERR_PHY;
- 	}
- 
-@@ -1792,8 +1789,7 @@ s32 e1000e_get_cable_length_m88(struct e1000_hw *hw)
- 	if (ret_val)
- 		return ret_val;
- 
--	index = ((phy_data & M88E1000_PSSR_CABLE_LENGTH) >>
--		 M88E1000_PSSR_CABLE_LENGTH_SHIFT);
-+	index = FIELD_GET(M88E1000_PSSR_CABLE_LENGTH, phy_data);
- 
- 	if (index >= M88E1000_CABLE_LENGTH_TABLE_SIZE - 1)
- 		return -E1000_ERR_PHY;
-@@ -3233,8 +3229,7 @@ s32 e1000_get_cable_length_82577(struct e1000_hw *hw)
- 	if (ret_val)
- 		return ret_val;
- 
--	length = ((phy_data & I82577_DSTATUS_CABLE_LENGTH) >>
--		  I82577_DSTATUS_CABLE_LENGTH_SHIFT);
-+	length = FIELD_GET(I82577_DSTATUS_CABLE_LENGTH, phy_data);
- 
- 	if (length == E1000_CABLE_LENGTH_UNDEFINED)
- 		return -E1000_ERR_PHY;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 1eea0ec5dbcf..98861cc6df7c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1575,8 +1575,7 @@ static s32 fm10k_get_fault_pf(struct fm10k_hw *hw, int type,
- 	if (func & FM10K_FAULT_FUNC_PF)
- 		fault->func = 0;
+ 	val = rd32(hw, I40E_PFLAN_QALLOC);
+-	base_queue = (val & I40E_PFLAN_QALLOC_FIRSTQ_MASK) >>
+-		     I40E_PFLAN_QALLOC_FIRSTQ_SHIFT;
+-	j = (val & I40E_PFLAN_QALLOC_LASTQ_MASK) >>
+-	    I40E_PFLAN_QALLOC_LASTQ_SHIFT;
++	base_queue = FIELD_GET(I40E_PFLAN_QALLOC_FIRSTQ_MASK, val);
++	j = FIELD_GET(I40E_PFLAN_QALLOC_LASTQ_MASK, val);
+ 	if (val & I40E_PFLAN_QALLOC_VALID_MASK && j >= base_queue)
+ 		num_queues = (j - base_queue) + 1;
  	else
--		fault->func = 1 + ((func & FM10K_FAULT_FUNC_VF_MASK) >>
--				   FM10K_FAULT_FUNC_VF_SHIFT);
-+		fault->func = 1 + FIELD_GET(FM10K_FAULT_FUNC_VF_MASK, func);
+ 		num_queues = 0;
  
- 	/* record fault type */
- 	fault->type = func & FM10K_FAULT_FUNC_TYPE_MASK;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-index c50928ec14ff..7fb1961f2921 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-@@ -127,15 +127,14 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
- 	hw->mac.max_queues = i;
+ 	val = rd32(hw, I40E_PF_VT_PFALLOC);
+-	i = (val & I40E_PF_VT_PFALLOC_FIRSTVF_MASK) >>
+-	    I40E_PF_VT_PFALLOC_FIRSTVF_SHIFT;
+-	j = (val & I40E_PF_VT_PFALLOC_LASTVF_MASK) >>
+-	    I40E_PF_VT_PFALLOC_LASTVF_SHIFT;
++	i = FIELD_GET(I40E_PF_VT_PFALLOC_FIRSTVF_MASK, val);
++	j = FIELD_GET(I40E_PF_VT_PFALLOC_LASTVF_MASK, val);
+ 	if (val & I40E_PF_VT_PFALLOC_VALID_MASK && j >= i)
+ 		num_vfs = (j - i) + 1;
+ 	else
+@@ -1194,8 +1187,7 @@ static u32 i40e_led_is_mine(struct i40e_hw *hw, int idx)
+ 	    !hw->func_caps.led[idx])
+ 		return 0;
+ 	gpio_val = rd32(hw, I40E_GLGEN_GPIO_CTL(idx));
+-	port = (gpio_val & I40E_GLGEN_GPIO_CTL_PRT_NUM_MASK) >>
+-		I40E_GLGEN_GPIO_CTL_PRT_NUM_SHIFT;
++	port = FIELD_GET(I40E_GLGEN_GPIO_CTL_PRT_NUM_MASK, gpio_val);
  
- 	/* fetch default VLAN and ITR scale */
--	hw->mac.default_vid = (fm10k_read_reg(hw, FM10K_TXQCTL(0)) &
--			       FM10K_TXQCTL_VID_MASK) >> FM10K_TXQCTL_VID_SHIFT;
-+	hw->mac.default_vid = FIELD_GET(FM10K_TXQCTL_VID_MASK,
-+					fm10k_read_reg(hw, FM10K_TXQCTL(0)));
- 	/* Read the ITR scale from TDLEN. See the definition of
- 	 * FM10K_TDLEN_ITR_SCALE_SHIFT for more information about how TDLEN is
- 	 * used here.
- 	 */
--	hw->mac.itr_scale = (fm10k_read_reg(hw, FM10K_TDLEN(0)) &
--			     FM10K_TDLEN_ITR_SCALE_MASK) >>
--			    FM10K_TDLEN_ITR_SCALE_SHIFT;
-+	hw->mac.itr_scale = FIELD_GET(FM10K_TDLEN_ITR_SCALE_MASK,
-+				      fm10k_read_reg(hw, FM10K_TDLEN(0)));
+ 	/* if PRT_NUM_NA is 1 then this LED is not port specific, OR
+ 	 * if it is not our port then ignore
+@@ -1239,8 +1231,7 @@ u32 i40e_led_get(struct i40e_hw *hw)
+ 		if (!gpio_val)
+ 			continue;
  
- 	return 0;
- 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 8d6e44ee1895..64dfc362d1dc 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -222,8 +222,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+-		mode = (gpio_val & I40E_GLGEN_GPIO_CTL_LED_MODE_MASK) >>
+-			I40E_GLGEN_GPIO_CTL_LED_MODE_SHIFT;
++		mode = FIELD_GET(I40E_GLGEN_GPIO_CTL_LED_MODE_MASK, gpio_val);
+ 		break;
  	}
  
- 	/* set lan id */
--	hw->bus.func = (rd32(E1000_STATUS) & E1000_STATUS_FUNC_MASK) >>
--			E1000_STATUS_FUNC_SHIFT;
-+	hw->bus.func = FIELD_GET(E1000_STATUS_FUNC_MASK, rd32(E1000_STATUS));
+@@ -4190,8 +4181,7 @@ i40e_validate_filter_settings(struct i40e_hw *hw,
  
- 	/* Set phy->phy_addr and phy->id. */
- 	ret_val = igb_get_phy_id_82575(hw);
-@@ -262,8 +261,8 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 			if (ret_val)
- 				goto out;
+ 	/* FCHSIZE + FCDSIZE should not be greater than PMFCOEFMAX */
+ 	val = rd32(hw, I40E_GLHMC_FCOEFMAX);
+-	fcoe_fmax = (val & I40E_GLHMC_FCOEFMAX_PMFCOEFMAX_MASK)
+-		     >> I40E_GLHMC_FCOEFMAX_PMFCOEFMAX_SHIFT;
++	fcoe_fmax = FIELD_GET(I40E_GLHMC_FCOEFMAX_PMFCOEFMAX_MASK, val);
+ 	if (fcoe_filt_size + fcoe_cntx_size >  fcoe_fmax)
+ 		return -EINVAL;
  
--			data = (data & E1000_M88E1112_MAC_CTRL_1_MODE_MASK) >>
--			       E1000_M88E1112_MAC_CTRL_1_MODE_SHIFT;
-+			data = FIELD_GET(E1000_M88E1112_MAC_CTRL_1_MODE_MASK,
-+					 data);
- 			if (data == E1000_M88E1112_AUTO_COPPER_SGMII ||
- 			    data == E1000_M88E1112_AUTO_COPPER_BASEX)
- 				hw->mac.ops.check_for_link =
-@@ -330,8 +329,7 @@ static s32 igb_init_nvm_params_82575(struct e1000_hw *hw)
- 	u32 eecd = rd32(E1000_EECD);
- 	u16 size;
- 
--	size = (u16)((eecd & E1000_EECD_SIZE_EX_MASK) >>
--		     E1000_EECD_SIZE_EX_SHIFT);
-+	size = FIELD_GET(E1000_EECD_SIZE_EX_MASK, eecd);
- 
- 	/* Added to a constant, "size" becomes the left-shift value
- 	 * for setting word_size.
-@@ -2798,7 +2796,7 @@ static s32 igb_get_thermal_sensor_data_generic(struct e1000_hw *hw)
- 		return 0;
- 
- 	hw->nvm.ops.read(hw, ets_offset, 1, &ets_cfg);
--	if (((ets_cfg & NVM_ETS_TYPE_MASK) >> NVM_ETS_TYPE_SHIFT)
-+	if (FIELD_GET(NVM_ETS_TYPE_MASK, ets_cfg)
- 	    != NVM_ETS_TYPE_EMC)
- 		return E1000_NOT_IMPLEMENTED;
- 
-@@ -2808,10 +2806,8 @@ static s32 igb_get_thermal_sensor_data_generic(struct e1000_hw *hw)
- 
- 	for (i = 1; i < num_sensors; i++) {
- 		hw->nvm.ops.read(hw, (ets_offset + i), 1, &ets_sensor);
--		sensor_index = ((ets_sensor & NVM_ETS_DATA_INDEX_MASK) >>
--				NVM_ETS_DATA_INDEX_SHIFT);
--		sensor_location = ((ets_sensor & NVM_ETS_DATA_LOC_MASK) >>
--				   NVM_ETS_DATA_LOC_SHIFT);
-+		sensor_index = FIELD_GET(NVM_ETS_DATA_INDEX_MASK, ets_sensor);
-+		sensor_location = FIELD_GET(NVM_ETS_DATA_LOC_MASK, ets_sensor);
- 
- 		if (sensor_location != 0)
- 			hw->phy.ops.read_i2c_byte(hw,
-@@ -2859,20 +2855,17 @@ static s32 igb_init_thermal_sensor_thresh_generic(struct e1000_hw *hw)
- 		return 0;
- 
- 	hw->nvm.ops.read(hw, ets_offset, 1, &ets_cfg);
--	if (((ets_cfg & NVM_ETS_TYPE_MASK) >> NVM_ETS_TYPE_SHIFT)
-+	if (FIELD_GET(NVM_ETS_TYPE_MASK, ets_cfg)
- 	    != NVM_ETS_TYPE_EMC)
- 		return E1000_NOT_IMPLEMENTED;
- 
--	low_thresh_delta = ((ets_cfg & NVM_ETS_LTHRES_DELTA_MASK) >>
--			    NVM_ETS_LTHRES_DELTA_SHIFT);
-+	low_thresh_delta = FIELD_GET(NVM_ETS_LTHRES_DELTA_MASK, ets_cfg);
- 	num_sensors = (ets_cfg & NVM_ETS_NUM_SENSORS_MASK);
- 
- 	for (i = 1; i <= num_sensors; i++) {
- 		hw->nvm.ops.read(hw, (ets_offset + i), 1, &ets_sensor);
--		sensor_index = ((ets_sensor & NVM_ETS_DATA_INDEX_MASK) >>
--				NVM_ETS_DATA_INDEX_SHIFT);
--		sensor_location = ((ets_sensor & NVM_ETS_DATA_LOC_MASK) >>
--				   NVM_ETS_DATA_LOC_SHIFT);
-+		sensor_index = FIELD_GET(NVM_ETS_DATA_INDEX_MASK, ets_sensor);
-+		sensor_location = FIELD_GET(NVM_ETS_DATA_LOC_MASK, ets_sensor);
- 		therm_limit = ets_sensor & NVM_ETS_DATA_HTHRESH_MASK;
- 
- 		hw->phy.ops.write_i2c_byte(hw,
-diff --git a/drivers/net/ethernet/intel/igb/e1000_i210.c b/drivers/net/ethernet/intel/igb/e1000_i210.c
-index 53b396fd194a..503b239868e8 100644
---- a/drivers/net/ethernet/intel/igb/e1000_i210.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_i210.c
-@@ -473,7 +473,7 @@ s32 igb_read_invm_version(struct e1000_hw *hw,
- 		/* Check if we have second version location used */
- 		else if ((i == 1) &&
- 			 ((*record & E1000_INVM_VER_FIELD_TWO) == 0)) {
--			version = (*record & E1000_INVM_VER_FIELD_ONE) >> 3;
-+			version = FIELD_GET(E1000_INVM_VER_FIELD_ONE, *record);
- 			status = 0;
- 			break;
- 		}
-@@ -483,8 +483,8 @@ s32 igb_read_invm_version(struct e1000_hw *hw,
- 		else if ((((*record & E1000_INVM_VER_FIELD_ONE) == 0) &&
- 			 ((*record & 0x3) == 0)) || (((*record & 0x3) != 0) &&
- 			 (i != 1))) {
--			version = (*next_record & E1000_INVM_VER_FIELD_TWO)
--				  >> 13;
-+			version = FIELD_GET(E1000_INVM_VER_FIELD_TWO,
-+					    *next_record);
- 			status = 0;
- 			break;
- 		}
-@@ -493,15 +493,15 @@ s32 igb_read_invm_version(struct e1000_hw *hw,
- 		 */
- 		else if (((*record & E1000_INVM_VER_FIELD_TWO) == 0) &&
- 			 ((*record & 0x3) == 0)) {
--			version = (*record & E1000_INVM_VER_FIELD_ONE) >> 3;
-+			version = FIELD_GET(E1000_INVM_VER_FIELD_ONE, *record);
- 			status = 0;
- 			break;
- 		}
+@@ -4646,8 +4636,7 @@ int i40e_read_phy_register_clause22(struct i40e_hw *hw,
+ 			   "PHY: Can't write command to external PHY.\n");
+ 	} else {
+ 		command = rd32(hw, I40E_GLGEN_MSRWD(port_num));
+-		*value = (command & I40E_GLGEN_MSRWD_MDIRDDATA_MASK) >>
+-			 I40E_GLGEN_MSRWD_MDIRDDATA_SHIFT;
++		*value = FIELD_GET(I40E_GLGEN_MSRWD_MDIRDDATA_MASK, command);
  	}
+ 
+ 	return status;
+@@ -4756,8 +4745,7 @@ int i40e_read_phy_register_clause45(struct i40e_hw *hw,
  
  	if (!status) {
--		invm_ver->invm_major = (version & E1000_INVM_MAJOR_MASK)
--					>> E1000_INVM_MAJOR_SHIFT;
-+		invm_ver->invm_major = FIELD_GET(E1000_INVM_MAJOR_MASK,
-+						 version);
- 		invm_ver->invm_minor = version & E1000_INVM_MINOR_MASK;
- 	}
- 	/* Read Image Type */
-@@ -520,7 +520,8 @@ s32 igb_read_invm_version(struct e1000_hw *hw,
- 			 ((*record & E1000_INVM_IMGTYPE_FIELD) == 0)) ||
- 			 ((((*record & 0x3) != 0) && (i != 1)))) {
- 			invm_ver->invm_img_type =
--				(*next_record & E1000_INVM_IMGTYPE_FIELD) >> 23;
-+				FIELD_GET(E1000_INVM_IMGTYPE_FIELD,
-+					  *next_record);
- 			status = 0;
- 			break;
- 		}
-diff --git a/drivers/net/ethernet/intel/igb/e1000_mac.c b/drivers/net/ethernet/intel/igb/e1000_mac.c
-index caf91c6f52b4..00131636c4cf 100644
---- a/drivers/net/ethernet/intel/igb/e1000_mac.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_mac.c
-@@ -50,13 +50,12 @@ s32 igb_get_bus_info_pcie(struct e1000_hw *hw)
- 			break;
- 		}
+ 		command = rd32(hw, I40E_GLGEN_MSRWD(port_num));
+-		*value = (command & I40E_GLGEN_MSRWD_MDIRDDATA_MASK) >>
+-			 I40E_GLGEN_MSRWD_MDIRDDATA_SHIFT;
++		*value = FIELD_GET(I40E_GLGEN_MSRWD_MDIRDDATA_MASK, command);
+ 	} else {
+ 		i40e_debug(hw, I40E_DEBUG_PHY,
+ 			   "PHY: Can't read register value from external PHY.\n");
+@@ -5902,9 +5890,8 @@ i40e_aq_add_cloud_filters_bb(struct i40e_hw *hw, u16 seid,
+ 		u16 tnl_type;
+ 		u32 ti;
  
--		bus->width = (enum e1000_bus_width)((pcie_link_status &
--						     PCI_EXP_LNKSTA_NLW) >>
--						     PCI_EXP_LNKSTA_NLW_SHIFT);
-+		bus->width = (enum e1000_bus_width)FIELD_GET(PCI_EXP_LNKSTA_NLW,
-+							     pcie_link_status);
- 	}
+-		tnl_type = (le16_to_cpu(filters[i].element.flags) &
+-			   I40E_AQC_ADD_CLOUD_TNL_TYPE_MASK) >>
+-			   I40E_AQC_ADD_CLOUD_TNL_TYPE_SHIFT;
++		tnl_type = le16_get_bits(filters[i].element.flags,
++					 I40E_AQC_ADD_CLOUD_TNL_TYPE_MASK);
  
- 	reg = rd32(E1000_STATUS);
--	bus->func = (reg & E1000_STATUS_FUNC_MASK) >> E1000_STATUS_FUNC_SHIFT;
-+	bus->func = FIELD_GET(E1000_STATUS_FUNC_MASK, reg);
+ 		/* Due to hardware eccentricities, the VNI for Geneve is shifted
+ 		 * one more byte further than normally used for Tenant ID in
+@@ -5996,9 +5983,8 @@ i40e_aq_rem_cloud_filters_bb(struct i40e_hw *hw, u16 seid,
+ 		u16 tnl_type;
+ 		u32 ti;
+ 
+-		tnl_type = (le16_to_cpu(filters[i].element.flags) &
+-			   I40E_AQC_ADD_CLOUD_TNL_TYPE_MASK) >>
+-			   I40E_AQC_ADD_CLOUD_TNL_TYPE_SHIFT;
++		tnl_type = le16_get_bits(filters[i].element.flags,
++					 I40E_AQC_ADD_CLOUD_TNL_TYPE_MASK);
+ 
+ 		/* Due to hardware eccentricities, the VNI for Geneve is shifted
+ 		 * one more byte further than normally used for Tenant ID in
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+index a0691b7c87c4..9d88ed6105fd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+@@ -22,8 +22,7 @@ int i40e_get_dcbx_status(struct i40e_hw *hw, u16 *status)
+ 		return -EINVAL;
+ 
+ 	reg = rd32(hw, I40E_PRTDCB_GENS);
+-	*status = (u16)((reg & I40E_PRTDCB_GENS_DCBX_STATUS_MASK) >>
+-			I40E_PRTDCB_GENS_DCBX_STATUS_SHIFT);
++	*status = FIELD_GET(I40E_PRTDCB_GENS_DCBX_STATUS_MASK, reg);
  
  	return 0;
  }
-diff --git a/drivers/net/ethernet/intel/igb/e1000_nvm.c b/drivers/net/ethernet/intel/igb/e1000_nvm.c
-index 0da57e89593a..2dcd64d6dec3 100644
---- a/drivers/net/ethernet/intel/igb/e1000_nvm.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_nvm.c
-@@ -708,10 +708,10 @@ void igb_get_fw_version(struct e1000_hw *hw, struct e1000_fw_version *fw_vers)
- 		 */
- 		if ((etrack_test &  NVM_MAJOR_MASK) != NVM_ETRACK_VALID) {
- 			hw->nvm.ops.read(hw, NVM_VERSION, 1, &fw_version);
--			fw_vers->eep_major = (fw_version & NVM_MAJOR_MASK)
--					      >> NVM_MAJOR_SHIFT;
--			fw_vers->eep_minor = (fw_version & NVM_MINOR_MASK)
--					      >> NVM_MINOR_SHIFT;
-+			fw_vers->eep_major = FIELD_GET(NVM_MAJOR_MASK,
-+						       fw_version);
-+			fw_vers->eep_minor = FIELD_GET(NVM_MINOR_MASK,
-+						       fw_version);
- 			fw_vers->eep_build = (fw_version & NVM_IMAGE_ID_MASK);
- 			goto etrack_id;
- 		}
-@@ -753,15 +753,13 @@ void igb_get_fw_version(struct e1000_hw *hw, struct e1000_fw_version *fw_vers)
- 		return;
+@@ -52,12 +51,9 @@ static void i40e_parse_ieee_etscfg_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	 * |1bit | 1bit|3 bits|3bits|
+ 	 */
+ 	etscfg = &dcbcfg->etscfg;
+-	etscfg->willing = (u8)((buf[offset] & I40E_IEEE_ETS_WILLING_MASK) >>
+-			       I40E_IEEE_ETS_WILLING_SHIFT);
+-	etscfg->cbs = (u8)((buf[offset] & I40E_IEEE_ETS_CBS_MASK) >>
+-			   I40E_IEEE_ETS_CBS_SHIFT);
+-	etscfg->maxtcs = (u8)((buf[offset] & I40E_IEEE_ETS_MAXTC_MASK) >>
+-			      I40E_IEEE_ETS_MAXTC_SHIFT);
++	etscfg->willing = FIELD_GET(I40E_IEEE_ETS_WILLING_MASK, buf[offset]);
++	etscfg->cbs = FIELD_GET(I40E_IEEE_ETS_CBS_MASK, buf[offset]);
++	etscfg->maxtcs = FIELD_GET(I40E_IEEE_ETS_MAXTC_MASK, buf[offset]);
+ 
+ 	/* Move offset to Priority Assignment Table */
+ 	offset++;
+@@ -71,11 +67,9 @@ static void i40e_parse_ieee_etscfg_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	 *        -----------------------------------------
+ 	 */
+ 	for (i = 0; i < 4; i++) {
+-		priority = (u8)((buf[offset] & I40E_IEEE_ETS_PRIO_1_MASK) >>
+-				I40E_IEEE_ETS_PRIO_1_SHIFT);
+-		etscfg->prioritytable[i * 2] =  priority;
+-		priority = (u8)((buf[offset] & I40E_IEEE_ETS_PRIO_0_MASK) >>
+-				I40E_IEEE_ETS_PRIO_0_SHIFT);
++		priority = FIELD_GET(I40E_IEEE_ETS_PRIO_1_MASK, buf[offset]);
++		etscfg->prioritytable[i * 2] = priority;
++		priority = FIELD_GET(I40E_IEEE_ETS_PRIO_0_MASK, buf[offset]);
+ 		etscfg->prioritytable[i * 2 + 1] = priority;
+ 		offset++;
  	}
- 	hw->nvm.ops.read(hw, NVM_VERSION, 1, &fw_version);
--	fw_vers->eep_major = (fw_version & NVM_MAJOR_MASK)
--			      >> NVM_MAJOR_SHIFT;
-+	fw_vers->eep_major = FIELD_GET(NVM_MAJOR_MASK, fw_version);
- 
- 	/* check for old style version format in newer images*/
- 	if ((fw_version & NVM_NEW_DEC_MASK) == 0x0) {
- 		eeprom_verl = (fw_version & NVM_COMB_VER_MASK);
- 	} else {
--		eeprom_verl = (fw_version & NVM_MINOR_MASK)
--				>> NVM_MINOR_SHIFT;
-+		eeprom_verl = FIELD_GET(NVM_MINOR_MASK, fw_version);
+@@ -126,12 +120,10 @@ static void i40e_parse_ieee_etsrec_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	 *        -----------------------------------------
+ 	 */
+ 	for (i = 0; i < 4; i++) {
+-		priority = (u8)((buf[offset] & I40E_IEEE_ETS_PRIO_1_MASK) >>
+-				I40E_IEEE_ETS_PRIO_1_SHIFT);
+-		dcbcfg->etsrec.prioritytable[i*2] =  priority;
+-		priority = (u8)((buf[offset] & I40E_IEEE_ETS_PRIO_0_MASK) >>
+-				I40E_IEEE_ETS_PRIO_0_SHIFT);
+-		dcbcfg->etsrec.prioritytable[i*2 + 1] = priority;
++		priority = FIELD_GET(I40E_IEEE_ETS_PRIO_1_MASK, buf[offset]);
++		dcbcfg->etsrec.prioritytable[i * 2] = priority;
++		priority = FIELD_GET(I40E_IEEE_ETS_PRIO_0_MASK, buf[offset]);
++		dcbcfg->etsrec.prioritytable[(i * 2) + 1] = priority;
+ 		offset++;
  	}
- 	/* Convert minor value to hex before assigning to output struct
- 	 * Val to be converted will not be higher than 99, per tool output
-diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-index c84e7356cdb1..cd65008c7ef5 100644
---- a/drivers/net/ethernet/intel/igb/e1000_phy.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -1682,8 +1682,7 @@ s32 igb_get_cable_length_m88(struct e1000_hw *hw)
- 	if (ret_val)
- 		goto out;
  
--	index = (phy_data & M88E1000_PSSR_CABLE_LENGTH) >>
--		M88E1000_PSSR_CABLE_LENGTH_SHIFT;
-+	index = FIELD_GET(M88E1000_PSSR_CABLE_LENGTH, phy_data);
- 	if (index >= ARRAY_SIZE(e1000_m88_cable_length_table) - 1) {
- 		ret_val = -E1000_ERR_PHY;
- 		goto out;
-@@ -1796,8 +1795,7 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
- 		if (ret_val)
- 			goto out;
- 
--		index = (phy_data & M88E1000_PSSR_CABLE_LENGTH) >>
--			M88E1000_PSSR_CABLE_LENGTH_SHIFT;
-+		index = FIELD_GET(M88E1000_PSSR_CABLE_LENGTH, phy_data);
- 		if (index >= ARRAY_SIZE(e1000_m88_cable_length_table) - 1) {
- 			ret_val = -E1000_ERR_PHY;
- 			goto out;
-@@ -2578,8 +2576,7 @@ s32 igb_get_cable_length_82580(struct e1000_hw *hw)
- 	if (ret_val)
- 		goto out;
- 
--	length = (phy_data & I82580_DSTATUS_CABLE_LENGTH) >>
--		 I82580_DSTATUS_CABLE_LENGTH_SHIFT;
-+	length = FIELD_GET(I82580_DSTATUS_CABLE_LENGTH, phy_data);
- 
- 	if (length == E1000_CABLE_LENGTH_UNDEFINED)
- 		ret_val = -E1000_ERR_PHY;
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index f03977f2323e..3ba23fb87551 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2434,7 +2434,7 @@ static int igb_get_ts_info(struct net_device *dev,
- 	}
+@@ -172,12 +164,9 @@ static void i40e_parse_ieee_pfccfg_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	 * -----------------------------------------
+ 	 * |1bit | 1bit|2 bits|4bits| 1 octet      |
+ 	 */
+-	dcbcfg->pfc.willing = (u8)((buf[0] & I40E_IEEE_PFC_WILLING_MASK) >>
+-				   I40E_IEEE_PFC_WILLING_SHIFT);
+-	dcbcfg->pfc.mbc = (u8)((buf[0] & I40E_IEEE_PFC_MBC_MASK) >>
+-			       I40E_IEEE_PFC_MBC_SHIFT);
+-	dcbcfg->pfc.pfccap = (u8)((buf[0] & I40E_IEEE_PFC_CAP_MASK) >>
+-				  I40E_IEEE_PFC_CAP_SHIFT);
++	dcbcfg->pfc.willing = FIELD_GET(I40E_IEEE_PFC_WILLING_MASK, buf[0]);
++	dcbcfg->pfc.mbc = FIELD_GET(I40E_IEEE_PFC_MBC_MASK, buf[0]);
++	dcbcfg->pfc.pfccap = FIELD_GET(I40E_IEEE_PFC_CAP_MASK, buf[0]);
+ 	dcbcfg->pfc.pfcenable = buf[1];
  }
  
--#define ETHER_TYPE_FULL_MASK ((__force __be16)~0)
-+#define ETHER_TYPE_FULL_MASK cpu_to_be16(FIELD_MAX(U16_MAX))
- static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
- 				     struct ethtool_rxnfc *cmd)
+@@ -198,8 +187,7 @@ static void i40e_parse_ieee_app_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	u8 *buf;
+ 
+ 	typelength = ntohs(tlv->typelength);
+-	length = (u16)((typelength & I40E_LLDP_TLV_LEN_MASK) >>
+-		       I40E_LLDP_TLV_LEN_SHIFT);
++	length = FIELD_GET(I40E_LLDP_TLV_LEN_MASK, typelength);
+ 	buf = tlv->tlvinfo;
+ 
+ 	/* The App priority table starts 5 octets after TLV header */
+@@ -217,12 +205,10 @@ static void i40e_parse_ieee_app_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	 *        -----------------------------------------
+ 	 */
+ 	while (offset < length) {
+-		dcbcfg->app[i].priority = (u8)((buf[offset] &
+-						I40E_IEEE_APP_PRIO_MASK) >>
+-					       I40E_IEEE_APP_PRIO_SHIFT);
+-		dcbcfg->app[i].selector = (u8)((buf[offset] &
+-						I40E_IEEE_APP_SEL_MASK) >>
+-					       I40E_IEEE_APP_SEL_SHIFT);
++		dcbcfg->app[i].priority = FIELD_GET(I40E_IEEE_APP_PRIO_MASK,
++						    buf[offset]);
++		dcbcfg->app[i].selector = FIELD_GET(I40E_IEEE_APP_SEL_MASK,
++						    buf[offset]);
+ 		dcbcfg->app[i].protocolid = (buf[offset + 1] << 0x8) |
+ 					     buf[offset + 2];
+ 		/* Move to next app */
+@@ -250,8 +236,7 @@ static void i40e_parse_ieee_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	u8 subtype;
+ 
+ 	ouisubtype = ntohl(tlv->ouisubtype);
+-	subtype = (u8)((ouisubtype & I40E_LLDP_TLV_SUBTYPE_MASK) >>
+-		       I40E_LLDP_TLV_SUBTYPE_SHIFT);
++	subtype = FIELD_GET(I40E_LLDP_TLV_SUBTYPE_MASK, ouisubtype);
+ 	switch (subtype) {
+ 	case I40E_IEEE_SUBTYPE_ETS_CFG:
+ 		i40e_parse_ieee_etscfg_tlv(tlv, dcbcfg);
+@@ -301,11 +286,9 @@ static void i40e_parse_cee_pgcfg_tlv(struct i40e_cee_feat_tlv *tlv,
+ 	 *        -----------------------------------------
+ 	 */
+ 	for (i = 0; i < 4; i++) {
+-		priority = (u8)((buf[offset] & I40E_CEE_PGID_PRIO_1_MASK) >>
+-				 I40E_CEE_PGID_PRIO_1_SHIFT);
+-		etscfg->prioritytable[i * 2] =  priority;
+-		priority = (u8)((buf[offset] & I40E_CEE_PGID_PRIO_0_MASK) >>
+-				 I40E_CEE_PGID_PRIO_0_SHIFT);
++		priority = FIELD_GET(I40E_CEE_PGID_PRIO_1_MASK, buf[offset]);
++		etscfg->prioritytable[i * 2] = priority;
++		priority = FIELD_GET(I40E_CEE_PGID_PRIO_0_MASK, buf[offset]);
+ 		etscfg->prioritytable[i * 2 + 1] = priority;
+ 		offset++;
+ 	}
+@@ -362,8 +345,7 @@ static void i40e_parse_cee_app_tlv(struct i40e_cee_feat_tlv *tlv,
+ 	u8 i;
+ 
+ 	typelength = ntohs(tlv->hdr.typelen);
+-	length = (u16)((typelength & I40E_LLDP_TLV_LEN_MASK) >>
+-		       I40E_LLDP_TLV_LEN_SHIFT);
++	length = FIELD_GET(I40E_LLDP_TLV_LEN_MASK, typelength);
+ 
+ 	dcbcfg->numapps = length / sizeof(*app);
+ 
+@@ -419,15 +401,13 @@ static void i40e_parse_cee_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	u32 ouisubtype;
+ 
+ 	ouisubtype = ntohl(tlv->ouisubtype);
+-	subtype = (u8)((ouisubtype & I40E_LLDP_TLV_SUBTYPE_MASK) >>
+-		       I40E_LLDP_TLV_SUBTYPE_SHIFT);
++	subtype = FIELD_GET(I40E_LLDP_TLV_SUBTYPE_MASK, ouisubtype);
+ 	/* Return if not CEE DCBX */
+ 	if (subtype != I40E_CEE_DCBX_TYPE)
+ 		return;
+ 
+ 	typelength = ntohs(tlv->typelength);
+-	tlvlen = (u16)((typelength & I40E_LLDP_TLV_LEN_MASK) >>
+-			I40E_LLDP_TLV_LEN_SHIFT);
++	tlvlen = FIELD_GET(I40E_LLDP_TLV_LEN_MASK, typelength);
+ 	len = sizeof(tlv->typelength) + sizeof(ouisubtype) +
+ 	      sizeof(struct i40e_cee_ctrl_tlv);
+ 	/* Return if no CEE DCBX Feature TLVs */
+@@ -437,11 +417,8 @@ static void i40e_parse_cee_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	sub_tlv = (struct i40e_cee_feat_tlv *)((char *)tlv + len);
+ 	while (feat_tlv_count < I40E_CEE_MAX_FEAT_TYPE) {
+ 		typelength = ntohs(sub_tlv->hdr.typelen);
+-		sublen = (u16)((typelength &
+-				I40E_LLDP_TLV_LEN_MASK) >>
+-				I40E_LLDP_TLV_LEN_SHIFT);
+-		subtype = (u8)((typelength & I40E_LLDP_TLV_TYPE_MASK) >>
+-				I40E_LLDP_TLV_TYPE_SHIFT);
++		sublen = FIELD_GET(I40E_LLDP_TLV_LEN_MASK, typelength);
++		subtype = FIELD_GET(I40E_LLDP_TLV_TYPE_MASK, typelength);
+ 		switch (subtype) {
+ 		case I40E_CEE_SUBTYPE_PG_CFG:
+ 			i40e_parse_cee_pgcfg_tlv(sub_tlv, dcbcfg);
+@@ -478,8 +455,7 @@ static void i40e_parse_org_tlv(struct i40e_lldp_org_tlv *tlv,
+ 	u32 oui;
+ 
+ 	ouisubtype = ntohl(tlv->ouisubtype);
+-	oui = (u32)((ouisubtype & I40E_LLDP_TLV_OUI_MASK) >>
+-		    I40E_LLDP_TLV_OUI_SHIFT);
++	oui = FIELD_GET(I40E_LLDP_TLV_OUI_MASK, ouisubtype);
+ 	switch (oui) {
+ 	case I40E_IEEE_8021QAZ_OUI:
+ 		i40e_parse_ieee_tlv(tlv, dcbcfg);
+@@ -517,10 +493,8 @@ int i40e_lldp_to_dcb_config(u8 *lldpmib,
+ 	tlv = (struct i40e_lldp_org_tlv *)lldpmib;
+ 	while (1) {
+ 		typelength = ntohs(tlv->typelength);
+-		type = (u16)((typelength & I40E_LLDP_TLV_TYPE_MASK) >>
+-			     I40E_LLDP_TLV_TYPE_SHIFT);
+-		length = (u16)((typelength & I40E_LLDP_TLV_LEN_MASK) >>
+-			       I40E_LLDP_TLV_LEN_SHIFT);
++		type = FIELD_GET(I40E_LLDP_TLV_TYPE_MASK, typelength);
++		length = FIELD_GET(I40E_LLDP_TLV_LEN_MASK, typelength);
+ 		offset += sizeof(typelength) + length;
+ 
+ 		/* END TLV or beyond LLDPDU size */
+@@ -594,7 +568,7 @@ static void i40e_cee_to_dcb_v1_config(
  {
-@@ -2732,8 +2732,8 @@ static int igb_rxnfc_write_vlan_prio_filter(struct igb_adapter *adapter,
- 	u32 vlapqf;
+ 	u16 status, tlv_status = le16_to_cpu(cee_cfg->tlv_status);
+ 	u16 app_prio = le16_to_cpu(cee_cfg->oper_app_prio);
+-	u8 i, tc, err;
++	u8 i, err;
  
- 	vlapqf = rd32(E1000_VLAPQF);
--	vlan_priority = (ntohs(input->filter.vlan_tci) & VLAN_PRIO_MASK)
--				>> VLAN_PRIO_SHIFT;
-+	vlan_priority = FIELD_GET(VLAN_PRIO_MASK,
-+				  ntohs(input->filter.vlan_tci));
- 	queue_index = (vlapqf >> (vlan_priority * 4)) & E1000_VLAPQF_QUEUE_MASK;
+ 	/* CEE PG data to ETS config */
+ 	dcbcfg->etscfg.maxtcs = cee_cfg->oper_num_tc;
+@@ -603,13 +577,13 @@ static void i40e_cee_to_dcb_v1_config(
+ 	 * from those in the CEE Priority Group sub-TLV.
+ 	 */
+ 	for (i = 0; i < 4; i++) {
+-		tc = (u8)((cee_cfg->oper_prio_tc[i] &
+-			 I40E_CEE_PGID_PRIO_0_MASK) >>
+-			 I40E_CEE_PGID_PRIO_0_SHIFT);
+-		dcbcfg->etscfg.prioritytable[i * 2] =  tc;
+-		tc = (u8)((cee_cfg->oper_prio_tc[i] &
+-			 I40E_CEE_PGID_PRIO_1_MASK) >>
+-			 I40E_CEE_PGID_PRIO_1_SHIFT);
++		u8 tc;
++
++		tc = FIELD_GET(I40E_CEE_PGID_PRIO_0_MASK,
++			       cee_cfg->oper_prio_tc[i]);
++		dcbcfg->etscfg.prioritytable[i * 2] = tc;
++		tc = FIELD_GET(I40E_CEE_PGID_PRIO_1_MASK,
++			       cee_cfg->oper_prio_tc[i]);
+ 		dcbcfg->etscfg.prioritytable[i*2 + 1] = tc;
+ 	}
  
- 	/* check whether this vlan prio is already set */
-@@ -2816,7 +2816,7 @@ static void igb_clear_vlan_prio_filter(struct igb_adapter *adapter,
- 	u8 vlan_priority;
- 	u32 vlapqf;
+@@ -631,8 +605,7 @@ static void i40e_cee_to_dcb_v1_config(
+ 	dcbcfg->pfc.pfcenable = cee_cfg->oper_pfc_en;
+ 	dcbcfg->pfc.pfccap = I40E_MAX_TRAFFIC_CLASS;
  
--	vlan_priority = (vlan_tci & VLAN_PRIO_MASK) >> VLAN_PRIO_SHIFT;
-+	vlan_priority = FIELD_GET(VLAN_PRIO_MASK, vlan_tci);
+-	status = (tlv_status & I40E_AQC_CEE_APP_STATUS_MASK) >>
+-		  I40E_AQC_CEE_APP_STATUS_SHIFT;
++	status = FIELD_GET(I40E_AQC_CEE_APP_STATUS_MASK, tlv_status);
+ 	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
+ 	/* Add APPs if Error is False */
+ 	if (!err) {
+@@ -641,22 +614,19 @@ static void i40e_cee_to_dcb_v1_config(
  
- 	vlapqf = rd32(E1000_VLAPQF);
- 	vlapqf &= ~E1000_VLAPQF_P_VALID(vlan_priority);
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 897eb36bb609..4df8d4153aa5 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7295,7 +7295,7 @@ static int igb_set_vf_promisc(struct igb_adapter *adapter, u32 *msgbuf, u32 vf)
- static int igb_set_vf_multicasts(struct igb_adapter *adapter,
- 				  u32 *msgbuf, u32 vf)
+ 		/* FCoE APP */
+ 		dcbcfg->app[0].priority =
+-			(app_prio & I40E_AQC_CEE_APP_FCOE_MASK) >>
+-			 I40E_AQC_CEE_APP_FCOE_SHIFT;
++			FIELD_GET(I40E_AQC_CEE_APP_FCOE_MASK, app_prio);
+ 		dcbcfg->app[0].selector = I40E_APP_SEL_ETHTYPE;
+ 		dcbcfg->app[0].protocolid = I40E_APP_PROTOID_FCOE;
+ 
+ 		/* iSCSI APP */
+ 		dcbcfg->app[1].priority =
+-			(app_prio & I40E_AQC_CEE_APP_ISCSI_MASK) >>
+-			 I40E_AQC_CEE_APP_ISCSI_SHIFT;
++			FIELD_GET(I40E_AQC_CEE_APP_ISCSI_MASK, app_prio);
+ 		dcbcfg->app[1].selector = I40E_APP_SEL_TCPIP;
+ 		dcbcfg->app[1].protocolid = I40E_APP_PROTOID_ISCSI;
+ 
+ 		/* FIP APP */
+ 		dcbcfg->app[2].priority =
+-			(app_prio & I40E_AQC_CEE_APP_FIP_MASK) >>
+-			 I40E_AQC_CEE_APP_FIP_SHIFT;
++			FIELD_GET(I40E_AQC_CEE_APP_FIP_MASK, app_prio);
+ 		dcbcfg->app[2].selector = I40E_APP_SEL_ETHTYPE;
+ 		dcbcfg->app[2].protocolid = I40E_APP_PROTOID_FIP;
+ 	}
+@@ -675,7 +645,7 @@ static void i40e_cee_to_dcb_config(
  {
--	int n = (msgbuf[0] & E1000_VT_MSGINFO_MASK) >> E1000_VT_MSGINFO_SHIFT;
-+	int n = FIELD_GET(E1000_VT_MSGINFO_MASK, msgbuf[0]);
- 	u16 *hash_list = (u16 *)&msgbuf[1];
- 	struct vf_data_storage *vf_data = &adapter->vf_data[vf];
- 	int i;
-@@ -7555,7 +7555,7 @@ static int igb_ndo_set_vf_vlan(struct net_device *netdev, int vf,
+ 	u32 status, tlv_status = le32_to_cpu(cee_cfg->tlv_status);
+ 	u16 app_prio = le16_to_cpu(cee_cfg->oper_app_prio);
+-	u8 i, tc, err, sync, oper;
++	u8 i, err, sync, oper;
  
- static int igb_set_vf_vlan_msg(struct igb_adapter *adapter, u32 *msgbuf, u32 vf)
+ 	/* CEE PG data to ETS config */
+ 	dcbcfg->etscfg.maxtcs = cee_cfg->oper_num_tc;
+@@ -684,13 +654,13 @@ static void i40e_cee_to_dcb_config(
+ 	 * from those in the CEE Priority Group sub-TLV.
+ 	 */
+ 	for (i = 0; i < 4; i++) {
+-		tc = (u8)((cee_cfg->oper_prio_tc[i] &
+-			 I40E_CEE_PGID_PRIO_0_MASK) >>
+-			 I40E_CEE_PGID_PRIO_0_SHIFT);
+-		dcbcfg->etscfg.prioritytable[i * 2] =  tc;
+-		tc = (u8)((cee_cfg->oper_prio_tc[i] &
+-			 I40E_CEE_PGID_PRIO_1_MASK) >>
+-			 I40E_CEE_PGID_PRIO_1_SHIFT);
++		u8 tc;
++
++		tc = FIELD_GET(I40E_CEE_PGID_PRIO_0_MASK,
++			       cee_cfg->oper_prio_tc[i]);
++		dcbcfg->etscfg.prioritytable[i * 2] = tc;
++		tc = FIELD_GET(I40E_CEE_PGID_PRIO_1_MASK,
++			       cee_cfg->oper_prio_tc[i]);
+ 		dcbcfg->etscfg.prioritytable[i * 2 + 1] = tc;
+ 	}
+ 
+@@ -713,8 +683,7 @@ static void i40e_cee_to_dcb_config(
+ 	dcbcfg->pfc.pfccap = I40E_MAX_TRAFFIC_CLASS;
+ 
+ 	i = 0;
+-	status = (tlv_status & I40E_AQC_CEE_FCOE_STATUS_MASK) >>
+-		  I40E_AQC_CEE_FCOE_STATUS_SHIFT;
++	status = FIELD_GET(I40E_AQC_CEE_FCOE_STATUS_MASK, tlv_status);
+ 	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
+ 	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
+ 	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
+@@ -722,15 +691,13 @@ static void i40e_cee_to_dcb_config(
+ 	if (!err && sync && oper) {
+ 		/* FCoE APP */
+ 		dcbcfg->app[i].priority =
+-			(app_prio & I40E_AQC_CEE_APP_FCOE_MASK) >>
+-			 I40E_AQC_CEE_APP_FCOE_SHIFT;
++			FIELD_GET(I40E_AQC_CEE_APP_FCOE_MASK, app_prio);
+ 		dcbcfg->app[i].selector = I40E_APP_SEL_ETHTYPE;
+ 		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_FCOE;
+ 		i++;
+ 	}
+ 
+-	status = (tlv_status & I40E_AQC_CEE_ISCSI_STATUS_MASK) >>
+-		  I40E_AQC_CEE_ISCSI_STATUS_SHIFT;
++	status = FIELD_GET(I40E_AQC_CEE_ISCSI_STATUS_MASK, tlv_status);
+ 	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
+ 	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
+ 	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
+@@ -738,15 +705,13 @@ static void i40e_cee_to_dcb_config(
+ 	if (!err && sync && oper) {
+ 		/* iSCSI APP */
+ 		dcbcfg->app[i].priority =
+-			(app_prio & I40E_AQC_CEE_APP_ISCSI_MASK) >>
+-			 I40E_AQC_CEE_APP_ISCSI_SHIFT;
++			FIELD_GET(I40E_AQC_CEE_APP_ISCSI_MASK, app_prio);
+ 		dcbcfg->app[i].selector = I40E_APP_SEL_TCPIP;
+ 		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_ISCSI;
+ 		i++;
+ 	}
+ 
+-	status = (tlv_status & I40E_AQC_CEE_FIP_STATUS_MASK) >>
+-		  I40E_AQC_CEE_FIP_STATUS_SHIFT;
++	status = FIELD_GET(I40E_AQC_CEE_FIP_STATUS_MASK, tlv_status);
+ 	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
+ 	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
+ 	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
+@@ -754,8 +719,7 @@ static void i40e_cee_to_dcb_config(
+ 	if (!err && sync && oper) {
+ 		/* FIP APP */
+ 		dcbcfg->app[i].priority =
+-			(app_prio & I40E_AQC_CEE_APP_FIP_MASK) >>
+-			 I40E_AQC_CEE_APP_FIP_SHIFT;
++			FIELD_GET(I40E_AQC_CEE_APP_FIP_MASK, app_prio);
+ 		dcbcfg->app[i].selector = I40E_APP_SEL_ETHTYPE;
+ 		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_FIP;
+ 		i++;
+@@ -1188,7 +1152,7 @@ static void i40e_add_ieee_app_pri_tlv(struct i40e_lldp_org_tlv *tlv,
+ 		selector = dcbcfg->app[i].selector & 0x7;
+ 		buf[offset] = (priority << I40E_IEEE_APP_PRIO_SHIFT) | selector;
+ 		buf[offset + 1] = (dcbcfg->app[i].protocolid >> 0x8) & 0xFF;
+-		buf[offset + 2] =  dcbcfg->app[i].protocolid & 0xFF;
++		buf[offset + 2] = dcbcfg->app[i].protocolid & 0xFF;
+ 		/* Move to next app */
+ 		offset += 3;
+ 		i++;
+@@ -1284,8 +1248,7 @@ int i40e_dcb_config_to_lldp(u8 *lldpmib, u16 *miblen,
+ 	do {
+ 		i40e_add_dcb_tlv(tlv, dcbcfg, tlvid++);
+ 		typelength = ntohs(tlv->typelength);
+-		length = (u16)((typelength & I40E_LLDP_TLV_LEN_MASK) >>
+-				I40E_LLDP_TLV_LEN_SHIFT);
++		length = FIELD_GET(I40E_LLDP_TLV_LEN_MASK, typelength);
+ 		if (length)
+ 			offset += length + I40E_IEEE_TLV_HEADER_LENGTH;
+ 		/* END TLV or beyond LLDPDU size */
+@@ -1537,8 +1500,7 @@ u8 i40e_dcb_hw_get_num_tc(struct i40e_hw *hw)
  {
--	int add = (msgbuf[0] & E1000_VT_MSGINFO_MASK) >> E1000_VT_MSGINFO_SHIFT;
-+	int add = FIELD_GET(E1000_VT_MSGINFO_MASK, msgbuf[0]);
- 	int vid = (msgbuf[1] & E1000_VLVF_VLANID_MASK);
- 	int ret;
+ 	u32 reg = rd32(hw, I40E_PRTDCB_GENC);
  
-diff --git a/drivers/net/ethernet/intel/igbvf/mbx.c b/drivers/net/ethernet/intel/igbvf/mbx.c
-index a3cd7ac48d4b..d15282ee5ea8 100644
---- a/drivers/net/ethernet/intel/igbvf/mbx.c
-+++ b/drivers/net/ethernet/intel/igbvf/mbx.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- /* Copyright(c) 2009 - 2018 Intel Corporation. */
- 
-+#include <linux/bitfield.h>
- #include "mbx.h"
+-	return (u8)((reg & I40E_PRTDCB_GENC_NUMTC_MASK) >>
+-		I40E_PRTDCB_GENC_NUMTC_SHIFT);
++	return FIELD_GET(I40E_PRTDCB_GENC_NUMTC_MASK, reg);
+ }
  
  /**
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index e6c1fbee049e..a4d4f00e6a87 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -273,9 +273,8 @@ static bool igbvf_clean_rx_irq(struct igbvf_adapter *adapter,
- 		 * that case, it fills the header buffer and spills the rest
- 		 * into the page.
- 		 */
--		hlen = (le16_to_cpu(rx_desc->wb.lower.lo_dword.hs_rss.hdr_info)
--		       & E1000_RXDADV_HDRBUFLEN_MASK) >>
--		       E1000_RXDADV_HDRBUFLEN_SHIFT;
-+		hlen = le16_get_bits(rx_desc->wb.lower.lo_dword.hs_rss.hdr_info,
-+				     E1000_RXDADV_HDRBUFLEN_MASK);
- 		if (hlen > adapter->rx_ps_hdr_size)
- 			hlen = adapter->rx_ps_hdr_size;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c b/drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c
+index 4721845fda6e..b96a92187ab3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c
+@@ -21,8 +21,7 @@ static void i40e_get_pfc_delay(struct i40e_hw *hw, u16 *delay)
+ 	u32 val;
  
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 878dd8dff528..7d7bd44448c4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -684,7 +684,7 @@ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
- 	u32 reg;
- 
- 	reg = IXGBE_READ_REG(hw, IXGBE_STATUS);
--	bus->func = (reg & IXGBE_STATUS_LAN_ID) >> IXGBE_STATUS_LAN_ID_SHIFT;
-+	bus->func = FIELD_GET(IXGBE_STATUS_LAN_ID, reg);
- 	bus->lan_id = bus->func;
- 
- 	/* check for a port swap */
-@@ -695,8 +695,8 @@ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
- 	/* Get MAC instance from EEPROM for configuring CS4227 */
- 	if (hw->device_id == IXGBE_DEV_ID_X550EM_A_SFP) {
- 		hw->eeprom.ops.read(hw, IXGBE_EEPROM_CTRL_4, &ee_ctrl_4);
--		bus->instance_id = (ee_ctrl_4 & IXGBE_EE_CTRL_4_INST_ID) >>
--				   IXGBE_EE_CTRL_4_INST_ID_SHIFT;
-+		bus->instance_id = FIELD_GET(IXGBE_EE_CTRL_4_INST_ID,
-+					     ee_ctrl_4);
- 	}
+ 	val = rd32(hw, I40E_PRTDCB_GENC);
+-	*delay = (u16)((val & I40E_PRTDCB_GENC_PFCLDA_MASK) >>
+-		       I40E_PRTDCB_GENC_PFCLDA_SHIFT);
++	*delay = FIELD_GET(I40E_PRTDCB_GENC_PFCLDA_MASK, val);
  }
  
-@@ -870,10 +870,9 @@ s32 ixgbe_init_eeprom_params_generic(struct ixgbe_hw *hw)
- 			 * SPI EEPROM is assumed here.  This code would need to
- 			 * change if a future EEPROM is not SPI.
+ /**
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ddp.c b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+index cf25bfc5dc3f..2f53f0f53bc3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ddp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ddp.c
+@@ -81,8 +81,8 @@ static int i40e_ddp_does_profile_exist(struct i40e_hw *hw,
+ static bool i40e_ddp_profiles_overlap(struct i40e_profile_info *new,
+ 				      struct i40e_profile_info *old)
+ {
+-	unsigned int group_id_old = (u8)((old->track_id & 0x00FF0000) >> 16);
+-	unsigned int group_id_new = (u8)((new->track_id & 0x00FF0000) >> 16);
++	unsigned int group_id_old = FIELD_GET(0x00FF0000, old->track_id);
++	unsigned int group_id_new = FIELD_GET(0x00FF0000, new->track_id);
+ 
+ 	/* 0x00 group must be only the first */
+ 	if (group_id_new == 0)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index afbe921f6d20..585b599bedeb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1959,9 +1959,8 @@ int i40e_get_eeprom_len(struct net_device *netdev)
+ 		i40e_trace(ioctl_get_eeprom_len, np->vsi->back, val);
+ 		return val;
+ 	}
+-	val = (rd32(hw, I40E_GLPCI_LBARCTRL)
+-		& I40E_GLPCI_LBARCTRL_FL_SIZE_MASK)
+-		>> I40E_GLPCI_LBARCTRL_FL_SIZE_SHIFT;
++	val = FIELD_GET(I40E_GLPCI_LBARCTRL_FL_SIZE_MASK,
++			rd32(hw, I40E_GLPCI_LBARCTRL));
+ 	/* register returns value in power of 2, 64Kbyte chunks. */
+ 	val = (64 * 1024) * BIT(val);
+ 	i40e_trace(ioctl_get_eeprom_len, np->vsi->back, val);
+@@ -3300,7 +3299,7 @@ static int i40e_parse_rx_flow_user_data(struct ethtool_rx_flow_spec *fsp,
+ 	} else if (valid) {
+ 		data->flex_word = value & I40E_USERDEF_FLEX_WORD;
+ 		data->flex_offset =
+-			(value & I40E_USERDEF_FLEX_OFFSET) >> 16;
++			FIELD_GET(I40E_USERDEF_FLEX_OFFSET, value);
+ 		data->flex_filter = true;
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 0dfe472747c6..903a1e66697d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1197,11 +1197,9 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
+ 
+ 	val = rd32(hw, I40E_PRTPM_EEE_STAT);
+ 	nsd->tx_lpi_status =
+-		       (val & I40E_PRTPM_EEE_STAT_TX_LPI_STATUS_MASK) >>
+-			I40E_PRTPM_EEE_STAT_TX_LPI_STATUS_SHIFT;
++		       FIELD_GET(I40E_PRTPM_EEE_STAT_TX_LPI_STATUS_MASK, val);
+ 	nsd->rx_lpi_status =
+-		       (val & I40E_PRTPM_EEE_STAT_RX_LPI_STATUS_MASK) >>
+-			I40E_PRTPM_EEE_STAT_RX_LPI_STATUS_SHIFT;
++		       FIELD_GET(I40E_PRTPM_EEE_STAT_RX_LPI_STATUS_MASK, val);
+ 	i40e_stat_update32(hw, I40E_PRTPM_TLPIC,
+ 			   pf->stat_offsets_loaded,
+ 			   &osd->tx_lpi_count, &nsd->tx_lpi_count);
+@@ -4340,8 +4338,7 @@ static irqreturn_t i40e_intr(int irq, void *data)
+ 			set_bit(__I40E_RESET_INTR_RECEIVED, pf->state);
+ 		ena_mask &= ~I40E_PFINT_ICR0_ENA_GRST_MASK;
+ 		val = rd32(hw, I40E_GLGEN_RSTAT);
+-		val = (val & I40E_GLGEN_RSTAT_RESET_TYPE_MASK)
+-		       >> I40E_GLGEN_RSTAT_RESET_TYPE_SHIFT;
++		val = FIELD_GET(I40E_GLGEN_RSTAT_RESET_TYPE_MASK, val);
+ 		if (val == I40E_RESET_CORER) {
+ 			pf->corer_count++;
+ 			i40e_trace(state_reset_corer, pf, pf->corer_count);
+@@ -5010,8 +5007,8 @@ static void i40e_vsi_free_irq(struct i40e_vsi *vsi)
+ 			 * next_q field of the registers.
  			 */
--			eeprom_size = (u16)((eec & IXGBE_EEC_SIZE) >>
--					    IXGBE_EEC_SIZE_SHIFT);
-+			eeprom_size = FIELD_GET(IXGBE_EEC_SIZE, eec);
- 			eeprom->word_size = BIT(eeprom_size +
--						 IXGBE_EEPROM_WORD_SIZE_SHIFT);
-+						IXGBE_EEPROM_WORD_SIZE_SHIFT);
+ 			val = rd32(hw, I40E_PFINT_LNKLSTN(vector - 1));
+-			qp = (val & I40E_PFINT_LNKLSTN_FIRSTQ_INDX_MASK)
+-				>> I40E_PFINT_LNKLSTN_FIRSTQ_INDX_SHIFT;
++			qp = FIELD_GET(I40E_PFINT_LNKLSTN_FIRSTQ_INDX_MASK,
++				       val);
+ 			val |= I40E_QUEUE_END_OF_LIST
+ 				<< I40E_PFINT_LNKLSTN_FIRSTQ_INDX_SHIFT;
+ 			wr32(hw, I40E_PFINT_LNKLSTN(vector - 1), val);
+@@ -5033,8 +5030,8 @@ static void i40e_vsi_free_irq(struct i40e_vsi *vsi)
+ 
+ 				val = rd32(hw, I40E_QINT_TQCTL(qp));
+ 
+-				next = (val & I40E_QINT_TQCTL_NEXTQ_INDX_MASK)
+-					>> I40E_QINT_TQCTL_NEXTQ_INDX_SHIFT;
++				next = FIELD_GET(I40E_QINT_TQCTL_NEXTQ_INDX_MASK,
++						 val);
+ 
+ 				val &= ~(I40E_QINT_TQCTL_MSIX_INDX_MASK  |
+ 					 I40E_QINT_TQCTL_MSIX0_INDX_MASK |
+@@ -5052,8 +5049,7 @@ static void i40e_vsi_free_irq(struct i40e_vsi *vsi)
+ 		free_irq(pf->pdev->irq, pf);
+ 
+ 		val = rd32(hw, I40E_PFINT_LNKLST0);
+-		qp = (val & I40E_PFINT_LNKLSTN_FIRSTQ_INDX_MASK)
+-			>> I40E_PFINT_LNKLSTN_FIRSTQ_INDX_SHIFT;
++		qp = FIELD_GET(I40E_PFINT_LNKLSTN_FIRSTQ_INDX_MASK, val);
+ 		val |= I40E_QUEUE_END_OF_LIST
+ 			<< I40E_PFINT_LNKLST0_FIRSTQ_INDX_SHIFT;
+ 		wr32(hw, I40E_PFINT_LNKLST0, val);
+@@ -9556,18 +9552,18 @@ static void i40e_handle_lan_overflow_event(struct i40e_pf *pf,
+ 	dev_dbg(&pf->pdev->dev, "overflow Rx Queue Number = %d QTX_CTL=0x%08x\n",
+ 		queue, qtx_ctl);
+ 
++	if (FIELD_GET(I40E_QTX_CTL_PFVF_Q_MASK, qtx_ctl) !=
++	    I40E_QTX_CTL_VF_QUEUE)
++		return;
++
+ 	/* Queue belongs to VF, find the VF and issue VF reset */
+-	if (((qtx_ctl & I40E_QTX_CTL_PFVF_Q_MASK)
+-	    >> I40E_QTX_CTL_PFVF_Q_SHIFT) == I40E_QTX_CTL_VF_QUEUE) {
+-		vf_id = (u16)((qtx_ctl & I40E_QTX_CTL_VFVM_INDX_MASK)
+-			 >> I40E_QTX_CTL_VFVM_INDX_SHIFT);
+-		vf_id -= hw->func_caps.vf_base_id;
+-		vf = &pf->vf[vf_id];
+-		i40e_vc_notify_vf_reset(vf);
+-		/* Allow VF to process pending reset notification */
+-		msleep(20);
+-		i40e_reset_vf(vf, false);
+-	}
++	vf_id = FIELD_GET(I40E_QTX_CTL_VFVM_INDX_MASK, qtx_ctl);
++	vf_id -= hw->func_caps.vf_base_id;
++	vf = &pf->vf[vf_id];
++	i40e_vc_notify_vf_reset(vf);
++	/* Allow VF to process pending reset notification */
++	msleep(20);
++	i40e_reset_vf(vf, false);
+ }
+ 
+ /**
+@@ -9593,8 +9589,7 @@ u32 i40e_get_current_fd_count(struct i40e_pf *pf)
+ 
+ 	val = rd32(&pf->hw, I40E_PFQF_FDSTAT);
+ 	fcnt_prog = (val & I40E_PFQF_FDSTAT_GUARANT_CNT_MASK) +
+-		    ((val & I40E_PFQF_FDSTAT_BEST_CNT_MASK) >>
+-		      I40E_PFQF_FDSTAT_BEST_CNT_SHIFT);
++		    FIELD_GET(I40E_PFQF_FDSTAT_BEST_CNT_MASK, val);
+ 	return fcnt_prog;
+ }
+ 
+@@ -9608,8 +9603,7 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
+ 
+ 	val = rd32(&pf->hw, I40E_GLQF_FDCNT_0);
+ 	fcnt_prog = (val & I40E_GLQF_FDCNT_0_GUARANT_CNT_MASK) +
+-		    ((val & I40E_GLQF_FDCNT_0_BESTCNT_MASK) >>
+-		     I40E_GLQF_FDCNT_0_BESTCNT_SHIFT);
++		    FIELD_GET(I40E_GLQF_FDCNT_0_BESTCNT_MASK, val);
+ 	return fcnt_prog;
+ }
+ 
+@@ -11200,14 +11194,10 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
+ 	/* find what triggered the MDD event */
+ 	reg = rd32(hw, I40E_GL_MDET_TX);
+ 	if (reg & I40E_GL_MDET_TX_VALID_MASK) {
+-		u8 pf_num = (reg & I40E_GL_MDET_TX_PF_NUM_MASK) >>
+-				I40E_GL_MDET_TX_PF_NUM_SHIFT;
+-		u16 vf_num = (reg & I40E_GL_MDET_TX_VF_NUM_MASK) >>
+-				I40E_GL_MDET_TX_VF_NUM_SHIFT;
+-		u8 event = (reg & I40E_GL_MDET_TX_EVENT_MASK) >>
+-				I40E_GL_MDET_TX_EVENT_SHIFT;
+-		u16 queue = ((reg & I40E_GL_MDET_TX_QUEUE_MASK) >>
+-				I40E_GL_MDET_TX_QUEUE_SHIFT) -
++		u8 pf_num = FIELD_GET(I40E_GL_MDET_TX_PF_NUM_MASK, reg);
++		u16 vf_num = FIELD_GET(I40E_GL_MDET_TX_VF_NUM_MASK, reg);
++		u8 event = FIELD_GET(I40E_GL_MDET_TX_EVENT_MASK, reg);
++		u16 queue = FIELD_GET(I40E_GL_MDET_TX_QUEUE_MASK, reg) -
+ 				pf->hw.func_caps.base_queue;
+ 		if (netif_msg_tx_err(pf))
+ 			dev_info(&pf->pdev->dev, "Malicious Driver Detection event 0x%02x on TX queue %d PF number 0x%02x VF number 0x%02x\n",
+@@ -11217,12 +11207,9 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
+ 	}
+ 	reg = rd32(hw, I40E_GL_MDET_RX);
+ 	if (reg & I40E_GL_MDET_RX_VALID_MASK) {
+-		u8 func = (reg & I40E_GL_MDET_RX_FUNCTION_MASK) >>
+-				I40E_GL_MDET_RX_FUNCTION_SHIFT;
+-		u8 event = (reg & I40E_GL_MDET_RX_EVENT_MASK) >>
+-				I40E_GL_MDET_RX_EVENT_SHIFT;
+-		u16 queue = ((reg & I40E_GL_MDET_RX_QUEUE_MASK) >>
+-				I40E_GL_MDET_RX_QUEUE_SHIFT) -
++		u8 func = FIELD_GET(I40E_GL_MDET_RX_FUNCTION_MASK, reg);
++		u8 event = FIELD_GET(I40E_GL_MDET_RX_EVENT_MASK, reg);
++		u16 queue = FIELD_GET(I40E_GL_MDET_RX_QUEUE_MASK, reg) -
+ 				pf->hw.func_caps.base_queue;
+ 		if (netif_msg_rx_err(pf))
+ 			dev_info(&pf->pdev->dev, "Malicious Driver Detection event 0x%02x on RX queue %d of function 0x%02x\n",
+@@ -16187,8 +16174,8 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	/* make sure the MFS hasn't been set lower than the default */
+ #define MAX_FRAME_SIZE_DEFAULT 0x2600
+-	val = (rd32(&pf->hw, I40E_PRTGL_SAH) &
+-	       I40E_PRTGL_SAH_MFS_MASK) >> I40E_PRTGL_SAH_MFS_SHIFT;
++	val = FIELD_GET(I40E_PRTGL_SAH_MFS_MASK,
++			rd32(&pf->hw, I40E_PRTGL_SAH));
+ 	if (val < MAX_FRAME_SIZE_DEFAULT)
+ 		dev_warn(&pdev->dev, "MFS for port %x has been set below the default: %x\n",
+ 			 pf->hw.port, val);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 70215ae92b0c..987534b0285b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -27,8 +27,7 @@ int i40e_init_nvm(struct i40e_hw *hw)
+ 	 * as the blank mode may be used in the factory line.
+ 	 */
+ 	gens = rd32(hw, I40E_GLNVM_GENS);
+-	sr_size = ((gens & I40E_GLNVM_GENS_SR_SIZE_MASK) >>
+-			   I40E_GLNVM_GENS_SR_SIZE_SHIFT);
++	sr_size = FIELD_GET(I40E_GLNVM_GENS_SR_SIZE_MASK, gens);
+ 	/* Switching to words (sr_size contains power of 2KB) */
+ 	nvm->sr_size = BIT(sr_size) * I40E_SR_WORDS_IN_1KB;
+ 
+@@ -194,9 +193,8 @@ static int i40e_read_nvm_word_srctl(struct i40e_hw *hw, u16 offset,
+ 		ret_code = i40e_poll_sr_srctl_done_bit(hw);
+ 		if (!ret_code) {
+ 			sr_reg = rd32(hw, I40E_GLNVM_SRDATA);
+-			*data = (u16)((sr_reg &
+-				       I40E_GLNVM_SRDATA_RDDATA_MASK)
+-				    >> I40E_GLNVM_SRDATA_RDDATA_SHIFT);
++			*data = FIELD_GET(I40E_GLNVM_SRDATA_RDDATA_MASK,
++					  sr_reg);
  		}
+ 	}
+ 	if (ret_code)
+@@ -772,13 +770,12 @@ static inline u8 i40e_nvmupd_get_module(u32 val)
+ }
+ static inline u8 i40e_nvmupd_get_transaction(u32 val)
+ {
+-	return (u8)((val & I40E_NVM_TRANS_MASK) >> I40E_NVM_TRANS_SHIFT);
++	return FIELD_GET(I40E_NVM_TRANS_MASK, val);
+ }
  
- 		if (eec & IXGBE_EEC_ADDR_SIZE)
-@@ -3946,10 +3945,10 @@ s32 ixgbe_get_thermal_sensor_data_generic(struct ixgbe_hw *hw)
- 		if (status)
- 			return status;
+ static inline u8 i40e_nvmupd_get_preservation_flags(u32 val)
+ {
+-	return (u8)((val & I40E_NVM_PRESERVATION_FLAGS_MASK) >>
+-		    I40E_NVM_PRESERVATION_FLAGS_SHIFT);
++	return FIELD_GET(I40E_NVM_PRESERVATION_FLAGS_MASK, val);
+ }
  
--		sensor_index = ((ets_sensor & IXGBE_ETS_DATA_INDEX_MASK) >>
--				IXGBE_ETS_DATA_INDEX_SHIFT);
--		sensor_location = ((ets_sensor & IXGBE_ETS_DATA_LOC_MASK) >>
--				   IXGBE_ETS_DATA_LOC_SHIFT);
-+		sensor_index = FIELD_GET(IXGBE_ETS_DATA_INDEX_MASK,
-+					 ets_sensor);
-+		sensor_location = FIELD_GET(IXGBE_ETS_DATA_LOC_MASK,
-+					    ets_sensor);
+ static const char * const i40e_nvm_update_state_str[] = {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index 1cf993a79438..e7ebcb09f23c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -1480,8 +1480,8 @@ void i40e_ptp_init(struct i40e_pf *pf)
+ 	/* Only one PF is assigned to control 1588 logic per port. Do not
+ 	 * enable any support for PFs not assigned via PRTTSYN_CTL0.PF_ID
+ 	 */
+-	pf_id = (rd32(hw, I40E_PRTTSYN_CTL0) & I40E_PRTTSYN_CTL0_PF_ID_MASK) >>
+-		I40E_PRTTSYN_CTL0_PF_ID_SHIFT;
++	pf_id = FIELD_GET(I40E_PRTTSYN_CTL0_PF_ID_MASK,
++			  rd32(hw, I40E_PRTTSYN_CTL0));
+ 	if (hw->pf_id != pf_id) {
+ 		clear_bit(I40E_FLAG_PTP_ENA, pf->flags);
+ 		dev_info(&pf->pdev->dev, "%s: PTP not supported on %s\n",
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index b0df3dde1386..971ba3322038 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -686,8 +686,7 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring, u64 qword0_raw,
+ 	u32 error;
  
- 		if (sensor_location != 0) {
- 			status = hw->phy.ops.read_i2c_byte(hw,
-@@ -3993,8 +3992,7 @@ s32 ixgbe_init_thermal_sensor_thresh_generic(struct ixgbe_hw *hw)
- 	if (status)
- 		return status;
+ 	qw0 = (struct i40e_16b_rx_wb_qw0 *)&qword0_raw;
+-	error = (qword1 & I40E_RX_PROG_STATUS_DESC_QW1_ERROR_MASK) >>
+-		I40E_RX_PROG_STATUS_DESC_QW1_ERROR_SHIFT;
++	error = FIELD_GET(I40E_RX_PROG_STATUS_DESC_QW1_ERROR_MASK, qword1);
  
--	low_thresh_delta = ((ets_cfg & IXGBE_ETS_LTHRES_DELTA_MASK) >>
--			     IXGBE_ETS_LTHRES_DELTA_SHIFT);
-+	low_thresh_delta = FIELD_GET(IXGBE_ETS_LTHRES_DELTA_MASK, ets_cfg);
- 	num_sensors = (ets_cfg & IXGBE_ETS_NUM_SENSORS_MASK);
- 	if (num_sensors > IXGBE_MAX_SENSORS)
- 		num_sensors = IXGBE_MAX_SENSORS;
-@@ -4008,10 +4006,10 @@ s32 ixgbe_init_thermal_sensor_thresh_generic(struct ixgbe_hw *hw)
- 			       ets_offset + 1 + i);
+ 	if (error == BIT(I40E_RX_PROG_STATUS_DESC_FD_TBL_FULL_SHIFT)) {
+ 		pf->fd_inv = le32_to_cpu(qw0->hi_dword.fd_id);
+@@ -1398,8 +1397,7 @@ void i40e_clean_programming_status(struct i40e_ring *rx_ring, u64 qword0_raw,
+ {
+ 	u8 id;
+ 
+-	id = (qword1 & I40E_RX_PROG_STATUS_DESC_QW1_PROGID_MASK) >>
+-		  I40E_RX_PROG_STATUS_DESC_QW1_PROGID_SHIFT;
++	id = FIELD_GET(I40E_RX_PROG_STATUS_DESC_QW1_PROGID_MASK, qword1);
+ 
+ 	if (id == I40E_RX_PROG_STATUS_DESC_FD_FILTER_STATUS)
+ 		i40e_fd_handle_status(rx_ring, qword0_raw, qword1, id);
+@@ -1759,11 +1757,9 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 	u64 qword;
+ 
+ 	qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+-	ptype = (qword & I40E_RXD_QW1_PTYPE_MASK) >> I40E_RXD_QW1_PTYPE_SHIFT;
+-	rx_error = (qword & I40E_RXD_QW1_ERROR_MASK) >>
+-		   I40E_RXD_QW1_ERROR_SHIFT;
+-	rx_status = (qword & I40E_RXD_QW1_STATUS_MASK) >>
+-		    I40E_RXD_QW1_STATUS_SHIFT;
++	ptype = FIELD_GET(I40E_RXD_QW1_PTYPE_MASK, qword);
++	rx_error = FIELD_GET(I40E_RXD_QW1_ERROR_MASK, qword);
++	rx_status = FIELD_GET(I40E_RXD_QW1_STATUS_MASK, qword);
+ 	decoded = decode_rx_desc_ptype(ptype);
+ 
+ 	skb->ip_summed = CHECKSUM_NONE;
+@@ -1896,13 +1892,10 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
+ 			     union i40e_rx_desc *rx_desc, struct sk_buff *skb)
+ {
+ 	u64 qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+-	u32 rx_status = (qword & I40E_RXD_QW1_STATUS_MASK) >>
+-			I40E_RXD_QW1_STATUS_SHIFT;
++	u32 rx_status = FIELD_GET(I40E_RXD_QW1_STATUS_MASK, qword);
+ 	u32 tsynvalid = rx_status & I40E_RXD_QW1_STATUS_TSYNVALID_MASK;
+-	u32 tsyn = (rx_status & I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
+-		   I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT;
+-	u8 rx_ptype = (qword & I40E_RXD_QW1_PTYPE_MASK) >>
+-		      I40E_RXD_QW1_PTYPE_SHIFT;
++	u32 tsyn = FIELD_GET(I40E_RXD_QW1_STATUS_TSYNINDX_MASK, rx_status);
++	u8 rx_ptype = FIELD_GET(I40E_RXD_QW1_PTYPE_MASK, qword);
+ 
+ 	if (unlikely(tsynvalid))
+ 		i40e_ptp_rx_hwtstamp(rx_ring->vsi->back, skb, tsyn);
+@@ -2549,8 +2542,7 @@ static int i40e_clean_rx_irq(struct i40e_ring *rx_ring, int budget,
  			continue;
  		}
--		sensor_index = ((ets_sensor & IXGBE_ETS_DATA_INDEX_MASK) >>
--				IXGBE_ETS_DATA_INDEX_SHIFT);
--		sensor_location = ((ets_sensor & IXGBE_ETS_DATA_LOC_MASK) >>
--				   IXGBE_ETS_DATA_LOC_SHIFT);
-+		sensor_index = FIELD_GET(IXGBE_ETS_DATA_INDEX_MASK,
-+					 ets_sensor);
-+		sensor_location = FIELD_GET(IXGBE_ETS_DATA_LOC_MASK,
-+					    ets_sensor);
- 		therm_limit = ets_sensor & IXGBE_ETS_DATA_HTHRESH_MASK;
  
- 		hw->phy.ops.write_i2c_byte(hw,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 94bde2cad0f4..227415d61efc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -11371,7 +11371,7 @@ static pci_ers_result_t ixgbe_io_error_detected(struct pci_dev *pdev,
- 	if ((pf_func & 1) == (pdev->devfn & 1)) {
- 		unsigned int device_id;
+-		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
+-		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
++		size = FIELD_GET(I40E_RXD_QW1_LENGTH_PBUF_MASK, qword);
+ 		if (!size)
+ 			break;
  
--		vf = (req_id & 0x7F) >> 1;
-+		vf = FIELD_GET(0x7F, req_id);
- 		e_dev_err("VF %d has caused a PCIe error\n", vf);
- 		e_dev_err("TLP: dw0: %8.8x\tdw1: %8.8x\tdw2: "
- 				"%8.8x\tdw3: %8.8x\n",
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 689470c1e8ad..ca31638c6fb8 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -276,9 +276,8 @@ s32 ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
- 		return 0;
+@@ -3594,8 +3586,7 @@ static inline int i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
  
- 	if (hw->phy.nw_mng_if_sel) {
--		phy_addr = (hw->phy.nw_mng_if_sel &
--			    IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD) >>
--			   IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT;
-+		phy_addr = FIELD_GET(IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD,
-+				     hw->phy.nw_mng_if_sel);
- 		if (ixgbe_probe_phy(hw, phy_addr))
- 			return 0;
- 		else
-@@ -1448,8 +1447,7 @@ s32 ixgbe_reset_phy_nl(struct ixgbe_hw *hw)
- 		ret_val = hw->eeprom.ops.read(hw, data_offset, &eword);
- 		if (ret_val)
- 			goto err_eeprom;
--		control = (eword & IXGBE_CONTROL_MASK_NL) >>
--			   IXGBE_CONTROL_SHIFT_NL;
-+		control = FIELD_GET(IXGBE_CONTROL_MASK_NL, eword);
- 		edata = eword & IXGBE_DATA_MASK_NL;
- 		switch (control) {
- 		case IXGBE_DELAY_NL:
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 9cfdfa8a4355..f8c6ca9fea82 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -363,8 +363,7 @@ int ixgbe_pci_sriov_configure(struct pci_dev *dev, int num_vfs)
- static int ixgbe_set_vf_multicasts(struct ixgbe_adapter *adapter,
- 				   u32 *msgbuf, u32 vf)
- {
--	int entries = (msgbuf[0] & IXGBE_VT_MSGINFO_MASK)
--		       >> IXGBE_VT_MSGINFO_SHIFT;
-+	int entries = FIELD_GET(IXGBE_VT_MSGINFO_MASK, msgbuf[0]);
- 	u16 *hash_list = (u16 *)&msgbuf[1];
- 	struct vf_data_storage *vfinfo = &adapter->vfinfo[vf];
- 	struct ixgbe_hw *hw = &adapter->hw;
-@@ -969,7 +968,7 @@ static int ixgbe_set_vf_mac_addr(struct ixgbe_adapter *adapter,
- static int ixgbe_set_vf_vlan_msg(struct ixgbe_adapter *adapter,
- 				 u32 *msgbuf, u32 vf)
- {
--	u32 add = (msgbuf[0] & IXGBE_VT_MSGINFO_MASK) >> IXGBE_VT_MSGINFO_SHIFT;
-+	u32 add = FIELD_GET(IXGBE_VT_MSGINFO_MASK, msgbuf[0]);
- 	u32 vid = (msgbuf[1] & IXGBE_VLVF_VLANID_MASK);
- 	u8 tcs = adapter->hw_tcs;
- 
-@@ -992,8 +991,7 @@ static int ixgbe_set_vf_macvlan_msg(struct ixgbe_adapter *adapter,
- 				    u32 *msgbuf, u32 vf)
- {
- 	u8 *new_mac = ((u8 *)(&msgbuf[1]));
--	int index = (msgbuf[0] & IXGBE_VT_MSGINFO_MASK) >>
--		    IXGBE_VT_MSGINFO_SHIFT;
-+	int index = FIELD_GET(IXGBE_VT_MSGINFO_MASK, msgbuf[0]);
- 	int err;
- 
- 	if (adapter->vfinfo[vf].pf_set_mac && !adapter->vfinfo[vf].trusted &&
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-index d5cfb51ff648..e127070a59f4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-@@ -187,16 +187,16 @@ s32 ixgbe_start_hw_X540(struct ixgbe_hw *hw)
- s32 ixgbe_init_eeprom_params_X540(struct ixgbe_hw *hw)
- {
- 	struct ixgbe_eeprom_info *eeprom = &hw->eeprom;
--	u32 eec;
--	u16 eeprom_size;
- 
- 	if (eeprom->type == ixgbe_eeprom_uninitialized) {
-+		u16 eeprom_size;
-+		u32 eec;
-+
- 		eeprom->semaphore_delay = 10;
- 		eeprom->type = ixgbe_flash;
- 
- 		eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
--		eeprom_size = (u16)((eec & IXGBE_EEC_SIZE) >>
--				    IXGBE_EEC_SIZE_SHIFT);
-+		eeprom_size = FIELD_GET(IXGBE_EEC_SIZE, eec);
- 		eeprom->word_size = BIT(eeprom_size +
- 					IXGBE_EEPROM_WORD_SIZE_SHIFT);
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index aa4bf6c9a2f7..b3509b617a4e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -628,16 +628,16 @@ static s32 ixgbe_fc_autoneg_fw(struct ixgbe_hw *hw)
- static s32 ixgbe_init_eeprom_params_X550(struct ixgbe_hw *hw)
- {
- 	struct ixgbe_eeprom_info *eeprom = &hw->eeprom;
--	u32 eec;
--	u16 eeprom_size;
- 
- 	if (eeprom->type == ixgbe_eeprom_uninitialized) {
-+		u16 eeprom_size;
-+		u32 eec;
-+
- 		eeprom->semaphore_delay = 10;
- 		eeprom->type = ixgbe_flash;
- 
- 		eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
--		eeprom_size = (u16)((eec & IXGBE_EEC_SIZE) >>
--				    IXGBE_EEC_SIZE_SHIFT);
-+		eeprom_size = FIELD_GET(IXGBE_EEC_SIZE, eec);
- 		eeprom->word_size = BIT(eeprom_size +
- 					IXGBE_EEPROM_WORD_SIZE_SHIFT);
- 
-@@ -712,8 +712,7 @@ static s32 ixgbe_read_iosf_sb_reg_x550(struct ixgbe_hw *hw, u32 reg_addr,
- 	ret = ixgbe_iosf_wait(hw, &command);
- 
- 	if ((command & IXGBE_SB_IOSF_CTRL_RESP_STAT_MASK) != 0) {
--		error = (command & IXGBE_SB_IOSF_CTRL_CMPL_ERR_MASK) >>
--			 IXGBE_SB_IOSF_CTRL_CMPL_ERR_SHIFT;
-+		error = FIELD_GET(IXGBE_SB_IOSF_CTRL_CMPL_ERR_MASK, command);
- 		hw_dbg(hw, "Failed to read, error %x\n", error);
- 		return IXGBE_ERR_PHY;
+ 	if (tx_flags & I40E_TX_FLAGS_HW_VLAN) {
+ 		td_cmd |= I40E_TX_DESC_CMD_IL2TAG1;
+-		td_tag = (tx_flags & I40E_TX_FLAGS_VLAN_MASK) >>
+-			 I40E_TX_FLAGS_VLAN_SHIFT;
++		td_tag = FIELD_GET(I40E_TX_FLAGS_VLAN_MASK, tx_flags);
  	}
-@@ -1412,8 +1411,7 @@ static s32 ixgbe_write_iosf_sb_reg_x550(struct ixgbe_hw *hw, u32 reg_addr,
- 	ret = ixgbe_iosf_wait(hw, &command);
  
- 	if ((command & IXGBE_SB_IOSF_CTRL_RESP_STAT_MASK) != 0) {
--		error = (command & IXGBE_SB_IOSF_CTRL_CMPL_ERR_MASK) >>
--			 IXGBE_SB_IOSF_CTRL_CMPL_ERR_SHIFT;
-+		error = FIELD_GET(IXGBE_SB_IOSF_CTRL_CMPL_ERR_MASK, command);
- 		hw_dbg(hw, "Failed to write, error %x\n", error);
- 		return IXGBE_ERR_PHY;
- 	}
-@@ -3222,9 +3220,8 @@ static void ixgbe_read_mng_if_sel_x550em(struct ixgbe_hw *hw)
- 	 */
- 	if (hw->mac.type == ixgbe_mac_x550em_a &&
- 	    hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_MDIO_ACT) {
--		hw->phy.mdio.prtad = (hw->phy.nw_mng_if_sel &
--				      IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD) >>
--				     IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT;
-+		hw->phy.mdio.prtad = FIELD_GET(IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD,
-+					       hw->phy.nw_mng_if_sel);
- 	}
- }
+ 	first->tx_flags = tx_flags;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 5a45c53e6770..0de8e00ad291 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -474,10 +474,10 @@ static void i40e_release_rdma_qvlist(struct i40e_vf *vf)
+ 			 */
+ 			reg_idx = (msix_vf - 1) * vf->vf_id + qv_info->ceq_idx;
+ 			reg = rd32(hw, I40E_VPINT_CEQCTL(reg_idx));
+-			next_q_index = (reg & I40E_VPINT_CEQCTL_NEXTQ_INDX_MASK)
+-					>> I40E_VPINT_CEQCTL_NEXTQ_INDX_SHIFT;
+-			next_q_type = (reg & I40E_VPINT_CEQCTL_NEXTQ_TYPE_MASK)
+-					>> I40E_VPINT_CEQCTL_NEXTQ_TYPE_SHIFT;
++			next_q_index = FIELD_GET(I40E_VPINT_CEQCTL_NEXTQ_INDX_MASK,
++						 reg);
++			next_q_type = FIELD_GET(I40E_VPINT_CEQCTL_NEXTQ_TYPE_MASK,
++						reg);
+ 
+ 			reg_idx = ((msix_vf - 1) * vf->vf_id) + (v_idx - 1);
+ 			reg = (next_q_index &
+@@ -555,10 +555,10 @@ i40e_config_rdma_qvlist(struct i40e_vf *vf,
+ 		 * queue on top. Also link it with the new queue in CEQCTL.
+ 		 */
+ 		reg = rd32(hw, I40E_VPINT_LNKLSTN(reg_idx));
+-		next_q_idx = ((reg & I40E_VPINT_LNKLSTN_FIRSTQ_INDX_MASK) >>
+-				I40E_VPINT_LNKLSTN_FIRSTQ_INDX_SHIFT);
+-		next_q_type = ((reg & I40E_VPINT_LNKLSTN_FIRSTQ_TYPE_MASK) >>
+-				I40E_VPINT_LNKLSTN_FIRSTQ_TYPE_SHIFT);
++		next_q_idx = FIELD_GET(I40E_VPINT_LNKLSTN_FIRSTQ_INDX_MASK,
++				       reg);
++		next_q_type = FIELD_GET(I40E_VPINT_LNKLSTN_FIRSTQ_TYPE_MASK,
++					reg);
+ 
+ 		if (qv_info->ceq_idx != I40E_QUEUE_INVALID_IDX) {
+ 			reg_idx = (msix_vf - 1) * vf->vf_id + qv_info->ceq_idx;
+@@ -4673,9 +4673,8 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
+ 
+ 	ivi->max_tx_rate = vf->tx_rate;
+ 	ivi->min_tx_rate = 0;
+-	ivi->vlan = le16_to_cpu(vsi->info.pvid) & I40E_VLAN_MASK;
+-	ivi->qos = (le16_to_cpu(vsi->info.pvid) & I40E_PRIORITY_MASK) >>
+-		   I40E_VLAN_PRIORITY_SHIFT;
++	ivi->vlan = le16_get_bits(vsi->info.pvid, I40E_VLAN_MASK);
++	ivi->qos = le16_get_bits(vsi->info.pvid, I40E_PRIORITY_MASK);
+ 	if (vf->link_forced == false)
+ 		ivi->linkstate = IFLA_VF_LINK_STATE_AUTO;
+ 	else if (vf->link_up == true)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_xsk.c b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+index e99fa854d17f..af7d5fa6cdc1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_xsk.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_xsk.c
+@@ -476,8 +476,7 @@ int i40e_clean_rx_irq_zc(struct i40e_ring *rx_ring, int budget)
+ 			continue;
+ 		}
+ 
+-		size = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
+-		       I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
++		size = FIELD_GET(I40E_RXD_QW1_LENGTH_PBUF_MASK, qword);
+ 		if (!size)
+ 			break;
  
 -- 
 2.39.3
