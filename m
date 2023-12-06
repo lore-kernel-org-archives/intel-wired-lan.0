@@ -4,85 +4,234 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1EFEC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4748C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:18:15 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 80B7D61400;
-	Wed,  6 Dec 2023 01:02:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 80B7D61400
+	by smtp3.osuosl.org (Postfix) with ESMTP id 640DA611AB;
+	Wed,  6 Dec 2023 01:18:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 640DA611AB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701824573;
-	bh=9tOhkgB0fO97ECD4yu4GThojPq7CFj82eYLgWig7NZ8=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1701825495;
+	bh=ixCvOfRSOMjHARBlCq/hO+VjOBo6y3gShqN604Akasw=;
+	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Gr0lvtKbshANXVPmmSSGz3HSxYVWwPO+tUvYOT+KEkBkiMi4XxPmkCD9Wox8sLqO0
-	 jQkKB5Ir0Phdgt21s9KkVzSI/akCJ73tvPOMOz9vUe0mYScFDNgpUmMECDGibYYJfc
-	 Bd6FM0+2Et9cNx+ErsAbxcOAevRRrXpa3G6FXkJyp1mWXTO9tW7Qo7G9cZBbUnmzt/
-	 jk0rn3uAweCsoOmCeyInHWoIDiFqMiHndTGBaHZdDcgHVF1sWYRLG+6ZPk7NexcWng
-	 bly9qXGzSpExjKGnhp9a55wGa9hBaIyBTbnTPTljMGbQH78ruOAHsNKrJDpp2BiBYO
-	 WkWUxmZyP2NSg==
+	b=V6jzmF1IyZHnrYCPKfXTGbFvNCHZRlM8B/OtzHtZ+saiYmRP9iJfrkbWTYV7WjLUB
+	 usnKYrddcdRUnVDNfeiV3D78/Vs7TdG31+Nod9crCmYe7slXziEC0s9GC7uM15WCuH
+	 VpeUk5dbqLPjArhFjRDsRLAT8fIL0T2uPrttTUT2BFy/ELTPKDMjJQf4tTa6cIKdol
+	 rbWMV+v41hmdFF8QL8W9uuJhQgmt+QXgikDykyBgPs8sR8sKAHO1AGZ4lzhcjpGrYW
+	 j1EGUvB5Eie4tnoI4vJR3EJPthTfV4NAqleb/+KNRQJmDmO/AyRQzUkd6S0YJst50B
+	 HjXTnYu39WAdg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Uz7vtP1R8Ojn; Wed,  6 Dec 2023 01:02:51 +0000 (UTC)
+	with ESMTP id WFOPYO4NdBXY; Wed,  6 Dec 2023 01:18:14 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id B0DEE6142B;
-	Wed,  6 Dec 2023 01:02:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B0DEE6142B
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id B1F2E1BF97D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:43 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id 3F85861400;
+	Wed,  6 Dec 2023 01:18:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 3F85861400
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
+ by ash.osuosl.org (Postfix) with ESMTP id 09D9A1BF34C
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:18:13 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 6B27E82C18
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6B27E82C18
+ by smtp2.osuosl.org (Postfix) with ESMTP id D894B40BFD
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:18:12 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org D894B40BFD
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id HIwmh3vc2MWm for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Dec 2023 01:01:34 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 756F382BEB
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 756F382BEB
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700296"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700296"
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
- by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:34 -0800
+Received: from smtp2.osuosl.org ([127.0.0.1])
+ by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id ho4VXXD0zVU9 for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Dec 2023 01:18:11 +0000 (UTC)
+X-Greylist: delayed 428 seconds by postgrey-1.37 at util1.osuosl.org;
+ Wed, 06 Dec 2023 01:18:11 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 50C3B4029B
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id 50C3B4029B
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:18:11 +0000 (UTC)
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="1073267"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; 
+   d="scan'208";a="1073267"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 05 Dec 2023 17:11:03 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655253"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655253"
-Received: from jbrandeb-spr1.jf.intel.com ([10.166.28.233])
- by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:33 -0800
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="837138125"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="837138125"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+ by fmsmga008.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 05 Dec 2023 17:11:03 -0800
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Tue, 5 Dec 2023 17:11:02 -0800
+Received: from fmsmsx610.amr.corp.intel.com (10.18.126.90) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Tue, 5 Dec 2023 17:11:02 -0800
+Received: from FMSEDG603.ED.cps.intel.com (10.1.192.133) by
+ fmsmsx610.amr.corp.intel.com (10.18.126.90) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35 via Frontend Transport; Tue, 5 Dec 2023 17:11:02 -0800
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (104.47.58.169)
+ by edgegateway.intel.com (192.55.55.68) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.34; Tue, 5 Dec 2023 17:11:02 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=CUucESLlkVztGRL2pcAU9rbj/OfFBBCxWPgWi21u2++Twp/bZ2c19btQYsaj5takY5Reb88vuvWAOqElCJY2hFlmjGvwWpW1Qr8qmuOsds0ckk5yAbPiQxPIIhvvW6pcdjaVbmNUsjl0OsHuqzAt1GEiuK8PzsqOGLy0+F0CK9EaskMCaO1daYRIVBSHfDUmp23FjubARP2gGGNwsrqC9I50u6v6p0lCNNJdnG+zCCpjySDevWLy3D+2C1AkvPQvh5vk+maZBSs+2udldwhJQNSGYPFIS2VmZzmvnTtACtx09ootNZ6lUVcXymTDoDAq1M82i0/MnNP+yVnbr2jjNA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LHej4d0TbSVPoUzUGCGXit9ZYITzAe1jWkbHsG6NxQY=;
+ b=AtVQlhnPrRT/fQRKLeNfP/oi5xRF2Eb5uCV7GwcT0JhQfW3dibz6jx9ahvvxL9RTZYKMldjV/NQ4o/ESKXBOkrWB67dxJW3iJ7rS3rG9i2t9Q9N5wTJvIUlzGj447ZhjmHwfgKrDrcd2TlrTk13SELFNz2QTBeyVlX4aoVARuVWb+BNHe5kbIZ1pe1fUms9Ey60L+4dbmlumAq3j37yhiverdCWz3Gmmz72q9HbtIC1EnnsmJq3w6jSbDF7V8Po40RgyDCxez/DW+/RrEklqSdv+gU8y3y5WLXEqNNPyqC5xwOx3KcZayHbvFrmO3WnLj8aqgmHtVER7RBTyRnlcXg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from CO1PR11MB4914.namprd11.prod.outlook.com (2603:10b6:303:90::24)
+ by LV8PR11MB8509.namprd11.prod.outlook.com (2603:10b6:408:1e6::15)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7046.34; Wed, 6 Dec
+ 2023 01:10:59 +0000
+Received: from CO1PR11MB4914.namprd11.prod.outlook.com
+ ([fe80::7706:285b:27d0:2c5d]) by CO1PR11MB4914.namprd11.prod.outlook.com
+ ([fe80::7706:285b:27d0:2c5d%6]) with mapi id 15.20.7046.034; Wed, 6 Dec 2023
+ 01:10:59 +0000
+Message-ID: <eff20fb6-d2d3-4b12-8d46-1cd891ad0156@intel.com>
+Date: Tue, 5 Dec 2023 17:10:58 -0800
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+References: <20231130214511.647586-1-jesse.brandeburg@intel.com>
+ <212e5518-0f72-4bf5-bc5f-49d184be1931@intel.com>
+ <97ed09be-cb2b-48c3-846d-7a0e453ef816@intel.com>
+ <30c89a45-602f-4fd4-9fe0-70f335859f8f@intel.com>
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Dec 2023 17:01:05 -0800
-Message-Id: <20231206010114.2259388-7-jesse.brandeburg@intel.com>
-X-Mailer: git-send-email 2.39.3
-In-Reply-To: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
-References: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
+Autocrypt: addr=jesse.brandeburg@intel.com; keydata=
+ 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
+ /fnLfll98Nhx
+In-Reply-To: <30c89a45-602f-4fd4-9fe0-70f335859f8f@intel.com>
+X-ClientProxiedBy: MW3PR06CA0015.namprd06.prod.outlook.com
+ (2603:10b6:303:2a::20) To CO1PR11MB4914.namprd11.prod.outlook.com
+ (2603:10b6:303:90::24)
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CO1PR11MB4914:EE_|LV8PR11MB8509:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7f2cd5fe-cfc2-485e-a216-08dbf5f834fa
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 9t8qMANukNSt20VwEw2kjqpW5PtL7u009CepNAyD8UVV5SpjhN2wpDtsb3NrhrGDVSZO78pFd26/f8Ckk3gCYiWTfjwES0umzwrAGoA9ZoeMQFmvDbGMt00MwKdhZ/x1pyLByPbB9IibsPDuTGKkT3p+jOVOppvy73muny6YQgZAdNNvm+EHmDK+v4hYvaeGfD8KVpRJZcfMk2wtSZVZCRGRUMXqfzaGUw58Eqo2clpTmlQZYL4wOdqHEYszkO7zXuyCQmwc5mwe76nTQtkuE6VSG/0tnIhN/Ge4GWaFfJQ1+97unsYe7ZvnHCg56G0WmRym02AMmNDKvYnMgmz1baaIv/VTz56kZ25764vuMNGB6urb4z8o1rJ1mtNZMf1kgDkLZ4BLW5i8AB6RRzEElktpoD/iAIuLrm7ucbLe/Qvyy1ShNcxbNsi+QMOcFoTRpQDzBZziJhtY4ptqRMkIIsCn2qIWRtMlGQt3r+yggZ0OPktVqd9dDmiBOs9P95TWrgkzCqVGfTZzllyxZLdkjH2Z/SmJ8v1uXtbcAOj2zfBPE4VnXI18T3gqywtFjOKtOT8hgsN2Krhw3vqbAAtoyEaey/2HrHUtv1nAY46B4xkgsMst9z4+QyRmUEhvQ9OqU/0NfRjJ1dcKTa2LrdzjgQ==
+X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:CO1PR11MB4914.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230031)(376002)(396003)(366004)(136003)(346002)(39860400002)(230922051799003)(64100799003)(186009)(451199024)(1800799012)(82960400001)(26005)(83380400001)(36756003)(41300700001)(53546011)(6506007)(31686004)(6512007)(38100700002)(2616005)(6486002)(2906002)(31696002)(66476007)(86362001)(44832011)(37006003)(66946007)(5660300002)(6636002)(316002)(8936002)(478600001)(66556008)(6862004)(8676002)(4326008)(45980500001)(43740500002);
+ DIR:OUT; SFP:1102; 
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?Nlc4VlNFa0MrOVJuUnYvV1RJaTFhTzZBZzdmbVA2N1NCT09ocCtqclNoOTBW?=
+ =?utf-8?B?STJYT0s0cnRVaE1KL096SkQ2UEYwOGVPQjkrTmRtVko2bUxlN004VURhV0hE?=
+ =?utf-8?B?NllqcXVIbWxlQnJrU0JZWFRrTzFjeFE4TkJUQ25FNlBXejkwdEtjM3J4MGRh?=
+ =?utf-8?B?M3k2SGRQNDlROUJROVpQb05KQVlPUHFOUE03RWlheHpkUTRqUzN3czVpeUNS?=
+ =?utf-8?B?Y281OGgvNlQ0cFh6b3NzMllZSm9WeXBQTG1BcUJyYUJLQnV5Qjd0bVFPbzR5?=
+ =?utf-8?B?WXFKTzFkTk8wTEoyZGxINFI4SVRmWXlDWXZiS2Zld0RYamQzWVFUSWQ2YUlw?=
+ =?utf-8?B?eFFYRkx6YWZBVTh4dmhTakp2ZEJWMXoyc3E2VEd2ZjY1NWRkc0J4TUkxVTBF?=
+ =?utf-8?B?Rk93Q1F0SVVVZlZVcDljTWZNRkVnZE40TWIrWDY4M1pxck9FSU5nTnc0OFQw?=
+ =?utf-8?B?V256VzREb1dsWjFjZHNQVkUzbFdaUThWMmJ2U1Bvc1VWODZqQ3hzRzUvRS9j?=
+ =?utf-8?B?VEV2bUlTd043KzVhTzk5L3M4Y2VMa3Axd3QyMERsSERpT21FSU9DQlZadXJR?=
+ =?utf-8?B?d2R5b3Y0dTZoZUhybkYxS0FFRThZVXp5WjdKcHQxNmFGeVJraWN4RkFMMEgv?=
+ =?utf-8?B?bTVTUk5NTzdjV21rZm9OSzhraURXNkIwaCtFSFpZUGo2S0JRTXIzT01Qdldi?=
+ =?utf-8?B?M2cyS3NNRmxPamFHTm8xaGZlSjZ1OXl6emc1Ym16VURyQ3hBUWRmK091bDhO?=
+ =?utf-8?B?Rm9BV3ZtUmxiRHlDQlZZUk8zcWszajNQLzJRM2tjekdiYlNCOFJ4VkU2Q095?=
+ =?utf-8?B?SU92bTZvRkdqZm1sdm9VK0tIalFldnFJaVJVVE1UVSt1NWMzOGdJRG4rY1ZW?=
+ =?utf-8?B?ZFVtTkU3MlZPY2s3b2VtRHNSQWdDR1I0U0p3YVFXdHBlSiswNVlTZDZDWlR5?=
+ =?utf-8?B?dzlZUkhtdlNxSk5vZU5pdUk0WWc0aTlON2VlbE1SNEEwdDByV2xqQ3FDT3BY?=
+ =?utf-8?B?c3V0Q2dEY0lPdUFzekZoZjBuRnQyVVpDOEpkZGtOTjhzUUFWdXhiUG5RaFEy?=
+ =?utf-8?B?QkozdU1SM091VEN3YU9JbEFHVUhLMGVJeHdYUVJCa2t2d2hBN2F1d2VQUm9M?=
+ =?utf-8?B?ZFB3NmFGbDE5dE0wV3l0bDV4dnlhMWcyTjVjUy8xOFowMWZ2VXFuVG8rREFp?=
+ =?utf-8?B?RkptdUNXdDZzbnViY1JjcHdrWndZZ2VlYmNBR3dXM3lFcUNYaXhnak0raHlZ?=
+ =?utf-8?B?aGl2WWl3MS9sK3E5MjN5blBMTnNHTDFsT3N4Z1JHTEhwOVl5TXo5bUJvWXVL?=
+ =?utf-8?B?TnhGM3c1RXN4eFp5QWtPeUZHTXhJVkc5b1BPMGxxY2VUZGxDK1N5blhUUkps?=
+ =?utf-8?B?MjNOb3hTSFpuN3ZYOXE3SUwyUmVkeEMveXp0eTZFa1AraUtsYko4dVZaWnBL?=
+ =?utf-8?B?YnN6ZEp5Tkt3MTlPUUlXaEo3Tjk4c3ZER1JjWk92WU05SHZlOUwwd1k5Mzkx?=
+ =?utf-8?B?SHpaUjlWRjU3SGVteUtCemFQTzNEVWtNdHNMT1luZkFsdCt5b0M5MUhOaGJE?=
+ =?utf-8?B?NGt4Skg1OTZBbW1UakxwMVFEZVllLy9haWpwcVFJMVR3TGFjdWhiMitDWXFD?=
+ =?utf-8?B?em5ET04rbW85NXNrUUdwdU9BVVp1bVczazA3Wk5zc29TWktPN1RWL0NzU1V5?=
+ =?utf-8?B?YnY5Y043TURVUlNhc0hGeC9YSjNnK21jS3FHamJTN1M5QlRBUjBVMFlHN25B?=
+ =?utf-8?B?aGIrV0V2ZkYrWXJrWUhXTFQ1UUhadXJDeThUMUpKY0xWWFVtcndmYmNPb2Q0?=
+ =?utf-8?B?d29KemdMdC9HMGZ5TjV2ZWZVYWdSQXlyVlI0c0w1L2NwL2JETHBLWXIzV1VB?=
+ =?utf-8?B?REZ1QktFbXJQU0RrdlRpc1F2QzRiQTI0elBOYi9DbUJVWCt3NlFIcEo0YzNp?=
+ =?utf-8?B?aUpudk9LTFdIYTRwaHcycEtTbkkzeVdPUDc0VWNUbzRhc0J4MXliYVNUNmxK?=
+ =?utf-8?B?b2JNb2E0RVpxOGROTWpvNWQydm5tQWM1MFhTbXpmdDBwTlYvelp1eDd2SnJL?=
+ =?utf-8?B?WjhIWmtlTzljbUFPM2N4eUc4MjlkdlZRL2Y1YkRhVVA1cWFQNVFtVnFaV2xs?=
+ =?utf-8?B?Nk8rQmlCZEZOWDRheHh3TTRoUDJDK0pod09XRVpnSm9WcmxjUDBvTnFmdUdu?=
+ =?utf-8?B?bFE9PQ==?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7f2cd5fe-cfc2-485e-a216-08dbf5f834fa
+X-MS-Exchange-CrossTenant-AuthSource: CO1PR11MB4914.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Dec 2023 01:10:59.4116 (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 6CcHFQtE+69VTpowXCG4FJh+outLB4R4zwrryzoD/pVxZK+xemj5o3b9slT/5JYNNAxxCop26W6d13TziZxbnAvfizqXy3M8rAseZL45IFs=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: LV8PR11MB8509
+X-OriginatorOrg: intel.com
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1701824495; x=1733360495;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=TFG5aBQwkeIG7uAqAAvlruKHDJecPwgL4dn3O7n3fO8=;
- b=ID72ilka6f9nlGyKftZPPTNXNZeF+SdvaW3XyTICAg4pccZOyERVkiCo
- ah7PYcU+J/9l8dTcMzrceo6Lzqm162SDzearK0xfpefcPQlMtq+i13OMG
- oEDJbZ9Jy8pi0eJRxb+H6GMkCy1xp8wG8msrE0ySh53kEEIv0MSEbylcY
- pKnO7SRhcT4A/cRNtakrcou/zr70h4g8G5Cat7e5Ze83sncM8BS4yaK9I
- UgIFMxMjFTimhD6LLaDeGu5Yc5wVK3v7Aq48PX8jdqXVDFEelilJbDrp/
- Xej/L7zrgDd39FxfkcIZtHSzCR8+tjIUhlNJuOxQLsrV8V07h+jPiEBVA
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ t=1701825491; x=1733361491;
+ h=message-id:date:subject:to:cc:references:from:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=pYoe2DCw4TA8jAco3DFxHCDXgJ8Hwoy7rg9DCgYF+hk=;
+ b=KVVN9q0E5UKfkiStWucPv1GWxw9PVt0SQRNM6WPF6BUMt/S3x8wfqe0n
+ ksNol3BngUhZ6VXv8Rzo99lsNvv+8YjSzFSeVcQwWMwqHm4D0+SBdJ+ba
+ EKYIKLktCB7RXARfMq6HUC+Jyoqp3AndRMTvHrEpkCHfnQydpe8Mrv9rp
+ qQ+cjQSea0TVsCvw9wfsBonPe6b01aM8dfyelprAlD7ZibCypsPaNGe47
+ hQptOO66iaynDvcqGL5SOPxu0kGQyyZrtrz1B3ezojdM7hSS0oAC5xEkt
+ S4y37oLu9C9p97Agxxo9ry7xwse2ddSo1SznbCc5pJwi9Eezl4gD8e77O
+ A==;
+X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=ID72ilka
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 06/15] ice: field prep
- conversion
+ header.a=rsa-sha256 header.s=Intel header.b=KVVN9q0E
+X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v1] idpf: refactor some
+ missing field get/prep conversions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,910 +244,103 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: przemyslaw.kitszel@intel.com, Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Julia Lawall <Julia.Lawall@inria.fr>, aleksander.lobakin@intel.com,
- marcin.szycik@linux.intel.com, horms@kernel.org, netdev@vger.kernel.org
+Cc: Julia Lawall <julia.lawall@inria.fr>, netdev@vger.kernel.org,
+ anthony.l.nguyen@intel.com, intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Refactor ice driver to use FIELD_PREP(), which reduces lines of code
-and adds clarity of intent.
+On 12/4/2023 2:26 AM, Alexander Lobakin wrote:
+yping.
+> 
+> What is "not a constant"?
+> 
+> 	ring[nta] = FIELD_PREP(IDPF_RX_BI_GEN_M,
+> 			       test_bit(__IDPF_Q_GEN_CHK, flags));
+> 
+> Is there a problem with this ^ code?
+> 
+> "The scripts ignored that" is not a good argument I'd say :>
 
-This code was generated by the following coccinelle/spatch script and
-then manually repaired.
+Fixed in v2
 
-Several places I changed to OR into a single variable with |= instead of
-using a multi-line statement with trailing OR operators, as it
-(subjectively) makes the code clearer.
 
-A local variable vmvf_and_timeout was created and used to avoid multiple
-logical ORs being __le16 converted, which shortened some lines and makes
-the code cleaner.
+>> Generally I'd prefer that the kind of check above returned a bool with a
+>> constant conversion of the mask (compile time) to an LE16 mask, and then
+>> use that, which is why all of our other drivers do that instead.
+> 
+> Ah, good point. Smth like
+> 
+> 		gen = !!(tx_desc->qid_comptype_gen &
+> 			 IDPF_TXQ_COMPLQ_GEN_M_LE);
 
-Also clean up a couple of places where conversions were made to have the
-code read more clearly/consistently.
+Yeah, it would be nice but I didn't add that to this series. But you
+have the idea.
 
-@prep2@
-constant shift,mask;
-type T;
-expression a;
-@@
--(((T)(a) << shift) & mask)
-+FIELD_PREP(mask, a)
+> 
+> OTOH x86 is always LE and BE is seen more and more rarely nowadays. It
+> might just not worth having a LE-version of each such mask for the sake
+> of a bit more optimized code on architectures where our drivers are
+> barely used.
 
-@prep@
-constant shift,mask;
-type T;
-expression a;
-@@
--((T)((a) << shift) & mask)
-+FIELD_PREP(mask, a)
+Our drivers should work on BE, IMO. sparse annotations takes care of
+making sure we have the conversions right, they cost nothing on x86.
 
-Cc: Julia Lawall <Julia.Lawall@inria.fr>
-CC: Alexander Lobakin <aleksander.lobakin@intel.com>
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
-v2: added a couple more preps, some code cleanups found when looking for
-le32_set/encode opportunities.
----
- drivers/net/ethernet/intel/ice/ice_base.c     | 20 ++---
- drivers/net/ethernet/intel/ice/ice_common.c   | 35 ++++-----
- drivers/net/ethernet/intel/ice/ice_dcb.c      |  3 +-
- drivers/net/ethernet/intel/ice/ice_dcb_lib.c  |  2 +-
- drivers/net/ethernet/intel/ice/ice_eswitch.c  |  4 +-
- drivers/net/ethernet/intel/ice/ice_fdir.c     | 69 ++++++-----------
- .../net/ethernet/intel/ice/ice_flex_pipe.c    |  8 +-
- drivers/net/ethernet/intel/ice/ice_flow.c     |  2 +-
- drivers/net/ethernet/intel/ice/ice_lag.c      |  7 +-
- drivers/net/ethernet/intel/ice/ice_lib.c      | 52 +++++--------
- drivers/net/ethernet/intel/ice/ice_ptp.c      |  9 +--
- drivers/net/ethernet/intel/ice/ice_sriov.c    | 38 ++++------
- drivers/net/ethernet/intel/ice/ice_switch.c   | 75 +++++++++----------
- drivers/net/ethernet/intel/ice/ice_txrx.c     |  6 +-
- drivers/net/ethernet/intel/ice/ice_virtchnl.c |  8 +-
- .../ethernet/intel/ice/ice_virtchnl_fdir.c    |  2 +-
- .../net/ethernet/intel/ice/ice_vsi_vlan_lib.c | 25 +++----
- 17 files changed, 147 insertions(+), 218 deletions(-)
+> 
+>>
+>>>
+>>> Moreover, you could use le*_{get,encode,replace}_bits() to get/set LE
+>>> values right away without 2-step operation (from/to CPU + masks), but
+>>> you didn't do that here (see below for an example).
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_base.c b/drivers/net/ethernet/intel/ice/ice_base.c
-index 7fa43827a3f0..3fd6e99dba23 100644
---- a/drivers/net/ethernet/intel/ice/ice_base.c
-+++ b/drivers/net/ethernet/intel/ice/ice_base.c
-@@ -234,14 +234,10 @@ static void ice_cfg_itr_gran(struct ice_hw *hw)
- 	      GLINT_CTL_ITR_GRAN_25_S) == ICE_ITR_GRAN_US))
- 		return;
- 
--	regval = ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_200_S) &
--		  GLINT_CTL_ITR_GRAN_200_M) |
--		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_100_S) &
--		  GLINT_CTL_ITR_GRAN_100_M) |
--		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_50_S) &
--		  GLINT_CTL_ITR_GRAN_50_M) |
--		 ((ICE_ITR_GRAN_US << GLINT_CTL_ITR_GRAN_25_S) &
--		  GLINT_CTL_ITR_GRAN_25_M);
-+	regval = FIELD_PREP(GLINT_CTL_ITR_GRAN_200_M, ICE_ITR_GRAN_US) |
-+		 FIELD_PREP(GLINT_CTL_ITR_GRAN_100_M, ICE_ITR_GRAN_US) |
-+		 FIELD_PREP(GLINT_CTL_ITR_GRAN_50_M, ICE_ITR_GRAN_US) |
-+		 FIELD_PREP(GLINT_CTL_ITR_GRAN_25_M, ICE_ITR_GRAN_US);
- 	wr32(hw, GLINT_CTL, regval);
- }
- 
-@@ -913,10 +909,10 @@ ice_cfg_txq_interrupt(struct ice_vsi *vsi, u16 txq, u16 msix_idx, u16 itr_idx)
- 	struct ice_hw *hw = &pf->hw;
- 	u32 val;
- 
--	itr_idx = (itr_idx << QINT_TQCTL_ITR_INDX_S) & QINT_TQCTL_ITR_INDX_M;
-+	itr_idx = FIELD_PREP(QINT_TQCTL_ITR_INDX_M, itr_idx);
- 
- 	val = QINT_TQCTL_CAUSE_ENA_M | itr_idx |
--	      ((msix_idx << QINT_TQCTL_MSIX_INDX_S) & QINT_TQCTL_MSIX_INDX_M);
-+	      FIELD_PREP(QINT_TQCTL_MSIX_INDX_M, msix_idx);
- 
- 	wr32(hw, QINT_TQCTL(vsi->txq_map[txq]), val);
- 	if (ice_is_xdp_ena_vsi(vsi)) {
-@@ -945,10 +941,10 @@ ice_cfg_rxq_interrupt(struct ice_vsi *vsi, u16 rxq, u16 msix_idx, u16 itr_idx)
- 	struct ice_hw *hw = &pf->hw;
- 	u32 val;
- 
--	itr_idx = (itr_idx << QINT_RQCTL_ITR_INDX_S) & QINT_RQCTL_ITR_INDX_M;
-+	itr_idx = FIELD_PREP(QINT_RQCTL_ITR_INDX_M, itr_idx);
- 
- 	val = QINT_RQCTL_CAUSE_ENA_M | itr_idx |
--	      ((msix_idx << QINT_RQCTL_MSIX_INDX_S) & QINT_RQCTL_MSIX_INDX_M);
-+	      FIELD_PREP(QINT_RQCTL_MSIX_INDX_M, msix_idx);
- 
- 	wr32(hw, QINT_RQCTL(vsi->rxq_map[rxq]), val);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 8d97434e1413..eb5c00b83112 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -4095,6 +4095,7 @@ ice_aq_sff_eeprom(struct ice_hw *hw, u16 lport, u8 bus_addr,
- {
- 	struct ice_aqc_sff_eeprom *cmd;
- 	struct ice_aq_desc desc;
-+	u16 i2c_bus_addr;
- 	int status;
- 
- 	if (!data || (mem_addr & 0xff00))
-@@ -4105,15 +4106,13 @@ ice_aq_sff_eeprom(struct ice_hw *hw, u16 lport, u8 bus_addr,
- 	desc.flags = cpu_to_le16(ICE_AQ_FLAG_RD);
- 	cmd->lport_num = (u8)(lport & 0xff);
- 	cmd->lport_num_valid = (u8)((lport >> 8) & 0x01);
--	cmd->i2c_bus_addr = cpu_to_le16(((bus_addr >> 1) &
--					 ICE_AQC_SFF_I2CBUS_7BIT_M) |
--					((set_page <<
--					  ICE_AQC_SFF_SET_EEPROM_PAGE_S) &
--					 ICE_AQC_SFF_SET_EEPROM_PAGE_M));
--	cmd->i2c_mem_addr = cpu_to_le16(mem_addr & 0xff);
--	cmd->eeprom_page = cpu_to_le16((u16)page << ICE_AQC_SFF_EEPROM_PAGE_S);
-+	i2c_bus_addr = FIELD_PREP(ICE_AQC_SFF_I2CBUS_7BIT_M, bus_addr >> 1) |
-+		       FIELD_PREP(ICE_AQC_SFF_SET_EEPROM_PAGE_M, set_page);
- 	if (write)
--		cmd->i2c_bus_addr |= cpu_to_le16(ICE_AQC_SFF_IS_WRITE);
-+		i2c_bus_addr |= ICE_AQC_SFF_IS_WRITE;
-+	cmd->i2c_bus_addr = cpu_to_le16(i2c_bus_addr);
-+	cmd->i2c_mem_addr = cpu_to_le16(mem_addr & 0xff);
-+	cmd->eeprom_page = le16_encode_bits(page, ICE_AQC_SFF_EEPROM_PAGE_M);
- 
- 	status = ice_aq_send_cmd(hw, &desc, data, length, cd);
- 	return status;
-@@ -4368,6 +4367,7 @@ ice_aq_dis_lan_txq(struct ice_hw *hw, u8 num_qgrps,
- 	struct ice_aqc_dis_txq_item *item;
- 	struct ice_aqc_dis_txqs *cmd;
- 	struct ice_aq_desc desc;
-+	u16 vmvf_and_timeout;
- 	u16 i, sz = 0;
- 	int status;
- 
-@@ -4383,27 +4383,26 @@ ice_aq_dis_lan_txq(struct ice_hw *hw, u8 num_qgrps,
- 
- 	cmd->num_entries = num_qgrps;
- 
--	cmd->vmvf_and_timeout = cpu_to_le16((5 << ICE_AQC_Q_DIS_TIMEOUT_S) &
--					    ICE_AQC_Q_DIS_TIMEOUT_M);
-+	vmvf_and_timeout = FIELD_PREP(ICE_AQC_Q_DIS_TIMEOUT_M, 5);
- 
- 	switch (rst_src) {
- 	case ICE_VM_RESET:
- 		cmd->cmd_type = ICE_AQC_Q_DIS_CMD_VM_RESET;
--		cmd->vmvf_and_timeout |=
--			cpu_to_le16(vmvf_num & ICE_AQC_Q_DIS_VMVF_NUM_M);
-+		vmvf_and_timeout |= vmvf_num & ICE_AQC_Q_DIS_VMVF_NUM_M;
- 		break;
- 	case ICE_VF_RESET:
- 		cmd->cmd_type = ICE_AQC_Q_DIS_CMD_VF_RESET;
- 		/* In this case, FW expects vmvf_num to be absolute VF ID */
--		cmd->vmvf_and_timeout |=
--			cpu_to_le16((vmvf_num + hw->func_caps.vf_base_id) &
--				    ICE_AQC_Q_DIS_VMVF_NUM_M);
-+		vmvf_and_timeout |= (vmvf_num + hw->func_caps.vf_base_id) &
-+				    ICE_AQC_Q_DIS_VMVF_NUM_M;
- 		break;
- 	case ICE_NO_RESET:
- 	default:
- 		break;
- 	}
- 
-+	cmd->vmvf_and_timeout = cpu_to_le16(vmvf_and_timeout);
-+
- 	/* flush pipe on time out */
- 	cmd->cmd_type |= ICE_AQC_Q_DIS_CMD_FLUSH_PIPE;
- 	/* If no queue group info, we are in a reset flow. Issue the AQ */
-@@ -4478,10 +4477,8 @@ ice_aq_cfg_lan_txq(struct ice_hw *hw, struct ice_aqc_cfg_txqs_buf *buf,
- 	cmd->cmd_type = ICE_AQC_Q_CFG_TC_CHNG;
- 	cmd->num_qs = num_qs;
- 	cmd->port_num_chng = (oldport & ICE_AQC_Q_CFG_SRC_PRT_M);
--	cmd->port_num_chng |= (newport << ICE_AQC_Q_CFG_DST_PRT_S) &
--			      ICE_AQC_Q_CFG_DST_PRT_M;
--	cmd->time_out = (5 << ICE_AQC_Q_CFG_TIMEOUT_S) &
--			ICE_AQC_Q_CFG_TIMEOUT_M;
-+	cmd->port_num_chng |= FIELD_PREP(ICE_AQC_Q_CFG_DST_PRT_M, newport);
-+	cmd->time_out = FIELD_PREP(ICE_AQC_Q_CFG_TIMEOUT_M, 5);
- 	cmd->blocked_cgds = 0;
- 
- 	status = ice_aq_send_cmd(hw, &desc, buf, buf_size, cd);
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb.c b/drivers/net/ethernet/intel/ice/ice_dcb.c
-index 396e555023aa..41b7853291d3 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb.c
-@@ -35,8 +35,7 @@ ice_aq_get_lldp_mib(struct ice_hw *hw, u8 bridge_type, u8 mib_type, void *buf,
- 	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_lldp_get_mib);
- 
- 	cmd->type = mib_type & ICE_AQ_LLDP_MIB_TYPE_M;
--	cmd->type |= (bridge_type << ICE_AQ_LLDP_BRID_TYPE_S) &
--		ICE_AQ_LLDP_BRID_TYPE_M;
-+	cmd->type |= FIELD_PREP(ICE_AQ_LLDP_BRID_TYPE_M, bridge_type);
- 
- 	desc.datalen = cpu_to_le16(buf_size);
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-index 850db8e0e6b0..6e20ee610022 100644
---- a/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_dcb_lib.c
-@@ -934,7 +934,7 @@ ice_tx_prepare_vlan_flags_dcb(struct ice_tx_ring *tx_ring,
- 	    skb->priority != TC_PRIO_CONTROL) {
- 		first->vid &= ~VLAN_PRIO_MASK;
- 		/* Mask the lower 3 bits to set the 802.1p priority */
--		first->vid |= (skb->priority << VLAN_PRIO_SHIFT) & VLAN_PRIO_MASK;
-+		first->vid |= FIELD_PREP(VLAN_PRIO_MASK, skb->priority);
- 		/* if this is not already set it means a VLAN 0 + priority needs
- 		 * to be offloaded
- 		 */
-diff --git a/drivers/net/ethernet/intel/ice/ice_eswitch.c b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-index 3f80e2081e5d..0aed9b5dba06 100644
---- a/drivers/net/ethernet/intel/ice/ice_eswitch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_eswitch.c
-@@ -358,8 +358,8 @@ ice_eswitch_set_target_vsi(struct sk_buff *skb,
- 		off->cd_qw1 |= (cd_cmd | ICE_TX_DESC_DTYPE_CTX);
- 	} else {
- 		cd_cmd = ICE_TX_CTX_DESC_SWTCH_VSI << ICE_TXD_CTX_QW1_CMD_S;
--		dst_vsi = ((u64)dst->u.port_info.port_id <<
--			   ICE_TXD_CTX_QW1_VSI_S) & ICE_TXD_CTX_QW1_VSI_M;
-+		dst_vsi = FIELD_PREP(ICE_TXD_CTX_QW1_VSI_M,
-+				     dst->u.port_info.port_id);
- 		off->cd_qw1 = cd_cmd | dst_vsi | ICE_TX_DESC_DTYPE_CTX;
- 	}
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_fdir.c b/drivers/net/ethernet/intel/ice/ice_fdir.c
-index ae089d32ee9d..5840c3e04a5b 100644
---- a/drivers/net/ethernet/intel/ice/ice_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fdir.c
-@@ -604,55 +604,32 @@ ice_set_fd_desc_val(struct ice_fd_fltr_desc_ctx *ctx,
- 	u64 qword;
- 
- 	/* prep QW0 of FD filter programming desc */
--	qword = ((u64)ctx->qindex << ICE_FXD_FLTR_QW0_QINDEX_S) &
--		ICE_FXD_FLTR_QW0_QINDEX_M;
--	qword |= ((u64)ctx->comp_q << ICE_FXD_FLTR_QW0_COMP_Q_S) &
--		 ICE_FXD_FLTR_QW0_COMP_Q_M;
--	qword |= ((u64)ctx->comp_report << ICE_FXD_FLTR_QW0_COMP_REPORT_S) &
--		 ICE_FXD_FLTR_QW0_COMP_REPORT_M;
--	qword |= ((u64)ctx->fd_space << ICE_FXD_FLTR_QW0_FD_SPACE_S) &
--		 ICE_FXD_FLTR_QW0_FD_SPACE_M;
--	qword |= ((u64)ctx->cnt_index << ICE_FXD_FLTR_QW0_STAT_CNT_S) &
--		 ICE_FXD_FLTR_QW0_STAT_CNT_M;
--	qword |= ((u64)ctx->cnt_ena << ICE_FXD_FLTR_QW0_STAT_ENA_S) &
--		 ICE_FXD_FLTR_QW0_STAT_ENA_M;
--	qword |= ((u64)ctx->evict_ena << ICE_FXD_FLTR_QW0_EVICT_ENA_S) &
--		 ICE_FXD_FLTR_QW0_EVICT_ENA_M;
--	qword |= ((u64)ctx->toq << ICE_FXD_FLTR_QW0_TO_Q_S) &
--		 ICE_FXD_FLTR_QW0_TO_Q_M;
--	qword |= ((u64)ctx->toq_prio << ICE_FXD_FLTR_QW0_TO_Q_PRI_S) &
--		 ICE_FXD_FLTR_QW0_TO_Q_PRI_M;
--	qword |= ((u64)ctx->dpu_recipe << ICE_FXD_FLTR_QW0_DPU_RECIPE_S) &
--		 ICE_FXD_FLTR_QW0_DPU_RECIPE_M;
--	qword |= ((u64)ctx->drop << ICE_FXD_FLTR_QW0_DROP_S) &
--		 ICE_FXD_FLTR_QW0_DROP_M;
--	qword |= ((u64)ctx->flex_prio << ICE_FXD_FLTR_QW0_FLEX_PRI_S) &
--		 ICE_FXD_FLTR_QW0_FLEX_PRI_M;
--	qword |= ((u64)ctx->flex_mdid << ICE_FXD_FLTR_QW0_FLEX_MDID_S) &
--		 ICE_FXD_FLTR_QW0_FLEX_MDID_M;
--	qword |= ((u64)ctx->flex_val << ICE_FXD_FLTR_QW0_FLEX_VAL_S) &
--		 ICE_FXD_FLTR_QW0_FLEX_VAL_M;
-+	qword = FIELD_PREP(ICE_FXD_FLTR_QW0_QINDEX_M, ctx->qindex);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_COMP_Q_M, ctx->comp_q);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_COMP_REPORT_M, ctx->comp_report);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_FD_SPACE_M, ctx->fd_space);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_STAT_CNT_M, ctx->cnt_index);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_STAT_ENA_M, ctx->cnt_ena);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_EVICT_ENA_M, ctx->evict_ena);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_TO_Q_M, ctx->toq);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_TO_Q_PRI_M, ctx->toq_prio);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_DPU_RECIPE_M, ctx->dpu_recipe);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_DROP_M, ctx->drop);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_FLEX_PRI_M, ctx->flex_prio);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_FLEX_MDID_M, ctx->flex_mdid);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW0_FLEX_VAL_M, ctx->flex_val);
- 	fdir_desc->qidx_compq_space_stat = cpu_to_le64(qword);
- 
- 	/* prep QW1 of FD filter programming desc */
--	qword = ((u64)ctx->dtype << ICE_FXD_FLTR_QW1_DTYPE_S) &
--		ICE_FXD_FLTR_QW1_DTYPE_M;
--	qword |= ((u64)ctx->pcmd << ICE_FXD_FLTR_QW1_PCMD_S) &
--		 ICE_FXD_FLTR_QW1_PCMD_M;
--	qword |= ((u64)ctx->desc_prof_prio << ICE_FXD_FLTR_QW1_PROF_PRI_S) &
--		 ICE_FXD_FLTR_QW1_PROF_PRI_M;
--	qword |= ((u64)ctx->desc_prof << ICE_FXD_FLTR_QW1_PROF_S) &
--		 ICE_FXD_FLTR_QW1_PROF_M;
--	qword |= ((u64)ctx->fd_vsi << ICE_FXD_FLTR_QW1_FD_VSI_S) &
--		 ICE_FXD_FLTR_QW1_FD_VSI_M;
--	qword |= ((u64)ctx->swap << ICE_FXD_FLTR_QW1_SWAP_S) &
--		 ICE_FXD_FLTR_QW1_SWAP_M;
--	qword |= ((u64)ctx->fdid_prio << ICE_FXD_FLTR_QW1_FDID_PRI_S) &
--		 ICE_FXD_FLTR_QW1_FDID_PRI_M;
--	qword |= ((u64)ctx->fdid_mdid << ICE_FXD_FLTR_QW1_FDID_MDID_S) &
--		 ICE_FXD_FLTR_QW1_FDID_MDID_M;
--	qword |= ((u64)ctx->fdid << ICE_FXD_FLTR_QW1_FDID_S) &
--		 ICE_FXD_FLTR_QW1_FDID_M;
-+	qword = FIELD_PREP(ICE_FXD_FLTR_QW1_DTYPE_M, ctx->dtype);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW1_PCMD_M, ctx->pcmd);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW1_PROF_PRI_M, ctx->desc_prof_prio);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW1_PROF_M, ctx->desc_prof);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW1_FD_VSI_M, ctx->fd_vsi);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW1_SWAP_M, ctx->swap);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW1_FDID_PRI_M, ctx->fdid_prio);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW1_FDID_MDID_M, ctx->fdid_mdid);
-+	qword |= FIELD_PREP(ICE_FXD_FLTR_QW1_FDID_M, ctx->fdid);
- 	fdir_desc->dtype_cmd_vsi_fdid = cpu_to_le64(qword);
- }
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-index 5ce413965930..b0ce58829584 100644
---- a/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flex_pipe.c
-@@ -1409,13 +1409,13 @@ ice_write_prof_mask_reg(struct ice_hw *hw, enum ice_block blk, u16 mask_idx,
- 	switch (blk) {
- 	case ICE_BLK_RSS:
- 		offset = GLQF_HMASK(mask_idx);
--		val = (idx << GLQF_HMASK_MSK_INDEX_S) & GLQF_HMASK_MSK_INDEX_M;
--		val |= (mask << GLQF_HMASK_MASK_S) & GLQF_HMASK_MASK_M;
-+		val = FIELD_PREP(GLQF_HMASK_MSK_INDEX_M, idx);
-+		val |= FIELD_PREP(GLQF_HMASK_MASK_M, mask);
- 		break;
- 	case ICE_BLK_FD:
- 		offset = GLQF_FDMASK(mask_idx);
--		val = (idx << GLQF_FDMASK_MSK_INDEX_S) & GLQF_FDMASK_MSK_INDEX_M;
--		val |= (mask << GLQF_FDMASK_MASK_S) & GLQF_FDMASK_MASK_M;
-+		val = FIELD_PREP(GLQF_FDMASK_MSK_INDEX_M, idx);
-+		val |= FIELD_PREP(GLQF_FDMASK_MASK_M, mask);
- 		break;
- 	default:
- 		ice_debug(hw, ICE_DBG_PKG, "No profile masks for block %d\n",
-diff --git a/drivers/net/ethernet/intel/ice/ice_flow.c b/drivers/net/ethernet/intel/ice/ice_flow.c
-index fb8b925aaf8b..f0c890d612ef 100644
---- a/drivers/net/ethernet/intel/ice/ice_flow.c
-+++ b/drivers/net/ethernet/intel/ice/ice_flow.c
-@@ -2035,7 +2035,7 @@ ice_add_rss_list(struct ice_hw *hw, u16 vsi_handle, struct ice_flow_prof *prof)
-  */
- #define ICE_FLOW_GEN_PROFID(hash, hdr, segs_cnt) \
- 	((u64)(((u64)(hash) & ICE_FLOW_PROF_HASH_M) | \
--	       (((u64)(hdr) << ICE_FLOW_PROF_HDR_S) & ICE_FLOW_PROF_HDR_M) | \
-+	       FIELD_PREP(ICE_FLOW_PROF_HDR_M, hdr) | \
- 	       ((u8)((segs_cnt) - 1) ? ICE_FLOW_PROF_ENCAP_M : 0)))
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ice/ice_lag.c b/drivers/net/ethernet/intel/ice/ice_lag.c
-index cd065ec48c87..a7f3437e8e42 100644
---- a/drivers/net/ethernet/intel/ice/ice_lag.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lag.c
-@@ -208,8 +208,7 @@ ice_lag_cfg_fltr(struct ice_lag *lag, u32 act, u16 recipe_id, u16 *rule_idx,
- 		eth_hdr = s_rule->hdr_data;
- 		ice_fill_eth_hdr(eth_hdr);
- 
--		act |= (vsi_num << ICE_SINGLE_ACT_VSI_ID_S) &
--			ICE_SINGLE_ACT_VSI_ID_M;
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_VSI_ID_M, vsi_num);
- 
- 		s_rule->hdr.type = cpu_to_le16(ICE_AQC_SW_RULES_T_LKUP_RX);
- 		s_rule->recipe_id = cpu_to_le16(recipe_id);
-@@ -711,9 +710,7 @@ ice_lag_cfg_cp_fltr(struct ice_lag *lag, bool add)
- 		s_rule->act = cpu_to_le32(ICE_FWD_TO_VSI |
- 					  ICE_SINGLE_ACT_LAN_ENABLE |
- 					  ICE_SINGLE_ACT_VALID_BIT |
--					  ((vsi->vsi_num <<
--					    ICE_SINGLE_ACT_VSI_ID_S) &
--					   ICE_SINGLE_ACT_VSI_ID_M));
-+					  FIELD_PREP(ICE_SINGLE_ACT_VSI_ID_M, vsi->vsi_num));
- 		s_rule->hdr_len = cpu_to_le16(ICE_LAG_SRIOV_TRAIN_PKT_LEN);
- 		memcpy(s_rule->hdr_data, lacp_train_pkt, LACP_TRAIN_PKT_LEN);
- 		opc = ice_aqc_opc_add_sw_rules;
-diff --git a/drivers/net/ethernet/intel/ice/ice_lib.c b/drivers/net/ethernet/intel/ice/ice_lib.c
-index d826b5afa143..394f915290f6 100644
---- a/drivers/net/ethernet/intel/ice/ice_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_lib.c
-@@ -986,13 +986,11 @@ static void ice_set_dflt_vsi_ctx(struct ice_hw *hw, struct ice_vsi_ctx *ctxt)
- 		ctxt->info.inner_vlan_flags |=
- 			ICE_AQ_VSI_INNER_VLAN_EMODE_NOTHING;
- 		ctxt->info.outer_vlan_flags =
--			(ICE_AQ_VSI_OUTER_VLAN_TX_MODE_ALL <<
--			 ICE_AQ_VSI_OUTER_VLAN_TX_MODE_S) &
--			ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M;
-+			FIELD_PREP(ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M,
-+				   ICE_AQ_VSI_OUTER_VLAN_TX_MODE_ALL);
- 		ctxt->info.outer_vlan_flags |=
--			(ICE_AQ_VSI_OUTER_TAG_VLAN_8100 <<
--			 ICE_AQ_VSI_OUTER_TAG_TYPE_S) &
--			ICE_AQ_VSI_OUTER_TAG_TYPE_M;
-+			FIELD_PREP(ICE_AQ_VSI_OUTER_TAG_TYPE_M,
-+				   ICE_AQ_VSI_OUTER_TAG_VLAN_8100);
- 		ctxt->info.outer_vlan_flags |=
- 			FIELD_PREP(ICE_AQ_VSI_OUTER_VLAN_EMODE_M,
- 				   ICE_AQ_VSI_OUTER_VLAN_EMODE_NOTHING);
-@@ -1071,10 +1069,8 @@ static int ice_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 		vsi->tc_cfg.tc_info[i].qcount_tx = num_txq_per_tc;
- 		vsi->tc_cfg.tc_info[i].netdev_tc = netdev_tc++;
- 
--		qmap = ((offset << ICE_AQ_VSI_TC_Q_OFFSET_S) &
--			ICE_AQ_VSI_TC_Q_OFFSET_M) |
--			((pow << ICE_AQ_VSI_TC_Q_NUM_S) &
--			 ICE_AQ_VSI_TC_Q_NUM_M);
-+		qmap = FIELD_PREP(ICE_AQ_VSI_TC_Q_OFFSET_M, offset);
-+		qmap |= FIELD_PREP(ICE_AQ_VSI_TC_Q_NUM_M, pow);
- 		offset += num_rxq_per_tc;
- 		tx_count += num_txq_per_tc;
- 		ctxt->info.tc_mapping[i] = cpu_to_le16(qmap);
-@@ -1157,18 +1153,14 @@ static void ice_set_fd_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- 	ctxt->info.max_fd_fltr_shared =
- 			cpu_to_le16(vsi->num_bfltr);
- 	/* default queue index within the VSI of the default FD */
--	val = ((dflt_q << ICE_AQ_VSI_FD_DEF_Q_S) &
--	       ICE_AQ_VSI_FD_DEF_Q_M);
-+	val = FIELD_PREP(ICE_AQ_VSI_FD_DEF_Q_M, dflt_q);
- 	/* target queue or queue group to the FD filter */
--	val |= ((dflt_q_group << ICE_AQ_VSI_FD_DEF_GRP_S) &
--		ICE_AQ_VSI_FD_DEF_GRP_M);
-+	val |= FIELD_PREP(ICE_AQ_VSI_FD_DEF_GRP_M, dflt_q_group);
- 	ctxt->info.fd_def_q = cpu_to_le16(val);
- 	/* queue index on which FD filter completion is reported */
--	val = ((report_q << ICE_AQ_VSI_FD_REPORT_Q_S) &
--	       ICE_AQ_VSI_FD_REPORT_Q_M);
-+	val = FIELD_PREP(ICE_AQ_VSI_FD_REPORT_Q_M, report_q);
- 	/* priority of the default qindex action */
--	val |= ((dflt_q_prio << ICE_AQ_VSI_FD_DEF_PRIORITY_S) &
--		ICE_AQ_VSI_FD_DEF_PRIORITY_M);
-+	val |= FIELD_PREP(ICE_AQ_VSI_FD_DEF_PRIORITY_M, dflt_q_prio);
- 	ctxt->info.fd_report_opt = cpu_to_le16(val);
- }
- 
-@@ -1204,9 +1196,9 @@ static void ice_set_rss_vsi_ctx(struct ice_vsi_ctx *ctxt, struct ice_vsi *vsi)
- 		return;
- 	}
- 
--	ctxt->info.q_opt_rss = ((lut_type << ICE_AQ_VSI_Q_OPT_RSS_LUT_S) &
--				ICE_AQ_VSI_Q_OPT_RSS_LUT_M) |
--				(hash_type & ICE_AQ_VSI_Q_OPT_RSS_HASH_M);
-+	ctxt->info.q_opt_rss = FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_LUT_M,
-+					  lut_type);
-+	ctxt->info.q_opt_rss |= (hash_type & ICE_AQ_VSI_Q_OPT_RSS_HASH_M);
- }
- 
- static void
-@@ -1220,10 +1212,8 @@ ice_chnl_vsi_setup_q_map(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt)
- 	qcount = min_t(int, vsi->num_rxq, pf->num_lan_msix);
- 
- 	pow = order_base_2(qcount);
--	qmap = ((offset << ICE_AQ_VSI_TC_Q_OFFSET_S) &
--		 ICE_AQ_VSI_TC_Q_OFFSET_M) |
--		 ((pow << ICE_AQ_VSI_TC_Q_NUM_S) &
--		   ICE_AQ_VSI_TC_Q_NUM_M);
-+	qmap = FIELD_PREP(ICE_AQ_VSI_TC_Q_OFFSET_M, offset);
-+	qmap |= FIELD_PREP(ICE_AQ_VSI_TC_Q_NUM_M, pow);
- 
- 	ctxt->info.tc_mapping[0] = cpu_to_le16(qmap);
- 	ctxt->info.mapping_flags |= cpu_to_le16(ICE_AQ_VSI_Q_MAP_CONTIG);
-@@ -1813,11 +1803,8 @@ ice_write_qrxflxp_cntxt(struct ice_hw *hw, u16 pf_q, u32 rxdid, u32 prio,
- 		    QRXFLXP_CNTXT_RXDID_PRIO_M |
- 		    QRXFLXP_CNTXT_TS_M);
- 
--	regval |= (rxdid << QRXFLXP_CNTXT_RXDID_IDX_S) &
--		QRXFLXP_CNTXT_RXDID_IDX_M;
--
--	regval |= (prio << QRXFLXP_CNTXT_RXDID_PRIO_S) &
--		QRXFLXP_CNTXT_RXDID_PRIO_M;
-+	regval |= FIELD_PREP(QRXFLXP_CNTXT_RXDID_IDX_M, rxdid);
-+	regval |= FIELD_PREP(QRXFLXP_CNTXT_RXDID_PRIO_M, prio);
- 
- 	if (ena_ts)
- 		/* Enable TimeSync on this queue */
-@@ -3341,9 +3328,8 @@ ice_vsi_setup_q_map_mqprio(struct ice_vsi *vsi, struct ice_vsi_ctx *ctxt,
- 	vsi->tc_cfg.ena_tc = ena_tc ? ena_tc : 1;
- 
- 	pow = order_base_2(tc0_qcount);
--	qmap = ((tc0_offset << ICE_AQ_VSI_TC_Q_OFFSET_S) &
--		ICE_AQ_VSI_TC_Q_OFFSET_M) |
--		((pow << ICE_AQ_VSI_TC_Q_NUM_S) & ICE_AQ_VSI_TC_Q_NUM_M);
-+	qmap = FIELD_PREP(ICE_AQ_VSI_TC_Q_OFFSET_M, tc0_offset);
-+	qmap |= FIELD_PREP(ICE_AQ_VSI_TC_Q_NUM_M, pow);
- 
- 	ice_for_each_traffic_class(i) {
- 		if (!(vsi->tc_cfg.ena_tc & BIT(i))) {
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 03fc9c7cd21a..42458554d2a7 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -1359,8 +1359,8 @@ static int ice_ptp_tx_ena_intr(struct ice_pf *pf, bool ena, u32 threshold)
- 		if (ena) {
- 			val |= Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
- 			val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_THR_M;
--			val |= ((threshold << Q_REG_TX_MEM_GBL_CFG_INTR_THR_S) &
--				Q_REG_TX_MEM_GBL_CFG_INTR_THR_M);
-+			val |= FIELD_PREP(Q_REG_TX_MEM_GBL_CFG_INTR_THR_M,
-+					  threshold);
- 		} else {
- 			val &= ~Q_REG_TX_MEM_GBL_CFG_INTR_ENA_M;
- 		}
-@@ -1505,8 +1505,7 @@ ice_ptp_cfg_extts(struct ice_pf *pf, bool ena, unsigned int chan, u32 gpio_pin,
- 		 * + num_in_channels * tmr_idx
- 		 */
- 		func = 1 + chan + (tmr_idx * 3);
--		gpio_reg = ((func << GLGEN_GPIO_CTL_PIN_FUNC_S) &
--			    GLGEN_GPIO_CTL_PIN_FUNC_M);
-+		gpio_reg = FIELD_PREP(GLGEN_GPIO_CTL_PIN_FUNC_M, func);
- 		pf->ptp.ext_ts_chan |= (1 << chan);
- 	} else {
- 		/* clear the values we set to reset defaults */
-@@ -1616,7 +1615,7 @@ static int ice_ptp_cfg_clkout(struct ice_pf *pf, unsigned int chan,
- 	/* 4. write GPIO CTL reg */
- 	func = 8 + chan + (tmr_idx * 4);
- 	val = GLGEN_GPIO_CTL_PIN_DIR_M |
--	      ((func << GLGEN_GPIO_CTL_PIN_FUNC_S) & GLGEN_GPIO_CTL_PIN_FUNC_M);
-+	      FIELD_PREP(GLGEN_GPIO_CTL_PIN_FUNC_M, func);
- 	wr32(hw, GLGEN_GPIO_CTL(gpio_pin), val);
- 
- 	/* Store the value if requested */
-diff --git a/drivers/net/ethernet/intel/ice/ice_sriov.c b/drivers/net/ethernet/intel/ice/ice_sriov.c
-index 6d33dd647c78..54d602388c9c 100644
---- a/drivers/net/ethernet/intel/ice/ice_sriov.c
-+++ b/drivers/net/ethernet/intel/ice/ice_sriov.c
-@@ -106,10 +106,8 @@ static void ice_dis_vf_mappings(struct ice_vf *vf)
- 	for (v = first; v <= last; v++) {
- 		u32 reg;
- 
--		reg = (((1 << GLINT_VECT2FUNC_IS_PF_S) &
--			GLINT_VECT2FUNC_IS_PF_M) |
--		       ((hw->pf_id << GLINT_VECT2FUNC_PF_NUM_S) &
--			GLINT_VECT2FUNC_PF_NUM_M));
-+		reg = FIELD_PREP(GLINT_VECT2FUNC_IS_PF_M, 1) |
-+		      FIELD_PREP(GLINT_VECT2FUNC_PF_NUM_M, hw->pf_id);
- 		wr32(hw, GLINT_VECT2FUNC(v), reg);
- 	}
- 
-@@ -275,24 +273,20 @@ static void ice_ena_vf_msix_mappings(struct ice_vf *vf)
- 		(device_based_first_msix + vf->num_msix) - 1;
- 	device_based_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
- 
--	reg = (((device_based_first_msix << VPINT_ALLOC_FIRST_S) &
--		VPINT_ALLOC_FIRST_M) |
--	       ((device_based_last_msix << VPINT_ALLOC_LAST_S) &
--		VPINT_ALLOC_LAST_M) | VPINT_ALLOC_VALID_M);
-+	reg = FIELD_PREP(VPINT_ALLOC_FIRST_M, device_based_first_msix) |
-+	      FIELD_PREP(VPINT_ALLOC_LAST_M, device_based_last_msix) |
-+	      VPINT_ALLOC_VALID_M;
- 	wr32(hw, VPINT_ALLOC(vf->vf_id), reg);
- 
--	reg = (((device_based_first_msix << VPINT_ALLOC_PCI_FIRST_S)
--		 & VPINT_ALLOC_PCI_FIRST_M) |
--	       ((device_based_last_msix << VPINT_ALLOC_PCI_LAST_S) &
--		VPINT_ALLOC_PCI_LAST_M) | VPINT_ALLOC_PCI_VALID_M);
-+	reg = FIELD_PREP(VPINT_ALLOC_PCI_FIRST_M, device_based_first_msix) |
-+	      FIELD_PREP(VPINT_ALLOC_PCI_LAST_M, device_based_last_msix) |
-+	      VPINT_ALLOC_PCI_VALID_M;
- 	wr32(hw, VPINT_ALLOC_PCI(vf->vf_id), reg);
- 
- 	/* map the interrupts to its functions */
- 	for (v = pf_based_first_msix; v <= pf_based_last_msix; v++) {
--		reg = (((device_based_vf_id << GLINT_VECT2FUNC_VF_NUM_S) &
--			GLINT_VECT2FUNC_VF_NUM_M) |
--		       ((hw->pf_id << GLINT_VECT2FUNC_PF_NUM_S) &
--			GLINT_VECT2FUNC_PF_NUM_M));
-+		reg = FIELD_PREP(GLINT_VECT2FUNC_VF_NUM_M, device_based_vf_id) |
-+		      FIELD_PREP(GLINT_VECT2FUNC_PF_NUM_M, hw->pf_id);
- 		wr32(hw, GLINT_VECT2FUNC(v), reg);
- 	}
- 
-@@ -325,10 +319,8 @@ static void ice_ena_vf_q_mappings(struct ice_vf *vf, u16 max_txq, u16 max_rxq)
- 		 * VFNUMQ value should be set to (number of queues - 1). A value
- 		 * of 0 means 1 queue and a value of 255 means 256 queues
- 		 */
--		reg = (((vsi->txq_map[0] << VPLAN_TX_QBASE_VFFIRSTQ_S) &
--			VPLAN_TX_QBASE_VFFIRSTQ_M) |
--		       (((max_txq - 1) << VPLAN_TX_QBASE_VFNUMQ_S) &
--			VPLAN_TX_QBASE_VFNUMQ_M));
-+		reg = FIELD_PREP(VPLAN_TX_QBASE_VFFIRSTQ_M, vsi->txq_map[0]) |
-+		      FIELD_PREP(VPLAN_TX_QBASE_VFNUMQ_M, max_txq - 1);
- 		wr32(hw, VPLAN_TX_QBASE(vf->vf_id), reg);
- 	} else {
- 		dev_err(dev, "Scattered mode for VF Tx queues is not yet implemented\n");
-@@ -343,10 +335,8 @@ static void ice_ena_vf_q_mappings(struct ice_vf *vf, u16 max_txq, u16 max_rxq)
- 		 * VFNUMQ value should be set to (number of queues - 1). A value
- 		 * of 0 means 1 queue and a value of 255 means 256 queues
- 		 */
--		reg = (((vsi->rxq_map[0] << VPLAN_RX_QBASE_VFFIRSTQ_S) &
--			VPLAN_RX_QBASE_VFFIRSTQ_M) |
--		       (((max_rxq - 1) << VPLAN_RX_QBASE_VFNUMQ_S) &
--			VPLAN_RX_QBASE_VFNUMQ_M));
-+		reg = FIELD_PREP(VPLAN_RX_QBASE_VFFIRSTQ_M, vsi->rxq_map[0]) |
-+		      FIELD_PREP(VPLAN_RX_QBASE_VFNUMQ_M, max_rxq - 1);
- 		wr32(hw, VPLAN_RX_QBASE(vf->vf_id), reg);
- 	} else {
- 		dev_err(dev, "Scattered mode for VF Rx queues is not yet implemented\n");
-diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-index ee19f3aa3d19..dc5b34ca2d4a 100644
---- a/drivers/net/ethernet/intel/ice/ice_switch.c
-+++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-@@ -2492,25 +2492,24 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
- 
- 	switch (f_info->fltr_act) {
- 	case ICE_FWD_TO_VSI:
--		act |= (f_info->fwd_id.hw_vsi_id << ICE_SINGLE_ACT_VSI_ID_S) &
--			ICE_SINGLE_ACT_VSI_ID_M;
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_VSI_ID_M,
-+				  f_info->fwd_id.hw_vsi_id);
- 		if (f_info->lkup_type != ICE_SW_LKUP_VLAN)
- 			act |= ICE_SINGLE_ACT_VSI_FORWARDING |
- 				ICE_SINGLE_ACT_VALID_BIT;
- 		break;
- 	case ICE_FWD_TO_VSI_LIST:
- 		act |= ICE_SINGLE_ACT_VSI_LIST;
--		act |= (f_info->fwd_id.vsi_list_id <<
--			ICE_SINGLE_ACT_VSI_LIST_ID_S) &
--			ICE_SINGLE_ACT_VSI_LIST_ID_M;
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_VSI_LIST_ID_M,
-+				  f_info->fwd_id.vsi_list_id);
- 		if (f_info->lkup_type != ICE_SW_LKUP_VLAN)
- 			act |= ICE_SINGLE_ACT_VSI_FORWARDING |
- 				ICE_SINGLE_ACT_VALID_BIT;
- 		break;
- 	case ICE_FWD_TO_Q:
- 		act |= ICE_SINGLE_ACT_TO_Q;
--		act |= (f_info->fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
--			ICE_SINGLE_ACT_Q_INDEX_M;
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_Q_INDEX_M,
-+				  f_info->fwd_id.q_id);
- 		break;
- 	case ICE_DROP_PACKET:
- 		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP |
-@@ -2520,10 +2519,9 @@ ice_fill_sw_rule(struct ice_hw *hw, struct ice_fltr_info *f_info,
- 		q_rgn = f_info->qgrp_size > 0 ?
- 			(u8)ilog2(f_info->qgrp_size) : 0;
- 		act |= ICE_SINGLE_ACT_TO_Q;
--		act |= (f_info->fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
--			ICE_SINGLE_ACT_Q_INDEX_M;
--		act |= (q_rgn << ICE_SINGLE_ACT_Q_REGION_S) &
--			ICE_SINGLE_ACT_Q_REGION_M;
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_Q_INDEX_M,
-+				  f_info->fwd_id.q_id);
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_Q_REGION_M, q_rgn);
- 		break;
- 	default:
- 		return;
-@@ -2649,7 +2647,7 @@ ice_add_marker_act(struct ice_hw *hw, struct ice_fltr_mgmt_list_entry *m_ent,
- 		m_ent->fltr_info.fwd_id.hw_vsi_id;
- 
- 	act = ICE_LG_ACT_VSI_FORWARDING | ICE_LG_ACT_VALID_BIT;
--	act |= (id << ICE_LG_ACT_VSI_LIST_ID_S) & ICE_LG_ACT_VSI_LIST_ID_M;
-+	act |= FIELD_PREP(ICE_LG_ACT_VSI_LIST_ID_M, id);
- 	if (m_ent->vsi_count > 1)
- 		act |= ICE_LG_ACT_VSI_LIST;
- 	lg_act->act[0] = cpu_to_le32(act);
-@@ -2657,16 +2655,15 @@ ice_add_marker_act(struct ice_hw *hw, struct ice_fltr_mgmt_list_entry *m_ent,
- 	/* Second action descriptor type */
- 	act = ICE_LG_ACT_GENERIC;
- 
--	act |= (1 << ICE_LG_ACT_GENERIC_VALUE_S) & ICE_LG_ACT_GENERIC_VALUE_M;
-+	act |= FIELD_PREP(ICE_LG_ACT_GENERIC_VALUE_M, 1);
- 	lg_act->act[1] = cpu_to_le32(act);
- 
--	act = (ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX <<
--	       ICE_LG_ACT_GENERIC_OFFSET_S) & ICE_LG_ACT_GENERIC_OFFSET_M;
-+	act = FIELD_PREP(ICE_LG_ACT_GENERIC_OFFSET_M,
-+			 ICE_LG_ACT_GENERIC_OFF_RX_DESC_PROF_IDX);
- 
- 	/* Third action Marker value */
- 	act |= ICE_LG_ACT_GENERIC;
--	act |= (sw_marker << ICE_LG_ACT_GENERIC_VALUE_S) &
--		ICE_LG_ACT_GENERIC_VALUE_M;
-+	act |= FIELD_PREP(ICE_LG_ACT_GENERIC_VALUE_M, sw_marker);
- 
- 	lg_act->act[2] = cpu_to_le32(act);
- 
-@@ -2675,9 +2672,9 @@ ice_add_marker_act(struct ice_hw *hw, struct ice_fltr_mgmt_list_entry *m_ent,
- 			 ice_aqc_opc_update_sw_rules);
- 
- 	/* Update the action to point to the large action ID */
--	rx_tx->act = cpu_to_le32(ICE_SINGLE_ACT_PTR |
--				 ((l_id << ICE_SINGLE_ACT_PTR_VAL_S) &
--				  ICE_SINGLE_ACT_PTR_VAL_M));
-+	act = ICE_SINGLE_ACT_PTR;
-+	act |= FIELD_PREP(ICE_SINGLE_ACT_PTR_VAL_M, l_id);
-+	rx_tx->act = cpu_to_le32(act);
- 
- 	/* Use the filter rule ID of the previously created rule with single
- 	 * act. Once the update happens, hardware will treat this as large
-@@ -4426,8 +4423,8 @@ ice_alloc_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- 	int status;
- 
- 	buf->num_elems = cpu_to_le16(num_items);
--	buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
--				      ICE_AQC_RES_TYPE_M) | alloc_shared);
-+	buf->res_type = cpu_to_le16(FIELD_PREP(ICE_AQC_RES_TYPE_M, type) |
-+				    alloc_shared);
- 
- 	status = ice_aq_alloc_free_res(hw, buf, buf_len, ice_aqc_opc_alloc_res);
- 	if (status)
-@@ -4454,8 +4451,8 @@ ice_free_res_cntr(struct ice_hw *hw, u8 type, u8 alloc_shared, u16 num_items,
- 	int status;
- 
- 	buf->num_elems = cpu_to_le16(num_items);
--	buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
--				      ICE_AQC_RES_TYPE_M) | alloc_shared);
-+	buf->res_type = cpu_to_le16(FIELD_PREP(ICE_AQC_RES_TYPE_M, type) |
-+				    alloc_shared);
- 	buf->elem[0].e.sw_resp = cpu_to_le16(counter_id);
- 
- 	status = ice_aq_alloc_free_res(hw, buf, buf_len, ice_aqc_opc_free_res);
-@@ -4481,18 +4478,15 @@ int ice_share_res(struct ice_hw *hw, u16 type, u8 shared, u16 res_id)
- {
- 	DEFINE_FLEX(struct ice_aqc_alloc_free_res_elem, buf, elem, 1);
- 	u16 buf_len = __struct_size(buf);
-+	u16 res_type;
- 	int status;
- 
- 	buf->num_elems = cpu_to_le16(1);
-+	res_type = FIELD_PREP(ICE_AQC_RES_TYPE_M, type);
- 	if (shared)
--		buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
--					     ICE_AQC_RES_TYPE_M) |
--					    ICE_AQC_RES_TYPE_FLAG_SHARED);
--	else
--		buf->res_type = cpu_to_le16(((type << ICE_AQC_RES_TYPE_S) &
--					     ICE_AQC_RES_TYPE_M) &
--					    ~ICE_AQC_RES_TYPE_FLAG_SHARED);
-+		res_type |= ICE_AQC_RES_TYPE_FLAG_SHARED;
- 
-+	buf->res_type = cpu_to_le16(res_type);
- 	buf->elem[0].e.sw_resp = cpu_to_le16(res_id);
- 	status = ice_aq_alloc_free_res(hw, buf, buf_len,
- 				       ice_aqc_opc_share_res);
-@@ -5024,8 +5018,8 @@ ice_add_sw_recipe(struct ice_hw *hw, struct ice_sw_recipe *rm,
- 			entry->chain_idx = chain_idx;
- 			content->result_indx =
- 				ICE_AQ_RECIPE_RESULT_EN |
--				((chain_idx << ICE_AQ_RECIPE_RESULT_DATA_S) &
--				 ICE_AQ_RECIPE_RESULT_DATA_M);
-+				FIELD_PREP(ICE_AQ_RECIPE_RESULT_DATA_M,
-+					   chain_idx);
- 			clear_bit(chain_idx, result_idx_bm);
- 			chain_idx = find_first_bit(result_idx_bm,
- 						   ICE_MAX_FV_WORDS);
-@@ -6125,23 +6119,22 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
- 
- 	switch (rinfo->sw_act.fltr_act) {
- 	case ICE_FWD_TO_VSI:
--		act |= (rinfo->sw_act.fwd_id.hw_vsi_id <<
--			ICE_SINGLE_ACT_VSI_ID_S) & ICE_SINGLE_ACT_VSI_ID_M;
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_VSI_ID_M,
-+				  rinfo->sw_act.fwd_id.hw_vsi_id);
- 		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_VALID_BIT;
- 		break;
- 	case ICE_FWD_TO_Q:
- 		act |= ICE_SINGLE_ACT_TO_Q;
--		act |= (rinfo->sw_act.fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
--		       ICE_SINGLE_ACT_Q_INDEX_M;
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_Q_INDEX_M,
-+				  rinfo->sw_act.fwd_id.q_id);
- 		break;
- 	case ICE_FWD_TO_QGRP:
- 		q_rgn = rinfo->sw_act.qgrp_size > 0 ?
- 			(u8)ilog2(rinfo->sw_act.qgrp_size) : 0;
- 		act |= ICE_SINGLE_ACT_TO_Q;
--		act |= (rinfo->sw_act.fwd_id.q_id << ICE_SINGLE_ACT_Q_INDEX_S) &
--		       ICE_SINGLE_ACT_Q_INDEX_M;
--		act |= (q_rgn << ICE_SINGLE_ACT_Q_REGION_S) &
--		       ICE_SINGLE_ACT_Q_REGION_M;
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_Q_INDEX_M,
-+				  rinfo->sw_act.fwd_id.q_id);
-+		act |= FIELD_PREP(ICE_SINGLE_ACT_Q_REGION_M, q_rgn);
- 		break;
- 	case ICE_DROP_PACKET:
- 		act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP |
-diff --git a/drivers/net/ethernet/intel/ice/ice_txrx.c b/drivers/net/ethernet/intel/ice/ice_txrx.c
-index 9e97ea863068..79d986273a9f 100644
---- a/drivers/net/ethernet/intel/ice/ice_txrx.c
-+++ b/drivers/net/ethernet/intel/ice/ice_txrx.c
-@@ -1494,9 +1494,9 @@ static void ice_set_wb_on_itr(struct ice_q_vector *q_vector)
- 	 * be static in non-adaptive mode (user configured)
- 	 */
- 	wr32(&vsi->back->hw, GLINT_DYN_CTL(q_vector->reg_idx),
--	     ((ICE_ITR_NONE << GLINT_DYN_CTL_ITR_INDX_S) &
--	      GLINT_DYN_CTL_ITR_INDX_M) | GLINT_DYN_CTL_INTENA_MSK_M |
--	     GLINT_DYN_CTL_WB_ON_ITR_M);
-+	     FIELD_PREP(GLINT_DYN_CTL_ITR_INDX_M, ICE_ITR_NONE) |
-+	     FIELD_PREP(GLINT_DYN_CTL_INTENA_MSK_M, 1) |
-+	     FIELD_PREP(GLINT_DYN_CTL_WB_ON_ITR_M, 1));
- 
- 	q_vector->wb_on_itr = true;
- }
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-index 5261ba802c36..8bec83965e50 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-@@ -832,11 +832,9 @@ static int ice_vc_handle_rss_cfg(struct ice_vf *vf, u8 *msg, bool add)
- 			goto error_param;
- 		}
- 
--		ctx->info.q_opt_rss = ((lut_type <<
--					ICE_AQ_VSI_Q_OPT_RSS_LUT_S) &
--				       ICE_AQ_VSI_Q_OPT_RSS_LUT_M) |
--				       (hash_type &
--					ICE_AQ_VSI_Q_OPT_RSS_HASH_M);
-+		ctx->info.q_opt_rss = FIELD_PREP(ICE_AQ_VSI_Q_OPT_RSS_LUT_M,
-+						 lut_type) |
-+				      (hash_type & ICE_AQ_VSI_Q_OPT_RSS_HASH_M);
- 
- 		/* Preserve existing queueing option setting */
- 		ctx->info.q_opt_rss |= (vsi->info.q_opt_rss &
-diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-index 24b23b7ef04a..e62104f895a1 100644
---- a/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-+++ b/drivers/net/ethernet/intel/ice/ice_virtchnl_fdir.c
-@@ -21,7 +21,7 @@
-  */
- #define ICE_FLOW_PROF_FD(vsi, flow, tun_offs) \
- 	((u64)(((((flow) + (tun_offs)) & ICE_FLOW_PROF_TYPE_M)) | \
--	      (((u64)(vsi) << ICE_FLOW_PROF_VSI_S) & ICE_FLOW_PROF_VSI_M)))
-+	      FIELD_PREP(ICE_FLOW_PROF_VSI_M, vsi)))
- 
- #define GTPU_TEID_OFFSET 4
- #define GTPU_EH_QFI_OFFSET 1
-diff --git a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-index 76266e709a39..699bcb1e2f3a 100644
---- a/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-+++ b/drivers/net/ethernet/intel/ice/ice_vsi_vlan_lib.c
-@@ -481,10 +481,11 @@ int ice_vsi_ena_outer_stripping(struct ice_vsi *vsi, u16 tpid)
- 	ctxt->info.outer_vlan_flags = vsi->info.outer_vlan_flags &
- 		~(ICE_AQ_VSI_OUTER_VLAN_EMODE_M | ICE_AQ_VSI_OUTER_TAG_TYPE_M);
- 	ctxt->info.outer_vlan_flags |=
--		((ICE_AQ_VSI_OUTER_VLAN_EMODE_SHOW_BOTH <<
--		  ICE_AQ_VSI_OUTER_VLAN_EMODE_S) |
--		 ((tag_type << ICE_AQ_VSI_OUTER_TAG_TYPE_S) &
--		  ICE_AQ_VSI_OUTER_TAG_TYPE_M));
-+		/* we want EMODE_SHOW_BOTH, but that value is zero, so the line
-+		 * above clears it well enough that we don't need to try to set
-+		 * zero here, so just do the tag type
-+		 */
-+		 FIELD_PREP(ICE_AQ_VSI_OUTER_TAG_TYPE_M, tag_type);
- 
- 	err = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (err)
-@@ -589,11 +590,9 @@ int ice_vsi_ena_outer_insertion(struct ice_vsi *vsi, u16 tpid)
- 		  ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M |
- 		  ICE_AQ_VSI_OUTER_TAG_TYPE_M);
- 	ctxt->info.outer_vlan_flags |=
--		((ICE_AQ_VSI_OUTER_VLAN_TX_MODE_ALL <<
--		  ICE_AQ_VSI_OUTER_VLAN_TX_MODE_S) &
--		 ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M) |
--		((tag_type << ICE_AQ_VSI_OUTER_TAG_TYPE_S) &
--		 ICE_AQ_VSI_OUTER_TAG_TYPE_M);
-+		FIELD_PREP(ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M,
-+			   ICE_AQ_VSI_OUTER_VLAN_TX_MODE_ALL) |
-+		FIELD_PREP(ICE_AQ_VSI_OUTER_TAG_TYPE_M, tag_type);
- 
- 	err = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (err)
-@@ -642,9 +641,8 @@ int ice_vsi_dis_outer_insertion(struct ice_vsi *vsi)
- 		  ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M);
- 	ctxt->info.outer_vlan_flags |=
- 		ICE_AQ_VSI_OUTER_VLAN_BLOCK_TX_DESC |
--		((ICE_AQ_VSI_OUTER_VLAN_TX_MODE_ALL <<
--		  ICE_AQ_VSI_OUTER_VLAN_TX_MODE_S) &
--		 ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M);
-+		FIELD_PREP(ICE_AQ_VSI_OUTER_VLAN_TX_MODE_M,
-+			   ICE_AQ_VSI_OUTER_VLAN_TX_MODE_ALL);
- 
- 	err = ice_update_vsi(hw, vsi->idx, ctxt, NULL);
- 	if (err)
-@@ -702,8 +700,7 @@ __ice_vsi_set_outer_port_vlan(struct ice_vsi *vsi, u16 vlan_info, u16 tpid)
- 	ctxt->info.outer_vlan_flags =
- 		(ICE_AQ_VSI_OUTER_VLAN_EMODE_SHOW <<
- 		 ICE_AQ_VSI_OUTER_VLAN_EMODE_S) |
--		((tag_type << ICE_AQ_VSI_OUTER_TAG_TYPE_S) &
--		 ICE_AQ_VSI_OUTER_TAG_TYPE_M) |
-+		FIELD_PREP(ICE_AQ_VSI_OUTER_TAG_TYPE_M, tag_type) |
- 		ICE_AQ_VSI_OUTER_VLAN_BLOCK_TX_DESC |
- 		(ICE_AQ_VSI_OUTER_VLAN_TX_MODE_ACCEPTUNTAGGED <<
- 		 ICE_AQ_VSI_OUTER_VLAN_TX_MODE_S) |
--- 
-2.39.3
+Done in v2.
 
+>>
+>> Those aren't widely used yet in our drivers so I wasn't picking them up
+>> yet. But thank you for pointing that out.
+>>
+>> <snip>
+>>
+>>
+>>> In general, I would say those two issues are very common in IDPF and
+>>> also the whole your series converting the Intel drivers. The scripts
+>>> won't check whether the mask has only 1 bit or whether the value gets
+>>> converted from/to LE, so they won't help here.
+>>
+>> I had been hoping to do some more followup work. it's possible that with
+>> some tweaking the coccinelle script could learn how to detect non-pow2
+>> constants, and therefore possibly one bit constants as well. Maybe
+>> @Julia can help us refine the script and possibly get it into the
+>> scripts/coccinelle directory to help other drivers as well.
+> 
+> Every automated change needs polishing by human.
+> 
+> Don't FIELD_*() macros already check whether the passed mask is actually
+> a contiguous mask?
+
+Yes
+
+> 
+>>
+>>> Could you maybe manually recheck all the places where bitfield masks are
+>>> used at least in IDPF (better in ice, iavf, i40e, ..., as well) and
+>>> posted a series that would address them? At the end, manual work is more
+>>> valuable than automated conversions :p
+>>
+>> I think a followup series would work better for this, do you agree?
+> 
+> Nope :D If you want to convert all of our drivers to use bitfield API,
+> I'd like to see a complete mature series instead of incremental series
+> of series where followups will refactor the code introduced in the
+> earlier ones.
+
+v2 of the previous series sent with audit of all *cpu* conversions and
+fixing up leXX_*_bits() opportunities.
+
+Appreciate the reviews!
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
