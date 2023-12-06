@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 491FFC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60539C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:02:31 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 088BD6141D;
-	Wed,  6 Dec 2023 01:02:26 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 088BD6141D
+	by smtp3.osuosl.org (Postfix) with ESMTP id 1D95261446;
+	Wed,  6 Dec 2023 01:02:31 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 1D95261446
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701824546;
-	bh=xpX4xAtFwBz7uvS5cs3gEDu8vXcMVbSnokoSZwUpi3s=;
+	s=default; t=1701824551;
+	bh=ICrckRF0q8DBXZ08Vn6zprTWQ6otAyJgODfwAcam584=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=XvzlMye3no6SRCzfxvdu1Cf5X2PfliFv8icBsk/KHg5ejEdbEmNpHvn82FH8xV7EY
-	 saimTXNT55mcvd9coWS2EPtIzkvk1+6RwMO4Dg7/+NF7Gj2VkvTlyeqtSDWMuLRXsv
-	 aUxu5TzN+vV5lCIEPfnKuymhmEYKLOFE0ajD131MRqyOOtEVaF0K1u32QDDl/Pvdgk
-	 LB5MfMHgbTksg5pTJSvF9tfB9Mxg7cQRx0UB/YnjUzM1Q8pGZBtHAL+8bp+Eeg0TZW
-	 +IMl8fiRb3xVvcs3ZLyjrwJBrfDExBxbjX49ZZ0v7w/6dw7yjwb61+KR++/MLkx2XI
-	 +sVzG/kDxvaZw==
+	b=DKOz5DW6INRRkyiL/fPeek8yVHGhzh7sChKOGfPNPAFw//aN1kI1V2RyIFnSAFn+F
+	 zO8gj1dHHW+2fMuKLVj8g+p08dU8gRTm1Z8R2MWhKVi8biLj7vEAlkQpzeO306ZE12
+	 iwaVcAQI+GLVlQ4DJm/gxHzu0j8PV6GLiYeR2bOUEubHq9LQ8jJIsL5KTNGjjIdCuB
+	 RXVQ2YTsvZX3iIpRyqVO+p5fopfj91C5H1krS+IEOWNkZXnLTtgthhCWjQL1Z1IdyR
+	 +Rt5bAaE6dU5cxPTwpapT/19X1RyOqe3aVwjuz3A1SsTL1TZRkKPLjV664lPUt5Ulp
+	 fWm/Cg3Er/dYw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CzwF3N-9WP95; Wed,  6 Dec 2023 01:02:25 +0000 (UTC)
+	with ESMTP id za1GSg4wBc7n; Wed,  6 Dec 2023 01:02:30 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id D89C16143A;
-	Wed,  6 Dec 2023 01:02:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D89C16143A
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 85DB81BF97D
+	by smtp3.osuosl.org (Postfix) with ESMTP id EB8CE61439;
+	Wed,  6 Dec 2023 01:02:29 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org EB8CE61439
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 92EA11BF980
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:39 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 092CC82C5E
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 092CC82C5E
+ by smtp4.osuosl.org (Postfix) with ESMTP id 5AEC1417E9
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 5AEC1417E9
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id AnzgchlUjz5m for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Dec 2023 01:01:36 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id MHq-vHpZtxti for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Dec 2023 01:01:37 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3BD4A8229D
- for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3BD4A8229D
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700325"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700325"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 599BA41714
+ for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:37 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 599BA41714
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700336"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700336"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:36 -0800
+ 05 Dec 2023 17:01:37 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655283"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655283"
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655297"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655297"
 Received: from jbrandeb-spr1.jf.intel.com ([10.166.28.233])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:35 -0800
+ 05 Dec 2023 17:01:36 -0800
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Dec 2023 17:01:11 -0800
-Message-Id: <20231206010114.2259388-13-jesse.brandeburg@intel.com>
+Date: Tue,  5 Dec 2023 17:01:14 -0800
+Message-Id: <20231206010114.2259388-16-jesse.brandeburg@intel.com>
 X-Mailer: git-send-email 2.39.3
 In-Reply-To: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 References: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1701824497; x=1733360497;
+ t=1701824498; x=1733360498;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=r8lWu9gNBkUsZSd6it0SarezI/ivZlZxd38l3b9PCII=;
- b=oHvDsVV3p430j2vATchFAvzaCAsYZ+gnTAQAV8786po1iXHkxM0/i73x
- hvFqcYhZtKV4mrxoFu3r+1taqY4iEp6SzVFIJO8uhpUvvS0TA9YMZ5tqA
- PVJRgIGl8rm2HK49BeQFIyocolPlwt1cGC5ffzoT4kJVHbdeE2QxTU22u
- rNfdP1HBBPvEjfHkDMii1kFDPU5mUtj7Cc86ZxMxrfeNfKQRsexbpsVfl
- w3I8ET9fwclW7OUNFbbxaWCqU6t6MGaWJ7wDajp/tyQF/9onYd278cIFy
- DfN/cf54nBE+5k3uUyEdRYcphqRSxm695DgCOfC4WJX1wMLfNOsF3r46d
- w==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=mnZASE63x34yCq6dzY8hV2ZsE25/tYf36JpzHzX+6rQ=;
+ b=QJSf2zclXuWqpnL4aRsGu+DkM7yQJf4myIrohcbOhGXLjS80tMbuDYB2
+ gAw60zn/Lpw8QO6bzTIqp8SiX3UuhhjUqOReZwrKOcEYKTyv9xG4z2mI6
+ 7mdw2ZO0EpbuaCGnG06EFDV/LPpz6EOODfLenxxLp93gJOoE/+bgRQHV9
+ pboozZsT4hXtA9Dku25GEwpyejnOR5E6ZDUp5grJ4vtgBpDY5//4D3pSu
+ O2QbX4v3pfTB8bls96bgjb4GNDYh1GKH96D3yC+Vh+WLTE/364e6PjrE6
+ 8pNAjfc3CZUGUFPQUKt7KOnX8E4EKRP7aKb/xynTKtbgED+hPrjE6KSmZ
+ g==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=oHvDsVV3
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 12/15] iavf: field get
- conversion
+ header.a=rsa-sha256 header.s=Intel header.b=QJSf2zcl
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 15/15] idpf: refactor some
+ missing field get/prep conversions
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,18 +96,38 @@ List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
 Cc: przemyslaw.kitszel@intel.com, Jesse Brandeburg <jesse.brandeburg@intel.com>,
- Julia Lawall <Julia.Lawall@inria.fr>, aleksander.lobakin@intel.com,
- marcin.szycik@linux.intel.com, horms@kernel.org, netdev@vger.kernel.org
+ aleksander.lobakin@intel.com, marcin.szycik@linux.intel.com, horms@kernel.org,
+ netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Refactor the iavf driver to use FIELD_GET() for mask and shift reads,
-which reduces lines of code and adds clarity of intent.
+Most of idpf correctly uses FIELD_GET and FIELD_PREP, but a couple spots
+were missed so fix those.
 
-This code was generated by the following coccinelle/spatch script and
-then manually repaired in a later patch.
+Automated conversion with coccinelle script and manually fixed up,
+including audits for opportunities to convert to {get,encode,replace}
+bits functions.
+
+Add conversions to le16_get/encode/replace_bits where appropriate. And
+in one place fix up a cast from a u16 to a u16.
+
+@prep2@
+constant shift,mask;
+type T;
+expression a;
+@@
+-(((T)(a) << shift) & mask)
++FIELD_PREP(mask, a)
+
+@prep@
+constant shift,mask;
+type T;
+expression a;
+@@
+-((T)((a) << shift) & mask)
++FIELD_PREP(mask, a)
 
 @get@
 constant shift,mask;
@@ -121,88 +141,174 @@ and applied via:
 spatch --sp-file field_prep.cocci --in-place --dir \
  drivers/net/ethernet/intel/
 
-Cc: Julia Lawall <Julia.Lawall@inria.fr>
-Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
+CC: Alexander Lobakin <aleksander.lobakin@intel.com>
+Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
- .../net/ethernet/intel/iavf/iavf_ethtool.c    |  3 +--
- drivers/net/ethernet/intel/iavf/iavf_txrx.c   | 20 +++++++------------
- 2 files changed, 8 insertions(+), 15 deletions(-)
+v2: merged this patch into larger series, modified after Olek's comments
+to include bits encoding where changing lines for prep or get.
+---
+ .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  7 +--
+ drivers/net/ethernet/intel/idpf/idpf_txrx.c   | 58 +++++++++----------
+ 2 files changed, 30 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-index 11150bdc63d0..90d8f1fcc3aa 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_ethtool.c
-@@ -1020,8 +1020,7 @@ iavf_parse_rx_flow_user_data(struct ethtool_rx_flow_spec *fsp,
- #define IAVF_USERDEF_FLEX_MAX_OFFS_VAL 504
- 		flex = &fltr->flex_words[cnt++];
- 		flex->word = value & IAVF_USERDEF_FLEX_WORD_M;
--		flex->offset = (value & IAVF_USERDEF_FLEX_OFFS_M) >>
--			     IAVF_USERDEF_FLEX_OFFS_S;
-+		flex->offset = FIELD_GET(IAVF_USERDEF_FLEX_OFFS_M, value);
- 		if (flex->offset > IAVF_USERDEF_FLEX_MAX_OFFS_VAL)
- 			return -EINVAL;
- 	}
-diff --git a/drivers/net/ethernet/intel/iavf/iavf_txrx.c b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-index fb7edba9c2f8..b71484c87a84 100644
---- a/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-+++ b/drivers/net/ethernet/intel/iavf/iavf_txrx.c
-@@ -989,11 +989,9 @@ static void iavf_rx_checksum(struct iavf_vsi *vsi,
- 	u64 qword;
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+index 81288a17da2a..447753495c53 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+@@ -328,10 +328,9 @@ static void idpf_tx_singleq_build_ctx_desc(struct idpf_queue *txq,
  
- 	qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
--	ptype = (qword & IAVF_RXD_QW1_PTYPE_MASK) >> IAVF_RXD_QW1_PTYPE_SHIFT;
--	rx_error = (qword & IAVF_RXD_QW1_ERROR_MASK) >>
--		   IAVF_RXD_QW1_ERROR_SHIFT;
--	rx_status = (qword & IAVF_RXD_QW1_STATUS_MASK) >>
--		    IAVF_RXD_QW1_STATUS_SHIFT;
-+	ptype = FIELD_GET(IAVF_RXD_QW1_PTYPE_MASK, qword);
-+	rx_error = FIELD_GET(IAVF_RXD_QW1_ERROR_MASK, qword);
-+	rx_status = FIELD_GET(IAVF_RXD_QW1_STATUS_MASK, qword);
- 	decoded = decode_rx_desc_ptype(ptype);
+ 	if (offload->tso_segs) {
+ 		qw1 |= IDPF_TX_CTX_DESC_TSO << IDPF_TXD_CTX_QW1_CMD_S;
+-		qw1 |= ((u64)offload->tso_len << IDPF_TXD_CTX_QW1_TSO_LEN_S) &
+-			IDPF_TXD_CTX_QW1_TSO_LEN_M;
+-		qw1 |= ((u64)offload->mss << IDPF_TXD_CTX_QW1_MSS_S) &
+-			IDPF_TXD_CTX_QW1_MSS_M;
++		qw1 |= FIELD_PREP(IDPF_TXD_CTX_QW1_TSO_LEN_M,
++				  offload->tso_len);
++		qw1 |= FIELD_PREP(IDPF_TXD_CTX_QW1_MSS_M, offload->mss);
  
- 	skb->ip_summed = CHECKSUM_NONE;
-@@ -1534,8 +1532,7 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
- 		if (!iavf_test_staterr(rx_desc, IAVF_RXD_DD))
+ 		u64_stats_update_begin(&txq->stats_sync);
+ 		u64_stats_inc(&txq->q_stats.tx.lso_pkts);
+diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+index 1f728a9004d9..725f2477f979 100644
+--- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
++++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+@@ -505,9 +505,9 @@ static void idpf_rx_post_buf_refill(struct idpf_sw_queue *refillq, u16 buf_id)
+ 
+ 	/* store the buffer ID and the SW maintained GEN bit to the refillq */
+ 	refillq->ring[nta] =
+-		((buf_id << IDPF_RX_BI_BUFID_S) & IDPF_RX_BI_BUFID_M) |
+-		(!!(test_bit(__IDPF_Q_GEN_CHK, refillq->flags)) <<
+-		 IDPF_RX_BI_GEN_S);
++		FIELD_PREP(IDPF_RX_BI_BUFID_M, buf_id) |
++		FIELD_PREP(IDPF_RX_BI_GEN_M,
++			   test_bit(__IDPF_Q_GEN_CHK, refillq->flags));
+ 
+ 	if (unlikely(++nta == refillq->desc_count)) {
+ 		nta = 0;
+@@ -1825,14 +1825,14 @@ static bool idpf_tx_clean_complq(struct idpf_queue *complq, int budget,
+ 		u16 gen;
+ 
+ 		/* if the descriptor isn't done, no work yet to do */
+-		gen = (le16_to_cpu(tx_desc->qid_comptype_gen) &
+-		      IDPF_TXD_COMPLQ_GEN_M) >> IDPF_TXD_COMPLQ_GEN_S;
++		gen = le16_get_bits(tx_desc->qid_comptype_gen,
++				    IDPF_TXD_COMPLQ_GEN_M);
+ 		if (test_bit(__IDPF_Q_GEN_CHK, complq->flags) != gen)
  			break;
  
--		size = (qword & IAVF_RXD_QW1_LENGTH_PBUF_MASK) >>
--		       IAVF_RXD_QW1_LENGTH_PBUF_SHIFT;
-+		size = FIELD_GET(IAVF_RXD_QW1_LENGTH_PBUF_MASK, qword);
+ 		/* Find necessary info of TX queue to clean buffers */
+-		rel_tx_qid = (le16_to_cpu(tx_desc->qid_comptype_gen) &
+-			 IDPF_TXD_COMPLQ_QID_M) >> IDPF_TXD_COMPLQ_QID_S;
++		rel_tx_qid = le16_get_bits(tx_desc->qid_comptype_gen,
++					   IDPF_TXD_COMPLQ_QID_M);
+ 		if (rel_tx_qid >= complq->txq_grp->num_txq ||
+ 		    !complq->txq_grp->txqs[rel_tx_qid]) {
+ 			dev_err(&complq->vport->adapter->pdev->dev,
+@@ -1842,9 +1842,8 @@ static bool idpf_tx_clean_complq(struct idpf_queue *complq, int budget,
+ 		tx_q = complq->txq_grp->txqs[rel_tx_qid];
  
- 		iavf_trace(clean_rx_irq, rx_ring, rx_desc, skb);
- 		rx_buffer = iavf_get_rx_buffer(rx_ring, size);
-@@ -1582,8 +1579,7 @@ static int iavf_clean_rx_irq(struct iavf_ring *rx_ring, int budget)
- 		total_rx_bytes += skb->len;
+ 		/* Determine completion type */
+-		ctype = (le16_to_cpu(tx_desc->qid_comptype_gen) &
+-			IDPF_TXD_COMPLQ_COMPL_TYPE_M) >>
+-			IDPF_TXD_COMPLQ_COMPL_TYPE_S;
++		ctype = le16_get_bits(tx_desc->qid_comptype_gen,
++				      IDPF_TXD_COMPLQ_COMPL_TYPE_M);
+ 		switch (ctype) {
+ 		case IDPF_TXD_COMPLT_RE:
+ 			hw_head = le16_to_cpu(tx_desc->q_head_compl_tag.q_head);
+@@ -1945,11 +1944,10 @@ void idpf_tx_splitq_build_ctb(union idpf_tx_flex_desc *desc,
+ 			      u16 td_cmd, u16 size)
+ {
+ 	desc->q.qw1.cmd_dtype =
+-		cpu_to_le16(params->dtype & IDPF_FLEX_TXD_QW1_DTYPE_M);
++		le16_encode_bits(params->dtype, IDPF_FLEX_TXD_QW1_DTYPE_M);
+ 	desc->q.qw1.cmd_dtype |=
+-		cpu_to_le16((td_cmd << IDPF_FLEX_TXD_QW1_CMD_S) &
+-			    IDPF_FLEX_TXD_QW1_CMD_M);
+-	desc->q.qw1.buf_size = cpu_to_le16((u16)size);
++		le16_encode_bits(td_cmd, IDPF_FLEX_TXD_QW1_CMD_M);
++	desc->q.qw1.buf_size = cpu_to_le16(size);
+ 	desc->q.qw1.l2tags.l2tag1 = cpu_to_le16(params->td_tag);
+ }
  
- 		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
--		rx_ptype = (qword & IAVF_RXD_QW1_PTYPE_MASK) >>
--			   IAVF_RXD_QW1_PTYPE_SHIFT;
-+		rx_ptype = FIELD_GET(IAVF_RXD_QW1_PTYPE_MASK, qword);
+@@ -2843,8 +2841,9 @@ static void idpf_rx_splitq_extract_csum_bits(struct virtchnl2_rx_flex_desc_adv_n
+ 				qword1);
+ 	csum->ipv6exadd = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_IPV6EXADD_M,
+ 				    qword0);
+-	csum->raw_csum_inv = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_RAW_CSUM_INV_M,
+-				       le16_to_cpu(rx_desc->ptype_err_fflags0));
++	csum->raw_csum_inv =
++		le16_get_bits(rx_desc->ptype_err_fflags0,
++			      VIRTCHNL2_RX_FLEX_DESC_ADV_RAW_CSUM_INV_M);
+ 	csum->raw_csum = le16_to_cpu(rx_desc->misc.raw_cs);
+ }
  
- 		/* populate checksum, VLAN, and protocol */
- 		iavf_process_skb_fields(rx_ring, rx_desc, skb, rx_ptype);
-@@ -2291,8 +2287,7 @@ static void iavf_tx_map(struct iavf_ring *tx_ring, struct sk_buff *skb,
+@@ -2938,8 +2937,8 @@ static int idpf_rx_process_skb_fields(struct idpf_queue *rxq,
+ 	struct idpf_rx_ptype_decoded decoded;
+ 	u16 rx_ptype;
  
- 	if (tx_flags & IAVF_TX_FLAGS_HW_VLAN) {
- 		td_cmd |= IAVF_TX_DESC_CMD_IL2TAG1;
--		td_tag = (tx_flags & IAVF_TX_FLAGS_VLAN_MASK) >>
--			 IAVF_TX_FLAGS_VLAN_SHIFT;
-+		td_tag = FIELD_GET(IAVF_TX_FLAGS_VLAN_MASK, tx_flags);
- 	}
+-	rx_ptype = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_PTYPE_M,
+-			     le16_to_cpu(rx_desc->ptype_err_fflags0));
++	rx_ptype = le16_get_bits(rx_desc->ptype_err_fflags0,
++				 VIRTCHNL2_RX_FLEX_DESC_ADV_PTYPE_M);
  
- 	first->tx_flags = tx_flags;
-@@ -2468,8 +2463,7 @@ static netdev_tx_t iavf_xmit_frame_ring(struct sk_buff *skb,
- 	if (tx_flags & IAVF_TX_FLAGS_HW_OUTER_SINGLE_VLAN) {
- 		cd_type_cmd_tso_mss |= IAVF_TX_CTX_DESC_IL2TAG2 <<
- 			IAVF_TXD_CTX_QW1_CMD_SHIFT;
--		cd_l2tag2 = (tx_flags & IAVF_TX_FLAGS_VLAN_MASK) >>
--			IAVF_TX_FLAGS_VLAN_SHIFT;
-+		cd_l2tag2 = FIELD_GET(IAVF_TX_FLAGS_VLAN_MASK, tx_flags);
- 	}
+ 	decoded = rxq->vport->rx_ptype_lkup[rx_ptype];
+ 	/* If we don't know the ptype we can't do anything else with it. Just
+@@ -2953,8 +2952,8 @@ static int idpf_rx_process_skb_fields(struct idpf_queue *rxq,
  
- 	/* obtain protocol of skb */
+ 	skb->protocol = eth_type_trans(skb, rxq->vport->netdev);
+ 
+-	if (FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_RSC_M,
+-		      le16_to_cpu(rx_desc->hdrlen_flags)))
++	if (le16_get_bits(rx_desc->hdrlen_flags,
++			  VIRTCHNL2_RX_FLEX_DESC_ADV_RSC_M))
+ 		return idpf_rx_rsc(rxq, skb, rx_desc, &decoded);
+ 
+ 	idpf_rx_splitq_extract_csum_bits(rx_desc, &csum_bits);
+@@ -3148,8 +3147,8 @@ static int idpf_rx_splitq_clean(struct idpf_queue *rxq, int budget)
+ 		dma_rmb();
+ 
+ 		/* if the descriptor isn't done, no work yet to do */
+-		gen_id = le16_to_cpu(rx_desc->pktlen_gen_bufq_id);
+-		gen_id = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_GEN_M, gen_id);
++		gen_id = le16_get_bits(rx_desc->pktlen_gen_bufq_id,
++				       VIRTCHNL2_RX_FLEX_DESC_ADV_GEN_M);
+ 
+ 		if (test_bit(__IDPF_Q_GEN_CHK, rxq->flags) != gen_id)
+ 			break;
+@@ -3164,9 +3163,8 @@ static int idpf_rx_splitq_clean(struct idpf_queue *rxq, int budget)
+ 			continue;
+ 		}
+ 
+-		pkt_len = le16_to_cpu(rx_desc->pktlen_gen_bufq_id);
+-		pkt_len = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_LEN_PBUF_M,
+-				    pkt_len);
++		pkt_len = le16_get_bits(rx_desc->pktlen_gen_bufq_id,
++					VIRTCHNL2_RX_FLEX_DESC_ADV_LEN_PBUF_M);
+ 
+ 		hbo = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_STATUS0_HBO_M,
+ 				rx_desc->status_err0_qw1);
+@@ -3183,14 +3181,12 @@ static int idpf_rx_splitq_clean(struct idpf_queue *rxq, int budget)
+ 			goto bypass_hsplit;
+ 		}
+ 
+-		hdr_len = le16_to_cpu(rx_desc->hdrlen_flags);
+-		hdr_len = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_LEN_HDR_M,
+-				    hdr_len);
++		hdr_len = le16_get_bits(rx_desc->hdrlen_flags,
++					VIRTCHNL2_RX_FLEX_DESC_ADV_LEN_HDR_M);
+ 
+ bypass_hsplit:
+-		bufq_id = le16_to_cpu(rx_desc->pktlen_gen_bufq_id);
+-		bufq_id = FIELD_GET(VIRTCHNL2_RX_FLEX_DESC_ADV_BUFQ_ID_M,
+-				    bufq_id);
++		bufq_id = le16_get_bits(rx_desc->pktlen_gen_bufq_id,
++					VIRTCHNL2_RX_FLEX_DESC_ADV_BUFQ_ID_M);
+ 
+ 		rxq_set = container_of(rxq, struct idpf_rxq_set, rxq);
+ 		if (!bufq_id)
 -- 
 2.39.3
 
