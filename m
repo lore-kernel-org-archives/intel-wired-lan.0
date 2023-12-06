@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF171C4167B
-	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:01:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAE6FC4167B
+	for <intel-wired-lan@archiver.kernel.org>; Wed,  6 Dec 2023 01:01:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 66B0A61429;
-	Wed,  6 Dec 2023 01:01:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 66B0A61429
+	by smtp3.osuosl.org (Postfix) with ESMTP id 9AA34610E0;
+	Wed,  6 Dec 2023 01:01:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9AA34610E0
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701824511;
-	bh=v3PbowOQDgFy36TDufSX6LNA97gRgVXn0ml1bRVzwNw=;
+	s=default; t=1701824516;
+	bh=uYi6Q1ZVfAAtbpKKgBUFwUx7SASN9El5LdLfN278ZoE=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=XgaAUIJ27EPKPV7b6520BPP7yM8COY2K6GnV/xLxcsS7300fgY/CIlBNF4yBHVtcr
-	 h2sLSolugdHm5Sw1hd9M8SsLDabcLUCXoZs1J32Y0BvZxVqFCFnq5oe5zq1kw8g+iX
-	 gSDQzDn9H/QTgmU+Z8QTpS61VR2KNqFyJpOuKEBhSatkX723iFMeb8ChEpVzLE+x7r
-	 LtTZ0PiOp8jrzGM56PiM5OzEo5QdtPymFnNETrpoi05ILDtfpVs3II+xUQH+Hc4UvX
-	 koImGDAhGDPFJy9+iTtD78dkrUPeh/ei2/cKpyEffL8j+EsiSu5mPiSH5BvGXL/SOT
-	 7QHvBQESG9IFg==
+	b=Oy9hoowhdBzXl79Hg/mLR9lqvGX5D7OuPK36WucwJpG3yk4HjP59KZdRoiuNws8eC
+	 IS9hSEbivr+2feZCSpgnHgcQutJLHxtUBSJb4ycfETkUD5KwJmdLHC1ERl8AyW/xb4
+	 OmMPASpZ1ZaKHuncEnkMp8heaEZHPmaaPBd7z7mFP30FJrKNeIr/W5sIyOJrPimwie
+	 OvWDee7GYs4LY82No/yxNs4h9Vci5gKrrvMfycCR53/rhBcQkM1I+RaoO41t1/uIMo
+	 QwWRu8r2s+TKZkxOjbFqBWIpfGWTft2qoalp8qFdLvHIAioga1k+TxLHejIkx7NMJ8
+	 3kAhxY26TPgbg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zSAi8BV14KPJ; Wed,  6 Dec 2023 01:01:50 +0000 (UTC)
+	with ESMTP id BK_-50HPKiJh; Wed,  6 Dec 2023 01:01:55 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 77FE86142B;
-	Wed,  6 Dec 2023 01:01:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 77FE86142B
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 1D9DA1BF97D
+	by smtp3.osuosl.org (Postfix) with ESMTP id D14C261412;
+	Wed,  6 Dec 2023 01:01:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org D14C261412
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
+ by ash.osuosl.org (Postfix) with ESMTP id 9C01F1BF97D
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:36 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id A647182C35
+ by smtp4.osuosl.org (Postfix) with ESMTP id 30A1041714
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org A647182C35
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 30A1041714
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
- by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id dEIJGzmyNR3T for <intel-wired-lan@lists.osuosl.org>;
- Wed,  6 Dec 2023 01:01:35 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+ by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 2bp0tiYXvi-y for <intel-wired-lan@lists.osuosl.org>;
+ Wed,  6 Dec 2023 01:01:34 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
- by smtp1.osuosl.org (Postfix) with ESMTPS id C1AD882C18
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 1B1C3417E9
  for <intel-wired-lan@lists.osuosl.org>; Wed,  6 Dec 2023 01:01:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org C1AD882C18
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700304"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700304"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1B1C3417E9
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="12700281"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="12700281"
 Received: from fmsmga004.fm.intel.com ([10.253.24.48])
  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:35 -0800
+ 05 Dec 2023 17:01:33 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655262"
-X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655262"
+X-IronPort-AV: E=McAfee;i="6600,9927,10915"; a="841655237"
+X-IronPort-AV: E=Sophos;i="6.04,254,1695711600"; d="scan'208";a="841655237"
 Received: from jbrandeb-spr1.jf.intel.com ([10.166.28.233])
  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 05 Dec 2023 17:01:33 -0800
+ 05 Dec 2023 17:01:31 -0800
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue,  5 Dec 2023 17:01:07 -0800
-Message-Id: <20231206010114.2259388-9-jesse.brandeburg@intel.com>
+Date: Tue,  5 Dec 2023 17:01:02 -0800
+Message-Id: <20231206010114.2259388-4-jesse.brandeburg@intel.com>
 X-Mailer: git-send-email 2.39.3
 In-Reply-To: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 References: <20231206010114.2259388-1-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1701824495; x=1733360495;
+ t=1701824494; x=1733360494;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=kvzei3+ovK/51i0s2+v6v/D+4CvRA9trUDjXetYyV9U=;
- b=GJaO2ZE3053Zg3SFKPuVijUoupQiDwJewGitvjQWEgtbMW0tvctK80qn
- Ps7sXZOFsTrlNGC/YD13H3ZStWN353RrW+x1PgWZDh7lB79tCHl2d/YMh
- fQXwU8aJs5GIAvHGfq/vqrhMmDeXhbHxYtI8+yhdr6GilOWaXnmxeTK0F
- jhsnOF/hiNnF6/B/yj67cCFYUUSVd+pKe0JHOCGeVD1f9mGZkBqrPL/TH
- TkQT96pP+OU0qzMGTpH6KerliCFnDesljVYjZwaaRv7pp5ki/DgEXaWfO
- 5C18+rWx5hyd9zjEhOyRDqyT9xF0kCzKLl7pFUc7XYh/NvXAgO4MbN53O
- g==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ bh=iw6yro3/LMCZEEhj2IEYsH6Nqa5hJW1h7JIi8Ii0uUA=;
+ b=W4lf8iv5T+p5a8R2kp9Fx6OEIVZHQJvC388h8RQ5hIYE8lXctkzuOS7s
+ 6As0FVj0z4vR+nenKDjuj52eaIlvG/fNkBG+ulD4di+Yi4ws8JXNM+6r6
+ yfQNKY1BucjWYgU79XQhUxqL27eEGOChqY0jwq1AtC1/KUsQG1zYFlqOb
+ uYgxCSrIo6hLnvV2ooyOJXQqvlrUX6QYKJhK3vu31XQ9eqfUIDXL1yKKX
+ 7FL5j+m2u+7pRl5yA/ruCYEXweFfS60AQYgh+IpL+zeYSQxBL0LazU3Uw
+ XUHdaSernh5cDXzd6liaI2Ji7W7NyEIpV8oeV4IiWoMPbQXGU2MMP7p0K
+ A==;
+X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=GJaO2ZE3
-Subject: [Intel-wired-lan] [PATCH iwl-next v2 08/15] igc: field prep
- conversion
+ header.a=rsa-sha256 header.s=Intel header.b=W4lf8iv5
+Subject: [Intel-wired-lan] [PATCH iwl-next v2 03/15] intel: legacy: field
+ prep conversion
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,8 +95,7 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Sasha Neftin <sasha.neftin@intel.com>, przemyslaw.kitszel@intel.com,
- Jesse Brandeburg <jesse.brandeburg@intel.com>,
+Cc: przemyslaw.kitszel@intel.com, Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Julia Lawall <Julia.Lawall@inria.fr>, aleksander.lobakin@intel.com,
  marcin.szycik@linux.intel.com, horms@kernel.org, netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
@@ -104,11 +103,11 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Refactor igc driver to use FIELD_PREP(), which reduces lines of code
-and adds clarity of intent.
+Refactor several older Intel drivers to use FIELD_PREP(), which reduces
+lines of code and adds clarity of intent.
 
 This code was generated by the following coccinelle/spatch script and
-then manually repaired in a later patch.
+then manually repaired.
 
 @prep2@
 constant shift,mask;
@@ -127,31 +126,184 @@ expression a;
 +FIELD_PREP(mask, a)
 
 Cc: Julia Lawall <Julia.Lawall@inria.fr>
-Cc: Sasha Neftin <sasha.neftin@intel.com>
 Reviewed-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 Reviewed-by: Simon Horman <horms@kernel.org>
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 ---
-v2: no change
+v2: updated commit message with new script
 ---
- drivers/net/ethernet/intel/igc/igc_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/e1000e/80003es2lan.c | 7 +++----
+ drivers/net/ethernet/intel/e1000e/phy.c         | 7 +++----
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c     | 3 +--
+ drivers/net/ethernet/intel/igb/e1000_phy.c      | 4 ++--
+ drivers/net/ethernet/intel/igb/igb_ethtool.c    | 3 +--
+ drivers/net/ethernet/intel/igb/igb_main.c       | 9 +++------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c  | 2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c   | 4 ++--
+ 8 files changed, 16 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igc/igc_main.c b/drivers/net/ethernet/intel/igc/igc_main.c
-index 61db1d3bfa0b..d949289a3ddb 100644
---- a/drivers/net/ethernet/intel/igc/igc_main.c
-+++ b/drivers/net/ethernet/intel/igc/igc_main.c
-@@ -3452,8 +3452,8 @@ static int igc_write_flex_filter_ll(struct igc_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.c b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
+index 74671201208e..31fce3e4e8af 100644
+--- a/drivers/net/ethernet/intel/e1000e/80003es2lan.c
++++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
+@@ -1210,8 +1210,8 @@ static s32 e1000_read_kmrn_reg_80003es2lan(struct e1000_hw *hw, u32 offset,
+ 	if (ret_val)
+ 		return ret_val;
  
- 	/* Configure filter */
- 	queuing = input->length & IGC_FHFT_LENGTH_MASK;
--	queuing |= (input->rx_queue << IGC_FHFT_QUEUE_SHIFT) & IGC_FHFT_QUEUE_MASK;
--	queuing |= (input->prio << IGC_FHFT_PRIO_SHIFT) & IGC_FHFT_PRIO_MASK;
-+	queuing |= FIELD_PREP(IGC_FHFT_QUEUE_MASK, input->rx_queue);
-+	queuing |= FIELD_PREP(IGC_FHFT_PRIO_MASK, input->prio);
+-	kmrnctrlsta = ((offset << E1000_KMRNCTRLSTA_OFFSET_SHIFT) &
+-		       E1000_KMRNCTRLSTA_OFFSET) | E1000_KMRNCTRLSTA_REN;
++	kmrnctrlsta = FIELD_PREP(E1000_KMRNCTRLSTA_OFFSET, offset) |
++		      E1000_KMRNCTRLSTA_REN;
+ 	ew32(KMRNCTRLSTA, kmrnctrlsta);
+ 	e1e_flush();
  
- 	if (input->immediate_irq)
- 		queuing |= IGC_FHFT_IMM_INT;
+@@ -1245,8 +1245,7 @@ static s32 e1000_write_kmrn_reg_80003es2lan(struct e1000_hw *hw, u32 offset,
+ 	if (ret_val)
+ 		return ret_val;
+ 
+-	kmrnctrlsta = ((offset << E1000_KMRNCTRLSTA_OFFSET_SHIFT) &
+-		       E1000_KMRNCTRLSTA_OFFSET) | data;
++	kmrnctrlsta = FIELD_PREP(E1000_KMRNCTRLSTA_OFFSET, offset) | data;
+ 	ew32(KMRNCTRLSTA, kmrnctrlsta);
+ 	e1e_flush();
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+index 08c3d477dd6f..2498f021eb02 100644
+--- a/drivers/net/ethernet/intel/e1000e/phy.c
++++ b/drivers/net/ethernet/intel/e1000e/phy.c
+@@ -463,8 +463,8 @@ static s32 __e1000_read_kmrn_reg(struct e1000_hw *hw, u32 offset, u16 *data,
+ 			return ret_val;
+ 	}
+ 
+-	kmrnctrlsta = ((offset << E1000_KMRNCTRLSTA_OFFSET_SHIFT) &
+-		       E1000_KMRNCTRLSTA_OFFSET) | E1000_KMRNCTRLSTA_REN;
++	kmrnctrlsta = FIELD_PREP(E1000_KMRNCTRLSTA_OFFSET, offset) |
++		      E1000_KMRNCTRLSTA_REN;
+ 	ew32(KMRNCTRLSTA, kmrnctrlsta);
+ 	e1e_flush();
+ 
+@@ -536,8 +536,7 @@ static s32 __e1000_write_kmrn_reg(struct e1000_hw *hw, u32 offset, u16 data,
+ 			return ret_val;
+ 	}
+ 
+-	kmrnctrlsta = ((offset << E1000_KMRNCTRLSTA_OFFSET_SHIFT) &
+-		       E1000_KMRNCTRLSTA_OFFSET) | data;
++	kmrnctrlsta = FIELD_PREP(E1000_KMRNCTRLSTA_OFFSET, offset) | data;
+ 	ew32(KMRNCTRLSTA, kmrnctrlsta);
+ 	e1e_flush();
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index ae700a1807c6..1eea0ec5dbcf 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -866,8 +866,7 @@ static s32 fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
+ 	 * register is RO from the VF, so the PF must do this even in the
+ 	 * case of notifying the VF of a new VID via the mailbox.
+ 	 */
+-	txqctl = ((u32)vf_vid << FM10K_TXQCTL_VID_SHIFT) &
+-		 FM10K_TXQCTL_VID_MASK;
++	txqctl = FIELD_PREP(FM10K_TXQCTL_VID_MASK, vf_vid);
+ 	txqctl |= (vf_idx << FM10K_TXQCTL_TC_SHIFT) |
+ 		  FM10K_TXQCTL_VF | vf_idx;
+ 
+diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+index 3c1b562a3271..c84e7356cdb1 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_phy.c
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+@@ -255,7 +255,7 @@ s32 igb_read_phy_reg_i2c(struct e1000_hw *hw, u32 offset, u16 *data)
+ 	}
+ 
+ 	/* Need to byte-swap the 16-bit value. */
+-	*data = ((i2ccmd >> 8) & 0x00FF) | ((i2ccmd << 8) & 0xFF00);
++	*data = ((i2ccmd >> 8) & 0x00FF) | FIELD_PREP(0xFF00, i2ccmd);
+ 
+ 	return 0;
+ }
+@@ -282,7 +282,7 @@ s32 igb_write_phy_reg_i2c(struct e1000_hw *hw, u32 offset, u16 data)
+ 	}
+ 
+ 	/* Swap the data bytes for the I2C interface */
+-	phy_data_swapped = ((data >> 8) & 0x00FF) | ((data << 8) & 0xFF00);
++	phy_data_swapped = ((data >> 8) & 0x00FF) | FIELD_PREP(0xFF00, data);
+ 
+ 	/* Set up Op-code, Phy Address, and register address in the I2CCMD
+ 	 * register.  The MAC will take care of interfacing with the
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 16d2a55d5e17..f03977f2323e 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -2713,8 +2713,7 @@ static int igb_rxnfc_write_etype_filter(struct igb_adapter *adapter,
+ 	etqf |= (etype & E1000_ETQF_ETYPE_MASK);
+ 
+ 	etqf &= ~E1000_ETQF_QUEUE_MASK;
+-	etqf |= ((input->action << E1000_ETQF_QUEUE_SHIFT)
+-		& E1000_ETQF_QUEUE_MASK);
++	etqf |= FIELD_PREP(E1000_ETQF_QUEUE_MASK, input->action);
+ 	etqf |= E1000_ETQF_QUEUE_ENABLE;
+ 
+ 	wr32(E1000_ETQF(i), etqf);
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index b2295caa2f0a..897eb36bb609 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -9810,8 +9810,7 @@ static void igb_set_vf_rate_limit(struct e1000_hw *hw, int vf, int tx_rate,
+ 			 tx_rate;
+ 
+ 		bcnrc_val = E1000_RTTBCNRC_RS_ENA;
+-		bcnrc_val |= ((rf_int << E1000_RTTBCNRC_RF_INT_SHIFT) &
+-			      E1000_RTTBCNRC_RF_INT_MASK);
++		bcnrc_val |= FIELD_PREP(E1000_RTTBCNRC_RF_INT_MASK, rf_int);
+ 		bcnrc_val |= (rf_dec & E1000_RTTBCNRC_RF_DEC_MASK);
+ 	} else {
+ 		bcnrc_val = 0;
+@@ -10000,8 +9999,7 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
+ 			hwm = 64 * (pba - 6);
+ 			reg = rd32(E1000_FCRTC);
+ 			reg &= ~E1000_FCRTC_RTH_COAL_MASK;
+-			reg |= ((hwm << E1000_FCRTC_RTH_COAL_SHIFT)
+-				& E1000_FCRTC_RTH_COAL_MASK);
++			reg |= FIELD_PREP(E1000_FCRTC_RTH_COAL_MASK, hwm);
+ 			wr32(E1000_FCRTC, reg);
+ 
+ 			/* Set the DMA Coalescing Rx threshold to PBA - 2 * max
+@@ -10010,8 +10008,7 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
+ 			dmac_thr = pba - 10;
+ 			reg = rd32(E1000_DMACR);
+ 			reg &= ~E1000_DMACR_DMACTHR_MASK;
+-			reg |= ((dmac_thr << E1000_DMACR_DMACTHR_SHIFT)
+-				& E1000_DMACR_DMACTHR_MASK);
++			reg |= FIELD_PREP(E1000_DMACR_DMACTHR_MASK, dmac_thr);
+ 
+ 			/* transition to L0x or L1 if available..*/
+ 			reg |= (E1000_DMACR_DMAC_EN | E1000_DMACR_DMAC_LX_MASK);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+index 100388968e4d..0470b69d834c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+@@ -794,7 +794,7 @@ static s32 ixgbe_set_vmdq_82598(struct ixgbe_hw *hw, u32 rar, u32 vmdq)
+ 
+ 	rar_high = IXGBE_READ_REG(hw, IXGBE_RAH(rar));
+ 	rar_high &= ~IXGBE_RAH_VIND_MASK;
+-	rar_high |= ((vmdq << IXGBE_RAH_VIND_SHIFT) & IXGBE_RAH_VIND_MASK);
++	rar_high |= FIELD_PREP(IXGBE_RAH_VIND_MASK, vmdq);
+ 	IXGBE_WRITE_REG(hw, IXGBE_RAH(rar), rar_high);
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+index 7311bd545acf..18d63c8c2ff4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+@@ -670,8 +670,8 @@ void ixgbe_configure_fcoe(struct ixgbe_adapter *adapter)
+ 			int fcoe_i_h = fcoe->offset + ((i + fcreta_size) %
+ 							fcoe->indices);
+ 			fcoe_q_h = adapter->rx_ring[fcoe_i_h]->reg_idx;
+-			fcoe_q_h = (fcoe_q_h << IXGBE_FCRETA_ENTRY_HIGH_SHIFT) &
+-				   IXGBE_FCRETA_ENTRY_HIGH_MASK;
++			fcoe_q_h = FIELD_PREP(IXGBE_FCRETA_ENTRY_HIGH_MASK,
++					      fcoe_q_h);
+ 		}
+ 
+ 		fcoe_i = fcoe->offset + (i % fcoe->indices);
 -- 
 2.39.3
 
