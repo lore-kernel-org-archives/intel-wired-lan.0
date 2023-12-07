@@ -4,86 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2108AC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Dec 2023 16:48:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEED5C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Dec 2023 16:48:59 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D2EC283CF9;
-	Thu,  7 Dec 2023 16:48:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D2EC283CF9
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8DC5A83D26;
+	Thu,  7 Dec 2023 16:48:59 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8DC5A83D26
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701967734;
-	bh=ohHQRxdzzDUtLdf2v8gdOG0eRb/mjKF3wpnd7m0SLCs=;
+	s=default; t=1701967739;
+	bh=HtlpQU+BZ0jkWkfOKjcKzMmjhtXJYlFzoHWNwMR4AGM=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=d8Fo1ycVhkfuOQLq2sG4JMAj+vfZV8qsZKyJYFs+k85MXqQ7s9+u4K5xeHazSQxkA
-	 sIF3nYVZ0c0TCDvyxBj3INmZQ7I3E1qO1JH15WvMCJ+wZtrv08kPAIZwmGnnAtlVac
-	 myE4KgC2dCVyRNAIorg4abiA5G2aS7dwwZvYFsp5TqkGq1yGpT1oScVfHmugrw1RFy
-	 857MynsTXMmoC9M6i1/ZJv814YnfFCHxtY7+7/7xduWUfu0WxoxjFsc2KB8QCyzGxm
-	 B9ul4e0kPw5gd2AuUayA1bOzCd8ZcCYxAFh5uGHWKyvRTft2+51Do6D2pd3fhLlCyU
-	 qgMaLWieDFhKA==
+	b=i0p6mypTQmsJ1LoFXGkYyR6h078gT3OUfhyEJ5YrbWfb8430H4uS0SenzuMR/pKQU
+	 XN3rdExZXXzblA/DkBevzmq81cICkkwRNnxCvyozhgy2tcrKTvt+EuWCUXu1YttYHX
+	 /fnd1b4yBT6C5SQWfIHpQqY3aITDkplig9LvajRjORoVrO23Hmc3XwQnfetqMZFudV
+	 1MY97so5rZTi2XyAVhLLMYlbUb122Ifxh56/9HXBkMAU1vQbrgRmdCrfaQ07zGS+Cw
+	 k7AgYEpStQGwAJ/libUo7TQK8sARknXiQNR4yKJv9NcnYI0aguceW/X5cKqLIhgSR0
+	 syn0JA+pl+5LA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id WKMG2UyMBWeu; Thu,  7 Dec 2023 16:48:53 +0000 (UTC)
+	with ESMTP id xUul2XJGJzxE; Thu,  7 Dec 2023 16:48:58 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 781D183D16;
-	Thu,  7 Dec 2023 16:48:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 781D183D16
+	by smtp1.osuosl.org (Postfix) with ESMTP id 0A52B83D1C;
+	Thu,  7 Dec 2023 16:48:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0A52B83D1C
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 17E661BF5B3
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:43 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 141241BF5B3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:44 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id DFE36420F6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:42 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DFE36420F6
+ by smtp4.osuosl.org (Postfix) with ESMTP id 97B84420F6
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 97B84420F6
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id A--f3bZIaMuh for <intel-wired-lan@lists.osuosl.org>;
- Thu,  7 Dec 2023 16:48:41 +0000 (UTC)
+ with ESMTP id CoMliJTHGWQK for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  7 Dec 2023 16:48:43 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id AB1794210F
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AB1794210F
-X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="373759561"
-X-IronPort-AV: E=Sophos;i="6.04,258,1695711600"; d="scan'208";a="373759561"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id EE0F842132
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EE0F842132
+X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="373759570"
+X-IronPort-AV: E=Sophos;i="6.04,258,1695711600"; d="scan'208";a="373759570"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Dec 2023 08:48:41 -0800
+ 07 Dec 2023 08:48:42 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="775477351"
-X-IronPort-AV: E=Sophos;i="6.04,258,1695711600"; d="scan'208";a="775477351"
+X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="775477354"
+X-IronPort-AV: E=Sophos;i="6.04,258,1695711600"; d="scan'208";a="775477354"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga007.fm.intel.com with ESMTP; 07 Dec 2023 08:48:38 -0800
+ by fmsmga007.fm.intel.com with ESMTP; 07 Dec 2023 08:48:40 -0800
 Received: from mystra-4.igk.intel.com (mystra-4.igk.intel.com [10.123.220.40])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 16CCE35429;
- Thu,  7 Dec 2023 16:48:36 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 9678735430;
+ Thu,  7 Dec 2023 16:48:38 +0000 (GMT)
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  7 Dec 2023 17:49:08 +0100
-Message-ID: <20231207164911.14330-5-marcin.szycik@linux.intel.com>
+Date: Thu,  7 Dec 2023 17:49:10 +0100
+Message-ID: <20231207164911.14330-7-marcin.szycik@linux.intel.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20231207164911.14330-1-marcin.szycik@linux.intel.com>
 References: <20231207164911.14330-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1701967721; x=1733503721;
+ t=1701967722; x=1733503722;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=oATl+5skT1o6b7uXUtIlvTWpLNq2QG4O+3v2RN8YE7Q=;
- b=RSIM7vrBzJGmruSidjw1Y/bjmGETuS2CdrwDM+Ok5uDXiiwIe91kndDg
- vfs5w6sTSN3qs9vmkYHP1MWcgxko5nn1Qa6plh1Pw7yoEkjFUQukSQiZM
- j17fviUIWYvFC5RMlPHF3cD1WEnZSASOrGabILF53Q5zvdsDfVkoLkSl+
- Cy09Cg7zsUHnSSMronPW55c4TPAxxzcUZoWr28blfnKLe435mkm1XXLgA
- CqlJklshjD0rZDjQEBRw44WQdRppjdr/PPXO5vxwtRk8vWt8HDVS2JloW
- 0G5oxHkQQYjmcwNyKGWjy5vzN5FJIGwYAZQxlg1NwLT0Xs8/X418+9ylo
- A==;
+ bh=+MHAjFDqdjBN6ROQjoXHXlVgXAmbFcDuRBbJ65W00nQ=;
+ b=Fy0ykEl6rDG1gqe7uQTQkYqgj0xkd8C+r36L7hYePzUgQHk7aVikK7h6
+ XPBUSSLRAbxKhbWvfmfTm55go8AspqtesEES3WsRUPLKkQGyQsFZS0O5A
+ EFbVIHeVEgbFsl9chx4XuokwJbO8zO0b/SK+CDNcKDrUTIgALKfqyWhAv
+ a9p1wn6Wed3vC7/44tZJ3nWhD6NsFxv+A9AIw6uSFYY8DsLbDEIZYrBKs
+ SJAut+tkMZP4Wc42b99yCAZ5AzaXG9FN/E2qPrtQXqVDWyWMIob5U3oaV
+ QUTDYM/eQhDu+QnkKCa8mWQQPqZTNFnVwkLEPFP74L2vM0OX4ArT7LxDd
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=RSIM7vrB
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 4/7] pfcp: add PFCP module
+ header.a=rsa-sha256 header.s=Intel header.b=Fy0ykEl6
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 6/7] ice: refactor
+ ICE_TC_FLWR_FIELD_ENC_OPTS
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,331 +107,76 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Wojciech Drewek <wojciech.drewek@intel.com>
+FLOW_DISSECTOR_KEY_ENC_OPTS can be used for multiple headers, but currently
+it is treated as GTP-exclusive in ice. Rename ICE_TC_FLWR_FIELD_ENC_OPTS to
+ICE_TC_FLWR_FIELD_GTP_OPTS and check for tunnel type earlier. After this
+refactor, it is easier to add new headers using FLOW_DISSECTOR_KEY_ENC_OPTS
+- instead of checking tunnel type in ice_tc_count_lkups() and
+ice_tc_fill_tunnel_outer(), it needs to be checked only once, in
+ice_parse_tunnel_attr().
 
-Packet Forwarding Control Protocol (PFCP) is a 3GPP Protocol
-used between the control plane and the user plane function.
-It is specified in TS 29.244[1].
-
-Note that this module is not designed to support this Protocol
-in the kernel space. There is no support for parsing any PFCP messages.
-There is no API that could be used by any userspace daemon.
-Basically it does not support PFCP. This protocol is sophisticated
-and there is no need for implementing it in the kernel. The purpose
-of this module is to allow users to setup software and hardware offload
-of PFCP packets using tc tool.
-
-When user requests to create a PFCP device, a new socket is created.
-The socket is set up with port number 8805 which is specific for
-PFCP [29.244 4.2.2]. This allow to receive PFCP request messages,
-response messages use other ports.
-
-Note that only one PFCP netdev can be created.
-
-Only IPv4 is supported at this time.
-
-[1] https://portal.3gpp.org/desktopmodules/Specifications/SpecificationDetails.aspx?specificationId=3111
-
-Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 Reviewed-by: Simon Horman <simon.horman@corigine.com>
 Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/Kconfig  |  13 +++
- drivers/net/Makefile |   1 +
- drivers/net/pfcp.c   | 223 +++++++++++++++++++++++++++++++++++++++++++
- include/net/pfcp.h   |  17 ++++
- 4 files changed, 254 insertions(+)
- create mode 100644 drivers/net/pfcp.c
- create mode 100644 include/net/pfcp.h
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c | 10 +++++-----
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h |  2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index af0da4bb429b..0af6ac053292 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -290,6 +290,19 @@ config GTP
- 	  To compile this drivers as a module, choose M here: the module
- 	  will be called gtp.
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+index 08d3bbf4b44c..e9acab2ede10 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -35,7 +35,7 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
+ 	if (flags & ICE_TC_FLWR_FIELD_ENC_DST_MAC)
+ 		lkups_cnt++;
  
-+config PFCP
-+	tristate "Packet Forwarding Control Protocol (PFCP)"
-+	depends on INET
-+	select NET_UDP_TUNNEL
-+	help
-+	  This allows one to create PFCP virtual interfaces that allows to
-+	  set up software and hardware offload of PFCP packets.
-+	  Note that this module does not support PFCP protocol in the kernel space.
-+	  There is no support for parsing any PFCP messages.
-+
-+	  To compile this drivers as a module, choose M here: the module
-+	  will be called pfcp.
-+
- config AMT
- 	tristate "Automatic Multicast Tunneling (AMT)"
- 	depends on INET && IP_MULTICAST
-diff --git a/drivers/net/Makefile b/drivers/net/Makefile
-index 7cab36f94782..9c053673d6b2 100644
---- a/drivers/net/Makefile
-+++ b/drivers/net/Makefile
-@@ -38,6 +38,7 @@ obj-$(CONFIG_GENEVE) += geneve.o
- obj-$(CONFIG_BAREUDP) += bareudp.o
- obj-$(CONFIG_GTP) += gtp.o
- obj-$(CONFIG_NLMON) += nlmon.o
-+obj-$(CONFIG_PFCP) += pfcp.o
- obj-$(CONFIG_NET_VRF) += vrf.o
- obj-$(CONFIG_VSOCKMON) += vsockmon.o
- obj-$(CONFIG_MHI_NET) += mhi_net.o
-diff --git a/drivers/net/pfcp.c b/drivers/net/pfcp.c
-new file mode 100644
-index 000000000000..3f1ee0ae7111
---- /dev/null
-+++ b/drivers/net/pfcp.c
-@@ -0,0 +1,223 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * PFCP according to 3GPP TS 29.244
-+ *
-+ * Copyright (C) 2022, Intel Corporation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/netdevice.h>
-+#include <linux/rculist.h>
-+#include <linux/skbuff.h>
-+#include <linux/types.h>
-+
-+#include <net/udp.h>
-+#include <net/udp_tunnel.h>
-+#include <net/pfcp.h>
-+
-+struct pfcp_dev {
-+	struct list_head	list;
-+
-+	struct socket		*sock;
-+	struct net_device	*dev;
-+	struct net		*net;
-+};
-+
-+static unsigned int pfcp_net_id __read_mostly;
-+
-+struct pfcp_net {
-+	struct list_head	pfcp_dev_list;
-+};
-+
-+static void pfcp_del_sock(struct pfcp_dev *pfcp)
-+{
-+	udp_tunnel_sock_release(pfcp->sock);
-+	pfcp->sock = NULL;
-+}
-+
-+static void pfcp_dev_uninit(struct net_device *dev)
-+{
-+	struct pfcp_dev *pfcp = netdev_priv(dev);
-+
-+	pfcp_del_sock(pfcp);
-+}
-+
-+static int pfcp_dev_init(struct net_device *dev)
-+{
-+	struct pfcp_dev *pfcp = netdev_priv(dev);
-+
-+	pfcp->dev = dev;
-+
-+	return 0;
-+}
-+
-+static const struct net_device_ops pfcp_netdev_ops = {
-+	.ndo_init		= pfcp_dev_init,
-+	.ndo_uninit		= pfcp_dev_uninit,
-+	.ndo_get_stats64	= dev_get_tstats64,
-+};
-+
-+static const struct device_type pfcp_type = {
-+	.name = "pfcp",
-+};
-+
-+static void pfcp_link_setup(struct net_device *dev)
-+{
-+	dev->netdev_ops = &pfcp_netdev_ops;
-+	dev->needs_free_netdev = true;
-+	SET_NETDEV_DEVTYPE(dev, &pfcp_type);
-+
-+	dev->hard_header_len = 0;
-+	dev->addr_len = 0;
-+
-+	dev->type = ARPHRD_NONE;
-+	dev->flags = IFF_POINTOPOINT | IFF_NOARP | IFF_MULTICAST;
-+	dev->priv_flags |= IFF_NO_QUEUE;
-+
-+	netif_keep_dst(dev);
-+}
-+
-+static struct socket *pfcp_create_sock(struct pfcp_dev *pfcp)
-+{
-+	struct udp_tunnel_sock_cfg tuncfg = {};
-+	struct udp_port_cfg udp_conf = {
-+		.local_ip.s_addr	= htonl(INADDR_ANY),
-+		.family			= AF_INET,
-+	};
-+	struct net *net = pfcp->net;
-+	struct socket *sock;
-+	int err;
-+
-+	udp_conf.local_udp_port = htons(PFCP_PORT);
-+
-+	err = udp_sock_create(net, &udp_conf, &sock);
-+	if (err)
-+		return ERR_PTR(err);
-+
-+	setup_udp_tunnel_sock(net, sock, &tuncfg);
-+
-+	return sock;
-+}
-+
-+static int pfcp_add_sock(struct pfcp_dev *pfcp)
-+{
-+	pfcp->sock = pfcp_create_sock(pfcp);
-+
-+	return PTR_ERR_OR_ZERO(pfcp->sock);
-+}
-+
-+static int pfcp_newlink(struct net *net, struct net_device *dev,
-+			struct nlattr *tb[], struct nlattr *data[],
-+			struct netlink_ext_ack *extack)
-+{
-+	struct pfcp_dev *pfcp = netdev_priv(dev);
-+	struct pfcp_net *pn;
-+	int err;
-+
-+	pfcp->net = net;
-+
-+	err = pfcp_add_sock(pfcp);
-+	if (err) {
-+		netdev_dbg(dev, "failed to add pfcp socket %d\n", err);
-+		goto exit_err;
-+	}
-+
-+	err = register_netdevice(dev);
-+	if (err) {
-+		netdev_dbg(dev, "failed to register pfcp netdev %d\n", err);
-+		goto exit_del_pfcp_sock;
-+	}
-+
-+	pn = net_generic(dev_net(dev), pfcp_net_id);
-+	list_add_rcu(&pfcp->list, &pn->pfcp_dev_list);
-+
-+	netdev_dbg(dev, "registered new PFCP interface\n");
-+
-+	return 0;
-+
-+exit_del_pfcp_sock:
-+	pfcp_del_sock(pfcp);
-+exit_err:
-+	pfcp->net = NULL;
-+	return err;
-+}
-+
-+static void pfcp_dellink(struct net_device *dev, struct list_head *head)
-+{
-+	struct pfcp_dev *pfcp = netdev_priv(dev);
-+
-+	list_del_rcu(&pfcp->list);
-+	unregister_netdevice_queue(dev, head);
-+}
-+
-+static struct rtnl_link_ops pfcp_link_ops __read_mostly = {
-+	.kind		= "pfcp",
-+	.priv_size	= sizeof(struct pfcp_dev),
-+	.setup		= pfcp_link_setup,
-+	.newlink	= pfcp_newlink,
-+	.dellink	= pfcp_dellink,
-+};
-+
-+static int __net_init pfcp_net_init(struct net *net)
-+{
-+	struct pfcp_net *pn = net_generic(net, pfcp_net_id);
-+
-+	INIT_LIST_HEAD(&pn->pfcp_dev_list);
-+	return 0;
-+}
-+
-+static void __net_exit pfcp_net_exit(struct net *net)
-+{
-+	struct pfcp_net *pn = net_generic(net, pfcp_net_id);
-+	struct pfcp_dev *pfcp;
-+	LIST_HEAD(list);
-+
-+	rtnl_lock();
-+	list_for_each_entry(pfcp, &pn->pfcp_dev_list, list)
-+		pfcp_dellink(pfcp->dev, &list);
-+
-+	unregister_netdevice_many(&list);
-+	rtnl_unlock();
-+}
-+
-+static struct pernet_operations pfcp_net_ops = {
-+	.init	= pfcp_net_init,
-+	.exit	= pfcp_net_exit,
-+	.id	= &pfcp_net_id,
-+	.size	= sizeof(struct pfcp_net),
-+};
-+
-+static int __init pfcp_init(void)
-+{
-+	int err;
-+
-+	err = register_pernet_subsys(&pfcp_net_ops);
-+	if (err)
-+		goto exit_err;
-+
-+	err = rtnl_link_register(&pfcp_link_ops);
-+	if (err)
-+		goto exit_unregister_subsys;
-+	return 0;
-+
-+exit_unregister_subsys:
-+	unregister_pernet_subsys(&pfcp_net_ops);
-+exit_err:
-+	pr_err("loading PFCP module failed: err %d\n", err);
-+	return err;
-+}
-+late_initcall(pfcp_init);
-+
-+static void __exit pfcp_exit(void)
-+{
-+	rtnl_link_unregister(&pfcp_link_ops);
-+	unregister_pernet_subsys(&pfcp_net_ops);
-+
-+	pr_info("PFCP module unloaded\n");
-+}
-+module_exit(pfcp_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Wojciech Drewek <wojciech.drewek@intel.com>");
-+MODULE_DESCRIPTION("Interface driver for PFCP encapsulated traffic");
-+MODULE_ALIAS_RTNL_LINK("pfcp");
-diff --git a/include/net/pfcp.h b/include/net/pfcp.h
-new file mode 100644
-index 000000000000..3f9ebf27a8ff
---- /dev/null
-+++ b/include/net/pfcp.h
-@@ -0,0 +1,17 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _PFCP_H_
-+#define _PFCP_H_
-+
-+#include <linux/netdevice.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+
-+#define PFCP_PORT 8805
-+
-+static inline bool netif_is_pfcp(const struct net_device *dev)
-+{
-+	return dev->rtnl_link_ops &&
-+	       !strcmp(dev->rtnl_link_ops->kind, "pfcp");
-+}
-+
-+#endif
+-	if (flags & ICE_TC_FLWR_FIELD_ENC_OPTS)
++	if (flags & ICE_TC_FLWR_FIELD_GTP_OPTS)
+ 		lkups_cnt++;
+ 
+ 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
+@@ -219,8 +219,7 @@ ice_tc_fill_tunnel_outer(u32 flags, struct ice_tc_flower_fltr *fltr,
+ 		i++;
+ 	}
+ 
+-	if (flags & ICE_TC_FLWR_FIELD_ENC_OPTS &&
+-	    (fltr->tunnel_type == TNL_GTPU || fltr->tunnel_type == TNL_GTPC)) {
++	if (flags & ICE_TC_FLWR_FIELD_GTP_OPTS) {
+ 		list[i].type = ice_proto_type_from_tunnel(fltr->tunnel_type);
+ 
+ 		if (fltr->gtp_pdu_info_masks.pdu_type) {
+@@ -1360,7 +1359,8 @@ ice_parse_tunnel_attr(struct net_device *dev, struct flow_rule *rule,
+ 		}
+ 	}
+ 
+-	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ENC_OPTS)) {
++	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ENC_OPTS) &&
++	    (fltr->tunnel_type == TNL_GTPU || fltr->tunnel_type == TNL_GTPC)) {
+ 		struct flow_match_enc_opts match;
+ 
+ 		flow_rule_match_enc_opts(rule, &match);
+@@ -1371,7 +1371,7 @@ ice_parse_tunnel_attr(struct net_device *dev, struct flow_rule *rule,
+ 		memcpy(&fltr->gtp_pdu_info_masks, &match.mask->data[0],
+ 		       sizeof(struct gtp_pdu_session_info));
+ 
+-		fltr->flags |= ICE_TC_FLWR_FIELD_ENC_OPTS;
++		fltr->flags |= ICE_TC_FLWR_FIELD_GTP_OPTS;
+ 	}
+ 
+ 	return 0;
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.h b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
+index 65d387163a46..5d188ad7517a 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
+@@ -22,7 +22,7 @@
+ #define ICE_TC_FLWR_FIELD_ENC_SRC_L4_PORT	BIT(15)
+ #define ICE_TC_FLWR_FIELD_ENC_DST_MAC		BIT(16)
+ #define ICE_TC_FLWR_FIELD_ETH_TYPE_ID		BIT(17)
+-#define ICE_TC_FLWR_FIELD_ENC_OPTS		BIT(18)
++#define ICE_TC_FLWR_FIELD_GTP_OPTS		BIT(18)
+ #define ICE_TC_FLWR_FIELD_CVLAN			BIT(19)
+ #define ICE_TC_FLWR_FIELD_PPPOE_SESSID		BIT(20)
+ #define ICE_TC_FLWR_FIELD_PPP_PROTO		BIT(21)
 -- 
 2.41.0
 
