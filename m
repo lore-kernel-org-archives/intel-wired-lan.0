@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83444C4167B
-	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Dec 2023 16:49:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80E0AC4167B
+	for <intel-wired-lan@archiver.kernel.org>; Thu,  7 Dec 2023 16:49:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3F8CF83CF9;
-	Thu,  7 Dec 2023 16:49:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3F8CF83CF9
+	by smtp1.osuosl.org (Postfix) with ESMTP id 3CE7983D39;
+	Thu,  7 Dec 2023 16:49:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3CE7983D39
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1701967744;
-	bh=2R8yenRrgIEGiwcY/NGO7xuBSNkQN7OcdlFazsFuuOE=;
+	s=default; t=1701967749;
+	bh=8eBjMBhwAjCc0/7oIbRe9AvyGy0+mnfUZiUNXjcI6eI=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=DYSzK1K36CuCp9bsHhrgDs8utQJ1yVOEQcEFXfdtPCVYir5awXlKOFulCl/VN2TcI
-	 1l80Yj7QsG2EUiJX+yvSwsmIug0IHPI3C/FF9GQfZEDP3nZ2LIrFdOC9TOBoTRWoLA
-	 gklsslEKUiB6OppUiE+DmFEfKc8RHT9g3R9GCSVYu2nYbigvpN5zaYKmhgGHzLdyMn
-	 RUh1TCXBbWZleACg4sERwUjGOzhY1NGliPoih1jG15LglkaZdxRV/WUb17v5skosnx
-	 wunQ75yQ60jyEu9SWLtlRsEP2z6zuDlcHbxzrqCXHCtHBV4jC0Zn+Q8x7N38LY1Fv2
-	 IKFAx46wFec3Q==
+	b=B1kW3r5RD0U0ybSDxG6m3iGhi8zdd499sU8wrWO3/ED44cHzPR3R5nxgMrygqln9o
+	 K8kqWnGFA+1kC2Er03oQzqegWkmfR+olzUpvNWeFtsg1ju0smmMWz81apCfrXqunYO
+	 FMqwBFTerAX9aA+lgw5gN0fKnwBIpH62+KlSqKQ2W4n7Dch9hwNwqK9g4p2/zw68V7
+	 bFgkHc7xxblmzfa0DOAhde8tEAsiW9upwp1CXUQ2FuuLwW7LI6UL8RCvvY8N4Uq54P
+	 Oo1FT3pWlpv0n58B03DCeUUtr22+MrRq+8yQfTMfY1cm44AjzwiSDsDxMZiwUEha3a
+	 1/0RzjuieBc5Q==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id v95bl36wEAVO; Thu,  7 Dec 2023 16:49:02 +0000 (UTC)
+	with ESMTP id i_sSTs3SLSEJ; Thu,  7 Dec 2023 16:49:07 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 3FFAC83D1C;
-	Thu,  7 Dec 2023 16:49:02 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3FFAC83D1C
+	by smtp1.osuosl.org (Postfix) with ESMTP id 8917183D3E;
+	Thu,  7 Dec 2023 16:49:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8917183D3E
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 627501BF5B3
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:46 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 58B041BF5B3
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:50 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 3B50B42138
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3B50B42138
+ by smtp4.osuosl.org (Postfix) with ESMTP id 31CE342147
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 31CE342147
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 5na9gsWIL5ne for <intel-wired-lan@lists.osuosl.org>;
- Thu,  7 Dec 2023 16:48:45 +0000 (UTC)
+ with ESMTP id jttg7i0xx-1W for <intel-wired-lan@lists.osuosl.org>;
+ Thu,  7 Dec 2023 16:48:48 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.136])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 0A6C3420F6
- for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 0A6C3420F6
-X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="373759582"
-X-IronPort-AV: E=Sophos;i="6.04,258,1695711600"; d="scan'208";a="373759582"
+ by smtp4.osuosl.org (Postfix) with ESMTPS id C116B42138
+ for <intel-wired-lan@lists.osuosl.org>; Thu,  7 Dec 2023 16:48:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org C116B42138
+X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="373759603"
+X-IronPort-AV: E=Sophos;i="6.04,258,1695711600"; d="scan'208";a="373759603"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 07 Dec 2023 08:48:44 -0800
+ 07 Dec 2023 08:48:48 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="775477362"
-X-IronPort-AV: E=Sophos;i="6.04,258,1695711600"; d="scan'208";a="775477362"
+X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="775477375"
+X-IronPort-AV: E=Sophos;i="6.04,258,1695711600"; d="scan'208";a="775477375"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
- by fmsmga007.fm.intel.com with ESMTP; 07 Dec 2023 08:48:39 -0800
+ by fmsmga007.fm.intel.com with ESMTP; 07 Dec 2023 08:48:42 -0800
 Received: from mystra-4.igk.intel.com (mystra-4.igk.intel.com [10.123.220.40])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id 26A813542A;
- Thu,  7 Dec 2023 16:48:37 +0000 (GMT)
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id 0FEE735421;
+ Thu,  7 Dec 2023 16:48:40 +0000 (GMT)
 From: Marcin Szycik <marcin.szycik@linux.intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Thu,  7 Dec 2023 17:49:09 +0100
-Message-ID: <20231207164911.14330-6-marcin.szycik@linux.intel.com>
+Date: Thu,  7 Dec 2023 17:49:11 +0100
+Message-ID: <20231207164911.14330-8-marcin.szycik@linux.intel.com>
 X-Mailer: git-send-email 2.41.0
 In-Reply-To: <20231207164911.14330-1-marcin.szycik@linux.intel.com>
 References: <20231207164911.14330-1-marcin.szycik@linux.intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1701967725; x=1733503725;
+ t=1701967728; x=1733503728;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=rSG+prJYFRYrW9tfVQKxOROEvg739CvW/TwNE43HBiM=;
- b=csddKSlQc4SAg6eavG7FHoCGSy0+cvOIrsoLGR4QtXcuSPk2Gqml0/2K
- GODnYfwy7R8SCqFEIBBnS3xEXT7aM53IJf6LcUOnoceQdcaQJ5/PWHazW
- S078mb51SI3RaSyG3vXtua0AsByDG3Uzq9GlO113MUVAl122aHD2emBc+
- TzlXBRNWnA2p4rgHQvpP5yZzw4FM7w/Dln9mWVReIBzk3wxubc2Peh+5v
- C2HxghsoTzUAF2YVfyj2W4X14m8d67cAByWjUW1RC6bg8Te/qHopSrX/X
- pbWUzuD3gYPx+Ygd31ndPSYXPVnK2Dp9EeZ7JPWsnbDWEQswtjR0On6ux
- w==;
+ bh=EeDtvsL1NmnfJCp0xS/fxWL+214LlDaasv4Zj6WVZX0=;
+ b=JZSZJpOk7DJG2COOvFBDueBmxLg3REEj0qw3usdpfhADs5ckdlS+Cb8j
+ qaEF/GwJtaagvsFePE13zugOWDLQWvkIpqvWk9GiKoL58gWDkxRK3cEb9
+ 7PyqJ9Fey3QmSNuu1nCKSH5IC2FzRvQ8+wvD7UDq8XKISG5oryUD7uEk5
+ tnCSLEtWVMllAo3fWPLevWwt6BpBeGzDh4sMLD3a4y3ndd7QcCrWR4nlj
+ 2zs1h+L/0v7JhwEyAIra4vnMnUpW4PUjBe9tZm8mrkalzqH49fqXqjWUr
+ 2IW2ZsR25LY/oLf78mt6K3i3QP7+DohjvR1BcSlO0F4fRLmCgmvpgcWyp
+ A==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=csddKSlQ
-Subject: [Intel-wired-lan] [PATCH iwl-next v4 5/7] pfcp: always set pfcp
- metadata
+ header.a=rsa-sha256 header.s=Intel header.b=JZSZJpOk
+Subject: [Intel-wired-lan] [PATCH iwl-next v4 7/7] ice: Add support for PFCP
+ hardware offload in switchdev
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,486 +107,435 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+Add support for creating PFCP filters in switchdev mode. Add support
+for parsing PFCP-specific tc options: S flag and SEID.
 
-In PFCP receive path set metadata needed by flower code to do correct
-classification based on this metadata.
+To create a PFCP filter, a special netdev must be created and passed
+to tc command:
 
-Signed-off-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
+  ip link add pfcp0 type pfcp
+  tc filter add dev eth0 ingress prio 1 flower pfcp_opts \
+    1:12ab/ff:fffffffffffffff0 skip_hw action mirred egress redirect \
+    dev pfcp0
+
+Changes in iproute2 [1] are required to be able to use pfcp_opts in tc.
+
+ICE COMMS package is required to create a filter as it contains PFCP
+profiles.
+
+Link: https://lore.kernel.org/netdev/20230614091758.11180-1-marcin.szycik@linux.intel.com [1]
 Reviewed-by: Simon Horman <simon.horman@corigine.com>
 Signed-off-by: Marcin Szycik <marcin.szycik@linux.intel.com>
 ---
- drivers/net/pfcp.c             |  81 ++++++++++++++++++++++++-
- include/net/ip_tunnels.h       |   3 +
- include/net/pfcp.h             |  73 ++++++++++++++++++++++
- include/uapi/linux/if_tunnel.h |   3 +
- include/uapi/linux/pkt_cls.h   |  14 +++++
- lib/test_bitmap.c              |   7 +--
- net/sched/cls_flower.c         | 107 +++++++++++++++++++++++++++++++++
- 7 files changed, 281 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_ddp.c      |  9 ++
+ .../net/ethernet/intel/ice/ice_flex_type.h    |  4 +-
+ .../ethernet/intel/ice/ice_protocol_type.h    | 12 +++
+ drivers/net/ethernet/intel/ice/ice_switch.c   | 85 +++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_switch.h   |  2 +
+ drivers/net/ethernet/intel/ice/ice_tc_lib.c   | 58 +++++++++++--
+ drivers/net/ethernet/intel/ice/ice_tc_lib.h   |  6 ++
+ 7 files changed, 169 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/pfcp.c b/drivers/net/pfcp.c
-index 3f1ee0ae7111..cc5b28c5f99f 100644
---- a/drivers/net/pfcp.c
-+++ b/drivers/net/pfcp.c
-@@ -21,6 +21,8 @@ struct pfcp_dev {
- 	struct socket		*sock;
- 	struct net_device	*dev;
- 	struct net		*net;
+diff --git a/drivers/net/ethernet/intel/ice/ice_ddp.c b/drivers/net/ethernet/intel/ice/ice_ddp.c
+index 8b7504a9df31..57278ec71aac 100644
+--- a/drivers/net/ethernet/intel/ice/ice_ddp.c
++++ b/drivers/net/ethernet/intel/ice/ice_ddp.c
+@@ -721,6 +721,12 @@ static bool ice_is_gtp_c_profile(u16 prof_idx)
+ 	}
+ }
+ 
++static bool ice_is_pfcp_profile(u16 prof_idx)
++{
++	return prof_idx >= ICE_PROFID_IPV4_PFCP_NODE &&
++	       prof_idx <= ICE_PROFID_IPV6_PFCP_SESSION;
++}
 +
-+	struct gro_cells	gro_cells;
+ /**
+  * ice_get_sw_prof_type - determine switch profile type
+  * @hw: pointer to the HW structure
+@@ -738,6 +744,9 @@ static enum ice_prof_type ice_get_sw_prof_type(struct ice_hw *hw,
+ 	if (ice_is_gtp_u_profile(prof_idx))
+ 		return ICE_PROF_TUN_GTPU;
+ 
++	if (ice_is_pfcp_profile(prof_idx))
++		return ICE_PROF_TUN_PFCP;
++
+ 	for (i = 0; i < hw->blk[ICE_BLK_SW].es.fvw; i++) {
+ 		/* UDP tunnel will have UDP_OF protocol ID and VNI offset */
+ 		if (fv->ew[i].prot_id == (u8)ICE_PROT_UDP_OF &&
+diff --git a/drivers/net/ethernet/intel/ice/ice_flex_type.h b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+index 4f42e14ed3ae..2dd8909dce2e 100644
+--- a/drivers/net/ethernet/intel/ice/ice_flex_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_flex_type.h
+@@ -93,6 +93,7 @@ enum ice_tunnel_type {
+ 	TNL_GRETAP,
+ 	TNL_GTPC,
+ 	TNL_GTPU,
++	TNL_PFCP,
+ 	__TNL_TYPE_CNT,
+ 	TNL_LAST = 0xFF,
+ 	TNL_ALL = 0xFF,
+@@ -351,7 +352,8 @@ enum ice_prof_type {
+ 	ICE_PROF_TUN_GRE = 0x4,
+ 	ICE_PROF_TUN_GTPU = 0x8,
+ 	ICE_PROF_TUN_GTPC = 0x10,
+-	ICE_PROF_TUN_ALL = 0x1E,
++	ICE_PROF_TUN_PFCP = 0x20,
++	ICE_PROF_TUN_ALL = 0x3E,
+ 	ICE_PROF_ALL = 0xFF,
  };
  
- static unsigned int pfcp_net_id __read_mostly;
-@@ -29,6 +31,78 @@ struct pfcp_net {
- 	struct list_head	pfcp_dev_list;
+diff --git a/drivers/net/ethernet/intel/ice/ice_protocol_type.h b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+index f6f27361c3cf..755a9c55267c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_protocol_type.h
++++ b/drivers/net/ethernet/intel/ice/ice_protocol_type.h
+@@ -43,6 +43,7 @@ enum ice_protocol_type {
+ 	ICE_NVGRE,
+ 	ICE_GTP,
+ 	ICE_GTP_NO_PAY,
++	ICE_PFCP,
+ 	ICE_PPPOE,
+ 	ICE_L2TPV3,
+ 	ICE_VLAN_EX,
+@@ -61,6 +62,7 @@ enum ice_sw_tunnel_type {
+ 	ICE_SW_TUN_NVGRE,
+ 	ICE_SW_TUN_GTPU,
+ 	ICE_SW_TUN_GTPC,
++	ICE_SW_TUN_PFCP,
+ 	ICE_ALL_TUNNELS /* All tunnel types including NVGRE */
  };
  
-+static void
-+pfcp_session_recv(struct pfcp_dev *pfcp, struct sk_buff *skb,
-+		  struct pfcp_metadata *md)
-+{
-+	struct pfcphdr_session *unparsed = pfcp_hdr_session(skb);
-+
-+	md->seid = unparsed->seid;
-+	md->type = PFCP_TYPE_SESSION;
-+}
-+
-+static void
-+pfcp_node_recv(struct pfcp_dev *pfcp, struct sk_buff *skb,
-+	       struct pfcp_metadata *md)
-+{
-+	md->type = PFCP_TYPE_NODE;
-+}
-+
-+static int pfcp_encap_recv(struct sock *sk, struct sk_buff *skb)
-+{
-+	IP_TUNNEL_DECLARE_FLAGS(flags) = { };
-+	struct metadata_dst *tun_dst;
-+	struct pfcp_metadata *md;
-+	struct pfcphdr *unparsed;
-+	struct pfcp_dev *pfcp;
-+
-+	if (unlikely(!pskb_may_pull(skb, PFCP_HLEN)))
-+		goto drop;
-+
-+	pfcp = rcu_dereference_sk_user_data(sk);
-+	if (unlikely(!pfcp))
-+		goto drop;
-+
-+	unparsed = pfcp_hdr(skb);
-+
-+	ip_tunnel_flags_zero(flags);
-+	tun_dst = udp_tun_rx_dst(skb, sk->sk_family, flags, 0,
-+				 sizeof(*md));
-+	if (unlikely(!tun_dst))
-+		goto drop;
-+
-+	md = ip_tunnel_info_opts(&tun_dst->u.tun_info);
-+	if (unlikely(!md))
-+		goto drop;
-+
-+	if (unparsed->flags & PFCP_SEID_FLAG)
-+		pfcp_session_recv(pfcp, skb, md);
-+	else
-+		pfcp_node_recv(pfcp, skb, md);
-+
-+	__set_bit(IP_TUNNEL_PFCP_OPT_BIT, flags);
-+	ip_tunnel_info_opts_set(&tun_dst->u.tun_info, md, sizeof(*md),
-+				flags);
-+
-+	if (unlikely(iptunnel_pull_header(skb, PFCP_HLEN, skb->protocol,
-+					  !net_eq(sock_net(sk),
-+					  dev_net(pfcp->dev)))))
-+		goto drop;
-+
-+	skb_dst_set(skb, (struct dst_entry *)tun_dst);
-+
-+	skb_reset_network_header(skb);
-+	skb_reset_mac_header(skb);
-+	skb->dev = pfcp->dev;
-+
-+	gro_cells_receive(&pfcp->gro_cells, skb);
-+
-+	return 0;
-+drop:
-+	kfree_skb(skb);
-+	return 0;
-+}
-+
- static void pfcp_del_sock(struct pfcp_dev *pfcp)
- {
- 	udp_tunnel_sock_release(pfcp->sock);
-@@ -39,6 +113,7 @@ static void pfcp_dev_uninit(struct net_device *dev)
- {
- 	struct pfcp_dev *pfcp = netdev_priv(dev);
+@@ -202,6 +204,15 @@ struct ice_udp_gtp_hdr {
+ 	u8 rsvrd;
+ };
  
-+	gro_cells_destroy(&pfcp->gro_cells);
- 	pfcp_del_sock(pfcp);
- }
- 
-@@ -48,7 +123,7 @@ static int pfcp_dev_init(struct net_device *dev)
- 
- 	pfcp->dev = dev;
- 
--	return 0;
-+	return gro_cells_init(&pfcp->gro_cells, dev);
- }
- 
- static const struct net_device_ops pfcp_netdev_ops = {
-@@ -94,6 +169,10 @@ static struct socket *pfcp_create_sock(struct pfcp_dev *pfcp)
- 	if (err)
- 		return ERR_PTR(err);
- 
-+	tuncfg.sk_user_data = pfcp;
-+	tuncfg.encap_rcv = pfcp_encap_recv;
-+	tuncfg.encap_type = 1;
-+
- 	setup_udp_tunnel_sock(net, sock, &tuncfg);
- 
- 	return sock;
-diff --git a/include/net/ip_tunnels.h b/include/net/ip_tunnels.h
-index 1f04a379291f..74abfc5f6579 100644
---- a/include/net/ip_tunnels.h
-+++ b/include/net/ip_tunnels.h
-@@ -216,6 +216,7 @@ static inline void ip_tunnel_set_options_present(unsigned long *flags)
- 	__set_bit(IP_TUNNEL_VXLAN_OPT_BIT, present);
- 	__set_bit(IP_TUNNEL_ERSPAN_OPT_BIT, present);
- 	__set_bit(IP_TUNNEL_GTP_OPT_BIT, present);
-+	__set_bit(IP_TUNNEL_PFCP_OPT_BIT, present);
- 
- 	ip_tunnel_flags_or(flags, flags, present);
- }
-@@ -228,6 +229,7 @@ static inline void ip_tunnel_clear_options_present(unsigned long *flags)
- 	__set_bit(IP_TUNNEL_VXLAN_OPT_BIT, present);
- 	__set_bit(IP_TUNNEL_ERSPAN_OPT_BIT, present);
- 	__set_bit(IP_TUNNEL_GTP_OPT_BIT, present);
-+	__set_bit(IP_TUNNEL_PFCP_OPT_BIT, present);
- 
- 	__ipt_flag_op(bitmap_andnot, flags, flags, present);
- }
-@@ -240,6 +242,7 @@ static inline bool ip_tunnel_is_options_present(const unsigned long *flags)
- 	__set_bit(IP_TUNNEL_VXLAN_OPT_BIT, present);
- 	__set_bit(IP_TUNNEL_ERSPAN_OPT_BIT, present);
- 	__set_bit(IP_TUNNEL_GTP_OPT_BIT, present);
-+	__set_bit(IP_TUNNEL_PFCP_OPT_BIT, present);
- 
- 	return ip_tunnel_flags_intersect(flags, present);
- }
-diff --git a/include/net/pfcp.h b/include/net/pfcp.h
-index 3f9ebf27a8ff..af14f970b80e 100644
---- a/include/net/pfcp.h
-+++ b/include/net/pfcp.h
-@@ -2,12 +2,85 @@
- #ifndef _PFCP_H_
- #define _PFCP_H_
- 
-+#include <uapi/linux/if_ether.h>
-+#include <net/dst_metadata.h>
- #include <linux/netdevice.h>
-+#include <uapi/linux/ipv6.h>
-+#include <net/udp_tunnel.h>
-+#include <uapi/linux/udp.h>
-+#include <uapi/linux/ip.h>
- #include <linux/string.h>
- #include <linux/types.h>
-+#include <linux/bits.h>
- 
- #define PFCP_PORT 8805
- 
-+/* PFCP protocol header */
-+struct pfcphdr {
-+	u8	flags;
-+	u8	message_type;
-+	__be16	message_length;
-+};
-+
-+/* PFCP header flags */
-+#define PFCP_SEID_FLAG		BIT(0)
-+#define PFCP_MP_FLAG		BIT(1)
-+
-+#define PFCP_VERSION_MASK	GENMASK(4, 0)
-+
-+#define PFCP_HLEN (sizeof(struct udphdr) + sizeof(struct pfcphdr))
-+
-+/* PFCP node related messages */
-+struct pfcphdr_node {
-+	u8	seq_number[3];
-+	u8	reserved;
-+};
-+
-+/* PFCP session related messages */
-+struct pfcphdr_session {
-+	__be64	seid;
-+	u8	seq_number[3];
-+#ifdef __LITTLE_ENDIAN_BITFIELD
-+	u8	message_priority:4,
-+		reserved:4;
-+#elif defined(__BIG_ENDIAN_BITFIELD)
-+	u8	reserved:4,
-+		message_priprity:4;
-+#else
-+#error "Please fix <asm/byteorder>"
-+#endif
-+};
-+
-+struct pfcp_metadata {
-+	u8 type;
++struct ice_pfcp_hdr {
++	u8 flags;
++	u8 msg_type;
++	__be16 length;
 +	__be64 seid;
-+} __packed;
++	__be32 seq;
++	u8 spare;
++} __packed __aligned(__alignof__(u16));
 +
-+enum {
-+	PFCP_TYPE_NODE		= 0,
-+	PFCP_TYPE_SESSION	= 1,
+ struct ice_pppoe_hdr {
+ 	u8 rsrvd_ver_type;
+ 	u8 rsrvd_code;
+@@ -418,6 +429,7 @@ union ice_prot_hdr {
+ 	struct ice_udp_tnl_hdr tnl_hdr;
+ 	struct ice_nvgre_hdr nvgre_hdr;
+ 	struct ice_udp_gtp_hdr gtp_hdr;
++	struct ice_pfcp_hdr pfcp_hdr;
+ 	struct ice_pppoe_hdr pppoe_hdr;
+ 	struct ice_l2tpv3_sess_hdr l2tpv3_sess_hdr;
+ 	struct ice_hw_metadata metadata;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
+index ee19f3aa3d19..a83462d77ebd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.c
++++ b/drivers/net/ethernet/intel/ice/ice_switch.c
+@@ -42,6 +42,7 @@ enum {
+ 	ICE_PKT_KMALLOC		= BIT(9),
+ 	ICE_PKT_PPPOE		= BIT(10),
+ 	ICE_PKT_L2TPV3		= BIT(11),
++	ICE_PKT_PFCP		= BIT(12),
+ };
+ 
+ struct ice_dummy_pkt_offsets {
+@@ -1110,6 +1111,77 @@ ICE_DECLARE_PKT_TEMPLATE(ipv6_gtp) = {
+ 	0x00, 0x00,
+ };
+ 
++ICE_DECLARE_PKT_OFFSETS(pfcp_session_ipv4) = {
++	{ ICE_MAC_OFOS,		0 },
++	{ ICE_ETYPE_OL,		12 },
++	{ ICE_IPV4_OFOS,	14 },
++	{ ICE_UDP_ILOS,		34 },
++	{ ICE_PFCP,		42 },
++	{ ICE_PROTOCOL_LAST,	0 },
 +};
 +
-+#define PFCP_HEADROOM (sizeof(struct iphdr) + sizeof(struct udphdr) + \
-+		       sizeof(struct pfcphdr) + sizeof(struct ethhdr))
-+#define PFCP6_HEADROOM (sizeof(struct ipv6hdr) + sizeof(struct udphdr) + \
-+			sizeof(struct pfcphdr) + sizeof(struct ethhdr))
++ICE_DECLARE_PKT_TEMPLATE(pfcp_session_ipv4) = {
++	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
 +
-+static inline struct pfcphdr *pfcp_hdr(struct sk_buff *skb)
-+{
-+	return (struct pfcphdr *)(udp_hdr(skb) + 1);
-+}
++	0x08, 0x00,		/* ICE_ETYPE_OL 12 */
 +
-+static inline struct pfcphdr_node *pfcp_hdr_node(struct sk_buff *skb)
-+{
-+	return (struct pfcphdr_node *)(pfcp_hdr(skb) + 1);
-+}
++	0x45, 0x00, 0x00, 0x2c, /* ICE_IPV4_OFOS 14 */
++	0x00, 0x01, 0x00, 0x00,
++	0x00, 0x11, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
 +
-+static inline struct pfcphdr_session *pfcp_hdr_session(struct sk_buff *skb)
-+{
-+	return (struct pfcphdr_session *)(pfcp_hdr(skb) + 1);
-+}
++	0x00, 0x00, 0x22, 0x65, /* ICE_UDP_ILOS 34 */
++	0x00, 0x18, 0x00, 0x00,
 +
- static inline bool netif_is_pfcp(const struct net_device *dev)
- {
- 	return dev->rtnl_link_ops &&
-diff --git a/include/uapi/linux/if_tunnel.h b/include/uapi/linux/if_tunnel.h
-index 838927dd73a4..e1a246dd8c62 100644
---- a/include/uapi/linux/if_tunnel.h
-+++ b/include/uapi/linux/if_tunnel.h
-@@ -212,6 +212,9 @@ enum {
- 	IP_TUNNEL_VTI_BIT,
- 	IP_TUNNEL_SIT_ISATAP_BIT	= IP_TUNNEL_VTI_BIT,
- 
-+	/* Flags starting from here are not available via the old UAPI */
-+	IP_TUNNEL_PFCP_OPT_BIT,		/* OPTIONS_PRESENT */
++	0x21, 0x01, 0x00, 0x0c, /* ICE_PFCP 42 */
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
 +
- 	__IP_TUNNEL_FLAG_NUM,
- };
- 
-diff --git a/include/uapi/linux/pkt_cls.h b/include/uapi/linux/pkt_cls.h
-index c7082cc60d21..6dc2856d8cf7 100644
---- a/include/uapi/linux/pkt_cls.h
-+++ b/include/uapi/linux/pkt_cls.h
-@@ -634,6 +634,10 @@ enum {
- 					 * TCA_FLOWER_KEY_ENC_OPT_GTP_
- 					 * attributes
- 					 */
-+	TCA_FLOWER_KEY_ENC_OPTS_PFCP,	/* Nested
-+					 * TCA_FLOWER_KEY_ENC_IPT_PFCP
-+					 * attributes
-+					 */
- 	__TCA_FLOWER_KEY_ENC_OPTS_MAX,
- };
- 
-@@ -683,6 +687,16 @@ enum {
- #define TCA_FLOWER_KEY_ENC_OPT_GTP_MAX \
- 		(__TCA_FLOWER_KEY_ENC_OPT_GTP_MAX - 1)
- 
-+enum {
-+	TCA_FLOWER_KEY_ENC_OPT_PFCP_UNSPEC,
-+	TCA_FLOWER_KEY_ENC_OPT_PFCP_TYPE,		/* u8 */
-+	TCA_FLOWER_KEY_ENC_OPT_PFCP_SEID,		/* be64 */
-+	__TCA_FLOWER_KEY_ENC_OPT_PFCP_MAX,
++	0x00, 0x00,		/* 2 bytes for 4 byte alignment */
 +};
 +
-+#define TCA_FLOWER_KEY_ENC_OPT_PFCP_MAX \
-+		(__TCA_FLOWER_KEY_ENC_OPT_PFCP_MAX - 1)
-+
- enum {
- 	TCA_FLOWER_KEY_MPLS_OPTS_UNSPEC,
- 	TCA_FLOWER_KEY_MPLS_OPTS_LSE,
-diff --git a/lib/test_bitmap.c b/lib/test_bitmap.c
-index 270afc0cba5c..1639d27d128b 100644
---- a/lib/test_bitmap.c
-+++ b/lib/test_bitmap.c
-@@ -1478,12 +1478,7 @@ static const struct ip_tunnel_flags_test ip_tunnel_flags_test[] __initconst = {
- 			     ip_tunnel_flags_1),
- 	IP_TUNNEL_FLAGS_TEST(ip_tunnel_flags_2_src, true, VTI_ISVTI,
- 			     ip_tunnel_flags_2_exp),
--	IP_TUNNEL_FLAGS_TEST(ip_tunnel_flags_3_src,
--			     /*
--			      * This must be set to ``false`` once
--			      * ``__IP_TUNNEL_FLAG_NUM`` goes above 17.
--			      */
--			     true,
-+	IP_TUNNEL_FLAGS_TEST(ip_tunnel_flags_3_src, false,
- 			     cpu_to_be16(BIT(IP_TUNNEL_VXLAN_OPT_BIT)),
- 			     ip_tunnel_flags_3_exp),
- };
-diff --git a/net/sched/cls_flower.c b/net/sched/cls_flower.c
-index 8986bf9d1259..8b34d941bdd0 100644
---- a/net/sched/cls_flower.c
-+++ b/net/sched/cls_flower.c
-@@ -28,6 +28,7 @@
- #include <net/vxlan.h>
- #include <net/erspan.h>
- #include <net/gtp.h>
-+#include <net/pfcp.h>
- #include <net/tc_wrapper.h>
- 
- #include <net/dst.h>
-@@ -741,6 +742,7 @@ enc_opts_policy[TCA_FLOWER_KEY_ENC_OPTS_MAX + 1] = {
- 	[TCA_FLOWER_KEY_ENC_OPTS_VXLAN]         = { .type = NLA_NESTED },
- 	[TCA_FLOWER_KEY_ENC_OPTS_ERSPAN]        = { .type = NLA_NESTED },
- 	[TCA_FLOWER_KEY_ENC_OPTS_GTP]		= { .type = NLA_NESTED },
-+	[TCA_FLOWER_KEY_ENC_OPTS_PFCP]		= { .type = NLA_NESTED },
- };
- 
- static const struct nla_policy
-@@ -770,6 +772,12 @@ gtp_opt_policy[TCA_FLOWER_KEY_ENC_OPT_GTP_MAX + 1] = {
- 	[TCA_FLOWER_KEY_ENC_OPT_GTP_QFI]	   = { .type = NLA_U8 },
- };
- 
-+static const struct nla_policy
-+pfcp_opt_policy[TCA_FLOWER_KEY_ENC_OPT_PFCP_MAX + 1] = {
-+	[TCA_FLOWER_KEY_ENC_OPT_PFCP_TYPE]	   = { .type = NLA_U8 },
-+	[TCA_FLOWER_KEY_ENC_OPT_PFCP_SEID]	   = { .type = NLA_U64 },
++ICE_DECLARE_PKT_OFFSETS(pfcp_session_ipv6) = {
++	{ ICE_MAC_OFOS,		0 },
++	{ ICE_ETYPE_OL,		12 },
++	{ ICE_IPV6_OFOS,	14 },
++	{ ICE_UDP_ILOS,		54 },
++	{ ICE_PFCP,		62 },
++	{ ICE_PROTOCOL_LAST,	0 },
 +};
 +
- static const struct nla_policy
- mpls_stack_entry_policy[TCA_FLOWER_KEY_MPLS_OPT_LSE_MAX + 1] = {
- 	[TCA_FLOWER_KEY_MPLS_OPT_LSE_DEPTH]    = { .type = NLA_U8 },
-@@ -1419,6 +1427,44 @@ static int fl_set_gtp_opt(const struct nlattr *nla, struct fl_flow_key *key,
- 	return sizeof(*sinfo);
- }
- 
-+static int fl_set_pfcp_opt(const struct nlattr *nla, struct fl_flow_key *key,
-+			   int depth, int option_len,
-+			   struct netlink_ext_ack *extack)
-+{
-+	struct nlattr *tb[TCA_FLOWER_KEY_ENC_OPT_PFCP_MAX + 1];
-+	struct pfcp_metadata *md;
-+	int err;
++ICE_DECLARE_PKT_TEMPLATE(pfcp_session_ipv6) = {
++	0x00, 0x00, 0x00, 0x00, /* ICE_MAC_OFOS 0 */
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
 +
-+	md = (struct pfcp_metadata *)&key->enc_opts.data[key->enc_opts.len];
-+	memset(md, 0xff, sizeof(*md));
++	0x86, 0xdd,		/* ICE_ETYPE_OL 12 */
 +
-+	if (!depth)
-+		return sizeof(*md);
++	0x60, 0x00, 0x00, 0x00, /* ICE_IPV6_OFOS 14 */
++	0x00, 0x10, 0x11, 0x00, /* Next header UDP */
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
 +
-+	if (nla_type(nla) != TCA_FLOWER_KEY_ENC_OPTS_PFCP) {
-+		NL_SET_ERR_MSG_MOD(extack, "Non-pfcp option type for mask");
-+		return -EINVAL;
-+	}
++	0x00, 0x00, 0x22, 0x65, /* ICE_UDP_ILOS 54 */
++	0x00, 0x18, 0x00, 0x00,
 +
-+	err = nla_parse_nested(tb, TCA_FLOWER_KEY_ENC_OPT_PFCP_MAX, nla,
-+			       pfcp_opt_policy, extack);
-+	if (err < 0)
-+		return err;
++	0x21, 0x01, 0x00, 0x0c, /* ICE_PFCP 62 */
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00,
 +
-+	if (!option_len && !tb[TCA_FLOWER_KEY_ENC_OPT_PFCP_TYPE]) {
-+		NL_SET_ERR_MSG_MOD(extack, "Missing tunnel key pfcp option type");
-+		return -EINVAL;
-+	}
++	0x00, 0x00,		/* 2 bytes for 4 byte alignment */
++};
 +
-+	if (tb[TCA_FLOWER_KEY_ENC_OPT_PFCP_TYPE])
-+		md->type = nla_get_u8(tb[TCA_FLOWER_KEY_ENC_OPT_PFCP_TYPE]);
-+
-+	if (tb[TCA_FLOWER_KEY_ENC_OPT_PFCP_SEID])
-+		md->seid = nla_get_be64(tb[TCA_FLOWER_KEY_ENC_OPT_PFCP_SEID]);
-+
-+	return sizeof(*md);
-+}
-+
- static int fl_set_enc_opt(struct nlattr **tb, struct fl_flow_key *key,
- 			  struct fl_flow_key *mask,
- 			  struct netlink_ext_ack *extack)
-@@ -1576,6 +1622,36 @@ static int fl_set_enc_opt(struct nlattr **tb, struct fl_flow_key *key,
- 				return -EINVAL;
- 			}
- 			break;
-+		case TCA_FLOWER_KEY_ENC_OPTS_PFCP:
-+			if (key->enc_opts.dst_opt_type) {
-+				NL_SET_ERR_MSG_MOD(extack, "Duplicate type for pfcp options");
-+				return -EINVAL;
-+			}
-+			option_len = 0;
-+			key->enc_opts.dst_opt_type = IP_TUNNEL_PFCP_OPT_BIT;
-+			option_len = fl_set_pfcp_opt(nla_opt_key, key,
-+						     key_depth, option_len,
-+						     extack);
-+			if (option_len < 0)
-+				return option_len;
-+
-+			key->enc_opts.len += option_len;
-+			/* At the same time we need to parse through the mask
-+			 * in order to verify exact and mask attribute lengths.
-+			 */
-+			mask->enc_opts.dst_opt_type = IP_TUNNEL_PFCP_OPT_BIT;
-+			option_len = fl_set_pfcp_opt(nla_opt_msk, mask,
-+						     msk_depth, option_len,
-+						     extack);
-+			if (option_len < 0)
-+				return option_len;
-+
-+			mask->enc_opts.len += option_len;
-+			if (key->enc_opts.len != mask->enc_opts.len) {
-+				NL_SET_ERR_MSG_MOD(extack, "Key and mask miss aligned");
-+				return -EINVAL;
-+			}
-+			break;
- 		default:
- 			NL_SET_ERR_MSG(extack, "Unknown tunnel option type");
- 			return -EINVAL;
-@@ -3093,6 +3169,32 @@ static int fl_dump_key_gtp_opt(struct sk_buff *skb,
- 	return -EMSGSIZE;
- }
- 
-+static int fl_dump_key_pfcp_opt(struct sk_buff *skb,
-+				struct flow_dissector_key_enc_opts *enc_opts)
-+{
-+	struct pfcp_metadata *md;
-+	struct nlattr *nest;
-+
-+	nest = nla_nest_start_noflag(skb, TCA_FLOWER_KEY_ENC_OPTS_PFCP);
-+	if (!nest)
-+		goto nla_put_failure;
-+
-+	md = (struct pfcp_metadata *)&enc_opts->data[0];
-+	if (nla_put_u8(skb, TCA_FLOWER_KEY_ENC_OPT_PFCP_TYPE, md->type))
-+		goto nla_put_failure;
-+
-+	if (nla_put_be64(skb, TCA_FLOWER_KEY_ENC_OPT_PFCP_SEID,
-+			 md->seid, 0))
-+		goto nla_put_failure;
-+
-+	nla_nest_end(skb, nest);
-+	return 0;
-+
-+nla_put_failure:
-+	nla_nest_cancel(skb, nest);
-+	return -EMSGSIZE;
-+}
-+
- static int fl_dump_key_ct(struct sk_buff *skb,
- 			  struct flow_dissector_key_ct *key,
- 			  struct flow_dissector_key_ct *mask)
-@@ -3198,6 +3300,11 @@ static int fl_dump_key_options(struct sk_buff *skb, int enc_opt_type,
- 		if (err)
- 			goto nla_put_failure;
+ ICE_DECLARE_PKT_OFFSETS(pppoe_ipv4_tcp) = {
+ 	{ ICE_MAC_OFOS,		0 },
+ 	{ ICE_ETYPE_OL,		12 },
+@@ -1343,6 +1415,8 @@ static const struct ice_dummy_pkt_profile ice_dummy_pkt_profiles[] = {
+ 	ICE_PKT_PROFILE(ipv4_gtpu_ipv4_tcp, ICE_PKT_TUN_GTPU),
+ 	ICE_PKT_PROFILE(ipv6_gtp, ICE_PKT_TUN_GTPC | ICE_PKT_OUTER_IPV6),
+ 	ICE_PKT_PROFILE(ipv4_gtpu_ipv4, ICE_PKT_TUN_GTPC),
++	ICE_PKT_PROFILE(pfcp_session_ipv6, ICE_PKT_PFCP | ICE_PKT_OUTER_IPV6),
++	ICE_PKT_PROFILE(pfcp_session_ipv4, ICE_PKT_PFCP),
+ 	ICE_PKT_PROFILE(pppoe_ipv6_udp, ICE_PKT_PPPOE | ICE_PKT_OUTER_IPV6 |
+ 					ICE_PKT_INNER_UDP),
+ 	ICE_PKT_PROFILE(pppoe_ipv6_tcp, ICE_PKT_PPPOE | ICE_PKT_OUTER_IPV6),
+@@ -4532,6 +4606,7 @@ static const struct ice_prot_ext_tbl_entry ice_prot_ext[ICE_PROTOCOL_LAST] = {
+ 	ICE_PROTOCOL_ENTRY(ICE_NVGRE, 0, 2, 4, 6),
+ 	ICE_PROTOCOL_ENTRY(ICE_GTP, 8, 10, 12, 14, 16, 18, 20, 22),
+ 	ICE_PROTOCOL_ENTRY(ICE_GTP_NO_PAY, 8, 10, 12, 14),
++	ICE_PROTOCOL_ENTRY(ICE_PFCP, 8, 10, 12, 14, 16, 18, 20, 22),
+ 	ICE_PROTOCOL_ENTRY(ICE_PPPOE, 0, 2, 4, 6),
+ 	ICE_PROTOCOL_ENTRY(ICE_L2TPV3, 0, 2, 4, 6, 8, 10),
+ 	ICE_PROTOCOL_ENTRY(ICE_VLAN_EX, 2, 0),
+@@ -4565,6 +4640,7 @@ static struct ice_protocol_entry ice_prot_id_tbl[ICE_PROTOCOL_LAST] = {
+ 	{ ICE_NVGRE,		ICE_GRE_OF_HW },
+ 	{ ICE_GTP,		ICE_UDP_OF_HW },
+ 	{ ICE_GTP_NO_PAY,	ICE_UDP_ILOS_HW },
++	{ ICE_PFCP,		ICE_UDP_ILOS_HW },
+ 	{ ICE_PPPOE,		ICE_PPPOE_HW },
+ 	{ ICE_L2TPV3,		ICE_L2TPV3_HW },
+ 	{ ICE_VLAN_EX,          ICE_VLAN_OF_HW },
+@@ -5272,6 +5348,9 @@ ice_get_compat_fv_bitmap(struct ice_hw *hw, struct ice_adv_rule_info *rinfo,
+ 	case ICE_SW_TUN_GTPC:
+ 		prof_type = ICE_PROF_TUN_GTPC;
  		break;
-+	case IP_TUNNEL_PFCP_OPT_BIT:
-+		err = fl_dump_key_pfcp_opt(skb, enc_opts);
-+		if (err)
-+			goto nla_put_failure;
++	case ICE_SW_TUN_PFCP:
++		prof_type = ICE_PROF_TUN_PFCP;
++		break;
+ 	case ICE_SW_TUN_AND_NON_TUN:
+ 	default:
+ 		prof_type = ICE_PROF_ALL;
+@@ -5554,6 +5633,9 @@ ice_find_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
+ 	case ICE_SW_TUN_VXLAN:
+ 		match |= ICE_PKT_TUN_UDP;
+ 		break;
++	case ICE_SW_TUN_PFCP:
++		match |= ICE_PKT_PFCP;
 +		break;
  	default:
- 		goto nla_put_failure;
+ 		break;
  	}
+@@ -5694,6 +5776,9 @@ ice_fill_adv_dummy_packet(struct ice_adv_lkup_elem *lkups, u16 lkups_cnt,
+ 		case ICE_GTP:
+ 			len = sizeof(struct ice_udp_gtp_hdr);
+ 			break;
++		case ICE_PFCP:
++			len = sizeof(struct ice_pfcp_hdr);
++			break;
+ 		case ICE_PPPOE:
+ 			len = sizeof(struct ice_pppoe_hdr);
+ 			break;
+diff --git a/drivers/net/ethernet/intel/ice/ice_switch.h b/drivers/net/ethernet/intel/ice/ice_switch.h
+index db7e501b7e0a..30091a80e7fa 100644
+--- a/drivers/net/ethernet/intel/ice/ice_switch.h
++++ b/drivers/net/ethernet/intel/ice/ice_switch.h
+@@ -21,6 +21,8 @@
+ #define ICE_PROFID_IPV6_GTPC_NO_TEID			45
+ #define ICE_PROFID_IPV6_GTPU_TEID			46
+ #define ICE_PROFID_IPV6_GTPU_IPV6_TCP_INNER		70
++#define ICE_PROFID_IPV4_PFCP_NODE			79
++#define ICE_PROFID_IPV6_PFCP_SESSION			82
+ 
+ #define ICE_SW_RULE_VSI_LIST_SIZE(s, n)		struct_size((s), vsi, (n))
+ #define ICE_SW_RULE_RX_TX_HDR_SIZE(s, l)	struct_size((s), hdr_data, (l))
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+index e9acab2ede10..2e9fffa77538 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
+@@ -38,6 +38,9 @@ ice_tc_count_lkups(u32 flags, struct ice_tc_flower_lyr_2_4_hdrs *headers,
+ 	if (flags & ICE_TC_FLWR_FIELD_GTP_OPTS)
+ 		lkups_cnt++;
+ 
++	if (flags & ICE_TC_FLWR_FIELD_PFCP_OPTS)
++		lkups_cnt++;
++
+ 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
+ 		     ICE_TC_FLWR_FIELD_ENC_DEST_IPV4 |
+ 		     ICE_TC_FLWR_FIELD_ENC_SRC_IPV6 |
+@@ -138,6 +141,8 @@ ice_proto_type_from_tunnel(enum ice_tunnel_type type)
+ 		return ICE_GTP;
+ 	case TNL_GTPC:
+ 		return ICE_GTP_NO_PAY;
++	case TNL_PFCP:
++		return ICE_PFCP;
+ 	default:
+ 		return 0;
+ 	}
+@@ -157,6 +162,8 @@ ice_sw_type_from_tunnel(enum ice_tunnel_type type)
+ 		return ICE_SW_TUN_GTPU;
+ 	case TNL_GTPC:
+ 		return ICE_SW_TUN_GTPC;
++	case TNL_PFCP:
++		return ICE_SW_TUN_PFCP;
+ 	default:
+ 		return ICE_NON_TUN;
+ 	}
+@@ -236,6 +243,22 @@ ice_tc_fill_tunnel_outer(u32 flags, struct ice_tc_flower_fltr *fltr,
+ 		i++;
+ 	}
+ 
++	if (flags & ICE_TC_FLWR_FIELD_PFCP_OPTS) {
++		struct ice_pfcp_hdr *hdr_h, *hdr_m;
++
++		hdr_h = &list[i].h_u.pfcp_hdr;
++		hdr_m = &list[i].m_u.pfcp_hdr;
++		list[i].type = ICE_PFCP;
++
++		hdr_h->flags = fltr->pfcp_meta_keys.type;
++		hdr_m->flags = fltr->pfcp_meta_masks.type & 0x01;
++
++		hdr_h->seid = fltr->pfcp_meta_keys.seid;
++		hdr_m->seid = fltr->pfcp_meta_masks.seid;
++
++		i++;
++	}
++
+ 	if (flags & (ICE_TC_FLWR_FIELD_ENC_SRC_IPV4 |
+ 		     ICE_TC_FLWR_FIELD_ENC_DEST_IPV4)) {
+ 		list[i].type = ice_proto_type_from_ipv4(false);
+@@ -366,8 +389,11 @@ ice_tc_fill_rules(struct ice_hw *hw, u32 flags,
+ 	if (tc_fltr->tunnel_type != TNL_LAST) {
+ 		i = ice_tc_fill_tunnel_outer(flags, tc_fltr, list, i);
+ 
+-		headers = &tc_fltr->inner_headers;
+-		inner = true;
++		/* PFCP is considered non-tunneled - don't swap headers. */
++		if (tc_fltr->tunnel_type != TNL_PFCP) {
++			headers = &tc_fltr->inner_headers;
++			inner = true;
++		}
+ 	}
+ 
+ 	if (flags & ICE_TC_FLWR_FIELD_ETH_TYPE_ID) {
+@@ -621,6 +647,8 @@ static int ice_tc_tun_get_type(struct net_device *tunnel_dev)
+ 	 */
+ 	if (netif_is_gtp(tunnel_dev))
+ 		return TNL_GTPU;
++	if (netif_is_pfcp(tunnel_dev))
++		return TNL_PFCP;
+ 	return TNL_LAST;
+ }
+ 
+@@ -1374,6 +1402,20 @@ ice_parse_tunnel_attr(struct net_device *dev, struct flow_rule *rule,
+ 		fltr->flags |= ICE_TC_FLWR_FIELD_GTP_OPTS;
+ 	}
+ 
++	if (flow_rule_match_key(rule, FLOW_DISSECTOR_KEY_ENC_OPTS) &&
++	    fltr->tunnel_type == TNL_PFCP) {
++		struct flow_match_enc_opts match;
++
++		flow_rule_match_enc_opts(rule, &match);
++
++		memcpy(&fltr->pfcp_meta_keys, match.key->data,
++		       sizeof(struct pfcp_metadata));
++		memcpy(&fltr->pfcp_meta_masks, match.mask->data,
++		       sizeof(struct pfcp_metadata));
++
++		fltr->flags |= ICE_TC_FLWR_FIELD_PFCP_OPTS;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -1432,10 +1474,14 @@ ice_parse_cls_flower(struct net_device *filter_dev, struct ice_vsi *vsi,
+ 			return err;
+ 		}
+ 
+-		/* header pointers should point to the inner headers, outer
+-		 * header were already set by ice_parse_tunnel_attr
+-		 */
+-		headers = &fltr->inner_headers;
++		/* PFCP is considered non-tunneled - don't swap headers. */
++		if (fltr->tunnel_type != TNL_PFCP) {
++			/* Header pointers should point to the inner headers,
++			 * outer header were already set by
++			 * ice_parse_tunnel_attr().
++			 */
++			headers = &fltr->inner_headers;
++		}
+ 	} else if (dissector->used_keys &
+ 		  (BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV4_ADDRS) |
+ 		   BIT_ULL(FLOW_DISSECTOR_KEY_ENC_IPV6_ADDRS) |
+diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.h b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
+index 5d188ad7517a..d84f153517ec 100644
+--- a/drivers/net/ethernet/intel/ice/ice_tc_lib.h
++++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.h
+@@ -4,6 +4,9 @@
+ #ifndef _ICE_TC_LIB_H_
+ #define _ICE_TC_LIB_H_
+ 
++#include <linux/bits.h>
++#include <net/pfcp.h>
++
+ #define ICE_TC_FLWR_FIELD_DST_MAC		BIT(0)
+ #define ICE_TC_FLWR_FIELD_SRC_MAC		BIT(1)
+ #define ICE_TC_FLWR_FIELD_VLAN			BIT(2)
+@@ -34,6 +37,7 @@
+ #define ICE_TC_FLWR_FIELD_VLAN_PRIO		BIT(27)
+ #define ICE_TC_FLWR_FIELD_CVLAN_PRIO		BIT(28)
+ #define ICE_TC_FLWR_FIELD_VLAN_TPID		BIT(29)
++#define ICE_TC_FLWR_FIELD_PFCP_OPTS		BIT(30)
+ 
+ #define ICE_TC_FLOWER_MASK_32   0xFFFFFFFF
+ 
+@@ -161,6 +165,8 @@ struct ice_tc_flower_fltr {
+ 	__be32 tenant_id;
+ 	struct gtp_pdu_session_info gtp_pdu_info_keys;
+ 	struct gtp_pdu_session_info gtp_pdu_info_masks;
++	struct pfcp_metadata pfcp_meta_keys;
++	struct pfcp_metadata pfcp_meta_masks;
+ 	u32 flags;
+ 	u8 tunnel_type;
+ 	struct ice_tc_flower_action	action;
 -- 
 2.41.0
 
