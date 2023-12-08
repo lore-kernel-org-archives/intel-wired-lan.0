@@ -4,153 +4,176 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BBD5C4167B
-	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 Dec 2023 01:53:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56E51C10DC3
+	for <intel-wired-lan@archiver.kernel.org>; Fri,  8 Dec 2023 02:53:56 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 9480E40320;
-	Fri,  8 Dec 2023 01:53:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 9480E40320
+	by smtp2.osuosl.org (Postfix) with ESMTP id C1EE540525;
+	Fri,  8 Dec 2023 02:53:55 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C1EE540525
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702000432;
-	bh=yEAPRwN5KjMWkDrK+prrZjPS52/1UQwuGW0eAqFLtAI=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1702004035;
+	bh=illUS7Oar0NR0viATCuRiwYpq6fGPnO7VsfrVRwTcAw=;
+	h=From:To:Date:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=NL3RpE+k9z09HtWRMNLPwvq6nDC1WIt9HzcLEKOAXXYPvdnRodlQSrVdFHDWmhlgE
-	 9tssZJCbZTk8AqIVKYd1bCMwbVqML0S1ZV/YUMpLnj3cK0+JWVkb5vLL5weZqOPOUv
-	 qCVgaGBQUcHBk3XRZ6VeQk5opmT3TZFSZIuoSJN4DgVB7cCsLz1X0m9TrCWSvYy6Q5
-	 bCh7ZQCEQRwTtNYQGLBfZY9VTKSrxuBYDd+4ZdkNSqaoR3CfeJt1vfYLxZcu+ISC4G
-	 5vu3vwnuKCiWm5lk3WCRRHC+0D3hqyFQY7AU4en8CZSgmvYfkK2Ac/ETnNVPvGw6mM
-	 xGPuBAnbmp0bw==
+	b=GToJ9ia6aBaY29tK/87qZ2HHSOEt95EmcOsMRRuDDuqQw8mU+UBuhqHR7WsGfFhlJ
+	 9U2jS8T0gxbUSajkrUpqjo3U/qSb8XGV6rIaZqBIMPpsZNWBEppfaVmw49L0nJLlue
+	 NP30K3i1mKuvjzXHlK9W1nAtLGaFj2zjlMp0D30dokpubBo1oj0Ny2jlk231v/MeA3
+	 0veJqeb78s+OGgHYIJoZb5gWJaxywA/8cFk8Ctj61nHiVxHXH0EYCKjBYwYvFI6hro
+	 w4CJ0VBG0Bj19I54eoB4XT0+MyDsmthNTV8L9jijVu3S/ufHwwemj/wJ3tRUlWdN+w
+	 /qLXJn4gLw/yQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id LccenEpEpeDn; Fri,  8 Dec 2023 01:53:51 +0000 (UTC)
+	with ESMTP id 3fxp2wg9G56B; Fri,  8 Dec 2023 02:53:54 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id C3F7140374;
-	Fri,  8 Dec 2023 01:53:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C3F7140374
+	by smtp2.osuosl.org (Postfix) with ESMTP id 6A60F402E7;
+	Fri,  8 Dec 2023 02:53:54 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 6A60F402E7
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
- by ash.osuosl.org (Postfix) with ESMTP id A2B9B1BF3FD
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Dec 2023 01:53:48 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 613271BF35B
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Dec 2023 02:53:52 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp2.osuosl.org (Postfix) with ESMTP id 2C40A40374
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Dec 2023 01:53:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2C40A40374
+ by smtp2.osuosl.org (Postfix) with ESMTP id 35D4A40103
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Dec 2023 02:53:52 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 35D4A40103
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
  by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id eOgZIv-SKe7o for <intel-wired-lan@lists.osuosl.org>;
- Fri,  8 Dec 2023 01:53:46 +0000 (UTC)
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com
- (mail-bn8nam12on2070.outbound.protection.outlook.com [40.107.237.70])
- by smtp2.osuosl.org (Postfix) with ESMTPS id EA03840320
- for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Dec 2023 01:53:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org EA03840320
+ with ESMTP id 3uTRNteSURL6 for <intel-wired-lan@lists.osuosl.org>;
+ Fri,  8 Dec 2023 02:53:51 +0000 (UTC)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+ by smtp2.osuosl.org (Postfix) with ESMTPS id C927A400AF
+ for <intel-wired-lan@lists.osuosl.org>; Fri,  8 Dec 2023 02:53:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C927A400AF
+X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="7710096"
+X-IronPort-AV: E=Sophos;i="6.04,259,1695711600"; 
+   d="scan'208";a="7710096"
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
+ 07 Dec 2023 18:53:50 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10917"; a="842446071"
+X-IronPort-AV: E=Sophos;i="6.04,259,1695711600"; d="scan'208";a="842446071"
+Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
+ by fmsmga004.fm.intel.com with ESMTP/TLS/AES256-GCM-SHA384;
+ 07 Dec 2023 18:53:49 -0800
+Received: from orsmsx602.amr.corp.intel.com (10.22.229.15) by
+ ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35; Thu, 7 Dec 2023 18:53:48 -0800
+Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
+ orsmsx602.amr.corp.intel.com (10.22.229.15) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.35 via Frontend Transport; Thu, 7 Dec 2023 18:53:48 -0800
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (104.47.55.100)
+ by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.35; Thu, 7 Dec 2023 18:53:47 -0800
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=gEcWlpKnR3o5DieMPSPqCkXKKSOvTBuPfwafz3svnG36qDswNBFnNgjgO8ovtiQaMJGIKptHOLhjGEoVHv0rMpUsGP9phzrqC+BPfTptLmrect5YZvumuvlnc8T43tsCCnP/DaXk9OIFIOit4T4cBD/XyTFg++k/wJydw/0rihXQTg8Tvb4Lw6ZKld22wivUM1qczxXQy+2gPcwjd1ZSnIQ5qk4SsCu+5IJNhyo96jI9gVIV/yyK03BksdHotojLotLqPk/wsQwg6pnTCCtPx+kejw6EhEQEnFqOZPBRoclViZ4osjL4ZjskCI1cbmGxt5X9WV/wBAW24PAn8n7DeQ==
+ b=YQ5IauT4IKKSzY86B+X4wEY90W+/z4ffUqi+DlNiXjboljB5zTUw7B7gbsAtH8Cnjyon2XFXVrn/1F2hEvrSJaxEWmT7o3ADXa0iMGnOZ/J8Z36fIVBS2POn7NHkqUZnHC7RTBozxEfN1j1wYvb8lF23T5exhLHZ4eYMAuWklNXQK46QWRrIcsO850q3XbSJ7EP38eS4PCHzLIGGnIzUIVgWZh87y9UKBWJ+iAQhOma0U7+9GhDcwNB3jZbyy24/TSmDs0vescceNAh47tmnxks2wpBejAO7/sg9267jjFByiIiDRjt3U6DxVsICb0t+y30WjrnR9lYdKsYhLyxVSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=YbAF+p8rVQBPmcfTbpY5StoXDA7vAGdVTNg5uY2cYGE=;
- b=R1mJclEa7zTws3eQD32YjdsqGGBuP/3i6WyYpgNssVhYcA3owL0UUyKuNp4XtBQF80xskar4Wi2RyDsJiBwY+YlV384LaouAsO/p0qBuJEzPgTs2JVB96u2C90qW8RDf0ME4CutA7EBdIu6dCzNTAAr4jP3TLEAQwOK9xV3XUH8ibd7VmkJYDQM9opily0h4zxZtzRZiFHwlLe+PjpMsYUABS6rVbj9RewldIR8Qu1/3Yhka8vHtKaMlKCeaCjXb7Sb9+3xZ6D9eAp7bJGqNZa+KBNqV9938C0/MP7WBc4wiFMGZUn8PQ9unY/gK7ZXjHrZjqFU+JHWTbcMr4UtFbQ==
+ bh=OMMdb1PpIOBQ4fIzx1FOtGFm4xzhdVVgPxyaIItmXWI=;
+ b=HvRikDw7IOl8KPU0ddZgJ1sMC1nnMf0na4YIQTIQOHEmm+cHvsdHsu6AZz3VyTCRzp+vDJycJQvzDfhk6OjXF0Nfp8/P0ddc5Rhjp7IetoUapdM3r9jXXKKRewa4RywW+s9jKGThPEGL3ZJum0+Xat1h+Id7CI+jEIAZAuBmBDWar4b5UyK2tPbKefhMyW4i9M4pgemH/mHbhcX/KsO6vcXIlvmyUjUU/k4jmoN4il8WPm1V40dw5H6flNnd8CKCnSQwC1Qyh1qlRr1PH1byUcGWxMDu4+N2UmAXWHm++MlxnnvrHgBhCN1ltWbZaKpA1XX/0qKu98rH/zaIDeyeuw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-Received: from PH0PR12MB7982.namprd12.prod.outlook.com (2603:10b6:510:28d::5)
- by IA0PR12MB7675.namprd12.prod.outlook.com (2603:10b6:208:433::9)
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from BN9PR11MB5276.namprd11.prod.outlook.com (2603:10b6:408:135::18)
+ by PH0PR11MB7471.namprd11.prod.outlook.com (2603:10b6:510:28a::13)
  with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7068.27; Fri, 8 Dec
- 2023 01:53:42 +0000
-Received: from PH0PR12MB7982.namprd12.prod.outlook.com
- ([fe80::bec4:77b3:e1d1:5615]) by PH0PR12MB7982.namprd12.prod.outlook.com
- ([fe80::bec4:77b3:e1d1:5615%5]) with mapi id 15.20.7068.028; Fri, 8 Dec 2023
- 01:53:42 +0000
-Message-ID: <91266021-20db-267e-2ccf-023627ba1569@amd.com>
-Date: Thu, 7 Dec 2023 17:53:39 -0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Content-Language: en-US
-To: Yahui Cao <yahui.cao@intel.com>, intel-wired-lan@lists.osuosl.org
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7068.28; Fri, 8 Dec
+ 2023 02:53:45 +0000
+Received: from BN9PR11MB5276.namprd11.prod.outlook.com
+ ([fe80::e7a4:a757:2f2e:f96a]) by BN9PR11MB5276.namprd11.prod.outlook.com
+ ([fe80::e7a4:a757:2f2e:f96a%3]) with mapi id 15.20.7068.025; Fri, 8 Dec 2023
+ 02:53:45 +0000
+From: "Tian, Kevin" <kevin.tian@intel.com>
+To: Jason Gunthorpe <jgg@nvidia.com>
+Thread-Topic: [PATCH iwl-next v4 08/12] ice: Save and load RX Queue head
+Thread-Index: AQHaHCV/OCOKlQEK7EeTKXfnKkai+7CdigMggAB184CAAMp8UA==
+Date: Fri, 8 Dec 2023 02:53:44 +0000
+Message-ID: <BN9PR11MB5276771D5FB2D3CDAC3A70348C8AA@BN9PR11MB5276.namprd11.prod.outlook.com>
 References: <20231121025111.257597-1-yahui.cao@intel.com>
- <20231121025111.257597-6-yahui.cao@intel.com>
-From: Brett Creeley <bcreeley@amd.com>
-In-Reply-To: <20231121025111.257597-6-yahui.cao@intel.com>
-X-ClientProxiedBy: BYAPR04CA0022.namprd04.prod.outlook.com
- (2603:10b6:a03:40::35) To PH0PR12MB7982.namprd12.prod.outlook.com
- (2603:10b6:510:28d::5)
+ <20231121025111.257597-9-yahui.cao@intel.com>
+ <BN9PR11MB5276DFED75FE8F9372B7A3CE8C8BA@BN9PR11MB5276.namprd11.prod.outlook.com>
+ <20231207144615.GK2692119@nvidia.com>
+In-Reply-To: <20231207144615.GK2692119@nvidia.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: BN9PR11MB5276:EE_|PH0PR11MB7471:EE_
+x-ms-office365-filtering-correlation-id: 53c30e7f-3f15-4d64-7d36-08dbf798e4b6
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: tXC7F5dEaYcleAqpE3Jc8HPl+5l3/ttShFLC+sbuPDc0tilsOdJNIdMmxTZOcm+iArf5jdaQEK2kD8hT5LCNZtL8pdVPhSiPf5r8RFc2RaK9EQdBm/r1kPzuNwsD1kqBGea6pmkD35v25l8SmMkshhtRx6DSEcMlbZ1glixc50FdKLl+bmdThhwl+y0jnMFmVigq0jl+h0LGzlc9eZa2ulOUoJGj5a8bZrm25lKt77zq3v/wLE55xyTSWbzmGRKx1U6bLSoNKz1JCY9zjpWY7P7IHF7+WWdJhhT0cUmI+bqKg0dHek7nCEpDafdioLT+Gvx3RVvWQMnilWDLKAXXAQ3ymeTXLw5hvIsedurA6QymAFXdLQc3F1S86IOGaMprkRj9ipRyUTQo5rFEseUtn4bP9waZVzYH9sjNXQRQBYIFbIFi6vgxTbVZ8O2TUrhbVZdHCFvraMq0P5Hmh9tDnWC1YBY0kyY77lO1anIbD2p3L+oYfmA/rX2XBTZxEnvmheTUAX4c3tZBQuoEVSFh3v7KUwaVu1Yd7v0eSZsOs5jAISBTaw0YsLaNNWOEZkeYxGOLLlm4ve5zXYE4Zdn+YptoesuOG7+lw+KIhhdX2afiY1uOuWMPBVmt8Pvc3mWm
+x-forefront-antispam-report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
+ IPV:NLI; SFV:NSPM; H:BN9PR11MB5276.namprd11.prod.outlook.com; PTR:; CAT:NONE;
+ SFS:(13230031)(366004)(396003)(376002)(136003)(346002)(39860400002)(230922051799003)(451199024)(186009)(1800799012)(64100799003)(478600001)(66556008)(66476007)(66446008)(64756008)(54906003)(76116006)(66946007)(38100700002)(6916009)(55016003)(9686003)(26005)(83380400001)(316002)(71200400001)(7696005)(6506007)(82960400001)(38070700009)(2906002)(8936002)(86362001)(4326008)(8676002)(52536014)(5660300002)(33656002)(7416002)(41300700001)(122000001);
+ DIR:OUT; SFP:1102; 
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?omfidNdVO84O/NiTMnkxMWk4eTEOtpj4RrBjvXWTO7kc/olkJ9EdIpxeCkkJ?=
+ =?us-ascii?Q?hx13js8YVQ9V4EyTFYFxoDCSaL4ICur9fEBNDrBCbZVzEsAS+lNJaXKwyrIS?=
+ =?us-ascii?Q?rpchQ7BjeCyOqr8o5U1bB+ZCH39i+ywhoCppqfasQZyg0NarFzBhoTF4Gx9Q?=
+ =?us-ascii?Q?Ve0aDz8Swm0B9tTc1LKPN6By958SNCyX9ZFP2IvOkn0lnDdchKJXzvkrQyuk?=
+ =?us-ascii?Q?Q56rqKTkoFmgsAtoZzbY32usQ5534TuQQJ+ivMbdeFq7sxPzXXjPrgX2wQtt?=
+ =?us-ascii?Q?urtZWvRzFuRBopsYjf6h0Ri1sjdPDpelPvA+kZEZUefI4x5xPAADMJD4UxVQ?=
+ =?us-ascii?Q?aYtZ6YyWURDNkrxmQQjui1mBQz6vpEZS5Bs8g3z7KC0c8h3bRTHUnPzNFXHw?=
+ =?us-ascii?Q?JikngkIgx8sgPro6bhkGEHaodbwog/wGf7MhyMi+ZJWO27g5iZHKVSWfHqm8?=
+ =?us-ascii?Q?dhYswlMyISOvGugEnYDNhfJoBItnxaCa/gsxkaGPf7PTwRdp2TZc9DHQ2kbe?=
+ =?us-ascii?Q?B7m66tcs+aJvo1MDkiGhxJ2EKSC85yNpfH4yq1GFT61PfCJ9oauuhVDuKB04?=
+ =?us-ascii?Q?twasxCe1b0kNgl4+kp1sD0oNNo3GtiQSU6BPFPTpNr0Np9gDbsl02tVIR8GG?=
+ =?us-ascii?Q?J93Lz1Ty4BnviYCmPkqmsXNIzXdW58NCS1KExc8wohHmLYPrjx6v+4KroFkp?=
+ =?us-ascii?Q?QW7D5YL1cs4tcjvAnHw3MDF4qt+mMYarfQgrbiBEpfRICdYDcdTGNI3gFRaP?=
+ =?us-ascii?Q?BVv+q4jcOuuoIbHURDrpvadf9DiWl/7yz8gDiXGuvWFWS1cefbqfU0EYlUBA?=
+ =?us-ascii?Q?ibnlwiYh6IfCmC/q/N6ck5G3yAQZEcZveiLOUbALAiUdeHe24QW+Wo+/UBbh?=
+ =?us-ascii?Q?EpJlJZFCYD8sL5Uv2adugKe6lNhel+rIsOKcKIndTin6csbR1sshFC01AW6L?=
+ =?us-ascii?Q?V/lQNUb0FGGn+/JHVKTPXtAMHhZSorbd4bRqg4SsKpk5tQgDZtGEL63WKS69?=
+ =?us-ascii?Q?mYXdgzqKmHp5u9ear5vWJDPqwa8817Up6NItqKWKsdbv565imUP1fbXDOmyH?=
+ =?us-ascii?Q?IUaxJOCKf0ApGFJHm9dROVHdl/vGPogemckR77XtkxjNbVyazrMYFdLj7VmS?=
+ =?us-ascii?Q?1bQSeJVeUznmpzYAT7Y2duUIpoyHoYttOhm+2OQVWRasqy7PrESfxnntJGCY?=
+ =?us-ascii?Q?iUCApSRWfNvmdkoaXDa88zoHzpBq9RPexWAepM72RQ8fZwqRUcDIQSzAf1do?=
+ =?us-ascii?Q?eKPqkP1grw5Gch2aTaXNN/hODjICUQ7cRszx/k+gX0MWtECJ9j1qm8uia1nX?=
+ =?us-ascii?Q?F6YC/6N5pUu9O2fZ2SLhi2I4m7TDsuaplu7H7yDPcBFsjckfEikJqzjYX0/J?=
+ =?us-ascii?Q?VY7FxyDuI71cT3D1f51RHsdVOELhcMmRlYc2Kzvflv2xtYb9ACNh5H2X3wpC?=
+ =?us-ascii?Q?cBcsoVFaOF46IsbcJSP1w6ywQuDB8xWSmjDym8U8hZa8bs7DXtcFjx1+Hsvl?=
+ =?us-ascii?Q?XcSrQfhkVZWZg3lRTMqPBdIAUXmGp+AMPXH3baiuoQ2g+ZnWBlQ5+goo/4z/?=
+ =?us-ascii?Q?XshAPPA7NQDBjDMcZGOv8eNNSS2pEjT5R7hBreMc?=
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR12MB7982:EE_|IA0PR12MB7675:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2f24a24c-0ef5-4b5d-d5ed-08dbf7908132
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: C1RtPCrJPN7GuKFFfxVPB5SfJv3i71Ehbn50IeOuTE3TqqPiSOH/Pvvo+rgMTcdBgDWbGqJM5uvYFhQth5qR+c2Q+TUhZOKwR/BYP9rmtA0nkVKgMlq4rwE1VI/rN8URrdWgnDFkYm9ESnKH4IlbyXHVV2QChzSl9zwsw78mcc4pTwQ+4DIUc23xeWdm8IFUWrgFTRFRiczYVSAZKMDhpWV0oLjw6VIvRCJOh2f6ruzrHvpuzGO80BWpbZ5e7uBeLg3MmuUuHLTrBhcVQYhcmG7r4MysbcWr++abvO+b5WXt51GgQ1NSiPvYUboxA0bdgwqqfZsqQL4pGMN9hSmkoB4ATkORxLK4tmjpL259s4w+/1LpFpioNPG+KKX8Qd9xeGZpHgisMfPxrcY7GyMWtnHUjG8Uf/iCRlj57ALaDPeqFCDIfj5zGae6VvAA9FRpDmpdUiuss4rcuyU6rtHru7EiPaBzre2zzagcED0tkpFEH84LIAuZFJTNNdz5zqCI88ZJzYUItqq6btbM2AIStySFv63QOs2Ujg6GmZEohUMUzkPc6nOK6/dzkB4DrBRIJDgfpMC8gYuSWj0vJAVyQ1jzRG1seIeU5r1DdYVQY1PWmSVX4AfMH8nC/AsMr5FoT1E+XkgNZBYWULDXNm7P4tzm3WPkJsB7SLnSTR4/NWYZOSLfNjOKWzUbSEj6w8QJ
-X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
- IPV:NLI; SFV:NSPM; H:PH0PR12MB7982.namprd12.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(136003)(376002)(366004)(39860400002)(346002)(396003)(230922051799003)(230273577357003)(230173577357003)(451199024)(186009)(1800799012)(64100799003)(8676002)(8936002)(4326008)(66556008)(316002)(66476007)(66946007)(38100700002)(41300700001)(31696002)(36756003)(5660300002)(15650500001)(6512007)(7416002)(30864003)(2616005)(26005)(2906002)(83380400001)(478600001)(6486002)(6506007)(6666004)(53546011)(31686004)(45980500001)(43740500002);
- DIR:OUT; SFP:1101; 
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?YkNDWS9PcmxpaXFuTjJHT3lLVjBuN0pLSENPdEMwcDFlSlFoOXNsSW1JWmVC?=
- =?utf-8?B?bGlISUhkdi9EL0NmK25VZ2NGd0ZYdTIzZXlPQVpyYTQrNm5NdUpZanhlZ1lD?=
- =?utf-8?B?RzB2dmtCQmFWaDIwSTBWRE5MR1lucUpCeDNFQStYRWFBRURtNFhib3ovVEth?=
- =?utf-8?B?K2sxMVRFVVkxbTBBaGlLREtNVlU2V2hqWDhLbjdac3NYdVJxbzhrdzU3eU1C?=
- =?utf-8?B?U28vczVZa3JpdlBtMUFQSFJnbDlHejJVUjIzT3VLSldhZTJjb2JpMGJBVzBP?=
- =?utf-8?B?TDlTWXVjclg0SW14RU14Qlo1QXVQK2EybHExTTJ4N01HTFRpZnJNWEVxU0Vp?=
- =?utf-8?B?QU8rdVA2Y0xyaEhOVjNISVZvU1pKL2ZOWko5Y0xDSUkweS9wWTJsUFVoNHJP?=
- =?utf-8?B?aFk1ekM0a3VTc3p0K2xKNkJueHltRVliMjRKbjJvSnRDS0FtRWJJa0txR2lW?=
- =?utf-8?B?VDRLYmwwTG44Q1A0NEdIMmErRjN3M2RsemtNcXlvWFFUKzhZNUJjdVRuZnZL?=
- =?utf-8?B?OFRsS2F6dW40b3VJZFNBM1VTMmtOaWNxeTQyVDlpWXFHMGU0NE5pSkd6S0o5?=
- =?utf-8?B?bFVUSEx4dUF2YzRYK1pKWWlVTDI5NHh5UHhxc0RPTDNBTG9KdEJzWHZWQTFr?=
- =?utf-8?B?TktScUZsc2RYQjhzcmdhUUtVbmZkcUpXYnB5RU40ZEo5SXJXUWJlR2VZNGRp?=
- =?utf-8?B?TjJELzd1UytMQTUvRlh6MzBvaXBSSzYzaTVOUUwzenhNbnVZWXRnMG0yaXFE?=
- =?utf-8?B?SUMyMTBoM3RYVzU2MU51Z2RrNnNuYVhoaE41VnB6aUVpblNicEUxdFVYZ0d5?=
- =?utf-8?B?VitPRTh1OVQ4SERUdmpacXBqbEJKQWhXY3FnbEZJQlY5K2NHdmxERVBET3l0?=
- =?utf-8?B?Y1JjU2JlTXl3OGMvSkd3cHMwWWlIK3hsMkNRTEVKZkxzeUV2SVJVbTB1RXNi?=
- =?utf-8?B?SXNuRSs0UDdBeG1GQ25GNDg0QVp1VUNYYzF5VTFBdk9IMEt5OGRDVTJnMzJK?=
- =?utf-8?B?VmJ2ZXdYSmp4d3I5aFUxMGpVYTY2L20xVmVDVE51RUNwMUQzbkpWTkNEMDJn?=
- =?utf-8?B?NmkzMWZVYmxabXRwbUMyTmxDS1l1WmMvVStNNTcwUHF1VlEwUktPYlNHbEFP?=
- =?utf-8?B?cnFMdUhXYlhGQUJkYzc1bWFuM0l1WHNBTlJXZm45RGNWZTBhMGlSaFZyb1dv?=
- =?utf-8?B?d3gyTllZVHp6UEJRU3VXb0l2RlR3OHJBcndEeUZkM3lPNGwwWGVYc0RpQUZv?=
- =?utf-8?B?b2lZdzM4azJ4VU5ScWNLZDBMdXlVWXRvbTVnNlVIYzNRQWdMUDQzWno5dWtr?=
- =?utf-8?B?WENMK2VjMnVuMkFqUU1aTE5aNm53NnJYakZKZkdXaU5kL2RJUFYrd0xNUk04?=
- =?utf-8?B?bXhJOEw5bkF6aTVWMzJiRVpRVk9aZTlrcHg2cENENHBhbS9BQk9xbUcvVHdC?=
- =?utf-8?B?ZVBESkpzTkxpVEZlNzRxR1JUZmR0aWtpSXZLYndla2Y3ekQva0VnK2VIK1dZ?=
- =?utf-8?B?WWsvZWY0RXBLL0h6eEM3Sk1OZm9LQUJ6YUJ3UG9sVDJKRlU3UVhFT0dDZ3Z3?=
- =?utf-8?B?THVxWWVIbmJWbWZIbVJabFZDN0dBbUVqY0YzbEZ6aWN0U0VjWEVXLzlvT2I2?=
- =?utf-8?B?OG5zRlJkV2JWZ0l2ZzIrb1kxcVRpZVd4UjQ1UkFuaFNXM1ZvOGJCdmozMzVy?=
- =?utf-8?B?TC9qU2FKL2VRUmsyQUMrN3czYkU3dm9DVmdFNU9YemREWnJiMXplMnFyZExh?=
- =?utf-8?B?UzQ5V0ZtblB1L05mOXl3QUtUb2lMY1hKdWY5Vys5ZVJ6RFhsWnN2ZW9LWjF4?=
- =?utf-8?B?eVRISEk5eVcrSVo2cXZVMFI4OEEwS2pUZEgzbCtjQjZ4ck1hTHJ1c2NpdGQw?=
- =?utf-8?B?a3RhbnE2bFhyN2U0N1Y4S1lHMXpBaHJweE41UjNmeC9NbXo0d1VaU1hKYkNh?=
- =?utf-8?B?THZqTWxYNm44amhIWDN6cjlDWU42dkhvZS82WlZqQnpRbEgrcXVPWVhjam5o?=
- =?utf-8?B?ZlUrY1kwdE9oWWNIRVNWWGt6SWxDcGpreVdhUWM4UDFjeXgrTGxvc0tGZGJn?=
- =?utf-8?B?N21zcjVCekdZaFFEa2VGQ2JqY2tHNGlLTmhIZHFRakdVbm45QjQxVFJ5ZlZy?=
- =?utf-8?Q?J3HwyKPW/4Paffo+22T4kF1Ja?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2f24a24c-0ef5-4b5d-d5ed-08dbf7908132
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB7982.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Dec 2023 01:53:41.9221 (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: /3K/AlfMHsbrvl3zFttD3FyRkGnUjHjvlvmqVpfIm9A49W9W6xwk/yor+dDCC6IFRCP/uV21EUseioNepE3ZZw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7675
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amd.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=YbAF+p8rVQBPmcfTbpY5StoXDA7vAGdVTNg5uY2cYGE=;
- b=pSZBbTWQOqxdtQEm6V9VznCTJM7s15hiDlRV0CM+NMZ9fgbmZeyQzg7bK8MsR4mGHLbadpNAljZ2NhT83Sv+WFUBvypQoYn1JPhI0PK3B1fA7ky056HQHV5o2Xm6/m7jVaotAKZOtoPmeCCTLBQOYGFdksYGGrpyH2pRV/KYpmM=
+X-MS-Exchange-CrossTenant-AuthSource: BN9PR11MB5276.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 53c30e7f-3f15-4d64-7d36-08dbf798e4b6
+X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Dec 2023 02:53:44.7185 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: 3mkE5qAU8OAkj0/p0jiLdtqgnhPdMgIKoE3C8Lj9aPlWS6zVBv3iM+8HJMWcHnO7qR0KQBmBO6JfmZa23fPq6A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB7471
+X-OriginatorOrg: intel.com
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+ t=1702004031; x=1733540031;
+ h=from:to:cc:subject:date:message-id:references:
+ in-reply-to:content-transfer-encoding:mime-version;
+ bh=ti6/hj+FFFEnp57nQsmG5vThrO4ZHgMylMpbJIr8FoA=;
+ b=g0d/lB1MW18b4JRCbUJ+v2dKbjpnOjGCQswV5JNhtw2qakTYYhHOOiQ3
+ 9sk+D5qaeh9yVEMfKRqA62ZXrZSZMuJytEt8laWucOlvGhuwaqP5LRFyg
+ 7+NTP08UH93JvznKTTQlY6igir6ZEM/ZSvWtTWsoMn3Iwwngac9npO6Kr
+ La77DdFrUkJmxF3cdIHiku9bEIDPQiixeWCY5qHs5WtkfTNfHQ5xdZFZO
+ MU9nBjIulFnIbmJkMwEz0mh7dysNtor5eXNtDbbAz1Hj5ZK8x1oM7QgMh
+ crWEWf1e/laHOdxJ+qTtRRSb4enUpaMxndwnUtq6Q0ac7emcmBzHIbq8x
+ A==;
 X-Mailman-Original-Authentication-Results: smtp2.osuosl.org;
- dkim=pass (1024-bit key,
- unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
- header.s=selector1 header.b=pSZBbTWQ
+ dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
+ header.a=rsa-sha256 header.s=Intel header.b=g0d/lB1M
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 05/12] ice: Log virtual
- channel messages in PF
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next v4 08/12] ice: Save and load
+ RX Queue head
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -163,398 +186,78 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: kevin.tian@intel.com, yishaih@nvidia.com, brett.creeley@amd.com,
- kvm@vger.kernel.org, sridhar.samudrala@intel.com, edumazet@google.com,
- shameerali.kolothum.thodi@huawei.com, alex.williamson@redhat.com,
- madhu.chittim@intel.com, jgg@nvidia.com, netdev@vger.kernel.org,
- kuba@kernel.org, pabeni@redhat.com, davem@davemloft.net
+Cc: "yishaih@nvidia.com" <yishaih@nvidia.com>,
+ "brett.creeley@amd.com" <brett.creeley@amd.com>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "Cao,
+ Yahui" <yahui.cao@intel.com>, "edumazet@google.com" <edumazet@google.com>,
+ "shameerali.kolothum.thodi@huawei.com" <shameerali.kolothum.thodi@huawei.com>,
+ "alex.williamson@redhat.com" <alex.williamson@redhat.com>, "Chittim,
+ Madhu" <madhu.chittim@intel.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ "Samudrala, Sridhar" <sridhar.samudrala@intel.com>,
+ "kuba@kernel.org" <kuba@kernel.org>, "pabeni@redhat.com" <pabeni@redhat.com>,
+ "davem@davemloft.net" <davem@davemloft.net>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
+> From: Jason Gunthorpe <jgg@nvidia.com>
+> Sent: Thursday, December 7, 2023 10:46 PM
+> 
+> On Thu, Dec 07, 2023 at 07:55:17AM +0000, Tian, Kevin wrote:
+> > > From: Cao, Yahui <yahui.cao@intel.com>
+> > > Sent: Tuesday, November 21, 2023 10:51 AM
+> > >
+> > > +
+> > > +		/* Once RX Queue is enabled, network traffic may come in at
+> > > any
+> > > +		 * time. As a result, RX Queue head needs to be loaded
+> > > before
+> > > +		 * RX Queue is enabled.
+> > > +		 * For simplicity and integration, overwrite RX head just after
+> > > +		 * RX ring context is configured.
+> > > +		 */
+> > > +		if (msg_slot->opcode == VIRTCHNL_OP_CONFIG_VSI_QUEUES)
+> > > {
+> > > +			ret = ice_migration_load_rx_head(vf, devstate);
+> > > +			if (ret) {
+> > > +				dev_err(dev, "VF %d failed to load rx head\n",
+> > > +					vf->vf_id);
+> > > +				goto out_clear_replay;
+> > > +			}
+> > > +		}
+> > > +
+> >
+> > Don't we have the same problem here as for TX head restore that the
+> > vfio migration protocol doesn't carry a way to tell whether the IOAS
+> > associated with the device has been restored then allowing RX DMA
+> > at this point might cause device error?
+> 
+> Does this trigger a DMA?
 
-
-On 11/20/2023 6:51 PM, Yahui Cao wrote:
-> Caution: This message originated from an External Source. Use proper caution when opening attachments, clicking links, or responding.
-> 
-> 
-> From: Lingyu Liu <lingyu.liu@intel.com>
-> 
-> Save the virtual channel messages sent by VF on the source side during
-> runtime. The logged virtchnl messages will be transferred and loaded
-> into the device on the destination side during the device resume stage.
-> 
-> For the feature which can not be migrated yet, it must be disabled or
-> blocked to prevent from being abused by VF. Otherwise, it may introduce
-> functional and security issue. Mask unsupported VF capability flags in
-> the VF-PF negotiaion stage.
-
-s/negotiaion/negotiation/
+looks yes from the comment
 
 > 
-> Signed-off-by: Lingyu Liu <lingyu.liu@intel.com>
-> Signed-off-by: Yahui Cao <yahui.cao@intel.com>
-> ---
->   .../net/ethernet/intel/ice/ice_migration.c    | 167 ++++++++++++++++++
->   .../intel/ice/ice_migration_private.h         |  17 ++
->   drivers/net/ethernet/intel/ice/ice_vf_lib.h   |   5 +
->   drivers/net/ethernet/intel/ice/ice_virtchnl.c |  31 ++++
->   4 files changed, 220 insertions(+)
+> > @Jason, is it a common gap applying to all devices which include a
+> > receiving path from link? How is it handled in mlx migration
+> > driver?
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_migration.c b/drivers/net/ethernet/intel/ice/ice_migration.c
-> index 2b9b5a2ce367..18ec4ec7d147 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_migration.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_migration.c
-> @@ -3,6 +3,17 @@
+> There should be no DMA until the device is placed in RUNNING. All
+> devices may instantly trigger DMA once placed in RUNNING.
 > 
->   #include "ice.h"
+> The VMM must ensure the entire environment is ready to go before
+> putting anything in RUNNING, including having setup the IOMMU.
 > 
-> +struct ice_migration_virtchnl_msg_slot {
-> +       u32 opcode;
-> +       u16 msg_len;
-> +       char msg_buffer[];
-> +};
-> +
-> +struct ice_migration_virtchnl_msg_listnode {
-> +       struct list_head node;
-> +       struct ice_migration_virtchnl_msg_slot msg_slot;
-> +};
-> +
->   /**
->    * ice_migration_get_pf - Get ice PF structure pointer by pdev
->    * @pdev: pointer to ice vfio pci VF pdev structure
-> @@ -22,6 +33,9 @@ EXPORT_SYMBOL(ice_migration_get_pf);
->   void ice_migration_init_vf(struct ice_vf *vf)
->   {
->          vf->migration_enabled = true;
-> +       INIT_LIST_HEAD(&vf->virtchnl_msg_list);
-> +       vf->virtchnl_msg_num = 0;
-> +       vf->virtchnl_msg_size = 0;
->   }
-> 
->   /**
-> @@ -30,10 +44,24 @@ void ice_migration_init_vf(struct ice_vf *vf)
->    */
->   void ice_migration_uninit_vf(struct ice_vf *vf)
->   {
-> +       struct ice_migration_virtchnl_msg_listnode *msg_listnode;
-> +       struct ice_migration_virtchnl_msg_listnode *dtmp;
-> +
->          if (!vf->migration_enabled)
->                  return;
-> 
->          vf->migration_enabled = false;
-> +
-> +       if (list_empty(&vf->virtchnl_msg_list))
-> +               return;
-> +       list_for_each_entry_safe(msg_listnode, dtmp,
-> +                                &vf->virtchnl_msg_list,
-> +                                node) {
-> +               list_del(&msg_listnode->node);
-> +               kfree(msg_listnode);
-> +       }
-> +       vf->virtchnl_msg_num = 0;
-> +       vf->virtchnl_msg_size = 0;
->   }
-> 
->   /**
-> @@ -80,3 +108,142 @@ void ice_migration_uninit_dev(struct ice_pf *pf, int vf_id)
->          ice_put_vf(vf);
->   }
->   EXPORT_SYMBOL(ice_migration_uninit_dev);
-> +
-> +/**
-> + * ice_migration_is_loggable_msg - is this message loggable or not
-> + * @v_opcode: virtchnl message operation code
-> + *
-> + * Return true if this message logging is supported, otherwise return false
-> + */
-> +static inline bool ice_migration_is_loggable_msg(u32 v_opcode)
-> +{
-> +       switch (v_opcode) {
-> +       case VIRTCHNL_OP_VERSION:
-> +       case VIRTCHNL_OP_GET_VF_RESOURCES:
-> +       case VIRTCHNL_OP_CONFIG_VSI_QUEUES:
-> +       case VIRTCHNL_OP_CONFIG_IRQ_MAP:
-> +       case VIRTCHNL_OP_ADD_ETH_ADDR:
-> +       case VIRTCHNL_OP_DEL_ETH_ADDR:
-> +       case VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE:
-> +       case VIRTCHNL_OP_ENABLE_QUEUES:
-> +       case VIRTCHNL_OP_DISABLE_QUEUES:
-> +       case VIRTCHNL_OP_ADD_VLAN:
-> +       case VIRTCHNL_OP_DEL_VLAN:
-> +       case VIRTCHNL_OP_ENABLE_VLAN_STRIPPING:
-> +       case VIRTCHNL_OP_DISABLE_VLAN_STRIPPING:
-> +       case VIRTCHNL_OP_CONFIG_RSS_KEY:
-> +       case VIRTCHNL_OP_CONFIG_RSS_LUT:
-> +       case VIRTCHNL_OP_GET_SUPPORTED_RXDIDS:
-> +               return true;
-> +       default:
-> +               return false;
-> +       }
-> +}
-> +
-> +/**
-> + * ice_migration_log_vf_msg - Log request message from VF
-> + * @vf: pointer to the VF structure
-> + * @event: pointer to the AQ event
-> + *
-> + * Log VF message for later device state loading during live migration
-> + *
-> + * Return 0 for success, negative for error
-> + */
-> +int ice_migration_log_vf_msg(struct ice_vf *vf,
-> +                            struct ice_rq_event_info *event)
-> +{
-> +       struct ice_migration_virtchnl_msg_listnode *msg_listnode;
-> +       u32 v_opcode = le32_to_cpu(event->desc.cookie_high);
-> +       struct device *dev = ice_pf_to_dev(vf->pf);
-> +       u16 msglen = event->msg_len;
-> +       u8 *msg = event->msg_buf;
-> +
-> +       if (!ice_migration_is_loggable_msg(v_opcode))
-> +               return 0;
-> +
-> +       if (vf->virtchnl_msg_num >= VIRTCHNL_MSG_MAX) {
-> +               dev_warn(dev, "VF %d has maximum number virtual channel commands\n",
-> +                        vf->vf_id);
-> +               return -ENOMEM;
-> +       }
-> +
-> +       msg_listnode = (struct ice_migration_virtchnl_msg_listnode *)
-> +                       kzalloc(struct_size(msg_listnode,
-> +                                           msg_slot.msg_buffer,
-> +                                           msglen),
-> +                               GFP_KERNEL);
-> +       if (!msg_listnode) {
-> +               dev_err(dev, "VF %d failed to allocate memory for msg listnode\n",
-> +                       vf->vf_id);
-> +               return -ENOMEM;
-> +       }
-> +       dev_dbg(dev, "VF %d save virtual channel command, op code: %d, len: %d\n",
-> +               vf->vf_id, v_opcode, msglen);
-> +       msg_listnode->msg_slot.opcode = v_opcode;
-> +       msg_listnode->msg_slot.msg_len = msglen;
-> +       memcpy(msg_listnode->msg_slot.msg_buffer, msg, msglen);
 
-It seems like this can still be abused. What if the VM/VF user sends 
-hundreds of thousands of ADD_ADDR/DEL_ADDR, ADD_VLAN/DEL_VLAN, 
-PROMISCUOUS, ENABLE_VLAN_STRIPPING/DISABLE_VLAN_STRIPPING, RSS_LUT, 
-RSS_KEY, etc.?
+ah, yes. that is the right behavior.
 
-Shouldn't you only maintain one copy for each key/value when it makes 
-sense? For example, you don't need multiple RSS_LUT and RSS_KEY messages 
-logged as just the most recent one is needed.
+so if there is no other way to block DMA before RUNNING is reached,
+here the RX queue should be left disabled until when transitioning 
+to RUNNING.
 
-What if multiple promiscuous messages are sent? Do you need to save them 
-all or just the most recent?
-
-What if you have an ADD_ADDR/DEL_ADDR for the same address? Do you need 
-to save both of those messages? Seems like when you get a DEL_ADDR you 
-should search for the associated ADD_ADDR and just remove it. Same 
-comment applies for ADD_VLAN/DEL_VLAN.
-
-> +       list_add_tail(&msg_listnode->node, &vf->virtchnl_msg_list);
-> +       vf->virtchnl_msg_num++;
-> +       vf->virtchnl_msg_size += struct_size(&msg_listnode->msg_slot,
-> +                                            msg_buffer,
-> +                                            msglen);
-> +       return 0;
-> +}
-> +
-> +/**
-> + * ice_migration_unlog_vf_msg - revert logged message
-> + * @vf: pointer to the VF structure
-> + * @v_opcode: virtchnl message operation code
-> + *
-> + * Remove the last virtual channel message logged before.
-> + */
-> +void ice_migration_unlog_vf_msg(struct ice_vf *vf, u32 v_opcode)
-> +{
-> +       struct ice_migration_virtchnl_msg_listnode *msg_listnode;
-> +
-> +       if (!ice_migration_is_loggable_msg(v_opcode))
-> +               return;
-> +
-> +       if (WARN_ON_ONCE(list_empty(&vf->virtchnl_msg_list)))
-> +               return;
-> +
-> +       msg_listnode =
-> +               list_last_entry(&vf->virtchnl_msg_list,
-> +                               struct ice_migration_virtchnl_msg_listnode,
-> +                               node);
-> +       if (WARN_ON_ONCE(msg_listnode->msg_slot.opcode != v_opcode))
-> +               return;
-> +
-> +       list_del(&msg_listnode->node);
-> +       kfree(msg_listnode);
-> +       vf->virtchnl_msg_num--;
-> +       vf->virtchnl_msg_size -= struct_size(&msg_listnode->msg_slot,
-> +                                            msg_buffer,
-> +                                            msg_listnode->msg_slot.msg_len);
-> +}
-> +
-> +#define VIRTCHNL_VF_MIGRATION_SUPPORT_FEATURE \
-> +                               (VIRTCHNL_VF_OFFLOAD_L2 | \
-> +                                VIRTCHNL_VF_OFFLOAD_RSS_PF | \
-> +                                VIRTCHNL_VF_OFFLOAD_RSS_AQ | \
-> +                                VIRTCHNL_VF_OFFLOAD_RSS_REG | \
-> +                                VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2 | \
-> +                                VIRTCHNL_VF_OFFLOAD_ENCAP | \
-> +                                VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM | \
-> +                                VIRTCHNL_VF_OFFLOAD_RX_POLLING | \
-> +                                VIRTCHNL_VF_OFFLOAD_WB_ON_ITR | \
-> +                                VIRTCHNL_VF_CAP_ADV_LINK_SPEED | \
-> +                                VIRTCHNL_VF_OFFLOAD_VLAN | \
-> +                                VIRTCHNL_VF_OFFLOAD_RX_FLEX_DESC | \
-> +                                VIRTCHNL_VF_OFFLOAD_USO)
-> +
-> +/**
-> + * ice_migration_supported_caps - get migration supported VF capabilities
-> + *
-> + * When migration is activated, some VF capabilities are not supported.
-> + * Hence unmask those capability flags for VF resources.
-> + */
-> +u32 ice_migration_supported_caps(void)
-> +{
-> +       return VIRTCHNL_VF_MIGRATION_SUPPORT_FEATURE;
-> +}
-> diff --git a/drivers/net/ethernet/intel/ice/ice_migration_private.h b/drivers/net/ethernet/intel/ice/ice_migration_private.h
-> index 2cc2f515fc5e..676eb2d6c12e 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_migration_private.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_migration_private.h
-> @@ -13,9 +13,26 @@
->   #if IS_ENABLED(CONFIG_ICE_VFIO_PCI)
->   void ice_migration_init_vf(struct ice_vf *vf);
->   void ice_migration_uninit_vf(struct ice_vf *vf);
-> +int ice_migration_log_vf_msg(struct ice_vf *vf,
-> +                            struct ice_rq_event_info *event);
-> +void ice_migration_unlog_vf_msg(struct ice_vf *vf, u32 v_opcode);
-> +u32 ice_migration_supported_caps(void);
->   #else
->   static inline void ice_migration_init_vf(struct ice_vf *vf) { }
->   static inline void ice_migration_uninit_vf(struct ice_vf *vf) { }
-> +static inline int ice_migration_log_vf_msg(struct ice_vf *vf,
-> +                                          struct ice_rq_event_info *event)
-> +{
-> +       return 0;
-> +}
-> +
-> +static inline void
-> +ice_migration_unlog_vf_msg(struct ice_vf *vf, u32 v_opcode) { }
-> +static inline u32
-> +ice_migration_supported_caps(void)
-> +{
-> +       return 0xFFFFFFFF;
-> +}
->   #endif /* CONFIG_ICE_VFIO_PCI */
-> 
->   #endif /* _ICE_MIGRATION_PRIVATE_H_ */
-> diff --git a/drivers/net/ethernet/intel/ice/ice_vf_lib.h b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-> index 431fd28787e8..318b6dfc016d 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_vf_lib.h
-> @@ -77,6 +77,7 @@ struct ice_vfs {
->          unsigned long last_printed_mdd_jiffies; /* MDD message rate limit */
->   };
-> 
-> +#define VIRTCHNL_MSG_MAX 1000
-
-This seems fairly arbitrary. How did you come up with this value? It 
-seems like you can figure out the max number of messages needed for a 
-single VF and it wouldn't be too unreasonable. What if it's a trusted VF 
-that supports 4K VLANs?
-
-Also, should this be named more appropriately since it's specific to the 
-ice driver, i.e.:
-
-ICE_VF_VIRTCHNL_LOGGABLE_MSG_MAX
-
-
->   /* VF information structure */
->   struct ice_vf {
->          struct hlist_node entry;
-> @@ -141,6 +142,10 @@ struct ice_vf {
->          u16 num_msix;                   /* num of MSI-X configured on this VF */
-> 
->          u8 migration_enabled:1;
-> +       struct list_head virtchnl_msg_list;
-> +       u64 virtchnl_msg_num;
-> +       u64 virtchnl_msg_size;
-> +       u32 virtchnl_retval;
->   };
-> 
->   /* Flags for controlling behavior of ice_reset_vf */
-> diff --git a/drivers/net/ethernet/intel/ice/ice_virtchnl.c b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> index 661ca86c3032..730eeaea8c89 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_virtchnl.c
-> @@ -348,6 +348,12 @@ ice_vc_respond_to_vf(struct ice_vf *vf, u32 v_opcode,
->                  return -EIO;
->          }
-> 
-> +       /* v_retval will not be returned in this function, store it in the
-> +        * per VF field to be used by migration logging logic later.
-> +        */
-> +       if (vf->migration_enabled)
-> +               vf->virtchnl_retval = v_retval;
-> +
->          return ice_vc_send_response_to_vf(vf, v_opcode, v_retval, msg, msglen);
->   }
-> 
-> @@ -480,6 +486,8 @@ static int ice_vc_get_vf_res_msg(struct ice_vf *vf, u8 *msg)
->                                    VIRTCHNL_VF_OFFLOAD_RSS_REG |
->                                    VIRTCHNL_VF_OFFLOAD_VLAN;
-> 
-> +       if (vf->migration_enabled)
-> +               vf->driver_caps &= ice_migration_supported_caps();
->          vfres->vf_cap_flags = VIRTCHNL_VF_OFFLOAD_L2;
->          vsi = ice_get_vf_vsi(vf);
->          if (!vsi) {
-> @@ -4037,6 +4045,17 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
->                  goto finish;
->          }
-> 
-> +       if (vf->migration_enabled) {
-> +               if (ice_migration_log_vf_msg(vf, event)) {
-> +                       u32 status_code = VIRTCHNL_STATUS_ERR_NO_MEMORY;
-> +
-> +                       err = ice_vc_respond_to_vf(vf, v_opcode,
-> +                                                  status_code,
-> +                                                  NULL, 0);
-> +                       goto finish;
-> +               }
-> +       }
-> +
->          switch (v_opcode) {
->          case VIRTCHNL_OP_VERSION:
->                  err = ops->get_ver_msg(vf, msg);
-> @@ -4156,6 +4175,18 @@ void ice_vc_process_vf_msg(struct ice_pf *pf, struct ice_rq_event_info *event,
->                           vf_id, v_opcode, err);
->          }
-> 
-> +       /* All of the loggable virtual channel messages are logged by
-> +        * ice_migration_unlog_vf_msg() before they are processed.
-
-Should this be ice_migration_log_vf_msg() in the comment instead?
-
-> +        *
-> +        * Two kinds of error may happen, virtual channel message's result
-> +        * is failure after processed by PF or message is not sent to VF
-> +        * successfully. If error happened, fallback here by reverting logged
-> +        * messages.
-> +        */
-> +       if (vf->migration_enabled &&
-> +           (vf->virtchnl_retval != VIRTCHNL_STATUS_SUCCESS || err))
-> +               ice_migration_unlog_vf_msg(vf, v_opcode);
-> +
->   finish:
->          mutex_unlock(&vf->cfg_lock);
->          ice_put_vf(vf);
-> --
-> 2.34.1
-> 
+Yahui, can you double check?
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
