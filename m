@@ -1,79 +1,80 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 468BBC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Sat,  9 Dec 2023 01:15:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB278C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Sat,  9 Dec 2023 01:57:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D503B817F5;
-	Sat,  9 Dec 2023 01:15:51 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D503B817F5
+	by smtp2.osuosl.org (Postfix) with ESMTP id 49C694012E;
+	Sat,  9 Dec 2023 01:57:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 49C694012E
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702084551;
-	bh=AonpHCwSkbLlqkTcffkkznCg+WXPDJtzxyGxx+dqTdk=;
+	s=default; t=1702087031;
+	bh=SjDmYA4NZsZYrawN8d7shhsjvK4535ehTXINaQPnDl4=;
 	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=Ag/2W3wxQdaWiVgDewiQ8sk8YRFtIxLCkBRANpMtgG2TlA0Zh7ZFTDHd+n0oHS8qo
-	 m37OW+N3NS+j67VMn5aCFoP2UhoOJIjp+xkwQXLU0scpnYqO6uFcvvlJtHW28e5ith
-	 c60+s/MpPh64mkAPyKDQHRiysxy/9ZVSLDzTc/SoYGv+y18Ifv2PGe6uZEW84eNhQC
-	 AvSrWe/o+kGqeoDtHHiXCXl8X5etvvbvkFXCXe2NxXE1k6V8EgmKiDJfWDwUbrF2fk
-	 Yxp21AdluCswNFX7rbEOkxqIsNRahaLYPxD+m0D2DBnD9kibXiuqmdGZmtUP4nXF+N
-	 vXSaOvQTbMgtA==
+	b=0xKminwrwSL3CszrpWq1IMq+tBV+6meQxgm14DhfA96SVzfUaP9hkBkHSA/CjCzKq
+	 813n/HAcw+m18g0aiquVy3z8YKB6URWCPVjiyrq74Ke7J9AAUFkeWT2FbgohI/AP8L
+	 v2+cdYbX7d34wH0f68bwVyu1SyXEP5vfCgzvd6ooGiqlm4Xps2zD0JYT4M080Tar7e
+	 8o/yCfMtK05551OALOsSKMYrOXmwzuvkb7Swt9jDDZe8m4XNpcqTB2NdJbQ1PfaY7Z
+	 7RRt6MR6Sx+rAJcY1HgdltMDWulEe9teZFPIx990QLpdPQWr2sVmxmkpOxkBFDiBVT
+	 qUEFTClCZU/gw==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp1.osuosl.org ([127.0.0.1])
-	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZXNgbVxgbahp; Sat,  9 Dec 2023 01:15:51 +0000 (UTC)
+Received: from smtp2.osuosl.org ([127.0.0.1])
+	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ajWFHK1sKdwD; Sat,  9 Dec 2023 01:57:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id E03218176D;
-	Sat,  9 Dec 2023 01:15:50 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org E03218176D
+	by smtp2.osuosl.org (Postfix) with ESMTP id F10F3405B1;
+	Sat,  9 Dec 2023 01:57:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org F10F3405B1
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id E25071BF99A
- for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Dec 2023 01:15:48 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 60A1C1BF99A
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Dec 2023 01:57:08 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id B9D594287C
- for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Dec 2023 01:15:48 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B9D594287C
+ by smtp4.osuosl.org (Postfix) with ESMTP id 3E32F428D3
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Dec 2023 01:57:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3E32F428D3
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 8TD62VNrptzK for <intel-wired-lan@lists.osuosl.org>;
- Sat,  9 Dec 2023 01:15:47 +0000 (UTC)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 7C1B44287B
- for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Dec 2023 01:15:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7C1B44287B
+ with ESMTP id 0lx1XP_nZd7p for <intel-wired-lan@lists.osuosl.org>;
+ Sat,  9 Dec 2023 01:57:07 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org
+ [IPv6:2604:1380:4641:c500::1])
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 8C120426E2
+ for <intel-wired-lan@lists.osuosl.org>; Sat,  9 Dec 2023 01:57:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 8C120426E2
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by ams.source.kernel.org (Postfix) with ESMTP id 990ABB8312C;
- Sat,  9 Dec 2023 01:15:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B66CC433C9;
- Sat,  9 Dec 2023 01:15:43 +0000 (UTC)
-Date: Fri, 8 Dec 2023 17:15:42 -0800
+ by dfw.source.kernel.org (Postfix) with ESMTP id F3F7262647;
+ Sat,  9 Dec 2023 01:57:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B21BCC433C8;
+ Sat,  9 Dec 2023 01:57:04 +0000 (UTC)
+Date: Fri, 8 Dec 2023 17:57:03 -0800
 From: Jakub Kicinski <kuba@kernel.org>
-To: Alexander Lobakin <aleksander.lobakin@intel.com>
-Message-ID: <20231208171542.30699419@kernel.org>
-In-Reply-To: <20231207172010.1441468-5-aleksander.lobakin@intel.com>
-References: <20231207172010.1441468-1-aleksander.lobakin@intel.com>
- <20231207172010.1441468-5-aleksander.lobakin@intel.com>
+To: Ahmed Zaki <ahmed.zaki@intel.com>
+Message-ID: <20231208175703.3970d1de@kernel.org>
+In-Reply-To: <20231206233642.447794-2-ahmed.zaki@intel.com>
+References: <20231206233642.447794-1-ahmed.zaki@intel.com>
+ <20231206233642.447794-2-ahmed.zaki@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1702084544;
- bh=pS7MlfNbwl/Fhu3GrSIjw0yO1cc0pZZG21Lsn10Aahk=;
+ d=kernel.org; s=k20201202; t=1702087025;
+ bh=kVKeeuFA6aLVpPCgtOqP/HqEH7kYw9itbYOfMzQSBwQ=;
  h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=YnBjlmg9axdBsBOudX3MhpFZxt5NM0IClStBSJBRD1fkcfmkwot7ga0Gkqx+C3ZF/
- +uv8zET9hz0fLr/b9Hw4jhhbroBrEqtj9HDlqZhdhmUkfRWsbEDPbMM0IwcfcbdC5m
- TnKEH6fG931dw8l+RlujMQsKF8uIw2vhHT7iJQVWN/69YDEIn44sWIE3nx9r9ZZ0dK
- ZyrZaYVL0mSXCCRxwzGHW9fbaS/paBfpvjvfYkNCoisXBqMPKBZznWJb4yIyHUW+0s
- o3NrD3DhFYj7Inn/cozQb1eKNStRTLvu3JlwfD44OK4ZppHbYev42RVMDaemcYfbx2
- e/iw5EnKCT+aw==
+ b=tVF81oN5HLlxyCEIxrU+M3UU6WgIi5zsIZF2e4wRoTU+eHaoahVFLsB7mG0wRlfAh
+ X1cOwF7d0yzbueQofpI4n9M+QYMYLdcrWGqls1nykvGAniIs7ladiE5NTMecFXy2zy
+ cquOK5gr8MGV8fiBKco5nvDsPLkpTBjIcmqhqF6nvGNiXQoNcIvJc2itWq3olxe946
+ 6pUlxm5vTg7Ba3zCGDe7LN0QWIswVaCzS/Cv94lZyCb6wimh6DOc/SSza/3Hj0MyFc
+ 1dy2RREQ3LrucONKz2lsugoBxE0/vdFew6xzmKYB6RbmpKJWWzZPgB8W5bnFRbyt8c
+ 3Hixw1MVY5EKA==
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=YnBjlmg9
-Subject: Re: [Intel-wired-lan] [PATCH net-next v6 04/12] iavf: kill
- "legacy-rx" for good
+ header.a=rsa-sha256 header.s=k20201202 header.b=tVF81oN5
+Subject: Re: [Intel-wired-lan] [PATCH net-next v8 1/8] net: ethtool: pass a
+ pointer to parameters to get/set_rxfh ethtool ops
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,29 +87,68 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
- Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
- Jesper Dangaard Brouer <hawk@kernel.org>,
- Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
- Alexander Duyck <alexanderduyck@fb.com>,
- Ilias Apalodimas <ilias.apalodimas@linaro.org>,
- Yunsheng Lin <linyunsheng@huawei.com>, linux-kernel@vger.kernel.org,
- Eric Dumazet <edumazet@google.com>, Michal Kubiak <michal.kubiak@intel.com>,
- intel-wired-lan@lists.osuosl.org, David Christensen <drc@linux.vnet.ibm.com>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Cc: mkubecek@suse.cz, andrew@lunn.ch, willemdebruijn.kernel@gmail.com,
+ corbet@lwn.net, netdev@vger.kernel.org, gal@nvidia.com,
+ linux-doc@vger.kernel.org, jesse.brandeburg@intel.com, ecree.xilinx@gmail.com,
+ edumazet@google.com, anthony.l.nguyen@intel.com, horms@kernel.org,
+ vladimir.oltean@nxp.com, Jacob Keller <jacob.e.keller@intel.com>,
+ intel-wired-lan@lists.osuosl.org, pabeni@redhat.com, davem@davemloft.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Thu,  7 Dec 2023 18:20:02 +0100 Alexander Lobakin wrote:
-> Ever since build_skb() became stable, the old way with allocating an skb
-> for storing the headers separately, which will be then copied manually,
-> was slower, less flexible, and thus obsolete.
+On Wed,  6 Dec 2023 16:36:35 -0700 Ahmed Zaki wrote:
+> -	rxfh.indir_size = dev_indir_size;
+> -	rxfh.key_size = dev_key_size;
+> +	rxfh.indir_size = rxfh_dev.indir_size;
+> +	rxfh.key_size = rxfh_dev.key_size;
+>  	if (copy_to_user(useraddr, &rxfh, sizeof(rxfh)))
+>  		return -EFAULT;
+>  
+> -	if ((user_indir_size && (user_indir_size != dev_indir_size)) ||
+> -	    (user_key_size && (user_key_size != dev_key_size)))
+> +	if ((user_indir_size && user_indir_size != rxfh_dev.indir_size) ||
+> +	    (user_key_size && user_key_size != rxfh_dev.key_size))
+>  		return -EINVAL;
+>  
+> -	indir_bytes = user_indir_size * sizeof(indir[0]);
+> -	total_size = indir_bytes + user_key_size;
+> -	rss_config = kzalloc(total_size, GFP_USER);
+> -	if (!rss_config)
+> -		return -ENOMEM;
+> -
+> -	if (user_indir_size)
+> -		indir = (u32 *)rss_config;
+> +	indir_bytes = user_indir_size * sizeof(*rxfh_dev.indir);
+> +	if (indir_bytes) {
+> +		rxfh_dev.indir = kzalloc(indir_bytes, GFP_KERNEL);
+> +		if (!rxfh_dev.indir)
+> +			return -ENOMEM;
+> +	}
+>  
+> -	if (user_key_size)
+> -		hkey = rss_config + indir_bytes;
+> +	if (user_key_size) {
+> +		rxfh_dev.key = kzalloc(user_key_size, GFP_KERNEL);
+> +		if (!rxfh_dev.key) {
+> +			kfree(rxfh_dev.indir);
+> +			return -ENOMEM;
+> +		}
+> +	}
 
-This one has a conflict on net-next :(
--- 
-pw-bot: cr
+Splitting the allocation into two separate kzalloc()s should be 
+a separate change.
+
+> +struct ethtool_rxfh_param {
+> +	__u8	hfunc;
+> +	__u32   indir_size;
+> +	__u32	*indir;
+> +	__u32   key_size;
+> +	__u8	*key;
+> +};
+
+no underscores needed on types, this is a kernel struct
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
