@@ -4,75 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6BCBC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Sun, 10 Dec 2023 11:50:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47707C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Sun, 10 Dec 2023 11:51:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 847F76104C;
-	Sun, 10 Dec 2023 11:50:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 847F76104C
+	by smtp3.osuosl.org (Postfix) with ESMTP id DEEE0600CB;
+	Sun, 10 Dec 2023 11:51:44 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org DEEE0600CB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702209018;
-	bh=zccENANq/fnZ8bgPb6JScKLR13WH5n9TlOFrgukxBg4=;
+	s=default; t=1702209104;
+	bh=pVM6687VnH4DBz+NEZ+/ZQc4dHNdEJ7QPL8JRWctLAI=;
 	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=OODZTn4ogmH0mL757tj4Bp7hbh7ijz2zY9cpdPBJThOoDyjvVkV62yHNWVxaiF1/y
-	 zhcNjD4RATPBpmBUIpg/YfNG2Iw0wqe09bMiBjx/mk6UaF36/8WWqp26dQbaBsM7G6
-	 YBYYL0ZsnXpHE0b7QDJl94wL3DR4iybRqrmH0tIJbb/4xLkCeF7kMi0Ve4Mf3i6INT
-	 /JLVXjS9cUq9MKnh6aedywknjfen/kv4gwWF/rzwnHbZt8/hrOXSy+1LpueSd7a9bZ
-	 sR0aWc4wLzKSF66YBabzAbzcufIAuafNtai8EetSGSUT7XYhe5/Kzug1FImL15GEmU
-	 K76Z1eoGd3uIw==
+	b=XiPbvk4ce1Qxk001PHiOyZvg6nNtL7eE+6DcUi7c3cnb6w1clM7oiaOZ7SMpsa8Ev
+	 UAvBT9aVCx8nu7PQJaar6u0CXy1kKStmo8ugEhXBQ6rBJm5oAXxpVRum7K7kNS24By
+	 27h50I3F7R9M0NDoqqUR09ojAuhPJTXDs3Gc3u1OdZRBJN58KgsHVFdNhuCEKGMYOP
+	 X3GqeQLjO4EX5qDJU+aWFzH9HRU7U+lTwFpO71ARe6Y3PHAGFR35bRzE1sn21bzlNS
+	 TkWZpQJBS12+o6GATosCudkd31ov4Tbn68src2UdZFJMCf+Jgms9KXwnX9HhEYASN3
+	 O+fwDZXU4byMA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
 	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id kImOWqetuGXS; Sun, 10 Dec 2023 11:50:17 +0000 (UTC)
+	with ESMTP id hWHMy3xJ4p89; Sun, 10 Dec 2023 11:51:44 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 87CAB6104E;
-	Sun, 10 Dec 2023 11:50:17 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 87CAB6104E
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 89EAE1BF593
- for <intel-wired-lan@lists.osuosl.org>; Sun, 10 Dec 2023 11:50:16 +0000 (UTC)
+	by smtp3.osuosl.org (Postfix) with ESMTP id F01466104C;
+	Sun, 10 Dec 2023 11:51:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org F01466104C
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 96A7C1BF593
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 10 Dec 2023 11:51:42 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 6F28341527
- for <intel-wired-lan@lists.osuosl.org>; Sun, 10 Dec 2023 11:50:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6F28341527
+ by smtp1.osuosl.org (Postfix) with ESMTP id 6E50182099
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 10 Dec 2023 11:51:42 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 6E50182099
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Irn5f9k2L-hf for <intel-wired-lan@lists.osuosl.org>;
- Sun, 10 Dec 2023 11:50:15 +0000 (UTC)
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
- by smtp4.osuosl.org (Postfix) with ESMTPS id BBBB0408BD
- for <intel-wired-lan@lists.osuosl.org>; Sun, 10 Dec 2023 11:50:15 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BBBB0408BD
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id k9NeOvZWZ-Ly for <intel-wired-lan@lists.osuosl.org>;
+ Sun, 10 Dec 2023 11:51:41 +0000 (UTC)
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 28C698208A
+ for <intel-wired-lan@lists.osuosl.org>; Sun, 10 Dec 2023 11:51:41 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 28C698208A
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
- by ams.source.kernel.org (Postfix) with ESMTP id D8EEEB80A48;
- Sun, 10 Dec 2023 11:50:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C5138C433C7;
- Sun, 10 Dec 2023 11:50:10 +0000 (UTC)
-Date: Sun, 10 Dec 2023 11:50:07 +0000
+ by sin.source.kernel.org (Postfix) with ESMTP id 951CDCE0302;
+ Sun, 10 Dec 2023 11:51:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 71157C433C8;
+ Sun, 10 Dec 2023 11:51:33 +0000 (UTC)
+Date: Sun, 10 Dec 2023 11:51:30 +0000
 From: Simon Horman <horms@kernel.org>
 To: Kurt Kanzenbach <kurt@linutronix.de>
-Message-ID: <20231210115007.GH5817@kernel.org>
-References: <20231206140718.57433-1-kurt@linutronix.de>
+Message-ID: <20231210115130.GI5817@kernel.org>
+References: <20231201075043.7822-1-kurt@linutronix.de>
+ <20231201075043.7822-2-kurt@linutronix.de>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20231206140718.57433-1-kurt@linutronix.de>
+In-Reply-To: <20231201075043.7822-2-kurt@linutronix.de>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=kernel.org; s=k20201202; t=1702209013;
- bh=nQSIKETL4cIFCIbVW5Lsz+1L3/MB2QWHSDc0NxIJQEM=;
+ d=kernel.org; s=k20201202; t=1702209095;
+ bh=zTw11dma9TQr51J8b37cApWXRBd1GrHPH/9aAAbr88M=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=MOxVeJgHOOMRna/HW4cFKZIIYcRQqETPNwvF0zXDgqFI4dn5tqk2147+EmWvmlrXd
- BC+uXMXZ++0JryrqSN6UURjhctB9bjEdTl2fGWg3y8C2vaGWHaxeUu0hyDgrOjj9Qj
- HlxcwYAlJgdjgYtuTAaADFDOp97yM7/UvQ/Y74W+K0tWh0fkg4NCw5cgJgGY4fo9Lh
- 4TNrR+hDMQktsBtbO6aEAcEmL4m5m5JT5k9/cBQMPXlie4jQa7L0JYYGpaniHQ6xWv
- M+XGKG29AMwq7oufZgeodGnYWy6SZhUtxJ+HzRHY9QjhTfo54ItvdCFuxqmx3ZAceV
- HasXGRxeMLMjw==
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ b=EJ886RBaO1WQggaU9RMEZ/Q+MZqh/qL7pqTx6lS2aiTQ/wGhl2F5LsqzCu2e16WSD
+ QZN7UtBVVou4K01d4jugHnpplwfnXq41U8in8Vcoo1S0uMXT7TG1r6b4e4H68lE8Jx
+ UdJ3BL8oon2/fHo+PWiDfJ+/Szr8YmZhpUtfhdtRIf7oQK5csPMux82YlLAnPYmIb/
+ I7TuHWUx+XR0Dl4ss8hg+fqtwqHjjl8icX6ZCzIHgs+SCJeKnrFbJNpcTyY6+cWGEP
+ dYRmZ3p6ckniXZTYHvR20lioOCYEUtjUnD7gEYQ8+L/t3BxTa1hum/9Jftnwgawz6N
+ BYPw+X3fhfx7Q==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
- header.a=rsa-sha256 header.s=k20201202 header.b=MOxVeJgH
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] igc: Check VLAN EtherType mask
+ header.a=rsa-sha256 header.s=k20201202 header.b=EJ886RBa
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net v2 1/2] igc: Report VLAN
+ EtherType matching back to user
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,23 +92,33 @@ Cc: Vinicius Costa Gomes <vinicius.gomes@intel.com>,
  Jesse Brandeburg <jesse.brandeburg@intel.com>,
  Eric Dumazet <edumazet@google.com>, Tony Nguyen <anthony.l.nguyen@intel.com>,
  netdev@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
- Suman Ghosh <sumang@marvell.com>
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-On Wed, Dec 06, 2023 at 03:07:18PM +0100, Kurt Kanzenbach wrote:
-> Currently the driver accepts VLAN EtherType steering rules regardless of
-> the configured mask. And things might fail silently or with confusing error
-> messages to the user. The VLAN EtherType can only be matched by full
-> mask. Therefore, add a check for that.
+On Fri, Dec 01, 2023 at 08:50:42AM +0100, Kurt Kanzenbach wrote:
+> Currently the driver allows to configure matching by VLAN EtherType.
+> However, the retrieval function does not report it back to the user. Add
+> it.
 > 
-> For instance the following rule is invalid, but the driver accepts it and
-> ignores the user specified mask:
-> |root@host:~# ethtool -N enp3s0 flow-type ether vlan-etype 0x8100 \
-> |             m 0x00ff action 0
+> Before:
+> |root@host:~# ethtool -N enp3s0 flow-type ether vlan-etype 0x8100 action 0
+> |Added rule with ID 63
+> |root@host:~# ethtool --show-ntuple enp3s0
+> |4 RX rings available
+> |Total 1 rules
+> |
+> |Filter: 63
+> |        Flow Type: Raw Ethernet
+> |        Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
+> |        Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
+> |        Ethertype: 0x0 mask: 0xFFFF
+> |        Action: Direct to queue 0
+> 
+> After:
+> |root@host:~# ethtool -N enp3s0 flow-type ether vlan-etype 0x8100 action 0
 > |Added rule with ID 63
 > |root@host:~# ethtool --show-ntuple enp3s0
 > |4 RX rings available
@@ -122,14 +134,9 @@ On Wed, Dec 06, 2023 at 03:07:18PM +0100, Kurt Kanzenbach wrote:
 > |        User-defined: 0x0 mask: 0xffffffffffffffff
 > |        Action: Direct to queue 0
 > 
-> After:
-> |root@host:~# ethtool -N enp3s0 flow-type ether vlan-etype 0x8100 \
-> |             m 0x00ff action 0
-> |rmgr: Cannot insert RX class rule: Operation not supported
-> 
 > Fixes: 2b477d057e33 ("igc: Integrate flex filter into ethtool ops")
-> Suggested-by: Suman Ghosh <sumang@marvell.com>
 > Signed-off-by: Kurt Kanzenbach <kurt@linutronix.de>
+> Acked-by: Vinicius Costa Gomes <vinicius.gomes@intel.com>
 
 Reviewed-by: Simon Horman <horms@kernel.org>
 
