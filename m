@@ -1,89 +1,85 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0FDBC4167B
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Dec 2023 15:03:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD9A9C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Dec 2023 16:42:28 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 5FCF4611B2;
-	Mon, 11 Dec 2023 15:03:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 5FCF4611B2
+	by smtp4.osuosl.org (Postfix) with ESMTP id 6F1C741762;
+	Mon, 11 Dec 2023 16:42:28 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6F1C741762
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702306985;
-	bh=MHeq4YZ2ACcqDJcbMmU4iqgC/QYDH3w/hCtLTQVgDPU=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
-	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
-	 Cc:From;
-	b=xSs4OfoB0jdaiB65niXL0ykL0yTJuH0JBOqLDVbjL2s+AegISup8PZlwJAg5KXnAv
-	 X36HzSBICxZpeAEKm0mEWWGfzv2RrzgeRpVjvjDwUgzzc+g/o1Lw4SP7Wn4p7WZvmw
-	 Y06s3jeU7MZSmH73gHGYTGAfUt5HXjo587PM+AFYF9rArqg73aeU5W10OH9dtvFwnM
-	 z8pNLECUu0j7sS0bg/k6gf/gn4rjr+MvxNSAYi+6OgfGR/YQfOw/Mz/pVGSbV7ormg
-	 2WQNbywW4+7ZJ4/vJJh+V7GD1Bv4DiLbdY+BmAz1tnklpvoBfmIL/PktJmyHqkNEsJ
-	 hBNCY0RFzgh4w==
+	s=default; t=1702312948;
+	bh=wKwQ4eYsKEwXT3XXCNLGQwBLZPy4U+Ac7JejFRuXAuU=;
+	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
+	 List-Post:List-Help:List-Subscribe:Cc:From;
+	b=lyIJ6+ONiqS6MkK/dlf2ByiK2jknLxreqWxGDISlL5D14FDxs4Nx4jGAbMHvmC1T1
+	 RQ7B5nfWNe+nWRTwHxCeqKf42Hxl9r8LQHBMxZ2o8BJWyU4k7ScF/9EGXGNlZfLz4z
+	 BqEVaqMO8Lqiq+4pMO0Dp2wG3PpGArGaD6NZUhqZnIQvxNxoiEx54DdZPMwoSdoGSw
+	 87QPQWPbnaE/4YfUeDL4zs4+dX69x1ap9/nj6pxA25wbWThyyNBJOzoh71cqqDWbZD
+	 4Gphzbape//ucorIPSl3ZFRvi9yXuPKphz6do3tsZFJyEmXrXQhwSr1DfiKLzc+J7F
+	 wObNFMd86g47A==
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DinHnDz8b_lJ; Mon, 11 Dec 2023 15:03:04 +0000 (UTC)
+Received: from smtp4.osuosl.org ([127.0.0.1])
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lLB4iLjpsE_j; Mon, 11 Dec 2023 16:42:27 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 2004D611C0;
-	Mon, 11 Dec 2023 15:03:04 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 2004D611C0
+	by smtp4.osuosl.org (Postfix) with ESMTP id 55E3B416DB;
+	Mon, 11 Dec 2023 16:42:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 55E3B416DB
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 2C35C1BF860
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 15:02:46 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 3E8011BF3C1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 03:00:22 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 04BE881E5E
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 15:02:46 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 04BE881E5E
+ by smtp1.osuosl.org (Postfix) with ESMTP id 15AAB80BC3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 03:00:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 15AAB80BC3
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id cYNwvDwXCPYV for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 Dec 2023 15:02:45 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.120])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 4FD7C81DF7
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 15:02:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4FD7C81DF7
-X-IronPort-AV: E=McAfee;i="6600,9927,10921"; a="393532338"
-X-IronPort-AV: E=Sophos;i="6.04,268,1695711600"; d="scan'208";a="393532338"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
- by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 11 Dec 2023 07:02:45 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10921"; a="773090884"
-X-IronPort-AV: E=Sophos;i="6.04,268,1695711600"; d="scan'208";a="773090884"
-Received: from kkolacin-desk1.igk.intel.com ([10.102.102.152])
- by orsmga002.jf.intel.com with ESMTP; 11 Dec 2023 07:02:43 -0800
-From: Karol Kolacinski <karol.kolacinski@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Mon, 11 Dec 2023 16:02:26 +0100
-Message-Id: <20231211150226.295090-7-karol.kolacinski@intel.com>
-X-Mailer: git-send-email 2.40.1
-In-Reply-To: <20231211150226.295090-1-karol.kolacinski@intel.com>
-References: <20231211150226.295090-1-karol.kolacinski@intel.com>
+ with ESMTP id zgqkWXhYHVFC for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 Dec 2023 03:00:21 +0000 (UTC)
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 670F780A58
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 03:00:19 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 670F780A58
+X-UUID: 0b105c8e154d4308be340be35614f20c-20231211
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.33, REQID:19a20f34-c316-4582-9f89-476ca1073edf, IP:5,
+ U
+ RL:0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+ N:release,TS:-10
+X-CID-INFO: VERSION:1.1.33, REQID:19a20f34-c316-4582-9f89-476ca1073edf, IP:5,
+ URL
+ :0,TC:0,Content:0,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+ release,TS:-10
+X-CID-META: VersionHash:364b77b, CLOUDID:931283fd-4a48-46e2-b946-12f04f20af8c,
+ B
+ ulkID:231211105935IA61I4Z6,BulkQuantity:0,Recheck:0,SF:38|24|17|19|44|66|1
+ 02,TC:nil,Content:0,EDM:-3,IP:-2,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,CO
+ L:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_FSD,TF_CID_SPAM_FSI,TF_CID_SPAM_SNR,TF_CID_SPAM_FAS
+X-UUID: 0b105c8e154d4308be340be35614f20c-20231211
+X-User: chentao@kylinos.cn
+Received: from vt.. [(116.128.244.169)] by mailgw
+ (envelope-from <chentao@kylinos.cn>)
+ (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
+ with ESMTP id 1052257917; Mon, 11 Dec 2023 10:59:34 +0800
+From: Kunwu Chan <chentao@kylinos.cn>
+To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
+ pabeni@redhat.com
+Date: Mon, 11 Dec 2023 10:59:27 +0800
+Message-Id: <20231211025927.233449-1-chentao@kylinos.cn>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173,
- 80-298 Gdansk - KRS 101882 - NIP 957-07-52-316
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1702306965; x=1733842965;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=9ScAq09hYEJMh5QtZv0jv/+C5ikdy9w1RFO5ONE7WUw=;
- b=mKxhz3w+wSHR2g8Mymav02fHhh0/jWj667FqLm+X+l+Xx3iT6vBYmrWR
- K+l4tWgMYnJDuP82IyC0KNKAofRQX9ioVB6eJyVaB9q0p9iTCyZkOFaXM
- di4zryf+VjT4NLosNNAvrYQcBgeSYKh35vtM+GgU7KURHRFH+gdJCv5Ma
- ElUOmafrpk7HqPckROp+Lde/amfK3mMgm698yaLWFBGUjfwiwJXPGgG3B
- hcK0V23HZ0zU5o2SrTLXU/AsxAepFxztXEo66ZnEAr210OHRF4yxkjdM5
- 7Il6UcajZaDDQhqGH+ZjLljcVIwBpKJBT3WGmDBUCVVMorp69OAtB/ymY
- A==;
-X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=mKxhz3w+
-Subject: [Intel-wired-lan] [PATCH v2 iwl-next 6/6] ice: stop destroying and
- reinitalizing Tx tracker during reset
+X-Mailman-Approved-At: Mon, 11 Dec 2023 16:42:26 +0000
+Subject: [Intel-wired-lan] [PATCH] iavf: Fix null pointer dereference in
+ iavf_print_link_message
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,96 +92,40 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Jacob Keller <jacob.e.keller@intel.com>, netdev@vger.kernel.org,
- Karol Kolacinski <karol.kolacinski@intel.com>, anthony.l.nguyen@intel.com,
- jesse.brandeburg@intel.com
+Cc: Kunwu Chan <chentao@kylinos.cn>, Kunwu Chan <kunwu.chan@hotmail.com>,
+ przemyslaw.kitszel@intel.com, linux-kernel@vger.kernel.org,
+ intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
+ jacob.e.keller@intel.com
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+kasprintf() returns a pointer to dynamically allocated memory
+which can be NULL upon failure.
 
-The ice driver currently attempts to destroy and re-initialize the Tx
-timestamp tracker during the reset flow. The release of the Tx tracker
-only happened during CORE reset or GLOBAL reset. The ice_ptp_rebuild()
-function always calls the ice_ptp_init_tx function which will allocate
-a new tracker data structure, resulting in memory leaks during PF reset.
-
-Certainly the driver should not be allocating a new tracker without
-removing the old tracker data, as this results in a memory leak.
-Additionally, there's no reason to remove the tracker memory during a
-reset. Remove this logic from the reset and rebuild flow. Instead of
-releasing the Tx tracker, flush outstanding timestamps just before we
-reset the PHY timestamp block in ice_ptp_cfg_phy_interrupt().
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Karol Kolacinski <karol.kolacinski@intel.com>
-Reviewed-by: Jacob Keller <jacob.e.keller@intel.com>
+Fixes: 1978d3ead82c ("intel: fix string truncation warnings")
+Cc: Kunwu Chan <kunwu.chan@hotmail.com>
+Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
 ---
- drivers/net/ethernet/intel/ice/ice_ptp.c | 33 +++++++++++++++---------
- 1 file changed, 21 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/iavf/iavf_virtchnl.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ice/ice_ptp.c b/drivers/net/ethernet/intel/ice/ice_ptp.c
-index 2f862b2e1a90..d0e9f793f4d1 100644
---- a/drivers/net/ethernet/intel/ice/ice_ptp.c
-+++ b/drivers/net/ethernet/intel/ice/ice_ptp.c
-@@ -963,6 +963,22 @@ ice_ptp_mark_tx_tracker_stale(struct ice_ptp_tx *tx)
- 	spin_unlock_irqrestore(&tx->lock, flags);
- }
- 
-+/**
-+ * ice_ptp_flush_all_tx_tracker - Flush all timestamp trackers on this clock
-+ * @pf: Board private structure
-+ *
-+ * Called by the clock owner to flush all the Tx timestamp trackers associated
-+ * with the clock.
-+ */
-+static void
-+ice_ptp_flush_all_tx_tracker(struct ice_pf *pf)
-+{
-+	struct ice_ptp_port *port;
-+
-+	list_for_each_entry(port, &pf->ptp.ports_owner.ports, list_member)
-+		ice_ptp_flush_tx_tracker(ptp_port_to_pf(port), &port->tx);
-+}
-+
- /**
-  * ice_ptp_release_tx_tracker - Release allocated memory for Tx tracker
-  * @pf: Board private structure
-@@ -2721,6 +2737,11 @@ static int ice_ptp_rebuild_owner(struct ice_pf *pf)
- 	/* Release the global hardware lock */
- 	ice_ptp_unlock(hw);
- 
-+	/* Flush software tracking of any outstanding timestamps since we're
-+	 * about to flush the PHY timestamp block.
-+	 */
-+	ice_ptp_flush_all_tx_tracker(pf);
-+
- 	if (!ice_is_e810(hw)) {
- 		/* Enable quad interrupts */
- 		err = ice_ptp_cfg_phy_interrupt(pf, true, 1);
-@@ -2759,18 +2780,6 @@ void ice_ptp_rebuild(struct ice_pf *pf, enum ice_reset_req reset_type)
- 			goto err;
+diff --git a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+index 64c4443dbef9..1b50d351f28b 100644
+--- a/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
++++ b/drivers/net/ethernet/intel/iavf/iavf_virtchnl.c
+@@ -1444,6 +1444,8 @@ static void iavf_print_link_message(struct iavf_adapter *adapter)
+ 		speed = kasprintf(GFP_KERNEL, "%d Mbps", link_speed_mbps);
  	}
  
--	/* Init Tx structures */
--	if (ice_is_e810(&pf->hw)) {
--		err = ice_ptp_init_tx_e810(pf, &ptp->port.tx);
--	} else {
--		kthread_init_delayed_work(&ptp->port.ov_work,
--					  ice_ptp_wait_for_offsets);
--		err = ice_ptp_init_tx_e82x(pf, &ptp->port.tx,
--					   ptp->port.port_num);
--	}
--	if (err)
--		goto err;
--
- 	ptp->state = ICE_PTP_READY;
- 
- 	/* Start periodic work going */
++	if (!speed)
++		return;
+ 	netdev_info(netdev, "NIC Link is Up Speed is %s Full Duplex\n", speed);
+ 	kfree(speed);
+ }
 -- 
-2.40.1
+2.39.2
 
 _______________________________________________
 Intel-wired-lan mailing list
