@@ -4,82 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2176BC10DC3
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Dec 2023 16:42:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6524FC4167B
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 11 Dec 2023 16:42:38 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B01A641933;
-	Mon, 11 Dec 2023 16:42:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B01A641933
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2473440345;
+	Mon, 11 Dec 2023 16:42:38 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2473440345
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702312952;
-	bh=b/ZV5WgUARdinkoGEyS8Pvj8+WT84/L8o2q2yPHyyNM=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=fiPpQEnUvXTnr7vyoZk+ilq9sgyTHkyx6vQGH6GhLpSYJ4qAb/sFqSnZlx8UE7m0h
-	 7OrnVE2IqRCRhV4MZ/89v2VREhkukKc2Jqe1azHCVXF27sHpN+KS6cCzj6jHA/8ATp
-	 GbV8XIlUQkhlpu53QFBxGkCb5BSYN4cG6JvkjcVIR0al5G85f57hoBDw8s+Mpe51mD
-	 X5V5bSdoFtWD23nb9CPfXZ1GFKUw2b+OiElrN9cr/YnwUgIUMVCWuoZ2WUJ6wXqyMA
-	 So1Tfnrxgx3GoGmnRcjHIXvHUTetFQzFMkPobDqKLvczRqttSkFG+YzF9T4vRZxGbB
-	 sOPWd4za3BWrQ==
+	s=default; t=1702312958;
+	bh=pC9Zk3v86xxmfIMnhDckz/H/2pRfWWWwdSRYR6UxtC8=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=7UbInhSob9uWPxoO880DUUXxeOvJBPq19oA1pwWmxL+2NKaA0JKIP7NDcH4zhfZLz
+	 TyFXD/x+biAm83J0qKbnXIusRWOmWUTCWfW0RTW4wzz2FbvBSevpiUnp/E5KNyaTZ2
+	 dlUXAAKCc+JV+zg0D7VYILwE0c+8n+sojbb6/BVpK57BuL9uPi84x5sBLRZjQvZhuu
+	 oqB7u/wgRbtOgGyLTGQEdzrW0YZBgYgyQKKz5zR3cH85NSOApTTekEqcS5CjXr/pzh
+	 WPC9gji+4lWeccAl3dQMzjzRn/M7t/BsAC8qIMIaPW88m8WpyhtjK0zVTIcIUenxlb
+	 s+6cQKddsYU+w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id JLHyPbzjY-ko; Mon, 11 Dec 2023 16:42:32 +0000 (UTC)
+	with ESMTP id FSlngcfi_1Et; Mon, 11 Dec 2023 16:42:36 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id B5DC7417BD;
-	Mon, 11 Dec 2023 16:42:31 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org B5DC7417BD
+	by smtp4.osuosl.org (Postfix) with ESMTP id 2583F41743;
+	Mon, 11 Dec 2023 16:42:36 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 2583F41743
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id EA9C41BF32B
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 03:13:55 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 772B91BF5A2
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 04:52:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id B3D838215C
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 03:13:55 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B3D838215C
+ by smtp1.osuosl.org (Postfix) with ESMTP id 4F74A8218F
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 04:52:16 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4F74A8218F
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 49WguISRyivq for <intel-wired-lan@lists.osuosl.org>;
- Mon, 11 Dec 2023 03:13:55 +0000 (UTC)
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 0EEEA82157
- for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 03:13:53 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 0EEEA82157
-X-UUID: b0aed6746fa9462dbc846b22f61b057a-20231211
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.33, REQID:62e02d26-f187-4327-b2ae-62bc0e600995, IP:5,
- U
- RL:0,TC:0,Content:-5,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTI
- ON:release,TS:-15
-X-CID-INFO: VERSION:1.1.33, REQID:62e02d26-f187-4327-b2ae-62bc0e600995, IP:5,
- URL
- :0,TC:0,Content:-5,EDM:0,RT:0,SF:-15,FILE:0,BULK:0,RULE:Release_Ham,ACTION
- :release,TS:-15
-X-CID-META: VersionHash:364b77b, CLOUDID:5c8e0a61-c89d-4129-91cb-8ebfae4653fc,
- B
- ulkID:231211111344YBK1WEVE,BulkQuantity:0,Recheck:0,SF:17|19|44|66|38|24|1
- 02,TC:nil,Content:0,EDM:-3,IP:-2,URL:0,File:nil,Bulk:nil,QS:nil,BEC:nil,CO
- L:0,OSI:0,OSA:0,AV:0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR,TF_CID_SPAM_FAS,TF_CID_SPAM_FSD,TF_CID_SPAM_FSI
-X-UUID: b0aed6746fa9462dbc846b22f61b057a-20231211
-X-User: chentao@kylinos.cn
-Received: from vt.. [(116.128.244.169)] by mailgw
- (envelope-from <chentao@kylinos.cn>)
- (Generic MTA with TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 256/256)
- with ESMTP id 1392175482; Mon, 11 Dec 2023 11:13:41 +0800
-From: Kunwu Chan <chentao@kylinos.cn>
-To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Mon, 11 Dec 2023 11:13:36 +0800
-Message-Id: <20231211031336.235634-1-chentao@kylinos.cn>
-X-Mailer: git-send-email 2.39.2
+ with ESMTP id 6UeR1x-44gmD for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 11 Dec 2023 04:52:14 +0000 (UTC)
+Received: from mail1.merlins.org (magic.merlins.org [209.81.13.136])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id B8C078210A
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 11 Dec 2023 04:52:13 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org B8C078210A
+Received: from c-76-132-34-178.hsd1.ca.comcast.net ([76.132.34.178]:58984
+ helo=sauron.svh.merlins.org) by mail1.merlins.org with esmtpsa 
+ (Cipher TLS1.3:ECDHE_SECP256R1__RSA_PSS_RSAE_SHA256__AES_256_GCM:256) (Exim
+ 4.94.2 #2)
+ id 1rCYGv-0004Vc-9r by authid <merlins.org> with srv_auth_plain;
+ Sun, 10 Dec 2023 20:52:01 -0800
+Received: from merlin by sauron.svh.merlins.org with local (Exim 4.92)
+ (envelope-from <marc@merlins.org>)
+ id 1rCYGu-000roj-Sl; Sun, 10 Dec 2023 20:52:00 -0800
+Date: Sun, 10 Dec 2023 20:52:00 -0800
+From: Marc MERLIN <marc@merlins.org>
+To: Jakub Kicinski <kuba@kernel.org>
+Message-ID: <20231211045200.GC24475@merlins.org>
+References: <20231206113934.8d7819857574.I2deb5804ef1739a2af307283d320ef7d82456494@changeid>
+ <20231206084448.53b48c49@kernel.org>
+ <e6f227ee701e1ee37e8f568b1310d240a2b8935a.camel@sipsolutions.net>
+ <a44865f5-3a07-d60a-c333-59c012bfa2fb@intel.com>
+ <20231207094021.1419b5d0@kernel.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+In-Reply-To: <20231207094021.1419b5d0@kernel.org>
+X-Sysadmin: BOFH
+X-URL: http://marc.merlins.org/
+X-SA-Exim-Connect-IP: 76.132.34.178
+X-SA-Exim-Mail-From: marc@merlins.org
 X-Mailman-Approved-At: Mon, 11 Dec 2023 16:42:26 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Add null pointer check to
- igb_set_fw_version
+Subject: Re: [Intel-wired-lan] [PATCH net v3] net: ethtool: do runtime PM
+ outside RTNL
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,41 +86,47 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Kunwu Chan <chentao@kylinos.cn>, Kunwu Chan <kunwu.chan@hotmail.com>,
- przemyslaw.kitszel@intel.com, linux-kernel@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org,
- jacob.e.keller@intel.com
+Cc: Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ Johannes Berg <johannes@sipsolutions.net>,
+ Heiner Kallweit <hkallweit1@gmail.com>,
+ "intel-wired-lan@lists.osuosl.org" <intel-wired-lan@lists.osuosl.org>,
+ netdev@vger.kernel.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-kasprintf() returns a pointer to dynamically allocated memory
-which can be NULL upon failure.
+On Thu, Dec 07, 2023 at 09:40:21AM -0800, Jakub Kicinski wrote:
+> On Thu, 7 Dec 2023 11:16:10 +0100 Przemek Kitszel wrote:
+> > I have let know our igc TL, architect, and anybody that could be
+> > interested via cc: IWL. And I'm happy that this could be done at
+> > relaxed pace thanks to Johannes
+> 
+> I think you may be expecting us to take Johannes's patch.
+> It's still on the table, but to make things clear -
+> upstream we prefer to wait for the "real fix", so if we agree
+> that fixing igb/igc is a better way (as Heiner pointed out on previous
+> version PM functions are called by the stack under rtnl elsewhere too,
+> just not while device is open) - we'll wait for that. Especially
+> that I'm 80% I complained about the PM in those drivers in
+> the past and nobody seemed to care. It's a constant source of rtnl
+> deadlocks.
 
-Fixes: 1978d3ead82c ("intel: fix string truncation warnings")
-Cc: Kunwu Chan <kunwu.chan@hotmail.com>
-Signed-off-by: Kunwu Chan <chentao@kylinos.cn>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+For whatever it's worth, I want to be clear that all stock kernels
+are 100% unusable on lenovo P17gen2 because of this deadlock and that
+without the temporary patch, my laptop would be usuable.
+It was also a risk of data loss due to repeated deadlocks and unclean
+shutdowns.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b2295caa2f0a..6838f6fccb80 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3102,6 +3102,8 @@ void igb_set_fw_version(struct igb_adapter *adapter)
- 		break;
- 	}
- 
-+	if (!lbuf)
-+		return;
- 	/* the truncate happens here if it doesn't fit */
- 	strscpy(adapter->fw_version, lbuf, sizeof(adapter->fw_version));
- 	kfree(lbuf);
+I cannot say what the correct fix is, but I am definitely hoping you
+will accept some solution for the next stable kernel.
+
+Thank you
+Marc
 -- 
-2.39.2
-
+"A mouse is a device used to point at the xterm you want to type in" - A.S.R.
+ 
+Home page: http://marc.merlins.org/                       | PGP 7F55D5F27AAF9D08
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
