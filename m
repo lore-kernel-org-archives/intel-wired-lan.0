@@ -1,84 +1,97 @@
 Return-Path: <intel-wired-lan-bounces@osuosl.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACFCAC4332F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 14:56:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 987F4C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 16:09:27 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 4EFB761531;
-	Tue, 12 Dec 2023 14:56:36 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 4EFB761531
+	by smtp4.osuosl.org (Postfix) with ESMTP id 38B0D40900;
+	Tue, 12 Dec 2023 16:09:27 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 38B0D40900
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702392996;
-	bh=17sirw7pn8ETaBFpibe6kfaGa12Hx46pFhGltafSsK0=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=79euT7XH+GIZMegsBPwvn/qAgz6O2x9Zy2/ZetJsHX4OW3/ktd+prq4g1bjBZHjBz
-	 d/uhcJ/c33X55qkLkC+9fEWp2N1y7uTFzfGBb5uxbQlxXVdBqheoZf7s6WX7zloxeo
-	 PV1mEz/KJQ9WGYN8wD6j8MOJbLg1ORUG3aMsCxR82gJYBPQj8irwFnFGU2WAlPaCih
-	 7v/5xdxUjxHrG/XYk4xraXR6JYz1U9UUiwFHCk86UOE4gtSnPhZIUuou4n2/DEkBEa
-	 9WTTyykK/YEhMU68VgcFtcRisUZxkAwvDm3QYQkGu6shFoPrLwXKt1bYPO81/nYk9/
-	 ycI7Gyuq0GQAg==
-X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp3.osuosl.org ([127.0.0.1])
-	by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id L-bfIPH0jVf3; Tue, 12 Dec 2023 14:56:34 +0000 (UTC)
-Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp3.osuosl.org (Postfix) with ESMTP id 577D661534;
-	Tue, 12 Dec 2023 14:56:34 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 577D661534
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id D3D101BF5A6
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 14:56:32 +0000 (UTC)
-Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id AB22C408DB
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 14:56:32 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AB22C408DB
+	s=default; t=1702397367;
+	bh=UFUHBypM0ltQqdbSZRO4Rfe8s8HOc1JYpmTT9PTD1Bc=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=rAXhgGR2Ts4e1yhU3pO0u1SiiJfZNwDXndDUKc2tIyoSn8EFdIvpMlVTHpptz0T+9
+	 m0UI3GNoypHadx1BiUaXBgsVpq8iVG5HM/ECObXseKaMxyClPLBjBRFhjifbKOE4W4
+	 JkRyr5eJs548ZBuDbYeWXApU4FxJGxV5av6uWXR2CwGxw5dBSnea3Fb5vYi+SmxT17
+	 /OQz9+7Zd/Tb+HLsYjt5DmwgZeJ9isb7glZV25I01EobEuUFFU+pn8DZWJCQcniuK9
+	 3EhDPIZOdgy0RFV+791B70OtlhqKCW32p4HbaL2XJSAx86xJc+EpCKqkOeKmUDLp5C
+	 oPRP2eZwDQEQA==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zFnmg0JwUaTv for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Dec 2023 14:56:31 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.55.52.151])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 36613408DA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 14:56:30 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 36613408DA
-X-IronPort-AV: E=McAfee;i="6600,9927,10922"; a="374972147"
-X-IronPort-AV: E=Sophos;i="6.04,270,1695711600"; d="scan'208";a="374972147"
-Received: from fmviesa001.fm.intel.com ([10.60.135.141])
- by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Dec 2023 06:56:28 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.04,270,1695711600"; d="scan'208";a="17637353"
-Received: from kkazimiedevpc.igk.intel.com (HELO localhost.igk.intel.com)
- ([10.102.102.224])
- by smtpauth.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Dec 2023 06:56:26 -0800
-From: Michal Kubiak <michal.kubiak@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 12 Dec 2023 15:55:46 +0100
-Message-Id: <20231212145546.396273-1-michal.kubiak@intel.com>
-X-Mailer: git-send-email 2.33.1
+	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Fj5zKgc34FA3; Tue, 12 Dec 2023 16:09:26 +0000 (UTC)
+Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
+	by smtp4.osuosl.org (Postfix) with ESMTP id BBC4441713;
+	Tue, 12 Dec 2023 16:09:25 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BBC4441713
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 8B7221BF429
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:09:24 +0000 (UTC)
+Received: from localhost (localhost [127.0.0.1])
+ by smtp3.osuosl.org (Postfix) with ESMTP id 6192960D76
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:09:24 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6192960D76
+X-Virus-Scanned: amavisd-new at osuosl.org
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 4ei0wcRPVLsF for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Dec 2023 16:09:23 +0000 (UTC)
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com
+ [IPv6:2a00:1450:4864:20::134])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 0C0FC60B23
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:09:22 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0C0FC60B23
+Received: by mail-lf1-x134.google.com with SMTP id
+ 2adb3069b0e04-50bee606265so6157965e87.2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 08:09:22 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1702397361; x=1703002161;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+ :reply-to;
+ bh=C7kPejCOIQ0Z2zM992pXAoK7GYD6l/1jlpcKPxwN/1Y=;
+ b=xACcXMPoOEi8Ddn0MrzbAHWM3cVW14apDJIBbHxQN0tQWgYbNVGaVHzioDF2KTcns3
+ 6Mr+MQ+cRySBRU4ZtATxMe6E3TTB34y/jm4sT68x20Z6vV/vYJIieQKvFh2XZb5XHQm2
+ GGkRS4/bdoQPolOmnhgcig6uKST8xo3sbs5UKZNIcnHXkQrwVcqSjO2Y6k6Tjme59o0m
+ cUlCgWePlSFNPlVy/h2WNrbKsjw22swu4KKLS9xmFlxFMvTNh7vLPv2s/OMSpQgnlaJI
+ JKpdcla9AlA2AmhuUFp9wtOsBNSsDZq5yrK7XUHBdyP04KQMR7j8o85D8Zn8HWyMhU9d
+ kd5g==
+X-Gm-Message-State: AOJu0Yxfcobsl8oXLuWKjhtZp1VP3eNq7ARI6P1ZYEDtaSmutGcNHFPt
+ 8vv+6fZaO6RXSJmX9VwncWb1fCRq1EsdxL6+rceLFg==
+X-Google-Smtp-Source: AGHT+IHHftglne1u21N5E1zeODGSFYQycb1SzJKIn0jbUjARDf6T4JHnAuXLM0WED2OXM0lIa5miP/CyCBEd1jUPI44=
+X-Received: by 2002:a19:ca59:0:b0:50d:1454:8f8d with SMTP id
+ h25-20020a19ca59000000b0050d14548f8dmr2801661lfj.6.1702397360870; Tue, 12 Dec
+ 2023 08:09:20 -0800 (PST)
 MIME-Version: 1.0
-X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1702392990; x=1733928990;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=rtJ1TpolWl/YBfRHUC7KrytBuUFTlnN1c8GTu2B9qwg=;
- b=Da+Y4OsWjVxRyG+t0nngIaLHwVygy1u5ROznN/hP+MrGRbI7L+qgZxwJ
- g+Exn1MERB84hUs6g9AaH4aIvmIKVyV+2fQCpaSjSXjZLazOHZ+73zV81
- P8/xN6wgJS8uKex4S5X+8oHu1PDlRjoo7bc3N2Wm+HPsotN0PuufnlXIu
- xHIP8jIY3zldkhrAvmmGRXa0Zs7rhCsWpHor6WDmcDxtjvHX2yoU5s0q/
- 60XP7TxvyuIdNeYVHuFiL6U2++tkdftSjzuY3RUPvTTyCLuwQSzGg4HRx
- BXlsbSHRBCVoXSkLTBtR1zGWwdiqx9LrlOGLA0n1EEnvd4w28kGLDPxAR
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Da+Y4OsW
-Subject: [Intel-wired-lan] [PATCH iwl-net] idpf: enable WB_ON_ITR
+References: <20231207172010.1441468-1-aleksander.lobakin@intel.com>
+ <20231207172010.1441468-7-aleksander.lobakin@intel.com>
+In-Reply-To: <20231207172010.1441468-7-aleksander.lobakin@intel.com>
+From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+Date: Tue, 12 Dec 2023 18:08:45 +0200
+Message-ID: <CAC_iWjK0uqso8oX9_fCYCHYkNkySrizprqz439k3Lzdmk06yEg@mail.gmail.com>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linaro.org; s=google; t=1702397361; x=1703002161; darn=lists.osuosl.org;
+ h=cc:to:subject:message-id:date:from:in-reply-to:references
+ :mime-version:from:to:cc:subject:date:message-id:reply-to;
+ bh=C7kPejCOIQ0Z2zM992pXAoK7GYD6l/1jlpcKPxwN/1Y=;
+ b=vqbdPoIqmrkaG1aJK4QbkH8dRS2H2ZHxul1QBZhpiMelypRS983QQW+GT+9D+6pYlc
+ K2K9lvIUL64uvwgIUavexPlz2vd6cyPhGs94+UHR01VdFPrbmsPhy73pQK2Awiv+2JI9
+ hCGDhGjBG6+cUD+E5hz8/BsgC+lPn+IIGMqIgNmacFoGu7WJHskk9BpZ42kESWQS0EYb
+ cU/+RXqQDpCpOtIiU6b5gaLTprXUT3U6Kd3rxbLrcMo78YSrwADb7n69lsEeieVfaE8y
+ p5VCII00hr5GJD/klCoXakeWi7JAc2zbniNU06WLtpTgsfR4UOnyFQ70o+6JCN4v0aIk
+ JTgQ==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org
+ header.a=rsa-sha256 header.s=google header.b=vqbdPoIq
+Subject: Re: [Intel-wired-lan] [PATCH net-next v6 06/12] page_pool: constify
+ some read-only function arguments
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,180 +104,259 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: maciej.fijalkowski@intel.com, emil.s.tantilov@intel.com,
- larysa.zaremba@intel.com, netdev@vger.kernel.org, joshua.a.hay@intel.com,
- aleksander.lobakin@intel.com, Michal Kubiak <michal.kubiak@intel.com>,
- alan.brady@intel.com, Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>, Yunsheng Lin <linyunsheng@huawei.com>,
+ linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
+ Michal Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org,
+ David Christensen <drc@linux.vnet.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
+Content-Type: multipart/mixed; boundary="===============2486539103664038421=="
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Joshua Hay <joshua.a.hay@intel.com>
+--===============2486539103664038421==
+Content-Type: multipart/alternative; boundary="000000000000f62efa060c524541"
 
-Tell hardware to writeback completed descriptors even when interrupts
-are disabled. Otherwise, descriptors might not be written back until
-the hardware can flush a full cacheline of descriptors. This can cause
-unnecessary delays when traffic is light (or even trigger Tx queue
-timeout).
+--000000000000f62efa060c524541
+Content-Type: text/plain; charset="UTF-8"
 
-Fixes: c2d548cad150 ("idpf: add TX splitq napi poll support")
-Fixes: a5ab9ee0df0b ("idpf: add singleq start_xmit and napi poll")
-Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
-Co-developed-by: Michal Kubiak <michal.kubiak@intel.com>
-Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
----
- drivers/net/ethernet/intel/idpf/idpf_dev.c    |  2 ++
- .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  6 ++++-
- drivers/net/ethernet/intel/idpf/idpf_txrx.c   |  7 +++++-
- drivers/net/ethernet/intel/idpf/idpf_txrx.h   | 23 +++++++++++++++++++
- drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |  2 ++
- 5 files changed, 38 insertions(+), 2 deletions(-)
+On Thu, 7 Dec 2023 at 19:22, Alexander Lobakin <aleksander.lobakin@intel.com>
+wrote:
 
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-index 34ad1ac46b78..2c6776086130 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_dev.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-@@ -96,8 +96,10 @@ static int idpf_intr_reg_init(struct idpf_vport *vport)
- 		intr->dyn_ctl = idpf_get_reg_addr(adapter,
- 						  reg_vals[vec_id].dyn_ctl_reg);
- 		intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
-+		intr->dyn_ctl_intena_msk_m = PF_GLINT_DYN_CTL_INTENA_MSK_M;
- 		intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
- 		intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
-+		intr->dyn_ctl_wb_on_itr_m = PF_GLINT_DYN_CTL_WB_ON_ITR_M;
- 
- 		spacing = IDPF_ITR_IDX_SPACING(reg_vals[vec_id].itrn_index_spacing,
- 					       IDPF_PF_ITR_IDX_SPACING);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-index 81288a17da2a..8e1478b7d86c 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-@@ -1168,8 +1168,10 @@ int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
- 						    &work_done);
- 
- 	/* If work not completed, return budget and polling will return */
--	if (!clean_complete)
-+	if (!clean_complete) {
-+		idpf_vport_intr_set_wb_on_itr(q_vector);
- 		return budget;
-+	}
- 
- 	work_done = min_t(int, work_done, budget - 1);
- 
-@@ -1178,6 +1180,8 @@ int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
- 	 */
- 	if (likely(napi_complete_done(napi, work_done)))
- 		idpf_vport_intr_update_itr_ena_irq(q_vector);
-+	else
-+		idpf_vport_intr_set_wb_on_itr(q_vector);
- 
- 	return work_done;
- }
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-index 1646ff3877ba..b496566ee2aa 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-@@ -3639,6 +3639,7 @@ void idpf_vport_intr_update_itr_ena_irq(struct idpf_q_vector *q_vector)
- 					      IDPF_NO_ITR_UPDATE_IDX, 0);
- 
- 	writel(intval, q_vector->intr_reg.dyn_ctl);
-+	q_vector->wb_on_itr = false;
- }
- 
- /**
-@@ -3930,8 +3931,10 @@ static int idpf_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
- 	clean_complete &= idpf_tx_splitq_clean_all(q_vector, budget, &work_done);
- 
- 	/* If work not completed, return budget and polling will return */
--	if (!clean_complete)
-+	if (!clean_complete) {
-+		idpf_vport_intr_set_wb_on_itr(q_vector);
- 		return budget;
-+	}
- 
- 	work_done = min_t(int, work_done, budget - 1);
- 
-@@ -3940,6 +3943,8 @@ static int idpf_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
- 	 */
- 	if (likely(napi_complete_done(napi, work_done)))
- 		idpf_vport_intr_update_itr_ena_irq(q_vector);
-+	else
-+		idpf_vport_intr_set_wb_on_itr(q_vector);
- 
- 	/* Switch to poll mode in the tear-down path after sending disable
- 	 * queues virtchnl message, as the interrupts will be disabled after
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-index df76493faa75..50761c2d9f3b 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-+++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-@@ -495,9 +495,11 @@ struct idpf_vec_regs {
- struct idpf_intr_reg {
- 	void __iomem *dyn_ctl;
- 	u32 dyn_ctl_intena_m;
-+	u32 dyn_ctl_intena_msk_m;
- 	u32 dyn_ctl_itridx_s;
- 	u32 dyn_ctl_itridx_m;
- 	u32 dyn_ctl_intrvl_s;
-+	u32 dyn_ctl_wb_on_itr_m;
- 	void __iomem *rx_itr;
- 	void __iomem *tx_itr;
- 	void __iomem *icr_ena;
-@@ -534,6 +536,7 @@ struct idpf_q_vector {
- 	struct napi_struct napi;
- 	u16 v_idx;
- 	struct idpf_intr_reg intr_reg;
-+	bool wb_on_itr;
- 
- 	u16 num_txq;
- 	struct idpf_queue **tx;
-@@ -973,6 +976,26 @@ static inline void idpf_rx_sync_for_cpu(struct idpf_rx_buf *rx_buf, u32 len)
- 				      page_pool_get_dma_dir(pp));
- }
- 
-+/**
-+ * idpf_vport_intr_set_wb_on_itr - enable descriptor writeback on disabled interrupts
-+ * @q_vector: pointer to queue vector struct
-+ */
-+static inline void idpf_vport_intr_set_wb_on_itr(struct idpf_q_vector *q_vector)
-+{
-+	struct idpf_intr_reg *reg;
-+
-+	if (q_vector->wb_on_itr)
-+		return;
-+
-+	reg = &q_vector->intr_reg;
-+
-+	writel(reg->dyn_ctl_wb_on_itr_m | reg->dyn_ctl_intena_msk_m |
-+	       IDPF_NO_ITR_UPDATE_IDX << reg->dyn_ctl_itridx_s,
-+	       reg->dyn_ctl);
-+
-+	q_vector->wb_on_itr = true;
-+}
-+
- int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget);
- void idpf_vport_init_num_qs(struct idpf_vport *vport,
- 			    struct virtchnl2_create_vport *vport_msg);
-diff --git a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-index 8ade4e3a9fe1..f5b0a0666636 100644
---- a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-+++ b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-@@ -96,7 +96,9 @@ static int idpf_vf_intr_reg_init(struct idpf_vport *vport)
- 		intr->dyn_ctl = idpf_get_reg_addr(adapter,
- 						  reg_vals[vec_id].dyn_ctl_reg);
- 		intr->dyn_ctl_intena_m = VF_INT_DYN_CTLN_INTENA_M;
-+		intr->dyn_ctl_intena_msk_m = VF_INT_DYN_CTLN_INTENA_MSK_M;
- 		intr->dyn_ctl_itridx_s = VF_INT_DYN_CTLN_ITR_INDX_S;
-+		intr->dyn_ctl_wb_on_itr_m = VF_INT_DYN_CTLN_WB_ON_ITR_M;
- 
- 		spacing = IDPF_ITR_IDX_SPACING(reg_vals[vec_id].itrn_index_spacing,
- 					       IDPF_VF_ITR_IDX_SPACING);
--- 
-2.33.1
+> There are several functions taking pointers to data they don't modify.
+> This includes statistics fetching, page and page_pool parameters, etc.
+> Constify the pointers, so that call sites will be able to pass const
+> pointers as well.
+> No functional changes, no visible changes in functions sizes.
+>
+> Signed-off-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+> ---
+>  include/net/page_pool/helpers.h | 10 +++++-----
+>  net/core/page_pool.c            |  8 ++++----
+>  2 files changed, 9 insertions(+), 9 deletions(-)
+>
+> diff --git a/include/net/page_pool/helpers.h
+> b/include/net/page_pool/helpers.h
+> index 7dc65774cde5..c860fad50d00 100644
+> --- a/include/net/page_pool/helpers.h
+> +++ b/include/net/page_pool/helpers.h
+> @@ -58,7 +58,7 @@
+>  /* Deprecated driver-facing API, use netlink instead */
+>  int page_pool_ethtool_stats_get_count(void);
+>  u8 *page_pool_ethtool_stats_get_strings(u8 *data);
+> -u64 *page_pool_ethtool_stats_get(u64 *data, void *stats);
+> +u64 *page_pool_ethtool_stats_get(u64 *data, const void *stats);
+>
+>  bool page_pool_get_stats(const struct page_pool *pool,
+>                          struct page_pool_stats *stats);
+> @@ -73,7 +73,7 @@ static inline u8 *page_pool_ethtool_stats_get_strings(u8
+> *data)
+>         return data;
+>  }
+>
+> -static inline u64 *page_pool_ethtool_stats_get(u64 *data, void *stats)
+> +static inline u64 *page_pool_ethtool_stats_get(u64 *data, const void
+> *stats)
+>  {
+>         return data;
+>  }
+> @@ -204,8 +204,8 @@ static inline void *page_pool_dev_alloc_va(struct
+> page_pool *pool,
+>   * Get the stored dma direction. A driver might decide to store this
+> locally
+>   * and avoid the extra cache line from page_pool to determine the
+> direction.
+>   */
+> -static
+> -inline enum dma_data_direction page_pool_get_dma_dir(struct page_pool
+> *pool)
+> +static inline enum dma_data_direction
+> +page_pool_get_dma_dir(const struct page_pool *pool)
+>  {
+>         return pool->p.dma_dir;
+>  }
+> @@ -357,7 +357,7 @@ static inline void page_pool_free_va(struct page_pool
+> *pool, void *va,
+>   * Fetch the DMA address of the page. The page pool to which the page
+> belongs
+>   * must had been created with PP_FLAG_DMA_MAP.
+>   */
+> -static inline dma_addr_t page_pool_get_dma_addr(struct page *page)
+> +static inline dma_addr_t page_pool_get_dma_addr(const struct page *page)
+>  {
+>         dma_addr_t ret = page->dma_addr;
+>
+> diff --git a/net/core/page_pool.c b/net/core/page_pool.c
+> index 59aca3339222..4295aec0be40 100644
+> --- a/net/core/page_pool.c
+> +++ b/net/core/page_pool.c
+> @@ -121,9 +121,9 @@ int page_pool_ethtool_stats_get_count(void)
+>  }
+>  EXPORT_SYMBOL(page_pool_ethtool_stats_get_count);
+>
+> -u64 *page_pool_ethtool_stats_get(u64 *data, void *stats)
+> +u64 *page_pool_ethtool_stats_get(u64 *data, const void *stats)
+>  {
+> -       struct page_pool_stats *pool_stats = stats;
+> +       const struct page_pool_stats *pool_stats = stats;
+>
+>         *data++ = pool_stats->alloc_stats.fast;
+>         *data++ = pool_stats->alloc_stats.slow;
+> @@ -360,8 +360,8 @@ static struct page *__page_pool_get_cached(struct
+> page_pool *pool)
+>         return page;
+>  }
+>
+> -static void page_pool_dma_sync_for_device(struct page_pool *pool,
+> -                                         struct page *page,
+> +static void page_pool_dma_sync_for_device(const struct page_pool *pool,
+> +                                         const struct page *page,
+>                                           unsigned int dma_sync_size)
+>  {
+>         dma_addr_t dma_addr = page_pool_get_dma_addr(page);
+> --
+> 2.43.0
+>
+
+ Reviewed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
+
+--000000000000f62efa060c524541
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><div class=3D"gmail_default" style=3D"fon=
+t-family:arial,sans-serif"><br></div></div><br><div class=3D"gmail_quote"><=
+div dir=3D"ltr" class=3D"gmail_attr">On Thu, 7 Dec 2023 at 19:22, Alexander=
+ Lobakin &lt;<a href=3D"mailto:aleksander.lobakin@intel.com">aleksander.lob=
+akin@intel.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" st=
+yle=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padd=
+ing-left:1ex">There are several functions taking pointers to data they don&=
+#39;t modify.<br>
+This includes statistics fetching, page and page_pool parameters, etc.<br>
+Constify the pointers, so that call sites will be able to pass const<br>
+pointers as well.<br>
+No functional changes, no visible changes in functions sizes.<br>
+<br>
+Signed-off-by: Alexander Lobakin &lt;<a href=3D"mailto:aleksander.lobakin@i=
+ntel.com" target=3D"_blank">aleksander.lobakin@intel.com</a>&gt;<br>
+---<br>
+=C2=A0include/net/page_pool/helpers.h | 10 +++++-----<br>
+=C2=A0net/core/page_pool.c=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 |=C2=A0=
+ 8 ++++----<br>
+=C2=A02 files changed, 9 insertions(+), 9 deletions(-)<br>
+<br>
+diff --git a/include/net/page_pool/helpers.h b/include/net/page_pool/helper=
+s.h<br>
+index 7dc65774cde5..c860fad50d00 100644<br>
+--- a/include/net/page_pool/helpers.h<br>
++++ b/include/net/page_pool/helpers.h<br>
+@@ -58,7 +58,7 @@<br>
+=C2=A0/* Deprecated driver-facing API, use netlink instead */<br>
+=C2=A0int page_pool_ethtool_stats_get_count(void);<br>
+=C2=A0u8 *page_pool_ethtool_stats_get_strings(u8 *data);<br>
+-u64 *page_pool_ethtool_stats_get(u64 *data, void *stats);<br>
++u64 *page_pool_ethtool_stats_get(u64 *data, const void *stats);<br>
+<br>
+=C2=A0bool page_pool_get_stats(const struct page_pool *pool,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0struct page_pool_stats *stats);<br>
+@@ -73,7 +73,7 @@ static inline u8 *page_pool_ethtool_stats_get_strings(u8 =
+*data)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 return data;<br>
+=C2=A0}<br>
+<br>
+-static inline u64 *page_pool_ethtool_stats_get(u64 *data, void *stats)<br>
++static inline u64 *page_pool_ethtool_stats_get(u64 *data, const void *stat=
+s)<br>
+=C2=A0{<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 return data;<br>
+=C2=A0}<br>
+@@ -204,8 +204,8 @@ static inline void *page_pool_dev_alloc_va(struct page_=
+pool *pool,<br>
+=C2=A0 * Get the stored dma direction. A driver might decide to store this =
+locally<br>
+=C2=A0 * and avoid the extra cache line from page_pool to determine the dir=
+ection.<br>
+=C2=A0 */<br>
+-static<br>
+-inline enum dma_data_direction page_pool_get_dma_dir(struct page_pool *poo=
+l)<br>
++static inline enum dma_data_direction<br>
++page_pool_get_dma_dir(const struct page_pool *pool)<br>
+=C2=A0{<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 return pool-&gt;p.dma_dir;<br>
+=C2=A0}<br>
+@@ -357,7 +357,7 @@ static inline void page_pool_free_va(struct page_pool *=
+pool, void *va,<br>
+=C2=A0 * Fetch the DMA address of the page. The page pool to which the page=
+ belongs<br>
+=C2=A0 * must had been created with PP_FLAG_DMA_MAP.<br>
+=C2=A0 */<br>
+-static inline dma_addr_t page_pool_get_dma_addr(struct page *page)<br>
++static inline dma_addr_t page_pool_get_dma_addr(const struct page *page)<b=
+r>
+=C2=A0{<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 dma_addr_t ret =3D page-&gt;dma_addr;<br>
+<br>
+diff --git a/net/core/page_pool.c b/net/core/page_pool.c<br>
+index 59aca3339222..4295aec0be40 100644<br>
+--- a/net/core/page_pool.c<br>
++++ b/net/core/page_pool.c<br>
+@@ -121,9 +121,9 @@ int page_pool_ethtool_stats_get_count(void)<br>
+=C2=A0}<br>
+=C2=A0EXPORT_SYMBOL(page_pool_ethtool_stats_get_count);<br>
+<br>
+-u64 *page_pool_ethtool_stats_get(u64 *data, void *stats)<br>
++u64 *page_pool_ethtool_stats_get(u64 *data, const void *stats)<br>
+=C2=A0{<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0struct page_pool_stats *pool_stats =3D stats;<b=
+r>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0const struct page_pool_stats *pool_stats =3D st=
+ats;<br>
+<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 *data++ =3D pool_stats-&gt;alloc_stats.fast;<br=
+>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 *data++ =3D pool_stats-&gt;alloc_stats.slow;<br=
+>
+@@ -360,8 +360,8 @@ static struct page *__page_pool_get_cached(struct page_=
+pool *pool)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 return page;<br>
+=C2=A0}<br>
+<br>
+-static void page_pool_dma_sync_for_device(struct page_pool *pool,<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0st=
+ruct page *page,<br>
++static void page_pool_dma_sync_for_device(const struct page_pool *pool,<br=
+>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0co=
+nst struct page *page,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 u=
+nsigned int dma_sync_size)<br>
+=C2=A0{<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 dma_addr_t dma_addr =3D page_pool_get_dma_addr(=
+page);<br>
+-- <br>
+2.43.0<br></blockquote><div><br></div><div>=C2=A0Reviewed-by: Ilias Apalodi=
+mas &lt;<a href=3D"mailto:ilias.apalodimas@linaro.org">ilias.apalodimas@lin=
+aro.org</a>&gt;<br></div></div></div>
+
+--000000000000f62efa060c524541--
+
+--===============2486539103664038421==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+--===============2486539103664038421==--
