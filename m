@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B72D0C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 17:51:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FAD5C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 17:51:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 283AD82A6C;
-	Tue, 12 Dec 2023 17:51:43 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 283AD82A6C
+	by smtp1.osuosl.org (Postfix) with ESMTP id 108BD82AC3;
+	Tue, 12 Dec 2023 17:51:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 108BD82AC3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702403503;
-	bh=4Zwonf35KU8Y6jdFXG0ndHB+Ho8TN5fNHeOCLIaUkuE=;
+	s=default; t=1702403509;
+	bh=RcvlOs777tn51QCOoHPMH9m/loBceNPwCK5kNEGzTnc=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=LykjsUKtAOw6v3VT3Yu6OJoM8hY/qhhPkdYJPWEwN/Wwl+DK8lbl7fHQiCpW+urAJ
-	 JtiIf7CPNEG86TyZVjBvBJ+5QNrN1SCxdaTgq0r3XBrZ6mH2uSfBlMp14Z6acnXcjj
-	 tFh68w01+4C1dn8EleS8Q2zWpEbJoUq2qmHzsj1+MHBG8h3J9PxiRx/DShfQVrHgLs
-	 y/5tQ/LcXDtMrd4poPD2NoezmjM5eemYv/dXfGyeKWhHPiADPW+7eunA6RaAeEOixk
-	 unjb/vj48Xr00GhNIqJwHGYlftPmvrea13HDbvcRyYdLV7Tcbg3pYVF9A3r44GoGtY
-	 MUPx+0AFDmqBw==
+	b=fAPy6Y83oiln3SSv4a4Udz/07TFN7Qd9daTSGjDrMGg2OdIfrK2c9tQnDm0R+fwrI
+	 MAGzwmXYi7KDqZgpOKhq/U3waNcuCyI9tfcMdoTx9GQyAybuujKQKMQHaoZwBuqzVr
+	 bG46TuSVD0aaPlmGK8duiWlFiNTQ15o2Pm2AT2yNzM7hogjWXDZqwgM5X6Y4fUhIzl
+	 Zurn31yYNhoW8j5Qliz3j/dxDNwQR+gDduxOB2Bvp0rMnApLsGo1Jc1CJhWfzfHfz9
+	 knJqQfV3ky51NrZ9u1yHLXE/yeAW6ib3D8VTBF+FTtocL3NI/RpFydUJDQSIEcPVhh
+	 NwrRGKElPETjQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id AAqOUdnEOuMv; Tue, 12 Dec 2023 17:51:41 +0000 (UTC)
+	with ESMTP id boi7V_UxB6Uc; Tue, 12 Dec 2023 17:51:46 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 8F56982A83;
-	Tue, 12 Dec 2023 17:51:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 8F56982A83
+	by smtp1.osuosl.org (Postfix) with ESMTP id 324CB82ADD;
+	Tue, 12 Dec 2023 17:51:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 324CB82ADD
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 69B3E1BF429
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 17:51:39 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 13CDA1BF429
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 17:51:40 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 40F174154E
+ by smtp4.osuosl.org (Postfix) with ESMTP id 7464740351
  for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 17:51:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 40F174154E
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 7464740351
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
  by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id zkuDeIgUZGIg for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Dec 2023 17:51:38 +0000 (UTC)
+ with ESMTP id 3GD0sdoStgKa for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Dec 2023 17:51:37 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp4.osuosl.org (Postfix) with ESMTPS id EE2F140351
+ by smtp4.osuosl.org (Postfix) with ESMTPS id 96D684034F
  for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 17:51:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EE2F140351
-X-IronPort-AV: E=McAfee;i="6600,9927,10922"; a="8214846"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 96D684034F
+X-IronPort-AV: E=McAfee;i="6600,9927,10922"; a="8214850"
 X-IronPort-AV: E=Sophos;i="6.04,270,1695711600"; 
-   d="scan'208";a="8214846"
+   d="scan'208";a="8214850"
 Received: from orviesa002.jf.intel.com ([10.64.159.142])
  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Dec 2023 09:48:47 -0800
+ 12 Dec 2023 09:48:48 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.04,270,1695711600"; d="scan'208";a="15102035"
+X-IronPort-AV: E=Sophos;i="6.04,270,1695711600"; d="scan'208";a="15102056"
 Received: from pmstillw-desk1.amr.corp.intel.com ([10.212.121.197])
  by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Dec 2023 09:48:47 -0800
+ 12 Dec 2023 09:48:48 -0800
 From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 12 Dec 2023 09:48:31 -0800
-Message-Id: <20231212174835.65-2-paul.m.stillwell.jr@intel.com>
+Date: Tue, 12 Dec 2023 09:48:34 -0800
+Message-Id: <20231212174835.65-5-paul.m.stillwell.jr@intel.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20231212174835.65-1-paul.m.stillwell.jr@intel.com>
 References: <20231212174835.65-1-paul.m.stillwell.jr@intel.com>
@@ -70,19 +70,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1702403498; x=1733939498;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=Jg21xfHkx2AQ0bCCakxhauc31ZnutOGgjICyFISOKms=;
- b=lTEbYU9ARMZhLgM3NDXYLrHn4VDRDoZFwZBSJWIBqGwCo5vqWpyn4vAD
- huF0uv0v+EA7IQA4NFRBPQZMsDnaGaMN/yzEk/1M4YjIWiTaRm4XMSWqt
- 75rAq1Df6Ezb0eJp0ox+CABRABeR8ddz9WoNjPO+yeu7VUL/84AA1KAN4
- BpJDlWdwB5sxSSisg29OwqrMy85baiVhlnQ2/3iuUnQ/Ecb5LW/l7jENb
- icQGSAFilFygo1pn213J3BC9x3++0l0uctrmi9+vJjxd0TLCKLJJ9pfHf
- tBQl42lHYyEXhB++wixbdKcJY1vLnDRk+SjcmtIF6O2S3LcOjyL3zDVCY
- A==;
+ bh=OKFbGjumMwjDtCRoeRyXGyQYWtI5if03AKGyB4pm4Fg=;
+ b=Lg/2cs1al8o/y5xrZECJL82oIqUyl7+8nUvJeXoJGMgb+LF2uPDHhrZr
+ +yAL4IypFkB3aB/lKALGVxLE9OCCoGcXNm02QcnVA4lctX+2FEwNX7xd0
+ 7flhQsoZt0aRB2/cFtZeGcPLsBoGdN7b2+qWyEFBBtSEa1dbR0xC8kS0n
+ 12E56KfiYzODYKbQREReBEzFlKe+SISxNPM0fFEg7ROSon1USgJnFooqh
+ X9fDEP93/V5rLiFI689JmMZ9DKY4RbT5mKzkSyRs14YHNMsO9lZAABNi4
+ Qa1pz7uIZpVRxx7kMkplqw+Vphcbta7Ku21TpJ9yw5o8bsIKOwr48/f/i
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=lTEbYU9A
-Subject: [Intel-wired-lan] [PATCH net-next v20 1/5] ice: remove FW logging
- code
+ header.a=rsa-sha256 header.s=Intel header.b=Lg/2cs1a
+Subject: [Intel-wired-lan] [PATCH net-next v20 4/5] ice: add ability to read
+ and configure FW log data
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,438 +95,598 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com>,
- Tony Nguyen <anthony.l.nguyen@intel.com>,
- Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+Cc: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-The FW logging code doesn't work because there is no way to set
-cq_ena or uart_ena so remove the code. This code is the original
-(v1) way of FW logging so it should be replaced with the v2 way.
+Once logging is enabled the user should read the data from the 'data'
+file. The data is in the form of a binary blob that can be sent to Intel
+for decoding. To read the data use a command like:
+
+  # cat /sys/kernel/debug/ice/0000\:18\:00.0/fwlog/data > log_data.bin
+
+If the user wants to clear the FW log data that has been stored in the
+driver then they can write any value to the 'data' file and that will clear
+the data. An example is:
+
+  # echo 34 > /sys/kernel/debug/ice/0000\:18\:00.0/fwlog/data
+
+In addition to being able to read the data the user can configure how
+much memory is used to store FW log data. This allows the user to
+increase/decrease the amount of memory based on the users situation.
+The data is stored such that if the memory fills up then the oldest data
+will get overwritten in a circular manner. To change the amount of
+memory the user can write to the 'log_size' file like this:
+
+  # echo <value> > /sys/kernel/debug/ice/0000\:18\:00.0/fwlog/log_size
+
+Where <value> is one of 128K, 256K, 512K, 1M, and 2M. The default value
+is 1M.
+
+The user can see the current value of 'log_size' by reading the file:
+
+  # cat /sys/kernel/debug/ice/0000\:18\:00.0/fwlog/log_size
 
 Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
-Tested-by: Pucha Himasekhar Reddy <himasekharx.reddy.pucha@intel.com> (A Contingent worker at Intel)
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |  78 -------
- drivers/net/ethernet/intel/ice/ice_common.c   | 217 ------------------
- drivers/net/ethernet/intel/ice/ice_common.h   |   1 -
- drivers/net/ethernet/intel/ice/ice_main.c     |   3 -
- drivers/net/ethernet/intel/ice/ice_type.h     |  20 --
- 5 files changed, 319 deletions(-)
+ .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   2 +
+ drivers/net/ethernet/intel/ice/ice_debugfs.c  | 219 ++++++++++++++++++
+ drivers/net/ethernet/intel/ice/ice_fwlog.c    | 148 +++++++++++-
+ drivers/net/ethernet/intel/ice/ice_fwlog.h    |  22 ++
+ drivers/net/ethernet/intel/ice/ice_main.c     |  29 +++
+ drivers/net/ethernet/intel/ice/ice_type.h     |   1 +
+ 6 files changed, 420 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 51c241ab6b8e..775adca0a145 100644
+index 82139e0ede6a..6a5e974a1776 100644
 --- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -2094,78 +2094,6 @@ struct ice_aqc_add_rdma_qset_data {
- 	struct ice_aqc_add_tx_rdma_qset_entry rdma_qsets[];
- };
- 
--/* Configure Firmware Logging Command (indirect 0xFF09)
-- * Logging Information Read Response (indirect 0xFF10)
-- * Note: The 0xFF10 command has no input parameters.
-- */
--struct ice_aqc_fw_logging {
--	u8 log_ctrl;
--#define ICE_AQC_FW_LOG_AQ_EN		BIT(0)
--#define ICE_AQC_FW_LOG_UART_EN		BIT(1)
--	u8 rsvd0;
--	u8 log_ctrl_valid; /* Not used by 0xFF10 Response */
--#define ICE_AQC_FW_LOG_AQ_VALID		BIT(0)
--#define ICE_AQC_FW_LOG_UART_VALID	BIT(1)
--	u8 rsvd1[5];
--	__le32 addr_high;
--	__le32 addr_low;
--};
--
--enum ice_aqc_fw_logging_mod {
--	ICE_AQC_FW_LOG_ID_GENERAL = 0,
--	ICE_AQC_FW_LOG_ID_CTRL,
--	ICE_AQC_FW_LOG_ID_LINK,
--	ICE_AQC_FW_LOG_ID_LINK_TOPO,
--	ICE_AQC_FW_LOG_ID_DNL,
--	ICE_AQC_FW_LOG_ID_I2C,
--	ICE_AQC_FW_LOG_ID_SDP,
--	ICE_AQC_FW_LOG_ID_MDIO,
--	ICE_AQC_FW_LOG_ID_ADMINQ,
--	ICE_AQC_FW_LOG_ID_HDMA,
--	ICE_AQC_FW_LOG_ID_LLDP,
--	ICE_AQC_FW_LOG_ID_DCBX,
--	ICE_AQC_FW_LOG_ID_DCB,
--	ICE_AQC_FW_LOG_ID_NETPROXY,
--	ICE_AQC_FW_LOG_ID_NVM,
--	ICE_AQC_FW_LOG_ID_AUTH,
--	ICE_AQC_FW_LOG_ID_VPD,
--	ICE_AQC_FW_LOG_ID_IOSF,
--	ICE_AQC_FW_LOG_ID_PARSER,
--	ICE_AQC_FW_LOG_ID_SW,
--	ICE_AQC_FW_LOG_ID_SCHEDULER,
--	ICE_AQC_FW_LOG_ID_TXQ,
--	ICE_AQC_FW_LOG_ID_RSVD,
--	ICE_AQC_FW_LOG_ID_POST,
--	ICE_AQC_FW_LOG_ID_WATCHDOG,
--	ICE_AQC_FW_LOG_ID_TASK_DISPATCH,
--	ICE_AQC_FW_LOG_ID_MNG,
--	ICE_AQC_FW_LOG_ID_MAX,
--};
--
--/* Defines for both above FW logging command/response buffers */
--#define ICE_AQC_FW_LOG_ID_S		0
--#define ICE_AQC_FW_LOG_ID_M		(0xFFF << ICE_AQC_FW_LOG_ID_S)
--
--#define ICE_AQC_FW_LOG_CONF_SUCCESS	0	/* Used by response */
--#define ICE_AQC_FW_LOG_CONF_BAD_INDX	BIT(12)	/* Used by response */
--
--#define ICE_AQC_FW_LOG_EN_S		12
--#define ICE_AQC_FW_LOG_EN_M		(0xF << ICE_AQC_FW_LOG_EN_S)
--#define ICE_AQC_FW_LOG_INFO_EN		BIT(12)	/* Used by command */
--#define ICE_AQC_FW_LOG_INIT_EN		BIT(13)	/* Used by command */
--#define ICE_AQC_FW_LOG_FLOW_EN		BIT(14)	/* Used by command */
--#define ICE_AQC_FW_LOG_ERR_EN		BIT(15)	/* Used by command */
--
--/* Get/Clear FW Log (indirect 0xFF11) */
--struct ice_aqc_get_clear_fw_log {
--	u8 flags;
--#define ICE_AQC_FW_LOG_CLEAR		BIT(0)
--#define ICE_AQC_FW_LOG_MORE_DATA_AVAIL	BIT(1)
--	u8 rsvd1[7];
--	__le32 addr_high;
--	__le32 addr_low;
--};
--
- /* Download Package (indirect 0x0C40) */
- /* Also used for Update Package (indirect 0x0C41 and 0x0C42) */
- struct ice_aqc_download_pkg {
-@@ -2507,8 +2435,6 @@ struct ice_aq_desc {
- 		struct ice_aqc_add_rdma_qset add_rdma_qset;
- 		struct ice_aqc_add_get_update_free_vsi vsi_cmd;
- 		struct ice_aqc_add_update_free_vsi_resp add_update_free_vsi_res;
--		struct ice_aqc_fw_logging fw_logging;
--		struct ice_aqc_get_clear_fw_log get_clear_fw_log;
- 		struct ice_aqc_download_pkg download_pkg;
- 		struct ice_aqc_set_cgu_input_config set_cgu_input_config;
- 		struct ice_aqc_get_cgu_input_config get_cgu_input_config;
-@@ -2717,10 +2643,6 @@ enum ice_adminq_opc {
- 
- 	/* Standalone Commands/Events */
- 	ice_aqc_opc_event_lan_overflow			= 0x1001,
--
--	/* debug commands */
--	ice_aqc_opc_fw_logging				= 0xFF09,
--	ice_aqc_opc_fw_logging_info			= 0xFF10,
+@@ -2395,6 +2395,7 @@ enum ice_aqc_fw_logging_mod {
+ /* Set FW Logging configuration (indirect 0xFF30)
+  * Register for FW Logging (indirect 0xFF31)
+  * Query FW Logging (indirect 0xFF32)
++ * FW Log Event (indirect 0xFF33)
+  */
+ struct ice_aqc_fw_log {
+ 	u8 cmd_flags;
+@@ -2726,6 +2727,7 @@ enum ice_adminq_opc {
+ 	ice_aqc_opc_fw_logs_config			= 0xFF30,
+ 	ice_aqc_opc_fw_logs_register			= 0xFF31,
+ 	ice_aqc_opc_fw_logs_query			= 0xFF32,
++	ice_aqc_opc_fw_logs_event			= 0xFF33,
  };
  
  #endif /* _ICE_ADMINQ_CMD_H_ */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.c b/drivers/net/ethernet/intel/ice/ice_common.c
-index 4aee6f35771b..18733dffbf51 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.c
-+++ b/drivers/net/ethernet/intel/ice/ice_common.c
-@@ -970,216 +970,6 @@ static void ice_cleanup_fltr_mgmt_struct(struct ice_hw *hw)
- 	devm_kfree(ice_hw_to_dev(hw), sw);
+diff --git a/drivers/net/ethernet/intel/ice/ice_debugfs.c b/drivers/net/ethernet/intel/ice/ice_debugfs.c
+index 6cc708b81f8b..52b8f608fb8b 100644
+--- a/drivers/net/ethernet/intel/ice/ice_debugfs.c
++++ b/drivers/net/ethernet/intel/ice/ice_debugfs.c
+@@ -64,6 +64,17 @@ static const char * const ice_fwlog_level_string[] = {
+ 	"verbose",
+ };
+ 
++/* the order in this array is important. it matches the ordering of the
++ * values in the FW so the index is the same value as in ice_fwlog_level
++ */
++static const char * const ice_fwlog_log_size[] = {
++	"128K",
++	"256K",
++	"512K",
++	"1M",
++	"2M",
++};
++
+ /**
+  * ice_fwlog_print_module_cfg - print current FW logging module configuration
+  * @hw: pointer to the HW structure
+@@ -396,6 +407,208 @@ static const struct file_operations ice_debugfs_enable_fops = {
+ 	.write = ice_debugfs_enable_write,
+ };
+ 
++/**
++ * ice_debugfs_log_size_read - read from 'log_size' file
++ * @filp: the opened file
++ * @buffer: where to write the data for the user to read
++ * @count: the size of the user's buffer
++ * @ppos: file position offset
++ */
++static ssize_t ice_debugfs_log_size_read(struct file *filp,
++					 char __user *buffer, size_t count,
++					 loff_t *ppos)
++{
++	struct ice_pf *pf = filp->private_data;
++	struct ice_hw *hw = &pf->hw;
++	char buff[32] = {};
++	int status, index;
++
++	index = hw->fwlog_ring.index;
++	snprintf(buff, sizeof(buff), "%s\n", ice_fwlog_log_size[index]);
++
++	status = simple_read_from_buffer(buffer, count, ppos, buff,
++					 strlen(buff));
++
++	return status;
++}
++
++/**
++ * ice_debugfs_log_size_write - write into 'log_size' file
++ * @filp: the opened file
++ * @buf: where to find the user's data
++ * @count: the length of the user's data
++ * @ppos: file position offset
++ */
++static ssize_t
++ice_debugfs_log_size_write(struct file *filp, const char __user *buf,
++			   size_t count, loff_t *ppos)
++{
++	struct ice_pf *pf = filp->private_data;
++	struct device *dev = ice_pf_to_dev(pf);
++	struct ice_hw *hw = &pf->hw;
++	char user_val[5], *cmd_buf;
++	ssize_t ret;
++	int index;
++
++	if (count > sizeof(user_val))
++		return -EINVAL;
++
++	/* don't allow partial writes */
++	if (*ppos != 0)
++		return 0;
++
++	cmd_buf = memdup_user(buf, count);
++	if (IS_ERR(cmd_buf))
++		return PTR_ERR(cmd_buf);
++	cmd_buf[count] = '\0';
++
++	ret = sscanf(cmd_buf, "%s", user_val);
++	if (ret != 1)
++		return -EINVAL;
++
++	index = sysfs_match_string(ice_fwlog_log_size, user_val);
++
++	if (index < 0) {
++		dev_info(dev, "Invalid log size '%s'. The value must be one of 128K, 256K, 512K, 1M, 2M\n",
++			 user_val);
++		ret = -EINVAL;
++		goto log_size_write_error;
++	} else if (hw->fwlog_cfg.options & ICE_FWLOG_OPTION_IS_REGISTERED) {
++		dev_info(dev, "FW logging is currently running. Please disable FW logging to change log_size\n");
++		ret = -EINVAL;
++		goto log_size_write_error;
++	}
++
++	/* free all the buffers and the tracking info and resize */
++	ice_fwlog_realloc_rings(hw, index);
++
++	/* if we get here, nothing went wrong; return count since we didn't
++	 * really write anything
++	 */
++	ret = (ssize_t)count;
++
++log_size_write_error:
++	/* This function always consumes all of the written input, or produces
++	 * an error. Check and enforce this. Otherwise, the write operation
++	 * won't complete properly.
++	 */
++	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
++		ret = -EIO;
++
++	return ret;
++}
++
++static const struct file_operations ice_debugfs_log_size_fops = {
++	.owner = THIS_MODULE,
++	.open  = simple_open,
++	.read = ice_debugfs_log_size_read,
++	.write = ice_debugfs_log_size_write,
++};
++
++/**
++ * ice_debugfs_data_read - read from 'data' file
++ * @filp: the opened file
++ * @buffer: where to write the data for the user to read
++ * @count: the size of the user's buffer
++ * @ppos: file position offset
++ */
++static ssize_t ice_debugfs_data_read(struct file *filp, char __user *buffer,
++				     size_t count, loff_t *ppos)
++{
++	struct ice_pf *pf = filp->private_data;
++	struct ice_hw *hw = &pf->hw;
++	int data_copied = 0;
++	bool done = false;
++
++	if (ice_fwlog_ring_empty(&hw->fwlog_ring))
++		return 0;
++
++	while (!ice_fwlog_ring_empty(&hw->fwlog_ring) && !done) {
++		struct ice_fwlog_data *log;
++		u16 cur_buf_len;
++
++		log = &hw->fwlog_ring.rings[hw->fwlog_ring.head];
++		cur_buf_len = log->data_size;
++
++		if (cur_buf_len >= count) {
++			done = true;
++			continue;
++		}
++
++		if (copy_to_user(buffer, log->data, cur_buf_len)) {
++			/* if there is an error then bail and return whatever
++			 * the driver has copied so far
++			 */
++			done = true;
++			continue;
++		}
++
++		data_copied += cur_buf_len;
++		buffer += cur_buf_len;
++		count -= cur_buf_len;
++		*ppos += cur_buf_len;
++		ice_fwlog_ring_increment(&hw->fwlog_ring.head,
++					 hw->fwlog_ring.size);
++	}
++
++	return data_copied;
++}
++
++/**
++ * ice_debugfs_data_write - write into 'data' file
++ * @filp: the opened file
++ * @buf: where to find the user's data
++ * @count: the length of the user's data
++ * @ppos: file position offset
++ */
++static ssize_t
++ice_debugfs_data_write(struct file *filp, const char __user *buf, size_t count,
++		       loff_t *ppos)
++{
++	struct ice_pf *pf = filp->private_data;
++	struct device *dev = ice_pf_to_dev(pf);
++	struct ice_hw *hw = &pf->hw;
++	ssize_t ret;
++
++	/* don't allow partial writes */
++	if (*ppos != 0)
++		return 0;
++
++	/* any value is allowed to clear the buffer so no need to even look at
++	 * what the value is
++	 */
++	if (!(hw->fwlog_cfg.options & ICE_FWLOG_OPTION_IS_REGISTERED)) {
++		hw->fwlog_ring.head = 0;
++		hw->fwlog_ring.tail = 0;
++	} else {
++		dev_info(dev, "Can't clear FW log data while FW log running\n");
++		ret = -EINVAL;
++		goto nr_buffs_write_error;
++	}
++
++	/* if we get here, nothing went wrong; return count since we didn't
++	 * really write anything
++	 */
++	ret = (ssize_t)count;
++
++nr_buffs_write_error:
++	/* This function always consumes all of the written input, or produces
++	 * an error. Check and enforce this. Otherwise, the write operation
++	 * won't complete properly.
++	 */
++	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
++		ret = -EIO;
++
++	return ret;
++}
++
++static const struct file_operations ice_debugfs_data_fops = {
++	.owner = THIS_MODULE,
++	.open  = simple_open,
++	.read = ice_debugfs_data_read,
++	.write = ice_debugfs_data_write,
++};
++
+ /**
+  * ice_debugfs_fwlog_init - setup the debugfs directory
+  * @pf: the ice that is starting up
+@@ -452,6 +665,12 @@ void ice_debugfs_fwlog_init(struct ice_pf *pf)
+ 	debugfs_create_file("enable", 0600, pf->ice_debugfs_pf_fwlog,
+ 			    pf, &ice_debugfs_enable_fops);
+ 
++	debugfs_create_file("log_size", 0600, pf->ice_debugfs_pf_fwlog,
++			    pf, &ice_debugfs_log_size_fops);
++
++	debugfs_create_file("data", 0600, pf->ice_debugfs_pf_fwlog,
++			    pf, &ice_debugfs_data_fops);
++
+ 	return;
+ 
+ err_create_module_files:
+diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.c b/drivers/net/ethernet/intel/ice/ice_fwlog.c
+index 4155b1d82b13..92b5dac481cd 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fwlog.c
++++ b/drivers/net/ethernet/intel/ice/ice_fwlog.c
+@@ -1,10 +1,128 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* Copyright (c) 2022, Intel Corporation. */
+ 
++#include <linux/vmalloc.h>
+ #include "ice.h"
+ #include "ice_common.h"
+ #include "ice_fwlog.h"
+ 
++bool ice_fwlog_ring_full(struct ice_fwlog_ring *rings)
++{
++	u16 head, tail;
++
++	head = rings->head;
++	tail = rings->tail;
++
++	if (head < tail && (tail - head == (rings->size - 1)))
++		return true;
++	else if (head > tail && (tail == (head - 1)))
++		return true;
++
++	return false;
++}
++
++bool ice_fwlog_ring_empty(struct ice_fwlog_ring *rings)
++{
++	return rings->head == rings->tail;
++}
++
++void ice_fwlog_ring_increment(u16 *item, u16 size)
++{
++	*item = (*item + 1) & (size - 1);
++}
++
++static int ice_fwlog_alloc_ring_buffs(struct ice_fwlog_ring *rings)
++{
++	int i, nr_bytes;
++	u8 *mem;
++
++	nr_bytes = rings->size * ICE_AQ_MAX_BUF_LEN;
++	mem = vzalloc(nr_bytes);
++	if (!mem)
++		return -ENOMEM;
++
++	for (i = 0; i < rings->size; i++) {
++		struct ice_fwlog_data *ring = &rings->rings[i];
++
++		ring->data_size = ICE_AQ_MAX_BUF_LEN;
++		ring->data = mem;
++		mem += ICE_AQ_MAX_BUF_LEN;
++	}
++
++	return 0;
++}
++
++static void ice_fwlog_free_ring_buffs(struct ice_fwlog_ring *rings)
++{
++	int i;
++
++	for (i = 0; i < rings->size; i++) {
++		struct ice_fwlog_data *ring = &rings->rings[i];
++
++		/* the first ring is the base memory for the whole range so
++		 * free it
++		 */
++		if (!i)
++			vfree(ring->data);
++
++		ring->data = NULL;
++		ring->data_size = 0;
++	}
++}
++
++#define ICE_FWLOG_INDEX_TO_BYTES(n) ((128 * 1024) << (n))
++/**
++ * ice_fwlog_realloc_rings - reallocate the FW log rings
++ * @hw: pointer to the HW structure
++ * @index: the new index to use to allocate memory for the log data
++ *
++ */
++void ice_fwlog_realloc_rings(struct ice_hw *hw, int index)
++{
++	struct ice_fwlog_ring ring;
++	int status, ring_size;
++
++	/* convert the number of bytes into a number of 4K buffers. externally
++	 * the driver presents the interface to the FW log data as a number of
++	 * bytes because that's easy for users to understand. internally the
++	 * driver uses a ring of buffers because the driver doesn't know where
++	 * the beginning and end of any line of log data is so the driver has
++	 * to overwrite data as complete blocks. when the data is returned to
++	 * the user the driver knows that the data is correct and the FW log
++	 * can be correctly parsed by the tools
++	 */
++	ring_size = ICE_FWLOG_INDEX_TO_BYTES(index) / ICE_AQ_MAX_BUF_LEN;
++	if (ring_size == hw->fwlog_ring.size)
++		return;
++
++	/* allocate space for the new rings and buffers then release the
++	 * old rings and buffers. that way if we don't have enough
++	 * memory then we at least have what we had before
++	 */
++	ring.rings = kcalloc(ring_size, sizeof(*ring.rings), GFP_KERNEL);
++	if (!ring.rings)
++		return;
++
++	ring.size = ring_size;
++
++	status = ice_fwlog_alloc_ring_buffs(&ring);
++	if (status) {
++		dev_warn(ice_hw_to_dev(hw), "Unable to allocate memory for FW log ring data buffers\n");
++		ice_fwlog_free_ring_buffs(&ring);
++		kfree(ring.rings);
++		return;
++	}
++
++	ice_fwlog_free_ring_buffs(&hw->fwlog_ring);
++	kfree(hw->fwlog_ring.rings);
++
++	hw->fwlog_ring.rings = ring.rings;
++	hw->fwlog_ring.size = ring.size;
++	hw->fwlog_ring.index = index;
++	hw->fwlog_ring.head = 0;
++	hw->fwlog_ring.tail = 0;
++}
++
+ /**
+  * ice_fwlog_init - Initialize FW logging configuration
+  * @hw: pointer to the HW structure
+@@ -14,16 +132,39 @@
+  */
+ int ice_fwlog_init(struct ice_hw *hw)
+ {
+-	int status;
++	/* only support fw log commands on PF 0 */
++	if (hw->bus.func)
++		return -EINVAL;
+ 
+ 	ice_fwlog_set_supported(hw);
+ 
+ 	if (ice_fwlog_supported(hw)) {
++		int status;
++
+ 		/* read the current config from the FW and store it */
+ 		status = ice_fwlog_get(hw, &hw->fwlog_cfg);
+ 		if (status)
+ 			return status;
+ 
++		hw->fwlog_ring.rings = kcalloc(ICE_FWLOG_RING_SIZE_DFLT,
++					       sizeof(*hw->fwlog_ring.rings),
++					       GFP_KERNEL);
++		if (!hw->fwlog_ring.rings) {
++			dev_warn(ice_hw_to_dev(hw), "Unable to allocate memory for FW log rings\n");
++			return -ENOMEM;
++		}
++
++		hw->fwlog_ring.size = ICE_FWLOG_RING_SIZE_DFLT;
++		hw->fwlog_ring.index = ICE_FWLOG_RING_SIZE_INDEX_DFLT;
++
++		status = ice_fwlog_alloc_ring_buffs(&hw->fwlog_ring);
++		if (status) {
++			dev_warn(ice_hw_to_dev(hw), "Unable to allocate memory for FW log ring data buffers\n");
++			ice_fwlog_free_ring_buffs(&hw->fwlog_ring);
++			kfree(hw->fwlog_ring.rings);
++			return status;
++		}
++
+ 		ice_debugfs_fwlog_init(hw->back);
+ 	} else {
+ 		dev_warn(ice_hw_to_dev(hw), "FW logging is not supported in this NVM image. Please update the NVM to get FW log support\n");
+@@ -64,6 +205,11 @@ void ice_fwlog_deinit(struct ice_hw *hw)
+ 	if (status)
+ 		dev_warn(ice_hw_to_dev(hw), "Unable to unregister FW logging, status: %d\n",
+ 			 status);
++
++	if (hw->fwlog_ring.rings) {
++		ice_fwlog_free_ring_buffs(&hw->fwlog_ring);
++		kfree(hw->fwlog_ring.rings);
++	}
  }
  
--/**
-- * ice_get_fw_log_cfg - get FW logging configuration
-- * @hw: pointer to the HW struct
-- */
--static int ice_get_fw_log_cfg(struct ice_hw *hw)
--{
--	struct ice_aq_desc desc;
--	__le16 *config;
--	int status;
--	u16 size;
--
--	size = sizeof(*config) * ICE_AQC_FW_LOG_ID_MAX;
--	config = kzalloc(size, GFP_KERNEL);
--	if (!config)
--		return -ENOMEM;
--
--	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging_info);
--
--	status = ice_aq_send_cmd(hw, &desc, config, size, NULL);
--	if (!status) {
--		u16 i;
--
--		/* Save FW logging information into the HW structure */
--		for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++) {
--			u16 v, m, flgs;
--
--			v = le16_to_cpu(config[i]);
--			m = FIELD_GET(ICE_AQC_FW_LOG_ID_M, v);
--			flgs = FIELD_GET(ICE_AQC_FW_LOG_EN_M, v);
--
--			if (m < ICE_AQC_FW_LOG_ID_MAX)
--				hw->fw_log.evnts[m].cur = flgs;
--		}
--	}
--
--	kfree(config);
--
--	return status;
--}
--
--/**
-- * ice_cfg_fw_log - configure FW logging
-- * @hw: pointer to the HW struct
-- * @enable: enable certain FW logging events if true, disable all if false
-- *
-- * This function enables/disables the FW logging via Rx CQ events and a UART
-- * port based on predetermined configurations. FW logging via the Rx CQ can be
-- * enabled/disabled for individual PF's. However, FW logging via the UART can
-- * only be enabled/disabled for all PFs on the same device.
-- *
-- * To enable overall FW logging, the "cq_en" and "uart_en" enable bits in
-- * hw->fw_log need to be set accordingly, e.g. based on user-provided input,
-- * before initializing the device.
-- *
-- * When re/configuring FW logging, callers need to update the "cfg" elements of
-- * the hw->fw_log.evnts array with the desired logging event configurations for
-- * modules of interest. When disabling FW logging completely, the callers can
-- * just pass false in the "enable" parameter. On completion, the function will
-- * update the "cur" element of the hw->fw_log.evnts array with the resulting
-- * logging event configurations of the modules that are being re/configured. FW
-- * logging modules that are not part of a reconfiguration operation retain their
-- * previous states.
-- *
-- * Before resetting the device, it is recommended that the driver disables FW
-- * logging before shutting down the control queue. When disabling FW logging
-- * ("enable" = false), the latest configurations of FW logging events stored in
-- * hw->fw_log.evnts[] are not overridden to allow them to be reconfigured after
-- * a device reset.
-- *
-- * When enabling FW logging to emit log messages via the Rx CQ during the
-- * device's initialization phase, a mechanism alternative to interrupt handlers
-- * needs to be used to extract FW log messages from the Rx CQ periodically and
-- * to prevent the Rx CQ from being full and stalling other types of control
-- * messages from FW to SW. Interrupts are typically disabled during the device's
-- * initialization phase.
-- */
--static int ice_cfg_fw_log(struct ice_hw *hw, bool enable)
--{
--	struct ice_aqc_fw_logging *cmd;
--	u16 i, chgs = 0, len = 0;
--	struct ice_aq_desc desc;
--	__le16 *data = NULL;
--	u8 actv_evnts = 0;
--	void *buf = NULL;
--	int status = 0;
--
--	if (!hw->fw_log.cq_en && !hw->fw_log.uart_en)
--		return 0;
--
--	/* Disable FW logging only when the control queue is still responsive */
--	if (!enable &&
--	    (!hw->fw_log.actv_evnts || !ice_check_sq_alive(hw, &hw->adminq)))
--		return 0;
--
--	/* Get current FW log settings */
--	status = ice_get_fw_log_cfg(hw);
--	if (status)
--		return status;
--
--	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logging);
--	cmd = &desc.params.fw_logging;
--
--	/* Indicate which controls are valid */
--	if (hw->fw_log.cq_en)
--		cmd->log_ctrl_valid |= ICE_AQC_FW_LOG_AQ_VALID;
--
--	if (hw->fw_log.uart_en)
--		cmd->log_ctrl_valid |= ICE_AQC_FW_LOG_UART_VALID;
--
--	if (enable) {
--		/* Fill in an array of entries with FW logging modules and
--		 * logging events being reconfigured.
--		 */
--		for (i = 0; i < ICE_AQC_FW_LOG_ID_MAX; i++) {
--			u16 val;
--
--			/* Keep track of enabled event types */
--			actv_evnts |= hw->fw_log.evnts[i].cfg;
--
--			if (hw->fw_log.evnts[i].cfg == hw->fw_log.evnts[i].cur)
--				continue;
--
--			if (!data) {
--				data = devm_kcalloc(ice_hw_to_dev(hw),
--						    ICE_AQC_FW_LOG_ID_MAX,
--						    sizeof(*data),
--						    GFP_KERNEL);
--				if (!data)
--					return -ENOMEM;
--			}
--
--			val = i << ICE_AQC_FW_LOG_ID_S;
--			val |= hw->fw_log.evnts[i].cfg << ICE_AQC_FW_LOG_EN_S;
--			data[chgs++] = cpu_to_le16(val);
--		}
--
--		/* Only enable FW logging if at least one module is specified.
--		 * If FW logging is currently enabled but all modules are not
--		 * enabled to emit log messages, disable FW logging altogether.
--		 */
--		if (actv_evnts) {
--			/* Leave if there is effectively no change */
--			if (!chgs)
--				goto out;
--
--			if (hw->fw_log.cq_en)
--				cmd->log_ctrl |= ICE_AQC_FW_LOG_AQ_EN;
--
--			if (hw->fw_log.uart_en)
--				cmd->log_ctrl |= ICE_AQC_FW_LOG_UART_EN;
--
--			buf = data;
--			len = sizeof(*data) * chgs;
--			desc.flags |= cpu_to_le16(ICE_AQ_FLAG_RD);
--		}
--	}
--
--	status = ice_aq_send_cmd(hw, &desc, buf, len, NULL);
--	if (!status) {
--		/* Update the current configuration to reflect events enabled.
--		 * hw->fw_log.cq_en and hw->fw_log.uart_en indicate if the FW
--		 * logging mode is enabled for the device. They do not reflect
--		 * actual modules being enabled to emit log messages. So, their
--		 * values remain unchanged even when all modules are disabled.
--		 */
--		u16 cnt = enable ? chgs : (u16)ICE_AQC_FW_LOG_ID_MAX;
--
--		hw->fw_log.actv_evnts = actv_evnts;
--		for (i = 0; i < cnt; i++) {
--			u16 v, m;
--
--			if (!enable) {
--				/* When disabling all FW logging events as part
--				 * of device's de-initialization, the original
--				 * configurations are retained, and can be used
--				 * to reconfigure FW logging later if the device
--				 * is re-initialized.
--				 */
--				hw->fw_log.evnts[i].cur = 0;
--				continue;
--			}
--
--			v = le16_to_cpu(data[i]);
--			m = FIELD_GET(ICE_AQC_FW_LOG_ID_M, v);
--			hw->fw_log.evnts[m].cur = hw->fw_log.evnts[m].cfg;
--		}
--	}
--
--out:
--	devm_kfree(ice_hw_to_dev(hw), data);
--
--	return status;
--}
--
--/**
-- * ice_output_fw_log
-- * @hw: pointer to the HW struct
-- * @desc: pointer to the AQ message descriptor
-- * @buf: pointer to the buffer accompanying the AQ message
-- *
-- * Formats a FW Log message and outputs it via the standard driver logs.
-- */
--void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf)
--{
--	ice_debug(hw, ICE_DBG_FW_LOG, "[ FW Log Msg Start ]\n");
--	ice_debug_array(hw, ICE_DBG_FW_LOG, 16, 1, (u8 *)buf,
--			le16_to_cpu(desc->datalen));
--	ice_debug(hw, ICE_DBG_FW_LOG, "[ FW Log Msg End ]\n");
--}
--
  /**
-  * ice_get_itr_intrl_gran
-  * @hw: pointer to the HW struct
-@@ -1234,11 +1024,6 @@ int ice_init_hw(struct ice_hw *hw)
- 	if (status)
- 		goto err_unroll_cqinit;
+diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.h b/drivers/net/ethernet/intel/ice/ice_fwlog.h
+index 45865558425d..65d9a1cbfa1c 100644
+--- a/drivers/net/ethernet/intel/ice/ice_fwlog.h
++++ b/drivers/net/ethernet/intel/ice/ice_fwlog.h
+@@ -47,12 +47,34 @@ struct ice_fwlog_cfg {
+ 	u16 log_resolution;
+ };
  
--	/* Enable FW logging. Not fatal if this fails. */
--	status = ice_cfg_fw_log(hw, true);
--	if (status)
--		ice_debug(hw, ICE_DBG_INIT, "Failed to enable FW logging.\n");
--
- 	status = ice_clear_pf_cfg(hw);
- 	if (status)
- 		goto err_unroll_cqinit;
-@@ -1388,8 +1173,6 @@ void ice_deinit_hw(struct ice_hw *hw)
- 	ice_free_hw_tbls(hw);
- 	mutex_destroy(&hw->tnl_lock);
- 
--	/* Attempt to disable FW logging before shutting down control queues */
--	ice_cfg_fw_log(hw, false);
- 	ice_destroy_all_ctrlq(hw);
- 
- 	/* Clear VSI contexts if not already cleared */
-diff --git a/drivers/net/ethernet/intel/ice/ice_common.h b/drivers/net/ethernet/intel/ice/ice_common.h
-index 271716ebb672..d0ef1fdd6493 100644
---- a/drivers/net/ethernet/intel/ice/ice_common.h
-+++ b/drivers/net/ethernet/intel/ice/ice_common.h
-@@ -200,7 +200,6 @@ ice_aq_cfg_lan_txq(struct ice_hw *hw, struct ice_aqc_cfg_txqs_buf *buf,
- 		   struct ice_sq_cd *cd);
- int ice_replay_vsi(struct ice_hw *hw, u16 vsi_handle);
- void ice_replay_post(struct ice_hw *hw);
--void ice_output_fw_log(struct ice_hw *hw, struct ice_aq_desc *desc, void *buf);
- struct ice_q_ctx *
- ice_get_lan_q_ctx(struct ice_hw *hw, u16 vsi_handle, u8 tc, u16 q_handle);
- int ice_sbq_rw_reg(struct ice_hw *hw, struct ice_sbq_msg_input *in);
++struct ice_fwlog_data {
++	u16 data_size;
++	u8 *data;
++};
++
++struct ice_fwlog_ring {
++	struct ice_fwlog_data *rings;
++	u16 index;
++	u16 size;
++	u16 head;
++	u16 tail;
++};
++
++#define ICE_FWLOG_RING_SIZE_INDEX_DFLT 3
++#define ICE_FWLOG_RING_SIZE_DFLT 256
++#define ICE_FWLOG_RING_SIZE_MAX 512
++
++bool ice_fwlog_ring_full(struct ice_fwlog_ring *rings);
++bool ice_fwlog_ring_empty(struct ice_fwlog_ring *rings);
++void ice_fwlog_ring_increment(u16 *item, u16 size);
+ void ice_fwlog_set_supported(struct ice_hw *hw);
+ bool ice_fwlog_supported(struct ice_hw *hw);
+ int ice_fwlog_init(struct ice_hw *hw);
+ void ice_fwlog_deinit(struct ice_hw *hw);
++void ice_fwlog_deinit(struct ice_hw *hw);
+ int ice_fwlog_set(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
+ int ice_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
+ int ice_fwlog_register(struct ice_hw *hw);
+ int ice_fwlog_unregister(struct ice_hw *hw);
++void ice_fwlog_realloc_rings(struct ice_hw *hw, int index);
+ #endif /* _ICE_FWLOG_H_ */
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index cfa584627993..ccd92a5363b1 100644
+index 279c54c13ac3..3742d2464c4c 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -1533,9 +1533,6 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
+@@ -1252,6 +1252,32 @@ ice_handle_link_event(struct ice_pf *pf, struct ice_rq_event_info *event)
+ 	return status;
+ }
+ 
++/**
++ * ice_get_fwlog_data - copy the FW log data from ARQ event
++ * @pf: PF that the FW log event is associated with
++ * @event: event structure containing FW log data
++ */
++static void
++ice_get_fwlog_data(struct ice_pf *pf, struct ice_rq_event_info *event)
++{
++	struct ice_fwlog_data *fwlog;
++	struct ice_hw *hw = &pf->hw;
++
++	fwlog = &hw->fwlog_ring.rings[hw->fwlog_ring.tail];
++
++	memset(fwlog->data, 0, PAGE_SIZE);
++	fwlog->data_size = le16_to_cpu(event->desc.datalen);
++
++	memcpy(fwlog->data, event->msg_buf, fwlog->data_size);
++	ice_fwlog_ring_increment(&hw->fwlog_ring.tail, hw->fwlog_ring.size);
++
++	if (ice_fwlog_ring_full(&hw->fwlog_ring)) {
++		/* the rings are full so bump the head to create room */
++		ice_fwlog_ring_increment(&hw->fwlog_ring.head,
++					 hw->fwlog_ring.size);
++	}
++}
++
+ /**
+  * ice_aq_prep_for_event - Prepare to wait for an AdminQ event from firmware
+  * @pf: pointer to the PF private structure
+@@ -1533,6 +1559,9 @@ static int __ice_clean_ctrlq(struct ice_pf *pf, enum ice_ctl_q q_type)
  
  			ice_vc_process_vf_msg(pf, &event, &data);
  			break;
--		case ice_aqc_opc_fw_logging:
--			ice_output_fw_log(hw, &event.desc, event.msg_buf);
--			break;
++		case ice_aqc_opc_fw_logs_event:
++			ice_get_fwlog_data(pf, &event);
++			break;
  		case ice_aqc_opc_lldp_set_mib_change:
  			ice_dcb_process_lldp_set_mib_change(pf, &event);
  			break;
 diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-index f69d5c0dd7b5..8aef6ca12bcf 100644
+index d7f31c570d91..6e3f6eeaf0a4 100644
 --- a/drivers/net/ethernet/intel/ice/ice_type.h
 +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-@@ -741,24 +741,6 @@ struct ice_switch_info {
- 	DECLARE_BITMAP(prof_res_bm[ICE_MAX_NUM_PROFILES], ICE_MAX_FV_WORDS);
- };
+@@ -885,6 +885,7 @@ struct ice_hw {
  
--/* FW logging configuration */
--struct ice_fw_log_evnt {
--	u8 cfg : 4;	/* New event enables to configure */
--	u8 cur : 4;	/* Current/active event enables */
--};
--
--struct ice_fw_log_cfg {
--	u8 cq_en : 1;    /* FW logging is enabled via the control queue */
--	u8 uart_en : 1;  /* FW logging is enabled via UART for all PFs */
--	u8 actv_evnts;   /* Cumulation of currently enabled log events */
--
--#define ICE_FW_LOG_EVNT_INFO	(ICE_AQC_FW_LOG_INFO_EN >> ICE_AQC_FW_LOG_EN_S)
--#define ICE_FW_LOG_EVNT_INIT	(ICE_AQC_FW_LOG_INIT_EN >> ICE_AQC_FW_LOG_EN_S)
--#define ICE_FW_LOG_EVNT_FLOW	(ICE_AQC_FW_LOG_FLOW_EN >> ICE_AQC_FW_LOG_EN_S)
--#define ICE_FW_LOG_EVNT_ERR	(ICE_AQC_FW_LOG_ERR_EN >> ICE_AQC_FW_LOG_EN_S)
--	struct ice_fw_log_evnt evnts[ICE_AQC_FW_LOG_ID_MAX];
--};
--
- /* Enum defining the different states of the mailbox snapshot in the
-  * PF-VF mailbox overflow detection algorithm. The snapshot can be in
-  * states:
-@@ -900,8 +882,6 @@ struct ice_hw {
- 	u8 fw_patch;		/* firmware patch version */
- 	u32 fw_build;		/* firmware build number */
+ 	struct ice_fwlog_cfg fwlog_cfg;
+ 	bool fwlog_supported; /* does hardware support FW logging? */
++	struct ice_fwlog_ring fwlog_ring;
  
--	struct ice_fw_log_cfg fw_log;
--
  /* Device max aggregate bandwidths corresponding to the GL_PWR_MODE_CTL
   * register. Used for determining the ITR/INTRL granularity during
-  * initialization.
 -- 
 2.35.1
 
