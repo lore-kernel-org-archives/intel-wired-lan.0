@@ -4,84 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 271A2C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 17:52:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7018C4167D
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 18:16:11 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id D6C5082A6C;
-	Tue, 12 Dec 2023 17:52:06 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org D6C5082A6C
+	by smtp1.osuosl.org (Postfix) with ESMTP id 5C5F481842;
+	Tue, 12 Dec 2023 18:16:11 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 5C5F481842
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702403526;
-	bh=kOQfD7XaNjs9oCUE0gbH+qbGBwMxJ6wrKA34KfssV/8=;
-	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
+	s=default; t=1702404971;
+	bh=iIC9GwQso2pCL+waaJHGudgMXHYW3qWUlAjcN4HBmEE=;
+	h=Date:From:To:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=OunnPXYSjjaeZBTotR6JekiiZVWYIEiOxRFv8uXHBZf5r2x7nU6RejOHI+D6kKhOK
-	 ckx7UlaPmVg3v6rojSk8OuR26/gi3WaVi6iSiYv3UEOKK737wUdadOoXJva7LQcmxL
-	 TI2mi/szuAWRok0Vqej0fAuGsQkcVWRKH2YJEuQCL+wCRKce3PZtA71izJlQg79l1I
-	 2c2xow9XT2sVxHTo96oNDAEN4jv271mI8+vFH+RWl4EY5+IgifbgkPBo8zwwQxcZIv
-	 z1MiEctxO4hTf1W44U3Ut1Ze08bQWRfgtNpWWEEPzVhbHUPKud76PVgR1FsAqW5GUx
-	 p8Hb+EgXoyBQw==
+	b=BGxEXh1d0rmg9+EQJQWjqflWYfixpf81Sep9ocgIP3CtKe/bJX1MmC8np+G9HCt5N
+	 NvZSffS7dM8DkzjaI9ksaUxamkXYIf4MmZCZdBvRnwsV9obZnTJZavQnZP1XJ66JuK
+	 7LRktnys1zBntgxN9/XmtBfFGWHQ8ivvx3CIdDLKmS1642ZBxNHjXTBuHKxbS+fiDf
+	 W+2URf8A6mMJ8SlbW9q1HJCxgoSVodmVK5OZL157shj9CFuTTJHa2iZ6py0qCLER0m
+	 BpiLp3GdULwy3V0QVW4NUjShOztPOJc10etU1n+jgCidzFW22o5rCgI8gBk4CrA5Hg
+	 XHgNjakNpggwQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jmcrofWiAbAq; Tue, 12 Dec 2023 17:52:05 +0000 (UTC)
+	with ESMTP id rFGEYZQwa0Of; Tue, 12 Dec 2023 18:16:10 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 69B8082B1E;
-	Tue, 12 Dec 2023 17:52:05 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 69B8082B1E
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 2C5001BF429
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 17:51:43 +0000 (UTC)
+	by smtp1.osuosl.org (Postfix) with ESMTP id 48E8B81801;
+	Tue, 12 Dec 2023 18:16:10 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 48E8B81801
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 21BBB1BF3D2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 18:16:09 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E1110403CA
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 17:51:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E1110403CA
+ by smtp3.osuosl.org (Postfix) with ESMTP id ECD1860AC0
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 18:16:08 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org ECD1860AC0
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id pNISaHKEBCGm for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Dec 2023 17:51:39 +0000 (UTC)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
- by smtp4.osuosl.org (Postfix) with ESMTPS id DF043408A1
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 17:51:38 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DF043408A1
-X-IronPort-AV: E=McAfee;i="6600,9927,10922"; a="8214849"
-X-IronPort-AV: E=Sophos;i="6.04,270,1695711600"; 
-   d="scan'208";a="8214849"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
- by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Dec 2023 09:48:48 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.04,270,1695711600"; d="scan'208";a="15102052"
-Received: from pmstillw-desk1.amr.corp.intel.com ([10.212.121.197])
- by orviesa002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 12 Dec 2023 09:48:48 -0800
-From: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
-To: intel-wired-lan@lists.osuosl.org
-Date: Tue, 12 Dec 2023 09:48:33 -0800
-Message-Id: <20231212174835.65-4-paul.m.stillwell.jr@intel.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20231212174835.65-1-paul.m.stillwell.jr@intel.com>
-References: <20231212174835.65-1-paul.m.stillwell.jr@intel.com>
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id da2X-nYy5s22 for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Dec 2023 18:16:07 +0000 (UTC)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id A566C607C1
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 18:16:07 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org A566C607C1
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+ by dfw.source.kernel.org (Postfix) with ESMTP id E5D1F61877;
+ Tue, 12 Dec 2023 18:16:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0A2F8C433C7;
+ Tue, 12 Dec 2023 18:16:05 +0000 (UTC)
+Date: Tue, 12 Dec 2023 10:16:05 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Alexander Lobakin <aleksander.lobakin@intel.com>
+Message-ID: <20231212101605.766fbbcc@kernel.org>
+In-Reply-To: <20231212142752.935000-1-aleksander.lobakin@intel.com>
+References: <20231212142752.935000-1-aleksander.lobakin@intel.com>
 MIME-Version: 1.0
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
- t=1702403499; x=1733939499;
- h=from:to:cc:subject:date:message-id:in-reply-to:
- references:mime-version:content-transfer-encoding;
- bh=miuluS9CdJZKE+TcKzO6J5FXwYzthjNEieIM9DLpFmM=;
- b=f/aRMqggRD0qAT+SlMe5eg9bkKYJU9Jg/ymOmw1K33X2IlfmVmo+JoJc
- eE6ob0YeDawq9GS1QTuyhP/kv4ygvslAHTz+uIM9s1+kvACGysfM19hTl
- 8sKyTeIQOJ51t7nTFyxxK3PrDWwntpmupUiH3ErGSrNWyEp4rX9hLct/Y
- QwJez4VBbNVg/054tNM4QRo+LAkjsTe+NlO2np2+DIQtvdQ9A0RyOMpK6
- O7gjuSNkimR08IcuepDXpdfGBqckkaE1jtGwQv7q9F0FOjuT5ORZotfoY
- GcJ+q8ZyX87O+fyK6MrD9jPO/sbWwvRcaZu57jOXQQh9pXoWcMnpYCLqe
- g==;
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
- dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=f/aRMqgg
-Subject: [Intel-wired-lan] [PATCH net-next v20 3/5] ice: enable FW logging
+ d=kernel.org; s=k20201202; t=1702404966;
+ bh=55v2YEAEajqeqknulyuWsJXXATDMpGT7WsJUIr0GI/E=;
+ h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+ b=cKwKGBqs/hXYX/mV4mPQ1ZwkgUJrnnfWNcTPTyuiWBMJ/leiYEQSgENKdG3sfmvuE
+ bSxth5b7ltOcRFcXTlP8+X9n+jOnsalASL5N2T8+CKUnwMTofd6ykO/MA3iEjkEH1I
+ vyEo/J55wTxQRcgS8Z26G14QuLjkeJL/++nkTRr5TV82egehIoXsWMvKeHxZW1Xyid
+ HlrXsxTNt0sQBUanT+A3LL7p35sHXf4ZvAD3mpjk4w5JT0X9ECdORpdYkQ6uqWc+hj
+ S+MdnAXBQoDEF/jxjxTWyYFWDxeb6TrrrvUcE3mDsEqhmpugczKoOVcl1o+k1jfZrz
+ hwp9ZTajSJYBA==
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
+ dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org
+ header.a=rsa-sha256 header.s=k20201202 header.b=cKwKGBqs
+Subject: Re: [Intel-wired-lan] [PATCH net-next 0/2] idpf: add get/set for
+ Ethtool's header split ringparam
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,292 +85,32 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+Cc: Michal Kubecek <mkubecek@suse.cz>, Andrew Lunn <andrew@lunn.ch>,
+ Jiri Pirko <jiri@resnulli.us>, Przemek Kitszel <przemyslaw.kitszel@intel.com>,
+ linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>,
+ Michal Kubiak <michal.kubiak@intel.com>,
+ Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Vladimir Oltean <vladimir.oltean@nxp.com>,
+ Paul Greenwalt <paul.greenwalt@intel.com>, netdev@vger.kernel.org,
+ Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+ intel-wired-lan@lists.osuosl.org
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Once users have configured the FW logging then allow them to enable it
-by writing to the 'fwlog/enable' file. The file accepts a boolean value
-(0 or 1) where 1 means enable FW logging and 0 means disable FW logging.
+On Tue, 12 Dec 2023 15:27:50 +0100 Alexander Lobakin wrote:
+> Currently, the header split feature (putting headers in one smaller
+> buffer and then the data in a separate bigger one) is always enabled
+> in idpf when supported.
+> One may want to not have fragmented frames per each packet, for example,
+> to avoid XDP frags. To better optimize setups for particular workloads,
+> add ability to switch the header split state on and off via Ethtool's
+> ringparams, as well as to query the current status.
+> There's currently only GET in the Ethtool Netlink interface for now,
+> so add SET first. I suspect idpf is not the only one supporting this.
 
-  # echo <value> > /sys/kernel/debug/ice/0000\:18\:00.0/fwlog/enable
-
-Where <value> is 0 or 1.
-
-The user can read the 'fwlog/enable' file to see whether logging is
-enabled or not. Reading the actual data is a separate patch. To see the
-current value then:
-
-  # cat /sys/kernel/debug/ice/0000\:18\:00.0/fwlog/enable
-
-Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
----
- .../net/ethernet/intel/ice/ice_adminq_cmd.h   |   3 +
- drivers/net/ethernet/intel/ice/ice_debugfs.c  | 106 ++++++++++++++++++
- drivers/net/ethernet/intel/ice/ice_fwlog.c    |  67 +++++++++++
- drivers/net/ethernet/intel/ice/ice_fwlog.h    |   2 +
- 4 files changed, 178 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-index 73452333d342..82139e0ede6a 100644
---- a/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/ice/ice_adminq_cmd.h
-@@ -2393,6 +2393,7 @@ enum ice_aqc_fw_logging_mod {
- };
- 
- /* Set FW Logging configuration (indirect 0xFF30)
-+ * Register for FW Logging (indirect 0xFF31)
-  * Query FW Logging (indirect 0xFF32)
-  */
- struct ice_aqc_fw_log {
-@@ -2401,6 +2402,7 @@ struct ice_aqc_fw_log {
- #define ICE_AQC_FW_LOG_CONF_AQ_EN	BIT(1)
- #define ICE_AQC_FW_LOG_QUERY_REGISTERED	BIT(2)
- #define ICE_AQC_FW_LOG_CONF_SET_VALID	BIT(3)
-+#define ICE_AQC_FW_LOG_AQ_REGISTER	BIT(0)
- #define ICE_AQC_FW_LOG_AQ_QUERY		BIT(2)
- 
- 	u8 rsp_flag;
-@@ -2722,6 +2724,7 @@ enum ice_adminq_opc {
- 
- 	/* FW Logging Commands */
- 	ice_aqc_opc_fw_logs_config			= 0xFF30,
-+	ice_aqc_opc_fw_logs_register			= 0xFF31,
- 	ice_aqc_opc_fw_logs_query			= 0xFF32,
- };
- 
-diff --git a/drivers/net/ethernet/intel/ice/ice_debugfs.c b/drivers/net/ethernet/intel/ice/ice_debugfs.c
-index 7ecce55860d0..6cc708b81f8b 100644
---- a/drivers/net/ethernet/intel/ice/ice_debugfs.c
-+++ b/drivers/net/ethernet/intel/ice/ice_debugfs.c
-@@ -293,6 +293,109 @@ static const struct file_operations ice_debugfs_nr_messages_fops = {
- 	.write = ice_debugfs_nr_messages_write,
- };
- 
-+/**
-+ * ice_debugfs_enable_read - read from 'enable' file
-+ * @filp: the opened file
-+ * @buffer: where to write the data for the user to read
-+ * @count: the size of the user's buffer
-+ * @ppos: file position offset
-+ */
-+static ssize_t ice_debugfs_enable_read(struct file *filp,
-+				       char __user *buffer, size_t count,
-+				       loff_t *ppos)
-+{
-+	struct ice_pf *pf = filp->private_data;
-+	struct ice_hw *hw = &pf->hw;
-+	char buff[32] = {};
-+	int status;
-+
-+	snprintf(buff, sizeof(buff), "%u\n",
-+		 (u16)(hw->fwlog_cfg.options &
-+		 ICE_FWLOG_OPTION_IS_REGISTERED) >> 3);
-+
-+	status = simple_read_from_buffer(buffer, count, ppos, buff,
-+					 strlen(buff));
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_debugfs_enable_write - write into 'enable' file
-+ * @filp: the opened file
-+ * @buf: where to find the user's data
-+ * @count: the length of the user's data
-+ * @ppos: file position offset
-+ */
-+static ssize_t
-+ice_debugfs_enable_write(struct file *filp, const char __user *buf,
-+			 size_t count, loff_t *ppos)
-+{
-+	struct ice_pf *pf = filp->private_data;
-+	struct ice_hw *hw = &pf->hw;
-+	char user_val[2], *cmd_buf;
-+	bool enable;
-+	ssize_t ret;
-+
-+	if (count > sizeof(user_val))
-+		return -EINVAL;
-+
-+	/* don't allow partial writes */
-+	if (*ppos != 0)
-+		return 0;
-+
-+	cmd_buf = memdup_user(buf, count);
-+	if (IS_ERR(cmd_buf))
-+		return PTR_ERR(cmd_buf);
-+	cmd_buf[count] = '\0';
-+
-+	ret = sscanf(cmd_buf, "%s", user_val);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	ret = kstrtobool(user_val, &enable);
-+	if (ret)
-+		goto enable_write_error;
-+
-+	if (enable)
-+		hw->fwlog_cfg.options |= ICE_FWLOG_OPTION_ARQ_ENA;
-+	else
-+		hw->fwlog_cfg.options &= ~ICE_FWLOG_OPTION_ARQ_ENA;
-+
-+	ret = ice_fwlog_set(hw, &hw->fwlog_cfg);
-+	if (ret)
-+		goto enable_write_error;
-+
-+	if (enable)
-+		ret = ice_fwlog_register(hw);
-+	else
-+		ret = ice_fwlog_unregister(hw);
-+
-+	if (ret)
-+		goto enable_write_error;
-+
-+	/* if we get here, nothing went wrong; return count since we didn't
-+	 * really write anything
-+	 */
-+	ret = (ssize_t)count;
-+
-+enable_write_error:
-+	/* This function always consumes all of the written input, or produces
-+	 * an error. Check and enforce this. Otherwise, the write operation
-+	 * won't complete properly.
-+	 */
-+	if (WARN_ON(ret != (ssize_t)count && ret >= 0))
-+		ret = -EIO;
-+
-+	return ret;
-+}
-+
-+static const struct file_operations ice_debugfs_enable_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = simple_open,
-+	.read = ice_debugfs_enable_read,
-+	.write = ice_debugfs_enable_write,
-+};
-+
- /**
-  * ice_debugfs_fwlog_init - setup the debugfs directory
-  * @pf: the ice that is starting up
-@@ -346,6 +449,9 @@ void ice_debugfs_fwlog_init(struct ice_pf *pf)
- 
- 	pf->ice_debugfs_pf_fwlog_modules = fw_modules;
- 
-+	debugfs_create_file("enable", 0600, pf->ice_debugfs_pf_fwlog,
-+			    pf, &ice_debugfs_enable_fops);
-+
- 	return;
- 
- err_create_module_files:
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.c b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-index 1074d6e8f263..4155b1d82b13 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.c
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.c
-@@ -59,6 +59,11 @@ void ice_fwlog_deinit(struct ice_hw *hw)
- 	kfree(pf->ice_debugfs_pf_fwlog_modules);
- 
- 	pf->ice_debugfs_pf_fwlog_modules = NULL;
-+
-+	status = ice_fwlog_unregister(hw);
-+	if (status)
-+		dev_warn(ice_hw_to_dev(hw), "Unable to unregister FW logging, status: %d\n",
-+			 status);
- }
- 
- /**
-@@ -193,6 +198,8 @@ static int ice_aq_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
- 		cfg->options |= ICE_FWLOG_OPTION_ARQ_ENA;
- 	if (cmd->cmd_flags & ICE_AQC_FW_LOG_CONF_UART_EN)
- 		cfg->options |= ICE_FWLOG_OPTION_UART_ENA;
-+	if (cmd->cmd_flags & ICE_AQC_FW_LOG_QUERY_REGISTERED)
-+		cfg->options |= ICE_FWLOG_OPTION_IS_REGISTERED;
- 
- 	fw_modules = (struct ice_aqc_fw_log_cfg_resp *)buf;
- 
-@@ -222,6 +229,66 @@ int ice_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg)
- 	return ice_aq_fwlog_get(hw, cfg);
- }
- 
-+/**
-+ * ice_aq_fwlog_register - Register PF for firmware logging events (0xFF31)
-+ * @hw: pointer to the HW structure
-+ * @reg: true to register and false to unregister
-+ */
-+static int ice_aq_fwlog_register(struct ice_hw *hw, bool reg)
-+{
-+	struct ice_aq_desc desc;
-+
-+	ice_fill_dflt_direct_cmd_desc(&desc, ice_aqc_opc_fw_logs_register);
-+
-+	if (reg)
-+		desc.params.fw_log.cmd_flags = ICE_AQC_FW_LOG_AQ_REGISTER;
-+
-+	return ice_aq_send_cmd(hw, &desc, NULL, 0, NULL);
-+}
-+
-+/**
-+ * ice_fwlog_register - Register the PF for firmware logging
-+ * @hw: pointer to the HW structure
-+ *
-+ * After this call the PF will start to receive firmware logging based on the
-+ * configuration set in ice_fwlog_set.
-+ */
-+int ice_fwlog_register(struct ice_hw *hw)
-+{
-+	int status;
-+
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	status = ice_aq_fwlog_register(hw, true);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Failed to register for firmware logging events over ARQ\n");
-+	else
-+		hw->fwlog_cfg.options |= ICE_FWLOG_OPTION_IS_REGISTERED;
-+
-+	return status;
-+}
-+
-+/**
-+ * ice_fwlog_unregister - Unregister the PF from firmware logging
-+ * @hw: pointer to the HW structure
-+ */
-+int ice_fwlog_unregister(struct ice_hw *hw)
-+{
-+	int status;
-+
-+	if (!ice_fwlog_supported(hw))
-+		return -EOPNOTSUPP;
-+
-+	status = ice_aq_fwlog_register(hw, false);
-+	if (status)
-+		ice_debug(hw, ICE_DBG_FW_LOG, "Failed to unregister from firmware logging events over ARQ\n");
-+	else
-+		hw->fwlog_cfg.options &= ~ICE_FWLOG_OPTION_IS_REGISTERED;
-+
-+	return status;
-+}
-+
- /**
-  * ice_fwlog_set_supported - Set if FW logging is supported by FW
-  * @hw: pointer to the HW struct
-diff --git a/drivers/net/ethernet/intel/ice/ice_fwlog.h b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-index 8e68ee02713b..45865558425d 100644
---- a/drivers/net/ethernet/intel/ice/ice_fwlog.h
-+++ b/drivers/net/ethernet/intel/ice/ice_fwlog.h
-@@ -53,4 +53,6 @@ int ice_fwlog_init(struct ice_hw *hw);
- void ice_fwlog_deinit(struct ice_hw *hw);
- int ice_fwlog_set(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
- int ice_fwlog_get(struct ice_hw *hw, struct ice_fwlog_cfg *cfg);
-+int ice_fwlog_register(struct ice_hw *hw);
-+int ice_fwlog_unregister(struct ice_hw *hw);
- #endif /* _ICE_FWLOG_H_ */
--- 
-2.35.1
-
+Reviewed-by: Jakub Kicinski <kuba@kernel.org>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
