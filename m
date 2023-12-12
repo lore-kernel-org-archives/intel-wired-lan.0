@@ -4,65 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38DE5C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 16:51:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 556CBC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 17:13:16 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id D06DA41742;
-	Tue, 12 Dec 2023 16:51:21 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org D06DA41742
+	by smtp4.osuosl.org (Postfix) with ESMTP id DFDFB40565;
+	Tue, 12 Dec 2023 17:13:15 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org DFDFB40565
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702399881;
-	bh=H8Zo1I4T79HDPlwcLR6RJDDa9IzXurCUcbUvn7b9NvI=;
-	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
+	s=default; t=1702401195;
+	bh=KGV6mFKpBOdQePSh1IleC9l4MyS0Azio0FplhWCBn+s=;
+	h=Date:From:To:References:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=z68D3sDx10oZaOJyU991gWu/IwgVClfnmUZJhuJb0kJD1O70PE+fa4TkPGIIqoTt7
-	 6P8yEC7hkK015JmXYSJpGYrETP4loua51KHk2f60/a3xO1azfuXJC2+y81CYynm4Yh
-	 pFeoN+/bKh4USPoM8bF7SMakEsRf8jJRLOeNeo96TKpz8NOZTY6RWVSFe58F4ai8iU
-	 hjhs9vGjgvXMCN3k9gVWRSNNFQEYhOa6SnxBUnMpDbPHHXxYNWk+FMT+N0M+DfOwHS
-	 T+tnkVwRsZY/nMitbp5xnbG8GXTqH5PmdVgDEQXDWrntx4yipww5Vmxu9IJ8CSwbZa
-	 YOurtQ95kGSsQ==
+	b=itEBodAt9yuQiYAhMcX0ctXJzpoRxXSJMd2b7LGyC7BZFz2g80Cx8zbzRcXbnsGQj
+	 k8+zyJcL93sF+yNpSANxUVU44pNFv1jF/xjuEKoS7CV6prwxzOa6W1LvMmxyYaJnXf
+	 c2uvvsJ0jYL6d48X53NXquuCjwUwVJopTegngYAIqcqdFqG0TXxiFX7Z/I3QBoB0RF
+	 OtzRXJTHAfn2bptEtXSBJG2Q0Sn4RSavpnWEdSHrfk9+/jCftHcR9hglrDB/nEV/UM
+	 bj6wiTcTzarv0ihlE5y7PT3Uu/Wrq2sL8DZfnIt3f0IijhfAsVAYZWTXmpjfNHTPPS
+	 6IKoPLc4ov6QQ==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id C5BvNK-DaV8V; Tue, 12 Dec 2023 16:51:20 +0000 (UTC)
+	with ESMTP id lPG0W8sZBQeC; Tue, 12 Dec 2023 17:13:14 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id A56D9418BB;
-	Tue, 12 Dec 2023 16:51:20 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org A56D9418BB
+	by smtp4.osuosl.org (Postfix) with ESMTP id 554344077D;
+	Tue, 12 Dec 2023 17:13:14 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 554344077D
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id C78641BF3D2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:51:18 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 40D051BF3C3
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 15:32:10 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 9F1A160BED
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:51:18 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 9F1A160BED
+ by smtp3.osuosl.org (Postfix) with ESMTP id AC5006156E
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 15:32:09 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org AC5006156E
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 5-tTXF6AN4gn for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Dec 2023 16:51:17 +0000 (UTC)
-Received: from mx3.molgen.mpg.de (mx3.molgen.mpg.de [141.14.17.11])
- by smtp3.osuosl.org (Postfix) with ESMTPS id CE95060A82
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:51:16 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org CE95060A82
-Received: from [141.14.30.220] (rabammel.molgen.mpg.de [141.14.30.220])
- (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested) (Authenticated sender: pmenzel)
- by mx.molgen.mpg.de (Postfix) with ESMTPSA id 9796461E5FE03;
- Tue, 12 Dec 2023 17:50:56 +0100 (CET)
-Message-ID: <78ecdb9f-25e9-4847-87ed-6e8b44a7c71d@molgen.mpg.de>
-Date: Tue, 12 Dec 2023 17:50:55 +0100
+ with ESMTP id jZ_f_Ly5M00k for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Dec 2023 15:32:08 +0000 (UTC)
+X-Greylist: delayed 375 seconds by postgrey-1.37 at util1.osuosl.org;
+ Tue, 12 Dec 2023 15:32:07 UTC
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 967D861574
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id 967D861574
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 15:32:07 +0000 (UTC)
+Received: by verein.lst.de (Postfix, from userid 2407)
+ id 47F9B68C4E; Tue, 12 Dec 2023 16:25:44 +0100 (CET)
+Date: Tue, 12 Dec 2023 16:25:43 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Yunsheng Lin <linyunsheng@huawei.com>
+Message-ID: <20231212152543.GA19879@lst.de>
+References: <20231124154732.1623518-1-aleksander.lobakin@intel.com>
+ <20231124154732.1623518-4-aleksander.lobakin@intel.com>
+ <6bd14aa9-fa65-e4f6-579c-3a1064b2a382@huawei.com>
+ <a1a0c27f-f367-40e7-9dc2-9421b4b6379a@intel.com>
+ <534e7752-38a9-3e7e-cb04-65789712fb66@huawei.com>
+ <8c6d09be-78d0-436e-a5a6-b94fb094b0b3@intel.com>
+ <4814a337-454b-d476-dabe-5035dd6dc51f@huawei.com>
+ <d8631d76-4bb3-41a4-a2b2-86725867d2a9@intel.com>
+ <6c234df1-d20a-812e-3c58-7e3941d8309b@huawei.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Michal Kubiak <michal.kubiak@intel.com>,
- Joshua Hay <joshua.a.hay@intel.com>
-References: <20231212145546.396273-1-michal.kubiak@intel.com>
-Content-Language: en-US
-From: Paul Menzel <pmenzel@molgen.mpg.de>
-In-Reply-To: <20231212145546.396273-1-michal.kubiak@intel.com>
-Subject: Re: [Intel-wired-lan] [PATCH iwl-net] idpf: enable WB_ON_ITR
+Content-Disposition: inline
+In-Reply-To: <6c234df1-d20a-812e-3c58-7e3941d8309b@huawei.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Mailman-Approved-At: Tue, 12 Dec 2023 17:13:12 +0000
+Subject: Re: [Intel-wired-lan] [PATCH net-next v5 03/14] page_pool: avoid
+ calling no-op externals when possible
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,193 +82,29 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: maciej.fijalkowski@intel.com, emil.s.tantilov@intel.com,
- larysa.zaremba@intel.com, netdev@vger.kernel.org, aleksander.lobakin@intel.com,
- intel-wired-lan@lists.osuosl.org, alan.brady@intel.com,
- Przemek Kitszel <przemyslaw.kitszel@intel.com>
+Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
+ Maciej Fijalkowski <maciej.fijalkowski@intel.com>,
+ Jesper Dangaard Brouer <hawk@kernel.org>,
+ Larysa Zaremba <larysa.zaremba@intel.com>, netdev@vger.kernel.org,
+ Alexander Duyck <alexanderduyck@fb.com>,
+ Ilias Apalodimas <ilias.apalodimas@linaro.org>, linux-kernel@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Alexander Lobakin <aleksander.lobakin@intel.com>,
+ Eric Dumazet <edumazet@google.com>, Michal Kubiak <michal.kubiak@intel.com>,
+ intel-wired-lan@lists.osuosl.org, David Christensen <drc@linux.vnet.ibm.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ Christoph Hellwig <hch@lst.de>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Dear Michal, dear Joshua,
+On Thu, Nov 30, 2023 at 08:20:44PM +0800, Yunsheng Lin wrote:
+> I would prefer we could wait for the generic one as there is only about one
+> month between now and january:)
 
-
-Thank you for your patch.
-
-On 12/12/23 15:55, Michal Kubiak wrote:
-> From: Joshua Hay <joshua.a.hay@intel.com>
-> 
-> Tell hardware to writeback completed descriptors even when interrupts
-
-Should you resend, the verb is spelled with a space: write back.
-
-> are disabled. Otherwise, descriptors might not be written back until
-> the hardware can flush a full cacheline of descriptors. This can cause
-> unnecessary delays when traffic is light (or even trigger Tx queue
-> timeout).
-
-How can the problem be reproduced and the patch be verified?
-
-
-Kind regards,
-
-Paul
-
-
-> Fixes: c2d548cad150 ("idpf: add TX splitq napi poll support")
-> Fixes: a5ab9ee0df0b ("idpf: add singleq start_xmit and napi poll")
-> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-> Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
-> Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
-> Co-developed-by: Michal Kubiak <michal.kubiak@intel.com>
-> Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
-> ---
->  drivers/net/ethernet/intel/idpf/idpf_dev.c    |  2 ++
->  .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  6 ++++-
->  drivers/net/ethernet/intel/idpf/idpf_txrx.c   |  7 +++++-
->  drivers/net/ethernet/intel/idpf/idpf_txrx.h   | 23 +++++++++++++++++++
->  drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |  2 ++
->  5 files changed, 38 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-> index 34ad1ac46b78..2c6776086130 100644
-> --- a/drivers/net/ethernet/intel/idpf/idpf_dev.c
-> +++ b/drivers/net/ethernet/intel/idpf/idpf_dev.c
-> @@ -96,8 +96,10 @@ static int idpf_intr_reg_init(struct idpf_vport *vport)
->  		intr->dyn_ctl = idpf_get_reg_addr(adapter,
->  						  reg_vals[vec_id].dyn_ctl_reg);
->  		intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
-> +		intr->dyn_ctl_intena_msk_m = PF_GLINT_DYN_CTL_INTENA_MSK_M;
->  		intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
->  		intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
-> +		intr->dyn_ctl_wb_on_itr_m = PF_GLINT_DYN_CTL_WB_ON_ITR_M;
->  
->  		spacing = IDPF_ITR_IDX_SPACING(reg_vals[vec_id].itrn_index_spacing,
->  					       IDPF_PF_ITR_IDX_SPACING);
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-> index 81288a17da2a..8e1478b7d86c 100644
-> --- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-> +++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
-> @@ -1168,8 +1168,10 @@ int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
->  						    &work_done);
->  
->  	/* If work not completed, return budget and polling will return */
-> -	if (!clean_complete)
-> +	if (!clean_complete) {
-> +		idpf_vport_intr_set_wb_on_itr(q_vector);
->  		return budget;
-> +	}
->  
->  	work_done = min_t(int, work_done, budget - 1);
->  
-> @@ -1178,6 +1180,8 @@ int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
->  	 */
->  	if (likely(napi_complete_done(napi, work_done)))
->  		idpf_vport_intr_update_itr_ena_irq(q_vector);
-> +	else
-> +		idpf_vport_intr_set_wb_on_itr(q_vector);
->  
->  	return work_done;
->  }
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> index 1646ff3877ba..b496566ee2aa 100644
-> --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
-> @@ -3639,6 +3639,7 @@ void idpf_vport_intr_update_itr_ena_irq(struct idpf_q_vector *q_vector)
->  					      IDPF_NO_ITR_UPDATE_IDX, 0);
->  
->  	writel(intval, q_vector->intr_reg.dyn_ctl);
-> +	q_vector->wb_on_itr = false;
->  }
->  
->  /**
-> @@ -3930,8 +3931,10 @@ static int idpf_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
->  	clean_complete &= idpf_tx_splitq_clean_all(q_vector, budget, &work_done);
->  
->  	/* If work not completed, return budget and polling will return */
-> -	if (!clean_complete)
-> +	if (!clean_complete) {
-> +		idpf_vport_intr_set_wb_on_itr(q_vector);
->  		return budget;
-> +	}
->  
->  	work_done = min_t(int, work_done, budget - 1);
->  
-> @@ -3940,6 +3943,8 @@ static int idpf_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
->  	 */
->  	if (likely(napi_complete_done(napi, work_done)))
->  		idpf_vport_intr_update_itr_ena_irq(q_vector);
-> +	else
-> +		idpf_vport_intr_set_wb_on_itr(q_vector);
->  
->  	/* Switch to poll mode in the tear-down path after sending disable
->  	 * queues virtchnl message, as the interrupts will be disabled after
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-> index df76493faa75..50761c2d9f3b 100644
-> --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-> +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
-> @@ -495,9 +495,11 @@ struct idpf_vec_regs {
->  struct idpf_intr_reg {
->  	void __iomem *dyn_ctl;
->  	u32 dyn_ctl_intena_m;
-> +	u32 dyn_ctl_intena_msk_m;
->  	u32 dyn_ctl_itridx_s;
->  	u32 dyn_ctl_itridx_m;
->  	u32 dyn_ctl_intrvl_s;
-> +	u32 dyn_ctl_wb_on_itr_m;
->  	void __iomem *rx_itr;
->  	void __iomem *tx_itr;
->  	void __iomem *icr_ena;
-> @@ -534,6 +536,7 @@ struct idpf_q_vector {
->  	struct napi_struct napi;
->  	u16 v_idx;
->  	struct idpf_intr_reg intr_reg;
-> +	bool wb_on_itr;
->  
->  	u16 num_txq;
->  	struct idpf_queue **tx;
-> @@ -973,6 +976,26 @@ static inline void idpf_rx_sync_for_cpu(struct idpf_rx_buf *rx_buf, u32 len)
->  				      page_pool_get_dma_dir(pp));
->  }
->  
-> +/**
-> + * idpf_vport_intr_set_wb_on_itr - enable descriptor writeback on disabled interrupts
-> + * @q_vector: pointer to queue vector struct
-> + */
-> +static inline void idpf_vport_intr_set_wb_on_itr(struct idpf_q_vector *q_vector)
-> +{
-> +	struct idpf_intr_reg *reg;
-> +
-> +	if (q_vector->wb_on_itr)
-> +		return;
-> +
-> +	reg = &q_vector->intr_reg;
-> +
-> +	writel(reg->dyn_ctl_wb_on_itr_m | reg->dyn_ctl_intena_msk_m |
-> +	       IDPF_NO_ITR_UPDATE_IDX << reg->dyn_ctl_itridx_s,
-> +	       reg->dyn_ctl);
-> +
-> +	q_vector->wb_on_itr = true;
-> +}
-> +
->  int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget);
->  void idpf_vport_init_num_qs(struct idpf_vport *vport,
->  			    struct virtchnl2_create_vport *vport_msg);
-> diff --git a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-> index 8ade4e3a9fe1..f5b0a0666636 100644
-> --- a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-> +++ b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
-> @@ -96,7 +96,9 @@ static int idpf_vf_intr_reg_init(struct idpf_vport *vport)
->  		intr->dyn_ctl = idpf_get_reg_addr(adapter,
->  						  reg_vals[vec_id].dyn_ctl_reg);
->  		intr->dyn_ctl_intena_m = VF_INT_DYN_CTLN_INTENA_M;
-> +		intr->dyn_ctl_intena_msk_m = VF_INT_DYN_CTLN_INTENA_MSK_M;
->  		intr->dyn_ctl_itridx_s = VF_INT_DYN_CTLN_ITR_INDX_S;
-> +		intr->dyn_ctl_wb_on_itr_m = VF_INT_DYN_CTLN_WB_ON_ITR_M;
->  
->  		spacing = IDPF_ITR_IDX_SPACING(reg_vals[vec_id].itrn_index_spacing,
->  					       IDPF_VF_ITR_IDX_SPACING);
+Same here.  Please fix this properly for everyone instead of adding
+a pile of hac
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
