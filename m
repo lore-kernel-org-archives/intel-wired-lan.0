@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 987F4C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 16:09:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB843C4332F
+	for <intel-wired-lan@archiver.kernel.org>; Tue, 12 Dec 2023 16:14:51 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 38B0D40900;
-	Tue, 12 Dec 2023 16:09:27 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 38B0D40900
+	by smtp4.osuosl.org (Postfix) with ESMTP id 4815C402BA;
+	Tue, 12 Dec 2023 16:14:51 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 4815C402BA
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702397367;
-	bh=UFUHBypM0ltQqdbSZRO4Rfe8s8HOc1JYpmTT9PTD1Bc=;
+	s=default; t=1702397691;
+	bh=lSnTVG1doZgb/45rJuZr8hJUkYDbI6QAGCL1L1ds4mM=;
 	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=rAXhgGR2Ts4e1yhU3pO0u1SiiJfZNwDXndDUKc2tIyoSn8EFdIvpMlVTHpptz0T+9
-	 m0UI3GNoypHadx1BiUaXBgsVpq8iVG5HM/ECObXseKaMxyClPLBjBRFhjifbKOE4W4
-	 JkRyr5eJs548ZBuDbYeWXApU4FxJGxV5av6uWXR2CwGxw5dBSnea3Fb5vYi+SmxT17
-	 /OQz9+7Zd/Tb+HLsYjt5DmwgZeJ9isb7glZV25I01EobEuUFFU+pn8DZWJCQcniuK9
-	 3EhDPIZOdgy0RFV+791B70OtlhqKCW32p4HbaL2XJSAx86xJc+EpCKqkOeKmUDLp5C
-	 oPRP2eZwDQEQA==
+	b=KLVEBip/3slfFOokPvmY+i3eKTwgBHuS9MuhmLBKLWu2Um9AKGROSZA8C0rlf/o6a
+	 S5cYMPWqGJ3zXpsYLyzdP1qAE+Ij+sbBKwJzPlzTEd8F6I+Z7mpzvWkW2KfU+t2K/d
+	 ddsgccJJjo8QKWH9kFXulhsI8qDaxoxeZ1wwXrGjYiatISSfAkHuF1Vs9K0x42/BvA
+	 3iBNupshetGPkRjB4Yrq8BnILnJNrnlurmJy5PMgQAc2VObAl6gD3mz3f+TZTNO2uT
+	 bobMRk56mG8y1xeLF5GRFCfB+DmfDSsnmytxt/e/xFS1Rrg8qvwHy18BRwjs6lmDfS
+	 f/fMMwxXrdaBw==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Fj5zKgc34FA3; Tue, 12 Dec 2023 16:09:26 +0000 (UTC)
+	with ESMTP id NBVnMylze--9; Tue, 12 Dec 2023 16:14:50 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id BBC4441713;
-	Tue, 12 Dec 2023 16:09:25 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org BBC4441713
+	by smtp4.osuosl.org (Postfix) with ESMTP id 39A634053D;
+	Tue, 12 Dec 2023 16:14:50 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 39A634053D
 Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
- by ash.osuosl.org (Postfix) with ESMTP id 8B7221BF429
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:09:24 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id D45CE1BF429
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:14:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp3.osuosl.org (Postfix) with ESMTP id 6192960D76
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:09:24 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 6192960D76
+ by smtp3.osuosl.org (Postfix) with ESMTP id B988661539
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:14:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B988661539
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp3.osuosl.org ([127.0.0.1])
  by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 4ei0wcRPVLsF for <intel-wired-lan@lists.osuosl.org>;
- Tue, 12 Dec 2023 16:09:23 +0000 (UTC)
-Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com
- [IPv6:2a00:1450:4864:20::134])
- by smtp3.osuosl.org (Postfix) with ESMTPS id 0C0FC60B23
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:09:22 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 0C0FC60B23
-Received: by mail-lf1-x134.google.com with SMTP id
- 2adb3069b0e04-50bee606265so6157965e87.2
- for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 08:09:22 -0800 (PST)
+ with ESMTP id G7FhGOwsaMUV for <intel-wired-lan@lists.osuosl.org>;
+ Tue, 12 Dec 2023 16:14:48 +0000 (UTC)
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com
+ [IPv6:2a00:1450:4864:20::12c])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id BDEC660D76
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 16:14:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org BDEC660D76
+Received: by mail-lf1-x12c.google.com with SMTP id
+ 2adb3069b0e04-50dfac6c0beso3304524e87.2
+ for <intel-wired-lan@lists.osuosl.org>; Tue, 12 Dec 2023 08:14:47 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20230601; t=1702397361; x=1703002161;
+ d=1e100.net; s=20230601; t=1702397685; x=1703002485;
  h=cc:to:subject:message-id:date:from:in-reply-to:references
  :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
  :reply-to;
- bh=C7kPejCOIQ0Z2zM992pXAoK7GYD6l/1jlpcKPxwN/1Y=;
- b=xACcXMPoOEi8Ddn0MrzbAHWM3cVW14apDJIBbHxQN0tQWgYbNVGaVHzioDF2KTcns3
- 6Mr+MQ+cRySBRU4ZtATxMe6E3TTB34y/jm4sT68x20Z6vV/vYJIieQKvFh2XZb5XHQm2
- GGkRS4/bdoQPolOmnhgcig6uKST8xo3sbs5UKZNIcnHXkQrwVcqSjO2Y6k6Tjme59o0m
- cUlCgWePlSFNPlVy/h2WNrbKsjw22swu4KKLS9xmFlxFMvTNh7vLPv2s/OMSpQgnlaJI
- JKpdcla9AlA2AmhuUFp9wtOsBNSsDZq5yrK7XUHBdyP04KQMR7j8o85D8Zn8HWyMhU9d
- kd5g==
-X-Gm-Message-State: AOJu0Yxfcobsl8oXLuWKjhtZp1VP3eNq7ARI6P1ZYEDtaSmutGcNHFPt
- 8vv+6fZaO6RXSJmX9VwncWb1fCRq1EsdxL6+rceLFg==
-X-Google-Smtp-Source: AGHT+IHHftglne1u21N5E1zeODGSFYQycb1SzJKIn0jbUjARDf6T4JHnAuXLM0WED2OXM0lIa5miP/CyCBEd1jUPI44=
-X-Received: by 2002:a19:ca59:0:b0:50d:1454:8f8d with SMTP id
- h25-20020a19ca59000000b0050d14548f8dmr2801661lfj.6.1702397360870; Tue, 12 Dec
- 2023 08:09:20 -0800 (PST)
+ bh=KPkDhdP4e0RTH+GCxFA+29duj+Ltr9LIDpgourkAuzM=;
+ b=XQj5ykofC3miBQjL0MNOmDVYCMcwscUrWjLm5emyxMNqBBqRKk82aaFo+QMX8bKmTA
+ paXgQ/7D+RuR5vPTMEpwVmrZ1bahkL7VxvcVdZl6LLhyGZGa4+BpaxcpBIFE/sIFqO/V
+ HRkkOEAi74vA72MCFRZQYQ1HIWxXaXeR2OxOr8ZoRqqiyCMIeCpGAGnZ8s+XZ0HxXotW
+ UL2ND67KmXDe5ZLsEzWIdeJOZi0poIqyLC+1Aj5cJPKqehpom1qavbGN50txdG9xekqT
+ CPnsWRlyGZLpy8IXI/wU4unC3REXYwljcz5Vpd+jIiGpOq1dI9FL7wJVBRRKzj/Esg/K
+ wrtQ==
+X-Gm-Message-State: AOJu0YyFvZX9SA/ptLQ5omsLo7se1xc1XHR5Tm/uy/qPcBSr5D9IgINd
+ qTqXYx9QlbifLSQmGL/xf72QOhX3GDzUeRQfbAsWlQ==
+X-Google-Smtp-Source: AGHT+IH5HuV5L/CKapxEvujfucVeUx5qR84eQQeowjHbIgMINDX4vKkt9TvKvvUqu2S16CbDPgGfkRTNABJfGkppQG0=
+X-Received: by 2002:a05:6512:108c:b0:50c:fd2:df1a with SMTP id
+ j12-20020a056512108c00b0050c0fd2df1amr3778283lfg.78.1702397685556; Tue, 12
+ Dec 2023 08:14:45 -0800 (PST)
 MIME-Version: 1.0
 References: <20231207172010.1441468-1-aleksander.lobakin@intel.com>
  <20231207172010.1441468-7-aleksander.lobakin@intel.com>
 In-Reply-To: <20231207172010.1441468-7-aleksander.lobakin@intel.com>
 From: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-Date: Tue, 12 Dec 2023 18:08:45 +0200
-Message-ID: <CAC_iWjK0uqso8oX9_fCYCHYkNkySrizprqz439k3Lzdmk06yEg@mail.gmail.com>
+Date: Tue, 12 Dec 2023 18:14:09 +0200
+Message-ID: <CAC_iWjKD4dq_YdhgOzSfgSX=tmu0ofD-2fCijfTinOq7heYitA@mail.gmail.com>
 To: Alexander Lobakin <aleksander.lobakin@intel.com>
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linaro.org; s=google; t=1702397361; x=1703002161; darn=lists.osuosl.org;
+ d=linaro.org; s=google; t=1702397685; x=1703002485; darn=lists.osuosl.org;
  h=cc:to:subject:message-id:date:from:in-reply-to:references
  :mime-version:from:to:cc:subject:date:message-id:reply-to;
- bh=C7kPejCOIQ0Z2zM992pXAoK7GYD6l/1jlpcKPxwN/1Y=;
- b=vqbdPoIqmrkaG1aJK4QbkH8dRS2H2ZHxul1QBZhpiMelypRS983QQW+GT+9D+6pYlc
- K2K9lvIUL64uvwgIUavexPlz2vd6cyPhGs94+UHR01VdFPrbmsPhy73pQK2Awiv+2JI9
- hCGDhGjBG6+cUD+E5hz8/BsgC+lPn+IIGMqIgNmacFoGu7WJHskk9BpZ42kESWQS0EYb
- cU/+RXqQDpCpOtIiU6b5gaLTprXUT3U6Kd3rxbLrcMo78YSrwADb7n69lsEeieVfaE8y
- p5VCII00hr5GJD/klCoXakeWi7JAc2zbniNU06WLtpTgsfR4UOnyFQ70o+6JCN4v0aIk
- JTgQ==
+ bh=KPkDhdP4e0RTH+GCxFA+29duj+Ltr9LIDpgourkAuzM=;
+ b=uyqtUpDW7zS4jmSHzB7bU+WijjqFxiOSvollWYlBrldigov+wtb9/fC4ThGF9f5a40
+ Kq4Y8v6LDoj4OuoCO/+R4Svam2ANSxYmgUc39kBL0aT+GBB28OpG5rGlSnFC2aMs+ZaW
+ 3Ls0qTfxJ4IKOoSGHJbj+S06BAqM4+CLGtzC1075Dr/gwQnkSfRis3R/pf2Bj4lLVgbG
+ R0OFKES1U02IPEEPflxUZN2ggRX632a4UvTXJpGD4Q9Q6nkapuoXlqQDili+/nFunTm8
+ lcvGBt0oVBRVwZ3/F/oPmAyJthQWBsQEYNetzMbLducDkj6tSEx7CTic58Jb3UJColJf
+ fqPQ==
 X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org
- header.a=rsa-sha256 header.s=google header.b=vqbdPoIq
+ header.a=rsa-sha256 header.s=google header.b=uyqtUpDW
 Subject: Re: [Intel-wired-lan] [PATCH net-next v6 06/12] page_pool: constify
  some read-only function arguments
 X-BeenThere: intel-wired-lan@osuosl.org
@@ -113,19 +113,18 @@ Cc: Paul Menzel <pmenzel@molgen.mpg.de>,
  Michal Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org,
  David Christensen <drc@linux.vnet.ibm.com>, Jakub Kicinski <kuba@kernel.org>,
  Paolo Abeni <pabeni@redhat.com>, "David S. Miller" <davem@davemloft.net>
-Content-Type: multipart/mixed; boundary="===============2486539103664038421=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
---===============2486539103664038421==
-Content-Type: multipart/alternative; boundary="000000000000f62efa060c524541"
+Apologies for the noise,
+Resending without HTML
 
---000000000000f62efa060c524541
-Content-Type: text/plain; charset="UTF-8"
 
-On Thu, 7 Dec 2023 at 19:22, Alexander Lobakin <aleksander.lobakin@intel.com>
-wrote:
-
+On Thu, 7 Dec 2023 at 19:22, Alexander Lobakin
+<aleksander.lobakin@intel.com> wrote:
+>
 > There are several functions taking pointers to data they don't modify.
 > This includes statistics fetching, page and page_pool parameters, etc.
 > Constify the pointers, so that call sites will be able to pass const
@@ -138,8 +137,7 @@ wrote:
 >  net/core/page_pool.c            |  8 ++++----
 >  2 files changed, 9 insertions(+), 9 deletions(-)
 >
-> diff --git a/include/net/page_pool/helpers.h
-> b/include/net/page_pool/helpers.h
+> diff --git a/include/net/page_pool/helpers.h b/include/net/page_pool/helpers.h
 > index 7dc65774cde5..c860fad50d00 100644
 > --- a/include/net/page_pool/helpers.h
 > +++ b/include/net/page_pool/helpers.h
@@ -152,36 +150,28 @@ wrote:
 >
 >  bool page_pool_get_stats(const struct page_pool *pool,
 >                          struct page_pool_stats *stats);
-> @@ -73,7 +73,7 @@ static inline u8 *page_pool_ethtool_stats_get_strings(u8
-> *data)
+> @@ -73,7 +73,7 @@ static inline u8 *page_pool_ethtool_stats_get_strings(u8 *data)
 >         return data;
 >  }
 >
 > -static inline u64 *page_pool_ethtool_stats_get(u64 *data, void *stats)
-> +static inline u64 *page_pool_ethtool_stats_get(u64 *data, const void
-> *stats)
+> +static inline u64 *page_pool_ethtool_stats_get(u64 *data, const void *stats)
 >  {
 >         return data;
 >  }
-> @@ -204,8 +204,8 @@ static inline void *page_pool_dev_alloc_va(struct
-> page_pool *pool,
->   * Get the stored dma direction. A driver might decide to store this
-> locally
->   * and avoid the extra cache line from page_pool to determine the
-> direction.
+> @@ -204,8 +204,8 @@ static inline void *page_pool_dev_alloc_va(struct page_pool *pool,
+>   * Get the stored dma direction. A driver might decide to store this locally
+>   * and avoid the extra cache line from page_pool to determine the direction.
 >   */
 > -static
-> -inline enum dma_data_direction page_pool_get_dma_dir(struct page_pool
-> *pool)
+> -inline enum dma_data_direction page_pool_get_dma_dir(struct page_pool *pool)
 > +static inline enum dma_data_direction
 > +page_pool_get_dma_dir(const struct page_pool *pool)
 >  {
 >         return pool->p.dma_dir;
 >  }
-> @@ -357,7 +357,7 @@ static inline void page_pool_free_va(struct page_pool
-> *pool, void *va,
->   * Fetch the DMA address of the page. The page pool to which the page
-> belongs
+> @@ -357,7 +357,7 @@ static inline void page_pool_free_va(struct page_pool *pool, void *va,
+>   * Fetch the DMA address of the page. The page pool to which the page belongs
 >   * must had been created with PP_FLAG_DMA_MAP.
 >   */
 > -static inline dma_addr_t page_pool_get_dma_addr(struct page *page)
@@ -205,8 +195,7 @@ wrote:
 >
 >         *data++ = pool_stats->alloc_stats.fast;
 >         *data++ = pool_stats->alloc_stats.slow;
-> @@ -360,8 +360,8 @@ static struct page *__page_pool_get_cached(struct
-> page_pool *pool)
+> @@ -360,8 +360,8 @@ static struct page *__page_pool_get_cached(struct page_pool *pool)
 >         return page;
 >  }
 >
@@ -221,142 +210,8 @@ wrote:
 > 2.43.0
 >
 
- Reviewed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
-
---000000000000f62efa060c524541
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"><div class=3D"gmail_default" style=3D"fon=
-t-family:arial,sans-serif"><br></div></div><br><div class=3D"gmail_quote"><=
-div dir=3D"ltr" class=3D"gmail_attr">On Thu, 7 Dec 2023 at 19:22, Alexander=
- Lobakin &lt;<a href=3D"mailto:aleksander.lobakin@intel.com">aleksander.lob=
-akin@intel.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" st=
-yle=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padd=
-ing-left:1ex">There are several functions taking pointers to data they don&=
-#39;t modify.<br>
-This includes statistics fetching, page and page_pool parameters, etc.<br>
-Constify the pointers, so that call sites will be able to pass const<br>
-pointers as well.<br>
-No functional changes, no visible changes in functions sizes.<br>
-<br>
-Signed-off-by: Alexander Lobakin &lt;<a href=3D"mailto:aleksander.lobakin@i=
-ntel.com" target=3D"_blank">aleksander.lobakin@intel.com</a>&gt;<br>
----<br>
-=C2=A0include/net/page_pool/helpers.h | 10 +++++-----<br>
-=C2=A0net/core/page_pool.c=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 |=C2=A0=
- 8 ++++----<br>
-=C2=A02 files changed, 9 insertions(+), 9 deletions(-)<br>
-<br>
-diff --git a/include/net/page_pool/helpers.h b/include/net/page_pool/helper=
-s.h<br>
-index 7dc65774cde5..c860fad50d00 100644<br>
---- a/include/net/page_pool/helpers.h<br>
-+++ b/include/net/page_pool/helpers.h<br>
-@@ -58,7 +58,7 @@<br>
-=C2=A0/* Deprecated driver-facing API, use netlink instead */<br>
-=C2=A0int page_pool_ethtool_stats_get_count(void);<br>
-=C2=A0u8 *page_pool_ethtool_stats_get_strings(u8 *data);<br>
--u64 *page_pool_ethtool_stats_get(u64 *data, void *stats);<br>
-+u64 *page_pool_ethtool_stats_get(u64 *data, const void *stats);<br>
-<br>
-=C2=A0bool page_pool_get_stats(const struct page_pool *pool,<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0struct page_pool_stats *stats);<br>
-@@ -73,7 +73,7 @@ static inline u8 *page_pool_ethtool_stats_get_strings(u8 =
-*data)<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 return data;<br>
-=C2=A0}<br>
-<br>
--static inline u64 *page_pool_ethtool_stats_get(u64 *data, void *stats)<br>
-+static inline u64 *page_pool_ethtool_stats_get(u64 *data, const void *stat=
-s)<br>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 return data;<br>
-=C2=A0}<br>
-@@ -204,8 +204,8 @@ static inline void *page_pool_dev_alloc_va(struct page_=
-pool *pool,<br>
-=C2=A0 * Get the stored dma direction. A driver might decide to store this =
-locally<br>
-=C2=A0 * and avoid the extra cache line from page_pool to determine the dir=
-ection.<br>
-=C2=A0 */<br>
--static<br>
--inline enum dma_data_direction page_pool_get_dma_dir(struct page_pool *poo=
-l)<br>
-+static inline enum dma_data_direction<br>
-+page_pool_get_dma_dir(const struct page_pool *pool)<br>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 return pool-&gt;p.dma_dir;<br>
-=C2=A0}<br>
-@@ -357,7 +357,7 @@ static inline void page_pool_free_va(struct page_pool *=
-pool, void *va,<br>
-=C2=A0 * Fetch the DMA address of the page. The page pool to which the page=
- belongs<br>
-=C2=A0 * must had been created with PP_FLAG_DMA_MAP.<br>
-=C2=A0 */<br>
--static inline dma_addr_t page_pool_get_dma_addr(struct page *page)<br>
-+static inline dma_addr_t page_pool_get_dma_addr(const struct page *page)<b=
-r>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 dma_addr_t ret =3D page-&gt;dma_addr;<br>
-<br>
-diff --git a/net/core/page_pool.c b/net/core/page_pool.c<br>
-index 59aca3339222..4295aec0be40 100644<br>
---- a/net/core/page_pool.c<br>
-+++ b/net/core/page_pool.c<br>
-@@ -121,9 +121,9 @@ int page_pool_ethtool_stats_get_count(void)<br>
-=C2=A0}<br>
-=C2=A0EXPORT_SYMBOL(page_pool_ethtool_stats_get_count);<br>
-<br>
--u64 *page_pool_ethtool_stats_get(u64 *data, void *stats)<br>
-+u64 *page_pool_ethtool_stats_get(u64 *data, const void *stats)<br>
-=C2=A0{<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0struct page_pool_stats *pool_stats =3D stats;<b=
-r>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0const struct page_pool_stats *pool_stats =3D st=
-ats;<br>
-<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 *data++ =3D pool_stats-&gt;alloc_stats.fast;<br=
->
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 *data++ =3D pool_stats-&gt;alloc_stats.slow;<br=
->
-@@ -360,8 +360,8 @@ static struct page *__page_pool_get_cached(struct page_=
-pool *pool)<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 return page;<br>
-=C2=A0}<br>
-<br>
--static void page_pool_dma_sync_for_device(struct page_pool *pool,<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0st=
-ruct page *page,<br>
-+static void page_pool_dma_sync_for_device(const struct page_pool *pool,<br=
->
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0co=
-nst struct page *page,<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 u=
-nsigned int dma_sync_size)<br>
-=C2=A0{<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 dma_addr_t dma_addr =3D page_pool_get_dma_addr(=
-page);<br>
--- <br>
-2.43.0<br></blockquote><div><br></div><div>=C2=A0Reviewed-by: Ilias Apalodi=
-mas &lt;<a href=3D"mailto:ilias.apalodimas@linaro.org">ilias.apalodimas@lin=
-aro.org</a>&gt;<br></div></div></div>
-
---000000000000f62efa060c524541--
-
---===============2486539103664038421==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
+Reviewed-by: Ilias Apalodimas <ilias.apalodimas@linaro.org>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan@osuosl.org
 https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
---===============2486539103664038421==--
