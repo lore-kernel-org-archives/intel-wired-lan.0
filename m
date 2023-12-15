@@ -4,152 +4,141 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18622C4332F
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Dec 2023 17:37:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8159DC4332F
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Dec 2023 18:01:48 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp4.osuosl.org (Postfix) with ESMTP id AE09A4030B;
-	Fri, 15 Dec 2023 17:37:45 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org AE09A4030B
+	by smtp4.osuosl.org (Postfix) with ESMTP id 3A8DA4195C;
+	Fri, 15 Dec 2023 18:01:48 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 3A8DA4195C
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702661865;
-	bh=Gd9CeT1lCYXJ6BZ4o7X5az6ennO3egu8d0V8oU2lwE0=;
+	s=default; t=1702663308;
+	bh=uOMHL3S5omhuGTItOs6BiJNHParXibxxmWzQfQQCpks=;
 	h=Date:To:References:From:In-Reply-To:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=cG8hZVk9znGUHHHJNntx7418sPznaaNEevX47EAtLoRHFfsEK8wQoi5nbxZyctQCj
-	 cHx3WODmiKgzgASHOhkezJmWEZZ7oLOFNWP8tQVfE20fenwssBTtotnLRMdFONsFH6
-	 M47VXoehJ3k/NcpxlrDuF9xEPoDMZDAh/PLeDtl010YWF6HeD8TSqgB0OXnsnbWNub
-	 0mDcV7uJzL9Ghf0ZOjsTDSX69CmS7Fd2e/6gO2iS6BP4ZIvStD6Lp5rqKJCkms7CQq
-	 qPLVNUEoGBdCn0XRRsFXWwmirHUBbufIcy+NJw2jZPmqjFIz39nKORfx5MRxQ3rp4B
-	 /m4ed9vi9/Cog==
+	b=d6q+FUWVBmVZ49M/GpXnQRJzh/BgqCf3tHRFxnT0R/PrDFjP7yw6LCDLhTEbYH6/f
+	 ZiOsQC8Fye4xJv8YGHwuM6j7VOy0GmufcpF5e3eOR0coxMhQHUfbF5mPuSdHbjFBuG
+	 e3vUaCU5Fanmvygex5POnk7E00P9ZQD8kXDndKU3+jgKIAyfQ/HZFTJz0FH0+2tCJ/
+	 l9MNgSqz6/AAFgu1eGjO2Gm5ZHOIVi6jLeyZNpqhUCIr75/UVdJupG/te0iJ2AcZlS
+	 5kP4WOQFEeWvbVVA6ld/W1mGX7dvx55/MR80QsLQJI3y0MMRYCWQEmjnLcvk+rfPDP
+	 OwKfGShE9DKLg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp4.osuosl.org ([127.0.0.1])
 	by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id XOeAoaJi1mbo; Fri, 15 Dec 2023 17:37:44 +0000 (UTC)
+	with ESMTP id q2HcbggZ-myC; Fri, 15 Dec 2023 18:01:47 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp4.osuosl.org (Postfix) with ESMTP id 6E526417DA;
-	Fri, 15 Dec 2023 17:37:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 6E526417DA
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 0CFDB1BF281
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 17:37:42 +0000 (UTC)
+	by smtp4.osuosl.org (Postfix) with ESMTP id EC41841B42;
+	Fri, 15 Dec 2023 18:01:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org EC41841B42
+Received: from smtp3.osuosl.org (smtp3.osuosl.org [140.211.166.136])
+ by ash.osuosl.org (Postfix) with ESMTP id 91D0E1BF281
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 18:01:45 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id E1B85417DA
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 17:37:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org E1B85417DA
+ by smtp3.osuosl.org (Postfix) with ESMTP id 7524461099
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 18:01:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org 7524461099
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id I1Bd16wK9tAH for <intel-wired-lan@lists.osuosl.org>;
- Fri, 15 Dec 2023 17:37:38 +0000 (UTC)
-Received: from NAM12-DM6-obe.outbound.protection.outlook.com
- (mail-dm6nam12on2068.outbound.protection.outlook.com [40.107.243.68])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 1DABF4030B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 17:37:37 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1DABF4030B
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=bTVcTzFLsRGOBPYC4spB16bLGTlJo9KdxAZxc/MPr/FIA5eQqkIBZHHhBdTHidH3TfmfIBoYHTTui0e9BBav8q50b4O1VbED93Z4HNk7iujbuV4+Q9ksPC14wNVmfAxDCrOibC/TL+H9hcijWD2mK4eIvQGemK7VcBs9t3+fXiEq4Xm/eFIIJWCOOdwAPIAj8sVWc/ZzWbl5AAYjWoNc8/yXem/nDxeyVmeAtLqLMM8WbKjjrSZbYV+nE0+8XfWcYWEH8lR/IeWB2ydEuVPh+XrX2CSg50ZuoAlSBCIMC45uZysDLpvvDwszGeEuIABej5E8Z/cdRVpXBgGwU8LIvA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com; 
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=b0TwU+XDWTKGeeIZesvCdZrMJhYwlygHQtiRJBGFldo=;
- b=HmYj46NjC5OabD/HXiEy9eOA2gjJ1n7Mlv3fKUS0lyXXjLUx9gdBYo1mfGRqmjYGVst+OfV1N5Jurp4VuVoBwSC3f+tSeswpDEnPQ6xvNfb3AeJHVlB/SyhKu8qRiJarzLTBIE9Hw3cqVAD4mQYeWnAzbNf27SdXTYxstNUsk6QV3gzMShoKy225Gd32ktHv3O7BJG37L379WdLYoynnkmXKvZc/A/qAFLXs8pVXW9GmUuTYdjMqMXMxmx+A/Fq5ADvmv8mSouCgPuhESn6ok1qDoW/hM/2kUJ++aZVmGmQ10GoVfK+ndOwoACGzkAzL+8bt16d+bWZvt45+daMp1Q==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
+Received: from smtp3.osuosl.org ([127.0.0.1])
+ by localhost (smtp3.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id Q0F0VHgcVMT3 for <intel-wired-lan@lists.osuosl.org>;
+ Fri, 15 Dec 2023 18:01:43 +0000 (UTC)
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com
+ (mail-mw2nam10on2086.outbound.protection.outlook.com [40.107.94.86])
+ by smtp3.osuosl.org (Postfix) with ESMTPS id B6A9561073
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 18:01:43 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp3.osuosl.org B6A9561073
 Received: from PH0PR12MB7982.namprd12.prod.outlook.com (2603:10b6:510:28d::5)
- by SA1PR12MB6728.namprd12.prod.outlook.com (2603:10b6:806:257::13)
+ by SJ0PR12MB8113.namprd12.prod.outlook.com (2603:10b6:a03:4e0::20)
  with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7091.32; Fri, 15 Dec
- 2023 17:37:34 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.7091.31; Fri, 15 Dec
+ 2023 18:01:41 +0000
 Received: from PH0PR12MB7982.namprd12.prod.outlook.com
  ([fe80::bec4:77b3:e1d1:5615]) by PH0PR12MB7982.namprd12.prod.outlook.com
  ([fe80::bec4:77b3:e1d1:5615%5]) with mapi id 15.20.7091.028; Fri, 15 Dec 2023
- 17:37:34 +0000
-Message-ID: <58fd07c6-ce04-f802-08d2-1a65245aca00@amd.com>
-Date: Fri, 15 Dec 2023 09:37:31 -0800
+ 18:01:40 +0000
+Message-ID: <9ea0484d-a2a4-308c-95fd-c9accdcdc424@amd.com>
+Date: Fri, 15 Dec 2023 10:01:36 -0800
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
  Thunderbird/102.15.1
 Content-Language: en-US
-To: Andrii Staikov <andrii.staikov@intel.com>, intel-wired-lan@lists.osuosl.org
-References: <20231212125126.3297556-1-andrii.staikov@intel.com>
+To: Michal Kubiak <michal.kubiak@intel.com>, intel-wired-lan@lists.osuosl.org
+References: <20231212145546.396273-1-michal.kubiak@intel.com>
 From: Brett Creeley <bcreeley@amd.com>
-In-Reply-To: <20231212125126.3297556-1-andrii.staikov@intel.com>
-X-ClientProxiedBy: SJ0PR13CA0069.namprd13.prod.outlook.com
- (2603:10b6:a03:2c4::14) To PH0PR12MB7982.namprd12.prod.outlook.com
+In-Reply-To: <20231212145546.396273-1-michal.kubiak@intel.com>
+X-ClientProxiedBy: BYAPR11CA0102.namprd11.prod.outlook.com
+ (2603:10b6:a03:f4::43) To PH0PR12MB7982.namprd12.prod.outlook.com
  (2603:10b6:510:28d::5)
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH0PR12MB7982:EE_|SA1PR12MB6728:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0be5a4bb-e5cd-4e2b-320d-08dbfd948581
+X-MS-TrafficTypeDiagnostic: PH0PR12MB7982:EE_|SJ0PR12MB8113:EE_
+X-MS-Office365-Filtering-Correlation-Id: fc3dbdf1-a838-4eb2-56c9-08dbfd97e3b2
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: QuJdTzjXYqnpnvfCXPlKWmuM4WWO4KJkfpb1jxRzzET+pq6OWTmEncBsQH8XV5YI58hF5ku/IUlxUDB1uQWY8NsUx2BHX1yCNiYJmXZTgyXoeC14XYH4xMP6qJgTWckIVeeWUuM32tjQ153emLNxwfUibSulgd003l5fSfvep900wY8S1+V8iGFwJ/hpK8DA/EMZlnpxhWAbU0Mh+GRgM2gwKZjTRkUXZxwdcrCHN27dW8/qWUZENMbGKFOuszvPd3z8dGd1pOandhLV4f0eIvLvhA4NZKZmOBGe6UmftLy/SWk11gOAjrdrvpt4NqbPoMt+bBTdsApEweNuFheRLsxq1zrscn6vsksRLMuUelbByITjgZM7bplZD7Rd9ROJQHW2YI8i+yE2NtARn3u9FogA9yF5YaZvPdChK4hD4rtC6dc19lROGT3n0JdPm4WNfEKqlVkHrUOOLUQMSAAXCqQhWO01Tu7sqP7H34jWkGhCyWgk7DA68Lz+pWaIe0rC3LUajRegDbkQdbPqcRgG5ZxPbOnfAsxFuyrItXkunqMno61PG2o5U4VwxeTLx9Im6i6+uIH6L5YUc6TJK69kFE9nNZc/Ftf8QB6qkc1f03b3M4Hv9NNDMomFspRXDqDeNHsI416y/mnkp6kt0Ik7Q0XlDx+x+wmQc+kB1cON10WZGj9ZJdPoPSM9EhbmrE9P
+X-Microsoft-Antispam-Message-Info: QPW1O44zYdKlbWcZs0gcrOHCDdHkToHJpdJhBThfX7Gt/WhGr62qALW3nkb+4JKjSCGPS2HS5Ls6vpBM3R7RjsbMvfMmdnwhN4L0Pt9RTRtt2uwrj+WoKDNCf6X96ZI6xyYi9mRKKBbyI9hKaLde1Plymk6o70W51JhrBjfhdhoWg8KbMpldOHCMMpCOQq0MUble/aCvi/qw3Hi3VFrU1Wj8eUQft/DCvgAjgYDdWtQ9ktzpOp9JfrKIHJFhoAUhZNRKOO7zlQrwrSVUzQ/ghRL+brOvCufRUWHOd01rKXPogvlzINLMhXvy9qnxQL3L0pqUO+INtGC0QKnBe7end4ycqT7KTIzqUB8182/KAetBJql7WLzB/wdXYeo9++TO1zEE0Slf0flfOrnXhaQQVOTnSbav6IkztTWIHnNdbXF3fllbeb/syy1yol44VOC4IfBuyERYZrNcpm+5Uj6VjImzZxkBNWmkhVmV/t1PUjGdvliNOeeqJL/f6ZtClaMLOAqCs/55w+hgzWN+pLDoAzHUTF2is1nlEbxX32Sya3WrkyP2YBniZFJUWHlju9lAXRJel0EZzRLs7ebts2lhUmj923r9kT1IHrvqkM754l12406hPLETn4XcUNxF206zmhQFq7hwDTqBFOU8qI2X1X0fAqN1Mh7MXTrLreXMxTAxThMmST5bm4EN7WTkTQDD
 X-Forefront-Antispam-Report: CIP:255.255.255.255; CTRY:; LANG:en; SCL:1; SRV:;
  IPV:NLI; SFV:NSPM; H:PH0PR12MB7982.namprd12.prod.outlook.com; PTR:; CAT:NONE;
- SFS:(13230031)(376002)(39860400002)(396003)(366004)(136003)(346002)(230922051799003)(230273577357003)(230173577357003)(1800799012)(186009)(64100799003)(451199024)(66476007)(66556008)(54906003)(31686004)(41300700001)(8676002)(6666004)(83380400001)(2906002)(8936002)(4326008)(38100700002)(5660300002)(66946007)(316002)(31696002)(6486002)(478600001)(53546011)(2616005)(36756003)(6506007)(6512007)(26005)(43740500002)(45980500001);
+ SFS:(13230031)(366004)(396003)(376002)(136003)(346002)(39860400002)(230922051799003)(230173577357003)(230273577357003)(451199024)(64100799003)(1800799012)(186009)(31686004)(26005)(6506007)(2616005)(31696002)(36756003)(38100700002)(83380400001)(5660300002)(4326008)(7416002)(6512007)(53546011)(6666004)(316002)(66946007)(8676002)(6486002)(8936002)(66556008)(66476007)(2906002)(41300700001)(478600001)(45980500001)(43740500002);
  DIR:OUT; SFP:1101; 
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?R0FVRU5wMG5NaitHN01kNk1UbVNqK2FiUE1YK3k0bEFqNUc3b1VpVitwd2NP?=
- =?utf-8?B?S3F4TVNNcnB3OVZsdWlLcHFxc1k5bVhtYnNYZ2tSbThYbFoyckdIcVU1TGU1?=
- =?utf-8?B?dDJxUEp2L0h3cUZjZ3FYdEhHSzZiSUFzR2dzSkpvN0NQSnAvWE5SZHkzWUxP?=
- =?utf-8?B?TXlUYmU0U3RUL0RMd25ZSWZCYlN1SENVekZXODlWL0V6WElKN1BSa3ViUHRT?=
- =?utf-8?B?eGNIZStENU84WXI2b3ZVU1FYTkEyQ3RMZTdueVlWQ1ZyMVJRL1FkRGIzZDVT?=
- =?utf-8?B?eWdZa3pXU1E2ZFBNL1BpOXo3dWVUWTYrdlJZQWlYVHgyWFRveW42NC9YM3FS?=
- =?utf-8?B?Tk5URk1ETVJEV09zc2hCM0hhcXRLMkZuNitubmJkdGZKUXRWMlNwS2ROV2Nh?=
- =?utf-8?B?WXFQaVdOYUxaYllZbk1tUWw0TFJpcXVOdlBjN2N2YlE3cEVmYW1ydTVIM0tP?=
- =?utf-8?B?d25wSXdRaEZjUkQ0S29abmxjaTRTa05ieUJwaDB4T0d0Vjg2VTUwTnB0Vkdl?=
- =?utf-8?B?eGZnREhtSE55UE5selZaQjRIWjZ4cStxeUkvcmo4OVpyNjNNSXR4Vy85WTVZ?=
- =?utf-8?B?N0Z1emppcnBPK1ltTDFESGREK09lYzdIQ2VVZzdTRGNTQUovajBBdlZSRnUy?=
- =?utf-8?B?UWpXTkxDL0NFZDBPc3dLTGp2QzZzaWRNanZSWlR6akRZcm91MDhKTlUxVkdI?=
- =?utf-8?B?NkxIT2M2b2hrWndhZmJlZ3d3SW5uL3BQVlpCOGpJbjNpcVVtYjZ3TCt6dkh4?=
- =?utf-8?B?Unp4ZDVQR2FhTFJhM1JRQ3BCZ2Fxdno5WjBGQktPbGNHRVdZTHFHbStqcCtI?=
- =?utf-8?B?MzYwVFgzb1RyZkVzbURIK2dyY3ZkRDRzbHZ4a2JBSVQzL1Jodnp6aEd1ZFJG?=
- =?utf-8?B?eG5KOE1xdnJWNjMyWDEwSnNrSlFPTGc4R0pHYnNOcXBZbTdLQzh1eVAvcnlo?=
- =?utf-8?B?VFVra1BGMG1kNFdJZS9TbEhIQXh3QUhoaWhjdGdyQUZ4NlVaTnRjemV3WkpL?=
- =?utf-8?B?NlFiRVJvck1DVkpZQ1hBb1AyUHp3RFhHVnpERWxOSjdRVlpVdCtUUXNDbWwz?=
- =?utf-8?B?WHk3by92SXNXQThBTnNvMWJiNWhJbW0vUTE4V0ZHbDlqT25DSEhwY0ZmN21M?=
- =?utf-8?B?UzJPRlhLckhmdlo5NCswMldNSm9uZFNnUHlVbWFYT0NmdFBLTmJLbzNMUGpR?=
- =?utf-8?B?SVpEV25qVEZ1MVVSZTBmdy9seTF5czNoS0JCR3UxOU44K2dmVXBNS091MzFK?=
- =?utf-8?B?NlJCc2FkaklIUndldUZvS1FtMHAvNUFZK1JmTm1hREZyVng4NGJxSW9nQk83?=
- =?utf-8?B?ZHM5bkRaVUxhWjF0ZlFUYmw1WG1HK1N4WUN3ZGdrKzRCamh4d2JZWUprWkN2?=
- =?utf-8?B?clFveEk4bDJuakhsMGJtd0R6OHVBRzZGZUlrODFiMEh4ZEZONGczS2VIK1lY?=
- =?utf-8?B?dmFrSk9LaVVOcmZESnRvT1c4dUZxUldVam0ydS9UNXk3djNNZFJRSmhTeFdi?=
- =?utf-8?B?dVhNL1o0eTBvdlJqTlhURU9HMG1BQ1BaWXRUQWMxZ2V4M0ZuWjMzTmZTT1hu?=
- =?utf-8?B?WXZGbEMwMzkyRlZycnFSc2xxRG9tS1VEU2JkNUNFb3czQ1dmd2xQZGJUMTZD?=
- =?utf-8?B?a1pGNDVYTDQ1cXlrQklRV29ST2dIWCs5K3FBUWlWc0lhMWNBZmhoUDZiRE9l?=
- =?utf-8?B?Q1RBcHhlRW00RzY1am55aFR6Wi8rNjAyYXRrS0FLQS9kblU5aTFrQXBSZnBl?=
- =?utf-8?B?N0JWTnRtSXVjWStOdThSUzVSSGFNTDcrTkxOYWlzeldnTmJLTGNiUnNiRjhh?=
- =?utf-8?B?dWpOeDUrWjBiVVNuWC9kaG9iUGtjd2tsU0Uxd1lDWVU1Z1J2NjdaQnpEV0Vq?=
- =?utf-8?B?QkFsOTlLWEQ0ejFUYWVoVGQxakJCK3lKc1J6RFIvK0lNc2dXQlIxWWkraU9D?=
- =?utf-8?B?R0tndE5GVFhZOUZPQm1QcXZBMXlWWW5ZNENpVzBzTGxncW1zYmd3SzVjRFQ5?=
- =?utf-8?B?eXo1VzFFbVJEQ1U5ck1SNWRRMFNPRnJkcWg4RWpEOEZWVzhzSnNNL1RCTFhW?=
- =?utf-8?B?ZFRzQlVyNzFRZ3Q4Qk11djZCTi9KeU1YUU9YaHl2STZJcCs2VTN3aW83ajJt?=
- =?utf-8?Q?LoYNAaYQlfDTwejs/p2+Nuceb?=
+X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?RkVNcjl0TlcybFRkdm5ZYW4vTFRoRFJkLy9PQithOHh2ZHJBc0YzSUF6LzBy?=
+ =?utf-8?B?Y0J0bUlEczRKcEJnTW5kZ0xJdjFNSUNLVjhreXhYT0E0dzBvd0s3Qnc5UUVN?=
+ =?utf-8?B?MjF1QlRGb3lGejVGQ3NXekRMbFlOQW0vL2xUbVBZTXZNTjFhTWJZbTNGeUMv?=
+ =?utf-8?B?ZEs3UlBVRDZrTytkcFQ2aUNmenZzM3NJMVRYNHZQcktRRUtrMElXMHRCdWkw?=
+ =?utf-8?B?SWhrcHdScnBSQWRrN3k3VFZYRkRLMFdUeDdKMUhhbDM1ZmRmTXFBNHBNdDZo?=
+ =?utf-8?B?MHg0MysvWk5nOXBISFdDWS84aTRmdmp3TUhmRVZ4WUNsenBjU0V0VzZpU2NV?=
+ =?utf-8?B?NUpZNlM3blkrSXRrVm5naFAzcGV6dHdNOUxnMnFWRzVjNFZWZ3llYXMvZVc2?=
+ =?utf-8?B?RGprZDRJcGNNSGRUdnJ4eFd5VXNYaXhjS0xQUW9mQlBEeVlRQk1XNmdSODBk?=
+ =?utf-8?B?R1IrTDNoUzQ2WFZlVklCSyswa0h1ZFl2azZCM2wvRnFpWUlDSU16WGZ4VzhL?=
+ =?utf-8?B?Rk5qamJvQWlrUzk0U0p2eHAwOWVBRjRxdXJLM00ya0NHemN5VS9ia1pJSWs4?=
+ =?utf-8?B?ZzUvZWlGOEdXTHJwaklvNFFpNWdiby84cjVMU0hDbWp2WDluUlJ1WnpBRGcz?=
+ =?utf-8?B?UlM5aW02WHFlQmovWEEvdmlJZmZYWHpLWlZjSFNZK0ltdHRtYzBrMUZoaGF4?=
+ =?utf-8?B?YmVQa2YwQnBZekhpRXAwTlEva3RHQU1EVnA0eGdRTkFsM3Q1V1lDaGorOEha?=
+ =?utf-8?B?RHNkWHMyZ2Erc1F1Q1o1Rk1lRUw5SUN6Um1iQnlJV0xPK2x2OCt1VDJYck1B?=
+ =?utf-8?B?S0wzOEJsWjJZMjdId1ZGTXo5L1NJWHRVSzNRTVRvZ0ZVR0NiMjlONCtYVkx4?=
+ =?utf-8?B?ZHMvZzk3MzNRaVJaNzJjWWtqTytwbkZIRXBNNkRWTDdlVVYyQ25DYnNYazIx?=
+ =?utf-8?B?UXNYdlJvVVEvcVRWMEhvNVpZdTBQWGJQMXpXajhKUmUyUkNmUmJ4VHUvMlFo?=
+ =?utf-8?B?Z3k1aEdSOWt5RW1tVlFjcEpMbG9QWkVWTC9nS3B5RnkwcTM4bXRvTmQ0eXZ2?=
+ =?utf-8?B?cU9YbWtQZE5XS1pMRUhHaUFscmtDQzgwU3h1UnJMMGdncU5UREE3cU4wNFZQ?=
+ =?utf-8?B?K2R6NUJwYllJblZ4RzdtOHozY2NLWWYrWUF4bktXdzMwRGN0dVB3TWZYUXd6?=
+ =?utf-8?B?MDdsQ0grZk85WHRFQmpkY1hxOG1OcklTU2tHdXNJSlRld2JUQk0yUyt5aVNG?=
+ =?utf-8?B?UUladzdIaHNvNnl2bktaVkVlQ0pzd1YrbnJnL1NVWWtvWHR2c2NLd2NmL3Bs?=
+ =?utf-8?B?ZGhSeFZPZTNBZEVndEtUUjBTMDR0bXZ0d1lVNzlVNXN0c0gzelZxQXFCckhU?=
+ =?utf-8?B?VG0wRzhiYU9hQUE3RlQrK05naGRaRE5UT3ZTLzBUZDBnR3NvNjE4ZU04a1d4?=
+ =?utf-8?B?aU1hUW1CWUI1aDh0NnBrUjc3QnJTRmVsMFo3c25OcExRM2RNcnFtb0NSNmxZ?=
+ =?utf-8?B?R3hkWFZZMW9qOXFOZGNBVUEvemFxQVNHTjZjUldMb2RBRWppTWYwWFJTTENr?=
+ =?utf-8?B?R3Z6SUhZcTVHcUFkNEUxY3VnaEZIeURMUkRNaXR0ZHhBWmhsNFZxMjh4ek5L?=
+ =?utf-8?B?S1l3SktTcEpxN2lDVkxTZ3h2c21aSWtTSE95cTVpS3ZMaHp2YkNzRnJmaUY5?=
+ =?utf-8?B?ZndTY1U2cTh0Q1RCMlFXcllVRTVRanMyTU94QWY5a2oxaXpZRHg4K3FKS2dW?=
+ =?utf-8?B?MnN0WGs5anc4SUNscy83OWxPMlFDQmpPU3EyeWxXYzJlZkFRRDJOK3VMQnlK?=
+ =?utf-8?B?UStmSFFXVkJvbldRbW1ISGFJV3dvdXhUWlFkZ0U0TGE5TFF0Y2UvQjhVQ05Q?=
+ =?utf-8?B?bUkrTUUvMjVSV0hYekFsN3BBWXBJdGR1Wjc5NTU5VFFlUEV4MUk4YWZrcXZa?=
+ =?utf-8?B?M3VzbjZzZVpPOVhYK1dXMm05MkY2REl3ZForemFRRGxSd2w0dEZYdy8ybm9w?=
+ =?utf-8?B?MlhtVmpDNktmUnByZTQ1L3FGN01rYUJqUHcxYW5GVmVPOG9QNzdsa3lwU0NH?=
+ =?utf-8?B?Z1g1ZXZhZ2V6RlBXb2tXWUVZZ0tGUFJ4WVBLZkpGa3M4NVF6Zk5sd1JyU3Y0?=
+ =?utf-8?Q?bqwMo3/bJ0H6lCV9W744q1NnI?=
 X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0be5a4bb-e5cd-4e2b-320d-08dbfd948581
+X-MS-Exchange-CrossTenant-Network-Message-Id: fc3dbdf1-a838-4eb2-56c9-08dbfd97e3b2
 X-MS-Exchange-CrossTenant-AuthSource: PH0PR12MB7982.namprd12.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Dec 2023 17:37:34.1114 (UTC)
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 15 Dec 2023 18:01:40.6263 (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Isog1/HkUVloUdbUvLGuPcTiCNx6/DxxVmhJpVa06BxwmjvpqJXfb9jvhfqew3w3ydSo826WhBIzh9px51FWug==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA1PR12MB6728
+X-MS-Exchange-CrossTenant-UserPrincipalName: N21rxNRh6PcazCUbxkCat2k5ZpSgZjRqCgmYK4WxPy9Js7AD1or10fLL4wyoFAfLmqPh1UtDXT8lnk2lNOZoYQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ0PR12MB8113
 X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=amd.com; s=selector1; 
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=b0TwU+XDWTKGeeIZesvCdZrMJhYwlygHQtiRJBGFldo=;
- b=JQldu+NiYPkHnCruckfCddmr3zSBeCmE/sYP44ly7/h7Vy7+f1NZOtC2p120vk732KOt7ET8xPV63+UIb5B6CjYKIL5PihfIYdfEWH+yNK3cfNKInUj/zv5nFNBTxLYeNd3ul+pwQ8+I5w+pFIblVIYwuDTxJpO41TE0Ts8in8o=
-X-Mailman-Original-Authentication-Results: smtp4.osuosl.org;
+ bh=ge0azjWPU2OXEp3q5rURUvypw/otebwxSXMoE5ry/DE=;
+ b=IjvjZGUkaxfF+FKzO+sOKwuIK/uGBDazBXZjL/VUutKfChKJz1mq412/qi+oSi1JAmQLEpSb2naeRYGF1kwYcrMHZsGl62JDrdUgP4nlUe7Qo2Sm7EwZ2mkF7DObBJgAPnYqwqEocpod/e5idbVg2qnWZ1oR/oZ9luiw7ivJq6Y=
+X-Mailman-Original-Authentication-Results: smtp3.osuosl.org;
  dkim=pass (1024-bit key,
  unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256
- header.s=selector1 header.b=JQldu+Ni
+ header.s=selector1 header.b=IjvjZGUk
 X-Mailman-Original-Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=amd.com;
-Subject: Re: [Intel-wired-lan] [PATCH iwl-next v6] ice: Add support for
- packet mirroring using hardware in switchdev mode
+Subject: Re: [Intel-wired-lan] [PATCH iwl-net] idpf: enable WB_ON_ITR
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -162,8 +151,10 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Wojciech Drewek <wojciech.drewek@intel.com>,
- linux-kernel@vger.kernel.org, Marcin Szycik <marcin.szycik@intel.com>
+Cc: maciej.fijalkowski@intel.com, emil.s.tantilov@intel.com,
+ larysa.zaremba@intel.com, netdev@vger.kernel.org, joshua.a.hay@intel.com,
+ aleksander.lobakin@intel.com, alan.brady@intel.com,
+ Przemek Kitszel <przemyslaw.kitszel@intel.com>
 Content-Transfer-Encoding: 7bit
 Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Errors-To: intel-wired-lan-bounces@osuosl.org
@@ -171,185 +162,177 @@ Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
 
 
-On 12/12/2023 4:51 AM, Andrii Staikov wrote:
+On 12/12/2023 6:55 AM, Michal Kubiak wrote:
 > Caution: This message originated from an External Source. Use proper caution when opening attachments, clicking links, or responding.
 > 
 > 
-> Switchdev mode allows to add mirroring rules to mirror incoming and
-> outgoing packets to the interface's port representor. Previously, this was
-> available only using software functionality. Add possibility to offload
-> this functionality to the NIC hardware.
+> From: Joshua Hay <joshua.a.hay@intel.com>
 > 
-> Introduce ICE_MIRROR_PACKET filter action to the ice_sw_fwd_act_type enum
-> to identify the desired action and pass it to the hardware as well as the
-> VSI to mirror.
+> Tell hardware to writeback completed descriptors even when interrupts
+> are disabled. Otherwise, descriptors might not be written back until
+> the hardware can flush a full cacheline of descriptors. This can cause
+> unnecessary delays when traffic is light (or even trigger Tx queue
+> timeout).
 > 
-> Example of tc mirror command using hardware:
->    tc filter add dev ens1f0np0 ingress protocol ip prio 1 flower src_mac
->    b4:96:91:a5:c7:a7 skip_sw action mirred egress mirror dev eth1
-> 
-> ens1f0np0 - PF
-> b4:96:91:a5:c7:a7 - source MAC address
-> eth1 - PR of a VF to mirror to
-> 
-> Co-developed-by: Marcin Szycik <marcin.szycik@intel.com>
-> Signed-off-by: Marcin Szycik <marcin.szycik@intel.com>
-> Reviewed-by: Wojciech Drewek <wojciech.drewek@intel.com>
-> Signed-off-by: Andrii Staikov <andrii.staikov@intel.com>
+> Fixes: c2d548cad150 ("idpf: add TX splitq napi poll support")
+> Fixes: a5ab9ee0df0b ("idpf: add singleq start_xmit and napi poll")
+> Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
+> Reviewed-by: Alexander Lobakin <aleksander.lobakin@intel.com>
+> Signed-off-by: Joshua Hay <joshua.a.hay@intel.com>
+> Co-developed-by: Michal Kubiak <michal.kubiak@intel.com>
+> Signed-off-by: Michal Kubiak <michal.kubiak@intel.com>
 > ---
-> v1 -> v2: no need for changes in ice_add_tc_flower_adv_fltr()
-> v2 -> v3: add another if branch for netif_is_ice(act->dev) ||
-> ice_is_tunnel_supported(act->dev) for FLOW_ACTION_MIRRED action and
-> add direction rules for filters
-> v3 -> v4: move setting mirroring into dedicated function
-> ice_tc_setup_mirror_action()
-> v4 -> v5: Fix packets not mirroring from VF to VF by changing
-> ICE_ESWITCH_FLTR_INGRESS to ICE_ESWITCH_FLTR_EGRESS where needed
-> v5 -> v6: Additionally fix some tags
-> ---
->   drivers/net/ethernet/intel/ice/ice_switch.c | 25 +++++++++----
->   drivers/net/ethernet/intel/ice/ice_tc_lib.c | 41 +++++++++++++++++++++
->   drivers/net/ethernet/intel/ice/ice_type.h   |  1 +
->   3 files changed, 60 insertions(+), 7 deletions(-)
+>   drivers/net/ethernet/intel/idpf/idpf_dev.c    |  2 ++
+>   .../ethernet/intel/idpf/idpf_singleq_txrx.c   |  6 ++++-
+>   drivers/net/ethernet/intel/idpf/idpf_txrx.c   |  7 +++++-
+>   drivers/net/ethernet/intel/idpf/idpf_txrx.h   | 23 +++++++++++++++++++
+>   drivers/net/ethernet/intel/idpf/idpf_vf_dev.c |  2 ++
+>   5 files changed, 38 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/ice/ice_switch.c b/drivers/net/ethernet/intel/ice/ice_switch.c
-> index ee19f3aa3d19..4af1ce2657ad 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_switch.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_switch.c
-> @@ -6065,6 +6065,7 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
->                rinfo->sw_act.fltr_act == ICE_FWD_TO_Q ||
->                rinfo->sw_act.fltr_act == ICE_FWD_TO_QGRP ||
->                rinfo->sw_act.fltr_act == ICE_DROP_PACKET ||
-> +             rinfo->sw_act.fltr_act == ICE_MIRROR_PACKET ||
->                rinfo->sw_act.fltr_act == ICE_NOP)) {
->                  status = -EIO;
->                  goto free_pkt_profile;
-> @@ -6077,9 +6078,11 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
->          }
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_dev.c
+> index 34ad1ac46b78..2c6776086130 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_dev.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_dev.c
+> @@ -96,8 +96,10 @@ static int idpf_intr_reg_init(struct idpf_vport *vport)
+>                  intr->dyn_ctl = idpf_get_reg_addr(adapter,
+>                                                    reg_vals[vec_id].dyn_ctl_reg);
+>                  intr->dyn_ctl_intena_m = PF_GLINT_DYN_CTL_INTENA_M;
+> +               intr->dyn_ctl_intena_msk_m = PF_GLINT_DYN_CTL_INTENA_MSK_M;
+>                  intr->dyn_ctl_itridx_s = PF_GLINT_DYN_CTL_ITR_INDX_S;
+>                  intr->dyn_ctl_intrvl_s = PF_GLINT_DYN_CTL_INTERVAL_S;
+> +               intr->dyn_ctl_wb_on_itr_m = PF_GLINT_DYN_CTL_WB_ON_ITR_M;
 > 
->          if (rinfo->sw_act.fltr_act == ICE_FWD_TO_VSI ||
-> -           rinfo->sw_act.fltr_act == ICE_NOP)
-> +           rinfo->sw_act.fltr_act == ICE_MIRROR_PACKET ||
-> +           rinfo->sw_act.fltr_act == ICE_NOP) {
->                  rinfo->sw_act.fwd_id.hw_vsi_id =
->                          ice_get_hw_vsi_num(hw, vsi_handle);
+>                  spacing = IDPF_ITR_IDX_SPACING(reg_vals[vec_id].itrn_index_spacing,
+>                                                 IDPF_PF_ITR_IDX_SPACING);
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+> index 81288a17da2a..8e1478b7d86c 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_singleq_txrx.c
+> @@ -1168,8 +1168,10 @@ int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
+>                                                      &work_done);
+> 
+>          /* If work not completed, return budget and polling will return */
+> -       if (!clean_complete)
+> +       if (!clean_complete) {
+> +               idpf_vport_intr_set_wb_on_itr(q_vector);
+>                  return budget;
 > +       }
 > 
->          if (rinfo->src_vsi)
->                  rinfo->sw_act.src = ice_get_hw_vsi_num(hw, rinfo->src_vsi);
-> @@ -6115,12 +6118,15 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
->                  status = -ENOMEM;
->                  goto free_pkt_profile;
->          }
-> -       if (!rinfo->flags_info.act_valid) {
-> -               act |= ICE_SINGLE_ACT_LAN_ENABLE;
-> -               act |= ICE_SINGLE_ACT_LB_ENABLE;
-> -       } else {
-> -               act |= rinfo->flags_info.act & (ICE_SINGLE_ACT_LAN_ENABLE |
-> -                                               ICE_SINGLE_ACT_LB_ENABLE);
-> +
-> +       if (rinfo->sw_act.fltr_act != ICE_MIRROR_PACKET) {
-> +               if (!rinfo->flags_info.act_valid) {
-> +                       act |= ICE_SINGLE_ACT_LAN_ENABLE;
-> +                       act |= ICE_SINGLE_ACT_LB_ENABLE;
-> +               } else {
-> +                       act |= rinfo->flags_info.act & (ICE_SINGLE_ACT_LAN_ENABLE |
-> +                                                       ICE_SINGLE_ACT_LB_ENABLE);
-> +               }
->          }
+>          work_done = min_t(int, work_done, budget - 1);
 > 
->          switch (rinfo->sw_act.fltr_act) {
-> @@ -6147,6 +6153,11 @@ ice_add_adv_rule(struct ice_hw *hw, struct ice_adv_lkup_elem *lkups,
->                  act |= ICE_SINGLE_ACT_VSI_FORWARDING | ICE_SINGLE_ACT_DROP |
->                         ICE_SINGLE_ACT_VALID_BIT;
->                  break;
-> +       case ICE_MIRROR_PACKET:
-> +               act |= ICE_SINGLE_ACT_OTHER_ACTS;
-> +               act |= FIELD_PREP(ICE_SINGLE_ACT_VSI_ID_M,
-> +                                 rinfo->sw_act.fwd_id.hw_vsi_id);
-> +               break;
->          case ICE_NOP:
->                  act |= FIELD_PREP(ICE_SINGLE_ACT_VSI_ID_M,
->                                    rinfo->sw_act.fwd_id.hw_vsi_id);
-> diff --git a/drivers/net/ethernet/intel/ice/ice_tc_lib.c b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-> index 08d3bbf4b44c..b890410a2bc0 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-> +++ b/drivers/net/ethernet/intel/ice/ice_tc_lib.c
-> @@ -689,6 +689,41 @@ ice_tc_setup_drop_action(struct net_device *filter_dev,
->          return 0;
+> @@ -1178,6 +1180,8 @@ int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget)
+>           */
+>          if (likely(napi_complete_done(napi, work_done)))
+>                  idpf_vport_intr_update_itr_ena_irq(q_vector);
+> +       else
+> +               idpf_vport_intr_set_wb_on_itr(q_vector);
+> 
+>          return work_done;
+>   }
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.c b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+> index 1646ff3877ba..b496566ee2aa 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.c
+> @@ -3639,6 +3639,7 @@ void idpf_vport_intr_update_itr_ena_irq(struct idpf_q_vector *q_vector)
+>                                                IDPF_NO_ITR_UPDATE_IDX, 0);
+> 
+>          writel(intval, q_vector->intr_reg.dyn_ctl);
+> +       q_vector->wb_on_itr = false;
 >   }
 > 
-> +static int ice_tc_setup_mirror_action(struct net_device *filter_dev,
-> +                                     struct ice_tc_flower_fltr *fltr,
-> +                                     struct net_device *target_dev)
-> +{
-> +       struct ice_repr *repr;
-> +
-> +       fltr->action.fltr_act = ICE_MIRROR_PACKET;
-> +
-> +       if (ice_is_port_repr_netdev(filter_dev) &&
-> +           ice_is_port_repr_netdev(target_dev)) {
-> +               repr = ice_netdev_to_repr(target_dev);
-> +
-> +               fltr->dest_vsi = repr->src_vsi;
-> +               fltr->direction = ICE_ESWITCH_FLTR_EGRESS;
-> +       } else if (ice_is_port_repr_netdev(filter_dev) &&
-> +                  ice_tc_is_dev_uplink(target_dev)) {
-> +               repr = ice_netdev_to_repr(filter_dev);
-> +
-> +               fltr->dest_vsi = repr->src_vsi->back->eswitch.uplink_vsi;
-
-It seems like multiple places use this and pf->eswitch.uplink_vsi. Would 
-it be worth adding a helper function for this, i.e.:
-
-ice_get_eswitch_uplink_vsi(pf)
-
-> +               fltr->direction = ICE_ESWITCH_FLTR_EGRESS;
-> +       } else if (ice_tc_is_dev_uplink(filter_dev) &&
-> +                  ice_is_port_repr_netdev(target_dev)) {
-> +               repr = ice_netdev_to_repr(target_dev);
-> +
-> +               fltr->dest_vsi = repr->src_vsi;
-> +               fltr->direction = ICE_ESWITCH_FLTR_INGRESS;
-> +       } else {
-> +               NL_SET_ERR_MSG_MOD(fltr->extack,
-> +                                  "Unsupported netdevice in switchdev mode");
-> +               return -EINVAL;
+>   /**
+> @@ -3930,8 +3931,10 @@ static int idpf_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
+>          clean_complete &= idpf_tx_splitq_clean_all(q_vector, budget, &work_done);
+> 
+>          /* If work not completed, return budget and polling will return */
+> -       if (!clean_complete)
+> +       if (!clean_complete) {
+> +               idpf_vport_intr_set_wb_on_itr(q_vector);
+>                  return budget;
 > +       }
+> 
+>          work_done = min_t(int, work_done, budget - 1);
+> 
+> @@ -3940,6 +3943,8 @@ static int idpf_vport_splitq_napi_poll(struct napi_struct *napi, int budget)
+>           */
+>          if (likely(napi_complete_done(napi, work_done)))
+>                  idpf_vport_intr_update_itr_ena_irq(q_vector);
+> +       else
+> +               idpf_vport_intr_set_wb_on_itr(q_vector);
+> 
+>          /* Switch to poll mode in the tear-down path after sending disable
+>           * queues virtchnl message, as the interrupts will be disabled after
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_txrx.h b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+> index df76493faa75..50761c2d9f3b 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_txrx.h
+> @@ -495,9 +495,11 @@ struct idpf_vec_regs {
+>   struct idpf_intr_reg {
+>          void __iomem *dyn_ctl;
+>          u32 dyn_ctl_intena_m;
+> +       u32 dyn_ctl_intena_msk_m;
+>          u32 dyn_ctl_itridx_s;
+>          u32 dyn_ctl_itridx_m;
+>          u32 dyn_ctl_intrvl_s;
+> +       u32 dyn_ctl_wb_on_itr_m;
+>          void __iomem *rx_itr;
+>          void __iomem *tx_itr;
+>          void __iomem *icr_ena;
+> @@ -534,6 +536,7 @@ struct idpf_q_vector {
+>          struct napi_struct napi;
+>          u16 v_idx;
+>          struct idpf_intr_reg intr_reg;
+> +       bool wb_on_itr;
+
+Not sure if this was considered, but it might be best to put this before 
+intr_reg so it's on the same cacheline as intr_reg.
+
+> 
+>          u16 num_txq;
+>          struct idpf_queue **tx;
+> @@ -973,6 +976,26 @@ static inline void idpf_rx_sync_for_cpu(struct idpf_rx_buf *rx_buf, u32 len)
+>                                        page_pool_get_dma_dir(pp));
+>   }
+> 
+> +/**
+> + * idpf_vport_intr_set_wb_on_itr - enable descriptor writeback on disabled interrupts
+> + * @q_vector: pointer to queue vector struct
+> + */
+> +static inline void idpf_vport_intr_set_wb_on_itr(struct idpf_q_vector *q_vector)
+> +{
+> +       struct idpf_intr_reg *reg;
 > +
-> +       return 0;
+> +       if (q_vector->wb_on_itr)
+> +               return;
+> +
+> +       reg = &q_vector->intr_reg;
+> +
+> +       writel(reg->dyn_ctl_wb_on_itr_m | reg->dyn_ctl_intena_msk_m |
+> +              IDPF_NO_ITR_UPDATE_IDX << reg->dyn_ctl_itridx_s,
+> +              reg->dyn_ctl);
+> +
+> +       q_vector->wb_on_itr = true;
 > +}
 > +
->   static int ice_eswitch_tc_parse_action(struct net_device *filter_dev,
->                                         struct ice_tc_flower_fltr *fltr,
->                                         struct flow_action_entry *act)
-> @@ -710,6 +745,12 @@ static int ice_eswitch_tc_parse_action(struct net_device *filter_dev,
+>   int idpf_vport_singleq_napi_poll(struct napi_struct *napi, int budget);
+>   void idpf_vport_init_num_qs(struct idpf_vport *vport,
+>                              struct virtchnl2_create_vport *vport_msg);
+> diff --git a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
+> index 8ade4e3a9fe1..f5b0a0666636 100644
+> --- a/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
+> +++ b/drivers/net/ethernet/intel/idpf/idpf_vf_dev.c
+> @@ -96,7 +96,9 @@ static int idpf_vf_intr_reg_init(struct idpf_vport *vport)
+>                  intr->dyn_ctl = idpf_get_reg_addr(adapter,
+>                                                    reg_vals[vec_id].dyn_ctl_reg);
+>                  intr->dyn_ctl_intena_m = VF_INT_DYN_CTLN_INTENA_M;
+> +               intr->dyn_ctl_intena_msk_m = VF_INT_DYN_CTLN_INTENA_MSK_M;
+>                  intr->dyn_ctl_itridx_s = VF_INT_DYN_CTLN_ITR_INDX_S;
+> +               intr->dyn_ctl_wb_on_itr_m = VF_INT_DYN_CTLN_WB_ON_ITR_M;
 > 
->                  break;
-> 
-> +       case FLOW_ACTION_MIRRED:
-> +               err = ice_tc_setup_mirror_action(filter_dev, fltr, act->dev);
-> +               if (err)
-> +                       return err;
-> +               break;
-> +
->          default:
->                  NL_SET_ERR_MSG_MOD(fltr->extack, "Unsupported action in switchdev mode");
->                  return -EINVAL;
-> diff --git a/drivers/net/ethernet/intel/ice/ice_type.h b/drivers/net/ethernet/intel/ice/ice_type.h
-> index 5a80158e49ed..20c014e9b6c0 100644
-> --- a/drivers/net/ethernet/intel/ice/ice_type.h
-> +++ b/drivers/net/ethernet/intel/ice/ice_type.h
-> @@ -1055,6 +1055,7 @@ enum ice_sw_fwd_act_type {
->          ICE_FWD_TO_Q,
->          ICE_FWD_TO_QGRP,
->          ICE_DROP_PACKET,
-> +       ICE_MIRROR_PACKET,
->          ICE_NOP,
->          ICE_INVAL_ACT
->   };
+>                  spacing = IDPF_ITR_IDX_SPACING(reg_vals[vec_id].itrn_index_spacing,
+>                                                 IDPF_VF_ITR_IDX_SPACING);
 > --
-> 2.25.1
+> 2.33.1
 > 
 > 
 _______________________________________________
