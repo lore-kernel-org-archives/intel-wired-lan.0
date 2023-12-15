@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83AE5C4167B
-	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Dec 2023 11:03:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0D45C4167B
+	for <intel-wired-lan@archiver.kernel.org>; Fri, 15 Dec 2023 11:03:57 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 186EF822CE;
-	Fri, 15 Dec 2023 11:03:54 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 186EF822CE
+	by smtp1.osuosl.org (Postfix) with ESMTP id 76DAA81EDE;
+	Fri, 15 Dec 2023 11:03:57 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 76DAA81EDE
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702638234;
-	bh=0jz6e1wRZQj9BZC0avSXIZ/cw/ZvZyl+g9FJ2d/UX8w=;
+	s=default; t=1702638237;
+	bh=spWhZ8IF+NWvD1Fr7HyMyemB15UAXdC7ocS4VRlNSBk=;
 	h=From:To:Date:In-Reply-To:References:Subject:List-Id:
 	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
 	 Cc:From;
-	b=J+6N8iFY6CXoJrVUqM0jjZmGFwNB+eQcptPc3KRQV9mbOh35JzOCTaOSys6UgDTUZ
-	 3WCBaDR0IKCoIANvSIwv6S8vvWFDQRfGWO74p+xcJ951oFmIatMLM76yyf57cYPidz
-	 Py0cf0izNmxM7ebXMla8QMDd/Gz8kT+Y6RhulAl0klSY01MTxHl0m9QSRKQcC/5reH
-	 kpjUFH40kBfGKgfvXy4zTea0WN2Fd+nAJGQZ3kDrrbTQsSdT7dISSE/FL9GNwkWyQo
-	 fBQ/L2aQfn6H3yPTGomp7sSTHaKNMbwONP8RQSsoY0mmCYxPPUh90MmiD8GP2E72+l
-	 r/oEePNLJgjWg==
+	b=fpxup7PUHHAcJdpauJoI5csAjX8tlUrTQIphHKlPoxLyVbwBUslLSjDRbuM6AQhlU
+	 B0mJHSXz1VYb8CQ7smaBGUnc/9QbvqsQDGvTledr5Yf5JHZGAohpoJBReRla9iPXiK
+	 080cjaYrTbWK5NDcsZ991WpmiEHR+TkJMKyeKJkMTFkxgSbvcvxpaI2GKjfkml8Yyi
+	 NOeOBnZG60c2CCklQa+iTnFK3lXjoweDJ4YDL2h+UD46H3ZPi1LKCs02s2MVC+WWM8
+	 IE2Utd7S8WO49JCMDlip3WSZ7wQT5Jky6RVK67vEJumbssEsNoBsLHyU5+WHZJhDOt
+	 RU1dLw639e81w==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
 	by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 2Shhlj_V735S; Fri, 15 Dec 2023 11:03:52 +0000 (UTC)
+	with ESMTP id VUBaPAkpol-E; Fri, 15 Dec 2023 11:03:56 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp1.osuosl.org (Postfix) with ESMTP id 4D2F283D8B;
-	Fri, 15 Dec 2023 11:03:52 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 4D2F283D8B
+	by smtp1.osuosl.org (Postfix) with ESMTP id 79A6383947;
+	Fri, 15 Dec 2023 11:03:56 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 79A6383947
 Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
- by ash.osuosl.org (Postfix) with ESMTP id 1ACF01BF83B
- for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 11:03:48 +0000 (UTC)
+ by ash.osuosl.org (Postfix) with ESMTP id 404AD1BF83B
+ for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 11:03:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp1.osuosl.org (Postfix) with ESMTP id 571A683D87
+ by smtp1.osuosl.org (Postfix) with ESMTP id 73A9583D8B
  for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 11:03:47 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 571A683D87
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 73A9583D8B
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp1.osuosl.org ([127.0.0.1])
  by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id WEoK8euS__a8 for <intel-wired-lan@lists.osuosl.org>;
+ with ESMTP id r4yitLfxbk19 for <intel-wired-lan@lists.osuosl.org>;
  Fri, 15 Dec 2023 11:03:44 +0000 (UTC)
 Received: from mgamail.intel.com (mgamail.intel.com [134.134.136.20])
- by smtp1.osuosl.org (Postfix) with ESMTPS id 3D224831BD
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 92AF283947
  for <intel-wired-lan@lists.osuosl.org>; Fri, 15 Dec 2023 11:03:44 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 3D224831BD
-X-IronPort-AV: E=McAfee;i="6600,9927,10924"; a="385679108"
-X-IronPort-AV: E=Sophos;i="6.04,278,1695711600"; d="scan'208";a="385679108"
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 92AF283947
+X-IronPort-AV: E=McAfee;i="6600,9927,10924"; a="385679110"
+X-IronPort-AV: E=Sophos;i="6.04,278,1695711600"; d="scan'208";a="385679110"
 Received: from fmsmga001.fm.intel.com ([10.253.24.23])
  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384;
- 15 Dec 2023 03:03:43 -0800
+ 15 Dec 2023 03:03:44 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10924"; a="918408308"
-X-IronPort-AV: E=Sophos;i="6.04,278,1695711600"; d="scan'208";a="918408308"
+X-IronPort-AV: E=McAfee;i="6600,9927,10924"; a="918408309"
+X-IronPort-AV: E=Sophos;i="6.04,278,1695711600"; d="scan'208";a="918408309"
 Received: from irvmail002.ir.intel.com ([10.43.11.120])
  by fmsmga001.fm.intel.com with ESMTP; 15 Dec 2023 03:03:42 -0800
 Received: from rozewie.igk.intel.com (unknown [10.211.8.69])
- by irvmail002.ir.intel.com (Postfix) with ESMTP id A003639C83;
+ by irvmail002.ir.intel.com (Postfix) with ESMTP id DF2A039C86;
  Fri, 15 Dec 2023 11:03:41 +0000 (GMT)
 From: Wojciech Drewek <wojciech.drewek@intel.com>
 To: intel-wired-lan@lists.osuosl.org
-Date: Fri, 15 Dec 2023 12:01:56 +0100
-Message-Id: <20231215110157.296923-2-wojciech.drewek@intel.com>
+Date: Fri, 15 Dec 2023 12:01:57 +0100
+Message-Id: <20231215110157.296923-3-wojciech.drewek@intel.com>
 X-Mailer: git-send-email 2.40.1
 In-Reply-To: <20231215110157.296923-1-wojciech.drewek@intel.com>
 References: <20231215110157.296923-1-wojciech.drewek@intel.com>
@@ -72,19 +72,19 @@ X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  t=1702638224; x=1734174224;
  h=from:to:cc:subject:date:message-id:in-reply-to:
  references:mime-version:content-transfer-encoding;
- bh=izoEArmY3BTSCQrEPl2eZ2gxCJtnlinZSxzFEQRzkJk=;
- b=Ft0IY+dw0JN419jMADXY78lQxcW2SG5LfMU7YFZ2/CFhMc75T6txTwek
- VNA4cID+0lGvIDTxeUBan4NDVlDmRTdzSfdfhVx/2yBUCTkqXrImBJYz5
- 2E7gMWkX83TnqeCNRGs0pKUC0Th40q56fX9jNFpC5Gn1HlLSVNBo5dafm
- ilJLEjk9X+OSgrN7X09uIhOvSom0ZCpZdGNeNthBHHY/o4LQlhvE8w5M3
- aOEF9Ohcq+zy4H9EGT5z3MjOMusX198s73R4Pgzagm+xNcwExp5vBc4mW
- kA/obafEz1Z423mxD13ttPawJgl6d3rjuWkb+PFfna+5t3VMbY2uC7lvY
- A==;
+ bh=r91IwQB98GjbzYQuxtqMyFt4lszlbhRTuZ/jgO7vu+s=;
+ b=VVxdEsjewNaqZDi5cESYnPwFHnXOfjBUezXOpZxwMDa9uBYZkTtOtjBy
+ 2XGPDURZR50D/SRnfcaA/wjmhQ1t/prHhGFw7W3QjQkpwbTPEcAjz6FCH
+ Nb+0eof+WHHlJZAshkqKAgkiaemAz14rborNlEPz9wgwhd/vcpHnpRHvZ
+ zrV7INLNqwp9brscRd4ThgBi526knolJDG4qxzAsY+j5S76i4uedYX7/a
+ F0oDbItk4VVJJOQS4MLa4VP2vJnoUrd8YAHaMSFNKB+MNoOhTULcZJZSs
+ 970miv2Gr2hd1V4x1lJCT1bD1PxYpnIE3PdO+KydVOo1p/+qNrkEvCQ+j
+ Q==;
 X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
  dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com
- header.a=rsa-sha256 header.s=Intel header.b=Ft0IY+dw
-Subject: [Intel-wired-lan] [PATCH iwl-net 1/2] ice: Fix link_down_on_close
- message
+ header.a=rsa-sha256 header.s=Intel header.b=VVxdEsje
+Subject: [Intel-wired-lan] [PATCH iwl-net 2/2] ice: Shut down VSI with
+ "link-down-on-close" enabled
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,45 +103,30 @@ Content-Transfer-Encoding: 7bit
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-From: Katarzyna Wieczerzycka <katarzyna.wieczerzycka@intel.com>
+From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 
-The driver should not report an error message when for a medialess port
-the link_down_on_close flag is enabled and the physical link cannot be
-set down.
+Disabling netdev with ethtool private flag "link-down-on-close" enabled
+can cause NULL pointer dereference bug. Shut down VSI regardless of
+"link-down-on-close" state.
 
 Fixes: 8ac7132704f3 ("ice: Fix interface being down after reset with link-down-on-close flag on")
 Reviewed-by: Przemek Kitszel <przemyslaw.kitszel@intel.com>
-Signed-off-by: Katarzyna Wieczerzycka <katarzyna.wieczerzycka@intel.com>
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 Signed-off-by: Wojciech Drewek <wojciech.drewek@intel.com>
 ---
- drivers/net/ethernet/intel/ice/ice_main.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ice/ice_main.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ice/ice_main.c b/drivers/net/ethernet/intel/ice/ice_main.c
-index cfa584627993..67c2ed2e61f9 100644
+index 67c2ed2e61f9..a56fbc39e7fd 100644
 --- a/drivers/net/ethernet/intel/ice/ice_main.c
 +++ b/drivers/net/ethernet/intel/ice/ice_main.c
-@@ -2145,7 +2145,7 @@ static int ice_configure_phy(struct ice_vsi *vsi)
- 
- 	/* Ensure we have media as we cannot configure a medialess port */
- 	if (!(phy->link_info.link_info & ICE_AQ_MEDIA_AVAILABLE))
--		return -EPERM;
-+		return -ENOMEDIUM;
- 
- 	ice_print_topo_conflict(vsi);
- 
-@@ -9295,8 +9295,12 @@ int ice_stop(struct net_device *netdev)
- 		int link_err = ice_force_phys_link_state(vsi, false);
- 
- 		if (link_err) {
--			netdev_err(vsi->netdev, "Failed to set physical link down, VSI %d error %d\n",
--				   vsi->vsi_num, link_err);
-+			if (link_err == -ENOMEDIUM)
-+				netdev_info(vsi->netdev, "Skipping link reconfig - no media attached, VSI %d\n",
-+					    vsi->vsi_num);
-+			else
-+				netdev_err(vsi->netdev, "Failed to set physical link down, VSI %d error %d\n",
-+					   vsi->vsi_num, link_err);
+@@ -9301,6 +9301,8 @@ int ice_stop(struct net_device *netdev)
+ 			else
+ 				netdev_err(vsi->netdev, "Failed to set physical link down, VSI %d error %d\n",
+ 					   vsi->vsi_num, link_err);
++
++			ice_vsi_close(vsi);
  			return -EIO;
  		}
  	}
