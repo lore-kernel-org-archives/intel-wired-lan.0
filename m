@@ -4,73 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from smtp2.osuosl.org (smtp2.osuosl.org [140.211.166.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8694AC46CD2
-	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Dec 2023 16:15:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFF14C35274
+	for <intel-wired-lan@archiver.kernel.org>; Mon, 18 Dec 2023 16:32:49 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
-	by smtp2.osuosl.org (Postfix) with ESMTP id 2D97540493;
-	Mon, 18 Dec 2023 16:15:41 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 2D97540493
+	by smtp2.osuosl.org (Postfix) with ESMTP id 7AB6840018;
+	Mon, 18 Dec 2023 16:32:49 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org 7AB6840018
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=osuosl.org;
-	s=default; t=1702916141;
-	bh=QYxfxiC+BwTd/gKjCQUebSQ8jt4iTK6YK9Gnqu1+IeA=;
-	h=From:To:Date:Subject:List-Id:List-Unsubscribe:List-Archive:
-	 List-Post:List-Help:List-Subscribe:Cc:From;
-	b=nDUVT1Bbu0oP7nJ4bjoA3EJgXuJn/K+fzv1HVX4H0pi9zUkmaz9JGT5rSSOJyFeLe
-	 eML5NvZwh33n7riaT6RgtMRql4mW6J9PIb4V37dqzchcRzV7Sg9FRT7pVHqZBNtzgu
-	 uRW2P064CMncNl3VhSBlkJSz/oB6WiTEaIceBk64EUdSklngU7n3LyDyPxvyBe7nmj
-	 yITU0R/J23c7Msz0SDIX9fnETz8jy5yeOOLUiZ5wAE2Y3tZ26mw8+yVnm9JviYYGas
-	 QoGF3bklhTM5NPqmSVR/frueb7L2xOMxHwZeChnXkfCNl0ZK/NIBBoA1SEpll/FWs8
-	 0rVZ4sTMGDWsw==
+	s=default; t=1702917169;
+	bh=cdoEpa+0zDI6yag6qe/U26PrPHHGGwqfLU/6rfSCoW8=;
+	h=References:In-Reply-To:From:Date:To:Subject:List-Id:
+	 List-Unsubscribe:List-Archive:List-Post:List-Help:List-Subscribe:
+	 Cc:From;
+	b=D+riYDt0yfMQ79wqiYYFploPe/zxpbegY2mgrOeJ/5qoBkWplioKyyiuNy4a45Zek
+	 ZYkAVSF9LxmnFVBaoNZ2xOU6krkWskgGWglBPE8aBaRm1twZZ+xoqutFwesV/SO0gf
+	 s4uPxPJI3VIy4XEjf5s4ayd5N4nPMLVSA6hWSFacqg+eEwktQ/7KeXeHMe6CxoKR7z
+	 0B530rb8o++ynXgUAiqmHcVtdNXr2JZSNEOsYLG3IGLDOvUI8OMD2VScje3hRELle7
+	 ayW5VFaT6A+nPfa5tH1CZ9XJD/HspNmRfEN+kokfRbFWypyz5rM3w3644V0Qm/5pNt
+	 bB7op7hlqR0sg==
 X-Virus-Scanned: amavisd-new at osuosl.org
 Received: from smtp2.osuosl.org ([127.0.0.1])
 	by localhost (smtp2.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id r8WwOvN_Ab1N; Mon, 18 Dec 2023 16:15:40 +0000 (UTC)
+	with ESMTP id zSPV38DTt95j; Mon, 18 Dec 2023 16:32:48 +0000 (UTC)
 Received: from ash.osuosl.org (ash.osuosl.org [140.211.166.34])
-	by smtp2.osuosl.org (Postfix) with ESMTP id C9C0F404DD;
-	Mon, 18 Dec 2023 16:15:39 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org C9C0F404DD
-Received: from smtp4.osuosl.org (smtp4.osuosl.org [140.211.166.137])
- by ash.osuosl.org (Postfix) with ESMTP id 459491BF3F4
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 07:17:40 +0000 (UTC)
+	by smtp2.osuosl.org (Postfix) with ESMTP id BEDAB40493;
+	Mon, 18 Dec 2023 16:32:47 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp2.osuosl.org BEDAB40493
+Received: from smtp1.osuosl.org (smtp1.osuosl.org [140.211.166.138])
+ by ash.osuosl.org (Postfix) with ESMTP id 3098F1BF2A1
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 16:32:46 +0000 (UTC)
 Received: from localhost (localhost [127.0.0.1])
- by smtp4.osuosl.org (Postfix) with ESMTP id 1AE7C41693
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 07:17:40 +0000 (UTC)
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 1AE7C41693
+ by smtp1.osuosl.org (Postfix) with ESMTP id 07B6C81589
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 16:32:46 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 07B6C81589
 X-Virus-Scanned: amavisd-new at osuosl.org
-Received: from smtp4.osuosl.org ([127.0.0.1])
- by localhost (smtp4.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Rm11Sph6vMjf for <intel-wired-lan@lists.osuosl.org>;
- Mon, 18 Dec 2023 07:17:39 +0000 (UTC)
-X-Greylist: delayed 480 seconds by postgrey-1.37 at util1.osuosl.org;
- Mon, 18 Dec 2023 07:17:38 UTC
-DKIM-Filter: OpenDKIM Filter v2.11.0 smtp4.osuosl.org 649C341675
-Received: from mail-m127105.qiye.163.com (mail-m127105.qiye.163.com
- [115.236.127.105])
- by smtp4.osuosl.org (Postfix) with ESMTPS id 649C341675
- for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 07:17:37 +0000 (UTC)
-Received: from localhost.localdomain (unknown
- [IPV6:240e:3b7:3270:35d0:f136:8ef4:5e9e:94b4])
- by mail-m12741.qiye.163.com (Hmail) with ESMTPA id EE1229E0608;
- Mon, 18 Dec 2023 15:09:06 +0800 (CST)
-From: Ke Xiao <xiaoke@sangfor.com.cn>
-To: jesse.brandeburg@intel.com, anthony.l.nguyen@intel.com,
- davem@davemloft.net, edumazet@google.com, kuba@kernel.org,
- pabeni@redhat.com
-Date: Mon, 18 Dec 2023 15:08:50 +0800
-Message-Id: <20231218070850.15870-1-xiaoke@sangfor.com.cn>
-X-Mailer: git-send-email 2.17.1
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
- tZV1koWUFITzdXWS1ZQUlXWQ8JGhUIEh9ZQVlCT0hNVhpLSh1CQkNMGU9MH1UTARMWGhIXJBQOD1
- lXWRgSC1lBWUlPSx5BSBlMQUhJTEtBSE4fS0EdSkhNQUMeHU9BTh5CHkFCTxlPWVdZFhoPEhUdFF
- lBWU9LSFVKTU9JTE5VSktLVUpCS0tZBg++
-X-HM-Tid: 0a8c7bc1cba9b214kuuuee1229e0608
-X-HM-MType: 1
-X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6MDo6Pxw5CTwwKykpKigqGA0L
- FTcaCwtVSlVKTEtJQ0NISE9DSklMVTMWGhIXVQMSGhQQHjsIGhUcHRQJVRgUFlUYFUVZV1kSC1lB
- WUlPSx5BSBlMQUhJTEtBSE4fS0EdSkhNQUMeHU9BTh5CHkFCTxlPWVdZCAFZQU9CTUI3Bg++
-X-Mailman-Approved-At: Mon, 18 Dec 2023 16:15:33 +0000
-Subject: [Intel-wired-lan] [net PATCH v2] i40e: fix use-after-free in
- i40e_aqc_add_filters()
+Received: from smtp1.osuosl.org ([127.0.0.1])
+ by localhost (smtp1.osuosl.org [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id iI_seVh2wUAm for <intel-wired-lan@lists.osuosl.org>;
+ Mon, 18 Dec 2023 16:32:45 +0000 (UTC)
+Received: from mail-wr1-x435.google.com (mail-wr1-x435.google.com
+ [IPv6:2a00:1450:4864:20::435])
+ by smtp1.osuosl.org (Postfix) with ESMTPS id 294DA8151E
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 16:32:45 +0000 (UTC)
+DKIM-Filter: OpenDKIM Filter v2.11.0 smtp1.osuosl.org 294DA8151E
+Received: by mail-wr1-x435.google.com with SMTP id
+ ffacd0b85a97d-336695c4317so1014607f8f.3
+ for <intel-wired-lan@lists.osuosl.org>; Mon, 18 Dec 2023 08:32:45 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20230601; t=1702917163; x=1703521963;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+ :subject:date:message-id:reply-to;
+ bh=qxF72wKyjSEZjuqzTvuY0Vstw6URgB5M3BZ+UT5BCpI=;
+ b=abRpQCUwHbiQexvrH6skYQqJwwE+W8QK0nXds/7WTas9FLrBfgGv2XqvR83uz91CJc
+ GlGrETXGEKvm98iLVtLnevRDchR1+tn/jaQDM+xMPWs5eq8Pi4k1DLX1RwoQTrJySDY0
+ EOHHD4G69gTrxSRad9sp6TQcSXEtrP9HZkPsw4VrxuWTJtoVqsZ+o3vxyxhKtPbdlaKu
+ 1a3OSZr+cAy5zMW5PVmRwwSlzLKaguBw0CJ9UFW2rS6b9x0dCb8XPKALbd6bHS6Klu67
+ wGZrbsG396C8TYiEM+IKwSoPBwuMLO5yt5+0RPX+8VquH9E9ETT70yTh15HvgNz6p+XY
+ PIeg==
+X-Gm-Message-State: AOJu0YxcqAH3c1VjoswpVXQHo5UvXlRY1vFpQiBL+7ZsEoHRIdEQmjre
+ gfxU0qUQREMSYkgn6wWvWGA/armkqU/Mf1sS8MhIZA==
+X-Google-Smtp-Source: AGHT+IHGfFW6R6JOaRG0q4/dC5NXDsnHxuGOKtVw5DDYC+yH+BCIjfLy0MnSQI2L3kNO0XZL8vOkfR4p88ZhQAopGz4=
+X-Received: by 2002:a5d:4cd2:0:b0:336:42b9:6a75 with SMTP id
+ c18-20020a5d4cd2000000b0033642b96a75mr4813068wrt.31.1702917162922; Mon, 18
+ Dec 2023 08:32:42 -0800 (PST)
+MIME-Version: 1.0
+References: <20231217-i40e-comma-v1-1-85c075eff237@kernel.org>
+In-Reply-To: <20231217-i40e-comma-v1-1-85c075eff237@kernel.org>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Mon, 18 Dec 2023 08:32:28 -0800
+Message-ID: <CAKwvOd=ZKV6KsgX0UxBX4Y89YEgpry00jG6K6qSjodwY3DLAzA@mail.gmail.com>
+To: Simon Horman <horms@kernel.org>
+X-Mailman-Original-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=google.com; s=20230601; t=1702917163; x=1703521963; darn=lists.osuosl.org;
+ h=content-transfer-encoding:cc:to:subject:message-id:date:from
+ :in-reply-to:references:mime-version:from:to:cc:subject:date
+ :message-id:reply-to;
+ bh=qxF72wKyjSEZjuqzTvuY0Vstw6URgB5M3BZ+UT5BCpI=;
+ b=nvmBvRfNIDFxlGqXfhp+KOit382oFj1A+JlTHIBqYK1CbKRgh6uEoX3pWdCQ6vq4ra
+ yNMq3k/feCu3zZdTSWlAe/pG0hrT21kYiEZH7BbwxeaGFMmOGKzNy3NQNWa31csBMmEk
+ j+zCGAaocEGFrlsGd7yY4DoZrf1KsH2kOZUvrZLDldr9ih/ZERRWwngGV2+eVqq039ES
+ tjJ3HuWpCkFzeGMMUZtYdW21t2JLOEwXwvdB/saMj5JH+ouoIEWsK8ioJvZpup6g+yOr
+ dGpPvgTe9KQ54KXzWT15MC76rKR01Ww59dkkCxr65bdOCYtFm2PBuHtbMNIoZTfNGK7m
+ +bXA==
+X-Mailman-Original-Authentication-Results: smtp1.osuosl.org;
+ dkim=pass (2048-bit key) header.d=google.com header.i=@google.com
+ header.a=rsa-sha256 header.s=20230601 header.b=nvmBvRfN
+Subject: Re: [Intel-wired-lan] [PATCH iwl-next] i40e: Avoid unnecessary use
+ of comma operator
 X-BeenThere: intel-wired-lan@osuosl.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,128 +104,45 @@ List-Post: <mailto:intel-wired-lan@osuosl.org>
 List-Help: <mailto:intel-wired-lan-request@osuosl.org?subject=help>
 List-Subscribe: <https://lists.osuosl.org/mailman/listinfo/intel-wired-lan>,
  <mailto:intel-wired-lan-request@osuosl.org?subject=subscribe>
-Cc: jan.sokolowski@intel.com, netdev@vger.kernel.org, dinghui@sangfor.com.cn,
- linux-kernel@vger.kernel.org, zhangrui182@huawei.com,
- intel-wired-lan@lists.osuosl.org, horms@kernel.org, zhudi2@huawei.com,
- Ke Xiao <xiaoke@sangfor.com.cn>, shannon.nelson@amd.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: intel-wired-lan@lists.osuosl.org, llvm@lists.linux.dev,
+ Jesse Brandeburg <jesse.brandeburg@intel.com>,
+ Nathan Chancellor <nathan@kernel.org>, Eric Dumazet <edumazet@google.com>,
+ netdev@vger.kernel.org, Tony Nguyen <anthony.l.nguyen@intel.com>,
+ Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
+ Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+ "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Errors-To: intel-wired-lan-bounces@osuosl.org
 Sender: "Intel-wired-lan" <intel-wired-lan-bounces@osuosl.org>
 
-Commit 3116f59c12bd ("i40e: fix use-after-free in
-i40e_sync_filters_subtask()") avoided use-after-free issues,
-by increasing refcount during update the VSI filter list to
-the HW. However, it missed the unicast situation.
-
-When deleting an unicast FDB entry, the i40e driver will release
-the mac_filter, and i40e_service_task will concurrently request
-firmware to add the mac_filter, which will lead to the following
-use-after-free issue.
-
-Fix again for both netdev->uc and netdev->mc.
-
-BUG: KASAN: use-after-free in i40e_aqc_add_filters+0x55c/0x5b0 [i40e]
-Read of size 2 at addr ffff888eb3452d60 by task kworker/8:7/6379
-
-CPU: 8 PID: 6379 Comm: kworker/8:7 Kdump: loaded Tainted: G
-Workqueue: i40e i40e_service_task [i40e]
-Call Trace:
- dump_stack+0x71/0xab
- print_address_description+0x6b/0x290
- kasan_report+0x14a/0x2b0
- i40e_aqc_add_filters+0x55c/0x5b0 [i40e]
- i40e_sync_vsi_filters+0x1676/0x39c0 [i40e]
- i40e_service_task+0x1397/0x2bb0 [i40e]
- process_one_work+0x56a/0x11f0
- worker_thread+0x8f/0xf40
- kthread+0x2a0/0x390
- ret_from_fork+0x1f/0x40
-
-Allocated by task 21948:
- kasan_kmalloc+0xa6/0xd0
- kmem_cache_alloc_trace+0xdb/0x1c0
- i40e_add_filter+0x11e/0x520 [i40e]
- i40e_addr_sync+0x37/0x60 [i40e]
- __hw_addr_sync_dev+0x1f5/0x2f0
- i40e_set_rx_mode+0x61/0x1e0 [i40e]
- dev_uc_add_excl+0x137/0x190
- i40e_ndo_fdb_add+0x161/0x260 [i40e]
- rtnl_fdb_add+0x567/0x950
- rtnetlink_rcv_msg+0x5db/0x880
- netlink_rcv_skb+0x254/0x380
- netlink_unicast+0x454/0x610
- netlink_sendmsg+0x747/0xb00
- sock_sendmsg+0xe2/0x120
- __sys_sendto+0x1ae/0x290
- __x64_sys_sendto+0xdd/0x1b0
- do_syscall_64+0xa0/0x370
- entry_SYSCALL_64_after_hwframe+0x65/0xca
-
-Freed by task 21948:
- __kasan_slab_free+0x137/0x190
- kfree+0x8b/0x1b0
- __i40e_del_filter+0x116/0x1e0 [i40e]
- i40e_del_mac_filter+0x16c/0x300 [i40e]
- i40e_addr_unsync+0x134/0x1b0 [i40e]
- __hw_addr_sync_dev+0xff/0x2f0
- i40e_set_rx_mode+0x61/0x1e0 [i40e]
- dev_uc_del+0x77/0x90
- rtnl_fdb_del+0x6a5/0x860
- rtnetlink_rcv_msg+0x5db/0x880
- netlink_rcv_skb+0x254/0x380
- netlink_unicast+0x454/0x610
- netlink_sendmsg+0x747/0xb00
- sock_sendmsg+0xe2/0x120
- __sys_sendto+0x1ae/0x290
- __x64_sys_sendto+0xdd/0x1b0
- do_syscall_64+0xa0/0x370
- entry_SYSCALL_64_after_hwframe+0x65/0xca
-
-Fixes: 3116f59c12bd ("i40e: fix use-after-free in i40e_sync_filters_subtask()")
-Fixes: 41c445ff0f48 ("i40e: main driver core")
-Signed-off-by: Ke Xiao <xiaoke@sangfor.com.cn>
-Signed-off-by: Ding Hui <dinghui@sangfor.com.cn>
-Cc: Di Zhu <zhudi2@huawei.com>
-Reviewed-by: Jan Sokolowski <jan.sokolowski@intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
----
-v2:
-- Order local variable declarations in Reverse Christmas Tree (RCT)
-
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1ab8dbe2d880..d5633a440cca 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -107,12 +107,18 @@ static struct workqueue_struct *i40e_wq;
- static void netdev_hw_addr_refcnt(struct i40e_mac_filter *f,
- 				  struct net_device *netdev, int delta)
- {
-+	struct netdev_hw_addr_list *ha_list;
- 	struct netdev_hw_addr *ha;
- 
- 	if (!f || !netdev)
- 		return;
- 
--	netdev_for_each_mc_addr(ha, netdev) {
-+	if (is_unicast_ether_addr(f->macaddr) || is_link_local_ether_addr(f->macaddr))
-+		ha_list = &netdev->uc;
-+	else
-+		ha_list = &netdev->mc;
-+
-+	netdev_hw_addr_list_for_each(ha, ha_list) {
- 		if (ether_addr_equal(ha->addr, f->macaddr)) {
- 			ha->refcount += delta;
- 			if (ha->refcount <= 0)
--- 
-2.17.1
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan@osuosl.org
-https://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+T24gU3VuLCBEZWMgMTcsIDIwMjMgYXQgMTo0NeKAr0FNIFNpbW9uIEhvcm1hbiA8aG9ybXNAa2Vy
+bmVsLm9yZz4gd3JvdGU6Cj4KPiBBbHRob3VnaCBpdCBkb2VzIG5vdCBzZWVtIHRvIGhhdmUgYW55
+IHVudG93YXJkIHNpZGUtZWZmZWN0cywKPiB0aGUgdXNlIG9mICc7JyB0byBzZXBhcmF0ZSB0byBh
+c3NpZ25tZW50cyBzZWVtcyBtb3JlIGFwcHJvcHJpYXRlIHRoYW4gJywnLgo+Cj4gRmxhZ2dlZCBi
+eSBjbGFuZy0xNyAtV2NvbW1hCgpZaWtlcyEgVGhpcyBraW5kIG9mIGV4YW1wbGUgaXMgd2h5IEkg
+aGF0ZSB0aGUgY29tbWEgb3BlcmF0b3IhCgpSZXZpZXdlZC1ieTogTmljayBEZXNhdWxuaWVycyA8
+bmRlc2F1bG5pZXJzQGdvb2dsZS5jb20+CgooSXMgLVdjb21tYSBlbmFibGVkIGJ5IC1XYWxsPykK
+CklzIHRoZXJlIGEgZml4ZXMgdGFnIHdlIGNhbiBhZGQ/Cgo+Cj4gTm8gZnVuY3Rpb25hbCBjaGFu
+Z2UgaW50ZW5kZWQuCj4gQ29tcGlsZSB0ZXN0ZWQgb25seS4KPgo+IFNpZ25lZC1vZmYtYnk6IFNp
+bW9uIEhvcm1hbiA8aG9ybXNAa2VybmVsLm9yZz4KPiAtLS0KPiAgZHJpdmVycy9uZXQvZXRoZXJu
+ZXQvaW50ZWwvaTQwZS9pNDBlX2V0aHRvb2wuYyB8IDIgKy0KPiAgMSBmaWxlIGNoYW5nZWQsIDEg
+aW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pCj4KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQv
+ZXRoZXJuZXQvaW50ZWwvaTQwZS9pNDBlX2V0aHRvb2wuYyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0
+L2ludGVsL2k0MGUvaTQwZV9ldGh0b29sLmMKPiBpbmRleCA4MTJkMDQ3NDdiZDAuLmY1NDJmMjY3
+MTk1NyAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9pbnRlbC9pNDBlL2k0MGVf
+ZXRodG9vbC5jCj4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvaW50ZWwvaTQwZS9pNDBlX2V0
+aHRvb2wuYwo+IEBAIC0xOTE3LDcgKzE5MTcsNyBAQCBpbnQgaTQwZV9nZXRfZWVwcm9tKHN0cnVj
+dCBuZXRfZGV2aWNlICpuZXRkZXYsCj4gICAgICAgICAgICAgICAgICAgICAgICAgbGVuID0gZWVw
+cm9tLT5sZW4gLSAoSTQwRV9OVk1fU0VDVE9SX1NJWkUgKiBpKTsKPiAgICAgICAgICAgICAgICAg
+ICAgICAgICBsYXN0ID0gdHJ1ZTsKPiAgICAgICAgICAgICAgICAgfQo+IC0gICAgICAgICAgICAg
+ICBvZmZzZXQgPSBlZXByb20tPm9mZnNldCArIChJNDBFX05WTV9TRUNUT1JfU0laRSAqIGkpLAo+
+ICsgICAgICAgICAgICAgICBvZmZzZXQgPSBlZXByb20tPm9mZnNldCArIChJNDBFX05WTV9TRUNU
+T1JfU0laRSAqIGkpOwo+ICAgICAgICAgICAgICAgICByZXRfdmFsID0gaTQwZV9hcV9yZWFkX252
+bShodywgMHgwLCBvZmZzZXQsIGxlbiwKPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICh1OCAqKWVlcHJvbV9idWZmICsgKEk0MEVfTlZNX1NFQ1RPUl9TSVpFICogaSksCj4gICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICBsYXN0LCBOVUxMKTsKPgo+CgoKLS0gClRoYW5rcywK
+fk5pY2sgRGVzYXVsbmllcnMKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KSW50ZWwtd2lyZWQtbGFuIG1haWxpbmcgbGlzdApJbnRlbC13aXJlZC1sYW5Ab3N1
+b3NsLm9yZwpodHRwczovL2xpc3RzLm9zdW9zbC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC13
+aXJlZC1sYW4K
